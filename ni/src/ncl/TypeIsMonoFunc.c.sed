@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeIsMonoFunc.c.sed,v 1.1 1995-01-28 01:52:55 ethan Exp $
+ *      $Id: TypeIsMonoFunc.c.sed,v 1.2 1997-01-16 19:44:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -34,7 +34,7 @@ int nval;
 	int i = 0,j = 1;
 
 	if(nval == 1) 
-		return(1);
+		return(NclINCREASING);
 	if(val_m != NULL) {
 		i = 0;
 		j = 0;

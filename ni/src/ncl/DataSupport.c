@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.32 1996-12-20 00:42:04 ethan Exp $
+ *      $Id: DataSupport.c,v 1.33 1997-01-16 19:43:59 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -88,12 +88,12 @@ NclObjTypes obj_type;
 
 NhlErrorTypes _NclRegisterCallback
 #if     NhlNeedProto
-(NclObjTypes class_type, unsigned int callback_type, void *callback_function,void *call_backdata)
+(NclObjTypes class_type, unsigned int callback_type, NclCallBack callback_function,void *call_backdata)
 #else
 (class_type, callback_type, callback_function,call_backdata)
 NclObjTypes class_type;
 unsigned int callback_type;
-void *callback_function;
+NclCallBack callback_function;
 void *call_backdata;
 #endif
 {
@@ -486,7 +486,7 @@ long _NclObjTypeToName
 		return(-1);
 	}
 }
-unsigned int _NclKeywordToObjType
+NclObjTypes _NclKeywordToObjType
 #if	NhlNeedProto
 (struct _NclSymbol *keywd)
 #else
@@ -497,29 +497,29 @@ unsigned int _NclKeywordToObjType
 	if(keywd != NULL) {
 		switch(keywd->type) {
 		case INTEGER:
-			return((unsigned int)Ncl_Typeint);
+			return(Ncl_Typeint);
 		case DOUBLE:
-			return((unsigned int)Ncl_Typedouble);
+			return(Ncl_Typedouble);
 		case BYTE:
-			return((unsigned int)Ncl_Typebyte);
+			return(Ncl_Typebyte);
 		case LONG:
-			return((unsigned int)Ncl_Typelong);
+			return(Ncl_Typelong);
 		case SHORT:
-			return((unsigned int)Ncl_Typeshort);
+			return(Ncl_Typeshort);
 		case FLOAT:
-			return((unsigned int)Ncl_Typefloat);
+			return(Ncl_Typefloat);
 		case CHARACTER:
-			return((unsigned int)Ncl_Typechar);
+			return(Ncl_Typechar);
 		case STRNG:
-			return((unsigned int)Ncl_Typestring);
+			return(Ncl_Typestring);
 		case NUMERIC:
 			return(NCL_TYPE_NUMERIC_MASK);
 		case GRAPHIC:
-			return((unsigned int)Ncl_MultiDValHLUObjData);
+			return(Ncl_MultiDValHLUObjData);
 		case LOGICAL:
-			return((unsigned int)Ncl_Typelogical);
+			return(Ncl_Typelogical);
 		case FILETYPE:
-			return((unsigned int)Ncl_MultiDValnclfileData);
+			return(Ncl_MultiDValnclfileData);
 		default:
 			return(Ncl_Obj);
 		}
@@ -839,6 +839,7 @@ NclScalar *new_missing;
 			oc = (NclDataClass)oc->obj_class.super_class;
 		}
 	}
+	return(NULL);
 }
 
 NhlErrorTypes _NclCallDualOp
@@ -1518,7 +1519,7 @@ struct _NclDataRec *value;
         int f_selection;
 
         if((self == NULL)||!(self->obj.obj_type_mask & NCL_MD_MASK)) {
-                return(NULL);
+                return(NhlFATAL);
         } else {
                 oc = (NclDataClass)self->obj.class_ptr;
         }
@@ -1531,5 +1532,5 @@ struct _NclDataRec *value;
                         oc = (NclDataClass)oc->obj_class.super_class;
                 }
         }
-
+        return(NhlFATAL);
 }

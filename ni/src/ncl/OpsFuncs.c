@@ -111,13 +111,13 @@ int operation;
 * No need to pass in missing value since it will be used appropriately
 * by the operator's function
 */
-		coerce_res = _NclCoerceData(rhs_data_obj,lhs_type & NCL_VAL_TYPE_MASK,NULL);
+		coerce_res = _NclCoerceData(rhs_data_obj,(NclObjTypes)((int)lhs_type & NCL_VAL_TYPE_MASK),NULL);
 		if(coerce_res == NULL) {
 /*
 * No need to pass in missing value since it will be used appropriately
 * by the operator's function
 */
-			coerce_res = _NclCoerceData(lhs_data_obj,rhs_type & NCL_VAL_TYPE_MASK,NULL);
+			coerce_res = _NclCoerceData(lhs_data_obj,(NclObjTypes)((int)rhs_type & NCL_VAL_TYPE_MASK),NULL);
 			if(coerce_res == NULL) {
 /*
 * Error message needed
@@ -135,13 +135,13 @@ int operation;
 * No need to pass in missing value since it will be used appropriately
 * by the operator's function
 */
-		coerce_res = _NclCoerceData(lhs_data_obj,rhs_type & NCL_VAL_TYPE_MASK,NULL);
+		coerce_res = _NclCoerceData(lhs_data_obj,(NclObjTypes)(rhs_type & NCL_VAL_TYPE_MASK),NULL);
 		if(coerce_res == NULL) {
 /*
 * No need to pass in missing value since it will be used appropriately
 * by the operator's function
 */
-			coerce_res = _NclCoerceData(rhs_data_obj,lhs_type & NCL_VAL_TYPE_MASK,NULL);
+			coerce_res = _NclCoerceData(rhs_data_obj,(NclObjTypes)(lhs_type & NCL_VAL_TYPE_MASK),NULL);
 			if(coerce_res == NULL) {
 /*
 * Error message needed
@@ -304,7 +304,7 @@ NhlErrorTypes _NclBuildArray
 	NclMultiDValData theobj,coerce_res;
 	NclStackEntry *data_ptr;
 	NclObjTypes result_type ;
-	int obj_type ;
+	NclObjTypes obj_type ;
 	int must_be_numeric = 1,i,j;
 	int ndims;
 	NclScalar *mis_ptr = NULL,themissing;
@@ -353,10 +353,10 @@ NhlErrorTypes _NclBuildArray
 	}
 	if(obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical)) {
 		must_be_numeric =1;
-		result_type = obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical);
+		result_type = (NclObjTypes)((int)obj_type & (NCL_VAL_NUMERIC_MASK | (int)Ncl_Typelogical));
 	} else if(obj_type & NCL_VAL_CHARSTR_MASK) {
 		must_be_numeric =0;
-		result_type = obj_type & NCL_VAL_CHARSTR_MASK;
+		result_type = (NclObjTypes)((int)obj_type & NCL_VAL_CHARSTR_MASK);
 	} else if(obj_type & Ncl_Typeobj) {
 		must_be_numeric =-1;
 		result_type = Ncl_Typeobj;
@@ -410,13 +410,13 @@ NhlErrorTypes _NclBuildArray
 		}
 		if((must_be_numeric==1)&&
 			( obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical))) {
-			if(result_type > (obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical))) {
-				result_type = (obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical));
+			if(result_type > (NclObjTypes)((int)obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical))) {
+				result_type = (NclObjTypes)((int)obj_type & (NCL_VAL_NUMERIC_MASK | (int)Ncl_Typelogical));
 			}
 		} else if((must_be_numeric == 0)&&
 			(obj_type & NCL_VAL_CHARSTR_MASK)) {
 			if(result_type > (obj_type & NCL_VAL_CHARSTR_MASK)) {
-				result_type = (obj_type & NCL_VAL_CHARSTR_MASK);
+				result_type = (NclObjTypes)((int)obj_type & NCL_VAL_CHARSTR_MASK);
 			}
 		} else if((must_be_numeric == -1)&&
 			(obj_type & Ncl_Typeobj )) {
@@ -891,6 +891,7 @@ NhlErrorTypes _NclIPSetRL
 	if(ncl_private_rl_list < 0) {
 		ncl_private_rl_list = 0;
 	}
+	return(NhlNOERROR);
 }
 
 

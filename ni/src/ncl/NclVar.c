@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.37 1996-12-31 17:15:17 ethan Exp $
+ *      $Id: NclVar.c,v 1.38 1997-01-16 19:44:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -571,12 +571,18 @@ FILE *fp;
 			if(ret < 0) {
 				return(NhlWARNING);
 			}
-			ret1 =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
+			ret =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
 			ret = nclfprintf(fp,"..");
 			if(ret < 0) {
 				return(NhlWARNING);
 			}
-			ret1 = _Nclprint(tmp_md->multidval.type,fp,&(((char*)tmp_md->multidval.val)[(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
+			ret = _Nclprint(tmp_md->multidval.type,fp,&(((char*)tmp_md->multidval.val)[(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
 			ret = nclfprintf(fp,"]\n");
 			if(ret < 0) {
 				return(NhlWARNING);
@@ -1127,9 +1133,8 @@ long dim_num;
 		}
 	} else if((dim_num < self->var.n_dims)&&( dim_num >= 0)) {
 			return(&(self->var.dim_info[dim_num]));
-	} else {
-		return(NULL);	
-	}
+	} 
+	return(NULL);	
 }
 
 static NhlErrorTypes VarWriteDim
@@ -1412,6 +1417,7 @@ NclSelectionRecord *sel_ptr;
 			} 
 		}
 	}
+	return(NhlFATAL);
 }
 static struct _NclVarRec *VarReadCoord
 #if	NhlNeedProto

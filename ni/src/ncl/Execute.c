@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.78 1997-01-08 16:29:01 ethan Exp $
+ *      $Id: Execute.c,v 1.79 1997-01-16 19:44:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -793,7 +793,7 @@ NclExecuteReturnStatus _NclExecute
 			{
 				NclStackEntry data;
 				ptr++;lptr++;fptr++;
-				estatus = _NclBuildArray((int)*ptr,&data);
+				estatus = _NclBuildArray(*ptr,&data);
 				if(estatus != NhlFATAL)
 					estatus = _NclPush(data);
 				break;
@@ -806,7 +806,7 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry data;
 			
 				ptr++;lptr++;fptr++;
-				data.u.data_obj = (NclMultiDValData)_NclGetObj(*ptr);
+				data.u.data_obj = (NclMultiDValData)_NclGetObj(*(int*)ptr);
 				data.kind = NclStk_VAL;
 				if(data.u.data_obj != NULL) {
 					estatus  = _NclPush(data);
@@ -939,7 +939,7 @@ NclExecuteReturnStatus _NclExecute
 					val = _NclVarValueRead(data.u.data_var,NULL,NULL);
 				}
 				ptr++;lptr++;fptr++;
-				nres = (int)*ptr;
+				nres = *(int*)ptr;
 				if(val == NULL) {
 					_NclCleanUpStack(2*nres);
 					estatus = NhlFATAL;
@@ -1598,7 +1598,7 @@ NclExecuteReturnStatus _NclExecute
 				sym = (NclSymbol*)*ptr;
 				var = _NclRetrieveRec(sym,READ_IT);
 				ptr++;lptr++;fptr++;
-				nsubs = *ptr;
+				nsubs = *(int*)ptr;
 				if((var == NULL)||(var->u.data_var == NULL)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is undefined",sym->name);
 					_NclCleanUpStack(nsubs);
@@ -1677,7 +1677,7 @@ NclExecuteReturnStatus _NclExecute
 				sym = (NclSymbol*)*ptr;
 				var = _NclRetrieveRec(sym,READ_IT);
 				ptr++;lptr++;fptr++;
-				nsubs = *ptr;
+				nsubs = *(int*)ptr;
 				if((var == NULL)||(var->u.data_var == NULL)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is undefined",sym->name);
 					_NclCleanUpStack(nsubs);
@@ -1756,7 +1756,7 @@ NclExecuteReturnStatus _NclExecute
 			sym = (NclSymbol*)(*ptr);
 
 			ptr++;lptr++;fptr++;
-			nsubs = *ptr;
+			nsubs = *(int*)ptr;
 
 			lhs_var = _NclRetrieveRec(sym,WRITE_IT);
 			if((estatus != NhlFATAL)&&(lhs_var != NULL)) {
@@ -1952,7 +1952,7 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				proc = (NclSymbol*)(*ptr);
 				ptr++;lptr++;fptr++;
-				offset = (int)(*ptr);
+				offset = (*(int*)ptr);
 				if((proc->u.procfunc != NULL)&&(offset >= 0)) {
 					if(proc->u.procfunc->thescope != NULL) {	
 						_NclPushScope(proc->u.procfunc->thescope);
@@ -1968,8 +1968,8 @@ NclExecuteReturnStatus _NclExecute
 				NclGenProcFuncInfo *pfinfo = NULL;
 				NclSymbol *argsym = NULL;
 				NclStackEntry data,tmp_data;
-				unsigned int obj_type_param;
-				unsigned int obj_type_arg;
+				NclObjTypes obj_type_param;
+				NclObjTypes obj_type_arg;
 				NclMultiDValData tmp_md = NULL;
 				NclVar tmp_var = NULL;
 				int i;
@@ -1979,7 +1979,7 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				thesym = (NclSymbol*)(*ptr);
 				ptr++;lptr++;fptr++;
-				arg_num = (int)(*ptr);
+				arg_num = (*(int*)ptr);
 
 				switch(thesym->type) {
 				case IPROC:
@@ -2615,7 +2615,7 @@ NclExecuteReturnStatus _NclExecute
 				
 			
 				ptr++;lptr++;fptr++;
-				nres = (int)*ptr;
+				nres = *(int*)ptr;
 				ptr++;lptr++;fptr++;
 				objtype =(NclSymbol*)*ptr ;
 	
@@ -2680,7 +2680,7 @@ NclExecuteReturnStatus _NclExecute
 				attname = NrmQuarkToString(*ptr);
 */
 				ptr++;lptr++;fptr++;
-				nsubs = (int)(*ptr);
+				nsubs = (*(int*)ptr);
 
 				var = _NclRetrieveRec(thesym,READ_IT);
 				if(var->u.data_var != NULL) {
@@ -2815,7 +2815,7 @@ NclExecuteReturnStatus _NclExecute
 				attname = NrmQuarkToString(*ptr);
 */
 				ptr++;lptr++;fptr++;
-				nsubs = (int)*ptr;
+				nsubs = *(int*)ptr;
 
 				var = _NclRetrieveRec(thesym,WRITE_IT);
 				if(var->u.data_var != NULL) {
@@ -2928,7 +2928,7 @@ NclExecuteReturnStatus _NclExecute
 				coord_name = NrmQuarkToString(*ptr);
 */
 				ptr++;lptr++;fptr++;
-				nsubs = (int)*ptr;
+				nsubs = *(int*)ptr;
 
 				var = _NclRetrieveRec(thesym,WRITE_IT);
 				if((var == NULL)||(var->u.data_var == NULL)) {
@@ -3088,7 +3088,7 @@ NclExecuteReturnStatus _NclExecute
 				attname = NrmQuarkToString(*ptr);
 */
 				ptr++;lptr++;fptr++;
-				nsubs = (int)*ptr;
+				nsubs = *(int*)ptr;
 
 				var = _NclRetrieveRec(thesym,WRITE_IT);
 				if((var == NULL)||(var->u.data_var == NULL)) {
@@ -3213,7 +3213,7 @@ NclExecuteReturnStatus _NclExecute
 				coord_name = NrmQuarkToString(*ptr);
 */
 				ptr++;lptr++;fptr++;
-				nsubs = (int)*ptr;
+				nsubs = *(int*)ptr;
 
 				var = _NclRetrieveRec(thesym,READ_IT);
 				if((var == NULL)||(var->u.data_var == NULL)) {
@@ -3316,7 +3316,7 @@ NclExecuteReturnStatus _NclExecute
 				coord_name = NrmQuarkToString(*ptr);
 */
 				ptr++;lptr++;fptr++;
-				nsubs = (int)*ptr;
+				nsubs = *(int*)ptr;
 
 				var = _NclRetrieveRec(thesym,READ_IT);
 				if((var == NULL)||(var->u.data_var == NULL)) {
@@ -3425,7 +3425,7 @@ NclExecuteReturnStatus _NclExecute
 				var = (NclQuark)*ptr;
 				ptr++;lptr++;fptr++;
 */
-				nsubs = *ptr;
+				nsubs = *(int*)ptr;
 				file_ptr = _NclRetrieveRec(file_sym,WRITE_IT);
 				if((file_ptr != NULL)&&(file_ptr->kind == NclStk_VAR)&&(estatus != NhlFATAL)) {
 					value = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
@@ -3608,7 +3608,7 @@ NclExecuteReturnStatus _NclExecute
 				NclSelectionRecord* sel_ptr = NULL;
 				NhlErrorTypes ret = NhlNOERROR;
 /*
-				kind = *ptr;
+				kind = *(int*)ptr;
 */
 				fvar = _NclPop();
 				switch(fvar.kind) {
@@ -3636,10 +3636,10 @@ NclExecuteReturnStatus _NclExecute
 				dfile = (NclSymbol*)*ptr;
 				ptr++;lptr++;fptr++;
 /*
-				var = (NclQuark)*ptr;
+				var = *(NclQuark*)ptr;
 				ptr++;lptr++;fptr++;
 */
-				nsubs = (NclQuark)*ptr;
+				nsubs = *(int*)ptr;
 				file_ptr =  _NclRetrieveRec(dfile,READ_IT);
 				if((file_ptr != NULL)&&(file_ptr->kind == NclStk_VAR)&&(estatus != NhlFATAL)) {
 					value = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
@@ -3793,7 +3793,7 @@ NclExecuteReturnStatus _NclExecute
 				attname = NrmQuarkToString(*ptr);
 */
 				ptr++;lptr++;fptr++;
-				nsubs = (int)(*ptr);
+				nsubs = (*(int*)ptr);
 	
 				var = _NclRetrieveRec(thesym,WRITE_IT);
 				if(var->u.data_var != NULL) {
@@ -3956,7 +3956,7 @@ NclExecuteReturnStatus _NclExecute
 				att_name = (NclQuark)*ptr;
 */
 				ptr++;lptr++;fptr++;
-				nsubs = (int)*ptr;
+				nsubs = *(int*)ptr;
 				file_ptr = _NclRetrieveRec(file_sym,READ_IT);
 				if((estatus != NhlFATAL)&&(file_ptr != NULL) &&(file_ptr->u.data_var != NULL)) {
 					file_md = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
@@ -4113,7 +4113,7 @@ NclExecuteReturnStatus _NclExecute
 				att = (NclQuark)(*ptr);
 */
 				ptr++;lptr++;fptr++;
-				nsubs = *ptr;
+				nsubs = *(int*)ptr;
 				file_ptr = _NclRetrieveRec(file_sym,WRITE_IT);
 				if((estatus!=NhlFATAL)&&(file_ptr != NULL)&&(file_ptr->u.data_var != NULL)) {
 					file_md = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
@@ -4254,7 +4254,7 @@ NclExecuteReturnStatus _NclExecute
 */
 				coord_name = (NclQuark)(*ptr);
 				ptr++;lptr++;fptr++;
-				nsubs = (int)(*ptr);
+				nsubs = (*(int*)ptr);
 /*
 * This is really are read because the actual variable holding
 * the file object id doesn't change
@@ -4443,7 +4443,7 @@ NclExecuteReturnStatus _NclExecute
 				att_name = (NclQuark)(*ptr);
 */
 				ptr++;lptr++;fptr++;
-				nsubs = *ptr;
+				nsubs = *(int*)ptr;
 	
 				file_ptr = _NclRetrieveRec(file_sym,READ_IT);
 				if((estatus != NhlFATAL)&&(file_ptr != NULL)&&(file_ptr->u.data_var != NULL))  {
@@ -4585,7 +4585,7 @@ NclExecuteReturnStatus _NclExecute
 				att_name = (NclQuark)(*ptr);
 */
 				ptr++;lptr++;fptr++;
-				nsubs = *ptr;
+				nsubs = *(int*)ptr;
 	
 				file_ptr = _NclRetrieveRec(file_sym,READ_IT);
 				if((estatus != NhlFATAL)&&(file_ptr != NULL)&&(file_ptr->u.data_var != NULL))  {
@@ -4719,7 +4719,7 @@ NclExecuteReturnStatus _NclExecute
 				coord_name = (NclQuark)(*ptr);
 				ptr++;lptr++;fptr++;
 */
-				nsubs = (*ptr);
+				nsubs = (*(int*)ptr);
 				file_ptr = _NclRetrieveRec(file_sym,READ_IT);
 				if((estatus != NhlFATAL)&&(file_ptr != NULL)&&(file_ptr->u.data_var != NULL)) {
 					file_md = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
@@ -4803,12 +4803,12 @@ NclExecuteReturnStatus _NclExecute
 				rhs_sym = (NclSymbol*)*ptr;
 				rhs_var = _NclRetrieveRec(rhs_sym,READ_IT);
 				ptr++;lptr++;fptr++;
-				rhs_nsubs = *ptr;
+				rhs_nsubs = *(int*)ptr;
 				ptr++;lptr++;fptr++;
 				lhs_sym = (NclSymbol*)*ptr;
 				lhs_var = _NclRetrieveRec(lhs_sym,WRITE_IT);
 				ptr++;lptr++;fptr++;
-				lhs_nsubs = *ptr;
+				lhs_nsubs = *(int*)ptr;
 
 				if((rhs_var == NULL)||(rhs_var->kind == NclStk_NOVAL)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN," Assign: %s is undefined",rhs_sym->name);

@@ -26,7 +26,7 @@ NclAddFileFormat thefunc;
 char* file_extension;
 #endif
 {
-	static first = 1;
+	static int first = 1;
 	NclFormatList* tmp;
 
 	if(first) {

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.56 1996-12-20 00:42:08 ethan Exp $
+ *      $Id: Machine.c,v 1.57 1997-01-16 19:44:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -632,7 +632,7 @@ static void SaveFramePtrNLevel
 	unsigned int tmp_sb;
 #endif
 {
-	static inited = 0;
+	static int inited = 0;
 
 	struct _NclFrameList *tmp;
 
@@ -1152,7 +1152,7 @@ void _NclPrintMachine
 			case JMP_SCALAR_FALSE_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",(int)*ptr);
+				fprintf(fp,"\t%d\n",*(int*)ptr);
 				break;
 			case PUSH_STRING_LIT_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
@@ -1165,7 +1165,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",(int)*ptr);
+				fprintf(fp,"\t%d\n",*(int*)ptr);
 				break;
 			case PROC_CALL_OP:
 			case BPROC_CALL_OP:
@@ -1186,7 +1186,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",(int)*ptr);
+				fprintf(fp,"\t%d\n",*(int*)ptr);
 				break;
 			case LOOP_VALIDATE_OP:
 			case LOOP_INC_OP:
@@ -1206,9 +1206,9 @@ void _NclPrintMachine
 			case DO_WHILE_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",(int)*ptr);
+				fprintf(fp,"\t%d\n",*(int*)ptr);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",(int)*ptr);
+				fprintf(fp,"\t%d\n",*(int*)ptr);
 				break;
 			case VAR_COORD_ATT_OP:
 			case ASSIGN_VAR_COORD_ATT_OP:
@@ -1244,7 +1244,7 @@ void _NclPrintMachine
 */
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",(int)*ptr);
+				fprintf(fp,"\t%d\n",*(int*)ptr);
 				break;
 			case VAR_COORD_OP:
 			case VARVAL_COORD_OP:
@@ -1259,7 +1259,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
 */
-				fprintf(fp,"\t%d\n",(int)*ptr);
+				fprintf(fp,"\t%d\n",*(int*)ptr);
 				break;
 			case FILEVARATT_OP:
 			case ASSIGN_FILEVARATT_OP:
@@ -1275,7 +1275,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 */
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",(int)*ptr);
+				fprintf(fp,"\t%d\n",*(int*)ptr);
 				break;
 			case VARATT_OP:
 			case ASSIGN_VARATT_OP:
@@ -1289,7 +1289,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
 */
-				fprintf(fp,"\t%d\n",(int)*ptr);
+				fprintf(fp,"\t%d\n",*(int*)ptr);
 				break;
 			case FILE_VAR_OP :
 			case FILE_VARVAL_OP :
@@ -1347,7 +1347,7 @@ void _NclPrintMachine
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\tArg #:");
-				fprintf(fp,"%d\n",(int)*ptr,fp);
+				fprintf(fp,"%d\n",*(int*)ptr,fp);
 				break;
 			case VAR_DIM_OP:
 			case ASSIGN_VAR_DIM_OP:
@@ -2346,6 +2346,7 @@ void _NclDumpStack
 					fprintf(fp," x ");
 				}
         		}
+			fprintf(fp,"\t%d",tmp_ptr->u.data_obj->obj.id);
 			fprintf(fp,"\n");
 			break;
 		case 	NclStk_VAR:
@@ -2384,6 +2385,7 @@ void _NclDumpStack
 				}
 			}
 
+			fprintf(fp,"\t%d",tmp_ptr->u.data_var->obj.id);
 			fprintf(fp,"\n");
 			break;
 		case 	NclStk_SUBREC:

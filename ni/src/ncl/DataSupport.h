@@ -1,6 +1,6 @@
 
 /*
- *      $Id: DataSupport.h,v 1.11 1996-07-16 20:58:10 ethan Exp $
+ *      $Id: DataSupport.h,v 1.12 1997-01-16 19:44:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -43,7 +43,7 @@ extern NhlErrorTypes _NclRegisterCallback(
 #if	NhlNeedProto
 NclObjTypes /* class_type */, 
 unsigned int  /* callback_type */,
-void * /* callback_function */,
+NclCallBack /* callback_function */,
 void * /* call_backdata */
 #endif
 );
@@ -222,7 +222,7 @@ struct _NclSymbol * /*keywd*/
 #endif 
 );
 
-extern unsigned int _NclKeywordToObjType(
+extern NclObjTypes _NclKeywordToObjType(
 #if  NhlNeedProto 
 struct _NclSymbol * /*keywd*/
 #endif

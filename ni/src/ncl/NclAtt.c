@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.15 1996-11-14 23:43:56 ethan Exp $
+ *      $Id: NclAtt.c,v 1.16 1997-01-16 19:44:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@
 #include "NclMultiDValData.h"
 #include "DataSupport.h"
 #include "AttSupport.h"
+#include "TypeSupport.h"
 
 
 static void AttIsBeingDestroyedNotify

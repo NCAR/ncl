@@ -410,8 +410,8 @@ FILE    *fp;
 					return(NhlWARNING);
 				}
 			} else {
-				ret1 = nclfprintf(fp,"<ARRAY>\n");
-				if(ret1 < NhlINFO) {	
+				ret = nclfprintf(fp,"<ARRAY>\n");
+				if(ret < NhlINFO) {	
 					return(NhlWARNING);
 				}
 			}
@@ -670,6 +670,7 @@ NclQuark attname;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"FileDelAtt: file (%s) is read only, can not delete attribute",NrmQuarkToString(thefile->file.fname));
 		return(NhlFATAL);
 	}
+	return(NhlFATAL);
 }
 
 static NhlErrorTypes FileDelVarAtt
@@ -731,6 +732,7 @@ NclQuark attname;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"FileDelVarAtt: file (%s) is read only, can not delete attribute",NrmQuarkToString(thefile->file.fname));
 		return(NhlFATAL);
 	}
+	return(NhlFATAL);
 }
 
 NclFileClassRec nclFileClassRec = {
@@ -3019,7 +3021,6 @@ int type;
 						}
 					}	
 					return(ret);
-					return(NhlFATAL);
 				}
 			}
 		} else {

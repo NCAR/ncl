@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.56 1996-12-12 22:58:02 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.57 1997-01-16 19:43:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -127,7 +127,7 @@ NhlErrorTypes _NclIListVariables
 	step = tmp;
 
 	while(step != NULL) {
-		ret = nclfprintf(fp,"\n%s\t%s ",_NclBasicDataTypeToName(step->u.var->data_type),NrmQuarkToString(step->u.var->name));
+		ret = nclfprintf(fp,"\n%s\t%s ",_NclBasicDataTypeToName((NclBasicDataTypes)step->u.var->data_type),NrmQuarkToString(step->u.var->name));
 		if(ret < 0) {
 			_NclFreeApiDataList((void*)tmp);
 			return(NhlWARNING);
@@ -493,7 +493,7 @@ NhlErrorTypes _NclIListFileVariables
 	tmp = _NclGetFileVarInfoList(file_q);
 	step = tmp;
 	while(step != NULL) {
-		ret = nclfprintf(fp,"\n%s\t%s ",_NclBasicDataTypeToName(step->u.var->data_type),NrmQuarkToString(step->u.var->name));
+		ret = nclfprintf(fp,"\n%s\t%s ",_NclBasicDataTypeToName((NclBasicDataTypes)step->u.var->data_type),NrmQuarkToString(step->u.var->name));
 		if(ret < 0) {
 			_NclFreeApiDataList((void*)tmp);
 			return(NhlWARNING);
@@ -656,7 +656,7 @@ NhlErrorTypes _NclINhlDataToNDC
 				}
 			}
 		}
-		return(NhlEUNKNOWN);	
+		return(NhlNOERROR);	
 	} else {
 		return(NhlFATAL);
 	}
@@ -764,7 +764,7 @@ NhlErrorTypes _NclINhlNDCToData
 				}
 			}
 		}
-		return(NhlEUNKNOWN);	
+		return(NhlNOERROR);	
 	} else {
 		return(NhlFATAL);
 	}
@@ -1237,6 +1237,7 @@ NhlErrorTypes _NclIAll
 			return(NhlNOERROR);
 		}
 	}
+	return(NhlNOERROR);
 }
 
 NhlErrorTypes _NclISizeOf
@@ -1539,6 +1540,7 @@ NhlErrorTypes _NclIDestroy
 			}
 		}
 	}
+	return(NhlNOERROR);
 }
 NhlErrorTypes _NclIUpdate
 #if	NhlNeedProto
@@ -2041,6 +2043,7 @@ NhlErrorTypes _NclIqsort
 		}
 		NclFree(sel_ptr);
 	}
+	return(NhlNOERROR);
 }
 NhlErrorTypes _NclIbsearch
 #if	NhlNeedProto
@@ -3015,9 +3018,11 @@ NhlErrorTypes _NclIsrand
 	}
 	if (tmp_md != NULL) {
 		srand(*(int*)tmp_md->multidval.val);
+		return(NhlNOERROR);
 	} else {
 		return(NhlFATAL);
 	}
+	
 }
 NhlErrorTypes _NclIabs
 #if	NhlNeedProto
@@ -3087,6 +3092,7 @@ NhlErrorTypes _NclIncargversion
 	strcat(tmp2,"/ncargversion");
 	system(tmp2);	
 	NclFree(tmp2);
+	return(NhlNOERROR);
 }
 NhlErrorTypes _NclIncargpath
 #if	NhlNeedProto
@@ -3412,7 +3418,7 @@ NhlErrorTypes _NclIchartoint
 	out_val = NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size *total);
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.charval)) {
+			if((value[i] > 255)||(value[i] == missing.charval)) {
 				out_val[i] = (int)missing.charval;
 			} else {
 				out_val[i] = (int)value[i];
@@ -3587,7 +3593,7 @@ NhlErrorTypes _NclIchartoshort
 	out_val = NclMalloc(((NclTypeClass)nclTypeshortClass)->type_class.size *total);
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.charval)) {
+			if((value[i] > 255)||(value[i] == missing.charval)) {
 				out_val[i] = (short) missing.charval;
 			} else {
 				out_val[i] = (short)value[i];
@@ -3896,7 +3902,7 @@ NhlErrorTypes _NclIchartolong
 	out_val = NclMalloc(((NclTypeClass)nclTypelongClass)->type_class.size *total);
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.charval)) {
+			if((value[i] > 255)||(value[i] == missing.charval)) {
 				out_val[i] = (long)missing.charval;
 			} else {
 				out_val[i] = (long)value[i];
@@ -4271,7 +4277,7 @@ NhlErrorTypes _NclIchartofloat
 	out_val = NclMalloc(((NclTypeClass)nclTypefloatClass)->type_class.size *total);
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.charval)) {
+			if((value[i] > 255)||(value[i] == missing.charval)) {
 				out_val[i] = (float)missing.charval;
 			} else {
 				out_val[i] = (float)value[i];
@@ -4443,7 +4449,7 @@ NhlErrorTypes _NclIchartodouble
 	out_val = NclMalloc(((NclTypeClass)nclTypedoubleClass)->type_class.size *total);
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.charval)) {
+			if((value[i] > 255)||(value[i] == missing.charval)) {
 				out_val[i] = (double)missing.charval;
 			} else {
 				out_val[i] = (double)value[i];
@@ -7307,6 +7313,11 @@ NhlErrorTypes _Ncldim_max
 	return(ret);
 
 }
+
 #ifdef __cplusplus
 }
 #endif
+
+
+
+

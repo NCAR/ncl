@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.c,v 1.16 1996-07-16 20:58:26 ethan Exp $
+ *      $Id: NclFileVar.c,v 1.17 1997-01-16 19:44:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -515,6 +515,7 @@ long dim_num;
 			}
 		}
 	}
+	return(NULL);
 }
 
 static NhlErrorTypes FileVarWriteDim
@@ -536,7 +537,7 @@ char *dim_name;
 	if(thefile != NULL) {
 		return(_NclFileWriteDim(thefile,(dim_name == NULL ? -1 : NrmStringToQuark(dim_name)),dim_num));
 	}
-	return(NULL);
+	return(NhlFATAL);
 }
 
 static int FileVarIsACoord
