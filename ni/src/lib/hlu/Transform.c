@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.51 2000-06-28 19:04:02 dbrown Exp $
+ *      $Id: Transform.c,v 1.52 2000-06-30 20:36:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -678,14 +678,14 @@ static NhlErrorTypes TransformSetValues
 
 	if (tfp->poly_draw_list != otfp->poly_draw_list){
 		NhlGenArray gen = tfp->poly_draw_list;
-		tfp->poly_draw_list = _NhlCopyGenArray(gen,True);
-		if(gen && ! tfp->poly_draw_list){
-			NHLPERROR((NhlFATAL,ENOMEM,NULL));
-			return NhlFATAL;
+		if (gen) {
+			tfp->poly_draw_list = _NhlCopyGenArray(gen,True);
+			if(gen && ! tfp->poly_draw_list){
+				NHLPERROR((NhlFATAL,ENOMEM,NULL));
+				return NhlFATAL;
+			}
 		}
-		else{
-			NhlFreeGenArray(otfp->poly_draw_list);
-		}
+		NhlFreeGenArray(otfp->poly_draw_list);
 	}
 
         return NhlNOERROR;
@@ -2616,6 +2616,7 @@ NhlErrorTypes NhlAddPrimitive
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return NhlFATAL;
 		}
+		gen->my_data = True;
 		tfp->poly_draw_list = gen;
 		return ret;
 	}
