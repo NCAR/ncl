@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.31 1993-10-11 14:55:10 clyne Exp $
+ *	$Id: main.c,v 1.32 1995-05-10 16:01:44 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -24,6 +24,10 @@
  *	for parsing the command line arguments, intializing ctrans
  *	and processing the named metafile.
  */
+
+/*
+**	This is a test
+*/
 
 #include	<stdio.h>
 #include	<ctype.h>
