@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.3 1994-01-12 00:34:41 dbrown Exp $
+ *      $Id: LogLinPlot.c,v 1.4 1994-01-13 21:46:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -439,9 +439,9 @@ static NhlErrorTypes SetUpTransObj
 	NhlBoolean	init
 )
 #else 
-(llnew,xold,init)
+(llnew,llold,init)
 	LogLinPlotLayer	llnew;
-	LogLinPlotLayer	xold;
+	LogLinPlotLayer	llold;
 	NhlBoolean	init;
 #endif
 {

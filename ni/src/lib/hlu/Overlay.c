@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.3 1994-01-12 00:34:50 dbrown Exp $
+ *      $Id: Overlay.c,v 1.4 1994-01-13 21:46:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -806,8 +806,8 @@ static NhlErrorTypes	OverlayGetValues
 					return FATAL;
 				}
 
-				memcpy(ov_recs[j], 
-				       ovp->ov_recs[j],sizeof(ovRec));
+				memcpy((char*)ov_recs[j], 
+				       (char*)ovp->ov_recs[j],sizeof(ovRec));
 			}
 			
 			ga = NhlCreateGenArray((NhlPointer)ov_recs,

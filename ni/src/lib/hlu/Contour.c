@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.3 1994-01-12 00:34:11 dbrown Exp $
+ *      $Id: Contour.c,v 1.4 1994-01-13 21:46:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -597,9 +597,9 @@ static NhlErrorTypes SetUpTransObj
 	NhlBoolean	init
 )
 #else 
-(cnnew,xold,init)
+(cnnew,cnold,init)
 	ContourLayer	cnnew;
-	ContourLayer	xold;
+	ContourLayer	cnold;
 	NhlBoolean	init;
 #endif
 {

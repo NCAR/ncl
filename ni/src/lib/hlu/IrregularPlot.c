@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.3 1994-01-12 00:34:23 dbrown Exp $
+ *      $Id: IrregularPlot.c,v 1.4 1994-01-13 21:46:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -454,9 +454,9 @@ static NhlErrorTypes SetUpTransObj
 	NhlBoolean	init
 )
 #else 
-(irnew,xold,init)
+(irnew,irold,init)
 	IrregularPlotLayer	irnew;
-	IrregularPlotLayer	xold;
+	IrregularPlotLayer	irold;
 	NhlBoolean	init;
 #endif
 {

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.6 1994-01-10 19:48:58 boote Exp $
+ *      $Id: TickMark.c,v 1.7 1994-01-13 21:46:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -6636,13 +6636,13 @@ int num_args;
 			switch(tnew->tick.y_l_style) {
 			case LOG:
 				NhlSetSArg(&sargs[nargs++],NhlNtrYLog,1);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_l_data_bottom);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_l_data_top);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_l_data_min);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_l_data_max);
 				break;
 			case LINEAR:
 				NhlSetSArg(&sargs[nargs++],NhlNtrYLog,0);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_l_data_bottom);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_l_data_top);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_l_data_min);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_l_data_max);
 				break;
 			case TIME:
 			case GEOGRAPHIC:
@@ -6651,18 +6651,20 @@ int num_args;
 			switch(tnew->tick.x_b_style) {
 			case LOG:
 				NhlSetSArg(&sargs[nargs++],NhlNtrXLog,1);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_b_data_left);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_b_data_right);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_b_data_min);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_b_data_max);
 				break;
 			case LINEAR:
 				NhlSetSArg(&sargs[nargs++],NhlNtrXLog,0);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_b_data_left);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_b_data_right);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_b_data_min);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_b_data_max);
 				break;
 			case TIME:
 			case GEOGRAPHIC:
 				break;
 			}
+			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,(tnew->tick.x_b_data_left>tnew->tick.x_b_data_right ? 1 : 0));
+			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,(tnew->tick.y_l_data_bottom >tnew->tick.y_l_data_top? 1 : 0));
 			trans_class = logLinTransObjLayerClass;
 		}
 		
@@ -6819,13 +6821,13 @@ int num_args;
 			switch(tnew->tick.y_r_style) {
 			case LOG:
 				NhlSetSArg(&sargs[nargs++],NhlNtrYLog,1);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_r_data_bottom);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_r_data_top);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_r_data_min);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_r_data_max);
 				break;
 			case LINEAR:
 				NhlSetSArg(&sargs[nargs++],NhlNtrYLog,0);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_r_data_bottom);
-				NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_r_data_top);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_r_data_min);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_r_data_max);
 				break;
 			case TIME:
 			case GEOGRAPHIC:
@@ -6834,19 +6836,21 @@ int num_args;
 			switch(tnew->tick.x_t_style) {
 			case LOG:
 				NhlSetSArg(&sargs[nargs++],NhlNtrXLog,1);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_t_data_left);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_t_data_right);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_t_data_min);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_t_data_max);
 				break;
 			case LINEAR:
 				NhlSetSArg(&sargs[nargs++],NhlNtrXLog,0);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_t_data_left);
-				NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_t_data_right);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_t_data_min);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_t_data_max);
 				break;
 			case TIME:
 			case GEOGRAPHIC:
 				break;
 			}
 			trans_class = logLinTransObjLayerClass;
+			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,(tnew->tick.x_t_data_left>tnew->tick.x_t_data_right ? 1 : 0));
+			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,(tnew->tick.y_r_data_bottom >tnew->tick.y_r_data_top? 1 : 0));
 		}
 		
 		strcpy(buffer,tnew->base.name);
