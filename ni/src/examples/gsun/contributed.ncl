@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.52 2004-10-26 23:52:08 shea Exp $
+;      $Id: contributed.ncl,v 1.53 2004-10-28 20:05:37 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5936,17 +5936,17 @@ end
 function readAsciiTable( fName:string, ncol:integer, datatype:string, opt)
 local head, nh, xs, nrow, table
 begin
-  head = readAsciiHead( fName, opt)
-  nh   = dimsizes(head)              ; # header records
-; ********************************************************
-; read each data row: trick
-;      (1) write strings as a tempoarary file;
-;      (2) read temporary file back in as 2D 
-; ********************************************************
-  xs   = asciiread(fName, -1, "string") ; all rows as strings
-  nrow = dimsizes(xs)-nh                ; # rows containing data
-  asciiwrite ("./DaTaBoGuSfile", xs(nh:))
-  table = asciiread("./DaTaBoGuSfile", (/nrow,ncol/), datatype)
-  system("/bin/rm ./DaTaBoGuSfile")
+  if (typeof(opt).eq."integer" .and. opt.eq.0) then
+      nrow  = dimsizes(asciiread(fName, -1, "string"))  ; all rows as strings
+      table = asciiread(fName, (/nrow,ncol/), datatype)
+  else
+      head = readAsciiHead( fName, opt)
+      nh   = dimsizes(head)                 ; # header records
+      xs   = asciiread(fName, -1, "string") ; all rows as strings
+      nrow = dimsizes(xs)-nh                ; # rows containing data
+      asciiwrite ("./DaTaBoGuSfile", xs(nh:))
+      table = asciiread("./DaTaBoGuSfile", (/nrow,ncol/), datatype)
+      system("/bin/rm ./DaTaBoGuSfile")
+  end if
   return(table)
 end
