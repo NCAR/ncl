@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.26 1999-12-01 16:01:50 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.27 1999-12-10 20:39:39 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -39,6 +39,8 @@ undef("gsn_geop_hgt")
 undef("check_for_subtitles")
 undef("set_right_subtitle")
 undef("set_left_subtitle")
+undef("set_xaxis_string")
+undef("set_yaxis_string")
 undef("set_subtitles_res")
 undef("check_for_coord_arrays")
 undef("check_for_lat_coord")
@@ -365,6 +367,60 @@ begin
     newres@gsnLeftString = data@long_name
     delete(data@long_name)
   end if
+  return
+end
+
+;***********************************************************************;
+; Procedure : set_xaxis_string                                          ;
+;                 res: logical                                          ;
+;                data: numeric                                          ;
+;                                                                       ;
+; This procedure sets the tiYAxisString resource depending on current   ;
+; resource and/or attribute settings.                                   ;
+;***********************************************************************;
+procedure set_xaxis_string(res:logical,data:numeric)
+begin
+;
+; If the X axis tickmarks are being labeled explicitly by the user, 
+; then don't put a label on the X axis.
+;
+  if(isatt(res,"tmXBMode").and.(res@tmXBMode.eq."Explicit".or.\
+                                res@tmXBMode.eq."EXPLICIT"))
+    set_attr(res,"tiXAxisString","")
+  else
+    if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
+            isatt(data&$data!1$,"long_name"))
+      set_attr(res,"tiXAxisString",data&$data!1$@long_name)
+    end if
+  end if
+
+  return
+end
+
+;***********************************************************************;
+; Procedure : set_yaxis_string                                          ;
+;                 res: logical                                          ;
+;                data: numeric                                          ;
+;                                                                       ;
+; This procedure sets the tiYAxisString resource depending on current   ;
+; resource and/or attribute settings.                                   ;
+;***********************************************************************;
+procedure set_yaxis_string(res:logical,data:numeric)
+begin
+;
+; If the Y axis tickmarks are being labeled explicitly by the user, 
+; then don't put a label on the Y axis.
+;
+  if(isatt(res,"tmYLMode").and.(res@tmYLMode.eq."Explicit".or.\
+                                res@tmYLMode.eq."EXPLICIT"))
+    set_attr(res,"tiYAxisString","")
+  else
+    if(.not.ismissing(data!0).and.iscoord(data,data!0).and.\
+            isatt(data&$data!0$,"long_name"))
+      set_attr(res,"tiYAxisString",data&$data!0$@long_name)
+    end if
+  end if
+
   return
 end
 
@@ -3846,26 +3902,8 @@ end
 
 ; Check to see if X and/or Y axis labels should be set.
 
-    if(isatt(res2,"tmXBMode").and.(res2@tmXBMode.eq."Explicit".or.\
-                                   res2@tmXBMode.eq."EXPLICIT"))
-      set_attr(res2,"tiXAxisString","")
-    else
-      if(.not.ismissing(datanew!1).and.iscoord(datanew,datanew!1).and.\
-              isatt(datanew&$datanew!1$,"long_name"))
-        set_attr(res2,"tiXAxisString",datanew&$datanew!1$@long_name)
-      end if
-    end if
-
-    if(isatt(res2,"tmYLMode").and.(res2@tmYLMode.eq."Explicit".or.\
-                                   res2@tmYLMode.eq."EXPLICIT"))
-      set_attr(res2,"tiYAxisString","")
-    else
-      if(.not.ismissing(datanew!0).and.iscoord(datanew,datanew!0).and.\
-              isatt(datanew&$datanew!0$,"long_name"))
-        set_attr(res2,"tiYAxisString",datanew&$datanew!0$@long_name)
-      end if
-    end if
-
+    set_xaxis_string(datanew,res2)
+    set_yaxis_string(datanew,res2)
 ; This function creates and draws a titled contour plot to the          ;
 ; workstation  "wks" (the variable returned from a previous call to     ;
 ; "gsn_open_wks"). "resources" is an optional list of  resources. The   ;
@@ -3894,43 +3932,27 @@ begin
                                           ; contour plot, or a contour plot
                                           ; over a loglin plot.
     if(cname.eq."logLinPlotClass")
-      getvalues contour_object@contour
-        "vpWidthF"             : width
-        "vpHeightF"            : height
-  
-        "cnLevels"     : levels        ; Need this for creating
-        "cnFillColors" : colors        ; a labelbar.
-  
-        "tiXAxisFontHeightF"   : xfontf
-        "tiYAxisFontHeightF"   : yfontf
-  
-        "tmYLMajorLengthF"     : ylength
-        "tmXBMajorLengthF"     : xlength
-        "tmYLMinorLengthF"     : ymlength
-        "tmXBMinorLengthF"     : xmlength
-      end getvalues
+      temp_obj = contour_object@contour
     else
-      getvalues contour_object
-        "vpWidthF"             : width
-        "vpHeightF"            : height
-
-        "tiXAxisFontHeightF"   : xfontf
-        "tiYAxisFontHeightF"   : yfontf
-  
-        "tmYLMajorLengthF"     : ylength
-        "tmXBMajorLengthF"     : xlength
-        "tmYLMinorLengthF"     : ymlength
-        "tmXBMinorLengthF"     : xmlength
-      end getvalues
+      temp_obj = contour_object
     end if
+    getvalues temp_obj
+
+; The default is to not add a cyclic point.
+
+    if(get_res_value(res2,"gsnAddCyclic",False))
+        datanew = gsn_add_cyclic_point(data)
+    else
+        datanew = data
+    end if
+;
+; Check if frame and/or draw are not supposed to be called.
+;
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)
 ; 
 ; Check if a POP grid is to be overlaid.
-    major_length = min((/ylength,xlength/))    ; New length for major ticks.
-    minor_length = min((/ymlength,xmlength/))  ; New length for minor ticks.
-
 ;
     popgrid = get_res_value(res2,"gsnPopGrid","")
 ;
@@ -3952,15 +3974,10 @@ begin
 
     left_string   = new(1,logical)
     center_string = new(1,logical)
-      major_length = scale * major_length
-      minor_length = scale * minor_length
+    right_string  = new(1,logical)
+
     check_for_subtitles(res2,left_string,center_string,right_string)
-      if(cname.eq."logLinPlotClass")
-        gsnp_point_tickmarks_outward(contour_object@contour,major_length,\
-                                     minor_length)
-      else
-        gsnp_point_tickmarks_outward(contour_object,major_length,minor_length)
-      end if
+      gsnp_point_tickmarks_outward(temp_obj,major_length,minor_length)
 
 ; Check if gsnShape set.
 
@@ -4462,7 +4479,7 @@ end
       "trYReverse" : True
       "trXMinF"    : xmin
       "trXMaxF"    : xmax
-;  
+      "trYMinF"    : ymin
     calldraw  = get_special_res_value(res2,"gsnDraw", True)
     callframe = get_special_res_value(res2,"gsnFrame",True)
 ;
@@ -4499,26 +4516,8 @@ end
 
 ; Check to see if X and/or Y axis labels should be set.
 
-    if(isatt(res2,"tmXBMode").and.(res2@tmXBMode.eq."Explicit".or.\
-                                   res2@tmXBMode.eq."EXPLICIT"))
-      set_attr(res2,"tiXAxisString","")
-    else
-      if(.not.ismissing(unew!1).and.iscoord(unew,unew!1).and.\
-              isatt(unew&$unew!1$,"long_name"))
-        set_attr(res2,"tiXAxisString",unew&$unew!1$@long_name)
-      end if
-    end if
-
-    if(isatt(res2,"tmYLMode").and.(res2@tmYLMode.eq."Explicit".or.\
-                                   res2@tmYLMode.eq."EXPLICIT"))
-      set_attr(res2,"tiYAxisString","")
-    else
-      if(.not.ismissing(unew!0).and.iscoord(unew,unew!0).and.\
-              isatt(unew&$unew!0$,"long_name"))
-        set_attr(res2,"tiYAxisString",unew&$unew!0$@long_name)
-      end if
-    end if
-
+    set_xaxis_string(unew,res2)
+    set_yaxis_string(unew,res2)
 
     loglin_object@contour = contour_object
     loglin_object@data    = contour_object@data
@@ -4713,25 +4712,8 @@ begin
 
 ; Check to see if X and/or Y axis labels should be set.
 
-    if(isatt(res2,"tmXBMode").and.(res2@tmXBMode.eq."Explicit".or.\
-                                   res2@tmXBMode.eq."EXPLICIT"))
-      set_attr(res2,"tiXAxisString","")
-    else
-      if(.not.ismissing(unew!1).and.iscoord(unew,unew!1).and.\
-              isatt(unew&$unew!1$,"long_name"))
-        set_attr(res2,"tiXAxisString",unew&$unew!1$@long_name)
-      end if
-    end if
-
-    if(isatt(res2,"tmYLMode").and.(res2@tmYLMode.eq."Explicit".or.\
-                                   res2@tmYLMode.eq."EXPLICIT"))
-      set_attr(res2,"tiYAxisString","")
-    else
-      if(.not.ismissing(unew!0).and.iscoord(unew,unew!0).and.\
-              isatt(unew&$unew!0$,"long_name"))
-        set_attr(res2,"tiYAxisString",unew&$unew!0$@long_name)
-      end if
-    end if
+    set_xaxis_string(unew,res2)
+    set_yaxis_string(unew,res2)
 
 ; Return contour/vector plot with data objects as attributes.
 

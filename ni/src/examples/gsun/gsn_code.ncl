@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.24 1999-11-29 17:00:29 haley Exp $
+;      $Id: gsn_code.ncl,v 1.25 1999-12-10 20:39:38 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1935,7 +1935,7 @@ begin
     scale     = get_special_res_value(res2,"gsnScale",shape)
         setvalues data_object
             "vfMissingVValueV" :v@_FillValue
-    mpres = get_res_ne(res2,(/"mp","vp"/))
+        end setvalues
     end if
 
     if(vfres.and..not.any(ismissing(getvaratts(vfres))))
@@ -2885,9 +2885,10 @@ begin
 
 ;***********************************************************************;
 ; Function : gsn_xy                                                     ;
-xy_res_index, xydp_res_index, dspec, res2
+;                   wks: workstation object                             ;
 ;                     x: n-dimensional array of X arrays                ;
-    res2      = resources
+;                     y: n-dimensional array of Y array                 ;
+;             resources: optional resources                             ;
 ;                                                                       ;
 ; This function creates and draws an xy plot to the workstation "wks"   ;
 ; (the variable returned from a previous call to "gsn_open_wks").  "x"  ;
@@ -2969,11 +2970,19 @@ begin
         "xyCoordData" : data_object
         "trXMinF"     : trxmin
         "trXMaxF"     : trxmax
-    setvalues dspec
+        "trYMinF"     : trymin
+        "trYMaxF"     : trymax
+    end create
+
+; Check for existence of x@long_name and y@long_name and use them
+; to label X and Y axes.
+
+    if(isatt(x,"long_name")) then
       set_attr(res2,"tiXAxisString",x@long_name)
     end if
     if(isatt(y,"long_name")) then
-    end setvalues
+      set_attr(res2,"tiYAxisString",y@long_name)
+    end if
 
     calldraw  = get_special_res_value(res2,"gsnDraw", True)
     callframe = get_special_res_value(res2,"gsnFrame",True)
