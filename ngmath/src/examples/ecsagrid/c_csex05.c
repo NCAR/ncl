@@ -1,5 +1,5 @@
 /*
- *  $Id: c_csex05.c,v 1.1 1998-12-10 00:09:08 fred Exp $
+ *  $Id: c_csex05.c,v 1.2 1998-12-11 22:46:07 fred Exp $
  */
 
 #include <math.h>
@@ -7,7 +7,6 @@
 #include <ncarg/gks.h>
 #include <ncarg/ngmath.h>
 
-#define NDIM    3
 #define NX     21
 #define NY     21
 #define NZ     21

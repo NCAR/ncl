@@ -1,5 +1,5 @@
 /*
- *  $Id: c_csex04.c,v 1.1 1998-12-10 00:09:08 fred Exp $
+ *  $Id: c_csex04.c,v 1.2 1998-12-11 22:42:49 fred Exp $
  */
 
 #include <math.h>
@@ -13,7 +13,6 @@
 #define NI    1000
 #define N1      4
 #define N2      4
-#define NCF    N1*N2
 #define XMIN   -1.0
 #define XMAX    1.0
 #define YMIN   -1.0
