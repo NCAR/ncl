@@ -111,6 +111,7 @@ void NGCALLF(natgridd,NATGRIDD) (int *n, double *x, double *y, double *z,
                 int *ier)
 {
    ErrorHnd(29, "natgridd", filee, "\n");
+   *ier = error_status;
    return;
 }
 #else
@@ -165,6 +166,7 @@ void NGCALLF(nngetsloped,NNGETSLOPED) (int *row, int *col,
              double *slope, int *ier)
 {
    ErrorHnd(29, "nngetsloped", filee, "\n");
+   *ier = error_status;
 }
 #else
 void NGCALLF(nngetsloped,NNGETSLOPED) (int *row, int *col, 
@@ -179,6 +181,7 @@ void NGCALLF(nngetaspectd,NNGETASPECTD) (int *row, int *col,
              double *aspect, int *ier)
 {
    ErrorHnd(29, "nngetaspectd", filee, "\n");
+   *ier = error_status;
 }
 #else
 void NGCALLF(nngetaspectd,NNGETASPECTD) (int *row, int *col, 
