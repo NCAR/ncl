@@ -7,6 +7,8 @@ int c_shgetnp(float, float, float, int, float *, float *, float *,
               int, int *); 
 float *c_shgrid(int, float [], float [], float [], float [], 
                 int, int, int, float [], float [], float [], int*);
+void c_shseti(char *, int);
+int c_shgeti(char *);
 
 /*
  *  Fortran function macro.  This macro is used to provide the appropriate

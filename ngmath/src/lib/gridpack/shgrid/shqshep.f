@@ -1,5 +1,5 @@
 C
-C       $Id: shqshep.f,v 1.2 1999-09-13 19:00:58 fred Exp $
+C       $Id: shqshep.f,v 1.3 1999-09-15 17:01:52 fred Exp $
 C
       SUBROUTINE SHQSHEP (N,X,Y,Z,F,NQ,NW,NR, LCELL,LNEXT,
      +                   XYZMIN,XYZDEL,RMAX,RSQ,A,IER)
@@ -115,7 +115,7 @@ C  Note that the above output parameters are not defined
 C  unless IER = 0.
 C
 C    IER = Error indicator --
-C      IER = 3 - NQ must be at least 9
+C      IER = 3 - NQ must > 9
 C      IER = 4 - NW must be at least 1
 C      IER = 5 - must have N < NQ < 41
 C      IER = 6 - must have N < NW < 41
@@ -422,7 +422,7 @@ C  N, NQ, NW, or NR is out of range.
 C
    30 CONTINUE
       CALL SHERR (3,'SHQSHEP - number of data points used in least squar
-     +es fit must be at least 9',75)
+     +es fit must be > 9',69)
       IER = 3
       RETURN
    31 CONTINUE
