@@ -1,9 +1,9 @@
 /*
- * $Id: psplit.c,v 1.3 2001-07-30 20:17:56 fred Exp $
+ * $Id: psplit.c,v 1.4 2001-09-08 22:49:19 fred Exp $
  */
 /************************************************************************
 *                                                                       *
-*                Copyright (C)  2000                                    *
+*                Copyright (C)  2001                                    *
 *        University Corporation for Atmospheric Research                *
 *                All Rights Reserved                                    *
 *                                                                       *
@@ -18,7 +18,7 @@
 * General Public License for more details.                              *
 *                                                                       *
 * You should have received a copy of the GNU General Public License     *
-* along with this software; if not, write to the Free Software         *
+* along with this software; if not, write to the Free Software          *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307   *
 * USA.                                                                  *
 *                                                                       *
@@ -26,8 +26,9 @@
 
 /*
  *  This program takes a PostScript file created from NCAR
- *  Graphics 3.2 or later and splits it into individual PS files, 
- *  one for each page in the original file.
+ *  Graphics 3.2 or later (either directly or via ctrans) 
+ *  and splits it into individual PS files, one for each 
+ *  page in the original file.
  */
 
 #include <stdio.h>
@@ -35,23 +36,24 @@
 #include <string.h>
 
 #define LINEL 256
-
 char line[LINEL];
 
-enum file_type {PSNCGM, PSDSC, NOBOX, NODSC};
-
+enum file_type {PSNCGM, PSDSC, NOPE};
 enum file_type ftype(FILE *);
+
 void from_ncgm(FILE *, char *);
 void begin_picture(FILE *);
+void picture_body(FILE *, FILE*, fpos_t *);
 void end_picture(FILE *);
-void picture_body(FILE *, FILE*, int, fpos_t, fpos_t *);
+
 void from_ps(FILE *, char *);
-void picture_body_ps(FILE *, FILE *, int, int, fpos_t, fpos_t *, fpos_t *);
-void end_picture_ps(FILE *, FILE *, fpos_t);
+void begin_picture_ps(FILE *, FILE *);
+void picture_body_ps(FILE *, FILE *, fpos_t *);
+void end_picture_ps(FILE *, FILE *, fpos_t *);
 
 main(int argc, char *argv[])
 {
-   FILE *input_file, *preamble;
+   FILE *input_file;
    enum file_type ft;
    char *root_name;
 
@@ -87,7 +89,8 @@ main(int argc, char *argv[])
 
 /*
  *  Determine if the input file is PostScript from an NCGM, a PostScript
- *  file conforming to the DSC, or neither of these.
+ *  file conforming to the DSC, or neither of these, and process
+ *  accordingly.
  */
    ft = ftype(input_file);
    switch (ft) {
@@ -97,35 +100,26 @@ main(int argc, char *argv[])
      case PSDSC:
        from_ps(input_file, root_name);
        break;
-     case NOBOX:
-       printf("No bounding box in original file, cannot split.\n");
-       exit(4);
-       break;
-     case NODSC:
-       printf("\n  Original file does not conform to the PostScript\n"
-              "  Document Structuring Conventions.\n\n");
+     case NOPE:
+       printf("\n  Input file does not conform to the file\n"
+              " structuring requirements.\n\n");
        exit(5);
        break;
    }
-
    exit(0);
-
 }
 
 enum file_type ftype(FILE *ifile) 
 {
-  int box_flag=0, page_flag=0, trailer_flag=0;
+  int page_flag=0, trailer_flag=0;
 
-  while (fgets(line, LINEL, ifile)) {
+  while (fgets(line, LINEL, ifile) != (char *) NULL) {
     if (!strncmp("/w {setlinewidth} def",line,21)) {
       if (fseek(ifile,0L,SEEK_SET)) {
         printf("Error in repositioning the input file to the start\n");
         exit(2);
       }
       return(PSNCGM);
-    }
-    if (!strncmp("%%BoundingBox:",line,14)) {
-      box_flag=1;
     }
     if (!strncmp("%%Page:",line,7)) {
       page_flag=1;
@@ -141,53 +135,65 @@ enum file_type ftype(FILE *ifile)
     }
     return(PSDSC);
   }
-  else if (!trailer_flag) {
-    return(NODSC);
-  }
-  else if (page_flag) {
-    return(NOBOX);
-  }
-  else if (box_flag) {
-    return(NODSC);
-  }
   else {
-    return(NODSC);
+    return(NOPE);
   }
 }
 
 void from_ncgm(FILE *ifile, char *rname)
 {
   FILE *output_file;
-  int pict_count=0, line_count=0;
-  fpos_t *pict_end, pict_one_start;
-  int i;
+  int i,pict_count=0;
+  fpos_t *pict_start;
   char *pnum, *output_name;
+
+  int line_count = 0;
 
 /*
  *  Determine how many pictures are in the file.
  */
-  while (fgets(line, LINEL, ifile)) {
+  while (fgets(line, LINEL, ifile) != (char *) NULL) {
     if (!strncmp(" h",line,2) || !strncmp("h ",line,2)) {
       pict_count++;
     }
   }
 
 /*
- *  Record the position numbers of where the pictures end.
+ *  Record the position numbers of where the pictures start.
  */
-  pict_end = (fpos_t *) calloc(pict_count,sizeof(fpos_t));
-  pict_count = 0;
-  fseek(ifile,0L,SEEK_SET);
+  pict_start = (fpos_t *) calloc(pict_count+1,sizeof(fpos_t));
+  if ( pict_start == (fpos_t *) NULL ) {
+    printf("Error in getting memory for file position pointers\n");
+    exit(19);
+  }
+  pict_count = 1;
+  if (fseek(ifile,0L,SEEK_SET)) {
+    printf("Error in repositioning the input file to the start\n");
+    exit(9);
+  }
   while (fgets(line, LINEL, ifile)) {
     line_count++;
     if (!strncmp(" h",line,2) || !strncmp("h ",line,2)) {
-      fgetpos(ifile, pict_end+pict_count);
+      if (fgetpos(ifile, pict_start+pict_count)) {
+        printf("Error return from fgetpos.\n");
+        exit(20);
+      }
       pict_count++;
     }
-    if (!strncmp("/o {",line,4)) {
-      fgetpos(ifile,&pict_one_start);
+    else if (!strncmp("/o {",line,4)) {
+      if (fgetpos(ifile, pict_start)) {
+        printf("Error return from fgetpos.\n");
+        exit(20);
+      }
     }
   }
+
+/*
+ *  pict_count is actually one larger than the total number
+ *  of pictures, since we searched for picture end flags and
+ *  added in where the first picture started.
+ */
+  pict_count--;
 
   pnum = (char *) calloc(5,sizeof(char));
   output_name = (char *) calloc(strlen(rname)+1+4+4,sizeof(char));
@@ -218,16 +224,21 @@ void from_ncgm(FILE *ifile, char *rname)
  *  Write out the header, the prolog, and the color table.
  */
     begin_picture(output_file);
+    fflush(output_file);
 
 /*
- *  Write out the picture body.
+ *  Write out the picture body, pict_start+i is the start
+ *  position for picture i.
+ *  
  */
-    picture_body(ifile, output_file, i, pict_one_start, pict_end);
+    picture_body(ifile, output_file, pict_start+i);
+    fflush(output_file);
 
 /*
  *  Write out the picture termination.
  */
     end_picture(output_file);
+    fflush(output_file);
 
 /*
  *  Close the output file.
@@ -238,7 +249,7 @@ void from_ncgm(FILE *ifile, char *rname)
 /*
  *  Free memory.
  */
-  free(pict_end);
+  free(pict_start);
   free(pnum);
   free(output_name);
 
@@ -511,32 +522,28 @@ void begin_picture(FILE *ofile)
   fprintf(ofile,"ct 239 [0.169 0.086 0.000] put\n");
 }
 
-void picture_body(FILE *ifile, FILE *ofile, int npict, fpos_t p1_start, 
-                  fpos_t *pends)
+void picture_body(FILE *ifile, FILE *ofile, fpos_t *pict_start)
 {
 
-  size_t bsize;
-  char *buf;
   int i;
 
-  if (npict == 0) {
-    fsetpos(ifile, &p1_start);
-    bsize = (size_t) (pends[0] - p1_start);
-  }
-  else {
-    fsetpos(ifile, pends+npict-1);
-    bsize = (size_t) (pends[npict] - pends[npict-1]);
+  if (fsetpos(ifile, pict_start)) {
+    printf("Error return from fsetpos.\n");
+    exit(20);
   }
 
 /*
- *  Copy the picture body from the input file to the output file.
+ *  Copy up through the showpage operator (" h").
  */
-  buf = (char *) calloc(bsize, sizeof(char));
-  fread(buf, (size_t) sizeof(char), bsize, ifile);
-  fwrite(buf, (size_t) sizeof(char), bsize, ofile);
-  fflush(ofile);
-  free(buf);
   
+  fgets(line, LINEL, ifile);
+  while (strncmp(" h",line,2) && strncmp("h ",line,2)) {
+    fputs(line, ofile);
+    if (fgets(line, LINEL, ifile) == (char *) NULL)  {
+      return;
+    }
+  }
+  fputs(line, ofile);
 }
 
 void end_picture(FILE *ofile)
@@ -548,51 +555,54 @@ void end_picture(FILE *ofile)
 void from_ps(FILE *ifile, char *rname)
 {
   FILE *output_file;
-  int pict_count=0, line_count=0;
-  fpos_t *pict_start, *page_comment_end, last_pict_end, tpos;
-  int i;
-  char *pnum, *output_name, *file_header, *buf;
+  int i,pict_count=0, line_count=0, npict;
+  fpos_t *pict_start, tpos;
+  char *pnum, *output_name;
 
 /*
- *  Determine how many pictures are in the file.
+ *  Determine how many pictures and how many lines are in the file.
  */
-  while (fgets(line, LINEL, ifile)) {
+  if (fseek(ifile,0L,SEEK_SET)) {
+    printf("Error in repositioning the input file to the start\n");
+    exit(10);
+  }
+  while (fgets(line, LINEL, ifile) != (char *) NULL) {
     if (!strncmp("%%Page:",line,7)) {
       pict_count++;
     }
+    line_count++;
   }
 
 /*
  *  Record the position numbers of where the pictures start and where
- *  the the %%Page comments end.
+ *  the %%Trailer is.
  */
-  pict_start = (fpos_t *) calloc(pict_count,sizeof(fpos_t));
-  page_comment_end = (fpos_t *) calloc(pict_count,sizeof(fpos_t));
-  pict_count = 0;
-  fseek(ifile,0L,SEEK_SET);
-  while (fgets(line, LINEL, ifile)) {
-    line_count++;
-    if (!strncmp("%%Page:",line,7)) {
-      fgetpos(ifile, &tpos);
-      *(pict_start+pict_count) = tpos - (int) strlen(line);
-      *(page_comment_end+pict_count) = tpos;
-      pict_count++;
+  pict_start = (fpos_t *) calloc(pict_count+1,sizeof(fpos_t));
+  if ( pict_start == (fpos_t *) NULL ) {
+    printf("Error in getting memory for file position pointers\n");
+    exit(19);
+  }
+  if (fseek(ifile,0L,SEEK_SET)) {
+    printf("Error in repositioning the input file to the start\n");
+    exit(11);
+  }
+  npict = 0;
+  for (i = 0; i < line_count; i++) {
+    if (fgetpos(ifile,&tpos)) {
+      printf("Error return from fgetpos.\n");
+      exit(20);
     }
-    if (!strncmp("%%Trailer",line,9)) {
-      fgetpos(ifile, &tpos);
-      last_pict_end = tpos - (int) strlen(line);
+    fgets(line, LINEL, ifile);
+    if (!strncmp("%%Page:",line,7)) {
+      pict_start[npict] = tpos;
+      npict++;
+    } 
+    else if (!strncmp("%%Trailer",line,9)) {
+      pict_start[pict_count] = tpos;
     }
   }
-
   pnum = (char *) calloc(5,sizeof(char));
   output_name = (char *) calloc(strlen(rname)+1+4+4,sizeof(char));
-  file_header = (char *) calloc( (size_t) *pict_start, sizeof(char));
-
-/*
- *  Store the header information to be used for each output ps file.
- */
-  fseek(ifile,0L,SEEK_SET);
-  fread(file_header, (size_t) sizeof(char), (size_t) *pict_start, ifile);
 
 /*
  *  Loop through the pictures.
@@ -619,20 +629,20 @@ void from_ps(FILE *ifile, char *rname)
 /*
  *  Write out the header, the prolog, and the color table.
  */
-    fwrite(file_header, (size_t) sizeof(char), (size_t) *pict_start, 
-           output_file);
+    begin_picture_ps(ifile,output_file);
     fflush(output_file);
 
 /*
  *  Write out the picture body.
  */
-    picture_body_ps(ifile, output_file, i, pict_count,
-                    last_pict_end, pict_start, page_comment_end);
+    picture_body_ps(ifile, output_file, pict_start+i);
+    fflush(output_file);
 
 /*
  *  Write out the picture termination.
  */
-    end_picture_ps(ifile, output_file, last_pict_end);
+    end_picture_ps(ifile, output_file, pict_start+pict_count);
+    fflush(output_file);
 
 /*
  *  Close the output file.
@@ -644,10 +654,8 @@ void from_ps(FILE *ifile, char *rname)
  *  Free memory.
  */
   free(pict_start);
-  free(page_comment_end);
   free(pnum);
   free(output_name);
-  free(file_header);
 
 /*
  *  Close the input file.
@@ -655,51 +663,57 @@ void from_ps(FILE *ifile, char *rname)
   fclose(ifile);
 }
 
-void picture_body_ps(FILE *ifile, FILE *ofile, int npict, int count,
-                     fpos_t final_end, fpos_t *pstarts, fpos_t *pends)
+void begin_picture_ps(FILE *ifile, FILE *ofile)
 {
-
-  size_t bsize;
-  char *buf;
-  int i;
-
-  fsetpos(ifile, pstarts+npict);
-  if (npict == count-1) {
-    bsize = (size_t) (final_end - pends[count-1]);
+  if (fseek(ifile,0L,SEEK_SET)) {
+    printf("Error in repositioning the input file to the start\n");
+    exit(2);
   }
-  else {
-    bsize = (size_t) (pstarts[npict+1] - pends[npict]);
-  }
-
-/*
- *  Copy the picture body from the input file to the output file.
- */
-  buf = (char *) calloc(bsize, sizeof(char));
-
-  fsetpos(ifile, pends+npict);
-  fread(buf, (size_t) sizeof(char), bsize, ifile);
-
-  fputs("\n%%BeginPictureBody\n", ofile);
-  fwrite(buf, (size_t) sizeof(char), bsize, ofile);
-  fflush(ofile);
-
-  free(buf);
-  
-}
-
-void end_picture_ps(FILE *ifile, FILE *ofile, fpos_t pict_end_pos)
-{
-
-/*
- *  Copy the trailer information.
- */
-  fsetpos(ifile, &pict_end_pos);
-  while (fgets(line, LINEL, ifile)) {
-    if (!strncmp("%%Pages:",line,8)) {
-      fputs("%%Pages: 1\n", ofile);
+  while (fgets(line, LINEL, ifile) != (char *) NULL) {
+    if (!strncmp("%%Page:",line,7)) {
+      return;
     }
     else {
-      fputs(line, ofile); 
+      fputs(line,ofile);
     }
+  }
+}
+
+void picture_body_ps(FILE *ifile, FILE *ofile, fpos_t *pict_start)
+{
+
+/*
+ *  Copy until we hit a %%Page: or a %%Trailer.
+ */
+  int i;
+
+  if (fsetpos(ifile, pict_start)) {
+    printf("Error return from fsetpos.\n");
+    exit(20);
+  }
+
+/*
+ *  Copy up through the showpage operator (" h").
+ */
+  fgets(line, LINEL, ifile);
+  fputs("%%Page: 1 1\n", ofile);
+  fgets(line, LINEL, ifile);
+  while (strncmp("%%Page:",line,7) && strncmp("%%Trailer",line,9)) {
+    fputs(line, ofile);
+    if (fgets(line, LINEL, ifile) == (char *) NULL)  {
+      printf("Premature EOF\n");
+      exit(12);
+    }
+  }
+}
+
+void end_picture_ps(FILE *ifile, FILE *ofile, fpos_t *pict_end_pos)
+{
+  if (fsetpos(ifile, pict_end_pos)) {
+    printf("Error return from fsetpos.\n");
+    exit(20);
+  }
+  while (fgets(line, LINEL, ifile) != (char *) NULL) {
+    fputs(line,ofile);
   }
 }
