@@ -1,5 +1,5 @@
 C
-C $Id: ardbda.f,v 1.7 1994-03-17 17:47:15 kennison Exp $
+C $Id: ardbda.f,v 1.8 1994-06-14 18:50:33 kennison Exp $
 C
       SUBROUTINE ARDBDA (X1,Y1,X2,Y2,IL,IR)
 C
@@ -25,7 +25,7 @@ C
 C
 C Define character variables required to write the area identifiers.
 C
-      CHARACTER*6 CS
+      CHARACTER*7 CS
       CHARACTER*1 IC
 C
 C Check for an uncleared prior error.
@@ -48,19 +48,19 @@ C
       IF (DP.EQ.0.) RETURN
 C
 C If area identifiers are to be written and they are in a reasonable
-C range (less than 100,000 in absolute value), write them on either
+C range (less than 1,000,000 in absolute value), write them on either
 C side of the arrow.
 C
-      IF (.NOT.(RDI.GT.0..AND.RSI.GT.0.AND.ABS(IL).LT.100000.AND.ABS(IR)
-     +.LT.100000)) GO TO 10001
+      IF (.NOT.(RDI.GT.0..AND.RSI.GT.0.AND.ABS(IL).LT.1000000.AND.ABS(IR
+     +).LT.1000000)) GO TO 10001
 C
         XC=.5*(X1+X2)
         YC=.5*(Y1+Y2)
         XL=XC-RDI*DY/DP
         YL=YC+RDI*DX/DP
-        WRITE (CS,'(I6)') IL
+        WRITE (CS,'(I7)') IL
         NC=0
-        DO 101 I=1,6
+        DO 101 I=1,7
         IC=CS(I:I)
         IF (.NOT.(IC.NE.' ')) GO TO 10002
           NC=NC+1
@@ -72,9 +72,9 @@ C
 C
         XR=XC+RDI*DY/DP
         YR=YC-RDI*DX/DP
-        WRITE (CS,'(I6)') IR
+        WRITE (CS,'(I7)') IR
         NC=0
-        DO 102 I=1,6
+        DO 102 I=1,7
         IC=CS(I:I)
         IF (.NOT.(IC.NE.' ')) GO TO 10003
           NC=NC+1
