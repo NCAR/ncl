@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1993-10-19 17:32:35 boote Exp $
+#	$Id: yMakefile,v 1.8 1993-12-02 22:54:31 kennison Exp $
 #
 MYNAME	= support
 
@@ -9,7 +9,7 @@ GENERIC_SRCS = \
 	msbsf2.f mssrf1.f mssrf2.f msceez.f mstrms.f msshch.f msntvl.f \
 	bzbkd.f  bzcurv.f bzdp2l.f bzfcrv.f bzftol.f bzgeti.f bzgetr.f \
 	bzseti.f bzsetr.f bzsubd.f idbvip.f idgrid.f idlctn.f idpdrv.f \
-	idptip.f idsfft.f idtang.f idxchg.f uliber.f
+	idptip.f idsfft.f idtang.f idxchg.f uliber.f icfell.f
 
 GENERIC_OBJS = \
 	encd.o entsr.o retsr.o nerro.o errof.o seter.o eprin.o fdum.o \
@@ -17,7 +17,7 @@ GENERIC_OBJS = \
 	msbsf2.o mssrf1.o mssrf2.o msceez.o mstrms.o msshch.o msntvl.o \
 	bzbkd.o bzcurv.o bzdp2l.o bzfcrv.o bzftol.o bzgeti.o bzgetr.o \
 	bzseti.o bzsetr.o bzsubd.o idbvip.o idgrid.o idlctn.o idpdrv.o \
-	idptip.o idsfft.o idtang.o idxchg.o uliber.o
+	idptip.o idsfft.o idtang.o idxchg.o uliber.o icfell.o
 
 SOURCES = $(GENERIC_SRCS)
 OBJECTS = $(GENERIC_OBJS)
