@@ -1,5 +1,5 @@
 C
-C       $Id: vvthin.f,v 1.2 1996-05-23 00:40:46 dbrown Exp $
+C       $Id: vvthin.f,v 1.3 1997-04-01 04:15:56 dbrown Exp $
 C
       SUBROUTINE VVTHIN (U,V,P,UFR,VFR)
 C
@@ -274,7 +274,7 @@ C
             MXI = I+IXIN
             DO 401 JJ=J,IYDN,IYIN
                IF (MXI.LE.I) THEN
-                  GO TO 500
+                  GO TO 405
                END IF
                ICM = I
                DO 400 II=I,IXDM,IXIN
@@ -293,14 +293,43 @@ C
                      UFR(II,JJ) = -1.0
                      ICM = II + IXIN
                      GO TO 400
-                  ELSE IF (II.LT.MXI) THEN
-                     GO TO 400
                   ELSE 
                      MXI = ICM
                      GO TO 401
                   END IF
- 400              CONTINUE
- 401              CONTINUE
+ 400           CONTINUE
+ 401        CONTINUE
+C
+ 405        CONTINUE
+C
+            JJMX = JJ
+            MNI = I - 2*IXIN
+            DO 411 JJ=J+IYIN,JJMX,IYIN
+               IF (MNI.GE.I) THEN
+                  GO TO 500
+               END IF
+               ICM = I - IXIN
+               DO 410 II = I - IXIN,1,-IXIN
+                  IF (UFR(II,JJ).EQ.-1.0) THEN
+                     GO TO 411
+                  END IF
+                  IF (UFR(II,JJ).LT.0.0) THEN
+                     ICM = II - IXIN
+                     GO TO 410
+                  END IF
+                  UT = UFR(I,J) - UFR(II,JJ)
+                  VT = VFR(I,J) - VFR(II,JJ)
+                  VLS = UT*UT+VT*VT
+                  IF (VLS .LT. VSQ) THEN
+                     UFR(II,JJ) = -1.0
+                     ICM = II - IXIN
+                     GO TO 410
+                  ELSE 
+                     MNI = ICM
+                     GO TO 411
+                  END IF
+ 410           CONTINUE
+ 411        CONTINUE
 C
  500     CONTINUE
  501  CONTINUE
