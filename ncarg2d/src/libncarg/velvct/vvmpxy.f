@@ -1,5 +1,5 @@
 C
-C	$Id: vvmpxy.f,v 1.4 1993-01-20 22:02:51 dbrown Exp $
+C	$Id: vvmpxy.f,v 1.5 1993-02-02 23:34:58 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -71,28 +71,25 @@ C
 C
 C --------------------------------------------------------------------
 C
-C Common block variables used:
+C --------------------------------------------------------------------
 C
-C RLEN  -- the maximum vector length in the user coordinate system
-C SXDC  -- scale factor from vector length to fractional coords, X
-C SYDC  -- scale factor from vector length to fractional coords, Y
+C Local parameters:
 C
-C Parameters:
-C
-C PRCFAC is the precision factor to resolve float equality within
-C   the precision of a 4 byte REAL
-C PVFRAC is the initial fraction of the vector magnitude used to
-C   determine the differential increment
-C PDTOR is a degree to radian conversion value
-C PFOVFL is the floating point overflow value
-C IPMXCT is the number of times to allow increasing the differential
-C PDUVML is the multiplier when the differential is increased
+C PRCFAC - Precision factor used to resolve float equality within
+C            the precision of a 4 byte REAL
+C PVFRAC - Initial fraction of the vector magnitude used to
+C            determine the differential increment
+C PFOVFL - Floating point overflow value
+C IPMXCT - Number of times to allow the differential to increase
+C PDUVML - Multiplier when the differential is increased
+C PCSTST - Test value for closeness to 90 degree latitude
 C
       PARAMETER (PRCFAC=1E5,
      +           PVFRAC=0.001,
      +           PFOVFL=1E12,
      +           IPMXCT=40,
-     +           PDUVML=2.0)
+     +           PDUVML=2.0,
+     +           IPCTST=PRCFAC*90)
 C
 C Local variables:
 C
@@ -201,7 +198,7 @@ C Since EZMAP uses uniform user coordinates, don't convert to
 C fractional coordinates until the end
 C The tranformation type parameter is not used.
 C
-         IF (IFIX(ABS(Y)*PRCFAC) .EQ. IFIX(90.*PRCFAC)) THEN
+         IF (IFIX(ABS(Y)*PRCFAC+0.5).EQ.IPCTST) THEN
             IST=-1
             RETURN
          END IF
@@ -217,7 +214,7 @@ C
 C
 C Check the vector magnitude
 C
-         IF (IFIX(UVM*PRCFAC) .EQ. 0) THEN
+         IF (IFIX(UVM*PRCFAC+0.5) .EQ. 0) THEN
             IST=-2
             RETURN
          END IF
