@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.7 1992-09-01 23:39:27 clyne Exp $
+ *	$Id: commands.c,v 1.8 1993-01-06 22:20:28 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -93,6 +93,15 @@ medCopy(med_data)
 	 */
 	DEFAULT_FRAME(med_data->current_frame, c_data);
 
+	if (c_data->add1 > c_data->add2) {
+		fprintf(stderr, "Invalid address\n");
+		return;
+	}
+	if (c_data->add1 > med_data->last_frame) {
+		fprintf(stderr, "Address out of range\n");
+		return;
+	}	
+
 	start_frame = c_data->add1;
 	num_frames = c_data->add2 - start_frame + 1;
 	target = c_data->add3;
@@ -156,6 +165,15 @@ medDelete(med_data)
 	 * calculate address for delete. use current frame for default
 	 */
 	DEFAULT_FRAME(med_data->current_frame, c_data);
+
+	if (c_data->add1 > c_data->add2) {
+		fprintf(stderr, "Invalid address\n");
+		return;
+	}
+	if (c_data->add1 > med_data->last_frame) {
+		fprintf(stderr, "Address out of range\n");
+		return;
+	}	
 
 	start_frame = c_data->add1;
 	num_frames = c_data->add2 - start_frame + 1;
@@ -291,6 +309,15 @@ medLabel(med_data)
 	 */
 	DEFAULT_FRAME(med_data->current_frame, c_data);
 
+	if (c_data->add1 > c_data->add2) {
+		fprintf(stderr, "Invalid address\n");
+		return;
+	}
+	if (c_data->add1 > med_data->last_frame) {
+		fprintf(stderr, "Address out of range\n");
+		return;
+	}	
+
 	start_frame = c_data->add1;
 	num_frames = c_data->add2 - start_frame + 1;
 
@@ -424,6 +451,15 @@ medMerge(med_data)
 	 */
 	DEFAULT_FRAME(med_data->current_frame, c_data);
 
+	if (c_data->add1 > c_data->add2) {
+		fprintf(stderr, "Invalid address\n");
+		return;
+	}
+	if (c_data->add1 > med_data->last_frame) {
+		fprintf(stderr, "Address out of range\n");
+		return;
+	}	
+
 	bottom_frame = c_data->add1;
 	top_frame = c_data->add2;
 
@@ -481,6 +517,15 @@ medMove(med_data)
 	 */
 	DEFAULT_FRAME(med_data->current_frame, c_data);
 
+	if (c_data->add1 > c_data->add2) {
+		fprintf(stderr, "Invalid address\n");
+		return;
+	}
+	if (c_data->add1 > med_data->last_frame) {
+		fprintf(stderr, "Address out of range\n");
+		return;
+	}	
+
 	start_frame = c_data->add1;
 	num_frames = c_data->add2 - start_frame + 1;
 	target = c_data->add3;
@@ -537,6 +582,14 @@ medPrint(med_data)
 	 */
 	DEFAULT_FRAME(med_data->current_frame, c_data);
 
+	if (c_data->add1 > c_data->add2) {
+		fprintf(stderr, "Invalid address\n");
+		return;
+	}
+	if (c_data->add1 > med_data->last_frame) {
+		fprintf(stderr, "Address out of range\n");
+		return;
+	}	
 	start_frame = c_data->add1;
 	num_frames = c_data->add2 - start_frame + 1;
 
@@ -638,6 +691,14 @@ medRead(med_data)
 	 */
 	DEFAULT_FRAME(med_data->current_frame, c_data);
 
+	if (c_data->add1 > c_data->add2) {
+		fprintf(stderr, "Invalid address\n");
+		return;
+	}
+	if (c_data->add1 > med_data->last_frame) {
+		fprintf(stderr, "Address out of range\n");
+		return;
+	}	
 	start_frame = c_data->add1;
 
 #ifdef	DEBUG
@@ -726,6 +787,14 @@ medWrite(med_data)
 		}
 	}
 
+	if (c_data->add1 > c_data->add2) {
+		fprintf(stderr, "Invalid address\n");
+		return;
+	}
+	if (c_data->add1 > med_data->last_frame) {
+		fprintf(stderr, "Address out of range\n");
+		return;
+	}	
 	start_frame = c_data->add1;
 	num_frames = c_data->add2 - start_frame + 1;
 
@@ -801,6 +870,14 @@ medAppend(med_data)
 		}
 	}
 
+	if (c_data->add1 > c_data->add2) {
+		fprintf(stderr, "Invalid address\n");
+		return;
+	}
+	if (c_data->add1 > med_data->last_frame) {
+		fprintf(stderr, "Address out of range\n");
+		return;
+	}	
 	start_frame = c_data->add1;
 	num_frames = c_data->add2 - start_frame + 1;
 
@@ -916,6 +993,14 @@ medSplit(med_data)
 
 	c_data->file = c_data->file == NULL ? SPLIT_PREFIX : c_data->file;
 
+	if (c_data->add1 > c_data->add2) {
+		fprintf(stderr, "Invalid address\n");
+		return;
+	}
+	if (c_data->add1 > med_data->last_frame) {
+		fprintf(stderr, "Address out of range\n");
+		return;
+	}	
 	start_frame = c_data->add1;
 	num_frames = c_data->add2 - start_frame + 1;
 	num_split = c_data->add3;
