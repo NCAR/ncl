@@ -89,16 +89,16 @@ char *ErrMsg(int i)
     "Unable to allocate storage for neig.",
 
 /* #019 */
-    "slopes have not been computed, set sdip.",
+    "Slopes have not been computed, set sdi.",
 
 /* #020 */
-    "row argument out of range.",
+    "Row argument out of range.",
 
 /* #021 */
-    "column argument out of range.",
+    "Column argument out of range.",
 
 /* #022 */
-    "aspects have not been computed, set sdip.",
+    "Aspects have not been computed, set sdi.",
 
 /* #023 */
     "Parameter name not known.",
