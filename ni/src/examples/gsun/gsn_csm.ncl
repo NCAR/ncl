@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.27 1999-12-10 20:39:39 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.28 1999-12-16 19:50:13 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -43,7 +43,8 @@ undef("set_xaxis_string")
 undef("set_yaxis_string")
 undef("set_subtitles_res")
 undef("check_for_coord_arrays")
-undef("check_for_lat_coord")
+undef("check_for_y_lat_coord")
+undef("check_for_x_lat_coord")
 undef("check_for_lon_coord")
 undef("get_polar_type")
 undef("create_labelbar")
@@ -75,6 +76,7 @@ undef("gsn_csm_xy")
 undef("gsn_csm_contour")
 undef("gsn_csm_hov")
 undef("gsn_csm_lat_time")
+undef("gsn_csm_time_lat")
 undef("gsn_csm_pres_hgt")
 undef("gsn_csm_vector")
 undef("gsn_csm_streamline")
@@ -491,7 +493,7 @@ begin
 ; for sf/vf/XArray.
 ; are longitudes names from a grib file, so their units are assumed to  ;
 ; be "degrees_east".                                                    ;
-; Procedure : check_for_lat_coord                                       ;
+  end if
  
   npres = dimsizes(ptmp)
   gph = new(npres,float)
@@ -502,7 +504,7 @@ begin
 ; this coordinate array.                                                ;
      if ( ( ptmp(i) .le. psa(j) ) .and. ( ptmp(i) .ge. psa(j+1) ) ) then
        gph(i) = zsa(j) + (zsa(j+1) - zsa(j)) * \
-procedure check_for_lat_coord(data[*][*]:numeric,res:logical,type:string)
+                log( psa(j)/ptmp(i) )/log( psa(j)/psa(j+1) )
 local latname, char_latname, array_name, start_name, end_name
      end if
   end do
@@ -529,6 +531,44 @@ end
     array_name = "vfYArray"
     start_name = "vfYCStartV"
     end_name   = "vfYCEndV"
+  else
+    array_name = "sfYArray"
+    start_name = "sfYCStartV"
+    end_name   = "sfYCEndV"
+  end if
+
+; dimension 0 that starts with "lat" or "Lat".  If so, then it sets     ;
+; sf/vfXArray (depending on if type equals "contour" or "vector" to     ;
+; this coordinate array.                                                ;
+;
+; Check the name of the coordinate variable against the allowed
+; lat names. The coordinate variable must also be one-dimensional to
+local latname, char_latname, array_name, start_name, end_name
+;
+;
+  if(is_valid_lat_ycoord(data))
+    if(.not.(isatt(res,start_name).and.isatt(res,end_name)))
+      set_attr(res,array_name,data&$data!0$)
+      return
+    end if
+  else
+    if(isatt(data,"lat2d").and. \
+       all(dimsizes(data@lat2d).eq.dimsizes(data)).and. \
+       .not.(isatt(res,start_name).and.isatt(res,end_name)))
+  if(.not.ismissing(data!1).and.iscoord(data,data!1))
+    latname = data!1
+    char_latname = stringtochar(latname)
+    if(dimsizes(char_latname).ge.3)
+      if(char_latname(0:2).eq."lat".or.char_latname(0:2).eq."Lat")
+        if(.not.(isatt(res,start_name).and.isatt(res,end_name)))
+         set_attr(res,array_name,data&$latname$)
+        end if
+      end if
+    end if
+;                 res: logical                                          ;
+; dimension 1 of an allowable list of latnames                          ;
+;                                                                       ;
+; If so, then it sets sf/vfYArray (depending on if type equals          ;
 ; "contour" or "vector" to this coordinate array.                       ;
 ;                                                                       ;
 ;***********************************************************************;
@@ -764,7 +804,8 @@ begin
 
 procedure add_labelbar(wks:graphic,plot,res:logical)
   txres = get_res_eq(res,"tx")
-lbar_side, lbar_just
+  amres = get_res_eq(res,"am")
+mono_fill_scl, mono_fill_col, the_plot
   getvalues plot
     if(strings(i).ne."")
         setvalues anno
@@ -795,23 +836,39 @@ end
   set_attr(lbres,"lbLabelFontHeightF",font_height)
   lbar_orient = "horizontal"
   lbar_side   = "bottom"
-  if(class_name.eq."contourPlotClass")
-    getvalues plot
-      "cnLevels"     : levels
-      "cnFillColors" : colors
+  lbar_just   = "bottomcenter"
+
+  if(check_attr(lbres,"lbOrientation","vertical",True))
+    lbar_orient = "vertical"
+    lbar_side   = "right"
+    lbar_just   = "centerright"
+  end if
+
+  set_attr(lbres,"lbOrientation",lbar_orient)
+  set_attr(amres,"amSide",lbar_side)
+  set_attr(amres,"amJust",lbar_just)
+
+; 
+; Determine what the default labelbar width and height should be depending
 ; on shape of plot (this is for a horizontal labelbar).  For example, if
+; the plot is square, then make the labelbar the same width as the plot.
+; If the plot is 1:2, then make the labelbar .75 * width of the plot.
+;
+; For a vertical labelbar, make the height the same as the height of the
+; plot.
+;
+  getvalues plot
+    "vpWidthF"  : width    ; Width of plot
+    "vpHeightF" : height   ; Height of plot
+  end getvalues
+
+  ratio1 = width/height
+  ratio2 = height/width
   ratio = min((/ratio1,ratio2/))
-    if(class_name.eq."logLinPlotClass")
-      getvalues plot@contour
-        "cnLevels"      : levels
-        "cnFillColors"  : colors
-      end getvalues
-    else
-      getvalues plot
-        "vcLevels"      : levels
-        "vcLevelColors" : colors
-      end getvalues
-    end if
+  ratios  = (/0.50, 0.75, 1.00/)  ; viewport ratios
+
+  lwscale   = (/0.75, 0.90, 1.00/)
+  wh_ind    = ind(ratio.le.ratios)
   def_lvpwf = lwscale(wh_ind(0))    ; default width scale for labelbar
   if(lbar_orient.eq."vertical") then
     if(type.eq."polar")
@@ -2274,7 +2331,7 @@ begin
     return(gsn_csm_map_polar(wks,res2))
 ; list of resources. The id of the map plot is returned.                ;
 ;                                                                       ;
-    check_for_lat_coord(datanew,res2,"contour")
+; This function behaves differently from gsn_contour in that it will    ;
 ; create a special kind of plot if certain attributes are set.          ;
 ;                                                                       ;
 ;    1. By default, a cyclic point is added.  If gsnAddCyclic is set to ;
@@ -2444,7 +2501,7 @@ local i, attnames, contour_object, labelbar_object, xy_object, map_object, \
     mpres           = True 
     cnres@gsnDraw   = False
     cnres@gsnFrame  = False
-map_vpwf, map_vphf, vpwf, vphf
+map_vpwf, map_vphf, vpwf, vphf, contour_plot
     mpres@gsnFrame = False
 
     contour_object = gsn_contour(wks,datanew,cnres) ; Create contours.
@@ -2468,7 +2525,7 @@ map_vpwf, map_vphf, vpwf, vphf
 ; Check if user setting own font heights.
 ;
     main_font_height = get_res_value_keep(res2,"tiMainFontHeightF", \
-    check_for_lat_coord(datanew,res2,"contour")
+                                          2.*font_height)
     main_font = get_res_value_keep(res2,"tiMainFont","helvetica-bold")
 
     setvalues map_object
@@ -2664,28 +2721,22 @@ begin
     cname = NhlClassName(contour_object)  ; Determine whether this is a
                                           ; contour plot, or a contour plot
                                           ; over a loglin plot.
+    if(cname.eq."logLinPlotClass")
+      contour_plot = contour_object@contour
+    else
+      contour_plot = contour_object
+    end if
+; This section tests for regular resources.
     lbres = get_res_eq(res2,(/"lb","pm"/))
-      if(cname.eq."logLinPlotClass")
-        setvalues contour_object@contour
-          "cnLineLabelFontHeightF"    : xbfontf
-        end setvalues
-      else
-        setvalues contour_object
-          "cnLineLabelFontHeightF"    : xbfontf
-        end setvalues
-      end if
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
+    cnres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm"/))
+
     if(cnres)
       if(check_attr(cnres,"cnFillOn",True,False))
         set_attr(cnres,"cnInfoLabelOn",False)
-      if(cname.eq."logLinPlotClass")
-        setvalues contour_object@contour
-          "cnInfoLabelFontHeightF"    : xbfontf
-        end setvalues
-      else
-        setvalues contour_object
-          "cnInfoLabelFontHeightF"    : xbfontf
-        end setvalues
-      end if
+        if(.not.check_attr(lbres,"lbLabelBarOn",False,False))
+          set_attr(cnres,"cnLineLabelsOn",False)
+          lbar_on = True   ; Turn on a labelbar
           if(check_attr(lbres,"lbOrientation","vertical",True))
             set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
 ; Retrieve the view port size of the map plot so we know how big
@@ -2885,7 +2936,7 @@ map_vpwf, map_vphf, vpwf, vphf, callframe, min_lat, max_lat, unew, vnew
     if(.not.isatt(cnres,"cnLineLabelFontHeightF"))
       setvalues contour_plot
         "cnLineLabelFontHeightF"    : 0.6 * font_height
-    check_for_lat_coord(unew,res2,"vector")
+      end setvalues
     end if
 
     if(.not.isatt(cnres,"cnInfoLabelFontHeightF"))
@@ -3034,7 +3085,7 @@ local i, attnames, stream_object, map_object, stres, calldraw, callframe, \
 ; Check if user setting own font heights.
 ;
     main_font_height = get_res_value(res2,"tiMainFontHeightF", \
-    check_for_lat_coord(unew,res2,"vector")
+                                     1.1*font_height)
     setvalues map_object
       "tiMainFontHeightF"    : main_font_height  ; main title size
     end setvalues
@@ -3168,7 +3219,7 @@ local i, attnames, vector_object, map_object, res, res2, \
       setvalues vector_object
         "vcRefAnnoFontHeightF" : xbfontf
      end setvalues
-    check_for_lat_coord(unew,res2,"vector")
+    end if
 
 ; Create a labelbar.
 
@@ -3201,7 +3252,7 @@ local i, attnames, vector_object, map_object, res, res2, \
     vector_object@vfdata  = vector_object@vfdata
 ; according to the scalar field. This resource defaults to False.       ;
 ;***********************************************************************;
-      check_for_lat_coord(datanew,res2,"contour")
+    res2           = get_resources(resources)
 
 ; Check for cyclic point (default is True).
 
@@ -3435,7 +3486,7 @@ end
 
 
 ;***********************************************************************;
-  check_for_lat_coord(datanew,res2_tmp,"contour")
+; Function : gsn_csm_streamline_contour_map                             ;
 ;                   wks: workstation object                             ;
 ;                     u: 2-dimensional data                             ;
 ;                     v: 2-dimensional data                             ;
@@ -3833,7 +3884,7 @@ begin
     gsnp_point_tickmarks_outward(xy_object,tmres,xlength,ylength,xmlength, \
                                  ymlength,major_length,minor_length)
 
-main_zone, datanew, popgrid
+; Set up three subtitles at top, if they exist.
     subres = get_res_eq(res2,(/"tx","am"/))  ; Get textitem resources
     subres               = True
     set_attr(subres,"txFontHeightF",font_height)
@@ -3902,8 +3953,8 @@ end
 
 ; Check to see if X and/or Y axis labels should be set.
 
-    set_xaxis_string(datanew,res2)
-    set_yaxis_string(datanew,res2)
+    set_xaxis_string(res2,datanew)
+    set_yaxis_string(res2,datanew)
 ; This function creates and draws a titled contour plot to the          ;
 ; workstation  "wks" (the variable returned from a previous call to     ;
 ; "gsn_open_wks"). "resources" is an optional list of  resources. The   ;
@@ -3932,11 +3983,11 @@ begin
                                           ; contour plot, or a contour plot
                                           ; over a loglin plot.
     if(cname.eq."logLinPlotClass")
-      temp_obj = contour_object@contour
+      contour_plot = contour_object@contour
     else
-      temp_obj = contour_object
+      contour_plot = contour_object
     end if
-    getvalues temp_obj
+; with "gsn."
 
 ; The default is to not add a cyclic point.
 
@@ -3977,7 +4028,7 @@ begin
     right_string  = new(1,logical)
 
     check_for_subtitles(res2,left_string,center_string,right_string)
-      gsnp_point_tickmarks_outward(temp_obj,major_length,minor_length)
+      gsnp_point_tickmarks_outward(contour_plot,major_length,minor_length)
 
 ; Check if gsnShape set.
 
@@ -4045,7 +4096,7 @@ begin
 
 function gsn_csm_hov(wks:graphic,data:numeric,resources:logical)
 
-datanew, lon_spacing
+    getvalues contour_plot
       "vpWidthF"             : width
       "vpHeightF"            : height
   
@@ -4099,19 +4150,16 @@ datanew, lon_spacing
                                             ; contour plot, or a contour plot
                                             ; over a loglin plot.
       if(cname.eq."logLinPlotClass")
-        getvalues contour_object@contour
-          "trXMinF"   : min_lon
-          "trXMaxF"   : max_lon
-        end getvalues
-        add_lon_labels(contour_object@contour,min_lon,max_lon,lon_spacing,\
-                       mlon_spacing)
+        contour_plot = contour_object@contour
       else
-        getvalues contour_object
-          "trXMinF"   : min_lon
-          "trXMaxF"   : max_lon
-        end getvalues
-        add_lon_labels(contour_object,min_lon,max_lon,lon_spacing,mlon_spacing)
+        contour_plot = contour_object
       end if
+; Make tick marks same length and point outward.
+;
+      major_length = scale * min((/ylength,xlength/))
+      minor_length = scale * min((/ymlength,xmlength/))
+
+      add_lon_labels(contour_plot,min_lon,max_lon,lon_spacing,mlon_spacing)
     if (lbar_on)
       lbres = get_res_eq(res2,(/"lb","pm"/))
       add_labelbar(wks,contour_object,3,font_height,"contour",lbres)
@@ -4172,7 +4220,7 @@ function gsn_csm_lat_time(wks:graphic,data:numeric,resources:logical)
 
     maxbb        = get_bb_res(res2)
     lon_spacing  = get_res_value(res2,"gsnMajorLonSpacing",0)
-    check_for_lat_coord(data,res2,"contour")
+    mlon_spacing = get_res_value(res2,"gsnMinorLonSpacing",0)
 
     if(is_valid_lat_xcoord(data).or.is_valid_lon_xcoord(data))
       set_attr(res2,"tiXAxisString","")
@@ -4186,20 +4234,101 @@ function gsn_csm_lat_time(wks:graphic,data:numeric,resources:logical)
                                           ; contour plot, or a contour plot
                                           ; over a loglin plot.
     if(cname.eq."logLinPlotClass")
-      getvalues contour_object@contour
-        "trYMinF"   : min_lat
-        "trYMaxF"   : max_lat
-      end getvalues
-      add_lat_labels_yaxis(contour_object@contour,min_lat,max_lat,\
-                           lat_spacing,mlat_spacing)
+      contour_plot = contour_object@contour
     else
-      getvalues contour_object
-        "trYMinF"   : min_lat
-        "trYMaxF"   : max_lat
-      end getvalues
-      add_lat_labels_yaxis(contour_object,min_lat,max_lat,lat_spacing,\
-                           mlat_spacing)
+      contour_plot = contour_object
     end if
+    end if
+
+    res2           = True
+    res2@gsnDraw   = False
+    res2@gsnFrame  = False
+    contour_object = gsn_csm_contour(wks,data,res2) ; Create a contour plot.
+                         lat_spacing,mlat_spacing)
+; Check if we should label X axis with nice longitude labels.
+
+    draw_and_frame(wks,contour_object,calldraw,callframe)
+
+; Get min and max X axis values (longitude units)
+
+      contour_plot = check_class_name(contour_object,"contour")
+
+      getvalues contour_plot
+        "trXMinF"   : min_lon
+        "trXMaxF"   : max_lon
+      end getvalues
+;
+; We want different defaults for longitude spacing, so set them up here.
+;
+      lon_range        = (/ 20,  40,  60, 180, 360/)
+      lon_spacing_arr  = (/ 10,  20,  30,  45,  60/)
+      mlon_spacing_arr = (/  5,   5,  10,  15,  30/)
+      add_lon_labels(contour_plot,min_lon,max_lon,lon_spacing,mlon_spacing,\
+                     lon_range,lon_spacing_arr,mlon_spacing_arr,res2)
+    end if
+
+; Draw all this stuff: contour plot and subtitles.
+    draw_and_frame(wks,contour_object,calldraw,callframe,maxbb)
+;                                                                       ;
+
+; Return contour plot object.
+function gsn_csm_time_lat(wks:graphic,data:numeric,resources:logical)
+    return(contour_object)
+end
+
+;***********************************************************************;
+; Function : gsn_csm_lat_time                                           ;
+    res2 = resources
+;                    data: data to be contoured                         ;
+    calldraw  = get_special_res_value(res2,"gsnDraw", True)
+    callframe = get_special_res_value(res2,"gsnFrame",True)
+; Id of the contour plot is returned.                                   ;
+;                                                                       ;
+; This function behaves differently from gsn_csm_contour in that it     ;
+; draws a specially-labelled latitude Y axis.                           ;
+;                                                                       ;
+; Check if gsnMajorLatSpacing or gsnMinorLatSpacing are set.
+
+    if((res2).and.isatt(res2,"gsnMajorLatSpacing"))
+      lat_spacing = res2@gsnMajorLatSpacing
+      delete(res2@gsnMajorLatSpacing)
+    else
+      lat_spacing = 15
+    end if
+
+    if((res2).and.isatt(res2,"gsnMinorLatSpacing"))
+      mlat_spacing = res2@gsnMinorLatSpacing
+      delete(res2@gsnMinorLatSpacing)
+    else
+      mlat_spacing = 5
+    end if
+
+;                                                                       ;
+;***********************************************************************;
+
+function gsn_csm_lat_time(wks:graphic,data[*][*]:numeric,resources:logical)
+local res, contour_object, res2, font_height, calldraw, callframe, \
+datanew, lat_spacing
+begin
+
+; Initialize.
+    res2         = get_resources(resources)
+
+    calldraw     = get_res_value(res2,"gsnDraw", True)
+    cname = NhlClassName(contour_object)  ; Determine whether this is a
+                                          ; contour plot, or a contour plot
+                                          ; over a loglin plot.
+    if(cname.eq."logLinPlotClass")
+      contour_plot = contour_object@contour
+    else
+      contour_plot = contour_object
+    end if
+    lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",0)
+    mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",0)
+
+    if((res2).and..not.any(ismissing(getvaratts(res2))))
+    end if
+                                                     mlat_spacing)
 ; Use coordinate variable for Y if it exists.
 
     draw_and_frame(wks,contour_object,calldraw,callframe)
@@ -4230,7 +4359,7 @@ function gsn_csm_lat_time(wks:graphic,data:numeric,resources:logical)
     return(contour_object)
 function gsn_csm_pres_hgt(wks:graphic,data:numeric,resources:logical)
 
-calldraw, callframe, add_hgt
+
 ;***********************************************************************;
 ; Function : gsn_csm_time_lat                                           ;
 ;                     wks: workstation object                           ;
@@ -4309,66 +4438,39 @@ end
                                           ; contour plot, or a contour plot
                                           ; over a loglin plot.
     if(cname.eq."logLinPlotClass")
-      getvalues contour_object@contour
-        "vpXF"                 : xvp
-        "vpYF"                 : yvp
-        "vpWidthF"             : widthvp
-        "vpHeightF"            : heightvp
-        "trXMinF"              : xmin
-        "trXMaxF"              : xmax
-        "trYMinF"              : ymin
-        "trYMaxF"              : ymax
-        "tiYAxisFontHeightF"   : yaxis_font_height
-        "tmYLLabelFontHeightF" : yaxis_label_height
-        "tiXAxisFontHeightF"   : xfontf
-        "tiYAxisFontHeightF"   : yfontf
-      end getvalues
+      contour_plot = contour_object@contour
     else
-      getvalues contour_object
-        "vpXF"                 : xvp
-        "vpYF"                 : yvp
-        "vpWidthF"             : widthvp
-        "vpHeightF"            : heightvp
-        "trXMinF"              : xmin
-        "trXMaxF"              : xmax
-        "trYMinF"              : ymin
-        "trYMaxF"              : ymax
-        "tiYAxisFontHeightF"   : yaxis_font_height
-        "tmYLLabelFontHeightF" : yaxis_label_height
-        "tiXAxisFontHeightF"   : xfontf
-        "tiYAxisFontHeightF"   : yfontf
-      end getvalues
+      contour_plot = contour_object
     end if
 ; This function behaves differently from gsn_csm_contour in that it     ;
+; draws a specially-labelled pressure axis on one side and a height axis;
+; on the other side.  It also labels the longitude X axis, if one       ;
+; exists.                                                               ;
+;                                                                       ;
+;***********************************************************************;
+
+function gsn_csm_pres_hgt(wks:graphic,data[*][*]:numeric,resources:logical)
+local res, contour_object, res2, xfontf, yfontf, font_height, \
+calldraw, callframe, add_hgt, contour_plot
+begin
+
+; Initialize.
+    add_hgt       = False
+    pres_reverse  =  True  ; Default is to assume pressure values
+                           ; already reversed.
     res2          = get_resources(resources)
 
-    if(cname.eq."logLinPlotClass")
-      setvalues contour_object@contour
-        "tmYLLabelFontHeightF" : yaxis_label_height * 0.8
-        "tmYRLabelFontHeightF" : yaxis_label_height * 0.8
-        "tmXBLabelFontHeightF" : yaxis_label_height * 0.8
-      end setvalues
-    else 
-      setvalues contour_object
-        "tmYLLabelFontHeightF" : yaxis_label_height * 0.8
-        "tmYRLabelFontHeightF" : yaxis_label_height * 0.8
-        "tmXBLabelFontHeightF" : yaxis_label_height * 0.8
-      end setvalues
-    end if
+    calldraw     = get_res_value(res2,"gsnDraw", True)
+    callframe    = get_res_value(res2,"gsnFrame",True)
+    maxbb        = get_bb_res(res2)
+    lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",0)
+    mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",0)
 
     if(is_valid_ycoord(data).and.isatt(data&$data!0$,"long_name"))
       set_attr(res2,"tiYAxisString",data&$data!0$@long_name)
     if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
        (data!1.eq."lat".or.data!1.eq."latitude"))
-      cname = NhlClassName(contour_object)  ; Determine whether this is a
-                                            ; contour plot, or a contour plot
-                                            ; over a loglin plot.
-      if(cname.eq."logLinPlotClass")
-        add_lat_labels_xaxis(contour_object@contour,xmin,xmax,lat_spacing,\
-                             mlat_spacing)
-      else
-        add_lat_labels_xaxis(contour_object,xmin,xmax,lat_spacing,mlat_spacing)
-      end if
+      add_lat_labels_xaxis(contour_plot,xmin,xmax,lat_spacing,mlat_spacing)
 ; If this is a pressure/hgt plot, then do stuff to the pressure values.
 
 ;
@@ -4516,8 +4618,8 @@ end
 
 ; Check to see if X and/or Y axis labels should be set.
 
-    set_xaxis_string(unew,res2)
-    set_yaxis_string(unew,res2)
+    set_xaxis_string(res2,unew)
+    set_yaxis_string(res2,unew)
 
     loglin_object@contour = contour_object
     loglin_object@data    = contour_object@data
@@ -4712,8 +4814,8 @@ begin
 
 ; Check to see if X and/or Y axis labels should be set.
 
-    set_xaxis_string(unew,res2)
-    set_yaxis_string(unew,res2)
+    set_xaxis_string(res2,unew)
+    set_yaxis_string(res2,unew)
 
 ; Return contour/vector plot with data objects as attributes.
 
