@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.4 1993-10-19 17:40:33 boote Exp $
+#	$Id: yMakefile,v 1.5 1993-10-22 16:51:46 haley Exp $
 #
 NCARG	= ../../..
 
 MYNAME	= tests
 
-GENERIC_SRCS = \
+TESTS = \
 	tagupw.f tareas.f tautog.f tcnqck.f tcnsmt.f tcnsup.f tcolcv.f \
 	tconan.f tconaq.f tconas.f tconpa.f tconre.f tdashc.f tdashl.f \
 	tdashp.f tdashs.f tezmap.f tezmpa.f tgflas.f tgrida.f thafto.f \
@@ -13,30 +13,5 @@ GENERIC_SRCS = \
 	tpwrzi.f tpwrzs.f tpwrzt.f tseter.f tsoftf.f tsrfac.f tstitl.f \
 	tstrml.f tthree.f tvelvc.f
 
-TESTS = \
-	tagupw tareas tautog tcnqck tcnsmt tcnsup tcolcv \
-	tconan tconaq tconas tconpa tconre tdashc tdashl \
-	tdashp tdashs tezmap tezmpa tgflas tgrida thafto \
-	thstgr tisohr tisosr tlblba tpltch tpwrtx tpwry \
-	tpwrzi tpwrzs tpwrzt tseter tsoftf tsrfac tstitl \
-	tstrml tthree tvelvc
+InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))
 
-all::
-
-install:: $(GENERIC_SRCS)
-	@for name in $(GENERIC_SRCS); do\
-	($(INSTALL) -m $(INSTALL_LIB) $$name $(TESTSPATH) );\
-	done
-
-Update:
-	@echo "Updating <$(MYNAME)> from Generic NCAR Graphics"
-	@-$(RM) $(GENERIC_SRCS) $(GENERIC_OBJS)
-	@echo "	File listing after removing old generics"
-	@ls
-	@echo "	Copying Generic source"
-	@for name in $(TESTS); do\
-	($(CP) $(NCARG)/generic/$$name/src $$name.f);\
-	(chmod 644 $$name.f);\
-	done
-	@if (test -x Generic2Unix) then \
-	echo "	Applying local modifications"; Generic2Unix; fi
