@@ -1,5 +1,5 @@
 /*
- *      $Id: Open.c,v 1.3 1994-02-18 02:54:37 boote Exp $
+ *      $Id: Open.c,v 1.4 1994-02-18 17:19:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -37,4 +37,5 @@ void NhlOpen()
 	/* Initialize Error handling */
 	_NhlInitError();
 	_NhlInitRLList();
+	_NhlInitGetValues();
 }

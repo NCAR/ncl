@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.5 1994-02-18 02:54:15 boote Exp $
+ *      $Id: GetValues.c,v 1.6 1994-02-18 17:19:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -93,7 +93,7 @@ GetValues
 						*args[i].free_func =
 							(_NhlFreeFunc)NhlFree;
 					}
-					else if((*args[i].type_ret == genQ){
+					else if(*args[i].type_ret == genQ){
 						*args[i].free_func =
 						(_NhlFreeFunc)NhlFreeGenArray;
 					}

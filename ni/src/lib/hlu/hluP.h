@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.10 1994-02-18 02:55:13 boote Exp $
+ *      $Id: hluP.h,v 1.11 1994-02-18 17:19:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -153,6 +153,12 @@ struct NhlGenArrayRec_{
  * This function is used as an inheritance constant.
  */
 extern void _NhlInherit(
+#if	NhlNeedProto
+	void
+#endif
+);
+
+extern void _NhlInitGetValues(
 #if	NhlNeedProto
 	void
 #endif
