@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.11 2002-06-20 22:21:32 haley Exp $
+#	$Id: yMakefile,v 1.12 2003-04-14 13:50:13 haley Exp $
 #
 
 MYNAME  = pre2ncgm
@@ -30,7 +30,6 @@ OBJECTS = $(GENERIC_OBJS) $(OTHER_OBJS) $(ROBJS)
 
 FCPP_OBJS	= fndarg.f metred.f mninst.f trans.f trassn.f \
 		trlate.f trndat.f
-EXTRA_LIBS = $(CTOFLIBS)
 
 PROG_LIBS = $(NCARGLIBS)
 DEP_LIBS = $(DEPNCARGLIBS)

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 2002-02-23 02:42:59 haley Exp $
+#	$Id: yMakefile,v 1.7 2003-04-14 13:50:44 haley Exp $
 #
 
 MYNAME	= pwritxnt
@@ -14,7 +14,6 @@ FSOURCES = \
 
 PROG_LIBS	= $(NCARGLIB) $(NCARGCLIB)
 DEPLIBS		= $(DEPNCARGLIB) $(DEPNCARGCLIB)
-EXTRA_LIBS	= $(CTOFLIBS)
 
 FortranProgram(pwritxnt,$(OBJECTS),$(DEPLIBS))
 InstallTarget(pwritdata,$(INSTALL_DB),$(DBPATH))

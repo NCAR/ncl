@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.15 2002-06-20 22:18:56 haley Exp $
+#	$Id: yMakefile,v 1.16 2003-04-14 13:49:48 haley Exp $
 #
 
 MYNAME	= graphcap
@@ -17,8 +17,6 @@ SOURCES = \
 	 rascls.f rdline.f skpblk.f txtcls.f
 
 FCPP_OBJS	= capast.f capchg.f
-EXTRA_LIBS = $(CTOFLIBS)
-
 PROG_LIBS	= $(NCARGCLIB)
 
 #
@@ -57,7 +55,7 @@ CleanFilesTarget($(GRAPHCAPS))
 	@echo "	Processing graphcap $@"
 	@$(GRAPHC) $< $@
 
-#if defined(AIX) || defined(linux) || defined(Darwin)
+#if defined(AIX) || defined(linux) || defined(Darwin) || defined(IRIX) || defined(IRIX64)
 aed.a: aed.a.gc
 	@$(GRAPHC) < aed.a.gc > aed.a
 aed.b: aed.b.gc
