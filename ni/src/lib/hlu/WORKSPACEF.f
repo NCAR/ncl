@@ -1,26 +1,26 @@
 C
-C $Id: DATAITEM.f,v 1.2 1997-05-05 21:45:07 boote Exp $
+C $Id: WORKSPACEF.f,v 1.1 2001-10-09 00:18:37 haley Exp $
 C
 C****************************************************************
 C								*
-C			Copyright (C)  1995			*
+C			Copyright (C)  1994			*
 C	University Corporation for Atmospheric Research		*
 C			All Rights Reserved			*
 C								*
 C****************************************************************
 C
-C      File:            DATAITEM.f
+C      File:            WORKSPACE.f
 C
 C      Author:          Jeff W. Boote
 C                       National Center for Atmospheric Research
 C                       PO 3000, Boulder, Colorado
 C
-C      Date:            Tue Feb 14 12:17:04 MST 1995
+C      Date:            Fri Apr 15 16:55:57 MDT 1994
 C
 C      Description:     
 C
-      subroutine nhlfisdataitem(id,istat)
+      subroutine nhlfgetworkspaceobjectid(id)
+	integer id
 
-	integer id,istat
-	call nhlpfisdataitem(id,istat)
+	call nhlpfgetworkspaceobjectid(id)
       end

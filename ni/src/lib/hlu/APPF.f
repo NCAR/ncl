@@ -1,26 +1,31 @@
 C
-C $Id: WORKSPACE.f,v 1.2 1997-05-05 21:45:31 boote Exp $
+C $Id: APPF.f,v 1.1 2001-10-09 00:18:33 haley Exp $
 C
 C****************************************************************
 C								*
-C			Copyright (C)  1994			*
+C			Copyright (C)  1995			*
 C	University Corporation for Atmospheric Research		*
 C			All Rights Reserved			*
 C								*
 C****************************************************************
 C
-C      File:            WORKSPACE.f
+C      File:            APP.f
 C
 C      Author:          Jeff W. Boote
 C                       National Center for Atmospheric Research
 C                       PO 3000, Boulder, Colorado
 C
-C      Date:            Fri Apr 15 16:55:57 MDT 1994
+C      Date:            Mon Mar 13 23:23:17 MST 1995
 C
 C      Description:     
 C
-      subroutine nhlfgetworkspaceobjectid(id)
-	integer id
+      subroutine nhlfisapp(id,istat)
 
-	call nhlpfgetworkspaceobjectid(id)
+	integer id,istat
+	call nhlpfisapp(id,istat)
+      end
+
+      subroutine nhlfappgetdefaultparentid(id)
+	integer id
+	call nhlpfappgetdefaultparentid(id)
       end

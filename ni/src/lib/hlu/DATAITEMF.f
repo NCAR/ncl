@@ -1,5 +1,5 @@
 C
-C $Id: APP.f,v 1.3 1997-05-05 21:44:57 boote Exp $
+C $Id: DATAITEMF.f,v 1.1 2001-10-09 00:18:34 haley Exp $
 C
 C****************************************************************
 C								*
@@ -9,23 +9,18 @@ C			All Rights Reserved			*
 C								*
 C****************************************************************
 C
-C      File:            APP.f
+C      File:            DATAITEM.f
 C
 C      Author:          Jeff W. Boote
 C                       National Center for Atmospheric Research
 C                       PO 3000, Boulder, Colorado
 C
-C      Date:            Mon Mar 13 23:23:17 MST 1995
+C      Date:            Tue Feb 14 12:17:04 MST 1995
 C
 C      Description:     
 C
-      subroutine nhlfisapp(id,istat)
+      subroutine nhlfisdataitem(id,istat)
 
 	integer id,istat
-	call nhlpfisapp(id,istat)
-      end
-
-      subroutine nhlfappgetdefaultparentid(id)
-	integer id
-	call nhlpfappgetdefaultparentid(id)
+	call nhlpfisdataitem(id,istat)
       end
