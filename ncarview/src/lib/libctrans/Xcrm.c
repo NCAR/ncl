@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.8 1992-02-07 17:38:44 clyne Exp $
+ *	$Id: Xcrm.c,v 1.9 1992-02-10 17:31:42 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -147,7 +147,7 @@ X11_UpdateColorTable_()
 		 * load the colours from the ctrans color map into the X
 		 * server's color map
 		 */
-		for(i=1; COLOUR_TOTAL_DAMAGE > 0 && i<MAX_C_I; i++) {
+		for(i=1; COLOUR_TOTAL_DAMAGE > 0 && i<=MAX_C_I; i++) {
 
 		if (COLOUR_INDEX_DAMAGE(i)) {
 
@@ -185,7 +185,7 @@ X11_UpdateColorTable_()
 	/*	
 	 * load the colours from the cgmc into the colour map 
 	 */
-	for(i=1; COLOUR_TOTAL_DAMAGE > 0 && i<MAX_C_I; i++) {
+	for(i=1; COLOUR_TOTAL_DAMAGE > 0 && i<=MAX_C_I; i++) {
 
 		if (COLOUR_INDEX_DAMAGE(i)) {
 			/*

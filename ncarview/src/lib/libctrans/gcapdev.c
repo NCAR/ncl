@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.8 1992-02-07 17:39:14 clyne Exp $
+ *	$Id: gcapdev.c,v 1.9 1992-02-10 17:31:54 clyne Exp $
  */
 #include <stdio.h>
 #include <cterror.h>
@@ -574,7 +574,7 @@ void	gcap_update_color_table()
 
 
 	if (MAP_INDIVIDUAL) {
-	for(i=0; COLOUR_TOTAL_DAMAGE > 0 && i < MAX_C_I; i++) {
+	for(i=0; COLOUR_TOTAL_DAMAGE > 0 && i<=MAX_C_I; i++) {
 
 	if (COLOUR_INDEX_DAMAGE(i)) {
 
@@ -644,7 +644,7 @@ void	gcap_update_color_table()
 
 	skipping = TRUE;
 	defining = FALSE;
-	for(i=0; COLOUR_TOTAL_DAMAGE > 0 && i < MAX_C_I; i++) {
+	for(i=0; COLOUR_TOTAL_DAMAGE > 0 && i<=MAX_C_I; i++) {
 
 		if (COLOUR_INDEX_DAMAGE(i)) {
 			COLOUR_TOTAL_DAMAGE--;

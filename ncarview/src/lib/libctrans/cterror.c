@@ -1,5 +1,5 @@
 /*
- *	$Id: cterror.c,v 1.9 1992-01-24 16:31:47 clyne Exp $
+ *	$Id: cterror.c,v 1.10 1992-02-10 17:31:46 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -138,7 +138,7 @@ char	*message;
 			if (report != ALL && report != NON_TERM)
 				return;
 
-			(void) fprintf(errfile, "\n%s: ", program_name); 
+			(void) fprintf(errfile, "%s: ", program_name); 
 
 			switch (error) {
 
@@ -261,7 +261,7 @@ char	*message;
 
 			if (report == ALL || report == TERMINAL) {
 
-				(void) fprintf(errfile, "\n%s: ", program_name); 
+				(void) fprintf(errfile, "%s: ", program_name); 
 
 				switch (error) {
 
@@ -427,6 +427,7 @@ init_ct_error(prog_name, file_)
 			perror(program_name);
 			errfile = stderr;
 		}
+		setbuf(errfile, NULL);	/* turn off buffered i/o	*/
 	}
 	else
 		errfile = stderr;

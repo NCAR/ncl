@@ -1,5 +1,5 @@
 /*
- *	$Id: rastdev.c,v 1.6 1991-12-16 11:07:53 clyne Exp $
+ *	$Id: rastdev.c,v 1.7 1992-02-10 17:31:58 clyne Exp $
  */
 #include <stdio.h>
 #include <ncarg_ras.h>
@@ -405,7 +405,7 @@ void	rast_update_color_table()
 	MARKER_COLOUR_DAMAGE = TRUE;
 	LINE_COLOUR_DAMAGE = TRUE;
 
-	for (i=0; COLOUR_TOTAL_DAMAGE > 0 && i<MAX_C_I && i<MAX_COLOR; i++) {
+	for (i=0; COLOUR_TOTAL_DAMAGE > 0 && i<=MAX_C_I && i<MAX_COLOR; i++) {
 
 		if (COLOUR_INDEX_DAMAGE(i)) {
 			colorTab.rgb[i].red =  COLOUR_INDEX_RED(i);
