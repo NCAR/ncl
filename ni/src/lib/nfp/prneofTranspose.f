@@ -184,10 +184,11 @@ c EXPLICITLY INITALIZE
 
           DO NC = 1,NCOL
               EVEC(NC,NE)  = XMSG
-              IF(NC.LE.NCSTA) THEN
-                 WEVEC(NC,NE) = XMSG
-              END IF
           END DO
+
+          DO NC = 1,NCSTA 
+              WEVEC(NC,NE) = XMSG
+          END DO 
 
           DO NR = 1,NROW 
               W2D(NR,NE)  = XMSG
