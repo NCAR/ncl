@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.9 1996-05-09 23:30:31 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.10 1996-05-10 23:51:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1832,6 +1832,7 @@ NclSelectionRecord *sel_rec;
 	thevalobj->multi_obj.cblist = _NhlCBCreate(0,NULL,NULL);
 	thevalobj->multi_obj.crecs= (HLUMDCalRec**)NclMalloc(sizeof(HLUMDCalRec*)*thevalobj->multidval.totalelements);
 	for(i = 0; i<thevalobj->multidval.totalelements; i++) {
+		thevalobj->multi_obj.crecs[i] = NULL;
 		tmp_ho = (NclHLUObj)_NclGetObj(obj_ids[i]);
 		if((tmp_ho != NULL)&&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
 			(void)_NclAddParent((NclObj)tmp_ho,(NclObj)thevalobj);
