@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.4 1991-09-10 09:23:23 clyne Exp $
+ *	$Id: rasview.c,v 1.5 1992-02-13 18:42:04 clyne Exp $
  */
 /*
  *	rasview.c
@@ -25,6 +25,7 @@
 static	struct	{
 	StringType_	palette;	/* color palette		*/
 	BoolType_	quiet;		/* quiet or verbose mode	*/
+	BoolType_	version;	/* print version		*/
 	} commLineOpt;
 
 /*
@@ -33,6 +34,7 @@ static	struct	{
 static	OptDescRec	set_options[] = {
 	{"palette", OptSepArg, NULL},
 	{"quiet", OptIsArg, "false"},
+	{"Version", OptIsArg, "false"},
 	{NULL}
 };
 	
@@ -44,6 +46,9 @@ static	Option	get_options[] = {
 						sizeof (StringType_)
 	},
 	{"quiet", BoolType, (unsigned long) &(commLineOpt.quiet),
+						sizeof (BoolType_)
+	},
+	{"Version", BoolType, (unsigned long) &(commLineOpt.version),
 						sizeof (BoolType_)
 	},
 	{
@@ -85,6 +90,10 @@ main(argc, argv)
 	pal_name = commLineOpt.palette;
 	verbose = ! commLineOpt.quiet;
 
+	if (commLineOpt.version) {
+		PrintVersion(program_name);
+		exit(0);
+	}
 
 
 	/*
@@ -230,7 +239,7 @@ void	usage(prog_name, message)
 	}
 
 	(void) fprintf(stderr, 
-		"%s: Usage: %s [-pal palette_file] [-quiet] [raster_file...]\n",
+		"%s: Usage: %s [-Version] [-pal palette_file] [-quiet] [raster_file...]\n",
 		prog_name, prog_name);
 
 	exit(1);
