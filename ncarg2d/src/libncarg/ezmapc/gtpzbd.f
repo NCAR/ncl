@@ -1,13 +1,10 @@
 C
-C $Id: gtpzbd.f,v 1.3 1999-04-19 22:09:47 kennison Exp $
+C $Id: gtpzbd.f,v 1.4 1999-06-04 22:04:57 kennison Exp $
 C
       BLOCK DATA GTPZBD
 C
         COMMON /PRINZ0/ IPEMSG,IPELUN,IPPARM,IPPLUN
         SAVE   /PRINZ0/
-C
-        COMMON /SPCSIR/ ISPHER
-        SAVE   /SPCSIR/
 C
         COMMON /STPLCH/ NM27,NM83
           CHARACTER*32 NM27(134),NM83(134)
@@ -26,12 +23,16 @@ C
           INTEGER IPRF
         SAVE   /USGSC1/
 C
-        DATA IPRF   / 0 /
-        DATA IPEMSG / 1 /
-        DATA IPELUN / 6 /
-        DATA IPPARM / 1 /
-        DATA IPPLUN / 6 /
-        DATA ISPHER / 0 /
+        DATA IPEMSG /    1    /
+        DATA IPELUN /    6    /
+        DATA IPPARM /    1    /
+        DATA IPPLUN /    6    /
+        DATA UTPA   / 15*0.D0 /
+        DATA UUMN   /    0.D0 /
+        DATA UUMX   /    0.D0 /
+        DATA UVMN   /    0.D0 /
+        DATA UVMX   /    0.D0 /
+        DATA IPRF   /    0    /
 C
         DATA NM27(  1),ID27(  1) /'ALABAMA         EAST            ',1/
         DATA (PA27(I,  1),I=1,9) /             0.6378206400000000D+07 ,

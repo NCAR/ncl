@@ -1,50 +1,49 @@
 C
-C $Id: sphddp.f,v 1.1 1999-04-19 22:10:40 kennison Exp $
+C $Id: sphddp.f,v 1.2 1999-06-04 22:05:00 kennison Exp $
 C
-      SUBROUTINE SPHDDP(ISPH,PARM)
+      SUBROUTINE SPHDDP (ISPH,PARM)
 C
-C     SUBROUTINE TO COMPUTE SPHEROID PARAMETERS
+C Subroutine to compute spheroid parameters.  ISPH is a spheroid code,
+C as follows:
 C
-C     ISPH IS THE SPHEROID CODE FROM THE FOLLOWING LIST:
-C     0 = CLARKE 1866           1 = CLARKE 1880
-C     2 = BESSEL                3 = NEW INTERNATIONAL 1967
-C     4 = INTERNATIONAL 1909    5 = WGS 72
-C     6 = EVEREST               7 = WGS 66
-C     8 = GRS 1980              9 = AIRY
-C    10 = MODIFIED EVEREST     11 = MODIFIED AIRY
-C    12 = WGS 84               13 = SOUTHEAST ASIA
-C    14 = AUSTRALIAN NATIONAL  15 = KRASSOVSKY
-C    16 = HOUGH                17 = MERCURY 1960
-C    18 = MODIFIED MERC 1968   19 = SPHERE OF RADIUS 6370997 M
+C   0 = Clarke 1866             10 = Modified Everest
+C   1 = Clarke 1880             11 = Modified Airy
+C   2 = Bessel                  12 = WGS 84
+C   3 = New International 1967  13 = Southeast Asia
+C   4 = International 1909      14 = Australian National
+C   5 = WGS 72                  15 = Krassovsky
+C   6 = Everest                 16 = Hough
+C   7 = WGS 66                  17 = Mercury 1960
+C   8 = GRS 1980                18 = Modified Mercury 1968
+C   9 = Airy                    19 = Sphere of radius 6,370,997 meters
 C
-C    PARM IS ARRAY OF PROJECTION PARAMETERS:
-C       PARM(1) IS THE SEMI-MAJOR AXIS
-C       PARM(2) IS THE ECCENTRICITY SQUARED
+C PARM is the array of projection parameters; in particular,
 C
-C     IF ISPH IS NEGATIVE, USER SPECIFIED PROJECTION PARAMETERS ARE TO
-C     DEFINE THE RADIUS OF SPHERE OR ELLIPSOID CONSTANTS AS APPROPRIATE
+C   PARM(1) is the semi-major axis
+C   PARM(2) is the eccentricity squared
 C
-C     IF ISPH = 0 , THE DEFAULT IS RESET TO CLARKE 1866
-C
-C ****                                                             *****
+C If ISPH is negative, user-specified values of these must be supplied;
+C otherwise, the values are returned.
 C
       IMPLICIT DOUBLE PRECISION (A-Z)
       INTEGER ISPH,JSPH
       DIMENSION PARM(15),AXIS(20),BXIS(20)
 C
       COMMON /ELLPDP/ AZ,EZ,ESZ,E0Z,E1Z,E2Z,E3Z,E4Z
+      SAVE   /ELLPDP/
+C
       COMMON /SPHRDP/ AZZ
+      SAVE   /SPHRDP/
+C
       COMMON /ERRMZ0/ IERR
         INTEGER IERR
       SAVE   /ERRMZ0/
+C
       COMMON /PRINZ0/ IPEMSG,IPELUN,IPPARM,IPPLUN
         INTEGER IPEMSG,IPELUN,IPPARM,IPPLUN
       SAVE   /PRINZ0/
-      COMMON /PROJZ0/ IPRO
-        INTEGER IPRO
-      SAVE   /PROJZ0/
 C
-      DATA ZERO,ONE /0.0D0,1.0D0/
+      DATA ZERO,ONE,TEN / 0.D0 , 1.D0 , 1.D1 /
 C
       DATA AXIS / 6378206.400000D0,6378249.145000D0,6377397.155000D0,
      .            6378157.500000D0,6378388.000000D0,6378135.000000D0,
@@ -62,92 +61,57 @@ C
      .            6356863.018800D0,6356794.343479D0,6356784.283666D0,
      .            6356768.337303D0,6370997.000000D0 /
 C
-      IF (ISPH.GE.0) GO TO 5
+C Compute A and B (the lengths of the semi-major and semi-minor axes),
+C and ES (the square of the eccentricity).  Note that, if one sets ISPH
+C less than zero, one can specify, in PARM(1) and PARM(2), "a" and "0"
+C (implying a sphere of radius "a"), "a" and "b" (implying an ellipsoid
+C with semi-major and semi-minor axes of lengths "a" and "b", or "a" and
+C "e**2" (implying an ellipsoid with a semi-major axis of length "a" and
+C eccentricity squared "e**2"); in any of these cases, the numbers can
+C be given in either order.  (It is assumed, however, that "a" is not
+C less than 1 and that "e**2" is not greater than "a/10".
 C
-C     INITIALIZE USER SPECIFIED SPHERE AND ELLIPSOID PARAMETERS
-C
-      AZZ = ZERO
-C
-C     FETCH FIRST TWO USER SPECIFIED PROJECTION PARAMETERS
-C
-      A = ABS(PARM(1))
-      B = ABS(PARM(2))
-      IF (A .GT. ZERO .AND. B .GT. ZERO) GO TO 13
-      IF (A .GT. ZERO .AND. B .LE. ZERO) GO TO 12
-      IF (A .LE. ZERO .AND. B .GT. ZERO) GO TO 11
-C
-C     DEFAULT NORMAL SPHERE AND CLARKE 1866 ELLIPSOID
-C
-      JSPH = 1
-      GO TO 10
-C
-C     DEFAULT CLARKE 1866 ELLIPSOID
-C
-   11 A = AXIS(1)
-      B = BXIS(1)
-      GO TO 14
-C
-C     USER SPECIFIED RADIUS OF SPHERE
-C
-   12 AZZ = A
-      GO TO 15
-C
-C     USER SPECIFIED SEMI-MAJOR AND SEMI-MINOR AXES OF ELLIPSOID
-C
-   13 IF (B .LE. ONE) GO TO 15
-   14 ES = ONE - (B / A)**2
-      GO TO 16
-C
-C     USER SPECIFIED SEMI-MAJOR AXIS AND ECCENTRICITY SQUARED
-C
-   15 ES = B
-   16 IF (AZ.NE.A.OR.ESZ.NE.ES) THEN
-         AZ = A
-         ESZ = ES
-         EZ  = SQRT(ES)
-         E0Z = E0FNDP(ES)
-         E1Z = E1FNDP(ES)
-         E2Z = E2FNDP(ES)
-         E3Z = E3FNDP(ES)
-         E4Z = E4FNDP(EZ)
-      END IF
-      PARM(1) = A
-      PARM(2) = ES
-      RETURN
-C
-C     CHECK FOR VALID SPHEROID SELECTION
-C
-    5 IF (PARM(1).NE.ZERO.AND.IPRO.NE.1) RETURN
-      JSPH = ABS(ISPH) + 1
-      IF (JSPH.LE.20) GO TO 10
-      IERR = 999
-      IF (IPEMSG .EQ. 0) WRITE (IPELUN,1) ISPH
-    1 FORMAT(/' ERROR SPHDDP:  SPHEROID CODE OF ',I5,' RESET TO 0')
-      ISPH = 0
-      JSPH = 1
-C
-C     RETRIEVE A AND B AXES FOR SELECTED SPHEROID
-C
-   10 A = AXIS(JSPH)
-      B = BXIS(JSPH)
-      ES = ONE - (B / A)**2
-C
-C     SET COMMON BLOCK PARAMETERS FOR SELECTED SPHEROID
-C
-      AZZ = 6370997.0D0
-      IF (AZ.NE.A.OR.ESZ.NE.ES) THEN
-         EZ  = SQRT(ES)
-         E0Z = E0FNDP(ES)
-         E1Z = E1FNDP(ES)
-         E2Z = E2FNDP(ES)
-         E3Z = E3FNDP(ES)
-         E4Z = E4FNDP(EZ)
-         AZ  = A
-         ESZ = ES
-         IF (ES.EQ.ZERO) AZZ=A
+      IF (ISPH.LT.0) THEN
+        A=MAX(ABS(PARM(1)),ABS(PARM(2)))
+        B=MIN(ABS(PARM(1)),ABS(PARM(2)))
+        ES=ONE-(B/A)**2
+        IF (A.EQ.ZERO) THEN
+          A=AXIS(1)
+          B=BXIS(1)
+          ES=ONE-(B/A)**2
+        ELSE IF (B.EQ.ZERO) then
+          B=A
+          ES=ZERO
+        ELSE IF (B.LT.A/TEN) THEN
+          ES=B
+          B=A*SQRT(ONE-ES)
+        END IF
+      ELSE
+        A=AXIS(MAX(1,MIN(20,ISPH+1)))
+        B=BXIS(MAX(1,MIN(20,ISPH+1)))
+        ES=ONE-(B/A)**2
       END IF
 C
-      PARM(1) = A
-      PARM(2) = ES
+C Transfer the appropriate values to common blocks.
+C
+      AZ=A
+      AZZ=A
+      ESZ=ES
+      EZ=SQRT(ES)
+      E0Z=E0FNDP(ES)
+      E1Z=E1FNDP(ES)
+      E2Z=E2FNDP(ES)
+      E3Z=E3FNDP(ES)
+      E4Z=E4FNDP(EZ)
+C
+C Pass the length of the semi-major axis and the square of the
+C eccentricity back to the caller.
+C
+      PARM(1)=A
+      PARM(2)=ES
+C
+C Done.
+C
       RETURN
+C
       END

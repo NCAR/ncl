@@ -1,7 +1,9 @@
 C
-C $Id: mputis.f,v 1.1 1999-04-19 22:09:57 kennison Exp $
+C $Id: mputis.f,v 1.2 1999-06-04 22:04:58 kennison Exp $
 C
       SUBROUTINE MPUTIS (UVAL,VVAL,RLAT,RLON)
+C
+C Given UVAL and VVAL, in meters, return RLAT and RLON, in degrees.
 C
         REAL UVAL,VVAL,RLAT,RLON
 C
@@ -9,9 +11,6 @@ C Declare common blocks required to communicate with USGS code.
 C
         COMMON /ERRMZ0/ IERR
         SAVE   /ERRMZ0/
-C
-        COMMON /PROJZ0/ IPRO
-        SAVE   /PROJZ0/
 C
         COMMON /USGSC1/ UTPA(15),UUMN,UUMX,UVMN,UVMX,IPRF
           DOUBLE PRECISION UTPA,UUMN,UUMX,UVMN,UVMX
@@ -31,22 +30,26 @@ C
         DATA DTOR / .017453292519943E0 /
         DATA RTOD / 57.2957795130823E0 /
 C
-C Given UVAL and VVAL, in meters, return RLAT and RLON, in degrees.
+C If the USGS package is initialized, zero the error flag; otherwise,
+C take an error exit.
+C
+        IF (IPRF.GE.3.AND.IPRF.LE.23) THEN
+          IERR=0
+        ELSE
+          IERR=1
+          RLAT=1.E12
+          RLON=1.E12
+          RETURN
+        END IF
+C
+C Generate coordinates for projection routine.
 C
         CRDI(1)=UVAL
         CRDI(2)=VVAL
 C
-        GO TO (101,102,103,104,105,106,107,108,109,110,
+        GO TO (        103,104,105,106,107,108,109,110,
      +         111,112,113,114,115,116,117,118,119,120,
-     +         121,122,123                             ) , IPRO
-C
-  101   CALL PJ01SP (CRDI,CRDO,1)
-        IF (IERR.EQ.0) CALL PJ01SP (CRDO,CRDT,0)
-        GO TO 201
-C
-  102   CALL PJ02SP (CRDI,CRDO,1)
-        IF (IERR.EQ.0) CALL PJ02SP (CRDO,CRDT,0)
-        GO TO 201
+     +         121,122,123                             ) , IPRF-2
 C
   103   CALL PJ03SP (CRDI,CRDO,1)
         IF (IERR.EQ.0) CALL PJ03SP (CRDO,CRDT,0)
