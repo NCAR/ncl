@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.3 1993-01-09 02:04:59 fred Exp $
+#	$Id: yMakefile,v 1.4 1993-01-09 23:58:35 fred Exp $
 #
 NCARG	= ../../../..
 
@@ -16,7 +16,7 @@ GENERIC_SRCS = \
 gactm.f   gacwk.f   gaspar.f  gatelm.f  gca.f     gcelcd.f  gceldc.f  gceldr.f \
 gclks.f   gclrwk.f  gclsg.f   gclwk.f   gcrsg.f   gcsgwk.f  gdawk.f   gdsg.f \
 geclks.f  gelms.f   genneg.f  gerhnd.f  gerlog.f  gesc.f    gescfn.f  gevtm.f \
-gfa.f     gfilat.f  ggdp.f    ggkwdr.f  ggtitm.f  giitm.f   ginst.f   gksbd.f \
+gfa.f     gfilat.f  ggdp.f    ggtitm.f  giitm.f   ginst.f   gksbd.f \
 gmarat.f  gninst.f  gnpart.f  gopdec.f  gopks.f   gopwk.f   gpl.f     gpm.f \
 gpolat.f  gprec.f   gputpt.f  gqacwk.f  gqasf.f   gqcf.f    gqchb.f   gqchh.f \
 gqchsp.f  gqchup.f  gqchw.f   gqchxp.f  gqclip.f  gqcntn.f  gqcr.f    gqdsp.f \
@@ -40,7 +40,7 @@ GENERIC_OBJS = \
 gactm.o   gacwk.o   gaspar.o  gatelm.o  gca.o     gcelcd.o  gceldc.o  gceldr.o \
 gclks.o   gclrwk.o  gclsg.o   gclwk.o   gcrsg.o   gcsgwk.o  gdawk.o   gdsg.o \
 geclks.o  gelms.o   genneg.o  gerhnd.o  gerlog.o  gesc.o    gescfn.o  gevtm.o \
-gfa.o     gfilat.o  ggdp.o    ggkwdr.o  ggtitm.o  giitm.o   ginst.o   gksbd.o \
+gfa.o     gfilat.o  ggdp.o    ggtitm.o  giitm.o   ginst.o   gksbd.o \
 gmarat.o  gninst.o  gnpart.o  gopdec.o  gopks.o   gopwk.o   gpl.o     gpm.o \
 gpolat.o  gprec.o   gputpt.o  gqacwk.o  gqasf.o   gqcf.o    gqchb.o   gqchh.o \
 gqchsp.o  gqchup.o  gqchw.o   gqchxp.o  gqclip.o  gqcntn.o  gqcr.o    gqdsp.o \
@@ -195,8 +195,6 @@ gfilat.o : gfilat.f \
  
 ggdp.o : ggdp.f \
    gkscom.h 
- 
-ggkwdr.o : ggkwdr.f 
  
 ggtitm.o : ggtitm.f \
    gkscom.h 
