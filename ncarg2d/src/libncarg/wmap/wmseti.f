@@ -1,5 +1,5 @@
 C
-C	$Id: wmseti.f,v 1.3 1994-10-14 01:24:11 fred Exp $
+C	$Id: wmseti.f,v 1.4 1994-12-16 17:52:01 fred Exp $
 C
       SUBROUTINE WMSETI (CNP,IVP)
 C
@@ -220,63 +220,63 @@ C
         ISUNC1 = IVP
         GO TO 120
 C
-C  SC2 - color index for center of sun symbol.
+C  SC2 - color index for the points of the sun symbol.
 C
       ELSE IF (CNP(1:3).EQ.'SC2' .OR. CNP(1:3).EQ.'sc2' .OR.
      +    CNP(1:3).EQ.'Sc2') THEN
         ISUNC2 = IVP
         GO TO 120
 C
-C  SC3 - color index for center of sun symbol.
+C  SC3 - color index for the outline of the sun symbol.
 C
       ELSE IF (CNP(1:3).EQ.'SC3' .OR. CNP(1:3).EQ.'sc3' .OR.
      +    CNP(1:3).EQ.'Sc3') THEN
         ISUNC3 = IVP
         GO TO 120
 C
-C  SC4 - color index for center of sun symbol.
+C  SC4 - color index for shadow of the sun symbol.
 C
       ELSE IF (CNP(1:3).EQ.'SC4' .OR. CNP(1:3).EQ.'sc4' .OR.
      +    CNP(1:3).EQ.'Sc4') THEN
         ISUNC4 = IVP
         GO TO 120
 C
-C  CC1 - color index for cloud symbol.
+C  CC1 - color index for interior of the cloud symbol.
 C
       ELSE IF (CNP(1:3).EQ.'CC1' .OR. CNP(1:3).EQ.'cc1' .OR.
      +    CNP(1:3).EQ.'Cc1') THEN
         ICLDC1 = IVP
         GO TO 120
 C
-C  CC2 - color index for cloud symbol.
+C  CC2 - color index for the outline of the cloud symbol.
 C
       ELSE IF (CNP(1:3).EQ.'CC2' .OR. CNP(1:3).EQ.'cc2' .OR.
      +    CNP(1:3).EQ.'Cc2') THEN
         ICLDC2 = IVP
         GO TO 120
 C
-C  CC3 - color index for cloud symbol.
+C  CC3 - color index for shadow of the cloud symbol.
 C
       ELSE IF (CNP(1:3).EQ.'CC3' .OR. CNP(1:3).EQ.'cc3' .OR.
      +    CNP(1:3).EQ.'Cc3') THEN
         ICLDC3 = IVP
         GO TO 120
 C
-C  LC1 - color index for lightening bolt symbol.
+C  LC1 - color index for the interior of the lightening bolt symbol.
 C
       ELSE IF (CNP(1:3).EQ.'LC1' .OR. CNP(1:3).EQ.'lc1' .OR.
      +    CNP(1:3).EQ.'Lc1') THEN
         ILTNC1 = IVP
         GO TO 120
 C
-C  LC2 - color index for lightening bolt symbol.
+C  LC2 - color index for the outline of the lightening bolt symbol.
 C
       ELSE IF (CNP(1:3).EQ.'LC2' .OR. CNP(1:3).EQ.'lc2' .OR.
      +    CNP(1:3).EQ.'Lc2') THEN
         ILTNC2 = IVP
         GO TO 120
 C
-C  LC3 - color index for lightening bolt symbol.
+C  LC3 - color index for the shadow of the lightening bolt symbol.
 C
       ELSE IF (CNP(1:3).EQ.'LC3' .OR. CNP(1:3).EQ.'lc3' .OR.
      +    CNP(1:3).EQ.'Lc3') THEN
@@ -295,6 +295,20 @@ C
       ELSE IF (CNP(1:3).EQ.'CFC' .OR. CNP(1:3).EQ.'cfc' .OR.
      +    CNP(1:3).EQ.'Cfc') THEN
         ICOLDC = IVP
+        GO TO 120
+C
+C  T1C - color index for alternate colors of tropical front.
+C
+      ELSE IF (CNP(1:3).EQ.'T1C' .OR. CNP(1:3).EQ.'t1c' .OR.
+     +    CNP(1:3).EQ.'T1c') THEN
+        ITRO1C = IVP
+        GO TO 120
+C
+C  T2C - another color index for alternate colors of tropical front.
+C
+      ELSE IF (CNP(1:3).EQ.'T2C' .OR. CNP(1:3).EQ.'t2c' .OR.
+     +    CNP(1:3).EQ.'T2c') THEN
+        ITRO2C = IVP
         GO TO 120
 C
 C  HIS - shadow color for high symbols.
@@ -388,7 +402,7 @@ C
         IAROWC = IVP
         GO TO 120
 C
-C  AWC - arrow shadow color.
+C  ASC - arrow shadow color.
 C
       ELSE IF (CNP(1:3).EQ.'ASC' .OR. CNP(1:3).EQ.'asc' .OR.
      +    CNP(1:3).EQ.'Asc') THEN

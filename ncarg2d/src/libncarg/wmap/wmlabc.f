@@ -1,5 +1,5 @@
 C
-C	$Id: wmlabc.f,v 1.2 1994-10-14 01:24:02 fred Exp $
+C	$Id: wmlabc.f,v 1.3 1994-12-16 17:51:48 fred Exp $
 C
       SUBROUTINE WMLABC(X,Y,CITY,TEMPS) 
 C
@@ -19,6 +19,7 @@ C
       CALL GQPLCI(IER,ILCLRO)
       CALL GSFACI(ICOLOR)
       CALL GSPLCI(ICOLOR)
+      CALL GSFAIS(1)
 C
 C  Convert X and Y to NDC and work in NDC space.
 C
@@ -31,23 +32,29 @@ C
 C
 C  Save Plotchar parameters.
 C
-      CALL PCGETI ('CC - character color',ICCO)
       CALL PCGETI ('FN - font name',IFNO)
 C
 C  Draw the city label and daily hi/lows.
 C
       GAP = .9*SIZEL
-      CALL PCSETI ('CC - character color',ICOLOR)
       CALL PCSETI ('FN - font name',22)
+C
       CALL WMGETI ('RBS',IRBSO)
+      CALL WMGETI ('RLS',IRLSO)
+      CALL WMGETI ('ROS',IROSO)
+C
       CALL WMSETI ('RBS',IBGCTY)
+      CALL WMSETI ('RLS',-1)
+      CALL WMSETI ('ROS',-1)
+C
       CALL WMCHBG (XNDC,YNDC+0.5*(GAP+SIZEL),CITY,SIZEL)
       CALL WMCHBG (XNDC,YNDC-0.5*(GAP+SIZEL),TEMPS,0.9*SIZEL)
       CALL WMSETI ('RBS',IRBSO)
+      CALL WMSETI ('RLS',IRLSO)
+      CALL WMSETI ('ROS',IROSO)
 C
 C  Restore Plotchar parameters.
 C
-      CALL PCSETI ('CC',ICCO)
       CALL PCSETI ('FN',IFNO)
 C
 C  Restore GKS environment.

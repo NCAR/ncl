@@ -1,5 +1,5 @@
 C
-C	$Id: wmblda.f,v 1.5 1994-10-25 22:24:09 fred Exp $
+C	$Id: wmblda.f,v 1.6 1994-12-16 17:51:36 fred Exp $
 C
       BLOCKDATA WMBLDA
 C
@@ -21,9 +21,10 @@ C
 C
 C  User override for number of symbols on a front line.
 C
-      DATA NUMSYO/0/
+      DATA NUMSYO/-1/
 C
-C  Front type (1=cold, 2=warm, 3=stationary, 4=occluded.
+C  Front type (1=cold, 2=warm, 3=stationary, 4=occluded, 5=instability,
+C              6=intertropical, 7=convergence).
 C
       DATA IFRONT/2/
 C
@@ -170,6 +171,10 @@ C
 C  Color indices for regional weather label boxes.
 C
       DATA IRGLC1,IRGLC2,IRGLC3,IRGLC4,IRGLC5/1,0,1,1,-1/
+C
+C  Color indices for tropical front alternate segments in dashed line.
+C
+      DATA ITRO1C,ITRO2C/1,1/
 C
 C  Arrow color, arrow shadow color, arrow outline color.
 C

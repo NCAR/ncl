@@ -1,5 +1,5 @@
 C
-C	$Id: wmlabt.f,v 1.3 1994-10-14 01:24:06 fred Exp $
+C	$Id: wmlabt.f,v 1.4 1994-12-16 17:51:51 fred Exp $
 C
       SUBROUTINE WMLABT(X,Y,LABEL,IFLG)
 C
@@ -46,6 +46,7 @@ C
       CALL GSFAIS(1)
       CALL GSFACI(ICOLOR)
       CALL GSPLCI(ICOLOR)
+      CALL PCGETI('FN',IFNO)
 C
 C  Convert X and Y to NDC and work in NDC space.
 C
@@ -70,7 +71,7 @@ C
 C  Scale the length of an arrow to leave space between the tail of
 C  the arrow and the label.
 C
-      ELEN = 1.25*ARWSIZ
+      ELEN = 1.25*ARWSIZ*ARWLEN
 C
 C  Compute new coordinate positions to reposition the label so that
 C  the arrow will have its tip at (X,Y).
@@ -129,7 +130,10 @@ C
 C
 C  Draw the label.
 C
+      CALL WMGETR('CMG',CMGO)
+      CALL WMSETR('CMG',TMPMRG)
       CALL WMCHBG(XP,YP,LABEL,SIZEL)
+      CALL WMSETR('CMG',CMGO)
 C
       IF (JFLG .NE. 0) THEN
 C
@@ -148,6 +152,7 @@ C
       CALL GSPLCI(ILCLRO)
       CALL GSELNT(NTRO)
       CALL WMSETR('ARD',ARDO)
+      CALL PCSETI('FN',IFNO)
 C
       RETURN
       END

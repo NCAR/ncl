@@ -1,11 +1,10 @@
 C
-C	$Id: wmlgnd.f,v 1.3 1994-10-14 01:24:09 fred Exp $
+C	$Id: wmlgnd.f,v 1.4 1994-12-16 17:51:55 fred Exp $
 C
       SUBROUTINE WMLGND(X,Y,NTYPE,IROWS,ICOLS)
 C
-C  Subroutine for producing legends.  The world coordinate (X,Y)
-C  specifies the lower left corner of the legend.  NTYPE specifies
-C  what legends are to be drawn:
+C  Subroutine for producing legends. NTYPE specifies what legends 
+C  are to be drawn:
 C
 C    NTYPE = 1  Plot the legend for the weather types.  There are 
 C               six weather types: showers; T-storms; rain; flurries; 

@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrsm.f,v 1.3 1994-10-14 01:23:56 fred Exp $
+C	$Id: wmdrsm.f,v 1.4 1994-12-16 17:51:44 fred Exp $
 C
       SUBROUTINE WMDRSM(NUMSYM,DSTBTW,IPTS,XIN,YIN,ARCLEN,XT,YT,IPOSIT)       
 C
@@ -196,12 +196,14 @@ C
           NF = NOUT
         ENDIF
         IF (IALOFT .NE. 0) THEN
+          ICOLO = ICOLOR
           IF (IABS(ISTYPE(I)) .EQ. 2) THEN
-            CALL GSPLCI(IWARMC)
+            ICOLOR = IWARMC
           ELSE IF (IABS(ISTYPE(I)) .EQ. 1) THEN
-            CALL GSPLCI(ICOLDC)
+            ICOLOR = ICOLDC
           ENDIF
           CALL WMLGPL(NF,XT,YT)
+          ICOLOR = ICOLO
         ELSE IF(IFRONT.EQ.7) THEN
           CALL GQLWSC(IER,OSCL)
           CALL GSLWSC(DLINWD)

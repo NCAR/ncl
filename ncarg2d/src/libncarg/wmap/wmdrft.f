@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrft.f,v 1.3 1994-10-14 01:23:52 fred Exp $
+C	$Id: wmdrft.f,v 1.4 1994-12-16 17:51:42 fred Exp $
 C
       SUBROUTINE WMDRFT(N,X,Y)
 C
@@ -97,13 +97,16 @@ C
 C
 C  Just draw line if squall or tropical front.
 C
-      IF (IFRONT.EQ.5 .OR. IFRONT.EQ.6) GO TO 60
+      IF (IFRONT.EQ.5 .OR. IFRONT.EQ.6) THEN
+        CALL WMLGPL(NPTS,XOUT,YOUT)
+        GO TO 80
+      ENDIF
 C
 C  Calculate the number of symbols along the curve.
 C
       DSTBTW = BETDST
       CRVLEN = ALEN(NPTS)
-      IF (NUMSYO .GT. 0) THEN
+      IF (NUMSYO .GE. 0) THEN
         NUMSYM = MIN(NUMSYO,MAXSYM)
       ELSE
         NUMSYM = 1
@@ -150,7 +153,9 @@ C
 C
 C  Draw the symbols along the front.
 C
-      CALL WMDRSM(NUMSYM,DSTBTW,NPTS,XOUT,YOUT,ALEN,XS,YS,IPOSIT)
+      IF (NUMSYM .GT. 0) THEN
+        CALL WMDRSM(NUMSYM,DSTBTW,NPTS,XOUT,YOUT,ALEN,XS,YS,IPOSIT)
+      ENDIF
 C
    60 CONTINUE
 C
@@ -166,6 +171,24 @@ C
           ENDIF
           CALL WMLGPL(NPTS,XOUT,YOUT)
         ELSE
+C
+C  Since the spline curve will be drawn in segments (so that 
+C  the proper colors can be applied) we need to guard against 
+C  possible notches in thick curves by drawing the entire spline
+C  first.
+C 
+          IF (IFRONT.GE.1 .AND. IFRONT.LE.4) THEN
+            ICOLOR = IWARMC
+            IF (IFRONT .EQ. 1) THEN
+              ICOLOR = ICOLDC
+            ELSE
+              ICOLOR = IWARMC
+            ENDIF
+            CALL WMLGPL(NPTS,XOUT,YOUT)
+          ENDIF
+C
+C  Now draw the segments.
+C
           IBL = 1
           DO 70 J=1,NUMSYM-1
             IF (IABS(ISTYPE(J)) .EQ. 1) THEN
@@ -191,6 +214,7 @@ C
 C  Restore the original normalization transformation, interior style,
 C  linewidth, fill color, line color.
 C
+  80  CONTINUE
       CALL GSELNT(NTRO)
       CALL GSFAIS(INSTYO)
       CALL GSLWSC(RLNSCO)

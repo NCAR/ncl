@@ -1,5 +1,5 @@
 C
-C	$Id: wmsetc.f,v 1.2 1994-09-23 17:13:59 fred Exp $
+C	$Id: wmsetc.f,v 1.3 1994-12-16 17:51:59 fred Exp $
 C
       SUBROUTINE WMSETC (CNP,CVP)
 C
@@ -38,7 +38,8 @@ C
         GO TO 120
       ENDIF
 C
-C  FRO - Front type (one of 'WARM', 'COLD', 'OCCLUDED' or 'STATIONARY').       
+C  FRO - Front type (one of 'WARM', 'COLD', 'OCCLUDED', 'STATIONARY',
+C        'SQUALL', 'TROPICAL', 'CONVERGENCE').       
 C
       IF (CNP(1:3).EQ.'FRO' .OR. CNP(1:3).EQ.'fro' .OR.
      +    CNP(1:3).EQ.'Fro') THEN

@@ -1,5 +1,5 @@
 C
-C	$Id: wmrgwt.f,v 1.2 1994-10-25 23:35:41 fred Exp $
+C	$Id: wmrgwt.f,v 1.3 1994-12-16 17:51:58 fred Exp $
 C
       SUBROUTINE WMRGWT(N,X,Y,IFNT,NASC)
 C
@@ -125,8 +125,8 @@ C  from dropping out on low-resolution screens.
 C
       SEEDX = XRL+0.5*CHRWID/WIDSCL
       SEEDY = YRT-0.5*CHRHIT
-      LXEXT = ((XRR-XRL)/CHRWID)+1
-      LYEXT = ((YRT-YRB)/CHRHIT)+1
+      LXEXT = ((XRR-XRL)/CHRWID)+2
+      LYEXT = ((YRT-YRB)/CHRHIT)+2
       DO 20 J=1,LYEXT
         YP = SEEDY-(J-1)*CHRHIT
         DO 30 I=1,LXEXT

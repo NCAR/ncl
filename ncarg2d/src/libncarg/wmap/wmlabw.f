@@ -1,5 +1,5 @@
 C
-C	$Id: wmlabw.f,v 1.2 1994-10-14 01:24:07 fred Exp $
+C	$Id: wmlabw.f,v 1.3 1994-12-16 17:51:53 fred Exp $
 C
       SUBROUTINE WMLABW(X,Y,LABEL)
 C
@@ -69,8 +69,9 @@ C
       CALL PCSETI ('BC(1) - BOX COLOR - BOX OUTLINE    ',IBC1)
       CALL PCSETI ('BC(2) - BOX COLOR - BOX FILL       ',IBC2)
       CALL PCSETI ('BC(3) - BOX COLOR - BOX SHADOW FILL',IBC3)
-      CALL PCSETI ('OF - outline flag',IFC)
+      CALL PCSETI ('CC - CHARACTER COLOR',ICCO)
       CALL PCSETI ('OC - outline color',IOC)
+      CALL PCSETI ('OF - outline flag',IFC)
       CALL PCSETI ('FN - font number',IFNO)
 C
 C  Restore GKS environment.

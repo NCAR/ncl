@@ -1,15 +1,53 @@
 C
-C	$Id: wmstnm.f,v 1.2 1994-09-12 19:07:40 fred Exp $
+C	$Id: wmstnm.f,v 1.3 1994-12-16 17:52:04 fred Exp $
 C
       SUBROUTINE WMSTNM(X,Y,IMDAT)
 C
 C  This subroutine plots station model data as per the NOAA/WMO
-C  guidlines.  (X,Y) is a world coordinate specifying the center
-C  of the windbarb shaft.  IMDAT is a CHARACTER*5 array of length
-C  9 that contains the coded model data.  The first member of the 
-C  IMDAT array contains IR,IX,H,VV (in that order), and the second
-C  member contains N,DD,FF (in that order).  The remaining members
+C  guidelines.  (X,Y) is a world coordinate specifying the center
+C  of the tail of the windbarb shaft.  IMDAT is a CHARACTER*5 array 
+C  of length 9 that contains the coded model data.  The first member 
+C  of the  IMDAT array contains IR,IX,H,VV (in that order), and the 
+C  second member contains N,DD,FF (in that order).  The remaining members
 C  of IMDAT contain, as their first character, a group identifier.
+C
+C  In a little more detail:
+C
+C     IMDAT(1)( 1: 1) = iR - precipitation data indictor.
+C     IMDAT(1)( 2: 2) = iX - weather data and station type indicator. 
+C     IMDAT(1)( 3: 3) =  h - height above ground of base lowest cloud.
+C     IMDAT(1)( 4: 5) = VV - visibility in miles and fractions.
+C
+C     IMDAT(2)( 1: 1) =  N - total amount of cloud cover.
+C     IMDAT(2)( 2: 3) = dd - direction from which wind is blowing.
+C     IMDAT(2)( 4: 5) = ff - wind speed in knots.
+C
+C     For I=3,9 if IMDAT(I)(1:1) =
+C
+C             '1', then IMDAT(I)(2:2) =  sn - sign of temperature
+C                       IMDAT(I)(3:5) = TTT - current air temperature
+C
+C             '2', then IMDAT(I)(2:2) =  sn - sign of temperature
+C                       IMDAT(I)(3:5) =  Td - dew point
+C
+C             '3', then IMDAT(I)(2:5) =  PO - station pressure
+C
+C             '4', then IMDAT(I)(2:5) =  PPPP - pressure reduced to sea level
+C
+C             '5', then IMDAT(I)(2:2) =   a - characteristic of barograph trace
+C                       IMDAT(I)(3:5) = ppp - pressure change, last 3 hrs.
+C
+C             '6', then IMDAT(I)(2:4) = RRR - precipitation
+C                       IMDAT(I)(5:5) =  tr - time duration of precipitation
+C
+C             '7', then IMDAT(I)(2:3) =  ww - present weather
+C                       IMDAT(I)(4:4) =  W1 - most significant past weather
+C                       IMDAT(I)(5:5) =  W2 - 2nd most significant past weather
+C
+C             '8', then IMDAT(I)(2:2) =  Nh - fraction of sky cover
+C                       IMDAT(I)(3:3) =  CL - cloud type, low clouds
+C                       IMDAT(I)(4:4) =  CM - cloud type, medium clouds
+C                       IMDAT(I)(4:4) =  CH - cloud type, high clouds
 C
       include 'wmcomn.h'
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: wmgeti.f,v 1.4 1994-10-14 01:23:57 fred Exp $
+C	$Id: wmgeti.f,v 1.5 1994-12-16 17:51:46 fred Exp $
 C
       SUBROUTINE WMGETI (CNP,IVP)
 C
@@ -83,7 +83,7 @@ C
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'RBS' .OR. CNP(1:3).EQ.'rbs' .OR. 
      +    CNP(1:3).EQ.'Rbs') THEN
-        IVP = IRBLBKC
+        IVP = IRLBKC
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'DTC' .OR. CNP(1:3).EQ.'dtc' .OR. 
      +    CNP(1:3).EQ.'Dtc') THEN
@@ -152,6 +152,14 @@ C
       ELSE IF (CNP(1:3).EQ.'CFC' .OR. CNP(1:3).EQ.'cfc' .OR. 
      +    CNP(1:3).EQ.'Cfc') THEN
         IVP = ICOLDC
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'T1C' .OR. CNP(1:3).EQ.'t1c' .OR. 
+     +    CNP(1:3).EQ.'T1c') THEN
+        IVP = ITRO1C
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'T2C' .OR. CNP(1:3).EQ.'t2c' .OR. 
+     +    CNP(1:3).EQ.'T2c') THEN
+        IVP = ITRO2C
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'RC1' .OR. CNP(1:3).EQ.'rc1' .OR. 
      +    CNP(1:3).EQ.'Rc1') THEN

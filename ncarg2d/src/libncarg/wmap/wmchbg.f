@@ -1,5 +1,5 @@
 C
-C	$Id: wmchbg.f,v 1.2 1994-10-14 01:23:47 fred Exp $
+C	$Id: wmchbg.f,v 1.3 1994-12-16 17:51:38 fred Exp $
 C
       SUBROUTINE WMCHBG(X,Y,STR,SIZ)
 C
@@ -12,13 +12,12 @@ C
       CHARACTER*1 CTMP
       DIMENSION XBB(5),YBB(5)
 C
-      LCLR = IABS(ICLR)
       CALL PCGETI('TE - save text extent computation flag',ITEOLD)
       CALL PCGETI('SF - shadow flag',ISF)
       CALL PCGETI('SC - shadow color',ISC)
       CALL PCGETR('SX - shadow X offset',OSX)
       CALL PCGETR('SY - shadow Y offset',OSY)
-      CALL PCGETI('CC - charactger color',ICC)
+      CALL PCGETI('CC - character color',ICC)
       CALL PCGETI('OF - outline flag',IOF)
       CALL PCGETI('OC - outline color',IOC)
       CALL PCGETI('FN - font number',IFNO)
@@ -44,6 +43,7 @@ C
             CALL PCGETR ('DR',XR)
             CALL PCGETR ('DB',YB)
             CALL PCGETR ('DT',YT)
+            
             XBB(1) = (XBEG-XL)-CTYMRG
             YBB(1) = (YCEN+YT)+CTYMRG
             XBB(2) = (XBEG+XR)+CTYMRG

@@ -1,5 +1,5 @@
 C
-C	$Id: wmsetr.f,v 1.3 1994-10-14 01:24:12 fred Exp $
+C	$Id: wmsetr.f,v 1.4 1994-12-16 17:52:03 fred Exp $
 C
       SUBROUTINE WMSETR (CNP,RVP)
 C
@@ -187,6 +187,13 @@ C
         SLOPE2 = RVP
         GO TO 120
 C
+C  WBA - Angle wind barb tics make with the wind barb shaft, in degrees.
+C
+      ELSE IF (CNP(1:3).EQ.'WBA' .OR. CNP(1:3).EQ.'wba' .OR.
+     +    CNP(1:3).EQ.'Wba') THEN
+        WBBANG = RVP
+        GO TO 120
+C
 C  WBS - Length of wind barb shafts as a fraction of the maximum
 C        screen width.
 C
@@ -208,14 +215,6 @@ C
       ELSE IF (CNP(1:3).EQ.'WBD' .OR. CNP(1:3).EQ.'wbd' .OR.
      +         CNP(1:3).EQ.'Wbd') THEN
         WBDIST = RVP
-        GO TO 120
-C
-C  WBR - Radius of the larger circle drawn for calm, as a percentage
-C        of the windbarb shaft length.
-C
-      ELSE IF (CNP(1:3).EQ.'WBR' .OR. CNP(1:3).EQ.'wbr' .OR.
-     +         CNP(1:3).EQ.'Wbr') THEN
-        WBCLMR = RVP
         GO TO 120
 C
 C  WBR - Radius of the larger circle drawn for calm, as a percentage

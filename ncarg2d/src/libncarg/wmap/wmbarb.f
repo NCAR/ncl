@@ -1,5 +1,5 @@
 C
-C	$Id: wmbarb.f,v 1.1 1994-09-09 23:54:39 fred Exp $
+C	$Id: wmbarb.f,v 1.2 1994-12-16 17:51:34 fred Exp $
 C
       SUBROUTINE WMBARB(X,Y,U,V)
 C
@@ -101,7 +101,7 @@ C
       YPOS = YEND
       IF (SPEED .LT. 7.5) THEN
 C
-C  Draw a half tic spaced WMDIST down the shaft.
+C  Draw a half tic spaced WBDIST down the shaft.
 C
         XX(1) = XEND-XINC
         YY(1) = YEND-YINC

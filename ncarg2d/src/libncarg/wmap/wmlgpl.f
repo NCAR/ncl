@@ -1,10 +1,9 @@
 C
-C	$Id: wmlgpl.f,v 1.3 1994-09-23 17:13:58 fred Exp $
+C	$Id: wmlgpl.f,v 1.4 1994-12-16 17:51:56 fred Exp $
 C
       SUBROUTINE WMLGPL(N,X,Y)
 C
-C  Draws polylines either using GPL (IWDTYP=0) or WMDRFL
-C  (IWDTYP=1).
+C  Draws polylines either using GPL (IWDTYP=0) or WMDRFL (IWDTYP=1).
 C
       DIMENSION X(N),Y(N)
 C
@@ -31,7 +30,6 @@ C
         CALL DPSETR('LS1',0.0)
         CALL DPSETC('DPT','___:F34X150Y150:7_:F34X150Y150:7___$$$$$$$$$$
      +$$$$$$')
-        CALL GSLWSC(2.)
         CALL DPCURV(X,Y,N)
 C
         CALL GSLWSC(OSCL)
@@ -49,10 +47,14 @@ C
         CALL DPGETR('WOG',OWOG)
         CALL DPGETR('WOS',OWOS)
 C
-        CALL DPSETI('DPS',-7)
-        CALL DPSETR('WOG',.0075)
-        CALL DPSETR('WOS',.0075)
-        CALL DPSETI('DPT',31)
+        CALL DPSETI('DPS',-22)
+        CALL DPSETR('WOG',.007)
+        CALL DPSETR('WOS',.007)
+        CALL DPSETI('DPT',4177920)
+        CALL GSPLCI(ITRO1C)
+        CALL DPCURV(X,Y,N)
+        CALL DPSETI('DPT',2040)
+        CALL GSPLCI(ITRO2C)
         CALL DPCURV(X,Y,N)
 C
         CALL GSLWSC(OSCL)
