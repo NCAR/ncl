@@ -1,5 +1,5 @@
 /*
- *	$Id: rastdev.c,v 1.17 1993-05-13 19:49:38 clyne Exp $
+ *	$Id: rastdev.c,v 1.18 1993-06-24 22:08:13 clyne Exp $
  */
 #include <stdio.h>
 #include <ncarg/ncarg_ras.h>
@@ -433,6 +433,8 @@ int	set_back_colr() {
 	colorTab.rgb[0].blue =  COLOUR_INDEX_BLUE(0);
 
 	Ras_ClearDevice(&cgmc);
+
+	return(0);
 
 }
 
