@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.141 2003-11-25 18:14:13 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.142 2003-11-25 19:45:12 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1141,7 +1141,6 @@ begin
 ;   4. Have a valid lon name that doesn't require a valid units name.
 ;   5. Have a valid units name, but either no or an invalid lon name.
 ;
-
     if(any(data!1.eq.get_allowed_lonnames()))
       if(isatt(data&$data!1$,"units"))
         if(any(data&$data!1$@units.eq.get_allowed_lon_units))
@@ -1201,7 +1200,6 @@ begin
 ;   4. Have a valid lat name that doesn't require a valid units name.
 ;   5. Have a valid units name, but either no or an invalid lat name.
 ;
-
     if(any(data!0.eq.get_allowed_latnames()))
       if(isatt(data&$data!0$,"units"))
         if(any(data&$data!0$@units.eq.get_allowed_lat_units))
@@ -4632,7 +4630,6 @@ map_vpwf, map_vphf, vphf, contour_plot
 begin
 ; Initialize.
     lbar_on        = False    ; Default is no labelbar.
-    zonal_mean_plot= False    ; Default is no zonal mean plot.
     mpres          = True
 
     infolabel_zone = 2        ; Zone for info label (may change later)
@@ -4640,6 +4637,22 @@ begin
     zonal_zone     = 2        ; Zone for zonal means plot
 
     res2 = get_resources(resources)
+
+;
+; Default is no zonal mean plot.
+; Also get min and max X values, if any.
+;
+    zonal_mean_plot = get_res_value(res2,"gsnZonalMean",False)
+    zonal_xmin      = isatt(res2,"gsnZonalMeanXMinF")
+    zonal_xmax      = isatt(res2,"gsnZonalMeanXMaxF")
+
+    if(zonal_xmin) then
+      trxmin = get_res_value(res2,"gsnZonalMeanXMinF",1.)
+    end if
+
+    if(zonal_xmax) then
+      trxmax = get_res_value(res2,"gsnZonalMeanXMaxF",1.)
+    end if
 
 ; Check for cyclic point (default is True if we are not setting both
 ; lon2d/lat2d attributes).
@@ -4669,40 +4682,35 @@ begin
 
 ; Check if a zonal mean plot is desired.
 
-    if(res2.and.isatt(res2,"gsnZonalMean"))
+    if(zonal_mean_plot) then
       if((isdimnamed(datanew,0).and. \
          any(datanew!0.eq.get_allowed_latnames())).and.\
          (isdimnamed(datanew,1).and.\
          any(datanew!1.eq.get_allowed_lonnames())))
-        if(res2@gsnZonalMean)
-          if(isatt(res2,"vpHeightF"))
-            map_vphf = res2@vpHeightF
-          else
-            map_vphf  = 0.7 ; make sure zonalplot will fit in view port
+        if(isatt(res2,"vpHeightF"))
+          map_vphf = res2@vpHeightF
+        else
+          map_vphf  = 0.7 ; make sure zonalplot will fit in view port
 
-            set_attr(res2,"vpHeightF",0.7)
-            set_attr(res2, "vpWidthF",0.7)
-            set_attr(res2,     "vpXF",0.1)
-            set_attr(res2,     "vpYF",0.9)
-
-          end if
-          zonal_mean_plot = True
-          zmeans2 = dim_avg(datanew)
-          if(min(zmeans2).lt.0.and.max(zmeans2).gt.0)
-            nmeans = dimsizes(zmeans2)
-            zmeans = new((/2,nmeans/),typeof(zmeans2))
-            zmeans(0,:) = zmeans2
-            zmeans(1,:) = fspan(0.,0.,nmeans)
-          else
-            zmeans = zmeans2
-          end if
-          delete(zmeans2)
+          set_attr(res2,"vpHeightF",0.7)
+          set_attr(res2, "vpWidthF",0.7)
+          set_attr(res2,     "vpXF",0.1)
+          set_attr(res2,     "vpYF",0.9)
         end if
+        zmeans2 = dim_avg(datanew)
+        if(min(zmeans2).lt.0.and.max(zmeans2).gt.0)
+          nmeans = dimsizes(zmeans2)
+          zmeans = new((/2,nmeans/),typeof(zmeans2))
+          zmeans(0,:) = zmeans2
+          zmeans(1,:) = fspan(0.,0.,nmeans)
+        else
+          zmeans = zmeans2
+        end if
+        delete(zmeans2)
       else
         print("gsn_csm_contour_map_ce: Warning: The resource gsnZonalMean can only be set to True")
         print("if the data has one of the coordinate variables " + get_allowed_latnames() + "and " + get_allowed_lonnames())
       end if
-      delete(res2@gsnZonalMean)
     end if
 
 ; Create some contour plot resources.
@@ -4789,8 +4797,8 @@ begin
 ;
     infolabel_on = get_res_value_keep(cnres,"cnInfoLabelOn",True)
 
-    if(zonal_mean_plot)
-      if(infolabel_on)
+    if(zonal_mean_plot) then
+      if(infolabel_on) then
         infolabel_zone = zonal_zone + 1
         lbar_zone      = zonal_zone + 2
       else
@@ -4918,6 +4926,18 @@ begin
           "tiXAxisOn"              : False
           "tiYAxisOn"              : False
         end create
+
+        if(zonal_xmin) then
+          setvalues xy_object
+            "trXMinF" : trxmin
+          end setvalues
+        end if 
+
+        if(zonal_xmax) then
+          setvalues xy_object
+            "trXMaxF" : trxmax
+          end setvalues
+        end if 
 
 ; Add XY plot as annotation of map plot.
         anno = NhlAddAnnotation(map_object,xy_object)
