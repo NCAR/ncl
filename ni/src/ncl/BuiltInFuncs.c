@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.141 2001-09-28 17:01:35 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.142 2001-12-17 19:02:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -12004,7 +12004,7 @@ NhlErrorTypes _NclICreateFile(void)
 	ncclose(cdfid);
 
 
-        file = _NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,*(NclQuark*)path,1);
+        file = _NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,*(NclQuark*)path,0);
         if(file != NULL) {
                 *id = file->obj.id;
                 out_md = _NclMultiDValnclfileDataCreate(NULL,NULL,Ncl_MultiDValnclfileData,0,id,NULL,1,&dim_size,TEMPORARY,NULL);
