@@ -1,3 +1,6 @@
+C
+C	$Id: bzsetr.f,v 1.2 1992-11-17 19:10:14 fred Exp $
+C
       SUBROUTINE BZSETR(PA,RVAL)
 C
 C Set real-valued parameters for the Bezier curve package.

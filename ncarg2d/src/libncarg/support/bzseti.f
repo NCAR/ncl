@@ -1,3 +1,6 @@
+C
+C	$Id: bzseti.f,v 1.2 1992-11-17 19:10:12 fred Exp $
+C
       SUBROUTINE BZSETI(PA,IVAL)
 C
 C Set integer-valued parameters for the Bezier curve package.

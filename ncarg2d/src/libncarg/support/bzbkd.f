@@ -1,3 +1,6 @@
+C
+C	$Id: bzbkd.f,v 1.2 1992-11-17 19:09:57 fred Exp $
+C
       BLOCKDATA BZBKD
 C
 C  Data for the Bezier curve package.

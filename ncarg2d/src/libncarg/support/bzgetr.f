@@ -1,3 +1,6 @@
+C
+C	$Id: bzgetr.f,v 1.2 1992-11-17 19:10:10 fred Exp $
+C
       SUBROUTINE BZGETR(PA,RVAL)
 C
 C Retrieve real-valued parameters for the Bezier curve package.

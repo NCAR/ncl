@@ -1,3 +1,6 @@
+C
+C	$Id: bzftol.f,v 1.2 1992-11-17 19:10:06 fred Exp $
+C
       REAL FUNCTION BZFTOL(BX,BY)
 C
 C  Returns the maximum undirected distance that the line connecting 

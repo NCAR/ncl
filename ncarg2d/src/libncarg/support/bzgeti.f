@@ -1,3 +1,6 @@
+C
+C	$Id: bzgeti.f,v 1.2 1992-11-17 19:10:08 fred Exp $
+C
       SUBROUTINE BZGETI(PA,IVAL)
 C
 C Retrieve integer-valued parameters for the Bezier curve package.

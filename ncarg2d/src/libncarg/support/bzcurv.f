@@ -1,3 +1,6 @@
+C
+C	$Id: bzcurv.f,v 1.2 1992-11-17 19:10:01 fred Exp $
+C
       SUBROUTINE BZCURV(BXI,BYI,NO,XO,YO,NPTS)
 C
 C  PURPOSE

@@ -1,3 +1,6 @@
+C
+C	$Id: bzfcrv.f,v 1.2 1992-11-17 19:10:04 fred Exp $
+C
       SUBROUTINE BZFCRV(BXI,BYI,NO,XO,YO)
 C
 C  This subroutine takes the four Bezier specification points in

@@ -1,3 +1,6 @@
+C
+C	$Id: bzsubd.f,v 1.2 1992-11-17 19:10:16 fred Exp $
+C
       SUBROUTINE BZSUBD(BX,BY,SX,SY,TX,TY)
 C
 C  Do a midpoint subdivision of the input Bezier curve whose control 

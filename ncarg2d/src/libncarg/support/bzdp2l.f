@@ -1,3 +1,6 @@
+C
+C	$Id: bzdp2l.f,v 1.2 1992-11-17 19:10:02 fred Exp $
+C
       REAL FUNCTION BZDP2L(PX,PY,X1,Y1,X2,Y2)
 C
 C  Calculate the undirected distance from a point (PX,PY) to a line
