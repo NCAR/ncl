@@ -1,5 +1,5 @@
 /*
- *	$Id: hdf.c,v 1.7 1992-03-23 21:45:21 clyne Exp $
+ *	$Id: hdf.c,v 1.8 1992-03-27 00:19:09 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -159,13 +159,6 @@ HDFOpenWrite(name, nx, ny, comment, encoding)
 		(void) strcat(name, TMPFILE);
 		(void) mktemp(name);
 	}
-	else {
-		ras->fd = open(name, O_WRONLY | O_CREAT, 0644);
-		if (ras->fd == -1) {
-			(void) RasterSetError(RAS_E_SYSTEM);
-			return( (Raster *) NULL );
-		}
-	}
 
 	ras->name = (char *) calloc((unsigned) strlen(name) + 1, 1);
 	(void) strcpy(ras->name, name);
@@ -280,6 +273,11 @@ HDFRead(ras)
 
 		status = DFR8getimage(ras->name, ras->data, 
 				ras->nx, ras->ny, pal);
+
+		if (status != 0) {
+			(void) RasterSetError(RAS_E_SYSTEM);
+			return(RAS_ERROR);
+		}
 	}
 		
 	if (ras->map_loaded == False) {
