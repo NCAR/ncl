@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.15 1994-08-25 18:01:13 ethan Exp $
+ *      $Id: defs.h,v 1.16 1994-10-29 00:58:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@ extern "C" {
 #define _NCdefs_h
 
 #define NCL_MAX_DIMENSIONS 32
-#define NCL_MAX_FVARS 128
+#define NCL_MAX_FVARS 512
 #define NCL_MAX_STRING 256
 #define NCL_MAX_ATTRIBUTES 32
 #define NCL_MAX_SYMS_PER_STMNT 300
@@ -55,30 +55,99 @@ typedef struct _NclGenericVal {
 } NclGenericVal;
 
 extern void *NclMalloc(
-#ifdef NhlFuncProto
+#ifdef NhlNeedProto
 unsigned  int	/* size */
 #endif
 );
 
 extern void *NclCalloc(
-#ifdef NhlFuncProto
+#ifdef NhlNeedProto
 unsigned int	/* num */,
 unsigned int	/* size */
 #endif
 );
 
 extern void *NclRealloc(
-#ifdef NhlFuncProto
+#ifdef NhlNeedProto
 void 	*  /* ptr */	,
 unsigned int	/* size */
 #endif
 );
 
 extern NhlErrorTypes NclFree(
-#ifdef NhlFuncProto
+#ifdef NhlNeedProto
 void * /* size */
 #endif
 );
+
+extern FILE* _NclGetOutputStream(
+#ifdef NhlNeedProto
+void
+#endif
+);
+extern FILE* _NclGetInputStream(
+#ifdef NhlNeedProto
+void
+#endif
+);
+extern FILE* _NclGetErrorStream(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+void _NclPushNewInputFile(
+#if NhlNeedProto
+FILE * /*fp*/,
+const char * /*name*/,
+int /*cline_number*/
+#endif
+);
+
+void _NclPushNewInputStr(
+#if NhlNeedProto
+char* /*tmp_input*/,
+const char* /*name*/,
+int /*size*/,
+int /*cline_number*/
+#endif
+);
+
+char *_NclPopInputStr(
+#if NhlNeedProto
+void
+#endif
+);
+
+FILE *_NclPopInputFile(
+#if NhlNeedProto
+void
+#endif
+);
+
+
+typedef int (*NclVaPrintFunc)(
+#ifdef NhlNeedProto
+FILE* /*fp*/,
+const char* /*fmt*/,
+va_list /*arg*/
+#endif
+);
+
+extern void nclfprintf(
+#if	NhlNeedVarArgProto
+	FILE * /*fp*/,
+	char * /*fmt*/,
+	...
+#endif
+);
+
+void _NclSetPrintFunc(
+#if NhlNeedProto
+NclVaPrintFunc thepit
+#endif
+);
+
 
 #endif /*_NCdefs.h*/
 #ifdef __cplusplus

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Keywords.h,v 1.7 1994-07-14 20:45:56 ethan Exp $
+ *      $Id: Keywords.h,v 1.8 1994-10-29 00:57:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 extern "C" {
 #endif
 
-#include "y.tab.h"
+#include "parser.h"
 
 static struct {
         char *keyword;
@@ -73,11 +73,6 @@ static struct {
 /*
 "objdata",	RKEY,
 */
-"FooLayerClass", OBJTYPE,
-"testfunc",	FUNC,
-"testvar",	VAR,
-"testproc",	PROC,
-"testfile",	DFILE,
 (char*)NULL,(int)NULL
 };
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.3 1994-07-27 20:30:37 ethan Exp $
+ *      $Id: VarSupport.c,v 1.4 1994-10-29 00:58:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,6 @@
 #include "NclVar.h"
 #include "NclFileVar.h"
 #include "VarSupport.h"
-#include "Machine.h"
 #include "DataSupport.h"
 
 

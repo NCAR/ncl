@@ -79,13 +79,88 @@ static void HLUObjDestroy
 	NclObj self;
 #endif
 {
-	NclHLUObj hlu_obj = (NclHLUObj) self;
+	NclHLUObj hlu_obj = (NclHLUObj) self,ptmp;
+	NclHLUChildList *step,*tmp;
+ 
+	NclObj tmp_obj;
 	if(hlu_obj != NULL) {
+/*
+* All of the HLU objects children will be destroyed by the NhlDestroy call
+* Therefore, all NclHLUObjs that point to children must be deleted.
+*/
+		if(hlu_obj->hlu.c_list != NULL) {
+			while(hlu_obj->hlu.c_list != NULL) {
+				tmp_obj = _NclGetObj(hlu_obj->hlu.c_list->child_id);
+				if(tmp_obj != NULL){
+					_NclDestroyObj(tmp_obj);
+				}
+			}
+		}
+		if(hlu_obj->hlu.parent_hluobj_id > -1) {
+			ptmp = (NclHLUObj)_NclGetObj(hlu_obj->hlu.parent_hluobj_id);
+			if(ptmp != NULL) {
+				_NclDelHLUChild(ptmp,self->obj.id);
+			}
+		}
 		NhlDestroy(hlu_obj->hlu.hlu_id);
 		_NclUnRegisterObj(self);
 		NclFree(self);
 	}
 }
+
+static NhlErrorTypes DelHLUChild
+#if __STDC__
+(NclHLUObj self, int child_id)
+#else
+(self, child_id)
+NclHLUObj self;
+NclQuark child_id;
+#endif
+{
+	NclHLUChildList *step,*tmp;
+
+	if(self->hlu.c_list != NULL) {
+		while((self->hlu.c_list != NULL)&&(self->hlu.c_list->child_id == child_id)) {
+			tmp = self->hlu.c_list;
+			self->hlu.c_list = self->hlu.c_list->next;
+			NclFree(tmp);
+		}
+		if(self->hlu.c_list != NULL ) {
+		step = self->hlu.c_list;
+			while(step->next != NULL) {
+				if(step->next->child_id == child_id) {
+					tmp = step->next;
+					step->next = step->next->next;
+					NclFree(tmp);
+				} else {
+					step = step->next;
+				}
+			}
+		}
+		return(NhlNOERROR);
+	} else {
+		return(NhlNOERROR);
+	}
+}
+
+static NhlErrorTypes AddHLUChild
+#if  __STDC__
+(NclHLUObj self, int child_id)
+#else
+(self, child_id)
+NclHLUObj self;
+NclQuark child_id;
+#endif
+{
+	NclHLUChildList *tmp;
+
+	tmp = self->hlu.c_list;
+	self->hlu.c_list = (NclHLUChildList*)NclMalloc((unsigned)sizeof(NclHLUChildList));
+	self->hlu.c_list->next = tmp;
+	self->hlu.c_list->child_id = child_id;
+	return(NhlNOERROR);
+}
+
 
 
 NclHLUObjClassRec nclHLUObjClassRec = {
@@ -103,7 +178,8 @@ NclHLUObjClassRec nclHLUObjClassRec = {
 	/* NclPrintFunction print; 	*/	NULL
 	},
 	{
-/* foo; 	*/	NULL
+/* foo; 	*/	DelHLUChild,
+/* foo; 	*/	AddHLUChild
 	}
 };
 
@@ -112,24 +188,32 @@ NclObjClass nclHLUObjClass = (NclObjClass)&nclHLUObjClassRec;
 
 struct _NclHLUObjRec * _NclHLUObjCreate
 #if     __STDC__
-(NclObj inst , NclObjClass theclass , NclObjTypes obj_type , unsigned int obj_type_mask, NclStatus status, int id)
+(NclObj inst , NclObjClass theclass , NclObjTypes obj_type , unsigned int obj_type_mask, NclStatus status, int id,int parentid)
 #else
-(inst , theclass , obj_type ,obj_type_mask, status,id)
+(inst , theclass , obj_type ,obj_type_mask, status,id,parentid)
 NclObj inst ;
 NclObjClass theclass ;
 NclObjTypes obj_type ;
 unsigned int obj_type_mask;
 NclStatus status;
 int id;
+int parentid;
 #endif
 {
-	NclHLUObj tmp;
+	NclHLUObj tmp,ptmp;
 
 	if(inst == NULL) {
 		tmp = (NclHLUObj)NclMalloc((unsigned)sizeof(NclHLUObjRec));
 	} else {
 		tmp = (NclHLUObj)inst;
 	}
+	tmp->hlu.parent_hluobj_id = parentid;
 	tmp->hlu.hlu_id = id;
-        return((NclHLUObj)_NclObjCreate((NclObj)tmp , theclass , obj_type ,(obj_type_mask | Ncl_HLUObj), status));
+	tmp->hlu.c_list = NULL;
+        (void)_NclObjCreate((NclObj)tmp , theclass , obj_type ,(obj_type_mask | Ncl_HLUObj), status);
+	if(parentid > -1) {
+		ptmp = (NclHLUObj)_NclGetObj(parentid);
+		_NclAddHLUChild(ptmp,tmp->obj.id);
+	}
+	return(tmp);
 }

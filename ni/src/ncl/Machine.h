@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.11 1994-07-14 20:46:02 ethan Exp $
+ *      $Id: Machine.h,v 1.12 1994-10-29 00:57:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,7 @@ extern "C" {
 * statment  can be removed once they are executed.
 */
 
-typedef struct mach_stack {
+typedef struct mach_rec {
         NclValue *themachine;
         char **thefiles;
         int     *thelines;
@@ -44,6 +44,10 @@ typedef struct mach_stack {
         char **fn;
         int *lc;
         unsigned int current_machine_size;
+}_NclMachineRec;
+
+typedef struct mach_stack {
+	struct mach_rec *the_rec;
         struct mach_stack *next;
 } _NclMachineStack;
 

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.23 1994-09-01 17:41:19 ethan Exp $
+ *      $Id: Machine.c,v 1.24 1994-10-29 00:57:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -173,7 +173,7 @@ NclValue *_NclGetCurrentMachine
 ()
 #endif
 {
-	return(mstk->themachine);
+	return(mstk->the_rec->themachine);
 }
 
 NclStackEntry *_NclPeek
@@ -228,7 +228,7 @@ int *_NclGetCurrentLineRec
 ()
 #endif
 {
-	return(mstk->thelines);
+	return(mstk->the_rec->thelines);
 }
 
 char **_NclGetCurrentFileNameRec
@@ -238,7 +238,7 @@ char **_NclGetCurrentFileNameRec
 ()
 #endif
 {
-	return(mstk->thefiles);
+	return(mstk->the_rec->thefiles);
 }
 
 void _NclNewMachine
@@ -248,8 +248,8 @@ void _NclNewMachine
 ()
 #endif
 {
-	_NclMachineStack* tmp;
-	tmp = (_NclMachineStack*)NclMalloc((unsigned)sizeof(_NclMachineStack));
+	_NclMachineRec* tmp;
+	tmp = (_NclMachineRec*)NclMalloc((unsigned)sizeof(_NclMachineRec));
 	tmp->themachine = (NclValue*)NclCalloc(NCL_FUNC_MACHINE_SIZE,sizeof(NclValue));
 	tmp->thefiles = (char**)NclCalloc(NCL_FUNC_MACHINE_SIZE,sizeof(char*));
 	tmp->thelines = (int*)NclCalloc(NCL_FUNC_MACHINE_SIZE,sizeof(int));
@@ -262,8 +262,7 @@ void _NclNewMachine
 	tmp->fn = tmp->thefiles;
 	tmp->pcoffset = 0;
 	tmp->current_machine_size = NCL_FUNC_MACHINE_SIZE;
-	tmp->next = mstk;
-	mstk = tmp;
+	_NclPushMachine((void*)tmp);
 }
 
 void *_NclPopMachine
@@ -274,11 +273,13 @@ void *_NclPopMachine
 #endif
 {
 	_NclMachineStack* tmp;
+	_NclMachineRec* the_rec;
 
 	tmp = mstk;
 	mstk = mstk->next;
-	tmp->next = NULL;
-	return((void*)tmp);
+	the_rec = tmp->the_rec;
+	NclFree(tmp);
+	return((void*)the_rec);
 }
 void _NclPushMachine
 #if __STDC__
@@ -290,9 +291,11 @@ void _NclPushMachine
 {
 	_NclMachineStack* tmp;
 
-	tmp = mstk;
-	mstk = (_NclMachineStack*)the_mach_rec;
-	mstk->next = tmp;
+	tmp = (_NclMachineStack*)NclMalloc((unsigned)sizeof(_NclMachineStack));
+
+	tmp->next = mstk;
+	tmp->the_rec  = (_NclMachineRec*)the_mach_rec;
+	mstk = tmp;
 	return;
 }
 
@@ -309,10 +312,10 @@ void _NclResetMachine
 	}
 	sb = thestack;
 	sb_off = 0;
-	mstk->pcoffset = 0;
-	mstk->pc = mstk->themachine;
-	mstk->lc = mstk->thelines;
-	mstk->fn = mstk->thefiles;
+	mstk->the_rec->pcoffset = 0;
+	mstk->the_rec->pc = mstk->the_rec->themachine;
+	mstk->the_rec->lc = mstk->the_rec->thelines;
+	mstk->the_rec->fn = mstk->the_rec->thefiles;
 	return;
 }
 
@@ -323,11 +326,11 @@ static NhlErrorTypes IncreaseMachineSize
 ()
 #endif
 {
-	mstk->themachine = (NclValue*)NclRealloc(mstk->themachine,mstk->current_machine_size*2);
-	mstk->thefiles = (char**)NclRealloc(mstk->themachine,mstk->current_machine_size*2);
-	mstk->thelines = (int*)NclRealloc(mstk->themachine,mstk->current_machine_size*2);
-	mstk->current_machine_size *=2;
-	if(mstk->themachine == NULL) {
+	mstk->the_rec->themachine = (NclValue*)NclRealloc(mstk->the_rec->themachine,mstk->the_rec->current_machine_size*2);
+	mstk->the_rec->thefiles = (char**)NclRealloc(mstk->the_rec->themachine,mstk->the_rec->current_machine_size*2);
+	mstk->the_rec->thelines = (int*)NclRealloc(mstk->the_rec->themachine,mstk->the_rec->current_machine_size*2);
+	mstk->the_rec->current_machine_size *=2;
+	if(mstk->the_rec->themachine == NULL) {
 		NhlPError(NhlFATAL,errno,"IncreaseMachineSize: Unable to increase the size of the machine");
 		return(NhlFATAL);
 
@@ -336,7 +339,7 @@ static NhlErrorTypes IncreaseMachineSize
 * Since a new pointer is possible here a new value of pc needs to be computed
 * from the current pcoffset value
 */
-	mstk->pc = &(mstk->themachine[mstk->pcoffset]);
+	mstk->the_rec->pc = &(mstk->the_rec->themachine[mstk->the_rec->pcoffset]);
 	return(NhlNOERROR);
 }
 	
@@ -352,18 +355,19 @@ NhlErrorTypes _NclInitMachine
 	sb = thestack;
 	sb_off = 0;
 	mstk = (_NclMachineStack*)NclMalloc((unsigned)sizeof(_NclMachineStack));
-	mstk->themachine = (NclValue*)NclCalloc(NCL_MACHINE_SIZE,sizeof(NclValue));
-	mstk->thefiles = (char**)NclCalloc(NCL_MACHINE_SIZE,sizeof(char*));
-	mstk->thelines = (int*)NclCalloc(NCL_MACHINE_SIZE,sizeof(int));
-	if(mstk->themachine == NULL ){
+	mstk->the_rec = (_NclMachineRec*)NclMalloc((unsigned)sizeof(_NclMachineRec));
+	mstk->the_rec->themachine = (NclValue*)NclCalloc(NCL_MACHINE_SIZE,sizeof(NclValue));
+	mstk->the_rec->thefiles = (char**)NclCalloc(NCL_MACHINE_SIZE,sizeof(char*));
+	mstk->the_rec->thelines = (int*)NclCalloc(NCL_MACHINE_SIZE,sizeof(int));
+	if(mstk->the_rec->themachine == NULL ){
 		NhlPError(NhlFATAL,errno,"_NhlInitMachine: Can't allocate space for machine");
 		return(NhlFATAL);
 	}
-	mstk->pc = mstk->themachine;
-	mstk->lc = mstk->thelines;
-	mstk->fn = mstk->thefiles;
-	mstk->pcoffset = 0;
-	mstk->current_machine_size = NCL_MACHINE_SIZE;
+	mstk->the_rec->pc = mstk->the_rec->themachine;
+	mstk->the_rec->lc = mstk->the_rec->thelines;
+	mstk->the_rec->fn = mstk->the_rec->thefiles;
+	mstk->the_rec->pcoffset = 0;
+	mstk->the_rec->current_machine_size = NCL_MACHINE_SIZE;
 	mstk->next = NULL;
 	SetUpOpsStrings();
 /*
@@ -806,21 +810,21 @@ int _NclPutIntInstr
 * conditionals. Therefore it is necessary to return the offset of the instruct
 * being placed in the list.
 */
-	int old_offset = (int)(mstk->pc - mstk->themachine);
+	int old_offset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
 
 /*
 * Check for overflow
 */
-	if(mstk->pc >= &(mstk->themachine[mstk->current_machine_size -1])) {
+	if(mstk->the_rec->pc >= &(mstk->the_rec->themachine[mstk->the_rec->current_machine_size -1])) {
 /*
-* Will take care of updating mstk->pc
+* Will take care of updating mstk->the_rec->pc
 */
 		IncreaseMachineSize();
 	}
-	*((int*)mstk->pc++) = val;
-	*(mstk->lc++) = line;
-	*(mstk->fn++) = file;
-	mstk->pcoffset = (int)(mstk->pc - mstk->themachine);
+	*((int*)mstk->the_rec->pc++) = val;
+	*(mstk->the_rec->lc++) = line;
+	*(mstk->the_rec->fn++) = file;
+	mstk->the_rec->pcoffset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
 
 	return(old_offset);
 }
@@ -841,21 +845,21 @@ int _NclPutRealInstr
 * conditionals. Therefore it is necessary to return the offset of the instruct
 * being placed in the list.
 */
-	int old_offset = (int)(mstk->pc - mstk->themachine);
+	int old_offset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
 
 /*
 * Check for overflow
 */
-	if(mstk->pc >= &(mstk->themachine[mstk->current_machine_size -1])) {
+	if(mstk->the_rec->pc >= &(mstk->the_rec->themachine[mstk->the_rec->current_machine_size -1])) {
 /*
-* Will take care of updating mstk->pc
+* Will take care of updating mstk->the_rec->pc
 */
 		IncreaseMachineSize();
 	}
-	*((float*)mstk->pc++) = val;
-	*(mstk->lc++) = line;
-	*(mstk->fn++) = file;
-	mstk->pcoffset = (int)(mstk->pc - mstk->themachine);
+	*((float*)mstk->the_rec->pc++) = val;
+	*(mstk->the_rec->lc++) = line;
+	*(mstk->the_rec->fn++) = file;
+	mstk->the_rec->pcoffset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
 
 	return(old_offset);
 }
@@ -875,21 +879,21 @@ int _NclPutInstr
 * conditionals. Therefore it is necessary to return the offset of the instruct
 * being placed in the list.
 */
-	int old_offset = (int)(mstk->pc - mstk->themachine);
+	int old_offset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
 
 /*
 * Check for overflow
 */
-	if(mstk->pc >= &(mstk->themachine[mstk->current_machine_size -1])) {
+	if(mstk->the_rec->pc >= &(mstk->the_rec->themachine[mstk->the_rec->current_machine_size -1])) {
 /*
-* Will take care of updating mstk->pc
+* Will take care of updating mstk->the_rec->pc
 */
 		IncreaseMachineSize();
 	}
-	*(mstk->pc++) = val;
-	*(mstk->lc++) = line;
-	*(mstk->fn++) = file;
-	mstk->pcoffset = (int)(mstk->pc - mstk->themachine);
+	*(mstk->the_rec->pc++) = val;
+	*(mstk->the_rec->lc++) = line;
+	*(mstk->the_rec->fn++) = file;
+	mstk->the_rec->pcoffset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
 
 	return(old_offset);
 }
@@ -901,7 +905,7 @@ int _NclGetCurrentOffset
 ()
 #endif
 {
-	return(mstk->pcoffset);
+	return(mstk->the_rec->pcoffset);
 }
 
 int _NclPutInstrAt
@@ -919,9 +923,9 @@ int _NclPutInstrAt
 	int *lptr;
 	char **fptr;
 
-	ptr = (NclValue*)(mstk->themachine + offset);
-	lptr = (int*)(mstk->thelines + offset);
-	fptr = (char**)(mstk->thefiles+ offset);
+	ptr = (NclValue*)(mstk->the_rec->themachine + offset);
+	lptr = (int*)(mstk->the_rec->thelines + offset);
+	fptr = (char**)(mstk->the_rec->thefiles+ offset);
 
 	*ptr = val;
 	*lptr = line;
@@ -947,23 +951,25 @@ void _NclPrintMachine
 	int	*lptr;
 	char **fptr;
 
+	if(fp == NULL)
+		fp = stdout;
 	if(from == -1){
 		from = 0;
 	}
 	if(to == -1) {
-		to = mstk->pcoffset;
+		to = mstk->the_rec->pcoffset;
 	}
 
-	ptr = (NclValue*)(mstk->themachine + from);
-	eptr = (NclValue*)(mstk->themachine + to);
-	lptr = (int*)(mstk->thelines+from);		
-	fptr = (char**)(mstk->thefiles+from);
+	ptr = (NclValue*)(mstk->the_rec->themachine + from);
+	eptr = (NclValue*)(mstk->the_rec->themachine + to);
+	lptr = (int*)(mstk->the_rec->thelines+from);		
+	fptr = (char**)(mstk->the_rec->thefiles+from);
 	
 	while(ptr != eptr) {
 		if(*fptr != NULL) {
-			fprintf(fp,"(%d,%d,%s)\t",(int)(ptr-mstk->themachine),*lptr,*fptr);
+			fprintf(fp,"(%d,%d,%s)\t",(int)(ptr-mstk->the_rec->themachine),*lptr,*fptr);
 		} else {
-			fprintf(fp,"(%d,%d)\t",(int)(ptr-mstk->themachine),*lptr);
+			fprintf(fp,"(%d,%d)\t",(int)(ptr-mstk->the_rec->themachine),*lptr);
 		}
 		switch(*ptr) {
 			case NOOP :
@@ -1310,8 +1316,8 @@ void _NclRemapParameters
 	int from;
 #endif
 {
-	NclParamRecList *the_list;
-	NclStackEntry data,*data_ptr;
+	NclParamRecList *the_list = NULL;
+	NclStackEntry data,*data_ptr = NULL;
 	NclObjTypes param_rep_type,var_rep_type;
 	NclVar anst_var = NULL, tmp_var = NULL,tmp_var1 = NULL;
 	int i = 0,j = 0,contains_vec = 0;
@@ -1319,8 +1325,8 @@ void _NclRemapParameters
 	int check_ret_status = 0;
 	int value_ref_count = 0;
 	int coord_ids[NCL_MAX_DIMENSIONS];
-	NclAtt tmp_att;
-	NclVar tmp_coord_var;
+	NclAtt tmp_att = NULL;
+	NclVar tmp_coord_var = NULL;
 /*
 * Some kind of check is need to assure top of stack and arguments are 
 * aligned before the following loop starts up
@@ -1535,7 +1541,6 @@ void _NclRemapParameters
 				}
 				anst_var = data_ptr->u.data_var;
 				if(the_list->the_elements[i].is_modified) {
-/*
 					if((anst_var->var.att_id == -1)&&(data.u.data_var->var.att_id != -1)) {
 						anst_var->var.att_id = data.u.data_var->var.att_id;
 						_NclAddParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
@@ -1565,6 +1570,9 @@ void _NclRemapParameters
 						} 
 						anst_var->var.dim_info[j] = data.u.data_var->var.dim_info[j];
 					}
+
+/*
+* AssignVarVar only assigns values not atts, coords or dimensions
 */
 					_NclAssignVarToVar(anst_var,NULL,data.u.data_var,NULL);
 				}
@@ -1595,12 +1603,12 @@ void _NclRemapParameters
 						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
 						if(tmp_var1->var.att_id != -1) 
 							tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
-						for(i = 0; i< tmp_var1->var.n_dims; i++) {
-							if(tmp_var1->var.coord_vars[i] != -1) {
+						for(j = 0; j< tmp_var1->var.n_dims; j++) {
+							if(tmp_var1->var.coord_vars[j] != -1) {
 								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[i]),NULL,NULL);
-								coord_ids[i] = tmp_coord_var->obj.id;
+								coord_ids[j] = tmp_coord_var->obj.id;
 							} else {
-								coord_ids[i] = -1;
+								coord_ids[j] = -1;
 							}
 						}
 						tmp_var = _NclVarNclCreate(
@@ -1653,12 +1661,12 @@ void _NclRemapParameters
 						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
 						if(tmp_var1->var.att_id != -1) 
 							tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
-						for(i = 0; i< tmp_var1->var.n_dims; i++) {
-							if(tmp_var1->var.coord_vars[i] != -1) {
-								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[i]),NULL,NULL);
-								coord_ids[i] = tmp_coord_var->obj.id;
+						for(j = 0; j< tmp_var1->var.n_dims; j++) {
+							if(tmp_var1->var.coord_vars[j] != -1) {
+								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[j]),NULL,NULL);
+								coord_ids[j] = tmp_coord_var->obj.id;
 							} else {
-								coord_ids[i] = -1;
+								coord_ids[j] = -1;
 							}
 						}
 						tmp_var = _NclVarNclCreate(
@@ -1715,12 +1723,12 @@ void _NclRemapParameters
 						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
 						if(tmp_var1->var.att_id != -1) 
 							tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
-						for(i = 0; i< tmp_var1->var.n_dims; i++) {
-							if(tmp_var1->var.coord_vars[i] != -1) {
+						for(j = 0; i< tmp_var1->var.n_dims; i++) {
+							if(tmp_var1->var.coord_vars[j] != -1) {
 								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[i]),NULL,NULL);
-								coord_ids[i] = tmp_coord_var->obj.id;
+								coord_ids[j] = tmp_coord_var->obj.id;
 							} else {
-								coord_ids[i] = -1;
+								coord_ids[j] = -1;
 							}
 						}
 						tmp_var = _NclVarNclCreate(
@@ -1761,6 +1769,8 @@ void _NclDumpStack
 	NclStackEntry *tmp_ptr = (NclStackEntry*)(sb + sb_off - off);
 	int i;
 
+	if(fp == NULL) 
+		fp = stdout;
 	fprintf(fp,"\n");
 	tmp_ptr = tmp_ptr - 1;
 	while(tmp_ptr >= thestack) {

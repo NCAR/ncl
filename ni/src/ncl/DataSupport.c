@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.6 1994-09-01 17:41:11 ethan Exp $
+ *      $Id: DataSupport.c,v 1.7 1994-10-29 00:57:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -355,14 +355,24 @@ void _NclDestroyObj
 	NclObj obj;
 #endif
 {
-	if(obj != NULL) {
-		if((obj->obj.class_ptr != NULL)
-			&&(obj->obj.class_ptr->obj_class.destroy != NULL)) {
-			(*obj->obj.class_ptr->obj_class.destroy)(obj);
+	NclObjClass oc;
+
+	if(obj == NULL)  {
+		return;
+	} else {
+		oc = obj->obj.class_ptr;
+	}
+
+	while(oc != NULL) {
+		if(oc->obj_class.destroy != NULL)  {
+			(*(oc->obj_class.destroy))(obj);
+			return;
 		} else {
-			(void)NclFree((void*)obj);
+			oc = oc->obj_class.super_class;
 		}
 	} 
+	NclFree((void*)obj);
+	return;
 }
 
 

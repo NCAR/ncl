@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.2 1993-12-21 19:17:51 ethan Exp $
+ *      $Id: NclApi.h,v 1.3 1994-10-29 00:57:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,11 +27,14 @@
 extern "C" {
 #endif
 
+#define NCLAPI_TMP_VAR "__N_C_L__T_M_P__"
+#define NCLAPI_DEL_TMP_VAR "delete(__N_C_L__T_M_P__)"
 
 extern int NclInitServer(
 #ifdef NhlNeedProto
 FILE * /* error_file */,
-NhlErrorTypes /*error_level
+FILE * /* error_file */,
+NhlErrorTypes /*error_level*/
 #endif
 );
 
@@ -71,6 +74,73 @@ extern int NclGetErrorId(
 void
 #endif
 );
+
+extern struct _NclApiDataList* NclGetProcFuncList(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern struct _NclApiDataList* NclGetFileList(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern struct _NclApiDataList* NclGetFileVarsList(
+#if NhlNeedProto
+NclQuark /*filevar*/
+#endif
+);
+
+extern struct _NclApiDataList* NclGetHLUObjsList(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern struct _NclApiDataList* NclGetVarList(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern void NclFreeDataList(
+#if NhlNeedProto
+NclApiDataList* /*tmp;*/
+#endif
+);
+
+struct _NclExtValueRec {
+	int type;
+	int constant;
+	void *value;
+	int elem_size;
+	int totalelements;
+	int n_dims;
+	int dim_sizes[NCL_MAX_DIMENSIONS];
+};
+
+typedef struct _NclExtValueRec NclExtValueRec;
+
+extern NclExtValueRec *NclGetVarValue(
+#if NhlNeedProto
+char * /*var_name*/,
+int /*copy_data*/
+#endif
+);
+extern NclExtValueRec *NclGetExprValue(
+#if NhlNeedProto
+char * /*expression*/
+#endif
+);
+
+extern void NclFreeExtValue(
+#if NhlNeedProto
+NclExtValueRec * /*val*/
+#endif
+);
+
 #ifdef __cplusplus
 }
 #endif

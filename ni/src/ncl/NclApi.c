@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.5 1994-07-21 23:16:12 boote Exp $
+ *      $Id: NclApi.c,v 1.6 1994-10-29 00:57:30 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,37 +30,67 @@ extern "C" {
 #include "defs.h"
 #include "NclData.h"
 #include "Symbol.h"
+#include "NclVar.h"
+#include "ApiRecords.h"
+#include "NclApi.h"
 #include <errno.h>
 
 FILE *the_err_file;
 extern FILE *yyin;
-extern int yyparse();
+extern int yyparse(int);
 int fd[2];
 
 extern char *the_input_buffer;
 extern char *the_input_buffer_ptr;
 extern int the_input_buffer_size;
 
+FILE *thefptr;
+FILE *theoptr;
+int cmd_line;
+extern int cur_line_number;
 
+extern FILE* error_fp;
+extern FILE* stdout_fp;
 
 int NclInitServer
 #if __STDC__
-(FILE *error_file,NhlErrorTypes error_level)
+(FILE *error_file,FILE* stdout_file,NhlErrorTypes error_level)
 #else
-(error_file,error_level)
+(error_file,stdout_file,error_level)
 	FILE *error_file;
+	FILE *stdout_file;
 	NhlErrorTypes error_level;
 #endif
 {
+#ifdef YYDEBUG
+        extern int yydebug;
+        yydebug = 1;
+#endif
 	NhlOpen();
-	the_err_file = error_file;
+	error_fp = the_err_file = error_file;
+	stdout_fp = stdout_file;
+	thefptr = fopen("ncl.tree","w");
+        theoptr = fopen("ncl.seq","w");
+
+
 	
 	NhlVASetValues(NhlErrGetID(),
+/*
 		NhlNerrBuffer,True,
+*/
 		NhlNerrLevel,error_level,
-		NhlNerrPrint,False,NULL);
-	
-	return(_NclInitSymbol());
+/*
+		NhlNerrPrint,False,
+		NhlNerrFilePtr,the_err_file,
+*/
+		NULL);
+	_NclInitMachine();
+	_NclInitSymbol();
+	_NclInitDataClasses();
+	_NhlRegSymConv(NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
+
+
+	return(1);	
 	
 }
 
@@ -83,6 +113,7 @@ int NclSubmitBlock1
 	int script_size;
 #endif
 {
+	static first = 1;
 	int i;
 	char *tmp = script;
 	if(the_input_buffer != NULL) {
@@ -94,9 +125,11 @@ int NclSubmitBlock1
 	*the_input_buffer_ptr = '\n';
 	the_input_buffer_ptr = the_input_buffer;
         the_input_buffer_size = script_size+1;
-        if(yyparse()==1) {
+        if(yyparse((first? 1: 0))==1) {
+		first = 0;
                 return(0);
         } else {
+		first = 0;
                 return(1);
         }
 }
@@ -112,6 +145,7 @@ int NclSubmitBlock2
 	int i = 0;
 	int size = 0;
 	char *tmp;
+	static int first = 1;
 
 	for(i =0; script[i] != NULL; i++)  
 		size += strlen(script[i]) + 1; 
@@ -133,9 +167,11 @@ int NclSubmitBlock2
 	*the_input_buffer_ptr = '\n';
 	the_input_buffer_size = size +1;
 	the_input_buffer_ptr = the_input_buffer;
-        if(yyparse()==1) {
+        if(yyparse((first?1:0))==1) {
+		first = 0;
                 return(0);
         } else {
+		first = 0;
                 return(1);
         }
 }
@@ -148,11 +184,14 @@ int NclSubmitCommand
 	char *command;
 #endif
 {
+	static int first = 1;
 	the_input_buffer_ptr = the_input_buffer = command;
 	the_input_buffer_size = strlen(command);
-	if(yyparse()==1) {
+	if(yyparse((first?1:0))==1) {
+		first = 0;
                 return(0);
         } else {
+		first = 0;
                 return(1);
         }
 }
@@ -184,6 +223,143 @@ int NclGetErrorId
 {
 	return(NhlErrGetID());
 }
+
+
+struct _NclApiDataList* NclGetProcFuncList
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	return(_NclGetDefinedProcFuncInfo());
+} 
+
+struct _NclApiDataList* NclGetVarList
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+        return(_NclGetDefinedVarInfo());
+}
+
+struct _NclApiDataList* NclGetFileList
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	return(_NclGetDefinedFileInfo());
+}
+
+struct _NclApiDataList* NclGetFileVarsList
+#if __STDC__
+(NclQuark filevar)
+#else
+(filevar)
+	NclQuark filevar;
+#endif
+{
+	return(_NclGetFileVarInfo(filevar));
+}
+
+void NclFreeDataList
+#if __STDC__
+(NclApiDataList *dlist)
+#else
+(dlist)
+NclApiDataList *dlist;
+#endif
+{
+	if(dlist != NULL) 
+		_NclFreeApiDataList((void*)dlist);
+}
+
+struct _NclApiDataList* NclGetHLUObjsList
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	return(_NclGetDefinedHLUInfo());
+}
+
+
+
+struct _NclExtValueRec *NclGetVarValue
+#if __STDC__
+(char *var_name,int copy_data)
+#else
+(var_name,copy_data)
+	char * var_name;
+	int copy_data;
+#endif
+{
+	NclSymbol *s;
+
+	s = _NclLookUp(var_name);
+	return(_NclGetVarValue(s,copy_data));
+}
+
+NclExtValueRec *NclGetExprValue
+#if __STDC__
+(char * expression)
+#else
+(expression)
+	char* expression;
+#endif
+{
+	char *tmp= NULL,*ptr = NULL;
+	NclSymbol *s;
+	NclExtValueRec *tmp_val = NULL;
+	int size;
+/*
+	s = _NclLookUp(NCLAPI_TMP_VAR);
+
+	if((s != NULL)&&(s->type != UNDEF)) {
+		
+	}
+*/
+	size = strlen(expression);
+	size += strlen(NCLAPI_TMP_VAR);
+	size += 2; /* one for equals and one for '\0' */
+
+	ptr = tmp = NclMalloc(size);
+	memcpy(ptr,NCLAPI_TMP_VAR,strlen(NCLAPI_TMP_VAR));
+	ptr += strlen(NCLAPI_TMP_VAR) + 1;
+	*ptr++ = '=';
+	memcpy(ptr,expression,strlen(expression));
+	ptr += strlen(expression) + 1;
+	*ptr = '\0';
+	NclSubmitCommand(tmp);
+	tmp_val = NclGetVarValue(NCLAPI_TMP_VAR,1);
+	NclSubmitCommand(NCLAPI_DEL_TMP_VAR);
+	
+	return(tmp_val);
+}
+
+void NclFreeExtValue
+#if __STDC__
+(NclExtValueRec* val)
+#else
+(val)
+NclExtValueRec* val;
+#endif
+{
+	if(val != NULL) {
+		if(!val->constant)
+			NclFree(val->value);
+		NclFree(val);
+		return;
+	}
+}
+
+
+
 #ifdef __cplusplus
 }
 #endif

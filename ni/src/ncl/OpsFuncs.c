@@ -17,6 +17,231 @@ extern "C" {
 #include "NclHLUObj.h"
 #include "parser.h"
 #include "OpsList.h"
+#include "ApiRecords.h"
+
+NhlErrorTypes _NclIListHLUObjs
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+        FILE *fp;
+        NclApiDataList *tmp,*step;
+        int i;
+	tmp = _NclGetDefinedHLUInfo();
+
+	fp = _NclGetOutputStream();
+	
+
+	step = tmp;
+	while(step != NULL) {
+		nclfprintf(fp,"\nVariable: %s\n",NrmQuarkToString(step->u.hlu->name));
+		for(i = 0 ; i < step->u.hlu->n_objs; i++) {
+			nclfprintf(fp,"\t%s\t%s\n",NrmQuarkToString(step->u.hlu->objs[i].obj_name),NrmQuarkToString(step->u.hlu->objs[i].obj_class));
+		}
+		step = step->next;
+	}
+	_NclFreeApiDataList((void*)tmp);
+	return(NhlNOERROR);
+}
+NhlErrorTypes _NclIListVariables
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+	FILE *fp;
+	NclApiDataList *tmp,*step;
+	int i;
+	
+
+	fp = _NclGetOutputStream();
+	tmp = _NclGetDefinedVarInfo();
+	step = tmp;
+
+	while(step != NULL) {
+		nclfprintf(fp,"\n%s\t%s ",NrmQuarkToString(step->u.var->data_type_quark),NrmQuarkToString(step->u.var->name));
+		for(i = 0; i < step->u.var->n_dims - 1; i++) {
+			nclfprintf(fp,"[ ");
+			if(step->u.var->dim_info[i].dim_quark != -1) {
+				nclfprintf(fp,"%s | ",NrmQuarkToString(step->u.var->dim_info[i].dim_quark));
+			}
+			nclfprintf(fp,"%d ] x ",step->u.var->dim_info[i].dim_size);
+		}
+		nclfprintf(fp,"[ ");
+		if(step->u.var->dim_info[step->u.var->n_dims - 1].dim_quark != -1) {
+                	nclfprintf(fp,"%s | ",NrmQuarkToString(step->u.var->dim_info[step->u.var->n_dims - 1].dim_quark));
+                }
+                nclfprintf(fp,"%d ]\n",step->u.var->dim_info[step->u.var->n_dims - 1].dim_size);
+		for(i = 0; i < step->u.var->n_atts; i++) {
+			nclfprintf(fp,"\t%s\n",NrmQuarkToString(step->u.var->attnames[i]));
+		}
+		step = step->next;
+	}
+	_NclFreeApiDataList((void*)tmp);
+	return(NhlNOERROR);
+}
+
+NhlErrorTypes _NclIListFiles
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+	FILE *fp;
+	NclApiDataList *tmp,*step;
+	int i;
+	
+
+	fp = _NclGetOutputStream();
+	tmp = _NclGetDefinedFileInfo();
+	step = tmp;
+	while(step != NULL) {
+		nclfprintf(fp,"\n%s\t%s\n",NrmQuarkToString(step->u.file->name),(step->u.file->wr_status ? "READ ONLY" : "READ/WRITE"));
+		nclfprintf(fp,"\t%s\n",NrmQuarkToString(step->u.file->path));
+		nclfprintf(fp,"\tDimensions:\n");
+		for(i = 0; i < step->u.file->n_dims; i++) {
+			nclfprintf(fp,"\t\t(%d) ",i);
+			if(step->u.file->dim_info[i].dim_quark != -1) {
+				nclfprintf(fp,"%s ",NrmQuarkToString(step->u.file->dim_info[i].dim_quark));
+			}
+			nclfprintf(fp,"%d\n",step->u.file->dim_info[i].dim_size);
+		}
+		nclfprintf(fp,"\tAttributes:\n");
+		for(i = 0; i < step->u.file->n_atts; i++) {
+			nclfprintf(fp,"\t\t%s\n",NrmQuarkToString(step->u.file->attnames[i]));
+		}
+		step = step->next;
+	}
+	
+	_NclFreeApiDataList((void*)tmp);
+	return(NhlNOERROR);
+}
+
+NhlErrorTypes _NclIListFuncs
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+	FILE *fp;
+	NclApiDataList *tmp,*step;
+	int i,j;
+	
+
+	fp = _NclGetOutputStream();
+	tmp = _NclGetDefinedProcFuncInfo();
+	step = tmp;
+
+	while(step != NULL) {
+		nclfprintf(fp,"\n%s ", (step->u.func->kind ? "function" : "procedure"));
+		nclfprintf(fp,"%s (",NrmQuarkToString(step->u.func->name));
+	
+		if(step->u.func->nparams > 0 ) {	
+			nclfprintf(fp,"\n");
+			for(i = 0; i < step->u.func->nparams - 1 ; i++) {
+/*
+				nclfprintf(fp,"\t%s ",step->u.func->theargs[i].arg_sym->name);
+*/
+				nclfprintf(fp,"\t");
+				if(step->u.func->theargs[i].is_dimsizes) {
+					for(j = 0; j < step->u.func->theargs[i].n_dims; j++ ) {
+						if(step->u.func->theargs[i].dim_sizes[j] > 0) {
+							nclfprintf(fp,"[%d]",step->u.func->theargs[i].dim_sizes[j]);
+						} else {
+							nclfprintf(fp,"[*]");
+						}
+					}
+				}
+				if(step->u.func->theargs[i].arg_data_type != NULL) {
+					nclfprintf(fp,": %s,\n",step->u.func->theargs[i].arg_data_type->name);
+				} else {
+					nclfprintf(fp,",\n");
+				}
+			}
+/*
+			nclfprintf(fp,"\t%s ",step->u.func->theargs[step->u.func->nparams-1].arg_sym->name);
+*/
+			nclfprintf(fp,"\t");
+			if(step->u.func->theargs[step->u.func->nparams-1].is_dimsizes) {
+				for(j = 0; j < step->u.func->theargs[step->u.func->nparams-1].n_dims; j++ ) {
+					if(step->u.func->theargs[step->u.func->nparams-1].dim_sizes[j] > 0) {
+						nclfprintf(fp,"[%d]",step->u.func->theargs[step->u.func->nparams-1].dim_sizes[j]);
+					} else {
+						nclfprintf(fp,"[*]");
+					}
+				}
+			}
+			if(step->u.func->theargs[step->u.func->nparams-1].arg_data_type != NULL) {
+				nclfprintf(fp,": %s\n",step->u.func->theargs[step->u.func->nparams-1].arg_data_type->name);
+			} else {
+				nclfprintf(fp,"\n");
+			}
+		} 
+		nclfprintf(fp,")\n");
+		step = step->next;
+	}
+	
+	_NclFreeApiDataList((void*)tmp);
+        return(NhlNOERROR);
+}
+
+
+
+NhlErrorTypes _NclIListFileVariables
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	FILE *fp;
+	NclApiDataList *tmp,*step;
+	NclQuark file_q;
+	int i;
+	
+
+	data = _NclGetArg(0,1);
+	switch(data.kind) {
+	case NclStk_VAR:
+		 file_q = data.u.data_var->var.var_quark;
+		break;
+	case NclStk_VAL:
+		return(NhlFATAL);
+		break;
+	}
+	fp = _NclGetOutputStream();
+	tmp = _NclGetFileVarInfo(file_q);
+	step = tmp;
+	while(step != NULL) {
+		nclfprintf(fp,"\n%s\t%s ",NrmQuarkToString(step->u.var->data_type_quark),NrmQuarkToString(step->u.var->name));
+		for(i = 0; i < step->u.var->n_dims - 1; i++) {
+			nclfprintf(fp,"[ ");
+			if(step->u.var->dim_info[i].dim_quark != -1) {
+				nclfprintf(fp,"%s | ",NrmQuarkToString(step->u.var->dim_info[i].dim_quark));
+			}
+			nclfprintf(fp,"%d ] x ",step->u.var->dim_info[i].dim_size);
+		}
+		nclfprintf(fp,"[ ");
+		if(step->u.var->dim_info[step->u.var->n_dims - 1].dim_quark != -1) {
+                	nclfprintf(fp,"%s | ",NrmQuarkToString(step->u.var->dim_info[step->u.var->n_dims - 1].dim_quark));
+                }
+                nclfprintf(fp,"%d ]\n",step->u.var->dim_info[step->u.var->n_dims - 1].dim_size);
+		for(i = 0; i < step->u.var->n_atts; i++) {
+			nclfprintf(fp,"\t%s\n",NrmQuarkToString(step->u.var->attnames[i]));
+		}
+		step = step->next;
+	}
+	_NclFreeApiDataList((void*)tmp);
+        return(NhlNOERROR);
+}
+
+
 
 NhlErrorTypes _NclINhlDataToNDC
 #ifdef __STDC__
@@ -390,7 +615,11 @@ NhlErrorTypes _NclIAny
 			if(i == tmp_md->multidval.totalelements) {
 				tmp_val = (logical*)NclMalloc((unsigned)_NclSizeOf(NCL_logical));
 				*tmp_val = 0;
-				_NclMultiDVallogicalCreate(NULL,NULL,Ncl_MultiDVallogicalData,0,tmp_val,NULL,1,&dim_size,TEMPORARY,NULL);
+				data_out.kind = NclStk_VAL;
+
+				data_out.u.data_obj = _NclMultiDVallogicalCreate(NULL,NULL,Ncl_MultiDVallogicalData,0,tmp_val,NULL,1,&dim_size,TEMPORARY,NULL);
+				_NclPlaceReturn(data_out);
+				return(NhlNOERROR);
 			}
 		}
 		tmp_val = (logical*)NclMalloc((unsigned)_NclSizeOf(NCL_logical));
@@ -632,7 +861,7 @@ NhlErrorTypes _NclIDumpStk
 		tmp_md = data.u.data_obj;
 	} else {
 		NhlPError(NhlWARNING, NhlEUNKNOWN,"dump: incorrect type of object, defaulting to stdout");
-		fp =  stdout;
+		fp =  _NclGetOutputStream();
 		ret = NhlWARNING;
 	}
 	if(tmp_md->obj.obj_type_mask & Ncl_MultiDValstringData) {
@@ -662,7 +891,7 @@ NhlErrorTypes _NclIDumpStk
 	if((fname != NULL)&&(strcmp(fname,"stdout"))) {
 		fp = fopen(fname,"a");
 	} else {
-		fp = stdout;
+		fp = _NclGetOutputStream();
 	}
 	if(fp != NULL) {
 		_NclDumpStack(fp,6);
@@ -945,8 +1174,7 @@ NhlErrorTypes _NclIPrint
 	
 
 	data = _NclGetArg(0,1);
-	fp = stdout;
-/*_NclGetOutputStream();*/
+	fp = _NclGetOutputStream();
 
 	switch(data.kind) {
 	case NclStk_VAL:
@@ -1733,6 +1961,43 @@ NhlErrorTypes _NclFuncCallOp
 	return(ret);
 }
 
+static int ncl_private_rl_list = 0;
+
+int _NclGetExtRLList
+#if  __STDC__
+(void)
+#endif
+{
+	return(ncl_private_rl_list);
+}
+NhlErrorTypes _NclIPSetRL
+#if  __STDC__
+(void)
+#endif
+{
+	NclStackEntry arg;
+	NclMultiDValData tmp_md;
+
+	arg = _NclGetArg(0,1);
+	switch(arg.kind) {
+	case NclStk_VAL:
+		tmp_md = arg.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(arg.u.data_var,
+				NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	ncl_private_rl_list = *(int*)(tmp_md->multidval.val);
+	if(ncl_private_rl_list < 0) {
+		ncl_private_rl_list = 0;
+	}
+}
+
+
+
 NclStackEntry _NclCreateHLUObjOp
 #if __STDC__
 (int nres,char *the_hlu_obj, NclSymbol *the_hlu_obj_class, NclMultiDValData parent)
@@ -1748,6 +2013,7 @@ NclStackEntry _NclCreateHLUObjOp
 	NclStackEntry *data,*resname;
 	NclStackEntry data_out;
 	int rl_list;
+	static int local_rl_list = 0;
 	NhlGenArray *gen_array;
 	NclMultiDValData tmp_md = NULL;
 	NclHLUObj tmp_ho = NULL;
@@ -1772,8 +2038,15 @@ NclStackEntry _NclCreateHLUObjOp
 		}
 	}
 
+	if(local_rl_list == 0) {
+		local_rl_list = NhlRLCreate(NhlSETRL);	
+	} 
 
-	rl_list = NhlRLCreate(NhlSETRL);	
+	rl_list = _NclGetExtRLList();	
+	if(rl_list == 0) {
+		rl_list = local_rl_list;
+	}
+
 	gen_array = NclMalloc((unsigned)sizeof(NhlGenArray)*nres);
 	for(i = 0; i < nres; i++) {
 /*
@@ -1845,7 +2118,7 @@ NclStackEntry _NclCreateHLUObjOp
 	tmp_id = (int*)NclMalloc((unsigned)sizeof(int));
 
 	NhlCreate(&tmp_ho_id,the_hlu_obj,the_hlu_obj_class->u.obj_class_ptr,(parent_id == -1? NhlNOPARENT:parent_id),rl_list);
-	tmp_ho = _NclHLUObjCreate(NULL,nclHLUObjClass,Ncl_HLUObj,0,TEMPORARY,tmp_ho_id); 
+	tmp_ho = _NclHLUObjCreate(NULL,nclHLUObjClass,Ncl_HLUObj,0,TEMPORARY,tmp_ho_id,(parent_id == -1 ? -1 : *(int*)parent->multidval.val)); 
 	*tmp_id = tmp_ho->obj.id;
 	tmp_md = _NclMultiDValHLUObjDataCreate(
 		NULL,
@@ -1870,7 +2143,7 @@ NclStackEntry _NclCreateHLUObjOp
 		NhlFreeGenArray(gen_array[i]);
 	}
 	NclFree(gen_array);
-	NhlRLDestroy(rl_list);
+	NhlRLClear(rl_list);
 	_NclCleanUpStack(2*nres);
 	return(data_out);
 }
@@ -1963,13 +2236,20 @@ int nres;
 	int i;
 	NclStackEntry *data,*resname;
 	int rl_list;
+	static int local_rl_list = 0;
 	NhlGenArray *gen_array;
 	NclMultiDValData tmp_md = NULL;
 	int *obj_ids = NULL;
 	NclHLUObj hlu_ptr;
 
 
-	rl_list = NhlRLCreate(NhlSETRL);	
+	if(local_rl_list == 0 ) {
+		local_rl_list = NhlRLCreate(NhlSETRL);	
+	}
+	rl_list = _NclGetExtRLList();
+	if(rl_list == 0) {
+		rl_list = local_rl_list;
+	}
 	gen_array = NclMalloc((unsigned)sizeof(NhlGenArray)*nres);
 	for(i = 0; i < nres; i++) {
 /*
@@ -2021,7 +2301,7 @@ int nres;
 		NhlFreeGenArray(gen_array[i]);
 	}
 	NclFree(gen_array);
-	NhlRLDestroy(rl_list);
+	NhlRLClear(rl_list);
 	_NclCleanUpStack(2*nres);
 	return(NhlNOERROR);
 }

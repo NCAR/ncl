@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.5 1994-09-23 16:15:48 ethan Exp $
+ *      $Id: NclVar.c,v 1.6 1994-10-29 00:57:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -340,60 +340,60 @@ FILE *fp;
 		v_name = "unnamed";
 	}
 
-	fprintf(fp,"\n\n");
+	nclfprintf(fp,"\n\n");
 	switch(self->var.var_type) {
 	case NORMAL:
 	case HLUOBJ:
-		fprintf(fp,"Variable: %s\n",v_name);
+		nclfprintf(fp,"Variable: %s\n",v_name);
 		break;
 	case VARSUBSEL:
-		fprintf(fp,"Variable: %s (subsection)\n",v_name);
+		nclfprintf(fp,"Variable: %s (subsection)\n",v_name);
 		break;
 	case COORD:
-		fprintf(fp,"Variable: %s (coordinate)\n",v_name);
+		nclfprintf(fp,"Variable: %s (coordinate)\n",v_name);
 		break;
 	case COORDSUBSEL:
-		fprintf(fp,"Variable: %s (coordinate subsection)\n",v_name);
+		nclfprintf(fp,"Variable: %s (coordinate subsection)\n",v_name);
 		break;
 	case PARAM:
-		fprintf(fp,"Variable: %s (parameter)\n",v_name);
+		nclfprintf(fp,"Variable: %s (parameter)\n",v_name);
 		break;
 	case RETURNVAR:
-		fprintf(fp,"Variable: %s (return)\n",v_name);
+		nclfprintf(fp,"Variable: %s (return)\n",v_name);
 		break;
 /*
-		fprintf(fp,"Variable: %s (HLU object)\n",v_name);
+		nclfprintf(fp,"Variable: %s (HLU object)\n",v_name);
 		break;
 */
 	default:
-		fprintf(fp,"Variable: %s\n","unnamed");
+		nclfprintf(fp,"Variable: %s\n","unnamed");
 		break;
 	}
 	if(thevalue == NULL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"The value associated with variable (%s) has been freed, can't print it",v_name);
 		return;
 	}
-	fprintf(fp,"Type: %s\n",_NclBasicDataTypeToName(thevalue->multidval.data_type));
-	fprintf(fp,"Total Size: %d bytes\n",thevalue->multidval.totalsize);
-	fprintf(fp,"            %d values\n",thevalue->multidval.totalelements);
-	fprintf(fp,"Number of Dimensions: %d\n",self->var.n_dims);
-	fprintf(fp,"Dimensions and sizes:\t");
+	nclfprintf(fp,"Type: %s\n",_NclBasicDataTypeToName(thevalue->multidval.data_type));
+	nclfprintf(fp,"Total Size: %d bytes\n",thevalue->multidval.totalsize);
+	nclfprintf(fp,"            %d values\n",thevalue->multidval.totalelements);
+	nclfprintf(fp,"Number of Dimensions: %d\n",self->var.n_dims);
+	nclfprintf(fp,"Dimensions and sizes:\t");
 	for(i = 0; i< self->var.n_dims; i++) {
-		fprintf(fp,"[");
+		nclfprintf(fp,"[");
 		if((self->var.dim_info[i].dim_quark != -1)) {
-			fprintf(fp,"%s | ",NrmQuarkToString(self->var.dim_info[i].dim_quark));
+			nclfprintf(fp,"%s | ",NrmQuarkToString(self->var.dim_info[i].dim_quark));
 		}
-		fprintf(fp,"%d]",self->var.dim_info[i].dim_size);
+		nclfprintf(fp,"%d]",self->var.dim_info[i].dim_size);
 		if(i !=  self->var.n_dims - 1) {
-			fprintf(fp," x ");
+			nclfprintf(fp," x ");
 		}
 	}
-	fprintf(fp,"\n");
-	fprintf(fp,"Coordinates: \n");
+	nclfprintf(fp,"\n");
+	nclfprintf(fp,"Coordinates: \n");
 	for(i =0 ; i< self->var.n_dims; i++) {
 		if((self->var.coord_vars[i] != -1)&&(_NclGetObj(self->var.coord_vars[i])!=NULL)) {
-			fprintf(fp,"            ");
-			fprintf(fp,"%s: [xx..xx]\n",NrmQuarkToString(self->var.dim_info[i].dim_quark));
+			nclfprintf(fp,"            ");
+			nclfprintf(fp,"%s: [xx..xx]\n",NrmQuarkToString(self->var.dim_info[i].dim_quark));
 		}
 	}
 	_NclPrint(_NclGetObj(self->var.att_id),fp);
@@ -1405,12 +1405,13 @@ struct _NclVarRec *storage;
 	if(tmp_var == NULL) {
 		return(NULL);
 	}
-	(void)_NclObjCreate((NclObj)tmp_var,thevar->obj.class_ptr,thevar->obj.obj_type ,(thevar->obj.obj_type_mask | Ncl_Var),PERMANENT);
+	(void)_NclObjCreate((NclObj)tmp_var,thevar->obj.class_ptr,thevar->obj.obj_type ,(thevar->obj.obj_type_mask | Ncl_Var),TEMPORARY);
 	
 	tmp_var->var = thevar->var;
 
 
 	tmp_obj = (NclObj)_NclCopyVal((NclMultiDValData)_NclGetObj(thevar->var.thevalue_id),new_missing);
+	_NclSetStatus((NclObj)tmp_obj,PERMANENT);
 	_NclAddParent(tmp_obj,(NclObj)tmp_var);
 	if(tmp_obj != NULL) {
 		tmp_var->var.thevalue_id = tmp_obj->obj.id;
@@ -1535,9 +1536,6 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 		return(ret);
 	}
 
-/*
-* Must deal with assignment of coodinate variables, dimension info etc...
-*/
 	
 	return(NhlNOERROR);
 }

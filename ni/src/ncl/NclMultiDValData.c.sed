@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.3 1994-09-01 17:41:35 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.4 1994-10-29 00:57:49 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -375,15 +375,15 @@ FILE *fp;
 	}
 	while(!done) {
 		where = 0;
-		fprintf(fp,"(");
+		nclfprintf(fp,"(");
 		for(k = 0; k < ndims - 1; k++) {
-			fprintf(fp,"%d,",i[k]);
+			nclfprintf(fp,"%d,",i[k]);
 			where = (where + i[k]) * j[k+1];
 		}
-		fprintf(fp,"%d)\t",i[ndims-1]);
+		nclfprintf(fp,"%d)\t",i[ndims-1]);
 		where = where + i[ndims - 1];
 
-		fprintf(fp,"PRINTFORMAT",((DATATYPE*)(self_md->multidval.val))[where]);
+		nclfprintf(fp,"PRINTFORMAT",((DATATYPE*)(self_md->multidval.val))[where]);
 		i[ndims - 1]++;
 		if(i[ndims - 1] == j[ndims - 1]) {
 			for(k=ndims - 1;k >0;k--) {

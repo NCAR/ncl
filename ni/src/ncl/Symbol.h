@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.10 1994-07-27 20:30:35 ethan Exp $
+ *      $Id: Symbol.h,v 1.11 1994-10-29 00:58:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -290,6 +290,49 @@ int                   /* ftype */
 #endif
 );
 
+
+extern struct _NclApiDataList *_NclGetDefinedVarInfo(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern struct _NclApiDataList *_NclGetDefinedProcFuncInfo(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern struct _NclApiDataList *_NclGetDefinedFileInfo(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern struct _NclApiDataList *_NclGetFileVarInfo(
+#if NhlNeedProto
+NclQuark /*file_var*/
+#endif
+);
+
+extern struct _NclApiDataList *_NclGetDefinedHLUInfo(
+#if NhlNeedProto
+void 
+#endif
+);
+
+extern void _NclFreeApiDataList(
+#if NhlNeedProto
+void* /*list*/
+#endif
+);
+
+extern struct _NclExtValueRec *_NclGetVarValue(
+#if NhlNeedProto
+NclSymbol * /*the_sym*/,
+int /*copy_data*/
+#endif
+);
 
 #endif /*_NCSymbol_h*/
 #ifdef __cplusplus

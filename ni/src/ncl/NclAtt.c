@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.3 1994-09-19 21:08:21 ethan Exp $
+ *      $Id: NclAtt.c,v 1.4 1994-10-29 00:57:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -268,9 +268,9 @@ FILE *fp;
 	NclAttList *tmp;
 	
 	tmp = theattobj->att.att_list;
-	fprintf(fp,"Number Of Attributes: %d\n",theattobj->att.n_atts);
+	nclfprintf(fp,"Number Of Attributes: %d\n",theattobj->att.n_atts);
 	while(tmp != NULL) {
-		fprintf(fp,"%s \n",tmp->attname);
+		nclfprintf(fp,"%s \n",tmp->attname);
 		tmp = tmp->next;
 	}
 	return;

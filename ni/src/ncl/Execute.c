@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.25 1994-09-01 17:41:15 ethan Exp $
+ *      $Id: Execute.c,v 1.26 1994-10-29 00:57:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,7 @@ extern "C" {
 #include "NclFileInterfaces.h"
 #include "NclFile.h"
 #include "NclFileVar.h"
+#include "NclHLUVar.h"
 #include "FileSupport.h"
 #include "DataSupport.h"
 #include "VarSupport.h"
@@ -1512,6 +1513,8 @@ NclExecuteReturnStatus _NclExecute
 								}
 								if(rhs_md->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 									lhs_var->u.data_var= _NclFileVarCreate(NULL,NULL,Ncl_FileVar,0,sym,rhs_md,NULL,-1,NULL,NORMAL,sym->name);
+								} else if(rhs_md->obj.obj_type_mask & Ncl_MultiDValHLUObjData ) {
+									lhs_var->u.data_var= _NclHLUVarCreate(NULL,NULL,Ncl_HLUVar,0,sym,rhs_md,NULL,-1,NULL,NORMAL,sym->name);
 								} else {
 									lhs_var->u.data_var= _NclVarCreate(NULL,NULL,Ncl_Var,0,sym,rhs_md,NULL,-1,NULL,NORMAL,sym->name);
 								}
@@ -1546,6 +1549,8 @@ NclExecuteReturnStatus _NclExecute
 								}
 								if(rhs_md->obj.obj_type_mask & Ncl_MultiDValnclfileData) { 
 									lhs_var->u.data_var= _NclFileVarCreate(NULL,NULL,Ncl_FileVar,0,sym,rhs_md,rhs.u.data_var->var.dim_info,rhs.u.data_var->var.att_id,rhs.u.data_var->var.coord_vars,NORMAL,sym->name);
+								} else if(rhs_md->obj.obj_type_mask & Ncl_MultiDValHLUObjData ) {
+									lhs_var->u.data_var= _NclHLUVarCreate(NULL,NULL,Ncl_HLUVar,0,sym,rhs_md,rhs.u.data_var->var.dim_info,rhs.u.data_var->var.att_id,rhs.u.data_var->var.coord_vars,NORMAL,sym->name);
 								} else {
 									lhs_var->u.data_var= _NclVarCreate(NULL,NULL,Ncl_Var,0,sym,rhs_md,rhs.u.data_var->var.dim_info,rhs.u.data_var->var.att_id,rhs.u.data_var->var.coord_vars,NORMAL,sym->name);
 								}
@@ -1580,29 +1585,30 @@ NclExecuteReturnStatus _NclExecute
 					} else {
 						sel_ptr = NULL;
 					}
-
-					for(i=0;i<nsubs;i++) {
-						data =_NclPop();
-						switch(data.u.sub_rec->sub_type) {
-						case INT_VECT:
+					if(estatus != NhlFATAL) {
+						for(i=0;i<nsubs;i++) {
+							data =_NclPop();
+							switch(data.u.sub_rec->sub_type) {
+							case INT_VECT:
 /*
 * Need to free some stuff here
 */							
-							ret = _NclBuildVSelection(lhs_var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
-							break;
-						case INT_RANGE:
+								ret = _NclBuildVSelection(lhs_var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+								break;
+							case INT_RANGE:
 /*
 * Need to free some stuff here
 */								
-							ret = _NclBuildRSelection(lhs_var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
-							break;
-						case COORD_VECT:
-						case COORD_RANGE:
-							break;
-						}
-						_NclFreeSubRec(data.u.sub_rec);
-						if(ret < NhlWARNING) {
-							estatus = NhlFATAL;
+								ret = _NclBuildRSelection(lhs_var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+								break;
+							case COORD_VECT:
+							case COORD_RANGE:
+								break;
+							}
+							_NclFreeSubRec(data.u.sub_rec);
+							if(ret < NhlWARNING) {
+								estatus = NhlFATAL;
+							}
 						}
 					}
 					rhs = _NclPop();	
@@ -1678,6 +1684,7 @@ NclExecuteReturnStatus _NclExecute
 
 				switch(thesym->type) {
 				case IPROC:
+				case PIPROC:
 				case IFUNC:
 				case FUNC:
 				case PROC:
@@ -1720,14 +1727,14 @@ NclExecuteReturnStatus _NclExecute
 						}
 
 						if(pfinfo->theargs[arg_num].is_dimsizes) {
-							if(pfinfo->theargs->n_dims != data.u.data_var->var.n_dims) {
+							if(pfinfo->theargs[arg_num].n_dims != data.u.data_var->var.n_dims) {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions in parameter (%d) of (%s) does not match specification",arg_num,thesym->name);
 								estatus = NhlFATAL;
 
 							} else {
-								for(i = 0; i< pfinfo->theargs->n_dims; i++) {
-									if(pfinfo->theargs->dim_sizes[i] != -1) {
-										if(pfinfo->theargs->dim_sizes[i] != data.u.data_var->var.dim_info[i].dim_size) {
+								for(i = 0; i< pfinfo->theargs[arg_num].n_dims; i++) {
+									if(pfinfo->theargs[arg_num].dim_sizes[i] != -1) {
+										if(pfinfo->theargs[arg_num].dim_sizes[i] != data.u.data_var->var.dim_info[i].dim_size) {
 											NhlPError(NhlFATAL,NhlEUNKNOWN,"Size of dimension (%d) of argument (%d) does not match specification in (%s) function definition",i,arg_num,thesym->name);
 											estatus = NhlFATAL;
 										}
@@ -1756,7 +1763,7 @@ NclExecuteReturnStatus _NclExecute
 							tmp_md = NULL;
 						}
                                                 _NclAddObjToParamList((NclObj)data.u.data_var,arg_num);
-						if((thesym->type != IPROC) && (thesym->type != IFUNC)&&(estatus != NhlFATAL)) {
+						if((thesym->type != IPROC)&&(thesym->type != PIPROC) && (thesym->type != IFUNC)&&(estatus != NhlFATAL)) {
 /*
 * Variable subsections also point to the symbol of the main variable so the AddObjToParamList just
 * stores the symbol rather than the pointer to variable record
@@ -1766,6 +1773,17 @@ NclExecuteReturnStatus _NclExecute
 								if(tmp_md->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 									tmp_var = _NclFileVarCreate(NULL,data.u.data_var->obj.class_ptr,
                                                                                 Ncl_FileVar,
+                                                                                0,
+                                                                                argsym,
+                                                                                tmp_md,
+                                                                                data.u.data_var->var.dim_info,
+                                                                                data.u.data_var->var.att_id,
+                                                                                data.u.data_var->var.coord_vars,
+                                                                                PARAM,
+                                                                                argsym->name);
+								} else if(tmp_md->obj.obj_type_mask & Ncl_MultiDValHLUObjData ) {
+									tmp_var = _NclHLUVarCreate(NULL,data.u.data_var->obj.class_ptr,
+                                                                                Ncl_HLUVar,
                                                                                 0,
                                                                                 argsym,
                                                                                 tmp_md,
@@ -1790,6 +1808,17 @@ NclExecuteReturnStatus _NclExecute
 								tmp_md = (NclMultiDValData)_NclGetObj(data.u.data_var->var.thevalue_id);
 								if(tmp_md->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
                                                                 	tmp_var = _NclFileVarCreate(NULL,data.u.data_var->obj.class_ptr,
+                                                                                data.u.data_var->obj.obj_type,
+                                                                                data.u.data_var->obj.obj_type_mask,
+                                                                                argsym,
+                                                                                tmp_md,
+                                                                                data.u.data_var->var.dim_info,
+                                                                                data.u.data_var->var.att_id,
+                                                                                data.u.data_var->var.coord_vars,
+                                                                                PARAM,
+                                                                                argsym->name);
+								} else if(tmp_md->obj.obj_type_mask & Ncl_MultiDValHLUObjData) {
+                                                                	tmp_var = _NclHLUVarCreate(NULL,data.u.data_var->obj.class_ptr,
                                                                                 data.u.data_var->obj.obj_type,
                                                                                 data.u.data_var->obj.obj_type_mask,
                                                                                 argsym,
@@ -1872,7 +1901,7 @@ NclExecuteReturnStatus _NclExecute
 						} else {
 							tmp_md = data.u.data_obj;
 						}
-						if((thesym->type != IPROC)&&(thesym->type != IFUNC)&&(estatus != NhlFATAL)) {
+						if((thesym->type != IPROC)&&(thesym->type != PIPROC)&&(thesym->type != IFUNC)&&(estatus != NhlFATAL)) {
 							argsym = pfinfo->theargs[arg_num].arg_sym;
 							_NclAddObjToParamList((NclObj)data.u.data_obj,arg_num);
                                                 	if(estatus != NhlFATAL) {
@@ -1881,6 +1910,18 @@ NclExecuteReturnStatus _NclExecute
                                                         		tmp_var = _NclFileVarCreate(
 										NULL,NULL,
                                                                 		Ncl_FileVar,
+                                                                		0,
+                                                                		argsym,
+                                                                		tmp_md,
+                                                                		NULL,
+                                                                		-1,
+                                                                		NULL,
+                                                                		PARAM,
+                                                                		argsym->name);
+								} else if(tmp_md->obj.obj_type_mask & Ncl_MultiDValHLUObjData) {
+                                                        		tmp_var = _NclHLUVarCreate(
+										NULL,NULL,
+                                                                		Ncl_HLUVar,
                                                                 		0,
                                                                 		argsym,
                                                                 		tmp_md,
@@ -1936,7 +1977,7 @@ NclExecuteReturnStatus _NclExecute
 				unsigned long block_off;
 				int done = 0;
 				NclStackEntry data;
-				NclMultiDValData val;
+				NclMultiDValData val,tmp_md;
 				NclExecuteReturnStatus rtst;
 
 				ptr++;lptr++;fptr++;
@@ -1962,20 +2003,33 @@ NclExecuteReturnStatus _NclExecute
 							if(!*(logical*)val->multidval.val) {
 								done = 1;
 							}
-						} 
-						switch(data.kind) {
-						case NclStk_VAL:
-							if(data.u.data_obj->obj.status != PERMANENT) {
-								_NclDestroyObj((NclObj)data.u.data_obj);
+							switch(data.kind) {
+							case NclStk_VAL:
+								if(data.u.data_obj->obj.status != PERMANENT) {
+									_NclDestroyObj((NclObj)data.u.data_obj);
+								}
+								break;
+							case NclStk_VAR:
+								if(data.u.data_var->obj.status != PERMANENT) {
+									_NclDestroyObj((NclObj)data.u.data_var);
+								}
+								break;
+							default:
+								break;
 							}
-							break;
-						case NclStk_VAR:
-							if(data.u.data_var->obj.status != PERMANENT) {
-								_NclDestroyObj((NclObj)data.u.data_var);
+						}  else if(val->multidval.kind == SCALAR){
+							tmp_md = _NclCoerceData(val,Ncl_MultiDVallogicalData,NULL);
+							if(tmp_md == NULL) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce expression to logical type");
+								estatus = NhlFATAL;
+							} else {
+								if(!*(logical*)tmp_md->multidval.val) {
+									done = 1;
+								}
 							}
-							break;
-						default:
-							break;
+						} else {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"While requires a SCALAR conditional expression");
+							estatus = NhlFATAL;
 						}
 						if((estatus != NhlFATAL)&&(!done)){
 							rtst = _NclExecute(block_off);
@@ -2766,9 +2820,11 @@ NclExecuteReturnStatus _NclExecute
 							estatus = NhlFATAL;
 						}
 						ret = _NclWriteAtt(var->u.data_var,attname,value_md,sel_ptr);
-						if(value_md->obj.status != PERMANENT) {
-							_NclDestroyObj((NclObj)value_md);
-						}
+						if((value.kind == NclStk_VAR)&&(value.u.data_var->obj.status != PERMANENT)) {
+							 _NclDestroyObj((NclObj)value.u.data_var);
+						} else if((value.kind == NclStk_VAL)&&(value.u.data_obj->obj.status != PERMANENT)){
+							 _NclDestroyObj((NclObj)value.u.data_obj);
+						} 
 						if( ret < NhlINFO) {
 							estatus = ret;
 						}
@@ -3223,6 +3279,7 @@ NclExecuteReturnStatus _NclExecute
 					} else {
 						lhs_var->kind = NclStk_VAR;
 						lhs_var->u.data_var = _NclCopyVar(rhs_var->u.data_var,NULL,NULL);
+						_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT);	
 						lhs_var->u.data_var->var.var_quark = NrmStringToQuark(lhs_sym->name);
 						lhs_var->u.data_var->var.thesym = lhs_sym;
 						lhs_var->u.data_var->var.var_type = NORMAL;

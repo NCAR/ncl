@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.3 1994-09-01 17:41:27 ethan Exp $
+ *      $Id: NclData.c,v 1.4 1994-10-29 00:57:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -542,7 +542,7 @@ NclStatus requested;
 
 static int current_id = 0;
 static struct _NclObjList *objs  = NULL;
-#define  OBJ_LIST_START_SIZE 512
+#define  OBJ_LIST_START_SIZE 1021
 static int current_size = OBJ_LIST_START_SIZE;
 
 
@@ -554,7 +554,31 @@ void _NclUnRegisterObj
 NclObj self;
 #endif
 {
-	objs[self->obj.id].freed = 1;
+	int tmp;
+	NclObjList *step,*temp;
+
+	tmp = self->obj.id % current_size;
+	if(objs[tmp].id == -1) {
+		return;
+	}
+	if(objs[tmp].id == self->obj.id) {
+		objs[tmp].id = -1;
+		if(objs[tmp].next != NULL) {
+			step = objs[tmp].next;
+			objs[tmp] = *objs[tmp].next;
+			NclFree(step);
+		}
+	} else {
+		step = &objs[tmp];
+		while((step->next != NULL)&&(step->next->id < self->obj.id)) {
+			step= step->next;
+		}
+		if((step->next != NULL)&&(step->next->id == self->obj.id)) {
+			temp = step->next;
+			step->next = step->next->next;
+			NclFree(temp);
+		}
+	}
 }
 
 static char *_NclStatusString
@@ -585,15 +609,28 @@ FILE *fp;
 #endif
 {
 	int i;
-	
-	for(i = 0; i < current_id; i++) {
-		if(!objs[i].freed) {
-			fprintf(fp,"\n------%d------\n",i);
-			fprintf(fp,"Index: %d\n",i);
-			fprintf(fp,"Object Class: %s\n",objs[i].theobj->obj.class_ptr->obj_class.class_name);
-			fprintf(fp,"Object Status: %s\n",_NclStatusString(objs[i].theobj->obj.status));
+	NclObjList *tmp;
 
-			_NclPrint(objs[i].theobj,fp);
+	if(objs != NULL) {	
+		for(i = 0; i < current_size; i++) {
+			if(objs[i].id != -1) {
+				fprintf(fp,"\n------%d------\n",objs[i].id);
+				fprintf(fp,"Index: %d\n",i);
+				fprintf(fp,"Object Class: %s\n",objs[i].theobj->obj.class_ptr->obj_class.class_name);
+				fprintf(fp,"Object Status: %s\n",_NclStatusString(objs[i].theobj->obj.status));
+
+				_NclPrint(objs[i].theobj,fp);
+			}
+			tmp = objs[i].next;
+			while(tmp != NULL) {
+				fprintf(fp,"\n------%d------\n",tmp->id);
+				fprintf(fp,"Index: %d\n",i);
+				fprintf(fp,"Object Class: %s\n",tmp->theobj->obj.class_ptr->obj_class.class_name);
+				fprintf(fp,"Object Status: %s\n",_NclStatusString(tmp->theobj->obj.status));
+	
+				_NclPrint(tmp->theobj,fp);
+				tmp = tmp->next;			
+			}
 		}
 	}
 }
@@ -606,13 +643,32 @@ int _NclNumObjs
 {
 	int i;
 	int total = 0;
-	
-	for(i = 0; i < current_id; i++) {
-		if(!objs[i].freed) {
-			total++;
+	NclObjList *tmp;
+
+	if(objs != NULL) {	
+		for(i = 0; i < current_size; i++) {
+			if(objs[i].id != -1) {
+				total++;
+			}
+			tmp = objs[i].next ;
+			while(tmp != NULL) {
+				total++;
+				tmp = tmp->next;
+			}
 		}
 	}
 	return(total);
+}
+int num_get_obj = 0;
+void _NclNumGetObjCals
+#if __STDC__
+(FILE *fp)
+#else
+(fp)
+FILE *fp;
+#endif
+{
+	fprintf(fp,"The number of _NclGetObj calls was %d\n",num_get_obj);
 }
 
 struct _NclObjRec *_NclGetObj 
@@ -623,10 +679,26 @@ struct _NclObjRec *_NclGetObj
 	int id;
 #endif
 {
-	if((id <0)||(id > current_id)||objs[id].freed) {
+	int tmp;
+	NclObjList *ptr;
+	num_get_obj++;
+	if((id <0)||(id > current_id)) {
 		return(NULL);
 	} else {
-		return(objs[id].theobj);
+		tmp = id %current_size;
+		if((objs[tmp].id == -1)||((objs[tmp].next == NULL)&&(objs[tmp].id != id))) {
+			return(NULL);
+		}
+		ptr = &objs[tmp];
+		while((ptr != NULL)&&(ptr->id < id)) {
+			ptr = ptr->next;
+		}
+		if((ptr == NULL) || (ptr->id != id)) {
+			return(NULL);
+		} else {
+			return(ptr->theobj);
+		}
+		
 	}
 }
 int _NclRegisterObj
@@ -638,21 +710,49 @@ NclObj self;
 #endif
 {
 	int tmp;
+	NclObjList *ptr;
 	
 	if(objs == NULL) {
 		objs = (NclObjList*)NclMalloc((unsigned)sizeof(NclObjList)*current_size);
-	} else if(current_id >= current_size) {
-		objs = (NclObjList*)NclRealloc((char*)objs,sizeof(NclObjList)*current_size * 2);
-		current_size *= 2;
-	}
+		for(tmp = 0; tmp < current_size; tmp++) {
+			objs[tmp].id = -1;
+			objs[tmp].next = NULL;
+		}
+	} 
 
 	
 	
-	tmp = current_id;
-	objs[current_id].freed = 0;
-	objs[current_id].obj_type = self->obj.obj_type;
-	objs[current_id].obj_type_mask = self->obj.obj_type_mask;
-	objs[current_id].theobj = self;
+	tmp = current_id % current_size;
+	if(objs[tmp].id == -1) {
+		ptr = &(objs[tmp]);
+	} else if(objs[tmp].next == NULL) {
+		objs[tmp].next = (NclObjList*)NclMalloc(sizeof(NclObjList));
+		ptr = objs[tmp].next;
+		ptr->next = NULL;
+	} else {
+		ptr = objs[tmp].next;
+		while(ptr->next != NULL) {
+			ptr = ptr->next;
+		}
+		ptr->next = (NclObjList*)NclMalloc(sizeof(NclObjList));
+		ptr = ptr->next;
+		ptr->next = NULL;
+	}
+	ptr->id = current_id;
+	ptr->obj_type = self->obj.obj_type;
+	ptr->obj_type_mask = self->obj.obj_type_mask;
+	ptr->theobj = self;
 	current_id++;
-	return(tmp);
+	return(ptr->id);
+}
+
+void _NclObjsSize
+#if __STDC__
+(FILE *fp)
+#else
+(fp)
+	FILE *fp;
+#endif
+{
+	fprintf(fp,"The size of objs list is %d elements of size %d with %d elements used\n",current_size,sizeof(NclObjList),current_id-1);
 }

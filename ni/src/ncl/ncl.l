@@ -32,7 +32,7 @@ extern int loading;
 char *the_input_buffer = NULL;
 char *the_input_buffer_ptr = NULL;
 int the_input_buffer_size = 0;
-#define input() (( (int)the_input_buffer_ptr >=the_input_buffer_size + (int)the_input_buffer)? 0 : (((int)*the_input_buffer_ptr == 10) ? yylineno++,*the_input_buffer_ptr++:*the_input_buffer_ptr++))
+#define input() (( (int)the_input_buffer_ptr >=the_input_buffer_size + (int)the_input_buffer)? (char)0177 : (((int)*the_input_buffer_ptr == 10) ? yylineno++,*the_input_buffer_ptr++:*the_input_buffer_ptr++))
 
 #define unput(c) { yytchar = (c); if(yytchar=='\n')yylineno--;*(--the_input_buffer_ptr) = yytchar; }
 #endif /* MAKEAPI */
@@ -48,10 +48,14 @@ white	[\t ]
 digit	[0-9]
 %START AA
 %%
-<AA>[^\n] {
+<AA>[^\n^\177] {
 	cur_line_number++;
 	BEGIN 0;
 	yyless(yyleng-1);
+}
+<AA>[\177] {
+	cur_line_number++;
+	BEGIN 0;
 }
 <AA>[\n] {
 	cur_line_number++;
@@ -369,11 +373,11 @@ digit	[0-9]
 [&]{let}{alnum}* {
 
 	strcpy(yylval.str,yytext);
-	printtoken(COORD,yylval.str);
+	printtoken(COORDV,yylval.str);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
 	cur_line_text_pos += yyleng;
-	return COORD;
+	return COORDV;
 /* NOTREACHED */
 }
 ["][^"\n]*["] {
@@ -459,6 +463,10 @@ digit	[0-9]
 	strcpy(cur_line_text_pos,yytext);
 	cur_line_text_pos += yyleng;
 	return(MARKER);
+}
+[\177] {
+	fprintf(stdout,"EOFF\n");
+	return(EOFF);
 }
 . {  
 	printtoken(yytext[0],(char*)NULL);

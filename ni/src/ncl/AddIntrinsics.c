@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.8 1994-08-25 18:00:17 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.9 1994-10-29 00:57:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -126,6 +126,42 @@ void
 #endif
 );
 
+extern NhlErrorTypes _NclIListVariables(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIListFiles(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIListFuncs(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIListFileVariables(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIListHLUObjs(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIPSetRL(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
 void _NclAddIntrinsics
 #if  __STDC__
 (void)
@@ -168,7 +204,13 @@ void _NclAddIntrinsics
 	args[0].is_dimsizes = 1;
 	args[0].dim_sizes[0] = 1;
 	args[0].n_dims = 1;
-	_NclRegisterProc(_NclIDumpStk,args,"dump",1,IPROC);
+	_NclRegisterProc(_NclIDumpStk,args,"dump",1,PIPROC);
+	args = NclCalloc(1,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("integer");
+	args[0].is_dimsizes = 1;
+	args[0].dim_sizes[0] = 1;
+	args[0].n_dims = 1;
+	_NclRegisterProc(_NclIPSetRL,args,"setrl",1,PIPROC);
 	args = NclCalloc(2,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("string");
 	args[0].is_dimsizes = 1;
@@ -241,6 +283,16 @@ void _NclAddIntrinsics
 	args[4].is_dimsizes = 0;
 	args[4].n_dims = 1;
 	_NclRegisterProc(_NclINhlNDCToData,args,"ndctodata",5,IPROC);
+	_NclRegisterProc(_NclIListVariables,NULL,"list_vars",0,IPROC);
+	_NclRegisterProc(_NclIListFiles,NULL,"list_files",0,IPROC);
+	_NclRegisterProc(_NclIListFuncs,NULL,"list_procfuncs",0,IPROC);
+	_NclRegisterProc(_NclIListHLUObjs,NULL,"list_hlus",0,IPROC);
+	args = NclCalloc(1,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("file");
+	args[0].is_dimsizes = 1;
+	args[0].dim_sizes[0] = 1;
+	args[0].n_dims = 1;
+	_NclRegisterProc(_NclIListFileVariables,args,"list_filevars",1,IPROC);
 	return;
 }
 

@@ -15,7 +15,7 @@ extern  "C" {
 
 extern char *cur_load_file;
 extern int loading;
-
+extern int cmd_line;
 
 /*
  * Function:	_NclTransTerminate
@@ -96,12 +96,12 @@ if(groot != NULL) {
 		{
 			NclReturn *ret = (NclReturn*)root;
 			
-			(void)_NclTranslate(ret->expr,fp);
+			off1 = _NclTranslate(ret->expr,fp);
 /*
 * All that is needed is the return op to tell machine that top of
 * stack should be placed in frames return_value field
 */
-			off1 = _NclPutInstr(RETURN_OP,ret->line,ret->file);
+			_NclPutInstr(RETURN_OP,ret->line,ret->file);
 		break;
 		}
 		case Ncl_IFTHEN:
@@ -256,56 +256,58 @@ if(groot != NULL) {
                         int off8 = -1;
                         int off9 = -1;
                         int off10 = -1;
+
+			if(dofromto->block_stmnt_list != NULL) {
 			
 /*
 * Nothing on stack here
 */
-                        off1 = _NclTranslate(dofromto->end_expr,fp);
-			_NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
-			_NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
-			_NclPutInstr(0,dofromto->line,dofromto->file);
+                        	off1 = _NclTranslate(dofromto->end_expr,fp);
+				_NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
+				_NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
+				_NclPutInstr(0,dofromto->line,dofromto->file);
 /*
 * Two values of start expr pushed on stack
 */
-                        _NclPutInstr(PUSH_INT_LIT_OP,dofromto->line,dofromto->file);
-                        _NclPutIntInstr(1,dofromto->line,dofromto->file);
+                        	_NclPutInstr(PUSH_INT_LIT_OP,dofromto->line,dofromto->file);
+                        	_NclPutIntInstr(1,dofromto->line,dofromto->file);
 /*
 * assigns increment value to inc_sym uncovers direction logical on top of stack
 */
-			_NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
-			_NclPutInstr((NclValue)dofromto->inc_sym,dofromto->line,dofromto->file);
-			_NclPutInstr(0,dofromto->line,dofromto->file);
+				_NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
+				_NclPutInstr((NclValue)dofromto->inc_sym,dofromto->line,dofromto->file);
+				_NclPutInstr(0,dofromto->line,dofromto->file);
 /*
 * assigns direction sym uncovers start_expr value
 */
-			_NclPutInstr(PUSH_LOG_LIT_OP,dofromto->line,dofromto->file);
-			_NclPutIntInstr(0,dofromto->line,dofromto->file);
+				_NclPutInstr(PUSH_LOG_LIT_OP,dofromto->line,dofromto->file);
+				_NclPutIntInstr(0,dofromto->line,dofromto->file);
 
-			_NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
-			_NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
-			_NclPutInstr(0,dofromto->line,dofromto->file);
+				_NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
+				_NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
+				_NclPutInstr(0,dofromto->line,dofromto->file);
 
 			
 /*
 * assigns start_expr to the loop counter variable
 */
-			_NclTranslate(dofromto->start_expr,fp);
-                        ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_WRITEIT;
-                        _NclTranslate(dofromto->inc_var,fp);
+				_NclTranslate(dofromto->start_expr,fp);
+                        	((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_WRITEIT;
+                        	_NclTranslate(dofromto->inc_var,fp);
 			
 /*
-			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr(0,dofromto->line,dofromto->file);
+				_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
+                        	_NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
+                        	_NclPutInstr(0,dofromto->line,dofromto->file);
 */
 
 
-                        ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_READIT;
-                        _NclTranslate(dofromto->inc_var,fp);
-			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr(0,dofromto->line,dofromto->file);
-                        _NclPutInstr(LE_OP,dofromto->line,dofromto->file);
+                        	((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_READIT;
+                        	_NclTranslate(dofromto->inc_var,fp);
+				_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
+                        	_NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
+                        	_NclPutInstr(0,dofromto->line,dofromto->file);
+                        	_NclPutInstr(LE_OP,dofromto->line,dofromto->file);
 
 
 			
@@ -315,69 +317,77 @@ if(groot != NULL) {
 * direction, followed by the final value. First thing DO_FROM_TO_OP does is pop that value
 * and compare. then it runs its loop
 */
-                        _NclPutInstr(DO_FROM_TO_OP,dofromto->line,dofromto->file);
+                        	_NclPutInstr(DO_FROM_TO_OP,dofromto->line,dofromto->file);
 
-                        off2 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->inc_sym,dofromto->line,dofromto->file);
+                        	off2 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
+                        	_NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
+                        	_NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
+                        	_NclPutInstr((NclValue)dofromto->inc_sym,dofromto->line,dofromto->file);
 /*
 * Jumps over loop block when done
 */
-                        _NclPutInstr(JMP,dofromto->line,dofromto->file);
-                        off3 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
+                        	_NclPutInstr(JMP,dofromto->line,dofromto->file);
+                        	off3 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
 
-                        step = dofromto->block_stmnt_list;
-                        if(step != NULL) {
-                                off4 = _NclTranslate(step->node,fp);
-                                step = step->next;
-                        }
-                        _NclPutInstrAt(off2,off4,dofromto->line,dofromto->file);
-                        while(step != NULL) {
-                                (void) _NclTranslate(step->node,fp);
-                                step = step->next;
-                        }
+                        	step = dofromto->block_stmnt_list;
+                        	if(step != NULL) {
+                                	off4 = _NclTranslate(step->node,fp);
+                                	step = step->next;
+                        	}
+                        	_NclPutInstrAt(off2,off4,dofromto->line,dofromto->file);
+                        	while(step != NULL) {
+                                	(void) _NclTranslate(step->node,fp);
+                                	step = step->next;
+                        	}
 /*
 * Must leave true or false on top of stack
 */			
-			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->inc_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr(0,dofromto->line,dofromto->file);
-                        ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_READIT;
-                        _NclTranslate(dofromto->inc_var,fp);
-			_NclPutInstr(PLUS_OP,dofromto->line,dofromto->file);
-                        ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_WRITEIT;
-                        _NclTranslate(dofromto->inc_var,fp);
+				_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
+                        	_NclPutInstr((NclValue)dofromto->inc_sym,dofromto->line,dofromto->file);
+                        	_NclPutInstr(0,dofromto->line,dofromto->file);
+                        	((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_READIT;
+                        	_NclTranslate(dofromto->inc_var,fp);
+				_NclPutInstr(PLUS_OP,dofromto->line,dofromto->file);
+                        	((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_WRITEIT;
+                        	_NclTranslate(dofromto->inc_var,fp);
 
-			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr(0,dofromto->line,dofromto->file);
-			_NclPutInstr(JMPFALSE,dofromto->line,dofromto->file);
-			off7 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
-                        ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_READIT;
-                        _NclTranslate(dofromto->inc_var,fp);
-			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr(0,dofromto->line,dofromto->file);
-                        _NclPutInstr(GE_OP,dofromto->line,dofromto->file);
+				_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
+                        	_NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
+                        	_NclPutInstr(0,dofromto->line,dofromto->file);
+				_NclPutInstr(JMPFALSE,dofromto->line,dofromto->file);
+				off7 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
+                        	((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_READIT;
+                        	_NclTranslate(dofromto->inc_var,fp);
+				_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
+                        	_NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
+                        	_NclPutInstr(0,dofromto->line,dofromto->file);
+                        	_NclPutInstr(GE_OP,dofromto->line,dofromto->file);
 
-			_NclPutInstr(JMP,dofromto->line,dofromto->file);
-			off9 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
+				_NclPutInstr(JMP,dofromto->line,dofromto->file);
+				off9 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
 
-                        ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_READIT;
-			off8 = _NclTranslate(dofromto->inc_var,fp);
-			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr(0,dofromto->line,dofromto->file);
-                        _NclPutInstr(LE_OP,dofromto->line,dofromto->file);
-			_NclPutInstrAt(off7,off8,dofromto->line,dofromto->file);
+                        	((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_READIT;
+				off8 = _NclTranslate(dofromto->inc_var,fp);
+				_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
+                        	_NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
+                        	_NclPutInstr(0,dofromto->line,dofromto->file);
+                        	_NclPutInstr(LE_OP,dofromto->line,dofromto->file);
+				_NclPutInstrAt(off7,off8,dofromto->line,dofromto->file);
 			
 			
 
-                        off10 = _NclPutInstr(STOPSEQ,dofromto->line,dofromto->file);
-			_NclPutInstrAt(off9,off10,dofromto->line,dofromto->file);
+                        	off10 = _NclPutInstr(STOPSEQ,dofromto->line,dofromto->file);
+				_NclPutInstrAt(off9,off10,dofromto->line,dofromto->file);
 
-                        _NclPutInstrAt(off3, _NclGetCurrentOffset(),dofromto->line,dofromto->file);
+                        	_NclPutInstrAt(off3, _NclGetCurrentOffset(),dofromto->line,dofromto->file);
+			} else {
+				off1 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
+				if(dofromto->file == NULL) {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) is being ingnored",(cmd_line ? dofromto->line - 1 : dofromto->line));
+				} else {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) in file (%s) is being ingnored",dofromto->line, dofromto->file);
+				}
+			}
                         break;
 
 		}
@@ -391,129 +401,140 @@ if(groot != NULL) {
                         int off9 = -1;
                         int off10 = -1;
                         int off11 = -1;
+		
+			if(dofromtostride->block_stmnt_list != NULL) {	
+				off1 = _NclTranslate(dofromtostride->end_expr,fp);
+				_NclPutInstr(ASSIGN_VAR_OP,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
 			
-			off1 = _NclTranslate(dofromtostride->end_expr,fp);
-			_NclPutInstr(ASSIGN_VAR_OP,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+				_NclTranslate(dofromtostride->stride_expr,fp);
+				_NclPutInstr(ASSIGN_VAR_OP,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr((NclValue)dofromtostride->inc_sym,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
 			
-			_NclTranslate(dofromtostride->stride_expr,fp);
-			_NclPutInstr(ASSIGN_VAR_OP,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr((NclValue)dofromtostride->inc_sym,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+				_NclTranslate(dofromtostride->start_expr,fp);
+				_NclPutInstr(DUP_TOFS,dofromtostride->line,dofromtostride->file);
 			
-			_NclTranslate(dofromtostride->start_expr,fp);
-			_NclPutInstr(DUP_TOFS,dofromtostride->line,dofromtostride->file);
-			
-			((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_WRITEIT;
-			_NclTranslate(dofromtostride->inc_var,fp);
+				((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_WRITEIT;
+				_NclTranslate(dofromtostride->inc_var,fp);
 /*
 * Start expr is left on top of stack
 */
 
-			_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
-                        _NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
-                        _NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
+                        	_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
+                        	_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
 
-			_NclPutInstr(LE_OP,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr(DUP_TOFS,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(LE_OP,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(DUP_TOFS,dofromtostride->line,dofromtostride->file);
 /*
 * 
 */			
-			_NclPutInstr(ASSIGN_VAR_OP,dofromtostride->line,dofromtostride->file);
-                        _NclPutInstr((NclValue)dofromtostride->dir_sym,dofromtostride->line,dofromtostride->file);
-                        _NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(ASSIGN_VAR_OP,dofromtostride->line,dofromtostride->file);
+                        	_NclPutInstr((NclValue)dofromtostride->dir_sym,dofromtostride->line,dofromtostride->file);
+                        	_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
 		
-			_NclPutInstr(JMPFALSE,dofromtostride->line,dofromtostride->file);
-			off2 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(JMPFALSE,dofromtostride->line,dofromtostride->file);
+				off2 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
 
-			((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_READIT;
-			_NclTranslate(dofromtostride->inc_var,fp);
-			_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
-                        _NclPutInstr(0,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr(LE_OP,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr(JMP,dofromtostride->line,dofromtostride->file);
-			off7 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
+				((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_READIT;
+				_NclTranslate(dofromtostride->inc_var,fp);
+				_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
+                        	_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(LE_OP,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(JMP,dofromtostride->line,dofromtostride->file);
+				off7 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
 
-			((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_READIT;
-                        off3 = _NclTranslate(dofromtostride->inc_var,fp);
-			_NclPutInstrAt(off2,off3,dofromtostride->line,dofromtostride->file);      
+				((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_READIT;
+                        	off3 = _NclTranslate(dofromtostride->inc_var,fp);
+				_NclPutInstrAt(off2,off3,dofromtostride->line,dofromtostride->file);      
 
-			_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
-                        _NclPutInstr(0,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr(GE_OP,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
+                        	_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(GE_OP,dofromtostride->line,dofromtostride->file);
 
-			off8 = _NclPutInstr(DO_FROM_TO_OP,dofromtostride->line,dofromtostride->file);      
-			_NclPutInstrAt(off7,off8,dofromtostride->line,dofromtostride->file);      
-			off2 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr((NclValue)dofromtostride->dir_sym,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr((NclValue)dofromtostride->inc_sym,dofromtostride->line,dofromtostride->file);
+				off8 = _NclPutInstr(DO_FROM_TO_OP,dofromtostride->line,dofromtostride->file);      
+				_NclPutInstrAt(off7,off8,dofromtostride->line,dofromtostride->file);      
+				off2 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr((NclValue)dofromtostride->dir_sym,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr((NclValue)dofromtostride->inc_sym,dofromtostride->line,dofromtostride->file);
 			
-			_NclPutInstr(JMP,dofromtostride->line,dofromtostride->file);      
-			off3 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(JMP,dofromtostride->line,dofromtostride->file);      
+				off3 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
 			
-			step = dofromtostride->block_stmnt_list;
-			if(step != NULL) {
-				off4 = _NclTranslate(step->node,fp);
-				step = step->next;
+				step = dofromtostride->block_stmnt_list;
+				if(step != NULL) {
+					off4 = _NclTranslate(step->node,fp);
+					step = step->next;
+				}
+				_NclPutInstrAt(off2,off4,dofromtostride->line,dofromtostride->file);
+				while(step != NULL) {
+					_NclTranslate(step->node,fp);
+					step = step->next;
+				}
+	
+				((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_READIT;
+				_NclTranslate(dofromtostride->inc_var,fp);
+	
+				_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr((NclValue)dofromtostride->inc_sym,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+
+				_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr((NclValue)dofromtostride->dir_sym,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(JMPFALSE,dofromtostride->line,dofromtostride->file);
+				off9 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
+
+				_NclPutInstr(PLUS_OP,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(JMP,dofromtostride->line,dofromtostride->file);
+				off11 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
+				off10 = _NclPutInstr(MINUS_OP,dofromtostride->line,dofromtostride->file);
+				_NclPutInstrAt(off9,off10,dofromtostride->line,dofromtostride->file);
+
+
+				((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_WRITEIT;
+				off10 = _NclTranslate(dofromtostride->inc_var,fp);     
+				_NclPutInstrAt(off11,off10,dofromtostride->line,dofromtostride->file);
+			
+
+				_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);      
+				_NclPutInstr((NclValue)dofromtostride->dir_sym,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+			
+				_NclPutInstr(JMPFALSE,dofromtostride->line,dofromtostride->file);
+				off5 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
+				((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_READIT;                   
+                        	_NclTranslate(dofromtostride->inc_var,fp);     
+				_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);      
+				_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(LE_OP,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(JMP,dofromtostride->line,dofromtostride->file);
+				off6 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
+				_NclTranslate(dofromtostride->inc_var,fp);
+				 _NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
+                        	_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
+                        	_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+				_NclPutInstr(GE_OP,dofromtostride->line,dofromtostride->file);
+				_NclPutInstrAt(off5,off6,dofromtostride->line,dofromtostride->file);
+				off7 = _NclPutInstr(STOPSEQ,dofromtostride->line,dofromtostride->file);
+				_NclPutInstrAt(off6,off7,dofromtostride->line,dofromtostride->file);
+				_NclPutInstrAt(off3,_NclGetCurrentOffset(),dofromtostride->line,dofromtostride->file);      
+			} else {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) being ingnored",dofromtostride->line);
+				off1 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
+				if(dofromtostride->file == NULL) {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) is being ingnored",(cmd_line ? dofromtostride->line - 1 : dofromtostride->line));
+				} else {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) in file (%s) is being ingnored",dofromtostride->line ,dofromtostride->file);
+				}
+
 			}
-			_NclPutInstrAt(off2,off4,dofromtostride->line,dofromtostride->file);
-			while(step != NULL) {
-				_NclTranslate(step->node,fp);
-				step = step->next;
-			}
-
-			((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_READIT;
-			_NclTranslate(dofromtostride->inc_var,fp);
-
-			_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr((NclValue)dofromtostride->inc_sym,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
-
-			_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr((NclValue)dofromtostride->dir_sym,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr(JMPFALSE,dofromtostride->line,dofromtostride->file);
-			off9 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
-
-			_NclPutInstr(PLUS_OP,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr(JMP,dofromtostride->line,dofromtostride->file);
-			off11 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
-			off10 = _NclPutInstr(MINUS_OP,dofromtostride->line,dofromtostride->file);
-			_NclPutInstrAt(off9,off10,dofromtostride->line,dofromtostride->file);
-
-
-			((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_WRITEIT;
-			off10 = _NclTranslate(dofromtostride->inc_var,fp);     
-			_NclPutInstrAt(off11,off10,dofromtostride->line,dofromtostride->file);
-			
-
-			_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);      
-			_NclPutInstr((NclValue)dofromtostride->dir_sym,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
-			
-			_NclPutInstr(JMPFALSE,dofromtostride->line,dofromtostride->file);
-			off5 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
-			((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_READIT;                   
-                        _NclTranslate(dofromtostride->inc_var,fp);     
-			_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);      
-			_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr(LE_OP,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr(JMP,dofromtostride->line,dofromtostride->file);
-			off6 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
-			_NclTranslate(dofromtostride->inc_var,fp);
-			 _NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
-                        _NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
-                        _NclPutInstr(0,dofromtostride->line,dofromtostride->file);
-			_NclPutInstr(GE_OP,dofromtostride->line,dofromtostride->file);
-			_NclPutInstrAt(off5,off6,dofromtostride->line,dofromtostride->file);
-			off7 = _NclPutInstr(STOPSEQ,dofromtostride->line,dofromtostride->file);
-			_NclPutInstrAt(off6,off7,dofromtostride->line,dofromtostride->file);
-			_NclPutInstrAt(off3,_NclGetCurrentOffset(),dofromtostride->line,dofromtostride->file);      
 			break;
 
 		}			
@@ -1218,25 +1239,34 @@ Unneeded translations
 		case Ncl_DOWHILE:
 		{
 			NclDoWhile *dowhilel = (NclDoWhile*)root;
-			off1 = _NclPutInstr(DO_WHILE_OP,dowhilel->line,dowhilel->file);
-			off2 = _NclPutInstr(NOOP,dowhilel->line,dowhilel->file);
-			off3 = _NclPutInstr(NOOP,dowhilel->line,dowhilel->file);
-			_NclPutInstr(JMP,dowhilel->line,dowhilel->file);
-			off4 = _NclPutInstr(NOOP,dowhilel->line,dowhilel->file);	
-			_NclPutInstrAt(off2,_NclTranslate(dowhilel->cond_expr,fp),dowhilel->line,dowhilel->file);
-			_NclPutInstr(STOPSEQ,dowhilel->line,dowhilel->file);
-			step = dowhilel->stmnts;
-			if(step != NULL) {
-				off5 = _NclTranslate(step->node,fp);
-				step = step->next;
+			if(dowhilel->stmnts != NULL) {
+				off1 = _NclPutInstr(DO_WHILE_OP,dowhilel->line,dowhilel->file);
+				off2 = _NclPutInstr(NOOP,dowhilel->line,dowhilel->file);
+				off3 = _NclPutInstr(NOOP,dowhilel->line,dowhilel->file);
+				_NclPutInstr(JMP,dowhilel->line,dowhilel->file);
+				off4 = _NclPutInstr(NOOP,dowhilel->line,dowhilel->file);	
+				_NclPutInstrAt(off2,_NclTranslate(dowhilel->cond_expr,fp),dowhilel->line,dowhilel->file);
+				_NclPutInstr(STOPSEQ,dowhilel->line,dowhilel->file);
+				step = dowhilel->stmnts;
+				if(step != NULL) {
+					off5 = _NclTranslate(step->node,fp);
+					step = step->next;
+				}
+				_NclPutInstrAt(off3,off5,dowhilel->line,dowhilel->file);
+				while(step != NULL) {
+					(void)_NclTranslate(step->node,fp);
+					step = step->next;
+				}
+				_NclPutInstr(STOPSEQ,dowhilel->line,dowhilel->file);
+				_NclPutInstrAt(off4,_NclGetCurrentOffset(),dowhilel->line,dowhilel->file);
+			} else {
+				off1 = _NclPutInstr(NOOP,dowhilel->line,dowhilel->file);
+				if(dowhilel->file== NULL) {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) is being ingnored",(cmd_line ? dowhilel->line - 1 : dowhilel->line));
+				} else {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) in file (%s) is being ingnored",dowhilel->line, dowhilel->file);
+				}
 			}
-			_NclPutInstrAt(off3,off5,dowhilel->line,dowhilel->file);
-			while(step != NULL) {
-				(void)_NclTranslate(step->node,fp);
-				step = step->next;
-			}
-			_NclPutInstr(STOPSEQ,dowhilel->line,dowhilel->file);
-			_NclPutInstrAt(off4,_NclGetCurrentOffset(),dowhilel->line,dowhilel->file);
 			break;
 		}
 		case Ncl_VAR:

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: string_ops.c.sed,v 1.4 1994-09-01 17:42:21 ethan Exp $
+ *      $Id: string_ops.c.sed,v 1.5 1994-10-29 00:58:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1878,18 +1878,18 @@ FILE *fp;
 	}
 	while(!done) {
 		where = 0;
-		fprintf(fp,"(");
+		nclfprintf(fp,"(");
 		for(k = 0; k < ndims - 1; k++) {
-			fprintf(fp,"%d,",i[k]);
+			nclfprintf(fp,"%d,",i[k]);
 			where = (where + i[k]) * j[k+1];
 		}
-		fprintf(fp,"%d)\t",i[ndims-1]);
+		nclfprintf(fp,"%d)\t",i[ndims-1]);
 		where = where + i[ndims - 1];
 
 		if(((string*)(self_md->multidval.val))[where] != -1) {
-			fprintf(fp,"%s\n",NrmQuarkToString(((string*)(self_md->multidval.val))[where]));
+			nclfprintf(fp,"%s\n",NrmQuarkToString(((string*)(self_md->multidval.val))[where]));
 		} else {
-			fprintf(fp,"<NULL>\n");
+			nclfprintf(fp,"<NULL>\n");
 		}
 		i[ndims - 1]++;
 		if(i[ndims - 1] == j[ndims - 1]) {

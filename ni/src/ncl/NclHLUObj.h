@@ -3,12 +3,38 @@
 
 #include "NclData.h"
 
+typedef struct _NclHLUObjRec *NclHLUObj;
+typedef NhlErrorTypes (*NclAddHLUChild)(
+#if  NhlNeedProto
+NclHLUObj	/* self */,
+int /*sym_q*/
+#endif
+);
+
+typedef NhlErrorTypes (*NclDelHLUChild)(
+#if  NhlNeedProto
+NclHLUObj	/* self */,
+int /*sym_q*/
+#endif
+);
+
 typedef struct _NclHLUObjClassPart {
-	char *foo;
+	NclDelHLUChild  del_hlu_child;
+	NclAddHLUChild	add_hlu_child;
 } NclHLUObjClassPart;
+
+struct _NclHLUChildList {
+	NclQuark child_id;
+	struct _NclHLUChildList * next;
+};
+
+typedef struct _NclHLUChildList NclHLUChildList;
+
 
 typedef struct _NclHLUObjPart {
 	int hlu_id;
+	int parent_hluobj_id;
+	NclHLUChildList *c_list;
 }NclHLUObjPart;
  
 typedef struct _NclHLUObjClassRec{
@@ -21,7 +47,6 @@ typedef struct _NclHLUObjRec {
 	NclHLUObjPart	hlu;
 }NclHLUObjRec;
 
-typedef NclHLUObjRec *NclHLUObj;
 typedef NclHLUObjClassRec *NclHLUObjClass;
 
 extern NclObjClass nclHLUObjClass;
@@ -35,7 +60,8 @@ NclObjClass /*theclass */,
 NclObjTypes /*obj_type */, 
 unsigned int /*obj_type_mask*/, 
 NclStatus /*status*/, 
-int /*id*/
+int /*id*/,
+int /* pid*/
 #endif
 );
 

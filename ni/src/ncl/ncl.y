@@ -13,6 +13,8 @@
 #include "Machine.h"
 #include <errno.h>
 #include <ctype.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 int scopelevel = 0;
 extern int yydebug;
 extern char yytext[];
@@ -27,6 +29,7 @@ extern char cur_line_text[512];
 extern int ok_to_start_vsblk;
 #define ERROR(x)  NhlPError(NhlFATAL,NhlEUNKNOWN,"%s",(x))
 int is_error = 0;
+int ret_urn = 0;
 /*
 extern int _NclTranslate(
 #ifdef NhlNeedProto
@@ -61,13 +64,14 @@ char *cur_load_file = NULL;
 }
 
 %token	<void> EOLN 
+%token  <void> EOFF
 %token	<void> RP LP RBC LBC RBK LBK COLON ',' '*' SEMI MARKER LPSLSH SLSHRP DIM_MARKER
 %token <integer> INT DIMNUM
 %token <real> REAL
-%token <str> STRING DIM DIMNAME ATTNAME COORD FVAR 
+%token <str> STRING DIM DIMNAME ATTNAME COORDV FVAR 
 %token <sym> INTEGER FLOAT LONG DOUBLE BYTE CHARACTER GRAPHIC STRNG NUMERIC FILETYPE SHORT LOGICAL
-%token <sym> UNDEF VAR WHILE DO QUIT PROC EPROC NPROC IPROC UNDEFFILEVAR BREAK NOPARENT
-%token <sym> BGIN END FUNC EFUNC NFUNC IFUNC FDIM IF THEN VBLKNAME FILEVAR CONTINUE
+%token <sym> UNDEF VAR WHILE DO QUIT PROC EPROC NPROC PIPROC IPROC UNDEFFILEVAR BREAK NOPARENT
+%token <sym> BGIN END FUNC EFUNC NFUNC IFUNC FDIM IF THEN VBLKNAME CONTINUE
 %token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL RETURN VSBLKGET LOAD NEW
 %token <sym> OBJVAR OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP
 %token '='
@@ -102,7 +106,7 @@ char *cur_load_file = NULL;
 %left UNOP NOT
 %type <array> expr_list
 %type <src_node> statement assignment 
-%type <src_node> procedure function_def procedure_def block do conditional
+%type <src_node> procedure function_def procedure_def fp_block block do conditional
 %type <src_node> visblk statement_list
 %type <src_node> declaration identifier expr v_parent 
 %type <src_node> subscript0 break_cont vcreate
@@ -125,16 +129,10 @@ statement_list :  statement eoln			{
 									_NclExecute(strt);
 									_NclResetNewSymStack();
 									_NclFreeTree();
-#ifdef MAKEAPI
-									return(0);
-#endif
 								} else {
 									_NclDeleteNewSymStack();
 									_NclFreeTree();
 									is_error = 0;
-#ifdef MAKEAPI
-									return(1);
-#endif
 								}
 								if(cmd_line) {
 									fprintf(stdout,"ncl %d> ",cur_line_number);
@@ -151,16 +149,10 @@ statement_list :  statement eoln			{
 									_NclExecute(strt);
 									_NclResetNewSymStack();
 									_NclFreeTree();
-#ifdef MAKEAPI
-									return(0);
-#endif 
 								} else {
 									_NclDeleteNewSymStack();
 									_NclFreeTree();
 									is_error = 0;
-#ifdef MAKEAPI
-									return(1);
-#endif
 								}
 								if(cmd_line)
 									fprintf(stdout,"ncl %d> ",cur_line_number);
@@ -179,9 +171,6 @@ statement_list :  statement eoln			{
 								}
 								if(cmd_line)
 									fprintf(stdout,"ncl %d> ",cur_line_number);
-#ifdef MAKEAPI
-									return(0);
-#endif 
 							}
 	| RECORD STRING eoln				{ 
 								recfp = fopen(_NGResolvePath($2),"w"); 
@@ -194,9 +183,6 @@ statement_list :  statement eoln			{
 								if(cmd_line) {
 									fprintf(stdout,"ncl %d> ",cur_line_number);
 								}
-#ifdef MAKEAPI
-									return(0);
-#endif 
 							}
 /*
 * This can not be used through the API because the API has as different way of
@@ -206,54 +192,82 @@ statement_list :  statement eoln			{
 	| LOAD STRING eoln				{
 #ifndef MAKEAPI
 								FILE *tmp_file;
-	
 
-								if(loading) {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"Recursive script file loading is not supported");
+								tmp_file = fopen(_NGResolvePath($2),"r");	
+								if(tmp_file != NULL) {
+									_NclPushNewInputFile(tmp_file,$2,cur_line_number);
+									cur_line_number = 0;
+									loading += 1;
+									cmd_line = isatty(fileno(tmp_file));
 								} else {
-									tmp_file = fopen(_NGResolvePath($2),"r");	
-									if(tmp_file != NULL) {
-										top_level_line = cur_line_number + 1;
-										cur_line_number = 0;
-										yyin = tmp_file;
-										cmd_line = isatty(fileno(tmp_file));
-										loading = 1;
-										cur_load_file = (char*)NclMalloc((unsigned)strlen($2)+1);
-										strcpy(cur_load_file,$2);
-									} else {
-										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$2);
-										loading = 0;
-									}
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$2);
 								}
 								if(cmd_line) {
 									fprintf(stdout,"ncl %d> ",cur_line_number);
 								}
+#else
+								FILE *tmp_file;
+								const char * tmp;
+								char * tmp_input;
+								struct stat buff;
+								tmp = _NGResolvePath($2);
+								if(stat(tmp,&buff) != -1) {
+									tmp_file = fopen(tmp,"r");
+									if(tmp_file != NULL) {
+										tmp_input = (char*)NclMalloc(buff.st_size);
+										if(fread((void*)tmp_input,sizeof(char),buff.st_size/sizeof(char),tmp_file)<0) {
+											NhlPError(NhlWARNING,NhlEUNKNOWN,"Error opening file: %s",$2);
+										}
+										_NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
+										cur_line_number = 0;
+										fclose(tmp_file);
+										loading += 1;
+									}	
+								} else {
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",tmp);
+								}
+#endif
 							}
-	| statement_list LOAD STRING eoln				{
+	| statement_list LOAD STRING eoln		{
+#ifndef MAKEAPI
 								FILE *tmp_file;
 	
 
-								if(loading) {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"Recursive script file loading is not supported");
+								tmp_file = fopen(_NGResolvePath($3),"r");	
+								if(tmp_file != NULL) {
+									_NclPushNewInputFile(tmp_file,$3,cur_line_number);
+									cur_line_number = 0;
+									loading += 1;
+									cmd_line = isatty(fileno(tmp_file));
 								} else {
-									tmp_file = fopen(_NGResolvePath($3),"r");	
-									if(tmp_file != NULL) {
-										top_level_line = cur_line_number + 1;
-										cur_line_number = 0;
-										yyin = tmp_file;
-										loading = 1;
-										cur_load_file = (char*)NclMalloc(strlen((char*)$3)+1);
-										cmd_line = isatty(fileno(tmp_file));
-										strcpy(cur_load_file,$3);
-									} else {
-										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$3);
-										loading = 0;
-									}
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$3);
 								}
 								if(cmd_line) {
 									fprintf(stdout,"ncl %d> ",cur_line_number);
 								}
+#else
+								FILE *tmp_file;
+								const char * tmp;
+								char * tmp_input;
+								struct stat buff;
+								tmp = _NGResolvePath($3);
+								if(stat(tmp,&buff) != -1) {
+									tmp_file = fopen(tmp,"r");
+									if(tmp_file != NULL) {
+										tmp_input = (char*)NclMalloc(buff.st_size);
+										if(fread((void*)tmp_input,sizeof(char),buff.st_size/sizeof(char),tmp_file)<0) {
+											NhlPError(NhlWARNING,NhlEUNKNOWN,"Error opening file: %s",$3);
+										}
+										_NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
+										cur_line_number = 0;
+										fclose(tmp_file);
+										loading += 1;
+									}	
+								} else {
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",tmp);
+								}
 #endif
+								$$ = NULL;
 							}
 ;
 
@@ -358,65 +372,105 @@ block_statement_list : statement eoln {
 */
 	| LOAD STRING eoln				{
 #ifndef MAKEAPI
-								FILE *tmp_file;
-	
+                                                                FILE *tmp_file;
 
-								if(loading) {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"Recursive script file loading is not supported");
-								} else {
-									tmp_file = fopen(_NGResolvePath($2),"r");	
-									if(tmp_file != NULL) {
-										top_level_line = cur_line_number +1;
-										cur_line_number = 0;
-										yyin = tmp_file;
-										cmd_line = isatty(fileno(tmp_file));
-										loading = 1;
-										cur_load_file = (char*)NclMalloc((unsigned)strlen($2)+1);
-										strcpy(cur_load_file,$2);
-									} else {
-										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$2);
-										loading = 0;
-									}
-								}
+                                                                tmp_file = fopen(_NGResolvePath($2),"r");
+                                                                if(tmp_file != NULL) {
+                                                                        _NclPushNewInputFile(tmp_file,$2,cur_line_number);
+                                                                        cur_line_number = 0;
+                                                                        loading += 1;
+                                                                        cmd_line = isatty(fileno(tmp_file));
+                                                                } else {
+                                                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$2);
+                                                                }
+                                                                if(cmd_line) {
+                                                                        fprintf(stdout,"ncl %d> ",cur_line_number);
+                                                                }
+#else
+                                                                FILE *tmp_file;
+                                                                const char * tmp;
+                                                                char * tmp_input;
+                                                                struct stat buff;
+                                                                tmp = _NGResolvePath($2);
+                                                                if(stat(tmp,&buff) != -1) {
+                                                                        tmp_file = fopen(tmp,"r");
+                                                                        if(tmp_file != NULL) {
+                                                                                tmp_input = (char*)NclMalloc(buff.st_size);
+                                                                                if(fread((void*)tmp_input,sizeof(char),buff.st_size/sizeof(char),tmp_file)<0) {
+                                                                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Error opening file: %s",$2);
+                                                                                }
+                                                                                _NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
+                                                                                cur_line_number = 0;
+                                                                                fclose(tmp_file);
+                                                                                loading += 1;
+                                                                        }
+                                                                } else {
+                                                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",tmp);
+                                                                }
 #endif
 								$$ = NULL;
 							}
 	| block_statement_list LOAD STRING eoln				{
 #ifndef MAKEAPI
-								FILE *tmp_file;
-	
+                                                                FILE *tmp_file;
 
-								if(loading) {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"Recursive script file loading is not supported");
-								} else {
-									tmp_file = fopen(_NGResolvePath($3),"r");	
-									if(tmp_file != NULL) {
-										top_level_line = cur_line_number +1;
-										cur_line_number = 0;
-										yyin = tmp_file;
-										cmd_line = isatty(fileno(tmp_file));
-										loading = 1;
-										cur_load_file = (char*)NclMalloc((unsigned)strlen((char*)$3)+1);
-										strcpy(cur_load_file,$3);
-									} else {
-										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$3);
-										loading = 0;
-									}
-								}
+
+                                                                tmp_file = fopen(_NGResolvePath($3),"r");
+                                                                if(tmp_file != NULL) {
+                                                                        _NclPushNewInputFile(tmp_file,$3,cur_line_number);
+                                                                        cur_line_number = 0;
+                                                                        loading += 1;
+                                                                        cmd_line = isatty(fileno(tmp_file));
+                                                                } else {
+                                                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$3);
+                                                                }
+                                                                if(cmd_line) {
+                                                                        fprintf(stdout,"ncl %d> ",cur_line_number);
+                                                                }
+#else
+                                                                FILE *tmp_file;
+                                                                const char * tmp;
+                                                                char * tmp_input;
+                                                                struct stat buff;
+                                                                tmp = _NGResolvePath($3);
+                                                                if(stat(tmp,&buff) != -1) {
+                                                                        tmp_file = fopen(tmp,"r");
+                                                                        if(tmp_file != NULL) {
+                                                                                tmp_input = (char*)NclMalloc(buff.st_size);
+                                                                                if(fread((void*)tmp_input,sizeof(char),buff.st_size/sizeof(char),tmp_file)<0) {
+                                                                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Error opening file: %s",$3);
+                                                                                }
+                                                                                _NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
+                                                                                cur_line_number = 0;
+                                                                                fclose(tmp_file);
+                                                                                loading += 1;
+                                                                        }
+                                                                } else {
+                                                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",tmp);
+                                                                }
+
 #endif
 								$$ = $1;
 							}
 ;
 
 opt_eoln : 		{ /* do nothing */ }
-	| eoln		{ 
-				yyerrok; 
+	| opt_eoln eoln	{ 
+				yyerrok;
 				if(cmd_line)
-                                      fprintf(stdout,"ncl %d> ",cur_line_number);
-			}
+					fprintf(stdout,"ncl %d> ",cur_line_number);
+			}	
 ;
 
+
 eoln : EOLN 						{ yyerrok; }
+	| EOFF						{ 
+								yyerrok;
+#ifdef MAKEAPI
+								ret_urn = 1;
+#endif
+							}
+;
 
 statement :     					{ $$ = NULL; }
 	| 	assignment 				{
@@ -710,10 +764,10 @@ resource : 					{
 	| STRING COLON RKEY FVAR LP subscript_list RP	{
 					 		$$ = NULL;
 						}
-	| STRING COLON RKEY COORD		{	
+	| STRING COLON RKEY COORDV		{	
 						 	$$ = NULL;
 						}
-	| STRING COLON RKEY COORD LP subscript_list RP  	{
+	| STRING COLON RKEY COORDV LP subscript_list RP  	{
 							 	$$ = NULL;
 							}
 	| STRING COLON RKEY ATTNAME		{
@@ -771,8 +825,36 @@ block : BGIN block_statement_list END	{ $$ = _NclMakeBlock($2); }
 					$$ = _NclMakeBlock(tmp); 
 				}
 ;
+fp_block : BGIN block_statement_list END	{ $$ = _NclMakeBlock($2); }
+	| BGIN statement END	{ 
+					NclSrcListNode *tmp = NULL ;
+					if($2 != NULL) {
+                                       		tmp = _NclMakeNewListNode();
+                                        	tmp->next = NULL;
+                                               	tmp->node = $2;
+	                                } 
+					$$ = _NclMakeBlock(tmp); 
+				}
+;
 
 procedure : IPROC opt_arg_list    {
+						NclSrcListNode *step;
+						int count = 0;
+					
+						step = $2;
+						while(step != NULL) {
+							count++;
+							step = step->next;
+						}
+						if(count != $1->u.procfunc->nargs) {
+							is_error += 1;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+							$$ = NULL;
+						} else {
+							$$ = _NclMakeProcCall($1,$2,Ncl_INTRINSICPROCCALL); 
+						}
+				}
+	| PIPROC opt_arg_list    {
 						NclSrcListNode *step;
 						int count = 0;
 					
@@ -808,7 +890,10 @@ procedure : IPROC opt_arg_list    {
 				}
 	| EPROC opt_arg_list	{ $$ = _NclMakeProcCall($1,$2,Ncl_EXTERNALPROCCALL); }
 	| NPROC opt_arg_list	{ $$ = _NclMakeProcCall($1,$2,Ncl_PROCCALL); }
-	| IPROC 			{ 
+	| PIPROC 		{ 
+					$$ = _NclMakeProcCall($1,NULL,Ncl_INTRINSICPROCCALL); 
+				}
+	| IPROC 		{ 
 					$$ = _NclMakeProcCall($1,NULL,Ncl_INTRINSICPROCCALL); 
 				}
 	| PROC 			{ 
@@ -869,6 +954,10 @@ arg_list: expr					{
 						}
 ;
 func_identifier: KEYFUNC UNDEF { _NclNewScope(); $$ = $2; }
+/*
+	| KEYFUNC pfname { NhlPError(NhlFATAL,NhlEUNKNOWN,"Function identifier is defined");_NclNewScope(); $$ = NULL; }
+	| KEYFUNC VAR { NhlPError(NhlFATAL,NhlEUNKNOWN,"Function identifier is defined");_NclNewScope(); $$ = NULL; }
+*/
 ;
 
 local_list: vname {
@@ -898,7 +987,7 @@ local_list: vname {
 			}
 			}
 ;
-function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolType($1,NFUNC);_NclAddProcFuncInfoToSym($1,$3); } block		
+function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolType($1,NFUNC);_NclAddProcFuncInfoToSym($1,$3); } fp_block		
 								{  
 									NclSymTableListNode *tmp;
 
@@ -906,12 +995,13 @@ function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolT
 										_NclDeleteNewSymStack();
 										tmp = _NclPopScope();	
 										$$ = NULL;
+										is_error += 1;
 									}else {
 										tmp = _NclPopScope();	
 										$$ = _NclMakeNFunctionDef($1,$3,$7,tmp);  
 									}
 								}
-	|  func_identifier  LP arg_dec_list  RP opt_eoln LOCAL opt_eoln local_list opt_eoln {_NclChangeSymbolType($1,NFUNC); _NclAddProcFuncInfoToSym($1,$3); } block
+	|  func_identifier  LP arg_dec_list  RP opt_eoln LOCAL opt_eoln local_list opt_eoln {_NclChangeSymbolType($1,NFUNC); _NclAddProcFuncInfoToSym($1,$3); } fp_block
 								{  
 									NclSymTableListNode *tmp;
 
@@ -919,6 +1009,7 @@ function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolT
 										_NclDeleteNewSymStack();
 										tmp = _NclPopScope();	
 										$$ = NULL;
+										is_error += 1;
 									}else {
 										tmp = _NclPopScope();	
 										$$ = _NclMakeNFunctionDef($1,$3,$11,tmp);  
@@ -949,6 +1040,11 @@ function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolT
 */
 			(void)_NclPopScope();
 	}
+	| KEYFUNC error {
+		is_error += 1;
+		 NhlPError(NhlFATAL,NhlEUNKNOWN,"Function identifier is defined");
+		$$ = NULL;
+	}
 /*
 	| EXTERNAL func_identifier LP arg_dec_list RP opt_eoln local_arg_dec_list eoln error {
 						ERROR("syntax error: EXPECTING A 'begin'");
@@ -956,7 +1052,7 @@ function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolT
 */
 ;
 
-arg_dec_list :			{ $$ = NULL; }
+arg_dec_list : 			{ $$ = NULL; }
 	| opt_eoln the_list { $$ = $2; }
 ; 
 
@@ -1049,6 +1145,9 @@ declaration : vname {
 pfname : IFUNC		{
 				$$ = $1;
 			}
+	| PIPROC	{
+				$$ = $1;
+			}
 	| NFUNC		{		
 				$$ = $1;
 			}
@@ -1122,7 +1221,7 @@ dim_size_list : LBK INT RBK		{
 
 proc_identifier: KEYPROC UNDEF { _NclNewScope(); $$ = $2; }
 ;
-procedure_def : proc_identifier LP arg_dec_list RP opt_eoln LOCAL opt_eoln local_list opt_eoln {_NclChangeSymbolType($1,NPROC);_NclAddProcFuncInfoToSym($1,$3); } block   {
+procedure_def : proc_identifier LP arg_dec_list RP opt_eoln LOCAL opt_eoln local_list opt_eoln {_NclChangeSymbolType($1,NPROC);_NclAddProcFuncInfoToSym($1,$3); } fp_block   {
 								NclSymTableListNode *tmp;
 								if(is_error) {
 									_NclDeleteNewSymStack();
@@ -1132,7 +1231,7 @@ procedure_def : proc_identifier LP arg_dec_list RP opt_eoln LOCAL opt_eoln local
 								$$ = _NclMakeProcDef($1,$3,$11,tmp);
 									
 							}
-	| proc_identifier LP arg_dec_list RP opt_eoln {_NclChangeSymbolType($1,NPROC);_NclAddProcFuncInfoToSym($1,$3); } block   {
+	| proc_identifier LP arg_dec_list RP opt_eoln {_NclChangeSymbolType($1,NPROC);_NclAddProcFuncInfoToSym($1,$3); } fp_block   {
 								NclSymTableListNode *tmp;
 								if(is_error) {
 									_NclDeleteNewSymStack();
@@ -1201,13 +1300,13 @@ identifier : vname {
         | vname FVAR ATTNAME LP subscript_list RP	{
 						$$ = _NclMakeFileVarAttRef($1,&(($2)[2]),$3,$5);
 					}
-	| vname FVAR COORD			{
+	| vname FVAR COORDV			{
 						$$ = _NclMakeFileVarCoordRef($1,&(($2)[2]),&(($3)[1]),NULL);
 					}
-	| vname FVAR COORD ATTNAME {
+	| vname FVAR COORDV ATTNAME {
 						$$ = _NclMakeFileVarCoordRef($1,&(($2)[2]),&(($3)[1]),NULL);
 					}
-	| vname FVAR COORD LP subscript_list RP{
+	| vname FVAR COORDV LP subscript_list RP{
 						$$ = _NclMakeFileVarCoordRef($1,&(($2)[2]),&(($3)[1]),$5);
 					}
 	| vname DIM_MARKER primary  {
@@ -1228,13 +1327,13 @@ identifier : vname {
         | vname LP subscript_list RP {
 						$$ = _NclMakeVarRef($1,$3);
 					}
-	| vname COORD			{
+	| vname COORDV			{
 						$$ = _NclMakeVarCoordRef($1,&(($2)[1]),NULL);
 					}
-	| vname COORD LP subscript_list RP{
+	| vname COORDV LP subscript_list RP{
 						$$ = _NclMakeVarCoordRef($1,&(($2)[1]),$4);
 					}
-	| vname COORD ATTNAME		{
+	| vname COORDV ATTNAME		{
 						$$ = _NclMakeVarCoordRef($1,&(($2)[1]),NULL);
 					}
 ;

@@ -39,7 +39,8 @@ Ncl_MultiDValHLUObjData =    040000,
 Ncl_MultiDVallogicalData =    0100000,
 Ncl_HLUObj = 0200000,
 Ncl_File = 0400000,
-Ncl_FileVar = 01000000
+Ncl_FileVar = 01000000,
+Ncl_HLUVar = 02000000
 } NclObjTypes;
 
 /*
@@ -109,10 +110,11 @@ typedef struct _NclMultiDValDataRec *NclMultiDValData;
 typedef struct _NclDataRec *NclData;
 
 typedef struct _NclObjList {
-	int 	freed;
+	int	id;
 	NclObjTypes obj_type;
 	unsigned int obj_type_mask;
 	NclObj	theobj;
+	struct _NclObjList *next;
 } NclObjList;
 
 typedef enum {  Ncl_SUBSCR, Ncl_VECSUBSCR, Ncl_SUB_ALL, Ncl_SUB_VAL_DEF, Ncl_SUB_DEF_VAL } NclSelectionTypes;

@@ -24,20 +24,22 @@ int yywrap()
 {
 	if(loading) {
 #ifdef SunOS
-		nclin = stdin;
+		nclin = _NclPopInputFile();
 #else
-		yyin = stdin;
+		yyin = _NclPopInputFile();
 #endif
-		loading = 0;
+		loading -= 1;
 /*
 * Yeah I know the loses the pointer but the allocated string must
 * remain arround for error reporting even after the file
 * has been loaded. This happens because load statments inside
 * of a block are not executed untill the end of the block 
 */
+/*
 		cur_line_number = top_level_line;
-		cmd_line = isatty(fileno(stdin));
 		cur_load_file = NULL;
+*/
+		cmd_line = isatty(fileno(yyin));
 		if(cmd_line) {
 			fprintf(stdout,"ncl %d> ",cur_line_number);
 

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.17 1994-09-01 17:42:08 ethan Exp $
+ *      $Id: SrcTree.c,v 1.18 1994-10-29 00:57:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1918,9 +1918,6 @@ void _NclPrintSymbol
 		break;
 	case RETURN:
 		fprintf(fp,"%s\t","RETURN");
-		break;
-	case FILEVAR:
-		fprintf(fp,"%s\t","FILEVAR");
 		break;
 	case BREAK:
 		fprintf(fp,"%s\t","BREAK");

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.h,v 1.2 1994-08-25 18:00:42 ethan Exp $
+ *      $Id: NclData.h,v 1.3 1994-10-29 00:57:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -288,7 +288,11 @@ extern struct _NclObjRec *_NclGetObj(
 int /*id*/
 #endif
 );
-
+extern void _NclNumGetObjCals(
+#if NhlNeedProto
+FILE *fp
+#endif
+);
 extern int _NclRegisterObj(
 #if	NhlNeedProto
 NclObj /*self*/
@@ -305,6 +309,13 @@ extern int _NclNumObjs(
 void
 #endif
 );
+
+extern void _NclObjsSize(
+#if NhlNeedProto
+FILE *fp
+#endif
+);
+
 extern void _NclPrintUnfreedObjs(
 #if     NhlNeedProto
 FILE * /*fp*/

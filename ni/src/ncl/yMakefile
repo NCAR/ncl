@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.18 1994-09-01 17:42:25 ethan Exp $
+#      $Id: yMakefile,v 1.19 1994-10-29 00:58:20 ethan Exp $
 #
 #########################################################################
 #									#
@@ -28,8 +28,14 @@
 #
 #	Options:
 
+#define IHaveSubdirs
+
+SUBDIRS = yacc
+
 MYBIN		=	ncl
 MYLIB		=	libncl.a
+MYLIB_API	=	libnclapi.a
+YACC		=	./yacc/byacc
 
 
 #ifdef  HPUX
@@ -37,6 +43,8 @@ ARCH_LIBS	=	-lPW
 #endif
 
 EXTRA_DEFINES = $(OS1_DEF)
+
+API_DEFS	=	-DMAKEAPI
 
 PROG_LIBS	=	$(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 #ifdef  UseInstalled
@@ -60,10 +68,10 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			NclFile.h NclFileInterfaces.h NclHLUObj.h NclMdInc.h \
 			NclMultiDValData.h NclMultiDValHLUObjData.h NclVar.h \
 			OpsFuncs.h OpsList.h SrcTree.h Symbol.h VarSupport.h \
-			NclFileVar.h defs.h
+			NclFileVar.h defs.h NclHLUVar.h HLUSupport.h
 
-API_SRCS	=	NclApi.c
-EXE_SRCS	=	Ncl.c yywrap.c
+API_SRCS	=	NclApi.c scanapi.c parseapi.c 
+EXE_SRCS	=	Ncl.c yywrap.c scanner.c parser.c io.c
 
 APISRCS		=	$(API_SRCS) $(SRCS)
 EXESRCS		=	$(EXE_SRCS) $(SRCS)
@@ -83,10 +91,11 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			NclAtt.c NclData.c NclFile.c NclHLUObj.c \
 			NclMultiDValData.c NclMultiDValHLUObjData.c \
 			NclNetCdf.c NclVar.c OpsFuncs.c Printtoken.c SrcTree.c \
-			Symbol.c Translate.c VarSupport.c NclFileVar.c
+			Symbol.c Translate.c VarSupport.c NclFileVar.c \
+			NclHLUVar.c HLUSupport.c
 
-API_OBJS	=	NclApi.o
-EXE_OBJS	=	Ncl.o yywrap.o
+API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o
+EXE_OBJS	=	Ncl.o yywrap.o scanner.o parser.o io.o
 
 APIOBJS		=	$(API_OBJS) $(OBJS)
 EXEOBJS		=	$(EXE_OBJS) $(OBJS)
@@ -97,8 +106,7 @@ GEN_OBJS	=	NclMultiDValdoubleData.o NclMultiDValfloatData.o \
 			NclMultiDValintData.o NclMultiDVallogicalData.o \
 			NclMultiDVallongData.o NclMultiDValnclfileData.o \
 			NclMultiDValshortData.o NclMultiDValstringData.o \
-			scanner.o parser.o NclMultiDValbyteData.o \
-			NclMultiDValcharData.o
+			NclMultiDValbyteData.o NclMultiDValcharData.o
 
 STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			AddIntrinsics.o AttSupport.o DataSupport.o Execute.o \
@@ -106,10 +114,12 @@ STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			NclAtt.o NclData.o NclFile.o NclHLUObj.o \
 			NclMultiDValData.o NclMultiDValHLUObjData.o \
 			NclNetCdf.o NclVar.o OpsFuncs.o Printtoken.o SrcTree.o \
-			Symbol.o Translate.o VarSupport.o NclFileVar.o
+			Symbol.o Translate.o VarSupport.o NclFileVar.o \
+			NclHLUVar.o HLUSupport.o
 
 
 LibraryTarget($(MYLIB),$(ALLOBJS))
+LibraryTarget($(MYLIB_API),$(APIOBJS))
 CProgram($(MYBIN),$(EXEOBJS),$(DEPLIBS))
 
 depend-local::	$(GEN_HDRS) $(GEN_SRCS)
@@ -121,6 +131,21 @@ CleanFilesTarget($(GEN_HDRS) $(GEN_SRCS))
 #
 # yacc and lex dependancies
 #
+
+ioapi.o : io.c
+	$(CC) -c $(API_DEFS) $(CFLAGS) $< -o ioapi.o
+
+scanapi.c: scanner.c
+	$(CP) scanner.c scanapi.c
+
+scanapi.o: scanapi.c
+	$(CC) -c $(API_DEFS) $(CFLAGS) $<
+
+parseapi.c: parser.c
+	$(CP) parser.c parseapi.c
+
+parseapi.o: parseapi.c
+	$(CC) -c $(API_DEFS) $(CFLAGS) $<
 
 #if	defined(SUN) && (MAJOR == 4)
 scanner.c:	lex.yy.c syms_lex.sh
@@ -145,7 +170,7 @@ parser.c:	y.tab.c
 lex.yy.c: ncl.l
 	$(LEX) ncl.l
 
-y.tab.c y.tab.h: ncl.y
+y.tab.c y.tab.h: ncl.y makesubdirs
 	$(YACC) -d -t ncl.y
 
 #

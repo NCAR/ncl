@@ -209,20 +209,20 @@ FILE    *fp;
 
 	
 
-	fprintf(fp,"\nfilename:\t%s\n",NrmQuarkToString(thefile->file.fname));
-	fprintf(fp,"path:\t%s\n",NrmQuarkToString(thefile->file.fpath));
-	fprintf(fp,"\tdimensions:\n");
+	nclfprintf(fp,"\nfilename:\t%s\n",NrmQuarkToString(thefile->file.fname));
+	nclfprintf(fp,"path:\t%s\n",NrmQuarkToString(thefile->file.fpath));
+	nclfprintf(fp,"\tdimensions:\n");
 	for(i = 0; i< thefile->file.n_file_dims; i++) {
-		fprintf(fp,"\t\t%s = %ld\n",NrmQuarkToString(thefile->file.file_dim_info[i]->dim_name_quark),	
+		nclfprintf(fp,"\t\t%s = %ld\n",NrmQuarkToString(thefile->file.file_dim_info[i]->dim_name_quark),	
 			thefile->file.file_dim_info[i]->dim_size);
 	}
-	fprintf(fp,"\tvariables:\n");
+	nclfprintf(fp,"\tvariables:\n");
 	for(i = 0; i < thefile->file.n_vars; i++) {
-		fprintf(fp,"\t\t%s %s(",_NclBasicDataTypeToName(thefile->file.var_info[i]->data_type),NrmQuarkToString(thefile->file.var_info[i]->var_name_quark));
+		nclfprintf(fp,"\t\t%s %s(",_NclBasicDataTypeToName(thefile->file.var_info[i]->data_type),NrmQuarkToString(thefile->file.var_info[i]->var_name_quark));
 		for(j=0; j< thefile->file.var_info[i]->num_dimensions - 1; j++) {
-			fprintf(fp,"%s,",NrmQuarkToString(FileGetDimName(thefile,thefile->file.var_info[i]->file_dim_num[j])));
+			nclfprintf(fp,"%s,",NrmQuarkToString(FileGetDimName(thefile,thefile->file.var_info[i]->file_dim_num[j])));
 		}
-		fprintf(fp,"%s)\n",NrmQuarkToString(FileGetDimName(thefile,thefile->file.var_info[i]->file_dim_num[thefile->file.var_info[i]->num_dimensions - 1])));
+		nclfprintf(fp,"%s)\n",NrmQuarkToString(FileGetDimName(thefile,thefile->file.var_info[i]->file_dim_num[thefile->file.var_info[i]->num_dimensions - 1])));
 	}
 	
 	return;
