@@ -1,5 +1,5 @@
 C
-C $Id: EzmapDemo.f,v 1.8 2002-12-30 23:21:53 kennison Exp $
+C $Id: EzmapDemo.f,v 1.9 2004-06-30 16:06:26 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -53,7 +53,7 @@ C Declare a common block in which the directory name will be passed.
 C
         COMMON /EDRGDI/ USNM
           CHARACTER*60 USNM
-        SAVE
+        SAVE   /EDRGDI/
 C
 C Declare a couple of variables that determine what projection will be
 C used and how the portion of the projection to be shown is selected.
@@ -4281,7 +4281,7 @@ C Declare a common block in which the directory name will be passed.
 C
         COMMON /EDRGDI/ USNM
           CHARACTER*60 USNM
-        SAVE
+        SAVE   /EDRGDI/
 C
 C Return the name of the directory.
 C
