@@ -1,34 +1,35 @@
 .TH KUMY 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
-KUMY - Converts from user coordinates to metacode coordinates
-.TH SPPS_CONVERTERS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+KUMY - Converts from user coordinates to metacode coordinates.
+.TH SPPS_converters 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
-spps_converters - A set of functions which transform coordinates
-between the various NCAR Graphics coordinate systems.  The full list is:
-CFUX, CFUY, CMFX, CMFY, CMUX, CMUY, CPFX, CPFY, CPUX, CPUY, CUFX, CUFY,
-KFMX, KFMY, KFPX, KFPY, KMPX, KMPY, KPMX, KPMY, KUMX, KUMY, KUPX, KUPY
+spps_converters - A set of functions, each of which transforms a coordinate
+from one of the NCAR Graphics coordinate systems to another.  The complete
+list of functions is as follows:  CFUX, CFUY, CMFX, CMFY, CMUX, CMUY, CPFX,
+CPFY, CPUX, CPUY, CUFX, CUFY, KFMX, KFMY, KFPX, KFPY, KMPX, KMPY, KPMX, KPMY,
+KUMX, KUMY, KUPX, and KUPY.
 .SH STATUS
 Plotter Address Units (PAUs) and Metacode Units (MUs) are no longer used
-in NCAR Graphics; thus, all functions with either an m or a p in the
-second or third letters of the function name are considered obsolete.
+in NCAR Graphics; thus, all functions with either an M or a P as the
+second or third letter of the function name are considered obsolete.
 .sp
 The current recognized coordinate systems are GKS world coordinates,
 GKS normalized device coordinates, NCAR Graphics fractional
 coordinates, and NCAR Graphics user coordinates.  See the NCAR Graphics
-document "NCAR Graphics Fundamentals, UNIX Version" for a description
+document "NCAR Graphics Fundamentals, UNIX Version" for descriptions
 of these coordinate systems.
 .sp
-The following definitions of the PAU Coordinate System and the MU
+The following definitions of the PAU coordinate system and the MU
 coordinate system are provided for the purpose of interpreting and
-converting PAU and MU codes:
+converting codes which use PAUs or MUs:
 .sp
 The plotter coordinates of a point are integers IPX and IPY, where
 IPX is between 1 and 2**MX and IPY is between 1 and 2**MY.  MX and
-MY are user state variables, both having a default value of 10.
-Values of MX and MY can be set by routine SETI and retrieved by
-routine GETSI.
+MY are internal parameters of SPPS; each has a default value of 10.
+Values of MX and MY can be set by calling the routines SETI or SETUSV
+and retrieved by calling the routines GETSI or GETUSV.
 .sp
 The metacode coordinates of a point are integers IMX and IMY between
 0 and 32767 inclusive.  The area addressed is a square in a "metacode space"
@@ -37,19 +38,20 @@ the plotting device.  Metacode coordinates were used in calls to the
 routine PLOTIT and are returned in calls to FL2INT.
 .SH SYNOPSIS
 .nf
-X = CFUX (RX),  Y =CFUY(RY)
-X = CUFX (RX),  Y =CUFY(RY)
 
-X = CMUX (IX),  Y =CMUY(IY)
-X = CPUX (IX),  Y =CPUY(IY)
-X = CMFX (IX),  Y =CMFY(IY)
-X = CPFX (IX),  Y =CPFY(IY)
+Current:
+X = CFUX (RX),  Y = CFUY(RY)
+X = CUFX (RX),  Y = CUFY(RY)
 
+Obsolete:
+X = CMUX (IX),  Y = CMUY(IY)
+X = CPUX (IX),  Y = CPUY(IY)
+X = CMFX (IX),  Y = CMFY(IY)
+X = CPFX (IX),  Y = CPFY(IY)
 I = KFMX (RX),  J = KFMY(RY)
 I = KUMX (RX),  J = KUMY(RY)
 I = KFPX (RX),  J = KFPY(RY)
 I = KUPX (RX),  J = KUPY(RY)
-
 I = KPMX (IX),  J = KPMY(IY)
 I = KMPX (IX),  J = KMPY(IY)
 .fi
@@ -65,23 +67,36 @@ float c_cufx (float rx)
 float c_cufy (float ry)
 .SH DESCRIPTION 
 .IP RX 12
-(input fractional coordinate of type REAL) is converted to the user X
-coordinate for CFUX.
-.sp
-(input user coordinate of type REAL) is converted to the fractional X
-coordinate for CUFX.
+(an input expression of type REAL) is an X coordinate in the coordinate
+system specified by the second letter of the function name.  In a reference
+to CFUX, RX is a fractional X coordinate; in a reference to CUFX, RX is
+a user X coordinate.
 .IP RY 12
-(input fractional coordinate of type REAL) is converted to the user Y
-coordinate for CFUY.
+(an input expression of type REAL) is a Y coordinate in the coordinate
+system specified by the second letter of the function name.  In a reference
+to CFUY, RY is a fractional Y coordinate; in a reference to CUFY, RY is
+a user Y coordinate.
+.PP
+IX and IY occur as arguments only in references to some of the obsolete
+functions; they represent input expressions of type INTEGER, specifying
+the X and Y coordinates of a point in either PAUs or MUs (depending on
+the second letter of the function name).
 .sp
-(input user coordinate of type REAL) is converted to the fractional Y
-coordinate for CUFY.
+The first letter of the function name is a C if the result is of type REAL
+and a K if the result is of type INTEGER (the latter only happens for some
+of the obsolete ones).  This conforms to the usual FORTRAN convention for
+implicit typing.
 .sp
-The second letter of the converter function name designates the
-coordinate system of the function argument.  For example CFUX(RX)
-has RX as a Fractional X coordinate.  The 3rd letter of the name
-designates the coordinate system of the functional result.  In the
-above case it would be the X User coordinate of the point.
+The second letter of the function name specifies the coordinate system of
+the argument.
+.sp
+The third letter of the function name specifies the coordinate system of
+the functional result.  In references to CFUX and CFUY, the result is in
+the user system; in references to CUFX and CUFY, the result is in the
+fractional system.
+.sp
+The fourth letter of the function name is an X or a Y, depending on whether
+an X or a Y coordinate is being converted.
 .SH C-BINDING DESCRIPTION
 The C-binding argument description is the same as the FORTRAN
 argument description.
@@ -94,21 +109,21 @@ The command "ncargex -n mpex10" will load the driver mpex10.f into
 your current working directory where you can examine the file using
 a local editor, or the UNIX more command.
 .SH ACCESS
-There were 24 converters in the original set.  These converters,
-12 for the X coordinate of a point, and 12 for the Y coordinate,
-allowed one to switch between any combination of PAUs, MUs, fractional
-coordinates, and user coordinates.  PAUs and MUs are now obsolete
-coordinates; thus, only four of the converters are still pertinent.
-CFUX and CFUY allow one to convert the respective X and Y coordinates
-of a point in fractional coordinates to user coordinates.  CUFX and
-CUFY go in the opposite direction.
+There were 24 conversion functions in the original set.  These functions
+(12 for the X coordinate of a point, and 12 for the Y coordinate),
+allowed one to convert between any combination of PAUs, MUs, fractional
+coordinates, and user coordinates.  PAUs and MUs are now obsolete;
+thus, only four of the conversion functions are still pertinent:  CFUX
+and CFUY allow one to convert the X and Y coordinates of a point from
+the fractional system to the user system, while CUFX and CUFY do the
+opposite.
 .sp
 To use one of CFUX, CFUY, CUFX, or CUFY,
 load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cfux,
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cfux,
 c_cfuy, c_cufx, or c_cufy, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 cfux, cfuy, cmfx, cmfy, cmux, cmuy, cpfx, cpfy, cpux, cpuy, cufx, cufy, 
@@ -123,3 +138,4 @@ Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved
+
