@@ -1,5 +1,5 @@
 C
-C	$Id: cfvld.f,v 1.1.1.1 1992-04-17 22:32:40 ncargd Exp $
+C	$Id: cfvld.f,v 1.2 1992-06-15 13:59:06 ncargd Exp $
 C
       SUBROUTINE CFVLD (IENTRY,IIX,IIY)
 C
@@ -30,6 +30,11 @@ C LASTD.
 C
       COMMON /DCFLAG/ IFSTFL
       COMMON /CFFLAG/ IVCTFG
+C
+C Necessary on some machines to get BLOCK DATA loaded:
+C
+      EXTERNAL DASHBD
+C
       SAVE
 C
 C
