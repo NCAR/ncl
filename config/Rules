@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.25 1994-12-09 17:46:25 haley Exp $
+ *	$Id: Rules,v 1.26 1994-12-09 22:00:30 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -237,6 +237,11 @@ CleanFilesTarget(name objects)
  */
 #ifndef	FortranProgram
 #define FortranProgram(program,objects,deplibs)\
+]\
+all::]\
+]\
+all-local:: program]\
+]\
 _FortranLinkProgram(program,objects,deplibs)\
 InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
 #endif	/* FortranProgram */
@@ -250,6 +255,11 @@ InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
  */
 #ifndef	FortranTarget
 #define FortranTarget(program,objects)\
+]\
+all::]\
+]\
+all-local:: program]\
+]\
 _FortranLinkProgram(program,objects,NullArgument)\
 InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
 #endif	/* FortranTarget */
@@ -263,11 +273,6 @@ InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
  */
 #ifndef	_FortranLinkProgram
 #define	_FortranLinkProgram(program,objects,deplib)\
-]\
-all::]\
-]\
-all-local:: program]\
-]\
 program: objects deplib]\
 	$(F77_LD) $(FC_LDOPTIONS) -o program objects $(PROG_LIBS) $(LDLIBS) $(EXTRA_LDLIBS)]\
 ]\
@@ -283,6 +288,11 @@ CleanFilesTarget(program objects)
  */
 #ifndef	FNotInstalledTarget
 #define	FNotInstalledTarget(program,objects)\
+]\
+all::]\
+]\
+all-local:: program]\
+]\
 _FortranLinkProgram(program,objects,NullArgument)
 #endif	/* FNotInstalledTarget */
 
@@ -296,6 +306,11 @@ _FortranLinkProgram(program,objects,NullArgument)
  */
 #ifndef	CProgram
 #define	CProgram(program,objects,deplibs)\
+]\
+all::]\
+]\
+all-local:: program]\
+]\
 _CLinkProgram(program,objects,deplibs)\
 ]\
 InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
@@ -310,6 +325,11 @@ InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
  */
 #ifndef	CTarget
 #define CTarget(program,objects)\
+]\
+all::]\
+]\
+all-local:: program]\
+]\
 _CLinkProgram(program,objects,NullArgument)\
 InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
 #endif	/* CTarget */
@@ -325,11 +345,6 @@ InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
 #ifndef	_CLinkProgram
 #ifndef	AIX
 #define	_CLinkProgram(program,objects,deplib)\
-]\
-all::]\
-]\
-all-local:: program]\
-]\
 program: objects deplib]\
 	$(CC_LD) $(CC_LDOPTIONS) -o program objects $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)]\
 ]\
@@ -359,6 +374,11 @@ CleanFilesTarget(program program.nonshr.o objects)
  */
 #ifndef	CNotInstalledTarget
 #define	CNotInstalledTarget(program,objects)\
+]\
+all::]\
+]\
+all-local:: program]\
+]\
 _CLinkProgram(program,objects,NullArgument)
 #endif	/* FNotInstalledTarget */
 
@@ -536,8 +556,7 @@ CleanFilesTarget(library)
 ]\
 examples:: program]\
 ]\
-program: objects]\
-	$(CC_LD) $(CC_LDOPTIONS) -o program objects $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)]\
+_CLinkProgram(program,objects,NullArgument)\
 ]\
 CleanFilesTarget(program objects)
 #endif	/* HLUCExampleTarget */
@@ -555,8 +574,7 @@ CleanFilesTarget(program objects)
 ]\
 examples:: program]\
 ]\
-program: objects]\
-	$(F77_LD) $(FC_LDOPTIONS) -o program objects $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)]\
+_FortranLinkProgram(program,objects,NullArgument)\
 ]\
 CleanFilesTarget(program objects)
 #endif	/* HLUFExampleTarget */
