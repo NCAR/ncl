@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.105 2003-03-07 15:45:13 haley Exp $
+;      $Id: gsn_code.ncl,v 1.106 2003-04-01 01:54:57 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3100,6 +3100,7 @@ begin
   y_top          = get_res_value_keep(res,"gsnPanelTop",1.)
   main_string    = get_res_value_keep(res,"txString","")
   maxbb          = get_bb_res(res)
+
   lft_pnl        = isatt(res,"gsnPanelLeft")
   rgt_pnl        = isatt(res,"gsnPanelRight")
   bot_pnl        = isatt(res,"gsnPanelBottom")
@@ -3149,7 +3150,7 @@ begin
 ; 
   if(maxbb) then
     class = NhlClassName(wks)
-    if((class(0).ne."psWorkstationClass").or.(class(0).ne."pdfWorkstationClass")) then
+    if((class(0).ne."psWorkstationClass").and.(class(0).ne."pdfWorkstationClass")) then
       maxbb = False
     end if
     delete(class)
