@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.10 2001-09-20 03:35:18 haley Exp $
+ *  $Id: ncargC.h,v 1.11 2001-11-03 00:33:54 kennison Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1731,7 +1731,9 @@ extern void c_mdrggc(
 
 extern void c_mdrgol(
 #ifdef NeedFuncProto
-    int irgl
+    int irgl,
+    float *rwrk,
+    int lrwk,
 #endif
 );
 
@@ -1744,7 +1746,11 @@ extern void c_mdrgsc(
 
 extern void c_mdrgsf(
 #ifdef NeedFuncProto
-    int irgl
+    int irgl,
+    float *rwrk,
+    int lrwk,
+    int *iama,
+    int lama
 #endif
 );
 
