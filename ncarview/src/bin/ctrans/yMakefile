@@ -1,9 +1,13 @@
 #
-#	$Id: yMakefile,v 1.27 1993-11-01 17:42:58 boote Exp $
+#	$Id: yMakefile,v 1.28 1994-03-29 16:55:20 haley Exp $
 #
 
 
 MYNAME		= ctrans
+
+#if defined(alpha)
+#define COptOrDebugFlag -g3
+#endif
 
 #
 #	X11 libraries
