@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.16 1998-02-11 23:01:40 dbrown Exp $
+!      $Id: ngi.res,v 1.17 1998-08-21 01:16:05 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -25,8 +25,8 @@
 !									!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-!!! DEBUGGING !!!
-!NgNGO*synchronous:	True
+!!! DEBUGING !!!
+NgNGO*synchronous:	True
 *dragInitiatorProtocolStyle:	XmDRAG_NONE
 *dragReceiverProtocolStyle:	XmDRAG_NONE
 
@@ -62,10 +62,9 @@ NgNGO*addfileMGR*directory:	.
 !	the actual hex id of the visual (Server dependent).
 !
 !NgNGO*visual:		XcbVisual
-!NgNGO*visual:		0x29
 ngi.minColorCells:	20
 
-!NgNGO*colorMode:	mixedcmap
+NgNGO*colorMode:	mixedcmap
 NgNGO*colorMode:	sharedcmap
 
 NgNGO*maxColorCells:	0
@@ -172,11 +171,11 @@ NgNGO*globalTranslations:	\
 *menubar.help.mnemonic:			H
 *menubar.help.sensitive:		False
 
-*fmenu.nclWindow.labelString:		New Ncl Editor
+*fmenu.nclWindow.labelString:		Ncl Editor
 *fmenu.nclWindow.mnemonic:		N
 *fmenu.nclWindow.acceleratorText:	Ctrl+N
 
-*fmenu.browseWindow.labelString:	New Browser
+*fmenu.browseWindow.labelString:	Browser
 *fmenu.browseWindow.mnemonic:		B
 *fmenu.browseWindow.acceleratorText:	Ctrl+B
 
@@ -187,6 +186,10 @@ NgNGO*globalTranslations:	\
 *fmenu.loadScript.labelString:		Load Script
 *fmenu.loadScript.mnemonic:		L
 *fmenu.loadScript.acceleratorText:	Alt+L
+
+*fmenu.printPlot.labelString:		Print/Output Plot
+*fmenu.printPlot.mnemonic:		P
+*fmenu.printPlot.acceleratorText:	Ctrl+P
 
 *fmenu.closeWindow.labelString:		Close
 *fmenu.closeWindow.mnemonic:		C
@@ -476,19 +479,83 @@ browse.title:				Data Browser
 !*contourPlotClass*cnLevelSpacingF : 1.0
 
 !*contourPlotClass*cnLevelSelectionMode : ManualLevels
-*wkColorMap : psgcap
-*wkColorMap : temp1
+!*wkColorMap : psgcap
+!*wkColorMap : temp1
 *cnHighLabelsOn : False
 *cnLowLabelsOn : False
+!*mpShapeMode: FixedAspectNoFitBB
+*mapPlotClass*vpWidthF : 1.0
+*mapPlotClass*vpHeightF : 1.0
+*mapPlotClass*vpYF : 1.0
+*mapPlotClass*vpXF : 0.0
+!*mapPlotClass*mpDumpAreaMap : True
+*mpDataBaseVersion : NCARG4_1
+*vpUseSegments: True
+*logLinPlotClass*pmTickMarkDisplayMode: always
+*irregularPlotClass*pmTickMarkDisplayMode: always
+
 !*browseMGR*EnumMenu*translations: #override \
 !        <Btn1Up>:               EnumButtonUpAction()
+
+!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!									!
+! PRINT DIALOG								!
+!									!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+*printPlot*title:				Print/Output Plot
+*printPlot*printDestinationLbl.labelString:	Print To:
+*printPlot*printerTgl.labelString:		Printer
+*printPlot*fileTgl.labelString:			File
+*printPlot*printCommandLbl.labelString:		Print Command:
+*printPlot*fileNameLbl.labelString:		File:
+*printPlot*fileTypeLbl.labelString:		File Type:
+*printPlot*overwriteTgl.labelString:		Warn before overwrite
+*printPlot*orientationLbl.labelString:		Orientation:
+*printPlot*portraitPb.labelString:		Portrait
+*printPlot*landscapePb.labelString:		Landscape
+*printPlot*autoOrientPb.labelString:		Auto Orient
+*printPlot*plotBoundsLbl.labelString:		Extent:
+*printPlot*maximizeBBTgl.labelString:		Maximal BBox
+*printPlot*fullViewspaceTgl.labelString:	Full Viewspace
+*printPlot*paperSizeLbl.labelString:		Paper Size:
+*printPlot*resolutionLbl.labelString:		Resolution:
+*printPlot*selectAllViewsTgl.labelString:	Print All View Objects
+*printPlot*workstationLbl.labelString: 		Workstation:
+*printPlot*plotViewsLbl.labelString:		Plot Views:
+*printPlot*selectAllTgl.labelString:		All
+*printPlot*selectedViewsTgl.labelString: 	Selected
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!									!
+! DEVELOPMENT STUFF
+!									!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 ! for development
 addfile*directory:     /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
 addfile*directory: /fs/scd/home1/ncargd/dev/sun4_SunOS_5_5_1/lib/ncarg/data/cdf
+addfile*directory:     /traver/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
+addfile*directory:     /usr/local/ncarg/lib/ncarg/data/cdf/
+addfile*directory:     /traver/home/dbrown/src/data
+addfile*directory:     /fs/scd/home1/dbrown/src/data
 
 !htmlview: display is sgi,linux
 !*html*fontSizeList: 12,8,22,18,14,12,10,8
 !htmlview: display is sun
 !*html*fontSizeList: 10,8,20,16,12,10,8,6
 *enableBadHTMLWarnings : HTML_NONE
+*XmCascadeButtonGadget*shadowThickness: 2
+*XmCascadeButton*shadowThickness: 2
+*XmPushButtonGadget*shadowThickness: 2
+*XmPushButton*shadowThickness: 2
+*PaneInc*marginHeight: 0
+*PaneInc*bottomMargin: 0
+*PaneInc*topMargin: 0
+*PaneInc*topOffset: 0
+*PaneInc*bottomOffset: 0
+
