@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncgm2mpeg.m,v 1.1 1999-03-24 20:50:38 haley Exp $
+.\"	$Id: ncgm2mpeg.m,v 1.2 1999-07-28 17:24:42 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCGM2MPEG 1NCARG "February 1997" NCAR "NCAR GRAPHICS"
@@ -43,7 +43,7 @@ overwrite files.
 .BR ctrans(1NCARG)
 .sp
 .SH COPYRIGHT
-Copyright (C) 1997-1998
+Copyright (C) 1997-1999
 .br
 University Corporation for Atmospheric Research
 .br

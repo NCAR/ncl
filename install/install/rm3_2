@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: rm3_2,v 1.4 1996-05-24 14:17:44 haley Exp $
+#      $Id: rm3_2,v 1.5 1999-07-28 17:23:54 haley Exp $
 #
 #########################################################################
 #									#
@@ -63,86 +63,125 @@ shift;
 set bins = 	(ConvertMapData WritePlotcharData byacc bnchmk cgm2ncgm \
 		cgm_edit cgmtrans cgmtrans.hplj cgmtrans.nolj ctlib ctrans \
 		fcaps findg fontc ftrans gcaps graphc ictrans idt \
-		med ncargcc ncargcex ncargex ncargf77 \
-		ncargfile ncargmv ncargpath ncargrun ncargtar \
+		med ncargcc ncargcex ncargex ncargf77 ngi wrapit77 \
+		ncargfile ncargmv ncargpath ncargrun ncargtar nnalg \
 		ncargversion ncarvversion ncargworld ncgm2cgm ncgmstat \
 		ncl ng4ex nhlcc nhlf77 nriftohdf plt pre2ncgm pre2ncgm.prog psblack \
 		pswhite pwritxnt ras2ccir601 rascat rasgetpal rasls rassplit \
-		rasstat rasview sunplot tgks0a tlocal tplot \
-		tspps xproto xwdtohdf ymake ymkmf)
+		rasstat rasview sunplot tgks0a tlocal tplot tdpackdemo \
+		tspps xproto xwdtohdf ymake ymkmf ConvertMapData WriteLineFile \
+		WriteNameFile WritePlotcharData ncargf90 nhlf90 psplit)
 
 set incs = 	(ncarg)
 
 set libs = 	(libcgm.a libncarg.a libncargC.a libncarg_c.a \
 		libncarg_gks.a libncarg_gksC.a libncarg_loc.a libncarg_ras.a \
-		libhlu.a libncl.a libnclapi.a ncarg)
+		libhlu.a libncl.a libnclapi.a libngmath.a ncarg)
 
-set man1s = 	(cgm2ncgm cgm_edit cgmtrans ctrans fcaps gcaps ictrans idt \
-		med ncarvversion ncgm2cgm ncgmstat nriftohdf rascat \
-		rasgetpal rasls rassplit rasstat rasview xwdtohdf \
-		graphc fontc \
-		ncarg_gks ncarg_cbind ncarg_gks_cbind ncargcex ncargcc \
-		ncargex ncargf77 ncargpath ncargrun ncargversion pre2ncgm \
-		psblack pswhite ftrans)
+set man1s = (cgm2ncgm ctrans fcaps findg fontc gcaps graphc ictrans idt med \
+		ncargcc ncargcex ncargex ncargf77 ncargfile ncargpath ncargrun \
+		ncargversion ncgm2cgm ng4ex nhlcc nhlf77 pre2ncgm psblack psplit \
+		pswhite rascat rasgetpal rasls rassplit rasview nriftohdf xwdtohdf \
+		cgm_edit ftrans ncargf90 nhlf90)
 
-set man3s =	(cgm \
-		areas areas_params ardbpa ardrln \
-		aredam argeti argtai arinam \
-		arpram arscam arseti autograph autograph_params agback \
-		agbnch agchax agchcu agchil agchnl agcurv agdshn aggetc \
-		aggetf aggeti aggetp aggetr agpwrt agrstr agsave agsetc agsetf \
-		agseti agsetp agsetr agstup agutol anotat displa ezmxy ezmy \
-		ezxy ezy bivar idsfft idbvip colconv hlsrgb hsvrgb rgbhls \
-		rgbhsv rgbyiq yiqrgb conpack conpack_params cpback cpchcf \
-		cpchcl cpchhl cpchil cpchll cpcica cpclam cpcldm cpcldr \
-		cpcltr cpcnrc cpdrpl cpezct cpgetc cpgeti cpgetr cplbam \
-		cplbdr cpmpxy cppkcl cppklb cprect cprset cpscae cpsetc cpseti \
-		cpsetr cpsprs cpsps1 cpsps2 dashline dashline_params dashchar \
-		dashsmth dashsupr curved dashdb dashdc frstd lastd lined \
-		reset vectd ezmap ezmap_params ezmapa mapaci mapbla mapdrw \
-		mapeod mapfst mapgci mapgrd mapgrm mapgtc mapgti mapgtl \
-		mapgtr mapint mapiq mapiqa mapiqm mapit mapita mapitm maplbl \
-		maplot mappos maproj maprs maprst mapsav mapset mapstc \
-		mapsti mapstl mapstr maptra maptri maptrn mapusr mapvec \
-		mpgetc mpgeti mpgetl mpgetr mpsetc mpseti mpsetl mpsetr \
-		supmap supcon gflash gflas1 gflas2 gflas3 gflas4 gks \
-		gacwk gca gclks gclrwk gclwk gdawk gesc gfa gopks gopwk \
-		gpl gpm gqasf gqchh gqchsp gqchup gqchxp gqclip gqcntn \
-		gqcr gqfaci gqfais gqfasi gqln gqlwsc gqmk gqmksc gqmntn \
-		gqnt gqops gqplci gqpmci gqtxal gqtxci gqtxfp gqtxp gsasf \
-		gschh gschsp gschup gschxp gsclip gscr gselnt gsfaci gsfais \
-		gsfasi gsln gslwsc gsmk gsmksc gsplci gspmci gstxal gstxci \
-		gstxfp gstxp gsvp gswn gtx gridall gridall_params gacolr \
-		gagetc gageti gagetr gasetc gaseti gasetr grid gridal \
-		gridl halfax labmod perim periml tick4 ticks histogram \
-		histogram_params histgr hstopc hstopi hstopl hstopr \
-		isosurface isosurface_params ezisos isgeti isgetr isosrf \
-		isseti issetr pwrzi labelbar labelbar_params lbfill lbgeti \
-		lbgetr lblbar lbseti lbsetr plotchar plotchar_params pcdlsc \
-		pcgetc pcgeti pcgetr pchiqu pcloqu pcmequ pcmpxy pcpnwi \
-		pcsetc pcseti pcsetr plchhq plchlq plchmq softfill \
-		softfill_params sfgetc sfgeti sfgetp sfgetr sfnorm \
-		sfsetc sfseti sfsetp sfsetr sfsgfa sfwrld spps spps_params \
-		spps_converters cfux cfuy clsgks cmfx cmfy cmux cmuy cpfx \
-		cpfy cpux cpuy cufx cufy curve fl2int frame frstpt getset \
-		getsi getusv kfmx kfmy kfpx kfpy kmpx kmpy kpmx kpmy kumx \
-		kumy kupx kupy line mxmy opngks plotif plotit point points \
-		pwrit set seti setusv sflush vector wtstr surface ezsrfc \
-		pwrzs srface scrolled_title scrolled_title_params ftitle \
-		slgeti slgetr slseti slsetr stitle streamlines \
-		streamlines_params ezstrm fx fy stgeti stgetr stinit \
-		stream strmln strset stseti stsetr studmv stuixy stumta \
-		stumxy threed threed_params curve3 fence3 frst3 line3 \
-		perim3 point3 psym3 pwrz pwrzt set3 tick3 tick43 \
-		vect3 vectors vectors_params ezvec fx fy velvct velvec \
-		vvectr vvgetc vvgeti vvgetr vvinit vvrset vvsetc vvseti \
-		vvsetr vvudmv vvumxy conran_family conran_family_params conran \
-		conraq conras conran conop1 conop2 conop3 conop4 \
-		conrec_family conrec conrecqck conrecspr conrec ezcntr \
-		halftone ezhftn hafton isosrfhr dandr init3d isoscr pwritx \
-		pwritx pwrity pwrity)
+set man3s =	(agback agbnch agchax agchcu agchil agchnl agcurv agdshn aggetc \
+	aggetf aggeti aggetp aggetr agpwrt agrstr agsave agsetc agsetf agseti \
+	agsetp agsetr agstup agutol anotat ardbpa ardrln areas areas_params \
+	aredam argeti argetr argtai arinam armvam arpram arscam arseti arsetr \
+	autograph autograph_params bivar bivar_params c_csa1s c_csa1xs c_csa2ls \
+	c_csa2lxs c_csa2s c_csa2xs c_csa3ls c_csa3lxs c_csa3s c_csa3xs c_dsgetc \
+	c_dsgeti c_dsgetr c_dsgetrd c_dsgrid2d c_dsgrid2s c_dsgrid3d c_dsgrid3s \
+	c_dspnt2d c_dspnt2s c_dspnt3d c_dspnt3s c_dssetc c_dsseti c_dssetr \
+	c_dssetrd c_ftcurv c_ftcurvd c_ftcurvi c_ftcurvp c_ftcurvpi c_ftcurvps \
+	c_ftcurvs c_ftgetc c_ftgetfa_data c_ftgetfa_size c_ftgeti c_ftgetr \
+	c_ftkurv c_ftkurvd c_ftkurvp c_ftkurvpd c_ftsetc c_ftsetfa c_ftseti \
+	c_ftsetr c_ftsurf c_natgridd c_natgrids c_nngetaspectd c_nngetaspects \
+	c_nngetc c_nngeti c_nngetr c_nngetrd c_nngetsloped c_nngetslopes \
+	c_nnpntd c_nnpntend c_nnpntendd c_nnpntinitd c_nnpntinits c_nnpnts \
+	c_nnsetc c_nnseti c_nnsetr c_nnsetrd cfux cfuy cgm clsgks cmfx cmfy \
+	cmux cmuy colconv conop1 conop2 conop3 conop4 conpack conpack_params \
+	conran conran_family conran_family_params conraq conras conrec \
+	conrec_family conrec_family_params conrecqck conrecquick conrecsmooth \
+	conrecspr conrecsuper cpback cpchcf cpchcl cpchhl cpchil cpchll cpcica \
+	cpclam cpcldm cpcldr cpcltr cpcnrc cpdrpl cpezct cpfx cpfy cpgetc cpgeti \
+	cpgetr cplbam cplbdr cpmpxy cppkcl cppklb cprect cprset cpscae cpsetc \
+	cpseti cpsetr cpsprs cpsps1 cpsps2 cpux cpuy csa1s csa1xs csa2ls \
+	csa2lxs csa2s csa2xs csa3ls csa3lxs csa3s csa3xs csagrid csagrid_errors \
+	cufx cufy curv1 curv2 curvd curve curve3 curved curvi curvp1 curvp2 \
+	curvpi curvps curvs dandr dashchar dashdb dashdc dashline \
+	dashline_params dashpack dashpack_params dashsmth dashsupr displa \
+	dpcurv dpdraw dpfrst dpgetc dpgeti dpgetr dplast dpline dpsetc dpseti \
+	dpsetr dpsmth dpvect dsgetc dsgeti dsgetr dsgetrd dsgrid dsgrid2d \
+	dsgrid2s dsgrid3d dsgrid3s dsgrid_errors dsgrid_params dspnt2d dspnt2s \
+	dspnt3d dspnt3s dssetc dsseti dssetr dssetrd entsr eprin errof \
+	error_handling ezcntr ezhftn ezisos ezmap ezmap_params ezmapa ezmxy \
+	ezmy ezsrfc ezstrm ezvec ezxy ezy fdum fence3 fitgrid fitgrid_params \
+	fl2int frame frst3 frstd frstpt ftitle fx fy gaccum_tran_matrix gacolr \
+	gactivate_ws gactm gacwk gagetc gageti gagetr gasetc gaseti gasetr gca \
+	gcell_array gclear_ws gclks gclose_gks gclose_seg gclose_ws gclrwk gclsg \
+	gclwk gcopy_seg_ws gcreate_seg gcrsg gcsgwk gdawk gdeactivate_ws \
+	gdel_seg gdsg gesc gescape getset getsi getusv geval_tran_matrix \
+	gevtm gfa gfill_area gflas1 gflas2 gflas3 gflas4 gflash ginq_asfs \
+	ginq_char_expan ginq_char_ht ginq_char_space ginq_char_up_vec ginq_clip \
+	ginq_colr_rep ginq_cur_norm_tran_num ginq_fill_colr_ind \
+	ginq_fill_int_style ginq_fill_style_ind ginq_line_colr_ind ginq_linetype \
+	ginq_linewidth ginq_marker_colr_ind ginq_marker_size ginq_marker_type \
+	ginq_max_norm_tran_num ginq_name_open_seg ginq_norm_tran ginq_op_st \
+	ginq_set_seg_names ginq_text_align ginq_text_colr_ind \
+	ginq_text_font_prec ginq_text_path gks gopen_gks gopen_ws gopks gopwk \
+	gpl gpm gpolyline gpolymarker gqasf gqchh gqchsp gqchup gqchxp gqclip \
+	gqcntn gqcr gqfaci gqfais gqfasi gqln gqlwsc gqmk gqmksc gqmntn gqnt \
+	gqops gqopsg gqplci gqpmci gqsgus gqtxal gqtxci gqtxfp gqtxp grid gridal \
+	gridall gridall_params gridl gsasf gschh gschsp gschup gschxp gsclip \
+	gscr gsel_norm_tran gselnt gset_asfs gset_char_expan gset_char_ht \
+	gset_char_space gset_char_up_vec gset_clip_ind gset_colr_rep \
+	gset_fill_colr_ind gset_fill_int_style gset_fill_style_ind \
+	gset_line_colr_ind gset_linetype gset_linewidth gset_marker_colr_ind \
+	gset_marker_size gset_marker_type gset_seg_tran gset_text_align \
+	gset_text_colr_ind gset_text_font_prec gset_text_path gset_vp gset_win \
+	gsfaci gsfais gsfasi gsln gslwsc gsmk gsmksc gsplci gspmci gssgt gstxal \
+	gstxci gstxfp gstxp gsvp gswn gtext gtx gupd_ws guwk hafton halfax \
+	halftone histgr histogram histogram_params hlsrgb hstopc hstopi hstopl \
+	hstopr hsvrgb icfell icloem idbvip idgeti idgetr idpltr idseti idsetr \
+	idsfft init3d isgeti isgetr isosrf isosrfhr isosurface isosurface_params \
+	isseti issetr kfmx kfmy kfpx kfpy kmpx kmpy kpmx kpmy kumx kumy kupx \
+	kupy kurv1 kurv2 kurvd kurvp1 kurvp2 kurvpd labelbar labelbar_params \
+	labmod lastd lbfill lbgeti lbgetr lblbar lbseti lbsetr line line3 lined \
+	mapaci mapbla mapblm mapdrw mapeod mapfst mapgci mapgrd mapgrm mapgtc \
+	mapgti mapgtl mapgtr mapint mapiq mapiqa mapiqd mapiqm mapit mapita \
+	mapitd mapitm maplbl maplmb maplot mappos maproj maprs maprst mapsav \
+	mapset mapstc mapsti mapstl mapstr maptra maptri maptrn mapusr mapvec \
+	mpchln mpfnme mpgetc mpgeti mpgetl mpgetr mpglty mpiaty mpifnb mpilnb \
+	mpiola mpiosa mpipai mpipan mpipar mpisci mplnam mplndm mplndr mplnri \
+	mpname mprset mpsetc mpseti mpsetl mpsetr mxmy natgrid natgrid_errors \
+	natgrid_params natgridd natgrids ncarg_cbind ncarg_gks ncarg_gks_cbind \
+	nerro ngckop ngdots nggcog nggetc nggeti nggetr nggsog ngmftc ngmisc \
+	ngmisc_params ngpict ngpswk ngreop ngritd ngsetc ngseti ngsetr ngsrat \
+	ngwsym nngetaspectd nngetaspects nngetc nngeti nngetr nngetrd \
+	nngetsloped nngetslopes nnpntd nnpntend nnpntendd nnpntinitd nnpntinits \
+	nnpnts nnsetc nnseti nnsetr nnsetrd opngks pcdlsc pcgetc pcgeti pcgetr \
+	pchiqu pcloqu pcmequ pcmpxy pcpnwi pcrset pcsetc pcseti pcsetr perim \
+	perim3 periml plchhq plchlq plchmq plotchar plotchar_params plotif \
+	plotit point point3 points polypack ppdipo ppditr ppinpo ppintr ppplcl \
+	ppppap ppunpo ppuntr psym3 pwrit pwrite_family pwritx pwrity pwrz pwrzi \
+	pwrzs pwrzt reset retsr rgbhls rgbhsv rgbyiq scrolled_title \
+	scrolled_title_params semess set set3 seter seti setr setusv sfgetc \
+	sfgeti sfgetp sfgetr sflush sfnorm sfsetc sfseti sfsetp sfsetr sfsgfa \
+	sfwrld slgeti slgetr slogap slrset slseti slsetr softfill \
+	softfill_params spps spps_converters spps_params srface stgeti stgetr \
+	stinit stitle stream streamlines streamlines_params strmln strset stseti \
+	stsetr stuixy stumsl stumta stumxy supcon supmap surf1 surf2 surface \
+	surface_params tdclrs tddtri tdez2d tdez3d tdgeti tdgetr tdgrds tdgrid \
+	tdgtrs tdinit tditri tdlbla tdlbls tdline tdlnpa tdmtri tdotri tdpack \
+	tdpack_params tdpara tdplch tdprpa tdprpi tdprpt tdseti tdsetr tdsort \
+	tdstri tdstrs threed tick3 tick4 tick43 ticks vect3 vectd vector vectors \
+	vectors_params velvct velvec vvectr vvgetc vvgeti vvgetr vvinit vvrset \
+	vvsetc vvseti vvsetr vvudmv vvumxy wmap wmap_params wmbarb wmdflt wmdrft \
+	wmdrrg wmgetc wmgeti wmgetr wmlabc wmlabs wmlabt wmlabw wmlgnd wmsetc \
+	wmseti wmsetr wmstnm wtstr yiqrgb)
 
-set man5s = 	(fontcap graphcap ncarv_spool ras_formats ras_palette)
+set man5s =	(fontcap graphcap ncarv_spool ras_formats ras_palette ncarg_env \
+	ncargintro)
 
 set man8s =	(ncargmv ncargtar)
 

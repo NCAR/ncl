@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargf90.m,v 1.1 1998-07-28 20:35:13 haley Exp $
+.\"	$Id: ncargf90.m,v 1.2 1999-07-28 17:24:42 haley Exp $
 .\"
 .TH NCARGF90 1NCARG "June 1998" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -84,10 +84,8 @@ Online:
 .BR nhlf90(1NCARG),
 .BR ncargintro(5NCARG)
 .sp
-Hardcopy:
-NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1997-1998
+Copyright (C) 1997-1999
 .br
 University Corporation for Atmospheric Research
 .br
