@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.18 1995-06-06 19:56:50 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.19 1995-06-08 01:47:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -433,8 +433,8 @@ static NhlResource resources[] = {
 	{NhlNcnHighLabelFont,NhlCcnHighLabelFont,NhlTFont, 
 		 sizeof(int),Oset(high_lbls.font),
 		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
-	{NhlNcnHighLabelFontColor,NhlCcnHighLabelFontColor,NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(high_lbls.color),
+	{NhlNcnHighLabelFontColor,NhlCcnHighLabelFontColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(high_lbls.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNcnHighLabelFontAspectF,NhlCcnHighLabelFontAspectF,NhlTFloat, 
 		 sizeof(float),Oset(high_lbls.aspect),
@@ -494,8 +494,8 @@ static NhlResource resources[] = {
 	{NhlNcnLowLabelFont,NhlCcnLowLabelFont,NhlTFont, 
 		 sizeof(int),Oset(low_lbls.font),
 		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
-	{NhlNcnLowLabelFontColor,NhlCcnLowLabelFontColor,NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(low_lbls.color),
+	{NhlNcnLowLabelFontColor,NhlCcnLowLabelFontColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(low_lbls.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNcnLowLabelFontAspectF,NhlCcnLowLabelFontAspectF,NhlTFloat, 
 		 sizeof(float),Oset(low_lbls.aspect),
@@ -558,8 +558,8 @@ static NhlResource resources[] = {
 	{NhlNcnInfoLabelFont,NhlCcnInfoLabelFont,NhlTFont, 
 		 sizeof(int),Oset(info_lbl.font),
 		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
-	{NhlNcnInfoLabelFontColor,NhlCcnInfoLabelFontColor,NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(info_lbl.color),
+	{NhlNcnInfoLabelFontColor,NhlCcnInfoLabelFontColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(info_lbl.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNcnInfoLabelFontAspectF,NhlCcnInfoLabelFontAspectF,NhlTFloat, 
 		 sizeof(float),Oset(info_lbl.aspect),
@@ -646,8 +646,8 @@ static NhlResource resources[] = {
 	{NhlNcnConstFLabelFont,NhlCcnConstFLabelFont,NhlTFont, 
 		 sizeof(int),Oset(constf_lbl.font),
 		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
-	{NhlNcnConstFLabelFontColor,NhlCcnConstFLabelFontColor,NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(constf_lbl.color),
+	{NhlNcnConstFLabelFontColor,NhlCcnConstFLabelFontColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(constf_lbl.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNcnConstFLabelFontAspectF,NhlCcnConstFLabelFontAspectF,NhlTFloat, 
 		 sizeof(float),Oset(constf_lbl.aspect),
@@ -3842,6 +3842,26 @@ static NhlErrorTypes cnDraw
   	}
 #endif
 
+	if (cnp->do_labels && 
+	    cnp->label_masking && cnp->label_order == order) {
+
+		c_cpseti("GIL",5);
+		if (cnp->aws == NULL) {
+			subret = cnInitAreamap(cnl,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+		}
+
+		subret = _NhlCplbam(cnp->data,
+				    cnp->fws,cnp->iws,cnp->aws,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			ContourAbortDraw(cnl);
+			return ret;
+		}
+	}
+
 	if (cnp->do_fill && cnp->fill_order == order) {
 
 		if (! cnp->raster_mode_on) {
@@ -3879,25 +3899,6 @@ static NhlErrorTypes cnDraw
 				return ret;
 			}
 			
-		}
-	}
-
-	if (cnp->do_labels && 
-	    cnp->label_masking && cnp->label_order == order) {
-
-		if (cnp->aws == NULL) {
-			subret = cnInitAreamap(cnl,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-		}
-
-		subret = _NhlCplbam(cnp->data,
-				    cnp->fws,cnp->iws,cnp->aws,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			ContourAbortDraw(cnl);
-			return ret;
 		}
 	}
 
@@ -4004,6 +4005,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 	c_arseti("RC(1)",1);
 	c_arseti("RC(3)",2);
 #endif
+	c_arseti("RC",1);
 	if (! ezmap) {
 		float twlx,twrx,twby,twuy;
 		float gwlx,gwrx,gwby,gwuy;
@@ -4277,7 +4279,14 @@ static void SetRegionAttrs
 		c_cpseti("CLU",1);
 	else
 		c_cpseti("CLU",0);
-	c_cpseti("AIA",100 + cpix);
+
+	if (cpix == -1)
+		c_cpseti("AIA",0);
+	else if (cpix == -2)
+		c_cpseti("AIA",98);
+	else
+		c_cpseti("AIA",-1);
+
 	return;
 
 }
@@ -9705,7 +9714,13 @@ int (_NHLCALLF(hlucpfill,HLUCPFILL))
 	if (Cnp == NULL) return 0;
 
 	for (i = 0; i < *nai; i++) {
+#if 0
+		printf("i %d iai %d iag %d\n",i,iai[i],iag[i]);
+#endif
 		if (iag[i] == 17 && iai[i] == 9999) {
+			return 0;
+		}
+		if (iag[i] == 5 && iai[i] == -1) {
 			return 0;
 		}
 	}
@@ -10043,6 +10058,14 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		return;
 	}
 
+#if 0
+	{ /* for debugging */
+		float flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
+		c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
+		printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
+		       flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
+  	}
+#endif
 	switch (*iflg) {
 	case 1:
 		if (! Cnp->high_lbls.on) {
@@ -10229,6 +10252,8 @@ void   (_NHLCALLF(hlucpchll,HLUCPCHLL))
 		_NHLCALLF(cpchll,CPCHLL)(iflg);
 		return;
 	}
+	if (Cnp->llabel_placement == NhlCONSTANT)
+		return;
 
 	if (*iflg == 2) {
 		if (Cnp->line_lbls.gks_bcolor > NhlTRANSPARENT)
