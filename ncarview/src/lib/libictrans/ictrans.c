@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.19 1993-03-16 02:51:10 clyne Exp $
+ *	$Id: ictrans.c,v 1.20 1993-03-16 18:48:59 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -100,11 +100,12 @@ usage(od, msg)
 	int	od;
 	char	*msg;
 {
-	char	*usage = "-d device [-f font] [-e cmd]+ [options] [device options]";
+	char	*usage = "[-e cmd]+ [options] [device options] <metafile>";
 
 	if (msg) fprintf(stderr, "%s: %s\n", progName, msg);
 
 	fprintf(stderr, "Usage: %s %s\n", progName, usage);
+	fprintf(stderr, "\nWhere \"options\" are:\n\n");
 	PrintOptionHelp(od, stderr);
 
 }
