@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.23 2001-12-13 01:57:46 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.24 2002-08-14 19:34:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -165,19 +165,19 @@ typedef struct NhlMapPlotLayerPart {
 
         NhlAnnotationDisplayMode display_tickmarks;
 	NhlBoolean	label_auto_stride;
-	NhlTickMarkMode	xb_mode;
+	int		xb_mode;
 	NhlGenArray	xb_values;
 	NhlGenArray	xb_labels;
 	char		xb_label_fcode;
-	NhlTickMarkMode	xt_mode;
+	int		xt_mode;
 	NhlGenArray	xt_values;
 	NhlGenArray	xt_labels;
 	char		xt_label_fcode;
-	NhlTickMarkMode	yl_mode;
+	int		yl_mode;
 	NhlGenArray	yl_values;
 	NhlGenArray	yl_labels;
 	char		yl_label_fcode;
-	NhlTickMarkMode	yr_mode;
+	int		yr_mode;
 	NhlGenArray	yr_values;
 	NhlGenArray	yr_labels;
 	char		yr_label_fcode;

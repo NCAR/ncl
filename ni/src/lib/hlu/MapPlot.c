@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.89 2002-08-13 22:13:33 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.90 2002-08-14 19:34:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1223,15 +1223,14 @@ MapPlotInitialize
  * tickmark modes cannot be set for now; hopefully this will change
  */
 
-	if ((int) mpp->xb_mode != -1 ||
-	    (int) mpp->xt_mode != -1 ||
-	    (int) mpp->yl_mode != -1 ||
-	    (int) mpp->yr_mode != -1) {
+	if (mpp->xb_mode != -1 ||
+	    mpp->xt_mode != -1 ||
+	    mpp->yl_mode != -1 ||
+	    mpp->yr_mode != -1) {
 		e_text = "%s: tm[XB|XT|YL|YR]Mode resources are not currently enabled for MapPlot tick marks";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		 (int) mpp->xb_mode = (int)mpp->xt_mode =  
-			 (int)mpp->yl_mode = (int)mpp->yr_mode =
-			 -1;
+		 mpp->xb_mode = mpp->xt_mode =  
+			 mpp->yl_mode = mpp->yr_mode = -1;
 	}
 
 		
@@ -1579,15 +1578,14 @@ static NhlErrorTypes MapPlotSetValues
 /*
  * tickmark modes cannot be set for now; hopefully this will change
  */
-	if ((int) mpp->xb_mode != -1 ||
-	    (int) mpp->xt_mode != -1 ||
-	    (int) mpp->yl_mode != -1 ||
-	    (int) mpp->yr_mode != -1) {
+	if (mpp->xb_mode != -1 ||
+	    mpp->xt_mode != -1 ||
+	    mpp->yl_mode != -1 ||
+	    mpp->yr_mode != -1) {
 		e_text = "%s: tm[XB|XT|YL|YR]Mode resources are not currently enabled for MapPlot tick marks";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		 (int) mpp->xb_mode = (int)mpp->xt_mode =  
-			 (int)mpp->yl_mode = (int)mpp->yr_mode =
-			 -1;
+		 mpp->xb_mode = mpp->xt_mode =  
+			 mpp->yl_mode = mpp->yr_mode = -1;
 	}
         
         
