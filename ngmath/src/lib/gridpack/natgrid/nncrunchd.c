@@ -1,5 +1,5 @@
 /*
- * $Id: nncrunchd.c,v 1.10 2002-04-01 18:11:54 haley Exp $
+ * $Id: nncrunchd.c,v 1.11 2004-09-27 22:23:38 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -483,13 +483,13 @@ double **MakeGridd(int nxi, int nyi, double *xi, double *yi)
             (curasd.slope_outd)[j7][j8] = slope;
             curasd.crows = nxi;
             curasd.ccols = nyi;
-            if (magz EQ 1.) 
+            if (magz EQ 1. OR (!extrap AND !goodflag))
                data_out[j7][j8] = surf;
             else 
                data_out[j7][j8] = surf/magz;
          }
          else {
-            if (magz EQ 1.) 
+            if (magz EQ 1. OR (!extrap AND !goodflag))
                data_out[j7][j8] = surf;
             else 
                data_out[j7][j8] = surf/magz;

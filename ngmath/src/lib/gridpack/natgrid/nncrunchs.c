@@ -1,5 +1,5 @@
 /*
- * $Id: nncrunchs.c,v 1.11 2002-04-01 18:11:54 haley Exp $
+ * $Id: nncrunchs.c,v 1.12 2004-09-27 22:23:38 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -484,13 +484,13 @@ float **MakeGrid(int nxi, int nyi, float *xi, float *yi)
             (curas.slope_out)[j7][j8] = slope;
             curas.crows = nxi;
             curas.ccols = nyi;
-            if (magz EQ 1.) 
+            if (magz EQ 1. OR (!extrap AND !goodflag)) 
                data_out[j7][j8] = surf;
             else 
                data_out[j7][j8] = surf/magz;
          }
          else {
-            if (magz EQ 1.) 
+            if (magz EQ 1. OR (!extrap AND !goodflag)) 
                data_out[j7][j8] = surf;
             else 
                data_out[j7][j8] = surf/magz;
