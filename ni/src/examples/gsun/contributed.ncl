@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.10 2003-05-10 22:37:25 shea Exp $
+;      $Id: contributed.ncl,v 1.11 2003-05-19 17:47:46 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -1121,10 +1121,15 @@ begin
  
  do n=0,nAtts-1
     if (any(oNames.eq.xAtts(n))) then
-        if (typeof(xS@$xAtts(n)$).eq."double") then
-            offset = doubletofloat(xS@$xAtts(n)$)
-        else
+        if (typeof(xS@$xAtts(n)$).eq."float") then
             offset = xS@$xAtts(n)$
+        else
+            if (typeof(xS@$xAtts(n)$).eq."double") then
+                offset = doubletofloat(xS@$xAtts(n)$)
+            end if
+            if (typeof(xS@$xAtts(n)$).eq."string") then
+                offset = stringtofloat(xS@$xAtts(n)$)
+            end if
         end if
         delete(xF@$xAtts(n)$)  ; xF will no longer have offset att
         break
@@ -1133,10 +1138,15 @@ begin
  
  do n=0,nAtts-1
     if (any(sNames.eq.xAtts(n))) then
-        if (typeof(xS@$xAtts(n)$).eq."double") then
-            scale  = doubletofloat(xS@$xAtts(n)$)
-        else
+        if (typeof(xS@$xAtts(n)$).eq."float") then
             scale  = xS@$xAtts(n)$
+        else
+            if (typeof(xS@$xAtts(n)$).eq."double") then
+                scale  = doubletofloat(xS@$xAtts(n)$)
+            end if
+            if (typeof(xS@$xAtts(n)$).eq."string") then
+                scale  = stringtofloat(xS@$xAtts(n)$)
+            end if
         end if
         delete(xF@$xAtts(n)$)  ; xF will no longer have scale att
         break
