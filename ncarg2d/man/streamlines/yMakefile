@@ -1,9 +1,10 @@
 #
-#	$Id: yMakefile,v 1.9 1994-04-08 22:24:30 haley Exp $
+#	$Id: yMakefile,v 1.10 2003-05-22 17:22:07 haley Exp $
 #
 
-MAN =	ezstrm stgeti stgetr stinit stream streamlines streamlines_params \
-	strmln strset stseti stsetr stuixy stumsl stumta stumxy
+MAN =	ezstrm stgetc stgeti stgetr stinit stream streamlines \
+	streamlines_params strmln strset stsetc stseti stsetr stuixy \
+	stumsl stumta stumxy
 
 # Install preformatted troff documents on systems without troff
 #if UseCatDirs
