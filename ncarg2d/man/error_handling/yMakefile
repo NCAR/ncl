@@ -1,12 +1,12 @@
 #
-# $Id: yMakefile,v 1.1 1994-03-31 01:35:20 kennison Exp $
+# $Id: yMakefile,v 1.2 1994-04-08 22:06:58 haley Exp $
 #
 
 MAN = entsr eprin errof error_handling fdum icfell icloem nerro retsr semess \
 	seter
 
 # Install preformatted troff documents on systems without troff
-#ifdef UseCatDirs
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m
