@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: cgm2ncgm.m,v 1.5 1992-08-12 23:07:42 clyne Exp $
+.\"	$Id: cgm2ncgm.m,v 1.6 1992-12-01 03:18:14 clyne Exp $
 .\"
 .\"	ncgm2cgm.l 3.00 10/5/89 NCAR View
 .TH NCAR2CGM 1NCAR "JULY 1988"
@@ -7,11 +7,11 @@
 cgm2ncgm ncgm2cgm \- filter \fBNCAR CGM\fR to/from vanilla \fBCGM\fR
 .SH SYNOPSIS
 .B ncgm2cgm
-[\ \fB\-s\ \fIoutput record size\fR\ ]
+[\ \fB\-s\ \fIoutput block size\fR\ ]
 [\ \fB\-V\ ]
 .LP
 .B cgm2ncgm
-[\ \fB\-s\ \fIinput record size\fR\ ]
+[\ \fB\-s\ \fIinput block size\fR\ ]
 [\ \fB\-V\ ]
 .PP
 .SH DESCRIPTION
@@ -22,7 +22,8 @@ restores. I/O is done from standard in/out respectively.
 .PP
 .SH OPTIONS
 .IP \fB\-s\fP\fI\ size\fP
-Set vanilla CGM record size. The default, if not specified, is 1440.
+Set block size in bytes for reads/writes of vanilla CGM. The default blocking
+factor is 1024.
 .IP \fB\-V\fR
 Print the version number and then exit.
 .SH SEE ALSO
