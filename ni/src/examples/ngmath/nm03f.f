@@ -1,5 +1,5 @@
 C
-C      $Id: nm03f.f,v 1.4 2003-03-01 00:42:49 grubin Exp $
+C      $Id: nm03f.f,v 1.5 2003-03-06 17:33:01 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -22,6 +22,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFScalarFieldClass
       external NhlFVectorFieldClass
