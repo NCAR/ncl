@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.6 2004-05-21 14:29:30 haley Exp $
+#       $Id: yMakefile,v 1.7 2004-06-29 19:23:30 kennison Exp $
 #
 MYNAME	= softfill
 
@@ -23,6 +23,6 @@ $(SOURCES) : IftranRun
 
 IftranRun : CodeIftran
 	@$(IFTRAN) < CodeIftran > CodeFortran
-	@$(FSPLIT) CodeFortran
+	@$(FSPLIT) -both CodeFortran
 	-@$(RM) CodeFortran
 	touch IftranRun

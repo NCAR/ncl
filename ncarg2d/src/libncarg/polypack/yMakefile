@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.4 2004-05-21 14:29:27 haley Exp $
+#       $Id: yMakefile,v 1.5 2004-06-29 19:22:51 kennison Exp $
 #
 
 MYNAME  = polypack
@@ -24,6 +24,6 @@ $(SOURCES) : IftranRun
 
 IftranRun : CodeIftran
 	@$(IFTRAN) < CodeIftran > CodeFortran
-	@$(FSPLIT) CodeFortran
+	@$(FSPLIT) -both CodeFortran
 	-@$(RM) CodeFortran
 	touch IftranRun

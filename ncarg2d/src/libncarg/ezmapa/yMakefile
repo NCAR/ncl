@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.12 2004-05-21 14:29:23 haley Exp $
+#       $Id: yMakefile,v 1.13 2004-06-29 19:21:35 kennison Exp $
 #
 MYNAME	= ezmapa
 
@@ -25,6 +25,6 @@ $(SOURCES) : IftranRun
 
 IftranRun : CodeIftran
 	@$(IFTRAN) < CodeIftran > CodeFortran
-	@$(FSPLIT) CodeFortran
+	@$(FSPLIT) -both CodeFortran
 	-@$(RM) CodeFortran
 	touch IftranRun

@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.7 2004-06-01 23:10:09 kennison Exp $
+#       $Id: yMakefile,v 1.8 2004-06-29 19:20:45 kennison Exp $
 #
 
 MYNAME  = conpackt
@@ -44,7 +44,7 @@ $(SOURCES) : IftranRun
 
 IftranRun : CodeIftran
 	@$(IFTRAN) < CodeIftran > CodeFortran
-	@$(FSPLIT) CodeFortran
+	@$(FSPLIT) -both CodeFortran
 	-@$(RM) CodeFortran
 	touch IftranRun
 
