@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.51 1998-02-06 01:02:52 ethan Exp $
+ *      $Id: NclVar.c,v 1.52 1998-02-12 17:18:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2126,19 +2126,13 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 */
 		if(lhs_md->obj.id != rhs_md->obj.id) {
 			if(rhs_type != lhs_type) {
-				rhs_md = _NclCoerceData(rhs_md,
-					lhs_type,
-					NULL);
-				if(rhs_md == NULL) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
-					ret = NhlFATAL;
-					
-				} else {
-					ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
-					_NclDestroyObj((NclObj)rhs_md);
-				}
+				rhs_md = (NclMultiDValData)_NclReadSubSection((NclData)rhs_md,rhs_sel_ptr,NULL); 
+				ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
 			} else {
 				ret = _NclReadThenWriteSubSection((NclData)lhs_md, lhs_sel_ptr, (NclData)rhs_md, rhs_sel_ptr);
+			}
+			if(rhs_md->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)rhs_md);
 			}
 			if(ret < NhlINFO) {
 				return(ret);
