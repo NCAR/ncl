@@ -1,57 +1,14 @@
 #
-#	$Id: yMakefile,v 1.6 1993-03-11 15:10:04 haley Exp $
+#	$Id: yMakefile,v 1.7 1993-03-11 15:58:40 haley Exp $
 #
-NCARG	= ../..
+NCARG = ../..
 
-#if ! defined BuildNCARGSourceLibrary
-MANS = pre2ncgm psblack pswhite ncargf77 ncargcc ncarg_gks cgmtrans ftrans \
-	ncargex ncargcex ncargrun findg ncarg_cbind ncarg_gks_cbind ncargversion
-#else
-MANS = pre2ncgm psblack pswhite ncargf77 ncargcc ncarg_gks ncargsrc cgmtrans \
-	ftrans ncargex ncargcex ncargrun findg ncargversion
-#endif
+SUBDIRS = areas autograph bivar colconv conpack conran_family conrec_family \
+	dashline ezmap gflash gks gksC gridal halftone histogram isosrfhr \
+	isosurface labelbar ngmisc other plotchar pwritx pwrity scrolled_title \
+	softfill spps streamlines surface threed vectors	
 
-all:
-
-preformatted:
-	@for name in $(MANS); do\
-	(sed <$$name.m \
-	-e 's@MACRO_SOURCE3@ncargmac3.m@' \
-	-e 's@MACRO_SOURCE@ncargmac.m@' \
-	| nroff -man >$$name.p);\
-	done
-
-#if defined(CRAY) || defined(sgi) || defined(ardent)
-# Install preformatted troff documents on systems without troff
-
-install::
-	@for name in $(MANS); do\
-	($(INSTALL) -m $(INSTALL_MAN) $$name.p \
-	$(MANLPATH)/$$name.$(MANL_SECTION) );\
-	done
-
-#else
-
-install::
-	@for name in $(MANS); do\
-	(sed \
-	-e 's@MACRO_SOURCE3@$(MANLPATH)/ncargmac3.$(MANL_SECTION)@' \
-	-e 's@MACRO_SOURCE@$(MANLPATH)/ncargmac.$(MANL_SECTION)@' \
-	<$$name.m >$$name.$(MANL_SECTION));\
-	done
-
-install::
-	@for name in $(MANS); do\
-	($(INSTALL) -m $(INSTALL_MAN) $$name.$(MANL_SECTION) $(MANLPATH));\
-	done
-
-install::
-	@-for name in $(MANS); do\
-	($(RM) $$name.$(MANL_SECTION));\
-	done
-#endif
-
-MakefileTarget
-CleanTarget
-
-generic::
+MakeSubdirs($(SUBDIRS))
+InstallSubdirs($(SUBDIRS))
+MakefilesSubdirs($(SUBDIRS))
+CleanSubdirs($(SUBDIRS))
