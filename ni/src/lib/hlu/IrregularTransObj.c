@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.26 1996-09-14 17:06:16 boote Exp $
+ *      $Id: IrregularTransObj.c,v 1.27 1996-12-09 20:57:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -683,7 +683,7 @@ static NhlErrorTypes SetUpTrans
 		}
 		switch (irp->x_axis_type) {
 		case NhlIRREGULARAXIS:
-			if (irp->x_coord_points_ga != NULL ||
+			if (irp->x_coord_points_ga != NULL &&
 			  irp->x_coord_points_ga->num_elements > 0) {
 				irp->x_coord_points  = 
 					(float *) irp->x_coord_points_ga->data;
@@ -740,7 +740,7 @@ static NhlErrorTypes SetUpTrans
 		}
 		switch (irp->y_axis_type) {
 		case NhlIRREGULARAXIS:
-			if (irp->y_coord_points_ga != NULL ||
+			if (irp->y_coord_points_ga != NULL &&
 			    irp->y_coord_points_ga->num_elements > 0) {
 				irp->y_coord_points  = 
 					(float *) irp->y_coord_points_ga->data;
