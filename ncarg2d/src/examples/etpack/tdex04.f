@@ -39,7 +39,6 @@ C Declare local dimensioned variables to hold data defining a simple
 C surface and an isosurface.
 C
         DIMENSION U(IMAX),V(JMAX),W(KMAX),S(IMAX,JMAX),F(IMAX,JMAX,KMAX)
-        DIMENSION Q(IMAX,JMAX,2)
 C
 C Declare a local array to hold the triangle list and a couple of
 C temporary variables to be used in sorting the list.
