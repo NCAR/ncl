@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1995-06-14 14:03:53 haley Exp $
+#	$Id: yMakefile,v 1.6 1996-09-30 23:39:43 fred Exp $
 #
 MYNAME	= pgks
 
@@ -7,13 +7,13 @@ SRCS =	pgkex01.f pgkex02.f pgkex03.f pgkex04.f pgkex05.f pgkex06.f \
 		pgkex07.f pgkex08.f pgkex09.f pgkex10.f pgkex11.f pgkex12.f \
 		pgkex13.f pgkex14.f pgkex15.f pgkex16.f pgkex17.f pgkex18.f \
 		pgkex19.f pgkex20.f pgkex21.f pgkex22.f pgkex23.f pgkex24.f \
-		pgkex25.f pgkex26.f
+		pgkex25.f pgkex26.f pgkex27.f
 
 OBJS =	pgkex01.o pgkex02.o pgkex03.o pgkex04.o pgkex05.o pgkex06.o \
 		pgkex07.o pgkex08.o pgkex09.o pgkex10.o pgkex11.o pgkex12.o \
 		pgkex13.o pgkex14.o pgkex15.o pgkex16.o pgkex17.o pgkex18.o \
 		pgkex19.o pgkex20.o pgkex21.o pgkex22.o pgkex23.o pgkex24.o \
-		pgkex25.o pgkex26.o
+		pgkex25.o pgkex26.o pgkex27.o
 
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
@@ -47,4 +47,5 @@ FExampleTarget(pgkex23,pgkex23.o)
 FExampleTarget(pgkex24,pgkex24.o)
 FExampleTarget(pgkex25,pgkex25.o)
 FExampleTarget(pgkex26,pgkex26.o)
+FExampleTarget(pgkex27,pgkex27.o)
 
