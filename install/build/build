@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.26 1998-01-14 22:05:28 haley Exp $
+#      $Id: build,v 1.27 1998-07-28 20:29:08 haley Exp $
 #
 #########################################################################
 #									#
@@ -306,7 +306,7 @@ $ENV{'LOCALDIR'} = "$ncarg/install/install";
 #
 #   get the system type
 #
-$cmd = "cd $ncarg/install/install; sys_type";
+$cmd = "cd $ncarg/install/install; ./sys_type";
 $sys_type = `$cmd`;
 if ($? != 0) {
     print STDERR "progName: \"$cmd\" exited with error\n";
