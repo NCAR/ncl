@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV40DataHandler.c,v 1.6 1998-11-06 22:16:10 dbrown Exp $
+ *      $Id: MapV40DataHandler.c,v 1.7 1998-11-10 17:18:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2580,8 +2580,10 @@ static NhlErrorTypes mpSetUpAreamap
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 		break;
 	}
-	if (new_amap_req) {
+	if (! _NhlWorkspaceDataIntact(aws_id) || new_amap_req) {
 		c_mpseti("VS",0);
+		c_mpseti("G2",2);
+		c_mpseti("G1",1);
 		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 		subret = _NhlArinam(*aws,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;

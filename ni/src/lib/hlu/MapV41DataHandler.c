@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.7 1998-11-06 22:16:10 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.8 1998-11-10 17:18:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -159,6 +159,11 @@ static int UsIds[3];
 static int UsIdCount;
 static int LandId,WaterId,OceanId;
 static char OutBuf[512];
+
+#if 0
+static NhlString MapDataName = "Wordian..1";
+#endif
+static NhlString MapDataName = "Earth..1";
 
 /*
  * The following string manipulation routines help deal with Map entity
@@ -396,7 +401,7 @@ static NhlErrorTypes Init_Entity_Recs
                 mv41p->outline_rec_count = Mv41cp->entity_rec_count;
         }
         else {
-                c_mplnri("Earth..1");
+                c_mplnri(MapDataName);
         
                 for (i = 1; ;i++) {
                         int type = NGCALLF(mpiaty,MPIATY)(&i);
@@ -2291,18 +2296,19 @@ static NhlErrorTypes mpSetUpAreamap
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(NhlFATAL);
 	}
-	if (mv41p->new_amap_req) {
+	if (! _NhlWorkspaceDataIntact(aws_id) || mv41p->new_amap_req ) {
                 float fl,fr,fb,ft,ul,ur,ub,ut;
                 int ll;
                 float xp[5],yp[5];
                 
 		c_mpseti("VS",8);
+		c_mpseti("G2",2);
+		c_mpseti("G1",1);
 		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 		subret = _NhlArinam(*aws,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
                 subret = _NhlMplnam
-                        (*aws,"Earth..1",mv41p->min_fill_level,entry_name);
+                        (*aws,MapDataName,mv41p->min_fill_level,entry_name);
                 if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 #if 0
                 printf("num points in areamap %d\n",Point_Count);
@@ -2338,7 +2344,7 @@ static NhlErrorTypes mpSetUpAreamap
                                        NhlNmpRightMapPosF,rm,
                                        NULL);
 
-                        subret = _NhlMplnam(*aws,"Earth..1",Level,entry_name);
+                        subret = _NhlMplnam(*aws,MapDataName,Level,entry_name);
                         if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 #if 0
                         printf("num points in areamap %d\n",Point_Count);
@@ -2709,7 +2715,7 @@ static NhlErrorTypes mpOutline
                 }
         }
 
-        c_mplndr("Earth..1",mv41p->min_outline_level);
+        c_mplndr(MapDataName,mv41p->min_outline_level);
         
 	return ret;
 }

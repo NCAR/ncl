@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.79 1998-11-06 22:16:03 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.80 1998-11-10 17:18:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3477,14 +3477,18 @@ static NhlErrorTypes cnUpdateTrans
 	    ! tfp->do_ndc_overlay && tfp->overlay_trans_obj != NULL) {
 		cnp->trans_obj = tfp->overlay_trans_obj;
 
+		/* 
+		 * if over a map the data xstart/xend values are used to
+		 * determine the longitude range (max 360 from -540-+540)
+		 * the data ystart/end values are not used should not be
+		 * set. Otherwise it causes unnecessary redraws
+		 */
 		if ((cnp->trans_obj->base.layer_class)->base_class.class_name 
 		    == NhlmapTransObjClass->base_class.class_name) {
 			subret = NhlVASetValues
                                 (cnp->trans_obj->base.id,
                                  NhlNtrDataXStartF,tfp->data_xstart,
                                  NhlNtrDataXEndF,tfp->data_xend,
-                                 NhlNtrDataYStartF,tfp->data_ystart,
-                                 NhlNtrDataYEndF,tfp->data_yend,
                                  NULL);
 
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.51 1998-11-06 22:16:12 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.52 1998-11-10 17:18:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -383,7 +383,15 @@ static NhlErrorTypes InternalGetBB(
 #if	NhlNeedProto
         NhlLayer	instance,
 	NhlBoundingBox	*thebox,
-        int  	        include_types,   
+        int  	        zone,   
+	char		*entry_name		   
+#endif
+);
+
+static NhlErrorTypes AddSpecialZonesBB(
+#if	NhlNeedProto
+        NhlLayer	instance,
+	NhlBoundingBox	*thebox,
 	char		*entry_name		   
 #endif
 );
@@ -2002,6 +2010,7 @@ static NhlErrorTypes PlotManagerGetBB
 	}
 
 	ret = InternalGetBB(instance,thebox,max_zone,entry_name);
+	ret = AddSpecialZonesBB(instance,thebox,entry_name);
 
 	if (ret < NhlWARNING) {
 		e_text = "%s: error getting Bounding Box";
@@ -2888,6 +2897,77 @@ static NhlErrorTypes InternalGetBB
 	return ret;
 }
 
+
+/*
+ * Function:    AddSpecialZonesBB
+ *
+ * Description: The BBs of zone 0 and 1 annotations do not affect the placement
+ *              of outer zones, but need to be accounted for in the final 
+ *              BoundingBox calculation.
+ *
+ * In Args:     instance        the object instance record
+ *              thebox          a data structure used to hold bounding box 
+ *                              information.
+ *
+ * Out Args:    NONE
+ *
+ * Return Values:       Error Conditions
+ *
+ * Side Effects:        NONE
+ */
+static NhlErrorTypes AddSpecialZonesBB
+#if	NhlNeedProto
+(
+	NhlLayer	instance,
+	NhlBoundingBox	*thebox,
+	char		*entry_name
+)
+#else
+(instance,thebox,entry_name)
+	NhlLayer	instance;
+	NhlBoundingBox	*thebox;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	NhlPlotManagerLayer		ovl = (NhlPlotManagerLayer) instance;
+	NhlPlotManagerLayerPart	*ovl_basep;
+	float 			t,b,l,r;
+	int			i;
+	
+/*
+ * First find the base PlotManager, then search through the annotation
+ * record of each member overlay and add the bounding boxes of each annotation
+ * inside the requested zone. Exclude any objects not currently displayed.
+ */
+	ovl_basep = 
+		&((NhlPlotManagerLayer)ovl->trans.overlay_object)->plotmanager;
+
+	for (i = 0; i < ovl_basep->overlay_count; i++) {
+		NhlAnnoRec *anno_list = ovl_basep->pm_recs[i]->anno_list;
+
+                if (! _NhlViewOn((NhlLayer) ovl_basep->pm_recs[i]->plot))
+                                continue;
+		for ( ; anno_list != NULL; anno_list = anno_list->next) {
+			if (anno_list->plot_id <= NhlNULLOBJID ||
+			    anno_list->zone > 1 ||
+			    ! anno_list->viewable ||
+			    anno_list->status != NhlALWAYS)
+				continue;
+			subret = _NhlGetBB(_NhlGetLayer(anno_list->plot_id),
+					   thebox);
+			if ((ret = MIN(subret,ret)) < NhlNOERROR) {
+				e_text = 
+				"%s: Error getting annotation bounding box";
+				NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
+				if (ret < NhlWARNING) return ret;
+			}
+		}
+	}
+	return ret;
+
+}
 
 /*
  * Function:	SetAnnotations

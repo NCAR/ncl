@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceP.h,v 1.7 1998-05-22 01:59:14 dbrown Exp $
+ *      $Id: WorkspaceP.h,v 1.8 1998-11-10 17:18:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,7 +39,6 @@ typedef struct _NhlWorkspaceRec {
 	int			ws_id;     	/* Workspace identifier */
 	NrmQuark		type;   	/* Workspace type */
 	NhlPersistence		persistence;	/* Need for preservation */
-	NhlPointer		ws_data;	/* Workspace information */
         int			req_size;
 	NhlPointer		ws_ptr;		/* Workspace address */
 	int			cur_size;  	/* Current size in bytes */

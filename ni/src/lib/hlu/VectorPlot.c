@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.55 1998-11-06 22:16:17 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.56 1998-11-10 17:18:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2977,7 +2977,7 @@ static NhlErrorTypes vcUpdateTrans
 		    == NhlmapTransObjClass->base_class.class_name) {
 			subret = NhlVASetValues
 				(vcp->trans_obj->base.id,
-				 NhlNtrDataXStartF,tfp->data_xend,
+				 NhlNtrDataXStartF,tfp->data_xstart,
 				 NhlNtrDataXEndF,tfp->data_xend,
 				 NULL);
 

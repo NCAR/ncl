@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceI.h,v 1.12 1998-05-22 01:59:14 dbrown Exp $
+ *      $Id: WorkspaceI.h,v 1.13 1998-11-10 17:18:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,19 +34,10 @@ typedef enum _NhlPersistence {
 	NhlwsDISK
 } NhlPersistence;
 
-typedef struct _NhlAreaSetRec {
-	struct	_NhlAreaSetRec	*next;
-	NrmQuark		aset_name;
-	int			group_id;
-	int			aset_size;
-	int			*aset_ids;
-} NhlAreaSetRec;
-
 typedef struct _NhlWorkspace {
 	int			ws_id;     	/* Workspace identifier */
 	NrmQuark		type;   	/* Workspace type */
 	NhlPersistence		persistence;	/* Need for preservation */
-	NhlPointer		ws_data;	/* Workspace information */
         int			req_size;
 } NhlWorkspace;
 
@@ -73,6 +64,12 @@ extern NhlWorkspace *_NhlUseWorkspace(
 extern NhlErrorTypes _NhlIdleWorkspace(
 #if	NhlNeedProto
 	NhlWorkspace *ws
+#endif
+);
+
+extern NhlBoolean _NhlWorkspaceDataIntact(
+#if	NhlNeedProto
+	int		ws_id
 #endif
 );
 
