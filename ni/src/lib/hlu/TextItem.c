@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.20 1995-03-03 02:56:30 boote Exp $
+ *      $Id: TextItem.c,v 1.21 1995-03-08 23:44:14 haley Exp $
  */
 /************************************************************************
 *									*
@@ -245,31 +245,31 @@ static NhlResource resources[] = {
 			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxPosXF, NhlCtxPosXF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.pos_x),
-			NhlTProcedure,_NhlUSET(XPSet) ,0,NULL},
+			NhlTProcedure,_NhlUSET((NhlPointer)XPSet) ,0,NULL},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.pos_y_set),
 			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxPosYF, NhlCtxPosYF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.pos_y),
-				NhlTProcedure,_NhlUSET(YPSet),0,NULL },
+				NhlTProcedure,_NhlUSET((NhlPointer)YPSet),0,NULL },
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.angle_set),
 			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxAngleF, NhlCtxAngleF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.angle),
-		NhlTProcedure,_NhlUSET(AngleSet),0,NULL },
+		NhlTProcedure,_NhlUSET((NhlPointer)AngleSet),0,NULL },
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.font_set),
 			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		NhlOffset(NhlTextItemLayerRec, text.font),
-		NhlTProcedure,_NhlUSET(FontSet),0,NULL },
+		NhlTProcedure,_NhlUSET((NhlPointer)FontSet),0,NULL },
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.just_set),
 			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxJust, NhlCtxJust, NhlTInteger, sizeof(int),
 		NhlOffset(NhlTextItemLayerRec, text.just),
-		NhlTProcedure,_NhlUSET(JustSet),0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)JustSet),0,NULL},
 	{ NhlNtxFontQuality, NhlCtxFontQuality, NhlTFQuality, 
 		sizeof(NhlFontQuality),
 		NhlOffset(NhlTextItemLayerRec, text.font_quality),
@@ -282,13 +282,13 @@ static NhlResource resources[] = {
 			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxFontHeightF, NhlCtxFontHeightF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.font_height),
-		NhlTProcedure,_NhlUSET(FontHSet) ,0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)FontHSet) ,0,NULL},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.font_aspect_set),
 			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxFontAspectF, NhlCtxFontAspectF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.font_aspect),
-		NhlTProcedure, _NhlUSET(FontASPSet),0,NULL },
+		NhlTProcedure, _NhlUSET((NhlPointer)FontASPSet),0,NULL },
 	{ NhlNtxFontThicknessF, NhlCtxFontThicknessF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.font_thickness),
 		NhlTString,_NhlUSET("1.0") ,0,NULL},
@@ -302,7 +302,7 @@ static NhlResource resources[] = {
 	{ NhlNtxDirection, NhlCtxDirection, NhlTTextDirection, 
 		sizeof(NhlTextDirection),
 		NhlOffset(NhlTextItemLayerRec, text.direction),
-		NhlTProcedure,_NhlUSET(DirectionSet),0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)DirectionSet),0,NULL},
 	{ NhlNtxFuncCode, NhlCtxFuncCode, NhlTCharacter, 
 		sizeof(char),
 		NhlOffset(NhlTextItemLayerRec, text.func_code),
@@ -543,7 +543,7 @@ DoPcCalc
 	if( tnew->text.font_aspect <= 0.0 ) {
 		tnew->text.font_aspect = 1.3125;
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			"TextItem: Aspect ratio cannont be zero or negative");
+			"TextItem: Aspect ratio cannot be zero or negative");
 		ret = MIN(ret,NhlWARNING);
 	}
 	if(tnew->text.font_aspect <= 1.0) {
