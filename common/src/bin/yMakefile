@@ -1,7 +1,7 @@
 #
-#	$Id: yMakefile,v 1.4 1993-10-19 17:11:49 boote Exp $
+#	$Id: yMakefile,v 1.5 1997-01-24 22:28:14 haley Exp $
 #
 
 #define IHaveSubdirs
 
-SUBDIRS = fontc graphc scripts ncargpath
+SUBDIRS = scripts ncargpath
