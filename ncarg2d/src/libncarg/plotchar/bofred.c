@@ -1,5 +1,5 @@
 /*
- * $Id: bofred.c,v 1.1 1994-08-11 18:37:33 haley Exp $
+ * $Id: bofred.c,v 1.2 1994-08-30 17:28:27 kennison Exp $
  */
 
 #include <stdio.h>
@@ -14,9 +14,9 @@
  *	underlying C routines so FORTRAN never has cause to become
  *	upset because it is not actually a Logical Unit. The return
  *	code, "status", is not 0 if an error occurred, and 0 if
- *	all went well. The I/O status, "ios", is not used, but
- *	it is set equal to "status" so that it is used and
- *	compilers don't complain.
+ *	all went well. The returned value of the "I/O status" ("ios")
+ *	is always equal to that of "status"; "ios" is set only to keep
+ *	certain "C" compilers from issuing warning messages.
  */
 NGCALLF(bofred,BOFRED)(unit, fnum, ios, status)
 	int		*unit, *fnum, *ios, *status;
