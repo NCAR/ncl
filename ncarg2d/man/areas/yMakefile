@@ -1,8 +1,8 @@
 #
-#	$Id: yMakefile,v 1.7 1993-10-19 17:14:50 boote Exp $
+#	$Id: yMakefile,v 1.8 1993-10-22 14:09:06 haley Exp $
 #
 
-MAN3 = ardbpa ardrln areas areas_params aredam argeti argetr argtai arinam \
+MAN = ardbpa ardrln areas areas_params aredam argeti argetr argtai arinam \
 	armvam arpram arscam arseti arsetr
 
 # Install preformatted troff documents on systems without troff
