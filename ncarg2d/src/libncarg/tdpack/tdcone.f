@@ -1,5 +1,5 @@
 C
-C $Id: tdcone.f,v 1.1 2003-11-24 20:38:32 kennison Exp $
+C $Id: tdcone.f,v 1.2 2005-02-12 00:43:51 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -33,25 +33,34 @@ C
         DATA DTOR / .017453292519943 /
         DATA RTOD / 57.2957795130823 /
 C
-        RLAT=RTOD*ASIN(WDCS)
+C       RLAT=RTOD*ASIN(WDCS)
 C
-        IF (UDCS.NE.0.OR.VDCS.NE.0.) THEN
-          RLON=RTOD*ATAN2(VDCS,UDCS)
-        ELSE
-          RLON=0.
-        END IF
+C       IF (UDCS.NE.0.OR.VDCS.NE.0.) THEN
+C         RLON=RTOD*ATAN2(VDCS,UDCS)
+C       ELSE
+C         RLON=0.
+C       END IF
 C
 C Draw the circular base of the arrowhead.  Essentially, we form the
-C circle in the UV plane, perform two rotations (one about the V axis
-C and one about the W axis), and then translate the circle to its
-C desired final position.
+C circle in the UV plane, perform two rotations (one about the V axis,
+C by the angle 90-RLAT, and one about the W axis, by the angle RLON),
+C and then translate the circle to its desired final position.  The
+C rotations involve sines and cosines of 90-RLAT and of RLON; the code
+C is simplified by computing these from the direction cosines.
+C
+        DNOM=SQRT(UDCS*UDCS+VDCS*VDCS)
 C
         DO 101 I=0,NPAC
           UCR1=RADI*COS(DTOR*REAL(I)*(360./REAL(NPAC)))
           UCR2=UCR1*WDCS
           VCR2=RADI*SIN(DTOR*REAL(I)*(360./REAL(NPAC)))
-          UCR3=UCR2*UDCS-VCR2*VDCS
-          VCR3=VCR2*UDCS+UCR2*VDCS
+          IF (DNOM.EQ.0.) THEN
+            UCR3=UCR2
+            VCR3=VCR2
+          ELSE
+            UCR3=(UCR2*UDCS-VCR2*VDCS)/DNOM
+            VCR3=(VCR2*UDCS+UCR2*VDCS)/DNOM
+          END IF
           WCR3=-UCR1*SQRT(1.-WDCS*WDCS)
           CALL TDPRPT (UACC+UCR3,VACC+VCR3,WACC+WCR3,XPOS,YPOS)
           CALL PLOTIF (CUFX(XPOS),CUFY(YPOS),MIN(I,1))
@@ -70,8 +79,13 @@ C
           UCR1=RADI*COS(DTOR*REAL(I)*(360./REAL(NPCT)))
           UCR2=UCR1*WDCS
           VCR2=RADI*SIN(DTOR*REAL(I)*(360./REAL(NPCT)))
-          UCR3=UCR2*UDCS-VCR2*VDCS
-          VCR3=VCR2*UDCS+UCR2*VDCS
+          IF (DNOM.EQ.0.) THEN
+            UCR3=UCR2
+            VCR3=VCR2
+          ELSE
+            UCR3=(UCR2*UDCS-VCR2*VDCS)/DNOM
+            VCR3=(VCR2*UDCS+UCR2*VDCS)/DNOM
+          END IF
           WCR3=-UCR1*SQRT(1.-WDCS*WDCS)
           CALL TDPRPT (UACC+UCR3,VACC+VCR3,WACC+WCR3,XPOS,YPOS)
           CALL PLOTIF (CUFX(XPOS),CUFY(YPOS),1)

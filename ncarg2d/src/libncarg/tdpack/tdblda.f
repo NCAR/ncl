@@ -1,6 +1,6 @@
 C
-C $Id: tdblda.f,v 1.3 2000-08-22 15:07:06 haley Exp $
-C                                                                      
+C $Id: tdblda.f,v 1.4 2005-02-12 00:43:51 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -91,7 +91,7 @@ C
 C
 C IS is the internal parameter 'SET', which says whether a SET call is
 C to be done by TDINIT or not.  Use the value 0 if no SET call is to be
-C done, the value 1 otherwise
+C done, the value 1 otherwise.
 C
         DATA IS / 1 /
 C

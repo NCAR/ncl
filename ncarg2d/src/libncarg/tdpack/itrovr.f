@@ -1,6 +1,6 @@
 C
-C $Id: itrovr.f,v 1.3 2000-08-22 15:07:06 haley Exp $
-C                                                                      
+C $Id: itrovr.f,v 1.4 2005-02-12 00:43:51 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -35,18 +35,18 @@ C sign if point 3 is to the right of that line.
 C
         SIDE(X1,Y1,X2,Y2,X3,Y3)=(X1-X3)*(Y2-Y3)-(Y1-Y3)*(X2-X3)
 C
-      XCA1=.999*XCP1+.001*(XCP1+XCP2+XCP3)/3.
-      YCA1=.999*YCP1+.001*(YCP1+YCP2+YCP3)/3.
-      XCA2=.999*XCP2+.001*(XCP1+XCP2+XCP3)/3.
-      YCA2=.999*YCP2+.001*(YCP1+YCP2+YCP3)/3.
-      XCA3=.999*XCP3+.001*(XCP1+XCP2+XCP3)/3.
-      YCA3=.999*YCP3+.001*(YCP1+YCP2+YCP3)/3.
-      XCB1=.999*XCQ1+.001*(XCQ1+XCQ2+XCQ3)/3.
-      YCB1=.999*YCQ1+.001*(YCQ1+YCQ2+YCQ3)/3.
-      XCB2=.999*XCQ2+.001*(XCQ1+XCQ2+XCQ3)/3.
-      YCB2=.999*YCQ2+.001*(YCQ1+YCQ2+YCQ3)/3.
-      XCB3=.999*XCQ3+.001*(XCQ1+XCQ2+XCQ3)/3.
-      YCB3=.999*YCQ3+.001*(YCQ1+YCQ2+YCQ3)/3.
+        XCA1=.999*XCP1+.001*(XCP1+XCP2+XCP3)/3.
+        YCA1=.999*YCP1+.001*(YCP1+YCP2+YCP3)/3.
+        XCA2=.999*XCP2+.001*(XCP1+XCP2+XCP3)/3.
+        YCA2=.999*YCP2+.001*(YCP1+YCP2+YCP3)/3.
+        XCA3=.999*XCP3+.001*(XCP1+XCP2+XCP3)/3.
+        YCA3=.999*YCP3+.001*(YCP1+YCP2+YCP3)/3.
+        XCB1=.999*XCQ1+.001*(XCQ1+XCQ2+XCQ3)/3.
+        YCB1=.999*YCQ1+.001*(YCQ1+YCQ2+YCQ3)/3.
+        XCB2=.999*XCQ2+.001*(XCQ1+XCQ2+XCQ3)/3.
+        YCB2=.999*YCQ2+.001*(YCQ1+YCQ2+YCQ3)/3.
+        XCB3=.999*XCQ3+.001*(XCQ1+XCQ2+XCQ3)/3.
+        YCB3=.999*YCQ3+.001*(YCQ1+YCQ2+YCQ3)/3.
 C
 C Initialize the value of the function to say that the triangles don't
 C overlap.
