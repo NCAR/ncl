@@ -6,6 +6,14 @@
  */
 
 /*
+ *  Function prototypes for the shgrid package.
+ */
+int c_shgetnp(float, float, float, int, float *, float *, float *,
+              int, int *); 
+float *c_shgrid(int, float [], float [], float [], float [], 
+                int, int, int, float [], float [], float [], int*);
+
+/*
  *  Function prototypes for the cssgrid package.
  */
 int   *c_csstri(int, float [], float [], float [], int *, int *);
