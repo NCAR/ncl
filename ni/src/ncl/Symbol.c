@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.39 1996-10-02 22:34:00 ethan Exp $
+ *      $Id: Symbol.c,v 1.40 1996-10-03 18:32:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2513,6 +2513,9 @@ long*stride;
 				}
 				
 			}
+			if(the_val->obj.status == TEMPORARY) {
+				_NclDestroyObj((NclObj)the_val);
+			}
 		}
 		return(tmp);
 	} 
@@ -2602,6 +2605,10 @@ NclQuark attname;
 							_NclSetStatus((NclObj)tmp_md,STATIC);
 						}
 						out_data->value = tmp_md->multidval.val;
+						for(i = 0; i < tmp_md->multidval.n_dims; i++) {
+							out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
+						}
+						_NclDestroyObj((NclObj)tmp_md);
 					} else {
 						 out_data->elem_size = sizeof(int);
 						out_data->value = (void*)NclMalloc(sizeof(int)*tmp_md->multidval.totalelements);
@@ -2621,11 +2628,13 @@ NclQuark attname;
 								}
 							}
 						}
+						for(i = 0; i < tmp_md->multidval.n_dims; i++) {
+							out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
+						}
+						if(tmp_md->obj.status == TEMPORARY) {
+							_NclDestroyObj((NclObj)tmp_md);
+						}
 					}
-					for(i = 0; i < tmp_md->multidval.n_dims; i++) {
-						out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
-					}
-					_NclDestroyObj((NclObj)tmp_md);
 					return(out_data);
 				}
 			}
