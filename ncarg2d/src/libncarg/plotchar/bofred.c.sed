@@ -1,5 +1,5 @@
 /*
- *	$Id: bofred.c.sed,v 1.1.1.1 1992-04-17 22:32:20 ncargd Exp $
+ *	$Id: bofred.c.sed,v 1.2 1992-10-02 18:54:07 ncargd Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -12,14 +12,6 @@
 ***********************************************************************/
 
 #include <stdio.h>
-
-#ifdef	SYSV
-#if	!defined(RS6000) && !defined(CRAY)
-	extern	int	sprintf();
-#endif
-#else
-	extern	char	*sprintf();
-#endif
 
 /* Procedure bofred_(unit, fnum, ios, status)
  *
