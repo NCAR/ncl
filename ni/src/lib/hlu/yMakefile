@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.57 2002-07-02 01:26:41 dbrown Exp $
+#      $Id: yMakefile,v 1.58 2002-07-02 11:36:30 haley Exp $
 #
 #########################################################################
 #									#
@@ -54,7 +54,7 @@ HDRS		= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		MapRGDataHandler.h MapRGDataHandlerP.h \
 		Primitive.h PrimitiveP.h \
 		CurvilinearTransObj.h CurvilinearTransObjP.h \
-		SphericalTransObj.h SphericalTransObjP.h SphericalGeometryP.h \
+		SphericalTransObj.h SphericalTransObjP.h SphericalGeometryP.h
 
 CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
