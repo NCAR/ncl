@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_cbind.m,v 1.5 1993-05-03 22:25:50 haley Exp $
+.\"	$Id: ncarg_cbind.m,v 1.6 1993-05-10 17:44:32 haley Exp $
 .\"
 .TH NCARG_CBIND 3NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -143,7 +143,7 @@ The following C examples are available:
 .nf
 .in .5i
 c_agex07 c_cbex01 c_colcon c_eezmpa c_elblba
-c_epltch c_mpex05 c_sfex02 c_slex01
+c_epltch c_gtxpac c_mpex05 c_sfex02 c_slex01
 .sp
 .in -.5i
 If you want to generate all of these examples, type 
@@ -162,7 +162,7 @@ C-bindings have not been provided for user entry points in the
 following obsolete utilities:
 .sp
 .in .5i
-CONRAN, CONREC, CONTERP, HAFTON, ISOSFHR, PWRITX, and PWRITY
+Conran_family, Conrec_family, Halftone, Isosrfhr, and Pwrite_family.
 .in -.5i
 .SH CAVEATS
 You cannot pass a NULL pointer in place of a character string.
