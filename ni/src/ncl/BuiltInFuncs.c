@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.130 2000-11-21 17:01:19 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.131 2000-12-05 16:43:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -333,7 +333,7 @@ NhlErrorTypes _NclIListFuncs
 						}
 					}
 				}
-				if(step->u.func->theargs[i].arg_data_type != NULL) {
+				if(step->u.func->theargs[i].arg_data_type >= 0) {
 					ret = nclfprintf(fp,": %s,\n",NrmQuarkToString(step->u.func->theargs[i].arg_data_type));
 					if(ret < 0) {
 						_NclFreeApiDataList((void*)tmp);
@@ -376,7 +376,7 @@ NhlErrorTypes _NclIListFuncs
 					}
 				}
 			}
-			if(step->u.func->theargs[step->u.func->nparams-1].arg_data_type != NULL) {
+			if(step->u.func->theargs[step->u.func->nparams-1].arg_data_type >= 0) {
 				ret = nclfprintf(fp,": %s\n",NrmQuarkToString(step->u.func->theargs[step->u.func->nparams-1].arg_data_type));
 				if(ret < 0) {
 					_NclFreeApiDataList((void*)tmp);
@@ -6210,6 +6210,7 @@ NhlErrorTypes _NclIExit
 #endif
 {
 	exit(0);
+	return(NhlNOERROR);
 }
 NhlErrorTypes _NclIIsFunc
 #if	NhlNeedProto
@@ -11216,6 +11217,9 @@ NhlErrorTypes _NclIAttSetValues( void )
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"attsetvalues: Bad attribute list, can't continue");
 				return(NhlFATAL);
 			}
+			if(tmp_attobj->att.n_atts == 0) {
+				return(NhlNOERROR);
+			}
 			rl_list = NhlRLCreate(NhlSETRL);
 			att_list = tmp_attobj->att.att_list;
 			gen_array = NclMalloc((unsigned)sizeof(NhlGenArray)*tmp_attobj->att.n_atts);
@@ -11307,7 +11311,7 @@ NhlErrorTypes _NclIAttSetValues( void )
                 }
 	}
         for(; i > 0; i--) {
-                if(gen_array[i-1])
+                if((gen_array != NULL)&&(gen_array[i-1]))
                         NhlFreeGenArray(gen_array[i-1]);
         }
 
@@ -11473,6 +11477,7 @@ NhlErrorTypes _NclIprintFileVarSummary( void )
                         0);
 
 	_NclPrintFileVarSummary(thefile,*var_string);
+	return(NhlNOERROR);
 
 }
 NhlErrorTypes _NclIAddFiles( void )
@@ -11618,7 +11623,6 @@ NhlErrorTypes _NclIListGetType(void)
 		0
 	));
 
-	return(NhlNOERROR);
 }
 NhlErrorTypes _NclIListSetType(void)
 {
