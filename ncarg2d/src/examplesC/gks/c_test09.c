@@ -41,7 +41,7 @@ main()
 /*
  *  Open GKS
  */
-	gopen_gks("stdout",10000);
+	gopen_gks("stdout",0);
 /*
  *  Open a metafile workstation with name DIFMETA.
  */
