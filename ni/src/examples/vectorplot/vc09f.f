@@ -1,5 +1,5 @@
 C
-C  $Id: vc09f.f,v 1.3 1998-06-28 22:51:33 haley Exp $
+C  $Id: vc09f.f,v 1.4 2003-03-03 20:20:54 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -28,6 +28,7 @@ C
       external NhlFTextItemClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFVectorFieldClass
       external NhlFVectorPlotClass
@@ -39,7 +40,7 @@ C
       parameter(TIMESTEPS=64)
       parameter(NLAT=33,NLON=36)
 
-      integer ZOOM, NCGM, X11, PS
+      integer ZOOM, NCGM, X11, PS, PDF
       integer appid, wid, vfield, sfield, sfield2
       integer mapid, cnid, vcid, tiid1, tiid2,txid1
       integer u_id, v_id, p_id, t_id, lat_id, lon_id, titl_id, tim_id
@@ -76,6 +77,7 @@ C
       NCGM=1
       X11=0
       PS=0
+      PDF=0
 
       call NhlFInitialize
       call NhlFRLCreate (rlist,  'setrl')
@@ -95,7 +97,7 @@ C Create an ncgmWorkstation object.
 C
 
       if (NCGM .eq. 1) then
-         call NhlFRLClear (rlist,ierr)
+         call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkMetaName', './vc09f.ncgm', 
      +        ierr)
          call NhlFRLSetString (rlist, 'wkColorMap', 'temp1', ierr)
@@ -106,7 +108,7 @@ C
 C Create an XWorkstation object.
 C
       else if (X11 .eq. 1) then
-         call NhlFRLClear (rlist,ierr)
+         call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkPause', 'True', ierr)
          call NhlFRLSetString (rlist, 'wkColorMap', 'temp1', ierr)
          call NhlFCreate (wid, 'vc09Work', NhlFXWorkstationClass, 0,
@@ -117,11 +119,22 @@ C Create a PSWorkstation object.
 C
 
       else if (PS .eq. 1) then
-         call NhlFRLClear (rlist,ierr)
+         call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkPSFileName', 'vc09n.ps', ierr)
          call NhlFRLSetString (rlist, 'wkColorMap', 'temp1', ierr)
          call NhlFCreate (wid, 'vc09Work', NhlFPSWorkstationClass, 0,
      +        rlist,  ierr)
+C
+C Create a PDFWorkstation object.
+C
+
+      else if (PDF .eq. 1) then
+         call NhlFRLClear (rlist)
+         call NhlFRLSetString (rlist, 'wkPDFFileName', 'vc09n.pdf',
+     +        ierr)
+         call NhlFRLSetString (rlist, 'wkColorMap', 'temp1', ierr)
+         call NhlFCreate (wid, 'vc09Work', NhlFPDFWorkstationClass, 0,
+     +        rlist, ierr)
       end if
 
       call gngpat (dir, 'data', ierr)

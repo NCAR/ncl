@@ -1,5 +1,5 @@
 /*
- *      $Id: vc07c.c,v 1.1 1996-07-03 16:48:09 haley Exp $
+ *      $Id: vc07c.c,v 1.2 2003-03-03 20:20:54 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -29,6 +29,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/VectorPlot.h>
 #include <ncarg/hlu/VectorField.h>
@@ -45,7 +46,7 @@ int ithin[NROWS] = {90,15,5,5,4,4,3,3,2,2,2};
 
 main(int argc, char *argv[])
 {
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
     int i, j;
     int appid, wid, cnid, vcid, mpid;
     int vfield, sfield;
@@ -127,6 +128,15 @@ main(int argc, char *argv[])
         NhlRLSetString(rlist,NhlNwkPSFileName,"vc07c.ps");
         NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len_dims);
         NhlCreate(&wid,"vc07Work",NhlpsWorkstationClass,appid,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"vc07c.pdf");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len_dims);
+        NhlCreate(&wid,"vc07Work",NhlpdfWorkstationClass,appid,rlist);
     }
 /*
  * Read the data file.

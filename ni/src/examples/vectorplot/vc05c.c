@@ -48,6 +48,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/VectorField.h>
 #include <ncarg/hlu/VectorPlot.h>
 #include <ncarg/hlu/MapPlot.h>
@@ -63,7 +64,7 @@ main(int argc, char *argv[])
     int         srlist;
     float       x,y;
     int         i,j;
-    int         NCGM=0, X11=1, PS=0;
+    int         NCGM=0, X11=1, PS=0, PDF=0;
 
 
 for( i= 0;i < 25; i++){
@@ -124,11 +125,19 @@ for( i= 0;i < 25; i++){
 
     else if (PS) {
 /*
- * Create a meta file workstation.
+ * Create a PS workstation.
  */
         NhlRLClear(srlist);
         NhlRLSetString(srlist,NhlNwkPSFileName,"./vc05c.ps");
         NhlCreate(&wid,"vc05Work",NhlpsWorkstationClass,0,srlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkPDFFileName,"./vc05c.pdf");
+        NhlCreate(&wid,"vc05Work",NhlpdfWorkstationClass,0,srlist);
     }
 
 /*

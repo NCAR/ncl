@@ -1,5 +1,5 @@
 C
-C  $Id: vc06f.f,v 1.5 1998-02-11 18:56:40 dbrown Exp $
+C  $Id: vc06f.f,v 1.6 2003-03-03 20:20:54 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -38,13 +38,14 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFVectorPlotClass
       external NhlFVectorFieldClass
       external NhlFScalarFieldClass
       external NhlFMapPlotClass
       
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
       integer appid,wid,vcid,vfid, sfid, mpid
       integer rlist
       real U(73,73),V(73,73), PSL(73,73)
@@ -120,6 +121,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 
       if (NCGM.eq.1) then
 C
@@ -146,6 +148,14 @@ C
       call NhlFRLSetString(rlist,'wkPSFileName','./vc06f.ps',ierr)
       call NhlFCreate(wid,'vc06Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkPDFFileName','./vc06f.pdf',ierr)
+      call NhlFCreate(wid,'vc06Work',
+     +        NhlFPDFWorkstationClass,0,rlist,ierr)
       endif
 C
 C Create a VectorField data object using the data set defined above.

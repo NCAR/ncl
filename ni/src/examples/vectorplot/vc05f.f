@@ -36,6 +36,7 @@ C ;;********* see resource file vc05.res ******
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFMapPlotClass
       external NhlFVectorFieldClass
@@ -50,11 +51,12 @@ C ;;********* see resource file vc05.res ******
       integer len_dims(2) 
       real x,y
       integer i,j
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 
       DO 100 i= 1,25
          DO 200 j= 1,25
@@ -117,6 +119,15 @@ C Create a PS  workstation.
       call NhlFRLClear(srlist)
       call NhlFRLSetstring(srlist,'wkPSFileName','./vc05f.ps',ierr)
       call NhlFCreate(wid,'vc05Work',NhlFPSWorkstationClass,
+     1     0,srlist,ierr)
+
+      else if (PDF .eq. 1) then
+
+C Create a PDF  workstation.
+
+      call NhlFRLClear(srlist)
+      call NhlFRLSetstring(srlist,'wkPDFFileName','./vc05f.pdf',ierr)
+      call NhlFCreate(wid,'vc05Work',NhlFPDFWorkstationClass,
      1     0,srlist,ierr)
       endif
 

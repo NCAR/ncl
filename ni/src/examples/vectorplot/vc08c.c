@@ -1,5 +1,5 @@
 /*
- *      $Id: vc08c.c,v 1.3 1997-04-11 18:52:56 haley Exp $
+ *      $Id: vc08c.c,v 1.4 2003-03-03 20:20:54 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,6 +28,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/VectorPlot.h>
 #include <ncarg/hlu/VectorField.h>
@@ -42,7 +43,7 @@ int vccolors[14] = {26,28,30,33,36,39,42,45,48,51,54,56,58,60};
 
 main()
 {
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
     int appid,wid,vcid,vfield,mapid,txid1,txid2;
     int rlist;
     float U[NLAT][NLON],V[NLAT][NLON];
@@ -104,6 +105,15 @@ main()
         NhlRLSetString(rlist,NhlNwkColorMap,"uniform");
         NhlRLSetString(rlist,NhlNwkPSFileName,"vc08c.ps");
         NhlCreate(&wid,"vc08Work",NhlpsWorkstationClass,appid,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkColorMap,"uniform");
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"vc08c.pdf");
+        NhlCreate(&wid,"vc08Work",NhlpdfWorkstationClass,appid,rlist);
     }
 /*
  * Get netCDF file information.

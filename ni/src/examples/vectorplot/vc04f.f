@@ -27,12 +27,13 @@ C
        external NhlFAppClass
        external NhlFNcgmWorkstationClass
        external NhlFPSWorkstationClass
+       external NhlFPDFWorkstationClass
        external NhlFXWorkstationClass
        external NhlFVectorPlotClass
        external NhlFVectorFieldClass
 
        parameter(LL=37,MM=37,NN=2)
-       integer NCGM, X11, PS
+       integer NCGM, X11, PS, PDF
        integer appid,wid,vcid,vfid
        integer rlist,grlist
        integer len_dims(3)
@@ -72,6 +73,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 
       if (NCGM.eq.1) then
 C
@@ -98,6 +100,14 @@ C
          call NhlFRLSetString(rlist,'wkPSFileName','./vc04f.ps',ierr)
          call NhlFCreate(wid,'vc04Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPDFFileName','./vc04f.pdf',ierr)
+         call NhlFCreate(wid,'vc04Work',
+     +        NhlFPDFWorkstationClass,0,rlist,ierr)
       endif
 C
 C  Create a VectorField data object using the data set defined above.

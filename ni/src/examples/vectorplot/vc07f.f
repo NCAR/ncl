@@ -1,5 +1,5 @@
 C
-C      $Id: vc07f.f,v 1.4 1999-03-18 17:17:58 haley Exp $
+C      $Id: vc07f.f,v 1.5 2003-03-03 20:20:54 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -24,6 +24,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFVectorFieldClass
       external NhlFVectorPlotClass
@@ -33,7 +34,7 @@ C
 
       parameter(MSIZE=73,NSIZE=73,NROWS=11,NCOLORS=24)
 
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
       integer i, j
       integer appid, wid, cnid, vcid, mpid
       integer vfield, sfield
@@ -75,6 +76,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the high level utility library
 C
@@ -120,6 +122,16 @@ C
      +        ierr)
          call NhlFCreate(wid,'vc07Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPDFFileName','./vc07f.pdf',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len_dims,
+     +        ierr)
+         call NhlFCreate(wid,'vc07Work',
+     +        NhlFPDFWorkstationClass,0,rlist,ierr)
       endif
 C
 C Read the data file

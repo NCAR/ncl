@@ -64,6 +64,7 @@ end create
 NCGM=1
 X11=0
 PS=0
+PDF=0
 
 if (NCGM .eq. 1) then
 ;
@@ -91,6 +92,16 @@ else
        "wkPSFileName" : "./vc07n.ps"
        "wkColorMap" : cmap
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+        wid = create "vc07Work" pdfWorkstationClass defaultapp
+         "wkPDFFileName" : "./vc07n.pdf"
+         "wkColorMap" : cmap
+        end create
+       end if
      end if
   end if
 end if

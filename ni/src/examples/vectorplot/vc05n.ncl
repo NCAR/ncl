@@ -61,6 +61,7 @@ end create
 NCGM=0
 X11=1
 PS=0
+PDF=0
 
 if (NCGM.eq.1) then
 ;
@@ -89,6 +90,16 @@ else
         "wkPSFileName" : "./vc05n.ps"
         "wkColorMap" : "temp1"
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDF workstation.
+;
+        wid = create "vc05Work" pdfWorkstationClass defaultapp
+          "wkPDFFileName" : "./vc05n.pdf"
+          "wkColorMap" : "temp1"
+        end create
+      end if
     end if
   end if
 end if

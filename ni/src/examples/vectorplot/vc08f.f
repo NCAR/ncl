@@ -1,5 +1,5 @@
 C
-C  $Id: vc08f.f,v 1.1 1997-03-13 17:22:12 haley Exp $
+C  $Id: vc08f.f,v 1.2 2003-03-03 20:20:54 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -23,6 +23,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFVectorPlotClass
       external NhlFVectorFieldClass
@@ -30,7 +31,7 @@ C
       external NhlFTextItemClass
       parameter(NLON = 129, NLAT = 64)
       
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
       integer appid,wid,vcid,vfield,mapid,txid1,txid2
       integer rlist
       real U(NLON,NLAT),V(NLON,NLAT)
@@ -76,6 +77,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 
       if (NCGM.eq.1) then
 C
@@ -104,6 +106,15 @@ C
       call NhlFRLSetString(rlist,'wkPSFileName','./vc08f.ps',ierr)
       call NhlFCreate(wid,'vc08Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkColorMap','uniform',ierr)
+      call NhlFRLSetString(rlist,'wkPDFFileName','./vc08f.pdf',ierr)
+      call NhlFCreate(wid,'vc08Work',
+     +        NhlFPDFWorkstationClass,0,rlist,ierr)
       endif
 C
 C Get netCDF file information.

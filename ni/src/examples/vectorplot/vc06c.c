@@ -1,5 +1,5 @@
 /*
- *  $Id: vc06c.c,v 1.5 1998-02-11 18:56:40 dbrown Exp $    
+ *  $Id: vc06c.c,v 1.6 2003-03-03 20:20:54 grubin Exp $    
  */
 /***********************************************************************
 *                                                                      *
@@ -52,6 +52,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/VectorPlot.h>
 #include <ncarg/hlu/ScalarField.h>
@@ -63,7 +64,7 @@
 
 main(int argc, char *argv[])
 {
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
     int appid,wid,vcid,vfid, sfid, mpid;
     int rlist;
     float U[73][73],V[73][73], PSL[73][73];
@@ -138,6 +139,14 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"vc06c.ps");
         NhlCreate(&wid,"vc06Work",NhlpsWorkstationClass,appid,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"vc06c.pdf");
+        NhlCreate(&wid,"vc06Work",NhlpdfWorkstationClass,appid,rlist);
     }
 /*
  * Get the U and V and lat/lon dimensions.

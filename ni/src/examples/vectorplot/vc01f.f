@@ -1,5 +1,5 @@
 C
-C      $Id: vc01f.f,v 1.1 1996-05-10 15:22:16 haley Exp $
+C      $Id: vc01f.f,v 1.2 2003-03-03 20:20:54 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -23,6 +23,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFVectorFieldClass
       external NhlFVectorPlotClass
@@ -30,7 +31,7 @@ C
       parameter(M=30,N=25)
       parameter(PI=3.14159)
 
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
       integer appid,wid,vcid,vfid
       integer rlist
       integer len_dims(2)
@@ -40,6 +41,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Generate vector data arrays
 C
@@ -89,6 +91,14 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPSFileName','./vc01f.ps',ierr)
          call NhlFCreate(wid,'vc01Work',NhlFPSWorkstationClass,
+     1        0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPDFFileName','./vc01f.pdf',ierr)
+         call NhlFCreate(wid,'vc01Work',NhlFPDFWorkstationClass,
      1        0,rlist,ierr)
       endif
 C

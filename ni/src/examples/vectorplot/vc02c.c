@@ -1,5 +1,5 @@
 /*
- *      $Id: vc02c.c,v 1.3 1996-05-01 17:39:42 dbrown Exp $
+ *      $Id: vc02c.c,v 1.4 2003-03-03 20:20:54 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -29,6 +29,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/VectorPlot.h>
 
@@ -39,7 +40,7 @@
 
 main(int argc, char *argv[])
 {
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
     int appid,wid,vcid,vfid;
     int rlist,grlist;
     int len_dims[2];
@@ -105,6 +106,15 @@ main(int argc, char *argv[])
 	NhlRLSetString(rlist,NhlNwkColorMap,"temp1");
         NhlRLSetString(rlist,NhlNwkPSFileName,"vc02c.ps");
         NhlCreate(&wid,"vc02Work",NhlpsWorkstationClass,appid,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+	NhlRLSetString(rlist,NhlNwkColorMap,"temp1");
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"vc02c.pdf");
+        NhlCreate(&wid,"vc02Work",NhlpdfWorkstationClass,appid,rlist);
     }
 /*
  * Create a VectorField data object using the data set defined above.

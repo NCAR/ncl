@@ -1,5 +1,5 @@
 /*
- *      $Id: vc09c.c,v 1.3 1998-02-05 23:56:56 haley Exp $
+ *      $Id: vc09c.c,v 1.4 2003-03-03 20:20:54 grubin Exp $
  */
 /************************************************************************
  *                                                                      *
@@ -31,6 +31,7 @@
 #include <ncarg/hlu/TextItem.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/VectorPlot.h>
 #include <ncarg/hlu/ScalarField.h>
@@ -41,7 +42,7 @@
 #define NLON 36
 #define NLAT 33
 
-void main ()
+int main ()
 {
 
 /*
@@ -51,7 +52,7 @@ void main ()
  *
  */
 
-    int ZOOM=0, NCGM=1, X11=0, PS=0;
+    int ZOOM=0, NCGM=1, X11=0, PS=0, PDF=0;
 
     int i, j, k, u_id, v_id, p_id, t_id, len_dims [2], *time, *timestep;
     int rlist, uf, vf, pf, tf, tim_id, lat_id, lon_id, tit_id;
@@ -116,6 +117,19 @@ void main ()
        NhlRLSetString (rlist, NhlNwkPSFileName, "vc09c.ps");
 	   NhlRLSetString (rlist, NhlNwkColorMap, "temp1");
        NhlCreate (&wid, "vc09Work", NhlpsWorkstationClass,
+                   NhlDEFAULT_APP, rlist);
+    }
+    else
+
+/*
+ *  Create a PDFWorkstation object.
+ */
+
+    if (PDF) {
+       NhlRLClear (rlist);
+       NhlRLSetString (rlist, NhlNwkPDFFileName, "vc09c.pdf");
+	   NhlRLSetString (rlist, NhlNwkColorMap, "temp1");
+       NhlCreate (&wid, "vc09Work", NhlpdfWorkstationClass,
                    NhlDEFAULT_APP, rlist);
     }
 
