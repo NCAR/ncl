@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_gks_cbind.m,v 1.2 1993-03-29 23:16:32 haley Exp $
+.\"	$Id: ncarg_gks_cbind.m,v 1.3 1993-04-05 17:29:55 haley Exp $
 .\"
 .TH NCARG_GKS_CBIND 3NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -19,11 +19,6 @@ the functions at level 0A have been implemented.  At the time,
 not all of these functions are supported; only the ones that have
 man pages associated with them are supported.  Below is a list
 of the currently supported NCAR Graphics GKS C-bindings:
-.sp
-Since the NCAR Graphics GKS C-binding adheres to the standard, the
-names for the C-bindings are not like the Fortran names.  Instead, the
-functions names are more descriptive, like \fBgset_fill_colr_ind\fP
-which corresponds to the Fortran routine \fBGSFACI\fP.
 .sp
 .nf
 gaccum_tran_matrix
@@ -98,9 +93,18 @@ gtext
 gupd_ws
 .sp
 .fi
+.sp
 Please see the man page for any of these for more information on that
 particular function.  In the future, as higher level GKS Fortran functions 
 are implemented, there may be C-bindings created for them as well.
+.sp
+Notice that since the NCAR Graphics GKS C-binding adheres to the
+standard, the names for the C-bindings are not like the Fortran names.
+Instead, the functions names are more descriptive, like
+\fBgset_fill_colr_ind\fP which corresponds to the Fortran GKS routine
+\fBGSFACI\fP.  If you know the name of the Fortran GKS routine and you
+need the C-binding name, you can look at the man page for the Fortran
+routine to get the name of the C-binding routine.
 .SH ARGUMENT LISTS
 The argument list of each GKS C-binding closely corresponds with the
 argument list of the Fortran routine, but in many cases, the arguments
@@ -108,7 +112,7 @@ are represented in the form of a C structure.  These structures are defined
 in the include file <ncarg/gks.h>.
 .SH FUNCTION PROTOTYPES
 The GKS C-bindings are intended to be ANSI C compliant.  To get the
-correct function prototypes you can include <ncarg/gks.h>.
+correct function prototypes, include <ncarg/gks.h> in your C program.
 .SH COMPILING YOUR PROGRAM
 To compile your NCAR Graphics C program with the GKS C-bindings, use the
 application \fBncargcc\fP.  \fBncargcc\fP will take care of loading in
