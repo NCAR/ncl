@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.3 2003-01-23 21:03:28 fred Exp $
+ *      $Id: pdf.c,v 1.4 2003-02-20 19:12:46 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -34,7 +34,7 @@
  *
  *      Date:           Thu Aug 19 10:30:32 MDT 1993
  *
- *      Description:    This file contains the definition of the PostScript
+ *      Description:    This file contains the definition of the PDF
  *                      device driver.
  */
 #include <stdio.h>
@@ -199,7 +199,7 @@ PDFClipRect *GetPDFClipping (PDFddp *psa, CoordSpace s1, CoordSpace s2)
     rtmp.ury = rtmp.ury * (psa->transform).y_scale + (psa->transform).y_trans;
           
 /*
- *  Calculate the PostScript coordinates.
+ *  Calculate the PDF coordinates.
  */
     rect.llx = (psa->dspace.llx) + (int)(((float)(psa->dspace.xspan))*rtmp.llx);
     rect.urx = (psa->dspace.llx) + (int)(((float)(psa->dspace.xspan))*rtmp.urx);
@@ -220,7 +220,7 @@ PDFClipRect *GetPDFClipping (PDFddp *psa, CoordSpace s1, CoordSpace s2)
  */
 void PDFOutputClipping (PDFddp *psa, int type)
 {
-  int x0,x1,y0,y1,current_color;
+  int tx,ty,x0,x1,y0,y1,current_color;
 
   if (psa->pdf_clip.null == FALSE) {
     if (type == DEFAULT_CLIPPING_RECT) {
@@ -255,6 +255,20 @@ void PDFOutputClipping (PDFddp *psa, int type)
     sprintf(page_lines[num_page_lines],
               "%7.5f 0.0 0.0 %7.5f 0.0 0.0 cm\n",psa->scaling,psa->scaling);
     stream_size += 35;
+
+/*
+ *  Modify transformation matrix if landscape mode.
+ */
+    if (port_land == LANDSCAPE) {
+      tx = -((psa->dspace.lly) + (psa->dspace.urx));
+      ty =   (psa->dspace.llx) - (psa->dspace.lly);
+      bump_page_lines();
+      sprintf(page_lines[num_page_lines],"0. -1. 1. 0. 0. 0. cm\n");
+      stream_size += 22;
+      bump_page_lines();
+      sprintf(page_lines[num_page_lines],"1. 0. 0. 1. %6d %6d cm\n", tx, ty);
+      stream_size += 29;
+    }
 
 /*
  *  Establish the new clipping rectangle.
@@ -340,7 +354,7 @@ void PDFOutputClipping (PDFddp *psa, int type)
 
 void PDFpreamble (PDFddp *psa, preamble_type type)
 {
-  int     i,current_color,x0,x1,y0,y1,current_clipping;
+  int     i,current_color,tx,ty,x0,x1,y0,y1,current_clipping;
   float   scl = psa->scaling;
   FILE    *fp;
   char    *strn,*lines[10];
@@ -426,6 +440,20 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
     stream_size += 35;
 
 /*
+ *  Modify transformation matrix if landscape mode.
+ */
+    if (port_land == LANDSCAPE) {
+      tx = -((psa->dspace.lly) + (psa->dspace.urx));
+      ty =  (psa->dspace.llx) - (psa->dspace.lly);
+      bump_page_lines();
+      sprintf(page_lines[num_page_lines],"0. -1. 1. 0. 0. 0. cm\n");
+      stream_size += 22;
+      bump_page_lines();
+      sprintf(page_lines[num_page_lines],"1. 0. 0. 1. %6d %6d cm\n", tx, ty);
+      stream_size += 29;
+    }
+
+/*
  *  Put out the line join, line cap, and miter limit.
  */
     bump_page_lines();
@@ -491,30 +519,31 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
        PDFOutputClipping (psa, PDF_CLIPPING_RECT);
     }
 
+
 /*
  *  Establish the new clipping rectangle.
-    x0 = psa->pdf_clip.llx;
-    x1 = psa->pdf_clip.urx;
-    y0 = psa->pdf_clip.lly;
-    y1 = psa->pdf_clip.ury;
-    bump_page_lines();
-    sprintf(page_lines[num_page_lines],"%6d %6d m\n",x0,y0);
-    stream_size += 16;
-    bump_page_lines();
-    sprintf(page_lines[num_page_lines],"%6d %6d l\n",x1,y0);
-    stream_size += 16;
-    bump_page_lines();
-    sprintf(page_lines[num_page_lines],"%6d %6d l\n",x1,y1);
-    stream_size += 16;
-    bump_page_lines();
-    sprintf(page_lines[num_page_lines],"%6d %6d l\n",x0,y1);
-    stream_size += 16;
-    bump_page_lines();
-    sprintf(page_lines[num_page_lines],"%6d %6d l\n",x0,y0);
-    stream_size += 16;
-    bump_page_lines();
-    sprintf(page_lines[num_page_lines],"W n\n");
-    stream_size += 4;
+ *  x0 = psa->pdf_clip.llx;
+ *  x1 = psa->pdf_clip.urx;
+ *  y0 = psa->pdf_clip.lly;
+ *  y1 = psa->pdf_clip.ury;
+ *  bump_page_lines();
+ *  sprintf(page_lines[num_page_lines],"%6d %6d m\n",x0,y0);
+ *  stream_size += 16;
+ *  bump_page_lines();
+ *  sprintf(page_lines[num_page_lines],"%6d %6d l\n",x1,y0);
+ *  stream_size += 16;
+ *  bump_page_lines();
+ *  sprintf(page_lines[num_page_lines],"%6d %6d l\n",x1,y1);
+ *  stream_size += 16;
+ *  bump_page_lines();
+ *  sprintf(page_lines[num_page_lines],"%6d %6d l\n",x0,y1);
+ *  stream_size += 16;
+ *  bump_page_lines();
+ *  sprintf(page_lines[num_page_lines],"%6d %6d l\n",x0,y0);
+ *  stream_size += 16;
+ *  bump_page_lines();
+ *  sprintf(page_lines[num_page_lines],"W n\n");
+ *  stream_size += 4;
  */
 
   }
@@ -3461,14 +3490,6 @@ int PDFPutStreamDict(FILE *fp, int obj_num, int obj_contents_num) {
   tbcnt += 24;
   fprintf(fp,"/Contents %6d 0 R\n",obj_contents_num);
   tbcnt += 21;
-  if (port_land == PORTRAIT) {
-    fprintf(fp,"/Rotate 0\n");
-    tbcnt += 10;
-  }
-  else {
-    fprintf(fp,"/Rotate -90\n");
-    tbcnt += 12;
-  }
   fprintf(fp,"/Resources << /ProcSet 2 0 R\n");
   tbcnt += 29;
   fprintf(fp,"/Font << /Helvetica 3 0 R /Helvetica-Bold 4 0 R\n");
