@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.24 1994-11-23 20:03:04 haley Exp $
+#	$Id: ncargcex.csh,v 1.25 1994-11-29 15:34:46 haley Exp $
 #
 
 #**************************#
@@ -38,9 +38,8 @@ endif
 #                                             #
 #*********************************************#
 setenv NCARG_ROOT  `ncargpath root`
-
 if ($status != 0) then
-    exit 1
+  exit 1
 endif
 
 #****************************#
@@ -388,14 +387,14 @@ set ws_type = "1"
 set names
 
 while ($#argv > 0)
-    
+
   switch ($1)
     case "-all":
     case "-A":
       shift
       set names=($names $ex_list $tst_list $ttr_list $fnd_list $pdc_list)
       breaksw
-        
+
     case "-allexamples":
     case "-E":
       shift
@@ -575,7 +574,7 @@ while ($#argv > 0)
       set OneByOneOption
       breaksw
 
-    case "-unique"
+    case "-unique":
       shift
       set Unique
       breaksw
@@ -904,6 +903,7 @@ set suffix = "$suffix_names[$the_ws_type]"
 set graphic_file = "$name.$suffix"
 set default_file = $default_files[$the_ws_type]
 set msg = "$default_msgs[$the_ws_type] $graphic_file."
+set main = "$name.c"
 
 if ($?tmp_msg) then
   set msg = "$tmp_msg"
@@ -987,16 +987,16 @@ endif
 #                              #
 #******************************#
    
-echo "  Copying $name.c"
+echo "  Copying $main"
 echo ""
-cp $temp_dir/$name.c ./$name.c
-ed << EOF - ./$name.c >& /dev/null
+cp $temp_dir/$main ./$main
+ed << EOF - ./$main >& /dev/null
 g/SED_WSTYPE/s//$the_ws_type/g
 w
 q
 EOF
 
-set c_files = ($extra_c_files $name.c)
+set c_files = ($extra_c_files $main)
 
 #***********************#
 #                       #

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.78 1994-11-23 20:03:06 haley Exp $
+#   $Id: ncargex.csh,v 1.79 1994-11-29 15:34:48 haley Exp $
 #
 
 #*************************#
@@ -43,7 +43,6 @@ setenv NCARG_ROOT  `ncargpath root`
 if ($status != 0) then
   exit 1
 endif
-
 
 #****************************#
 #                            #
@@ -618,6 +617,11 @@ while ($#argv > 0)
       set names=($names $gflash_list)
       breaksw
 
+    case "-gks":
+      shift
+      set names=($names $gks_list)
+      breaksw
+
     case "-gridall":
       shift
       set names=($names $gridall_list)
@@ -711,11 +715,6 @@ while ($#argv > 0)
     case "-wmap":
       shift
       set names=($names $wmap_list)
-      breaksw
-
-    case "-gks":
-      shift
-      set names=($names $gks_list)
       breaksw
 
     case "-misc":
@@ -1129,6 +1128,7 @@ set suffix = "$suffix_names[$the_ws_type]"
 set graphic_file = "$name.$suffix"
 set default_file = $default_files[$the_ws_type]
 set msg = "$default_msgs[$the_ws_type] $graphic_file."
+set main = "$name.f"
 
 if ($?tmp_msg) then
   set msg = "$tmp_msg"
@@ -1331,16 +1331,16 @@ endif
 #                              #
 #******************************#
    
-echo "  Copying $name.f"
+echo "  Copying $main"
 echo ""
-cp $temp_dir/$name.f ./$name.f
-ed << EOF - ./$name.f >& /dev/null
+cp $temp_dir/$main ./$main
+ed << EOF - ./$main >& /dev/null
 g/SED_WSTYPE/s//$the_ws_type/g
 w
 q
 EOF
 
-set fort_files = ($extra_fort_files $name.f)
+set fort_files = ($extra_fort_files $main)
 
 #***********************#
 #                       #
