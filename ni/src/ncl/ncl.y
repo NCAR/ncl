@@ -364,7 +364,6 @@ block_statement_list : statement eoln {
 								$2->u.package->so_handle = dlopen(_NGResolvePath($3),RTLD_NOW);
 #endif
 								if($2->u.package->so_handle == NULL) {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded",$3);
 #if defined(HPUX)
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n",$3);
 #else
