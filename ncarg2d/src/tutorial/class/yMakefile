@@ -1,0 +1,9 @@
+#
+#	$Id: yMakefile,v 1.1 1993-10-26 23:12:28 haley Exp $
+#
+MYNAME	= class
+
+GENERIC_SRCS = \
+	class1.f class2.f class3.f class1.dat
+
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(TUTORIALPATH))
