@@ -1,6 +1,6 @@
 
 /*
- *      $Id: OpsFuncs.h,v 1.5 1994-05-06 23:37:24 ethan Exp $
+ *      $Id: OpsFuncs.h,v 1.6 1994-05-28 00:13:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -50,22 +50,39 @@ NclStackEntry */*result*/
 
 NhlErrorTypes _NclFuncCallOp(
 #ifdef NhlNeedProto
-NclSymbol * /*func*/
+NclSymbol * /*func*/,
+int /*caller_level*/
 #endif
 );
 NhlErrorTypes _NclProcCallOp(
 #ifdef NhlNeedProto
-NclSymbol *  /* proc*/
+NclSymbol *  /* proc*/,
+int /*caller_level*/
 #endif
 );
 
-NhlErrorTypes _NclCreateHLUObjOp(
+NclStackEntry _NclCreateHLUObjOp(
 #ifdef NhlNeedProto
 int /*nres*/,
-NclSymbol * /*the_hlu_obj*/,
+char * /*the_hlu_obj*/,
 NclSymbol * /*the_hlu_obj_class*/,
 NclMultiDValData /*the_hlu_obj_parent*/
 #endif
 );
 
+
+NhlErrorTypes _NclSetHLUObjOp(
+#ifdef NhlNeedProto
+NclMultiDValData /*the_hlu_data_obj*/,
+int /*nres*/
+#endif
+);
+
+NhlErrorTypes _NclNewOp(
+#ifdef NhlNeedProto
+NclSymbol*  /*data_type*/,
+NclStackEntry /*size_expr*/,
+NclStackEntry /*missing_expr*/
+#endif
+);
 

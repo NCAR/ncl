@@ -10,6 +10,7 @@ extern "C" {
 #include <data_objs/NclMultiDValshortData.h>
 #include <data_objs/NclMultiDValstringData.h>
 #include <data_objs/NclMultiDValHLUObjData.h>
+#include <data_objs/NclMultiDVallogicalData.h>
 #include <defs.h>
 #include <Symbol.h>
 #include <errno.h>
@@ -21,25 +22,374 @@ extern "C" {
 #include <data_objs/DataSupport.h>
 #include <y.tab.h>
 
-void _NclIClear
+NhlErrorTypes _NclIAny
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+/*
+* Guarenteed to be a logical
+*/
+	NclStackEntry data;	
+	NclStackEntry data_out;	
+	NclMultiDValData tmp_md = NULL;
+	int i,dim_size = 1;
+	logical *tmp_val;
+	data = _NclGetArg(0,1);
+	if(data.kind == NclStk_VAR) {
+		if(data.u.data_var != NULL) {	
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		}
+	} else if(data.kind == NclStk_VAL) {
+		tmp_md = data.u.data_obj;
+	} else {
+		NhlPError(NhlWARNING, NhlEUNKNOWN,"any: incorrect type of object passed to any");
+		return(NhlWARNING);
+	}
+	if(tmp_md == NULL) {
+		data_out.kind = NclStk_NOVAL;
+		data_out.u.data_obj = NULL;
+		_NclPlaceReturn(data_out);
+		return(NhlFATAL);
+	}
+
+	if(tmp_md->multidval.kind == SCALAR) {
+		_NclPlaceReturn(data);
+	} else if(!tmp_md->multidval.missing_value.has_missing) {
+		tmp_val = (logical*)tmp_md->multidval.val;
+		i = 0;
+		while(!(*tmp_val)) {
+			tmp_val++;
+			i++;
+			if(i == tmp_md->multidval.totalelements) {
+				tmp_val = (logical*)NclMalloc((unsigned)_NclSizeOf(NCL_logical));
+				*tmp_val = 0;
+				_NclMultiDVallogicalCreate(NULL,NULL,Ncl_MultiDVallogicalData,0,tmp_val,NULL,1,&dim_size,TEMPORARY,NULL);
+			}
+		}
+		tmp_val = (logical*)NclMalloc((unsigned)_NclSizeOf(NCL_logical));
+		*tmp_val = 1;
+		data_out.kind = NclStk_VAL;
+		data_out.u.data_obj = _NclMultiDVallogicalCreate(NULL,NULL,Ncl_MultiDVallogicalData,0,tmp_val,NULL,1,&dim_size,TEMPORARY,NULL);
+		_NclPlaceReturn(data_out);
+	} else {
+		tmp_val = (logical*)tmp_md->multidval.val;
+		i = 0;
+		while(i<tmp_md->multidval.totalelements) {
+			if((*tmp_val != tmp_md->multidval.missing_value.value.logicalval) &&(*tmp_val) ) {
+				break;
+			}
+			tmp_val++;
+			i++;
+		}
+		if(i >= tmp_md->multidval.totalelements) {
+			tmp_val = (logical*)NclMalloc((unsigned)_NclSizeOf(NCL_logical));
+			*tmp_val = 0;
+			data_out.kind = NclStk_VAL;
+			data_out.u.data_obj = _NclMultiDVallogicalCreate(NULL,NULL,Ncl_MultiDVallogicalData,0,tmp_val,NULL,1,&dim_size,TEMPORARY,NULL);
+			_NclPlaceReturn(data_out);
+		} else {
+			tmp_val = (logical*)NclMalloc((unsigned)_NclSizeOf(NCL_logical));
+			*tmp_val = 1;
+			data_out.kind = NclStk_VAL;
+			data_out.u.data_obj = _NclMultiDVallogicalCreate(NULL,NULL,Ncl_MultiDVallogicalData,0,tmp_val,NULL,1,&dim_size,TEMPORARY,NULL);
+			_NclPlaceReturn(data_out);
+		}
+	}
+	return(NhlNOERROR);
+}
+NhlErrorTypes _NclIAll
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+/*
+* Guarenteed to be a logical
+*/
+	NclStackEntry data;	
+	NclStackEntry data_out;	
+	NclMultiDValData tmp_md = NULL;
+	int i,dim_size = 1;
+	logical *tmp_val;
+	data = _NclGetArg(0,1);
+	if(data.kind == NclStk_VAR) {
+		if(data.u.data_var != NULL) {	
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		}
+	} else if(data.kind == NclStk_VAL) {
+		tmp_md = data.u.data_obj;
+	} else {
+		NhlPError(NhlWARNING, NhlEUNKNOWN,"any: incorrect type of object passed to any");
+		return(NhlWARNING);
+	}
+	if(tmp_md == NULL) {
+		data_out.kind = NclStk_NOVAL;
+		data_out.u.data_obj = NULL;
+		_NclPlaceReturn(data_out);
+		return(NhlFATAL);
+	}
+
+	if(tmp_md->multidval.kind == SCALAR) {
+		_NclPlaceReturn(data);
+	} else if(!tmp_md->multidval.missing_value.has_missing) {
+		tmp_val = (logical*)tmp_md->multidval.val;
+		i = 0;
+		while((*tmp_val)) {
+			tmp_val++;
+			i++;
+			if(i >= tmp_md->multidval.totalelements) {
+				tmp_val = (logical*)NclMalloc((unsigned)_NclSizeOf(NCL_logical));
+				*tmp_val = 1;
+				data_out.kind = NclStk_VAL;
+				data_out.u.data_obj =_NclMultiDVallogicalCreate(NULL,NULL,Ncl_MultiDVallogicalData,0,tmp_val,NULL,1,&dim_size,TEMPORARY,NULL);
+				_NclPlaceReturn(data_out);
+				
+			}
+		}
+		tmp_val = (logical*)NclMalloc((unsigned)_NclSizeOf(NCL_logical));
+		*tmp_val = 0;
+		data_out.kind = NclStk_VAL;
+		data_out.u.data_obj = _NclMultiDVallogicalCreate(NULL,NULL,Ncl_MultiDVallogicalData,0,tmp_val,NULL,1,&dim_size,TEMPORARY,NULL);
+		_NclPlaceReturn(data_out);
+	} else {
+		tmp_val = (logical*)tmp_md->multidval.val;
+		i = 0;
+		while(i<tmp_md->multidval.totalelements) {
+			if((*tmp_val != tmp_md->multidval.missing_value.value.logicalval) &&!(*tmp_val) ) {
+				break;
+			}
+			tmp_val++;
+			i++;
+		}
+		if(i >= tmp_md->multidval.totalelements) {
+			tmp_val = (logical*)NclMalloc((unsigned)_NclSizeOf(NCL_logical));
+			*tmp_val = 1;
+			data_out.kind = NclStk_VAL;
+			data_out.u.data_obj = _NclMultiDVallogicalCreate(NULL,NULL,Ncl_MultiDVallogicalData,0,tmp_val,NULL,1,&dim_size,TEMPORARY,NULL);
+			_NclPlaceReturn(data_out);
+		} else {
+			tmp_val = (logical*)NclMalloc((unsigned)_NclSizeOf(NCL_logical));
+			*tmp_val = 0;
+			data_out.kind = NclStk_VAL;
+			data_out.u.data_obj = _NclMultiDVallogicalCreate(NULL,NULL,Ncl_MultiDVallogicalData,0,tmp_val,NULL,1,&dim_size,TEMPORARY,NULL);
+			_NclPlaceReturn(data_out);
+		}
+	}
+	return(NhlNOERROR);
+}
+
+NhlErrorTypes _NclISizeOf
 #if  __STDC__
 (void)
 #else
 ()
 #endif
 {
+	NclStackEntry data;	
+	NclStackEntry data_out;	
+	NclMultiDValData tmp_md = NULL;
+	int *size;
+	int dim_size = 1;
+
+	data = _NclGetArg(0,1);
+	if(data.kind == NclStk_VAR) {
+		if(data.u.data_var != NULL) {	
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		}
+	} else if(data.kind == NclStk_VAL) {
+		tmp_md = data.u.data_obj;
+	} else {
+		NhlPError(NhlWARNING, NhlEUNKNOWN,"sizeof: incorrect type of object passed to sizeof");
+		return(NhlWARNING);
+	}
+	if(tmp_md != NULL) {
+		data_out.kind = NclStk_VAL;
+		size = NclMalloc(sizeof(int));
+		*size = _NclSizeOf(tmp_md->multidval.data_type)*tmp_md->multidval.totalelements;
+		data_out.u.data_obj = _NclMultiDValintCreate(
+			NULL,
+			NULL,
+			Ncl_MultiDValintData,
+			0,
+			(void*)size,
+			NULL,
+			1,
+			&dim_size,
+			TEMPORARY,
+			NULL
+		);
+		if(data_out.u.data_obj != NULL) {
+			_NclPlaceReturn(data_out);
+			return(NhlNOERROR);
+		} else {
+			return(NhlFATAL);
+		}
+	} else {
+		return(NhlFATAL);
+	}
 }
 
-void _NclIUpdate
+NhlErrorTypes _NclIDimSizes
 #if  __STDC__
 (void)
 #else
 ()
 #endif
 {
+	NclStackEntry data;	
+	NclStackEntry data_out;	
+	NclMultiDValData tmp_md = NULL;
+	int *size;
+	int dim_size,i;
+
+	data = _NclGetArg(0,1);
+	if(data.kind == NclStk_VAR) {
+		if(data.u.data_var != NULL) {	
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		}
+	} else if(data.kind == NclStk_VAL) {
+		tmp_md = data.u.data_obj;
+	} else {
+		NhlPError(NhlWARNING, NhlEUNKNOWN,"sizeof: incorrect type of object passed to sizeof");
+		return(NhlWARNING);
+	}
+	if(tmp_md != NULL) {
+		data_out.kind = NclStk_VAL;
+		size = NclMalloc(sizeof(int)*tmp_md->multidval.n_dims);
+		for(i = 0; i< tmp_md->multidval.n_dims; i++) {
+			size[i] = tmp_md->multidval.dim_sizes[i];
+		}
+		dim_size = tmp_md->multidval.n_dims;
+		data_out.u.data_obj = _NclMultiDValintCreate(
+			NULL,
+			NULL,
+			Ncl_MultiDValintData,
+			0,
+			(void*)size,
+			NULL,
+			1,
+			&dim_size,
+			TEMPORARY,
+			NULL
+		);
+		if(data_out.u.data_obj != NULL ) {
+			_NclPlaceReturn(data_out);
+			return(NhlNOERROR);
+		} else {
+			return(NhlFATAL);
+		}
+	} else {
+		return(NhlFATAL);
+	}
 }
 
-void _NclIDraw
+NhlErrorTypes _NclIDumpStk
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+	FILE *fp = NULL;
+	NclMultiDValData tmp_md,tmp1_md;
+	NclStackEntry data;
+	char *fname = NULL;
+	NhlErrorTypes ret = NhlNOERROR;
+	data = _NclGetArg(0,1);
+	if(data.kind == NclStk_VAR) {
+		if(data.u.data_var != NULL) {
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		}
+	} else if(data.kind == NclStk_VAL) {
+		tmp_md = data.u.data_obj;
+	} else {
+		NhlPError(NhlWARNING, NhlEUNKNOWN,"dump: incorrect type of object, defaulting to stdout");
+		fp =  stdout;
+		ret = NhlWARNING;
+	}
+	if(tmp_md->obj.obj_type_mask & Ncl_MultiDValstringData) {
+		if(tmp_md->multidval.kind != SCALAR) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"dump: multiple file names passed to dump, using the first one");
+			ret = NhlWARNING;
+		}
+		fname = NrmQuarkToString(*(int*)tmp_md->multidval.val);
+	} else {
+		tmp1_md = _NclCoerceData(tmp_md,Ncl_MultiDValstringData,NULL);
+		if(tmp1_md == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"dump: Unable to covert parameter to string representation for output filename");
+			fp = NULL;
+			return(NhlFATAL);
+		} else {
+			if(tmp_md->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)tmp_md);
+			}
+			tmp_md = tmp1_md;
+			if(tmp_md->multidval.kind != SCALAR) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"dump: multiple file names passed to dump, using the first one");
+				ret = NhlWARNING;
+			}
+			fname = NrmQuarkToString(*(int*)tmp_md->multidval.val); 
+		}
+	}
+	if((fname != NULL)&&(strcmp(fname,"stdout"))) {
+		fp = fopen(fname,"a");
+	} else {
+		fp = stdout;
+	}
+	if(fp != NULL) {
+		_NclDumpStack(fp,6);
+		if(fp != stdout)
+			fclose(fp);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"dump: Unable to open output stream or file");
+		return(NhlFATAL);
+	}
+	return(ret);
+}
+
+NhlErrorTypes _NclIFrame
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md;
+	NhlErrorTypes ret = NhlNOERROR;
+	int *obj_ids,i;
+
+	data = _NclGetArg(0,1);
+
+	if(data.kind == NclStk_VAR) {
+		if(!(_NclGetVarRepValue(data.u.data_var) & NCL_HLU_MASK) ) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to frame, ignoring request");
+			return(NhlFATAL);
+		} else {
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK) {
+				obj_ids = (int*)tmp_md->multidval.val;
+				for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
+					ret = NhlFrame(obj_ids[i]);
+				}
+			}
+		}
+	} else if(data.kind == NclStk_VAL) {
+		tmp_md = data.u.data_obj;
+		if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
+			obj_ids = (int*)tmp_md->multidval.val;
+			for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
+				ret = NhlFrame(obj_ids[i]);
+			}
+		}
+	}
+	return(ret);
+}
+NhlErrorTypes _NclIClear
 #if  __STDC__
 (void)
 #else
@@ -53,9 +403,160 @@ void _NclIDraw
 	data = _NclGetArg(0,1);
 
 	if(data.kind == NclStk_VAR) {
-		if(data.u.data_var->var.var_type != HLUOBJ) {
+		if(!(_NclGetVarRepValue(data.u.data_var) & NCL_HLU_MASK) ) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to clear, ignoring request");
+			return(NhlFATAL);
+		} else {
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK) {
+				obj_ids = (int*)tmp_md->multidval.val;
+				for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
+					NhlClearWorkstation(obj_ids[i]);
+				}
+			}
+		}
+	} else if(data.kind == NclStk_VAL) {
+		tmp_md = data.u.data_obj;
+		if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
+			obj_ids = (int*)tmp_md->multidval.val;
+			for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
+				NhlClearWorkstation(obj_ids[i]);
+			}
+		}
+	}
+	return(NhlNOERROR);
+}
+
+NhlErrorTypes _NclIDestroy
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md;
+	NclSymbol *thesym;
+	NclStackEntry *var;
+	int *obj_ids,i;
+
+	data = _NclGetArg(0,1);
+
+	if(data.kind == NclStk_VAR) {
+		if(!(_NclGetVarRepValue(data.u.data_var) & NCL_HLU_MASK)) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to update, ignoring request");
+	
+			return(NhlFATAL);
+		} else {
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK) {
+				obj_ids = (int*)tmp_md->multidval.val;
+				for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
+					NhlDestroy(obj_ids[i]);
+				}
+			}
+		}
+	} else if(data.kind == NclStk_VAL) {
+		tmp_md = data.u.data_obj;
+		if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
+			obj_ids = (int*)tmp_md->multidval.val;
+			for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
+				NhlDestroy(obj_ids[i]);
+			}
+		}
+	} else {
+		return(NhlFATAL);
+	}
+	switch(data.kind) {
+	case NclStk_VAL:
+		_NclDestroyObj((NclObj)data.u.data_obj);
+		break;
+	case NclStk_VAR:
+		if((data.u.data_var != NULL)&&(data.u.data_var->var.thesym != NULL)) {
+			var = _NclRetrieveRec(data.u.data_var->var.thesym,DONT_CARE);
+			thesym = data.u.data_var->var.thesym;
+			if(data.u.data_var->var.var_type == NORMAL) {
+/*
+* Can't destroy symbol since it may be referenced from the instruction
+* sequence. Changing it to UNDEF should do the trick though
+*/
+				_NclChangeSymbolType(thesym,UNDEF);
+			}
+		} else {
+			var = NULL;
+		}
+		_NclDestroyObj((NclObj)data.u.data_var);
+		if(var != NULL) {
+			var->u.data_var = NULL;
+			var->kind = NclStk_NOVAL;
+		}
+		break;
+	default:
+		break;
+	}
+	data.kind = NclStk_NOVAL;
+	data.u.data_obj = NULL;
+	_NclPutArg(data,0,1);
+	return(NhlNOERROR);
+}
+NhlErrorTypes _NclIUpdate
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md;
+	int *obj_ids,i;
+
+	data = _NclGetArg(0,1);
+
+	if(data.kind == NclStk_VAR) {
+		if(!(_NclGetVarRepValue(data.u.data_var) & NCL_HLU_MASK)) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to update, ignoring request");
+	
+			return(NhlFATAL);
+		} else {
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK) {
+				obj_ids = (int*)tmp_md->multidval.val;
+				for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
+					NhlUpdateWorkstation(obj_ids[i]);
+				}
+			}
+		}
+	} else if(data.kind == NclStk_VAL) {
+		tmp_md = data.u.data_obj;
+		if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
+			obj_ids = (int*)tmp_md->multidval.val;
+			for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
+				NhlUpdateWorkstation(obj_ids[i]);
+			}
+		}
+	} else {
+		return(NhlFATAL);
+	}
+	return(NhlNOERROR);
+}
+
+NhlErrorTypes _NclIDraw
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md;
+	int *obj_ids,i;
+
+	data = _NclGetArg(0,1);
+
+	if(data.kind == NclStk_VAR) {
+		if(!(_NclGetVarRepValue(data.u.data_var) & NCL_HLU_MASK)) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to draw, ignoring request");
-			return;
+			return(NhlFATAL);
 		} else {
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
 			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK) {
@@ -73,10 +574,13 @@ void _NclIDraw
 				NhlDraw(obj_ids[i]);
 			}
 		}
+	} else {
+		return(NhlFATAL);
 	}
+	return(NhlNOERROR);
 }
 
-void _NclIPrint
+NhlErrorTypes _NclIPrint
 #if  __STDC__
 (void)
 #else
@@ -101,10 +605,10 @@ void _NclIPrint
 	default:
 		break;
 	}
-	return;
+	return(NhlNOERROR);
 }
 
-void _NclIDelete
+NhlErrorTypes _NclIDelete
 #if  __STDC__
 (void)
 #else
@@ -124,7 +628,7 @@ void _NclIDelete
 		break;
 	case NclStk_VAR:
 		if((data.u.data_var != NULL)&&(data.u.data_var->var.thesym != NULL)) {
-			var = _NclRetrieveRec(data.u.data_var->var.thesym);
+			var = _NclRetrieveRec(data.u.data_var->var.thesym,DONT_CARE);
 			thesym = data.u.data_var->var.thesym;
 			if(data.u.data_var->var.var_type == NORMAL) {
 /*
@@ -149,7 +653,7 @@ void _NclIDelete
 	data.u.data_obj = NULL;
 	_NclPutArg(data,0,1);
 	
-	return;
+	return(NhlNOERROR);
 }
 NhlErrorTypes _NclDualOp
 #if  __STDC__
@@ -332,7 +836,7 @@ NhlErrorTypes _NclBuildArray
 	NclStackEntry *data_ptr;
 	NclObjTypes result_type ;
 	int obj_type ;
-	int must_be_numeric = 1,i;
+	int must_be_numeric = 1,i,j;
 	int ndims;
 	NclScalar *mis_ptr = NULL,themissing;
 	int still_no_missing = 1;
@@ -346,10 +850,19 @@ NhlErrorTypes _NclBuildArray
 	data_ptr = _NclPeek(0);
 	if(data_ptr->kind == NclStk_VAL) {	
 		obj_type = data_ptr->u.data_obj->obj.obj_type_mask;
+		ndims = data_ptr->u.data_obj->multidval.n_dims;
+		for(i = 0; i < ndims; i++ ) {
+			dim_sizes[i] = data_ptr->u.data_obj->multidval.dim_sizes[i];
+		} 
 	} else if(data_ptr->kind == NclStk_VAR) {
 		obj_type = _NclGetVarRepValue(data_ptr->u.data_var);
+		ndims = data_ptr->u.data_var->var.n_dims;
+		for(i = 0; i < ndims; i++ ) {
+			dim_sizes[i] = data_ptr->u.data_var->var.dim_info[i].dim_size;
+		} 
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: attempt to build array out of illegal data type, can't continue");
+		_NclCleanUpStack(n_items);
 		return(NhlFATAL);
 	}
 	if(obj_type & NCL_VAL_NUMERIC_MASK) {
@@ -358,8 +871,12 @@ NhlErrorTypes _NclBuildArray
 	} else if(obj_type & NCL_VAL_CHARSTR_MASK) {
 		must_be_numeric =0;
 		result_type = obj_type & NCL_VAL_CHARSTR_MASK;
+	} else if(obj_type & NCL_HLU_MASK) {
+		must_be_numeric =-1;
+		result_type = obj_type & NCL_HLU_MASK;
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: attempt to build array out of illegal data type or undefined element, can't continue");
+		_NclCleanUpStack(n_items);
 		return(NhlFATAL);
 	}
 
@@ -372,24 +889,61 @@ NhlErrorTypes _NclBuildArray
 		data_ptr = _NclPeek(i);
 		if(data_ptr->kind == NclStk_VAL) {	
 			obj_type = data_ptr->u.data_obj->obj.obj_type_mask;
+			if(ndims == data_ptr->u.data_obj->multidval.n_dims) {
+				for(j = 0; j < ndims; j++) {
+					if(dim_sizes[j] != data_ptr->u.data_obj->multidval.dim_sizes[j]) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: each element of a literal array must have the same dimension sizes, at least one item doesn't");
+						_NclCleanUpStack(n_items);
+						return(NhlFATAL);
+					}
+				}
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: each element of a literal array must have the same number of dimensions");
+				_NclCleanUpStack(n_items);
+				return(NhlFATAL);
+			}
 		} else if(data_ptr->kind == NclStk_VAR) {
 			obj_type = _NclGetVarRepValue(data_ptr->u.data_var);
+			if(ndims == data_ptr->u.data_var->var.n_dims) {
+				for(j = 0; j < ndims; j++) {
+					if(dim_sizes[j] != data_ptr->u.data_var->var.dim_info[j].dim_size) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: each element of a literal array must have the same dimension sizes, at least one item doesn't");
+						_NclCleanUpStack(n_items);
+						return(NhlFATAL);
+					}
+				}
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: each element of a literal array must have the same number of dimensions");
+				_NclCleanUpStack(n_items);
+				return(NhlFATAL);
+			}
 		} else {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: attempt to build array out of illegal data type, can't continue");
+			_NclCleanUpStack(n_items);
 			return(NhlFATAL);
 		}
-		if((must_be_numeric)&&
+		if((must_be_numeric==1)&&
 			( obj_type &NCL_VAL_NUMERIC_MASK)) {
 			if(result_type > (obj_type & NCL_VAL_NUMERIC_MASK)) {
 				result_type = (obj_type & NCL_VAL_NUMERIC_MASK);
 			}
-		} else if((!must_be_numeric)&&
+		} else if((must_be_numeric == 0)&&
 			(obj_type & NCL_VAL_CHARSTR_MASK)) {
 			if(result_type > (obj_type & NCL_VAL_CHARSTR_MASK)) {
 				result_type = (obj_type & NCL_VAL_CHARSTR_MASK);
 			}
+		} else if((must_be_numeric == -1)&&
+			(obj_type & NCL_HLU_MASK)) {
+			if(result_type > (obj_type & NCL_HLU_MASK)) {
+				result_type = (obj_type & NCL_HLU_MASK);
+			}
 		} else {
+/*
+* May need to say something different now that objects are done in this
+* way too
+*/
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: can not combine character or string types with numeric types, can't continue");
+			_NclCleanUpStack(n_items);
 			return(NhlFATAL);
 		}
 	}
@@ -441,6 +995,7 @@ NhlErrorTypes _NclBuildArray
 * are coercible to result_type.
 */
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+				_NclCleanUpStack(items_left);
 				return(NhlFATAL);
 			} else if(theobj->multidval.missing_value.has_missing){
 				still_no_missing = 0;
@@ -459,6 +1014,7 @@ NhlErrorTypes _NclBuildArray
 			theobj = _NclVarValueRead(data.u.data_var,NULL,NULL);
 			if(theobj == NULL) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+				_NclCleanUpStack(items_left);
 				return(NhlFATAL);
 			} else if(theobj->multidval.missing_value.has_missing){
 /*
@@ -473,6 +1029,7 @@ NhlErrorTypes _NclBuildArray
 		}
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: unknown stack data type");
+		_NclCleanUpStack(items_left);
 		return(NhlFATAL);
 	}
 
@@ -499,11 +1056,10 @@ NhlErrorTypes _NclBuildArray
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray : Memory allocation failure\n");
 		result->kind = NclStk_NOVAL;
 		result->u.data_obj = NULL; 
+		NclFree(value);
+		_NclCleanUpStack(items_left);
 		return(NhlFATAL);
 	}
-/*
-****** HEY THIS DOESN"T WORK FOR STRINGS 
-*/
 	ptr = (char*)value;
 	memcpy(ptr,(char*)theobj->multidval.val,partsize);
 	ptr += partsize;
@@ -525,6 +1081,8 @@ NhlErrorTypes _NclBuildArray
 * are coercible to result_type.
 */
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+					_NclCleanUpStack(items_left);
+					NclFree(value);
 					return(NhlFATAL);
 				} else if((still_no_missing)	
 					&&(coerce_res->multidval.missing_value.has_missing)) {
@@ -571,6 +1129,8 @@ NhlErrorTypes _NclBuildArray
 * are coercible to result_type.
 */
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+					_NclCleanUpStack(items_left);
+					NclFree(value);
 					return(NhlFATAL);
 				} else if((still_no_missing)&&
 					(theobj->multidval.missing_value.has_missing)) {
@@ -585,6 +1145,8 @@ NhlErrorTypes _NclBuildArray
 				theobj = _NclVarValueRead(data.u.data_var,NULL,NULL);
 				if(theobj == NULL) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+					_NclCleanUpStack(items_left);
+					NclFree(value);
 					return(NhlFATAL);
 				} else if((still_no_missing)&&
 					(theobj->multidval.missing_value.has_missing)) {
@@ -605,6 +1167,8 @@ NhlErrorTypes _NclBuildArray
 			}
 		} else {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: unknown stack data type");
+			_NclCleanUpStack(items_left);
+			NclFree(value);
 			return(NhlFATAL);
 		}
 		memcpy(ptr,(char*)theobj->multidval.val,partsize);
@@ -627,10 +1191,11 @@ NhlErrorTypes _NclBuildArray
 
 NhlErrorTypes _NclProcCallOp
 #if __STDC__
-(NclSymbol *proc)
+(NclSymbol *proc,int caller_level)
 #else
-(proc)
+(proc,caller_level)
 	NclSymbol *proc;
+	int caller_level;
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
@@ -661,14 +1226,14 @@ NhlErrorTypes _NclProcCallOp
 		break;
 	}
 	(void)_NclPopMachine();
-	previous_fp = _NclLeaveFrame();
+	previous_fp = _NclLeaveFrame(caller_level);
 /*
 * Temporary stack management code
 */
 	if(ret != NhlFATAL) {
-		_NclRemapParameters(proc->u.procfunc->nargs,previous_fp,PROC_CALL_OP);
+		_NclRemapParameters(proc->u.procfunc->nargs,proc->u.procfunc->thescope->cur_offset,previous_fp,PROC_CALL_OP);
 	} else {
-		for(i = 0; i<proc->u.procfunc->nargs; i++) {
+		for(i = 0; i<proc->u.procfunc->thescope->cur_offset; i++) {
 			data = _NclPop();
 			switch(data.kind) {
 			case NclStk_VAL: {
@@ -684,22 +1249,17 @@ NhlErrorTypes _NclProcCallOp
 			}
 		}
 	}
-/*
-* Remove whats left of frame
-*/
-	for(i = 0; i < sizeof(NclFrame)/sizeof(NclStackEntry); i++) {
-		(void)_NclPop();
-	}
 	
-
+	_NclPopFrame(PROC_CALL_OP);
 	return(ret);
 }
 NhlErrorTypes _NclFuncCallOp
 #if __STDC__
-(NclSymbol *func)
+(NclSymbol *func,int caller_level)
 #else
-(func)
+(func,caller_level)
 	NclSymbol *func;
+	int caller_level;
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
@@ -731,12 +1291,12 @@ NhlErrorTypes _NclFuncCallOp
 		break;
 	}
 	(void)_NclPopMachine();
-	previous_fp = _NclLeaveFrame();
+	previous_fp = _NclLeaveFrame(caller_level);
 
 	if(ret != NhlFATAL) {
-		_NclRemapParameters(func->u.procfunc->nargs,previous_fp,FUNC_CALL_OP);
+		_NclRemapParameters(func->u.procfunc->nargs,func->u.procfunc->thescope->cur_offset,previous_fp,FUNC_CALL_OP);
 	} else {
-		for(i = 0; i<func->u.procfunc->nargs; i++) {
+		for(i = 0; i<func->u.procfunc->thescope->cur_offset; i++) {
 			data = _NclPop();
 			switch(data.kind) {
 			case NclStk_VAL: {
@@ -752,19 +1312,21 @@ NhlErrorTypes _NclFuncCallOp
 			}
 		}
 	}
-	for(i = 0 ; i < (sizeof(NclFrame)/sizeof(NclStackEntry)) - 1; i++) {
+	_NclPopFrame(FUNC_CALL_OP);
+/*
+* Doesn't leave return value on stack if an error has occured. Probably
+* should check it to see if it needs to be freed
+*/
+	if(ret < NhlWARNING) {
 		(void)_NclPop();
 	}
-/*
-* Deal with return value? RETURN operator should deal with packaging return value
-*/
 
 	return(ret);
 }
 
-NhlErrorTypes _NclCreateHLUObjOp
+NclStackEntry _NclCreateHLUObjOp
 #if __STDC__
-(int nres,NclSymbol *the_hlu_obj, NclSymbol *the_hlu_obj_class, NclMultiDValData parent)
+(int nres,char *the_hlu_obj, NclSymbol *the_hlu_obj_class, NclMultiDValData parent)
 #else
 (nres,the_hlu_obj, the_hlu_obj_class, parent)
 	int nres;
@@ -773,22 +1335,112 @@ NhlErrorTypes _NclCreateHLUObjOp
 	NclMultiDValData parent;
 #endif
 {
-	int i,j;
+	int i;
 	NclStackEntry *data,*resname;
-	NclStackEntry *obj_out;
+	NclStackEntry data_out;
 	int rl_list;
-	NhlGenArray gen_array;
+	NhlGenArray *gen_array;
 	NclMultiDValData tmp_md = NULL;
-	int dim_lens[NCL_MAX_DIMENSIONS];
 	int *tmp_id = NULL;
 	int dim_size = 1;
 	int parent_id = -1;
 
-	if(parent != NULL) 	
+	if(parent != NULL) 	 {
+		if(parent->multidval.totalelements > 1) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"Objects only accept one object as their parent, a multi-element of array objects, using the first element");
+		}
 		parent_id = *(int*)parent->multidval.val;
+	}
 
 
 	rl_list = NhlRLCreate(NhlSETRL);	
+	gen_array = NclMalloc((unsigned)sizeof(NhlGenArray)*nres);
+	for(i = 0; i < nres; i++) {
+/*
+* Need to peek because I have to keep the stack values arround until after
+* the Create call
+*/
+		data = _NclPeek(2*i);
+		resname = _NclPeek(2*i+1);
+		if(((data->kind != NclStk_VAL)&&(data->kind != NclStk_VAR))||(resname->kind != NclStk_VAL)) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in resource list. type mismatch, resource names must be strings and \nresource values must be either file variables, variables or expression results.\n");
+
+			_NclCleanUpStack(2*nres);
+			data_out.kind = NclStk_NOVAL;
+			data_out.u.data_obj = NULL;
+			return(data_out);
+		}
+		switch(data->kind) {
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data->u.data_obj;
+		break;
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data->u.data_var,NULL,NULL);
+		break;
+		}
+		gen_array[i] = _NhlCreateGenArray(
+				(NhlPointer)tmp_md->multidval.val,
+				tmp_md->multidval.hlu_type_rep,
+				(int)(tmp_md->multidval.totalsize/tmp_md->multidval.totalelements),
+				tmp_md->multidval.n_dims,
+				tmp_md->multidval.dim_sizes,
+				0);
+		NhlRLSet(rl_list,NrmQuarkToString(
+			*(int*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)),
+			NhlTGenArray,
+			gen_array[i]);
+	}
+
+	tmp_id = (int*)NclMalloc((unsigned)sizeof(int));
+
+	NhlCreate(tmp_id,the_hlu_obj,the_hlu_obj_class->u.obj_class_ptr,(parent_id == -1? NhlNOPARENT:parent_id),rl_list);
+	tmp_md = _NclMultiDValHLUObjDataCreate(
+		NULL,
+		NULL,
+		Ncl_MultiDValHLUObjData,
+		0,
+		tmp_id,
+		NULL,
+		1,
+		&dim_size,
+		TEMPORARY,
+		NULL
+	); 
+	if(tmp_md != NULL) {
+		data_out.u.data_obj = tmp_md;
+		data_out.kind = NclStk_VAL;
+	} else {
+		data_out.u.data_obj = NULL;
+		data_out.kind = NclStk_NOVAL;
+	}
+	for(i = 0; i < nres; i++) {
+		NhlFreeGenArray(gen_array[i]);
+	}
+	NclFree(gen_array);
+	NhlRLDestroy(rl_list);
+	_NclCleanUpStack(2*nres);
+	return(data_out);
+}
+
+NhlErrorTypes _NclSetHLUObjOp
+#if __STDC__
+(NclMultiDValData the_hlu_data_obj, int nres)
+#else
+(the_hlu_data_obj,nres)
+NclMultiDValData the_hlu_data_obj;
+int nres;
+#endif
+{
+	int i;
+	NclStackEntry *data,*resname;
+	int rl_list;
+	NhlGenArray *gen_array;
+	NclMultiDValData tmp_md = NULL;
+	int *obj_ids = NULL;
+
+
+	rl_list = NhlRLCreate(NhlSETRL);	
+	gen_array = NclMalloc((unsigned)sizeof(NhlGenArray)*nres);
 	for(i = 0; i < nres; i++) {
 /*
 * Need to peek because I have to keep the stack values arround until after
@@ -810,7 +1462,7 @@ NhlErrorTypes _NclCreateHLUObjOp
 			tmp_md = _NclVarValueRead(data->u.data_var,NULL,NULL);
 		break;
 		}
-		gen_array = _NhlCreateGenArray(
+		gen_array[i] = _NhlCreateGenArray(
 				(NhlPointer)tmp_md->multidval.val,
 				tmp_md->multidval.hlu_type_rep,
 				(int)(tmp_md->multidval.totalsize/tmp_md->multidval.totalelements),
@@ -820,51 +1472,173 @@ NhlErrorTypes _NclCreateHLUObjOp
 		NhlRLSet(rl_list,NrmQuarkToString(
 			*(int*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)),
 			NhlTGenArray,
-			gen_array);
+			gen_array[i]);
 	}
 
-	tmp_id = (int*)NclMalloc((unsigned)sizeof(int));
-	NhlCreate(tmp_id,the_hlu_obj->name,the_hlu_obj_class->u.obj_class_ptr,(parent_id == -1? NhlNOPARENT:parent_id),rl_list);
-	(void)_NclChangeSymbolType(the_hlu_obj,OBJVAR);
-	tmp_md = _NclMultiDValHLUObjDataCreate(
-		NULL,
-		NULL,
-		Ncl_MultiDValHLUObjData,
-		0,
-		tmp_id,
-		NULL,
-		1,
-		&dim_size,
-		TEMPORARY,
-		NULL
-	);
-	obj_out = _NclRetrieveRec(the_hlu_obj);
-	obj_out->kind = NclStk_VAR;
-	obj_out->u.data_var = _NclVarCreate(
-		NULL,
-		NULL,
-		Ncl_Var,
-		0,
-		the_hlu_obj,
-		tmp_md,
-		NULL,
-		-1,
-		NULL,
-		HLUOBJ,
-		the_hlu_obj->name
-	);
+
+/* 
+* stuff like this makes me think that NclMultiDValHLUObjData.c should have 
+* methods added to the HLUObj to perform HLU specific functions.
+*/
+	obj_ids = (int*)the_hlu_data_obj->multidval.val;
+	for(i = 0; i < the_hlu_data_obj->multidval.totalelements; i++ ) {
+		NhlSetValues(obj_ids[i],rl_list);
+	}
+	for(i = 0; i < nres; i++) {
+		NhlFreeGenArray(gen_array[i]);
+	}
+	NclFree(gen_array);
+	NhlRLDestroy(rl_list);
 	_NclCleanUpStack(2*nres);
-	if(obj_out->u.data_var == NULL) {
-		if(*tmp_id >=0) 
-			NhlDestroy(*tmp_id);
-		if(tmp_md != NULL) 
-			_NclDestroyObj((NclObj)tmp_md);
-		obj_out->kind = NclStk_NOVAL;
+	return(NhlNOERROR);
+}
+
+NhlErrorTypes _NclNewOp
+#if  __STDC__
+(NclSymbol*  data_type, NclStackEntry size_expr, NclStackEntry missing_expr)
+#else
+(data_type, size_expr, missing_expr)
+NclSymbol*  data_type;
+NclStackEntry size_expr;
+NclStackEntry missing_expr;
+#endif  
+{
+	unsigned int the_obj_type;
+	NclStackEntry data;
+	NclBasicDataTypes the_type;
+	unsigned int allowed_types = (NCL_VAL_NUMERIC_MASK | NCL_VAL_CHARSTR_MASK | NCL_HLU_MASK);
+	NclScalar missing_val;
+	NclMultiDValData missing_md,tmp_md,size_md,tmp1_md;
+	void *tmp_val;
+	int dim_sizes[NCL_MAX_DIMENSIONS];
+	int tmp_missing = NCL_DEFAULT_MISSING_VALUE;
+	long *dim_size_list,total;
+	int i;
+	NhlErrorTypes ret = NhlNOERROR;
+	
+
+	the_type = _NclKeywordToDataType(data_type);
+	the_obj_type = _NclKeywordToObjType(data_type);
+	if(the_obj_type == NCL_VAL_NUMERIC_MASK) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"New: Keyword numeric is too general, can't determine the size of data");
 		return(NhlFATAL);
+	} else if(the_obj_type == Ncl_File) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"New: Can not make arrays of files");
+		return(NhlFATAL);
+	} else if(the_obj_type == Ncl_Var) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"New: Can not make arrays of vars without values and variable names");
+		return(NhlFATAL);
+	}
+
+	if((missing_expr.kind == NclStk_VAL)||(missing_expr.kind == NclStk_VAR)) {
+		if(missing_expr.kind == NclStk_VAL) {
+			missing_md = missing_expr.u.data_obj;
+		} else {
+			missing_md = _NclVarValueRead(missing_expr.u.data_var,NULL,NULL);
+		}
+		if(missing_md->multidval.kind != SCALAR) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"New: the missing value provided has more than one element, using the first one as the _FillValue");
+			ret = NhlWARNING;
+		}
+		if(missing_md->obj.obj_type != the_obj_type) {
+			tmp_md = _NclCoerceData(missing_md,the_obj_type,NULL);
+			if(tmp_md == NULL) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"New: Could not coerce missing value parameter into appropriate type, using default");
+
+				if(the_type != NCL_int) {
+					tmp_val = (void*)NclMalloc((unsigned)_NclSizeOf(the_type));
+					dim_sizes[0] = 1;
+					if(_NclScalarCoerce(&tmp_missing,NCL_int,tmp_val,the_type)) {
+						memcpy((void*)&missing_val,(void*)tmp_val,_NclSizeOf(the_type));
+						NclFree(tmp_val);
+					} else {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"New: Could not coerce default missing value into appropriate type");
+						return(NhlFATAL);
+					}
+				} else {	
+						missing_val.intval = tmp_missing;
+				}
+				ret = NhlWARNING;
+			} else {
+				if(missing_md->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)missing_md);
+				}
+				missing_md = tmp_md;
+			}
+		} 
+		memcpy((void*)&missing_val,(void*)missing_md->multidval.val,_NclSizeOf(the_type));
 	} else {
-		return(NhlNOERROR);
+		if(the_type != NCL_int) {
+			tmp_val = (void*)NclMalloc((unsigned)_NclSizeOf(the_type));
+			dim_sizes[0] = 1;
+			if(_NclScalarCoerce(&tmp_missing,NCL_int,tmp_val,the_type)) {
+				memcpy((void*)&missing_val,(void*)tmp_val,_NclSizeOf(the_type));
+				NclFree(tmp_val);
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"New: Could not coerce missing value into requested type");
+				return(NhlFATAL);
+			}
+		} else {	
+				missing_val.intval = tmp_missing;
+		}
+	}
+	if(size_expr.kind == NclStk_VAL) {
+		size_md = size_expr.u.data_obj;
+	} else if(size_expr.kind == NclStk_VAR) {
+		size_md = _NclVarValueRead(size_expr.u.data_var,NULL,NULL);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"New: Incorrect type passed as dimension size array");
+		return(NhlFATAL);
+
+	}
+	if(size_md != NULL) {
+		if(size_md->multidval.missing_value.has_missing) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"New: The dimension size list contains missing values, can't determine size");
+			return(NhlFATAL);
+		}
+		if(!(size_md->obj.obj_type_mask & Ncl_MultiDVallongData)) {
+			tmp1_md = _NclCoerceData(size_md,Ncl_MultiDVallongData,NULL);
+			if(tmp1_md == NULL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"New: the dimension size parameter is the wrong type an integer value was expected");
+				return(NhlFATAL);
+			}
+		} else {
+			tmp1_md = size_md;
+		}
+		dim_size_list = (long*)tmp1_md->multidval.val;
+		total = 1;
+		for(i = 0; i< tmp1_md->multidval.dim_sizes[0]; i++) {
+			if(dim_size_list[i] < 1) {	
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"New: a zero or negative value has been passed in in the dimension size parameter");
+				return(NhlFATAL);
+			}
+			total *= dim_size_list[i];
+			dim_sizes[i] = (int)dim_size_list[i];
+		}
+		tmp_val = (void*)NclMalloc((unsigned int)total*_NclSizeOf(the_type));
+		for(i = 0; i< total*_NclSizeOf(the_type); i+=_NclSizeOf(the_type)) {
+			memcpy((void*)&(((char*)tmp_val)[i]),(void*)&missing_val,_NclSizeOf(the_type));
+			
+		}
+		tmp_md = _NclCreateVal(NULL,NULL,the_obj_type,0,tmp_val,&missing_val,tmp1_md->multidval.totalelements,dim_sizes,TEMPORARY,NULL);
+		if(tmp1_md != size_md) {
+			_NclDestroyObj((NclObj)tmp1_md);
+		}
+		if(tmp_md != NULL) {
+			data.kind = NclStk_VAL;
+			data.u.data_obj = tmp_md;
+			_NclPush(data);
+			return(ret);
+		} else{
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"New: Could not create new array");
+			return(NhlFATAL);
+		}
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"New: Could not create new array");
+		return(NhlFATAL);
 	}
 }
+
 
 #ifdef __cplusplus
 }

@@ -51,10 +51,10 @@ char *cur_load_file = NULL;
 %token <integer> INT DIMNUM
 %token <real> REAL
 %token <str> STRING DIM DIMNAME ATTNAME COORD FVAR 
-%token <sym> INTEGER FLOAT LONG DOUBLE BYTE CHARACTER GRAPHIC STRNG NUMERIC FILETYPE SHORT
-%token <sym> UNDEF VAR WHILE DO QUIT PROC EPROC NPROC IPROC UNDEFFILEVAR BREAK
+%token <sym> INTEGER FLOAT LONG DOUBLE BYTE CHARACTER GRAPHIC STRNG NUMERIC FILETYPE SHORT LOGICAL
+%token <sym> UNDEF VAR WHILE DO QUIT PROC EPROC NPROC IPROC UNDEFFILEVAR BREAK NOPARENT
 %token <sym> BGIN END FUNC EFUNC NFUNC IFUNC FDIM IF THEN VBLKNAME FILEVAR CONTINUE
-%token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL RETURN VSBLKGET LOAD
+%token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL RETURN VSBLKGET LOAD NEW
 %token <sym> OBJVAR OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP
 %token '='
 %token OR
@@ -90,11 +90,11 @@ char *cur_load_file = NULL;
 %type <src_node> statement assignment 
 %type <src_node> procedure function_def procedure_def block do conditional
 %type <src_node> visblk statement_list
-%type <src_node> declaration identifier expr
-%type <src_node> subscript0 break_cont
+%type <src_node> declaration identifier expr v_parent 
+%type <src_node> subscript0 break_cont vcreate
 %type <src_node> subscript1 subexpr primary function array error
 %type <list> the_list arg_dec_list subscript_list opt_arg_list 
-%type <list> block_statement_list resource_list dim_size_list vcreate 
+%type <list> block_statement_list resource_list dim_size_list  
 %type <list> arg_list do_stmnt resource vset vget get_resource get_resource_list
 %type <sym> datatype pfname vname
 %type <sym> func_identifier proc_identifier 
@@ -514,27 +514,28 @@ then :
 	| THEN 
 ;
 
-visblk :  vcreate	{
-				$$ = $1;
-			}
-	| vset		{
+visblk :   vset		{
 				$$ = $1;
 			}
 	| vget		{
 				$$ = $1;
 			}
 ;
-vcreate : VSBLKCREATE UNDEF OBJTYPE identifier resource_list END VSBLKCREATE	{   
+
+v_parent: NOPARENT {
+			$$ = NULL;
+		   }
+	| identifier {
+			$$ = $1;
+		     }
+;
+
+
+vcreate : VSBLKCREATE expr OBJTYPE v_parent resource_list END VSBLKCREATE	{   
 									$$ = _NclMakeVis($2,$3,$4,$5,Ncl_VISBLKCREATE);
 								}
-	| VSBLKCREATE UNDEF OBJTYPE identifier resource END VSBLKCREATE 		{   
+	| VSBLKCREATE expr OBJTYPE v_parent resource END VSBLKCREATE 		{   
 									$$ = _NclMakeVis($2,$3,$4,$5,Ncl_VISBLKCREATE); 
-								}
-	| VSBLKCREATE UNDEF OBJTYPE resource_list END VSBLKCREATE	{   
-									$$ = _NclMakeVis($2,$3,NULL,$4,Ncl_VISBLKCREATE);
-								}
-	| VSBLKCREATE UNDEF OBJTYPE resource END VSBLKCREATE 		{   
-									$$ = _NclMakeVis($2,$3,NULL,$4,Ncl_VISBLKCREATE); 
 								}
 	| VSBLKCREATE error 					{
 										$$ = NULL;
@@ -602,10 +603,18 @@ get_resource : 					{
 						}
 	| STRING COLON UNDEF			{
 						 	$$ = _NclMakeGetResource($1,$3);
+/*
+							if(cmd_line)
+								if(!VerifyGetResExpr($3)) {
+									$$ = NULL;
+								}
+*/
 						}
-	| STRING COLON VAR			{
+/*
+	| STRING COLON identifier			{
 						 	$$ = _NclMakeGetResource($1,$3);
 						}
+*/
 	| error					{	
 							$$ = NULL;
 						}
@@ -640,6 +649,13 @@ resource_list : resource eoln			{
 								$$->node = $2;
 							} else {
 								$$ = $1;
+								if(is_error) {
+/*
+									_NclDeleteNewSymStack();		
+*/
+									is_error = 0;
+								}
+						
 							}
 							if(cmd_line) {
 								fprintf(stdout,"ncl %d> ",cur_line_number);
@@ -648,7 +664,11 @@ resource_list : resource eoln			{
 	| resource_list error eoln		{
 							$$ = $1;
 							is_error -= 1;
+/*
+							_NclDeleteNewSymStack();	
+*/
 							if(cmd_line) {
+
 								fprintf(stdout,"ncl %d> ",cur_line_number);
 							}
 						}
@@ -659,6 +679,12 @@ resource : 					{
 						}
 	| STRING COLON expr 			{
 						 	$$ = _NclMakeResource($1,$3);
+/*
+							if(cmd_line)
+								if(!VerifySetResExpr($3)) {
+									$$ = NULL;
+								}
+*/
 						}
 /*
 	| STRING COLON RKEY FVAR		{
@@ -697,12 +723,10 @@ do_stmnt : block_statement_list						{
 ;
 
 do : DO identifier '=' expr ',' expr do_stmnt END DO 			 	{ 
-										((NclGenericRefNode*)$2)->ref_type = Ncl_WRITEIT;
 										
 										$$ = _NclMakeDoFromTo($2,$4, $6, $7);
 									}
 	| DO identifier '=' expr ',' expr ',' expr do_stmnt END DO	 { 
-										((NclGenericRefNode*)$2)->ref_type = Ncl_WRITEIT;
 										$$ = _NclMakeDoFromToStride($2,$4,$6,$8,$9);
 									}
 	| DO WHILE expr block_statement_list END DO {   
@@ -857,7 +881,7 @@ local_list: vname {
 			}
 			}
 ;
-function_def :  func_identifier LP arg_dec_list  RP opt_eoln block		
+function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolType($1,NFUNC);_NclAddProcFuncInfoToSym($1,$3); } block		
 								{  
 									NclSymTableListNode *tmp;
 
@@ -867,10 +891,10 @@ function_def :  func_identifier LP arg_dec_list  RP opt_eoln block
 										$$ = NULL;
 									}else {
 										tmp = _NclPopScope();	
-										$$ = _NclMakeNFunctionDef(_NclChangeSymbolType($1,NFUNC),$3,$6,tmp);  
+										$$ = _NclMakeNFunctionDef($1,$3,$7,tmp);  
 									}
 								}
-	|  func_identifier LP arg_dec_list  RP opt_eoln LOCAL local_list opt_eoln block		
+	|  func_identifier  LP arg_dec_list  RP opt_eoln LOCAL local_list opt_eoln {_NclChangeSymbolType($1,NFUNC); _NclAddProcFuncInfoToSym($1,$3); } block
 								{  
 									NclSymTableListNode *tmp;
 
@@ -880,7 +904,7 @@ function_def :  func_identifier LP arg_dec_list  RP opt_eoln block
 										$$ = NULL;
 									}else {
 										tmp = _NclPopScope();	
-										$$ = _NclMakeNFunctionDef(_NclChangeSymbolType($1,NFUNC),$3,$9,tmp);  
+										$$ = _NclMakeNFunctionDef($1,$3,$10,tmp);  
 									}
 								}
 	| EXTERNAL func_identifier LP arg_dec_list  RP opt_eoln STRING 
@@ -945,7 +969,7 @@ declaration : vname		{
 					}
 					$$ = _NclMakeLocalVarDec(s,NULL,NULL); 
 				}
-	| vname datatype	{ 
+	| vname COLON datatype	{ 
 					NclSymbol *s;
 					int lv = _NclGetCurrentScopeLevel();
 
@@ -954,7 +978,7 @@ declaration : vname		{
 					} else {
 						s = $1;
 					}
-					$$ = _NclMakeLocalVarDec(s,NULL,$2); 
+					$$ = _NclMakeLocalVarDec(s,NULL,$3); 
 				}
 	| vname dim_size_list		{ 
 						NclSymbol *s;
@@ -967,7 +991,7 @@ declaration : vname		{
 
 						$$ = _NclMakeLocalVarDec(s,$2,NULL); 
 					}
-	| vname dim_size_list datatype	{ 
+	| vname dim_size_list COLON datatype	{ 
 						NclSymbol *s;
 						int lv = _NclGetCurrentScopeLevel();
 						if(($1->type != UNDEF)||($1->level != lv)) {
@@ -976,7 +1000,7 @@ declaration : vname		{
 							s = $1;
 						}
 
-						$$ = _NclMakeLocalVarDec(s,$2,$3); 
+						$$ = _NclMakeLocalVarDec(s,$2,$4); 
 					}
 	| pfname		{ 
 				/* Need to intercept defined names and add them to current scope */
@@ -985,11 +1009,11 @@ declaration : vname		{
 					s = _NclAddSym($1->name,UNDEF);
 					$$ = _NclMakeLocalVarDec(s,NULL,NULL); 
 				}
-	| pfname datatype	{ 
+	| pfname COLON datatype	{ 
 					NclSymbol *s;
 
 					s= _NclAddSym($1->name,UNDEF);
-					$$ = _NclMakeLocalVarDec(s,NULL,$2); 
+					$$ = _NclMakeLocalVarDec(s,NULL,$3); 
 				}
 	| pfname dim_size_list	{ 
 					NclSymbol *s;
@@ -997,11 +1021,11 @@ declaration : vname		{
 					s = _NclAddSym($1->name,UNDEF);
 					$$ = _NclMakeLocalVarDec(s,$2,NULL); 
 				}
-	| pfname dim_size_list datatype	{ 
+	| pfname dim_size_list COLON datatype	{ 
 					NclSymbol *s;
 
 					s = _NclAddSym($1->name,UNDEF);
-					$$ = _NclMakeLocalVarDec(s,$2,$3); 
+					$$ = _NclMakeLocalVarDec(s,$2,$4); 
 				}
 ;
 
@@ -1028,16 +1052,19 @@ pfname : IFUNC		{
 			}
 ;
 
-datatype : COLON FLOAT		{ $$ = $2; }
-	| COLON LONG		{ $$ = $2; }
-	| COLON SHORT		{ $$ = $2; }
-	| COLON DOUBLE		{ $$ = $2; }
-	| COLON CHARACTER	{ $$ = $2; }
-	| COLON BYTE		{ $$ = $2; }
-	| COLON FILETYPE	{ $$ = $2; }
-	| COLON NUMERIC		{ $$ = $2; }
+datatype : FLOAT	{ $$ = $1; }
+	| LONG		{ $$ = $1; }
+	| INTEGER	{ $$ = $1; }
+	| SHORT		{ $$ = $1; }
+	| DOUBLE	{ $$ = $1; }
+	| CHARACTER	{ $$ = $1; }
+	| BYTE		{ $$ = $1; }
+	| FILETYPE	{ $$ = $1; }
+	| NUMERIC	{ $$ = $1; }
+	| GRAPHIC 	{ $$ = $1; }
+	| STRNG	 	{ $$ = $1; }
+	| LOGICAL 	{ $$ = $1; }
 ;
-
 
 dim_size_list : LBK INT RBK		{ 
 					/* Dimension size list must be in order */
@@ -1078,23 +1105,23 @@ dim_size_list : LBK INT RBK		{
 
 proc_identifier: KEYPROC UNDEF { _NclNewScope(); $$ = $2; }
 ;
-procedure_def : proc_identifier LP arg_dec_list RP opt_eoln LOCAL local_list opt_eoln block   {
+procedure_def : proc_identifier LP arg_dec_list RP opt_eoln LOCAL local_list opt_eoln {_NclChangeSymbolType($1,NPROC);_NclAddProcFuncInfoToSym($1,$3); } block   {
 								NclSymTableListNode *tmp;
 								if(is_error) {
 									_NclDeleteNewSymStack();
 								}
                                                                 tmp = _NclPopScope();
 							
-								$$ = _NclMakeProcDef(_NclChangeSymbolType($1,NPROC),$3,$9,tmp);
+								$$ = _NclMakeProcDef($1,$3,$10,tmp);
 									
 							}
-	| proc_identifier LP arg_dec_list RP opt_eoln block   {
+	| proc_identifier LP arg_dec_list RP opt_eoln {_NclChangeSymbolType($1,NPROC);_NclAddProcFuncInfoToSym($1,$3); } block   {
 								NclSymTableListNode *tmp;
 								if(is_error) {
 									_NclDeleteNewSymStack();
 								}
                                                                 tmp = _NclPopScope();
-								$$ = _NclMakeProcDef(_NclChangeSymbolType($1,NPROC),$3,$6,tmp);
+								$$ = _NclMakeProcDef($1,$3,$7,tmp);
 									
 							}
 	| EXTERNAL proc_identifier LP arg_dec_list RP opt_eoln STRING	{
@@ -1124,6 +1151,11 @@ assignment :  identifier '=' expr		{
 						$$ = _NclMakeAssignment($1,$3);
 						  
 					}
+/*
+	| identifier '=' vcreate	{
+						$$ = NULL;
+					}
+*/
 ;
 
 identifier : vname {
@@ -1155,6 +1187,9 @@ identifier : vname {
 	| vname FVAR COORD			{
 						$$ = _NclMakeFileVarCoordRef($1,&(($2)[2]),&(($3)[1]),NULL);
 					}
+	| vname FVAR COORD ATTNAME {
+						$$ = _NclMakeFileVarCoordRef($1,&(($2)[2]),&(($3)[1]),NULL);
+					}
 	| vname FVAR COORD LP subscript_list RP{
 						$$ = _NclMakeFileVarCoordRef($1,&(($2)[2]),&(($3)[1]),$5);
 					}
@@ -1181,6 +1216,9 @@ identifier : vname {
 					}
 	| vname COORD LP subscript_list RP{
 						$$ = _NclMakeVarCoordRef($1,&(($2)[1]),$4);
+					}
+	| vname COORD ATTNAME		{
+						$$ = _NclMakeVarCoordRef($1,&(($2)[1]),NULL);
 					}
 ;
 
@@ -1385,8 +1423,17 @@ primary : REAL				{
 	| array 		 	{
 						$$ = _NclMakeIdnExpr($1);
 					}
+	| vcreate			{
+						$$ = $1;
+					}
 	| LP expr RP			{ 
 						$$ = $2;
+					}
+	| NEW LP expr ',' datatype ',' expr RP	{
+						$$ = _NclMakeNewOp($3,$5,$7);
+					}
+	| NEW LP expr ',' datatype RP	{
+						$$ = _NclMakeNewOp($3,$5,NULL);
 					}
 ;
 function: FUNC opt_arg_list		{	

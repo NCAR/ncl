@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.11 1994-04-07 16:48:36 ethan Exp $
+ *      $Id: defs.h,v 1.12 1994-05-28 00:13:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -207,11 +207,17 @@ typedef struct _NclSelectionRecord {
 
 typedef enum {NONE_P, VALUE_P, VAR_P} NclParamTypes;
 
-typedef struct _NclParamRecList {
+typedef struct _NclParamRec {
 	NclParamTypes p_type;
+	int is_modified;
 	struct _NclSymbol *var_sym;
 	struct _NclVarRec *var_ptr;
 	NclSelectionRecord *rec;
+} NclParamRec;
+typedef struct _NclParamRecList {
+	int n_elements;
+	struct _NclSymbol * fpsym;
+	struct _NclParamRec *the_elements;
 }NclParamRecList;
 
 extern int _NclTranslate(

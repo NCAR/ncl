@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.7 1994-04-18 17:11:13 ethan Exp $
+ *      $Id: Symbol.h,v 1.8 1994-05-28 00:13:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -46,12 +46,9 @@ typedef struct _NclSymbol {
 		struct _NclFileVarInfo		*fvar;
 		struct _NclVisBlkInfo		*visblk;
 		struct _NclProcFuncInfo		*procfunc;
-		struct _NclBuiltInProcInfo	*bproc;
 		struct _NclBuiltInFuncInfo	*bfunc;
+		struct _NclBuiltInProcInfo 	*bproc;
 		struct _NhlLayerClassRec 	*obj_class_ptr;
-/*
-		struct _NclLiteral		*lit;
-*/
 	} u;
 	struct _NclSymbol *symnext;
 	struct _NclSymbol *sympre;
@@ -102,6 +99,13 @@ extern NclSymbol *_NclAddSym(
 #ifdef NhlNeedProto
 char * /* name */,
 int  /* type */
+#endif
+);
+
+extern NclSymbol *_NclAddUniqueSym(
+#ifdef NhlNeedProto
+char * /*name */,
+int /* type */
 #endif
 );
 

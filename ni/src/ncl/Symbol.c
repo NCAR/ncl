@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.8 1994-04-18 17:11:11 ethan Exp $
+ *      $Id: Symbol.c,v 1.9 1994-05-28 00:13:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -146,6 +146,7 @@ void _NclRegisterFunc
 		s->u.bfunc->theargs = args;
 		s->u.bfunc->thesym = s;
 		s->u.bfunc->thefunc = thefuncptr;
+		s->u.bfunc->thescope = NULL;
 		return;
 	}
 }
@@ -178,6 +179,7 @@ void _NclRegisterProc
 		s->u.bproc->theargs = args;
 		s->u.bproc->thesym = s;
 		s->u.bproc->theproc = theprocptr;
+		s->u.bproc->thescope = NULL;
 		return;
 	}
 }
@@ -316,7 +318,24 @@ char *name;
         return (h % NCL_SYM_TAB_SIZE);
 }
 
+NclSymbol *_NclAddUniqueSym
+#if __STDC__
+(char *name,int type)
+#else
+(name,type)
+	char *name;
+	int  type;
+#endif
+{
+	static int unique_id = 0;
+	char buffer[80];
 
+	strcpy(buffer,name);
+	sprintf(&(buffer[strlen(buffer)]),"%d",unique_id);
+	unique_id++;
+	return(_NclAddSym(buffer,type));
+	
+}
 
 
 /*

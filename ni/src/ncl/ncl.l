@@ -209,6 +209,15 @@ digit	[0-9]
 	cur_line_text_pos += yyleng;
         return INT;
 }
+{digit}+(".not."|".NOT.") {
+	yyless(yyleng - strlen(".not."));
+	sscanf(yytext,"%d",&(yylval.integer));
+        printtoken(INT,yytext);
+	cur_line_length += yyleng;
+	strcpy(cur_line_text_pos,yytext);
+	cur_line_text_pos += yyleng;
+        return INT;
+}
 {digit}+(".xor."|".XOR.") {
 	yyless(yyleng - strlen(".xor."));
 	sscanf(yytext,"%d",&(yylval.integer));
@@ -252,6 +261,13 @@ digit	[0-9]
 	strcpy(cur_line_text_pos,yytext);
 	cur_line_text_pos += yyleng;
 	return GE;
+}
+".not."|".not." {
+	printtoken(NOT,(char*)NULL);
+	cur_line_length += yyleng;
+	strcpy(cur_line_text_pos,yytext);
+	cur_line_text_pos += yyleng;
+	return NOT;
 }
 ".ne."|".NE." {
 	printtoken(NE,(char*)NULL);

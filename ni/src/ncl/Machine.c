@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.14 1994-05-06 23:37:20 ethan Exp $
+ *      $Id: Machine.c,v 1.15 1994-05-28 00:12:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -73,6 +73,7 @@ int	current_level_1_size;
 
 NclFrame *fp;
 NclStackEntry *sb;
+int sb_off;
 unsigned int current_scope_level = 1;
 
 static void SetUpOpsStrings() {
@@ -90,7 +91,6 @@ static void SetUpOpsStrings() {
 	ops_strings[PROC_CALL_OP] = "PROC_CALL_OP";
 	ops_strings[JMP] = "JMP";
 	ops_strings[JMPFALSE] = "JMPFALSE";
-	ops_strings[IF_OP] = "IF_OP";
 	ops_strings[DO_FROM_TO_OP] = "DO_FROM_TO_OP";
 	ops_strings[DO_FROM_TO_STRIDE_OP] = "DO_FROM_TO_STRIDE_OP";
 	ops_strings[DO_WHILE_OP] = "DO_WHILE_OP";
@@ -158,6 +158,7 @@ static void SetUpOpsStrings() {
 	ops_strings[ASSIGN_VAR_DIM_OP]= "ASSIGN_VAR_DIM_OP";
 	ops_strings[PARAM_VAR_DIM_OP]= "PARAM_VAR_DIM_OP";
 	ops_strings[ASSIGN_VAR_VAR_OP]= "ASSIGN_VAR_VAR_OP";
+	ops_strings[DUP_TOFS]= "DUP_TOFS";
 }
 
 NclValue *_NclGetCurrentMachine
@@ -178,7 +179,7 @@ NclStackEntry *_NclPeek
 	int offset;
 #endif
 {
-	return((NclStackEntry*)(sb - (offset + 1)));
+	return((NclStackEntry*)(sb +(sb_off - (offset + 1))));
 }
 
 void _NclPutArg
@@ -193,7 +194,7 @@ int total_args;
 {
 	NclStackEntry *ptr;
 
-	ptr = ((NclStackEntry*)(sb - total_args)) + arg_num;
+	ptr = ((NclStackEntry*)(sb + (sb_off - total_args))) + arg_num;
 	*ptr = data;
  
 	return;
@@ -210,7 +211,7 @@ int total_args;
 {
 	NclStackEntry *ptr;
 
-	ptr = ((NclStackEntry*)(sb - total_args)) + arg_num;
+	ptr = ((NclStackEntry*)(sb + (sb_off - total_args))) + arg_num;
 
 	return(*ptr);
 }
@@ -298,10 +299,11 @@ void _NclResetMachine
 #endif
 {
 	fp = NULL;
-	if(sb != thestack) {
+	if((NclStackEntry*)(sb + sb_off) != thestack) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"ResetMachine: reseting non-empty stack, memory may leak!");
 	}
 	sb = thestack;
+	sb_off = 0;
 	mstk->pcoffset = 0;
 	mstk->pc = mstk->themachine;
 	mstk->lc = mstk->thelines;
@@ -343,6 +345,7 @@ NhlErrorTypes _NclInitMachine
 {
 	fp = (NclFrame*)thestack;
 	sb = thestack;
+	sb_off = 0;
 	mstk = (_NclMachineStack*)NclMalloc((unsigned)sizeof(_NclMachineStack));
 	mstk->themachine = (NclValue*)NclCalloc(NCL_MACHINE_SIZE,sizeof(NclValue));
 	mstk->thefiles = (char**)NclCalloc(NCL_MACHINE_SIZE,sizeof(char*));
@@ -438,14 +441,17 @@ NclStackEntry *therec;
 
 NclStackEntry *_NclRetrieveRec
 #if  __STDC__
-(NclSymbol* the_sym)
+(NclSymbol* the_sym,int access_type)
 #else
-(the_sym)
+(the_sym,access_type)
 NclSymbol* the_sym;
+int access_type;
 #endif
 {
 	int i;
 	NclFrame *previous;
+	NclParamRecList *the_list;
+
 
 	i = current_scope_level;
 	
@@ -456,7 +462,19 @@ NclSymbol* the_sym;
 		previous = (NclFrame*)fp;
 		while(i != the_sym->level) {
 			i--;
-			previous = (NclFrame*)((NclStackEntry*)thestack + ((NclStackEntry*)previous)->u.offset);
+			previous = (NclFrame*)((NclStackEntry*)thestack + previous->static_link.u.offset);
+		}
+
+/*
+* Mark it if its read
+*/
+		if(previous->parameter_map.kind == NclStk_PARAMLIST) {
+			the_list = previous->parameter_map.u.the_list;
+		}
+		if((access_type == WRITE_IT)
+			&&(the_list != NULL)&&(the_sym->offset < the_list->n_elements)) {
+
+			the_list->the_elements[the_sym->offset].is_modified = 1;
 		}
 /*
 * increment over stack frame stuff to base of actual scope
@@ -473,11 +491,12 @@ static struct _NclFrameList flist ;
 
 static void SaveFramePtrNLevel
 #if __STDC__
-(struct _NclFrame *tmp_fp,int level)
+(struct _NclFrame *tmp_fp,int level,NclStackEntry* tmp_sb)
 #else
-(tmp_fp,level)
+(tmp_fp,level,tmp_sb)
 	struct _NclFrame *tmp_fp;
 	int level;
+	NclStackEntry* tmp_sb;
 #endif
 {
 	static inited = 0;
@@ -486,7 +505,8 @@ static void SaveFramePtrNLevel
 
 	if(!inited) {
 		flist.next = NULL;
-		flist.fp = NULL;
+		flist.sb = NULL;
+		flist.sb = NULL;
 		flist.level = -1;
 		inited = 1;
 	}
@@ -494,11 +514,12 @@ static void SaveFramePtrNLevel
 
 	flist.next = (NclFrameList*)NclMalloc((unsigned)sizeof(NclFrameList));
 	flist.next->fp = tmp_fp;
+	flist.next->sb = tmp_sb;
 	flist.next->level = level;
 	flist.next->next = tmp;
 }
 
-static void SetNextFramePtrNLevel
+void _NclAbortFrame
 #if __STDC__
 (void)
 #else
@@ -506,51 +527,146 @@ static void SetNextFramePtrNLevel
 #endif
 {
 	struct _NclFrameList *tmp;
+	struct _NclFrame *tmp_fp;
+
+	if(flist.next != NULL) {
+		while(flist.next != NULL) {
+			tmp = flist.next;
+			tmp_fp = tmp->fp;
+			flist.next = flist.next->next;
+			NclFree(tmp);
+		}
+/*
+* May need to reset sb_off
+*/
+		_NclCleanUpStack((int)((NclStackEntry*)(sb + sb_off)  - (NclStackEntry*)tmp_fp));
+		sb_off = 0;
+		sb = (NclStackEntry*)tmp_fp;
+	}
+}
+
+void _NclClearToStackBase
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	_NclCleanUpStack(sb_off);
+}
+
+
+static int SetNextFramePtrNLevel
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	struct _NclFrameList *tmp;
+	int tmp_level;
+
+	tmp_level = current_scope_level;
 
 	tmp = flist.next;
 	if(tmp != NULL) {
 		flist.next = flist.next->next;
 		fp = tmp->fp;
+		sb = tmp->sb;
+		sb_off = 0;
 		current_scope_level = tmp->level;
 		NclFree(tmp);
 	}
+	return(tmp_level);
 	
 }
 
+void _NclPopFrame
+#if  __STDC__
+(int popping_from)
+#else 
+(popping_from)
+	int popping_from;
+#endif
+{
+	int i;
+	NclStackEntry data;
 
+	switch(popping_from) {
+	case FUNC_CALL_OP:	
+	case INTRINSIC_FUNC_CALL:
+	case BFUNC_CALL_OP:
+		for(i = 0;i<(sizeof(NclFrame)/sizeof(NclStackEntry))-1; i++) {
+			data = _NclPop();
+			if(data.kind == NclStk_PARAMLIST) {
+				if(data.u.the_list != NULL) {
+					if(data.u.the_list->the_elements != NULL) {	
+						NclFree(data.u.the_list->the_elements);
+					}
+					NclFree(data.u.the_list);
+				}
+			}
+		}
+	break;
+	default:
+		for(i = 0 ; i < (sizeof(NclFrame)/sizeof(NclStackEntry)); i++) {
+			data = _NclPop();
+			if(data.kind == NclStk_PARAMLIST) {
+				if(data.u.the_list != NULL) {
+					if(data.u.the_list->the_elements != NULL) {	
+						NclFree(data.u.the_list->the_elements);
+					}
+					NclFree(data.u.the_list);
+				}
+			}
+        	}
+        break;
+	}
+}
 void _NclPushFrame
 #if __STDC__
-(NclSymTableListNode *new_scope,unsigned long next_instr_offset,int nargs)
+(struct _NclSymbol *the_sym,unsigned long next_instr_offset)
 #else
-(new_scope,next_instr_offset,nargs)
-	NclSymTableListNode *new_scope;
+(the_sym,next_instr_offset)
+	struct _NclSymbol *the_sym;
 	unsigned long next_instr_offset;
-	int nargs;
 #endif
 {
 	NclFrame *tmp,*tmp_fp; 
 	NclFrame *previous; 
 	int i;
+	int nargs =  the_sym->u.procfunc->nargs; 
+	int new_scope_level = 1;
+	int new_scope_cur_off= 0;
 
-	previous = (NclFrame*)fp;	
 
-	tmp = (NclFrame*)(sb);
+	if(the_sym->u.procfunc->thescope != NULL) {
+		new_scope_level = the_sym->u.procfunc->thescope->level; 
+		new_scope_cur_off = the_sym->u.procfunc->thescope->cur_offset;
+	} else {
+		new_scope_cur_off = the_sym->u.procfunc->nargs;
+	}
+
+
+
+	tmp = (NclFrame*)(sb + sb_off);
 	tmp->func_ret_value.kind = NclStk_RETURNVAL;
-	tmp->func_ret_value.u.data_obj= NULL;
-	if(new_scope->level == current_scope_level+1) {
-		tmp->static_link.u.offset  = (unsigned long)((NclStackEntry*)previous - (NclStackEntry*)thestack);
+	tmp->func_ret_value.u.data_obj= (NclMultiDValData)the_sym;
+	if(new_scope_level == current_scope_level+1) {
+		tmp->static_link.u.offset  = (unsigned long)((NclStackEntry*)fp - (NclStackEntry*)thestack);
 		tmp->static_link.kind = NclStk_STATIC_LINK;
-	} else if(new_scope->level == current_scope_level) {
-		tmp->static_link = previous->static_link;
-	} else  {
-		i = current_scope_level - new_scope->level;
-		while(i-- >= 0) {
+	} else if(new_scope_level == current_scope_level) {
+		tmp->static_link = fp->static_link;
+	} else  {	
+		previous = fp;
+		i = current_scope_level - new_scope_level;
+		while(i-- >= 1) {
 			previous = (NclFrame*)((NclStackEntry*)thestack + previous->static_link.u.offset);
 		}
 		tmp->static_link.u.offset = (unsigned long)((NclStackEntry*)previous - (NclStackEntry*)thestack);
 		tmp->static_link.kind = NclStk_STATIC_LINK;
 	}
-	tmp->dynamic_link.u.offset  = (unsigned long)((NclStackEntry*)previous - (NclStackEntry*)thestack);
+	tmp->dynamic_link.u.offset  = (unsigned long)((NclStackEntry*)fp - (NclStackEntry*)thestack);
 	tmp->dynamic_link.kind = NclStk_DYNAMIC_LINK;
 
 /*
@@ -562,10 +678,16 @@ void _NclPushFrame
 		tmp->parameter_map.kind = NclStk_PARAMLIST;
 		tmp->parameter_map.u.the_list = (NclParamRecList*)NclMalloc(
 					(unsigned) sizeof(NclParamRecList) * nargs);
+		tmp->parameter_map.u.the_list->fpsym = the_sym;
+		tmp->parameter_map.u.the_list->n_elements = nargs;
+		tmp->parameter_map.u.the_list->the_elements = (NclParamRec*)
+					NclMalloc((unsigned)sizeof(NclParamRec)*
+					nargs);
+			
 		for(i = 0 ; i< nargs; i++) {
-			tmp->parameter_map.u.the_list[i].p_type = NONE_P;
-			tmp->parameter_map.u.the_list[i].var_sym = NULL;
-			tmp->parameter_map.u.the_list[i].rec = NULL;
+			tmp->parameter_map.u.the_list->the_elements[i].p_type = NONE_P;
+			tmp->parameter_map.u.the_list->the_elements[i].var_sym = NULL;
+			tmp->parameter_map.u.the_list->the_elements[i].rec = NULL;
 		}
 	} else {
 		tmp->parameter_map.u.the_list = NULL;
@@ -573,10 +695,19 @@ void _NclPushFrame
 	tmp_fp = tmp;
 	
 	tmp++;
-	sb = (NclStackEntry*)tmp;
 /*
-	current_scope_level = new_scope->level;
+* The stack frame has to be temporarily set to this 
+* since the frame pointer can't be set until the
+* arguments are executed the CONVERT_TO_LOCAL operator
+* can't use the normal lookup to get the correct stack
+* location to place a local variable. This means that
+* for the _NclRetrieveRec and _NclPush to be used to
+* implement CONVERT_TO_LOCAL the stack base must 
+* be temporarily save with the new frame pointer information
 */
+	sb = (NclStackEntry*)tmp;
+	sb_off = 0;
+	
 
 /* 
 * the frame pointer needs to be returned so it can be set after all of the
@@ -585,26 +716,26 @@ void _NclPushFrame
 * referenced by the instruction sequence. Same goes for the current scope
 * level.
 */
-	SaveFramePtrNLevel(tmp_fp,new_scope->level);
+	SaveFramePtrNLevel(tmp_fp,new_scope_level,(NclStackEntry*)(sb + (sb_off + new_scope_cur_off)));
 	return;
 }
 
-void _NclFinishFrame
+int _NclFinishFrame
 #if __STDC__
 (void)
 #else
 ()
 #endif
 {
-	SetNextFramePtrNLevel();
-	return;
+	return(SetNextFramePtrNLevel());
 }
 
 void *_NclLeaveFrame
 #if __STDC__
-(void)
+(int caller_level)
 #else
-()
+(caller_level)
+	int caller_level;
 #endif
 {
 	NclFrame * prev;
@@ -613,6 +744,7 @@ void *_NclLeaveFrame
 */
 	prev = fp;
 	fp = (NclFrame*)(thestack + fp->dynamic_link.u.offset);
+	current_scope_level = caller_level;
 	return((void*)prev);
 }
 
@@ -624,9 +756,9 @@ void _NclPush
 	NclStackEntry data;
 #endif
 {
-	*(sb) = data;
-	sb++;
-	if((sb) >= &(thestack[NCL_STACK_SIZE -1]) ) {
+	*(NclStackEntry*)(sb+sb_off) = data;
+	sb_off++;
+	if((NclStackEntry*)(sb+sb_off) >= &(thestack[NCL_STACK_SIZE -1]) ) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Push: Stack overflow");
 	}
 	return;
@@ -640,16 +772,16 @@ NclStackEntry _NclPop
 #endif
 {
 	NclStackEntry tmp;
-	if(sb <= thestack) {
+	if(sb +sb_off <= thestack) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Pop: Stack underflow");
 		tmp.kind = NclStk_NOVAL;
 		tmp.u.offset = 0;
 		return(tmp);
 	} else {
-		sb--;
-		tmp = (*(sb));
-		sb->kind = NclStk_NOVAL;
-		sb->u.offset = 0;
+		sb_off--;
+		tmp = (*(NclStackEntry*)(sb + sb_off));
+		((NclStackEntry*)(sb+sb_off))->kind = NclStk_NOVAL;
+		((NclStackEntry*)(sb+sb_off))->u.offset = 0;
 		return(tmp);
 	}
 }
@@ -832,7 +964,6 @@ void _NclPrintMachine
 			case NOOP :
 			case STOPSEQ:
 			case RETURN_OP :
-			case IF_OP :
 			case NAMED_COORD_SUBSCRIPT_OP :
 			case INT_SUBSCRIPT_OP :
 			case NAMED_INT_SUBSCRIPT_OP :
@@ -863,6 +994,7 @@ void _NclPrintMachine
 			case BREAK_OP:
 			case CONTINUE_OP:
 			case ENDSTMNT_OP:
+			case DUP_TOFS:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				break;
 			case JMP :
@@ -904,13 +1036,22 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d",(int)*ptr);
+				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
-			case DO_FROM_TO_OP :
 			case DO_FROM_TO_STRIDE_OP :
+			case DO_FROM_TO_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d\n",*ptr);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				break;
 			case PUSH_REAL_LIT_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
@@ -1058,9 +1199,6 @@ void _NclPrintMachine
 				ptr++;lptr++,fptr++;
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				ptr++;lptr++,fptr++;
-				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				break;	
 			default:
 				break;
@@ -1087,45 +1225,79 @@ extern void _NclAddObjToParamList
 */
 	tmp_fp = flist.next->fp;
 	if(obj->obj.obj_type_mask & NCL_VAR_TYPE_MASK) {
-		tmp_fp->parameter_map.u.the_list[arg_num].p_type = VAR_P;
-		tmp_fp->parameter_map.u.the_list[arg_num].var_sym = ((NclVar)obj)->var.thesym;
-		tmp_fp->parameter_map.u.the_list[arg_num].var_ptr = (NclVar)obj;
+		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].p_type = VAR_P;
+		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].var_sym = ((NclVar)obj)->var.thesym;
+		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].var_ptr = (NclVar)obj;
 		if((((NclVar)obj)->var.var_type == VARSUBSEL)
 			||(((NclVar)obj)->var.var_type == COORDSUBSEL)
 			||(((NclVar)obj)->var.var_type == FILEVARSUBSEL)) {
 		
 			tmp_md = (NclMultiDValData)_NclGetObj(((NclVar)obj)->var.thevalue_id);
 			if(tmp_md->multidval.sel_rec != NULL) {
-				tmp_fp->parameter_map.u.the_list[arg_num].rec = (NclSelectionRecord*)NclMalloc((unsigned)sizeof(NclSelectionRecord));
-            			memcpy((char*)tmp_fp->parameter_map.u.the_list[arg_num].rec,(char*)tmp_md->multidval.sel_rec,sizeof(NclSelectionRecord));
+				tmp_fp->parameter_map.u.the_list->the_elements[arg_num].rec = (NclSelectionRecord*)NclMalloc((unsigned)sizeof(NclSelectionRecord));
+            			memcpy((char*)tmp_fp->parameter_map.u.the_list->the_elements[arg_num].rec,(char*)tmp_md->multidval.sel_rec,sizeof(NclSelectionRecord));
 
 			} else {
-				tmp_fp->parameter_map.u.the_list[arg_num].rec = NULL;
+				tmp_fp->parameter_map.u.the_list->the_elements[arg_num].rec = NULL;
 			}
 		}
+		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].is_modified = 0;
 	} else if(obj->obj.obj_type_mask & NCL_VAL_TYPE_MASK) {
-		tmp_fp->parameter_map.u.the_list[arg_num].p_type = VALUE_P;
-		tmp_fp->parameter_map.u.the_list[arg_num].var_sym = NULL;
-		tmp_fp->parameter_map.u.the_list[arg_num].var_ptr = NULL;
-		tmp_fp->parameter_map.u.the_list[arg_num].rec = NULL;
+		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].p_type = VALUE_P;
+		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].var_sym = NULL;
+		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].var_ptr = NULL;
+		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].rec = NULL;
+		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].is_modified = 0;
 	} else {
-		tmp_fp->parameter_map.u.the_list[arg_num].p_type = NONE_P;
-		tmp_fp->parameter_map.u.the_list[arg_num].var_sym = NULL;
-		tmp_fp->parameter_map.u.the_list[arg_num].var_ptr = NULL;
-		tmp_fp->parameter_map.u.the_list[arg_num].rec = NULL;
+		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].p_type = NONE_P;
+		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].var_sym = NULL;
+		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].var_ptr = NULL;
+		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].rec = NULL;
+		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].is_modified = 0;
 /*
 * handle files 
 */
 	}
 	
 }
-
-void _NclRemapParameters
-#if __STDC__
-(int nargs,void *previous_fp,int from)
+/*ARGSUSED*/
+void _NclRemapIntrParameters
+#if  __STDC__ 
+(int nargs, void *previous_fp, int from)
 #else
 (nargs,previous_fp,from)
+int nargs;
+void *previous_fp;
+int from;
+#endif
+{
+	int i;
+	NclStackEntry data;
+	for(i = 0;i< nargs; i++) {
+		data = _NclPop();
+		switch(data.kind) {
+		case NclStk_VAR:
+			if((data.u.data_var != NULL)&&(data.u.data_var->obj.status != PERMANENT)){
+				_NclDestroyObj((NclObj)data.u.data_obj);
+			}
+			break;
+		case NclStk_VAL:
+			if((data.u.data_obj != NULL)&&(data.u.data_obj->obj.status != PERMANENT)){
+				_NclDestroyObj((NclObj)data.u.data_obj);
+			}
+			break;
+		default:
+			break;
+		}
+	}
+}
+void _NclRemapParameters
+#if __STDC__
+(int nargs,int cur_off,void *previous_fp,int from)
+#else
+(nargs,cur_off,previous_fp,from)
 	int nargs;
+	int cur_off;
 	void *previous_fp;
 	int from;
 #endif
@@ -1147,18 +1319,79 @@ void _NclRemapParameters
 */
 	switch(from) {
 	case FUNC_CALL_OP:
+	case INTRINSIC_FUNC_CALL:
+	case BFUNC_CALL_OP:
 		check_ret_status = 1;
 		break;
 	default:
 		check_ret_status = 0;
 		break;
 	}
+/*
+* Have to remove any local variable space, should
+* be no problem to just destroy them
+*/
+	if(check_ret_status) {
+		for(i = 0; i< cur_off-nargs; i++) {
+			data = _NclPop();
+			switch(data.kind) {
+			case NclStk_VAL:
+/*
+* Not sure this can ever happen but it can't hurt
+*/
+				if(!((data.kind == NclStk_VAL)&&(tmp_fp->func_ret_value.kind == NclStk_VAL)&&
+					(tmp_fp->func_ret_value.u.data_obj->obj.id == data.u.data_obj->obj.id))) {
+					_NclDestroyObj((NclObj)data.u.data_obj);
+				}
+				break;
+			case NclStk_VAR:
+				if((data.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.kind == NclStk_VAR)&&
+					(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)) {
+					tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
+					tmp_var = _NclVarCreate(
+						NULL,
+						tmp_var1->obj.class_ptr,
+						tmp_var1->obj.obj_type,
+						tmp_var1->obj.obj_type_mask,
+						NULL,
+						(NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),
+						tmp_var1->var.dim_info,
+						tmp_var1->var.att_id,
+						tmp_var1->var.coord_vars,
+						RETURNVAR,
+						NULL
+						);
+					_NclDestroyObj((NclObj)tmp_var1);
+					tmp_fp->func_ret_value.u.data_var = tmp_var;
+					check_ret_status = 0;
+					
+				} else {
+					_NclDestroyObj((NclObj)data.u.data_var);
+				}
+			default:
+				break;
+			}
+		}
+	} else {
+		for(i = 0; i< cur_off-nargs; i++) {
+			data = _NclPop();
+			switch(data.kind) {
+			case NclStk_VAL:
+				_NclDestroyObj((NclObj)data.u.data_obj);
+				break;
+			case NclStk_VAR:
+				_NclDestroyObj((NclObj)data.u.data_var);
+			default:
+				break;
+			}
+		}
+	}
 
 	the_list = tmp_fp->parameter_map.u.the_list;
 	for (i = 0; i < nargs; i++) {
 		data = _NclPop();
-		if(the_list[i].p_type == VAR_P) {
-			if((the_list[i].var_sym != NULL)&&(the_list[i].rec != NULL)) {
+		if(the_list->the_elements[i].p_type == VAR_P) {
+			if((the_list->the_elements[i].var_sym != NULL)&&(the_list->the_elements[i].rec != NULL)) {
 
 /* 
 * Key thing to think about here: if there is a subscript record or no variable 
@@ -1175,12 +1408,19 @@ void _NclRemapParameters
 * variable. So only coordinate variables, type and actual data array values 
 * must bew remapped.
 */
-				for(j = 0; j< the_list[i].rec->n_entries; j ++) {
-					if(the_list[i].rec->selection[j].sel_type == Ncl_VECSUBSCR) {
+				for(j = 0; j< the_list->the_elements[i].rec->n_entries; j ++) {
+					if(the_list->the_elements[i].rec->selection[j].sel_type == Ncl_VECSUBSCR) {
 						contains_vec = 1;
 					}
 				}
-				data_ptr = _NclRetrieveRec(the_list[i].var_sym);
+/*
+* ---------> Not really sure this is a don't care case <---------------
+*/
+				if(the_list->the_elements[i].is_modified) {
+					data_ptr = _NclRetrieveRec(the_list->the_elements[i].var_sym,WRITE_IT);
+				} else {
+					data_ptr = _NclRetrieveRec(the_list->the_elements[i].var_sym,DONT_CARE);
+				}
 				anst_var = data_ptr->u.data_var;
 				if(data.u.data_var != NULL ) {
 					var_rep_type = _NclGetVarRepValue(data.u.data_var);
@@ -1198,11 +1438,11 @@ void _NclRemapParameters
 							data.u.data_var = tmp_var;
 						}
 					} else {
-						if(!contains_vec) 
-							_NclAssignVarToVar(anst_var,the_list[i].rec,data.u.data_var,NULL);
-
+						if((!contains_vec) &&(the_list->the_elements[i].is_modified))
+							_NclAssignVarToVar(anst_var,the_list->the_elements[i].rec,data.u.data_var,NULL);
 					}
 /* 
+* 5/17/94 Is this really a problem to deal with here? shouldn't AssignVarToVar take care of copying these?
 * ------->
 * Need to deal with mapping coordinates, attributes and dim_info. THis is
 * not trivial since remapping can cause coord arrays to expand to the
@@ -1210,8 +1450,8 @@ void _NclRemapParameters
 * <-------
 */
 				
-					if((the_list[i].var_ptr != NULL)&&(anst_var->obj.id != the_list[i].var_ptr->obj.id)) {
-						_NclDestroyObj((NclObj)the_list[i].var_ptr);
+					if((the_list->the_elements[i].var_ptr != NULL)&&(anst_var->obj.id != the_list->the_elements[i].var_ptr->obj.id)) {
+						_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
 					}
 
 					value_ref_count = _NclGetObjRefCount(data.u.data_var->var.thevalue_id);
@@ -1237,7 +1477,6 @@ void _NclRemapParameters
 							_NclDestroyObj((NclObj)tmp_var1);
 							tmp_fp->func_ret_value.u.data_var = tmp_var;
 							check_ret_status = 0;
-						
 					} else if((check_ret_status)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)){
 						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
 						if(tmp_var1->var.att_id != -1) 
@@ -1270,41 +1509,53 @@ void _NclRemapParameters
 						_NclDestroyObj((NclObj)data.u.data_var);
 					}
 				} else {
-					if((the_list[i].var_ptr != NULL)&&(anst_var->obj.id != the_list[i].var_ptr->obj.id)) {
-						_NclDestroyObj((NclObj)the_list[i].var_ptr);
+					if((the_list->the_elements[i].var_ptr != NULL)&&(anst_var->obj.id != the_list->the_elements[i].var_ptr->obj.id)) {
+						_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
 					}
 				}
-			} else if(the_list[i].var_sym != NULL){
-				data_ptr = _NclRetrieveRec(the_list[i].var_sym);
-				anst_var = data_ptr->u.data_var;
-				if((anst_var->var.att_id == -1)&&(data.u.data_var->var.att_id != -1)) {
-					anst_var->var.att_id = data.u.data_var->var.att_id;
-					_NclAddParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
-				} else if((anst_var->var.att_id != -1)&&(data.u.data_var->var.att_id == -1)){
-
-					_NclDelParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
-					anst_var->var.att_id = -1;
-				} else if(anst_var->var.att_id != data.u.data_var->var.att_id) {
-					_NclDelParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
-					anst_var->var.att_id = data.u.data_var->var.att_id;
-					_NclAddParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
+			} else if(the_list->the_elements[i].var_sym != NULL){
+/*
+* -----------> Not really sure about DONT_CARE <------------
+*/
+				if(the_list->the_elements[i].is_modified) {
+					data_ptr = _NclRetrieveRec(the_list->the_elements[i].var_sym,WRITE_IT);
+				} else {
+					data_ptr = _NclRetrieveRec(the_list->the_elements[i].var_sym,DONT_CARE);
 				}
-				for(j = 0 ; j < data.u.data_var->var.n_dims; j++) {
-					if((anst_var->var.coord_vars[j] != -1)&&(data.u.data_var->var.coord_vars[j] == -1)) {
-						_NclDelParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
-						anst_var->var.coord_vars[j] = -1;
+				anst_var = data_ptr->u.data_var;
+				if(the_list->the_elements[i].is_modified) {
+/*
+					if((anst_var->var.att_id == -1)&&(data.u.data_var->var.att_id != -1)) {
+						anst_var->var.att_id = data.u.data_var->var.att_id;
+						_NclAddParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
+					} else if((anst_var->var.att_id != -1)&&(data.u.data_var->var.att_id == -1)){
+
+						_NclDelParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
+						anst_var->var.att_id = -1;
+					} else if(anst_var->var.att_id != data.u.data_var->var.att_id) {
+						_NclDelParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
+						anst_var->var.att_id = data.u.data_var->var.att_id;
+						_NclAddParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
+					}
+					for(j = 0 ; j < data.u.data_var->var.n_dims; j++) {
+						if((anst_var->var.coord_vars[j] != -1)&&(data.u.data_var->var.coord_vars[j] == -1)) {
+							_NclDelParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
+							anst_var->var.coord_vars[j] = -1;
 						
 						
-					} else if((anst_var->var.coord_vars[j] == -1)&&(data.u.data_var->var.coord_vars[j] == -1)) {
-						anst_var->var.coord_vars[j] = data.u.data_var->var.coord_vars[j];
-						_NclAddParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
+						} else if((anst_var->var.coord_vars[j] == -1)&&(data.u.data_var->var.coord_vars[j] == -1)) {
+							anst_var->var.coord_vars[j] = data.u.data_var->var.coord_vars[j];
+							_NclAddParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
 				
-					} else if(anst_var->var.coord_vars[j] != data.u.data_var->var.coord_vars[j]) {
-						_NclDelParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
-						anst_var->var.coord_vars[j] = data.u.data_var->var.coord_vars[j];
-						_NclAddParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
-					} 
-					anst_var->var.dim_info[j] = data.u.data_var->var.dim_info[j];
+						} else if(anst_var->var.coord_vars[j] != data.u.data_var->var.coord_vars[j]) {
+							_NclDelParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
+							anst_var->var.coord_vars[j] = data.u.data_var->var.coord_vars[j];
+							_NclAddParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
+						} 
+						anst_var->var.dim_info[j] = data.u.data_var->var.dim_info[j];
+					}
+*/
+					_NclAssignVarToVar(anst_var,NULL,data.u.data_var,NULL);
 				}
 				value_ref_count = _NclGetObjRefCount(data.u.data_var->var.thevalue_id);
 
@@ -1419,7 +1670,7 @@ void _NclRemapParameters
 					_NclDestroyObj((NclObj)data.u.data_var);
 				}
 			}
-		} else if(the_list[i].p_type == VALUE_P) {
+		} else if(the_list->the_elements[i].p_type == VALUE_P) {
 			if(data.kind == NclStk_VAR) { 
 /*
 * Need to turn data part into a temporary variable and still destroy variable
@@ -1489,16 +1740,18 @@ void _NclRemapParameters
 
 void _NclDumpStack
 #if __STDC__
-(FILE *fp)
+(FILE *fp,int off)
 #else 
-(fp) 
+(fp,off) 
 	FILE *fp;
+	int off;
 #endif
 {
-	NclStackEntry *tmp_ptr = sb;
+	NclStackEntry *tmp_ptr = (NclStackEntry*)(sb + sb_off - off);
+	int i;
 
 	fprintf(fp,"\n");
-	tmp_ptr = sb - 1;
+	tmp_ptr = tmp_ptr - 1;
 	while(tmp_ptr >= thestack) {
 		fprintf(fp,"%d)\t",(int)(tmp_ptr - thestack));
 		switch(tmp_ptr->kind) {
@@ -1506,19 +1759,63 @@ void _NclDumpStack
 			fprintf(fp,"NclStk_NOVAL\n");
 			break;
 		case	NclStk_OFFSET:
-			fprintf(fp,"NclStk_OFFSET\n");
+			fprintf(fp,"NclStk_OFFSET\t",tmp_ptr->u.offset);
 			break;
 		case 	NclStk_VAL:
-			fprintf(fp,"NclStk_VAL\n");
+			fprintf(fp,"NclStk_VAL\t");
+			fprintf(fp,"%s\t",NrmQuarkToString(_NclObjTypeToName(tmp_ptr->u.data_obj->obj.obj_type)));
+			for(i = 0; i< tmp_ptr->u.data_obj->multidval.n_dims; i++) {
+				fprintf(fp,"[%d]",tmp_ptr->u.data_obj->multidval.dim_sizes[i]);
+				if(i !=  tmp_ptr->u.data_obj->multidval.n_dims - 1) {
+					fprintf(fp," x ");
+				}
+        		}
+			fprintf(fp,"\n");
 			break;
 		case 	NclStk_VAR:
-			fprintf(fp,"NclStk_VAR\n");
+			fprintf(fp,"NclStk_VAR\t");
+			fprintf(fp,"%s ",NrmQuarkToString(tmp_ptr->u.data_var->var.var_quark));
+			switch(tmp_ptr->u.data_var->var.var_type) {
+			case VARSUBSEL:
+				fprintf(fp,"(subsection)\t");
+				break;
+			case COORD:
+				fprintf(fp,"(coordinate)\t");
+				break;
+			case COORDSUBSEL:
+				fprintf(fp,"(coordinate subsection)\t");
+				break;
+			case PARAM:
+				fprintf(fp,"(parameter)\t");
+				break;
+			case RETURNVAR:
+				fprintf(fp,"(return)\t");
+				break;
+			case HLUOBJ:
+			case NORMAL:
+			default:
+				fprintf(fp,"\t");
+				break;
+			}
+			for(i = 0; i< tmp_ptr->u.data_var->var.n_dims; i++) {
+				fprintf(fp,"[");
+				if((tmp_ptr->u.data_var->var.dim_info[i].dim_quark != -1)) {
+					fprintf(fp,"%s | ",NrmQuarkToString(tmp_ptr->u.data_var->var.dim_info[i].dim_quark));
+				}
+				fprintf(fp,"%d]",tmp_ptr->u.data_var->var.dim_info[i].dim_size);
+				if(i !=  tmp_ptr->u.data_var->var.n_dims - 1) {
+					fprintf(fp," x ");
+				}
+			}
+
+			fprintf(fp,"\n");
 			break;
 		case 	NclStk_SUBREC:
 			fprintf(fp,"NclStk_SUBREC\n");
 			break;
 		case	NclStk_PARAMLIST:
-			fprintf(fp,"NclStk_PARAMLIST\n");
+			fprintf(fp,"NclStk_PARAMLIST\t");
+			fprintf(fp,"\n");
 			break;
 		case	NclStk_RANGEREC:
 			fprintf(fp,"NclStk_RANGEREC\n");
@@ -1542,7 +1839,7 @@ void _NclDumpStack
 			fprintf(fp,"NclStk_RET_OFFSET\t%d\n",(int)(tmp_ptr->u.offset));
 			break;
 		case 	NclStk_RETURNVAL:
-			fprintf(fp,"------------FRAME--------------\n");
+			fprintf(fp,"------------FRAME(%s)------------\n",((NclSymbol*)tmp_ptr->u.data_obj)->name);
 			break;
 		default:
 			fprintf(fp,"\n");
@@ -1551,6 +1848,7 @@ void _NclDumpStack
 		tmp_ptr--;
 	}
 	fprintf(fp,"\n");
+	
 }
 
 NhlErrorTypes _NclPlaceReturn
@@ -1586,7 +1884,7 @@ void _NclCleanUpStack
 		case NclStk_VAR:
 			if((data.u.data_var != NULL) &&( data.u.data_var->obj.status != PERMANENT)) {
 				_NclDestroyObj((NclObj)data.u.data_var);
-			}
+			} 
 			break;
 		case NclStk_SUBREC:
 				_NclFreeSubRec(data.u.sub_rec);

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.11 1994-04-18 17:11:06 ethan Exp $
+ *      $Id: SrcTree.c,v 1.12 1994-05-28 00:13:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -70,7 +70,7 @@ char *src_tree_names[] = {"Ncl_BLOCK", "Ncl_RETURN", "Ncl_IFTHEN",
 			"Ncl_RESOURCE","Ncl_GETRESOURCE", "Ncl_OBJ",
 			"Ncl_BREAK", "Ncl_CONTINUE","Ncl_FILEVARATT",
 			"Ncl_FILEVARDIM",
-			"Ncl_FILECOORD"
+			"Ncl_FILECOORD","Ncl_NEW"
 			};
 /*
 * These are the string equivalents of the attribute tags assigned to 
@@ -459,10 +459,10 @@ extern void *_NclMakeObjRef
  */
 void *_NclMakeVis
 #if  __STDC__
-(NclSymbol *objname,NclSymbol *objtype,void *objparent,NclSrcListNode* resource_list,NclSrcTreeTypes nodetype)
+(void *obj_name_expr,NclSymbol *objtype,void *objparent,NclSrcListNode* resource_list,NclSrcTreeTypes nodetype)
 #else
-(objname,objtype,objparent,resource_list,nodetype)
-NclSymbol* objname;
+(obj_name_expr,objtype,objparent,resource_list,nodetype)
+void * obj_name_expr;
 NclSymbol* objtype;
 void * objparent;
 NclSrcListNode * resource_list;
@@ -477,7 +477,7 @@ NclSrcTreeTypes nodetype;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
 
-	tmp->objname = objname;
+	tmp->obj_name_expr = obj_name_expr;
 	tmp->objparent = objparent;
 	tmp->resource_list = resource_list;
 	tmp->objtype = objtype;
@@ -581,6 +581,9 @@ NclSrcListNode * block_stmnt_list;
 	tmp->start_expr = start_expr;
 	tmp->end_expr = end_expr;
 	tmp->block_stmnt_list = block_stmnt_list;
+	tmp->inc_sym = _NclAddUniqueSym("L_INC_",VAR);
+	tmp->dir_sym = _NclAddUniqueSym("L_DIR_",VAR);
+	tmp->end_sym = _NclAddUniqueSym("L_END_",VAR);
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
@@ -627,6 +630,9 @@ NclSrcListNode *block_stmnt_list;
 	tmp->end_expr = end_expr;
 	tmp->stride_expr = stride_expr;
 	tmp->block_stmnt_list = block_stmnt_list;
+	tmp->inc_sym = _NclAddUniqueSym("L_INC_",VAR);
+	tmp->dir_sym = _NclAddUniqueSym("L_DIR_",VAR);
+	tmp->end_sym = _NclAddUniqueSym("L_END_",VAR);
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
@@ -672,6 +678,71 @@ NclSrcTreeTypes type;
 	return((void*)tmp);
 }
 
+void _NclAddProcFuncInfoToSym
+#if __STDC__
+(NclSymbol * pf_sym,NclSrcListNode *dec_list)
+#else
+(pf_sym,dec_list)
+NclSymbol * pf_sym;
+NclSrcListNode *dec_list;
+#endif
+{
+	NclProcFuncInfo  *tmp1 = (NclProcFuncInfo*)NclMalloc((unsigned)
+				sizeof(NclProcFuncInfo));
+	NclSrcListNode *step, *step1;
+	NclLocalVarDec *var_dec;
+	int i,j;
+	NclDimSizeListNode *dim_size;
+
+	if(tmp1 == NULL) {
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
+		return;
+	}
+	if(dec_list != NULL) {
+		step = dec_list;
+		i = 0;
+		while(step != NULL) {
+			i++;
+			step = step->next;
+		}
+		step = dec_list;
+		tmp1->nargs = i;
+		tmp1->theargs = (NclArgTemplate*)
+				NclMalloc((unsigned)sizeof(NclArgTemplate)*i);
+		i = 0;
+		while( step != NULL ) {
+			var_dec = (NclLocalVarDec*)step->node;
+			if(var_dec->dim_size_list != NULL) {
+				tmp1->theargs[i].is_dimsizes = 1;
+				step1 = var_dec->dim_size_list;
+				j = 0;
+				while(step1 != NULL) {
+					dim_size = (NclDimSizeListNode*)step1->node;
+					tmp1->theargs[i].dim_sizes[j] = dim_size->size;
+					step1 = step1->next;
+					j++;
+				}
+				tmp1->theargs[i].n_dims= j;
+			} else {
+				tmp1->theargs[i].is_dimsizes = 0;
+			}
+			tmp1->theargs[i].arg_data_type = var_dec->data_type;
+			tmp1->theargs[i].arg_sym = var_dec->var;
+			
+			step = step->next;		
+			i++;
+		}
+		tmp1->thesym = pf_sym;
+		tmp1->mach_rec_ptr= NULL;
+	} else {
+		tmp1->nargs = 0;
+		tmp1->theargs = NULL;
+		tmp1->thesym = pf_sym;
+		tmp1->mach_rec_ptr = NULL;
+	}
+	tmp1->thescope = NULL;
+	pf_sym->u.procfunc = tmp1;
+}
 /*
  * Function:	_NclMakeNFunctionDef
  *
@@ -698,12 +769,6 @@ NclSymTableListNode* thescope;
 {
 	NclFuncDef *tmp = (NclFuncDef*)NclMalloc(
 				(unsigned)sizeof(NclFuncDef));
-	NclProcFuncInfo  *tmp1 = (NclProcFuncInfo*)NclMalloc((unsigned)
-				sizeof(NclProcFuncInfo));
-	NclSrcListNode *step, *step1;
-	NclLocalVarDec *var_dec;
-	NclDimSizeListNode *dim_size;
-	int i=0,j=0;
 
 
 	if(tmp == NULL) {
@@ -719,61 +784,18 @@ NclSymTableListNode* thescope;
 	tmp->block = block;
 	tmp->scope = thescope;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
-/*
-* Create argument numbers and type template and attach it to functions symbol
-*/
-	if(tmp1 == NULL) {
-		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
-		return(NULL);
-	}
-	if(tmp->dec_list != NULL) {
-		step = tmp->dec_list;
-		i = 0;
-		while(step != NULL) {
-			i++;
-			step = step->next;
-		}
-		step = tmp->dec_list;
-		tmp1->nargs = i;
-		tmp1->theargs = (NclArgTemplate*)
-				NclMalloc((unsigned)sizeof(NclArgTemplate)*i);
-/*
-		tmp1->theargs = 
-*/
-		step = tmp->dec_list;
-		i = 0;
-		while( step != NULL ) {
-			var_dec = (NclLocalVarDec*)step->node;
-			if(var_dec->dim_size_list != NULL) {
-				tmp1->theargs[i].is_dimsizes = 1;
-				step1 = var_dec->dim_size_list;
-				j = 0;
-				while(step1 != NULL) {
-					dim_size = (NclDimSizeListNode*)step1->node;
-					tmp1->theargs[i].dim_sizes[j] = dim_size->size;
-					step1 = step1->next;
-					j++;
-				}
-				tmp1->theargs[i].n_dims= j;
-			} else {
-				tmp1->theargs[i].is_dimsizes = 0;
-			}
-			tmp1->theargs[i].arg_data_type = var_dec->data_type;
-			tmp1->theargs[i].arg_sym = var_dec->var;
-			
-			step = step->next;		
-			i++;
-		}
-		tmp1->thesym = func;
-		tmp1->mach_rec_ptr= NULL;
+
+	if(func->u.procfunc != NULL) {
+		func->u.procfunc->thescope = thescope;
 	} else {
-		tmp1->nargs = 0;
-		tmp1->theargs = NULL;
-		tmp1->thesym = func;
-		tmp1->mach_rec_ptr = NULL;
+		_NclAddProcFuncInfoToSym(func,dec_list);
+		if(func->u.procfunc ==NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not create procedure or function paremeter info");
+			return(NULL);
+		} else {
+			func->u.procfunc->thescope = thescope;
+		}
 	}
-	tmp1->thescope = thescope;
-	func->u.procfunc = tmp1;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
@@ -2022,7 +2044,7 @@ if(groot != NULL) {
 			fprintf(fp,"%s\n",vblk->name);
 			i++;
 			putspace(i,fp);
-			_NclPrintSymbol(vblk->objname,fp);
+			_NclPrintTree(vblk->obj_name_expr,fp);
 			_NclPrintSymbol(vblk->objtype,fp);
 			if(vblk->objparent != NULL) {
 				_NclPrintTree(vblk->objparent,fp);
@@ -2945,6 +2967,31 @@ NclSrcListNode *subscript_list;
 
 
 
+void *_NclMakeNewOp
+#ifdef __STDC__
+(void * size_expr, struct _NclSymbol * datatype,void *missing_expr)
+#else
+void * size_expr;
+struct _NclSymbol *datatype;
+#endif
+{
+	NclNew *tmp= (NclNew*)NclMalloc((unsigned)sizeof(NclNew));
+	
+	if(tmp == NULL) {
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
+		return(NULL);
+	}
+	tmp->kind = Ncl_NEW;
+	tmp->name = src_tree_names[Ncl_NEW];
+	tmp->line = cur_line_number;
+	tmp->file = cur_load_file;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->size_expr = size_expr;
+	tmp->data_sym = datatype;
+	tmp->missing_expr = missing_expr;
+	_NclRegisterNode((NclGenericNode*)tmp);
+	return((void*)tmp);
+}
 
 
 

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Keywords.h,v 1.5 1994-04-07 16:48:11 ethan Exp $
+ *      $Id: Keywords.h,v 1.6 1994-05-28 00:12:48 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -53,6 +53,7 @@ static struct {
 "character",    CHARACTER,
 "string",    	STRNG,
 "byte",         BYTE,
+"logical",      LOGICAL,
 "file",         FILETYPE,
 "numeric",      NUMERIC,
 "graphic",      GRAPHIC,
@@ -67,6 +68,8 @@ static struct {
 "stop",		STOP,
 "break",	BREAK,
 "continue",	CONTINUE,
+"noparent",	NOPARENT,
+"new",		NEW,
 /*
 "objdata",	RKEY,
 */

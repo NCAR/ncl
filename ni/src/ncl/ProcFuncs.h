@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ProcFuncs.h,v 1.5 1994-04-07 16:48:24 ethan Exp $
+ *      $Id: ProcFuncs.h,v 1.6 1994-05-28 00:13:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -28,10 +28,29 @@ extern "C" {
 
 #define ANYDIMSIZE = -1
 
+typedef NhlErrorTypes (*NclBuiltInProcWrapper)(
+#if	NhlNeedProto
+	void
+#endif
+);
+typedef void (*NclIntrinsicProcWrapper)(
+#if	NhlNeedProto
+	void	
+#endif
+);
+
+typedef NhlErrorTypes (*NclBuiltInFuncWrapper)(
+#if	NhlNeedProto
+	void
+#endif
+);
+
+
 typedef struct _NclGenProcFuncInfo {
 	int nargs;
 	struct _NclArgTemplate * theargs;
 	struct _NclSymbol *thesym;
+	struct _NclSymTableListNode* thescope;
 } NclGenProcFuncInfo;
 
 typedef struct _NclProcFuncInfo {
@@ -42,6 +61,23 @@ typedef struct _NclProcFuncInfo {
 	void *mach_rec_ptr;
 } NclProcFuncInfo;
 
+typedef struct _NclBuiltInFuncInfo {
+	int nargs;
+	struct _NclArgTemplate *theargs;
+	struct _NclSymbol *thesym;
+	struct _NclSymTableListNode* thescope;
+	NclBuiltInFuncWrapper thefunc;
+} NclBuiltInFuncInfo;
+
+typedef struct _NclBuiltInProcInfo {
+	int nargs;
+	struct _NclArgTemplate *theargs;
+	struct _NclSymbol *thesym;
+	struct _NclSymTableListNode* thescope;
+	NclBuiltInProcWrapper theproc;
+} NclBuiltInProcInfo;
+
+
 typedef struct _NclArgTemplate {
 	int n_dims;
 	int dim_sizes[NCL_MAX_DIMENSIONS];
@@ -50,36 +86,6 @@ typedef struct _NclArgTemplate {
 	int is_dimsizes;
 } NclArgTemplate;
 
-typedef void (*NclBuiltInProcWrapper)(
-#if	NhlNeedProto
-	void
-#endif
-);
-typedef void (*NclIntrinsicProcWrapper)(
-#if	NhlNeedProto
-	int
-#endif
-);
-
-typedef struct _NclBuiltInProcInfo {
-	int nargs;
-	struct _NclArgTemplate *theargs;
-	struct _NclSymbol *thesym;
-	NclBuiltInProcWrapper theproc;
-} NclBuiltInProcInfo;
-
-typedef void (*NclBuiltInFuncWrapper)(
-#if	NhlNeedProto
-	NclStackEntry * /*return_data*/
-#endif
-);
-
-typedef struct _NclBuiltInFuncInfo {
-	int nargs;
-	struct _NclArgTemplate *theargs;
-	struct _NclSymbol *thesym;
-	NclBuiltInFuncWrapper thefunc;
-} NclBuiltInFuncInfo;
 
 
 #endif	/* _NCProcFuncs_h */

@@ -9,7 +9,7 @@
 #define PROC_CALL_OP			9
 #define JMP			10
 #define JMPFALSE 			11
-#define IF_OP 			12
+#define DUP_TOFS 			12
 #define DO_FROM_TO_OP			13
 #define DO_FROM_TO_STRIDE_OP			14
 #define DO_WHILE_OP			15
@@ -80,4 +80,6 @@
 #define INTRINSIC_FUNC_CALL			80
 #define INTRINSIC_PROC_CALL			81
 #define ASSIGN_VAR_VAR_OP			82
-#define NUM_OPERATORS				83
+#define NEW_OP 					83
+#define NEW_WM_OP				84
+#define NUM_OPERATORS				85

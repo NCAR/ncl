@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.14 1994-05-06 23:37:16 ethan Exp $
+ *      $Id: Execute.c,v 1.15 1994-05-28 00:12:45 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -60,7 +60,7 @@ NclExecuteReturnStatus _NclExecute
 	int *lptr;
 	char **fptr;
 	NclValue *machine;
-	NhlErrorTypes status = NhlNOERROR;
+	NhlErrorTypes estatus = NhlNOERROR;
 	static int level = 0;
 
 	machine = _NclGetCurrentMachine();
@@ -107,7 +107,7 @@ NclExecuteReturnStatus _NclExecute
 						data1.u.sub_rec->u.vec = data.u.vec_rec;
 					} else{
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. Vector subscripts must be integer");
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 					}
 				} else if(data.kind == NclStk_RANGEREC) {
 					if(((data.u.range_rec->start == NULL)
@@ -120,7 +120,7 @@ NclExecuteReturnStatus _NclExecute
 						data1.u.sub_rec->u.range = data.u.range_rec;
 					} else {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. Subscripts must be integer when not using coordinate indexing");
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 					}
 				}
 				if(*ptr == INT_SUBSCRIPT_OP) {
@@ -145,6 +145,8 @@ NclExecuteReturnStatus _NclExecute
 					}
 				}
 				_NclPush(data1);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 				break;
 			}
 			case DEFAULT_RANGE_OP : {
@@ -163,6 +165,11 @@ NclExecuteReturnStatus _NclExecute
 				stride = _NclPop();
 				finish = _NclPop();
 				start  = _NclPop();
+/*
+* These three values are destroyed later when processing the 
+* subscripts. This however presents a problem when a variable has
+* been used
+*/
 				data.kind = NclStk_RANGEREC;
 				data.u.range_rec = (NclRangeRec*)NclMalloc(
 					sizeof(NclRangeRec));
@@ -174,18 +181,18 @@ NclExecuteReturnStatus _NclExecute
 						if(start.u.data_obj !=NULL) {
 						data.u.range_rec->start = start.u.data_obj;
 						} else {
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						}
 						break;
 					case NclStk_VAR:
 						data.u.range_rec->start = 
 								_NclVarValueRead(start.u.data_var,NULL,NULL);
 						if(data.u.range_rec->start == NULL) {
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						}
 						break;
 					default:
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 						break;
 					}
 				}
@@ -197,17 +204,17 @@ NclExecuteReturnStatus _NclExecute
 						if(finish.u.data_obj !=NULL) {
 						data.u.range_rec->finish= finish.u.data_obj;
 						} else {
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						}
 						break;
 					case NclStk_VAR:
 						data.u.range_rec->finish= _NclVarValueRead(finish.u.data_var,NULL,NULL);
 						if(data.u.range_rec->finish == NULL) {
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						}
 						break;
 					default:
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 						break;
 					}
 				}
@@ -219,36 +226,38 @@ NclExecuteReturnStatus _NclExecute
 						if(stride.u.data_obj !=NULL) {
 						data.u.range_rec->stride= stride.u.data_obj;
 						} else {
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						}
 						break;
 					case NclStk_VAR:
 						data.u.range_rec->stride= _NclVarValueRead(stride.u.data_var,NULL,NULL);
 						if(data.u.range_rec->stride == NULL){
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						}
 						break;
 					default:
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 						break;
 					}
 				}
 				if((data.u.range_rec->start != NULL) &&
 					(data.u.range_rec->start->multidval.kind != SCALAR)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal Subscript. Only scalar values are allowed in subscript ranges.\n");
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				}
 				if((data.u.range_rec->finish != NULL) &&
 					(data.u.range_rec->finish->multidval.kind != SCALAR)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal Subscript. Only scalar values are allowed in subscript ranges.\n");
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				}
 				if((data.u.range_rec->stride != NULL) &&
 					(data.u.range_rec->stride->multidval.kind != SCALAR)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal Subscript. Only scalar values are allowed in subscript ranges.\n");
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				}
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 				break;
 			}
 			case SINGLE_INDEX_OP : {
@@ -261,20 +270,20 @@ NclExecuteReturnStatus _NclExecute
 				case NclStk_VAR: 
 					val = _NclVarValueRead(data.u.data_var,NULL,NULL);
 					if(val == NULL){
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 					}
 					break;
 				case NclStk_VAL:
 					if(data.u.data_obj != NULL) {
 						val = data.u.data_obj;
 					} else {
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 					}
 					break;
 				default:
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				}
-				if(status != NhlFATAL) {
+				if(estatus != NhlFATAL) {
 					if(val->multidval.kind == SCALAR) {
 						data1.kind = NclStk_RANGEREC;
 						data1.u.range_rec = 
@@ -293,7 +302,7 @@ NclExecuteReturnStatus _NclExecute
 						_NclPush(data1);
 					} else {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. Subscripts must be scalar or one dimensional vectors\n");
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 					}
 				}
 				break;
@@ -305,13 +314,13 @@ NclExecuteReturnStatus _NclExecute
 				
 				ret = _NclPlaceReturn(data);
 				if(ret< NhlWARNING) {
+					level--;
 					return(Ncl_ERRORS);
 				} else {
+					level--;
 					return(Ncl_STOPS);
 				}
 			}
-			case IF_OP :
-				break;
 			case NAMED_COORD_SUBSCRIPT_OP : 
 			case COORD_SUBSCRIPT_OP : {
 				NclStackEntry data;
@@ -338,7 +347,7 @@ NclExecuteReturnStatus _NclExecute
 						data1.u.sub_rec->u.range = data.u.range_rec;
 					} else {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. stride must always be integer regardless of whether coordinate or integer subscripting is being used\n");
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 					}
 				}
 				if(*ptr == COORD_SUBSCRIPT_OP) {
@@ -363,22 +372,28 @@ NclExecuteReturnStatus _NclExecute
 					}
 				}
 				_NclPush(data1);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 				break;
 			} 
 			case NEG_OP : {
 				NclStackEntry data;
 				NclStackEntry operand;
 				operand = _NclPop();
-				status = _NclMonoOp(operand,&data,NEG_OP);
+				estatus = _NclMonoOp(operand,&data,NEG_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 			break;
 			case NOT_OP : {
 				NclStackEntry data;
 				NclStackEntry operand;
 				operand = _NclPop();
-				status = _NclMonoOp(operand,&data,NOT_OP);
+				estatus = _NclMonoOp(operand,&data,NOT_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 			break;
 			case MOD_OP : {
@@ -387,8 +402,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,MOD_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,MOD_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 			break;
 			case OR_OP : {
@@ -397,8 +414,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,OR_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,OR_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 			break;
 			case AND_OP : {
@@ -407,8 +426,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,AND_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,AND_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 			break;
 			case XOR_OP : {
@@ -417,8 +438,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,XOR_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,XOR_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 			break;
 			case LTSEL_OP : {
@@ -427,8 +450,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,LTSEL_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,LTSEL_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 			break;
 			case GTSEL_OP : {
@@ -437,8 +462,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,GTSEL_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,GTSEL_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 			break;
 			case PLUS_OP :
@@ -448,8 +475,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status =  _NclDualOp(lhs,rhs,&data,PLUS_OP);
+				estatus =  _NclDualOp(lhs,rhs,&data,PLUS_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 				break;
 			case MINUS_OP :
@@ -459,8 +488,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,MINUS_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,MINUS_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 				break;
 			case MUL_OP :
@@ -470,8 +501,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,MUL_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,MUL_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 				break;
 			case MAT_OP :
@@ -481,8 +514,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,MAT_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,MAT_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 				break;
 			case DIV_OP :
@@ -492,8 +527,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,DIV_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,DIV_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 				break;
 			case EXP_OP :{
@@ -502,8 +539,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,EXP_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,EXP_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 			break;
 			case LE_OP : {
@@ -512,8 +551,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,LE_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,LE_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 			break;
 			case GE_OP : {
@@ -522,8 +563,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,GE_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,GE_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 			break;
 			case GT_OP : {
@@ -532,8 +575,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,GT_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,GT_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 			break;
 			case LT_OP : {
@@ -542,8 +587,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,LT_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,LT_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 			break;
 			case EQ_OP : {
@@ -552,8 +599,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,EQ_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,EQ_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 			break;
 			case NE_OP : {
@@ -562,8 +611,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry rhs;
 				lhs = _NclPop();
 				rhs = _NclPop();
-				status = _NclDualOp(lhs,rhs,&data,NE_OP);
+				estatus = _NclDualOp(lhs,rhs,&data,NE_OP);
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 			break;
 /***************************
@@ -571,13 +622,16 @@ NclExecuteReturnStatus _NclExecute
 ***************************/
 			case FUNC_CALL_OP: {
 				NclSymbol *func = NULL;
+				int caller_level;
 
 				ptr++;lptr++;fptr++;
 				func = (NclSymbol*)(*ptr);
 
-				_NclFinishFrame();
-				
-				status = _NclFuncCallOp(func);
+				caller_level = _NclFinishFrame();
+			/*
+			* Doesn't leave anything on the stack if an error has occured
+			*/	
+				estatus = _NclFuncCallOp(func,caller_level);
 				break;
 			}
 			case FPDEF:
@@ -585,19 +639,22 @@ NclExecuteReturnStatus _NclExecute
 				break;
 			case JMP:
 			{
+				unsigned long offset;
 				ptr++;lptr++;fptr++;
-/*
-* Needs to be substracted by one so ptr++ is valid
-*/
-				ptr = machine + (*ptr - 1);		
+				offset = *ptr;	
+				ptr = machine + offset - 1;
+				lptr = _NclGetCurrentLineRec() + offset - 1;
+				fptr = _NclGetCurrentFileNameRec() + offset - 1;
 				break;
 			}
 			case ARRAY_LIT_OP :
 			{
 				NclStackEntry data;
 				ptr++;lptr++;fptr++;
-				status = _NclBuildArray((int)*ptr,&data);
+				estatus = _NclBuildArray((int)*ptr,&data);
 				_NclPush(data);
+				if(estatus == NhlFATAL)
+					_NclCleanUpStack(1);
 				break;
 			}
 			case PUSH_STRING_LIT_OP :
@@ -643,42 +700,156 @@ NclExecuteReturnStatus _NclExecute
 				_NclPush(data);
 				break;
 			}
-			case JMPFALSE :
+			case JMPFALSE : {
+				NclStackEntry data;
+				NclMultiDValData val;
+				unsigned long offset;
+
 				ptr++;lptr++;fptr++;
+				offset = *ptr;
+				data = _NclPop();
+				switch(data.kind) {
+				case NclStk_VAL:
+					val = data.u.data_obj;	
+					break;
+				case NclStk_VAR:
+					val = _NclVarValueRead(data.u.data_var,NULL,NULL);
+					break;
+				default:
+					estatus = NhlFATAL;
+					break;
+				}
+				if((val->obj.obj_type_mask & Ncl_MultiDVallogicalData)&&(val->multidval.kind == SCALAR)) {
+					if(!(*(logical*)val->multidval.val)) {
+						machine = _NclGetCurrentMachine();
+						ptr = machine + offset - 1;
+						lptr = _NclGetCurrentLineRec() + offset - 1;
+						fptr = _NclGetCurrentFileNameRec() + offset - 1;
+					}
+					if(val->obj.status != PERMANENT) 
+						_NclDestroyObj((NclObj)val);
+				} else {
+					if(val->obj.status != PERMANENT) 
+						_NclDestroyObj((NclObj)val);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"If: if statments require SCALAR logical values");
+					estatus = NhlFATAL;
+				}
 				break;
-			case SET_OBJ_OP :
+			}
+			case SET_OBJ_OP : {
+				NclStackEntry data;
+				NclMultiDValData val;
+				int nres;
+
+				data = _NclPop();
+				if(data.kind == NclStk_VAL) {
+					val = data.u.data_obj;
+				} else if(data.kind == NclStk_VAR) {
+					val = _NclVarValueRead(data.u.data_var,NULL,NULL);
+				}
 				ptr++;lptr++;fptr++;
+				nres = (int)*ptr;
+				if(val == NULL) {
+					_NclCleanUpStack(2*nres);
+					estatus = NhlFATAL;
+				} else {
+					estatus = _NclSetHLUObjOp(val,nres);
+				}
+			}
 				break;
 			case GET_OBJ_OP :
 				ptr++;lptr++;fptr++;
 				break;
 			case PROC_CALL_OP:{
 				NclSymbol *proc = NULL;
+				int caller_level;
 
 				ptr++;lptr++;fptr++;
 				proc = (NclSymbol*)(*ptr);
 			
-				_NclFinishFrame();	
-				status = _NclProcCallOp(proc);
+				caller_level = _NclFinishFrame();	
+				estatus = _NclProcCallOp(proc,caller_level);
 			}
 				break;
 			case BPROC_CALL_OP:
 				ptr++;lptr++;fptr++;
 				break;
+			case INTRINSIC_FUNC_CALL:
+			{
+				int i;
+				NclFrame *previous_fp;
+				int caller_level;
+				ptr++;lptr++;fptr++;
+	
+/*
+* This is not going to work because nothing is done to unpack the
+* arguments they are just popped now!!!!!!
+* 5/20 this was taken care of by modifiying the CONVERT_TO_LOCAL operator.
+*/
+				caller_level = _NclFinishFrame();	
+				if(((NclSymbol*)*ptr)->u.bfunc != NULL) {
+					(*((NclSymbol*)*ptr)->u.bfunc->thefunc)();
+/*
+* should actually map values back
+*/
+					previous_fp = _NclLeaveFrame(caller_level);
+					_NclRemapIntrParameters(((NclSymbol*)*ptr)->u.bfunc->nargs,
+							previous_fp,FUNC_CALL_OP);
+
+				        for(i = 0 ; i < (sizeof(NclFrame)/sizeof(NclStackEntry)) - 1; i++) {
+						(void)_NclPop();
+					}
+
+/*
+					for(i = 0;i<((NclSymbol*)*ptr)->u.bfunc->nargs; i++) {
+						data = _NclPop();
+						switch(data.kind) {
+						case NclStk_VAR:
+							if((data.u.data_var != NULL)&&(data.u.data_var->obj.status != PERMANENT)){
+								_NclDestroyObj((NclObj)data.u.data_obj);
+							}
+							break;
+						case NclStk_VAL:
+							if((data.u.data_obj != NULL)&&(data.u.data_obj->obj.status != PERMANENT)){
+								_NclDestroyObj((NclObj)data.u.data_obj);
+							}
+							break;
+						default:
+							break;
+						}
+	
+					}
+*/
+				} else {
+					(void)_NclLeaveFrame(caller_level);
+				}
+				ptr++;lptr++;fptr++;
+			}
+				break;
 			case INTRINSIC_PROC_CALL:
 			{
 				int i;
-				NclStackEntry data;
+				NclFrame *previous_fp;
+				int caller_level;
 				ptr++;lptr++;fptr++;
 /*
 * This is not going to work because nothing is done to unpack the
 * arguments they are just popped now!!!!!!
+* 5/20 this was taken care of by modifiying the CONVERT_TO_LOCAL operator.
 */
+				caller_level = _NclFinishFrame();	
 				if(((NclSymbol*)*ptr)->u.bproc != NULL) {
 					(*((NclSymbol*)*ptr)->u.bproc->theproc)();
 /*
 * should actually map values back
 */
+					previous_fp = _NclLeaveFrame(caller_level);
+					_NclRemapIntrParameters(((NclSymbol*)*ptr)->u.bfunc->nargs,
+							previous_fp,PROC_CALL_OP);
+				        for(i = 0 ; i < (sizeof(NclFrame)/sizeof(NclStackEntry)) ; i++) {
+						(void)_NclPop();
+					}
+/*
 					for(i = 0;i<((NclSymbol*)*ptr)->u.bproc->nargs; i++) {
 						data = _NclPop();
 						switch(data.kind) {
@@ -697,6 +868,9 @@ NclExecuteReturnStatus _NclExecute
 						}
 	
 					}
+*/
+				} else {
+					(void)_NclLeaveFrame(caller_level);
 				}
 				ptr++;lptr++;fptr++;
 			}
@@ -704,8 +878,129 @@ NclExecuteReturnStatus _NclExecute
 			case BFUNC_CALL_OP:
 				ptr++;lptr++;fptr++;
 				break;
-			case DO_FROM_TO_OP :
+			case DUP_TOFS: {
+				NclStackEntry data;
+				NclStackEntry data_dup;
+				
+				data = _NclPop();
+				switch(data.kind) {
+				case NclStk_VAL:
+					data_dup.kind = data.kind;
+					data_dup.u.data_obj = _NclCopyVal(data.u.data_obj,NULL);
+					_NclPush(data);
+					_NclPush(data_dup);
+					break;
+				case NclStk_VAR:
+					data_dup.kind = data.kind;
+					data_dup.u.data_var = _NclCopyVar(data.u.data_var,NULL,NULL);
+					_NclPush(data);
+					_NclPush(data_dup);
+					break;
+				default:
+					estatus = NhlFATAL;
+					break;
+				}
+				break;
+			}
+			case DO_FROM_TO_OP : {
+				NclStackEntry data;
+				NclStackEntry* data_ptr;
+				unsigned long jmp_off;
+				NclExecuteReturnStatus rtst;
+				int done = 0;
+				NclMultiDValData val;
+				NclSymbol *sym;
+
+				
+
 				ptr++;lptr++;fptr++;
+				jmp_off = *ptr;
+				
+				data = _NclPop();
+				if(data.kind == NclStk_VAL) {
+					switch(data.kind) {
+					case NclStk_VAL:
+						val = data.u.data_obj;
+						break;
+					case NclStk_VAR:
+						val = _NclVarValueRead(data.u.data_var,NULL,NULL);
+						break;
+					default:
+						estatus = NhlFATAL;
+						break;
+					}
+					if((val->obj.obj_type_mask & Ncl_MultiDVallogicalData)&&(val->multidval.kind == SCALAR)) {
+						if(!*(logical*)val->multidval.val) {
+							done = 1;
+						}
+					} 
+					switch(data.kind) {
+					case NclStk_VAL:
+						if(data.u.data_obj->obj.status != PERMANENT) {
+							_NclDestroyObj((NclObj)data.u.data_obj);
+						}
+						break;
+					case NclStk_VAR:
+						if(data.u.data_var->obj.status != PERMANENT) {
+							_NclDestroyObj((NclObj)data.u.data_var);
+						}
+						break;
+					default:
+						break;
+					}
+					while(!done) {
+						rtst = _NclExecute(jmp_off);
+						if(rtst != Ncl_ERRORS) {
+							data = _NclPop();
+							switch(data.kind) {
+							case NclStk_VAL:
+								val = data.u.data_obj;
+							break;
+							case NclStk_VAR:
+								val = _NclVarValueRead(data.u.data_var,NULL,NULL);
+							break;
+							default:
+								estatus = NhlFATAL;
+							break;
+							}
+							if((val->obj.obj_type_mask & Ncl_MultiDVallogicalData)&&(val->multidval.kind == SCALAR)) {
+								if(!*(logical*)val->multidval.val) {
+									done = 1;
+								}
+							} 
+							switch(data.kind) {
+							case NclStk_VAL:
+								if(data.u.data_obj->obj.status != PERMANENT) {
+									_NclDestroyObj((NclObj)data.u.data_obj);
+								}
+								break;
+							case NclStk_VAR:
+								if(data.u.data_var->obj.status != PERMANENT) {
+									_NclDestroyObj((NclObj)data.u.data_var);
+								}
+								break;
+							default:
+								break;
+							}
+						} else {
+							done = 1;
+							estatus = NhlFATAL;
+						}
+					}
+				}
+				ptr++,lptr++,fptr++;
+				sym = (NclSymbol*)*ptr;
+				data_ptr = _NclRetrieveRec(sym,DONT_CARE);
+				_NclDestroyObj((NclObj)data_ptr->u.data_var);
+				ptr++,lptr++,fptr++;
+				sym = (NclSymbol*)*ptr;
+				data_ptr = _NclRetrieveRec(sym,DONT_CARE);
+				_NclDestroyObj((NclObj)data_ptr->u.data_var);
+				ptr++,lptr++,fptr++;
+				sym = (NclSymbol*)*ptr;
+				data_ptr = _NclRetrieveRec(sym,DONT_CARE);
+				_NclDestroyObj((NclObj)data_ptr->u.data_var);
+			}
 				break;
 			case DO_FROM_TO_STRIDE_OP :
 				ptr++;lptr++;fptr++;
@@ -724,7 +1019,7 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				thesym = (NclSymbol*)*ptr;
 		
-				var = _NclRetrieveRec(thesym);
+				var = _NclRetrieveRec(thesym,READ_IT);
 
 				data = _NclPop();
 				switch(data.kind) {
@@ -737,7 +1032,7 @@ NclExecuteReturnStatus _NclExecute
 				default:
 					data_md = NULL;
 /* ---------> Error message here < +++++++++ */				
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 					break;
 				}
 				if((data_md != NULL)&&(data_md->obj.obj_type_mask & valid_dims)&&(data_md->multidval.kind == SCALAR)&&(var!= NULL)&&(var->u.data_var != NULL)) {	
@@ -762,13 +1057,13 @@ NclExecuteReturnStatus _NclExecute
 						dim_num
 						);
 					if(data.u.data_obj == NULL) {
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 					} else {
 						data.kind = NclStk_VAL;
 						_NclPush(data);
 					}
 				} else {
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				}
 			}
 			break;
@@ -789,7 +1084,7 @@ NclExecuteReturnStatus _NclExecute
 
 				ptr++;lptr++;fptr++;
 				thesym = (NclSymbol*)*ptr;
-				data_var =  _NclRetrieveRec(thesym);
+				data_var =  _NclRetrieveRec(thesym,WRITE_IT);
 				dim_ref = _NclPop();
 				dim_expr = _NclPop();
 				
@@ -826,7 +1121,7 @@ NclExecuteReturnStatus _NclExecute
 							NCL_long);
 							
 					} else {
-						dim_name = *(char**)dim_expr_md->multidval.val;
+						dim_name = NrmQuarkToString(*(string*)dim_expr_md->multidval.val);
 					}
 					if((dim_ref_md->multidval.data_type != NCL_long)) {
 						_NclScalarCoerce(
@@ -839,8 +1134,8 @@ NclExecuteReturnStatus _NclExecute
 						dim_num= *(long*)dim_ref_md->multidval.val;
 					}
 
-					if(status != NhlFATAL) {
-					status = _NclWriteDim(
+					if(estatus != NhlFATAL) {
+					estatus = _NclWriteDim(
 						data_var->u.data_var,
 						dim_num,
 						dim_name);
@@ -852,10 +1147,44 @@ NclExecuteReturnStatus _NclExecute
 						_NclDestroyObj((NclObj)dim_ref_md);
 					}
 				} else {
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				}
 			}
 			break;
+			case NEW_WM_OP:
+			case NEW_OP:
+			{	
+				NclStackEntry size_expr;
+				NclStackEntry missing_expr;
+				NclSymbol *data_type;
+
+				if(*ptr == NEW_WM_OP) {
+					missing_expr = _NclPop();
+				} else {
+					missing_expr.kind = NclStk_NOVAL;
+					missing_expr.u.data_obj = NULL;
+				}
+				size_expr = _NclPop();
+				ptr++; lptr++; fptr++;
+				data_type = (NclSymbol*)*ptr;
+				estatus = _NclNewOp(data_type,size_expr,missing_expr);
+				switch(size_expr.kind) {
+				case NclStk_VAL:
+					if(size_expr.u.data_obj->obj.status != PERMANENT) {	
+						_NclDestroyObj((NclObj)size_expr.u.data_obj);
+					}
+					break;
+				case NclStk_VAR:
+					if(size_expr.u.data_var->obj.status != PERMANENT) {	
+						_NclDestroyObj((NclObj)size_expr.u.data_var);
+					}
+					break;
+				default:
+					break;
+				}
+				
+				break;
+			}
 /***************************
 * Two Operand Instructions *
 ***************************/			
@@ -873,19 +1202,23 @@ NclExecuteReturnStatus _NclExecute
 
 				ptr++;lptr++;fptr++;
 				sym = (NclSymbol*)*ptr;
-				var = _NclRetrieveRec(sym);
+				var = _NclRetrieveRec(sym,READ_IT);
 				ptr++;lptr++;fptr++;
 				nsubs = *ptr;
 				if(var->u.data_var == NULL) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is undefined",sym->name);
-					status = NhlFATAL;
+					_NclCleanUpStack(nsubs);
+					estatus = NhlFATAL;
 				} else if(nsubs == 0) {
 					if(var != NULL) {
 						_NclPush(*var);
+					} else {
+						estatus = NhlFATAL;
 					}
 				} else if(nsubs != var->u.data_var->var.n_dims) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",nsubs,var->u.data_var->var.n_dims);
-					status = NhlFATAL;
+					estatus = NhlFATAL;
+					_NclCleanUpStack(nsubs);
 				} else {
 					sel_ptr = (NclSelectionRecord*)NclMalloc
 						(sizeof(NclSelectionRecord));
@@ -914,22 +1247,22 @@ NclExecuteReturnStatus _NclExecute
 						}
 						_NclFreeSubRec(data.u.sub_rec);
 						if(ret < NhlWARNING) {
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						}
 						if(!dim_is_ref[(sel_ptr->selection[nsubs - i - 1]).dim_num]) {
 							dim_is_ref[(sel_ptr->selection[nsubs - i - 1]).dim_num] = 1;
 						} else {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in subscript # %d,dimension is referenced more than once",i);
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						}
 					} 
-					if(status != NhlFATAL) {
+					if(estatus != NhlFATAL) {
 						data1.kind = NclStk_VAR;
 						data1.u.data_var = _NclVarRead(var->u.data_var,sel_ptr);
 						if(data1.u.data_var != NULL) {
 							_NclPush(data1);
 						} else {
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						}
 					}
 				}
@@ -953,13 +1286,13 @@ NclExecuteReturnStatus _NclExecute
 			ptr++;lptr++;fptr++;
 			nsubs = *ptr;
 
-			lhs_var = _NclRetrieveRec(sym);
-			if((status != NhlFATAL)&&(lhs_var != NULL)) {
+			lhs_var = _NclRetrieveRec(sym,WRITE_IT);
+			if((estatus != NhlFATAL)&&(lhs_var != NULL)) {
 				if(lhs_var->kind == NclStk_NOVAL) {
 					if(nsubs != 0) {
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Assign: %s is undefined, can not subscript an undefined variable",sym->name);
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 						_NclCleanUpStack(nsubs+1);
 					} else {
 						rhs = _NclPop();	
@@ -984,7 +1317,7 @@ NclExecuteReturnStatus _NclExecute
 									lhs_var->kind = NclStk_VAR;
 								} else {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not create variable (%s)",sym->name);
-									status = NhlWARNING;
+									estatus = NhlWARNING;
 									lhs_var->kind = NclStk_NOVAL;
 								}
 							} 
@@ -1014,24 +1347,24 @@ NclExecuteReturnStatus _NclExecute
 									lhs_var->kind = NclStk_VAR;
 								} else {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not create variable (%s)",sym->name);
-									status = NhlWARNING;
+									estatus = NhlWARNING;
 									lhs_var->kind = NclStk_NOVAL;
 								}
 							} else {
-								status = NhlFATAL;
+								estatus = NhlFATAL;
 							} 
 							if(rhs.u.data_var->obj.status != PERMANENT) {
 								_NclDestroyObj((NclObj)rhs.u.data_var);
 							}
 						} else {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal right-hand side type for assignment");
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						}
 					}
 				} else if(lhs_var->kind == NclStk_VAR) {
 					if((nsubs != lhs_var->u.data_var->var.n_dims)&&(nsubs != 0)) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts (%d) and number of dimensions (%d) do not match for variable (%s)",nsubs,lhs_var->u.data_var->var.n_dims,sym->name);
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 						_NclCleanUpStack(nsubs+1);
 					}
 					if(nsubs != 0) {
@@ -1062,11 +1395,11 @@ NclExecuteReturnStatus _NclExecute
 						}
 						_NclFreeSubRec(data.u.sub_rec);
 						if(ret < NhlWARNING) {
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						}
 					}
 					rhs = _NclPop();	
-					if(status != NhlFATAL) {
+					if(estatus != NhlFATAL) {
 						if(rhs.kind == NclStk_VAL) {
 							rhs_md = rhs.u.data_obj;
 							if(rhs_md != NULL) {
@@ -1075,10 +1408,10 @@ NclExecuteReturnStatus _NclExecute
 									_NclDestroyObj((NclObj)rhs_md);
 								}
 								if(ret <= NhlWARNING) {
-									status = ret;
+									estatus = ret;
 								}
 							} else {
-								status = NhlFATAL;
+								estatus = NhlFATAL;
 							}
 						} else if(rhs.kind == NclStk_VAR) {
 /*
@@ -1086,18 +1419,18 @@ NclExecuteReturnStatus _NclExecute
 * _NclAssignToVar checks the missing values and it has
 * to visit each element anyways
 */
-							status = _NclAssignVarToVar(rhs.u.data_var,sel_ptr,rhs.u.data_var,NULL);
+							estatus = _NclAssignVarToVar(rhs.u.data_var,sel_ptr,rhs.u.data_var,NULL);
 							if(rhs.u.data_var->obj.status != PERMANENT) {
 								_NclDestroyObj((NclObj)rhs.u.data_var);
 							}
 						} else {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal right-hand side type for assignment");
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						}
 					}
 				} else {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment not supported for left-hand type");
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				}
 
 			} else {
@@ -1112,10 +1445,10 @@ NclExecuteReturnStatus _NclExecute
 				proc = (NclSymbol*)(*ptr);
 				ptr++;lptr++;fptr++;
 				offset = (int)(*ptr);
-				if((proc->u.procfunc != NULL)&&(proc->u.procfunc->thescope != NULL)&&(offset >= 0)) {
-					_NclPushFrame(proc->u.procfunc->thescope,offset,proc->u.procfunc->nargs);
+				if((proc->u.procfunc != NULL)&&(offset >= 0)) {
+					_NclPushFrame(proc,offset);
 				} else {
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				}
 				break;
 			}
@@ -1137,11 +1470,8 @@ NclExecuteReturnStatus _NclExecute
 				arg_num = (int)(*ptr);
 
 				switch(thesym->type) {
-/*
-*				case IPROC:
-*				case IFUNC:
-* Intrinsic functions don't have local variables.
-*/
+				case IPROC:
+				case IFUNC:
 				case FUNC:
 				case PROC:
 					pfinfo = (NclGenProcFuncInfo*)thesym->u.bproc;
@@ -1157,41 +1487,45 @@ NclExecuteReturnStatus _NclExecute
 					break;
 				}
 				if(pfinfo == NULL) {
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				} else if(arg_num >= pfinfo->nargs) {
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				} else {
-					argsym = pfinfo->theargs[arg_num].arg_sym;
 /*
 *---> Need to look into allowing HLU objects to be used as parameters
 * in which case this will not be enough also files <----
 */
-					obj_type_arg = _NclKeywordToObjType(pfinfo->theargs[arg_num].arg_data_type);
-					if(obj_type_arg == Ncl_Obj) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal type for argument in argument (%d) of (%s)",arg_num,thesym->name);
-						status = NhlFATAL;
-					}
 /*
 * Check dimensions first since it isn't expensive
 */		
 					data = _NclPop();
 					switch(data.kind) {
 					case NclStk_VAR: {
+						if(pfinfo->theargs[arg_num].arg_data_type != NULL) {
+							obj_type_arg = _NclKeywordToObjType(pfinfo->theargs[arg_num].arg_data_type);
+							if(obj_type_arg == Ncl_Obj) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal type for argument in argument (%d) of (%s)",arg_num,thesym->name);
+								estatus = NhlFATAL;
+							}
+                                                	obj_type_param = _NclGetVarRepValue(data.u.data_var);
+						} else {
+                                                	obj_type_arg = obj_type_param = _NclGetVarRepValue(data.u.data_var);
+						}
 
 						if(pfinfo->theargs[arg_num].is_dimsizes) {
 							if(pfinfo->theargs->n_dims != data.u.data_var->var.n_dims) {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions in parameter (%d) of (%s) does not match specification",arg_num,thesym->name);
-								status = NhlFATAL;
+								estatus = NhlFATAL;
 
 							} else {
 								for(i = 0; i< pfinfo->theargs->n_dims; i++) {
 									if(pfinfo->theargs->dim_sizes[i] != -1) {
 										if(pfinfo->theargs->dim_sizes[i] != data.u.data_var->var.dim_info[i].dim_size) {
 											NhlPError(NhlFATAL,NhlEUNKNOWN,"Size of dimension (%d) of argument (%d) does not match specification in (%s) function definition",i,arg_num,thesym->name);
-											status = NhlFATAL;
+											estatus = NhlFATAL;
 										}
 									}
-									if(status == NhlFATAL) {
+									if(estatus == NhlFATAL) {
 										break;
 									} else {
 										i++;
@@ -1199,72 +1533,84 @@ NclExecuteReturnStatus _NclExecute
 								}
 							}
 						}
+                                                if(!(obj_type_param & obj_type_arg)){
+                                                        tmp_md = _NclCoerceVar(data.u.data_var,obj_type_arg,NULL);
+                                                        if(tmp_md == NULL) {
+                                                                NhlPError(NhlFATAL,NhlEUNKNOWN,"Argument type mismatch on argument (%d) of (%s) can not coerce",arg_num,thesym->name);
+                                                                estatus = NhlFATAL;
+                                                        }
+/*
+* Attention: missing value may be different type than variable data until code is put here to fix it
+*/
+						} else {
+							tmp_md = NULL;
+						}
+                                                _NclAddObjToParamList((NclObj)data.u.data_var,arg_num);
+						if((thesym->type != IPROC) && (thesym->type != IFUNC)&&(estatus != NhlFATAL)) {
 /*
 * Variable subsections also point to the symbol of the main variable so the AddObjToParamList just
 * stores the symbol rather than the pointer to variable record
 */
-						_NclAddObjToParamList((NclObj)data.u.data_var,arg_num);
-						if(status != NhlFATAL) {
-							obj_type_param = _NclGetVarRepValue(data.u.data_var);
-							if(!(obj_type_param & obj_type_arg)){
-								tmp_md = _NclCoerceVar(data.u.data_var,obj_type_arg,NULL);
-								if(tmp_var == NULL) {
-									NhlPError(NhlFATAL,NhlEUNKNOWN,"Argument type mismatch on argument (%d) of (%s) can not coerce",arg_num,thesym->name);
-									status = NhlFATAL;
-								}
-/*
-* Attention: missing value may be different type than variable data until code is put here to fix it
-*/
+                                                	argsym = pfinfo->theargs[arg_num].arg_sym;
+							if(tmp_md != NULL) {
 								tmp_var = _NclVarCreate(NULL,data.u.data_var->obj.class_ptr,
-										Ncl_Var,
-										0,
-										argsym,
-										tmp_md,
-										data.u.data_var->var.dim_info,
-										data.u.data_var->var.att_id,
-										data.u.data_var->var.coord_vars,
-										PARAM,
-										argsym->name);
-										
-							} else {
-								tmp_var = _NclVarCreate(NULL,data.u.data_var->obj.class_ptr,
-										data.u.data_var->obj.obj_type,
-										data.u.data_var->obj.obj_type_mask,
-										argsym,
-										(NclMultiDValData)_NclGetObj(data.u.data_var->var.thevalue_id),
-										data.u.data_var->var.dim_info,
-										data.u.data_var->var.att_id,
-										data.u.data_var->var.coord_vars,
-										PARAM,
-										argsym->name);
-							}
-/*
-* Need to put ancestor of local variable in the parmeter list so it can be unpacked later
-*/
+                                                                                Ncl_Var,
+                                                                                0,
+                                                                                argsym,
+                                                                                tmp_md,
+                                                                                data.u.data_var->var.dim_info,
+                                                                                data.u.data_var->var.att_id,
+                                                                                data.u.data_var->var.coord_vars,
+                                                                                PARAM,
+                                                                                argsym->name);
 
-						}
-						if(status != NhlFATAL) {
-							data.kind = NclStk_VAR;
-							data.u.data_var = tmp_var;
-							_NclPush(data);
+                                                        } else {
+                                                                tmp_var = _NclVarCreate(NULL,data.u.data_var->obj.class_ptr,
+                                                                                data.u.data_var->obj.obj_type,
+                                                                                data.u.data_var->obj.obj_type_mask,
+                                                                                argsym,
+                                                                                (NclMultiDValData)_NclGetObj(data.u.data_var->var.thevalue_id),
+                                                                                data.u.data_var->var.dim_info,
+                                                                                data.u.data_var->var.att_id,
+                                                                                data.u.data_var->var.coord_vars,
+                                                                                PARAM,
+                                                                                argsym->name);
+                                                        }
+                                                	if(estatus != NhlFATAL) {
+                                                        	data.kind = NclStk_VAR;
+                                                        	data.u.data_var = tmp_var;
+                                                        	_NclPush(data);
+                                                	}
+						} else if(estatus != NhlFATAL){
+                                                        _NclPush(data);
 						}
 					}
 					break;
 					case NclStk_VAL: {
+						if(pfinfo->theargs[arg_num].arg_data_type != NULL) {
+							obj_type_arg = _NclKeywordToObjType(pfinfo->theargs[arg_num].arg_data_type);
+							if(obj_type_arg == Ncl_Obj) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal type for argument in argument (%d) of (%s)",arg_num,thesym->name);
+								estatus = NhlFATAL;
+							}
+                                                	obj_type_param =((NclMultiDValData)data.u.data_obj)->obj.obj_type;
+						} else {
+                                                	obj_type_arg = obj_type_param =((NclMultiDValData)data.u.data_obj)->obj.obj_type;
+						}
 						if(pfinfo->theargs[arg_num].is_dimsizes) {
-							if(pfinfo->theargs->n_dims != data.u.data_obj->multidval.n_dims) {
+							if(pfinfo->theargs[arg_num].n_dims != data.u.data_obj->multidval.n_dims) {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions in parameter (%d) of (%s) does not match specification",arg_num,thesym->name);
-								status = NhlFATAL;
+								estatus = NhlFATAL;
 
 							} else {
 								for(i = 0; i< pfinfo->theargs->n_dims; i++) {
 									if(pfinfo->theargs->dim_sizes[i] != -1) {
 										if(pfinfo->theargs->dim_sizes[i] != data.u.data_obj->multidval.dim_sizes[i]) {
 											NhlPError(NhlFATAL,NhlEUNKNOWN,"Size of dimension (%d) of argument (%d) does not match specification in (%s) function definition",i,arg_num,thesym->name);
-											status = NhlFATAL;
+											estatus = NhlFATAL;
 										}
 									}
-									if(status == NhlFATAL) {
+									if(estatus == NhlFATAL) {
 										break;
 									} else {
 										i++;
@@ -1272,53 +1618,50 @@ NclExecuteReturnStatus _NclExecute
 								}
 							}
 						}
-						_NclAddObjToParamList((NclObj)data.u.data_obj,arg_num);
-                                                if(status != NhlFATAL) {
-                                                        obj_type_param =((NclMultiDValData)data.u.data_obj)->obj.obj_type;
-                                                        if(!(obj_type_param & obj_type_arg)){
-                                                                tmp_md = _NclCoerceData(data.u.data_obj,obj_type_arg,NULL);
-                                                                if(tmp_var == NULL) {
-                                                                        NhlPError(NhlFATAL,NhlEUNKNOWN,"Argument type mismatch on argument (%d) of (%s) can not coerce",arg_num,thesym->name);
-                                                                        status = NhlFATAL;
-                                                                }
+                                                if(!(obj_type_param & obj_type_arg)){
+                                                	tmp_md = _NclCoerceData(data.u.data_obj,obj_type_arg,NULL);
+                                                        if(tmp_md == NULL) {
+                                                        	NhlPError(NhlFATAL,NhlEUNKNOWN,"Argument type mismatch on argument (%d) of (%s) can not coerce",arg_num,thesym->name);
+                                                        	estatus = NhlFATAL;
+                                                        } 
 /*
 * Attention: missing value may be different type than variable data until code is put here to fix it
 */
-                                                                tmp_var = _NclVarCreate(
-										NULL,NULL,
-                                                                                Ncl_Var,
-                                                                                0,
-                                                                                argsym,
-                                                                                tmp_md,
-                                                                                NULL,
-                                                                                -1,
-                                                                                NULL,
-                                                                                PARAM,
-                                                                                argsym->name);
+						} else {
+							tmp_md = data.u.data_obj;
+						}
+						if((thesym->type != IPROC)&&(thesym->type != IFUNC)&&(estatus != NhlFATAL)) {
+							argsym = pfinfo->theargs[arg_num].arg_sym;
+							_NclAddObjToParamList((NclObj)data.u.data_obj,arg_num);
+                                                	if(estatus != NhlFATAL) {
 
-                                                        } else {
-                                                                tmp_var = _NclVarCreate(
-										NULL,NULL,
-                                                                                Ncl_Var,
-                                                                                0,
-                                                                                argsym,
-                                                                                data.u.data_obj,
-                                                                                NULL,
-                                                                                -1,
-                                                                                NULL,
-                                                                                PARAM,
-                                                                                argsym->name);
-                                                        }
+                                                        	tmp_var = _NclVarCreate(
+									NULL,NULL,
+                                                                	Ncl_Var,
+                                                                	0,
+                                                                	argsym,
+                                                                	tmp_md,
+                                                                	NULL,
+                                                                	-1,
+                                                                	NULL,
+                                                                	PARAM,
+                                                                	argsym->name);
+								if(tmp_md->obj.status != PERMANENT) {
+									_NclDestroyObj((NclObj)tmp_md);
+								}
 /*
 * Need to put ancestor of local variable in the parmeter list so it can be unpacked later
 */
 
-                                                }
-                                                if(status != NhlFATAL) {
-                                                        data.kind = NclStk_VAR;
-                                                        data.u.data_var = tmp_var;
-                                                        _NclPush(data);
-                                                }
+                                                	}
+                                                	if(estatus != NhlFATAL) {
+                                                        	data.kind = NclStk_VAR;
+                                                        	data.u.data_var = tmp_var;
+                                                        	_NclPush(data);
+                                                	}
+						} else if(estatus != NhlFATAL) {
+                                                       	_NclPush(data);
+						}
 					}
 					break;
 					case NclStk_FILE:
@@ -1332,9 +1675,74 @@ NclExecuteReturnStatus _NclExecute
 				}
 				break;
 			}
-			case DO_WHILE_OP :
+			case DO_WHILE_OP : {
+				unsigned long cond_off;
+				unsigned long block_off;
+				int done = 0;
+				NclStackEntry data;
+				NclMultiDValData val;
+				NclExecuteReturnStatus rtst;
+
 				ptr++;lptr++;fptr++;
+				cond_off = *ptr;
 				ptr++;lptr++;fptr++;
+				block_off = *ptr;
+				while( !done) {
+					rtst = _NclExecute(cond_off);
+					if(rtst != Ncl_ERRORS) {
+						data = _NclPop();
+						switch(data.kind) {
+						case NclStk_VAL:
+							val = data.u.data_obj;
+						break;
+						case NclStk_VAR:
+							val = _NclVarValueRead(data.u.data_var,NULL,NULL);
+						break;
+						default:
+							estatus = NhlFATAL;
+						break;
+						}
+						if((val->obj.obj_type_mask & Ncl_MultiDVallogicalData)&&(val->multidval.kind == SCALAR)) {
+							if(!*(logical*)val->multidval.val) {
+								done = 1;
+							}
+						} 
+						switch(data.kind) {
+						case NclStk_VAL:
+							if(data.u.data_obj->obj.status != PERMANENT) {
+								_NclDestroyObj((NclObj)data.u.data_obj);
+							}
+							break;
+						case NclStk_VAR:
+							if(data.u.data_var->obj.status != PERMANENT) {
+								_NclDestroyObj((NclObj)data.u.data_var);
+							}
+							break;
+						default:
+							break;
+						}
+						if((estatus != NhlFATAL)&&(!done)){
+							rtst = _NclExecute(block_off);
+							switch(rtst) {
+							case Ncl_ERRORS: 
+								done = 1;
+								estatus = NhlFATAL;
+								break;
+							case Ncl_BREAKS:
+								done = 1;
+								break;
+							default:
+								break;
+							}
+						}  else {
+							done = 1;
+						}
+					} else {
+						done = 1;
+						estatus = NhlFATAL;
+					}
+				}
+			}
 				break;
 			case FILEVAR_DIM_OP:	
 			case ASSIGN_FILEVAR_DIM_OP:
@@ -1342,16 +1750,15 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				ptr++;lptr++;fptr++;
 				break;
-/*****************************
-* Three Operand Instructions *
-*****************************/
 			case CREATE_OBJ_WP_OP : 
 			case CREATE_OBJ_OP : {
 				int nres;
-				NclSymbol *objname;
 				NclSymbol *objtype;
-				NclStackEntry parent;
+				NclStackEntry parent,data;
+				NclStackEntry obj_name_expr;
+				NclMultiDValData obj_name_md;
 				NclMultiDValData tmp_md;
+				char * objname = NULL;
 				if(*ptr == CREATE_OBJ_WP_OP) {
 					parent = _NclPop();
 					if(parent.kind == NclStk_VAR) {
@@ -1359,30 +1766,90 @@ NclExecuteReturnStatus _NclExecute
 					} else if(parent.kind == NclStk_VAL) {
 						tmp_md = parent.u.data_obj;
 					} else {
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 					}
 					if(tmp_md->multidval.kind != SCALAR) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"HLU Object can only have one parent, Parent objects must be scalar");
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 					}
 				} else {
 					tmp_md = NULL;
 				}
+				obj_name_expr = _NclPop();
+				if(obj_name_expr.kind == NclStk_VAL) {
+					obj_name_md = obj_name_expr.u.data_obj;
+				} else if(obj_name_expr.kind == NclStk_VAR){
+					obj_name_md = _NclVarValueRead(
+						obj_name_expr.u.data_var,
+						NULL,
+						NULL
+						);
+				} else {
+					estatus = NhlFATAL;
+					obj_name_md = NULL;
+				}
+				if(obj_name_md == NULL) {
+					estatus = NhlFATAL;
+				} else {
+					if(obj_name_md->multidval.kind != SCALAR) {
+						NhlPError(NhlFATAL,
+							NhlEUNKNOWN,
+							"create: The object name expression must result in a single scalar string value."	
+						);
+						estatus = NhlFATAL;
+					} else
+					if(!(obj_name_md->obj.obj_type_mask &
+						Ncl_MultiDValstringData)) {
+
+						tmp_md = _NclCoerceData(
+						obj_name_md,
+						Ncl_MultiDValstringData,
+						NULL
+						);
+						if(tmp_md == NULL) {
+						NhlPError(NhlFATAL,
+							NhlEUNKNOWN,
+							"create: The object name expression must result in a string value or a value that can be coerced to a string."	
+						);
+							estatus = NhlFATAL;
+							if(obj_name_md->obj.status != PERMANENT) {
+								_NclDestroyObj((NclObj)obj_name_md);
+							}
+						} else {
+							if(obj_name_md->obj.status != PERMANENT) {
+								_NclDestroyObj((NclObj)obj_name_md);
+							}
+							obj_name_md = tmp_md;
+							tmp_md = NULL;
+						}
+					}
+				}
+				objname = NrmQuarkToString(*(int*)obj_name_md->multidval.val);
+				if(obj_name_md->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)obj_name_md);
+				}
+				
 			
 				ptr++;lptr++;fptr++;
 				nres = (int)*ptr;
 				ptr++;lptr++;fptr++;
-				objname =(NclSymbol*)*ptr ;
-				ptr++;lptr++;fptr++;
 				objtype =(NclSymbol*)*ptr ;
 	
-				if(status != NhlFATAL) {
-					status = _NclCreateHLUObjOp(nres,objname,objtype,tmp_md);
+				if(estatus != NhlFATAL) {
+					data = _NclCreateHLUObjOp(nres,objname,objtype,tmp_md);
+					if(data.kind != NclStk_NOVAL) {
+						_NclPush(data);
+					} else {
+						estatus = NhlFATAL;
+					}
 				} else {
 					_NclCleanUpStack(2*nres);
 				}
 			}
 			break;
+/*****************************
+* Three Operand Instructions *
+*****************************/
 			case PARAM_VARATT_OP:
 			case VARATT_OP: {
 				NclSymbol *thesym = NULL;
@@ -1400,7 +1867,7 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				nsubs = (int)(*ptr);
 
-				var = _NclRetrieveRec(thesym);
+				var = _NclRetrieveRec(thesym,READ_IT);
 				if(var->u.data_var != NULL) {
 					if(_NclVarIsAtt(var->u.data_var,attname)) {
 						if(nsubs == 1) {
@@ -1409,7 +1876,7 @@ NclExecuteReturnStatus _NclExecute
 							data =_NclPop();
 							if(data.u.sub_rec->name != NULL) {
 								NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
-								status = NhlWARNING;
+								estatus = NhlWARNING;
 							}
 							switch(data.u.sub_rec->sub_type) {
 							case INT_VECT:
@@ -1427,34 +1894,36 @@ NclExecuteReturnStatus _NclExecute
 							case COORD_VECT:
 							case COORD_RANGE:
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
-								status = NhlFATAL;
+								estatus = NhlFATAL;
 								break;
 							}
 						_NclFreeSubRec(data.u.sub_rec);
 							if(ret < NhlWARNING)
-								status = ret;
+								estatus = ret;
 						} else if(nsubs != 0) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Attributes only have one dimension, %d subscripts used",nsubs);		
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						}
 					} else {
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to reference attribute (%s) which is undefined",attname);
 					}
-					if(status != NhlFATAL) {
+					if(estatus != NhlFATAL) {
 						data.u.data_obj = _NclReadAtt(var->u.data_var,attname,sel_ptr);
 						if(data.u.data_obj == NULL) {
 							data.kind = NclStk_NOVAL;
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						} else {
 							data.kind = NclStk_VAL;
 						}
 					}
 				} else {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is still undefined, unable to reference attribute %s",thesym->name,attname);
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				}
 				_NclPush(data);
+				if(estatus == NhlFATAL) 
+					_NclCleanUpStack(1);
 			}
 			break;
 			case ASSIGN_VAR_COORD_OP: {
@@ -1475,12 +1944,12 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				nsubs = (int)*ptr;
 
-				var = _NclRetrieveRec(thesym);
+				var = _NclRetrieveRec(thesym,WRITE_IT);
 				if((var == NULL)||(var->u.data_var == NULL)) {
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				} else if(_NclIsDim(var->u.data_var,coord_name) == -1) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a named dimension in variable (%s).",coord_name,thesym->name);
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				} else {
 					if(nsubs == 0) {
 						sel_ptr = NULL;
@@ -1490,7 +1959,7 @@ NclExecuteReturnStatus _NclExecute
 						data =_NclPop();
 						if(data.u.sub_rec->name != NULL) {
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with coordinate variables since only one dimension applies");
-							status = NhlWARNING;
+							estatus = NhlWARNING;
 						}
 						switch(data.u.sub_rec->sub_type) {
 						case INT_VECT:
@@ -1510,19 +1979,19 @@ NclExecuteReturnStatus _NclExecute
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with coordinate variables ");
 							NclFree(sel_ptr);
 							sel_ptr = NULL;
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 							break;
 						}
 						_NclFreeSubRec(data.u.sub_rec);
 						if(ret < NhlWARNING)
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 
 					} else {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate variables have only one dimension, %d subscripts on left hand side of assignement",nsubs);
 						_NclCleanUpStack(nsubs);
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 					}
-					if(status != NhlFATAL) {
+					if(estatus != NhlFATAL) {
 						data = _NclPop();
 						switch(data.kind) {
 						case NclStk_VAL: 
@@ -1533,17 +2002,29 @@ NclExecuteReturnStatus _NclExecute
 							break;
 						default:
 							thevalue = NULL;
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						break;
 						}
 					
 						if(thevalue != NULL) {
 							ret = _NclWriteCoordVar(var->u.data_var,thevalue,coord_name,sel_ptr);
-							if(status < ret){
-								status = ret;
+							if(estatus < ret){
+								estatus = ret;
 							}
 						} else {
-							status = NhlFATAL;
+							estatus = NhlFATAL;
+						}
+						switch(data.kind) {
+						case NclStk_VAL: 
+							if(data.u.data_obj->obj.status != PERMANENT) 
+								_NclDestroyObj((NclObj)data.u.data_obj);
+							break;
+						case NclStk_VAR:
+							if(data.u.data_obj->obj.status != PERMANENT) 
+								_NclDestroyObj((NclObj)data.u.data_var);
+							break;
+						default:
+							break;
 						}
 					} else {	
 						_NclCleanUpStack(1);
@@ -1570,12 +2051,12 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				nsubs = (int)*ptr;
 
-				var = _NclRetrieveRec(thesym);
+				var = _NclRetrieveRec(thesym,READ_IT);
 				if((var == NULL)||(var->u.data_var == NULL)) {
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				} else if(_NclIsDim(var->u.data_var,coord_name) == -1) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a named dimension in variable (%s).",coord_name,thesym->name);
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				} else {
 					if(nsubs == 0) {
 						sel_ptr = NULL;
@@ -1585,7 +2066,7 @@ NclExecuteReturnStatus _NclExecute
 						data =_NclPop();
 						if(data.u.sub_rec->name != NULL) {
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with coordinate variables since only one dimension applies");
-							status = NhlWARNING;
+							estatus = NhlWARNING;
 						}
 						switch(data.u.sub_rec->sub_type) {
 						case INT_VECT:
@@ -1605,24 +2086,24 @@ NclExecuteReturnStatus _NclExecute
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with coordinate variables ");
 							NclFree(sel_ptr);
 							sel_ptr = NULL;
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 							break;
 						}
 						_NclFreeSubRec(data.u.sub_rec);
 						if(ret < NhlWARNING)
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 					} else {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate variables have only one dimension, %d subscripts used on coordinate variable reference",nsubs);
 						_NclCleanUpStack(nsubs);
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 					}
-					if(status != NhlFATAL) {
+					if(estatus != NhlFATAL) {
 						data.u.data_var = _NclReadCoordVar(var->u.data_var,coord_name,sel_ptr);
 						if(data.u.data_var != NULL) {
 							data.kind = NclStk_VAR;
 							_NclPush(data);
 						} else {
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						}
 					} 
 				}
@@ -1653,15 +2134,15 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				nsubs = (int)(*ptr);
 	
-				var = _NclRetrieveRec(thesym);
-				if((var->u.data_var != NULL)&&!(status < NhlINFO)) {
+				var = _NclRetrieveRec(thesym,WRITE_IT);
+				if(var->u.data_var != NULL) {
 					if(nsubs == 1) {
 						sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
 						sel_ptr->n_entries = 1;
 						data1 =_NclPop();
 						if(data1.u.sub_rec->name != NULL) {
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
-							status = NhlWARNING;
+							estatus = NhlWARNING;
 						}
 						switch(data1.u.sub_rec->sub_type) {
 						case INT_VECT:
@@ -1679,42 +2160,42 @@ NclExecuteReturnStatus _NclExecute
 						case COORD_VECT:
 						case COORD_RANGE:
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 							break;
 						}
 						_NclFreeSubRec(data1.u.sub_rec);
 						if(ret < NhlWARNING) 
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 					} else if(nsubs != 0){
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to subscript attribute with more than one dimension");
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 					}
-					if(!(status < NhlINFO)) {
+					if(!(estatus < NhlINFO)) {
 						value = _NclPop();
 						if(value.kind == NclStk_VAR) {
 							value_md = _NclVarValueRead(value.u.data_var,NULL,NULL);
 							if(value_md == NULL) {
-								status = NhlFATAL;
+								estatus = NhlFATAL;
 							}
 						} else if(value.kind == NclStk_VAL){
 							value_md = value.u.data_obj;
 						} else {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to assign illegal type or value to variable attribute");
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						}
 						ret = _NclWriteAtt(var->u.data_var,attname,value_md,sel_ptr);
 						if(value_md->obj.status != PERMANENT) {
 							_NclDestroyObj((NclObj)value_md);
 						}
 						if( ret < NhlINFO) {
-							status = ret;
+							estatus = ret;
 						}
 					} else {
 						_NclCleanUpStack(1);
 					}
 				} else {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is undefined, can not assign attribute (%s)",thesym->name,attname);
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				}
 			}
 			break;
@@ -1746,24 +2227,24 @@ NclExecuteReturnStatus _NclExecute
 	
 				ptr++;lptr++;fptr++;
 				rhs_sym = (NclSymbol*)*ptr;
-				rhs_var = _NclRetrieveRec(rhs_sym);
+				rhs_var = _NclRetrieveRec(rhs_sym,READ_IT);
 				ptr++;lptr++;fptr++;
 				rhs_nsubs = *ptr;
 				ptr++;lptr++;fptr++;
 				lhs_sym = (NclSymbol*)*ptr;
-				lhs_var = _NclRetrieveRec(lhs_sym);
+				lhs_var = _NclRetrieveRec(lhs_sym,WRITE_IT);
 				ptr++;lptr++;fptr++;
 				lhs_nsubs = *ptr;
 
 				if((rhs_var == NULL)||(rhs_var->kind == NclStk_NOVAL)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN," Assign: %s is undefined",rhs_sym->name);
-					status = NhlFATAL;
+					estatus = NhlFATAL;
 				}
 
-				if((status!=NhlFATAL)&&(lhs_var != NULL)&&(lhs_var->kind == NclStk_NOVAL)) {
+				if((estatus!=NhlFATAL)&&(lhs_var != NULL)&&(lhs_var->kind == NclStk_NOVAL)) {
 					if(lhs_nsubs != 0) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Assign: %s is undefined, can not subscript an undefined variable",lhs_sym->name);
-						status = NhlFATAL;
+						estatus = NhlFATAL;
 						_NclCleanUpStack(lhs_nsubs);
 					} else if(rhs_nsubs != 0) {
 /*
@@ -1792,7 +2273,7 @@ NclExecuteReturnStatus _NclExecute
 						}
 						_NclFreeSubRec(data.u.sub_rec);
 						if(ret < NhlWARNING) {
-							status = NhlFATAL;
+							estatus = NhlFATAL;
 						}
 					} 
 					lhs_var->kind = NclStk_VAR;
@@ -1819,8 +2300,11 @@ NclExecuteReturnStatus _NclExecute
 					} else {
 						lhs_var->kind = NclStk_VAR;
 						lhs_var->u.data_var = _NclCopyVar(rhs_var->u.data_var,NULL,NULL);
+						lhs_var->u.data_var->var.var_quark = NrmStringToQuark(lhs_sym->name);
+						lhs_var->u.data_var->var.thesym = lhs_sym;
+						lhs_var->u.data_var->var.var_type = NORMAL;
 					}
-				} else if((status !=NhlFATAL)&&(lhs_var->kind == NclStk_VAR)&&(lhs_var->u.data_var != NULL)) {
+				} else if((estatus !=NhlFATAL)&&(lhs_var->kind == NclStk_VAR)&&(lhs_var->u.data_var != NULL)) {
 /*
 * When the target variable is already defined just normal assignment occurs if it is not subscripted
 * if it is then the _NclAssignVarToVar is used which is different then the normal assignment provided
@@ -1851,7 +2335,7 @@ NclExecuteReturnStatus _NclExecute
 							}
 							_NclFreeSubRec(data.u.sub_rec);
 							if(ret < NhlWARNING) {
-								status = NhlFATAL;
+								estatus = NhlFATAL;
 							}
 						} 
 					} else {
@@ -1881,7 +2365,7 @@ NclExecuteReturnStatus _NclExecute
 							}
 							_NclFreeSubRec(data.u.sub_rec);
 							if(ret < NhlWARNING) {
-								status = NhlFATAL;
+								estatus = NhlFATAL;
 							}
 						} 
 					} else {
@@ -1889,29 +2373,40 @@ NclExecuteReturnStatus _NclExecute
 					}
 					ret = _NclAssignVarToVar(lhs_var->u.data_var,lhs_sel_ptr,rhs_var->u.data_var,rhs_sel_ptr);
 					if(ret < NhlINFO) {
-						status = ret;
+						estatus = ret;
 					}
+				} else {
+					_NclCleanUpStack(rhs_nsubs);
+					_NclCleanUpStack(lhs_nsubs);
 				}
 				break;
 			}
 			default:
 				break;
 		}
-		if(status < NhlINFO) {
+		if(estatus < NhlINFO) {
 			if(*fptr == NULL) {
-				NhlPError(status,NhlEUNKNOWN,"Execute: Error occured at or near line %d\n",(cmd_line ? (*lptr)-1: *lptr));
+				NhlPError(estatus,NhlEUNKNOWN,"Execute: Error occured at or near line %d\n",(cmd_line ? (*lptr)-1: *lptr));
 			} else {
-				NhlPError(status,NhlEUNKNOWN,"Execute: Error occured at or near line %d in file %s\n", *lptr, *fptr);
+				NhlPError(estatus,NhlEUNKNOWN,"Execute: Error occured at or near line %d in file %s\n", *lptr, *fptr);
 			}
-			if(status < NhlWARNING) {
+			if(estatus < NhlWARNING) {
 /*
 * need to clean up stack !!! for current level
 */
+				_NclAbortFrame();
+/*
+* Probably still need more stack freeing for other types of errors 
+* this really only handles left overs from failed function and 
+* procedure calls
+*/
+				_NclClearToStackBase();
+
 				level--;
 				return(Ncl_ERRORS);
 			}
 		}	
-		status = NhlNOERROR;	
+		estatus = NhlNOERROR;	
 		ptr++;lptr++;fptr++;
 	}
 }

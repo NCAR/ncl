@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.9 1994-04-18 17:10:56 ethan Exp $
+ *      $Id: Machine.h,v 1.10 1994-05-28 00:12:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -49,6 +49,7 @@ typedef struct mach_stack {
 typedef struct _NclFrameList {
 	int level;
 	struct _NclFrame *fp;
+	struct _NclStackEntry *sb;
 	struct _NclFrameList * next;
 }NclFrameList;
 
@@ -200,10 +201,13 @@ int	/*offset*/,
 NclStackEntry * /*therec*/
 #endif
 );
-
+#define DONT_CARE 0
+#define WRITE_IT  1
+#define READ_IT	2
 extern NclStackEntry *_NclRetrieveRec(
 #ifdef NhlNeedProto
-NclSymbol * /*n_items*/
+NclSymbol * /*n_items*/,
+int 	/*access_type*/
 #endif
 );
 
@@ -215,19 +219,24 @@ int	/*offset*/
 
 extern void *_NclLeaveFrame(
 #ifdef NhlNeedProto
-void
+int /* caller_level */
 #endif
 );
 
 extern void _NclPushFrame(
 #ifdef NhlNeedProto
-struct _NclSymTableListNode* /* thescope */,
-unsigned long /* offset */,
-int  /* nargs */
+struct _NclSymbol * /* thesym*/,
+unsigned long /* offset */
 #endif
 );
 
-extern void _NclFinishFrame(
+extern void _NclPopFrame(
+#ifdef NhlNeedProto
+int /*popping_from*/
+#endif
+);
+
+extern int _NclFinishFrame(
 #ifdef NhlNeedProto
 void
 #endif
@@ -243,14 +252,24 @@ int /* arg_num */
 extern void _NclRemapParameters(
 #ifdef NhlNeedProto
 int /* nargs*/,
+int /* cur_off */,
 void * /*previous_fp*/,
 int /* from */
 #endif
 );
 
+extern void _NclRemapIntrParameters(
+#ifdef NhlNeedProto
+int /*nargs*/,
+void * /*previous_fp*/,
+int /*from*/
+#endif
+);
+
 extern void _NclDumpStack(
 #ifdef NhlNeedProto
-FILE * /*fp*/
+FILE * /*fp*/,
+int /*off*/
 #endif
 );
 
@@ -266,6 +285,17 @@ int /*n*/
 #endif
 );
 
+extern void _NclAbortFrame(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+extern void _NclClearToStackBase(
+#ifdef NhlNeedProto
+void
+#endif
+);
 #ifdef __cplusplus
 }
 #endif
