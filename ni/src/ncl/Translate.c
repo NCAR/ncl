@@ -214,6 +214,8 @@ if(groot != NULL) {
 				off1 = _NclTranslate(vblk->objname,fp);
 				_NclTranslate(step->node,fp);
 				step = step->next;
+			} else {
+				off1 = _NclGetCurrentOffset(); 
 			}
 			while(step != NULL) {
 				_NclTranslate(vblk->objname,fp);

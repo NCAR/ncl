@@ -2233,14 +2233,17 @@ NclMultiDValData the_hlu_data_obj;
 int nres;
 #endif
 {
-	int i;
+	int i,j;
 	NclStackEntry *data,*resname;
 	int rl_list;
 	static int local_rl_list = 0;
 	NhlGenArray *gen_array;
 	NclMultiDValData tmp_md = NULL;
 	int *obj_ids = NULL;
-	NclHLUObj hlu_ptr;
+	NclHLUObj hlu_ptr,tmp_ho;
+	int *tmp_id;
+	int *ids;
+
 
 
 	if(local_rl_list == 0 ) {
@@ -2272,17 +2275,45 @@ int nres;
 			tmp_md = _NclVarValueRead(data->u.data_var,NULL,NULL);
 		break;
 		}
-		gen_array[i] = _NhlCreateGenArray(
-				(NhlPointer)tmp_md->multidval.val,
-				tmp_md->multidval.hlu_type_rep[0],
-				(int)(tmp_md->multidval.totalsize/tmp_md->multidval.totalelements),
-				tmp_md->multidval.n_dims,
-				tmp_md->multidval.dim_sizes,
-				0);
-		NhlRLSet(rl_list,NrmQuarkToString(
-			*(int*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)),
-			NhlTGenArray,
-			gen_array[i]);
+		if(tmp_md->multidval.hlu_type_rep[0] != NULL) {
+			gen_array[i] = _NhlCreateGenArray(
+					(NhlPointer)tmp_md->multidval.val,
+					tmp_md->multidval.hlu_type_rep[0],
+					(int)(tmp_md->multidval.totalsize/tmp_md->multidval.totalelements),
+					tmp_md->multidval.n_dims,
+					tmp_md->multidval.dim_sizes,
+					0);
+			NhlRLSet(rl_list,NrmQuarkToString(
+				*(int*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)),
+				NhlTGenArray,
+				gen_array[i]);
+		} else {
+			ids = (int*)NclMalloc((unsigned)sizeof(int)*tmp_md->multidval.totalelements);
+			for(j = 0; j < tmp_md->multidval.totalelements;j++) {
+                                tmp_ho = (NclHLUObj)_NclGetObj(((int*)tmp_md->multidval.val)[j]);
+                                ids[j] = tmp_ho->hlu.hlu_id;
+                        }
+			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK){
+                                gen_array[i] = _NhlCreateGenArray(
+                                        (NhlPointer)ids,
+                                        NhlTInteger,
+                                        sizeof(int),
+                                        1,
+                                        &tmp_md->multidval.totalelements,
+                                        0);
+                                NhlRLSet(rl_list,NrmQuarkToString(
+                                        *(int*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)),
+                                        NhlTGenArray,
+                                        gen_array[i]);
+                        } else {
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,"The value associated with (%s) does not have an HLU representation",
+                                                NrmQuarkToString(*(int*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)));
+                                gen_array[i] = NULL;
+                        }
+
+
+
+		}
 	}
 
 

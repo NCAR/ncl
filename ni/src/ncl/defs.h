@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.16 1994-10-29 00:58:11 ethan Exp $
+ *      $Id: defs.h,v 1.17 1994-11-07 03:02:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,13 @@ extern "C" {
 #define NCL_MISSING_VALUE_ATT "_FillValue"
 
 #define NhlTNclData "nclData"
+typedef enum { NORMAL, VARSUBSEL , COORD, COORDSUBSEL, FILEVAR, FILEVARSUBSEL,PARAM,RETURNVAR,HLUOBJ } NclVarTypes;
+typedef struct _NclDimRec {
+        int   dim_quark;
+        long   dim_num;
+        int   dim_size;
+} NclDimRec;
+
 
 /*
 * Maximum number of error messages to be printed

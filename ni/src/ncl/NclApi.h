@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.3 1994-10-29 00:57:31 ethan Exp $
+ *      $Id: NclApi.h,v 1.4 1994-11-07 03:02:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -32,8 +32,6 @@ extern "C" {
 
 extern int NclInitServer(
 #ifdef NhlNeedProto
-FILE * /* error_file */,
-FILE * /* error_file */,
 NhlErrorTypes /*error_level*/
 #endif
 );
@@ -96,6 +94,12 @@ NclQuark /*filevar*/
 extern struct _NclApiDataList* NclGetHLUObjsList(
 #if NhlNeedProto
 void
+#endif
+);
+
+extern int NclGetHLUObjId(
+#if NhlNeedProto
+char * /*var_name*/
 #endif
 );
 

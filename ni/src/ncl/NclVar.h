@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.h,v 1.1 1994-07-14 20:47:08 ethan Exp $
+ *      $Id: NclVar.h,v 1.2 1994-11-07 03:02:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,13 +23,6 @@
 #ifndef NclVar_h
 #define NclVar_h
 #include "NclData.h"
-
-typedef enum { NORMAL, VARSUBSEL , COORD, COORDSUBSEL, FILEVAR, FILEVARSUBSEL,PARAM,RETURNVAR,HLUOBJ } NclVarTypes;
-typedef struct _NclDimRec {
-        int   dim_quark;
-        long   dim_num;
-        int   dim_size;
-} NclDimRec;
 
 typedef NhlErrorTypes (*NclAssignFunction)(
 #if	NhlNeedProto

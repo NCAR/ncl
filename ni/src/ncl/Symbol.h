@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.11 1994-10-29 00:58:03 ethan Exp $
+ *      $Id: Symbol.h,v 1.12 1994-11-07 03:02:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -256,7 +256,11 @@ void _NclAddBuiltIns(
 void
 #endif
 );
-
+int _NclGetHLUObjId(
+#if NhlNeedProto
+char * /* var_name */
+#endif
+);
 void _NclAddHLUObjs(
 #ifdef NhlNeedProto
 void

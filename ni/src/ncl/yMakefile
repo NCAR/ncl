@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.19 1994-10-29 00:58:20 ethan Exp $
+#      $Id: yMakefile,v 1.20 1994-11-07 03:02:41 ethan Exp $
 #
 #########################################################################
 #									#
@@ -55,7 +55,7 @@ DEPLIBS		=	$(DEPHLULIBS) $(DEPCNCARGLIBS) $(DEPNCARGLIBS)
 EXTRA_LIBS	=	-ll $(NCDFLIBS) $(XLIB)
 SYS_LIBS	=	$(CTOFLIBS) -lm $(ARCH_LIBS)
 
-HDRS		=	$(GEN_HDRS) $(STATIC_HDRS)
+HDRS		=	$(GEN_HDRS) $(STATIC_HDRS) $(INSTALL_HDRS)
 
 GEN_HDRS	=	NclMultiDValnclfileData.h NclMultiDVallogicalData.h \
 			NclMultiDValdoubleData.h NclMultiDValfloatData.h \
@@ -64,11 +64,13 @@ GEN_HDRS	=	NclMultiDValnclfileData.h NclMultiDVallogicalData.h \
 			parser.h NclMultiDValbyteData.h NclMultiDValcharData.h
 
 STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
-			Machine.h NclApi.h NclAtt.h NclData.h NclDataDefs.h \
+			Machine.h NclAtt.h NclData.h NclDataDefs.h \
 			NclFile.h NclFileInterfaces.h NclHLUObj.h NclMdInc.h \
-			NclMultiDValData.h NclMultiDValHLUObjData.h NclVar.h \
+			NclMultiDValData.h NclMultiDValHLUObjData.h \
 			OpsFuncs.h OpsList.h SrcTree.h Symbol.h VarSupport.h \
-			NclFileVar.h defs.h NclHLUVar.h HLUSupport.h
+			NclFileVar.h NclHLUVar.h HLUSupport.h
+
+INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h
 
 API_SRCS	=	NclApi.c scanapi.c parseapi.c 
 EXE_SRCS	=	Ncl.c yywrap.c scanner.c parser.c io.c
@@ -121,6 +123,8 @@ STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 LibraryTarget($(MYLIB),$(ALLOBJS))
 LibraryTarget($(MYLIB_API),$(APIOBJS))
 CProgram($(MYBIN),$(EXEOBJS),$(DEPLIBS))
+BuildIncludes($(INSTALL_HDRS),ncarg/ncl,../..)
+InstallTarget($(INSTALL_HDRS),$(INSTALL_INC),$(NCLINCPATH))
 
 depend-local::	$(GEN_HDRS) $(GEN_SRCS)
 DependTarget($(ALLSRCS))
@@ -133,7 +137,7 @@ CleanFilesTarget($(GEN_HDRS) $(GEN_SRCS))
 #
 
 ioapi.o : io.c
-	$(CC) -c $(API_DEFS) $(CFLAGS) $< -o ioapi.o
+	$(CC) -c $(API_DEFS) $(CFLAGS) io.c -o ioapi.o
 
 scanapi.c: scanner.c
 	$(CP) scanner.c scanapi.c

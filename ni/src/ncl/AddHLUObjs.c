@@ -2,7 +2,7 @@
 
 
 /*
- *      $Id: AddHLUObjs.c,v 1.5 1994-08-08 22:34:48 ethan Exp $
+ *      $Id: AddHLUObjs.c,v 1.6 1994-11-07 03:02:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@ extern "C" {
 #endif
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/BaseP.h>
 
 extern void _NclAddSingleObj(
 #ifdef NhlNeedProto
@@ -49,6 +50,7 @@ extern NhlLayerClass NhllegendLayerClass;
 extern NhlLayerClass NhlcoordArraysLayerClass;
 extern NhlLayerClass NhlscalarFieldLayerClass;
 extern NhlLayerClass NhlmapPlotLayerClass;
+extern NhlLayerClass NhlappLayerClass;
 
 
 
@@ -60,19 +62,20 @@ void _NclAddHLUObjs
 ()
 #endif
 {
-	_NclAddSingleObj("tickMarkLayerClass",NhltickMarkLayerClass);
-	_NclAddSingleObj("titleLayerClass",NhltitleLayerClass);
-	_NclAddSingleObj("xWorkstationLayerClass",NhlxWorkstationLayerClass);
-	_NclAddSingleObj("ncgmWorkstationLayerClass",NhlncgmWorkstationLayerClass);
-	_NclAddSingleObj("contourLayerClass",NhlcontourLayerClass);
-	_NclAddSingleObj("textItemLayerClass",NhltextItemLayerClass);
-	_NclAddSingleObj("xyPlotLayerClass",NhlxyPlotLayerClass);
-	_NclAddSingleObj("xyDataDepLayerClass",NhlxyDataDepLayerClass);
-	_NclAddSingleObj("labelBarLayerClass",NhllabelBarLayerClass);
-	_NclAddSingleObj("legendLayerClass",NhllegendLayerClass);
-	_NclAddSingleObj("coordArraysLayerClass",NhlcoordArraysLayerClass);
-	_NclAddSingleObj("scalarFieldLayerClass",NhlscalarFieldLayerClass);
-	_NclAddSingleObj("mapPlotLayerClass",NhlmapPlotLayerClass);
+	_NclAddSingleObj(NhltickMarkLayerClass->base_class.class_name,NhltickMarkLayerClass);
+	_NclAddSingleObj(NhltitleLayerClass->base_class.class_name,NhltitleLayerClass);
+	_NclAddSingleObj(NhlxWorkstationLayerClass->base_class.class_name,NhlxWorkstationLayerClass);
+	_NclAddSingleObj(NhlncgmWorkstationLayerClass->base_class.class_name,NhlncgmWorkstationLayerClass);
+	_NclAddSingleObj(NhlcontourLayerClass->base_class.class_name,NhlcontourLayerClass);
+	_NclAddSingleObj(NhltextItemLayerClass->base_class.class_name,NhltextItemLayerClass);
+	_NclAddSingleObj(NhlxyPlotLayerClass->base_class.class_name,NhlxyPlotLayerClass);
+	_NclAddSingleObj(NhlxyDataDepLayerClass->base_class.class_name,NhlxyDataDepLayerClass);
+	_NclAddSingleObj(NhllabelBarLayerClass->base_class.class_name,NhllabelBarLayerClass);
+	_NclAddSingleObj(NhllegendLayerClass->base_class.class_name,NhllegendLayerClass);
+	_NclAddSingleObj(NhlcoordArraysLayerClass->base_class.class_name,NhlcoordArraysLayerClass);
+	_NclAddSingleObj(NhlscalarFieldLayerClass->base_class.class_name,NhlscalarFieldLayerClass);
+	_NclAddSingleObj(NhlmapPlotLayerClass->base_class.class_name,NhlmapPlotLayerClass);
+	_NclAddSingleObj(NhlappLayerClass->base_class.class_name,NhlappLayerClass);
 	return;
 	
 }

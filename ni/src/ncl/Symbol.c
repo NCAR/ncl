@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.13 1994-10-29 00:58:01 ethan Exp $
+ *      $Id: Symbol.c,v 1.14 1994-11-07 03:02:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1012,6 +1012,38 @@ NclApiDataList *_NclGetDefinedProcFuncInfo
 	}	
 	return(thelist);
 }
+
+int _NclGetHLUObjId
+#if __STDC__
+(char *varname)
+#else
+(varname)
+        char *varname;
+#endif
+{
+	NclSymbol *thesym = _NclLookUp(varname);
+	NclStackEntry *the_var;
+	NclMultiDValData the_hlu = NULL;
+	NclHLUObj hlu = NULL;
+
+	if(thesym != NULL) {
+		the_var = _NclRetrieveRec(thesym,DONT_CARE);	
+		if((the_var->kind == NclStk_VAR)&&((the_var->u.data_var->obj.obj_type_mask & Ncl_HLUVar))) {
+			the_hlu = _NclVarValueRead(the_var->u.data_var,NULL,NULL);
+			if(the_hlu != NULL) {
+				if(the_hlu->multidval.kind == SCALAR) {
+					hlu = (NclHLUObj)_NclGetObj(((int*)the_hlu->multidval.val)[0]);
+					if(hlu != NULL) {
+						return(hlu->hlu.hlu_id);
+					} 
+				}
+			}
+		}
+		
+	} 
+       	return(-1);
+}
+
 NclApiDataList * _NclGetDefinedHLUInfo
 #if __STDC__
 (void)

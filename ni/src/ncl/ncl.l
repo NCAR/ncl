@@ -465,7 +465,6 @@ digit	[0-9]
 	return(MARKER);
 }
 [\177] {
-	fprintf(stdout,"EOFF\n");
 	return(EOFF);
 }
 . {  

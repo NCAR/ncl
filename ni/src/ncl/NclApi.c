@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.6 1994-10-29 00:57:30 ethan Exp $
+ *      $Id: NclApi.c,v 1.7 1994-11-07 03:02:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -54,11 +54,9 @@ extern FILE* stdout_fp;
 
 int NclInitServer
 #if __STDC__
-(FILE *error_file,FILE* stdout_file,NhlErrorTypes error_level)
+(NhlErrorTypes error_level)
 #else
-(error_file,stdout_file,error_level)
-	FILE *error_file;
-	FILE *stdout_file;
+(error_level)
 	NhlErrorTypes error_level;
 #endif
 {
@@ -66,11 +64,9 @@ int NclInitServer
         extern int yydebug;
         yydebug = 1;
 #endif
-	NhlOpen();
-	error_fp = the_err_file = error_file;
-	stdout_fp = stdout_file;
 	thefptr = fopen("ncl.tree","w");
         theoptr = fopen("ncl.seq","w");
+	NhlOpen();
 
 
 	
@@ -276,6 +272,16 @@ NclApiDataList *dlist;
 {
 	if(dlist != NULL) 
 		_NclFreeApiDataList((void*)dlist);
+}
+int NclGetHLUObjId
+#if __STDC__
+(char *varname)
+#else
+(varname)
+	char *varname;
+#endif
+{
+	return(_NclGetHLUObjId(varname));
 }
 
 struct _NclApiDataList* NclGetHLUObjsList

@@ -602,8 +602,14 @@ v_parent: NOPARENT {
 vcreate : VSBLKCREATE expr OBJTYPE v_parent resource_list END VSBLKCREATE	{   
 									$$ = _NclMakeVis($2,$3,$4,$5,Ncl_VISBLKCREATE);
 								}
-	| VSBLKCREATE expr OBJTYPE v_parent resource END VSBLKCREATE 		{   
-									$$ = _NclMakeVis($2,$3,$4,$5,Ncl_VISBLKCREATE); 
+	| VSBLKCREATE expr OBJTYPE v_parent resource END VSBLKCREATE 	{   
+										NclSrcListNode * tmp = NULL;
+										if($5 != NULL) {
+						 					tmp = _NclMakeNewListNode();
+											tmp->next = NULL;
+											tmp->node = $5;
+										}
+										$$ = _NclMakeVis($2,$3,$4,tmp,Ncl_VISBLKCREATE); 
 								}
 	| VSBLKCREATE error 					{
 										$$ = NULL;
@@ -611,7 +617,13 @@ vcreate : VSBLKCREATE expr OBJTYPE v_parent resource_list END VSBLKCREATE	{
 ;
 
 vset :  VSBLKSET identifier resource END VSBLKSET		{
-									$$ = _NclMakeSGVis($2,$3,Ncl_VISBLKSET); 
+									NclSrcListNode * tmp = NULL;
+									if($3 != NULL) {
+						 				tmp = _NclMakeNewListNode();
+										tmp->next = NULL;
+										tmp->node = $3;
+									}
+									$$ = _NclMakeSGVis($2,tmp,Ncl_VISBLKSET); 
 								}
 	| VSBLKSET identifier resource_list END VSBLKSET	{
 									$$ = _NclMakeSGVis($2,$3,Ncl_VISBLKSET);
@@ -621,7 +633,13 @@ vset :  VSBLKSET identifier resource END VSBLKSET		{
 								}
 ;
 vget : VSBLKGET identifier get_resource END VSBLKGET		{
-									$$ = _NclMakeSGVis($2,$3,Ncl_VISBLKGET); 
+									NclSrcListNode * tmp = NULL;
+									if($3 != NULL) {
+						 				tmp = _NclMakeNewListNode();
+										tmp->next = NULL;
+										tmp->node = $3;
+									}
+									$$ = _NclMakeSGVis($2,tmp,Ncl_VISBLKGET); 
 								}
 	| VSBLKGET identifier get_resource_list END VSBLKGET  	{
 									$$ = _NclMakeSGVis($2,$3,Ncl_VISBLKGET);
