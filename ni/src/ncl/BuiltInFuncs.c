@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.69 1997-05-20 15:52:07 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.70 1997-05-23 20:50:49 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -5361,7 +5361,6 @@ NhlErrorTypes _NclIIsProc
 				if( s != NULL){
 					switch(s->type) {
 					case PROC:
-					case EPROC:
 					case NPROC:
 					case IPROC:
 						outval[i] = 1;
@@ -5383,7 +5382,6 @@ NhlErrorTypes _NclIIsProc
 			if( s != NULL){
 				switch(s->type) {
 				case PROC:
-				case EPROC:
 				case NPROC:
 				case IPROC:
 					outval[i] = 1;
@@ -5450,7 +5448,6 @@ NhlErrorTypes _NclIIsFunc
 				if( s != NULL){
 					switch(s->type) {
 					case FUNC:
-					case EFUNC:
 					case NFUNC:
 					case IFUNC:
 						outval[i] = 1;
@@ -5472,7 +5469,6 @@ NhlErrorTypes _NclIIsFunc
 			if( s != NULL){
 				switch(s->type) {
 				case FUNC:
-				case EFUNC:
 				case NFUNC:
 				case IFUNC:
 					outval[i] = 1;
@@ -5530,12 +5526,10 @@ NhlErrorTypes _NclIUnDef
 				if( s != NULL) {
 					switch(s->type) {	
 						case PROC:
-						case EPROC:
 						case NPROC:
 						case PIPROC:
 						case IPROC:
 						case FUNC:
-						case EFUNC:
 						case NFUNC:
 						case IFUNC:
 						case UNDEF:
@@ -5574,12 +5568,10 @@ NhlErrorTypes _NclIUnDef
 
 			 		switch(s->type) {	
 						case PROC:
-						case EPROC:
 						case NPROC:
 						case PIPROC:
 						case IPROC:
 						case FUNC:
-						case EFUNC:
 						case NFUNC:
 						case IFUNC:
 						case UNDEF:
@@ -8858,10 +8850,10 @@ NhlErrorTypes _Nclmask
 
 	if(tmp_md1->multidval.data_type != tmp_md2->multidval.data_type) {
 		tmp = (void*)NclMalloc(tmp_md1->multidval.type->type_class.size);
-		if(_Nclcoerce((NclTypeClass)tmp_md1->multidval.data_type,tmp,tmp_md2->multidval.val,1,NULL,NULL,(NclTypeClass)tmp_md2->multidval.type) == NhlFATAL)  {
+		if(_Nclcoerce((NclTypeClass)tmp_md1->multidval.type,tmp,tmp_md2->multidval.val,1,NULL,NULL,(NclTypeClass)tmp_md2->multidval.type) == NhlFATAL)  {
 			NclFree(tmp);
 			tmp = (void*)NclMalloc(tmp_md2->multidval.type->type_class.size * tmp_md1->multidval.totalelements);
-			if(_Nclcoerce((NclTypeClass)tmp_md2->multidval.data_type,tmp,tmp_md1->multidval.val,tmp_md1->multidval.totalelements,NULL,NULL,(NclTypeClass)tmp_md1->multidval.type) == NhlFATAL)  {
+			if(_Nclcoerce((NclTypeClass)tmp_md2->multidval.type,tmp,tmp_md1->multidval.val,tmp_md1->multidval.totalelements,NULL,NULL,(NclTypeClass)tmp_md1->multidval.type) == NhlFATAL)  {
 				NclFree(tmp);
 
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"mask: parameter 1 and parameter 2 must be the same types or coercible to each other");
@@ -8913,7 +8905,7 @@ NhlErrorTypes _Nclmask
 		out_val,
 		tmp_md0->multidval.n_dims,
 		tmp_md0->multidval.dim_sizes,
-		&tmp_md0->multidval.type->type_class.default_mis,
+		(tmp_md0->multidval.missing_value.has_missing? &tmp_md0->multidval.missing_value.value:&tmp_md0->multidval.type->type_class.default_mis),
 		tmp_md0->multidval.data_type,
 		0
 	));
