@@ -79,7 +79,7 @@ NhlErrorTypes vinth2p_W
 	double *p0 = NULL;
 	int p0_has_missing;
 	NclScalar p0_missing;
-	int p0_type;
+	NclBasicDataTypes p0_type;
 
 	int *ilev = NULL;
 	int ilev_has_missing;
