@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.8 1994-01-14 23:36:20 boote Exp $
+ *      $Id: TickMark.c,v 1.9 1994-01-19 03:06:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -5057,15 +5057,22 @@ static NhlErrorTypes CheckIrregular
 	}
 
 	if(tnew->tick.x_b_style == IRREGULAR) {
+
+		if(((tnew->tick.x_b_data_left >= tnew->tick.ir_xbmax)
+			&&(tnew->tick.x_b_data_right >=tnew->tick.ir_xbmax))
+			||((tnew->tick.x_b_data_left <=tnew->tick.ir_xbmin)&&(tnew->tick.x_b_data_right <= tnew->tick.ir_xbmin))) {
+			NhlPError(FATAL,E_UNKNOWN,"TickMark:CheckIrregular: Both tmXBDataLeftF and tmXBDataRightF are outside of the range of the values in tmXBCoordPoints, can not continue\n");
+			return(FATAL);
+		}
 		if(tnew->tick.x_b_data_left > tnew->tick.x_b_data_right) {
 			if(tnew->tick.x_b_data_left > tnew->tick.ir_xbmax) {
 				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XBDataLeftF is greater than maximum value in XBCoordPoints, resetting XBDataLeftF to maximum of XBCoordPoints");
 				tnew->tick.x_b_data_left = tnew->tick.ir_xbmax;
 				ret = WARNING;
-			}
+			} 
 			if(tnew->tick.x_b_data_right < tnew->tick.ir_xbmin) {
 				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XBDataRightF is than minimum value in XBCoordPoints, resetting XBDataRightF to minimum of XBCoordPoints");
-				tnew->tick.x_b_data_left = tnew->tick.ir_xbmin;
+				tnew->tick.x_b_data_right = tnew->tick.ir_xbmin;
 				ret = WARNING;
 			}
 		} else {
@@ -5076,12 +5083,18 @@ static NhlErrorTypes CheckIrregular
 			}
 			if(tnew->tick.x_b_data_right > tnew->tick.ir_xbmax) {
 				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XBDataRightF is than maximum value in XBCoordPoints, resetting XBDataRightF to maximum of XBCoordPoints");
-				tnew->tick.x_b_data_left = tnew->tick.ir_xbmax;
+				tnew->tick.x_b_data_right = tnew->tick.ir_xbmax;
 				ret = WARNING;
 			}
 		}
 	}
 	if(tnew->tick.x_t_style == IRREGULAR) {
+		if(((tnew->tick.x_t_data_left >= tnew->tick.ir_xtmax)
+			&&(tnew->tick.x_t_data_right >=tnew->tick.ir_xtmax))
+			||((tnew->tick.x_t_data_left <=tnew->tick.ir_xtmin)&&(tnew->tick.x_t_data_right <= tnew->tick.ir_xtmin))) {
+			NhlPError(FATAL,E_UNKNOWN,"TickMark:CheckIrregular: Both tmXTDataLeftF and tmXTDataRightF are outside of the range of the values in tmXTCoordPoints, can not continue\n");
+			return(FATAL);
+		}
 		if(tnew->tick.x_t_data_left > tnew->tick.x_t_data_right) {
 			if(tnew->tick.x_t_data_left > tnew->tick.ir_xtmax) {
 				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XTDataLeftF is greater than maximum value in XTCoordPoints, resetting XTDataLeftF to maximum of XTCoordPoints");
@@ -5090,7 +5103,7 @@ static NhlErrorTypes CheckIrregular
 			}
 			if(tnew->tick.x_t_data_right < tnew->tick.ir_xtmin) {
 				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XTDataRightF is than minimum value in XTCoordPoints, resetting XTDataRightF to minimum of XTCoordPoints");
-				tnew->tick.x_t_data_left = tnew->tick.ir_xtmin;
+				tnew->tick.x_t_data_right = tnew->tick.ir_xtmin;
 				ret = WARNING;
 			}
 		} else {
@@ -5101,12 +5114,18 @@ static NhlErrorTypes CheckIrregular
 			}
 			if(tnew->tick.x_t_data_right > tnew->tick.ir_xtmax) {
 				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XTDataRightF is than maximum value in XTCoordPoints, resetting XTDataRightF to maximum of XTCoordPoints");
-				tnew->tick.x_t_data_left = tnew->tick.ir_xtmax;
+				tnew->tick.x_t_data_right = tnew->tick.ir_xtmax;
 				ret = WARNING;
 			}
 		}
 	}
 	if(tnew->tick.y_r_style == IRREGULAR) {
+		if(((tnew->tick.y_r_data_top >= tnew->tick.ir_yrmax)
+			&&(tnew->tick.y_r_data_bottom >=tnew->tick.ir_yrmax))
+			||((tnew->tick.y_r_data_top <=tnew->tick.ir_yrmin)&&(tnew->tick.y_r_data_bottom <= tnew->tick.ir_yrmin))) {
+			NhlPError(FATAL,E_UNKNOWN,"TickMark:CheckIrregular: Both tmYRDataBottomF and tmYRDataTop are outside of the range of the values in tmYRCoordPoints, can not continue\n");
+			return(FATAL);
+		}
 		if(tnew->tick.y_r_data_bottom > tnew->tick.y_r_data_top) {
 			if(tnew->tick.y_r_data_bottom > tnew->tick.ir_yrmax) {
 				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YRDataBottomF is greater than maximum value in YRCoordPoints, resetting YRDataBottomF to maximum of YRCoordPoints");
@@ -5132,6 +5151,12 @@ static NhlErrorTypes CheckIrregular
 		}
 	}
 	if(tnew->tick.y_l_style == IRREGULAR) {
+		if(((tnew->tick.y_l_data_top >= tnew->tick.ir_ylmax)
+			&&(tnew->tick.y_l_data_bottom>=tnew->tick.ir_ylmax))
+			||((tnew->tick.y_l_data_top <=tnew->tick.ir_ylmin)&&(tnew->tick.y_l_data_bottom<= tnew->tick.ir_ylmin))) {
+			NhlPError(FATAL,E_UNKNOWN,"TickMark:CheckIrregular: Both tmYLDataBottomF and tmYLDataTop are outside of the range of the values in tmYLCoordPoints, can not continue\n");
+			return(FATAL);
+		}
 		if(tnew->tick.y_l_data_bottom > tnew->tick.y_l_data_top) {
 			if(tnew->tick.y_l_data_bottom > tnew->tick.ir_ylmax) {
 				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YLDataBottomF is greater than maximum value in YLCoordPoints, resetting YLDataBottomF to maximum of YLCoordPoints");
