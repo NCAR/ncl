@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.8 1995-06-03 00:45:50 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.9 1996-05-09 23:30:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -24,15 +24,100 @@
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Callbacks.h>
 #include "defs.h"
 #include <errno.h>
 #include "NclHLUObj.h"
 #include "NclMultiDValHLUObjData.h"
 #include "DataSupport.h"
+#include "HLUSupport.h"
 #include "NclTypeobj.h"
+#include "NclVar.h"
 #include <math.h>
 
 
+/*
+* udata is the record containing the index and the parent_id.
+* cbdata contains the id of the HLUObj child being deleted
+* 	if the value at the index doesn't match the nothing is done
+*/
+
+static void MultiDVal_HluObj_DestroyNotify
+#if 	NhlNeedProto
+(NhlArgVal cbdata, NhlArgVal udata)
+#else
+(cbdata,udata)
+NhlArgVal cbdata;
+NhlArgVal udata;
+#endif
+{
+	NclMultiDValHLUObjData self_md= NULL; 
+	obj value = (obj) cbdata.lngval;
+	HLUMDCalRec *crec = ( HLUMDCalRec *) udata.ptrval;
+	int parent = crec->parent_id;
+	int index = crec->index;
+	NclScalar mis;
+	NclMultiDValData tmp_md = NULL;
+	obj *obj_ids = NULL;
+	int i;
+	NclRefList *plptr;
+	NclScalar *tmp_mis;
+	int dim_size = 1;
+	int replaced = 0;
+
+	self_md = (NclMultiDValHLUObjData)_NclGetObj(parent);
+	
+	if(self_md != NULL) {
+		obj_ids = (obj*)self_md->multidval.val;
+		if(self_md->multidval.missing_value.has_missing) {
+			mis = self_md->multidval.missing_value.value;
+		} else {
+			mis = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis;
+			replaced = 1;
+		}
+		if(obj_ids[index] == value) {
+			obj_ids[index] = mis.objval;
+			_NhlCBDelete(self_md->multi_obj.cbs[index]);
+			self_md->multi_obj.cbs[index] = NULL;
+			NclFree(self_md->multi_obj.crecs[index]); 
+			self_md->multi_obj.crecs[index] = NULL;
+			if((self_md->obj.ref_count > 0)&&(replaced)) {
+				plptr = self_md->obj.parents;
+				tmp_mis = NclMalloc((unsigned)sizeof(NclScalar));
+				*tmp_mis = mis;
+				tmp_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,(void*)tmp_mis,NULL,1,&dim_size,PERMANENT,NULL,nclTypeobjClass);
+				while(plptr != NULL) {
+					if(plptr->pptr->obj.obj_type_mask & Ncl_Var) {
+						_NclWriteAtt((NclVar)(plptr->pptr),NCL_MISSING_VALUE_ATT,tmp_md,NULL);
+					}
+					plptr = plptr->next;
+				}
+				_NclDestroyObj((NclObj)tmp_md);
+			}
+		} 
+	} 
+}
+
+static _NhlCB AddDestroyNotify
+#if	NhlNeedProto
+(NclMultiDValHLUObjData self_md,int index)
+#else
+(self_md,index)
+NclMultiDValHLUObjData self_md;
+int index;
+#endif
+{
+	HLUMDCalRec *crec = NclMalloc(sizeof(HLUMDCalRec));
+	NhlArgVal udata;
+	NhlArgVal selector;
+	
+	crec->parent_id = self_md->obj.id;
+	crec->index = index;
+	udata.ptrval = (NhlPointer)crec;
+	selector.lngval = 0;
+	self_md->multi_obj.crecs[index] = crec;
+	return(_NhlCBAdd(self_md->multi_obj.cblist,selector,MultiDVal_HluObj_DestroyNotify,udata));
+}
 static struct _NclDataRec *MultiDVal_HluObj_ReadSection
 #if	NhlNeedProto
 (NclData self, NclSelectionRecord * sel,NclScalar *missing)
@@ -329,8 +414,8 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 	NclData value;
 #endif
 {
-	NclMultiDValData target_md = (NclMultiDValData)target;
-	NclMultiDValData value_md = (NclMultiDValData)value;
+	NclMultiDValHLUObjData target_md = (NclMultiDValHLUObjData)target;
+	NclMultiDValHLUObjData value_md = (NclMultiDValHLUObjData)value;
 /*
 * This selection record applys to the target record and it represents a 
 * mapping from the value object into target. 
@@ -395,6 +480,10 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 						tmp_ho = (NclHLUObj)_NclGetObj(((obj*)target_md->multidval.val)[i]);
 					} 
 					if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
+						if(target_md->multi_obj.cbs[i] != NULL) {
+							_NhlCBDelete(target_md->multi_obj.cbs[i]);
+							target_md->multi_obj.cbs[i] = NULL;
+						}
 						(void)_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
                 			}
 					tmp_ho = NULL;
@@ -406,23 +495,33 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 					}
 					if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
 			               		(void)_NclAddParent((NclObj)tmp_ho,(NclObj)target_md);
-                			}
+						target_md->multi_obj.cbs[i] = AddDestroyNotify(target_md,i);
+                			} else {
+						target_md->multi_obj.cbs[i] = NULL;
+					}
 
 				} else {
+					tmp_ho = NULL;
+					if(!(target_md->multidval.missing_value.has_missing)||(target_md->multidval.missing_value.value.objval != ((obj*)target_md->multidval.val)[i])) {
+						tmp_ho = (NclHLUObj)_NclGetObj(((obj*)target_md->multidval.val)[i]);
+					}
+					if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
+						if(target_md->multi_obj.cbs[i] != NULL) {
+							_NhlCBDelete(target_md->multi_obj.cbs[i]);
+							target_md->multi_obj.cbs[i] = NULL;
+						}
+						(void)_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
+                			}
 					tmp_ho = NULL;
 					if(!(value_md->multidval.missing_value.has_missing) ||(value_md->multidval.missing_value.value.objval != val[i])) {
 						tmp_ho = (NclHLUObj)_NclGetObj((int)val[i]);
 					}
 					if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
 			               		(void)_NclAddParent((NclObj)tmp_ho,(NclObj)target_md);
-                			}
-					tmp_ho = NULL;
-					if(!(target_md->multidval.missing_value.has_missing)||(target_md->multidval.missing_value.value.objval != ((obj*)target_md->multidval.val)[i])) {
-						tmp_ho = (NclHLUObj)_NclGetObj(((obj*)target_md->multidval.val)[i]);
+						target_md->multi_obj.cbs[i] = AddDestroyNotify(target_md,i);
+                			} else {
+						target_md->multi_obj.cbs[i] = NULL;
 					}
-					if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
-						(void)_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
-                			}
 					((obj*)target_md->multidval.val)[i] = val[i];
 				}
 			}
@@ -566,6 +665,10 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 			if(((obj*)target_md->multidval.val)[to] != target_md->multidval.missing_value.value.objval){
 				tmp_ho = (NclHLUObj)_NclGetObj(((obj*)target_md->multidval.val)[to]);
 				if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
+					if(target_md->multi_obj.cbs[to] != NULL) {
+						_NhlCBDelete(target_md->multi_obj.cbs[to]);
+						target_md->multi_obj.cbs[to] = NULL;
+					}
 					(void)_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
                 		}
 			}
@@ -574,7 +677,10 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 				tmp_ho = (NclHLUObj)_NclGetObj(val[from]);
 				if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
 					(void)_NclAddParent((NclObj)tmp_ho,(NclObj)target_md);
-                		}
+					target_md->multi_obj.cbs[to] = AddDestroyNotify(target_md,to);
+                		} else {
+					target_md->multi_obj.cbs[to] = NULL;
+				}
 			}
 			((obj*)target_md->multidval.val)[to] = 
 				((val[from] == value_md->multidval.missing_value.value.objval) ? 
@@ -583,19 +689,26 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 		} else {
 			
 			tmp_ho = NULL;
+			if(!(target_md->multidval.missing_value.has_missing)||(target_md->multidval.missing_value.value.objval != ((obj*)target_md->multidval.val)[to])) {
+				tmp_ho = (NclHLUObj)_NclGetObj(((obj*)target_md->multidval.val)[to]);
+			}
+			if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
+				if(target_md->multi_obj.cbs[to] != NULL) {
+					_NhlCBDelete(target_md->multi_obj.cbs[to]);
+					target_md->multi_obj.cbs[to] = NULL;
+				}
+				(void)_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
+                	}
+			tmp_ho = NULL;
 			if(!(value_md->multidval.missing_value.has_missing) ||(value_md->multidval.missing_value.value.objval != val[from])) {
 				tmp_ho = (NclHLUObj)_NclGetObj((int)val[from]);
 			}
 			if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
 				(void)_NclAddParent((NclObj)tmp_ho,(NclObj)target_md);
-                	}
-			tmp_ho = NULL;
-			if(!(target_md->multidval.missing_value.has_missing)||(target_md->multidval.missing_value.value.objval != ((obj*)target_md->multidval.val)[to])) {
-				tmp_ho = (NclHLUObj)_NclGetObj(((obj*)target_md->multidval.val)[to]);
+				target_md->multi_obj.cbs[to] = AddDestroyNotify(target_md,to);
+                	} else {
+				target_md->multi_obj.cbs[to] = NULL;
 			}
-			if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
-				(void)_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
-                	}
 			((obj*)target_md->multidval.val)[to] = val[from];
 		}
 		if(compare_sel[n_dims_target-1] <0) {
@@ -686,8 +799,8 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 	NclData value;
 #endif
 {
-	NclMultiDValData target_md = (NclMultiDValData)target;
-	NclMultiDValData value_md = (NclMultiDValData)value;
+	NclMultiDValHLUObjData target_md = (NclMultiDValHLUObjData)target;
+	NclMultiDValHLUObjData value_md = (NclMultiDValHLUObjData)value;
 /*
 * This selection record applys to the target record and it represents a 
 * mapping from the value object into target. 
@@ -854,6 +967,10 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 		if(!(target_md->multidval.missing_value.has_missing)||(((obj*)target_md->multidval.val)[to] != target_md->multidval.missing_value.value.objval)) {
 			tmp_ho = (NclHLUObj)_NclGetObj((int)((obj*)target_md->multidval.val)[to]);
 			if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
+				if(target_md->multi_obj.cbs[to] != NULL) {
+					_NhlCBDelete(target_md->multi_obj.cbs[to]);
+					target_md->multi_obj.cbs[to] = NULL;
+				}
 				(void)_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
 			}
 		} 
@@ -862,6 +979,9 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 			tmp_ho = (NclHLUObj)_NclGetObj((int)*val);
 			if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
 				(void)_NclAddParent((NclObj)tmp_ho,(NclObj)target_md);
+				target_md->multi_obj.cbs[to] = AddDestroyNotify(target_md,to);
+			} else {
+				target_md->multi_obj.cbs[to] = NULL;
 			}
 		}
 		if(compare_sel[n_dims_target-1] <0) {
@@ -997,8 +1117,8 @@ NclData from_data;
 NclSelectionRecord *from_selection;
 #endif
 {
-	NclMultiDValData target_md = (NclMultiDValData)to_data;
-	NclMultiDValData value_md = (NclMultiDValData)from_data;
+	NclMultiDValHLUObjData target_md = (NclMultiDValHLUObjData)to_data;
+	NclMultiDValHLUObjData value_md = (NclMultiDValHLUObjData)from_data;
 /*
 * This selection record applys to the target record and it represents a 
 * mapping from the value object into target. 
@@ -1288,6 +1408,10 @@ NclSelectionRecord *from_selection;
 			if(to_val[to] != target_md->multidval.missing_value.value.objval) {
 				tmp_ho = (NclHLUObj)_NclGetObj((int)to_val[to]);
 				if((tmp_ho != NULL)&&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)) {
+					if(target_md->multi_obj.cbs[to] != NULL) {
+						_NhlCBDelete(target_md->multi_obj.cbs[to]);
+						target_md->multi_obj.cbs[to] = NULL;
+					}
 					_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
 				}
 			}
@@ -1296,6 +1420,9 @@ NclSelectionRecord *from_selection;
 				tmp_ho = (NclHLUObj)_NclGetObj((int)from_val[from]);
 				if((tmp_ho != NULL)&&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)) {
 					_NclAddParent((NclObj)tmp_ho,(NclObj)target_md);
+					target_md->multi_obj.cbs[to] = AddDestroyNotify(target_md,to);
+				} else {
+					target_md->multi_obj.cbs[to] = NULL;
 				}
 			}
 			to_val[to] = 
@@ -1307,6 +1434,10 @@ NclSelectionRecord *from_selection;
 			if(!(target_md->multidval.missing_value.has_missing)||(to_val[to] != target_md->multidval.missing_value.value.objval)) {
 				tmp_ho = (NclHLUObj)_NclGetObj((int)to_val[to]);
 				if((tmp_ho != NULL)&&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)) {
+					if(target_md->multi_obj.cbs[to] != NULL) {
+						_NhlCBDelete(target_md->multi_obj.cbs[to]);
+						target_md->multi_obj.cbs[to] = NULL;
+					}
 					_NclDelParent((NclObj)tmp_ho,(NclObj)target_md);
 				}
 			}
@@ -1315,6 +1446,9 @@ NclSelectionRecord *from_selection;
 				tmp_ho = (NclHLUObj)_NclGetObj((int)from_val[from]);
 				if((tmp_ho != NULL)&&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)) {
 					_NclAddParent((NclObj)tmp_ho,(NclObj)target_md);
+					target_md->multi_obj.cbs[to] = AddDestroyNotify(target_md,to);
+				} else {
+					target_md->multi_obj.cbs[to] = NULL;
 				}
 			}
 			to_val[to] = from_val[from];
@@ -1471,7 +1605,7 @@ static void MultiDVal_HLUObj_Destroy
         NclObj  self;
 #endif
 {
-        NclMultiDValData self_md = (NclMultiDValData)self;
+        NclMultiDValHLUObjData self_md = (NclMultiDValHLUObjData)self;
 	NclHLUObj tmp_ho;
 	obj *obj_ids,i;
 
@@ -1480,11 +1614,33 @@ static void MultiDVal_HLUObj_Destroy
 	if(self_md->multidval.sel_rec != NULL) {
 		NclFree(self_md->multidval.sel_rec);
 	}
+	for(i = 0; i < self_md->multidval.totalelements; i++) {
+		if(self_md->multi_obj.crecs[i] != NULL) {
+			NclFree(self_md->multi_obj.crecs[i]);
+		}
+	}
+	NclFree(self_md->multi_obj.crecs);
+	_NhlCBDestroy(self_md->multi_obj.cblist);
+	NclFree(self_md->multi_obj.cbs);
 
-	obj_ids = (obj*)self_md->multidval.val;	
-	for(i = 0; i< self_md->multidval.totalelements; i++) {
-		tmp_ho = (NclHLUObj)_NclGetObj(obj_ids[i]);
-		(void)_NclDelParent((NclObj)tmp_ho,self);
+	if(self_md->multidval.missing_value.has_missing) {
+		obj_ids = (obj*)self_md->multidval.val;	
+		for(i = 0; i< self_md->multidval.totalelements; i++) {
+			if(obj_ids[i] != self_md->multidval.missing_value.value.objval) {
+				tmp_ho = (NclHLUObj)_NclGetObj(obj_ids[i]);
+				if(tmp_ho != NULL) {
+					(void)_NclDelParent((NclObj)tmp_ho,self);
+				}
+			}
+		}
+	} else {
+		obj_ids = (obj*)self_md->multidval.val;	
+		for(i = 0; i< self_md->multidval.totalelements; i++) {
+			tmp_ho = (NclHLUObj)_NclGetObj(obj_ids[i]);
+			if(tmp_ho != NULL) {
+				(void)_NclDelParent((NclObj)tmp_ho,self);
+			}
+		}
 	}
 	
 	if((self_md->obj.status != STATIC)&&(self_md->multidval.val != NULL)) {
@@ -1668,13 +1824,20 @@ NclSelectionRecord *sel_rec;
 
 
 
+	
 	thevalobj->multidval.data_type = NCL_obj;
 
 	obj_ids = (obj*)thevalobj->multidval.val;
+	thevalobj->multi_obj.cbs = (_NhlCB*)NclMalloc(sizeof(_NhlCB)*thevalobj->multidval.totalelements);
+	thevalobj->multi_obj.cblist = _NhlCBCreate(0,NULL,NULL);
+	thevalobj->multi_obj.crecs= (HLUMDCalRec**)NclMalloc(sizeof(HLUMDCalRec*)*thevalobj->multidval.totalelements);
 	for(i = 0; i<thevalobj->multidval.totalelements; i++) {
 		tmp_ho = (NclHLUObj)_NclGetObj(obj_ids[i]);
 		if((tmp_ho != NULL)&&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
 			(void)_NclAddParent((NclObj)tmp_ho,(NclObj)thevalobj);
+			thevalobj->multi_obj.cbs[i] = AddDestroyNotify(thevalobj,i);
+		} else {
+			thevalobj->multi_obj.cbs[i] = NULL;
 		}
 	}
 	

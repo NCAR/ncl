@@ -1,6 +1,7 @@
 
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Callbacks.h>
 #include "defs.h"
 #include "Symbol.h"
 #include <math.h>
@@ -2824,9 +2825,12 @@ int type;
 			if(data_type == NULL) {
 				from_type = value->multidval.data_type;
 				to_type = _NclPromoteType(from_type);
-				while((from_type != to_type )&&((*thefile->file.format_funcs->map_ncl_type_to_format)(to_type)==NULL)) {
+				while((from_type != to_type )&&((data_type = (*thefile->file.format_funcs->map_ncl_type_to_format)(to_type))==NULL)) {
 					from_type = to_type;
 					to_type = _NclPromoteType(from_type);
+				}
+				if(data_type != NULL) {
+					NclFree(data_type);
 				}
 				obj_type = _NclBasicDataTypeToObjType(to_type);
 				tmp_md = _NclCoerceData(value,obj_type,NULL);
@@ -2858,6 +2862,7 @@ int type;
 					new_dim_sizes
 				);
 				tmp_md = value;
+				NclFree(data_type);
 			}
 			if(ret < NhlWARNING) {
 				return(ret);
@@ -3045,6 +3050,7 @@ struct _NclSelectionRecord * sel_ptr;
 	NclFileAttInfoList *step;
 	NclBasicDataTypes from_type,to_type;
 	NclObjTypes obj_type;
+	void *data_type;
 
 	if(thefile->file.wr_status<=0) {
 		index = FileIsVar(thefile,var);
@@ -3104,27 +3110,32 @@ struct _NclSelectionRecord * sel_ptr;
 						_NclDeleteAtt(att_id,NrmQuarkToString(attname));
 					}
 				} else {
-					if((*thefile->file.format_funcs->map_ncl_type_to_format)(value->multidval.data_type) == NULL)  {
+					if((data_type = (*thefile->file.format_funcs->map_ncl_type_to_format)(value->multidval.data_type)) == NULL)  {
 						if(value->multidval.data_type == NCL_string) {
 							tmp_md = _NclStringMdToCharMd(value);
 							return(_NclFileWriteVarAtt(thefile,var,attname,tmp_md,sel_ptr));
 						} else {
 							from_type = value->multidval.data_type;
 							to_type = _NclPromoteType(from_type);
-							while((from_type != to_type)&&((*thefile->file.format_funcs->map_ncl_type_to_format)(to_type)==NULL)) {
+							while((from_type != to_type)&&((data_type =(*thefile->file.format_funcs->map_ncl_type_to_format)(to_type))==NULL)) {
 								from_type = to_type;
 								to_type = _NclPromoteType(from_type);
 							}
-							if((*thefile->file.format_funcs->map_ncl_type_to_format)(to_type)==NULL) {
+							if(data_type != NULL) {
+								NclFree(data_type);
+							}
+							if((data_type = (*thefile->file.format_funcs->map_ncl_type_to_format)(to_type))==NULL) {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"The type (%s) is not representable as an attribute in the file (%s)",_NclBasicDataTypeToName(to_type),NrmQuarkToString(thefile->file.fpath));
 								return(NhlFATAL);
 							} else {
+								NclFree(data_type);
 								obj_type = _NclBasicDataTypeToObjType(to_type);
 								tmp_md = _NclCoerceData(value,obj_type,NULL);
 							}
 						}
 						
 					} else {
+						NclFree(data_type);
 						tmp_md = value;
 					}
 					ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
@@ -3232,6 +3243,7 @@ struct _NclSelectionRecord *sel_ptr;
 	NhlErrorTypes ret = NhlNOERROR;
 	NclBasicDataTypes from_type,to_type;
 	NclObjTypes obj_type;
+	void *data_type;
 
 	if(thefile->file.wr_status<=0) {
 		if(thefile->file.file_atts_id == -1) {
@@ -3294,27 +3306,32 @@ struct _NclSelectionRecord *sel_ptr;
 					_NclDeleteAtt(att_id,NrmQuarkToString(attname));
 				}
 			} else {
-				if((*thefile->file.format_funcs->map_ncl_type_to_format)(value->multidval.data_type) == NULL)  {
+				if((data_type = (*thefile->file.format_funcs->map_ncl_type_to_format)(value->multidval.data_type)) == NULL)  {
 					if(value->multidval.data_type == NCL_string) {
 						tmp_md = _NclStringMdToCharMd(value);
 						return(_NclFileWriteAtt(thefile,attname,tmp_md,sel_ptr));
 					} else {
 						from_type = value->multidval.data_type;
 						to_type = _NclPromoteType(from_type);
-						while((from_type != to_type )&&((*thefile->file.format_funcs->map_ncl_type_to_format)(to_type)==NULL)) {
+						while((from_type != to_type )&&((data_type = (*thefile->file.format_funcs->map_ncl_type_to_format)(to_type))==NULL)) {
 							from_type = to_type;
 							to_type = _NclPromoteType(from_type);
 						}
-						if((*thefile->file.format_funcs->map_ncl_type_to_format)(to_type)==NULL)  {
+						if(data_type != NULL) {
+							NclFree(data_type);
+						}
+						if((data_type = (*thefile->file.format_funcs->map_ncl_type_to_format)(to_type))==NULL)  {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"The type (%s) is not representable as an attribute in the file (%s)",_NclBasicDataTypeToName(to_type),NrmQuarkToString(thefile->file.fpath));
        	                                          return(NhlFATAL);
 	
 						} else {
+							NclFree(data_type);
 							obj_type = _NclBasicDataTypeToObjType(to_type);
 							tmp_md = _NclCoerceData(value,obj_type,NULL);
 						}
 					}
 				} else {
+					NclFree(data_type);
 					tmp_md= value;
 				}
 				ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);

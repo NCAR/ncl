@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclCoordVar.c,v 1.7 1996-04-25 00:58:54 ethan Exp $
+ *      $Id: NclCoordVar.c,v 1.8 1996-05-09 23:30:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
  */
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Callbacks.h>
 #include "defs.h"
 #include "Symbol.h"
 #include "NclMdInc.h"

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.26 1996-05-03 15:48:46 ethan Exp $
+ *      $Id: NclVar.c,v 1.27 1996-05-09 23:30:41 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,7 @@
  */
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Callbacks.h>
 #include "defs.h"
 #include "Symbol.h"
 #include "NclMdInc.h"

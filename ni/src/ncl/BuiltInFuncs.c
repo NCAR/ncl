@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.33 1996-04-25 00:58:52 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.34 1996-05-09 23:29:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,7 @@ extern "C" {
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/PlotManager.h>
 #include <ncarg/hlu/Workstation.h>
+#include <ncarg/hlu/Callbacks.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/c.h>
 #include <sys/types.h>
@@ -1444,51 +1445,19 @@ NhlErrorTypes _NclIDestroy
 			return(NhlFATAL);
 		} else {
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK) {
-				obj_ids = (obj*)tmp_md->multidval.val;
-				if(!tmp_md->multidval.missing_value.has_missing) {	
-					att_val = (void*)NclMalloc(sizeof(NclScalar));
-					*(NclScalar*)att_val = tmp_md->multidval.type->type_class.default_mis;
-					i = 1;
-					att_md = _NclCreateMultiDVal(
-						NULL,
-						NULL,
-						Ncl_MultiDValData,
-						0,
-						att_val,
-						NULL,
-						1,
-						&i,
-						TEMPORARY,
-						NULL,
-						tmp_md->multidval.type);
-	
-						
-					_NclWriteAtt(data.u.data_var,NCL_MISSING_VALUE_ATT,att_md,NULL);
-					tmp_md->multidval.missing_value.has_missing = 1;
-					tmp_md->multidval.missing_value.value = tmp_md->multidval.type->type_class.default_mis;
-				}
-				for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
-					if(obj_ids[i] != tmp_md->multidval.missing_value.value.objval){
-						_NclDestroyObj(_NclGetObj(obj_ids[i]));
-					}
-					obj_ids[i] = tmp_md->multidval.missing_value.value.objval;
-				}
-			}
 		}
 	} else if(data.kind == NclStk_VAL) {
 		tmp_md = data.u.data_obj;
-		if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
-			obj_ids = (obj*)tmp_md->multidval.val;
-			for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
-				if(obj_ids[i] != tmp_md->multidval.missing_value.value.objval){
-					_NclDestroyObj(_NclGetObj(obj_ids[i]));
-				}
-				obj_ids[i] = tmp_md->multidval.missing_value.value.objval;
-			}
-		}
 	} else {
 		return(NhlFATAL);
+	}
+	if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
+		obj_ids = (obj*)tmp_md->multidval.val;
+		for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
+			if((tmp_md->multidval.missing_value.has_missing) &&(obj_ids[i] != tmp_md->multidval.missing_value.value.objval)){
+				_NclDestroyObj(_NclGetObj(obj_ids[i]));
+			}
+		}
 	}
 }
 NhlErrorTypes _NclIUpdate

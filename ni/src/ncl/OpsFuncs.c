@@ -5,6 +5,9 @@ extern "C" {
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/PlotManager.h>
+#include <ncarg/hlu/Callbacks.h>
+#include <ncarg/hlu/App.h>
+#include <ncarg/hlu/AppI.h>
 #include <ncarg/ncargC.h>
 #include "defs.h"
 #include <errno.h>
@@ -25,22 +28,40 @@ extern "C" {
 #include "NclBuiltInSupport.h"
 
 
+int defaultapp_hluobj_id = -1;
 
+static void DefaultAppChangeCB
+#if     NhlNeedProto
+(NhlArgVal cbdata, NhlArgVal udata)
+#else
+(cbdata,udata)
+NhlArgVal cbdata;
+NhlArgVal udata;
+#endif
+{
+	int hlu_id = (int)cbdata.lngval;
+	int nclhluobj_id = (int)udata.lngval;
+	int rl_list;
+	NhlBoolean tmp = 0;
+	NclHLUObj hlu_obj;
 
+	rl_list = NhlRLCreate(NhlGETRL);
+	NhlRLGet(rl_list,NhlNappDefaultParent,NhlTBoolean,&tmp);
+	NhlGetValues(hlu_id,rl_list);
+	NhlRLDestroy(rl_list);
 
+	hlu_obj = (NclHLUObj)_NclGetObj(nclhluobj_id);
 
+	if((hlu_obj != NULL)&&(hlu_obj->hlu.hlu_id == hlu_id)) {
+		if((!tmp)&&(defaultapp_hluobj_id == nclhluobj_id)) {
+			defaultapp_hluobj_id = -1;
+		} else if (tmp) {
+			defaultapp_hluobj_id = nclhluobj_id;
+		}
+	}
 
-
-
-
-
-
-
-
-
-
-
-
+	
+}
 
 
 
@@ -847,6 +868,7 @@ NclStackEntry _NclCreateHLUObjOp
 	NclStackEntry data_out;
 	int rl_list;
 	static int local_rl_list = 0;
+	int grl_list =0;
 	NhlGenArray *gen_array;
 	NclMultiDValData tmp_md = NULL;
 	NclMultiDValData tmp2_md = NULL;
@@ -854,7 +876,11 @@ NclStackEntry _NclCreateHLUObjOp
 	int *tmp_id = NULL,tmp_ho_id;
 	int dim_size = 1;
 	int parent_id = -1;
+	int parent_hluobj_id = -1;
 	int *ids;
+	int appd_id = 0;
+	NhlArgVal udata;
+
 
 	if(parent != NULL) 	 {
 		if(parent->multidval.totalelements > 1) {
@@ -863,6 +889,7 @@ NclStackEntry _NclCreateHLUObjOp
 		tmp_ho = (NclHLUObj)_NclGetObj(*(int*)parent->multidval.val);
 		if((tmp_ho != NULL)&&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)) {
 			parent_id = tmp_ho->hlu.hlu_id;
+			parent_hluobj_id = *(int*)parent->multidval.val;
 		} else {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclCreateHLUObjOp: Parent value is not an hlu object or is undefined");
 			_NclCleanUpStack(2*nres);
@@ -870,7 +897,19 @@ NclStackEntry _NclCreateHLUObjOp
 			data_out.u.data_obj = NULL;
 			return(data_out);
 		}
-	}
+	} else if(defaultapp_hluobj_id != -1) {
+		tmp_ho = (NclHLUObj)_NclGetObj(defaultapp_hluobj_id);
+		if((tmp_ho != NULL)&&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)) {
+                        parent_id = tmp_ho->hlu.hlu_id;
+			parent_hluobj_id = tmp_ho->obj.id;
+                } else {
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclCreateHLUObjOp: Parent value is not an hlu object or is undefined");
+                        _NclCleanUpStack(2*nres);
+                        data_out.kind = NclStk_NOVAL;
+                        data_out.u.data_obj = NULL;
+                        return(data_out);
+                }
+	} 
 
 	if(local_rl_list == 0) {
 		local_rl_list = NhlRLCreate(NhlSETRL);	
@@ -939,7 +978,15 @@ NclStackEntry _NclCreateHLUObjOp
 */
 			ids = (int*)NclMalloc((unsigned)sizeof(int)*tmp_md->multidval.totalelements);
 			for(j = 0; j < tmp_md->multidval.totalelements;j++) {
-				tmp_ho = (NclHLUObj)_NclGetObj(((int*)tmp_md->multidval.val)[j]);
+				if(tmp_md->multidval.missing_value.has_missing) {
+					if(((int*)tmp_md->multidval.val)[j] != tmp_md->multidval.missing_value.value.objval) {
+						tmp_ho = (NclHLUObj)_NclGetObj(((int*)tmp_md->multidval.val)[j]);
+					} else {
+						tmp_ho = NULL;
+					}
+				} else {
+					tmp_ho = (NclHLUObj)_NclGetObj(((int*)tmp_md->multidval.val)[j]);
+				}
 				if(tmp_ho != NULL) {
 					ids[j] = tmp_ho->hlu.hlu_id;
 				} else {
@@ -973,9 +1020,9 @@ NclStackEntry _NclCreateHLUObjOp
 	tmp_id = (int*)NclMalloc((unsigned)sizeof(int));
 
 	NhlCreate(&tmp_ho_id,the_hlu_obj,the_hlu_obj_class->u.obj_class_ptr,(parent_id == -1? NhlDEFAULT_APP:parent_id),rl_list);
-	tmp_ho = _NclHLUObjCreate(NULL,nclHLUObjClass,Ncl_HLUObj,0,TEMPORARY,tmp_ho_id,(parent_id == -1 ? -1 : *(int*)parent->multidval.val),the_hlu_obj_class->u.obj_class_ptr); 
+	tmp_ho = _NclHLUObjCreate(NULL,nclHLUObjClass,Ncl_HLUObj,0,TEMPORARY,tmp_ho_id,parent_hluobj_id,the_hlu_obj_class->u.obj_class_ptr); 
 	*tmp_id = tmp_ho->obj.id;
-	tmp_md = _NclMultiDValHLUObjDataCreate(
+	tmp2_md = _NclMultiDValHLUObjDataCreate(
 		NULL,
 		NULL,
 		Ncl_MultiDValHLUObjData,
@@ -987,8 +1034,44 @@ NclStackEntry _NclCreateHLUObjOp
 		TEMPORARY,
 		NULL
 	); 
-	if(tmp_md != NULL) {
-		data_out.u.data_obj = tmp_md;
+	if(NhlIsApp(tmp_ho->hlu.hlu_id)) {
+		appd_id = NhlAppGetDefaultParentId();
+		if(tmp_ho->hlu.hlu_id == appd_id) {	
+			defaultapp_hluobj_id = tmp_ho->obj.id;
+		}
+		udata.lngval = tmp_ho->obj.id;
+		tmp_ho->hlu.apcb = NhlSetAppDefaultChangeCB(the_hlu_obj_class->u.obj_class_ptr,DefaultAppChangeCB,udata);
+	}
+
+	
+	for(i = 0; i < nres; i++) {
+		data = _NclPeek(2*i);
+		switch(data->kind) {
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data->u.data_obj;
+		break;
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data->u.data_var,NULL,NULL);
+		break;
+		}
+		if(tmp_md->obj.obj_type_mask & Ncl_MultiDValHLUObjData) {
+			for(j = 0; j < tmp_md->multidval.totalelements;j++) {
+				if(tmp_md->multidval.missing_value.has_missing) {
+					if(((int*)tmp_md->multidval.val)[j] != tmp_md->multidval.missing_value.value.objval) {
+						tmp_ho = (NclHLUObj)_NclGetObj(((int*)tmp_md->multidval.val)[j]);
+					} else {
+						tmp_ho = NULL;
+					}
+				} else {
+					tmp_ho = (NclHLUObj)_NclGetObj(((int*)tmp_md->multidval.val)[j]);
+				}
+				if(tmp_ho != NULL) 
+					_NclAddHLUToExpList(_NclGetObj(*tmp_id),tmp_ho->obj.id);
+			}
+		}
+	}
+	if(tmp2_md != NULL) {
+		data_out.u.data_obj = tmp2_md;
 		data_out.kind = NclStk_VAL;
 	} else {
 		data_out.u.data_obj = NULL;
@@ -1014,12 +1097,14 @@ NclQuark res_name;
 {
 	NclStackEntry out_data;
 	int *obj_ids = NULL;
+	int *child_ids = NULL;
 	NclHLUObj hlu_ptr;
 	int i,n_items = 0;
 	NclMultiDValData tmp_md= NULL;
 	NclStackEntry tmp_data;
 	NhlErrorTypes ret = NhlNOERROR;
 	int rl_list;
+	int k;
 
 	rl_list = NhlRLCreate(NhlGETRL);	
 
@@ -1038,6 +1123,18 @@ NclQuark res_name;
 */
 				NhlGetValues(hlu_ptr->hlu.hlu_id,rl_list);
 				if(tmp_md != NULL) {	
+					if(tmp_md->obj.obj_type_mask & Ncl_MultiDValHLUObjData) {
+						child_ids = (int*)tmp_md->multidval.val;
+						for(k = 0; k < tmp_md->multidval.totalelements; k++) {
+							if(tmp_md->multidval.missing_value.has_missing) {
+								if(child_ids[k] != tmp_md->multidval.missing_value.value.objval) {
+									_NclAddHLUChild(hlu_ptr,child_ids[k]);
+								}
+							} else {
+								_NclAddHLUChild(hlu_ptr,child_ids[k]);
+							}
+						}
+					}
 					tmp_data.kind = NclStk_VAL;
 					tmp_data.u.data_obj = tmp_md;
 					if(_NclPush(tmp_data) == NhlFATAL) {
@@ -1067,6 +1164,18 @@ NclQuark res_name;
 		if((hlu_ptr != NULL) &&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
 			NhlGetValues(hlu_ptr->hlu.hlu_id,rl_list);
 			if(tmp_md != NULL) {
+				if(tmp_md->obj.obj_type_mask & Ncl_MultiDValHLUObjData) {
+					child_ids = (int*)tmp_md->multidval.val;
+					for(k = 0; k < tmp_md->multidval.totalelements; k++) {
+						if(tmp_md->multidval.missing_value.has_missing) {
+							if(child_ids[k] != tmp_md->multidval.missing_value.value.objval) {
+								_NclAddHLUChild(hlu_ptr,child_ids[k]);
+							}
+						} else {
+							_NclAddHLUChild(hlu_ptr,child_ids[k]);
+						}
+					}
+				}
 				out_data.kind = NclStk_VAL;
 				out_data.u.data_obj = tmp_md;
 				return(out_data);
@@ -1092,7 +1201,7 @@ NclMultiDValData the_hlu_data_obj;
 int nres;
 #endif
 {
-	int i,j;
+	int i,j,k;
 	NclStackEntry *data,*resname;
 	int rl_list;
 	static int local_rl_list = 0;
@@ -1102,6 +1211,7 @@ int nres;
 	int *obj_ids = NULL;
 	NclHLUObj hlu_ptr,tmp_ho;
 	int *ids;
+	
 
 
 
@@ -1163,8 +1273,24 @@ int nres;
 		} else {
 			ids = (int*)NclMalloc((unsigned)sizeof(int)*tmp_md->multidval.totalelements);
 			for(j = 0; j < tmp_md->multidval.totalelements;j++) {
-                                tmp_ho = (NclHLUObj)_NclGetObj(((int*)tmp_md->multidval.val)[j]);
-                                ids[j] = tmp_ho->hlu.hlu_id;
+				ids[j] = -1;
+				if(tmp_md->obj.obj_type_mask & Ncl_MultiDValHLUObjData ) {
+                                	tmp_ho = (NclHLUObj)_NclGetObj(((int*)tmp_md->multidval.val)[j]);
+					if(tmp_ho != NULL) {
+                                		ids[j] = tmp_ho->hlu.hlu_id;
+						obj_ids = (int*)the_hlu_data_obj->multidval.val;
+						for(k = 0; k < the_hlu_data_obj->multidval.totalelements; k++) {
+							if((!the_hlu_data_obj->multidval.missing_value.has_missing)||
+								(obj_ids[k]!= the_hlu_data_obj->multidval.missing_value.value.objval))  {
+								hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[k]);
+								if((hlu_ptr != NULL) &&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
+									_NclAddHLUToExpList(hlu_ptr,ids[j]);
+								}
+							} 
+						}
+					}
+					
+				}
                         }
 			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK){
                                 gen_array[i] = _NhlCreateGenArray(
@@ -1173,12 +1299,14 @@ int nres;
                                         sizeof(int),
                                         1,
                                         &tmp_md->multidval.totalelements,
-                                        0);
+                                        1);
                                 NhlRLSet(rl_list,NrmQuarkToString(
                                         *(string*)(tmp2_md->multidval.val)),
                                         NhlTGenArray,
                                         gen_array[i]);
+				NclFree(ids);
                         } else {
+				NclFree(ids);
                                 NhlPError(NhlWARNING,NhlEUNKNOWN,"The value associated with (%s) does not have an HLU representation",
                                                 NrmQuarkToString(*(string*)(tmp2_md->multidval.val)));
                                 gen_array[i] = NULL;
@@ -1196,9 +1324,12 @@ int nres;
 */
 	obj_ids = (int*)the_hlu_data_obj->multidval.val;
 	for(i = 0; i < the_hlu_data_obj->multidval.totalelements; i++ ) {
-		hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
-		if((hlu_ptr != NULL) &&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
-			NhlSetValues(hlu_ptr->hlu.hlu_id,rl_list);
+		if((!the_hlu_data_obj->multidval.missing_value.has_missing)||
+				(obj_ids[i]!= the_hlu_data_obj->multidval.missing_value.value.objval))  {
+			hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
+			if((hlu_ptr != NULL) &&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
+				NhlSetValues(hlu_ptr->hlu.hlu_id,rl_list);
+			}
 		}
 	}
 	for(i = 0; i < nres; i++) {

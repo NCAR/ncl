@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.14 1996-05-02 23:31:02 ethan Exp $
+ *      $Id: VarSupport.c,v 1.15 1996-05-09 23:30:48 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -561,19 +561,20 @@ NhlErrorTypes _NclBuildRSelection
 /*
 * Preconditions: subscripts are SCALAR and integer guarenteed!!!!
 */
-	if(var->var.var_quark != -1) {
-		v_name = NrmQuarkToString(var->var.var_quark);
-	} else if(var->var.thesym != NULL) {
-		v_name = var->var.thesym->name;
+	if(var != NULL) {
+		if(var->var.var_quark != -1) {
+			v_name = NrmQuarkToString(var->var.var_quark);
+		} else if(var->var.thesym != NULL) {
+			v_name = var->var.thesym->name;
+		} else {
+			v_name = "unnamed";
+		}
 	} else {
 		v_name = "unnamed";
 	}
 
 	if(range != NULL) {
 		if(dim_name != NULL) {
-/*
-*---------> code needed here <-------------------
-*/
 			index = _NclIsDim(var,dim_name);
 			if((index >= 0)&&(index < var->var.n_dims)){
 				sel->dim_num = index;
@@ -1012,10 +1013,14 @@ NhlErrorTypes  _NclBuildVSelection
 /*
 * Preconditions: subscripts are SCALAR and integer guarenteed!!!!
 */
-	if(var->var.var_quark != -1) {
-		v_name = NrmQuarkToString(var->var.var_quark);
-	} else if(var->var.thesym != NULL) {
-		v_name = var->var.thesym->name;
+	if(var != NULL) {
+		if(var->var.var_quark != -1) {
+			v_name = NrmQuarkToString(var->var.var_quark);
+		} else if(var->var.thesym != NULL) {
+			v_name = var->var.thesym->name;
+		} else {
+			v_name = "unnamed";
+		}
 	} else {
 		v_name = "unnamed";
 	}

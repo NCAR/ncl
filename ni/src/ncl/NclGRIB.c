@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Callbacks.h>
 #include "defs.h"
 #include <netcdf.h>
 #include "NclDataDefs.h"

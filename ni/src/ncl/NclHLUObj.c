@@ -3,12 +3,14 @@
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Callbacks.h>
 #include "defs.h"
 #include <errno.h>
 #include "NclHLUObj.h"
 #include "HLUSupport.h"
 #include "NclCallBacksI.h"
-
+#include "NclMultiDValHLUObjData.h"
+extern int defaultapp_hluobj_id;
 #ifdef MAKEAPI
 extern void _NclAddToDelList(
 #if	NhlNeedProto
@@ -36,13 +38,6 @@ NclObj parent;
 {
 	NclRefList * tmp = NULL;
 
-	tmp = theobj->obj.parents;
-	while(tmp != NULL) {
-		if(tmp->pptr->obj.id  == parent->obj.id) {
-			return(NhlNOERROR);
-		}
-		tmp = tmp->next;
-	}
 	tmp = theobj->obj.parents;
 	theobj->obj.parents = NclMalloc((unsigned)sizeof(NclRefList));
 	theobj->obj.parents->next = tmp;
@@ -79,7 +74,9 @@ NclObj parent;
 	if((tmp == NULL)&&(found)) {
 		_NclDestroyObj(theobj);
 		return(NhlNOERROR);
-	} 
+	} else if(found) {
+		return(NhlNOERROR);
+	}
 	while(tmp->next != NULL) {
 		if(tmp->next->pptr->obj.id == parent->obj.id) {
 			found = 1;
@@ -91,7 +88,7 @@ NclObj parent;
 				_NclDestroyObj(theobj);
 			return(NhlNOERROR);
 		} else {
-			tmp = tmp->next;
+				tmp = tmp->next;
 		}
 	}
 	return(NhlWARNING);
@@ -107,13 +104,47 @@ static void HLUObjDestroy
 {
 	NclHLUObj hlu_obj = (NclHLUObj) self,ptmp;
 	NclHLUChildList *tmp1,*tmp2;
+	NclHLUExpChildList *etmp1,*etmp2;
 	NclObj tmp_obj;
+	NhlArgVal cbdata;
+	NhlArgVal selector;
+	NclRefList *parents,*tmpptr,*tmpptr2;
+
+
 
 	if(hlu_obj != NULL) {
 /*
 * All of the HLU objects children will be destroyed by the NhlDestroy call
 * Therefore, all NclHLUObjs that point to children must be deleted.
 */
+		if(hlu_obj->obj.ref_count > 0) {
+			parents = hlu_obj->obj.parents;
+			while(parents != NULL) {
+				tmpptr = parents;
+				while(tmpptr->next != NULL) {
+					if(tmpptr->next->pptr->obj.id == parents->pptr->obj.id) {
+						tmpptr2 = tmpptr->next->next;
+						NclFree(tmpptr->next);
+						tmpptr->next = tmpptr2;
+					} else {
+						tmpptr = tmpptr->next;
+					}
+				}
+				if(parents->pptr->obj.obj_type_mask & Ncl_MultiDValHLUObjData) {
+					cbdata.lngval = hlu_obj->obj.id;
+					selector.lngval = 0;
+					_NhlCBCallCallbacks(((NclMultiDValHLUObjData)parents->pptr)->multi_obj.cblist,selector,cbdata);
+				} else if(parents->pptr->obj.obj_type_mask & Ncl_HLUObj) {
+					cbdata.lngval = hlu_obj->obj.id;
+					selector.lngval = 0;
+					_NhlCBCallCallbacks(((NclHLUObj)parents->pptr)->hlu.cblist,selector,cbdata);
+				}
+				tmpptr = parents;
+				parents = parents->next;
+				NclFree(tmpptr);
+			}
+			
+		}
 		if(hlu_obj->hlu.c_list != NULL) {
 			tmp1 = hlu_obj->hlu.c_list;
 			hlu_obj->hlu.c_list = NULL;
@@ -121,10 +152,37 @@ static void HLUObjDestroy
 				tmp_obj = _NclGetObj(tmp1->child_id);
 				tmp2 = tmp1;
 				tmp1 = tmp1->next;
+/*
+* This line keeps HLUObjDestroy from calling DelHLUChild on subsequent 
+* this object
+*/
+				if(((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id == hlu_obj->obj.id)
+					((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id = -1;
 				if(tmp_obj != NULL){
 					_NclDestroyObj(tmp_obj);
 				}
 				NclFree(tmp2);
+			}
+		}
+		if(hlu_obj->hlu.exp_list != NULL) {
+			etmp1 = hlu_obj->hlu.exp_list;
+			hlu_obj->hlu.exp_list = NULL;
+			while(etmp1 != NULL) {
+				tmp_obj = _NclGetObj(etmp1->child_id);
+				etmp2 = etmp1;
+				etmp1 = etmp1->next;
+/*
+* This line keeps HLUObjDestroy from calling DelHLUChild on subsequent 
+* this object
+*/
+				_NhlCBDelete(etmp2->cb);
+				NclFree(etmp2->crec);
+				if(((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id == hlu_obj->obj.id)
+					((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id = -1;
+				if(tmp_obj != NULL){
+					_NclDelParent(tmp_obj,(NclObj)hlu_obj);
+				}
+				NclFree(etmp2);
 			}
 		}
 		if(hlu_obj->hlu.parent_hluobj_id > -1) {
@@ -133,13 +191,17 @@ static void HLUObjDestroy
 				_NclDelHLUChild(ptmp,self->obj.id);
 			}
 		}
+		if(hlu_obj->hlu.apcb != NULL) {
+			_NhlCBDelete(hlu_obj->hlu.apcb);
+		}
+		_NhlCBDestroy(hlu_obj->hlu.cblist);
+		if(defaultapp_hluobj_id == hlu_obj->hlu.hlu_id) 
+			defaultapp_hluobj_id = -1;
 		if(hlu_obj->obj.status != STATIC) {
 #ifdef MAKEAPI
 		_NclAddToDelList(hlu_obj->hlu.hlu_id,NrmStringToQuark(NhlName(hlu_obj->hlu.hlu_id)),hlu_obj->hlu.class_ptr);
 #endif /* MAKEAPI */
-/*
 			NhlDestroy(hlu_obj->hlu.hlu_id);
-*/
 		}
 		_NclUnRegisterObj(self);
 		NclFree(self);
@@ -180,7 +242,87 @@ int child_id;
 		return(NhlNOERROR);
 	}
 }
+static void ExpDestroyNotify
+#if     NhlNeedProto
+(NhlArgVal cbdata, NhlArgVal udata)
+#else
+(cbdata,udata)
+NhlArgVal cbdata;
+NhlArgVal udata;
+#endif
+{
+	HLUObjCalRec *crec;
+	NclHLUObj self;
+	NclHLUExpChildList *tmp,*tmp2;
 
+	crec = (HLUObjCalRec*)udata.ptrval;
+	if(crec->child_id == cbdata.lngval) {
+		self = (NclHLUObj)_NclGetObj(crec->parent_id);
+		if(self != NULL) {
+			tmp = self->hlu.exp_list;
+			if(tmp->child_id == crec->child_id) {
+				self->hlu.exp_list = self->hlu.exp_list->next;
+				_NhlCBDelete(tmp->cb);
+				NclFree(tmp->crec);
+				NclFree(tmp);
+				return;
+			} else {
+				while(tmp->next != NULL) {
+					if(tmp->next->child_id == crec->child_id) {
+						tmp2 = tmp->next;
+						tmp->next = tmp->next->next;
+					 	_NhlCBDelete(tmp2->cb);
+						NclFree(tmp2->crec);
+						NclFree(tmp2);	
+						return;
+					}
+					tmp = tmp->next;
+				}
+			}
+		}
+	}
+}
+
+static NhlErrorTypes AddHLUExpChild
+#if	NhlNeedProto
+(NclHLUObj self, int child_id)
+#else
+(self, child_id)
+NclHLUObj self;
+int child_id;
+#endif
+{
+	NclHLUExpChildList *tmp;
+	NclHLUObj chi = (NclHLUObj)_NclGetObj(child_id);
+	NhlArgVal selector;
+	NhlArgVal udata;
+	
+	selector.lngval = 0;
+
+	
+	if(self->obj.id == child_id) {
+		fprintf(stdout,"HEY!!!!!!!!!!!!!!!!\n");
+	}	
+
+	tmp = self->hlu.exp_list;
+	while(tmp != NULL) {
+		if(tmp->child_id == child_id) {
+			return(NhlNOERROR);
+		}
+		tmp = tmp->next;
+	}
+	tmp = self->hlu.exp_list;
+	self->hlu.exp_list = (NclHLUExpChildList*)NclMalloc((unsigned)sizeof(NclHLUExpChildList));
+	self->hlu.exp_list->next = tmp;
+	self->hlu.exp_list->child_id = child_id;
+	self->hlu.exp_list->crec =  (HLUObjCalRec*)NclMalloc(sizeof(HLUObjCalRec));
+	self->hlu.exp_list->crec->child_id = child_id;
+	self->hlu.exp_list->crec->parent_id = self->obj.id;
+	udata.ptrval = (NhlPointer)self->hlu.exp_list->crec;
+	self->hlu.exp_list->cb = _NhlCBAdd(self->hlu.cblist,selector,ExpDestroyNotify,udata);
+	_NclAddParent((NclObj)chi,(NclObj)self);
+	return(NhlNOERROR);
+}
 static NhlErrorTypes AddHLUChild
 #if	NhlNeedProto
 (NclHLUObj self, int child_id)
@@ -285,7 +427,8 @@ NclHLUObjClassRec nclHLUObjClassRec = {
 	},
 	{
 /* foo; 	*/	DelHLUChild,
-/* foo; 	*/	AddHLUChild
+/* foo; 	*/	AddHLUChild,
+			AddHLUExpChild
 	}
 };
 
@@ -331,6 +474,9 @@ NhlClass class_ptr;
 	tmp->hlu.hlu_id = id;
 	tmp->hlu.hlu_name = NrmStringToQuark(NhlName(tmp->hlu.hlu_id));
 	tmp->hlu.c_list = NULL;
+	tmp->hlu.exp_list = NULL;
+	tmp->hlu.cblist = _NhlCBCreate(0,NULL,NULL);
+	tmp->hlu.apcb = NULL;
 	tmp->hlu.class_ptr = class_ptr;
 #ifdef MAKEAPI
 	_NclAddToNewList(tmp->hlu.hlu_id,tmp->hlu.hlu_name,tmp->hlu.class_ptr);

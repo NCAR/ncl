@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.28 1996-04-09 22:06:42 ethan Exp $
+ *      $Id: Symbol.c,v 1.29 1996-05-09 23:30:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@ extern "C" {
 #include <errno.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Callbacks.h>
 #include "defs.h"
 #include "Symbol.h"
 #include "NclBuiltIns.h"

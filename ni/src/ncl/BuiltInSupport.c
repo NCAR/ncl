@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInSupport.c,v 1.3 1995-03-25 00:58:43 ethan Exp $
+ *      $Id: BuiltInSupport.c,v 1.4 1996-05-09 23:29:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -20,23 +20,11 @@
  *
  *	Description:	
  */
-/*
-
-#include <ncarg/hlu/hluP.h>
-#include "defs.h"
-#include "NclDataDefs.h"
-#include "Symbol.h"
-#include "Machine.h"
-#include "NclMultiDValData.h"
-#include "VarSupport.h"
-#include "DataSupport.h"
-#include "NclType.h"
-#include "TypeSupport.h"
-*/
 
 
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Callbacks.h>
 #include "defs.h"
 #include "Symbol.h"
 #include "NclMdInc.h"

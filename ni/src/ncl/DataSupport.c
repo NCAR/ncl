@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.24 1996-04-19 23:05:24 ethan Exp $
+ *      $Id: DataSupport.c,v 1.25 1996-05-09 23:29:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,7 @@
 
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Callbacks.h>
 #include "defs.h"
 #include "Symbol.h"
 #include "NclMdInc.h"

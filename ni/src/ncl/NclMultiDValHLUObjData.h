@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.h,v 1.3 1995-01-28 01:51:46 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.h,v 1.4 1996-05-09 23:30:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -25,10 +25,17 @@
 #include "defs.h"
 #include "NclMultiDValData.h"
 
+typedef struct _HLUMDCalRec {
+        int parent_id;
+        int index;
+}HLUMDCalRec;
+
 
 
 typedef struct _NclMultiDValHLUObjDataPart {
-	char *space_holder;
+	_NhlCB *cbs;
+	_NhlCBList cblist;
+	HLUMDCalRec **crecs;
 }NclMultiDValHLUObjDataPart;
 
 typedef struct _NclMultiDValHLUObjDataRec {

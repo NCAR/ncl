@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.59 1996-05-02 23:30:41 ethan Exp $
+ *      $Id: Execute.c,v 1.60 1996-05-09 23:30:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@ extern "C" {
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Callbacks.h>
 
 #include "defs.h"
 #include "Symbol.h"
@@ -991,7 +992,7 @@ NclExecuteReturnStatus _NclExecute
 							fptr = _NclGetCurrentFileNameRec() + offset - 1;
 						}
 					} else {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"If: the result of the conditional expression yields a missing value can not determine branch, see ismissing and clearmissing functions");
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"If: the result of the conditional expression yields a missing value. NCL can not determine branch, see ismissing function");
 						estatus = NhlFATAL;
 					}
 					if(val->obj.status != PERMANENT) 
@@ -1617,6 +1618,11 @@ NclExecuteReturnStatus _NclExecute
 						data1.kind = NclStk_VAR;
 						data1.u.data_var = _NclVarRead(var->u.data_var,sel_ptr);
 						if(sel_ptr != NULL) {
+							for(i = 0; i <  sel_ptr->n_entries; i++) { 
+								if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
+									NclFree(sel_ptr->selection[i].u.vec.ind);
+								}
+							}
 							NclFree(sel_ptr);
 						}
 						if(data1.u.data_var != NULL) {
@@ -1800,6 +1806,11 @@ NclExecuteReturnStatus _NclExecute
 							if(rhs_md != NULL) {
 								ret = _NclAssignToVar(lhs_var->u.data_var,rhs_md,sel_ptr);
 								if(sel_ptr != NULL) {
+									for(i = 0; i <  sel_ptr->n_entries; i++) { 
+										if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
+											NclFree(sel_ptr->selection[i].u.vec.ind);
+										}
+									}
 									NclFree(sel_ptr);
 								}
 								if(rhs_md->obj.status != PERMANENT) {
@@ -1819,6 +1830,11 @@ NclExecuteReturnStatus _NclExecute
 */
 							estatus = _NclAssignVarToVar(lhs_var->u.data_var,sel_ptr,rhs.u.data_var,NULL);
 							if(sel_ptr != NULL) {
+								for(i = 0; i <  sel_ptr->n_entries; i++) { 
+									if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
+										NclFree(sel_ptr->selection[i].u.vec.ind);
+									}
+								}
 								NclFree(sel_ptr);
 							}
 							if(rhs.u.data_var->obj.status != PERMANENT) {
@@ -2094,8 +2110,8 @@ NclExecuteReturnStatus _NclExecute
 	
 								} else {
 									for(i = 0; i< pfinfo->theargs->n_dims; i++) {
-										if(pfinfo->theargs->dim_sizes[i] != -1) {
-											if(pfinfo->theargs->dim_sizes[i] != data.u.data_obj->multidval.dim_sizes[i]) {
+										if(pfinfo->theargs[arg_num].dim_sizes[i] != -1) {
+											if(pfinfo->theargs[arg_num].dim_sizes[i] != data.u.data_obj->multidval.dim_sizes[i]) {
 												NhlPError(NhlFATAL,NhlEUNKNOWN,"Size of dimension (%d) of argument (%d) does not match specification in (%s) function definition",i,arg_num,thesym->name);
 												estatus = NhlFATAL;
 											}
@@ -2641,6 +2657,12 @@ NclExecuteReturnStatus _NclExecute
 						}
 						if(estatus != NhlFATAL) {
 							data.u.data_obj = _NclReadAtt(var->u.data_var,attname,sel_ptr);
+							if(sel_ptr != NULL) {
+								if(sel_ptr->selection[0].sel_type == Ncl_VECSUBSCR) {	
+									NclFree(sel_ptr->selection[0].u.vec.ind);
+								}
+								NclFree(sel_ptr);
+							}
 							if(data.u.data_obj == NULL) {
 								data.kind = NclStk_NOVAL;
 								estatus = NhlFATAL;
@@ -3006,6 +3028,14 @@ NclExecuteReturnStatus _NclExecute
 
 									estatus = NhlFATAL;
 								}
+								if(sel_ptr != NULL) {
+									for(i = 0; i <  sel_ptr->n_entries; i++) { 
+										if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
+											NclFree(sel_ptr->selection[i].u.vec.ind);
+										}
+									}
+									NclFree(sel_ptr);
+								}
 							}
 							
 						} else {
@@ -3178,8 +3208,15 @@ NclExecuteReturnStatus _NclExecute
 								if(estatus != NhlFATAL) {
 									out_var.kind = NclStk_VAR;
 									out_var.u.data_var = _NclFileReadVar(file,var,sel_ptr);
-									if(sel_ptr != NULL)
+									if(sel_ptr != NULL) {
+										
+										for(i = 0; i <  sel_ptr->n_entries; i++) { 
+											if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
+												NclFree(sel_ptr->selection[i].u.vec.ind);
+											}
+										}
 										NclFree(sel_ptr);
+									}
 									if((estatus != NhlFATAL)&&(out_var.u.data_var != NULL)) {
 										estatus = _NclPush(out_var);
 									} else 	{
@@ -3285,7 +3322,16 @@ NclExecuteReturnStatus _NclExecute
 						if( ret < NhlINFO) {
 							estatus = ret;
 						}
+						if(sel_ptr != NULL) {
+							if(sel_ptr->selection[0].sel_type == Ncl_VECSUBSCR) {
+								NclFree(sel_ptr->selection[0].u.vec.ind);
+							}
+							NclFree(sel_ptr);
+						}
 					} else {
+						if(sel_ptr !=  NULL) {
+							NclFree(sel_ptr);
+						}
 						_NclCleanUpStack(1);
 					}
 				} else {
@@ -3397,6 +3443,12 @@ NclExecuteReturnStatus _NclExecute
 								if(rhs_md->obj.status != PERMANENT) {
 									_NclDestroyObj((NclObj)rhs_md);
 								}
+							}
+							if(sel_ptr != NULL) {
+								if(sel_ptr->selection[0].sel_type == Ncl_VECSUBSCR ) {
+									NclFree(sel_ptr->selection[0].u.vec.ind);
+								}
+								NclFree(sel_ptr);
 							}
 							
 						}
@@ -3533,6 +3585,12 @@ NclExecuteReturnStatus _NclExecute
 										_NclDestroyObj((NclObj)rhs_data.u.data_obj);
 								
 									}
+									if(sel_ptr != NULL) {
+										if(sel_ptr->selection[0].sel_type == Ncl_VECSUBSCR) {
+											NclFree(sel_ptr->selection[0].u.vec.ind);
+										}
+										NclFree(sel_ptr);
+									}
 								}
 							}
 						} else {
@@ -3631,6 +3689,12 @@ NclExecuteReturnStatus _NclExecute
 							estatus = NhlFATAL;
 						}
 						out_data.u.data_obj = _NclFileReadVarAtt(file,var_name,att_name,sel_ptr);
+						if(sel_ptr != NULL) {
+							if(sel_ptr->selection[0].sel_type == Ncl_VECSUBSCR) {
+								NclFree(sel_ptr->selection[0].u.vec.ind);
+							}
+							NclFree(sel_ptr);
+						}
 						if(out_data.u.data_obj != NULL) {
 							out_data.kind = NclStk_VAL;
 							estatus = _NclPush(out_data);
@@ -3739,6 +3803,12 @@ NclExecuteReturnStatus _NclExecute
 							estatus = NhlFATAL;
 						}
 						out_data.u.data_var =_NclFileReadCoord (file, coord_name,sel_ptr);
+						if(sel_ptr != NULL) {
+							if(sel_ptr->selection[0].sel_type == Ncl_VECSUBSCR) {
+								NclFree(sel_ptr->selection[0].u.vec.ind);
+							}	
+							NclFree(sel_ptr);
+						}
 						if(out_data.u.data_var != NULL) {
 							out_data.kind = NclStk_VAR;
 							estatus = _NclPush(out_data);
@@ -3832,6 +3902,11 @@ NclExecuteReturnStatus _NclExecute
 						lhs_var->kind = NclStk_VAR;
 						lhs_var->u.data_var = _NclVarRead(rhs_var->u.data_var,rhs_sel_ptr);
 						if(rhs_sel_ptr != NULL) {
+							for(i = 0; i <  rhs_sel_ptr->n_entries; i++) {
+								if(rhs_sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
+									NclFree(rhs_sel_ptr->selection[i].u.vec.ind);
+								}
+							}
 							NclFree(rhs_sel_ptr);
 						}
 						if(!_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT)) {	
@@ -3947,9 +4022,19 @@ NclExecuteReturnStatus _NclExecute
 					if(estatus != NhlFATAL) {
 						ret = _NclAssignVarToVar(lhs_var->u.data_var,lhs_sel_ptr,rhs_var->u.data_var,rhs_sel_ptr);
 						if(lhs_sel_ptr != NULL) {
+							for(i = 0; i <  lhs_sel_ptr->n_entries; i++) { 
+								if(lhs_sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
+									NclFree(lhs_sel_ptr->selection[i].u.vec.ind);
+								}
+							}
 							NclFree(lhs_sel_ptr);
 						}
 						if(rhs_sel_ptr != NULL) {
+							for(i = 0; i <  rhs_sel_ptr->n_entries; i++) { 
+								if(rhs_sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
+									NclFree(rhs_sel_ptr->selection[i].u.vec.ind);
+								}
+							}
 							NclFree(rhs_sel_ptr);
 						}
 						if(ret < NhlINFO) {

@@ -1,6 +1,14 @@
 #ifndef HLUSupport_h
 #define HLUSupport_h
 
+
+extern NhlErrorTypes _NclAddHLUToExpList(
+#if NhlNeedProto
+NclHLUObj /*ptmp*/,
+int /*nclhlu_id*/
+#endif
+);
+
 extern NhlErrorTypes _NclDelHLUChild(
 #if NhlNeedProto
 NclHLUObj /*ptmp*/,
@@ -16,3 +24,4 @@ int /*nclhlu_id*/
 );
 
 #endif /* HLUSupport_h */
+

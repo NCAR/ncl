@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.17 1996-04-24 00:19:44 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.18 1996-05-09 23:30:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -328,6 +328,7 @@ int wr_status;
 		}
 	} else {
 		tmp->vars = NULL;
+		tmp->has_scalar_dim = 0;
 	}
 	if(tmp->n_file_atts != 0 ) {
 		stepalptr = &(tmp->file_atts);
@@ -1211,6 +1212,7 @@ long* dim_sizes;
 			ncendef(cdfid);
 			ncclose(cdfid);
 			if(ret == -1) {
+				NclFree(the_data_type);
 				return(NhlFATAL);
 			} 
 	
@@ -1251,6 +1253,7 @@ long* dim_sizes;
 				}
 				rec->n_vars++;
 			}
+			NclFree(the_data_type);
 			return(NhlNOERROR);
 		} else {
 			ncclose(cdfid);
@@ -1296,6 +1299,7 @@ NclBasicDataTypes data_type;
 					if(ret == -1) {
 						ncabort(cdfid);
 						ncclose(cdfid);
+						NclFree(the_data_type);
 						return(NhlFATAL);
 					} 
 				}
@@ -1333,6 +1337,7 @@ NclBasicDataTypes data_type;
 				stepvl->next->var_inq->att_list = NULL;
 				rec->n_vars++;
 			}
+			NclFree(the_data_type);
 		} else {
 			ncclose(cdfid);
 		}
@@ -1413,6 +1418,7 @@ static NhlErrorTypes NetAddAtt
 			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
 			if(cdfid == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
+				NclFree(the_data_type);
 				return(NhlFATAL);
 			}
 			ncredef(cdfid);
@@ -1445,6 +1451,7 @@ static NhlErrorTypes NetAddAtt
 					stepal->next->next = NULL;
 				}
 				rec->n_file_atts++;
+				NclFree(the_data_type);
 				return(NhlNOERROR);
 			} 
 		} 
@@ -1480,6 +1487,7 @@ static NhlErrorTypes NetAddVarAtt
 			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
 			if(cdfid == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
+				NclFree(the_data_type);
 				return(NhlFATAL);
 			}
 			stepvl = rec->vars;	
@@ -1521,6 +1529,7 @@ static NhlErrorTypes NetAddVarAtt
 					stepal->next->next = NULL;
 					stepvl->var_inq->natts++ ;
 				}
+				NclFree(the_data_type);
 				return(NhlNOERROR);
 			} 
 		} 

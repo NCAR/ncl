@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclHLUVar.c,v 1.6 1995-06-08 15:35:01 boote Exp $
+ *      $Id: NclHLUVar.c,v 1.7 1996-05-09 23:30:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
  */
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Callbacks.h>
 #include "defs.h"
 #include "Symbol.h"
 #include "NclMdInc.h"

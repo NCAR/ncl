@@ -5,6 +5,7 @@
 #include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/PlotManager.h>
 #include <ncarg/hlu/DataComm.h>
+#include <ncarg/hlu/Callbacks.h>
 #include "defs.h"
 #include "Symbol.h"
 
@@ -821,9 +822,11 @@ NhlErrorTypes _NclIAddData
 					tmp = NhlAddData(tmp_hlu_ptr[i]->hlu.hlu_id,NrmQuarkToString(*resname),tmp_data_ptr[l]->hlu.hlu_id);
 
 					if(tmp > 0) {
+						_NclAddHLUToExpList(tmp_hlu_ptr[i],tmp_data_ptr[l]->obj.id);
 						tmp_layer = _NhlGetLayer(tmp);
 						if(tmp_layer != NULL) {
                                                 	tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,tmp,-1,tmp_layer->base.layer_class);
+							_NclAddHLUChild(tmp_hlu_ptr[i],tmp_hlu->obj.id);
 							out_dspec_ids[i*j+l] = tmp_hlu->obj.id;
 						} else {
 							out_dspec_ids[i*j+l] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
@@ -1192,9 +1195,11 @@ NhlErrorTypes _NclIAddAnnotation
 					tmp= NhlAddAnnotation(tmp_base_ptr->hlu.hlu_id,tmp_hlu_ptr[i]->hlu.hlu_id);
 
 					if(tmp > 0) {
+						_NclAddHLUToExpList(tmp_base_ptr,tmp_hlu_ptr[i]->obj.id);
 						tmp_layer = _NhlGetLayer(tmp);
 						if(tmp_layer != NULL) {
 							tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,tmp,-1,tmp_layer->base.layer_class);
+							_NclAddHLUChild(tmp_base_ptr,tmp_hlu->obj.id);
 							out_anno_ids[i] =  tmp_hlu->obj.id;
 						} else {
 							out_anno_ids[i] =  ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypeobj.c.specific,v 1.6 1995-12-19 20:42:40 boote Exp $
+ *      $Id: NclTypeobj.c.specific,v 1.7 1996-05-09 23:30:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -20,11 +20,12 @@
  *
  *	Description:	
  */
+#include <ncarg/hlu/BaseP.h>
+#include <ncarg/hlu/DataComm.h>
+#include <ncarg/hlu/Callbacks.h>
 #include "NclTypelogical.h"
 #include "NclHLUObj.h"
 #include "NclMultiDValHLUObjData.h"
-#include <ncarg/hlu/BaseP.h>
-#include <ncarg/hlu/DataComm.h>
 
 static NhlErrorTypes Ncl_Type_obj_print
 #if     NhlNeedProto
