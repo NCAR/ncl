@@ -1,5 +1,5 @@
 /*
- *      $Id: c_mdfnme.c,v 1.1 2001-10-10 02:51:24 haley Exp $
+ *      $Id: c_mdfnme.c,v 1.2 2002-02-23 03:01:45 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -47,9 +47,13 @@ char *c_mdfnme
     ft_str=_cptofcd(buff,len);
     NGCALLF(mdfnme,MDFNME)(ft_str,&iain,&ilvl);
     strcpy(buff,_fcdtocp(ft_str));
+#if defined(AbsoftProFortran)
+    extern NGstring NGCALLF(mdfnme,MDFNME)(char *,int*,int*,int);
+    NGCALLF(mdfnme,MDFNME)(buff,&iain,&ilvl,len);
 #else
     extern NGstring NGCALLF(mdfnme,MDFNME)(char *,int,int*,int*);
     NGCALLF(mdfnme,MDFNME)(buff,len,&iain,&ilvl);
+#endif
 #endif
     buff[c_icloem(buff)]='\0';
     return(buff);

@@ -1,5 +1,5 @@
 /*
- *      $Id: c_mdname.c,v 1.1 2001-10-10 02:51:28 haley Exp $
+ *      $Id: c_mdname.c,v 1.2 2002-02-23 03:01:45 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -40,14 +40,19 @@ char *c_mdname
     int len=64;
     static char buff[65];
 #if defined(cray)
-	extern NGstring NGCALLF(mdname,MDNAME)(_fcd,int*);
+    extern NGstring NGCALLF(mdname,MDNAME)(_fcd,int*);
     _fcd ft_str;
     ft_str=_cptofcd(buff,len);
     NGCALLF(mdname,MDNAME)(ft_str,&iain);
     strcpy(buff,_fcdtocp(ft_str));
 #else
-	extern NGstring NGCALLF(mdname,MDNAME)(char*,int,int*);
+#if defined(AbsoftProFortran)
+    extern NGstring NGCALLF(mdname,MDNAME)(char*,int*,int);
+    NGCALLF(mdname,MDNAME)(buff,&iain,len);
+#else
+    extern NGstring NGCALLF(mdname,MDNAME)(char*,int,int*);
     NGCALLF(mdname,MDNAME)(buff,len,&iain);
+#endif
 #endif
     buff[c_icloem(buff)]='\0';
     return(buff);
