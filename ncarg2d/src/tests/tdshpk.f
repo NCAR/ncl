@@ -1,5 +1,5 @@
 C
-C $Id: tdshpk.f,v 1.3 1994-09-08 20:08:51 kennison Exp $
+C $Id: tdshpk.f,v 1.4 1994-09-22 22:13:40 kennison Exp $
 C
 C Define error file number, Fortran logical unit number, workstation type, and
 C workstation ID.
@@ -318,10 +318,10 @@ C 'LTL' = 0, 'MFS' = 1, 'PCF' = 0, 'SAF' = 360, 'SCF' = 1, 'SSL' = .01,
 C 'TCS' = 2.5, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
         CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)',
-     +               '$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPDRAW')
+     +             '$_$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPDRAW')
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPDRAW' (character),
+C or '$_$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPDRAW' (character),
 C 'LTL' = 0, 'MFS' = 1, 'PCF' = 0, 'SAF' = 360, 'SCF' = 1, 'SSL' = .01,
 C 'TCS' = 2.5, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
@@ -348,15 +348,15 @@ C Use DPSMTH to draw the same spiral.  The single-character flag is
 C still on and smoothing is still on.
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPDRAW' (character),
+C or '$_$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPDRAW' (character),
 C 'LTL' = 0, 'MFS' = 1, 'PCF' = 0, 'SAF' = 360, 'SCF' = 1, 'SSL' = .01,
 C 'TCS' = 2.5, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
         CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)',
-     +                 '$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPSMTH')
+     +               '$_$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPSMTH')
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPSMTH' (character),
+C or '$_$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPSMTH' (character),
 C 'LTL' = 0, 'MFS' = 1, 'PCF' = 0, 'SAF' = 360, 'SCF' = 1, 'SSL' = .01,
 C 'TCS' = 2.5, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
@@ -384,7 +384,7 @@ C codes in the label string and use color to distinguish the label
 C from the line.
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPSMTH' (character),
+C or '$_$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPSMTH' (character),
 C 'LTL' = 0, 'MFS' = 1, 'PCF' = 0, 'SAF' = 360, 'SCF' = 1, 'SSL' = .01,
 C 'TCS' = 2.5, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
@@ -636,7 +636,7 @@ C
 C
 C Done.
 C
-	WRITE
+        WRITE
      +    (6,'(''DASHPACK TEST EXECUTED OKAY - SEE PLOTS TO CERTIFY'')')
 C
         IERR=0
