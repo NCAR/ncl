@@ -1,5 +1,5 @@
 C
-C $Id: plotit.f,v 1.4 1995-12-21 00:13:47 kennison Exp $
+C $Id: plotit.f,v 1.5 2000-02-16 00:53:09 kennison Exp $
 C
       SUBROUTINE PLOTIT (IX,IY,IP)
 C
@@ -51,6 +51,15 @@ C If a buffer flush is requested, jump.
 C
       IF (IP.EQ.2) GO TO 101
 C
+C A pen-up move to the current point (whether the pen is up or down) is
+C simply ignored, since it cannot possibly have any effect but to put
+C extra pen-up moves in the buffer.
+C
+      FX=FLOAT(IX)/32767.
+      FY=FLOAT(IY)/32767.
+C
+      IF (IP.EQ.0.AND.FX.EQ.QX(NQ).AND.FY.EQ.QY(NQ)) RETURN
+C
 C Set JX and JY for a possible call to MXMY.
 C
       JX=IX
@@ -74,8 +83,8 @@ C
 C Save the coordinates of the point, in the fractional coordinate
 C system.
 C
-      QX(NQ)=FLOAT(IX)/32767.
-      QY(NQ)=FLOAT(IY)/32767.
+      QX(NQ)=FX
+      QY(NQ)=FY
 C
 C If all three arguments were zero, or if the point-coordinate buffer
 C is full, dump the buffers; otherwise, return.

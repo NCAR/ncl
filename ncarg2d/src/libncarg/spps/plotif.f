@@ -1,5 +1,5 @@
 C
-C $Id: plotif.f,v 1.4 1995-12-21 00:13:46 kennison Exp $
+C $Id: plotif.f,v 1.5 2000-02-16 00:53:08 kennison Exp $
 C
       SUBROUTINE PLOTIF (FX,FY,IP)
 C
@@ -49,6 +49,12 @@ C
 C If a buffer flush is requested, jump.
 C
       IF (IP.EQ.2) GO TO 101
+C
+C A pen-up move to the current point (whether the pen is up or down) is
+C simply ignored, since it cannot possibly have any effect but to put
+C extra pen-up moves in the buffer.
+C
+      IF (IP.EQ.0.AND.FX.EQ.QX(NQ).AND.FY.EQ.QY(NQ)) RETURN
 C
 C Set JX and JY for a possible call to MXMY.
 C
