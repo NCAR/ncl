@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationI.h,v 1.8 1996-03-16 21:37:46 boote Exp $
+ *      $Id: WorkstationI.h,v 1.9 1997-02-27 20:13:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,9 @@
 
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/Workstation.h>
+
+/*cbdata.ptrval is workstation NhlLayer */
+#define	_NhlCBworkPreOpen	"CBworkPreOpen"
 
 /*
  * Private Workstation Resources are defined here.

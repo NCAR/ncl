@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.26 1997-02-24 22:12:23 boote Exp $
+ *      $Id: Error.c,v 1.27 1997-02-27 20:13:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1206,8 +1206,8 @@ AddErrMsg
 	else
 		ret = NhlErrSPrintMsg(buffer,msg);
 
-	NhlINIT_ARGVAL(dummy);
-	NhlINIT_ARGVAL(cbdata);
+	NhlINITVAR(dummy);
+	NhlINITVAR(cbdata);
 	cbdata.ptrval = (NhlPointer)msg;
 	_NhlCallObjCallbacks((NhlLayer)errorLayer,_NhlCBerrPError,dummy,cbdata);
 

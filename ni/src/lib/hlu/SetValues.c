@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.26 1997-02-24 22:12:34 boote Exp $
+ *      $Id: SetValues.c,v 1.27 1997-02-27 20:13:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -489,7 +489,7 @@ _NhlSetLayerValues
 		}
 	}
 
-	NhlINIT_ARGVAL(cbdata);
+	NhlINITVAR(cbdata);
 	cbdata.ptrval = (NhlPointer)oldl;
 	_NhlIterateObjCallbacks(l,_NhlCBobjValueSet,_NhlcbCALL,cbdata);
 

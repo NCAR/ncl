@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.36 1997-01-17 18:57:54 boote Exp $
+ *      $Id: hluP.h,v 1.37 1997-02-27 20:13:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -498,6 +498,28 @@ extern void _NhlCallObjCallbacks(
 
 extern void _NhlIterateObjCallbacks(
 	NhlLayer	l,
+	NhlString	cbname,
+	_NhlCBTask	task,
+	NhlArgVal	cbdata
+);
+
+extern _NhlCB _NhlAddClassCallback(
+	NhlClass	lc,
+	NhlString	cbname,
+	NhlArgVal	sel,
+	_NhlCBFunc	f,
+	NhlArgVal	udata
+);
+
+extern void _NhlCallClassCallbacks(
+	NhlClass	lc,
+	NhlString	cbname,
+	NhlArgVal	sel,
+	NhlArgVal	cbdata
+);
+
+extern void _NhlIterateClassCallbacks(
+	NhlClass	lc,
 	NhlString	cbname,
 	_NhlCBTask	task,
 	NhlArgVal	cbdata

@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.35 1997-02-24 22:12:33 boote Exp $
+ *      $Id: PlotManager.c,v 1.36 1997-02-27 20:13:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -5054,8 +5054,8 @@ NhlErrorTypes NhlAddOverlay
 		ovp->pm_recs[i] = NULL;
 	}
 
-	NhlINIT_ARGVAL(dummy);
-	NhlINIT_ARGVAL(cbdata);
+	NhlINITVAR(dummy);
+	NhlINITVAR(cbdata);
         overlay_status.id = transform_id;
         overlay_status.base_id = base_id;
         overlay_status.status = _tfCurrentOverlayMember;
@@ -5250,8 +5250,8 @@ NhlErrorTypes NhlRemoveOverlay
 	if ((ret = MIN(subret,ret)) < NhlWARNING)
 		return ret;
 
-	NhlINIT_ARGVAL(dummy);
-	NhlINIT_ARGVAL(cbdata);
+	NhlINITVAR(dummy);
+	NhlINITVAR(cbdata);
         overlay_status.id = overlay_id;
         overlay_status.base_id = base_id;
         overlay_status.status = ostatus;
@@ -5597,8 +5597,8 @@ int _NhlAddAnnotation
 
 	ret =  MIN(subret,ret);
 
-	NhlINIT_ARGVAL(dummy);
-	NhlINIT_ARGVAL(cbdata);
+	NhlINITVAR(dummy);
+	NhlINITVAR(cbdata);
         anno_status.id = anno_view->base.id;
         anno_status.base_id = plotmanager->base.parent->base.id;
         anno_status.anno_manager_id = anno_manager_id;
@@ -5785,8 +5785,8 @@ NhlErrorTypes _NhlRemoveAnnotation
 
 	ret = MIN(subret,ret);
         
-	NhlINIT_ARGVAL(dummy);
-	NhlINIT_ARGVAL(cbdata);
+	NhlINITVAR(dummy);
+	NhlINITVAR(cbdata);
         anno_status.id = anno_view->base.id;
         anno_status.isanno = False;
         anno_status.base_id = plotmanager->base.parent->base.id;

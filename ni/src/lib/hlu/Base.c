@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.22 1997-02-24 22:12:17 boote Exp $
+ *      $Id: Base.c,v 1.23 1997-02-27 20:13:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -404,6 +404,8 @@ OVERRIDE:
 		;
 	}
 
+	for(i=0;i<num_clist;i++)
+		clist[i].cblist = NULL;
 	lc->base_class.class_callbacks = (_NhlRawClassCBList)clist;
 	lc->base_class.num_class_callbacks = num_clist;
 
@@ -628,8 +630,8 @@ BaseLayerReparent
 		if(p->base.app_destroy){
 			NhlArgVal	dummy,udata;
 
-			NhlINIT_ARGVAL(dummy);
-			NhlINIT_ARGVAL(udata);
+			NhlINITVAR(dummy);
+			NhlINITVAR(udata);
 			dummy.lngval = 0;
 			udata.ptrval = l;
 			l->base.app_destroy = _NhlAddObjCallback(
@@ -776,8 +778,8 @@ _NhlBaseAppDestroyCB
 		if(p->base.app_destroy){
 			NhlArgVal	dummy,udata;
 
-			NhlINIT_ARGVAL(dummy);
-			NhlINIT_ARGVAL(udata);
+			NhlINITVAR(dummy);
+			NhlINITVAR(udata);
 			dummy.lngval = 0;
 			udata.ptrval = l;
 			l->base.app_destroy = _NhlAddObjCallback(
@@ -825,8 +827,8 @@ _NhlBaseAddChild
 	list->next = parent->base.all_children;
 	parent->base.all_children = list;
 
-	NhlINIT_ARGVAL(cbdata);
-	NhlINIT_ARGVAL(sel);
+	NhlINITVAR(cbdata);
+	NhlINITVAR(sel);
 	cc.reason = _NhlobjCCAdd;
 	cc.new = parent->base.id;
 	cc.child = child;
@@ -878,8 +880,8 @@ _NhlBaseRemoveChild
 		return;
 	}
 
-	NhlINIT_ARGVAL(cbdata);
-	NhlINIT_ARGVAL(sel);
+	NhlINITVAR(cbdata);
+	NhlINITVAR(sel);
 	cc.reason = _NhlobjCCRemove;
 	cc.old = l->base.parent->base.id;
 	cc.child = l->base.id;
@@ -947,8 +949,8 @@ _NhlBaseMoveChild
 	 */
 	child->base.parent = parent;
 
-	NhlINIT_ARGVAL(cbdata);
-	NhlINIT_ARGVAL(sel);
+	NhlINITVAR(cbdata);
+	NhlINITVAR(sel);
 	cc.reason = _NhlobjCCMove;
 	cc.new = parent->base.id;
 	cc.old = oldp->base.id;

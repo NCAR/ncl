@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.31 1997-02-24 22:12:16 boote Exp $
+ *      $Id: App.c,v 1.32 1997-02-27 20:13:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,10 @@
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/ErrorI.h>
 #include <ncarg/hlu/Workspace.h>
+
+static _NhlRawClassCB appc_callbacks[] = {
+	{_NhlCBappDefParentChange,NULL,0,NULL,NULL,NULL},
+};
 
 static NhlErrorTypes AppClassPartInitialize(
 #if	NhlNeedProto
@@ -190,8 +194,8 @@ NhlAppClassRec NhlappClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
-/* class_callbacks		*/	NULL,
-/* num_class_callbacks		*/	0,
+/* class_callbacks		*/	appc_callbacks,
+/* num_class_callbacks		*/	NhlNumber(appc_callbacks),
 
 /* class_part_initialize	*/	AppClassPartInitialize,
 /* class_initialize		*/	AppClassInitialize,
@@ -219,7 +223,8 @@ NhlAppClassRec NhlappClassRec = {
 /* baseDB			*/	NULL,
 /* error_id			*/	0,
 /* workspace_id			*/	0,
-/* app_objs			*/	NULL
+/* app_objs			*/	NULL,
+/* default_guidata		*/	NULL
 	}
 };
 
@@ -404,7 +409,6 @@ AppClassPartInitialize
 
 	alcp->default_app = NULL;
 	alcp->current_app = NULL;
-	alcp->cblist = _NhlCBCreate(0,NULL,NULL,NULL,NULL);
 	InitBaseDB(alc);
 	alcp->default_guidata = NULL;
 
@@ -423,14 +427,15 @@ DefaultParentChange
 #endif
 {
 	NhlArgVal cbdata;
-	NhlArgVal selector;
+	NhlArgVal sel;
 
-	NhlINIT_ARGVAL(cbdata);
-	NhlINIT_ARGVAL(selector);
+	NhlINITVAR(cbdata);
+	NhlINITVAR(sel);
 
-	selector.lngval = 0;
+	sel.lngval = 0;
 	cbdata.lngval = ac->app_class.current_app->base.id;
-	_NhlCBCallCallbacks(ac->app_class.cblist,selector,cbdata);
+	_NhlCallClassCallbacks((NhlClass)ac,_NhlCBappDefParentChange,
+								sel,cbdata);
 
 	return;
 }
@@ -1458,31 +1463,6 @@ void _NHLCALLF(nhl_fisapp,NHL_FISAPP)
 	*status = NhlIsApp(*id);
 
 	return;
-}
-
-
-/*
- * Don't need the NhlClass, since it isn't really possible to sub-class
- * the App object, without re-writing the App class...
- */
-_NhlCB  _NhlAppAddDefaultChangeCB
-#if 	NhlNeedProto
-(
-	_NhlCBFunc	cbfunc,
-	NhlArgVal	udata
-)
-#else
-(cbfunc,udata)
-        _NhlCBFunc	cbfunc;
-        NhlArgVal	udata;
-#endif
-{
-	NhlArgVal	selector;
-
-	NhlINIT_ARGVAL(selector);
-	selector.lngval = 0;
-	return _NhlCBAdd(((NhlAppClass)NhlappClass)->app_class.cblist,selector,
-								cbfunc,udata);
 }
 
 void

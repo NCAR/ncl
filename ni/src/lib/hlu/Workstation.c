@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.62 1997-02-24 22:12:45 boote Exp $
+ *      $Id: Workstation.c,v 1.63 1997-02-27 20:13:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -384,6 +384,10 @@ static NhlResource resources[] = {
 		_NhlUSET((NhlPointer)NULL),_NhlRES_SGONLY,NULL}
 };
 
+static _NhlRawClassCB workc_callbacks[] = {
+	{_NhlCBworkPreOpen,NULL,0,NULL,NULL,NULL},
+};
+
 /*
 * Base class method declarations
 */
@@ -533,8 +537,8 @@ NhlWorkstationClassRec NhlworkstationClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
-/* class_callbacks		*/	NULL,
-/* num_class_callbacks		*/	0,
+/* class_callbacks		*/	workc_callbacks,
+/* num_class_callbacks		*/	NhlNumber(workc_callbacks),
 
 /* class_part_initialize	*/	WorkstationClassPartInitialize,
 /* class_initialize		*/	WorkstationClassInitialize,
@@ -3285,14 +3289,21 @@ _NhlOpenWorkstation
 {
 	char				func[] = "_NhlOpenWorkstation";
 	NhlErrorTypes			ret = NhlNOERROR;
-	NhlWorkstationClassPart	*wc =
+	NhlWorkstationClassPart		*wc =
 		&((NhlWorkstationClass)wks->base.layer_class)->work_class;
+	NhlArgVal			sel,cbdata;
 
 	if(!_NhlIsWorkstation(wks)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"%s: attempt to perform open on nonworkstation",func);
 		return NhlFATAL;
 	}
+
+	NhlINITVAR(sel);
+	NhlINITVAR(cbdata);
+	cbdata.ptrval = wks;
+	_NhlCallClassCallbacks(wks->base.layer_class,_NhlCBworkPreOpen,
+								sel,cbdata);
 
 	ret = (*(wc->open_work))(wks);
 	if(ret != NhlFATAL)

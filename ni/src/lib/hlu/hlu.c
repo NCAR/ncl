@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.40 1997-02-24 22:12:48 boote Exp $
+ *      $Id: hlu.c,v 1.41 1997-02-27 20:13:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1953,11 +1953,21 @@ _NhlAddClassCallback
 	NhlClass	lc,
 	NhlString	cbname,
 	NhlArgVal	sel,
-	_NhlCBFunc	func,
+	_NhlCBFunc	f,
 	NhlArgVal	udata
 )
 {
-	return _NhlCBAdd(GetClassCBList(lc,cbname,True),sel,func,udata);
+	char		func[]="_NhlAddClassCallback";
+	NhlErrorTypes	ret;
+
+	ret = _NhlInitializeClass(lc);
+	if(ret < NhlWARNING){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+		"%s:Unable to add class callback to uninitialized class",func));
+		return NULL;
+	}
+
+	return _NhlCBAdd(GetClassCBList(lc,cbname,True),sel,f,udata);
 }
 
 /*

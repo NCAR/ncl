@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.32 1997-02-24 22:12:21 boote Exp $
+ *      $Id: Create.c,v 1.33 1997-02-27 20:13:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -422,8 +422,8 @@ _NhlCreate
 			parent->base.app_destroy){
 			NhlArgVal	dummy,udata;
 	
-			NhlINIT_ARGVAL(dummy);
-			NhlINIT_ARGVAL(udata);
+			NhlINITVAR(dummy);
+			NhlINITVAR(udata);
 
 			/* INSTALL CB to handle destroy of appobj */
 			dummy.lngval = 0;

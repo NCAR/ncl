@@ -1,5 +1,5 @@
 /*
- *      $Id: AppI.h,v 1.7 1996-10-16 16:18:30 boote Exp $
+ *      $Id: AppI.h,v 1.8 1997-02-27 20:13:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -45,6 +45,8 @@
 #define _NhlNappArgvInOut	"app.argv"
 #define _NhlCappArgvInOut	"App.argv"
 
+#define _NhlCBappDefParentChange	"CBappDefParentChange"
+
 extern	NhlLayer _NhlGetCurrentApp(
 #if	NhlNeedProto
 	void
@@ -84,18 +86,5 @@ extern void _NhlAppSetDefGuiData(
 	NhlPointer	ptr
 #endif
 );
-
-/*
- * cbdata to cbfunc will be HLU Id of the new default parent.
- * The default parent can change for all sorts of different reasons,
- * so keeping track of the NhlNappDefaultParent will not work.
- */
-extern _NhlCB  _NhlAppAddDefaultChangeCB(
-#if     NhlNeedProto
-        _NhlCBFunc      cbfunc,
-        NhlArgVal       udata
-#endif
-);
-
 
 #endif	/* _NAppI_h */
