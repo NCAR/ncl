@@ -140,6 +140,8 @@ extern NhlErrorTypes shaeC_W(void);
 extern NhlErrorTypes shagC_W(void);
 extern NhlErrorTypes shseC_W(void);
 extern NhlErrorTypes shsgC_W(void);
+extern NhlErrorTypes set_sphere_radius_W(void);
+extern NhlErrorTypes get_sphere_radius_W(void);
 extern NhlErrorTypes rhomb_trunc_W(void);
 extern NhlErrorTypes rhomb_trunC_W(void);
 extern NhlErrorTypes tri_trunc_W(void);
@@ -1649,6 +1651,21 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(shsgC_W,args,"shsgC",nargs);
+
+/*
+ *  Register set_sphere_radius.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
+    NclRegisterProc(set_sphere_radius_W, args, "set_sphere_radius", nargs);
+
+/*
+ *  Register get_sphere_radius.
+ */
+    nargs = 0;
+    NclRegisterFunc(get_sphere_radius_W, args, "get_sphere_radius", nargs);
 
 /*
  * Register "rhomb_trunC".

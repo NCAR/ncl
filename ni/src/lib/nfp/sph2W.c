@@ -183,6 +183,8 @@ extern void NGCALLF(dvtsgc,DVTSGC)(int *,int *,int *,int *,double *,double
 extern void NGCALLF(dvtsgci,DVTSGCI)(int *,int *,double *,int *,double
 *,int *,int *);
 
+double scale = 6.37122e+6;         /* radius of earth */
+
 NhlErrorTypes dv2uvf_W( void )
 {
 /*
@@ -211,7 +213,6 @@ NhlErrorTypes dv2uvf_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_dv, nmiss;
-  double scale;
 /*
  * Workspace variables
  */
@@ -371,7 +372,6 @@ NhlErrorTypes dv2uvf_W( void )
  * all missing.
  */
   index_dv = nmiss = 0;
-  scale = 6.37122e+6;         /* radius of earth */
 
   for(i = 0; i < nt; i++ ) {
     if(type_dv != NCL_double) {
@@ -533,7 +533,6 @@ NhlErrorTypes dv2uvg_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_dv, nmiss;
-  double scale;
 /*
  * Workspace variables
  */
@@ -693,7 +692,6 @@ NhlErrorTypes dv2uvg_W( void )
  * all missing.
  */
   index_dv = nmiss = 0;
-  scale = 6.37122e+6;         /* radius of earth */
 
   for(i = 0; i < nt; i++ ) {
     if(type_dv != NCL_double) {
@@ -856,7 +854,7 @@ NhlErrorTypes gradsf_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_z, nmiss;
-  double scale;
+  double invscale;
 /*
  * Workspace variables
  */
@@ -1016,7 +1014,7 @@ NhlErrorTypes gradsf_W( void )
  * all missing.
  */
   index_z = nmiss = 0;
-  scale = 1./6.37122e+6;       /* 1/(radius of earth) */
+  invscale = 1./scale;       /* 1/(radius of earth) */
 
   for(i = 0; i < nt; i++ ) {
     if(type_z != NCL_double) {
@@ -1103,8 +1101,8 @@ NhlErrorTypes gradsf_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_gzx,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_gzy,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_gzx,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_gzy,&invscale,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -1178,7 +1176,7 @@ NhlErrorTypes gradsg_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_z, nmiss;
-  double scale;
+  double invscale;
 /*
  * Workspace variables
  */
@@ -1338,7 +1336,7 @@ NhlErrorTypes gradsg_W( void )
  * all missing.
  */
   index_z = nmiss = 0;
-  scale = 1./6.37122e+6;       /* 1/(radius of earth) */
+  invscale = 1./scale;       /* 1/(radius of earth) */
 
   for(i = 0; i < nt; i++ ) {
     if(type_z != NCL_double) {
@@ -1425,8 +1423,8 @@ NhlErrorTypes gradsg_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_gzx,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_gzy,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_gzx,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_gzy,&invscale,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -1500,7 +1498,6 @@ NhlErrorTypes igradsf_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_gzxy, nmiss;
-  double scale;
 /*
  * Workspace variables
  */
@@ -1663,7 +1660,6 @@ NhlErrorTypes igradsf_W( void )
  * all missing.
  */
   index_gzxy = nmiss = 0;
-  scale = 6.37122e+6;         /* radius of earth */
 
   for(i = 0; i < nt; i++ ) {
     if(type_gzx != NCL_double) {
@@ -1825,7 +1821,6 @@ NhlErrorTypes igradsF_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_gzxy, nmiss;
-  double scale;
 /*
  * Workspace variables
  */
@@ -1981,7 +1976,6 @@ NhlErrorTypes igradsF_W( void )
  * all missing.
  */
   index_gzxy = nmiss = 0;
-  scale = 6.37122e+6;         /* radius of earth */
 
   for(i = 0; i < nt; i++ ) {
     if(type_gzx != NCL_double) {
@@ -2143,7 +2137,6 @@ NhlErrorTypes igradsg_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_gzxy, nmiss;
-  double scale;
 /*
  * Workspace variables
  */
@@ -2305,7 +2298,6 @@ NhlErrorTypes igradsg_W( void )
  * all missing.
  */
   index_gzxy = nmiss = 0;
-  scale = 6.37122e+6;         /* radius of earth */
 
   for(i = 0; i < nt; i++ ) {
     if(type_gzx != NCL_double) {
@@ -2467,7 +2459,6 @@ NhlErrorTypes igradsG_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_gzxy, nmiss;
-  double scale;
 /*
  * Workspace variables
  */
@@ -2624,7 +2615,6 @@ NhlErrorTypes igradsG_W( void )
  * all missing.
  */
   index_gzxy = nmiss = 0;
-  scale = 6.37122e+6;         /* radius of earth */
 
   for(i = 0; i < nt; i++ ) {
     if(type_gzx != NCL_double) {
@@ -2785,7 +2775,7 @@ NhlErrorTypes ilapsf_W( void )
   int found_missing_zlap, found_missing_zlmbda;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_zlap, nmiss;
-  double scale;
+  double scalesqrd;
 /*
  * Workspace variables
  */
@@ -2958,7 +2948,7 @@ NhlErrorTypes ilapsf_W( void )
  * all missing.
  */
   index_zlap = nmiss = 0;
-  scale = pow(6.37122e+6,2.);         /* radius of earth**2 */
+  scalesqrd = pow(scale,2.);         /* radius of earth**2 */
 
   for(i = 0; i < nt; i++ ) {
     if(type_zlap != NCL_double) {
@@ -3055,7 +3045,7 @@ NhlErrorTypes ilapsf_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_z,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_z,&scalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -3125,7 +3115,7 @@ NhlErrorTypes ilapsF_W( void )
   int found_missing_zlap, found_missing_zlmbda;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_zlap, nmiss;
-  double scale;
+  double scalesqrd;
 /*
  * Workspace variables
  */
@@ -3287,7 +3277,7 @@ NhlErrorTypes ilapsF_W( void )
  * all missing.
  */
   index_zlap = nmiss = 0;
-  scale = pow(6.37122e+6,2.);         /* radius of earth**2 */
+  scalesqrd = pow(scale,2.);         /* radius of earth**2 */
 
   for(i = 0; i < nt; i++ ) {
     if(type_zlap != NCL_double) {
@@ -3384,7 +3374,7 @@ NhlErrorTypes ilapsF_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_z,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_z,&scalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -3456,7 +3446,7 @@ NhlErrorTypes ilapsg_W( void )
   int found_missing_zlap, found_missing_zlmbda;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_zlap, nmiss;
-  double scale;
+  double scalesqrd;
 /*
  * Workspace variables
  */
@@ -3630,7 +3620,7 @@ NhlErrorTypes ilapsg_W( void )
  * all missing.
  */
   index_zlap = nmiss = 0;
-  scale = pow(6.37122e+6,2.);         /* radius of earth**2 */
+  scalesqrd = pow(scale,2.);         /* radius of earth**2 */
 
   for(i = 0; i < nt; i++ ) {
     if(type_zlap != NCL_double) {
@@ -3728,7 +3718,7 @@ NhlErrorTypes ilapsg_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_z,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_z,&scalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -3798,7 +3788,7 @@ NhlErrorTypes ilapsG_W( void )
   int found_missing_zlap, found_missing_zlmbda;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_zlap, nmiss;
-  double scale;
+  double scalesqrd;
 /*
  * Workspace variables
  */
@@ -3959,7 +3949,7 @@ NhlErrorTypes ilapsG_W( void )
  * all missing.
  */
   index_zlap = nmiss = 0;
-  scale = pow(6.37122e+6,2.);         /* radius of earth**2 */
+  scalesqrd = pow(scale,2.);         /* radius of earth**2 */
 
   for(i = 0; i < nt; i++ ) {
     if(type_zlap != NCL_double) {
@@ -4056,7 +4046,7 @@ NhlErrorTypes ilapsG_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_z,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_z,&scalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -4129,7 +4119,7 @@ NhlErrorTypes ilapvf_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_uv, nmiss;
-  double scale;
+  double scalesqrd;
 /*
  * Workspace variables
  */
@@ -4311,7 +4301,7 @@ NhlErrorTypes ilapvf_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = pow(6.37122e+6,2.);         /* radius of earth**2 */
+  scalesqrd = pow(scale,2.);         /* radius of earth**2 */
 
   for(i = 0; i < nt; i++ ) {
     if(type_ulap != NCL_double) {
@@ -4412,8 +4402,8 @@ NhlErrorTypes ilapvf_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_u,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_v,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_u,&scalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_v,&scalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -4491,7 +4481,7 @@ NhlErrorTypes ilapvg_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_uv, nmiss;
-  double scale;
+  double scalesqrd;
 /*
  * Workspace variables
  */
@@ -4674,7 +4664,7 @@ NhlErrorTypes ilapvg_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = pow(6.37122e+6,2.);         /* radius of earth**2 */
+  scalesqrd = pow(scale,2.);         /* radius of earth**2 */
   
   for(i = 0; i < nt; i++ ) {
     if(type_ulap != NCL_double) {
@@ -4775,8 +4765,8 @@ NhlErrorTypes ilapvg_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_u,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_v,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_u,&scalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_v,&scalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -4851,7 +4841,7 @@ NhlErrorTypes lapsf_W( void )
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int total_size_in;
   int index_z, nmiss;
-  double scale;
+  double invscalesqrd;
 /*
  * Workspace variables
  */
@@ -4987,7 +4977,7 @@ NhlErrorTypes lapsf_W( void )
  * all missing.
  */
   index_z = nmiss = 0;
-  scale = pow(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
+  invscalesqrd = pow(1./scale,2.);       /* (1/(radius of earth))**2 */
  
   for(i = 0; i < nt; i++ ) {
     if(type_z != NCL_double) {
@@ -5062,7 +5052,7 @@ NhlErrorTypes lapsf_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_zlap,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_zlap,&invscalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -5126,7 +5116,7 @@ NhlErrorTypes lapsF_W( void )
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int total_size_in;
   int index_z, nmiss;
-  double scale;
+  double invscalesqrd;
 /*
  * Workspace variables
  */
@@ -5246,7 +5236,7 @@ NhlErrorTypes lapsF_W( void )
  * all missing.
  */
   index_z = nmiss = 0;
-  scale = pow(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
+  invscalesqrd = pow(1./scale,2.);       /* (1/(radius of earth))**2 */
  
   for(i = 0; i < nt; i++ ) {
     if(type_z != NCL_double) {
@@ -5319,7 +5309,7 @@ NhlErrorTypes lapsF_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_zlap,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_zlap,&invscalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -5387,7 +5377,7 @@ NhlErrorTypes lapsg_W( void )
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int total_size_in;
   int index_z, nmiss;
-  double scale;
+  double invscalesqrd;
 /*
  * Workspace variables
  */
@@ -5522,7 +5512,7 @@ NhlErrorTypes lapsg_W( void )
  * all missing.
  */
   index_z = nmiss = 0;
-  scale = pow(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
+  invscalesqrd = pow(1./scale,2.);       /* (1/(radius of earth))**2 */
 
   for(i = 0; i < nt; i++ ) {
     if(type_z != NCL_double) {
@@ -5596,7 +5586,7 @@ NhlErrorTypes lapsg_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_zlap,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_zlap,&invscalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -5660,7 +5650,7 @@ NhlErrorTypes lapsG_W( void )
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int total_size_in;
   int index_z, nmiss;
-  double scale;
+  double invscalesqrd;
 /*
  * Workspace variables
  */
@@ -5780,7 +5770,7 @@ NhlErrorTypes lapsG_W( void )
  * all missing.
  */
   index_z = nmiss = 0;
-  scale = pow(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
+  invscalesqrd = pow(1./scale,2.);       /* (1/(radius of earth))**2 */
 
   for(i = 0; i < nt; i++ ) {
     if(type_z != NCL_double) {
@@ -5852,7 +5842,7 @@ NhlErrorTypes lapsG_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_zlap,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_zlap,&invscalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -5921,7 +5911,7 @@ NhlErrorTypes lapvf_W( void )
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int nt, nlat, nlon, nlatnlon, total_size_in;
   int index_uv, nmiss;
-  double scale;
+  double invscalesqrd;
 /*
  * Workspace variables
  */
@@ -6103,7 +6093,7 @@ NhlErrorTypes lapvf_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = pow(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
+  invscalesqrd = pow(1./scale,2.);       /* (1/(radius of earth))**2 */
 
   for(i = 0; i < nt; i++ ) {
     if(type_u != NCL_double) {
@@ -6205,8 +6195,8 @@ NhlErrorTypes lapvf_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_ulap,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vlap,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_ulap,&invscalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vlap,&invscalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -6283,7 +6273,7 @@ NhlErrorTypes lapvg_W( void )
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int nt, nlat, nlon, nlatnlon, total_size_in;
   int index_uv, nmiss;
-  double scale;
+  double invscalesqrd;
 /*
  * Workspace variables
  */
@@ -6465,7 +6455,7 @@ NhlErrorTypes lapvg_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = pow(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
+  invscalesqrd = pow(1./scale,2.);       /* (1/(radius of earth))**2 */
   
   for(i = 0; i < nt; i++ ) {
     if(type_u != NCL_double) {
@@ -6566,8 +6556,8 @@ NhlErrorTypes lapvg_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_ulap,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vlap,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_ulap,&invscalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vlap,&invscalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -6644,7 +6634,6 @@ NhlErrorTypes uv2sfvpf_W( void )
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int nt, nlat, nlon, nlatnlon, total_size_in;
   int index_uv, nmiss;
-  double scale;
 /*
  * Workspace variables
  */
@@ -6822,7 +6811,6 @@ NhlErrorTypes uv2sfvpf_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = 6.37122e+6;        /* radius of earth */
   
   for(i = 0; i < nt; i++ ) {
     if(type_u != NCL_double) {
@@ -6999,7 +6987,6 @@ NhlErrorTypes uv2sfvpg_W( void )
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int nt, nlat, nlon, nlatnlon, total_size_in;
   int index_uv, nmiss;
-  double scale;
 /*
  * Workspace variables
  */
@@ -7177,7 +7164,6 @@ NhlErrorTypes uv2sfvpg_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = 6.37122e+6;        /* radius of earth */
 
   for(i = 0; i < nt; i++ ) {
     if(type_u != NCL_double) {
@@ -7354,7 +7340,7 @@ NhlErrorTypes lderuvf_W( void )
   int i, j, l, ityp, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_uv, nmiss;
-  double scale;
+  double invscale;
 /*
  * Workspace variables
  */
@@ -7533,7 +7519,7 @@ NhlErrorTypes lderuvf_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = 1./6.37122e+6;      /* 1/(radius of earth) */
+  invscale = 1./scale;      /* 1/(radius of earth) */
   
   for(i = 0; i < nt; i++ ) {
     if(type_u != NCL_double) {
@@ -7632,8 +7618,8 @@ NhlErrorTypes lderuvf_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_uy,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vy,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_uy,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vy,&invscale,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -7710,7 +7696,7 @@ NhlErrorTypes lderuvg_W( void )
   int i, j, l, ityp, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_uv, nmiss;
-  double scale;
+  double invscale;
 /*
  * Workspace variables
  */
@@ -7889,7 +7875,7 @@ NhlErrorTypes lderuvg_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = 1./6.37122e+6;      /* 1/(radius of earth) */
+  invscale = 1./scale;      /* 1/(radius of earth) */
   
   for(i = 0; i < nt; i++ ) {
     if(type_u != NCL_double) {
@@ -7988,8 +7974,8 @@ NhlErrorTypes lderuvg_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_uy,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vy,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_uy,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vy,&invscale,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -8065,7 +8051,7 @@ NhlErrorTypes uv2dvf_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_uv, nmiss;
-  double scale;
+  double invscale;
 /*
  * Workspace variables
  */
@@ -8226,7 +8212,7 @@ NhlErrorTypes uv2dvf_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = 1./6.37122e+6;       /* 1/(radius of earth) */
+  invscale = 1./scale;       /* 1/(radius of earth) */
 
   for(i = 0; i < nt; i++ ) {
     if(type_u != NCL_double) {
@@ -8317,7 +8303,7 @@ NhlErrorTypes uv2dvf_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine.
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&invscale,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -8386,7 +8372,7 @@ NhlErrorTypes uv2dvF_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_uv, nmiss;
-  double scale;
+  double invscale;
 /*
  * Workspace variables
  */
@@ -8539,7 +8525,7 @@ NhlErrorTypes uv2dvF_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = 1./6.37122e+6;       /* 1/(radius of earth) */
+  invscale = 1./scale;       /* 1/(radius of earth) */
 
   for(i = 0; i < nt; i++ ) {
     if(type_u != NCL_double) {
@@ -8629,7 +8615,7 @@ NhlErrorTypes uv2dvF_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine.
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&invscale,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -8701,7 +8687,7 @@ NhlErrorTypes uv2dvg_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_uv, nmiss;
-  double scale;
+  double invscale;
 /*
  * Workspace variables
  */
@@ -8862,7 +8848,7 @@ NhlErrorTypes uv2dvg_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = 1./6.37122e+6;       /* 1/(radius of earth) */
+  invscale = 1./scale;       /* 1/(radius of earth) */
 
   for(i = 0; i < nt; i++ ) {
     if(type_u != NCL_double) {
@@ -8953,7 +8939,7 @@ NhlErrorTypes uv2dvg_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&invscale,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -9022,7 +9008,7 @@ NhlErrorTypes uv2dvG_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_uv, nmiss;
-  double scale;
+  double invscale;
 /*
  * Workspace variables
  */
@@ -9175,7 +9161,7 @@ NhlErrorTypes uv2dvG_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = 1./6.37122e+6;       /* 1/(radius of earth) */
+  invscale = 1./scale;       /* 1/(radius of earth) */
   
   for(i = 0; i < nt; i++ ) {
     if(type_u != NCL_double) {
@@ -9263,7 +9249,7 @@ NhlErrorTypes uv2dvG_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&invscale,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -9334,7 +9320,7 @@ NhlErrorTypes uv2vrf_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_uv, nmiss;
-  double scale;
+  double invscale;
 /*
  * Workspace variables
  */
@@ -9496,7 +9482,7 @@ NhlErrorTypes uv2vrf_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = 1./6.37122e+6;       /* 1/(radius of earth) */
+  invscale = 1./scale;       /* 1/(radius of earth) */
   
 
   for(i = 0; i < nt; i++ ) {
@@ -9588,7 +9574,7 @@ NhlErrorTypes uv2vrf_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine.
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vort,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vort,&invscale,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -9657,7 +9643,7 @@ NhlErrorTypes uv2vrF_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_uv, nmiss;
-  double scale;
+  double invscale;
 /*
  * Workspace variables
  */
@@ -9810,7 +9796,7 @@ NhlErrorTypes uv2vrF_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = 1./6.37122e+6;       /* 1/(radius of earth) */
+  invscale = 1./scale;       /* 1/(radius of earth) */
 
   for(i = 0; i < nt; i++ ) {
     if(type_u != NCL_double) {
@@ -9899,7 +9885,7 @@ NhlErrorTypes uv2vrF_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine.
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vort,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vort,&invscale,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -9971,7 +9957,7 @@ NhlErrorTypes uv2vrg_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_uv, nmiss;
-  double scale;
+  double invscale;
 /*
  * Workspace variables
  */
@@ -10133,7 +10119,7 @@ NhlErrorTypes uv2vrg_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = 1./6.37122e+6;       /* 1/(radius of earth) */
+  invscale = 1./scale;       /* 1/(radius of earth) */
   
   for(i = 0; i < nt; i++ ) {
     if(type_u != NCL_double) {
@@ -10224,7 +10210,7 @@ NhlErrorTypes uv2vrg_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vort,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vort,&invscale,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -10293,7 +10279,7 @@ NhlErrorTypes uv2vrG_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_uv, nmiss;
-  double scale;
+  double invscale;
 /*
  * Workspace variables
  */
@@ -10446,7 +10432,7 @@ NhlErrorTypes uv2vrG_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = 1./6.37122e+6;       /* 1/(radius of earth) */
+  invscale = 1./scale;       /* 1/(radius of earth) */
  
   for(i = 0; i < nt; i++ ) {
     if(type_u != NCL_double) {
@@ -10535,7 +10521,7 @@ NhlErrorTypes uv2vrG_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vort,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vort,&invscale,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -10605,7 +10591,7 @@ NhlErrorTypes uv2vrdvf_W( void )
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int nt, nlat, nlon, nlatnlon, total_size_in;
   int index_uv, nmiss;
-  double scale;
+  double invscale;
 /*
  * Workspace variables
  */
@@ -10783,7 +10769,7 @@ NhlErrorTypes uv2vrdvf_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = 1./6.37122e+6;      /* 1/(radius of earth) */
+  invscale = 1./scale;      /* 1/(radius of earth) */
 
   for(i = 0; i < nt; i++ ) {
     if(type_u != NCL_double) {
@@ -10886,8 +10872,8 @@ NhlErrorTypes uv2vrdvf_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vr,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vr,&invscale,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -10964,7 +10950,7 @@ NhlErrorTypes uv2vrdvg_W( void )
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int nt, nlat, nlon, nlatnlon, total_size_in;
   int index_uv, nmiss;
-  double scale;
+  double invscale;
 /*
  * Workspace variables
  */
@@ -11144,7 +11130,7 @@ NhlErrorTypes uv2vrdvg_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = 1./6.37122e+6;      /* 1/(radius of earth) */
+  invscale = 1./scale;      /* 1/(radius of earth) */
 
   for(i = 0; i < nt; i++ ) {
     if(type_u != NCL_double) {
@@ -11247,8 +11233,8 @@ NhlErrorTypes uv2vrdvg_W( void )
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vr,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vr,&invscale,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -11323,7 +11309,6 @@ NhlErrorTypes vr2uvf_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_vr, nmiss;
-  double scale;
 /*
  * Workspace variables
  */
@@ -11484,7 +11469,6 @@ NhlErrorTypes vr2uvf_W( void )
  * all missing.
  */
   index_vr = nmiss = 0;
-  scale = 6.37122e+6;         /* radius of earth */
   
   for(i = 0; i < nt; i++ ) {
     if(type_vort != NCL_double) {
@@ -11645,7 +11629,6 @@ NhlErrorTypes vr2uvg_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_vr, nmiss;
-  double scale;
 /*
  * Workspace variables
  */
@@ -11807,7 +11790,6 @@ NhlErrorTypes vr2uvg_W( void )
  * all missing.
  */
   index_vr = nmiss = 0;
-  scale = 6.37122e+6;         /* radius of earth */
   
   for(i = 0; i < nt; i++ ) {
     if(type_vort != NCL_double) {
@@ -11970,7 +11952,6 @@ NhlErrorTypes vrdv2uvf_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_uv, nmiss;
-  double scale;
 /*
  * Workspace variables
  */
@@ -12157,7 +12138,6 @@ NhlErrorTypes vrdv2uvf_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = 6.37122e+6;         /* radius of earth */
   
   for(i = 0; i < nt; i++ ) {
     if(type_vr != NCL_double) {
@@ -12342,7 +12322,6 @@ NhlErrorTypes vrdv2uvg_W( void )
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_uv, nmiss;
-  double scale;
 /*
  * Workspace variables
  */
@@ -12529,7 +12508,6 @@ NhlErrorTypes vrdv2uvg_W( void )
  * all missing.
  */
   index_uv = nmiss = 0;
-  scale = 6.37122e+6;         /* radius of earth */
 
   for(i = 0; i < nt; i++ ) {
     if(type_vr != NCL_double) {
@@ -15915,3 +15893,39 @@ NhlErrorTypes shsgC_W( void )
     return(NclReturnValue((void*)dg,ndims_g,dsizes_g,NULL,NCL_double,0));
   }
 }
+
+NhlErrorTypes set_sphere_radius_W(void)
+{
+/*
+ * Input array variables
+ */
+  void *radius;
+  NclBasicDataTypes type_radius;
+
+/*
+ * Retrieve argument #1
+ */
+  radius = (void *) NclGetArgValue(
+          0,
+          1,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          &type_radius,
+          2);
+
+  _Nclcoerce((NclTypeClass)nclTypedoubleClass,&scale,radius,1,NULL,NULL,
+     _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_radius)));
+  return(NhlNOERROR);
+}
+
+
+NhlErrorTypes get_sphere_radius_W(void)
+{
+  int dsizes[1];
+
+  dsizes[0] = 1;
+  return(NclReturnValue((void*)&scale,1,dsizes,NULL,NCL_double,0));
+}
+
