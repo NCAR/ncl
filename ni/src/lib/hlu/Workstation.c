@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.43 1996-02-26 21:59:08 dbrown Exp $
+ *      $Id: Workstation.c,v 1.44 1996-02-26 22:14:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1822,8 +1822,8 @@ static NhlErrorTypes WorkstationDestroy
 	if(wp->private_lineinfo.line_label_string != NULL)
 		NhlFree(wp->private_lineinfo.line_label_string);
 
-	if (_NhlGetLayer(wp->def_graphic_style) != NULL) {
-		NhlDestroy(wp->def_graphic_style);
+	if (_NhlGetLayer(wp->def_graphic_style_id) != NULL) {
+		NhlDestroy(wp->def_graphic_style_id);
 	}
 
 	return(retcode);
