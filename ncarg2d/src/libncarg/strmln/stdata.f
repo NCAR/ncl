@@ -1,5 +1,5 @@
 C
-C	$Id: stdata.f,v 1.3 1993-01-21 23:50:35 dbrown Exp $
+C	$Id: stdata.f,v 1.4 1993-02-20 00:31:35 dbrown Exp $
 C
       BLOCK DATA STDATA
 C
@@ -145,7 +145,7 @@ C
 C
 C ISET -- 'SET' -- The Set call flag - Old NSET parameter
 C
-      DATA     ISET / 0 /
+      DATA     ISET / 1 /
 C
 C IERR -- 'ERR' -- Error code set by STRMLN (read-only)
 C                  -101 - Cyclic flag set for non-cyclic data
@@ -217,7 +217,7 @@ C                  >1,<1: use CTV equally spaced levels
 C
       DATA  ICTV /   0     /
 C
-C WDLV -- 'LWD' -- the width of a vector line
+C WDLV -- 'LWD' -- the width of a streamline
 C 
       DATA  WDLV /   1.0   /
 C
@@ -353,7 +353,7 @@ C
 C
 C RVNL -- 'VNL' - Normalization factor for the differential magnitude.
 C                 This controls number of steps in compatibility mode
-C                 only when the FX,FY mapping routines are new. See 
+C                 only when the FX,FY mapping routines are used. See 
 C                 parameter 'DFM' for step control when STMPXY and
 C                 associated routines are used
 C

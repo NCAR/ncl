@@ -1,5 +1,5 @@
 C
-C	$Id: stinit.f,v 1.3 1993-01-21 23:50:46 dbrown Exp $
+C	$Id: stinit.f,v 1.4 1993-02-20 00:31:40 dbrown Exp $
 C
 C-----------------------------------------------------------------------
 C
@@ -146,7 +146,8 @@ C
 C Error if M > LU or M > LV?
 C
       IF (LU.LT.M .OR. LV.LT.M) THEN
-         WRITE(*,*) 'STINIT - U and/or V array dimension is too small'
+         CSTR(1:45)='STINIT - U AND/OR V ARRAY DIMENSIONS EXCEEDED'
+         CALL SETER (CSTR(1:45),1,2)
          STOP
       END IF
       IXDM=MIN(M,LU,LV)
@@ -158,7 +159,8 @@ C
       IYM1=IYDN-1
       IYM2=IYDN-2
       IF (LW .LT. 2*IXDM*IYDN) THEN
-         WRITE(*,*) 'STINIT - Work array dimension is too small'
+         CSTR(1:37)='STINIT - WRK ARRAY DIMENSION EXCEEDED'
+         CALL SETER (CSTR(1:37),2,2)
          STOP
       END IF
 C

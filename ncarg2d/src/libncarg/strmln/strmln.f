@@ -1,5 +1,5 @@
 C
-C	$Id: strmln.f,v 1.5 1993-01-23 01:14:32 dbrown Exp $
+C	$Id: strmln.f,v 1.6 1993-02-20 00:31:43 dbrown Exp $
 C
       SUBROUTINE STRMLN (U,V,WORK,IMAX,IPTSX,JPTSY,NSET,IER)
 C
@@ -287,8 +287,9 @@ C Load the communication common block with parameters
 C
 C
       IF (IPTSX.LE.1 .OR. JPTSY.LE.1 .OR. IMAX.LT.IPTSX) THEN
-         WRITE(*,*) 'STRMLN exiting; parameter value out of range'
-         CALL EXIT(1)
+         CSTR(1:26)='STRMLN - INVALID ARGUMENTS'
+         CALL SETER (CSTR(1:26),1,2)
+         STOP
       END IF
       LU=IMAX
       LV=IMAX

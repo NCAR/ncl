@@ -1,5 +1,5 @@
 C
-C	$Id: strset.f,v 1.3 1993-01-21 23:50:52 dbrown Exp $
+C	$Id: strset.f,v 1.4 1993-02-20 00:31:45 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -121,7 +121,7 @@ C
       IYDN = -1
       IWKD = -1
       IWKU = 0
-      ISET = 0
+      ISET = 1
       IERR = 0
       IXIN = 1
       IYIN = 1

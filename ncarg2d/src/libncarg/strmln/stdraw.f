@@ -1,5 +1,5 @@
 C
-C	$Id: stdraw.f,v 1.5 1993-02-02 23:30:42 dbrown Exp $
+C	$Id: stdraw.f,v 1.6 1993-02-20 00:31:37 dbrown Exp $
 C
       SUBROUTINE STDRAW  (U,V,UX,VY,IAM,STUMSL)
 C
@@ -621,10 +621,11 @@ C
 C Plot statistics
 C
       IF (ISST.EQ.1) THEN
-         WRITE(*,*) 'STREAM Statistics'
-         WRITE(*,*) '                Streamlines plotted:',LCT
-         WRITE(*,*) '      Total differential step count:',ITO
-         WRITE(*,*) ' '
+         LUN=I1MACH(2)
+         WRITE(LUN,*) 'STREAM Statistics'
+         WRITE(LUN,*) '                Streamlines plotted:',LCT
+         WRITE(LUN,*) '      Total differential step count:',ITO
+         WRITE(LUN,*) ' '
       END IF
 C
 C Set the workspace used parameter
