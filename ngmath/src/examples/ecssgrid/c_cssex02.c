@@ -1,5 +1,5 @@
 #
-#       $Id: c_cssex02.c,v 1.2 1999-05-24 23:57:16 fred Exp $
+#       $Id: c_cssex02.c,v 1.3 1999-05-25 18:14:32 fred Exp $
 #
 
 #include <stdlib.h>
@@ -10,7 +10,6 @@
  * Function prototypes for ngmath functions.
  */
 #include <ncarg/ngmath.h>
-#include "/fs/scd/home1/fred/ncarg/ngmath/src/lib/ngmath.h"
 
 /*
  * Function prototypes for c_cssex02.
