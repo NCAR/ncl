@@ -1,5 +1,5 @@
 C
-C      $Id: nm06f.f,v 1.4 1998-06-23 22:53:13 fred Exp $
+C      $Id: nm06f.f,v 1.5 1999-04-19 17:35:39 fred Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -146,13 +146,29 @@ C
       end
       REAL FUNCTION DRNM6()
 C
-      DATA ISEED/1/
-      SAVE ISEED
+C  Portable random number generator.
 C
-      ISEED = ISEED*1103515245 + 12345
-      IT = IAND(ISHIFT(ISEED,-16),32767)
+      PARAMETER (MPLIER=16807,MODLUS=2147483647,MOBYMP=127773,
+     +           MOMDMP=2836)
 C
-      DRNM6 = REAL(IT)/32767.
+      INTEGER HVLUE, LVLUE, TESTV, NEXTN
+      SAVE    NEXTN
+      DATA JSEED,IFRST/123456789,0/
+C
+      IF (IFRST .EQ. 0) THEN
+        NEXTN = JSEED
+        IFRST = 1
+      ENDIF
+C
+      HVLUE = NEXTN / MOBYMP
+      LVLUE = MOD(NEXTN, MOBYMP)
+      TESTV = MPLIER*LVLUE - MOMDMP*HVLUE
+      IF (TESTV .GT. 0) THEN
+        NEXTN = TESTV
+      ELSE
+        NEXTN = TESTV + MODLUS
+      ENDIF
+      DRNM6 = REAL(NEXTN)/REAL(MODLUS)
 C
       RETURN
       END

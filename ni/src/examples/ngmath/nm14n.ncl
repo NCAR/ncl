@@ -129,7 +129,7 @@ begin
   gsres@gsLineColor = 2              ; Set polyline color to red.
   gsn_polyline(wks,xy,xx,yy,gsres)   ; Draw polyline at Y=0.
 
-;----------- Second graph, same picture --------------------------------
+;----------- Second graph, on same picture --------------------------------
 
   xyres@vpYF             = 0.58      ; Set Y location of plot.
   xyres@xyMarkLineMode   = "Lines"   ; Set line mode to "Lines".

@@ -95,7 +95,7 @@ begin
   txres = True
   txres@txFontHeightF = 0.04
   gsn_text_ndc(wid,                                                         \
-     ":F25:z = f(x,y) = y:S:2:E:  - -:H-10::S:1:E::B::V-6:2:E:  x:S:2:E:",  \
+     ":F25:z = f(x,y) = y:S:2:E:  - -:H-10::S:1:E::B::V-6:2:E:  y:V-6:*:V+6:x:S:2:E:",  \
      0.5,0.85,txres)
   frame(wid)
 

@@ -110,7 +110,7 @@ begin
   xyres@vpXF      = 0.13
   xyres@vpYF      = 0.86
 
-;----------- First graph --------------------------------------------
+;--------- First graph (note unexpected oscillation in the curve) ----------
 
   xy = gsn_xy(wks,xo,yo1,xyres)      ; Plot the approximzted curve created
                                      ; with equal weights.
@@ -128,7 +128,7 @@ begin
   gsres@gsLineColor = 2              ; Set polyline color to red.
   gsn_polyline(wks,xy,xx,yy,gsres)   ; Draw polyline at Y=0.
 
-;----------- Second graph, same picture --------------------------------
+;----------- Second graph, on same picture --------------------------------
 
   xyres@vpYF             = 0.43      ; Set Y location of plot.
   xyres@xyMarkLineMode   = "Lines"   ; Set line mode to "Lines".
