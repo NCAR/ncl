@@ -1,30 +1,30 @@
 C
-C $Id: tdshpk.f,v 1.1 1994-08-24 17:10:11 kennison Exp $
+C $Id: tdshpk.f,v 1.2 1994-09-08 20:03:55 kennison Exp $
 C
 C Define error file number, Fortran logical unit number, workstation type, and
 C workstation ID.
 C
-	PARAMETER (IERRF=6,LUNIT=2,IWTYPE=SED_WSTYPE,IWKID=1)
+        PARAMETER (IERRF=6,LUNIT=2,IWTYPE=SED_WSTYPE,IWKID=1)
 C
 C Open GKS, open workstation of type 1, activate workstation.
 C
-	CALL GOPKS (IERRF, ISZDM)
-	CALL GOPWK (IWKID, LUNIT, IWTYPE)
-	CALL GACWK (IWKID)
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Invoke demo driver.
 C
-	CALL TDSHPK (IERR,IWKID)
+        CALL TDSHPK (IERR,IWKID)
 C
 C Deactivate and close workstation, close GKS.
 C
-	CALL GDAWK (IWKID)
-	CALL GCLWK (IWKID)
-	CALL GCLKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C
-	STOP
+        STOP
 C
       END
 
@@ -58,8 +58,8 @@ C
 C
 C Define some colors to use.
 C
-	CALL GSCR   (IWID,2,1.,0.,1.)
-	CALL GSCR   (IWID,3,1.,1.,0.)
+        CALL GSCR   (IWID,2,1.,0.,1.)
+        CALL GSCR   (IWID,3,1.,1.,0.)
 C
 C Define the mapping from the user system to the fractional system for
 C the first frame.
@@ -77,8 +77,8 @@ C are straight lines and put a label in the middle of the box.
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 1111111111111111 (binary)
 C or '$$$$$$$$$$$$$$$$' (character), 'LTL' = 0, 'MFS' = 1, 'PCF' = 0,
-C 'SAF' = 360, 'SCF' = 0, 'SSL' = .01, 'TCS' = -1., 'WOA'=.01,
-C 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'SAF' = 360, 'SCF' = 0, 'SSL' = .01, 'TCS' = -1., 'WOC' = .01,
+C 'WOG' = .005, and 'WOS' = .005.
 C
         YCEN=8.5
 C
@@ -96,15 +96,15 @@ C are straight lines, and put a label in the middle of the box.
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 1111111111111111 (binary)
 C or '$$$$$$$$$$$$$$$$' (character), 'LTL' = 0, 'MFS' = 1, 'PCF' = 0,
-C 'SAF' = 360, 'SCF' = 0, 'SSL' = .01, 'TCS' = -1., 'WOA'=.01,
-C 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'SAF' = 360, 'SCF' = 0, 'SSL' = .01, 'TCS' = -1., 'WOC' = .01,
+C 'WOG' = .005, and 'WOS' = .005.
 C
         CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)','$$$_$$$A')
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 1111111111111111 (binary)
 C or '$$$_$$$A' (character), 'LTL' = 0, 'MFS' = 1, 'PCF' = 0,
-C 'SAF' = 360, 'SCF' = 0, 'SSL' = .01, 'TCS' = -1., 'WOA'=.01,
-C 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'SAF' = 360, 'SCF' = 0, 'SSL' = .01, 'TCS' = -1., 'WOC' = .01,
+C 'WOG' = .005, and 'WOS' = .005.
 C
         YCEN=6.0
 C
@@ -125,8 +125,8 @@ C example.
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 1111111111111111 (binary)
 C or '$$$_$$$A' (character), 'LTL' = 0, 'MFS' = 1, 'PCF' = 0,
-C 'SAF' = 360, 'SCF' = 0, 'SSL' = .01, 'TCS' = -1., 'WOA'=.01,
-C 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'SAF' = 360, 'SCF' = 0, 'SSL' = .01, 'TCS' = -1., 'WOC' = .01,
+C 'WOG' = .005, and 'WOS' = .005.
 C
         CALL DPSETI ('DPS - DASH PATTERN SELECTOR',-14)
 C
@@ -134,8 +134,8 @@ C
 C
 C Note: At this point, 'DPS' = -14, 'DPT' = 01011011101111 (binary)
 C or '$$$_$$$A' (character), 'LTL' = 0, 'MFS' = 1, 'PCF' = 0,
-C 'SAF' = 360, 'SCF' = 0, 'SSL' = .01, 'TCS' = -1., 'WOA'=.01,
-C 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'SAF' = 360, 'SCF' = 0, 'SSL' = .01, 'TCS' = -1., 'WOC' = .01,
+C 'WOG' = .005, and 'WOS' = .005.
 C
         YCEN=3.5
 C
@@ -153,18 +153,18 @@ C are no breakpoints.  Smoothing is off by default.
 C
 C Note: At this point, 'DPS' = -14, 'DPT' = 01011011101111 (binary)
 C or '$$$_$$$A' (character), 'LTL' = 0, 'MFS' = 1, 'PCF' = 0,
-C 'SAF' = 360, 'SCF' = 0, 'SSL' = .01, 'TCS' = -1., 'WOA'=.01,
-C 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'SAF' = 360, 'SCF' = 0, 'SSL' = .01, 'TCS' = -1., 'WOC' = .01,
+C 'WOG' = .005, and 'WOS' = .005.
 C
         CALL DPSETI ('DPS - DASH PATTERN SELECTOR',0)
 C
         CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)',
-     +                                  '$$$$$$$$$$$$_W/O BREAKPOINTS_')
+     +                                    '$$$$$$$$$$$$W/O BREAKPOINTS')
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$$$$$$$$$$$$_W/O BREAKPOINTS_' (character), 'LTL' = 0, 'MFS' = 1,
+C or '$$$$$$$$$$$$W/O BREAKPOINTS' (character), 'LTL' = 0, 'MFS' = 1,
 C 'PCF' = 0, 'SAF' = 360, 'SCF' = 0, 'SSL' = .01, 'TCS' = -1.,
-C 'WOA'=.01, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
         YCEN=0.5
 C
@@ -188,19 +188,17 @@ C there are breakpoints.  Reduce the added space to be left in each
 C label gap.  Smoothing is still off.
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$$$$$$$$$$$$_W/O BREAKPOINTS_' (character), 'LTL' = 0, 'MFS' = 1,
+C or '$$$$$$$$$$$$W/O BREAKPOINTS' (character), 'LTL' = 0, 'MFS' = 1,
 C 'PCF' = 0, 'SAF' = 360, 'SCF' = 0, 'SSL' = .01, 'TCS' = -1.,
-C 'WOA'=.01, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
         CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)',
-     +                     '$$$$$$$$$_W|I|T|H| |B|R|E|A|K|P|O|I|N|T|S_')
-C
-        CALL DPSETR ('WOA - WIDTH OF ADDITIONAL SPACE',.003)
+     +                       '$$$$$$$$$W|I|T|H| |B|R|E|A|K|P|O|I|N|T|S')
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$$$$$$$$$_W|I|T|H| |B|R|E|A|K|P|O|I|N|T|S_' (character),
+C or '$$$$$$$$$W|I|T|H| |B|R|E|A|K|P|O|I|N|T|S' (character),
 C 'LTL' = 0, 'MFS' = 1, 'PCF' = 0, 'SAF' = 360, 'SCF' = 0, 'SSL' = .01,
-C 'TCS' = -1., 'WOA'=.003, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'TCS' = -1., 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
         YCEN=-3.5
 C
@@ -215,8 +213,7 @@ C
         CALL DPCURV (XCRA,YCRA,19)
 C
         CALL PLCHHQ (0.,YCEN,'An oval drawn using DPCURV, with smoothing
-     + off and a dash:C:pattern in which the labels have breakpoints.  '
-     +'WOA'' = .003.',
+     + off and:C:a dash pattern in which the labels have breakpoints.',
      +                                                        .01,0.,0.)
 C
 C Draw a third oval in the same way as the second one, but instead of
@@ -225,23 +222,21 @@ C flag.  Turn on the smoother and use even less added space around each
 C piece of the broken label.
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$$$$$$$$$_W|I|T|H| |B|R|E|A|K|P|O|I|N|T|S_' (character),
+C or '$$$$$$$$$W|I|T|H| |B|R|E|A|K|P|O|I|N|T|S' (character),
 C 'LTL' = 0, 'MFS' = 1, 'PCF' = 0, 'SAF' = 360, 'SCF' = 0, 'SSL' = .01,
-C 'TCS' = -1., 'WOA'=.003, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'TCS' = -1., 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
         CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)',
-     +                 '$$$$$$$$$$$$$$_WITH SINGLE-CHARACTER FLAG SET_')
+     +                       '$$$$$$$$$$WITH SINGLE-CHARACTER FLAG SET')
 C
         CALL DPSETI ('SCF - SINGLE-CHARACTER FLAG',1)
 C
         CALL DPSETR ('TCS - TENSION ON CUBIC SPLINES',2.5)
 C
-        CALL DPSETR ('WOA - WIDTH OF ADDITIONAL SPACE',.002)
-C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$$$$$$$$$$$$$$_WITH SINGLE-CHARACTER FLAG SET_' (character),
+C or '$$$$$$$$$$WITH SINGLE-CHARACTER FLAG SET' (character),
 C 'LTL' = 0, 'MFS' = 1, 'PCF' = 0, 'SAF' = 360, 'SCF' = 1, 'SSL' = .01,
-C 'TCS' = 2.5, 'WOA'=.002, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'TCS' = 2.5, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
         YCEN=-7.5
 C
@@ -256,8 +251,8 @@ C
         CALL DPCURV (XCRA,YCRA,19)
 C
         CALL PLCHHQ (0.,YCEN,'An oval drawn using DPCURV, with smoothing
-     + on and the single-:C:character flag set to create many breakpoint
-     +s.  ''WOA'' = .002.',
+     + on and the:C:single-character flag set to create many breakpoints
+     +.',
      +                                                        .01,0.,0.)
 C
 C Advance the frame.
@@ -281,19 +276,17 @@ C the curve will be smoothed, because the smoother is still turned on.
 C The additional space around the label pieces is reduced even more.
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$$$$$$$$$$$$$$_WITH SINGLE-CHARACTER FLAG SET_' (character),
+C or '$$$$$$$$$$WITH SINGLE-CHARACTER FLAG SET' (character),
 C 'LTL' = 0, 'MFS' = 1, 'PCF' = 0, 'SAF' = 360, 'SCF' = 1, 'SSL' = .01,
-C 'TCS' = 2.5, 'WOA'=.002, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'TCS' = 2.5, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
         CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)',
-     +           '$$$$$$$$$$$$$_A SPIRAL DRAWN USING DPFRST/VECT/LAST_')
-C
-        CALL DPSETR ('WOA - WIDTH OF ADDITIONAL SPACE',.001)
+     +                   '$$$$$$$A SPIRAL DRAWN USING DPFRST/VECT/LAST')
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$$$$$$$$$$$$$_A SPIRAL DRAWN USING DPFRST/VECT/LAST_' (character),
+C or '$$$$$$$A SPIRAL DRAWN USING DPFRST/VECT/LAST' (character),
 C 'LTL' = 0, 'MFS' = 1, 'PCF' = 0, 'SAF' = 360, 'SCF' = 1, 'SSL' = .01,
-C 'TCS' = 2.5, 'WOA'=.001, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'TCS' = 2.5, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
         CALL DPFRST (0.,0.)
 C
@@ -320,17 +313,17 @@ C flag is still on, so the label follows the curve.  Note also that,
 C even though the smoother is still on, it has no effect on DPDRAW.
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$$$$$$$$$$$$$_A SPIRAL DRAWN USING DPFRST/VECT/LAST_' (character),
+C or '$$$$$$$A SPIRAL DRAWN USING DPFRST/VECT/LAST' (character),
 C 'LTL' = 0, 'MFS' = 1, 'PCF' = 0, 'SAF' = 360, 'SCF' = 1, 'SSL' = .01,
-C 'TCS' = 2.5, 'WOA'=.001, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'TCS' = 2.5, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
         CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)',
-     +               '$_$_$_$_$_$_$_$_$_$_A SPIRAL DRAWN USING DPDRAW_')
+     +               '$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPDRAW')
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$_$_$_$_$_$_$_$_$_$_A SPIRAL DRAWN USING DPDRAW_' (character),
+C or '$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPDRAW' (character),
 C 'LTL' = 0, 'MFS' = 1, 'PCF' = 0, 'SAF' = 360, 'SCF' = 1, 'SSL' = .01,
-C 'TCS' = 2.5, 'WOA'=.001, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'TCS' = 2.5, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
         CALL DPDRAW (CUFX(0.),CUFY(0.),0)
 C
@@ -355,17 +348,17 @@ C Use DPSMTH to draw the same spiral.  The single-character flag is
 C still on and smoothing is still on.
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$_$_$_$_$_$_$_$_$_$_A SPIRAL DRAWN USING DPDRAW_' (character),
+C or '$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPDRAW' (character),
 C 'LTL' = 0, 'MFS' = 1, 'PCF' = 0, 'SAF' = 360, 'SCF' = 1, 'SSL' = .01,
-C 'TCS' = 2.5, 'WOA'=.001, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'TCS' = 2.5, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
         CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)',
-     +               '$_$_$_$_$_$_$_$_$_$_A SPIRAL DRAWN USING DPSMTH_')
+     +                 '$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPSMTH')
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$_$_$_$_$_$_$_$_$_$_A SPIRAL DRAWN USING DPSMTH_' (character),
+C or '$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPSMTH' (character),
 C 'LTL' = 0, 'MFS' = 1, 'PCF' = 0, 'SAF' = 360, 'SCF' = 1, 'SSL' = .01,
-C 'TCS' = 2.5, 'WOA'=.001, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'TCS' = 2.5, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
         CALL DPSMTH (CUFX(0.),CUFY(0.),0)
 C
@@ -391,9 +384,9 @@ C codes in the label string and use color to distinguish the label
 C from the line.
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$_$_$_$_$_$_$_$_$_$_A SPIRAL DRAWN USING DPSMTH_' (character),
+C or '$_$_$_$_$_$_$_$_$_$A SPIRAL DRAWN USING DPSMTH' (character),
 C 'LTL' = 0, 'MFS' = 1, 'PCF' = 0, 'SAF' = 360, 'SCF' = 1, 'SSL' = .01,
-C 'TCS' = 2.5, 'WOA'=.001, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'TCS' = 2.5, 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
 C
         CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)','$$$$$$$$$$$$$$$$$
      +$$$$$C|o|n|t|o|u|r| |l|e|v|e|l| |=| |1|3|.|6|2|:L1:4|1|0:S:14:N:')
@@ -404,13 +397,11 @@ C
 C
         CALL DPSETR ('SSL - SMOOTHED SEGMENT LENGTH',.001)
 C
-        CALL DPSETR ('WOA - WIDTH OF ADDITIONAL SPACE',.0025)
-C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
 C or '$$$$$$$$$$$$$$$$$$$$$$C|o|n|t|o|u|r| |l|e|v|e|l| |=| |1|3|.|6|2|:L
 C 1:4|1|0:S:14:N:' (character), 'LTL' = 1, 'MFS' = 1, 'PCF' = 0,
-C 'SAF' = 360, 'SCF' = 0, 'SSL' = .001, 'TCS' = 2.5, 'WOA'=.0025,
-C 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'SAF' = 360, 'SCF' = 0, 'SSL' = .001, 'TCS' = 2.5, 'WOC' = .01,
+C 'WOG' = .005, and 'WOS' = .005.
 C
         CALL GSPLCI (2)
         CALL PCSETI ('CC - CHARACTER COLOR',3)
@@ -454,8 +445,8 @@ C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
 C or '$$$$$$$$$$$$$$$$$$$$$$C|o|n|t|o|u|r| |l|e|v|e|l| |=| |1|3|.|6|2|:L
 C 1:4|1|0:S:14:N:' (character), 'LTL' = 1, 'MFS' = 1, 'PCF' = 0,
-C 'SAF' = 360, 'SCF' = 0, 'SSL' = .001, 'TCS' = 2.5, 'WOA'=.0025,
-C 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'SAF' = 360, 'SCF' = 0, 'SSL' = .001, 'TCS' = 2.5, 'WOC' = .01,
+C 'WOG' = .005, and 'WOS' = .005.
 C
         CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)','$$$$$$$$SPIRAL')
 C
@@ -463,8 +454,8 @@ C
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
 C or '$$$$$$$$SPIRAL' (character), 'LTL' = 1, 'MFS' = 1, 'PCF' = 0,
-C 'SAF' = -360, 'SCF' = 0, 'SSL' = .001, 'TCS' = 2.5, 'WOA'=.0025,
-C 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'SAF' = -360, 'SCF' = 0, 'SSL' = .001, 'TCS' = 2.5, 'WOC' = .01,
+C 'WOG' = .005, and 'WOS' = .005.
 C
         CALL GSPLCI (2)
         CALL PCSETI ('CC - CHARACTER COLOR',3)
@@ -495,10 +486,10 @@ C Use DPDRAW to draw a spiral.
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
 C or '$$$$$$$$SPIRAL' (character), 'LTL' = 1, 'MFS' = 1, 'PCF' = 0,
-C 'SAF' = -360, 'SCF' = 0, 'SSL' = .001, 'TCS' = 2.5, 'WOA'=.0025,
-C 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C 'SAF' = -360, 'SCF' = 0, 'SSL' = .001, 'TCS' = 2.5, 'WOC' = .01,
+C 'WOG' = .005, and 'WOS' = .005.
 C
-        CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)','$$$$$$$_SPIRAL_')
+        CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)','$$$$$$$SPIRAL')
 C
         CALL DPSETI ('LTL - LINE-THROUGH-LABEL FLAG',0)
 C
@@ -509,9 +500,9 @@ C
         CALL DPSETI ('SCF - SINGLE-CHARACTER FLAG',1)
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$$$$$$$_SPIRAL_' (character), 'LTL' = 0, 'MFS' = 1, 'PCF' = 1,
-C 'SAF' = 360, 'SCF' = 1, 'SSL' = .001, 'TCS' = 2.5, 'WOA'=.0025,
-C 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C or '$$$$$$$SPIRAL' (character), 'LTL' = 0, 'MFS' = 1, 'PCF' = 1,
+C 'SAF' = 360, 'SCF' = 1, 'SSL' = .001, 'TCS' = 2.5, 'WOC' = .01,
+C 'WOG' = .005, and 'WOS' = .005.
 C
         CALL DPDRAW (CUFX(0.),CUFY(0.),0)
 C
@@ -535,11 +526,11 @@ C
 C Use DPDRAW to draw a spiral.
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$$$$$$$_SPIRAL_' (character), 'LTL' = 0, 'MFS' = 1, 'PCF' = 1,
-C 'SAF' = 360, 'SCF' = 1, 'SSL' = .001, 'TCS' = 2.5, 'WOA'=.0025,
-C 'WOC' = .01, 'WOG' = .005, and 'WOS' = .005.
+C or '$$$$$$$SPIRAL' (character), 'LTL' = 0, 'MFS' = 1, 'PCF' = 1,
+C 'SAF' = 360, 'SCF' = 1, 'SSL' = .001, 'TCS' = 2.5, 'WOC' = .01,
+C 'WOG' = .005, and 'WOS' = .005.
 C
-        CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)','$_$_$_$_SPIRAL_')
+        CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)','$_$_$_$SPIRAL')
 C
         CALL DPSETI ('PCF - PLOTCHAR FLAG',0)
 C
@@ -550,9 +541,9 @@ C
         CALL DPSETR ('WOS - WIDTH OF SOLID',.01)
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$_$_$_$_SPIRAL_' (character), 'LTL' = 0, 'MFS' = 1, 'PCF' = 0,
-C 'SAF' = 360, 'SCF' = 1, 'SSL' = .001, 'TCS' = 2.5, 'WOA'=.0025,
-C 'WOC' = .02, 'WOG' = .01, and 'WOS' = .01.
+C or '$_$_$_$SPIRAL' (character), 'LTL' = 0, 'MFS' = 1, 'PCF' = 0,
+C 'SAF' = 360, 'SCF' = 1, 'SSL' = .001, 'TCS' = 2.5, 'WOC' = .02,
+C 'WOG' = .01, and 'WOS' = .01.
 C
         CALL DPDRAW (CUFX(0.),CUFY(0.),0)
 C
@@ -577,9 +568,9 @@ C
 C Use DPDRAW to draw two spirals and then use 'MFS' to offset one.
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$_$_$_$_SPIRAL_' (character), 'LTL' = 0, 'MFS' = 1, 'PCF' = 0,
-C 'SAF' = 360, 'SCF' = 1, 'SSL' = .001, 'TCS' = 2.5, 'WOA'=.0025,
-C 'WOC' = .02, 'WOG' = .01, and 'WOS' = .01.
+C or '$_$_$_$SPIRAL' (character), 'LTL' = 0, 'MFS' = 1, 'PCF' = 0,
+C 'SAF' = 360, 'SCF' = 1, 'SSL' = .001, 'TCS' = 2.5, 'WOC' = .02,
+C 'WOG' = .01, and 'WOS' = .01.
 C
         CALL DPSETR ('WOC - WIDTH OF CHARACTERS',.008)
 C
@@ -588,20 +579,20 @@ C
         CALL DPSETR ('WOS - WIDTH OF SOLID',.008)
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$_$_$_$_SPIRAL_' (character), 'LTL' = 0, 'MFS' = 1, 'PCF' = 0,
-C 'SAF' = 360, 'SCF' = 1, 'SSL' = .001, 'TCS' = 2.5, 'WOA'=.0025,
-C 'WOC' = .008, 'WOG' = .008, and 'WOS' = .008.
+C or '$_$_$_$SPIRAL' (character), 'LTL' = 0, 'MFS' = 1, 'PCF' = 0,
+C 'SAF' = 360, 'SCF' = 1, 'SSL' = .001, 'TCS' = 2.5, 'WOC' = .008,
+C 'WOG' = .008, and 'WOS' = .008.
 C
 C Draw the first spiral.
 C
-        CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)','$$$$$_SPIRAL 1_')
+        CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)','$$$$$SPIRAL 1')
 C
         CALL DPSETR ('MFS - MULTIPLIER FOR FIRST SOLID',1.5)
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$$$$$_SPIRAL 1_' (character), 'LTL' = 0, 'MFS' = 1.5, 'PCF' = 0,
-C 'SAF' = 360, 'SCF' = 1, 'SSL' = .001, 'TCS' = 2.5, 'WOA'=.0025,
-C 'WOC' = .008, 'WOG' = .008, and 'WOS' = .008.
+C or '$$$$$SPIRAL 1' (character), 'LTL' = 0, 'MFS' = 1.5, 'PCF' = 0,
+C 'SAF' = 360, 'SCF' = 1, 'SSL' = .001, 'TCS' = 2.5, 'WOC' = .008,
+C 'WOG' = .008, and 'WOS' = .008.
 C
         CALL DPDRAW (CUFX(0.),CUFY(0.),0)
 C
@@ -615,14 +606,14 @@ C
 C
 C Draw the second spiral.
 C
-        CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)','$$$$$_SPIRAL 2_')
+        CALL DPSETC ('DPT - DASH PATTERN (CHARACTER)','$$$$$SPIRAL 2')
 C
         CALL DPSETR ('MFS - MULTIPLIER FOR FIRST SOLID',3.)
 C
 C Note: At this point, 'DPS' = 0, 'DPT' = 01011011101111 (binary)
-C or '$$$$$_SPIRAL 2_' (character), 'LTL' = 0, 'MFS' = 3., 'PCF' = 0,
-C 'SAF' = 360, 'SCF' = 1, 'SSL' = .001, 'TCS' = 2.5, 'WOA'=.0025,
-C 'WOC' = .008, 'WOG' = .008, and 'WOS' = .008.
+C or '$$$$$SPIRAL 2' (character), 'LTL' = 0, 'MFS' = 3., 'PCF' = 0,
+C 'SAF' = 360, 'SCF' = 1, 'SSL' = .001, 'TCS' = 2.5, 'WOC' = .008,
+C 'WOG' = .008, and 'WOS' = .008.
 C
         CALL DPDRAW (CUFX(0.),CUFY(0.),0)
 C
@@ -645,11 +636,11 @@ C
 C
 C Done.
 C
-	WRITE (6,'(''DASHPACK TEST EXECUTED OKAY - SEE PLOTS TO CERTIFY'')')
+        WRITE (6,'(''DASHPACK TEST EXECUTED OKAY - SEE PLOTS TO CERTIFY'')')
 C
-	IERR=0
+        IERR=0
 C
-	RETURN
+        RETURN
 C
       END
 
