@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.45 1996-02-26 21:45:58 dbrown Exp $
+ *      $Id: Legend.c,v 1.46 1996-03-15 20:17:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1414,7 +1414,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 	for (i=0; i<count; i++) {
 		if (f_p[i] <= 0.0) {
 			e_text =
-	       "%s: %s index %d holds an invalid line thickness: defaulting";
+      "%s: %s index %d holds an invalid line dash segment length: defaulting";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgLineDashSegLens, i);
 		        ret = MIN(ret, NhlWARNING);
@@ -2119,11 +2119,11 @@ static NhlErrorTypes    ManageDynamicArrays
 				lg_p->line_dash_seglens->num_elements); i++) {
 			if (f_p[i] <= 0.0) {
 				e_text =
-        "%s: %s index %d holds an invalid line thickness value: defaulting";
+     "%s: %s index %d holds an invalid line dash segment length: defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 					  entry_name,NhlNlgLineDashSegLens,i);
 				ret = MIN(ret, NhlWARNING);
-				f_p[i] = 1.0;
+				f_p[i] = 0.15;
 			}
 		}
 	}

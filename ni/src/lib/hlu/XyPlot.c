@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.56 1996-03-05 20:14:03 boote Exp $
+ *      $Id: XyPlot.c,v 1.57 1996-03-15 20:17:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1111,6 +1111,15 @@ XyDataInitialize
 	else
 		dnp->marker_size = DEF_FHEIGHT_FACTOR;
 
+	if (dnp->marker_sizes != NULL) {
+		int	i;
+		float *marker_sizes = (float *) dnp->marker_sizes->data;
+
+		for (i=0;i < dnp->marker_sizes->num_elements; i++) {
+			marker_sizes[i] /= ave;
+		}
+	}
+
 	if(dnp->dash_seg_len_set)
 		dnp->dash_seg_len = dnp->dash_seg_len / ave;
 	else
@@ -2155,7 +2164,8 @@ SetUpDataSpec
 			else
 				line_colors[index] = dsp->color;
 
-			dash_seg_lens[index] = dsp->dash_seg_len;
+			dash_seg_lens[index] = 
+				dsp->dash_seg_len * xlp->vp_average;
 
 			if(j < len_labelcolortable)
 				llabel_colors[index] = labelcolortable[j];
@@ -2231,7 +2241,8 @@ SetUpDataSpec
 			}
 			strcpy(lg_label_strings[index],label);
 
-			llabel_fheights[index] = dsp->llabel_fheight;
+			llabel_fheights[index] = 
+				dsp->llabel_fheight * xlp->vp_average;
 
 			if(j < len_linethicktable)
 				line_thicknesses[index] = linethicktable[j];
@@ -2249,9 +2260,11 @@ SetUpDataSpec
 				marker_indexes[index] = dsp->marker;
 
 			if(j < len_markersizetable)
-				marker_sizes[index] = markersizetable[j];
+				marker_sizes[index] = 
+					markersizetable[j] * xlp->vp_average;
 			else 
-				marker_sizes[index] = dsp->marker_size ;
+				marker_sizes[index] = 
+					dsp->marker_size  * xlp->vp_average;
 
 			if(j < len_markerthicktable)
 				marker_thicknesses[index] = markerthicktable[j];
@@ -2386,10 +2399,8 @@ DrawCurves
 		float		*yvect;
 
 		NhlVASetValues(xlayer->base.wkptr->base.id,
-			_NhlNwkLineDashSegLenF,
-					dash_seg_lens[i]*xlp->vp_average,
-			_NhlNwkLineLabelFontHeightF,
-					llabel_fheights[i]*xlp->vp_average,
+			_NhlNwkLineDashSegLenF,dash_seg_lens[i],
+			_NhlNwkLineLabelFontHeightF,llabel_fheights[i],
 			_NhlNwkDashPattern,	dash_indexes[i],
 			_NhlNwkLineColor,	line_colors[i],
 			_NhlNwkLineLabelFontColor,	llabel_colors[i],
@@ -2397,7 +2408,7 @@ DrawCurves
 			_NhlNwkLineThicknessF,	line_thicknesses[i],
 			_NhlNwkMarkerColor,	marker_colors[i],
 			_NhlNwkMarkerIndex,	marker_indexes[i],
-			_NhlNwkMarkerSizeF,	marker_sizes[i]*xlp->vp_average,
+			_NhlNwkMarkerSizeF,	marker_sizes[i],
 			_NhlNwkMarkerThicknessF,	marker_thicknesses[i],
 			NULL);
 
