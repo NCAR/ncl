@@ -1,5 +1,5 @@
 /*
- *      $Id: Callbacks.c,v 1.4 1996-10-10 17:57:57 boote Exp $
+ *      $Id: Callbacks.c,v 1.5 1996-11-28 01:14:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,13 +30,17 @@ _NhlCBCreate
 (
 	int		hash_mult,
 	_NhlCBAddHash	add_hash,
-	_NhlCBCallHash	call_hash
+	_NhlCBCallHash	call_hash,
+	_NhlCBTaskProc	task_proc,
+	NhlPointer	task_proc_data
 )
 #else
-(hash_mult,add_hash,call_hash)
+(hash_mult,add_hash,call_hash,task_proc,task_proc_data)
 	int		hash_mult;
 	_NhlCBAddHash	add_hash;
 	_NhlCBCallHash	call_hash;
+	_NhlCBTaskProc	task_proc;
+	NhlPointer	task_proc_data;
 #endif
 {
 	_NhlCBList	cblist = NhlMalloc(sizeof(_NhlCBListRec));
@@ -76,6 +80,8 @@ _NhlCBCreate
 		cblist->add_hash = add_hash;
 		cblist->call_hash = call_hash;
 	}
+	cblist->task_proc = task_proc;
+	cblist->task_proc_data = task_proc_data;
 
 	return cblist;
 }
@@ -105,6 +111,17 @@ _NhlCBDestroy
 	for(i=0;i<cblist->size;i++){
 		cbt1 = cblist->hash[i];
 		while(cbt1){
+			if (cblist->task_proc) {
+				NhlBoolean	yes;
+				NhlArgVal	cbdata;
+				NhlArgVal	sel;
+
+				sel.lngval = cbt1->index;
+				(*cblist->task_proc)
+					(cblist->task_proc_data,
+					 _NhlcbDELETE,sel,&yes,&cbdata,
+					 &cbt1->cbnode_data);
+			}
 			cbt2 = cbt1;
 			cbt1 = cbt1->next;
 			NhlFree(cbt2);
@@ -157,9 +174,27 @@ _NhlCBAdd
 	else
 		cb->index = selector.lngval;
 
+
 	cb->cbfunc = cbfunc;
 	cb->udata = udata;
 	cb->next = NULL;
+	cb->cbnode_data = NULL;
+
+	if (cblist->task_proc) {
+		NhlArgVal sel;
+		NhlBoolean yes = True;
+
+		sel.lngval = cb->index;
+		(*cblist->task_proc) 
+			(cblist->task_proc_data,
+			 _NhlcbADD,sel,&yes,NULL,&cb->cbnode_data);
+		if (! cb->cbnode_data) {
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+				   "CB not installed"));
+			NhlFree(cb);
+			return NULL;
+		}
+	}
 
 	cbptr = &cblist->hash[cb->index & cblist->mask];
 	/*
@@ -202,6 +237,16 @@ _NhlCBDelete
 
 	while(*cbptr){
 		if(*cbptr == cb){
+			if (cblist->task_proc) {
+				NhlBoolean	yes;
+				NhlArgVal	cbdata;
+				NhlArgVal	sel;
+				sel.lngval = cb->index;
+				(*cblist->task_proc)
+					(cblist->task_proc_data,
+					 _NhlcbDELETE,sel,&yes,&cbdata,
+					 &cb->cbnode_data);
+			}
 			*cbptr = cb->next;
 			found = True;
 			break;
@@ -251,16 +296,35 @@ _NhlCBCallCallbacks
 		index = selector.lngval;
 
 	cb = cblist->hash[index & cblist->mask];
-	while(cb){
-		/*
-		 * Only call the cb if the index matches, and the callback
-		 * wasn't removed during this call to CallCallbacks.
-		 */
-		if(cb->index == index && !(cb->state & _NhlCBNODEDESTROY))
-			(*cb->cbfunc)(cbdata,cb->udata);
-		if(cblist->state & _NhlCBLISTDESTROY)
-			break;
-		cb = cb->next;
+	if (! cblist->task_proc) {
+		while(cb){
+			/*
+			 * Only call the cb if the index matches, and the 
+			 * callback wasn't removed during this call to 
+			 * CallCallbacks.
+			 */
+			if(cb->index == index && 
+			   !(cb->state & _NhlCBNODEDESTROY))
+				(*cb->cbfunc)(cbdata,cb->udata);
+			if(cblist->state & _NhlCBLISTDESTROY)
+				break;
+			cb = cb->next;
+		}
+	}
+	else {
+		while(cb){
+			NhlBoolean	yes = True;
+			NhlArgVal	sel;
+			sel.lngval = index;
+			(*cblist->task_proc)
+				(cblist->task_proc_data,_NhlcbCALL,
+				 sel,&yes,&cbdata,&cb->cbnode_data);
+				
+			if (yes && !(cb->state & _NhlCBNODEDESTROY)) {
+				(*cb->cbfunc)(cbdata,cb->udata);
+			}
+			cb = cb->next;
+		}
 	}
 	cblist->state &= ~_NhlCBCALLING;
 
@@ -292,3 +356,102 @@ _NhlCBCallCallbacks
 
 	return;
 }
+
+void
+_NhlCBIterate
+#if	NhlNeedProto
+(
+	_NhlCBList	cblist,
+	_NhlCBTask	task, /* for now only accepted task is '_NhlcbCALL' */
+	NhlArgVal	cbdata
+)
+#else
+(cblist,task,cbdata)
+	_NhlCBList	cblist;
+	_NhlCBTask	task;
+	NhlArgVal	cbdata;
+#endif
+{
+	NhlArgVal sel;
+	_NhlCB	cb;
+	int	i;
+
+	if(!cblist)
+		return;
+
+	if(cblist->state & _NhlCBCALLING)
+		return;
+
+	if (task == _NhlcbADD || task == _NhlcbDELETE) /* not supported */
+		return;
+
+	cblist->state = _NhlCBCALLING;
+
+	for(i=0;i<cblist->size;i++){
+		_NhlCB	*cbptr;
+
+		cbptr = &cblist->hash[i];
+		if (! cblist->task_proc) {
+			while(*cbptr){
+				cb = *cbptr;
+				if (!(cb->state & _NhlCBNODEDESTROY)) {
+					(*cb->cbfunc)(cbdata,cb->udata);
+				}
+				cbptr = &cb->next;
+			}
+		}
+		else {
+			while(*cbptr){
+				NhlBoolean yes = True;
+				cb = *cbptr;
+				sel.lngval = cb->index;
+				(*cblist->task_proc)
+					(cblist->task_proc_data,task,
+					 sel,&yes,&cbdata,&cb->cbnode_data);
+				
+				if (yes && !(cb->state & _NhlCBNODEDESTROY)) {
+					(*cb->cbfunc)(cbdata,cb->udata);
+				}
+				cbptr = &cb->next;
+			}
+		}
+	}
+
+	cblist->state &= ~_NhlCBCALLING;
+
+	/*
+	 * If _NhlCBDestroy was called during the call of the list
+	 */
+	if(cblist->state & _NhlCBLISTDESTROY){
+		_NhlCBDestroy(cblist);
+		return;
+	}
+	/*
+	 * Remove any nodes that were deleted during the call of the list
+	 */
+	sel.lngval = 0;
+	for(i=0;i<cblist->size;i++){
+		_NhlCB	*cbptr;
+
+		cbptr = &cblist->hash[i];
+		while(*cbptr){
+			NhlBoolean yes;
+			cb = *cbptr;
+			if(cb->state & _NhlCBNODEDESTROY){
+				if (cblist->task_proc) {
+					(*cblist->task_proc)
+					(cblist->task_proc_data,
+					 _NhlcbDELETE,sel,&yes,&cbdata,
+					 &cb->cbnode_data);
+				}
+				*cbptr = cb->next;
+				NhlFree(cb);
+				continue;
+			}
+			cbptr = &cb->next;
+		}
+	}
+
+	return;
+}
+

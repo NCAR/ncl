@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.35 1996-11-24 22:25:32 boote Exp $
+ *      $Id: hlu.c,v 1.36 1996-11-28 01:14:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1807,8 +1807,10 @@ GetObjCBList
 			cblptr = (_NhlCBList *)((char*)l + cbl[i].offset);
 			if(create && !*cblptr){
 				*cblptr = _NhlCBCreate(cbl[i].hash_mult,
-							cbl[i].add_hash,
-							cbl[i].call_hash);
+						       cbl[i].add_hash,
+						       cbl[i].call_hash,
+						       cbl[i].task_proc,
+						       (NhlPointer)l);
 			}
 			return *cblptr;
 		}
@@ -1866,5 +1868,34 @@ _NhlCallObjCallbacks
 )
 {
 	_NhlCBCallCallbacks(GetObjCBList(l,cbname,False),sel,cbdata);
+	return;
+}
+
+
+/*
+ * Function:	_NhlIterateObjCallbacks
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NhlIterateObjCallbacks
+(
+	NhlLayer	l,
+	NhlString	cbname,
+ 	_NhlCBTask	task
+)
+{
+	NhlArgVal cbdata;
+
+	cbdata.lngval = 0;
+	_NhlCBIterate(GetObjCBList(l,cbname,False),task,cbdata);
 	return;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: BaseI.h,v 1.2 1996-10-10 17:57:55 boote Exp $
+ *      $Id: BaseI.h,v 1.3 1996-11-28 01:14:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,5 +25,16 @@
 #include <ncarg/hlu/Base.h>
 
 #define	_NhlCBobjDestroy	"CBobjDestroy"	/* cbdata.ptrval is NhlLayer */
+
+typedef struct _NhlValueSetCBDataRec 
+	_NhlValueSetCBDataRec, *_NhlValueSetCBData;
+
+struct _NhlValueSetCBDataRec {
+	int		id;	/* layer id */
+	NrmQuark	resq;	/* resource name quark */
+};
+
+#define	_NhlCBresValueSet	"CBresValueSet"	/* cbdata.ptrval is 
+						   _NhlValueSetCBData */
 
 #endif  /* _NBaseI_h */

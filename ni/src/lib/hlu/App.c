@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.27 1996-10-16 16:18:28 boote Exp $
+ *      $Id: App.c,v 1.28 1996-11-28 01:14:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -399,7 +399,7 @@ AppClassPartInitialize
 
 	alcp->default_app = NULL;
 	alcp->current_app = NULL;
-	alcp->cblist = _NhlCBCreate(0,NULL,NULL);
+	alcp->cblist = _NhlCBCreate(0,NULL,NULL,NULL,NULL);
 	InitBaseDB(alc);
 	alcp->default_guidata = NULL;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.22 1996-11-24 22:25:31 boote Exp $
+ *      $Id: SetValues.c,v 1.23 1996-11-28 01:14:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,9 @@
 #include <ncarg/hlu/ResListP.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/BaseP.h>
+
+
+static NhlLayer Oldl;
 
 /*
  * Function:	CallSetValues
@@ -484,6 +487,9 @@ _NhlSetLayerValues
 		}
 	}
 
+	Oldl = oldl;
+	_NhlIterateObjCallbacks(l,_NhlCBresValueSet,_NhlcbCALL);
+
 	(void)NhlFree(oldl);
 	(void)NhlFree(reql);
 
@@ -911,4 +917,214 @@ _NhlALSetValuesChild
 	ret = SetValuesChild(pid,parent,args,nargs);
 
 	return ret;
+}
+
+static NhlLayer
+GetResLayer 
+#if	NhlNeedProto
+(
+	NhlLayer	l,
+	NrmQuark	resq,
+	NrmResource	**res
+)
+#else
+(l,resq,res)
+	NhlLayer	l;
+	NrmQuark	resq;
+	NrmResource	**res;
+#endif
+{
+	NhlClass		lc = _NhlClass(l);
+	NrmResourceList 	reslist = 
+		(NrmResourceList) lc->base_class.resources;
+	int			num_res = lc->base_class.num_resources;
+	_NhlChildResList	child_reslist;
+	_NhlChildList		childlist;
+	NhlClass		child_class = NULL;
+	int			i;
+	NhlBoolean		found = False,forwarded = False;
+
+	for (i = 0; i < num_res; i++) {
+		if (resq == reslist[i].nrm_name) {
+			found = True;
+			*res = &reslist[i];
+			return(l);
+		}
+	}
+	if (_NhlIsObj(l))
+		return NULL;
+
+	child_reslist = lc->base_class.child_resources;
+	while (child_reslist) {
+		if (NrmQinQList(child_reslist->resources,resq)) {
+			child_class = child_reslist->class;
+			break;
+		}
+		child_reslist = child_reslist->next;
+	}
+	if (!child_class)
+		return NULL;
+
+	childlist = l->base.children;
+	while (childlist) {
+		if (child_class == childlist->class) {
+			break;
+		}
+		childlist = childlist->next;
+	}
+	if (!childlist) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "Internal HLU lib error");
+		return NULL;
+	}
+	return (GetResLayer(_NhlGetLayer(childlist->pid),resq,res));
+}
+
+void ForwardedValueSetCB(NhlArgVal cbdata, NhlArgVal udata)
+
+{
+	_NhlValSetCBInfo	vsinfo = (_NhlValSetCBInfo) udata.ptrval;
+
+	vsinfo->forwarded_value_set = True;
+	return;
+}
+
+static _NhlValSetCBInfo 
+AddValueSetCB
+#if	NhlNeedProto
+(
+	NhlLayer	l,
+	NrmQuark	resq
+)
+#else
+(l,resq)
+	NhlLayer	l;
+	NrmQuark	resq;
+#endif
+{
+	_NhlValSetCBInfo	vsinfo;
+	NhlClass		lc = _NhlClass(l);
+	NhlLayer		resl;
+	NrmResource		*res;
+	_NhlCB			cb;
+	NhlArgVal		sel;
+	NhlArgVal		udata;
+		
+	resl = GetResLayer(l,resq,&res);
+	if (! resl)
+		return NULL;
+
+	vsinfo = NhlMalloc(sizeof(_NhlValSetCBInfoRec));
+	
+	if (!vsinfo) {
+		NhlPError(NhlFATAL,ENOMEM,NULL);
+		return NULL;
+	}
+
+	vsinfo->nameq = resq;
+	vsinfo->resl = resl;
+	vsinfo->resl_id = resl->base.id;
+	vsinfo->forwarded_value_set = False;
+	if (resl != l) {
+		vsinfo->forwarded = True;
+		vsinfo->forwarded_cb = cb;
+		sel.lngval = resq;
+		udata.ptrval = vsinfo;
+		cb =  _NhlAddObjCallback(resl,"CBresValueSet",sel,
+					 ForwardedValueSetCB,udata);
+		if (! cb) {
+			NhlFree(vsinfo);
+			return NULL;
+		}
+	}
+	else {
+		vsinfo->forwarded = False;
+		vsinfo->forwarded_cb = NULL;
+		vsinfo->offset = res->nrm_offset;
+		vsinfo->size = res->nrm_size;
+	}
+	return vsinfo;
+}
+NhlErrorTypes _NhlResValueSetCBTask
+#if	NhlNeedProto
+(
+	NhlPointer	procdata,
+	_NhlCBTask	task,
+	NhlArgVal	selector,
+	NhlBoolean	*do_it,					
+	NhlArgVal	*cbdata,				     
+	NhlPointer	*cbnode_data
+)
+#else
+(procdata,task,selector,do_it,cbdata,cbnode_data)
+	NhlPointer	procdata;
+	_NhlCBTask	task;
+	NhlArgVal	selector;
+	NhlBoolean	*do_it;					
+	NhlArgVal	*cbdata;				     
+	NhlPointer	*cbnode_data;
+#endif
+{
+	NhlLayer l = (NhlLayer) procdata;
+	NrmQuark resq = (NrmQuark)selector.lngval;
+ 	_NhlValSetCBInfo vsinfo;
+	static _NhlValueSetCBDataRec vsdata;
+	char *base, *oldbase;
+
+	switch (task) {
+	case _NhlcbCALL:
+		*do_it = False;
+		if (! cbnode_data || ! *cbnode_data) {
+			return NhlNOERROR;
+		}
+		vsinfo = (_NhlValSetCBInfo) *cbnode_data;
+		if (vsinfo->forwarded) {
+			if (! vsinfo->forwarded_value_set)
+				return NhlNOERROR;
+			else
+				vsinfo->forwarded_value_set = False;
+		}
+		else {
+			base = (char *) vsinfo->resl;
+			oldbase = (char *) Oldl;
+			if (! memcmp(base+vsinfo->offset,
+				     oldbase+vsinfo->offset,vsinfo->size)) {
+				return NhlNOERROR;
+			}
+		}
+		vsdata.id = l->base.id;
+		vsdata.resq = resq;
+		(*cbdata).ptrval = &vsdata;
+		*do_it = True;
+		return NhlNOERROR;
+	case _NhlcbADD:	
+		*cbnode_data = (NhlPointer)AddValueSetCB(l,resq);
+		if (! *cbnode_data) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  "SetValues CB not installed for %s",
+				  NrmQuarkToString(resq));
+			*do_it = False;
+			return NhlWARNING;
+		}
+		*do_it = False;
+		return NhlNOERROR;
+	case _NhlcbDELETE:
+		if (!cbnode_data || ! *cbnode_data)
+			return NhlNOERROR;
+
+		vsinfo = (_NhlValSetCBInfo) *cbnode_data;
+		if (vsinfo->forwarded && 
+		    (vsinfo->resl == _NhlGetLayer(vsinfo->resl_id)))
+			_NhlCBDelete(vsinfo->forwarded_cb);
+			
+		NhlFree(*cbnode_data);
+		*do_it = False;
+		return NhlNOERROR;
+		break;
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "Invalid enumeration value for callback task");
+		break;
+	}
+	return NhlNOERROR;
 }

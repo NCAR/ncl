@@ -1,5 +1,5 @@
 /*
- *      $Id: CallbacksP.h,v 1.3 1996-10-10 17:57:58 boote Exp $
+ *      $Id: CallbacksP.h,v 1.4 1996-11-28 01:14:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@ struct _NhlCBRec {
 	int		index;
 	_NhlCBFunc	cbfunc;
 	NhlArgVal	udata;
+	NhlPointer	cbnode_data;
 	_NhlCB		next;
 };
 
@@ -45,6 +46,8 @@ struct _NhlCBListRec {
 	_NhlCB		*hash;
 	_NhlCBAddHash	add_hash;
 	_NhlCBCallHash	call_hash;
+	_NhlCBTaskProc  task_proc;
+	NhlPointer	task_proc_data;
 };
 
 #endif	/* _NHL_CALLBACKSP_H */

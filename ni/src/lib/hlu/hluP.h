@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.34 1996-11-24 22:25:32 boote Exp $
+ *      $Id: hluP.h,v 1.35 1996-11-28 01:14:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -494,6 +494,12 @@ extern void _NhlCallObjCallbacks(
 	NhlString	cbname,
 	NhlArgVal	sel,
 	NhlArgVal	cbdata
+);
+
+extern void _NhlIterateObjCallbacks(
+	NhlLayer	l,
+	NhlString	cbname,
+	_NhlCBTask	task
 );
 
 #endif /* HLUP_H */

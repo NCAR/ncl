@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.23 1996-10-10 17:58:00 boote Exp $
+ *      $Id: Error.c,v 1.24 1996-11-28 01:14:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -101,7 +101,8 @@ static NhlResource fresources[] = {
 
 static _NhlRawObjCB callbacks[] = {
 
-	{_NhlCBerrPError,NhlOffset(NhlErrorLayerRec,error.perrcb),0,NULL,NULL}
+	{_NhlCBerrPError,NhlOffset(NhlErrorLayerRec,error.perrcb),
+		 0,NULL,NULL,NULL}
 };
 
 /* Methode declarations	*/

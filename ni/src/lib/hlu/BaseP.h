@@ -1,5 +1,5 @@
 /*
- *      $Id: BaseP.h,v 1.12 1996-10-16 16:18:34 boote Exp $
+ *      $Id: BaseP.h,v 1.13 1996-11-28 01:14:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -71,6 +71,7 @@ typedef struct _NhlObjLayerPart {
 	NhlLayer	appobj;		/* App Class Object		*/
 	NhlBoolean	being_destroyed;
 	_NhlCBList	destroycb;
+	_NhlCBList	resvaluesetcb;
 	_NhlAllChildList	all_children;
 	NhlPointer	ncl_data;
 	NhlPointer	gui_data;
@@ -90,6 +91,7 @@ typedef struct _NhlBaseLayerPart {
 	NhlLayer	appobj;		/* App Class Object		*/
 	NhlBoolean	being_destroyed;
 	_NhlCBList	destroycb;
+	_NhlCBList	resvaluesetcb;
 	_NhlAllChildList	all_children;
 	NhlPointer	ncl_data;
 	NhlPointer	gui_data;
@@ -128,6 +130,7 @@ typedef struct _NhlRawObjCBRec{
 	int		hash_mult;
 	_NhlCBAddHash	add_hash;
 	_NhlCBCallHash	call_hash;
+	_NhlCBTaskProc	task_proc;
 } _NhlRawObjCB, *_NhlRawObjCBList;
 
 typedef struct _NhlCookedObjCBRec{
@@ -136,6 +139,7 @@ typedef struct _NhlCookedObjCBRec{
 	int		hash_mult;
 	_NhlCBAddHash	add_hash;
 	_NhlCBCallHash	call_hash;
+	_NhlCBTaskProc	task_proc;
 } _NhlCookedObjCB, *_NhlCookedObjCBList;
 
 

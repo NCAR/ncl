@@ -1,5 +1,5 @@
 /*
- *      $Id: ResourcesP.h,v 1.12 1995-04-22 01:02:00 boote Exp $
+ *      $Id: ResourcesP.h,v 1.13 1996-11-28 01:14:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -186,6 +186,31 @@ extern NhlBoolean _NhlResInClass(
 extern void _NhlDestroyResDatabase(
 #if	NhlNeedProto
 	void
+#endif
+);
+
+
+typedef struct _NhlValSetCBInfoRec _NhlValSetCBInfoRec, *_NhlValSetCBInfo;
+
+struct _NhlValSetCBInfoRec {
+	NrmQuark	nameq;
+	NhlBoolean	forwarded;
+	_NhlCB		forwarded_cb;
+	NhlBoolean	forwarded_value_set;
+	int		resl_id;
+	NhlLayer	resl;
+	unsigned int    offset;
+	unsigned int	size;
+};
+
+extern NhlErrorTypes _NhlResValueSetCBTask(
+#if	NhlNeedProto
+	NhlPointer	proc_data,
+	_NhlCBTask	task,
+	NhlArgVal	selector,
+	NhlBoolean	*do_it,					
+	NhlArgVal	*cbdata,				     
+	NhlPointer	*cbnode_data
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Callbacks.h,v 1.2 1996-09-14 17:05:52 boote Exp $
+ *      $Id: Callbacks.h,v 1.3 1996-11-28 01:14:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -61,6 +61,28 @@ typedef long (*_NhlCBCallHash)(
 #endif
 );
 
+typedef enum __NhlCBTask {
+	_NhlcbADD,
+	_NhlcbDELETE,
+	_NhlcbCALL
+} _NhlCBTask;
+
+/*
+ * This function does private stuff appropriate to the particular
+ * callback during add, call, and delete
+ */
+
+typedef NhlErrorTypes (*_NhlCBTaskProc)(
+#if	NhlNeedProto
+	NhlPointer	proc_data,
+	_NhlCBTask	task,
+	NhlArgVal	selector,
+	NhlBoolean	*do_it,					
+	NhlArgVal	*cbdata,				     
+	NhlPointer	*cbnode_data
+#endif
+);
+
 typedef struct _NhlCBRec _NhlCBRec, *_NhlCB;
 typedef struct _NhlCBListRec _NhlCBListRec, *_NhlCBList;
 
@@ -83,7 +105,9 @@ _NhlCBCreate(
 #if	NhlNeedProto
 	int		hash_mult,
 	_NhlCBAddHash	add_hash,
-	_NhlCBCallHash	call_hash
+	_NhlCBCallHash	call_hash,
+        _NhlCBTaskProc	task_proc,
+	NhlPointer	task_proc_data
 #endif
 );
 
@@ -125,6 +149,15 @@ _NhlCBCallCallbacks(
 #if	NhlNeedProto
 	_NhlCBList	cblist,
 	NhlArgVal	selector,
+	NhlArgVal	cbdata
+#endif
+);
+
+extern void
+_NhlCBIterate(
+#if	NhlNeedProto
+	_NhlCBList	cblist,
+ 	_NhlCBTask	task,
 	NhlArgVal	cbdata
 #endif
 );

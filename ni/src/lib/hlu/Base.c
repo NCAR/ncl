@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.18 1996-10-16 16:18:32 boote Exp $
+ *      $Id: Base.c,v 1.19 1996-11-28 01:14:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,10 +30,16 @@
 #include <ncarg/hlu/BaseP.h>
 
 static _NhlRawObjCB bcallbacks[] = {
-	{_NhlCBobjDestroy,NhlOffset(NhlBaseLayerRec,base.destroycb),0,NULL,NULL}
+	{_NhlCBobjDestroy,NhlOffset(NhlBaseLayerRec,base.destroycb),
+		 0,NULL,NULL,NULL},
+	{_NhlCBresValueSet,NhlOffset(NhlBaseLayerRec,base.resvaluesetcb),
+		 0,NULL,NULL,_NhlResValueSetCBTask}
 };
 static _NhlRawObjCB ocallbacks[] = {
-	{_NhlCBobjDestroy,NhlOffset(NhlObjLayerRec,base.destroycb),0,NULL,NULL}
+	{_NhlCBobjDestroy,NhlOffset(NhlBaseLayerRec,base.destroycb),
+		 0,NULL,NULL,NULL},
+	{_NhlCBresValueSet,NhlOffset(NhlBaseLayerRec,base.resvaluesetcb),
+		 0,NULL,NULL,_NhlResValueSetCBTask}
 };
 
 static NhlResource bresources[] = {
