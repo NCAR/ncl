@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: rm3_2,v 1.2 1994-05-03 14:02:48 haley Exp $
+#      $Id: rm3_2,v 1.3 1995-06-12 21:57:02 haley Exp $
 #
 #########################################################################
 #									#
@@ -65,11 +65,11 @@ set bins = 	(bnchmk cgm2ncgm cgm_edit cgmtrans \
 		findg fontc ftrans gcaps graphc ictrans idt \
 		med ncargcc ncargcex ncargex ncargf77 \
 		ncargfile ncargmv ncargpath ncargrun ncargtar \
-		ncargversion ncarvversion ncgm2cgm ncgmstat \
+		ncargversion ncarvversion ncargworld ncgm2cgm ncgmstat \
 		nriftohdf plt pre2ncgm pre2ncgm.prog psblack \
-		pswhite rascat rasgetpal rasls rassplit \
+		pswhite pwritxnt rascat rasgetpal rasls rassplit \
 		rasstat rasview sunplot tgks0a tlocal tplot \
-		tspps xwdtohdf)
+		tspps xwdtohdf ymake ymkmf)
 
 set incs = 	(ncarg)
 

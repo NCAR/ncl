@@ -1,4 +1,4 @@
-ROOT_DIR	= /cyclone/ncargd/dist/binaries
+ROOT_DIR	= /tmp/haley
 INS_DIR	= $(ROOT_DIR)/INSTALL
 SRC_TAR	= $(ROOT_DIR)/SRC.TAR
 
