@@ -1,5 +1,5 @@
 C
-C	$Id: cssgridd.f,v 1.3 2000-08-22 15:19:19 haley Exp $
+C	$Id: cssgridd.f,v 1.4 2000-09-13 17:21:23 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -118,7 +118,6 @@ C
 C  Parameters for random number usage.
 C
       PARAMETER (D2R=0.017453293D0,EPSILON=0.00001D0,IRMAX=32767)
-      DATA IX,IY,IZ/1,2,3/
 C
 C  Use pre-calculated estimated gradients.
 C
@@ -126,6 +125,7 @@ C
 C
       INTEGER CSJRAND
       INTEGER I,J,IERR,IST,NN,NST,NX,NY
+      DATA IX,IY,IZ/1,2,3/
       DATA NST/1/
 C
 C Local parameters:

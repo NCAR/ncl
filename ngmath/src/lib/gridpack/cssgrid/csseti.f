@@ -1,5 +1,5 @@
 C
-C	$Id: csseti.f,v 1.4 2000-08-22 15:19:18 haley Exp $
+C	$Id: csseti.f,v 1.5 2000-09-13 17:21:22 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -83,7 +83,7 @@ C
 C
 C  ISG - Flag to revert to calculating a SIGMA array rather than
 C        use a constant SIGMA.  Using a constant SIGMA is effected
-C        by setting a value for SIGME using CSSETR.  If ICSIG is 0,
+C        by setting a value for SIG using CSSETR.  If ICSIG is 0,
 C        then a SIGMA array is used, otherwise a constant SIGMA is used.
 C
       ELSE IF (CNP(1:3).EQ.'ISG' .OR. CNP(1:3).EQ.'isg' .OR.

@@ -1,5 +1,5 @@
 C
-C	$Id: cssgrid.f,v 1.8 2000-08-22 15:19:19 haley Exp $
+C	$Id: cssgrid.f,v 1.9 2000-09-13 17:21:22 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -52,7 +52,7 @@ C    RLATI,RLONI = Arrays containing lat/lon coordinates of the nodes,
 C                  in degrees.
 C
 C    F     = Array containing data values.  F(I) is associated with
-C            (X(I),Y(I),Z(I)) for I = 1 to N.
+C            (RLATI(I),RLON(I)) for I = 1 to N.
 C
 C    NI,NJ = Number of rows and columns in the uniform grid.
 C            1 .LE. NI .LE. NROW and 1 .LE. NJ.
@@ -121,7 +121,6 @@ C
 C  Parameters for random number usage.
 C
       PARAMETER (EPSILON=0.00001,IRMAX=32767)
-      DATA IX,IY,IZ/1,2,3/
 C
 C  Use pre-calculated estimated gradients.
 C
@@ -130,6 +129,7 @@ C
       INTEGER CSJRAND
       INTEGER I,J,IERR,IST,NN,NST,NX,NY
       DATA NST/1/
+      DATA IX,IY,IZ/1,2,3/
 C
 C Local parameters:
 C
