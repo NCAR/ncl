@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.4 2002-02-23 00:35:26 haley Exp $
+#       $Id: yMakefile,v 1.5 2002-02-23 00:41:25 haley Exp $
 #
 
 MYNAME  = ezmapdemo
