@@ -1,5 +1,5 @@
 C
-C	$Id: g01clp.f,v 1.7 2001-09-07 00:31:53 fred Exp $
+C	$Id: g01clp.f,v 1.8 2001-12-11 22:16:35 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -85,7 +85,7 @@ C
           MRCREC(I) = ICRLOC(I)
         END IF
    10 CONTINUE
-      IF (DCLIP) THEN
+      IF (DCLIP .OR. CHANGE) THEN
         IF (MDEMPT .EQ. GNEMPT) THEN
 C
 C  Total byte length, based on VDC bit precision.
