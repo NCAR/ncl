@@ -1,4 +1,5 @@
 #define BuildXlibDependentCode
+#define BuildSunViewctrans
 /*
 ** Define which raster drivers will be built.
 */
@@ -20,8 +21,8 @@ LIBROOT		= /usr/local/lib
 INCROOT		= /usr/local/include
 MANROOT		= /usr/local/man
 TMPROOT		= /tmp
-LOCAL_LIB_SEARCH		= -L/X/X11/lib -L/usr/local/lib
-LOCAL_INC_SEARCH		= -I/X/X11/include -I/usr/local/include
+LOCAL_LIB_SEARCH		= -L/X/X11/lib -L/usr/local/ncarg/lib -L/usr/local/lib
+LOCAL_INC_SEARCH		= -I/X/X11/include -I/usr/local/ncarg/include -I/usr/local/include
 
 /*
 **  Order of assignment to LIB_SEARCH and to INC_SEARCH is
@@ -31,6 +32,7 @@ LIB_SEARCH        = -L$(LIBROOT) $(LOCAL_LIB_SEARCH)
 INC_SEARCH        = -I$(INCROOT) $(LOCAL_INC_SEARCH)
 
 NCARGDIR          = ncarg
+HLUDIR            = hlu
 BINDIR            = bin
 LIBDIR            = lib
 INCDIR            = include
@@ -50,6 +52,7 @@ GENERICDIR        = generic
 BINPATH           = $(BINROOT)
 LIBPATH           = $(LIBROOT)
 INCPATH           = $(INCROOT)/$(NCARGDIR)
+HLUINCPATH        = $(INCROOT)/$(NCARGDIR)/$(HLUDIR)
 TMPPATH           = $(TMPROOT)
 MANPATH           = $(MANROOT)
 
@@ -83,6 +86,11 @@ XTOOLLIB          = -lXt
 XMULIB            = -lXmu
 XAWLIB            = -lXaw
 XMOTIFLIBS        = -lXm $(XTOOLLIB) $(XLIB)
+HLULIBS           = -lhlu -lhlu_util
+NCARGCLIBS        = -lncargC -lncarg_gksC
+NCARGLIBS         = -lncarg -lncarg_gks -lncarg_loc -lncarg_c
+CTOFLIBS          = -lF77
+NCDFLIBS          = -lnetcdf
 #ifdef BuildRasterHDF
 HDFLIB            = -ldf
 #endif
@@ -106,7 +114,7 @@ CC                = acc
 CC_LD             = $(CC)
 CDEBUG            = 
 COPT              = -O
-CMISC             = -Xa -DNeedFuncProto
+CMISC             = -Xc -DNeedFuncProto
 CINC              = $(INC_SEARCH)
 CFLAGS            = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
                     $(FLOAT_OPT) $(CINC) $(VDEFINE)
