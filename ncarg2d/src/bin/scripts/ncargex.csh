@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.71 1994-09-13 05:10:48 haley Exp $
+#   $Id: ncargex.csh,v 1.72 1994-09-14 16:51:44 kennison Exp $
 #
 
 #********************#
@@ -124,7 +124,7 @@ set colconv_list = ($ex_colconv $tst_colconv $fnd_colconv)
 #                        #
 #************************#
 set ex_conpack   = (cpex01 cpex02 cpex03 cpex04 cpex05 cpex06 cpex07 \
-                    cpex08 cpex09 cpex10 cpex11 ${ex_cbivar})
+		    cpex08 cpex09 cpex10 cpex11 cpex12 ${ex_cbivar})
 set tst_conpack  = (tconpa)
 set ttr_conpack  = (ccpback ccpcff ccpcfx ccpcica ccpcir ccpcis ccpcit ccpclc \
                     ccpcld ccpcldm ccpcldr ccpcll ccpclu ccpcnrc ccpdflt \
