@@ -1,5 +1,5 @@
 C
-C   $Id: cezmap1.f,v 1.5 1995-06-14 14:06:56 haley Exp $
+C   $Id: cezmap1.f,v 1.6 1999-03-09 22:11:59 haley Exp $
 C
 C
 C Define error file, Fortran unit number, and workstation type,
@@ -15,7 +15,7 @@ C
 C
 C Invoke demo driver
 C
-      CALL CEZMAP('SV',40.,-50.,0.,'PO')
+      CALL CEZMAP('SV',40.,-50.,0.)
 C
 C Deactivate and close workstation, close GKS.
 C
