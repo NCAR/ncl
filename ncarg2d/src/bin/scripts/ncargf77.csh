@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargf77.csh,v 1.11 1993-04-19 17:27:27 haley Exp $
+#	$Id: ncargf77.csh,v 1.12 1993-04-19 20:24:55 haley Exp $
 #
 set XLIBPATH = ""
 set system   = "SED_SYSTEM_INCLUDE"
@@ -10,16 +10,19 @@ set ro       = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
 set loadopts = ""
 set libextra = ""
 
+if (! -d "$libdir") then
+  echo "Library directory <$libdir> does not exist."
+  exit 1
+endif
+
+#
+# Set up special cases
+#
 if ("$system" == "Sun3") then
   set loadopts = "-fswitch"
 else if ("$system" == "Sun4Solaris") then
   set libextra = "/usr/ucblib/libucb.a"
 endif    
-
-if (! -d "$libdir") then
-  echo "Library directory <$libdir> does not exist."
-  exit 1
-endif
 
 set newargv = "$fortran $loadopts"
 
@@ -132,6 +135,9 @@ foreach arg ($argv)
         set libX11   = ""
         set libmath  = ""
         set stub_file = $ro/ggkwdr_stub.o
+        if ("$system" == "Sun4") then
+            set libextra = "-L/usr/lang/SC1.0/ansi_lib -lansi"
+        endif
         breaksw
 
     case "-noX11"
