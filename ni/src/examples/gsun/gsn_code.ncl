@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.101 2003-02-27 18:05:09 haley Exp $
+;      $Id: gsn_code.ncl,v 1.102 2003-02-27 21:51:06 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3219,6 +3219,12 @@ begin
         end if
       end if
     end if
+;
+; Use this font height for the panel strings, if any, unless the user
+; has set gsnPanelFigureStringsFontHeightF.
+;
+    pfont_height = get_res_value(res,"gsnPanelFigureStringsFontHeightF",\
+                                 font_height)
   end if
 ;
 ; We assume all plots are the same size, so if we get the size of
@@ -3426,7 +3432,7 @@ begin
             panel_strings(nplot).ne."")
             text = create "string" textItemClass wks
               "txString"              : panel_strings(nplot)
-              "txFontHeightF"         : font_height
+              "txFontHeightF"         : pfont_height
               "txPerimOn"             : True
               "txBackgroundFillColor" : 0
             end create
