@@ -721,8 +721,7 @@ NhlErrorTypes dim_median_W( void )
     l1 += npts;
     l2++;
     if (ier == 2) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_median: The input array contains all missing values");
-      return(NhlFATAL);
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_median: The input array contains all missing values");
     }
   }
 /*
@@ -877,6 +876,9 @@ NhlErrorTypes dim_rmvmean_W( void )
   for(i = 1; i <= total_elements; i++) {
     NGCALLF(drmvmean,DRMVMEAN)(&x[l1],&npts,&xmsg,&ier);
     l1 += npts;
+    if (ier == 2) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_rmvmean: The input array contains all missing values");
+    }
   }
 /*
  * Return float if input isn't double, otherwise return double.
@@ -1034,6 +1036,9 @@ NhlErrorTypes dim_rmvmed_W( void )
   for(i = 1; i <= total_elements; i++) {
     NGCALLF(drmvmed,DRMVMED)(&x[l1],work,&npts,&xmsg,&ier);
     l1 += npts;
+    if (ier == 2) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_rmvmed: The input array contains all missing values");
+    }
   }
   free(work);
 /*
@@ -1197,6 +1202,9 @@ NhlErrorTypes dim_standardize_W( void )
   for(i = 1; i <= total_elements; i++) {
     NGCALLF(dxstnd,DXSTND)(&x[l1],&npts,&xmsg,opt,&ier);
     l1 += npts;
+    if (ier == 2) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_standardize: The input array contains all missing values");
+    }
   }
 /*
  * Return float if input isn't double, otherwise return double.
