@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogridP.h,v 1.4 1999-08-28 00:18:44 dbrown Exp $
+ *      $Id: shapeinfogridP.h,v 1.5 2000-01-21 05:18:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -49,6 +49,8 @@ typedef struct _NgShapeInfoGridRec
             /* private fields */
         NgGO                    go;
         NrmQuark		qfileref;
+	NrmQuark		qvar;
+	NclApiDataList		*dl;	
  	NclApiVarInfoRec	*vinfo;
         int			cwidths[32];
         int			shape;
