@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.40 1995-07-06 23:56:00 haley Exp $
+#      $Id: yMakefile,v 1.41 1995-07-08 14:05:33 haley Exp $
 #
 #########################################################################
 #									#
@@ -141,11 +141,6 @@ STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			NclOneDValCoordData.o BuiltInSupport.o BuiltInFuncs.o \
 			HLUFunctions.o NclHDF.o
 
-#if defined(CRAY)
-BuiltInFuncs.o:  BuiltInFuncs.c
-	$(CC) -g $(ALLINCLUDES) $(ALLDEFINES) -c BuiltInFuncs.c
-#endif
-
 LibraryTarget($(MYLIB),$(ALLOBJS))
 LibraryTarget($(MYLIB_API),$(APIOBJS))
 CProgram($(MYBIN),$(EXEOBJS),$(DEPLIBS))
@@ -275,11 +270,15 @@ NclTypeRule(obj,$(NUM_OP_TMPL))
 NclTypeRule(char,$(NUM_OP_TMPL))
 NclTypeRule(byte,$(NUM_OP_TMPL))
 
+#if defined(CRAY)
+BuiltInFuncs.o:  BuiltInFuncs.c
+	$(CC) -g $(CFLAGS) -c BuiltInFuncs.c
+#endif
+
 #
 # Data Format Dependencies
 #
  
 NclHDF.o: NclHDF.c
-      $(CC) -c $(HDFDEFINES) $(CFLAGS) NclHDF.c -o NclHDF.o
-
+      $(CC) -c $(HDFDEFINES) $(CFLAGS) NclHDF.c
 
