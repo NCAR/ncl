@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.134 2001-01-08 22:15:39 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.135 2001-01-29 21:22:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -9533,6 +9533,11 @@ NhlErrorTypes _Ncldim_min
 			for(j = 1; j < m; j++) {
 				_Nclgt(tmp_md->multidval.type,&result,&(((char*)out_val)[i*sz]),&(((char*)tmp_md->multidval.val)[((i* m)+j)*sz]),NULL,NULL,1,1);
 
+				if(result == 1) {
+					memcpy(&(((char*)out_val)[i*sz]),&(((char*)tmp_md->multidval.val)[((i*m) + j)*sz]),sz);
+					result = 0;
+
+				}
 			}
 		}
 		ret = NclReturnValue(
@@ -9634,6 +9639,11 @@ NhlErrorTypes _Ncldim_max
 			memcpy(&(((char*)out_val)[i*sz]) ,&(((char*)tmp_md->multidval.val)[i*m*sz]),sz);
 			for(j = 1; j < m; j++) {
 				_Ncllt(tmp_md->multidval.type,&result,&(((char*)out_val)[i*sz]),&(((char*)tmp_md->multidval.val)[((i* m)+j)*sz]),NULL,NULL,1,1);
+				if(result == 1) {
+					memcpy(&(((char*)out_val)[i*sz]),&(((char*)tmp_md->multidval.val)[((i*m) + j)*sz]),sz);
+					result = 0;
+
+				}
 
 			}
 		}
