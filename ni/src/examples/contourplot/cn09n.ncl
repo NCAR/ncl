@@ -84,7 +84,7 @@ con1 = create "con1" contourPlotClass wks
     "cnLineLabelsOn" : "False"
     "cnLinesOn" : "False"
     "cnFillOn" : "True"
-    "tiMainString" : "Forcast Time " + 0
+    "tiMainString" : "Forecast Time " + 0
 end create
 
 ; 
@@ -102,7 +102,7 @@ do i = 1, dimsizes(frtime) - 1
         "sfDataArray" : p(i,:,:)
     end setvalues
     setvalues con1
-        "tiMainString" : "Forcast Time " + frtime(i)
+        "tiMainString" : "Forecast Time " + frtime(i)
     end setvalues
     draw(con1)
     frame(wks)
