@@ -77,7 +77,7 @@ C
 C
 C Create a meta file workstation.
 C
-         call NhlFRLClear(rlist,ierr)
+         call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkMetaName',
     1         './basic06c.ncgm',ierr)
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',
@@ -191,14 +191,14 @@ C
       call NhlFRLCreate(rlist,'SETRL')
       call NhlFRLCreate(grlist,'GETRL')
 
-      call NhlFRLClear(grlist,ierr)
+      call NhlFRLClear(grlist)
       call NhlFRLGetFloat(grlist,'vpXF',x_ref,ierr)
       call NhlFRLGetFloat(grlist,'vpYF',y_ref,ierr)
       call NhlFRLGetFloat(grlist,'vpWidthF',width_ref,ierr)
       call NhlFRLGetFloat(grlist,'vpHeightF',height_ref,ierr)
       call NhlFGetValues(id,grlist,ierr)
 
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetFloat(rlist,'vpXF',x - 0.5*width_ref*scale,ierr)
       call NhlFRLSetFloat(rlist,'vpYF',y + 0.5*height_ref*scale,ierr)
       call NhlFRLSetFloat(rlist,'vpWidthF',width_ref*scale,ierr)
@@ -207,7 +207,7 @@ C
 
       call NhlFDraw(id,ierr)
 
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetFloat(rlist,'vpXF',x_ref,ierr)
       call NhlFRLSetFloat(rlist,'vpYF',y_ref,ierr)
       call NhlFRLSetFloat(rlist,'vpWidthF',width_ref,ierr)
@@ -231,13 +231,13 @@ C
       call NhlFRLCreate(rlist,'SETRL')
       call NhlFRLCreate(grlist,'GETRL')
 
-      call NhlFRLClear(grlist,ierr)
+      call NhlFRLClear(grlist)
       call NhlFRLGetFloat(grlist,'txPosXF',xpos,ierr)
       call NhlFRLGetFloat(grlist,'txPosYF',ypos,ierr)
       call NhlFRLGetFloat(grlist,'txFontHeightF',fheight,ierr)
       call NhlFGetValues(id,grlist,ierr)
 
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetFloat(rlist,'txPosXF',x,ierr)
       call NhlFRLSetFloat(rlist,'txPosYF',y,ierr)
       call NhlFRLSetFloat(rlist,'txFontHeightF',height,ierr)
@@ -245,7 +245,7 @@ C
 
       call NhlFDraw(id,ierr)
 
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetFloat(rlist,'txPosXF',xpos,ierr)
       call NhlFRLSetFloat(rlist,'txPosYF',ypos,ierr)
       call NhlFRLSetFloat(rlist,'txFontHeightF',fheight,ierr)
