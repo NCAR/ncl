@@ -1,5 +1,5 @@
 C
-C $Id: stitle.f,v 1.2 1993-01-14 00:30:07 kennison Exp $
+C $Id: stitle.f,v 1.3 1993-01-15 23:30:43 kennison Exp $
 C
       SUBROUTINE STITLE (CARDS,NCARDS,NYST,NYFIN,TST,TMV,TFIN,MV)
 C
@@ -147,6 +147,8 @@ C
 C
 C Plot characters.
 C
+          CALL SLUBKG (-1)
+C
           DO 103 I=1,NCARDS
             READ (CARDS(I)(1:20),'(3I5,F5.1)') IXPOS,IYPOS,ICNTR,SIZE
             IF (IXPOS .EQ. -9999) GO TO 103
@@ -169,6 +171,8 @@ C
             CALL PLCHHQ(XPOS,YPOS,CTMP(1:NUMCHR),PSZ,REAL(IORNT),CNTR)
   103     CONTINUE
 C
+          CALL SLUBKG (+1)
+C
           IF (MV .NE. 0) THEN
             CALL SLOWND
             CTMP = ' '
@@ -188,6 +192,8 @@ C
         CALL GFLAS1(IDEN)
         CALL GSCR(IWK,1,FGCLR(1),FGCLR(2),FGCLR(3))
         CALL GSCR(IWK,IBKG,BGCLR(1),BGCLR(2),BGCLR(3))
+C
+        CALL SLUBKG (-2)
 C
         DO 107 I=1,NCARDS
           IF (IBKG.NE.0 .AND. I.EQ.1) CALL SLBKGD
@@ -211,6 +217,8 @@ C
           PSZ = (6./7.)*SIZE*PCHSZ/1023.
           CALL PLCHHQ(XPOS,YPOS,CTMP(1:NUMCHR),PSZ,REAL(IORNT),CNTR)
   107   CONTINUE
+C
+        CALL SLUBKG (+2)
 C
         CALL GFLAS2
 C
@@ -252,6 +260,8 @@ C
           LX = ISCRD1-NXST-INT(FKM1*DIFFX)
           LY = ISCRD2-NYST-INT(FKM1*DIFFY)
 C
+          CALL SLUBKG (-3)
+C
           DO 111 I=1,NCARDS
             IF (IBKG.NE.0 .AND. I.EQ.1) CALL SLBKGD
             READ (CARDS(I)(1:20),'(3I5,F5.1)') IXPOS,IYPOS,ICNTR,SIZE
@@ -280,6 +290,8 @@ C
      +      CALL PLCHHQ(XPOS,YPOS,CTMP(1:NUMCHR),PSZ,REAL(IORNT),CNTR)
   111     CONTINUE
 C
+          CALL SLUBKG (+3)
+C
           IF (MV .NE. 0) THEN
             CALL SLOWND
             CTMP = ' '
@@ -303,6 +315,8 @@ C
         CALL GSCR(IWK,IBKG,BGCLR(1),BGCLR(2),BGCLR(3))
         CALL GSCR(IWK,1,FGCLR(1),FGCLR(2),FGCLR(3))
 C
+        CALL SLUBKG (-4)
+C
         DO 115 I=1,NCARDS
           IF (IBKG.NE.0 .AND. I.EQ.1) CALL SLBKGD
           READ (CARDS(I)(1:20),'(3I5,F5.1)') IXPOS,IYPOS,ICNTR,SIZE
@@ -325,6 +339,8 @@ C
           PSZ = (6./7.)*SIZE*PCHSZ/1023.
           CALL PLCHHQ(XPOS,YPOS,CTMP(1:NUMCHR),PSZ,REAL(IORNT),CNTR)
   115   CONTINUE
+C
+        CALL SLUBKG (+4)
 C
         CALL GFLAS2
 C
@@ -381,6 +397,8 @@ C
 C
 C Plot characters.
 C
+          CALL SLUBKG (-5)
+C
           DO 119 I=1,NCARDS
             READ (CARDS(I)(1:20),'(3I5,F5.1)') IXPOS,IYPOS,ICNTR,SIZE
             IF (IXPOS .EQ. -9999) GO TO 119
@@ -402,6 +420,8 @@ C
             PSZ = (6./7.)*SIZE*PCHSZ/1023.
             CALL PLCHHQ(XPOS,YPOS,CTMP(1:NUMCHR),PSZ,REAL(IORNT),CNTR)
   119     CONTINUE
+C
+          CALL SLUBKG (+5)
 C
           IF (MV .NE. 0) THEN
             CALL SLOWND
