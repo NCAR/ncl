@@ -1,6 +1,6 @@
 C
-C $Id: tdclrs.f,v 1.3 2000-08-22 15:07:06 haley Exp $
-C                                                                      
+C $Id: tdclrs.f,v 1.4 2002-07-23 21:47:29 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -105,8 +105,8 @@ C
         NSHD=IOLC-IOFC+1
 C
         DO 101 IOCC=IOFC,IOLC
-          P=1.-     REAL(IOCC-IOFC)/REAL(IOLC-IOFC)
-          Q=1.-SHDR*REAL(IOCC-IOFC)/REAL(IOLC-IOFC)
+          P=MAX(0.,MIN(1.,1.-     REAL(IOCC-IOFC)/REAL(IOLC-IOFC)))
+          Q=MAX(0.,MIN(1.,1.-SHDR*REAL(IOCC-IOFC)/REAL(IOLC-IOFC)))
           CALL GSCR (IWID,IOCC       ,     P,     P,     P) ! full range
           IF (ILMT.EQ.1) GO TO 101
           CALL GSCR (IWID,IOCC+  NSHD,     Q,     Q,     Q) ! grays
