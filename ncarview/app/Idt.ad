@@ -31,3 +31,8 @@ Idt*scrollbar*orientation:		horizontal
 Idt*scrollbar*length:			100
 !
 Idt*fileSelectAction:			display
+!
+!	default plotting canvas size
+!
+Idt*canvas*width:       		512
+Idt*canvas*height:      		512
