@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.31 1993-06-25 21:13:06 clyne Exp $
+ *	$Id: rast.c,v 1.32 1993-09-09 20:17:26 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -75,6 +75,9 @@ static	Option	raster_opts[] = {
 };
 
 static	CoordRect	rasDevExtent;	/* device extents		*/
+static	boolean		rasDevExtentChanged;	/* device extent may have
+						 * changed
+						 */
 static	CoordModifier	rasCoordMod = { 0, 0, 1.0, 1.0 };
 
 RasColrTab	colorTab;	/* the color table			*/
@@ -496,6 +499,7 @@ CGMC *c;
 	 * find dimensions of buffer for rasterization
 	 */
 	get_resolution(&rasDevExtent, rast_opts, devices[currdev].name);
+	rasDevExtentChanged = TRUE;
 
 	
 
@@ -634,7 +638,7 @@ int	Ras_BegPicBody(c)
 CGMC *c;
 {
 
-	if (VDC_EXTENT_DAMAGE) {
+	if (VDC_EXTENT_DAMAGE || rasDevExtentChanged) {
 		int	width, height;
 
 		width = ABS(rasDevExtent.llx - rasDevExtent.urx) + 1;
@@ -649,6 +653,7 @@ CGMC *c;
 		if (initSoftSim(0, width-1, 0, height-1) < 0) return(-1);
 
 		VDC_EXTENT_DAMAGE = FALSE;
+		rasDevExtentChanged = FALSE;
 	}
 
 	startedDrawing = FALSE;
