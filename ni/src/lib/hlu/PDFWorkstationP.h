@@ -1,5 +1,5 @@
 /*
- *  $Id: PDFWorkstationP.h,v 1.1 2003-02-27 18:14:35 grubin Exp $
+ *  $Id: PDFWorkstationP.h,v 1.2 2003-03-06 23:22:50 grubin Exp $
  */
 
 # ifndef    _NPDFWorkstationP_h
@@ -12,16 +12,19 @@
 
 /*
  * PDF workstation type identifiers start at 11.
+ * Types are: PORTRAIT or LANDSCAPE.
  */
-# define    PDFBASE      (11)
+# define    PDFBASE         (11)
+# define    PDFPORTRAIT     (11)
+# define    PDFLANDSCAPE    (12)
 
 typedef struct _NhlPDFWorkstationLayerPart {
     /* User setable resource fields */
 
-    NhlPDFFormat    format;
-    NhlVisualType   visual;
-    NhlWorkOrientation  orientation;
-    NhlColorModel   color_model;
+    NhlPDFFormat    format;             /* PDF */
+    NhlVisualType   visual;             /* always COLOR */
+    NhlWorkOrientation  orientation;    /* PORTRAIT or LANDSCAPE */
+    NhlColorModel   color_model;        /* RGB or user defined */
 
     NhlString   filename;
 

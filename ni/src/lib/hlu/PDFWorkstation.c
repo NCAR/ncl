@@ -1,5 +1,5 @@
 /*
- *      $Id: PDFWorkstation.c,v 1.1 2003-02-27 18:14:35 grubin Exp $
+ *      $Id: PDFWorkstation.c,v 1.2 2003-03-06 23:22:50 grubin Exp $
  */
 
 # include   <stdio.h>
@@ -307,7 +307,7 @@ PDFWorkstationClassInitialize
 /*
  * Function:    PDFWorkstationInitialize
  *
- * Description:
+ * Description: Set PDF Workstation type, filename, device coordinates
  *
  * In Args:
  *
@@ -338,7 +338,27 @@ static NhlErrorTypes PDFWorkstationInitialize
     char    buff[_NhlMAXFNAMELEN];
     NhlErrorTypes   ret = NhlNOERROR;
 
-    wnew->work.gkswkstype = PDFBASE + np->format + np->visual + np->orientation;
+    /* 
+     * Set gkswkstype
+     * For PDF, only PORTRAIT and LANDSCAPE make sense
+     */
+    switch (np->orientation) {
+        case NhlPORTRAIT:
+            wnew->work.gkswkstype = PDFPORTRAIT;
+            break;
+
+        case NhlLANDSCAPE:
+            wnew->work.gkswkstype = PDFLANDSCAPE;
+            break;
+
+        default:
+            NhlPError(NhlWARNING, NhlEUNKNOWN,
+                "%s: Invalid orientation \"%s\" defaulting to PORTRAIT",
+                func, np->orientation);
+            wnew->work.gkswkstype = PDFPORTRAIT;
+            break;
+    }
+
     wnew->work.gkswksconid = 0;
 
     if (np->filename) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstationP.h,v 1.6 2001-01-27 01:05:05 dbrown Exp $
+ *      $Id: PSWorkstationP.h,v 1.7 2003-03-06 23:22:50 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -25,10 +25,29 @@
 #include <ncarg/hlu/PSWorkstation.h>
 
 #define	MAX_OPEN_PS	(15)
+
+#define	PSBASE		(20)
 /*
  * PS workstation type identifiers start at 20.
+ *
+ * PS workstation type will be one of the following.
+ * This value is set in PSWorkstationInitialize().
+ *
+ *  |  wktype  |  visual  |  format  |  orientation  |
+ *  ==================================================
+ *  |    20    |  color   |   ps     |    portrait   |
+ *  |    21    |  color   |   eps    |    portrait   |
+ *  |    22    |  color   |   epsi   |    portrait   |
+ *  |    23    |  mono    |   ps     |    portrait   |
+ *  |    24    |  mono    |   eps    |    portrait   |
+ *  |    25    |  mono    |   epsi   |    portrait   |
+ *  |    26    |  color   |   ps     |    landscape  |
+ *  |    27    |  color   |   eps    |    landscape  |
+ *  |    28    |  color   |   epsi   |    landscape  |
+ *  |    29    |  mono    |   ps     |    landscape  |
+ *  |    30    |  mono    |   eps    |    landscape  |
+ *  |    31    |  mono    |   epsi   |    landscape  |
  */
-#define	PSBASE		(20)
 
 typedef struct _NhlPSWorkstationLayerPart {
 	/* User setable resource fields */
