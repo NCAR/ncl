@@ -1,8 +1,12 @@
+/*
+ * $Id: c_ccpmap.c,v 1.2 1994-08-05 15:07:55 haley Exp $
+ */
+
 #include <stdio.h>
 #include <math.h>
+
 #include <ncarg/gks.h>
 #include <ncarg/ncargC.h>
-#include "c_ggdini.c"
 
 /*
 ** Define error file, Fortran unit number, and workstation type,
