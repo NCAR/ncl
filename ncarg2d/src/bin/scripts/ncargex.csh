@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.137 2003-08-05 22:41:57 haley Exp $
+#   $Id: ncargex.csh,v 1.138 2003-08-06 16:05:33 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -431,8 +431,10 @@ set csagrid_clist = (c_csex01 c_csex02 c_csex03 c_csex04 c_csex05 \
 set cssgrid_clist = (c_cssex01 c_cssex02 c_cssex03)
 set dsgrid_clist  = (c_dsex01 c_dsex01d c_dsex02 c_dsex03 c_dsex04 \
                      c_dsex05 c_dsex06)
-set fitgrid_clist = (c_ftex01 c_ftex02 c_ftex03 c_ftex04 c_ftex05 c_ftex06 \
-                     c_ftex07)
+set fitgrid_clist = (c_ftex01  c_ftex02  c_ftex03  c_ftex04  c_ftex05 \
+                     c_ftex06  c_ftex07 \
+                     c_ftex01d c_ftex02d c_ftex03d c_ftex04d c_ftex05d \
+                     c_ftex06d c_ftex07d)
 set natgrid_clist = (c_nnex01 c_nnex01d c_nnex02 c_nnex03 c_nnex06)
 set shgrid_clist  = (c_shex01 c_shex02 c_shex03)
 
@@ -1447,6 +1449,13 @@ switch($name)
     case ftex05d:
     case ftex06d:
     case ftex07d:
+    case c_ftex01d:
+    case c_ftex02d:
+    case c_ftex03d:
+    case c_ftex04d:
+    case c_ftex05d:
+    case c_ftex06d:
+    case c_ftex07d:
       unset orig_ws_type
       set no_file
       set tmp_msg = "   "
@@ -1693,6 +1702,13 @@ switch ($name)
     case c_ftex05:
     case c_ftex06:
     case c_ftex07:
+    case c_ftex01d:
+    case c_ftex02d:
+    case c_ftex03d:
+    case c_ftex04d:
+    case c_ftex05d:
+    case c_ftex06d:
+    case c_ftex07d:
     case c_shex01:
     case c_shex02:
     case c_shex03
