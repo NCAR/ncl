@@ -119,6 +119,13 @@ NhlCompareDat *_NhlCmpFSetup
 	NhlCompareDat *tmp = (NhlCompareDat*)malloc((unsigned)sizeof(NhlCompareDat));
 	float dummy;
 	int sign;
+        
+	if(sig_dig > 7)  {
+		tmp->sig_dig = 7;
+	} else {
+		tmp->sig_dig = sig_dig;
+	}
+        
 	if(val == 0.0) {
 		tmp->is_zero = 1;
 		tmp->orig_val = 0.0;
@@ -127,11 +134,6 @@ NhlCompareDat *_NhlCmpFSetup
 
 	tmp->is_zero = 0;	
 	tmp->orig_val = val;
-	if(sig_dig > 7)  {
-		tmp->sig_dig = 7;
-	} else {
-		tmp->sig_dig = sig_dig;
-	}
 
 	if(val < 0.0)
 		sign = -1;
