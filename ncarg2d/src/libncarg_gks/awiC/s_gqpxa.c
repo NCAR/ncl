@@ -1,5 +1,5 @@
 /*
- *  $Id: s_gqpxa.c,v 1.2 2000-07-12 17:06:18 haley Exp $
+ *  $Id: s_gqpxa.c,v 1.3 2000-08-01 14:35:53 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,10 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqpxa,GQPXA)(Gint*,Gfloat*,Gfloat*,Gint*,
+                                 Gint*,Gint*,Gint*,int*,int*,Gint*,
+                                 Gpres_inval*,Gint*);
 
 #define min(x,y)   ((x) < (y) ? (x) : (y))
 

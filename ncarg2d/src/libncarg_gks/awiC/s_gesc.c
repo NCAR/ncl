@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gesc.c,v 1.2 2000-07-12 17:06:08 haley Exp $
+ *	$Id: s_gesc.c,v 1.3 2000-08-01 14:35:44 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -39,8 +39,11 @@
 #define MAX_FILE_LEN    80
 
 /* this is the length of each row of the data	*/
+
 #define MAX_ARRAY_LEN	80
 
+extern void NGCALLF(gesc,GESC)(Gint*,int*,char*,int*,int*,
+                               char out_array[MAX_ARRAY_LEN],int,int);
 #if defined(cray)
 struct common {
 #else

@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gacwk.c,v 1.2 2000-07-12 17:06:06 haley Exp $
+ *	$Id: s_gacwk.c,v 1.3 2000-08-01 14:35:43 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gacwk,GACWK)(Gint*);
 
 void gactivate_ws
 #ifdef NeedFuncProto

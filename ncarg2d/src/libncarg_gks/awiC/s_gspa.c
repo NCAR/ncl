@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gspa.c,v 1.2 2000-07-12 17:06:23 haley Exp $
+ *	$Id: s_gspa.c,v 1.3 2000-08-01 14:35:59 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gspa,GSPA)(Gfloat*,Gfloat*);
 
 void gset_pat_size
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gpl.c,v 1.3 2000-07-12 17:06:09 haley Exp $
+ *	$Id: s_gpl.c,v 1.4 2000-08-01 14:35:45 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -30,6 +30,8 @@
 #include <stdlib.h>
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gpl,GPL)(const Gint*,Gfloat*,Gfloat*);
 
 void gpolyline
 #ifdef NeedFuncProto

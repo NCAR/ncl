@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gfa.c,v 1.3 2000-07-12 17:06:08 haley Exp $
+ *	$Id: s_gfa.c,v 1.4 2000-08-01 14:35:45 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -30,6 +30,8 @@
 #include <stdlib.h>
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gfa,GFA)(const Gint*,Gfloat*,Gfloat*);
 
 void gfill_area
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gqcntn.c,v 1.2 2000-07-12 17:06:11 haley Exp $
+ *	$Id: s_gqcntn.c,v 1.3 2000-08-01 14:35:47 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqcntn,GQCNTN)(Gint*,Gint*);
 
 void ginq_cur_norm_tran_num
 #ifdef NeedFuncProto

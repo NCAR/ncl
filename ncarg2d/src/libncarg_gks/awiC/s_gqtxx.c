@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gqtxx.c,v 1.2 2000-07-12 17:06:19 haley Exp $
+ *	$Id: s_gqtxx.c,v 1.3 2000-08-01 14:35:55 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,10 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqtxx,GQTXX)(Gint*,const Gfloat*,const Gfloat*,NGstring,
+                                 Gint*,Gfloat*,Gfloat*,Gfloat x[4],
+                                 Gfloat y[4],int);
 
 void ginq_text_extent
 #ifdef NeedFuncProto

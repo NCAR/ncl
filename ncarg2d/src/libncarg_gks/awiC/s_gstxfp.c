@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gstxfp.c,v 1.2 2000-07-12 17:06:24 haley Exp $
+ *	$Id: s_gstxfp.c,v 1.3 2000-08-01 14:36:00 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gstxfp,GSTXFP)(const Gint*,const Gtext_prec*);
 
 void gset_text_font_prec
 #ifdef NeedFuncProto

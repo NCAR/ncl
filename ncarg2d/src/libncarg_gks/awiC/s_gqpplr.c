@@ -1,5 +1,5 @@
 /*
- *  $Id: s_gqpplr.c,v 1.2 2000-07-12 17:06:17 haley Exp $
+ *  $Id: s_gqpplr.c,v 1.3 2000-08-01 14:35:53 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqpplr,GQPPLR)(Gint*,Gint*,Gint*,Gint*,Gfloat*,Gint*);
 
 void ginq_pred_line_rep
 #ifdef NeedFuncProto

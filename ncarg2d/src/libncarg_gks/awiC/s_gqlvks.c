@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gqlvks.c,v 1.2 2000-07-12 17:06:13 haley Exp $
+ *	$Id: s_gqlvks.c,v 1.3 2000-08-01 14:35:49 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqlvks,GQLVKS)(Gint*,Glevel*);
 
 void ginq_level_gks
 #ifdef NeedFuncProto

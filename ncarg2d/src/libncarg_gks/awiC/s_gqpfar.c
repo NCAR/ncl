@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gqpfar.c,v 1.2 2000-07-12 17:06:16 haley Exp $
+ *	$Id: s_gqpfar.c,v 1.3 2000-08-01 14:35:52 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,9 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqpfar,GQPFAR)(Gint*,Gint*,Gint*,Gfill_int_style*,
+                                   Gint*,Gint*);
 
 void ginq_pred_fill_rep
 #ifdef NeedFuncProto

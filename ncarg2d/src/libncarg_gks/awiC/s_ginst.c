@@ -1,5 +1,5 @@
 /*
- *	$Id: s_ginst.c,v 1.2 2000-07-12 17:06:09 haley Exp $
+ *	$Id: s_ginst.c,v 1.3 2000-08-01 14:35:45 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,11 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(ginst,GINST)(Gint*,Gint*,int*,NGstring,Gint*,
+                                 const Gfloat*,const Gfloat*,
+                                 const Gfloat*,const Gfloat*,
+                                 Gint*,Gint*,const size_t*,void*,int);
 
 void ginit_string
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gsasf.c,v 1.2 2000-07-12 17:06:20 haley Exp $
+ *	$Id: s_gsasf.c,v 1.3 2000-08-01 14:35:56 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gsasf,GSASF)(const Gasfs *);
 
 void gset_asfs
 #ifdef NeedFuncProto

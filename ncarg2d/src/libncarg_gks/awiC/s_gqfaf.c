@@ -1,5 +1,5 @@
 /*
- *  $Id: s_gqfaf.c,v 1.2 2000-07-12 17:06:12 haley Exp $
+ *  $Id: s_gqfaf.c,v 1.3 2000-08-01 14:35:48 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,9 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqfaf,GQFAF)(Gint*,int*,Gint*,Gint*,Gint*,
+                                 Gfill_int_style*,Gint*,Gint*,Gint*);
 
 #define min(x,y)   ((x) < (y) ? (x) : (y))
 

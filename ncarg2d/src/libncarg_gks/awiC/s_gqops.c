@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gqops.c,v 1.2 2000-07-12 17:06:14 haley Exp $
+ *	$Id: s_gqops.c,v 1.3 2000-08-01 14:35:50 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqops,GQOPS)(Gop_st*);
 
 void ginq_op_st
 #ifdef NeedFuncProto

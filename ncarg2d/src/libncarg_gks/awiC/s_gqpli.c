@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gqpli.c,v 1.2 2000-07-12 17:06:16 haley Exp $
+ *	$Id: s_gqpli.c,v 1.3 2000-08-01 14:35:52 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqpli,GQPLI)(Gint*,Gint*);
 
 void ginq_line_ind
 #ifdef NeedFuncProto

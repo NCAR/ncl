@@ -1,5 +1,5 @@
 /*
- *  $Id: s_gqparf.c,v 1.2 2000-07-12 17:06:15 haley Exp $
+ *  $Id: s_gqparf.c,v 1.3 2000-08-01 14:35:51 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqparf,GQPARF)(Gint*,Gfloat*,Gfloat*);
 
 void ginq_pat_ref_point
 #ifdef NeedFuncProto

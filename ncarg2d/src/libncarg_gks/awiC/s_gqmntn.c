@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gqmntn.c,v 1.2 2000-07-12 17:06:14 haley Exp $
+ *	$Id: s_gqmntn.c,v 1.3 2000-08-01 14:35:50 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqmntn,GQMNTN)(Gint*,Gint*);
 
 void ginq_max_norm_tran_num
 #ifdef NeedFuncProto

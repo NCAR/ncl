@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gcsgwk.c,v 1.2 2000-07-12 17:06:07 haley Exp $
+ *	$Id: s_gcsgwk.c,v 1.3 2000-08-01 14:35:44 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gcsgwk,GCSGWK)(Gint*,Gint*);
 
 void gcopy_seg_ws
 #ifdef NeedFuncProto

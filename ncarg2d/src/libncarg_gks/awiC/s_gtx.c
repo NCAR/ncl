@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gtx.c,v 1.2 2000-07-12 17:06:25 haley Exp $
+ *	$Id: s_gtx.c,v 1.3 2000-08-01 14:36:01 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gtx,GTX)(const Gfloat*,const Gfloat*,NGstring,int);
 
 void gtext
 #ifdef NeedFuncProto

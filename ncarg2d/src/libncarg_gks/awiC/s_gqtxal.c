@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gqtxal.c,v 1.2 2000-07-12 17:06:18 haley Exp $
+ *	$Id: s_gqtxal.c,v 1.3 2000-08-01 14:35:54 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqtxal,GQTXAL)(Gint*,Ghor_text_align*,Gvert_text_align*);
 
 void ginq_text_align
 #ifdef NeedFuncProto

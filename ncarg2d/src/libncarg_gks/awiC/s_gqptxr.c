@@ -1,5 +1,5 @@
 /*
- *  $Id: s_gqptxr.c,v 1.2 2000-07-12 17:06:17 haley Exp $
+ *  $Id: s_gqptxr.c,v 1.3 2000-08-01 14:35:53 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,9 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqptxr,GQPTXR)(Gint*,Gint*,Gint*,Gint*,Gtext_prec*,
+                                   Gfloat*,Gfloat*,Gint*);
 
 void ginq_pred_text_rep
 #ifdef NeedFuncProto

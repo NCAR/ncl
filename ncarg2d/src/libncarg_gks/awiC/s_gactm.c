@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gactm.c,v 1.2 2000-07-12 17:06:06 haley Exp $
+ *	$Id: s_gactm.c,v 1.3 2000-08-01 14:35:43 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,11 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gactm,GACTM)(Gfloat m2[3][2],const Gfloat*,const Gfloat*,
+                                 const Gfloat*,const Gfloat*,Gfloat*,
+                                 const Gfloat*,const Gfloat*,
+                                 Gcoord_switch*,Gfloat tm2[3][2]);
 
 void gaccum_tran_matrix
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gqchw.c,v 1.2 2000-07-12 17:06:10 haley Exp $
+ *	$Id: s_gqchw.c,v 1.3 2000-08-01 14:35:47 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqchw,GQCHW)(Gint*, Gfloat*);
 
 void ginq_char_width
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gsmksc.c,v 1.2 2000-07-12 17:06:23 haley Exp $
+ *	$Id: s_gsmksc.c,v 1.3 2000-08-01 14:35:59 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gsmksc,GSMKSC)(Gfloat*);
 
 void gset_marker_size
 #ifdef NeedFuncProto

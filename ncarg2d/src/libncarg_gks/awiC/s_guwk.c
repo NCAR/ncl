@@ -1,5 +1,5 @@
 /*
- *  $Id: s_guwk.c,v 1.2 2000-07-12 17:06:25 haley Exp $
+ *  $Id: s_guwk.c,v 1.3 2000-08-01 14:36:02 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(guwk,GUWK)(Gint*,Gupd_regen_flag*);
 
 void gupd_ws
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gqtxfp.c,v 1.2 2000-07-12 17:06:18 haley Exp $
+ *	$Id: s_gqtxfp.c,v 1.3 2000-08-01 14:35:55 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqtxfp,GQTXFP)(Gint*,Gint*,Gtext_prec*);
 
 void ginq_text_font_prec
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gca.c,v 1.3 2000-07-12 17:06:06 haley Exp $
+ *	$Id: s_gca.c,v 1.4 2000-08-01 14:35:43 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -30,6 +30,10 @@
 #include <stdlib.h>
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gca,GCA)(const Gfloat*,const Gfloat*,const Gfloat*,
+                             const Gfloat*,const Gint*,const Gint*,int*,
+                             int*,int*,int*,int*);
 
 void gcell_array
 #ifdef NeedFuncProto

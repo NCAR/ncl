@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gqopsg.c,v 1.2 2000-07-12 17:06:14 haley Exp $
+ *	$Id: s_gqopsg.c,v 1.3 2000-08-01 14:35:50 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqopsg,GQOPSG)(Gint*,Gint*);
 
 void ginq_name_open_seg
 #ifdef NeedFuncProto

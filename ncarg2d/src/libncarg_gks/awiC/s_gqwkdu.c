@@ -1,5 +1,5 @@
 /*
- *  $Id: s_gqwkdu.c,v 1.2 2000-07-12 17:06:19 haley Exp $
+ *  $Id: s_gqwkdu.c,v 1.3 2000-08-01 14:35:56 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,9 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqwkdu,GQWKDU)(Gint*,Gint*,Gdefer_mode*,Girg_mode*,
+                                   Gdisp_space_empty*,Gnew_frame_nec_upd*);
 
 void ginq_ws_defer_upd_sts
 #ifdef NeedFuncProto

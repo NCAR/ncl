@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gsclip.c,v 1.2 2000-07-12 17:06:21 haley Exp $
+ *	$Id: s_gsclip.c,v 1.3 2000-08-01 14:35:57 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gsclip,GSCLIP)(Gclip_ind*);
 
 void gset_clip_ind
 #ifdef NeedFuncProto

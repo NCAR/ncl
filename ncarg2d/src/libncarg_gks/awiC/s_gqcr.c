@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gqcr.c,v 1.2 2000-07-12 17:06:11 haley Exp $
+ *	$Id: s_gqcr.c,v 1.3 2000-08-01 14:35:47 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,9 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqcr,GQCR)(Gint*,Gint*,Ginq_type*,Gint*,Gfloat*,
+                               Gfloat*,Gfloat*);
 
 void ginq_colr_rep
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gclrwk.c,v 1.2 2000-07-12 17:06:06 haley Exp $
+ *	$Id: s_gclrwk.c,v 1.3 2000-08-01 14:35:43 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gclrwk,GCLRWK)(Gint*,Gctrl_flag*);
 
 void gclear_ws
 #ifdef NeedFuncProto

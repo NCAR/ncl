@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gsstm.c,v 1.2 2000-07-12 17:06:24 haley Exp $
+ *	$Id: s_gsstm.c,v 1.3 2000-08-01 14:36:00 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gsstm,GSSTM)(Gint*,Gint*,Gop_mode*,Gecho_switch*);
 
 void gset_string_mode
 #ifdef NeedFuncProto

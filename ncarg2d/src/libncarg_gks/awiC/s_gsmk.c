@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gsmk.c,v 1.2 2000-07-12 17:06:22 haley Exp $
+ *	$Id: s_gsmk.c,v 1.3 2000-08-01 14:35:59 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gsmk,GSMK)(Gint*);
 
 void gset_marker_type
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gqfai.c,v 1.2 2000-07-12 17:06:12 haley Exp $
+ *	$Id: s_gqfai.c,v 1.3 2000-08-01 14:35:48 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqfai,GQFAI)(Gint*,Gint*);
 
 void ginq_fill_ind
 #ifdef NeedFuncProto

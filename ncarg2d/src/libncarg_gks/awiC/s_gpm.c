@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gpm.c,v 1.3 2000-07-12 17:06:09 haley Exp $
+ *	$Id: s_gpm.c,v 1.4 2000-08-01 14:35:46 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -30,6 +30,8 @@
 #include <stdlib.h>
 
 #include <ncarg/gks.h>
+
+extern void  NGCALLF(gpm,GPM)(const Gint*,const Gfloat *,const Gfloat*);
 
 void gpolymarker
 #ifdef NeedFuncProto

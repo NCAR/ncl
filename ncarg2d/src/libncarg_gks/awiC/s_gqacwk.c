@@ -1,5 +1,5 @@
 /*
- *  $Id: s_gqacwk.c,v 1.2 2000-07-12 17:06:09 haley Exp $
+ *  $Id: s_gqacwk.c,v 1.3 2000-08-01 14:35:46 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,8 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqacwk,GQACWK)(int*,Gint*,Gint*,Gint*);
 
 #define min(x,y)   ((x) < (y) ? (x) : (y))
 

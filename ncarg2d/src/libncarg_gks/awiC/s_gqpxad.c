@@ -1,5 +1,5 @@
 /*
- *  $Id: s_gqpxad.c,v 1.2 2000-07-12 17:06:18 haley Exp $
+ *  $Id: s_gqpxad.c,v 1.3 2000-08-01 14:35:54 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,9 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gqpxad,GQPXAD)(Gint*,Gfloat*,Gfloat*,Gfloat*,Gfloat*,
+                                   Gint*,Gint*,Gint*);
 
 void ginq_pixel_array_dims
 #ifdef NeedFuncProto

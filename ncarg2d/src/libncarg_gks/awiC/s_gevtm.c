@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gevtm.c,v 1.2 2000-07-12 17:06:08 haley Exp $
+ *	$Id: s_gevtm.c,v 1.3 2000-08-01 14:35:45 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,11 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gevtm,GEVTM)(const Gfloat*,const Gfloat*,const Gfloat*,
+                                 const Gfloat*,Gfloat*,const Gfloat*,
+                                 const Gfloat*,
+                                 Gcoord_switch*,Gfloat tm2[3][2]);
 
 void geval_tran_matrix
 #ifdef NeedFuncProto

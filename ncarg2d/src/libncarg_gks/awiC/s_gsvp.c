@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gsvp.c,v 1.2 2000-07-12 17:06:25 haley Exp $
+ *	$Id: s_gsvp.c,v 1.3 2000-08-01 14:36:01 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,9 @@
  */
 
 #include <ncarg/gks.h>
+
+extern void NGCALLF(gsvp,GSVP)(Gint*,const Gfloat*,const Gfloat*,
+                                     const Gfloat*,const Gfloat*);
 
 void gset_vp
 #ifdef NeedFuncProto
