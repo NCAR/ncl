@@ -139,6 +139,7 @@ extern NhlErrorTypes exp_tapersh_W(void);
 extern NhlErrorTypes exp_tapersh_wgts_W(void);
 extern NhlErrorTypes pop_remap_W(void);
 extern NhlErrorTypes smth9_W(void);
+extern NhlErrorTypes simpson_W(void);
 
 extern NhlErrorTypes nggcog_W(void);
 
@@ -2092,6 +2093,20 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
     NclRegisterFunc(smth9_W,args,"smth9",nargs);
+
+/*
+ * Register "simpson"
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+
+    NclRegisterFunc(simpson_W,args,"simpson",nargs);
 
 /*
  *  Register nggcog.
