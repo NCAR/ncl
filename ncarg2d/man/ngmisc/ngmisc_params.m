@@ -72,6 +72,11 @@ filled areas in PostScript output from NCAR GKS.
 This value applies to the specific
 workstation specified in a previous call to NGSETI to set a value
 for the \'WO\' parameter (see below).  
+.IP "\'IG\'   -   Integer   -   0"
+A flag to indicate whether the clip rectangles in segment copies 
+should be transformed by using the current segment transformation.
+The GKS standard says that the clip rectangles should not be so
+transformed and this is the default.
 .IP "\'JO\'   -   Integer   -   1"
 Controls the type of line join used in PostScript
 output from NCAR GKS.  If the value is 0, miter joins are used;
