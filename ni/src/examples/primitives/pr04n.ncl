@@ -1,5 +1,5 @@
 ;
-;      $Id: pr04n.ncl,v 1.3 1998-04-23 22:20:15 ethan Exp $
+;      $Id: pr04n.ncl,v 1.4 1998-05-29 16:33:05 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -151,7 +151,11 @@ end setvalues
 draw(canvas)
 
 NhlDataPolygon(canvas,gsid,plx2,ply2)
-plx2(0:4) = (/ 5.0 , 5.0 , 95.0 , 95.0 , 5.0 /)
+plx2(0) = 5.0
+plx2(2) = 95.0
+plx2(4) = 5.0
+ply2(1) = 5.0
+ply2(3) = 95.0
 NhlDataPolyline(canvas,gsid,plx2,ply2)
 frame(wid)
 
