@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargsrc.csh,v 1.1 1992-09-22 14:41:04 ncargd Exp $
+#	$Id: ncargsrc.csh,v 1.2 1992-09-29 15:31:46 ncargd Exp $
 #
 
 # If no arguments, tell user how "ncargsrc" works.
@@ -167,6 +167,9 @@ endif
 # Make sure "ncargpath" works by getting a path to the binary directory.
 
 set b = `ncargpath SED_BINDIR`
+if ($status != 0) then
+        exit 1
+endif
 
 if (! -d "$b") then
   echo "Binary directory <$b> does not exist."

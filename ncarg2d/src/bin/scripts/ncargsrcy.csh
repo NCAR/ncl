@@ -1,6 +1,6 @@
 #!/bin/csh -f -b
 #
-#	$Id: ncargsrcy.csh,v 1.1 1992-09-22 14:41:06 ncargd Exp $
+#	$Id: ncargsrcy.csh,v 1.2 1992-09-29 15:31:48 ncargd Exp $
 #
 
 set path = (/bin /usr/bin)
@@ -8,6 +8,10 @@ set path = (/bin /usr/bin)
 set bnpath = $0
 set bindir = $bnpath:h
 set l = `$bindir/ncargpath SED_LIBDIR`
+
+if ($status != 0) then
+        exit 1
+endif
 
 set nlibs = "$l/srcncarg.a $l/srcncarg_gks.a $l/srcncarg_loc.a"
 set alibs = ""

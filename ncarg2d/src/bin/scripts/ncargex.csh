@@ -1,9 +1,12 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.1 1992-09-22 14:40:57 ncargd Exp $
+#   $Id: ncargex.csh,v 1.2 1992-09-29 15:31:39 ncargd Exp $
 #
 
 set example_dir=`ncargpath SED_EXAMPLESDIR`
+if ($status != 0) then
+        exit 1
+endif
 
 if (! -d "$example_dir") then
   echo "Example directory <$example_dir> does not exist."
@@ -11,9 +14,22 @@ if (! -d "$example_dir") then
 endif
 
 set test_dir=`ncargpath SED_TESTSDIR`
+if ($status != 0) then
+        exit 1
+endif
 
 if (! -d "$test_dir") then
   echo "Test directory <$test_dir> does not exist."
+  exit 2
+endif
+
+set tutor_dir=`ncargpath SED_TUTORIALDIR`
+if ($status != 0) then
+        exit 1
+endif
+
+if (! -d "$tutor_dir") then
+  echo "Test directory <$tutor_dir> does not exist."
   exit 2
 endif
 
@@ -31,6 +47,11 @@ tgflas tgrida thafto thstgr tisohr tisosr tlblba tpltch tpwrtx \
 tpwry tpwrzi tpwrzs tpwrzt tsoftf tsrfac tstitl tstrml tthree \
 tvelvc)
 
+set tutor_list=(\
+cezmap1 cezmap2 cezmap3 cmpclr cmpcc cmpdd cmpdrw cmpel cmpfil \
+cmpgci cmpgrd cmpita cmpitm cmplab cmplbl cmplot cmpmsk cmpou \
+cmppos cmpsat cmpsup cmptit cmptra cmpusr)
+
 set alias_list=(\
 agupwrtx areas autograph conrecq conrecs conrecsup colconv conran \
 conranq conransup conpack conrec dashchar dashline dashsmth \
@@ -39,8 +60,8 @@ labelbar plotchar pwritx pwrity pwrzi pwrtz pwrzs pwrzt softfill \
 srface stitle strmln threed velvct)
 
 if ($#argv < 1) then
-echo "usage: ncargex [-all] [-allexamples] [-alltests] [-clean] [-n]"
-echo "               [-onebyone] names                              "
+echo "usage: ncargex [-all,-A] [-allexamples,-E] [-alltests,-T]"
+echo "               [-alltutorial,-U] [-clean] [-n] [-onebyone] names"
 echo "                                                              "
 echo "See <man ncargex>                                             "
 exit
@@ -53,18 +74,27 @@ while ($#argv > 0)
     switch ($1)
 
         case "-all":
+        case "-A":
             shift
             set names=($example_list $test_list)
             breaksw
 
         case "-allexamples":
+		case "-E":
             shift
             set names=($example_list)
             breaksw
 
         case "-alltests":
+		case "-T":
             shift
             set names=($test_list)
+            breaksw
+        
+        case "-alltutorial":
+		case "-U":
+            shift
+            set names=($tutor_list)
             breaksw
         
         case "-clean":
@@ -109,6 +139,12 @@ end
 foreach known ($test_list)
     if ("$name" == "$known") then
         set type="Test"
+    endif
+end
+
+foreach known ($tutor_list)
+    if ("$name" == "$known") then
+        set type="Tutorial"
     endif
 end
 
@@ -195,6 +231,53 @@ endif
 
 if ("$name" == "stex01") then
     set rmfiles = ($rmfiles GNFB09)
+endif
+
+endif
+
+################################################################
+#
+# Code for handling tutorial exercises
+#
+################################################################
+
+if ("$type" == "Tutorial") then
+
+echo ""
+echo "NCAR Graphics Tutorial Exercise <$name>"
+
+set f_files = $name.f
+
+set copy_files="$f_files"
+
+if ( "$name" == "cmptit" ) then
+    set copy_files=($copy_files cmpcc.f)
+    set f_files=($f_files cmpcc.f)
+    set rmfiles="cmpcc.o"
+endif
+
+set rmfiles=($rmfiles $copy_files)
+
+foreach file($copy_files)
+    echo "  Copying $file"
+    cp $tutor_dir/$file .
+end
+
+if (! $?NoRunOption) then
+    echo ""
+    echo "Compiling and Linking..."
+    ncargf77 -o $name $f_files
+    if ($status != 0) then
+        echo ""
+        echo "The compile and link failed"
+        exit -1
+    endif
+    echo ""
+    echo "Executing <$name>..."
+
+    ncargrun -o $name.ncgm $name
+    set rmfiles = ($rmfiles $name.o $name)
+    echo "Metafile is named $name.ncgm"
 endif
 
 endif

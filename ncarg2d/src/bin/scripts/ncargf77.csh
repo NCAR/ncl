@@ -1,12 +1,15 @@
 #!/bin/csh -f
 #
-#	$Id: ncargf77.csh,v 1.2 1992-09-22 14:41:01 ncargd Exp $
+#	$Id: ncargf77.csh,v 1.3 1992-09-29 15:31:41 ncargd Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
 set fortran="SED_F77"
 set loadopts = "SED_LD_FFLAGS"
 set l = `ncargpath SED_LIBDIR`
+if ($status != 0) then
+        exit 1
+endif
 
 if (! -d "$l") then
   echo "Library directory <$l> does not exist."

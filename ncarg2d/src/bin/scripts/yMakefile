@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.3 1992-09-25 21:04:21 ncargd Exp $
+#	$Id: yMakefile,v 1.4 1992-09-29 15:31:52 ncargd Exp $
 #
 NCARG	= ../../../..
 
@@ -55,6 +55,7 @@ ncargex: ncargex.csh Makefile
 	@sed \
 	-e 's+SED_EXAMPLESDIR+$(EXAMPLESDIR)+' \
 	-e 's+SED_TESTSDIR+$(TESTSDIR)+' \
+	-e 's+SED_TUTORIALDIR+$(TUTORIALDIR)+' \
 	<ncargex.csh >ncargex
 
 ncargfile: ncargfile.csh Makefile
