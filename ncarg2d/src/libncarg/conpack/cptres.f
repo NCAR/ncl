@@ -1,5 +1,5 @@
 C
-C $Id: cptres.f,v 1.9 1998-10-29 23:21:49 kennison Exp $
+C $Id: cptres.f,v 1.10 1999-04-29 21:58:48 kennison Exp $
 C
       SUBROUTINE CPTRES (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
 C
@@ -561,6 +561,10 @@ C
           L10086=    2
           GO TO 10086
 10096     CONTINUE
+          XKND=XCND
+          YKND=YCND
+          XKNU=XCNU
+          YKNU=YCNU
           XCND=XCVD
           YCND=YCVD
           XCNU=XCVU
@@ -569,6 +573,10 @@ C
           L10093=    2
           GO TO 10093
 10097     CONTINUE
+          XCND=XKND
+          YCND=YKND
+          XCNU=XKNU
+          YCNU=YKNU
           IJMP=4
           IRW1=IR01
           IRW2=IR01+MPLS

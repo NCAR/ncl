@@ -1,5 +1,5 @@
 C
-C $Id: cptrcl.f,v 1.8 1998-10-29 23:21:46 kennison Exp $
+C $Id: cptrcl.f,v 1.9 1999-04-29 21:58:46 kennison Exp $
 C
       SUBROUTINE CPTRCL (ZDAT,RWRK,IWRK,CLVL,IJMP,IRW1,IRW2,NRWK)
 C
@@ -603,6 +603,10 @@ C
             L10080=    2
             GO TO 10080
 10091       CONTINUE
+            XKND=XCND
+            YKND=YCND
+            XKNU=XCNU
+            YKNU=YCNU
             XCND=XCVD
             YCND=YCVD
             XCNU=XCVU
@@ -610,6 +614,10 @@ C
             L10088=    2
             GO TO 10088
 10092       CONTINUE
+            XCND=XKND
+            YCND=YKND
+            XCNU=XKNU
+            YCNU=YKNU
             L10057=    4
             GO TO 10057
 10093       CONTINUE

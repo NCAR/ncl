@@ -1,5 +1,5 @@
 C
-C $Id: cptreg.f,v 1.9 1998-10-29 23:21:48 kennison Exp $
+C $Id: cptreg.f,v 1.10 1999-04-29 21:58:47 kennison Exp $
 C
       SUBROUTINE CPTREG (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
 C
@@ -450,6 +450,10 @@ C
           L10058=    2
           GO TO 10058
 10068     CONTINUE
+          XKND=XCND
+          YKND=YCND
+          XKNU=XCNU
+          YKNU=YCNU
           XCND=XCVD
           YCND=YCVD
           XCNU=XCVU
@@ -458,6 +462,10 @@ C
           L10065=    2
           GO TO 10065
 10069     CONTINUE
+          XCND=XKND
+          YCND=YKND
+          XCNU=XKNU
+          YCNU=YKNU
           IJMP=3
           IRW1=IR01
           IRW2=IR01+MPLS
