@@ -1,3 +1,6 @@
+C
+C $Id: cpex13.f,v 1.4 1996-02-29 17:59:49 kennison Exp $
+C
       PROGRAM XMPL13
 C
 C This program produces a detailed picture of the contents of a typical

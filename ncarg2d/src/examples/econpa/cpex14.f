@@ -1,3 +1,6 @@
+C
+C $Id: cpex14.f,v 1.3 1996-02-29 17:59:49 kennison Exp $
+C
       PROGRAM CPEX14
 C
 C Define the error file, the Fortran unit number, the workstation type,

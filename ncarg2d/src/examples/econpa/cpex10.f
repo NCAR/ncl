@@ -1,3 +1,6 @@
+C
+C $Id: cpex10.f,v 1.5 1996-02-29 17:59:47 kennison Exp $
+C
       PROGRAM TESTIT
 C
 C This program shows a view of the area around Boulder, Colorado, as

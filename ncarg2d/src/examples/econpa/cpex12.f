@@ -1,3 +1,6 @@
+C
+C $Id: cpex12.f,v 1.3 1996-02-29 17:59:48 kennison Exp $
+C
       PROGRAM CPEX12
 C
 C This program demonstrates the use of the new dashed-line package

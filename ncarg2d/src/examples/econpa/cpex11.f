@@ -1,3 +1,6 @@
+C
+C $Id: cpex11.f,v 1.4 1996-02-29 17:59:48 kennison Exp $
+C
       PROGRAM CPEX11
 C
 C This program demonstrates the use of the new internal parameter 'PIT',
