@@ -1,5 +1,5 @@
 ;
-;      $Id: nm21n.ncl,v 1.4 2000-02-25 19:10:51 fred Exp $
+;      $Id: nm21n.ncl,v 1.5 2000-03-02 23:01:43 fred Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -74,7 +74,7 @@ procedure genrs(rlat[*]:float, rlon[*]:float)
 local size, tmpa, rslt, rz
 
 begin
-  size = (sizeof(rlat)/sizeof("float"))
+  size = dimsizes(rlat)
   tmpa = new(1,integer)
   rslt = new(1,float)
   nrand(0,tmpa,rslt)
@@ -381,7 +381,8 @@ begin
 ;  Create the triangulation.
 ;
   triangles = csstri(rlat,rlon)
-  num_triangles = sizeof(triangles)/(3*sizeof("integer"))
+  tri_sizes = dimsizes(triangles)
+  num_triangles = tri_sizes(0)
 
 ;
 ;  Get the circumcenters for the Delaunay triangles and store

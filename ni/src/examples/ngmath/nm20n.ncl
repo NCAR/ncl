@@ -1,5 +1,5 @@
 ;
-;      $Id: nm20n.ncl,v 1.5 2000-02-25 19:10:51 fred Exp $
+;      $Id: nm20n.ncl,v 1.6 2000-03-02 23:01:43 fred Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -77,14 +77,15 @@ begin
 ;  storing the Cartesian coordinate equivalents to the lat/lon input;
 ;  calculate the Cartesian coordinates.
 ;  
-  fsize = sizeof(plat)/sizeof("float")
+  fsize = dimsizes(plat)
 
 ;
 ;  Create the Delaunay triangulation; "triangles" is returned as
 ;  a two dimensional array dimensioned for fsize x 3.
 ;
   triangles = csstri(plat,plon)
-  num_triangles = sizeof(triangles)/(3*sizeof("integer"))
+  tri_size = dimsizes(triangles)
+  num_triangles = tri_size(0)
 
 ;
 ;  Get the circumcenters for the Delaunay triangles and store
