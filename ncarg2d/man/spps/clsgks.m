@@ -7,8 +7,7 @@ closes GKS.
 .SH STATUS
 CLSGKS is somewhat dated.  It was primarily used with NCAR GKS-0A
 when this package only allowed for a single metacode workstation.
-Now that the NCAR GKS package, like most vendor and commercial GKS
-packages, provides for multiple workstations
+Now that the NCAR GKS package provides for multiple workstations
 to be open, it is recommended that standard GKS calls to
 GDAWK, GCLWK, and GCLKS be used instead.
 .SH SYNOPSIS
@@ -22,9 +21,9 @@ Use the ncargex command to see the following relevant examples:
 agex01.
 .SH ACCESS
 To use CLSGKS, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_clsgks, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_clsgks, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 spps, gdawk, gclwk, gclks, opngks, setusv, getusv, ncarg_cbind

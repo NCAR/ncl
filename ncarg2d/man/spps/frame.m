@@ -2,8 +2,8 @@
 .na
 .nh
 .SH NAME
-FRAME - advances to the next picture in the case of CGM output,
-and pauses in the window of most recent creation for X11 output.
+FRAME - advances to the next picture (in the case of CGM output), or
+pauses in the window of most recent creation (for X11 output).
 A mouse or key click in the window on pause will cause all
 active workstations to be cleared.
 .SH SYNOPSIS
@@ -13,7 +13,7 @@ CALL FRAME
 .sp
 void c_frame()
 .SH USAGE
-If a CGM workstation is open, a call to routine FRAME, causes
+If a CGM workstation is open, a call to routine FRAME causes
 an END_PICTURE CGM element to be generated.
 If there are open X windows, it updates all
 workstations and pauses in the window of most recent creation.
@@ -35,9 +35,9 @@ Use the ncargex command to see the following relevant examples:
 agex06
 .SH ACCESS
 To use FRAME, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_frame, load the
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_frame, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 sflush, ngpict, spps, spps_params, ncarg_cbind

@@ -2,8 +2,12 @@
 .na
 .nh
 .SH NAME
-PLOTIT - Moves the plotter pen to a designated position in metacode
-coordinates, or causes a pen-move buffer flush
+PLOTIT - A line-drawing routine, described in terms of "pen moves".
+Most calls to PLOTIT specify whether the "pen" should be up (not
+drawing) or down (drawing) and then move it to a designated position
+in the metacode coordinate system.  The polylines resulting from
+the pen moves are buffered; some calls to PLOTIT just cause the SPPS
+polyline buffer to be flushed.
 .SH STATUS
 Metacode units are no longer used in NCAR Graphics;
 thus, PLOTIT is considered an obsolete routine.
@@ -15,7 +19,7 @@ User Document "NCAR Graphics Fundamentals, UNIX Version" for a description
 of these coordinate systems.
 .sp
 PLOTIT continues to be provided for compatibility of early NCAR Graphics
-codes.  If you are writing new code, we suggest that you use routine
+codes.  If you are writing new code, we suggest that you use the routine
 PLOTIF which uses fractional coordinates.
 .sp
 The following definition of the Metacode Coordinate System is included
@@ -30,27 +34,27 @@ routine PLOTIT and are returned in calls to FL2INT.
 CALL PLOTIT (IX,IY,IP)
 .SH DESCRIPTION 
 .IP IX 12
-(an input coordinate of type INTEGER) is the X metacode coordinate of the
+(an input expression of type INTEGER) is the X metacode coordinate of the
 point to which the plotter pen is to be moved.
 .IP IY 12
-(an input coordinate of type INTEGER) is the Y metacode coordinate of the
+(an input expression of type INTEGER) is the Y metacode coordinate of the
 point to which the plotter pen is to be moved.
 .IP IP 12
-(an input parameter of type INTEGER) which determines whether the
-movement of the plotter pen to point IX,IY will occur with the pen up
-(IP = 0), or with the pen down (IP = 1).  This parameter (IP = 2) can
-also be used to flush the pen-move buffer.
+(an input expression of type INTEGER) determines whether the
+movement of the plotter pen to the point (IX,IY) will occur with the pen up
+(IP = 0), or with the pen down (IP = 1).  If IP = 2, no pen move occurs,
+but the SPPS polyline buffer is flushed.  For historical reasons, a
 "CALL PLOTIT (0,0,0)" will also flush the buffer.
 .sp
-The size of the pen-move buffer can be changed by a call to
-the parameter setting routine SETUSV, with parameter PB.  The legal
-range of parameter PB is between 2 and 50.  For example, to set
-PB to 2, CALL SETUSV("PB",2).
+The size of the SPPS polyline buffer can be changed by calling
+the parameter-setting routine SETUSV to set the parameter 'PB'.  The legal
+range of 'PB' is between 2 and 50.  For example, to set 'PB' to 2, use
+"CALL SETUSV ('PB',2)".
 .sp
-The buffer is provided to increase drawing efficiency.
+The SPPS polyline buffer is provided to increase drawing efficiency.
 .SH ACCESS
 To use PLOTIT, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 gpl, fl2int, plotif, setusv, getusv, sflush, frstpt, vector, line, curve,

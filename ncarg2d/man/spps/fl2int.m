@@ -3,7 +3,7 @@
 .nh
 .SH NAME
 FL2INT -
-converts X,Y coordinates from the User Coordinate System to the
+converts X and Y coordinates from the User Coordinate System to the
 Metacode Coordinate System.
 .SH STATUS
 Metacode units are no longer used in NCAR Graphics;
@@ -33,20 +33,20 @@ routine PLOTIT and are returned in calls to FL2INT.
 CALL FL2INT (PX,PY,IX,IY)
 .SH DESCRIPTION 
 .IP PX 12
-(an input coordinate of type REAL) is the X coordinate of a point in
+(an input experssion of type REAL) is the X coordinate of a point in
 user coordinates.
 .IP PY 12
-(an input coordinate of type REAL) is the Y coordinate of a point in
+(an input expression of type REAL) is the Y coordinate of a point in
 user coordinates.
 .IP IX 12
-(an output coordinate of type INTEGER) is the X coordinate of the point in
+(an output variable of type INTEGER) is the X coordinate of the point in
 metacode coordinates.
 .IP IY 12
-(an output coordinate of type INTEGER) is the Y coordinate of the point in
+(an output variable of type INTEGER) is the Y coordinate of the point in
 metacode coordinates.
 .SH ACCESS
 To use FL2INT, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 spps, plotit, cmfx, cmfy, cmux, cmuy,

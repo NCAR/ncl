@@ -3,10 +3,10 @@
 .nh
 .SH NAME
 GETSET - returns a set of values which, if used as arguments in a call to
-SET, will cause normalization transformation 1, axis scaling (argument LS),
-and axis mirror imaging (See USAGE) to be defined in such a way as to
-duplicate the combined effects of the current normalization transformation
-and axis scaling and mirror imaging.
+SET, will cause normalization transformation 1, axis linear/log scaling
+(internal parameter 'LS'), and axis mirror imaging (internal parameter 'MI')
+to be defined in such a way as to duplicate the combined effects of the
+current normalization transformation, axis scaling, and axis mirror imaging.
 .SH SYNOPSIS
 CALL GETSET (VL,VR,VB,VT,WL,WR,WB,WT,LS)
 .SH C-BINDING SYNOPSIS
@@ -15,31 +15,31 @@ CALL GETSET (VL,VR,VB,VT,WL,WR,WB,WT,LS)
 void c_getset(float *vl, float *vr, float *vb, float *vt, float *wl, float *wr, float *wb, float *wt, int *lf)
 .SH DESCRIPTION 
 .IP VL 12
-(an output parameter of type REAL) that defines the left margin of the
+(an output variable of type REAL) defines the left margin of the
 viewport in fractional coordinates.
 .IP VR 12
-(an output parameter of type REAL) that defines the right margin of the
+(an output variable of type REAL) defines the right margin of the
 viewport in fractional coordinates.
 .IP VB 12
-(an output parameter of type REAL) that defines the bottom margin of the
+(an output variable of type REAL) defines the bottom margin of the
 viewport in fractional coordinates.
 .IP VT 12
-(an output parameter of type REAL) that defines the top margin of the
+(an output variable of type REAL) defines the top margin of the
 viewport in fractional coordinates.
 .IP WL 12
-(an output parameter of type REAL) that defines the left margin of the
+(an output variable of type REAL) defines the left margin of the
 window in user coordinates.
 .IP WR 12
-(an output parameter of type REAL) that defines the right margin of the
+(an output variable of type REAL) defines the right margin of the
 window in user coordinates.
 .IP WB 12
-(an output parameter of type REAL) that defines the bottom margin of the
+(an output variable of type REAL) defines the bottom margin of the
 window in user coordinates.
 .IP WT 12
-(an output parameter of type REAL) that defines the top margin of the
+(an output variable of type REAL) defines the top margin of the
 window in user coordinates.
 .IP LS 12
-(an output parameter of type INTEGER) that defines the linear/log nature of
+(an output variable of type INTEGER) defines the linear/log nature of
 the mapping, where:
 .nf
 
@@ -47,19 +47,21 @@ LS = 1, is linear X, linear Y
 LS = 2, is linear X, log Y
 LS = 3, is log X,    linear Y
 LS = 4, is log X,    log Y
+
 .fi
 .SH C-BINDING DESCRIPTION                               ,,
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE
 Note that in setting the limits of the viewport and the window, the
-left margin can have a coordinate value that is larger than the right
-margin value.  This means the X axis scale will run from a maximum
-value at the left to a minimum value at the right.  This is referred
-to as "mirror imaging" of the X axis.  Likewise the
+left margin can have a user coordinate value that is larger than the
+user coordinate value at the right
+margin.  This means the X axis scale will run from a maximum
+value at the left to a minimum value at the right.  Likewise the
 bottom value can exceed the top value meaning that the Y axis can
-run from a maximum at the bottom to a minimum at the top.
-These features represents a substantial functional
+run from a maximum at the bottom to a minimum at the top.  This
+reversal of the axes is referred to as "mirror imaging".
+It represents a substantial functional
 enhancement over what is provided in GKS.  That is why NCAR Graphics
 SET calls using fractional and user coordinates are in general preferred
 over GKS calls to GSVP and GSWN using normalized device coordinates
@@ -69,9 +71,9 @@ Use the ncargex command to see the following relevant examples:
 arex01, mpex07, mpex09, cpexcc.
 .SH ACCESS
 To use GETSET, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_getset, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_getset, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 gqnt, set, getusv, setusv, spps, spps_params, ncarg_cbind

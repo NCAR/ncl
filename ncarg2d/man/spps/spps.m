@@ -2,7 +2,7 @@
 .na
 .nh
 .SH NAME
-SPPS - is a collection of routines for defining and managing NCAR
+SPPS - a collection of routines for defining and managing NCAR
 Graphics coordinate systems, for drawing lines, markers, and text
 in those coordinate systems, and for implementing efficiency
 considerations such as polyline segment buffering.
@@ -10,61 +10,77 @@ considerations such as polyline segment buffering.
 The current recognized coordinate systems are GKS world coordinates,
 GKS normalized device coordinates, NCAR Graphics fractional
 coordinates, and NCAR Graphics user coordinates.  See the NCAR Graphics
-document "The Use of X/Y Coordinates in NCAR Graphics" for a description
+document "The Use of X/Y Coordinates in NCAR Graphics" for descriptions
 of these coordinate systems.
 .sp
-The NCAR Graphics user coordinate system allows for axis reversal and
-non-linear axes which are two important extensions to the GKS
-world coordinate system.
+The NCAR Graphics user coordinate system allows for axis reversal
+(mirror imaging) and non-linear (logarithmic) axes, which are two
+important extensions to the GKS world coordinate system.
 .sp
-Plotter address units (PAUs) were used frequently in various SPPS routines
-and parameters.  PAUs are no longer used in NCAR Graphics.  Wherever
-they might still be encountered, simply think of them as integer scaled
-NDC units where 1 PAU = 1 integer scaled NDC based upon the formula
-PAU = INDC = NDCs * 1024.
+Plotter address units (PAUs) were used frequently in various SPPS routine
+arguments and in some internal parameters.   PAUs are not being used in
+new NCAR Graphics routines.  Wherever they might still be encountered,
+simply interpret them according to the formula "1 PAU = 1/1023 NDC units".
 .SH SYNOPSIS
-OPNGKS - Opens GKS, opens workstation 1 to receive metacode output and
-activates workstation 1.
+OPNGKS - Opens GKS, opens and activates an NCAR GCM
+workstation (workstation of type 1) with workstation ID
+of 1 and connection ID of 2.
 .sp
 CLSGKS - Deactivates workstation 1, closes workstation 1, and
 closes GKS.
 .sp
-FRSTPT - generates a pen-up move to the point (PX,PY) in the user
-coordinate system.
-It is used in conjunction with routine VECTOR to draw lines.
+PLOTIF - A line-drawing routine, described in terms of "pen moves".
+Most calls to PLOTIF specify whether the "pen" should be up (not
+drawing) or down (drawing) and then move it to a designated position
+in the fractional coordinate system.  The polylines resulting from
+the pen moves are buffered; some calls to PLOTIF just cause the SPPS
+polyline buffer to be flushed.
 .sp
-VECTOR - generates a pen-down move to the point (PX,PY) in the user
-coordinate system.
-It is used in conjunction with routine FRSTPT to draw lines.
+FRSTPT - generates a "pen-up" move to a specified point in the user
+coordinate system.  FRSTPT is used in conjunction with the routine VECTOR
+to draw lines.
 .sp
-POINT - draws a point at the location (PX,PY) in the user coordinate system.
+VECTOR - generates a "pen-down" move to a specified point in the user
+coordinate system.  VECTOR is used in conjunction with the routine FRSTPT
+to draw lines.
 .sp
-POINTS - draws a series of markers at the locations (PX(I),PY(I),I=1,NP).
-The markers can also be connected by drawing lines between them.
+POINT - draws a point at a specified position in the user coordinate system.
+.sp
+POINTS - draws a marker at each of a series of specified positions in the
+user coordinate system.  The markers can also be connected by drawing lines
+between them.
 .sp
 LINE - draws a line from the point (X1,Y1) to the point (X2,Y2).
+The "pen" (for subsequent calls to FRSTPT, VECTOR, PLOTIF, and PLOTIT)
+is left at (X2,Y2).
 .sp
-CURVE - draws a curve defined by the series of points (PX(I),PY(I), I
-= 1,NP), in the user coordinate system.  The pen is left at the location
-of the last point in the curve.
+CURVE - draws the curve defined by a specified series of points
+in the user coordinate system.  The "pen" (for subsequent calls to
+FRSTPT, VECTOR, PLOTIF, and PLOTIT) is left at the location of the
+last point in the curve.
 .sp
-SFLUSH - Flushes the plot buffer accumulated through calls to routines
-PLOTIF and PLOTIT.
+SFLUSH - Flushes polylines, accumulated through calls to the routines
+PLOTIF and PLOTIT, from the SPPS polyline buffer shared by those routines;
+updates all open workstations; and flushes all system-level I/O buffers.
 .sp
 FRAME - advances to the next picture in the case of CGM output,
 and pauses in the window of most recent creation for X11 output.
 A mouse or key click in the window on pause will cause all
 active workstations to be cleared.
 .sp
-SET - sets the internal parameters that define the mapping
-back and forth between fractional and user coordinates.
+SET - defines the mapping between fractional and user coordinates: sets
+the values of the SPPS internal parameters 'LS' (axis linear/log scaling)
+and 'MI' (axis mirror imaging); defines GKS normalization transformation 1.
 .sp
-GETSET - returns the values of the parameters used in the previous call
-to routine SET.
+GETSET - returns a set of values which, if used as arguments in a call to
+SET, will cause normalization transformation 1, axis linear/log scaling
+(internal parameter 'LS'), and axis mirror imaging (internal parameter 'MI')
+to be defined in such a way as to duplicate the combined effects of the
+current normalization transformation, axis scaling, and axis mirror imaging.
 .sp
-SETUSV - sets the value of one of the spps parameters.
+SETUSV - sets the value of one of the internal parameters of SPPS.
 .sp
-GETUSV - gets the value of one of the spps parameters.
+GETUSV - gets the value of one of the internal parameters of SPPS.
 .sp
 CFUX, CFUY - Converts from fractional coordinates to user coordinates
 .sp

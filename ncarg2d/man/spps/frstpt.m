@@ -2,9 +2,9 @@
 .na
 .nh
 .SH NAME
-FRSTPT - generates a pen-up move to the point (PX,PY) in the user
-coordinate system.
-It is used in conjunction with routine VECTOR to draw lines.
+FRSTPT - generates a "pen-up" move to a specified point in the user
+coordinate system.  FRSTPT is used in conjunction with the routine VECTOR
+to draw lines.
 .SH SYNOPSIS
 CALL FRSTPT (PX,PY)
 .SH C-BINDING SYNOPSIS
@@ -13,27 +13,28 @@ CALL FRSTPT (PX,PY)
 void c_frstpt (float px, float py)
 .SH DESCRIPTION 
 .IP PX 12
-(an input coordinate of type REAL) defining the X user coordinate.
+(an input expression of type REAL) defines the X user coordinate.
 .IP PY 12
-(an input coordinate of type REAL) defining the Y user coordinate.
+(an input expression of type REAL) defines the Y user coordinate.
 .SH C-BINDING DESCRIPTION                               ,,
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE
 Polyline type, line width, and color can be set by calling the
-GKS routines, GSLN, GSLWSC, GSCR, and GSPLCI, before calling FRSTPT.
+GKS routines GSLN, GSLWSC, GSCR, and GSPLCI before calling FRSTPT.
 .sp
-Note that this routine and VECTOR buffer points for efficiency.  Thus
-one must be sure to flush the buffer before changing polyline attributes.
-CALL PLOTIF (0.,0.,2) will flush the buffer.
+Note that, for the sake of efficiency, the routines FRSTPT and VECTOR
+buffer the polylines resulting from pen moves.  One must be sure to flush
+the SPPS polyline buffer before changing polyline attributes.
+A "CALL PLOTIF (0.,0.,2)" will flush the buffer.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
 tgflas.
 .SH ACCESS
 To use FRSTPT, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_frstpt, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_frstpt, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 gpl, gsln, gslwsc, gscr, gsplci,

@@ -2,7 +2,8 @@
 .na
 .nh
 .SH NAME
-SETI - sets the plotter address unit range exponents
+SETI - sets the exponents which define the plotting range
+in the plotter address unit coordinate system.
 .SH STATUS
 Plotter Address Units (PAUs) are no longer used in NCAR Graphics;
 thus, SETI is considered an obsolete routine.
@@ -21,21 +22,23 @@ for the purpose of interpreting and converting PAU codes:
 .sp
 The plotter coordinates of a point are integers IPX and IPY, where
 IPX is between 1 and 2**MX and IPY is between 1 and 2**MY.  MX and
-MY are user state variables, both having a default value of 10.
+MY are internal parameters of SPPS; each has the default value 10.
 Values of MX and MY can be set by routine SETI and retrieved by
 routine GETSI.
 .SH SYNOPSIS
 CALL SETI (IX,IY)
 .SH DESCRIPTION 
 .IP IX 12
-(an input INTEGER) which is the X axis exponent for plotter coordinates
-defining a range of 1 to 2**IX - 1.  IX has a default value of 10.
+(an input expression of type INTEGER) is the X axis exponent for plotter
+coordinates defining a range of 1 to 2**IX - 1.  IX has a default value
+of 10.
 .IP IY 12
-(an input INTEGER) which is the Y axis exponent for plotter coordinates
-defining a range of 1 to 2**IY - 1.  IY has a default value of 10.
+(an input expresssion of type INTEGER) is the Y axis exponent for plotter
+coordinates defining a range of 1 to 2**IY - 1.  IY has a default value
+of 10.
 .SH ACCESS
 To use SETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 spps, getsi

@@ -2,13 +2,13 @@
 .na
 .nh
 .SH NAME
-OPNGKS - Opens GKS, opens workstation 1 to receive metacode output and
-activates workstation 1.
+OPNGKS - Opens GKS, opens and activates an NCAR GCM
+workstation (workstation of type 1) with workstation ID
+of 1 and connection ID of 2.
 .SH STATUS
 OPNGKS is somewhat dated.  It was primarily used with NCAR GKS-0A
 when this package only allowed for a single metacode workstation.
-Now that the NCAR GKS package, like most vendor and commercial GKS
-packages, provides for multiple workstations
+Now that the NCAR GKS package provides for multiple workstations
 to be open, it is recommended that standard GKS calls to
 GOPKS, GOPWK, and GACWK be used instead.
 .SH SYNOPSIS
@@ -22,9 +22,9 @@ Use the ncargex command to see the following relevant examples:
 agex01.
 .SH ACCESS
 To use OPNGKS, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_opngks, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_opngks, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 spps, gopks, gopwk, gacwk, clsgks, setusv, getusv, ncarg_cbind

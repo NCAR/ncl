@@ -2,8 +2,9 @@
 .na
 .nh
 .SH NAME
-SFLUSH - Flushes the plot buffer accumulated through calls to routines
-PLOTIF and PLOTIT.
+SFLUSH - Flushes polylines, accumulated through calls to the routines
+PLOTIF and PLOTIT, from the SPPS polyline buffer shared by those routines;
+updates all open workstations; and flushes all system-level I/O buffers.
 .SH STATUS
 SFLUSH was called FLUSH in previous versions.  The name was changed
 to avoid a naming conflict with a common system routine.
@@ -18,9 +19,9 @@ Use the ncargex command to see the following relevant examples:
 (none)
 .SH ACCESS
 To use SFLUSH, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_sflush, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_sflush, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 ngpict, frame, plotif, spps, spps_params, ncarg_cbind
