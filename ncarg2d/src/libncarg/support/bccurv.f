@@ -1,5 +1,5 @@
 C
-C $Id: bccurv.f,v 1.3 2000-08-22 15:06:49 haley Exp $
+C $Id: bccurv.f,v 1.4 2001-09-06 16:24:32 haley Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -99,7 +99,7 @@ C
           WRITE(6,510) NPPC,NO
   510     FORMAT(' BCCURV -- Number of points specified for interpolatio
      -n along the curve = ',I5,',',/'           exceeds the array dimens
-     -ion reserved for them ='I5,'.'/)
+     -ion reserved for them =',I5,'.'/)
         ENDIF
         CALL BCFCRV(BXI,BYI,NPPC,XO,YO)
         NPTS = NPPC
