@@ -1,5 +1,5 @@
 C
-C $Id: fcurv2.f,v 1.3 2000-08-22 15:19:35 haley Exp $
+C $Id: fcurv2.f,v 1.4 2002-08-03 00:27:32 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -115,6 +115,20 @@ C
       DIMENSION XI(M),YI(N),ZI(IZ,N),ZP(M,N,3)
 C
       SVALUE = SURF2(XO,YO,M,N,XI,YI,ZI,IZ,ZP,SIGMA)
+C
+      RETURN
+      END
+      SUBROUTINE FCURVS2(N,PARAM,XI,YI,XS,XSP,YS,YSP,SIGMA,
+     +                   M,XL,XR,XO,YO)
+C
+      DIMENSION PARAM(N),XI(N),YI(N),XS(N),XSP(N),YS(N),YSP(N),
+     +          XO(M),YO(M)
+C
+      XINC = (XR-XL)/REAL(M-1)
+      DO 10 I=1,M
+        CALL CURVS2(REAL(I-1)*XINC,N,PARAM,XS,YS,
+     +              XSP,YSP,SIGMA,XO(I),YO(I))
+   10 CONTINUE
 C
       RETURN
       END

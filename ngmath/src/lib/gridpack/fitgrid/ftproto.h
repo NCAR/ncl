@@ -1,5 +1,5 @@
 /*
- * $Id: ftproto.h,v 1.4 2000-09-19 23:54:46 fred Exp $
+ * $Id: ftproto.h,v 1.5 2002-08-03 00:27:32 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -44,6 +44,8 @@ int c_ftcurvi(float, float, int, float [], float [], float *);
 int c_ftcurvp(int, float [], float [], float, int, float [], float yo[]);
 int c_ftcurvpi(float, float, float, int, float [], float [], float *);
 int c_ftcurvs(int, float [], float [], int, float [], int, float [], float []);
+int c_ftcurvs1(int, float [], float [], int, float [],
+               int, float, float, float [], float []);
 int c_ftcurvps(int, float [], float [], float, int, float [],
                int, float [], float []);
 int c_ftkurv(int, float [], float [], int, float [], float [], float []);

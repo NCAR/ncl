@@ -1,5 +1,5 @@
 /*
- * $Id: ftuser.c,v 1.3 2000-08-22 15:19:35 haley Exp $
+ * $Id: ftuser.c,v 1.4 2002-08-03 00:27:32 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -34,31 +34,31 @@ int c_ftseti(char *pnam, int ival)
    if (!strncmp(pnam,"sf1",3) || !strncmp(pnam,"SF1",3)) {
       ft_islp = ival;
    }
+   else if (!strncmp(pnam,"df1",3) || !strncmp(pnam,"DF1",3)) {
+      ft_df1 = ival;
+   }
+   else if (!strncmp(pnam,"df2",3) || !strncmp(pnam,"DF2",3)) {
+      ft_df2 = ival;
+   }
    else if (!strncmp(pnam,"sf2",3) || !strncmp(pnam,"SF2",3)) {
       ft_sms = ival;
    }
-   else if (!strncmp(pnam,"df1",3) || !strncmp(pnam,"df1",3)) {
-      ft_df1 = ival;
-   }
-   else if (!strncmp(pnam,"df2",3) || !strncmp(pnam,"df2",3)) {
-      ft_df2 = ival;
-   }
-   else if (!strncmp(pnam,"df3",3) || !strncmp(pnam,"df3",3)) {
+   else if (!strncmp(pnam,"df3",3) || !strncmp(pnam,"DF3",3)) {
       ft_df3 = ival;
    }
-   else if (!strncmp(pnam,"df4",3) || !strncmp(pnam,"df4",3)) {
+   else if (!strncmp(pnam,"df4",3) || !strncmp(pnam,"DF4",3)) {
       ft_df4 = ival;
    }
-   else if (!strncmp(pnam,"df5",3) || !strncmp(pnam,"df5",3)) {
+   else if (!strncmp(pnam,"df5",3) || !strncmp(pnam,"DF5",3)) {
       ft_df5 = ival;
    }
-   else if (!strncmp(pnam,"df6",3) || !strncmp(pnam,"df6",3)) {
+   else if (!strncmp(pnam,"df6",3) || !strncmp(pnam,"DF6",3)) {
       ft_df6 = ival;
    }
-   else if (!strncmp(pnam,"df7",3) || !strncmp(pnam,"df7",3)) {
+   else if (!strncmp(pnam,"df7",3) || !strncmp(pnam,"DF7",3)) {
       ft_df7 = ival;
    }
-   else if (!strncmp(pnam,"df8",3) || !strncmp(pnam,"df8",3)) {
+   else if (!strncmp(pnam,"df8",3) || !strncmp(pnam,"DF8",3)) {
       ft_df8 = ival;
    }
    else {
@@ -251,7 +251,7 @@ int c_ftsetfa(char *pnam, int n, float *far)
 }
 
 /*
- *  Retreive floating array sizes.
+ *  Retrieve floating array sizes.
  */
 int c_ftgetfa_size(char *pnam)
 {

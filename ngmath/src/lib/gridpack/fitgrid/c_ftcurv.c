@@ -1,5 +1,5 @@
 /*
- * $Id: c_ftcurv.c,v 1.4 2000-08-22 15:19:32 haley Exp $
+ * $Id: c_ftcurv.c,v 1.5 2002-08-03 00:27:31 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -383,4 +383,53 @@ float *c_ftsurf(int mi, int ni, float *xi, float *yi, float *zi,
     free(ft_zyn.data);
   }
   return(output);
+}
+
+int c_ftcurvs1(int n, float xi[], float yi[], int dflg, float d[],
+               int m, float xl, float xr, float xo[], float yo[])
+{
+  float *param, *xs, *xsp, *ys, *ysp, *temp, smths, smeps;
+  int   i;
+
+/*
+ *  Establish the values for the parameters S and EPS.
+ */
+
+  if (ft_sms == 0) {
+    smths = (float) n;
+    smeps = (float) sqrt( (float) (2./smths) );
+  }
+  else if (ft_sms == 1) {
+    smths = ft_s;
+    smeps = ft_eps;
+  }
+  else if (ft_sms == 2) {
+    smths = ft_s;
+    smeps = (float) sqrt( (float) (2./((float) n)) );
+  }
+  else if (ft_sms == 3) {
+    smths = (float) n;
+    smeps = ft_eps;
+  }
+
+  ys    = (float *) calloc(n, sizeof(float));
+  ysp   = (float *) calloc(n, sizeof(float));
+  xs    = (float *) calloc(n, sizeof(float));
+  xsp   = (float *) calloc(n, sizeof(float));
+  param = (float *) calloc(n, sizeof(float));
+  temp  = (float *) calloc(19*n, sizeof(float));
+  
+  NGCALLF(curvs1,CURVS1)(&n, xi, yi, d, &dflg, &smths, &smeps, param,
+                         xs, ys, xsp, ysp, &ft_sigma, temp, &ft_err);
+  NGCALLF(fcurvs2,FCURVS2)(&n, param, xi, yi, xs, xsp, ys, ysp, &ft_sigma, 
+          &m, &xl, &xr, xo, yo);
+
+  free(xs);
+  free(xsp);
+  free(ys);
+  free(ysp);
+  free(param);
+  free(temp);
+
+  return(ft_err);
 }
