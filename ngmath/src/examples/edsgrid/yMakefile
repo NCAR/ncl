@@ -1,18 +1,18 @@
 #
-#	$Id: yMakefile,v 1.1 1997-10-14 23:01:58 fred Exp $
+#	$Id: yMakefile,v 1.2 1997-10-15 21:46:34 haley Exp $
 #
 
 MYNAME	= edsgrid
 
 SRCS = \
 	dsplotc.c    c_dsex01.c   c_dsex01d.c    c_dsex02.c    c_dsex03.c \
-	c_dsex04.c   c_dsex05.c   c_dsec06.c                              \
+	c_dsex04.c   c_dsex05.c   c_dsex06.c                              \
 	dsplotf.f    dsex01.f     dsex01d.f      dsex02.f      dsex03.f   \
 	dsex04.f     dsex05.f     dsex06.f
 
 OBJS = \
 	dsplotc.o    c_dsex01.o   c_dsex01d.o    c_dsex02.o    c_dsex03.o \
-	c_dsex04.o   c_dsex05.c   c_dsec06.c                              \
+	c_dsex04.o   c_dsex05.c   c_dsex06.c                              \
 	dsplotf.o    dsex01.o     dsex01d.o      dsex02.o      dsex03.o   \
 	dsex04.o     dsex05.o     dsex06.f
 
