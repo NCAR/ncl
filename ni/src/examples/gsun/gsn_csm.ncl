@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.94 2002-05-09 14:56:37 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.95 2002-05-15 15:25:27 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3933,7 +3933,7 @@ begin
 
           end if
           zonal_mean_plot = True
-          zmeans2 = dim_avg(datanew(lat | : ,lon | :))
+          zmeans2 = dim_avg(datanew)
           if(min(zmeans2).lt.0.and.max(zmeans2).gt.0)
             nmeans = dimsizes(zmeans2)
             zmeans = new((/2,nmeans/),float)
