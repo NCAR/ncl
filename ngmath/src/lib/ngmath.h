@@ -6,6 +6,14 @@
  */
 
 /*
+ *  Function prototypes for the cssgrid package.
+ */
+int   *c_csstri(int, float [], float [], float [], int *, int *);
+float *c_cssgrid(int, float [], float [], float [], float [],
+                 int, int, float [], float [], int *);
+void   c_cstrans(int, float *, float *, float *, float *, float *);
+ 
+/*
  *  Function prototypes for the csagrid package.
  */
 float *c_csa1s(int, float [], float [], int, int, float [], int *);
