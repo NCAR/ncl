@@ -1,71 +1,23 @@
 /*
- *	$Id: ncarg_ras.h,v 1.8 1992-03-27 21:00:03 clyne Exp $
+ *	$Id: ncarg_ras.h,v 1.9 1992-09-10 21:42:34 don Exp $
  */
 #ifndef _RASTER_
 #define _RASTER_
 
 #include <stdio.h>
-
-/*
- * included for 'struct stat'
- */
 #include <sys/types.h>
-#include <sys/stat.h>
+#include <sys/stat.h>	 /* included for 'struct stat' */
+#include <ncarg/c.h>
 
-/* Definitions related to machine portability */
+/*************************** TYPE DEFINITIONS *************************/
 
-#define CARD32	unsigned long
-#define CARD16	unsigned int
-#define CARD8	unsigned char
+typedef enum {
+	RAS_OK		= 1,
+	RAS_EOF		= 0,
+	RAS_ERROR	= -1
+} RasterErrorType;
 
-#ifdef CRAY
-#define B32	:32
-#else
-#define B32
-#endif /* CRAY */
-
-/* Definitions of error codes for the library */
-
-#define RAS_E_SYSTEM				0
-#define RAS_E_INTERNAL_PROGRAMMING		1
-#define RAS_E_8BIT_PIXELS_ONLY			2
-#define RAS_E_8BIT_INTENSITIES_ONLY		3
-#define RAS_E_8BIT_RUNLENGTHS_ONLY		4
-#define RAS_E_NOT_IN_CORRECT_FORMAT		5
-#define RAS_E_UNSUPPORTED_ENCODING		6
-#define RAS_E_IMPROPER_COLORMAP_LOAD		7
-#define RAS_E_COLORMAP_TOO_BIG			8
-#define RAS_E_IMAGE_SIZE_CHANGED		9
-#define RAS_E_NO_FORMAT_SPECIFIED		10
-#define RAS_E_NO_STDIN_WITH_HDF			11
-#define RAS_E_NULL_NAME				12
-#define RAS_E_UNKNOWN_FORMAT			13
-#define RAS_E_INVALID_COLORMAP			14
-#define RAS_E_BAD_OPTION			15
-#define RAS_E_UNSUPPORTED_RESOLUTION		16
-#define RAS_E_BOGUS_RASTER_STRUCTURE		17
-#define RAS_E_UNSUPPORTED_FUNCTIONS		18
-#define RAS_E_TOO_MANY_DITHERBITS		19
-#define RAS_E_SUN_RLE_UNSUPPORTED		20
-#define RAS_E_PARALLAX				21
-
-/* Definitions common to all machines */
-
-#ifndef True
-#define True		1
-#endif
-
-#ifndef False
-#define False		0
-#endif
-
-#define E_FATAL		1
-#define E_NONFATAL	2
-#define E_WARNING	3
-
-#define RAS_OK		1
-#define RAS_EOF		0
-#define RAS_ERROR	-1
+#define RAS_DEFAULT_NCOLORS	256
 
 typedef enum {
 	RAS_INVALID_ENCODING,
@@ -77,9 +29,22 @@ struct RasterStruct {
 	/* File Related */
 	char			*name;
 	char			*format;
-	int			fd;
-	FILE			*fp;
-	int			written;
+	char			*dep;		/* Format dependent */
+	int			fd;		/* File descriptor */
+	FILE			*fp;		/* FILE pointer */
+	int			written;	/* File has been written */
+	int			read;		/* File has been read */
+	/*
+	The next three items are associated with the file
+	and tracked to insure that they do not change from
+	frame to frame i.e. this interface assumes that
+	all images within a single file have the same
+	dimensions and encoding type.
+	*/
+	int			file_nx;
+	int			file_ny;
+	RasterEncoding		file_type;
+
 	/* Image Related */
 	int			nx;
 	int			ny;		/* Vertical dimension */
@@ -88,8 +53,7 @@ struct RasterStruct {
 	RasterEncoding		type;		/* Encoding type */
 	int			ncolor;		/* Number of colors */
 	char			*text;		/* Comments and such */
-	char			*dep;		/* Format dependent */
-	int			map_loaded;	/* Color map force loaded */
+	int			map_forced;	/* Color map force loaded */
 	unsigned char		*red;		/* Red color table */
 	unsigned char		*green;		/* Green color table */
 	unsigned char		*blue;		/* Blue color table */
@@ -108,11 +72,24 @@ typedef struct RasterStruct Raster;
 struct	RasStatStruct {
 	struct stat	stat;	/* UNIX stat struct	*/
 	RasterEncoding	type;	/* Encoding type	*/
-	int		nx, 	/* horizontal dimention	*/
+	int		nx, 	/* horizontal dimension	*/
 			ny;	/* vertical dimension	*/
 };
 
 typedef	struct	RasStatStruct	RasStat;
+
+typedef struct _RasterfileStruct {
+	char			*name;
+	char			*format;
+	int			mode;
+	int			fd;
+	FILE			*fp;
+	int			written;
+	Raster			*ras;
+	char			*dep;
+} RasterfileStruct;
+
+/********************* IMAGE PROCESSING MACROS ***********************/
 
 #define INDEXED_PIXEL(ras, x, y) \
 	ras->data[((y) * ras->nx) + (x)]
@@ -162,6 +139,77 @@ typedef	struct	RasStatStruct	RasStat;
 
 #define DIRECT_UV(ras, x, y) \
 	(ras)->data[(y) * 3 * (ras)->nx + (x) * 3 + 1]
+
+
+#define NrtNformatName		"NrtNformatName"
+#define NrtNformatDesc		"NrtNformatDesc"
+
+/* Definitions related to machine portability */
+
+#define CARD32	unsigned long
+#define CARD16	unsigned int
+#define CARD8	unsigned char
+
+#ifdef CRAY
+#define B32	:32
+#else
+#define B32
+#endif /* CRAY */
+
+/**************************** ERROR CODES ********************************/
+
+/*
+These macros relate to the HDF library. For new versions,
+these must be checked for consistency!.
+*/
+
+#define HDF_ERROR_START		2001
+#define HDF_ERRNO		(HDF_ERROR_START - 1 + abs(DFerror))
+
+/* Raster library error codes */
+
+#define RAS_ERROR_START		1001
+
+typedef enum {
+	 RAS_E_SYSTEM = RAS_ERROR_START,
+	 RAS_E_INTERNAL,
+	 RAS_E_8BIT_PIXELS_ONLY,
+	 RAS_E_8BIT_INTENSITIES_ONLY,
+	 RAS_E_8BIT_RUNLENGTHS_ONLY,
+	 RAS_E_NOT_IN_CORRECT_FORMAT,
+	 RAS_E_UNSUPPORTED_ENCODING,
+	 RAS_E_IMPROPER_COLORMAP_LOAD,
+	 RAS_E_COLORMAP_TOO_BIG,
+	 RAS_E_IMAGE_SIZE_CHANGED,
+	 RAS_E_IMAGE_TYPE_CHANGED,
+	 RAS_E_NO_FORMAT_SPECIFIED,
+	 RAS_E_NULL_NAME,
+	 RAS_E_UNKNOWN_FORMAT,
+	 RAS_E_INVALID_COLORMAP,
+	 RAS_E_NO_OPTION_PARM,
+	 RAS_E_UNSUPPORTED_RESOLUTION,
+	 RAS_E_BOGUS_RASTER_STRUCTURE,
+	 RAS_E_UNSUPPORTED_FUNCTION,
+	 RAS_E_SUN_RLE_UNSUPPORTED,
+	 RAS_E_PARALLAX,
+	 RAS_E_PREMATURE_EOF,
+	 RAS_E_PROGRAMMING,
+	 RAS_E_TOO_MANY_DITHERBITS,
+	 RAS_E_UNKNOWN_RESOURCE,
+	 RAS_E_BOGUS_COOKIE
+} RasterErrorIndex;
+
+/* Definitions common to all machines */
+
+#ifndef True
+#define True		1
+#endif
+
+#ifndef False
+#define False		0
+#endif
+
+/************************* FUNCTION DEFINITIONS **************************/
 
 
 extern	int	RasterInit(
@@ -243,6 +291,11 @@ extern	Raster *RasterCreate(
 #endif
 	);
 
+extern	char   *RasterTypeString(
+#ifdef	NeedFuncProto
+	RasterEncoding	type
+#endif
+	);
 
 extern	int RasterDestroy(
 #ifdef	NeedFuncProto
@@ -278,6 +331,438 @@ extern	Raster	*RasterScale(
 #ifdef	NeedFuncProto
         Raster  *src,
 	int	scale
+#endif
+	);
+
+/********* Function deinitions for SGI semi-public interface ***********/
+
+extern Raster *SGIOpen(
+#ifdef NeedFuncProto
+	char	*name
+#endif
+	);
+
+extern int SGIRead(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern Raster *SGIOpenWrite(
+#ifdef NeedFuncProto
+	char		*name,
+	int		nx,
+	int		ny,
+	char		*comment,
+	RasterEncoding	encoding
+#endif
+	);
+
+extern int SGIWrite(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int SGIPrintInfo(
+#ifdef NeedFuncProto
+	Raster		*ras
+#endif
+	);
+
+extern int SGIClose(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int SGISetFunctions(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+/********* Function deinitions for NRIF semi-public interface ***********/
+
+extern Raster *NrifOpen(
+#ifdef NeedFuncProto
+	char	*name
+#endif
+	);
+
+extern int NrifRead(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern Raster *NrifOpenWrite(
+#ifdef NeedFuncProto
+	char		*name,
+	int		nx,
+	int		ny,
+	char		*comment,
+	RasterEncoding	encoding
+#endif
+	);
+
+extern int NrifWrite(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int NrifPrintInfo(
+#ifdef NeedFuncProto
+	Raster		*ras
+#endif
+	);
+
+extern int NrifClose(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int NrifSetFunctions(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+/********* Function deinitions for Sun semi-public interface ***********/
+
+extern Raster *SunOpen(
+#ifdef NeedFuncProto
+	char	*name
+#endif
+	);
+
+extern int SunRead(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern Raster *SunOpenWrite(
+#ifdef NeedFuncProto
+	char		*name,
+	int		nx,
+	int		ny,
+	char		*comment,
+	RasterEncoding	encoding
+#endif
+	);
+
+extern int SunWrite(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int SunPrintInfo(
+#ifdef NeedFuncProto
+	Raster		*ras
+#endif
+	);
+
+extern int SunClose(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int SunSetFunctions(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+/********* Function deinitions for XWD semi-public interface ***********/
+
+extern Raster *XWDOpen(
+#ifdef NeedFuncProto
+	char	*name
+#endif
+	);
+
+extern int XWDRead(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern Raster *XWDOpenWrite(
+#ifdef NeedFuncProto
+	char		*name,
+	int		nx,
+	int		ny,
+	char		*comment,
+	RasterEncoding	encoding
+#endif
+	);
+
+extern int XWDWrite(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int XWDPrintInfo(
+#ifdef NeedFuncProto
+	Raster		*ras
+#endif
+	);
+
+extern int XWDClose(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int XWDSetFunctions(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+/********* Function deinitions for HDF semi-public interface ***********/
+
+extern Raster *HDFOpen(
+#ifdef NeedFuncProto
+	char	*name
+#endif
+	);
+
+extern int HDFRead(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern Raster *HDFOpenWrite(
+#ifdef NeedFuncProto
+	char		*name,
+	int		nx,
+	int		ny,
+	char		*comment,
+	RasterEncoding	encoding
+#endif
+	);
+
+extern int HDFWrite(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int HDFPrintInfo(
+#ifdef NeedFuncProto
+	Raster		*ras
+#endif
+	);
+
+extern int HDFClose(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int HDFSetFunctions(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+/********* Function deinitions for AVS semi-public interface ***********/
+
+extern Raster *AVSOpen(
+#ifdef NeedFuncProto
+	char	*name
+#endif
+	);
+
+extern int AVSRead(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern Raster *AVSOpenWrite(
+#ifdef NeedFuncProto
+	char		*name,
+	int		nx,
+	int		ny,
+	char		*comment,
+	RasterEncoding	encoding
+#endif
+	);
+
+extern int AVSWrite(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int AVSPrintInfo(
+#ifdef NeedFuncProto
+	Raster		*ras
+#endif
+	);
+
+extern int AVSClose(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int AVSSetFunctions(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+/********* Function deinitions for Parallax semi-public interface ***********/
+
+extern Raster *ParallaxOpen(
+#ifdef NeedFuncProto
+	char	*name
+#endif
+	);
+
+extern int ParallaxRead(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern Raster *ParallaxOpenWrite(
+#ifdef NeedFuncProto
+	char		*name,
+	int		nx,
+	int		ny,
+	char		*comment,
+	RasterEncoding	encoding
+#endif
+	);
+
+extern int ParallaxWrite(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int ParallaxPrintInfo(
+#ifdef NeedFuncProto
+	Raster		*ras
+#endif
+	);
+
+extern int ParallaxClose(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int ParallaxSetFunctions(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+/********* Function deinitions for HPLJ semi-public interface ***********/
+
+extern Raster *HPLJOpen(
+#ifdef NeedFuncProto
+	char	*name
+#endif
+	);
+
+extern int HPLJRead(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern Raster *HPLJOpenWrite(
+#ifdef NeedFuncProto
+	char		*name,
+	int		nx,
+	int		ny,
+	char		*comment,
+	RasterEncoding	encoding
+#endif
+	);
+
+extern int HPLJWrite(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int HPLJPrintInfo(
+#ifdef NeedFuncProto
+	Raster		*ras
+#endif
+	);
+
+extern int HPLJClose(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int HPLJSetFunctions(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+/********* Function deinitions for Abekas semi-public interface ***********/
+
+extern Raster *AbekasOpen(
+#ifdef NeedFuncProto
+	char	*name
+#endif
+	);
+
+extern int AbekasRead(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern Raster *AbekasOpenWrite(
+#ifdef NeedFuncProto
+	char		*name,
+	int		nx,
+	int		ny,
+	char		*comment,
+	RasterEncoding	encoding
+#endif
+	);
+
+extern int AbekasWrite(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int AbekasPrintInfo(
+#ifdef NeedFuncProto
+	Raster		*ras
+#endif
+	);
+
+extern int AbekasClose(
+#ifdef NeedFuncProto
+	Raster	*ras
+#endif
+	);
+
+extern int AbekasSetFunctions(
+#ifdef NeedFuncProto
+	Raster	*ras
 #endif
 	);
 
