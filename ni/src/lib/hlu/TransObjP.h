@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjP.h,v 1.12 1996-06-19 16:56:22 dbrown Exp $
+ *      $Id: TransObjP.h,v 1.13 1996-06-22 01:27:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -83,6 +83,10 @@ typedef struct _NhlTransObjLayerPart {
 	float		width;
 	float		height;
 	int		point_count;
+	float		data_xmin;
+	float		data_xmax;
+	float		data_ymin;
+	float		data_ymax;
 }NhlTransObjLayerPart;
 
 

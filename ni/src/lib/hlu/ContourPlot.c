@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.40 1996-06-13 02:05:53 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.41 1996-06-22 01:27:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3441,11 +3441,28 @@ static NhlErrorTypes cnUpdateTrans
 
 /*
  * If the plot is an overlay member, use the overlay manager's trans object.
+ * Note that the "do_low_level_log" flag is true only if the trans object
+ * is an IrregularTransObj.
  */
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
 	    tfp->overlay_trans_obj != NULL) {
 		cnp->trans_obj = tfp->overlay_trans_obj;
-		if (cnp->do_low_level_log) {
+		if ((cnp->trans_obj->base.layer_class)->base_class.class_name 
+		    == NhlmapTransObjClass->base_class.class_name) {
+			subret = NhlVASetValues(cnp->trans_obj->base.id,
+						NhlNtrDataXMinF,
+						MIN(cnp->sfp->x_start,
+						    cnp->sfp->x_end),
+						NhlNtrDataXMaxF,
+						MAX(cnp->sfp->x_start,
+						    cnp->sfp->x_end),
+						NULL);
+
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				return(ret);
+			}
+		}
+		else if (cnp->do_low_level_log) {
 			if (cnp->x_log) {
 				subret = NhlVASetValues(
 						   tfp->trans_obj->base.id,
@@ -5011,6 +5028,8 @@ static NhlErrorTypes SetUpLLTransObj
 		subret = SetCoordBounds(cnp,cnYCOORD,0,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING)
 			return ret;
+		xrev = cnp->sfp->x_start > cnp->sfp->x_end;
+		yrev = cnp->sfp->y_start > cnp->sfp->y_end;
 	}
 	if (tfp->trans_obj == NULL) {
 

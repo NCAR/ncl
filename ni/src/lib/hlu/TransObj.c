@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.18 1996-06-19 16:56:21 dbrown Exp $
+ *      $Id: TransObj.c,v 1.19 1996-06-22 01:27:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,7 +39,19 @@ static NhlResource resources[] =  {
 
 	{ NhlNtrChangeCount, NhlCtrChangeCount, NhlTInteger, sizeof(int),
 		NhlOffset(NhlTransObjLayerRec, trobj.change_count),
-		NhlTImmediate, _NhlUSET((NhlPointer) 0),_NhlRES_GONLY,NULL }
+		NhlTImmediate, _NhlUSET((NhlPointer) 0),_NhlRES_GONLY,NULL },
+	{ NhlNtrDataXMinF, NhlCtrDataXMinF, NhlTFloat, sizeof(float),
+		NhlOffset(NhlTransObjLayerRec, trobj.data_xmin),
+		NhlTString, _NhlUSET("0.0"),0,NULL },
+	{ NhlNtrDataXMaxF, NhlCtrDataXMaxF, NhlTFloat, sizeof(float),
+		NhlOffset(NhlTransObjLayerRec, trobj.data_xmax),
+		NhlTString, _NhlUSET("0.0"),0,NULL },
+	{ NhlNtrDataYMinF, NhlCtrDataYMinF, NhlTFloat, sizeof(float),
+		NhlOffset(NhlTransObjLayerRec, trobj.data_ymin),
+		NhlTString, _NhlUSET("0.0"),0,NULL },
+	{ NhlNtrDataYMaxF, NhlCtrDataYMaxF, NhlTFloat, sizeof(float),
+		NhlOffset(NhlTransObjLayerRec, trobj.data_ymax),
+		NhlTString, _NhlUSET("0.0"),0,NULL }
 
 };
 

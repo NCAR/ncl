@@ -1,5 +1,5 @@
 /*
- *      $Id: MapTransObjP.h,v 1.8 1996-05-03 03:30:55 dbrown Exp $
+ *      $Id: MapTransObjP.h,v 1.9 1996-06-22 01:27:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -103,6 +103,7 @@ typedef struct _NhlMapTransObjLayerPart{
 	float		satellite_angle_1;
 	float		satellite_angle_2;
 	NhlBoolean	elliptical_boundary;
+	NhlBoolean	great_circle_lines_on;
 
 	float		actual_min_lat;
 	float		actual_max_lat;

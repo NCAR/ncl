@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.13 1996-06-13 02:05:56 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.14 1996-06-22 01:27:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2442,12 +2442,23 @@ static NhlErrorTypes stUpdateTrans
 	    tfp->overlay_trans_obj != NULL) {
 		stp->trans_obj = tfp->overlay_trans_obj;
                 Overlay_Trans_Obj = tfp->overlay_trans_obj;
-                if ((
-                  stp->trans_obj->base.layer_class)->base_class.class_name ==
-                    NhlmapTransObjClass->base_class.class_name) {
+                if ((stp->trans_obj->base.layer_class)->base_class.class_name
+		    == NhlmapTransObjClass->base_class.class_name) {
                         Over_Map = True;	
+			subret = NhlVASetValues(stp->trans_obj->base.id,
+						NhlNtrDataXMinF,
+						MIN(stp->vfp->x_start,
+						    stp->vfp->x_end),
+						NhlNtrDataXMaxF,
+						MAX(stp->vfp->x_start,
+						    stp->vfp->x_end),
+						NULL);
+
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				return(ret);
+			}
                 }
-		if (stp->do_low_level_log) {
+		else if (stp->do_low_level_log) {
 			if (stp->x_log) {
 				subret = NhlVASetValues(
 						   tfp->trans_obj->base.id,
@@ -3128,6 +3139,8 @@ static NhlErrorTypes SetUpLLTransObj
 		subret = SetCoordBounds(stp,stYCOORD,0,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING)
 			return ret;
+		xrev = stp->vfp->x_start > stp->vfp->x_end;
+		yrev = stp->vfp->y_start > stp->vfp->y_end;
 	}
 
 	if (tfp->trans_obj == NULL) {

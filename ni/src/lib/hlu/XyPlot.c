@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.59 1996-06-13 02:06:01 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.60 1996-06-22 01:27:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,7 @@
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/TickMark.h>
 #include <ncarg/hlu/Title.h>
-#include <ncarg/hlu/TransObjI.h>
+#include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/CoordArrTableFloatP.h>
 
@@ -2664,6 +2664,18 @@ static NhlErrorTypes xyUpdateTrans
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
 	    tfp->overlay_trans_obj != NULL) {
 		*thetrans = tfp->overlay_trans_obj;
+                if (((*thetrans)->base.layer_class)->base_class.class_name
+		    == NhlmapTransObjClass->base_class.class_name) {
+			subret = NhlVASetValues((*thetrans)->base.id,
+						NhlNtrDataXMinF,xyp->x_min,
+						NhlNtrDataXMaxF,xyp->x_max,
+						NULL);
+
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				return(ret);
+			}
+                }
+		
 	}
 	else {
 		*thetrans = tfp->trans_obj;

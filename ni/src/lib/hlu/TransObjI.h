@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjI.h,v 1.5 1996-02-26 21:46:11 dbrown Exp $
+ *      $Id: TransObjI.h,v 1.6 1996-06-22 01:27:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,9 +31,21 @@
  * if the trans obj has changed 
  */
 
-#define NhlNtrChangeCount	"trChangeCount"
-#define NhlCtrChangeCount	"TrChangeCount"
+#define NhlNtrChangeCount	".trChangeCount"
+#define NhlCtrChangeCount	".TrChangeCount"
 
+/*
+ * private resources for communicating plot data limits
+ */
+
+#define NhlNtrDataXMinF		".trDataXMinF"
+#define NhlNtrDataYMinF		".trDataXMinF"
+#define NhlNtrDataXMaxF		".trDataYMaxF"
+#define NhlNtrDataYMaxF		".trDataYMaxF"
+#define NhlCtrDataXMinF		".TrDataXMinF"
+#define NhlCtrDataYMinF		".TrDataXMinF"
+#define NhlCtrDataXMaxF		".TrDataYMaxF"
+#define NhlCtrDataYMaxF		".TrDataYMaxF"
 
 /*
  * Private Global functions defined by the Transform Class

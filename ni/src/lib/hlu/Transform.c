@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.25 1996-06-13 02:05:57 dbrown Exp $
+ *      $Id: Transform.c,v 1.26 1996-06-22 01:27:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -495,6 +495,7 @@ static NhlErrorTypes TransformDataPolyline
 	char			*e_text;
 	char			*entry_name = "TransformDataPolyline";
 	int			i;
+	NhlBoolean		ismaptrans = False;
 
 	if (n < 2) {
 		e_text = "%s, not enough points for a line";
@@ -521,6 +522,9 @@ static NhlErrorTypes TransformDataPolyline
 	}
 
 	tocp = (NhlTransObjClass) (top->base.layer_class);
+	if (tocp->base_class.class_name == 
+	    NhlmapTransObjClass->base_class.class_name) 
+		ismaptrans = True;
 
 	subret = _NhlActivateWorkstation(tl->base.wkptr);
 
@@ -564,7 +568,13 @@ static NhlErrorTypes TransformDataPolyline
 /*
  * This call ensures a NCAR LASTD call
  */
-	subret = _NhlWorkstationLineTo(tl->base.wkptr,0.0,0.0,1);
+	if (ismaptrans) {
+		c_mapiqd();
+	}
+	else {
+		subret = _NhlWorkstationLineTo(tl->base.wkptr,0.0,0.0,1);
+	}
+
 	gset_clip_ind(GIND_NO_CLIP);
 
         subret = _NhlDeactivateWorkstation(tl->base.wkptr);

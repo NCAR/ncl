@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.20 1996-06-13 02:05:59 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.21 1996-06-22 01:27:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3080,7 +3080,22 @@ static NhlErrorTypes vcUpdateTrans
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
 	    tfp->overlay_trans_obj != NULL) {
 		vcp->trans_obj = tfp->overlay_trans_obj;
-		if (vcp->do_low_level_log) {
+                if ((vcp->trans_obj->base.layer_class)->base_class.class_name 
+		    == NhlmapTransObjClass->base_class.class_name) {
+			subret = NhlVASetValues(vcp->trans_obj->base.id,
+						NhlNtrDataXMinF,
+						MIN(vcp->vfp->x_start,
+						    vcp->vfp->x_end),
+						NhlNtrDataXMaxF,
+						MAX(vcp->vfp->x_start,
+						    vcp->vfp->x_end),
+						NULL);
+
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				return(ret);
+			}
+                }
+		else if (vcp->do_low_level_log) {
 			if (vcp->x_log) {
 				subret = NhlVASetValues(
 						   tfp->trans_obj->base.id,
@@ -3968,6 +3983,8 @@ static NhlErrorTypes SetUpLLTransObj
 		subret = SetCoordBounds(vcp,vcYCOORD,0,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING)
 			return ret;
+		xrev = vcp->vfp->x_start > vcp->vfp->x_end;
+		yrev = vcp->vfp->y_start > vcp->vfp->y_end;
 	}
 
 	if (tfp->trans_obj == NULL) {

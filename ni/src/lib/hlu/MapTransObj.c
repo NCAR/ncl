@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.28 1996-06-13 21:34:04 boote Exp $
+*      $Id: MapTransObj.c,v 1.29 1996-06-22 01:27:33 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -223,6 +223,10 @@ static NhlResource resources[] = {
 {NhlNmpEllipticalBoundary,NhlCmpEllipticalBoundary,NhlTBoolean,
 	 sizeof(NhlBoolean),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.elliptical_boundary),
+	 NhlTImmediate,_NhlUSET((NhlPointer)False) ,0,NULL},
+{NhlNmpGreatCircleLinesOn,NhlCmpGreatCircleLinesOn,NhlTBoolean,
+	 sizeof(NhlBoolean),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.great_circle_lines_on),
 	 NhlTImmediate,_NhlUSET((NhlPointer)False) ,0,NULL},
 
 
@@ -1106,9 +1110,9 @@ static NhlErrorTypes MapWinToData
 				*status = 1;
 				xout[i]=yout[i]=minstance->trobj.out_of_range;
 			}
-			else if (xout[i] < mtp->min_lon) 
+			else if (xout[i] < minstance->trobj.data_xmin) 
 				xout[i] += 360.0;
-			else if (xout[i] > mtp->max_lon)
+			else if (xout[i] > minstance->trobj.data_xmax)
 				xout[i] -= 360.0;
 		}
 	}
@@ -1679,6 +1683,77 @@ static NhlErrorTypes    MapTransClassInitialize
 	return NhlNOERROR;
 }
 
+#if 0
+/*
+ * Function:	GetMinMaxLatLon
+ *
+ * Description: Returns the min and max lat and lon given the current
+ *              map limits and projection
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+/*ARGSUSED*/
+static NhlErrorTypes GetMinMaxLatLon
+#if	NhlNeedProto
+(
+	NhlMapTransObjLayer	mpl,
+	float			*minlon,
+	float			*maxlon,
+	float			*minlat,
+	float			*maxlat,
+	NhlString		entry_name
+)
+#else
+(mpl,minlon,maxlon,minlat,maxlat,entry_name)
+	NhlMapTransObjLayer	mpl;
+	float			*minlon;
+	float			*maxlon;
+	float			*minlat;
+	float			*maxlat;
+	NhlString		entry_name;
+#endif
+{
+	NhlMapTransObjLayerPart	*mtp = &(mpl->mptrans);
+        float tlat,tlon,uval,vval;
+
+	if (mtp->map_limit_mode == NhlLATLON) {
+		*minlon = mtp->min_lon;
+		*maxlon = mtp->max_lon;
+		*minlat = mtp->min_lat;
+		*maxlat = mtp->max_lat;
+		return NhlNOERROR;
+	}
+	*minlon = 180.0;
+	*maxlon = -180.0;
+	*minlat = 90.0;
+	*maxlat = -90.0;
+		
+        for (tlat = -90.0; tlat <= 90.0; tlat += 1.0) {
+                for (tlon = -180.0; tlon <= 180.0; tlon += 1.0) {
+                        c_maptra(tlat,tlon,&uval,&vval);
+                        if (uval >= 1E9 || vval >= 1E9)
+                                continue;
+                        if (tlat < *minlat) *minlat = tlat;
+                        if (tlat > *maxlat) *maxlat = tlat;
+                        if (tlon < *minlon) *minlon = tlon;
+                        if (tlon > *maxlon) *maxlon = tlon;
+                }
+        }
+#if 0
+        printf("lat,lon min,max - %f,%f,%f,%f\n",
+	       *minlat,*maxlat,*minlon,*maxlon);
+#endif
+
+        return NhlNOERROR;
+
+}
+#endif
 /*ARGSUSED*/
 static NhlErrorTypes MapDataLineTo
 #if	NhlNeedProto
@@ -1691,39 +1766,64 @@ float y;
 int upordown;
 #endif
 {
+	
+	NhlString entry_name = "MapDataLineTo";
+	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlMapTransObjLayer mpl = (NhlMapTransObjLayer)instance;
 	static float x_last,y_last;
-	static float *xbuf, *ybuf;
+	float *xbuf, *ybuf;
 	float xdist, ydist;
-	static int size = 0;
+	int npoints;
 	int i,ifst;
-
+	float minlat,maxlat,minlon,maxlon;
+	static int save_change_count = -999;
+	static float dlat = 180.0, dlon = 360.0;
+#if 0
+	if (save_change_count != mpl->trobj.change_count) {
+		GetMinMaxLatLon(mpl,
+				&minlon,&maxlon,&minlat,&maxlat,entry_name);
+		dlon = maxlon - minlon;
+		dlat = maxlat - minlat;
+		save_change_count = mpl->trobj.change_count;
+	}
+#endif
 	if(upordown) {
 		c_mapiqd();
-		ifst = 0;
-		c_mapitd(y,x,ifst);
+		c_mapitd(y,x,0);
 		x_last = x;
 		y_last = y;
 		return NhlNOERROR;
 	}
-#if 0
-	if (size < 10) {
-		xbuf = NhlMalloc(10*sizeof(float));
-		ybuf = NhlMalloc(10*sizeof(float));
-		size = 10;
-	}
-	c_mapgci(y_last,x_last,y,x,10,ybuf,xbuf);
-	for (i = 0; i < 10; i++)
-		c_mapit(ybuf[i],xbuf[i],2);
-#endif
 	xdist = x - x_last;
 	ydist = y - y_last;
-	size = (int)(abs(xdist) + abs(ydist));
-	for (i = 0; i < size; i++) {
-		float yc = y_last + ydist *(i+1)/ (float)size;
-		float xc = x_last + xdist *(i+1)/ (float)size;
-		ifst = 2;
-		c_mapitd(yc,xc,ifst);
+#if 0
+	npoints = (int) (mpl->trobj.point_count * 
+			 0.5 * (fabs(xdist/dlon) + fabs(ydist/dlat))); 
+	npoints = npoints < 1 ? 1 : npoints;
+	printf("xdist %f ydist %f npoints %d\n",xdist,ydist,npoints);
+#endif
+	npoints = MAX(1.0,(int)(fabs(xdist) + fabs(ydist)));
+
+	if (mpl->mptrans.great_circle_lines_on && npoints > 1) {
+		xbuf = NhlMalloc(npoints*sizeof(float));
+		ybuf = NhlMalloc(npoints*sizeof(float));
+		c_mapgci(y_last,x_last,y,x,npoints,ybuf,xbuf);
+		for (i = 0; i < npoints; i++)
+			c_mapitd(ybuf[i],xbuf[i],1);
+		c_mapitd(y,x,2);
+		x_last = x;
+		y_last = y;
+		NhlFree(xbuf);
+		NhlFree(ybuf);
+		return NhlNOERROR;
 	}
+
+	for (i = 0; i < npoints-1; i++) {
+		float yc = y_last + ydist *(i+1)/ (float)npoints;
+		float xc = x_last + xdist *(i+1)/ (float)npoints;
+		c_mapitd(yc,xc,1);
+	}
+	c_mapitd(y,x,2);
 	x_last = x;
 	y_last = y;
 	
@@ -2099,26 +2199,77 @@ int n;
 	
 	subret = _NhlMapita(aws,yl[0],xl[0],0,3,left_id,right_id,entry_name); 
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-	for (i = 0; i < n; i++) {
-		nexti = i + 1;
-		if (i == n - 1) {
-			if (closed)
-				break;
-			else
-				nexti = 0;
+
+
+	if (mptrans->mptrans.great_circle_lines_on) {
+		float	*xbuf,*ybuf;
+		int	lastsize = 0;
+		for (i = 0; i < n; i++) {
+			nexti = i + 1;
+			if (i == n - 1) {
+				if (closed)
+					break;
+				else
+					nexti = 0;
+			}
+			xdist = xl[nexti] - xl[i];
+			ydist = yl[nexti] - yl[i];
+			size =  MAX(1.0,(int)(fabs(xdist) + fabs(ydist)));
+			if (lastsize == 0) {
+				xbuf = NhlMalloc(size*sizeof(float));
+				ybuf = NhlMalloc(size*sizeof(float));
+			}
+			else if (lastsize < size) {
+				xbuf = NhlRealloc(xbuf,size*sizeof(float));
+				ybuf = NhlRealloc(ybuf,size*sizeof(float));
+			}
+			if (! xbuf || !ybuf) {
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
+			}
+			lastsize = size;
+			c_mapgci(yl[i],xl[i],
+				 yl[nexti],xl[nexti],size,ybuf,xbuf);
+			for (j = 0; j < size; j++) {
+				subret = _NhlMapita(aws,ybuf[j],xbuf[j],
+					   2,3,left_id,right_id,entry_name);
+				if ((ret = MIN(subret,ret)) < NhlWARNING)
+					return ret;
+			}
+			subret = _NhlMapita(aws,yl[nexti],xl[nexti],
+					    2,3,left_id,right_id,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING)
+				return ret;
 		}
-		xdist = xl[nexti] - xl[i];
-		ydist = yl[nexti] - yl[i];
-		size = (int)(abs(xdist) + abs(ydist));
-		for (j = 0; j < size; j++) {
-			_NhlMapita(aws,yl[i] + ydist *(j+1)/ (float)size,
-				   xl[i] + xdist *(j+1)/ (float)size,2,
-				   3,left_id,right_id,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		NhlFree(xbuf);
+		NhlFree(ybuf);
+	}
+	else {
+		for (i = 0; i < n; i++) {
+			nexti = i + 1;
+			if (i == n - 1) {
+				if (closed)
+					break;
+				else
+					nexti = 0;
+			}
+			xdist = xl[nexti] - xl[i];
+			ydist = yl[nexti] - yl[i];
+			size =  MAX(1.0,(int)(fabs(xdist) + fabs(ydist)));
+			for (j = 0; j < size; j++) {
+				subret = _NhlMapita(aws,
+					   yl[i] + ydist *(j+1)/ (float)size,
+					   xl[i] + xdist *(j+1)/ (float)size,2,
+					   3,left_id,right_id,entry_name);
+				if ((ret = MIN(subret,ret)) < NhlWARNING)
+					return ret;
+			}
 		}
 	}
-	_NhlMapiqa(aws,3,left_id,right_id,entry_name);
 	
+	_NhlMapiqa(aws,3,left_id,right_id,entry_name);
 	subret = _NhlArpram(aws,0,0,0,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
