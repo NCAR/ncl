@@ -1199,7 +1199,6 @@ GribFileRecord *therec;
 			}
 		}
 
-
 		step = step->next;
 	}
 }
@@ -3150,7 +3149,18 @@ static GribParamList *_NewListNode
 	tmp->n_entries = 1;
 	tmp->minimum_it = grib_rec->initial_time;
 	tmp->time_range_indicator = (int)grib_rec->pds[20];
+	tmp->time_period = 0;
+	switch (tmp->time_range_indicator) {
+		case 3:
+	        case 4:
+		case 5:
+			tmp->time_period = (int)grib_rec->pds[19] -  (int)grib_rec->pds[18];
+			break;
+	        default:
+			break;
+	}
 	tmp->time_unit_indicator = (int)grib_rec->pds[17];
+	
 	tmp->levels = NULL;
 	tmp->levels0 = NULL;
 	tmp->levels1 = NULL;
@@ -3194,6 +3204,7 @@ static GribRecordInqRec* _MakeMissingRec
 	grib_rec->grid_tbl_index = -1;
 	grib_rec->grid_gds_tbl_index = -1;
 	grib_rec->time_offset = -1;
+	grib_rec->time_period = -1;
 	grib_rec->level0 = -1;
 	grib_rec->level1 = -1;
 	grib_rec->var_name = NULL;
@@ -3297,6 +3308,61 @@ GribRecordInqRec *grib_rec;
 		return(0);
 	}
 }
+
+static void TimePeriodString
+#if	NhlNeedProto
+(char *buf,int time_period, int unit_code)
+#else
+(buf,time_period,unit_code)
+char *buf;
+int time_period;
+int unit_code;
+#endif
+{
+
+	switch (unit_code) {
+	case 0: /*Minute*/
+		sprintf(buf,"%dmin",time_period);
+		break;
+        case 1: /*Hour*/
+		sprintf(buf,"%dh",time_period);
+		break;
+	case 2: /*Day*/
+		sprintf(buf,"%dd",time_period);
+		break;
+	case 3: /*Month*/
+		sprintf(buf,"%dm",time_period);
+		break;
+	case 4: /*Year*/
+		sprintf(buf,"%dy",time_period);
+		break;
+	case 5: /*Decade (10 years)*/
+		sprintf(buf,"%dy",time_period * 10);
+		break;
+	case 6: /*Normal (30 years)*/
+		sprintf(buf,"%dy",time_period * 30);
+		break;
+	case 7: /*Century*/
+		sprintf(buf,"%dy",time_period * 100);
+		break;
+	case 10: /*3 hours*/
+		sprintf(buf,"%dh",time_period * 3);
+		break;
+	case 11: /*6 hours*/
+		sprintf(buf,"%dh",time_period * 6);
+		break;
+	case 12: /*12 hours*/
+		sprintf(buf,"%dh",time_period * 12);
+		break;
+	case 254: /*Second*/
+		sprintf(buf,"%dsec",time_period);
+		break;
+	default: /*unknown*/
+		sprintf(buf,"%d",time_period);
+		break;
+	}
+}
+
 
 static void *GribGetFileRec
 #if	NhlNeedProto
@@ -3402,79 +3468,79 @@ int wr_status;
 					}
 				}
 
-			if(grib_rec != NULL) {
-				grib_rec->time_offset = 0;
-				grib_rec->pds_size = CnvtToDecimal(3,&(grib_rec->pds[0]));
-				if(grib_rec->has_gds) {
-					fseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size),SEEK_SET);
-					fread((void*)buffer,1,6,fd);
-					grib_rec->gds_size = CnvtToDecimal(3,buffer);
-					grib_rec->gds_off = (version?8:4) + grib_rec->pds_size;
-					grib_rec->gds_type = (int)buffer[5];
-/*
-					fprintf(stdout,"%d\n",grib_rec->gds_type);
-*/
-					grib_rec->gds = (unsigned char*)NclMalloc((unsigned)sizeof(char)*grib_rec->gds_size);
-					fseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size),SEEK_SET);
-					fread((void*)grib_rec->gds,1,grib_rec->gds_size,fd);
-				} else {
-					grib_rec->gds_off = 0;	
-					grib_rec->gds_size = 0;
-					grib_rec->gds_type = -1;
-					grib_rec->gds = NULL;
-				}
-				if((grib_rec->has_gds) && (grib_rec->grid_number == 255)) {
-					for(i = 0; i < grid_gds_tbl_len ; i++) {
-						if(grib_rec->gds_type == grid_gds_index[i]) { 
-							grib_rec->grid_gds_tbl_index = i;
-							break;
+				if(grib_rec != NULL) {
+					grib_rec->time_offset = 0;
+					grib_rec->pds_size = CnvtToDecimal(3,&(grib_rec->pds[0]));
+					if(grib_rec->has_gds) {
+						fseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size),SEEK_SET);
+						fread((void*)buffer,1,6,fd);
+						grib_rec->gds_size = CnvtToDecimal(3,buffer);
+						grib_rec->gds_off = (version?8:4) + grib_rec->pds_size;
+						grib_rec->gds_type = (int)buffer[5];
+						/*
+						  fprintf(stdout,"%d\n",grib_rec->gds_type);
+						*/
+						grib_rec->gds = (unsigned char*)NclMalloc((unsigned)sizeof(char)*grib_rec->gds_size);
+						fseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size),SEEK_SET);
+						fread((void*)grib_rec->gds,1,grib_rec->gds_size,fd);
+					} else {
+						grib_rec->gds_off = 0;	
+						grib_rec->gds_size = 0;
+						grib_rec->gds_type = -1;
+						grib_rec->gds = NULL;
+					}
+					if((grib_rec->has_gds) && (grib_rec->grid_number == 255)) {
+						for(i = 0; i < grid_gds_tbl_len ; i++) {
+							if(grib_rec->gds_type == grid_gds_index[i]) { 
+								grib_rec->grid_gds_tbl_index = i;
+								break;
+							}
 						}
-					}
-					if(i == grid_gds_tbl_len) {
-						grib_rec->grid_gds_tbl_index = -1;
-					}
-					grib_rec->grid_tbl_index = -1;
-				} else {
-					for(i = 0; i < grid_tbl_len ; i++) {
-						if(grib_rec->grid_number == grid_index[i]) { 
-							grib_rec->grid_tbl_index = i;
-							break;
+						if(i == grid_gds_tbl_len) {
+							grib_rec->grid_gds_tbl_index = -1;
 						}
-					}
-					if((i == grid_tbl_len) || (grid[grib_rec->grid_tbl_index].get_grid == NULL)){
 						grib_rec->grid_tbl_index = -1;
-						if(grib_rec->has_gds) {
-							for(i = 0; i < grid_gds_tbl_len ; i++) {
-								if(grib_rec->gds_type == grid_gds_index[i]) { 
-									grib_rec->grid_gds_tbl_index = i;
-									break;
+					} else {
+						for(i = 0; i < grid_tbl_len ; i++) {
+							if(grib_rec->grid_number == grid_index[i]) { 
+								grib_rec->grid_tbl_index = i;
+								break;
+							}
+						}
+						if((i == grid_tbl_len) || (grid[grib_rec->grid_tbl_index].get_grid == NULL)){
+							grib_rec->grid_tbl_index = -1;
+							if(grib_rec->has_gds) {
+								for(i = 0; i < grid_gds_tbl_len ; i++) {
+									if(grib_rec->gds_type == grid_gds_index[i]) { 
+										grib_rec->grid_gds_tbl_index = i;
+										break;
+									}
+								}
+								if(i == grid_gds_tbl_len) {
+									grib_rec->grid_gds_tbl_index = -1;
 								}
 							}
-							if(i == grid_gds_tbl_len) {
-								grib_rec->grid_gds_tbl_index = -1;
-							}
+						} else {
+							grib_rec->grid_gds_tbl_index = -1;
 						}
-					} else {
-						grib_rec->grid_gds_tbl_index = -1;
 					}
-				}
 
-				if(grib_rec->has_bms) {
-					fseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size + grib_rec->gds_size),SEEK_SET);
-					fread((void*)tmpc,1,3,fd);
-					grib_rec->bms_size = CnvtToDecimal(3,tmpc);
-					grib_rec->bms_off = (version?8:4) + grib_rec->pds_size + grib_rec->gds_size;
-				} else {
-					grib_rec->bms_off = 0;
-					grib_rec->bms_size = 0;
+					if(grib_rec->has_bms) {
+						fseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size + grib_rec->gds_size),SEEK_SET);
+						fread((void*)tmpc,1,3,fd);
+						grib_rec->bms_size = CnvtToDecimal(3,tmpc);
+						grib_rec->bms_off = (version?8:4) + grib_rec->pds_size + grib_rec->gds_size;
+					} else {
+						grib_rec->bms_off = 0;
+						grib_rec->bms_size = 0;
+					}
+					grib_rec->bds_off = (version ? 8:4) + grib_rec->pds_size + grib_rec->bms_size + grib_rec->gds_size;
+					fseek(fd,(unsigned)(grib_rec->start + grib_rec->bds_off),SEEK_SET);
+					fread((void*)tmpc,1,4,fd);
+					grib_rec->bds_flags = tmpc[3];
+					grib_rec->bds_size = CnvtToDecimal(3,tmpc);
+					grib_rec->int_or_float = (int)(tmpc[3]  & (char)0040) ? 1 : 0;
 				}
-				grib_rec->bds_off = (version ? 8:4) + grib_rec->pds_size + grib_rec->bms_size + grib_rec->gds_size;
-				fseek(fd,(unsigned)(grib_rec->start + grib_rec->bds_off),SEEK_SET);
-				fread((void*)tmpc,1,4,fd);
-				grib_rec->bds_flags = tmpc[3];
-				grib_rec->bds_size = CnvtToDecimal(3,tmpc);
-				grib_rec->int_or_float = (int)(tmpc[3]  & (char)0040) ? 1 : 0;
-			}
 
 		
 				name_rec = NULL;	
@@ -3604,19 +3670,39 @@ int wr_status;
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%d",(int)grib_rec->pds[9]);
 						}
 					}
+					grib_rec->time_period = 0;
 					switch((int)grib_rec->pds[20]) {
+						char tpbuf[16];
 					case 0:
 					case 1:
 					case 2:
 						break;	
 					case 3:
-						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave");
+						grib_rec->time_period = (int)grib_rec->pds[19] - (int) grib_rec->pds[18];
+						if (grib_rec->time_period == 0)
+							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave");
+						else {
+							TimePeriodString(tpbuf,grib_rec->time_period,grib_rec->pds[17]);
+							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave%s",tpbuf);
+						}
 						break;
 					case 4:
-						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_acc");
+						grib_rec->time_period = (int)grib_rec->pds[19] - (int) grib_rec->pds[18];
+						if (grib_rec->time_period == 0)
+							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_acc");
+						else {
+							TimePeriodString(tpbuf,grib_rec->time_period,grib_rec->pds[17]);
+							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_acc%s",tpbuf);
+						}
 						break;
 					case 5:
-						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_dif");
+						grib_rec->time_period = (int)grib_rec->pds[19] - (int) grib_rec->pds[18];
+						if (grib_rec->time_period == 0)
+							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_dif");
+						else {
+							TimePeriodString(tpbuf,grib_rec->time_period,grib_rec->pds[17]);
+							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_dif%s",tpbuf);
+						}
 						break;
 					default:
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%d",(int)grib_rec->pds[20]);
@@ -3696,29 +3782,53 @@ int wr_status;
 									step2 = _NewListNode(grib_rec);
 									_InsertNodeAfter(step,step2);
 									therec->n_vars++;
-								} else if(step->next->level_indicator <= grib_rec->level_indicator) {
+								} else if(step->next->time_period <= grib_rec->time_period) {
 									while((step->next != NULL) 
 										&&(step->next->param_number == grib_rec->param_number)
 										&&(step->next->grid_number == grib_rec->grid_number)
 										&&(step->next->time_range_indicator == (int)grib_rec->pds[20])
-										&&(step->next->level_indicator < grib_rec->level_indicator)){
+										&&(step->next->time_period < grib_rec->time_period)){
 										step = step->next;
 									}
 									if((step->next == NULL)
 										||(step->next->param_number != grib_rec->param_number)
 										||(step->next->grid_number != grib_rec->grid_number)
 										||(step->next->time_range_indicator != (int)grib_rec->pds[20])
-										||(step->next->level_indicator > grib_rec->level_indicator)) {
+										||(step->next->time_period > grib_rec->time_period)) {
 										step2 = _NewListNode(grib_rec);	
 										_InsertNodeAfter(step,step2);
 										therec->n_vars++;
-									} else {
+									} else if(step->next->level_indicator <= grib_rec->level_indicator) {
+										while((step->next != NULL) 
+										      &&(step->next->param_number == grib_rec->param_number)
+										      &&(step->next->grid_number == grib_rec->grid_number)
+										      &&(step->next->time_range_indicator == (int)grib_rec->pds[20])
+										      &&(step->next->time_period == grib_rec->time_period)
+										      &&(step->next->level_indicator < grib_rec->level_indicator)){
+											step = step->next;
+										}
+										if((step->next == NULL)
+										   ||(step->next->param_number != grib_rec->param_number)
+										   ||(step->next->grid_number != grib_rec->grid_number)
+										   ||(step->next->time_range_indicator != (int)grib_rec->pds[20])
+										   ||(step->next->time_period != grib_rec->time_period)
+										   ||(step->next->level_indicator > grib_rec->level_indicator)) {
+											step2 = _NewListNode(grib_rec);	
+											_InsertNodeAfter(step,step2);
+											therec->n_vars++;
+
+										} else {
 /*
 * Att this point it falls through because 
-* param_number, grid_number and time_range_indicator level_indicator are equal
+* param_number, grid_number, time_range_indicator, time_period and level_indicator are equal
 * so its time ot add the record
 */
-										_AddRecordToNode(step->next,grib_rec);
+											_AddRecordToNode(step->next,grib_rec);
+										}
+									} else {
+										step2 = _NewListNode(grib_rec);
+										_InsertNodeAfter(step,step2);
+										therec->n_vars++;
 									}
 								} else {
 									step2 = _NewListNode(grib_rec);

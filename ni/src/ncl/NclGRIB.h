@@ -117,6 +117,7 @@ struct _GribParamList {
 	int grid_gds_tbl_index;
 	int n_entries;
 	int time_range_indicator;
+	int time_period;      /* 0 unless  ave,diff, or acc: then p2 - p1 */
 	int time_unit_indicator;
 	int level_indicator;
 	GIT minimum_it;
@@ -165,6 +166,7 @@ struct _GribRecordInqRec {
 */
 	GIT initial_time;
 	long time_offset;
+	int time_period;      /* this is P2 - P1 -- the period for acc, avg and diff type records */
 	int level_indicator;
 	int level0;
 	int level1;
