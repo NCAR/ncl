@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.39 1993-04-13 22:23:53 haley Exp $
+#   $Id: ncargex.csh,v 1.40 1993-04-16 20:11:20 haley Exp $
 #
 
 #********************#
@@ -97,6 +97,7 @@ set cbivar_list = ($ex_cbivar $ttr_cbivar)
 #  Set colconv examples  #
 #                        #
 #************************#
+set ex_colconv   = (coex01 coex02 coex03)
 set tst_colconv  = (tcolcv)
 set fnd_colconv  = (fcce01 fcce02)
 set colconv_list = ($tst_colconv $fnd_colconv)
@@ -270,7 +271,7 @@ set softfill_list = ($ex_softfill $tst_softfill $fnd_softfill)
 #                   #
 #*******************#
 set ex_spps   = (splogy sprevx spset1 spset2)
-set fnd_spps  = (fspcurve fspline fsppoint fspponts)
+set fnd_spps  = (fspcurve fspline fsppoint fspponts fcoord fcoord1 fcoord2)
 set spps_list = ($ex_spps $fnd_spps)
 
 #**************************#
@@ -281,8 +282,7 @@ set spps_list = ($ex_spps $fnd_spps)
 set ex_streamlines   = (stex01 stex02 stex03)
 set tst_streamlines  = (tstrml)
 set fnd_streamlines  = (fstream ffex00 ffex01 ffex03 ffex04)
-set streamlines_list = ($ex_streamlines $tst_streamlines \
-                        $fnd_streamlines)
+set streamlines_list = ($ex_streamlines $tst_streamlines $fnd_streamlines)
 
 #**********************#
 #                      #
@@ -342,9 +342,8 @@ set gks_list   = ($fnd_gks $pdc_gks)
 # set miscellaneous examples #
 #                            #
 #****************************#
-set ex_misc   = (coex01 coex02 coex03 example bnchmk)
-set fnd_misc  = (fcoord fcoord1 fcoord2)
-set misc_list = ($ex_misc $fnd_misc)
+set ex_misc   = (example bnchmk)
+set misc_list = ($ex_misc)
 
 #*************************************************************#
 #                                                             #
@@ -358,9 +357,9 @@ set ttr_overlap = (mpex03 mpex05 arex01 sfex01 tsoftf)
 #               SET LISTS OF VARIOUS TYPES OF EXAMPLES                #
 #                                                                     #
 #*********************************************************************#
-set ex_list  = ($ex_areas $ex_autograph $ex_conpack $ex_ezmap $ex_field \
-                $ex_labelbar $ex_plotchar ${ex_scrlld_title} $ex_softfill \
-                $ex_spps $ex_surface $ex_misc)
+set ex_list  = ($ex_areas $ex_autograph $ex_colconv $ex_conpack $ex_ezmap \
+                $ex_field $ex_labelbar $ex_plotchar ${ex_scrlld_title} \
+                $ex_softfill $ex_spps $ex_surface $ex_misc)
 
 set tst_list = ($tst_areas $tst_autograph $tst_colconv $tst_conpack \
                 ${tst_cnrn_family} ${tst_cnrc_family} $tst_dashline \
@@ -373,7 +372,7 @@ set ttr_list = ($ttr_areas $ttr_conpack $ttr_ezmap)
 
 set fnd_list = ($fnd_autograph $fnd_colconv $fnd_dashline $fnd_field $fnd_gks \
                 $fnd_isosurface $fnd_ngmisc $fnd_plotchar ${fnd_scrlld_title} \
-                $fnd_softfill $fnd_spps $fnd_surface $fnd_threed $fnd_misc)
+                $fnd_softfill $fnd_spps $fnd_surface $fnd_threed)
 
 set pdc_list = ($pdc_gks)
 
