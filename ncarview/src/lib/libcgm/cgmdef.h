@@ -154,6 +154,8 @@
  */
 #define	GRP_ELEMENT		4
 
+#define	POLYLINE_ID		1
+#define	DISJ_POLYLINE_ID	2
 #define	TEXT_ID			4
 #define POLYGON_ID		7
 #define POLYGON_SET_ID		8
@@ -165,6 +167,9 @@
  */
 #define	ATT_ELEMENT		5
 
+#define	LINE_TYPE_ID		2
+#define	LINE_WIDTH_ID		3
+#define	LINE_COLOUR_ID		4
 #define	TEXT_ALIGN_ID		18
 #define	INTERIOR_STYLE_ID	22
 #define	FILL_COLOUR_ID		23
