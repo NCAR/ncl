@@ -1,5 +1,5 @@
 /*
- *      $Id: varpageP.h,v 1.2 1997-06-06 03:14:57 dbrown Exp $
+ *      $Id: varpageP.h,v 1.3 1997-06-20 16:35:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,10 +23,12 @@
 #define	_NG_VARPAGEP_H_
 
 #include <ncarg/ngo/browseP.h>
+#include <ncarg/ngo/varpage.h>
 #include <ncarg/ngo/diminfogrid.h>
 #include <ncarg/ngo/vartree.h>
 #include <ncarg/ngo/shaper.h>
 #include <ncarg/ngo/datagrid.h>
+#include <ncarg/ngo/createmenus.h>
 
 #define DEBUG_VARPAGE 0
 
@@ -34,15 +36,16 @@ typedef struct _brVarPageRec
 {
         NgDimInfoGrid	*diminfogrid;
         NgVarTree	*vartree;
-        NgDataGrid	*datagrid;
-        NhlBoolean	new_data;
-        Widget		datagrid_toggle;
-	Widget		update_data_pb;
-        NhlBoolean	datagrid_managed;
         NgShaper	*shaper;
         NhlBoolean	new_shape;
         Widget		shaper_toggle;
         NhlBoolean	shaper_managed;
+        NgDataGrid	*datagrid;
+        NhlBoolean	new_data;
+        Widget		data_ctrl_form;
+        Widget		datagrid_toggle;
+        NgCreateMenus   *createmenu;
+        NhlBoolean	datagrid_managed;
         long		*start;
         long		*finish;
         long		*stride;

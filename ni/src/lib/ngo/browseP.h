@@ -1,5 +1,5 @@
 /*
- *      $Id: browseP.h,v 1.1 1997-06-04 18:08:23 dbrown Exp $
+ *      $Id: browseP.h,v 1.2 1997-06-20 16:35:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,6 +47,7 @@ typedef struct _brTab
 typedef struct _brPage 
 {
         NgGO			go;
+        NgPageId		id;
 	brPageType		type;
         NrmQuark		qvar;
         NrmQuark		qfile;
@@ -71,6 +72,7 @@ typedef struct _brPane
         XmLArray		pagelist;
 	struct _brPageData	*fileref_pages;
 	struct _brPageData	*var_pages;
+        struct _brPageData	*hlu_pages;
         NhlBoolean		changed;
         int			remove_pos;
         int			active_pos;
@@ -81,11 +83,31 @@ typedef void (*DestroyPageFunc) (
 );
 
 typedef void (*AdjustPageGeoFunc) (
-	NhlPointer data
+ 	NhlPointer data
 );
 
 typedef void (*DeactivatePageFunc) (
 	brPage	*page
+);
+
+typedef void (*PageOutputNotify) (
+        brPage *page,
+        brPageType input_page_type,
+        NhlBoolean connect
+);
+
+typedef void (*PageInputNotify) (
+        brPage *page,
+        brPageType output_page_type,
+ 	NhlPointer output_data
+);
+
+typedef NhlPointer (*PublicPageData) (
+        brPage *page
+);
+
+typedef NhlErrorTypes (*UpdatePage) (
+        brPage *page
 );
 
 typedef struct _brPageData 
@@ -99,6 +121,10 @@ typedef struct _brPageData
 	DestroyPageFunc		destroy_page;
 	AdjustPageGeoFunc	adjust_page_geo;
 	DeactivatePageFunc	deactivate_page;
+        PageOutputNotify	page_output_notify;
+        PageInputNotify		page_input_notify;
+        PublicPageData		public_page_data;
+        UpdatePage		update_page;
 } brPageData, *brPageDataList;
 
 typedef struct _brHistory

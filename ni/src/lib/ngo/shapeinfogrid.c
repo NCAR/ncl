@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.2 1997-06-06 03:14:53 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.3 1997-06-20 16:35:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -502,7 +502,7 @@ CellFocusCB
         if (cb->reason == XmCR_CELL_FOCUS_OUT) {
                 XtVaSetValues(sip->grid,
                               XmNrowRangeStart,START_ROW,
-                              XmNrowRangeEnd,FINISH_ROW,
+                              XmNrowRangeEnd,STRIDE_ROW,
                               XmNcolumn,cb->column,
                               XtVaTypedArg,XmNcellBackground,
                               XmRString,"#d0d0d0",8,

@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.2 1997-06-06 03:14:56 dbrown Exp $
+ *      $Id: varpage.c,v 1.3 1997-06-20 16:35:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #include <Xm/Form.h>
 #include <Xm/ToggleBG.h>
 #include <Xm/PushBG.h>
+#include <Xm/LabelG.h>
         
 static void
 AdjustVarPageGeometry
@@ -63,7 +64,7 @@ AdjustVarPageGeometry
                               NULL);
         }
         else
-                XtVaGetValues(rec->datagrid_toggle,
+                XtVaGetValues(rec->data_ctrl_form,
                               XmNy,&y,
                               XmNheight,&h,
                               NULL);
@@ -145,7 +146,7 @@ static void DataGridToggleCB
                               XmNrightAttachment,XmATTACH_NONE,
                               XmNtopOffset,2,
                               XmNtopAttachment,XmATTACH_WIDGET,
-                              XmNtopWidget,rec->datagrid_toggle,
+                              XmNtopWidget,rec->data_ctrl_form,
                               NULL);
                 rec->new_data = False;
                 rec->datagrid_managed = True;
@@ -217,7 +218,7 @@ static void ShaperToggleCB
                               NULL);
                 rec->shaper_managed = True;
                 rec->new_shape = False;
-                XtVaSetValues(rec->datagrid_toggle,
+                XtVaSetValues(rec->data_ctrl_form,
                               XmNtopWidget,rec->shaper->frame,
                               NULL);
         }
@@ -235,7 +236,7 @@ static void ShaperToggleCB
                 if (! rec->shaper_managed) {
                         XtManageChild(rec->shaper->frame);
                         rec->shaper_managed = True;
-                        XtVaSetValues(rec->datagrid_toggle,
+                        XtVaSetValues(rec->data_ctrl_form,
                                       XmNtopWidget,rec->shaper->frame,
                                       NULL);
                 }
@@ -243,14 +244,14 @@ static void ShaperToggleCB
         else if (rec->shaper_managed) {
                 XtUnmanageChild(rec->shaper->frame);
                 rec->shaper_managed = False;
-                XtVaSetValues(rec->datagrid_toggle,
+                XtVaSetValues(rec->data_ctrl_form,
                               XmNtopWidget,rec->shaper_toggle,
                               NULL);
         }
         else {
                 XtManageChild(rec->shaper->frame);
                 rec->shaper_managed = True;
-                XtVaSetValues(rec->datagrid_toggle,
+                XtVaSetValues(rec->data_ctrl_form,
                               XmNtopWidget,rec->shaper->frame,
                               NULL);
         }
@@ -270,6 +271,8 @@ static void DestroyVarPage
 
         NgDestroyVarTree(rec->vartree);
         NgDestroyDimInfoGrid(rec->diminfogrid);
+        NgDestroyCreateMenus(rec->createmenu);
+        
         if (rec->datagrid) {
                 NgDestroyDataGrid(rec->datagrid);
         }
@@ -303,7 +306,7 @@ DeactivateVarPage
                 XtVaSetValues(rec->shaper_toggle,
                               XmNset,False,
                               NULL);
-                XtVaSetValues(rec->datagrid_toggle,
+                XtVaSetValues(rec->data_ctrl_form,
                               XmNtopWidget,rec->shaper_toggle,
                               NULL);
         }
@@ -361,6 +364,68 @@ void InitializeDimInfo
         return;
 }
 
+static brPageData *
+NewVarPage
+(
+  	NgGO		go,
+        brPane		*pane
+        )
+{
+	brPageData		*pdp;
+	brVarPageRec	*rec;
+        NhlString		e_text;
+        
+	if (!(pdp = NhlMalloc(sizeof(brPageData)))) {
+		e_text = "%s: dynamic memory allocation error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,_NhlName(go));
+                return NULL;
+	}
+        pdp->dl = NULL;
+	pdp->next = pane->var_pages;
+	pane->var_pages = pdp;
+
+	rec = (brVarPageRec*) NhlMalloc(sizeof(brVarPageRec));
+	if (! rec) {
+		e_text = "%s: dynamic memory allocation error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,_NhlName(go));
+                NhlFree(pdp);
+                return NULL;
+	}
+        rec->diminfogrid = NULL;
+        rec->vartree = NULL;
+        rec->new_shape = True;
+        rec->shaper = NULL;
+        rec->shaper_toggle = NULL;
+        rec->shaper_managed = False;
+        rec->datagrid = NULL;
+        rec->datagrid_toggle = NULL;
+        rec->datagrid_managed = False;
+        rec->new_data = True;
+        rec->data_ctrl_form = NULL;
+        rec->datagrid_toggle = NULL;
+        rec->createmenu = NULL;
+        rec->start = NULL;
+        rec->finish = NULL;
+        rec->stride = NULL;
+        
+        pdp->type_rec = (NhlPointer) rec;
+        
+	pdp->form = XtVaCreateManagedWidget
+		("form",xmFormWidgetClass,pane->folder,
+                 XmNy,28,
+                 XmNx,2,
+                 NULL);
+        
+	pdp->destroy_page = DestroyVarPage;
+	pdp->adjust_page_geo = AdjustVarPageGeometry;
+	pdp->deactivate_page = DeactivateVarPage;
+	pdp->page_output_notify = NULL;
+        pdp->page_input_notify = NULL;
+        pdp->public_page_data = NULL;
+        pdp->update_page = NULL;
+        
+        return pdp;
+}
 
 extern brPageData *
 NgGetVarPage
@@ -379,6 +444,7 @@ NgGetVarPage
         Dimension		h1,h2;
         Widget			sep;
 	NgVarTree		*copy_vartree;
+        Widget			label;
 
 	if (copy_page) {
 		copy_rec = (brVarPageRec *) copy_page->pdata->type_rec;
@@ -388,166 +454,158 @@ NgGetVarPage
 		if (!pdp->in_use)
 		  break;
 	}
-	if (pdp) {
-                if (pdp->dl)
-                        NclFreeDataList(pdp->dl);
-                if (page->type == _brFILEVAR)
-                        pdp->dl = NclGetFileVarInfo(page->qfile,page->qvar);
-                else
-                        pdp->dl = NclGetVarInfo(page->qvar);
-                if (!pdp->dl) {
-                        e_text =
-                           "%s: error getting file var information for %s->%s";
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,_NhlName(go),
-                                  NrmQuarkToString(page->qfile),
-                                  NrmQuarkToString(page->qvar));
-                        
-                }
-		rec = (brVarPageRec *) pdp->type_rec;
-                InitializeDimInfo(rec,pdp->dl);
-		if (copy_page)
-			NgDupVarTree(go,pdp->form,page->qfile,page->qvar,
-                                     pdp->dl,rec->vartree,copy_vartree);
-		else
-			NgUpdateVarTree(rec->vartree,
-                                        page->qfile,page->qvar,pdp->dl);
-		NgUpdateDimInfoGrid(rec->diminfogrid,
-				    page->qfile,pdp->dl->u.var);
-                if (copy_rec && copy_rec->datagrid_managed) {
-                        NgUpdateDataGrid(rec->datagrid,
-                                         page->qfile,pdp->dl->u.var,
-                                         rec->start,rec->finish,rec->stride);
-                        XtManageChild(rec->datagrid->grid);
-                        rec->datagrid_managed = True;
-                        rec->new_data = False;
-                        XtVaSetValues(rec->datagrid_toggle,
-                                      XmNset,True,
-                                      NULL);
-                }
-                XtAddCallback(rec->datagrid_toggle,
-                              XmNvalueChangedCallback,DataGridToggleCB,page);
-                XtAddCallback(rec->shaper_toggle,
-                              XmNvalueChangedCallback,ShaperToggleCB,page);
-                rec->vartree->geo_notify = AdjustVarPageGeometry;
-                rec->vartree->geo_data = (NhlPointer) page;
-		pdp->in_use = True;
-		return pdp;
-	}
-	if (!(pdp = NhlMalloc(sizeof(brPageData)))) {
-		e_text = "%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,_NhlName(go));
-	}
-	rec = (brVarPageRec*) NhlMalloc(sizeof(brVarPageRec));
-	pdp->next = pane->var_pages;
-	pane->var_pages = pdp;
+        if (! pdp)
+                pdp = NewVarPage(go,pane);
+        if (! pdp)
+                return NULL;
 
-	pdp->type_rec = (void *) rec;
-	if (! pdp->type_rec) {
-		e_text = "%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,_NhlName(go));
-	}
-
-	pdp->form = XtVaCreateManagedWidget
-		("form",xmFormWidgetClass,pane->folder,
-                 XmNy,28,
-                 XmNx,2,
-                 NULL);
-	
-	if (page->type == _brFILEVAR)
+        if (pdp->dl)
+                NclFreeDataList(pdp->dl);
+        if (page->type == _brFILEVAR)
                 pdp->dl = NclGetFileVarInfo(page->qfile,page->qvar);
         else
                 pdp->dl = NclGetVarInfo(page->qvar);
         if (!pdp->dl) {
-                e_text = "%s: error getting file var information for %s->%s";
+                e_text =
+                        "%s: error getting file var information for %s->%s";
                 NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,_NhlName(go),
                           NrmQuarkToString(page->qfile),
                           NrmQuarkToString(page->qvar));
         }
-	rec->start = NULL;
-	rec->finish = NULL;
-	rec->stride = NULL;
+        rec = (brVarPageRec *) pdp->type_rec;
         InitializeDimInfo(rec,pdp->dl);
-        
-	rec->diminfogrid = NgCreateDimInfoGrid
-		(pdp->form,page->qfile,pdp->dl->u.var,True,False);
-        XtVaSetValues(rec->diminfogrid->grid,
-                      XmNrightAttachment,XmATTACH_NONE,
-                      XmNbottomAttachment,XmATTACH_NONE,
-                      NULL);
-        
-	if (copy_page)
-		rec->vartree = 
-			NgDupVarTree(go,pdp->form,
-                                      page->qfile,page->qvar,pdp->dl,
-				      NULL,copy_vartree);
-	else
-		rec->vartree = 
-	        	NgCreateVarTree(go,pdp->form,
-                                        page->qfile,page->qvar,pdp->dl);
-        
-        XtVaSetValues(rec->vartree->tree,
-                      XmNrightAttachment,XmATTACH_NONE,
-                      XmNbottomAttachment,XmATTACH_NONE,
-                      XmNtopOffset,8,
-                      XmNtopAttachment,XmATTACH_WIDGET,
-                      XmNtopWidget,rec->diminfogrid->grid,
-                      NULL);
-        rec->vartree->geo_notify = AdjustVarPageGeometry;
-        rec->vartree->geo_data = (NhlPointer) page;
-        
-        rec->shaper_toggle = XtVaCreateManagedWidget
-                ("Shape",xmToggleButtonGadgetClass,pdp->form,
-                 XmNbottomAttachment,XmATTACH_NONE,
-                 XmNrightAttachment,XmATTACH_NONE,
-                 XmNtopOffset,4,
-                 XmNtopAttachment,XmATTACH_WIDGET,
-                 XmNtopWidget,rec->vartree->tree,
-                 NULL);
-        XtAddCallback(rec->shaper_toggle,
-                      XmNvalueChangedCallback,ShaperToggleCB,page);
-        rec->shaper = NULL;
-	rec->shaper_managed = False;
 
-        rec->datagrid_toggle = XtVaCreateManagedWidget
-                ("Data",xmToggleButtonGadgetClass,pdp->form,
-                 XmNbottomAttachment,XmATTACH_NONE,
-                 XmNrightAttachment,XmATTACH_NONE,
-                 XmNtopOffset,4,
-                 XmNtopAttachment,XmATTACH_WIDGET,
-                 XmNtopWidget,rec->shaper_toggle,
-                 NULL);
-        XtAddCallback(rec->datagrid_toggle,
-                      XmNvalueChangedCallback,DataGridToggleCB,page);
+/* DimInfoGrid */
+        
+        if (! rec->diminfogrid) {
+                rec->diminfogrid = NgCreateDimInfoGrid
+                        (pdp->form,page->qfile,pdp->dl->u.var,True,False);
+                XtVaSetValues(rec->diminfogrid->grid,
+                              XmNrightAttachment,XmATTACH_NONE,
+                              XmNbottomAttachment,XmATTACH_NONE,
+                              NULL);
+        }
+        else {
+		NgUpdateDimInfoGrid(rec->diminfogrid,
+				    page->qfile,pdp->dl->u.var);
+        }
+        
+/* VarTree */
+        
+        if (!rec->vartree) {
+		if (copy_page)
+			NgDupVarTree(go,pdp->form,page->qfile,page->qvar,
+                                     pdp->dl,NULL,copy_vartree);
+                else 
+                        rec->vartree = 
+                                NgCreateVarTree
+                                (go,pdp->form,page->qfile,page->qvar,pdp->dl);
+                XtVaSetValues(rec->vartree->tree,
+                              XmNrightAttachment,XmATTACH_NONE,
+                              XmNbottomAttachment,XmATTACH_NONE,
+                              XmNtopOffset,8,
+                              XmNtopAttachment,XmATTACH_WIDGET,
+                              XmNtopWidget,rec->diminfogrid->grid,
+                              NULL);
+                rec->vartree->geo_notify = AdjustVarPageGeometry;
+        }
+        else if (copy_page)
+                NgDupVarTree(go,pdp->form,page->qfile,page->qvar,
+                             pdp->dl,rec->vartree,copy_vartree);
+        else
+                NgUpdateVarTree(rec->vartree,page->qfile,page->qvar,pdp->dl);
+
+
+/* Shaper */
+        
+        if (! rec->shaper_toggle) {
+                rec->shaper_toggle = XtVaCreateManagedWidget
+                        ("Shape",xmToggleButtonGadgetClass,pdp->form,
+                         XmNbottomAttachment,XmATTACH_NONE,
+                         XmNrightAttachment,XmATTACH_NONE,
+                         XmNtopOffset,4,
+                         XmNtopAttachment,XmATTACH_WIDGET,
+                         XmNtopWidget,rec->vartree->tree,
+                         NULL);
+        }
+
+/* Data Control and Output */        
+        
+        if (! rec->data_ctrl_form) {
+                rec->data_ctrl_form = XtVaCreateManagedWidget
+                        ("form",xmFormWidgetClass,pdp->form,
+                         XmNbottomAttachment,XmATTACH_NONE,
+                         XmNrightAttachment,XmATTACH_NONE,
+                         XmNtopOffset,4,
+                         XmNtopAttachment,XmATTACH_WIDGET,
+                         XmNtopWidget,rec->shaper_toggle,
+                         NULL);
+
+                rec->datagrid_toggle = XtVaCreateManagedWidget
+                        ("Data",xmToggleButtonGadgetClass,rec->data_ctrl_form,
+                         XmNrightAttachment,XmATTACH_NONE,
+                         NULL);
+
+                label =  XtVaCreateManagedWidget
+                        ("Output Shaped Data:",xmLabelGadgetClass,
+                         rec->data_ctrl_form,
+                         XmNrightAttachment,XmATTACH_NONE,
+                         XmNtopOffset,3,
+                         XmNleftOffset,15,
+                         XmNleftAttachment,XmATTACH_WIDGET,
+                         XmNleftWidget,rec->datagrid_toggle,
+                         NULL);
+                rec->createmenu =
+                        NgCreateCreateMenus(page->go,rec->data_ctrl_form);
+                XtVaSetValues(rec->createmenu->menubar,
+                              XmNrightAttachment,XmATTACH_NONE,
+                              XmNtopOffset,4,
+                              XmNtopAttachment,XmATTACH_WIDGET,
+                              XmNtopWidget,rec->shaper_toggle,
+                              XmNheight,25,
+                              XmNleftOffset,10,
+                              XmNleftAttachment,XmATTACH_WIDGET,
+                              XmNleftWidget,label,
+                              NULL);
+        }
+        rec->createmenu->qsymbol = page->qfile;
+        rec->createmenu->vinfo = pdp->dl->u.var;
+        rec->createmenu->start = rec->start;
+        rec->createmenu->finish = rec->finish;
+        rec->createmenu->stride = rec->stride;
+
+/* Data Grid */
         
         if (copy_rec && copy_rec->datagrid_managed) {
-
-                rec->datagrid = NgCreateDataGrid
-                        (page->go,pdp->form,
-                         page->qfile,pdp->dl->u.var,False,False);
-		NgUpdateDataGrid(rec->datagrid,page->qfile,pdp->dl->u.var,
+                if (! rec->datagrid) {
+                        rec->datagrid = NgCreateDataGrid
+                                (page->go,pdp->form,
+                                 page->qfile,pdp->dl->u.var,False,False);
+                        XtVaSetValues(rec->datagrid->grid,
+                                      XmNbottomAttachment,XmATTACH_NONE,
+                                      XmNrightAttachment,XmATTACH_NONE,
+                                      XmNtopOffset,2,
+                                      XmNtopAttachment,XmATTACH_WIDGET,
+                                      XmNtopWidget,rec->data_ctrl_form,
+                                      NULL);
+                }
+                NgUpdateDataGrid(rec->datagrid,
+                                 page->qfile,pdp->dl->u.var,
                                  rec->start,rec->finish,rec->stride);
-                XtVaSetValues(rec->datagrid->grid,
-                              XmNbottomAttachment,XmATTACH_NONE,
-                              XmNrightAttachment,XmATTACH_NONE,
-                              XmNtopOffset,2,
-                              XmNtopAttachment,XmATTACH_WIDGET,
-                              XmNtopWidget,rec->datagrid_toggle,
-                              NULL);
-                rec->new_data = False;
+                XtManageChild(rec->datagrid->grid);
                 rec->datagrid_managed = True;
+                rec->new_data = False;
                 XtVaSetValues(rec->datagrid_toggle,
                               XmNset,True,
                               NULL);
         }
-        else {
-                rec->datagrid = NULL;
-                rec->datagrid_managed = False;
-                rec->new_data = True;
-        }
-	pdp->in_use = True;
-	pdp->destroy_page = DestroyVarPage;
-	pdp->adjust_page_geo = AdjustVarPageGeometry;
-	pdp->deactivate_page = DeactivateVarPage;
+        rec->vartree->geo_data = (NhlPointer) page;
+                
+        XtAddCallback(rec->datagrid_toggle,
+                      XmNvalueChangedCallback,DataGridToggleCB,page);
+        XtAddCallback(rec->shaper_toggle,
+                      XmNvalueChangedCallback,ShaperToggleCB,page);
 
+        pdp->in_use = True;
 	return pdp;
 }

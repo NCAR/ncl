@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.11 1997-06-11 20:47:27 boote Exp $
+#      $Id: yMakefile,v 1.12 1997-06-20 16:35:40 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -38,16 +38,19 @@ XHDRS		= xappP.h xapp.h goP.h go.h ncleditP.h ncledit.h xutil.h \
 		attrinfogridP.h vcrcontrol.h vcrcontrolP.h browse.h browseP.h \
 		varmenus.h varmenusP.h filetree.h filetreeP.h sort.h \
 		vartree.h vartreeP.h datagrid.h datagridP.h stringutil.h \
-		filepageP.h varpageP.h shaper.h shaperP.h shapeinfogrid.h \
-		shapeinfogridP.h
+		filepageP.h varpage.h varpageP.h shaper.h shaperP.h \
+		shapeinfogrid.h shapeinfogridP.h createmenus.h createmenusP.h \
+		hlupageP.h
 XSRCS		= xapp.c go.c ncledit.c xutil.c load.c addfile.c mwin.c \
 		xwk.c diminfogrid.c attrinfogrid.c vcrcontrol.c browse.c \
 		varmenus.c filetree.c sort.c vartree.c datagrid.c \
-		stringutil.c filepage.c varpage.c shaper.c shapeinfogrid.c
+		stringutil.c filepage.c varpage.c shaper.c shapeinfogrid.c \
+		createmenus.c hlupage.c
 XOBJS		= xapp.o go.o ncledit.o xutil.o load.o addfile.o mwin.o \
 		xwk.o diminfogrid.o attrinfogrid.o vcrcontrol.o browse.o \
 		varmenus.o filetree.o sort.o vartree.o datagrid.o \
-		stringutil.o filepage.o varpage.o shaper.o shapeinfogrid.o
+		stringutil.o filepage.o varpage.o shaper.o shapeinfogrid.o \
+		createmenus.o hlupage.o
 
 BuildSharedLibTarget(libNGgo,$(OBJS),1,0,NullArgument)
 BuildLibTarget($(MYNAME),$(OBJS))

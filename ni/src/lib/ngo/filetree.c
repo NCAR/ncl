@@ -1,5 +1,5 @@
 /*
- *      $Id: filetree.c,v 1.2 1997-06-06 03:14:51 dbrown Exp $
+ *      $Id: filetree.c,v 1.3 1997-06-20 16:35:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1480,8 +1480,7 @@ static void Button3Action(
 #endif
                 qnames[0] = ndata->qname;
                 qnames[1] = ftp->qfileref;
-                NgBrowseOpenPage(ftp->go->base.id,
-                                 _brFILEVAR,qnames,2);
+                NgOpenPage(ftp->go->base.id,_brFILEVAR,qnames,2);
         }
         return;
 }

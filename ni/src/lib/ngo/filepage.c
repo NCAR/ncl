@@ -1,5 +1,5 @@
 /*
- *      $Id: filepage.c,v 1.1 1997-06-04 18:08:25 dbrown Exp $
+ *      $Id: filepage.c,v 1.2 1997-06-20 16:35:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -65,7 +65,53 @@ AdjustFileRefPageGeometry
 	
 	return;
 }
+static brPageData *
+NewFileRefPage
+(
+  	NgGO		go,
+        brPane		*pane
+        )
+{
+	brPageData		*pdp;
+	brFileRefPageRec	*rec;
+        NhlString		e_text;
+        
+	if (!(pdp = NhlMalloc(sizeof(brPageData)))) {
+		e_text = "%s: dynamic memory allocation error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,_NhlName(go));
+                return NULL;
+	}
+        pdp->dl = NULL;
+	pdp->next = pane->fileref_pages;
+	pane->fileref_pages = pdp;
 
+	rec = (brFileRefPageRec*) NhlMalloc(sizeof(brFileRefPageRec));
+	if (! rec) {
+		e_text = "%s: dynamic memory allocation error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,_NhlName(go));
+                NhlFree(pdp);
+                return NULL;
+	}
+        rec->filetree = NULL;
+        pdp->type_rec = (NhlPointer) rec;
+        
+	pdp->form = XtVaCreateManagedWidget
+		("form",xmFormWidgetClass,pane->folder,
+                 XmNy,28,
+                 XmNx,2,
+                 NULL);
+	pdp->destroy_page = DestroyFileRefPage;
+	pdp->adjust_page_geo = AdjustFileRefPageGeometry;
+	pdp->deactivate_page = NULL;
+	pdp->page_output_notify = NULL;
+        pdp->page_input_notify = NULL;
+        pdp->public_page_data = NULL;
+        pdp->update_page = NULL;
+        
+        return pdp;
+}
+
+        
 extern brPageData *
 NgGetFileRefPage
 (
@@ -91,69 +137,44 @@ NgGetFileRefPage
 		if (!pdp->in_use)
 		  break;
 	}
-	if (pdp) {
-		pdp->dl = NclGetFileInfo(page->qfile);
-                if (!pdp->dl) {
-                        e_text = "%s: error getting file information for %s";
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,_NhlName(go),
-                                  NrmQuarkToString(page->qfile));
-                }
-		rec = (brFileRefPageRec *) pdp->type_rec;
-		if (copy_page)
-			NgDupFileTree(go,pdp->form,page->qfile,pdp->dl,
-				      rec->filetree,copy_filetree);
-		else
-			NgUpdateFileTree(rec->filetree,page->qfile,pdp->dl);
-		pdp->in_use = True;
-                rec->filetree->geo_data = (NhlPointer) page;
-		return pdp;
-	}
-	if (!(pdp = NhlMalloc(sizeof(brPageData)))) {
-		e_text = "%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,_NhlName(go));
-	}
-	pdp->next = pane->fileref_pages;
-	pane->fileref_pages = pdp;
-
-	rec = (brFileRefPageRec*) NhlMalloc(sizeof(brFileRefPageRec));
-	pdp->type_rec = (void *) rec;
-	if (! pdp->type_rec) {
-		e_text = "%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,_NhlName(go));
-	}
-
-	pdp->form = XtVaCreateManagedWidget
-		("form",xmFormWidgetClass,pane->folder,
-                 XmNy,28,
-                 XmNx,2,
-                 NULL);
-	
-	pdp->dl = NclGetFileInfo(page->qfile);
+        if (! pdp)
+                pdp = NewFileRefPage(go,pane);
+        if (! pdp)
+                return NULL;
+        
+        if (pdp->dl)
+                NclFreeDataList(pdp->dl);
+        pdp->dl = NclGetFileInfo(page->qfile);
         if (!pdp->dl) {
                 e_text = "%s: error getting file information for %s";
                 NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,_NhlName(go),
                           NrmQuarkToString(page->qfile));
         }
+        rec = (brFileRefPageRec *) pdp->type_rec;
 
-	if (copy_page)
-		rec->filetree = 
-			NgDupFileTree(go,pdp->form,page->qfile,pdp->dl,
-				      NULL,copy_filetree);
-	else
-		rec->filetree = 
-	        	NgCreateFileTree(go,pdp->form,page->qfile,pdp->dl);
-
-        XtVaSetValues(rec->filetree->tree,
-                      XmNrightAttachment,XmATTACH_NONE,
-                      XmNbottomAttachment,XmATTACH_NONE,
-                      NULL);
-        rec->filetree->geo_notify = AdjustFileRefPageGeometry;
+        if (! rec->filetree) {
+                if (copy_page)
+                        NgDupFileTree(go,pdp->form,page->qfile,pdp->dl,
+                                      NULL,copy_filetree);
+                else
+                        rec->filetree = NgCreateFileTree
+                                (go,pdp->form,page->qfile,pdp->dl);
+                
+                XtVaSetValues(rec->filetree->tree,
+                              XmNrightAttachment,XmATTACH_NONE,
+                              XmNbottomAttachment,XmATTACH_NONE,
+                              NULL);
+                rec->filetree->geo_notify = AdjustFileRefPageGeometry;
+        }
+        else if (copy_page)
+                NgDupFileTree(go,pdp->form,page->qfile,pdp->dl,
+                              rec->filetree,copy_filetree);
+        else
+                NgUpdateFileTree(rec->filetree,page->qfile,pdp->dl);
+        
+        
+        pdp->in_use = True;
         rec->filetree->geo_data = (NhlPointer) page;
-        
-	pdp->in_use = True;
-	pdp->destroy_page = DestroyFileRefPage;
-	pdp->adjust_page_geo = AdjustFileRefPageGeometry;
-	pdp->deactivate_page = NULL;
-        
-	return pdp;
+        return pdp;
+
 }

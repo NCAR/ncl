@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.6 1997-03-04 03:05:03 dbrown Exp $
+ *      $Id: nclstate.c,v 1.7 1997-06-20 16:35:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1282,15 +1282,19 @@ NgNclEnumerateObj
 NhlString
 NgNclGetSymName
 (
-	NhlString	basename
+	NhlString	basename,
+        NhlBoolean	add_zero
 )
 {
 	static char	buff[512];
 	int		i=0;
 
-        for(sprintf(buff,"%s",basename);
-            NclSymbolDefined(buff);
-            i++,sprintf(buff,"%s%i",basename,i));
+        if (add_zero)
+                sprintf(buff,"%s%d",basename,i);
+        else
+                sprintf(buff,"%s",basename);
+        
+        for(; NclSymbolDefined(buff); ++i,sprintf(buff,"%s%d",basename,i));
         
 	return buff;
 }

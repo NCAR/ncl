@@ -1,5 +1,5 @@
 /*
- *      $Id: datagrid.c,v 1.2 1997-06-06 03:14:50 dbrown Exp $
+ *      $Id: datagrid.c,v 1.3 1997-06-20 16:35:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -511,6 +511,10 @@ static void SetData
                     default:
                             fprintf(stderr,"invalid var type\n");
                 }
+                if (!val) {
+                        fprintf(stderr,"error reading var\n");
+                        return;
+                }
                 for (i = 0; i < cols; i++) {
                         int len;
 
@@ -581,7 +585,7 @@ static void SetData
                                              &dgrp->finish[i],
                                              &dgrp->stride[i]);
                                     break;
-                            case COORD:
+                            case NORMAL:
                                     val = NclReadVarCoord
                                             (dgrp->vinfo->name,
                                              dgrp->vinfo->coordnames[i],
@@ -591,6 +595,10 @@ static void SetData
                                     break;
                             default:
                                     fprintf(stderr,"invalid var type\n");
+                        }
+                        if (!val) {
+                                fprintf(stderr,"error reading var\n");
+                                return;
                         }
 			vix = 0;
                         for (j = 0; j < rows; j++) {

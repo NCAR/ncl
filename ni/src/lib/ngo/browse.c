@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.2 1997-06-06 03:14:48 dbrown Exp $
+ *      $Id: browse.c,v 1.3 1997-06-20 16:35:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/filepageP.h>
 #include <ncarg/ngo/varpageP.h>
+#include <ncarg/ngo/hlupageP.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
@@ -116,6 +117,8 @@ NgBrowseClassRec NgbrowseClassRec = {
 };
 
 NhlClass NgbrowseClass = (NhlClass)&NgbrowseClassRec;
+
+static NgPageId CurrentPageId = 0;
 
 static NhlErrorTypes
 BrowseInitialize
@@ -399,6 +402,9 @@ static char *PageString
                     strcpy(string,NrmQuarkToString(page->qfile));
                     strcat(string,"->");
                     strcat(string,NrmQuarkToString(page->qvar));
+                    break;
+            case _brHLUVAR:
+                    strcpy(string,NrmQuarkToString(page->qvar));
                     break;
         }
 
@@ -980,6 +986,9 @@ UpdateTabs
                             qfile = page->qfile;
                             strcpy(name,NrmQuarkToString(page->qfile));
                             break;
+                    case _brHLUVAR:
+                            strcpy(name,NrmQuarkToString(page->qvar));
+                            break;
                     case _brFILEVAR:
                             if (page->qfile == qfile) {
                                     strcpy(name,"->");
@@ -1083,6 +1092,11 @@ InsertPage
 		    pane->pagecount++;
                     XmLArraySet(pane->pagelist,pos,page);
                     break;
+            case _brHLUVAR:
+                    XmLArrayAdd(pane->pagelist,pos,1);
+		    pane->pagecount++;
+                    XmLArraySet(pane->pagelist,pos,page);
+                    break;
             case _brFILEREF:
                     XmLArrayAdd(pane->pagelist,pos,1);
 		    pane->pagecount++;
@@ -1161,6 +1175,7 @@ static brPage *AddPage
         page->qvar = qvar;
         page->qfile = qfile;
         page->tab = NULL;
+        page->id = ++CurrentPageId;
         
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
         fprintf(stderr,"AddPage: %x -- pane %d %s\n",
@@ -1185,6 +1200,9 @@ static brPage *AddPage
                 break;
         case _brFILEREF:
 		page->pdata = NgGetFileRefPage(go,pane,page,copy_page);
+                break;
+        case _brHLUVAR:
+		page->pdata = NgGetHluPage(go,pane,page,copy_page);
                 break;
         }
         if (!page->pdata) {
@@ -1286,7 +1304,7 @@ ShufflePage
         return;
 }
 
-static void
+static brPage *
 UpdatePanes
 (
 	NgGO		go,
@@ -1302,7 +1320,7 @@ UpdatePanes
         NhlBoolean	page_found = False;
         int 		i,j,pos = -1;
         brPane		*delete_pane = NULL;
-        brPage		*page,*copy_page = NULL;
+        brPage		*page = NULL,*copy_page = NULL;
 
         for (i = 0; i < pcp->alloc_count; i++) {
                 brPane	*this_pane = pcp->panes[i];
@@ -1337,7 +1355,7 @@ UpdatePanes
         else if (delete_pane)
                 DeletePage(go,delete_pane,delete_pane->remove_pos);
         
-        return;
+        return page;
 }
 
 typedef struct _timer_data 
@@ -1367,7 +1385,11 @@ static void BrowseTimeoutCB
                     UpdatePanes(go,_brFILEREF,NULL,qvar,False);
                     break;
             case _brFILEVAR:
-                    UpdatePanes(go,_brFILEVAR,qvar,np->vmenus->qfile,False);
+                    UpdatePanes(go,_brFILEVAR,
+                                qvar,np->vmenus->qfile,False);
+                    break;
+            case _brHLUVAR:
+                    UpdatePanes(go,_brHLUVAR,qvar,NULL,False);
                     break;
         }
         return;
@@ -1479,7 +1501,42 @@ static void BrowseFileVarCB
         
 	return;
 }
+
+static void BrowseHluVarCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	NgGO		go = (NgGO) udata;
+	NgBrowse	browse = (NgBrowse)udata;
+	NgBrowsePart	*np = &browse->browse;
+	NrmQuark	qvar;
+        brPage		*page;
+        brPane		*pane;
+        static timer_data tdata;
+
+#if	DEBUG_DATABROWSER & DEBUG_ENTRY
+	fprintf(stderr,"BrowseFileCB(IN)\n");
+#endif
+	XtVaGetValues(w,
+		      XmNuserData,&qvar,
+		      NULL);
+
+#if	DEBUG_DATABROWSER & DEBUG_FOLDER
+	fprintf(stderr,"browsing file %s\n", NrmQuarkToString(qfile));
+#endif
         
+        tdata.go = go;
+        tdata.qvar = qvar;
+        tdata.type = _brHLUVAR;
+        
+        XtAppAddTimeOut(go->go.x->app,50,BrowseTimeoutCB,&tdata);
+
+	return;
+}
+
 static NgVarMenus
 CreateVarMenus
 (
@@ -1620,6 +1677,9 @@ static void DeleteSelectionCB
             case _brFILEVAR:
                     UpdatePanes(go,_brFILEVAR,qvar,qfile,True);
                     break;
+            case _brHLUVAR:
+                    UpdatePanes(go,_brHLUVAR,qvar,NULL,True);
+                    break;
         }
         
         return;
@@ -1669,6 +1729,9 @@ static void CycleSelectionCB
                     break;
             case _brFILEVAR:
                     UpdatePanes(go,_brFILEVAR,qvar,qfile,False);
+                    break;
+            case _brHLUVAR:
+                    UpdatePanes(go,_brHLUVAR,qvar,qfile,False);
                     break;
         }
         
@@ -1881,7 +1944,7 @@ BrowseCreateWin
 	return True;
 }
 
-extern NhlErrorTypes NgBrowseOpenPage(
+extern NgPageId NgOpenPage(
         int		goid,
         brPageType	type,
         NrmQuark	*qname,
@@ -1889,27 +1952,111 @@ extern NhlErrorTypes NgBrowseOpenPage(
         )
 {
         NgGO		go = (NgGO)_NhlGetLayer(goid);
-
+        brPage		*page;
+        
         switch (type) {
             case _brREGVAR:
                     if (qcount < 1 || qname[0] == NrmNULLQUARK)
-                            return NhlFATAL;
-                    UpdatePanes(go,_brREGVAR,qname[0],NULL,False);
+                            return NULL;
+                    page = UpdatePanes(go,_brREGVAR,qname[0],NULL,False);
                     break;
             case _brFILEREF:
                     if (qcount < 1 || qname[0] == NrmNULLQUARK)
-                            return NhlFATAL;
-                    UpdatePanes(go,_brFILEREF,NULL,qname[0],False);
+                            return NULL;
+                    page = UpdatePanes(go,_brFILEREF,NULL,qname[0],False);
                     break;
             case _brFILEVAR:
                     if (qcount < 2
                         || qname[0] == NrmNULLQUARK
                         || qname[1] == NrmNULLQUARK)
-                            return NhlFATAL;
-                    UpdatePanes(go,_brFILEVAR,qname[0],qname[1],False);
+                            return NULL;
+                    page = UpdatePanes(go,_brFILEVAR,qname[0],qname[1],False);
+                    break;
+            case _brHLUVAR:
+                    if (qcount < 1 || qname[0] == NrmNULLQUARK)
+                            return NULL;
+                    page = UpdatePanes(go,_brHLUVAR,qname[0],NULL,False);
                     break;
         }
+        return page->id;
+
+}
+
+static brPage *GetPageReference
+(
+        NgGO	go,
+        NgPageId	id
+        )
+{
+	NgBrowse	browse = (NgBrowse)go;
+	NgBrowsePart	*np = &browse->browse;
+        brPaneControl	*pcp = &np->pane_ctrl;
+        brPane		*pane;
+        brPage		*page;
+        int		i,j;
+        
+        for (i = 0; i < pcp->alloc_count; i++) {
+                pane = pcp->panes[i];
+                for (j = 0; j < pane->pagecount; j++) {
+                        page = XmLArrayGet(pane->pagelist,j);
+                        if (page->id == id)
+                                return page;
+                }
+        }
+        return NULL;
+}
+
+extern void NgPageOutputNotify(
+        int		goid,
+        NgPageId	page_id,
+        brPageType	output_page_type,
+        NhlPointer	output_data
+        )
+{
+        NgGO		go = (NgGO)_NhlGetLayer(goid);
+        brPage		*page = GetPageReference(go,page_id);
+
+        if (! page)
+                return;
+        if (! page->pdata->page_input_notify)
+                return;
+        
+        (*page->pdata->page_input_notify)(page,output_page_type,output_data);
+
         return;
+}
+
+extern NhlPointer NgPageData(
+        int		goid,
+        NgPageId	page_id
+        )
+{
+        NgGO		go = (NgGO)_NhlGetLayer(goid);
+        brPage		*page = GetPageReference(go,page_id);
+
+        if (! page)
+                return NULL;
+        if (! page->pdata->public_page_data)
+                return NULL;
+
+        return ((*page->pdata->public_page_data)(page));
+
+}
+
+extern NhlErrorTypes NgUpdatePage(
+        int		goid,
+        NgPageId	page_id
+        )        
+{
+        NgGO		go = (NgGO)_NhlGetLayer(goid);
+        brPage		*page = GetPageReference(go,page_id);
+
+        if (! page)
+                return NhlFATAL;
+        if (! page->pdata->page_input_notify)
+                return NhlFATAL;
+
+        return ((*page->pdata->update_page)(page));
 
 }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.h,v 1.2 1997-02-27 20:25:46 boote Exp $
+ *      $Id: nclstate.h,v 1.3 1997-06-20 16:35:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -223,7 +223,8 @@ NgNclEnumerateObj(
  */
 extern NhlString
 NgNclGetSymName(
-	NhlString	basename
+	NhlString	basename,
+        NhlBoolean	add_zero
 );
 
 #endif	/* _NG_NCLSTATE_H */

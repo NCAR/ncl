@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.8 1997-06-06 18:07:24 dbrown Exp $
+ *      $Id: addfile.c,v 1.9 1997-06-20 16:35:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,7 +43,9 @@
 #include  <Xm/LabelG.h>
 #include  <Xm/Frame.h>
 
+#if 0
 #define _NgPreviewFile "_NgPreviewFile" /* the NCL file reference var name */
+#endif
 static  NrmQuark QPreviewFile = NrmNULLQUARK;
 static Pixel Background;
 
@@ -518,6 +520,8 @@ static void SetApplyForm
                 dlist = NclGetFileList();
                 for (dl = dlist; dl != NULL; dl = dl->next) {
                         finfo = dl->u.file;
+			if (finfo->name == QPreviewFile)
+				continue;
                         if (!strcmp(item,NrmQuarkToString(finfo->path))) {
                                 added = True;
                                 symbol = finfo->name;
@@ -583,7 +587,7 @@ static void SetApplyForm
 	else
 		bname[0] = '\0';
 
-        vname = NgNclGetSymName(bname);
+        vname = NgNclGetSymName(bname,False);
 	XmTextFieldSetString(np->vname,vname);
                 
 	return;
@@ -896,16 +900,15 @@ static NhlBoolean OpenForPreview
 	}
         
 	if (first) {
-		QPreviewFile = NrmStringToQuark(_NgPreviewFile); 
+		QPreviewFile = NrmStringToQuark("_NgPreviewFile"); 
 		first = False;
 	}
 	else {
-		sprintf(Buffer,"delete(\"_NgPreviewFile\")\n");
+		sprintf(Buffer,"delete(_NgPreviewFile)\n");
                 (void)NgNclSubmitBlock(nsid,Buffer);
 	}
 	
-	sprintf(Buffer,"%s = addfile(\"%s\",\"r\")\n",
-		_NgPreviewFile,np->dirspec);
+	sprintf(Buffer,"_NgPreviewFile = addfile(\"%s\",\"r\")\n",np->dirspec);
 
         (void)NgNclSubmitBlock(nsid,Buffer);
 

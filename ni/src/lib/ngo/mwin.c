@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.5 1997-06-11 20:47:23 boote Exp $
+ *      $Id: mwin.c,v 1.6 1997-06-20 16:35:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -826,7 +826,7 @@ CreateXWorkCB
 	/*
 	 * Submit to nclstate
 	 */
-	name = NgNclGetSymName("Xwk");
+	name = NgNclGetSymName("Xwk",True);
 	sprintf(line,
 	"%s = create \"%s\" xWorkstationClass defaultapp\nend create\n",
 		name,name);

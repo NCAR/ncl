@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.h,v 1.1 1997-06-04 18:08:22 dbrown Exp $
+ *      $Id: browse.h,v 1.2 1997-06-20 16:35:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,19 +31,36 @@ extern NhlClass NgbrowseClass;
  * Public api
  */
 
-
 typedef enum _brPageType 
 {
-        _brREGVAR, _brFILEREF, _brFILEVAR
+        _brNULL, _brREGVAR, _brFILEREF, _brFILEVAR, _brHLUVAR
 } brPageType;
 
-extern NhlErrorTypes NgBrowseOpenPage(
+#define NgNoPage 0
+typedef int NgPageId;
+
+extern NgPageId NgOpenPage(
         int		goid,
         brPageType	type,
         NrmQuark	*qname,
         int		qcount
         );
 
+extern void NgPageOutputNotify(
+        int		goid,
+        NgPageId	page_id,
+        brPageType	output_page_type,
+        NhlPointer	output_data
+        );
 
-        
+extern NhlPointer NgPageData(
+        int		goid,
+        NgPageId	page_id
+        );
+
+extern NhlErrorTypes NgUpdatePage(
+        int		goid,
+        NgPageId	page_id
+        );
+
 #endif	/* _NG_BROWSE_H */
