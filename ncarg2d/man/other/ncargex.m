@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.9 1993-04-29 17:59:43 haley Exp $
+.\"	$Id: ncargex.m,v 1.10 1993-05-02 03:52:10 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1993" NCAR "NCAR GRAPHICS"
@@ -253,8 +253,8 @@ listed according to which utility they belong with:
 	mpex08 mpex09 mpex10 mpexfi tezmap tezmpa
 .sp
 .I "FIELD FLOW Examples:"
-	ffex00 ffex01 ffex02 ffex03 ffex04 ffex05 fstream stex01
-	stex02 stex03 vvex01 vvex02
+	ffex00 ffex01 ffex02 ffex03 ffex04 ffex05 fcover fstream
+	stex01 stex02 stex03 vvex01 vvex02
 .sp
 .I "GFLASH Example:"
     tgflas
@@ -314,7 +314,7 @@ listed according to which utility they belong with:
 	fthex01 fthex02 fthex03 fthex04 fthex05 tthree tpwrzt
 .sp
 .I "VECTORS Examples:"
-	ffex00 ffex01 ffex02 ffex05 tvelvc vvex01 vvex02
+	ffex00 ffex01 ffex02 ffex05 fcover tvelvc vvex01 vvex02
 .sp
 .I "Miscellaneous Examples:"
 	bnchmk example
