@@ -1,5 +1,5 @@
 C
-C	$Id: gwiwdr.f,v 1.2 1993-03-19 01:29:31 fred Exp $
+C	$Id: gwiwdr.f,v 1.3 1994-04-28 23:40:43 fred Exp $
 C
       SUBROUTINE GWIWDR(ICNTX,RCNTX)
 C
@@ -83,7 +83,7 @@ C
 C  Clipping control function(s).
 C
       IF (MCODES.EQ.61)  THEN
-        CALL GWICLP
+        CALL GWICLP(0)
         RETURN
       END IF
 C

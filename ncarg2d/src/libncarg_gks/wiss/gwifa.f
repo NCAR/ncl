@@ -1,5 +1,5 @@
 C
-C	$Id: gwifa.f,v 1.1 1993-01-09 02:09:20 fred Exp $
+C	$Id: gwifa.f,v 1.2 1994-04-28 23:40:34 fred Exp $
 C
       SUBROUTINE GWIFA
 C
@@ -24,9 +24,11 @@ C
       KALL = KALL+1
       IF  (KALL .EQ. 1) THEN
 C
-C  Set WSL entry "DISPLAY SURFACE EMPTY" to "NOT EMPTY".
+C  If the picture is empty, send the clip indicator and rectangle;
+C  set the WSL entry "DISPLAY SURFACE EMPTY" to "NOT EMPTY".
 C
-        MDEMPT = GNO
+        IF (MDEMPT .EQ. GEMPTY) CALL GWICLP(1)
+        MDEMPT = GNEMPT
 C
 C  Process pending attributes.
 C

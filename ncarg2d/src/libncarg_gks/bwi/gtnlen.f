@@ -1,12 +1,12 @@
 C
-C	$Id: gtnlen.f,v 1.3 1994-04-05 19:22:09 fred Exp $
+C	$Id: gtnlen.f,v 1.4 1994-04-28 23:35:54 fred Exp $
 C
         SUBROUTINE GTNLEN(FNAME,ILEN,IER)
 C
 C  Determine the length of the name in FNAME.  The length is the
 C  longest initial character sequence without a blank or null.
-C  Maximum length is 79.  IER is returned as 0 if the length is
-C  less than 80; IER is returned as 1 otherwise.
+C  Maximum length is 255.  IER is returned as 0 if the length is
+C  less than 256; IER is returned as 1 otherwise.
 C
         CHARACTER*(*) FNAME
 C

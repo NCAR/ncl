@@ -1,5 +1,5 @@
 C
-C	$Id: g01snp.f,v 1.3 1994-03-30 02:08:27 fred Exp $
+C	$Id: g01snp.f,v 1.4 1994-04-28 23:35:49 fred Exp $
 C
       SUBROUTINE G01SNP (ERROR)
 C
@@ -73,32 +73,6 @@ C
         ITMP(3) = SBLUE(I)*REAL(MDCCRG)
         CALL GPUTPR (ITMP, MDCCFW, 3, RERR)
    10 CONTINUE
-C
-C  Put out clipping indicator and rectangle.
-C
-C  Put out opcode (CLASS and ID) and length.
-C
-      NBYTES = 1+(MIXFW-1)/8
-      CALL GPUTNI (CLCLIN, IDCLIN, NBYTES, RERR)
-      IF (RERR.NE.0)  GO TO 77
-C
-C  Put out clipping indicator parameter (DATA, PRECIS, COUNT).
-C
-      CALL GPUTPR (MRCLIP, MIXFW,     1, RERR)
-      IF (RERR.NE.0)  GO TO 77
-C
-C  Total byte length, based on VDC bit precision.
-C
-      NBYTES = 1 + (4*MVDCFW-1)/8
-C
-C  Put out opcode (CLASS and ID) and LENGTH.
-C
-      CALL GPUTNI (CLCREC, IDCREC, NBYTES, RERR)
-      IF (RERR.NE.0)  GO TO 77
-C
-C  Put out clipping rectangle parameters (XMIN,XMAX,YMIN,YMAX).
-C
-      CALL GPUTPR (MRCREC, MVDCFW,     4, RERR)
 C
       RETURN
       END

@@ -1,5 +1,5 @@
 C
-C	$Id: gwipm.f,v 1.1 1993-01-09 02:09:42 fred Exp $
+C	$Id: gwipm.f,v 1.2 1994-04-28 23:40:39 fred Exp $
 C
       SUBROUTINE GWIPM
 C
@@ -24,8 +24,10 @@ C
       KALL = KALL+1
       IF  (KALL .EQ. 1) THEN
 C
-C  Set WSL entry "DISPLAY SURFACE EMPTY" to "NOT EMPTY".
+C  If the picture is empty, send the clip indicator and rectangle;
+C  set the WSL entry "DISPLAY SURFACE EMPTY" to "NOT EMPTY".
 C
+        IF (MDEMPT .EQ. GEMPTY) CALL GWICLP(1)
         MDEMPT = GNEMPT
 C
 C  Process pending attributes.

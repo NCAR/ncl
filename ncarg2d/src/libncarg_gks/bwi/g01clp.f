@@ -1,9 +1,15 @@
 C
-C	$Id: g01clp.f,v 1.2 1993-01-09 02:05:42 fred Exp $
+C	$Id: g01clp.f,v 1.3 1994-04-28 23:35:41 fred Exp $
 C
-      SUBROUTINE G01CLP
+      SUBROUTINE G01CLP(IFORCE)
 C
-C  Process clipping parameters.
+C  Process clipping parameters.  If the current picture is empty,
+C  then putting a clip indicator or clip rectangle into the metafile
+C  is suppressed.  Setting IFORCE to 1 forces a clip indicator and 
+C  clip rectangle into the metafile, and this is done when the picture
+C  becomes non-empty.  In all other cases the clip indicator or
+C  rectangle is put into the metafile depending upon whether a
+C  change has been detected from the previous setting.
 C
       include 'g01prm.h'
       include 'gksin.h'
@@ -14,24 +20,35 @@ C
       INTEGER  NBYTES, I, ICRLOC(4)
       LOGICAL  CHANGE
 C
-C  If clipping indicator has changed, send it and store it in WSL.
+      SAVE
+C
+C  Handle the case where a clip indicator and rectangle is forced
+C  into the metafile.
+C
+      IF (IFORCE .NE. 0) GO TO 100
+C
+C  If the clipping indicator has changed, store it in the WSL.  If 
+C  the picture is not empty, send the clip indicator.
 C
       IF (ID(1).NE.MRCLIP)  THEN
         MRCLIP = ID(1)
+        IF (MDEMPT .EQ. GNEMPT) THEN
 C
 C  Put out opcode (CLASS and ID) and LENGTH
 C
-        NBYTES = 1+(MEFW-1)/8
-        CALL GPUTNI (CLCLIN, IDCLIN, NBYTES, RERR)
-        IF (RERR.NE.0)  RETURN
+          NBYTES = 1+(MEFW-1)/8
+          CALL GPUTNI (CLCLIN, IDCLIN, NBYTES, RERR)
+          IF (RERR.NE.0)  RETURN
 C
 C  Put out clipping indicator parameter (DATA, PRECIS, COUNT).
 C
-        CALL GPUTPR (MRCLIP, MEFW,     1, RERR)
-        IF (RERR.NE.0)  RETURN
+          CALL GPUTPR (MRCLIP, MEFW,     1, RERR)
+          IF (RERR.NE.0)  RETURN
+        ENDIF
       END IF
 C
-C  Normalize clipping rectangle, send and store it if changed.
+C  Normalize the clipping rectangle and store it.  Send the rectangle
+C  if the picture is not empty.
 C
 C  Normalize NDC limits of rectangle (assume bounds check
 C  above WSI), store as rectangle corner points.
@@ -48,20 +65,49 @@ C
         END IF
    10 CONTINUE
       IF (CHANGE) THEN
+        IF (MDEMPT .EQ. GNEMPT) THEN
 C
 C  Total byte length, based on VDC bit precision.
 C
-        NBYTES = 1 + (4*MVDCFW-1)/8
+          NBYTES = 1 + (4*MVDCFW-1)/8
 C
 C  Put out opcode (CLASS and ID) and LENGTH.
 C
-        CALL GPUTNI (CLCREC, IDCREC, NBYTES, RERR)
-        IF (RERR.NE.0)  RETURN
+          CALL GPUTNI (CLCREC, IDCREC, NBYTES, RERR)
+          IF (RERR.NE.0)  RETURN
 C
 C  Put out clipping rectangle corner points (DATA, PRECIS, COUNT).
 C
-        CALL GPUTPR (MRCREC, MVDCFW,     4, RERR)
+          CALL GPUTPR (MRCREC, MVDCFW,     4, RERR)
+        END IF
       END IF
-C
       RETURN
+C
+  100 CONTINUE
+C
+C  Put out opcode (CLASS and ID) and LENGTH
+C
+      NBYTES = 1+(MEFW-1)/8
+      CALL GPUTNI (CLCLIN, IDCLIN, NBYTES, RERR)
+      IF (RERR.NE.0)  RETURN
+C
+C  Put out clipping indicator parameter.
+C
+      CALL GPUTPR (MRCLIP, MEFW, 1, RERR)
+      IF (RERR.NE.0)  RETURN
+
+C  Total byte length, based on VDC bit precision.
+C
+      NBYTES = 1 + (4*MVDCFW-1)/8
+C
+C  Put out opcode (CLASS and ID) and LENGTH.
+C
+      CALL GPUTNI (CLCREC, IDCREC, NBYTES, RERR)
+      IF (RERR.NE.0)  RETURN
+C
+C  Put out clipping rectangle corner points (DATA, PRECIS, COUNT).
+C
+      CALL GPUTPR (MRCREC, MVDCFW,     4, RERR)
+      RETURN
+C
       END

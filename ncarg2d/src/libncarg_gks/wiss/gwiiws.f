@@ -1,5 +1,5 @@
 C
-C	$Id: gwiiws.f,v 1.1 1993-01-09 02:09:32 fred Exp $
+C	$Id: gwiiws.f,v 1.2 1994-04-28 23:40:36 fred Exp $
 C
       SUBROUTINE GWIIWS
 C
@@ -34,6 +34,10 @@ C
 C  State is inactive (0=GINACT)
 C
       MSTATE = GINACT
+C
+C  Display surface is empty (1=GEMPTY)
+C
+      MDEMPT = GEMPTY
 C
 C  Requested workstation window in NDC is unit square.
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: gwica.f,v 1.1 1993-01-09 02:09:04 fred Exp $
+C	$Id: gwica.f,v 1.2 1994-04-28 23:40:29 fred Exp $
 C
       SUBROUTINE GWICA
 C
@@ -26,8 +26,10 @@ C
 C  Treat the first case (set-up call, P,Q,DX,DY passed,
 C  first color indices processed).
 C
-C  Set WSL entry "DISPLAY SURFACE EMPTY" to "NOT EMPTY"
+C  If the picture is empty, send the clip indicator and rectangle;
+C  set the WSL entry "DISPLAY SURFACE EMPTY" to "NOT EMPTY".
 C
+        IF (MDEMPT .EQ. GEMPTY) CALL GWICLP(1)
         MDEMPT = GNEMPT
 C
 C  Transform P and Q corner points to VDC, generate the

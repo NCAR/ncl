@@ -1,5 +1,5 @@
 C
-C	$Id: g01wdr.f,v 1.4 1994-04-05 19:22:08 fred Exp $
+C	$Id: g01wdr.f,v 1.5 1994-04-28 23:35:53 fred Exp $
 C
         SUBROUTINE G01WDR(WKID,METANM)
 C
@@ -82,7 +82,7 @@ C
 C  Clipping control function(s).
 C
       IF (MCODES.EQ.61)  THEN
-        CALL G01CLP
+        CALL G01CLP(0)
         RETURN
       END IF
 C
