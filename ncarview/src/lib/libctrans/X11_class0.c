@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.9 1992-02-18 18:21:06 clyne Exp $
+ *	$Id: X11_class0.c,v 1.10 1992-02-28 00:19:57 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -455,9 +455,21 @@ CGMC *c;
 	return (OK);
 }
 
-
 /*ARGSUSED*/
 Ct_err	X11_BegPic(c)
+CGMC *c;
+{
+#ifdef DEBUG
+	(void) fprintf(stderr,"X11_BegPicBody\n");
+#endif DEBUG
+
+
+
+	return (OK);
+}
+
+/*ARGSUSED*/
+Ct_err	X11_BegPicBody(c)
 CGMC *c;
 {
 	XWindowAttributes	xwa;
@@ -541,18 +553,6 @@ CGMC *c;
 	return(OK);
 }
 
-/*ARGSUSED*/
-Ct_err	X11_BegPicBody(c)
-CGMC *c;
-{
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_BegPicBody\n");
-#endif DEBUG
-
-
-
-	return (OK);
-}
 
 /*ARGSUSED*/
 Ct_err	X11_EndPic(c)

@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.11 1992-02-20 12:45:36 clyne Exp $
+ *	$Id: commondev.c,v 1.12 1992-02-28 00:20:02 clyne Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -33,7 +33,6 @@ static	ComDev	*dev;
 
 static	CoordRect	VDCExtent;
 
-extern	short	devWinSet;
 extern	boolean	*softFill;
 
 /*
@@ -195,44 +194,6 @@ CGMC *c;
 	 * if no clipping use the quick algorithm
 	 */
 
-	if (!CLIPFLAG && !devWinSet) {
-	p = 0;
-	while (1) {
-		n = 0;
-
-		/* Draw lines in groups of (coordBufSize), except for the
-		 * last group. n = count of processed points .
-		 * p = count of processed unsent point specifications.
-		 */
-		while (n < c->Pnum) {
-			coordBuf[p] = c->p[n];
-			n++;
-
-			p++;
-			if (p == coordBufSize || p == maxPolyPoints) {
-				coordBufNum = p;
-				dev->point_flush(coordBuf,&coordBufNum,
-								FALSE,FALSE);
-
-				coordBuf[0] =  coordBuf[p-1];
-				p = 1;
-			}
-		}
-		/*
-		* see if more flag is set. If so get more data
-		*/
-		if (c->more) {
-			if (Instr_Dec(c) < 1) {
-				ct_error(T_FRE, "metafile");
-				return (DIE);
-			}
-		}
-		else break;     /* leave loop   */
-
-	}	/* while (1)	*/
-	}	/* if clip	*/
-
-	else {
 	p = 0;
 	while (1) {
 		n = 0;
@@ -294,7 +255,6 @@ CGMC *c;
 	coordBuf[p].x = x2;
 	coordBuf[p].y = y2;
 	p++;
-	}
 
 	if (LINE_WIDTH == 0.0) 
 		return(OK);	/* do nothing if line is zero width	*/
@@ -523,86 +483,79 @@ CGMC *c;
 		 *	load coordinate buffer with points. Do clipping
 		 *	if needed.
 		 */
-		if (CLIPFLAG || devWinSet) {
+		/*
+		 * clip the first edge if necessary.
+		 * if the edge is completely outside the clip
+		 * rectangle lay it on the boundry
+		 */
+		if (! Clipper(c->p[0].x, c->p[0].y,
+			c->p[1].x,c->p[1].y,
+			&x1,&y1,&x2,&y2)) {
+
 			/*
-			 * clip the first edge if necessary.
-			 * if the edge is completely outside the clip
-			 * rectangle lay it on the boundry
+			 * the edge is completely outside the
+			 * clip rectangle. bring it back
 			 */
-			if (! Clipper(c->p[0].x, c->p[0].y,
-				c->p[1].x,c->p[1].y,
+			x1 = MIN(clipxmax, c->p[0].x);
+			x1 = MAX(clipxmin, x1);
+			x2 = MIN(clipxmax, c->p[1].x);
+			x2 = MAX(clipxmin, x2);
+
+			y1 = MIN(clipymax, c->p[0].y);
+			y1 = MAX(clipymin, y1);
+			y2 = MIN(clipymax, c->p[1].y);
+			y2 = MAX(clipymin, y2);
+		}
+		else draw = TRUE;
+		coordBuf[coordBufNum].x = x1;
+		coordBuf[coordBufNum++].y = y1;
+
+		if (x2 != x1 || y2 != y1){
+	
+			coordBuf[coordBufNum].x = x2;
+			coordBuf[coordBufNum++].y = y2;
+		}
+
+
+		for(i = 2; i < c->Pnum ; i++) {
+			if (! Clipper(c->p[i-1].x,c->p[i-1].y,
+				c->p[i].x,c->p[i].y,
 				&x1,&y1,&x2,&y2)) {
 
-				/*
-				 * the edge is completely outside the
-				 * clip rectangle. bring it back
-				 */
-				x1 = MIN(clipxmax, c->p[0].x);
+				x1 = MIN(clipxmax, c->p[i - 1].x);
 				x1 = MAX(clipxmin, x1);
-				x2 = MIN(clipxmax, c->p[1].x);
+				x2 = MIN(clipxmax, c->p[i].x);
 				x2 = MAX(clipxmin, x2);
 
-				y1 = MIN(clipymax, c->p[0].y);
+				y1 = MIN(clipymax, c->p[i - 1].y);
 				y1 = MAX(clipymin, y1);
-				y2 = MIN(clipymax, c->p[1].y);
+				y2 = MIN(clipymax, c->p[i].y);
 				y2 = MAX(clipymin, y2);
 			}
 			else draw = TRUE;
-			coordBuf[coordBufNum].x = x1;
-			coordBuf[coordBufNum++].y = y1;
-
+			/*
+			 * only send the first point if is not the
+			 * same as the previous point sent
+			 */
+			if (x1 != coordBuf[coordBufNum - 1].x ||
+				y1 != coordBuf[coordBufNum - 1].y){
+	
+				coordBuf[coordBufNum].x = x1;
+				coordBuf[coordBufNum++].y = y1;
+			}
+			/*
+			 * only send the second point if it is not the
+			 * same as the first point
+			 */
 			if (x2 != x1 || y2 != y1){
-		
+	
 				coordBuf[coordBufNum].x = x2;
 				coordBuf[coordBufNum++].y = y2;
 			}
-
-
-			for(i = 2; i < c->Pnum ; i++) {
-				if (! Clipper(c->p[i-1].x,c->p[i-1].y,
-					c->p[i].x,c->p[i].y,
-					&x1,&y1,&x2,&y2)) {
-
-					x1 = MIN(clipxmax, c->p[i - 1].x);
-					x1 = MAX(clipxmin, x1);
-					x2 = MIN(clipxmax, c->p[i].x);
-					x2 = MAX(clipxmin, x2);
-
-					y1 = MIN(clipymax, c->p[i - 1].y);
-					y1 = MAX(clipymin, y1);
-					y2 = MIN(clipymax, c->p[i].y);
-					y2 = MAX(clipymin, y2);
-				}
-				else draw = TRUE;
-				/*
-				 * only send the first point if is not the
-				 * same as the previous point sent
-				 */
-				if (x1 != coordBuf[coordBufNum - 1].x ||
-					y1 != coordBuf[coordBufNum - 1].y){
 		
-					coordBuf[coordBufNum].x = x1;
-					coordBuf[coordBufNum++].y = y1;
-				}
-				/*
-				 * only send the second point if it is not the
-				 * same as the first point
-				 */
-				if (x2 != x1 || y2 != y1){
-		
-					coordBuf[coordBufNum].x = x2;
-					coordBuf[coordBufNum++].y = y2;
-				}
-		
-			}	/* for	*/
+		}	/* for	*/
 
-			if (coordBufNum < 3 || !draw) return(OK);
-		} else  {
-
-			for(i = 0; i < c->Pnum; i++) { 
-				coordBuf[coordBufNum++] = c->p[i];
-			}
-		}
+		if (coordBufNum < 3 || !draw) return(OK);
 
 		/*
 		 * see if more flag is set. If so get more data

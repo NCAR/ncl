@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.10 1992-02-20 18:49:55 clyne Exp $
+ *	$Id: gcapdev.c,v 1.11 1992-02-28 00:20:16 clyne Exp $
  */
 #include <stdio.h>
 #include <cterror.h>
@@ -286,14 +286,9 @@ long	x1_,y1_,x2_,y2_;
 	int	i;	/* loop variable */
 
 	long	x1, y1, x2, y2;
-	extern	short	devWinSet;
 
-	if (CLIPFLAG || devWinSet) {
-		if (!(Clipper(x1_, y1_, x2_, y2_, &x1, &y1, &x2, &y2))) {
-			return;
-		}
-	} else {
-		x1 = x1_; y1 = y1_; x2 = x2_; y2 = y2_;
+	if (!(Clipper(x1_, y1_, x2_, y2_, &x1, &y1, &x2, &y2))) {
+		return;
 	}
 
 	if (POLY_FLAG) {

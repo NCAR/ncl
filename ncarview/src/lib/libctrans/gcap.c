@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.16 1992-02-20 18:49:52 clyne Exp $
+ *	$Id: gcap.c,v 1.17 1992-02-28 00:20:12 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -62,7 +62,6 @@
 #include "translate.h"
 
 extern	FILE	*tty;
-extern	short	devWinSet;
 extern	long	lseek();
 extern	Ct_err	formatintensity();
 extern	Ct_err	formatveccnt();
@@ -525,14 +524,12 @@ CGMC *c;
 		return(OK);
 	}
 
-	if (CLIPFLAG || devWinSet) {	/* do we need to do clipping?	*/
-		if (c->p[0].x < clipxmin || c->p[0].y < clipymin
-			|| c->p[0].x > clipxmax || c->p[0].y > clipymax
-			|| c->p[1].x < clipxmin || c->p[1].y < clipymin
-			|| c->p[1].x > clipxmax || c->p[1].y > clipymax) { 
+	if (c->p[0].x < clipxmin || c->p[0].y < clipymin
+		|| c->p[0].x > clipxmax || c->p[0].y > clipymax
+		|| c->p[1].x < clipxmin || c->p[1].y < clipymin
+		|| c->p[1].x > clipxmax || c->p[1].y > clipymax) { 
 
-			clip = TRUE;
-		}
+		clip = TRUE;
 	}
 
         /*
