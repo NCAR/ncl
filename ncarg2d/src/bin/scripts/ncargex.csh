@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.35 1993-04-12 19:17:06 haley Exp $
+#   $Id: ncargex.csh,v 1.36 1993-04-12 20:00:30 haley Exp $
 #
 
 #********************#
@@ -945,6 +945,7 @@ if (! $?NoRunOption) then
         breaksw
         case ccpcff:
         case tcolcv:
+        case fcce02:
             $name
             echo "No metafile produced"
         breaksw
@@ -953,7 +954,7 @@ if (! $?NoRunOption) then
     endsw
 
     set rmfiles = ($rmfiles $name.o $name)
-    if ( $name != "tcolcv" && $name != "ccpcff" && $name != "fgke03" ) then
+    if ( $name != "tcolcv" && $name != "ccpcff" && $name != "fgke03" && $name != "fcce02" ) then
         echo "Metafile is named $name.ncgm"
     endif
 endif
