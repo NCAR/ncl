@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.146 2002-07-08 18:32:51 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.147 2002-08-02 21:06:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -4265,8 +4265,50 @@ NhlErrorTypes _NclIgetenv
 	
 }
 
-
-
+NhlErrorTypes _NclIushorttoint
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	short *value;
+	int total_elements = 1;
+	int n_dims = 0;
+	int dimsizes[NCL_MAX_DIMENSIONS];
+	NclScalar missing, missing2;
+	int has_missing;
+	int i;
+	int *output;
+	
+        value = (short*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+	for (i = 0; i < n_dims; i++) {
+		total_elements *= dimsizes[i];
+	}
+	output = (int*)NclMalloc(sizeof(int)*total_elements);
+	for(i = 0; i < total_elements; i++) {
+		output[i] = (int)((unsigned short*)value)[i];
+	}
+	if(has_missing) {
+		missing2.intval = (int)*((unsigned short*)&missing);
+	}
+	return(NclReturnValue(
+		(void*)output,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing2 : NULL),
+		NCL_int,
+		0
+	));
+}
 
 NhlErrorTypes _NclIinttoshort
 #if	NhlNeedProto

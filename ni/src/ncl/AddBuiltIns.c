@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.56 2002-06-21 21:47:18 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.57 2002-08-02 21:06:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,12 @@ extern NhlErrorTypes _NclICreateFile(
 void
 #endif
 );
+extern NhlErrorTypes _NclIushorttoint(
+#if NhlNeedProto
+void
+#endif
+);
+
 extern NhlErrorTypes _NclIAddFiles(
 #if NhlNeedProto
 void
@@ -1590,6 +1596,11 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
     SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
     NclRegisterFunc(_NclIAddFiles,args,"addfilelist",nargs);
+
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"short",NclANY,NclANY); nargs++;
+    NclRegisterFunc(_NclIushorttoint,args,"ushorttoint",nargs);
     
 /*
 	nargs = 0;

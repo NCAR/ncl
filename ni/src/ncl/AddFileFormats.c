@@ -9,6 +9,11 @@ extern "C" {
 #include "NclDataDefs.h"
 #include "NclFileInterfaces.h"
 
+extern NclFormatFunctionRecPtr HDFEOSAddFileFormat(
+#if	NhlNeedProto
+void
+#endif
+);
 extern NclFormatFunctionRecPtr NetCdfAddFileFormat(
 #if	NhlNeedProto
 void
@@ -41,6 +46,7 @@ void _NclAddFileFormats
 	_NclRegisterFormat(NetCdfAddFileFormat,"cdf");
 	_NclRegisterFormat(NetCdfAddFileFormat,"nc");
 	_NclRegisterFormat(HDFAddFileFormat,"hdf");
+	_NclRegisterFormat(HDFEOSAddFileFormat,"hdfeos");
 	_NclRegisterFormat(HDFAddFileFormat,"hd");
 	_NclRegisterFormat(GribAddFileFormat,"grb");
 	_NclRegisterFormat(CcmAddFileFormat,"ccm");
