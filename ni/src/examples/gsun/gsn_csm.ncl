@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.59 2001-01-31 22:43:33 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.60 2001-02-09 21:59:13 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3056,8 +3056,9 @@ begin
     right_string  = new(1,logical)
 
     check_for_subtitles(res2,left_string,center_string,right_string)
-; This function calls either gsn_csm_map_ce or                          ;
-; gsn_csm_map_polar depending on if gsnPolar is set to True.            ;
+    if(left_string.or.center_string.or.right_string)
+      main_zone   = 4
+    end if
 
     shape_mode   = get_res_value(res2,"mpShapeMode","FixedAspectFitBB")
 function gsn_csm_map(wks:graphic,res:logical)

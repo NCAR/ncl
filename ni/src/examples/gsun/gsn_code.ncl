@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.60 2001-02-06 16:41:22 haley Exp $
+;      $Id: gsn_code.ncl,v 1.61 2001-02-09 21:59:11 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -708,7 +708,7 @@ begin
     exit
   end if
 
-;       "gsnMargin" - margin to leave around plots (in NDC units,      ;
+  if(xlog.and.xlinear)
      print("Error: You cannot set both gsnXAxisIrregular2Log")
      print("and gsnXAxisIrregular2Linear to True.")
      exit
@@ -718,7 +718,7 @@ begin
 end
 
 ;**********************************************************************;
-  margin = get_res_value_keep(res,"gsnMargin",0.02)
+; Function : maximize_bb                                               ;
 ;               plot : graphic                                         ;
 ;                res : logical                                         ;
 ;                                                                      ;
@@ -1045,8 +1045,7 @@ begin
 
 ; Check if turning tickmarks off.
 
-;                         "portrait", or "auto_orient". Default is     ;
-;                         "auto_orient".                               ;
+  ticks_on = get_res_value(res,"gsnTickMarksOn",True)
   if(.not.ticks_on)
     gsnp_turn_off_tickmarks(res)
   end if
@@ -1064,7 +1063,7 @@ end
 ;          be a n x 4 float array with values between 0 and 1.         ;
 ;            (top,bottom,left,right)                                   ;
 ;                                                                      ;
-  paper_orient = get_res_value_keep(res,"gsnPaperOrientation","auto_orient")
+; res : list of optional resources. Ones accepted include:             ;
 ;                                                                      ;
 ; "gsnPaperOrientation" - orientation of paper. Can be "landscape",    ;
 ;                         "portrait", or "auto". Default is "auto".    ;
@@ -1172,7 +1171,7 @@ begin
   dpi_pw     = paper_width  * dpi
   dpi_ph     = paper_height * dpi
   dpi_margin = paper_margin * dpi
-     (lc_orient.eq."auto_orient".and.(ph / pw).ge.1.0))
+
 ;
 ; Get paper height/width in dpi units
 ;
@@ -1228,6 +1227,7 @@ begin
 
 ;
 ; Compute device coordinates.
+;
     ly = dpi_margin + 0.5 * (dh - pw * ndc2du) - (1.0 - rgt) * ndc2du
     lx = dpi_margin + 0.5 * (dw - ph * ndc2du) - bot * ndc2du
     ux = lx + ndc2du
@@ -1257,14 +1257,6 @@ end
 
 ;***********************************************************************;
 ; Procedure : draw_and_frame                                            ;
-; Get orientation of plot.
-;
-      getvalues wks
-        "wkOrientation" : orientation
-      end getvalues
-      maxbb@gsnPaperOrientation = get_res_value(maxbb,"gsnPaperOrientation",\
-                                                orientation)
-;
 ;                wks:graphic                                            ;
 ;               plot:graphic                                            ;
 ;           calldraw:logical                                            ;
@@ -1272,6 +1264,7 @@ end
 ;              maxbb:logical                                            ;
 ;                                                                       ;
 ; By default, all of the plotting routines will draw the plot and       ;
+; advance the frame, unless the special resources gsnDraw and/or        ;
 ; gsnFrame are set to False. This procedure checks if these resources   ;
 ; had been set, and calls draw and/or frame accordingly.                ;
 ; If maxbb is True, then the plot is maximized in the NCGM, X11, or PS  ;
@@ -1313,7 +1306,7 @@ begin
   end if
 
   if(calldraw)
-  maxbb@gsnMargin      = get_res_value(res,"gsnMargin",0.02)
+    draw(plot)
   end if
 
   if(callframe)
@@ -2538,11 +2531,16 @@ begin
 ; maximized for an NCGM/X11 window.
 ; 
   if(maxbb) then
-    txres = get_res_eq(res,"tx")
     class = NhlClassName(wks)
-    perim = get_res_value(txres,"txPerimOn",True)
-    bkgrn = get_res_value(txres,"txBackgroundFillColor",0)
     if(class(0).ne."psWorkstationClass") then
+      maxbb = False
+    end if
+    delete(class)
+  end if
+;
+; Get some resources for the figure strings, if they exist.
+;
+  if(isatt(res,"gsnPanelFigureStrings"))
     is_figure_strings = True
     panel_strings = get_res_value(res,"gsnPanelFigureStrings","")      
 ;
@@ -2855,10 +2853,13 @@ begin
           "vpHeightF" : old_vp(nplot,3)
         end getvalues
 
-              "txPerimOn"             : perim
-              "txBackgroundFillColor" : bkgrn
+        if(panel_debug) then
+          print("-------Panel viewport values for each plot-------")
           print("    plot #" + nplot)
-            attsetvalues_check(text,txres)
+          print("    x,y     = " + xpos(nc) + "," + ypos(nr))
+          print("    wdt,hgt = " + scale*old_vp(nplot,2) + "," + scale*old_vp(nplot,3))
+        end if
+
         setvalues pplot
           "vpXF"      : xpos(nc)
           "vpYF"      : ypos(nr)
@@ -2907,9 +2908,9 @@ begin
             gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/), \
                                  (/bot,bot,top,top,bot/),gsres)
           end if
-; If plot type is unknown, then we can't get labelbar information.
+        end if
       end if
-    if(plot_type.ne."unknown") then
+      nplot = nplot + 1
     end do  ; end of columns
 ;
 ; Retain the smallest x position.
@@ -2988,7 +2989,7 @@ begin
       set_attr(lbres,"lbLabelFontHeightF",labelbar_font_height)
 ;
 ; Check if we want different fill patterns or fill scales.  If so, we
-       print("Warning: gsn_panel: unrecognized plot type, thus unable to extract information for creating a labelbar.")
+       print("Warning: gsn_panel: unrecognized plot type. Unable to extract information for creating a labelbar.")
 ;
       set_attr(lbres,"lbMonoFillColor",mono_fill_col)
       if(.not.mono_fill_pat)
