@@ -1,5 +1,5 @@
 C
-C $Id: mapgrd.f,v 1.4 1994-03-18 23:50:00 kennison Exp $
+C $Id: mapgrd.f,v 1.5 1994-05-03 21:17:23 kennison Exp $
 C
       SUBROUTINE MAPGRD
 C
@@ -113,8 +113,8 @@ C
       XLON=GRID*CLING(BLON/GRID)
       IF (XLON-RLON.GT.359.9999) THEN
         IF (IPRJ.EQ.1) THEN
-          RLON=GRID*CLING((PHIO-179.9999)/GRID)
-          XLON=GRID*FLOOR((PHIO+179.9999)/GRID)
+          RLON=GRID*CLING((PHOC-179.9999)/GRID)
+          XLON=GRID*FLOOR((PHOC+179.9999)/GRID)
         ELSE IF (IPRJ.GE.2.AND.IPRJ.LE.9) THEN
           XLON=XLON-GRID
           IF (XLON-RLON.GT.359.9999) XLON=XLON-GRID
@@ -165,11 +165,11 @@ C or both of the poles is within the (rectangular) perimeter, arrange
 C for the parallels at -90 and/or +90 to be drawn.
 C
       IF (IPRJ.EQ.10) THEN
-        CALL MAPTRN (-90.,PHIO,U,V)
+        CALL MAPTRN (-90.,PHOC,U,V)
         IF (ICFELL('MAPGRD',5).NE.0) RETURN
         IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                    SLAT=SLAT-GRID
-        CALL MAPTRN (90.,PHIO,U,V)
+        CALL MAPTRN (90.,PHOC,U,V)
         IF (ICFELL('MAPGRD',6).NE.0) RETURN
         IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                    BLAT=BLAT+GRID

@@ -1,11 +1,13 @@
 C
-C $Id: maplbl.f,v 1.4 1994-03-18 23:50:20 kennison Exp $
+C $Id: maplbl.f,v 1.5 1994-05-03 21:17:28 kennison Exp $
 C
       SUBROUTINE MAPLBL
 C
 C Declare required common blocks.  See MAPBD for descriptions of these
 C common blocks and the variables in them.
 C
+      COMMON /MAPCM1/ IPRJ,PHOC,IROD,RSNO,RCSO,RSNR,RCSR
+      SAVE /MAPCM1/
       COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UEPS,VEPS,UCEN,VCEN,URNG,VRNG,
      +                BLAM,SLAM,BLOM,SLOM,ISSL
       SAVE /MAPCM2/
@@ -65,7 +67,7 @@ C
 C
 C The equator.
 C
-        RLON=PHIO-10.
+        RLON=PHOC-10.
         DO 101 I=1,36
           RLON=RLON+10.
           CALL MAPTRN (0.,RLON,U,V)

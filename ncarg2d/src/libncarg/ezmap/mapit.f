@@ -1,5 +1,5 @@
 C
-C $Id: mapit.f,v 1.4 1994-03-18 23:50:17 kennison Exp $
+C $Id: mapit.f,v 1.5 1994-05-03 21:17:27 kennison Exp $
 C
       SUBROUTINE MAPIT (XLAT,XLON,IFST)
 C
@@ -57,8 +57,8 @@ C
       IF (IPRJ.EQ.2.OR.IPRJ.EQ.4.OR.IPRJ.EQ.5.OR.IPRJ.EQ.6) THEN
         CPLT=COS(DTOR*PHIA)
         SPLT=SIN(DTOR*PHIA)
-        CPLN=COS(DTOR*PHIO)
-        SPLN=SIN(DTOR*PHIO)
+        CPLN=COS(DTOR*PHOC)
+        SPLN=SIN(DTOR*PHOC)
         CXLT=COS(DTOR*XLAT)
         SXLT=SIN(DTOR*XLAT)
         CXLN=COS(DTOR*XLON)

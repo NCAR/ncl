@@ -1,5 +1,5 @@
 C
-C $Id: maplmb.f,v 1.4 1994-03-18 23:50:22 kennison Exp $
+C $Id: maplmb.f,v 1.5 1994-05-03 21:17:30 kennison Exp $
 C
       SUBROUTINE MAPLMB
 C
@@ -67,7 +67,7 @@ C
 C Lambert conformal conic with two standard parallels.
 C
   101 DLAT=GRDR
-      RLON=PHIO+179.9999
+      RLON=PHOC+179.9999
       K=CLING(180./DLAT)
       DO 103 I=1,2
         RLAT=-90.
@@ -83,7 +83,7 @@ C
         IF (ICFELL('MAPLMB',5).NE.0) RETURN
         CALL MAPIQ
         IF (ICFELL('MAPLMB',6).NE.0) RETURN
-        RLON=PHIO-179.9999
+        RLON=PHOC-179.9999
   103 CONTINUE
       GO TO 110
 C

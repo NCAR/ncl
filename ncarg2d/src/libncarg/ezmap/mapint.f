@@ -1,5 +1,5 @@
 C
-C $Id: mapint.f,v 1.6 1994-03-18 23:50:11 kennison Exp $
+C $Id: mapint.f,v 1.7 1994-05-03 21:17:25 kennison Exp $
 C
       SUBROUTINE MAPINT
 C
@@ -139,8 +139,7 @@ C
             COST=SQRT(1.D0-SINT**2)
             TMP1=DSNR/COST
             TMP2=DSNO/COST
-            PHIO=PHIO-REAL(ATAN2(TMP1,-DCSR*TMP2))*RTOD
-            PHOC=PHIO
+            PHOC=PHIO-REAL(ATAN2(TMP1,-DCSR*TMP2))*RTOD
             DSNR=TMP1*DCSO
             RSNR=REAL(DSNR)
             DCSR=-TMP2
@@ -162,8 +161,7 @@ C
             ELSE
               DSNO=-1.D0
               RSNO=-1.
-              PHIO=PHIO+180.
-              PHOC=PHIO
+              PHOC=PHIO+180.
             END IF
 C
             DCSO=0.D0
@@ -505,8 +503,8 @@ C At first, assume the whole globe will be projected.
 C
         SLAM=-90.
         BLAM=+90.
-        SLOM=PHIO-180.
-        BLOM=PHIO+180.
+        SLOM=PHOC-180.
+        BLOM=PHOC+180.
 C
 C Jump if it's obvious that really is the case.
 C
@@ -518,7 +516,7 @@ C to do is to find a point (CLAT,CLON) whose projection is known to be
 C on the map.  First, try the pole of the projection.
 C
         CLAT=PHIA
-        CLON=PHIO
+        CLON=PHOC
         CALL MAPTRN (CLAT,CLON,U,V)
         IF (ICFELL('MAPINT',9).NE.0) RETURN
         IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
@@ -647,8 +645,8 @@ C
         IF (BLOM.LE.SLOM) BLOM=BLOM+360.
         GO TO 701
 C
-  651   SLOM=PHIO-180.
-        BLOM=PHIO+180.
+  651   SLOM=PHOC-180.
+        BLOM=PHOC+180.
         GO TO 701
 C
       END IF
