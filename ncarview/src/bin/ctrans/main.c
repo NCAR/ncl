@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.5 1991-04-03 18:54:28 clyne Exp $
+ *	$Id: main.c,v 1.6 1991-04-18 13:28:11 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -68,6 +68,7 @@ static	struct	{
 	FloatType_ 	min_line_width;	/* minimum line width		*/
 	FloatType_ 	max_line_width;	/* maximun line width		*/
 	FloatType_ 	line_scale;	/* additional line scaling	*/
+	StringType_	pal;		/* optional color palette	*/
 	} commLineOpt;
 	
 
@@ -82,7 +83,8 @@ static	OptDescRec	set_options[] = {
 	{"lmin", OptSepArg, "-1"},	
 	{"lmax", OptSepArg, "-1"},	
 	{"lscale", OptSepArg, "-1"},	
-	{NULL},	
+	{"pal", OptSepArg, NULL},	
+	{NULL}
 	};
 
 static	Option	get_options[] = {
@@ -106,7 +108,9 @@ static	Option	get_options[] = {
 							sizeof (FloatType_ )},
         {"lscale", FloatType, (unsigned long) &commLineOpt.line_scale, 
 							sizeof (FloatType_ )},
-	{NULL},
+	{"pal", StringType, (unsigned long) &(commLineOpt.pal), 
+							sizeof(StringType_)},	
+	{NULL}
 	};
 
 extern	boolean *softFill;
@@ -199,6 +203,14 @@ char	**argv;
 			ct_error(T_MF,"");
 		}
         }
+
+	/*
+	 * inform ctrans to use a default color palette if one was
+	 * requested
+	 */
+	if (commLineOpt.pal) {
+		SetDefaultPalette(commLineOpt.pal);
+	}
 
 	/*
 	 *	init ctrans
