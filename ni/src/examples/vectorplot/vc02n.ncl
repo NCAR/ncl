@@ -183,8 +183,8 @@ frame(wid)
 
 setvalues vcid
    "tiMainString" : "Uniformly-sized Arrow Heads"
-   "vcLineArrowHeadMinSizeF" : 0.0175
-   "vcLineArrowHeadMaxSizeF" : 0.0175
+   "vcLineArrowHeadMinSizeF" : 0.01
+   "vcLineArrowHeadMaxSizeF" : 0.01
 end setvalues
 
 draw(vcid)

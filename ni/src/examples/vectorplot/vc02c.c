@@ -1,5 +1,5 @@
 /*
- *      $Id: vc02c.c,v 1.2 1996-04-11 19:23:40 dbrown Exp $
+ *      $Id: vc02c.c,v 1.3 1996-05-01 17:39:42 dbrown Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -211,8 +211,8 @@ main(int argc, char *argv[])
 
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNtiMainString,"Uniformly-sized Arrow Heads");
-    NhlRLSetFloat(rlist,NhlNvcLineArrowHeadMinSizeF,0.0175);
-    NhlRLSetFloat(rlist,NhlNvcLineArrowHeadMaxSizeF,0.0175);
+    NhlRLSetFloat(rlist,NhlNvcLineArrowHeadMinSizeF,0.01);
+    NhlRLSetFloat(rlist,NhlNvcLineArrowHeadMaxSizeF,0.01);
     NhlSetValues(vcid,rlist);
 
     NhlDraw(vcid);
