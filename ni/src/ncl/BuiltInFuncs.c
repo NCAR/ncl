@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.163 2003-08-20 02:49:51 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.164 2003-12-03 20:11:26 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -5324,11 +5324,21 @@ NhlErrorTypes _NclIfloattochar
 	out_val = NclMalloc(((NclTypeClass)nclTypecharClass)->type_class.size *total);
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
+/**/
+fprintf(stderr, "value[%d]: %3.1f\n", i, value[i]);
+fprintf(stderr, "missing.floatval == %3.1f\n", missing.floatval);
+/**/
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.floatval)) {
-				out_val[i] = (char)missing.floatval;
+/*				out_val[i] = (char)missing.floatval;*/
+/*				out_val[i] = missing.floatval;*/
+				out_val[i] = (char) 0;
 			} else {
 				out_val[i] = (char)value[i];
 			}
+/**/
+fprintf(stderr, "out_val[%d]: %3.3f\n", i, (float) out_val[i]);
+fprintf(stderr, "out_val[%d]: %d\n", i, out_val[i]);
+/**/
 		}
 		missing2.charval = (char)missing.floatval;
 	} else {
@@ -5382,13 +5392,26 @@ NhlErrorTypes _NclIchartofloat
                 total *= dimsizes[i];
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypefloatClass)->type_class.size *total);
+
+missing.charval = (char) 0;
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
-			if(value[i] == missing.charval) {
+/**/
+fprintf(stderr, "fvalue[%d]: %3.1f\n", i, (float) value[i]);
+fprintf(stderr, "cvalue[%d]: %d\n", i, value[i]);
+fprintf(stderr, "missing.charval == %d\n", missing.charval);
+/**/
+/*			if(value[i] == missing.charval) {
 				out_val[i] = (float)missing.charval;
+*/
+			if(value[i] == (char) 0) {
+				out_val[i] = (float) 0;
 			} else {
 				out_val[i] = (float)value[i];
 			}
+/**/
+fprintf(stderr, "out_val[%d]: %3.3f\n", i, out_val[i]);
+/**/
 		}
 		missing2.floatval = (float)missing.charval;
 	} else {
@@ -9070,10 +9093,6 @@ NhlErrorTypes _Nclfspan
 	int dimsizes = 1;
 	int i;
 
-	float   strt,           /* span start */
-            fnsh,           /* span finish */
-            spacing;        /* span interval */
-
 	void    *out_val;       /* may be of type float or of type double */
 
 
@@ -9148,10 +9167,14 @@ NhlErrorTypes _Nclfspan
         tmp_md1 = _NclCoerceData(tmp_md1, Ncl_Typedouble, NULL);
 
         if (dimsizes > 1) {
+        	double  strt,           /* span start */
+                    fnsh,           /* span finish */
+                    spacing;        /* span interval */
+
             fnsh = *(double *) tmp_md1->multidval.val;
             strt = *(double *) tmp_md0->multidval.val;
 
-            spacing = (double) (fnsh - strt) / (double) (dimsizes - 1);
+            spacing = (fnsh - strt) / (dimsizes - 1);
 
             out_val = (void *) NclMalloc(dimsizes * sizeof(double));
             for (i = 0; i < dimsizes; i++) {
@@ -9175,10 +9198,14 @@ NhlErrorTypes _Nclfspan
         tmp_md1 = _NclCoerceData(tmp_md1, Ncl_Typefloat, NULL);
 
         if (dimsizes > 1) {
+        	float   strt,           /* span start */
+                    fnsh,           /* span finish */
+                    spacing;        /* span interval */
+
             fnsh = *(float *) tmp_md1->multidval.val;
             strt = *(float *) tmp_md0->multidval.val;
 
-            spacing = (float) (fnsh - strt) / (float) (dimsizes - 1);
+            spacing = (fnsh - strt) / (dimsizes - 1);
 
             out_val = (void *) NclMalloc(dimsizes * sizeof(float));
             for (i = 0; i < dimsizes; i++) {
