@@ -1,5 +1,5 @@
 C
-C       $Id: wmex11.f,v 1.3 1995-02-02 20:02:02 fred Exp $
+C       $Id: wmex11.f,v 1.4 1995-06-14 13:57:29 haley Exp $
 C
       PROGRAM WMEX11
 C
@@ -8,7 +8,7 @@ C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
       PARAMETER (X1=0.22, X2=0.67)
       CHARACTER*5 IMDAT(10)
 C

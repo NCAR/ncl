@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1995-06-13 21:49:31 haley Exp $
+#	$Id: yMakefile,v 1.6 1995-06-14 13:56:13 haley Exp $
 #
 
 MYNAME	= eautog
@@ -15,7 +15,6 @@ OBJS = \
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 

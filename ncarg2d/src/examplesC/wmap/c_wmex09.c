@@ -7,7 +7,7 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 
 #define T1   0.90
@@ -27,7 +27,7 @@ main()
  *  Example 01 - chart of windbarbs for various speeds.
  */
     gopen_gks ("stdout",0);
-    gopen_ws (WKID, NULL, WSTYPE);
+    gopen_ws (WKID, NULL, IWTYPE);
     gactivate_ws(WKID);
 
 	rgb.rgb.red = 1.; rgb.rgb.green = 1.; rgb.rgb.blue = 1.;

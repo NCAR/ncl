@@ -1,12 +1,12 @@
 C
-C	$Id: coex02.f,v 1.3 1994-10-25 14:01:20 haley Exp $
+C	$Id: coex02.f,v 1.4 1995-06-14 13:56:15 haley Exp $
 C
       PROGRAM SMPCOL
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C  Number of squares in the X and Y directions.
 C

@@ -3,7 +3,7 @@ C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C 
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
       PARAMETER (K=40,N=40,LRWK=1000,LIWK=1000)
       REAL Z(K,N), RWRK(LRWK)
       INTEGER I, M, IWRK(LIWK),IBTS (16,7)

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.3 1995-06-14 00:03:11 haley Exp $
+#	$Id: yMakefile,v 1.4 1995-06-14 14:02:21 haley Exp $
 #
 MYNAME	= fthreed
 SRCS = fthex01.f fthex02.f fthex03.f fthex04.f fthex05.f
@@ -8,7 +8,6 @@ OBJS = fthex01.o fthex02.o fthex03.o fthex04.o fthex05.o
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 FExampleTarget(fthex01,fthex01.o)

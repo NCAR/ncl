@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1995-06-13 21:50:02 haley Exp $
+#	$Id: yMakefile,v 1.6 1995-06-14 13:57:18 haley Exp $
 #
 
 MYNAME	= evelvc
@@ -10,7 +10,6 @@ OBJS = vvex01.o vvex02.o vvex03.o vvexcc.o
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 

@@ -1,12 +1,12 @@
 C
-C	$Id: ffex00.f,v 1.4 1994-10-25 14:20:31 haley Exp $
+C	$Id: ffex00.f,v 1.5 1995-06-14 14:01:21 haley Exp $
 C
       PROGRAM FFEX00
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C Draws a uniform field over an azimuthal projection of the globe
 C Continental boundaries are filled with a grayscale value

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1995-06-14 00:03:05 haley Exp $
+#	$Id: yMakefile,v 1.5 1995-06-14 14:02:07 haley Exp $
 #
 MYNAME	= fspps
 SRCS = fspcurve.f fspline.f fsppoint.f fspponts.f fcoord.f fcoord1.f \
@@ -10,7 +10,6 @@ OBJS = fspcurve.o fspline.o fsppoint.o fspponts.o fcoord.o fcoord1.o \
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 

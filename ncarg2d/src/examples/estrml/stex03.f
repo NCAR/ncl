@@ -1,5 +1,5 @@
 C
-C	$Id: stex03.f,v 1.8 1994-07-08 16:29:12 stautler Exp $
+C	$Id: stex03.f,v 1.9 1995-06-14 13:57:13 haley Exp $
 C
       PROGRAM STEX03
 C
@@ -16,7 +16,7 @@ C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C  
       PARAMETER (M=25, N=25)
       DIMENSION A(M,N),B(M,N),WRK(M*N*2)

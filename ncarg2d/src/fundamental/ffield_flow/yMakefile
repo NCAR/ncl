@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1995-06-14 00:02:48 haley Exp $
+#	$Id: yMakefile,v 1.6 1995-06-14 14:01:26 haley Exp $
 #
 MYNAME	= ffield_flow
 
@@ -10,7 +10,6 @@ OBJS = ffex00.o ffex01.o ffex02.o ffex03.o ffex04.o ffex05.o fcover.o
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 

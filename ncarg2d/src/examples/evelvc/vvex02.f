@@ -1,5 +1,5 @@
 C
-C	$Id: vvex02.f,v 1.8 1994-07-08 16:29:17 stautler Exp $
+C	$Id: vvex02.f,v 1.9 1995-06-14 13:57:17 haley Exp $
 C
       PROGRAM VVEX02
 C
@@ -12,7 +12,7 @@ C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
       PARAMETER ( M=70 , N=150 , NPR=155)
       DIMENSION A(M,NPR),B(M,N),ZDAT(M,N)

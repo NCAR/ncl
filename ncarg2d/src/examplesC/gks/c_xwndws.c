@@ -24,7 +24,7 @@
 #include <ncarg/ncargC.h>
 
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 
 /* NCAR graphic dependent definitions */  
@@ -67,7 +67,7 @@ void main()
 	printf("opening xgks window\n");
  	gopen_gks("stdout", 0);
    	gopen_ws(X_WIN, "1", 8);
-   	gopen_ws(WKID, NULL, WSTYPE);
+   	gopen_ws(WKID, NULL, IWTYPE);
 	gactivate_ws(X_WIN);
 	gactivate_ws(WKID);
 

@@ -1,5 +1,5 @@
 /*
- *  $Id: c_tdshpk.c,v 1.3 1994-12-22 17:36:26 haley Exp $
+ *  $Id: c_tdshpk.c,v 1.4 1995-06-14 13:59:17 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -8,7 +8,7 @@
 #include <ncarg/gks.h>
 
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 
 main()
@@ -23,7 +23,7 @@ main()
  * Invoke demo driver.
  */
     gopen_gks ("stdout",0);
-    gopen_ws (WKID, NULL, WSTYPE);
+    gopen_ws (WKID, NULL, IWTYPE);
     gactivate_ws(WKID);
 
     tdshpk (&ierr);

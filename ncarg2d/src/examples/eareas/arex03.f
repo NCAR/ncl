@@ -1,5 +1,5 @@
 C
-C $Id: arex03.f,v 1.1 1995-05-12 19:37:29 kennison Exp $
+C $Id: arex03.f,v 1.2 1995-06-14 13:55:56 haley Exp $
 C
       PROGRAM TESTIT
 C
@@ -15,7 +15,7 @@ C
 C Define the error file, the Fortran unit number, the workstation type,
 C and the workstation ID.
 C
-        PARAMETER (IERRF=6,LUNIT=2,IWTYPE=SED_WSTYPE,IWKID=1)
+        PARAMETER (IERRF=6,LUNIT=2,IWTYPE=1,IWKID=1)
 C
 C Define the length of the area map array.
 C

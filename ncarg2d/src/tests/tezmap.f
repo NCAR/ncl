@@ -1,11 +1,11 @@
 C
-C       $Id: tezmap.f,v 1.4 1995-04-26 23:49:12 kennison Exp $
+C       $Id: tezmap.f,v 1.5 1995-06-14 14:04:51 haley Exp $
 C
 C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
 C

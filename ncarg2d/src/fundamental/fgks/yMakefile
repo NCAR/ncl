@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1995-06-14 00:02:50 haley Exp $
+#	$Id: yMakefile,v 1.6 1995-06-14 14:01:36 haley Exp $
 #
 MYNAME	= fgks
 
@@ -11,7 +11,6 @@ OBJS = fcell.o fcell0.o fgke01.o fgke02.o fgke03.o fgke04.o fgkgpl.o \
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 

@@ -1,5 +1,5 @@
 /*
- *  $Id: c_ffex03.c,v 1.2 1994-12-22 17:36:44 haley Exp $
+ *  $Id: c_ffex03.c,v 1.3 1995-06-14 14:00:06 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -7,7 +7,7 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 
 #define MSIZE   36
@@ -69,7 +69,7 @@ main()
  *  Open gks, open and activate a workstation.
  */
     gopen_gks("stdout",0);
-    gopen_ws(WKID, NULL, WSTYPE);
+    gopen_ws(WKID, NULL, IWTYPE);
     gactivate_ws(WKID);
 /*
  * Read the input array data

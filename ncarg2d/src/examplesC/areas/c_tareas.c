@@ -1,19 +1,19 @@
 /*
- *	$Id: c_tareas.c,v 1.2 1994-11-04 16:31:21 haley Exp $
+ *	$Id: c_tareas.c,v 1.3 1995-06-14 13:58:51 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 
 main()
 {
     int i, idum, ierr;
     gopen_gks ("stdout",0);
-    gopen_ws (WKID, NULL, WSTYPE);
+    gopen_ws (WKID, NULL, IWTYPE);
     gactivate_ws(WKID);
     tareas(&ierr);
     gdeactivate_ws(WKID);

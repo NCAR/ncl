@@ -1,12 +1,12 @@
 C
-C	$Id: example.f,v 1.2 1994-07-08 16:28:36 stautler Exp $
+C	$Id: example.f,v 1.3 1995-06-14 13:56:50 haley Exp $
 C
       PROGRAM EXMPLE
 C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
       REAL Y(21)
 C
 C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION

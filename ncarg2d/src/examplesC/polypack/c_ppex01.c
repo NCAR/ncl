@@ -1,12 +1,12 @@
 /*
- *      $Id: c_ppex01.c,v 1.6 1995-04-03 20:41:17 kennison Exp $
+ *      $Id: c_ppex01.c,v 1.7 1995-06-14 13:59:53 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 #define NWRK 999
 #define NCCP  5
@@ -86,7 +86,7 @@ main()
  * Open GKS.
  */
     gopen_gks ("stdout",0);
-    gopen_ws (WKID, NULL, WSTYPE);
+    gopen_ws (WKID, NULL, IWTYPE);
     gactivate_ws(WKID);
 /*
  * Enable solid fill instead of the default hollow fill.

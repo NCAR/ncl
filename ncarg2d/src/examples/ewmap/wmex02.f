@@ -1,5 +1,5 @@
 C
-C       $Id: wmex02.f,v 1.10 1995-04-21 16:55:02 haley Exp $
+C       $Id: wmex02.f,v 1.11 1995-06-14 13:57:22 haley Exp $
 C
       PROGRAM WMEX02
 C
@@ -8,7 +8,7 @@ C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C  Color index for cross markers.
 C

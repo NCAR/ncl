@@ -1,12 +1,12 @@
 C
-C   $Id: cmpsat.f,v 1.3 1994-07-11 14:10:51 haley Exp $
+C   $Id: cmpsat.f,v 1.4 1995-06-14 14:07:15 haley Exp $
 C
       PROGRAM CMPSAT
 C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C Open GKS.
 C

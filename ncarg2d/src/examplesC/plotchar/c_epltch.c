@@ -1,5 +1,5 @@
 /*
- *  $Id: c_epltch.c,v 1.2 1994-07-12 20:46:42 haley Exp $
+ *  $Id: c_epltch.c,v 1.3 1995-06-14 13:59:49 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -34,7 +34,7 @@ char  *rlbl[48] = { "A(01)", "B(02)", "C(03)", "D(04)", "E(05)", "F(06)",
  */
     int iffn[23] = { 1, 21, 22, 25, 26, 29, 30, 33, 34, 35, 36, 37, 
                        121,122,125,126,129,130,133,134,135,136,137 };
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 
 main()
@@ -58,7 +58,7 @@ main()
  * Open GKS.
  */
     gopen_gks("stdout",0);
-    gopen_ws (WKID, NULL, WSTYPE);
+    gopen_ws (WKID, NULL, IWTYPE);
     gactivate_ws(WKID);
 /*
  * Do a call to SET which allows us to use fractional coordinates.

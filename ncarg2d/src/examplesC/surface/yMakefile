@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1995-06-13 23:55:03 haley Exp $
+#	$Id: yMakefile,v 1.8 1995-06-14 14:00:10 haley Exp $
 #
 
 SRCS = c_srex01.c
@@ -8,7 +8,6 @@ OBJS = c_srex01.o
 PROG_LIBS		= $(CNCARGLIBS) $(NCARGLIBS)
 SYS_LIBS		= $(CTOFLIBS) -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 

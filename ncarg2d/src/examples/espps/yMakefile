@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1995-06-13 21:49:53 haley Exp $
+#	$Id: yMakefile,v 1.7 1995-06-14 13:57:04 haley Exp $
 #
 
 MYNAME	= espps
@@ -10,7 +10,6 @@ OBJS = splogy.o sprevx.o
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 

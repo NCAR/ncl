@@ -1,12 +1,12 @@
 C
-C	$Id: ffex04.f,v 1.2 1994-07-08 17:44:20 haley Exp $
+C	$Id: ffex04.f,v 1.3 1995-06-14 14:01:24 haley Exp $
 C
       PROGRAM FFEX04
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
       PARAMETER ( M=20 , N=36 , NPR=155)
       DIMENSION U(M,N),V(M,N)

@@ -1,12 +1,12 @@
 C
-C     $Id: ffex01.f,v 1.3 1994-08-08 23:26:09 haley Exp $
+C     $Id: ffex01.f,v 1.4 1995-06-14 14:01:22 haley Exp $
 C
       PROGRAM FFEX01
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C  Open GKS, open and activate a workstation.
 C

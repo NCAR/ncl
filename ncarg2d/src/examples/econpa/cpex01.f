@@ -1,12 +1,12 @@
 C
-C $Id: cpex01.f,v 1.3 1994-07-08 16:27:45 stautler Exp $
+C $Id: cpex01.f,v 1.4 1995-06-14 13:56:20 haley Exp $
 C
       PROGRAM EXMPL1
 C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C Declare an array to hold the data to be contoured.
 C

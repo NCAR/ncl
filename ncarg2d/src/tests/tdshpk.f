@@ -1,10 +1,10 @@
 C
-C $Id: tdshpk.f,v 1.5 1994-10-25 13:55:28 haley Exp $
+C $Id: tdshpk.f,v 1.6 1995-06-14 14:04:50 haley Exp $
 C
 C Define error file number, Fortran logical unit number, workstation type, and
 C workstation ID.
 C
-        PARAMETER (IERRF=6,LUNIT=2,IWTYPE=SED_WSTYPE,IWKID=1)
+        PARAMETER (IERRF=6,LUNIT=2,IWTYPE=1,IWKID=1)
 C
 C Open GKS, open workstation of type 1, activate workstation.
 C

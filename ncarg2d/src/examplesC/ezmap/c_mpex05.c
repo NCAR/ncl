@@ -1,5 +1,5 @@
 /*
- *  $Id: c_mpex05.c,v 1.1 1994-10-31 03:34:21 haley Exp $
+ *  $Id: c_mpex05.c,v 1.2 1995-06-14 13:59:21 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -10,7 +10,7 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 
 main()
@@ -30,7 +30,7 @@ main()
  * open GKS.
  */
     gopen_gks("stdout",0);
-    gopen_ws(WKID, NULL, WSTYPE);
+    gopen_ws(WKID, NULL, IWTYPE);
     gactivate_ws(WKID);
 /*
  * Turn off the clipping indicator.

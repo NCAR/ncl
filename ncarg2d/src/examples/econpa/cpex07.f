@@ -1,12 +1,12 @@
 C
-C	$Id: cpex07.f,v 1.2 1994-07-08 16:27:52 stautler Exp $
+C	$Id: cpex07.f,v 1.3 1995-06-14 13:56:25 haley Exp $
 C
       PROGRAM EXMPL7
 C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C Declare required data arrays and workspace arrays.
 C

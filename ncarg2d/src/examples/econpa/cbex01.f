@@ -1,5 +1,5 @@
 C
-C	$Id: cbex01.f,v 1.2 1994-07-08 16:27:44 stautler Exp $
+C	$Id: cbex01.f,v 1.3 1995-06-14 13:56:19 haley Exp $
 C
       PROGRAM CPBIVR
 C
@@ -45,7 +45,7 @@ C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C Define arrays to be used below.  XRAN, YRAN, and ZRAN are used for
 C the "random data".  XCNV and YCNV are used to define the convex hull

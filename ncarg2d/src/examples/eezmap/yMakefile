@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1995-06-13 21:49:37 haley Exp $
+#	$Id: yMakefile,v 1.6 1995-06-14 13:56:42 haley Exp $
 #
 MYNAME	= eezmap
 
@@ -11,7 +11,6 @@ OBJS = mpexcc.o mpex01.o mpex02.o mpex03.o mpex04.o mpex05.o mpex06.o \
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 

@@ -1,5 +1,5 @@
 C
-C	$Id: bnchmk.f,v 1.3 1994-07-08 16:28:35 stautler Exp $
+C	$Id: bnchmk.f,v 1.4 1995-06-14 13:56:49 haley Exp $
 C
       PROGRAM BNCHMK
 C
@@ -32,7 +32,7 @@ C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 
       PARAMETER ( M=70 , N=150 , NPR=155)
       PARAMETER (PI=3.14159 , TWOPI=2.*PI , EPS=PI/6.)

@@ -6,7 +6,7 @@ C
 C Define error file, Fortran unit number, workstation type, and
 C workstation ID.
 C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C Declare an array to hold the data to be contoured.
 C

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1995-06-14 00:18:08 haley Exp $
+#	$Id: yMakefile,v 1.5 1995-06-14 14:07:19 haley Exp $
 #
 MYNAME	= tezmap
 
@@ -18,7 +18,6 @@ OBJS = \
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(TUTORIALPATH))
 

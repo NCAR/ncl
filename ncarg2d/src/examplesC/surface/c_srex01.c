@@ -1,5 +1,5 @@
 /*
- *	$Id: c_srex01.c,v 1.1 1994-10-31 04:09:45 haley Exp $
+ *	$Id: c_srex01.c,v 1.2 1995-06-14 14:00:09 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -18,7 +18,7 @@ struct common {
 
 char *plbl = "Longs Peak relief using SRFACE";
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 
 main()
@@ -44,7 +44,7 @@ main()
  * Open GKS, open workstation of type 1, activate workstation.
  */
     gopen_gks ("stdout",0);
-    gopen_ws (WKID, NULL, WSTYPE);
+    gopen_ws (WKID, NULL, IWTYPE);
     gactivate_ws (WKID);
 /*
  * Generate x and y coordinate values.

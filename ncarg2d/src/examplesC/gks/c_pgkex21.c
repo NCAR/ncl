@@ -5,7 +5,7 @@
 #include <ncarg/gks.h>
 
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 20
 #define WKID   1
 
 #define IWTYPE   1

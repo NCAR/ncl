@@ -1,5 +1,5 @@
 C
-C       $Id: vvex03.f,v 1.3 1994-07-08 16:29:18 stautler Exp $
+C       $Id: vvex03.f,v 1.4 1995-06-14 13:57:18 haley Exp $
 C
       PROGRAM VVEX03
 C
@@ -14,7 +14,7 @@ C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C Open GKS, open workstation of type 1, activate workstation
 C

@@ -1,12 +1,12 @@
 C
-C	$Id: ffex05.f,v 1.5 1994-07-08 17:44:21 haley Exp $
+C	$Id: ffex05.f,v 1.6 1995-06-14 14:01:25 haley Exp $
 C
       PROGRAM FFEX05
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C This program requires the input data file 'ffex05.dat'
 C It reads the data from standard input, e.g.: ffex05 < ffex05.dat

@@ -1,5 +1,5 @@
 /*
- *  $Id: c_vvex03.c,v 1.1 1994-10-31 04:17:01 haley Exp $
+ *  $Id: c_vvex03.c,v 1.2 1995-06-14 14:00:16 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -7,7 +7,7 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 
 /*
@@ -46,7 +46,7 @@ main()
  * open gks, open workstation of type 1, activate workstation
  */
     gopen_gks("stdout",0);
-    gopen_ws(WKID, NULL, WSTYPE);
+    gopen_ws(WKID, NULL, IWTYPE);
     gactivate_ws(WKID);
 /*
  * draw an irregularly gridded vector plot.

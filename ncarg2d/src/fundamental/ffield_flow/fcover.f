@@ -1,12 +1,12 @@
 C
-C	$Id: fcover.f,v 1.4 1994-07-08 17:44:16 haley Exp $
+C	$Id: fcover.f,v 1.5 1995-06-14 14:01:20 haley Exp $
 C
       PROGRAM FCOVER
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C This program requires the input data file 'fun-cover.dat'
 C It reads the data from standard input, e.g.: fun-cover < fun-cover.dat

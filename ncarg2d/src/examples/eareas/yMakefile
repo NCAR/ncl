@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1995-06-13 21:49:25 haley Exp $
+#	$Id: yMakefile,v 1.7 1995-06-14 13:55:57 haley Exp $
 #
 MYNAME	= eareas
 
@@ -9,7 +9,6 @@ OBJS = arex01.o arex02.o arex03.o
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 

@@ -1,5 +1,5 @@
 C
-C	$Id: mpex06.f,v 1.2 1994-07-08 16:28:13 stautler Exp $
+C	$Id: mpex06.f,v 1.3 1995-06-14 13:56:37 haley Exp $
 C
       PROGRAM EXMPL6
 C
@@ -9,7 +9,7 @@ C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C Define the label for the top of the map.
 C

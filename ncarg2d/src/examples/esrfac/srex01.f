@@ -1,12 +1,12 @@
 C
-C	$Id: srex01.f,v 1.2 1994-07-08 16:29:01 stautler Exp $
+C	$Id: srex01.f,v 1.3 1995-06-14 13:57:06 haley Exp $
 C
       PROGRAM TEST
 C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
       COMMON /SRFIP1/ IFR        ,ISTP       ,IROTS      ,IDRX       ,
      1                IDRY       ,IDRZ       ,IUPPER     ,ISKIRT     ,

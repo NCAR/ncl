@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 1995-06-14 00:17:57 haley Exp $
+#	$Id: yMakefile,v 1.3 1995-06-14 14:05:50 haley Exp $
 #
 MYNAME	= class
 
@@ -9,7 +9,6 @@ OBJS = class1.o class2.o class3.o
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(TUTORIALPATH))
 

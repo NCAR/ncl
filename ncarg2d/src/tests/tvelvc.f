@@ -1,10 +1,10 @@
 C
-C	$Id: tvelvc.f,v 1.3 1994-07-08 19:41:47 stautler Exp $
+C	$Id: tvelvc.f,v 1.4 1995-06-14 14:05:12 haley Exp $
 C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
 C

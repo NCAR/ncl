@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1995-06-14 00:18:06 haley Exp $
+#	$Id: yMakefile,v 1.8 1995-06-14 14:06:54 haley Exp $
 #
 MYNAME	= tconpack
 
@@ -30,7 +30,6 @@ OBJS = \
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(TUTORIALPATH))
 

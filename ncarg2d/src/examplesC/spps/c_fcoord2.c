@@ -1,5 +1,5 @@
 /*
- * $Id: c_fcoord2.c,v 1.2 1994-12-22 17:36:41 haley Exp $
+ * $Id: c_fcoord2.c,v 1.3 1995-06-14 14:00:03 haley Exp $
  */
 
 #include <stdio.h>
@@ -8,7 +8,7 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 
 main()
@@ -23,7 +23,7 @@ main()
  * Open GKS, open and activate a workstation.
  */
 	gopen_gks("stdout",0);
-	gopen_ws(WKID, NULL, WSTYPE);
+	gopen_ws(WKID, NULL, IWTYPE);
 	gactivate_ws(WKID);
 /*
  * Invoke demo driver

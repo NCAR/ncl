@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1995-06-14 00:02:58 haley Exp $
+#	$Id: yMakefile,v 1.5 1995-06-14 14:01:52 haley Exp $
 #
 MYNAME	= fplotchar
 
@@ -9,7 +9,6 @@ OBJS = fpcfonts.o fpchiqu.o fpcloqu.o
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 

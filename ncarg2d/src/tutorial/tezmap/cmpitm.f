@@ -1,5 +1,5 @@
 C
-C	$Id: cmpitm.f,v 1.4 1994-07-11 14:10:46 haley Exp $
+C	$Id: cmpitm.f,v 1.5 1995-06-14 14:07:08 haley Exp $
 C
 C
 C This program draws a map, then it draws the projection of a circle, 
@@ -8,7 +8,7 @@ C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C The arrays CLAT and CLON will be used to hold lat/lon pairs defining
 C the desired circle.

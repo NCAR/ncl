@@ -1,5 +1,5 @@
 /*
- *  $Id: c_fngwsym.c,v 1.3 1994-12-22 17:36:36 haley Exp $
+ *  $Id: c_fngwsym.c,v 1.4 1995-06-14 13:59:46 haley Exp $
  */
 #include <stdio.h>
 
@@ -18,7 +18,7 @@ char *ylab[2][7] = {"a","N","W","CH","CM","CL","C","Pressure Tendency ",
 
 int ylen[2][7] = {1,1,1,2,2,2,1,17,9,12,11,13,10,11};
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 
 main()
@@ -42,7 +42,7 @@ main()
 #endif
 
 	gopen_gks("stdout",0);
-	gopen_ws(WKID, NULL, WSTYPE);
+	gopen_ws(WKID, NULL, IWTYPE);
 	gactivate_ws(WKID);
 
     rgb.rgb.red = 1.;    rgb.rgb.green = 1.;    rgb.rgb.blue = 1.;

@@ -1,11 +1,11 @@
 C
-C	$Id: cmpgci.f,v 1.3 1994-07-11 14:10:43 haley Exp $
+C	$Id: cmpgci.f,v 1.4 1995-06-14 14:07:04 haley Exp $
 C
 C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 
       PARAMETER(IGRD=2)
       PARAMETER(M=180/IGRD,N=360/IGRD)

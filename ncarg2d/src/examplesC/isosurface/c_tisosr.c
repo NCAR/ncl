@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tisosr.c,v 1.4 1994-11-03 20:44:07 haley Exp $
+ *	$Id: c_tisosr.c,v 1.5 1995-06-14 13:59:39 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -8,7 +8,7 @@
 
 float t[19][31][21],slab[33][33];
 
-#define WSTYPE  SED_WSTYPE
+#define IWTYPE  SED_IWTYPE
 #define WKID    1
 
 main()
@@ -18,7 +18,7 @@ main()
  * Open GKS, open workstation, activate workstation
  */
     gopen_gks ("stdout",0);
-    gopen_ws (WKID, NULL, WSTYPE);
+    gopen_ws (WKID, NULL, IWTYPE);
     gactivate_ws (WKID);
 /*
  * invoke demo driver

@@ -1,5 +1,5 @@
 C
-C	$Id: coex01.f,v 1.3 1994-10-25 14:01:19 haley Exp $
+C	$Id: coex01.f,v 1.4 1995-06-14 13:56:14 haley Exp $
 C
 C
 C  This program produces five 9 x 9 color charts.  Blue and green
@@ -13,7 +13,7 @@ C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
       DIMENSION RGB(3,405)
 C

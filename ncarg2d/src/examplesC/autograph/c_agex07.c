@@ -1,5 +1,5 @@
 /*
- *	$Id: c_agex07.c,v 1.2 1994-12-22 17:36:18 haley Exp $
+ *	$Id: c_agex07.c,v 1.3 1995-06-14 13:58:58 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -11,7 +11,7 @@
 
 #define pow2(x)  ((x) * (x))
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 
 main()
@@ -33,7 +33,7 @@ main()
  * initialize gks.
  */
 	gopen_gks("stdout",0);
-	gopen_ws(WKID, NULL, WSTYPE);
+	gopen_ws(WKID, NULL, IWTYPE);
 	gactivate_ws(WKID);
 /*
  * fill the data arrays and the dash pattern array.

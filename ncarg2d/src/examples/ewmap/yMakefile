@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.4 1995-06-13 21:50:04 haley Exp $
+#       $Id: yMakefile,v 1.5 1995-06-14 13:57:34 haley Exp $
 #
 MYNAME  = ewmap
 
@@ -11,7 +11,6 @@ OBJS = wmex01.o wmex02.o wmex03.o wmex04.o wmex05.o wmex06.o wmex07.o \
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1995-06-13 21:49:57 haley Exp $
+#	$Id: yMakefile,v 1.5 1995-06-14 13:57:10 haley Exp $
 #
 
 MYNAME	= estitl
@@ -10,7 +10,6 @@ OBJS = slex01.o
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 

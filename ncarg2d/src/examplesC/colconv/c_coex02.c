@@ -1,5 +1,5 @@
 /*
- *  $Id: c_coex02.c,v 1.4 1994-11-04 16:24:09 haley Exp $
+ *  $Id: c_coex02.c,v 1.5 1995-06-14 13:59:08 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -20,7 +20,7 @@ int NY=4;
  */
 float SZX= .235,SZY=.135,Y0=.10,Y1=.88;
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 
 main()
@@ -75,7 +75,7 @@ main()
       strcpy(tlab[3][3], "Black                    " );
 
 	  gopen_gks ("stdout",0);
-	  gopen_ws (WKID, NULL, WSTYPE);
+	  gopen_ws (WKID, NULL, IWTYPE);
 	  gactivate_ws(WKID);
 /*
  *  Use the Duplex character set of PLOTCHAR.

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.10 1995-06-14 00:08:42 haley Exp $
+#	$Id: yMakefile,v 1.11 1995-06-14 14:05:13 haley Exp $
 #
 
 MYNAME	= tests
@@ -23,7 +23,6 @@ OBJS = \
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
-EXTRA_DEFINES	= -DSED_WSTYPE=1
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(TESTSPATH))
 

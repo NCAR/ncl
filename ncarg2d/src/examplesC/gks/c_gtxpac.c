@@ -22,7 +22,7 @@
 #define IMXHM IMXH-IX
 #define IMXHP IMXH+IX
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 
 main()
@@ -42,7 +42,7 @@ main()
  *  Open GKS, open and activate the metafile workstation.
  */
     gopen_gks("stdout",0);
-    gopen_ws (WKID, NULL, WSTYPE);
+    gopen_ws (WKID, NULL, IWTYPE);
     gactivate_ws(WKID);
 /*
  *  Define the necessary color indices.

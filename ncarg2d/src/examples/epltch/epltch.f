@@ -1,12 +1,12 @@
 C
-C $Id: epltch.f,v 1.9 1995-06-13 17:31:08 kennison Exp $
+C $Id: epltch.f,v 1.10 1995-06-14 13:56:53 haley Exp $
 C
       PROGRAM EXMPLS
 C
 C Define error file, FORTRAN unit number, workstation type, and
 C workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C --- D E C L A R A T I O N S -----------------------------------------
 C

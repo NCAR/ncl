@@ -1,5 +1,5 @@
 /*
- *  $Id: c_cbex01.c,v 1.1 1994-10-31 03:15:21 haley Exp $
+ *  $Id: c_cbex01.c,v 1.2 1995-06-14 13:59:05 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -10,7 +10,7 @@
 
 int icll, iama[10000];
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 
 main()
@@ -129,7 +129,7 @@ main()
  * Open GKS.
  */
     gopen_gks("stdout",0);
-    gopen_ws(WKID, NULL, WSTYPE);
+    gopen_ws(WKID, NULL, IWTYPE);
     gactivate_ws(WKID);
 /*
  * Turn off clipping.

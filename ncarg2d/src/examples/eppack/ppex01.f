@@ -1,12 +1,12 @@
 C
-C $Id: ppex01.f,v 1.4 1995-04-03 20:33:18 kennison Exp $
+C $Id: ppex01.f,v 1.5 1995-06-14 13:56:56 haley Exp $
 C
       PROGRAM TESTIT
 C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C Declare arrays in which to define the clip polygon and the subject
 C polygon.

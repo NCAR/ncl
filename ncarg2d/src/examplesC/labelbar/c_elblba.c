@@ -1,5 +1,5 @@
 /*
- *	$Id: c_elblba.c,v 1.2 1994-07-12 20:46:40 haley Exp $
+ *	$Id: c_elblba.c,v 1.3 1995-06-14 13:59:42 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -30,7 +30,7 @@ char *llb4[4] = {"I","J","K","L"};
 char *llb5[4] = {"E","F","G","H"};
 char *llb6[4] = {"A","B","C","D"};
 
-#define WSTYPE SED_WSTYPE
+#define IWTYPE 1
 #define WKID   1
 
 main()
@@ -66,7 +66,7 @@ main()
  * Open GKS.
  */
     gopen_gks("stdout",0);
-    gopen_ws (WKID, NULL, WSTYPE);
+    gopen_ws (WKID, NULL, IWTYPE);
     gactivate_ws(WKID);
 /*
  * Set all the GKS aspect source flags to "individual".

@@ -1,5 +1,5 @@
 C
-C       $Id: vvex01.f,v 1.7 1994-10-24 21:22:10 haley Exp $
+C       $Id: vvex01.f,v 1.8 1995-06-14 13:57:16 haley Exp $
 C
       PROGRAM VVEX01
 C
@@ -13,7 +13,7 @@ C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C 
 C The contour, vector field component, and area map array declarations:
 C
