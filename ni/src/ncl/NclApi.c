@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.53 1999-02-09 22:57:22 ethan Exp $
+ *      $Id: NclApi.c,v 1.54 1999-02-09 23:55:34 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -661,7 +661,7 @@ NclExtValueRec *NclGetExprValue
 	*ptr++ = '=';
 	memcpy(ptr,expression,strlen(expression));
 	ptr += strlen(expression);
-	*ptr = '\n';
+	*ptr = '\0';
 	NclSubmitCommand(tmp);
 	tmp_val = NclGetVarValue(NCLAPI_TMP_VAR,1);
 	NclSubmitCommand(NCLAPI_DEL_TMP_VAR);
