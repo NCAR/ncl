@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.45 2000-07-27 15:06:58 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.46 2000-07-27 21:42:30 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1656,6 +1656,7 @@ end
 ;***********************************************************************;
 ; Function : get_lat_labels                                             ;
 ;                lat_values[*]: numeric                                 ;
+  set_attr(tmres,"tiXAxisOn"        , False)
 
 ; Create labels for latitude tick marks.
   lat_labels = new(dimsizes(lat_values),string)
@@ -1689,6 +1690,7 @@ end
   set_attr(tmres,"tmXBLabels"       , latlabels)
   set_attr(tmres,"tmXBValues"       , latvalues)
   set_attr(tmres,"tmXBMinorValues"  , latvalues@minor)
+  set_attr(tmres,"tiXAxisOn"        , False)
   attsetvalues(plot,tmres)
 
   lon_spacing2 = get_res_value(tmres,"tmXBTickSpacingF",lon_spacing)
@@ -1721,6 +1723,7 @@ end
   set_attr(tmres,"tmYLLabels"       , latlabels)
   set_attr(tmres,"tmYLValues"       , latvalues)
   set_attr(tmres,"tmYLMinorValues"  , latvalues@minor)
+  set_attr(tmres,"tiYAxisOn"        , False)
   attsetvalues(plot,tmres)
 
   lat_spacing2 = get_res_value(tmres,"tmXBTickSpacingF",lat_spacing)
