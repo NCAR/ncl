@@ -1,5 +1,5 @@
 C
-C       $Id: stmpxy.f,v 1.8 1994-06-01 23:08:29 dbrown Exp $
+C       $Id: stmpxy.f,v 1.9 1994-06-02 21:09:16 dbrown Exp $
 C
 C ---------------------------------------------------------------------
 C
@@ -117,32 +117,31 @@ C
             RETURN
          ENDIF
 C
-C Depending on how the data coordinate boundaries are expressed, 
-C it may be necessary to adjust the longitudinal values in order 
-C to place them within range. Latitudes are not adjusted.
+C MAPTRI always returns longitudes in the ranges -180. to +180.
+C However, the user is allowed to express the data boundaries
+C anywhere within the range -540. to +540. Therefore, the
+C longitudinal values returned by MAPTRI may need adjustment.
+C Latitudes are not adjusted, however.
 C
-         XLO = MIN(XLOV,XHIV)
-         XHI = MAX(XLOV,XHIV)
-         IF (XDA .LT. XLO) THEN       
- 10         CONTINUE
-            IF (XDA .GT. XHI) THEN
-               IST = -1
-               RETURN
-            ELSE IF (XDA .GE. XLO) THEN
-               RETURN
-            ENDIF
+         TLO = MIN(XLOV,XHIV)
+         THI = MAX(XLOV,XHIV)
+         IF (XDA .LT. TLO) THEN
             XDA = XDA + 360.0
-            GOTO 10
-         ELSE IF (XDA .GT. XHI) THEN
- 20         CONTINUE
-            IF (XDA .LT. XLO) THEN
+            IF (XDA .GT. THI .OR. XDA .LT. TLO) THEN
                IST = -1
                RETURN
-            ELSE IF (XDA .LE. XHI) THEN
+            END IF
+         ELSE IF (XDA .GT. THI) THEN
+            XDA = XDA - 360.0
+            IF (XDA .LT. TLO .OR. XDA .GT. THI) THEN
+               IST = -1
                RETURN
             ENDIF
-            XDA = XDA - 360.0
-            GOTO 10
+         ENDIF
+C
+         IF (YDA.LT.MIN(YLOV,YHIV) .OR. YDA.GT.MAX(YLOV,YHIV)) THEN
+            IST = -1
+            RETURN
          ENDIF
 C
        ELSE IF (IMAP .EQ. 2) THEN
