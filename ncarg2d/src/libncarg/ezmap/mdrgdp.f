@@ -1,5 +1,5 @@
 C
-C $Id: mdrgdp.f,v 1.1 2001-11-02 22:40:57 kennison Exp $
+C $Id: mdrgdp.f,v 1.2 2001-11-15 22:48:02 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -32,7 +32,7 @@ C
         SAVE   /MAPRGD/
 C
         IF (NCRA.GT.1.AND.ITYP.GT.0) THEN
-          IF (ICSF(ITYP).GE.0) THEN
+          IF (ICOL(ITYP).GE.0) THEN
             CALL GETSET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
             CALL MDPRS
             NCRM=0
