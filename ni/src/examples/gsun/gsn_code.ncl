@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.9 1999-02-19 22:33:49 haley Exp $
+;      $Id: gsn_code.ncl,v 1.10 1999-02-20 00:11:09 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -38,6 +38,7 @@
 ; procedures with the same name.                                        ;
 ;***********************************************************************;
 
+undef("turn_off_tickmarks")
 undef("gsn_open_ps")
 undef("gsn_open_x11")
 undef("gsn_open_ncgm")
@@ -66,6 +67,19 @@ undef("gsn_vector_scalar")
 undef("gsn_vector_scalar_map")
 undef("gsn_xy")
 
+
+procedure turn_off_tickmarks(res:logical)
+  new_vpx = new_ux + dx
+  res@tmXBBorderOn = False 
+  res@tmXBOn       = False
+  res@tmXTBorderOn = False
+  res@tmXTOn       = False
+  res@tmYLBorderOn = False
+  res@tmYLOn       = False
+  res@tmYRBorderOn = False
+  res@tmYROn       = False
+
+  if(xrange.lt.yrange)
     new_width  = width * (xrange/yrange)
   end if
 ;
@@ -666,6 +680,8 @@ begin
             delete(res2@gsnFrame)
         end if
 
+; Check if the plot should be reshaped or scaled.
+
         if(isatt(res2,"gsnScale"))
             if(res2@gsnScale)
                 scale = True
@@ -679,6 +695,15 @@ begin
                 scale = True
             end if
             delete(res2@gsnShape)
+        end if
+
+; Check if turning tickmarks off.
+
+        if(isatt(res2,"gsnTickMarksOn"))
+            if(.not.res2@gsnTickMarksOn)
+              turn_off_tickmarks(res2)
+            end if
+            delete(res2@gsnTickMarksOn)
         end if
 
     end if
@@ -1655,6 +1680,8 @@ begin
             delete(res2@gsnFrame)
         end if
 
+; Check if the plot should be reshaped or scaled.
+
         if(isatt(res2,"gsnScale"))
             if(res2@gsnScale)
                 scale = True
@@ -1668,6 +1695,15 @@ begin
                 scale = True
             end if
             delete(res2@gsnShape)
+        end if
+
+; Check if turning tickmarks off.
+
+        if(isatt(res2,"gsnTickMarksOn"))
+            if(.not.res2@gsnTickMarksOn)
+              turn_off_tickmarks(res2)
+            end if
+            delete(res2@gsnTickMarksOn)
         end if
 
     end if
@@ -2189,6 +2225,8 @@ begin
             delete(res2@gsnFrame)
         end if
 
+; Check if the plot should be reshaped or scaled.
+
         if(isatt(res2,"gsnScale"))
             if(res2@gsnScale)
                 scale = True
@@ -2202,6 +2240,15 @@ begin
                 scale = True
             end if
             delete(res2@gsnShape)
+        end if
+
+; Check if turning tickmarks off.
+
+        if(isatt(res2,"gsnTickMarksOn"))
+            if(.not.res2@gsnTickMarksOn)
+              turn_off_tickmarks(res2)
+            end if
+            delete(res2@gsnTickMarksOn)
         end if
 
     end if
@@ -2428,7 +2475,6 @@ begin
             end if
             delete(res2@gsnScale)
         end if
-
     end if
         "vcVectorFieldData" : vfdata_object
     if((res2).and..not.any(ismissing(getvaratts(res2))))
@@ -2650,7 +2696,6 @@ begin
             end if
             delete(res2@gsnScale)
         end if
-
     end if
     end if
     if((res2).and..not.any(ismissing(getvaratts(res2))))
@@ -2845,6 +2890,8 @@ begin
             delete(res2@gsnFrame)
         end if
 
+; Check if the plot should be reshaped or scaled.
+
         if(isatt(res2,"gsnScale"))
             if(res2@gsnScale)
                 scale = True
@@ -2858,6 +2905,15 @@ begin
                 scale = True
             end if
             delete(res2@gsnShape)
+        end if
+
+; Check if turning tickmarks off.
+
+        if(isatt(res2,"gsnTickMarksOn"))
+            if(.not.res2@gsnTickMarksOn)
+              turn_off_tickmarks(res2)
+            end if
+            delete(res2@gsnTickMarksOn)
         end if
 
     end if
@@ -3096,7 +3152,6 @@ begin
             end if
             delete(res2@gsnScale)
         end if
-
     end if
 ; Create plot object.
     if((res2).and..not.any(ismissing(getvaratts(res2))))
@@ -3299,9 +3354,6 @@ begin
       set_attr(res2,"tiXAxisString",x@long_name)
     end if
     if(isatt(y,"long_name")) then
-        "xyMarkers" : (/0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,\
-                        0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,\
-                        0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16/)
     end setvalues
     if((res2).and..not.any(ismissing(getvaratts(res2))))
 
@@ -3320,7 +3372,9 @@ begin
             delete(res2@gsnFrame)
         end if
 
-        if(isatt(res2,"gsnScale"))
+; Check if the plot should be reshaped or scaled.
+ 
+       if(isatt(res2,"gsnScale"))
             if(res2@gsnScale)
                 scale = True
             end if
@@ -3333,6 +3387,15 @@ begin
                 scale = True
             end if
             delete(res2@gsnShape)
+        end if
+
+; Check if turning tickmarks off.
+
+        if(isatt(res2,"gsnTickMarksOn"))
+            if(.not.res2@gsnTickMarksOn)
+              turn_off_tickmarks(res2)
+            end if
+            delete(res2@gsnTickMarksOn)
         end if
 
     end if
