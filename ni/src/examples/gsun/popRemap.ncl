@@ -1,18 +1,23 @@
 ;
-;      $Id: popRemap.ncl,v 1.5 2004-06-17 23:29:26 shea Exp $
+;      $Id: popRemap.ncl,v 1.6 2004-06-27 22:01:04 shea Exp $
 ;
 ;===========================================================
 ; D. Shea
 ; NCL function to perform selected grid-to-grid transformations
-; Within NCAR there are several directories where the required
-; remapping files reside.
-; outside the firewall
+; **Within NCAR** the remapping files reside inseveral directories
+; outside  firewall
 ;    CSM convention:    /fs/cgd/csm/mapping/maps/validated
 ;                       [replaces /fs/cgd/csm/mapping/maps 14 June 2004]
 ;    SCRIP convention:  /fs/cgd/data0/shea/pop
-; behind the firewall
+; behind firewall
 ;    one official master copy: /fis/cgd/cseg/csm/mapping/maps
 ;    unofficial:        /cgd/cas/shea/POP_REMAP/
+; 
+; July 1, 2004
+; We can no longer automatically access certain directories.
+; I [Dennis Shea] have decided to have the code look in the
+; current directory or in a directory specified by the
+; environment variable NCL_POP_REMAP.
 
 ; CCSM uses gx1v2
 
@@ -78,10 +83,7 @@ begin
 
   dirENV  = getenv("NCL_POP_REMAP")
   if (ismissing(dirENV)) then
-      dirPOP  = (/ "." \                            ; local
-                 , "/fs/cgd/csm/mapping/mapping/validated" \  ; CSM convention
-                 , "/fs/cgd/data0/shea/pop"  /)            \  ; SCRIP convention
-                 + "/"
+      dirPOP  = (/ "./" /)             ; local only
   else
       dirPOP  = (/ dirENV, "." /) + "/"
   end if
@@ -113,13 +115,10 @@ begin
 
   dirENV  = getenv("NCL_POP_REMAP")
   if (ismissing(dirENV)) then
-      dirPOP  = (/ "." \                         ; local
-                 , "/fs/cgd/data0/shea/pop"  /)  \  
-                 + "/"
+      dirPOP  = (/ "./" /)             ; local only
   else
-      dirPOP  = (/ dirENV , "." /) + "/"
+      dirPOP  = (/ dirENV, "." /) + "/"
   end if
-
                                         ; names with rot angles
   rotPOP  = (/ "POPX3","POP23", "POP43", "gx1v3", "gx1v2" \
              , "gx3", "gx3p", "hx1", "crx3" /)
@@ -904,7 +903,7 @@ function latLon2Pop_LinearIntS (x:numeric, dst_type:string)
 ;   t_X3 = latLon2Pop_LinearIntS ( temp, "POPX3") ==> (time,depth,116,100)
 
 local dimx, nDim, lon, lat, f, lon_pop, lat_pop, ny, nx, \
-      x_tmp, x_pop, i, x_atts
+      x_tmp, x_pop, i, x_atts, dirENV, dirPOP
 begin
   dimx = dimsizes(x)
   nDim = dimsizes(dimx)
@@ -930,10 +929,20 @@ begin
       end if
   end if
 
+
+  dirENV  = getenv("NCL_POP_REMAP")
+  if (ismissing(dirENV)) then
+      dirPOP  = "./"             ; local only
+  else
+      dirPOP  = dirENV + "/"
+  end if
+
 ; get two-dimensional lat and lon coordinates from a X1 or X3  file
 
+
   if (dst_type.eq."POPX1") then
-      f = addfile ("/fs/cgd/data0/shea/pop/rmp_OneD_to_POPX1_C.nc","r")
+     ;f = addfile ("/fs/cgd/data0/shea/pop/rmp_OneD_to_POPX1_C.nc","r")
+      f = addfile (dirPOP+"rmp_OneD_to_POPX1_C.nc","r")
       lon_pop = f->dst_grid_center_lon    ; this is one-dim
       lat_pop = f->dst_grid_center_lat
       ny = 320
@@ -941,7 +950,8 @@ begin
   end if
 
   if (dst_type.eq."POPX3") then
-      f = addfile ("/fs/cgd/data0/shea/pop/rmp_OneD_to_POPX3_B_CSM.nc","r")
+     ;f = addfile ("/fs/cgd/data0/shea/pop/rmp_OneD_to_POPX3_B_CSM.nc","r")
+      f = addfile (dirPOP+"rmp_OneD_to_POPX3_B_CSM.nc","r")
       lon_pop = f->xc_b    ; this is one-dim
       lat_pop = f->yc_b
       ny = 116
