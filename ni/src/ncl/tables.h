@@ -384,39 +384,59 @@ TBLE2 params_ecmwf[] = {
 {"185","Cloud Cover","(0 - 1)","T_CDC"}
 };
 
-int level_index[] = { 100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,119,120,121,125,128,141,160,200,201};
+int level_index[] = {1,2,3,4,5,6,7,8,9,20,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,119,120,121,125,128,141,160,200,201};
 
 char *level_str[] = {
-        "lv_ISBL", 	/*100*/
-        "lv_ISBY", 	/*101*/
-        "lv_MSL", 	/*102*/
-        "lv_GPML",	/*103*/
-        "lv_GPMY",	/*104*/
-        "lv_HTGL",	/*105*/
-        "lv_HTGY",/*106*/
-	"lv_SIGL",		/*107*/
-	"lv_SIGY",	/*108*/
-	"lv_HYBL",		/*109*/
-	"lv_HYBY",/*110*/
-	"lv_DBLL",	/*111*/
-	"lv_DBLY", /*112*/
-	"lv_THEL",	/*113*/
-	"lv_THEY", /*114*/
-	"lv_SPDL",	/*115*/
-	"lv_SPDY", /*116*/
-	"lv_PVL", /*117*/
-	"lv_ETAL", /*119*/
-	"lv_ETAY", /*120*/
-	"lv_IBYH", 	/*121*/
-	"lv_HGLH",	/*125*/
-	"lv_SGYH", /*128*/
-	"lv_IBYM", /*141*/
-	"lv_DBSL",	/*160*/
-	"lv_EATM",	/*200*/
-	"lv_EOCN",		/*201*/
+	"SFC",		/*1*/
+	"CBL",		/*2*/
+	"CTL",		/*3*/
+	"0DEG",		/*4*/
+	"ADCL",		/*5*/
+	"MWSL",		/*6*/
+	"TRO",		/*7*/
+	"NTAT",		/*8*/
+	"SEAB",		/*9*/
+	"TMPL",		/*20*/
+        "ISBL", 	/*100*/
+        "ISBY", 	/*101*/
+        "MSL", 	/*102*/
+        "GPML",	/*103*/
+        "GPMY",	/*104*/
+        "HTGL",	/*105*/
+        "HTGY",/*106*/
+	"SIGL",		/*107*/
+	"SIGY",	/*108*/
+	"HYBL",		/*109*/
+	"HYBY",/*110*/
+	"DBLL",	/*111*/
+	"DBLY", /*112*/
+	"THEL",	/*113*/
+	"THEY", /*114*/
+	"SPDL",	/*115*/
+	"SPDY", /*116*/
+	"PVL", /*117*/
+	"ETAL", /*119*/
+	"ETAY", /*120*/
+	"IBYH", 	/*121*/
+	"HGLH",	/*125*/
+	"SGYH", /*128*/
+	"IBYM", /*141*/
+	"DBSL",	/*160*/
+	"EATM",	/*200*/
+	"EOCN",		/*201*/
 };
 
 char *level_str_long_name[] = {
+	"surface of the earth including sea surface", /*1*/
+	"cloud base level",	/*2*/
+	"cloud top level",	/*3*/
+	"0 deg (C) isotherm level (lowest)", /*4*/
+	"adiabatic condensation level (parcel lifted from surface)", /*5*/
+	"maximum wind speed level", /*6*/
+	"tropopause level",	/*7*/
+	"nominal top of atmosphere", /*8*/
+	"sea bottom", /*9*/
+	"temperature in 1/100 K", /*20*/
 	"isobaric level",	/*100*/
 	"layer between tow isobaric levels",	/*101*/
 	"mean sea level",	/*102*/

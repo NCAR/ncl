@@ -997,7 +997,7 @@ GribFileRecord *therec;
 					}
 				}
 				if(i < sizeof(level_index)/sizeof(int)) {
-					sprintf(buffer,"%s%d",level_str[i],therec->total_dims);
+					sprintf(buffer,"lv_%s%d",level_str[i],therec->total_dims);
 				} else {
 					sprintf(buffer,"levels%d",therec->total_dims);
 				}
@@ -1068,7 +1068,7 @@ GribFileRecord *therec;
 					}
 				}
 				if(i < sizeof(level_index)/sizeof(int)) {
-					sprintf(buffer,"%s%d",level_str[i],therec->total_dims);
+					sprintf(buffer,"lv_%s%d",level_str[i],therec->total_dims);
 				} else {
 					sprintf(buffer,"levels%d",therec->total_dims);
 				}
@@ -1104,7 +1104,7 @@ GribFileRecord *therec;
 *  if not: check get_grid field
 *     then get_grid.
 *     if its more that 1D then
-*       define gridx_### and gridy_### and then add variables lat_### and lon_### if gridx and gridy are 
+*       define gridx_### and gridy_### and then add variables gridlat_### and gridlon_### if gridx and gridy are 
 *     else
 *       define lat_### and lon_### and add them as variables of the same name (real coordinate variables)
 */
@@ -1117,7 +1117,7 @@ GribFileRecord *therec;
 */
 			sprintf(buffer,"gridx_%d",step->grid_number);
 			gridx_q = NrmStringToQuark(buffer);
-			sprintf(buffer,"gridlat_%d",step->grid_number);
+			sprintf(buffer,"lat_%d",step->grid_number);
 			lat_q = NrmStringToQuark(buffer);
 		} else if((step->has_gds)&&(step->grid_number == 255)) { 
 			
@@ -1263,7 +1263,7 @@ GribFileRecord *therec;
 					if((step->has_gds)&&(step->grid_number == 255)) {
 						sprintf(buffer,"g%d_lon_%d",step->gds_type,therec->total_dims+1);
 					} else {
-						sprintf(buffer,"gridlon_%d",step->grid_number);
+						sprintf(buffer,"lon_%d",step->grid_number);
 					}
 					tmp = (GribDimInqRec*)NclMalloc((unsigned)sizeof(GribDimInqRec));
 					tmp->dim_number = therec->total_dims + 1;
@@ -1297,7 +1297,7 @@ GribFileRecord *therec;
 					if((step->has_gds)&&(step->grid_number == 255)) {
 						sprintf(buffer,"g%d_lat_%d",step->gds_type,therec->total_dims);
 					} else {
-						sprintf(buffer,"gridlat_%d",step->grid_number);
+						sprintf(buffer,"lat_%d",step->grid_number);
 					}
 					tmp = (GribDimInqRec*)NclMalloc((unsigned)sizeof(GribDimInqRec));
 					tmp->dim_number = therec->total_dims;
@@ -1354,7 +1354,7 @@ GribFileRecord *therec;
 					if((step->has_gds)&&(step->grid_number == 255)) {
 						sprintf(buffer,"g%d_lon_%d",step->gds_type,therec->total_dims + 1);
 					} else {
-						sprintf(buffer,"lon_%d",step->grid_number);
+						sprintf(buffer,"gridlon_%d",step->grid_number);
 					}
 					tmp_file_dim_numbers[0] = therec->total_dims;
 					tmp_file_dim_numbers[1] = therec->total_dims+ 1;
@@ -1395,7 +1395,7 @@ GribFileRecord *therec;
 					if((step->has_gds)&&(step->grid_number == 255)) {
 						sprintf(buffer,"g%d_lat_%d",step->gds_type,therec->total_dims);
 					} else {
-						sprintf(buffer,"lat_%d",step->grid_number);
+						sprintf(buffer,"gridlat_%d",step->grid_number);
 					}
 					tmp_float = NclMalloc((unsigned)sizeof(float)*4);
 					tmp_float[0] = tmp_lat[0];
@@ -1814,6 +1814,10 @@ GribParamList* step;
 			total *= step->var_info.dim_sizes[i];
 		}
 		strt = (GribRecordInqRecList*)NclMalloc((unsigned)sizeof(GribRecordInqRecList)*total);
+		for (i = 0; i < total; i++) {
+			strt[i].rec_inq = NULL;
+			strt[i].next = NULL;
+		}
 		the_end = header.next;
 		i = 0;
 		while(the_end != NULL) {
@@ -2674,7 +2678,23 @@ int wr_status;
 					} else {
 						sprintf(&(buffer[strlen(buffer)]),"_%d",grib_rec->grid_number);
 					}
-					switch(grib_rec->pds[20]) {
+					for(i = 0; i < sizeof(level_index)/sizeof(int); i++) {
+						if(level_index[i] == (int)grib_rec->pds[9]) { 
+							break;
+						}
+					}
+					if(i < sizeof(level_index)/sizeof(int)) {
+						sprintf(&(buffer[strlen(buffer)]),"_%s",level_str[i]);
+					} else {
+						if(((int)grib_rec->pds[9]) != 0) {
+							sprintf(&(buffer[strlen(buffer)]),"_%d",(int)grib_rec->pds[9]);
+						}
+					}
+					switch((int)grib_rec->pds[20]) {
+					case 0:
+					case 1:
+					case 2:
+						break;	
 					case 3:
 						sprintf(&(buffer[strlen(buffer)]),"_ave");
 						break;
@@ -2685,43 +2705,7 @@ int wr_status;
 						sprintf(&(buffer[strlen(buffer)]),"_dif");
 						break;
 					default:
-						break;
-					}
-					switch((int)grib_rec->pds[9]) {
-					case 1:
-						sprintf(&(buffer[strlen(buffer)]),"_surf");
-						break;
-					case 2:
-						sprintf(&(buffer[strlen(buffer)]),"_cldb");
-						break;
-					case 3: 
-						sprintf(&(buffer[strlen(buffer)]),"_cldt");
-						break;
-					case 4: 
-						sprintf(&(buffer[strlen(buffer)]),"_0deg");
-						break;
-					case 5: 
-						sprintf(&(buffer[strlen(buffer)]),"_acl");
-						break;
-					case 6: 
-						sprintf(&(buffer[strlen(buffer)]),"_mwsl");
-						break;
-					case 7: 
-						sprintf(&(buffer[strlen(buffer)]),"_trop");
-						break;
-					case 8: 
-						sprintf(&(buffer[strlen(buffer)]),"_ntop");
-						break;
-					case 9: 
-						sprintf(&(buffer[strlen(buffer)]),"_seab");
-						break;
-					case 102:
-						sprintf(&(buffer[strlen(buffer)]),"_mslv");
-						break;
-					case 100:
-						break;
-					default:
-						sprintf(&(buffer[strlen(buffer)]),"_%d",(int)grib_rec->pds[9]);
+						sprintf(&(buffer[strlen(buffer)]),"_%d",(int)grib_rec->pds[20]);
 						break;
 					}
 					grib_rec->var_name = (char*)NclMalloc((unsigned)strlen(buffer) + 1);
@@ -3215,8 +3199,6 @@ NclQuark dim_name_q;
 /*
 * first character is either i,f, g or l
 */
-	switch(*tmp) {
-	case 'i':
 		dstep = thefile->it_dims;
 		while(dstep != NULL) {
 			if(dstep->dim_inq->dim_name == dim_name_q) {
@@ -3227,8 +3209,6 @@ NclQuark dim_name_q;
 			}
 			dstep = dstep->next;
 		}		
-		return(NULL);
-	case 'f':
 		dstep = thefile->ft_dims;
 		while(dstep != NULL) {
 			if(dstep->dim_inq->dim_name == dim_name_q) {
@@ -3239,8 +3219,6 @@ NclQuark dim_name_q;
 			}
 			dstep = dstep->next;
 		}		
-		return(NULL);
-	case 'g':
 		dstep = thefile->grid_dims;
 		while(dstep != NULL) {
 			if(dstep->dim_inq->dim_name == dim_name_q) {
@@ -3251,8 +3229,6 @@ NclQuark dim_name_q;
 			}
 			dstep = dstep->next;
 		}		
-		return(NULL);
-	case 'l':
 		dstep = thefile->lv_dims;
 		while(dstep != NULL) {
 			if(dstep->dim_inq->dim_name == dim_name_q) {
@@ -3264,9 +3240,6 @@ NclQuark dim_name_q;
 			dstep = dstep->next;
 		}		
 		return(NULL);
-	default:
-		return(NULL);
-	}
 }
 
 static void *GribReadVar

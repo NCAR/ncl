@@ -137,7 +137,9 @@ static void HLUObjDestroy
 #ifdef MAKEAPI
 		_NclAddToDelList(hlu_obj->hlu.hlu_id,NrmStringToQuark(NhlName(hlu_obj->hlu.hlu_id)),hlu_obj->hlu.class_ptr);
 #endif /* MAKEAPI */
+/*
 			NhlDestroy(hlu_obj->hlu.hlu_id);
+*/
 		}
 		_NclUnRegisterObj(self);
 		NclFree(self);

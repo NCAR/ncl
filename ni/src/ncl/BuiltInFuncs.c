@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.26 1996-04-03 00:20:22 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.27 1996-04-05 00:59:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -672,6 +672,7 @@ NhlErrorTypes _NclINhlNDCToData
 		case NclStk_VAR:
 			tmp_mds[i] = _NclVarValueRead(args[i].u.data_var,
 					NULL,NULL);
+			tmp_vars[i] = args[i].u.data_var;
 			break;
 		default:
 			return(NhlFATAL);
