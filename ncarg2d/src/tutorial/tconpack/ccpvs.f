@@ -30,10 +30,10 @@ C Generate an array of test data.
 C
         CALL GENDAT (ZDAT,23,23,14,20,20,-136.148,451.834)
 C
-C Tell CONPACK to use 13 contour levels, splitting the range into 14
-C equal bands, one for each of the 14 colors available.
+C Tell CONPACK to use 12 contour lines, splitting the range into 13
+C equal bands, one for each of the 13 colors available.
 C
-        CALL CPSETI ('CLS - CONTOUR LEVEL SELECTOR',-13)
+        CALL CPSETI ('CLS - CONTOUR LEVEL SELECTOR',-12)
 C
 C Tell Conpack that we want 3 vertical strips
 C
@@ -83,12 +83,12 @@ C
             IF (IGRP(I).EQ.3) IFILL=IAREA(I)
   101     CONTINUE
 C
-          XSUM=0.
+C Find the average X value of the X coordinates defining the area
 C
+          XSUM=0.
           DO 102 I=1,NCRA
             XSUM=XSUM+XCRA(I)
   102     CONTINUE
-C
           XAVG=XSUM/REAL(NCRA)
 C
 C Fill vertical strip 1.
@@ -229,57 +229,57 @@ C DarkViolet1
 C Orchid1
       CALL GSCR(1, 15, 0.85, 0.45, 0.8)
 C Red2
-      CALL GSCR(1, 16, 0.8, 0.25, 0.0)
+      CALL GSCR(1, 16, 0.77, 0.21, 0.0)
 C OrangeRed2
-      CALL GSCR(1, 17, 0.9, 0.0, 0.2)
+      CALL GSCR(1, 17, 0.85, 0.0, 0.17)
 C Orange2
-      CALL GSCR(1, 18, 0.9, 0.55, 0.0)
+      CALL GSCR(1, 18, 0.85, 0.55, 0.0)
 C Yellow2
-      CALL GSCR(1, 19, 0.9, 0.9, 0.0)
+      CALL GSCR(1, 19, 0.85, 0.85, 0.0)
 C GreenYellow2
-      CALL GSCR(1, 20, 0.7, 0.9, 0.2)
+      CALL GSCR(1, 20, 0.6, 0.85, 0.17)
 C Chartreuse2
-      CALL GSCR(1, 21, 0.5, 0.9, 0.0)
+      CALL GSCR(1, 21, 0.43, 0.85, 0.0)
 C Celeste2
-      CALL GSCR(1, 22, 0.2, 0.9, 0.5)
+      CALL GSCR(1, 22, 0.17, 0.85, 0.43)
 C Green2
-      CALL GSCR(1, 23, 0.2, 0.7, 0.2)
+      CALL GSCR(1, 23, 0.17, 0.68, 0.17)
 C DeepSkyBlue2
-      CALL GSCR(1, 24, 0.0, 0.75, 0.9)
+      CALL GSCR(1, 24, 0.0, 0.64, 0.85)
 C RoyalBlue2
-      CALL GSCR(1, 25, 0.25, 0.45, 0.85)
+      CALL GSCR(1, 25, 0.21, 0.38, 0.81)
 C SlateBlue2
-      CALL GSCR(1, 26, 0.4, 0.35, 0.7)
+      CALL GSCR(1, 26, 0.32, 0.3, 0.68)
 C DarkViolet2
-      CALL GSCR(1, 27, 0.6, 0.0, 0.7)
+      CALL GSCR(1, 27, 0.51, 0.0, 0.68)
 C Orchid2
-      CALL GSCR(1, 28, 0.75, 0.45, 0.8)
+      CALL GSCR(1, 28, 0.72, 0.38, 0.68)
 C Red3
-      CALL GSCR(1, 29, 0.7, 0.25, 0.0)
+      CALL GSCR(1, 29, 0.63, 0.18, 0.0)
 C OrangeRed3
-      CALL GSCR(1, 30, 0.8, 0.0, 0.2)
+      CALL GSCR(1, 30, 0.7, 0.0, 0.14)
 C Orange3
-      CALL GSCR(1, 31, 0.8, 0.45, 0.0)
+      CALL GSCR(1, 31, 0.6, 0.39, 0.0)
 C Yellow3
-      CALL GSCR(1, 32, 0.8, 0.8, 0.0)
+      CALL GSCR(1, 32, 0.7, 0.7, 0.0)
 C GreenYellow3
-      CALL GSCR(1, 33, 0.7, 0.8, 0.2)
+      CALL GSCR(1, 33, 0.49, 0.7, 0.14)
 C Chartreuse3
-      CALL GSCR(1, 34, 0.5, 0.8, 0.0)
+      CALL GSCR(1, 34, 0.35, 0.7, 0.0)
 C Celeste3
-      CALL GSCR(1, 35, 0.2, 0.8, 0.5)
+      CALL GSCR(1, 35, 0.14, 0.7, 0.35)
 C Green3
-      CALL GSCR(1, 36, 0.2, 0.6, 0.2)
+      CALL GSCR(1, 36, 0.14, 0.56, 0.14)
 C DeepSkyBlue3
-      CALL GSCR(1, 37, 0.0, 0.75, 0.8)
+      CALL GSCR(1, 37, 0.0, 0.53, 0.7)
 C RoyalBlue3
-      CALL GSCR(1, 38, 0.25, 0.45, 0.75)
+      CALL GSCR(1, 38, 0.18, 0.32, 0.67)
 C SlateBlue3
-      CALL GSCR(1, 39, 0.4, 0.35, 0.6)
+      CALL GSCR(1, 39, 0.28, 0.25, 0.56)
 C DarkViolet3
-      CALL GSCR(1, 40, 0.6, 0.0, 0.6)
+      CALL GSCR(1, 40, 0.42, 0.0, 0.56)
 C Orchid3
-      CALL GSCR(1, 41, 0.65, 0.45, 0.8)
+      CALL GSCR(1, 41, 0.6, 0.32, 0.56)
 C Lavender
       CALL GSCR(1, 42, 0.8, 0.8, 1.0)
 C Gray
