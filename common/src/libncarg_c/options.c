@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.12 1992-04-22 15:13:13 clyne Exp $
+ *	$Id: options.c,v 1.13 1992-04-24 20:43:23 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -660,13 +660,15 @@ static	OptDescRec	*get_option (name)
 			if (*q == 0)            /* exact match? */
 				return (o);
 		}
-		if (!*q) {                      /* the name was a prefix */
-			if (q - name > longest) {
-				longest = q - name;
-				nmatches = 1;
-				found = o;
-			} else if (q - name == longest)
-				nmatches++;
+		if (*name) {
+			if (!*q) {	/* the name was a prefix */
+				if (q - name > longest) {
+					longest = q - name;
+					nmatches = 1;
+					found = o;
+				} else if (q - name == longest)
+					nmatches++;
+			}
 		}
 	}
 	if (nmatches > 1)	/* ambiguous	*/
