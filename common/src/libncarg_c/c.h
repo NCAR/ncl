@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.17 1993-03-22 17:35:12 clyne Exp $
+ *	$Id: c.h,v 1.18 1994-03-09 19:07:24 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -181,7 +181,16 @@ typedef	struct	_OptDescRec {
  */
 typedef	struct	_Option {
 	char		*option_name;	/* the options name		*/
-	int		(*type_conv)();	/* option type converter	*/
+
+			/* 
+			 * option type converter	
+			 */
+	int		(*type_conv)(
+#ifdef	NeedFuncProto
+			const char *from, Voidptr to
+#endif
+			);
+
 	Voidptr		offset;		/* offset of return address	*/ 
 	int		size;		/* size of option in bytes	*/
 	} Option;
