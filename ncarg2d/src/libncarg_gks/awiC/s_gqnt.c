@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gqnt.c,v 1.1 1997-03-05 19:13:03 haley Exp $
+ *	$Id: s_gqnt.c,v 1.2 1998-09-20 21:00:03 haley Exp $
  */
 /*
  *  Inquire normalization transformation  
@@ -21,7 +21,7 @@ void ginq_norm_tran
     Gtran *norm_tran;
 #endif
 {
-    float win[4], vp[4];
+    Gfloat win[4], vp[4];
     NGCALLF(gqnt,GQNT)(&num,err_ind, win, vp);
     norm_tran->win.x_min = (Gfloat)win[0];
     norm_tran->win.x_max = (Gfloat)win[1];
