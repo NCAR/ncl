@@ -40,7 +40,7 @@ c                                               local
 
       IF (LD.EQ.0) THEN
           IER = -10
-          PRINT *,'grid2triple: ld=0: all values missing'
+C          PRINT *,'grid2triple: ld=0: all values missing'
       END IF
       RETURN
       END
