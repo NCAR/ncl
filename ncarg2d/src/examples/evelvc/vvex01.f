@@ -1,369 +1,253 @@
-      PROGRAM EXMPL3
 C
-C Declare an array to hold the data to be contoured.
+C       $Id: vvex01.f,v 1.4 1993-04-08 23:37:56 dbrown Exp $
 C
-        DIMENSION ZDAT(33,33)
-        DIMENSION A(60,60), B(60,60)
+      PROGRAM VVEX01
 C
-C Declare the required real and integer workspaces.
+C This example overlays vectors on a polar contour plot using 
+C data generated with a randomizing algorithm. The first frame colors
+C the vectors according to the data used to generate the contour plot,
+C with the result that the color of the vectors corresponds to the 
+C contour level at each location. In the second frame the vectors 
+C are colored by magnitude.
+C 
+C The contour, vector field component, and area map array declarations:
 C
-        DIMENSION RWRK(5000),IWRK(1000)
+      PARAMETER (MSIZE=33, NSIZE=33)
+      DIMENSION ZDAT(MSIZE,NSIZE)
+      DIMENSION A(60,60), B(60,60)
+      DIMENSION IAMA(20000)
 C
-C Declare an array to hold an area map.
+C Workspace arrays for Conpack:
 C
-        DIMENSION IAMA(20000)
-        common /acom/ iama
-        save /acom/
+      DIMENSION RWRK(5000),IWRK(1000)
 C
-C Declare the arrays needed by ARSCAM for x/y coordinates.
+C ARSCAM arrays:
 C
-        DIMENSION XCRA(1000),YCRA(1000)
+      DIMENSION XCRA(1000),YCRA(1000)
+      DIMENSION IARA(10),IGRA(10)
 C
-C Declare the arrays needed by ARSCAM for area and group identifiers.
+C Declare the masked rendering routines for drawing and shading the
+C contour plot, as well as for drawing the vectors
 C
-        DIMENSION IARA(10),IGRA(10)
+      EXTERNAL DRAWCL
+      EXTERNAL SHADER
+      EXTERNAL VVUDMV
 C
-C Declare an array to hold the GKS "aspect source flags".
-C
-        DIMENSION IASF(13)
-C
-C Declare the routine which will draw contour lines, avoiding labels.
-C
-        EXTERNAL DRAWCL
-C
-C Declare the analogous routine for drawing vectors
-C
-        EXTERNAL VVUDMV
-C
-C Declare the routine which does the shading.
-C
-        EXTERNAL SHADER
-C
-C Declare common blocks required for communication with CPMPXY.
-C
-        COMMON /CPMPC1/ XFOI(33),YFOJ(33)
-        COMMON /CPMPC2/ XFIJ(33,33),YFIJ(33,33)
-C
-C Initialize the values in the aspect-source-flag array.
-C
-        DATA IASF / 13*1 /
-C
+C Initialization
+C ==================================================================
 C Open GKS.
 C
-        CALL OPNGKS
+      CALL OPNGKS
+      CALL GSCLIP (0)
 C
-C Turn off the clipping indicator.
+C Generate a scalar data array, then create a special value region
 C
-        CALL GSCLIP (0)
+      CALL GENDAT (ZDAT,MSIZE,MSIZE,NSIZE,20,20,-1.,1.)
 C
-C Set all the GKS aspect source flags to "individual".
-C
-        CALL GSASF (IASF)
-C
-C Turn on the positioning of labels by the penalty scheme and provide a
-C little more room for X and Y coordinates defining contour lines, so
-C as not to have labels right next to each other on a contour line.
-C
-        CALL CPSETI ('LLP - LINE LABEL POSITIONING',3)
-        CALL CPSETI ('RWC - REAL WORKSPACE FOR CONTOURS',200)
-C
-C Turn on the drawing of the high and low label boxes.
-C
-        CALL CPSETI ('HLB - HIGH/LOW LABEL BOX FLAG',1)
-C
-C Tell CONPACK to delete high/low labels which overlap the informational
-C label or another high/low label, but to move those which overlap the
-C edge inward a little.
-C
-        CALL CPSETI ('HLO - HIGH/LOW LABEL OVERLAP FLAG',11)
-C
-C Make all CONPACK-written characters a little bigger.
-C
-        CALL CPSETR ('CWM - CHARACTER WIDTH MULTIPLIER',1.25)
-C
-C Turn on the drawing of the grid edge ("contour line number -1") and
-C thicken it somewhat.
-C
-        CALL CPSETI ('PAI - PARAMETER ARRAY INDEX',-1)
-        CALL CPSETI ('CLU - CONTOUR LEVEL USE FLAG',1)
-        CALL CPSETR ('CLL - CONTOUR LEVEL LINE WIDTH',2.)
-C
-C Tell CONPACK to do no SET call.
-C
-        CALL CPSETI ('SET - DO-SET-CALL FLAG',0)
-C
-C Turn on the special-value feature and the outlining of special-value
-C areas ("contour line number -2"), using a double-width line.
-C
-        CALL CPSETR ('SPV - SPECIAL VALUE',1.E36)
-        CALL CPSETI ('PAI - PARAMETER ARRAY INDEX',-2)
-        CALL CPSETI ('CLU - CONTOUR LEVEL USE FLAG',1)
-        CALL CPSETR ('CLL - CONTOUR LEVEL LINE WIDTH',2.)
-C
-C Generate an array of test data.
-C
-        CALL GENDAT (ZDAT,33,33,33,20,20,-1.,1.)
-C
-C Put special values in a roughly circular area.
-C
-        DO 102 I=1,33
-          DO 101 J=1,33
+      DO 102 I=1,MSIZE
+         DO 101 J=1,NSIZE
             IF (REAL(I-20)**2+REAL(J-10)**2.LT.25) ZDAT(I,J)=1.E36
-  101     CONTINUE
-  102   CONTINUE
+ 101     CONTINUE
+ 102  CONTINUE
 C
-        XVPL=.05
-        XVPR=.95
-        YVPB=.05
-        YVPT=.95
+C Generate the vector field component array data. 
+C Call GENARA twice because the second set of data looks better.
+C Also set up the color table.
 C
-C Polar map
+      CALL GENARA(B,A,60,60)
+      CALL GENARA(B,A,60,60)
+      CALL DFCLRS 
 C
-        CALL CPSETI ('MAP - MAPPING FUNCTION',2)
+C Conpack setup:
+C ===============================================================
+C Set up a polar coordinate system mapping for Conpack
 C
-C Polar coordinates.
+      CALL SET    (0.05,0.95,0.05,0.95,-1.0,1.0,-1.0,1.0,1)
+      CALL CPSETI ('MAP - Mapping Function',2)
+      CALL CPSETI ('SET - Do-Set-Call Flag',0)
+      CALL CPSETR ('XC1 - Rho At I = 1',.1)
+      CALL CPSETR ('XCM - Rho At I = M',1.)
+      CALL CPSETR ('YC1 - Theta At J = 1',0.0)
+      CALL CPSETR ('YCN - Theta At J = N',360.0)
 C
-        CALL CPSETR ('XC1 - RHO AT I = 1',.1)
-        CALL CPSETR ('XCM - RHO AT I = M',1.)
-        CALL CPSETR ('YC1 - THETA AT J = 1',0.)
-        CALL CPSETR ('YCN - THETA AT J = N',360.)
-        CALL SET    (XVPL,XVPR,YVPB,YVPT,-1.,1.,-1.,1.,1)
+C Enable special value processing and outline special value regions
 C
-C Initialize the drawing of the contour plot.
+      CALL CPSETR ('SPV - Special Value',1.E36)
+      CALL CPSETI ('PAI - Parameter Array Index',-2)
+      CALL CPSETI ('CLU - Contour Level Use Flag',1)
+      CALL CPSETR ('CLL - Contour Level Line Width',2.)
 C
-        CALL CPRECT (ZDAT,33,33,33,RWRK,5000,IWRK,1000)
+C Adjust Conpack labelling and outline the data field.
 C
-C Force the selection of contour levels, so that associated quantities
-C may be tweaked.
+      CALL CPSETI ('LLP - Line Label Positioning',3)
+      CALL CPSETI ('RWC - Real Workspace For Contours',200)
+      CALL CPSETI ('HLB - High/Low Label Box Flag',1)
+      CALL CPSETI ('HLO - High/Low Label Overlap Flag',11)
+      CALL CPSETR ('CWM - Character Width Multiplier',1.25)
+      CALL CPSETI ('PAI - Parameter Array Index',-1)
+      CALL CPSETI ('CLU - Contour Level Use Flag',1)
+      CALL CPSETR ('CLL - Contour Level Line Width',2.)
 C
-        CALL CPPKCL (ZDAT,RWRK,IWRK)
+C Initialize the drawing of the contour plot, and tell Conpack 
+C to pick the contour levels.
 C
-C Increase the line width for labelled levels and turn off the area
-C identifiers for all levels.
+      CALL CPRECT (ZDAT,MSIZE,MSIZE,NSIZE,RWRK,5000,IWRK,1000)
+      CALL CPPKCL (ZDAT,RWRK,IWRK)
 C
-        CALL CPGETI ('NCL - NUMBER OF CONTOUR LEVELS',NCLV)
+C Set the attributes of the contour lines
 C
-        DO 107 ICLV=1,NCLV
-           CALL CPSETI ('PAI - PARAMETER ARRAY INDEX',ICLV)
-           CALL CPGETI ('CLU - CONTOUR LEVEL USE FLAG',ICLU)
-           IF (ICLU.EQ.3) THEN
-              CALL CPSETI ('CLL - CONTOUR-LINE LINE WIDTH',2)
-           END IF
-           CALL CPSETI ('AIA - AREA IDENTIFIER ABOVE LEVEL',0)
-           CALL CPSETI ('AIB - AREA IDENTIFIER BELOW LEVEL',0)
- 107    CONTINUE
+      CALL CPGETI ('NCL - Number Of Contour Levels',NCLV)
+      DO 107 ICLV=1,NCLV
+         CALL CPSETI ('PAI - Parameter Array Index',ICLV)
+         CALL CPGETI ('CLU - Contour Level Use Flag',ICLU)
+         IF (ICLU.EQ.3) THEN
+            CALL CPSETI ('CLL - Contour-Line Line Width',2)
+         END IF
+         CALL CPSETI ('AIA - Area Identifier Above Level',0)
+         CALL CPSETI ('AIB - Area Identifier Below Level',0)
+ 107  CONTINUE
 C
 C Add two new levels for which no contour lines are to be drawn, but
 C between which shading is to be done.
 C
-        NCLV=NCLV+2
-        CALL CPSETI ('NCL - NUMBER OF CONTOUR LEVELS',NCLV)
+      NCLV=NCLV+2
+      CALL CPSETI ('NCL - Number Of Contour Levels',NCLV)
+      CALL CPSETI ('PAI - Parameter Array Index',NCLV-1)
+      CALL CPSETR ('CLV - Contour Level Value',-.15)
+      CALL CPSETI ('CLU - Contour Level Use Flag',0)
+      CALL CPSETI ('AIA - Area Identifier Above Level',1)
+      CALL CPSETI ('AIB - Area Identifier Below Level',2)
+      CALL CPSETI ('PAI - Parameter Array Index',NCLV)
+      CALL CPSETR ('CLV - Contour Level Value',+.15)
+      CALL CPSETI ('CLU - Contour Level Use Flag',0)
+      CALL CPSETI ('AIA - Area Identifier Above Level',3)
+      CALL CPSETI ('AIB - Area Identifier Below Level',1)
 C
-        CALL CPSETI ('PAI - PARAMETER ARRAY INDEX',NCLV-1)
-        CALL CPSETR ('CLV - CONTOUR LEVEL VALUE',-.15)
-        CALL CPSETI ('CLU - CONTOUR LEVEL USE FLAG',0)
-        CALL CPSETI ('AIA - AREA IDENTIFIER ABOVE LEVEL',1)
-        CALL CPSETI ('AIB - AREA IDENTIFIER BELOW LEVEL',2)
-        CALL CPSETI ('PAI - PARAMETER ARRAY INDEX',NCLV)
-        CALL CPSETR ('CLV - CONTOUR LEVEL VALUE',+.15)
-        CALL CPSETI ('CLU - CONTOUR LEVEL USE FLAG',0)
-        CALL CPSETI ('AIA - AREA IDENTIFIER ABOVE LEVEL',3)
-        CALL CPSETI ('AIB - AREA IDENTIFIER BELOW LEVEL',1)
+C Initialize the area map and draw the contour labels into it.
 C
-C Genara is called twice because the second set of data looks
-C better
+      CALL ARINAM (IAMA,20000)
+      CALL CPLBAM (ZDAT,RWRK,IWRK,IAMA)
 C
-        CALL GENARA(B,A,60,60)
-        CALL GENARA(B,A,60,60)
-        CALL DFCLRS 
-C
-C Draw the contour plot with vectors overlaid twice. The first
-C plot uses the same data as the contour plot for the independent
-C scalar array. Therefore the colors of the vectors match the
-C contours. The second plot shows the vectors colored by magnitude.
-C
-        DO 2000 K=1,2
-           CALL ARINAM (IAMA,20000)
-           CALL CPLBAM (ZDAT,RWRK,IWRK,IAMA)
-           CALL CPCLDM (ZDAT,RWRK,IWRK,IAMA,DRAWCL)
-           CALL CPLBDR (ZDAT,RWRK,IWRK)
-           CALL CPCLAM (ZDAT,RWRK,IWRK,IAMA)
-           CALL ARSCAM (IAMA,XCRA,YCRA,1000,IARA,IGRA,10,SHADER)
-C
-C
-C choose between vector magnitude and scalar array coloring
-C
-           CALL VVSETI('NLV - Number of Levels', 14)
-           IF (K .EQ. 1) THEN
-              CALL VVSETI('CTV -- Color Threshold Value', 2)
-           ELSE
-              CALL VVSETI('CTV -- Color Threshold Value', 1)
-           END IF
-C
-C set up the color array
-C
-           DO 800 I=1,14,1
-              CALL VVSETI('PAI -- Parameter Array Index', I)
-              CALL VVSETI('CLR -- GKS Color Index', I+1)
- 800       CONTINUE
-C
-C Set up some miscellaneous parameters
-C     
-           CALL VVSETR('LWD -- Vector Linewidth', 2.0)
-           CALL VVSETR('AMN -- Arrow Minimum Size', 0.01)
-           CALL VVSETI('VPO -- Vector Position Method', 0)
-C
-C this causes the P array special values to be filtered out, 
-C although in this case they would not be drawn anyway because
-C they are masked by the area routine
-C
-           CALL VVSETI('SPC -- P Special Value Color', 0)
-           CALL VVSETR('PSV -- P Special Value', 1.E36)
-C
-C Set the mapping flag to the Polar transformation, and the 
-C transformation type to 1 so that vectors will be oriented relative
-C to the polar system.
+C Vectors setup:
+C ==================================================================
+C Set the mapping flag for the polar transformation.
 C Set the X,Y array index mapping parameters to the same values used
 C bythe Conpack CPSET routines above. Turn on masking and turn the
 C Set call flag off.
 C
-           MA = 33
-           NA = 33
-           CALL VVSETI('MAP -- Mapping Flag', 2)
-           CALL VVSETI('TRT -- Transformation Type', 1)
-           CALL VVSETR('XC1 -- Lower X Bound', 0.1)
-           CALL VVSETR('XCM -- Upper X Bound', 1.0)
-           CALL VVSETR('YC1 -- Lower X Bound', 0.0)
-           CALL VVSETR('YCN -- Upper Y Bound', 360.0)
-           CALL VVSETI('SET -- Set Call Flag', 0)
-           CALL VVSETI('XIN - X Grid Increment', 2)
-           CALL VVSETI('MSK -- Area Mask Flag', 1)
+      CALL VVSETI('MAP -- Mapping Flag', 2)
+      CALL VVSETI('SET -- Set Call Flag', 0)
+      CALL VVSETR('XC1 -- Lower X Bound', 0.1)
+      CALL VVSETR('XCM -- Upper X Bound', 1.0)
+      CALL VVSETR('YC1 -- Lower X Bound', 0.0)
+      CALL VVSETR('YCN -- Upper Y Bound', 360.0)
+      CALL VVSETI('MSK -- Area Mask Flag', 1)
+C     
+C Enable special value processing for the P array to eliminate
+C vectors from the special value region. This is not really required
+C in this case since the masking routine eliminates these vectors.
+C     
+      CALL VVSETI('SPC -- P Special Value Color', 0)
+      CALL VVSETR('PSV -- P Special Value', 1.E36)
 C
-C Call the initialization routine
+C Enable vector coloring
 C
-           CALL VVINIT (A,60,B,60,ZDAT,33,MA,NA,0,0)
+      CALL VVSETI('NLV - Number of Levels', 14)
+      DO 800 I=1,14,1
+         CALL VVSETI('PAI -- Parameter Array Index', I)
+         CALL VVSETI('CLR -- GKS Color Index', I+1)
+ 800  CONTINUE
+C
+C Set up miscellaneous attribute parameters
+C     
+      CALL VVSETR('LWD -- Vector Linewidth', 2.0)
+      CALL VVSETR('AMN -- Arrow Minimum Size', 0.01)
+      CALL VVSETI('VPO -- Vector Position Method', 0)
+      CALL VVSETI('XIN - X Grid Increment', 2)
+C     
+C Move the minimum and maximum vector text blocks out of the
+C way of the text that Conpack puts out.
+C
+      CALL VVSETR('MNX - Minimum Vector X Pos', 0.0)
+      CALL VVSETR('MXX - Maximum Vector X Pos', 0.33)
+      CALL VVSETI('MNP - Minimum Vector Justification', 2)
+      CALL VVSETI('MXP - Maximum Vector Justification', 4)
+C
+C Turn on statistics
+C
+      CALL VVSETI('VST - Vector statistics', 1)
+C
+C Drawing loop
+C ===================================================================
+C Draw the contour plot with vectors overlaid twice. In the first
+C plot Vectors uses the same data as Conpack for the independent
+C scalar array. Therefore the colors of the vectors correspond to the
+C contours. The second plot shows the vectors colored by magnitude.
+C
+      DO 2000 K=1,2
+C
+C First draw masked contour lines, then labels, then put the
+C contour lines in the area map for shading by ARSCAM
+C
+         CALL CPCLDM (ZDAT,RWRK,IWRK,IAMA,DRAWCL)
+         CALL CPLBDR (ZDAT,RWRK,IWRK)
+         CALL CPCLAM (ZDAT,RWRK,IWRK,IAMA)
+         CALL ARSCAM (IAMA,XCRA,YCRA,1000,IARA,IGRA,10,SHADER)
+C
+C Choose between vector magnitude and scalar array coloring
+C
+         IF (K .EQ. 1) THEN
+            CALL VVSETI('CTV -- Color Threshold Value', 2)
+         ELSE
+            CALL VVSETI('CTV -- Color Threshold Value', 1)
+         END IF
+C
+C Initialize Vectors
+C
+         CALL VVINIT (A,60,B,60,ZDAT,MSIZE,MSIZE,NSIZE,0,0)
 C
 C Remove the bottom 05% of the vectors
 C
-           CALL VVGETR('VMX -- Max Vector Magnitude',VMX)
-           CALL VVGETR('VMN -- Min Vector Magnitude',VMN)
-           CALL VVSETR('VLC -- Vector Low Cutoff', 
-     +                 VMN+0.05*(VMX-VMN))
+         CALL VVGETR('VMX -- Max Vector Magnitude',VMX)
+         CALL VVGETR('VMN -- Min Vector Magnitude',VMN)
+         CALL VVSETR('VLC -- Vector Low Cutoff', 
+     +        VMN+0.05*(VMX-VMN))
 C
 C Increase the size of the longest vector by 50% from its default
 C value and make the shortest one fourth the length of the longest.
 C
-           CALL VVGETR('DMX -- Max Vector Device Magnitude',DMX)
-           CALL GETSET(VL,VR,VB,VT,UL,UR,UB,UT,LL)
-           VRL = 1.5 * DMX / (VR - VL)
-           CALL VVSETR('VRL - Vector Realized Length', VRL)
-           CALL VVSETR('VFR -- Vector Fractional Minimum', 0.25)
+         CALL VVGETR('DMX -- Max Vector Device Magnitude',DMX)
+         CALL GETSET(VL,VR,VB,VT,UL,UR,UB,UT,LL)
+         VRL = 1.5 * DMX / (VR - VL)
+         CALL VVSETR('VRL - Vector Realized Length', VRL)
+         CALL VVSETR('VFR -- Vector Fractional Minimum', 0.25)
 C
-C Move the Minimum and Maximum Vector text blocks out of the
-C way of the text that CONPACK puts out.
-C
-           CALL VVSETR('MNX - Minimum Vector X Pos', 0.0)
-           CALL VVSETR('MXX - Maximum Vector X Pos', 0.33)
-           CALL VVSETI('MNP - Minimum Vector Justification', 2)
-           CALL VVSETI('MXP - Maximum Vector Justification', 4)
-C
-C Turn on statistics
-C
-           CALL VVSETI('VST - Vector statistics', 1)
-
 C Call VVECTR to draw the vectors, using the same area map that
-C the CONPACK routines used. The 'Draw Masked Vector' routine 
+C the Conpack routines used. The 'Draw Masked Vector' routine 
 C used is the one supplied with the Velocity Vector Utility.
 C
-           CALL VVECTR (A,B,ZDAT,IAMA,VVUDMV,0)
-C
-C
-C Compute and print statistics for the plot and label it.
-C
-C           LABL='EXAMPLE 3-'//CHAR(ICHAR('0')+2)
-C           CALL CAPSAP (LABL,TIME,IAMA,20000)
-C           CALL LABTOP (LABL,.017)
+         CALL VVECTR (A,B,ZDAT,IAMA,VVUDMV,0)
 C
 C Put a boundary line at the edge of the plotter frame.
 C
-           CALL BNDARY
+         CALL BNDARY
 C
 C Advance the frame.
 C     
-           CALL FRAME
+         CALL FRAME
 C
- 2000   CONTINUE
+ 2000 CONTINUE
 C     
 C Close GKS.
 C
-        CALL CLSGKS
+      CALL CLSGKS
 C
 C Done.
 C
-        STOP
+      STOP
 C
       END
-      SUBROUTINE CPMPXY (IMAP,XINP,YINP,XOTP,YOTP)
 C
-C This version of CPMPXY implements four different mappings:
-C
-C   IMAP = 1 implies an EZMAP mapping.  XINP and YINP are assumed to be
-C   the longitude and latitude, in degrees, of a point on the globe.
-C
-C   IMAP = 2 implies a polar coordinate mapping.  XINP and YINP are
-C   assumed to be values of rho and theta (in degrees).
-C
-C   IMAP = 3 implies an orthogonal, but unequally-spaced mapping.  XINP
-C   is assumed to lie in the range from 1 to M, YINP in the range from
-C   1 to N, where M and N are the dimensions of the grid.  The common
-C   block CPMPC1 contains arrays XFOI and YFOJ giving the X coordinates
-C   associated with I = 1 to M and the Y coordinates associated with
-C   J = 1 to N.
-C
-C   IMAP = 4 implies a generalized distortion.  XINP is assumed to lie
-C   in the range from 1 to M, YINP in the range from 1 to N, where M
-C   and N are the dimensions of the grid.  The common block CPMPC2
-C   contains arrays XFIJ and YFIJ, giving the X and Y coordinates
-C   associated with index pairs (I,J).
-C
-C Declare common blocks.
-C
-        COMMON /CPMPC1/ XFOI(33),YFOJ(33)
-        COMMON /CPMPC2/ XFIJ(33,33),YFIJ(33,33)
-C
-C Do the mapping.
-C
-        IF (IMAP.EQ.1) THEN
-          CALL MAPTRN (YINP,XINP,XOTP,YOTP)
-        ELSE IF (IMAP.EQ.2) THEN
-          XOTP=XINP*COS(.017453292519943*YINP)
-          YOTP=XINP*SIN(.017453292519943*YINP)
-        ELSE IF (IMAP.EQ.3) THEN
-          I=MAX(1,MIN(32,INT(XINP)))
-          J=MAX(1,MIN(32,INT(YINP)))
-          XOTP=(REAL(I+1)-XINP)*XFOI(I)+(XINP-REAL(I))*XFOI(I+1)
-          YOTP=(REAL(J+1)-YINP)*YFOJ(J)+(YINP-REAL(J))*YFOJ(J+1)
-        ELSE IF (IMAP.EQ.4) THEN
-          I=MAX(1,MIN(32,INT(XINP)))
-          J=MAX(1,MIN(32,INT(YINP)))
-          XOTP=(REAL(J+1)-YINP)*
-     +    ((REAL(I+1)-XINP)*XFIJ(I,J  )+(XINP-REAL(I))*XFIJ(I+1,J  ))
-     +    +(YINP-REAL(J))*
-     +    ((REAL(I+1)-XINP)*XFIJ(I,J+1)+(XINP-REAL(I))*XFIJ(I+1,J+1))
-          YOTP=(REAL(J+1)-YINP)*
-     +    ((REAL(I+1)-XINP)*YFIJ(I,J  )+(XINP-REAL(I))*YFIJ(I+1,J  ))
-     +    +(YINP-REAL(J))*
-     +    ((REAL(I+1)-XINP)*YFIJ(I,J+1)+(XINP-REAL(I))*YFIJ(I+1,J+1))
-        ELSE
-          XOTP=XINP
-          YOTP=YINP
-        END IF
-C
-C Done.
-C
-        RETURN
-C
-      END
       SUBROUTINE DRAWCL (XCS,YCS,NCS,IAI,IAG,NAI)
 C
 C This version of DRAWCL draws the polyline defined by the points
@@ -371,27 +255,28 @@ C ((XCS(I),YCS(I)),I=1,NCS) if and only if none of the area identifiers
 C for the area containing the polyline are negative.  The dash package
 C routine CURVED is called to do the drawing.
 C
-        DIMENSION XCS(*),YCS(*),IAI(*),IAG(*)
+      DIMENSION XCS(*),YCS(*),IAI(*),IAG(*)
 C
 C Turn on drawing.
 C
-        IDR=1
+      IDR=1
 C
 C If any area identifier is negative, turn off drawing.
 C
-        DO 101 I=1,NAI
-          IF (IAI(I).LT.0) IDR=0
-  101   CONTINUE
+      DO 101 I=1,NAI
+         IF (IAI(I).LT.0) IDR=0
+ 101  CONTINUE
 C
 C If drawing is turned on, draw the polyline.
 C
-        IF (IDR.NE.0) CALL CURVED (XCS,YCS,NCS)
+      IF (IDR.NE.0) CALL CURVED (XCS,YCS,NCS)
 C
 C Done.
 C
-        RETURN
+      RETURN
 C
       END
+C
       SUBROUTINE SHADER (XCS,YCS,NCS,IAI,IAG,NAI)
 C
 C This version of SHADER shades the polygon whose edge is defined by
@@ -399,35 +284,35 @@ C the points ((XCS(I),YCS(I)),I=1,NCS) if and only, relative to edge
 C group 3, its area identifier is a 1.  The package SOFTFILL is used
 C to do the shading.
 C
-        DIMENSION XCS(*),YCS(*),IAI(*),IAG(*)
+      DIMENSION XCS(*),YCS(*),IAI(*),IAG(*)
 C
 C Define workspaces for the shading routine.
 C
-        DIMENSION DST(1100),IND(1200)
+      DIMENSION DST(1100),IND(1200)
 C
 C Turn off shading.
 C
-        ISH=0
+      ISH=0
 C
 C If the area identifier for group 3 is a 1, turn on shading.
 C
-        DO 101 I=1,NAI
-          IF (IAG(I).EQ.3.AND.IAI(I).EQ.1) ISH=1
-  101   CONTINUE
+      DO 101 I=1,NAI
+         IF (IAG(I).EQ.3.AND.IAI(I).EQ.1) ISH=1
+ 101  CONTINUE
 C
 C If shading is turned on, shade the area.  The last point of the
 C edge is redundant and may be omitted.
 C
-        IF (ISH.NE.0) THEN
-          CALL SFSETI ('ANGLE',45)
-          CALL SFSETR ('SPACING',.006)
-          CALL SFWRLD (XCS,YCS,NCS-1,DST,1100,IND,1200)
-          CALL SFSETI ('ANGLE',135)
-          CALL SFNORM (XCS,YCS,NCS-1,DST,1100,IND,1200)
-        END IF
+      IF (ISH.NE.0) THEN
+         CALL SFSETI ('ANGLE',45)
+         CALL SFSETR ('SPACING',.006)
+         CALL SFWRLD (XCS,YCS,NCS-1,DST,1100,IND,1200)
+         CALL SFSETI ('ANGLE',135)
+         CALL SFNORM (XCS,YCS,NCS-1,DST,1100,IND,1200)
+      END IF
 C
 C Done.
 C
-        RETURN
+      RETURN
 C
       END

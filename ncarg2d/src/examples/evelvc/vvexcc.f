@@ -1,3 +1,6 @@
+C
+C	$Id: vvexcc.f,v 1.4 1993-04-08 23:38:00 dbrown Exp $
+C
       SUBROUTINE GENDAT (DATA,IDIM,M,N,MLOW,MHGH,DLOW,DHGH)
 C
 C This is a routine to generate test data for two-dimensional graphics
@@ -56,6 +59,7 @@ C
         RETURN
 C
       END
+C
       FUNCTION FRAN ()
         DIMENSION RSEQ (100)
         SAVE ISEQ
@@ -74,32 +78,7 @@ C
         FRAN=RSEQ(ISEQ)
         RETURN
       END
-      SUBROUTINE CAPSAP (LABL,TIME,IAMA,LAMA)
 C
-        DIMENSION IAMA(*)
-C
-        CHARACTER*(*) LABL
-C
-C Compute and print the time required to draw the contour plot and how
-C much space was used in the various arrays.
-C
-        TIME=SECOND(DUMI)-TIME
-        PRINT * , 'PLOT TITLE WAS ',LABL
-        PRINT * , 'TIME TO DRAW PLOT WAS  ',TIME
-        CALL CPGETI ('IWU - INTEGER WORKSPACE USAGE',IIWU)
-        CALL CPGETI ('RWU - REAL WORKSPACE USAGE',IRWU)
-        PRINT * , 'INTEGER WORKSPACE USED ',IIWU
-        PRINT * , '   REAL WORKSPACE USED ',IRWU
-        IF (LAMA.NE.0) THEN
-          IAMU=LAMA-(IAMA(6)-IAMA(5)-1)
-          PRINT * , '   AREA MAP SPACE USED ',IAMU
-        END IF
-C
-C Done.
-C
-        RETURN
-C
-      END
       SUBROUTINE LABTOP (LABL,SIZE)
 C
         CHARACTER*(*) LABL
@@ -126,6 +105,7 @@ C
         RETURN
 C
       END
+C
       SUBROUTINE BNDARY
 C
 C Draw a line showing where the edge of the plotter frame is.
@@ -142,131 +122,47 @@ C
         RETURN
 C
       END
+C
       SUBROUTINE DFCLRS
 C
 C Define a set of RGB color triples for colors 1 through 15.
 C
-        DIMENSION RGBV(3,15)
+      PARAMETER (NCLRS=16)
+      DIMENSION RGBV(3,NCLRS)
 C
 C Define the RGB color triples needed below.
 C
-        DATA RGBV / 1.00 , 1.00 , 1.00 ,
-c$$$     +    0.050 , 0.250 , 0.800 ,
-c$$$     +    0.000 , 0.300 , 0.950 ,
-c$$$     +    0.100 , 0.450 , 0.150 ,
-c$$$     +    0.050 , 0.500 , 0.300 ,
-c$$$     +    0.000 , 0.450 , 1.000 ,
-c$$$     +    0.100 , 0.600 , 0.200 ,
-c$$$     +    0.150 , 0.600 , 0.350 ,
-c$$$     +    0.050 , 0.750 , 0.100 ,
-c$$$     +    0.850 , 0.350 , 0.350 ,
-c$$$     +    0.900 , 0.350 , 0.500 ,
-c$$$     +    0.700 , 0.550 , 0.250 ,
-c$$$     +    1.000 , 0.450 , 0.250 ,
-c$$$     +    0.850 , 0.600 , 0.150 ,
-c$$$     +    0.800 , 0.650 , 0.300 ,
-c$$$     +    0.800 , 0.600 , 0.850 ,
-c$$$     +    1.000 , 0.700 , 0.050 ,
-c$$$     +    0.800 , 0.800 , 0.350 /
-c
-     +              0.70 , 0.70 , 0.70 ,
-     +              0.75 , 0.50 , 1.00 ,
-     +              0.50 , 0.00 , 1.00 ,
-     +              0.00 , 0.00 , 1.00 ,
-     +              0.00 , 0.50 , 1.00 ,
-     +              0.00 , 1.00 , 1.00 ,
-     +              0.00 , 1.00 , 0.60 ,
-     +              0.00 , 1.00 , 0.00 ,
-     +              0.70 , 1.00 , 0.00 ,
-     +              1.00 , 1.00 , 0.00 ,
-     +              1.00 , 0.75 , 0.00 ,
-     +              1.00 , 0.38 , 0.38 ,
-     +              1.00 , 0.00 , 0.38 ,
-     +              1.00 , 0.00 , 0.00 /
-c
-c     +    0.250 , 0.000 , 0.750 ,
-c     +    0.000 , 0.000 , 1.000 ,
-c     +    0.000 , 0.167 , 0.833 ,
-c     +    0.000 , 0.333 , 0.667 ,
-c     +    0.000 , 0.500 , 0.500 ,
-c     +    0.000 , 0.667 , 0.333 ,
-c     +    0.000 , 0.833 , 0.167 ,
-c     +    0.000 , 1.000 , 0.000 ,
-c     +    0.167 , 0.833 , 0.000 ,
-c     +    0.333 , 0.667 , 0.000 ,
-c     +    0.500 , 0.500 , 0.000 ,
-c     +    0.667 , 0.333 , 0.000 ,
-c     +    0.833 , 0.167 , 0.000 ,
-c     +    1.000 , 0.000 , 0.000 /
-c
-c$$$
-c$$$     +              0.00 , 0.05 , 0.30 ,
-c$$$     +              0.00 , 0.10 , 0.60 ,
-c$$$     +              0.00 , 0.15 , 0.90 ,
-c$$$     +              0.30 , 0.15 , 0.65 ,
-c$$$     +              0.20 , 0.40 , 0.15 ,
-c$$$     +              0.20 , 0.45 , 0.45 ,
-c$$$     +              0.15 , 0.60 , 0.35 ,
-c$$$     +              0.10 , 0.75 , 0.25 ,
-c$$$     +              0.10 , 0.80 , 0.55 ,
-c$$$     +              0.40 , 0.80 , 0.30 ,
-c$$$     +              0.35 , 0.95 , 0.20 ,
-c$$$     +              0.35 , 1.00 , 0.50 ,
-c$$$     +              0.65 , 1.00 , 0.25 ,
-c$$$     +              1.00 , 0.90 , 0.40 ,
-c$$$     +              1.00 , 0.95 , 0.70   /
-c$$$
-c$$$     +              0.50 , 0.75 , 1.00 ,
-c$$$     +              0.75 , 0.50 , 1.00 ,
-c$$$     +              0.50 , 0.00 , 1.00 ,
-c$$$     +              0.00 , 0.00 , 1.00 ,
-c$$$     +              0.00 , 0.50 , 1.00 ,
-c$$$     +              0.00 , 1.00 , 1.00 ,
-c$$$     +              0.00 , 1.00 , 0.60 ,
-c$$$     +              0.00 , 1.00 , 0.00 ,
-c$$$     +              0.70 , 1.00 , 0.00 ,
-c$$$     +              1.00 , 1.00 , 0.00 ,
-c$$$     +              1.00 , 0.75 , 0.00 ,
-c$$$     +              1.00 , 0.38 , 0.38 ,
-c$$$     +              1.00 , 0.00 , 0.38 ,
-c$$$     +              1.00 , 0.00 , 0.00 /
+      DATA RGBV / 0.00 , 0.00 , 0.00 ,
+     +     1.00 , 1.00 , 1.00 ,
+     +     0.70 , 0.70 , 0.70 ,
+     +     0.75 , 0.50 , 1.00 ,
+     +     0.50 , 0.00 , 1.00 ,
+     +     0.00 , 0.00 , 1.00 ,
+     +     0.00 , 0.50 , 1.00 ,
+     +     0.00 , 1.00 , 1.00 ,
+     +     0.00 , 1.00 , 0.60 ,
+     +     0.00 , 1.00 , 0.00 ,
+     +     0.70 , 1.00 , 0.00 ,
+     +     1.00 , 1.00 , 0.00 ,
+     +     1.00 , 0.75 , 0.00 ,
+     +     1.00 , 0.38 , 0.38 ,
+     +     1.00 , 0.00 , 0.38 ,
+     +     1.00 , 0.00 , 0.00 /
 C
 C Define 16 different color indices, for indices 0 through 15.  The
 C color corresponding to index 0 is black and the color corresponding
 C to index 1 is white.
 C
-        CALL GSCR (1,0,0.,0.,0.)
-C
-        DO 101 I=1,15
-          CALL GSCR (1,I,RGBV(1,I),RGBV(2,I),RGBV(3,I))
-  101   CONTINUE
+      DO 101 I=1,NCLRS
+         CALL GSCR (1,I-1,RGBV(1,I),RGBV(2,I),RGBV(3,I))
+ 101  CONTINUE
 C
 C Done.
 C
         RETURN
 C
       END
-      FUNCTION SECOND (DUMI)
-        SAVE IFLG
-        DATA IFLG / 0 /
-        IF (IFLG.EQ.0) THEN
-          IFLG=1
-          PRINT * , '**************************************************'
-          PRINT * , '** THE DUMMY FUNCTION "SECOND" HAS BEEN CALLED. **'
-          PRINT * , '** A ZERO WILL BE RETURNED AS ITS VALUE.  THIS  **'
-          PRINT * , '** MEANS THAT TIMING INFORMATION PRINTED WILL   **'
-          PRINT * , '** BE WRONG.  TO GET ACTUAL TIMINGS, YOU SHOULD **'
-          PRINT * , '** REPLACE THIS FUNCTION WITH ONE HAVING AS ITS **'
-          PRINT * , '** VALUE THE ELAPSED CPU TIME, IN SECONDS.  ON  **'
-          PRINT * , '** THE CRAY, UNDER COS, THE SYSTEM FUNCTION     **'
-          PRINT * , '** CALLED "SECOND" DOES THIS, SO YOU CAN JUST   **'
-          PRINT * , '** DELETE THE DUMMY ONE.                        **'
-          PRINT * , '**************************************************'
-        END IF
-        SECOND=0.
-        RETURN
-      END
-
+C
       SUBROUTINE GENARA (A,B,ID,JD)
 C
 C     This subroutine generates a smooth array in output array B.
@@ -278,20 +174,6 @@ C     numbers from the file RANFDAT.
 C
       DIMENSION A(ID,JD), B(ID,JD)
       PARAMETER (PI=3.14159 , TWOPI=2.*PI , EPS=PI/6.)
-C
-c$$$      num= id*jd
-c$$$      xmin=10.
-c$$$      xmax=1440.
-c$$$      xinc=(xmax-xmin)/real(num)
-c$$$      xnum=xmin
-c$$$      DO 1 I=1,ID
-c$$$      DO 1 J=1,JD
-c$$$         A(I,J)=xnum
-c$$$         B(I,J)= 3.*PI/4.0
-c$$$         xnum=xnum+xinc
-c$$$c         A(I,J)=B(I,J)
-c$$$ 1    CONTINUE
-c$$$      RETURN
 C
       NN=(ID+JD)/10
       AA=1.
@@ -327,7 +209,7 @@ C
     8 CONTINUE
       RETURN
       END
-
+C
       SUBROUTINE OPENR (IUNIT)
       CHARACTER*128 FILENM
       DATA FILENM / ' ' /
@@ -360,7 +242,7 @@ C
      +             FILENM
       STOP
       END
-
+C
       FUNCTION RANDNO()
 C
 C     This function is used to produce random numbers for the
