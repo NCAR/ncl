@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.39 1995-06-05 19:08:53 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.40 1995-06-23 18:34:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3765,7 +3765,7 @@ static NhlErrorTypes    AdjustGeometry
 	switch (lb_p->just) {
 	case NhlBOTTOMLEFT:
 		x_off = lb_p->perim.lxtr - lb_p->lb_x;
-		y_off = lb_p->perim.bxtr - (lb_p->lb_y - lb_p->lb_width);
+		y_off = lb_p->perim.bxtr - (lb_p->lb_y - lb_p->lb_height);
 		break;
 	case NhlCENTERLEFT:
 		x_off = lb_p->perim.lxtr - lb_p->perim.l;
