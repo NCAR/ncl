@@ -78,7 +78,7 @@ YMAKE             = $(CONFIGPATH)/ymake -I$(CONFIGPATH)
 
 MAKE              = make
 FLOAT_OPT         = 
-OS                = -DSYSV
+OS                = -DSYSV -DUNICOS
 ARCH              =
 VDEFINE           = -DVERSION='"$(VERSION)"'
 CC                = cc
