@@ -1,0 +1,166 @@
+#define BuildXlibDependentCode
+#define RS6000
+/*
+** Define which raster drivers will be built.
+*/
+#define	BuildRasterHDF
+#define	BuildRasterHPPCL
+#define	BuildRasterNrif
+#define	BuildRasterSun
+#define BuildRasterAVS
+#define BuildRasterSGI
+#define BuildRasterAbekas
+#define BuildRasterBinary
+
+/*
+**  Stuff that should be edited by Configure
+*/
+VERSION           = 3.2.alpha
+BINROOT           = /usr/local/bin
+LIBROOT           = /usr/local/lib
+INCROOT           = /usr/local/include
+MANROOT           = /usr/local/man
+TMPROOT           = /tmp
+LOCAL_LIB_SEARCH  = -L/X/X11/lib -L/usr/local/lib
+LOCAL_INC_SEARCH  = -I/X/X11/include -I/usr/local/include
+
+/*
+**  Order of assignment to LIB_SEARCH and to INC_SEARCH is 
+**  important.
+*/
+LIB_SEARCH        = -L$(LIBROOT) $(LOCAL_LIB_SEARCH)
+INC_SEARCH        = -I$(INCROOT) $(LOCAL_INC_SEARCH)
+
+NCARGDIR          = ncarg
+HLUDIR            = hlu
+BINDIR            = bin
+LIBDIR            = lib
+INCDIR            = include
+MANDIR            = man
+DOCDIR            = doc
+TMPDIR            = tmp
+DBDIR             = database
+FONTCAPDIR        = fontcaps
+GRAPHCAPDIR       = graphcaps
+EXAMPLESDIR       = examples
+TUTORIALDIR       = tutorial
+TESTSDIR          = tests
+ROBJDIR           = robj
+XAPPDIR           = xapp
+CONFIGDIR         = config
+GENERICDIR        = generic
+
+BINPATH           = $(BINROOT)
+LIBPATH           = $(LIBROOT)
+INCPATH           = $(INCROOT)/$(NCARGDIR)
+HLUINCPATH        = $(INCROOT)/$(NCARGDIR)/$(HLUDIR)
+TMPPATH           = $(TMPROOT)
+MANPATH           = $(MANROOT)
+
+MANLPATH          = $(MANPATH)/manl
+MAN1PATH          = $(MANPATH)/man1
+MAN3PATH          = $(MANPATH)/man3
+MAN5PATH          = $(MANPATH)/man5
+MAN6PATH          = $(MANPATH)/man6
+MAN8PATH          = $(MANPATH)/man8
+
+LIBNCARGPATH      = $(LIBPATH)/$(NCARGDIR)
+DBPATH            = $(LIBNCARGPATH)/$(DBDIR)
+FONTCAPPATH       = $(LIBNCARGPATH)/$(FONTCAPDIR)
+GRAPHCAPPATH      = $(LIBNCARGPATH)/$(GRAPHCAPDIR)
+DOCPATH           = $(LIBNCARGPATH)/$(DOCDIR)
+EXAMPLESPATH      = $(LIBNCARGPATH)/$(EXAMPLESDIR)
+TESTSPATH         = $(LIBNCARGPATH)/$(TESTSDIR)
+ROBJPATH          = $(LIBNCARGPATH)/$(ROBJDIR)
+TUTORIALPATH      = $(LIBNCARGPATH)/$(TUTORIALDIR)
+XAPPPATH          = $(LIBNCARGPATH)/$(XAPPDIR)
+
+MANL_SECTION      = l
+MAN1_SECTION      = 1
+MAN3_SECTION      = 3
+MAN5_SECTION      = 5
+MAN6_SECTION      = 6
+MAN8_SECTION      = 8
+
+XLIB              = -lX11
+EXTENSIONLIB      = -lXext
+XTOOLLIB          = -lXt
+XMULIB            = -lXmu
+XAWLIB            = -lXaw
+XMOTIFLIBS        = -lXm $(XTOOLLIB) $(XLIB)
+HLULIBS           = -lhlu -lhlu_util
+NCARGCLIBS        = -lncargC -lncarg_gksC
+NCARGLIBS         = -lncarg -lncarg_gks -lncarg_loc -lncarg_c
+CTOFLIBS          =
+NCDFLIBS          = -lnetcdf
+#ifdef BuildRasterHDF
+HDFLIB            = -ldf
+#endif
+XDRLIB            =
+#ifdef BuildRasterNetcdf
+NETCDFLIB         = -lnetcdf $(XDRLIB)
+#endif
+HDFDEFINES        = -DIBM6000
+
+GENERICPATH       = $(NCARG)/$(GENERICDIR)
+
+CONFIGPATH        = $(NCARG)/$(CONFIGDIR)
+YMAKE             = $(CONFIGPATH)/ymake -I$(CONFIGPATH)
+
+MAKE              = make
+FLOAT_OPT         = 
+OS                = -DSYSV -D_POSIX_SOURCE
+ARCH              = -DRS6000
+VDEFINE           = -DVERSION='"$(VERSION)"'
+CC                = xlc
+CC_LD             = $(CC)
+CDEBUG            = 
+COPT              = -O
+CMISC             = -DNeedFuncProto
+CINC              = $(INC_SEARCH)
+CFLAGS            = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
+                    $(FLOAT_OPT) $(CINC) $(VDEFINE)
+LD_CFLAGS         = $(LIB_SEARCH) $(CFLAGS) 
+CPP               = /lib/cpp
+FCPP              = $(NCARG)/utils/fcpp $(CPP)
+FC                = xlf
+F77               = xlf
+F77_LD            = $(F77)
+FDEBUG            = 
+FOPT              = -O
+FMISC             =
+FFLAGS            = $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC) $(FLOAT_OPT)
+LD_FFLAGS         = $(LIB_SEARCH) $(FFLAGS) -lc
+LD                = ld
+LD_REL            = $(LD)
+AR                = ar
+AR_QUICK          = $(AR) ql
+AR_CHECK          = $(AR) vrul
+AR_SRC            = ar
+AR_SRC_QUICK      = $(AR_SRC) q
+AR_SRC_CHECK      = $(AR_SRC) vru
+RM                = rm -f
+CAT               = cat
+CP                = cp
+MV                = mv -f
+RANLIB            = ranlib
+NO_OP             = touch -c
+LINT              = lint
+INSTALL           = $(NCARG)/utils/install -c
+INSTALL_RM        = $(RM)
+INSTALL_BIN       = 0755
+INSTALL_MAN       = 0644
+INSTALL_DOC       = 0644
+INSTALL_APP       = 0644
+INSTALL_LIB       = 0644
+INSTALL_DB        = 0644
+INSTALL_INC       = 0644
+
+GRAPHC            = $(BINPATH)/graphc
+FONTC             = $(BINPATH)/fontc
+
+FSPLIT            = fsplit
+CALLCONV          = $(NCARG)/utils/callconv
+SHELL             = /bin/sh
+
+GKS_BUFFER_SIZE   = 0
