@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.33 1995-02-01 01:29:05 ethan Exp $
+ *      $Id: Execute.c,v 1.34 1995-02-24 15:25:08 haley Exp $
  */
 /************************************************************************
 *									*
@@ -2268,7 +2268,7 @@ NclExecuteReturnStatus _NclExecute
 					if(file_md->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 						file_obj = (NclFile)_NclGetObj(*(int*)file_md->multidval.val);
 						if(file_obj == NULL) {
-							estatus = NULL;
+							estatus = NhlFATAL;
 						}
 					}
 					switch(dim_expr.kind) {
@@ -3038,7 +3038,7 @@ NclExecuteReturnStatus _NclExecute
 							} else if((rhs.kind == NclStk_VAR)&&(rhs.u.data_var != NULL)) {
 								rhs_md = _NclVarValueRead(rhs.u.data_var,NULL,NULL);
 							} else {
-								estatus = NULL;
+								estatus = NhlFATAL;
 							}
 	
 							if(estatus != NhlFATAL) {
