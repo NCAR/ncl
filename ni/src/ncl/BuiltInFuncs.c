@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.13 1995-04-20 19:03:45 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.14 1995-04-26 17:41:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1975,7 +1975,7 @@ NhlErrorTypes _NclIasciiwrite
 }
 
 
-void asciinumeric
+int asciinumeric
 #if NhlNeedProto
 (FILE *fp, char* format,void *retvalue)
 #else
@@ -2001,7 +2001,7 @@ void asciinumeric
 				break;
 			case '.':
 				*step++ = cc;
-				state = 4;
+				state = 5;
 				break;
 			default:
 				if(isdigit(cc)) {
@@ -2017,7 +2017,7 @@ void asciinumeric
 			switch(cc) {
 			case '.':
 				*step++ = cc;
-				state = 4;
+				state = 5;
 				break;
 			default:
 				if(isdigit(cc)) {
@@ -2037,7 +2037,7 @@ void asciinumeric
 				switch(cc) {
 				case '.':
 					*step++ = cc;
-					state = 4;
+					state = 5;
 					break;
 				default:
 /*
@@ -2047,16 +2047,6 @@ void asciinumeric
 					state = 9;
 					*step++ = '\0';
 				}
-			}
-			break;
-		case 4:
-			if(isdigit(cc)) {
-				*step++ = cc;
-				state = 5;
-			} else {
-				ungetc(cc,fp);
-				step = buffer;
-				state = 0;
 			}
 			break;
 		case 5:
@@ -2124,8 +2114,10 @@ void asciinumeric
 	}
 	if((step != buffer)&&(!feof(fp))) {
 		sscanf(buffer,format,retvalue);
+		return(1);
+	} else {
+		return(0);
 	}
-	return;
 }
 NhlErrorTypes _NclIasciiread
 #if	NhlNeedProto
@@ -2236,21 +2228,28 @@ NhlErrorTypes _NclIasciiread
 			return(NhlFATAL);
 
 		if(thetype->type_class.type & NCL_VAL_TYPE_MASK) {
-			for(i = 0; i < totalsize; i++) {
-				if(!feof(fd)) {
-					asciinumeric(fd,thetype->type_class.format,tmp_ptr);
+			for(i = 0; ((i < totalsize)&&(!feof(fd))); i++) {
+				if(asciinumeric(fd,thetype->type_class.format,tmp_ptr)) {
 					tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
 				} else {
+					i--;
+					break;
+				}
+			}
+			if(i < totalsize) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
+				for(;i<totalsize;i++) {
 					memcpy(tmp_ptr,&(thetype->type_class.default_mis),thetype->type_class.size);
 					tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
 				}
-			
 			}
+			
 		} else if(thetype->type_class.type==Ncl_Typechar) {
 			for(i = 0; ((i<totalsize) && !feof(fd)); i++) {
 				*(char*)tmp_ptr = fgetc(fd);
 			}
 			if(i < totalsize) {	
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
 				for(;i<totalsize;i++) {
 					*(char*)tmp_ptr = thetype->type_class.default_mis.charval;
 					tmp_ptr = (void*)((char*)tmp_ptr+1);
@@ -2286,6 +2285,7 @@ NhlErrorTypes _NclIasciiread
 				} 
 			}
 			if( i < totalsize ) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
 				for(;i<totalsize;i++) {
 					*(NclQuark*)tmp_ptr = thetype->type_class.default_mis.stringval; 
                                         tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
