@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1993-11-01 17:41:21 boote Exp $
+#	$Id: yMakefile,v 1.5 1994-03-01 22:53:04 haley Exp $
 #
 
 MYNAME	= agupwrtx
@@ -12,5 +12,10 @@ OBJECTS = $(GENERIC_OBJS)
 
 SOURCES = $(GENERIC_SRCS)
 
+#if defined(alpha)
+InstallTarget($(OBJECTS),$(INSTALL_LIB),$(ROBJPATH)/$(MYNAME))
+#else
 RelocatableTarget(libagupwrtx.o,$(OBJECTS))
+#endif
+
 SourceLibraryTarget($(MYNAME),srcagupwrtx.a,$(SOURCES))

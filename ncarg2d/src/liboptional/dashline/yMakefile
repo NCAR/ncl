@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1993-11-01 17:42:06 boote Exp $
+#	$Id: yMakefile,v 1.5 1994-03-01 22:53:50 haley Exp $
 #
 MYNAME	= dashline
 
@@ -15,5 +15,10 @@ SOURCES = $(GENERIC_SRCS)
 
 OBJECTS = $(GENERIC_OBJS)
 
+#if defined(alpha)
+InstallTarget($(OBJECTS),$(INSTALL_LIB),$(ROBJPATH)/$(MYNAME))
+#else
 RelocatableTarget(libdashline.o,$(OBJECTS))
+#endif
+
 SourceLibraryTarget($(MYNAME),srcdashline.a,$(SOURCES))
