@@ -1203,6 +1203,43 @@ GribFileRecord *therec;
 		step = step->next;
 	}
 }
+
+static void _MakeVarnamesUnique
+#if 	NhlNeedProto
+(GribFileRecord *therec)
+#else
+(therec)
+GribFileRecord *therec;
+#endif
+{
+	GribParamList *step = NULL;
+	unsigned char buffer[80];
+
+	for (step = therec->var_list; step != NULL; step = step->next) {
+		NclQuark qvname = step->var_info.var_name_quark;
+		int nfound = 0;
+		GribParamList *tstep = step->next;
+		
+		for (tstep = step->next; tstep != NULL; tstep = tstep->next) {
+			int i;
+
+			if (tstep->var_info.var_name_quark != qvname)
+				continue;
+			nfound++;
+			sprintf(buffer,"%s_%d",NrmQuarkToString(qvname),nfound);
+			tstep->var_info.var_name_quark = NrmStringToQuark(buffer);
+
+			for (i = 0; i < tstep->n_entries; i++) {
+				GribRecordInqRec *rec = tstep->thelist[i].rec_inq;
+				NclFree(rec->var_name);
+				rec->var_name = (char*)NclMalloc((unsigned)strlen((char*)buffer) + 1);
+				strcpy(rec->var_name,(char*)buffer);
+				rec->var_name_q = tstep->var_info.var_name_quark;
+			}
+		}
+	}
+}
+
 int GdsCompare(unsigned char *a,unsigned char *b,int n) {
 	int i;
 	for( i = 0; i < n ; i++) {
@@ -3853,7 +3890,7 @@ int wr_status;
 */
 			_SetFileDimsAndCoordVars(therec);
 			_SetAttributeLists(therec);
-
+			_MakeVarnamesUnique(therec);
 
 			fclose(fd);	
 			NclFree(vbuf);
