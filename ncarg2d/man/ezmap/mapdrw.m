@@ -4,7 +4,11 @@
 .SH NAME
 MAPDRW - 
 Draws the complete map described by the current values of the internal
-parameters of Ezmap.
+parameters of EZMAP.  Note that this routine uses whichever old outline
+dataset is selected by the value of the internal parameter 'OU'; to access
+the new map database "Earth..1", which was created in 1998, one must call
+instead the routines that MAPDRW would have called, but call MPLNDR instead
+of MAPLOT.
 .SH SYNOPSIS
 CALL MAPDRW 
 .SH C-BINDING SYNOPSIS
@@ -91,10 +95,26 @@ maptri,
 maptrn,
 mapusr, 
 mapvec,
+mpchln,
+mpfnme,
 mpgetc,
 mpgeti,  
 mpgetl,
 mpgetr,  
+mpglty,
+mpiaty,
+mpifnb,
+mpilnb,
+mpioar,
+mpipai,
+mpipan,
+mpipar,
+mpisci,
+mplnam,
+mplndm,
+mplndr,
+mplnri,
+mpname,
 mprset,
 mpsetc,  
 mpseti,  

@@ -1,28 +1,28 @@
-.TH MAPRS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH MPIFNB 3NCARG "April 1998" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
-MAPRS - Re-calls SET. 
+MPIFNB - A simple utility function that finds the index of the first non-blank
+character in a character string.
 .SH SYNOPSIS
-CALL MAPRS 
+IFNB=MPIFNB(CHRS)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_maprs()
-.SH DESCRIPTION
-MAPRS has no arguments.
+int c_mpifnb (char *chrs)
+.SH DESCRIPTION 
+.IP CHRS 12
+is an input expression of type CHARACTER.
+.SH C-BINDING DESCRIPTION
+The C-binding argument description is the same as the FORTRAN 
+argument description.
 .SH USAGE
-This routine allows you to have the SPPS routine SET re-called with the
-same arguments that MAPINT would use, but executes a little faster than
-MAPINT.  This is useful when you are about to call one of the
-routines MAPBLA, MAPDRW, MAPFST, MAPGRD, MAPGRM, MAPIQ, MAPIQA, MAPIQM,
-MAPIT, MAPITA, MAPITM, MAPLBL, MAPLOT, or MAPVEC (all of which depend on
-the proper SET call's having been done), and there has been some intervening,
-inappropriate, call to SET.
+The statement "IFNB=MPIFNB(CHRS)" sets the value of IFNB to the index (between
+1 and LEN(CHRS)) of the first non-blank character in the character string CHRS.
 .SH EXAMPLES
-No example is available for MAPRS.
+None.
 .SH ACCESS
-To use MAPRS or c_maprs, load the NCAR Graphics libraries ncarg, ncarg_gks,
+To use MPIFNB or c_mpifnb, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
@@ -55,6 +55,7 @@ maplmb,
 maplot,
 mappos,
 maproj,
+maprs,
 maprst,
 mapsav,
 mapset,
@@ -75,7 +76,6 @@ mpgetl,
 mpgetr,
 mpglty,
 mpiaty,
-mpifnb,
 mpilnb,
 mpioar,
 mpipai,
@@ -95,9 +95,6 @@ mpsetr,
 supmap,
 supcon,
 ncarg_cbind
-.sp
-Hardcopy:  
-NCAR Graphics Contouring and Mapping Tutorial 
 .SH COPYRIGHT
 Copyright (C) 1987-1998
 .br

@@ -2,24 +2,25 @@
 .na
 .nh
 .SH NAME
-Ezmap - Allows one to plot maps of the earth according 
-to any of ten different
-projections, with parallels, meridians, 
-and continental, international,
+Ezmap - Allows one to plot maps of the earth according to any of ten different
+projections, with parallels, meridians, and continental, international,
 and/or U.S. state outlines. 
 .sp
-Ezmapa was the name of a supplement to the Ezmap utility that
-allowed users to produce solid-filled maps of the earth. All
-Ezmapa routines are now organized under the Ezmap utility.
+Ezmapa is the name of a supplement to the Ezmap utility that allows users to
+produce solid-filled maps of the earth.  The Ezmapa routines are discussed as
+part of the Ezmap utility.
+.sp
+Ezmapb is the name of a supplement to the Ezmap utility that provides access
+to improved map databases (principally one called "Earth..1", which contains
+a unified higher-resolution version of everything that was in the old outline
+datasets).  The Ezmapb routines are discussed as part of the Ezmap utility.
 .SH SYNOPSIS
 .IP "Routines Used to Draw a Simple Map" 
 .sp
-To draw a simple map (one not involving solid fill of areas), 
-as directed
-by the current values of Ezmap's internal parameters, one need only
-execute the single FORTRAN 
-statement "CALL MAPDRW". Thus, the principal
-Ezmap routine is this:
+To draw the simple map defined by the current values of EZMAP's internal
+parameters (assuming no area fills and no access to the new, improved, map
+database "Earth..1", which was created in 1998), one need only execute the
+single FORTRAN statement "CALL MAPDRW":
 .RS 
 .IP "\(bu" 4
 MAPDRW - Draws a complete simple map.
@@ -42,7 +43,10 @@ MAPGRD - Draws selected parallels and meridians.
 MAPLBL - Labels the international date line, the equator, the Greenwich
 meridian, and the poles, and draws the perimeter.
 .IP "\(bu" 4
-MAPLOT - Draws selected geographic outlines.
+MAPLOT - Draws selected geographic outlines.  Note that this routine uses
+whichever old outline dataset is selected by the value of the internal
+parameter 'OU'; to access the new map database "Earth..1", which was created
+in 1998, one must call instead the EZMAPB routine MPLNDR.
 .RE
 .IP "Routines Used to Change the Values of Internal Parameters"
 .sp
@@ -154,7 +158,16 @@ follows:
 MAPBLA - Adds boundary lines to an existing area map. Routines in the
 package AREAS may then be used to process that area map in various ways.
 (Example: drawing a map of Europe with each country in a different
-color.)
+color.)  Note that this routine uses whichever old outline dataset is
+selected by the value of the internal parameter 'OU'; to access the new
+map database "Earth..1", which was created in 1998, one must call instead
+the EZMAPB routine MPLNAM.
+.IP "\(bu" 4
+MAPBLM - Draws boundary lines "masked" by an existing area map.  (Example:
+drawing these lines only where they do not overlay CONPACK labels.)   Note
+that this routine uses whichever old outline dataset is selected by the value
+of the internal parameter 'OU'; to access the new map database "Earth..1",
+which was created in 1998, one must call instead the EZMAPB routine MPLNDM.
 .IP "\(bu" 4
 MAPGRM - Draws lines of latitude and longitude "masked" by an existing
 area map. (Example: drawing these lines over water, but not over land.)
@@ -172,10 +185,154 @@ and longitude; they may be called directly by the user to draw other
 masked lines.
 .IP "\(bu" 4
 MAPACI - A function which, given the "area identifier" for a particular
-area defined by the boundaries in one of the Ezmap outline datasets,
+area defined by the boundaries in one of the old Ezmap outline datasets,
 returns a suggested color index for that area; it is guaranteed that, if
 the suggested color indices are used, no two areas having a boundary in
-common will have the same color.
+common will have the same color.  Note that this function should not be
+used to select color indices for areas defined by the new map
+database "Earth..1", which was created in 1998; for that purpose, use
+EZMAPB functions instead (in particular, MPISCI).
+.RE
+.IP "Routines Used to Access New Datasets (Ezmapb)"
+.sp
+In early 1998, a new world map database, called "Earth..1", was created for
+use with EZMAP; this database has higher-resolution coastlines, it has been
+updated to reflect many of the political changes that have taken place over
+the years since EZMAP came into existence, and it is structured differently,
+allowing for greater flexibility and ease of use and providing for easier
+changes and extensions in the future.
+.sp
+Each area defined by the database has 1) a "area identifier" (an integer
+uniquely identifying it), 2) an "area type" specifying its level in a
+hierarchy of areas, 3) a suggested color index, 4) an area identifier
+specifying its "parent" area (the area of which it is a part), and 5) a
+name.  For example, there is an area named "Madeline Island" which is of
+type 4 (used for a state or a portion thereof) and has suggested color
+index 6.  Its parent is an area named "Wisconsin", which is also of type
+4 and has suggested color index 6.  The parent of "Wisconsin"
+is "Conterminous US", which is of type 3 (used for a country or a portion
+thereof) and has suggested color index 3.  The parent of "Conterminous
+US" is "United States", which is also of type 3 and has suggested color
+index 3.  The parent of "United States" is "North America", which is of
+type 2 and has suggested color index 5.  The parent of "North America"
+is "Land", which is of type 1 and has suggested color index 2.  The area
+named "Land" is at the top of the hierarchy and therefore has no parent
+(when you ask for the area identifier of its parent, you get a zero).
+.sp
+One may use the database at any of five specified hierarchical levels:
+1 => land/water, 2 => continents, 3 => countries, 4 => states, and 5 =>
+counties (so far, no counties are included).  When the database is used
+at a particular level, entities that exist only at lower levels (larger
+level numbers) effectively disappear.
+.sp
+The new database was created from data available on the World Wide Web,
+using a new interactive editor based on NCAR Graphics.  There are plans
+to make this editor available, so that a knowledgeable user can create
+a database tailored to his or her own needs: for example (assuming that
+one can obtain the necessary outline data), it should now be relatively
+easy to create and use a Pangaea database with EZMAP.
+.sp
+A new package of routines is used to access "Earth..1" and other databases
+in the same format; this package is called EZMAPB.  Conceptually, the
+EZMAPB routines are just part of EZMAP; they use the same common blocks
+and many of the same underlying low-level routines and they are affected
+by the same set of internal parameters as the routines in EZMAP proper.
+.sp
+The principal EZMAPB routines are as follows:
+.RS
+.IP "\(bu" 4
+MPLNAM (MaP LiNes, to Area Map) - A routine to extract boundary lines from
+a specified database and send them to an area map.
+.IP "\(bu" 4
+MPLNDM (MaP LiNes, Draw Masked) - A routine to extract boundary lines from a
+specified database and draw them, masked by the contents of an area map.
+.IP "\(bu" 4
+MPLNDR (MaP LiNes, Draw) - A routine to extract boundary lines from a specified
+database and draw them.
+.IP "\(bu" 4
+MPLNRI - A routine to force the reading of certain information from a database
+into labelled COMMON blocks inside EZMAP, so that subsequent references to some
+of the functions described below will have that information to work with.
+(Each of the routines MPLNAM, MPLNDM, and MPLNDR reads this data as a side
+effect; MPLNRI is provided for use in cases in which none of the other three
+routines has yet been called.)
+.RE
+.IP ""
+As each of the EZMAPB routines MPLNAM, MPLNDM, and MPLNDR processes
+boundary lines from a specified database, it calls an EZMAPB routine
+named MPCHLN (the default version of which does nothing):
+.RS
+.IP "\(bu" 4
+MPCHLN - A user-replaceable routine that can be made to change line style,
+color, line width, and so on as the boundary lines from a database are being
+drawn; it can also be made to delete particular lines or to change the area
+identifiers associated with them.  The arguments of MPCHLN tell it which of
+the EZMAPB routines is calling it and whether it's being called before or
+after the line is processed; they also supply the "line type" of the line
+being drawn, the area identifiers of the areas on either side of it, and the
+actual coordinates defining the line.  Line types are similar to area types
+(1 => land/water, 2 => continents, 3 => countries, 4 => states, and 5 =>
+counties).
+.RE
+.IP ""
+Another EZMAPB routine, named MPGLTY, may be called by the user from within
+the line-processing routine specified by the final argument in a call to
+MPLNDM:
+.RS
+.IP "\(bu" 4
+MPGLTY - Retrieves the line type of the line being drawn.
+.RE
+.IP ""
+There is a group of EZMAPB functions providing access to information about
+the areas defined by a database being used; these may be referenced at any
+time the appropriate information has been loaded into EZMAPB's common
+blocks (that is, after calling one of MPLNAM, MPLNDM, MPLNDR, or MPLNRI),
+but they are normally to be referenced from within the area-processing
+routine specified as the final argument in a call to the AREAS routine
+ARSCAM, in which they may be used to obtain information determining the
+manner in which the areas are to be rendered:
+.RS
+.IP "\(bu" 4
+MPIPAI - A function whose value is non-zero if and only if the area with a
+specified area identifier is part of the area having a second specified area
+identifier.
+.IP "\(bu" 4
+MPIPAN - A function whose value is non-zero if and only if the area with a
+specified area identifier is part of the area having a specified name.
+.IP "\(bu" 4
+MPIOAR - A function whose value is the area identifier of the smallest
+area that is defined at or above a specified level in the area hierarchy and
+of which the area having a specified area identifier is a part.
+.IP "\(bu" 4
+MPIATY - A function whose value is the type of the area having a specified
+area identifier.
+.IP "\(bu" 4
+MPIPAR - A function whose value is the area identifier of the parent of the
+area having a specified area identifier.
+.IP "\(bu" 4
+MPISCI - A function whose value is the suggested color index for an area
+having a specified area identifier.
+.IP "\(bu" 4
+MPNAME - A function whose value is the name of the area having a particular
+area identifier.
+.IP "\(bu" 4
+MPFNME - A function whose value is the full name of the area having
+a specified area identifier, up to a specified level in the hierarchy of areas;
+the full name of an area consists of its own name, preceded by the name of its
+parent, preceded by the name of its parent's parent, and so on; the various
+components of the name are separated by the 3-character string ' - ' (a blank,
+a dash, and another blank).
+.RE
+.IP ""
+Two additional EZMAPB functions are provided; these have nothing to do with
+mapping, really, but can be useful in dealing with character strings:
+.RS
+.IP "\(bu" 4
+MPIFNB - A function whose value is the index of the first non-blank character
+in a character string.
+.IP "\(bu" 4
+MPILNB - A function whose value is the index of the last non-blank character
+in a character string.
 .RE
 .IP "Miscellaneous Other Routines"
 .sp
@@ -198,13 +355,41 @@ from which Ezmap grew.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
+c_mapaci
+.br
+c_mapbla
+.br
 c_mapdrw
 .br
-c_mapint
+c_mapfst
 .br
 c_mapgrd
 .br
+c_mapgrm
+.br
 c_mapgtc
+.br
+c_mapgtc
+.br
+c_mapgti
+.br
+c_mapgtl
+.br
+c_mapgtr
+.br
+c_mapint
+.br
+c_mapiq
+.br
+c_mapiqa
+.br
+c_mapiqm
+.br
+c_mapit
+.br
+c_mapita
+.br
+c_mapitm
 .br
 c_maplbl
 .br
@@ -213,6 +398,12 @@ c_maplot
 c_mappos
 .br
 c_maproj
+.br
+c_maprs
+.br
+c_maprst
+.br
+c_mapsav
 .br
 c_mapset
 .br
@@ -224,47 +415,43 @@ c_mapstl
 .br
 c_mapstr
 .br
-c_mapgtc
-.br
-c_mapgti
-.br
-c_mapgtl
-.br
-c_mapgtr
-.br
-c_mapsav
-.br
-c_maprst
-.br
 c_maptra
-.br
-c_maptrn
-.br
-c_mapfst
-.br
-c_mapvec
-.br
-c_mapit
-.br
-c_mapiq
 .br
 c_maptri
 .br
-c_mapbla
+c_maptrn
 .br
-c_mapgrm
+c_mapvec
 .br
-c_mapita
+c_mpfnme
 .br
-c_mapiqa
+c_mpglty
 .br
-c_mapitm
+c_mpiaty
 .br
-c_mapiqm
+c_mpifnb
 .br
-c_mapaci
+c_mpilnb
 .br
-c_maprs
+c_mpioar
+.br
+c_mpipai
+.br
+c_mpipan
+.br
+c_mpipar
+.br
+c_mpisci
+.br
+c_mplnam
+.br
+c_mplndm
+.br
+c_mplndr
+.br
+c_mplnri
+.br
+c_mpname
 .br
 c_mprset
 .br
@@ -282,13 +469,22 @@ color indices of various parts of the map are all user-settable
 parameters, but more complete control of color indices, spot size, dash
 pattern, etc., may be achieved by supplying one's own version of MAPUSR;
 a user version may be as complicated as is required to achieve a desired
-effect.
+effect.  Note that this routine is not called by any of the EZMAPB routines;
+use MPCHLN instead.
 .IP "\(bu" 4
-MAPEOD - This routine is called by the Ezmap routine MAPLOT and the
-Ezmap routine MAPBLA; in each case, it is called once for each segment
+MAPEOD - This routine is called by the Ezmap routine MAPLOT and by the Ezmapa
+routines MAPBLA and MAPBLM; in each case, it is called once for each segment
 in the outline dataset. The user may supply a version which examines the
-segment to see if it ought to be plotted and, if not, to delete it. This
-can be used (for example) to reduce the clutter in northern Canada.
+segment to see if it ought to be plotted and, if not, to delete it.  This
+can be used (for example) to reduce the clutter in northern Canada.  Note
+that this routine is not called by any of the EZMAPB routines; they call
+MPCHLN instead.
+.IP "\(bu" 4
+MPCHLN - This routine is called by the Ezmapb routines MPLNAM, MPLNDM, and
+MPLNDR; in each case, it is called just before and just after the processing
+of each segment in the map database.  The default version does nothing; a
+user-supplied version can do for the new databases what MAPUSR and MAPEOD
+did for the old ones.
 .RE
 .SH ACCESS 
 To use Ezmap Fortran or C routines, load the NCAR Graphics libraries ncarg,
@@ -431,6 +627,58 @@ MPGETL - UNCLEARED PRIOR ERROR
 .br
 MPGETR - UNCLEARED PRIOR ERROR
 .br
+MPLNAM - Can't form name of ".names" file
+.br
+MPLNAM - Can't open the ".lines" file
+.br
+MPLNAM - Can't open the ".names" file
+.br
+MPLNAM - Read bad index from ".names" file
+.br
+MPLNAM - Read error on ".lines" file
+.br
+MPLNAM - Read error on ".names" file
+.br
+MPLNAM - UNCLEARED PRIOR ERROR
+.br
+MPLNDM - Can't form name of ".names" file
+.br
+MPLNDM - Can't open the ".lines" file
+.br
+MPLNDM - Can't open the ".names" file
+.br
+MPLNDM - Read bad index from ".names" file
+.br
+MPLNDM - Read error on ".lines" file
+.br
+MPLNDM - Read error on ".names" file
+.br
+MPLNDM - UNCLEARED PRIOR ERROR
+.br
+MPLNDR - Can't form name of ".names" file
+.br
+MPLNDR - Can't open the ".lines" file
+.br
+MPLNDR - Can't open the ".names" file
+.br
+MPLNDR - Read bad index from ".names" file
+.br
+MPLNDR - Read error on ".lines" file
+.br
+MPLNDR - Read error on ".names" file
+.br
+MPLNDR - UNCLEARED PRIOR ERROR
+.br
+MPLNRI - Can't form name of ".names" file
+.br
+MPLNRI - Can't open the ".names" file
+.br
+MPLNRI - Read bad index from ".names" file
+.br
+MPLNRI - Read error on ".names" file
+.br
+MPLNRI - UNCLEARED PRIOR ERROR
+.br
 MPRSET - UNCLEARED PRIOR ERROR
 .br
 MPSETC - UNCLEARED PRIOR ERROR
@@ -488,10 +736,26 @@ maptri,
 maptrn,
 mapusr,
 mapvec,
+mpchln,
+mpfnme,
 mpgetc,
 mpgeti,
 mpgetl,
 mpgetr,
+mpglty,
+mpiaty,
+mpifnb,
+mpilnb,
+mpioar,
+mpipai,
+mpipan,
+mpipar,
+mpisci,
+mplnam,
+mplndm,
+mplndr,
+mplnri,
+mpname,
 mprset,
 mpsetc,
 mpseti,

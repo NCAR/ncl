@@ -1,36 +1,34 @@
-.TH MAPRST 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH MPIPAR 3NCARG "April 1998" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
-MAPRST - Restores the state of Ezmap saved by an earlier call to MAPSAV.
+MPIPAR - Given the area identifier of one of the areas defined by whatever
+database was last read by one of the EZMAPB routines MPLNAM, MPLNDM, MPLNDR,
+and MPLNRI, this function returns the area identifier of that area's containing
+(parent) area.
 .SH SYNOPSIS
-CALL MAPRST (INFO)
+IPAR=MPIPAR(IAIN)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_maprst (int info)
+int c_mpipar (int iain)
 .SH DESCRIPTION 
-.IP INFO 12
-(an input expression, of type INTEGER) is the number of a unit from
-which a single unformatted record is to be read. It is the user's
-responsibility to position this unit. MAPRST does not rewind it, either
-before or after reading the record.
-.SH C-BINDING DESCRIPTION 
+.IP IAIN 12
+is an input expression of type INTEGER, specifying the area identifier of a
+particular area of interest.
+.SH C-BINDING DESCRIPTION
 The C-binding argument description is the same as the FORTRAN 
 argument description.
 .SH USAGE
-This routine allows you to restore internal parameter values
-from a file. 
-For a complete list of parameters available
-in this utility, see the ezmap_params man page.
+The statement "IPAR=MPIPAR(IAIN)" retrieves in IPAR the area identifier of the
+parent of the area with area identifier IAIN.  For example, if IMAD is the area
+identifier of the little island in Lake Superior called "Lake Madeline", then
+MPIPAR(IMAD) is the area identifier of the area called "Wisconsin".
 .SH EXAMPLES
-No example is available for MAPRST.
+Use the ncargex command to see the following relevant example: mpex12.
 .SH ACCESS
-To use MAPRST or c_maprst, load the NCAR Graphics libraries ncarg, ncarg_gks,
+To use MPIPAR or c_mpipar, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.  
-.SH MESSAGES
-See the ezmap man page for a description of all Ezmap error
-messages and/or informational messages.
 .SH SEE ALSO
 Online:
 ezmap,
@@ -63,6 +61,7 @@ maplot,
 mappos,
 maproj,
 maprs,
+maprst,
 mapsav,
 mapset,
 mapstc,
@@ -87,7 +86,6 @@ mpilnb,
 mpioar,
 mpipai,
 mpipan,
-mpipar,
 mpisci,
 mplnam,
 mplndm,
@@ -102,9 +100,6 @@ mpsetr,
 supmap,
 supcon,
 ncarg_cbind
-.sp
-Hardcopy:  
-NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
 Copyright (C) 1987-1998
 .br

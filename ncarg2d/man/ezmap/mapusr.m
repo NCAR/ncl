@@ -4,7 +4,8 @@
 .SH NAME
 MAPUSR - Called by Ezmap routines that draw the various parts of the map.
 The default version does nothing.  A user-written version may be supplied
-to change the appearance of the map.
+to change the appearance of the map. Note that this routine is not called
+by any of the EZMAPB routines; they call MPCHLN instead.
 .SH SYNOPSIS
 CALL MAPUSR (IPRT)
 .SH DESCRIPTION 
@@ -97,10 +98,26 @@ maptra,
 maptri,
 maptrn,
 mapvec,
+mpchln,
+mpfnme,
 mpgetc,
 mpgeti,
 mpgetl,
 mpgetr,
+mpglty,
+mpiaty,
+mpifnb,
+mpilnb,
+mpioar,
+mpipai,
+mpipan,
+mpipar,
+mpisci,
+mplnam,
+mplndm,
+mplndr,
+mplnri,
+mpname,
 mprset,
 mpsetc,
 mpseti,

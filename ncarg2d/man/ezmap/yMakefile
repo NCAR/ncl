@@ -1,23 +1,25 @@
 #
-#	$Id: yMakefile,v 1.12 1996-07-08 22:51:44 kennison Exp $
+#	$Id: yMakefile,v 1.13 1998-05-15 00:28:03 kennison Exp $
 #
 
 MAN =   ezmap ezmap_params ezmapa mapaci mapbla mapblm mapdrw mapeod mapfst \
 	mapgci mapgrd mapgrm mapgtc mapgti mapgtl mapgtr mapint mapiq mapiqa \
-	mapiqd mapiqm mapit mapita mapitd  mapitm maplbl maplmb maplot mappos \
+	mapiqd mapiqm mapit mapita mapitd mapitm maplbl maplmb maplot mappos \
 	maproj maprs maprst mapsav mapset mapstc mapsti mapstl mapstr maptra \
-	maptri maptrn mapusr mapvec mpgetc mpgeti mpgetl mpgetr mprset mpsetc \
-	mpseti mpsetl mpsetr supcon supmap
+	maptri maptrn mapusr mapvec mpchln mpfnme mpgetc mpgeti mpgetl mpgetr \
+	mpglty mpiaty mpifnb mpilnb mpioar mpipai mpipan mpipar mpisci mplnam \
+	mplndm mplndr mplnri mpname mprset mpsetc mpseti mpsetl mpsetr supcon \
+	supmap
 
 # Install preformatted troff documents on systems without troff
 #if UseCatDirs
-FORMAT_EXT	= .p
+FORMAT_EXT      = .p
 #else
-FORMAT_EXT	= .m
+FORMAT_EXT      = .m
 #endif
 
-MPATH	= $(MAN3PATH)
-MSECT	= $(MAN3_SECTION)
+MPATH   = $(MAN3PATH)
+MSECT   = $(MAN3_SECTION)
 
 InstallManPages($(MAN),$(FORMAT_EXT),$(MPATH),$(MSECT))
 FormatManPages($(MAN),.m,.p)

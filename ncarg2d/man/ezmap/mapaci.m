@@ -3,8 +3,11 @@
 .nh
 .SH NAME
 MAPACI - 
-Normally used to pick colors for the areas created
-by the boundary lines added to an area map by a call to MAPBLA.
+Normally used to pick colors for the areas created by the boundary lines added
+to an area map by a call to MAPBLA.  Note that this function should not be used
+to select color indices for areas defined by the new map database "Earth..1",
+which was created in 1998; for that purpose, use EZMAPB functions instead (in
+particular, MPISCI).
 .SH SYNOPSIS
 ICIR = MAPACI(IAID)
 .SH C-BINDING SYNOPSIS
@@ -79,10 +82,26 @@ maptri,
 maptrn,
 mapusr, 
 mapvec,
+mpchln,
+mpfnme,
 mpgetc,
 mpgeti,  
 mpgetl,
 mpgetr,  
+mpglty,
+mpiaty,
+mpifnb,
+mpilnb,
+mpioar,
+mpipai,
+mpipan,
+mpipar,
+mpisci,
+mplnam,
+mplndm,
+mplndr,
+mplnri,
+mpname,
 mprset,
 mpsetc,  
 mpseti,  

@@ -57,8 +57,8 @@ If true (non-zero), user calls to MAPIT draw dotted
 lines. The default is false (zero); lines drawn by
 MAPIT are solid or dashed, depending on the current
 state of the Dashline package. 'DL' may be reset by a
-user version of MAPUSR to change the way in which the
-perimeter, the grid, the limb lines, and the
+user version of MAPUSR or MPCHLN to change the way in
+which the perimeter, the grid, the limb lines, and the
 outlines are drawn.
 .IP "\&'DO' - Integer or Logical"
 If true (non-zero), outlines are dotted. The default
@@ -82,13 +82,13 @@ must fall between 0.001 and 10.0.
 The desired grid spacing. A zero suppresses the
 grid. The default is 10 degrees.
 .IP "\&'G1' - Integer"
-The group identifier to be used by MAPBLA when
-putting into the area map the group of edges that
+The group identifier to be used by MAPBLA or MPLNAM
+when putting into the area map the group of edges that
 define the division of the plotter frame into the
 projected images of geographic entities.
 .IP "\&'G2' - Integer"
-The group identifier to be used by MAPBLA when
-putting into the area map the group of edges that
+The group identifier to be used by MAPBLA or MPLNAM
+when putting into the area map the group of edges that
 define the division of the plotter frame into
 vertical strips.
 .IP "\&'IN' - Integer or Logical"
@@ -108,12 +108,12 @@ Minimum vector length for MAPIT. A point closer to
 the previous point than this is omitted. The default
 value is 4 (out of 4096; see 'RE', below).
 .IP "\&'OU' - Character"
-Says which set of outline data to use. The possible
-values are 'NO', for no outlines, 'CO', for
-continental outlines, 'US', for U.S. state outlines,
-\&'PS', for continental outlines plus international
-outlines plus U.S. outlines, and 'PO', for
-continental outlines plus international outlines.
+Says which set of outline data are be used by MAPLOT,
+MAPBLA, and MAPBLM. The possible values are 'NO' (no
+outlines), 'CO' (continental outlines), 'US' (U.S.
+state outlines), 'PS' (continental outlines plus
+international outlines plus U.S. outlines), and 'PO'
+(continental outlines plus international outlines).
 Default is 'CO'.
 .IP "\&'PE' - Integer or Logical"
 If true (non-zero), draw the perimeter. The default
@@ -169,9 +169,9 @@ default value is 1.; user values must lie between
 of a consultant.
 .IP "\&'VS' - Integer"
 The vertical-stripping parameter, which determines
-whether MAPBLA puts into the area map edge group
+whether MAPBLA and MPLNAM put into the area map edge group
 \&'G2', defining a set of vertical strips. A negative
-or zero value of 'VS' prevents MAPBLA from doing
+or zero value of 'VS' prevents MAPBLA and MPLNAM from doing
 this. A value greater than zero requests that it be
 done and specifies the number of vertical strips to
 be created. The default value of 'VS' is 1.
@@ -194,10 +194,26 @@ mapstc,
 mapsti,  
 mapstl,  
 mapstr,  
+mpchln,
+mpfnme,
 mpgetc,
 mpgeti,  
 mpgetl,
 mpgetr,  
+mpglty,
+mpiaty,
+mpifnb,
+mpilnb,
+mpioar,
+mpipai,
+mpipan,
+mpipar,
+mpisci,
+mplnam,
+mplndm,
+mplndr,
+mplnri,
+mpname,
 mprset,
 mpsetc,  
 mpseti,  
