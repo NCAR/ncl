@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.47 1999-03-27 00:44:55 dbrown Exp $
+ *      $Id: TextItem.c,v 1.48 1999-04-08 21:24:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -129,7 +129,7 @@ static NhlResource resources[] = {
 		 sizeof(float), 
 		 NhlOffset(NhlTextItemLayerRec,text.perim_dash_length),
 		 NhlTString,_NhlUSET("0.15"),0,NULL},
-	{NhlNtxPerimSpaceF, NhlCtxPerimSpaceF, NhlTFloat, 
+	{NhlNtxPerimSpaceF, NhlCEdgeBorderWidthF, NhlTFloat, 
 		 sizeof(float), 
 		 NhlOffset(NhlTextItemLayerRec,text.perim_space),
 		 NhlTString,_NhlUSET("0.5"),0,NULL},
