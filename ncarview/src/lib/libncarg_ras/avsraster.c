@@ -1,4 +1,4 @@
-/* $Id: avsraster.c,v 1.5 1992-09-01 23:44:33 clyne Exp $ */
+/* $Id: avsraster.c,v 1.6 1992-09-10 21:01:43 don Exp $ */
 
 /***********************************************************************
 *                                                                      *
@@ -33,14 +33,14 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <string.h>
-#include <malloc.h>
 #include "ncarg_ras.h"
 #include "avsraster.h"
 
 static char	*FormatName = "avs";
-extern char	*ProgramName;
 
 Raster *
 AVSOpen(name)
@@ -50,7 +50,7 @@ AVSOpen(name)
 
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, "AVSOpen(%s)", name);
 		return( (Raster *) NULL );
 	}
 
@@ -61,13 +61,13 @@ AVSOpen(name)
 	else {
 		ras->fd  = open(name, O_RDONLY);
 		if (ras->fd == -1) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "AVSOpen(%s)", name);
 			return( (Raster *) NULL );
 		}
 
 		ras->fp = fdopen(ras->fd, "r");
 		if (ras->fp == (FILE *) NULL) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "AVSOpen(%s)", name);
 			return( (Raster *) NULL );
 		}
 	}
@@ -103,7 +103,7 @@ AVSRead(ras)
 	if (ras->dep == (char *) NULL) {
 		ras->dep =  (char *) calloc(sizeof(AVSInfo),1);
 		if (ras->dep == (char *) NULL) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "");
 			return(RAS_ERROR);
 		}
 	}
@@ -122,9 +122,9 @@ AVSRead(ras)
 	}
 
 	ras->type  = RAS_DIRECT;
-	ras->depth = 24;
 	ras->nx    = dep->nx;
 	ras->ny    = dep->ny;
+	ras->ncolor = 256*256*256;
 	ras->length = ras->nx * ras->ny * 3;
 
 	/* If not initialized, allocate image memory */
@@ -135,7 +135,7 @@ AVSRead(ras)
 		ras->data = (unsigned char *) calloc( (unsigned) image_size, 1);
 
 		if (ras->data == (unsigned char *) NULL) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "");
 			return(RAS_ERROR);
 		}
 	}
@@ -146,7 +146,7 @@ AVSRead(ras)
 		tmplen = ras->nx * ras->ny * 4;
 		tmpbuf = (unsigned char *) calloc( (unsigned) tmplen, 1);
 		if (tmpbuf == (unsigned char *) NULL) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "");
 			return(RAS_ERROR);
 		}
 	}
@@ -173,30 +173,30 @@ AVSOpenWrite(name, nx, ny, comment, encoding)
 	int		nx;
 	int		ny;
 	char		*comment;
-	int		encoding;
+	RasterEncoding	encoding;
 {
 	Raster		*ras;
 	AVSInfo		*dep;
 
 	if (name == (char *) NULL) {
-		(void) RasterSetError(RAS_E_NULL_NAME);
+		(void) ESprintf(RAS_E_NULL_NAME, "AVSOpenWrite()");
 		return( (Raster *) NULL );
 	}
 
 	if (encoding != RAS_DIRECT) {
-		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING, "AVSOpenWrite()");
 		return( (Raster *) NULL );
 	}
 
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, "");
 		return( (Raster *) NULL );
 	}
 
 	ras->dep = calloc(sizeof(AVSInfo),1);
 	if (ras->dep == (char *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, "");
 		return( (Raster *) NULL );
 	}
 
@@ -208,7 +208,7 @@ AVSOpenWrite(name, nx, ny, comment, encoding)
 	else {
 		ras->fd = open(name, O_WRONLY | O_CREAT, 0644);
 		if (ras->fd == -1) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "");
 			return( (Raster *) NULL );
 		}
 	}
@@ -225,7 +225,7 @@ AVSOpenWrite(name, nx, ny, comment, encoding)
 	ras->nx		= nx;
 	ras->ny		= ny;
 	ras->length	= ras->nx * ras->ny * 3;
-	ras->ncolor	= 0;
+	ras->ncolor	= 256*256*256;
 	ras->type	= RAS_DIRECT;
 	ras->red	= (unsigned char *) NULL;
 	ras->green	= (unsigned char *) NULL;
@@ -269,7 +269,7 @@ AVSWrite(ras)
 		tmplen = ras->nx * ras->ny * 4;
 		tmpbuf = (unsigned char *) calloc( (unsigned) tmplen, 1);
 		if (tmpbuf == (unsigned char *) NULL) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "");
 			return(RAS_ERROR);
 		}
 	}
