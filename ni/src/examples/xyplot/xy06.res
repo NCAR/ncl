@@ -1,4 +1,8 @@
 !
+! Set all fonts to helvetica
+!
+*Font : Helvetica
+!
 ! ViewPort resources
 !
 *vpXF:       0.2
@@ -28,6 +32,8 @@
 *pmLegendDisplayMode:     conditional
 *lgPerimOn:               True
 *lgAutoManage:            False
+*lgLabelFontHeightF:      0.015
+
 !
 ! Title resources
 !
