@@ -1,16 +1,16 @@
 #
-#	$Id: yMakefile,v 1.27 1994-10-26 13:45:16 haley Exp $
+#	$Id: yMakefile,v 1.28 1994-12-05 17:23:32 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
 SRC_SCRIPTS	=	ncargsrc ncargsrcy
 #endif
 
-SCRIPTS = ncargf77 ncargfile ncargcc ncargversion \
+SCRIPTS = ncargf77 ncargfile ncargcc nhlcc ncargversion \
 	ncargrun ncargex ncargcex pre2ncgm $(SRC_SCRIPTS)
 
 InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
-CleanFilesTarget(ncargf77 ncargcc ncargex ncargcex ncargsrc ncargsrcy ncargversion ncargfile)
+CleanFilesTarget(ncargf77 ncargcc nhlcc ncargex ncargcex ncargsrc ncargsrcy ncargversion ncargfile)
 
 ncargversion:	sedscript
 	@sed -f sedscript < version.sed > ncargversion
@@ -32,15 +32,37 @@ ncargf77: ncargf77.csh Makefile
 ncargcc: ncargcc.csh Makefile
 	@sed \
 	-e 's+SED_CC+$(CC)+' \
+	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
 	-e 's+SED_STDDEF+$(STD_DEFINES)+' \
 	-e 's+SED_PROJDEF+$(PROJECTDEFINES)+' \
 	-e 's+SED_LDCFLAGS+$(CC_LDOPTIONS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	-e 's+SED_XLIB+$(XLIB)+' \
+	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
 	<ncargcc.csh >ncargcc
+
+nhlcc: nhlcc.csh Makefile
+	@sed \
+	-e 's+SED_CC+$(CC)+' \
+	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
+	-e 's+SED_INCSEARCH+$(INCSEARCH)+' \
+	-e 's+SED_STDDEF+$(STD_DEFINES)+' \
+	-e 's+SED_PROJDEF+$(PROJECTDEFINES)+' \
+	-e 's+SED_LDCFLAGS+$(CC_LDOPTIONS)+' \
+	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
+	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	-e 's+SED_XMOTIFLIB+$(XMOTIFLIB)+' \
+	-e 's+SED_XTOOLLIB+$(XTOOLLIB)+' \
+	-e 's+SED_XLIB+$(XLIB)+' \
+	-e 's+SED_LIBDIR+$(LIBDIR)+' \
+	-e 's+SED_INCDIR+$(INCDIR)+' \
+	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
+	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
+	<nhlcc.csh >nhlcc
 
 ncargex: ncargex.csh Makefile
 	@sed \
