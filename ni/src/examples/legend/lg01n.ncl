@@ -52,7 +52,7 @@ else
 ; Create an XWorkstation object.
 ;
     wid = create "lg01Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then

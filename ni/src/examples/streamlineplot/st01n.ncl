@@ -24,25 +24,20 @@ N=30
 M=25
 PI=3.14159
 
-U = new((/N,M/),float)
-V = new((/N,M/),float)
-
 ;
-; create a simple vector field
+; Generate vector data arrays
 ;
-
-igrid = 2.0 * PI / M
-jgrid = 2.0 * PI / N
-ii = ispan(0,M-1,1)
-jj = ispan(0,N-1,1)
-do i= 0,M-1
-  U(:,i) = 10.0 * cos(jgrid * jj)
-end do
-do j=0,N-1
-  V(j,:) = 10.0 * cos(igrid * ii)
-end do
-delete(ii)
-delete(jj)
+ 
+ 
+V = 10.0 * cos(onedtond((2.0 * PI / M) * ispan(0,M-1,1),(/N,M/)))
+U = 10.0 * cos(onedtond((2.0 * PI / N) * ispan(0,N-1,1),(/M,N/)))
+ 
+;
+; We will need to transpose U so dimension names will be needed
+;
+ 
+U!0 = "x"
+U!1 = "y"
 
 ;
 ; Create an application context. Set the app dir to the current directory
@@ -50,7 +45,7 @@ delete(jj)
 ;
 appid = create "st01" appClass defaultapp
     "appUsrDir" : "./"
-        "appDefaultParent" : "True"
+        "appDefaultParent" : True
 end create
 
 ;
@@ -73,7 +68,7 @@ else
 ; Create an X workstation.
 ;
     wid = create "st01Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then
@@ -94,7 +89,7 @@ end if
 ;
 
 vfid = create "vectorfield" vectorFieldClass appid
-        "vfUDataArray" : U
+        "vfUDataArray" : U( y | :, x | :)  ; Transpose of U
 	"vfVDataArray" : V
 end create
 

@@ -1,5 +1,5 @@
 ;
-;      $Id: pr05n.ncl,v 1.1 1996-07-01 17:28:54 haley Exp $
+;      $Id: pr05n.ncl,v 1.2 1998-04-23 22:20:16 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -43,7 +43,7 @@ projection = (/"orthographic","mollweide","stereographic"/)
 ; case.
 ; 
 appid = create "pr05" appClass defaultapp 
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
 
@@ -67,7 +67,7 @@ else
 ; Create an XWorkstation object.
 ;
   wid = create "pr05Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
   end create
   else
     if (PS .eq. 1) then
@@ -112,7 +112,7 @@ do i = 0,2
 ;
   setvalues gsid
     "gsMarkerColor" : 0
-    "gsEdgesOn" : "false"
+    "gsEdgesOn" : False
     "gsFillColor" : 2
   end setvalues
 
@@ -127,28 +127,12 @@ do i = 0,2
     "gsFillColor" : 3
   end setvalues
 
-  py(0) = 23.5
-  py(1) = 66.5
-  py(2) = 66.5
-  py(3) = 23.5
-  py(4) = 23.5
-  px(0) = 360.
-  px(1) = 360.
-  px(2) =  0.
-  px(3) = 0.
-  px(4) = 360.
+  py(0:4) = (/ 23.5 , 66.5 , 66.5 , 23.5 , 23.5/)
+  px(0:4) = (/ 360. , 360. , 0. , 0. , 360./)
   NhlDataPolygon(canvas,gsid,px,py)
 
-  py(0) = -23.5
-  py(1) = -66.5
-  py(2) = -66.5
-  py(3) = -23.5
-  py(4) = -23.5
-  px(0) = 360.
-  px(1) = 360.
-  px(2) =  0.
-  px(3) = 0.
-  px(4) = 360.
+  py(0:4) = (/ -23.5 , -66.5 , -66.5 , -23.5 , -23.5 /)
+  px(0:4) = (/ 360. , 360. ,  0. , 0.  , 360. /)
   NhlDataPolygon(canvas,gsid,px,py)
 ;
 ; Draw the frigid zones
@@ -157,28 +141,12 @@ do i = 0,2
     "gsFillColor" : 4
   end setvalues
 
-  py(0) = 90.
-  py(1) = 66.5
-  py(2) = 66.5
-  py(3) = 90.
-  py(4) = 90.
-  px(0) = 360.
-  px(1) = 360.
-  px(2) =  0.
-  px(3) = 0.
-  px(4) = 360.
+  py(0:4) = (/ 90. , 66.5 , 66.5 , 90. , 90. /)
+  px(0:4) = (/ 360.  , 360. , 0. , 0. , 360. /)
   NhlDataPolygon(canvas,gsid,px,py)
 
-  py(0) = -90.
-  py(1) = -66.5
-  py(2) = -66.5
-  py(3) = -90.
-  py(4) = -90.
-  px(0) = 360.
-  px(1) = 360.
-  px(2) =  0.
-  px(3) = 0.
-  px(4) = 360.
+  py(0:4) = (/ -90. , -66.5 , -66.5 , -90. , -90./)
+  px(0:4) = (/ 360. , 360.  , 0. , 0. , 360./)
   NhlDataPolygon(canvas,gsid,px,py)
 
 ;
@@ -188,10 +156,8 @@ do i = 0,2
 ;
 ; Draw markers at each pole
 ;
-  px(0) = 0.
-  px(1) = 0.
-  py(0) = 90.
-  py(1) = -90.
+  px(0:1) = 0.
+  py(0:1) = (/90., -90./)
   NhlDataPolymarker(canvas,gsid,px(:1),py(:1))
 
 ;
@@ -204,10 +170,8 @@ do i = 0,2
     "gsLineLabelString" : "e|q|u|a|t|o|r"
   end setvalues
 
-  px(0) = 360.
-  px(1) = 0.
-  py(0) = 0.
-  py(1) = 0.
+  px(0:1) = (/360.,0/)
+  py(0:1) = 0.
   NhlDataPolyline(canvas,gsid,px(:1),py(:1))
 
 ;
@@ -217,10 +181,8 @@ do i = 0,2
     "gsLineLabelString" : "t|r|o|p|i|c o|f c|a|n|c|e|r"
   end setvalues
 
-  px(0) = 360.
-  px(1) = 0.
-  py(0) = 23.5
-  py(1) = 23.5
+  px(0:1) = (/360., 0./)
+  py(0:1) = 23.5
   NhlDataPolyline(canvas,gsid,px(:1),py(:1))
 
 ;
@@ -233,10 +195,7 @@ do i = 0,2
     "gsLineLabelString" : "tr|o|p|ic of c|a|p|r|i|c|o|rn"
   end setvalues
 
-  px(0) = 360.
-  px(1) = 0.
-  py(0) = -23.5
-  py(1) = -23.5
+  py(0:1) = -23.5
   NhlDataPolyline(canvas,gsid,px(:1),py(:1))
 ;
 ; Arctic circle
@@ -245,10 +204,7 @@ do i = 0,2
     "gsLineLabelString" : "a|r|c|t|i|c c|i|r|c|l|e"
   end setvalues
 
-  px(0) = 360.
-  px(1) = 0.
-  py(0) = 66.5
-  py(1) = 66.5
+  py(0:1) = 66.5
   NhlDataPolyline(canvas,gsid,px(:1),py(:1))
 
 ;
@@ -258,10 +214,7 @@ do i = 0,2
     "gsLineLabelString" : "|a|n|t|a|r|c|t|i|c c|i|r|c|l|e"
   end setvalues
 
-  px(0) = 360.
-  px(1) = 0.
-  py(0) = -66.5
-  py(1) = -66.5
+  py(0:1) = -66.5
   NhlDataPolyline(canvas,gsid,px(:1),py(:1))
   frame(wid)
 

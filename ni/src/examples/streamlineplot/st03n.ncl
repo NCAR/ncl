@@ -39,7 +39,7 @@ uv = addfile(cdfpath + "941110_UV.cdf","r")
 ;
 appid = create "st03" appClass defaultapp
     "appUsrDir" : "./"
-        "appDefaultParent" : "True"
+        "appDefaultParent" : True
 end create
 
 ;
@@ -62,7 +62,7 @@ else
 ; Create an X workstation.
 ;
     wid = create "st03Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then

@@ -29,10 +29,9 @@ yi = fspan(0.,1.,nyi)
 zi = new((/nxi,nyi/),float)
 
 do i=0,nxi-1
-  do j=0,nyi-1
-    zi(i,j) = 0.5 + 0.25*sin(-7.*xi(i)) + 0.25*cos(5.*yi(j))
-  end do
+    zi(i,:) = sin(-7.*xi(i)) + cos(5.*yi)
 end do
+zi = .5 + .25 * zi
 
 ;
 ;  Set up the output grid.
@@ -67,7 +66,7 @@ zo = ftsurf(xi,yi,zi,xo,yo)
 ; Create an XWorkstation object.
 ;
       wid = create "nm12Work" xWorkstationClass defaultapp
-        "wkPause" : "True"
+        "wkPause" : True
       end create
     else
       if (PS .eq. 1) then

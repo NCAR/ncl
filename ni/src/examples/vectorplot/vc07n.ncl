@@ -26,45 +26,43 @@ NROWS = 11
 ; 
 ; Define our own colormap.
 ;
-ncolors = 24
-cmap = new( (/ncolors,3/), float)
-cmap(0,:) = (/1.0,1.0,1.0/)
-cmap(1,:) = (/0.0,0.0,0.0/)
-cmap(2,:) = (/0.9,0.9,0.9/)
-cmap(3,:) = (/0.6,0.6,0.6/)
-cmap(4,:) = (/0.3,0.3,0.3/)
-cmap(5,:) = (/0.8,0.9,1.0/)
-cmap(6,:) = (/0.5,0.0,0.5/)
-cmap(7,:) = (/0.0,0.5,0.7/)
-cmap(8,:) = (/0.0,0.0,0.0/)
-cmap(9,:) = (/0.00000,1.00000,0.00000/)
-cmap(10,:) = (/0.14286,1.00000,0.00000/)
-cmap(11,:) = (/0.28571,1.00000,0.00000/)
-cmap(12,:) = (/0.42857,1.00000,0.00000/)
-cmap(13,:) = (/0.57143,1.00000,0.00000/)
-cmap(14,:) = (/0.71429,1.00000,0.00000/)
-cmap(15,:) = (/0.85714,1.00000,0.00000/)
-cmap(16,:) = (/1.00000,1.00000,0.00000/)
-cmap(17,:) = (/1.00000,0.85714,0.00000/)
-cmap(18,:) = (/1.00000,0.71429,0.00000/)
-cmap(19,:) = (/1.00000,0.57143,0.00000/)
-cmap(20,:) = (/1.00000,0.42857,0.00000/)
-cmap(21,:) = (/1.00000,0.28571,0.00000/)
-cmap(22,:) = (/1.00000,0.14286,0.00000/)
-cmap(23,:) = (/1.00000,0.00000,0.00000/)
+cmap = (/ (/1.0,1.0,1.0/), \
+	 (/0.0,0.0,0.0/), \
+	 (/0.9,0.9,0.9/), \
+	 (/0.6,0.6,0.6/), \
+	 (/0.3,0.3,0.3/), \
+	 (/0.8,0.9,1.0/), \
+	 (/0.5,0.0,0.5/), \
+	 (/0.0,0.5,0.7/), \
+	 (/0.0,0.0,0.0/), \
+	 (/0.00000,1.00000,0.00000/), \
+	 (/0.14286,1.00000,0.00000/), \
+	 (/0.28571,1.00000,0.00000/), \
+	 (/0.42857,1.00000,0.00000/), \
+	 (/0.57143,1.00000,0.00000/), \
+	 (/0.71429,1.00000,0.00000/), \
+	 (/0.85714,1.00000,0.00000/), \
+	 (/1.00000,1.00000,0.00000/), \
+	 (/1.00000,0.85714,0.00000/), \
+	 (/1.00000,0.71429,0.00000/), \
+	 (/1.00000,0.57143,0.00000/), \
+	 (/1.00000,0.42857,0.00000/), \
+	 (/1.00000,0.28571,0.00000/), \
+	 (/1.00000,0.14286,0.00000/), \
+	 (/1.00000,0.00000,0.00000/) /)
 
 ;
 ; Create an application object.
 ;
 appid = create "vc07" appClass defaultapp
     "appUsrDir" : "./"
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
 end create
 ;
 ; Default is to display output to an X workstation.
 ;
-NCGM=0
-X11=1
+NCGM=1
+X11=0
 PS=0
 
 if (NCGM .eq. 1) then
@@ -81,7 +79,7 @@ else
 ; Create an XWorkstation object.
 ;
     wid = create "vc07Work" xWorkstationClass defaultapp
-        "wkPause" : "True"
+        "wkPause" : True
        "wkColorMap" : cmap
     end create
   else
@@ -111,12 +109,9 @@ data = asciiread(path + "/fcover.dat",(/3,73,73/),"float")
 ;
 ithin = (/90,15,5,5,4,4,3,3,2,2,2/)
 do j=1,NROWS
-  do i=1,MSIZE
-    if ( i % ithin(j-1) .ne. 0) then
-      data(0,NSIZE-j,i-1) = -9999.0
-    end if
-  end do
+      data(0,NSIZE-j,ind(ispan(1,MSIZE,1) % ithin(j-1) .ne. 0)) = -9999.0
 end do
+data@_FillValue = -9999.0
 
 ;
 ; Create a MapPlot object.
@@ -132,7 +127,7 @@ sfield = create "ScalarField" scalarFieldClass appid
     "sfYCStartV" : -90.
     "sfXCEndV" : 180.
     "sfYCEndV" : 90.
-    "sfMissingValueV" : -9999.0
+    "sfMissingValueV" : data@_FillValue
 end create
 ;
 ; Create a VectorField object.
@@ -152,7 +147,7 @@ end create
 ; Create a VectorPlot object.
 ;
 vcid = create "vectorplot" vectorPlotClass wid
-    "vcUseScalarArray" :  "true"
+    "vcUseScalarArray" :  True
     "vcVectorFieldData":  vfield
     "vcScalarFieldData":  sfield
 end create

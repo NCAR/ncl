@@ -95,7 +95,7 @@ begin
 ;
   appid = create "nm03" appClass defaultapp
     "appUsrDir" : "./"
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
   end create
 ;
 ; Create our workstation object and then retrieve the GKS workstation
@@ -147,10 +147,12 @@ begin
   do i=0,NUMXOUT-1
     do j=0,NUMYOUT-1
        rtmp = nngetaspects(i,j)
-       u(j,i) = sin(rtmp)
-       v(j,i) = cos(rtmp)
+       u(j,i) = rtmp
+       v(j,i) = rtmp
     end do
   end do
+  u = sin(u)
+  v = cos(v)
 
 ;
 ; Create a VectorField object; then use its id as the value of
@@ -175,9 +177,10 @@ begin
   do i = 0,NUMXOUT-1
     do j = 0,NUMYOUT-1
       rtmp = nngetslopes(i, j)
-      u(j,i) = RAD2DEG*rtmp
+      u(j,i) = rtmp
     end do
   end do
+  u = u * RAD2DEG
 ;
 ; Create a ScalarField object; then use its id as the value of
 ; the 'cnScalarFieldData' resource when creating the ContourPlot object.

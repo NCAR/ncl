@@ -1,5 +1,5 @@
 ;
-;   $Id: tx05n.ncl,v 1.6 1995-06-22 21:08:44 haley Exp $
+;   $Id: tx05n.ncl,v 1.7 1998-04-23 22:20:22 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -29,10 +29,9 @@ begin
 ;
 ; Create an X11 workstation, defining the desired colors.
 ;
-cmap = new( (/3, 3/), float)
-cmap(0,:) = (/1.0, 1.0, 1.0/)
-cmap(1,:) = (/0.0, 0.0, 1.0/)
-cmap(2,:) = (/0.4, 0.0, 0.4/)
+cmap = (/ (/1.0, 1.0, 1.0/) , \
+	 (/0.0, 0.0, 1.0/) , \
+	 (/0.4, 0.0, 0.4/) /)
 ;
 ; Default is to display output to an X workstation
 ;

@@ -1,5 +1,5 @@
 ;
-;      $Id: nm09n.ncl,v 1.3 1998-02-12 19:11:21 fred Exp $
+;      $Id: nm09n.ncl,v 1.4 1998-04-23 22:20:11 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -55,14 +55,12 @@ yosp = ftcurvps(xi, yi, period, d, xo)
 ;
 ; Create a color map.
 ;
-ncolors = 6
-cmap = new( (/ncolors,3/), float)
-cmap(0,:) = (/1.0,1.0,1.0/)
-cmap(1,:) = (/0.0,0.0,0.0/)
-cmap(2,:) = (/1.0,0.0,0.0/)
-cmap(3,:) = (/0.0,1.0,0.0/)
-cmap(4,:) = (/0.0,0.0,1.0/)
-cmap(5,:) = (/1.0,1.0,0.0/)
+cmap = (/ (/1.0,1.0,1.0/), \
+	 (/0.0,0.0,0.0/), \
+	 (/1.0,0.0,0.0/), \
+	 (/0.0,1.0,0.0/), \
+	 (/0.0,0.0,1.0/), \
+	 (/1.0,1.0,0.0/) /)
 
 ;
 ; Default is to display output to an X workstation
@@ -146,12 +144,8 @@ ypos_top = 0.95
 zero_line_id = create "ZeroLine" graphicStyleClass xworkid
     "gsLineColor": 2
 end create
-xx = new( (/ 2 /), float)
-yy = new( (/ 2 /), float)
-xx(0) = xl
-xx(1) = xr
-yy(0) = 0.
-yy(1) = 0.
+xx = (/xl,xr/)
+yy = (/0.0,0.0/)
 
 ;
 ; Create a label for the graph of function values of the non-periodic

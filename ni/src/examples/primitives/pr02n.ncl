@@ -31,58 +31,23 @@ begin
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;These are the polyline points  /*a square*/
 
-N=5
-
-X = new((/N/),float)
-Y = new((/N/),float)
-
-X(0) = .25
-X(1) = .25
-X(2) = .45
-X(3) = .45
-X(4) = .25
-Y(0) = .25
-Y(1) = .45
-Y(2) = .45
-Y(3) = .25
-Y(4) = .25
+X = (/ .25 , .25 , .45 , .45 , .25 /)
+Y = (/ .25 , .45 , .45 , .25 , .25 /)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;These are the polymarker points /*four corner points*/
 
-M = 4
-
-U = new((/M/),float)
-V = new((/M/),float)
-
-U(0) = .35
-U(1) = .35
-U(2) = .55
-U(3) = .55
-V(0) = .35
-V(1) = .55
-V(2) = .55
-V(3) = .35
+U = (/ .35 , .35 , .55 , .55 /)
+V = (/ .35 , .55 , .55 , .35 /)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;These are the polygon points /*a filled rectangle*/
 
-K=5
 
-PX = new((/K/),float)
-PY = new((/K/),float)
 
-PX(0) = .6
-PX(1) = .7
-PX(2) = .7
-PX(3) = .8
-PX(4) = .6
-PY(0) = .2
-PY(1) = .8
-PY(2) = .8
-PY(3) = .2
-PY(4) = .2
+PX = (/ .6 , .7 , .7 , .8 , .6 /)
+PY = (/ .2 , .8 , .8 , .2 , .2 /)
 
 
 
@@ -94,7 +59,7 @@ PY(4) = .2
 ;
 appid = create "pr02" appClass defaultapp
     "appUsrDir" : "./"
-        "appDefaultParent" : "True"
+        "appDefaultParent" : True
 end create
 
 ; Choose to display output to an X11 workstation. 
@@ -116,7 +81,7 @@ else
 ; Create an X workstation.
 ;
     wid = create "pr02Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then
@@ -161,7 +126,7 @@ end create
 gsid_pg = create "pr02polygon" graphicStyleClass wid
 
 ;;;**** See resource file pr02.res ****
-;;;        "gsEdgesOn" : "true"
+;;;        "gsEdgesOn" : True
 ;;;        "gsEdgeDashPattern" : 1
 ;;;        "gsEdgeColor" : 2
 ;;;        "gsEdgeThicknessF" : 3

@@ -1,5 +1,5 @@
 ;
-;      $Id: tx04n.ncl,v 1.7 1995-06-22 21:08:42 haley Exp $
+;      $Id: tx04n.ncl,v 1.8 1998-04-23 22:20:22 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -31,7 +31,7 @@ begin
 ; from. 
 ;
 app_id = create "tx04" appClass defaultapp
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
     

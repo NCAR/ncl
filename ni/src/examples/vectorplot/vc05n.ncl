@@ -35,10 +35,7 @@ begin
 M=25
 N=25
 
-U = new((/N,M/),float)
-V = new((/N,M/),float)
-ii = ispan(0,24,1)
-U = onedtond(ispan(0,24,1),(/25,25/))
+U = onedtond(fspan(0,M-1,M),(/N,M/))
 U!0 = "x"
 U!1 = "y"
 V = 2.5*(U(y | :,x | :) + 2)/1.4142
@@ -52,7 +49,7 @@ U = 2.5*(U + 2)/1.4142
 ;
 appid = create "vc05" appClass defaultapp
     "appUsrDir" : "./"
-        "appDefaultParent" : "True"
+        "appDefaultParent" : True
 end create
 
 ; Next, choose the type of output workstation for all 3 frames.
@@ -79,7 +76,7 @@ else
 ; Create an X workstation.
 ;
     wid = create "vc05Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
 ;;;*******see resource file vc05.res ******
 ;;;     "wkColorMap" : "temp1"
     end create
@@ -116,8 +113,8 @@ end create
 vcid = create "VectorPlot1" vectorPlotClass wid
     "vcVectorFieldData" : dataid
 ;;;********* see resource file vc05.res ******
-;;;   "vcMonoLineArrowColor" : "false"
-;;;   "vcMonoFillArrowFillColor" : "false"
+;;;   "vcMonoLineArrowColor" : False
+;;;   "vcMonoFillArrowFillColor" : False
 ;;;   "vcMaxLevelCount" : 61
 end create
 
@@ -159,8 +156,8 @@ end create
 vcid = create "VectorPlot2" vectorPlotClass wid
     "vcVectorFieldData" : dataid
 ;**********see file vc05.res************
-;;; "vcMonoLineArrowColor" : "false"
-;;; "vcMonoFillArrowFillColor" : "false"
+;;; "vcMonoLineArrowColor" : False
+;;; "vcMonoFillArrowFillColor" : False
 ;;; "vcMinFracLengthF" : .33
 ;;;     "vcMaxLevelCount" : 61  
 end create
@@ -173,7 +170,7 @@ mapid = create "Map1" mapPlotClass wid
         "pmTitleDisplayMode" : "always"
         "tiMainString" : "vc05 frame 2"
 ;;;******** see vc05.res ********
-;;; "mpGridAndLimbOn" : "false"
+;;; "mpGridAndLimbOn" : False
 end create
 
 ; Overlay the VectorPlot2 VectorPlot object onto the Map1 MapPlot object.
@@ -223,8 +220,8 @@ end create
 vcid = create "VectorPlot3" vectorPlotClass wid
     "vcVectorFieldData" : dataid
 ;;;******* see file vc05.res *********
-;;; "vcMonoLineArrowColor" : "false"
-;;; "vcMonoFillArrowFillColor" : "false"
+;;; "vcMonoLineArrowColor" : False
+;;; "vcMonoFillArrowFillColor" : False
 ;;;     "vcMaxLevelCount" : 61
 ;;; "vcMinFracLengthF" : .33  
 ;;; "vcRefLengthF" : .05
@@ -266,7 +263,7 @@ mapid = create "Map2" mapPlotClass wid
 ;;;        "mpLeftPointLonF" : -90
 ;;;        "mpRightPointLonF" : 90
 
-;;; "mpGridAndLimbOn" : "false"
+;;; "mpGridAndLimbOn" : False
 end create
 
 ; Overlay the VectorPlot3 VectorPlot object onto the Map2 MapPlot object.

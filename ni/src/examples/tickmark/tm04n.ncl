@@ -30,7 +30,7 @@ begin
 ;
 appid = create "tm04" appClass defaultapp
     "appUsrDir" : "./"
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
 end create
 
 ;
@@ -53,7 +53,7 @@ else
 ; Create an XWorkstation object.
 ;
     wid = create "tm04Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then
@@ -109,12 +109,12 @@ pid = create "FormatDemo" logLinPlotClass wid
     "tmXBMajorLengthF" : 0.02
     "tmXBMinorLengthF" : 0.01
     "tmXBMinorPerMajor" : 4
-    "tmXTBorderOn": "False"
-    "tmYLBorderOn": "False"
-    "tmYRBorderOn": "False"
-    "tmXTOn": "False"
-    "tmYLOn": "False"
-    "tmYROn": "False"
+    "tmXTBorderOn": False
+    "tmYLBorderOn": False
+    "tmYRBorderOn": False
+    "tmXTOn": False
+    "tmYLOn": False
+    "tmYROn": False
     "tiMainPosition" : "left"
     "tiMainJust" : "centerleft"
     "tiMainFuncCode" : "~"

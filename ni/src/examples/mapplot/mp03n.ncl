@@ -24,23 +24,17 @@
 ;
 ; Read data from input file 'mp03n.asc'. 
 ;
-procedure getdat (
-        data: float,
+function getdat (
         m : integer,
         n : integer
 )
 begin
-	dims = new((/2/),integer)
-	dims(0) = m
-	dims(1) = n
-
-	data = asciiread("mp03n.asc",dims,"float")
+	return(asciiread("mp03n.asc",(/m,n/),"float"))
 end
 
 
 begin
 
-    Z = new((/50,50/),float)
     M = 50
     N = 50
 
@@ -53,7 +47,7 @@ begin
 ;
     appid = create "mp03" appClass defaultapp
         "appUsrDir" : "./"
-        "appDefaultParent" : "True"
+        "appDefaultParent" : True
     end create
 ;
 ; Default is to display output to an X workstation
@@ -75,7 +69,7 @@ begin
 ; Create an XWorkstation object.
 ;
         wid = create "mp03Work" xWorkstationClass defaultapp
-            "wkPause" : "True"
+            "wkPause" : True
         end create
       else
         if (PS .eq. 1) then
@@ -94,9 +88,8 @@ begin
 ; data. Create a ScalarField data object and hand it the data created by
 ; 'getdat'. Define the extent of the data coordinates as the whole globe 
 ; 
-    getdat(Z,M,N)
     dataid = create "Gendat" scalarFieldClass appid
-        "sfDataArray" : Z
+        "sfDataArray" : getdat(M,N)
         "sfXCStartV" : -180
         "sfXCEndV" : 180
         "sfYCStartV" : -90
@@ -115,11 +108,11 @@ begin
 ; and masking out the oceans.
 ;
     mapid = create "Map1" mapPlotClass wid
-        "mpFillOn" : "true"
+        "mpFillOn" : True
         "pmTitleDisplayMode" : "always"
         "tiMainString" : "mp03n"
         "mpFillDrawOrder" : "postdraw"
-        "mpAreaMaskingOn" : "true"
+        "mpAreaMaskingOn" : True
         "mpMaskAreaSpecifiers" : mask_specs
     end create
 ;

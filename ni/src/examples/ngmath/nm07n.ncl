@@ -1,5 +1,5 @@
 ;
-;      $Id: nm07n.ncl,v 1.3 1998-02-12 19:11:17 fred Exp $
+;      $Id: nm07n.ncl,v 1.4 1998-04-23 22:20:10 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -37,6 +37,7 @@ label1 = create "Label" textItemClass output
 end create
  
 draw(label1)
+update(output)
 destroy(label1)
  
 end
@@ -90,14 +91,12 @@ end do
 ;
 ; Create a color map.
 ;
-ncolors = 6
-cmap = new( (/ncolors,3/), float)
-cmap(0,:) = (/1.0,1.0,1.0/)
-cmap(1,:) = (/0.0,0.0,0.0/)
-cmap(2,:) = (/1.0,0.0,0.0/)
-cmap(3,:) = (/0.0,1.0,0.0/)
-cmap(4,:) = (/0.0,0.0,1.0/)
-cmap(5,:) = (/1.0,1.0,0.0/)
+cmap = (/ (/1.0,1.0,1.0/), \
+	 (/0.0,0.0,0.0/), \
+	 (/1.0,0.0,0.0/), \
+	 (/0.0,1.0,0.0/), \
+	 (/0.0,0.0,1.0/), \
+	 (/1.0,1.0,0.0/) /)
 
 ;
 ; Default is to display output to an X workstation
@@ -120,7 +119,7 @@ else
 ; Create an XWorkstation object.
 ;
   xworkid = create "nm07Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
       "wkColorMap" : cmap
   end create
   else
@@ -201,12 +200,8 @@ drw_text("Demo for ftcurv, ftcurvd, ftcurvi",0.5,.95,0.04,xworkid)
 zero_line_id = create "ZeroLine" graphicStyleClass xworkid
     "gsLineColor": 2
 end create
-xx = new( (/ 2 /), float)
-yy = new( (/ 2 /), float)
-xx(0) = 0.
-xx(1) = xr
-yy(0) = 0.
-yy(1) = 0.
+xx = (/0.,xr/)
+yy = (/0., 0./)
 
 ;
 ; Create an XyPlot object for drawing a curve with the interpolated
@@ -222,8 +217,8 @@ plotid_interpolated_points = create "xyPlot" xyPlotClass xworkid
     "trXMaxF" : xr
     "trXMinF" :  0.0
     "xyCoordData": dataid_interpolated_points
-    "tmXTBorderOn": "False"
-    "tmYRBorderOn": "False"
+    "tmXTBorderOn": False
+    "tmYRBorderOn": False
     "tmXBMinorPerMajor": 4
     "tmYLMinorPerMajor": 0
     "tmBorderThicknessF": 1.
@@ -233,8 +228,8 @@ plotid_interpolated_points = create "xyPlot" xyPlotClass xworkid
     "tmXBMinorLengthF": 0.0075
     "tmXBMajorThicknessF": 1.0
     "tmYLMajorThicknessF": 1.0
-    "tmXTOn": "False"
-    "tmYROn": "False"
+    "tmXTOn": False
+    "tmYROn": False
     "tmXBLabelFont": 21
     "tmXBLabelFontHeightF": 0.025
     "tmYLLabelFont": 21

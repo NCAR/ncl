@@ -27,7 +27,7 @@ begin
 
   appid = create "vc09" appClass defaultapp
       "appUsrDir" : "./"
-      "appDefaultParent" : "True"
+      "appDefaultParent" : True
   end create
 
 ;
@@ -59,7 +59,7 @@ begin
 ;
     if (X11 .eq. 1) then
       wid = create "vc09Work" xWorkstationClass defaultapp
-            "wkPause" : "True"
+            "wkPause" : True
             "wkColorMap" : "temp1"
       end create
     else
@@ -87,8 +87,8 @@ vfield = create "VectorField" vectorFieldClass appid
     "vfVDataArray" : vf->v(0,:,:)
     "vfXCStartV"   : uf->lon(0)
     "vfYCStartV"   : uf->lat(0)
-    "vfXCEndV"     : uf->lon(dimsizes(uf->lon) - 1)
-    "vfYCEndV"     : uf->lat(dimsizes(uf->lat) - 1)
+    "vfXCEndV"   : uf->lon(filevardimsizes(uf,"lon")-1)
+    "vfYCEndV"   : uf->lat(filevardimsizes(uf,"lat")-1)
     "vfXCStride"   : 2
     "vfYCStride"   : 2
     "vfMissingUValueV" : -9999.0
@@ -96,10 +96,10 @@ vfield = create "VectorField" vectorFieldClass appid
 
 sfield = create "ScalarField" scalarFieldClass appid
     "sfDataArray" : pf->p(0,:,:) / 100.0
-    "sfXCStartV"  : pf->lon(0)
-    "sfYCStartV"  : pf->lat(0)
-    "sfXCEndV"    : pf->lon(dimsizes(pf->lon) - 1)
-    "sfYCEndV"    : pf->lat(dimsizes(pf->lat) - 1)
+    "sfXCStartV"   : pf->lon(0)
+    "sfYCStartV"   : pf->lat(0)
+    "sfXCEndV"   : pf->lon(filevardimsizes(pf,"lon")-1)
+    "sfYCEndV"   : pf->lat(filevardimsizes(pf,"lat")-1)
     "sfXCStride"  : 2
     "sfYCStride"  : 2
     "sfMissingValueV" : -9999.0
@@ -107,10 +107,12 @@ sfield = create "ScalarField" scalarFieldClass appid
 
 sfield2 = create "ScalarField2" scalarFieldClass appid
     "sfDataArray" : (tf->t(0,:,:)  - 273.15)*9.0/5.0 +32.0
-    "sfXCStartV"  : tf->lon(0)
-    "sfYCStartV"  : tf->lat(0)
-    "sfXCEndV"    : tf->lon(dimsizes(tf->lon) - 1)
-    "sfYCEndV"    : tf->lat(dimsizes(tf->lat) - 1)
+    "sfXArray"  : tf->lon
+    "sfYArray"  : tf->lat
+    "sfXCStartV"   : tf->lon(0)
+    "sfYCStartV"   : tf->lat(0)
+    "sfXCEndV"   : tf->lon(filevardimsizes(tf,"lon")-1)
+    "sfYCEndV"   : tf->lat(filevardimsizes(tf,"lat")-1)
     "sfXCStride"  : 2
     "sfYCStride"  : 2
     "sfMissingValueV" : -9999.0
@@ -152,7 +154,7 @@ sfield2 = create "ScalarField2" scalarFieldClass appid
         "vpYF"          : 0.85
         "vpWidthF"      : 0.8
         "vpHeightF"     : 0.8
-        "vpUseSegments" : "true"
+        "vpUseSegments" : True
         "mpMinLatF"     : MinLat
         "mpMaxLatF"     : MaxLat
         "mpMinLonF"     : MinLon
@@ -163,30 +165,30 @@ sfield2 = create "ScalarField2" scalarFieldClass appid
   end create
 
   cnid = create "contourplot" contourPlotClass wid
-        "cnFillOn"              : "true"
-        "cnLinesOn"             : "false"
+        "cnFillOn"              : True
+        "cnLinesOn"             : False
         "cnFillDrawOrder"       : "predraw"
         "cnScalarFieldData"     : sfield
         "pmLabelBarDisplayMode" : "always"
         "pmLabelBarHeightF"     : 0.075
         "pmLabelBarWidthF"      : 0.6
         "lbOrientation"         : "horizontal"
-        "lbPerimOn"             : "False"
+        "lbPerimOn"             : False
         "pmLabelBarSide"        : "top"
   end create
 ;
 ; Create a VectorPlot object using the above data field.
 ;
   vcid = create "vectorplot" vectorPlotClass wid
-        "vcUseScalarArray"      : "true"
+        "vcUseScalarArray"      : True
         "vcVectorFieldData"     : vfield
         "vcScalarFieldData"     : sfield2
         "vcMinFracLengthF"      : 0.33
-        "vcMonoLineArrowColor"  : "false"
+        "vcMonoLineArrowColor"  : False
         "vcVectorDrawOrder"     : "predraw"
         "pmLabelBarDisplayMode" : "always"
         "pmLabelBarWidthF"      : 0.1
-        "lbPerimOn"             : "False"
+        "lbPerimOn"             : False
   end create
 
   title_id1 = create "Titles" titleClass wid

@@ -48,7 +48,7 @@ p = addfile(cdfpath + "941110_P.cdf","r")
 ;
 appid = create "vc06" appClass defaultapp
     "appUsrDir" : "./"
-        "appDefaultParent" : "True"
+        "appDefaultParent" : True
 end create
 
 ;
@@ -71,7 +71,7 @@ else
 ; Create an X workstation.
 ;
     wid = create "vc06Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then
@@ -101,7 +101,7 @@ vfid = create "vfield" vectorFieldClass appid
 end create
 
 sfid = create "sfield" scalarFieldClass appid
-	"sfDataArray" : p->Psl(:,:)
+	"sfDataArray" : p->Psl
 	"sfXCStartV" : -180.0
 	"sfXCEndV" : 180.0
 	"sfYCStartV" : -90.0

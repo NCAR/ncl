@@ -1,5 +1,5 @@
 ;
-;      $Id: nm08n.ncl,v 1.3 1998-02-12 19:11:19 fred Exp $
+;      $Id: nm08n.ncl,v 1.4 1998-04-23 22:20:10 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -108,7 +108,7 @@ else
 ; Create an XWorkstation object.
 ;
   xworkid = create "nm08nWork" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
       "wkColorMap" : cmap
   end create
   else
@@ -256,8 +256,8 @@ plotid_interpolated_points = create "xyPlot" xyPlotClass xworkid
     "trXMaxF" :  xr
     "trXMinF" :  xl
     "xyCoordData": dataid_interpolated_points
-    "tmXTBorderOn": "False"
-    "tmYRBorderOn": "False"
+    "tmXTBorderOn": False
+    "tmYRBorderOn": False
     "tmXBMinorPerMajor": 4
     "tmYLMinorPerMajor": 0
     "tmBorderThicknessF": 1.
@@ -267,8 +267,8 @@ plotid_interpolated_points = create "xyPlot" xyPlotClass xworkid
     "tmXBMinorLengthF": 0.0075
     "tmXBMajorThicknessF": 1.0
     "tmYLMajorThicknessF": 1.0
-    "tmXTOn": "False"
-    "tmYROn": "False"
+    "tmXTOn": False
+    "tmYROn": False
     "tmXBLabelFont": 21
     "tmXBLabelFontHeightF": 0.025
     "tmYLLabelFont": 21

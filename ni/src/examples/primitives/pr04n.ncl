@@ -1,5 +1,5 @@
 ;
-;      $Id: pr04n.ncl,v 1.2 1998-02-11 18:56:19 dbrown Exp $
+;      $Id: pr04n.ncl,v 1.3 1998-04-23 22:20:15 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -47,7 +47,7 @@ dpgy = (/ 10.,10.,20.0,20.,110.,110,10.0 /)
 ; case.
 ; 
 appid = create "pr04" appClass defaultapp 
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
 
@@ -71,7 +71,7 @@ else
 ; Create an XWorkstation object.
 ;
   wid = create "pr04Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
   end create
   else
     if (PS .eq. 1) then
@@ -151,11 +151,7 @@ end setvalues
 draw(canvas)
 
 NhlDataPolygon(canvas,gsid,plx2,ply2)
-plx2(0) = 5.0
-plx2(2) = 95.0
-plx2(4) = 5.0
-ply2(1) = 5.0
-ply2(3) = 95.0
+plx2(0:4) = (/ 5.0 , 5.0 , 95.0 , 95.0 , 5.0 /)
 NhlDataPolyline(canvas,gsid,plx2,ply2)
 frame(wid)
 

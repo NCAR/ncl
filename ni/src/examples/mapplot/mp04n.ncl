@@ -45,7 +45,7 @@ begin
 ;
     appid = create "mp04" appClass defaultapp
         "appUsrDir" : "./"
-        "appDefaultParent" : "True"
+        "appDefaultParent" : True
     end create
 ;
 ; Default is to display output to an NCGM
@@ -67,7 +67,7 @@ begin
 ; Create an XWorkstation object.
 ;
         wid = create "mp04Work" xWorkstationClass defaultapp
-            "wkPause" : "True"
+            "wkPause" : True
         end create
       else
         if (PS .eq. 1) then

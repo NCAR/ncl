@@ -37,7 +37,7 @@ data = asciiread(path + "uvdata0.asc",(/2,37,37/),"float")
 ;
 appid = create "vc04" appClass defaultapp
     "appUsrDir" : "./"
-        "appDefaultParent" : "True"
+        "appDefaultParent" : True
 end create
 
 ;
@@ -60,7 +60,7 @@ else
 ; Create an X workstation.
 ;
     wid = create "vc04Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then

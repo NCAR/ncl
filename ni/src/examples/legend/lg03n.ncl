@@ -37,7 +37,7 @@ item_ind = (/ 2, 3, 4, 5, 6 /)
 ; In this example the resource file supplies the plot title only.
 ;
 appid = create "lg03" appClass defaultapp
-        "appDefaultParent" : "True"
+        "appDefaultParent" : True
         "appUsrDir" : "./"
 end create
 
@@ -61,7 +61,7 @@ else
 ; Create an X Workstation.
 ;
   wid = create "lg03Work" xWorkstationClass defaultapp
-        "wkPause" : "True"
+        "wkPause" : True
   end create
   else
     if (PS .eq. 1) then
@@ -89,7 +89,7 @@ pid = create "Legend" legendClass wid
     "lgItemCount" : 5
     "lgLabelFontHeightF" : .03
     "lgLabelStrings" : labels
-    "lgMonoItemType" : "True"
+    "lgMonoItemType" : True
     "lgItemType" : 0
 ;
 ; Set the dashed lines and the line characters to the same colors.
@@ -97,7 +97,7 @@ pid = create "Legend" legendClass wid
     "lgLineColors" : colors
     "lgLineLabelFontColors" : colors
     "lgDashIndexes" : item_ind
-    "lgMonoLineThickness" : "False"
+    "lgMonoLineThickness" : False
     "lgLineThicknesses" : lnthik
     "lgLineLabelFontHeightF" : .03
 end create

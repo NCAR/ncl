@@ -1,5 +1,5 @@
 ;
-;   $Id: ti03n.ncl,v 1.8 1995-06-22 21:09:13 haley Exp $
+;   $Id: ti03n.ncl,v 1.9 1998-04-23 22:20:29 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -29,11 +29,10 @@ begin
 ; Modify the color map.  Color indices '0' and '1' are the background
 ; and foreground colors respectively.
 ;
-cmap = new( (/4,3/), float)
-cmap(0,:) = (/0.0,0.0,0.0/)
-cmap(1,:) = (/0.0,1.0,1.0/)
-cmap(2,:) = (/1.0,0.5,0.0/)
-cmap(3,:) = (/1.0,1.0,0.0/)
+cmap = (/ (/0.0,0.0,0.0/), \
+	 (/0.0,1.0,1.0/), \
+	 (/1.0,0.5,0.0/), \
+	 (/1.0,1.0,0.0/)/)
 
 ;
 ; Create an application context. Set the app dir to the current directory
@@ -41,7 +40,7 @@ cmap(3,:) = (/1.0,1.0,0.0/)
 ; In this example the resource file supplies the plot title only.
 ;
 appid = create "ti03" appClass defaultapp
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "."
 end create
 
@@ -67,7 +66,7 @@ else
 ;
     wid = create "ti03Work" xWorkstationClass defaultapp
       "wkColorMap" : cmap
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then

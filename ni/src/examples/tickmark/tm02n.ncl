@@ -31,7 +31,7 @@ begin
 ;
 appid = create "tm02" appClass defaultapp
     "appUsrDir" : "./"
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
 end create
 
 ;
@@ -54,7 +54,7 @@ else
 ; Create an XWorkstation object.
 ;
     wid = create "tm02Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then

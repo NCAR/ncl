@@ -28,7 +28,7 @@ begin
 ; In this example the resource file supplies the plot title only.
 ;
 appid = create "lb01" appClass defaultapp
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
 
@@ -52,7 +52,7 @@ else
 ; Create an X workstation.
 ;
     wid = create "lb01Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS.eq.1) then

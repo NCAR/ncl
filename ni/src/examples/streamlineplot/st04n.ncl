@@ -58,7 +58,7 @@ TIMESTEPS = 20
 
   appid = create "st04" appClass defaultapp
       "appUsrDir" : "./"
-      "appDefaultParent" : "True"
+      "appDefaultParent" : True
   end create
 ;
 ; Default is to display output to an X workstation
@@ -81,7 +81,7 @@ TIMESTEPS = 20
 ; Create an XWorkstation object.
 ;
       wid = create "st04Work" xWorkstationClass defaultapp
-          "wkPause" : "True"
+          "wkPause" : True
           "wkColorMap" : "temp1"
       end create
     else
@@ -117,8 +117,8 @@ vfield = create "VectorField" vectorFieldClass appid
     "vfVDataArray" : vf->v(0,:,:)
     "vfXCStartV" : uf->lon(0)
     "vfYCStartV" : uf->lat(0)
-    "vfXCEndV" : uf->lon(dimsizes(uf->lon) - 1)
-    "vfYCEndV" : uf->lat(dimsizes(uf->lat) - 1)
+    "vfXCEndV" : uf->lon(filevardimsizes(uf,"lon") - 1)
+    "vfYCEndV" : uf->lat(filevardimsizes(uf,"lat") - 1)
     "vfMissingUValueV" : -9999.0
 end create
 
@@ -131,8 +131,8 @@ vfield2 = create "VectorField" vectorFieldClass appid
     "vfVDataArray" : v500f->v(0,:,:)
     "vfXCStartV" : u500f->lon(0)
     "vfYCStartV" : u500f->lat(0)
-    "vfXCEndV" : u500f->lon(dimsizes(uf->lon) - 1)
-    "vfYCEndV" : u500f->lat(dimsizes(uf->lat) - 1)
+    "vfXCEndV" : u500f->lon(filevardimsizes(uf,"lon") - 1)
+    "vfYCEndV" : u500f->lat(filevardimsizes(uf,"lat") - 1)
     "vfMissingUValueV" : -9999.0
 end create
 
@@ -144,8 +144,8 @@ sfield = create "ScalarField" scalarFieldClass appid
     "sfDataArray" : pf->p(0,:,:) / 100.0
     "sfXCStartV" : pf->lon(0)
     "sfYCStartV" : pf->lat(0)
-    "sfXCEndV" : pf->lon(dimsizes(pf->lon) - 1)
-    "sfYCEndV" : pf->lat(dimsizes(pf->lat) - 1)
+    "sfXCEndV" : pf->lon(filevardimsizes(pf,"lon") - 1)
+    "sfYCEndV" : pf->lat(filevardimsizes(pf,"lat") - 1)
     "sfMissingValueV" : -9999.0
 end create
 
@@ -158,8 +158,8 @@ sfield2 = create "ScalarField2" scalarFieldClass appid
     "sfDataArray" : (tf->t(0,:,:)  - 273.15)*9.0/5.0 +32.0
     "sfXCStartV" : tf->lon(0)
     "sfYCStartV" : tf->lat(0)
-    "sfXCEndV" : tf->lon(dimsizes(tf->lon) - 1)
-    "sfYCEndV" : tf->lat(dimsizes(tf->lat) - 1)
+    "sfXCEndV" : tf->lon(filevardimsizes(tf,"lon") - 1)
+    "sfYCEndV" : tf->lat(filevardimsizes(tf,"lat") - 1)
     "sfMissingValueV" : -9999.0
 end create
 
@@ -168,8 +168,8 @@ end create
 ;
  
 cnid = create "contourplot" contourPlotClass wid
-    "cnFillOn" : "true"
-    "cnLinesOn" : "false"
+    "cnFillOn" : True
+    "cnLinesOn" : False
     "cnFillDrawOrder" : "predraw"
     "cnScalarFieldData":      sfield2
 end create
@@ -179,7 +179,7 @@ end create
 ;
 
 vcid = create "vectorplot" vectorPlotClass wid
-    "vcUseScalarArray" :  "true"
+    "vcUseScalarArray" :  True
     "vcVectorFieldData":  vfield
     "vcScalarFieldData":  sfield
 end create
@@ -207,7 +207,7 @@ amid = NhlAddAnnotation(stid,txid)
 ;
 
 mapid = create "mapplot" mapPlotClass wid 
-        "vpUseSegments" : "true"
+        "vpUseSegments" : True
 end create
 
 ;

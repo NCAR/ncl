@@ -29,7 +29,7 @@ begin
 ;
     appid = create "mp01" appClass defaultapp
         "appUsrDir" : "."
-        "appDefaultParent" : "True"
+        "appDefaultParent" : True
     end create
 ;
 ; Default is to display output to an X workstation
@@ -51,7 +51,7 @@ begin
 ; Create an XWorkstation object.
 ;
         wid = create "mp01Work" xWorkstationClass defaultapp
-            "wkPause" : "True"
+            "wkPause" : True
         end create
       else
         if (PS .eq. 1) then
@@ -83,10 +83,10 @@ begin
         "tiMainString" : "mp01n - Frame 2"
         "vpYF" : 0.9
         "vpHeightF" : 0.8
-        "mpFillOn" : "true"
+        "mpFillOn" : True
         "mpOutlineBoundarySets" : "allBoundaries"
         "mpProjection" : "orthographic"
-        "mpPerimOn" : "true"
+        "mpPerimOn" : True
         "mpCenterLatF" : 10.0
         "mpCenterLonF" : -90.0
         "mpCenterRotF" : 45.0

@@ -1,5 +1,5 @@
 ;
-;      $Id: pr03n.ncl,v 1.2 1996-05-13 20:24:58 haley Exp $
+;      $Id: pr03n.ncl,v 1.3 1998-04-23 22:20:15 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -46,7 +46,7 @@ dpgy = (/ 1.,1.,20.0,20.,110.,110,1.0 /)
 ; case.
 ; 
 appid = create "pr03" appClass defaultapp 
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
 
@@ -70,7 +70,7 @@ else
 ; Create an XWorkstation object.
 ;
   wid = create "pr03Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
   end create
   else
     if (PS .eq. 1) then

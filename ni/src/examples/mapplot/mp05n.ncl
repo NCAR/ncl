@@ -26,7 +26,7 @@ begin
 ;
     appid = create "mp05" appClass defaultapp
         "appUsrDir" : "./"
-        "appDefaultParent" : "True"
+        "appDefaultParent" : True
     end create
 ;
 ; Default is to display output to an X workstation
@@ -48,7 +48,7 @@ begin
 ; Create an XWorkstation object.
 ;
         wid = create "mp05Work" xWorkstationClass defaultapp
-            "wkPause" : "True"
+            "wkPause" : True
         end create
       else
         if (PS .eq. 1) then
@@ -83,8 +83,7 @@ begin
 ;
 ; Draw each projection individually and fill the countries.
 ; 
-    do i = 0,9
-      setvalues mapid(i)
+    setvalues mapid
         "mpEllipticalBoundary":  True
         "mpFillOn":              True
         "mpLabelsOn":            False
@@ -94,7 +93,8 @@ begin
         "vpYF":                  0.9
         "vpWidthF":              0.8
         "vpHeightF":             0.8
-      end setvalues
+    end setvalues
+    do i = 0,9
       draw(mapid(i))
       frame(wid)
     end do

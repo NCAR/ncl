@@ -27,10 +27,8 @@ begin
 ;
 ; Initialize data values
 ;
-colors = new(16,integer)
 colors = (/ 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31/)
 
-line_labels = new(16,string)
 line_labels = (/"Color Index 1 ","Color Index 3 ", \
      "Color Index 5  ","Color Index 7  ", \
      "Color Index 9  ","Color Index 11 ", \
@@ -46,7 +44,7 @@ line_labels = (/"Color Index 1 ","Color Index 3 ", \
 ; In this example the resource file supplies the plot title only.
 ;
 appid = create "lb02" appClass defaultapp
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
 
@@ -70,7 +68,7 @@ else
 ; Create an X Workstation object.
 ;
     wid = create "lb02Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS.eq.1) then

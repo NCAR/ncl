@@ -42,7 +42,7 @@ labellocs = (/ -90.0, -60.0, -30.0, 0.0, 30.0, 60.0, 90.0 /)
 ; only.
 ;
 appid = create "tm03" appClass defaultapp
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
 
@@ -66,7 +66,7 @@ else
 ; Create an XWorkstation object.
 ;
     wid = create "tm03Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then
@@ -91,7 +91,7 @@ pid = create "TickMarks" tickMarkClass wid
     "tmXBDataLeftF" : -90.0
     "tmYLStyle" : "IRREGULAR"
     "tmXBMode" : "EXPLICIT"
-    "tmXBMinorOn" : "False"
+    "tmXBMinorOn" : False
     "tmXBValues" : labellocs
 
 ;

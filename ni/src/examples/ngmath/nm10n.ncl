@@ -1,5 +1,5 @@
 ;
-;      $Id: nm10n.ncl,v 1.1 1998-02-12 19:11:22 fred Exp $
+;      $Id: nm10n.ncl,v 1.2 1998-04-23 22:20:11 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -35,6 +35,7 @@ label1 = create "Label" textItemClass output
 end create
  
 draw(label1)
+update(output)
 destroy(label1)
  
 end
@@ -79,14 +80,12 @@ ftkurvd(x, y, u, xs, ys, xd, yd, xdd, ydd)
 ;
 ; Create a color map.
 ;
-ncolors = 6
-cmap = new( (/ncolors,3/), float)
-cmap(0,:) = (/1.0,1.0,1.0/)
-cmap(1,:) = (/0.0,0.0,0.0/)
-cmap(2,:) = (/1.0,0.0,0.0/)
-cmap(3,:) = (/0.0,1.0,0.0/)
-cmap(4,:) = (/0.0,0.0,1.0/)
-cmap(5,:) = (/1.0,1.0,0.0/)
+cmap = (/ (/1.0,1.0,1.0/), \
+	 (/0.0,0.0,0.0/), \
+	 (/1.0,0.0,0.0/), \
+	 (/0.0,1.0,0.0/), \
+	 (/0.0,0.0,1.0/), \
+	 (/1.0,1.0,0.0/) /)
 
 ;
 ; Default is to display output to an X workstation

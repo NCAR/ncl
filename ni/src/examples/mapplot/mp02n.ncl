@@ -40,7 +40,7 @@ begin
 ;
     appid = create "mp02" appClass defaultapp
         "appUsrDir" : "./"
-        "appDefaultParent" : "True"
+        "appDefaultParent" : True
     end create
 ;
 ; Default is to display output to an X workstation
@@ -62,7 +62,7 @@ begin
 ; Create an XWorkstation object.
 ;
         wid = create "mp02Work" xWorkstationClass defaultapp
-            "wkPause" : "True"
+            "wkPause" : True
         end create
       else
         if (PS .eq. 1) then
@@ -84,9 +84,9 @@ begin
     mapid = create "Map0" mapPlotClass wid
         "pmTitleDisplayMode" : "Always"
         "tiMainString" : "mp02n - Frame 1"
-        "mpFillOn" : "True"
+        "mpFillOn" : True
         "mpProjection" : "Orthographic"
-        "mpPerimOn" : "true"
+        "mpPerimOn" : True
         "mpCenterLatF" : 10.0
         "mpCenterLonF" : -90.0
         "mpCenterRotF" : 45.0
@@ -156,7 +156,7 @@ begin
         "tiMainString" : "mp02n - Frame 4"
         "mpFillBoundarySets" : "NoBoundaries"
         "mpFillAreaSpecifiers" : fill_specs
-        "mpAreaMaskingOn" : "True"
+        "mpAreaMaskingOn" : True
         "mpMaskAreaSpecifiers" : mask_specs
     end setvalues
 

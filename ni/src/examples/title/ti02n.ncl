@@ -1,5 +1,5 @@
 ;
-;   $Id: ti02n.ncl,v 1.7 1995-06-22 21:09:10 haley Exp $
+;   $Id: ti02n.ncl,v 1.8 1998-04-23 22:20:28 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -32,7 +32,7 @@ begin
 ; In this example the resource file supplies the plot title only.
 ;
 appid = create "ti02" appClass defaultapp
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "."
 end create
 
@@ -56,7 +56,7 @@ else
 ; Create an XWorkstation object.
 ;
     wid = create "ti02Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then

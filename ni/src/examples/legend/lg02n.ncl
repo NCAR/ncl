@@ -36,7 +36,7 @@ item_ind = (/ 2, 3, 4, 5, 6 /)
 ; In this example the resource file supplies the plot title only.
 ;
 appid = create "lg02" appClass defaultapp
-        "appDefaultParent" : "True"
+        "appDefaultParent" : True
         "appUsrDir" : "./"
 end create
 
@@ -60,7 +60,7 @@ else
 ; Create an X Workstation.
 ;
     wid = create "lg02Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then
@@ -86,12 +86,12 @@ pid = create "Legend" legendClass wid
 ; Specify the type of markers for the legend.
 ;
     "lgItemCount" : 5
-    "lgMonoItemType" : "True"
+    "lgMonoItemType" : True
     "lgItemType" : "MARKERS"
     "lgLabelStrings" : labels
     "lgMarkerColors" : colors
     "lgMarkerIndexes" : item_ind
-    "lgMonoMarkerThickness" : "False"
+    "lgMonoMarkerThickness" : False
     "lgMarkerThicknesses" : mkthik
     "lgMarkerSizeF" : 0.05
 end create

@@ -31,56 +31,24 @@ begin
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;These are the polyline points  /*a square*/
 
-N=5
 
-X = new((/N/),float)
-Y = new((/N/),float)
 
-X(0) = .3
-X(1) = .3
-X(2) = .5
-X(3) = .5
-X(4) = .3
-Y(0) = .3
-Y(1) = .5
-Y(2) = .5
-Y(3) = .3
-Y(4) = .3
+X =(/ .3 , .3 , .5 , .5 , .3/)
+Y =(/ .3 , .5 , .5 , .3 , .3/)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;These are the polymarker points /*four corner points*/
 
-M = 4
 
-U = new((/M/),float)
-V = new((/M/),float)
-
-U(0) = .4
-U(1) = .4
-U(2) = .6
-U(3) = .6
-V(0) = .4
-V(1) = .6
-V(2) = .6
-V(3) = .4
+U = (/.4 , .4 , .6 , .6/)
+V = (/.4 , .6 , .6 , .4/)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;These are the polygon points /*a filled rectangle*/
 
-K=5
 
-PX = new((/K/),float)
-PY = new((/K/),float)
 
-PX(0) = .7
-PX(1) = .7
-PX(2) = .8
-PX(3) = .8
-PX(4) = .7
-PY(0) = .2
-PY(1) = .8
-PY(2) = .8
-PY(3) = .2
-PY(4) = .2
+PX = (/ .7 , .7 , .8 , .8 , .7 /)
+PY = (/ .2 , .8 , .8 , .2 , .2 /)
 
 
 
@@ -91,7 +59,7 @@ PY(4) = .2
 ;
 appid = create "pr01" appClass defaultapp
     "appUsrDir" : "./"
-        "appDefaultParent" : "True"
+        "appDefaultParent" : True
 end create
 
 ; Choose to display output to an X11 workstation. 
@@ -113,7 +81,7 @@ else
 ; Create an X workstation.
 ;
     wid = create "pr01Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then

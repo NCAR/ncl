@@ -30,8 +30,8 @@ begin
 ; Create an ncgmWorkstation object.
 ;
       wid = create "vc08Work" ncgmWorkstationClass defaultapp
-     "wkColorMap" : "uniform"
-     "wkMetaName" : "./vc08n.ncgm"
+	"wkColorMap" : "uniform"
+	"wkMetaName" : "./vc08n.ncgm"
       end create
   else
     if (X11 .eq. 1) then
@@ -39,19 +39,18 @@ begin
 ; Create an XWorkstation object.
 ;
       wid = create "vc08Work" xWorkstationClass defaultapp
-     "wkColorMap" : "uniform"
-          "wkPause" : "True"
-      "wkColorMap" : "uniform"
+	"wkColorMap" : "uniform"
+	"wkPause" : True
       end create
     else
       if (PS .eq. 1) then
 ;
 ; Create a PSWorkstation object.
 ;
-    wid = create "vc08Work" psWorkstationClass defaultapp
-     "wkColorMap" : "uniform"
-     "wkPSFileName" : "./vc08n.ps"
-        end create
+	wid = create "vc08Work" psWorkstationClass defaultapp
+	  "wkColorMap" : "uniform"
+	  "wkPSFileName" : "./vc08n.ps"
+	end create
       end if
     end if
   end if
@@ -72,15 +71,13 @@ vfield = create "VectorField" vectorFieldClass defaultapp
     "vfUDataArray" : vf->U(0,0,:,:)
     "vfVDataArray" : vf->V(0,0,:,:)
 ;
-; Specify X from the 1st longitude to the last
+; Specify longitude coordinates 
 ;
-    "vfXCStartV" : vf->lon(0)
-    "vfXCEndV" : vf->lon(dimsizes(vf->lon) - 1)
+    "vfXArray" : vf->lon
 ;
-; Specify Y from the 1st latitude to the last
+; Specify latitude coordinates
 ;
-    "vfYCStartV" : vf->lat(0)
-    "vfYCEndV" : vf->lat(dimsizes(vf->lat) - 1)
+    "vfYArray" : vf->lat
 ;
 ; Specify a stride of 3 in both dimensions
 ;
@@ -95,7 +92,7 @@ vcid = create "vectorplot" vectorPlotClass wid
     "vcMinFracLengthF" : 0.33
     "vcRefLengthF" : 0.025
     "vcRefAnnoString1" : "$VMG$ " + vf@sub_title_rhs
-    "vcMonoLineArrowColor" : "false"
+    "vcMonoLineArrowColor" :  False
     "pmLabelBarDisplayMode" : "always"
     "pmLabelBarSide" : "bottom"
     "lbOrientation" : "horizontal" 
