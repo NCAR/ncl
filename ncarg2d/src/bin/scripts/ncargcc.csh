@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.20 1993-02-18 17:44:57 haley Exp $
+#	$Id: ncargcc.csh,v 1.21 1993-02-18 18:08:11 haley Exp $
 #
 
 set system = "SED_SYSTEM_INCLUDE"
@@ -20,11 +20,13 @@ if (! -d "$incdir") then
 endif
 
 set loadopts = ""
+set libextra = ""
 
 if ("$system" == "Sun4") then
   set loadopts = "-Xa -DNeedFuncProto"
 else if ("$system" == "Sun4Solaris") then
   set loadopts = "-Xc -DNeedFuncProto"
+  set libextra = "/usr/ucblib/libucb.a"
 else if ("$system" == "SGI4D") then
   set loadopts = "-ansiposix -DNeedFuncProto"
 else if ("$system" == "HPUX") then
@@ -174,7 +176,7 @@ foreach arg ($argv)
 
 end
 
-set newargv = "$newargv $stub_file $ctrans_libs $libs $libcbind $libncarg $libgks $libncarg_c $liblocal $f77libs $libX11"
+set newargv = "$newargv $stub_file $ctrans_libs $libs $libcbind $libncarg $libgks $libncarg_c $liblocal $f77libs $libX11 $libextra"
 
 echo $newargv
 eval $newargv
