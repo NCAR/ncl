@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.14 1992-09-24 17:24:55 clyne Exp $
+ *	$Id: c.h,v 1.15 1992-10-02 16:30:03 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -350,13 +350,25 @@ extern	void	PrintVersion(
 
 /*
 **
-**	N C A R   G   E N V I R O N M E N T
+**	N C A R  G   E N V I R O N M E N T
 **
 */
 
 extern	const char	*GetNCARGPath(
 #ifdef	NeedFuncProto
 	const char	*dir
+#endif
+);
+
+/*
+**
+**	M I S C E L L A N E O U S
+**
+*/
+
+extern char	*NmuStrdup(
+#ifdef NeedFuncProto
+	const char	*str
 #endif
 );
 

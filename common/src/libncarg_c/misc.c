@@ -1,5 +1,5 @@
 /*
- *	$Id: misc.c,v 1.4 1992-09-01 23:47:16 clyne Exp $
+ *	$Id: misc.c,v 1.5 1992-10-02 16:30:04 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -13,7 +13,10 @@
 /*LINTLIBRARY*/
 
 #include	<ctype.h>
+#include 	<stdlib.h>
 #include	"c.h"
+
+extern int	errno;
 
 
 /*
@@ -38,3 +41,38 @@ boolean	IsAsciiInt( s )
 	return (FALSE);
 }
 
+/*
+ * Function:		NmuStrdup(str)
+ *
+ * Description:		malloc()'s space for new string,
+ *			copies it in, and returns the pointer.
+ *
+ * In Args:		char *str
+ *
+ * Out Args:		None.
+ *
+ * Return Values:	char * pointer to new string.
+ *
+ * Side Effects:	malloc()'s memory.
+ */
+
+char *
+NmuStrdup(str)
+	const char	*str;
+{
+	char	*p;
+
+	if (str == (char *) NULL) {
+		(void) ESprintf(E_UNKNOWN, "NmuStrdup(NULL)");
+		return((char *) NULL);
+	}
+
+	p = malloc(strlen(str)+1);
+	if (p == (char *) NULL) {
+		(void) ESprintf(errno, "NmuStrdup(\"%s\")", str);
+		return((char *) NULL);
+	}
+
+	(void) strcpy(p, str);
+	return(p);
+}
