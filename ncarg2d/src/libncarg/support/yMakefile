@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.9 1995-11-03 23:45:29 kennison Exp $
+#	$Id: yMakefile,v 1.10 1996-10-25 21:46:08 boote Exp $
 #
 MYNAME	= support
 
@@ -29,6 +29,8 @@ OBJECTS = $(GENERIC_OBJS)
  
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
+
+PartialLibraryTarget(libNGllu.a,$(OBJECTS))
 
 bzbkd.o : bzcom.h
 bzcurv.o : bzcom.h

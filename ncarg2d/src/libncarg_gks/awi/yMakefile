@@ -1,17 +1,8 @@
 #
-#	$Id: yMakefile,v 1.17 1996-10-07 19:14:20 fred Exp $
+#	$Id: yMakefile,v 1.18 1996-10-25 21:41:02 boote Exp $
 #
 
 MYNAME	= awi
-
-/*
- * The Sun f77 optimizer appears to have troubles with the GKS system.
- */
-#ifdef	NOT_SURE_IF_NEEDED_ANYMORE
-#if defined(SUN)
-#define	DisableOptimize
-#endif	/* sun	*/
-#endif
 
 GENERIC_SRCS = \
 gactm.f   gacwk.f   gaspar.f  gatelm.f  gca.f     gcelcd.f  \
@@ -85,19 +76,14 @@ OBJECTS = $(GENERIC_OBJS)
 ROBJ_SRC = ggkwdr_stub.c
 ROBJ_OBJ = ggkwdr_stub.o
 
-FCPP_OBJS	=
-
 PartialLibraryTarget(libncarg_gks.a,$(OBJECTS))
+PartialLibraryTarget(libbasegks.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
-InstallTarget(ggkwdr_stub.o,$(INSTALL_LIB),$(ROBJPATH))
-CleanFilesTarget($(FCPP_OBJS) $(ROBJ_SRC) $(ROBJ_OBJ))
+DependTarget($(ROBJ_SRC))
+InstallTarget($(ROBJ_OBJ),$(INSTALL_LIB),$(ROBJPATH))
+CleanFilesTarget($(ROBJ_OBJ))
 
 all::	ggkwdr_stub.o
-
-# A file containing C functions called from Fortran
-
-ggkwdr_stub.c: ggkwdr_stub.c.sed Makefile
-	@$(CALLCONV) $(SYSTEM_INCLUDE) ggkwdr_stub.c ggkwdr
 
 #ifdef HPUX
 gztowk.o: gztowk.f

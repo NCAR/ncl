@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.9 1995-07-08 17:15:04 haley Exp $
+#	$Id: yMakefile,v 1.10 1996-10-25 21:43:00 boote Exp $
 #
 
 MYNAME	= conpack
@@ -45,6 +45,8 @@ OBJECTS = $(GENERIC_OBJS)
 
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
+
+PartialLibraryTarget(libNGcn.a,$(OBJECTS))
 
 #if defined(alpha)
 cptrcl.o: cptrcl.f

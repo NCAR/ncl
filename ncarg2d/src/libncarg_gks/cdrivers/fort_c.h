@@ -1,5 +1,5 @@
 /*
- *	$Id: fort_c.h,v 1.3 1994-08-10 18:46:20 boote Exp $
+ *	$Id: fort_c.h,v 1.4 1996-10-25 21:41:25 boote Exp $
  */
 /*
  *      File:		fort_c.h
@@ -19,14 +19,6 @@
 #define	_fort_c_
 
 #include <ncarg/c.h>
-/*
- * This macro is used to resolve C/Fortran naming conventions on the
- * supported arch's.
- */
-#ifndef	_GKCALLF
-#define	_GKCALLF(reg,caps)	NGCALLF(reg,caps)
-#endif  /* _GKCALLF    */
-
 /*
  *	supported output device identifiers
  */

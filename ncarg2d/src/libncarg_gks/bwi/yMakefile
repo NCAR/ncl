@@ -1,14 +1,8 @@
 #
-#	$Id: yMakefile,v 1.10 1994-10-05 19:09:13 haley Exp $
+#	$Id: yMakefile,v 1.11 1996-10-25 21:41:14 boote Exp $
 #
 
 MYNAME	= bwi
-
-#ifdef	NOT_SURE_IF_NEEDED
-#if defined(SUN)
-#define	DisableOptimize
-#endif	/* sun */
-#endif
 
 GENERIC_SRCS = \
 g01bkd.f  g01ca.f   g01clp.f  g01clw.f  g01ctb.f  g01d2r.f  g01d2s.f  g01diq.f \
@@ -26,7 +20,7 @@ g01tx.o   g01wdr.o  g01wkt.o  gflcnv.o  giargs.o  ginlod.o  gkasci.o \
 gmflod.o  gmpart.o  gopnic.o  gputmd.o  gputni.o  gputpr.o  gputps.o  gtnlen.o \
 gupasf.o  gupdva.o  gupdvi.o  gupdvr.o 
 
-EXTRA_CDEFINES   = -DNGTMPDIR='"$(NGTMPDIR)"'
+EXTRA_CDEFINES   = -DNGTMPDIR='"$(NGTMPDIR)"' -DDEFAULT_GKS_BUFSIZE='$(GKS_BUFFER_SIZE)'
 
 OTHER_SRCS = wks.c wks.h
 OTHER_OBJS = wks.o
@@ -36,23 +30,9 @@ OBJECTS = $(GENERIC_OBJS) $(OTHER_OBJS)
 
 
 PartialLibraryTarget(libncarg_gks.a, $(OBJECTS))
+PartialLibraryTarget(libbasegks.a, $(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
-CleanFilesTarget(wks.c wks.h)
-
-
-# A file containing C functions called from Fortran
-
-
-wks.c: wks.c.sed Makefile
-	@$(CALLCONV) $(SYSTEM_INCLUDE) wks.c \
-		opnwks clswks wrtwks rdwks begwks lstwks flswks delfil gzgids
-
-wks.h: wks.h.sed Makefile
-	@sed \
-	-e 's+SED_GKS_BUFFER_SIZE+$(GKS_BUFFER_SIZE)+' \
-	< wks.h.sed > wks.h
-
-wks.o:	wks.h
+DependTarget(wks.c)
 
 g01bkd.o : g01bkd.f \
    g01prm.h \

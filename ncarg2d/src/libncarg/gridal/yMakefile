@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1995-12-18 22:41:09 kennison Exp $
+#	$Id: yMakefile,v 1.8 1996-10-25 21:43:59 boote Exp $
 #
 MYNAME	= gridal
 
@@ -19,3 +19,5 @@ OBJECTS	= $(GENERIC_OBJS)
 
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
+
+PartialLibraryTarget(libNGllu.a,$(OBJECTS))

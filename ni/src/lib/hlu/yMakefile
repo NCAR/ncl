@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.36 1996-09-14 17:08:00 boote Exp $
+#      $Id: yMakefile,v 1.37 1996-10-25 21:42:11 boote Exp $
 #
 #########################################################################
 #									#
@@ -18,7 +18,7 @@
 #	Date:		Tue Apr 27 15:05:52 MDT 1993
 #
 #	Description:	yMakefile for ncarg/ni/src/lib/hlu
-MYNAME		= libhlu.a
+MYNAME		= libhlu
 
 EXTRA_CDEFINES	=	$(OS_DEF)
 
@@ -104,6 +104,7 @@ InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
 InstallTarget(sysresfile,$(INSTALL_INC),$(LIBNCARGPATH))
 DependTarget($(CSRCS))
 
+BuildSharedLibTarget(libNGhlu,$(OBJS),1,0,-lNGlluC -lNGllu -lNGgksC -lNGgks -lNGcommon -lftn -lm -lc)
 
 /* This is used to expand the huge macros in this file	*/
 

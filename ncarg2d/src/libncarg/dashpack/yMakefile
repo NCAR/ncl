@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.3 1995-07-08 17:16:16 haley Exp $
+#	$Id: yMakefile,v 1.4 1996-10-25 21:43:30 boote Exp $
 #
 
 MYNAME  = dashpack
@@ -20,6 +20,9 @@ OBJECTS = $(GENERIC_OBJS)
 
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
+
+PartialLibraryTarget(libNGllu.a,$(OBJECTS))
+
 #if defined(alpha)
 dpdraw.o: dpdraw.f
 	$(F77) -g -c dpdraw.f

@@ -1,17 +1,8 @@
 #
-#	$Id: yMakefile,v 1.4 1994-05-17 00:40:03 fred Exp $
+#	$Id: yMakefile,v 1.5 1996-10-25 21:41:38 boote Exp $
 #
 
 MYNAME	= wiss
-
-/*
- * The Sun f77 optimizer appears to have troubles with the GKS system.
- */
-#ifdef	NOT_SURE_IF_NEEDED
-#if defined(SUN)
-#define DisableOptimize
-#endif	/* sun */
-#endif
 
 GENERIC_SRCS = \
 gwelod.f  gwibkd.f  gwica.f   gwiclp.f  gwiclw.f  gwid2r.f  gwid2s.f  gwidmp.f \
@@ -29,6 +20,7 @@ SOURCES = $(GENERIC_SRCS)
 OBJECTS = $(GENERIC_OBJS)
 
 PartialLibraryTarget(libncarg_gks.a,$(OBJECTS))
+PartialLibraryTarget(libbasegks.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
 
 gwelod.o : gwelod.f \

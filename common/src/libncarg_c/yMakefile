@@ -1,13 +1,13 @@
 #
 #
-#	$Id: yMakefile,v 1.25 1996-05-07 22:16:51 haley Exp $
+#	$Id: yMakefile,v 1.26 1996-10-25 21:46:50 boote Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common utilities
 #
 #
 
-MYNAME		= libncarg_c.a
+MYNAME		= libncarg_c
 
 #if defined(CRAY)
 
@@ -50,9 +50,9 @@ CSRCS		= $(EXCSRCS) options.c misc.c ncarg_path.c version.c \
 			error.c atoargv.c usleep.c env.c trnspprt.c \
 			rwchinfl.c
 FSRCS		= $(EXFSRCS) $(FCPP_FSRCS) lblank.f iargct.f
-OBJS		= $(EXOBJS) $(FCPP_OBJS) options.o misc.o ncarg_path.o version.o \
-		error.o atoargv.o usleep.o env.o trnspprt.o lblank.o iargct.o \
-		rwchinfl.o
+OBJS		= $(EXOBJS) $(FCPP_OBJS) options.o misc.o ncarg_path.o \
+		version.o error.o atoargv.o usleep.o env.o trnspprt.o lblank.o \
+		iargct.o rwchinfl.o
 
 #if (defined(IRIX) && (MAJOR == 5)) || (defined(IRIX64) || (MAJOR == 6))
 MY_DEFINES = -D_BSD_TYPES
@@ -60,8 +60,12 @@ MY_DEFINES = -D_BSD_TYPES
 
 EXTRA_CDEFINES =	$(OS_DEF) $(VDEFINE) $(NGENVDEF) $(MY_DEFINES) -DNCARGURL='$(NCARGURL)'
 
+REQLIBS = $(CTOFLIBS)
+
 LibraryTarget($(MYNAME),$(OBJS))
 InstallTarget($(HDRS),$(INSTALL_INC),$(NCARGINCPATH))
 BuildIncludes($(HDRS),ncarg,..)
 DependTarget($(CSRCS))
 CleanFilesTarget($(FCPP_FSRCS))
+
+BuildSharedLibTarget(libNGcommon,$(OBJS),1,0,$(REQLIBS))

@@ -1,5 +1,5 @@
 /*
- *	$Id: gks_device.h,v 1.1 1994-03-30 02:11:24 fred Exp $
+ *	$Id: gks_device.h,v 1.2 1996-10-25 21:41:27 boote Exp $
  */
 /*
  *      File:		gks_device.h
@@ -84,3 +84,20 @@ extern	GKSdev  *GKS_GetDevByName(
 #endif
 );
 
+extern GKSdev	*GKS_GetCTXTdev(
+#ifdef	NeedFuncProto
+	void
+#endif
+);
+
+extern GKSdev	*GKS_GetX11dev(
+#ifdef	NeedFuncProto
+	void
+#endif
+);
+
+extern GKSdev	*GKS_GetPSdev(
+#ifdef	NeedFuncProto
+	void
+#endif
+);

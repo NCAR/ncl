@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.42 1996-03-16 05:07:10 ethan Exp $
+#      $Id: yMakefile,v 1.43 1996-10-25 21:47:08 boote Exp $
 #
 #########################################################################
 #									#
@@ -41,6 +41,7 @@ YACCDIR		=	./yacc
 
 #ifdef  HPUX
 ARCH_LIBS	=	-lPW
+HACKOBJS	=	hphack.o
 #endif
 
 EXTRA_DEFINES = $(OS1_DEF) $(MAJOR_DEF)
@@ -48,14 +49,9 @@ EXTRA_DEFINES = $(OS1_DEF) $(MAJOR_DEF)
 API_DEFS	=	-DMAKEAPI
 
 PROG_LIBS	=	$(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
-#ifdef  UseInstalled
-DEPLIBS		=
-#else
 DEPLIBS		=	$(DEPHLULIBS) $(DEPCNCARGLIBS) $(DEPNCARGLIBS)
-#endif
-EXTRA_LIBS	=	-ll $(NCDFLIBS) $(XLIB) $(HDFLIB)
-
-SYS_LIBS	=	$(CTOFLIBS) -lm $(ARCH_LIBS)
+EXTRA_LIBS	=	-ll $(NCDFLIBS) $(HDFLIB)
+SYS_LIBS	=	$(XLIB) $(CTOFLIBS) -lm $(ARCH_LIBS)
 
 HDRS		=	$(GEN_HDRS) $(STATIC_HDRS) $(INSTALL_HDRS)
 
@@ -71,20 +67,24 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			NclFile.h NclFileInterfaces.h NclHLUObj.h NclMdInc.h \
 			NclMultiDValData.h NclMultiDValHLUObjData.h \
 			OpsFuncs.h OpsList.h SrcTree.h Symbol.h VarSupport.h \
-			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h NclType.h \
+			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h \
+			NclType.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
 			NclOneDValCoordData.h BuiltInFuncs.h HLUFunctions.h \
 			NclCallBacksI.h date.h NclGRIB.h date.h tables.h
 
 INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h NclBuiltIns.h \
-			NclDataDefs.h NclBuiltInSupport.h NclCallBacksI.h NclFileInterfaces.h
+			NclDataDefs.h NclBuiltInSupport.h NclCallBacksI.h \
+			NclFileInterfaces.h
 			
 
 API_SRCS	=	NclApi.c scanapi.c parseapi.c 
 EXE_SRCS	=	Ncl.c scanner.c parser.c io.c
 
-APISRCS		=	$(API_SRCS) $(SRCS) NclUserFuncStub.c NclUserHLUStub.c NclUserFileFormStub.c
-EXESRCS		=	$(EXE_SRCS) $(SRCS) NclUserFuncStub.c NclUserHLUStub.c NclUserFileFormStub.c
+APISRCS		=	$(API_SRCS) $(SRCS) NclUserFuncStub.c NclUserHLUStub.c \
+			NclUserFileFormStub.c
+EXESRCS		=	$(EXE_SRCS) $(SRCS) NclUserFuncStub.c NclUserHLUStub.c \
+			NclUserFileFormStub.c
 ALLSRCS		=	$(EXESRCS)
 SRCS		=	$(GEN_SRCS) $(STATIC_SRCS)
 
@@ -93,8 +93,8 @@ GEN_SRCS	=	NclTypedouble.c NclTypefloat.c \
 			NclTypelong.c NclTypeobj.c \
 			NclTypeshort.c NclTypestring.c \
 			scanner.c parser.c NclTypebyte.c \
-			NclTypechar.c scanapi.c parseapi.c TypeSupport.c NclMultiDValData.c \
-			MathFuncs.c
+			NclTypechar.c scanapi.c parseapi.c TypeSupport.c \
+			NclMultiDValData.c MathFuncs.c
 
 STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			AddIntrinsics.c AttSupport.c DataSupport.c Execute.c \
@@ -106,22 +106,11 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			NclHLUVar.c HLUSupport.c NclCoordVar.c \
 			NclMultiDValnclfileData.c NclMultiDValHLUObjData.c \
 			NclOneDValCoordData.c BuiltInSupport.c BuiltInFuncs.c \
-			HLUFunctions.c NclHDF.c NclGRIB.c date.c yywrap.c GetGrids.c
+			HLUFunctions.c NclHDF.c NclGRIB.c date.c yywrap.c \
+			GetGrids.c
 
 FSRCS		=	fortranio.f
 FOBJS		=	fortranio.o
-
-API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o
-EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o
-
-APIOBJS		=	$(API_OBJS) $(OBJS)  NclUserFuncStub.o NclUserHLUStub.o NclUserFileFormStub.o
-#ifdef HPUX
-EXEOBJS		=	$(EXE_OBJS) $(OBJS)  hphack.o NclUserFuncStub.o NclUserHLUStub.o NclUserFileFormStub.o
-#else
-EXEOBJS		=	$(EXE_OBJS) $(OBJS) NclUserFuncStub.o NclUserHLUStub.o NclUserFileFormStub.o
-#endif
-ALLOBJS		=	$(EXE_OBJS) $(OBJS)
-OBJS		=	$(GEN_OBJS) $(STATIC_OBJS) $(FOBJS)
 
 GEN_OBJS	=	NclTypedouble.o NclTypefloat.o \
 			NclTypeint.o NclTypelogical.o \
@@ -139,10 +128,23 @@ STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			NclHLUVar.o HLUSupport.o NclCoordVar.o NclType.o \
 			NclMultiDValnclfileData.o NclMultiDValHLUObjData.o \
 			NclOneDValCoordData.o BuiltInSupport.o BuiltInFuncs.o \
-			HLUFunctions.o NclHDF.o NclGRIB.o date.o yywrap.o GetGrids.o
+			HLUFunctions.o NclHDF.o NclGRIB.o date.o yywrap.o \
+			GetGrids.o
+
+OBJS		=	$(GEN_OBJS) $(STATIC_OBJS) $(FOBJS)
+
+API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o
+EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o
+
+ALLOBJS		=	$(EXE_OBJS) $(OBJS)
+APIOBJS		=	$(API_OBJS) $(OBJS) \
+			NclUserFuncStub.o NclUserHLUStub.o NclUserFileFormStub.o
+EXEOBJS		=	$(EXE_OBJS) $(OBJS)  $(HACKOBJS) \
+			NclUserFuncStub.o NclUserHLUStub.o NclUserFileFormStub.o
 
 LibraryTarget($(MYLIB),$(ALLOBJS))
 LibraryTarget($(MYLIB_API),$(APIOBJS))
+BuildSharedLibTarget(libNGncl,$(APIOBJS),1,0,-lNGhlu -lNGlluC -lNGcommon -ll -lnetcdf -ldf -lftn -lm -lc)
 CProgram($(MYBIN),$(EXEOBJS),$(DEPLIBS))
 BuildIncludes($(INSTALL_HDRS),ncarg/ncl,../..)
 InstallTarget($(INSTALL_HDRS),$(INSTALL_INC),$(NCLINCPATH))

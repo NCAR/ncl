@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1996-01-19 17:21:53 dbrown Exp $
+#	$Id: yMakefile,v 1.8 1996-10-25 21:46:23 boote Exp $
 #
 MYNAME	= velvct
 
@@ -20,3 +20,5 @@ OBJECTS = $(GENERIC_OBJS)
 
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
+
+PartialLibraryTarget(libNGff.a,$(OBJECTS))

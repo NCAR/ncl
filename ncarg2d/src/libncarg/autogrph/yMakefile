@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.9 1996-08-14 19:41:37 kennison Exp $
+#	$Id: yMakefile,v 1.10 1996-10-25 21:42:33 boote Exp $
 #
 
 MYNAME	= autogrph
@@ -30,3 +30,5 @@ OBJECTS = $(GENERIC_OBJS)
 
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
+
+PartialLibraryTarget(libNGmisc.a,$(OBJECTS))

@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.1 1994-06-20 19:49:09 kennison Exp $
+#       $Id: yMakefile,v 1.2 1996-10-25 21:44:53 boote Exp $
 #
 
 MYNAME  = polypack
@@ -18,3 +18,5 @@ OBJECTS = $(GENERIC_OBJS)
 
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
+
+PartialLibraryTarget(libNGmisc.a,$(OBJECTS))

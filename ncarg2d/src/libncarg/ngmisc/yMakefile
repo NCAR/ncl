@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.8 1996-09-30 23:37:51 fred Exp $
+#	$Id: yMakefile,v 1.9 1996-10-25 21:44:38 boote Exp $
 #
 MYNAME	= ngmisc
 
@@ -19,3 +19,5 @@ OBJECTS = $(GENERIC_OBJS)
 
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
+
+PartialLibraryTarget(libNGllu.a,$(OBJECTS))

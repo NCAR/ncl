@@ -1,25 +1,34 @@
 #
-#	$Id: yMakefile,v 1.3 1996-03-16 21:43:51 boote Exp $
+#	$Id: yMakefile,v 1.4 1996-10-25 21:41:30 boote Exp $
 #
 
 MYNAME		= cdrivers
 
 INCLUDES	= gksP.h
-SOURCES		= \
-		ctxt.c ctxt_conv.c font.c fort_c.c gks_device.c gksc.c \
-		text.c transform.c x_conv.c xattribute.c xcontrol.c \
-		ps.c ps_conv.c psfill.c \
-		xinquiry.c xoutput.c gksP.c
+BASICSRC	= fort_c.c gks_device.c gksc.c transform.c gksP.c
+CTXTSRC		= ctxt_device.c ctxt.c ctxt_conv.c
+XSRC		= xdevice.c font.c text.c x_conv.c xattribute.c xcontrol.c \
+		xinquiry.c xoutput.c
+PSSRC		= psdevice.c ps.c ps_conv.c psfill.c
 
-OBJECTS		= \
-		ctxt.o ctxt_conv.o font.o fort_c.o gks_device.o gksc.o \
-		text.o transform.o x_conv.o xattribute.o xcontrol.o \
-		ps.o ps_conv.o psfill.o \
-		xinquiry.o xoutput.o gksP.o
+BASICOBJ	= fort_c.o gks_device.o gksc.o transform.o gksP.o
+CTXTOBJ		= ctxt_device.o ctxt.o ctxt_conv.o
+XOBJ		= xdevice.o font.o text.o x_conv.o xattribute.o xcontrol.o \
+		xinquiry.o xoutput.o
+PSOBJ		= psdevice.o ps.o ps_conv.o psfill.o
+
+SOURCES		= $(BASICSRC) $(CTXTSRC) $(XSRC) $(PSSRC)
+OBJECTS		= $(BASICOBJ) $(CTXTOBJ) $(XOBJ) $(PSOBJ)
 
 EXTRA_CDEFINES	= $(OS_DEF) -DCTXT -DX11 -DPS
 
 PartialLibraryTarget(libncarg_gks.a,$(OBJECTS))
+PartialLibraryTarget(libbasegks.a,$(BASICOBJ))
+
+BuildSharedLibTarget(libNGgksCTXT,$(CTXTOBJ),1,0,-lc)
+BuildSharedLibTarget(libNGgksX,$(XOBJ),1,0,-lNGcommon $(XLIB) -lm -lc)
+BuildSharedLibTarget(libNGgksPS,$(PSOBJ),1,0,-lNGcommon -lm -lc)
+
 PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
 BuildIncludes($(INCLUDES),ncarg,..)
 InstallTarget($(INCLUDES),$(INSTALL_INC),$(NCARGINCPATH))

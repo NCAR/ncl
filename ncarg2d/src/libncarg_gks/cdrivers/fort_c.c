@@ -1,5 +1,5 @@
 /*
- *      $Id: fort_c.c,v 1.4 1994-06-14 21:24:41 boote Exp $
+ *      $Id: fort_c.c,v 1.5 1996-10-25 21:41:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -126,7 +126,7 @@ static	int	*c2f_strncpy(fs, cs, n)
  *			  err_msg will contain an error message.
  */
 int
-_GKCALLF(ggkwdr,GGKWDR)
+NGCALLF(ggkwdr,GGKWDR)
 #ifdef	NeedFuncProto
 (
 	unsigned int	*wk_id,
