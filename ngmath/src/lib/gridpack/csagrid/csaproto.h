@@ -81,7 +81,7 @@ double *c_csa3lxd(int, double [], double [], double [], double [],
  */
 #ifndef NGCALLF
  
-#ifdef  UNICOS
+#if defined(UNICOS) || defined(NGCAPS)
 #define NGCALLF(reg,caps)       caps
  
 #elif   defined(RS6000) || defined(__hpux)

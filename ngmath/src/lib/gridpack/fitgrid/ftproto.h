@@ -1,5 +1,5 @@
 /*
- * $Id: ftproto.h,v 1.8 2003-09-19 23:05:55 haley Exp $
+ * $Id: ftproto.h,v 1.9 2004-07-31 12:27:23 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -99,7 +99,7 @@ double *c_ftsurfdp(int, int, double *, double *, double *,
  */
 #ifndef NGCALLF
  
-#ifdef  UNICOS
+#if defined(UNICOS) || defined(NGCAPS)
 #define NGCALLF(reg,caps)       caps
  
 #elif   defined(RS6000) || defined(__hpux)

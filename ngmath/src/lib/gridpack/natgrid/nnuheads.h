@@ -1,5 +1,5 @@
 /*
- * $Id: nnuheads.h,v 1.7 2000-09-19 23:56:55 fred Exp $
+ * $Id: nnuheads.h,v 1.8 2004-07-31 12:27:24 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -41,7 +41,7 @@ extern void   c_nngetwtsd(int *, int *, double *, double *, double *, double *);
  */
 #ifndef NGCALLF
 
-#ifdef  UNICOS
+#if defined(UNICOS) || defined(NGCAPS)
 #define NGCALLF(reg,caps)       caps
 
 #elif   defined(RS6000) || defined(__hpux)

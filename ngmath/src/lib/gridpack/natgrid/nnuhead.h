@@ -1,5 +1,5 @@
 /*
- * $Id: nnuhead.h,v 1.6 2002-04-01 18:11:55 haley Exp $
+ * $Id: nnuhead.h,v 1.7 2004-07-31 12:27:24 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -49,7 +49,7 @@ extern char      tri_file[], error_file[], emsg[];
  */
 #ifndef NGCALLF
 
-#ifdef  UNICOS
+#if defined(UNICOS) || defined(NGCAPS)
 #define NGCALLF(reg,caps)       caps
 
 #elif   defined(RS6000) || defined(__hpux)

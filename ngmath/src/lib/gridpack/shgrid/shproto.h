@@ -1,5 +1,5 @@
 /*
- * $Id: shproto.h,v 1.5 2000-09-19 23:58:16 fred Exp $
+ * $Id: shproto.h,v 1.6 2004-07-31 12:27:24 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -43,7 +43,7 @@ int c_shgeti(char *);
  */
 #ifndef NGCALLF
  
-#ifdef  UNICOS
+#if defined(UNICOS) || defined(NGCAPS)
 #define NGCALLF(reg,caps)       caps
  
 #elif   defined(RS6000) || defined(__hpux)
