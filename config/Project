@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.59 2004-07-25 19:04:08 haley Exp $
+ *      $Id: Project,v 1.60 2004-09-13 21:20:20 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2004-07-25 19:04:08 $
+ *	$Date: 2004-09-13 21:20:20 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -289,6 +289,7 @@ NGENV_DESCRIPT	= \
 		"examples",NULL,"ncarg",NULL,NULL,		\
 		"hluex",NULL,"ncarg",NULL,NULL,			\
 		"nclex",NULL,"ncarg",NULL,NULL,			\
+		"pynglex",NULL,"ncarg",NULL,NULL,		\
 		"resfiles",NULL,"ncarg",NULL,NULL,		\
 		"tests",NULL,"ncarg",NULL,NULL,			\
 		"tutorial",NULL,"ncarg",NULL,NULL,		\
