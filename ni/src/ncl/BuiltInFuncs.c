@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.12 1995-04-19 00:01:47 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.13 1995-04-20 19:03:45 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2214,7 +2214,7 @@ NhlErrorTypes _NclIasciiread
 			return(NhlFATAL);	
 	}
 
-	totalsize = size*thetype->type_class.size;
+	totalsize = size;
 	
 	tmp_ptr = NclMalloc(size*thetype->type_class.size);
 	fd = fopen(path_string,"r");
