@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.3 1994-05-19 19:28:07 fred Exp $
+C	$Id: ngseti.f,v 1.4 1994-06-23 00:39:56 fred Exp $
 C
       SUBROUTINE NGSETI (CNP,IVP)
 C
@@ -170,6 +170,43 @@ C
         IPTHMX = IVP
         WRITE(IDR(7:16), 510) IPTHMX
         CALL GESC(-1515,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  PE - Percentage error allowed in color matching in X output.
+C
+      ELSE IF (CNP(1:2).EQ.'PE' .OR. CNP(1:2).EQ.'pe' .OR.
+     +         CNP(1:2).EQ.'Pe') THEN
+        IF (IWKID .LT. 0) THEN
+          CTM =
+     +      'NGSETI - you must set a value for WO before setting PE'
+          CALL SETER (CTM(1:60), 7, 1)
+          GO TO 120
+        ENDIF
+        IF (IVP.LT.0 .OR. IVP.GT.100) THEN
+          CALL SETER ('NGSETI - value for PE must be between 0 and 100',       
+     +                    8, 1)
+          GO TO 120
+        ENDIF
+        WRITE(IDR(1: 5), 500) IWKID
+        IPERCX = IVP
+        WRITE(IDR(6:10), 500) IPERCX
+        CALL GESC(-1400,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  PR - Flag private color map in X output.
+C
+      ELSE IF (CNP(1:2).EQ.'PR' .OR. CNP(1:2).EQ.'pr' .OR.
+     +         CNP(1:2).EQ.'Pr') THEN
+        IF (IWKID .LT. 0) THEN
+          CTM =
+     +      'NGSETI - you must set a value for WO before setting FU'
+          CALL SETER (CTM(1:60), 7, 1)
+          GO TO 120
+        ENDIF
+        WRITE(IDR(1: 5), 500) IWKID
+        IPRIVX = IVP
+        WRITE(IDR(7:16), 510) IPRIVX
+        CALL GESC(-1401,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
 C  PU - Pause in X driver.

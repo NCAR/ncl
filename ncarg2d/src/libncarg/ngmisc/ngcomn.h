@@ -14,7 +14,7 @@ C      ILLX  -  Lower left X coordinate for PostScript page position.
 C      ILLY  -  Lower left Y coordinate for PostScript page position.
 C      IURX  -  Upper right X coordinate for PostScript page position.
 C      IURY  -  Upper right Y coordinate for PostScript page position.
-C    FILSPC  -   Spacing between fill lines in PostScript.
+C    FILSPC  -  Spacing between fill lines in PostScript.
 C    HATSPC  -  Spacing between hatch fill lines in PostScript
 C    RNLSCL  -  Nominal linewidth scale factor for PostScript lines.
 C    ICOSCL  -  Scale factor for PostScript coordinate representation.
@@ -23,10 +23,14 @@ C               miter.
 C    IERRMX  -  Maximum number of GKS errors allowed before abort.
 C    ISGSAV  -  Flag for saving GKS segments at close WISS time.
 C    IGKSCP  -  Flag for controlling if GKS clipping is on.
+C    IPERCX  -  Percentage error allowed in matching colors in X output.
+C    IPRIVX  -  Flags whether an X window should have a private color
+C               map instead of sharing with other maps.
 C
       COMMON /NGCOMI/  IWKID, IFULLB,   IXPS, ISTKMX, IPTHMX, 
      +                ILJOIN,  ILCAP,   ILLX,   ILLY,   IURX,
      +                  IURY, FILSPC, HATSPC, RNLSCL, ICOSCL,
-     +                RMITER, IERRMX, ISGSAV, IGKSCP
+     +                RMITER, IERRMX, ISGSAV, IGKSCP, IPERCX,
+     +                IPRIVX
       COMMON /NGCOMC/ CFILNM, CPICNM
       CHARACTER CFILNM*256, CPICNM*80

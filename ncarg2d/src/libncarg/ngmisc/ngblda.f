@@ -1,5 +1,5 @@
 C
-C	$Id: ngblda.f,v 1.3 1994-05-19 19:28:01 fred Exp $
+C	$Id: ngblda.f,v 1.4 1994-06-23 00:39:50 fred Exp $
 C
       BLOCKDATA NGBLDA
 C
@@ -55,6 +55,15 @@ C
 C  Flag to control whether GKS clipping is on (0 = no; 1 = yes).
 C
       DATA IGKSCP/1/
+C
+C  Percentage error allow in matching colors in shared X color maps.
+C
+      DATA IPERCX/20/
+C
+C  Flag for whether an X window should have a private color map.
+C  (0 = no; 1 = yes).
+C
+      DATA IPRIVX/0/
 C
 C  File name and picture name.
 C

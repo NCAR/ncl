@@ -1,5 +1,5 @@
 C
-C	$Id: nggeti.f,v 1.3 1994-05-19 19:28:05 fred Exp $
+C	$Id: nggeti.f,v 1.4 1994-06-23 00:39:54 fred Exp $
 C
       SUBROUTINE NGGETI (CNP,IVP)
 C
@@ -72,6 +72,14 @@ C
       ELSE IF (CNP(1:2).EQ.'PA' .OR. CNP(1:2).EQ.'pa' .OR. 
      +    CNP(1:2).EQ.'Pa') THEN
         IVP = IPTHMX
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'PE' .OR. CNP(1:2).EQ.'pe' .OR. 
+     +    CNP(1:2).EQ.'Pe') THEN
+        IVP = IPERCX
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'PR' .OR. CNP(1:2).EQ.'pr' .OR. 
+     +    CNP(1:2).EQ.'Pr') THEN
+        IVP = IPRIVX
         GO TO 110
       ELSE IF (CNP(1:2).EQ.'JO' .OR. CNP(1:2).EQ.'jo' .OR. 
      +    CNP(1:2).EQ.'Jo') THEN
