@@ -1,5 +1,5 @@
 /*
- *      $Id: mp06c.c,v 1.1 1999-12-14 00:07:31 haley Exp $
+ *      $Id: mp06c.c,v 1.2 2003-03-04 17:17:57 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -27,6 +27,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/MapPlot.h>
 
@@ -63,7 +64,7 @@ main(int argc, char *argv[])
 {
     int wid,appid,mapid;
     int i, rlist;
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Initialize the high level utility library
  */
@@ -100,6 +101,15 @@ main(int argc, char *argv[])
         NhlRLSetString(rlist,NhlNwkPSFileName,"./mp06c.ps");
         NhlCreate(&wid,"mp06Work",
                   NhlpsWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./mp06c.pdf");
+        NhlCreate(&wid,"mp06Work",
+                  NhlpdfWorkstationClass,NhlDEFAULT_APP,rlist);
     }
 /*
  * Create and draw a map with all mainland US counties outlined.

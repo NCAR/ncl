@@ -1,5 +1,5 @@
 /*
- *      $Id: mp02c.c,v 1.10 1997-10-08 18:16:49 haley Exp $
+ *      $Id: mp02c.c,v 1.11 2003-03-04 17:17:57 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -27,6 +27,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/MapPlot.h>
 
@@ -35,7 +36,7 @@ main(int argc, char *argv[])
 
     int appid,wid,mapid;
     int rlist;
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * String arrays for specifying areas
  */
@@ -92,6 +93,15 @@ main(int argc, char *argv[])
         NhlRLSetString(rlist,NhlNwkPSFileName,"./mp02c.ps");
         NhlCreate(&wid,"mp02Work",
                   NhlpsWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDf workstation
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./mp02c.pdf");
+        NhlCreate(&wid,"mp02Work",
+                  NhlpdfWorkstationClass,NhlDEFAULT_APP,rlist);
     }
 /*
  * Create a plot focusing on North and South America;

@@ -20,6 +20,7 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFXWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFMapPlotClass
       external NhlFtextitemClass
       external nhlfannomanagerclass
@@ -39,7 +40,8 @@ C
       data ret/-1/
       integer appid,wid,mapid,rlist,grlist
       integer i
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
+
       data name/'Los Angeles','Seattle','Toronto','New York','Miami',
      1 'Mexico City','London','Jakarta','Moscow','New Delhi',
      1 'Rio de Janeiro','Cairo','Buenos Aires','Beijing','Tokyo',
@@ -60,6 +62,7 @@ C
       NCGM=1
       X11=0
       PS=0
+      PDF=0
 C
 C Initialize the high level utility library
 C
@@ -99,6 +102,14 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPSFileName','./mp04f.ps',ierr)
          call NhlFCreate(wid,'mp04Work',NhlFPSWorkstationClass,
+     1        0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPDFFileName','./mp04f.pdf',ierr)
+         call NhlFCreate(wid,'mp04Work',NhlFPDFWorkstationClass,
      1        0,rlist,ierr)
       endif
 C

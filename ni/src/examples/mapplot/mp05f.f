@@ -1,5 +1,5 @@
 C     
-C     $Id: mp05f.f,v 1.2 1996-01-04 17:39:52 haley Exp $
+C     $Id: mp05f.f,v 1.3 2003-03-04 17:17:58 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -26,12 +26,13 @@ C
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFMapPlotClass
       external NhlFtextItemClass
 
       integer appid,wid,mapid(NMAP),txid
       integer rlist,i
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
       character*20 mapstr
 C
 C Default is to display output to an X workstation
@@ -39,6 +40,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the high level utility library
 C
@@ -74,6 +76,14 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPSFileName','./mp05f.ps',ierr)
          call NhlFCreate(wid,'mp05Work',NhlFPSWorkstationClass,0,
+     1        rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPDFFileName','./mp05f.pdf',ierr)
+         call NhlFCreate(wid,'mp05Work',NhlFPDFWorkstationClass,0,
      1        rlist,ierr)
       endif
 C

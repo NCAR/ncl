@@ -1,5 +1,5 @@
 /*
- *      $Id: mp03c.c,v 1.8 1995-06-22 21:08:21 haley Exp $
+ *      $Id: mp03c.c,v 1.9 2003-03-04 17:17:57 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -29,6 +29,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/ContourPlot.h>
@@ -45,7 +46,7 @@ main(int argc, char *argv[])
     int mlow = 13, mhigh = 18;
     float dlow = 13.0, dhigh = 18.0;
     int len_dims[2];
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 
     extern void gendat();
 
@@ -89,6 +90,14 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"mp03c.ps");
         NhlCreate(&wid,"mp03Work",NhlpsWorkstationClass,appid,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"mp03c.pdf");
+        NhlCreate(&wid,"mp03Work",NhlpdfWorkstationClass,appid,rlist);
     }
 
 /*

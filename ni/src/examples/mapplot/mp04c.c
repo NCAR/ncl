@@ -25,6 +25,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/MapPlot.h>
 
@@ -47,7 +48,7 @@ main(int argc, char *argv[])
     int rlist,grlist;
     int i, num_am_ids;
     int *am_ids;
-    int NCGM=1, X11=0, PS=0;
+    int NCGM=1, X11=0, PS=0, PDF=0;
 
     Anno_List anno_list[] = {
     {"Los Angeles",34.0,-118.28},
@@ -114,7 +115,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"mp04Work",
                   NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (PS) {
 /*
  * Create a PS workstation.
  */
@@ -122,6 +123,15 @@ main(int argc, char *argv[])
         NhlRLSetString(rlist,NhlNwkPSFileName,"mp04c.ps");
         NhlCreate(&wid,"mp04Work",
                   NhlpsWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"mp04c.pdf");
+        NhlCreate(&wid,"mp04Work",
+                  NhlpdfWorkstationClass,NhlDEFAULT_APP,rlist);
     }
 /*
  * AnnoManager objects allow the PlotManager to manipulate any View class

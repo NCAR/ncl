@@ -1,5 +1,5 @@
 C     
-C     $Id: mp06f.f,v 1.1 1999-12-14 00:07:32 haley Exp $
+C     $Id: mp06f.f,v 1.2 2003-03-04 17:17:58 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -24,11 +24,12 @@ C
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFMapPlotClass
 
       integer appid,wid,mapid
       integer rlist
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C List of Florida counties.
 C
@@ -65,6 +66,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the high level utility library
 C
@@ -100,6 +102,14 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPSFileName','./mp06f.ps',ierr)
          call NhlFCreate(wid,'mp06Work',NhlFPSWorkstationClass,0,
+     1        rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPDFFileName','./mp06f.pdf',ierr)
+         call NhlFCreate(wid,'mp06Work',NhlFPDFWorkstationClass,0,
      1        rlist,ierr)
       endif
 

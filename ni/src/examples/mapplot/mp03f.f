@@ -1,5 +1,5 @@
 C
-C     $Id: mp03f.f,v 1.7 1995-06-22 21:08:22 haley Exp $
+C     $Id: mp03f.f,v 1.8 2003-03-04 17:17:57 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -23,6 +23,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFMapPlotClass
       external NhlFScalarFieldClass
@@ -42,13 +43,14 @@ C
 
       character*6 mask_specs(1)
       data mask_specs/'oceans'/
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to display output to an X workstation
 C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the high level utility library
 C
@@ -86,6 +88,14 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPSFileName','./mp03f.ps',ierr)
          call NhlFCreate(wid,'mp03Work',NhlFPSWorkstationClass,0,
+     1        rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPDFFileName','./mp03f.pdf',ierr)
+         call NhlFCreate(wid,'mp03Work',NhlFPDFWorkstationClass,0,
      1        rlist,ierr)
       endif
 C
