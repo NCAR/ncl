@@ -1,5 +1,5 @@
 /*
- *      $Id: LegendP.h,v 1.5 1994-03-02 01:44:12 dbrown Exp $
+ *      $Id: LegendP.h,v 1.6 1994-04-05 00:51:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,18 +29,18 @@ typedef struct _NhlLegendLayerPart {
 
 	/* public resource fields */
 
-	int	legend_on;
+	int		legend_on;
 	NhlOrientation	orient;
 	NhlJustification just;
-	float	box_major_ext;
-	float	box_minor_ext;
-	int	item_count;
-	int     item_placement;
+	float		box_major_ext;
+	float		box_minor_ext;
+	int		item_count;
+	int     	item_placement;
 
 	NhlBoolean	auto_manage;
-	float	label_angle_add;
-	float	label_off;
-	float	title_off;
+	float		label_angle_add;
+	float		label_off;
+	float		title_off;
 	NhlBoundingBox	margin;
 
 	NhlGenArray	item_indexes;
@@ -58,46 +58,55 @@ typedef struct _NhlLegendLayerPart {
 	NhlBoolean 	mono_item_string_color;
 	NhlGenArray	item_string_colors;
 
-	int	labels_on;
+	NhlBoolean	line_labels_on;
+	float		line_dash_seglen;
+	NhlFont		istring_font;
+	float		istring_aspect;
+	float		istring_thickness;
+	NhlFontQuality 	istring_quality;
+	float		istring_const_spacing;
+	char		istring_func_code;
+
+	int		labels_on;
 	NhlPosition	label_pos;
 	NhlJustification label_just;
-	int     label_alignment;    /* 0 - Item Centers, 1 - Above Items,
-				       2 - Below Items */
-	int	label_dir;
-	float	label_angle;
-	NhlFont	label_font;
-	int	label_color;
-	float	label_height;
-	float	label_aspect;
-	float	label_thickness;
-	NhlFontQuality label_quality;
-	float	label_const_spacing;
-	char	label_func_code;
+	int     	label_alignment;  /* 0 - Item Centers, 1 - Above Items,
+				       		2 - Below Items */
+	int		label_dir;
+	float		label_angle;
+	NhlFont		label_font;
+	int		label_color;
+	float		label_height;
+	float		label_aspect;
+	float		label_thickness;
+	NhlFontQuality 	label_quality;
+	float		label_const_spacing;
+	char		label_func_code;
 	NhlTextDirection label_direction;
-	int     label_stride;
+	int     	label_stride;
 	
-	float	max_title_ext;
-	char	*title_string;
-	int	title_on;
-	NhlPosition title_pos;
+	float		max_title_ext;
+	char		*title_string;
+	int		title_on;
+	NhlPosition 	title_pos;
 	NhlJustification  title_just;
-	int     title_direction;
-	float	title_angle;
-	NhlFont	title_font;
-	int	title_color;
-	float	title_height;
-	float	title_aspect;
-	float	title_thickness;
-	NhlFontQuality title_quality;
-	float	title_const_spacing;
-	char	title_func_code;
+	int     	title_direction;
+	float		title_angle;
+	NhlFont		title_font;
+	int		title_color;
+	float		title_height;
+	float		title_aspect;
+	float		title_thickness;
+	NhlFontQuality 	title_quality;
+	float		title_const_spacing;
+	char		title_func_code;
 
 	int	box_background;
 	int	box_line_on;
 	int	box_line_color;
 	float	box_line_thickness;
 	int	box_line_dash_pattern;
-	float	box_line_dash_length;
+	float	box_line_dash_seglen;
 	
 	int	perim_on;
 	int	perim_color;
@@ -105,7 +114,7 @@ typedef struct _NhlLegendLayerPart {
 	int	perim_fill_color;
 	float	perim_thickness;
 	int	perim_dash_pattern;
-	float	perim_dash_length;
+	float	perim_dash_seglen;
 
 	int	fill_background;
 	float	fill_line_thickness;
@@ -143,6 +152,9 @@ typedef struct _NhlLegendLayerPart {
 	float		title_y;
 	NhlBoolean	new_draw_req;	
         NhlTransDat	*trans_dat;	/* segment transform data */
+
+	float		istring_pheight;
+	float		istring_pwidth;
 
 }NhlLegendLayerPart;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceI.h,v 1.1 1994-03-18 02:18:47 dbrown Exp $
+ *      $Id: WorkspaceI.h,v 1.2 1994-04-05 00:51:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -114,12 +114,6 @@ extern NhlErrorTypes _NhlAredam(
 extern NhlErrorTypes _NhlArscam(
 #ifdef NhlNeedProto
 	NhlWorkspace	*amap_ws,
-	float		*x,
-	float		*y,
-	int		npoints,
-	int		*group_ids,
-	int		*area_ids,
-	int		ngroups,
 	int		(*apr)(float *xcs, 
 			       float *ycs, 
 			       int *ncs, 

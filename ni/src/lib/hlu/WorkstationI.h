@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationI.h,v 1.1 1994-01-27 21:27:28 boote Exp $
+ *      $Id: WorkstationI.h,v 1.2 1994-04-05 00:51:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -108,6 +108,13 @@ extern  int  _NhlWorkstationId(
 );
 
 extern int _NhlGetGksCi(
+#ifdef NhlNeedProto
+        NhlLayer   /* workstation*/,
+        int /* ci*/
+#endif
+);
+
+extern int _NhlIsAllocatedColor(
 #ifdef NhlNeedProto
         NhlLayer   /* workstation*/,
         int /* ci*/

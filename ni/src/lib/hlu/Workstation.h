@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.5 1994-03-02 01:44:49 dbrown Exp $
+ *      $Id: Workstation.h,v 1.6 1994-04-05 00:51:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -228,6 +228,14 @@ extern int NhlGetGksCi(
         int     /* ci   */
 #endif
 );
+
+extern int NhlIsAllocatedColor(
+#ifdef NhlNeedProto
+        int     /* pid */,
+        int     /* ci   */
+#endif
+);
+
 int NhlGetGksWorkId(
 #ifdef NhlNeedProto
 int /* workid */

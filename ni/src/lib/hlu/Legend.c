@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.9 1994-03-18 02:18:16 dbrown Exp $
+ *      $Id: Legend.c,v 1.10 1994-04-05 00:51:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -141,6 +141,37 @@ static NhlResource resources[] = {
 	 sizeof(NhlPointer), 
 	 NhlOffset(NhlLegendLayerRec,legend.item_string_colors),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NULL)},
+
+{NhlNlgDrawLineLabels,NhlClgDrawLineLabels,NhlTBoolean,sizeof(NhlBoolean), 
+	 NhlOffset(NhlLegendLayerRec,legend.line_labels_on),
+	 NhlTImmediate,_NhlUSET((NhlPointer) True)},
+{NhlNlgLineDashSegLenF, NhlClgLineDashSegLenF, NhlTFloat,sizeof(float), 
+	 NhlOffset(NhlLegendLayerRec,legend.line_dash_seglen),
+	 NhlTString, _NhlUSET("0.15")},
+{NhlNlgItemStringFont,NhlClgItemStringFont,NhlTFont, 
+	 sizeof(int),NhlOffset(NhlLegendLayerRec,legend.istring_font),
+	 NhlTImmediate,_NhlUSET((NhlPointer) 1)},
+{NhlNlgItemStringFontAspectF,NhlClgItemStringFontAspectF,NhlTFloat, 
+	 sizeof(float), 
+	 NhlOffset(NhlLegendLayerRec,legend.istring_aspect),
+	 NhlTString, _NhlUSET("1.0")},
+{NhlNlgItemStringFontThicknessF,NhlClgItemStringFontThicknessF,
+	 NhlTFloat,sizeof(float),
+	 NhlOffset(NhlLegendLayerRec,legend.istring_thickness),
+	 NhlTString, _NhlUSET("1.0")},
+{NhlNlgItemStringFontQuality,NhlClgItemStringFontQuality,NhlTFQuality, 
+	 sizeof(NhlFontQuality), 
+	 NhlOffset(NhlLegendLayerRec,legend.istring_quality),
+	 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH)},
+{NhlNlgItemStringConstantSpacingF,NhlClgItemStringConstantSpacingF,
+	 NhlTFloat,sizeof(float), 
+	 NhlOffset(NhlLegendLayerRec,legend.istring_const_spacing),
+	 NhlTString,_NhlUSET("0.0")},
+{NhlNlgItemStringFuncCode,NhlClgItemStringFuncCode,NhlTCharacter, 
+	 sizeof(char),
+	 NhlOffset(NhlLegendLayerRec,legend.istring_func_code),
+	 NhlTString, _NhlUSET(":")},
+
 	
 {NhlNlgDrawLabels, NhlClgDrawLabels, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.labels_on),
@@ -254,9 +285,9 @@ static NhlResource resources[] = {
 	 sizeof(int), 
 	 NhlOffset(NhlLegendLayerRec,legend.box_line_dash_pattern),
 	 NhlTImmediate, _NhlUSET((NhlPointer) 0)},
-{NhlNlgBoxLineDashLengthF, NhlClgBoxLineDashLengthF, NhlTFloat, 
+{NhlNlgBoxLineDashSegLenF, NhlClgBoxLineDashSegLenF, NhlTFloat, 
 	 sizeof(float), 
-	 NhlOffset(NhlLegendLayerRec,legend.box_line_dash_length),
+	 NhlOffset(NhlLegendLayerRec,legend.box_line_dash_seglen),
 	 NhlTString, _NhlUSET("0.15")},
 
 {NhlNlgDrawPerim, NhlClgDrawPerim, NhlTInteger, 
@@ -279,9 +310,9 @@ static NhlResource resources[] = {
 	 sizeof(int), 
 	 NhlOffset(NhlLegendLayerRec,legend.perim_dash_pattern),
 	 NhlTImmediate, _NhlUSET((NhlPointer) 0)}, 
-{NhlNlgPerimDashLengthF, NhlClgPerimDashLengthF, NhlTFloat, 
+{NhlNlgPerimDashSegLenF, NhlClgPerimDashSegLenF, NhlTFloat, 
 	 sizeof(float), 
-	 NhlOffset(NhlLegendLayerRec,legend.perim_dash_length),
+	 NhlOffset(NhlLegendLayerRec,legend.perim_dash_seglen),
 	 NhlTString, _NhlUSET("0.15")},
 
 };
@@ -584,14 +615,9 @@ static NhlErrorTypes    LegendInitialize
 	lg_p->perim.b = lg_p->lg_y - lg_p->lg_height;
 	lg_p->perim.t = lg_p->lg_y;
 
-
 /*
- * Create a default title string
+ * Set up array resources
  */
-
-	lg_p->title_string = (char*)
-		NhlMalloc((unsigned)strlen(tnew->base.name) +1);
-	strcpy(lg_p->title_string,tnew->base.name);
 
 	ret1 = InitializeDynamicArrays(new,req,args,num_args);
 	ret = MIN(ret,ret1);
@@ -1065,8 +1091,8 @@ static NhlErrorTypes    InitializeDynamicArrays
 	}
 	for (i=0; i < NhlLG_DEF_ITEM_COUNT; i++) 
 		i_p[i] = def_colors[i];
-	for (i=NhlLG_DEF_ITEM_COUNT; i<count; i++)
-		i_p[i] = i < len_1 ? i : NhlLG_DEF_COLOR;
+	for (i=NhlLG_DEF_ITEM_COUNT; i < count; i++)
+		i_p[i] = i;
 			
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
 				    sizeof(int),1,&count)) == NULL) {
@@ -1099,7 +1125,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 	}
 
 	for (i=0; i<count; i++) {
-		if (i_p[i] < 0 || i_p[i] > len_1) {
+		if (! _NhlIsAllocatedColor(tnew->base.wkptr, i_p[i])) {
 			e_text =
 	       "%s: %s index %d holds an invalid color value, %d: defaulting";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
@@ -1301,9 +1327,12 @@ static NhlErrorTypes    InitializeDynamicArrays
 		return NhlFATAL;
 	}
 	for (i=0; i < NhlLG_DEF_ITEM_COUNT; i++) 
-		i_p[i] = def_colors[i];
-	for (i=NhlLG_DEF_ITEM_COUNT; i<count; i++)
-		i_p[i] = i < len_1 ? i : NhlLG_DEF_COLOR;
+		i_p[i] = 
+			_NhlIsAllocatedColor(tnew->base.wkptr, def_colors[i]) ?
+				def_colors[i] : NhlLG_DEF_COLOR;
+	for (i = NhlLG_DEF_ITEM_COUNT; i < count; i++)
+		i_p[i] = _NhlIsAllocatedColor(tnew->base.wkptr, i) ?
+			def_colors[i] : NhlLG_DEF_COLOR;
 			
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
 				    sizeof(int),1,&count)) == NULL) {
@@ -1336,7 +1365,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 	}
 
 	for (i=0; i<count; i++) {
-		if (i_p[i] < 0 || i_p[i] > len_1) {
+		if (! _NhlIsAllocatedColor(tnew->base.wkptr, i_p[i])) {
 			e_text =
 	       "%s: %s index %d holds an invalid color value, %d: defaulting";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
@@ -1650,7 +1679,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		i_p = (int *) lg_p->item_colors->data;
 
 		for (i=0; i<MIN(count,lg_p->item_colors->num_elements); i++) {
-			if (i_p[i] < 0 || i_p[i] > len_1) {
+			if (! _NhlIsAllocatedColor(tnew->base.wkptr, i_p[i])) {
 				e_text =
 		"%s: %s index %d holds an invalid color value, %d: defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
@@ -1682,7 +1711,8 @@ static NhlErrorTypes    ManageDynamicArrays
 			return NhlFATAL;
 		}
 		for (i=lg_p->item_colors->num_elements; i<count; i++) {
-			i_p[i] = i < len_1 ? i : NhlLG_DEF_COLOR;
+			i_p[i] = _NhlIsAllocatedColor(tnew->base.wkptr,i) ? 
+				i : NhlLG_DEF_COLOR;
 			lg_p->gks_colors[i] =
 				_NhlGetGksCi(tnew->base.wkptr, i_p[i]);
 		}
@@ -1867,7 +1897,7 @@ static NhlErrorTypes    ManageDynamicArrays
 
 		for (i=0;i<MIN(count,
 			       lg_p->item_string_colors->num_elements); i++) {
-			if (i_p[i] < 0 || i_p[i] > len_1) {
+			if (! _NhlIsAllocatedColor(tnew->base.wkptr, i_p[i])) {
 				e_text =
 		"%s: %s index %d holds an invalid color value, %d: defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
@@ -1899,7 +1929,8 @@ static NhlErrorTypes    ManageDynamicArrays
 			return NhlFATAL;
 		}
 		for (i=lg_p->item_string_colors->num_elements; i<count; i++) {
-			i_p[i] = i < len_1 ? i : NhlLG_DEF_COLOR;
+			i_p[i] = _NhlIsAllocatedColor(tnew->base.wkptr, i) ? 
+				i : NhlLG_DEF_COLOR;
 			lg_p->string_gks_colors[i] =
 				_NhlGetGksCi(tnew->base.wkptr, i_p[i]);
 		}
@@ -2010,7 +2041,7 @@ static NhlErrorTypes    SetLegendGeometry
 	int		num_args;
 #endif
 {
- 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+ 	NhlErrorTypes		ret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "lgSetLegendGeometry";
 	NhlLegendLayer	tnew = (NhlLegendLayer) new;
@@ -2020,6 +2051,26 @@ static NhlErrorTypes    SetLegendGeometry
 	float small_axis;
 	float title_off = 0.0, angle_adj = 0.0;
 	float title_angle, tan_t;
+
+/* 
+ * Determine the principal width and height for the item string
+ * based on aspect ratio. 21.0 is the default principle height. 
+ * This code works the way the TextItem handles aspect ratio.
+ */
+        if (lg_p->istring_aspect <= 0.0 ) {
+                lg_p->istring_aspect = 1.3125;
+		e_text = "%s: Invalid value for %s";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+			  entry_name,NhlNlgItemStringFontAspectF);
+                ret = NhlWARNING;
+        }
+        if(lg_p->istring_aspect <= 1.0) {
+                lg_p->istring_pheight = 21.0 * lg_p->istring_aspect;
+                lg_p->istring_pwidth = 21.0;
+        } else {
+                lg_p->istring_pwidth = 21.0 * 1.0/lg_p->istring_aspect;
+                lg_p->istring_pheight = 21.0;
+        }
 
 /* Calculate the ndc margin from the fractional margin */
 
@@ -4384,6 +4435,8 @@ static NhlErrorTypes    LegendDraw
 	float *text_heights;
 	NhlString *item_strings;
 	float back_dist, for_dist;
+	char buffer[20];
+	char *string;
 
 	if (! lg_p->legend_on)
 		return(ret);
@@ -4432,7 +4485,7 @@ static NhlErrorTypes    LegendDraw
 			     NhlNwkDrawEdges, 1,
 			     NhlNwkEdgeDashPattern, lg_p->perim_dash_pattern,
 			     NhlNwkEdgeThicknessF, lg_p->perim_thickness,
-			     NhlNwkEdgeDashSegLenF, lg_p->perim_dash_length,
+			     NhlNwkEdgeDashSegLenF, lg_p->perim_dash_seglen,
 			     NhlNwkEdgeColor, lg_p->perim_color,
 			     NhlNwkFillColor, lg_p->perim_fill_color,
 			     NhlNwkFillIndex, lg_p->perim_fill,
@@ -4452,14 +4505,15 @@ static NhlErrorTypes    LegendDraw
 		     NhlNwkDrawEdges, lg_p->box_line_on,
 		     NhlNwkEdgeDashPattern, lg_p->box_line_dash_pattern,
 		     NhlNwkEdgeThicknessF, lg_p->box_line_thickness,
-		     NhlNwkEdgeDashSegLenF, lg_p->box_line_dash_length,
+		     NhlNwkEdgeDashSegLenF, lg_p->box_line_dash_seglen,
 		     NhlNwkEdgeColor, lg_p->box_line_color,
 		     NhlNwkFillColor, lg_p->box_background,
 		     NhlNwkFillIndex, NhlSOLIDFILL,
+		     NhlNwkLineDashSegLenF, lg_p->line_dash_seglen,  
 		     NULL);
 				     
 /* 
- * Draw the boxes
+ * Draw the items
  */
 	frac = lg_p->box_major_ext;
 	colors = (int *) lg_p->item_colors->data;
@@ -4470,6 +4524,17 @@ static NhlErrorTypes    LegendDraw
 	text_heights = (float *) lg_p->item_text_heights->data;
 	item_strings = (NhlString *) lg_p->item_strings->data;
 
+        c_pcsetr("PH",lg_p->istring_pheight);
+        c_pcsetr("PW",lg_p->istring_pwidth);
+	c_pcseti("CS",lg_p->istring_const_spacing);
+	c_pcseti("TE",0);
+	c_pcseti("FN",lg_p->istring_font);
+	c_pcseti("QU",lg_p->istring_quality);
+	sprintf(buffer,"%c",lg_p->istring_func_code);
+	c_pcsetc("FC",buffer);
+	c_pcseti("CC",-1);
+	c_pcseti("OC",-1);
+	
 	if (lg_p->orient == NhlHORIZONTAL) {
 
 		ypoints[0] = lg_p->adj_bar.b;
@@ -4519,33 +4584,31 @@ static NhlErrorTypes    LegendDraw
 				item_thickness = thicknesses[i];
 			
 			if (lg_p->mono_item_text_height)
-				item_text_height = text_heights[0];
+				item_text_height =  text_heights[0] *
+					1.0 / lg_p->istring_aspect;
 			else
-				item_text_height = text_heights[i];
+				item_text_height = text_heights[i] *
+					1.0 / lg_p->istring_aspect;
+
+			string = lg_p->line_labels_on ? item_strings[i] : NULL;
+				
 
 			if (item_type == NhlLG_LINES) {
 				NhlVASetValues(lgl->base.wkptr->base.id,
-					     NhlNwkLineLabel, 
-					        item_strings[i],
-					     NhlNwkDashPattern, 
-					        indexes[i],
-					     NhlNwkLineThicknessF, 
-					        item_thickness,
-					     NhlNwkLineLabelFontHeightF,
-					        item_text_height,
-					     NhlNwkLineColor, item_color, 
-					     NhlNwkLineLabelColor, 
-					       item_string_color, 
-					     NULL);
+				  NhlNwkLineLabel,string,
+				  NhlNwkDashPattern,indexes[i],
+				  NhlNwkLineThicknessF,item_thickness,
+				  NhlNwkLineLabelFontHeightF,item_text_height,
+				  NhlNwkLineColor,item_color, 
+				  NhlNwkLineLabelColor,item_string_color, 
+					       NULL);
 				_NhlSetLineInfo(lgl->base.wkptr,layer);
 				xpoints[0] = xpoints[0] + 
 					(xpoints[1] - xpoints[0]) / 2.0;
 				_NhlWorkstationLineTo(lgl->base.wkptr, 
-						      xpoints[0],
-						      ypoints[0], 1);
+					      xpoints[0],ypoints[0], 1);
 				_NhlWorkstationLineTo(lgl->base.wkptr, 
-						      xpoints[0],
-						      ypoints[2], 0);
+					      xpoints[0],ypoints[2], 0);
 		        }
 			else {
 				NhlVASetValues(lgl->base.wkptr->base.id,
@@ -4614,16 +4677,18 @@ static NhlErrorTypes    LegendDraw
 				item_thickness = thicknesses[i];
 			
 			if (lg_p->mono_item_text_height)
-				item_text_height = text_heights[0];
+				item_text_height =  text_heights[0] *
+					1.0 / lg_p->istring_aspect;
 			else
-				item_text_height = text_heights[i];
+				item_text_height = text_heights[i] *
+					1.0 / lg_p->istring_aspect;
+
+			string = lg_p->line_labels_on ? item_strings[i] : NULL;
 
 			if (item_type == NhlLG_LINES) {
 				NhlVASetValues(lgl->base.wkptr->base.id,
-					     NhlNwkLineLabel, 
-					        item_strings[i],
-					     NhlNwkDashPattern, 
-					        indexes[i],
+					     NhlNwkLineLabel, string,
+					     NhlNwkDashPattern,indexes[i],
 					     NhlNwkLineThicknessF, 
 					        item_thickness,
 					     NhlNwkLineLabelFontHeightF,
@@ -4664,6 +4729,7 @@ static NhlErrorTypes    LegendDraw
 			
 		}
 	}
+	_NhlWorkstationLineTo(lgl->base.wkptr,0.0,0.0,1); 
 
 	if (lgl->view.use_segments) {
 

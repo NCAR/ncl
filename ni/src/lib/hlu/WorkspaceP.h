@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceP.h,v 1.1 1994-03-18 02:18:48 dbrown Exp $
+ *      $Id: WorkspaceP.h,v 1.2 1994-04-05 00:51:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,8 +27,12 @@
 #include <ncarg/hlu/WorkspaceI.h>
 
 #define NhlwsDEF_THRESHOLD	1048576
+#define NhlwsDEF_MAXIMUM	2097152
 #define NhlwsMIN_THRESHOLD	8096
+#define NhlwsMIN_MAXIMUM	262144
 #define NhlwsIDLE_REC_ALLOC	64
+#define NhlwsMAX_GKS_POINTS	12000
+#define NhlwsMAX_AREA_GROUPS	64
 
 typedef struct _NhlWorkspaceRec {
 	int			ws_id;     	/* Workspace identifier */
@@ -51,6 +55,7 @@ typedef struct _NhlwsIdleRec {
 
 typedef struct _NhlWorkspaceLayerPart {
 	/* public resources */
+	long			maximum_size;
 	long			threshold_size;
 	long			current_size;
 

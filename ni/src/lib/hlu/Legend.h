@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.h,v 1.6 1994-03-02 01:44:10 dbrown Exp $
+ *      $Id: Legend.h,v 1.7 1994-04-05 00:51:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -99,6 +99,16 @@
 
 /*end of arrays */
 
+#define NhlNlgDrawLineLabels		"lgDrawLineLabels"
+#define NhlNlgLineDashSegLenF		"lgLineDashSegLenF"
+#define NhlNlgItemStringFont		"lgItemStringFont"
+#define NhlNlgItemStringFontColor	"lgItemStringFontColor"
+#define NhlNlgItemStringFontAspectF	"lgItemStringFontAspectF"
+#define NhlNlgItemStringFontThicknessF	"lgItemStringFontThicknessF"
+#define NhlNlgItemStringFontQuality	"lgItemStringFontQuality"
+#define NhlNlgItemStringConstantSpacingF	"lgItemStringConstantSpacingF"
+#define NhlNlgItemStringFuncCode	"lgItemStringFuncCode"
+
 #define NhlNlgDrawLabels		"lgDrawLabels"
 #define NhlNlgLabelPosition		"lgLabelPosition"
 #define NhlNlgLabelAngleF		"lgLabelAngleF"
@@ -136,7 +146,7 @@
 #define NhlNlgBoxLineColor		"lgBoxLineColor"
 #define NhlNlgBoxLineThicknessF		"lgBoxLineThicknessF"
 #define NhlNlgBoxLineDashPattern	"lgBoxLineDashPattern"
-#define NhlNlgBoxLineDashLengthF	"lgBoxLineDashLengthF"
+#define NhlNlgBoxLineDashSegLenF	"lgBoxLineDashSegLenF"
 
 #define NhlNlgDrawPerim			"lgDrawPerim"
 #define NhlNlgPerimColor		"lgPerimColor"
@@ -144,7 +154,7 @@
 #define NhlNlgPerimFillColor		"lgPerimFillColor"
 #define NhlNlgPerimThicknessF		"lgPerimThicknessF"
 #define NhlNlgPerimDashPattern		"lgPerimDashPattern"
-#define NhlNlgPerimDashLengthF		"lgPerimDashLengthF"
+#define NhlNlgPerimDashSegLenF		"lgPerimDashSegLenF"
 
 /* Class resources */
 
@@ -186,6 +196,16 @@
 
 /*end of arrays */
 
+#define NhlClgDrawLineLabels		"LgDrawLineLabels"
+#define NhlClgLineDashSegLenF		"LgLineDashSegLenF"
+#define NhlClgItemStringFont		"LgItemStringFont"
+#define NhlClgItemStringFontColor	"LgItemStringFontColor"
+#define NhlClgItemStringFontAspectF	"LgItemStringFontAspectF"
+#define NhlClgItemStringFontThicknessF	"LgItemStringFontThicknessF"
+#define NhlClgItemStringFontQuality	"LgItemStringFontQuality"
+#define NhlClgItemStringConstantSpacingF	"LgItemStringConstantSpacingF"
+#define NhlClgItemStringFuncCode	"LgItemStringFuncCode"
+
 #define NhlClgDrawLabels		"LgDrawLabels"
 #define NhlClgLabelPosition		"LgLabelPosition"
 #define NhlClgLabelAngleF		"LgLabelAngleF"
@@ -221,7 +241,7 @@
 #define NhlClgBoxLineColor		"LgBoxLineColor"
 #define NhlClgBoxLineThicknessF		"LgBoxLineThicknessF"
 #define NhlClgBoxLineDashPattern	"LgBoxLineDashPattern"
-#define NhlClgBoxLineDashLengthF	"LgBoxLineDashLengthF"
+#define NhlClgBoxLineDashSegLenF	"LgBoxLineDashSegLenF"
 
 #define NhlClgDrawPerim			"LgDrawPerim"
 #define NhlClgPerimColor		"LgPerimColor"
@@ -229,7 +249,7 @@
 #define NhlClgPerimFillColor		"LgPerimFillColor"
 #define NhlClgPerimThicknessF		"LgPerimThicknessF"
 #define NhlClgPerimDashPattern		"LgPerimDashPattern"
-#define NhlClgPerimDashLengthF		"LgPerimDashLengthF"
+#define NhlClgPerimDashSegLenF		"LgPerimDashSegLenF"
 
 
 /* end of resources */

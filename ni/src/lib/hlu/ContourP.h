@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.5 1994-03-18 02:18:07 dbrown Exp $
+ *      $Id: ContourP.h,v 1.6 1994-04-05 00:51:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,8 +38,37 @@
 #define Nhl_cnDEF_LINE_LABEL_STRING	"LL_"
 #define Nhl_cnINT_WKSPACE	1000
 #define Nhl_cnFLOAT_WKSPACE	5000
-#define Nhl_cnSTD_VIEW_WIDTH	0.5
-#define Nhl_cnSTD_VIEW_HEIGHT	0.5
+#define Nhl_cnSTD_VIEW_WIDTH	1.0
+#define Nhl_cnSTD_VIEW_HEIGHT	1.0
+
+
+typedef struct _NhlcnLabelAttrs {
+	NhlBoolean	on;
+	NhlString	*text;
+	NhlString	format;
+	NhlFont		font;
+	int		mono_color;
+	int		*colors;
+	NhlBoolean	height_set;
+	float		height;
+	float		aspect;
+	float		thickness;
+	int		quality;
+	float		cspacing;
+	float		angle;
+	char		fcode[2];
+	int		back_color;
+	NhlBoolean	perim_on;
+	NhlBoolean	perim_space_set;
+	float		perim_space;
+	float		perim_lthick;
+	int		perim_lcolor;
+	int		gks_bcolor;
+	int		gks_plcolor;
+	float		real_height;
+	float		pheight;
+	float		pwidth;
+} NhlcnLabelAttrs;
 
 typedef struct _NhlContourLayerPart {
 
@@ -57,8 +86,8 @@ typedef struct _NhlContourLayerPart {
 	float		min_level_val;
 	NhlBoolean	max_level_set;
 	float		max_level_val;
-	NhlBoolean	line_label_interval_set;
-	int		line_label_interval;
+	NhlBoolean	llabel_interval_set;
+	int		llabel_interval;
 
 	NhlBoolean	mono_level_flag;
 	NhlBoolean	mono_fill_color;
@@ -67,7 +96,7 @@ typedef struct _NhlContourLayerPart {
 	NhlBoolean	mono_line_color;
 	NhlBoolean	mono_line_dash_pattern;
 	NhlBoolean	mono_line_thickness;
-	NhlBoolean	mono_line_label_color;
+	NhlBoolean	mono_llabel_color;
 
 	NhlGenArray	levels;
 	NhlGenArray	level_flags;
@@ -78,19 +107,20 @@ typedef struct _NhlContourLayerPart {
 	NhlGenArray	line_colors;
 	NhlGenArray	line_dash_patterns;
 	NhlGenArray	line_thicknesses;
-	NhlGenArray	line_label_strings;
-	NhlGenArray	line_label_colors;
+	NhlGenArray	llabel_strings;
+	NhlGenArray	llabel_colors;
 
+	NhlBoolean	line_dash_seglen_set;
 	float		line_dash_seglen;
-	NhlBoolean	line_label_text_height_set;
-	float		line_label_text_height;
 	int		llabel_position;
-	float		llabel_angle;
-	int		llabel_background_color;
-	NhlBoolean	llabel_perim;
-	int		llabel_perim_color; /* not a Conpack option */
 
-/* these will be replaced by contour specific resources */
+	NhlBoolean	low_use_high_attrs;
+	NhlBoolean	high_use_line_attrs;
+	NhlBoolean	line_use_info_attrs;
+	NhlcnLabelAttrs info_lbl;
+	NhlcnLabelAttrs line_lbls;
+	NhlcnLabelAttrs high_lbls;
+	NhlcnLabelAttrs low_lbls;
 
 	float 		x_min;
 	float		x_max;
@@ -102,8 +132,14 @@ typedef struct _NhlContourLayerPart {
 	NhlBoolean	y_reverse;
 	int		display_labelbar;
 	int		display_legend;
-	NhlBoolean	update_req;
+	NhlBoolean	auto_legend_labels;
 	NhlGenArray	legend_labels;
+	NhlString	legend_title;
+	NhlBoolean	auto_labelbar_labels;
+	NhlGenArray	labelbar_labels;
+	NhlString	labelbar_title;
+
+	NhlBoolean	update_req;
 
 	/* Private Fields */
 
@@ -116,11 +152,23 @@ typedef struct _NhlContourLayerPart {
 	float		*real_levels;
 	int		*gks_fill_colors;
 	int		*gks_line_colors;
-	int		*gks_line_label_colors;
+	int		*gks_llabel_colors;
 	NhlGenArray	dash_table;
 	float		zmin;
 	float		zmax;
-	float		ll_text_height_2vpw;
+	int		fill_count;
+	float		llabel_pwidth;
+	float		llabel_pheight;
+	float		llabel_real_height;
+	float		info_label_pwidth;
+	float		info_label_pheight;
+	float		info_label_real_height;
+	float		high_label_pwidth;
+	float		high_label_pheight;
+	float		high_label_real_height;
+	float		low_label_pwidth;
+	float		low_label_pheight;
+	float		low_label_real_height;
 	NhlGenArray	ll_strings;
 	NhlGenArray	ll_text_heights;
 	int		*label_amap;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.h,v 1.1 1994-03-18 02:18:45 dbrown Exp $
+ *      $Id: Workspace.h,v 1.2 1994-04-05 00:51:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,9 +25,11 @@
 
 #include <ncarg/hlu/Base.h>
 
+#define NhlNwsMaximumSize	"wsMaximumSize"
 #define NhlNwsThresholdSize	"wsThresholdSize"
 #define NhlNwsCurrentSize	".wsCurrentSize"
 
+#define NhlCwsMaximumSize	"WsMaximumSize"
 #define NhlCwsThresholdSize	"WsThresholdSize"
 #define NhlCwsCurrentSize	".WsCurrentSize"
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.9 1994-03-18 02:18:51 dbrown Exp $
+ *      $Id: Workstation.c,v 1.10 1994-04-05 00:51:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -946,8 +946,8 @@ static NhlErrorTypes WorkstationInitialize
  * copy of the actual colormap resource data. The color map length is
  * a read-only parameter. When the user supplies a colormap, the length
  * of the map is determined from the size of the supplied GenArray. Note
- * that background color is not counted in the number of colors in the
- * colormap.
+ * that the user color map length is one less than the private color map
+ * length since the user map length does not include the background color.
  */
 	newl->work.num_private_colors = NhlNumber(def_color) + 1;
 
@@ -985,27 +985,28 @@ static NhlErrorTypes WorkstationInitialize
 			newl->work.color_map_len = 
 				newl->work.color_map->len_dimensions[0];
 		}
+		newl->work.num_private_colors = newl->work.color_map_len + 1;
 	}
 	newl->work.color_map = ga;
-	newl->work.num_private_colors = newl->work.color_map_len + 1;
 
 /*
  * SETALMOST is changed to a GKS color index when the workstation is opened
  * for now the ci will be the same as the array index but this may change
- * and hence the need for the ci field. Should values be checked?
+ * and hence the need for the ci field. Should values be checked? Start at
+ * index 1 since the background color has already been set.
  */
 	tcolor = newl->work.color_map->data;
 	for (i=1; i<newl->work.num_private_colors; i++)  {
 		newl->work.private_color_map[i].ci = SETALMOST;
-		newl->work.private_color_map[i].red = tcolor[i-1][0];
-		newl->work.private_color_map[i].green = tcolor[i-1][1];
-		newl->work.private_color_map[i].blue =  tcolor[i-1][2];
+		newl->work.private_color_map[i].red = tcolor[i][0];
+		newl->work.private_color_map[i].green = tcolor[i][1];
+		newl->work.private_color_map[i].blue =  tcolor[i][2];
 	}
 
 /*
  * Process the foreground color resource: the foreground color is always
- * color index #1. It is set automatically when the colormap is loaded
- * but an explicitly set foreground color overrides the value loaded using
+ * color index #1 (NhlFOREGROUND). It is set automatically when the 
+ * colormap is loaded but an explicitly set foreground color overrides 
  * the colormap resource.
  */
 
@@ -1666,7 +1667,7 @@ NhlErrorTypes	_NhlSetColor
 {
 	NhlWorkstationLayer	thework = (NhlWorkstationLayer)inst;
 	
-	if(ci > MAX_COLOR_MAP) {
+	if(ci > MAX_COLOR_MAP || ci <= 0) {
 /*
 * COLOR INDEX EXCEEDS MAX_COLOR_MAP
 */
@@ -1674,10 +1675,10 @@ NhlErrorTypes	_NhlSetColor
 		return(NhlWARNING);
 	}
 
-	thework->work.private_color_map[ci - 1].ci = SETALMOST;
-	thework->work.private_color_map[ci - 1].red = red;
-	thework->work.private_color_map[ci - 1].green = green;
-	thework->work.private_color_map[ci - 1].blue = blue;
+	thework->work.private_color_map[ci].ci = SETALMOST;
+	thework->work.private_color_map[ci].red = red;
+	thework->work.private_color_map[ci].green = green;
+	thework->work.private_color_map[ci].blue = blue;
 
 	return(AllocateColors((NhlLayer)thework));
 }
@@ -1722,7 +1723,7 @@ NhlErrorTypes	_NhlFreeColor
 		return(NhlWARNING);
 	}
 
-	thework->work.private_color_map[ci - 1].ci =REMOVE;
+	thework->work.private_color_map[ci].ci =REMOVE;
 
 	return(DeallocateColors((NhlLayer)thework));
 }
@@ -1753,20 +1754,46 @@ static NhlErrorTypes AllocateColors
 	NhlWorkstationLayer thework = (NhlWorkstationLayer) inst;
 	Gcolr_rep tmpcolrrep;
 	int i;
+	NhlPrivateColor *pcmap;
 /*
 * Temporary allocation routine until some color management scheme is put in 
 * place. In fact this may turn in to a method
 */
-	for( i = 0; i < MAX_COLOR_MAP; i++) {
-		if(thework->work.private_color_map[i].ci == SETALMOST) {
-			tmpcolrrep.rgb.red = 
-				thework->work.private_color_map[i].red;
-			tmpcolrrep.rgb.green = 
-				thework->work.private_color_map[i].green;
-			tmpcolrrep.rgb.blue= 
-				thework->work.private_color_map[i].blue;
+	pcmap = thework->work.private_color_map;
+/*
+ * If the Foreground is unset default to white or black depending on
+ * whether the Background color is closer to white or black.
+ */
+	if (pcmap[NhlFOREGROUND].ci == UNSET) {
+		pcmap[NhlFOREGROUND].ci = SETALMOST;
+		if (pcmap[NhlBACKGROUND].red * pcmap[NhlBACKGROUND].red +
+		    pcmap[NhlBACKGROUND].green * pcmap[NhlBACKGROUND].green +
+		    pcmap[NhlBACKGROUND].blue * pcmap[NhlBACKGROUND].blue
+		    < .75) {
+			pcmap[NhlFOREGROUND].red = 1.0;
+			pcmap[NhlFOREGROUND].green = 1.0;
+			pcmap[NhlFOREGROUND].blue = 1.0;
+		}
+		else {
+			pcmap[NhlFOREGROUND].red = 0.0;
+			pcmap[NhlFOREGROUND].green = 0.0;
+			pcmap[NhlFOREGROUND].blue = 0.0;
+		}
+	}
+
+	for( i = 1; i < MAX_COLOR_MAP; i++) {
+		if(pcmap[i].ci == SETALMOST) {
+			tmpcolrrep.rgb.red = pcmap[i].red;
+			tmpcolrrep.rgb.green = pcmap[i].green;
+			tmpcolrrep.rgb.blue= pcmap[i].blue;
 			gset_colr_rep(thework->work.gkswksid,i,&tmpcolrrep);
-			thework->work.private_color_map[i].ci = i;
+			pcmap[i].ci = i;
+		}
+		else if (pcmap[i].ci == UNSET) {
+			tmpcolrrep.rgb.red = pcmap[NhlFOREGROUND].red;
+			tmpcolrrep.rgb.green = pcmap[NhlFOREGROUND].green;
+			tmpcolrrep.rgb.blue= pcmap[NhlFOREGROUND].blue;
+			pcmap[i].ci = NhlFOREGROUND;
 		}
 	}
 	return(NhlNOERROR);
@@ -1794,11 +1821,43 @@ static NhlErrorTypes DeallocateColors
 #endif
 {
 	NhlWorkstationLayer thework = (NhlWorkstationLayer) inst;
+	NhlPrivateColor *pcmap;
+	Gcolr_rep tmpcolrrep;
 	int i;
 
-	for( i = 0; i < MAX_COLOR_MAP; i++) {
-		if(thework->work.private_color_map[i].ci == REMOVE) {
-			thework->work.private_color_map[i].ci = UNSET;
+/*
+ * If the Foreground is removed set a new foreground of white or black 
+ * depending on whether the Background color is closer to white or black.
+ */
+
+	if (pcmap[NhlFOREGROUND].ci == REMOVE) {
+		pcmap[NhlFOREGROUND].ci = NhlFOREGROUND;
+		if (pcmap[NhlBACKGROUND].red * pcmap[NhlBACKGROUND].red +
+		    pcmap[NhlBACKGROUND].green * pcmap[NhlBACKGROUND].green +
+		    pcmap[NhlBACKGROUND].blue * pcmap[NhlBACKGROUND].blue 
+		    < .75) {
+			pcmap[NhlFOREGROUND].red = 1.0;
+			pcmap[NhlFOREGROUND].green = 1.0;
+			pcmap[NhlFOREGROUND].blue = 1.0;
+		}
+		else {
+			pcmap[NhlFOREGROUND].red = 0.0;
+			pcmap[NhlFOREGROUND].green = 0.0;
+			pcmap[NhlFOREGROUND].blue = 0.0;
+		}
+		tmpcolrrep.rgb.red = pcmap[NhlFOREGROUND].red;
+		tmpcolrrep.rgb.green = pcmap[NhlFOREGROUND].green;
+		tmpcolrrep.rgb.blue= pcmap[NhlFOREGROUND].blue;
+		gset_colr_rep(thework->work.gkswksid,
+			      NhlFOREGROUND,&tmpcolrrep);
+	}
+		
+	for( i = 1; i < MAX_COLOR_MAP; i++) {
+		if (pcmap[i].ci == REMOVE) {
+			pcmap[i].ci = NhlFOREGROUND;
+			pcmap[i].red = pcmap[NhlFOREGROUND].red;
+			pcmap[i].green = pcmap[NhlFOREGROUND].green;
+			pcmap[i].blue = pcmap[NhlFOREGROUND].blue;
 		}
 	}
 	return(NhlNOERROR);
@@ -1845,10 +1904,10 @@ int _NhlNewColor
 #endif
 {
 	NhlWorkstationLayer  thework = (NhlWorkstationLayer) inst;
-	int i = 1;
+	int i = 2;
 	NhlErrorTypes retcode = NhlNOERROR;
 
-	while( thework->work.private_color_map[i].ci != UNSET ) {
+	while( thework->work.private_color_map[i].ci != NhlFOREGROUND ) {
 		i++;
 		if(i == MAX_COLOR_MAP) {
 /*
@@ -1864,7 +1923,7 @@ int _NhlNewColor
 	thework->work.private_color_map[i].blue = blue;
 	retcode = AllocateColors((NhlLayer)thework);
 
-	return((retcode < NhlINFO)? (int)retcode : i+1);
+	return((retcode < NhlINFO)? (int)retcode : i);
 	 
 }
 
@@ -1917,7 +1976,7 @@ static NhlErrorTypes	WorkstationGetValues
 			tmp = (NhlColor*)
 				NhlMalloc(wl->work.color_map_len
 					  *sizeof(NhlColor));
-			for(j = 0; j< wl->work.num_private_colors -1; j++) {
+			for(j = 0; j< wl->work.color_map_len - 1; j++) {
 				tmp[j][0] = private[j + 1].red;
 				tmp[j][1] = private[j + 1].green;
 				tmp[j][2] = private[j + 1].blue;
@@ -2388,8 +2447,8 @@ int _NhlGetGksCi
 	
 	NhlWorkstationLayer  wk = (NhlWorkstationLayer) workstation;
 	if(_NhlIsWorkstation(workstation)){
-		if(wk->work.private_color_map[ci+1].ci >= 0) {
-			return(wk->work.private_color_map[ci+1].ci);
+		if(wk->work.private_color_map[ci].ci >= 0) {
+			return(wk->work.private_color_map[ci].ci);
 		} else {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlGetGksCi: Color index requested is not allocated");
 			return((int)NhlWARNING);
@@ -2399,6 +2458,76 @@ int _NhlGetGksCi
 		return((int)NhlWARNING);
 	}
 }
+
+
+/*
+ * Function:	NhlIsAllocatedColor
+ *
+ * Description: returns a Boolean value depending on whether a color is 
+ *		currently allocated
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+NhlBoolean NhlIsAllocatedColor
+#if __STDC__
+(int pid, int ci)
+#else
+(pid,ci)
+	int pid;
+	int ci;
+#endif
+{
+
+ 	return(_NhlIsAllocatedColor(_NhlGetLayer(pid),ci));	
+}
+
+/*
+ * Function:	_NhlIsAllocatedColor
+ *
+ * Description: returns a Boolean value depending on whether a color is 
+ *		currently allocated
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+int _NhlIsAllocatedColor
+#if __STDC__
+( 
+	NhlLayer workstation, 
+	int  ci
+)
+#else
+(workstation, ci)
+	NhlLayer	workstation;
+	int		ci;
+#endif
+{
+	
+	NhlWorkstationLayer  wk = (NhlWorkstationLayer) workstation;
+	char *entry_name = "NhlIsAllocatedColor";
+	char *e_text;
+
+	if (_NhlIsWorkstation(wk)) {
+		if (ci < 0 || ci >= MAX_COLOR_MAP) return False;
+		return wk->work.private_color_map[ci].ci >= 0 ? True : False;
+	}
+
+	e_text = "%s: invalid workstation identifier";
+	NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+	return((int)NhlWARNING);
+}
+
 
 /*
  * Function:	NhlUpdateWorkstation
@@ -2444,6 +2573,7 @@ NhlUpdateWorkstation
 
 	return (*(lc->work_class.update_work))(l);
 }
+
 
 /*
  * Function:	NhlClearWorkstation

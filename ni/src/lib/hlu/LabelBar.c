@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.9 1994-03-18 02:18:10 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.10 1994-04-05 00:51:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -588,14 +588,9 @@ static NhlErrorTypes    LabelBarInitialize
 		lb_p->orient_set = False;
 	else
 		lb_p->orient_set = True;
-
 /*
- * Create a default title string
+ * Set up array resources
  */
-
-	lb_p->title_string = (char*)
-		NhlMalloc((unsigned)strlen(tnew->base.name) +1);
-	strcpy(lb_p->title_string,tnew->base.name);
 
 	ret1 = InitializeDynamicArrays(new,req,args,num_args);
 	ret = MIN(ret,ret1);
@@ -974,11 +969,10 @@ static NhlErrorTypes    InitializeDynamicArrays
 			  NhlNlbFillPatterns);
 		return NhlFATAL;
 	}
-	for (i=0; i < count; i++) 
-		for (i=0; i < NhlLB_DEF_BOX_COUNT; i++) 
-			i_p[i] = def_patterns[i];
-		for (i=NhlLB_DEF_BOX_COUNT; i<count; i++)
-			i_p[i] = i + 1;
+	for (i=0; i < NhlLB_DEF_BOX_COUNT; i++) 
+		i_p[i] = def_patterns[i];
+	for (i=NhlLB_DEF_BOX_COUNT; i<count; i++)
+		i_p[i] = i + 1;
 
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
 				    sizeof(int),1,&count)) == NULL) {
@@ -1331,7 +1325,8 @@ static NhlErrorTypes    ManageDynamicArrays
 			if (i_p[i] < NhlHOLLOWFILL) {
 				e_text =
 	      "%s: %s index %d holds an invalid pattern value, %d: defaulting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  e_text,entry_name,
 					  NhlNlbFillPatterns, i, i_p[i]);
 				ret = MIN(ret, NhlWARNING);
 				i_p[i] = NhlLB_DEF_PATTERN;

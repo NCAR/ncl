@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.1 1994-03-18 02:18:42 dbrown Exp $
+ *      $Id: Workspace.c,v 1.2 1994-04-05 00:51:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -190,6 +190,9 @@ static NhlErrorTypes	SaveToFile(
 
 #define Oset(field)	NhlOffset(NhlWorkspaceLayerRec,workspace.field)
 static NhlResource resources[] = {
+	{NhlNwsMaximumSize,NhlCwsMaximumSize,NhlTLong,
+		 sizeof(long),Oset(maximum_size),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlwsDEF_MAXIMUM)},
 	{NhlNwsThresholdSize,NhlCwsThresholdSize,NhlTLong,
 		 sizeof(long),Oset(threshold_size),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlwsDEF_THRESHOLD)},
@@ -346,11 +349,27 @@ WorkspaceInitialize
 	}
 	wsc->workspace_class.num_ws_instances = 1;
 
+
+	if (wsp->maximum_size < NhlwsMIN_MAXIMUM) {
+		e_text = "%s: maximum size must be at least %d, defaulting";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  e_text,entry_name,NhlwsMIN_MAXIMUM);
+		wsp->maximum_size = NhlwsMIN_MAXIMUM;
+	}
+
 	if (wsp->threshold_size < NhlwsMIN_THRESHOLD) {
 		e_text = "%s: threshold size must be at least %d, defaulting";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  e_text,entry_name,NhlwsMIN_THRESHOLD);
 		wsp->threshold_size = NhlwsMIN_THRESHOLD;
+	}
+
+	if (wsp->threshold_size > wsp->maximum_size) {
+		e_text = 
+		 "%s: threshold size cannot exceed maximum size: currently %d";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  e_text,entry_name,wsp->maximum_size);
+		wsp->threshold_size = wsp->maximum_size;
 	}
 
 	if (wsp->current_size != 0) {
@@ -420,6 +439,21 @@ WorkspaceSetValues
 		wsp->threshold_size = NhlwsMIN_THRESHOLD;
 	}
 
+	if (wsp->maximum_size < NhlwsMIN_MAXIMUM) {
+		e_text = "%s: maximum size must be at least %d, defaulting";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  e_text,entry_name,NhlwsMIN_MAXIMUM);
+		wsp->maximum_size = NhlwsMIN_MAXIMUM;
+	}
+
+	if (wsp->threshold_size > wsp->maximum_size) {
+		e_text = 
+		 "%s: threshold size cannot exceed maximum size: currently %d";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  e_text,entry_name,wsp->maximum_size);
+		wsp->threshold_size = wsp->maximum_size;
+	}
+
 	if (wsp->current_size != wsold->workspace.current_size) {
 		e_text = 
 		"%s: attempt to set read-only resource %s ignored, defaulting";
@@ -467,7 +501,7 @@ static NhlErrorTypes    WorkspaceGetValues
 			*((long *)(args[i].value.lngval)) = 
 				wsp->current_size = wsp->total_size;
 	}
-#if 0 /* for debugging: */
+#if 1 /* for debugging: */
 	{
 		NhlWorkspaceRec *wsrp;
 		int		count = 0;
@@ -931,6 +965,17 @@ NhlWorkspace *_NhlUseWorkspace
 	if (over_threshold > 0) {
 		ret = ReduceCurrentAlloc(over_threshold,entry_name);
 		if (ret < NhlWARNING) return NULL;
+	}
+/*
+ * If the required size of the workspace plus the current total allocation
+ * is greater than the set maximum size, bail out with a fatal error.
+ */
+	if (WSp->total_size + wsrp->cur_size > WSp->maximum_size) {
+		wsrp->in_use = False;
+		e_text =
+		"%s: Allocation of workspace would exceed maximum total size";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NULL;
 	}
 
 	switch (wsrp->persistence) {
@@ -1576,7 +1621,7 @@ static NhlErrorTypes	TrimWorkspace
 	int size_used, cur_size, new_size, type_size;
 	int *iws;
 	NhlBoolean reduce_size = False;
-	float reduce_fac = 2.5;
+	float reduce_fac = 3.0;
 
 	if (wsrp->type == Qlabel_area_map || 
 	    wsrp->type == Qezmap_area_map ||
@@ -1612,7 +1657,7 @@ static NhlErrorTypes	TrimWorkspace
 	}
 
 	if (reduce_size) {
-		cur_size = new_size * type_size;
+		cur_size = MAX(256,new_size * type_size);
 		if ((wsrp->ws_ptr = 
 		     NhlRealloc(wsrp->ws_ptr,cur_size)) == NULL) {
 			e_text = "%s: dynamic memory allocation error";
@@ -1657,6 +1702,7 @@ static NhlErrorTypes	EnlargeWorkspace
 	NhlErrorTypes ret = NhlNOERROR;
 	char *e_text;
 	int over_threshold;
+	int nsize;
 
 	/* Double the current size */
 
@@ -1666,28 +1712,45 @@ static NhlErrorTypes	EnlargeWorkspace
 		ret = ReduceCurrentAlloc(over_threshold,entry_name);
 		if (ret < NhlWARNING) return NhlFATAL;
 	}
+	
+/*
+ * If additional workspace size plus the current total allocation
+ * is greater than the current maximum size, bail out with a fatal error.
+ */
+	if (WSp->total_size + wsrp->cur_size > WSp->maximum_size) {
+		e_text =
+	       "%s: Reallocation of workspace would exceed maximum total size";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
 
-	wsrp->cur_size += wsrp->cur_size;
 	if ((wsrp->ws_ptr = (NhlPointer) 
-		     NhlRealloc(wsrp->ws_ptr,wsrp->cur_size)) == NULL) {
+		     NhlRealloc(wsrp->ws_ptr,2*wsrp->cur_size)) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
+	WSp->total_size += wsrp->cur_size;
+	wsrp->cur_size *= 2;
 	if (wsrp->type == Qlabel_area_map || 
 	    wsrp->type == Qezmap_area_map ||
 	    wsrp->type == Qfill_area_map ||
 	    wsrp->type == Qother_area_map) {
-		c_armvam(wsrp->ws_ptr,wsrp->ws_ptr,
-			 (wsrp->cur_size/sizeof(int)));
+		nsize = wsrp->cur_size / sizeof(int);
+		c_armvam(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
 	}
 /*
  * Waiting for Conpack workspace move routines
  */
-	else if (wsrp->type == Qconpack_float)
-		;
-	else if (wsrp->type == Qconpack_float)
-		;
+	else if (wsrp->type == Qconpack_float) {
+		int nsize = wsrp->cur_size/sizeof(float);
+		c_cpmvrw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
+	}
+	else if (wsrp->type == Qconpack_int) {
+		int nsize = wsrp->cur_size/sizeof(int);
+		c_cpmviw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
+	}
+
 
 	return NhlNOERROR;
 }
@@ -1734,11 +1797,10 @@ NhlErrorTypes _NhlArinam
 	c_arinam(wsrp->ws_ptr,(wsrp->cur_size/sizeof(int)));
 
 	if (c_nerro(&err_num) != 0) {
-		e_msg = c_semess();
+		e_msg = c_semess(0);
 		c_errof();
 		e_text = "%s: %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,e_msg);
-		NhlFree(e_msg);
 		return NhlFATAL;
 	}
 	
@@ -1796,20 +1858,18 @@ NhlErrorTypes _NhlArpram
 			done = True;
 		}
 		else {
-			e_msg = c_semess();
+			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
 				printf("resizing ws old %d", wsrp->cur_size);
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", wsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else {
 				e_text = "%s: %s";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name,e_msg);
-				NhlFree(e_msg);
 				return NhlFATAL;
 			}
 		}
@@ -1875,20 +1935,18 @@ NhlErrorTypes _NhlAredam
 			done = True;
 		}
 		else {
-			e_msg = c_semess();
+			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
 				printf("resizing ws old %d", wsrp->cur_size);
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", wsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else {
 				e_text = "%s: %s";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name,e_msg);
-				NhlFree(e_msg);
 				return NhlFATAL;
 			}
 		}
@@ -1916,12 +1974,6 @@ NhlErrorTypes _NhlArscam
 #if	__STDC__
 (
 	NhlWorkspace	*amap_ws,
-	float		*x,
-	float		*y,
-	int		npoints,
-	int		*group_ids,
-	int		*area_ids,
-	int		ngroups,
 	int		(*apr)(float *xcs, 
 			       float *ycs, 
 			       int *ncs, 
@@ -1931,14 +1983,8 @@ NhlErrorTypes _NhlArscam
 	char		*entry_name
 )
 #else
-(amap_ws,x,y,npoints,group_ids,area_ids,ngroups,apr,entry_name)
+(amap_ws,apr,entry_name)
 	NhlWorkspace	*amap_ws;
-	float		*x;
-	float		*y;
-	int		npoints;
-	int		*group_ids;
-	int		*area_ids;
-	int		ngroups;
 	int		(*apr)();
 	char		*entry_name;
 #endif
@@ -1950,31 +1996,32 @@ NhlErrorTypes _NhlArscam
 	NhlBoolean	done = False;
 	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
 	int		err_num;
+	float		x[NhlwsMAX_GKS_POINTS], y[NhlwsMAX_GKS_POINTS];
+	int		group_ids[NhlwsMAX_AREA_GROUPS];
+	int		area_ids[NhlwsMAX_AREA_GROUPS];
 
 	c_entsr(&save_mode,1);
 
 	do {
-		c_arscam(wsrp->ws_ptr,x,y,npoints,
-			 group_ids,area_ids,ngroups,apr);
+		c_arscam(wsrp->ws_ptr,x,y,NhlwsMAX_GKS_POINTS,
+			 group_ids,area_ids,NhlwsMAX_AREA_GROUPS,apr);
 
 		if (c_nerro(&err_num) == 0) {
 			done = True;
 		}
 		else {
-			e_msg = c_semess();
+			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
 				printf("resizing ws old %d", wsrp->cur_size);
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", wsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else {
 				e_text = "%s: %s";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name,e_msg);
-				NhlFree(e_msg);
 				return NhlFATAL;
 			}
 		}
@@ -2026,11 +2073,10 @@ NhlErrorTypes _NhlCpback
 	c_cpback(zdat,fwsrp->ws_ptr,iwsrp->ws_ptr);
 
 	if (c_nerro(&err_num) != 0) {
-		e_msg = c_semess();
+		e_msg = c_semess(0);
 		c_errof();
 		e_text = "%s: %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,e_msg);
-		NhlFree(e_msg);
 		return NhlFATAL;
 	}
 	
@@ -2092,14 +2138,13 @@ NhlErrorTypes _NhlCpclam
 			done = True;
 		}
 		else {
-			e_msg = c_semess();
+			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
 				printf("resizing amap old %d",awsrp->cur_size);
 				ret = EnlargeWorkspace(awsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", awsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else if (strstr(e_msg,cmp_msg2)) {
 				printf("resizing flt_ws old %d",
@@ -2107,7 +2152,6 @@ NhlErrorTypes _NhlCpclam
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", fwsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else if (strstr(e_msg,cmp_msg3)) {
 				printf("resizing int_ws old %d",
@@ -2115,13 +2159,11 @@ NhlErrorTypes _NhlCpclam
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", iwsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else {
 				e_text = "%s: %s";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name,e_msg);
-				NhlFree(e_msg);
 				return NhlFATAL;
 			}
 		}
@@ -2192,14 +2234,13 @@ NhlErrorTypes _NhlCpcldm
 			done = True;
 		}
 		else {
-			e_msg = c_semess();
+			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
 				printf("resizing amap old %d",awsrp->cur_size);
 				ret = EnlargeWorkspace(awsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", awsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else if (strstr(e_msg,cmp_msg2)) {
 				printf("resizing flt_ws old %d",
@@ -2207,7 +2248,6 @@ NhlErrorTypes _NhlCpcldm
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", fwsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else if (strstr(e_msg,cmp_msg3)) {
 				printf("resizing int_ws old %d",
@@ -2215,13 +2255,11 @@ NhlErrorTypes _NhlCpcldm
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", iwsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else {
 				e_text = "%s: %s";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name,e_msg);
-				NhlFree(e_msg);
 				return NhlFATAL;
 			}
 		}
@@ -2282,7 +2320,7 @@ NhlErrorTypes _NhlCpcldr
 			done = True;
 		}
 		else {
-			e_msg = c_semess();
+			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
 				printf("resizing flt_ws old %d",
@@ -2290,7 +2328,6 @@ NhlErrorTypes _NhlCpcldr
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", fwsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else if (strstr(e_msg,cmp_msg2)) {
 				printf("resizing int_ws old %d",
@@ -2298,13 +2335,11 @@ NhlErrorTypes _NhlCpcldr
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", iwsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else {
 				e_text = "%s: %s";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name,e_msg);
-				NhlFree(e_msg);
 				return NhlFATAL;
 			}
 		}
@@ -2369,14 +2404,13 @@ NhlErrorTypes _NhlCplbam
 			done = True;
 		}
 		else {
-			e_msg = c_semess();
+			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1) != NULL) {
 				printf("resizing amap old %d",awsrp->cur_size);
 				ret = EnlargeWorkspace(awsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", awsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else if (strstr(e_msg,cmp_msg2) != NULL) {
 				printf("resizing flt_ws old %d",
@@ -2384,7 +2418,6 @@ NhlErrorTypes _NhlCplbam
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", fwsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else if (strstr(e_msg,cmp_msg3) != NULL) {
 				printf("resizing int_ws old %d",
@@ -2392,13 +2425,11 @@ NhlErrorTypes _NhlCplbam
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", iwsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else {
 				e_text = "%s: %s";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name,e_msg);
-				NhlFree(e_msg);
 				return NhlFATAL;
 			}
 		}
@@ -2459,7 +2490,7 @@ NhlErrorTypes _NhlCplbdr
 			done = True;
 		}
 		else {
-			e_msg = c_semess();
+			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
 				printf("resizing flt_ws old %d",
@@ -2467,7 +2498,6 @@ NhlErrorTypes _NhlCplbdr
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", fwsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else if (strstr(e_msg,cmp_msg2)) {
 				printf("resizing int_ws old %d",
@@ -2475,13 +2505,11 @@ NhlErrorTypes _NhlCplbdr
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", iwsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else {
 				e_text = "%s: %s";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name,e_msg);
-				NhlFree(e_msg);
 				return NhlFATAL;
 			}
 		}
@@ -2549,7 +2577,7 @@ NhlErrorTypes _NhlCprect
 			done = True;
 		}
 		else {
-			e_msg = c_semess();
+			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
 				printf("resizing flt_ws old %d",
@@ -2557,7 +2585,6 @@ NhlErrorTypes _NhlCprect
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", fwsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else if (strstr(e_msg,cmp_msg2)) {
 				printf("resizing int_ws old %d",
@@ -2565,13 +2592,11 @@ NhlErrorTypes _NhlCprect
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", iwsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else {
 				e_text = "%s: %s";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name,e_msg);
-				NhlFree(e_msg);
 				return NhlFATAL;
 			}
 		}
@@ -2624,20 +2649,18 @@ NhlErrorTypes _NhlMapbla
 			done = True;
 		}
 		else {
-			e_msg = c_semess();
+			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
 				printf("resizing ws old %d", wsrp->cur_size);
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", wsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else {
 				e_text = "%s: %s";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name,e_msg);
-				NhlFree(e_msg);
 				return NhlFATAL;
 			}
 		}
@@ -2704,20 +2727,18 @@ NhlErrorTypes _NhlMapita
 			done = True;
 		}
 		else {
-			e_msg = c_semess();
+			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
 				printf("resizing ws old %d", wsrp->cur_size);
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", wsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else {
 				e_text = "%s: %s";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name,e_msg);
-				NhlFree(e_msg);
 				return NhlFATAL;
 			}
 		}
@@ -2776,20 +2797,18 @@ NhlErrorTypes _NhlMapiqa
 			done = True;
 		}
 		else {
-			e_msg = c_semess();
+			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
 				printf("resizing ws old %d", wsrp->cur_size);
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
 				printf(" new %d\n", wsrp->cur_size);
-				NhlFree(e_msg);
 			}
 			else {
 				e_text = "%s: %s";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name,e_msg);
-				NhlFree(e_msg);
 				return NhlFATAL;
 			}
 		}
