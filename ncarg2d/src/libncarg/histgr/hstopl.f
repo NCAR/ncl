@@ -1,6 +1,4 @@
 C
-C	$Id: hstopl.f,v 1.1.1.1 1992-04-17 22:31:54 ncargd Exp $
-C
 C *************************************************************
 C
       SUBROUTINE HSTOPL(IOPT)
@@ -22,12 +20,14 @@ C
      -       HFRAME, LISTOP, WINDOW, COLORS, HSTFOR, TITLE, LABEL,
      -       FREQNC, HWIND(4), COLSHA, COLREC, COLAXI, COLMED, COLTEX,
      -       COLTIT, COLPER, DRAWL, SPACE, LABMAX, CHARL, HEIGHT,
-     -       ORIENT, COLSH2, SETSPA, SETSP2
+     -       ORIENT, COLSH2, SETSPA, SETSP2, MVALU, SETMVA, SETEPS,
+     -       NMVAL, PMVAL
       LOGICAL HORZNT, PERCNT, MIDVAL, SHADE, MEDIAN, PERIM, HFRAME,
      -        LISTOP, WINDOW, COLORS, HSTFOR, TITLE, LABEL, FREQNC,
-     -        DRAWL, SPACE, CHARL
+     -        DRAWL, SPACE, CHARL, MVALU, NMVAL, PMVAL
       COMMON /HSTGC2/ STRFOR, STRTIT, STRLAB, STRFRE, LABTEX
-      CHARACTER*55  STRFOR, STRTIT, STRLAB, STRFRE
+      CHARACTER*96  STRTIT
+      CHARACTER*55  STRFOR, STRLAB, STRFRE
       CHARACTER*15 LABTEX(30)
       CHARACTER*7  IOPT
       CHARACTER*2  TAG, OPT
@@ -45,9 +45,56 @@ C
           OPT = IOPT(5:6)
       ENDIF
 C
+C  'DEF' FLAG,  SET ALL OPTIONS TO DEFAULT VALUES
+C
+      IF (TAG .EQ. 'DE') THEN
+C
+C  SET DEFAULT FORMAT
+C
+        HORZNT = .FALSE.
+        PERCNT = .TRUE.
+        MIDVAL = .TRUE.
+        SPACE = .TRUE.
+        SHADE = .TRUE.
+        DRAWL = .FALSE.
+        MEDIAN = .FALSE.
+	MVALU  = .FALSE.
+        PERIM = .FALSE.
+        HFRAME = .TRUE.
+        LISTOP = .FALSE.
+        WINDOW = .FALSE.
+        HWIND(1) = 0.
+        HWIND(2) = 1.
+        HWIND(3) = 0.
+        HWIND(4) = 1.
+        COLORS = .FALSE.
+        COLSHA = 1
+        COLSH2 = 1
+        COLREC = 1
+        COLAXI = 1
+        COLTEX = 1
+        COLMED = 1
+        COLTIT = 1
+        COLPER = 1
+        SETSPA = 2.
+        SETSP2 = -1.
+	NMVAL = .TRUE.
+	PMVAL = .TRUE.
+	SETMVA = -999.
+	SETEPS = 1.E-10
+        HSTFOR = .FALSE.
+        STRFOR = '(G10.3)'
+        TITLE = .FALSE.
+        LABEL = .FALSE.
+        FREQNC = .FALSE.
+        CHARL = .FALSE.
+        HEIGHT = 2
+        ORIENT = 0
+      RETURN
+C
 C  HORIZONTAL FLAG
 C
-      IF (TAG .EQ. 'HO') THEN
+      ELSEIF (TAG .EQ. 'HO') THEN
 C
 C  SWITCH = ON
 C
@@ -101,48 +148,6 @@ C
           ELSE
                 GOTO 900
           ENDIF
-C
-C  'DEF' FLAG,  SET ALL OPTIONS TO DEFAULT VALUES
-C
-      ELSEIF (TAG .EQ. 'DE') THEN
-C
-C  SET DEFAULT FORMAT
-C
-        HORZNT = .FALSE.
-        PERCNT = .TRUE.
-        MIDVAL = .TRUE.
-        SPACE = .TRUE.
-        SHADE = .TRUE.
-        DRAWL = .FALSE.
-        MEDIAN = .FALSE.
-        PERIM = .FALSE.
-        HFRAME = .TRUE.
-        LISTOP = .FALSE.
-        WINDOW = .FALSE.
-        HWIND(1) = 0.
-        HWIND(2) = 1.
-        HWIND(3) = 0.
-        HWIND(4) = 1.
-        COLORS = .FALSE.
-        COLSHA = 1
-        COLSH2 = 1
-        COLREC = 1
-        COLAXI = 1
-        COLTEX = 1
-        COLMED = 1
-        COLTIT = 1
-        COLPER = 1
-        SETSPA = 2.
-        SETSP2 = -1.
-        HSTFOR = .FALSE.
-        STRFOR = '(G10.3)'
-        TITLE = .FALSE.
-        LABEL = .FALSE.
-        FREQNC = .FALSE.
-        CHARL = .FALSE.
-        HEIGHT = 2
-        ORIENT = 0
-      RETURN
 C
 C  SHADE FLAG
 C
@@ -234,6 +239,44 @@ C  SWITCH OFF
 C
           ELSEIF (OPT .EQ. 'OF') THEN
             HFRAME = .FALSE.
+            RETURN
+          ELSE
+                GOTO 900
+          ENDIF
+C
+C  Missing Value normalization flag
+C
+      ELSEIF (TAG .EQ. 'NM') THEN
+C
+C  SWITCH ON
+C
+          IF (OPT .EQ. 'ON') THEN
+	    NMVAL = .TRUE.
+            RETURN
+C
+C  SWITCH OFF
+C
+          ELSEIF (OPT .EQ. 'OF') THEN
+	    NMVAL = .FALSE.
+            RETURN
+          ELSE
+                GOTO 900
+          ENDIF
+C
+C  Missing value print flag
+C
+      ELSEIF (TAG .EQ. 'PM') THEN
+C
+C  SWITCH ON
+C
+          IF (OPT .EQ. 'ON') THEN
+	    PMVAL = .TRUE.
+            RETURN
+C
+C  SWITCH OFF
+C
+          ELSEIF (OPT .EQ. 'OF') THEN
+	    PMVAL = .FALSE.
             RETURN
           ELSE
                 GOTO 900

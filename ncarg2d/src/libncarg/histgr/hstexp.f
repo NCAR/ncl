@@ -1,7 +1,4 @@
 C
-C	$Id: hstexp.f,v 1.1.1.1 1992-04-17 22:31:54 ncargd Exp $
-C
-C
 C
 C *************************************************************
 C
@@ -55,7 +52,7 @@ C
 C  SET NEW (EXPANDED) NORMALIZATION TRANSFORMATION
 C
         CALL GSWN(1,MAXW(1),MAXW(2),MAXW(3),MAXW(4))
-        CALL GSVP(1, HWIND(1), HWIND(2), HWIND(3), HWIND(4))
+	CALL GSVP(1, HWIND(1), HWIND(2), HWIND(3), HWIND(4))
         CALL GSELNT(1)
 C
 C

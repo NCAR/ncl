@@ -1,6 +1,4 @@
 C
-C	$Id: hstopi.f,v 1.1.1.1 1992-04-17 22:31:55 ncargd Exp $
-C
 C *************************************************************
 C
       SUBROUTINE HSTOPI (STRING, PARAM1, PARAM2, ICOL, LCOL)
@@ -36,10 +34,11 @@ C
      -       HFRAME, LISTOP, WINDOW, COLORS, HSTFOR, TITLE, LABEL,
      -       FREQNC, HWIND(4), COLSHA, COLREC, COLAXI, COLMED, COLTEX,
      -       COLTIT, COLPER, DRAWL, SPACE, LABMAX, CHARL, HEIGHT,
-     -       ORIENT, COLSH2, SETSPA, SETSP2
+     -       ORIENT, COLSH2, SETSPA, SETSP2, MVALU, SETMVA, SETEPS,
+     -       NMVAL, PMVAL
       LOGICAL HORZNT, PERCNT, MIDVAL, SHADE, MEDIAN, PERIM, HFRAME,
      -        LISTOP, WINDOW, COLORS, HSTFOR, TITLE, LABEL, FREQNC,
-     -        DRAWL, SPACE, CHARL
+     -        DRAWL, SPACE, CHARL, MVALU, NMVAL, PMVAL
       CHARACTER*(*)  STRING
       CHARACTER*2  TAG, OPT
       INTEGER COLSHA, COLREC, COLAXI, COLMED, COLTEX, PARAM1, PARAM2
@@ -98,8 +97,6 @@ C
           ORIENT = PARAM2
           IF(PARAM1 .LT. 1) HEIGHT = 1
           IF(PARAM1 .GT. 3) HEIGHT = 3
-          IF(PARAM2 .LT. -4) ORIENT = -4
-          IF(PARAM1 .GT. 4) ORIENT = 4
           RETURN
         ENDIF
       ELSE

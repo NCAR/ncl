@@ -1,6 +1,4 @@
 C
-C	$Id: hstopr.f,v 1.1.1.1 1992-04-17 22:31:54 ncargd Exp $
-C
 C *************************************************************
 C
       SUBROUTINE HSTOPR (IOPT,ARRAY,ISIZE)
@@ -21,12 +19,14 @@ C
      -       HFRAME, LISTOP, WINDOW, COLORS, HSTFOR, TITLE, LABEL,
      -       FREQNC, HWIND(4), COLSHA, COLREC, COLAXI, COLMED, COLTEX,
      -       COLTIT, COLPER, DRAWL, SPACE, LABMAX, CHARL, HEIGHT,
-     -       ORIENT, COLSH2, SETSPA, SETSP2
+     -       ORIENT, COLSH2, SETSPA, SETSP2, MVALU, SETMVA, SETEPS,
+     -       NMVAL, PMVAL
       LOGICAL HORZNT, PERCNT, MIDVAL, SHADE, MEDIAN, PERIM, HFRAME,
      -        LISTOP, WINDOW, COLORS, HSTFOR, TITLE, LABEL, FREQNC,
-     -        DRAWL, SPACE, CHARL
+     -        DRAWL, SPACE, CHARL, MVALU, NMVAL, PMVAL
       COMMON /HSTGC2/ STRFOR, STRTIT, STRLAB, STRFRE, LABTEX
-      CHARACTER*55  STRFOR, STRTIT, STRLAB, STRFRE
+      CHARACTER*96  STRTIT
+      CHARACTER*55  STRFOR, STRLAB, STRFRE
       CHARACTER*15 LABTEX(30)
       CHARACTER*7  IOPT
       CHARACTER*2  TAG, OPT
@@ -80,6 +80,21 @@ C
           RETURN
         ELSEIF (OPT .EQ. 'OF') THEN
           SPACE = .FALSE.
+          RETURN
+        ELSE
+          GOTO 120
+        ENDIF
+C
+C Set special value flag.
+C
+      ELSEIF (TAG .EQ. 'MV') THEN
+        IF (OPT .EQ. 'ON') THEN
+	  MVALU = .TRUE.
+	  SETMVA = ARRAY(1)
+	  SETEPS = ARRAY(2)
+          RETURN
+        ELSEIF (OPT .EQ. 'OF') THEN
+	  MVALU = .FALSE.
           RETURN
         ELSE
           GOTO 120

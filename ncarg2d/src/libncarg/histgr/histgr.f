@@ -1,6 +1,3 @@
-C
-C	$Id: histgr.f,v 1.1.1.1 1992-04-17 22:31:52 ncargd Exp $
-C
       SUBROUTINE HISTGR( DAT1,NDIM,NPTS,IFLAG,CLASS,NCLASS,WRK,NWRK)
 C
 C PURPOSE       HISTGR plots a histogram with various options
@@ -64,10 +61,27 @@ C                                  particular class interval (bin size),
 C                                  or it can be given as a percentage of
 C                                  the number of values input, NPTS.
 C
-C                                  Note that under this option the user
+C                                  Note that under IFLAG = 0, the user
 C                                  has no control over the range of the
 C                                  class intervals.  They are internally
 C                                  determined from the range of the data.
+C
+C                                  When missing values are present:
+C
+C                                  NPTS = Total input points
+C                                  MISS = # of missing values
+C                                  NMVA = NPTS - MISS
+C
+C                                  If MVA = ON, and NMV = OFF, the bin
+C                                  percentages are computed relative to
+C                                  NPTS.
+C
+C                                  If MVA = ON, and NMV = ON, the bin
+C                                  percentages are computed relative to
+C                                  NMVA.
+C
+C                                  If MVA = OFF, no checking is done for
+C                                  missing values.
 C
 C                      IFLAG = 1   This option is similar to the IFLAG = 0
 C                                  option except that the user can select
@@ -254,6 +268,19 @@ C                   of all points.  If 'MED=OFF', this line is not drawn.
 C                   MED does not apply when assigning Y-values to
 C                   X-values; it is valid only for IFLAG = 1 or 2.
 C
+C             NMV    Normalize minus missing values.
+C                    If 'NMV=ON', histogram bar percentages will be
+C                    calculated with respect to the number of input
+C                    data values (NPTS) minus the number of detected
+C                    missing values (MISS), or NMVA = NPTS - MISS.
+C
+C                    If 'NMV=OFF', histogram bar percentages will be
+C                    normalized to NPTS.
+C
+C             PMV    Print missing value count.
+C                    If 'PMV=ON', missing value counts will be written
+C                    on the plot.  If 'NMV=OFF', they will not.
+C
 C             PRM   Perimeter.
 C                   If 'PRM=ON', a perimeter is drawn around the
 C                   histogram.  If 'PRM=OFF', no perimeter is drawn.
@@ -289,6 +316,7 @@ C                    option is to be set.  Valid options are:
 C
 C                    'WIN=ON', or 'WIN=OFF'
 C                    'SPA=ON', or 'SPA=OFF'
+C                    'MVA=ON', or 'MVA=OFF'
 C
 C                    WIN defines the portion of the frame which will
 C                    receive the histogram.  SPA determines the spacing
@@ -365,6 +393,17 @@ C
 C             The above example would cause two sets of histograms
 C             to have overlapping bars for comparison purposes.
 C
+C             MVA   Special value flag. If MVA=ON
+C                   ARRAY(1) = The special value to be ignored
+C                              when it is observed in the input data.
+C                   ARRAY(2) = The epsilon to use in comparing the
+C                              input data to the special value.
+C
+C        EX:       ARRAY(1) = -9999.
+C                  ARRAY(2) = 1.E-10
+C                  CALL HSTOPR('MVA=ON',ARRAY,2)
+C
+C
 C-----------------------------------------------------------------------
 C SUBROUTINE HSTOPC
 C-----------------------------------------------------------------------
@@ -429,6 +468,9 @@ C                 in which case HISTGR will convert from real to
 C                 integer before plotting labels.
 C
 C         TIT     A main title.  The 'TIT=OFF' default is no title.
+C                 It can be up to 96 characters.  If it is greater
+C                 than 45 characters it will be written in multiple
+C                 centered lines at no more than 45 characters per line.
 C
 C         LAB     A label for the class interval(histogram bar) axis.  The
 C                 'LAB=OFF' default value is 'CLASS INTERVALS' when
@@ -561,6 +603,11 @@ C         'DRL=OFF', lines corresponding to plotted scale values are not
 C                    drawn through the histogram bars.
 C         'MED=OFF', a line denoting the median of all points is not
 C                    drawn on the histogram.
+C         'NMV=ON',  histogram bar percentages will be calculated
+C                    with respect to (Input points - missing values.)
+C         'PMV=ON',  missing value counts will be written on the plot.
+C                       NMV and PMV will only occur if HSTOPR
+C                       option MVA=ON.
 C         'PRM=OFF', a perimeter around the histogram is not drawn.
 C         'FRA=ON',  a frame advance will occur after the call to HISTGR.
 C         'LIS=OFF', nothing is printed on the standard output unit.
@@ -572,6 +619,7 @@ C         'SPA=ON',  default values: spacing = 2.0, overlap = -1.0
 C                    This will yield spacing between bars on a single
 C                    histogram and overlap of bars in the comparison
 C                    of two histograms.
+C         'MVA=OFF', No checking of data will be done for special values.
 C
 C     HSTOPC:
 C         'FOR=OFF', class label format = '(G10.3)'.
@@ -592,13 +640,16 @@ C
      -       HFRAME, LISTOP, WINDOW, COLORS, HSTFOR, TITLE, LABEL,
      -       FREQNC, HWIND(4), COLSHA, COLREC, COLAXI, COLMED, COLTEX,
      -       COLTIT, COLPER, DRAWL, SPACE, LABMAX, CHARL, HEIGHT,
-     -       ORIENT, COLSH2, SETSPA, SETSP2
+     -       ORIENT, COLSH2, SETSPA, SETSP2, MVALU, SETMVA, SETEPS,
+     -       NMVAL, PMVAL
       LOGICAL HORZNT, PERCNT, MIDVAL, SHADE, MEDIAN, PERIM, HFRAME,
      -        LISTOP, WINDOW, COLORS, HSTFOR, TITLE, LABEL, FREQNC,
-     -        DRAWL, SPACE, CHARL
+     -        DRAWL, SPACE, CHARL, MVALU, NMVAL, PMVAL
       COMMON /HSTGC2/ STRFOR, STRTIT, STRLAB, STRFRE, LABTEX
-      CHARACTER*55  STRFOR, STRTIT, STRLAB, STRFRE
-      CHARACTER*15 LABTEX(30), TEX, TESTCH
+      CHARACTER*96  STRTIT
+      CHARACTER*55  STRFOR, STRLAB, STRFRE
+      CHARACTER*15 LABTEX(30), TEX, TESTCH, LTEX
+      CHARACTER*1 BLANK
 C
       INTEGER  NDIM, NPTS, NCLASS, NWRK
       INTEGER  COLSHA, COLREC, COLAXI, COLMED, COLTEX
@@ -611,6 +662,7 @@ C
       REAL     OWIND(4), OVIEW(4), VUPORT(4)
       REAL     NEWWIN(4), LABMAX, LASTLB
       LOGICAL  DONE, COMPAR, SPEC, ASSIGN
+      DATA BLANK /' '/
 C
 C  THE FOLLOWING IS FOR GATHERING STATISTICS ON LIBRARY USE AT NCAR
 C
@@ -698,10 +750,10 @@ C
 C  INITIALIZE VARIABLES
 C
       IF (.NOT. HSTFOR) THEN
-        IF (.NOT. HORZNT) THEN
-          LABMAX = 9.
+	IF (HORZNT) THEN
+	  LABMAX = 15.
         ELSE
-          LABMAX = 15.
+	  LABMAX = 9.
         ENDIF
       ENDIF
       DONE = .FALSE.
@@ -709,6 +761,7 @@ C
       LENWRK = NDIM+3*NCLASS+3
       INDY1 = NDIM + NCLASS + 1
       INDY2 = INDY1 + NCLASS + 1
+C       PRINT *,' LENWRK INDY1 INDY2',LENWRK,INDY1,INDY2
        DO 110 I = 1,LENWRK
           WRK(I) = 0.
   110   CONTINUE
@@ -731,6 +784,7 @@ C
         WRITE(IERUNT,1001)
  1001 FORMAT(' HISTGR--IFLAG NOT SPECIFIED OR INVALID')
       ENDIF
+C
   150 CONTINUE
       IF ((ASSIGN .OR. COMPAR) .AND. (NCLASS .NE. NPTS)) THEN
         NERR = NERR + 1
@@ -742,11 +796,53 @@ C
 C
 C  DO SHELL SORT, FIND MEDIAN OF ALL DATA POINTS
 C
-      DO 155 I = 1,NPTS
+C  If IFLAG = 0, or 1, and MVALU .EQ. .TRUE.
+C     reject missing values
+C
+      IF (IFLAG.LT.2) THEN
+	IF (MVALU) THEN
+	NMVA = 0
+	MISS = 0
+	DO 155 I = 1,NPTS
+	NMVA = NMVA + 1
+	WRK(NMVA) = DAT1(I,1)
+	DIF = DAT1(I,1)-SETMVA
+	 IF(ABS(DIF).LT.SETEPS) THEN
+	 MISS = MISS + 1
+C         IF(MISS.LE.5) THEN
+C       PRINT *,' Special value detected at point ',I
+C       PRINT *,'  DAT1(I,1) =',DAT1(I,1),' DIF =',DIF,' SETMVA =',
+C    1  SETMVA,' SETEPS =',SETEPS
+C         END IF
+C
+C  This is a special value.  Ignore it.
+C
+	 WRK(NMVA) = 0.
+	 NMVA = NMVA - 1
+	 END IF
+  155 CONTINUE
+	GO TO 157
+	END IF
+       END IF
+C
+	DO 156 I = 1,NPTS
         WRK(I)=DAT1(I,1)
         IF (ASSIGN .OR. COMPAR) WRK(I)=ABS(DAT1(I,1))
-  155 CONTINUE
-      CALL HSTMED(WRK,NPTS,WRK,MED)
+  156   CONTINUE
+	NMVA = NPTS
+C
+  157   CONTINUE
+C       PRINT *,' NMVA =',NMVA
+C       PRINT *,' WRK =',WRK
+C
+      IF (NMVA .LT. 1) THEN
+          NERR = NERR + 1
+	  CALL SETER(' HISTGR--NMVA LESS THAN 1',NERR,2)
+	  RETURN
+      ENDIF
+C
+      CALL HSTMED(WRK,NMVA,WRK,MED)
+C       PRINT *,' MEDIAN =',MED
 C
 C  Determine Upper and Lower Bounds of DAT1, and
 C  sort values in CLASS, if supplied
@@ -762,7 +858,7 @@ C
         HI = CLASS(NPTS)
         LOW = CLASS(1)
       ELSE
-        HI = WRK(NPTS)
+	HI = WRK(NMVA)
         LOW =  WRK(1)
       ENDIF
 C
@@ -828,8 +924,8 @@ C
             TM1 = WRK(NPTS+I) - HAFINT
             TM2 = WRK(NPTS+I) + HAFINT
           ENDIF
-          DO 300 J = 1,NPTS
-            TM3 = DAT1(J,1)
+	  DO 300 J = 1,NMVA
+	    TM3 = WRK(J)
             IF ((TM3 .GE. TM1) .AND. (TM3 .LT. TM2)) THEN
               WRK(INDY1+I) = WRK(INDY1+I) + 1.
             ELSE
@@ -895,7 +991,9 @@ C
       YTICKS(3) = TICINT * 3.
       YTICKS(4) = YMAX
       IF (PERCNT) THEN
-          PERC = YMAX / FLOAT(NPTS) * 100.
+	  DEN = FLOAT(NPTS)
+	  IF(NMVAL) DEN = FLOAT(NMVA)
+	  PERC = YMAX / DEN * 100.
           IF (ASSIGN .OR. COMPAR) PERC = (YMAX/YBOUND)*100.
           PER(1) = PERC / 4.
           PER(2) = PER(1) * 2.
@@ -905,17 +1003,17 @@ C
 C
 C  SET UP WINDOW COORDINATES
 C
-      IF (.NOT. HORZNT) THEN
-          CALL GSWN(1,XMIN,XMAX,0.,YMAX)
-          VUPORT(1) = .15
-          VUPORT(2) = .85
-          VUPORT(3) = .15
-          VUPORT(4) = .85
-      ELSE
+      IF (HORZNT) THEN
           CALL GSWN(1,0.,YMAX,XMIN,XMAX)
           VUPORT(1) = .20
           VUPORT(2) = .90
           VUPORT(3) = .1
+          VUPORT(4) = .85
+      ELSE
+          CALL GSWN(1,XMIN,XMAX,0.,YMAX)
+          VUPORT(1) = .15
+          VUPORT(2) = .85
+          VUPORT(3) = .15
           VUPORT(4) = .85
       ENDIF
       IF (WINDOW) THEN
@@ -953,18 +1051,18 @@ C  DETERMINE CHARACTER HEIGHT AND TICK LENGTHS
 C
       CALL HSTEXP(HWIND,NEWWIN)
       FRACT = 18./1024.
-      YRANGE = NEWWIN(4) - NEWWIN(3)
-      XRANGE = NEWWIN(2) - NEWWIN(1)
-      IF (.NOT. HORZNT) THEN
-          XTIC = FRACT * YRANGE
-          YTIC = FRACT * XRANGE
-      ELSE
+      YRANGE = ABS(NEWWIN(4) - NEWWIN(3))
+      XRANGE = ABS(NEWWIN(2) - NEWWIN(1))
+      IF (HORZNT) THEN
           XTIC = FRACT * XRANGE
           YTIC = FRACT * YRANGE
+      ELSE
+          XTIC = FRACT * YRANGE
+          YTIC = FRACT * XRANGE
       ENDIF
       XDEC = .8 * XTIC
       YDEC = .8 * YTIC
-      CHARH = .014 * YRANGE
+      CHARH = 14.
       CALL GSCHH(CHARH)
 C
 C  DRAW FREQUENCY-AXIS
@@ -974,20 +1072,26 @@ C
       PX(2) = XMIN
       PY(1) = 0.
       PY(2) = YMAX
-      IF (.NOT. HORZNT) THEN
-          CALL GPL(2,PX,PY)
-C                            RIGHT,HALF
-          CALL GSTXAL(3,3)
-      ELSE
+C
+C Draw the frequency axis.
+C
+      IF (HORZNT) THEN
           CALL GPL(2,PY,PX)
 C                            CENTER,TOP
           CALL GSTXAL(2,1)
+      ELSE
+          CALL GPL(2,PX,PY)
+C                            RIGHT,HALF
+          CALL GSTXAL(3,3)
       ENDIF
+C
+C Compute tick marks on the frequency axis.
+C
       PX(1) = XMIN
       PX(2) = XMIN + 0.6*HAFINT
       IF ( COMPAR ) PX(2) = XMIN + 0.3*HAFINT
       IF(HORZNT) THEN
-        XPOS = XMIN - 1.5*YDEC
+	XPOS = XMIN - 1.5*YDEC
       ELSE
         XPOS = XMIN - 1.0*YDEC
       ENDIF
@@ -999,6 +1103,9 @@ C
           PY(1) = YTICKS(I)
         IF (PY(1) .EQ. INT(PY(1))) JJ = JJ + 1
   520 CONTINUE
+C
+C Loop over the four tick marks and scales on the frequency axis.
+C
       DO 530 I = 1,4
           PY(1) = YTICKS(I)
           PY(2) = PY(1)
@@ -1009,8 +1116,8 @@ C
 C Choose integer format for axis labels
 C
         IF (JJ .EQ. 4) THEN
-              IF (YMAX .GT. 199998) THEN
-                CHARH = .010 * YRANGE
+	      IF (YMAX .GT. 199998.) THEN
+		CHARH = 10.
                 CALL GSCHH(CHARH)
               ENDIF
           WRITE(TEX,'(I11)')IFNUM
@@ -1018,22 +1125,26 @@ C
 C
 C Choose real format for axis labels
 C
-              IF (YMAX .GT. 1998) THEN
-                CHARH = .010 * YRANGE
+	      IF (YMAX .GT. 1998.) THEN
+		CHARH = 10.
                 CALL GSCHH(CHARH)
               ENDIF
           WRITE(TEX,'(F11.1)')FNUM
         ENDIF
+C
+C Draw tick marks and print scales on the frequency axis
+C
           CALL HSTSTR(TEX,FIRST,LAST)
-          IF (.NOT. HORZNT) THEN
-              CALL GPL(2,PX,PY)
-              CALL NWTSTR(XPOS,YPOS,TEX(FIRST:LAST))
-          ELSE
+	  IF (HORZNT) THEN
               CALL GPL(2,PY,PX)
               CALL NWTSTR(YPOS,XPOS,TEX(FIRST:LAST))
+          ELSE
+              CALL GPL(2,PX,PY)
+	      CALL GSTXAL(3,3)
+	      CALL NWTSTR(XPOS,YPOS,TEX(FIRST:LAST))
           ENDIF
   530 CONTINUE
-      CHARH = .014 * YRANGE
+      CHARH = 14.
       CALL GSCHH(CHARH)
 C
 C  DRAW and SHADE RECTANGLES
@@ -1060,12 +1171,12 @@ C
           ELSE
             CALL GSFAIS(0)
           ENDIF
-          IF (.NOT. HORZNT) THEN
-              CALL GFA(4,PX,PY)
-              CALL GPL(4,PX,PY)
-          ELSE
+	  IF (HORZNT) THEN
               CALL GFA(4,PY,PX)
               CALL GPL(4,PY,PX)
+          ELSE
+              CALL GFA(4,PX,PY)
+              CALL GPL(4,PX,PY)
           ENDIF
 C
 C  CALL PLOTIT TO FLUSH OUT BUFFER (FINISH DRAWING SHADE LINES)
@@ -1081,10 +1192,10 @@ C
               PY(2) = YTICKS(J)
               PX(1) = CURX + SPAC1
               PX(2) = NEXTX - SPAC1
-              IF (.NOT. HORZNT) THEN
-                CALL GPL(2,PX,PY)
-              ELSE
+	      IF (HORZNT) THEN
                 CALL GPL(2,PY,PX)
+              ELSE
+                CALL GPL(2,PX,PY)
               ENDIF
             ENDIF
   550     CONTINUE
@@ -1132,12 +1243,12 @@ C
             ELSE
               CALL GSFAIS (0)
             ENDIF
-            IF (.NOT. HORZNT) THEN
-              CALL GFA(6,PX,PY)
-              CALL GPL(7,PX,PY)
-            ELSE
+	    IF (HORZNT) THEN
               CALL GFA(6,PY,PX)
               CALL GPL(7,PY,PX)
+            ELSE
+              CALL GFA(6,PX,PY)
+              CALL GPL(7,PX,PY)
             ENDIF
           ELSE
             PX(1) = AMAX1(NEXTX - SPAC1,CURX+XINT/2+SPAC2)
@@ -1162,12 +1273,12 @@ C
             ELSE
               CALL GSFAIS (0)
             ENDIF
-            IF (.NOT. HORZNT) THEN
-              CALL GFA(4,PX,PY)
-              CALL GPL(4,PX,PY)
-            ELSE
+	    IF (HORZNT) THEN
               CALL GFA(4,PY,PX)
               CALL GPL(4,PY,PX)
+            ELSE
+              CALL GFA(4,PX,PY)
+              CALL GPL(4,PX,PY)
             ENDIF
           ENDIF
 C
@@ -1197,12 +1308,12 @@ C
           PY(3) = WRK(INDY1+1)
           PY(4) = 0.
           IF ( SHADE ) CALL GSFAIS (1)
-          IF (.NOT. HORZNT) THEN
-            IF ( SHADE .AND. KK .EQ. 1 ) CALL GFA(NUM,PX,PY)
-            IF ( KK .EQ. 2 ) CALL GPL(NUM,PX,PY)
-          ELSE
+	  IF (HORZNT) THEN
             IF ( SHADE .AND. KK .EQ. 1 ) CALL GFA(NUM,PY,PX)
             IF ( KK .EQ. 2 ) CALL GPL(NUM,PY,PX)
+          ELSE
+            IF ( SHADE .AND. KK .EQ. 1 ) CALL GFA(NUM,PX,PY)
+            IF ( KK .EQ. 2 ) CALL GPL(NUM,PX,PY)
           ENDIF
 C
 C Call PLOTIT To Flush out Buffer (Finish Drawing Shade Lines)
@@ -1245,12 +1356,12 @@ C
               PY(5) = 0.
             ENDIF
             CALL GSFAIS(1)
-            IF ( .NOT. HORZNT ) THEN
-              IF ( SHADE .AND. KK .EQ. 1 ) CALL GFA(NUM2,PX,PY)
-              IF ( KK .EQ. 2 ) CALL GPL(NUM,PX,PY)
-            ELSE
+	    IF (HORZNT ) THEN
               IF ( SHADE .AND. KK .EQ. 1 ) CALL GFA(NUM2,PY,PX)
               IF ( KK .EQ. 2 ) CALL GPL(NUM,PY,PX)
+            ELSE
+              IF ( SHADE .AND. KK .EQ. 1 ) CALL GFA(NUM2,PX,PY)
+              IF ( KK .EQ. 2 ) CALL GPL(NUM,PX,PY)
             ENDIF
 C
 C Call PLOTIT To Flush out Buffer (Finish Drawing Shade Lines)
@@ -1272,10 +1383,10 @@ C
                 PY(2) = YTICKS(J)
                 PX(1) = CURX
                 PX(2) = NEXTX
-                IF (.NOT. HORZNT) THEN
-                  CALL GPL(2,PX,PY)
-                ELSE
+		IF (HORZNT) THEN
                   CALL GPL(2,PY,PX)
+                ELSE
+                  CALL GPL(2,PX,PY)
                 ENDIF
               ENDIF
   620       CONTINUE
@@ -1299,7 +1410,7 @@ C
       ELSE
         CHGHT = .012
       ENDIF
-      CHARH = CHGHT * YRANGE
+      CHARH = CHGHT * 1000.
       CALL GSCHH(CHARH)
       PX(1) = XMIN
       PX(2) = XMAX
@@ -1310,7 +1421,11 @@ C
       ELSE
           XPOS = WRK(NPTS+1) - HAFINT
       ENDIF
-      IF (.NOT. HORZNT) THEN
+      IF (HORZNT) THEN
+          CALL GPL(2,PY,PX)
+C ************************* RIGHT,HALF
+          CALL GSTXAL(3,3)
+      ELSE
           CALL GPL(2,PX,PY)
         IF (ORIENT .LT. 5) THEN
 C ************************* CENTER,TOP
@@ -1319,29 +1434,25 @@ C ************************* CENTER,TOP
 C ************************* RIGHT,TOP
           CALL GSTXAL(3,1)
         ENDIF
-        RAD = (3.141592654/180)*(90-ORIENT)
+	RAD = (3.141592654/180.)*(90-ORIENT)
         ORNTY = SIN(RAD)
         ORNTX = -COS(RAD)
           CALL GSCHUP(ORNTX,ORNTY)
-      ELSE
-          CALL GPL(2,PY,PX)
-C ************************* RIGHT,HALF
-          CALL GSTXAL(3,3)
       ENDIF
       IF (ORIENT .LT. 5) THEN
-        YPOS = 0. - 2.6 * XTIC
+	YPOS = 0. - 2.6 * XTIC
       ELSE
-        YPOS = 0. - 1.3 * XTIC
+	YPOS = 0. - 1.3 * XTIC
       ENDIF
       PY(1) = 0.
       PY(2) = 0. - XTIC
       PX(1) = XPOS
       PX(2) = PX(1)
       DO 700 I = 1,NUMLAB
-          IF (.NOT. HORZNT) THEN
-              CALL GPL(2,PX,PY)
+	  IF (HORZNT) THEN
+	      CALL GPL(2,PY,PX)
           ELSE
-              CALL GPL(2,PY,PX)
+              CALL GPL(2,PX,PY)
           ENDIF
           PX(1) = PX(1) + XINT
           PX(2) = PX(1)
@@ -1405,17 +1516,17 @@ C
           ENDIF
           IF ( CHARL ) THEN
             CALL HSTSTR(LABTEX(I),FIRST,LAST)
-            IF (.NOT. HORZNT) THEN
-              CALL NWTSTR(XPOS,YPOS,LABTEX(I)(FIRST:LAST))
-            ELSE
+	    IF ( HORZNT) THEN
               CALL NWTSTR(YPOS,XPOS,LABTEX(I)(FIRST:LAST))
+            ELSE
+              CALL NWTSTR(XPOS,YPOS,LABTEX(I)(FIRST:LAST))
             ENDIF
           ELSE
             CALL HSTSTR(TEX,FIRST,LAST)
-            IF (.NOT. HORZNT) THEN
-              CALL NWTSTR(XPOS,YPOS,TEX(FIRST:LAST))
-            ELSE
+	    IF (HORZNT) THEN
               CALL NWTSTR(YPOS,XPOS,TEX(FIRST:LAST))
+            ELSE
+              CALL NWTSTR(XPOS,YPOS,TEX(FIRST:LAST))
             ENDIF
           ENDIF
           IF (DONE) GOTO 720
@@ -1425,7 +1536,7 @@ C
       IF (.NOT. HORZNT) THEN
         CALL GSCHUP(0.,1.)
       ENDIF
-      CHARH = .014 * YRANGE
+      CHARH = 14.
       CALL GSCHH(CHARH)
 C
 C  DRAW PERCENT AXIS
@@ -1436,15 +1547,18 @@ C
           PX(2) = XMAX
           PY(1) = 0.
           PY(2) = YMAX
-          IF (.NOT. HORZNT) THEN
-C                             (LEFT,HALF)
-            CALL GSTXAL(1,3)
-            CALL GPL(2,PX,PY)
-          ELSE
+	  IF (HORZNT) THEN
 C                             (CENTER,BOTTOM)
             CALL GSTXAL(2,4)
             CALL GPL(2,PY,PX)
+          ELSE
+C                             (LEFT,HALF)
+            CALL GSTXAL(1,3)
+            CALL GPL(2,PX,PY)
           ENDIF
+C
+C Compute tick marks and scales
+C
           PX(1) = XMAX
           PX(2) = XMAX - 0.6*HAFINT
           IF ( COMPAR ) PX(2) = XMAX - 0.3*HAFINT
@@ -1455,12 +1569,16 @@ C                             (CENTER,BOTTOM)
               WRITE(TEX,'(F5.1)')PER(J)
               CALL HSTSTR(TEX,FIRST,LAST)
               YPOS = PY(1)
-              IF (.NOT. HORZNT) THEN
-                  CALL GPL(2,PX,PY)
-                  CALL NWTSTR(XPOS,YPOS,TEX(FIRST:LAST))
-              ELSE
+C
+C Draw tick marks and print scales
+C
+	      IF (HORZNT) THEN
                   CALL GPL(2,PY,PX)
                   CALL NWTSTR(YPOS,XPOS,TEX(FIRST:LAST))
+              ELSE
+                  CALL GPL(2,PX,PY)
+		  CALL GSTXAL(1,3)
+		  CALL NWTSTR(XPOS,YPOS,TEX(FIRST:LAST))
               ENDIF
   730     CONTINUE
       ENDIF
@@ -1473,12 +1591,12 @@ C
           PX(2) = MED
           PY(1) = 0.
           PY(2) = YMAX
-          IF (.NOT. HORZNT) THEN
-              MED = (MED - NEWWIN(1))/XRANGE
-              CALL GPL(2,PX,PY)
-          ELSE
+	  IF (HORZNT) THEN
               MED = (MED - NEWWIN(3))/YRANGE
               CALL GPL(2,PY,PX)
+          ELSE
+              MED = (MED - NEWWIN(1))/XRANGE
+              CALL GPL(2,PX,PY)
           ENDIF
       ENDIF
 C
@@ -1486,10 +1604,14 @@ C  DRAW PERIMETER
 C
       IF (WINDOW) THEN
           CALL GSWN(1,0.,1.,0.,1.)
-          CALL GSVP(1,HWIND(1),HWIND(2),HWIND(3),HWIND(4))
+	  CALL GSVP(1,HWIND(1),HWIND(2),HWIND(3),HWIND(4))
           CALL GSELNT(1)
+	  YRANGE = ABS(HWIND(4) - HWIND(3))
+	  XRANGE = ABS(HWIND(2) - HWIND(1))
       ELSE
           CALL GSELNT(0)
+	  YRANGE = 1.
+	  XRANGE = 1.
       ENDIF
       IF (PERIM) THEN
           IF (COLORS) CALL GSPLCI(COLPER)
@@ -1508,7 +1630,7 @@ C
 C
 C  OUTPUT LABELS
 C
-      CHARH = .015
+      CHARH = 15.
       CALL GSCHH(CHARH)
 C                       CENTER,HALF
       CALL GSTXAL(2,3)
@@ -1522,20 +1644,20 @@ C                       CENTER,HALF
               TEX = 'CLASS INTERVALS'
           ENDIF
           NCHAR = 15
-          IF (.NOT. HORZNT) THEN
-              CALL NWTSTR(XPOS,YPOS,TEX(1:NCHAR))
-          ELSE
+	  IF (HORZNT) THEN
               CALL GSCHUP(-1.,0.)
               CALL NWTSTR(YPOS,XPOS,TEX(1:NCHAR))
+          ELSE
+              CALL NWTSTR(XPOS,YPOS,TEX(1:NCHAR))
           ENDIF
       ELSE
         IF (STRLAB .EQ. 'NOLABEL') Goto 740
           CALL HSTSTR(STRLAB,FIRST,LAST)
-          IF (.NOT. HORZNT) THEN
-              CALL NWTSTR(XPOS,YPOS,STRLAB(FIRST:LAST))
-          ELSE
+	  IF (HORZNT) THEN
               CALL GSCHUP(-1.,0.)
               CALL NWTSTR(YPOS,XPOS,STRLAB(FIRST:LAST))
+          ELSE
+              CALL NWTSTR(XPOS,YPOS,STRLAB(FIRST:LAST))
           ENDIF
       ENDIF
   740 CONTINUE
@@ -1543,22 +1665,22 @@ C                       CENTER,HALF
         IF (STRFRE .EQ. 'NOLABEL') Goto 750
           NCHAR = LEN(STRFRE)
           CALL HSTSTR(STRFRE,FIRST,LAST)
-          IF (.NOT. HORZNT) THEN
-              CALL GSCHUP(-1.,0.)
-              CALL NWTSTR(YPOS,XPOS,STRFRE(FIRST:LAST))
-          ELSE
+	  IF (HORZNT) THEN
               XPOS = .5
               CALL GSCHUP(0.,1.)
               CALL NWTSTR(XPOS,YPOS,STRFRE(FIRST:LAST))
+          ELSE
+              CALL GSCHUP(-1.,0.)
+              CALL NWTSTR(YPOS,XPOS,STRFRE(FIRST:LAST))
           ENDIF
       ELSE
-          IF (.NOT. HORZNT) THEN
-              CALL GSCHUP(-1.,0.)
-              CALL NWTSTR(YPOS,XPOS,'FREQUENCY')
-          ELSE
+	  IF (HORZNT) THEN
               XPOS = .5
               CALL GSCHUP(0.,1.)
               CALL NWTSTR(XPOS,YPOS,'FREQUENCY')
+          ELSE
+              CALL GSCHUP(-1.,0.)
+              CALL NWTSTR(YPOS,XPOS,'FREQUENCY')
           ENDIF
       ENDIF
   750 CONTINUE
@@ -1566,21 +1688,21 @@ C
 C  LABEL PERCENT AXIS
 C
       IF (PERCNT) THEN
-          IF (.NOT. HORZNT) THEN
-            YPOS = .96
-            XPOS = .5
-            IF ( ASSIGN .OR. COMPAR) THEN
-              CALL NWTSTR(YPOS,XPOS,'PERCENT of MAXIMUM')
-            ELSE
-              CALL NWTSTR(YPOS,XPOS,'PERCENT OCCURRENCE')
-            ENDIF
-          ELSE
+	  IF (HORZNT) THEN
             YPOS = .92
             XPOS = .5
             IF ( ASSIGN .OR. COMPAR) THEN
               CALL NWTSTR(XPOS,YPOS,'PERCENT of MAXIMUM')
             ELSE
               CALL NWTSTR(XPOS,YPOS,'PERCENT OCCURRENCE')
+            ENDIF
+          ELSE
+            YPOS = .96
+            XPOS = .5
+            IF ( ASSIGN .OR. COMPAR) THEN
+              CALL NWTSTR(YPOS,XPOS,'PERCENT of MAXIMUM')
+            ELSE
+              CALL NWTSTR(YPOS,XPOS,'PERCENT OCCURRENCE')
             ENDIF
           ENDIF
       ENDIF
@@ -1590,11 +1712,11 @@ C
       IF (MEDIAN .AND. (.NOT. (COMPAR .OR. ASSIGN))) THEN
         XPOS = MED - .018
         YPOS = .85
-        IF (.NOT. HORZNT) THEN
+	IF (HORZNT) THEN
+          CALL NWTSTR(YPOS,XPOS,'MEDIAN')
+        ELSE
           YPOS = .81
           CALL NWTSTR(XPOS,YPOS,'MEDIAN')
-        ELSE
-          CALL NWTSTR(YPOS,XPOS,'MEDIAN')
         ENDIF
       ENDIF
 C
@@ -1602,12 +1724,92 @@ C  OUTPUT TITLE
 C
       IF (TITLE) THEN
           IF (COLORS) CALL GSTXCI(COLTIT)
-          CHARH = .016
-          CALL HSTSTR(STRTIT,FIRST,LAST)
+	  CHGHT = .018
+	  CHARH = CHGHT * 1000.
           CALL GSCHH(CHARH)
           CALL GSCHUP(0.,1.)
-          CALL NWTSTR(.5,.965,STRTIT(FIRST:LAST))
+          CALL HSTSTR(STRTIT,FIRST,LAST)
+	  YTIT = .995
+  223     YTIT = YTIT -.03
+C
+C If the title is more than 45 characters, write it in multiple lines.
+C
+	  NUM = LAST-FIRST+1
+	IF(NUM.GT.45) THEN
+C
+C Search for blanks as a place to break the lines
+C
+	  JST = 44 + FIRST
+	  JND = FIRST
+	  DO 222  JCH = JST,JND,-1
+	    IF(STRTIT(JCH:JCH).EQ.BLANK) THEN
+	      JLST = JCH - 1
+	      IF(JLST.GT.FIRST) THEN
+C
+C Found a blank.  Print a line not including this blank.
+C
+		CALL NWTSTR(.5,YTIT,STRTIT(FIRST:JLST))
+		FIRST = JCH + 1
+		GO TO 223
+	      ENDIF
+	    ENDIF
+  222     CONTINUE
+C
+C There was no logical place to split the title line which exceeded
+C  45 characters so just split it at 45 characters.  On a 96 character
+C  title it would create 3 lines.
+C
+	  L2 = FIRST + 44
+	  CALL NWTSTR(.5,YTIT,STRTIT(FIRST:L2))
+  224     YTIT = YTIT -.03
+	  L1 = L2 + 1
+	  L2 = L1 + 44
+	  IF(L2.LT.LAST) THEN
+	    CALL NWTSTR(.5,YTIT,STRTIT(L1:L2))
+	    GO TO 224
+	  ELSE
+	    CALL NWTSTR(.5,YTIT,STRTIT(L1:LAST))
+	  ENDIF
+	ELSEIF (NUM.GT.0) THEN
+C
+C The title line is less than 46 characters.  Write it.
+C
+	  CALL NWTSTR(.5,YTIT,STRTIT(FIRST:LAST))
+	ENDIF
       ENDIF
+C
+C  Print missing value count on request.
+C
+      IF(IFLAG.LT.2) THEN
+	IF(MVALU) THEN
+	  IF(PMVAL) THEN
+	  CHARH = 10.
+	  CALL GSCHH(CHARH)
+	  CALL GSTXAL(2,3)
+	  CALL GSCHUP(0.,1.)
+C
+C Write the number of input points, NPTS, and the number of
+C  missing values, MISS, in the lower right corner of the plot.
+C
+	  XPOS = .92
+	  YPOS = .04
+	  LTEX(1:5)='NPTS='
+	  WRITE(TEX,'(I10)')NPTS
+	  CALL HSTSTR(TEX,FIRST,LAST)
+	  NUM = LAST - FIRST + 6
+	  LTEX(6:NUM)=TEX(FIRST:LAST)
+	  CALL NWTSTR(XPOS,YPOS,LTEX(1:NUM))
+C
+	  YPOS = .02
+	  LTEX(1:5)='MISS='
+	  WRITE(TEX,'(I10)')MISS
+	  CALL HSTSTR(TEX,FIRST,LAST)
+	  NUM = LAST - FIRST + 6
+	  LTEX(6:NUM)=TEX(FIRST:LAST)
+	  CALL NWTSTR(XPOS,YPOS,LTEX(1:NUM))
+	  END IF
+	END IF
+      END IF
 C
 C  CALL FRAME UNLESS .HFRAME. IS FALSE
 C
@@ -1618,7 +1820,7 @@ C  TO HISTOGRAM
 C
       IF (ICNT .NE. 0) THEN
           CALL GSWN(ICNT,OWIND(1),OWIND(2),OWIND(3),OWIND(4))
-          CALL GSVP(ICNT,OVIEW(1),OVIEW(2),OVIEW(3),OVIEW(4))
+	  CALL GSVP(ICNT,OVIEW(1),OVIEW(2),OVIEW(3),OVIEW(4))
       ENDIF
       CALL GSELNT(ICNT)
 C

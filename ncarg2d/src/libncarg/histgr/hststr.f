@@ -1,8 +1,4 @@
 C
-C	$Id: hststr.f,v 1.1.1.1 1992-04-17 22:31:53 ncargd Exp $
-C
-C
-C
 C *****************************************************
 C
         SUBROUTINE HSTSTR(LABEL,FIRST,LAST)
