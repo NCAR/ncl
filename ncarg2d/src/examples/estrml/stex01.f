@@ -1,5 +1,5 @@
 C
-C	$Id: stex01.f,v 1.5 1993-04-09 23:46:08 dbrown Exp $
+C	$Id: stex01.f,v 1.6 1993-04-13 16:29:11 dbrown Exp $
 C
       PROGRAM STEX01
 C
@@ -51,7 +51,7 @@ C
       DO 120 I = 1,M
          DO 110 J = 1,N
             A(I,J)=0.0
-            B(I,J)=-1.0
+            B(I,J)=1.0
  110     CONTINUE
  120  CONTINUE
 C
