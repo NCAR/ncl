@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gupd_ws.m,v 1.1 1993-03-11 16:26:11 haley Exp $
+.\"	$Id: gupd_ws.m,v 1.2 1993-03-21 01:32:19 haley Exp $
 .\"
 .TH GUPD_WS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -11,10 +11,10 @@ reflects all requests that have been made.
 void gupd_ws(Gint ws_id, Gupd_regen_flag upd_regen_flag);
 .SH DESCRIPTION
 .IP ws_id 12
-A number identifying the workstation to be updated.
+(Input) A number identifying the workstation to be updated.
 ws_id must be the same as that used in some previous gopen_ws call.
 .IP upd_regen_flag 12
-A flag to specify if the current picture should be regenerated.  The 
+(Input) A flag to specify if the current picture should be regenerated.  The 
 possible values for this are "0" for postpone, and
 "1" for perform.  For the workstation types supported in NCAR GKS,
 this flag should always be set to "1".
@@ -25,7 +25,10 @@ To use the GKS C-binding routines, load the ncarg_gksC and ncarg_gks
 libraries.
 .SH SEE ALSO
 Online: 
-sflush (3NCARG), plotif (3NCARG), ncarg_gks_cbind (3NCARG)
+.BR sflush(3NCARG),
+.BR plotif(3NCARG), 
+.BR gks(3NCARG),
+.BR ncarg_gks_cbind(3NCARG)
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"
