@@ -1,7 +1,7 @@
 #
-#	$Id: yMakefile,v 1.4 1993-10-19 17:11:42 boote Exp $
+#	$Id: yMakefile,v 1.5 1994-08-11 16:32:38 haley Exp $
 #
 
 #define	IHaveSubdirs
 
-SUBDIRS =  libncarg_c libncarg_loc bin fontcap graphcap
+SUBDIRS =  libncarg_c bin fontcap graphcap
