@@ -321,6 +321,7 @@ extern NhlErrorTypes paleo_outline_W(void);
 extern NhlErrorTypes inverse_matrix_W(void);
 extern NhlErrorTypes solve_linsys_W(void);
 extern NhlErrorTypes wavelet_W(void);
+extern NhlErrorTypes wavelet_default_W(void);
 extern NhlErrorTypes grid2triple_W(void);
 
 void NclAddUserFuncs(void)
@@ -3841,7 +3842,6 @@ void NclAddUserFuncs(void)
 /*
  *  Register wavelet.
  */
-
     nargs = 0;
     args = NewArgs(12);
     dimsizes[0] = 1;
@@ -3859,6 +3859,17 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "numeric", 1, NclANY);    nargs++;
 
     NclRegisterFunc(wavelet_W, args, "wavelet", nargs);
+
+/*
+ *  Register wavelet_default.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+
+    NclRegisterFunc(wavelet_default_W, args, "wavelet_default", nargs);
 
 /*
  *  Register grid2triple.
