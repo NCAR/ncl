@@ -1,0 +1,20 @@
+#
+#	$Id: yMakefile,v 1.1 1993-01-13 18:17:21 haley Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= tareas
+
+GENERIC_SRCS = \
+	cardb1.f cardb2.f caredg.f carfill.f carline.f carmap.f
+
+all::
+
+install:: $(GENERIC_SRCS)
+	@for name in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$name $(TUTORIALPATH));\
+	done
+
+MakefileTarget
+CleanTarget
+
