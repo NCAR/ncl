@@ -1,5 +1,5 @@
 C
-C      $Id: cn05f.f,v 1.1 1995-09-26 21:00:30 haley Exp $
+C      $Id: cn05f.f,v 1.2 1996-01-10 21:25:44 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -44,11 +44,11 @@ C Declare variables for the HLU routine calls.
 C
       integer appid, workid, field1, con1
       integer mapid, lb1id, lb2id
-      integer srlist, i, j, k, day
+      integer srlist, i, day
 C
 C Declare variables for defining color map.
 C
-      integer length(2), colors(13)
+      integer length(2)
       real cmap(3,NCOLORS)
       data cmap/.000,.000,.000,.000,.000,.000,.700,.700,.700,
      +          .650,.650,.700,.610,.600,.700,.550,.550,.700,

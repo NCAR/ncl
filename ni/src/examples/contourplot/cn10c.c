@@ -1,5 +1,5 @@
 /*
-**      $Id: cn10c.c,v 1.3 1995-09-26 21:00:31 haley Exp $
+**      $Id: cn10c.c,v 1.4 1996-01-10 21:25:45 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -55,7 +55,7 @@ main()
  */
     int     appid, work_id, field1, field2, con1, con2;
     int     dataspec, mapid, y_dataid, xy_id;
-    int     srlist, grlist, i, j;
+    int     srlist, grlist, i;
     float   ymin, ymax, special_value = -9999.;
 /*
  * Declare variables for defining color map.

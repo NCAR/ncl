@@ -1,5 +1,5 @@
 /*
-**      $Id: cn05c.c,v 1.1 1995-09-26 21:00:30 haley Exp $
+**      $Id: cn05c.c,v 1.2 1996-01-10 21:25:43 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -55,11 +55,11 @@ main()
  */
     int     appid, workid, field1, con1;
     int     mapid, lb1id, lb2id;
-    int     srlist, i, j, k, day;
+    int     srlist, i, day;
 /*
  * Declare variables for defining color map.
  */
-    int     length[2], colors[13];
+    int     length[2];
     float   cmap[NCOLORS][3];
     extern void gen_colormap();
 /*

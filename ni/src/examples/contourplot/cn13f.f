@@ -1,5 +1,5 @@
 C
-C      $Id: cn13f.f,v 1.2 1995-12-01 15:39:54 haley Exp $
+C      $Id: cn13f.f,v 1.3 1996-01-10 21:25:46 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -27,7 +27,6 @@ C
       external nhlfpsworkstationclass
       external nhlfscalarfieldclass
       external nhlfcontourplotclass
-      external nhlfmapplotclass
       external nhlfmapplotclass
 
       parameter(NCLS=300,NC=NCLS*NCLS,DTOR=.017453292519943,NCOLORS=66)

@@ -1,5 +1,5 @@
 C
-C      $Id: cn10f.f,v 1.1 1995-09-26 15:26:48 haley Exp $
+C      $Id: cn10f.f,v 1.2 1996-01-10 21:25:46 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -45,7 +45,7 @@ C Declare variables for the HLU routine calls.
 C
       integer appid, work_id, field1, field2, con1, con2
       integer dataspec, mapid, y_dataid, xy_id
-      integer srlist, grlist, i, j
+      integer srlist, grlist, i
       real ymin, ymax, special_value
       data special_value/-9999./
 C

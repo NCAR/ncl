@@ -1,5 +1,5 @@
 /*
-**      $Id: cn07c.c,v 1.1 1995-10-06 16:19:49 haley Exp $
+**      $Id: cn07c.c,v 1.2 1996-01-10 21:25:44 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -46,7 +46,7 @@ main()
  * Declare variables for the HLU routine calls.
  */
     int     appid, workid, field1, con1;
-    int     srlist, i, j, k;
+    int     srlist, i;
 /*
  * Declare variables for getting information from netCDF file.
  */
