@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.50 1993-09-23 20:52:15 kennison Exp $
+#   $Id: ncargex.csh,v 1.51 1993-09-24 20:07:05 kennison Exp $
 #
 
 #********************#
@@ -16,7 +16,7 @@ if ($#argv < 1) then
   echo "               [-ezmap] [-field_flow] [-gflash] [-gridall]          "
   echo "               [-halftone] [-histogram] [-isosrfhr] [-isosurface]   "
   echo "               [-labelbar] [-ngmisc] [-plotchar] [-pwrite_family]   "
-  echo "               [-scrolled_title] [-softfill] [-spps]                "
+  echo "               [-scrolled_title] [-seter] [-softfill] [-spps]                "
   echo "               [-streamlines] [-surface] [-threed] [-vectors]       "
   echo "               [-gks] [-misc] [-clean] [-n] [-onebyone] names       "
   echo ""
@@ -256,6 +256,14 @@ set fnd_scrlld_title  = (fslfont)
 set scrlld_title_list = (${ex_scrlld_title} ${tst_scrlld_title} \
                          ${fnd_scrlld_title})
 
+#********************#
+#                    #
+# set seter examples #
+#                    #
+#********************#
+set tst_seter  = (tseter)
+set seter_list = ($tst_seter)
+
 #***********************#
 #                       #
 # set softfill examples #
@@ -366,7 +374,7 @@ set tst_list = ($tst_areas $tst_autograph $tst_colconv $tst_conpack \
                 ${tst_cnrn_family} ${tst_cnrc_family} $tst_dashline \
                 $tst_ezmap $tst_field $tst_gflash $tst_gridall $tst_halftone \
                 $tst_histogram $tst_isosrfhr $tst_isosurface $tst_labelbar \
-                $tst_plotchar $tst_pwrite ${tst_scrlld_title} \
+		$tst_plotchar $tst_pwrite ${tst_scrlld_title} $tst_seter \
                 $tst_softfill $tst_surface $tst_threed)
 
 set ttr_list = ($ttr_areas $ttr_conpack $ttr_ezmap)
