@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.h,v 1.2 1998-11-20 04:11:04 dbrown Exp $
+ *      $Id: xinteract.h,v 1.3 1999-01-11 19:36:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -59,6 +59,7 @@ typedef struct _NgViewObjRec {
 	NgViewStatus		vstatus;
 	NgXBBox			xvp;	  /* X coordinates of viewport */
 	NgXBBox			xbbox;    /* X coordinates of BB */
+	NhlBoolean		visible;
 } NgViewObjRec, *NgViewObj;
 
 

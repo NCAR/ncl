@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupageP.h,v 1.9 1998-12-16 23:51:36 dbrown Exp $
+ *      $Id: hlupageP.h,v 1.10 1999-01-11 19:36:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -64,9 +64,7 @@ typedef struct _brHluPageRec
         int		hlu_id;
         Widget		auto_update;
         NhlBoolean	do_auto_update;
-        int		var_data_alloced;
-        NgVarData	var_data[8];
-	NgDataProfileRec *data_profile;
+	NgDataProfile	data_profile;
 	int		data_object_count;
         NrmQuark	data_objects[8];
 	int		data_ids[8];

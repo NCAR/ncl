@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenu.c,v 1.5 1998-12-16 23:51:38 dbrown Exp $
+ *      $Id: plotspecmenu.c,v 1.6 1999-01-11 19:36:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,8 +28,8 @@
 #include <ncarg/ngo/plotspecmenuP.h>
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/sort.h>
-#include <ncarg/ngo/datasourcegrid.h>
 #include <ncarg/ngo/hlupage.h>
+#include <ncarg/ngo/nclstate.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -41,94 +41,72 @@
 #include  <Xm/Form.h>
 #include  <Xm/LabelG.h>
 
-#define NgContourPlot  	"ContourPlot"
-#define NgStreamlinePlot    "StreamlinePlot"
-#define NgVectorPlot   	"VectorPlot"
-#define NgXyPlot       	"XyPlot"
-#define NgCoordArray    "CoordArray"
-#define NgScalarField   "ScalarField"
-#define NgVectorField   "VectorField"
-#define NgNclVariable   "NclVariable"
+typedef struct _NgDefSymbol {
+	NhlString class_name;
+	NhlString def_symbol;
+} NgDefSymbolRec, *NgDefSymbol;
 
-static NgDataProfileRec DataProfs[] = {
-	{_NgCONTOURPLOT,NgContourPlot,"cn_obj","contourPlotClass",NULL,
-         3,0,{ 2, 1, 1 },{ "scalar field", "x coord", "y coord" },
-         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
-	 {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
-	 {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
-	 2,{ 1, 2 }
-        },
-	{_NgSTREAMLINEPLOT,NgStreamlinePlot, "st_obj",
-	 "streamlinePlotClass",NULL,
-         4,0,{ 2, 2, 1, 1 },
-         { "vector field u", "vector field v", "x coord", "y coord" },
-         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
-	 {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
-	 {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
-	 2,{ 2,3 }
-        },
-	{_NgVECTORPLOT,NgVectorPlot, "vc_obj","vectorPlotClass",NULL,
-         5,0,{ 2, 2, 2, 1, 1 }, 
-         { "vector field u", "vector field v", "scalar field",
-           "x coord", "y coord" },
-         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
-         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
-         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
-         2,{ 3, 4 }
-        },
-	{_NgXYPLOT,NgXyPlot, "xy_obj","xyPlotClass",NULL,
-         2,0,{ -2, -2 } , { "y array", "x array" },
-         {NrmNULLQUARK,NrmNULLQUARK},
-         {NrmNULLQUARK,NrmNULLQUARK},
-         {NrmNULLQUARK,NrmNULLQUARK},
-	 2,{ 0,1 }
-        },
-	{_NgCOORDARRAY,NgCoordArray, "ca_obj","coordArraysClass",NULL,
-         2,0,{ -2, -2 } , { "y array", "x array" },
-         {NrmNULLQUARK,NrmNULLQUARK},
-         {NrmNULLQUARK,NrmNULLQUARK},
-         {NrmNULLQUARK,NrmNULLQUARK},
-	 2,{ 0,1 }
-        },
-	{_NgSCALARFIELD,NgScalarField, "sf_obj","scalarFieldClass",NULL,
-         3,0,{ 2, 1, 1 } ,  { "scalar field", "x coord", "y coord" },
-         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
-         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
-         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
-	 2,{ 1, 2 }
-        },
-	{_NgVECTORFIELD,NgVectorField, "vf_obj","vectorFieldClass",NULL,
-         4,0,{ 2, 2, 1, 1 } ,
-         { "vector field u", "vector field v", "x coord", "y coord" },
-         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
-         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
-         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
-	 2,{ 2, 3 }
-        }
-};
+static NgDefSymbolRec Def_Symbols[] = {
+	{ "contourPlotClass", "cn_obj" },
+	{ "streamlinePlotClass", "st_obj" },
+	{ "vectorPlotClass", "vc_obj" },
+	{ "xyPlotClass", "xy_obj" },
+	{ "coordArraysClass", "ca_obj" },
+	{ "scalarFieldClass", "sf_obj" },
+	{ "vectorFieldClass",  "vf_obj"} };
 
 typedef struct _NgPlotStyleRec {
 	NhlString 	pstyle;
 	NhlString	name;
+	NhlClass	class;
+	NhlString	def_symbol;
 	NgDataProfile	dprof;
 } NgPlotStyleRec, *NgPlotStyle;
 
 NgPlotStyle	PlotStyles = NULL;
 
 static NgDataProfileRec VarDataProf =
-        {_NgNONGRAPHIC,NgNclVariable, "ncl_var",NULL,NULL,
-         1,0,{ 0 },{"var"},
-	 {NrmNULLQUARK},
-	 {NrmNULLQUARK},
-	 {NrmNULLQUARK},
-	 -1,{ 1, 1 }
-        };
+	{_NgDEFAULT,NULL,NULL,0,0,{ 0 },False,NULL };
 
-NgPlotStyleRec  VarPlotStyle = { NULL, NULL, &VarDataProf };
+NgPlotStyleRec  VarPlotStyle = { NULL, NULL, NULL, "ncl_var", &VarDataProf };
 
 static int	PlotStyleCount = 0;
 static 	char	*PlotStyleDir = NULL;
 
+static NhlString GetDefaultSymbol
+(
+        NhlString       class_name
+        )
+{
+	int i;
+	
+	for (i = 0; i < NhlNumber(Def_Symbols); i++)
+		if (!strcmp(class_name,Def_Symbols[i].class_name))
+			return(Def_Symbols[i].def_symbol);
+	return NULL;
+}
+		    
+
+static void CancelCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	PlotSpecMenuRec	*priv = (PlotSpecMenuRec	*)udata;
+	NgPlotSpecMenu	*pub = &priv->public;
+	NgPlotStyle	pstyle;
+
+        XtVaGetValues(w,
+                      XmNuserData,&pstyle,
+                      NULL);
+
+	NgFreeDataProfile(pstyle->dprof);
+	pstyle->dprof = NULL;
+
+	return;
+}
 static void CopyShapedVar
 (
         PlotSpecMenuRec *priv,
@@ -160,102 +138,15 @@ static void CopyShapedVar
         return;
 }
 
-static void CreateCB 
-(
-	Widget		w,
-	XtPointer	udata,
-	XtPointer	cb_data
-)
-{
-	PlotSpecMenuRec	*priv = (PlotSpecMenuRec	*)udata;
-	NgPlotSpecMenu	*pub = &priv->public;
-        NgMenuRec	*plot = &priv->plot;
-        NgDataProfileRec	*prof;
-	NgPlotStyle	pstyle;
-        NrmQuark	qname;
-        char		*vartext;
-        NgPageId	page_id;
-        NgHluPage	*hlu_page;
-	int		i;
-        
-#if	DEBUG_PLOTSPECMENU
-        fprintf(stderr,"in create cb\n");
-#endif
-
-        XtVaGetValues(w,
-                      XmNuserData,&pstyle,
-                      NULL);
-	prof = pstyle->dprof;
-
-        XtVaGetValues(priv->dialog_text,
-                      XmNvalue,&vartext,
-                      NULL);
-            /* need to qualify text string, and warn user if it's already
-               a symbol */
-        if (! prof->class_name) { /* copy to a variable */
-                CopyShapedVar(priv,vartext);
-                return;
-        }
-        else {
-                char buf[256];
-                NhlString varname = NgNclGetSymName(priv->nsid,vartext,False);
-                
-                    /* create the NCL graphic variable using this name now
-                       in order that it won't be "stolen" before the hlu
-                       object actually gets created */
-                
-                sprintf(buf,"%s = new(1,graphic)\n",varname);
-                (void)NgNclSubmitBlock(priv->nsid,buf);
-
-                qname = NrmStringToQuark(vartext);
-                page_id = NgOpenPage(priv->go->base.id,_brHLUVAR,&qname,1);
-                if (page_id <= NgNoPage) {
-			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-				   "unable to open hlu page"));
-                        return;
-                }
-                hlu_page = (NgHluPage *)NgPageData(priv->go->base.id,page_id);
-                if (! hlu_page) {
-			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-				   "unable to get public page data"));
-                        return;
-                }
-                hlu_page->class_name = prof->class_name;
-                memcpy(&hlu_page->data_prof,prof,sizeof(NgDataProfileRec));
-		for (i = 0; i < hlu_page->data_prof.n_dataitems; i++) {
-			hlu_page->data_prof.qfiles[i] = 
-				priv->var_data[i]->qfile;
-			hlu_page->data_prof.qvars[i] = priv->var_data[i]->qvar;
-		}
-		hlu_page->data_prof.master_data_ix = priv->master_data_ix;
-		hlu_page->plot_style = pstyle->pstyle;
-		hlu_page->plot_style_dir = PlotStyleDir;
-
-#if	DEBUG_PLOTSPECMENU
-        fprintf(stderr,"setting plot style %s\n",pstyle->pstyle);
-#endif
-
-                if (NgUpdatePage(priv->go->base.id,page_id) < NhlWARNING) {
-			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-				   "error updating hlu page"));
-                        return;
-                }
-                (*pub->output_notify)(pub->pdata,page_id);
-                
-        }
-        
-        return;
-}
-
 static NhlBoolean
 CoordItem(
-       NgDataProfileRec 	*prof,
-       int index
+       NgDataProfile 	prof,
+       int		index
 )
 {
 	int i;
-	for (i = 0; i < prof->n_coords; i++) {
-		if (prof->coord_ix[i] == index)
+	for (i = 0; i < prof->ditems[prof->master_data_ix]->n_dims; i++) {
+		if (prof->coord_items[i] == index)
 			return True;
 	}
 	return False;
@@ -313,7 +204,7 @@ static NhlBoolean ConformingVar
 static void GetExtraVectorData
 (
        PlotSpecMenuRec	*priv,
-       NgDataProfileRec 	*prof,
+       NgDataProfileRec *prof,
        NrmQuark *secondary_file,
        NrmQuark *secondary_var,
        NhlBoolean *secondary_is_udata
@@ -529,7 +420,7 @@ static void GetExtraVectorData
 static void SetVarData
 (
        PlotSpecMenuRec	*priv,
-       NgDataProfileRec *prof
+       NgDataProfile	prof
 )
 {
 	NgPlotSpecMenu	*pub = &priv->public;
@@ -559,25 +450,8 @@ static void SetVarData
 			}
 		}
         }
-	priv->master_data_ix = primary_data_item;
+	prof->master_data_ix = primary_data_item;
 
-	if (prof->n_dataitems > priv->var_data_alloced) {
-		for (i = priv->var_data_alloced;i < prof->n_dataitems;i++) {
-			priv->var_data[i] = NhlMalloc(sizeof(NgVarDataRec));
-			priv->var_data[i]->dims_alloced = 0;
-			priv->var_data[i]->start = NULL;
-			priv->var_data[i]->finish = NULL;
-			priv->var_data[i]->stride = NULL;
-		}
-		priv->var_data_alloced = prof->n_dataitems;
-	}
-	for (i = 0; i < prof->n_dataitems; i++) {
-		priv->var_data[i]->ndims = 0;
-		priv->var_data[i]->qfile = NrmNULLQUARK;
-		priv->var_data[i]->qvar = NrmNULLQUARK;
-		priv->var_data[i]->data_ix = i;
-		priv->var_data[i]->dl = NULL;
-	}
 	for (i = 0; i < pub->vinfo->n_dims; i++) {
 		if ((pub->finish[i] - pub->start[i]) /pub->stride[i] >= 1) {
 			dims_supplied[i] = True;
@@ -588,13 +462,13 @@ static void SetVarData
 			dims_supplied[i] = False;
 		}
 	}
-	max_dims = abs(prof->n_datadims[primary_data_item]);
-	if (prof->n_datadims[primary_data_item] == 0)
+	max_dims = abs(prof->ditems[primary_data_item]->n_dims);
+	if (prof->ditems[primary_data_item]->n_dims == 0)
 		;
-	else if (var_dim_count < prof->n_datadims[primary_data_item]) {
+	else if (var_dim_count < prof->ditems[primary_data_item]->n_dims) {
 		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 			   "insufficient dimensionality for %s",
-			   prof->data_names[0]));
+			   prof->ditems[primary_data_item]->name));
 	}
 	else if (var_dim_count > max_dims) {
 		int dims_used = 0;
@@ -609,7 +483,7 @@ static void SetVarData
 		var_dim_count = dims_used;
 	}
 	for (i = 0; i < prof->n_dataitems; i++) {
-		NgVarData vdata = priv->var_data[i];
+		NgVarData vdata = prof->ditems[i]->vdata;
 		if (i == primary_data_item) {
 			if (pub->vinfo->n_dims > vdata->dims_alloced) {
 				int size = pub->vinfo->n_dims * sizeof(int);
@@ -633,6 +507,8 @@ static void SetVarData
 			vdata->qfile = pub->qsymbol;
 			vdata->qvar = pub->vinfo->name;
 			vdata->data_ix = i;
+			vdata->set = True;
+			vdata->new_val = True;
 		}
 		else if (i == secondary_data_item) {
 			vdata->qfile = secondary_file;
@@ -657,6 +533,8 @@ static void SetVarData
 				vdata->finish[j] = pub->finish[j];
 				vdata->stride[j] = pub->stride[j];
 			}
+			vdata->new_val = True;
+			vdata->set = False;
 		}
 		else if (CoordItem(prof,i)) {
 			if (last_dim < 0 ||
@@ -677,6 +555,8 @@ static void SetVarData
 			vdata->qfile = pub->qsymbol;
 			vdata->qvar = pub->vinfo->coordnames[last_dim];
 			vdata->data_ix = i;
+			vdata->new_val = True;
+			vdata->set = False;
 			last_dim--;
 			while (last_dim > -1) {
 				if (dims_supplied[last_dim])
@@ -688,6 +568,103 @@ static void SetVarData
 }
 	
 
+static void CreateCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	PlotSpecMenuRec	*priv = (PlotSpecMenuRec	*)udata;
+	NgPlotSpecMenu	*pub = &priv->public;
+        NgMenuRec	*plot = &priv->plot;
+        NgDataProfile	prof;
+	NgPlotStyle	pstyle;
+        NrmQuark	qname;
+        char		*vartext;
+        NgPageId	page_id;
+        NgHluPage	*hlu_page;
+	int		i;
+        
+#if	DEBUG_PLOTSPECMENU
+        fprintf(stderr,"in create cb\n");
+#endif
+
+        XtVaGetValues(w,
+                      XmNuserData,&pstyle,
+                      NULL);
+		
+        XtVaGetValues(priv->dialog_text,
+                      XmNvalue,&vartext,
+                      NULL);
+            /* need to qualify text string, and warn user if it's already
+               a symbol */
+        if (! pstyle->class) { /* copy to a variable */
+                CopyShapedVar(priv,vartext);
+                return;
+        }
+        else {
+                char buf[256];
+                NhlString varname = NgNclGetSymName(priv->nsid,vartext,False);
+                
+                    /* create the NCL graphic variable using this name now
+                       in order that it won't be "stolen" before the hlu
+                       object actually gets created */
+                
+                sprintf(buf,"%s = new(1,graphic)\n",varname);
+                (void)NgNclSubmitBlock(priv->nsid,buf);
+
+                qname = NrmStringToQuark(vartext);
+                page_id = NgOpenPage(priv->go->base.id,_brHLUVAR,&qname,1);
+                if (page_id <= NgNoPage) {
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				   "unable to open hlu page"));
+                        return;
+                }
+                hlu_page = (NgHluPage *)NgPageData(priv->go->base.id,page_id);
+                if (! hlu_page) {
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				   "unable to get public page data"));
+                        return;
+                }
+
+		if (NgHasDataProfile(priv->go,hlu_page->class_name)) {
+			prof = NgGetDataProfile
+				(priv->go,
+				 pstyle->class->base_class.class_name);
+			if (! prof)
+				return;
+			else
+				prof->linked = True;
+		}
+
+#if	DEBUG_PLOTSPECMENU
+		fprintf(stderr,"%s\n",prof->class_name);
+#endif
+		pstyle->dprof = prof;
+
+		SetVarData(priv,prof);
+		
+		hlu_page->data_profile = prof;
+                hlu_page->class_name = prof->class_name;
+		hlu_page->plot_style = pstyle->pstyle;
+		hlu_page->plot_style_dir = PlotStyleDir;
+
+#if	DEBUG_PLOTSPECMENU
+        fprintf(stderr,"setting plot style %s\n",pstyle->pstyle);
+#endif
+
+                if (NgUpdatePage(priv->go->base.id,page_id) < NhlWARNING) {
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				   "error updating hlu page"));
+                        return;
+                }
+                (*pub->output_notify)(pub->pdata,page_id);
+                
+        }
+        return;
+}
+
 static void CreateDialog
 (
        PlotSpecMenuRec	*priv,
@@ -697,16 +674,21 @@ static void CreateDialog
 	Arg	args[50];
 	int	nargs;
 	NgPlotSpecMenu	*pub = &priv->public;
-	NgDataProfile	prof = pstyle->dprof;
 	char    buf[128] = "";
         XmString xmname;
         Widget  form,label,help;
 	char *name;
-        
-        if (! prof->class_name)
+        NgDataProfile	prof = NULL;
+
+#if	DEBUG_PLOTSPECMENU
+        fprintf(stderr,"%s\n",pstyle->name);
+#endif
+        if (pstyle->class) {
+                sprintf(buf,"Create %s Plot",pstyle->name);
+	}
+	else {
                 sprintf(buf,"Create Ncl Variable");
-        else
-                sprintf(buf,"Create %sPlot",prof->name);
+	}
         
         xmname = NgXAppCreateXmString(priv->go->go.appmgr,buf);
 #if	DEBUG_PLOTSPECMENU
@@ -715,7 +697,7 @@ static void CreateDialog
         nargs = 0;
 	XtSetArg(args[nargs],XmNdialogTitle,xmname);nargs++;
 	XtSetArg(args[nargs],XmNuserData,pstyle);nargs++;
-	name = NgNclGetSymName(priv->nsid,prof->def_name,True);
+	name = NgNclGetSymName(priv->nsid,pstyle->def_symbol,True);
         if (! priv->create_dialog) {
                 priv->create_dialog = XmCreateMessageDialog
                         (pub->menubar,"CreateDialog",args,nargs);
@@ -724,6 +706,8 @@ static void CreateDialog
                 XtUnmanageChild(help);
 		XtAddCallback(priv->create_dialog,
 			      XmNokCallback,CreateCB,priv);
+		XtAddCallback(priv->create_dialog,XmNcancelCallback,
+			      CancelCB,priv);
 		form = XtVaCreateManagedWidget
                         ("form",xmFormWidgetClass,
                          priv->create_dialog,
@@ -744,28 +728,12 @@ static void CreateDialog
                          XmNvalue,name,
                          XmNresizeWidth,True,
                          NULL);
-
-		priv->data_source_grid = NgCreateDataSourceGrid
-			(form,NrmStringToQuark(name),prof);
-	        XtVaSetValues(priv->data_source_grid->grid,
-			      XmNtopAttachment,XmATTACH_WIDGET,
-			      XmNtopWidget,priv->dialog_text,
-			      NULL);
-		SetVarData(priv,prof);
-		priv->data_source_grid->dataitems = priv->var_data;
-		NgUpdateDataSourceGrid
-			(priv->data_source_grid,NrmStringToQuark(name),prof);
-	
         }
 	else {
 		XtSetValues(priv->create_dialog,args,nargs);
                 XtVaSetValues(priv->dialog_text,
                               XmNvalue,name,
                               NULL);
-		SetVarData(priv,prof);
-		priv->data_source_grid->dataitems = priv->var_data;
-		NgUpdateDataSourceGrid
-			(priv->data_source_grid,NrmStringToQuark(name),prof);
 	}
 	XmStringFree(xmname);
         XtManageChild(priv->create_dialog);
@@ -785,7 +753,6 @@ static void CreateDialogCB
 	NgPlotSpecMenu	*pub = &priv->public;
         NgMenuRec	*plot = &priv->plot;
 	NgPlotStyle	pstyle;
-        NgDataProfileRec	*prof;
 
 #if	DEBUG_PLOTSPECMENU
         fprintf(stderr,"in plot create cb\n");
@@ -844,7 +811,7 @@ NhlErrorTypes NgUpdatePlotSpecMenu
 static void 
 UpdatePlotStyles
 (
-	void
+	PlotSpecMenuRec	*priv
 )
 {
 	struct stat		statbuf;
@@ -928,6 +895,8 @@ UpdatePlotStyles
 		}
 		while (cp = fgets(buf,255,fp)) {
 			char *name,*np;
+			NhlClass class;
+
 			while (np = strrchr(cp,'\n'))
 			       *np = '\0';
 			if (! gotname &&
@@ -949,19 +918,27 @@ UpdatePlotStyles
 					np++;
 				if (! *np) 
 					continue;
-				name = NhlMalloc(strlen(np)+1);
-				strcpy(name,np);
-				for (i = 0; i < NhlNumber(DataProfs) - 1; i++){
-					if (! DataProfs[i].class_name)
-						continue;
-					if (! strcmp(name,
-						     DataProfs[i].class_name)){
-						PlotStyles[count].dprof =
-							&DataProfs[i];
-						gotclass = True;
-						break;
-					}
+				class = NgNclHluClassPtrFromName
+					(priv->go->go.nclstate,np);
+				if (! class) {
+					NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+					   "Invalid class %s in %s: ignoring",
+						   name,dirp->d_name));
+					continue;
 				}
+				if (! NgHasDataProfile
+				    (priv->go,class->base_class.class_name)) {
+					NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+	       "No data profile associated with class name %s in %s: ignoring",
+						   name,dirp->d_name));
+					continue;
+				}
+				PlotStyles[count].def_symbol = 
+					GetDefaultSymbol(np);
+
+				PlotStyles[count].class = class;
+				PlotStyles[count].dprof = NULL;
+				gotclass = True;
 			}
 			if (gotname && gotclass)
 				break;
@@ -980,7 +957,7 @@ UpdatePlotStyles
 			continue;
 		}
 		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-			   "Plot style resourcee file %s invalid: ignoring",
+			   "Plot style resources file %s invalid: ignoring",
 			   dirp->d_name));
 			
 	}
@@ -1001,17 +978,13 @@ NgCreatePlotSpecMenu
         Widget		menush;
 	int		i;
 
-	if (! PlotStyles)
-		UpdatePlotStyles();
-	
 
         priv = NhlMalloc(sizeof(PlotSpecMenuRec));
         priv->go = go;
         priv->create_dialog = NULL;
-	for (i = 0; i < 8; i++) 
-		priv->var_data[i] = NULL;   
-	priv->var_data_alloced = 0;
 	pub = &priv->public;
+	if (! PlotStyles)
+		UpdatePlotStyles(priv);
         
 	NhlVAGetValues(priv->go->go.appmgr,
 		NgNappNclState,	&priv->nsid,

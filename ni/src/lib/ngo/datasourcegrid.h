@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegrid.h,v 1.1 1998-12-16 23:51:33 dbrown Exp $
+ *      $Id: datasourcegrid.h,v 1.2 1999-01-11 19:36:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,25 +33,15 @@
 #define _NCL_H_
 #endif
 
+#include <ncarg/ngo/dataprofile.h>
+
 /*
  * Public api
  */
-
-typedef enum {
-	_NgNONGRAPHIC,
-	_NgCONTOURPLOT,
-	_NgSTREAMLINEPLOT,
-	_NgVECTORPLOT,
-	_NgXYPLOT,
-	_NgCOORDARRAY,
-	_NgSCALARFIELD,
-	_NgVECTORFIELD
-} NgClassType;
-        
-typedef struct _NgDataProfileRec
+#if 0
+typedef struct _NgOLDDataProfileRec
 {
 	NgClassType	type;
-        NhlString	name;
         NhlString	def_name;
         NhlString	class_name;
 	NhlClass	class;
@@ -64,12 +54,12 @@ typedef struct _NgDataProfileRec
 	NrmQuark	qvars[8];
 	int		n_coords;
         int		coord_ix[8];
-} NgDataProfileRec, *NgDataProfile;
+} NgOLDDataProfileRec, *NgOLDDataProfile;
+#endif
 
 typedef struct _NgDataSourceGrid
 {
         Widget			grid;
-        NgVarDataRec		**dataitems;
         NhlBoolean		headline_on;
         Dimension		height;
 } NgDataSourceGrid;
@@ -77,19 +67,25 @@ typedef struct _NgDataSourceGrid
 
 NgDataSourceGrid *NgCreateDataSourceGrid
 (
+	NgGO			go,
         Widget			parent,
         NrmQuark		qname,
-        NgDataProfileRec	*data_profile_rec
+        NgDataProfile		data_profile
         );
 
 NhlErrorTypes NgUpdateDataSourceGrid
 (
-        NgDataSourceGrid		*data_source_grid,
+        NgDataSourceGrid	*data_source_grid,
         NrmQuark		qname,
-        NgDataProfileRec	*data_profile_rec
+        NgDataProfile		data_profile
         );
 
 void NgDestroyDataSourceGrid
+(
+        NgDataSourceGrid		*data_source_grid
+        );
+
+void NgDeactivateDataSourceGrid
 (
         NgDataSourceGrid		*data_source_grid
         );

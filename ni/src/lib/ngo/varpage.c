@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.8 1998-12-16 23:51:42 dbrown Exp $
+ *      $Id: varpage.c,v 1.9 1999-01-11 19:36:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -54,10 +54,11 @@ static void VarPageOutputNotify
                 rec->output = NhlMalloc(sizeof(NgVarDataRec));
                 rec->output->ndims = 0;
 		rec->output->dims_alloced = 0;
-                rec->output->data_ix = 0;
+                rec->output->data_ix = -1;
                 rec->output->start =
                         rec->output->finish = rec->output->stride = NULL;
 		rec->output->dl = NULL;
+                rec->output->qfile = rec->output->qvar = NrmNULLQUARK;
         }
         if (ndims > rec->output->dims_alloced) {
 		notify_req = True;
@@ -66,15 +67,17 @@ static void VarPageOutputNotify
                 rec->output->stride = NhlRealloc(rec->output->stride,size);
 		rec->output->dims_alloced = ndims;
         }
-	rec->output->ndims = ndims;
-	if (memcmp(rec->output->start,rec->start,size) ||
-	    memcmp(rec->output->finish,rec->finish,size) ||
-	    memcmp(rec->output->stride,rec->stride,size) ) {
+        if ( (ndims > rec->output->ndims) ||
+            (memcmp(rec->output->start,rec->start,size) ||
+             memcmp(rec->output->finish,rec->finish,size) ||
+             memcmp(rec->output->stride,rec->stride,size) )) {
 		notify_req = True;
 		memcpy(rec->output->start,rec->start,size);
 		memcpy(rec->output->finish,rec->finish,size);
 		memcpy(rec->output->stride,rec->stride,size);
+		rec->output->new_val = rec->output->set = True;
 	}
+	rec->output->ndims = ndims;
 	if (rec->output->qfile != page->qfile ||
 	    rec->output->qvar != pdp->dl->u.var->name) {
 		notify_req = True;

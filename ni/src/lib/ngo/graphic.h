@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.h,v 1.2 1998-11-18 19:45:18 dbrown Exp $
+ *      $Id: graphic.h,v 1.3 1999-01-11 19:36:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,19 @@ typedef void (*NgPreviewResProc)
 (
         int srlist_id,
         NhlPointer res_proc_data
+        );
+
+extern
+NhlErrorTypes NgCreatePreviewGraphic
+(
+	int		goid,
+        int		*hlu_id,
+	NhlString	ncl_graphic,
+	NhlString	ncl_parent,
+	NhlString	classname,
+        int		pres_proc_count,
+        NgPreviewResProc *pres_procs,
+        NhlPointer	*pres_proc_data
         );
 
 extern

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.24 1998-12-16 23:51:44 dbrown Exp $
+#      $Id: yMakefile,v 1.25 1999-01-11 19:36:31 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -57,7 +57,8 @@ XHDRS		= xappP.h xapp.h goP.h go.h ncleditP.h ncledit.h xutil.h \
 		plotspecmenu.h plotspecmenuP.h Folder.h FolderP.h \
 		Grid.h GridP.h Tree.h TreeP.h XmL.h htmlview.h htmlviewI.h \
 		htmlviewP.h print.h printP.h CascadeBG.h ToggleBG.h \
-		colormap.h colormapP.h xinteract.h xinteractP.h
+		colormap.h colormapP.h xinteract.h xinteractP.h \
+		dataprofile.h
 
 XSRCS		= xapp.c go.c ncledit.c xutil.c load.c addfile.c mwin.c \
 		xwk.c diminfogrid.c attrinfogrid.c vcrcontrol.c browse.c \
@@ -65,7 +66,7 @@ XSRCS		= xapp.c go.c ncledit.c xutil.c load.c addfile.c mwin.c \
 		stringutil.c filepage.c varpage.c shaper.c shapeinfogrid.c \
 		createmenu.c hlupage.c datasourcegrid.c restree.c graphic.c \
 		plotspecmenu.c Folder.c Grid.c Tree.c XmL.c htmlview.c \
-		print.c colormap.c xinteract.c
+		print.c colormap.c xinteract.c dataprofile.c
 
 XOBJS		= xapp.o go.o ncledit.o xutil.o load.o addfile.o mwin.o \
 		xwk.o diminfogrid.o attrinfogrid.o vcrcontrol.o browse.o \
@@ -73,7 +74,7 @@ XOBJS		= xapp.o go.o ncledit.o xutil.o load.o addfile.o mwin.o \
 		stringutil.o filepage.o varpage.o shaper.o shapeinfogrid.o \
 		createmenu.o hlupage.o datasourcegrid.o restree.o graphic.o \
 		plotspecmenu.o Folder.o Grid.o Tree.o XmL.o htmlview.o \
-		print.o	colormap.o xinteract.o
+		print.o	colormap.o xinteract.o dataprofile.o
 
 BuildSharedLibTarget(libNGgo,$(OBJS),1,0,NullArgument)
 BuildLibTarget($(MYNAME),$(OBJS))

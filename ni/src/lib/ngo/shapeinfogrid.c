@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.11 1998-12-16 23:51:40 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.12 1999-01-11 19:36:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1351,7 +1351,7 @@ NhlErrorTypes NgUpdateShapeInfoGrid
         for (i = 0; i <= sirp->vinfo->n_dims; i++) {
                 sirp->cwidths[i] = 0;
         }
-        sirp->cwidths[0] = strlen("Diminsions");
+        sirp->cwidths[0] = strlen("Dimensions");
         sirp->cwidths[sirp->vinfo->n_dims+1] = strlen("Total Elements");
         
         XmLGridSetStringsPos(sip->grid,XmHEADING,DIM_NAMES_ROW,XmCONTENT,0,

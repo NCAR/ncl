@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.h,v 1.7 1998-12-16 23:51:31 dbrown Exp $
+ *      $Id: browse.h,v 1.8 1999-01-11 19:36:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,21 +38,6 @@ extern NhlClass NgbrowseClass;
 /*
  * Public api
  */
-
-typedef struct _NgVarDataRec
-{
-	
-        NrmQuark 		qfile;
-        NrmQuark 		qvar;
-	NclApiDataList          *dl;
-	NclVarTypes		type;
-        int			ndims;       /* current shape info follows */
-	int     		dims_alloced;
-        long			*start;
-        long			*finish;
-        long			*stride;
-        int			data_ix;     /* not sure we need this */
-} NgVarDataRec, *NgVarData;
 
 typedef enum _brPageType 
 {

@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegridP.h,v 1.1 1998-12-16 23:51:34 dbrown Exp $
+ *      $Id: datasourcegridP.h,v 1.2 1999-01-11 19:36:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,12 +43,15 @@ typedef struct _NgDataSourceGridRec
         NgDataSourceGrid		public;
         
             /* private fields */
+	NgGO			go;
         NrmQuark		qname;
-        NgDataProfileRec	*data_profile;
+        NgDataProfile		data_profile;
  	NclApiDataList		*dlist;        
         int			cwidths[2];
         int			c_alloc;
 	NhlBoolean		created;
+	int			selected_row;
+	int			vis_row_count;
 } NgDataSourceGridRec;
 
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.c,v 1.2 1998-11-20 04:11:04 dbrown Exp $
+ *      $Id: xinteract.c,v 1.3 1999-01-11 19:36:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -716,7 +716,8 @@ fprintf(stderr,"In ManipulateEH()\n");
 	}
 	else {
 		vobj = (NgViewObj) l->base.gui_data2;
-		if(	(event->x < (vobj->xvp.p0.x - FUZZFACTOR))	||
+		if(	! vobj->visible ||
+			(event->x < (vobj->xvp.p0.x - FUZZFACTOR))	||
 			(event->x > (vobj->xvp.p1.x + FUZZFACTOR))	||
 			(event->y < (vobj->xvp.p0.y - FUZZFACTOR))	||
 			(event->y > (vobj->xvp.p1.y + FUZZFACTOR))	) {
@@ -745,7 +746,7 @@ static void Select
 	static RubberRec	rubber = {MODPT,0,};
 	Display			*dpy = XtDisplay(xwk->xwk.graphics);
 	NgWksState 		wks_state;
-	int			view_count;
+	int			i,view_count;
 
 	rubber.bbox.p0.x = rubber.bbox.p1.x = event->x;
 	rubber.bbox.p0.y = rubber.bbox.p1.y = event->y;
@@ -787,6 +788,18 @@ static void Select
 	XUNGRABSERVER(dpy);
 
 	if (xwk->xwk.selected_view_id) {
+		for (i = 0; i < view_count; i++) {
+			if (xwk->xwk.views[i] == xwk->xwk.selected_view_id) {
+				xwk->xwk.selected_view_ix = i;
+				xwk->xwk.view_count = view_count;
+				xwk->xwk.lastp.x = event->x;
+				xwk->xwk.lastp.y = event->y;
+				XorDrawViewPort
+					(xwk,xwk->xwk.selected_view_id,False);
+				return;
+			}
+		}
+
 #if DEBUG_XINTERACT
 		fprintf(stderr,"erasing %d\n",xwk->xwk.selected_view_id);
 #endif
@@ -803,7 +816,8 @@ static void Select
 		xwk->xwk.selected_view_id = xwk->xwk.views[0];
 		xwk->xwk.selected_view_ix = 0;
 #if DEBUG_XINTERACT
-		fprintf(stderr,"drawing selected %d\n",xwk->xwk.selected_view_id);
+		fprintf(stderr,"drawing selected %d\n",
+			xwk->xwk.selected_view_id);
 #endif
 		XorDrawViewPort(xwk,xwk->xwk.selected_view_id,False);
 		XtAddEventHandler(xwk->xwk.graphics,ButtonPressMask,False,
@@ -894,7 +908,7 @@ _NgSelectionEH
 		return;
 	}
 		
-	Select(xwk,event,False,False);
+	Select(xwk,event,True,False);
 
 	return;
 }
@@ -1382,21 +1396,81 @@ extern void NgSetSelectedXwkView
 	NhlLayer l = _NhlGetLayer(view_id);
 	NgViewObj  vobj;
 	Position   x,y;
-	XButtonEvent  ev;
+	RubberRec  rubber = {MODPT,0,};
+	int view_count,i;
 
 	if (!(xwk && l))
 		return;
-
 
 	vobj = (NgViewObj)l->base.gui_data2;
 
 	if (!vobj)
 		return;
 
+	if (xwk->xwk.selected_view_id == view_id) {
+		if (vobj->visible && xwk->xwk.select_rect_vis)
+			return;
+		else if (! vobj->visible && ! xwk->xwk.select_rect_vis)
+			return;
+		else if (vobj->visible) {
+			XorDrawViewPort(xwk,xwk->xwk.selected_view_id,False);
+			return;
+		}
+		else {
+			XorDrawViewPort(xwk,xwk->xwk.selected_view_id,True);
+			return;
+		}
+	}
+
 	x = 0.5 * (vobj->xvp.p0.x + vobj->xvp.p1.x);
 	y = 0.5 * (vobj->xvp.p0.y + vobj->xvp.p1.y);
-	ev.x = x;
-	ev.y = y;
-	Select(xwk,&ev,False,False);
+	rubber.bbox.p0.x = rubber.bbox.p1.x = x;
+	rubber.bbox.p0.y = rubber.bbox.p1.y = y;
+
+	NhlVAGetValues(xwk->go.appmgr,
+		       NgNappWksState,&wks_state,
+		       NULL);
+	view_count = xwk->xwk.view_alloc_count;
+	NgGetViewsInRegion(wks_state,xwk->xwk.xwork->base.id,False,
+			   &rubber.bbox,&xwk->xwk.views,&view_count);
+	xwk->xwk.view_alloc_count = MAX(view_count,xwk->xwk.view_alloc_count);
+
+#if DEBUG_XINTERACT
+	fprintf(stderr,"view count %d \n",view_count);
+#endif
+
+	if (xwk->xwk.selected_view_id) {
+#if DEBUG_XINTERACT
+		fprintf(stderr,"erasing %d\n",xwk->xwk.selected_view_id);
+#endif
+		XorDrawViewPort(xwk,xwk->xwk.selected_view_id,True);
+		XtRemoveEventHandler(xwk->xwk.graphics,ButtonPressMask,False,
+                                ManipulateEH,(XtPointer)xwk);
+		xwk->xwk.manipulate_eh_active = False;
+		xwk->xwk.selected_view_id = NhlNULLOBJID;
+		xwk->xwk.selected_view_ix = -1;
+		xwk->xwk.lastp.x = xwk->xwk.lastp.y = (Position) -1;
+		xwk->xwk.view_count = 0;
+	}
+	for (i = 0; i < view_count; i++) {
+		if (view_id == xwk->xwk.views[i]) {
+			xwk->xwk.selected_view_ix = i;
+			break;
+		}
+	}
+	
+	xwk->xwk.selected_view_id = view_id;
+
+#if DEBUG_XINTERACT
+	fprintf(stderr,"drawing selected %d\n",xwk->xwk.selected_view_id);
+#endif
+	XorDrawViewPort(xwk,xwk->xwk.selected_view_id,False);
+	xwk->xwk.view_count = view_count;
+	xwk->xwk.lastp.x = x;
+	xwk->xwk.lastp.y = y;
+	XtAddEventHandler(xwk->xwk.graphics,ButtonPressMask,False,
+			  (XtEventHandler)ManipulateEH,
+			  (XtPointer)xwk);
+	xwk->xwk.manipulate_eh_active = True;
 }	
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenu.h,v 1.2 1998-12-16 23:51:39 dbrown Exp $
+ *      $Id: plotspecmenu.h,v 1.3 1999-01-11 19:36:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 
 #include <ncarg/ngo/go.h>
 #include <ncarg/ngo/browse.h>
+#include <ncarg/ngo/dataprofile.h>
 
 #ifndef _NCL_H_
 #include <ncarg/ncl/defs.h>

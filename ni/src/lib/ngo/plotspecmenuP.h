@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenuP.h,v 1.2 1998-12-16 23:51:39 dbrown Exp $
+ *      $Id: plotspecmenuP.h,v 1.3 1999-01-11 19:36:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -44,7 +44,7 @@ typedef struct _NgMenuRec
 
 typedef struct _PlotSpecMenuRec
 {
-	NgPlotSpecMenu   public;
+	NgPlotSpecMenu  public;
         NgGO		go;
         int		nsid;
         Widget		create_dialog;
@@ -52,10 +52,6 @@ typedef struct _PlotSpecMenuRec
         NgMenuRec	plot;
         NgMenuRec	var;
         NgMenuRec	data;
-	int		master_data_ix;
-	NgVarData	var_data[8];
-	int		var_data_alloced;
-	NgDataSourceGrid	*data_source_grid;
 } PlotSpecMenuRec;
 
 #endif	/* _NG_PLOTSPECMENUP_H_ */

@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenu.c,v 1.8 1998-12-16 23:51:31 dbrown Exp $
+ *      $Id: createmenu.c,v 1.9 1999-01-11 19:36:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #include <ncarg/ngo/createmenuP.h>
 #include <ncarg/ngo/nclstate.h>
 #include <ncarg/ngo/browse.h>
+#include <ncarg/ngo/dataprofile.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -117,7 +118,19 @@ static void CreateCB
                 return;
         }
         hlu_page->class_name = priv->create_class->base_class.class_name;
-                
+         
+	if (NgHasDataProfile(browse,hlu_page->class_name)) {
+		hlu_page->data_profile = NgGetDataProfile
+			(browse,hlu_page->class_name);
+		if (! hlu_page->data_profile) {
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+				   "error creating data profile"));
+		}
+		else { 
+			hlu_page->data_profile->linked = False;
+		}
+	}
+
         if (NgUpdatePage(browse_id,page_id) < NhlWARNING) {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,"error updating hlu page"));
                 return;

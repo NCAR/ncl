@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.8 1998-12-16 23:51:35 dbrown Exp $
+ *      $Id: graphic.c,v 1.9 1999-01-11 19:36:25 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -129,6 +129,61 @@ NhlErrorTypes NgCreatePreviewGraphic
                 }
         }
         return NhlCreate(hlu_id,namebuf,class,parent_id,srlist);
+}
+
+/*
+ * Function:	NgUpdatePreviewGraphic
+ *
+ * Description:	updates a preview instance of graphic (HLU) objects. Since
+ *              this is supposed to be a 'behind the scenes' kind of
+ *              operation, direct HLU calls, rather than ncl block are used
+ *              to create the object. Through this interface, the only
+ *              resources that can be set are those that can be converted
+ *              from string to the correct type. Basically this means that
+ *              only resources that can be set from resource files can be
+ *              set in the preview instance. In particular, this means you
+ *              cannot easily create usable DataItem instances with this
+ *              interface.
+ *
+ * In Args:	set ncl_parent to NULL if no parent is needed for object
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+
+NhlErrorTypes NgUpdateePreviewGraphic
+(
+        int		goid,
+        int		hlu_id,
+        int		pres_proc_count,
+        NgPreviewResProc *pres_procs,
+        NhlPointer	*pres_proc_data
+        )
+{
+        static int srlist;
+        int i;
+        static NhlBoolean first = True;
+        NgGO go = (NgGO)_NhlGetLayer(goid);
+
+        if (!go) {
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid graphic object"));
+                return (NhlErrorTypes) NhlFATAL;
+        }
+
+        if (first) {
+                srlist = NhlRLCreate(NhlSETRL);
+                first = False;
+        }
+        else {
+                NhlRLClear(srlist);
+        }
+        for (i = 0; i < pres_proc_count; i++) {
+                (*pres_procs[i])(srlist,pres_proc_data[i]);
+        }
+        return NhlSetValues(hlu_id,srlist);
 }
 
 NhlErrorTypes NgDestroyPreviewGraphic
@@ -266,7 +321,7 @@ NhlErrorTypes NgDestroyGraphic
         NgGO go = (NgGO)_NhlGetLayer(goid);
 	int i,hlu_id, *id_array, count;
 
-        if (!go) {
+        if (!(go && ncl_graphic)) {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid graphic object"));
                 return (NhlErrorTypes) NhlFATAL;
         }

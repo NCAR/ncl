@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.20 1998-12-16 23:51:37 dbrown Exp $
+ *      $Id: mwin.c,v 1.21 1999-01-11 19:36:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1822,7 +1822,7 @@ SetValuesCB
 	NgViewObj	vobj;
 	NgWksObj	wks;
 	int		base_id;
-#if 0
+
 #if DEBUG_MWIN
 	fprintf(stderr,"in set values cb\n");
 #endif
@@ -1835,16 +1835,19 @@ SetValuesCB
 
 	if (! _NhlIsClass(vl->base.wkptr,NhlxWorkstationClass))
 		return;
-
 	if (vl->base.being_destroyed || vl->base.wkptr->base.being_destroyed)
 		return;
-#if 0
+
 	vobj = (NgViewObj)vl->base.gui_data2;
+	NhlVAGetValues(svstat->id,
+		       NhlNvpOn,&vobj->visible,
+		       NULL);
+#if 0
 	if (vobj->suppress_svcb) {
 		vobj->suppress_svcb = False;
 		return;
 	}
-#endif
+
 	for (wp = otree->wklist; wp; wp = wp->next)
 		if (wp->id == vl->base.wkptr->base.id)
 			break;
@@ -1862,6 +1865,7 @@ SetValuesCB
 	base_id = _NhlTopLevelView(svstat->id);
 	NgDrawXwkView(wks->wks_wrap_id,base_id);
 #endif
+
 	return;
 }
 	
@@ -1935,6 +1939,7 @@ AddViewNode
 		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 			   "%s:Unable to track annotation status!",func));
 	}
+	sel.lngval = NrmStringToQuark(NhlNvpOn);
 	vwo->svcb = _NhlAddObjCallback
 		(_NhlGetLayer(vwnode->id),_NhlCBobjValueSet,
 		 sel,SetValuesCB,udata);
@@ -2517,6 +2522,7 @@ UpdateViewBB
 		       NhlNvpYF,&y,
 		       NhlNvpWidthF,&width,
 		       NhlNvpHeightF,&height,
+		       NhlNvpOn,&view_obj->visible,
 		       NULL);
 
 	NgNDCToXCoord(wks_obj->wks_wrap_id,&view_obj->xvp,
@@ -2622,6 +2628,8 @@ extern NhlErrorTypes NgGetViewsInRegion(
 	for (vwnode = wknode->cnodes; vwnode; vwnode = vwnode->next) {
 		NgViewObj vobj = (NgViewObj) vwnode->ndata;
 		NgXBBox   *bbox;
+		if (! vobj->visible)
+			continue;
 		bbox = limit_to_vp ? &vobj->xvp : &vobj->xbbox;
 #if DEBUG_MWIN
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.h,v 1.5 1998-12-16 23:51:36 dbrown Exp $
+ *      $Id: hlupage.h,v 1.6 1999-01-11 19:36:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,11 +35,12 @@
 #endif
 
 #include <ncarg/ngo/datasourcegrid.h>
+#include <ncarg/ngo/dataprofile.h>
 
 typedef struct _NgHluPage
 {
         NhlString class_name;
-        NgDataProfileRec data_prof;
+	NgDataProfile data_profile;
 	NhlString plot_style;
 	NhlString plot_style_dir;
 } NgHluPage;
