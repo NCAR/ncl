@@ -34,7 +34,7 @@ C
 C
 C  Draw a single polymarker in the upper half of the picture.
 C
-      CALL GPM(2,.5,.75)
+      CALL GPM(1,.5,.75)
       CALL FRAME
 C
 C  Deactivate and close the META02 metafile.
