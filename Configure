@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.12 1997-12-17 22:51:41 haley Exp $
+#      $Id: Configure,v 1.13 1998-01-07 23:12:23 haley Exp $
 #
 #########################################################################
 #									#
@@ -146,6 +146,9 @@ echo -n "..."
 set buildxlibstuff=`$makecmd XSTUFF`
 echo -n "..."
 set buildhdf=`$makecmd HDFSTUFF`
+echo -n "..."
+set buildf90=`$makecmd F90STUFF`
+set f90comp="f90"
 echo -n "..."
 set ncargversion=`$makecmd VERS`
 echo ""
@@ -498,6 +501,45 @@ else
     if ("$answer" == "y" || "$answer" == "") goto proc_tmp
   endif
 endif
+
+#
+# F90 stuff
+#
+if ($?verbose_option) then
+  cat <<"EOF"
+
+	The default Fortran compiler used to build NCAR Graphics is 
+	Fortran 77.  You may specify that you want to use Fortran 90
+	instead. If you don't want to use Fortran 90, answer "n" to 
+	the next question."
+
+"EOF"
+endif
+
+echo ""
+echo "Use Fortran 90 to build Fortran libraries? ($buildf90)"
+echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+set answer=$<
+if ("$answer" == "q") goto cleanup
+if (("$answer" != "") && ("$answer" != "$buildf90")) then
+	set buildf90 = $answer
+	set newbuildf90
+	set altered
+endif
+
+if ("$buildf90" == "y") then
+  echo ""
+  echo "What is the name of your Fortran 90 compiler? ($f90comp)"
+  echo -n "Enter Return (default), name of Fortran 90 compiler, or q(quit) > "
+  set answer=$<
+  if ("$answer" == "q") goto cleanup
+  if (("$answer" != "") && ("$answer" != "$buildf90")) then
+	set f90comp = $answer
+	set newf90comp
+	set altered
+  endif
+endif
+
 #
 # NCAR View stuff.
 #
@@ -567,7 +609,7 @@ if (("$answer" != "") && ("$answer" != "$buildhdf")) then
         set altered
 endif
 
-
+#
 #  Library Search Path
 #
 
@@ -750,6 +792,17 @@ if ($?nloclib) then
 endif
 if ($?nlocinc) then
 	echo "#define IncSearch $locinc" >> Site.local
+endif
+
+echo "" >> Site.local
+
+if ($?newbuildf90) then
+	if ("$buildf90" == "y") then
+		echo "#define BuildWithF90 TRUE" >> Site.local
+		echo "#define FCompiler $f90comp" >> Site.local
+	else
+		echo "#define BuildWithF90 FALSE" >> Site.local
+	endif
 endif
 
 echo "" >> Site.local
