@@ -1,39 +1,47 @@
-#	$Id: yMakefile,v 1.25 1992-09-09 15:10:26 clyne Exp $
+#	$Id: yMakefile,v 1.26 1992-09-10 21:44:03 don Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
 #
 
 
-#
-#	The following drivers are compiled unconditionally: HDF, HP Laser
-#	Jet, NRIF, Sun and AVS.
-#
 #define	BuildRasterHDF
 #define	BuildRasterHPLaser
 #define	BuildRasterNrif
 #define	BuildRasterSun
 #define BuildRasterAVS
+#define BuildRasterSGI
+#define BuildRasterAbekas
 
-#
-#	Additionally, if 'BuildXlibDependentCode' is defined the XWD
-#	driver is also compiled
-#
+#ifdef hostantero
+#define BuildRasterNetcdf
+#endif
+
+# Build the Parallax video frame buffer driver only for local systems.
+
+#if	defined(hostlonecone) || defined(gulebra) || defined(hostsalida)
+#define BuildRasterParallax
+#endif
+
+#if	defined(BuildParallax)
+#define BuildRasterParallax
+#endif
+
 #ifdef	BuildXlibDependentCode
 #define	BuildRasterXWD
 #endif	BuildXlibDependentCode
 
-#
-#	For Sun systems the parallax driver is also loaded 
-# 
-#ifdef	sun
-#define	BuildRasterParallax
-#endif
-
-
 NCARG		= ../../../..
 MYNAME		= libncarg_ras.a
 INCLUDES	= ncarg_ras.h
+
+#ifdef sgi
+LOCLIB		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a \
+		$(LIBPATH)/libdf.a $(LIBPATH)/libnetcdf.a -lsun
+#else
+LOCLIB		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a \
+		$(LIBPATH)/libdf.a
+#endif
 
 #ifdef BuildRasterHDF
 HDF_OBJS =	hdf.o
@@ -77,22 +85,43 @@ AVS_SRCS =	avsraster.c
 AVS_DEFS =	-DBuildRasterAVS
 #endif
 
+#ifdef BuildRasterSGI
+SGI_OBJS =	sgiraster.o
+SGI_SRCS =	sgiraster.c
+SGI_DEFS =	-DBuildRasterSGI
+#endif
+
+#ifdef BuildRasterAbekas
+ABEKAS_OBJS =	abekas.o
+ABEKAS_SRCS =	abekas.c
+ABEKAS_DEFS =	-DBuildRasterAbekas
+#endif
+
+#ifdef BuildRasterNetcdf
+NETCDF_OBJS =	netcdf.o
+NETCDF_SRCS =	netcdf.c
+NETCDF_DEFS =	-DBuildRasterNetcdf
+#endif
+
 CDEFINES =	$(HDF_DEFS) $(HPLJ_DEFS) $(NRIF_DEFS) $(SUN_DEFS) \
-		$(XWD_DEFS) $(PARALLAX_DEFS) $(AVS_DEFS)
+		$(XWD_DEFS) $(PARALLAX_DEFS) $(AVS_DEFS) $(SGI_DEFS) \
+		$(ABEKAS_DEFS) $(NETCDF_DEFS)
 
 DEVICE_OBJS =	$(HDF_OBJS) $(HPLJ_OBJS) $(NRIF_OBJS) $(SUN_OBJS) \
-		$(XWD_OBJS) $(PARALLAX_OBJS) $(AVS_OBJS)
+		$(XWD_OBJS) $(PARALLAX_OBJS) $(AVS_OBJS) $(SGI_OBJS) \
+		$(ABEKAS_OBJS) $(NETCDF_OBJS)
 
 DEVICE_SRCS =	$(HDF_SRCS) $(HPLJ_SRCS) $(NRIF_SRCS) $(SUN_SRCS) \
-		$(XWD_SRCS) $(PARALLAX_SRCS) $(AVS_SRCS)
+		$(XWD_SRCS) $(PARALLAX_SRCS) $(AVS_SRCS) $(SGI_SRCS) \
+		$(ABEKAS_SRCS) $(NETCDF_SRCS)
 
 GENERIC_OBJS =	raster.o cleartext.o error.o misc.o palette.o \
 		dither.o resample.o composite.o ntsc.o color.o \
-		$(DEVICE_OBJS)
+		rasterop.o $(DEVICE_OBJS)
 
 GENERIC_SRCS =	raster.c cleartext.c error.c misc.c palette.c \
 		dither.c resample.c composite.c ntsc.c color.c \
-		$(DEVICE_SRCS)
+		rasterop.c $(DEVICE_SRCS)
 			
 OBJS		= $(GENERIC_OBJS)
 SRCS		= $(GENERIC_SRCS)
@@ -100,24 +129,34 @@ SRCS		= $(GENERIC_SRCS)
 EQUALHACK	= =
 
 InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCPATH))
+
 Library($(MYNAME),$(OBJS))
 
 dither.o:	ncarg_ras.h
-error.o:	ncarg_ras.h
+error.o:	ncarg_ras.h error.h
 hdf.o:          ncarg_ras.h options.h Makefile
 misc.o:		ncarg_ras.h
+hdf.o:		ncarg_ras.h hdf.h
 nrif.o:		ncarg_ras.h nrif.h
 palette.o:	ncarg_ras.h
 rasinfo.o:	ncarg_ras.h
+rascopy.o:	ncarg_ras.h
 raster.o:	ncarg_ras.h options.h devices.h Makefile
 sunraster.o:	ncarg_ras.h sunraster.h
 xwd.o:		ncarg_ras.h
+
 parallax.o:	ncarg_ras.h parallax.h
+	cc $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) \
+                  $(FLOAT_OPT) $(CINC) $(VDEFINE) -c parallax.c
+	
 hplj.o:		ncarg_ras.h hplj.h
 cleartext.o:	ncarg_ras.h
 avsraster.o:	ncarg_ras.h avsraster.h
 ntsc.o:		ncarg_ras.h ntsc.h
 color.o:	ncarg_ras.h
+sgiraster.o:	ncarg_ras.h sgiraster.h
+abekas.o:	ncarg_ras.h abekas.h
+netcdf.o:	ncarg_ras.h netcdflocal.h
 
 saber_src: $(SRCS)
 	#setopt load_flags $(CFLAGS)
@@ -127,8 +166,9 @@ saber_obj: $(OBJS)
 	#setopt load_flags $(CFLAGS)
 	#load $(OBJS) -ldf
 
-rasinfo: rasinfo.o
-	$(CC) $(CFLAGS) -o rasinfo rasinfo.o -lncarg_ras -ldf
+test: rasinfo.o rascopy.o
+	$(CC) $(CFLAGS) -o rasinfo rasinfo.o $(LOCLIB)
+	$(CC) $(CFLAGS) -o rascopy rascopy.o $(LOCLIB)
 
 lint:
 	lint -I$(CINC) $(SRCS) 1> lint.out 2>&1
