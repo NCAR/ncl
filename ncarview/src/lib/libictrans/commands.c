@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.24 1993-02-17 20:01:11 clyne Exp $
+ *	$Id: commands.c,v 1.25 1993-02-23 03:27:13 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -296,7 +296,9 @@ int	iCSave(ic)
 				fp,"Non valid CGM, overwrite file? [y,n](y)"
 			);
 
-			while (c = getchar()) if (isalpha(c)) break; 
+			while (c = getchar()) {
+				if (isalpha(c) || c == '\n') break; 
+			}
 
 			if (c == 'n' || c == 'N') {
 				return(1);
@@ -304,7 +306,7 @@ int	iCSave(ic)
 			else {
 				type = 1;	/* write to file	*/
 			}
-			while ((c = getchar()) != '\n');
+			while (c != '\n') c = getchar();
 		}
 	} else  {		/* file exists and is a valid CGM	*/
 		if (force) {
@@ -315,7 +317,9 @@ int	iCSave(ic)
 				fp,"File exists, overwrite or append? [o,a](a)"
 			);
 
-			while (c = getchar()) if (isalpha(c)) break; 
+			while (c = getchar()) {
+				if (isalpha(c) || c == '\n') break; 
+			}
 
 			if (c == 'o' || c == 'O') {
 				type = 1;	/* write to file	*/
@@ -323,7 +327,7 @@ int	iCSave(ic)
 			else {
 				type = 0;	/* append to file	*/
 			}
-			while ((c = getchar()) != '\n');
+			while (c != '\n') c = getchar();
 		}
 	}
 
