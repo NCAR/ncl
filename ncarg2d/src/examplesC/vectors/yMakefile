@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.4 1994-05-26 14:36:15 haley Exp $
+#	$Id: yMakefile,v 1.5 1994-08-01 14:22:14 haley Exp $
 #
 
-CSRCS = c_tvelvc.c c_vvex02.c
+CSRCS = c_tvelvc.c c_vvex02.c c_ffex02.c
 
-SED_SRCS = c_fcover.c
+SED_SRCS = c_fcover.c c_ffex05.c c_vvex01.c c_vvex03.c
 
 GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
 
@@ -14,3 +14,15 @@ CleanFilesTarget($(SED_SRCS))
 c_fcover.c: c_fcover.c.sed Makefile
 	@-$(RM) $@
 	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ vvudmv
+
+c_ffex05.c: c_ffex05.c.sed Makefile
+	@-$(RM) $@
+	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ vvudmv
+
+c_vvex01.c: c_vvex01.c.sed Makefile
+	@-$(RM) $@
+	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ vvudmv gngpat
+
+c_vvex03.c: c_vvex03.c.sed Makefile
+	@-$(RM) $@
+	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ vvmap
