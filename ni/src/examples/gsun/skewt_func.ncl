@@ -1,5 +1,5 @@
 ;
-;      $Id: skewt_func.ncl,v 1.5 2004-08-19 14:46:51 shea Exp $
+;      $Id: skewt_func.ncl,v 1.6 2004-09-14 20:32:52 shea Exp $
 ;
 ; -------------------------------------------------
 ; This library requires that the "gsn_code.ncl" library
@@ -680,10 +680,29 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
   colWindZ      = "Blue"   
   colWindH      = "Magenta"    
   colThermoInfo = "Sienna"
+                                          ; Change defaults
+  if (isatt(localOpts,"colTemperature")) then
+      colTemperature  = localOpts@colTemperature  ; new color   
+  end if
+  if (isatt(localOpts,"colDewPt")) then
+      colDewPt  = localOpts@colDewPt              ; new color   
+  end if
+
+  if (isatt(localOpts,"colCape")) then
+      colCape   = localOpts@colCape               ; new color   
+  end if
+                                          ; Change defaults
                                           ; gs settings for gsn_polyline
   gsOpts                   = True
-  gsOpts@gsLineDashPattern = 0            ; solid
-  gsOpts@gsLineThicknessF  = 3.0
+  gsOpts@gsLineDashPattern = 0            ; solid (default)
+  gsOpts@gsLineThicknessF  = 3.0          ; make thicker
+
+  if (isatt(localOpts,"gsLineDashPattern")) then
+      gsOpts@gsLineDashPattern = localOpts@gsLineDashPattern
+  end if
+  if (isatt(localOpts,"gsLineThicknessF")) then
+      gsOpts@gsLineThicknessF = localOpts@gsLineThicknessF
+  end if
 
   yp   = skewty (p)                    
   xtc  = skewtx (tc , yp)              ; T-P plot
