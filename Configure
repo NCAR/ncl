@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.5 1994-04-08 19:36:37 boote Exp $
+#      $Id: Configure,v 1.6 1994-04-08 20:32:40 boote Exp $
 #
 #########################################################################
 #									#
@@ -751,7 +751,7 @@ if ($?newbuildhdf) then
 	endif
 endif
 echo "" >> Site.local
-if ($?nomakedepend) echo "#define NoMakeDepend" >> config/Site.local
+if ($?nomakedepend) echo "#define NoMakeDepend" >> Site.local
 echo "" >> Site.local
 echo "#endif /* SecondSite */" >> Site.local
 
