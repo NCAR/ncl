@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.20 1996-09-14 17:06:14 boote Exp $
+ *      $Id: IrregularPlot.c,v 1.21 1996-10-31 23:06:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -319,6 +319,7 @@ IrregularPlotInitialize
 /* Initialize private fields */
 
 	irp->update_req = False;
+	irp->trans_change_count = 0;
 	irp->overlay_object = NULL;
 	
 	
@@ -571,6 +572,7 @@ static NhlErrorTypes SetUpTransObj
 	NhlTransformLayerPart		*tfp = &(irnew->trans);
 	char				buffer[_NhlMAXRESNAMLEN];
 	int				tmpid;
+	int				trans_change_count;
         NhlSArg				sargs[16];
         int				nargs = 0;
 
@@ -611,7 +613,13 @@ static NhlErrorTypes SetUpTransObj
 				NhlNtrXMaxF,&tfp->data_xmax,
 				NhlNtrYMinF,&tfp->data_ymin,
 				NhlNtrYMaxF,&tfp->data_ymax,
+				NhlNtrChangeCount,&trans_change_count,
 				NULL);
+	
+	if (trans_change_count > irnew->irrplot.trans_change_count) {
+		irnew->irrplot.trans_change_count = trans_change_count;
+		irnew->irrplot.update_req = True;
+	}
 
 	return MIN(ret,subret);
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.19 1996-09-14 17:06:29 boote Exp $
+ *      $Id: LogLinPlot.c,v 1.20 1996-10-31 23:06:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -313,6 +313,7 @@ LogLinPlotInitialize
 /* Initialize private fields */
 
 	llp->update_req = False;
+	llp->trans_change_count = 0;
 	llp->overlay_object = NULL;
 	
 /* Set up the loglin transformation */
@@ -565,6 +566,7 @@ static NhlErrorTypes SetUpTransObj
 	NhlTransformLayerPart	*tfp = &(llnew->trans);
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
+	int			trans_change_count;
         NhlSArg			sargs[16];
         int			nargs = 0;
 
@@ -605,8 +607,14 @@ static NhlErrorTypes SetUpTransObj
 				NhlNtrXMaxF,&tfp->data_xmax,
 				NhlNtrYMinF,&tfp->data_ymin,
 				NhlNtrYMaxF,&tfp->data_ymax,
+				NhlNtrChangeCount,&trans_change_count,
 				NULL);
 	
+	if (trans_change_count > llnew->llplot.trans_change_count) {
+		llnew->llplot.trans_change_count = trans_change_count;
+		llnew->llplot.update_req = True;
+	}
+
 	return MIN(ret,subret);
 
 }

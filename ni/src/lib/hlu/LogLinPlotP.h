@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlotP.h,v 1.5 1995-04-07 10:42:44 boote Exp $
+ *      $Id: LogLinPlotP.h,v 1.6 1996-10-31 23:06:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -37,6 +37,7 @@ typedef struct NhlLogLinPlotLayerPart {
 
 	/* Private Fields */
 
+	int			trans_change_count;
 	NhlLayer		overlay_object;
 
 } NhlLogLinPlotLayerPart;

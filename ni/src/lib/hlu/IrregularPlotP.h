@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlotP.h,v 1.7 1995-05-03 03:11:10 dbrown Exp $
+ *      $Id: IrregularPlotP.h,v 1.8 1996-10-31 23:06:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,7 @@ typedef struct _NhlIrregularPlotLayerPart {
 
 	/* Private Fields */
 
+	int			trans_change_count;
 	NhlLayer		overlay_object;
 
 } NhlIrregularPlotLayerPart;

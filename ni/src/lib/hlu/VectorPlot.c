@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.26 1996-10-08 23:37:00 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.27 1996-10-31 23:06:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -7824,7 +7824,7 @@ static NhlErrorTypes    SetupLevelsManual
 	char			*e_text;
 	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
 	int			i, count;
-	float			lmin,lmax,spacing;
+	float			lmin,lmax,rem,spacing;
 	float			*fp;
 
 	spacing = vcp->level_spacing;
@@ -7846,10 +7846,12 @@ static NhlErrorTypes    SetupLevelsManual
 		vcp->max_level_val = lmax;
 	}
 
-	if (fmod((lmax - lmin), vcp->level_spacing) > 0.0)
-		count =	(lmax - lmin) / vcp->level_spacing + 2.0;
+	count = (lmax - lmin) / vcp->level_spacing;
+	rem = lmax - lmin - vcp->level_spacing * count; 
+	if (_NhlCmpFAny(rem,0.0,6) != 0.0)
+		count += 2;
 	else
-		count =	(lmax - lmin) / vcp->level_spacing + 1.5;
+		count += 1;
 
 	if (count <= 0) {
 		e_text = 

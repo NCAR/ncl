@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.45 1996-09-14 17:05:56 boote Exp $
+ *      $Id: ContourPlot.c,v 1.46 1996-10-31 23:06:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9536,7 +9536,7 @@ static NhlErrorTypes    SetupLevelsManual
 	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = &(cnew->contourplot);
 	int			i, count;
-	float			lmin,lmax,spacing;
+	float			lmin,lmax,rem,spacing;
 	float			*fp;
 
 	spacing = cnp->level_spacing;
@@ -9558,12 +9558,14 @@ static NhlErrorTypes    SetupLevelsManual
 		cnp->max_level_val = lmax;
 	}
 
-	if (fmod((lmax - lmin), cnp->level_spacing) > 0.0)
-		count =	(lmax - lmin) / cnp->level_spacing + 2.0;
+	count = (lmax - lmin) / cnp->level_spacing;
+	rem = lmax - lmin - cnp->level_spacing * count; 
+	if (_NhlCmpFAny(rem,0.0,6) != 0.0)
+		count += 2;
 	else
-		count =	(lmax - lmin) / cnp->level_spacing + 1.5;
+		count += 1;
 
-	if (count <= 0) {
+	if (count <= 1) {
 		e_text = 
 	  "%s: cnLevelSpacingF value exceeds or equals data range: defaulting";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
