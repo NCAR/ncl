@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.107 1997-07-10 21:55:08 kennison Exp $
+#   $Id: ncargex.csh,v 1.108 1997-10-16 14:32:34 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -381,11 +381,13 @@ set c_list = ($c_list $labelbar_clist)
 # set ngmath examples #
 #                     #
 #*********************#
-set ngmath_fex  = (nnex01 nnex02 nnex03 nnex04 nnex05 nnex06 nnex07 nnex08 \
-                   nnex09 nnex01d)
+set ngmath_fex  = (dsex01 dsex02 dsex03 dsex04 dsex05 dsex06 dsex01d nnex01 \
+                   nnex02 nnex03 nnex04 nnex05 nnex06 nnex07 nnex08 nnex09 \
+                   nnex01d)
 set ngmath_flist = ($ngmath_fex)
 
-set ngmath_cex  = (c_nnex01 c_nnex02 c_nnex03 c_nnex06 c_nnex01d)
+set ngmath_cex  = (c_dsex01 c_dsex02 c_dsex03 c_dsex04 c_dsex05 c_dsex06 \
+                   c_dsex01d c_nnex01 c_nnex02 c_nnex03 c_nnex06 c_nnex01d)
 set ngmath_clist = ($ngmath_cex)
 
 set f_list = ($f_list $ngmath_flist)
@@ -1508,6 +1510,27 @@ switch ($name)
         set data_files = (srex01.dat)
     breaksw
 
+    case dsex01:
+    case dsex02:
+    case dsex03:
+    case dsex04:
+    case dsex05:
+    case dsex06:
+    case dsex01d:
+        set extra_src_files = (dsplotf.f)
+        set comp_flags = ($comp_flags "-ngmath")
+    breaksw
+
+    case c_dsex01:
+    case c_dsex02:
+    case c_dsex03:
+    case c_dsex04:
+    case c_dsex05:
+    case c_dsex06:
+    case c_dsex01d:
+        set extra_src_files = (dsplotc.c)
+        set comp_flags = ($comp_flags "-ngmath")
+    breaksw
 
     case nnex01:
     case nnex02:
