@@ -1,29 +1,24 @@
-.TH MAPRS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH MPRSET 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
-MAPRS - Re-calls SET. 
+MPRSET - Reset the internal state of EZMAP/EZMAPA to the default.
 .SH SYNOPSIS
-CALL MAPRS 
+CALL MPRSET
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_maprs()
+void c_mprset()
 .SH DESCRIPTION
-MAPRS has no arguments.
+MPRSET has no arguments.
 .SH USAGE
-This routine allows you to have the SPPS routine SET re-called with the
-same arguments that MAPINT would use, but executes a little faster than
-MAPINT.  This is useful when you are about to call one of the
-routines MAPBLA, MAPDRW, MAPFST, MAPGRD, MAPGRM, MAPIQ, MAPIQA, MAPIQM,
-MAPIT, MAPITA, MAPITM, MAPLBL, MAPLOT, or MAPVEC (all of which depend on
-the proper SET call's having been done), and there has been some intervening,
-inappropriate, call to SET.
+MPRSET - Calling this routine resets the internal parameters of EZMAP/EZMAPA
+to the default state and recalls the routine MAPINT to initialize the package.
 .SH EXAMPLES
-No example is available for MAPRS.
+No example is available for MPRSET.
 .SH ACCESS
-To use MAPRS, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_c, preferably in that order.  To use c_maprs, load the 
+To use MPRSET, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order.  To use c_mprset, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
 ncarg_c, preferably in that order.
 .SH SEE ALSO
@@ -57,6 +52,7 @@ maplmb,
 maplot,
 mappos,
 maproj,
+maprs,
 maprst,
 mapsav,
 mapset,
@@ -73,7 +69,6 @@ mpgetc,
 mpgeti,
 mpgetl,
 mpgetr,
-mprset,
 mpsetc,
 mpseti,
 mpsetl,

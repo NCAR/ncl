@@ -190,7 +190,9 @@ contents of the flash buffer are copied to the metafile being created, if
 it is desired to draw something on the Ezmap background, MAPRS may first
 have to be called to ensure that the correct SET call is in effect.
 .IP "\(bu" 4
-Draws a map with a single call. An implementation of the routine
+MPRST - Resets the internal state of EZMAP/EZMAPA to the default.
+.IP "\(bu" 4
+SUPMAP - Draws a map with a single call. An implementation of the routine
 from which Ezmap grew.
 .RE
 .SH C-BINDING SYNOPSIS
@@ -263,6 +265,8 @@ c_mapiqm
 c_mapaci
 .br
 c_maprs
+.br
+c_mprset
 .br
 c_supmap
 .SH USER-MODIFIABLE INTERNAL ROUTINES
@@ -429,6 +433,8 @@ MPGETL - UNCLEARED PRIOR ERROR
 .br
 MPGETR - UNCLEARED PRIOR ERROR
 .br
+MPRSET - UNCLEARED PRIOR ERROR
+.br
 MPSETC - UNCLEARED PRIOR ERROR
 .br
 MPSETI - UNCLEARED PRIOR ERROR
@@ -488,6 +494,7 @@ mpgetc,
 mpgeti,
 mpgetl,
 mpgetr,
+mprset,
 mpsetc,
 mpseti,
 mpsetl,
