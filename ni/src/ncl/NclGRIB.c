@@ -2859,18 +2859,23 @@ unsigned int *nextoff;
 int *version;
 #endif
 {
-	int i,ret1,ret2,ret3,ret4;
+	int i,j,ret1,ret2,ret3,ret4;
+	unsigned char *is; /* pointer to indicator section */
+	unsigned char buf[1024];
+	int buflen = 1024;
 	char test[10];
 	unsigned char nd[10];
-	unsigned char is[10];
 	unsigned int size;
 	unsigned int t;
+	int len;
+	int tries = 0;
 #ifdef GRIBRECDUMP
 	static int fd_out;
 	static int count = 0;
 	void *tmp;
 #endif
 
+#define LEN_HEADER_PDS (28+8)
 
 	ret1 = 0;
 	ret2 = 0;
@@ -2880,36 +2885,33 @@ int *version;
 	test[4] = '\0';
 
 	i = startoff;
-	fseek(gribfile,i,SEEK_SET);
 	while(1) {
-		ret1 = fread((void*)is,1,1,gribfile);
-		i += ret1;
+		tries++;
+		if (tries > 100) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"100 blocks read without finding start of GRIB record -- is this a GRIB file?");
+			*totalsize = 0;
+			return(GRIBEOF);
+		}	 
+		fseek(gribfile,i,SEEK_SET);
+		ret1 = fread((void*)buf,1,buflen,gribfile);
 		if(ret1 > 0) {
-			if(is[0] == 'G') {
+			len = ret1 - LEN_HEADER_PDS;
+			for (j = 0; j < len; j++) {
+				if (buf[j] != 'G') 
+					continue;
+				if (! (buf[j+1] == 'R' && buf[j+2] == 'I' && buf[j+3] == 'B'))
+					continue;
+
+				*version = buf[j+7];
 /*
-				fprintf(stdout,"found G\n");
+				fprintf(stdout,"found GRIB\n");
 */
-				ret2 = fread((void*)&(is[1]),1,7,gribfile);
-				if(ret2 < 7) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Premature end-of-file, file appears to be truncated");
-					*totalsize = 0;
-					return(GRIBEOF);
-				} 
-				i += ret2;
-				test[0] = is[0];
-				test[1] = is[1];
-				test[2] = is[2];
-				test[3] = is[3];
-				*version = UnsignedCnvtToDecimal(1,&(is[7]));
-				test[4] = '\0';
+				if(*version == 1){
+					is = &(buf[j]);
 /*
-				fprintf(stdout,"%d\t%c%c%c%c\n",ret2,is[0],is[1],is[2],is[3]);
+					fprintf(stdout,"found GRIB version 1\n");
 */
-				if((!strncmp(test,"GRIB",4))&&(*version ==1)){
-/*
-					fprintf(stdout,"found GRIB\n");
-*/
-					*offset =  i - (ret1 + ret2);
+					*offset = i + j;
 					size = UnsignedCnvtToDecimal(3,&(is[4]));
 #ifdef GRIBRECDUMP
 					if(count == 0) {
@@ -2918,7 +2920,7 @@ int *version;
 					if(count < 3) {
 						tmp = NclMalloc(sizeof(char)*size);
 				
-						fseek(gribfile,i- (ret1 + ret2),SEEK_SET);	
+						fseek(gribfile,*offset,SEEK_SET);	
 						fread(tmp,1,size,gribfile);
 						write(fd_out,tmp,size);
 						count++;
@@ -2928,8 +2930,7 @@ int *version;
 						count++;
 					}
 #endif
-					fseek(gribfile,i+size - (ret1 + ret2) - 4,SEEK_SET);
-					ret3 = i+size - (ret1 + ret2) - 4;
+					fseek(gribfile,*offset+size - 4,SEEK_SET);
 					ret4 = fread((void*)nd,1,4,gribfile);
 					if(ret4 < 4) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Premature end-of-file, file appears to be truncated");
@@ -2941,21 +2942,96 @@ int *version;
 					test[2] = nd[2];
 					test[3] = nd[3];
 					test[4] = '\0';
+					*nextoff = *offset + size;
 					if(!strncmp("7777",test,4)) {
 /*
 					fprintf(stdout,"found 7777\n");
 */
-						*nextoff = ret3 + ret4;
 						*totalsize = size;
 						return(GRIBOK);
 					} else {
-						*nextoff = i;
 						*totalsize = size;
 						return(GRIBERROR);
 					}
-				} else if((!strncmp(test,"GRIB",4))&&(*version ==0)) {
-					*offset = i - (ret1 + ret2);
+				}
+				else if(*version == 0){
+					int has_bms,has_gds;
+					int pdssize, gdssize,bmssize,bdssize;
+					unsigned char *pds;
+					unsigned char ebuf[buflen];
+					unsigned char *cp;
+					int k;
+					int tsize;
+
+					is = &(buf[j]);
+					pds = is + 4;
+					*offset = i + j;
 /*
+  					fprintf(stdout,"found GRIB version 0 at offset %d\n",*offset);
+*/
+					has_gds = (pds[7] & (char)0200) ? 1 : 0;
+					has_bms = (pds[7] & (char)0100) ? 1 : 0;
+					size = 4;
+					t = *offset + size;
+					fseek(gribfile,t,SEEK_SET);
+					ret4 = fread((void*)nd,1,4,gribfile);
+					pdssize = UnsignedCnvtToDecimal(3,nd);
+					size += pdssize;
+					t = *offset + size;
+					if (has_gds) {
+						fseek(gribfile,t,SEEK_SET);
+						ret4 = fread((void*)nd,1,4,gribfile);
+						gdssize = UnsignedCnvtToDecimal(3,nd);
+						size += gdssize;
+						t = *offset + size;
+					}
+					if (has_bms) {
+						fseek(gribfile,t,SEEK_SET);
+						ret4 = fread((void*)nd,1,4,gribfile);
+						bmssize = UnsignedCnvtToDecimal(3,nd);
+						size += bmssize;
+						t = *offset + size;
+					}
+					fseek(gribfile,t,SEEK_SET);
+					ret4 = fread((void*)nd,1,4,gribfile);
+					bdssize = UnsignedCnvtToDecimal(3,nd);
+					size += bdssize;
+					tsize = size;
+					if (gdssize > 32 || pdssize > 24) { /* be suspiscious of this record */
+						tsize = 4;
+					}
+					while (1) {
+						t = *offset + tsize;
+						fseek(gribfile,t,SEEK_SET);
+						ret4 = fread((void*)buf,1,buflen,gribfile);
+						if (ret4 < 4) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Premature end-of-file, file appears to be truncated");
+							break;
+						}
+						for (k = 0; k < buflen-4; k++) {
+						     if (! buf[k] == '7')
+							     continue;
+						     if(strncmp("7777",(char*)&buf[k],4))
+							     continue;
+						     tsize += (k + 4);
+						     *nextoff = *offset + tsize ;
+#if 0
+						     fprintf(stdout,"found 7777 at offset %d size %d\n",*nextoff - 4,size);
+#endif
+						     *totalsize = tsize;
+						     if (tsize < size + 4) {
+#if 0
+							     printf("bad record, tsize %d size %d************************\n",tsize,size);
+#endif
+							     return (GRIBERROR);
+						     }
+						     return(GRIBOK);
+						}
+						tsize += buflen-8; /* make sure we don't lose the beginning of the end indicator */
+					}
+
+#if 0
+/
 * This gives me the pds size
 */
 					size = 4;
@@ -2963,7 +3039,7 @@ int *version;
 						t = *offset + size;
 						fseek(gribfile,t,SEEK_SET);
 						ret4 = fread((void*)nd,1,4,gribfile);
-						if(ret4 < 4) {
+						if (ret4 < 4) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Premature end-of-file, file appears to be truncated");
 							break;
 						}
@@ -2978,17 +3054,16 @@ int *version;
 							*totalsize = size;
 							return(GRIBOK);
 						} else {
-							size += UnsignedCnvtToDecimal(3,nd);
+							size += 4;
 						}
 						
 					}
 					*totalsize = size;
 					return(GRIBEOF);
-				} else if(!strncmp(test,"GRIB",4)){
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Unknown version number (%d), can't read this data",*version);
-					return(GRIBEOF);
+#endif
 				}
 			}
+			i += (buflen - LEN_HEADER_PDS);
 		} else {
 			*totalsize = 0;
 			return(GRIBEOF);
@@ -3989,6 +4064,7 @@ int wr_status;
 					switch(center) {
 					case 98:           /* ECMWF */
 						switch (ptable_version) {
+						case 0:
 						case 128:
 							ptable = &ecmwf_128_params[0];
 							ptable_count = sizeof(ecmwf_128_params)/sizeof(TBLE2);
@@ -4395,8 +4471,8 @@ int wr_status;
 			}
 		} else if(ret==GRIBERROR){
 			error_count++;
-			if(error_count > 10) {
-				NhlPError(NhlFATAL, NhlEUNKNOWN, "NclGRIB: More than 10 incomplete records were found, grib file appears to be corrupted, make sure it is not a tar file or a COS blocked grib file.");
+			if(error_count > 1000) {
+				NhlPError(NhlFATAL, NhlEUNKNOWN, "NclGRIB: More than 1000 incomplete records were found, grib file appears to be corrupted, make sure it is not a tar file or a COS blocked grib file.");
 				return(NULL);
 			} else {
 				NhlPError(NhlWARNING, NhlEUNKNOWN, "NclGRIB: Detected incomplete record, skipping record");
