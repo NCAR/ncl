@@ -1,5 +1,5 @@
 C
-C       $Id: gzclpo.f,v 1.2 1994-06-17 22:05:04 fred Exp $
+C       $Id: gzclpo.f,v 1.3 1995-07-28 00:20:48 fred Exp $
 C
       SUBROUTINE GZCLPO (XCCP,YCCP,NCCP,XCSP,YCSP,NCSP,
      +                        RWRK,IWRK,NWRK,IERR)
@@ -49,13 +49,13 @@ C
 C
 C Do some simple checks for degenerate cases.
 C
-      IF (LCCP.LT.3) THEN
-        GO TO 10002
-      END IF
+      IF (.NOT.(LCCP.LT.3)) GO TO 10001
+        GO TO 10003
+10001 CONTINUE
 C
-      IF (LCSP.LT.3) THEN
-        GO TO 10004
-      END IF
+      IF (.NOT.(LCSP.LT.3)) GO TO 10004
+        GO TO 10006
+10004 CONTINUE
 C
 C Check to see if the input polygon is entirely within the clipping
 C rectangle and treat that case specially.
@@ -98,17 +98,17 @@ C place where the Y coordinate changes one way or the other.
 C
       INXT=0
 C
-      DO 10005 I=1,LCCP-1
-        IF (YCCP(I).NE.YCCP(I+1)) THEN
+      DO 10007 I=1,LCCP-1
+        IF (.NOT.(YCCP(I).NE.YCCP(I+1))) GO TO 10008
           INXT=I
           YNXT=YCCP(INXT)
           GO TO 101
-        END IF
-10005 CONTINUE
+10008   CONTINUE
+10007 CONTINUE
 C
 C If there is no such starting place, take an error exit.
 C
-      GO TO 10002
+      GO TO 10003
 C
 C Otherwise, go through the entire polygon from the starting position,
 C finding all those places where the Y value increases after having
@@ -117,95 +117,103 @@ C the LMT.
 C
   101 IDIR=0
 C
-      DO 10007 I=0,LCCP
+      DO 10010 I=0,LCCP
         ILST=INXT
         YLST=YNXT
         INXT=INXT+1
         IF (INXT.GT.LCCP) INXT=INXT-LCCP
         YNXT=YCCP(INXT)
-        IF (YNXT.LT.YLST) THEN
+        IF (.NOT.(YNXT.LT.YLST)) GO TO 10011
           IDIR=-1
-        ELSE IF (YNXT.GT.YLST) THEN
-          IF (IDIR.LT.0) THEN
+        GO TO 10012
+10011   CONTINUE
+        IF (.NOT.(YNXT.GT.YLST)) GO TO 10013
+          IF (.NOT.(IDIR.LT.0)) GO TO 10014
             ILMN=IPWL+1
             IPWL=IPWL+3
-            IF (IPWL.GE.IPWU) THEN
-              GO TO 10009
-            END IF
+            IF (.NOT.(IPWL.GE.IPWU)) GO TO 10015
+              GO TO 10017
+10015       CONTINUE
             RWRK(ILMN)=YLST
             IWRK(ILMN+1)=ILST
             ITM1=0
             ITM2=ILMT
-10010       CONTINUE
-              IF (ITM2.EQ.0) GO TO 10011
-              IF (RWRK(ILMN).LE.RWRK(ITM2)) GO TO 10011
+10018       CONTINUE
+              IF (ITM2.EQ.0) GO TO 10019
+              IF (RWRK(ILMN).LE.RWRK(ITM2)) GO TO 10019
               ITM1=ITM2
               ITM2=IWRK(ITM2+2)
-            GO TO 10010
-10011       CONTINUE
-            IF (ITM1.EQ.0) THEN
+            GO TO 10018
+10019       CONTINUE
+            IF (.NOT.(ITM1.EQ.0)) GO TO 10020
               ILMT=ILMN
-            ELSE
+            GO TO 10021
+10020       CONTINUE
               IWRK(ITM1+2)=ILMN
-            END IF
+10021       CONTINUE
             IWRK(ILMN+2)=ITM2
-          END IF
+10014     CONTINUE
           IDIR=+1
-        END IF
-10007 CONTINUE
+10012   CONTINUE
+10013   CONTINUE
+10010 CONTINUE
 C
 C In the same way, search for local minima of the subject polygon.
 C
       INXT=0
 C
-      DO 10012 I=1,LCSP-1
-        IF (YCSP(I).NE.YCSP(I+1)) THEN
+      DO 10022 I=1,LCSP-1
+        IF (.NOT.(YCSP(I).NE.YCSP(I+1))) GO TO 10023
           INXT=I
           YNXT=YCSP(INXT)
           GO TO 102
-        END IF
-10012 CONTINUE
+10023   CONTINUE
+10022 CONTINUE
 C
-      GO TO 10004
+      GO TO 10006
 C
   102 IDIR=0
 C
-      DO 10014 I=0,LCSP
+      DO 10025 I=0,LCSP
         ILST=INXT
         YLST=YNXT
         INXT=INXT+1
         IF (INXT.GT.LCSP) INXT=INXT-LCSP
         YNXT=YCSP(INXT)
-        IF (YNXT.LT.YLST) THEN
+        IF (.NOT.(YNXT.LT.YLST)) GO TO 10026
           IDIR=-1
-        ELSE IF (YNXT.GT.YLST) THEN
-          IF (IDIR.LT.0) THEN
+        GO TO 10027
+10026   CONTINUE
+        IF (.NOT.(YNXT.GT.YLST)) GO TO 10028
+          IF (.NOT.(IDIR.LT.0)) GO TO 10029
             ILMN=IPWL+1
             IPWL=IPWL+3
-            IF (IPWL.GE.IPWU) THEN
-              GO TO 10009
-            END IF
+            IF (.NOT.(IPWL.GE.IPWU)) GO TO 10030
+              GO TO 10017
+10030       CONTINUE
             RWRK(ILMN)=YLST
             IWRK(ILMN+1)=LCCP+ILST
             ITM1=0
             ITM2=ILMT
-10016       CONTINUE
-              IF (ITM2.EQ.0) GO TO 10017
-              IF (RWRK(ILMN).LE.RWRK(ITM2)) GO TO 10017
+10032       CONTINUE
+              IF (ITM2.EQ.0) GO TO 10033
+              IF (RWRK(ILMN).LE.RWRK(ITM2)) GO TO 10033
               ITM1=ITM2
               ITM2=IWRK(ITM2+2)
-            GO TO 10016
-10017       CONTINUE
-            IF (ITM1.EQ.0) THEN
+            GO TO 10032
+10033       CONTINUE
+            IF (.NOT.(ITM1.EQ.0)) GO TO 10034
               ILMT=ILMN
-            ELSE
+            GO TO 10035
+10034       CONTINUE
               IWRK(ITM1+2)=ILMN
-            END IF
+10035       CONTINUE
             IWRK(ILMN+2)=ITM2
-          END IF
+10029     CONTINUE
           IDIR=+1
-        END IF
-10014 CONTINUE
+10027   CONTINUE
+10028   CONTINUE
+10025 CONTINUE
 C
 C Initialize the output polygon list pointer to indicate that no
 C polygons have been generated yet:
@@ -224,7 +232,7 @@ C
 C
 C Loop through the "scanbeams".
 C
-10018 CONTINUE
+10036 CONTINUE
 C
 C YBOS is the Y coordinate of the bottom of the new scanbeam.
 C
@@ -234,15 +242,15 @@ C Loop through those local minima in the LMT having Y coordinate
 C YBOS; for each, add to the AET the pair of edges that start at
 C that local minimum.
 C
-10019   CONTINUE
+10037   CONTINUE
 C
 C Quit if the end of the LMT has been reached.
 C
-          IF (ILMT.EQ.0) GO TO 10020
+          IF (ILMT.EQ.0) GO TO 10038
 C
 C Quit if the Y coordinate of the next local minimum is too large.
 C
-          IF (RWRK(ILMT).GT.YBOS) GO TO 10020
+          IF (RWRK(ILMT).GT.YBOS) GO TO 10038
 C
 C Retrieve in IMIN the index of the coordinates of the local minimum.
 C
@@ -255,7 +263,7 @@ C the last point along the polygon; the coordinates are XLST and YLST.
 C Similarly, INXT indexes the coordinates of the next point along
 C the polygon; the coordinates are XNXT and YNXT.
 C
-          IF (IMIN.LE.LCCP) THEN
+          IF (.NOT.(IMIN.LE.LCCP)) GO TO 10039
             ICOS=0
             XMIN=XCCP(IMIN)
             YMIN=YCCP(IMIN)
@@ -267,7 +275,8 @@ C
             IF (INXT.GT.LCCP) INXT=INXT-LCCP
             XNXT=XCCP(INXT)
             YNXT=YCCP(INXT)
-          ELSE
+          GO TO 10040
+10039     CONTINUE
             ICOS=1
             IMIN=IMIN-LCCP
             XMIN=XCSP(IMIN)
@@ -280,7 +289,7 @@ C
             IF (INXT.GT.LCSP) INXT=INXT-LCSP
             XNXT=XCSP(INXT)
             YNXT=YCSP(INXT)
-          END IF
+10040     CONTINUE
 C
 C Now we must scan the AET to determine where to put the new edges.
 C After executing the loop below, ITM1 will point to the node after
@@ -297,16 +306,16 @@ C
           IOCP=0
           IOSP=0
 C
-10021     CONTINUE
+10041     CONTINUE
 C
 C Exit if the end of the AET has been reached.
 C
-            IF (ITM2.EQ.0) GO TO 10022
+            IF (ITM2.EQ.0) GO TO 10042
 C
 C Exit if the new local minimum fits between elements ITM1 and ITM2 of
 C the AET.
 C
-            IF (XMIN.LE.RWRK(ITM2)) GO TO 10022
+            IF (XMIN.LE.RWRK(ITM2)) GO TO 10042
 C
 C Advance to the next position in the AET.
 C
@@ -316,41 +325,44 @@ C
 C Update the flags that say where we are relative to the clip and
 C subject polygons.
 C
-            IF (IWRK(ITM1+4).EQ.0) THEN
+            IF (.NOT.(IWRK(ITM1+4).EQ.0)) GO TO 10043
               IOCP=1-IOCP
-            ELSE
+            GO TO 10044
+10043       CONTINUE
               IOSP=1-IOSP
-            END IF
+10044       CONTINUE
 C
 C End of loop through the AET.
 C
-          GO TO 10021
-10022     CONTINUE
+          GO TO 10041
+10042     CONTINUE
 C
 C Create two new nodes in the AET.  Either re-use 10-word nodes from the
 C garbage list or create new ones.
 C
-          IF (IG10.NE.0) THEN
+          IF (.NOT.(IG10.NE.0)) GO TO 10045
             IPNL=IG10
             IG10=IWRK(IG10)
-          ELSE
+          GO TO 10046
+10045     CONTINUE
             IPNL=IPWL+1
             IPWL=IPWL+10
-            IF (IPWL.GE.IPWU) THEN
-              GO TO 10009
-            END IF
-          END IF
+            IF (.NOT.(IPWL.GE.IPWU)) GO TO 10047
+              GO TO 10017
+10047       CONTINUE
+10046     CONTINUE
 C
-          IF (IG10.NE.0) THEN
+          IF (.NOT.(IG10.NE.0)) GO TO 10049
             IPNN=IG10
             IG10=IWRK(IG10)
-          ELSE
+          GO TO 10050
+10049     CONTINUE
             IPNN=IPWL+1
             IPWL=IPWL+10
-            IF (IPWL.GE.IPWU) THEN
-              GO TO 10009
-            END IF
-          END IF
+            IF (.NOT.(IPWL.GE.IPWU)) GO TO 10051
+              GO TO 10017
+10051       CONTINUE
+10050     CONTINUE
 C
 C Fill in the information about the two new edges:
 C
@@ -363,47 +375,52 @@ C
           RWRK(IPNL+2)=YLST
           RWRK(IPNN+2)=YNXT
 C
-          IF (YLST.NE.YMIN) THEN
+          IF (.NOT.(YLST.NE.YMIN)) GO TO 10053
             RWRK(IPNL+3)=(XLST-XMIN)/(YLST-YMIN)
-          ELSE
+          GO TO 10054
+10053     CONTINUE
             RWRK(IPNL+3)=SIGN(RBIG,XLST-XMIN)
-          END IF
+10054     CONTINUE
 C
-          IF (YNXT.NE.YMIN) THEN
+          IF (.NOT.(YNXT.NE.YMIN)) GO TO 10055
             RWRK(IPNN+3)=(XNXT-XMIN)/(YNXT-YMIN)
-          ELSE
+          GO TO 10056
+10055     CONTINUE
             RWRK(IPNN+3)=SIGN(RBIG,XNXT-XMIN)
-          END IF
+10056     CONTINUE
 C
           IWRK(IPNL+4)=ICOS
           IWRK(IPNN+4)=ICOS
 C
-          IF (ICOS.EQ.0) THEN
+          IF (.NOT.(ICOS.EQ.0)) GO TO 10057
             IOPO=IOCP
-          ELSE
+          GO TO 10058
+10057     CONTINUE
             IOPO=IOSP
-          END IF
+10058     CONTINUE
 C
-          IF (RWRK(IPNL+3).LT.RWRK(IPNN+3)) THEN
+          IF (.NOT.(RWRK(IPNL+3).LT.RWRK(IPNN+3))) GO TO 10059
 C
             IPE1=IPNL
             IPE2=IPNN
 C
-          ELSE
+          GO TO 10060
+10059     CONTINUE
 C
             IPE1=IPNN
             IPE2=IPNL
 C
-          END IF
+10060     CONTINUE
 C
           IWRK(IPE1+5)=IOPO
           IWRK(IPE2+5)=1-IOPO
 C
-          IF (ITM1.EQ.0) THEN
+          IF (.NOT.(ITM1.EQ.0)) GO TO 10061
             IAET=IPE1
-          ELSE
+          GO TO 10062
+10061     CONTINUE
             IWRK(ITM1+6)=IPE1
-          END IF
+10062     CONTINUE
 C
           IWRK(IPE1+6)=IPE2
           IWRK(IPE2+6)=ITM2
@@ -418,34 +435,37 @@ C If the edges are "contributing", create an output polygon for them
 C to "contribute" to and put the initial point in it; otherwise, zero
 C the output-polygon pointers.
 C
-          IF ((IOCP.NE.0.AND.IOSP.NE.0).OR.(IOCP.EQ.0.AND.IOSP.NE.0.AND.
-     +ICOS.EQ.0).OR.(IOCP.NE.0.AND.IOSP.EQ.0.AND.ICOS.NE.0)) THEN
+          IF (.NOT.((IOCP.NE.0.AND.IOSP.NE.0).OR.(IOCP.EQ.0.AND.IOSP.NE.
+     +0.AND.ICOS.EQ.0).OR.(IOCP.NE.0.AND.IOSP.EQ.0.AND.ICOS.NE.0)))
+     +    GO TO 10063
 C
-            IF (IG03.NE.0) THEN
+            IF (.NOT.(IG03.NE.0)) GO TO 10064
               IPSN=IG03
               IG03=IWRK(IG03)
-            ELSE
+            GO TO 10065
+10064       CONTINUE
               IPWU=IPWU-3
-              IF (IPWU.LE.IPWL) THEN
-                GO TO 10009
-              END IF
+              IF (.NOT.(IPWU.LE.IPWL)) GO TO 10066
+                GO TO 10017
+10066         CONTINUE
               IPSN=IPWU
-            END IF
+10065       CONTINUE
 C
             RWRK(IPSN  )=XMIN
             RWRK(IPSN+1)=YMIN
             IWRK(IPSN+2)=0
 C
-            IF (IG03.NE.0) THEN
+            IF (.NOT.(IG03.NE.0)) GO TO 10068
               IPPN=IG03
               IG03=IWRK(IG03)
-            ELSE
+            GO TO 10069
+10068       CONTINUE
               IPWU=IPWU-3
-              IF (IPWU.LE.IPWL) THEN
-                GO TO 10009
-              END IF
+              IF (.NOT.(IPWU.LE.IPWL)) GO TO 10070
+                GO TO 10017
+10070         CONTINUE
               IPPN=IPWU
-            END IF
+10069       CONTINUE
 C
             IWRK(IPPN  )=IPSN
             IWRK(IPPN+1)=IPSN
@@ -455,12 +475,13 @@ C
             IWRK(IPNL+9)=IPPN
             IWRK(IPNN+9)=IPPN
 C
-          ELSE
+          GO TO 10072
+10063     CONTINUE
 C
             IWRK(IPNL+9)=0
             IWRK(IPNN+9)=0
 C
-          END IF
+10072     CONTINUE
 C
 C Put the current LMT node on the appropriate garbage list for re-use.
 C
@@ -473,13 +494,13 @@ C
 C
 C End of the loop through the LMT.
 C
-        GO TO 10019
-10020   CONTINUE
+        GO TO 10037
+10038   CONTINUE
 C
 C At this point, if the AET is empty, the scanbeam loop is exited.
 C
   103 CONTINUE
-        IF (IAET.EQ.0) GO TO 10027
+        IF (IAET.EQ.0) GO TO 10073
 C
 C Scan the AET to compute the value of the Y coordinate at the top of
 C the scanbeam (YTOS) and to look for horizontal edges in the list.
@@ -490,11 +511,11 @@ C
 C
         IF (ILMT.NE.0) YTOS=MIN(YTOS,RWRK(ILMT))
 C
-10028   CONTINUE
+10074   CONTINUE
 C
 C Check for a horizontal section.
 C
-          IF (YTOS.EQ.YBOS) THEN
+          IF (.NOT.(YTOS.EQ.YBOS)) GO TO 10075
 C
 C Step through points in the user's arrays until the end of the
 C horizontal section is reached, updating the X coordinate and the
@@ -502,45 +523,53 @@ C index of the successor edge as we go.
 C
             INNP=ABS(IWRK(ITMP+8))
 C
-10029       CONTINUE
+10076       CONTINUE
 C
-              IF (IWRK(ITMP+4).EQ.0) THEN
-                IF (INNP.LT.1) THEN
+              IF (.NOT.(IWRK(ITMP+4).EQ.0)) GO TO 10077
+                IF (.NOT.(INNP.LT.1)) GO TO 10078
                   INNP=INNP+LCCP
-                ELSE IF (INNP.GT.LCCP) THEN
+                GO TO 10079
+10078           CONTINUE
+                IF (.NOT.(INNP.GT.LCCP)) GO TO 10080
                   INNP=INNP-LCCP
-                END IF
-                IF (YCCP(INNP).NE.YBOS) GO TO 10030
+10079           CONTINUE
+10080           CONTINUE
+                IF (YCCP(INNP).NE.YBOS) GO TO 10081
                 RWRK(ITMP)=XCCP(INNP)
-              ELSE
-                IF (INNP.LT.1) THEN
+              GO TO 10082
+10077         CONTINUE
+                IF (.NOT.(INNP.LT.1)) GO TO 10083
                   INNP=INNP+LCSP
-                ELSE IF (INNP.GT.LCSP) THEN
+                GO TO 10084
+10083           CONTINUE
+                IF (.NOT.(INNP.GT.LCSP)) GO TO 10085
                   INNP=INNP-LCSP
-                END IF
-                IF (YCSP(INNP).NE.YBOS) GO TO 10030
+10084           CONTINUE
+10085           CONTINUE
+                IF (YCSP(INNP).NE.YBOS) GO TO 10081
                 RWRK(ITMP)=XCSP(INNP)
-              END IF
+10082         CONTINUE
 C
               RWRK(ITMP+1)=RWRK(ITMP)
 C
               IWRK(ITMP+8)=SIGN(INNP,IWRK(ITMP+8))
               INNP=INNP+SIGN(1,IWRK(ITMP+8))
 C
-            GO TO 10029
-10030       CONTINUE
+            GO TO 10076
+10081       CONTINUE
 C
 C Compute a quantity that will be used to recognize the successor of
 C the horizontal edge.
 C
             INNL=ABS(IWRK(ITMP+8))-SIGN(1,IWRK(ITMP+8))
-            IF (INNL.LE.0) THEN
-              IF (IWRK(ITMP+4).EQ.0) THEN
+            IF (.NOT.(INNL.LE.0)) GO TO 10086
+              IF (.NOT.(IWRK(ITMP+4).EQ.0)) GO TO 10087
                 INNL=INNL+LCCP
-              ELSE
+              GO TO 10088
+10087         CONTINUE
                 INNL=INNL+LCSP
-              END IF
-            END IF
+10088         CONTINUE
+10086       CONTINUE
             INNL=-SIGN(INNL,IWRK(ITMP+8))
 C
 C Zero the pointer to the list of intersection points.
@@ -564,32 +593,33 @@ C
 C
 C Generate the list of intersection points, either to the left ...
 C
-            IF (IWRK(ITMP+7).NE.0) THEN
+            IF (.NOT.(IWRK(ITMP+7).NE.0)) GO TO 10089
 C
               IDUM=IWRK(ITMP+7)
 C
-10031         CONTINUE
+10090         CONTINUE
 C
-                IF (RWRK(IDUM).LT.RWRK(ITMP)) GO TO 10032
+                IF (RWRK(IDUM).LT.RWRK(ITMP)) GO TO 10091
 C
-                IF (IWRK(IDUM+4).EQ.IWRK(ITMP+4).AND.IWRK(IDUM+8).EQ.INN
-     +L) THEN
+                IF (.NOT.(IWRK(IDUM+4).EQ.IWRK(ITMP+4).AND.IWRK(IDUM+8).
+     +EQ.INNL)) GO TO 10092
                   IINQ=IINN
-                  GO TO 10032
-                END IF
+                  GO TO 10091
+10092           CONTINUE
 C
-                IF (IINT.EQ.0) THEN
+                IF (.NOT.(IINT.EQ.0)) GO TO 10093
                   IINT=IPWL+1
-                ELSE
+                GO TO 10094
+10093           CONTINUE
                   IWRK(IINN+4)=IPWL+1
-                END IF
+10094           CONTINUE
 C
                 IINN=IPWL+1
                 IPWL=IPWL+5
 C
-                IF (IPWL.GE.IPWU) THEN
-                  GO TO 10009
-                END IF
+                IF (.NOT.(IPWL.GE.IPWU)) GO TO 10095
+                  GO TO 10017
+10095           CONTINUE
 C
                 RWRK(IINN)=RWRK(IDUM)
                 RWRK(IINN+1)=YBOS
@@ -601,47 +631,48 @@ C
 C
                 IDUM=IWRK(IDUM+7)
 C
-                IF (IDUM.EQ.0) GO TO 10032
+                IF (IDUM.EQ.0) GO TO 10091
 C
-              GO TO 10031
-10032         CONTINUE
+              GO TO 10090
+10091         CONTINUE
 C
-            END IF
+10089       CONTINUE
 C
 C ... or to the right.
 C
-            IF (IINQ.EQ.0) THEN
+            IF (.NOT.(IINQ.EQ.0)) GO TO 10097
 C
               IINT=0
               IPWL=ISWL
               IINN=-1
 C
-              IF (IWRK(ITMP+6).NE.0) THEN
+              IF (.NOT.(IWRK(ITMP+6).NE.0)) GO TO 10098
 C
                 IDUM=IWRK(ITMP+6)
 C
-10034           CONTINUE
+10099           CONTINUE
 C
-                  IF (RWRK(IDUM).GT.RWRK(ITMP)) GO TO 10035
+                  IF (RWRK(IDUM).GT.RWRK(ITMP)) GO TO 10100
 C
-                  IF (IWRK(IDUM+4).EQ.IWRK(ITMP+4).AND.IWRK(IDUM+8).EQ.I
-     +NNL) THEN
+                  IF (.NOT.(IWRK(IDUM+4).EQ.IWRK(ITMP+4).AND.IWRK(IDUM+8
+     +).EQ.INNL)) GO TO 10101
                     IINQ=IINN
-                    GO TO 10035
-                  END IF
+                    GO TO 10100
+10101             CONTINUE
 C
-                  IF (IINT.EQ.0) THEN
+                  IF (.NOT.(IINT.EQ.0)) GO TO 10102
                     IINT=IPWL+1
-                  ELSE
+                  GO TO 10103
+10102             CONTINUE
                     IWRK(IINN+4)=IPWL+1
-                  END IF
+10103             CONTINUE
 C
                   IINN=IPWL+1
                   IPWL=IPWL+5
 C
-                  IF (IPWL.GE.IPWU) THEN
-                    GO TO 10009
-                  END IF
+                  IF (.NOT.(IPWL.GE.IPWU)) GO TO 10104
+                    GO TO 10017
+10104             CONTINUE
 C
                   RWRK(IINN)=RWRK(IDUM)
                   RWRK(IINN+1)=YBOS
@@ -653,47 +684,50 @@ C
 C
                   IDUM=IWRK(IDUM+6)
 C
-                  IF (IDUM.EQ.0) GO TO 10035
+                  IF (IDUM.EQ.0) GO TO 10100
 C
-                GO TO 10034
-10035           CONTINUE
+                GO TO 10099
+10100           CONTINUE
 C
-              END IF
+10098         CONTINUE
 C
-            END IF
+10097       CONTINUE
 C
 C Clear entries at the end of the intersection list that don't need to
 C be considered to be intersections.  (This may clear the whole list.)
 C
-            IF (IINQ.EQ.0) THEN
+            IF (.NOT.(IINQ.EQ.0)) GO TO 10106
               IINT=0
               IPWL=ISWL
-            ELSE IF (IINQ.GT.0) THEN
+            GO TO 10107
+10106       CONTINUE
+            IF (.NOT.(IINQ.GT.0)) GO TO 10108
               IWRK(IINQ+4)=0
-            END IF
+10107       CONTINUE
+10108       CONTINUE
 C
 C If any intersection points were found, process them and then reclaim
 C the space used for the list.
 C
-            IF (IINT.NE.0) THEN
-              L10038=    1
-              GO TO 10038
-10037         CONTINUE
+            IF (.NOT.(IINT.NE.0)) GO TO 10109
+              L10111=    1
+              GO TO 10111
+10110         CONTINUE
               IPWL=ISWL
-            END IF
+10109       CONTINUE
 C
 C The horizontal edge is terminating at this point, so handle that.
 C
-            L10040=    1
-            GO TO 10040
-10039       CONTINUE
+            L10113=    1
+            GO TO 10113
+10112       CONTINUE
 C
 C Go back to see if the AET is empty now and, if not, to rescan it for
 C more horizontal segments.
 C
             GO TO 103
 C
-          END IF
+10075     CONTINUE
 C
 C Move to the next node in the AET.
 C
@@ -701,14 +735,14 @@ C
 C
 C Quit if there are none.
 C
-          IF (ITMP.EQ.0) GO TO 10041
+          IF (ITMP.EQ.0) GO TO 10114
 C
 C Update the variable that says where the top of the scanbeam is.
 C
           YTOS=MIN(YTOS,RWRK(ITMP+2))
 C
-        GO TO 10028
-10041   CONTINUE
+        GO TO 10074
+10114   CONTINUE
 C
 C Create a table of all intersections of edges in the AET, sorted in
 C order of increasing Y coordinate.  To do this, we also create a table
@@ -733,9 +767,9 @@ C
 C
         IPWL=IPWL+3
 C
-        IF (IPWL.GE.IPWU) THEN
-          GO TO 10009
-        END IF
+        IF (.NOT.(IPWL.GE.IPWU)) GO TO 10115
+          GO TO 10017
+10115   CONTINUE
 C
         RWRK(ISET)=RWRK(IAET+1)+(YTOS-RWRK(IAET+2))*RWRK(IAET+3)
         IWRK(ISET+1)=IAET
@@ -749,70 +783,75 @@ C end up adjacent to each other in the AET.
 C
         ITMP=IWRK(IAET+6)
 C
-10043   CONTINUE
+10117   CONTINUE
 C
-          IF (ITMP.EQ.0) GO TO 10044
+          IF (ITMP.EQ.0) GO TO 10118
 C
           XTMP=RWRK(ITMP+1)+(YTOS-RWRK(ITMP+2))*RWRK(ITMP+3)
 C
           IST1=0
           IST2=ISET
 C
-10045     CONTINUE
+10119     CONTINUE
 C
-            IF (IST2.EQ.0) GO TO 10046
-            IF (XTMP.GT.RWRK(IST2)) GO TO 10046
+            IF (IST2.EQ.0) GO TO 10120
+            IF (XTMP.GT.RWRK(IST2)) GO TO 10120
 C
-            IF (XTMP.EQ.RWRK(IST2)) THEN
+            IF (.NOT.(XTMP.EQ.RWRK(IST2))) GO TO 10121
 C
               IST3=IWRK(IST2+2)
               IST4=0
 C
-10047         CONTINUE
+10122         CONTINUE
 C
-                IF (IST3.EQ.0) GO TO 10048
-                IF (XTMP.NE.RWRK(IST3)) GO TO 10048
+                IF (IST3.EQ.0) GO TO 10123
+                IF (XTMP.NE.RWRK(IST3)) GO TO 10123
 C
-                IF (IWRK(IWRK(IST3+1)+4).EQ.IWRK(ITMP+4).AND.IWRK(IWRK(I
-     +ST3+1)+8).EQ.-IWRK(ITMP+8)) THEN
+                IF (.NOT.(IWRK(IWRK(IST3+1)+4).EQ.IWRK(ITMP+4).AND.IWRK(
+     +IWRK(IST3+1)+8).EQ.-IWRK(ITMP+8))) GO TO 10124
                   IST4=1
-                  GO TO 10048
-                END IF
+                  GO TO 10123
+10124           CONTINUE
 C
                 IST3=IWRK(IST3+2)
 C
-              GO TO 10047
-10048         CONTINUE
+              GO TO 10122
+10123         CONTINUE
 C
-              IF (IST4.EQ.0) GO TO 10046
+              IF (IST4.EQ.0) GO TO 10120
 C
               XINT=XTMP
               YINT=YTOS
 C
-            ELSE
+            GO TO 10125
+10121       CONTINUE
 C
-              IF (ABS(RWRK(ITMP+3)-RWRK(IWRK(IST2+1)+3)).GT.1.E-6) THEN
+              IF (.NOT.(ABS(RWRK(ITMP+3)-RWRK(IWRK(IST2+1)+3)).GT.1.E-6)
+     +)       GO TO 10126
                 YINT=YBOS-(RWRK(ITMP  )-RWRK(IWRK(IST2+1)  ))/
      +                    (RWRK(ITMP+3)-RWRK(IWRK(IST2+1)+3))
-              ELSE
+              GO TO 10127
+10126         CONTINUE
                 YINT=.5*(YBOS+YTOS)
-              END IF
+10127         CONTINUE
 C
-              IF (ABS(RWRK(ITMP+3)).LT.ABS(RWRK(IWRK(IST2+1)+3))) THEN
+              IF (.NOT.(ABS(RWRK(ITMP+3)).LT.ABS(RWRK(IWRK(IST2+1)+3))))
+     +        GO TO 10128
                 XINT=RWRK(ITMP+1)+(YINT-RWRK(ITMP+2))*RWRK(ITMP+3)
-              ELSE
+              GO TO 10129
+10128         CONTINUE
                 XINT=RWRK(IWRK(IST2+1)+1)+(YINT-RWRK(IWRK(IST2+1)+2))*
      +               RWRK(IWRK(IST2+1)+3)
-              END IF
+10129         CONTINUE
 C
-            END IF
+10125       CONTINUE
 C
             IINN=IPWL+1
             IPWL=IPWL+5
 C
-            IF (IPWL.GE.IPWU) THEN
-              GO TO 10009
-            END IF
+            IF (.NOT.(IPWL.GE.IPWU)) GO TO 10130
+              GO TO 10017
+10130       CONTINUE
 C
             RWRK(IINN)=XINT
             RWRK(IINN+1)=YINT
@@ -822,40 +861,42 @@ C
             IIN1=0
             IIN2=IINT
 C
-10050       CONTINUE
-              IF (IIN2.EQ.0) GO TO 10051
-              IF (RWRK(IINN+1).LE.RWRK(IIN2+1)) GO TO 10051
+10132       CONTINUE
+              IF (IIN2.EQ.0) GO TO 10133
+              IF (RWRK(IINN+1).LE.RWRK(IIN2+1)) GO TO 10133
               IIN1=IIN2
               IIN2=IWRK(IIN2+4)
-            GO TO 10050
-10051       CONTINUE
+            GO TO 10132
+10133       CONTINUE
 C
-            IF (IIN1.EQ.0) THEN
+            IF (.NOT.(IIN1.EQ.0)) GO TO 10134
               IINT=IINN
-            ELSE
+            GO TO 10135
+10134       CONTINUE
               IWRK(IIN1+4)=IINN
-            END IF
+10135       CONTINUE
 C
             IWRK(IINN+4)=IIN2
 C
             IST1=IST2
             IST2=IWRK(IST2+2)
 C
-          GO TO 10045
-10046     CONTINUE
+          GO TO 10119
+10120     CONTINUE
 C
           ISTN=IPWL+1
           IPWL=IPWL+3
 C
-          IF (IPWL.GE.IPWU) THEN
-            GO TO 10009
-          END IF
+          IF (.NOT.(IPWL.GE.IPWU)) GO TO 10136
+            GO TO 10017
+10136     CONTINUE
 C
-          IF (IST1.EQ.0) THEN
+          IF (.NOT.(IST1.EQ.0)) GO TO 10138
             ISET=ISTN
-          ELSE
+          GO TO 10139
+10138     CONTINUE
             IWRK(IST1+2)=ISTN
-          END IF
+10139     CONTINUE
 C
           RWRK(ISTN)=XTMP
           IWRK(ISTN+1)=ITMP
@@ -863,16 +904,16 @@ C
 C
           ITMP=IWRK(ITMP+6)
 C
-        GO TO 10043
-10044   CONTINUE
+        GO TO 10117
+10118   CONTINUE
 C
 C If intersections have been found, process them.
 C
-        IF (IINT.NE.0) THEN
-          L10038=    2
-          GO TO 10038
-10053     CONTINUE
-        END IF
+        IF (.NOT.(IINT.NE.0)) GO TO 10140
+          L10111=    2
+          GO TO 10111
+10141     CONTINUE
+10140   CONTINUE
 C
 C Discard the intersection table and the sorted edge table.
 C
@@ -883,11 +924,11 @@ C further processing those that terminate at the top of the scanbeam.
 C
         ITMP=IAET
 C
-10054   CONTINUE
+10142   CONTINUE
 C
 C Exit if all the edges have been done.
 C
-          IF (ITMP.EQ.0) GO TO 10055
+          IF (ITMP.EQ.0) GO TO 10143
 C
 C Update the X coordinate to its position at the top of the scanbeam.
 C
@@ -895,11 +936,11 @@ C
 C
 C If the edge terminates at the top of this scanbeam, process it.
 C
-          IF (RWRK(ITMP+2).EQ.YTOS) THEN
-            L10040=    2
-            GO TO 10040
-10056       CONTINUE
-          END IF
+          IF (.NOT.(RWRK(ITMP+2).EQ.YTOS)) GO TO 10144
+            L10113=    2
+            GO TO 10113
+10145       CONTINUE
+10144     CONTINUE
 C
 C Advance to the next edge in the AET.
 C
@@ -907,13 +948,13 @@ C
 C
 C End of loop on edges in the AET.
 C
-        GO TO 10054
-10055   CONTINUE
+        GO TO 10142
+10143   CONTINUE
 C
 C End of scanbeam loop.
 C
-      GO TO 10018
-10027 CONTINUE
+      GO TO 10036
+10073 CONTINUE
 C
 C Dump out all the polygons that have been formed.
 C
@@ -946,43 +987,43 @@ C         IPPL=IWRK(IPPL+2)
 C       END WHILE
 C
       MXYC=(IPWU-1-IPWL)/2
-      IF (MXYC.LT.1) THEN
-        GO TO 10009
-      END IF
+      IF (.NOT.(MXYC.LT.1)) GO TO 10146
+        GO TO 10017
+10146 CONTINUE
       IPXC=IPWL
       IPYC=IPWL+MXYC
-10058 CONTINUE
-      IF (.NOT.(IPPL.NE.0)) GO TO 10059
+10148 CONTINUE
+      IF (.NOT.(IPPL.NE.0)) GO TO 10149
         NXYC=1
         ITMP=IWRK(IPPL)
         RWRK(IPXC+1)=RWRK(ITMP  )
         RWRK(IPYC+1)=RWRK(ITMP+1)
         ITMP=IWRK(ITMP+2)
-10060   CONTINUE
-        IF (.NOT.(ITMP.NE.0)) GO TO 10061
-          IF (RWRK(ITMP).NE.RWRK(IPXC+NXYC).OR.RWRK(ITMP+1).NE.RWRK(IPYC
-     ++NXYC)) THEN
+10150   CONTINUE
+        IF (.NOT.(ITMP.NE.0)) GO TO 10151
+          IF (.NOT.(RWRK(ITMP).NE.RWRK(IPXC+NXYC).OR.RWRK(ITMP+1).NE.RWR
+     +K(IPYC+NXYC))) GO TO 10152
             NXYC=NXYC+1
-            IF (NXYC.GE.MXYC) THEN
-              GO TO 10009
-            END IF
+            IF (.NOT.(NXYC.GE.MXYC)) GO TO 10153
+              GO TO 10017
+10153       CONTINUE
             RWRK(IPXC+NXYC)=RWRK(ITMP)
             RWRK(IPYC+NXYC)=RWRK(ITMP+1)
-          END IF
+10152     CONTINUE
           ITMP=IWRK(ITMP+2)
-        GO TO 10060
-10061   CONTINUE
-        IF (RWRK(IPXC+NXYC).NE.RWRK(IPXC+1).OR.RWRK(IPYC+NXYC).NE.RWRK(I
-     +PYC+1)) THEN
+        GO TO 10150
+10151   CONTINUE
+        IF (.NOT.(RWRK(IPXC+NXYC).NE.RWRK(IPXC+1).OR.RWRK(IPYC+NXYC).NE.
+     +RWRK(IPYC+1))) GO TO 10155
           NXYC=NXYC+1
           RWRK(IPXC+NXYC)=RWRK(IPXC+1)
           RWRK(IPYC+NXYC)=RWRK(IPYC+1)
-        END IF
-        IF (NXYC.GE.4) 
+10155   CONTINUE
+        IF (NXYC.GE.4)
      +        CALL GZPUTR(NXYC,NXYC,RWRK(IPXC+1),RWRK(IPYC+1),1,IERR)
         IPPL=IWRK(IPPL+2)
-      GO TO 10058
-10059 CONTINUE
+      GO TO 10148
+10149 CONTINUE
 C
 C Normal exit.
 C
@@ -992,11 +1033,11 @@ C The following internal procedure processes the list of intersection
 C points that IINT points to.  On entry, it may be assumed that IINT
 C has been verified to be non-zero.
 C
-10038 CONTINUE
+10111 CONTINUE
 C
 C Loop through all the points of intersection.
 C
-10063   CONTINUE
+10156   CONTINUE
 C
 C Extract the coordinates of the point of intersection and the indices
 C of the two AET nodes describing the edges that intersected.
@@ -1013,25 +1054,25 @@ C If the two edges are not adjacent in the AET, there's a problem.  We
 C look for the next intersection of adjacent edges and move it to the
 C beginning of the list.
 C
-          IF (IWRK(IPE1+6).NE.IPE2) THEN
+          IF (.NOT.(IWRK(IPE1+6).NE.IPE2)) GO TO 10157
 C
             IIN1=IINT
             IIN2=IWRK(IINT+4)
 C
-10064       CONTINUE
+10158       CONTINUE
 C
-              IF (IIN2.EQ.0) THEN
+              IF (.NOT.(IIN2.EQ.0)) GO TO 10159
                 IERR=1
-                GO TO 10066
-              END IF
+                GO TO 10161
+10159         CONTINUE
 C
-              IF (IWRK(IWRK(IIN2+2)+6).EQ.IWRK(IIN2+3)) GO TO 10067
+              IF (IWRK(IWRK(IIN2+2)+6).EQ.IWRK(IIN2+3)) GO TO 10162
 C
               IIN1=IIN2
               IIN2=IWRK(IIN2+4)
 C
-            GO TO 10064
-10067       CONTINUE
+            GO TO 10158
+10162       CONTINUE
 C
             IWRK(IIN1+4)=IWRK(IIN2+4)
             IWRK(IIN2+4)=IINT
@@ -1039,11 +1080,11 @@ C
 C
             GO TO 201
 C
-          END IF
+10157     CONTINUE
 C
 C Check whether or not both edges are from the same input polygon.
 C
-          IF (IWRK(IPE1+4).EQ.IWRK(IPE2+4)) THEN
+          IF (.NOT.(IWRK(IPE1+4).EQ.IWRK(IPE2+4))) GO TO 10163
 C
 C Both edges are from the clip polygon or both are from the subject
 C polygon.  If edge 1 is contributing to an output polygon, then edge
@@ -1052,60 +1093,66 @@ C the left side of one polygon and to the right side of the other
 C polygon.  In either case, we must swap the left/right flags in the
 C two edges.
 C
-            IF (IWRK(IPE1+9).NE.0.OR.IWRK(IPE2+9).NE.0) THEN
+            IF (.NOT.(IWRK(IPE1+9).NE.0.OR.IWRK(IPE2+9).NE.0)) GO TO 101
+     +64
 C
-              IF (IWRK(IPE1+9).EQ.0.OR.IWRK(IPE2+9).EQ.0) THEN
+              IF (.NOT.(IWRK(IPE1+9).EQ.0.OR.IWRK(IPE2+9).EQ.0)) GO TO 1
+     +0165
                 IERR=2
-                GO TO 10066
-              END IF
+                GO TO 10161
+10165         CONTINUE
 C
-              IF (IG03.NE.0) THEN
+              IF (.NOT.(IG03.NE.0)) GO TO 10167
                 IPSN=IG03
                 IG03=IWRK(IG03)
-              ELSE
+              GO TO 10168
+10167         CONTINUE
                 IPWU=IPWU-3
-                IF (IPWU.LE.IPWL) THEN
-                  GO TO 10009
-                END IF
+                IF (.NOT.(IPWU.LE.IPWL)) GO TO 10169
+                  GO TO 10017
+10169           CONTINUE
                 IPSN=IPWU
-              END IF
+10168         CONTINUE
 C
               RWRK(IPSN  )=XINT
               RWRK(IPSN+1)=YINT
 C
-              IF (IWRK(IPE1+5).EQ.0) THEN
+              IF (.NOT.(IWRK(IPE1+5).EQ.0)) GO TO 10171
                 IWRK(IPSN+2)=IWRK(IWRK(IPE1+9))
                 IWRK(IWRK(IPE1+9))=IPSN
-              ELSE
+              GO TO 10172
+10171         CONTINUE
                 IWRK(IPSN+2)=0
                 IWRK(IWRK(IWRK(IPE1+9)+1)+2)=IPSN
                 IWRK(IWRK(IPE1+9)+1)=IPSN
-              END IF
+10172         CONTINUE
 C
-              IF (IG03.NE.0) THEN
+              IF (.NOT.(IG03.NE.0)) GO TO 10173
                 IPSN=IG03
                 IG03=IWRK(IG03)
-              ELSE
+              GO TO 10174
+10173         CONTINUE
                 IPWU=IPWU-3
-                IF (IPWU.LE.IPWL) THEN
-                  GO TO 10009
-                END IF
+                IF (.NOT.(IPWU.LE.IPWL)) GO TO 10175
+                  GO TO 10017
+10175           CONTINUE
                 IPSN=IPWU
-              END IF
+10174         CONTINUE
 C
               RWRK(IPSN  )=XINT
               RWRK(IPSN+1)=YINT
 C
-              IF (IWRK(IPE2+5).EQ.0) THEN
+              IF (.NOT.(IWRK(IPE2+5).EQ.0)) GO TO 10177
                 IWRK(IPSN+2)=IWRK(IWRK(IPE2+9))
                 IWRK(IWRK(IPE2+9))=IPSN
-              ELSE
+              GO TO 10178
+10177         CONTINUE
                 IWRK(IPSN+2)=0
                 IWRK(IWRK(IWRK(IPE2+9)+1)+2)=IPSN
                 IWRK(IWRK(IPE2+9)+1)=IPSN
-              END IF
+10178         CONTINUE
 C
-            END IF
+10164       CONTINUE
 C
             IDUM=IWRK(IPE1+5)
             IWRK(IPE1+5)=IWRK(IPE2+5)
@@ -1114,42 +1161,48 @@ C
 C One edge is from the clip polygon and the other is from the
 C subject polygon.  Check for a local minimum.
 C
-          ELSE IF ((IWRK(IPE1+4).EQ.1.AND.IWRK(IPE1+5).EQ.1.AND.IWRK(IPE
-     +2+4).EQ.0.AND.IWRK(IPE2+5).EQ.0).OR.(IWRK(IPE1+4).EQ.0.AND.IWRK(IP
-     +E1+5).EQ.1.AND.IWRK(IPE2+4).EQ.1.AND.IWRK(IPE2+5).EQ.0)) THEN
+          GO TO 10179
+10163     CONTINUE
+          IF (.NOT.((IWRK(IPE1+4).EQ.1.AND.IWRK(IPE1+5).EQ.1.AND.IWRK(IP
+     +E2+4).EQ.0.AND.IWRK(IPE2+5).EQ.0).OR.(IWRK(IPE1+4).EQ.0.AND.IWRK(I
+     +PE1+5).EQ.1.AND.IWRK(IPE2+4).EQ.1.AND.IWRK(IPE2+5).EQ.0))) GO TO 1
+     +0180
 C
 C Process a local minimum.
 C
-            IF (IWRK(IPE1+9).NE.0.OR.IWRK(IPE2+9).NE.0) THEN
+            IF (.NOT.(IWRK(IPE1+9).NE.0.OR.IWRK(IPE2+9).NE.0)) GO TO 101
+     +81
               IERR=3
-              GO TO 10066
-            END IF
+              GO TO 10161
+10181       CONTINUE
 C
-            IF (IG03.NE.0) THEN
+            IF (.NOT.(IG03.NE.0)) GO TO 10183
               IPSN=IG03
               IG03=IWRK(IG03)
-            ELSE
+            GO TO 10184
+10183       CONTINUE
               IPWU=IPWU-3
-              IF (IPWU.LE.IPWL) THEN
-                GO TO 10009
-              END IF
+              IF (.NOT.(IPWU.LE.IPWL)) GO TO 10185
+                GO TO 10017
+10185         CONTINUE
               IPSN=IPWU
-            END IF
+10184       CONTINUE
 C
             RWRK(IPSN  )=XINT
             RWRK(IPSN+1)=YINT
             IWRK(IPSN+2)=0
 C
-            IF (IG03.NE.0) THEN
+            IF (.NOT.(IG03.NE.0)) GO TO 10187
               IPPN=IG03
               IG03=IWRK(IG03)
-            ELSE
+            GO TO 10188
+10187       CONTINUE
               IPWU=IPWU-3
-              IF (IPWU.LE.IPWL) THEN
-                GO TO 10009
-              END IF
+              IF (.NOT.(IPWU.LE.IPWL)) GO TO 10189
+                GO TO 10017
+10189         CONTINUE
               IPPN=IPWU
-            END IF
+10188       CONTINUE
 C
             IWRK(IPPN  )=IPSN
             IWRK(IPPN+1)=IPSN
@@ -1161,27 +1214,31 @@ C
 C
 C Check for a left intersection.
 C
-          ELSE IF ((IWRK(IPE1+4).EQ.0.AND.IWRK(IPE1+5).EQ.0.AND.IWRK(IPE
-     +2+4).EQ.1.AND.IWRK(IPE2+5).EQ.0).OR.(IWRK(IPE1+4).EQ.1.AND.IWRK(IP
-     +E1+5).EQ.0.AND.IWRK(IPE2+4).EQ.0.AND.IWRK(IPE2+5).EQ.0)) THEN
+          GO TO 10179
+10180     CONTINUE
+          IF (.NOT.((IWRK(IPE1+4).EQ.0.AND.IWRK(IPE1+5).EQ.0.AND.IWRK(IP
+     +E2+4).EQ.1.AND.IWRK(IPE2+5).EQ.0).OR.(IWRK(IPE1+4).EQ.1.AND.IWRK(I
+     +PE1+5).EQ.0.AND.IWRK(IPE2+4).EQ.0.AND.IWRK(IPE2+5).EQ.0))) GO TO 1
+     +0191
 C
 C Process a left intersection.
 C
-            IF (IWRK(IPE2+9).EQ.0) THEN
+            IF (.NOT.(IWRK(IPE2+9).EQ.0)) GO TO 10192
               IERR=4
-              GO TO 10066
-            END IF
+              GO TO 10161
+10192       CONTINUE
 C
-            IF (IG03.NE.0) THEN
+            IF (.NOT.(IG03.NE.0)) GO TO 10194
               IPSN=IG03
               IG03=IWRK(IG03)
-            ELSE
+            GO TO 10195
+10194       CONTINUE
               IPWU=IPWU-3
-              IF (IPWU.LE.IPWL) THEN
-                GO TO 10009
-              END IF
+              IF (.NOT.(IPWU.LE.IPWL)) GO TO 10196
+                GO TO 10017
+10196         CONTINUE
               IPSN=IPWU
-            END IF
+10195       CONTINUE
 C
             RWRK(IPSN  )=XINT
             RWRK(IPSN+1)=YINT
@@ -1191,27 +1248,31 @@ C
 C
 C Check for a right intersection.
 C
-          ELSE IF ((IWRK(IPE1+4).EQ.0.AND.IWRK(IPE1+5).EQ.1.AND.IWRK(IPE
-     +2+4).EQ.1.AND.IWRK(IPE2+5).EQ.1).OR.(IWRK(IPE1+4).EQ.1.AND.IWRK(IP
-     +E1+5).EQ.1.AND.IWRK(IPE2+4).EQ.0.AND.IWRK(IPE2+5).EQ.1)) THEN
+          GO TO 10179
+10191     CONTINUE
+          IF (.NOT.((IWRK(IPE1+4).EQ.0.AND.IWRK(IPE1+5).EQ.1.AND.IWRK(IP
+     +E2+4).EQ.1.AND.IWRK(IPE2+5).EQ.1).OR.(IWRK(IPE1+4).EQ.1.AND.IWRK(I
+     +PE1+5).EQ.1.AND.IWRK(IPE2+4).EQ.0.AND.IWRK(IPE2+5).EQ.1))) GO TO 1
+     +0198
 C
 C Process a right intersection.
 C
-            IF (IWRK(IPE1+9).EQ.0) THEN
+            IF (.NOT.(IWRK(IPE1+9).EQ.0)) GO TO 10199
               IERR=5
-              GO TO 10066
-            END IF
+              GO TO 10161
+10199       CONTINUE
 C
-            IF (IG03.NE.0) THEN
+            IF (.NOT.(IG03.NE.0)) GO TO 10201
               IPSN=IG03
               IG03=IWRK(IG03)
-            ELSE
+            GO TO 10202
+10201       CONTINUE
               IPWU=IPWU-3
-              IF (IPWU.LE.IPWL) THEN
-                GO TO 10009
-              END IF
+              IF (.NOT.(IPWU.LE.IPWL)) GO TO 10203
+                GO TO 10017
+10203         CONTINUE
               IPSN=IPWU
-            END IF
+10202       CONTINUE
 C
             RWRK(IPSN  )=XINT
             RWRK(IPSN+1)=YINT
@@ -1222,16 +1283,20 @@ C
 C
 C Check for a local maximum.
 C
-          ELSE IF ((IWRK(IPE1+4).EQ.1.AND.IWRK(IPE1+5).EQ.0.AND.IWRK(IPE
-     +2+4).EQ.0.AND.IWRK(IPE2+5).EQ.1).OR.(IWRK(IPE1+4).EQ.0.AND.IWRK(IP
-     +E1+5).EQ.0.AND.IWRK(IPE2+4).EQ.1.AND.IWRK(IPE2+5).EQ.1)) THEN
+          GO TO 10179
+10198     CONTINUE
+          IF (.NOT.((IWRK(IPE1+4).EQ.1.AND.IWRK(IPE1+5).EQ.0.AND.IWRK(IP
+     +E2+4).EQ.0.AND.IWRK(IPE2+5).EQ.1).OR.(IWRK(IPE1+4).EQ.0.AND.IWRK(I
+     +PE1+5).EQ.0.AND.IWRK(IPE2+4).EQ.1.AND.IWRK(IPE2+5).EQ.1))) GO TO 1
+     +0205
 C
 C Process a local maximum.
 C
-            IF (IWRK(IPE1+9).EQ.0.OR.IWRK(IPE2+9).EQ.0) THEN
+            IF (.NOT.(IWRK(IPE1+9).EQ.0.OR.IWRK(IPE2+9).EQ.0)) GO TO 102
+     +06
               IERR=6
-              GO TO 10066
-            END IF
+              GO TO 10161
+10206       CONTINUE
 C
             IPP1=IWRK(IPE1+9)
             IPP2=IWRK(IPE2+9)
@@ -1239,16 +1304,17 @@ C
             IWRK(IPE1+9)=0
             IWRK(IPE2+9)=0
 C
-            IF (IG03.NE.0) THEN
+            IF (.NOT.(IG03.NE.0)) GO TO 10208
               IPSN=IG03
               IG03=IWRK(IG03)
-            ELSE
+            GO TO 10209
+10208       CONTINUE
               IPWU=IPWU-3
-              IF (IPWU.LE.IPWL) THEN
-                GO TO 10009
-              END IF
+              IF (.NOT.(IPWU.LE.IPWL)) GO TO 10210
+                GO TO 10017
+10210         CONTINUE
               IPSN=IPWU
-            END IF
+10209       CONTINUE
 C
             RWRK(IPSN  )=XINT
             RWRK(IPSN+1)=YINT
@@ -1258,7 +1324,7 @@ C
 C
 C See if the meeting edges are contributing to the same polygon.
 C
-            IF (IPP1.NE.IPP2) THEN
+            IF (.NOT.(IPP1.NE.IPP2)) GO TO 10212
 C
 C They aren't.  Append the subsidiary nodes of one polygon to the other.
 C
@@ -1269,19 +1335,20 @@ C Remove from the polygon list the polygon whose subsidiary nodes have
 C become part of the other polygon and put its principal node on the
 C garbage list for 3-word nodes, so that it can be re-used.
 C
-              IF (IPPL.EQ.IPP1) THEN
+              IF (.NOT.(IPPL.EQ.IPP1)) GO TO 10213
                 IPPL=IWRK(IPP1+2)
-              ELSE
+              GO TO 10214
+10213         CONTINUE
                 ISPL=IPPL
-10080           CONTINUE
-                  IF (IWRK(ISPL+2).EQ.IPP1) THEN
+10215           CONTINUE
+                  IF (.NOT.(IWRK(ISPL+2).EQ.IPP1)) GO TO 10216
                     IWRK(ISPL+2)=IWRK(IPP1+2)
-                    GO TO 10081
-                  END IF
+                    GO TO 10217
+10216             CONTINUE
                   ISPL=IWRK(ISPL+2)
-                GO TO 10080
-10081           CONTINUE
-              END IF
+                GO TO 10215
+10217           CONTINUE
+10214         CONTINUE
 C
               IWRK(IPP1)=IG03
               IG03=IPP1
@@ -1290,16 +1357,17 @@ C Any AET node that referenced IPP1 must now reference IPP2 instead.
 C
               IDUM=IAET
 C
-10082         CONTINUE
-              IF (.NOT.(IDUM.NE.0)) GO TO 10083
+10218         CONTINUE
+              IF (.NOT.(IDUM.NE.0)) GO TO 10219
                 IF (IWRK(IDUM+9).EQ.IPP1) IWRK(IDUM+9)=IPP2
                 IDUM=IWRK(IDUM+6)
-              GO TO 10082
-10083         CONTINUE
+              GO TO 10218
+10219         CONTINUE
 C
-            END IF
+10212       CONTINUE
 C
-          END IF
+10179     CONTINUE
+10205     CONTINUE
 C
 C Swap the positions of edge 1 and edge 2 in the AET.
 C
@@ -1326,16 +1394,16 @@ C
 C
 C Quit if there are no more points of intersection to process.
 C
-          IF (IINT.EQ.0) GO TO 10084
+          IF (IINT.EQ.0) GO TO 10220
 C
 C End of loop on points of intersection.
 C
-        GO TO 10063
-10084   CONTINUE
+        GO TO 10156
+10220   CONTINUE
 C
 C End of internal procedure to process a list of intersections.
 C
-      GO TO (10037,10053) , L10038
+      GO TO (10110,10141) , L10111
 C
 C The following internal procedure processes an edge in the AET that is
 C terminating at the top of the current scanbeam.  The variable ITMP
@@ -1344,7 +1412,7 @@ C from the AET (which can happen), the procedure must adjust the value
 C of ITMP so that the next-node pointer in the AET node that ITMP
 C points at properly specifies the next AET node to be examined.
 C
-10040 CONTINUE
+10113 CONTINUE
 C
 C Find the index, in the user's arrays, of the end point of the
 C successor edge.
@@ -1354,47 +1422,55 @@ C
 C Extract the X and Y coordinates of the end point of the successor
 C edge.
 C
-        IF (IWRK(ITMP+4).EQ.0) THEN
-          IF (INNP.LT.1) THEN
+        IF (.NOT.(IWRK(ITMP+4).EQ.0)) GO TO 10221
+          IF (.NOT.(INNP.LT.1)) GO TO 10222
             INNP=INNP+LCCP
-          ELSE IF (INNP.GT.LCCP) THEN
+          GO TO 10223
+10222     CONTINUE
+          IF (.NOT.(INNP.GT.LCCP)) GO TO 10224
             INNP=INNP-LCCP
-          END IF
+10223     CONTINUE
+10224     CONTINUE
           XCNP=XCCP(INNP)
           YCNP=YCCP(INNP)
-        ELSE
-          IF (INNP.LT.1) THEN
+        GO TO 10225
+10221   CONTINUE
+          IF (.NOT.(INNP.LT.1)) GO TO 10226
             INNP=INNP+LCSP
-          ELSE IF (INNP.GT.LCSP) THEN
+          GO TO 10227
+10226     CONTINUE
+          IF (.NOT.(INNP.GT.LCSP)) GO TO 10228
             INNP=INNP-LCSP
-          END IF
+10227     CONTINUE
+10228     CONTINUE
           XCNP=XCSP(INNP)
           YCNP=YCSP(INNP)
-        END IF
+10225   CONTINUE
 C
 C Check the vertical position of the end point of the successor edge.
 C
-        IF (YCNP.GE.YTOS) THEN
+        IF (.NOT.(YCNP.GE.YTOS)) GO TO 10229
 C
 C The end point of the successor edge is above the top of the scanbeam.
 C
 C Check whether the edge is contributing to a polygon.
 C
-          IF (IWRK(ITMP+9).NE.0) THEN
+          IF (.NOT.(IWRK(ITMP+9).NE.0)) GO TO 10230
 C
 C The edge is contributing to a polygon.  Form a subsidiary polygon
 C node to add to that polygon.
 C
-            IF (IG03.NE.0) THEN
+            IF (.NOT.(IG03.NE.0)) GO TO 10231
               IPSN=IG03
               IG03=IWRK(IG03)
-            ELSE
+            GO TO 10232
+10231       CONTINUE
               IPWU=IPWU-3
-              IF (IPWU.LE.IPWL) THEN
-                GO TO 10009
-              END IF
+              IF (.NOT.(IPWU.LE.IPWL)) GO TO 10233
+                GO TO 10017
+10233         CONTINUE
               IPSN=IPWU
-            END IF
+10232       CONTINUE
 C
             RWRK(IPSN  )=RWRK(ITMP)
             RWRK(IPSN+1)=YTOS
@@ -1403,104 +1479,111 @@ C Add the end point of the current edge to either the left end or the
 C right end of the polygon to which the edge is contributing, whichever
 C is appropriate.
 C
-            IF (IWRK(ITMP+5).EQ.0) THEN
+            IF (.NOT.(IWRK(ITMP+5).EQ.0)) GO TO 10235
               IWRK(IPSN+2)=IWRK(IWRK(ITMP+9))
               IWRK(IWRK(ITMP+9))=IPSN
-            ELSE
+            GO TO 10236
+10235       CONTINUE
               IWRK(IPSN+2)=0
               IWRK(IWRK(IWRK(ITMP+9)+1)+2)=IPSN
               IWRK(IWRK(ITMP+9)+1)=IPSN
-            END IF
+10236       CONTINUE
 C
-          END IF
+10230     CONTINUE
 C
 C Update the node to represent its successor edge.
 C
           RWRK(ITMP+1)=XCNP
           RWRK(ITMP+2)=YCNP
 C
-          IF (YCNP.NE.YTOS) THEN
+          IF (.NOT.(YCNP.NE.YTOS)) GO TO 10237
             RWRK(ITMP+3)=(XCNP-RWRK(ITMP))/(YCNP-YTOS)
-          ELSE
+          GO TO 10238
+10237     CONTINUE
             RWRK(ITMP+3)=SIGN(RBIG,XCNP-RWRK(ITMP))
-          END IF
+10238     CONTINUE
 C
           IWRK(ITMP+8)=SIGN(INNP,IWRK(ITMP+8))
 C
-        ELSE
+        GO TO 10239
+10229   CONTINUE
 C
 C The end point of the successor edge is below the top of the scanbeam.
 C We have arrived at a local maximum, so handle that case.
 C
-          IF (IWRK(ITMP+6).EQ.0) THEN
+          IF (.NOT.(IWRK(ITMP+6).EQ.0)) GO TO 10240
             IERR=7
-            GO TO 10066
-          END IF
+            GO TO 10161
+10240     CONTINUE
 C
           IPP1=IWRK(ITMP+9)
           IPP2=IWRK(IWRK(ITMP+6)+9)
 C
-          IF (IPP1.NE.0.OR.IPP2.NE.0) THEN
+          IF (.NOT.(IPP1.NE.0.OR.IPP2.NE.0)) GO TO 10242
 C
-            IF (IPP1.EQ.0.OR.IPP2.EQ.0) THEN
+            IF (.NOT.(IPP1.EQ.0.OR.IPP2.EQ.0)) GO TO 10243
               IERR=8
-              GO TO 10066
-            END IF
+              GO TO 10161
+10243       CONTINUE
 C
-            IF (IG03.NE.0) THEN
+            IF (.NOT.(IG03.NE.0)) GO TO 10245
               IPSN=IG03
               IG03=IWRK(IG03)
-            ELSE
+            GO TO 10246
+10245       CONTINUE
               IPWU=IPWU-3
-              IF (IPWU.LE.IPWL) THEN
-                GO TO 10009
-              END IF
+              IF (.NOT.(IPWU.LE.IPWL)) GO TO 10247
+                GO TO 10017
+10247         CONTINUE
               IPSN=IPWU
-            END IF
+10246       CONTINUE
 C
             RWRK(IPSN  )=RWRK(ITMP)
             RWRK(IPSN+1)=YTOS
 C
-            IF (IWRK(ITMP+5).EQ.0) THEN
+            IF (.NOT.(IWRK(ITMP+5).EQ.0)) GO TO 10249
               IWRK(IPSN+2)=IWRK(IPP1)
               IWRK(IPP1)=IPSN
-            ELSE
+            GO TO 10250
+10249       CONTINUE
               IWRK(IPSN+2)=0
               IWRK(IWRK(IPP1+1)+2)=IPSN
               IWRK(IPP1+1)=IPSN
-            END IF
+10250       CONTINUE
 C
 C See if the meeting edges are contributing to the same polygon.
 C
-            IF (IPP1.NE.IPP2) THEN
+            IF (.NOT.(IPP1.NE.IPP2)) GO TO 10251
 C
 C They aren't.  Append the subsidiary nodes of one polygon to the other.
 C
-              IF (IWRK(ITMP+5).EQ.0) THEN
+              IF (.NOT.(IWRK(ITMP+5).EQ.0)) GO TO 10252
                 IWRK(IWRK(IPP2+1)+2)=IWRK(IPP1)
                 IWRK(IPP2+1)=IWRK(IPP1+1)
-              ELSE
+              GO TO 10253
+10252         CONTINUE
                 IWRK(IWRK(IPP1+1)+2)=IWRK(IPP2)
                 IWRK(IPP2)=IWRK(IPP1)
-              END IF
+10253         CONTINUE
 C
 C Remove from the polygon list the polygon whose subsidiary nodes have
 C become part of the other polygon and put its principal node on the
 C garbage list for 3-word nodes, so that it can be re-used.
 C
-              IF (IPPL.EQ.IPP1) THEN
+              IF (.NOT.(IPPL.EQ.IPP1)) GO TO 10254
                 IPPL=IWRK(IPP1+2)
-              ELSE
+              GO TO 10255
+10254         CONTINUE
                 ISPL=IPPL
-10089           CONTINUE
-                  IF (IWRK(ISPL+2).EQ.IPP1) THEN
+10256           CONTINUE
+                  IF (.NOT.(IWRK(ISPL+2).EQ.IPP1)) GO TO 10257
                     IWRK(ISPL+2)=IWRK(IPP1+2)
-                    GO TO 10090
-                  END IF
+                    GO TO 10258
+10257             CONTINUE
                   ISPL=IWRK(ISPL+2)
-                GO TO 10089
-10090           CONTINUE
-              END IF
+                GO TO 10256
+10258           CONTINUE
+10255         CONTINUE
 C
               IWRK(IPP1)=IG03
               IG03=IPP1
@@ -1509,16 +1592,16 @@ C Any AET node that referenced IPP1 must now reference IPP2 instead.
 C
               IDUM=IAET
 C
-10091         CONTINUE
-              IF (.NOT.(IDUM.NE.0)) GO TO 10092
+10259         CONTINUE
+              IF (.NOT.(IDUM.NE.0)) GO TO 10260
                 IF (IWRK(IDUM+9).EQ.IPP1) IWRK(IDUM+9)=IPP2
                 IDUM=IWRK(IDUM+6)
-              GO TO 10091
-10092         CONTINUE
+              GO TO 10259
+10260         CONTINUE
 C
-            END IF
+10251       CONTINUE
 C
-          END IF
+10242     CONTINUE
 C
 C Delete from the AET the edge ITMP and the edge that follows it.  The
 C nodes go back on the garbage list for 10-word nodes.
@@ -1526,11 +1609,12 @@ C
           ITM1=IWRK(ITMP+7)
           ITM2=IWRK(IWRK(ITMP+6)+6)
 C
-          IF (ITM1.EQ.0) THEN
+          IF (.NOT.(ITM1.EQ.0)) GO TO 10261
             IAET=ITM2
-          ELSE
+          GO TO 10262
+10261     CONTINUE
             IWRK(ITM1+6)=ITM2
-          END IF
+10262     CONTINUE
 C
           IF (ITM2.NE.0) IWRK(ITM2+7)=ITM1
 C
@@ -1542,25 +1626,25 @@ C Adjust the pointer into the AET so as to continue looping properly.
 C
           ITMP=IWRK(ITMP+6)
 C
-        END IF
+10239   CONTINUE
 C
-      GO TO (10039,10056) , L10040
+      GO TO (10112,10145) , L10113
 C
 C Error exits.
 C
-10002 CONTINUE
+10003 CONTINUE
         IERR=1
         RETURN
 C
-10004 CONTINUE
+10006 CONTINUE
         IERR=2
         RETURN
 C
-10009 CONTINUE
+10017 CONTINUE
         IERR=3
         RETURN
 C
-10066 CONTINUE
+10161 CONTINUE
         IERR=3+IERR
         RETURN
 C
