@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.16 2001-01-27 01:05:05 dbrown Exp $
+ *      $Id: PSWorkstation.c,v 1.17 2001-02-07 02:44:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,7 +36,7 @@ static NhlResource resources[] = {
 		_NhlRES_NOSACCESS,NULL},
 	{NhlNwkOrientation,NhlCwkOrientation,NhlTWorkOrientation,
 		sizeof(NhlWorkOrientation),Oset(orientation),NhlTImmediate,
-		(NhlPointer)NhlCOLOR,_NhlRES_NOSACCESS,NULL},
+		(NhlPointer)NhlPORTRAIT,_NhlRES_DEFAULT,NULL},
 	{NhlNwkPSFileName,NhlCwkPSFileName,NhlTString,
 		sizeof(NhlString),Oset(filename),NhlTImmediate,
 		(NhlPointer)NULL,_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
@@ -451,7 +451,8 @@ PSWorkstationSetValues
 	if (np->lower_x != op->lower_x ||
 	    np->upper_x != op->upper_x ||
 	    np->lower_y != op->lower_y ||
-	    np->upper_y != op->upper_y)
+	    np->upper_y != op->upper_y ||
+	    np->orientation != op->orientation)
 		np->dev_bounds_updated = True;
 
 	if(np->lower_x >= np->upper_x){
@@ -594,10 +595,6 @@ PSWorkstationOpen
 
 	c_ngsetc("me",pp->filename);
 	c_ngseti("co",(pp->resolution/72 + 1));
-	c_ngseti("lx",pp->lower_x);
-	c_ngseti("ux",pp->upper_x);
-	c_ngseti("ly",pp->lower_y);
-	c_ngseti("uy",pp->upper_y);
 	c_ngseti("cm",pp->color_model);
 
 	if (pp->suppress_background && pp->suppress_bbinfo)
@@ -612,6 +609,11 @@ PSWorkstationOpen
 	ret = (*NhlworkstationClassRec.work_class.open_work)(l);
 
 	c_ngseti("wo",_NhlWorkstationId(l));
+	c_ngseti("lx",pp->lower_x);
+	c_ngseti("ux",pp->upper_x);
+	c_ngseti("ly",pp->lower_y);
+	c_ngseti("uy",pp->upper_y);
+	c_ngseti("pl",pp->orientation);
 	c_ngseti("fu",pp->full_background);
 
 	w = pp->upper_x - pp->lower_x;
@@ -658,6 +660,7 @@ PSWorkstationActivate
 		c_ngseti("ux",pp->upper_x);
 		c_ngseti("ly",pp->lower_y);
 		c_ngseti("uy",pp->upper_y);
+		c_ngseti("pl",pp->orientation);
 		pp->dev_bounds_updated = False;
 	}
 	w = pp->upper_x - pp->lower_x;
