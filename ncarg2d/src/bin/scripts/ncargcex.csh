@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.11 1994-05-13 18:01:53 haley Exp $
+#	$Id: ncargcex.csh,v 1.12 1994-07-12 21:38:28 haley Exp $
 #
 
 #********************#
@@ -9,14 +9,12 @@
 #                    #
 #********************#
 if ($#argv < 1) then
-  echo ""
-  echo "usage: ncargcex [-all,-A] [-autograph] [-bivar] [-conpack] [-ezmap] "
-  echo "                [-gks] [-labelbar] [-plotchar] [-scrolled_title]    "
-  echo "                [-softfill] [-inter] [-clean] [-n] [-onebyone]      "
-  echo "                names                                               "
+  echo "usage: ncargcex [-all,-A] [-autograph] [-bivar] [-conpack] [-ezmap]"
+  echo "                [-gks] [-labelbar] [-plotchar] [-scrolled_title]   "
+  echo "                [-softfill] [-inter] [-clean] [-n] [-onebyone]     "
+  echo "                [-W n] names                                       "
   echo ""
   echo "See <man ncargcex>                                                  "
-  echo ""
   exit
 endif
 
@@ -47,7 +45,17 @@ if (! -d "$example_dir") then
   exit 1
 endif
 
-set ex_list
+set tutorial_dir = `ncargpath SED_TUTORIALDIR`
+
+if ($status != 0) then
+        exit 1
+endif
+
+if (! -d "$tutorial_dir") then
+  echo "Tutorial directory <$tutorial_dir> does not exist."
+  exit 1
+endif
+
 
 #**************************#
 #                          #
@@ -55,7 +63,7 @@ set ex_list
 #                          #
 #**************************#
 set autograph_list = (c_agex07)
-set ex_list = ($ex_list $autograph_list)
+set ex_list = ($autograph_list)
 
 #******************************#
 #                              #
@@ -118,7 +126,7 @@ set ex_list = ($ex_list $scrlld_title_list)
 # set softfill examples #
 #                       #
 #***********************#
-set softfill_list = (c_sfex02)
+set softfill_list   = (c_sfex02)
 set ex_list = ($ex_list $softfill_list)
 
 #**************************#
@@ -135,12 +143,24 @@ set interactive_list = (c_xwndws)
 #*********************************#
 set X11_option
 
+set names
+
+#*********************************#
+#                                 #
+# Default workstation type is "1" #
+# Default graphic is NCGM         #
+#                                 #
+#*********************************#
+set ws_type = "1"
+set default_file = "gmeta"
+set graphic_type = "ncgm"
+set message = "Metafile is named "
+
 #***************#
 #               #
 # Parse options #
 #               #
 #***************#
-set names
 
 while ($#argv > 0)
     
@@ -199,6 +219,8 @@ while ($#argv > 0)
 
         case "-inter":
             shift
+	        set interfile
+            set ws_type = "8"
             set names=($names $interactive_list)
             breaksw
 
@@ -227,6 +249,62 @@ while ($#argv > 0)
             set List
             breaksw
 
+        case "-W":
+            unset psfile
+            unset epsfile
+            unset epsifile
+            shift
+            set ws_type = "$1"
+
+            switch ($ws_type)
+            
+            case  "1":
+            case "10":
+            breaksw
+
+            case "8":
+                set interfile
+            breaksw
+
+            case "20":
+            case "23":
+            case "26":
+            case "29":
+                set psfile
+                set default_file = "gmeta1.ps"
+                set graphic_type = "ps"
+                set message = "PostScript file is named "
+            breaksw
+
+            case "21":
+            case "24":
+            case "27":
+            case "30":
+                set epsfile
+                set default_file = "gmeta1.eps"
+                set graphic_type = "eps"
+                set message = "Encapsulated PostScript file is named "
+            breaksw
+
+            case "22":
+            case "25":
+            case "28":
+            case "31":
+                set epsifile
+                set default_file = "gmeta1.epsi"
+                set graphic_type = "epsi"
+                set message = "Interchange Encapsulated PostScript file is named "
+            breaksw
+
+            default:
+                echo ""
+                echo "    ncargcex:  $ws_type is an invalid workstation type."
+                echo ""
+                exit 1
+            endsw
+            shift
+            breaksw
+
         case "-noX11":
             shift
             set X11_option = "-noX11"
@@ -244,7 +322,45 @@ while ($#argv > 0)
     endsw
 end
 
+#********************************************#
+#                                            #
+# Cannot have both interactive and noX11 set #
+#                                            #
+#********************************************#
+
+if ($X11_option == "-noX11" && $?interfile) then
+    echo ""
+    echo "Warning:  You cannot use the '-noX11' option if you are"
+    echo "          running an interactive example.  I will turn"
+    echo "          the '-noX11' option off."
+    echo ""
+    set X11_option
+endif
+
+#***********************************************#
+#                                               #
+# Cannot have both interactive and ws_type != 8 #
+#                                               #
+#***********************************************#
+if ($?interfile && $ws_type != "8") then
+    echo ""
+    echo "Warning:  You must have a workstation type of '8' if you"
+    echo "          are running an interactive example.  I will force"
+    echo "          ws_type to be '8'.  If you specify the '-inter'"
+    echo "          option, ws_type will be set to 8 automatically."
+    echo ""
+    set ws_type = "8"
+endif
+
+#***********************#
+#                       #
+# Generate each example #
+#                       #
+#***********************#
+
 foreach name ($names)
+
+set graphic_file = $name.$graphic_type
 
 #*************************************#
 #                                     #
@@ -288,37 +404,33 @@ endif
 #**************************#
 switch ($type)
     case Example:
-        echo ""
         echo "NCAR Graphics C Example <$name>"
     breaksw
 
     case Interactive_Example:
-        echo ""
         echo "NCAR Graphics Interactive C Example <$name>"
     breaksw
 
     case Unknown:
-        echo ""
         echo "ncargcex: <$name> is not a known example"
         goto theend
     breaksw
 endsw
 echo ""
 
-#**************************************************#
-#                                                  #
-# If the "-unique" option was selected and the     #
-# example already exists, don't generate it again. #
-#                                                  #
-#**************************************************#
+#***********************************************#
+#                                               #
+# If the "-unique" option was selected and the  #
+# NCGM already exists, don't generate it again. #
+#                                               #
+#***********************************************#
 
-if ($?Unique && -f $name.ncgm) goto theend
+if ($?Unique && -f $graphic_file) goto theend
 
-set c_files = $name.c
-set copy_files="$c_files"
-set rmfiles=($copy_files)
-
+set c_files
 set ncargf77flags
+set rmfiles = "$name.c"
+set copy_files
 
 #***********************#
 #                       #
@@ -326,10 +438,20 @@ set ncargf77flags
 #                       #
 #***********************#
    
+echo "  Copying $name.c"
+ed << EOF - $example_dir/$name.c >& /dev/null
+g/SED_WSTYPE/s//$ws_type/g
+w ./$name.c
+q
+EOF
+
+set c_files = ($c_files $name.c)
+
 foreach file($copy_files)
-    echo "  Copying $file"
-    cp $example_dir/$file .
+    echo "  Copying $file:t"
+    cp $file $file:t
 end
+
 
 #******************************#
 #                              #
@@ -337,8 +459,10 @@ end
 #                              #
 #******************************#
 
+unset not_valid_metafile
+
 if (! $?NoRunOption) then
-    if ($type == "Interactive_Example") then
+    if ($type == "Interactive_Example" && $?interfile) then
         echo ""
         echo "    This example is interactive and can only be executed if"
         echo "    you have X running and have your DISPLAY environment"
@@ -359,18 +483,34 @@ if (! $?NoRunOption) then
             echo "The compile and link failed"
             exit -1
     endif
+    echo ""
+    echo "Executing <$name>..."
 #*****************#
 #                 #
 # Run the example #
 #                 #
 #*****************#
-    echo ""
-    echo "Executing <$name>..."
-    ncargrun -o $name.ncgm $name
-    endsw
+   
+    ./$name
+    if ( ! $?not_valid_metafile ) then
+        mv ./$default_file $graphic_file
+        echo ""
+        echo "$message $graphic_file"
+        echo ""
+    endif
 
     set rmfiles = ($rmfiles $name.o $name)
 endif
+
+#******************************#
+#                              #
+# Keep track of unwanted files #
+#                              #
+#******************************#
+if ($name == "c_slex01") then
+    set rmfiles = ($rmfiles GNFB09)
+endif
+
 
 #************************#
 #                        #

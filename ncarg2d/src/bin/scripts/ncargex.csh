@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.63 1994-07-08 19:08:40 haley Exp $
+#   $Id: ncargex.csh,v 1.64 1994-07-12 21:38:29 haley Exp $
 #
 
 #********************#
@@ -771,7 +771,23 @@ endif
 #***********************#
 foreach name ($names)
 
-set rmfiles
+if ($?psfile) then
+  set graphic_file = $name.ps
+  set default_file = gmeta1.ps
+  set message = "PostScript file is named "
+else if ($?epsfile) then
+  set default_file = gmeta1.eps
+  set graphic_file = $name.eps
+  set message = "Encapsulated PostScript file is named "
+else if ($?epsifile) then
+  set default_file = gmeta1.epsi
+  set graphic_file = $name.epsi
+  set message = "Interchange Encapsulated PostScript file is named "
+else if ( $?ncgmfile) then
+  set default_file = gmeta
+  set graphic_file = $name.ncgm
+  set message = "Metafile is named "
+endif
 
 #*************************************#
 #                                     #
@@ -884,7 +900,7 @@ echo ""
 #                                               #
 #***********************************************#
 
-if ($?Unique && -f $name.ncgm) goto theend
+if ($?Unique && -f $graphic_file) goto theend
 
 #********************************#
 #                                #
@@ -1160,25 +1176,9 @@ if (! $?NoRunOption) then
     endsw
 
     if ( ! $?not_valid_metafile ) then
-      if ($?psfile) then
-        mv ./gmeta1.ps ${name}.ps
+        /bin/mv $default_file $graphic_file
         echo ""
-        echo "PostScript file is named ${name}.ps"
-        echo ""
-      else if ($?epsfile) then
-        mv ./gmeta1.eps ${name}.eps
-        echo ""
-        echo "Encapsulated PostScript file is named ${name}.eps"
-        echo ""
-      else if ($?epsifile) then
-        mv ./gmeta1.epsi ${name}.epsi 
-        echo ""
-        echo "Interchange Encapsulated PostScript file is named ${name}.epsi"
-        echo ""
-      else if ( $?ncgmfile) then
-        mv ./gmeta $name.ncgm
-        echo ""
-        echo "Metafile is named $name.ncgm"
+        echo "$message $graphic_file"
         echo ""
       endif
     endif
