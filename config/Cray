@@ -1,5 +1,5 @@
 /*
- *      $Id: Cray,v 1.26 1994-04-08 21:22:18 haley Exp $
+ *      $Id: Cray,v 1.27 1994-04-15 21:53:40 haley Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,6 @@
  */
 #define TmpRoot		/usr/tmp
 #define	InstallManToLocal
-#define	ExtraSysLibraries	-lnet
 #define	HdfDefines	-DUNICOS
 #define	StdDefines	-DSYSV -DUNICOS -DUSG
 #define FCompiler	cf77
