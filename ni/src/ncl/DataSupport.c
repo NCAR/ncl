@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.20 1995-07-15 00:33:11 ethan Exp $
+ *      $Id: DataSupport.c,v 1.21 1995-10-26 22:30:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1078,6 +1078,32 @@ void _NclResetMissingValue
 		}
 	}
 	return;
+}
+
+struct _NclMultiDValDataRec *_NclCreateMissing
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int *val = (int*)NclMalloc((unsigned)sizeof(int));
+	int dim_sizes = 1;
+	
+
+	*val = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;	
+	return(_NclCreateMultiDVal(
+		NULL,
+		nclMultiDValDataClass,
+		Ncl_MultiDValData,
+		Ncl_MultiDValData,
+		(void*)val,
+		&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
+		1,
+		&dim_sizes,
+		TEMPORARY,
+		NULL,
+		(NclTypeClass)nclTypeintClass));
 }
 
 struct _NclMultiDValDataRec * _NclCreateVal

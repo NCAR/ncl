@@ -215,11 +215,18 @@ FILE    *fp;
 {
 	NclFile thefile = (NclFile)self;
 	int i,j;
+	NclFileAttInfoList* step;
 
 	
 
 	nclfprintf(fp,"\nfilename:\t%s\n",NrmQuarkToString(thefile->file.fname));
 	nclfprintf(fp,"path:\t%s\n",NrmQuarkToString(thefile->file.fpath));
+	nclfprintf(fp,"\tfile global attributes:\n");
+	for(i = 0; i < thefile->file.n_file_atts; i++) {
+		if(thefile->file.file_atts[i] != NULL) {
+			nclfprintf(fp,"\t\t%s\n",NrmQuarkToString(thefile->file.file_atts[i]->att_name_quark));
+		}
+	}
 	nclfprintf(fp,"\tdimensions:\n");
 	for(i = 0; i< thefile->file.n_file_dims; i++) {
 		nclfprintf(fp,"\t\t%s = %ld\n",NrmQuarkToString(thefile->file.file_dim_info[i]->dim_name_quark),	
@@ -232,6 +239,11 @@ FILE    *fp;
 			nclfprintf(fp,"%s, ",NrmQuarkToString(FileGetDimName(thefile,thefile->file.var_info[i]->file_dim_num[j])));
 		}
 		nclfprintf(fp,"%s )\n",NrmQuarkToString(FileGetDimName(thefile,thefile->file.var_info[i]->file_dim_num[thefile->file.var_info[i]->num_dimensions - 1])));
+		step = thefile->file.var_att_info[i];
+		while(step != NULL) {
+			nclfprintf(fp,"\t\t\t%s\n", NrmQuarkToString(step->the_att->att_name_quark));
+			step = step->next;
+		}
 	}
 	
 	return;
@@ -1856,8 +1868,8 @@ struct _NclSelectionRecord *sel_ptr;
 			}
 		}
 	}
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"FileReadVarAtt: (%s) is not an attribute of (%s)",NrmQuarkToString(attname),NrmQuarkToString(var));
-	return(NULL);
+	NhlPError(NhlWARNING,NhlEUNKNOWN,"FileReadVarAtt: (%s) is not an attribute of (%s)",NrmQuarkToString(attname),NrmQuarkToString(var));
+	return(_NclCreateMissing());
 }
 
 static int FileIsAtt
@@ -3123,8 +3135,8 @@ struct _NclSelectionRecord *sel_ptr;
 			}
 		}
 	}
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"FileReadVarAtt: (%s) is not an attribute of (%s)",NrmQuarkToString(attname),NrmQuarkToString(thefile->file.fname));
-	return(NULL);
+	NhlPError(NhlWARNING,NhlEUNKNOWN,"FileReadVarAtt: (%s) is not an attribute of (%s)",NrmQuarkToString(attname),NrmQuarkToString(thefile->file.fname));
+	return(_NclCreateMissing());
 }
 
 static NhlErrorTypes FileWriteAtt

@@ -689,6 +689,11 @@ get_resource : 					{
 						}
 	| STRING COLON identifier		{
 							((NclGenericRefNode*)$3)->ref_type = Ncl_WRITEIT;
+						 	$$ = _NclMakeGetResource(_NclMakeStringExpr($1),$3);
+
+						}
+	| identifier COLON identifier		{
+							((NclGenericRefNode*)$3)->ref_type = Ncl_WRITEIT;
 						 	$$ = _NclMakeGetResource($1,$3);
 
 						}
@@ -767,13 +772,10 @@ resource : 					{
 							$$ = NULL;
 						}
 	| STRING COLON expr 			{
+						 	$$ = _NclMakeResource(_NclMakeStringExpr($1),$3);
+						}
+	| identifier COLON expr 		{
 						 	$$ = _NclMakeResource($1,$3);
-/*
-							if(cmd_line)
-								if(!VerifySetResExpr($3)) {
-									$$ = NULL;
-								}
-*/
 						}
 /*
 	| STRING COLON RKEY FVAR		{

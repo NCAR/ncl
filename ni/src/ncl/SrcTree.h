@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.14 1995-02-27 21:54:31 ethan Exp $
+ *      $Id: SrcTree.h,v 1.15 1995-10-26 22:31:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -326,7 +326,7 @@ typedef struct ncl_resource{
 /*
 	char *res_name;
 */
-	int res_name_q;
+	void *resexpr;
 	void *expr;
 }NclResource;
 
@@ -339,7 +339,7 @@ typedef struct ncl_getresource{
 /*
 	char *res_name;
 */
-	int res_name_q;
+	void *resexpr;
 	void *target_idn;
 }NclGetResource;
 
@@ -925,13 +925,13 @@ extern void *_NclMakeUndefErrorRef(
 
 extern void *_NclMakeGetResource(
 #if	NhlNeedProto
-	char * /*resname*/,
+	void* /*resname*/,
 	void* /*var */
 #endif
 );
 extern void *_NclMakeResource(
 #if	NhlNeedProto
-	char * /*resname*/,
+	void* /*resname*/,
 	void* /*expr*/
 #endif
 );

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.23 1995-06-17 01:21:52 ethan Exp $
+ *      $Id: SrcTree.c,v 1.24 1995-10-26 22:31:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -379,10 +379,10 @@ void _NclGResDestroy
  */
 void *_NclMakeGetResource
 #if	NhlNeedProto
-(char *resname, void *target_idn)
+(void *resexpr, void *target_idn)
 #else
-(resname , target_idn)
-	char *resname;
+(resexpr, target_idn)
+	void *resexpr;
 	void *target_idn;
 #endif
 {
@@ -393,7 +393,7 @@ void *_NclMakeGetResource
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGResDestroy;
-	tmp->res_name_q = NrmStringToQuark(resname);
+	tmp->resexpr = resexpr;
 	tmp->target_idn = target_idn;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
@@ -427,10 +427,10 @@ void _NclResDestroy
  */
 void *_NclMakeResource
 #if	NhlNeedProto
-(char *resname, void *expr)
+(void *resexpr, void *expr)
 #else
-(resname , expr)
-	char *resname;
+(resexpr , expr)
+	void *resexpr;
 	void *expr;
 #endif
 {
@@ -440,7 +440,7 @@ void *_NclMakeResource
 	tmp->name = src_tree_names[Ncl_RESOURCE];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->res_name_q = NrmStringToQuark(resname);
+	tmp->resexpr = resexpr;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclResDestroy;
 	tmp->expr = expr;
 	_NclRegisterNode((NclGenericNode*)tmp);
@@ -2366,7 +2366,8 @@ if(groot != NULL) {
 			fprintf(fp,"%s\n",resource->name);
 			i++;
 			putspace(i,fp);
-			fprintf(fp,"%s\n",NrmQuarkToString(resource->res_name_q));
+			_NclPrintTree(resource->resexpr,fp);
+			putspace(i,fp);
 			_NclPrintTree(resource->expr,fp);
 			i--;
 		}
@@ -2378,7 +2379,7 @@ if(groot != NULL) {
 			fprintf(fp,"%s\n",resource->name);
 			i++;
 			putspace(i,fp);
-			fprintf(fp,"%s\n",NrmQuarkToString(resource->res_name_q));
+			_NclPrintTree(resource->resexpr,fp);
 			putspace(i,fp);
 			_NclPrintTree(resource->target_idn,fp);
 			i--;

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.46 1995-09-19 23:07:35 ethan Exp $
+ *      $Id: Execute.c,v 1.47 1995-10-26 22:31:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2449,6 +2449,7 @@ NclExecuteReturnStatus _NclExecute
 				NclSelectionRecord *sel_ptr = NULL;
 				NclStackEntry data;
 				NhlErrorTypes ret = NhlNOERROR;
+				NclMultiDValData tmpmis = NULL;
 
 				ptr++;lptr++;fptr++;
 				thesym = (NclSymbol*)(*ptr);
@@ -2496,18 +2497,21 @@ NclExecuteReturnStatus _NclExecute
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Attributes only have one dimension, %d subscripts used",nsubs);		
 							estatus = NhlFATAL;
 						}
-					} else {
-						estatus = NhlFATAL;
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to reference attribute (%s) which is undefined",attname);
-					}
-					if(estatus != NhlFATAL) {
-						data.u.data_obj = _NclReadAtt(var->u.data_var,attname,sel_ptr);
-						if(data.u.data_obj == NULL) {
-							data.kind = NclStk_NOVAL;
-							estatus = NhlFATAL;
-						} else {
-							data.kind = NclStk_VAL;
+						if(estatus != NhlFATAL) {
+							data.u.data_obj = _NclReadAtt(var->u.data_var,attname,sel_ptr);
+							if(data.u.data_obj == NULL) {
+								data.kind = NclStk_NOVAL;
+								estatus = NhlFATAL;
+							} else {
+								data.kind = NclStk_VAL;
+							}
 						}
+					} else {
+						estatus = NhlWARNING;
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"Attempt to reference attribute (%s) which is undefined",attname);
+						data.kind = NclStk_VAL;
+						tmpmis = _NclCreateMissing();
+						data.u.data_obj = tmpmis;
 					}
 				} else {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is still undefined, unable to reference attribute %s",thesym->name,attname);

@@ -832,6 +832,7 @@ NclStackEntry _NclCreateHLUObjOp
 	static int local_rl_list = 0;
 	NhlGenArray *gen_array;
 	NclMultiDValData tmp_md = NULL;
+	NclMultiDValData tmp2_md = NULL;
 	NclHLUObj tmp_ho = NULL;
 	int *tmp_id = NULL,tmp_ho_id;
 	int dim_size = 1;
@@ -871,14 +872,14 @@ NclStackEntry _NclCreateHLUObjOp
 */
 		data = _NclPeek(2*i);
 		resname = _NclPeek(2*i+1);
-		if(((data->kind != NclStk_VAL)&&(data->kind != NclStk_VAR))||(resname->kind != NclStk_VAL)) {
+		if(((data->kind != NclStk_VAL)&&(data->kind != NclStk_VAR))||((resname->kind != NclStk_VAL)&&(resname->kind != NclStk_VAR))) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in resource list. type mismatch, resource names must be strings and \nresource values must be either file variables, variables or expression results.\n");
 
 			_NclCleanUpStack(2*nres);
 			data_out.kind = NclStk_NOVAL;
 			data_out.u.data_obj = NULL;
 			return(data_out);
-		}
+		} 
 		switch(data->kind) {
 		case NclStk_VAL:
 			tmp_md = (NclMultiDValData)data->u.data_obj;
@@ -886,6 +887,22 @@ NclStackEntry _NclCreateHLUObjOp
 		case NclStk_VAR:
 			tmp_md = _NclVarValueRead(data->u.data_var,NULL,NULL);
 		break;
+		}
+		switch(resname->kind) {
+		case NclStk_VAL:
+			tmp2_md = (NclMultiDValData)resname->u.data_obj;
+		break;
+		case NclStk_VAR:
+			tmp2_md = _NclVarValueRead(resname->u.data_var,NULL,NULL);
+		break;
+		}
+		if((tmp2_md->multidval.type != (NclTypeClass)nclTypestringClass)||(tmp2_md->multidval.kind != SCALAR)) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in resource name. Resources must be scalar strings\n");
+
+			_NclCleanUpStack(2*nres);
+			data_out.kind = NclStk_NOVAL;
+			data_out.u.data_obj = NULL;
+			return(data_out);
 		}
 		if(tmp_md->multidval.hlu_type_rep[0] != NULL) {
 			gen_array[i] = _NhlCreateGenArray(
@@ -896,7 +913,7 @@ NclStackEntry _NclCreateHLUObjOp
 					tmp_md->multidval.dim_sizes,
 					0);
 			NhlRLSet(rl_list,NrmQuarkToString(
-				*(string*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)),
+				*(string*)(tmp2_md->multidval.val)),
 				NhlTGenArray,
 				gen_array[i]);
 		} else {
@@ -917,12 +934,12 @@ NclStackEntry _NclCreateHLUObjOp
 					&tmp_md->multidval.totalelements,
 					1);
 				NhlRLSet(rl_list,NrmQuarkToString(
-					*(string*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)),
+					*(string*)(tmp2_md->multidval.val)),
 					NhlTGenArray,
 					gen_array[i]);
 			} else {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"The value associated with (%s) does not have an HLU representation",
-						NrmQuarkToString(*(string*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)));
+						NrmQuarkToString(*(string*)(tmp2_md->multidval.val)));
 				gen_array[i] = NULL;
 			}
 			NclFree(ids);
@@ -1060,6 +1077,7 @@ int nres;
 	static int local_rl_list = 0;
 	NhlGenArray *gen_array;
 	NclMultiDValData tmp_md = NULL;
+	NclMultiDValData tmp2_md = NULL;
 	int *obj_ids = NULL;
 	NclHLUObj hlu_ptr,tmp_ho;
 	int *ids;
@@ -1081,7 +1099,7 @@ int nres;
 */
 		data = _NclPeek(2*i);
 		resname = _NclPeek(2*i+1);
-		if(((data->kind != NclStk_VAL)&&(data->kind != NclStk_VAR))||(resname->kind != NclStk_VAL)) {
+		if(((data->kind != NclStk_VAL)&&(data->kind != NclStk_VAR))||((resname->kind != NclStk_VAL)&&(resname->kind != NclStk_VAR))) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in resource list. type mismatch, resource names must be strings and \nresource values must be either file variables, variables or expression results.\n");
 
 			_NclCleanUpStack(2*nres);
@@ -1095,6 +1113,20 @@ int nres;
 			tmp_md = _NclVarValueRead(data->u.data_var,NULL,NULL);
 		break;
 		}
+		switch(resname->kind) {
+		case NclStk_VAL:
+			tmp2_md = (NclMultiDValData)resname->u.data_obj;
+		break;
+		case NclStk_VAR:
+			tmp2_md = _NclVarValueRead(resname->u.data_var,NULL,NULL);
+		break;
+		}
+		if((tmp2_md->multidval.type != (NclTypeClass)nclTypestringClass)||(tmp2_md->multidval.kind != SCALAR)) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in resource name. Resources must be scalar strings\n");
+
+			_NclCleanUpStack(2*nres);
+			return(NhlFATAL);
+		}
 		if(tmp_md->multidval.hlu_type_rep[0] != NULL) {
 			gen_array[i] = _NhlCreateGenArray(
 					(NhlPointer)tmp_md->multidval.val,
@@ -1104,7 +1136,7 @@ int nres;
 					tmp_md->multidval.dim_sizes,
 					0);
 			NhlRLSet(rl_list,NrmQuarkToString(
-				*(string*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)),
+				*(string*)(tmp2_md->multidval.val)),
 				NhlTGenArray,
 				gen_array[i]);
 		} else {
@@ -1122,12 +1154,12 @@ int nres;
                                         &tmp_md->multidval.totalelements,
                                         0);
                                 NhlRLSet(rl_list,NrmQuarkToString(
-                                        *(string*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)),
+                                        *(string*)(tmp2_md->multidval.val)),
                                         NhlTGenArray,
                                         gen_array[i]);
                         } else {
                                 NhlPError(NhlWARNING,NhlEUNKNOWN,"The value associated with (%s) does not have an HLU representation",
-                                                NrmQuarkToString(*(string*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)));
+                                                NrmQuarkToString(*(string*)(tmp2_md->multidval.val)));
                                 gen_array[i] = NULL;
                         }
 

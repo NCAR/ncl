@@ -227,8 +227,11 @@ if(groot != NULL) {
 		case Ncl_RESOURCE:
 		{
 			NclResource *resource = (NclResource*)root;
+/*
 			off1 = _NclPutInstr(PUSH_STRING_LIT_OP,resource->line,resource->file);
 			_NclPutInstr((NclValue)resource->res_name_q,resource->line,resource->file);
+*/
+			off1 = _NclTranslate(resource->resexpr,fp);
 			_NclTranslate(resource->expr,fp);
 			break;
 		}
@@ -239,8 +242,11 @@ if(groot != NULL) {
 * block starts.
 */
 			NclGetResource *resource = (NclGetResource*)root;
+/*
 			off1 = _NclPutInstr(PUSH_STRING_LIT_OP,resource->line,resource->file);
 			_NclPutInstr((NclValue)resource->res_name_q,resource->line,resource->file);
+*/
+			off1 = _NclTranslate(resource->resexpr,fp);
 			_NclPutInstr((NclValue)GET_OBJ_OP,resource->line,resource->file);
 /*
 * This allows full range of assignment possibilities.

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: DataSupport.h,v 1.7 1995-06-03 00:45:12 ethan Exp $
+ *      $Id: DataSupport.h,v 1.8 1995-10-26 22:30:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,12 @@
  */
 #ifndef _DataSupport_h
 #define _DataSupport_h
+
+extern struct _NclMultiDValDataRec *_NclCreateMissing(
+#if NhlNeedProto
+void
+#endif
+);
 
 extern NhlErrorTypes _NclRegisterCallback(
 #if	NhlNeedProto
