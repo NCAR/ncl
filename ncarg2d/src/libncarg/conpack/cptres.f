@@ -1,5 +1,5 @@
 C
-C $Id: cptres.f,v 1.5 1995-04-26 22:45:15 kennison Exp $
+C $Id: cptres.f,v 1.6 1995-05-22 16:53:56 kennison Exp $
 C
       SUBROUTINE CPTRES (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
 C
@@ -571,6 +571,8 @@ C
 10096   CONTINUE
 10097   CONTINUE
 C
+        IAIC=IAID
+C
         IF (.NOT.(IVNU.NE.0)) GO TO 10098
           L10100=    1
           GO TO 10100
@@ -604,8 +606,6 @@ C
           RUDN=0.
 10101   CONTINUE
 10102   CONTINUE
-C
-        IF (IAIC.NE.-9) IAIC=IAID
 C
       GO TO (10071,10075) , L10072
 C
