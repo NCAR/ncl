@@ -108,6 +108,8 @@ NhlDummyWorkstationClassRec NhldummyWorkstationClassRec = {
 /* layer_resources		*/	NULL,
 /* num_resources		*/	0,
 /* all_resources		*/	NULL,
+/* all_resources		*/	NULL,
+/* num_resources		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
