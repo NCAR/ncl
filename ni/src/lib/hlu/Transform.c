@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.45 1999-08-14 01:25:53 dbrown Exp $
+ *      $Id: Transform.c,v 1.46 1999-11-19 02:11:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -672,6 +672,8 @@ static NhlErrorTypes TransformDataToNDC
  * expected by the data.
  * The MapTransSetValues call does a SetTrans internally, so there's
  * no need to explicitly do a SetTrans in this case.
+ * ***WRONG*** actually when these resources are set by themselves it's
+ * a special case and no SetTrans happens. So SetTrans must always be called.
  */
 	if ((top->base.layer_class)->base_class.class_name 
 	    == NhlmapTransObjClass->base_class.class_name) {
@@ -680,9 +682,7 @@ static NhlErrorTypes TransformDataToNDC
 					NhlNtrDataXEndF,tfp->data_xend,
 					NULL);
 	}
-	else {
-		subret = _NhlSetTrans(top, plot);
-	}
+	subret = _NhlSetTrans(top, plot);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error setting transformation";
