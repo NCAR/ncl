@@ -130,7 +130,9 @@ extern NhlErrorTypes vr2uvg_W(void);
 extern NhlErrorTypes vr2uvF_W(void);
 extern NhlErrorTypes vr2uvG_W(void);
 extern NhlErrorTypes vrdv2uvf_W(void);
+extern NhlErrorTypes vrdv2uvF_W(void);
 extern NhlErrorTypes vrdv2uvg_W(void);
+extern NhlErrorTypes vrdv2uvG_W(void);
 
 extern NhlErrorTypes vhaec_W(void);
 extern NhlErrorTypes vhaeC_W(void);
@@ -1573,6 +1575,18 @@ void NclAddUserFuncs(void)
     NclRegisterProc(vrdv2uvf_W,args,"vrdv2uvf",nargs);
 
 /*
+ * Register "vrdv2uvF".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(vrdv2uvF_W,args,"vrdv2uvF",nargs);
+
+/*
  * Register "vrdv2uvg".
  *
  * Create private argument array.
@@ -1585,6 +1599,18 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(vrdv2uvg_W,args,"vrdv2uvg",nargs);
+
+/*
+ * Register "vrdv2uvG".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(vrdv2uvG_W,args,"vrdv2uvG",nargs);
 
 /*
  * Register "vhaec".
