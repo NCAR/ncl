@@ -1,16 +1,16 @@
 C
-C	$Id: wmex03.f,v 1.1 1994-09-09 23:59:11 fred Exp $
+C	$Id: wmex03.f,v 1.2 1994-10-14 01:28:24 fred Exp $
 C
       PROGRAM WMEX03
 C
-C  Example of windbarbs at various angles and a chart of wind speeds.
+C  Example of wind barbs at various angles and a chart of wind speeds.
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
-C  Example 01 - chart of windbarbs for various speeds.
+C  Example 01 - chart of wind barbs for various speeds.
 C
       PARAMETER (T1=0.90, T2=0.84)
 C
@@ -39,7 +39,7 @@ C
         XL = XCL+(I-1)*0.5
         XC = XCC+(I-1)*0.5
         XR = XCR+(I-1)*0.5
-        CALL PLCHHQ(XL,0.87,'Sym.',0.022,0.,0.) 
+        CALL PLCHHQ(XL,0.87,'Symbol',0.022,0.,0.) 
         CALL PLCHHQ(XC,0.87,'Knots',0.022,0.,0.) 
         CALL PLCHHQ(XR,0.87,'Miles/hr.',0.022,0.,0.) 
    10 CONTINUE
@@ -148,7 +148,7 @@ C
 C
       CALL FRAME
 C
-C  Example 02 - windbarbs at various angles.
+C  Example 02 - wind barbs at various angles.
 C
 C  Draw direction arrows and lebels.
 C
@@ -163,7 +163,7 @@ C
       CALL PLCHHQ(0.5,0.83,':F22:N',.03,0.,0.)
       CALL PLCHHQ(0.93,0.4,':F22:E',.03,0.,0.)
 C
-C  Draw windbarbs.
+C  Draw wind barbs.
 C
       CALL WMSETI('COL',2)
       CALL WMSETR('WBS',0.3)
@@ -179,7 +179,7 @@ C
 C  Main title.
 C
       CALL PCSETI('CC',3)
-      CALL PLCHHQ(0.5,0.93,':F25:Windbarbs',.04,0.,0.)
+      CALL PLCHHQ(0.5,0.93,':F25:Wind barbs',.04,0.,0.)
       CALL FRAME
 C
       CALL GDAWK (IWKID)

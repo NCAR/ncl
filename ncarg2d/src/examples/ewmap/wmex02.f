@@ -1,11 +1,15 @@
 C
-C	$Id: wmex02.f,v 1.1 1994-09-09 23:59:09 fred Exp $
+C	$Id: wmex02.f,v 1.2 1994-10-14 01:28:22 fred Exp $
 C
       PROGRAM WMEX02
 C
 C  An example of using the tools in the weather map library to
-C  create a color weather map.
+C  create a color weather map.  In the default case the plot is
+C  drawn with a white background (parameter IBTYPE=0) below; to
+C  draw a plot adjusted for a black background, set IBTYPE=1
+C  below.
 C
+      PARAMETER (IBTYPE=0,IWBACK=0,IBBACK=1)
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
@@ -382,10 +386,27 @@ C
       CALL NGSETI('LY',-15)
       CALL NGSETI('UY',785)
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
+C
+C  Set line caps to "butt" and fill the entire page for background (for 
+C  color PostScript output only).
+C
+      CALL NGSETI('WO',IWKID)
+      CALL NGSETI('FU',1)
+      CALL NGSETI('CA',0)
+C
       CALL GACWK (IWKID)
 C
-      CALL GSCR(IWKID, 0, 1.00, 1.00, 1.00)
-      CALL GSCR(IWKID, 1, 0.00, 0.00, 0.00)
+      IF (IBTYPE .EQ. IWBACK) THEN
+C
+C  White background.
+        CALL GSCR(IWKID, 0, 1.00, 1.00, 1.00)
+        CALL GSCR(IWKID, 1, 0.00, 0.00, 0.00)
+      ELSE
+C
+C  Black background.
+        CALL GSCR(IWKID, 0, 0.00, 0.00, 0.00)
+        CALL GSCR(IWKID, 1, 1.00, 1.00, 1.00)
+      ENDIF
 C
 C  Color for 100 degree temperature regions.
       CALL GSCR(IWKID, 2, 1.00, 0.25, 0.00)
@@ -402,10 +423,42 @@ C
 C  Color for 60 degree temperature regions.
       CALL GSCR(IWKID, 6, 0.25, 1.00, 0.50)
 C
-      CALL GSCR(IWKID, 7, 0.50, 0.50, 0.50)
-      CALL GSCR(IWKID, 8, 0.00, 0.00, 1.00)
-      CALL GSCR(IWKID, 9, 0.00, 1.00, 1.00)
-      CALL GSCR(IWKID,10, 0.40, 0.00, 0.40)
+C  Continental shadow and background for low and hi symbols.
+      CALL GSCR(IWKID, 7, 0.60, 0.60, 0.60)
+C
+C  Color for cold front symbols.
+      IF (IBTYPE .EQ. IWBACK) THEN
+        CALL GSCR(IWKID, 8, 0.00, 0.00, 0.00)
+      ELSE
+        CALL GSCR(IWKID, 8, 0.20, 0.20, 1.00)
+      ENDIF
+C
+C  Color for warm front symbols.
+      IF (IBTYPE .EQ. IWBACK) THEN
+        CALL GSCR(IWKID, 9, 0.00, 0.00, 0.00)
+      ELSE
+        CALL GSCR(IWKID, 9, 1.00, 0.00, 0.00)
+      ENDIF
+C
+C  Color for temperature labels.
+      IF (IBTYPE .EQ. IWBACK) THEN
+        CALL GSCR(IWKID, 10, 1.00, 1.00, 1.00)
+      ELSE
+        CALL GSCR(IWKID, 10, 0.00, 1.00, 1.00)
+      ENDIF
+C
+C  Regional weather patterns.
+      CALL GSCR(IWKID, 11, 0.00, 0.00, 0.00)
+C
+C  Color for Highs
+      IF (IBTYPE .EQ. IWBACK) THEN
+        CALL GSCR(IWKID, 12, 0.00, 0.00, 0.00)
+      ELSE
+        CALL GSCR(IWKID, 12, 0.20, 0.20, 1.00)
+      ENDIF
+C
+C  Dot color for marking cities.
+      CALL GSCR(IWKID, 13, 0.00, 0.00, 1.00)
 C
 C  Get world coordinates for the U.S. continental boundary and store
 C  the U.S. state map in flash buffer 1.  This takes some execution
@@ -433,13 +486,18 @@ C-------------------------------
 C  Plot temperature regions.   |
 C-------------------------------
 C
+      CALL WMGETI('COL',ICOLD)
       DO 50 I=1,NUMR
         INDXMX = LIMITS(I)
         DO 60 J=1,INDXMX
           CALL MAPTRN(RGNSUX(J,I),RGNSUY(J,I),RGNSWX(J),RGNSWY(J))
    60   CONTINUE
+        IF (I .GE. 8) THEN
+          CALL WMSETI('COL',11)
+        ENDIF
         CALL WMDRRG(LIMITS(I),RGNSWX,RGNSWY,IRTYPE(I),NO,USX,USY)
    50 CONTINUE
+      CALL WMSETI('COL',ICOLD)
 C
 C------------------
 C   U.S. Map      |
@@ -456,6 +514,8 @@ C
    10 CONTINUE
       CALL WMSETC('FRO','COLD')
       CALL WMSETR('END',.040)
+      CALL WMSETI('WFC',9)
+      CALL WMSETI('CFC',8)
       CALL WMDRFT(LIMITF(1),FRNSWX,FRNSWY)
       CALL WMDFLT
 C
@@ -480,6 +540,8 @@ C   Define spacings.
       CALL WMSETR('BEG',.03)
       CALL WMSETR('END',.035)
       CALL WMSETR('BET',.04)
+      CALL WMSETI('WFC',9)
+      CALL WMSETI('CFC',8)
 C
 C   Draw front.
       CALL WMDRFT(LIMITF(2),FRNSWX,FRNSWY)
@@ -493,6 +555,8 @@ C
       CALL WMSETC('FRO','STA')
       CALL WMSETR('BEG',.040)
       CALL WMSETI('REV',1)
+      CALL WMSETI('WFC',9)
+      CALL WMSETI('CFC',8)
       CALL WMDRFT(LIMITF(3),FRNSWX,FRNSWY)
       CALL WMDFLT
 C
@@ -502,6 +566,8 @@ C
       CALL WMSETC('FRO','COLD')
       CALL WMSETR('BEG',.040)
       CALL WMSETR('BET',.030)
+      CALL WMSETI('WFC',9)
+      CALL WMSETI('CFC',8)
       CALL WMDRFT(LIMITF(4),FRNSWX,FRNSWY)
       CALL WMDFLT
 C
@@ -509,6 +575,15 @@ C----------------
 C  LOs and HIs  |
 C----------------
 C
+      IF (IBTYPE .EQ. IBBACK) THEN
+        CALL WMSETI('LOS - shadow for low symbols',0)
+        CALL WMSETI('LOB - character background for low symbols',1)
+        CALL WMSETI('LOF - character color for low symbols',9)
+        CALL WMSETI('HIS - shadow for high symbols',7)
+        CALL WMSETI('HIB - character background for high symbols',1)
+        CALL WMSETI('HIF - character color for high symbols',12)
+        CALL WMSETI('HIC - character color circumscribed circle',0)
+      ENDIF
       DO 80 I=1,NUML
         CALL MAPTRN(RLOHUX(I),RLOHUY(I),XO,YO)
         IF (LOWHI(I) .EQ. 0) THEN
@@ -522,9 +597,15 @@ C-------------------------------
 C  Regional condition labels.  |
 C-------------------------------
 C  
+      IF (IBTYPE .EQ. IBBACK) THEN
+        CALL WMSETI('RC1',0)
+        CALL WMSETI('RC2',1)
+        CALL WMSETI('RC3',0)
+        CALL WMSETI('RC4',0)
+      ENDIF
       DO 90 I=1,NUMWL
         CALL MAPTRN(CNDSUX(I),CNDSUY(I),XO,YO)
-        LL = WMGTLN(ICNDSL(I),LEN(ICNDSL),0)
+        LL = WMGTLN(ICNDSL(I),LEN(ICNDSL(I)),0)
         CALL WMLABW(XO,YO,ICNDSL(I)(1:LL))
    90 CONTINUE
 C  
@@ -540,7 +621,16 @@ C   CITYUY  - Y user coordinates for city locations.
 C   TEMPUX  - X user coordinates for daily hi/low locations.
 C   TEMPUY  - Y user coordinates for daily hi/low locations.
 
-      CALL WMSETI('DTC',8)
+      CALL WMSETI('DTC',13)
+      IF (IBTYPE .EQ. IWBACK) THEN
+        CALL WMSETI('DBC'- dot background color,0)
+        CALL WMSETI('RFC'- foreground color for labels,1)
+        CALL WMSETI('CBC'- background color for city labels,0)
+      ELSE
+        CALL WMSETI('DBC'- dot background color,1)
+        CALL WMSETI('RFC'- foreground color for labels,0)
+        CALL WMSETI('CBC'- background color for city labels,1)
+      ENDIF
       DO 110 I=1,NUMC
         CALL MAPTRN(CITYUX(I),CITYUY(I),XO,YO)
         CALL WMLABS(XO,YO,'D')
@@ -549,71 +639,108 @@ C   TEMPUY  - Y user coordinates for daily hi/low locations.
         MM = WMGTLN(IDLYTS(I),LEN(IDLYTS),0)
         CALL WMLABC(XO,YO,ICITYS(I)(1:LL),IDLYTS(I)(1:MM))
   110 CONTINUE
+      CALL WMDFLT
 C
 C---------------------------------
 C  Regional temperature labels.  |
 C---------------------------------
 C
+      CALL WMSETI('RFC - foreground color for labels',10)
+      CALL WMSETI('ASC - arrow shadow color',-1)
+      CALL GSLWSC(2.)
+      IF (IBTYPE .EQ. IWBACK) THEN
+        CALL WMSETI('AWC - arrow color',1)
+        CALL WMSETI('AOC - arrow outline color',-1)
+        CALL WMSETI('ROS - character outline color',1)
+        CALL WMSETI('RLS - shadow color',1)
+      ELSE
+        CALL WMSETI('AWC - arrow color',10)
+        CALL WMSETI('AOC - arrow outline color',0)
+        CALL WMSETI('ROS - character outline color',-1)
+        CALL WMSETI('RLS - shadow color',-1)
+      ENDIF
+      CALL GSLWSC(1.)
+C
 C   S. Ariz.
       CALL MAPTRN(32.,-112.,XO,YO)
-      CALL WMLABT(XO,YO,'100s',2,1000)
+      CALL WMLABT(XO,YO,'100s',2)
 C   S. Calif.
+      CALL WMGETR('ARD',AANGO)
+      CALL WMGETR('ARL',ARLNO)
       CALL WMSETR('ARD',65.)
       CALL WMSETR('ARL',1.2)
       CALL MAPTRN(34.9,-120.,XO,YO)
       CALL WMLABS(XO,YO,'ARROW')
+      CALL WMSETR('ARD',AANGO)
+      CALL WMSETR('ARL',ARLNO)
       CALL MAPTRN(32.8,-116.9,XO,YO)
-      CALL WMDFLT
-      CALL WMLABT(XO,YO,'70s',1,1000)
+      CALL WMLABT(XO,YO,'70s',1)
 C   Oregon Pacific coast.
       CALL MAPTRN(43.,-123.9,XO,YO)
-      CALL WMLABT(XO,YO,'60s',11,1000)
+      CALL WMLABT(XO,YO,'60s',11)
 C   Idaho
       CALL MAPTRN(48.25,-114.75,XO,YO)
-      CALL WMLABT(XO,YO,'70s',8,1000)
+      CALL WMLABT(XO,YO,'70s',8)
 C   Gt. Lakes
       CALL MAPTRN(47.7,-87.,XO,YO)
-      CALL WMLABT(XO,YO,'70s',8,1000)
+      CALL WMLABT(XO,YO,'70s',8)
 C   N. Carolina
       CALL MAPTRN(35.0,-78.,XO,YO)
-      CALL WMLABT(XO,YO,'90s',6,1000)
+      CALL WMLABT(XO,YO,'90s',6)
 C   Maine
       CALL MAPTRN(46.5,-68.5,XO,YO)
-      CALL WMLABT(XO,YO,'70s',9,1000)
+      CALL WMLABT(XO,YO,'70s',9)
 C   Texas
-      CALL WMSETI('RFC',0)
+      IF (IBTYPE .EQ. IWBACK) THEN
+        CALL WMSETI('RLS - shadow color',1)
+        CALL WMSETI('ROS - character outline color',-1)
+      ELSE
+        CALL WMSETI('RLS - shadow color',0)
+        CALL WMSETI('ROS - character outline color',0)
+      ENDIF
+C
       CALL MAPTRN(31.25,-100.50,XO,YO)
       CALL WMLABT(XO,YO,'90s',0,-IC90S)
 C   S. of Okla.
       CALL MAPTRN(34.3,-97.5,XO,YO)
-      CALL WMLABT(XO,YO,'100s',11,-IC90S)
+      CALL WMSETI('RBS',IC90S)
+      CALL WMLABT(XO,YO,'100s',11)
 C   N. Ariz./New Mexico
       CALL MAPTRN(36.0,-109.0,XO,YO)
-      CALL WMLABT(XO,YO,'80s',0,-IC80S)
+      CALL WMSETI('RBS',IC80S)
+      CALL WMLABT(XO,YO,'80s',0)
 C   Oregon
       CALL MAPTRN(43.7,-120.5,XO,YO)
-      CALL WMLABT(XO,YO,'90s',0,-IC90S)
+      CALL WMSETI('RBS',IC90S)
+      CALL WMLABT(XO,YO,'90s',0)
 C   Utah
       CALL MAPTRN(40.0,-110.6,XO,YO)
-      CALL WMLABT(XO,YO,'90s',0,-IC90S)
+      CALL WMSETI('RBS',IC90S)
+      CALL WMLABT(XO,YO,'90s',0)
 C   N. Montana.
       CALL MAPTRN(48.0,-111.,XO,YO)
-      CALL WMLABT(XO,YO,'80s',0,-IC80S)
+      CALL WMSETI('RBS',IC80S)
+      CALL WMLABT(XO,YO,'80s',0)
 C   S. Dakota
       CALL MAPTRN(44.5,-100.0,XO,YO)
-      CALL WMLABT(XO,YO,'90s',0,-IC90S)
+      CALL WMSETI('RBS',IC90S)
+      CALL WMLABT(XO,YO,'90s',0)
 C   Iowa/Ill.
       CALL MAPTRN(41.5,-89.6,XO,YO)
-      CALL WMLABT(XO,YO,'80s',0,-IC80S)
+      CALL WMSETI('RBS',IC80S)
+      CALL WMLABT(XO,YO,'80s',0)
 C   Miss.
       CALL MAPTRN(33.4,-89.6,XO,YO)
-      CALL WMLABT(XO,YO,'90s',0,-IC90S)
+      CALL WMSETI('RBS',IC90S)
+      CALL WMLABT(XO,YO,'90s',0)
 C   Tenn.
       CALL MAPTRN(35.7,-83.,XO,YO)
-      CALL WMLABT(XO,YO,'80s',0,-IC80S)
+      CALL WMSETI('RBS',IC80S)
+      CALL WMLABT(XO,YO,'80s',0)
 C   New York
       CALL MAPTRN(42.7,-75.0,XO,YO)
-      CALL WMLABT(XO,YO,'80s',0,-IC80S)
+      CALL WMSETI('RBS',IC80S)
+      CALL WMLABT(XO,YO,'80s',0)
 C
 C-----------------
 C   Main title.  |
@@ -621,15 +748,27 @@ C-----------------
 C
       CALL MAPTRN(53.,-98.0,XO,YO)
       CALL WMSETI('RFC',1)
-      CALL WMLABT(XO,YO,'July 18, 1994',0,-1000)
+      CALL WMSETI('RBS',-1)
+      CALL WMSETI('ROS',-1)
+      CALL WMSETI('RLS',-1)
+      CALL WMLABT(XO,YO,'July 18, 1994',0)
 C--------------
 C   Legends.  |
 C--------------
 C
+      CALL GQCNTN(IER,NTRO)
       CALL GSELNT(0)
+      IF (IBTYPE .EQ. IWBACK) THEN
+        CALL WMSETI('COL',1)
+      ELSE
+        CALL WMSETI('COL',5)
+      ENDIF
+      CALL WMSETI('WFC',9)
+      CALL WMSETI('CFC',8)
       CALL WMLGND(.05,0.16,1,6,1)
       CALL WMLGND(.45,0.15,3,0,0)
       CALL WMLGND(.90,0.15,2,0,0)
+      CALL GSELNT(NTRO)
 C
       CALL FRAME
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: wmex01.f,v 1.1 1994-09-09 23:59:07 fred Exp $
+C	$Id: wmex01.f,v 1.2 1994-10-14 01:28:20 fred Exp $
 C
       PROGRAM WMEX01
 C
@@ -7,8 +7,8 @@ C  An example of using the tools in the weather map library to
 C  create a grayscale weather map.
 C
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
 C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
@@ -366,6 +366,7 @@ C
       CALL NGSETI('UX',710)
       CALL NGSETI('LY',-15)
       CALL NGSETI('UY',785)
+C
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
       CALL GACWK (IWKID)
 C
@@ -493,7 +494,7 @@ C-------------------------------
 C  
       DO 90 I=1,NUMWL
         CALL MAPTRN(CNDSUX(I),CNDSUY(I),XO,YO)
-        LL = WMGTLN(ICNDSL(I),LEN(ICNDSL),0)
+        LL = WMGTLN(ICNDSL(I),LEN(ICNDSL(I)),0)
         CALL WMLABW(XO,YO,ICNDSL(I)(1:LL))
    90 CONTINUE
 C  
@@ -522,81 +523,100 @@ C---------------------------------
 C  Regional temperature labels.  |
 C---------------------------------
 C
-C   Texas
-      CALL MAPTRN(31.25,-100.50,XO,YO)
-      CALL WMLABT(XO,YO,'90s',0,IC90S)
-C   S. of Okla.
-      CALL MAPTRN(34.3,-97.5,XO,YO)
-      CALL WMLABT(XO,YO,'100s',11,IC90S)
 C   S. Ariz.
       CALL MAPTRN(32.,-112.,XO,YO)
-      CALL WMLABT(XO,YO,'100s',2,-1000)
+      CALL WMLABT(XO,YO,'100s',2)
 C   S. Calif.
+      CALL WMGETR('ARD',AANGO)
+      CALL WMGETR('ARL',ARLNO)
       CALL WMSETR('ARD',65.)
       CALL WMSETR('ARL',1.2)
       CALL MAPTRN(34.9,-120.,XO,YO)
       CALL WMLABS(XO,YO,'ARROW')
+      CALL WMSETR('ARD',AANGO)
+      CALL WMSETR('ARL',ARLNO)
       CALL MAPTRN(32.8,-116.9,XO,YO)
-      CALL WMDFLT
-      CALL WMLABT(XO,YO,'70s',1,-1000)
-C   N. Ariz./New Mexico
-      CALL MAPTRN(36.0,-109.0,XO,YO)
-      CALL WMLABT(XO,YO,'80s',0,IC80S)
-C   Oregon
-      CALL MAPTRN(43.7,-120.5,XO,YO)
-      CALL WMLABT(XO,YO,'90s',0,-1000)
+      CALL WMLABT(XO,YO,'70s',1)
 C   Oregon Pacific coast.
       CALL MAPTRN(43.,-123.9,XO,YO)
-      CALL WMLABT(XO,YO,'60s',11,-1000)
-C   Colo/Utah
-      CALL MAPTRN(40.0,-110.6,XO,YO)
-      CALL WMLABT(XO,YO,'90s',0,IC90S)
-C   N. Montana.
-      CALL MAPTRN(48.0,-111.,XO,YO)
-      CALL WMLABT(XO,YO,'80s',0,IC80S)
+      CALL WMLABT(XO,YO,'60s',11)
 C   Idaho
       CALL MAPTRN(48.25,-114.75,XO,YO)
-      CALL WMLABT(XO,YO,'70s',8,-1000)
-C   S. Dakota
-      CALL MAPTRN(44.5,-100.0,XO,YO)
-      CALL WMLABT(XO,YO,'90s',0,-1000)
-C   Iowa/Ill.
-      CALL MAPTRN(41.5,-89.6,XO,YO)
-      CALL WMLABT(XO,YO,'80s',0,IC80S)
-C   Miss.
-      CALL MAPTRN(33.4,-89.6,XO,YO)
-      CALL WMLABT(XO,YO,'90s',0,-1000)
+      CALL WMLABT(XO,YO,'70s',8)
 C   Gt. Lakes
       CALL MAPTRN(47.7,-87.,XO,YO)
-      CALL WMLABT(XO,YO,'70s',8,-1000)
-C   Tenn.
-      CALL MAPTRN(35.7,-83.,XO,YO)
-      CALL WMLABT(XO,YO,'80s',0,IC80S)
+      CALL WMLABT(XO,YO,'70s',8)
 C   N. Carolina
       CALL MAPTRN(35.0,-78.,XO,YO)
-      CALL WMLABT(XO,YO,'90s',6,-1000)
+      CALL WMLABT(XO,YO,'90s',6)
 C   Maine
       CALL MAPTRN(46.5,-68.5,XO,YO)
-      CALL WMLABT(XO,YO,'70s',9,-1000)
+      CALL WMLABT(XO,YO,'70s',9)
+C   S. Dakota
+      CALL MAPTRN(44.5,-100.0,XO,YO)
+      CALL WMSETI('RBS',IC90S)
+      CALL WMLABT(XO,YO,'90s',0)
+C   Miss.
+      CALL MAPTRN(33.4,-89.6,XO,YO)
+      CALL WMSETI('RBS',IC90S)
+      CALL WMLABT(XO,YO,'90s',0)
+C   Texas
+      CALL MAPTRN(31.25,-100.50,XO,YO)
+      CALL WMSETI('RBS',IC90S)
+      CALL WMLABT(XO,YO,'90s',0)
+C   S. of Okla.
+      CALL MAPTRN(34.3,-97.5,XO,YO)
+      CALL WMSETI('RBS',IC90S)
+      CALL WMLABT(XO,YO,'100s',11)
+C   N. Ariz./New Mexico
+      CALL MAPTRN(36.0,-109.0,XO,YO)
+      CALL WMSETI('RBS',IC80S)
+      CALL WMLABT(XO,YO,'80s',0)
+C   Oregon
+      CALL MAPTRN(43.7,-120.5,XO,YO)
+      CALL WMSETI('RBS',IC90S)
+      CALL WMLABT(XO,YO,'90s',0)
+C   Colo/Utah
+      CALL MAPTRN(40.0,-110.6,XO,YO)
+      CALL WMSETI('RBS',IC90S)
+      CALL WMLABT(XO,YO,'90s',0)
+C   N. Montana.
+      CALL MAPTRN(48.0,-111.,XO,YO)
+      CALL WMSETI('RBS',IC80S)
+      CALL WMLABT(XO,YO,'80s',0)
+C   Iowa/Ill.
+      CALL MAPTRN(41.5,-89.6,XO,YO)
+      CALL WMSETI('RBS',IC80S)
+      CALL WMLABT(XO,YO,'80s',0)
+C   Tenn.
+      CALL MAPTRN(35.7,-83.,XO,YO)
+      CALL WMSETI('RBS',IC80S)
+      CALL WMLABT(XO,YO,'80s',0)
 C   New York
       CALL MAPTRN(42.7,-75.0,XO,YO)
-      CALL WMLABT(XO,YO,'80s',0,IC80S)
+      CALL WMSETI('RBS',IC80S)
+      CALL WMLABT(XO,YO,'80s',0)
 C
 C-----------------
 C   Main title.  |
 C-----------------
 C
       CALL MAPTRN(53.,-98.0,XO,YO)
-      CALL WMLABT(XO,YO,'July 18, 1994',0,-1000)
+      CALL WMSETI('RFC',1)
+      CALL WMSETI('RBS',-1)
+      CALL WMSETI('RLS',0)
+      CALL WMLABT(XO,YO,'July 18, 1994',0)
 C
 C--------------
 C   Legends.  |
 C--------------
 C
+      CALL GQCNTN(IER,NTRO)
       CALL GSELNT(0)
       CALL WMLGND(.05,0.16,1,6,1)
       CALL WMLGND(.45,0.15,3,0,0)
       CALL WMLGND(.90,0.15,2,0,0)
+      CALL GSELNT(NTRO)
 C
       CALL FRAME
 C
