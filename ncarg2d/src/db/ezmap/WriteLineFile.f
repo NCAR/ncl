@@ -48,7 +48,7 @@ C Get the name of the file to be read.
 C
         PRINT * , ' '
         PRINT * , 'Enter the name of the file to be read:'
-        READ (*,'(A64)') , FLNM
+        READ (*,'(A64)') FLNM
 C
         IF (FLNM.EQ.' ') GO TO 901
 C
