@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_cbind.m,v 1.6 1993-05-10 17:44:32 haley Exp $
+.\"	$Id: ncarg_cbind.m,v 1.7 1994-03-03 17:24:10 haley Exp $
 .\"
 .TH NCARG_CBIND 3NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -164,10 +164,6 @@ following obsolete utilities:
 .in .5i
 Conran_family, Conrec_family, Halftone, Isosrfhr, and Pwrite_family.
 .in -.5i
-.SH CAVEATS
-You cannot pass a NULL pointer in place of a character string.
-If you do not wish to pass a string, just pass "", which is a valid
-character string of length zero.
 .SH SEE ALSO
 Online: 
 .BR ncargcc(1NCARG),
