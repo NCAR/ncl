@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.26 1992-09-10 21:44:03 don Exp $
+
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -12,6 +12,7 @@
 #define BuildRasterAVS
 #define BuildRasterSGI
 #define BuildRasterAbekas
+#define BuildRasterBinary
 
 #ifdef hostantero
 #define BuildRasterNetcdf
@@ -103,17 +104,23 @@ NETCDF_SRCS =	netcdf.c
 NETCDF_DEFS =	-DBuildRasterNetcdf
 #endif
 
+#ifdef BuildRasterBinary
+BINARY_OBJS =	binary.o
+BINARY_SRCS =	binary.c
+BINARY_DEFS =	-DBuildRasterBinary
+#endif
+
 CDEFINES =	$(HDF_DEFS) $(HPLJ_DEFS) $(NRIF_DEFS) $(SUN_DEFS) \
 		$(XWD_DEFS) $(PARALLAX_DEFS) $(AVS_DEFS) $(SGI_DEFS) \
-		$(ABEKAS_DEFS) $(NETCDF_DEFS)
+		$(ABEKAS_DEFS) $(NETCDF_DEFS) $(BINARY_DEFS)
 
 DEVICE_OBJS =	$(HDF_OBJS) $(HPLJ_OBJS) $(NRIF_OBJS) $(SUN_OBJS) \
 		$(XWD_OBJS) $(PARALLAX_OBJS) $(AVS_OBJS) $(SGI_OBJS) \
-		$(ABEKAS_OBJS) $(NETCDF_OBJS)
+		$(ABEKAS_OBJS) $(NETCDF_OBJS) $(BINARY_OBJS)
 
 DEVICE_SRCS =	$(HDF_SRCS) $(HPLJ_SRCS) $(NRIF_SRCS) $(SUN_SRCS) \
 		$(XWD_SRCS) $(PARALLAX_SRCS) $(AVS_SRCS) $(SGI_SRCS) \
-		$(ABEKAS_SRCS) $(NETCDF_SRCS)
+		$(ABEKAS_SRCS) $(NETCDF_SRCS) $(BINARY_SRCS)
 
 GENERIC_OBJS =	raster.o cleartext.o error.o misc.o palette.o \
 		dither.o resample.o composite.o ntsc.o color.o \
@@ -141,7 +148,7 @@ nrif.o:		ncarg_ras.h nrif.h
 palette.o:	ncarg_ras.h
 rasinfo.o:	ncarg_ras.h
 rascopy.o:	ncarg_ras.h
-raster.o:	ncarg_ras.h options.h devices.h Makefile
+raster.o:	ncarg_ras.h raster.h options.h devices.h Makefile
 sunraster.o:	ncarg_ras.h sunraster.h
 xwd.o:		ncarg_ras.h
 
@@ -155,6 +162,7 @@ avsraster.o:	ncarg_ras.h avsraster.h
 ntsc.o:		ncarg_ras.h ntsc.h
 color.o:	ncarg_ras.h
 sgiraster.o:	ncarg_ras.h sgiraster.h
+binary.o:	ncarg_ras.h
 abekas.o:	ncarg_ras.h abekas.h
 netcdf.o:	ncarg_ras.h netcdflocal.h
 
