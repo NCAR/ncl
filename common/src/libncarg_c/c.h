@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.28 2004-01-14 19:35:06 haley Exp $
+ *	$Id: c.h,v 1.29 2004-07-31 12:17:41 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -39,8 +39,11 @@
  * Fortran callable.
  */
 #ifndef	NGCALLF
-#ifdef	UNICOS
-/* Brain dead cray's have to be different from everything else! */
+#if defined(UNICOS) || defined(NGCAPS)
+/*
+ * Brain dead crays (and most recently, Absoft ProFortran
+ * compiler) have to be different from everything else!
+ */
 #define	NGCALLF(reg,caps)	caps
 
 #elif	defined(RS6000) || defined(__hpux)
