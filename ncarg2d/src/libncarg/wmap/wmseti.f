@@ -1,5 +1,5 @@
 C
-C	$Id: wmseti.f,v 1.5 2000-02-18 21:39:59 fred Exp $
+C	$Id: wmseti.f,v 1.6 2000-02-22 18:46:47 fred Exp $
 C
       SUBROUTINE WMSETI (CNP,IVP)
 C
@@ -167,7 +167,7 @@ C        latitude and longitude.
 C
       ELSE IF (CNP(1:3).EQ.'EZF' .OR. CNP(1:3).EQ.'ezf' .OR.
      +    CNP(1:3).EQ.'Ezf') THEN
-        IRLLSC = IVP
+        IEZFLG = IVP
         GO TO 120
 C
 C  ROS - outline color index for regional temperature labels.

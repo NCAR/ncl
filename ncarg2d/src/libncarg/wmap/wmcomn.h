@@ -1,5 +1,5 @@
 C
-C	$Id: wmcomn.h,v 1.5 1994-12-16 17:51:39 fred Exp $
+C	$Id: wmcomn.h,v 1.6 2000-02-22 18:46:47 fred Exp $
 C
 C
 C  Size of the symbol type array.  This is a hardwired maximum.
@@ -113,6 +113,7 @@ C    IRLBKC  RBS   Regional temperature label background box color.
 C    IAROUC  AOC   Arrow outline color.
 C    ITRO1C  T1C   One color for alternate colors of tropical front. 
 C    ITRO2C  T2C   Second color for alternate colors of tropical front.
+C    IEZFLG  EZF   Flag for NCL to know if wmap is being used with mapping.
 C
       COMMON /WMCOMI/ SYMWID, BEGDST, ENDDST, BETDST, MAXSYM, IARNDX, 
      +                IFRONT, CRVLEN, ISLFLG, SLOPE1, SLOPE2, SLOPEL,

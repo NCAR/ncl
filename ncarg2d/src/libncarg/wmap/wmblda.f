@@ -1,5 +1,5 @@
 C
-C	$Id: wmblda.f,v 1.6 1994-12-16 17:51:36 fred Exp $
+C	$Id: wmblda.f,v 1.7 2000-02-22 18:46:46 fred Exp $
 C
       BLOCKDATA WMBLDA
 C
@@ -124,6 +124,11 @@ C
 C  Color index for regional weather labels and regioanl temperature labels.
 C
       DATA IFGTRG/1/
+C
+C  Flag for NCL to know if it is being used in conjunction with
+C  mapping tools in certain applications.
+C
+      DATA IEZFLG/-1/
 C
 C  Colors for regional temperature label shadows and outlines.
 C
