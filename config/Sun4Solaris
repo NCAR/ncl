@@ -1,5 +1,5 @@
 /*
- *      $Id: Sun4Solaris,v 1.20 1998-02-26 21:15:04 haley Exp $
+ *      $Id: Sun4Solaris,v 1.21 2000-03-20 22:15:12 haley Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,7 @@
 
 #define XLibrary -lX11 -lXext
 #define XmotifLibrary -Bdynamic -lXm -Bstatic
+#define XToolLibrary      -lXt -Bdynamic -lSM -lICE -Bstatic
 
 #define UseCatDirs        YES
 
