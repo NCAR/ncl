@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.6 1994-10-29 00:57:51 ethan Exp $
+ *      $Id: NclVar.c,v 1.7 1994-12-21 01:57:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -365,6 +365,12 @@ FILE *fp;
 		nclfprintf(fp,"Variable: %s (HLU object)\n",v_name);
 		break;
 */
+	case FILEVAR:
+		nclfprintf(fp,"Variable: %s (file variable)\n",v_name);
+		break;
+	case FILEVARSUBSEL:
+		nclfprintf(fp,"Variable: %s (file variable subsection)\n",v_name);
+		break;
 	default:
 		nclfprintf(fp,"Variable: %s\n","unnamed");
 		break;
@@ -1238,6 +1244,7 @@ NclSelectionRecord *sel_ptr;
 	NclMultiDValData thevalue;
 	NclObj tmp_obj;
 	NclAtt tmp_att = NULL;
+	NclDimRec dim_info[NCL_MAX_DIMENSIONS];
 
 	thevalue = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
 
@@ -1282,9 +1289,12 @@ NclSelectionRecord *sel_ptr;
 				} else {
 					coords[i] = -1;
 				}
+				dim_info[i].dim_num = 0;
+				dim_info[i].dim_quark = self->var.dim_info[sel_ptr->selection[i].dim_num].dim_quark;
+				dim_info[i].dim_size = val->multidval.dim_sizes[i];
 			}
 			tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(self->var.att_id),NULL);
-			tmp_obj = (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,self->var.thesym,val,self->var.dim_info,((tmp_att == NULL) ? -1:tmp_att->obj.id),coords,VARSUBSEL,NrmQuarkToString(self->var.var_quark));
+			tmp_obj = (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,self->var.thesym,val,dim_info,((tmp_att == NULL) ? -1:tmp_att->obj.id),coords,VARSUBSEL,NrmQuarkToString(self->var.var_quark));
 			for(i = 0; i< sel_ptr->n_entries;i++) {
 				if(((NclVar)tmp_obj)->var.coord_vars[i] != -1){
 					_NclAddParent(

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.7 1994-10-29 00:57:13 ethan Exp $
+ *      $Id: DataSupport.c,v 1.8 1994-12-21 01:57:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1038,7 +1038,7 @@ NclBasicDataTypes dt;
 #endif
 {
 	static int first = 1;
-	static NclQuark quarks[8];
+	static NclQuark quarks[9];
 
 	if(first) {
 		first = 0;
@@ -1050,6 +1050,7 @@ NclBasicDataTypes dt;
 		quarks[5] = NrmStringToQuark("string");
 		quarks[6] = NrmStringToQuark("char");
 		quarks[7] = NrmStringToQuark("byte");
+		quarks[8] = NrmStringToQuark("logical");
 	}	
 
 	switch(dt) {
@@ -1069,6 +1070,8 @@ NclBasicDataTypes dt;
 		return(NrmQuarkToString(quarks[6]));
 	case NCL_byte:
 		return(NrmQuarkToString(quarks[7]));
+	case NCL_logical:
+		return(NrmQuarkToString(quarks[8]));
 	}
 	return(NULL);
 }

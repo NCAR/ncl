@@ -102,7 +102,7 @@ char *cur_load_file = NULL;
 %left '<' '>'
 %left '+' '-'
 %left '*' '#' '/' '%'
-%right '^'
+%left '^'
 %left UNOP NOT
 %type <array> expr_list
 %type <src_node> statement assignment 

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.27 1994-12-14 23:16:23 ethan Exp $
+ *      $Id: Execute.c,v 1.28 1994-12-21 01:57:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -124,31 +124,33 @@ NclExecuteReturnStatus _NclExecute
 						estatus = NhlFATAL;
 					}
 				}
-				if(*ptr == INT_SUBSCRIPT_OP) {
-					data1.u.sub_rec->name = NULL;
-				} else {
-					data = _NclPop();
-					switch(data.kind) {
-					case NclStk_VAL: {
+				if(estatus != NhlFATAL) {
+					if(*ptr == INT_SUBSCRIPT_OP) {
+						data1.u.sub_rec->name = NULL;
+					} else {
+						data = _NclPop();
+						switch(data.kind) {
+						case NclStk_VAL: {
 /*
 * Taking for granted that syntax only allows string litterals here
 */
-						data1.u.sub_rec->name = NrmQuarkToString(*((NclQuark*) data.u.data_obj->multidval.val));
-						_NclDestroyObj((NclObj)data.u.data_obj);
-						
-						break;
+							data1.u.sub_rec->name = NrmQuarkToString(*((NclQuark*) data.u.data_obj->multidval.val));
+							_NclDestroyObj((NclObj)data.u.data_obj);
+							
+							break;
+						}
+						default:	
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"Illegal type for coordinate name in coordinate subscript ignoring value");
+							data1.u.sub_rec->name = NULL;
+							break;
+						}
 					}
-					default:	
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"Illegal type for coordinate name in coordinate subscript ignoring value");
-						data1.u.sub_rec->name = NULL;
-						break;
+					if(_NclPush(data1) == NhlFATAL)  {
+						estatus = NhlFATAL;
+					} else {
+						if(estatus == NhlFATAL) 
+							_NclCleanUpStack(1);
 					}
-				}
-				if(_NclPush(data1) == NhlFATAL)  {
-					estatus = NhlFATAL;
-				} else {
-					if(estatus == NhlFATAL) 
-						_NclCleanUpStack(1);
 				}
 				break;
 			}
@@ -1009,7 +1011,7 @@ NclExecuteReturnStatus _NclExecute
 */
 					previous_fp = _NclLeaveFrame(caller_level);
 					_NclRemapIntrParameters(((NclSymbol*)*ptr)->u.bfunc->nargs,
-							previous_fp,FUNC_CALL_OP);
+							previous_fp,INTRINSIC_FUNC_CALL);
 
 				        for(i = 0 ; i < (sizeof(NclFrame)/sizeof(NclStackEntry)) - 1; i++) {
 						(void)_NclPop();
@@ -1060,7 +1062,7 @@ NclExecuteReturnStatus _NclExecute
 */
 					previous_fp = _NclLeaveFrame(caller_level);
 					_NclRemapIntrParameters(((NclSymbol*)*ptr)->u.bfunc->nargs,
-							previous_fp,PROC_CALL_OP);
+							previous_fp,INTRINSIC_PROC_CALL);
 				        for(i = 0 ; i < (sizeof(NclFrame)/sizeof(NclStackEntry)) ; i++) {
 						(void)_NclPop();
 					}
@@ -1438,6 +1440,20 @@ NclExecuteReturnStatus _NclExecute
 				
 				break;
 			}
+			case ISDEFINED_OP: {
+				NclStackEntry* var;
+				NclSymbol *var_sym;
+
+
+				ptr++;lptr++;fptr++;
+				var_sym = (NclSymbol*)*ptr;
+				var = _NclRetrieveRec(var_sym,DONT_CARE);
+				if((var== NULL) || (var->kind == NclStk_NOVAL)|| (var->u.data_var == NULL)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Undefined indentifier: (%s) is undefined, can't continue",var_sym->name);
+					estatus = NhlFATAL;
+				}
+				break;
+			}
 /***************************
 * Two Operand Instructions *
 ***************************/			
@@ -1812,6 +1828,9 @@ NclExecuteReturnStatus _NclExecute
 /*
 * Attention: missing value may be different type than variable data until code is put here to fix it
 */
+							if(data.u.data_var->obj.status != PERMANENT) {
+								_NclDestroyObj((NclObj)data.u.data_var);
+							}
 						} else {
 							tmp_md = NULL;
 						}
@@ -1900,12 +1919,12 @@ NclExecuteReturnStatus _NclExecute
                                                         	estatus = _NclPush(data);
                                                 	}
 						} else if(estatus != NhlFATAL){
-							if(tmp_md == NULL) {
-                                                        	estatus = _NclPush(data);
-							} else {
+							if(tmp_md != NULL){
 								tmp_data.kind = NclStk_VAL;
 								tmp_data.u.data_obj = tmp_md;
 								estatus = _NclPush(tmp_data);
+							} else {
+								estatus = _NclPush(data);
 							}
 						}
 					}
@@ -1947,7 +1966,13 @@ NclExecuteReturnStatus _NclExecute
                                                         if(tmp_md == NULL) {
                                                         	NhlPError(NhlFATAL,NhlEUNKNOWN,"Argument type mismatch on argument (%d) of (%s) can not coerce",arg_num,thesym->name);
                                                         	estatus = NhlFATAL;
-                                                        } 
+                                                        } else {
+								if(data.u.data_obj->obj.status != PERMANENT) {
+									_NclDestroyObj((NclObj)data.u.data_obj);
+								}
+								data.u.data_obj = tmp_md;
+								data.kind = NclStk_VAL;
+							}
 /*
 * Attention: missing value may be different type than variable data until code is put here to fix it
 */

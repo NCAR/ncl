@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValbyteData.c.specific,v 1.2 1994-09-01 17:41:44 ethan Exp $
+ *      $Id: NclMultiDValbyteData.c.specific,v 1.3 1994-12-21 01:57:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,12 @@ static NclData MultiDVal_byte_md_Coerce
 #endif
 {
 	NclMultiDValbyteData self_md = (NclMultiDValbyteData)self;
+	logical *lovalue;
+	NclData output_md;
+	NclScalar missing;
+	int i,chckmiss = 0;
+
+	
 	if(self_md->obj.obj_type == Ncl_MultiDValbyteData) {
 		if((new_missing == NULL)||(!self_md->multidval.missing_value.has_missing)) {
 			return(self);
@@ -49,6 +55,38 @@ static NclData MultiDVal_byte_md_Coerce
 		} else {
 				return(self);
 		}
+	} if(coerce_to_obj == Ncl_MultiDVallogicalData) {
+		lovalue = (logical*)NclMalloc((unsigned)sizeof(logical)*
+                        self_md->multidval.totalelements);
+                if(self_md->multidval.missing_value.has_missing) {
+                        if(new_missing == NULL) {
+                                missing.logicalval = (logical)
+                                        self_md->multidval.missing_value.value.byteval;
+                        } else {
+                                chckmiss = 1;
+                                missing = self_md->multidval.missing_value.value;
+                        }
+                }
+                if(chckmiss) {
+                        for(i=0; i<self_md->multidval.totalelements;i++) {
+                                lovalue[i] = (logical)(
+                                ((int*)self_md->multidval.val)[i] == missing.byteval ? new_missing->logicalval : (((byte*)self_md->multidval.val)[i] ? 1 : 0));
+                        }
+                } else {
+                        for(i=0; i<self_md->multidval.totalelements;i++) {
+                                lovalue[i] = (logical)(((byte*)self_md->multidval.val)[i]?1:0);
+                        }
+                }
+                if(new_missing != NULL) {
+                        missing = *new_missing;
+                }
+                output_md = (NclData)_NclMultiDVallogicalCreate(NULL,NULL,Ncl_MultiDVallogicalData,0,(void*)lovalue,
+                ((self_md->multidval.missing_value.has_missing||new_missing!=NULL) ? &missing:NULL),
+                        self_md->multidval.n_dims,
+                        self_md->multidval.dim_sizes,
+                        TEMPORARY,NULL);
+                return((NclData)output_md);
+
 	} else {
 		return(NULL);
 	}
@@ -65,6 +103,11 @@ NclScalar *new_missing;
 #endif
 {
 	NclMultiDValbyteData self_md = (NclMultiDValbyteData)self;
+	NclData output_md;
+	NclScalar missing;
+	int chckmiss = 0;
+
+	logical *lovalue;
 	if(self_md->obj.obj_type == Ncl_MultiDValbyteData) {
 		if((new_missing == NULL )||(!self_md->multidval.missing_value.has_missing)) {
 			return(self);
@@ -81,6 +124,37 @@ NclScalar *new_missing;
 		} else {
 			return(self);
 		}
+	} if(coerce_to_obj == Ncl_MultiDVallogicalData) {
+		lovalue = (logical*)NclMalloc((unsigned)sizeof(logical));
+                if(self_md->multidval.missing_value.has_missing) {
+                        if(new_missing == NULL) {
+                                missing.logicalval = (logical)
+                                        self_md->multidval.missing_value.value.byteval;
+                        } else {
+                                chckmiss = 1;
+                                missing = self_md->multidval.missing_value.value;
+                        }
+                }
+                if(chckmiss) {
+                        *lovalue = (logical) (
+                                        *((logical*)self_md->multidval.val) == missing.byteval ?
+                                        new_missing->logicalval:
+                                        (*((byte*)self_md->multidval.val)?1:0)
+                                );
+                } else{
+                        *lovalue = (logical)(*((byte*)self_md->multidval.val)?1:0);
+                }
+                if(new_missing != NULL)
+                        missing = *new_missing;
+                output_md = (NclData)_NclMultiDVallogicalCreate(NULL,
+                        NULL,Ncl_MultiDVallogicalData,0,
+                        (void*)lovalue,
+                ((self_md->multidval.missing_value.has_missing||new_missing!=NULL) ? &missing:NULL),
+                        self_md->multidval.n_dims,
+                        self_md->multidval.dim_sizes,
+                        TEMPORARY,NULL);
+                return((NclData)output_md);
+
 	} else {
 		return(NULL);
 	}

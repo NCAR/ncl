@@ -1458,7 +1458,7 @@ int type;
 					index_map[i] = i;
 					total_elements *= thefile->file.var_info[index]->dim_sizes[i];
 					selection_dim_sizes[i] = thefile->file.var_info[index]->dim_sizes[i];
-					compare_sel[i] = -1;
+					compare_sel[i] = -2;
 					multiplier_target[i] = 1;
 					for(k = i + 1; k < n_dims_target; k++) {
 						multiplier_target[i] *= (long)thefile->file.var_info[index]->dim_sizes[k];
@@ -1498,6 +1498,9 @@ int type;
 					tmp_md = _NclCoerceData(value,lhs_type,(NclScalar*)mis_md->multidval.val);
 				} else {
 					tmp_md = _NclCoerceData(value,lhs_type,NULL);
+				}
+				if(tmp_md == NULL) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"FileWriteVar: Type mismatch, can't perform assignment");
 				}
 			} else {
 				if((has_missing)&&(value->multidval.missing_value.has_missing)) {
@@ -1678,6 +1681,7 @@ int type;
 							current_finish[index_map[0]] = current_index[index_map[0]];
 						}
 					}	
+					return(ret);
 				}
 			} else if((type == FILE_VAR_ACCESS) ? thefile->file.format_funcs->write_var_ns != NULL : thefile->file.format_funcs->write_coord_ns != NULL) {
 				if((!has_vectors)&&(!has_reverse)&&(!has_reorder)&&(!has_stride)) {	
@@ -1703,6 +1707,7 @@ int type;
 /*
 * Need code here
 */
+					return(NhlFATAL);
 				}
 			}
 		} else {
@@ -1890,19 +1895,23 @@ struct _NclSelectionRecord* sel_ptr;
 	int dindex;
 	int index;
 	
-
-	dindex = FileIsDim(thefile,coord_name);
-	if(dindex > -1) {
-		ret = MyFileWriteVar(thefile,coord_name,value,sel_ptr,NULL,FILE_COORD_VAR_ACCESS);
-		if(thefile->file.coord_vars[dindex] == NULL) {
-			index = FileIsVar(thefile,coord_name);
-			if(index > -1) {
-				thefile->file.coord_vars[dindex] = thefile->file.var_info[index];
-			} 
-		}	
-		return(ret);
+	if(!thefile->file.wr_status) {
+		dindex = FileIsDim(thefile,coord_name);
+		if(dindex > -1) {
+			ret = MyFileWriteVar(thefile,coord_name,value,sel_ptr,NULL,FILE_COORD_VAR_ACCESS);
+			if(thefile->file.coord_vars[dindex] == NULL) {
+				index = FileIsVar(thefile,coord_name);
+				if(index > -1) {
+					thefile->file.coord_vars[dindex] = thefile->file.var_info[index];
+				} 
+			}	
+			return(ret);
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%s) is not a valid dimension in file (%s), can't write coord_var",NrmQuarkToString(coord_name),NrmQuarkToString(thefile->file.fname));
+			return(NhlFATAL);
+		}
 	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%s) is not a valid dimension in file (%s), can't write coord_var",NrmQuarkToString(coord_name),NrmQuarkToString(thefile->file.fname));
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"FileWriteCoord: file (%s) was opened for reading only, can not write",NrmQuarkToString(thefile->file.fname));
 		return(NhlFATAL);
 	}
 }
@@ -1928,34 +1937,38 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 	NclVar coord_var;
 	NclAttList *step;
 	
-
-	tmp_var = _NclVarRead(rhs_var,rhs_sel_ptr);
-	for ( i = 0; i < tmp_var->var.n_dims; i++) {
-		dim_names[i] = tmp_var->var.dim_info[i].dim_quark;
-	}
-	ret = MyFileWriteVar(thefile,lhs_var,(NclMultiDValData)_NclGetObj(tmp_var->var.thevalue_id),lhs_sel_ptr,dim_names,FILE_VAR_ACCESS);
-	if(ret < NhlWARNING) {
+	if(!thefile->file.wr_status) {
+		tmp_var = _NclVarRead(rhs_var,rhs_sel_ptr);
+		for ( i = 0; i < tmp_var->var.n_dims; i++) {
+			dim_names[i] = tmp_var->var.dim_info[i].dim_quark;
+		}
+		ret = MyFileWriteVar(thefile,lhs_var,(NclMultiDValData)_NclGetObj(tmp_var->var.thevalue_id),lhs_sel_ptr,dim_names,FILE_VAR_ACCESS);
+		if(ret < NhlWARNING) {
+			return(ret);
+		}
+		if(rhs_var->var.att_id != -1) {
+			theatt = (NclAtt)_NclGetObj(rhs_var->var.att_id);
+			step = theatt->att.att_list;
+			while(step != NULL) {
+				ret = FileWriteVarAtt(thefile,lhs_var,step->quark,step->attvalue,NULL);
+				if(ret < NhlWARNING)
+				return(ret);
+				step = step->next;
+			}
+		}
+		for(i = 0; i < rhs_var->var.n_dims; i++) {
+			if(rhs_var->var.coord_vars[i] != -1) {
+				tmp_var = (NclVar)_NclGetObj(rhs_var->var.coord_vars[i]);
+				ret = FileWriteCoord(thefile,rhs_var->var.dim_info[i].dim_quark,_NclVarValueRead(tmp_var,NULL,NULL),NULL);
+				if(ret < NhlWARNING)
+				return(ret);
+			}
+		}
 		return(ret);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"FileWriteVarVar: file (%s) was opened for reading only, can not write",NrmQuarkToString(thefile->file.fname));
+		return(NhlFATAL);
 	}
-	if(rhs_var->var.att_id != -1) {
-		theatt = (NclAtt)_NclGetObj(rhs_var->var.att_id);
-		step = theatt->att.att_list;
-		while(step != NULL) {
-			ret = FileWriteVarAtt(thefile,lhs_var,step->quark,step->attvalue,NULL);
-			if(ret < NhlWARNING)
-				return(ret);
-			step = step->next;
-		}
-	}
-	for(i = 0; i < rhs_var->var.n_dims; i++) {
-		if(rhs_var->var.coord_vars[i] != -1) {
-			tmp_var = (NclVar)_NclGetObj(rhs_var->var.coord_vars[i]);
-			ret = FileWriteCoord(thefile,rhs_var->var.dim_info[i].dim_quark,_NclVarValueRead(tmp_var,NULL,NULL),NULL);
-			if(ret < NhlWARNING)
-				return(ret);
-		}
-	}
-	return(ret);
 }
 
 
@@ -1994,115 +2007,120 @@ struct _NclSelectionRecord * sel_ptr;
 	NclFileAttInfoList *step;
 	NclBasicDataTypes from_type,to_type;
 	NclObjTypes obj_type;
-	
-	index = FileIsVar(thefile,var);
-	if(index > -1) {
-		if(thefile->file.var_att_ids[index] == -1) {
-			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
-			step = thefile->file.var_att_info[index];
-			while(step != NULL){
-				tmp_att_md = FileReadVarAtt(thefile,var,step->the_att->att_name_quark,NULL);
-				if(tmp_att_md != NULL) {
-					if(tmp_att_md->obj.status == TEMPORARY){
-						_NclAddAtt(att_id,NrmQuarkToString(step->the_att->att_name_quark),tmp_att_md,NULL);
-					} else {
-						tmp_att_md = _NclCopyVal(tmp_att_md, NULL);
-						_NclAddAtt(att_id,NrmQuarkToString(step->the_att->att_name_quark),tmp_att_md,NULL);
+
+	if(!thefile->file.wr_status) {
+		index = FileIsVar(thefile,var);
+		if(index > -1) {
+			if(thefile->file.var_att_ids[index] == -1) {
+				att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
+				step = thefile->file.var_att_info[index];
+				while(step != NULL){
+					tmp_att_md = FileReadVarAtt(thefile,var,step->the_att->att_name_quark,NULL);
+					if(tmp_att_md != NULL) {
+						if(tmp_att_md->obj.status == TEMPORARY){
+							_NclAddAtt(att_id,NrmQuarkToString(step->the_att->att_name_quark),tmp_att_md,NULL);
+						} else {
+							tmp_att_md = _NclCopyVal(tmp_att_md, NULL);
+							_NclAddAtt(att_id,NrmQuarkToString(step->the_att->att_name_quark),tmp_att_md,NULL);
+						}
 					}
+					step = step->next;
 				}
-				step = step->next;
+				thefile->file.var_att_ids[index] = att_id;
+			}  else {
+				att_id = thefile->file.var_att_ids[index];
 			}
-			thefile->file.var_att_ids[index] = att_id;
-		}  else {
-			att_id = thefile->file.var_att_ids[index];
-		}
 /*
 * Hereis the trick. It is easier to let the _NclAddAtt... functions deal
 * with the coercion than to figure out what it should be 
 */
-		exists = _NclIsAtt(att_id,NrmQuarkToString(attname));
-		if((exists)&&(thefile->file.format_funcs->write_att != NULL))  {
-			ret = (*thefile->file.format_funcs->write_var_att)(
-				thefile->file.private_rec,
-				var,
-				attname,
-				value->multidval.val
-			);
-			return(ret);
-		} else if((!exists)&&(thefile->file.format_funcs->add_att != NULL)){
-			if(value->multidval.data_type == NCL_char) {	
-				tmp_md = _NclCharMdToStringMd(value);
-				ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
-				if(ret < NhlWARNING) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list",NrmQuarkToString(attname));
-					return(NhlFATAL);
-				}
-				ret = (*thefile->file.format_funcs->add_var_att)(
+			exists = _NclIsAtt(att_id,NrmQuarkToString(attname));
+			if((exists)&&(thefile->file.format_funcs->write_att != NULL))  {
+				ret = (*thefile->file.format_funcs->write_var_att)(
 					thefile->file.private_rec,
 					var,
 					attname,
-					value->multidval.data_type,
-					value->multidval.totalelements,
 					value->multidval.val
 				);
-				if(ret > NhlWARNING) {
-					AddAttInfoToList(&(thefile->file.var_att_info[index]), (*thefile->file.format_funcs->get_var_att_info)(thefile->file.private_rec,var,attname));
-					return(ret);
-				} else {
-					_NclDeleteAtt(att_id,NrmQuarkToString(attname));
-				}
-			} else {
-				if((*thefile->file.format_funcs->map_ncl_type_to_format)(value->multidval.data_type) == NULL)  {
-					if(value->multidval.data_type == NCL_string) {
-						tmp_md = _NclStringMdToCharMd(value);
-						return(_NclFileWriteVarAtt(thefile,var,attname,tmp_md,sel_ptr));
-					} else {
-						from_type = value->multidval.data_type;
-						to_type = _NclPromoteType(from_type);
-						while((from_type != to_type)&&((*thefile->file.format_funcs->map_ncl_type_to_format)(to_type)==NULL)) {
-							from_type = to_type;
-							to_type = _NclPromoteType(from_type);
-						}
-						if((*thefile->file.format_funcs->map_ncl_type_to_format)(to_type)==NULL) {
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"The type (%s) is not representable as an attribute in the file (%s)",_NclBasicDataTypeToName(to_type),NrmQuarkToString(thefile->file.fpath));
-							return(NhlFATAL);
-						} else {
-							obj_type = _NclBasicDataTypeToObjType(to_type);
-							tmp_md = _NclCoerceData(value,obj_type,NULL);
-						}
+				return(ret);
+			} else if((!exists)&&(thefile->file.format_funcs->add_att != NULL)){
+				if(value->multidval.data_type == NCL_char) {	
+					tmp_md = _NclCharMdToStringMd(value);
+					ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
+					if(ret < NhlWARNING) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list",NrmQuarkToString(attname));
+						return(NhlFATAL);
 					}
-					
+					ret = (*thefile->file.format_funcs->add_var_att)(
+						thefile->file.private_rec,
+						var,
+						attname,
+						value->multidval.data_type,
+						value->multidval.totalelements,
+						value->multidval.val
+					);
+					if(ret > NhlWARNING) {
+						AddAttInfoToList(&(thefile->file.var_att_info[index]), (*thefile->file.format_funcs->get_var_att_info)(thefile->file.private_rec,var,attname));
+						return(ret);
+					} else {
+						_NclDeleteAtt(att_id,NrmQuarkToString(attname));
+					}
 				} else {
-					tmp_md = value;
+					if((*thefile->file.format_funcs->map_ncl_type_to_format)(value->multidval.data_type) == NULL)  {
+						if(value->multidval.data_type == NCL_string) {
+							tmp_md = _NclStringMdToCharMd(value);
+							return(_NclFileWriteVarAtt(thefile,var,attname,tmp_md,sel_ptr));
+						} else {
+							from_type = value->multidval.data_type;
+							to_type = _NclPromoteType(from_type);
+							while((from_type != to_type)&&((*thefile->file.format_funcs->map_ncl_type_to_format)(to_type)==NULL)) {
+								from_type = to_type;
+								to_type = _NclPromoteType(from_type);
+							}
+							if((*thefile->file.format_funcs->map_ncl_type_to_format)(to_type)==NULL) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"The type (%s) is not representable as an attribute in the file (%s)",_NclBasicDataTypeToName(to_type),NrmQuarkToString(thefile->file.fpath));
+								return(NhlFATAL);
+							} else {
+								obj_type = _NclBasicDataTypeToObjType(to_type);
+								tmp_md = _NclCoerceData(value,obj_type,NULL);
+							}
+						}
+						
+					} else {
+						tmp_md = value;
+					}
+					ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
+					if(ret < NhlWARNING) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list",NrmQuarkToString(attname));
+						return(NhlFATAL);
+					}
+					ret = (*thefile->file.format_funcs->add_var_att)(
+						thefile->file.private_rec,
+						var,
+						attname,
+						tmp_md->multidval.data_type,
+						tmp_md->multidval.totalelements,
+						tmp_md->multidval.val
+					);
+					if(ret > NhlWARNING) {
+						AddAttInfoToList(&(thefile->file.var_att_info[index]), (*thefile->file.format_funcs->get_var_att_info)(thefile->file.private_rec,var,attname));
+						return(ret);
+					} else {
+						_NclDeleteAtt(att_id,NrmQuarkToString(attname));
+					}
 				}
-				ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
-				if(ret < NhlWARNING) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list",NrmQuarkToString(attname));
-					return(NhlFATAL);
-				}
-				ret = (*thefile->file.format_funcs->add_var_att)(
-					thefile->file.private_rec,
-					var,
-					attname,
-					tmp_md->multidval.data_type,
-					tmp_md->multidval.totalelements,
-					tmp_md->multidval.val
-				);
-				if(ret > NhlWARNING) {
-					AddAttInfoToList(&(thefile->file.var_att_info[index]), (*thefile->file.format_funcs->get_var_att_info)(thefile->file.private_rec,var,attname));
-					return(ret);
-				} else {
-					_NclDeleteAtt(att_id,NrmQuarkToString(attname));
-				}
+				return(ret);
+			} else {
+				return(NhlFATAL);
 			}
-			return(ret);
 		} else {
-			return(NhlFATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a variable in file (%s)",NrmQuarkToString(var),NrmQuarkToString(thefile->file.fname));
 		}
+		return(NhlFATAL);
 	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a variable in file (%s)",NrmQuarkToString(var),NrmQuarkToString(thefile->file.fname));
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"FileWriteVarAtt: file (%s) was opened for reading only, can not write",NrmQuarkToString(thefile->file.fname));
+		return(NhlFATAL);
 	}
-	return(NhlFATAL);
 }
 static struct _NclMultiDValDataRec *FileReadAtt
 #if  __STDC__
@@ -2174,118 +2192,121 @@ struct _NclSelectionRecord *sel_ptr;
 	NhlErrorTypes ret = NhlNOERROR;
 	NclBasicDataTypes from_type,to_type;
 	NclObjTypes obj_type;
-	
 
-	if(thefile->file.file_atts_id == -1) {
-		att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
-		for(i= 0; i < thefile->file.n_file_atts; i++) {
-			tmp_att_md = FileReadAtt(thefile,thefile->file.file_atts[i]->att_name_quark,NULL);
-			if(tmp_att_md != NULL) {
-				if(tmp_att_md->obj.status == TEMPORARY){
-					_NclAddAtt(att_id,NrmQuarkToString(thefile->file.file_atts[i]->att_name_quark),tmp_att_md,NULL);
-				} else {
-					tmp_att_md = _NclCopyVal(tmp_att_md, NULL);
-					_NclAddAtt(att_id,NrmQuarkToString(thefile->file.file_atts[i]->att_name_quark),tmp_att_md,NULL);
+	if(!thefile->file.wr_status) {
+		if(thefile->file.file_atts_id == -1) {
+			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
+			for(i= 0; i < thefile->file.n_file_atts; i++) {
+				tmp_att_md = FileReadAtt(thefile,thefile->file.file_atts[i]->att_name_quark,NULL);
+				if(tmp_att_md != NULL) {
+					if(tmp_att_md->obj.status == TEMPORARY){
+						_NclAddAtt(att_id,NrmQuarkToString(thefile->file.file_atts[i]->att_name_quark),tmp_att_md,NULL);
+					} else {
+						tmp_att_md = _NclCopyVal(tmp_att_md, NULL);
+						_NclAddAtt(att_id,NrmQuarkToString(thefile->file.file_atts[i]->att_name_quark),tmp_att_md,NULL);
+					}
 				}
 			}
+			thefile->file.file_atts_id = att_id;
+		}  else {
+			att_id = thefile->file.file_atts_id;
 		}
-		thefile->file.file_atts_id = att_id;
-	}  else {
-		att_id = thefile->file.file_atts_id;
-	}
-	exists = _NclIsAtt(att_id,NrmQuarkToString(attname));
-	if((exists)&&(thefile->file.format_funcs->write_att != NULL))  {
+		exists = _NclIsAtt(att_id,NrmQuarkToString(attname));
+		if((exists)&&(thefile->file.format_funcs->write_att != NULL))  {
 /*
 * Hereis the trick. It is easier to let the _NclAddAtt... functions deal
 * with the coercion than to figure out what it should be 
 */
-		ret = _NclAddAtt(att_id,NrmQuarkToString(attname),value,sel_ptr);
-		if(ret < NhlWARNING) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list", NrmQuarkToString(attname));
-			return(NhlFATAL);
-		}
-		tmp_att_md = _NclGetAtt(att_id,NrmQuarkToString(attname),NULL);
-		ret = (*thefile->file.format_funcs->write_att)(
-			thefile->file.private_rec,
-			attname,
-			tmp_att_md->multidval.val
-		);
-		return(ret);
-	} else if((!exists)&&(thefile->file.format_funcs->add_att != NULL)){
-		if(value->multidval.data_type == NCL_char) {
-			tmp_md = _NclCharMdToStringMd(value);
-			ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
-               		if(ret < NhlWARNING) {
-                        	NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list", NrmQuarkToString(attname));
-                        	return(NhlFATAL);
-                	}
-			ret = (*thefile->file.format_funcs->add_att)(
+			ret = _NclAddAtt(att_id,NrmQuarkToString(attname),value,sel_ptr);
+			if(ret < NhlWARNING) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list", NrmQuarkToString(attname));
+				return(NhlFATAL);
+			}
+			tmp_att_md = _NclGetAtt(att_id,NrmQuarkToString(attname),NULL);
+			ret = (*thefile->file.format_funcs->write_att)(
 				thefile->file.private_rec,
 				attname,
-				value->multidval.data_type,
-				value->multidval.totalelements,
-				value->multidval.val
+				tmp_att_md->multidval.val
 			);
-			if(ret > NhlWARNING) {
-				thefile->file.file_atts[thefile->file.n_file_atts] = (*thefile->file.format_funcs->get_att_info)(thefile->file.private_rec,attname);
-				if(thefile->file.file_atts[thefile->file.n_file_atts] != NULL) {
-					thefile->file.n_file_atts++;
-				}
-				return(ret);
-			} else {
-				_NclDeleteAtt(att_id,NrmQuarkToString(attname));
-			}
-		} else {
-			if((*thefile->file.format_funcs->map_ncl_type_to_format)(value->multidval.data_type) == NULL)  {
-				if(value->multidval.data_type == NCL_string) {
-					tmp_md = _NclStringMdToCharMd(value);
-					return(_NclFileWriteAtt(thefile,attname,tmp_md,sel_ptr));
+			return(ret);
+		} else if((!exists)&&(thefile->file.format_funcs->add_att != NULL)){
+			if(value->multidval.data_type == NCL_char) {
+				tmp_md = _NclCharMdToStringMd(value);
+				ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
+       	        		if(ret < NhlWARNING) {
+       	                 	NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list", NrmQuarkToString(attname));
+       	                 	return(NhlFATAL);
+       	         	}
+				ret = (*thefile->file.format_funcs->add_att)(
+					thefile->file.private_rec,
+					attname,
+					value->multidval.data_type,
+					value->multidval.totalelements,
+					value->multidval.val
+				);
+				if(ret > NhlWARNING) {
+					thefile->file.file_atts[thefile->file.n_file_atts] = (*thefile->file.format_funcs->get_att_info)(thefile->file.private_rec,attname);
+					if(thefile->file.file_atts[thefile->file.n_file_atts] != NULL) {
+						thefile->file.n_file_atts++;
+					}
+					return(ret);
 				} else {
-					from_type = value->multidval.data_type;
-					to_type = _NclPromoteType(from_type);
-					while((from_type != to_type )&&((*thefile->file.format_funcs->map_ncl_type_to_format)(to_type)==NULL)) {
-						from_type = to_type;
-						to_type = _NclPromoteType(from_type);
-					}
-					if((*thefile->file.format_funcs->map_ncl_type_to_format)(to_type)==NULL)  {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"The type (%s) is not representable as an attribute in the file (%s)",_NclBasicDataTypeToName(to_type),NrmQuarkToString(thefile->file.fpath));
-                                                 return(NhlFATAL);
-
+					_NclDeleteAtt(att_id,NrmQuarkToString(attname));
+				}
+			} else {
+				if((*thefile->file.format_funcs->map_ncl_type_to_format)(value->multidval.data_type) == NULL)  {
+					if(value->multidval.data_type == NCL_string) {
+						tmp_md = _NclStringMdToCharMd(value);
+						return(_NclFileWriteAtt(thefile,attname,tmp_md,sel_ptr));
 					} else {
-						obj_type = _NclBasicDataTypeToObjType(to_type);
-						tmp_md = _NclCoerceData(value,obj_type,NULL);
+						from_type = value->multidval.data_type;
+						to_type = _NclPromoteType(from_type);
+						while((from_type != to_type )&&((*thefile->file.format_funcs->map_ncl_type_to_format)(to_type)==NULL)) {
+							from_type = to_type;
+							to_type = _NclPromoteType(from_type);
+						}
+						if((*thefile->file.format_funcs->map_ncl_type_to_format)(to_type)==NULL)  {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"The type (%s) is not representable as an attribute in the file (%s)",_NclBasicDataTypeToName(to_type),NrmQuarkToString(thefile->file.fpath));
+       	                                          return(NhlFATAL);
+	
+						} else {
+							obj_type = _NclBasicDataTypeToObjType(to_type);
+							tmp_md = _NclCoerceData(value,obj_type,NULL);
+						}
 					}
+				} else {
+					tmp_md= value;
 				}
-			} else {
-				tmp_md= value;
-			}
-			ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
-               		if(ret < NhlWARNING) {
-                        	NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list", NrmQuarkToString(attname));
-                        	return(NhlFATAL);
-                	}
-			ret = (*thefile->file.format_funcs->add_att)(
-				thefile->file.private_rec,
-				attname,
-				tmp_md->multidval.data_type,
-				tmp_md->multidval.totalelements,
-				tmp_md->multidval.val
-			);
-			if((tmp_md != value)&&(tmp_md->obj.status != PERMANENT)) {
-				_NclDestroyObj((NclObj)tmp_md);
-			}
-			if(ret > NhlWARNING) {
-				thefile->file.file_atts[thefile->file.n_file_atts] = (*thefile->file.format_funcs->get_att_info)(thefile->file.private_rec,attname);
-				if(thefile->file.file_atts[thefile->file.n_file_atts] != NULL) {
-					thefile->file.n_file_atts++;
+				ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
+       	        		if(ret < NhlWARNING) {
+       		                 	NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list", NrmQuarkToString(attname));
+       		                 	return(NhlFATAL);
+       		         	}
+				ret = (*thefile->file.format_funcs->add_att)(
+					thefile->file.private_rec,
+					attname,
+					tmp_md->multidval.data_type,
+					tmp_md->multidval.totalelements,
+					tmp_md->multidval.val
+				);
+				if((tmp_md != value)&&(tmp_md->obj.status != PERMANENT)) {
+					_NclDestroyObj((NclObj)tmp_md);
 				}
-				return(ret);
-			} else {
-				_NclDeleteAtt(att_id,NrmQuarkToString(attname));
+				if(ret > NhlWARNING) {
+					thefile->file.file_atts[thefile->file.n_file_atts] = (*thefile->file.format_funcs->get_att_info)(thefile->file.private_rec,attname);
+					if(thefile->file.file_atts[thefile->file.n_file_atts] != NULL) {
+						thefile->file.n_file_atts++;
+					}
+					return(ret);
+				} else {
+					_NclDeleteAtt(att_id,NrmQuarkToString(attname));
+				}
 			}
-		}
-		return(ret);
-	} 
+			return(ret);
+		} 
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"FileWriteAtt: file (%s) was opened for reading only, can not write",NrmQuarkToString(thefile->file.fname));
+	}
 	return(NhlFATAL);
 }
 
@@ -2366,28 +2387,32 @@ long dim_num;
 {
 	int index;
 	NclQuark old_name;
-	
-	index = FileIsVar(thefile,var);
-	if(index > -1) {
-		if((dim_num > -1)&&(dim_num < thefile->file.var_info[index]->num_dimensions)) {
-			old_name = FileGetDimName(thefile,thefile->file.var_info[index]->file_dim_num[dim_num]);
-			if(thefile->file.format_funcs->rename_dim != NULL) {
-				if((*thefile->file.format_funcs->rename_dim)(
-					thefile->file.private_rec,
-					old_name,
-					dim_name) < NhlWARNING) {
-					
-					NhlPError(NhlFATAL,NhlEUNKNOWN,
-						"Cannot rename dimension (%d) in variable (%s)",
-						dim_num,
-						NrmQuarkToString(var));
-					return(NhlFATAL);
-				} else {
-					thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[dim_num]]->dim_name_quark = dim_name;
-					return(NhlNOERROR);
+
+	if(!thefile->file.wr_status) {
+		index = FileIsVar(thefile,var);
+		if(index > -1) {
+			if((dim_num > -1)&&(dim_num < thefile->file.var_info[index]->num_dimensions)) {
+				old_name = FileGetDimName(thefile,thefile->file.var_info[index]->file_dim_num[dim_num]);
+				if(thefile->file.format_funcs->rename_dim != NULL) {
+					if((*thefile->file.format_funcs->rename_dim)(
+						thefile->file.private_rec,
+						old_name,
+						dim_name) < NhlWARNING) {
+						
+						NhlPError(NhlFATAL,NhlEUNKNOWN,
+							"Cannot rename dimension (%d) in variable (%s)",
+							dim_num,
+							NrmQuarkToString(var));
+						return(NhlFATAL);
+					} else {
+						thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[dim_num]]->dim_name_quark = dim_name;
+						return(NhlNOERROR);
+					}
 				}
 			}
 		}
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"FileVarWriteDim: file (%s) was opened for reading only, can not write",NrmQuarkToString(thefile->file.fname));
 	}
 	return(NhlFATAL);
 }
@@ -2463,25 +2488,30 @@ NclQuark dim_name;
 long dim_num;
 #endif
 {
-	if((dim_num > -1)&&(dim_num < thefile->file.n_file_dims)) {
-		if(thefile->file.format_funcs->rename_dim != NULL) {
-			if((*thefile->file.format_funcs->rename_dim)(
-				thefile->file.private_rec,
-				thefile->file.file_dim_info[dim_num]->dim_name_quark,
-				dim_name)  < NhlWARNING) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not change dimension (%d) to (%s) for file (%s)",dim_num,NrmQuarkToString(dim_name),NrmQuarkToString(thefile->file.fname));
-				return(NhlFATAL);
-			} else {
-				thefile->file.file_dim_info[dim_num]->dim_name_quark = dim_name;
-				return(NhlNOERROR);
+	if(!thefile->file.wr_status) {
+		if((dim_num > -1)&&(dim_num < thefile->file.n_file_dims)) {
+			if(thefile->file.format_funcs->rename_dim != NULL) {
+				if((*thefile->file.format_funcs->rename_dim)(
+					thefile->file.private_rec,
+					thefile->file.file_dim_info[dim_num]->dim_name_quark,
+					dim_name)  < NhlWARNING) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not change dimension (%d) to (%s) for file (%s)",dim_num,NrmQuarkToString(dim_name),NrmQuarkToString(thefile->file.fname));
+					return(NhlFATAL);
+				} else {
+					thefile->file.file_dim_info[dim_num]->dim_name_quark = dim_name;
+					return(NhlNOERROR);
+				}
 			}
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%d) is out of range for file (%s)",dim_num,NrmQuarkToString(thefile->file.fname));
+			return(NhlFATAL);
 		}
 	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%d) is out of range for file (%s)",dim_num,NrmQuarkToString(thefile->file.fname));
-		return(NhlFATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"FileWriteDim: file (%s) was opened for reading only, can not write",NrmQuarkToString(thefile->file.fname));
 	}
+	return(NhlFATAL);
 }
-
+	
 static struct _NclVarRec* FileReadCoord
 #if  __STDC__
 (NclFile thefile, NclQuark coord_name, struct _NclSelectionRecord* sel_ptr)

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.27 1994-12-14 23:16:13 ethan Exp $
+ *      $Id: Machine.c,v 1.28 1994-12-21 01:57:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -168,6 +168,7 @@ static void SetUpOpsStrings() {
 	ops_strings[PUSH_LOG_LIT_OP]= "PUSH_LOG_LIT_OP";
 	ops_strings[JMP_SCALAR_TRUE_OP] = "JMP_SCALAR_TRUE_OP";
 	ops_strings[JMP_SCALAR_FALSE_OP] = "JMP_SCALAR_FALSE_OP";
+	ops_strings[ISDEFINED_OP] = "ISDEFINED_OP";
 
 }
 
@@ -1080,6 +1081,7 @@ void _NclPrintMachine
 			case BPROC_CALL_OP:
 			case FUNC_CALL_OP:
 			case BFUNC_CALL_OP:
+			case ISDEFINED_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -1328,22 +1330,71 @@ int from;
 #endif
 {
 	int i;
+	NclFrame *tmp_fp;
 	NclStackEntry data;
-	for(i = 0;i< nargs; i++) {
-		data = _NclPop();
-		switch(data.kind) {
-		case NclStk_VAR:
-			if((data.u.data_var != NULL)&&(data.u.data_var->obj.status != PERMANENT)){
-				_NclDestroyObj((NclObj)data.u.data_obj);
+	int check_ret_status = 1;
+	NclVar tmp_var,tmp_var1;
+
+	if(from != INTRINSIC_FUNC_CALL) {
+		for(i = 0;i< nargs; i++) {
+			data = _NclPop();
+			switch(data.kind) {
+			case NclStk_VAR:
+				if((data.u.data_var != NULL)&&(data.u.data_var->obj.status != PERMANENT)){
+					_NclDestroyObj((NclObj)data.u.data_obj);
+				}
+				break;
+			case NclStk_VAL:
+				if((data.u.data_obj != NULL)&&(data.u.data_obj->obj.status != PERMANENT)){
+					_NclDestroyObj((NclObj)data.u.data_obj);
+				}
+				break;
+			default:
+				break;
 			}
-			break;
-		case NclStk_VAL:
-			if((data.u.data_obj != NULL)&&(data.u.data_obj->obj.status != PERMANENT)){
-				_NclDestroyObj((NclObj)data.u.data_obj);
+		}
+	} else {
+		tmp_fp = (NclFrame*)(thestack + fp);
+		if(tmp_fp->func_ret_value.u.data_var == NULL) {
+			tmp_fp->func_ret_value.u.data_var = NULL;
+			tmp_fp->func_ret_value.kind = NclStk_NOVAL;
+		}
+		for(i = 0;i< nargs; i++) {
+			data = _NclPop();
+			switch(data.kind) {
+			case NclStk_VAR:
+				if((data.u.data_var != NULL)&&(data.u.data_var->obj.status != PERMANENT)){
+					if(check_ret_status&&((tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->obj.id != data.u.data_var->obj.id))) {
+						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
+						tmp_var = _NclVarNclCreate(
+							NULL,
+							tmp_var1->obj.class_ptr,
+							tmp_var1->obj.obj_type,
+							tmp_var1->obj.obj_type_mask,
+							NULL,
+							(NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),
+							tmp_var1->var.dim_info,
+							tmp_var1->var.att_id,
+							tmp_var1->var.coord_vars,
+							RETURNVAR,
+							NULL);
+						_NclDestroyObj((NclObj)tmp_var1);
+						tmp_fp->func_ret_value.u.data_var = tmp_var;
+					} else {
+						_NclDestroyObj((NclObj)data.u.data_var);
+					}
+				}
+				break;
+			case NclStk_VAL:
+				if((data.u.data_obj != NULL)&&(data.u.data_obj->obj.status != PERMANENT)){
+					if(!((tmp_fp->func_ret_value.kind == NclStk_VAL)&&(tmp_fp->func_ret_value.u.data_obj->obj.id == data.u.data_obj->obj.id)&&check_ret_status)) {
+						_NclDestroyObj((NclObj)data.u.data_obj);
+					}
+				}
+				break;
+			default:
+				break;
 			}
-			break;
-		default:
-			break;
 		}
 	}
 }

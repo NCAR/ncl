@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDVallongData.c.specific,v 1.4 1994-11-07 15:07:50 boote Exp $
+ *      $Id: NclMultiDVallongData.c.specific,v 1.5 1994-12-21 01:57:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -41,6 +41,7 @@ static struct _NclDataRec *MultiDVal_long_md_Coerce
 	double *dvalue;
 	float *fvalue;
 	string *svalue;
+	logical *lovalue;
 	NclScalar missing;
 	int i;
 	int chckmiss = 0;
@@ -168,6 +169,38 @@ static struct _NclDataRec *MultiDVal_long_md_Coerce
                 return(output_md);
 
 	}
+	case Ncl_MultiDVallogicalData: {
+                lovalue = (logical*)NclMalloc((unsigned)sizeof(logical)*
+                        self_md->multidval.totalelements);
+                if(self_md->multidval.missing_value.has_missing) {
+                        if(new_missing == NULL) {
+                                missing.logicalval = (logical)
+                                        self_md->multidval.missing_value.value.longval;
+                        } else {
+                                chckmiss = 1;
+                                missing = self_md->multidval.missing_value.value;
+                        }
+                }
+                if(chckmiss) {
+                        for(i=0; i<self_md->multidval.totalelements;i++) {
+                                lovalue[i] = (logical)(
+                                ((long*)self_md->multidval.val)[i] == missing.longval ? new_missing->logicalval : (((long*)self_md->multidval.val)[i] ? 1 : 0));
+                        }
+                } else {
+                        for(i=0; i<self_md->multidval.totalelements;i++) {
+                                lovalue[i] = (logical)(((long*)self_md->multidval.val)[i]?1:0);
+                        }
+                }
+                if(new_missing != NULL) {
+                        missing = *new_missing;
+                }
+                output_md = (NclData)_NclMultiDVallogicalCreate(NULL,NULL,Ncl_MultiDVallogicalData,0,(void*)lovalue,
+                ((self_md->multidval.missing_value.has_missing||new_missing!=NULL) ? &missing:NULL),
+                        self_md->multidval.n_dims,
+                        self_md->multidval.dim_sizes,
+                        TEMPORARY,NULL);
+                return((NclData)output_md);
+	}
 	default:
 		return((NclData)NULL);
 	}
@@ -187,6 +220,7 @@ static struct _NclDataRec *MultiDVal_long_s_Coerce
 	double *dvalue;
 	float *fvalue;
 	string *svalue;
+	logical *lovalue;
 	NclScalar missing;
 	int chckmiss = 0;
 
@@ -298,7 +332,39 @@ static struct _NclDataRec *MultiDVal_long_s_Coerce
                         TEMPORARY,NULL);
                 return(output_md);
 
-	}	
+	}
+        case Ncl_MultiDVallogicalData: {
+                lovalue = (logical*)NclMalloc((unsigned)sizeof(logical));
+                if(self_md->multidval.missing_value.has_missing) {
+                        if(new_missing == NULL) {
+                                missing.logicalval = (logical)
+                                        self_md->multidval.missing_value.value.longval;
+                        } else {
+                                chckmiss = 1;
+                                missing = self_md->multidval.missing_value.value;
+                        }
+                }
+                if(chckmiss) {
+                        *lovalue = (logical) (
+                                        *((long*)self_md->multidval.val) == missing.longval ?
+                                        new_missing->logicalval:
+                                        (*((long*)self_md->multidval.val)?1:0)
+                                );
+                } else{
+                        *lovalue = (logical)(*((int*)self_md->multidval.val)?1:0);
+                }
+                if(new_missing != NULL)
+                        missing = *new_missing;
+                output_md = (NclData)_NclMultiDVallogicalCreate(NULL,
+                        NULL,Ncl_MultiDVallogicalData,0,
+                        (void*)lovalue,
+                ((self_md->multidval.missing_value.has_missing||new_missing!=NULL) ? &missing:NULL),
+                        self_md->multidval.n_dims,
+                        self_md->multidval.dim_sizes,
+                        TEMPORARY,NULL);
+                return((NclData)output_md);
+        }
+
 	default:
 		return((NclData)NULL);
 	}

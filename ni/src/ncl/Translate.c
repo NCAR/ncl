@@ -568,10 +568,10 @@ if(groot != NULL) {
 					NclVar *lhs_var = (NclVar*)(assign->left_side);
 					
 					if(lhs_var->subscript_list != NULL) {
+						off1 = _NclPutInstr(ISDEFINED_OP,lhs_var->line,lhs_var->file);
+						_NclPutInstr((NclValue)lhs_var->sym,lhs_var->line,lhs_var->file);
 						step = lhs_var->subscript_list;
-						off1 = _NclTranslate(step->node,fp);
-						step = step->next;
-						nsubs_lhs = 1;
+						nsubs_lhs = 0;
 						while(step != NULL) {
 							(void)_NclTranslate(step->node,fp);
 							step = step->next;
@@ -579,10 +579,10 @@ if(groot != NULL) {
 						}
 					}
 					if(var->subscript_list != NULL) {
+						off2 = _NclPutInstr(ISDEFINED_OP,var->line,var->file);
+						_NclPutInstr((NclValue)var->sym,var->line,var->file);
 						step = var->subscript_list;
-						off2 = _NclTranslate(step->node,fp);
-						step = step->next;
-						nsubs = 1;
+						nsubs = 0;
 						while(step != NULL) {
 							(void)_NclTranslate(step->node,fp);
 							step = step->next;
@@ -1279,8 +1279,10 @@ Unneeded translations
 			switch(var->ref_type) {	
 			case Ncl_READIT:
 				if(var->subscript_list != NULL) {
+					off1 = _NclPutInstr(ISDEFINED_OP,var->line,var->file);
+					_NclPutInstr((NclValue)var->sym,var->line,var->file);
 					step = var->subscript_list;
-					off1 = _NclTranslate(step->node,fp);
+					_NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;
 					while(step != NULL) {
@@ -1298,8 +1300,10 @@ Unneeded translations
 				break;
 			case Ncl_WRITEIT:
 				if(var->subscript_list != NULL) {
+					off1 = _NclPutInstr(ISDEFINED_OP,var->line,var->file);
+					_NclPutInstr((NclValue)var->sym,var->line,var->file);
 					step = var->subscript_list;
-					off1 = _NclTranslate(step->node,fp);
+					_NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;
 					while(step != NULL) {
@@ -1316,8 +1320,10 @@ Unneeded translations
 				break;
 			case Ncl_PARAMIT:	
 				if(var->subscript_list != NULL) {
+					off1 = _NclPutInstr(ISDEFINED_OP,var->line,var->file);
+					_NclPutInstr((NclValue)var->sym,var->line,var->file);
 					step = var->subscript_list;
-					off1 = _NclTranslate(step->node,fp);
+					 _NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;
 					while(step != NULL) {
