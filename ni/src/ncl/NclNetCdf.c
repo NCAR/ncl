@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.25 1998-01-06 18:43:26 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.26 1998-02-11 21:58:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -100,11 +100,13 @@ static NclBasicDataTypes NetMapToNcl
 	static int first = 1;
 	static NclBasicDataTypes long_type;
 	if(first) {
-		if(sizeof(nclong) == _NclSizeOf(NCL_long)) {
-			long_type = NCL_long;
-		} else if(sizeof(nclong) == _NclSizeOf(NCL_int)) {
+		if(sizeof(nclong) == _NclSizeOf(NCL_int)) {
 			long_type = NCL_int;
-		} 
+		} else if(sizeof(nclong) == _NclSizeOf(NCL_long)) {
+			long_type = NCL_long;
+		} else {
+			long_type = NCL_none;
+		}
 		first = 0;
 	}
 	switch(*(nc_type*)the_type) {
@@ -141,7 +143,9 @@ static void *NetMapFromNcl
 			long_type = NCL_long;
 		} else if(sizeof(nclong) == _NclSizeOf(NCL_int)) {
 			long_type = NCL_int;
-		} 
+		} else {
+			long_type = NCL_none;
+		}
 		first = 0;
 	}
 
@@ -162,9 +166,9 @@ static void *NetMapFromNcl
 		if(long_type == the_type) {
 			*(nc_type*)out_type = NC_LONG;
 		} else {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Can't map type, netCDF does not support 64 bit longs use longtoint to convert your data to an integer type");
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"Can't map type, netCDF does not support 64 bit longs, NCL will try to promote type to double, errors may occur");
 			NclFree(out_type);
-			out_type = NULL;
+			return(NULL);
 		}
 		break;
 	case NCL_float:

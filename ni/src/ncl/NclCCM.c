@@ -1991,12 +1991,20 @@ void *storage;
 {
 	CCMFileRec *thefile = (CCMFileRec*)therec;
 	char buffer[81];
+	int i;
 	if(att_name == NrmStringToQuark("case")) {
 		*(NclQuark*)storage = CcmVarName(thefile->header.cheader.MCASE);
 		return(storage);
 	} else if(att_name == NrmStringToQuark("title")) {
 		memcpy(buffer,thefile->header.cheader.MCSTIT,80);
 		buffer[80] = '\0';
+		for(i = 79; i >= 0; i--) {
+			if((buffer[i] == (char)32)||(buffer[i] == (char)10)) {
+				buffer[i] = '\0';
+			} else {
+				break;
+			}
+		}
 		*(NclQuark*)storage = NrmStringToQuark(buffer);
 		return(storage);
 	}
