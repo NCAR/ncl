@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.13 1992-07-14 23:09:34 clyne Exp $
+ *	$Id: ictrans.c,v 1.14 1992-08-10 22:07:25 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -256,7 +256,7 @@ ICTrans(argc, argv, mem_cgm)
 	/*
 	 *	init ctrans
 	 */
-	if (init_ctrans(&argc,argv,gcap,fcap,TRUE,TRUE) != OK) {
+	if (init_ctrans(&argc,argv,gcap,fcap,FALSE,TRUE) != OK) {
 		log_ct(FATAL);
 		return(-1);
 	}
@@ -315,6 +315,7 @@ ICTrans(argc, argv, mem_cgm)
 			fprintf(stderr, "fdopen(%d, w)\n", opt.fd);
 			return(-1);
 		}
+		setbuf(fp, NULL);	/* make unbuffered	*/
 	}
 	else if (! isatty(fileno(stdout))) {
 
