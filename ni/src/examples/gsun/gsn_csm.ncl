@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.14 1999-07-07 14:22:45 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.15 1999-07-29 14:45:53 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -524,7 +524,9 @@ procedure set_pres_hgt_axes(pres:numeric,res2:logical,add_hgt:logical)
     ptmp = 1.* pres
     the_plot = plot
   end if
-  res2@sfYArray  = ptmp
+  if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
+    set_attr(res2,"sfYArray",ptmp)
+      "cnLevels"          : levels
       "cnFillColors"      : colors
   if(.not.isatt(res2,"tmYLMode"))
     res2@tmYLMode   = "Explicit" ; Define own tick mark labels.
@@ -706,9 +708,10 @@ end
 ;
 ; Calculate "nice" longitude values for longitude labels.
 ;
-function get_lon_values(min_lon:float,max_lon:float)
+function get_lon_values(min_lon:float,max_lon:float,lon_spacing:integer,\
+                        mlon_spacing:integer)
             end if
-lon_starts, lon_ends, start_lon, end_lon
+start_lon, end_lon
 ;
 ; Initialize polygon.
 ;
@@ -718,30 +721,25 @@ lon_starts, lon_ends, start_lon, end_lon
   lspcng_arr  = (/  5, 10, 20, 30/)  ; spacings for major ticks
   mlspcng_arr = (/  1,  2,  5, 10/)  ; spacings for minor ticks
           end if
-; Longitude range, will help determin longitude spacing.
+;
 ; Add polygon to XY plot.
 ;
           var_string = systemfunc("echo fill_polygon$$") + npoly
           plot@$var_string$ = gsn_add_polygon(wks,plot, \
-  lon_spcng  = lspcng_arr(lon_ind(0))  ; spacing for lon major tickmarks
-  mlon_spcng = mlspcng_arr(lon_ind(0)) ; spacing for lon minor tickmarks
-  delete(lon_ind)
-  
-  if(any((/min_lon,max_lon/).lt.0))
-    lon_starts = ispan(-180,180,mlon_spcng)   ; Pick nice values to start
-    lon_ends   = ispan(180,-180,mlon_spcng)   ; and end the longitudes labels.
+                                              polygon_y(0:npts2+2),res)
+;
 ; Advance polygon counter.
-    lon_starts = ispan(0,360,mlon_spcng)  ; Pick nice values to start
-    lon_ends   = ispan(360,0,mlon_spcng)  ; and end the longitudes labels.
+    lon_spcng = lon_spacing
           npoly = npoly + 1
           bpt = -1            ; Reinitialize
-  lon_ind    = ind(min_lon.ge.lon_starts)
-  start_lon  = lon_starts(lon_ind(0))
-  delete(lon_ind)
-
-  lon_ind  = ind(max_lon.le.lon_ends)
-  end_lon  = lon_ends(lon_ind(0))
+          ept = -1
+        end if
+      end if
+    mlon_spcng = mlon_spacing
+  end do
   return(plot)
+  start_lon = (floattointeger(min_lon/lon_spcng)-1)*lon_spcng
+  end_lon   = (floattointeger(max_lon/lon_spcng)+1)*lon_spcng
 function get_lon_values(min_lon:numeric,max_lon:numeric,lon_spacing:numeric,\
                         mlon_spacing:numeric,range_array,lonspacing_array, \
                         mlonspacing_array)
@@ -752,9 +750,9 @@ begin
 ;
 ; Calculate "nice" latitude values for latitude labels.
 ;
-function get_lat_values(min_lat:float,max_lat:float)
-local lat_range, lcheck_arr, lspcng_arr, mlspcng_arr, lat_spcng, mlat_spcng, \
-lat_starts, lat_ends
+function get_lat_values(min_lat:float,max_lat:float,lat_spacing:integer,\
+                        mlat_spacing:integer)
+local lat_range, lcheck_arr, lspcng_arr, mlspcng_arr, lat_spcng, mlat_spcng
   else
     mlspcng_arr = mlonspacing_array
   end if
@@ -764,25 +762,26 @@ lat_starts, lat_ends
     lon_spcng = tointeger(lon_spacing)
   end if
 
-; Latitude range, will help determin latitude spacing.
+  if(mlon_spacing.le.0)
     mlon_spcng = mlspcng_arr(lon_ind(0)) ; spacing for lon minor tickmarks
   else
     mlon_spcng = tointeger(mlon_spacing)
   end if
-  lat_spcng  = lspcng_arr(lat_ind(0))  ; spacing for lat major tickmarks
-  mlat_spcng = mlspcng_arr(lat_ind(0)) ; spacing for lat minor tickmarks
+  delete(lon_ind)
+;
+; This code will find the first integer value that is divisible
+    lat_spcng = lat_spacing
+; labeled longitude value.
+;
+   start_lon = floattointeger(ceil(tofloat(min_lon)))
+   end_lon   = floattointeger(floor(tofloat(max_lon)))
+   lon = start_lon
+    mlat_spcng = mlat_spacing
+   do while(lon.le.end_lon.and..not.found)
      if((lon % lon_spcng).eq.0)
        start_lon = lon
-  lat_starts = ispan(-90,90,mlat_spcng)   ; Pick nice values to start
-  lat_ends   = ispan(90,-90,mlat_spcng)   ; and end the latitudes labels.
-
-  lat_ind    = ind(min_lat.ge.lat_starts)
-  start_lat  = lat_starts(lat_ind(0))
-  delete(lat_ind)
-
-  lat_ind  = ind(max_lat.le.lat_ends)
-  end_lat  = lat_ends(lat_ind(0))
-  delete(lat_ind)
+  start_lat = (floattointeger(min_lat/lat_spcng)-1)*lat_spcng
+  end_lat = (floattointeger(max_lat/lat_spcng)+1)*lat_spcng
 ;        mlat_spacing: numeric                                          ;
 ;                                                                       ;
 ; Calculate "nice" latitude values to use for placing latitude labels   ;
@@ -871,9 +870,10 @@ local lon_index
 ;
 ; Add "nice" longitude labels to the X axis.
 ;
-procedure add_lon_labels(plot:graphic,min_lon:numeric,max_lon:numeric)
+    lon_labels(lon_index) = "180"
+                         lon_spacing:integer,mlon_spacing:integer)
 
-  lonvalues = get_lon_values(min_lon,max_lon)
+  lonvalues = get_lon_values(min_lon,max_lon,lon_spacing,mlon_spacing)
   lonlabels = get_lon_labels(lonvalues)
   return(lon_labels)
   setvalues plot
@@ -888,9 +888,10 @@ procedure add_lon_labels(plot:graphic,min_lon:numeric,max_lon:numeric)
 ;
 ; Add "nice" latitude labels to the X axis.
 ;
-procedure add_lat_labels_xaxis(plot:graphic,min_lat:numeric,max_lat:numeric)
+    lat_labels(lat_index) = lat_values(lat_index)          ; equator
+                               lat_spacing:integer,mlat_spacing:integer)
   return(lat_labels)
-  latvalues = get_lat_values(min_lat,max_lat)
+  latvalues = get_lat_values(min_lat,max_lat,lat_spacing,mlat_spacing)
   latlabels = get_lat_labels(latvalues)
 ;             max_lon: numeric                                          ;
   setvalues plot
@@ -905,9 +906,10 @@ procedure add_lat_labels_xaxis(plot:graphic,min_lat:numeric,max_lat:numeric)
 ;
 ; Add "nice" latitude labels to the Y axis.
 ;
-procedure add_lat_labels_yaxis(plot:graphic,min_lat:numeric,max_lat:numeric)
+    set_attr(tmres,"tiXAxisOn"      , False)
+                               lat_spacing:integer,mlat_spacing:integer)
 end
-  latvalues = get_lat_values(min_lat,max_lat)
+  latvalues = get_lat_values(min_lat,max_lat,lat_spacing,mlat_spacing)
   latlabels = get_lat_labels(latvalues)
 ;         lat_spacing: numeric                                          ;
   setvalues plot
@@ -971,7 +973,6 @@ lft_str_object, tm_res_index, ctr_str_object, rgt_str_object, calldraw, \
 callframe, left_string, center_string, right_string, main_zone, \
 min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
       print("pop_latlon_grid: "+popgrid+" is not a supported POP grid.")
-
       print("                 Supported POP grids include: " + valid_popgrids)
     calldraw  = True
     callframe = True
@@ -998,6 +999,39 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
     latlon_res = True
     latlon_res@gsnDraw              = False
     latlon_res@gsnFrame             = False
+    latlon_res@cnInfoLabelOn        = False
+; Check if gsnMajorLonSpacing or gsnMajorLatSpacing are set.
+
+    if((res2).and.isatt(res2,"gsnMajorLatSpacing"))
+      lat_spacing = res2@gsnMajorLatSpacing
+      delete(res2@gsnMajorLatSpacing)
+    else
+      lat_spacing = 0
+    end if
+
+    if((res2).and.isatt(res2,"gsnMajorLonSpacing"))
+      lon_spacing = res2@gsnMajorLonSpacing
+      delete(res2@gsnMajorLonSpacing)
+    else
+      lon_spacing = 0
+    end if
+
+; Check if gsnMinorLonSpacing or gsnMinorLatSpacing are set.
+
+    if((res2).and.isatt(res2,"gsnMinorLatSpacing"))
+      mlat_spacing = res2@gsnMinorLatSpacing
+      delete(res2@gsnMinorLatSpacing)
+    else
+      mlat_spacing = 0
+    end if
+
+    if((res2).and.isatt(res2,"gsnMinorLonSpacing"))
+      mlon_spacing = res2@gsnMinorLonSpacing
+      delete(res2@gsnMinorLonSpacing)
+    else
+      mlon_spacing = 0
+    end if
+
 ;
 ; If mpCenterLonF is set, but mpMinLonF and/or minMaxLonF are not,
 ; then we need to set them.
@@ -1161,8 +1195,8 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
 
 ; Create tickmark values for lat/lon labels.
 
-   lonvalues = get_lon_values(min_lon,max_lon)
-   latvalues = get_lat_values(min_lat,max_lat)
+   lonvalues = get_lon_values(min_lon,max_lon,lon_spacing,mlon_spacing)
+   latvalues = get_lat_values(min_lat,max_lat,lat_spacing,mlat_spacing)
 
 ; Create labels for lat/lon tick marks.
 
@@ -1251,9 +1285,15 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
     else
       main_font_height = 1.3*font_height
     end if
+    if(isatt(res2,"tiMainFont"))
+      main_font = res2@tiMainFont
+    else
+      main_font = "helvetica-bold"
+    end if
+    set_attr(res2,"mpFillColors",(/"background","transparent","LightGray",\
                                    "transparent"/)) ; (default,ocean,land,
                                                     ;  inland water)
-      "tiMainFont"         : "helvetica-bold" ; main title font
+;
 ; By default, mpOutlineOn is False, unless mpFillOn is set to False,
 ;
 ; Add the tick mark object as an annotation of the map object, so that
@@ -1471,10 +1511,15 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
     else
       main_font_height = 2.*font_height
     end if
+    if(isatt(res2,"tiMainFont"))
+      main_font = res2@tiMainFont
+    else
+      main_font = "helvetica-bold"
+    end if
       center_lat = -90
-        "tiMainOffsetYF"       : main_offset        ; main title offset
-        "tiMainFont"           : "helvetica-bold"   ; main title font
-        "tiMainFontHeightF"    : main_font_height   ; main title size
+    end if
+
+    height = get_res_value(res2,"vpHeightF",0.62)
     width  = get_res_value(res2,"vpWidthF",0.62)
     xpos   = get_res_value(res2,"vpXF",0.2)
 ; Set up three subtitles at top, if they exist.
@@ -1780,12 +1825,20 @@ begin
 ; list of resources. The id of the map plot is returned.                ;
 ;                                                                       ;
     if(iscoord(datanew,"lat").and.iscoord(datanew,"lon"))
-      res2@sfYArray  = datanew&lat
-      res2@sfXArray  = datanew&lon
+      if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
+        set_attr(res2,"sfYArray",datanew&lat)
+      end if
+      if(.not.(isatt(res2,"sfXCStartV").and.isatt(res2,"sfXCEndV")))
+        set_attr(res2,"sfXArray",datanew&lon)
+      end if
     else
       if(iscoord(datanew,"latitude").and.iscoord(datanew,"longitude"))
-        res2@sfYArray  = datanew&latitude
-        res2@sfXArray  = datanew&longitude
+        if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
+          set_attr(res2,"sfYArray",datanew&latitude)
+        end if
+        if(.not.(isatt(res2,"sfXCStartV").and.isatt(res2,"sfXCEndV")))
+          set_attr(res2,"sfXArray",datanew&longitude)
+        end if
       end if
     end if
 ;                                                                       ;
@@ -1817,7 +1870,7 @@ begin
     lbres = get_res_eq(res2,"lb")
     mpres = get_res_eq(res2,(/"mp","ti","vp"/))
 
-    cnres = get_res_ne(res2,(/"mp","ti","vp","lb"/))
+    cnres = get_res_ne(res2,(/"mp","vp","lb"/))
 function gsn_csm_contour_map_polar(wks:graphic,data[*][*]:numeric, \
       if(isatt(cnres,"cnFillOn").and.cnres@cnFillOn)
 	set_attr(cnres,"cnInfoLabelOn",False)
@@ -1869,9 +1922,14 @@ begin
     else
       main_font_height = 2.*font_height
     end if
+    if(isatt(res2,"tiMainFont"))
+      main_font = res2@tiMainFont
+    else
+      main_font = "helvetica-bold"
+    end if
     if(isatt(res2,"gsnPolarLabelSpacing"))
-        "tiMainFont"           : "helvetica-bold"   ; main title font
-        "tiMainFontHeightF"    : main_font_height   ; main title size
+      mpres@gsnPolarLabelSpacing = get_res_value(res2,  \
+                                                 "gsnPolarLabelSpacing",0)
     end if
 
     if(isatt(res2,"gsnPolarLabelDistance"))
@@ -1963,7 +2021,6 @@ lbres, xy_res, mpres, cnres, levels, colors, \
 map_vpwf, map_vphf, vpwf, vphf
     mpres@gsnFrame = False
 
-
     calldraw  = True
     callframe = True
 
@@ -2002,12 +2059,20 @@ map_vpwf, map_vphf, vpwf, vphf
 ;
     main_font_height = get_res_value_keep(res2,"tiMainFontHeightF", \
     if(iscoord(datanew,"lat").and.iscoord(datanew,"lon")) then
-      res2@sfYArray  = datanew&lat
-      res2@sfXArray  = datanew&lon
+      if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
+        set_attr(res2,"sfYArray",datanew&lat)
+      end if
+      if(.not.(isatt(res2,"sfXCStartV").and.isatt(res2,"sfXCEndV")))
+        set_attr(res2,"sfXArray",datanew&lon)
+      end if
     else
       if(iscoord(datanew,"latitude").and.iscoord(datanew,"longitude")) then
-        res2@sfYArray  = datanew&latitude
-        res2@sfXArray  = datanew&longitude
+        if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
+          set_attr(res2,"sfYArray",datanew&latitude)
+        end if
+        if(.not.(isatt(res2,"sfXCStartV").and.isatt(res2,"sfXCEndV")))
+          set_attr(res2,"sfXArray",datanew&longitude)
+        end if
       else
         res2@sfYCStartV =  -90.
         res2@sfYCEndV   =   90.
@@ -2062,6 +2127,24 @@ end
 ;***********************************************************************;
 
 function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
+                                resources:logical)
+local i, contour_object, labelbar_object, xy_object, map_object, \
+calldraw, callframe, lbar_on, zonal_mean_plot, min_lat, max_lat, datanew, \
+res, res2, lbres, xy_res, mpres, cnres, levels, colors, \
+lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
+map_vpwf, map_vphf, vphf, contour_plot
+begin
+; Initialize.
+    lbar_on        = False    ; Default is no labelbar.
+    zonal_mean_plot= False    ; Default is no zonal mean plot.
+    mpres          = True
+
+    infolabel_zone = 2        ; Zone for info label (may change later)
+    lbar_zone      = 2        ; Zone for labelbar (may change later)
+    zonal_zone     = 2        ; Zone for zonal means plot
+
+    res2 = get_resources(resources)
+
     if(isatt(datanew,"long_name").and..not.isatt(res2,"gsnLeftString"))
       mpres@gsnLeftString = datanew@long_name
       delete(datanew@long_name)
@@ -2110,7 +2193,7 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
             map_vphf  = 0.7 ; make sure zonalplot will fit in view port
     lbres = get_res_eq(res2,"lb")
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti"/))
-    cnres = get_res_ne(res2,(/"mp","vp","tm","ti","lb"/))
+    cnres = get_res_ne(res2,(/"mp","vp","tm","lb"/))
             set_attr(res2,     "vpXF",0.1)
             set_attr(res2,     "vpYF",0.9)
       if(isatt(cnres,"cnFillOn").and.cnres@cnFillOn)
@@ -2492,7 +2575,7 @@ end
                                 resources:logical)
 local i, vector_object, map_object, res, res2, calldraw, vcres, \
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti"/))
-    vcres = get_res_ne(res2,(/"mp","vp","tm","ti"/))
+    vcres = get_res_ne(res2,(/"mp","vp","tm"/))
     check_for_lon_coord(unew,res2,"vector")
 
     if(.not.(isatt(res2,"vfXArray")))
@@ -2669,12 +2752,20 @@ res, res2, map_vpwf, map_vphf, vpwf, vphf, lbar_on
 ; according to the scalar field. This resource defaults to False.       ;
 ;***********************************************************************;
       if(iscoord(datanew,"lat").and.iscoord(datanew,"lon")) then
-        res2@sfYArray  = datanew&lat
-        res2@sfXArray  = datanew&lon
+        if(.not.(isatt(res2,"sfXCStartV").and.isatt(res2,"sfXCEndV")))
+          set_attr(res2,"sfXArray",datanew&lon)
+        end if
+        if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
+          set_attr(res2,"sfYArray",datanew&lat)
+        end if
       else
         if(iscoord(datanew,"latitude").and.iscoord(datanew,"longitude")) then
-          res2@sfYArray  = datanew&latitude
-          res2@sfXArray  = datanew&longitude
+          if(.not.(isatt(res2,"sfXCStartV").and.isatt(res2,"sfXCEndV")))
+            set_attr(res2,"sfXArray",datanew&longitude)
+          end if
+          if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
+            set_attr(res2,"sfYArray",datanew&latitude)
+          end if
         else
           res2@sfYCStartV =  -90.
           res2@sfYCEndV   =   90.
@@ -2699,7 +2790,7 @@ res, res2, map_vpwf, map_vphf, vpwf, vphf, lbar_on
     lbres = get_res_eq(res2,(/"lb","pm"/))
 
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti"/))
-    vcres = get_res_ne(res2,(/"mp","vp","tm","ti","lb"/))
+    vcres = get_res_ne(res2,(/"mp","vp","tm","lb"/))
     scalar_contour = get_res_value(res2,"gsnScalarContour",False)
 
 ; Check for subtitles at top and add to mpres if exist.
@@ -2808,7 +2899,7 @@ res, res2, map_vpwf, map_vphf, vpwf, vphf, lbar_on
       lbres@amZone          = lbar_zone      ; Just outside plot area
       lbres@amOrthogonalPosF= lbar_pos       ; Move away from bottom edge
 
-      add_labelbar(wks,vector_object,lbres)
+      add_labelbar(wks,vector_object@contour,lbres)
 
     if(scalar_contour.and.infolabel_on)
       set_attr(vcres,"cnInfoLabelZone",2)
@@ -2843,7 +2934,6 @@ resources:logical)
 local res2
     end if
   res2     = resources
-
   if((res2).and.isatt(res2,"gsnPolarNH").and.res2@gsnPolarNH.or.\
                 isatt(res2,"gsnPolarSH").and.res2@gsnPolarSH)
     return(gsn_csm_contour_map_polar(wks,data,res2))
@@ -2910,12 +3000,20 @@ end
 
 ;***********************************************************************;
   if(iscoord(datanew,"lat").and.iscoord(datanew,"lon"))
-    set_attr(res2_tmp,"sfYArray",datanew&lat)
-    set_attr(res2_tmp,"sfXArray",datanew&lon)
+    if(.not.(isatt(res2_tmp,"sfYCStartV").and.isatt(res2_tmp,"sfYCEndV")))
+      set_attr(res2_tmp,"sfYArray",datanew&lat)
+    end if
+    if(.not.(isatt(res2_tmp,"sfXCStartV").and.isatt(res2_tmp,"sfXCEndV")))
+      set_attr(res2_tmp,"sfXArray",datanew&lon)
+    end if
   else
     if(iscoord(datanew,"latitude").and.iscoord(datanew,"longitude"))
-      set_attr(res2_tmp,"sfYArray",datanew&latitude)
-      set_attr(res2_tmp,"sfXArray",datanew&longitude)
+      if(.not.(isatt(res2_tmp,"sfYCStartV").and.isatt(res2_tmp,"sfYCEndV")))
+        set_attr(res2_tmp,"sfYArray",datanew&latitude)
+      end if
+      if(.not.(isatt(res2_tmp,"sfXCStartV").and.isatt(res2_tmp,"sfXCEndV")))
+        set_attr(res2_tmp,"sfXArray",datanew&longitude)
+      end if
     end if
   end if
 ;                     u: 2-dimensional data                             ;
@@ -3349,11 +3447,15 @@ end
 ;                    data: data to contour                              ;
 ;               resources: optional resources                           ;
     if(.not.ismissing(datanew!1).and.iscoord(data,datanew!1))
-      set_attr(res2,"sfXArray",datanew&$datanew!1$)
+      if(.not.(isatt(res2,"sfXCStartV").and.isatt(res2,"sfXCEndV")))
+        set_attr(res2,"sfXArray",datanew&$datanew!1$)
+      end if
     end if
 
     if(.not.ismissing(datanew!0).and.iscoord(data,datanew!0))
-      set_attr(res2,"sfYArray",datanew&$datanew!0$)
+      if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
+        set_attr(res2,"sfYArray",datanew&$datanew!0$)
+      end if
     end if
 
 ; Check to see if X and/or Y axis labels should be set.
@@ -3581,7 +3683,7 @@ begin
 function gsn_csm_hov(wks:graphic,data:numeric,resources:logical)
 local res, contour_object, res2, font_height, lbar_on, \
 lft_str_object, ctr_str_object, rgt_str_object, calldraw, callframe, \
-left_string, center_string, right_string, datanew
+left_string, center_string, right_string, datanew, lon_spacing
       "vpWidthF"             : width
       "vpHeightF"            : height
   
@@ -3592,6 +3694,22 @@ left_string, center_string, right_string, datanew
       "tiYAxisFontHeightF"   : yfontf
     check_for_draw_and_frame(res2,calldraw,callframe)
 
+; Check if gsnMajorLonSpacing or gsnMinorLonSpacing are set.
+
+    if((res2).and.isatt(res2,"gsnMajorLonSpacing"))
+      lon_spacing = res2@gsnMajorLonSpacing
+      delete(res2@gsnMajorLonSpacing)
+    else
+      lon_spacing = 0
+    end if
+
+    if((res2).and.isatt(res2,"gsnMinorLonSpacing"))
+      mlon_spacing = res2@gsnMinorLonSpacing
+      delete(res2@gsnMinorLonSpacing)
+    else
+      mlon_spacing = 0
+    end if
+    end getvalues
     if((res2).and..not.any(ismissing(getvaratts(res2))))
     font_height = min((/xfontf,yfontf/))  ; Make subtitle label sizes a
                                           ; function of the size of the
@@ -3599,7 +3717,9 @@ left_string, center_string, right_string, datanew
 
 ; If the plot is close to square in size, then make the 
     if(.not.ismissing(data!1).and.iscoord(data,data!1))
-      set_attr(res2,"sfXArray",data&$data!1$)
+      if(.not.(isatt(res2,"sfXCStartV").and.isatt(res2,"sfXCEndV")))
+        set_attr(res2,"sfXArray",data&$data!1$)
+      end if
     ratios     = (/0.5,0.75,1.0/)
 
     ratio = height/width
@@ -3610,29 +3730,28 @@ left_string, center_string, right_string, datanew
 
     scale = font_scale(index(0))
     font_height  = scale * font_height
-    if(.not.ismissing(data!1).and.iscoord(data,data!1).and.data!1.eq."lon")
+    if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
+       (data!1.eq."lon".or.data!1.eq."longitude"))
     if(popgrid.ne."") then
       pop_latlon_grid(wks,contour_object,popgrid)  ; Add a POP grid.
     else
       cname = NhlClassName(contour_object)  ; Determine whether this is a
                                             ; contour plot, or a contour plot
                                             ; over a loglin plot.
-  
       if(cname.eq."logLinPlotClass")
         getvalues contour_object@contour
           "trXMinF"   : min_lon
           "trXMaxF"   : max_lon
         end getvalues
+        add_lon_labels(contour_object@contour,min_lon,max_lon,lon_spacing,\
+                       mlon_spacing)
       else
         getvalues contour_object
           "trXMinF"   : min_lon
           "trXMaxF"   : max_lon
         end getvalues
+        add_lon_labels(contour_object,min_lon,max_lon,lon_spacing,mlon_spacing)
       end if
-
-; Add longitude labels to X axis.
-
-       add_lon_labels(contour_object,min_lon,max_lon)
     if (lbar_on)
       lbres = get_res_eq(res2,(/"lb","pm"/))
       add_labelbar(wks,contour_object,3,font_height,"contour",lbres)
@@ -3663,7 +3782,7 @@ end
 function gsn_csm_lat_time(wks:graphic,data:numeric,resources:logical)
 local res, contour_object, res2, font_height, lbar_on, \
 lft_str_object, ctr_str_object, rgt_str_object, calldraw, callframe, \
-left_string, center_string, right_string, datanew
+left_string, center_string, right_string, datanew, lat_spacing
 ; This function behaves differently from gsn_csm_contour in that it     ;
 ; draws a specially-labelled longitude X axis.                          ;
 ;                                                                       ;
@@ -3678,13 +3797,33 @@ left_string, center_string, right_string, datanew
 
     calldraw     = get_res_value(res2,"gsnDraw", True)
     callframe    = get_res_value(res2,"gsnFrame",True)
+; Check if gsnMajorLatSpacing or gsnMinorLatSpacing are set.
+
+    if((res2).and.isatt(res2,"gsnMajorLatSpacing"))
+      lat_spacing = res2@gsnMajorLatSpacing
+      delete(res2@gsnMajorLatSpacing)
+    else
+      lat_spacing = 0
+    end if
+
+    if((res2).and.isatt(res2,"gsnMinorLatSpacing"))
+      mlat_spacing = res2@gsnMinorLatSpacing
+      delete(res2@gsnMinorLatSpacing)
+    else
+      mlat_spacing = 0
+    end if
+
     maxbb        = get_bb_res(res2)
     lon_spacing  = get_res_value(res2,"gsnMajorLonSpacing",0)
     if(iscoord(data,"lat"))
-      set_attr(res2,"sfYArray",data&lat)
+      if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
+        set_attr(res2,"sfYArray",data&lat)
+      end if
     else
       if(iscoord(data,"latitude"))
-        set_attr(res2,"sfYArray",data&latitude)
+        if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
+          set_attr(res2,"sfYArray",data&latitude)
+        end if
       end if
     end if
 
@@ -3704,17 +3843,17 @@ left_string, center_string, right_string, datanew
         "trYMinF"   : min_lat
         "trYMaxF"   : max_lat
       end getvalues
+      add_lat_labels_yaxis(contour_object@contour,min_lat,max_lat,\
+                           lat_spacing,mlat_spacing)
     else
       getvalues contour_object
         "trYMinF"   : min_lat
         "trYMaxF"   : max_lat
       end getvalues
+      add_lat_labels_yaxis(contour_object,min_lat,max_lat,lat_spacing,\
+                           mlat_spacing)
     end if
 ; Use coordinate variable for Y if it exists.
-; Add latitude labels to Y axis.
-
-    add_lat_labels_yaxis(contour_object,min_lat,max_lat)
-
 
     draw_and_frame(wks,contour_object,calldraw,callframe)
 
@@ -3762,6 +3901,22 @@ left_string, center_string, right_string, add_hgt
 ; workstation "wks" (the variable returned from a previous call to      ;
     check_for_draw_and_frame(res2,calldraw,callframe)
 
+; Check if gsnMajorLatSpacing or gsnMinorLatSpacing are set.
+
+    if((res2).and.isatt(res2,"gsnMajorLatSpacing"))
+      lat_spacing = res2@gsnMajorLatSpacing
+      delete(res2@gsnMajorLatSpacing)
+    else
+      lat_spacing = 0
+    end if
+
+    if((res2).and.isatt(res2,"gsnMinorLatSpacing"))
+      mlat_spacing = res2@gsnMinorLatSpacing
+      delete(res2@gsnMinorLatSpacing)
+    else
+      mlat_spacing = 0
+    end if
+;                                                                       ;
     if(isatt(data&$data!0$,"long_name"))
 
 function gsn_csm_time_lat(wks:graphic,data[*][*]:numeric,resources:logical)
@@ -3860,8 +4015,17 @@ end
 
     if(is_valid_ycoord(data).and.isatt(data&$data!0$,"long_name"))
       set_attr(res2,"tiYAxisString",data&$data!0$@long_name)
-    if(.not.ismissing(data!1).and.iscoord(data,data!1).and.data!1.eq."lat")
-       add_lat_labels_xaxis(contour_object,xmin,xmax)
+    if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
+       (data!1.eq."lat".or.data!1.eq."latitude"))
+      cname = NhlClassName(contour_object)  ; Determine whether this is a
+                                            ; contour plot, or a contour plot
+                                            ; over a loglin plot.
+      if(cname.eq."logLinPlotClass")
+        add_lat_labels_xaxis(contour_object@contour,xmin,xmax,lat_spacing,\
+                             mlat_spacing)
+      else
+        add_lat_labels_xaxis(contour_object,xmin,xmax,lat_spacing,mlat_spacing)
+      end if
 ; If this is a pressure/hgt plot, then do stuff to the pressure values.
 
 ;
