@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.5 1998-04-17 22:53:44 haley Exp $
+#	$Id: yMakefile,v 1.6 2004-08-03 16:37:09 haley Exp $
 #
 MYNAME	= pwritx
 
 GENERIC_SRCS = \
 	 ccheck.f dcheck.f gethol.f gtdgts.f gtnum.f gtnumb.f gtsign.f\
-	 htable.f mkmsk.f pwritx.f pwrx.f pwrxbd.f xtch.f openpw.F
+	 htable.f mkmsk.f pwritx.f pwrx.f pwrxbd.f xtch.f openpw.f
 
 GENERIC_OBJS = \
 	 ccheck.o dcheck.o gethol.o gtdgts.o gtnum.o gtnumb.o gtsign.o\
@@ -14,15 +14,13 @@ GENERIC_OBJS = \
 SOURCES = $(GENERIC_SRCS)
 OBJECTS = $(GENERIC_OBJS)
 
-FCPP_OPJS	= openpw.f
-
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
-CleanFilesTarget($(FCPP_OBJS) openpw.F)
+CleanFilesTarget(openpw.f.sed)
 
 PartialLibraryTarget(libNGmisc2.a,$(OBJECTS))
 
-openpw.F: openpw.F.sed Makefile
+openpw.f.sed: openpw.f.2.sed Makefile
 	@sed \
 	-e 's+SED_DBDIR+$(DBDIR)+' \
-	<openpw.F.sed >openpw.F
+	<openpw.f.2.sed >openpw.f.sed
