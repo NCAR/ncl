@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.23 1996-11-24 22:25:28 boote Exp $
+ *      $Id: Create.c,v 1.24 1996-11-27 15:26:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -944,7 +944,7 @@ InitAllResources
 	 */
 	while(tnode != NULL){
 
-		memcpy((char*)tlist,list,sizeof(NrmQuark)*k);
+		memcpy((char*)tlist,list,sizeof(NrmQuark)*(k+1));
 		i=0;j=0;k=0;
 		while((tlist[i] != NrmNULLQUARK) &&
 					(tnode->resources[j] != NrmNULLQUARK)){
@@ -969,7 +969,7 @@ InitAllResources
 	 * have any of the resources that the parent has.
 	 */
 
-	memcpy((char*)tlist,list,sizeof(NrmQuark)*k);
+	memcpy((char*)tlist,list,sizeof(NrmQuark)*(k+1));
 	i=0;j=0;k=0;
 	while((i < lc->base_class.num_resources) && (tlist[j] != NrmNULLQUARK)){
 		if(parentlist[i].nrm_name < tlist[j])
