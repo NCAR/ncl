@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.49 1998-04-16 03:08:54 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.50 1998-10-15 16:27:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -6513,7 +6513,11 @@ extern NhlErrorTypes _NhlManageOverlay
  * If this plot is an overlay member (not the base plot), its view should
  * be the same as that of the overlay. If it is not, the user must have
  * set it: in this case issue a warning and set it to the view of the
- * overlay.
+ * overlay. 
+ * Actually there is an exception; if the overlay_object (the plot manager) 
+ * has changed, it means that the overlay has been moved from one base
+ * plot to another. This can happen when NhlRemoveOverlay is called with
+ * restore set to True.
  */
 	
 	if (tfp->overlay_status == _tfCurrentOverlayBase) {
@@ -6530,10 +6534,12 @@ extern NhlErrorTypes _NhlManageOverlay
 			return(NhlFATAL);
 		}
 
-		if (vwp->x != ovvl->view.x ||
-		    vwp->y != ovvl->view.y ||
-		    vwp->width != ovvl->view.width ||
-		    vwp->height != ovvl->view.height) {
+		if (tfp->overlay_object->base.id ==
+		    otfp->overlay_object->base.id &&
+		    (vwp->x != ovvl->view.x ||
+		     vwp->y != ovvl->view.y ||
+		     vwp->width != ovvl->view.width ||
+		     vwp->height != ovvl->view.height)) {
 
 			_NhlInternalSetView((NhlViewLayer)lnew,
 					    ovvl->view.x,
