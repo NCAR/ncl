@@ -1,5 +1,5 @@
 /*
- *  $Id: c_tdshpk.c,v 1.1 1994-10-31 03:23:36 haley Exp $
+ *  $Id: c_tdshpk.c,v 1.2 1994-11-03 22:38:01 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -34,9 +34,6 @@ main()
 void tdshpk (ierr)
 int *ierr;
 {
-    char stmp[30];
-    int ival;
-    float rval;
     Gcolr_rep rgb;
     float ycen, angd, rrho, thta;
     int i;
@@ -83,7 +80,7 @@ int *ierr;
  * 
  * Note: At this point, "DPS" = 0, "DPT" = 1111111111111111 (binary)
  * or "$$$$$$$$$$$$$$$$" (character), "LTL" = 0, "MFS" = 1, "PCF" = 0,
- * "SAF" = 360, "SCF" = 0, "SSL" = .01, "TCS" = -1., "WOA"=.01,
+ * "SAF" = 360, "SCF" = 0, "SSL" = .01, "TCS" = -1.,
  * "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */
     ycen=8.5;
@@ -100,14 +97,14 @@ int *ierr;
  * 
  * Note: At this point, "DPS" = 0, "DPT" = 1111111111111111 (binary)
  * or "$$$$$$$$$$$$$$$$" (character), "LTL" = 0, "MFS" = 1, "PCF" = 0,
- * "SAF" = 360, "SCF" = 0, "SSL" = .01, "TCS" = -1., "WOA"=.01,
+ * "SAF" = 360, "SCF" = 0, "SSL" = .01, "TCS" = -1.,
  * "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */
     c_dpsetc ("DPT - DASH PATTERN (CHARACTER)","$$$_$$$A");
 /*
  * Note: At this point, "DPS" = 0, "DPT" = 1111111111111111 (binary)
  * or "$$$_$$$A" (character), "LTL" = 0, "MFS" = 1, "PCF" = 0,
- * "SAF" = 360, "SCF" = 0, "SSL" = .01, "TCS" = -1., "WOA"=.01,
+ * "SAF" = 360, "SCF" = 0, "SSL" = .01, "TCS" = -1., 
  * "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */ 
     ycen=6.0;
@@ -127,7 +124,7 @@ int *ierr;
  * 
  * Note: At this point, "DPS" = 0, "DPT" = 1111111111111111 (binary)
  * or "$$$_$$$A" (character), "LTL" = 0, "MFS" = 1, "PCF" = 0,
- * "SAF" = 360, "SCF" = 0, "SSL" = .01, "TCS" = -1., "WOA"=.01,
+ * "SAF" = 360, "SCF" = 0, "SSL" = .01, "TCS" = -1.,
  * "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */
     c_dpseti ("DPS - DASH PATTERN SELECTOR",-14);
@@ -135,7 +132,7 @@ int *ierr;
 /*
  * Note: At this point, "DPS" = -14, "DPT" = 01011011101111 (binary)
  * or "$$$_$$$A" (character), "LTL" = 0, "MFS" = 1, "PCF" = 0,
- * "SAF" = 360, "SCF" = 0, "SSL" = .01, "TCS" = -1., "WOA"=.01,
+ * "SAF" = 360, "SCF" = 0, "SSL" = .01, "TCS" = -1.,
  * "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */ 
     ycen=3.5;
@@ -152,7 +149,7 @@ int *ierr;
  * 
  * Note: At this point, "DPS" = -14, "DPT" = 01011011101111 (binary)
  * or "$$$_$$$A" (character), "LTL" = 0, "MFS" = 1, "PCF" = 0,
- * "SAF" = 360, "SCF" = 0, "SSL" = .01, "TCS" = -1., "WOA"=.01,
+ * "SAF" = 360, "SCF" = 0, "SSL" = .01, "TCS" = -1.,
  * "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */
     c_dpseti ("DPS - DASH PATTERN SELECTOR",0);
@@ -162,7 +159,7 @@ int *ierr;
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$$$$$$$$$$$$_W/O BREAKPOINTS_" (character), "LTL" = 0, "MFS" = 1,
  * "PCF" = 0, "SAF" = 360, "SCF" = 0, "SSL" = .01, "TCS" = -1.,
- * "WOA"=.01, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
+ * "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */ 
     ycen=0.5;
 
@@ -185,16 +182,14 @@ int *ierr;
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$$$$$$$$$$$$_W/O BREAKPOINTS_" (character), "LTL" = 0, "MFS" = 1,
  * "PCF" = 0, "SAF" = 360, "SCF" = 0, "SSL" = .01, "TCS" = -1.,
- * "WOA"=.01, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
+ * "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */
     c_dpsetc ("DPT - DASH PATTERN (CHARACTER)", "$$$$$$$$$_W|I|T|H| |B|R|E|A|K|P|O|I|N|T|S_");
-
-    c_dpsetr ("WOA - WIDTH OF ADDITIONAL SPACE",.003);
 /*
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$$$$$$$$$_W|I|T|H| |B|R|E|A|K|P|O|I|N|T|S_" (character),
  * "LTL" = 0, "MFS" = 1, "PCF" = 0, "SAF" = 360, "SCF" = 0, "SSL" = .01,
- * "TCS" = -1., "WOA"=.003, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
+ * "TCS" = -1., "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */ 
     ycen=-3.5;
 
@@ -208,7 +203,7 @@ int *ierr;
 
     c_dpcurv (xcra,ycra,19);
 
-    c_plchhq (0.,ycen,"An oval drawn using DPCURV, with smoothing off and a dash:C:pattern in which the labels have breakpoints. 'WOA' = .003.",.01,0.,0.);
+    c_plchhq (0.,ycen,"An oval drawn using DPCURV, with smoothing off and a dash:C:pattern in which the labels have breakpoints.", .01,0.,0.);
 /*
  * Draw a third oval in the same way as the second one, but instead of
  * embedding break characters in the label, turn on the single-character
@@ -218,20 +213,18 @@ int *ierr;
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$$$$$$$$$_W|I|T|H| |B|R|E|A|K|P|O|I|N|T|S_" (character),
  * "LTL" = 0, "MFS" = 1, "PCF" = 0, "SAF" = 360, "SCF" = 0, "SSL" = .01,
- * "TCS" = -1., "WOA"=.003, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
+ * "TCS" = -1., "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */
     c_dpsetc ("DPT - DASH PATTERN (CHARACTER)","$$$$$$$$$$$$$$_WITH SINGLE-CHARACTER FLAG SET_");
 
     c_dpseti ("SCF - SINGLE-CHARACTER FLAG",1);
 
     c_dpsetr ("TCS - TENSION ON CUBIC SPLINES",2.5);
-
-    c_dpsetr ("WOA - WIDTH OF ADDITIONAL SPACE",.002);
 /*
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$$$$$$$$$$$$$$_WITH SINGLE-CHARACTER FLAG SET_" (character),
  * "LTL" = 0, "MFS" = 1, "PCF" = 0, "SAF" = 360, "SCF" = 1, "SSL" = .01,
- * "TCS" = 2.5, "WOA"=.002, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
+ * "TCS" = 2.5, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */ 
     ycen=-7.5;
 
@@ -245,7 +238,7 @@ int *ierr;
 
     c_dpcurv (xcra,ycra,19);
 
-    c_plchhq (0.,ycen,"An oval drawn using DPCURV, with smoothing on and the single-:C:character flag set to create many breakpoints.  'WOA' = .002.",.01,0.,0.);
+    c_plchhq (0.,ycen,"An oval drawn using DPCURV, with smoothing on and the single-:C:character flag set to create many breakpoints.",.01,0.,0.);
 /*
  * Advance the frame.
  */ 
@@ -268,16 +261,14 @@ int *ierr;
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$$$$$$$$$$$$$$_WITH SINGLE-CHARACTER FLAG SET_" (character),
  * "LTL" = 0, "MFS" = 1, "PCF" = 0, "SAF" = 360, "SCF" = 1, "SSL" = .01,
- * "TCS" = 2.5, "WOA"=.002, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
+ * "TCS" = 2.5, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */
     c_dpsetc ("DPT - DASH PATTERN (CHARACTER)", "$$$$$$$$$$$$$_A SPIRAL DRAWN USING DPFRST/VECT/LAST_");
-
-    c_dpsetr ("WOA - WIDTH OF ADDITIONAL SPACE",.001);
 /*
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$$$$$$$$$$$$$_A SPIRAL DRAWN USING DPFRST/VECT/LAST_" (character),
  * "LTL" = 0, "MFS" = 1, "PCF" = 0, "SAF" = 360, "SCF" = 1, "SSL" = .01,
- * "TCS" = 2.5, "WOA"=.001, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
+ * "TCS" = 2.5, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */ 
     c_dpfrst (0.,0.);
 
@@ -306,14 +297,14 @@ int *ierr;
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$$$$$$$$$$$$$_A SPIRAL DRAWN USING DPFRST/VECT/LAST_" (character),
  * "LTL" = 0, "MFS" = 1, "PCF" = 0, "SAF" = 360, "SCF" = 1, "SSL" = .01,
- * "TCS" = 2.5, "WOA"=.001, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
+ * "TCS" = 2.5, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */
     c_dpsetc ("DPT - DASH PATTERN (CHARACTER)", "$_$_$_$_$_$_$_$_$_$_A SPIRAL DRAWN USING DPDRAW_");
 /*
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$_$_$_$_$_$_$_$_$_$_A SPIRAL DRAWN USING DPDRAW_" (character),
  * "LTL" = 0, "MFS" = 1, "PCF" = 0, "SAF" = 360, "SCF" = 1, "SSL" = .01,
- * "TCS" = 2.5, "WOA"=.001, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
+ * "TCS" = 2.5, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */ 
     c_dpdraw (c_cufx(0.),c_cufy(0.),0);
 
@@ -340,14 +331,14 @@ int *ierr;
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$_$_$_$_$_$_$_$_$_$_A SPIRAL DRAWN USING DPDRAW_" (character),
  * "LTL" = 0, "MFS" = 1, "PCF" = 0, "SAF" = 360, "SCF" = 1, "SSL" = .01,
- * "TCS" = 2.5, "WOA"=.001, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
+ * "TCS" = 2.5, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */
     c_dpsetc ("DPT - DASH PATTERN (CHARACTER)", "$_$_$_$_$_$_$_$_$_$_A SPIRAL DRAWN USING DPSMTH_");
 /*
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$_$_$_$_$_$_$_$_$_$_A SPIRAL DRAWN USING DPSMTH_" (character),
  * "LTL" = 0, "MFS" = 1, "PCF" = 0, "SAF" = 360, "SCF" = 1, "SSL" = .01,
- * "TCS" = 2.5, "WOA"=.001, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
+ * "TCS" = 2.5, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */ 
     c_dpsmth (c_cufx(0.),c_cufy(0.),0);
 
@@ -375,7 +366,7 @@ int *ierr;
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$_$_$_$_$_$_$_$_$_$_A SPIRAL DRAWN USING DPSMTH_" (character),
  * "LTL" = 0, "MFS" = 1, "PCF" = 0, "SAF" = 360, "SCF" = 1, "SSL" = .01,
- * "TCS" = 2.5, "WOA"=.001, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
+ * "TCS" = 2.5, "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */
     c_dpsetc ("DPT - DASH PATTERN (CHARACTER)","$$$$$$$$$$$$$$$$$$$$$$C|o|n|t|o|u|r| |l|e|v|e|l| |=| |1|3|.|6|2|:L1:4|1|0:S:14:N:");
 
@@ -384,13 +375,11 @@ int *ierr;
     c_dpseti ("SCF - SINGLE-CHARACTER FLAG",0);
 
     c_dpsetr ("SSL - SMOOTHED SEGMENT LENGTH",.001);
-
-    c_dpsetr ("WOA - WIDTH OF ADDITIONAL SPACE",.0025);
 /*
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$$$$$$$$$$$$$$$$$$$$$$C|o|n|t|o|u|r| |l|e|v|e|l| |=| |1|3|.|6|2|:L
  * 1:4|1|0:S:14:N:" (character), "LTL" = 1, "MFS" = 1, "PCF" = 0,
- * "SAF" = 360, "SCF" = 0, "SSL" = .001, "TCS" = 2.5, "WOA"=.0025,
+ * "SAF" = 360, "SCF" = 0, "SSL" = .001, "TCS" = 2.5,
  * "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */ 
     gset_line_colr_ind (2);
@@ -432,7 +421,7 @@ int *ierr;
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$$$$$$$$$$$$$$$$$$$$$$C|o|n|t|o|u|r| |l|e|v|e|l| |=| |1|3|.|6|2|:L
  * 1:4|1|0:S:14:N:" (character), "LTL" = 1, "MFS" = 1, "PCF" = 0,
- * "SAF" = 360, "SCF" = 0, "SSL" = .001, "TCS" = 2.5, "WOA"=.0025,
+ * "SAF" = 360, "SCF" = 0, "SSL" = .001, "TCS" = 2.5,
  * "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */
     c_dpsetc ("DPT - DASH PATTERN (CHARACTER)","$$$$$$$$SPIRAL");
@@ -441,7 +430,7 @@ int *ierr;
 /*
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$$$$$$$$SPIRAL" (character), "LTL" = 1, "MFS" = 1, "PCF" = 0,
- * "SAF" = -360, "SCF" = 0, "SSL" = .001, "TCS" = 2.5, "WOA"=.0025,
+ * "SAF" = -360, "SCF" = 0, "SSL" = .001, "TCS" = 2.5,
  * "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */ 
     gset_line_colr_ind (2);
@@ -474,7 +463,7 @@ int *ierr;
  * 
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$$$$$$$$SPIRAL" (character), "LTL" = 1, "MFS" = 1, "PCF" = 0,
- * "SAF" = -360, "SCF" = 0, "SSL" = .001, "TCS" = 2.5, "WOA"=.0025,
+ * "SAF" = -360, "SCF" = 0, "SSL" = .001, "TCS" = 2.5,
  * "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */
     c_dpsetc ("DPT - DASH PATTERN (CHARACTER)","$$$$$$$_SPIRAL_");
@@ -489,7 +478,7 @@ int *ierr;
 /*
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$$$$$$$_SPIRAL_" (character), "LTL" = 0, "MFS" = 1, "PCF" = 1,
- * "SAF" = 360, "SCF" = 1, "SSL" = .001, "TCS" = 2.5, "WOA"=.0025,
+ * "SAF" = 360, "SCF" = 1, "SSL" = .001, "TCS" = 2.5,
  * "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */ 
     c_dpdraw (c_cufx(0.),c_cufy(0.),0);
@@ -515,7 +504,7 @@ int *ierr;
  * 
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$$$$$$$_SPIRAL_" (character), "LTL" = 0, "MFS" = 1, "PCF" = 1,
- * "SAF" = 360, "SCF" = 1, "SSL" = .001, "TCS" = 2.5, "WOA"=.0025,
+ * "SAF" = 360, "SCF" = 1, "SSL" = .001, "TCS" = 2.5,
  * "WOC" = .01, "WOG" = .005, and "WOS" = .005.
  */
     c_dpsetc ("DPT - DASH PATTERN (CHARACTER)","$_$_$_$_SPIRAL_");
@@ -530,7 +519,7 @@ int *ierr;
 /*
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$_$_$_$_SPIRAL_" (character), "LTL" = 0, "MFS" = 1, "PCF" = 0,
- * "SAF" = 360, "SCF" = 1, "SSL" = .001, "TCS" = 2.5, "WOA"=.0025,
+ * "SAF" = 360, "SCF" = 1, "SSL" = .001, "TCS" = 2.5,
  * "WOC" = .02, "WOG" = .01, and "WOS" = .01.
  */ 
     c_dpdraw (c_cufx(0.),c_cufy(0.),0);
@@ -556,7 +545,7 @@ int *ierr;
  * 
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$_$_$_$_SPIRAL_" (character), "LTL" = 0, "MFS" = 1, "PCF" = 0,
- * "SAF" = 360, "SCF" = 1, "SSL" = .001, "TCS" = 2.5, "WOA"=.0025,
+ * "SAF" = 360, "SCF" = 1, "SSL" = .001, "TCS" = 2.5,
  * "WOC" = .02, "WOG" = .01, and "WOS" = .01.
  */
     c_dpsetr ("WOC - WIDTH OF CHARACTERS",.008);
@@ -567,7 +556,7 @@ int *ierr;
 /*
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$_$_$_$_SPIRAL_" (character), "LTL" = 0, "MFS" = 1, "PCF" = 0,
- * "SAF" = 360, "SCF" = 1, "SSL" = .001, "TCS" = 2.5, "WOA"=.0025,
+ * "SAF" = 360, "SCF" = 1, "SSL" = .001, "TCS" = 2.5, 
  * "WOC" = .008, "WOG" = .008, and "WOS" = .008.
  *
  * Draw the first spiral.
@@ -578,7 +567,7 @@ int *ierr;
 /*
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$$$$$_SPIRAL 1_" (character), "LTL" = 0, "MFS" = 1.5, "PCF" = 0,
- * "SAF" = 360, "SCF" = 1, "SSL" = .001, "TCS" = 2.5, "WOA"=.0025,
+ * "SAF" = 360, "SCF" = 1, "SSL" = .001, "TCS" = 2.5,
  * "WOC" = .008, "WOG" = .008, and "WOS" = .008.
  */ 
     c_dpdraw (c_cufx(0.),c_cufy(0.),0);
@@ -599,7 +588,7 @@ int *ierr;
 /*
  * Note: At this point, "DPS" = 0, "DPT" = 01011011101111 (binary)
  * or "$$$$$_SPIRAL 2_" (character), "LTL" = 0, "MFS" = 3., "PCF" = 0,
- * "SAF" = 360, "SCF" = 1, "SSL" = .001, "TCS" = 2.5, "WOA"=.0025,
+ * "SAF" = 360, "SCF" = 1, "SSL" = .001, "TCS" = 2.5,
  * "WOC" = .008, "WOG" = .008, and "WOS" = .008.
  */ 
     c_dpdraw (c_cufx(0.),c_cufy(0.),0);
@@ -625,26 +614,6 @@ int *ierr;
     printf( "DASHPACK TEST EXECUTED OKAY - SEE PLOTS TO CERTIFY\n");
 
     *ierr=0;
-
-/*
- * Tests
- */
-    c_dpseti ("DPS",-11);
-    c_dpgeti ("DPS",&ival);
-    if( ival != -11) {
-        fprintf( stderr, "ival should be -11, ival is really %d\n", ival );
-    }
-    c_dpsetr ("MFS",2.);
-    c_dpgetr ("MFS",&rval);
-    if( rval != 2.) {
-        fprintf( stderr, "rval should be 2., rval is really %g\n", rval );
-    }
-    c_dpsetc ("DPT","$$$$$_TEST 2_");
-    c_dpgetc ("DPT",stmp,29);
-    if( !strcmp( stmp, "$$$$$_TEST 2_" ) ) {
-        fprintf( stderr, "stmp should be '$$$$$_TEST 2_'\n" );
-        fprintf( stderr, "stmp is really '%s'\n", stmp );
-    }
     return;
 }
 
