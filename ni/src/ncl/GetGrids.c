@@ -323,7 +323,6 @@ static int is_gpoint
 	unsigned char test;
 	unsigned char test1;
 
-	num_calls++;
 	if(bms == NULL) {
 		return(1);
 	} else {
