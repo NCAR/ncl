@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.40 1999-04-02 23:51:14 dbrown Exp $
+ *      $Id: Title.c,v 1.41 1999-04-19 23:28:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -129,10 +129,14 @@ static NhlResource resources[] = {
 		sizeof(NhlJustification),Oset(main_just),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlCENTERCENTER),0,NULL},
 	{NhlNtiMainFont, NhlCFont, NhlTFont, sizeof(NhlFont),
-		 Oset(main_font),NhlTImmediate,_NhlUSET((NhlPointer)0),0,NULL},
+	 	Oset(main_font),
+	 	NhlTImmediate,_NhlUSET((NhlPointer)0),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(main_font_height_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNtiMainFontHeightF,NhlCFontHeightF,NhlTFloat,sizeof(float),
-		 Oset(main_font_height), NhlTString,
-	 	_NhlUSET(NhlDEF_TITLE_HEIGHT_STR),0,NULL},
+	 	Oset(main_font_height), 
+	 	NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNtiMainFontAspectF,NhlCFontAspectF,NhlTFloat,sizeof(float),
 		 Oset(main_font_aspect), NhlTString,_NhlUSET("1.3125"),0,NULL},
 	{NhlNtiMainFontThicknessF,NhlCFontThicknessF,NhlTFloat,
@@ -181,10 +185,13 @@ static NhlResource resources[] = {
 	{NhlNtiXAxisFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		 Oset(x_axis_font),NhlTImmediate,_NhlUSET((NhlPointer)0 ),
 		0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(x_axis_font_height_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNtiXAxisFontHeightF,NhlCFontHeightF,
 		NhlTFloat,sizeof(float),
-		Oset(x_axis_font_height), NhlTString,
-	 	_NhlUSET(NhlDEF_TITLE_HEIGHT_STR),0,NULL},
+		Oset(x_axis_font_height),
+	 	NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNtiXAxisFontAspectF,NhlCFontAspectF,NhlTFloat,
 		 sizeof(float),
 		 Oset(x_axis_font_aspect), NhlTString,_NhlUSET("1.3125"),
@@ -236,10 +243,13 @@ static NhlResource resources[] = {
 	{NhlNtiYAxisFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		 Oset(y_axis_font),NhlTImmediate,
 		 _NhlUSET((NhlPointer)0 ),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(y_axis_font_height_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNtiYAxisFontHeightF,NhlCFontHeightF,
 		 NhlTFloat,sizeof(float),
-		 Oset(y_axis_font_height), NhlTString,
-	 	_NhlUSET(NhlDEF_TITLE_HEIGHT_STR),0,NULL},
+		 Oset(y_axis_font_height),
+	 	NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNtiYAxisFontAspectF,NhlCFontAspectF,NhlTFloat,
 		 sizeof(float),
 		 Oset(y_axis_font_aspect),NhlTString,
@@ -1084,6 +1094,13 @@ static NhlErrorTypes    TitleInitialize
 	tnew->title.new_draw_req = True;
 	tnew->title.trans_dat = NULL;
 	tnew->title.delta = (float)fabs((double)tnew->title.delta);
+
+	if (!tnew->title.main_font_height_set)
+		tnew->title.main_font_height = NhlDEF_TITLE_HEIGHT;
+	if (!tnew->title.x_axis_font_height_set)
+		tnew->title.x_axis_font_height = NhlDEF_TITLE_HEIGHT;
+	if (!tnew->title.y_axis_font_height_set)
+		tnew->title.y_axis_font_height = NhlDEF_TITLE_HEIGHT;
 
 	if(tnew->title.main_string != Main){
                 tnew->title.main_string = (char*)NhlMalloc((unsigned)

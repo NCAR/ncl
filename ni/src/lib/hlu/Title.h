@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.h,v 1.5 1999-04-02 23:51:15 dbrown Exp $
+ *      $Id: Title.h,v 1.6 1999-04-19 23:28:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,6 @@
 #include <ncarg/hlu/View.h>
 
 #define NhlDEF_TITLE_HEIGHT  0.025
-#define NhlDEF_TITLE_HEIGHT_STR "0.025"
 
 #define NhlNtiDeltaF	"tiDeltaF"
 #define NhlCtiDeltaF	"TiDeltaF"

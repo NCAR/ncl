@@ -1,5 +1,5 @@
 /*
- *      $Id: TitleP.h,v 1.5 1995-04-07 10:44:04 boote Exp $
+ *      $Id: TitleP.h,v 1.6 1999-04-19 23:28:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,7 @@ typedef struct _NhlTitleLayerPart {
 	NhlTitlePositions	main_position;
 	int	main_just;
 	NhlFont	main_font;
+	NhlBoolean	main_font_height_set;
 	float 	main_font_height;
 	float 	main_font_aspect;
 	float 	main_font_thickness;
@@ -55,6 +56,7 @@ typedef struct _NhlTitleLayerPart {
 	NhlTitlePositions	x_axis_position;
 	int	x_axis_just;
 	NhlFont	x_axis_font;
+	NhlBoolean	x_axis_font_height_set;
 	float 	x_axis_font_height;
 	float	x_axis_font_aspect;
 	float	x_axis_font_thickness;
@@ -73,6 +75,7 @@ typedef struct _NhlTitleLayerPart {
 	NhlTitlePositions	y_axis_position;
 	int	y_axis_just;
 	NhlFont	y_axis_font;
+	NhlBoolean	y_axis_font_height_set;
 	float	y_axis_font_height;
 	float	y_axis_font_aspect;
 	float	y_axis_font_thickness;
