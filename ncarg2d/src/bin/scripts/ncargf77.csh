@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargf77.csh,v 1.15 1994-03-24 15:05:07 haley Exp $
+#   $Id: ncargf77.csh,v 1.16 1994-04-05 19:25:32 haley Exp $
 #
 
 #*********************************************#
@@ -25,6 +25,9 @@ endif
 
 if ("$system" == "Sun4Solaris") then
   set libextra = "/usr/ucblib/libucb.a"
+  set XBLIPATH = "-L/usr/openwin/lib"
+else if("$system" == "HPUX_snake") then
+  set XBLIPATH = "-L/usr/lib/X11R4"
 endif    
 
 set newargv = "$fortran $loadopt"

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.27 1994-03-24 15:05:06 haley Exp $
+#	$Id: ncargcc.csh,v 1.28 1994-04-05 19:25:33 haley Exp $
 #
 
 #*********************************************#
@@ -37,36 +37,28 @@ set newargv = "$cc -I$incdir $defines $loadopt"
 set ctrans_libs = ""
 set stub_file   = ""
 
-#
-# set up default libraries
-#
-set libncarg    =       "$libdir/libncarg.a"
-set libgks      = "$libdir/libncarg_gksC.a $libdir/libncarg_gks.a"
-set liblocal    = "$libdir/libncarg_loc.a"
-set libncarg_c  = "$libdir/libncarg_c.a"
-set libcbind    = "$libdir/libncargC.a"
-set libX11      = "$XLIBPATH -lX11"
-
 if ($system == "Cray2" || $system == "Cray") then
-  set f77libs     =       "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
+  set f77libs     = "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
 else if ($system == "Sun4") then
-  set f77libs     =       "-L/usr/lang/SC1.0 -Bstatic -lF77 -Bdynamic -lV77 -lm -lc"
+  set f77libs     = "-L/usr/lang/SC1.0 -Bstatic -lF77 -Bdynamic -lV77 -lm -lc"
 else if ($system == "Sun4Solaris") then
-  set f77libs     =       "-L/opt/SUNWspro/SC2.0.1 -lF77 -lV77 -lM77 -lm"
+  set f77libs     = "-L/opt/SUNWspro/SC2.0.1 -lF77 -lV77 -lM77 -lm"
+  set XLIBPATH    = "-L/usr/openwin/lib"
 else if ($system == "Sun3") then
-  set f77libs     =       "-L/usr/lang/SC1.0 -lF77 -lV77 /usr/lib/fswitch/libm.a"
+  set f77libs     = "-L/usr/lang/SC1.0 -lF77 -lV77 /usr/lib/fswitch/libm.a"
 else if ($system == "AIX_RS6000") then
-  set f77libs     =       "-lm -lxlf"
+  set f77libs     = "-lm -lxlf"
 else if ($system == "DECRISC") then
-  set f77libs     =       "-lots -lfor -lF77 -lI77 -lU77 -lutil -li -lm -lUfor"
+  set f77libs     = "-lots -lfor -lF77 -lI77 -lU77 -lutil -li -lm -lUfor"
 else if ($system == "HPUX_snake") then
-  set f77libs     =       "-lf -lm"
+  set f77libs     = "-lf -lm"
+  set XLIBPATH    = "-L/usr/lib/X11R4"
 else if ($system == "SGI4D") then
-  set f77libs     =       "-lF77 -lI77 -lU77 -lisam -lm -lc"
+  set f77libs     = "-lF77 -lI77 -lU77 -lisam -lm -lc"
 else if ($system == "AlphaOSF1") then
-  set f77libs     =       "-lm -lots -lfor"
+  set f77libs     = "-lm -lots -lfor"
 else
-  set f77libs     =       "-lF77 -lI77 -lU77 -lm"
+  set f77libs     = "-lF77 -lI77 -lU77 -lm"
 endif
 
 if ("$system" == "AlphaOSF1") then
@@ -78,6 +70,16 @@ set smooth = "$ro/libdashsmth.o"
 set quick  = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"
 set super  = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
 endif
+
+#
+# set up default libraries
+#
+set libncarg    =       "$libdir/libncarg.a"
+set libgks      = "$libdir/libncarg_gksC.a $libdir/libncarg_gks.a"
+set liblocal    = "$libdir/libncarg_loc.a"
+set libncarg_c  = "$libdir/libncarg_c.a"
+set libcbind    = "$libdir/libncargC.a"
+set libX11      = "$XLIBPATH -lX11"
 
 set libs
 
