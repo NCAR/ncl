@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ncarg_path.c,v 1.9 1993-11-01 17:28:54 boote Exp $
+ *      $Id: ncarg_path.c,v 1.10 1993-11-06 00:31:33 boote Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -204,8 +204,22 @@ const	char	*GetNCARGPath(dir)
 
 		return(dir_2_path(dir));
 	}
+	else if (strcmp(config, dir) == 0){
+		char	*env_name=NULL,*s=NULL;
+
+		if (! (env_name = create_env_name(config))) {
+			return(NULL);
+		}
+
+		if ((s = getenv(env_name))) {
+			free(env_name);
+			return(s);
+		}
+		free(env_name);
+
+		libpath = dir_2_path(lib);
+	}
 	else if ((strcmp(db, dir) == 0)
-		||  (strcmp(config, dir) == 0)
 		||  (strcmp(fontcap, dir) == 0)
 		||  (strcmp(graphcap, dir) == 0)
 		||  (strcmp(examples, dir) == 0)
