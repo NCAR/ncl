@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.13 1998-01-08 01:44:49 dbrown Exp $
+!      $Id: ngi.res,v 1.14 1998-01-08 22:47:21 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -483,3 +483,4 @@ addfile*directory: /fs/scd/home1/ncargd/dev/sun4_SunOS_5_5_1/lib/ncarg/data/cdf
 *html*fontSizeList: 12,8,22,18,14,12,10,8
 !htmlview: display is sun
 *html*fontSizeList: 10,8,20,16,12,10,8,6
+*enableBadHTMLWarnings : HTML_NONE
