@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.82 2001-09-25 21:29:50 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.83 2001-10-14 19:39:32 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -258,7 +258,7 @@ begin
 ;
 ; Get the minimum dx for each set of curves.
 ;
-    dx = dim_min(x(npts|1:npts-1,ncurves|:)-x(npts|0:npts-2,ncurves|:))
+    dx = dim_min(x(:,1:npts-1)-x(:,0:npts-2))
     delete(x!0)
     delete(x!1)
   end if
@@ -2287,7 +2287,7 @@ begin
 
 ; lon=0, lon=360, or lon=720 (0)
 
-  tmres = get_res_eq(res,"tm")  ; Get tickmark resources
+  lon_index = ind(lon_values.eq.0.or.lon_values.eq.360.or.lon_values.eq.720)
   if(.not.all(ismissing(lon_index)))
       lon_labels(lon_index) = "0"
   end if
@@ -2323,7 +2323,7 @@ end
   delete(lat_index)
  
   return(lat_labels)
-  tmres = get_res_eq(res,"tm")  ; Get tickmark resources
+end
 
 ;***********************************************************************;
 ; Function : add_lon_labels                                             ;
@@ -2359,7 +2359,7 @@ begin
   attsetvalues(plot,tmres)
   return
 end
-  tmres = get_res_eq(res,"tm")  ; Get tickmark resources
+
 ;***********************************************************************;
 ; Procedure : add_lat_labels_xaxis                                      ;
 ;               plot: graphic                                           ;
@@ -7233,20 +7233,31 @@ begin
 
     if(check_attr(res2,"tmYLMode","Explicit",True))
       set_attr(res2,"tiYAxisString","")
-          xinterp = new((/2*ncurves,nab_max/),double,xabove@_FillValue)
-          yinterp = new((/2*ncurves,nab_max/),double,yabove@_FillValue)
+    end if
+
+; Check if we want fill above or below Y reference value, and whether we
+; want to do bar charts or regular curves.
+
+    if(yref_fill_on.and..not.bar_chart) then
+;
+; Create new X and Y arrays to hold new data values.  Wherever the curve
 ; crosses the reference line, an interpolation needs to be done to create 
-          xinterp(0:2*ncurves-1:2,0:na_max-1) = xabove(:,0:na_max-1)
-          xinterp(1:2*ncurves-1:2,0:nb_max-1) = xbelow(:,0:nb_max-1)
-          yinterp(0:2*ncurves-1:2,0:na_max-1) = yabove(:,0:na_max-1)
-          yinterp(1:2*ncurves-1:2,0:nb_max-1) = ybelow(:,0:nb_max-1)
-          yinterp(0:2*ncurves-1:2,4:na_max-1:5) = yinterp@_FillValue
-          yinterp(1:2*ncurves-1:2,4:nb_max-1:5) = yinterp@_FillValue
+; a point *on* that reference line.
+;
+      xinterp = new((/nyref,2*npts/),double,1e36)
+      yinterp = new((/nyref,2*npts/),double,1e36)
+
+      if(isatt(x,"_FillValue"))
+        xinterp@_FillValue = x@_FillValue
+      end if
+
+      if(isatt(y,"_FillValue"))
         yinterp@_FillValue = y@_FillValue
       end if
 
       new_npts = ref_line_interp(x,y,xinterp,yinterp,yref_line)
-          res2@xyDashPatterns = get_res_value(res2,"xyDashPatterns",0)
+    else
+      if(bar_chart) then
 ;
 ; Figure out if we want filled bars or outlined bars.
 ;
