@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.159 2003-05-20 22:09:52 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.160 2003-05-21 17:30:52 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -12551,34 +12551,46 @@ NhlErrorTypes   _NclIFileIsPresent
 ()
 # endif
 {
-    string  *file;
-    const char  *fpath;
+    string  *files;
+    const char  *fpath = NULL;
     struct stat st;
 
-    NclScalar   missing;
-    int has_missing = 0;
     int dimsizes = 1;
+    int ndims,
+        dimsz[NCL_MAX_DIMENSIONS];
+    int sz = 1;
 
-    logical file_exists = 0;        /* file exists? */
+    logical *file_exists;        /* file exists? */
+    int i = 0;
 
 
-    file = (string *) NclGetArgValue(
+    files = (string *) NclGetArgValue(
                 0, 
                 1, 
+                &ndims,
+                dimsz,
                 NULL,
                 NULL,
-                &missing,
-                &has_missing,
                 NULL,
                 0);
 
-    fpath = _NGResolvePath(NrmQuarkToString(*file));
-    if (stat(fpath, &st) == -1)
-        file_exists == 0;
-    else
-        file_exists = 1;
+    /* calculate total number of input files to check */
+    for (i = 0; i < ndims; i++)
+        sz *= dimsz[i];
 
-    return NclReturnValue((void *) &file_exists, 1, &dimsizes, NULL, NCL_logical, 1);
+    /* logical array to return */
+    file_exists = (logical *) NclMalloc((unsigned int) sizeof(logical) * sz);
+    if (file_exists == (logical *) NULL) {
+        NhlPError(NhlFATAL, errno, " isfilepresent: memory allocation error");
+        return NhlFATAL;
+    }
+
+    for (i = 0; i < sz; i++) {
+        fpath = _NGResolvePath(NrmQuarkToString(files[i]));
+        file_exists[i] = stat(fpath, &st) == -1 ? 0 : 1;
+    }
+
+    return NclReturnValue((void *) file_exists, ndims, dimsz, NULL, NCL_logical, 1);
 }
 
 
