@@ -1,5 +1,5 @@
 C
-C $Id: agqurv.f,v 1.6 2001-06-08 21:22:00 kennison Exp $
+C $Id: agqurv.f,v 1.7 2004-06-28 22:26:42 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -184,7 +184,7 @@ C
       YPIW=YLST
       XPOW=XNXT
       YPOW=YNXT
-      ASSIGN 104 TO JUMP
+      JUMP=1
       GO TO 107
   104 CALL VECTD (XPEW,YPEW)
       CALL LASTD
@@ -197,7 +197,7 @@ C
       YPIW=YNXT
       XPOW=XLST
       YPOW=YLST
-      ASSIGN 106 TO JUMP
+      JUMP=2
       GO TO 107
   106 CALL FRSTD (XPEW,YPEW)
       CALL VECTD (XNXT,YNXT)
@@ -226,7 +226,7 @@ C
         XPEW=XPIW+(YPEW-YPIW)*XDIF/YDIF
       END IF
 C
-  108 GO TO JUMP , (104,106)
+  108 GO TO (104,106) , JUMP
 C
 C No line drawn to last point, next point outside.  Jump if no last
 C point.

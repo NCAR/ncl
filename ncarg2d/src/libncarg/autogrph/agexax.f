@@ -1,6 +1,6 @@
 C
-C $Id: agexax.f,v 1.6 2000-08-22 15:02:12 haley Exp $
-C                                                                      
+C $Id: agexax.f,v 1.7 2004-06-28 22:26:42 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -146,7 +146,7 @@ C
 C
 C Reduce the approximate value to the form FTMP * 10 ** ITMP.
 C
-      ASSIGN 103 TO JMP1
+      JMP1=1
       GO TO 200
 C
 C Pick a reasonable value for BASE (1., 2., OR 5. * 10**ITMP).
@@ -310,7 +310,7 @@ C Reduce the value of BASE to the form RBSE * 10**KBSE, where RBSE is
 C in the range (1,10) and KBSE is an integer.
 C
   117 FTMP=BASE
-      ASSIGN 118 TO JMP1
+      JMP1=2
       GO TO 200
 C
   118 RBSE=FTMP
@@ -318,7 +318,6 @@ C
 C
 C Compute LBSE = the number of significant digits in RBSE.
 C
-      ASSIGN 119 TO JMP2
       GO TO 300
 C
   119 LBSE=1+ITMP
@@ -333,7 +332,7 @@ C
   120 GO TO (121,123,124) , NBTP
 C
   121 FTMP=AMAX1(ABS(VMIN),ABS(VMAX))/BASE
-      ASSIGN 122 TO JMP1
+      JMP1=3
       GO TO 200
 C
   122 NSIG=MAX0(1,ITMP+1+LBSE)
@@ -430,7 +429,7 @@ C
       IF (FTM1.LT.0.) FTM1=FTM1-1.
       ITMP=IFIX(FTM1)
       FTMP=AMAX1(1.,FTMP*REAL(10.D0**(-ITMP)))
-      GO TO JMP1 , (103,118,122)
+      GO TO (103,118,122) , JMP1
 C
 C *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 C
@@ -448,7 +447,7 @@ C
       FTM2=10.*FTM2
       GO TO 301
 C
-  302 GO TO JMP2 , (119)
+  302 GO TO 119
 C
 C *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 C

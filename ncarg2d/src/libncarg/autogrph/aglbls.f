@@ -1,6 +1,6 @@
 C
-C $Id: aglbls.f,v 1.4 2000-08-22 15:02:15 haley Exp $
-C                                                                      
+C $Id: aglbls.f,v 1.5 2004-06-28 22:26:42 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -191,9 +191,9 @@ C
 C
 C Preset certain jumps in the internal procedure which follows.
 C
-      ASSIGN 211 TO JMP1
-      ASSIGN 216 TO JMP2
-      ASSIGN 221 TO JMP3
+      JMP1=2
+      JMP2=2
+      JMP3=2
 C
 C Jump if this is a test run.
 C
@@ -211,7 +211,7 @@ C desired-size boxes.
 C
   101 RWCL=1.
       NBOX=0
-      ASSIGN 102 TO JMP4
+      JMP4=1
       GO TO 200
 C
   102 DBOX(NBOX,1)=XLBX
@@ -239,7 +239,7 @@ C Determine smallest-size boxes (shrinking allowed).
 C
   105 RWCL=0.
       NBOX=0
-      ASSIGN 106 TO JMP4
+      JMP4=2
       GO TO 200
 C
   106 SBOX(NBOX,1)=XLBX
@@ -259,7 +259,7 @@ C This is not a test run.  Compute reduction factors for each of the
 C six boxes.
 C
   107 NBOX=1
-      ASSIGN 110 TO JMP4
+      JMP4=3
 C
 C (DBOX(NBOX,I),I=1,4) specifies the box in which the labels are to be
 C drawn, (SBOX(NBOX,I),I=1,4) the minimum box in which they can be drawn
@@ -325,13 +325,13 @@ C We have done all we can to make the labels fit.  Plot them now.
 C
   115 NBOX=0
       LBIN=0
-      ASSIGN 117 TO JMP3
-      ASSIGN 120 TO JMP4
+      JMP3=1
+      JMP4=4
 C
 C Get a label to chew on.
 C
-  116 ASSIGN 211 TO JMP1
-      ASSIGN 216 TO JMP2
+  116 JMP1=2
+      JMP2=2
       GO TO 202
 C
 C We have a label.  Initialize the re-loop through the lines in it.
@@ -340,8 +340,8 @@ C
       YPLN=YPLB+DTLB*XDLB/HCWP
       PHCL=0.
       LNIN=LNII
-      ASSIGN 118 TO JMP1
-      ASSIGN 116 TO JMP2
+      JMP1=1
+      JMP2=1
       GO TO 210
 C
 C Get ready to plot the label line.
@@ -538,7 +538,7 @@ C
 C
 C Jump back with line information or drop through, as directed.
 C
-      GO TO JMP1 , (118,211)
+      GO TO (118,211) , JMP1
 C
 C Update the label-dimension parameters.
 C
@@ -562,7 +562,7 @@ C
 C
 C Jump back on end of lines or drop through, as directed.
 C
-      GO TO JMP2 , (116,216)
+      GO TO (116,216) , JMP2
 C
 C If all the lines in the label were either suppressed or of zero
 C length, skip this label.
@@ -595,7 +595,7 @@ C
 C
 C Jump back with label information or drop through, as directed.
 C
-  220 GO TO JMP3 , (117,221)
+  220 GO TO (117,221) , JMP3
 C
 C Update the x and y coordinates of the label box edges.
 C
@@ -614,7 +614,7 @@ C
 C
 C End of label list.  Jump as directed.
 C
-  222 GO TO JMP4 , (102,106,110,120)
+  222 GO TO (102,106,110,120) , JMP4
 C
 C *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 C

@@ -1,6 +1,6 @@
 C
-C $Id: agaxis.f,v 1.8 2000-08-22 15:02:09 haley Exp $
-C                                                                      
+C $Id: agaxis.f,v 1.9 2004-06-28 22:26:42 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -349,7 +349,7 @@ C
 C The numeric-label parameters are computed by an internal procedure
 C (which see, below).
 C
-      ASSIGN 104 TO JMP3
+      JMP3=1
       GO TO 500
 C
 C If this is a test run, skip the following code.
@@ -526,7 +526,7 @@ C
 C Jump to an internal procedure to tick-mark and label the axis.  Return
 C from there to the termination section of AGAXIS.
 C
-      ASSIGN 800 TO JMP1
+      JMP1=2
       GO TO 300
 C
 C Tick marks and labels must be done in two passes.  First, draw the
@@ -572,7 +572,7 @@ C
 C
 C Jump to an internal procedure to draw the label and/or the tick mark.
 C
-  202 ASSIGN 203 TO JMP2
+  202 JMP2=1
       GO TO 400
 C
 C Save the position of the zero-point (FRAX, expressed as a fraction of
@@ -582,7 +582,7 @@ C and the parameter DZRL, which is the minimum distance from the zero-
 C point at which a label could occur.  Set the label-space limit FNLE.
 C Preset the internal-procedure exit parameter JMP1.
 C
-  203 ASSIGN 205 TO JMP1
+  203 JMP1=1
       FZRO=FRAX
       DZRT=AMAX1(SMJT,1.6*FLOAT(LDNL)*FHCM)
       IF (LDNL.EQ.0) GO TO 204
@@ -593,7 +593,7 @@ C Do the portion of the axis lying in the direction specified by DZRT.
 C If it is too short, skip it entirely.
 C
   204 FRAX=FZRO+DZRT
-      IF (FRAX.LT.FBGM.OR.FRAX.GT.FNDP) GO TO JMP1 , (205,800)
+      IF (FRAX.LT.FBGM.OR.FRAX.GT.FNDP) GO TO (205,800) , JMP1
 C
 C Find out whether BASE must be negated for this portion.
 C
@@ -611,7 +611,7 @@ C
 C
 C Set up to do the second portion of the axis, then go do it.
 C
-  205 ASSIGN 800 TO JMP1
+  205 JMP1=2
       DZRT=-DZRT
       IF (LDNL.EQ.0) GO TO 204
       FNLB=FBGM-WNLB/CFAA-.5*(FHCM+FHCE)
@@ -693,7 +693,7 @@ C
 C
 C If the end of the axis has been reached, return to caller.
 C
-  304 IF (FRAX.LT.FBGM.OR.FRAX.GT.FNDP) GO TO JMP1 , (205,800)
+  304 IF (FRAX.LT.FBGM.OR.FRAX.GT.FNDP) GO TO (205,800) , JMP1
 C
 C Draw the major tick mark and/or the numeric label at FRAX.
 C
@@ -714,7 +714,7 @@ C
 C
 C Use the next internal procedure to draw the major tick and/or label.
 C
-  305 ASSIGN 301 TO JMP2
+  305 JMP2=2
 C
 C *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 C
@@ -771,7 +771,7 @@ C
       RFNL=AMIN1(.9,FDST/(FDST+AMAX1(FNLB-FLBB,FLBE-FNLE)))*RFNL
       MCIM=0
       MCIE=0
-      ASSIGN 200 TO JMP3
+      JMP3=2
       GO TO 500
 C
 C If labels have already been shrunk to minimum size, see if we can
@@ -793,7 +793,7 @@ C
       RFNL=1.
       MCIM=0
       MCIE=0
-      ASSIGN 200 TO JMP3
+      JMP3=2
       GO TO 500
 C
 C Label will fit.  Update the label space limits for next time.
@@ -950,7 +950,7 @@ C
 C
 C Exit from internal procedure.
 C
-  424 GO TO JMP2 , (203,301)
+  424 GO TO (203,301) , JMP2
 C
 C *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 C
@@ -992,7 +992,7 @@ C
 C
 C Return to internal-procedure caller.
 C
-      GO TO JMP3 , (104,200,801)
+      GO TO (104,200,801) , JMP3
 C
 C *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 C
@@ -1077,7 +1077,7 @@ C
 C
   810 RFNL=AMIN1(.9,(WNLL+WNLR)/(CFAP*(FNLL+FNLR)))*RFNL
 C
-  811 ASSIGN 801 TO JMP3
+  811 JMP3=3
       GO TO 500
 C
 C If labels have already been shrunk to minimum size, see if we can
@@ -1095,7 +1095,7 @@ C the problem is solved.
 C
       NLOF=NLOF-360
       RFNL=1.
-      ASSIGN 801 TO JMP3
+      JMP3=3
       GO TO 500
 C
 C Reset WNLL and WNLR for caller.

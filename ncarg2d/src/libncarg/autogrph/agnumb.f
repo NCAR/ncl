@@ -1,6 +1,6 @@
 C
-C $Id: agnumb.f,v 1.4 2000-08-22 15:02:15 haley Exp $
-C                                                                      
+C $Id: agnumb.f,v 1.5 2004-06-28 22:26:42 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -392,7 +392,7 @@ C Generate the digits preceding the decimal point, if any.
 C
       IF (NDPD.LE.0) GO TO 117
 C
-      ASSIGN 116 TO JUMP
+      JUMP=1
       GO TO 121
 C
   116 NDPD=NDPD-1
@@ -401,14 +401,14 @@ C
 C Generate the decimal point.
 C
   117 KHAR='.'
-      ASSIGN 118 TO JUMP
+      JUMP=2
       GO TO 122
 C
 C Generate leading zeroes, if any, after the decimal point.
 C
   118 IF (NDPD.EQ.0) GO TO 120
       KHAR='0'
-      ASSIGN 119 TO JUMP
+      JUMP=3
       GO TO 122
 C
   119 NDPD=NDPD+1
@@ -416,7 +416,7 @@ C
 C
 C Generate remaining fractional digits.
 C
-  120 ASSIGN 121 TO JUMP
+  120 JUMP=4
 C
 C Generate a digit from the mantissa-generator.  It is assumed that, for
 C n between 1 and 9, ICHAR('n') = ICHAR('n-1') + 1 .
@@ -434,7 +434,7 @@ C
 C Check whether (I.F) is complete.
 C
       LMAN=LMAN-1
-      IF (LMAN.NE.0) GO TO JUMP , (116,118,119,121)
+      IF (LMAN.NE.0) GO TO (116,118,119,121) , JUMP
 C
 C If appropriate, leave space in the mantissa buffer for the "X" .
 C
