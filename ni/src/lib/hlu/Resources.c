@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.41 2000-06-07 21:44:29 dbrown Exp $
+ *      $Id: Resources.c,v 1.42 2005-02-09 21:46:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -149,10 +149,20 @@ _NhlConvertArg
 	else if(_NhlIsSubtypeQ(doubleQ,name))
 		tmp.dblval = arg->value.dblval;
 #ifdef	NGLONG2XINT
-	/*
-	 * On non-byte swapped systems where ints are 4 bytes and longs are
+#ifdef  ByteSwapped
+	else if(_NhlIsSubtypeQ(charQ,name))
+		tmp.charval = (char)((int*)&arg->value.lngval)[0];
+	else if(_NhlIsSubtypeQ(byteQ,name))
+		tmp.byteval = (unsigned char)((int*)&arg->value.lngval)[0];
+	else if(_NhlIsSubtypeQ(shortQ,name))
+		tmp.shrtval = (short)((int*)&arg->value.lngval)[0];
+	else if(_NhlIsSubtypeQ(intQ,name))
+		tmp.intval = ((int*)&arg->value.lngval)[0];
+#else
+    /*
+     * On non-byte swapped systems where ints are 4 bytes and longs are
      * 8 bytes, this macro must be set.  From the AL/VA interface all
-	 * non-long integral types are promoted to int, but they are pulled
+     * non-long integral types are promoted to int, but they are pulled
      * off the va_arg stack as a long, and put in the arg->value union
      * as a long.  So, to get to the actual value, I treat the long as
      * an array of two ints, and pull off the second int.
@@ -165,6 +175,7 @@ _NhlConvertArg
 		tmp.shrtval = (short)((int*)&arg->value.lngval)[1];
 	else if(_NhlIsSubtypeQ(intQ,name))
 		tmp.intval = ((int*)&arg->value.lngval)[1];
+#endif
 #else
 	/*
 	 * If sizeof(int) == sizeof(long), then this should work.
