@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.13 1998-01-24 02:10:39 dbrown Exp $
+ *      $Id: hlupage.c,v 1.14 1998-02-11 21:52:49 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -587,6 +587,9 @@ CreateInstance
                 (rec->go->base.id,&hlu_id,
                  NrmQuarkToString(page->qvar),parent,
                  rec->public.class_name,1,setresproc,setresdata);
+#if DEBUG_HLUPAGE
+        fprintf(stderr,"created hlu obj with id %d\n", hlu_id);
+#endif        
         if (ret < NhlWARNING) {
                 char buf[512];
                 sprintf(buf,"%s = %s@_FillValue\n",

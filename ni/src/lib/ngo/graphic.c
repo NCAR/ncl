@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.2 1998-01-08 01:19:25 dbrown Exp $
+ *      $Id: graphic.c,v 1.3 1998-02-11 21:52:48 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -297,9 +297,11 @@ NhlErrorTypes NgDrawGraphic
                            "graphic not drawable %s",ncl_graphic));
                 return NhlWARNING;
         }
-	base_id = _NhlBasePlot(hlu_id);
-	strcpy(base_name,NgNclGetHLURef(go->go.nclstate,base_id));
-
+        base_id =  NhlIsTransform(hlu_id) ?
+                _NhlBasePlot(hlu_id) : hlu_id;
+        
+        strcpy(base_name,NgNclGetHLURef(go->go.nclstate,base_id));
+        
         wk_name = NgNclGetHLURef(go->go.nclstate,wk_id);
 
         if (clear)
