@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.10 1993-04-21 16:26:51 haley Exp $
+ *      $Id: wks.c.sed,v 1.11 1994-02-18 20:55:06 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -83,6 +83,10 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/file.h>
+#ifdef cray
+#include <fortran.h>
+#endif
+
 #include "wks.h"
 
 static int		wks_init   = FALSE;
@@ -128,28 +132,26 @@ static struct
 *
 ************************************************************************/
 
-#ifdef ardent
-opnwks_(unit, string, status)
+#ifdef cray
+opnwks_(unit, fname_, status)
+	_fcd	fname_;
 #else
 int	opnwks_(unit, fname, status)
-#endif
-	int	*unit;
-#ifdef ardent
-	FortranString	*string;
-#else
 	char	*fname;
 #endif
-	int	*status;
+	int	*status, *unit;
 {
 	int		i, pipes[2], stat;
-	char		*p;
+	char	*p;
 	int		default_bufsize;
 	int		bufsize = 0;
-	char		*otype;
-#ifdef ardent
+	char	*otype;
+#ifdef cray
+	unsigned	length = _fcdlen(fname_);
 	char		*fname;
 
-	fname = string->text;
+	fname = (char *)malloc(sizeof(char)*length);
+	strncpy( fname, _fcdtocp(fname_), length );
 #endif
 
 	/* Initialize the table that is used to track LU's. */

@@ -1,5 +1,5 @@
 /*
- *	$Id: wks.h.sed,v 1.3 1993-03-11 19:51:47 haley Exp $
+ *	$Id: wks.h.sed,v 1.4 1994-02-18 20:55:08 haley Exp $
  */
 /***********************************************************************
 * 
@@ -54,16 +54,3 @@
 #define L_INCR 1
 #endif
 
-/*
-The Ardent handles strings in argument lists differently from
-most other machines. This structure is used to deal with this
-problem.
-*/
-
-#ifdef ardent
-typedef struct
-{
-	char	*text;
-	int	length;
-} FortranString;
-#endif
