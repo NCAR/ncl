@@ -1,5 +1,5 @@
 C
-C       $Id: stthin.f,v 1.2 2002-01-14 22:32:58 dbrown Exp $
+C       $Id: stthin.f,v 1.3 2002-01-26 01:56:29 dbrown Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -352,6 +352,9 @@ C
             ICM = MXX
             DO 600 II=MXX,1,-IXIN
                IF (JJ.EQ.J) THEN
+                  IF (II.EQ.1) THEN
+                     GO TO 601
+                  END IF
                   ICM = MXX - IXIN
                END IF
                IF (UFR(II,JJ).LT.0.0) THEN
@@ -398,6 +401,9 @@ C
             DO 800 JJ=MXY,1,-IYIN
                IF (II.EQ.I) THEN
                   ICM = MXY - IXIN
+                  IF (JJ.EQ.J) THEN
+                     GO TO 800
+                  END IF
                END IF   
                IF (UFR(II,JJ).LT.0.0) THEN
                   ICM = JJ - IYIN
