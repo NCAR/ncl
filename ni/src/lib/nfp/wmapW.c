@@ -22,7 +22,7 @@
  *  The following is required in order to obtain an NCL object ID
  *  when you know the HLU ID.
  */
-#include "../../ncl/NclHLUObj.h"
+#include "NclHLUObj.h"
 
 NhlErrorTypes wmfndn(float, float, float, float, float *, float *);
 
