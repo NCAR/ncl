@@ -1,0 +1,7 @@
+#
+#	$Id: yMakefile,v 1.1 1994-10-31 03:53:03 haley Exp $
+#
+
+EXAMPLES = c_example.c c_tseter.c c_plcmnt.c c_animat.c c_bnchmk.c
+
+InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
