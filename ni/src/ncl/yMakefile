@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.81 2002-09-12 14:23:06 haley Exp $
+#      $Id: yMakefile,v 1.82 2002-09-13 14:50:52 haley Exp $
 #
 #########################################################################
 #									#
@@ -40,6 +40,7 @@ LEX		=	flex
 #ifdef  HPUX
 ARCH_LIBS	=	-lPW
 HACKOBJS	=	hphack.o
+EXTRA_CLDFLAGS	= 	-Wl,-E
 #endif
 
 #if defined(linux) || defined(i386)
