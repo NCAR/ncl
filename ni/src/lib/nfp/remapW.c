@@ -132,11 +132,12 @@ NhlErrorTypes pop_remap_W( void )
                                &nsrc,&missing_dsrc_array.doubleval);
 
   if(type_dst_array == NCL_float) {
-    for(i = 0; i < ndst; i++ ) {
-      ((float*)dst_array)[i] = (float)dst[i];
-    }
+    coerce_output_float_only(dst_array,dst,ndst,0);
     NclFree(dst);
   }
+  if(type_map_wts   != NCL_double) NclFree(map);
+  if(type_src_array != NCL_double) NclFree(src);
+
   return(NhlNOERROR);
 }
 
