@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.31 1996-10-25 21:08:50 boote Exp $
+ *      $Id: Template,v 1.32 1996-11-24 22:11:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -618,7 +618,7 @@ _INCROOTSEARCH	=	-I$(INCPATH) -I$(INCROOT)
 
 #ifdef	BuildShared
 SHAREDLIBSEARCH	=	-L$(TOP)/shared
-SHAREDLIBFLAGS	=	$(_EXECLIBSEARCH) $(SHAREDLIBSEARCH)
+SHAREDLIBFLAGS	=	-Wl,-woff,84,-woff,85 $(_EXECLIBSEARCH) $(SHAREDLIBSEARCH)
 SHAREDLDLIBSEARCH = $(DEV_LIB_SEARCH) $(SHAREDLIBSEARCH) $(_LIBROOTSEARCH) $(LIB_SEARCH)
 #else
 SHAREDLIBFLAGS =

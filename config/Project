@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.30 1996-11-01 15:31:38 boote Exp $
+ *      $Id: Project,v 1.31 1996-11-24 22:11:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -110,16 +110,9 @@
 #endif
 #endif	/* BuildSunViewctrans */
 
-#ifdef	BuildRasterHDF
 #ifndef	HDFlib
-#define	HDFlib	-ldf
+#define	HDFlib	-ldf -lz
 #endif	/* HDFlib */
-#else	/* !BuildRasterHDF */
-#ifdef	HDFlib
-#undef	HDFlib
-#endif	/* HDFlib */
-#define	HDFlib	/**/
-#endif	/* BuildRasterHDF */
 
 #ifndef	NetCDFlib
 #define	NetCDFlib	-lnetcdf

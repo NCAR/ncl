@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.33 1996-10-29 20:09:40 boote Exp $
+ *	$Id: Rules,v 1.34 1996-11-24 22:11:55 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -410,15 +410,14 @@ CleanFilesTarget(library.a objects)
 #endif	/* BuildLibTarget */
 
 /*
- * Macro:	BuildSharedPartialLib
+ * Macro:	BuildSharedPartialFromArch
  *
  * Description:	Build a shared lib that should only be linked from
- *		another shared lib - it may have unresolved references,
- *		and it should me delay_loaded.
+ *		another shared lib - it may have unresolved references.
  */
-#ifndef	BuildSharedPartialLib
+#ifndef	BuildSharedPartialFromArch
 #ifdef	BuildShared
-#define	BuildSharedPartialLib(library,objects,arch,major,minor,reqlibs)\
+#define	BuildSharedPartialFromArch(library,arch,major,minor,reqlibs)\
 ]\
 all::]\
 ]\
@@ -431,18 +430,25 @@ library.so:: library.so.major]\
 	$(RM) library.so; \ ]\
 	$(LN) library.so.major library.so ]\
 ]\
-library.so.major:: objects arch]\
+library.so.major:: arch]\
 	MakeDir($(TOP)/shared)]\
-	$(LD) -shared -default_delay_load -set_version sgi##major.minor -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ -all arch -none $(SHAREDLDLIBSEARCH) reqlibs ]\
+	$(LD) -shared -woff 85,33 -set_version sgi##major.minor -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ -all arch -none $(SHAREDLDLIBSEARCH) reqlibs ]\
 	@cd $(TOP)/shared;\ ]\
 	$(RM) library.so.major; \ ]\
 	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
 ]\
+InstallTarget(library.so.major,$(INSTALL_LIB),$(LIBPATH))\
+install-local:: library.so.major]\
+	MakeDir($(LIBPATH))]\
+	@cd $(LIBPATH); \ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
 CleanFilesTarget(library.so library.so.major arch)
 #else
-#define	BuildSharedPartialLib(library,objects,arch,major,minor,reqlibs) /**/
+#define	BuildSharedPartialFromArch(library,arch,major,minor,reqlibs) /**/
 #endif	/* BuildShared */
-#endif	/* BuildSharedPartialLib */
+#endif	/* BuildSharedPartialFromArch */
 
 /*
  * Macro:	BuildSharedFromArch
@@ -466,16 +472,67 @@ library.so:: library.so.major]\
 ]\
 library.so.major:: arch]\
 	MakeDir($(TOP)/shared)]\
-	$(LD) -shared -set_version sgi##major.minor -no_unresolved -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ -all arch -none $(SHAREDLDLIBSEARCH) reqlibs ]\
+	$(LD) -shared -woff 85,84 -set_version sgi##major.minor -no_unresolved -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ -all arch -none $(SHAREDLDLIBSEARCH) reqlibs ]\
 	@cd $(TOP)/shared;\ ]\
 	$(RM) library.so.major; \ ]\
 	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
+]\
+InstallTarget(library.so.major,$(INSTALL_LIB),$(LIBPATH))\
+install-local:: library.so.major]\
+	MakeDir($(LIBPATH))]\
+	@cd $(LIBPATH); \ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
 ]\
 CleanFilesTarget(library.so library.so.major arch)
 #else
 #define	BuildSharedFromArch(library,arch,major,minor,reqlibs) /**/
 #endif	/* BuildShared */
 #endif	/* BuildSharedFromArch */
+
+/*
+ * Macro:	BuildSharedPartialLib
+ *
+ * Description: Build a shared library that may contain unresolved references.
+ *		It should not be linked in directly from users - this should
+ *		only be used by other libraries, and it should contain
+ *		ABSOLUTELY NO USER ENTRY POINTS - it should be created
+ *		default - delay loaded.
+ */
+#ifndef	BuildSharedPartialLib
+#ifdef	BuildShared
+#define	BuildSharedPartialLib(library,objects,major,minor,reqlibs)\
+]\
+all::]\
+]\
+all-local:: library.so]\
+]\
+library.so:: library.so.major]\
+	@$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+library.so.major:: objects]\
+	MakeDir($(TOP)/shared)]\
+	$(LD) -shared -woff 85 -set_version sgi##major.minor -rdata_shared -default_delay_load -update_registry $(TOP)/shared/so_locations -o $@ objects $(SHAREDLDLIBSEARCH) reqlibs ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so.major; \ ]\
+	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
+]\
+InstallTarget(library.so.major,$(INSTALL_LIB),$(LIBPATH))\
+install-local:: library.so.major]\
+	MakeDir($(LIBPATH))]\
+	@cd $(LIBPATH); \ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+CleanFilesTarget(library.so library.so.major)
+#else
+#define	BuildSharedPartialLib(library,objects,major,minor,reqlibs) /**/
+#endif	/* IRIX */
+#endif	/* BuildSharedPartialLib */
 
 /*
  * Macro:	BuildSharedLibTarget
@@ -499,10 +556,17 @@ library.so:: library.so.major]\
 ]\
 library.so.major:: objects]\
 	MakeDir($(TOP)/shared)]\
-	$(LD) -shared -set_version sgi##major.minor -no_unresolved -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ objects $(SHAREDLDLIBSEARCH) reqlibs ]\
+	$(LD) -shared -woff 85 -set_version sgi##major.minor -no_unresolved -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ objects $(SHAREDLDLIBSEARCH) reqlibs ]\
 	@cd $(TOP)/shared;\ ]\
 	$(RM) library.so.major; \ ]\
 	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
+]\
+InstallTarget(library.so.major,$(INSTALL_LIB),$(LIBPATH))\
+install-local:: library.so.major]\
+	MakeDir($(LIBPATH))]\
+	@cd $(LIBPATH); \ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
 ]\
 CleanFilesTarget(library.so library.so.major)
 #else
