@@ -30,7 +30,6 @@ C Close frame and close GKS
         INTEGER MAP(LMAP),IAREA(NOGRPS),IGRP(NOGRPS)
 
         EXTERNAL SFILL
-        EXTERNAL COLOR
 
 C Set up color table
         CALL COLOR
@@ -58,7 +57,9 @@ C Fill contours
         CALL ARSCAM(MAP, XWRK, YWRK, NWRK, IAREA, IGRP, NOGRPS, SFILL)
 
 C Draw contours, masking label boxes
+	CALL GSPLCI(0)
         CALL CPCLDR(ZREG, RWRK, IWRK)
+	CALL GSPLCI(1)
 
 C Second draw color plot to left
 	CALL CPSETR('VPL - VIEWPORT LEFT',.51)
@@ -82,6 +83,7 @@ C Fill contours
         CALL ARSCAM(MAP, XWRK, YWRK, NWRK, IAREA, IGRP, NOGRPS, SFILL)
 
 C Draw contours, masking label boxes
+	CALL GSPLCI(0)
         CALL CPCLDR(ZREG, RWRK, IWRK)
         RETURN
         END
