@@ -1,6 +1,6 @@
 
 #
-#      $Id: math_funcs.sh,v 1.1 1995-01-31 22:26:12 ethan Exp $
+#      $Id: math_funcs.sh,v 1.2 1996-12-17 18:41:14 ethan Exp $
 #
 #########################################################################
 #									#
@@ -253,8 +253,19 @@ MathTemplate.c.sed >> .tmp.$$
 #-e 's/CAST/double/g' \
 #MathTemplate.c.sed >> .tmp.$$
 
-echo "#endif /* MATHFUNC_h */ " >> MathFuncs.h
+sed \
+-e 's/FUNCNAME/atan2/g' \
+MathTemplate.h.sed >> MathFuncs.h
 
+sed \
+-e 's/FUNCNAME/atan2/g' \
+-e 's/OUTDATATYPE/float/g' \
+-e 's/ARG0TYPE/float/g' \
+-e 's/ARG1TYPE/float/g' \
+-e 's/CAST/double/g' \
+MathTemplate2.c.sed >> .tmp.$$
+
+echo "#endif /* MATHFUNC_h */ " >> MathFuncs.h
 
 sed \
 -e "/REPLACE/r .tmp.$$" \

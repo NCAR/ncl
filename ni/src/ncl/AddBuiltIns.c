@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.25 1996-12-12 22:58:00 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.26 1996-12-17 18:41:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -378,6 +378,12 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Nclatan,args,"atan",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,1,"float",NclANY,NclANY);nargs++;
+	NclRegisterFunc(_Nclatan2,args,"atan2",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);

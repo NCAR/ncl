@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.74 1996-12-12 22:58:04 ethan Exp $
+ *      $Id: Execute.c,v 1.75 1996-12-17 18:41:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2227,7 +2227,13 @@ NclExecuteReturnStatus _NclExecute
 	* Attention: missing value may be different type than variable data until code is put here to fix it
 	*/
 							} else {
-								tmp_md = data.u.data_obj;
+/*
+* ONLY a PERMANENT when its a constant
+*/
+								if(data.u.data_obj->obj.status == PERMANENT)
+									tmp_md = _NclCopyVal(data.u.data_obj,NULL);
+								else 
+									tmp_md = data.u.data_obj;
 							}
 							if((thesym->type != IPROC)&&(thesym->type != PIPROC)&&(thesym->type != IFUNC)&&(estatus != NhlFATAL)) {
 								argsym = pfinfo->theargs[arg_num].arg_sym;

@@ -1670,8 +1670,13 @@ yyerror
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near %s \n%s\n",s,cur_line_number+1,yytext,error_buffer);
 			}
 		}
-	} else if(is_error == NCL_MAX_ERROR) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Maximum number of errors exceeded, no more will be printed");
+	} else if((is_error == NCL_MAX_ERROR)&&(cmd_line != 2)) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Maximum number of errors exceeded, terminating");
+			exit(0);
+	} else {
+/*
+* GUI STUFF
+*/
 	}
 	return(0);
 }
