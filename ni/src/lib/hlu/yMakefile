@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.63 2004-07-23 21:24:56 dbrown Exp $
+#      $Id: yMakefile,v 1.64 2004-07-26 12:14:56 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -133,7 +133,7 @@ InstallTarget(sysresfile,$(INSTALL_INC),$(LIBNCARGPATH))
 DependTarget($(CSRCS))
 
 triangle.o: triangle.c
-	$(CC) -DTRILIBRARY -c triangle.c
+	$(CC) $(CCOPTIONS) -DTRILIBRARY -c triangle.c
 
 #if defined(IRIX64)
 cmpf.o: cmpf.c
