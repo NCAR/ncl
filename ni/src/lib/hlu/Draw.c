@@ -1,5 +1,5 @@
 /*
- *      $Id: Draw.c,v 1.1 1993-04-30 17:21:48 boote Exp $
+ *      $Id: Draw.c,v 1.2 1993-10-19 17:50:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -61,6 +61,8 @@ CallDraw
 
 	if(class->base_class.superclass != NULL ) {
 		superclassret = CallDraw(l,class->base_class.superclass);
+		if(superclassret < WARNING)
+			return superclassret;
 	}
 
 	if(class->base_class.layer_draw != NULL) {
@@ -98,7 +100,7 @@ NhlDraw
 {
 	Layer layer = _NhlGetLayer(id);
 
-	if(layer == NULL){
+	if((layer == NULL) || !_NhlIsBase(layer)){
 		NhlPError(FATAL,E_UNKNOWN,
 				"Invalid plot ID= %d passed to NhlDraw",id);
 		return(FATAL);

@@ -1,6 +1,5 @@
-
 /*
- *      $Id: Workstation.c,v 1.1 1993-04-30 17:26:00 boote Exp $
+ *      $Id: Workstation.c,v 1.2 1993-10-19 17:53:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +37,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/WorkstationP.h>
 #include <ncarg/hlu/hluutil.h>
@@ -163,17 +163,189 @@ static NhlColor def_color[] = {
 {0.000000, 0.000000, 0.031373}
 };
 
+char *dash_patterns[] = { "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",
+                 "$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'",
+                 "$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'",
+                 "$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'",
+                 "$$$$'$$$$'$$$$'$$$$'$$$$'$$$$'$$$$'$$$$'$$$$'$$$$'",
+                 "$'$$'$'$$'$'$$'$'$$'$'$$'$'$$'$'$$'$'$$'$'$$'$'$$'",
+                 "$'$$$'$'$$$'$'$$$'$'$$$'$'$$$'$'$$$'$'$$$'$'$$$'",
+                 "$$'$$$$'$$'$$$$'$$'$$$$'$$'$$$$'$$'$$$$'$$'$$$$'",
+                 "$$$$'$$'$'$$'$$$$'$$'$'$$'$$$$'$$'$'$$'$$$$'$$'$'$$'",
+                 "$$''$$''$$''$$''$$''$$''$$''$$''$$''$$''$$''$$''",
+                 "$$$$$$''$$$$$$''$$$$$$''$$$$$$''$$$$$$''$$$$$$''",
+                 "$$$'$$$''$$$'$$$''$$$'$$$''$$$'$$$''$$$'$$$''",
+                 "$$'''$$'''$$'''$$'''$$'''$$'''$$'''$$'''$$'''$$'''",
+                 "$'$'''$'$'''$'$'''$'$'''$'$'''$'$'''$'$'''$'$'''",
+                 "$$$$$'$'$$$$$'$'$$$$$'$'$$$$$'$$$$$'$'$$$$$'$'",
+                 "$$$$$'$'$'$$$$$'$'$'$$$$$'$'$'$$$$$'$'$'$$$$$'$'$'",
+};
+
+static NhlFillSpec fill_specs[] = {
+
+{ 0,   0.0,  0, NULL, 0, 0, 0 },
+{ 0,   0.01, 0, NULL, 0, 1, 0 },
+{ 90,  0.01, 0, NULL, 0, 1, 0 },
+{ 45,  0.01, 0, NULL, 0, 1, 0 },
+{ 135, 0.01, 0, NULL, 0, 1, 0 },
+{ 0,   0.01, 0, NULL, 0, 2, 0 },
+{ 45,  0.01, 0, NULL, 0, 2, 0 },
+{ 22,  0.01, 0, NULL, 0, 1, 0 },
+{ 68,  0.01, 0, NULL, 0, 1, 0 },
+{ 112, 0.01, 0, NULL, 0, 1, 0 },
+{ 158, 0.01, 0, NULL, 0, 1, 0 },
+{ 22,  0.01, 0, NULL, 0, 2, 0 },
+{ 68,  0.01, 0, NULL, 0, 2, 0 },
+{ 0,   0.0003125, 0, NULL, 0, -3, 2 },
+{ 0,   0.0003125, 0, NULL, 0, -3, 3 },
+{ 0,   0.0003125, 0, NULL, 0, -4, 3 },
+{ 0,   0.0003125, 0, NULL, 0, -4, 4 }
+
+};
+
+/* Note: the specs for the user-defined marker should be set to the same
+ * values as the default marker - currently the asterisk
+ * spec-values: marker string, x_off, y_off, aspect ratio (h/w), size factor,
+ * dynamic allocation flag
+ */
+
+static NhlMarkerSpec marker_specs[] = {
+{"",       0.0, 0.0, 1.3125, 1.0, False},    /* user-defined */
+{":F37:Z", 0.0, 0.0, 1.3125, 0.175, False},  /* 1 - dot (small filled circle)*/
+{":F18:+", 0.0, 0.075, 1.3125, 0.95, False}, /* 2 - plus sign */
+{":F1:*",  0.0, 0.0, 1.3125, 1.0, False},    /* 3 - asterisk */
+{":F19:x", 0.0, 0.075, 1.3125, 1.2, False},  /* 4 - hollow circle */
+{":F18:U", 0.0, 0.075, 1.3125, 1.1, False},  /* 5 - cross (x) */
+{":F19:Z", 0.0, 0.083, 1.3125, 1.45, False}, /* 6 - hollow square */
+{":F19:[", 0.0, -0.03, 1.5, 1.25, False},    /* 7 - up pointing triangle */
+{":F19:X", 0.0, 0.87, 2.15, 0.67, False},    /* 8 - down pointing triangle */
+{":F19:\\", 0.0, 0.075, 1.0, 1.15, False},   /* 9 - diamond */
+{":F19:`", 0.0, 0.08, 1.5, 1.55, False}, /* 10-left pointing filled triangle */
+{":F19:b", 0.0, 0.08, 1.5, 1.55, False},/* 11-right pointing filled triangle */
+{":F19:]", 0.0, 0.0625, 1.3125, 1.1, False}, /* 12 - five-pointed star */
+{":F19:m", 0.0, 0.0725, 1.3125, 1.1, False}, /* 13 - six-pointed star */
+{":F18:Z", 0.0, 0.0, 1.3125, 0.8, False},    /* 14 - circle with center dot */
+{":F37:[", 0.0, 0.0, 1.3125, 0.8, False},    /* 15 - circle with cross */
+{":F37:Z", 0.0, 0.0, 1.3125, 0.8, False}     /* 16 - filled circle */
+
+};
+
+/* 
+ * The marker table is global to all workstations. It consists of a
+ * dynamically allocated array of pointers to NhlMarkerSpec structs.
+ * Since the marker table may be reallocated when a marker is added, each
+ * workstation is handed not a pointer to the table, but a pointer to
+ * the table pointer.
+ * The marker table length kept here is the actual length of the table
+ * including the 0 element, which does not represent a real marker. The
+ * NhlNwkMarkerTableLength read-only resource equals marker_table_len - 1; 
+ * Allocation for new markers is in chunks, so the amount currently
+ * allocated, and a pointer to the unused elements is also stored.
+ */
+
+
+static NhlMarkerTable marker_table;
+static int marker_table_len;
+static int marker_table_alloc_len;
+
 static NrmQuark colormap_name;
 static NrmQuark colormaplen_name;
 static NrmQuark bkgnd_name;
+static NrmQuark	marker_tbl_strings_name;
+static NrmQuark marker_tbl_params_name;
 
+#define Oset(field) NhlOffset(WorkstationLayerRec,work.field)
 static NhlResource resources[] = {
 	{ NhlNwkColorMap, NhlCwkColorMap, NhlTColorPtr , sizeof(NhlColor*),
-	NhlOffset(WorkstationLayerRec,work.color_map), NhlTImmediate, (NhlPointer)def_color},
+		Oset(color_map), NhlTImmediate, (NhlPointer)def_color},
 	{ NhlNwkColorMapLen, NhlCwkColorMapLen, NhlTInteger, sizeof(int),
-	NhlOffset(WorkstationLayerRec,work.color_map_len), NhlTImmediate, (NhlPointer)(int)(sizeof(def_color)/(sizeof(NhlColor)))},
+		Oset(color_map_len),NhlTImmediate,
+					(NhlPointer)NhlNumber(def_color)},
 	{ NhlNwkBkgndColor, NhlCwkBkgndColor, NhlTColorPtr, sizeof(NhlColor*),
-	NhlOffset(WorkstationLayerRec, work.bkgnd_color), NhlTImmediate, NULL}
+		Oset(bkgnd_color), NhlTImmediate, NULL},
+        { NhlNwkDashPattern, NhlCwkDashPattern, NhlTInteger, sizeof(int),
+		Oset(dash_pattern),NhlTImmediate,(NhlPointer)0},
+        { NhlNwkLineLabel, NhlCwkLineLabel, NhlTString, sizeof(char*),
+                Oset(line_label), NhlTImmediate,(NhlPointer)NULL},
+        { NhlNwkLineThicknessF, NhlCwkLineThicknessF, NhlTFloat, sizeof(float),
+                Oset(line_thickness), NhlTString,"1.0"},
+        { NhlNwkLineLabelFontHeightF, NhlCwkLineLabelFontHeightF, NhlTFloat,
+                sizeof(float),
+                Oset(line_label_font_height), NhlTString,"0.0125" },
+        { NhlNwkLineDashSegLenF, NhlCwkLineDashSegLenF,NhlTFloat, sizeof(float),
+                Oset(line_dash_seglen),NhlTString, ".15" },
+        { NhlNwkLineColor, NhlCwkLineColor,NhlTInteger, sizeof(int),
+                Oset(line_color),NhlTImmediate,(NhlPointer)1},
+	{ NhlNwkDashTableLength, NhlCwkDashTableLength, NhlTInteger, 
+		sizeof(int),Oset(dash_table_len),NhlTImmediate,
+					(NhlPointer)NhlWK_INIT_DASH_TABLE_LEN},
+	{ NhlNwkFillIndex, NhlCwkFillIndex, NhlTInteger, sizeof(int),
+		Oset(fill_index), NhlTImmediate,(NhlPointer)0},
+	{ NhlNwkFillColor, NhlCwkFillColor, NhlTInteger, sizeof(int),
+		Oset(fill_color),NhlTImmediate,(NhlPointer)1},
+	{ NhlNwkFillBackground, NhlCwkFillBackground, NhlTInteger, sizeof(int),
+		  Oset(fill_background), NhlTImmediate,(NhlPointer)-1},
+	{ NhlNwkFillScaleFactorF,NhlCwkFillScaleFactorF,
+		  NhlTFloat,sizeof(float),
+		Oset(fill_scale_factor),NhlTString,"1.0"},
+	{ NhlNwkFillLineThicknessF, NhlCwkFillLineThicknessF, NhlTFloat,
+		sizeof(float),Oset(fill_line_thickness),NhlTString,"1.0"},
+	{ NhlNwkFillTableLength, NhlCwkFillTableLength, NhlTInteger, 
+		sizeof(int),Oset(fill_table_len),NhlTImmediate,
+					(NhlPointer)NhlWK_INIT_FILL_TABLE_LEN},
+	{ NhlNwkDrawEdges, NhlCwkDrawEdges, NhlTInteger, sizeof(int),
+		Oset(edges_on),NhlTString,"0"},
+        { NhlNwkEdgeDashPattern, NhlCwkEdgeDashPattern, NhlTInteger,sizeof(int),
+		Oset(edge_dash_pattern),NhlTString,"0"},
+        { NhlNwkEdgeThicknessF, NhlCwkEdgeThicknessF, NhlTFloat,sizeof(float),
+		Oset(edge_thickness),NhlTString,"1.0"},
+        { NhlNwkEdgeDashSegLenF, NhlCwkEdgeDashSegLenF,NhlTFloat,sizeof(float),
+		Oset(edge_dash_seglen),NhlTString,".15" },
+        { NhlNwkEdgeColor, NhlCwkEdgeColor,NhlTInteger, sizeof(int),
+		Oset(edge_color),NhlTString,"1"},
+
+	{ NhlNwkMarkerTableLength, NhlCwkMarkerTableLength, NhlTInteger, 
+		  sizeof(int),Oset(marker_table_len),NhlTImmediate,
+		  (NhlPointer)NhlWK_INIT_MARKER_TABLE_LEN},
+	{ NhlNwkMarkerTableStrings, NhlCwkMarkerTableStrings, NhlTStringPtr,
+		  sizeof(NhlString *),Oset(marker_table_strings),NhlTImmediate,
+		  (NhlPointer)NULL},
+	{ NhlNwkMarkerTableParams, NhlCwkMarkerTableParams, 
+		  NhlTMarkerTableParamsPtr, sizeof(NhlMarkerTableParams *),
+		  Oset(marker_table_params), NhlTImmediate,
+		  (NhlPointer)NULL},
+	{ NhlNwkMarkerIndex, NhlCwkMarkerIndex, NhlTInteger, sizeof(int),
+		  Oset(marker_index), NhlTImmediate,(NhlPointer)3},
+        { NhlNwkMarkerString, NhlCwkMarkerString, NhlTString, sizeof(char*),
+                Oset(marker_string), NhlTImmediate,(NhlPointer)NULL},
+	{ NhlNwkMarkerColor, NhlCwkMarkerColor, NhlTInteger, sizeof(int),
+		  Oset(marker_color),NhlTImmediate,(NhlPointer)1},
+	{ NhlNwkMarkerSizeF,NhlCwkMarkerSizeF,
+		  NhlTFloat,sizeof(float),
+		  Oset(marker_size),NhlTString,"0.007"},
+	{ NhlNwkMarkerXOffsetF,NhlCwkMarkerXOffsetF,
+		  NhlTFloat,sizeof(float),
+		  Oset(marker_x_off),NhlTString,"0.0"},
+	{ NhlNwkMarkerYOffsetF,NhlCwkMarkerYOffsetF,
+		  NhlTFloat,sizeof(float),
+		  Oset(marker_y_off),NhlTString,"0.0"},
+	{ NhlNwkMarkerThicknessF, NhlCwkMarkerThicknessF, NhlTFloat,
+		  sizeof(float),Oset(marker_thickness),NhlTString,"1.0"},
+	{ NhlNwkDrawMarkerLines, NhlCwkDrawMarkerLines, 
+		  NhlTInteger, sizeof(int),
+		  Oset(marker_lines_on),NhlTString,"0"},
+        { NhlNwkMarkerLineDashPattern, NhlCwkMarkerLineDashPattern, 
+		  NhlTInteger,sizeof(int),
+		  Oset(marker_line_dash_pattern),NhlTString,"0"},
+        { NhlNwkMarkerLineThicknessF, NhlCwkMarkerLineThicknessF, 
+		  NhlTFloat,sizeof(float),
+		  Oset(marker_line_thickness),NhlTString,"1.0"},
+	{ NhlNwkMarkerLineDashSegLenF, NhlCwkMarkerLineDashSegLenF,
+		  NhlTFloat,sizeof(float),
+		  Oset(marker_line_dash_seglen),NhlTString,".15" },
+        { NhlNwkMarkerLineColor, NhlCwkMarkerLineColor,NhlTInteger, 
+		  sizeof(int),
+		  Oset(marker_line_color),NhlTString,"1"},
 };
 
 /*
@@ -264,6 +436,32 @@ static NhlErrorTypes WorkstationClear(
 #endif
 );
 
+static NhlErrorTypes WorkstationLineTo(
+#if 	NhlNeedProto
+	Layer	l,
+	float	x,
+	float 	y,
+	int	upordown
+#endif
+);
+
+static NhlErrorTypes WorkstationFill(
+#if 	NhlNeedProto
+	Layer	l,
+	float	*x,
+	float 	*y,
+	int	num_points
+#endif
+);
+
+static NhlErrorTypes WorkstationMarker(
+#if 	NhlNeedProto
+	Layer	l,
+	float	*x,
+	float 	*y,
+	int	num_points
+#endif
+);
 
 /*
 * Private functions
@@ -287,27 +485,33 @@ Layer	/* instance */
 
 WorkstationLayerClassRec workstationLayerClassRec = {
         {
-/* superclass			*/	(LayerClass)&baseLayerClassRec,
 /* class_name			*/	"Workstation",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(WorkstationLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(LayerClass)&baseLayerClassRec,
+
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
-/* child_resources		*/	NULL,
 /* all_resources		*/	NULL,
+
 /* class_part_initialize	*/	WorkstationClassPartInitialize,
-/* class_inited			*/	False,
 /* class_initialize		*/	WorkstationClassInitialize,
 /* layer_initialize		*/	WorkstationInitialize,
 /* layer_set_values		*/	WorkstationSetValues,
-/* layer_set_values_not		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	WorkstationGetValues,
-/* layer_pre_draw		*/	NULL,
+/* layer_reparent		*/	NULL,
+/* layer_destroy		*/	WorkstationDestroy,
+
+/* child_resources		*/	NULL,
+
 /* layer_draw			*/	NULL,
+
+/* layer_pre_draw		*/	NULL,
 /* layer_draw_segonly		*/	NULL,
 /* layer_post_draw		*/	NULL,
-/* layer_clear			*/	NULL,
-/* layer_destroy		*/	WorkstationDestroy
+/* layer_clear			*/	NULL
         },
 	{
 /* open_work		*/	WorkstationOpen,
@@ -315,7 +519,10 @@ WorkstationLayerClassRec workstationLayerClassRec = {
 /* activate_work	*/	WorkstationActivate,
 /* deactivate_work	*/	WorkstationDeactivate,
 /* update_work		*/	WorkstationUpdate,
-/* clear_work		*/	WorkstationClear
+/* clear_work		*/	WorkstationClear,
+/* lineto_work 		*/	WorkstationLineTo,
+/* fill_work		*/	WorkstationFill,
+/* marker_work		*/	WorkstationMarker
 	}
 };
 
@@ -340,12 +547,15 @@ static NhlErrorTypes WorkstationClassInitialize()
 {
 	Gop_st status;
 	int status1,dummy = 6;
+	int i;
 
 	(void)NrmStringToQuark(NhlTColorPtr);
 	(void)NrmStringToQuark(NhlTColor);
 	colormap_name = NrmStringToQuark(NhlNwkColorMap);
 	colormaplen_name = NrmStringToQuark(NhlNwkColorMapLen);
 	bkgnd_name = NrmStringToQuark(NhlNwkBkgndColor);
+	marker_tbl_strings_name = NrmStringToQuark(NhlNwkMarkerTableStrings);
+	marker_tbl_params_name = NrmStringToQuark(NhlNwkMarkerTableParams);
 
 	ginq_op_st(&status);
 
@@ -355,10 +565,32 @@ static NhlErrorTypes WorkstationClassInitialize()
 * which is the first parameter of the gopks call.
 */
 		status1 = 0;
-/* FORTRAN */ gopks_(&dummy,&status1);
+/* FORTRAN */ _NHLCALLF(gopks,GOPKS)(&dummy,&status1);
 	}
 	
+/*
+ * The 0 entry for the marker array holds some default values; it is
+ * not a real marker; the MarkerTableLength resource that the user can
+ * look at does not include this entry. Note that there must be
+ * NhlWK_INIT_MARKER_TABLE_LEN + 1 entries in the marker_specs array.
+ */
+
+	marker_table_len = NhlWK_INIT_MARKER_TABLE_LEN + 1;
+	marker_table_alloc_len = marker_table_len;
 	
+/*
+ * Allocate the marker table
+ */
+	marker_table = (NhlMarkerTable) NhlMalloc(marker_table_len * 
+						  sizeof(NhlMarkerSpec *));
+	if (marker_table == NULL) {
+		NhlPError(FATAL,E_UNKNOWN,
+			  "WorkstationClassInitialize: NhlMalloc failed");
+		return FATAL;
+	}
+	for (i = 0; i < marker_table_len; i++) {
+		marker_table[i] = &marker_specs[i];
+	}
 	
 	return(NOERROR);
 }
@@ -400,6 +632,14 @@ WorkstationClassPartInitialize
 		lc->work_class.clear_work = sc->work_class.clear_work;
 	}
 
+	if(lc->work_class.fill_work == NhlInheritFill){
+		lc->work_class.fill_work = sc->work_class.fill_work;
+	}
+
+	if(lc->work_class.marker_work == NhlInheritMarker){
+		lc->work_class.marker_work = sc->work_class.marker_work;
+	}
+
 	return NOERROR;
 }
 
@@ -436,7 +676,31 @@ static NhlErrorTypes WorkstationInitialize
 	NhlColor* tmp;
 	int i;
 	NhlErrorTypes retcode = NOERROR;
-	
+
+/* 
+ * In case someone tries to set the value of the read-only fill table size
+ * the actual size is maintained in a private variable. If the resource
+ * has been set, issue a warning, then replace with the real value.
+ */
+	newl->work.real_fill_table_len = NhlWK_INIT_FILL_TABLE_LEN;
+	if (_NhlArgIsSet(args,num_args,NhlNwkFillTableLength)) {
+		NhlPError(WARNING,E_UNKNOWN,
+			  "Attempt to set read-only resource ignored");
+		retcode = MIN(WARNING, retcode);
+	}
+	newl->work.fill_table_len = newl->work.real_fill_table_len;
+
+/*
+ * Handle marker resources
+ */
+
+	if (_NhlArgIsSet(args,num_args,NhlNwkMarkerTableLength)) {
+		NhlPError(WARNING,E_UNKNOWN,
+			  "Attempt to set read-only resource ignored");
+		retcode = MIN(WARNING, retcode);
+	}
+	newl->work.marker_table_len = marker_table_len - 1;
+
 	newl->work.gkswksid = (int)FATAL;
 	newl->work.gkswkstype = (int)FATAL;
 	newl->work.gkswksconid = (int)FATAL;
@@ -454,9 +718,7 @@ static NhlErrorTypes WorkstationInitialize
 * If the background is not set at initialize it is set to black. The back
 * ground color is a set once at create time resource
 */
-	/* SUPPRESS 112 */
 	if(newl->work.bkgnd_color != NULL) {
-		/* SUPPRESS 112 */
 		tmp = newl->work.bkgnd_color;
 /*
 * this may change when defaults work. Specifically a malloc may not be needed.
@@ -482,7 +744,6 @@ static NhlErrorTypes WorkstationInitialize
 * Need to process Color Map checking to see if it is null is just temporary
 * until the defaults work
 */
-	/* SUPPRESS 112 */
 	if(newl->work.color_map != NULL) {
 		if(newl->work.color_map_len >= MAX_COLOR_MAP) {
 /*
@@ -490,7 +751,7 @@ static NhlErrorTypes WorkstationInitialize
 * Since the background color is a resource then the actual number of aceptable
 * colors is MAX_COLOR_MAP - 1
 */
-			retcode = WARNING;
+			retcode = MIN(WARNING, retcode);
 		}
 		newl->work.num_private_colors = ((newl->work.color_map_len < (MAX_COLOR_MAP ))? newl->work.color_map_len +1 : MAX_COLOR_MAP );
 		for(i = 1; i < newl->work.num_private_colors; i++)  {
@@ -500,13 +761,10 @@ static NhlErrorTypes WorkstationInitialize
 * and hence the need for the ci field.
 */
 			newl->work.private_color_map[i].ci = SETALMOST;
-			/* SUPPRESS 112 */
 			newl->work.private_color_map[i].red = 
 						newl->work.color_map[i-1].red;
-			/* SUPPRESS 112 */
 			newl->work.private_color_map[i].green = 
 						newl->work.color_map[i-1].green;
-			/* SUPPRESS 112 */
 			newl->work.private_color_map[i].blue = 
 						newl->work.color_map[i-1].blue;
 		}
@@ -515,8 +773,16 @@ static NhlErrorTypes WorkstationInitialize
 * ERROR IF NO COLOR MAP EXISTS AT ALL!!!
 */
 		NhlPError(FATAL,E_UNKNOWN,"No color map provided to worksation and not able to default yet");
-		retcode = FATAL;
+		return(FATAL);
 	}
+
+        if(newl->work.line_label != NULL) {
+		char *tmp;
+                tmp = (char*)NhlMalloc((unsigned)strlen(newl->work.line_label)+1);
+                strcpy(tmp,newl->work.line_label);
+                newl->work.line_label = tmp;
+        }
+
 	return(retcode);
 }
 
@@ -595,7 +861,30 @@ static NhlErrorTypes    WorkstationSetValues
 	int i;
 	WorkstationLayer	oldl = (WorkstationLayer) old;
 	NhlErrorTypes	retcode = NOERROR,retcode1 = NOERROR;
+	char *tmp;
 
+/*
+ * Check to ensure that no one has messed with the read only fill table
+ * size.
+ */
+	if (newl->work.fill_table_len != newl->work.real_fill_table_len) {
+		NhlPError(WARNING,E_UNKNOWN,
+			  "Attempt to set read-only resource ignored");
+		retcode = MIN(WARNING, retcode);
+		newl->work.fill_table_len = newl->work.real_fill_table_len;
+	}
+
+/*
+ * Check to ensure that no one has messed with the read only marker table
+ * size.
+ */
+	if (newl->work.marker_table_len != marker_table_len - 1) { 
+		NhlPError(WARNING,E_UNKNOWN,
+			  "Attempt to set read-only resource ignored");
+		retcode = MIN(WARNING, retcode);
+		newl->work.marker_table_len = 
+			marker_table_len - 1;
+	}
 
 /*
 * -----------> Issue since the color_map field is not directly used by any
@@ -638,6 +927,19 @@ static NhlErrorTypes    WorkstationSetValues
 	if(retcode != NOERROR)
 		retcode1 = retcode;
 	retcode = AllocateColors((Layer)newl);
+        if( (oldl->work.line_label != newl->work.line_label)) {
+
+                if(oldl->work.line_label != NULL){
+                        NhlFree(oldl->work.line_label);
+                        oldl->work.line_label = NULL;
+                }
+                if(newl->work.line_label != NULL) {
+                        tmp = (char*)NhlMalloc((unsigned)strlen(newl->work.line_label)+1);
+                        strcpy(tmp,newl->work.line_label);
+                        newl->work.line_label = tmp;
+                }
+        }
+
 	return((retcode < retcode1)? retcode : retcode1);
 }
 
@@ -774,7 +1076,7 @@ static NhlErrorTypes WorkstationOpen
 	}
 	thework->work.gkswksid = i;
 
-/* FORTRAN */ gopwk_(&(thework->work.gkswksid),&(thework->work.gkswksconid),&(thework->work.gkswkstype));
+/* FORTRAN */ _NHLCALLF(gopwk,GOPWK)(&(thework->work.gkswksid),&(thework->work.gkswksconid),&(thework->work.gkswkstype));
 	gset_clip_ind(GIND_NO_CLIP);
 
 	retcode = AllocateColors((Layer)thework);
@@ -1136,7 +1438,13 @@ int _NhlNewColor
  *
  * Return Values:
  *
- * Side Effects:
+ * Side Effects: 
+ *	Memory is allocated when the following resources are retrieved:
+ *		NhlNwkColorMap
+ *		NhlNwkBkgndColor
+ *		NhlNwkMarkerTableStrings
+ *		NhlNwkMarkerTableParams
+ *	The user is responsible for freeing this memory.
  */
 
 static NhlErrorTypes	WorkstationGetValues
@@ -1153,6 +1461,8 @@ static NhlErrorTypes	WorkstationGetValues
 	int i,j;
 	NhlColor* tmp;
 	NhlPrivateColor *private;
+	NhlMarkerTableParams *mtp_p;
+	char **c_pp;
 
 	for( i = 0; i< num_args; i++ ) {
 		if(args[i].quark == colormap_name) {
@@ -1160,19 +1470,50 @@ static NhlErrorTypes	WorkstationGetValues
 			
 			tmp = (NhlColor*)NhlMalloc(wl->work.num_private_colors
 					*sizeof(NhlColor) - 1);
-			*((NhlColor**)(args[i].value)) = tmp;
 			for(j = 0; j< wl->work.num_private_colors -1; j++) {
 				tmp[j].red = private[j + 1].red;
 				tmp[j].green = private[j + 1].green;
 				tmp[j].blue = private[j + 1].blue;
 			}
+			*((NhlColor**)(args[i].value)) = tmp;
 		} else if (args[i].quark == colormaplen_name) {
-			*((int*)args[i].value) = wl->work.num_private_colors -1;
+			*((int*)args[i].value) = 
+				wl->work.num_private_colors -1;
 		} else if (args[i].quark == bkgnd_name) {
 			tmp = (NhlColor*) NhlMalloc(sizeof(NhlColor));
-			tmp->red = wl->work.private_color_map[BACKGROUND].red;
-			tmp->green=wl->work.private_color_map[BACKGROUND].green;
-			tmp->blue= wl->work.private_color_map[BACKGROUND].blue;
+			tmp->red = 
+				wl->work.private_color_map[BACKGROUND].red;
+			tmp->green=
+				wl->work.private_color_map[BACKGROUND].green;
+			tmp->blue= 
+				wl->work.private_color_map[BACKGROUND].blue;
+			*((NhlColor **)(args[i].value)) = tmp;
+
+		} else if (args[i].quark == marker_tbl_strings_name) {
+			c_pp = (char **) 
+				NhlMalloc(wl->work.marker_table_len *
+					  sizeof(char *));
+			for (j=0; j<wl->work.marker_table_len; j++) {
+				c_pp[j] = (char *) 
+					NhlMalloc(strlen(
+					      marker_table[j+1]->marker) + 1);
+				strcpy(c_pp[j], marker_table[j+1]->marker);
+			}
+			*(char ***)args[i].value =  c_pp;
+
+		} else if (args[i].quark == marker_tbl_params_name) {
+			mtp_p = (NhlMarkerTableParams *)
+				NhlMalloc(wl->work.marker_table_len *
+					  sizeof(NhlMarkerTableParams));
+			for (j=0; j<wl->work.marker_table_len; j++) {
+				mtp_p[j].x_off = marker_table[j+1]->x_off;
+				mtp_p[j].y_off = marker_table[j+1]->y_off;
+				mtp_p[j].aspect_adj = 
+					marker_table[j+1]->aspect_adj;
+				mtp_p[j].size_adj = 
+					marker_table[j+1]->size_adj;
+			}
+			*(NhlMarkerTableParams **)args[i].value = mtp_p;
 		}
 	}
 	return(NOERROR);
@@ -1707,3 +2048,835 @@ NhlErrorTypes	NhlFrame
 	ret1 = NhlClearWorkstation(wid);
 	return(MIN(ret,ret1));
 }
+
+/*ARGSUSED*/
+void _NhlSetLineInfo
+#if  __STDC__
+(Layer instance,Layer plot)
+#else
+(instance,plot)
+        Layer instance;
+        Layer plot;
+#endif
+{
+        WorkstationLayer tinst = (WorkstationLayer)instance;
+        float   fl,fr,fb,ft,ul,ur,ub,ut;
+        float  y0,y1,x0,x1;
+        int ll,i;
+        char buffer[80];
+
+        for(i = 0; i< 80; i++)
+                buffer[i] = '\0';
+
+        c_sflush();
+
+        c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+
+        y0 = fb;
+        y1 = fb + tinst->work.line_label_font_height;
+        y0 = (float)c_kfpy(y0);
+        y1 = (float)c_kfpy(y1);
+
+        tinst->work.char_size = (int) (y1 - y0);
+        if(tinst->work.char_size < 4) {
+                tinst->work.char_size = 4;
+        }
+        x0 = fl;
+        x1 = fl + tinst->work.line_dash_seglen;
+        x0 = (float)c_kfpy(x0);
+        x1 = (float)c_kfpy(x1);
+
+        tinst->work.dash_dollar_size = (int)((x1-x0)/
+                strlen(dash_patterns[(tinst->work.dash_pattern-1)%16])+.5);
+        if(tinst->work.dash_dollar_size < 1)
+                        tinst->work.dash_dollar_size = 1;
+
+        strcpy(buffer,dash_patterns[(tinst->work.dash_pattern-1)%16]);
+        if(tinst->work.line_label != NULL) {
+                  strcpy(&(buffer[strlen(dash_patterns[(tinst->work.dash_pattern-1)%16])
+                        - strlen(tinst->work.line_label)]) ,
+                        tinst->work.line_label);
+        }
+        gset_line_colr_ind((Gint)_NhlGetGksCi(plot->base.wkptr,tinst->work.line_color));
+
+        gset_linewidth(tinst->work.line_thickness);
+        c_dashdc(buffer,tinst->work.dash_dollar_size,tinst->work.char_size);
+        return;
+}
+
+
+/*ARGSUSED*/
+static NhlErrorTypes WorkstationLineTo
+#if  __STDC__
+(Layer l,float x,float y,int upordown)
+#else
+(l,x,y,upordown)
+	Layer l;
+	float x;
+	float y;
+	int upordown;
+#endif
+{
+	static float lastx,lasty;
+	static first = 0;
+	int ix0,iy0,ix1,iy1;
+
+	if(upordown == 1) {
+		lastx = x;
+		lasty = y;
+/* FORTRAN*/    _NHLCALLF(lastd,LASTD)();
+		first = 1;
+		return(NOERROR);
+	} else {
+		if(first == 1) {
+			ix0 = c_kfmx(lastx);
+			iy0 = c_kfmy(lasty);
+/* FORTRAN */		_NHLCALLF(cfvld,CFVLD)(&first,&ix0,&iy0);
+			first = 2;
+		}
+		ix1 = c_kfmx(x);
+		iy1 = c_kfmy(y);
+/* FORTRAN */   _NHLCALLF(cfvld,CFVLD)(&first,&ix1,&iy1);
+		lastx = x;
+		lasty = y;
+		return(NOERROR);
+	}
+}
+
+NhlErrorTypes CallWorkLineTo
+#if  __STDC__
+(LayerClass lc, Layer instance,  float x, float y, int upordown)
+#else
+(lc, instance,  x, y, upordown)
+LayerClass lc;
+Layer instance;
+float x;
+float y;
+int upordown;
+#endif
+{
+        WorkstationLayerClass tlc = (WorkstationLayerClass)lc;
+
+        if(tlc->work_class.lineto_work == NULL){
+                if(tlc->base_class.superclass != NULL) {
+                        return(CallWorkLineTo(lc->base_class.superclass,instance,x,y,upordown));
+                } else {
+                        NhlPError(WARNING,E_UNKNOWN,"_NhlWorkstationLineTo: Transformation object of type (%s) does not have lineto_work function",tlc->base_class.class_name);
+                        return(WARNING);
+                }
+        } else {
+                return((*tlc->work_class.lineto_work)(instance,x,y,upordown));
+        }
+}
+
+NhlErrorTypes _NhlWorkstationLineTo
+#if __STDC__
+(Layer instance, float x, float y, int upordown)
+#else
+(instance,x,y,upordown)
+Layer instance;
+float   x;
+float y;
+int upordown;
+#endif
+{
+        return(CallWorkLineTo(instance->base.layer_class,instance,x,y,upordown));
+}
+
+
+/*ARGSUSED*/
+void _NhlSetFillInfo
+#if  __STDC__
+(Layer instance,Layer plot)
+#else
+(instance,plot)
+        Layer instance;
+        Layer plot;
+#endif
+{
+        WorkstationLayer tinst = (WorkstationLayer)instance;
+	WorkstationLayerPart *wk_p = &tinst->work;
+        float   fl,fr,fb,ft,ul,ur,ub,ut;
+        float  x0,x1;
+        int ll,ix;
+        char buffer[80];
+
+
+	if (wk_p->edges_on && (wk_p->edge_dash_pattern % 16) > 0) {
+		memset((void *) buffer, 0, 80 * sizeof(char));
+
+		c_sflush();
+
+		c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+
+		x0 = fl;
+		x1 = fl + wk_p->edge_dash_seglen;
+		x0 = (float)c_kfpy(x0);
+		x1 = (float)c_kfpy(x1);
+	
+		ix = wk_p->edge_dash_pattern % 16;
+		wk_p->edge_dash_dollar_size = (x1 - x0) /
+			strlen(dash_patterns[ix]) + 0.5;
+		if(wk_p->edge_dash_dollar_size < 1)
+                        wk_p->edge_dash_dollar_size = 1;
+		
+		strcpy(buffer,dash_patterns[ix]);
+		
+		c_dashdc(buffer,wk_p->edge_dash_dollar_size,1);
+	}
+
+/*
+ * Make sure the scale factor is okay
+ */
+	if (wk_p->fill_scale_factor <= 0.0) {
+		/* WARNING - but it's a void function right now */
+		NhlPError(WARNING,E_UNKNOWN,
+		"_NhlSetFillInfo: fill scale factor must be greater than 0.0");
+		wk_p->fill_scale_factor = 1.0;
+	}
+/*
+ * An out-of-bounds fill index should have been caught at a higher
+ * level. Silently set to hollow fill.
+ */
+
+	if ((ix = wk_p->fill_index) > wk_p->fill_table_len ||
+	    ix < NhlHOLLOWFILL) {
+		/* WARNING - but it's a void function right now */
+		NhlPError(WARNING,E_UNKNOWN,
+			   "_NhlSetFillInfo: invalid fill index");
+		wk_p->fill_index = NhlHOLLOWFILL;
+
+	}
+	else if (wk_p->fill_index != NhlHOLLOWFILL) {
+		c_sfseti("AN", fill_specs[ix].angle);
+		c_sfsetr("SP", fill_specs[ix].spacing * 
+			 wk_p->fill_scale_factor);
+	}
+
+        return;
+}
+
+
+static NhlErrorTypes WorkstationFill
+#if  __STDC__
+(Layer l,float *x,float *y,int num_points)
+#else
+(l,x,y,num_points)
+	Layer l;
+	float *x;
+	float *y;
+	int num_points;
+#endif
+{
+        WorkstationLayer inst = (WorkstationLayer)l;
+	WorkstationLayerPart *wk_p = &inst->work;
+	static int first = 1;
+	static float *dst;
+	static int *ind;
+	static int msize;
+	static int nst, nnd;
+        float   fl,fr,fb,ft,ul,ur,ub,ut;
+	int ll, i;
+	Gfill_int_style save_fillstyle;
+	Gint save_linecolor;
+	Gint save_linetype;
+	Gdouble save_linewidth;
+	Gint err_ind;
+	Gint fill_color;
+	Gint fill_background;
+
+/* 
+ * Create or enlarge the workspace arrays as required
+ */
+
+	if (first) {
+		msize = MAX(num_points,NhlWK_INITIAL_FILL_BUFSIZE);
+		nst = 2 * msize;
+		nnd = 3 * msize;
+		dst = (float *)NhlMalloc(nst * sizeof(float));
+		ind = (int *)NhlMalloc(nnd * sizeof(int));
+		first = 0;
+		if (dst == NULL || ind == NULL) {
+			NhlPError(FATAL,E_UNKNOWN,
+			   "WorkstationFill: workspace allocation failed");
+			return(FATAL);
+		}
+	}
+	else if (msize < num_points) {
+		msize = num_points;
+		nst = 2 * msize;
+		nnd = 3 * msize;
+		dst = (float *)NhlRealloc(dst, nst * sizeof(float));
+		ind = (int *)NhlRealloc(ind, nnd * sizeof(int));
+		if (dst == NULL || ind == NULL) {
+			NhlPError(FATAL,E_UNKNOWN,
+			    "WorkstationFill: workspace allocation failed");
+			return(FATAL);
+		}
+	}
+
+/*
+ * Make the user space coincide with the NDC space for the
+ * duration of the routine
+ */
+	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
+/*
+ * Save attributes that may be modified
+ */
+	ginq_line_colr_ind(&err_ind, &save_linecolor);
+	ginq_linewidth(&err_ind, &save_linewidth);
+	ginq_fill_int_style(&err_ind, &save_fillstyle);
+	ginq_linetype(&err_ind, &save_linetype);
+	fill_color = _NhlGetGksCi(inst->base.wkptr, wk_p->fill_color);
+	fill_background = (wk_p->fill_background < 0) ?
+		wk_p->fill_background :
+			_NhlGetGksCi(inst->base.wkptr, wk_p->fill_background);
+
+/*
+ * Draw the fill, unless a negative fill index is specified
+ * (implying no fill)
+ */
+	if ((i = wk_p->fill_index) == NhlSOLIDFILL) {
+		/* fill_specs[i].type  must be 0 */
+		gset_fill_int_style(1);
+		gset_linewidth(wk_p->fill_line_thickness);
+		c_sfseti("type of fill", 0);
+		c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,fill_color);
+	}
+	else if (i > 0) {
+		/* fill_specs[i].type must not be 0 */
+		if (fill_background >= 0) {
+			gset_linewidth(1.0);
+			gset_fill_int_style(1);
+			c_sfseti("type of fill", 0);
+			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,
+				 fill_background);
+		}
+		gset_linewidth(wk_p->fill_line_thickness);
+		c_sfseti("TY", fill_specs[i].type);
+		if (fill_specs[i].type > 0) { 
+ 			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,fill_color);
+		}
+		else {
+			gset_line_colr_ind(fill_color);
+ 			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,
+				 fill_specs[i].ici);
+		}
+	}
+
+/*
+ * Draw the edges
+ */
+	if (wk_p->edges_on) {
+		gset_line_colr_ind((Gint)_NhlGetGksCi(inst->base.wkptr,
+						      wk_p->edge_color));
+		
+		gset_linewidth(wk_p->edge_thickness);
+		if (wk_p->edge_dash_pattern > 0) {
+			c_curved(x,y,num_points);
+		}
+		else {
+			c_curve(x,y,num_points);
+		}
+	}
+
+/*
+ * Restore state
+ */
+
+	gset_line_colr_ind(save_linecolor);
+	gset_linewidth(save_linewidth);
+	gset_fill_int_style(save_fillstyle);
+	gset_linetype(save_linetype);
+
+	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
+
+	return(NOERROR);
+
+}
+
+NhlErrorTypes CallWorkstationFill
+#if  __STDC__
+(LayerClass lc, Layer instance,  float *x, float *y, int num_points)
+#else
+(lc, instance,  x, y, num_points)
+LayerClass lc;
+Layer instance;
+float *x;
+float *y;
+int num_points;
+#endif
+{
+        WorkstationLayerClass tlc = (WorkstationLayerClass)lc;
+
+        if(tlc->work_class.fill_work == NULL){
+                if(tlc->base_class.superclass != NULL) {
+                        return(CallWorkstationFill(lc->base_class.superclass,
+						   instance,x,y,num_points));
+                } else {
+                        NhlPError(WARNING,E_UNKNOWN,"_NhlWorkstationFill: Transformation object of type (%s) does not have fill_work function",
+				  tlc->base_class.class_name);
+                        return(WARNING);
+                }
+        } else {
+                return((*tlc->work_class.fill_work)(instance,x,y,num_points));
+        }
+}
+
+NhlErrorTypes _NhlWorkstationFill
+#if __STDC__
+(Layer instance, float *x, float *y, int num_points)
+#else
+(instance,x,y,num_points)
+Layer instance;
+float   *x;
+float *y;
+int num_points;
+#endif
+{
+        return(CallWorkstationFill(instance->base.layer_class,
+				   instance,x,y,num_points));
+}
+
+
+/*
+ * Adds a marker definition to the marker table and returns an index to
+ * this marker. 
+ */
+/*ARGSUSED*/
+int NhlNewMarker
+#if  __STDC__
+(Layer instance, 
+ char *marker_string, 
+ float x_off, 
+ float y_off,
+ float aspect_adj,
+ float size_adj)
+#else
+(instance,marker_string,x_off,y_off,aspect_adj,size_adj)
+        Layer instance;
+	char *marker_string; 
+	float x_off; 
+	float y_off;
+	float aspect_adj;
+	float size_adj;
+#endif
+{
+        WorkstationLayer tinst = (WorkstationLayer)instance;
+	WorkstationLayerPart *wk_p = &tinst->work;
+	NhlMarkerSpec *m_p;
+	int i;
+
+	if (marker_table_len == marker_table_alloc_len) {
+		marker_table_alloc_len += NhlWK_ALLOC_UNIT;
+		marker_table = (NhlMarkerTable) 
+			NhlRealloc(marker_table, 
+				   marker_table_alloc_len *
+				   sizeof(NhlMarkerSpec *));
+		if (marker_table == NULL) {
+			NhlPError(FATAL,E_UNKNOWN,
+			     "_NhlNewMarker: marker table realloc failed");
+			return((int)FATAL);
+		}
+		m_p = (NhlMarkerSpec *)
+			NhlMalloc(NhlWK_ALLOC_UNIT * sizeof(NhlMarkerSpec));
+		if (m_p == NULL) {
+			NhlPError(FATAL,E_UNKNOWN,
+			     "_NhlNewMarker: marker specs alloc failed");
+			return((int)FATAL);
+		}
+		for (i=marker_table_len; i<marker_table_alloc_len; i++) {
+			marker_table[i] = &m_p[i - marker_table_len];
+		}
+	}
+/*
+ * If the marker string is NULL use the default marker string
+ */
+		
+	marker_table_len += 1;
+	wk_p->marker_table_len = marker_table_len - 1;
+	m_p = marker_table[marker_table_len - 1];
+
+	if (marker_string == NULL) {
+		marker_string = marker_table[NhlWK_DEF_MARKER]->marker;
+        }
+	if ((m_p->marker = NhlMalloc(strlen(marker_string) + 1)) == NULL) {
+		NhlPError(FATAL,E_UNKNOWN,
+			  "_NhlNewMarker: marker string alloc failed");
+		return((int)FATAL);
+	}
+	strcpy(m_p->marker, marker_string);
+	
+	if (x_off < 1.0 && x_off > -1.0)  
+		m_p->x_off = x_off;
+	else
+		m_p->x_off = marker_specs[0].x_off;
+
+	if (y_off < 1.0 && y_off > -1.0)
+		m_p->y_off = y_off;
+	else
+		m_p->y_off = marker_specs[0].y_off;
+
+	if (aspect_adj > 0.0)
+		m_p->aspect_adj = aspect_adj;
+	else
+		m_p->aspect_adj = marker_specs[0].aspect_adj;
+
+	if (size_adj > 0.0)
+		m_p->size_adj = size_adj;
+	else
+		m_p->size_adj = marker_specs[0].size_adj;
+
+	/* added markers are always dynamic */
+	m_p->dynamic = True;
+
+	return (wk_p->marker_table_len); 
+	
+}
+
+
+/*
+ * Allows modification of the characteristics of an existing marker, 
+ * whether pre-defined or added using NhlNewMarker.
+ */
+/*ARGSUSED*/
+NhlErrorTypes NhlSetMarker
+#if  __STDC__
+(Layer instance, 
+ int	index,
+ char	*marker_string, 
+ float	x_off, 
+ float	y_off,
+ float	aspect_adj,
+ float	size_adj)
+#else
+(instance,index,marker_string,x_off,y_off,aspect_adj,size_adj)
+        Layer instance;
+	int   index;
+	char *marker_string; 
+	float x_off; 
+	float y_off;
+	float aspect_adj;
+	float size_adj;
+#endif
+{
+	NhlMarkerSpec *m_p;
+	char *c_p;
+
+	if (index <= 0 || index > marker_table_len) {
+		NhlPError(WARNING,E_UNKNOWN,
+			  "_NhlEditMarker: invalid marker index");
+		return(WARNING);
+	}
+
+	m_p = marker_table[index];
+
+/* 
+ * If the marker is one of the initial statically defined markers, make
+ * a copy. This will allow the default markers to be restored if a method
+ * of restoring defaults is implemented. All marker entries will have the
+ * dynamic flag set true by the time this routine exits.
+ */
+	if (! m_p->dynamic) {
+		if ((m_p = (NhlMarkerSpec *) 
+		    NhlMalloc(sizeof(NhlMarkerSpec))) == NULL) {
+			NhlPError(FATAL,E_UNKNOWN,
+			      "_NhlEditMarker: marker alloc failed");
+			return(FATAL);
+		}
+		memcpy((void *) m_p, (const void *) marker_table[index],
+			sizeof(NhlMarkerSpec));
+		marker_table[index] = m_p;
+	}
+		
+	if (marker_string != NULL || 
+	    strcmp(marker_string, m_p->marker)) {
+		    if ((c_p = NhlMalloc(strlen(marker_string)+ 1 )) == NULL) {
+			    NhlPError(FATAL,E_UNKNOWN,
+				 "_NhlEditMarker: marker string alloc failed");
+			    return(FATAL);
+		    }
+		    strcpy(c_p, marker_string);
+		    if (m_p->dynamic) 
+			    NhlFree(m_p->marker);
+		    m_p->marker = c_p;
+	}
+	m_p->dynamic = True;
+
+	if (x_off < 1.0 && x_off > -1.0)  
+		m_p->x_off = x_off;
+	else
+		m_p->x_off = marker_specs[0].x_off;
+
+	if (y_off < 1.0 && y_off > -1.0)
+		m_p->y_off = y_off;
+	else
+		m_p->y_off = marker_specs[0].y_off;
+
+	if (aspect_adj > 0.0)
+		m_p->aspect_adj = aspect_adj;
+	else
+		m_p->aspect_adj = marker_specs[0].aspect_adj;
+
+	if (size_adj > 0.0)
+		m_p->size_adj = size_adj;
+	else
+		m_p->size_adj = marker_specs[0].size_adj;
+
+	return (NOERROR); 
+	
+}
+
+/*ARGSUSED*/
+void _NhlSetMarkerInfo
+#if  __STDC__
+(Layer instance,Layer plot)
+#else
+(instance,plot)
+        Layer instance;
+        Layer plot;
+#endif
+{
+        WorkstationLayer tinst = (WorkstationLayer)instance;
+	WorkstationLayerPart *wk_p = &tinst->work;
+        float   fl,fr,fb,ft,ul,ur,ub,ut;
+        float  x0,x1;
+        int ll,ix;
+        char buffer[80];
+
+
+	if (wk_p->marker_lines_on && 
+	    (wk_p->marker_line_dash_pattern % 16) > 0) {
+		memset((void *) buffer, 0, 80 * sizeof(char));
+
+		c_sflush();
+
+		c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+
+		x0 = fl;
+		x1 = fl + wk_p->marker_line_dash_seglen;
+		x0 = (float)c_kfpy(x0);
+		x1 = (float)c_kfpy(x1);
+	
+		ix = wk_p->marker_line_dash_pattern % 16;
+		wk_p->marker_line_dash_dollar_size = (x1 - x0) /
+			strlen(dash_patterns[ix]) + 0.5;
+		if(wk_p->marker_line_dash_dollar_size < 1)
+                        wk_p->marker_line_dash_dollar_size = 1;
+		
+		strcpy(buffer,dash_patterns[ix]);
+		
+		c_dashdc(buffer,wk_p->marker_line_dash_dollar_size,1);
+	}
+
+/*
+ * Make sure the marker size is okay
+ */
+	if (wk_p->marker_size <= 0.0) {
+		/* WARNING - but it's a void function right now */
+		NhlPError(WARNING,E_UNKNOWN,
+		"_NhlSetMarkerInfo: marker size must be greater than 0.0");
+		wk_p->marker_size = 0.007;
+	}
+/*
+ * An out-of-bounds marker index should have been caught at a higher
+ * level. Error and set to default marker.
+ */
+
+	if ((ix = wk_p->marker_index) > wk_p->marker_table_len ||
+	    ix < 0) {
+		/* WARNING - but it's a void function right now */
+		NhlPError(WARNING,E_UNKNOWN,
+			   "_NhlSetMarkerInfo: invalid marker index");
+		wk_p->marker_index = NhlWK_DEF_MARKER;
+
+	}
+
+        return;
+}
+
+
+static NhlErrorTypes WorkstationMarker
+#if  __STDC__
+(Layer l,float *x,float *y,int num_points)
+#else
+(l,x,y,num_points)
+	Layer l;
+	float *x;
+	float *y;
+	int num_points;
+#endif
+{
+        WorkstationLayer inst = (WorkstationLayer)l;
+	WorkstationLayerPart *wk_p = &inst->work;
+        float   fl,fr,fb,ft,ul,ur,ub,ut;
+	int ll, i, index;
+	int save_font;
+	Gint save_linecolor;
+	Gint save_linetype;
+	Gdouble save_linewidth;
+	Gint err_ind;
+	float marker_size, x_off, y_off;
+	int ret = NOERROR;
+	char *string;
+	int marker_color,line_color;
+	float p_height, p_width;
+
+/*
+ * Make the user space coincide with the NDC space for the
+ * duration of the routine
+ */
+	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
+/*
+ * Save attributes that may be modified
+ */
+	ginq_line_colr_ind(&err_ind, &save_linecolor);
+	ginq_linewidth(&err_ind, &save_linewidth);
+	ginq_linetype(&err_ind, &save_linetype);
+	c_pcgeti("FN",&save_font);
+	marker_color = _NhlGetGksCi(inst->base.wkptr, wk_p->marker_color);
+
+/*
+ * If marker lines are on, draw lines connecting the marker points
+ */
+	if (wk_p->marker_lines_on && num_points > 1) {
+		gset_linewidth(wk_p->marker_line_thickness);
+		line_color = _NhlGetGksCi(inst->base.wkptr, 
+					  wk_p->marker_line_color);
+		gset_line_colr_ind((Gint) line_color);
+		if (wk_p->marker_line_dash_pattern > 0) {
+			c_curved(x,y,num_points);
+		}
+		else {
+			c_curve(x,y,num_points);
+		}
+	}
+		
+/*
+ * Draw the markers; markers that do not define their own font using
+ * a function code are drawn using the default font (font #1).
+ */
+	c_pcseti("FN", 1);
+	gset_linewidth(wk_p->marker_thickness);
+	c_pcseti("OC",marker_color);
+	c_pcseti("CC",marker_color);
+	if ((index = wk_p->marker_index) == 0) {
+		/* the marker string is used to define the marker */
+		x_off = wk_p->marker_size * wk_p->marker_x_off;
+		y_off = wk_p->marker_size * wk_p->marker_y_off;
+		marker_size = wk_p->marker_size;
+		if ((string = wk_p->marker_string) == NULL ||
+		    string[0] == '\0') {
+			/* WARNING*/
+			NhlPError(WARNING,E_UNKNOWN,
+			      "_NhlWorkstationMarker: invalid marker string");
+			ret = WARNING;
+			marker_size = 
+				marker_table[NhlWK_DEF_MARKER]->size_adj *
+					wk_p->marker_size;
+			x_off = marker_size * 
+				(marker_table[NhlWK_DEF_MARKER]->x_off + 
+				 wk_p->marker_x_off);
+			y_off = marker_size * 
+				(marker_table[NhlWK_DEF_MARKER]->y_off +
+				 wk_p->marker_y_off);
+			string = 
+				marker_table[NhlWK_DEF_MARKER]->marker;
+		}
+			
+		for (i=0; i<num_points; i++) {
+			c_plchhq(x[i]+x_off,y[i]+y_off,string,
+				 marker_size,0.0,0.0);
+		}
+
+	}
+	else if (index > 0) {
+		for (i=0; i<num_points; i++) {
+			if (marker_table[index]->aspect_adj <= 1.0) {
+				p_height = 21.0 * 
+					marker_table[index]->aspect_adj;
+				p_width = 21.0;
+			} else {
+				p_width = 21.0 / 
+					marker_table[index]->aspect_adj;
+				p_height = 21.0;
+			}
+			
+			c_pcsetr("PH",p_height);
+			c_pcsetr("PW",p_width);
+			marker_size = marker_table[index]->size_adj *
+				wk_p->marker_size;
+			x_off = marker_size * 
+				(marker_table[index]->x_off + 
+				 wk_p->marker_x_off);
+			y_off = marker_size * 
+				(marker_table[index]->y_off + 
+				 wk_p->marker_y_off);
+			c_plchhq(x[i]+x_off,y[i]+y_off,
+				 marker_table[index]->marker,
+				 marker_size,0.0,0.0);
+		}
+	}
+
+/*
+ * Restore state
+ */
+
+	gset_line_colr_ind(save_linecolor);
+	gset_linewidth(save_linewidth);
+	gset_linetype(save_linetype);
+	c_pcseti("FN",save_font);
+
+	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
+
+	return(ret);
+
+}
+
+NhlErrorTypes CallWorkstationMarker
+#if  __STDC__
+(LayerClass lc, Layer instance,  float *x, float *y, int num_points)
+#else
+(lc, instance,  x, y, num_points)
+LayerClass lc;
+Layer instance;
+float *x;
+float *y;
+int num_points;
+#endif
+{
+        WorkstationLayerClass tlc = (WorkstationLayerClass)lc;
+
+        if(tlc->work_class.marker_work == NULL){
+                if(tlc->base_class.superclass != NULL) {
+                        return(CallWorkstationMarker(
+					      lc->base_class.superclass,
+					      instance,x,y,num_points));
+                } else {
+                        NhlPError(WARNING,E_UNKNOWN,"_NhlWorkstationMarker: Transformation object of type (%s) does not have marker_work function",
+				  tlc->base_class.class_name);
+                        return(WARNING);
+                }
+        } else {
+                return((*tlc->work_class.marker_work)(instance,
+						      x,y,num_points));
+        }
+}
+
+NhlErrorTypes _NhlWorkstationMarker
+#if __STDC__
+(Layer instance, float *x, float *y, int num_points)
+#else
+(instance,x,y,num_points)
+Layer instance;
+float   *x;
+float *y;
+int num_points;
+#endif
+{
+        return(CallWorkstationMarker(instance->base.layer_class,
+				     instance,x,y,num_points));
+}
+

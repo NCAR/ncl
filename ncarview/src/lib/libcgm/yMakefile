@@ -4,21 +4,18 @@
 #
 #
 
-NCARG	= ../../../..
-
 MYNAME		= libcgm.a
-
-CDEFINES	= 
 
 INCLUDES	= cgm_tools.h cgmdef.h 
 SRCS		= cgm_tools.c meta_edit.c misc.c mem_file.c name.c
 OBJECTS		= cgm_tools.o meta_edit.o misc.o mem_file.o name.o
 
-EQUALHACK	= =
+EXTRA_DEFINES	= -DTMPDIR='"$(TMPDIR)"'
 
-InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCPATH))
-
-Library($(MYNAME),$(OBJECTS))
+LibraryTarget($(MYNAME),$(OBJECTS))
+BuildIncludes($(INCLUDES),ncarg,..)
+DependTarget($(SRCS))
+InstallTarget($(INCLUDES), $(INSTALL_INC), $(INCPATH))
 
 lint:
 	$(LINT) $(CINC) $(SRCS) \
@@ -26,9 +23,6 @@ lint:
 	1> lint.out 2>&1
 
 cgm_tools.o:	cgmP.h
-
-meta_edit.o:	meta_edit.c Makefile
-	$(CC) $(CFLAGS) -DTMPDIR$(EQUALHACK)'"$(TMPDIR)"' -c $*.c
 
 
 cgmP.h: cgmP.h.sed Makefile

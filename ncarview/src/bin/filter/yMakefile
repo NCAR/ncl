@@ -1,36 +1,30 @@
 #
 #
-#	$Id: yMakefile,v 1.7 1993-03-26 23:19:22 haley Exp $
+#	$Id: yMakefile,v 1.8 1993-10-19 17:42:43 boote Exp $
 #
 #
 #	Makefile for cgm filters -- filter between NCAR CGM and vanilla CGM
 #
 #
 
-NCARG = ../../../..
-
 MYNAME	= filter
 
-#if defined(Solaris) && defined(sun4)
-GENLIBS = /usr/ucblib/libucb.a
-#endif
+PROG_LIBS	= $(CGMLIB) $(NCARGCLIB)
+DEP_LIBS	= $(DEPCGMLIB) $(DEPNCARGCLIB)
 
-LIBS		= $(LIBPATH)/libcgm.a $(LIBPATH)/libncarg_c.a $(GENLIBS)
-
-CDEFINES	= -I../../include
+EXTRA_INCLUDES	= -I../../include
 
 CGM2_SRCS	= cgm2ncgm.c
 NCAR2_SRCS	= ncgm2cgm.c 
 
+SRCS	= $(CGM2_SRCS) $(NCAR2_SRCS)
+
 CGM2_OBJ	= cgm2ncgm.o
 NCAR2_OBJ	= ncgm2cgm.o
 
-all::	cgm2ncgm ncgm2cgm 
-
-CTarget(cgm2ncgm,$(CGM2_OBJ),$(LIBS))
-CTarget(ncgm2cgm,$(NCAR2_OBJ),$(LIBS))
-MakefileTarget
-CleanTarget
+CProgram(cgm2ncgm,$(CGM2_OBJ),$(DEP_LIBS))
+CProgram(ncgm2cgm,$(NCAR2_OBJ),$(DEP_LIBS))
+DependTarget($(SRCS))
 
 lint:	
 	$(LINT) $(CDEFINES) $(NCAR2_SRCS) 1> lint.out 2>&1

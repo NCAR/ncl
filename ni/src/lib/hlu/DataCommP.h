@@ -1,5 +1,5 @@
 /*
- *      $Id: DataCommP.h,v 1.1 1993-07-12 22:36:03 boote Exp $
+ *      $Id: DataCommP.h,v 1.2 1993-10-19 17:50:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,21 +24,48 @@
 #define _NDataCommP_h
 
 #include <ncarg/hlu/TransformP.h>
-#include <ncarg/hlu/DataComm.h>
+#include <ncarg/hlu/DataCommF.h>
 #include <ncarg/hlu/DataMgr.h>
 
-typedef struct _DataListRec _NhlDataListRec, *_NhlDataList;
+#define _NhlTDListCompiled	".List.Compiled."
+#define _NhlTDataList		".Data.List"
+#define _NhlTAddData		".Add.Data"
+#define _NhlTRemoveData		".Rm.Data"
 
-struct _DataListRec {
-	int		item;
-	_NhlDHandle	dhandle;
-	_NhlDataList	next;
+typedef struct _DataOffsetRec _NhlDataOffsetRec, *_NhlDataOffset;
+typedef struct _DataNodeRec _NhlDataNodeRec, *_NhlDataNodePtr;
+typedef struct _InternalDataListRec _NhlInternDataListRec, *_NhlInternDataList;
+
+struct _DataNodeRec {
+	int		id;		/* id used to add/remove	*/
+	DataSpecLayer	dataspec;	/* DataSpec object		*/
+	NrmQuark	type;		/* Type Data will convert to	*/
+	int		item;		/* Data Item			*/
+	_NhlDHandle	dhandle;	/* connection to data Item	*/
+};
+
+struct _InternalDataListRec{
+	int		num_items;
+	_NhlDataNodePtr	*list;
+	_NhlDataNodePtr	extra;
+	NhlBoolean	shared_list;
+	DataCommLayer	dcl;
+	_NhlDataOffset	oset;
+};
+
+struct _DataOffsetRec{
+	NrmQuark	res_name;
+	unsigned int	offset;
+	LayerClass	dataspec_class;
+	NrmQuarkList	qlist;
+	_NhlDataOffset	next;
 };
 
 typedef struct _DataCommLayerPart{
 	/* User setable resource fields */
+	NhlBoolean	 delay_compute;
 	/* Private Fields */
-	_NhlDataList data_list;
+	NhlBoolean	 data_changed;
 } DataCommLayerPart;
 
 typedef struct _DataCommLayerRec{
@@ -48,8 +75,16 @@ typedef struct _DataCommLayerRec{
 	DataCommLayerPart	datacomm;
 } DataCommLayerRec;
 
+typedef	NhlErrorTypes (*_NhlUpdateDataProc)(
+#if	NhlNeedProto
+	DataCommLayer	new,
+	DataCommLayer	old
+#endif
+);
+
 typedef struct _DataCommLayerClassPart{
-	int	foo;
+	_NhlDataOffset		data_offsets;
+	_NhlUpdateDataProc	update_data;
 } DataCommLayerClassPart;
 
 typedef struct _DataCommLayerClassRec{
@@ -62,38 +97,65 @@ typedef struct _DataCommLayerClassRec{
 extern DataCommLayerClassRec dataCommLayerClassRec;
 
 /*
+ * DataSpec definitions
+ */
+
+typedef struct _NhlDCommListRec _NhlDCommListRec, *_NhlDCommList;
+
+struct _NhlDCommListRec{
+	int		dcommid;
+	NrmQuark	res_name;
+	_NhlDCommList	next;
+};
+
+typedef struct _DataSpecLayerPart{
+	/* User setable resource fields */
+	int		 data_item;
+	/* Private Fields */
+	_NhlDCommList	dcomm_list;
+} DataSpecLayerPart;
+
+typedef struct _DataSpecLayerRec{
+	ObjLayerPart		base;
+	DataSpecLayerPart	dataspec;
+} DataSpecLayerRec;
+
+typedef struct _DataSpecLayerClassPart{
+	int	foo;
+} DataSpecLayerClassPart;
+
+typedef struct _DataSpecLayerClassRec{
+	ObjLayerClassPart	base_class;
+	DataSpecLayerClassPart	dataspec_class;
+} DataSpecLayerClassRec;
+
+extern DataSpecLayerClassRec dataSpecLayerClassRec;
+
+/*
  * Private API to be used by Sub-Classes for handling Data
  */
 
-extern NrmQuark	_NhlDataConverterType(
+/*VARARGS3*/
+extern NhlErrorTypes _NhlRegisterDataRes(
 #if	NeedVarArgProto
-	int	item_id,/* data item to convert				*/
-	...		/* types requested NrmNULLQUARK terminated	*/
+	DataCommLayerClass	dc,		/* DataComm sub-class	*/
+	NrmString		res_name,	/* name of data res	*/
+	LayerClass		dataspec,	/* DataSpecific object	*/
+	...					/* types requested	*/
 #endif
 );
 
-extern _NhlDHandle _NhlRegisterData(
+extern int _NhlGetDataInfo(
 #if	NhlNeedProto
-	Layer		self,		/* DataComm sub-class 		*/
-	int		item_id,	/* DataItem sub-class		*/
-	NrmQuark	type_requested	/* Q of type wanted		*/
+	NhlGenArray		data,		/* pointer to datalist	*/
+	_NhlDataNodePtr		**dinfo		/* data info RET	*/
 #endif
 );
 
-extern NhlBoolean _NhlGetDataSet(
+extern Layer _NhlGetDataSet(
 #if	NhlNeedProto
-	int		item_id,	/* DataItem sub-class	*/
-	_NhlDHandle	dhandle,	/* data id		*/
-	NhlBoolean	*new_ret,	/* is data new?		*/
-	int		*dset_ret	/* actual data object	*/
-#endif
-);
-
-extern void _NhlReleaseData(
-#if	NhlNeedProto
-	Layer		self,		/* DataComm sub-class	*/
-	int		item_id,	/* DataItem sub-class	*/
-	_NhlDHandle	dhandle		/* data id		*/
+	_NhlDataNodePtr		datanode,	/* data node	*/
+	NhlBoolean		*new_ret	/* is data new?	*/
 #endif
 );
 

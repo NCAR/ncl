@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.2 1993-06-03 15:12:10 ethan Exp $
+ *      $Id: Title.c,v 1.3 1993-10-19 17:52:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -20,192 +20,215 @@
  *	Description:	Draws 3 title
  */
 
-#if	__STDC__
-#include <stdlib.h>
-#endif
-#include <stdio.h>
-#include <strings.h>
-#include <ncarg/hlu/hluP.h>
-#include <ncarg/hlu/ViewP.h>
-#include <ncarg/hlu/TextItem.h>
-#include <math.h>
 #include <ncarg/hlu/TitleP.h>
+#include <ncarg/hlu/Converters.h>
+#include <math.h>
 
-#define DEFAULT_STRING "none"
+static char	Main[] = "Main";
+static char	XAxis[] = "XAxis";
+static char	YAxis[] = "YAxis";
 
+/*ARGSUSED*/
+static NhlErrorTypes
+SetMainOn
+#if	__STDC__
+(
+	NrmName		name,
+	NrmClass	class,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,class,base,offset)
+	NrmName		name;
+	NrmClass	class;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	TitleLayer	tl = (TitleLayer)base;
+
+	tl->title.main_on = !(tl->title.main_string == Main);
+
+	return NOERROR;
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes
+SetXAxisOn
+#if	__STDC__
+(
+	NrmName		name,
+	NrmClass	class,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,class,base,offset)
+	NrmName		name;
+	NrmClass	class;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	TitleLayer	tl = (TitleLayer)base;
+
+	tl->title.x_axis_on = !(tl->title.x_axis_string == XAxis);
+
+	return NOERROR;
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes
+SetYAxisOn
+#if	__STDC__
+(
+	NrmName		name,
+	NrmClass	class,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,class,base,offset)
+	NrmName		name;
+	NrmClass	class;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	TitleLayer	tl = (TitleLayer)base;
+
+	tl->title.y_axis_on = !(tl->title.y_axis_string == YAxis);
+
+	return NOERROR;
+}
+
+#define Oset(field) NhlOffset(TitleLayerRec,title.field)
 static NhlResource resources[] = {
 	{NhlNtiDeltaF, NhlCtiDeltaF, NhlTFloat, sizeof(float),
-		NhlOffset(TitleLayerRec,title.delta), NhlTString, "1.5" },
+		Oset(delta), NhlTString, "1.5" },
 	{NhlNtiMainFontColor,NhlCtiTitleFontColors,NhlTInteger,sizeof(int),
-		NhlOffset(TitleLayerRec,title.main_font_color),
-		NhlTString,"1"},
+		Oset(main_font_color),NhlTImmediate,(NhlPointer)1},
 	{NhlNtiMainFontQuality, NhlCtiTitleFontQualities, NhlTFQuality,
-		sizeof(FontQuality),
-		NhlOffset(TitleLayerRec,title.main_font_quality),
+		sizeof(FontQuality),Oset(main_font_quality),
 		NhlTImmediate,(NhlPointer)HIGH },
-	{NhlNtiUseMainAttributes,NhlCtiUseMainAttributes, NhlTInteger,
-		sizeof(int),
-		NhlOffset(TitleLayerRec,title.use_main_attributes),
-		NhlTString,"0" },
+	{NhlNtiUseMainAttributes,NhlCtiUseMainAttributes, NhlTBoolean,
+		sizeof(NhlBoolean),
+		Oset(use_main_attributes),NhlTImmediate,False},
 	{NhlNtiMainString, NhlCtiMainString,NhlTString,sizeof(char*),
-		NhlOffset(TitleLayerRec,title.main_string),NhlTString,DEFAULT_STRING},
+		Oset(main_string),NhlTImmediate,(NhlPointer)Main},
 	{NhlNtiMainJust, NhlCtiTitleJust, NhlTInteger,sizeof(int),
-		NhlOffset(TitleLayerRec,title.main_just),NhlTString,"4" },
+		Oset(main_just),NhlTImmediate,(NhlPointer)4},
 	{NhlNtiMainFont, NhlCtiTitleFonts, NhlTInteger, sizeof(int),
-		NhlOffset(TitleLayerRec,title.main_font),NhlTString,"0" },
+		Oset(main_font),NhlTImmediate,(NhlPointer)0},
 	{NhlNtiMainFontHeightF,NhlCtiTitleFontHeightsF,NhlTFloat,sizeof(float),
-		NhlOffset(TitleLayerRec,title.main_font_height),
-		NhlTString,"0.025"},
+		Oset(main_font_height), NhlTString,"0.025"},
 	{NhlNtiMainFontAspectF,NhlCtiTitleFontAspectsF,NhlTFloat,sizeof(float),
-		NhlOffset(TitleLayerRec,title.main_font_aspect),
-		NhlTString,"1.3125"},
+		Oset(main_font_aspect), NhlTString,"1.3125"},
 	{NhlNtiMainFontThicknessF,NhlCtiTitleFontThicknessF,NhlTFloat,
-		sizeof(float),
-		NhlOffset(TitleLayerRec,title.main_font_thickness),
-		NhlTString,"1.0"},
-	{NhlNtiMainAngleF,NhlCtiTitleAnglesF,NhlTFloat,
-		sizeof(float),
-		NhlOffset(TitleLayerRec,title.main_angle),
-		NhlTString,"0.00"},
+		sizeof(float), Oset(main_font_thickness), NhlTString,"1.0"},
+	{NhlNtiMainAngleF,NhlCtiTitleAnglesF,NhlTFloat, sizeof(float),
+		Oset(main_angle), NhlTString,"0.00"},
 	{NhlNtiMainDirection,NhlCtiMainDirection,NhlTTextDirection,
 		sizeof(TextDirection),
-		NhlOffset(TitleLayerRec,title.main_direction),
-		NhlTImmediate,(NhlPointer)ACROSS},
+		Oset(main_direction), NhlTImmediate,(NhlPointer)ACROSS},
 	{NhlNtiMainPosition,NhlCtiMainPosition,NhlTTitlePositions,
 		sizeof(TitlePositions),
-		NhlOffset(TitleLayerRec,title.main_position),
-		NhlTImmediate,(NhlPointer)CENTER},
-	{NhlNtiMainOn,NhlCtiMainOn,NhlTInteger, sizeof(int),
-		NhlOffset(TitleLayerRec,title.main_on),
-		NhlTString,"1"},
-	{NhlNtiMainSide,NhlCtiMainSide,NhlTTitlePositions, 
+		Oset(main_position), NhlTImmediate,(NhlPointer)CENTER},
+	{NhlNtiMainOn,NhlCtiMainOn,NhlTBoolean, sizeof(NhlBoolean),
+		Oset(main_on),NhlTProcedure,(NhlPointer)SetMainOn},
+	{NhlNtiMainSide,NhlCtiMainSide,NhlTTitlePositions,
 		sizeof(TitlePositions),
-		NhlOffset(TitleLayerRec,title.main_side),
-		NhlTImmediate,(NhlPointer)TOP},
+		Oset(main_side),NhlTImmediate,(NhlPointer)TOP},
 	{NhlNtiMainConstantSpacingF, NhlCtiTitleConstantSpacingsF,NhlTFloat,
-		sizeof(float),
-		NhlOffset(TitleLayerRec,title.main_constant_spacing),
-		NhlTString,"0.0" },
+		sizeof(float), Oset(main_constant_spacing),NhlTString,"0.0" },
 	{NhlNtiMainFuncCode, NhlCtiTitleFuncCodes, NhlTCharacter,sizeof(char),
-		NhlOffset(TitleLayerRec,title.main_func_code),
-		NhlTString, ":" },
+		Oset(main_func_code), NhlTString, ":" },
 	{NhlNtiMainOffsetXF, NhlCtiMainOffsetXF, NhlTFloat,sizeof(float),
-		NhlOffset(TitleLayerRec,title.main_offset_x),
-		NhlTString,"0.0"},
+		Oset(main_offset_x), NhlTString,"0.0"},
 	{NhlNtiMainOffsetYF, NhlCtiMainOffsetYF, NhlTFloat,sizeof(float),
-		NhlOffset(TitleLayerRec,title.main_offset_y),
-		NhlTString,"0.0"},
+		Oset(main_offset_y), NhlTString,"0.0"},
 	{NhlNtiXAxisFontColor,NhlCtiTitleFontColors,NhlTInteger,sizeof(int),
-		NhlOffset(TitleLayerRec,title.x_axis_font_color),
-		NhlTString,"1"},
+		Oset(x_axis_font_color), NhlTImmediate,(NhlPointer)1},
 	{NhlNtiXAxisFontQuality, NhlCtiTitleFontQualities, NhlTFQuality,
 		sizeof(FontQuality),
-		NhlOffset(TitleLayerRec,title.x_axis_font_quality),
-		NhlTImmediate,(NhlPointer)HIGH },
+		Oset(x_axis_font_quality), NhlTImmediate,(NhlPointer)HIGH },
 	{NhlNtiXAxisString, NhlCtiXAxisString,NhlTString,sizeof(char*),
-		NhlOffset(TitleLayerRec,title.x_axis_string),NhlTString,DEFAULT_STRING },
+		Oset(x_axis_string),NhlTImmediate,(NhlPointer)XAxis},
 	{NhlNtiXAxisJust, NhlCtiTitleJust, NhlTInteger,sizeof(int),
-		NhlOffset(TitleLayerRec,title.x_axis_just),NhlTString,"4" },
+		Oset(x_axis_just),NhlTImmediate,(NhlPointer)4 },
 	{NhlNtiXAxisFont, NhlCtiTitleFonts, NhlTInteger, sizeof(int),
-		NhlOffset(TitleLayerRec,title.x_axis_font),NhlTString,"0" },
+		Oset(x_axis_font),NhlTImmediate,(NhlPointer)0 },
 	{NhlNtiXAxisFontHeightF,NhlCtiTitleFontHeightsF,NhlTFloat,sizeof(float),
-		NhlOffset(TitleLayerRec,title.x_axis_font_height),
-		NhlTString,"0.025"},
+		Oset(x_axis_font_height), NhlTString,"0.025"},
 	{NhlNtiXAxisFontAspectF,NhlCtiTitleFontAspectsF,NhlTFloat,sizeof(float),
-		NhlOffset(TitleLayerRec,title.x_axis_font_aspect),
-		NhlTString,"1.3125"},
+		Oset(x_axis_font_aspect), NhlTString,"1.3125"},
 	{NhlNtiXAxisFontThicknessF,NhlCtiTitleFontThicknessF,NhlTFloat,
 		sizeof(float),
-		NhlOffset(TitleLayerRec,title.x_axis_font_thickness),
-		NhlTString,"1.0"},
-	{NhlNtiXAxisAngleF,NhlCtiTitleAnglesF,NhlTFloat,
-		sizeof(float),
-		NhlOffset(TitleLayerRec,title.x_axis_angle),
-		NhlTString,"0.0"},
+		Oset(x_axis_font_thickness), NhlTString,"1.0"},
+	{NhlNtiXAxisAngleF,NhlCtiTitleAnglesF,NhlTFloat,sizeof(float),
+		Oset(x_axis_angle), NhlTString,"0.0"},
 	{NhlNtiXAxisDirection,NhlCtiXAxisDirection,NhlTTextDirection,
 		sizeof(TextDirection),
-		NhlOffset(TitleLayerRec,title.x_axis_direction),
-		NhlTImmediate,(NhlPointer)ACROSS},
+		Oset(x_axis_direction), NhlTImmediate,(NhlPointer)ACROSS},
 	{NhlNtiXAxisPosition,NhlCtiXAxisPosition,NhlTTitlePositions,
 		sizeof(TitlePositions),
-		NhlOffset(TitleLayerRec,title.x_axis_position),
-		NhlTImmediate,(NhlPointer)CENTER},
+		Oset(x_axis_position), NhlTImmediate,(NhlPointer)CENTER},
 	{NhlNtiXAxisConstantSpacingF, NhlCtiTitleConstantSpacingsF,NhlTFloat,
 		sizeof(float),
-		NhlOffset(TitleLayerRec,title.x_axis_constant_spacing),
-		NhlTString,"0.0" },
+		Oset(x_axis_constant_spacing), NhlTString,"0.0" },
 	{NhlNtiXAxisFuncCode, NhlCtiTitleFuncCodes, NhlTCharacter,sizeof(char),
-		NhlOffset(TitleLayerRec,title.x_axis_func_code),
-		NhlTString, ":" },
+		Oset(x_axis_func_code), NhlTString, ":" },
 	{NhlNtiXAxisOffsetXF, NhlCtiXAxisOffsetXF, NhlTFloat,sizeof(float),
-		NhlOffset(TitleLayerRec,title.x_axis_offset_x),
-		NhlTString,"0.0"},
+		Oset(x_axis_offset_x), NhlTString,"0.0"},
 	{NhlNtiXAxisOffsetYF, NhlCtiXAxisOffsetYF, NhlTFloat,sizeof(float),
-		NhlOffset(TitleLayerRec,title.x_axis_offset_y),
-		NhlTString,"0.0"},
-	{NhlNtiXAxisOn,NhlCtiXAxisOn,NhlTInteger, sizeof(int),
-		NhlOffset(TitleLayerRec,title.x_axis_on),
-		NhlTString,"1"},
+		Oset(x_axis_offset_y), NhlTString,"0.0"},
+	{NhlNtiXAxisOn,NhlCtiXAxisOn,NhlTBoolean, sizeof(NhlBoolean),
+		Oset(x_axis_on), NhlTProcedure,(NhlPointer)SetXAxisOn},
 	{NhlNtiXAxisSide,NhlCtiXAxisSide,NhlTTitlePositions, 
 		sizeof(TitlePositions),
-		NhlOffset(TitleLayerRec,title.x_axis_side),
-		NhlTImmediate,(NhlPointer)BOTTOM},
+		Oset(x_axis_side), NhlTImmediate,(NhlPointer)BOTTOM},
 	{NhlNtiYAxisFontColor,NhlCtiTitleFontColors,NhlTInteger,sizeof(int),
-		NhlOffset(TitleLayerRec,title.y_axis_font_color),
-		NhlTString,"1"},
+		Oset(y_axis_font_color), NhlTImmediate,(NhlPointer)1},
 	{NhlNtiYAxisFontQuality, NhlCtiTitleFontQualities, NhlTFQuality,
 		sizeof(FontQuality),
-		NhlOffset(TitleLayerRec,title.y_axis_font_quality),
-		NhlTImmediate,(NhlPointer)HIGH},
+		Oset(y_axis_font_quality), NhlTImmediate,(NhlPointer)HIGH},
 	{NhlNtiYAxisString, NhlCtiYAxisString,NhlTString,sizeof(char*),
-		NhlOffset(TitleLayerRec,title.y_axis_string),NhlTString,DEFAULT_STRING},
+		Oset(y_axis_string),NhlTImmediate,(NhlPointer)YAxis},
 	{NhlNtiYAxisJust, NhlCtiTitleJust, NhlTInteger,sizeof(int),
-		NhlOffset(TitleLayerRec,title.y_axis_just),NhlTString,"4" },
+		Oset(y_axis_just),NhlTImmediate,(NhlPointer)4 },
 	{NhlNtiYAxisFont, NhlCtiTitleFonts, NhlTInteger, sizeof(int),
-		NhlOffset(TitleLayerRec,title.y_axis_font),NhlTString,"0" },
+		Oset(y_axis_font),NhlTImmediate,(NhlPointer)0 },
 	{NhlNtiYAxisFontHeightF,NhlCtiTitleFontHeightsF,NhlTFloat,sizeof(float),
-		NhlOffset(TitleLayerRec,title.y_axis_font_height),
-		NhlTString,"0.025"},
+		Oset(y_axis_font_height), NhlTString,"0.025"},
 	{NhlNtiYAxisFontAspectF,NhlCtiTitleFontAspectsF,NhlTFloat,sizeof(float),
-		NhlOffset(TitleLayerRec,title.y_axis_font_aspect),
-		NhlTString,"1.3125"},
+		Oset(y_axis_font_aspect), NhlTString,"1.3125"},
 	{NhlNtiYAxisFontThicknessF,NhlCtiTitleFontThicknessF,NhlTFloat,
-		sizeof(float),
-		NhlOffset(TitleLayerRec,title.y_axis_font_thickness),
-		NhlTString,"1.0"},
-	{NhlNtiYAxisAngleF,NhlCtiTitleAnglesF,NhlTFloat,
-		sizeof(float),
-		NhlOffset(TitleLayerRec,title.y_axis_angle),
-		NhlTString,"90.0"},
+		sizeof(float), Oset(y_axis_font_thickness), NhlTString,"1.0"},
+	{NhlNtiYAxisAngleF,NhlCtiTitleAnglesF,NhlTFloat, sizeof(float),
+		Oset(y_axis_angle), NhlTString,"90.0"},
 	{NhlNtiYAxisDirection,NhlCtiYAxisDirection,NhlTTextDirection,
 		sizeof(TextDirection),
-		NhlOffset(TitleLayerRec,title.y_axis_direction),
-		NhlTImmediate,(NhlPointer)ACROSS},
+		Oset(y_axis_direction), NhlTImmediate,(NhlPointer)ACROSS},
 	{NhlNtiYAxisPosition,NhlCtiYAxisPosition,NhlTTitlePositions,
 		sizeof(TitlePositions),
-		NhlOffset(TitleLayerRec,title.y_axis_position),
-		NhlTImmediate,(NhlPointer)CENTER},
+		Oset(y_axis_position), NhlTImmediate,(NhlPointer)CENTER},
 	{NhlNtiYAxisConstantSpacingF, NhlCtiTitleConstantSpacingsF,NhlTFloat,
 		sizeof(float),
-		NhlOffset(TitleLayerRec,title.y_axis_constant_spacing),
-		NhlTString,"0.0" },
+		Oset(y_axis_constant_spacing), NhlTString,"0.0" },
 	{NhlNtiYAxisFuncCode, NhlCtiTitleFuncCodes, NhlTCharacter,sizeof(char),
-		NhlOffset(TitleLayerRec,title.y_axis_func_code),
-		NhlTString, ":" },
+		Oset(y_axis_func_code), NhlTString, ":" },
 	{NhlNtiYAxisOffsetXF, NhlCtiYAxisOffsetXF, NhlTFloat,sizeof(float),
-		NhlOffset(TitleLayerRec,title.y_axis_offset_x),
-		NhlTString,"0.0"},
+		Oset(y_axis_offset_x), NhlTString,"0.0"},
 	{NhlNtiYAxisOffsetYF, NhlCtiYAxisOffsetYF, NhlTFloat,sizeof(float),
-		NhlOffset(TitleLayerRec,title.y_axis_offset_y),
-		NhlTString,"0.0"},
-	{NhlNtiYAxisOn,NhlCtiXAxisOn,NhlTInteger, sizeof(int),
-		NhlOffset(TitleLayerRec,title.y_axis_on),
-		NhlTString,"1"},
+		Oset(y_axis_offset_y), NhlTString,"0.0"},
+	{NhlNtiYAxisOn,NhlCtiYAxisOn,NhlTBoolean, sizeof(NhlBoolean),
+		Oset(y_axis_on), NhlTProcedure,(NhlPointer)SetYAxisOn},
 	{NhlNtiYAxisSide,NhlCtiYAxisSide,NhlTTitlePositions, 
 		sizeof(TitlePositions),
-		NhlOffset(TitleLayerRec,title.y_axis_side),
-		NhlTImmediate,(NhlPointer)LEFT}
+		Oset(y_axis_side), NhlTImmediate,(NhlPointer)LEFT}
 };
+#undef Oset
 
 /*
 * Base Methods used
@@ -255,27 +278,33 @@ static NhlErrorTypes TitleDraw(
 
 TitleLayerClassRec titleLayerClassRec = {
         {
-/* superclass                   */      (LayerClass)&viewLayerClassRec,
 /* class_name                   */      "Title",
 /* nrm_class                    */      NrmNULLQUARK,
 /* layer_size                   */      sizeof(TitleLayerRec),
+/* class_inited                 */      False,
+/* superclass                   */      (LayerClass)&viewLayerClassRec,
+
 /* layer_resources              */      resources,
 /* num_resources                */      NhlNumber(resources),
-/* child_resources              */      NULL,
-/* all_resources                */      NULL,
+/* all_resources		*/	NULL,
+
 /* class_part_initialize        */      NULL,
-/* class_inited                 */      False,
 /* class_initialize             */      TitleClassInitialize,
 /* layer_initialize             */      TitleInitialize,
 /* layer_set_values             */      TitleSetValues,
-/* layer_set_values_not         */      NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values             */      NULL,
-/* layer_pre_draw               */      NULL,
+/* layer_reparent               */      NULL,
+/* layer_destroy                */      TitleDestroy,
+
+/* child_resources              */      NULL,
+
 /* layer_draw                   */      TitleDraw,
+
+/* layer_pre_draw               */      NULL,
 /* layer_draw_segonly           */      NULL,
 /* layer_post_draw              */      NULL,
-/* layer_clear                  */      NULL,
-/* layer_destroy                */      TitleDestroy
+/* layer_clear                  */      NULL
         },
 	{
 /* segment_workstation */ -1,
@@ -383,19 +412,22 @@ static NhlErrorTypes    TitleSetValues
 * may affect the main.
 */
 	if(told->title.main_string != tnew->title.main_string) {
-		NhlFree(told->title.main_string);
+		if(told->title.main_string != Main)
+			NhlFree(told->title.main_string);
 		tnew->title.main_string = NhlMalloc((unsigned)
 				strlen(tref->title.main_string)+1);
 		strcpy(tnew->title.main_string,tref->title.main_string);
 	}
 	if(told->title.x_axis_string != tnew->title.x_axis_string) {
-		NhlFree(told->title.x_axis_string);
+		if(told->title.x_axis_string != XAxis)
+			NhlFree(told->title.x_axis_string);
 		tnew->title.x_axis_string = NhlMalloc((unsigned)
 				strlen(tref->title.x_axis_string)+1);
 		strcpy(tnew->title.x_axis_string,tref->title.x_axis_string);
 	}
 	if(told->title.y_axis_string != tnew->title.y_axis_string) {
-		NhlFree(told->title.y_axis_string);
+		if(told->title.y_axis_string != YAxis)
+			NhlFree(told->title.y_axis_string);
 		tnew->title.y_axis_string = NhlMalloc((unsigned)
 				strlen(tref->title.y_axis_string)+1);
 		strcpy(tnew->title.y_axis_string,tref->title.y_axis_string);
@@ -846,47 +878,18 @@ static NhlErrorTypes    TitleInitialize
 
 	tnew->title.delta = (float)fabs((double)tnew->title.delta);
 
-	if((strcmp(tnew->title.main_string,DEFAULT_STRING)==0)
-		&&(tnew->title.main_on)) {
-		NhlPError(WARNING,E_UNKNOWN,"TitleIntialize: Main title on but no string provided, turning main title off");
-		ret = WARNING;
-		tnew->title.main_on = 0;
-		tnew->title.main_string = NhlMalloc((unsigned)
-					strlen(DEFAULT_STRING)+1);
-		strcpy(tnew->title.main_string,DEFAULT_STRING);
-	} else {
+	if(tnew->title.main_string != Main){
                 tnew->title.main_string = (char*)NhlMalloc((unsigned)
                                 strlen(tnew->title.main_string)+1);
                 strcpy(tnew->title.main_string,treq->title.main_string);
 
 	}	
-	if((strcmp(tnew->title.x_axis_string,DEFAULT_STRING)==0)
-		&&(tnew->title.x_axis_on)) {
-		NhlPError(WARNING,E_UNKNOWN,"TitleIntialize: XAxis title on but no string provided, turning XAxis title off");
-		ret = WARNING;
-/*
-* need to allocate dummy space so Destroy can just free the string rather
-* than have to check if its still the DEFAULT_STRING which is statically
-* stored
-*/
-		tnew->title.x_axis_string = NhlMalloc((unsigned)
-					strlen(DEFAULT_STRING)+1);
-		strcpy(tnew->title.x_axis_string,DEFAULT_STRING);
-		tnew->title.x_axis_on = 0;
-	} else {
+	if(tnew->title.x_axis_string != XAxis){
                 tnew->title.x_axis_string = (char*)NhlMalloc((unsigned)
                                 strlen(tnew->title.x_axis_string)+1);
                 strcpy(tnew->title.x_axis_string,treq->title.x_axis_string);
         }
-	if((strcmp(tnew->title.y_axis_string,DEFAULT_STRING)==0) 
-		&&(tnew->title.y_axis_on)) {
-		NhlPError(WARNING,E_UNKNOWN,"TitleIntialize: YAxis title on but no string provided, turning YAxis title off");
-		ret = WARNING;
-		tnew->title.y_axis_string = NhlMalloc((unsigned)
-					strlen(DEFAULT_STRING)+1);
-		strcpy(tnew->title.y_axis_string,DEFAULT_STRING);
-		tnew->title.y_axis_on = 0;
-	} else {
+	if(tnew->title.y_axis_string != YAxis){
                 tnew->title.y_axis_string = (char*)NhlMalloc((unsigned)
                                 strlen(tnew->title.y_axis_string)+1);
                 strcpy(tnew->title.y_axis_string,treq->title.y_axis_string);
@@ -1307,75 +1310,22 @@ static NhlErrorTypes     TitleDestroy
 {
 	TitleLayer tinst = (TitleLayer) inst;
 
-	NhlFree(tinst->title.main_string);
-	NhlFree(tinst->title.x_axis_string);	
-	NhlFree(tinst->title.y_axis_string);
+	if(tinst->title.main_string != Main)
+		NhlFree(tinst->title.main_string);
+	if(tinst->title.x_axis_string != XAxis)
+		NhlFree(tinst->title.x_axis_string);	
+	if(tinst->title.y_axis_string != YAxis)
+		NhlFree(tinst->title.y_axis_string);
 	NhlDestroy(tinst->title.main_id);
 	NhlDestroy(tinst->title.x_axis_id);
 	NhlDestroy(tinst->title.y_axis_id);
 	return(NOERROR);
 }
-static NhlErrorTypes
-NhlCvtStringToTitlePositions
-#if     __STDC__
-(
-        NrmValue        *from,  /* ptr to from data     */
-        NrmValue        *to,    /* ptr to to data       */
-        NrmValue        *args,  /* add'n args for conv  */
-        int             nargs   /* number of args       */
-)
-#else
-(from,to,args,nargs)
-        NrmValue        *from;  /* ptr to from data     */
-        NrmValue        *to;    /* ptr to to data       */
-        NrmValue        *args;  /* add'n args for conv  */
-        int             nargs;  /* number of args       */
-#endif
-{
-        TitlePositions tmp;
-        NhlErrorTypes ret = NOERROR;
-
-        if(nargs != 0) {
-                ret = WARNING;
-        }
-        if(strncmp((char*)from->addr,"TOP",strlen("TOP"))==0)
-                tmp = TOP;
-        else if(strncmp((char*)from->addr,"BOTTOM",strlen("BOTTOM"))==0)
-                tmp = BOTTOM;
-        else if(strncmp((char*)from->addr,"LEFT",strlen("LEFT"))==0)
-                tmp = LEFT;
-        else if(strncmp((char*)from->addr,"RIGHT",strlen("RIGHT"))==0)
-                tmp = RIGHT;
-        else if(strncmp((char*)from->addr,"CENTER",strlen("CENTER"))==0)
-                tmp = CENTER;
-        else {
-                NhlPError(WARNING,E_UNKNOWN,"NhlCvtStringToTitlePositions: Could not convert %s to either TOP, BOTTOM, LEFT, RIGHT or CENTER, incorrect string",(char*)from->addr);
-                return(WARNING);
-        }
-
-        if((to->size >0) && (to->addr != NULL)) {
-                /* caller provided space */
-                if(to->size < sizeof(TitlePositions)) {
-                        to->size = (unsigned int)sizeof(TitlePositions);
-                        return(FATAL);
-                }
-                to->size = (unsigned int)sizeof(TitlePositions);
-                *((TitlePositions*)(to->addr)) = tmp;
-                return(ret);
-        } else {
-                static TitlePositions val;
-                to->size = (unsigned int)sizeof(TitlePositions);
-                val = tmp;
-                to->addr = &val;
-                return(ret);
-        }
-}
 
 /*
  * Function:	TitleClassInitialize
  *
- * Description:	Just calls NrmStringToQuark to register new type name
- *		NhlTTitlePositions
+ * Description:	
  *
  * In Args:	NONE
  *
@@ -1392,8 +1342,16 @@ static NhlErrorTypes    TitleClassInitialize
 ()
 #endif
 {
-	NhlRegisterConverter(NhlTString,NhlTTitlePositions,
-		NhlCvtStringToTitlePositions,NULL,0,False,NULL);
+	NhlConvertArg	titlepos[] = {
+				{NHLSTRENUM,	TOP,	"top"},
+				{NHLSTRENUM,	BOTTOM,	"bottom"},
+				{NHLSTRENUM,	LEFT,	"left"},
+				{NHLSTRENUM,	RIGHT,	"right"},
+				{NHLSTRENUM,	CENTER,	"center"}
+				};
+
+	NhlRegisterConverter(NhlTString,NhlTTitlePositions,NhlCvtStringToEnum,
+				titlepos,NhlNumber(titlepos),False,NULL);
 	return(NOERROR);
 }
 

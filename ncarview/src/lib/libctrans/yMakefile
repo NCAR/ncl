@@ -1,14 +1,10 @@
-NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.17 1993-06-02 23:54:57 clyne Exp $
+#	$Id: yMakefile,v 1.18 1993-10-19 17:45:12 boote Exp $
 #
 
 
-MYNAME		= $(ROBJPATH)/libctrans.o
-
+MYNAME		= libctrans.o
 INCLUDES	= ctrans.h
-
-EQUALHACK	= =
 
 #ifdef	VMS
 VMSOBJS = vms.o
@@ -46,8 +42,10 @@ OBJS	= \
 	$(GENOBJS) $(X11OBJS) $(CGIOBJS) $(CTXTOBJS) \
 	$(SUNVOBJS) $(SUNROBJS) $(DEVOBJS) $(VMSOBJS)
 
+FCGCDIRDEF	=	-DFONTCAPDIR='"$(FONTCAPDIR)"' \
+			-DGRAPHCAPDIR='"$(GRAPHCAPDIR)"'
 
-DDEFINES = $(CGIDEFINES) $(X11DEFINES) $(SUNDEFINES) $(CTXTDEFINES)
+EXTRA_DEFINES = $(CGIDEFINES) $(X11DEFINES) $(SUNDEFINES) $(CTXTDEFINES) $(FCGCDIRDEF)
 
 # Generic code and libraries for all versions of ctrans.
 
@@ -106,29 +104,13 @@ DCTXTSRCS = clear_text.c
 
 DCTXTOBJS = clear_text.o
 
-CDEFINES	= $(DDEFINES)
-
 all::
 	@$(CAT) Copyright
 
-InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCPATH))
-
-all::	$(MYNAME)
-
-$(MYNAME):	$(OBJS)
-	$(LD_REL) -r -o $(MYNAME) $(OBJS)
-
-install::
-
-MakefileTarget
-CleanTarget
-
-env.o:	env.c Makefile
-        $(CC) $(CFLAGS) \
-		-DFONTCAPDIR$(EQUALHACK)'"$(FONTCAPDIR)"' \
-		-DGRAPHCAPDIR$(EQUALHACK)'"$(GRAPHCAPDIR)"' \
-		-c $*.c
-
+RelocatableTarget($(MYNAME),$(OBJS))
+BuildIncludes($(INCLUDES),ncarg,..)
+InstallTarget($(INCLUDES),$(INSTALL_INC),$(INCPATH))
+DependTarget($(SRCS))
 
 saber_src: $(SRCS)
 	#setopt load_flags $(CFLAGS) $(CINC)
@@ -142,4 +124,4 @@ saber_obj: $(OBJS)
 lint:
 	$(LINT) $(CINC) $(SRCS) 1> lint.out 2>&1
 
-
+env.o:	env.c Makefile

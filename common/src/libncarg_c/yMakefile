@@ -1,49 +1,42 @@
 #
 #
-#	$Id: yMakefile,v 1.10 1992-09-09 17:38:25 clyne Exp $
+#	$Id: yMakefile,v 1.11 1993-10-19 17:12:49 boote Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common C utilities
 #
 #
 
-NCARG		= ../../..
-
 MYNAME		= libncarg_c.a
-
-CDEFINES	=
 
 #ifdef	VMS
 VMSOBJS		= vms-unix.o
 VMSSRCS		= vms-unix.c
 #endif
 
-INCLUDES	= c.h 
+HDRS		= c.h 
 SRCS		= options.c misc.c ncarg_path.c version.c \
 		error.c atoargv.c usleep.c $(VMSSRCS)
 OBJS		= options.o misc.o ncarg_path.o version.o \
 		error.o atoargv.o usleep.o $(VMSOBJS)
 
-EQUALHACK	= =
+LibraryTarget($(MYNAME),$(OBJS))
+InstallTarget($(HDRS),$(INSTALL_INC),$(INCPATH))
+BuildIncludes($(HDRS),ncarg,..)
 
-InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCPATH))
-
-Library($(MYNAME),$(OBJS))
-
-test_opt:	test_opt.o
-	$(CC_LD) $(LD_CFLAGS) -o test_opt test_opt.o $(LIBPATH)/libncarg_c.a
-
-clean::
-	@-$(RM) test_opt
-
-
-lint:
-	$(LINT) -I$(CINC) $(SRCS) 1> lint.out 2>&1
-
-saber_src: $(SRCS)
-	#setopt load_flags $(CFLAGS) $(CINCS)
-	#load $(SRCS) $(LIBS)
-
-saber_obj: $(OBJS)
-	#setopt load_flags $(CFLAGS) $(CINCS)
-	#load $(OBJS) $(LIBS)
+#test_opt:	test_opt.o
+#	$(CC_LD) $(LD_CFLAGS) -o test_opt test_opt.o $(LIBPATH)/libncarg_c.a
+#
+#clean::
+#	@-$(RM) test_opt
+#
+#lint:
+#	$(LINT) -I$(CINC) $(SRCS) 1> lint.out 2>&1
+#
+#saber_src: $(SRCS)
+#	#setopt load_flags $(CFLAGS) $(CINCS)
+#	#load $(SRCS) $(LIBS)
+#
+#saber_obj: $(OBJS)
+#	#setopt load_flags $(CFLAGS) $(CINCS)
+#	#load $(OBJS) $(LIBS)

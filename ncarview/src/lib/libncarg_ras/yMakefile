@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.36 1993-02-10 19:19:18 don Exp $
+#	$Id: yMakefile,v 1.37 1993-10-19 17:45:33 boote Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -19,16 +19,13 @@
 #define	BuildRasterXWD
 #endif	BuildXlibDependentCode
 
-NCARG		= ../../../..
 MYNAME		= libncarg_ras.a
 INCLUDES	= ncarg_ras.h
 
 #ifdef sgi
-LOCLIB		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a \
-		$(LIBPATH)/libdf.a $(LIBPATH)/libnetcdf.a -lsun
+LOCLIB		= $(NCARGRASLIB) $(NCARGCLIB) -ldf $(NCDFLIBS) -lsun
 #else
-LOCLIB		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a \
-		$(LIBPATH)/libdf.a
+LOCLIB		= $(NCARGRASLIB) $(NCARGCLIB) -ldf
 #endif
 
 #ifdef BuildRasterHDF
@@ -97,7 +94,7 @@ BINARY_SRCS =	binary.c
 BINARY_DEFS =	-DBuildRasterBinary
 #endif
 
-CDEFINES =	$(HDF_DEFS) $(HPPCL_DEFS) $(NRIF_DEFS) $(SUN_DEFS) \
+EXTRA_DEFINES =	$(HDF_DEFS) $(HPPCL_DEFS) $(NRIF_DEFS) $(SUN_DEFS) \
 		$(XWD_DEFS) $(PARALLAX_DEFS) $(AVS_DEFS) $(SGI_DEFS) \
 		$(ABEKAS_DEFS) $(NETCDF_DEFS) $(BINARY_DEFS)
 
@@ -120,11 +117,10 @@ GENERIC_SRCS =	raster.c cleartext.c error.c misc.c palette.c \
 OBJS		= $(GENERIC_OBJS)
 SRCS		= $(GENERIC_SRCS)
 
-EQUALHACK	= =
-
-InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCPATH))
-
-Library($(MYNAME),$(OBJS))
+LibraryTarget($(MYNAME),$(OBJS))
+BuildIncludes($(INCLUDES),ncarg,..)
+InstallTarget($(INCLUDES),$(INSTALL_INC),$(INCPATH))
+DependTarget($(SRCS))
 
 dither.o:	ncarg_ras.h
 error.o:	ncarg_ras.h error.h
@@ -138,10 +134,9 @@ sunraster.o:	ncarg_ras.h sunraster.h
 xwd.o:		ncarg_ras.h
 
 parallax.o:	ncarg_ras.h parallax.h
-	cc $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) \
-                  $(FLOAT_OPT) $(CINC) $(VDEFINE) -c parallax.c
+	cc $(CFLAGS) -c parallax.c
 
-hppcl.o:		ncarg_ras.h hppcl.h
+hppcl.o:	ncarg_ras.h hppcl.h
 cleartext.o:	ncarg_ras.h
 avsraster.o:	ncarg_ras.h avsraster.h
 ntsc.o:		ncarg_ras.h ntsc.h

@@ -1,6 +1,5 @@
-
 /*
- *      $Id: LogLinTransObj.c,v 1.2 1993-05-27 19:11:17 ethan Exp $
+ *      $Id: LogLinTransObj.c,v 1.3 1993-10-19 17:51:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -147,26 +146,23 @@ float*  /*ymissing*/
 
 LogLinTransObjLayerClassRec logLinTransObjLayerClassRec = {
         {
-/* superclass			*/	(LayerClass)&transObjLayerClassRec,
 /* class_name			*/	"LogLinTransObj",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(LogLinTransObjLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(LayerClass)&transObjLayerClassRec,
+
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
-/* child_resources		*/	NULL,
 /* all_resources		*/	NULL,
+
 /* class_part_initialize	*/	NULL,
-/* class_inited			*/	False,
 /* class_initialize		*/	NULL,
 /* layer_initialize		*/	LlTransInitialize,
 /* layer_set_values		*/	LlTransSetValues,
-/* layer_set_values_not		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
-/* layer_pre_draw		*/	NULL,
-/* layer_draw			*/	NULL,
-/* layer_draw_segonly		*/	NULL,
-/* layer_post_draw		*/	NULL,
-/* layer_clear			*/	NULL,
+/* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NULL
         },
         {
@@ -826,6 +822,7 @@ static NhlErrorTypes LlNDCToWin
 }
 
 
+/*ARGSUSED*/
 static NhlErrorTypes LlDataLineTo
 #if __STDC__
 (Layer instance, Layer parent,float x, float y, int upordown )
@@ -842,9 +839,6 @@ int upordown;
 	static float lastx,lasty;
 	static call_frstd = 1;
 	float currentx,currenty;
-	float xpoints[2];
-	float ypoints[2];
-	int ix0,ix1,iy0,iy1;
 	float holdx,holdy;
 
 /*
@@ -853,8 +847,7 @@ int upordown;
 	if(upordown) {
 		lastx = x;
 		lasty = y;
-		call_frstd = 1;
-/* FORTRAN */		lastd_();
+		call_frstd =1;
 		return(NOERROR);
 	} else {
 		currentx = x;
@@ -870,29 +863,23 @@ int upordown;
 			&currentx,
 			&currenty,
 			-9999.0);
-		if((lastx == -9999.0)||(lasty == -9999)||(currentx == -9999.0)||(currenty == -9999.0)){
+		if((lastx == -9999.0)||(lasty == -9999.0)||(currentx == -9999.0)||(currenty == -9999.0)){
 /*
 * Line has gone completely out of window
 */
 			lastx = x;	
 			lasty = y;
 			call_frstd = 1;
-/* FORTRAN */		lastd_();
-			return(NOERROR);
+			return(_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(x),c_cufy(y),1));
 		} else {
                         if((lastx != holdx)||(lasty!= holdy)) {
                                 call_frstd = 1;
-/* FORTRAN */                   lastd_();
                         }
 			if(call_frstd == 1) {
-				ix0 = c_kumx(lastx);
-				iy0 = c_kumy(lasty);
-/* FORTRAN */			cfvld_(&call_frstd,&ix0,&iy0);
+				_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(lastx),c_cufy(lasty),1);
 				call_frstd = 2;
 			}
-			ix1 = c_kumx(currentx);
-			iy1 = c_kumy(currenty);
-/* FORTRAN */		cfvld_(&call_frstd,&ix1,&iy1);
+			_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(currentx),c_cufy(currenty),0);
 			lastx = x;
 			lasty = y;
 			return(NOERROR);
@@ -903,6 +890,7 @@ int upordown;
 	
 }
 
+/*ARGSUSED*/
 static NhlErrorTypes LlNDCLineTo
 #if __STDC__
 (Layer instance, Layer parent, float x, float y, int upordown)
@@ -915,12 +903,11 @@ float y;
 int upordown;
 #endif
 {
-	LogLinTransObjLayer llinst = (LogLinTransObjLayer)instance;
 	static float lastx,lasty;
 	static call_frstd = 1;
 	float currentx,currenty;
-	int ix0,ix1,iy0,iy1;
 	float xvp,yvp,widthvp,heightvp;
+	NhlErrorTypes ret = NOERROR,ret1 = NOERROR;
 	float holdx,holdy;
 
 /*
@@ -948,24 +935,22 @@ int upordown;
 /*
 * Line has gone completely out of window
 */
-			lastx = x;	
-			lasty = y;
+			lastx  = x;
+			lasty  = y;
 			call_frstd = 1;
-/* FORTRAN */		lastd_();
-			return(NOERROR);
+			return(_NhlWorkstationLineTo(parent->base.wkptr,x,y,1));
 		} else {
+                        if((lastx != holdx)||(lasty!= holdy)) {
+                                call_frstd = 1;
+                        }
 			if(call_frstd == 1) {
-				ix0 = c_kfmx(lastx);
-				iy0 = c_kfmy(lasty);
-/* FORTRAN */			cfvld_(&call_frstd,&ix0,&iy0);
+				ret1 = _NhlWorkstationLineTo(parent->base.wkptr,lastx,lasty,1);
 				call_frstd = 2;
 			}
-			ix1 = c_kfmx(currentx);
-			iy1 = c_kfmy(currenty);
-/* FORTRAN */		cfvld_(&call_frstd,&ix1,&iy1);
+			ret = _NhlWorkstationLineTo(parent->base.wkptr,currentx,currenty,0);
 			lastx = x;
-			lasty = y;
-			return(NOERROR);
+			lasty = y;			
+			return(MIN(ret1,ret));
 		}
 			
 			

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgr.c,v 1.1 1993-07-12 22:36:12 boote Exp $
+ *      $Id: DataMgr.c,v 1.2 1993-10-19 17:50:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <ncarg/hlu/DataMgrP.h>
 #include <ncarg/hlu/DataItemP.h>
+#include <ncarg/hlu/DataCommF.h>
 
 /************************************************************************
 *									*
@@ -55,31 +56,28 @@ static NhlErrorTypes DataMgrDestroy(
 DataMgrLayerClassRec dataMgrLayerClassRec = {
 	/* BaseLayerClassPart */
 	{
-/* superclass			*/	(LayerClass)&baseLayerClassRec,
 /* class_name			*/	"DataMgr",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(DataMgrLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(LayerClass)&objLayerClassRec,
+
 /* layer_resources		*/	NULL,
 /* num_resources		*/	0,
-/* child_resources		*/	NULL,
 /* all_resources		*/	NULL,
+
 /* class_part_initialize	*/	NULL,
-/* class_inited			*/	False,
 /* class_initialize		*/	NULL,
 /* layer_initialize		*/	DataMgrInitialize,
 /* layer_set_values		*/	NULL,
-/* layer_set_values_not		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
-/* layer_pre_draw		*/	NULL,
-/* layer_draw			*/	NULL,
-/* layer_draw_segonly		*/	NULL,
-/* layer_post_draw		*/	NULL,
-/* layer_clear			*/	NULL,
+/* layer_reparent		*/	NULL,
 /* layer_destroy		*/	DataMgrDestroy
 	},
 	/* DataMgrLayerClassPart */
 	{
-/* foo				*/	NULL
+/* foo				*/	0
 	}
 };
 	
@@ -141,10 +139,54 @@ DataMgrInitialize
 	dmgr->datamgr.uptodate = True;
 	dmgr->datamgr.connection_list = NULL;
 	dmgr->datamgr.data_list = NULL;
+	dmgr->datamgr.dspec_list = NULL;
 
 	return NOERROR;
 }
 
+/*
+ * Function:	ReleaseDSpecs
+ *
+ * Description:	This function is used to remove the dataitem parent from
+ *		each DataSpec class it is used in.  It just calls the
+ *		private _NhlReleaseDMgr call to the dspec to do this.
+ *
+ *
+ * In Args:	
+ *		_NhlDSpec	list,	list of nodes to free
+ *		int		ditemid	dataitem parent of mgr
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	void
+ * Side Effect:	
+ */
+static void
+ReleaseDSpecs
+#if	__STDC__
+(
+	_NhlDSpec	list,	/* list of nodes to free	*/
+	int		ditemid	/* dataitem parent of mgr	*/
+)
+#else
+(list,ditemid)
+	_NhlDSpec	list;		/* list of nodes to free	*/
+	int		ditemid;	/* dataitem parent of mgr	*/
+#endif
+{
+	/*
+	 * If null terminate recursion
+	 */
+	if(list == NULL)
+		return;
+
+	ReleaseDSpecs(list->next,ditemid);
+	_NhlReleaseDMgr(list->dspec_id,ditemid);
+	(void)NhlFree(list);
+
+	return;
+}
 /*
  * Function:	FreeHandles
  *
@@ -167,7 +209,7 @@ FreeHandles
 )
 #else
 (list)
-	_NhlDHandle	list;	/* list of handles to free	*/
+	_NhlDHandle	list;		/* list of handles to free	*/
 #endif
 {
 	/*
@@ -178,6 +220,52 @@ FreeHandles
 
 	FreeHandles(list->next);
 	(void)NhlFree(list);
+
+	return;
+}
+
+/*
+ * Function:	ReleaseHandles
+ *
+ * Description:	This function is used to remove the dataitem parent from
+ *		each DataComm class it is used in.  It just calls the
+ *		public NhlRemoveData function to do this.  The datacomm
+ *		class will then call functions that will re-enter this
+ *		object, hopefully freeing the handle in the manager.
+ *
+ *
+ * In Args:	
+ *		_NhlDHandle	list,	list of handles to free
+ *		int		ditemid	dataitem parent of mgr
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	void
+ * Side Effect:	
+ */
+static void
+ReleaseHandles
+#if	__STDC__
+(
+	_NhlDHandle	list,	/* list of handles to free	*/
+	int		ditemid	/* dataitem parent of mgr	*/
+)
+#else
+(list,ditemid)
+	_NhlDHandle	list;		/* list of handles to free	*/
+	int		ditemid;	/* list of handles to free	*/
+#endif
+{
+	/*
+	 * If null terminate recursion
+	 */
+	if(list == NULL)
+		return;
+
+	ReleaseHandles(list->next,ditemid);
+	(void)NhlRemoveData(list->datacommid,NrmQuarkToString(list->res_name),
+								ditemid);
 
 	return;
 }
@@ -214,7 +302,7 @@ FreeCache
 
 	FreeCache(list->next);
 
-	(void)NhlDestroy(list->dataset_id);
+	(void)NhlDestroy(list->dataset->base.id);
 	_NhlFreeConvertContext(list->cvt_context);
 	(void)NhlFree(list);
 
@@ -249,6 +337,13 @@ DataMgrDestroy
 {
 	DataMgrLayer	mgr = (DataMgrLayer)l;
 
+	/*
+	 * if the datacomm classes do the right thing ReleaseHandles should
+	 * free all the handles, but just in case FreeHandles free's anything
+	 * still in the list.
+	 */
+	ReleaseDSpecs(mgr->datamgr.dspec_list,mgr->base.parent->base.id);
+	ReleaseHandles(mgr->datamgr.connection_list,mgr->base.parent->base.id);
 	FreeHandles(mgr->datamgr.connection_list);
 	FreeCache(mgr->datamgr.data_list);
 
@@ -279,7 +374,7 @@ DataMgrDestroy
  *
  * In Args:	
  *		DataItemLayer	item,		DataItem sub-class
- *		NrmQuark	type_req	type wanted
+ *		NrmQuark	*type_req	type wanted
  *
  * Out Args:	
  *
@@ -291,24 +386,54 @@ _NhlDHandle
 _NhlInitDataConnection
 #if	__STDC__
 (
-	DataItemLayer	item,		/* DataItem sub-class	*/
-	NrmQuark	type_req	/* type wanted		*/
+	DataItemLayer	item,		/* DataItem sub-class		*/
+	int		dcommid,	/* id for datacomm layer	*/
+	NrmQuark	res_name,	/* resource name		*/
+	NrmQuark	*type_req,	/* type wanted			*/
+	NrmQuark	*type_ret	/* type will be created		*/
 )
 #else
-(item,type_req)
-	DataItemLayer	item;		/* DataItem sub-class	*/
-	NrmQuark	type_req;	/* type wanted		*/
+(item,dcommid,res_name,type_req,type_ret)
+	DataItemLayer	item;		/* DataItem sub-class		*/
+	int		dcommid;	/* id for datacomm layer	*/
+	NrmQuark	res_name;	/* resource name		*/
+	NrmQuark	*type_req;	/* type wanted			*/
+	NrmQuark	*type_ret;	/* type will be created		*/
 #endif
 {
 	DataMgrLayer	mgr = (DataMgrLayer)item->dataitem.manager;
-	_NhlDHandle	new = NhlMalloc(sizeof(_NhlDHandleRec));
+	_NhlDHandle	new;
+	NrmQuark	from = item->base.layer_class->base_class.nrm_class;
+	NrmQuark	*type;
 
+	if(mgr == NULL){
+		NhlPError(FATAL,E_UNKNOWN,
+			"_NhlInitDataConnection:Called without a Data Manager");
+		return NULL;
+	}
+
+	type = type_req;
+	while(*type != NrmNULLQUARK){
+		if(_NhlConverterExists(from,*type,NrmNULLQUARK))
+			break;
+		type++;
+	}
+	if(*type == NrmNULLQUARK){
+		NhlPError(FATAL,E_UNKNOWN,"No Conversion available");
+		return NULL;
+	}
+
+	*type_ret = *type;
+
+	new = NhlMalloc(sizeof(_NhlDHandleRec));
 	if(new == NULL){
 		NhlPError(FATAL,ENOMEM,NULL);
 		return NULL;
 	}
 
-	new->type = type_req;
+	new->datacommid = dcommid;
+	new->res_name = res_name;
+	new->type = *type;
 	new->cache = NULL;
 	new->next = mgr->datamgr.connection_list;
 	mgr->datamgr.connection_list = new;
@@ -351,7 +476,7 @@ ReleaseCache
 	(cache->ref_count)--;
 
 	if(!cache->uptodate && (cache->ref_count < 1)){
-		NhlDestroy(cache->dataset_id);
+		NhlDestroy(cache->dataset->base.id);
 		_NhlFreeConvertContext(cache->cvt_context);
 
 		for(cptr = &mgr->datamgr.data_list;
@@ -398,6 +523,7 @@ CreateCache
 #endif
 {
 	_NhlDCache	new;
+	int		dataset_id;
 	NhlErrorTypes	ret = NOERROR;
 	NrmQuark	fromQ =
 		mgr->base.parent->base.layer_class->base_class.nrm_class;
@@ -432,13 +558,16 @@ CreateCache
 	fromdata.size = sizeof(int);
 	fromdata.addr = &mgr->base.parent->base.id;
 	todata.size = sizeof(int);
-	todata.addr = &new->dataset_id;
+	todata.addr = &dataset_id;
 
 	ret = _NhlConvertData(new->cvt_context,fromQ,type,&fromdata,&todata);
-	if(ret < WARNING){
+	new->dataset = _NhlGetLayer(dataset_id);
+	if((ret < WARNING) || (new->dataset == NULL)){
 		NhlPError(FATAL,E_UNKNOWN,"Unable to convert from %s to %s",
 				NrmNameToString(fromQ),NrmNameToString(type));
 		_NhlFreeConvertContext(new->cvt_context);
+		if(new->dataset != NULL)
+			(void)NhlDestroy(new->dataset->base.id);
 		(void)NhlFree(new);
 		return NULL;
 	}
@@ -494,7 +623,7 @@ UpdateCacheList
 	 */
 	if(node->ref_count < 1){
 		tnode = node->next;
-		NhlDestroy(node->dataset_id);
+		NhlDestroy(node->dataset->base.id);
 		_NhlFreeConvertContext(node->cvt_context);
 		(void)NhlFree(node);
 
@@ -523,32 +652,46 @@ UpdateCacheList
  *		dataset objects id.
  *
  * In Args:	
+ *		DataItemLayer	item,		dataItem sub-class
+ *		_NhlDHandle	dhandle,	id for Connection
  *
  * Out Args:	
+ *		NhlBoolean	*new,		is data new/changed
+ *		int		*dset_ret	rtrn dataset object
  *
  * Scope:	Global - Privately used by DataComm class
- * Returns:	NhlBoolean - SUCCESS==True
+ * Returns:	Layer - Failure==NULL
  * Side Effect:	
  */
-NhlBoolean
+Layer
 _NhlRetrieveData
 #if	__STDC__
 (
 	DataItemLayer	item,		/* dataItem sub-class	*/
 	_NhlDHandle	dhandle,	/* id for Connection	*/
-	NhlBoolean	*new,		/* is data new/changed	*/
-	int		*dset_ret	/* rtrn dataset object	*/
+	NhlBoolean	*new		/* is data new/changed	*/
 )
 #else
-(item,dhandle,new,dset_ret)
+(item,dhandle,new)
 	DataItemLayer	item;		/* dataItem sub-class	*/
 	_NhlDHandle	dhandle;	/* id for Connection	*/
 	NhlBoolean	*new;		/* is data new/changed	*/
-	int		*dset_ret;	/* rtrn dataset object	*/
 #endif
 {
 	DataMgrLayer	mgr = (DataMgrLayer)item->dataitem.manager;
-	_NhlDHandle	thandle = mgr->datamgr.connection_list;
+	_NhlDHandle	thandle;
+
+	/*
+	 * set new in case caller didn't
+	 */
+	*new = False;
+
+	if(mgr == NULL){
+	NhlPError(FATAL,E_UNKNOWN,"_NhlRetrieveData:Called without a Data Mgr");
+		return NULL;
+	}
+
+	thandle = mgr->datamgr.connection_list;
 
 	/*
 	 * First make sure the given dhandle exists in the manager
@@ -562,7 +705,7 @@ _NhlRetrieveData
 		NhlPError(FATAL,E_UNKNOWN,
 	"_NhlRetrieveData:The given dhandle does not exist in DataItem %s",
 							NhlName(item->base.id));
-		return False;
+		return NULL;
 	}
 
 	/*
@@ -583,10 +726,7 @@ _NhlRetrieveData
 		 * return it without messing around further.
 		 */
 		if(dhandle->cache->uptodate){
-			*new = False;
-			*dset_ret = dhandle->cache->dataset_id;
-
-			return True;
+			return dhandle->cache->dataset;
 		}
 
 		/*
@@ -604,16 +744,14 @@ _NhlRetrieveData
 		NhlPError(FATAL,E_UNKNOWN,
 		"_NhlRetrieveData:Unable to convert data in DataItem %s",
 							NhlName(item->base.id));
-		return False;
+		return NULL;
 	}
 
 	/*
 	 * Conversion was successful
 	 */
 	*new = True;
-	*dset_ret = dhandle->cache->dataset_id;
-
-	return True;
+	return dhandle->cache->dataset;
 }
 
 /*
@@ -625,6 +763,8 @@ _NhlRetrieveData
  *		when it is no longer needed.
  *
  * In Args:	
+ *		DataItemLayer	item,	DataItem sub-class
+ *		_NhlDHandle	dhandle	id for Connection
  *
  * Out Args:	
  *
@@ -647,6 +787,11 @@ _NhlCloseDataConnection
 {
 	DataMgrLayer	mgr = (DataMgrLayer)item->dataitem.manager;
 	_NhlDHandle	*dhptr;
+
+	if(mgr == NULL){
+NhlPError(FATAL,E_UNKNOWN,"_NhlCloseDataConnection:called without a DataMgr");
+		return;
+	}
 
 	for(dhptr = &mgr->datamgr.connection_list; *dhptr != NULL;
 						dhptr = &((*dhptr)->next)){
@@ -683,7 +828,7 @@ _NhlCloseDataConnection
  * Out Args:	
  *
  * Scope:	Private to DataItem class
- * Returns:	void
+ * Returns:	NhlErrorTypes
  * Side Effect:	
  */
 void
@@ -698,6 +843,219 @@ _NhlDataItemModified
 #endif
 {
 	mgr->datamgr.uptodate = False;
+
+	return;
+}
+
+/*
+ * Function:	_NhlNotifyDataComm
+ *
+ * Description:	This function is used by DataItem to notify the datacomm
+ *		subclasses that the dataitem that is associated with the plot
+ *		has changed in such a way that the form of the data may have
+ *		changed, invalidating some of the resources in the plot.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Private to SetValues
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+_NhlNotifyDataComm
+#if	__STDC__
+(
+	DataMgrLayer	dmgr	/* dmgr layer */
+)
+#else
+(dmgr)
+	DataMgrLayer	dmgr;	/* dmgr layer */
+#endif
+{
+	_NhlDHandle	list = NULL;
+	NhlErrorTypes	ret = NOERROR, lret = NOERROR;
+
+	if(dmgr == NULL)
+		return NOERROR;
+
+	if(dmgr->datamgr.uptodate)
+		return NOERROR;
+	
+	list = dmgr->datamgr.connection_list;
+	while(list != NULL){
+		lret = _NhlUpdateData(list->datacommid);
+		ret = MIN(lret,ret);
+		list = list->next;
+	}
+
+	return ret;
+}
+
+/*
+ * Function:	PushDSpec
+ *
+ * Description:	This function adds the given dspec id to the linked list.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlBoolean
+ * Side Effect:	
+ */
+static NhlBoolean
+PushDSpec
+#if	__STDC__
+(
+	_NhlDSpec	*listptr,	/* ptr to dspec_list	*/
+	int		dspecid		/* dspecid		*/
+)
+#else
+(listptr,dspecid)
+	_NhlDSpec	*listptr;	/* ptr to dspec_list	*/
+	int		dspecid;	/* dspecid		*/
+#endif
+{
+	if(*listptr != NULL)
+		return PushDSpec(&(*listptr)->next,dspecid);
+
+	*listptr = (_NhlDSpec)NhlMalloc(sizeof(_NhlDSpecRec));
+	if(*listptr == NULL){
+		NhlPError(FATAL,ENOMEM,NULL);
+		return False;
+	}
+
+	(*listptr)->dspec_id = dspecid;
+	(*listptr)->next = NULL;
+
+	return True;
+}
+
+/*
+ * Function:	_NhlRegisterDSpec
+ *
+ * Description:	This function is used to notify the DataMgr that it is
+ *		being used as part of a DataSpec object.  So if the dmgr gets
+ *		destroyed, it should notify each of the dspec objects.
+ *
+ * In Args:	
+ *		DataItemLayer	item,		DataItem sub-class
+ *		int		dspecid		id for dataspec layer
+ *
+ * Out Args:	
+ *
+ * Scope:	private to DataSpec class
+ * Returns:	NhlBoolean
+ * Side Effect:	
+ */
+NhlBoolean
+_NhlRegisterDSpec
+#if	__STDC__
+(
+	DataItemLayer	item,		/* DataItem sub-class		*/
+	int		dspecid		/* id for dataspec layer	*/
+)
+#else
+(item,dspecid)
+	DataItemLayer	item;		/* DataItem sub-class		*/
+	int		dspecid;	/* id for dataspec layer	*/
+#endif
+{
+	DataMgrLayer	mgr = (DataMgrLayer)item->dataitem.manager;
+
+	if((mgr == NULL) || !_NhlIsDataMgr(mgr)){
+		NhlPError(FATAL,E_UNKNOWN,
+			"_NhlRegisterDSpec:Called without a Data Manager");
+		return False;
+	}
+
+	return PushDSpec(&mgr->datamgr.dspec_list,dspecid);
+}
+
+/*
+ * Function:	PopDSpec
+ *
+ * Description:	This function removes the given dspec id from the linked list.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlBoolean
+ * Side Effect:	
+ */
+static NhlBoolean
+PopDSpec
+#if	__STDC__
+(
+	_NhlDSpec	*listptr,	/* ptr to dspec_list	*/
+	int		dspecid		/* dspecid		*/
+)
+#else
+(listptr,dspecid)
+	_NhlDSpec	*listptr;	/* ptr to dspec_list	*/
+	int		dspecid;	/* dspecid		*/
+#endif
+{
+	_NhlDSpec	tptr;
+
+	if(*listptr == NULL)
+		return False;
+
+	if((*listptr)->dspec_id == dspecid){
+		tptr = *listptr;
+		*listptr = (*listptr)->next;
+		(void)NhlFree(tptr);
+		return True;
+	}
+
+	return PopDSpec(&(*listptr)->next,dspecid);
+}
+
+/*
+ * Function:	_NhlUnRegisterDSpec
+ *
+ * Description:	This function is used to notify the DataMgr that it is
+ *		no longer being used as part of a DataSpec object.
+ *
+ * In Args:	
+ *		DataItemLayer	item,		DataItem sub-class
+ *		int		dspecid		id for dataspec layer
+ *
+ * Out Args:	
+ *
+ * Scope:	private to DataSpec class
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NhlUnRegisterDSpec
+#if	__STDC__
+(
+	DataItemLayer	item,		/* DataItem sub-class		*/
+	int		dspecid		/* id for dataspec layer	*/
+)
+#else
+(item,dspecid)
+	DataItemLayer	item;		/* DataItem sub-class		*/
+	int		dspecid;	/* id for dataspec layer	*/
+#endif
+{
+	DataMgrLayer	mgr = (DataMgrLayer)item->dataitem.manager;
+
+	if((mgr == NULL) || !_NhlIsDataMgr(mgr)){
+		NhlPError(FATAL,E_UNKNOWN,
+			"_NhlUnRegisterDSpec:Called without a Data Manager");
+		return;
+	}
+
+	if(!PopDSpec(&mgr->datamgr.dspec_list,dspecid))
+		NhlPError(WARNING,E_UNKNOWN,
+			"Unable to find %d in DataMgr's DSpec list",dspecid);
 
 	return;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: Quarks.c,v 1.1 1993-04-30 17:23:45 boote Exp $
+ *      $Id: Quarks.c,v 1.2 1993-10-19 17:52:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -145,7 +145,7 @@ char *Npermalloc(length)
 	    neverFreeTable += DALIGN - i;
 	} else
 #endif
-	    /* SUPPRESS 560 */
+	    /* SUPPRESS 624 */
 	    if (i = (NEVERFREETABLESIZE - neverFreeTableSize) & (WALIGN-1)) {
 		neverFreeTableSize -= WALIGN - i;
 		neverFreeTable += WALIGN - i;
@@ -166,7 +166,7 @@ ExpandQuarkTable()
     NrmQuark q;
 
     oldentries = quarkTable;
-    /* SUPPRESS 560 */
+    /* SUPPRESS 624 */
     if (oldmask = quarkMask)
 	newmask = (oldmask << 1) + 1;
     else {
@@ -194,18 +194,18 @@ ExpandQuarkTable()
     entries = (Entry *)NhlMalloc(sizeof(Entry) * (newmask + 1));
     if (!entries)
 	return False;
-    bzero((char *)entries, sizeof(Entry) * (newmask + 1));
+    memset((char*)entries,0, sizeof(Entry) * (newmask + 1));
     quarkTable = entries;
     quarkMask = newmask;
     quarkRehash = quarkMask - 2;
     for (oldidx = 0; oldidx <= oldmask; oldidx++) {
-	/* SUPPRESS 560 */
+	/* SUPPRESS 624 */
 	if (entry = oldentries[oldidx]) {
 	    if (entry & LARGEQUARK)
 		q = entry & (LARGEQUARK-1);
 	    else
 		q = (entry >> QUARKSHIFT) & QUARKMASK;
-	    /* SUPPRESS 560 */
+	    /* SUPPRESS 624 */
 	    for (sig = 0, s = NAME(q); c = *s++; )
 		sig = (sig << 1) + c;
 	    newidx = HASH(sig);
@@ -244,7 +244,7 @@ NrmQuark _NrmInternalStringToQuark(name, len, sig, permstring)
 
     rehash = 0;
     idx = HASH(sig);
-    /* SUPPRESS 560 */
+    /* SUPPRESS 624 */
     while (entry = quarkTable[idx]) {
 	if (entry & LARGEQUARK)
 	    q = entry & (LARGEQUARK-1);
@@ -346,7 +346,7 @@ NrmQuark NrmStringToQuark(name)
     if (!name)
 	return (NrmNULLQUARK);
     
-    /* SUPPRESS 560 */
+    /* SUPPRESS 624 */
     for (tname = (char *)name; c = *tname++; )
 	sig = (sig << 1) + c;
 
@@ -367,7 +367,7 @@ NrmQuark NrmPermStringToQuark(name)
     if (!name)
 	return (NrmNULLQUARK);
 
-    /* SUPPRESS 560 */
+    /* SUPPRESS 624 */
     for (tname = (char *)name; c = *tname++; )
 	sig = (sig << 1) + c;
 

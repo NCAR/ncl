@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgrF.h,v 1.1 1993-07-12 22:36:17 boote Exp $
+ *      $Id: DataMgrF.h,v 1.2 1993-10-19 17:50:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,17 +33,19 @@
 
 extern _NhlDHandle _NhlInitDataConnection(
 #ifdef	NhlNeedProto
-	DataItemLayer	item,		/* DataItem sub-class	*/
-	NrmQuark	type_req	/* type wanted		*/
+	DataItemLayer	item,		/* DataItem sub-class		*/
+	int		dcommid,	/* id for datacomm layer	*/
+	NrmQuark	res_name,	/* resource name		*/
+	NrmQuark	*type_req,	/* array of type wanted		*/
+	NrmQuark	*type_ret	/* type will be created		*/
 #endif
 );
 
-extern NhlBoolean _NhlRetrieveData(
+extern Layer _NhlRetrieveData(
 #ifdef	NhlNeedProto
 	DataItemLayer	item,		/* dataItem sub-class	*/
 	_NhlDHandle	dhandle,	/* id for Connection	*/
-	NhlBoolean	*new,		/* is data new/changed	*/
-	int		*dset_ret	/* rtrn dataset object	*/
+	NhlBoolean	*new		/* is data new/changed	*/
 #endif
 );
 
@@ -55,10 +57,34 @@ extern void _NhlCloseDataConnection(
 );
 
 /*
+ * Private API for the DataSpec class only
+ */
+
+extern NhlBoolean _NhlRegisterDSpec(
+#ifdef	NhlNeedProto
+	DataItemLayer	item,		/* dataitem sub-class		*/
+	int		dspecid		/* id for dataspec layer	*/
+#endif
+);
+
+extern void _NhlUnRegisterDSpec(
+#ifdef	NhlNeedProto
+	DataItemLayer	item,		/* dataitem sub-class		*/
+	int		dspecid		/* id for dataspec layer	*/
+#endif
+);
+
+/*
  * Private API to be used by the DataItem class only.
  */
 
 extern void _NhlDataItemModified(
+#ifdef	NhlNeedProto
+	DataMgrLayer	mgr	/* DataMgr	*/
+#endif
+);
+
+extern NhlErrorTypes _NhlNotifyDataComm(
 #ifdef	NhlNeedProto
 	DataMgrLayer	mgr	/* DataMgr	*/
 #endif

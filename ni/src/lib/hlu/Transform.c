@@ -1,6 +1,5 @@
-
 /*
- *      $Id: Transform.c,v 1.1 1993-04-30 17:25:26 boote Exp $
+ *      $Id: Transform.c,v 1.2 1993-10-19 17:52:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -36,30 +35,38 @@
 
 TransformLayerClassRec transformLayerClassRec = {
         {
-/* superclass*/         (LayerClass)&viewLayerClassRec,
 /* class_name */        "Transform",
 /* nrm_class */         NrmNULLQUARK,
 /* layer_size */        sizeof(TransformLayerRec),
+/* class_inited */      False,
+/* superclass*/         (LayerClass)&viewLayerClassRec,
+
 /* layer_resources */   NULL,
 /* num_resources */     0,
+/* all_resources		*/	NULL,
+
 /* class_part_initialize */     NULL,
-/* class_inited */      False,
 /* class_initialize */  NULL,
 /* layer_initialize */  NULL,
 /* layer_set_values */  NULL,
-/* layer_set_values_not */  NULL,
+/* layer_set_values_hook */  NULL,
 /* layer_get_values */  NULL,
-/* layer_pre_draw */        NULL,
+/* layer_reparent */  NULL,
+/* layer_destroy */     NULL,
+
+/* child_resources */	NULL,
+
 /* layer_draw */        NULL,
+
+/* layer_pre_draw */        NULL,
 /* layer_draw_segonly */    NULL,
 /* layer_post_draw */        NULL,
-/* layer_clear */       NULL,
-/* layer_destroy */     NULL
+/* layer_clear */       NULL
 
         },
 	{
-/* segment_wkid */		NULL,
-/* get_bb */		NULL
+/* segment_wkid */		0,
+/* get_bb */			NULL
 	},
 	{
 /* data_to_ndc */	NULL,

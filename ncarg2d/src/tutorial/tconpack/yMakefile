@@ -1,8 +1,6 @@
 #
-#	$Id: yMakefile,v 1.4 1993-04-12 19:24:54 haley Exp $
+#	$Id: yMakefile,v 1.5 1993-10-19 17:41:06 boote Exp $
 #
-NCARG	= ../../../..
-
 MYNAME	= tconpack
 
 GENERIC_SRCS = \
@@ -17,13 +15,4 @@ GENERIC_SRCS = \
 	ccpsps1.f ccpsps2.f ccpspv.f ccpt2d.f ccptitle.f ccpvp.f ccpvs.f \
 	cidsfft.f colcon.f ggdini.f ccpex.dat ccpila.dat cpmpxy1.dat cpmpxy2.dat
 
-all::
-
-install:: $(GENERIC_SRCS)
-	@for name in $(GENERIC_SRCS); do\
-	($(INSTALL) -m $(INSTALL_LIB) $$name $(TUTORIALPATH));\
-	done
-
-MakefileTarget
-CleanTarget
-
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(TUTORIALPATH))

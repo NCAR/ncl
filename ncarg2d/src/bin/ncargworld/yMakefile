@@ -1,34 +1,30 @@
 #
-#	$Id: yMakefile,v 1.5 1993-03-26 23:28:25 haley Exp $
+#	$Id: yMakefile,v 1.6 1993-10-19 17:20:18 boote Exp $
 #
-NCARG = ../../../..
 
 MYNAME	= ncargworld
 
 SRCS    = ncargworld.f
 OBJS    = ncargworld.o
 
+#ifdef	UseInstalled
 ROBJS = $(ROBJPATH)/ggkwdr_stub.o
-
-OBJECTS	= $(OBJS) $(ROBJS)
-
-#if defined(ardent) || (defined(u370) && defined(unix))
-OTHER_LIBS =	$(ROBJPATH)/libncarbd.o
-#endif
-
-COMMON_LIBS =	$(LIBPATH)/libncarg.a \
-		$(LIBPATH)/libncarg_gks.a \
-		$(LIBPATH)/libncarg_c.a \
-		$(LIBPATH)/libncarg_loc.a -lm
-
-#if defined(Solaris) && defined(sun4)
-LIBS = $(OTHER_LIBS) $(COMMON_LIBS) /usr/ucblib/libucb.a
 #else
-LIBS = $(OTHER_LIBS) $(COMMON_LIBS)
+ROBJS = $(NCARGGKSLIBSRC)/awi/ggkwdr_stub.o
 #endif
 
-all:: $(MYNAME)
+OBJECTS	= $(OBJS) $(ROBJS) $(OTHER_ROBJS)
 
-FortranProgramLeaf($(MYNAME),$(OBJECTS),$(LIBS))
-CleanTarget
+#if defined(Ardent) || defined(AIX370)
+#ifdef	UseInstalled
+OTHER_ROBJS =	$(ROBJPATH)/libncarbd.o
+#else
+OTHER_ROBJS =	$(NCARGOPTLIBSRC)/ncarbd/ncarbd.o
+#endif	/* UseInstalled */
+#endif	/* Ardent || AIX370 */
 
+PROG_LIBS =	$(NCARGLIBS)
+DEP_LIBS =	$(DEPNCARGLIBS)
+SYS_LIBS	=	-lm
+
+FortranProgram($(MYNAME),$(OBJECTS),$(DEP_LIBS))

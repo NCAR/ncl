@@ -1,169 +1,33 @@
-#define BuildXlibDependentCode
-#define BuildAthenaApplications
+/*
+ *      $Id: Cray,v 1.18 1993-10-19 17:13:18 boote Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1993			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		Cray
+ *
+ *	Author:		Jeff W. Boote
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Mon May 3 14:33:36 MDT 1993
+ *
+ *	Description:	This file contains the directives necessary to
+ *			describe the Cray running unicos.
+ */
 #define	InstallManToLocal
-/*
-** Define which raster drivers will be built.
-*/
-#define	BuildRasterHDF
-#define	BuildRasterHPPCL
-#define	BuildRasterNrif
-#define	BuildRasterSun
-#define BuildRasterAVS
-#define BuildRasterSGI
-#define BuildRasterAbekas
-#define BuildRasterBinary
-
-/*
-**  Stuff that should be edited by Configure
-*/
-VERSION           = 3.2
-BINROOT           = /usr/local/bin
-LIBROOT           = /usr/local/lib
-INCROOT           = /usr/local/include
-MANROOT           = /usr/man
-TMPROOT           = /tmp
-LOCAL_LIB_SEARCH  = -L/usr/local/lib
-LOCAL_INC_SEARCH  = -I/usr/local/include
-
-/*
-**  Order of assignment to LIB_SEARCH and to INC_SEARCH is 
-**  important.
-*/
-LIB_SEARCH        = -L$(LIBROOT) $(LOCAL_LIB_SEARCH)
-INC_SEARCH        = -I$(INCROOT) $(LOCAL_INC_SEARCH)
-
-NCARGDIR          = ncarg
-HLUDIR            = hlu
-BINDIR            = bin
-LIBDIR            = lib
-INCDIR            = include
-MANDIR            = man
-DOCDIR            = doc
-TMPDIR            = tmp
-DBDIR             = database
-FONTCAPDIR        = fontcaps
-GRAPHCAPDIR       = graphcaps
-EXAMPLESDIR       = examples
-TUTORIALDIR       = tutorial
-TESTSDIR          = tests
-ROBJDIR           = robj
-XAPPDIR           = xapp
-CONFIGDIR         = config
-GENERICDIR        = generic
-
-BINPATH           = $(BINROOT)
-LIBPATH           = $(LIBROOT)
-INCPATH           = $(INCROOT)/$(NCARGDIR)
-HLUINCPATH        = $(INCROOT)/$(NCARGDIR)/$(HLUDIR)
-TMPPATH           = $(TMPROOT)
-MANPATH           = $(MANROOT)
-
-MANLPATH          = $(MANPATH)/manl
-MAN1PATH          = $(MANPATH)/man1
-MAN3PATH          = $(MANPATH)/man3
-MAN5PATH          = $(MANPATH)/man5
-MAN6PATH          = $(MANPATH)/man6
-MAN8PATH          = $(MANPATH)/man8
-
-LIBNCARGPATH      = $(LIBPATH)/$(NCARGDIR)
-DBPATH            = $(LIBNCARGPATH)/$(DBDIR)
-FONTCAPPATH       = $(LIBNCARGPATH)/$(FONTCAPDIR)
-GRAPHCAPPATH      = $(LIBNCARGPATH)/$(GRAPHCAPDIR)
-DOCPATH           = $(LIBNCARGPATH)/$(DOCDIR)
-EXAMPLESPATH      = $(LIBNCARGPATH)/$(EXAMPLESDIR)
-TESTSPATH         = $(LIBNCARGPATH)/$(TESTSDIR)
-ROBJPATH          = $(LIBNCARGPATH)/$(ROBJDIR)
-TUTORIALPATH      = $(LIBNCARGPATH)/$(TUTORIALDIR)
-XAPPPATH          = $(LIBNCARGPATH)/$(XAPPDIR)
-
-MANL_SECTION      = l
-MAN1_SECTION      = 1
-MAN3_SECTION      = 3
-MAN5_SECTION      = 5
-MAN6_SECTION      = 6
-MAN8_SECTION      = 8
-
-XLIB              = -lX11 -lnet
-EXTENSIONLIB      = -lXext
-XTOOLLIB          = -lXt
-XMULIB            = -lXmu
-XAWLIB            = -lXaw
-XMOTIFLIBS        = -lXm $(XTOOLLIB) $(XLIB)
-HLULIBS           = -lhlu -lhlu_util
-NCARGCLIBS        = -lncargC -lncarg_gksC
-NCARGLIBS         = -lncarg -lncarg_gks -lncarg_loc -lncarg_c
-CTOFLIBS          =
-NCDFLIBS          = -lnetcdf
-#ifdef BuildRasterHDF
-HDFLIB            = -ldf
-#endif
-XDRLIB            =
-#ifdef BuildRasterNetcdf
-NETCDFLIB         = -lnetcdf $(XDRLIB)
-#endif
-HDFDEFINES        = -DUNICOS
-
-GENERICPATH       = $(NCARG)/$(GENERICDIR)
-
-CONFIGPATH        = $(NCARG)/$(CONFIGDIR)
-YMAKE             = $(CONFIGPATH)/ymake -I$(CONFIGPATH)
-
-MAKE              = make
-FLOAT_OPT         = 
-OS                = -DSYSV -DUNICOS
-ARCH              =
-VDEFINE           = -DVERSION='"$(VERSION)"'
-CC                = cc
-CC_LD             = $(CC)
-CDEBUG            =
-COPT              = -h noopt
-CMISC             = -DUSG -DNeedFuncProto
-CSTATIC           =
-CDYNAMIC          =
-CINC              = $(INC_SEARCH) -I$(INCROOT)
-CFLAGS            = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
-                    $(FLOAT_OPT) $(CINC) $(VDEFINE)
-LD_CFLAGS         = $(LIB_SEARCH) -d FORCE=OFF $(CDEBUG)
-CPP               = /lib/cpp
-FCPP              = $(NCARG)/utils/fcpp $(CPP)
-F77               = cf77
-F77_LD            = $(F77)
-FDEBUG            =
-FOPT              =
-FMISC             =
-FFLAGS            = $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
-                    $(FLOAT_OPT)
-LD_FFLAGS         = $(LIB_SEARCH) -Wl"-D FORCE=OFF $(FDEBUG)"
-LD                = ld
-LD_REL            = $(NCARG)/utils/ldrel
-AR                = bld
-AR_QUICK          = $(AR) q
-AR_CHECK          = $(AR) vr
-AR_SRC            = ar
-AR_SRC_QUICK      = $(AR_SRC) q
-AR_SRC_CHECK      = $(AR_SRC) vr
-RM                = rm -f
-CAT               = cat
-CP                = cp
-MV                = mv -f
-RANLIB            = $(NO_OP)
-NO_OP             = touch -c
-LINT              = lint
-INSTALL           = $(NCARG)/utils/install -c
-INSTALL_RM        = $(RM)
-INSTALL_BIN       = 0755
-INSTALL_MAN       = 0644
-INSTALL_DOC       = 0644
-INSTALL_APP       = 0644
-INSTALL_LIB       = 0644
-INSTALL_DB        = 0644
-INSTALL_INC       = 0644
-
-GRAPHC            = $(BINPATH)/graphc
-FONTC             = $(BINPATH)/fontc
-
-FSPLIT            = fsplit
-CALLCONV          = $(NCARG)/utils/callconv
-SHELL             = /bin/sh
-
-GKS_BUFFER_SIZE   = 1024
+#define	UseCatDirs
+#define	ExtraSysLibraries	-lnet
+#define	HdfDefines	-DUNICOS
+#define	StdDefines	-DSYSV -DUNICOS -DUSG
+#define	COptimizeFlag	-h noopt
+#define FCompiler	cf77
+#define FOptimizeFlag	/**/
+#define LdRelCommand	$(TOP)/utils/ldrel
+#define	ArCommand	bld
+#define GksBufferSize	1024

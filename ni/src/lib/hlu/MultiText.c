@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.1 1993-04-30 17:23:05 boote Exp $
+ *      $Id: MultiText.c,v 1.2 1993-10-19 17:51:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,7 +21,6 @@
  *			child to draw numerous text strings in a column or
  *			a row - for use in Tic-Marks.
  */
-#include <strings.h>
 #include <ncarg/hlu/MultiTextP.h>
 #include <ncarg/hlu/TextItem.h>
 
@@ -71,9 +70,9 @@ static NhlResource resources[] = {
 
 /* Methode declarations	*/
 
-static NhlErrorTypes MultiTextClassInitialize(
+static NhlErrorTypes MultiTextClassPartInitialize(
 #if	NhlNeedProto
-	void
+	LayerClass	lc
 #endif
 );
 
@@ -113,27 +112,33 @@ static NhlErrorTypes MultiTextDestroy(
 
 MultiTextLayerClassRec multiTextLayerClassRec = {
 	{
-/* superclass			*/	(LayerClass)&viewLayerClassRec,
 /* class_name			*/	"MultiText",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(MultiTextLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(LayerClass)&viewLayerClassRec,
+
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
-/* child_resources		*/	NULL,
 /* all_resources		*/	NULL,
-/* class_part_initialize	*/	NULL,
-/* class_inited			*/	False,
-/* class_initialize		*/	MultiTextClassInitialize,
+
+/* class_part_initialize	*/	MultiTextClassPartInitialize,
+/* class_initialize		*/	NULL,
 /* layer_initialize		*/	MultiTextInitialize,
 /* layer_set_values		*/	MultiTextSetValues,
-/* layer_set_values_not		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
-/* layer_pre_draw		*/	NULL,
+/* layer_reparent		*/	NULL,
+/* layer_destroy		*/	MultiTextDestroy,
+
+/* child_resources		*/	NULL,
+
 /* layer_draw			*/	MultiTextDraw,
+
+/* layer_pre_draw		*/	NULL,
 /* layer_draw_segonly		*/	NULL,
 /* layer_post_draw		*/	NULL,
-/* layer_clear			*/	NULL,
-/* layer_destroy		*/	MultiTextDestroy
+/* layer_clear			*/	NULL
 	},
 	{
 /* segment_workstation		*/	-1,	/* ????	*/
@@ -165,7 +170,8 @@ LayerClass multiTextLayerClass = (LayerClass)&multiTextLayerClassRec;
  *
  * Description:	This function initializes the MultiText LayerClass record.
  *
- * In Args:	none
+ * In Args:
+ *		LayerClass	lc	LayerClass being inited
  *
  * Out Args:	none
  *
@@ -174,20 +180,21 @@ LayerClass multiTextLayerClass = (LayerClass)&multiTextLayerClassRec;
  * Side Effect:	
  */
 static NhlErrorTypes
-MultiTextClassInitialize
+MultiTextClassPartInitialize
 #if	__STDC__
 (
-	void
+	LayerClass	lc	/* LayerClass being inited	*/
 )
 #else
-()
+(lc)
+	LayerClass	lc;	/* LayerClass being inited	*/
 #endif
 {
 	/*
 	 * Register children classes
 	 */
-	return _NhlRegisterChildClass(multiTextLayerClass,textItemLayerClass,
-			True,False,NhlNtxString,NhlNtxPosXF,NhlNtxPosYF,NULL);
+	return _NhlRegisterChildClass(lc,textItemLayerClass,True,False,
+				NhlNtxString,NhlNtxPosXF,NhlNtxPosYF,NULL);
 }
 
 /*
@@ -507,8 +514,7 @@ MultiTextSetValues
 		/* free old memory */
 		for(i=0;i < mtold->multitext.num_strings;i++)
 			(void)NhlFree(mtold->multitext.text_strings[i]);
-		if(mtold->multitext.text_strings != NULL)
-			(void)NhlFree(mtold->multitext.text_strings);
+		(void)NhlFree(mtold->multitext.text_strings);
 		mtold->multitext.text_strings = NULL;
 	}
 
@@ -797,12 +803,19 @@ MultiTextDestroy
 	Layer	l;	/* layer to destroy	*/
 #endif
 {
+	int		i;
 	MultiTextLayer	mtl = (MultiTextLayer)l;
 
-	if(mtl->multitext.text_strings != NULL)
-	(void)NhlFree(mtl->multitext.text_strings);
+	if((mtl->multitext.num_strings > 0) &&
+		(mtl->multitext.text_strings != NULL)){
+
+		for(i=0;i < mtl->multitext.num_strings;i++)
+			(void)NhlFree(mtl->multitext.text_strings[i]);
+		(void)NhlFree(mtl->multitext.text_strings);
+	}
+
 	if(mtl->multitext.pos_array != NULL)
-	(void)NhlFree(mtl->multitext.pos_array);
+		(void)NhlFree(mtl->multitext.pos_array);
 
 	return NOERROR;
 }

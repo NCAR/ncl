@@ -1,15 +1,10 @@
 #
-#	$Id: yMakefile,v 1.3 1993-04-16 19:45:41 haley Exp $
+#	$Id: yMakefile,v 1.4 1993-10-19 17:24:20 boote Exp $
 #
-NCARG	= ../../..
+
+#define IHaveSubdirs
 
 SUBDIRS = \
 	fautograph fcolconv fdashline ffield_flow fgks fisosurface \
 	fngmisc fplotchar fscrolled_title fsoftfill fspps fstreamlines \
 	fsurface fthreed
-
-MakeSubdirs($(SUBDIRS))
-MakefilesSubdirs($(SUBDIRS))
-InstallSubdirs($(SUBDIRS))
-CleanSubdirs($(SUBDIRS))
-

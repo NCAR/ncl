@@ -1,7 +1,5 @@
-
-
 /*
- *      $Id: TickMarkP.h,v 1.1 1993-04-30 17:24:53 boote Exp $
+ *      $Id: TickMarkP.h,v 1.2 1993-10-19 17:52:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -228,6 +226,19 @@ typedef struct _TickMarkLayerPart {
 	float 		y_r_data_min;
 	float 		y_r_data_max;
 
+	float 		ir_xbmin;
+	float 		ir_xtmin;
+	float 		ir_ylmin;
+	float 		ir_yrmin;
+	float 		ir_xbmax;
+	float 		ir_xtmax;
+	float 		ir_ylmax;
+	float 		ir_yrmax;
+	int		new_ir_xb;
+	int		new_ir_xt;
+	int		new_ir_yl;
+	int		new_ir_yr;
+
 	float		*x_b_major_ndc_locs;
 	float		*x_b_major_data_locs;
 	char		**x_b_major_labels;
@@ -282,21 +293,5 @@ typedef struct _TickMarkLayerClassRec {
 }TickMarkLayerClassRec;
 
 extern TickMarkLayerClassRec	tickMarkLayerClassRec;
-
-float compare(
-#ifdef NhlNeedProto
-float	/*a*/,
-float	/*b*/,
-int	/*sig_digit*/
-#endif
-);
-
-float roundit(
-#ifdef NhlNeedProto
-float 	/*a*/,
-int	/*sig_digit*/
-#endif
-);
-
 
 #endif /* _NTickMarkP_h */

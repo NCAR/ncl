@@ -1,5 +1,5 @@
 /*
- *      $Id: NresDB.c,v 1.1 1993-04-30 17:23:31 boote Exp $
+ *      $Id: NresDB.c,v 1.2 1993-10-19 17:52:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -51,8 +51,8 @@ SOFTWARE.
 ******************************************************************/
 
 #include	<stdio.h>
+#include	<unistd.h>
 #include	<ctype.h>
-#include	<strings.h>
 
 #include	<ncarg/hlu/hluP.h>
 
@@ -334,6 +334,16 @@ static NrmBits Const xrmtypes[256] = {
     /* The rest will be automatically initialized to zero. */
 };
 
+extern int
+_NrmInternalStringToQuark(
+#if	NhlNeedProto
+	Const char	*name,
+	int		len,
+	Signature	sig,
+	NhlBoolean	permstring
+#endif
+);
+
 void
 _NrmInitialize
 #if	__STDC__
@@ -354,7 +364,7 @@ void NrmStringToQuarkList(
     register NrmQuarkList quarks)   /* RETURN */
 #else
 void NrmStringToQuarkList(name, quarks)
-    register char 	 *name;
+    register Const char	 *name;
     register NrmQuarkList quarks;   /* RETURN */
 #endif
 {
@@ -393,7 +403,7 @@ void NrmStringToBindingQuarkList(
     register NrmQuarkList   quarks)     /* RETURN */
 #else
 void NrmStringToBindingQuarkList(name, bindings, quarks)
-    register char	    *name;
+    register Const char	    *name;
     register NrmBindingList bindings;   /* RETURN */
     register NrmQuarkList   quarks;     /* RETURN */
 #endif
@@ -437,6 +447,7 @@ void NrmStringToBindingQuarkList(name, bindings, quarks)
 
 #ifdef DEBUG
 
+#ifdef OLD_STUFF
 static void PrintQuarkList(quarks, stream)
     NrmQuarkList    quarks;
     FILE	    *stream;
@@ -452,6 +463,7 @@ static void PrintQuarkList(quarks, stream)
     }
 } /* PrintQuarkList */
 
+#endif /* OLD_STUFF */
 #endif /* DEBUG */
 
 /*ARGSUSED*/
@@ -582,7 +594,7 @@ static void GrowTable(prev)
 	    return;
 	}
 	ltable->table.mask = i - 1;
-	bzero((char *)ltable->buckets, i * sizeof(VEntry));
+	memset((char*)ltable->buckets,0, sizeof(VEntry) * i);
 	MoveValues(&otable, ltable);
     } else {
 	register NTable ntable;
@@ -592,7 +604,7 @@ static void GrowTable(prev)
 	    return;
 	*ntable = *table;
 	ntable->mask = i - 1;
-	bzero((char *)NodeBuckets(ntable), i * sizeof(NTable));
+	memset((char*)NodeBuckets(ntable),0,sizeof(NTable)*i);
 	*prev = ntable;
 	MoveTables(table, ntable);
     }
@@ -912,7 +924,7 @@ static void PutEntry(db, bindings, quarks, type, value)
 		    if (!entry->string)
 			RepType(entry) = type;
 		    /* identical size, just overwrite value */
-		    bcopy((char *)value->addr, RawValue(entry), value->size);
+		    memcpy(RawValue(entry),value->addr,value->size);
 		    return;
 		}
 		/* splice out and free old entry */
@@ -966,7 +978,7 @@ static void PutEntry(db, bindings, quarks, type, value)
 	RepType(entry) = type;
     }
     /* save a copy of the value */
-    bcopy((char *)value->addr, RawValue(entry), value->size);
+    memcpy(RawValue(entry),value->addr,value->size);
     (*pprev)->entries++;
     /* this is a new leaf, need to remember it for search lists */
     if (q > maxResourceQuark) {
@@ -978,7 +990,7 @@ static void PutEntry(db, bindings, quarks, type, value)
 	else
 	    resourceQuarks = (unsigned char *)NhlMalloc(size);
 	if (resourceQuarks) {
-	    bzero((char *)&resourceQuarks[oldsize], size - oldsize);
+	    memset((char*)&resourceQuarks[oldsize],0,size - oldsize);
 	    maxResourceQuark = size - 1;
 	} else {
 	    maxResourceQuark = -1;
@@ -1067,13 +1079,14 @@ void NrmQPutStringResource(pdb, bindings, quarks, str)
 
 static void GetIncludeFile();
 
-static void GetDatabase(db, str, filename, doall)
+static void GetDatabase(db, permstr, filename, doall)
     NrmDatabase db;
-    register char *str;
+    Const char *permstr;
     Const char *filename;
     NhlBoolean doall;
 {
     register char *ptr;
+    register char *str = (char *)permstr;
     register NrmBits bits = 0;
     register char c;
     int len;
@@ -1128,11 +1141,11 @@ static void GetDatabase(db, str, filename, doall)
 	 */
 
 	if (c == '!') { /* Comment, spin to next newline */
-	    /* SUPPRESS 530 */
+	    /* SUPPRESS 570 */
 	    while (is_simple(bits = next_char(c, str))) {}
 	    if (is_EOL(bits))
 		continue;
-	    /* SUPPRESS 530 */
+	    /* SUPPRESS 570 */
 	    while (!is_EOL(bits = next_mbchar(c, len, str))) {}
 	    str--;
 	    continue;		/* start a new line. */
@@ -1141,13 +1154,13 @@ static void GetDatabase(db, str, filename, doall)
 	if (c == '#') { /* Directive */
 	    /* remove extra whitespace */
 	    only_pcs = True;
-	    /* SUPPRESS 530 */
+	    /* SUPPRESS 570 */
 	    while (is_space(bits = next_char(c, str))) {};
 	    /* only "include" directive is currently defined */
 	    if (!strncmp(str, "include", 7)) {
 		str += (7-1);
 		/* remove extra whitespace */
-		/* SUPPRESS 530 */
+		/* SUPPRESS 570 */
 		while (is_space(bits = next_char(c, str))) {};
 		/* must have a starting " */
 		if (c == '"') {
@@ -1507,7 +1520,7 @@ void NrmPutLineResource(
 #else
 void NrmPutLineResource(pdb, line)
     NrmDatabase *pdb;
-    char	*line;
+    Const char	*line;
 #endif
 {
     if (!*pdb) *pdb = NewDatabase();
@@ -1519,7 +1532,7 @@ NrmDatabase NrmGetStringDatabase(
     Const char    *data)
 #else
 NrmDatabase NrmGetStringDatabase(data)
-    char	    *data;
+    Const char	    *data;
 #endif
 {
     NrmDatabase     db;
@@ -1577,7 +1590,7 @@ GetIncludeFile(db, base, fname, fnamelen)
 
     if (fnamelen <= 0 || fnamelen >= BUFSIZ)
 	return;
-    if (*fname != '/' && base && (str = rindex(base, '/'))) {
+    if (fname[0] != '/' && base && (str = strrchr(base, '/'))) {
 	len = str - base + 1;
 	if (len + fnamelen >= BUFSIZ)
 	    return;
@@ -2054,11 +2067,11 @@ void NrmPutFileDatabase(db, fileName)
 		entry->next->hasloose && \
 		looseleaf((LTable)entry->next, names+1, classes+1, closure)) \
 		return True; \
-	    if ((*get)(entry, names+1, classes+1, closure)) \
+	    if ((*get)((LTable)entry, names+1, classes+1, closure)) \
 		return True; \
 	    if (entry->tight && (entry = entry->next) && \
 		entry->name == q && leaf == entry->leaf && \
-		(*get)(entry, names+1, classes+1, closure)) \
+		(*get)((LTable)entry, names+1, classes+1, closure)) \
 		return True; \
 	} else if (entry->leaf) { \
 	    if (entry->hasloose && \
@@ -2078,7 +2091,7 @@ void NrmPutFileDatabase(db, fileName)
 	entry = (NTable)NULL; \
     if (entry) { \
 	if (leaf == entry->leaf) { \
-	    if ((*get)(entry, names+1, classes+1, closure)) \
+	    if ((*get)((LTable)entry, names+1, classes+1, closure)) \
 		return True; \
 	} else if (entry->leaf && entry->hasloose) { \
 	    if (looseleaf((LTable)entry, names+1, classes+1, closure)) \
@@ -2248,7 +2261,7 @@ NrmGetQResFromList
 {
     register LTable *list;
     register LTable table;
-    register VEntry entry;
+    register VEntry entry=NULL;
     int flags;
 
 /* find tight or loose entry */
@@ -2283,7 +2296,7 @@ NrmGetQResFromList
 	table = (LTable)NULL;
     } else if (flags == 3) {
 	/* both name and class */
-	/* SUPPRESS 560 */
+	/* SUPPRESS 624 */
 	while (table = *list++) {
 	    if (table != LOOSESEARCH) {
 		VTIGHTLOOSE(name);  /* do name, tight and loose */
@@ -2298,7 +2311,7 @@ NrmGetQResFromList
 	/* just one of name or class */
 	if (flags == 1)
 	    name = class;
-	/* SUPPRESS 560 */
+	/* SUPPRESS 624 */
 	while (table = *list++) {
 	    if (table != LOOSESEARCH) {
 		VTIGHTLOOSE(name); /* tight and loose */
@@ -2547,7 +2560,7 @@ static void DestroyLTable(table)
 
     buckets = table->buckets;
     for (i = table->table.mask; i >= 0; i--, buckets++) {
-	/* SUPPRESS 560 */
+	/* SUPPRESS 624 */
 	for (next = *buckets; entry = next; ) {
 	    next = entry->next;
 	    NhlFree((char *)entry);
@@ -2567,7 +2580,7 @@ static void DestroyNTable(table)
 
     buckets = NodeBuckets(table);
     for (i = table->mask; i >= 0; i--, buckets++) {
-	/* SUPPRESS 560 */
+	/* SUPPRESS 624 */
 	for (next = *buckets; entry = next; ) {
 	    next = entry->next;
 	    if (entry->leaf)
@@ -2599,7 +2612,7 @@ NrmDestroyDB
     register NTable table, next;
 
     if (db) {
-	/* SUPPRESS 560 */
+	/* SUPPRESS 624 */
 	for (next = db->table; table = next; ) {
 	    next = table->next;
 	    if (table->leaf)
@@ -2607,6 +2620,7 @@ NrmDestroyDB
 	    else
 		DestroyNTable(table);
 	}
+	/* SUPPRESS 113 */
 	(*db->methods->destroy)(db->mbstate);
 	NhlFree((char *)db);
     }

@@ -1,20 +1,10 @@
 #
-#	$Id: yMakefile,v 1.3 1993-04-16 17:02:34 haley Exp $
+#	$Id: yMakefile,v 1.4 1993-10-19 17:23:17 boote Exp $
 #
-NCARG	= ../../../..
-
-FSPLIT	= ncarguncat
 
 MYNAME	= espps
 
 GENERIC_SRCS = \
 	splogy.f sprevx.f
 
-install::
-	@for file in $(GENERIC_SRCS); do\
-	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
-	done
-
-MakefileTarget
-CleanTarget
-UpdateTarget
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))

@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.2 1993-05-27 19:11:22 ethan Exp $
+ *      $Id: Resources.c,v 1.3 1993-10-19 17:52:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -42,8 +42,6 @@
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/NresDB.h>
 
-/* SUPPRESS 112 */
-
 /*
  * Static vars used to determine resoureces hard-coded defaults
  */
@@ -51,6 +49,7 @@
 static NrmQuark QImmediate = NrmNULLQUARK;
 static NrmQuark QProcedure = NrmNULLQUARK;
 static NrmQuark QString = NrmNULLQUARK;
+static NrmQuark QExtraLayer = NrmNULLQUARK;
 
 /*
  * Resource Database
@@ -97,9 +96,9 @@ _NhlCopyFromArg
     else if (size == sizeof(char*))	*(char **)dst = (char*)src;
     else if (size == sizeof(_NhlArgVal))	*(_NhlArgVal *)dst = src;
     else if (size > sizeof(_NhlArgVal))
-        bcopy((char *)  src, (char *) dst, (int) size);
+        memcpy((void*)dst,(void*)src,size);
     else
-        bcopy((char *) &src, (char *) dst, (int) size);
+        memcpy((void*)dst,(void*)&src,size);
 }
 
 /*
@@ -145,9 +144,9 @@ _NhlCopyToArg
     else if (size == sizeof(_NhlArgVal))
 				*((_NhlArgVal *)*dst) = *(_NhlArgVal*)src;
     else if (size > sizeof(_NhlArgVal))
-        bcopy((char *)  src, (char *) dst, (int) size);
+        memcpy((char*)dst,(char*)src,size);
     else
-        bcopy((char *) &src, (char *) dst, (int) size);
+        memcpy((char*)dst,(char*)&src,size);
 }
 
 /*
@@ -241,36 +240,38 @@ GetNamesAndClasses
  * Returns:	none
  * Side Effect:	none
  */
-/*ARGSUSED*/
 static NhlErrorTypes
 GetResources
 #if	__STDC__
 (
-	char*		base,		/* addr to write res-values to	*/
-	NrmQuarkList	nameQ,		/* Qlist of names in instance	*/
-	NrmQuarkList	classQ,		/* Qlist of classes in instance	*/
-	NrmResourceList	resources,	/* list of resources		*/
-	int		num_res,	/* number of resources		*/
-	_NhlArgList	args,		/* args to override defaults	*/
-	int		num_args,	/* number of args		*/
-	NrmQuarkList	child		/* look at parent's DB level too*/
+	_NhlConvertContext	context,/* context for converter allocs	*/
+	char			*base,	/* addr to write res-values to	*/
+	NrmQuarkList		nameQ,	/* Qlist of names in instance	*/
+	NrmQuarkList		classQ,	/* Qlist of classes in instance	*/
+	NrmResourceList		resources,/* list of resources		*/
+	int			num_res,/* number of resources		*/
+	_NhlExtArgList		args,	/* args to override defaults	*/
+	int			num_args,/* number of args		*/
+	NrmQuarkList		child	/* look at parent's DB level too*/
 )
 #else
-(base,nameQ,classQ,resources,num_res,args,num_args,child)
-	char*		base;		/* addr to write res-values to	*/
-	NrmQuarkList	nameQ;		/* Qlist of names in instance	*/
-	NrmQuarkList	classQ;		/* Qlist of classes in instance	*/
-	NrmResourceList	resources;	/* list of resources		*/
-	int		num_res;	/* number of resources		*/
-	_NhlArgList	args;		/* args to override defaults	*/
-	int		num_args;	/* number of args		*/
-	NrmQuarkList	child;		/* look at parent's DB level too*/
+(context,base,nameQ,classQ,resources,num_res,args,num_args,child)
+	_NhlConvertContext	context;/* context for converter allocs	*/
+	char			*base;	/* addr to write res-values to	*/
+	NrmQuarkList		nameQ;	/* Qlist of names in instance	*/
+	NrmQuarkList		classQ;	/* Qlist of classes in instance	*/
+	NrmResourceList		resources;/* list of resources		*/
+	int			num_res;/* number of resources		*/
+	_NhlExtArgList		args;	/* args to override defaults	*/
+	int			num_args;/* number of args		*/
+	NrmQuarkList		child;	/* look at parent's DB level too*/
 #endif
 {
 	register int	i,j;
 	NhlBoolean	resfound[MAXRESLIST];
 	NhlBoolean	argfound[MAXARGLIST];
 	NhlErrorTypes	ret = NOERROR;
+	NhlErrorTypes	lret = NOERROR;
 	NrmHashTable	stackslist[MAXRESLIST];
 	NrmHashTable	*slist = stackslist;
 	int		slistlen = MAXRESLIST;
@@ -279,29 +280,67 @@ GetResources
 	int		Pslistlen = MAXRESLIST;
 
 	/* Mark each resource as not found */
-	bzero((char *) resfound, (int)(num_res * sizeof(NhlBoolean)));
+	memset((char *)resfound,0, (int)(num_res * sizeof(NhlBoolean)));
 
 	/* Mark each arg as not found */
-	bzero((char *) argfound, (int)(num_args * sizeof(NhlBoolean)));
+	memset((char *) argfound,0, (int)(num_args * sizeof(NhlBoolean)));
 
 	/* Set resources specified via args */
 
 	for (i=0; i < num_args; i++){
 		for(j=0; j < num_res; j++) {
 			if(args[i].quark == resources[j].nrm_name) {
-				_NhlCopyFromArg(args[i].value,
+				if((args[i].type == NrmNULLQUARK) ||
+					(args[i].type==resources[j].nrm_type)){
+
+					_NhlCopyFromArg(args[i].value,
 					(char*)(base + resources[j].nrm_offset),
 					resources[j].nrm_size);
-				resfound[j] = True;
+					resfound[j] = True;
+				}
+				else if(_NhlConverterExists(args[i].type,
+					resources[j].nrm_type,NrmNULLQUARK)){
+					/* 
+					 * call converter
+					 */
+					NrmValue	from, to;
+
+					from.size = sizeof(NhlPointer);
+					from.addr = (void*)args[i].value;
+					to.size = resources[j].nrm_size;
+					to.addr =(void *)(base +
+						resources[j].nrm_offset);
+
+					lret = _NhlConvertData(context,
+							args[i].type,
+							resources[j].nrm_type,
+							&from, &to);
+					
+					if(lret!=NOERROR){
+						NhlPError(WARNING,E_UNKNOWN,
+			"Error retrieving resource %s from args - Ignoring Arg",
+					NrmNameToString(resources[i].nrm_name));
+						ret = MIN(WARNING,ret);
+					}
+					else{
+						resfound[j] = True;
+					}
+				}
+				else{
+					NhlPError(WARNING,E_UNKNOWN,
+				"The %s resource is not setable using a %s",
+						NrmQuarkToString(args[i].quark),
+						NrmQuarkToString(args[i].type));
+				}
 				argfound[i] = True;
 				break;
 			}	
 		}
 		if(!argfound[i]){
-			NhlPError(INFO,E_UNKNOWN,
+			NhlPError(WARNING,E_UNKNOWN,
 				"%s is not a resource in the given object",
 						NrmNameToString(args[i].quark));
-			ret = MIN(ret,INFO);
+			ret = MIN(ret,WARNING);
 		}
 	}
 
@@ -322,12 +361,14 @@ GetResources
 		NrmQuark *tquark;
 
 		/*
-		 * remove last quark from each list
+		 * remove last quark from each list because the resources
+		 * should look as if they are actually resources of the
+		 * parent.
 		 */
-		/* SUPPRESS 530 */
+		/* SUPPRESS 570 */
 		for(tquark = nameQ;*(tquark+1) != NrmNULLQUARK;tquark++);
 		*tquark = NrmNULLQUARK;
-		/* SUPPRESS 530 */
+		/* SUPPRESS 570 */
 		for(tquark = classQ;*(tquark+1) != NrmNULLQUARK;tquark++);
 		*tquark = NrmNULLQUARK;
 		while(!NrmQGetSearchList(NhlResDB,nameQ,classQ,Pslist,
@@ -344,7 +385,7 @@ GetResources
 
 	for (i=0; i < num_res; i++){
 
-		if(resfound[i])		/* resource set via arg	*/
+		if(resfound[i])		/* resource set via arg or datares*/
 			continue;
 
 		/* Set resources via Nrm databases */
@@ -362,13 +403,11 @@ GetResources
 
 				if(rdbtype != resources[i].nrm_type){
 
-					NhlErrorTypes lret = NOERROR;
-
 					to.size = resources[i].nrm_size;
 					to.addr =(void *)(base +
 						resources[i].nrm_offset);
 
-					lret = _NhlConvertData(rdbtype,
+					lret = _NhlConvertData(context,rdbtype,
 							resources[i].nrm_type,
 							&from, &to);
 					
@@ -398,8 +437,9 @@ GetResources
 						(unsigned int)from.addr;
 					}
 					else{
-						bcopy(from.addr,
-						base + resources[i].nrm_offset,
+						memcpy(base +
+							resources[i].nrm_offset,
+							from.addr,
 							resources[i].nrm_size);
 					}
 					resfound[i] = True;
@@ -425,13 +465,11 @@ GetResources
 
 				if(rdbtype != resources[i].nrm_type){
 
-					NhlErrorTypes lret = NOERROR;
-
 					to.size = resources[i].nrm_size;
 					to.addr =(void*)(base +
 						resources[i].nrm_offset);
 
-					lret = _NhlConvertData(rdbtype,
+					lret = _NhlConvertData(context,rdbtype,
 							resources[i].nrm_type,
 							&from, &to);
 					
@@ -461,8 +499,9 @@ GetResources
 						from.addr;
 					}
 					else{
-						bcopy(from.addr,
+						memcpy(
 						base + resources[i].nrm_offset,
+						from.addr,
 							resources[i].nrm_size);
 					}
 					resfound[i] = True;
@@ -530,15 +569,16 @@ GetResources
 			}
 
 			else if(resources[i].nrm_default_type == QProcedure){
-				NhlErrorTypes lret;
+
+				NrmResourceDefaultProc	def_proc =
+					(NrmResourceDefaultProc)
+						resources[i].nrm_default_addr;
 
 				/* step #2 */
 
-				lret = (*(NrmResourceDefaultProc)
-						resources[i].nrm_default_addr)
-						(resources[i].nrm_name,
+				lret = (*def_proc)(resources[i].nrm_name,
 						 resources[i].nrm_class,
-						 base, resources[i].nrm_offset);
+						 base,resources[i].nrm_offset);
 				if(lret > WARNING){
 					resfound[i] = True;
 					continue; /* this resource is finished*/
@@ -564,12 +604,10 @@ GetResources
 			else{
 				/* step #4 */
 
-				NhlErrorTypes lret = NOERROR;
-
 				from.size = 0;
 				from.addr = resources[i].nrm_default_addr;
 
-				lret = _NhlConvertData(
+				lret = _NhlConvertData(context,
 					resources[i].nrm_default_type,
 					resources[i].nrm_type,&from,&to);
 				
@@ -592,13 +630,13 @@ GetResources
 
 			if(resources[i].nrm_type == QString)
 				*(NhlPointer *)
-				(base + resources[i].nrm_offset) = to.addr;
+				(base+resources[i].nrm_offset) = to.addr;
 			else if(to.addr == NULL)
-				bzero(base + resources[i].nrm_offset,
+				memset(base + resources[i].nrm_offset,0,
 							resources[i].nrm_size);
 			else
-				bcopy(to.addr,(base + resources[i].nrm_offset),
-								to.size);
+				memcpy((base+resources[i].nrm_offset),
+							to.addr,to.size);
 			resfound[i] = True;
 		}
 	}
@@ -628,17 +666,19 @@ NhlErrorTypes
 _NhlGetResources
 #if	__STDC__
 (
-	Layer		l,		/* layer to set resources of	*/
-	_NhlArgList	args,		/* args to override res defaults*/
-	int		num_args,	/* number of args		*/
-	NrmQuarkList	child		/* layer is auto-managed chld	*/
+	_NhlConvertContext	context,
+	Layer			l,	/* layer to set resources of	*/
+	_NhlExtArgList		args,	/* args to override res defaults*/
+	int			num_args,/* number of args		*/
+	NrmQuarkList		child	/* layer is auto-managed chld	*/
 )
 #else
-(l,args,num_args,child)
-	Layer		l;		/* layer to set resources of	*/
-	_NhlArgList	args;		/* args to override res defaults*/
-	int		num_args;	/* number of args		*/
-	NrmQuarkList	child;		/* layer is auto-managed chld	*/
+(context,l,args,num_args,child)
+	_NhlConvertContext	context;
+	Layer			l;	/* layer to set resources of	*/
+	_NhlExtArgList		args;	/* args to override res defaults*/
+	int			num_args;/* number of args		*/
+	NrmQuarkList		child;	/* layer is auto-managed chld	*/
 #endif
 {
 	NrmQuark nameQ[MAXTREEDEPTH], classQ[MAXTREEDEPTH];
@@ -656,9 +696,9 @@ _NhlGetResources
 		return(FATAL);
 	}
 
-	return(GetResources((char *)l, nameQ, classQ,
-		     (NrmResourceList)lc->base_class.resources,
-		     lc->base_class.num_resources,args,num_args,child));
+	return(GetResources(context,(char*)l, nameQ, classQ,
+				     (NrmResourceList)lc->base_class.resources,
+			     lc->base_class.num_resources,args,num_args,child));
 }
 
 /*
@@ -708,7 +748,8 @@ _NhlCompileResourceList
  * Function:	_NhlGroupResources
  *
  * Description:	This function combines the resources of the current layer
- *		class with the resources of it's superclass.
+ *		class with the resources of it's superclass. If the current
+ *		LayerClass over-rides any of the resources in the super-class
  *
  * In Args:	LayerClass	lc;	layer class to create resource list for
  *
@@ -730,20 +771,82 @@ _NhlGroupResources
 #endif
 {
 	NrmResourceList	rlist;
-	LayerClass sc = lc->base_class.superclass;
+	int		num_rlist;
+	int		i,j,next;
+	NrmResourceList	classlist;
+	LayerClass	sc = lc->base_class.superclass;
+	unsigned int	super_size;
+	NhlBoolean	override;
 
-	if(sc != NULL) {
-	rlist = (NrmResourceList)NhlMalloc((unsigned)(sizeof(NrmResource) *
-		(lc->base_class.num_resources+sc->base_class.num_resources)));
-	bcopy((char*)(lc->base_class.resources),
-		(char*)rlist,
-		(unsigned)(sizeof(NrmResource)*lc->base_class.num_resources));
-	bcopy((char*)(sc->base_class.resources),
-		(char*)(&rlist[lc->base_class.num_resources]),
-		(unsigned)(sizeof(NrmResource)* sc->base_class.num_resources));
-	lc->base_class.resources = (NhlResourceList)rlist;
-	lc->base_class.num_resources += sc->base_class.num_resources;
+	/*
+	 * If superclass has no resources then the classes resource list
+	 * is already complete.
+	 */
+	if((sc == NULL) || (sc->base_class.num_resources < 1))
+		return;
+
+	/*
+	 * If class doesn't have any resources then point to the
+	 * super-classes resources.
+	 */
+	if(lc->base_class.num_resources < 1){
+		lc->base_class.resources = sc->base_class.resources;
+		lc->base_class.num_resources = sc->base_class.num_resources;
+
+		return;
 	}
+
+	num_rlist = lc->base_class.num_resources + sc->base_class.num_resources;
+	super_size = sc->base_class.layer_size;
+
+	rlist = (NrmResourceList)NhlMalloc(
+				(unsigned)(sizeof(NrmResource) * num_rlist));
+
+	memcpy((char*)rlist,(char*)(sc->base_class.resources),
+			sc->base_class.num_resources * sizeof(NrmResource));
+
+	classlist = (NrmResourceList)lc->base_class.resources;
+	next = sc->base_class.num_resources;
+
+	for(i=0;i < lc->base_class.num_resources;i++){
+
+		override = False;
+
+		if(classlist[i].nrm_offset < super_size){
+
+			for(j=0;j < sc->base_class.num_resources;j++){
+
+				if(classlist[i].nrm_offset ==
+							rlist[j].nrm_offset){
+					/*
+					 * Over-ride superclass field
+					 * size must be the same so GetResources
+					 * will not overwrite the next field.
+					 */
+					if(classlist[i].nrm_size !=
+							rlist[j].nrm_size){
+						NhlPError(WARNING,E_UNKNOWN,
+			"GroupResources:%s is Wrong size in Resource list",
+				NrmQuarkToString(classlist[i].nrm_name));
+
+						classlist[i].nrm_size =
+							rlist[j].nrm_size;
+					}
+					rlist[j] = classlist[i];
+					num_rlist--;
+					override = True;
+					break;
+				}
+			}
+		}
+
+		if(!override)
+			rlist[next++] = classlist[i];
+	}
+
+	lc->base_class.resources = (NhlResourceList)rlist;
+	lc->base_class.num_resources = num_rlist;
+
 	return;
 }
 
@@ -783,6 +886,7 @@ _NhlResourceListInitialize
 	QImmediate = NrmStringToName(NhlTImmediate);
 	QProcedure = NrmStringToName(NhlTProcedure);
 	QString = NrmStringToName(NhlTString);
+	QExtraLayer = NrmStringToName(NhlTExtraLayer);
 
 	return; 
 }
@@ -850,6 +954,37 @@ _NhlInitResDatabase
 }
 
 /*
+ * Function:	_NhlDestroyResDatabase
+ *
+ * Description:	This function is used to destroy the default resource
+ *		database that is made up from a system-resource file and
+ *		a user-resource file.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Private
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NhlDestroyResDatabase
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	NrmDestroyDB(NhlResDB);
+	NhlResDB = NULL;
+
+	return;
+}
+
+/*
  * Function:	_NhlMergeArgLists
  *
  * Description:	This function takes two arg lists and merges them - removing
@@ -857,13 +992,13 @@ _NhlInitResDatabase
  *		the args.
  *
  * In Args:	
- *		_NhlArgList	oargs,		over-ride args
+ *		_NhlExtArgList	oargs,		over-ride args
  *		int		num_oargs,	num oargs
- *		_NhlArgList	args,		args
+ *		_NhlExtArgList	args,		args
  *		int		num_args	num args
  *
  * Out Args:	
- *		_NhlArgList	*ret_args,	return args
+ *		_NhlExtArgList	*ret_args,	return args
  *		int		*num_ret_args,	num ret_args
  *
  * Scope:	Private Global
@@ -874,20 +1009,20 @@ void
 _NhlMergeArgLists
 #if	__STDC__
 (
-	_NhlArgList	*ret_args,	/* return args		*/
+	_NhlExtArgList	ret_args,	/* return args		*/
 	int		*num_ret_args,	/* num ret_args		*/
-	_NhlArgList	oargs,		/* over-ride args	*/
+	_NhlExtArgList	oargs,		/* over-ride args	*/
 	int		num_oargs,	/* num oargs		*/
-	_NhlArgList	args,		/* args			*/
+	_NhlExtArgList	args,		/* args			*/
 	int		num_args	/* num args		*/
 )
 #else
 (ret_args,num_ret_args,oargs,num_oargs,args,num_args)
-	_NhlArgList	*ret_args;	/* return args		*/
+	_NhlExtArgList	ret_args;	/* return args		*/
 	int		*num_ret_args;	/* num ret_args		*/
-	_NhlArgList	oargs;		/* over-ride args	*/
+	_NhlExtArgList	oargs;		/* over-ride args	*/
 	int		num_oargs;	/* num oargs		*/
-	_NhlArgList	args;		/* args			*/
+	_NhlExtArgList	args;		/* args			*/
 	int		num_args;	/* num args		*/
 #endif
 {
@@ -906,17 +1041,6 @@ _NhlMergeArgLists
 		return;
 
 	/*
-	 * allocate memory for return arg list
-	 */
-	*ret_args = (_NhlArgList)NhlMalloc((num_oargs + num_args) *
-							sizeof(_NhlArg));
-	if(*ret_args == NULL){
-		NhlPError(FATAL,12,
-				"Unable to Create args list to create child");
-		return;
-	}
-
-	/*
 	 * Add args from args list only if that argname doesn't exist in
 	 * the override arg list
 	 */
@@ -931,8 +1055,7 @@ _NhlMergeArgLists
 		}
 
 		if(!argfound){
-			(*ret_args)[*num_ret_args].quark = args[i].quark;
-			(*ret_args)[*num_ret_args].value = args[i].value;
+			ret_args[*num_ret_args] = args[i];
 			(*num_ret_args)++;
 		}
 	}
@@ -941,8 +1064,7 @@ _NhlMergeArgLists
 	 * Add all the oargs to the ret list
 	 */
 	for(i=0;i < num_oargs;i++){
-		(*ret_args)[*num_ret_args].quark = oargs[i].quark;
-		(*ret_args)[*num_ret_args].value = oargs[i].value;
+		ret_args[*num_ret_args] = oargs[i];
 		(*num_ret_args)++;
 	}
 }
@@ -1016,21 +1138,23 @@ _NhlSortChildArgs
 #if	__STDC__
 (
 	Layer			l,		/* layer		*/
-	_NhlArgList		args_in,	/* args to sort		*/
+	_NhlExtArgList		args_in,	/* args to sort		*/
 	int			nargs_in,	/* number args to sort	*/
-	_NhlArgList		args_out,	/* args not forwarded	*/
+	_NhlExtArgList		*args_out,	/* args not forwarded	*/
 	int			*nargs_out,	/* num args_out		*/
 	_NhlChildArgList	*forw_list,	/* list of args to frwd	*/
+	NhlBoolean		*args_used,	/* args used		*/
 	NhlBoolean		getvalues	/* called frm getvalues	*/
 )
 #else
-(l,args_in,nargs_in,args_out,nargs_out,forw_list,getvalues)
+(l,args_in,nargs_in,args_out,nargs_out,forw_list,args_used,getvalues)
 	Layer			l;		/* layer		*/
-	_NhlArgList		args_in;	/* args to sort		*/
+	_NhlExtArgList		args_in;	/* args to sort		*/
 	int			nargs_in;	/* number args to sort	*/
-	_NhlArgList		args_out;	/* args not forwarded	*/
+	_NhlExtArgList		*args_out;	/* args not forwarded	*/
 	int			*nargs_out;	/* num args_out		*/
 	_NhlChildArgList	*forw_list;	/* list of args to frwd	*/
+	NhlBoolean		*args_used;	/* args used		*/
 	NhlBoolean		getvalues;	/* called frm getvalues	*/
 #endif
 {
@@ -1048,17 +1172,17 @@ _NhlSortChildArgs
 	/*
 	 * Deal with simplest case
 	 */
-	if(nargs_in == 0){
-		*nargs_out = 0;
+	if(nargs_in == 0)
 		return NOERROR;
-	}
 
 	/*
 	 * Deal with no children case - Parent gets all args
 	 */
 	if(lc->base_class.child_resources == NULL){
-		bcopy(args_in,args_out,(int)(nargs_in * sizeof(_NhlArg)));
+		*args_out = args_in;
 		*nargs_out = nargs_in;
+		for(i=0;i<nargs_in;i++)
+			args_used[i] = True;
 		return NOERROR;
 	}
 
@@ -1080,9 +1204,12 @@ _NhlSortChildArgs
 		arglist->autosetval = reslist->autosetval;
 		arglist->next = NULL;
 		arglist->nargs = 0;
-		arglist->args = (_NhlArgList)NhlMalloc(nargs_in *
-							sizeof(_NhlArg));
-		if(arglist->args == NULL){
+		arglist->args = NhlMalloc(nargs_in * sizeof(_NhlExtArg));
+		arglist->args_used = (NhlBoolean**)NhlMalloc(nargs_in *
+							sizeof(NhlBoolean*));
+		if((arglist->args == NULL) || (arglist->args_used == NULL)){
+			(void)NhlFree(arglist->args);
+			(void)NhlFree(arglist->args_used);
 			_NhlFreeChildArgs(*forw_list);
 			*forw_list = NULL;
 			return FATAL;
@@ -1110,15 +1237,18 @@ _NhlSortChildArgs
 		NhlBoolean argfound;
 
 		argfound = False;
+		args_used[i] = False;
 
 		/*
 		 * if arg is a res in parent then arg is added to
 		 * parents arg list and no other.
 		 */
 		if(_NhlResInClass(lc,args_in[i].quark)){
-			args_out[*nargs_out].quark = args_in[i].quark;
-			args_out[*nargs_out].value = args_in[i].value;
+			(*args_out)[*nargs_out].quark = args_in[i].quark;
+			(*args_out)[*nargs_out].value = args_in[i].value;
+			(*args_out)[*nargs_out].type = args_in[i].type;
 			(*nargs_out)++;
+			args_used[i] = True;
 			argfound = True;
 		}
 		/*
@@ -1139,6 +1269,10 @@ _NhlSortChildArgs
 							args_in[i].quark;
 					arglist->args[arglist->nargs].value =
 							args_in[i].value;
+					arglist->args[arglist->nargs].type =
+								args_in[i].type;
+					arglist->args_used[arglist->nargs] =
+								&args_used[i];
 					(arglist->nargs)++;
 					argfound = True;
 					/*
@@ -1199,6 +1333,7 @@ _NhlFreeChildArgs
 	_NhlFreeChildArgs(list->next);
 
 	(void)NhlFree(list->args);
+	(void)NhlFree(list->args_used);
 	(void)NhlFree(list);
 
 	return;

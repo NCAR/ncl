@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.1 1993-04-30 17:21:33 boote Exp $
+ *      $Id: Converters.c,v 1.2 1993-10-19 17:50:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,11 +21,15 @@
  *			that are created and installed when the hlu library
  *			is initialized.
  */
-#include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
-#include <ncarg/hlu/Convert.h>
+#include <ncarg/hlu/Converters.h>
+
+#if	defined(__CENTERLINE__) && defined(sun)
+#include <floatingpoint.h>
+#endif	/* centerline/sun hack- strtod should be in stdlib.h but it's not */
 
 /*
  * This macro is used because most of the converters end the same way.
@@ -68,33 +72,33 @@
  *
  * Description:	This is a type converter to convert string's to floats.
  *
- * In Args:	NrmValue	*from	ptr to from data
- *		NrmValue	*args	add'n args for conversion
- *		int		nargs	number of args
+ * In Args:	NrmValue		*from	ptr to from data
+ *		NhlConvertArgList	args	add'n args for conversion
+ *		int			nargs	number of args
  *		
  *
- * Out Args:	NrmValue	*to	ptr to to data
+ * Out Args:	NrmValue		*to	ptr to to data
  *
- * Scope:	static
+ * Scope:	Global public
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
 /*ARGSUSED*/
-static NhlErrorTypes
+NhlErrorTypes
 NhlCvtStringToFloat
 #if	__STDC__
 (
-	NrmValue	*from,	/* ptr to from data	*/
-	NrmValue	*to,	/* ptr to to data	*/
-	NrmValue	*args,	/* add'n args for conv	*/
-	int		nargs	/* number of args	*/
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
 )
 #else
 (from,to,args,nargs)
-	NrmValue	*from;	/* ptr to from data	*/
-	NrmValue	*to;	/* ptr to to data	*/
-	NrmValue	*args;	/* add'n args for conv	*/
-	int		nargs;	/* number of args	*/
+	NrmValue		*from;	/* ptr to from data	*/
+	NrmValue		*to;	/* ptr to to data	*/
+	NhlConvertArgList	args;	/* add'n args for conv	*/
+	int			nargs;	/* number of args	*/
 #endif
 {
 	float tmp;
@@ -105,7 +109,7 @@ NhlCvtStringToFloat
 		ret = WARNING;
 	}
 
-	tmp = (float)atof((char *)from->addr);
+	tmp = (float)strtod((char *)from->addr,(char**)NULL);
 
 	SetVal(float,sizeof(float),tmp);
 }
@@ -115,33 +119,33 @@ NhlCvtStringToFloat
  *
  * Description:	This is a type converter to convert string's to int's.
  *
- * In Args:	NrmValue	*from	ptr to from data
- *		NrmValue	*args	add'n args for conversion
- *		int		nargs	number of args
+ * In Args:	NrmValue		*from	ptr to from data
+ *		NhlConvertArgList	args	add'n args for conversion
+ *		int			nargs	number of args
  *		
  *
- * Out Args:	NrmValue	*to	ptr to to data
+ * Out Args:	NrmValue		*to	ptr to to data
  *
- * Scope:	static
+ * Scope:	Global public
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
 /*ARGSUSED*/
-static NhlErrorTypes
+NhlErrorTypes
 NhlCvtStringToInteger
 #if	__STDC__
 (
-	NrmValue	*from,	/* ptr to from data	*/
-	NrmValue	*to,	/* ptr to to data	*/
-	NrmValue	*args,	/* add'n args for conv	*/
-	int		nargs	/* number of args	*/
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
 )
 #else
 (from,to,args,nargs)
-	NrmValue	*from;	/* ptr to from data	*/
-	NrmValue	*to;	/* ptr to to data	*/
-	NrmValue	*args;	/* add'n args for conv	*/
-	int		nargs;	/* number of args	*/
+	NrmValue		*from;	/* ptr to from data	*/
+	NrmValue		*to;	/* ptr to to data	*/
+	NhlConvertArgList	args;	/* add'n args for conv	*/
+	int			nargs;	/* number of args	*/
 #endif
 {
 	int tmp;
@@ -153,7 +157,7 @@ NhlCvtStringToInteger
 		return FATAL;
 	}
 
-	tmp = (int)atoi((char *)from->addr);
+	tmp = (int)strtol((char *)from->addr,(char**)NULL,10);
 
 	SetVal(int,sizeof(int),tmp);
 }
@@ -163,8 +167,14 @@ NhlCvtStringToInteger
  *
  * Description:	This function compares two strings - It treats uppercase and
  *		lower case the same.  If the first string is lexically greater
- *		than the first it returns a pos num if it is less it returns
+ *		than the second it returns a pos num if it is less it returns
  *		a neg number.  If the strings a lexically equal it returns 0.
+ *		The comparison is only done for the length of the first string.
+ *		If the second string is longer then the first they are not
+ *		equal, unless the only thing left in the second string is
+ *		white space - in that case they will be considered equal.
+ *		This makes it possible to have trailing white space in the
+ *		resource file.
  *
  * In Args:	char	*s1	string one
  *		char	*s2	string two
@@ -188,13 +198,40 @@ comparestring
 	char	*s2;	/* string two	*/
 #endif
 {
-	char	*ptr1, *ptr2;
+	char	*ptr1 = s1;
+	char	*ptr2 = s2;
+	int	len1 = strlen(s1);
+	int	len2 = strlen(s2);
+	int	i;
 	int	c1, c2;
 
-	ptr1 = s1;
-	ptr2 = s2;
+	/*
+	 * If the first string is longer than the second return 1 - the
+	 * resource file string isn't the same.
+	 */
+	if(len1 > len2)
+		return 1;
 
-	while((*ptr1 != '\0') && (*ptr2 != '\0')){
+	/*
+	 * If the second string is longer that the first, check to make sure
+	 * the difference isn't just white space.  If it isn't white space
+	 * return -1.
+	 */
+	if(len2 > len1){
+		for(i=len1;i<len2;i++){
+			if(isspace((int)s2[i]))
+				continue;
+			return -1;
+		}
+	}
+
+	/*
+	 * The strings are the same length - are they the same value?
+	 * Check each charactor - if they are not the same return -
+	 * if we get all the way threw the string then they are equal.
+	 */
+
+	for(i=0;i < len1; i++){
 		c1 = tolower((int)*ptr1);
 		c2 = tolower((int)*ptr2);
 
@@ -208,77 +245,76 @@ comparestring
 			return (1);
 	}
 
-	c1 = tolower((int)*ptr1);
-	c2 = tolower((int)*ptr2);
-
-	if(c1 == c2)
-		return 0;
-	else if(c1 < c2)
-		return -1;
-	else
-		return 1;
+	return 0;
 }
 
-
-
 /*
- * Function:	NhlCvtStringToBoolean
+ * Function:	NhlCvtStringToEnum
  *
- * Description:	This is a type converter to convert string's to Booleans.
+ * Description:	This is a type converter to convert string's to enumerations
+ *		defined by the args. This function uses the NrmValue structure
+ *		in the args, in a slightly non-standard way.  The size
+ *		part actually indicates the value that should be used if the
+ *		string pointed to by addr is the same as the string being
+ *		converted.  The addr should be a null terminated string.
  *
- * In Args:	NrmValue	*from	ptr to from data
- *		NrmValue	*args	add'n args for conversion
- *		int		nargs	number of args
+ * In Args:	NrmValue		*from	ptr to from data
+ *		NhlConvertArgList	args	args for conversion
+ *		int			nargs	number of args
  *		
  *
- * Out Args:	NrmValue	*to	ptr to to data
+ * Out Args:	NrmValue		*to	ptr to to data
  *
- * Scope:	static
+ * Scope:	Global public
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
 /*ARGSUSED*/
-static NhlErrorTypes
-NhlCvtStringToBoolean
+NhlErrorTypes
+NhlCvtStringToEnum
 #if	__STDC__
 (
-	NrmValue	*from,	/* ptr to from data	*/
-	NrmValue	*to,	/* ptr to to data	*/
-	NrmValue	*args,	/* add'n args for conv	*/
-	int		nargs	/* number of args	*/
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
 )
 #else
 (from,to,args,nargs)
-	NrmValue	*from;	/* ptr to from data	*/
-	NrmValue	*to;	/* ptr to to data	*/
-	NrmValue	*args;	/* add'n args for conv	*/
-	int		nargs;	/* number of args	*/
+	NrmValue		*from;	/* ptr to from data	*/
+	NrmValue		*to;	/* ptr to to data	*/
+	NhlConvertArgList	args;	/* add'n args for conv	*/
+	int			nargs;	/* number of args	*/
 #endif
 {
-	NhlBoolean	tmp;
+	int		i, tmp=0;
+	NhlBoolean	set = False;
 	NhlString	s1 = (NhlString)from->addr;
 	NhlErrorTypes	ret = NOERROR;
 
-	if(nargs != 0){
+	if(nargs < 1){
 		NhlPError(FATAL,E_UNKNOWN,
-		"NhlCvtStringToBoolean Called with improper number of args");
+		"NhlCvtStringToEnum Called with improper number of args");
 		return FATAL;
 	}
 
-	if( (comparestring(s1, "true") == 0)
-	  ||(comparestring(s1, "yes") == 0)
-	  ||(comparestring(s1, "on") == 0)
-	  ||(comparestring(s1, "1") == 0))
-		tmp = True;
-	else if( (comparestring(s1, "false") == 0)
-	       ||(comparestring(s1, "no") == 0)
-	       ||(comparestring(s1, "off") == 0)
-	       ||(comparestring(s1, "0") == 0))
-		tmp = False;
-	else
-		return FATAL;
+	for(i=0;i<nargs;i++){
+		if(comparestring((char*)args[i].addr,s1) == 0){
+			tmp = args[i].size;
+			set = True;
+			break;
+		}
+	}
 
-	SetVal(NhlBoolean,sizeof(NhlBoolean),tmp);
+	if(!set){
+		NhlPError(FATAL,E_UNKNOWN,
+	"NhlCvtStringToEnum: Unable to convert string \"%s\" to requested type",
+							(char*)from->addr);
+		to->size = 0;
+		return FATAL;
+	}
+
+	SetVal(int,sizeof(int),tmp);
 }
 
 /*
@@ -286,37 +322,40 @@ NhlCvtStringToBoolean
  *
  * Description:	This function is used to convert a string to a char.
  *
- * In Args:	NrmValue	*from	ptr to from data
- *		NrmValue	*args	add'n args for conversion
- *		int		nargs	number of args
+ * In Args:	NrmValue		*from	ptr to from data
+ *		NhlConvertArgList	args	add'n args for conversion
+ *		int			nargs	number of args
  *		
  *
- * Out Args:	NrmValue	*to	ptr to to data
+ * Out Args:	NrmValue		*to	ptr to to data
  *
- * Scope:	static
+ * Scope:	Global public
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
 /*ARGSUSED*/
-static NhlErrorTypes
+NhlErrorTypes
 NhlCvtStringToChar
 #if	__STDC__
 (
-	NrmValue	*from,	/* ptr to from data	*/
-	NrmValue	*to,	/* ptr to to data	*/
-	NrmValue	*args,	/* add'n args for conv	*/
-	int		nargs	/* number of args	*/
+	NrmValue		*from,	/* ptr to from data		*/
+	NrmValue		*to,	/* ptr to to data		*/
+ 	NhlConvertArgList	args,	/* add'n args for conversion	*/
+	int			nargs	/* number of args		*/
 )
 #else
 (from,to,args,nargs)
-	NrmValue	*from;	/* ptr to from data	*/
-	NrmValue	*to;	/* ptr to to data	*/
-	NrmValue	*args;	/* add'n args for conv	*/
-	int		nargs;	/* number of args	*/
+	NrmValue		*from;	/* ptr to from data		*/
+	NrmValue		*to;	/* ptr to to data		*/
+ 	NhlConvertArgList	args;	/* add'n args for conversion	*/
+	int			nargs;	/* number of args		*/
 #endif
 {
-	char tmp;
-	NhlErrorTypes ret = NOERROR;
+	char		tmp;
+	NhlString	s1 = (char*)from->addr;
+	int		len = strlen(s1);
+	int		i;
+	NhlErrorTypes	ret = NOERROR;
 
 	if(nargs != 0){
 		NhlPError(FATAL,E_UNKNOWN,
@@ -324,10 +363,14 @@ NhlCvtStringToChar
 		return FATAL;
 	}
 
-	if(strlen((char*)from->addr) != 1){
-		NhlPError(FATAL,E_UNKNOWN,
+	if(len > 1){
+		for(i=len-1;i > 0;i--){
+			if(isspace((int)s1[i]))
+				continue;
+			NhlPError(FATAL,E_UNKNOWN,
 		"NhlCvtStringToChar called with a string length unequal to 1");
-		return FATAL;
+			return FATAL;
+		}
 	}
 
 	tmp = *(char *)(from->addr);
@@ -359,12 +402,23 @@ _NhlConvertersInitialize
 ()
 #endif
 {
+	NhlConvertArg	BoolEnumList[] = {
+			{NHLSTRENUM,	True,	"true"},
+			{NHLSTRENUM,	False,	"false"},
+			{NHLSTRENUM,	True,	"yes"},
+			{NHLSTRENUM,	False,	"no"},
+			{NHLSTRENUM,	True,	"on"},
+			{NHLSTRENUM,	False,	"off"},
+			{NHLSTRENUM,	True,	"1"},
+			{NHLSTRENUM,	False,	"0"}
+			};
+
 	(void)NhlRegisterConverter(NhlTString,NhlTFloat,NhlCvtStringToFloat,
 							NULL,0,False,NULL);
 	(void)NhlRegisterConverter(NhlTString,NhlTInteger,NhlCvtStringToInteger,
 							NULL,0,False,NULL);
-	(void)NhlRegisterConverter(NhlTString,NhlTBoolean,NhlCvtStringToBoolean,
-							NULL,0,False,NULL);
+	(void)NhlRegisterConverter(NhlTString,NhlTBoolean,NhlCvtStringToEnum,
+			BoolEnumList,NhlNumber(BoolEnumList),False,NULL);
 	(void)NhlRegisterConverter(NhlTString,NhlTCharacter,NhlCvtStringToChar,
 							NULL,0,False,NULL);
 	return;

@@ -1,6 +1,5 @@
-
 /*
- *      $Id: TransObj.c,v 1.2 1993-05-27 19:11:25 ethan Exp $
+ *      $Id: TransObj.c,v 1.3 1993-10-19 17:52:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,74 +21,31 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <ncarg/hlu/hluP.h>
 
 #include <ncarg/hlu/TransObjP.h>
 
-static NhlErrorTypes TrSetValues(
-#ifdef NhlNeedProto
-        Layer,          /* old */
-        Layer,          /* reference */
-        Layer,          /* new */
-        _NhlArgList,    /* args */
-        int             /* num_args*/
-#endif
-);
-
-static NhlErrorTypes TrInitialize(
-#ifdef NhlNeedProto
-        LayerClass,     /* class */
-        Layer,          /* req */
-        Layer,          /* new */
-        _NhlArgList,    /* args */
-        int             /* num_args */
-#endif
-);
-
-
-static NhlResource resources[] = {
-	{ NhlNtrDashPattern, NhlCtrDashPattern, NhlTInteger, sizeof(int),
-		NhlOffset(TransObjLayerRec,trobj.dash_pattern),NhlTString,"0"},
-	{ NhlNtrLineLabel, NhlCtrLineLabel, NhlTString, sizeof(char*),
-		NhlOffset(TransObjLayerRec,trobj.line_label),
-		NhlTImmediate,(NhlPointer)NULL},
-	{ NhlNtrLineThicknessF, NhlCtrLineThicknessF, NhlTFloat, sizeof(float),
-		NhlOffset(TransObjLayerRec,trobj.line_thickness),
-		NhlTString,"1.0"},
-	{ NhlNtrLineLabelFontHeightF, NhlCtrLineLabelFontHeightF, NhlTFloat, 
-		sizeof(float), 
-		NhlOffset(TransObjLayerRec,trobj.line_label_font_height),
-		NhlTString,"0.0125" },
-	{ NhlNtrLineDashSegLenF, NhlCtrLineDashSegLenF,NhlTFloat, sizeof(float),
-		NhlOffset(TransObjLayerRec,trobj.line_dash_seglen),NhlTString,
-		".15" },
-	{ NhlNtrLineColor, NhlCtrLineColor,NhlTInteger, sizeof(int),
-		NhlOffset(TransObjLayerRec,trobj.line_color),NhlTString,
-		"1" }
-};
 TransObjLayerClassRec transObjLayerClassRec = {
 	{
-/* superclass*/         (LayerClass)&baseLayerClassRec,
 /* class_name */        "TransObj",
 /* nrm_class */         NrmNULLQUARK,
 /* layer_size */        sizeof(TransObjLayerRec),
-/* layer_resources */   resources,
-/* num_resources */     NhlNumber(resources),
-/* child_resources */	NULL,
-/* all_resources */     NULL,
-/* class_part_initialize */     NULL,
 /* class_inited */      False,
+/* superclass*/         (LayerClass)&objLayerClassRec,
+
+/* layer_resources */   NULL,
+/* num_resources */     0,
+/* all_resources		*/	NULL,
+
+/* class_part_initialize */     NULL,
 /* class_initialize */  NULL,
-/* layer_initialize */  TrInitialize,
-/* layer_set_values */  TrSetValues,
-/* layer_set_values_not */  NULL,
+/* layer_initialize */  NULL,
+/* layer_set_values */  NULL,
+/* layer_set_values_hook */  NULL,
 /* layer_get_values */  NULL,
-/* layer_pre_draw */    NULL,
-/* layer_draw */        NULL,
-/* layer_draw_segonly */NULL,
-/* layer_post_draw */   NULL,
-/* layer_clear */       NULL,
-/* layer_destroy */    NULL 
+/* layer_reparent */  NULL,
+/* layer_destroy */    NULL,
 	},
 	{
 /* set_trans */		NULL,
@@ -112,131 +68,6 @@ TransObjLayerClassRec transObjLayerClassRec = {
 LayerClass transObjLayerClass = (LayerClass)&transObjLayerClassRec;
 
 
-char *dash_patterns[] = { "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",
-                 "$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'",
-                 "$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'",
-                 "$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'",
-                 "$$$$'$$$$'$$$$'$$$$'$$$$'$$$$'$$$$'$$$$'$$$$'$$$$'",
-                 "$'$$'$'$$'$'$$'$'$$'$'$$'$'$$'$'$$'$'$$'$'$$'$'$$'",
-                 "$'$$$'$'$$$'$'$$$'$'$$$'$'$$$'$'$$$'$'$$$'$'$$$'",
-                 "$$'$$$$'$$'$$$$'$$'$$$$'$$'$$$$'$$'$$$$'$$'$$$$'",
-                 "$$$$'$$'$'$$'$$$$'$$'$'$$'$$$$'$$'$'$$'$$$$'$$'$'$$'",
-                 "$$''$$''$$''$$''$$''$$''$$''$$''$$''$$''$$''$$''",
-                 "$$$$$$''$$$$$$''$$$$$$''$$$$$$''$$$$$$''$$$$$$''",
-                 "$$$'$$$''$$$'$$$''$$$'$$$''$$$'$$$''$$$'$$$''",
-                 "$$'''$$'''$$'''$$'''$$'''$$'''$$'''$$'''$$'''$$'''",
-                 "$'$'''$'$'''$'$'''$'$'''$'$'''$'$'''$'$'''$'$'''",
-                 "$$$$$'$'$$$$$'$'$$$$$'$'$$$$$'$$$$$'$'$$$$$'$'",
-                 "$$$$$'$'$'$$$$$'$'$'$$$$$'$'$'$$$$$'$'$'$$$$$'$'$'",
-};
-/*ARGSUSED*/
-static NhlErrorTypes TrInitialize
-#if   __STDC__
-(LayerClass class, Layer req, Layer new, _NhlArgList args, int num_args)
-#else
-(class,req,new,args,num_args)
-        LayerClass      class;
-        Layer           req;
-        Layer           new;
-        _NhlArgList     args;
-        int             num_args;
-#endif
-{
-        TransObjLayer tnew = (TransObjLayer)new;
-	char * tmp;
-
-	if(tnew->trobj.line_label != NULL) {
-		tmp = (char*)NhlMalloc((unsigned)strlen(tnew->trobj.line_label)+1);
-		strcpy(tmp,tnew->trobj.line_label);
-		tnew->trobj.line_label = tmp;
-	}
-	return(NOERROR);
-}
-/*ARGSUSED*/
-static NhlErrorTypes TrSetValues
-#if __STDC__
-(Layer old, Layer reference, Layer new, _NhlArgList args, int num_args)
-#else
-(old,reference,new,args,num_args)
-        Layer   old;
-        Layer   reference;
-        Layer   new;
-        _NhlArgList     args;
-        int     num_args;
-#endif
-{
-        TransObjLayer tnew = (TransObjLayer)new;
-        TransObjLayer told = (TransObjLayer)old;
-	char *tmp;
-
-
-	if( (told->trobj.line_label != tnew->trobj.line_label)) {
-
-		if(told->trobj.line_label != NULL){
-			NhlFree(told->trobj.line_label);
-			told->trobj.line_label = NULL;
-		}
-		if(tnew->trobj.line_label != NULL) {
-			tmp = (char*)NhlMalloc((unsigned)strlen(tnew->trobj.line_label)+1);
-			strcpy(tmp,tnew->trobj.line_label);
-			tnew->trobj.line_label = tmp;
-		}
-	}
-	return(NOERROR);
-}
-/*ARGSUSED*/
-void _NhlSetLineInfo
-#if  __STDC__
-(Layer instance,Layer plot)
-#else
-(instance,plot)
-	Layer instance;
-	Layer plot;
-#endif
-{
-	TransObjLayer tinst = (TransObjLayer)instance;
-	float	fl,fr,fb,ft,ul,ur,ub,ut;
-	float  y0,y1,x0,x1;
-	int ll,i;
-	char buffer[80];
-
-        for(i = 0; i< 80; i++)
-                buffer[i] = '\0';
-
-	c_sflush();
-
-	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
-
-	y0 = fb;
-        y1 = fb + tinst->trobj.line_label_font_height;
-        y0 = (float)c_kfpy(y0);
-        y1 = (float)c_kfpy(y1);
-
-	tinst->trobj.char_size = (int) (y1 - y0);
-	if(tinst->trobj.char_size < 4) {
-		tinst->trobj.char_size = 4;
-	}
-        x0 = fl;
-        x1 = fl + tinst->trobj.line_dash_seglen;
-        x0 = (float)c_kfpy(x0);
-        x1 = (float)c_kfpy(x1);
-	
-	tinst->trobj.dash_dollar_size = (int)((x1-x0)/
-		strlen(dash_patterns[(tinst->trobj.dash_pattern-1)%16])+.5);
-	if(tinst->trobj.dash_dollar_size < 1) 
-			tinst->trobj.dash_dollar_size = 1;
-
-	strcpy(buffer,dash_patterns[(tinst->trobj.dash_pattern-1)%16]);
-	if(tinst->trobj.line_label != NULL) {
-		  strcpy(&(buffer[strlen(dash_patterns[(tinst->trobj.dash_pattern-1)%16])
-			- strlen(tinst->trobj.line_label)]) ,
-			tinst->trobj.line_label);
-	}
-	gset_line_colr_ind((Gint)_NhlGetGksCi(plot->base.wkptr,tinst->trobj.line_color));
-	gset_linewidth(tinst->trobj.line_thickness);
-	c_dashdc(buffer,tinst->trobj.dash_dollar_size,tinst->trobj.char_size);
-	return;
-}
 #define CTOP 010
 #define CBOTTOM 04
 #define CRIGHT 02
@@ -369,7 +200,7 @@ float missing;
 
 }
 
-NhlErrorTypes CallDataLineTo 
+static NhlErrorTypes CallDataLineTo 
 #if  __STDC__
 (LayerClass lc, Layer instance, Layer parent, float x, float y, int upordown)
 #else
@@ -412,7 +243,7 @@ int upordown;
 	return(CallDataLineTo(instance->base.layer_class,instance,parent,x,y,upordown));
 }
 
-NhlErrorTypes CallWinLineTo 
+static NhlErrorTypes CallWinLineTo 
 #if  __STDC__
 (LayerClass lc, Layer instance, Layer parent, float x, float y, int upordown)
 #else
@@ -455,7 +286,7 @@ int upordown;
 	return(CallWinLineTo(instance->base.layer_class,instance,parent,x,y,upordown));
 }
 
-NhlErrorTypes CallCompcLineTo 
+static NhlErrorTypes CallCompcLineTo 
 #if  __STDC__
 (LayerClass lc, Layer instance, Layer parent, float x, float y, int upordown)
 #else
@@ -498,7 +329,7 @@ int upordown;
 	return(CallCompcLineTo(instance->base.layer_class,instance,parent,x,y,upordown));
 }
 
-NhlErrorTypes CallNDCLineTo 
+static NhlErrorTypes CallNDCLineTo 
 #if  __STDC__
 (LayerClass lc, Layer instance, Layer parent, float x, float y, int upordown)
 #else

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.2 1993-06-03 15:12:27 ethan Exp $
+ *      $Id: hlu.c,v 1.3 1993-10-19 17:53:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,14 +22,11 @@
  *			writers.
  */
 
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
+#include <ncarg/hlu/hluP.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <pwd.h>
 #include <ncarg/c.h>
-#include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/VarArg.h>
 #include <ncarg/hlu/BaseP.h>
 
@@ -193,16 +190,18 @@ NhlFree
 	void		*ptr;	/* pointer to memory to free	*/
 #endif
 {
-	register int ret;
 
 	if(ptr == NULL)
 		return(NOERROR);
 
 	else{
-#ifdef	__sgi
+#if	defined(__sgi) || defined(_HPUX_SOURCE) || defined(__CLCC__)
+
 		free(ptr);
 		return NOERROR;
 #else
+		register int ret;
+
 		ret = free(ptr);
 
 		if(ret == 0){
@@ -785,24 +784,23 @@ void
 _NhlSArgToSetArgList
 #if	__STDC__
 (
-	_NhlArgList	*args,	/* arglist return	*/
+	_NhlExtArgList	args,	/* arglist return	*/
 	NhlSArgList	sargs,	/* public arglist	*/
 	int		nargs	/* num args		*/
 )
 #else
 (args,sargs,nargs)
-	_NhlArgList	*args;	/* arglist return	*/
+	_NhlExtArgList	args;	/* arglist return	*/
 	NhlSArgList	sargs;	/* public arglist	*/
 	int		nargs;	/* num args		*/
 #endif
 {
 	register int	i;
 
-	*args = (_NhlArgList)NhlMalloc((unsigned)(nargs * sizeof(_NhlArg)));
-
 	for(i=0;i < nargs; i++){
-		(*args)[i].quark = NrmStringToQuark(sargs[i].name);
-		(*args)[i].value = sargs[i].value;
+		args[i].quark = NrmStringToQuark(sargs[i].name);
+		args[i].value = sargs[i].value;
+		args[i].type = NrmNULLQUARK;
 	}
 
 	return;
@@ -864,24 +862,23 @@ void
 _NhlGArgToGetArgList
 #if	__STDC__
 (
-	_NhlArgList	*args,	/* arglist return	*/
+	_NhlExtArgList	args,	/* arglist return	*/
 	NhlGArgList	gargs,	/* public arglist	*/
 	int		nargs	/* num args		*/
 )
 #else
 (args,gargs,nargs)
-	_NhlArgList	*args;	/* arglist return	*/
+	_NhlExtArgList	args;	/* arglist return	*/
 	NhlGArgList	gargs;	/* public arglist	*/
 	int		nargs;	/* num args		*/
 #endif
 {
 	register int	i;
 
-	*args = (_NhlArgList)NhlMalloc((unsigned)(nargs * sizeof(_NhlArg)));
-
 	for(i=0;i < nargs; i++){
-		(*args)[i].quark = NrmStringToQuark(gargs[i].resname);
-		(*args)[i].value = gargs[i].value;
+		args[i].quark = NrmStringToQuark(gargs[i].resname);
+		args[i].value = gargs[i].value;
+		args[i].type = NrmNULLQUARK;
 	}
 
 	return;
@@ -919,7 +916,21 @@ _NhlInherit
 }
 
 
-int _NhlArgIsSet
+/*
+ * Function:	_NhlArgIsSet
+ *
+ * Description:	returns true if the given resource name is set in the given
+ *		arg list.  otherwise returns false.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Private
+ * Returns:	NhlBoolean
+ * Side Effect:	
+ */
+NhlBoolean _NhlArgIsSet
 #if     __STDC__
 (
         _NhlArgList args,
@@ -927,7 +938,7 @@ int _NhlArgIsSet
         char    *resource_name
 )
 #else
-(args,num_arg,resource_name)
+(args,num_args,resource_name)
         _NhlArgList args;
         int     num_args;
         char    *resource_name;
@@ -938,7 +949,265 @@ int _NhlArgIsSet
 
 	for(i = 0; i<num_args; i++) {
 		if(step[i].quark == quark) 
-			return(1);
+			return(True);
 	}
-	return(0);
+	return(False);
+}
+
+/*
+ * Function:	_NhlCreateGenArray
+ *
+ * Description:	This function is used to define the size/shape of arrays passed
+ *		in as resources. If num_dimensions is -1111 then pass back an
+ *		empty NhlGenArray - Data=NULL,num_dimensions=num_elements=0
+ *		and len_dimensions = NULL.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global public
+ * Returns:	NhlGenArray
+ * Side Effect:	
+ */
+NhlGenArray
+_NhlCreateGenArray
+#if	__STDC__
+(
+	NhlPointer	data,		/* data array		*/
+	NhlString	type,		/* type of each element	*/
+	unsigned int	size,		/* size of each element	*/
+	int		num_dimensions,	/* number of dimensions	*/
+	int		*len_dimensions,/* number of dimensions	*/
+	NhlBoolean	copy_data	/* copy data pointer?	*/
+)
+#else
+(data,type,size,num_dimensions,len_dimensions,copy_data)
+	NhlPointer	data;			/* data array		*/
+	NhlString	type;			/* type of each element	*/
+	unsigned int	size;			/* size of each element	*/
+	int		num_dimensions;		/* number of dimensions	*/
+	int		*len_dimensions;	/* number of dimensions	*/
+	NhlBoolean	copy_data;		/* copy data pointer?	*/
+#endif
+{
+	static NhlBoolean	first_time = True;
+	static NrmQuark		QString;
+	NhlGenArray		gen = NULL;
+	int			i;
+
+	if(first_time){
+		QString = NrmStringToQuark(NhlTString);
+		first_time = False;
+	}
+
+	if((num_dimensions < 1) && (num_dimensions != -1111)){
+		NHLPERROR((FATAL,E_UNKNOWN,
+		"NhlGenArrayCreate:Arrays must have at least one dimension"));
+		return NULL;
+	}
+
+	gen = NhlMalloc(sizeof(NhlGenArrayRec));
+
+	if(gen == NULL)
+		return NULL;
+
+	gen->typeQ = NrmStringToQuark(type);
+	gen->size = size;
+
+	if(num_dimensions == -1111){
+		gen->num_dimensions = 0;
+		gen->len_dimensions = NULL;
+		gen->num_elements = 0;
+		gen->data = NULL;
+		gen->my_data = False;
+	}
+	else{
+		gen->num_dimensions = num_dimensions;
+		if(gen->num_dimensions == 1){
+			gen->num_elements = *len_dimensions;
+			gen->len_dimensions = &gen->num_elements;
+		}
+		else{
+			gen->len_dimensions =
+					NhlMalloc(num_dimensions * sizeof(int));
+			if(gen->len_dimensions == NULL)
+				return NULL;
+			gen->num_elements = 0;
+			for(i=0;i < num_dimensions;i++){
+				gen->len_dimensions[i] = len_dimensions[i];
+				gen->num_elements += len_dimensions[i];
+			}
+		}
+
+		if(copy_data){
+			gen->data = NhlMalloc(gen->num_elements * gen->size);
+			if(gen->data == NULL)
+				return NULL;
+
+			/*
+			 * If the individual elements are NhlString's then we
+			 * know how to copy them.
+			 */
+			if((gen->typeQ == QString) &&
+					(gen->size == sizeof(NhlString))){
+				NhlString	*otable = data;
+				NhlString	*ntable = gen->data;
+
+				for(i=0;i<gen->num_elements;i++){
+					if(otable[i] == NULL){
+						ntable[i] = NULL;
+					}
+					else{
+						ntable[i] =
+						NhlMalloc(strlen(otable[i])+1);
+						if(ntable[i] == NULL)
+							return NULL;
+						strcpy(ntable[i],otable[i]);
+					}
+				}
+			}
+			else{
+				memcpy(gen->data,data,
+						gen->num_elements * gen->size);
+			}
+			gen->my_data = True;
+		}
+		else{
+			gen->data = data;
+			gen->my_data = False;
+		}
+	}
+
+	return gen;
+}
+
+/*
+ * Function:	NhlCreateGenArray
+ *
+ * Description:	This function is used by the user to define the size/shape
+ *		of arrays passed in as resources. It does not copy the
+ *		data - it only keeps a pointer to it.  The data pointer
+ *		memory belongs to the user.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global public
+ * Returns:	NhlGenArray
+ * Side Effect:	
+ */
+NhlGenArray
+NhlCreateGenArray
+#if	__STDC__
+(
+	NhlPointer	data,		/* data array		*/
+	NhlString	type,		/* type of each element	*/
+	unsigned int	size,		/* size of each element	*/
+	int		num_dimensions,	/* number of dimensions	*/
+	int		*len_dimensions	/* number of dimensions	*/
+)
+#else
+(data,type,size,num_dimensions,len_dimensions)
+	NhlPointer	data;			/* data array		*/
+	NhlString	type;			/* type of each element	*/
+	unsigned int	size;			/* size of each element	*/
+	int		num_dimensions;		/* number of dimensions	*/
+	int		*len_dimensions;	/* number of dimensions	*/
+#endif
+{
+	return
+	_NhlCreateGenArray(data,type,size,num_dimensions,len_dimensions,False);
+}
+
+/*
+ * Function:	_NhlCopyGenArray
+ *
+ * Description:	This function copies an NhlGenArray and allocates an
+ *		NhlGenArray. It copies the "data" part of the GenArray
+ *		if copy_data is true - otherwise the new GenArray just
+ *		references the same data pointer.
+ *
+ * In Args:	
+ *		NhlGenArray	gen		generic array pointer
+ *		NhlBoolean	copy_data	copy data?
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Private
+ * Returns:	NhlGenArray
+ * Side Effect:	
+ */
+NhlGenArray
+_NhlCopyGenArray
+#if	__STDC__
+(
+	NhlGenArray	gen,		/* generic array pointer	*/
+	NhlBoolean	copy_data	/* copy data?			*/
+)
+#else
+(gen,copy_data)
+	NhlGenArray	gen;		/* generic array pointer	*/
+	NhlBoolean	copy_data;	/* copy data?			*/
+#endif
+{
+	return _NhlCreateGenArray(gen->data,NrmQuarkToString(gen->typeQ),
+		gen->size,gen->num_dimensions,gen->len_dimensions,copy_data);
+}
+
+/*
+ * Function:	NhlFreeGenArray
+ *
+ * Description:	This function is used by the user to destroy an NhlGenArray
+ *		description record after they are done using it.  This
+ *		function does not free the "data" part of the NhlGenArray
+ *		the "data" pointer memory belongs to the user.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global public
+ * Returns:	NhlGenArray
+ * Side Effect:	
+ */
+void
+NhlFreeGenArray
+#if	__STDC__
+(
+	NhlGenArray	gen	/* gen array to free	*/
+)
+#else
+(gen)
+	NhlGenArray	gen;	/* gen array to free	*/
+#endif
+{
+	static NhlBoolean	first_time = True;
+	static NrmQuark		QString;
+
+	if(first_time){
+		QString = NrmStringToQuark(NhlTString);
+		first_time = False;
+	}
+
+	if(gen == NULL)
+		return;
+
+	if(gen->my_data){
+		if(gen->typeQ == QString){
+			int i;
+			NhlString	*table = gen->data;
+
+			for(i=0;i<gen->num_elements;i++)
+				(void)NhlFree(table[i]);
+		}
+		(void)NhlFree(gen->data);
+	}
+	if(gen->len_dimensions != &gen->num_elements)
+		(void)NhlFree(gen->len_dimensions);
+
+	(void)NhlFree(gen);
+
+	return;
 }

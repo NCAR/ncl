@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.1 1993-04-30 17:21:00 boote Exp $
+#      $Id: yMakefile,v 1.2 1993-10-19 17:49:25 boote Exp $
 #
 #########################################################################
 #									#
@@ -19,12 +19,5 @@
 #
 #	Description:	yMakefile for ncarg/ni/src/lib
 
-NCARG	= ../../..
-
+#define IHaveSubdirs
 SUBDIRS = hlu_util hlu 
-
-MakeSubdirs($(SUBDIRS))
-InstallSubdirs($(SUBDIRS))
-MakefilesSubdirs($(SUBDIRS))
-CleanSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))

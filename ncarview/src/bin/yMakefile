@@ -2,17 +2,7 @@
 #	Makefile for NCAR Graphics source directories
 #
 
-NCARG	= ../../..
+#define IHaveSubdirs
 
-#ifdef BuildAthenaApplications
 SUBDIRS	= ctrans ictrans filter med scripts rascat xwdtohdf nriftohdf \
-	rasstat ncgmstat cgm_edit idt rasview rasls rasgetpal rassplit
-#else
-SUBDIRS	= ctrans ictrans filter med scripts rascat xwdtohdf nriftohdf \
-	rasstat ncgmstat rasls rasgetpal rassplit
-#endif
-
-MakeSubdirs($(SUBDIRS))
-InstallSubdirs($(SUBDIRS))
-MakefilesSubdirs($(SUBDIRS))
-CleanSubdirs($(SUBDIRS))
+	  rasstat ncgmstat cgm_edit idt rasview rasls rasgetpal rassplit

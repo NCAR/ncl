@@ -1,5 +1,5 @@
 /*
- *      $Id: ConvertP.h,v 1.1 1993-04-30 17:21:31 boote Exp $
+ *      $Id: ConvertP.h,v 1.2 1993-10-19 17:49:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,39 @@
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Convert.h>
 
+#define	NHLCONVALLOCLISTLEN	10
+/*
+ * Declaration for Converter Context - used to make a list of mallocs
+ * done in the called converter.
+ */
+typedef struct _NhlConvertContext _NhlConvertContextRec, *_NhlConvertContext;
+
+struct _NhlConvertContext {
+	int			num_alloced;
+	NhlPointer		alloc_list[NHLCONVALLOCLISTLEN];
+	_NhlConvertContext	next;
+};
+
+typedef struct _NhlCtxtStack _NhlCtxtStackRec, *_NhlCtxtStack;
+
+struct _NhlCtxtStack{
+	_NhlConvertContext	context;
+	_NhlCtxtStack		next;
+};
+
+extern _NhlConvertContext _NhlCreateConvertContext(
+#if	NhlNeedProto
+	void
+#endif
+);
+
+extern void	_NhlFreeConvertContext(
+#if	NhlNeedProto
+	_NhlConvertContext	context
+#endif
+);
+
+
 /*
  * declarations for the conversion cache
  */
@@ -49,30 +82,31 @@ struct _NhlConvertRec{
 	NhlConvertPtr		next;
 	NrmQuark		fromtype;
 	NrmQuark		totype;
+	NrmQuark		converter_type;
 	NhlTypeConverter	converter;
-	NrmValue		*args;
+	NhlConvertArgList	args;
 	int			nargs;
 	NhlBoolean		cacheit;
 	CachePtr		cache;
 	NhlCacheClosure		closure;
 };
 
-extern NhlErrorTypes _NhlRegisterConverter(
+extern NhlErrorTypes _NhlExtRegisterConverter(
 #if	NhlNeedProto
-	NrmQuark		from,		/* from type		*/
-	NrmQuark		to,		/* to type		*/
+	NhlString		from,		/* from type		*/
+	NhlString		to,		/* to type		*/
+	NhlString		converter_type,	/* type	of conversion	*/
 	NhlTypeConverter	convert,	/* the converter function*/ 
 	NhlConvertArgList	args,		/* conversion args	*/ 
-	int			nargs,		/* number of args	*/ 
-	NhlBoolean		cache,		/* cache results?	*/ 
-	NhlCacheClosure		close		/* for freeing cache data*/ 
+	int			nargs		/* number of args	*/ 
 #endif
 );
 
 extern NhlErrorTypes _NhlDeleteConverter(
 #if	NhlNeedProto
 	NrmQuark		fromQ,		/* from type	*/
-	NrmQuark		toQ		/* to type	*/
+	NrmQuark		toQ,		/* to type	*/
+	NrmQuark		conv_typeQ	/* conv type	*/
 #endif
 );
 
@@ -80,6 +114,7 @@ extern NhlErrorTypes _NhlUnRegisterConverter(
 #if	NhlNeedProto
 	NrmQuark	from,		/* from type		*/
 	NrmQuark	to,		/* to type		*/
+	NrmQuark	conv_type,	/* conv type		*/
  	NhlConvertPtr	converter	/* pointer to converter	*/
 #endif
 );
@@ -87,16 +122,29 @@ extern NhlErrorTypes _NhlUnRegisterConverter(
 extern NhlBoolean _NhlConverterExists(
 #if	NhlNeedProto
 	NrmQuark		from,		/* from type	*/
-	NrmQuark		to		/* to type	*/
+	NrmQuark		to,		/* to type	*/
+	NrmQuark		conv_type	/* conv type	*/
+#endif
+);
+
+extern NhlErrorTypes _NhlExtConvertData(
+#if	NhlNeedProto
+	_NhlConvertContext	context,	/* context		*/
+	NrmQuark		typeQ,		/* conv type		*/
+	NrmQuark		fromQ,		/* from type		*/
+	NrmQuark		toQ,		/* to type		*/
+	NrmValue		*fromdata,	/* from type		*/
+	NrmValue		*todata		/* to type		*/
 #endif
 );
 
 extern NhlErrorTypes _NhlConvertData(
 #if	NhlNeedProto
-	NrmQuark	fromQ,		/* from type		*/
-	NrmQuark	toQ,		/* to type		*/
-	NrmValue	*fromdata,	/* from type		*/
-	NrmValue	*todata		/* to type		*/
+	_NhlConvertContext	context,	/* context		*/
+	NrmQuark		fromQ,		/* from type		*/
+	NrmQuark		toQ,		/* to type		*/
+	NrmValue		*fromdata,	/* from type		*/
+	NrmValue		*todata		/* to type		*/
 #endif
 );
 

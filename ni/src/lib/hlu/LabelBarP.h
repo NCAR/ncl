@@ -1,6 +1,6 @@
 
 /*
- *      $Id: LabelBarP.h,v 1.1 1993-07-27 18:03:01 dbrown Exp $
+ *      $Id: LabelBarP.h,v 1.2 1993-10-19 17:51:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,24 +32,27 @@ typedef struct _LabelBarLayerPart {
 
 	int	labelbar_on;
 	NhlOrientation	orient;
-	NhlJustification	just;
-	float	lb_x;
-	float	lb_y;
-	float	lb_width;
-	float	lb_height;
+	NhlJustification just;
 	float	box_major_ext;
 	float	box_minor_ext;
-	int	alignment;
 	int	box_count;
-	int	box_mode;
 	int     box_sizing;
 
-	int	*fill_patterns;
-	float	*fill_scale_facs;
-	int	*colors;
-	float	*values;
-	char	**label_strings;
-	float	*box_fractions;
+	NhlBoolean	auto_manage;
+	float	label_angle_add;
+	float	label_off;
+	float	title_off;
+	NhlBoundingBox	margin;
+	int	margin_mode;
+
+	NhlBoolean	mono_fill_color;
+	NhlGenArray	fill_colors;
+	NhlBoolean	mono_fill_pattern;
+	NhlGenArray	fill_patterns;
+	NhlBoolean	mono_fill_scale;
+	NhlGenArray	fill_scales;
+	NhlGenArray	label_strings;
+	NhlGenArray	box_fractions;
 
 	int	labels_on;
 	NhlPosition	label_pos;
@@ -69,7 +72,7 @@ typedef struct _LabelBarLayerPart {
 	TextDirection label_direction;
 	int     label_stride;
 	
-	float	title_ext;
+	float	max_title_ext;
 	char	*title_string;
 	int	title_on;
 	NhlPosition title_pos;
@@ -93,23 +96,33 @@ typedef struct _LabelBarLayerPart {
 	
 	int	perim_on;
 	int	perim_color;
+	int     perim_fill;
+	int	perim_fill_color;
 	float	perim_thickness;
 	int	perim_dash_pattern;
 	float	perim_dash_length;
 
-	int	fill_line_color;
-	int	fill_line_thickness;
-
-	NhlBoundingBox	margin;
+	int	fill_background;
+	float	fill_line_thickness;
 
 	/* private fields */
 
+	int             orient_set;     /* orientation set? */
+	float		lb_x;		/* base position and size */
+	float  		lb_y;
+	float		lb_width;
+	float		lb_height;
+	NhlBoundingBox	perim;		/* base perimeter */
+	NhlBoundingBox  adj_perim;	/* perimeter minus margins */
+	NhlBoundingBox	real_perim;	/* perimeter after accounting for
+					   excess label and title extent */
+
 	int 		*gks_colors;
-	int		last_box_count; /* reset at end of init and update */
-	NhlBoundingBox	expand_perim;     /* geometry adjustment fraction */
-	NhlBoundingBox	perim;
-	NhlBoundingBox  adj_perim;
-	NhlBoundingBox  ndc_margin;
+	int		current_label_count;
+	int		label_draw_count;
+	int		max_label_draw_count;
+	int		max_label_stride_count;
+
 	NhlBoundingBox	bar;	         /* preliminary bar boundary */
 	NhlBoundingBox	adj_bar;        /* after external label, label angle */
 	NhlCoord	box_size;        /* size of box assuming uniform */
@@ -117,13 +130,13 @@ typedef struct _LabelBarLayerPart {
 	float		*box_locs;       /* x or y depending on orientation */
 	NhlBoundingBox	labels;          /* overall boundary of label area */
 	int		labels_id;       /* multitext id */
+	float		const_pos;       /* constant position for labels */
 	float		*label_locs;     /* locations for multitext */
 	char		**stride_labels; /* subset of label_strings */
 	NhlBoundingBox	title;
 	int		title_id;
 	float		title_x;
 	float		title_y;
-
 
 }LabelBarLayerPart;
 

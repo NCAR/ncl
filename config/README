@@ -1,0 +1,567 @@
+ENVIRONMENT VARS
+
+NCARG	is no longer usefull - the distribution keeps track of it's directory
+	hierachy dynamically - so directories can be moved around within
+	the distribution without having to edit ymake files directly - You
+	may need to edit the $TOP/config/Project file to update any MAKE
+	symbols that are set to know where that part of the distribution
+	lives.
+
+YMAKE_DEV_FILE
+
+This is a new environment variable you can set for ymake - It only effects
+ymake if you are using ymake from the installed directory - It takes no
+effect for a full build of the system.  You can set this variable to a
+filename anywhere on the system. ymake will then include this file into
+the Makefile it creates - directly before it includes the yMakefile.  This
+file can over-ride any of the MAKE symbols that are set in the Template,Arch,
+Site, or Project files.  This is very usefull if you only want to have part
+of the distribution checked out at a time.  You can over-ride the values
+that have been assigned to NCARGLIB or any of the other libraries.  That
+way if you are currently working on that library you can put the line
+NCARGLIB = /path/to/work/dir/libncarg.a
+in this file - and all the application directories that use ymake will use
+this symbol to retrieve the ncarg library instead of using the installed
+library..
+
+Template sets up defaults for the following cpp variables - They can be
+over-riden in the "architecture" files or in the "Site" file.
+
+cpp symbol	default			Make Symbol(s) set or description
+
+NcargRoot	/usr/local
+BinRoot		NcargRoot/bin		$(BINROOT) $(BINPATH)
+LibRoot		NcargRoot/lib		$(LIBROOT) $(LIBPATH)
+IncRoot		NcargRoot/include	$(INCROOT) $(INCPATH)
+ManRoot		NcargRoot/man		$(MANROOT) $(MANPATH)
+TmpRoot		/tmp			$(TMPROOT) $(TMPPATH)
+XLibrary	-lX11			$(XLIB)
+XextLibrary	-lXext			$(EXTENSIONLIB)
+XToolLibrary	-lXt			$(XTOOLLIB)
+XMutilLibrary	-lXmu			$(XMULIB)
+XawLibrary	-lXaw			$(XAWLIB)
+XmotifLibrary	-lXm			$(XMOTIFLIB)
+
+UseCatDirs	NO			formated/unformated manpages
+MakeProgram	make			$(MAKE)
+CCompiler	cc			$(CC)
+CLoader		CCompiler		$(CC_LD)
+LibSearch	null			default libsearch path(set in Site file)
+IncSearch	null			default incsearch path(set in Site file)
+ExtraLibSearch	null			Extra lib search path(specific to arch)
+ExtraIncSearch	null			Extra inc search path(specific to arch)
+ExtraSysLibraries	null		Extra lib to link into EVERY executable
+CtoFLibraries	null			$(CTOFLIBS)
+StdDefines	null			default c-defines (specific to arch)
+Cdynamic	null			$(CDYNAMIC)
+Cstatic		null			$(CSTATIC)
+COptimizeFlag	-O			These two options are selected based
+CdebugFlag	-g			on the DEBUG cpp symbol to set $(COPT)
+CcOptions	null			default cc-options (specific to arch)
+MakeDepend	makedepend		$(MAKEDEPEND)
+CppCommand	/lib/cpp		$(CPP)
+FCppCommand	$(CONFIGPATH)/fcpp $(CPP)	$(FCPP)
+FCompiler	f77			$(F77)
+FLoader		FCompiler		$(F77_LD)
+FoptimizeFlag	-O			These two options are selected based
+FDebugFlag	-g			on the DEBUG cpp symbol to set $(FOPT)
+
+FcOptions	null			default f77 options (specific to arch)
+LdCommand	ld			$(LD)
+LdRelCommand	LdCommand		$(LD_REL)
+ArCommand	ar			$(AR) = ArCommand ArRegOpt
+ArRegOpt	vru
+ArQuickOpt	q			$(AR_QUICK) = ArCommand ArQuickOpt
+RmCommand	rm -f			$(RM)
+CatCommand	cat			$(CAT)
+CopyCommand	cp			$(CP)
+MoveCommand	mv -f			$(MV)
+LinkCommand	ln -s			$(LN)
+TblCommand	tbl			$(TBL)
+NroffCommand	nroff -man		$(NROFF)
+ColCommand	col			$(COL)
+DoesRanLib	YES			If YES $(RANLIB) = RanLib
+					If NO $(RANLIB) = touch -c
+RanLib		ranlib			possibly $(RANLIB)
+NoOptCommand	touch -c		$(NO_OPT)
+LintCommand	lint			$(LINT)
+InstallCommand	$(TOP)/utils/install -c	$(INSTALL)
+					If UseInstalled - default is install -c
+InstallRm	$(RM)			$(INSTALL_RM)
+FsplitCommand	fsplit			$(FSPLIT)
+
+Other Make Symbols set in Template:
+
+symbol			value				description
+
+SYSTEM_INCLUDE		dynamic			Name of arch file to include
+TOP			dynamic			top dir relative to current dir
+CURRENT_DIR		dynamic			current dir relative to top dir
+BINPATH			$(BINROOT)		dir to install execs to
+LIBPATH			$(LIBROOT)		dir to install libs in
+INCPATH			$(INCROOT)/$(NCARGDIR)	dir to install inc to
+HLUINCPATH		$(INCPATH)/$(HLUDIR)	dir to install hlu incs to
+TMPPATH			$(TMPROOT)		tmp dir
+MANPATH			$(MANROOT)		top of man tree
+MANLPATH		$(MANPATH)/[catl|manl]	dir to install manl pages to
+MAN1PATH		$(MANPATH)/[cat1|man1]	dir to install man1 pages to
+MAN3PATH		$(MANPATH)/[cat3|man3]	dir to install man3 pages to
+MAN5PATH		$(MANPATH)/[cat5|man5]	dir to install man5 pages to
+MAN6PATH		$(MANPATH)/[cat6|man6]	dir to install man6 pages to
+MAN8PATH		$(MANPATH)/[cat8|man8]	dir to install man8 pages to
+LIBNCARGPATH		$(LIBPATH)/ncarg	dir to install ncarg stuff to
+CONFIGPATH		$(LIBNCARGPATH)/config	dir to install config stuff to
+DBPATH			$(LIBNCARGPATH)/database	database dir
+FONTCAPPATH		$(LIBNCARGPATH)/fontcaps	fontcaps dir
+GRAPHCAPPATH		$(LIBNCARGPATH)/graphcaps	graphcaps dir
+DOCPATH			$(LIBNCARGPATH)/doc	dir to install doc's to
+EXAMPLESPATH		$(LIBNCARGPATH)/examples	examples dir
+ROBJPATH		$(LIBNCARGPATH)/robj	dir to install robj's
+TESTSPATH		$(LIBNCARGPATH)/tests	dir to install test's
+TUTORIALPATH		$(LIBNCARGPATH)/tutorial	tutorial's dir
+XAPPPATH		$(LIBNCARGPATH)/xapp	dir to install x app files to
+LIBHLUPATH		$(LIBNCARGPATH)/hlu	hlu dir
+HLUEXPATH		$(LIBHLUPATH)/examples	hlu examples dir
+HLUDOCPATH		$(LIBHLUPATH)/doc	hlu doc's
+HLURESPATH		$(LIBHLUPATH)
+MANL_SECTION		l
+MAN1_SECTION		1
+MAN3_SECTION		3
+MAN5_SECTION		5
+MAN6_SECTION		6
+MAN8_SECTION		8
+XMOTIFCLIENTLIBS	$(XMOTIFLIB) $(XTOOLLIB) $(XLIB)
+XATHENACLIENTLIBS	$(XAWLIB) $(XTOOLLIB) $(EXTENSIONLIB) $(XLIB)
+XMUATHENACLIENTLIBS	$(XAWLIB) $(XMULIB) $(XTOOLLIB) $(EXTENSIONLIB) $(XLIB)
+INSTALL_BIN		0755
+INSTALL_MAN		0644
+INSTALL_DOC		0644
+INSTALL_APP		0644
+INSTALL_LIB		0644
+INSTALL_DB		0644
+INSTALL_INC		0644
+SHELL			/bin/sh
+CALLCONV		$(CONFIGPATH)/callconv
+MKDIRHIER		$(CONFIGPATH)/mkdirhier
+CALLCONV		$(CONFIGSRC)/callconv
+MKDIRHIER		$(CONFIGSRC)/mkdirhier
+COPT			dynamic		uses DEBUG to determine
+FOPT			dynamic		uses DEBUG to determine
+
+"Project" sets up defaults for the following cpp variables:
+
+NcargVersion		3.2.x
+BuildRasterHDF		YES
+BuildRasterHPPCL	YES
+BuildRasterNrif		YES
+BuildRasterSun		YES
+BuildRasterAVS		YES
+BuildRasterSGI		YES
+BuildRasterAbekas	YES
+BuildRasterBinary	YES
+BuildXlibDependentCode	YES
+BuildSunViewctrans	NO
+HDFlib			-ldf		only if BuildRasterHDF
+NetCDFlib		-lnetcdf
+XdrLibrary		null
+ProjectDefines		-DNeedFuncProto		extra c defines for every c file
+GksBufferSize		0
+
+"Project" sets up the following Make Symbols:
+
+symbol			value					description
+VERSION			NcargVersion
+COMMONSRC		$(TOP)/common/src
+NCARG2DSRC		$(TOP)/ncarg2d/src
+NVIEWSRC		$(TOP)/ncarview/src
+NVIEWBINSRC		$(NVIEWSRC)/bin
+NVIEWLIBSRC		$(NVIEWSRC)/lib
+NISRC			$(TOP)/ni/src
+NIBINSRC		$(NISRC)/bin
+NILIBSRC		$(NISRC)/lib
+NCARGLOCLIBSRC		$(COMMONSRC)/libncarg_loc
+NCARGCLIBSRC		$(COMMONSRC)/libncarg_c
+NCARGLIBSRC		$(NCARG2DSRC)/libncarg
+CNCARGLIBSRC		$(NCARG2DSRC)/libncargC
+NCARGGKSLIBSRC		$(NCARG2DSRC)/libncarg_gks
+CNCARGGKSLIBSRC		$(NCARG2DSRC)/libncarg_gksC
+NCARGOPTLIBSRC		$(NCARG2DSRC)/liboptional
+CGMLIBSRC		$(NVIEWLIBSRC)/libcgm
+CTRANSLIBSRC		$(NVIEWLIBSRC)/libctrans
+ICTRANSLIBSRC		$(NVIEWLIBSRC)/libictrans
+NCARGRASLIBSRC		$(NVIEWLIBSRC)/libncarg_ras
+HLULIBSRC		$(NILIBSRC)/hlu
+HLUUTILLIBSRC		$(NILIBSRC)/hlu_util
+
+THESE ARE VERY IMPORTANT!! They should be used instead of using the library
+directly so dependancies can be determined. They will use the libraries
+in the distribution if ymake is being used in the distribution - but if ymake
+is being used from the installed space then they will use the installed versions
+of these libraries.
+
+NCARGLOCLIB		dynamic -lncarg_loc
+NCARGCLIB		dynamic -lncarg_c
+NCARGLIB		dynamic -lncarg
+CNCARGLIB		dynamic -lncargC
+NCARGGKSLIB		dynamic -lncarg_gks
+CNCARGGKSLIB		dynamic -lncarg_gksC
+CGMLIB			dynamic -lcgm
+NCARGRASLIB		dynamic -lncarg_ras
+HLULIB			dynamic -lhlu
+HLUUTILLIB		dynamic -lhlu_util
+CTRANSLIB		dynamic libctrans.o
+ICTRANSLIB		dynamic libictrans.o
+ICTRANS_LIB		dynamic libictrans_.o
+
+These variable should be used with the new FortranProgram and CProgram Rules:
+
+DEPNCARGLOCLIB		dynamic
+DEPNCARGCLIB		dynamic
+DEPNCARGLIB		dynamic
+DEPCNCARGLIB		dynamic
+DEPNCARGGKSLIB		dynamic
+DEPCNCARGGKSLIB		dynamic
+DEPCGMLIB		dynamic
+DEPNCARGRASLIB		dynamic
+DEPHLULIB		dynamic
+DEPHLUUTILLIB		dynamic
+DEPCTRANSLIB		$(CTRANSLIB)
+DEPICTRANSLIB		$(ICTRANSLIB)
+DEPICTRANS_LIB		$(ICTRANS_LIB)
+
+These are convienience symbols that include a number of the libs together.
+
+NCARGLIBS		$(NCARGLIB) $(NCARGGKSLIB) $(NCARGLOCLIB) $(NCARGCLIB)
+CNCARGLIBS		$(CNCARGLIB) $(CNCARGGKSLIB)
+HLULIBS			$(HLULIB) $(HLUUTILLIB)
+DEPNCARGLIBS		$(DEPNCARGLIB) $(DEPNCARGGKSLIB) $(DEPNCARGLOCLIB) $(DEPNCARGCLIB)
+DEPCNCARGLIBS		$(DEPCNCARGLIB) $(DEPCNCARGGKSLIB)
+DEPHLULIBS		$(DEPHLULIB) $(DEPHLUUTILLIB)
+
+GRAPHC			Determines if it should use installed version or not
+FONTC			Determines if it should use installed version or not
+NETCDFLIB		used in raster libs
+NCDFLIBS		netcdf library
+HDFLIB			hdf library
+XDRLIB			xdr library
+HDFDEFINES		hdf defines - set in arch files
+GKS_BUFFER_SIZE		GksBufferSize
+
+*************************************************************************
+*									*
+* The following cpp symbols are to be used in the Site file.		*
+*									*
+*************************************************************************
+
+symbol			description
+
+BuildNCARGSourceLibrary	if defined the Source Rules will create make targets
+			to create source libraries. Otherwise the Source Rules
+			will be null.
+
+InstallManToLocal	if defined the man pages will all be installed to
+			manl instead of being broken up into man[135].
+			This may also be set in the arch files so you
+			may need to check if it is defined before you
+			try to define it in Site.
+
+*************************************************************************
+*									*
+* The following cpp symbols are to be used in individual yMakefiles.	*
+*									*
+*************************************************************************
+
+symbol			description
+
+DEBUG			if defined COPT and FOPT will be set to CDebugFlag
+			and FDebugFlag respectively. if not defined COPT and
+			FOPT will be set to COptimizeFlag and FOptimizeFlag
+			unless DisableOptimize is defined.
+
+DisableOptimize		if defined COptimizeFlag and FOptimizeFlag will be
+			defined as null.
+
+COptimizeFlag		This is usually set in the "arch" file but can be
+			over-ridden in a specific yMakefile to use a specific
+			level of optimization.
+
+FOptimizeFlag		"see COptimizeFlag above"
+
+IHaveSubdirs		This directive tells ymake that you have set the
+			make symbol SUBDIRS equal to the sub-dirs of this
+			directory.  ymake will set up all the rules to
+			manage those sub-directories.
+*
+* Additionally, the name of the architecture file will have a cpp symbol
+* associated with it - so individual yMakefiles can tell which arch file
+* was selected and can use preprocesser directives to conditionally do
+* things.
+
+arch file		cpp symbol defined
+
+AIX370			AIX370Arch
+AIX_RS6000		AIX_RS6000Arch
+Ardent			ArdentArch
+Cray			CrayArch
+DECRISC			DECRISCArch
+HPUX_snake		HPUX_snakeArch
+SGI4D			SGI4DArch
+Sun3			Sun3Arch
+Sun386i			Sun386iArch
+Sun4			Sun4Arch
+Sun4Solaris		Sun4SolarisArch
+SystemV			SystemVArch
+
+*************************************************************************
+*									*
+* The following make symbols are to be used in individual yMakefiles.	*
+*									*
+*************************************************************************
+
+$(EXTRA_CDEFINES)	Used as part of CFLAGS to compile C programs - put in
+			additional -D flags to compile.
+
+$(EXTRA_FDEFINES)	Used to add -D flags to fortran compile - be carefull
+			since this isn't supported on all arch's.
+
+$(EXTRA_DEFINES)	Used to add -D flags to both fortran and C compiles.
+			Same warning applies to fortran compiles.
+
+$(EXTRA_INCLUDES)	Used to add -I flags to C compiles.
+
+$(EXTRA_CLDFLAGS)	Used to add additional LD flags for the linking of C
+			programs.
+
+$(EXTRA_FLDFLAGS)	Used to add additional LD flags for the linking of
+			Fortran programs.
+
+$(EXTRA_LDFLAGS)	Used to add additional LD flags for the linking of
+			Fortran and C programs.
+
+$(PROG_LIBS)		Used to specify the libraries that need to be linked
+			into a program that are part of the distribution.
+			Only make symbols should be used to set this make
+			symbol. ex. PROG_LIBS = $(NCARGLIB) $(NCARGLOCLIB)
+
+$(EXTRA_LIBS)		Used to specify the libraries that need to be linked
+			into a program that are not part of the distribution,
+			but that may not be installed on all systems - so they
+			need to be linked into the executable statically for
+			the arch's that support dynamic libs.
+
+$(SYS_LIBS)		Used to specify the system libraries that need to be
+			linked into a program.  These libraries include the
+			libc.a and all other libraries that are sure to be
+			installed on the target system.  These should be linked
+			dynamically so our programs work no matter which version
+			of the OS is being used on the target system.
+
+$(SUBDIRS)		Used in conjunction with the IHaveSubdirs cpp symbol
+			to manage sub-directories.
+
+*************************************************************************
+*									*
+* The following make symbols are to be used in the developers override	*
+* file.  $YMAKE_DEV_FILE						*
+* (Also, the "Optimize" cpp symbols can be used in this file)		*
+*************************************************************************
+
+$(DEV_DEFINES)		Add some extra defines that will be included in
+			compile lines.
+
+$(DEV_INCLUDES)		Add extra -I paths - like $(EXTRA_INCLUDES) but
+			meant to be used in multiple directories. (ie.
+			Don't Use Relative Paths)
+
+$(DEV_LIB_SEARCH)	Add extra -L paths - These will be the first -L
+			paths in the link lines.
+
+All of the NCAR Graphics Library symbols can be specified in this file.
+
+*************************************************************************
+* Rules creates the following cpp macros that should be used in ymake	*
+* files.  PLEASE - Don't put Make targets in ymake files unless in is	*
+* truely a unique directory!: It makes things very difficult to update	*
+*************************************************************************
+
+-------------------------------------------------------------------------
+**************************** Install Rules ******************************
+-------------------------------------------------------------------------
+
+InstallTarget(names, mode, dest)
+	names	- list of files in the current dir to be installed in dest dir.
+	mode	- mode to use for installing names.
+	dest	- directory to install names to.
+
+	This rule will create the dest dir if it needs to.
+
+InstallLibTarget(library)
+	library	- name of a library to install in the current dir.
+
+	This rule uses InstallTarget to install the library and then runs
+	ranlib on the library if it needs to.
+
+InstallManPages(files,suffix,destdir,section)
+	files	- list of man pages (without suffix) to install.
+	suffix	- suffix of man page files.
+	destdir	- directory to install manpages to -should use $(MAN?PATH).
+	section	- section of manpages installing to -should use $(MAN?_SECTION).
+
+	This rule is used to install man pages.  It uses the InstallTarget rule.
+
+InstallManPageAliases(file,destdir,section,aliases)
+	file	- name of manpage that is already installed.
+	destdir	- directory manpage is installed in.
+	section	- section of manpage.
+	aliases	- list of names that should also bring up the "file" manpage.
+
+	This rule is used to create alias manpages - It creates links to the
+	original file with the new names.  The "file" manpage must already
+	be installed before the aliases can be created.
+
+InstallXappFiles(appfiles)
+	appfiles	- name of the x app defaults file to install.
+
+	This rule looks for a file "appfiles.ad" in the current dir and installs
+	it into $(XAPPPATH) - creating that dir if it needs to. It will issue
+	a warning if there is already an app-defaults file installed there and
+	will move that file to "file.bak" and print a warning message.
+
+-------------------------------------------------------------------------
+************************** Build exec rules *****************************
+-------------------------------------------------------------------------
+
+FortranProgram(program,objects,deplibs)
+	program	- name of program to create.
+	objects	- list of object files to link to create program.
+	deplibs	- dependent libraries - $(DEP*) make symbols.
+
+	This rule creates a program by linking the listed objects with the
+	libraries indicated by setting the $(PROG_LIBS), $(EXTRA_LIBS) and
+	$(SYS_LIBS) make symbols. This rule also puts the install rule
+	in - it installs program to $(BINPATH).
+
+FortranTarget(program,objects)
+
+	This rule is essentually identical to FortranProgram except that it
+	doesn't keep track of the Dependent Libraries - so it doesn't re-link
+	if the libraries are re-compiled.
+
+FNotInstalledTarget(program,objects)
+
+	This rule is essentually identical to FortranTarget except that it
+	doesn't put the install rule in.  It is intended to be used to create
+	programs that are only used within the distribution or are installed
+	into a different dir than $(BINPATH).
+
+CProgram(program,objects,deplibs)
+
+	This rule is the same as FortranProgram except that it uses $(CC_LD)
+	to link instead of $(F77_LD) as FortranProgram does.
+
+CTarget(program,objects)
+
+	This rule is the same as FortranTarget with the same exception as
+	CProgram.
+
+CNotInstalledTarget(program,objects)
+
+	Same as FNotInstalledTarget with same exception as CProgram.
+
+HLUExampleTarget(program,objects,sources)
+	program	- name of example program.
+	objects	- objects used to create program.
+	sources	- All sources needed to be installed into $(HLUEXPATH)
+
+	This rule is used to create an HLU example program.  It installs all
+	the sources as well as the program into $(HLUEXPATH).
+
+-------------------------------------------------------------------------
+************************** Build lib rules ******************************
+-------------------------------------------------------------------------
+
+RelocatableTarget(name,objects)
+	name	- name of the object file to create.
+	objects	- objects to combine into name.
+
+	This rule will link the objects into name using $(LD_REL) and then
+	install that file into $(ROBJPATH).
+
+LibraryTarget(library,objects)
+	library	- library to create.
+	objects	- objects to archive into library.
+
+	This rule create library in the current directory and puts an install
+	rule in to install library into $(LIBPATH) and runs ranlib if needed.
+
+SourceLibraryTarget(name,library,sources)
+	name	- name of library to create source library for.
+	library	- name of source library.
+	sources	- sources to archive into library.
+
+	Same as Library target but for Source files - It only creates the
+	rules if BuildNCARGSourceLibrary is defined.
+
+PartialLibraryRoot(library,dirs)
+	library	- name of library to create in the current dir.
+	dirs	- sub-dirs that contain all the object files for library.
+
+	This rule is used to combine all the subdirs(utilities) into one
+	library in the current directory. It takes care of the install
+	target as well.
+
+PartialLibraryTarget(library,objects)
+	library	- name of the library in the directory above.
+	objects	- objects to add into the library.
+
+	This rule is used to manage an individual directory that creates
+	a portion of the library(a single utility).
+
+PartialSourceLibraryRoot(library,dirs)
+	library	- source library to create in the current dir.
+	dirs	- sub-dirs that contain the source for library.
+
+	This rule is analagous to the PartialLibraryRoot rule but for a source
+	library.  It is a null rule unless BuildNCARGSourceLibrary is defined.
+
+PartialSourceLibraryTarget(name,library,sources)
+	name	- name of the utility that is being added to library
+	library	- name of the source library in the directory above.
+	sources	- sources to add to library.
+
+	This rule is analogous to the PartialLibraryTarget but for a source
+	library.  It is a null rule unless BuildNCARGSourceLibrary is defined.
+
+-------------------------------------------------------------------------
+************************* other useful rules ****************************
+-------------------------------------------------------------------------
+
+CleanFilesTarget(files)
+	files	- files to clean
+
+	This rules is used to clean the files on a clean target.
+
+FormatManPages(manpages,mansuffix,catsuffix)
+	manpages	- name of manpages to format.
+	mansuffix	- suffix of manpages.
+	catsuffix	- suffix to use for formatted manpages.
+
+	This rule is used to format the manpages for a format target.  It uses
+	manpages as the root filename and mansuffix for the suffix of each
+	of those files.  catsuffix is the suffix to be used for the formatted
+	manpages that are created.
+
+DependTarget(srcs)
+	srcs	- sources to find the dependencies for.
+
+	This rule looks threw the C sources in srcs and follows all the
+	#include line to find out which files each of those sources are
+	dependendt upon and appends that information to the Makefile.
+
+BuildIncludes(srclist,dstsubdir,dstupdir)
+	srclist		- include files that eventually need to be installed.
+	dstsubdir	- subdir in the include directory.
+	dstupdir	- include dir from dstsubdir.
+
+	This rule is used to create an include sym-link tree inside the
+	distribution.

@@ -1,6 +1,5 @@
-
 /*
- *      $Id: TransObjP.h,v 1.2 1993-05-27 19:11:29 ethan Exp $
+ *      $Id: TransObjP.h,v 1.3 1993-10-19 17:52:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,21 +37,12 @@ int     /* upordown */
 #endif
 );
 typedef struct _TransObjLayerPart {
-	/* Publicly set values */
-	int dash_pattern;
-	char *line_label;
-	float line_thickness;	
-	int line_color;	
-	float line_label_font_height;
-	float line_dash_seglen;
-	/* private fields */
-	int char_size;
-	int dash_dollar_size;
+	void *foo;
 }TransObjLayerPart;
 
 
 typedef struct _TransObjLayerRec {
-	BaseLayerPart	base;
+	ObjLayerPart	base;
 	TransObjLayerPart	trobj;
 }TransObjLayerRec;
 
@@ -86,7 +76,7 @@ typedef struct _TransObjLayerClassPart {
 } TransObjLayerClassPart;
 
 typedef struct _TransObjLayerClassRec {
-	BaseLayerClassPart	base_class;
+	ObjLayerClassPart	base_class;
 	TransObjLayerClassPart  trobj_class;
 } TransObjLayerClassRec;
 
@@ -110,4 +100,3 @@ float /*missing*/
 );
 
 #endif  /*_NTransObjP_h*/
-

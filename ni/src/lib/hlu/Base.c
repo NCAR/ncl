@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.1 1993-04-30 17:21:08 boote Exp $
+ *      $Id: Base.c,v 1.2 1993-10-19 17:49:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,34 +39,64 @@ static NhlErrorTypes BaseLayerDestroy(
 #endif
 );
 
-LayerClassRec layerClassRec = {
+ObjLayerClassRec objLayerClassRec = {
 	{
-/* superclass			*/	(LayerClass)NULL,
-/* class_name			*/	"Base",
+/* class_name			*/	"Obj",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(LayerRec),
-/* layer_resources		*/	NULL,
-/* num_resources		*/	0,
-/* child_resources		*/	NULL,
-/* all_resources		*/	NULL,
-/* class_part_initialize	*/	BaseLayerClassPartInitialize,
+/* layer_size			*/	sizeof(ObjLayerRec),
 /* class_inited			*/	False,
+/* superclass			*/	(LayerClass)NULL,
+
+/* resources			*/	NULL,
+/* num_resources		*/	0,
+/* all_resources		*/	NULL,
+
+/* class_part_initialize	*/	BaseLayerClassPartInitialize,
 /* class_initialize		*/	NULL,
 /* layer_initialize		*/	NULL,
 /* layer_set_values		*/	NULL,
-/* layer_set_values_not		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
-/* layer_pre_draw		*/	NULL,
+/* layer_reparent		*/	NULL,
+/* layer_destroy		*/	NULL
+	}
+};
+
+LayerClassRec layerClassRec = {
+	{
+/* class_name			*/	"Base",
+/* nrm_class			*/	NrmNULLQUARK,
+/* layer_size			*/	sizeof(LayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(LayerClass)NULL,
+
+/* resources			*/	NULL,
+/* num_resources		*/	0,
+/* all_resources		*/	NULL,
+
+/* class_part_initialize	*/	BaseLayerClassPartInitialize,
+/* class_initialize		*/	NULL,
+/* layer_initialize		*/	NULL,
+/* layer_set_values		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
+/* layer_get_values		*/	NULL,
+/* layer_reparent		*/	NULL,
+/* layer_destroy		*/	BaseLayerDestroy,
+
+/* child_resources		*/	NULL,
+
 /* layer_draw			*/	NULL,
+
+/* layer_pre_draw		*/	NULL,
 /* layer_draw_segonly		*/	NULL,
 /* layer_post_draw		*/	NULL,
-/* layer_clear			*/	NULL,
-/* layer_destroy		*/	BaseLayerDestroy
+/* layer_clear			*/	NULL
 	}
 };
 
 LayerClass layerClass = (LayerClass)&layerClassRec;
 LayerClass baseLayerClass = (LayerClass)&layerClassRec;
+LayerClass objLayerClass = (LayerClass)&objLayerClassRec;
 
 /*
  * Function:	BaseLayerClassPartInitialize
@@ -121,10 +151,10 @@ BaseLayerClassPartInitialize
  * Out Args:	
  *
  * Scope:	static
- * Returns:	void
+ * Returns:	NhlErrorTypes
  * Side Effect:	
  */
-static void
+static NhlErrorTypes
 FreeAndDestroyChildList
 #if	__STDC__
 (
@@ -135,12 +165,16 @@ FreeAndDestroyChildList
 	_NhlChildList	list;	/* list to free	*/
 #endif
 {
-	if(list == NULL)
-		return;
+	NhlErrorTypes ret=NOERROR,lret=NOERROR;
 
-	FreeAndDestroyChildList(list->next);
-	(void)NhlDestroy(list->pid);
+	if(list == NULL)
+		return ret;
+
+	ret = FreeAndDestroyChildList(list->next);
+	lret = NhlDestroy(list->pid);
 	(void)NhlFree(list);
+
+	return MIN(ret,lret);
 }
 
 /*
@@ -170,9 +204,21 @@ BaseLayerDestroy
 	Layer	l;	/* layer to destroy	*/
 #endif
 {
-	FreeAndDestroyChildList(l->base.children);
+	NhlErrorTypes	ret=NOERROR,lret=NOERROR;
+	/*
+	 * First free register children left behind by sub-classes
+	 */
+	ret = FreeAndDestroyChildList(l->base.children);
 
-	return NOERROR;
+	/*
+	 * Now free any children that are still around
+	 */
+	while(l->base.all_children != NULL){
+		lret = NhlDestroy(l->base.all_children->pid);
+		ret = MIN(ret,lret);
+	}
+
+	return ret;
 }
 
 /*

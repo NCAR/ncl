@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.1 1993-04-30 17:01:34 boote Exp $
+#      $Id: yMakefile,v 1.2 1993-10-19 17:45:42 boote Exp $
 #
 #########################################################################
 #									#
@@ -18,31 +18,8 @@
 #	Date:		Tue Apr 27 14:56:52 MDT 1993
 #
 #	Description:	yMakefile for ncarg/ni
-NCARG	= ..
 
 SUBDIRS = src doc
-
-#if defined(SunOS) && defined(sun4) /* Only do ni prototypes on sun4's	*/
-
-CreateDirTarget($(LIBHLUPATH))
-CreateDirTarget($(HLUDOCPATH))
-CreateDirTarget($(HLUINCPATH))
-CreateDirTarget($(HLUEXPATH))
-
-MakeSubdirs($(SUBDIRS))
-InstallSubdirs($(SUBDIRS))
-MakefilesSubdirs($(SUBDIRS))
-CleanSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
-
-#else			/* provide null targets for other arch's	*/
-
-all:
-
-install:
-
-clean:
-
-depend:
-
+#if (defined(SunOS) && defined(sun4)) || defined(HPUX) || defined(IRIX)
+#define IHaveSubdirs
 #endif

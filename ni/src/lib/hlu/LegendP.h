@@ -1,6 +1,6 @@
 
 /*
- *      $Id: LegendP.h,v 1.1 1993-07-27 18:03:09 dbrown Exp $
+ *      $Id: LegendP.h,v 1.2 1993-10-19 17:51:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,44 +26,126 @@
 #include <ncarg/hlu/ViewP.h>
 #include <ncarg/hlu/Legend.h>
 
-typedef struct _LegendLayerPart{
-	/* user setable resource fields */
-	char	*string;
-	float	pos_x;
-	float	pos_y;
-	float	angle;
-	int	just;
-	TextDirection direction;
-	int	font;
-	int	font_color;
-	float	font_height;
-	float	font_aspect;
-	float 	font_thickness;
-	FontQuality	font_quality;
-	float	constant_spacing;
-	char	func_code;
-	float	*x_corners;
-	float	*y_corners;
+typedef struct _LegendLayerPart {
 
-	/* Private fields */
+	/* public resource fields */
 
-	char	*real_string;
-	float	cntr;
-	float	real_x_pos;
-	float	real_y_pos;
-	float   real_size;
-	float   real_ph_width;
-	float   real_ph_height;
-	float	heightvecx[2];
-	float	heightvecy[2];
-	char	dirstr[4];
-	int 	qual;
+	int	legend_on;
+	NhlOrientation	orient;
+	NhlJustification just;
+	float	box_major_ext;
+	float	box_minor_ext;
+	int	box_count;
+	int     box_sizing;
+	int	box_background;
+
+	NhlBoolean	auto_manage;
+	float	label_angle_add;
+	float	label_off;
+	float	title_off;
+	NhlBoundingBox	margin;
+
+	NhlGenArray	item_indexes;
+	NhlGenArray	item_strings;
+	NhlBoolean	mono_item_type;
+	NhlGenArray	item_types;
+	NhlBoolean 	mono_item_color;
+	NhlGenArray	item_colors;
+	NhlBoolean	mono_item_thickness;
+	NhlGenArray	item_thicknesses;
+	NhlBoolean 	mono_item_text_height;
+	NhlGenArray	item_text_heights;
+	NhlGenArray	label_strings;
+	NhlGenArray	box_fractions;
+
+	int	labels_on;
+	NhlPosition	label_pos;
+	NhlJustification label_just;
+	int     label_alignment;    /* 0 - Box Centers, 1 - Interior_Edges,
+				       2 - External_Edges */
+	int	label_dir;
+	float	label_angle;
+	int	label_font;
+	int	label_color;
+	float	label_height;
+	float	label_aspect;
+	float	label_thickness;
+	FontQuality label_quality;
+	float	label_const_spacing;
+	char	label_func_code;
+	TextDirection label_direction;
+	int     label_stride;
+	
+	float	max_title_ext;
+	char	*title_string;
+	int	title_on;
+	NhlPosition title_pos;
+	NhlJustification  title_just;
+	int     title_direction;
+	float	title_angle;
+	int	title_font;
+	int	title_color;
+	float	title_height;
+	float	title_aspect;
+	float	title_thickness;
+	FontQuality title_quality;
+	float	title_const_spacing;
+	char	title_func_code;
+
+	int	box_line_on;
+	int	box_line_color;
+	float	box_line_thickness;
+	int	box_line_dash_pattern;
+	float	box_line_dash_length;
+	
+	int	perim_on;
+	int	perim_color;
+	int     perim_fill;
+	int	perim_fill_color;
+	float	perim_thickness;
+	int	perim_dash_pattern;
+	float	perim_dash_length;
+
+	int	fill_background;
+	float	fill_line_thickness;
+
+	/* private fields */
+
+	float		lg_x;		/* base position and size */
+	float  		lg_y;
+	float		lg_width;
+	float		lg_height;
+	NhlBoundingBox	perim;		/* base perimeter */
+	NhlBoundingBox  adj_perim;	/* perimeter minus margins */
+	NhlBoundingBox	real_perim;	/* perimeter after accounting for
+					   excess label and title extent */
+
+	int 		*gks_colors;
+	int		label_draw_count;
+	int		max_label_draw_count;
+	int		max_label_stride_count;
+
+	NhlBoundingBox	bar;	         /* preliminary bar boundary */
+	NhlBoundingBox	adj_bar;        /* after external label, label angle */
+	NhlCoord	box_size;        /* size of box assuming uniform */
+	NhlCoord        adj_box_size;    /* size of box after adjustments */
+	float		*box_locs;       /* x or y depending on orientation */
+	NhlBoundingBox	labels;          /* overall boundary of label area */
+	int		labels_id;       /* multitext id */
+	float		const_pos;       /* constant position for labels */
+	float		*label_locs;     /* locations for multitext */
+	char		**stride_labels; /* subset of label_strings */
+	NhlBoundingBox	title;
+	int		title_id;
+	float		title_x;
+	float		title_y;
+
 }LegendLayerPart;
 
 typedef struct _LegendLayerRec{
 	BaseLayerPart	base;
 	ViewLayerPart	view;
-	LegendLayerPart text;
+	LegendLayerPart legend;
 }LegendLayerRec;
 
 typedef struct _LegendLayerClassPart {
@@ -73,7 +155,7 @@ typedef struct _LegendLayerClassPart {
 typedef struct _LegendLayerClassRec{
 	BaseLayerClassPart base_class;
 	ViewLayerClassPart view_class;
-	LegendLayerClassPart text_class;
+	LegendLayerClassPart legend_class;
 }LegendLayerClassRec;
 
 extern LegendLayerClassRec legendLayerClassRec;

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.1 1993-04-30 17:18:42 boote Exp $
+#      $Id: yMakefile,v 1.2 1993-10-19 17:48:34 boote Exp $
 #
 #########################################################################
 #									#
@@ -19,39 +19,28 @@
 #
 #	Description:	yMakefile for ncarg/ni/src/examples
 
-NCARG	= ../../..
+#define IHaveSubdirs
 
-EXAMPLES = nhl01 nhl02 nhl03 nhl04 nhl05 nhl06
+SUBDIRS		= $(EXAMPLES)
+EXAMPLES	= nhl01 nhl02 nhl03 nhl04 nhl05 nhl06
+SCRIPTS		= nhlex
+MANS		= nhlex.man
 
-SCRIPTS = nhlex
-
-MANS = nhlex.man
-
-DEBUG = 0
-VERBOSE = 0
+SCRIPT_DEBUG = 0
+SCRIPT_VERBOSE = 0
 
 all:: $(SCRIPTS)
-
-all:: $(MANS)
 
 nhlex: nhlex.csh Makefile
 	@sed \
 	-e 's+SED_HLUUSRRESENVNAME+$(HLUUSRRESENVNAME)+' \
-	-e 's+SED_DEBUG+$(DEBUG)+' \
-	-e 's+SED_VERBOSE+$(VERBOSE)+' \
+	-e 's+SED_DEBUG+$(SCRIPT_DEBUG)+' \
+	-e 's+SED_VERBOSE+$(SCRIPT_VERBOSE)+' \
 	-e 's+SED_LIBROOT+$(LIBROOT)+' \
 	-e 's+SED_EXAMPLES+$(EXAMPLES)+' \
 	< nhlex.csh > nhlex
 
 InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
+CleanFilesTarget($(SCRIPTS))
 
-InstallManPage(nhlex,$(MAN1PATH),$(MAN1_SECTION))
-
-clean::
-	@-$(RM) $(SCRIPTS)
-
-MakeSubdirs($(EXAMPLES))
-InstallSubdirs($(EXAMPLES))
-MakefilesSubdirs($(EXAMPLES))
-CleanSubdirs($(EXAMPLES))
-DependSubdirs($(EXAMPLES))
+InstallManPages(nhlex,.man,$(MAN1PATH),$(MAN1_SECTION))

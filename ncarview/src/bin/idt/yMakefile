@@ -1,29 +1,24 @@
 #
 #
-#	$Id: yMakefile,v 1.15 1993-03-26 23:20:32 haley Exp $
+#	$Id: yMakefile,v 1.16 1993-10-19 17:43:03 boote Exp $
 #
 #
 #	Makefile for idt -- Interactive Image Display Tool
 #
 #
 
-NCARG = ../../../..
-
 MYNAME	= idt
 
 TRANSLATOR	= ictrans
 
+PROG_LIBS	=	$(CGMLIB) $(NCARGCLIB)
+DEPLIBS		=	$(DEPCGMLIB) $(DEPNCARGCLIB)
 
-LOCLIB	= \
-	$(LIBPATH)/libcgm.a $(LIBPATH)/libncarg_c.a
+EXTRA_LIBS	=	$(XMUATHENACLIENTLIBS)
+SYS_LIBS	=	-lm
 
-XLIBS	= $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(EXTENSIONLIB) $(XLIB)
-
-GENLIBS = -lm
-
-LIBS	= $(LOCLIB) $(CSTATIC) $(XLIBS) $(CDYNAMIC) $(GENLIBS)
-
-EQUALHACK = =
+EXTRA_DEFINES =	-DXAPPDIR='"$(XAPPDIR)"' -DTRANSLATOR='"$(TRANSLATOR)"' \
+		-DBINDIR='"$(BINDIR)"'
 
 OBJS	= \
 	w_idt.o w_file.o file.o glob.o w_display.o display.o w_dialog.o \
@@ -36,28 +31,18 @@ SRCS	= \
 	xt_env.c animate.c animate_cb.c
 
 
-all::	$(MYNAME)
-
-CTarget($(MYNAME),$(OBJS),$(LIBS))
-MakefileTarget
-CleanTarget
-
+CProgram($(MYNAME),$(OBJS),$(DEPLIBS))
+DependTarget($(SRCS))
 
 #
 #	w_idt.c needs to know the name of the translator
 #
 w_idt.o:     w_idt.c Makefile
-	$(CC) $(CFLAGS) \
-	-DTRANSLATOR$(EQUALHACK)'"$(TRANSLATOR)"' \
-	-DBINDIR$(EQUALHACK)'"$(BINDIR)"' \
-	-c $*.c
 
 #
 #	xt_env.c needs to know the default location of the idt resoure file
 #
 xt_env.o:     xt_env.c Makefile
-	$(CC) $(CFLAGS) -DXAPPDIR$(EQUALHACK)'"$(XAPPDIR)"' -c $*.c
 
 lint:	$(HDR) $(SRCS)
-	lint  -DTRANSLATOR$(EQUALHACK)'"$(TRANSLATOR)"' \
-		$(LINTLIBS) $(SRCS)  1> lint.out 2>&1
+	lint  $(CFLAGS)$(LINTLIBS) $(SRCS)  1> lint.out 2>&1

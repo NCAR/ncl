@@ -1,6 +1,5 @@
-
 /*
- *      $Id: TickMark.c,v 1.2 1993-06-03 15:12:02 ethan Exp $
+ *      $Id: TickMark.c,v 1.3 1993-10-19 17:52:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,8 +21,8 @@
  */
 
 #include <stdio.h>
-#include <strings.h>
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/Converters.h>
 #include <ncarg/hlu/TickMarkP.h>
 #include <math.h>
 #include <ncarg/hlu/IrregularType2TransObj.h>
@@ -858,13 +857,28 @@ int		/* cors */
 #endif
 );
 
-static NhlErrorTypes SetUpTransformInfo(
+static NhlErrorTypes CreateXTYRTransformInfo(
 #ifdef NhlNeedProto
-TickMarkLayer 	/* tnew */,
-TickMarkLayer 	/* treq*/,
-_NhlArgList	/* args*/,
-int		/* num_args */,
-int		/* cors */
+TickMarkLayer 	tnew,
+_NhlArgList	args,
+int		num_args
+#endif
+);
+
+static NhlErrorTypes ChangeTransformInfo(
+#ifdef NhlNeedProto
+TickMarkLayer 	tnew,
+TickMarkLayer 	told,
+_NhlArgList	args,
+int		num_args
+#endif
+);
+
+static NhlErrorTypes CreateXBYLTransformInfo(
+#ifdef NhlNeedProto
+TickMarkLayer 	tnew,
+_NhlArgList	args,
+int		num_args
 #endif
 );
 
@@ -890,7 +904,7 @@ static NhlErrorTypes TickMarkGetBB(
 #endif
 );
 
-char *ConvertToString(
+static char *ConvertToString(
 #ifdef NhlNeedProto
 	float		value,
 	int		convert_precision,
@@ -902,27 +916,33 @@ char *ConvertToString(
 
 TickMarkLayerClassRec tickMarkLayerClassRec = {
         {
-/* superclass                   */      (LayerClass)&viewLayerClassRec,
-/* class_name                   */      "TickMark",
-/* nrm_class                    */      NrmNULLQUARK,
-/* layer_size                   */      sizeof(TickMarkLayerRec),
-/* layer_resources              */      resources,
-/* num_resources                */      NhlNumber(resources),
-/* child_resources              */      NULL,
-/* all_resources                */      NULL,
-/* class_part_initialize        */      NULL,
-/* class_inited                 */      False,
-/* class_initialize             */      TickMarkClassInitialize,
-/* layer_initialize             */      TickMarkInitialize,
-/* layer_set_values             */      TickMarkSetValues,
-/* layer_set_values_not         */      NULL,
-/* layer_get_values             */      NULL,
-/* layer_pre_draw               */      NULL,
-/* layer_draw                   */      TickMarkDraw,
-/* layer_draw_segonly           */      NULL,
-/* layer_post_draw              */      NULL,
-/* layer_clear                  */      NULL,
-/* layer_destroy                */      TickMarkDestroy
+/* class_name		*/      "TickMark",
+/* nrm_class		*/      NrmNULLQUARK,
+/* layer_size		*/      sizeof(TickMarkLayerRec),
+/* class_inited		*/      False,
+/* superclass		*/      (LayerClass)&viewLayerClassRec,
+
+/* layer_resources	*/      resources,
+/* num_resources	*/      NhlNumber(resources),
+/* all_resources		*/	NULL,
+
+/* class_part_initialize*/      NULL,
+/* class_initialize	*/      TickMarkClassInitialize,
+/* layer_initialize	*/      TickMarkInitialize,
+/* layer_set_values	*/      TickMarkSetValues,
+/* layer_set_values_hook*/      NULL,
+/* layer_get_values	*/      NULL,
+/* layer_reparent	*/      NULL,
+/* layer_destroy	*/      TickMarkDestroy,
+
+/* child_resources	*/      NULL,
+
+/* layer_draw		*/      TickMarkDraw,
+
+/* layer_pre_draw	*/      NULL,
+/* layer_draw_segonly	*/      NULL,
+/* layer_post_draw	*/      NULL,
+/* layer_clear		*/      NULL
 	},
         {
 /* segment_workstation  */      -1,
@@ -958,7 +978,7 @@ LayerClass tickMarkLayerClass = (LayerClass)&tickMarkLayerClassRec;
  *		CheckIrregular
  *		CheckTime
  *		CheckGeographic
- *		SetUpTransformInfo
+ *		ChangeTransformInfo
  *		ComputeTickInfo
  *		TransformLocations
  *		ComputeAndSetLabelInfo
@@ -1102,13 +1122,14 @@ static NhlErrorTypes	TickMarkSetValues
 * WHETHER OR NOT THESE ROUTINES NEED TO BE CALLED EVERY TIME ARE NEEDED
 */
 
-	ret = SetUpTransformInfo(tnew,told,args,num_args,SET);
+	ret = ChangeTransformInfo(tnew,told,args,num_args);
 	if(ret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"TickMarkSetValues: A fatal error was detected while setting up tranformation information,cannot continue");
 		return(ret);
 	}
 	if(ret < realret)
 		realret = ret;
+
 /*
 * Each of the compute functions comes up with an array of data values
 * for each tick mark and a string label . The labels are then skipped when
@@ -1171,7 +1192,8 @@ static NhlErrorTypes	TickMarkSetValues
  *		CheckIrregular
  *		CheckTime
  *		CheckGeographic
- *		SetUpTransformInfo
+ *		CreateXTYRTransformInfo
+ *		CreateXBYLTransformInfo
  *		ComputeTickInfo
  *		TransformLocations
  *		ComputeAndSetLabelInfo
@@ -1197,7 +1219,6 @@ static NhlErrorTypes	TickMarkInitialize
 #endif
 {
 	TickMarkLayer tnew = (TickMarkLayer) new;
-	TickMarkLayer treq = (TickMarkLayer) req;
 	int i;
 	NhlErrorTypes ret = NOERROR;
 	NhlErrorTypes realret = NOERROR;
@@ -1303,7 +1324,14 @@ static NhlErrorTypes	TickMarkInitialize
 * At this point all resource values should be confirmed and can then procede
 * with internal field generation
 */
-	ret = SetUpTransformInfo(tnew,treq,args,num_args,CREATE);
+	ret = CreateXBYLTransformInfo(tnew,args,num_args);
+	if(ret < WARNING) {
+		NhlPError(FATAL,E_UNKNOWN,"TickMarkInitialize: A fatal error was detected while setting up tranformation information,cannot continue");
+		return(ret);
+	}
+	if(ret < realret)
+		realret = ret;
+	ret = CreateXTYRTransformInfo(tnew,args,num_args);
 	if(ret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"TickMarkInitialize: A fatal error was detected while setting up tranformation information,cannot continue");
 		return(ret);
@@ -1568,116 +1596,6 @@ static NhlErrorTypes	TickMarkDestroy
 	return(NOERROR);
 }
 
-
-
-static NhlErrorTypes
-NhlCvtStringToTickMarkModes
-#if     __STDC__
-(
-        NrmValue        *from,  /* ptr to from data     */
-        NrmValue        *to,    /* ptr to to data       */
-        NrmValue        *args,  /* add'n args for conv  */
-        int             nargs   /* number of args       */
-)
-#else
-(from,to,args,nargs)
-        NrmValue        *from;  /* ptr to from data     */
-        NrmValue        *to;    /* ptr to to data       */
-        NrmValue        *args;  /* add'n args for conv  */
-        int             nargs;  /* number of args       */
-#endif
-{
-        TickMarkModes tmp;
-        NhlErrorTypes ret = NOERROR;
-
-        if(nargs != 0) {
-                ret = WARNING;
-        }
-        if(strncmp((char*)from->addr,"AUTOMATIC",strlen("AUTOMATIC"))==0)
-                tmp = AUTOMATIC;
-        else if(strncmp((char*)from->addr,"MANUAL",strlen("MANUAL"))==0)
-                tmp = MANUAL;
-        else if(strncmp((char*)from->addr,"EXPLICIT",strlen("EXPLICIT"))==0)
-                tmp = EXPLICIT;
-        else {
-                NhlPError(WARNING,E_UNKNOWN,"NhlCvtStringToTickMarkModes: Could not convert %s to either AUTOMATIC, MANUAL or CUSTOM, incorrect string",(char*)from->addr);
-		return(WARNING);
-	}
-
-        if((to->size >0) && (to->addr != NULL)) {
-                /* caller provided space */
-                if(to->size < sizeof(TickMarkModes)) {
-                        to->size = (unsigned int)sizeof(TickMarkModes);
-                        return(FATAL);
-                }
-                to->size = (unsigned int)sizeof(TickMarkModes);
-                *((TickMarkModes*)(to->addr)) = tmp;
-                return(ret);
-        } else {
-                static TickMarkModes val;
-                to->size = (unsigned int)sizeof(TickMarkModes);
-                val = tmp;
-                to->addr = &val;
-                return(ret);
-        }
-}
-
-static NhlErrorTypes
-NhlCvtStringToTickMarkStyles
-#if     __STDC__
-(
-        NrmValue        *from,  /* ptr to from data     */
-        NrmValue        *to,    /* ptr to to data       */
-        NrmValue        *args,  /* add'n args for conv  */
-        int             nargs   /* number of args       */
-)
-#else
-(from,to,args,nargs)
-        NrmValue        *from;  /* ptr to from data     */
-        NrmValue        *to;    /* ptr to to data       */
-        NrmValue        *args;  /* add'n args for conv  */
-        int             nargs;  /* number of args       */
-#endif
-{
-        TickMarkStyles tmp;
-        NhlErrorTypes ret = NOERROR;
-
-        if(nargs != 0) {
-                ret = WARNING;
-        }
-        if(strncmp((char*)from->addr,"LOG",strlen("LOG"))==0)
-                tmp = LOG;
-        else if(strncmp((char*)from->addr,"LINEAR",strlen("LINEAR"))==0)
-                tmp = LINEAR;
-        else if(strncmp((char*)from->addr,"IRREGULAR",strlen("IRREGULAR"))==0)
-                tmp = IRREGULAR;
-        else if(strncmp((char*)from->addr,"TIME",strlen("TIME"))==0)
-                tmp = TIME;
-        else if(strncmp((char*)from->addr,"GEOGRAPHIC",strlen("GEOGRAPHIC"))==0)
-                tmp = GEOGRAPHIC;
-        else {
-                NhlPError(WARNING,E_UNKNOWN,"NhlCvtStringToTickMarkStyles: Could not convert %s to either LOG, LINEAR, IRREGULAR, TIME or GEOGRAPHIC, incorrect string",(char*)from->addr);
-		return(WARNING);
-	}
-
-        if((to->size >0) && (to->addr != NULL)) {
-                /* caller provided space */
-                if(to->size < sizeof(TickMarkStyles)) {
-                        to->size = (unsigned int)sizeof(TickMarkStyles);
-                        return(FATAL);
-                }
-                to->size = (unsigned int)sizeof(TickMarkStyles);
-                *((TickMarkStyles*)(to->addr)) = tmp;
-                return(ret);
-        } else {
-                static TickMarkStyles val;
-                to->size = (unsigned int)sizeof(TickMarkStyles);
-                val = tmp;
-                to->addr = &val;
-                return(ret);
-        }
-}
-
 /*
  * Function:	TickMarkClassInitialize
  *
@@ -1700,13 +1618,26 @@ static NhlErrorTypes	TickMarkClassInitialize
 ()
 #endif
 {
-	(void)NrmStringToQuark(NhlTTickMarkModes);
-	(void)NrmStringToQuark(NhlTTickMarkStyles);
+	NhlConvertArg	tmarkmodes[] = {
+				{NHLSTRENUM,	AUTOMATIC,	"automatic"},
+				{NHLSTRENUM,	MANUAL,		"manual"},
+				{NHLSTRENUM,	EXPLICIT,	"explicit"}
+				};
+
+	NhlConvertArg	tmarkstyles[] = {
+				{NHLSTRENUM,	LOG,		"log"},
+				{NHLSTRENUM,	LINEAR,		"linear"},
+				{NHLSTRENUM,	IRREGULAR,	"irregular"},
+				{NHLSTRENUM,	TIME,		"time"},
+				{NHLSTRENUM,	GEOGRAPHIC,	"geographic"}
+				};
+
 	_NhlInitializeLayerClass(multiTextLayerClass);
-	NhlRegisterConverter(NhlTString,NhlTTickMarkModes,
-                NhlCvtStringToTickMarkModes,NULL,0,False,NULL);
-	NhlRegisterConverter(NhlTString,NhlTTickMarkStyles,
-                NhlCvtStringToTickMarkStyles,NULL,0,False,NULL);
+
+	NhlRegisterConverter(NhlTString,NhlTTickMarkModes,NhlCvtStringToEnum,
+				tmarkmodes,NhlNumber(tmarkmodes),False,NULL);
+	NhlRegisterConverter(NhlTString,NhlTTickMarkStyles,NhlCvtStringToEnum,
+				tmarkstyles,NhlNumber(tmarkstyles),False,NULL);
 	return(NOERROR);
 }
 
@@ -2131,8 +2062,6 @@ static NhlErrorTypes DrawBorder
 	TickMarkLayer tlayer;
 #endif
 {
-	float x0,y0,x1,y1;
-	float xvec[5],yvec[5];
 	int n;
 	NhlErrorTypes ret = NOERROR;
 
@@ -2301,6 +2230,12 @@ static NhlErrorTypes TickMarkGetBB
 	return(NOERROR);
 }
 
+static float roundit(
+#if	NhlNeedProto
+	float a,
+	int sig_digit
+#endif
+);
 
 /*
  * Function:	compare
@@ -2325,7 +2260,7 @@ static NhlErrorTypes TickMarkGetBB
  *
  * Side Effects: NONE
  */
-float	compare
+static float	compare
 #if	__STDC__
 (float a, float b, int sig_dig)
 #else
@@ -2445,7 +2380,7 @@ float	compare
  *
  * Side Effects: NONE
  */
-float roundit
+static float roundit
 #if	__STDC__
 (float a,int sig_digit)
 #else
@@ -2939,9 +2874,11 @@ int n_requested;
 #endif
 {
 	NhlErrorTypes ret = NOERROR;
-	int compare_precision = convert_precision;
-	float min,max,min_compare,max_compare;
+	float min,max;
+#ifdef	NOTUSED
+	float min_compare, max_compare;
 	float spacing_estimate; 
+#endif
 	int i,k;
 
 
@@ -2951,8 +2888,8 @@ int n_requested;
 	case IRREGULAR:
 		max = MIN(dmax,tend);
 		min = MAX(dmin,tstart);
+#ifdef	NOTUSED
 		spacing_estimate = (max - min)/n_requested;
-	
 		if(min != 0.0)	
 			min_compare = ceil(fabs(log10((double)(spacing_estimate/fabs(min)))))+1.0;
 		else 
@@ -2962,7 +2899,7 @@ int n_requested;
 			max_compare = ceil(fabs(log10((double)(spacing_estimate/fabs(max)))))+1.0;
 		else 
 			max_compare = 7;
-		compare_precision = MAX(min_compare,max_compare); 
+#endif
 		k = 0;
 		for(i = 0; i< n_requested; i++) {
 			if((compare(requested_points[i],min,7/*min_compare*/) >= 0.0) && (compare(requested_points[i],max,7 /*max_compare*/) <= 0.0)) {
@@ -3037,7 +2974,7 @@ int	convert_precision;
 int	max_ticks;
 #endif
 {
-	double table[10],d,u,t,am1,am2,ax1,ax2;
+	double table[10],d,u,t,am1,am2=0.0,ax1,ax2=0.0;
 	int	npts,i;
 
 	table[0] = 1.0;
@@ -3108,7 +3045,7 @@ int	convert_precision;
 int	max_ticks;
 #endif
 {
-	double table[10],d,u,t,am1,am2,ax1,ax2;
+	double table[10],d,u,t,am1,am2=0.0,ax1,ax2=0.0;
 	int	npts,i;
 
 	table[0] = 1.0;
@@ -3172,7 +3109,7 @@ int	max_ticks;
  *
  * Side Effects: NONE
  */
-char *ConvertToString
+static char *ConvertToString
 #if __STDC__
 (
 	float		value,
@@ -3646,6 +3583,7 @@ static void SetTop
 	tnew->tick.x_t_label_direction = tnew->tick.x_b_label_direction;
 	tnew->tick.x_t_label_delta = tnew->tick.x_b_label_delta;
 	tnew->tick.x_t_precision = tnew->tick.x_b_precision;
+	tnew->tick.x_t_auto_precision = tnew->tick.x_b_auto_precision;
 	tnew->tick.x_t_irregular_points = tnew->tick.x_b_irregular_points;
 	tnew->tick.x_t_num_irregular_points = tnew->tick.x_b_num_irregular_points;
 	tnew->tick.x_t_label_stride = tnew->tick.x_b_label_stride;
@@ -3714,6 +3652,7 @@ TickMarkLayer	tnew;
 	tnew->tick.y_r_label_direction = tnew->tick.y_l_label_direction;
 	tnew->tick.y_r_label_delta = tnew->tick.y_l_label_delta;
 	tnew->tick.y_r_precision = tnew->tick.y_l_precision;
+	tnew->tick.y_r_auto_precision = tnew->tick.y_l_auto_precision;
 	tnew->tick.y_r_irregular_points = tnew->tick.y_l_irregular_points;
 	tnew->tick.y_r_num_irregular_points = tnew->tick.y_l_num_irregular_points;
 	tnew->tick.y_r_label_stride = tnew->tick.y_l_label_stride;
@@ -4100,10 +4039,8 @@ static NhlErrorTypes CheckExplicit
                        	tmpfptr = tnew->tick.x_b_values;
                        	tnew->tick.x_b_values = (float*)NhlMalloc((unsigned)
                                sizeof(float)*tnew->tick.x_b_num_values);
-                       	bcopy( tmpfptr, 
-				(char*)tnew->tick.x_b_values,(char*)
-                               	(sizeof(float)
-				*tnew->tick.x_b_num_values));
+                       	memcpy((char*)tnew->tick.x_b_values,(char*)tmpfptr, 
+                               	sizeof(float)*tnew->tick.x_b_num_values);
 		}
 		if((c_or_s == CREATE)|| (tnew->tick.x_b_labels != told->tick.x_b_labels)) {
 			if(tnew->tick.x_b_labels != NULL) {
@@ -4178,10 +4115,8 @@ static NhlErrorTypes CheckExplicit
                        	tmpfptr = tnew->tick.x_t_values;
                        	tnew->tick.x_t_values = (float*)NhlMalloc((unsigned)
                                sizeof(float)*tnew->tick.x_t_num_values);
-                       	bcopy( tmpfptr, 
-				(char*)tnew->tick.x_t_values,(char*)
-                               	(sizeof(float)
-				*tnew->tick.x_t_num_values));
+                       	memcpy((char*)tnew->tick.x_t_values,(char*)tmpfptr, 
+				sizeof(float)*tnew->tick.x_t_num_values);
 		}
 		if((c_or_s == CREATE)||(tnew->tick.x_t_labels != told->tick.x_t_labels)) {
 			if(tnew->tick.x_t_labels != NULL) {
@@ -4256,10 +4191,8 @@ static NhlErrorTypes CheckExplicit
                        	tmpfptr = tnew->tick.y_l_values;
                        	tnew->tick.y_l_values = (float*)NhlMalloc((unsigned)
                                sizeof(float)*tnew->tick.y_l_num_values);
-                       	bcopy( tmpfptr, 
-				(char*)tnew->tick.y_l_values,(char*)
-                               	(sizeof(float)
-				*tnew->tick.y_l_num_values));
+                       	memcpy((char*)tnew->tick.y_l_values,(char*)tmpfptr, 
+				sizeof(float)*tnew->tick.y_l_num_values);
 		}
 		if((c_or_s == CREATE)||(tnew->tick.y_l_labels != told->tick.y_l_labels)){
 			if(tnew->tick.y_l_labels != NULL) {
@@ -4335,10 +4268,8 @@ static NhlErrorTypes CheckExplicit
                        	tmpfptr = tnew->tick.y_r_values;
                        	tnew->tick.y_r_values = (float*)NhlMalloc((unsigned)
                                sizeof(float)*tnew->tick.y_r_num_values);
-                       	bcopy( tmpfptr, 
-				(char*)tnew->tick.y_r_values,(char*)
-                               	(sizeof(float)
-				*tnew->tick.y_r_num_values));
+                       	memcpy((char*)tnew->tick.y_r_values,(char*)tmpfptr, 
+				sizeof(float)*tnew->tick.y_r_num_values);
 		}
 		if((c_or_s == CREATE)||(tnew->tick.y_r_labels != told->tick.y_r_labels)) {
 			if(tnew->tick.y_r_labels != NULL) {
@@ -4679,14 +4610,7 @@ static NhlErrorTypes CheckIrregular
 {
 	float *tmpfptr;
 	int i;
-	char *error_lead;
 	NhlErrorTypes ret = NOERROR;
-
-	if(c_or_s == CREATE ) {
-		error_lead = "TickMarkInitialize";
-	} else {
-		error_lead = "TickMarkSetValues";
-	}
 
 	if((tnew->tick.x_b_irregular_points != NULL)&&(tnew->tick.x_b_num_irregular_points >0)) {
 		if((c_or_s == CREATE)||(tnew->tick.x_b_irregular_points != 
@@ -4699,10 +4623,21 @@ static NhlErrorTypes CheckIrregular
                        	tnew->tick.x_b_irregular_points = (float*)
 				NhlMalloc((unsigned)sizeof(float)
                                	*tnew->tick.x_b_num_irregular_points);
+
+			tnew->tick.ir_xbmin = tnew->tick.ir_xbmax = tmpfptr[0];
+
                        	for(i = 0; i< tnew->tick.x_b_num_irregular_points;i++){
                                	tnew->tick.x_b_irregular_points[i] = 
 						tmpfptr[i];
+				if(tmpfptr[i] > tnew->tick.ir_xbmax) {
+					tnew->tick.ir_xbmax = tmpfptr[i];
+				} else if(tmpfptr[i] < tnew->tick.ir_xbmin) {
+					tnew->tick.ir_xbmin = tmpfptr[i];
+				}
 			}
+			tnew->tick.new_ir_xb = 1;
+		} else {
+			tnew->tick.new_ir_xb = 0;
 		}
         } else if(tnew->tick.x_b_irregular_points != NULL) {
 		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XBIrregularPoints set but XBNumIrregularPoints not set, cannot copy XBIrregularPoints into internal storage, setting XBStyle to LINEAR if set");
@@ -4735,10 +4670,22 @@ static NhlErrorTypes CheckIrregular
                        	tnew->tick.x_t_irregular_points = (float*)
 				NhlMalloc((unsigned)sizeof(float)
                                	*tnew->tick.x_t_num_irregular_points);
+
+			tnew->tick.ir_xtmin = tnew->tick.ir_xtmax = tmpfptr[0];
+
                        	for(i = 0; i< tnew->tick.x_t_num_irregular_points;i++){
                                	tnew->tick.x_t_irregular_points[i] = 
 						tmpfptr[i];
+		
+				if(tmpfptr[i] > tnew->tick.ir_xtmax) {
+					tnew->tick.ir_xtmax = tmpfptr[i];
+				} else if(tmpfptr[i] < tnew->tick.ir_xtmin) {
+					tnew->tick.ir_xtmin = tmpfptr[i];
+				}
 			}
+			tnew->tick.new_ir_xt = 1;
+		} else {
+			tnew->tick.new_ir_xt = 0;
 		}
         } else if(tnew->tick.x_t_irregular_points != NULL) {
 		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XTIrregularPoints set but XTNumIrregularPoints not set, cannot copy XTIrregularPoints into internal storage, setting XTStyle to LINEAR if set");
@@ -4771,10 +4718,19 @@ static NhlErrorTypes CheckIrregular
                        	tnew->tick.y_l_irregular_points = (float*)
 				NhlMalloc((unsigned)sizeof(float)
                                	*tnew->tick.y_l_num_irregular_points);
+			tnew->tick.ir_ylmax = tnew->tick.ir_ylmin = tmpfptr[0];
                        	for(i = 0; i< tnew->tick.y_l_num_irregular_points;i++){
                                	tnew->tick.y_l_irregular_points[i] = 
 						tmpfptr[i];
+				if(tmpfptr[i] > tnew->tick.ir_ylmax) {
+					tnew->tick.ir_ylmax = tmpfptr[i];
+				} else if(tmpfptr[i] < tnew->tick.ir_ylmin) {
+					tnew->tick.ir_ylmin = tmpfptr[i];
+				}
 			}
+			tnew->tick.new_ir_yl = 1;
+		} else {
+			tnew->tick.new_ir_yl = 0;
 		}
         } else if(tnew->tick.y_l_irregular_points != NULL) {
 		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YLIrregularPoints set but YLNumIrregularPoints not set, cannot copy YLIrregularPoints into internal storage, setting YLStyle to LINEAR if set");
@@ -4807,10 +4763,19 @@ static NhlErrorTypes CheckIrregular
                        	tnew->tick.y_r_irregular_points = (float*)
 				NhlMalloc((unsigned)sizeof(float)
                                	*tnew->tick.y_r_num_irregular_points);
+			tnew->tick.ir_yrmin = tnew->tick.ir_yrmax = tmpfptr[0];
                        	for(i = 0; i< tnew->tick.y_r_num_irregular_points;i++){
                                	tnew->tick.y_r_irregular_points[i] = 
 						tmpfptr[i];
+				if(tmpfptr[i] > tnew->tick.ir_yrmax) {
+					tnew->tick.ir_yrmax = tmpfptr[i];
+				} else if(tmpfptr[i] < tnew->tick.ir_yrmin) {
+					tnew->tick.ir_yrmin = tmpfptr[i];
+				}
 			}
+			tnew->tick.new_ir_yr = 1;
+		} else {
+			tnew->tick.new_ir_yr = 0;
 		}
         } else if(tnew->tick.y_r_irregular_points != NULL) {
 		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YRIrregularPoints set but YRNumIrregularPoints not set, cannot copy YRIrregularPoints into internal storage, setting YRStyle to LINEAR if set");
@@ -4830,6 +4795,107 @@ static NhlErrorTypes CheckIrregular
 		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YRStyle is IRREGULAR but YRIrregularPoints not set, defaulting to LINEAR");
 		tnew->tick.y_r_style = LINEAR;
 		ret = WARNING;
+	}
+
+	if(tnew->tick.x_b_style == IRREGULAR) {
+		if(tnew->tick.x_b_data_left > tnew->tick.x_b_data_right) {
+			if(tnew->tick.x_b_data_left > tnew->tick.ir_xbmax) {
+				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XBDataLeftF is greater than maximum value in XBCoordPoints, resetting XBDataLeftF to maximum of XBCoordPoints");
+				tnew->tick.x_b_data_left = tnew->tick.ir_xbmax;
+				ret = WARNING;
+			}
+			if(tnew->tick.x_b_data_right < tnew->tick.ir_xbmin) {
+				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XBDataRightF is than minimum value in XBCoordPoints, resetting XBDataRightF to minimum of XBCoordPoints");
+				tnew->tick.x_b_data_left = tnew->tick.ir_xbmin;
+				ret = WARNING;
+			}
+		} else {
+			if(tnew->tick.x_b_data_left < tnew->tick.ir_xbmin) {
+				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XBDataLeftF is less than minimum value in XBCoordPoints, resetting XBDataLeftF to minimum of XBCoordPoints");
+				tnew->tick.x_b_data_left = tnew->tick.ir_xbmin;
+				ret = WARNING;
+			}
+			if(tnew->tick.x_b_data_right > tnew->tick.ir_xbmax) {
+				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XBDataRightF is than maximum value in XBCoordPoints, resetting XBDataRightF to maximum of XBCoordPoints");
+				tnew->tick.x_b_data_left = tnew->tick.ir_xbmax;
+				ret = WARNING;
+			}
+		}
+	}
+	if(tnew->tick.x_t_style == IRREGULAR) {
+		if(tnew->tick.x_t_data_left > tnew->tick.x_t_data_right) {
+			if(tnew->tick.x_t_data_left > tnew->tick.ir_xtmax) {
+				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XTDataLeftF is greater than maximum value in XTCoordPoints, resetting XTDataLeftF to maximum of XTCoordPoints");
+				tnew->tick.x_t_data_left = tnew->tick.ir_xtmax;
+				ret = WARNING;
+			}
+			if(tnew->tick.x_t_data_right < tnew->tick.ir_xtmin) {
+				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XTDataRightF is than minimum value in XTCoordPoints, resetting XTDataRightF to minimum of XTCoordPoints");
+				tnew->tick.x_t_data_left = tnew->tick.ir_xtmin;
+				ret = WARNING;
+			}
+		} else {
+			if(tnew->tick.x_t_data_left < tnew->tick.ir_xtmin) {
+				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XTDataLeftF is less than minimum value in XTCoordPoints, resetting XTDataLeftF to minimum of XTCoordPoints");
+				tnew->tick.x_t_data_left = tnew->tick.ir_xtmin;
+				ret = WARNING;
+			}
+			if(tnew->tick.x_t_data_right > tnew->tick.ir_xtmax) {
+				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XTDataRightF is than maximum value in XTCoordPoints, resetting XTDataRightF to maximum of XTCoordPoints");
+				tnew->tick.x_t_data_left = tnew->tick.ir_xtmax;
+				ret = WARNING;
+			}
+		}
+	}
+	if(tnew->tick.y_r_style == IRREGULAR) {
+		if(tnew->tick.y_r_data_bottom > tnew->tick.y_r_data_top) {
+			if(tnew->tick.y_r_data_bottom > tnew->tick.ir_yrmax) {
+				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YRDataBottomF is greater than maximum value in YRCoordPoints, resetting YRDataBottomF to maximum of YRCoordPoints");
+				tnew->tick.y_r_data_bottom = tnew->tick.ir_yrmax;
+				ret = WARNING;
+			}
+			if(tnew->tick.y_r_data_top < tnew->tick.ir_yrmin) {
+				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YRDataTopF is than minimum value in YRCoordPoints, resetting YRDataTopF to minimum of YRCoordPoints");
+				tnew->tick.y_r_data_top = tnew->tick.ir_yrmin;
+				ret = WARNING;
+			}
+		} else {
+			if(tnew->tick.y_r_data_bottom < tnew->tick.ir_yrmin) {
+				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YRDataBottomF is less than minimum value in YRCoordPoints, resetting YRDataBottomF to minimum of YRCoordPoints");
+				tnew->tick.y_r_data_bottom = tnew->tick.ir_yrmin;
+				ret = WARNING;
+			}
+			if(tnew->tick.y_r_data_top > tnew->tick.ir_yrmax) {
+				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YRDataTopF is than maximum value in YRCoordPoints, resetting YRDataTopF to maximum of YRCoordPoints");
+				tnew->tick.y_r_data_top= tnew->tick.ir_yrmax;
+				ret = WARNING;
+			}
+		}
+	}
+	if(tnew->tick.y_l_style == IRREGULAR) {
+		if(tnew->tick.y_l_data_bottom > tnew->tick.y_l_data_top) {
+			if(tnew->tick.y_l_data_bottom > tnew->tick.ir_ylmax) {
+				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YLDataBottomF is greater than maximum value in YLCoordPoints, resetting YLDataBottomF to maximum of YLCoordPoints");
+				tnew->tick.y_l_data_bottom = tnew->tick.ir_ylmax;
+				ret = WARNING;
+			}
+			if(tnew->tick.y_l_data_top < tnew->tick.ir_ylmin) {
+				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YLDataTopF is than minimum value in YLCoordPoints, resetting YLDataTopF to minimum of YLCoordPoints");
+				tnew->tick.y_l_data_top= tnew->tick.ir_ylmin;
+				ret = WARNING;
+			}
+		} else {
+			if(tnew->tick.y_l_data_bottom < tnew->tick.ir_ylmin) {
+				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YLDataBottomF is less than minimum value in YLCoordPoints, resetting YLDataBottomF to minimum of YLCoordPoints");
+				tnew->tick.y_l_data_bottom= tnew->tick.ir_ylmin;
+				ret = WARNING;
+			}
+			if(tnew->tick.y_l_data_top > tnew->tick.ir_ylmax) {
+				NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YLDataTopF is than maximum value in YLCoordPoints, resetting YLDataTopF to maximum of YLCoordPoints");
+				tnew->tick.y_l_data_top = tnew->tick.ir_ylmax;
+				ret = WARNING;
+			}
+		}
 	}
 	return(ret);
 }
@@ -5384,7 +5450,7 @@ static NhlErrorTypes TransformLocations
 	int		c_or_s;
 #endif
 {
-	int i,tmpi,istrans;
+	int i,tmpi=0,istrans;
 	NhlErrorTypes ret = NOERROR;
 	NhlErrorTypes subret = NOERROR;
 	char *error_lead;
@@ -5395,7 +5461,7 @@ static NhlErrorTypes TransformLocations
 		error_lead = "TickMarkInitialize";
 	}
 
-	if(tnew->tick.xb_yl_trans_obj != NULL) {
+	if(((tnew->tick.x_b_on) ||(tnew->tick.y_l_on))&&(tnew->tick.xb_yl_trans_obj != NULL)) {
         subret = _NhlSetTrans((Layer)tnew->tick.xb_yl_trans_obj,(Layer)tnew);
 	if(subret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"%s: Cannot set the transformation for bottom and left tick marks, cannot continue",error_lead);
@@ -5441,9 +5507,13 @@ static NhlErrorTypes TransformLocations
 		ret = subret;
 	}
         if(!istrans){
-                bcopy((char*)tnew->tick.x_b_major_data_locs,
-                        (char*)tnew->tick.x_b_major_ndc_locs,tmpi*sizeof(float));bcopy((char*)tnew->tick.y_l_major_data_locs,
-                        (char*)tnew->tick.y_l_major_ndc_locs,tmpi*sizeof(float));} 
+                memcpy((char*)tnew->tick.x_b_major_ndc_locs,
+					(char*)tnew->tick.x_b_major_data_locs,
+							tmpi*sizeof(float));
+		memcpy((char*)tnew->tick.y_l_major_ndc_locs,
+					(char*)tnew->tick.y_l_major_data_locs,
+							tmpi*sizeof(float));
+	}
         istrans = 0;
         subret = _NhlWinToNDC((Layer)tnew->tick.xb_yl_trans_obj,(Layer)tnew,
                 tnew->tick.x_b_major_ndc_locs,tnew->tick.y_l_major_ndc_locs,
@@ -5495,9 +5565,13 @@ static NhlErrorTypes TransformLocations
 		ret = subret;
 	}
         if(!istrans){
-                bcopy((char*)tnew->tick.x_b_minor_data_locs,
-                        (char*)tnew->tick.x_b_minor_ndc_locs,tmpi*sizeof(float));bcopy((char*)tnew->tick.y_l_minor_data_locs,
-                        (char*)tnew->tick.y_l_minor_ndc_locs,tmpi*sizeof(float));} 
+                memcpy((char*)tnew->tick.x_b_minor_ndc_locs,
+					(char*)tnew->tick.x_b_minor_data_locs,
+							tmpi*sizeof(float));
+		memcpy((char*)tnew->tick.y_l_minor_ndc_locs,
+					(char*)tnew->tick.y_l_minor_data_locs,
+							tmpi*sizeof(float));
+	}
         istrans = 0;
         subret = _NhlWinToNDC((Layer)tnew->tick.xb_yl_trans_obj,(Layer)tnew,
                 tnew->tick.x_b_minor_ndc_locs,tnew->tick.y_l_minor_ndc_locs,
@@ -5514,7 +5588,7 @@ static NhlErrorTypes TransformLocations
 
 
 
-	if(tnew->tick.xt_yr_trans_obj != NULL) {
+	if(((tnew->tick.x_t_on)||(tnew->tick.y_r_on))&&(tnew->tick.xt_yr_trans_obj != NULL)) {
         subret = _NhlSetTrans((Layer)tnew->tick.xt_yr_trans_obj,(Layer)tnew);
 	if(subret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"%s: Cannot set the transformation for top and right tick marks, cannot continue",error_lead);
@@ -5561,9 +5635,13 @@ static NhlErrorTypes TransformLocations
 		ret = subret;
 	}
         if(!istrans){
-                bcopy((char*)tnew->tick.x_t_major_data_locs,
-                        (char*)tnew->tick.x_t_major_ndc_locs,tmpi*sizeof(float));bcopy((char*)tnew->tick.y_r_major_data_locs,
-                        (char*)tnew->tick.y_r_major_ndc_locs,tmpi*sizeof(float));} 
+		memcpy((char*)tnew->tick.x_t_major_ndc_locs,
+					(char*)tnew->tick.x_t_major_data_locs,
+							tmpi*sizeof(float));
+		memcpy((char*)tnew->tick.y_r_major_ndc_locs,
+					(char*)tnew->tick.y_r_major_data_locs,
+							tmpi*sizeof(float));
+	}
         istrans = 0;
         subret = _NhlWinToNDC((Layer)tnew->tick.xt_yr_trans_obj,(Layer)tnew,
                 tnew->tick.x_t_major_ndc_locs,tnew->tick.y_r_major_ndc_locs,
@@ -5612,9 +5690,12 @@ static NhlErrorTypes TransformLocations
 		ret = subret;
 	}
         if(!istrans){
-                bcopy((char*)tnew->tick.x_t_minor_data_locs,
-                        (char*)tnew->tick.x_t_minor_ndc_locs,tmpi*sizeof(float));bcopy((char*)tnew->tick.y_r_minor_data_locs,
-                        (char*)tnew->tick.y_r_minor_ndc_locs,tmpi*sizeof(float));
+                memcpy((char*)tnew->tick.x_t_minor_ndc_locs,
+					(char*)tnew->tick.x_t_minor_data_locs,
+							tmpi*sizeof(float));
+		memcpy((char*)tnew->tick.y_r_minor_ndc_locs,
+					(char*)tnew->tick.y_r_minor_data_locs,
+							tmpi*sizeof(float));
 	} 
         istrans = 0;
         subret = _NhlWinToNDC((Layer)tnew->tick.xt_yr_trans_obj,(Layer)tnew,
@@ -5885,7 +5966,7 @@ int		c_or_s;
 			return(FATAL);
 		}
                 if(tmpy - tmpheight < tnew->view.y) {
-                        delta = tnew->view.y - tmpy + (DEFAULTOFFSET + tnew->tick.x_t_label_delta)*tnew->tick.x_t_label_font_height;
+                        delta = tnew->view.y - (tmpy - tmpheight) + (DEFAULTOFFSET + tnew->tick.x_t_label_delta)*tnew->tick.x_t_label_font_height;
                         tnew->tick.x_t_ndc_label_y += delta;
                         subret = NhlSetValues(tmpid,NhlNMtextConstPosF,
                                         tnew->tick.x_t_ndc_label_y,NULL);
@@ -6124,7 +6205,7 @@ int		c_or_s;
 }
 
 /*
- * Function:	SetUpTransformInfo
+ * Function:	CreateXBYLTransformInfo
  *
  * Description: Takes care of creating and setting the transformation objects
  *		used by the tick mark object. The Bottom and Left axis share
@@ -6145,549 +6226,375 @@ int		c_or_s;
  *		Irregular object into a log plot.
  *
  * In Args:	tnew	new instance record
- *		told 	old instance record
- *		c_or_s	set to either SET or CREATE
+ *		args    current argslist passed to initialize from NhlCreate
+ *		num_args number of these
  *
  * Out Args:	NONE
  *
  * Return Values: Error Conditions
  *
- * Side Effects:	 NONE
+ * Side Effects: Sets ir_**min and ir_**max which are used by the ChangeTrans
+ *		function to determine whether new mins and maxs exceed the
+ *		minimum and maximum range of the coordinate points arrays of
+ *		the IrregularType2TransObj.
  */
 /*ARGSUSED*/
-static NhlErrorTypes SetUpTransformInfo
-#if  __STDC__
-(TickMarkLayer tnew, TickMarkLayer told,_NhlArgList args, int num_args,int c_or_s)
+static NhlErrorTypes CreateXBYLTransformInfo
+#if __STDC__
+(TickMarkLayer tnew, _NhlArgList args, int num_args)
 #else
-(tnew, told,c_or_s)
-	TickMarkLayer 	tnew;
-	TickMarkLayer	told;
-	_NhlArgList	args;
-	int		num_args;
-	int		c_or_s;
+(tnew,  args, num_args)
+TickMarkLayer tnew;
+_NhlArgList args;
+int num_args;
 #endif
 {
+	NhlSArg	sargs[20];
+	int nargs = 0;
+	LayerClass trans_class = NULL;
 	float *tmpycoordpoints;
         float *tmpxcoordpoints;
-        int numytmpcoords;
-        int numxtmpcoords;
-	        char buffer[MAXFNAMELEN];
+	char buffer[MAXFNAMELEN];
 	int tmpid;
-	int redo_yl_xb;
-	int redo_yr_xt;
 	NhlErrorTypes ret = NOERROR;
-	NhlErrorTypes subret = NOERROR;
-	char *error_lead;
-	int xblog = 0;
-	int yrlog = 0;
-	int xtlog = 0;
-	int yllog = 0;
 
 
-        float xmin,xmax;
-        float ymin,ymax;
-	if(c_or_s == SET)
-		error_lead = "TickMarkSetValues";
-	else 
-		error_lead = "TickMarkInitialize";
-
+	
+	if((tnew->tick.y_l_on)||(tnew->tick.x_b_on)) {
+		if((tnew->tick.y_l_style == IRREGULAR)||
+			(tnew->tick.x_b_style == IRREGULAR)) {
+			switch(tnew->tick.y_l_style) {
+			case IRREGULAR:
 /*
-* Check for changes in style that affect the current transformation objects
+* THis is needed because new has already been reallocated and could possibly
+* be the same as told. Also old is already freed!
 */
-	if(c_or_s == SET) {
-		if((tnew->tick.y_l_style != told->tick.y_l_style)||
-			(tnew->tick.x_b_style != told->tick.x_b_style)||
-			(tnew->tick.xb_yl_trans_obj == NULL)){
-			redo_yl_xb = 1;
-			if(tnew->tick.xb_yl_trans_obj != NULL ) {
-				subret = NhlDestroy(tnew->tick.xb_yl_trans_obj->base.id);
-				if(subret < WARNING) {
-					NhlPError(WARNING,E_UNKNOWN,"%s: A FATAL error was detected while destorying internal object, continuing anyways",error_lead);
-					ret = WARNING;
-				}
-			}
-			tnew->tick.xb_yl_trans_obj = NULL;
-		}
-		if((tnew->tick.y_r_style != told->tick.y_r_style)||
-			(tnew->tick.x_t_style != told->tick.x_t_style)||
-			(tnew->tick.xt_yr_trans_obj == NULL)){
-			redo_yr_xt = 1;
-			if(tnew->tick.xt_yr_trans_obj != NULL ) {
-				subret = NhlDestroy(tnew->tick.xt_yr_trans_obj->base.id);
-				if(subret < WARNING) {
-                                        NhlPError(WARNING,E_UNKNOWN,"%s: A FATAL error was detected while destorying internal object, continuing anyways",error_lead);
-                                        ret = WARNING;
-                                }
+				NhlSetSArg(&sargs[nargs++], NhlNtrYCoordPoints,
+					tnew->tick.y_l_irregular_points);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,
+					tnew->tick.y_l_num_irregular_points);
+				break;
+			case LOG:
+				tmpycoordpoints = (float*)NhlMalloc(
+					(unsigned)sizeof(float)*3);
+				tmpycoordpoints[2] = tnew->tick.y_l_data_top;
+				tmpycoordpoints[0] = tnew->tick.y_l_data_bottom;
+				tmpycoordpoints[1] = (float)pow(10.0,
+					(double)(log10(tmpycoordpoints[0]) 
+					+ log10(tmpycoordpoints[2]))/2.0);
 
+				tnew->tick.ir_ylmin = tnew->tick.y_l_data_min;
+				tnew->tick.ir_ylmax = tnew->tick.y_l_data_max;
+
+				NhlSetSArg(&sargs[nargs++],
+					NhlNtrYCoordPoints,tmpycoordpoints);
+				NhlSetSArg(&sargs[nargs++],	
+					NhlNtrYNumPoints,3);
+				NhlSetSArg(&sargs[nargs++],
+					NhlNtrYUseLog,1);
+				break;
+			case LINEAR:
+				tmpycoordpoints = (float*)NhlMalloc(
+					(unsigned)sizeof(float)*3);
+				tmpycoordpoints[2] =
+					tnew->tick.y_l_data_top;
+				tmpycoordpoints[0] =
+					tnew->tick.y_l_data_bottom;
+				tmpycoordpoints[1] = 
+					(tmpycoordpoints[0] 
+					+ tmpycoordpoints[2])/2.0;
+
+				tnew->tick.ir_ylmin = tnew->tick.y_l_data_min;
+				tnew->tick.ir_ylmax = tnew->tick.y_l_data_max;
+
+				NhlSetSArg(&sargs[nargs++],
+					NhlNtrYCoordPoints,tmpycoordpoints);
+				NhlSetSArg(&sargs[nargs++],	
+					NhlNtrYNumPoints,3);
+				NhlSetSArg(&sargs[nargs++],
+					NhlNtrYUseLog,0);
+				break;
+			case TIME:
+			case GEOGRAPHIC:
+				break;
 			}
-			tnew->tick.xt_yr_trans_obj = NULL;
+			switch(tnew->tick.x_b_style) {
+			case IRREGULAR:
+				NhlSetSArg(&sargs[nargs++],
+					NhlNtrXCoordPoints,
+					tnew->tick.x_b_irregular_points);
+				NhlSetSArg(&sargs[nargs++],		
+					NhlNtrXNumPoints,
+					tnew->tick.x_b_num_irregular_points);
+				break;
+			case LOG:
+				tmpxcoordpoints = (float*)NhlMalloc(
+					(unsigned)sizeof(float)*3);
+				tmpxcoordpoints[2] =
+					tnew->tick.x_b_data_right;
+				tmpxcoordpoints[0] =
+					tnew->tick.x_b_data_left;
+				tmpxcoordpoints[1] = (float)pow(10.0,
+					(double)(log10(tmpxcoordpoints[0]) 
+					+ log10(tmpxcoordpoints[2]))/2.0);
+
+				tnew->tick.ir_xbmin = tnew->tick.x_b_data_min;
+				tnew->tick.ir_xbmax = tnew->tick.x_b_data_max;
+
+				NhlSetSArg(&sargs[nargs++], NhlNtrXCoordPoints,
+					tmpxcoordpoints);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,3);
+				NhlSetSArg(&sargs[nargs++], NhlNtrXUseLog,1);
+				break;
+			case LINEAR:
+				tmpxcoordpoints = (float*)NhlMalloc(
+					(unsigned)sizeof(float)*3);
+				tmpxcoordpoints[2] = tnew->tick.x_b_data_right;
+				tmpxcoordpoints[0] = tnew->tick.x_b_data_left;
+				tmpxcoordpoints[1] = (tmpxcoordpoints[0] 
+						+ tmpxcoordpoints[2])/2.0;
+
+				tnew->tick.ir_xbmin = tnew->tick.x_b_data_min;
+				tnew->tick.ir_xbmax = tnew->tick.x_b_data_max;
+
+				NhlSetSArg(&sargs[nargs++], 
+					NhlNtrXCoordPoints,tmpxcoordpoints);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,3);
+				NhlSetSArg(&sargs[nargs++], NhlNtrXUseLog,0);
+				break;
+			case TIME:
+			case GEOGRAPHIC:
+				break;
+			}
+			trans_class = irregularType2TransObjLayerClass;
+			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,(tnew->tick.x_b_data_left>tnew->tick.x_b_data_right ? 1 : 0));
+			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,(tnew->tick.y_l_data_bottom >tnew->tick.y_l_data_top? 1 : 0));
+			NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_b_data_min);
+			NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_b_data_max);
+			NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_l_data_min);
+			NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_l_data_max);
+		} else {
+			switch(tnew->tick.y_l_style) {
+			case LOG:
+				NhlSetSArg(&sargs[nargs++],NhlNtrYLog,1);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_l_data_bottom);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_l_data_top);
+				break;
+			case LINEAR:
+				NhlSetSArg(&sargs[nargs++],NhlNtrYLog,0);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_l_data_bottom);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_l_data_top);
+				break;
+			case TIME:
+			case GEOGRAPHIC:
+				break;
+			}
+			switch(tnew->tick.x_b_style) {
+			case LOG:
+				NhlSetSArg(&sargs[nargs++],NhlNtrXLog,1);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_b_data_left);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_b_data_right);
+				break;
+			case LINEAR:
+				NhlSetSArg(&sargs[nargs++],NhlNtrXLog,0);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_b_data_left);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_b_data_right);
+				break;
+			case TIME:
+			case GEOGRAPHIC:
+				break;
+			}
+			trans_class = logLinTransObjLayerClass;
 		}
+		
+			strcpy(buffer,tnew->base.name);
+			strcat(buffer,".Trans");
+			NhlALCreate(&tmpid,buffer,trans_class,tnew->base.id,sargs,nargs);
+			tnew->tick.xb_yl_trans_obj = _NhlGetLayer(tmpid);
+	} else {
+		tnew->tick.xb_yl_trans_obj = NULL;
 	}
 
-/*
-* When IRREGULAR style is selected a CREATE happens every time. Better checks
-* to see if CREATE is needed should be included
-*/
-
-        if((tnew->tick.y_l_on)||(tnew->tick.x_b_on)) {
-                if((tnew->tick.y_l_style==IRREGULAR)||
-                                (tnew->tick.x_b_style==IRREGULAR)){
-                        switch(tnew->tick.y_l_style) {
-                        case LOG:
+	nargs = 0;
+	return(ret);
+}
 
 /*
-* WHAT NEEDS TO BE DONE WHEN ONE AXIS IS LOG AND THE OTHER IS IRREGULAR
-* WILL THE FOLLOWING WORK??????
-*/
-                                tmpycoordpoints = (float*)NhlMalloc((unsigned)
-                                        sizeof(float)*3);
-                                tmpycoordpoints[2] = tnew->tick.y_l_data_top;
-                                tmpycoordpoints[0] = tnew->tick.y_l_data_bottom;
-                                tmpycoordpoints[1] = (float)pow(10.0,(double)
-						(log10(tmpycoordpoints[0]) + 
-						log10(tmpycoordpoints[2]))/2.0);
-                                numytmpcoords = 3;
-				yllog = 1;
+ * Function:	CreateXTYRTransformInfo
+ *
+ * Description:	Basically same as CreateXBYLTransformInfo
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes CreateXTYRTransformInfo
+#if __STDC__
+(TickMarkLayer tnew, _NhlArgList args, int num_args)
+#else
+(tnew,  args, num_args)
+TickMarkLayer tnew;
+_NhlArgList args;
+int num_args;
+#endif
+{	
+	NhlSArg	sargs[20];
+	int nargs = 0;
+	LayerClass trans_class = NULL;
+	float *tmpycoordpoints;
+        float *tmpxcoordpoints;
+	char buffer[MAXFNAMELEN];
+	int tmpid;
+	NhlErrorTypes ret = NOERROR;
 
-                                break;
-                        case LINEAR:
-                                tmpycoordpoints = (float*)NhlMalloc((unsigned)
-                                        sizeof(float)*3);
-                                tmpycoordpoints[3] = tnew->tick.y_l_data_top;
-                                tmpycoordpoints[0] = tnew->tick.y_l_data_bottom;tmpycoordpoints[1] = (tmpycoordpoints[0] +
-                                                tmpycoordpoints[2])/2.0;
-                                numytmpcoords = 3;
-                                break;
-                        case TIME:
-/*
-* Top be completed at a later time
-*/
-                                break;
-                        case GEOGRAPHIC:
-/*
-* Top be completed at a later time
-*/
-                                break;
-                        case IRREGULAR:
-                                tmpycoordpoints = tnew->tick.y_l_irregular_points;
-                                numytmpcoords = tnew->tick.y_l_num_irregular_points;
+	if((tnew->tick.y_r_on)||(tnew->tick.x_t_on)) {
+		if((tnew->tick.y_r_style == IRREGULAR)||
+			(tnew->tick.x_t_style == IRREGULAR)) {
+			switch(tnew->tick.y_r_style) {
+			case IRREGULAR:
+				NhlSetSArg(&sargs[nargs++], NhlNtrYCoordPoints,
+					tnew->tick.y_r_irregular_points);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,
+					tnew->tick.y_r_num_irregular_points);
+				break;
+			case LOG:
+				tmpycoordpoints = (float*)NhlMalloc(
+					(unsigned)sizeof(float)*3);
+				tmpycoordpoints[2] = tnew->tick.y_r_data_top;
+				tmpycoordpoints[0] = tnew->tick.y_r_data_bottom;
+				tmpycoordpoints[1] = (float)pow(10.0,
+					(double)(log10(tmpycoordpoints[0]) 
+					+ log10(tmpycoordpoints[2]))/2.0);
 
-                                break;
-                        default:
-                                break;
-                        }
-                        switch(tnew->tick.x_b_style) {
-                        case LOG:
-/*
-* WHAT NEEDS TO BE DONE WHEN ONE AXIS IS LOG AND THE OTHER IS IRREGULAR
-*/
-                                tmpxcoordpoints = (float*)NhlMalloc((unsigned)
-                                        sizeof(float)*3);
-                                tmpxcoordpoints[2] = tnew->tick.x_b_data_right;
-                                tmpxcoordpoints[0] = tnew->tick.x_b_data_left;
-                                tmpxcoordpoints[1] = (float)pow(10.0,
-						(log10(tmpxcoordpoints[0]) +
-                                                log10(tmpxcoordpoints[2]))/2.0);
-                                numxtmpcoords = 3;
-				xblog =1;
-                                break;
-                        case LINEAR:
-                                tmpxcoordpoints = (float*)NhlMalloc((unsigned)
-                                        sizeof(float)*3);
-                                tmpxcoordpoints[2] = tnew->tick.x_b_data_right;
-                                tmpxcoordpoints[0] = tnew->tick.x_b_data_left;
-                                tmpxcoordpoints[1] = (tmpxcoordpoints[0] +
-                                                tmpxcoordpoints[2])/2.0;
-                                numxtmpcoords = 3;
-                                break;
-                        case TIME:
-/*
-* to be completed at a later time
-*/
-                                break;
-                        case GEOGRAPHIC:
-/*
-* to be completed at a later time
-*/
-                                break;
-                        case IRREGULAR:
-                                tmpxcoordpoints = tnew->tick.x_b_irregular_points;
-                                numxtmpcoords = tnew->tick.x_b_num_irregular_points;
-                                break;
-                        default:
-                                break;
-                        }
-			if((c_or_s == SET)&&(tnew->tick.xb_yl_trans_obj != NULL)) {
-				subret = NhlDestroy(tnew->tick.xb_yl_trans_obj->base.id);
-				if(subret < WARNING) {
-					NhlPError(WARNING,E_UNKNOWN,"%s: A FATAL error was detected while destroying an internal object, proceeding anyways",error_lead);
-					ret = WARNING;
-				}
+				tnew->tick.ir_yrmin = tnew->tick.y_r_data_min;
+				tnew->tick.ir_yrmax = tnew->tick.y_r_data_max;
+
+				NhlSetSArg(&sargs[nargs++], NhlNtrYCoordPoints,
+					tmpycoordpoints);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,3);
+				NhlSetSArg(&sargs[nargs++], NhlNtrYUseLog,1);
+				break;
+			case LINEAR:
+				tmpycoordpoints = (float*)NhlMalloc(
+					(unsigned)sizeof(float)*3);
+				tmpycoordpoints[2] = tnew->tick.y_r_data_top;
+				tmpycoordpoints[0] = tnew->tick.y_r_data_bottom;
+				tmpycoordpoints[1] = (tmpycoordpoints[0] 
+						+ tmpycoordpoints[2])/2.0;
+
+				tnew->tick.ir_yrmin = tnew->tick.y_r_data_min;
+				tnew->tick.ir_yrmax = tnew->tick.y_r_data_max;
+
+				NhlSetSArg(&sargs[nargs++], NhlNtrYCoordPoints,
+					tmpycoordpoints);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,3);
+				NhlSetSArg(&sargs[nargs++], NhlNtrYUseLog,0);
+				break;
+			case TIME:
+			case GEOGRAPHIC:
+				break;
 			}
-                        strcpy(buffer,tnew->base.name);
-                        strcat(buffer,".Trans");
-                        subret = NhlCreate(&tmpid,buffer,irregularType2TransObjLayerClass,tnew->base.id,
-				NhlNtrXUseLog,xblog,
-				NhlNtrYUseLog,yllog,
-                                NhlNtrXCoordPoints,tmpxcoordpoints,
-                                NhlNtrXNumPoints,numxtmpcoords,
-                                NhlNtrYCoordPoints,tmpycoordpoints,
-                                NhlNtrYNumPoints,numytmpcoords,
-				NhlNtrXReverse,(tnew->tick.x_b_data_left>tnew->tick.x_b_data_right ? 1 : 0),
-				NhlNtrYReverse,(tnew->tick.y_l_data_bottom>tnew->tick.y_l_data_top ? 1 : 0),
-				NhlNtrXMinF, tnew->tick.x_b_data_min,
-				NhlNtrXMaxF, tnew->tick.x_b_data_max,
-				NhlNtrYMinF, tnew->tick.y_l_data_min,
-				NhlNtrYMaxF, tnew->tick.y_l_data_max
-				,NULL);
-			if(subret < WARNING) {
-				NhlPError(FATAL,E_UNKNOWN,"%s: Could not create the appropriate transformation object, check resources, cannot continue",error_lead);
-				return(FATAL);
-			} else if(subret < ret) {
-				ret = subret;
-			}
-				
-                        tnew->tick.xb_yl_trans_obj = _NhlGetLayer(tmpid);
-/*
-* If allocation of temporary space happened free it now
-*/
-                        switch(tnew->tick.x_b_style) {
-                                case LINEAR:
-                                case LOG:
-                                        NhlFree((void*)tmpxcoordpoints);
-                                        break;
-                                case IRREGULAR:
-                                case GEOGRAPHIC:
-                                case TIME:
-                                default:
-                                        break;
-                        }
-                        switch(tnew->tick.y_l_style) {
-                                case LINEAR:
-                                case LOG:
-                                        NhlFree((void*)tmpycoordpoints);
-                                case IRREGULAR:
-                                case GEOGRAPHIC:
-                                case TIME:
-                                default:
-                                        break;
-                        }
-                } else {
-/*
-* GeoGraphic and Time both require a LogLinTransObj, there for no further
-* tests are needed however parameters to LogLinTranObj are likely to be
-* different.
-*/
-                        switch(tnew->tick.y_l_style) {
-                        case LINEAR:
-                        case LOG:
-                                ymin = tnew->tick.y_l_data_bottom;
-                                ymax = tnew->tick.y_l_data_top;
-                                break;
-                        case TIME:
-                        case GEOGRAPHIC:
-/*
-* Not implemented yet
-*/
-                        default:
-                                break;
-                        }
-                        switch(tnew->tick.x_b_style) {
-                        case LINEAR:
-                        case LOG:
-                                xmin = tnew->tick.x_b_data_left;
-                                xmax = tnew->tick.x_b_data_right;
-                                break;
-/*
-* Not implemented yet
-*/
-                        case TIME:
-                        case GEOGRAPHIC:
-                        default:
-                                break;
-                        }
-                        strcpy(buffer,tnew->base.name);
-                        strcat(buffer,".Trans");
-			if((c_or_s == CREATE)||(redo_yl_xb)){
-                        	subret = NhlCreate(&tmpid,buffer,logLinTransObjLayerClass,
-                                tnew->base.id,
-                                NhlNtrXMinF,xmin,
-                                NhlNtrXMaxF,xmax,
-                                NhlNtrYMinF,ymin,
-                                NhlNtrYMaxF,ymax,
-                                NhlNtrXLog,(tnew->tick.x_b_style ==LOG ? 1:0),
-                                NhlNtrYLog,(tnew->tick.y_l_style ==LOG ? 1:0),
-                                NULL);
-				if(subret < WARNING) {
-					NhlPError(FATAL,E_UNKNOWN,"%s: Could not create transformation, check resource, cannot continue",error_lead);
-					return(FATAL);
-				} else if(subret < ret) {
-					ret = subret;
-				}
-			} else {
-				tmpid = tnew->tick.xb_yl_trans_obj->base.id;
-				subret = NhlSetValues(tmpid,
-                                NhlNtrXMinF,xmin,
-                                NhlNtrXMaxF,xmax,
-                                NhlNtrYMinF,ymin,
-                                NhlNtrYMaxF,ymax,
-                                NhlNtrXLog,(tnew->tick.x_b_style ==LOG ? 1:0),
-                                NhlNtrYLog,(tnew->tick.y_l_style ==LOG ? 1:0),
-                                NULL);
-				if(subret < WARNING) {
-					NhlPError(FATAL,E_UNKNOWN,"%s: Could not set transformation values, check resources, cannot continue",error_lead);
-					return(FATAL);
-				} else if(subret < ret) {
-					ret = subret;
-				}
+			switch(tnew->tick.x_t_style) {
+			case IRREGULAR:
+				NhlSetSArg(&sargs[nargs++], NhlNtrXCoordPoints,
+					tnew->tick.x_t_irregular_points);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,
+					tnew->tick.x_t_num_irregular_points);
+				break;
+			case LOG:
+				tmpxcoordpoints = (float*)NhlMalloc(
+					(unsigned)sizeof(float)*3);
+				tmpxcoordpoints[2] = tnew->tick.x_t_data_right;
+				tmpxcoordpoints[0] = tnew->tick.x_t_data_left;
+				tmpxcoordpoints[1] = (float)pow(10.0, (double)
+						(log10(tmpxcoordpoints[0]) 
+						+log10(tmpxcoordpoints[2]))/2.0);
 
+				tnew->tick.ir_xtmin = tnew->tick.x_t_data_min;
+				tnew->tick.ir_xtmax = tnew->tick.x_t_data_max;
+
+				NhlSetSArg(&sargs[nargs++], NhlNtrXCoordPoints,
+				tmpxcoordpoints);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,3);
+				NhlSetSArg(&sargs[nargs++], NhlNtrXUseLog,1);
+				break;
+			case LINEAR:
+				tmpxcoordpoints = (float*)NhlMalloc(
+					(unsigned)sizeof(float)*3);
+				tmpxcoordpoints[2] =
+					tnew->tick.x_t_data_right;
+				tmpxcoordpoints[0] =
+					tnew->tick.x_t_data_left;
+				tmpxcoordpoints[1] = 
+					(tmpxcoordpoints[0] 
+					+ tmpxcoordpoints[2])/2.0;
+
+				tnew->tick.ir_xtmin = tnew->tick.x_t_data_min;
+				tnew->tick.ir_xtmax = tnew->tick.x_t_data_max;
+
+				NhlSetSArg(&sargs[nargs++],
+					NhlNtrXCoordPoints,tmpxcoordpoints);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,3);
+				NhlSetSArg(&sargs[nargs++],
+					NhlNtrXUseLog,0);
+				break;
+			case TIME:
+			case GEOGRAPHIC:
+				break;
 			}
-                        tnew->tick.xb_yl_trans_obj = _NhlGetLayer(tmpid);
-                }
-        } else {
-		if(c_or_s == CREATE)
-                	tnew->tick.xb_yl_trans_obj = NULL;
-		else if(tnew->tick.xb_yl_trans_obj != NULL) {
-			subret = NhlDestroy(tnew->tick.xb_yl_trans_obj->base.id);
-                	tnew->tick.xb_yl_trans_obj = NULL;
-			if(subret < WARNING) {
-				NhlPError(WARNING,E_UNKNOWN,"%s: An error has been detected while destroying and internal object, proceeding anyways",error_lead);
-				ret = subret;
-			} 
-			
+			trans_class = irregularType2TransObjLayerClass;
+			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,(tnew->tick.x_t_data_left>tnew->tick.x_t_data_right ? 1 : 0));
+			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,(tnew->tick.y_r_data_bottom >tnew->tick.y_r_data_top? 1 : 0));
+			NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_t_data_min);
+			NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_t_data_max);
+			NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_r_data_min);
+			NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_r_data_max);
+		} else {
+			switch(tnew->tick.y_r_style) {
+			case LOG:
+				NhlSetSArg(&sargs[nargs++],NhlNtrYLog,1);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_r_data_bottom);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_r_data_top);
+				break;
+			case LINEAR:
+				NhlSetSArg(&sargs[nargs++],NhlNtrYLog,0);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_r_data_bottom);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_r_data_top);
+				break;
+			case TIME:
+			case GEOGRAPHIC:
+				break;
+			}
+			switch(tnew->tick.x_t_style) {
+			case LOG:
+				NhlSetSArg(&sargs[nargs++],NhlNtrXLog,1);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_t_data_left);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_t_data_right);
+				break;
+			case LINEAR:
+				NhlSetSArg(&sargs[nargs++],NhlNtrXLog,0);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_t_data_left);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_t_data_right);
+				break;
+			case TIME:
+			case GEOGRAPHIC:
+				break;
+			}
+			trans_class = logLinTransObjLayerClass;
 		}
-
-        }
-        if((tnew->tick.y_r_on)||(tnew->tick.x_t_on)) {
-                if((tnew->tick.y_r_style==IRREGULAR)||
-                                (tnew->tick.x_t_style==IRREGULAR)){
-                        switch(tnew->tick.y_r_style) {
-                        case LOG:
-/*
-* LOGs combined with Irregular Ticks present a problem. The Irregular coordinate* approximation doesn't always work for exponential sets. So for tick marks
-* the log tickmark function is a function of the exponents rather than the
-* actual values!<--------- this is totally cludgy but will work as long as I
-* remember to convert exponents back to real numbers.
-*/
-/*
-* WHAT NEEDS TO BE DONE WHEN ONE AXIS IS LOG AND THE OTHER IS IRREGULAR
-* WILL THE FOLLOWING WORK??????
-*/
-                                tmpycoordpoints = (float*)NhlMalloc((unsigned)
-                                        sizeof(float)*3);
-                                tmpycoordpoints[2] = tnew->tick.y_r_data_top;
-                                tmpycoordpoints[0] = tnew->tick.y_r_data_bottom;
-                                tmpycoordpoints[1] = (float)pow(10.0,
-						(log10(tmpycoordpoints[0]) +
-                                                log10(tmpycoordpoints[2]))/2.0);
-                                numytmpcoords = 3;
-				yrlog = 1;
-                                break;
-                        case LINEAR:
-                                tmpycoordpoints = (float*)NhlMalloc((unsigned)
-                                        sizeof(float)*3);
-                                tmpycoordpoints[3] = tnew->tick.y_r_data_top;
-                                tmpycoordpoints[0] = tnew->tick.y_r_data_bottom;tmpycoordpoints[1] = (tmpycoordpoints[0] +
-                                                tmpycoordpoints[2])/2.0;
-                                numytmpcoords = 3;
-                                break;
-                        case TIME:
-/*
-* Top be completed at a later time
-*/
-                                break;
-                        case GEOGRAPHIC:
-/*
-* Top be completed at a later time
-*/
-                                break;
-                        case IRREGULAR:
-                                tmpycoordpoints = tnew->tick.y_r_irregular_points;
-                                numytmpcoords = tnew->tick.y_r_num_irregular_points;
-
-                                break;
-                        default:
-                                break;
-                        }
-                        switch(tnew->tick.x_t_style) {
-                        case LOG:
-/*
-* WHAT NEEDS TO BE DONE WHEN ONE AXIS IS LOG AND THE OTHER IS IRREGULAR
-* WILL THE FOLLOWING WORK??????
-*/
-                                tmpxcoordpoints = (float*)NhlMalloc((unsigned)
-                                        sizeof(float)*3);
-                                tmpxcoordpoints[2] = tnew->tick.x_t_data_right;
-                                tmpxcoordpoints[0] = tnew->tick.x_t_data_left;
-                                tmpxcoordpoints[1] = (float)pow(10.0,
-						(log10(tmpxcoordpoints[0]) +
-                                                log10(tmpxcoordpoints[2]))/2.0);
-                                numxtmpcoords = 3;
-				xtlog = 1;
-                                break;
-                        case LINEAR:
-                                tmpxcoordpoints = (float*)NhlMalloc((unsigned)
-                                        sizeof(float)*3);
-                                tmpxcoordpoints[2] = tnew->tick.x_t_data_right;
-                                tmpxcoordpoints[0] = tnew->tick.x_t_data_left;
-                                tmpxcoordpoints[1] = (tmpxcoordpoints[0] +
-                                                tmpxcoordpoints[2])/2.0;
-                                numxtmpcoords = 3;
-                                break;
-                        case TIME:
-/*
-* to be completed at a later time
-*/
-                                break;
-                        case GEOGRAPHIC:
-/*
-* to be completed at a later time
-*/
-                                break;
-                        case IRREGULAR:
-                                tmpxcoordpoints = tnew->tick.x_t_irregular_points;
-                                numxtmpcoords = tnew->tick.x_t_num_irregular_points;
-                                break;
-                        default:
-                                break;
-                        }
-                        strcpy(buffer,tnew->base.name);
-                        strcat(buffer,".Trans");
-			if((c_or_s == SET)&&(tnew->tick.xt_yr_trans_obj != NULL)) {
-				subret = NhlDestroy(tnew->tick.xt_yr_trans_obj->base.id);
-				if(subret < WARNING) {
-				NhlPError(WARNING,E_UNKNOWN,"%s: An error has been detected while destroying an internal object, proceeding anyways",error_lead);
-					ret = WARNING;
-				}
-			}
-                        subret = NhlCreate(&tmpid,buffer,irregularType2TransObjLayerClass,tnew->base.id,
-				NhlNtrXUseLog,xtlog,
-				NhlNtrYUseLog,yrlog,
-                                NhlNtrXCoordPoints,tmpxcoordpoints,
-                                NhlNtrXNumPoints,numxtmpcoords,
-                                NhlNtrYCoordPoints,tmpycoordpoints,
-                                NhlNtrYNumPoints,numytmpcoords,
-				NhlNtrXReverse,(tnew->tick.x_t_data_left>tnew->tick.x_t_data_right ? 1 : 0),
-				NhlNtrYReverse,(tnew->tick.y_r_data_bottom>tnew->tick.y_r_data_top ? 1 : 0),
-				NhlNtrXMinF, tnew->tick.x_t_data_min,
-				NhlNtrXMaxF, tnew->tick.x_t_data_max,
-				NhlNtrYMinF, tnew->tick.y_r_data_min,
-				NhlNtrYMaxF, tnew->tick.y_r_data_max
-				,NULL);
-			if(subret < WARNING) {
-				NhlPError(FATAL,E_UNKNOWN,"%s: Could not create internal transformation object, cannot continue",error_lead);
-				return(FATAL);
-			} else if(subret < ret) {
-				ret = subret;
-			}
-                        tnew->tick.xt_yr_trans_obj = _NhlGetLayer(tmpid);
-/*
-* If allocation of temporary space happened free it now
-*/
-                        switch(tnew->tick.x_t_style) {
-                                case LINEAR:
-                                case LOG:
-                                        NhlFree((void*)tmpxcoordpoints);
-                                        break;
-                                case IRREGULAR:
-                                case GEOGRAPHIC:
-                                case TIME:
-                                default:
-                                        break;
-                        }
-                        switch(tnew->tick.y_r_style) {
-                                case LINEAR:
-                                case LOG:
-                                        NhlFree((void*)tmpycoordpoints);
-                                case IRREGULAR:
-                                case GEOGRAPHIC:
-                                case TIME:
-                                default:
-                                        break;
-                        }
-                } else {
-/*
-* GeoGraphic and Time both require a LogLinTransObj, there for no further
-* tests are needed however parameters to LogLinTranObj are likely to be
-* different.
-*/
-                        switch(tnew->tick.y_r_style) {
-                        case LINEAR:
-                        case LOG:
-                                ymin = tnew->tick.y_r_data_bottom;
-                                ymax = tnew->tick.y_r_data_top;
-                                break;
-                        case TIME:
-                        case GEOGRAPHIC:
-/*
-* Not implemented yet
-*/
-                        default:
-                                break;
-                        }
-                        switch(tnew->tick.x_t_style) {
-                        case LINEAR:
-                        case LOG:
-                                xmin = tnew->tick.x_t_data_left;
-                                xmax = tnew->tick.x_t_data_right;
-                                break;
-/*
-* Not implemented yet
-*/
-                        case TIME:
-                        case GEOGRAPHIC:
-                        default:
-                                break;
-                        }
-			if((c_or_s == CREATE)||(redo_yr_xt)){
-                        	strcpy(buffer,tnew->base.name);
-                       		strcat(buffer,".Trans");
-                        	subret = NhlCreate(&tmpid,buffer,logLinTransObjLayerClass,
-                                tnew->base.id,
-                                NhlNtrXMinF,xmin,
-                                NhlNtrXMaxF,xmax,
-                                NhlNtrYMinF,ymin,
-                                NhlNtrYMaxF,ymax,
-                                NhlNtrXLog,(tnew->tick.x_t_style ==LOG ? 1:0),
-                                NhlNtrYLog,(tnew->tick.y_r_style ==LOG ? 1:0),
-                                NULL);
-				if(subret <WARNING) {
-					NhlPError(FATAL,E_UNKNOWN,"%s: Could not create transformation, cannot continue",error_lead);
-					return(FATAL);
-				} else if(subret < ret) {
-					ret = subret;
-				}
-			} else {
-				tmpid = tnew->tick.xt_yr_trans_obj->base.id;
-				subret = NhlSetValues(tmpid,
-                                NhlNtrXMinF,xmin,
-                                NhlNtrXMaxF,xmax,
-                                NhlNtrYMinF,ymin,
-                                NhlNtrYMaxF,ymax,
-                                NhlNtrXLog,(tnew->tick.x_t_style ==LOG ? 1:0),
-                                NhlNtrYLog,(tnew->tick.y_r_style ==LOG ? 1:0),
-                                NULL);
-				if(subret <WARNING) {
-					NhlPError(FATAL,E_UNKNOWN,"%s: Could not set transformation values, cannot continue",error_lead);
-					return(FATAL);
-				} else if(subret < ret) {
-					ret = subret;
-				}
-			}
-                        tnew->tick.xt_yr_trans_obj = _NhlGetLayer(tmpid);
-                }
-        } else {
-		if(c_or_s == CREATE)
-                	tnew->tick.xt_yr_trans_obj = NULL;
-		else if(tnew->tick.xt_yr_trans_obj != NULL) {
-			subret = NhlDestroy(tnew->tick.xt_yr_trans_obj->base.id);
-			if(subret <WARNING) {
-				NhlPError(FATAL,E_UNKNOWN,"%s: An error occured while destroying an internal object, proceeding anyways",error_lead);
-				ret = WARNING;
-			} 
-                	tnew->tick.xt_yr_trans_obj = NULL;
-		}
-        }
+		
+		strcpy(buffer,tnew->base.name);
+		strcat(buffer,".Trans");
+		ret = NhlALCreate(&tmpid,buffer,trans_class,tnew->base.id,sargs,nargs);
+		tnew->tick.xt_yr_trans_obj = _NhlGetLayer(tmpid);
+	} else {
+		tnew->tick.xt_yr_trans_obj = NULL;
+	}
 	return(ret);
 }
 
@@ -6848,4 +6755,527 @@ static NhlErrorTypes ScaleValuesForMove
 		}
 	}
 	return(NOERROR);
+}
+
+
+/*
+ * Function:	ChangeTransformInfo
+ *
+ * Description:	Called by SetValues this functions determines what should
+ *		happen to the current TransObj based on the new state of the
+ *		object. This function will call either CreateXTYRTransfromInfo 
+ *		or CreateXBYLTransformInfo as needed to create the appropriate
+ *		TransObj.
+ *
+ * In Args:	tnew the new instance of TickMark
+ *		told the old instance of TickMark
+ *		args current args list
+ *		num_args how many args
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	Sets ir_**min and ir_**max. can potentially call NhlDestroy
+ *		---> Important: This uses fields set in CheckIrregular <---- 
+ */
+static NhlErrorTypes ChangeTransformInfo
+#if __STDC__
+(TickMarkLayer tnew, TickMarkLayer told,_NhlArgList args, int num_args)
+#else
+(tnew, told, args, num_args)
+TickMarkLayer tnew;
+TickMarkLayer told;
+_NhlArgList args;
+int num_args;
+#endif
+{
+	int have_ir = 0;
+	int need_ir = 0;
+	NhlSArg sargs[20];
+        int nargs = 0;
+        float *tmpycoordpoints;
+        float *tmpxcoordpoints;
+        NhlErrorTypes ret = NOERROR;
+
+
+
+	if((tnew->tick.y_l_on)||(tnew->tick.x_b_on)) {
+/*
+* Fist decide what the state change is. It is special when going from
+* IRREGULAR to LOG or LINEAR and from LOG or LINEAR to IRREGULAR. In
+* both these cases the current TransObj must be destroyed and a new one
+* created. In all other cases a SetValues can be used to change the 
+* transfromation 
+*/
+
+		if((told->tick.y_l_style == IRREGULAR)||		
+			(told->tick.x_b_style == IRREGULAR)) {
+			have_ir = 1;
+		}
+		if((tnew->tick.y_l_style == IRREGULAR)||
+			(tnew->tick.x_b_style == IRREGULAR)) {
+			need_ir = 1;
+		}
+/*
+* Following is the case when an IrregularType2TransObj is already in use
+* and needs to be modified using SetValues
+*/
+		if((have_ir)&&(need_ir)) {
+			switch(tnew->tick.y_l_style) {
+				case IRREGULAR:
+					if((told->tick.y_l_style != IRREGULAR)||
+						(tnew->tick.new_ir_yl)) {
+/*
+* tnew->tick.new_ir_yl is set in the CheckIrregular function when copiing
+* the coordinate point arrays.
+*/
+
+					NhlSetSArg(&sargs[nargs++], 
+						NhlNtrYCoordPoints,
+                                        	tnew->tick.y_l_irregular_points);
+                                	NhlSetSArg(&sargs[nargs++],
+						NhlNtrYNumPoints,
+                                        	tnew->tick.y_l_num_irregular_points);
+					}
+					break;
+				case LOG:
+/*
+* Since an IrregularType2TransObj is being used careful attention must be
+* made to assure that the max and min do not exceed the range of the coordinate
+* arrays, which in the case of log and lin are the min and max of extents 
+* for a given axis. the ir_ylmin and ir_ylmax fields are set when the 
+* TransObj is created so that the following checks can determin whether or
+* not the entire coordinate point array needs to be recreated. 
+* When the style changes to LOG then the coordinate arrays must be set no
+* matter what.
+*/
+					if((told->tick.y_l_style != LOG)||
+						( tnew->tick.ir_ylmin > 
+						tnew->tick.y_l_data_min)
+						||(tnew->tick.ir_ylmax < 
+						tnew->tick.y_l_data_max)) {
+
+						tmpycoordpoints = 
+							(float*)NhlMalloc(
+							(unsigned)sizeof(float)*3);
+						tmpycoordpoints[2] = 
+							tnew->tick.y_l_data_top;
+						tmpycoordpoints[0] = 
+							tnew->tick.y_l_data_bottom;
+						tmpycoordpoints[1] = (float)
+							pow(10.0, (double)
+							(log10(tmpycoordpoints[0])
+							+ log10(tmpycoordpoints[2]))/2.0);
+						tnew->tick.ir_ylmin =
+							tnew->tick.y_l_data_min;
+						tnew->tick.ir_ylmax =
+							tnew->tick.y_l_data_max;
+
+						NhlSetSArg(&sargs[nargs++],
+						NhlNtrYCoordPoints,tmpycoordpoints);
+						NhlSetSArg(&sargs[nargs++],
+							NhlNtrYNumPoints,3);
+						NhlSetSArg(&sargs[nargs++],
+		                                        NhlNtrYUseLog,1);
+					}
+					break;
+				case LINEAR:
+/*
+* This functions in pretty much the same way as the above LOG switch
+*/
+					if((told->tick.y_l_style != LINEAR)||
+						(tnew->tick.ir_ylmin >
+						tnew->tick.y_l_data_min)
+						||(tnew->tick.ir_ylmax >
+						tnew->tick.y_l_data_max)){
+	                                tmpycoordpoints = (float*)NhlMalloc(
+	                                        (unsigned)sizeof(float)*3);
+	                                tmpycoordpoints[2] =
+	                                        tnew->tick.y_l_data_top;
+	                                tmpycoordpoints[0] =
+	                                        tnew->tick.y_l_data_bottom;
+	                                tmpycoordpoints[1] =
+	                                        (tmpycoordpoints[0]
+	                                        + tmpycoordpoints[2])/2.0;
+
+					tnew->tick.ir_ylmin =
+						tnew->tick.y_l_data_min;
+					tnew->tick.ir_ylmax =
+						tnew->tick.y_l_data_max;
+
+	                                NhlSetSArg(&sargs[nargs++],
+	                                        NhlNtrYCoordPoints,tmpycoordpoints);
+	                                NhlSetSArg(&sargs[nargs++],
+	                                        NhlNtrYNumPoints,3);
+	                                NhlSetSArg(&sargs[nargs++],
+	                                        NhlNtrYUseLog,0);
+
+					}
+					break;
+				case TIME:
+				case GEOGRAPHIC:
+					break;
+			}
+
+			switch(tnew->tick.x_b_style) {
+				case IRREGULAR:
+					if((told->tick.x_b_style != IRREGULAR)||
+						(tnew->tick.new_ir_xb)) {
+
+					NhlSetSArg(&sargs[nargs++], 
+						NhlNtrXCoordPoints,
+                                        	tnew->tick.x_b_irregular_points);
+                                	NhlSetSArg(&sargs[nargs++],
+						NhlNtrXNumPoints,
+                                        	tnew->tick.x_b_num_irregular_points);
+					}
+					break;
+				case LOG:
+					if((told->tick.x_b_style != LOG)||
+						( tnew->tick.ir_xbmin > 
+						tnew->tick.x_b_data_min)
+						||(tnew->tick.ir_xbmax < 
+						tnew->tick.x_b_data_max)) {
+
+						tmpxcoordpoints = 
+							(float*)NhlMalloc(
+							(unsigned)sizeof(float)*3);
+						tmpxcoordpoints[2] = 
+							tnew->tick.x_b_data_right;
+						tmpxcoordpoints[0] = 
+							tnew->tick.x_b_data_left;
+						tmpxcoordpoints[1] = (float)
+							pow(10.0, (double)
+							(log10(tmpxcoordpoints[0])
+							+ log10(tmpxcoordpoints[2]))/2.0);
+						tnew->tick.ir_xbmin =
+							tnew->tick.x_b_data_min;
+						tnew->tick.ir_xbmax =
+							tnew->tick.x_b_data_max;
+
+						NhlSetSArg(&sargs[nargs++],
+						NhlNtrXCoordPoints,tmpxcoordpoints);
+						NhlSetSArg(&sargs[nargs++],
+							NhlNtrXNumPoints,3);
+						NhlSetSArg(&sargs[nargs++],
+		                                        NhlNtrXUseLog,1);
+					}
+					break;
+				case LINEAR:
+					if((told->tick.x_b_style != LINEAR)||
+						(tnew->tick.ir_xbmin >
+						tnew->tick.x_b_data_min)
+						||(tnew->tick.ir_xbmax >
+						tnew->tick.x_b_data_max)){
+	                                tmpxcoordpoints = (float*)NhlMalloc(
+	                                        (unsigned)sizeof(float)*3);
+	                                tmpxcoordpoints[2] =
+	                                        tnew->tick.x_b_data_right;
+	                                tmpxcoordpoints[0] =
+	                                        tnew->tick.x_b_data_left;
+	                                tmpxcoordpoints[1] =
+	                                        (tmpxcoordpoints[0]
+	                                        + tmpxcoordpoints[2])/2.0;
+
+					tnew->tick.ir_xbmin =
+						tnew->tick.x_b_data_min;
+					tnew->tick.ir_xbmax =
+						tnew->tick.x_b_data_max;
+
+	                                NhlSetSArg(&sargs[nargs++],
+	                                        NhlNtrXCoordPoints,tmpxcoordpoints);
+	                                NhlSetSArg(&sargs[nargs++],
+	                                        NhlNtrXNumPoints,3);
+	                                NhlSetSArg(&sargs[nargs++],
+	                                        NhlNtrXUseLog,0);
+
+					}
+					break;
+				case TIME:
+				case GEOGRAPHIC:
+					break;
+			}
+			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,(tnew->tick.x_b_data_left>tnew->tick.x_b_data_right ? 1 : 0));
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,(tnew->tick.y_l_data_bottom >tnew->tick.y_l_data_top? 1 : 0));
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_b_data_min);
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_b_data_max);
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_l_data_min);
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_l_data_max);
+			ret = NhlALSetValues(tnew->tick.xb_yl_trans_obj->base.id
+				,sargs,nargs);
+
+		} else if((have_ir)&&(!need_ir)) {
+			NhlDestroy(tnew->tick.xb_yl_trans_obj->base.id);
+			tnew->tick.xb_yl_trans_obj = NULL;
+			ret = CreateXBYLTransformInfo(tnew,args, num_args);
+		} else if((!have_ir)&&(need_ir)) {
+			NhlDestroy(tnew->tick.xb_yl_trans_obj->base.id);
+			tnew->tick.xb_yl_trans_obj = NULL;
+			ret = CreateXBYLTransformInfo(tnew,args, num_args);
+		} else if((!have_ir)&&(!need_ir)){
+			switch(tnew->tick.y_l_style) {
+			case LOG:
+				NhlSetSArg(&sargs[nargs++],NhlNtrYLog,1);
+                                NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_l_data_bottom);
+                                NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_l_data_top);
+                                break;
+                        case LINEAR:
+                                NhlSetSArg(&sargs[nargs++],NhlNtrYLog,0);
+                                NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_l_data_bottom);
+                                NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_l_data_top);
+                                break;
+                        case TIME:
+                        case GEOGRAPHIC:
+                                break;
+
+			}
+			switch(tnew->tick.x_b_style) {
+                        case LOG:
+                                NhlSetSArg(&sargs[nargs++],NhlNtrXLog,1);
+                                NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_b_data_left);
+                                NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_b_data_right);
+                                break;
+                        case LINEAR:
+                                NhlSetSArg(&sargs[nargs++],NhlNtrXLog,0);
+                                NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_b_data_left);
+                                NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_b_data_right);
+                                break;
+                        case TIME:
+                        case GEOGRAPHIC:
+                                break;
+                        }
+			ret = NhlALSetValues(tnew->tick.xb_yl_trans_obj->base.id
+				,sargs,nargs);
+
+		}
+
+	} 
+	have_ir = 0;
+	need_ir = 0;
+	nargs = 0;
+	if((tnew->tick.y_r_on)||(tnew->tick.x_t_on)) {
+
+		if((told->tick.y_r_style == IRREGULAR)||		
+			(told->tick.x_t_style == IRREGULAR)) {
+			have_ir = 1;
+		}
+		if((tnew->tick.y_r_style == IRREGULAR)||
+			(tnew->tick.x_t_style == IRREGULAR)) {
+			need_ir = 1;
+		}
+		if((have_ir)&&(need_ir)) {
+			switch(tnew->tick.y_r_style) {
+				case IRREGULAR:
+					if((told->tick.y_r_style != IRREGULAR)||
+						(tnew->tick.new_ir_yr)) {
+
+					NhlSetSArg(&sargs[nargs++], 
+						NhlNtrYCoordPoints,
+                                        	tnew->tick.y_r_irregular_points);
+                                	NhlSetSArg(&sargs[nargs++],
+						NhlNtrYNumPoints,
+                                        	tnew->tick.y_r_num_irregular_points);
+					}
+					break;
+				case LOG:
+					if((told->tick.y_r_style != LOG)||
+						( tnew->tick.ir_yrmin > 
+						tnew->tick.y_r_data_min)
+						||(tnew->tick.ir_yrmax < 
+						tnew->tick.y_r_data_max)) {
+
+						tmpycoordpoints = 
+							(float*)NhlMalloc(
+							(unsigned)sizeof(float)*3);
+						tmpycoordpoints[2] = 
+							tnew->tick.y_r_data_top;
+						tmpycoordpoints[0] = 
+							tnew->tick.y_r_data_bottom;
+						tmpycoordpoints[1] = (float)
+							pow(10.0, (double)
+							(log10(tmpycoordpoints[0])
+							+ log10(tmpycoordpoints[2]))/2.0);
+						tnew->tick.ir_yrmin =
+							tnew->tick.y_r_data_min;
+						tnew->tick.ir_yrmax =
+							tnew->tick.y_r_data_max;
+
+						NhlSetSArg(&sargs[nargs++],
+						NhlNtrYCoordPoints,tmpycoordpoints);
+						NhlSetSArg(&sargs[nargs++],
+							NhlNtrYNumPoints,3);
+						NhlSetSArg(&sargs[nargs++],
+		                                        NhlNtrYUseLog,1);
+					}
+					break;
+				case LINEAR:
+					if((told->tick.y_r_style != LINEAR)||
+						(tnew->tick.ir_yrmin >
+						tnew->tick.y_r_data_min)
+						||(tnew->tick.ir_yrmax >
+						tnew->tick.y_r_data_max)){
+	                                tmpycoordpoints = (float*)NhlMalloc(
+	                                        (unsigned)sizeof(float)*3);
+	                                tmpycoordpoints[2] =
+	                                        tnew->tick.y_r_data_top;
+	                                tmpycoordpoints[0] =
+	                                        tnew->tick.y_r_data_bottom;
+	                                tmpycoordpoints[1] =
+	                                        (tmpycoordpoints[0]
+	                                        + tmpycoordpoints[2])/2.0;
+
+					tnew->tick.ir_yrmin =
+						tnew->tick.y_r_data_min;
+					tnew->tick.ir_yrmax =
+						tnew->tick.y_r_data_max;
+
+	                                NhlSetSArg(&sargs[nargs++],
+	                                        NhlNtrYCoordPoints,tmpycoordpoints);
+	                                NhlSetSArg(&sargs[nargs++],
+	                                        NhlNtrYNumPoints,3);
+	                                NhlSetSArg(&sargs[nargs++],
+	                                        NhlNtrYUseLog,0);
+
+					}
+					break;
+				case TIME:
+				case GEOGRAPHIC:
+					break;
+			}
+
+			switch(tnew->tick.x_t_style) {
+				case IRREGULAR:
+					if((told->tick.x_t_style != IRREGULAR)||
+						(tnew->tick.new_ir_xt)) {
+
+					NhlSetSArg(&sargs[nargs++], 
+						NhlNtrXCoordPoints,
+                                        	tnew->tick.x_t_irregular_points);
+                                	NhlSetSArg(&sargs[nargs++],
+						NhlNtrXNumPoints,
+                                        	tnew->tick.x_t_num_irregular_points);
+					}
+					break;
+				case LOG:
+					if((told->tick.x_t_style != LOG)||
+						( tnew->tick.ir_xtmin > 
+						tnew->tick.x_t_data_min)
+						||(tnew->tick.ir_xtmax < 
+						tnew->tick.x_t_data_max)) {
+
+						tmpxcoordpoints = 
+							(float*)NhlMalloc(
+							(unsigned)sizeof(float)*3);
+						tmpxcoordpoints[2] = 
+							tnew->tick.x_t_data_right;
+						tmpxcoordpoints[0] = 
+							tnew->tick.x_t_data_left;
+						tmpxcoordpoints[1] = (float)
+							pow(10.0, (double)
+							(log10(tmpxcoordpoints[0])
+							+ log10(tmpxcoordpoints[2]))/2.0);
+						tnew->tick.ir_xtmin =
+							tnew->tick.x_t_data_min;
+						tnew->tick.ir_xtmax =
+							tnew->tick.x_t_data_max;
+
+						NhlSetSArg(&sargs[nargs++],
+						NhlNtrXCoordPoints,tmpxcoordpoints);
+						NhlSetSArg(&sargs[nargs++],
+							NhlNtrXNumPoints,3);
+						NhlSetSArg(&sargs[nargs++],
+		                                        NhlNtrXUseLog,1);
+					}
+					break;
+				case LINEAR:
+					if((told->tick.x_t_style != LINEAR)||
+						(tnew->tick.ir_xtmin >
+						tnew->tick.x_t_data_min)
+						||(tnew->tick.ir_xtmax >
+						tnew->tick.x_t_data_max)){
+	                                tmpxcoordpoints = (float*)NhlMalloc(
+	                                        (unsigned)sizeof(float)*3);
+	                                tmpxcoordpoints[2] =
+	                                        tnew->tick.x_t_data_right;
+	                                tmpxcoordpoints[0] =
+	                                        tnew->tick.x_t_data_left;
+	                                tmpxcoordpoints[1] =
+	                                        (tmpxcoordpoints[0]
+	                                        + tmpxcoordpoints[2])/2.0;
+
+					tnew->tick.ir_xtmin =
+						tnew->tick.x_t_data_min;
+					tnew->tick.ir_xtmax =
+						tnew->tick.x_t_data_max;
+
+	                                NhlSetSArg(&sargs[nargs++],
+	                                        NhlNtrXCoordPoints,tmpxcoordpoints);
+	                                NhlSetSArg(&sargs[nargs++],
+	                                        NhlNtrXNumPoints,3);
+	                                NhlSetSArg(&sargs[nargs++],
+	                                        NhlNtrXUseLog,0);
+
+					}
+					break;
+				case TIME:
+				case GEOGRAPHIC:
+					break;
+			}
+			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,(tnew->tick.x_t_data_left>tnew->tick.x_t_data_right ? 1 : 0));
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,(tnew->tick.y_r_data_bottom >tnew->tick.y_r_data_top? 1 : 0));
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_t_data_min);
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_t_data_max);
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_r_data_min);
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_r_data_max);
+			ret = NhlALSetValues(tnew->tick.xt_yr_trans_obj->base.id
+				,sargs,nargs);
+
+		} else if((have_ir)&&(!need_ir)) {
+			NhlDestroy(tnew->tick.xt_yr_trans_obj->base.id);
+			tnew->tick.xt_yr_trans_obj = NULL;
+			ret = CreateXTYRTransformInfo(tnew,args, num_args);
+		} else if((!have_ir)&&(need_ir)) {
+			NhlDestroy(tnew->tick.xt_yr_trans_obj->base.id);
+			tnew->tick.xt_yr_trans_obj = NULL;
+			ret = CreateXTYRTransformInfo(tnew,args, num_args);
+		} else if((!have_ir)&&(!need_ir)){
+			switch(tnew->tick.y_r_style) {
+			case LOG:
+				NhlSetSArg(&sargs[nargs++],NhlNtrYLog,1);
+                                NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_r_data_bottom);
+                                NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_r_data_top);
+                                break;
+                        case LINEAR:
+                                NhlSetSArg(&sargs[nargs++],NhlNtrYLog,0);
+                                NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_r_data_bottom);
+                                NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_r_data_top);
+                                break;
+                        case TIME:
+                        case GEOGRAPHIC:
+                                break;
+
+			}
+			switch(tnew->tick.x_t_style) {
+                        case LOG:
+                                NhlSetSArg(&sargs[nargs++],NhlNtrXLog,1);
+                                NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_t_data_left);
+                                NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_t_data_right);
+                                break;
+                        case LINEAR:
+                                NhlSetSArg(&sargs[nargs++],NhlNtrXLog,0);
+                                NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_t_data_left);
+                                NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_t_data_right);
+                                break;
+                        case TIME:
+                        case GEOGRAPHIC:
+                                break;
+                        }
+			ret = NhlALSetValues(tnew->tick.xt_yr_trans_obj->base.id
+				,sargs,nargs);
+
+		}
+
+	} 
+	return ret;
 }

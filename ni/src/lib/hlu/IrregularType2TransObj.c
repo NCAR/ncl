@@ -1,6 +1,5 @@
-
 /*
- *      $Id: IrregularType2TransObj.c,v 1.2 1993-05-27 19:11:14 ethan Exp $
+ *      $Id: IrregularType2TransObj.c,v 1.3 1993-10-19 17:51:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -264,30 +263,37 @@ int     /* upordown */
 #endif
 );
 
+static SetUpTrans(
+#if NhlNeedProto
+        Layer   /*new*/,
+        Layer   /*old*/,
+	int	/*c_or_s*/
+#endif
+);
+
+#define CREATE  1
+#define SET 0
 
 
 IrregularType2TransObjLayerClassRec irregularType2TransObjLayerClassRec = {
         {
-/* superclass			*/	(LayerClass)&transObjLayerClassRec,
 /* class_name			*/	"IrregularType2TransObj",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(IrregularType2TransObjLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(LayerClass)&transObjLayerClassRec,
+
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
-/* child_resources		*/	NULL,
 /* all_resources		*/	NULL,
+
 /* class_part_initialize	*/	NULL,
-/* class_inited			*/	False,
 /* class_initialize		*/	NULL,
 /* layer_initialize		*/	IrTransInitialize,
 /* layer_set_values		*/	IrTransSetValues,
-/* layer_set_values_not		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
-/* layer_pre_draw		*/	NULL,
-/* layer_draw			*/	NULL,
-/* layer_draw_segonly		*/	NULL,
-/* layer_post_draw		*/	NULL,
-/* layer_clear			*/	NULL,
+/* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NULL
         },
         {
@@ -339,102 +345,7 @@ static NhlErrorTypes IrTransSetValues
 	int	num_args;
 #endif
 {
-	IrregularType2TransObjLayer inew = (IrregularType2TransObjLayer) new;
-	IrregularType2TransObjLayer iold = (IrregularType2TransObjLayer) old;
-	float tmp;
-	NhlErrorTypes ret = NOERROR;
-	char buffer[80];
-/*
-* Only type of change allowed by this object
-*/
-	
-	_NhlEvalSplineCoordForward(&inew->ir2trans.thecoord,
-		inew->ir2trans.x_min,
-		inew->ir2trans.y_min,
-		&(inew->ir2trans.ul),
-		&(inew->ir2trans.ub),
-		NULL,NULL);
-	_NhlEvalSplineCoordForward(&inew->ir2trans.thecoord,
-		inew->ir2trans.x_max,
-		inew->ir2trans.y_max,
-		&(inew->ir2trans.ur),
-		&(inew->ir2trans.ut),
-		NULL,NULL);
-	if(inew->ir2trans.x_reverse) {
-		tmp = inew->ir2trans.ur;
-		inew->ir2trans.ur = inew->ir2trans.ul;
-		inew->ir2trans.ul = tmp;
-	}
-	if(inew->ir2trans.y_reverse) {
-		tmp = inew->ir2trans.ut;
-		inew->ir2trans.ut = inew->ir2trans.ub;
-		inew->ir2trans.ub = tmp;
-	}
-/*
-* All the rest of the fields can't be changed
-*/
-	
-	if(inew->ir2trans.x_coord_points != iold->ir2trans.x_coord_points) {
-		sprintf(buffer,"Coordinate transformation points can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->ir2trans.x_coord_points = iold->ir2trans.x_coord_points;
-		ret = WARNING;
-	}
-	if(inew->ir2trans.x_inter_points != iold->ir2trans.x_inter_points) {
-		sprintf(buffer,"Coordinate transformation points can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->ir2trans.x_inter_points = iold->ir2trans.x_inter_points;
-		ret = WARNING;
-	}
-	if(inew->ir2trans.x_num_points != iold->ir2trans.x_num_points) {
-		sprintf(buffer,"Coordinate transformation points can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->ir2trans.x_num_points = iold->ir2trans.x_num_points;
-		ret = WARNING;
-	}
-	if(inew->ir2trans.x_tension != iold->ir2trans.x_tension) {
-		sprintf(buffer,"Coordinate transformation information can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->ir2trans.x_tension = iold->ir2trans.x_tension;
-		ret = WARNING;
-	}
-	if(inew->ir2trans.x_samples != iold->ir2trans.x_samples) {
-		sprintf(buffer,"Coordinate transformation information can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->ir2trans.x_samples = iold->ir2trans.x_samples;
-		ret = WARNING;
-	}
-	if(inew->ir2trans.y_coord_points != iold->ir2trans.y_coord_points) {
-		sprintf(buffer,"Coordinate transformation points can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->ir2trans.y_coord_points = iold->ir2trans.y_coord_points;
-		ret = WARNING;
-	}
-	if(inew->ir2trans.y_inter_points != iold->ir2trans.y_inter_points) {
-		sprintf(buffer,"Coordinate transformation points can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->ir2trans.y_inter_points = iold->ir2trans.y_inter_points;
-		ret = WARNING;
-	}
-	if(inew->ir2trans.y_num_points != iold->ir2trans.y_num_points) {
-		sprintf(buffer,"Coordinate transformation points can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->ir2trans.y_num_points = iold->ir2trans.y_num_points;
-		ret = WARNING;
-	}
-	if(inew->ir2trans.y_tension != iold->ir2trans.y_tension) {
-		sprintf(buffer,"Coordinate transformation information can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->ir2trans.y_tension = iold->ir2trans.y_tension;
-		ret = WARNING;
-	}
-	if(inew->ir2trans.y_samples != iold->ir2trans.y_samples) {
-		sprintf(buffer,"Coordinate transformation information can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->ir2trans.y_samples = iold->ir2trans.y_samples;
-		ret = WARNING;
-	}
-	return(ret);
+	return(SetUpTrans(new,old,SET));	
 }
 
 
@@ -465,79 +376,167 @@ static NhlErrorTypes IrTransInitialize
         int		num_args;
 #endif
 {
+	return(SetUpTrans(new,NULL,CREATE));
+}
+
+static SetUpTrans
+#if __STDC__
+(Layer new, Layer old, int c_or_s)
+#else
+(new,old,c_or_s)
+	Layer 	new;
+	Layer	old;
+#endif
+{
 	IrregularType2TransObjLayer inew = (IrregularType2TransObjLayer)new;
-	IrregularType2TransObjLayer ireq = (IrregularType2TransObjLayer)req;
+	IrregularType2TransObjLayer iold = (IrregularType2TransObjLayer)old;
+	char *error_lead;
+	float *tmp;
+	float tmpf;
+	int call_spline_create;
 	NhlErrorTypes ret = NOERROR;
-	float tmp;
 	Status xstatus,ystatus;
-	char buffer[80];
 
-
-	if((ireq->ir2trans.x_coord_points == NULL)||
-			(ireq->ir2trans.y_coord_points==NULL)||
-			(ireq->ir2trans.x_num_points < 2)||
-			(ireq->ir2trans.y_num_points < 2)) {
-		sprintf(buffer, "IrTransInitialize: Not enough information to set up transformations");
-		NhlPError(FATAL,E_UNKNOWN,buffer);
-			
-		return(FATAL);
+	if(c_or_s == SET) {
+		error_lead = "IrTransSetValues";
+		call_spline_create = 0;
 	} else {
-		inew->ir2trans.x_coord_points = (float*)NhlMalloc((unsigned)
-				sizeof(float) *(ireq->ir2trans.x_num_points));
-		inew->ir2trans.y_coord_points = (float*)NhlMalloc((unsigned)
-				sizeof(float) *(ireq->ir2trans.y_num_points));
-		bcopy(ireq->ir2trans.x_coord_points,
-			inew->ir2trans.x_coord_points,
-			sizeof(float)*ireq->ir2trans.x_num_points);
-		bcopy(ireq->ir2trans.y_coord_points,
-			inew->ir2trans.y_coord_points,
-			sizeof(float)*ireq->ir2trans.y_num_points);
+		error_lead = "IrTransInitialize";
+		call_spline_create = 1;
+	}
+
+	if((inew->ir2trans.x_coord_points == NULL)||
+			(inew->ir2trans.y_coord_points==NULL)||
+			(inew->ir2trans.x_num_points < 2)||
+			(inew->ir2trans.y_num_points < 2)) {
+		if(c_or_s == CREATE) {
+			NhlPError(FATAL,E_UNKNOWN,
+			"%s: Not enough information to set up transformations",
+								error_lead);
+			return(FATAL);
+		} else {
+			memcpy((char*)&inew->ir2trans,(char*)&iold->ir2trans,
+				sizeof(IrregularType2TransObjLayerPart));
+			
+			
+			NhlPError(WARNING,E_UNKNOWN,"%s: Not enough information to set up transformations, reseting to previous values",error_lead);	
+			return(WARNING);
+		}
+	} else {
+		if(c_or_s == SET){
+			if(inew->ir2trans.x_coord_points != iold->ir2trans.x_coord_points) {
+				call_spline_create = 1;
+				NhlFree(iold->ir2trans.x_coord_points);
+				tmp = inew->ir2trans.x_coord_points;
+				inew->ir2trans.x_coord_points 
+					= (float*)NhlMalloc((unsigned)
+					sizeof(float) *(inew->ir2trans.x_num_points));
+				memcpy((char*)inew->ir2trans.x_coord_points,
+					(char*)tmp,sizeof(float) *
+						inew->ir2trans.x_num_points);
+				
+			}
+			if(inew->ir2trans.y_coord_points != iold->ir2trans.y_coord_points) {
+				call_spline_create = 1;
+				NhlFree(iold->ir2trans.y_coord_points);
+				tmp = inew->ir2trans.y_coord_points;
+				inew->ir2trans.y_coord_points 
+					= (float*)NhlMalloc((unsigned)
+					sizeof(float) *(inew->ir2trans.y_num_points));
+				memcpy((char*)inew->ir2trans.y_coord_points,
+					(char*)tmp,sizeof(float) *
+						inew->ir2trans.y_num_points);
+			}
+			
+		} else {
+			tmp = inew->ir2trans.x_coord_points;
+			inew->ir2trans.x_coord_points = (float*)NhlMalloc((unsigned)
+					sizeof(float) *(inew->ir2trans.x_num_points));
+			memcpy((char*)inew->ir2trans.x_coord_points,(char*)tmp,
+				sizeof(float)*inew->ir2trans.x_num_points);
+
+			tmp = inew->ir2trans.y_coord_points;
+
+			inew->ir2trans.y_coord_points = (float*)NhlMalloc((unsigned)
+					sizeof(float) *(inew->ir2trans.y_num_points));
+			memcpy((char*)inew->ir2trans.y_coord_points,(char*)tmp,
+				sizeof(float)*inew->ir2trans.y_num_points);
+
+		}
+
+
 		if((inew->ir2trans.x_min == 0.0)&&
 			(inew->ir2trans.x_max == 0.0)) {
-			inew->ir2trans.x_min = MIN(inew->ir2trans.x_coord_points[0],inew->ir2trans.x_coord_points[ireq->ir2trans.x_num_points-1]);
-			inew->ir2trans.x_max = MAX(inew->ir2trans.x_coord_points[0],inew->ir2trans.x_coord_points[ireq->ir2trans.x_num_points-1]);
+			inew->ir2trans.x_min = MIN(inew->ir2trans.x_coord_points[0],inew->ir2trans.x_coord_points[inew->ir2trans.x_num_points-1]);
+			inew->ir2trans.x_max = MAX(inew->ir2trans.x_coord_points[0],inew->ir2trans.x_coord_points[inew->ir2trans.x_num_points-1]);
 		} else if(inew->ir2trans.x_min > inew->ir2trans.x_max) {
-			tmp = inew->ir2trans.x_min;
+			tmpf = inew->ir2trans.x_min;
 			inew->ir2trans.x_min = inew->ir2trans.x_max;
-			inew->ir2trans.x_max = tmp;
+			inew->ir2trans.x_max = tmpf;
+		}
+		if(inew->ir2trans.x_min < MIN(inew->ir2trans.x_coord_points[0],inew->ir2trans.x_coord_points[inew->ir2trans.x_num_points-1])) {
+			NhlPError(WARNING,E_UNKNOWN,"%s: Minimum value is less than minimum value of coordinate points array, resetting to minimum",error_lead);
+			inew->ir2trans.x_min = MIN(inew->ir2trans.x_coord_points[0],inew->ir2trans.x_coord_points[inew->ir2trans.x_num_points-1]);
+		}
+		if(inew->ir2trans.x_max > MAX(inew->ir2trans.x_coord_points[0],inew->ir2trans.x_coord_points[inew->ir2trans.x_num_points-1])) {
+			NhlPError(WARNING,E_UNKNOWN,"%s: Maximum value is greater than maximum value of coordinate points array, resetting to maximum",error_lead);
+			inew->ir2trans.x_max = MAX(inew->ir2trans.x_coord_points[0],inew->ir2trans.x_coord_points[inew->ir2trans.x_num_points-1]);
 		}
 		if((inew->ir2trans.y_min == 0.0)&&
 			(inew->ir2trans.y_max == 0.0)) {
-			inew->ir2trans.y_min = MIN(inew->ir2trans.y_coord_points[0],inew->ir2trans.y_coord_points[ireq->ir2trans.y_num_points-1]);
-			inew->ir2trans.y_max = MAX(inew->ir2trans.y_coord_points[0],inew->ir2trans.y_coord_points[ireq->ir2trans.y_num_points-1]);
+			inew->ir2trans.y_min = MIN(inew->ir2trans.y_coord_points[0],inew->ir2trans.y_coord_points[inew->ir2trans.y_num_points-1]);
+			inew->ir2trans.y_max = MAX(inew->ir2trans.y_coord_points[0],inew->ir2trans.y_coord_points[inew->ir2trans.y_num_points-1]);
 		} else if(inew->ir2trans.y_min > inew->ir2trans.y_max) {
-			tmp = inew->ir2trans.y_min;
+			tmpf = inew->ir2trans.y_min;
 			inew->ir2trans.y_min = inew->ir2trans.y_max;
-			inew->ir2trans.y_max = tmp;
+			inew->ir2trans.y_max = tmpf;
+		}
+		if(inew->ir2trans.y_min < MIN(inew->ir2trans.y_coord_points[0],inew->ir2trans.y_coord_points[inew->ir2trans.y_num_points-1])) {
+			NhlPError(WARNING,E_UNKNOWN,"%s: Minimum value is less than minimum value of coordinate points array, resetting to minimum",error_lead);
+			inew->ir2trans.y_min = MIN(inew->ir2trans.y_coord_points[0],inew->ir2trans.y_coord_points[inew->ir2trans.y_num_points-1]);
+		}
+		if(inew->ir2trans.y_max > MAX(inew->ir2trans.y_coord_points[0],inew->ir2trans.y_coord_points[inew->ir2trans.y_num_points-1])) {
+			NhlPError(WARNING,E_UNKNOWN,"%s: Maximum value is greater than maximum value of coordinate points array, resetting to maximum",error_lead);
+			inew->ir2trans.y_max = MAX(inew->ir2trans.y_coord_points[0],inew->ir2trans.y_coord_points[inew->ir2trans.y_num_points-1]);
 		}
 		
 	}
-	if((ireq->ir2trans.x_inter_points != NULL)) {
+	if((inew->ir2trans.x_inter_points != NULL)) {
+		if(c_or_s == SET) {
+			NhlFree(inew->ir2trans.x_inter_points);
+		}
+		tmp = inew->ir2trans.x_inter_points;
 		inew->ir2trans.x_inter_points = (float*)NhlMalloc((unsigned)
-				sizeof(float) * (ireq->ir2trans.x_num_points));
-		bcopy(ireq->ir2trans.x_inter_points,inew->ir2trans.x_inter_points,
-			sizeof(float)*ireq->ir2trans.x_num_points);
+				sizeof(float) * (inew->ir2trans.x_num_points));
+		memcpy((char*)inew->ir2trans.x_inter_points,(char*)tmp,
+			sizeof(float)*inew->ir2trans.x_num_points);
 	}
 	
-	if((ireq->ir2trans.y_inter_points != NULL)) {
+	if((inew->ir2trans.y_inter_points != NULL)) {
+		if(c_or_s == SET) {
+			NhlFree(inew->ir2trans.y_inter_points);
+		}
+		tmp = inew->ir2trans.y_inter_points;
 		inew->ir2trans.y_inter_points = (float*)NhlMalloc((unsigned)
-				sizeof(float) * (ireq->ir2trans.y_num_points));
-		bcopy(ireq->ir2trans.y_inter_points,inew->ir2trans.y_inter_points,
-			sizeof(float)*ireq->ir2trans.y_num_points);
+				sizeof(float) * (inew->ir2trans.y_num_points));
+		memcpy((char*)inew->ir2trans.y_inter_points,(char*)tmp,
+			sizeof(float)*inew->ir2trans.y_num_points);
 	}
 
-	ret = _NhlCreateSplineCoordApprox(&(inew->ir2trans.thecoord),
-		inew->ir2trans.x_use_log,
-		inew->ir2trans.x_coord_points,
-		inew->ir2trans.x_inter_points,
-		inew->ir2trans.x_num_points,
-		inew->ir2trans.y_use_log,
-		inew->ir2trans.y_coord_points,
-		inew->ir2trans.y_inter_points,
-		inew->ir2trans.y_num_points,
-		inew->ir2trans.x_tension,inew->ir2trans.y_tension,
-		inew->ir2trans.x_samples,inew->ir2trans.y_samples,
-		&xstatus,&ystatus);	
+	if(call_spline_create) {
+		ret = _NhlCreateSplineCoordApprox(&(inew->ir2trans.thecoord),
+			inew->ir2trans.x_use_log,
+			inew->ir2trans.x_coord_points,
+			inew->ir2trans.x_inter_points,
+			inew->ir2trans.x_num_points,
+			inew->ir2trans.y_use_log,
+			inew->ir2trans.y_coord_points,
+			inew->ir2trans.y_inter_points,
+			inew->ir2trans.y_num_points,
+			inew->ir2trans.x_tension,inew->ir2trans.y_tension,
+			inew->ir2trans.x_samples,inew->ir2trans.y_samples,
+			&xstatus,&ystatus);	
+	}
 	_NhlEvalSplineCoordForward(&inew->ir2trans.thecoord,
 		inew->ir2trans.x_min,
 		inew->ir2trans.y_min,
@@ -551,19 +550,18 @@ static NhlErrorTypes IrTransInitialize
 		&(inew->ir2trans.ut),
 		NULL,NULL);
 
-	if(ireq->ir2trans.x_reverse) {
-		tmp = inew->ir2trans.ur;
+	if(inew->ir2trans.x_reverse) {
+		tmpf = inew->ir2trans.ur;
 		inew->ir2trans.ur = inew->ir2trans.ul;
-		inew->ir2trans.ul = tmp;
+		inew->ir2trans.ul = tmpf;
 	}
-	if(ireq->ir2trans.y_reverse) {
-		tmp = inew->ir2trans.ut;
+	if(inew->ir2trans.y_reverse) {
+		tmpf = inew->ir2trans.ut;
 		inew->ir2trans.ut = inew->ir2trans.ub;
-		inew->ir2trans.ub = tmp;
+		inew->ir2trans.ub = tmpf;
 	}
 	return(ret);
 }
-
 
 /*
  * Function:	IrSetTrans
@@ -892,7 +890,6 @@ int upordown;
 	float xpoints[2];
 	float ypoints[2];
 	float holdx,holdy;
-	int ix0,ix1,iy0,iy1;
 
 /*
 * if true the moveto is being performed
@@ -901,7 +898,6 @@ int upordown;
 		lastx = x;
 		lasty = y;
 		call_frstd = 1;
-/* FORTRAN */		lastd_();
 		return(NOERROR);
 	} else {
 		currentx = x;
@@ -917,15 +913,18 @@ int upordown;
 			&currentx,
 			&currenty,
 			-9999.0);
-		if((lastx == -9999.0)||(lasty == -9999)||(currentx == -9999.0)||(currenty == -9999.0)){
+		if((lastx == -9999.0)||(lasty == -9999.0)||(currentx == -9999.0)||(currenty == -9999.0)){
 /*
 * Line has gone completely out of window
 */
 			lastx = x;	
 			lasty = y;
 			call_frstd = 1;
-/* FORTRAN */		lastd_();
-			return(NOERROR);
+			xpoints[0] = lastx;
+			ypoints[0] = lasty;
+			IrDataToCompc(instance,parent,xpoints,ypoints,1,xpoints,ypoints,NULL,NULL);
+				
+			return(_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(xpoints[0]),c_cufy(ypoints[0]),1));
 		} else {
 			xpoints[0] = lastx;
 			xpoints[1] = currentx;
@@ -934,17 +933,12 @@ int upordown;
 			IrDataToCompc(instance,parent,xpoints,ypoints,2,xpoints,ypoints,NULL,NULL);
 			if((lastx != holdx)||(lasty!= holdy)) {
 				call_frstd = 1;
-/* FORTRAN */			lastd_();
 			}
 			if(call_frstd == 1) {
-				ix0 = c_kumx(xpoints[0]);
-				iy0 = c_kumy(ypoints[0]);
-/* FORTRAN */			cfvld_(&call_frstd,&ix0,&iy0);
+				_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(xpoints[0]),c_cufy(ypoints[0]),1);
 				call_frstd = 2;
 			}
-			ix1 = c_kumx(xpoints[1]);
-			iy1 = c_kumy(ypoints[1]);
-/* FORTRAN */		cfvld_(&call_frstd,&ix1,&iy1);
+			_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(xpoints[1]),c_cufy(ypoints[1]),0);
 			lastx = x;
 			lasty = y;
 			return(NOERROR);
@@ -955,6 +949,7 @@ int upordown;
 	
 }
 
+/*ARGSUSED*/
 static NhlErrorTypes IrWinLineTo
 #if __STDC__
 (Layer instance, Layer parent, float x, float y, int upordown)
@@ -971,15 +966,9 @@ int upordown;
 	static float lastx,lasty;
 	static call_frstd = 1;
 	float currentx,currenty;
-	float xpoints[2];
-	float ypoints[2];
-	int ix0,ix1,iy0,iy1;
-	float xmin,ymin,xmax,ymax;
-	float holdx, holdy;
+	float xmin,ymin,xmax,ymax; 
+	float holdx, holdy; /* * if true the moveto is being performed */
 
-/*
-* if true the moveto is being performed
-*/
 	xmin = MIN(ir2inst->ir2trans.ur,ir2inst->ir2trans.ul);
 	xmax = MAX(ir2inst->ir2trans.ur,ir2inst->ir2trans.ul);
 	ymin = MIN(ir2inst->ir2trans.ub,ir2inst->ir2trans.ut);
@@ -998,30 +987,26 @@ int upordown;
 			xmin, xmax, ymin, ymax,
 			&lastx, &lasty, &currentx, &currenty,
 			-9999.0);
-		if((lastx == -9999.0)||(lasty == -9999)||(currentx == -9999.0)||(currenty == -9999.0)){
+		if((lastx == -9999.0)||(lasty == -9999.0)||(currentx == -9999.0)||(currenty == -9999.0)){
 /*
 * Line has gone completely out of window
 */
 			lastx = x;	
 			lasty = y;
 			call_frstd = 1;
-/* FORTRAN */		lastd_();
-			return(NOERROR);
+			return(_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(x),c_cufy(y),1));
 		} else {
                         if((lastx != holdx)||(lasty!= holdy)) {
                                 call_frstd = 1;
-/* FORTRAN */                   lastd_();
                         }
 
 			if(call_frstd == 1) {
-				ix0 = c_kumx(lastx);
-				iy0 = c_kumy(lasty);
-/* FORTRAN */			cfvld_(&call_frstd,&ix0,&iy0);
+				_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(lastx),c_cufy(lasty),1);
+
 				call_frstd = 2;
 			}
-			ix1 = c_kumx(currentx);
-			iy1 = c_kumy(currenty);
-/* FORTRAN */		cfvld_(&call_frstd,&ix1,&iy1);
+			_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(currentx),c_cufy(currenty),0);
+
 			lastx = x;
 			lasty = y;
 			return(NOERROR);
@@ -1033,6 +1018,7 @@ int upordown;
 }
 
 
+/*ARGSUSED*/
 static NhlErrorTypes IrNDCLineTo
 #if __STDC__
 (Layer instance, Layer parent,float x, float y, int upordown )
@@ -1045,13 +1031,9 @@ float y;
 int upordown;
 #endif
 {
-	IrregularType2TransObjLayer ir2inst = (IrregularType2TransObjLayer)instance;
 	static float lastx,lasty;
 	static call_frstd = 1;
 	float currentx,currenty;
-	float xpoints[2];
-	float ypoints[2];
-	int ix0,ix1,iy0,iy1;
 	float xvp,yvp,widthvp,heightvp;
 	float holdx,holdy;
 
@@ -1062,7 +1044,6 @@ int upordown;
 		lastx = x;
 		lasty = y;
 		call_frstd = 1;
-/* FORTRAN */		lastd_();
 		return(NOERROR);
 	} else {
 		currentx = x;
@@ -1079,30 +1060,26 @@ int upordown;
 			xvp, xvp+widthvp, yvp-heightvp, yvp,
 			&lastx, &lasty, &currentx, &currenty,
 			-9999.0);
-		if((lastx == -9999.0)||(lasty == -9999)||(currentx == -9999.0)||(currenty == -9999.0)){
+		if((lastx == -9999.0)||(lasty == -9999.0)||(currentx == -9999.0)||(currenty == -9999.0)){
 /*
 * Line has gone completely out of window
 */
 			lastx = x;	
 			lasty = y;
 			call_frstd = 1;
-/* FORTRAN */		lastd_();
-			return(NOERROR);
+			return(_NhlWorkstationLineTo(parent->base.wkptr,x,y,1));
+
 		} else {
                         if((lastx != holdx)||(lasty!= holdy)) {
                                 call_frstd = 1;
-/* FORTRAN */                   lastd_();
                         }
 
 			if(call_frstd == 1) {
-				ix0 = c_kfmx(lastx);
-				iy0 = c_kfmy(lasty);
-/* FORTRAN */			cfvld_(&call_frstd,&ix0,&iy0);
 				call_frstd = 2;
+				_NhlWorkstationLineTo(parent->base.wkptr,lastx,lasty,1);
 			}
-			ix1 = c_kfmx(currentx);
-			iy1 = c_kfmy(currenty);
-/* FORTRAN */		cfvld_(&call_frstd,&ix1,&iy1);
+			_NhlWorkstationLineTo(parent->base.wkptr,currentx,currenty,0);
+
 			lastx = x;
 			lasty = y;
 			return(NOERROR);

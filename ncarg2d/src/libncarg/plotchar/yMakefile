@@ -1,7 +1,6 @@
 #
-#	$Id: yMakefile,v 1.9 1993-01-12 16:53:08 kennison Exp $
+#	$Id: yMakefile,v 1.10 1993-10-19 17:30:38 boote Exp $
 #
-NCARG	= ../../../..
 
 MYNAME	= plotchar
 
@@ -33,60 +32,14 @@ OBJECTS = $(GENERIC_OBJS) $(OTHER_OBJS)
 
 FCPP_OBJS       = pcfopn.f
 
-PartialLibrary(libncarg.a,$(OBJECTS))
+PartialLibraryTarget(libncarg.a,$(OBJECTS))
+PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
+CleanFilesTarget(pcfopn.F bofred.c pcbnrd.c $(FCPP_OBJS))
 
 pcfopn.F: pcfopn.F.sed Makefile
 	@sed \
 	-e 's+SED_DBDIR+$(DBDIR)+' \
 	<pcfopn.F.sed >pcfopn.F
-
-pcffgp.o : pcffme.h pcffdx.h
-
-pcffgd.o : pcffme.h pcffdx.h pcffsp.h
-
-pcffhl.o : pcffdx.h pcffsp.h
-
-pcbdff.o : pcffme.doc pcffme.h pcffdx.doc pcffdx.h pcffsp.doc pcffsp.h
-
-pccfff.o : pcffme.h pcffdx.h
-
-pcffme.o : pcffme.h pcffdx.h
-
-
-#if defined(sgi) || defined(ardent) || (defined(u370) && defined(unix)) \
-	|| defined(RS6000) || defined(hpux) || defined(cray) || defined(CRAY2)
-
-.SUFFIXES: .F
-
-.F.o:
-	@$(FCPP) $< $*.f
-	$(F77) $(FFLAGS) -c $*.f
-	@$(RM) $*.f
-#endif
-
-#if defined(apollo)
-# plchmq.f suffers from highest level of optimization. So use -opt 2.
-plchmq.o:  plchmq.f
-	$(F77) $(FFLAGS) -W0,-opt,2 -c plchmq.f
-#endif
-
-clean::
-	@-$(RM) pcfopn.f
-
-#ifdef  BuildNCARGSourceLibrary
-all:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_QUICK) $(LIBPATH)/srcncarg.a $(MYNAME) $(SOURCES)
-	@-$(RM) $(MYNAME)
-
-install:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBPATH)/srcncarg.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBPATH)/srcncarg.a
-	@-$(RM) $(MYNAME)
-
-FRule
-#endif
 
 bofred.c:  bofred.c.sed Makefile
 	@$(CALLCONV) $(SYSTEM_INCLUDE) bofred.c bofred
@@ -94,5 +47,16 @@ bofred.c:  bofred.c.sed Makefile
 pcbnrd.c:  pcbnrd.c.sed Makefile
 	@$(CALLCONV) $(SYSTEM_INCLUDE) pcbnrd.c pcbnrd
 
-clean::
-	@-$(RM) $(FCPP_OBJS) bofred.c pcbnrd.c
+/* Probably obsolete - but we'll leave it here anyway */
+#if defined(apollo)
+# plchmq.f suffers from highest level of optimization. So use -opt 2.
+plchmq.o:  plchmq.f
+	$(F77) $(FFLAGS) -W0,-opt,2 -c plchmq.f
+#endif
+
+pcffgp.o : pcffme.h pcffdx.h
+pcffgd.o : pcffme.h pcffdx.h pcffsp.h
+pcffhl.o : pcffdx.h pcffsp.h
+pcbdff.o : pcffme.doc pcffme.h pcffdx.doc pcffdx.h pcffsp.doc pcffsp.h
+pccfff.o : pcffme.h pcffdx.h
+pcffme.o : pcffme.h pcffdx.h

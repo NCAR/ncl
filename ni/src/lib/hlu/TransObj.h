@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TransObj.h,v 1.2 1993-05-27 19:11:27 ethan Exp $
+ *      $Id: TransObj.h,v 1.3 1993-10-19 17:52:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -28,19 +28,6 @@
 #include <ncarg/hlu/Base.h>
 
 
-#define NhlNtrDashPattern	"trDashPattern"
-#define NhlNtrLineLabel		"trLineLabel"
-#define NhlNtrLineThicknessF	"trLineThicknessF"
-#define NhlNtrLineLabelFontHeightF	"trLineLabelFontHeightF"
-#define NhlNtrLineDashSegLenF	"trLineDashSegLenF"
-#define NhlNtrLineColor		"trLineColor"
-
-#define NhlCtrDashPattern	"TrDashPattern"
-#define NhlCtrLineLabel		"TrLineLabel"
-#define NhlCtrLineThicknessF	"TrLineThicknessF"
-#define NhlCtrLineLabelFontHeightF	"TrLineLabelFontHeightF"
-#define NhlCtrLineDashSegLenF	"TrLineDashSegLenF"
-#define NhlCtrLineColor		"TrLineColor"
 
 typedef struct _TransObjLayerClassRec *TransObjLayerClass;
 typedef struct _TransObjLayerRec *TransObjLayer;

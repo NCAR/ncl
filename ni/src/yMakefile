@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.1 1993-04-30 17:16:30 boote Exp $
+#      $Id: yMakefile,v 1.2 1993-10-19 17:46:19 boote Exp $
 #
 #########################################################################
 #									#
@@ -19,12 +19,5 @@
 #
 #	Description:	yMakefile for ncarg/ni/src
 
-NCARG	= ../..
-
+#define	IHaveSubdirs
 SUBDIRS = lib examples bin
-
-MakeSubdirs($(SUBDIRS))
-InstallSubdirs($(SUBDIRS))
-MakefilesSubdirs($(SUBDIRS))
-CleanSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))

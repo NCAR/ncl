@@ -1,9 +1,6 @@
 #
-#	$Id: yMakefile,v 1.1 1993-04-16 17:03:11 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-10-19 17:23:37 boote Exp $
 #
-NCARG	= ../../../..
-
-FSPLIT	= ncarguncat
 
 MYNAME	= estitl
 
@@ -13,11 +10,4 @@ GENERIC_SRCS = \
 GENERIC_OBJS = \
 	 slex01.o
 
-install::
-	@for file in $(GENERIC_SRCS); do\
-	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
-	done
-
-MakefileTarget
-CleanTarget
-UpdateTarget
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))

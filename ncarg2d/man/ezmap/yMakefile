@@ -1,49 +1,23 @@
 #
-#	$Id: yMakefile,v 1.6 1993-05-03 17:25:04 haley Exp $
+#	$Id: yMakefile,v 1.7 1993-10-19 17:16:08 boote Exp $
 #
-NCARG	= ../../..
 
-MAN3 = ezmap ezmap_params ezmapa mapaci mapbla mapdrw mapeod mapfst mapgci \
+MAN =	ezmap ezmap_params ezmapa mapaci mapbla mapdrw mapeod mapfst mapgci \
 	mapgrd mapgrm mapgtc mapgti mapgtl mapgtr mapint mapiq mapiqa mapiqm \
 	mapit mapita mapitm maplbl maplmb maplot mappos maproj maprs maprst \
 	mapsav mapset mapstc mapsti mapstl mapstr maptra maptri maptrn mapusr \
 	mapvec mpgetc mpgeti mpgetl mpgetr mpsetc mpseti mpsetl mpsetr supcon \
 	supmap
 
-MAN = $(MAN3) 
-
-all:
-
-preformatted:
-	@for name in $(MAN3); do \
-	echo "Formatting $$name.m"; \
-	nroff -man $$name.m >$$name.p; \
-	done
-
-#if defined(CRAY) || defined(sgi) || defined(ardent)
 # Install preformatted troff documents on systems without troff
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m
 #endif
 
-#ifdef	InstallManToLocal
+MPATH	= $(MAN3PATH)
+MSECT	= $(MAN3_SECTION)
 
-install::
-	@for name in $(MAN); do\
-	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MANLPATH)/$$name.$(MANL_SECTION) );\
-	done
-
-#else	/* ! InstallManToLocal	*/
-
-install::
-	@for name in $(MAN3); do\
-	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MAN3PATH)/$$name.$(MAN3_SECTION) );\
-	done
-
-#endif	/* InstallManToLocal	*/
-
-MakefileTarget
-CleanTarget
+InstallManPages($(MAN),$(FORMAT_EXT),$(MPATH),$(MSECT))
+FormatManPages($(MAN),.m,.p)

@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.5 1993-01-19 23:14:26 haley Exp $
+ *	$Id: Rules,v 1.6 1993-10-19 17:13:34 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -7,124 +7,186 @@
    into appropriate newlines and tabs by "ymake-filter".
 */
 
-#define FRule\
-]\
-.F.f:]\
-	@$(FCPP) $< $*.f]
+#define	NullArgument
 
-#define UpdateTarget\
+/*
+ * Macro:	PrintError
+ *
+ * Description:	This macro is used to report any rules that are in a yMakefile
+ *		that are out of date.
+ */
+#ifndef	PrintError
+#define PrintError(rule,rulename,message)\
 ]\
-Update:]\
-	@echo "Updating <$(MYNAME)> from Generic NCAR Graphics"]\
-	@-$(RM) $(GENERIC_SRCS) $(GENERIC_OBJS)]\
-	@echo "	File listing after removing old generics"]\
-	@ls]\
-	@echo "	Splitting Fortran source"]\
-	@$(FSPLIT) $(NCARG)/generic/$(MYNAME)/src \]\
-	| makemacro >FileList; $(RM) generic.f]\
-	@if (test -x Generic2Unix) then \]\
-	echo "	Applying local modifications"; Generic2Unix; fi]
+rule:]\
+	@echo -n "YMAKE Error-"rulename "used in $(CURRENT_DIR)/yMakefile "]\
+	@echo message]\
+]\
+Makefiles:: rule]
+#endif	/* PrintError */
 
-#define UpdateNoSplitTarget\
+/*
+ * Macro:	InternalMakefileTarget
+ *
+ * Description:	yMake uses this internally in the Template file - It should
+ *		not be used in an actual yMakefile.
+ */
+#ifndef	InternalMakefileTarget
+#define InternalMakefileTarget\
 ]\
-Update:]\
-	@echo "Updating <$(MYNAME)> from Generic NCAR Graphics"]\
-	@-$(RM) $(GENERIC_SRCS) $(GENERIC_OBJS)]\
-	@echo "	File listing after removing old generics"]\
-	@ls]\
-	@echo " Copying Generic source"]\
-	@$(CP) $(NCARG)/generic/$(MYNAME)/src $(MYNAME).f]\
-	@chmod 644 $(MYNAME).f]\
-	@if (test -x Generic2Unix) then \]\
-	echo "	Applying local modifications"; Generic2Unix; fi]
+YmakeDependency(local-Makefile)\
+]\
+local-Makefile::]\
+	@echo "Making Makefile in $(CURRENT_DIR)"]\
+	@$(YMAKE) -DTOPDIR\=$(TOP) -DCURDIR\=$(CURRENT_DIR)]\
+]\
+me: local-Makefile]
+#endif	/* InternalMakefileTarget */
 
-#define MakefileTarget\
-]\
-Makefiles:: local-Makefile]\
-]\
-local-Makefile:]\
-	@$(YMAKE)]\
-]\
-me:]\
-	@$(YMAKE)]
-
-/* install at 'install' time	*/
+/*
+ * Macro:	InstallTarget
+ *
+ * Description:	install a number of files to dest - It will try and create
+ *		dest if it doesn't currently exist. The all is there so that
+ *		install doesn't end up being the default target since nothing
+ *		should be installed on an all target.
+ */
+#ifndef	InstallTarget
 #define InstallTarget(names, mode, dest)\
 ]\
-install:: names]\
-	@for name in names; do\]\
-	($(INSTALL) -m mode $$name dest);\]\
-	done]
-
-/* install at 'all' time	*/
-#define InstallAllTarget(names, mode, dest)\
-]\
 all:: names]\
-	@for name in names; do\]\
+]\
+install:: names]\
+	MakeDir(dest)]\
+	for name in names; do\]\
 	($(INSTALL) -m mode $$name dest);\]\
 	done]
+#endif	/* InstallTarget */
 
-
-/* Macros for directory managers. */
-
-#define MakeSubdirs(dirs)\
+/*
+ * Macro:	InstallLibTarget
+ *
+ * Description:	Install a library - It installs the lib and then runs RANLIB.
+ */
+#ifndef	InstallLibTarget
+#define InstallLibTarget(library)\
+InstallTarget(library,$(INSTALL_LIB),$(LIBPATH))\
 ]\
-all::]\
-	@for dir in dirs ; do\]\
-	(cd $$dir; echo "Making $$dir";\]\
-	$(MAKE) $(MFLAGS));\]\
-	done]
+install::]\
+	$(RANLIB) $(LIBPATH)/library]
+#endif	/* InstallLibTarget */
 
-#define CleanSubdirs(dirs)\
+/*
+ * Macro:	InternalMakeSubdirs
+ *
+ * Description:	ymake uses this rule internally in Template - It should not
+ *		be used in an actual yMakefile.
+ */
+#ifndef	InternalMakeSubdirs
+#define InternalMakeSubdirs(dirs)\
+]\
+makesubdirs:]\
+	@for dir in dirs ; do\]\
+	(cd $$dir; echo "Making $(CURRENT_DIR)/$$dir";\]\
+	$(MAKE) $(MFLAGS));\]\
+	done]\
+]\
+all:: makesubdirs]
+#endif	/* InternalMakeSubdirs */
+
+/*
+ * Macro:	InternalCleanSubdirs
+ *
+ * Description:	ymake uses this rule internally in Template - It should not
+ *		be used in an actual yMakefile.
+ */
+#ifndef	InternalCleanSubdirs
+#define InternalCleanSubdirs(dirs)\
 ]\
 clean::]\
 	@for dir in dirs ; do\]\
-	(cd $$dir; echo "Cleaning in $$dir";\]\
-	$(MAKE) clean $(MFLAGS));\]\
+	(cd $$dir; echo "Cleaning in $(CURRENT_DIR)/$$dir";\]\
+	$(MAKE) $(MFLAGS) clean);\]\
 	done]
+#endif	/* InternalCleanSubdirs */
 
-
-#define RebuildSubdirs(library,dirs)\
+/*
+ * Macro:	InternalDistCleanSubdirs
+ *
+ * Description:	ymake uses this rule internally in Template to totally clean
+ *		the distribution - including Makefiles.
+ */
+#ifndef	InternalDistCleanSubdirs
+#define	InternalDistCleanSubdirs(dirs)\
 ]\
-rebuild::]\
-	@-$(RM) $(LIBPATH)/library]\
+dist-clean::]\
+	@if (test "$(CURRENT_DIR)" \= ".") then $(MAKE) $(MFLAGS) clean; fi]\
 	@for dir in dirs ; do\]\
-	(cd $$dir; echo "Rebuilding $$dir"; $(MAKE) $(MFLAGS));\]\
-	done]\
-	@$(RANLIB) $(LIBPATH)/library]
+	(cd $$dir; $(MAKE) $(MFLAGS) dist-clean);\]\
+	done]
+#endif	/* InternalDistCleanSubdirs */
 
-#define InstallSubdirs(dirs)\
+/*
+ * Macro:	InternalInstallSubdirs
+ *
+ * Description:	ymake uses this rule internally in Template - It should not
+ *		be used in an actual yMakefile.
+ */
+#ifndef	InternalInstallSubdirs
+#define InternalInstallSubdirs(dirs)\
 ]\
 install::]\
 	@for dir in dirs ; do\]\
-	(cd $$dir; echo "Installing $$dir";\]\
-	$(MAKE) install $(MFLAGS));\]\
+	(cd $$dir; echo "Installing $(CURRENT_DIR)/$$dir";\]\
+	$(MAKE) $(MFLAGS) install);\]\
 	done]
+#endif	/* InternalInstallSubdirs */
 
-#define LibraryMakeSubdirs(library,dirs)\
+/*
+ * Macro:	YmakeDependency
+ *
+ * Description:	ymake uses this rule internally to build ymake if it isn't
+ *		built.
+ */
+#ifndef	YmakeDependency
+#ifdef	UseInstalled
+#define	YmakeDependency(target) /**/
+#else
+#define	YmakeDependency(target)\
+target:: $(YMAKEDEP)]\
 ]\
-all::]\
-	@-$(RM) $(LIBPATH)/library]\
-	@for dir in dirs ; do\]\
-	(cd $$dir; echo "Making $$dir"; $(MAKE) $(MFLAGS));\]\
-	done]\
-	$(RANLIB) $(LIBPATH)/library]
+$(YMAKEDEP):]\
+	@(cd $(CONFIGSRC); if (test -f Makefile) then \]\
+	echo "checking ymake in $(CONFIGSRC) first..."; $(MAKE) all; else \]\
+	echo "making ymake from Makefile.ini in $(CONFIGSRC) first..."; \]\
+	$(MAKE) -f Makefile.ini clean all; fi; \]\
+	echo "continuing in $(CURRENT_DIR)")]
+#endif	/* UseInstalled */
+#endif	/* YmakeDependency */
 
-
-#define MakefilesSubdirs(dirs)\
-]\
-MakefileTarget]\
+/*
+ * Macro:	InternalMakefilesSubdirs
+ *
+ * Description:	ymake uses this rule internally in Template - It should not
+ *		be used in an actual yMakefile.
+ */
+#ifndef	InternalMakefilesSubdirs
+#define InternalMakefilesSubdirs(dirs)\
 ]\
 Makefiles::]\
 	@for dir in dirs ; do\]\
-	(cd $$dir; echo "Making Makefiles in $$dir";\]\
-	$(MAKE) Makefiles $(MFLAGS));\]\
+	(cd $$dir; echo "Making Makefiles in $(CURRENT_DIR)/$$dir";\]\
+	$(NEWYMAKE) -DTOPDIR\=../$(TOP) -DCURDIR\=$(CURRENT_DIR)/$$dir;\]\
+	$(MAKE) $(MFLAGS) Makefiles);\]\
 	done]
-
+#endif	/* InternalMakefilesSubdirs */
 
 /*
- * tree leaf macros
+ * Macro:	RelocatableTarget
+ *
+ * Description:	Builds a .o and installs it in the ROBJPATH.
  */
+#ifndef	RelocatableTarget
 #define RelocatableTarget(name,objects)\
 ]\
 all::	name]\
@@ -132,101 +194,432 @@ all::	name]\
 name:	objects]\
 	@$(LD_REL) -r -o name objects]\
 ]\
-install::]\
-	-$(INSTALL) -m $(INSTALL_LIB) name $(ROBJPATH)]\
-	@-$(RM) name]
+InstallTarget(name,$(INSTALL_LIB),$(ROBJPATH))\
+CleanFilesTarget(name objects)
+#endif	/* RelocatableTarget */
 
-#define FortranTarget(program,objects,libs)\
-]\
-program: objects]\
-	$(F77_LD) $(LD_FFLAGS) -o program objects libs]\
-]\
-install:: program]\
-	-$(INSTALL) -m $(INSTALL_BIN) program $(BINPATH)]\
-	@-$(RM) program]\
-]\
-clean::]\
-	@$(RM) program]
+/*
+ * Macro:	FortranProgram
+ *
+ * Description:	This rule is basically the same as FortranTarget but it
+ *		allows you to specify dependent libraries - so a make all
+ *		will rebuild if the library has been updated.
+ */
+#ifndef	FortranProgram
+#define FortranProgram(program,objects,deplibs)\
+_FortranLinkProgram(program,objects,deplibs)\
+InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
+#endif	/* FortranProgram */
 
-#define CTarget(program,objects,libs)\
+/*
+ * Macro:	FortranTarget
+ *
+ * Description:	This rule is build's and installs a Fortran program - if
+ *		possible the FortranProgram rule should be used instead so
+ *		the program will re-build if the libraries are rebuilt.
+ */
+#ifndef	FortranTarget
+#define FortranTarget(program,objects)\
+_FortranLinkProgram(program,objects,NullArgument)\
+InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
+#endif	/* FortranTarget */
+
+/*
+ * Macro:	_FortranLinkProgram
+ *
+ * Description:	This rule is used to link a fortran program - it may be
+ *		different for each archectecture so that shared-nonshared
+ *		libraries can be linked properly.
+ */
+#ifndef	_FortranLinkProgram
+#define	_FortranLinkProgram(program,objects,deplib)\
 ]\
-program: objects]\
-	$(CC_LD) $(LD_CFLAGS) -o program objects libs]\
+all:: program]\
 ]\
-install:: program]\
-	-$(INSTALL) -m $(INSTALL_BIN) program $(BINPATH)]\
-	@-$(RM) program]\
+program: objects deplib]\
+	$(F77_LD) $(FC_LDOPTIONS) -o program objects $(PROG_LIBS) $(LDLIBS) $(EXTRA_LDLIBS)]\
 ]\
-clean::]\
-	@-$(RM) program]
+CleanFilesTarget(program objects)
+#endif	/* _FortranLinkProgram */
 
 
+/*
+ * Macro:	FNotInstalledTarget
+ *
+ * Description:	This rule is used to build a fortran program that is used
+ *		in the distribution, but should not be installed.
+ */
+#ifndef	FNotInstalledTarget
+#define	FNotInstalledTarget(program,objects)\
+_FortranLinkProgram(program,objects,NullArgument)
+#endif	/* FNotInstalledTarget */
+
+
+/*
+ * Macro:	CProgram
+ *
+ * Description:	This rule is basically the same as CTarget but it
+ *		allows you to specify dependent libraries - so a make all
+ *		will rebuild if the library has been updated.
+ */
+#ifndef	CProgram
+#define	CProgram(program,objects,deplibs)\
+_CLinkProgram(program,objects,deplibs)\
+]\
+InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
+#endif	/* CProgram */
+
+/*
+ * Macro:	CTarget
+ *
+ * Description:	This rule is build's and installs a C program - if
+ *		possible the CProgram rule should be used instead so
+ *		the program will re-build if the libraries are rebuilt.
+ */
+#ifndef	CTarget
+#define CTarget(program,objects)\
+_CLinkProgram(program,objects,NullArgument)\
+InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
+#endif	/* CTarget */
+
+/*
+ * Macro:	_CLinkProgram
+ *
+ * Description:	This rule is used to link a C program - It may be different
+ *		for each architecture to resolve the differences in linking
+ *		some libraries statically and some dynamically on different
+ *		systems.
+ */
+#ifndef	_CLinkProgram
+#ifndef	AIX_RS6000Arch
+#define	_CLinkProgram(program,objects,deplib)\
+]\
+all:: program]\
+]\
+program: objects deplib]\
+	$(CC_LD) $(CC_LDOPTIONS) -o program objects $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)]\
+]\
+CleanFilesTarget(program objects)
+#else	/* AIX_RS6000Arch */
+#define	_CLinkProgram(program,objects,deplib)\
+]\
+all::	program]\
+]\
+program: program.nonshr.o]\
+	$(CC_LD) $(CC_LDOPTIONS) $(CDYNAMIC) -o program program.nonshr.o $(EXTRA_LDLIBS)]\
+]\
+program.nonshr.o: objects deplib]\
+	$(LD) -r $(CSTATIC) -bhalt\:4 -o program.nonshr.o objects $(PROG_LIBS) $(LDLIBS)]\
+]\
+CleanFilesTarget(program program.nonshr.o objects)
+#endif	/* AIX_RS6000Arch */
+#endif	/* _CLinkProgram */
+
+/*
+ * Macro:	CNotInstalledTarget
+ *
+ * Description:	This rule is used to build a C program that is used
+ *		in the distribution, but should not be installed.
+ */
+#ifndef	CNotInstalledTarget
+#define	CNotInstalledTarget(program,objects)\
+_CLinkProgram(program,objects,NullArgument)
+#endif	/* FNotInstalledTarget */
+
+/*
+ * Macro:	LibraryTarget
+ *
+ * Description:	This rule is build's and installs a library.
+ */
+#ifndef	LibraryTarget
 #define LibraryTarget(library,objects)\
 ]\
-all:: objects]\
-	@-$(RM) $(LIBPATH)/library]\
-	@$(AR_QUICK) $(LIBPATH)/library objects]\
-	$(RANLIB) $(LIBPATH)/library]\
+all:: library]\
 ]\
-install::]
+library:: objects]\
+	-$(RM) library]\
+	@$(AR_QUICK) library objects]\
+	$(RANLIB) library]\
+]\
+InstallLibTarget(library)]\
+CleanFilesTarget(library objects)
+#endif	/* LibraryTarget */
 
-#define PartialLibraryTarget(library,objects)\
+/*
+ * Macro:	SourceLibraryTarget
+ *
+ * Description:	This rule is build's and installs a source library.
+ */
+#ifndef	SourceLibraryTarget
+#ifdef  BuildNCARGSourceLibrary
+#define	SourceLibraryTarget(name,library,sources)\
+all:: library]\
 ]\
-all:: objects]\
-	@$(AR_QUICK) $(LIBPATH)/library objects]\
+library:: sources]\
+	@echo "sources" > name;\]\
+	$(RM) library;\]\
+	$(AR_QUICK) library name sources;\]\
+	$(RANLIB) library;\]\
+	$(RM) name]\
 ]\
-install:: objects]\
-	@$(AR_CHECK) $(LIBPATH)/library objects]\
-	$(RANLIB) $(LIBPATH)/library]
+InstallLibTarget(library)\
+CleanFilesTarget(library)
+#else	/* BuildNCARGSourceLibrary */
+#define SourceLibraryTarget(name,library,sources) /**/
+#endif	/* BuildNCARGSourceLibrary */
+#endif	/* SourceLibraryTarget */
 
-#define CleanTarget\
+/*
+ * Macro:	PartialSourceLibraryRoot
+ *
+ * Description:	PartialSourceLibraryRoot is used to manage the source library
+ *		created in this directory by all the subdirs.  Each of the
+ *		sub-dirs should be using the PartialSourceLibraryTarget rule.
+ */
+#ifndef	PartialSourceLibraryRoot
+#ifdef	BuildNCARGSourceLibrary
+#define PartialSourceLibraryRoot(library,dirs)\
+PartialLibraryRoot(library,dirs)
+#else	/* BuildNCARGSourceLibrary */
+#define PartialSourceLibraryRoot(library,dirs)	/**/
+#endif	/* BuildNCARGSourceLibrary */
+#endif	/* PartialSourceLibraryRoot */
+
+/*
+ * Macro:	PartialSourceLibraryTarget
+ *
+ * Description:	This rule is build's a source library in the directory
+ *		directly above it.  The directory above should be using
+ *		the PartialSourceLibraryRoot rule.
+ */
+#ifndef	PartialSourceLibraryTarget
+#ifdef  BuildNCARGSourceLibrary
+#define PartialSourceLibraryTarget(name,library,sources)\
+all:: ../library]\
+]\
+../library: sources]\
+	@echo "sources" > name]\
+	$(AR) ../library name sources]\
+	$(RM) name]\
+#else	/* !BuildNCARGSourceLibrary */
+#define PartialSourceLibraryTarget(name,library,sources) /**/
+#endif	/* BuildNCARGSourceLibrary */
+#endif	/* PartialSourceLibraryTarget */
+
+/*
+ * Macro:	CleanFilesTarget
+ *
+ * Description:	Removes the given files.
+ */
+#ifndef	CleanFilesTarget
+#define CleanFilesTarget(files)\
 ]\
 clean::]\
-	@-$(RM) *.o core]
+	-@$(RM) files]
+#endif	/* CleanFilesTarget */
 
-#define FortranProgramLeaf(program,objects,libs)\
-FortranTarget(program,objects,libs)		\
-MakefileTarget					\
-CleanTarget
-
-
-/* Manage a directory that contributes part of a library */
-
-#define PartialLibrary(library,objects)		\
-PartialLibraryTarget(library,objects)		\
-MakefileTarget					\
-CleanTarget					\
-UpdateTarget
-
-/* Manage a directory that builds a library */
-
-#define Library(library,objects)		\
-LibraryTarget(library,objects)			\
-MakefileTarget					\
-CleanTarget
-
-/* Root directory above 2 or more partial library directories */
-
-#define PartialLibraryRoot(library,dirs)	\
-LibraryMakeSubdirs(library,dirs)		\
-MakefilesSubdirs(dirs)				\
-CleanSubdirs(dirs)				\
+/*
+ * Macro:	PartialLibraryTarget
+ *
+ * Description:	This rule builds a library in the directory directly above
+ *		it with the same name as the current directory. The directory
+ *		above should be using the PartialLibraryRoot rule.
+ */
+#ifndef	PartialLibraryTarget
+#define PartialLibraryTarget(library,objects)\
 ]\
-install::]
+all::../library]\
+]\
+../library:: objects]\
+	$(AR) ../library objects]\
+]\
+CleanFilesTarget(objects)
+#endif	/* PartialLibraryTarget */
 
+/*
+ * Macro:	PartialLibraryRoot
+ *
+ * Description:	PartialLibraryRoot is used to manage the library created
+ *		in this directory by all the subdirs.  Each of the sub-dirs
+ *		should be using the PartialLibraryTarget rule.
+ */
+#ifndef	PartialLibraryRoot
+#define PartialLibraryRoot(library,dirs)\
+]\
+all:: library]\
+]\
+library::]\
+	@echo "Making in dirs First..."]\
+]\
+library:: makesubdirs]\
+	@echo "Continuing in $(CURRENT_DIR)"]\
+]\
+library::]\
+	$(RANLIB) library]\
+]\
+InstallLibTarget(library)\
+CleanFilesTarget(library)
+#endif	/* PartialLibraryRoot */
 
-/* A directory that contains a bunch of object files that need
-   to be combined for ld inclusion before a library with
-   duplicate names. (sigh). */
+/*
+ * Macro:	HLUExampleTarget
+ *
+ * Description:	Sources for HLUExampleTarget are any file that needs to be
+ *		copied to the HLUEXPATH - currently only $name.h $name.data
+ *		Makefile.$name and $name.resfile are supported by the nhlex
+ *		script.
+ */
+#ifndef	HLUExampleTarget
+#define HLUExampleTarget(program,objects,sources)\
+CNotInstalledTarget(program,objects)\
+InstallTarget(program, $(INSTALL_BIN), $(HLUEXPATH))\
+InstallTarget(sources, $(INSTALL_INC), $(HLUEXPATH))
+#endif	/* HLUExampleTarget */
 
-#define RelocatableObject(name,objects)		\
-RelocatableTarget(name,objects)			\
-MakefileTarget					\
-CleanTarget					\
-UpdateTarget
+/*
+ * Macro:	DependTarget
+ *
+ * Description:	This rule is used to add dependencies to the Makefile.
+ */
+#ifndef	DependTarget
+#define	DependTarget(srcs)\
+depend:: srcs]\
+	$(DEPEND) -s "# DO NOT DELETE" -- $(ALLDEFINES) -- srcs
+#endif /* DependTarget */
 
-#define RelocatableObjectRoot(dirs)		\
-MakeSubdirs(dirs)				\
-MakefilesSubdirs(dirs)				\
-InstallSubdirs(dirs)				\
-CleanSubdirs(dirs)
+/*
+ * Macro:	InternalDependSubdirs
+ *
+ * Description:	Used internally in ymake - It should not be used in a yMakefile.
+ */
+#ifndef	InternalDependSubdirs
+#define InternalDependSubdirs(dirs)\
+]\
+depend::]\
+	@for dir in dirs ; do\]\
+	(cd $$dir; echo "Depending $(CURRENT_DIR)/$$dir";\]\
+	$(MAKE) $(MFLAGS) depend);\]\
+	done]
+#endif	/* InternalDependSubdirs */
+
+/*
+ * Macro:	MakeDir
+ *
+ * Description:	This rule creates a directory - if a parent dir doesn't exist
+ *		it attempts to create it.
+ */
+#ifndef	MakeDir
+#define	MakeDir(dir)	@if (test ! -d dir); then ($(MKDIRHIER) dir); fi
+#endif
+
+/*
+ * Macro:	BuildIncludes
+ *
+ * Description:	This rule creates a symbolic include tree that point to
+ *		the current directory.  It allows the dependancies to work
+ *		by only re-compiling if the header file in the current
+ *		directory has changed.
+ */
+#ifndef	BuildIncludes
+#define	BuildIncludes(srclist,dstsubdir,dstupdir)\
+]\
+includes::]\
+	MakeDir($(BUILDINCDIR)/dstsubdir)]\
+	@cd $(BUILDINCDIR)/dstsubdir;\]\
+	$(RM) srclist; \]\
+	for i in srclist; do \]\
+	(echo "$(LN) dstupdir/$(BUILDINCTOP)/$(CURRENT_DIR)/$$i .";\]\
+	$(LN) dstupdir/$(BUILDINCTOP)/$(CURRENT_DIR)/$$i .;)\]\
+	done]
+#endif	/* BuildIncludes */
+
+/*
+ * Macro:	InternalIncludesSubdirs
+ *
+ * Description:	Used internally in ymake - It should not be used in a yMakefile.
+ */
+#ifndef	InternalIncludesSubdirs
+#define	InternalIncludesSubdirs(dirs)\
+]\
+includes::]\
+	@for dir in dirs ; do\]\
+	(cd $$dir; echo "including in $(CURRENT_DIR)/$$dir";\]\
+	$(MAKE) $(MFLAGS) includes);\]\
+	done]
+#endif	/* InternalIncludesSubdirs */
+
+/*
+ * Macro:	InstallManPages
+ *
+ * Description:	This rule is used to install a manpage
+ */
+#ifndef InstallManPages
+#define InstallManPages(files,suffix,destdir,section)\
+]\
+all::]\
+]\
+install::]\
+	MakeDir(destdir)]\
+	@for file in files; do \]\
+	$(INSTALL) -m $(INSTALL_MAN) $${file}suffix destdir/$${file}.section;\]\
+	done
+#endif	/* InstallManPages */
+
+/*
+ * Macro:	InstallManPageAliases
+ *
+ * Description:	* This rule is used to install man page aliases
+ */
+#ifndef InstallManPageAliases
+#define InstallManPageAliases(file,destdir,section,aliases)\
+]\
+all::]\
+]\
+install::]\
+	@if (test ! -f destdir/file.section) then \]\
+	echo "destdir/file.section must exist to create ManAliases to it";\]\
+	exit 1; fi]\
+	@(cd destdir;\]\
+	for alias in aliases ; do \]\
+	$(RM) $$alias.section;\]\
+	$(LN) file.section $$alias.section;\]\
+	done)]
+#endif	/* InstallManPageAliases */
+
+/*
+ * Macro:	FormatManPages
+ *
+ * Description:	This rule is used to create preformatted man pages
+ */
+#ifndef	FormatManPages
+#define	FormatManPages(manpages,mansuffix,catsuffix)\
+]\
+preformatted::]\
+	@for name in manpages; do \]\
+	echo "Formatting $${name}mansuffix";\]\
+	$(TBL) $${name}mansuffix | $(NROFF) | $(COL) > $${name}catsuffix;\]\
+	done]
+#endif	/* FormatManPages */
+
+/*
+ * Macro:	InstallXappFiles
+ *
+ * Description:	This rule is used to install X app defaults files - It gives
+ *		a warning if it is overriding an existing file and moves
+ *		that file to "file".bak in case there are local mods to
+ *		the file.
+ */
+#ifndef	InstallXappFiles
+#define	InstallXappFiles(appfiles)\
+]\
+all::]\
+]\
+install::]\
+	MakeDir($(XAPPPATH))]\
+	@for name in appfiles; do \]\
+	if (test -f $(XAPPPATH)/$$name) then \]\
+		echo "Warning - replacing $(XAPPPATH)/$$name"; \]\
+		$(MV) $(XAPPPATH)/$$name $(XAPPPATH)/$$name.bak ; fi; \]\
+	($(INSTALL) -m $(INSTALL_APP) $$name.ad $(XAPPPATH)/$$name); \]\
+	done]
+#endif	/* InstallXappFiles */

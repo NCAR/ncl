@@ -1,0 +1,227 @@
+/*
+ *      $Id: Project,v 1.1 1993-10-19 17:13:29 boote Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1993			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		Project
+ *
+ *	Author:		Jeff W. Boote
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Fri Apr 30 15:39:20 MDT 1993
+ *
+ *	Description:	This file sets up defaults for all variables specific
+ *			to the ncarg project.  System defaults - ie compilers
+ *			etc are in the Template file.
+ */
+
+/*
+ * This varible (?should?) be edited by Configure.
+ */
+#define NcargVersion 3.2.1
+
+#ifndef	BuildRasterHDF
+#define	BuildRasterHDF
+#else
+#if	!BuildRasterHDF
+#undef	BuildRasterHDF
+#endif
+#endif	/* BuildRasterHDF */
+
+#ifndef	BuildRasterHPPCL
+#define	BuildRasterHPPCL
+#else
+#if	!BuildRasterHPPCL
+#undef	BuildRasterHPPCL
+#endif
+#endif	/* BuildRasterHPPCL */
+
+#ifndef	BuildRasterNrif
+#define	BuildRasterNrif
+#else
+#if	!BuildRasterNrif
+#undef	BuildRasterNrif
+#endif
+#endif	/* BuildRasterNrif */
+
+#ifndef	BuildRasterSun
+#define	BuildRasterSun
+#else
+#if	!BuildRasterSun
+#undef	BuildRasterSun
+#endif
+#endif	/* BuildRasterSun */
+
+#ifndef	BuildRasterAVS
+#define	BuildRasterAVS
+#else
+#if	!BuildRasterAVS
+#undef	BuildRasterAVS
+#endif
+#endif	/* BuildRasterAVS */
+
+#ifndef	BuildRasterSGI
+#define	BuildRasterSGI
+#else
+#if	!BuildRasterSGI
+#undef	BuildRasterSGI
+#endif
+#endif	/* BuildRasterSGI */
+
+#ifndef	BuildRasterAbekas
+#define	BuildRasterAbekas
+#else
+#if	!BuildRasterAbekas
+#undef	BuildRasterAbekas
+#endif
+#endif	/* BuildRasterAbekas */
+
+#ifndef	BuildRasterBinary
+#define	BuildRasterBinary
+#else
+#if	!BuildRasterBinary
+#undef	BuildRasterBinary
+#endif
+#endif	/* BuildRasterBinary */
+
+#ifndef BuildXlibDependentCode
+#define BuildXlibDependentCode
+#else
+#if	!BuildXlibDependentCode
+#undef	BuildXlibDependentCode
+#endif
+#endif	/* BuildXlibDependentCode */
+
+#ifdef	BuildSunViewctrans
+#if	!(BuildSunViewctrans)
+#undef	BuildSunViewctrans
+#endif
+#endif	/* BuildSunViewctrans */
+
+#ifdef	BuildRasterHDF
+#ifndef	HDFlib
+#define	HDFlib	-ldf
+#endif	/* HDFlib */
+#else	/* !BuildRasterHDF */
+#ifdef	HDFlib
+#undef	HDFlib
+#endif	/* HDFlib */
+#endif	/* BuildRasterHDF */
+
+#ifndef	NetCDFlib
+#define	NetCDFlib	-lnetcdf
+#endif	/* NetCDFlib */
+
+#ifndef	XdrLibrary
+#define	XdrLibrary	/**/
+#endif	/* XdrLibrary */
+
+#ifndef	ProjectDefines
+#define	ProjectDefines	-DNeedFuncProto
+#endif
+
+#ifndef	GksBufferSize
+#define GksBufferSize 0
+#endif	/* GksBufferSize */
+
+VERSION		= NcargVersion
+
+#ifdef	UseInstalled
+#define _UseLib(a,b) b
+#define	_DepLib(a,b,c) b/c
+#define	_UseProg(a,b) b
+#else
+#define _UseLib(a,b) a b
+#define	_DepLib(a,b,c) a/c
+#define	_UseProg(a,b) a/b
+#endif
+
+COMMONSRC	= $(TOP)/common/src
+NCARG2DSRC	= $(TOP)/ncarg2d/src
+NVIEWSRC	= $(TOP)/ncarview/src
+NVIEWBINSRC	= $(NVIEWSRC)/bin
+NVIEWLIBSRC	= $(NVIEWSRC)/lib
+NISRC		= $(TOP)/ni/src
+NIBINSRC	= $(NISRC)/bin
+NILIBSRC	= $(NISRC)/lib
+
+NCARGLOCLIBSRC	= $(COMMONSRC)/libncarg_loc
+NCARGCLIBSRC	= $(COMMONSRC)/libncarg_c
+NCARGLIBSRC	= $(NCARG2DSRC)/libncarg
+CNCARGLIBSRC	= $(NCARG2DSRC)/libncargC
+NCARGGKSLIBSRC	= $(NCARG2DSRC)/libncarg_gks
+CNCARGGKSLIBSRC	= $(NCARG2DSRC)/libncarg_gksC
+NCARGOPTLIBSRC	= $(NCARG2DSRC)/liboptional
+CGMLIBSRC	= $(NVIEWLIBSRC)/libcgm
+CTRANSLIBSRC	= $(NVIEWLIBSRC)/libctrans
+ICTRANSLIBSRC	= $(NVIEWLIBSRC)/libictrans
+NCARGRASLIBSRC	= $(NVIEWLIBSRC)/libncarg_ras
+HLULIBSRC	= $(NILIBSRC)/hlu
+HLUUTILLIBSRC	= $(NILIBSRC)/hlu_util
+
+NCARGLOCLIB	= _UseLib(-L$(NCARGLOCLIBSRC),-lncarg_loc)
+NCARGCLIB	= _UseLib(-L$(NCARGCLIBSRC),-lncarg_c)
+NCARGLIB	= _UseLib(-L$(NCARGLIBSRC),-lncarg)
+CNCARGLIB	= _UseLib(-L$(CNCARGLIBSRC),-lncargC)
+NCARGGKSLIB	= _UseLib(-L$(NCARGGKSLIBSRC),-lncarg_gks)
+CNCARGGKSLIB	= _UseLib(-L$(CNCARGGKSLIBSRC),-lncarg_gksC)
+CGMLIB		= _UseLib(-L$(CGMLIBSRC),-lcgm)
+NCARGRASLIB	= _UseLib(-L$(NCARGRASLIBSRC),-lncarg_ras)
+HLULIB		= _UseLib(-L$(HLULIBSRC),-lhlu)
+HLUUTILLIB	= _UseLib(-L$(HLUUTILLIBSRC),-lhlu_util)
+
+CTRANSLIB	= _DepLib($(CTRANSLIBSRC),$(ROBJPATH),libctrans.o)
+ICTRANSLIB	= _DepLib($(ICTRANSLIBSRC),$(ROBJPATH),libictrans.o)
+ICTRANS_LIB	= _DepLib($(ICTRANSLIBSRC),$(ROBJPATH),libictrans_.o)
+
+DEPNCARGLOCLIB	= _DepLib($(NCARGLOCLIBSRC),$(LIBPATH),libncarg_loc.a)
+DEPNCARGCLIB	= _DepLib($(NCARGCLIBSRC),$(LIBPATH),libncarg_c.a)
+DEPNCARGLIB	= _DepLib($(NCARGLIBSRC),$(LIBPATH),libncarg.a)
+DEPCNCARGLIB	= _DepLib($(CNCARGLIBSRC),$(LIBPATH),libncargC.a)
+DEPNCARGGKSLIB	= _DepLib($(NCARGGKSLIBSRC),$(LIBPATH),libncarg_gks.a)
+DEPCNCARGGKSLIB	= _DepLib($(CNCARGGKSLIBSRC),$(LIBPATH),libncarg_gksC.a)
+DEPCGMLIB	= _DepLib($(CGMLIBSRC),$(LIBPATH),libcgm.a)
+DEPNCARGRASLIB	= _DepLib($(NCARGRASLIBSRC),$(LIBPATH),libncarg_ras.a)
+DEPHLULIB	= _DepLib($(HLULIBSRC),$(LIBPATH),libhlu.a)
+DEPHLUUTILLIB	= _DepLib($(HLUUTILLIBSRC),$(LIBPATH),libhlu_util.a)
+
+DEPCTRANSLIB	= $(CTRANSLIB)
+DEPICTRANSLIB	= $(ICTRANSLIB)
+DEPICTRANS_LIB	= $(ICTRANS_LIB)
+
+NCARGLIBS	= $(NCARGLIB) $(NCARGGKSLIB) $(NCARGLOCLIB) $(NCARGCLIB)
+CNCARGLIBS	= $(CNCARGLIB) $(CNCARGGKSLIB)
+HLULIBS		= $(HLULIB) $(HLUUTILLIB)
+
+DEPNCARGLIBS	= $(DEPNCARGLIB) $(DEPNCARGGKSLIB) $(DEPNCARGLOCLIB) $(DEPNCARGCLIB)
+DEPCNCARGLIBS	= $(DEPCNCARGLIB) $(DEPCNCARGGKSLIB)
+DEPHLULIBS	= $(DEPHLULIB) $(DEPHLUUTILLIB)
+
+COMMONBIN	= $(COMMONSRC)/bin
+GRAPHCSRC	= $(COMMONBIN)/graphc
+FONTCSRC	= $(COMMONBIN)/fontc
+
+GRAPHC		= _UseProg($(GRAPHCSRC),graphc)
+FONTC		= _UseProg($(FONTCSRC),fontc)
+
+#ifdef	BuildRasterNetcdf
+NETCDFLIB	= $(NCDFLIBS) $(XDRLIB)
+#else
+NETCDFLIB	=
+#endif
+
+NCDFLIBS	= NetCDFlib
+HDFLIB		= HDFlib
+XDRLIB		= XdrLibrary
+HDFDEFINES	= HdfDefines
+GENERICPATH	= $(NCARG)/$(GENERICDIR)
+VDEFINE		= -DVERSION='"$(VERSION)"'
+PROJECTDEFINES	= ProjectDefines $(VDEFINE)
+GKS_BUFFER_SIZE	= GksBufferSize

@@ -1,33 +1,21 @@
 #
 #
-#	$Id: yMakefile,v 1.5 1993-03-26 23:20:44 haley Exp $
+#	$Id: yMakefile,v 1.6 1993-10-19 17:43:20 boote Exp $
 #
 #	Makefile for ncgmstat
 #
 #
 
-NCARG = ../../../..
-
 MYNAME	= ncgmstat
 
-LOCLIBS		= $(LIBPATH)/libcgm.a $(LIBPATH)/libncarg_c.a
-
-#if defined(Solaris) && defined(sun4)
-GENLIBS = /usr/ucblib/libucb.a
-#endif
-
-LIBS = $(LOCLIBS) $(GENLIBS)
-
-CDEFINES	=
+PROG_LIBS	=	$(CGMLIB) $(NCARGCLIB)
+DEP_LIBS	=	$(DEPCGMLIB) $(DEPNCARGCLIB)
 
 OBJS		= ncgmstat.o
 SRCS		= ncgmstat.c
 
-all::	$(MYNAME)
-
-CTarget($(MYNAME),$(OBJS),$(LIBS))
-MakefileTarget
-CleanTarget
+CProgram($(MYNAME),$(OBJS),$(DEP_LIBS))
+DependTarget($(SRCS))
 
 saber_src: $(SRCS)
 	#setopt load_flags $(CFLAGS) $(CINCS)
@@ -36,4 +24,3 @@ saber_src: $(SRCS)
 saber_obj: $(OBJS)
 	#setopt load_flags $(CFLAGS) $(CINCS)
 	#load $(OBJS) $(LIBS)
-

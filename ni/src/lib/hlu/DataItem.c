@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.c,v 1.1 1993-07-12 22:36:05 boote Exp $
+ *      $Id: DataItem.c,v 1.2 1993-10-19 17:50:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -35,15 +35,35 @@
 *									*
 ************************************************************************/
 
-static NhlErrorTypes DataItemClassInitialize(
+/*
+ * Resource list
+ */
+#define	Oset(field)	NhlOffset(DataItemLayerRec,dataitem.field)
+static NhlResource resources[] = {
+	{ NhlNnoManager, NhlCnoManager, NhlTBoolean, sizeof(NhlBoolean),
+			Oset(no_manager), NhlTImmediate,(NhlPointer)False}
+};
+#undef Oset
+
+static NhlErrorTypes DataItemClassPartInitialize(
 #if	NhlNeedProto
-	void
+	LayerClass	lc
 #endif
 );
 
 static NhlErrorTypes DataItemInitialize(
 #if	NhlNeedProto
 	LayerClass	lc,	/* class	*/
+	Layer		req,	/* requested	*/
+	Layer		new,	/* new		*/
+	_NhlArgList	args,	/* args		*/
+	int		nargs	/* nargs	*/
+#endif
+);
+
+static NhlErrorTypes DataItemSetValuesHook(
+#if	NhlNeedProto
+	Layer		old,	/* old		*/
 	Layer		req,	/* requested	*/
 	Layer		new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -60,31 +80,37 @@ static NhlErrorTypes DataItemDestroy(
 DataItemLayerClassRec dataItemLayerClassRec = {
 	/* BaseLayerClassPart */
 	{
-/* superclass			*/	(LayerClass)&baseLayerClassRec,
 /* class_name			*/	"DataItem",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(DataItemLayerRec),
-/* resources			*/	NULL,
-/* num_resources		*/	0,
-/* child_resources		*/	NULL,
-/* all_resources		*/	NULL,
-/* class_part_initialize	*/	NULL,
 /* class_inited			*/	False,
-/* class_initialize		*/	DataItemClassInitialize,
+/* superclass			*/	(LayerClass)&baseLayerClassRec,
+
+/* resources			*/	resources,
+/* num_resources		*/	NhlNumber(resources),
+/* all_resources		*/	NULL,
+
+/* class_part_initialize	*/	DataItemClassPartInitialize,
+/* class_initialize		*/	NULL,
 /* layer_initialize		*/	DataItemInitialize,
 /* layer_set_values		*/	NULL,
-/* layer_set_values_not		*/	NULL,
+/* layer_set_values_hook	*/	DataItemSetValuesHook,
 /* layer_get_values		*/	NULL,
-/* layer_pre_draw		*/	NULL,
+/* layer_reparent		*/	NULL,
+/* layer_destroy		*/	DataItemDestroy,
+
+/* child_resources		*/	NULL,
+
 /* layer_draw			*/	NULL,
+
+/* layer_pre_draw		*/	NULL,
 /* layer_draw_segonly		*/	NULL,
 /* layer_post_draw		*/	NULL,
-/* layer_clear			*/	NULL,
-/* layer_destroy		*/	DataItemDestroy
+/* layer_clear			*/	NULL
 	},
 	/* DataItemLayerClassPart */
 	{
-/* foo				*/	NULL
+/* foo				*/	0
 	}
 };
 	
@@ -105,12 +131,13 @@ LayerClass dataItemLayerClass = (LayerClass)&dataItemLayerClassRec;
 ************************************************************************/
 
 /*
- * Function:	DataItemClassInitialize
+ * Function:	DataItemClassPartInitialize
  *
- * Description:	This function is used to initialize the DataItem LayerClass
+ * Description:	This function is used to initialize the DataItemLayerClassPart
  *		record.
  *
- * In Args:	none
+ * In Args:	
+ *		LayerClass	lc
  *
  * Out Args:	none
  *
@@ -119,13 +146,14 @@ LayerClass dataItemLayerClass = (LayerClass)&dataItemLayerClassRec;
  * Side Effect:	
  */
 static NhlErrorTypes
-DataItemClassInitialize
+DataItemClassPartInitialize
 #if	__STDC__
 (
-	void
+	LayerClass	lc
 )
 #else
-()
+(lc)
+	LayerClass	lc;
 #endif
 {
 	/*
@@ -133,8 +161,7 @@ DataItemClassInitialize
 	 * setvalues - and this class should not intercept any of the
 	 * resources for the manager.
 	 */
-	return _NhlRegisterChildClass(dataItemLayerClass,dataMgrLayerClass,
-							True,False,NULL);
+	return _NhlRegisterChildClass(lc,dataMgrLayerClass,True,False,NULL);
 }
 
 /*
@@ -183,6 +210,15 @@ DataItemInitialize
 	int		tint;
 
 	/*
+	 * if this object is being created by a converter as an internal
+	 * data set, then a Manager should not be created.
+	 */
+	if(direq->dataitem.no_manager){
+		dinew->dataitem.manager = NULL;
+		return NOERROR;
+	}
+
+	/*
 	 * Create the Manager
 	 */
 	strcpy(tstring,direq->base.name);
@@ -193,11 +229,49 @@ DataItemInitialize
 	if(ret < WARNING)
 		return ret;
 
-	dinew->dataitem.manager = _NhlGetLayer(tint);
+	dinew->dataitem.manager = (DataMgrLayer)_NhlGetLayer(tint);
 	if(dinew->dataitem.manager == NULL)
 		return FATAL;
 
 	return ret;
+}
+
+/*
+ * Function:	DataItemSetValuesHook
+ *
+ * Description:
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	void
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+DataItemSetValuesHook
+#if	__STDC__
+(
+	Layer		old,	/* old		*/
+	Layer		req,	/* requested	*/
+	Layer		new,	/* new		*/
+	_NhlArgList	args,	/* args		*/
+	int		nargs	/* nargs	*/
+)
+#else
+(old,req,new,args,nargs)
+	Layer		old;	/* old		*/
+	Layer		req;	/* requested	*/
+	Layer		new;	/* new		*/
+	_NhlArgList	args;	/* args		*/
+	int		nargs;	/* nargs	*/
+#endif
+{
+	DataItemLayer	dil = (DataItemLayer)new;
+
+	return _NhlNotifyDataComm(dil->dataitem.manager);
 }
 
 /*
@@ -226,9 +300,11 @@ DataItemDestroy
 #endif
 {
 	DataItemLayer	dil = (DataItemLayer)l;
+	Layer		tmp = (Layer)dil->dataitem.manager;
 	NhlErrorTypes	ret = NOERROR;
 
-	ret = _NhlDestroyChild(dil->dataitem.manager->base.id,l);
+	if(tmp != NULL)
+		ret = _NhlDestroyChild(tmp->base.id,l);
 
 	return ret;
 }
@@ -259,22 +335,26 @@ void
 _NhlDataChanged
 #if	__STDC__
 (
-	Layer	l	/* data item layer	*/
+	DataItemLayer	l	/* data item layer	*/
 )
 #else
 (l)
-	Layer	l;	/* data item layer	*/
+	DataItemLayer	l;	/* data item layer	*/
 #endif
 {
-	DataItemLayer	dl = (DataItemLayer)l;
-
 	if(!_NhlIsDataItem(l)){
 		NhlPError(FATAL,E_UNKNOWN,
 		"_NhlDataChanged:Can only be called with a DataItem sub-class");
 		return;
 	}
 
-	_NhlDataItemModified((DataMgrLayer)dl->dataitem.manager);
+	if(l->dataitem.manager != NULL){
+		_NhlDataItemModified((DataMgrLayer)l->dataitem.manager);
+		return;
+	}
+
+	NhlPError(FATAL,E_UNKNOWN,
+"_NhlDataChanged:Should only be called by DataItem sub-classes with Managers");
 
 	return;
 }

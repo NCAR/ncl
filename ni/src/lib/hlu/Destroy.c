@@ -1,5 +1,5 @@
 /*
- *      $Id: Destroy.c,v 1.1 1993-04-30 17:21:43 boote Exp $
+ *      $Id: Destroy.c,v 1.2 1993-10-19 17:50:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -112,15 +112,6 @@ NhlDestroy
 	ret = CallDestroy(l,l->base.layer_class);
 
 	/*
-	 * Call delete on any children this object may have left.
-	 */
-	while(l->base.all_children != NULL){
-		lret = NhlDestroy(l->base.all_children->pid);
-
-		ret = MIN(ret,lret);
-	}
-
-	/*
 	 * remove this object from it's parents all_children list
 	 */
 	if(l->base.parent != NULL){
@@ -188,6 +179,15 @@ _NhlDestroyChild
 	_NhlChildList	*tchldnodeptr=NULL;
 	_NhlChildList	tchldnode=NULL;
 	NhlBoolean	found=False;
+
+	/*
+	 * Not a valid function to call if parent is an ObjLayer
+	 */
+	if(_NhlIsObj(parent)){
+		NhlPError(FATAL,E_UNKNOWN,
+				"_NhlDestroyChild:parent has no children");
+		return FATAL;
+	}
 
 	ret = NhlDestroy(pid);
 

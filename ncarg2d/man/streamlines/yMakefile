@@ -1,45 +1,16 @@
 #
-#	$Id: yMakefile,v 1.6 1993-05-03 17:40:36 haley Exp $
+#	$Id: yMakefile,v 1.7 1993-10-19 17:18:39 boote Exp $
 #
-NCARG	= ../../..
 
-MAN3 = ezstrm stgeti stgetr stinit stream streamlines streamlines_params \
+MAN =	ezstrm stgeti stgetr stinit stream streamlines streamlines_params \
 	strmln strset stseti stsetr stuixy stumsl stumta stumxy
 
-MAN = $(MAN3)
-
-all:
-
-preformatted:
-	@for name in $(MAN3); do \
-	echo "Formatting $$name.m"; \
-	nroff -man $$name.m >$$name.p; \
-	done
-
-#if defined(CRAY) || defined(sgi) || defined(ardent)
 # Install preformatted troff documents on systems without troff
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m
 #endif
 
-#ifdef	InstallManToLocal
-
-install::
-	@for name in $(MAN); do\
-	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MANLPATH)/$$name.$(MANL_SECTION) );\
-	done
-
-#else	/* ! InstallManToLocal	*/
-
-install::
-	@for name in $(MAN3); do\
-	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MAN3PATH)/$$name.$(MAN3_SECTION) );\
-	done
-
-#endif	/* InstallManToLocal	*/
-
-MakefileTarget
-CleanTarget
+InstallManPages($(MAN),$(FORMAT_EXT),$(MAN3PATH),$(MAN3_SECTION))
+FormatManPages($(MAN),.m,.p)

@@ -1,6 +1,5 @@
-
 /*
- *      $Id: TransformP.h,v 1.1 1993-04-30 17:25:32 boote Exp $
+ *      $Id: TransformP.h,v 1.2 1993-10-19 17:53:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +26,6 @@
 #ifndef _NTransformP_h
 #define _NTransformP_h
 
-#include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/ViewP.h>
 #include <ncarg/hlu/Transform.h>
 
@@ -55,9 +53,5 @@ typedef struct _TransformLayerClassRec{
 } TransformLayerClassRec;
 
 extern TransformLayerClassRec transformLayerClassRec;
-
-
-
-
 
 #endif  /* _NTransformP_h */

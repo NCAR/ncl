@@ -1,37 +1,21 @@
 #
-#	$Id: yMakefile,v 1.8 1993-03-26 23:20:39 haley Exp $
+#	$Id: yMakefile,v 1.9 1993-10-19 17:43:11 boote Exp $
 #
 
-NCARG	= ../../../..
 MYNAME	= med
 
-EQUALHACK	= =
+PROG_LIBS	=	$(CGMLIB) $(NCARGCLIB)
+DEP_LIBS	=	$(DEPCGMLIB) $(DEPNCARGCLIB)
 
-LOCLIB	= $(LIBPATH)/libcgm.a $(LIBPATH)/libncarg_c.a 
-
-SRCS	= \
-	cmd_tab.c commands.c error.c med.c 
-
-OBJS	= \
-	cmd_tab.o commands.o error.o med.o
+SRCS	= cmd_tab.c commands.c error.c med.c 
+OBJS	= cmd_tab.o commands.o error.o med.o
 
 #if defined(CRAY)
-GENLIBS = -lbsd
-#else
-#if defined(Solaris) && defined(sun4)
-GENLIBS = /usr/ucblib/libucb.a
-#endif
+SYS_LIBS	=	-lbsd
 #endif
 
-LIBS	= $(LOCLIB) $(GENLIBS)
-
-CDEFINES	= 
-
-all::	$(MYNAME)
-
-CTarget($(MYNAME),$(OBJS),$(LIBS))
-MakefileTarget
-CleanTarget
+CProgram($(MYNAME),$(OBJS),$(DEP_LIBS))
+DependTarget($(SRCS))
 
 lint: $(HDR) $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1

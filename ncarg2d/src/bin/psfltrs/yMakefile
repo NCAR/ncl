@@ -1,26 +1,14 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-29 15:43:02 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1993-10-19 17:20:40 boote Exp $
 #
-NCARG	= ../../../..
-
-FSPLIT  = ncarguncat
 
 MYNAME  = psfltrs
 
 GENERIC_SRCS = ps.bkg_black.f ps.bkg_white.f
-
 GENERIC_OBJS = ps.bkg_black.o ps.bkg_white.o
 
-LIBS = $(LIBPATH)/libncarg_loc.a
+PROG_LIBS = $(NCARGLOCLIB)
+DEP_LIBS = $(DEPNCARGLOCLIB)
 
-all:
-
-FortranTarget(psblack,ps.bkg_black.o,$(LIBS))
-
-FortranTarget(pswhite,ps.bkg_white.o,$(LIBS))
-
-MakefileTarget
-
-CleanTarget
-
-UpdateTarget
+FortranProgram(psblack,ps.bkg_black.o,$(DEP_LIBS))
+FortranProgram(pswhite,ps.bkg_white.o,$(DEP_LIBS))

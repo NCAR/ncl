@@ -1,22 +1,13 @@
 #
-#	$Id: yMakefile,v 1.4 1993-01-10 00:35:25 clyne Exp $
+#	$Id: yMakefile,v 1.5 1993-10-19 17:36:45 boote Exp $
 #
 #
 #	Makefile for the NCAR GKS library
 #
 
-NCARG	= ../../..
+#define	IHaveSubdirs
 
 SUBDIRS = awi bwi wiss X11
 
-#ifdef  BuildNCARGSourceLibrary
-all::
-	@-$(RM) $(LIBPATH)/srcncarg_gks.a
-#endif
-
 PartialLibraryRoot(libncarg_gks.a,$(SUBDIRS))
-
-#ifdef  BuildNCARGSourceLibrary
-all::
-	$(RANLIB) $(LIBPATH)/srcncarg_gks.a
-#endif
+PartialSourceLibraryRoot(srcncarg_gks.a,$(SUBDIRS))

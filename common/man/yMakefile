@@ -1,7 +1,6 @@
 #
-#	$Id: yMakefile,v 1.7 1993-04-21 20:00:50 haley Exp $
+#	$Id: yMakefile,v 1.8 1993-10-19 17:11:33 boote Exp $
 #
-NCARG	= ../..
 
 MAN1	= fontc graphc
 MAN3	= 
@@ -11,53 +10,19 @@ MAN8	= ncargmv ncargtar
 
 MAN	= $(MAN1) $(MAN3) $(MAN5) $(MAN6) $(MAN8)
 
-#
-#	we always format
-#
-FORMAT	= $(MAN)
-
-all:
-
-preformatted:
-	@for name in $(FORMAT); do \
-	echo "Formatting $$name.m"; \
-	nroff -man $$name.m >$$name.p; \
-	done
-
-#if defined(CRAY) || defined(sgi) || defined(ardent)
 # Install preformatted troff documents on systems without troff
+#if	UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m
 #endif
 
 #ifdef	InstallManToLocal
-
-install::
-	@for name in $(MAN); do\
-	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MANLPATH)/$$name.$(MANL_SECTION) );\
-	done
-
+InstallManPages($(MAN),$(FORMAT_EXT),$(MANLPATH),$(MANL_SECTION))
 #else	/* ! InstallManToLocal	*/
-
-install::
-	@for name in $(MAN1); do\
-	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MAN1PATH)/$$name.$(MAN1_SECTION) );\
-	done
-
-	@for name in $(MAN5); do\
-	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MAN5PATH)/$$name.$(MAN5_SECTION) );\
-	done
-
-	@for name in $(MAN8); do\
-	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MAN8PATH)/$$name.$(MAN8_SECTION) );\
-	done
-
+InstallManPages($(MAN1),$(FORMAT_EXT),$(MAN1PATH),$(MAN1_SECTION))
+InstallManPages($(MAN5),$(FORMAT_EXT),$(MAN5PATH),$(MAN5_SECTION))
+InstallManPages($(MAN8),$(FORMAT_EXT),$(MAN8PATH),$(MAN8_SECTION))
 #endif	/* InstallManToLocal	*/
 
-MakefileTarget
-CleanTarget
+FormatManPages($(MAN),.m,.p)

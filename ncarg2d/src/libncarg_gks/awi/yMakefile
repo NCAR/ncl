@@ -1,16 +1,18 @@
 #
-#	$Id: yMakefile,v 1.6 1993-01-28 22:02:59 haley Exp $
+#	$Id: yMakefile,v 1.7 1993-10-19 17:37:22 boote Exp $
 #
-NCARG	= ../../../..
 
 MYNAME	= awi
 
+/*
+ * The Sun f77 optimizer appears to have troubles with the GKS system.
+ */
 #if defined(sun) || (defined(u370) && (unix))
-# The Sun f77 optimizer appears to have troubles with the GKS system.
-
-FOPT =
-
-#endif
+#ifdef	FOptimizeFlag
+#undef	FOptimizeFlag
+#endif	/* FOptimizeFlag */
+#define	FOptimizeFlag	/**/
+#endif	/* sun	*/
 
 GENERIC_SRCS = \
 gactm.f   gacwk.f   gaspar.f  gatelm.f  gca.f     gcelcd.f  gceldc.f  gceldr.f \
@@ -61,50 +63,19 @@ gzfmwk.o  gzines.o  gzinsl.o  gziqwk.o  gzn2wx.o  gzn2wy.o  gzputr.o  gzputs.o \
 gzroi.o   gzsrat.o  gztowk.o  gzw2gk.o  gzw2nx.o  gzw2ny.o  gzxid.o 
 
 SOURCES = $(GENERIC_SRCS)
-
 OBJECTS = $(GENERIC_OBJS)
 
 ROBJ_SRC = ggkwdr_stub.c
 ROBJ_OBJ = ggkwdr_stub.o
-ROBJ     = $(ROBJPATH)/$(ROBJ_OBJ)
 
 FCPP_OBJS	= gopwk.f
 
-all::  $(ROBJ)
+PartialLibraryTarget(libncarg_gks.a,$(OBJECTS))
+PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
+InstallTarget(ggkwdr_stub.o,$(INSTALL_LIB),$(ROBJPATH))
+CleanFilesTarget($(FCPP_OBJS) $(ROBJ_SRC) $(ROBJ_OBJ))
 
-$(ROBJ): $(ROBJ_OBJ)
-	$(LD_REL) -r -o $(ROBJ) $(ROBJ_OBJ)
-
-PartialLibrary(libncarg_gks.a,$(OBJECTS))
-
-clean::
-	@-$(RM) gopwk.f
-
-#ifdef  BuildNCARGSourceLibrary
-all:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_QUICK) $(LIBPATH)/srcncarg_gks.a $(MYNAME) $(SOURCES)
-	@-$(RM) $(MYNAME)
-
-install:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBPATH)/srcncarg_gks.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBPATH)/srcncarg_gks.a
-	@-$(RM) $(MYNAME)
-
-FRule
-#endif
-
-#if defined(sgi) || defined(ardent) || (defined(u370) && defined(unix)) \
-	|| defined(RS6000) || defined(hpux) || defined(cray) || defined(CRAY2)
-
-.SUFFIXES: .F
-
-.F.o:
-	@$(FCPP) $< $*.f
-	$(F77) $(FFLAGS) -c $*.f
-	@$(RM) $*.f
-#endif
+all::	ggkwdr_stub.o
 
 #if defined(cray)
 gztowk.o: gztowk.f
@@ -116,340 +87,106 @@ gztowk.o: gztowk.f
 ggkwdr_stub.c: ggkwdr_stub.c.sed Makefile
 	@$(CALLCONV) $(SYSTEM_INCLUDE) ggkwdr_stub.c ggkwdr
 
-clean::
-	@-$(RM) $(FCPP_OBJS) $(ROBJ_SRC)
-
-gactm.o : gactm.f 
- 
-gacwk.o : gacwk.f \
-   gkscom.h 
- 
-gaspar.o : gaspar.f \
-   trstat.h \
-   trpars.h \
-   trinst.h 
- 
-gatelm.o : gatelm.f \
-   trinst.h \
-   trcode.h 
- 
-gca.o : gca.f \
-   gkscom.h 
- 
-gcelcd.o : gcelcd.f \
-   trinst.h \
-   trpars.h \
-   trstat.h \
-   trcode.h 
- 
-gceldc.o : gceldc.f \
-   trinst.h 
- 
-gceldr.o : gceldr.f \
-   trpars.h \
-   gkscom.h \
-   ../bwi/g01io.h 
- 
-gclks.o : gclks.f \
-   gkscom.h 
- 
-gclrwk.o : gclrwk.f \
-   gkscom.h 
- 
-gclsg.o : gclsg.f \
-   gkscom.h 
- 
-gclwk.o : gclwk.f \
-   gkscom.h 
- 
-gcrsg.o : gcrsg.f \
-   gkscom.h 
- 
-gcsgwk.o : gcsgwk.f \
-   gkscom.h 
- 
-gdawk.o : gdawk.f \
-   gkscom.h 
- 
-gdsg.o : gdsg.f \
-   gkscom.h 
- 
-geclks.o : geclks.f \
-   gkscom.h 
- 
-gelms.o : gelms.f \
-   trinst.h \
-   trcode.h 
- 
-genneg.o : genneg.f 
- 
-gerhnd.o : gerhnd.f \
-   gkscom.h 
- 
-gerlog.o : gerlog.f \
-   gkscom.h 
- 
-gesc.o : gesc.f \
-   gkscom.h 
- 
-gescfn.o : gescfn.f \
-   trinst.h \
-   trpars.h 
- 
+gacwk.o : gkscom.h 
+gaspar.o : trstat.h trpars.h trinst.h 
+gatelm.o : trinst.h trcode.h 
+gca.o : gkscom.h 
+gcelcd.o : trinst.h trpars.h trstat.h trcode.h 
+gceldc.o : trinst.h 
+gceldr.o : trpars.h gkscom.h ../bwi/g01io.h 
+gclks.o : gkscom.h 
+gclrwk.o : gkscom.h 
+gclsg.o : gkscom.h 
+gclwk.o : gkscom.h 
+gcrsg.o : gkscom.h 
+gcsgwk.o : gkscom.h 
+gdawk.o : gkscom.h 
+gdsg.o : gkscom.h 
+geclks.o : gkscom.h 
+gelms.o : trinst.h trcode.h 
+gerhnd.o : gkscom.h 
+gerlog.o : gkscom.h 
+gesc.o : gkscom.h 
+gescfn.o : trinst.h trpars.h 
 gevtm.o : gevtm.f 
- 
-gfa.o : gfa.f \
-   gkscom.h 
- 
-gfilat.o : gfilat.f \
-   trinst.h \
-   trstat.h \
-   trpars.h \
-   trcode.h 
- 
-ggdp.o : ggdp.f \
-   gkscom.h 
- 
-ggtitm.o : ggtitm.f \
-   gkscom.h 
- 
-giitm.o : giitm.f \
-   gkscom.h 
- 
+gfa.o : gkscom.h 
+gfilat.o : trinst.h trstat.h trpars.h trcode.h 
+ggdp.o : gkscom.h 
+ggtitm.o : gkscom.h 
+giitm.o : gkscom.h 
 ginst.o : ginst.f 
- 
-gksbd.o : gksbd.f \
-   gkscom.h 
- 
-gmarat.o : gmarat.f \
-   trinst.h \
-   trstat.h \
-   trpars.h \
-   trcode.h 
- 
-gninst.o : gninst.f \
-   trpars.h \
-   trinst.h \
-   trbufr.h 
- 
-gnpart.o : gnpart.f \
-   trpars.h \
-   trinst.h \
-   trbufr.h 
- 
-gopdec.o : gopdec.f \
-   trbufr.h 
- 
-gopks.o : gopks.f \
-   gkscom.h 
- 
-gopwk.o : gopwk.F \
-   gkscom.h 
- 
-gpl.o : gpl.f \
-   gkscom.h 
- 
-gpm.o : gpm.f \
-   gkscom.h 
- 
-gpolat.o : gpolat.f \
-   trcode.h \
-   trinst.h \
-   trstat.h \
-   trpars.h 
- 
-gprec.o : gprec.f 
- 
-gputpt.o : gputpt.f \
-   trpars.h \
-   trinst.h \
-   trbufr.h \
-   gkscom.h \
-   ../bwi/g01io.h 
- 
-gqacwk.o : gqacwk.f \
-   gkscom.h 
- 
-gqasf.o : gqasf.f \
-   gkscom.h 
- 
-gqcf.o : gqcf.f \
-   gkscom.h 
- 
-gqchb.o : gqchb.f \
-   gkscom.h 
- 
-gqchh.o : gqchh.f \
-   gkscom.h 
- 
-gqchsp.o : gqchsp.f \
-   gkscom.h 
- 
-gqchup.o : gqchup.f \
-   gkscom.h 
- 
-gqchw.o : gqchw.f \
-   gkscom.h 
- 
-gqchxp.o : gqchxp.f \
-   gkscom.h 
- 
-gqclip.o : gqclip.f \
-   gkscom.h 
- 
-gqcntn.o : gqcntn.f \
-   gkscom.h 
- 
-gqcr.o : gqcr.f \
-   gkscom.h 
- 
-gqdsp.o : gqdsp.f \
-   gkscom.h 
- 
-gqeci.o : gqeci.f \
-   gkscom.h 
- 
-gqegdp.o : gqegdp.f \
-   gkscom.h 
- 
-gqentn.o : gqentn.f \
-   gkscom.h 
- 
-gqewk.o : gqewk.f \
-   gkscom.h 
- 
-gqfaci.o : gqfaci.f \
-   gkscom.h 
- 
-gqfaf.o : gqfaf.f \
-   gkscom.h 
- 
-gqfai.o : gqfai.f \
-   gkscom.h 
- 
-gqfais.o : gqfais.f \
-   gkscom.h 
- 
-gqfasi.o : gqfasi.f \
-   gkscom.h 
- 
-gqgdp.o : gqgdp.f \
-   gkscom.h 
- 
-gqln.o : gqln.f \
-   gkscom.h 
- 
-gqlvks.o : gqlvks.f \
-   gkscom.h 
- 
-gqlwk.o : gqlwk.f \
-   gkscom.h 
- 
-gqlwsc.o : gqlwsc.f \
-   gkscom.h 
- 
-gqmk.o : gqmk.f \
-   gkscom.h 
- 
-gqmksc.o : gqmksc.f \
-   gkscom.h 
- 
-gqmntn.o : gqmntn.f \
-   gkscom.h 
- 
-gqnt.o : gqnt.f \
-   gkscom.h 
- 
-gqops.o : gqops.f \
-   gkscom.h 
- 
-gqopsg.o : gqopsg.f \
-   gkscom.h 
- 
-gqopwk.o : gqopwk.f \
-   gkscom.h 
- 
-gqpa.o : gqpa.f \
-   gkscom.h 
- 
-gqpaf.o : gqpaf.f \
-   gkscom.h 
- 
-gqparf.o : gqparf.f \
-   gkscom.h 
- 
-gqpcr.o : gqpcr.f \
-   gkscom.h 
- 
-gqpfar.o : gqpfar.f \
-   gkscom.h 
- 
-gqplci.o : gqplci.f \
-   gkscom.h 
- 
-gqplf.o : gqplf.f \
-   gkscom.h 
- 
-gqpli.o : gqpli.f \
-   gkscom.h 
- 
-gqpmci.o : gqpmci.f \
-   gkscom.h 
- 
-gqpmf.o : gqpmf.f \
-   gkscom.h 
- 
-gqpmi.o : gqpmi.f \
-   gkscom.h 
- 
-gqppar.o : gqppar.f \
-   gkscom.h 
- 
-gqpplr.o : gqpplr.f \
-   gkscom.h 
- 
-gqppmr.o : gqppmr.f \
-   gkscom.h 
- 
-gqptxr.o : gqptxr.f \
-   gkscom.h 
- 
-gqpx.o : gqpx.f \
-   gkscom.h 
- 
-gqpxa.o : gqpxa.f \
-   gkscom.h 
- 
-gqpxad.o : gqpxad.f \
-   gkscom.h 
- 
-gqsgus.o : gqsgus.f \
-   gkscom.h 
- 
-gqtxal.o : gqtxal.f \
-   gkscom.h 
- 
-gqtxci.o : gqtxci.f \
-   gkscom.h 
- 
-gqtxf.o : gqtxf.f \
-   gkscom.h 
- 
-gqtxfp.o : gqtxfp.f \
-   gkscom.h 
- 
-gqtxi.o : gqtxi.f \
-   gkscom.h 
- 
-gqtxp.o : gqtxp.f \
-   gkscom.h 
- 
-gqtxx.o : gqtxx.f \
-   gkscom.h 
- 
-gqwkc.o : gqwkc.f \
-   gkscom.h 
- 
+gksbd.o : gkscom.h 
+gmarat.o : trinst.h trstat.h trpars.h trcode.h 
+gninst.o : trpars.h trinst.h trbufr.h 
+gnpart.o : trpars.h trinst.h trbufr.h 
+gopdec.o : trbufr.h 
+gopks.o : gkscom.h 
+gopwk.o : gkscom.h 
+gpl.o : gkscom.h 
+gpm.o : gkscom.h 
+gpolat.o : trcode.h trinst.h trstat.h trpars.h 
+gputpt.o : trpars.h trinst.h trbufr.h gkscom.h ../bwi/g01io.h 
+gqacwk.o : gkscom.h 
+gqasf.o : gkscom.h 
+gqcf.o : gkscom.h 
+gqchb.o : gkscom.h 
+gqchh.o : gkscom.h 
+gqchsp.o : gkscom.h 
+gqchup.o : gkscom.h 
+gqchw.o : gkscom.h 
+gqchxp.o : gkscom.h 
+gqclip.o : gkscom.h 
+gqcntn.o : gkscom.h 
+gqcr.o : gkscom.h 
+gqdsp.o : gkscom.h 
+gqeci.o : gkscom.h 
+gqegdp.o : gkscom.h 
+gqentn.o : gkscom.h 
+gqewk.o : gkscom.h 
+gqfaci.o : gkscom.h 
+gqfaf.o : gkscom.h 
+gqfai.o : gkscom.h 
+gqfais.o : gkscom.h 
+gqfasi.o : gkscom.h 
+gqgdp.o : gkscom.h 
+gqln.o : gkscom.h 
+gqlvks.o : gkscom.h 
+gqlwk.o : gkscom.h 
+gqlwsc.o : gkscom.h 
+gqmk.o : gkscom.h 
+gqmksc.o : gkscom.h 
+gqmntn.o : gkscom.h 
+gqnt.o : gkscom.h 
+gqops.o : gkscom.h 
+gqopsg.o : gkscom.h 
+gqopwk.o : gkscom.h 
+gqpa.o : gkscom.h 
+gqpaf.o : gkscom.h 
+gqparf.o : gkscom.h 
+gqpcr.o : gkscom.h 
+gqpfar.o : gkscom.h 
+gqplci.o : gkscom.h 
+gqplf.o : gkscom.h 
+gqpli.o : gkscom.h 
+gqpmci.o : gkscom.h 
+gqpmf.o : gkscom.h 
+gqpmi.o : gkscom.h 
+gqppar.o : gkscom.h 
+gqpplr.o : gkscom.h 
+gqppmr.o : gkscom.h 
+gqptxr.o : gkscom.h 
+gqpx.o : gkscom.h 
+gqpxa.o : gkscom.h 
+gqpxad.o : gkscom.h 
+gqsgus.o : gkscom.h 
+gqtxal.o : gkscom.h 
+gqtxci.o : gkscom.h 
+gqtxf.o : gkscom.h 
+gqtxfp.o : gkscom.h 
+gqtxi.o : gkscom.h 
+gqtxp.o : gkscom.h 
+gqtxx.o : gkscom.h 
+gqwkc.o : gkscom.h 
 gqwkca.o : gqwkca.f \
    gkscom.h 
  

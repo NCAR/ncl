@@ -1,199 +1,90 @@
-NCARG	= .
+/*
+ *      $Id: yMakefile,v 1.16 1993-10-19 17:10:45 boote Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1993			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		yMakefile
+ *
+ *	Author:		Jeff W. Boote
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue May 4 12:31:14 MDT 1993
+ *
+ *	Description:	This is the yMakefile for the TOP of the ncarg
+ *			distribution.
+ */
 
-SUBDIRS	= common ncarg2d ncarview prototypes unsupported
+#define IHaveSubdirs
 
-NEWDIRS	= $(BINPATH) $(LIBPATH) $(INCPATH) $(MANPATH) $(FONTCAPPATH) \
-	$(GRAPHCAPPATH) $(DBPATH) $(DOCPATH) $(ROBJPATH) $(EXAMPLESPATH) \
-	$(TESTSPATH) $(XAPPPATH) $(TUTORIALPATH)
-
-all::	dirs
-
-MakeSubdirs($(SUBDIRS))
+SUBDIRS	= config common ncarg2d ncarview ni unsupported
 
 Info:
-	@echo " "
-	@$(CAT) Version
-	@echo " "
-	@echo "NCAR Graphics - Current Installation Configuration"; \
-	echo "	System                  " $(SYSTEM_INCLUDE);
-#ifdef NCARLocal
-	@echo "	NCAR Graphics will include local NCAR additions"
-#endif
-#ifdef BuildCGIctrans
-	@echo "	NCAR View / ctrans will include support for SunView"
-#endif
-#ifdef BuildX11ctrans
-	@echo "	NCAR View / ctrans will include support for the X Window System"
-#endif
-#ifdef BuildUnsupportedAthenaApplications
-	@echo "	NCAR View will include unsupported X applications
-#endif
-	@echo "	Binary Directory             " $(BINPATH); \
-	echo "	Library Directory            " $(LIBPATH); \
-	echo "	Include Directory            " $(INCPATH); \
-	echo "	Manpage Directory            " $(MANPATH); \
-	echo "	Data Base Directory          " $(DBPATH); \
-	echo "	Programmer Doc Directory     " $(DOCPATH); \
-	echo "	Relocatable Obj. Directory   " $(ROBJPATH); \
-	echo "	Examples Directory           " $(EXAMPLESPATH); \
-	echo "	Tutorial Directory           " $(TUTORIALPATH); \
-	echo "	Test Directory               " $(TESTSPATH); \
-	echo "	X App. Defaults Directory    " $(XAPPPATH); \
-	echo "	f77 Flags                    " $(FFLAGS); \
-	echo "	cc Flags                     " $(CFLAGS);
+	@echo;\
+	echo "	NCAR Graphics - Version $(VERSION) Installation Configuration";\
+	echo;\
+	echo "System			"$(SYSTEM_INCLUDE);\
+	echo "Binary Directory	"$(BINPATH);\
+	echo "Library Directory	"$(LIBPATH);\
+	echo "Include Directory	"$(INCPATH);\
+	echo "Manpage Directory	"$(MANPATH);\
+	echo "Config Directory	"$(CONFIGPATH);\
+	echo "Data Base Directory	"$(DBPATH);\
+	echo "Programmer Doc Dir	"$(DOCPATH);\
+	echo "Reloc Obj. Directory	"$(ROBJPATH);\
+	echo "Examples Directory	"$(EXAMPLESPATH);\
+	echo "Tutorial Directory	"$(TUTORIALPATH);\
+	echo "Test Directory		"$(TESTSPATH);\
+	echo "X App. Def. Directory	"$(XAPPPATH);\
+	echo "f77 Compiler		"$(F77);\
+	echo "f77 Flags		"$(FFLAGS);\
+	echo "C Compiler		"$(CC);\
+	echo "cc Flags		"$(CFLAGS);
 
-Config:
-	@cd $(CONFIGPATH); $(MAKE) clean all
-
-# The "All" target rebuilds the Makefile hierarchy, rebuilds
-# all libraries, rebuilds all out-of-date executables, and
-# finally installs everything.  It *does not* clean out the
-# object code.  Its intended use is for rebuilding the system
-# once you have made changes to your configuration file.
+# The "All" target rebuilds the Makefile hierarchy, rearhives
+# all libraries, rebuilding all out-of-date objects and executables.
+# It *does not* clean out the object code.  Its intended use is for
+# rebuilding the system once you have made changes to your configuration file.
 
 All:
 	@echo ""
 	@echo "Making <All>."
-	@$(YMAKE)
-	@$(MAKE) Info
-	@$(MAKE) Makefiles
-	@$(MAKE) all install
+	@$(MAKE) $(MFLAGS) me
+	@$(MAKE) $(MFLAGS) Info
+	@date
+	@$(MAKE) $(MFLAGS) Makefiles
+	@$(MAKE) $(MFLAGS) includes
+	@$(MAKE) $(MFLAGS) depend
+	@$(MAKE) $(MFLAGS) all
+	@date
 	@echo "Finished making <All>."
 
-# The Everything target is a *complete* installation.  Makefiles
+# The Everything target is a *complete* build.  Makefiles
 # are completely rebuilt for the current installation, object
 # code is removed (clean target), and all binaries and libraries
-# are rebuilt from the ground up.  Finally, things are installed.
+# are rebuilt from the ground up.
 
-Everything: Config
+Everything:
 	@echo ""
 	@echo "Making <Everything>."
-	@$(YMAKE)
-	@$(MAKE) Info
-	@$(MAKE) Makefiles
-	@$(MAKE) clean all install
+	@$(MAKE) $(MFLAGS) me
+	@$(MAKE) $(MFLAGS) Info
+	@date
+	@$(MAKE) $(MFLAGS) Makefiles
+	@$(MAKE) $(MFLAGS) clean
+	@$(MAKE) $(MFLAGS) includes
+	@$(MAKE) $(MFLAGS) depend
+	@$(MAKE) $(MFLAGS) all
+	@date
 	@echo "Finished making <Everything>."
 
-dirs::
-	@-if (test ! -d $(BINROOT)) then mkdir $(BINROOT); else continue; fi
-	@-if (test ! -d $(BINROOT) || test ! -w $(BINROOT)) then \
-	echo "Installation Error - $(BINROOT) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(BINPATH)) then mkdir $(BINPATH); else continue; fi
-	@-if (test ! -d $(BINPATH) || test ! -w $(BINPATH)) then \
-	echo "Installation Error - $(BINPATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(LIBROOT)) then mkdir $(LIBROOT); else continue; fi
-	@-if (test ! -d $(LIBROOT) || test ! -w $(LIBROOT)) then \
-	echo "Installation Error - $(LIBROOT) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(LIBPATH)) then mkdir $(LIBPATH); else continue; fi
-	@-if (test ! -d $(LIBPATH) || test ! -w $(LIBPATH)) then \
-	echo "Installation Error - $(BINPATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(LIBNCARGPATH)) then mkdir $(LIBNCARGPATH); \
-	else continue; fi
-	@-if (test ! -d $(LIBNCARGPATH) || test ! -w $(LIBNCARGPATH)) then \
-	echo "Installation Error - $(LIBPATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(INCROOT)) then mkdir $(INCROOT); else continue; fi
-	@-if (test ! -d $(INCROOT) || test ! -w $(INCROOT)) then \
-	echo "Installation Error - $(INCPATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(INCPATH)) then mkdir $(INCPATH); else continue; fi
-	@-if (test ! -d $(INCPATH) || test ! -w $(INCPATH)) then \
-	echo "Installation Error - $(INCPATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(MANROOT)) then mkdir $(MANROOT); else continue; fi
-	@-if (test ! -d $(MANROOT) || test ! -w $(MANROOT)) then \
-	echo "Installation Error - $(MANROOT) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(MANLPATH)) then mkdir $(MANLPATH); else continue; fi
-	@-if (test ! -d $(MANLPATH) || test ! -w $(MANLPATH)) then \
-	echo "Installation Error - $(MANLPATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(FONTCAPPATH)) then mkdir $(FONTCAPPATH); \
-	else continue; fi
-	@-if (test ! -d $(FONTCAPPATH) || test ! -w $(FONTCAPPATH)) then \
-	echo "Installation Error - $(FONTCAPPATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(GRAPHCAPPATH)) then mkdir $(GRAPHCAPPATH); \
-	else continue; fi
-	@-if (test ! -d $(GRAPHCAPPATH) || test ! -w $(GRAPHCAPPATH)) then \
-	echo "Installation Error - $(GRAPHCAPPATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(DBPATH)) then mkdir $(DBPATH); else continue; fi
-	@-if (test ! -d $(DBPATH) || test ! -w $(DBPATH)) then \
-	echo "Installation Error - $(DBPATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(DOCPATH)) then mkdir $(DOCPATH); else continue; fi
-	@-if (test ! -d $(DOCPATH) || test ! -w $(DOCPATH)) then \
-	echo "Installation Error - $(DOCPATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(ROBJPATH)) then mkdir $(ROBJPATH); \
-	else continue; fi
-	@-if (test ! -d $(ROBJPATH) || test ! -w $(ROBJPATH)) then \
-	echo "Installation Error - $(ROBJPATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(EXAMPLESPATH)) then mkdir $(EXAMPLESPATH); \
-	else continue; fi
-	@-if (test ! -d $(EXAMPLESPATH) || test ! -w $(EXAMPLESPATH)) then \
-	echo "Installation Error - $(EXAMPLESPATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(TESTSPATH)) then mkdir $(TESTSPATH); else continue; fi
-	@-if (test ! -d $(TESTSPATH) || test ! -w $(TESTSPATH)) then \
-	echo "Installation Error - $(TESTSPATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(TUTORIALPATH)) then mkdir $(TUTORIALPATH); \
-	else continue; fi
-	@-if (test ! -d $(TUTORIALPATH) || test ! -w $(TUTORIALPATH)) then \
-	echo "Installation Error - $(TUTORIALPATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(XAPPPATH)) then mkdir $(XAPPPATH); else continue; fi
-	@-if (test ! -d $(XAPPPATH) || test ! -w $(XAPPPATH)) then \
-	echo "Installation Error - $(XAPPPATH) is not writeable"; exit 1; \
-	else continue; fi
+includes::
+	$(RM) -r include
 
-#ifdef	InstallManToLocal
-	@-if (test ! -d $(MANLPATH)) then mkdir $(MANLPATH); else continue; fi
-	@-if (test ! -d $(MANLPATH) || test ! -w $(MANLPATH)) then \
-	echo "Installation Error - $(MANLPATH) is not writeable"; exit 1; \
-	else continue; fi
-#else
-	@-if (test ! -d $(MAN1PATH)) then mkdir $(MAN1PATH); else continue; fi
-	@-if (test ! -d $(MAN1PATH) || test ! -w $(MAN1PATH)) then \
-	echo "Installation Error - $(MAN1PATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(MAN3PATH)) then mkdir $(MAN3PATH); else continue; fi
-	@-if (test ! -d $(MAN3PATH) || test ! -w $(MAN3PATH)) then \
-	echo "Installation Error - $(MAN3PATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(MAN5PATH)) then mkdir $(MAN5PATH); else continue; fi
-	@-if (test ! -d $(MAN5PATH) || test ! -w $(MAN5PATH)) then \
-	echo "Installation Error - $(MAN5PATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(MAN6PATH)) then mkdir $(MAN6PATH); else continue; fi
-	@-if (test ! -d $(MAN6PATH) || test ! -w $(MAN6PATH)) then \
-	echo "Installation Error - $(MAN6PATH) is not writeable"; exit 1; \
-	else continue; fi
-	@-if (test ! -d $(MAN8PATH)) then mkdir $(MAN8PATH); else continue; fi
-	@-if (test ! -d $(MAN8PATH) || test ! -w $(MAN8PATH)) then \
-	echo "Installation Error - $(MAN8PATH) is not writeable"; exit 1; \
-	else continue; fi
-#endif
-
-MakefilesSubdirs($(SUBDIRS))
-InstallSubdirs($(SUBDIRS))
-CleanSubdirs($(SUBDIRS))
-
-#ifdef BuildCFTBinaries
-install::
-	@$(NCARG)/utils/makecftbin $(LIBPATH)
-#endif
-
-#ifdef BuildNCARGSourceLibrary
-install::
-	@chmod 600 $(LIBPATH)/src*.a
-	@chmod u+s $(BINPATH)/ncargsrcx
-	touch $(LIBPATH)/ncargsrc.stats
-#endif
+Makefiles:: local-Makefile

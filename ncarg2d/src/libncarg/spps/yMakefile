@@ -1,11 +1,16 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-29 17:17:34 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1993-10-19 17:31:51 boote Exp $
 #
-NCARG	= ../../../..
 
+/*
+ * Disable Optimization for sgi mips
+ */
 #if defined(sgi) && defined(mips)
-FOPT =
-#endif
+#ifdef	FOptimizeFlag
+#undef	FOptimizeFlag
+#endif	/* FOptimizeFlag */
+#define	FOptimizeFlag	/**/
+#endif	/* sgi && mips */
 
 MYNAME	= spps
 
@@ -26,20 +31,7 @@ GENERIC_OBJS = \
 	setusv.o vector.o wtstr.o utilbd.o
 
 SOURCES = $(GENERIC_SRCS)
-
 OBJECTS = $(GENERIC_OBJS)
 
-PartialLibrary(libncarg.a,$(OBJECTS))
-
-#ifdef  BuildNCARGSourceLibrary
-all:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_QUICK) $(LIBPATH)/srcncarg.a $(MYNAME) $(SOURCES)
-	@-$(RM) $(MYNAME)
-
-install:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBPATH)/srcncarg.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBPATH)/srcncarg.a
-	@-$(RM) $(MYNAME)
-#endif
+PartialLibraryTarget(libncarg.a,$(OBJECTS))
+PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))

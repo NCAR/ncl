@@ -1,7 +1,6 @@
 #
-#	$Id: yMakefile,v 1.4 1992-09-24 19:45:23 ncargd Exp $
+#	$Id: yMakefile,v 1.5 1993-10-19 17:28:51 boote Exp $
 #
-NCARG	= ../../../..
 
 MYNAME	= ezmap
 
@@ -33,41 +32,12 @@ OBJECTS	= $(GENERIC_OBJS) $(UNIX_OBJS)
 
 FCPP_OBJS	= openmp.f
 
-PartialLibrary(libncarg.a,$(OBJECTS))
+PartialLibraryTarget(libncarg.a,$(OBJECTS))
+PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
+
+CleanFilesTarget($(FCPP_OBJS))
 
 openmp.F: openmp.F.sed Makefile
 	@sed \
 	-e 's+SED_DBDIR+$(DBDIR)+' \
 	<openmp.F.sed >openmp.F
-
-#if defined(sgi) || defined(ardent) || (defined(u370) && defined(unix)) \
-	|| defined(RS6000) || defined(hpux) || defined(cray) || defined(CRAY2)
-
-.SUFFIXES: .F
-
-.F.o:
-	@$(FCPP) $< $*.f
-	$(F77) $(FFLAGS) -c $*.f
-	@$(RM) $*.f
-#endif
-
-clean::
-	@-$(RM) openmp.f
-
-#ifdef  BuildNCARGSourceLibrary
-all:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_QUICK) $(LIBPATH)/srcncarg.a $(MYNAME) $(SOURCES)
-	@-$(RM) $(MYNAME)
-
-install:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBPATH)/srcncarg.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBPATH)/srcncarg.a
-	@-$(RM) $(MYNAME)
-
-FRule
-#endif
-
-clean::
-	@-$(RM) $(FCPP_OBJS)

@@ -1,6 +1,5 @@
-
 /*
- *      $Id: Trans.c,v 1.1 1993-04-30 17:25:11 boote Exp $
+ *      $Id: Trans.c,v 1.2 1993-10-19 17:52:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -444,7 +443,7 @@ NhlErrorTypes 	_NhlSetTrans
 	return(ret);
 	
 }
-NhlErrorTypes CallDataToNDC
+static NhlErrorTypes CallDataToNDC
 #if __STDC__
 (Layer layer, LayerClass class,float *x,float *y,int n, float *xout,float *yout,float *xmissing,float *ymissing)
 #else 
@@ -509,7 +508,7 @@ NhlErrorTypes NhlDataToNDC
 	return(ret);
 }
 
-NhlErrorTypes CallNDCToData
+static NhlErrorTypes CallNDCToData
 #if __STDC__
 (Layer layer, LayerClass class,float *x,float *y,int n, float *xout,float *yout,float *xmissing,float *ymissing)
 #else 

@@ -1,5 +1,5 @@
 /*
- *      $Id: defs.h,v 1.1 1993-04-30 17:26:37 boote Exp $
+ *      $Id: defs.h,v 1.2 1993-10-19 17:53:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,14 @@
  */
 #ifndef _DEFS_H_
 #define _DEFS_H_
+
+/*
+ * These macros are defined to be NULL.  They are not used by the code, but
+ * so that http daemons using the code2html script can produce anchors in
+ * the code.
+ */
+#define NhlDOCTAG(tagname)
+#define NhlDOCREF(url,anchortext)
 
 /* environment variable names for resource file locations */
 /* The sysresfile is kept in $NCARG_LIB/ncarg/hluresfile for now */

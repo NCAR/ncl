@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.5 1993-02-20 00:16:29 clyne Exp $
+#	$Id: ymake,v 1.6 1993-10-19 17:14:05 boote Exp $
 #
 ######################################################################
 #
@@ -28,13 +28,64 @@
 #		Revised October 1988 - extensions added for IBM/AIX
 #		Moved to Bourne shell version for UNICOS 5.0 beta
 #		Revised November 1989
+#		Significant re-write/additions to allow an installed
+#			version May 93 (boote)
 #
 # Warning:	This script WILL overwrite the existing
 #		Makefile IF a yMakefile exists!
 #
 ######################################################################
 
-#
+set	defines
+@ useinstalled = 1
+
+while ($#argv)
+
+	switch ("$argv[1]")
+
+	case	-config:
+		shift
+		if ($#argv) then
+			set config_dir = "$argv[1]"
+			set defines = (-I$argv[1] $defines)
+			@ useinstalled = 0
+		else
+			exit 1
+		endif
+		breaksw
+
+	default:
+		set defines = ($defines $argv[1])
+		breaksw
+	endsw
+
+	shift
+end
+
+if($useinstalled != 0) then
+	set config_dir = `ncargpath config`
+	if ($status != 0) then
+		echo "$0 : Unable to find NCARG_CONFIG dir" > /dev/tty
+		exit 1
+	endif
+	set defines = (-I$config_dir -DUseInstalled $defines)
+	set bin_dir = `ncargpath bin`
+	set lib_dir = `ncargpath lib`
+	set defines = ($defines -D_InstBin\=$bin_dir -D_InstLib\=$lib_dir)
+	set inc_dir = `ncargpath include`
+	set man_dir = `ncargpath man`
+	set defines = ($defines -D_InstInc\=$inc_dir -D_InstMan\=$man_dir)
+	set tmp_dir = `ncargpath tmp`
+	set defines = ($defines -D_InstTmp\=$tmp_dir)
+	if ($?YMAKE_DEV_FILE) then
+		if (-e $YMAKE_DEV_FILE) then
+		set defines=($defines -DYMAKEDEVFILE=\"$YMAKE_DEV_FILE\")
+		else
+			echo "unable to open YMAKE_DEV_FILE $YMAKE_DEV_FILE"
+		endif
+	endif
+endif
+
 
 if (-e /usr/ccs/lib/cpp) then
 	set cpp = /usr/ccs/lib/cpp
@@ -42,12 +93,6 @@ else
 	set cpp = /lib/cpp
 endif
 
-set defines
-
-if ("$NCARG" == "") then
-	echo "NCARG environment variable must be set"
-	exit 1
-endif
 
 set ymakefile
 set outfile
@@ -62,9 +107,11 @@ else if (-e "yMakefile") then
 	set ymakefile="yMakefile"
 	set outfile = "Makefile"
 else
-	echo "no y(mM)akefile found"
+	echo "$0 : no y(mM)akefile found" > /dev/tty
 	exit 1
 endif
+
+set defines=($defines -DYMAKESRCFILE=$ymakefile)
 
 if (-e $outfile) then
 	if (-e $outfile.bak) then
@@ -98,14 +145,132 @@ set defines=($defines -D$hostname)
 #	Figure out what kind of system we are on. We need to know the OS
 #	and the machine architecture. 
 #
-set line = `$NCARG/install/install/uname -M -s`
+set foo = `/bin/uname -s`
 if ($status != 0) then
-	echo "ymake : Unknown operating system"
+	echo "$0 : Unknown operating system" > /dev/tty
+	exit 1
+endif
+set mach = `/bin/uname -m`
+if ($status != 0) then
+	echo "$0 : Unkown maching type" > /dev/tty
 	exit 1
 endif
 
-set arch = $line[1]
-set os = $line[2]
+switch ("$foo")
+case SunOS:
+case AIX:
+case IRIX:
+case ULTRIX:
+case HP-UX:
+case OSF1:
+        set opsys = $foo
+        breaksw
+default:
+        set foo = `/bin/uname -m`
+        if ($status != 0) exit 1
+        switch ("$foo")
+        case    CRAY*
+                set opsys = UNICOS
+                breaksw
+        default:
+                echo "$0 : system unknown" > /dev/tty
+                exit 1
+        endsw
+        breaksw
+endsw
+
+switch ("$opsys")
+case	SunOS:
+	set foo = `/bin/uname -r`
+	if ($status != 0) exit 1
+
+	switch ("$foo")
+	case	5*:
+		set os = Solaris
+		breaksw
+	default:
+		set os = $opsys
+		breaksw
+	endsw
+
+	switch ("$mach")
+	case	sun4*:
+		set arch = sun4
+		breaksw
+	case	sun3*:
+		set arch = sun3
+		breaksw
+	case	sun2*:
+		set arch = sun2
+		breaksw
+	default:
+		echo "$0 : Unkown machine type" > /dev/tty
+		exit 1
+	endsw
+	breaksw
+
+case	AIX:
+	set os = $opsys
+
+	switch ("$mach")
+	case	00*:
+		set arch = RS6000
+		breaksw
+	default:
+		echo "$0 : Unknown machine type" > /dev/tty
+		exit 1
+	endsw
+	breaksw
+
+case	IRIX:
+	set os = $opsys
+
+	switch ("$mach")
+	case	IP*:
+		set arch = IP
+		breaksw
+	default:
+		echo "$0 : Unknown machine type" > /dev/tty
+		exit 1
+	endsw
+	breaksw
+
+case	ULTRIX:
+	set os = $opsys
+	set arch = $mach
+	breaksw
+
+case	HP-UX:
+	set os = HPUX
+
+	switch ("$mach")
+	case	9000/7*:
+		set arch = HP9000_7xx
+		breaksw
+	default:
+		echo "$0 : Unknown machine type" > /dev/tty
+		exit 1
+	endsw
+	breaksw
+
+case	UNICOS:
+	set os = $opsys
+
+	switch ("$mach[2]")
+	case	Y*:
+		set arch = YMP
+		breaksw
+	default:
+		echo "$0 : Unknown machine type" > /dev/tty
+		exit 1
+	endsw
+	breaksw
+
+default:
+	set os = $opsys
+	set arch = $mach
+	breaksw
+endsw
 
 #
 #	add os and arch to our defines list
@@ -116,6 +281,8 @@ set defines=($defines -D$os -D$arch)
 # Leave the cpp commands unmolested but insert a C null comment
 # in front of Makefile comment lines.  cpp will later remove these
 # restoring the original form (plus a few blank lines).
+# Also check for a tab followed by a # - that should be a saber target
+# so insert a C null comment for them as well.
 
 sed <$ymakefile >! $tmp1 \
 	-e '/^#[ 	]*if/b' \
@@ -128,7 +295,8 @@ sed <$ymakefile >! $tmp1 \
 	-e '/^#[ 	]*undef/b' \
 	-e '/^#[ 	]*line/b' \
 	-e '/^#[ 	]*include/b' \
-	-e '/^#/s$$/**/_COMMENT_&$'
+	-e '/^#/s$$/**/_COMMENT_&$' \
+	-e '/^	#/s$$/**/_COMMENT_&$'
 
 cat <<'EOF' >! $outfile
 #######################################################################
@@ -143,8 +311,8 @@ cat <<'EOF' >! $outfile
 'EOF'
 
 echo '#include "Template"' | \
-$cpp $argv[1-] -I. -D_COMMENT_="" -I$NCARG/config $defines \
--DYMAKEFILE=\"$tmp1\" | $NCARG/config/ymake-filter >>$outfile
+$cpp -I. -D_COMMENT_="" $defines -DYMAKEFILE=\"$tmp1\" | \
+"$config_dir"/ymake-filter >>$outfile
 
 /bin/rm -f $outfile.bak $tmp1
 onintr
@@ -158,5 +326,3 @@ cp $outfile.bak $outfile
 /bin/rm -f $outfile.bak
 exit 1
 onintr
-
-

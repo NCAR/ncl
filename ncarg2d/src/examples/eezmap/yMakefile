@@ -1,8 +1,6 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-29 16:59:50 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1993-10-19 17:22:23 boote Exp $
 #
-NCARG	= ../../../..
-
 FSPLIT	= ncarguncat
 
 MYNAME	= eezmap
@@ -11,11 +9,4 @@ GENERIC_SRCS = \
 	 mpexcc.f mpex01.f mpex02.f mpex03.f mpex04.f mpex05.f mpex06.f\
 	 mpex07.f mpex08.f mpex09.f mpex10.f mpexfi.f mpexfi.dat
 
-install::
-	@for file in $(GENERIC_SRCS); do\
-	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
-	done
-
-MakefileTarget
-CleanTarget
-UpdateTarget
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))

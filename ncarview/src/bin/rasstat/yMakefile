@@ -1,36 +1,25 @@
 #
 #
-#	$Id: yMakefile,v 1.8 1993-03-26 23:21:04 haley Exp $
+#	$Id: yMakefile,v 1.9 1993-10-19 17:44:09 boote Exp $
 #
 #
 #	Makefile for rasstat
 #
 #
 
-NCARG = ../../../..
-
 MYNAME	= rasstat
 
-LOCLIBS		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a
+PROG_LIBS	=	$(NCARGRASLIB) $(NCARGCLIB)
+DEP_LIBS	=	$(DEPNCARGRASLIB) $(DEPNCARGCLIB)
 
-#if defined(Solaris) && defined(sun4)
-GENLIBS =  $(NETCDFLIB) $(HDFLIB) /usr/ucblib/libucb.a -lm
-#else
-GENLIBS =  $(NETCDFLIB) $(HDFLIB) -lm
-#endif
-
-LIBS = $(LOCLIBS) $(GENLIBS)
-
-CDEFINES	= 
+EXTRA_LIBS	=	$(NETCDFLIB) $(HDFLIB)
+SYS_LIBS	=	-lm
 
 OBJS		= rasstat.o
 SRCS		= rasstat.c
 
-all::	$(MYNAME)
-
-CTarget($(MYNAME),$(OBJS),$(LIBS))
-MakefileTarget
-CleanTarget
+CProgram($(MYNAME),$(OBJS),$(DEP_LIBS))
+DependTarget($(SRCS))
 
 saber_src: $(SRCS)
 	#setopt load_flags $(CFLAGS) $(CINCS)
@@ -39,4 +28,3 @@ saber_src: $(SRCS)
 saber_obj: $(OBJS)
 	#setopt load_flags $(CFLAGS) $(CINCS)
 	#load $(OBJS) $(LIBS)
-

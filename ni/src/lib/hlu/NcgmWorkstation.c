@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.2 1993-06-03 15:11:52 ethan Exp $
+ *      $Id: NcgmWorkstation.c,v 1.3 1993-10-19 17:51:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -89,27 +89,33 @@ static int default_conid = NCGM_DEFAULT_CONID;
 
 NcgmWorkstationLayerClassRec ncgmWorkstationLayerClassRec = {
         {
-/* superclass			*/	(LayerClass)&workstationLayerClassRec,
 /* class_name			*/	"NcgmWorkstation",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NcgmWorkstationLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(LayerClass)&workstationLayerClassRec,
+
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
-/* child_resources		*/	NULL,
 /* all_resources		*/	NULL,
+
 /* class_part_initialize	*/	NcgmWorkstationClassPartInitialize,
-/* class_inited			*/	False,
 /* class_initialize		*/	NULL,
 /* layer_initialize		*/	NcgmWorkstationInitialize,
 /* layer_set_values		*/	NcgmWorkstationSetValues,
-/* layer_set_values_not		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
-/* layer_pre_draw		*/	NULL,
+/* layer_reparent		*/	NULL,
+/* layer_destroy		*/	NcgmWorkstationDestroy,
+
+/* child_resources		*/	NULL,
+
 /* layer_draw			*/	NULL,
+
+/* layer_pre_draw		*/	NULL,
 /* layer_draw_segonly		*/	NULL,
 /* layer_post_draw		*/	NULL,
-/* layer_clear			*/	NULL,
-/* layer_destroy		*/	NcgmWorkstationDestroy
+/* layer_clear			*/	NULL
         },
         {
 /* open_work		*/	NcgmWorkstationOpen,
@@ -117,7 +123,10 @@ NcgmWorkstationLayerClassRec ncgmWorkstationLayerClassRec = {
 /* activate_work	*/	NULL,
 /* deactivate_work	*/	NULL,
 /* update_work		*/	NhlInheritUpdate,
-/* clear_work		*/	NhlInheritClear
+/* clear_work		*/	NhlInheritClear,
+/* lineto_work		*/	NULL,
+/* fill_work		*/	NhlInheritFill,
+/* marker_work		*/	NhlInheritMarker
 	},
 	{
 /* cgm_inited	*/	&ncgm_is_initialized

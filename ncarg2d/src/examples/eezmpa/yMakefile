@@ -1,19 +1,10 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-29 17:00:01 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1993-10-19 17:22:31 boote Exp $
 #
-NCARG	= ../../../..
-
 MYNAME	= eezmpa
 
 GENERIC_SRCS = eezmpa.f
 
 GENERIC_OBJS = eezmpa.o
 
-install::
-	@for file in $(GENERIC_SRCS); do\
-	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
-	done
-
-MakefileTarget
-CleanTarget
-UpdateNoSplitTarget
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))

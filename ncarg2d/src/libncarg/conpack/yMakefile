@@ -1,12 +1,15 @@
 #
-#	$Id: yMakefile,v 1.3 1992-10-15 17:22:14 haley Exp $
+#	$Id: yMakefile,v 1.4 1993-10-19 17:27:47 boote Exp $
 #
 NCARG	= ../../../..
 
 MYNAME	= conpack
  
 #if defined(sgi) && defined(mips)
-FOPT =
+#ifdef FOptimizeFlag
+#undef FOptimizeFlag
+#endif
+#define FOptimizeFlag /**/
 #endif
 
 
@@ -36,24 +39,5 @@ SOURCES = $(GENERIC_SRCS)
 
 OBJECTS = $(GENERIC_OBJS)
 
-PartialLibrary(libncarg.a,$(OBJECTS))
-
-#ifdef  BuildNCARGSourceLibrary
-all:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_QUICK) $(LIBPATH)/srcncarg.a $(MYNAME) $(SOURCES)
-	@-$(RM) $(MYNAME)
-
-install:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBPATH)/srcncarg.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBPATH)/srcncarg.a
-	@-$(RM) $(MYNAME)
-#endif
-
-#ifdef sun
-
-cpinit.o: cpinit.f
-	$(F77) $(OS) $(FDEFINES) $(FDEBUG) $(FLOAT_OPT) -c cpinit.f
-
-#endif
+PartialLibraryTarget(libncarg.a,$(OBJECTS))
+PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))

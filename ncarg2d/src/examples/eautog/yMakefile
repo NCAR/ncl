@@ -1,8 +1,6 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-29 16:59:27 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1993-10-19 17:21:53 boote Exp $
 #
-NCARG	= ../../../..
-
 FSPLIT	= ncarguncat
 
 MYNAME	= eautog
@@ -15,11 +13,4 @@ GENERIC_OBJS = \
 	 agex01.o agex02.o agex03.o agex04.o agex05.o agex06.o agex07.o\
 	 agex08.o agex09.o agex10.o agex11.o agex12.o agex13.o agda13.dat
 
-install::
-	@for file in $(GENERIC_SRCS); do\
-	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
-	done
-
-MakefileTarget
-CleanTarget
-UpdateTarget
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.1 1993-04-30 17:24:49 boote Exp $
+ *      $Id: TickMark.h,v 1.2 1993-10-19 17:52:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -115,7 +115,7 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 #define NhlNtmXBMajorThicknessF		"tmXBMajorThicknessF"
 #define NhlNtmXBMajorLineColor		"tmXBMajorLineColor"
 #define NhlNtmXBMajorLengthF		"tmXBMajorLengthF"
-#define NhlNtmXBMajorOutwardLengthF	"tmXBMajorOutwardLength"
+#define NhlNtmXBMajorOutwardLengthF	"tmXBMajorOutwardLengthF"
 
 #define NhlNtmXBMinorThicknessF		"tmXBMinorThicknessF"
 #define NhlNtmXBMinorLineColor		"tmXBMinorLineColor"
@@ -173,7 +173,7 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 #define NhlNtmXTMajorThicknessF		"tmXTMajorThicknessF"
 #define NhlNtmXTMajorLineColor		"tmXTMajorLineColor"
 #define NhlNtmXTMajorLengthF		"tmXTMajorLengthF"
-#define NhlNtmXTMajorOutwardLengthF	"tmXTMajorOutwardLength"
+#define NhlNtmXTMajorOutwardLengthF	"tmXTMajorOutwardLengthF"
 
 #define NhlNtmXTMinorThicknessF		"tmXTMinorThicknessF"
 #define NhlNtmXTMinorLineColor		"tmXTMinorLineColor"
@@ -266,7 +266,7 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 #define NhlNtmYLMajorThicknessF		"tmYLMajorThicknessF"
 #define NhlNtmYLMajorLineColor		"tmYLMajorLineColor"
 #define NhlNtmYLMajorLengthF		"tmYLMajorLengthF"
-#define NhlNtmYLMajorOutwardLengthF	"tmYLMajorOutwardLength"
+#define NhlNtmYLMajorOutwardLengthF	"tmYLMajorOutwardLengthF"
 
 #define NhlNtmYLMinorThicknessF		"tmYLMinorThicknessF"
 #define NhlNtmYLMinorLineColor		"tmYLMinorLineColor"
@@ -323,7 +323,7 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 #define NhlNtmYRMajorThicknessF		"tmYRMajorThicknessF"
 #define NhlNtmYRMajorLineColor		"tmYRMajorLineColor"
 #define NhlNtmYRMajorLengthF		"tmYRMajorLengthF"
-#define NhlNtmYRMajorOutwardLengthF	"tmYRMajorOutwardLength"
+#define NhlNtmYRMajorOutwardLengthF	"tmYRMajorOutwardLengthF"
 
 #define NhlNtmYRMinorThicknessF		"tmYRMinorThicknessF"
 #define NhlNtmYRMinorLineColor		"tmYRMinorLineColor"

@@ -1,13 +1,15 @@
 #
-#	$Id: yMakefile,v 1.4 1993-01-11 20:53:57 don Exp $
+#	$Id: yMakefile,v 1.5 1993-10-19 17:37:37 boote Exp $
 #
-NCARG	= ../../../..
 
 MYNAME	= bwi
 
 #if defined(sun)
-FOPT	=
-#endif
+#ifdef  FOptimizeFlag
+#undef  FOptimizeFlag
+#endif  /* FOptimizeFlag */
+#define FOptimizeFlag   /**/
+#endif	/* sun */
 
 GENERIC_SRCS = \
 g01bkd.f  g01ca.f   g01clp.f  g01clw.f  g01ctb.f  g01d2r.f  g01d2s.f  g01diq.f \
@@ -26,31 +28,18 @@ gmflod.o  gmpart.o  gopnic.o  gputmd.o  gputni.o  gputpr.o  gputps.o  gtnlen.o \
 gupasf.o  gupdva.o  gupdvi.o  gupdvr.o 
 
 OTHER_SRCS = wks.c wks.h
-
 OTHER_OBJS = wks.o
 
 SOURCES = $(GENERIC_SRCS) $(OTHER_SRCS)
-
 OBJECTS = $(GENERIC_OBJS) $(OTHER_OBJS)
 
-PartialLibrary(libncarg_gks.a, $(OBJECTS))
+PartialLibraryTarget(libncarg_gks.a, $(OBJECTS))
+PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
+CleanFilesTarget(wks.c wks.h)
 
-#ifdef  BuildNCARGSourceLibrary
-all:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_QUICK) $(LIBPATH)/srcncarg_gks.a $(MYNAME) $(SOURCES)
-	@-$(RM) $(MYNAME)
-
-install:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBPATH)/srcncarg_gks.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBPATH)/srcncarg_gks.a
-	@-$(RM) $(MYNAME)
-#endif
 
 # A file containing C functions called from Fortran
 
-wks.o:	wks.h
 
 wks.c: wks.c.sed Makefile
 	@$(CALLCONV) $(SYSTEM_INCLUDE) wks.c \
@@ -61,8 +50,7 @@ wks.h: wks.h.sed Makefile
 	-e 's+SED_GKS_BUFFER_SIZE+$(GKS_BUFFER_SIZE)+' \
 	< wks.h.sed > wks.h
 
-clean::
-	@-$(RM) wks.c wks.h
+wks.o:	wks.h
 
 g01bkd.o : g01bkd.f \
    g01prm.h \

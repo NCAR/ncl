@@ -1,5 +1,5 @@
 /*
- *      $Id: Reparent.c,v 1.1 1993-04-30 17:23:49 boote Exp $
+ *      $Id: Reparent.c,v 1.2 1993-10-19 17:52:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -64,7 +64,7 @@ CallReparent
 	}
 
 	if(lc->base_class.reparent != NULL)
-		lcret = (*(lc->base_class.reparent))(l);
+		lcret = (*(lc->base_class.layer_reparent))(l);
 
 #endif
 	return MIN(scret,lcret);
@@ -129,8 +129,7 @@ Reparent
 	}
 
 	if(tnode == (_NhlAllChildList)NULL){
-		NhlPError(FATAL,E_UNKNOWN,
-				"Unable to remove PID#%d from parent",
+		NhlPError(FATAL,E_UNKNOWN,"Unable to remove PID#%d from parent",
 								child->base.id);
 		return FATAL;
 	}

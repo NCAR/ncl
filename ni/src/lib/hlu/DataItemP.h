@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItemP.h,v 1.1 1993-07-12 22:36:10 boote Exp $
+ *      $Id: DataItemP.h,v 1.2 1993-10-19 17:50:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,8 +26,17 @@
 #include <ncarg/hlu/DataItem.h>
 #include <ncarg/hlu/DataMgr.h>
 
+#define	NhlNnoManager	"no.Manager"
+#define	NhlCnoManager	"No.Manager"
+
 typedef struct _DataItemLayerPart{
 	/* User setable resource fields */
+
+	/*
+	 * type converter setable fields - this resource is setable
+	 * programatically only - and only by things that include the P.h file
+	 */
+	NhlBoolean	no_manager;
 	/*
 	 * Can't even do missing val's or min, max - because we don't know
 	 * what type the data is yet. - I guess it will have to be in
@@ -35,7 +44,7 @@ typedef struct _DataItemLayerPart{
 	 * in the public.h file so they at least all use the same name.
 	 */
 	/* Private Fields */
-	Layer	manager;
+	DataMgrLayer	manager;
 } DataItemLayerPart;
 
 typedef struct _DataItemLayerRec{
@@ -59,7 +68,7 @@ extern DataItemLayerClassRec dataItemLayerClassRec;
  */
 extern void _NhlDataChanged(
 #ifdef	NhlNeedProto
-	Layer	l
+	DataItemLayer	l
 #endif
 );
 

@@ -1,36 +1,25 @@
 #
 #
-#	$Id: yMakefile,v 1.12 1993-03-26 23:20:48 haley Exp $
+#	$Id: yMakefile,v 1.13 1993-10-19 17:43:41 boote Exp $
 #
 #
 #	Makefile for rascat
 #
 #
 
-NCARG = ../../../..
-
 MYNAME		= rascat
 
-LOCLIBS		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a
+PROG_LIBS	=	$(NCARGRASLIB) $(NCARGCLIB)
+DEP_LIBS	=	$(DEPNCARGRASLIB) $(DEPNCARGCLIB)
 
-#if defined(Solaris) && defined(sun4)
-GENLIBS = $(NETCDFLIB) $(HDFLIB) /usr/ucblib/libucb.a -lm
-#else
-GENLIBS = $(NETCDFLIB) $(HDFLIB) -lm
-#endif
-
-LIBS = $(LOCLIBS) $(GENLIBS)
-
-CDEFINES	= 
+EXTRA_LIBS	=	$(NETCDFLIB) $(HDFLIB)
+SYS_LIBS	=	-lm
 
 OBJS		= rascat.o
 SRCS		= rascat.c
 
-all::	$(MYNAME)
-
-CTarget($(MYNAME),$(OBJS),$(LIBS))
-MakefileTarget
-CleanTarget
+CProgram($(MYNAME),$(OBJS),$(DEP_LIBS))
+DependTarget($(SRCS))
 
 saber_src: $(SRCS)
 	#setopt load_flags $(CFLAGS) $(CINCS)
@@ -39,4 +28,3 @@ saber_src: $(SRCS)
 saber_obj: $(OBJS)
 	#setopt load_flags $(CFLAGS) $(CINCS)
 	#load $(OBJS) $(LIBS)
-

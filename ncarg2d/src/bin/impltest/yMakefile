@@ -1,21 +1,27 @@
 #
-#	$Id: yMakefile,v 1.6 1993-03-08 15:58:17 haley Exp $
+#	$Id: yMakefile,v 1.7 1993-10-19 17:19:58 boote Exp $
 #
-NCARG	= ../../../..
 
 MYNAME	= impltest
 
-#if defined(ardent) || (defined(u370) && defined(unix))
-OTHER_LIBS =	$(ROBJPATH)/libncarbd.o
+PROG_LIBS	=	$(NCARGLIBS)
+DEPLIBS		=	$(DEPNCARGLIBS)
+
+#if defined(Ardent) || defined(AIX370)
+#ifdef	UseInstalled
+OTHER_ROBJS =	$(ROBJPATH)/libncarbd.o
+#else
+OTHER_ROBJS = $(NCARGOPTLIBSRC)/ncarbd/ncarbd.o
+#endif	/* UseInstalled */
 #endif
 
-COMMON_LIBS =	$(LIBPATH)/libncarg.a \
-		$(LIBPATH)/libncarg_gks.a \
-		$(LIBPATH)/libncarg_c.a \
-		$(LIBPATH)/libncarg_loc.a
-
+#ifdef	UseInstalled
 ROBJS = $(ROBJPATH)/ggkwdr_stub.o
-LIBS = $(ROBJS) $(OTHER_LIBS) $(COMMON_LIBS)
+#else
+ROBJS = $(NCARGGKSLIBSRC)/awi/ggkwdr_stub.o
+#endif	/* UseInstalled */
+
+REL_OBJS =	$(ROBJS) $(OTHER_ROBJS)
 
 GENERIC_SRCS = \
 	 lcm.f mskout.f implbd.f tgbyte.f tgks0a.f tiand.f\
@@ -25,21 +31,21 @@ GENERIC_OBJS = \
 	 lcm.o mskout.o implbd.o tgbyte.o tgks0a.o tiand.o\
 	 tior.o tlocal.o tsbyte.o tshift.o
 
-#ifdef cray
+#ifdef Cray
 
 TLOCAL_OBJS = \
 	tlocalcray.o tiand.o tior.o lcm.o tgbyte.o tshift.o tsbyte.o\
 	mskout.o
 
 #else
-#ifdef ardent
+#ifdef Ardent
 
 TLOCAL_OBJS = \
 	tlocalardent.o tiand.o tior.o lcm.o tgbyte.o tshift.o tsbyte.o\
 	mskout.o
 
 #else
-#if defined(u370) && defined(unix) 
+#if defined(AIX370)
 
 TLOCAL_OBJS = \
 	tlocalibm.o tiand.o tior.o lcm.o tgbyte.o tshift.o tsbyte.o\
@@ -51,15 +57,9 @@ TLOCAL_OBJS = \
 	tlocal32.o tiand.o tior.o lcm.o tgbyte.o tshift.o tsbyte.o\
 	mskout.o
 
-#endif
-#endif
-#endif
+#endif	/* AIX370 */
+#endif	/* Ardent */
+#endif	/* Cray */
 
-
-all:: tlocal tgks0a
-
-FortranTarget(tlocal,$(TLOCAL_OBJS),$(LIBS))
-FortranTarget(tgks0a,tgks0a.o,$(LIBS))
-MakefileTarget
-CleanTarget
-UpdateTarget
+FortranProgram(tlocal,$(TLOCAL_OBJS) $(REL_OBJS),$(DEPLIBS))
+FortranProgram(tgks0a,tgks0a.o $(REL_OBJS),$(DEPLIBS))

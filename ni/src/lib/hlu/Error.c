@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.1 1993-04-30 17:21:52 boote Exp $
+ *      $Id: Error.c,v 1.2 1993-10-19 17:50:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -36,7 +36,7 @@
 #include <errno.h>
 #include <ncarg/hlu/ErrorP.h>
 #include <ncarg/hlu/VarArg.h>
-#include <ncarg/hlu/Convert.h>
+#include <ncarg/hlu/Converters.h>
 
 /************************************************************************
 *									*
@@ -99,26 +99,23 @@ static NhlErrorTypes ErrorDestroy(
 ErrorLayerClassRec errorLayerClassRec = {
 	/* BaseClassPart */
 	{
-/* superclass			*/	(LayerClass)&baseLayerClassRec,
 /* class_name			*/	"Error",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(ErrorLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(LayerClass)&objLayerClassRec,
+
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
-/* child_resources		*/	NULL,
 /* all_resources		*/	NULL,
+
 /* class_part_initialize	*/	NULL,
-/* class_inited			*/	False,
 /* class_initialize		*/	ErrorClassInitialize,
 /* layer_initialize		*/	ErrorInitialize,
 /* layer_set_values		*/	ErrorSetValues,
-/* layer_set_values_not		*/	NULL,
+/* layer_set_values_hook	*/	ErrorSetValues,
 /* layer_get_values		*/	NULL,
-/* layer_pre_draw		*/	NULL,
-/* layer_draw			*/	NULL,
-/* layer_draw_segonly		*/	NULL,
-/* layer_post_draw		*/	NULL,
-/* layer_clear			*/	NULL,
+/* layer_reparent		*/	NULL,
 /* layer_destroy		*/	ErrorDestroy
 	},
 	/* ErrorClassPart */
@@ -133,87 +130,6 @@ LayerClass errorLayerClass = (LayerClass)&errorLayerClassRec;
 * New type converters - needed for new type's defined for this class	*
 * Added to the converter table by ErrorClassInitialize			*
 ************************************************************************/
-
-/*
- * Function:	NhlCvtStringToNhlErrorTypes
- *
- * Description:	This is a type converter to convert strings to the NhlErrorTypes
- *		enumeration.
- *
- * In Args:	
- *	NrmValue	*from,	ptr to from data
- *	NrmValue	*args,	add'n args for conv
- *	int		nargs	number of args
- *
- * Out Args:	
- *	NrmValue	*to,	ptr to to data
- *
- * Scope:	Global Public
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-NhlCvtStringToNhlErrorTypes
-#if	__STDC__
-(
-	NrmValue	*from,	/* ptr to from data	*/
-	NrmValue	*to,	/* ptr to to data	*/
-	NrmValue	*args,	/* add'n args for conv	*/
-	int		nargs	/* number of args	*/
-)
-#else
-(from,to,args,nargs)
-	NrmValue	*from;	/* ptr to from data	*/
-	NrmValue	*to;	/* ptr to to data	*/
-	NrmValue	*args;	/* add'n args for conv	*/
-	int		nargs;	/* number of args	*/
-#endif
-{
-	NhlErrorTypes tmp;
-	NhlErrorTypes ret = NOERROR;
-
-	if(nargs != 0){
-		/*ERROR*/
-		ret = WARNING;
-	}
-
-	if(strncmp((char *)from->addr,"FATAL",strlen("FATAL")) == 0)
-		tmp = FATAL;
-	else if(strncmp((char *)from->addr,"WARNING",strlen("WARNING")) == 0)
-		tmp = WARNING;
-	else if(strncmp((char *)from->addr,"INFO",strlen("INFO")) == 0) 
-		tmp = INFO;
-	else
-		tmp = NOERROR;
-
-	if((to->size > 0) && (to->addr !=NULL)){
-		/* caller provided space */
-
-		if(to->size < sizeof(NhlErrorTypes)){
-			/* Not large enough */
-			to->size = (unsigned int)sizeof(NhlErrorTypes);
-			return FATAL;
-		}
-
-		/* give caller a copy */
-
-		to->size = (unsigned int)sizeof(NhlErrorTypes);
-		*((NhlErrorTypes *)(to->addr)) = tmp;
-		return ret;
-	}
-	else{
-
-	/* caller didn't provide space - give them a pointer to static data */
-
-		static NhlErrorTypes val;
-
-		to->size = (unsigned int)sizeof(NhlErrorTypes);
-		val = tmp;
-		to->addr = &val;
-		return ret;
-	}
-}
 
 /************************************************************************
 *									*
@@ -243,12 +159,19 @@ ErrorClassInitialize
 ()
 #endif
 {
+	NhlConvertArg	errtypes[] = {
+				{NHLSTRENUM,	FATAL,		"fatal"},
+				{NHLSTRENUM,	WARNING,	"warning"},
+				{NHLSTRENUM,	INFO,		"info"},
+				{NHLSTRENUM,	NOERROR,	"noerror"}
+				};
+
 	/*
 	 * should install string to Errortypes type converter so that
 	 * resources can be specifed in a resource file.
 	 */
-	NhlRegisterConverter(NhlTString,NhlTErrorTypes,
-				NhlCvtStringToNhlErrorTypes,NULL,0,False,NULL);
+	NhlRegisterConverter(NhlTString,NhlTErrorTypes,NhlCvtStringToEnum,
+				errtypes,NhlNumber(errtypes),False,NULL);
 
 	return NOERROR;
 }
@@ -1132,7 +1055,7 @@ NhlErrSPrintMsg
 		strcpy(buffer,"FATAL");
 	
 	if((msg->line > 0) && (msg->fname != NULL)){
-		sprintf(tbuf,":[FILE:%s,LINE:%d]",msg->fname,msg->line);
+		sprintf(tbuf,":[\"%s\":%d]",msg->fname,msg->line);
 		strcat(buffer,tbuf);
 	}
 
@@ -1186,7 +1109,7 @@ NhlErrFPrintMsg
 {
 	static char tbuf[MAXERRMSGLEN];
 
-	fprintf(fp,"%s\n",NhlErrSPrintMsg(tbuf,msg));
+	fprintf(fp,"%s\n\r",NhlErrSPrintMsg(tbuf,msg));
 	fflush(fp);
 
 	return tbuf;

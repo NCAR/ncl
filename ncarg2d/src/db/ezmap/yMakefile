@@ -1,31 +1,14 @@
 #
-#	$Id: yMakefile,v 1.3 1993-05-07 20:57:27 haley Exp $
+#	$Id: yMakefile,v 1.4 1993-10-19 17:21:06 boote Exp $
 #
-NCARG	= ../../../..
-
-MYNAME	= ezmapdata
-
-TARGETS = mapconvrt ezmapdata
 
 DBFILES = ezmapdata ezmap_area_ids
 
-all:: $(TARGETS)
-
-mapconvrt: mapconvrt.o
-	$(F77_LD) $(LD_FFLAGS) -o mapconvrt mapconvrt.o
+InstallTarget($(DBFILES),$(INSTALL_DB),$(DBPATH))
+FNotInstalledTarget(mapconvrt,mapconvrt.o)
+CleanFilesTarget(ezmapdata)
 
 ezmapdata: ezmapdat mapconvrt
 	-@$(RM) ezmapdata
 	@echo "Building the EZMAP database"
 	@./mapconvrt
-
-install:: $(DBFILES)
-	@for name in $(DBFILES); do\
-	($(INSTALL) -m $(INSTALL_DB) $$name $(DBPATH));\
-	done
-
-clean::
-	-@$(RM) $(TARGETS)
-
-MakefileTarget
-CleanTarget

@@ -1,16 +1,18 @@
 #
-#	$Id: yMakefile,v 1.1 1993-01-09 02:10:16 fred Exp $
+#	$Id: yMakefile,v 1.2 1993-10-19 17:37:49 boote Exp $
 #
-NCARG	= ../../../..
 
 MYNAME	= wiss
 
+/*
+ * The Sun f77 optimizer appears to have troubles with the GKS system.
+ */
 #if defined(sun) || (defined(u370) && (unix))
-# The Sun f77 optimizer appears to have troubles with the GKS system.
-
-FOPT =
-
-#endif
+#ifdef  FOptimizeFlag
+#undef  FOptimizeFlag
+#endif  /* FOptimizeFlag */
+#define FOptimizeFlag   /**/
+#endif	/* sun */
 
 GENERIC_SRCS = \
 gwelod.f  gwibkd.f  gwica.f   gwiclp.f  gwiclw.f  gwid2r.f  gwid2s.f  gwidmp.f \
@@ -25,25 +27,10 @@ gwipm.o   gwisas.o  gwitx.o   gwiwdr.o  gwpart.o  gwpasf.o  gwpdva.o  gwpdvi.o \
 gwpdvr.o  gwptni.o  gwptpr.o  gwptps.o 
 
 SOURCES = $(GENERIC_SRCS)
-
 OBJECTS = $(GENERIC_OBJS)
 
-PartialLibrary(libncarg_gks.a,$(OBJECTS))
-
-#ifdef  BuildNCARGSourceLibrary
-all:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_QUICK) $(LIBPATH)/srcncarg_gks.a $(MYNAME) $(SOURCES)
-	@-$(RM) $(MYNAME)
-
-install:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBPATH)/srcncarg_gks.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBPATH)/srcncarg_gks.a
-	@-$(RM) $(MYNAME)
-
-FRule
-#endif
+PartialLibraryTarget(libncarg_gks.a,$(OBJECTS))
+PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
 
 gwelod.o : gwelod.f \
    gwiins.h \

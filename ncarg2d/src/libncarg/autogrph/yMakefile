@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.3 1993-04-06 15:11:25 haley Exp $
+#	$Id: yMakefile,v 1.4 1993-10-19 17:27:05 boote Exp $
 #
 NCARG	= ../../../..
 
@@ -29,17 +29,5 @@ SOURCES = $(GENERIC_SRCS)
 
 OBJECTS = $(GENERIC_OBJS)
 
-PartialLibrary(libncarg.a,$(OBJECTS))
-
-#ifdef  BuildNCARGSourceLibrary
-all:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_QUICK) $(LIBPATH)/srcncarg.a $(MYNAME) $(SOURCES)
-	@-$(RM) $(MYNAME)
-
-install:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBPATH)/srcncarg.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBPATH)/srcncarg.a
-	@-$(RM) $(MYNAME)
-#endif
+PartialLibraryTarget(libncarg.a,$(OBJECTS))
+PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))

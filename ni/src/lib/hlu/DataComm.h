@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.h,v 1.1 1993-07-12 22:36:01 boote Exp $
+ *      $Id: DataComm.h,v 1.2 1993-10-19 17:50:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,9 +23,49 @@
 #define _NDataComm_h
 #include <ncarg/hlu/Transform.h>
 
+#define	NhlNdelayCompute	"delayCompute"
+#define	NhlCdelayCompute	"DelayCompute"
+
+#define NhlNdataItem	"dataItem"
+#define NhlCdataItem	"DataItem"
+
+/*
+ * Class declarations
+ */
 typedef struct _DataCommLayerClassRec *DataCommLayerClass;
 typedef struct _DataCommLayerRec *DataCommLayer;
 
 extern LayerClass dataCommLayerClass;
+
+typedef struct _DataSpecLayerClassRec *DataSpecLayerClass;
+typedef struct _DataSpecLayerRec *DataSpecLayer;
+
+extern LayerClass dataSpecLayerClass;
+
+/*
+ * Public API
+ */
+
+NhlErrorTypes NhlUpdateData(
+#if	NhlNeedProto
+	int	dcommid		/* id of dcomm object	*/
+#endif
+);
+
+NhlErrorTypes NhlAddData(
+#ifdef	NhlNeedProto
+	int		dcommid,	/* id of layer w/ data resource	*/
+	NhlString	res_name,	/* name of data resource	*/
+	int		ditemid		/* id of data to add		*/
+#endif
+);
+
+NhlErrorTypes NhlRemoveData(
+#ifdef	NhlNeedProto
+	int		dcommid,	/* id of layer w/ data resource	*/
+	NhlString	res_name,	/* name of data resource	*/
+	int		ditemid		/* id of data item to remove	*/
+#endif
+);
 
 #endif /*_NDataComm_h */

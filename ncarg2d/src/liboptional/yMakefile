@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:34:55 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1993-10-19 17:38:28 boote Exp $
 #
 #
 #	Makefile for nonstandard dash, conran, and conrec routines.
@@ -16,7 +16,7 @@
 #	within the libmisc subtree of the distribution.
 #
 
-NCARG	= ../../..
+#define IHaveSubdirs
 
 COMMON_SUBDIRS = \
 		conraq conras conrcqck conrcspr \
@@ -27,6 +27,3 @@ OTHER_SUBDIRS = ncarbd
 #endif
 
 SUBDIRS = $(COMMON_SUBDIRS) $(OTHER_SUBDIRS)
-
-RelocatableObjectRoot($(SUBDIRS))
-

@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.h,v 1.1 1993-04-30 17:21:57 boote Exp $
+ *      $Id: Error.h,v 1.2 1993-10-19 17:50:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@
 #ifndef _NError_h
 #define _NError_h
 
+#include <errno.h>
 #include <ncarg/hlu/Base.h>
 
 /* Resource Names */
@@ -105,7 +106,8 @@ extern Const char *NhlPError(
  * Returns:	void
  * Side Effect:	
  */
-#define NHLPERROR(vargs)	{_NhlPErrorHack(__LINE__,__FILE__);\
+#define NHLPERROR(vargs)	{_NhlPErrorHack(__LINE__,\
+				(Const char*)__FILE__);\
 				(void)NhlPError vargs;}
 
 extern void _NhlPErrorHack(

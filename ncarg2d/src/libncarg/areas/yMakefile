@@ -1,13 +1,8 @@
 #
-#	$Id: yMakefile,v 1.5 1993-09-23 17:25:26 kennison Exp $
+#	$Id: yMakefile,v 1.6 1993-10-19 17:26:50 boote Exp $
 #
-NCARG	= ../../../..
 
 MYNAME	= areas
-
-#if defined(sun) || defined (RS6000) || defined (hpux) || (defined(sgi) && defined(mips))
-FOPT =
-#endif
 
 GENERIC_SRCS = \
 	arblda.f arrat2.f ardat2.f ardbda.f ardbpa.f ardrln.f aredam.f \
@@ -23,17 +18,5 @@ SOURCES = $(GENERIC_SRCS)
 
 OBJECTS = $(GENERIC_OBJS)
 
-PartialLibrary(libncarg.a,$(OBJECTS))
-
-#ifdef  BuildNCARGSourceLibrary
-all:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_QUICK) $(LIBPATH)/srcncarg.a $(MYNAME) $(SOURCES)
-	@-$(RM) $(MYNAME)
-
-install:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBPATH)/srcncarg.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBPATH)/srcncarg.a
-	@-$(RM) $(MYNAME)
-#endif
+PartialLibraryTarget(libncarg.a,$(OBJECTS))
+PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))

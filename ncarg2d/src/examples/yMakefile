@@ -1,13 +1,9 @@
 #
-#	$Id: yMakefile,v 1.11 1993-04-30 22:47:23 haley Exp $
+#	$Id: yMakefile,v 1.12 1993-10-19 17:21:35 boote Exp $
 #
-NCARG	= ../../..
+
+#define IHaveSubdirs
 
 SUBDIRS = \
 	eareas eautog ecolcv econpa eezmap eezmpa elblba emisc \
 	epltch esoftf espps esrfac estitl estrml evelvc
-
-MakeSubdirs($(SUBDIRS))
-MakefilesSubdirs($(SUBDIRS))
-InstallSubdirs($(SUBDIRS))
-CleanSubdirs($(SUBDIRS))

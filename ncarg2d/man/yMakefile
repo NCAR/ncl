@@ -1,14 +1,10 @@
 #
-#	$Id: yMakefile,v 1.12 1993-04-06 22:02:08 haley Exp $
+#	$Id: yMakefile,v 1.13 1993-10-19 17:14:42 boote Exp $
 #
-NCARG = ../..
+
+#define IHaveSubdirs
 
 SUBDIRS = areas autograph bivar colconv conpack conran_family conrec_family \
 	dashline ezmap gflash gks gksC gridall halftone histogram \
 	isosurface labelbar ngmisc other plotchar pwrite_family scrolled_title \
 	softfill spps streamlines surface threed vectors	
-
-MakeSubdirs($(SUBDIRS))
-InstallSubdirs($(SUBDIRS))
-MakefilesSubdirs($(SUBDIRS))
-CleanSubdirs($(SUBDIRS))

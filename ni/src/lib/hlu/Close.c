@@ -1,5 +1,5 @@
 /*
- *      $Id: Close.c,v 1.1 1993-04-30 17:21:21 boote Exp $
+ *      $Id: Close.c,v 1.2 1993-10-19 17:49:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -20,7 +20,8 @@
  *	Description:	
  */
 #include <stdio.h>
-#include <ncarg/hlu/hlu.h>
+#include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/ErrorP.h>
 
 
@@ -49,4 +50,5 @@ void NhlClose
 {
 	/* free error handling	*/
 	_NhlCloseError();
+	_NhlDestroyResDatabase();
 }

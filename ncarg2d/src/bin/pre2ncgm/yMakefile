@@ -1,7 +1,6 @@
 #
-#	$Id: yMakefile,v 1.5 1993-01-27 02:24:16 haley Exp $
+#	$Id: yMakefile,v 1.6 1993-10-19 17:20:32 boote Exp $
 #
-NCARG	= ../../../..
 
 MYNAME  = pre2ncgm
 
@@ -19,7 +18,11 @@ GENERIC_OBJS = alover.o clipit.o frm.o garg.o intcnv.o lodctb.o \
 
 OTHER_OBJS = fndarg.o metred.o mninst.o trans.o trassn.o trlate.o trndat.o
 
+#ifdef	UseInstalled
 ROBJS = $(ROBJPATH)/ggkwdr_stub.o
+#else
+ROBJS = $(NCARGGKSLIBSRC)/awi/ggkwdr_stub.o
+#endif
 
 SOURCES = $(GENERIC_SRCS) $(OTHER_SRCS)
 
@@ -28,25 +31,10 @@ OBJECTS = $(GENERIC_OBJS) $(OTHER_OBJS) $(ROBJS)
 FCPP_OBJS	= fndarg.f metred.f mninst.f trans.f trassn.f \
 		trlate.f trndat.f
 
-LIBS = $(LIBPATH)/libncarg.a $(LIBPATH)/libncarg_gks.a $(LIBPATH)/libncarg_c.a \
-	$(LIBPATH)/libncarg_loc.a
+PROG_LIBS = $(NCARGLIBS)
+DEP_LIBS = $(DEPNCARGLIBS)
 
 all:: pre2ncgm.prog
 
-FortranProgramLeaf(pre2ncgm.prog,$(OBJECTS),$(LIBS))
-
-UpdateTarget
-
-#if defined(sgi) || defined(ardent) || (defined(u370) && defined(unix)) \
-	|| defined(RS6000) || defined(hpux) || defined(cray) || defined(CRAY2)
-
-.SUFFIXES: .F
-
-.F.o:
-	@$(FCPP) $< $*.f
-	$(F77) $(FFLAGS) -c $*.f
-	@$(RM) $*.f
-#endif
-
-clean::
-	@-$(RM) $(FCPP_OBJS)
+FortranProgram(pre2ncgm.prog,$(OBJECTS),$(DEP_LIBS))
+CleanFilesTarget($(FCPP_OBJS))

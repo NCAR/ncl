@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.1 1993-04-30 17:26:11 boote Exp $
+ *      $Id: XWorkstation.c,v 1.2 1993-10-19 17:53:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -52,9 +52,6 @@ static NhlErrorTypes XWorkstationInitialize(
 #endif
 );
 
-
-
-
 static NhlErrorTypes XWorkstationSetValues(
 #ifdef NhlNeedProto
         Layer,		/* old */
@@ -77,27 +74,33 @@ static NhlErrorTypes XWorkstationClear(
 
 XWorkstationLayerClassRec xWorkstationLayerClassRec = {
         {
-/* superclass			*/	(LayerClass)&workstationLayerClassRec,
 /* class_name			*/	"XWorkstation",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(XWorkstationLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(LayerClass)&workstationLayerClassRec,
+
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
-/* child_resources		*/	NULL,
 /* all_resources		*/	NULL,
+
 /* class_part_initialize	*/	NULL,
-/* class_inited			*/	False,
 /* class_initialize		*/	NULL,
 /* layer_initialize		*/	XWorkstationInitialize,
 /* layer_set_values		*/	XWorkstationSetValues,
-/* layer_set_values_not		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
-/* layer_pre_draw		*/	NULL,
+/* layer_reparent		*/	NULL,
+/* layer_destroy		*/	NULL,
+
+/* child_resources		*/	NULL,
+
 /* layer_draw			*/	NULL,
+
+/* layer_pre_draw		*/	NULL,
 /* layer_draw_segonly		*/	NULL,
 /* layer_post_draw		*/	NULL,
-/* layer_clear			*/	NULL,
-/* layer_destroy		*/	NULL
+/* layer_clear			*/	NULL
         },
         {
 /* open_work		*/	NULL,
@@ -105,7 +108,10 @@ XWorkstationLayerClassRec xWorkstationLayerClassRec = {
 /* activate_work	*/	NULL,
 /* deactivate_work	*/	NULL,
 /* update_work		*/	NhlInheritUpdate,
-/* clear_work		*/	XWorkstationClear
+/* clear_work		*/	XWorkstationClear,
+/* lineto_work 		*/	NULL,
+/* fill_work		*/	NhlInheritFill,
+/* marker_work		*/	NhlInheritMarker
 	},
 	{
 /* foo */	NULL

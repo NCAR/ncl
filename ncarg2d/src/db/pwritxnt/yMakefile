@@ -1,7 +1,6 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-29 17:04:10 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1993-10-19 17:21:16 boote Exp $
 #
-NCARG	= ../../../..
 
 MYNAME	= pwritxnt
 
@@ -13,26 +12,16 @@ FSOURCES = \
 	 ccheck.f creb15.f crebin.f dcheck.f dport.f mkmsk.f pcrbin.f\
 	 xtch.f
 
-LIBS	= $(LIBPATH)/libncarg.a $(LIBPATH)/libncarg_loc.a
+PROG_LIBS	= $(NCARGLIB) $(NCARGLOCLIB)
+DEPLIBS		= $(DEPNCARGLIB) $(DEPNCARGLOCLIB)
 
-TARGETS = pwritxnt pwritdata
+all::	pwritdata
 
-all::	$(TARGETS)
-
-pwritxnt: $(OBJECTS)
-	$(F77_LD) $(LD_FFLAGS) -o pwritxnt $(OBJECTS) $(LIBS)
+FortranProgram(pwritxnt,$(OBJECTS),$(DEPLIBS))
+InstallTarget(pwritdata,$(INSTALL_DB),$(DBPATH))
+CleanFilesTarget(pwritdata)
 
 pwritdata: pwritxnt pwritxc1 pwritxd1 pwritxc2 pwritxd2
 	-@$(RM) pwritdata
 	@echo "Building the PWRITX database"
 	@./pwritxnt
-	
-install:: pwritdata
-	@$(INSTALL) -m $(INSTALL_DB) pwritdata $(DBPATH)
-	-@$(RM) pwritdata
-
-clean::
-	-@$(RM) $(TARGETS)
-
-MakefileTarget
-CleanTarget

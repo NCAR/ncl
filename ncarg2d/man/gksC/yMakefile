@@ -1,9 +1,8 @@
 #
-#	$Id: yMakefile,v 1.4 1993-04-01 23:56:34 haley Exp $
+#	$Id: yMakefile,v 1.5 1993-10-19 17:16:43 boote Exp $
 #
-NCARG	= ../../..
 
-MAN3 = gaccum_tran_matrix gactivate_ws gcell_array gclear_ws gclose_gks \
+MAN =	gaccum_tran_matrix gactivate_ws gcell_array gclear_ws gclose_gks \
 	gclose_seg gclose_ws gcopy_seg_ws gcreate_seg gdeactivate_ws gdel_seg \
 	gescape geval_tran_matrix gfill_area ginq_asfs ginq_char_expan \
 	ginq_char_ht ginq_char_space ginq_char_up_vec ginq_clip ginq_colr_rep \
@@ -11,49 +10,22 @@ MAN3 = gaccum_tran_matrix gactivate_ws gcell_array gclear_ws gclose_gks \
 	ginq_fill_style_ind ginq_line_colr_ind ginq_linetype ginq_linewidth \
 	ginq_marker_colr_ind ginq_marker_size ginq_marker_type \
 	ginq_max_norm_tran_num ginq_name_open_seg ginq_norm_tran ginq_op_st \
-	ginq_set_seg_names ginq_text_align ginq_text_colr_ind ginq_text_font_prec \
-	ginq_text_path gopen_gks gopen_ws gpolyline gpolymarker gsel_norm_tran \
-	gset_asfs gset_char_expan gset_char_ht gset_char_space gset_char_up_vec \
-	gset_clip_ind gset_colr_rep gset_fill_colr_ind gset_fill_int_style \
-	gset_fill_style_ind gset_line_colr_ind gset_linetype gset_linewidth \
-	gset_marker_colr_ind gset_marker_size gset_marker_type gset_seg_tran \
-	gset_text_align gset_text_colr_ind gset_text_font_prec gset_text_path \
-	gset_vp gset_win gtext gupd_ws
+	ginq_set_seg_names ginq_text_align ginq_text_colr_ind \
+	ginq_text_font_prec ginq_text_path gopen_gks gopen_ws gpolyline \
+	gpolymarker gsel_norm_tran gset_asfs gset_char_expan gset_char_ht \
+	gset_char_space gset_char_up_vec gset_clip_ind gset_colr_rep \
+	gset_fill_colr_ind gset_fill_int_style gset_fill_style_ind \
+	gset_line_colr_ind gset_linetype gset_linewidth gset_marker_colr_ind \
+	gset_marker_size gset_marker_type gset_seg_tran gset_text_align \
+	gset_text_colr_ind gset_text_font_prec gset_text_path gset_vp gset_win \
+	gtext gupd_ws
 
-MAN = $(MAN3)
-
-all:
-
-preformatted:
-	@for name in $(MAN3); do \
-	echo "Formatting $$name.m"; \
-	nroff -man $$name.m >$$name.p; \
-	done
-
-#if defined(CRAY) || defined(sgi) || defined(ardent)
 # Install preformatted troff documents on systems without troff
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m
 #endif
 
-#ifdef	InstallManToLocal
-
-install::
-	@for name in $(MAN); do\
-	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MANLPATH)/$$name.$(MANL_SECTION) );\
-	done
-
-#else	/* ! InstallManToLocal	*/
-
-install::
-	@for name in $(MAN3); do\
-	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MAN3PATH)/$$name.$(MAN3_SECTION) );\
-	done
-
-#endif	/* InstallManToLocal	*/
-
-MakefileTarget
-CleanTarget
+InstallManPages($(MAN),$(FORMAT_EXT),$(MAN3PATH),$(MAN3_SECTION))
+FormatManPages($(MAN),.m,.p)

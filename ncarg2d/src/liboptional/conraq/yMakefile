@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-29 17:22:12 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1993-10-19 17:38:46 boote Exp $
 #
 NCARG	= ../../../..
 
@@ -13,7 +13,7 @@ SOURCES = $(GENERIC_SRCS)
 
 OBJECTS = $(GENERIC_OBJS)
 
-RelocatableObject(libconraq.o,$(OBJECTS))
+RelocatableTarget(libconraq.o,$(OBJECTS))
 
 #ifdef  BuildNCARGSourceLibrary
 install:: $(SOURCES)

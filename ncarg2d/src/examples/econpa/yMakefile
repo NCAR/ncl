@@ -1,8 +1,6 @@
 #
-#	$Id: yMakefile,v 1.3 1993-04-16 17:01:53 haley Exp $
+#	$Id: yMakefile,v 1.4 1993-10-19 17:22:13 boote Exp $
 #
-NCARG	= ../../../..
-
 FSPLIT	= ncarguncat
 
 MYNAME	= econpa
@@ -15,11 +13,4 @@ GENERIC_OBJS = \
 	 cpexcc.o cpex01.o cpex02.o cpex03.o cpex04.o cpex05.o cpex06.o\
 	 cpex07.o cpex08.o cpex09.o cbex01.o
 
-install::
-	@for file in $(GENERIC_SRCS); do\
-	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
-	done
-
-MakefileTarget
-CleanTarget
-UpdateTarget
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))

@@ -1,46 +1,80 @@
+/*
+ *      $Id: Template,v 1.6 1993-10-19 17:13:53 boote Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1993			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		Template
+ *
+ *	Author:		Jeff W. Boote
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Fri Apr 30 15:25:19 MDT 1993
+ *
+ *	Description:	Template file for ymake
+ */
+
+#define YES 1
+#define NO 0
+
 #if defined(HPUX) && defined(HP9000_7xx)
 #define SystemIncludes		"HPUX_snake"
 #define SystemIncludesName	HPUX_snake
+#define	HPUX_snakeArch
 #endif
 
 #if defined(AIX) && defined(RS6000)
 #define SystemIncludes		"AIX_RS6000"
 #define SystemIncludesName	AIX_RS6000
+#define	AIX_RS6000Arch
 #endif
 
 #if defined(u370) && defined(unix)
 #define SystemIncludes		"AIX370"
 #define SystemIncludesName	AIX370
+#define	AIX370Arch
 #endif
 
 #if defined(sun) && defined(i386)
 #define SystemIncludes		"Sun386i"
 #define SystemIncludesName	Sun386i
+#define	Sun386iArch
 #endif
 
 #if defined(SunOS) && defined(sun4)
 #define SystemIncludes		"Sun4"
 #define SystemIncludesName	Sun4
+#define	Sun4Arch
 #endif
 
 #if defined(SunOS) && defined(sun3)
 #define SystemIncludes		"Sun3"
 #define SystemIncludesName	Sun3
+#define	Sun3Arch
 #endif
 
 #if defined(Solaris) && defined(sun4)
 #define SystemIncludes		"Sun4Solaris"
 #define SystemIncludesName	Sun4Solaris
+#define	Sun4SolarisArch
 #endif
 
 #if defined(pyr) || defined(pyramid)
 #define SystemIncludes		"Pyramid"
 #define SystemIncludesName	Pyramid
+#define	PyramidArch
 #endif
 
 #if defined(ULTRIX) && defined(RISC)
 #define SystemIncludes		"DECRISC"
 #define SystemIncludesName	DECRISC
+#define	DECRISCArch
 #endif
 
 #if defined(vax)
@@ -48,9 +82,11 @@
 #if defined(ultrix)
 #define SystemIncludes		"DECVAX"
 #define SystemIncludesName	DECVAX
+#define	DECVAXArch
 #else
 #define SystemIncludes		"DECBSD"
 #define SystemIncludesName	DECBSD
+#define	DECBSDArch
 #endif
 
 #endif vax
@@ -58,45 +94,635 @@
 #if defined(mc300) || defined(mc500) || defined(mc700) || defined(mc6000)
 #define SystemIncludes		"Masscomp"
 #define SystemIncludesName	Masscomp
+#define	MasscompArch
 #endif
 
 #if defined(IRIX) && defined(IP)
 #define SystemIncludes		"SGI4D"
 #define SystemIncludesName	SGI4D
+#define	SGI4DArch
 #endif
 
 #if defined(CRAY2)
 #define SystemIncludes		"Cray2"
 #define SystemIncludesName	Cray2
+#define	Cray2Arch
 #endif
 
 #if defined(UNICOS) && defined(YMP)
 #define SystemIncludes          "Cray"
 #define SystemIncludesName      Cray
+#define	CrayArch
 #endif
 
 #if defined(ardent)
 #define SystemIncludes		"Ardent"
 #define SystemIncludesName	Ardent
+#define	ArdentArch
 #endif
 
 #ifndef SystemIncludesName
 #define SystemIncludes		"SystemV"
 #define SystemIncludesName	SystemV
+#define	SystemVArch
 #endif
 
 #if defined(OSF1) && defined(alpha)
 #define SystemIncludes		"AlphaOSF1"
 #define SystemIncludesName	AlphaOSF1
+#define	AlphaOSF1Arch
 #endif
 
 SYSTEM_INCLUDE		= SystemIncludesName
 
+#define FirstSite
+#include "Site"
+#undef FirstSite
+
 #include SystemIncludes
+
+#define SecondSite
+#include "Site"
+#undef SecondSite
+
+/************************************************************************
+*									*
+*	Now set up generic defaults					*
+*									*
+************************************************************************/
+
+#ifndef	NcargRoot
+#define	NcargRoot	/usr/local
+#endif	/* NcargRoot */
+
+#ifndef	BinRoot
+#define	BinRoot	NcargRoot/bin
+#endif	/* BinRoot */
+
+#ifndef LibRoot
+#define LibRoot NcargRoot/lib
+#endif	/* LibRoot */
+
+#ifndef	IncRoot
+#define	IncRoot	NcargRoot/include
+#endif	/* IncRoot */
+
+#ifndef	ManRoot
+#define	ManRoot	NcargRoot/man
+#endif	/* ManRoot */
+
+#ifndef	TmpRoot
+#define	TmpRoot	/tmp
+#endif	/* TmpRoot */
+
+#ifndef	XLibrary
+#define	XLibrary -lX11
+#endif	/* XLibrary */
+
+#ifndef	XextLibrary
+#define	XextLibrary	-lXext
+#endif	/* XextLibrary */
+
+#ifndef	XToolLibrary
+#define	XToolLibrary	-lXt
+#endif	/* XToolLibrary */
+
+#ifndef	XMutilLibrary
+#define	XMutilLibrary	-lXmu
+#endif	/* XMutilLibrary */
+
+#ifndef	XawLibrary
+#define	XawLibrary	-lXaw
+#endif	/* XawLibrary */
+
+#ifndef XmotifLibrary
+#define	XmotifLibrary	-lXm
+#endif	/* XmotifLibrary */
+
+#ifndef UseCatDirs
+#define	UseCatDirs	NO
+#endif	/* UseCatDirs */
+
+#ifndef	MakeProgram
+#define	MakeProgram	make
+#endif	/* MakeProgram */
+
+#ifndef	CCompiler
+#define	CCompiler	cc
+#endif	/* CCompiler */
+
+#ifndef CLoader
+#define	CLoader	CCompiler
+#endif	/* CLoader */
+
+#ifndef	LibSearch
+#define LibSearch	/**/
+#endif	/* LibSearch */
+
+#ifndef	IncSearch
+#define IncSearch	/**/
+#endif	/* IncSearch */
+
+#ifndef	ExtraLibSearch
+#define	ExtraLibSearch	/**/
+#endif	/* ExtraLibSearch */
+
+#ifndef	ExtraIncSearch
+#define	ExtraIncSearch	/**/
+#endif	/* ExtraIncSearch */
+
+#ifndef CtoFLibraries
+#define CtoFLibraries	/**/
+#endif	/* CtoFLibraries */
+
+#ifndef	StdDefines
+#define	StdDefines	/**/
+#endif	/* StdDefines */
+
+#ifndef	Cdynamic
+#define	Cdynamic	/**/
+#endif	/* Cdynamic */
+
+#ifndef	Cstatic
+#define	Cstatic	/**/
+#endif	/* Cstatic */
+
+#ifndef COptimizeFlag
+#define COptimizeFlag	-O
+#endif	/* COptimizeFlag */
+
+#ifndef	CDebugFlag
+#define	CDebugFlag	-g
+#endif	/* CDebugFlag */
+
+#ifndef	CcOptions
+#define	CcOptions	/**/
+#endif	/* CcOptions */
+
+#ifndef	MakeDepend
+#define	MakeDepend	makedepend
+#endif	/* MakeDepend */
+
+#ifndef	CppCommand
+#define	CppCommand	/lib/cpp
+#endif	/* CppCommand */
+
+#ifndef	FCppCommand
+#ifdef	UseInstalled
+#define	FCppCommand	$(CONFIGPATH)/fcpp $(CPP)
+#else
+#define	FCppCommand	$(CONFIGSRC)/fcpp $(CPP)
+#endif	/* UseInstalled */
+#endif	/* FCppCommand */
+
+#ifndef	FCompiler
+#define	FCompiler	f77
+#endif	/* FCompiler */
+
+#ifndef	FLoader
+#define	FLoader	FCompiler
+#endif	/* FLoader */
+
+#ifndef FOptimizeFlag
+#define FOptimizeFlag	-O
+#endif	/* FOptimizeFlag */
+
+#ifndef	FDebugFlag
+#define	FDebugFlag	-g
+#endif	/* FDebugFlag */
+
+#ifndef FcOptions
+#define	FcOptions	/**/
+#endif	/* FcOptions */
+
+#ifndef	LdCommand
+#define	LdCommand	ld
+#endif	/* LdCommand */
+
+#ifndef	LdRelCommand
+#define	LdRelCommand	LdCommand
+#endif	/* LdRelCommand */
+
+#ifndef	ExtraSysLibraries
+#define	ExtraSysLibraries	/**/
+#endif	/* ExtraSysLibraries */
+
+#ifndef	ArCommand
+#define	ArCommand	ar
+#endif	/* ArCommand */
+
+#ifndef ArRegOpt
+#define	ArRegOpt	vru
+#endif	/* ArRegOpt */
+
+#ifndef	ArQuickOpt
+#define	ArQuickOpt	q
+#endif	/* ArQuickOpt */
+
+#ifndef	RmCommand
+#define	RmCommand	rm -f
+#endif	/* RmCommand */
+
+#ifndef CatCommand
+#define	CatCommand	cat
+#endif	/* CatCommand */
+
+#ifndef	CopyCommand
+#define	CopyCommand	cp
+#endif	/* CopyCommand */
+
+#ifndef	MoveCommand
+#define	MoveCommand	mv -f
+#endif	/* MoveCommand */
+
+#ifndef	LinkCommand
+#define	LinkCommand	ln -s
+#endif	/* LinkCommand */
+
+#ifndef	TblCommand
+#define	TblCommand	tbl
+#endif	/* TblCommand */
+
+#ifndef	NroffCommand
+#define	NroffCommand	nroff -man
+#endif	/* NroffCommand */
+
+#ifndef	ColCommand
+#define	ColCommand	col
+#endif	/* ColCommand */
+
+#ifndef	DoesRanlib
+#define	DoesRanlib	YES
+#endif	/* DoesRanlib */
+
+#if	DoesRanlib
+#ifndef	RanLib
+#define	RanLib	ranlib
+#endif	/* RanLib */
+#else	/* DoesRanlib */
+#ifndef	RanLib
+#define	RanLib	touch -c
+#endif	/* RanLib */
+#endif	/* DoesRanlib */
+
+#ifndef	NoOptCommand
+#define	NoOptCommand	touch -c
+#endif	/* NoOptCommand */
+
+#ifndef LintCommand
+#define	LintCommand	lint
+#endif	/* LintCommand */
+
+#ifndef InstallCommand
+#ifndef	UseInstalled
+#define	InstallCommand	$(TOP)/utils/install -c
+#else	/* UseInstalled */
+#define	InstallCommand	install -c
+#endif	/* UseInstalled	*/
+#endif	/* InstallCommand */
+
+#ifndef	InstallRm
+#define	InstallRm	$(RM)
+#endif	/* InstallRm */
+
+#ifndef	FsplitCommand
+#define	FsplitCommand	fsplit
+#endif	/* FsplitCommand */
+
+#ifndef	BuildMFLAGS
+#define	BuildMFLAGS	YES
+#endif
+
+#ifndef	TOPDIR
+#define	TOPDIR	.
+#endif	/* TOPDIR */
+
+#ifndef CURDIR
+#define CURDIR	.
+#endif	/* CURDIR */
+
+#ifndef	UseInstalled
+BINROOT			= BinRoot
+LIBROOT			= LibRoot
+INCROOT			= IncRoot
+MANROOT			= ManRoot
+TMPROOT			= TmpRoot
+#else
+BINROOT			= _InstBin
+LIBROOT			= _InstLib
+INCROOT			= _InstInc
+MANROOT			= _InstMan
+TMPROOT			= _InstTmp
+#endif
+
+LIB_SEARCH		= LibSearch ExtraLibSearch
+INC_SEARCH		= IncSearch ExtraIncSearch
+
+TOP			= TOPDIR
+CURRENT_DIR		= CURDIR
+
+NCARGDIR		= ncarg
+HLUDIR			= hlu
+BINDIR			= bin
+LIBDIR			= lib
+INCDIR			= include
+MANDIR			= man
+DOCDIR			= doc
+TMPDIR			= tmp
+CONFIGDIR		= config
+DBDIR			= database
+FONTCAPDIR		= fontcaps
+GRAPHCAPDIR		= graphcaps
+EXAMPLESDIR		= examples
+TUTORIALDIR		= tutorial
+TESTSDIR		= tests
+ROBJDIR			= robj
+XAPPDIR			= xapp
+GENERICDIR		= generic
+
+BINPATH			= $(BINROOT)
+LIBPATH			= $(LIBROOT)
+INCPATH			= $(INCROOT)/$(NCARGDIR)
+HLUINCPATH		= $(INCROOT)/$(NCARGDIR)/$(HLUDIR)
+TMPPATH			= $(TMPROOT)
+MANPATH			= $(MANROOT)
+
+#ifdef	InstallManToLocal
+#if	UseCatDirs
+MANLPATH		= $(MANPATH)/catl
+#else
+MANLPATH		= $(MANPATH)/manl
+#endif	/* UseCatDirs */
+
+MAN1PATH		= $(MANLPATH)
+MAN3PATH		= $(MANLPATH)
+MAN5PATH		= $(MANLPATH)
+MAN6PATH		= $(MANLPATH)
+MAN8PATH		= $(MANLPATH)
+
+MANL_SECTION		= l
+MAN1_SECTION		= $(MANL_SECTION)
+MAN3_SECTION		= $(MANL_SECTION)
+MAN5_SECTION		= $(MANL_SECTION)
+MAN6_SECTION		= $(MANL_SECTION)
+MAN8_SECTION		= $(MANL_SECTION)
+
+#else	/* InstallManToLocal */
+
+#if	UseCatDirs
+MANLPATH		= $(MANPATH)/catl
+MAN1PATH		= $(MANPATH)/cat1
+MAN3PATH		= $(MANPATH)/cat3
+MAN5PATH		= $(MANPATH)/cat5
+MAN6PATH		= $(MANPATH)/cat6
+MAN8PATH		= $(MANPATH)/cat8
+#else	/* UseCatDirs */
+MANLPATH		= $(MANPATH)/manl
+MAN1PATH		= $(MANPATH)/man1
+MAN3PATH		= $(MANPATH)/man3
+MAN5PATH		= $(MANPATH)/man5
+MAN6PATH		= $(MANPATH)/man6
+MAN8PATH		= $(MANPATH)/man8
+#endif	/* UseCatDirs */
+
+MANL_SECTION		= l
+MAN1_SECTION		= 1
+MAN3_SECTION		= 3
+MAN5_SECTION		= 5
+MAN6_SECTION		= 6
+MAN8_SECTION		= 8
+
+#endif	/* InstallManToLocal */
+
+LIBNCARGPATH		= $(LIBPATH)/$(NCARGDIR)
+CONFIGPATH		= $(LIBNCARGPATH)/$(CONFIGDIR)
+DBPATH			= $(LIBNCARGPATH)/$(DBDIR)
+FONTCAPPATH		= $(LIBNCARGPATH)/$(FONTCAPDIR)
+GRAPHCAPPATH		= $(LIBNCARGPATH)/$(GRAPHCAPDIR)
+DOCPATH			= $(LIBNCARGPATH)/$(DOCDIR)
+EXAMPLESPATH		= $(LIBNCARGPATH)/$(EXAMPLESDIR)
+ROBJPATH		= $(LIBNCARGPATH)/$(ROBJDIR)
+TESTSPATH		= $(LIBNCARGPATH)/$(TESTSDIR)
+TUTORIALPATH		= $(LIBNCARGPATH)/$(TUTORIALDIR)
+XAPPPATH		= $(LIBNCARGPATH)/$(XAPPDIR)
+LIBHLUPATH		= $(LIBNCARGPATH)/$(HLUDIR)
+HLUEXPATH		= $(LIBHLUPATH)/$(EXAMPLESDIR)
+HLUDOCPATH		= $(LIBHLUPATH)/$(DOCDIR)
+HLURESPATH		= $(LIBHLUPATH)
+
+XLIB			= XLibrary
+EXTENSIONLIB		= XextLibrary
+XTOOLLIB		= XToolLibrary
+XMULIB			= XMutilLibrary
+XAWLIB			= XawLibrary
+XMOTIFLIB		= XmotifLibrary
+
+XMOTIFCLIENTLIBS	= $(XMOTIFLIB) $(XTOOLLIB) $(XLIB)
+XATHENACLIENTLIBS	= $(XAWLIB) $(XTOOLLIB) $(EXTENSIONLIB) $(XLIB)
+XMUATHENACLIENTLIBS	= $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(EXTENSIONLIB) $(XLIB)
+
+CTOFLIBS	= CtoFLibraries
+MAKE		= MakeProgram
+#if	BuildMFLAGS
+MFLAGS		= -$(MAKEFLAGS)
+#endif
+CC		= CCompiler
+CC_LD		= CLoader
+CDYNAMIC	= Cdynamic
+CSTATIC		= Cstatic
+CCOPTIONS	= CcOptions
+
+BUILDINCDIR	= $(TOP)/include
+/*
+ * $(TOP) relative to $(BUILDINCDIR)
+ */
+BUILDINCTOP	= ./..
+
+/*
+ * If not useinstalled then -L(libroot) needs to be after the libraries
+ * if use installed then it needs to be before the libraries.
+ */
+#ifndef	UseInstalled
+TOP_INCLUDES	= -I$(BUILDINCDIR)
+LDLIBS		= -L$(LIBROOT) $(LIB_SEARCH) $(EXTRA_LIBS)
+CC_LDOPTIONS	= $(CCOPTIONS) $(COPT) $(XTRA_CLDFLAGS)
+FC_LDOPTIONS	= $(FCOPTIONS) $(FOPT) $(XTRA_FLDFLAGS)
+#else
+TOP_INCLUDES	= -I$(BUILDINCDIR) $(DEV_INCLUDES) -I$(INCROOT)
+LDLIBS		= $(LIB_SEARCH) $(EXTRA_LIBS)
+CC_LDOPTIONS	= $(CCOPTIONS) $(COPT) $(XTRA_CLDFLAGS) $(DEV_LIB_SEARCH) -L$(LIBROOT)
+FC_LDOPTIONS	= $(FCOPTIONS) $(FOPT) $(XTRA_FLDFLAGS) $(DEV_LIB_SEARCH) -L$(LIBROOT)
+#endif
+EXTRA_LDLIBS	= $(SYS_LIBS) $(EXTRA_SYS_LIBS)
+
+
+ALLINCLUDES	= $(EXTRA_INCLUDES) $(TOP_INCLUDES) $(INC_SEARCH)
+STD_DEFINES	= StdDefines
+XTRA_CDEFINES	= $(EXTRA_CDEFINES) $(EXTRA_DEFINES)
+ALLDEFINES	= $(ALLINCLUDES) $(DEV_DEFINES) $(XTRA_CDEFINES) $(STD_DEFINES) $(PROJECTDEFINES) $(DEFINES)
+CFLAGS		= $(CCOPTIONS) $(COPT) $(ALLDEFINES)
+XTRA_CLDFLAGS	= $(EXTRA_CLDFLAGS) $(EXTRA_LDFLAGS)
+EXTRA_SYS_LIBS	= ExtraSysLibraries
+
+DEPEND		= MakeDepend
+CPP		= CppCommand
+FCPP		= FCppCommand
+
+F77		= FCompiler
+F77_LD		= FLoader
+FCOPTIONS	= FcOptions
+
+XTRA_FDEFINES	= $(EXTRA_FDEFINES) $(EXTRA_DEFINES)
+FFLAGS	= $(FCOPTIONS) $(FOPT) $(XTRA_FDEFINES)
+XTRA_FLDFLAGS	= $(EXTRA_FLDFLAGS) $(EXTRA_LDFLAGS)
+
+LD		= LdCommand
+LD_REL		= LdRelCommand
+AR		= ArCommand ArRegOpt
+AR_QUICK	= ArCommand ArQuickOpt
+
+RM		= RmCommand
+CAT		= CatCommand
+CP		= CopyCommand
+MV		= MoveCommand
+LN		= LinkCommand
+RANLIB		= RanLib
+NO_OPT		= NoOptCommand
+TBL		= TblCommand
+NROFF		= NroffCommand
+COL		= ColCommand
+
+LINT		= LintCommand
+INSTALL		= InstallCommand
+INSTALL_RM	= InstallRm
+
+INSTALL_BIN	= 0755
+INSTALL_MAN	= 0644
+INSTALL_DOC	= 0644
+INSTALL_APP	= 0644
+INSTALL_LIB	= 0644
+INSTALL_DB	= 0644
+INSTALL_INC	= 0644
+
+CONFIGSRC	= $(TOP)/$(CONFIGDIR)
+NEWCONFIGSRC	= ../$(CONFIGSRC)
+#ifdef	UseInstalled
+YMAKE		= ymake
+NEWYMAKE	= $(YMAKE)
+YMAKEDEP	=
+#else
+YMAKE		= $(CONFIGSRC)/ymake -config $(CONFIGSRC)
+NEWYMAKE	= $(NEWCONFIGSRC)/ymake -config $(NEWCONFIGSRC)
+YMAKEDEP	= $(CONFIGSRC)/ymake-filter
+#endif
+FSPLIT		= FsplitCommand
+SHELL		= /bin/sh
+#ifdef	UseInstalled
+CALLCONV	= $(CONFIGPATH)/callconv
+MKDIRHIER	= $(CONFIGPATH)/mkdirhier
+#else
+CALLCONV	= $(CONFIGSRC)/callconv
+MKDIRHIER	= $(CONFIGSRC)/mkdirhier
+#endif
+
+#include "Project"
 
 #include "Rules"
 
+#if	defined(AIX) || defined(IRIX) || defined(HPUX) || defined(UNICOS)
+.SUFFIXES: .F
+
+.F.o:
+	@$(FCPP) $< $*.f
+	$(F77) $(FFLAGS) -c $*.f
+	@$(RM) $*.f
+#endif
+
+
+/*
+ * This allows developers to over-ride the values of any of the pre-defined
+ * make symbols on a project wide bases - even if they are using the installed
+ * version of ymake.
+ */
+#ifdef	YMAKEDEVFILE
+#include YMAKEDEVFILE
+#endif
+
 #include YMAKEFILE
 
+/*
+ * Disable Optimization for a given yMakefile
+ */
+#ifdef	DisableOptimize
+#ifdef	COptimizeFlag
+#undef	COptimizeFlag
+#endif	/* COptimizeFlag */
+#define	COptimizeFlag	/**/
+#ifdef	FOptimizeFlag
+#undef	FOptimizeFlag
+#endif	/* FOptimizeFlag */
+#define	FOptimizeFlag	/**/
+#endif	/* DisableOptimize */
 
+/*
+ * Turn on/off Debuging in a given yMakefile
+ */
 
+#ifndef COptOrDebugFlag
+#ifdef	DEBUG
+#define COptOrDebugFlag CDebugFlag
+#else
+#define COptOrDebugFlag COptimizeFlag
+#endif	/* DEBUG */
+#endif	/* COptOrDebugFlag */
+
+#ifndef FOptOrDebugFlag
+#ifdef	DEBUG
+#define FOptOrDebugFlag FDebugFlag
+#else
+#define FOptOrDebugFlag FOptimizeFlag
+#endif	/* DEBUG */
+#endif	/* FOptOrDebugFlag */
+
+COPT	= COptOrDebugFlag
+FOPT	= FOptOrDebugFlag
+
+#ifdef	IHaveSubdirs
+InternalMakeSubdirs($(SUBDIRS))
+#else
+/*
+ * null all rule is here to pick up the all target in case the yMakefile
+ * is empty - don't want all to default to clean.
+ */
+null_rule::
+#endif
+
+CleanFilesTarget(core Makefile.bak)
+
+InternalMakefileTarget
+
+#ifdef	IHaveSubdirs
+
+InternalInstallSubdirs($(SUBDIRS))
+InternalMakefilesSubdirs($(SUBDIRS))
+InternalCleanSubdirs($(SUBDIRS))
+InternalDistCleanSubdirs($(SUBDIRS))
+InternalDependSubdirs($(SUBDIRS))
+InternalIncludesSubdirs($(SUBDIRS))
+
+#else	/* IHaveSubdirs */
+
+install::
+	@echo "install in $(CURRENT_DIR) done"
+
+Makefiles::
+
+includes::
+
+depend::
+
+#endif	/* IHaveSubdirs */
+
+dist-clean::
+	@$(RM) Makefile
+	@echo "dist-clean in $(CURRENT_DIR)"

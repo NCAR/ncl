@@ -1,6 +1,5 @@
-
 /*
- *      $Id: MapTransObj.c,v 1.2 1993-05-27 19:11:19 ethan Exp $
+ *      $Id: MapTransObj.c,v 1.3 1993-10-19 17:51:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -199,26 +198,23 @@ float*  /*ymissing*/
 
 MapTransObjLayerClassRec mapTransObjLayerClassRec = {
         {
-/* superclass			*/	(LayerClass)&transObjLayerClassRec,
 /* class_name			*/	"MapTransObj",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(MapTransObjLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(LayerClass)&transObjLayerClassRec,
+
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
-/* child_resources		*/	NULL,
 /* all_resources		*/	NULL,
+
 /* class_part_initialize	*/	NULL,
-/* class_inited			*/	False,
 /* class_initialize		*/	NULL,
 /* layer_initialize		*/	MapTransInitialize,
 /* layer_set_values		*/	MapTransSetValues,
-/* layer_set_values_not		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
-/* layer_pre_draw		*/	NULL,
-/* layer_draw			*/	NULL,
-/* layer_draw_segonly		*/	NULL,
-/* layer_post_draw		*/	NULL,
-/* layer_clear			*/	NULL,
+/* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NULL
         },
         {

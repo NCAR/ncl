@@ -1,28 +1,20 @@
 #
 #
-#	$Id: yMakefile,v 1.1 1992-09-09 17:37:48 clyne Exp $
+#	$Id: yMakefile,v 1.2 1993-10-19 17:12:12 boote Exp $
 #
 #
 #	Makefile for ncargpath
 #
 #
 
-NCARG = ../../../..
-
 MYNAME		= ncargpath
 
-LIBS		= $(LIBPATH)/libncarg_c.a 
-
-CDEFINES	= 
-
+PROG_LIBS	=	$(NCARGCLIB)
+DEPLIBS		=	$(DEPNCARGCLIB)
 OBJS		= ncargpath.o
 SRCS		= ncargpath.c
 
-all::	$(MYNAME)
-
-CTarget($(MYNAME),$(OBJS),$(LIBS))
-MakefileTarget
-CleanTarget
+CProgram($(MYNAME),$(OBJS),$(DEPLIBS))
 
 saber_src: $(SRCS)
 	#setopt load_flags $(CFLAGS) $(CINCS)
@@ -31,4 +23,3 @@ saber_src: $(SRCS)
 saber_obj: $(OBJS)
 	#setopt load_flags $(CFLAGS) $(CINCS)
 	#load $(OBJS) $(LIBS)
-

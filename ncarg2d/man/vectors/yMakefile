@@ -1,45 +1,16 @@
 #
-#	$Id: yMakefile,v 1.4 1993-05-03 17:42:35 haley Exp $
+#	$Id: yMakefile,v 1.5 1993-10-19 17:19:04 boote Exp $
 #
-NCARG	= ../../..
 
-MAN3 = ezvec fx fy vectors vectors_params velvct velvec vvectr vvgetc vvgeti \
+MAN =	ezvec fx fy vectors vectors_params velvct velvec vvectr vvgetc vvgeti \
 	vvgetr vvinit vvrset vvsetc vvseti vvsetr vvudmv vvumxy
 
-MAN = $(MAN3)
-
-all:
-
-preformatted:
-	@for name in $(MAN3); do \
-	echo "Formatting $$name.m"; \
-	nroff -man $$name.m >$$name.p; \
-	done
-
-#if defined(CRAY) || defined(sgi) || defined(ardent)
 # Install preformatted troff documents on systems without troff
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m
 #endif
 
-#ifdef	InstallManToLocal
-
-install::
-	@for name in $(MAN); do\
-	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MANLPATH)/$$name.$(MANL_SECTION) );\
-	done
-
-#else	/* ! InstallManToLocal	*/
-
-install::
-	@for name in $(MAN3); do\
-	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MAN3PATH)/$$name.$(MAN3_SECTION) );\
-	done
-
-#endif	/* InstallManToLocal	*/
-
-MakefileTarget
-CleanTarget
+InstallManPages($(MAN),$(FORMAT_EXT),$(MAN3PATH),$(MAN3_SECTION))
+FormatManPages($(MAN),.m,.p)

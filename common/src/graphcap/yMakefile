@@ -1,9 +1,6 @@
 #
-#	$Id: yMakefile,v 1.4 1993-01-20 17:08:55 haley Exp $
+#	$Id: yMakefile,v 1.5 1993-10-19 17:12:38 boote Exp $
 #
-NCARG	= ../../..
-
-FSPLIT	= ncarguncat
 
 MYNAME	= graphcap
 
@@ -12,11 +9,6 @@ MYNAME	= graphcap
 #		an internal code change to graphc.
 #
 #		"form.gc" is just an example and not installed.
-#
-#		The "all" target is a dummy because it depends upon
-#		the "graphc" program, which is not installed until the
-#		"install" cycle.
-#
 
 GENERIC_SRCS = \
 	adm5.gc aed.a.gc aed.b.gc balsml.gc hpgl.gc hpgl.land.gc \
@@ -40,210 +32,12 @@ GRAPHCAPS = \
 	versaterm vt100 vt125 vt220 vt240 vt330 vt340 \
 	vt340w ditroff
 
-
-all::
-
-install:: $(GRAPHCAPS)
-	@$(MV) $(GRAPHCAPS) $(GRAPHCAPPATH)
-
-adm5:  adm5.gc
+# rule for processing graphcaps
+.SUFFIXES:
+.SUFFIXES: .gc
+.gc:
 	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
+	@$(GRAPHC) $< $@
 
-aed.a:  aed.a.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-aed.b:  aed.b.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-balsml:  balsml.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-hpgl:  hpgl.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-hpgl.land:  hpgl.land.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-hp2648a:  hp2648a.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-hp150:  hp150.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-hp7475a:  hp7475a.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-hp7510a:  hp7510a.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-hplj100l:  hplj100l.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-hplj100p:  hplj100p.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-hplj150l:  hplj150l.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-hplj150p:  hplj150p.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-hplj300l:  hplj300l.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-hplj300p:  hplj300p.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-hplj75l:  hplj75l.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-hplj75p:  hplj75p.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-hpljo75l:  hpljo75l.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-hpljo75p:  hpljo75p.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-imagen:  imagen.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-imagen.port:  imagen.port.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-pc.mono:  pc.mono.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-ps.color:  ps.color.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-ps.land.color:  ps.land.color.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-ps.land.mono:  ps.land.mono.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-ps.mono:  ps.mono.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-qms800:  qms800.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-r6211:  r6211.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-s100:  s100.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-t4010:  t4010.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-t4025:  t4025.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-t4105:  t4105.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-t4107:  t4107.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-t4107.seg:  t4107.seg.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-t4115:  t4115.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-t4115.seg:  t4115.seg.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-tal1590:  tal1590.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-tekalike:  tekalike.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-versaterm:  versaterm.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-vt100:  vt100.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-vt125:  vt125.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-vt220:  vt220.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-vt240:  vt240.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-vt330:  vt330.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-vt340:  vt340.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-vt340w:  vt340w.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-ditroff:	ditroff.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-
-MakefileTarget
-CleanTarget
-UpdateTarget
-
-clean::
-	@$(RM) $(GRAPHCAPS)
-
-
+InstallTarget($(GRAPHCAPS),$(INSTALL_DB),$(GRAPHCAPPATH))
+CleanFilesTarget($(GRAPHCAPS))

@@ -1,11 +1,7 @@
 #
 # another cvs  test
 #
-NCARG	= ..
+
+#define IHaveSubdirs
 
 SUBDIRS = src man app
-
-MakeSubdirs($(SUBDIRS))
-InstallSubdirs($(SUBDIRS))
-MakefilesSubdirs($(SUBDIRS))
-CleanSubdirs($(SUBDIRS))

@@ -1,6 +1,5 @@
-NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.25 1993-03-28 14:49:37 haley Exp $
+#	$Id: yMakefile,v 1.26 1993-10-19 17:42:34 boote Exp $
 #
 
 
@@ -23,31 +22,24 @@ SUNLIBS		 = -lsuntool -lsunwindow -lpixrect
 #
 #	local libraries
 #
-LOCLIB		= $(ROBJPATH)/libctrans.o $(LIBPATH)/libcgm.a \
-		$(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a
+PROG_LIBS	= $(CTRANSLIB) $(CGMLIB) $(NCARGRASLIB) $(NCARGCLIB)
+DEP_LIBS	= $(DEPCTRANSLIB) $(DEPCGMLIB) $(DEPNCARGRASLIB) $(DEPNCARGCLIB)
 
 #ifdef	sgi
-GENLIBS 	= $(NETCDFLIB) $(HDFLIB) $(CDYNAMIC) -lm -lmalloc
-#else
-GENLIBS 	= $(NETCDFLIB) $(HDFLIB) $(CDYNAMIC) -lm 
+MORE_LIBRARIES	= -lmalloc
 #endif
 
-LIBS		= $(LOCLIB) $(CSTATIC) $(X11LIBS) $(SUNLIBS) $(GENLIBS)
+EXTRA_LIBS	= $(X11LIBS) $(SUNLIBS) $(NETCDFLIB) $(HDFLIB)
+SYS_LIBS	= -lm $(MORE_LIBRARIES)
 
 SRCS		=  main.c 
 OBJS		=  main.o 
 
-
-
-
 all::
 	@$(CAT) Copyright
 
-all:: $(MYNAME)
-
-CTarget($(MYNAME),$(OBJS),$(LIBS))
-MakefileTarget
-CleanTarget
+CProgram($(MYNAME),$(OBJS),$(DEP_LIBS))
+DependTarget($(SRCS))
 
 saber_src: $(SRCS)
 	#setopt load_flags $(LD_CFLAGS) $(CINCS)
@@ -61,5 +53,3 @@ saber_obj: $(OBJS)
 lint: $(HDR) $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1
 #	lint $(SRCS) $(LIBS) > lint.out
-
-

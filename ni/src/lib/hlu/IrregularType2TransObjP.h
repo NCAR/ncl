@@ -1,6 +1,5 @@
-
 /*
- *      $Id: IrregularType2TransObjP.h,v 1.1 1993-04-30 17:22:35 boote Exp $
+ *      $Id: IrregularType2TransObjP.h,v 1.2 1993-10-19 17:51:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,13 +20,9 @@
  *	Description:	Private header file for irregular type 2 grid 
  *			transformations.
  */
-
-
 #ifndef _NIrregularType2TransObjP_h
 #define _NIrregularType2TransObjP_h
 
-
-#include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/TransObjP.h>
 #include <ncarg/hlu/IrregularType2TransObj.h>
 
@@ -66,7 +61,7 @@ typedef struct _IrregularType2TransObjLayerPart {
 } IrregularType2TransObjLayerPart;
 
 typedef struct _IrregularType2TransObjLayerRec {
-	BaseLayerPart	base;
+	ObjLayerPart	base;
 	TransObjLayerPart trobj;
 	IrregularType2TransObjLayerPart ir2trans;
 } IrregularType2TransObjLayerRec;
@@ -76,7 +71,7 @@ typedef struct _IrregularType2TransObjLayerClassPart {
 }IrregularType2TransObjLayerClassPart;
 
 typedef struct _IrregularType2TransObjLayerClassRec {
-	BaseLayerClassPart	base_class;
+	ObjLayerClassPart	base_class;
 	TransObjLayerClassPart	trobj_class;
 	IrregularType2TransObjLayerClassPart	ir2trans_class;
 }IrregularType2TransObjLayerClassRec;

@@ -1,6 +1,5 @@
-
 /*
- *      $Id: View.c,v 1.2 1993-06-03 15:12:14 ethan Exp $
+ *      $Id: View.c,v 1.3 1993-10-19 17:53:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -36,8 +35,7 @@
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/ViewP.h>
 #include <ncarg/hlu/hluutil.h>
-
-/* SUPPRESS 112 */
+#include <ncarg/hlu/Workstation.h>
 
 static NhlResource resources[] = {
 	{ NhlNvpXF, NhlCvpXF, NhlTFloat, sizeof(float),
@@ -110,27 +108,33 @@ static NhlErrorTypes    ViewGetBB(
 
 ViewLayerClassRec viewLayerClassRec = {
         {
-/* superclass			*/	(LayerClass)&baseLayerClassRec,  
 /* class_name			*/	"View",
 /* nrm_class			*/	NrmNULLQUARK, 
 /* layer_size			*/	sizeof(ViewLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(LayerClass)&baseLayerClassRec,  
+
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
-/* child_resources		*/	NULL,
 /* all_resources		*/	NULL,
+
 /* class_part_initialize	*/	ViewClassPartInitialize,
-/* class_inited			*/	False,
 /* class_initialize		*/	ViewClassInitialize,
 /* layer_initialize		*/	ViewInitialize,
 /* layer_set_values		*/	ViewSetValues,
-/* layer_set_values_not		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
-/* layer_pre_draw		*/	NULL,
+/* layer_reparent		*/	NULL,
+/* layer_destroy		*/	ViewDestroy,
+
+/* child_resources		*/	NULL,
+
 /* layer_draw			*/	NULL,
+
+/* layer_pre_draw		*/	NULL,
 /* layer_draw_segonly		*/	NULL,
 /* layer_post_draw		*/	NULL,
-/* layer_clear			*/	NULL,
-/* layer_destroy		*/	ViewDestroy
+/* layer_clear			*/	NULL
         },
         {
 /* segment_workstation	*/	-1,
@@ -199,7 +203,6 @@ static NhlErrorTypes	ViewSetValues
 	LayerList	step;
 	NhlSegTransList	steptrans;
 	NhlErrorTypes ret = NOERROR;
-	int i;
 
 
 	if((newl->view.x != oldl->view.x) ||
@@ -465,18 +468,23 @@ static NhlErrorTypes	ViewClassInitialize()
 	int i = NhlDEFAULT_SEG_WKS;
 	int cid = NhlDEFAULT_CONNECTION_ID;
 	int wtp = NhlDEFAULT_SEG_WKS_TYPE;
+	NhlErrorTypes	ret = NOERROR;
 
 /*
-* GKS BETTER BE OPEN !!!!
-*/
+ * GKS BETTER BE OPEN !!!!
+ * Make sure the WorkstationLayerClass is initialized so GKS is sure to be open.
+ */
+	 ret = _NhlInitializeLayerClass(workstationLayerClass);
+	 if(ret < WARNING)
+		return(ret);
 
 	while(wksisopn(i)) {
 		i++;
 	}
-/* FORTRAN */ gopwk_(&i,&cid,&wtp);
+/* FORTRAN */ _NHLCALLF(gopwk,GOPWK)(&i,&cid,&wtp);
 	gactivate_ws(i);
 	viewLayerClassRec.view_class.segment_workstation = i;
-	return(NOERROR);
+	return(ret);
 }
 
 /*
@@ -506,7 +514,6 @@ static NhlErrorTypes	ViewDestroy
 	LayerList	step1,tmp1;
 
 	step1 = layer->view.children;
-	if(step1 != NULL)
 	_NhlDestroySegTransDat(layer->view.thetrans_children);
 	layer->view.children = NULL;
 	while(step1 != NULL) {

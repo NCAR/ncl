@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Segments.c,v 1.1 1993-04-30 17:24:02 boote Exp $
+ *      $Id: Segments.c,v 1.2 1993-10-19 17:52:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -51,6 +51,7 @@ void lubksb3d();
 */
 
 static int id = 1;
+#define SEG_NOT_SET -10
 
 
 /*
@@ -90,7 +91,9 @@ void	_NhlDestroySegTransDat
 	NhlTransDat	*transdat;
 #endif
 {
-/* FORTRAN */ gdsg_(&(transdat->id));
+	if(transdat->id != SEG_NOT_SET) {
+/* FORTRAN */ _NHLCALLF(gdsg,GDSG)(&(transdat->id));
+	}
 	NhlFree(transdat);
 	transdat = NULL;
 	return;
@@ -155,7 +158,7 @@ NhlTransDat *_NhlInitSegTransDat
 		transdat->indx[2] = 0;
 
 		transdat->d = 0;
-		transdat->id = id++;
+		transdat->id = SEG_NOT_SET;
 
 		k = 3;
 		j = 3;
@@ -163,7 +166,7 @@ NhlTransDat *_NhlInitSegTransDat
 * Computes LU factorization routine located in util.a
 */
 
-/* FORTRAN */ sgefa_(transdat->a,&k,&j, transdat->indx, &(transdat->d)); 
+/* FORTRAN */ _NHLCALLF(sgefa,SGEFA)(transdat->a,&k,&j, transdat->indx, &(transdat->d)); 
 	}
 	return(transdat);
 }
@@ -234,7 +237,7 @@ void	_NhlResetSegTransDat
 		k = 3;
 		j = 3;
 
-/* FORTRAN */ sgefa_(transdat->a,&k,&j, transdat->indx, &(transdat->d)); 
+/* FORTRAN */ _NHLCALLF(sgefa,SGEFA)(transdat->a,&k,&j, transdat->indx, &(transdat->d)); 
 	}
 }
 /*
@@ -297,12 +300,12 @@ void	_NhlComputeSegTrans
 	yprimef[2] = yprime[2];
 
 
-/* FORTRAN */ sgesl_(transdat->a,&k,&j,transdat->indx,xprimef,&i);
+/* FORTRAN */ _NHLCALLF(sgesl,SGESL)(transdat->a,&k,&j,transdat->indx,xprimef,&i);
 	transform[0] = (float)xprimef[0];
 	transform[2] = (float)xprimef[1];
 	transform[4] = (float)xprimef[2];
 
-/* FORTRAN */ sgesl_(transdat->a,&k,&j,transdat->indx,yprimef,&i);
+/* FORTRAN */ _NHLCALLF(sgesl,SGESL)(transdat->a,&k,&j,transdat->indx,yprimef,&i);
 	transform[1] = (float)yprimef[0];
 	transform[3] = (float)yprimef[1];
 	transform[5] = (float)yprimef[2];
@@ -335,13 +338,19 @@ NhlErrorTypes _NhlDrawSegment
 	int		wksid;
 #endif
 {
-	if(wksisopn(wksid)&&(wksisact(wksid))) {
-/* FORTRAN */ gcsgwk_(&(wksid),&(transdat->id));
-		return(NOERROR);
-	}
-	else {
-		NhlPError(WARNING,E_UNKNOWN,"_NhlDrawSegment: Workstation is not open or inactive. ");
+	if(transdat->id != SEG_NOT_SET) {
+		if(wksisopn(wksid)&&(wksisact(wksid))) {
+	/* FORTRAN */ _NHLCALLF(gcsgwk,GCSGWK)(&(wksid),&(transdat->id));
+			return(NOERROR);
+		}
+		else {
+			NhlPError(WARNING,E_UNKNOWN,"_NhlDrawSegment: Workstation is not open or inactive. ");
+			return(WARNING);
+		}
+	} else {
+		NhlPError(WARNING,E_UNKNOWN,"_NhlDrawSegment: _NhlStartSegment never called. ");
 		return(WARNING);
+		
 	}
 }
 
@@ -414,7 +423,10 @@ void	_NhlStartSegment
 	NhlTransDat	*transdat;
 #endif
 {
-/* FORTRAN */ gcrsg_(&(transdat->id));
+	if(transdat->id == SEG_NOT_SET) {
+		transdat->id = id++;
+	}
+/* FORTRAN */ _NHLCALLF(gcrsg,GCRSG)(&(transdat->id));
 	return;
 }
 
@@ -442,7 +454,12 @@ void _NhlSetSegTrans
 	float		*transform;
 #endif
 {
-/* FORTRAN */ gssgt_(&(transdat->id),transform);
+	if(transdat->id != SEG_NOT_SET) {
+/* FORTRAN */ _NHLCALLF(gssgt,GSSGT)(&(transdat->id),transform);
+	} else {
+			NhlPError(WARNING,E_UNKNOWN,"_NhlSetSegTrans: _NhlStartSeg was never called. ");
+			return;
+	}
 	return;
 }
 
@@ -463,6 +480,6 @@ void _NhlSetSegTrans
 
 void	_NhlEndSegment()
 {
-/* FORTRAN */ gclsg_();
+/* FORTRAN */ _NHLCALLF(gclsg,GCLSG)();
 	return;
 }

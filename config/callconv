@@ -1,0 +1,111 @@
+#!/bin/csh -f
+#
+#	NCAR Graphics
+#	Copyright -C- 1989 University Corporation for Atmospheric Research
+#	Author: Don Middleton February 1989
+#
+#	callconv:
+#
+#		Convert C functions that are called by Fortran
+#		to the proper calling convention for the system.
+#	
+#	Usage:
+#		callconv system file function1 function2 ...
+#
+#	Example:
+#		suppose you are on a Cray2 and the file foo.c
+#		contains functions wooga(), booga(), and rooga().
+#		
+#		callconv Cray2 foo.c wooga booga rooga
+#
+#
+#	
+
+
+if ($#argv < 3) then
+	echo "Usage: callconv system file function1 function2 ..."
+	exit(1)
+endif
+
+set functions=()
+
+set system=$1
+shift
+
+set file=$1
+shift
+
+if (! -e ${file}.sed) then
+	echo "Error: Cannot locate ${file}.sed"
+	exit 1
+endif
+
+while ($#argv > 0)
+	set functions=($functions $1)
+	shift
+end
+
+cp ${file}.sed $file
+
+if ($system == "Cray2" || $system == "Cray") then
+echo "Converting to $system C/f77 calling conventions for $file"
+endif
+
+if ($system == "Ardent") then
+echo "Converting to $system calling conventions for $file"
+endif
+
+if ($system == "Ultrix-VAX-Fortran") then
+echo "Converting to $system calling conventions for $file"
+endif
+
+if (${system} == "AIX_RS6000") then
+echo "Converting to $system calling conventions for $file"
+endif
+
+if (${system} == "HPUX_snake") then
+echo "Converting to $system calling conventions for $file"
+endif
+
+
+if ($system == "Cray2" || $system == "Cray" || $system == "Ultrix-VAX-Fortran") then
+
+	foreach i ($functions)
+		set newname = `echo $i | tr '[a-z]' '[A-Z]'`
+
+		ed <<EOF - $file >/dev/null
+		g/${i}_/s//$newname/g
+		w
+		q
+EOF
+	end
+exit 0
+endif
+
+if ($system == "Ardent") then
+ 
+      foreach i ($functions)
+              set newname = `echo $i | tr '[a-z]' '[A-Z]'`
+
+              sed -e "s/${i}_/$newname/g" < $file > /tmp/foo$$
+              mv -f /tmp/foo$$ $file
+      end
+exit 0
+endif
+
+
+if (${system} == "AIX_RS6000" || $system == "HPUX_snake") then
+
+	foreach i (${functions})
+
+		ed <<EOF - ${file} >/dev/null
+		g/${i}_/s//${i}/g
+		w
+		q
+EOF
+	end
+exit 0
+endif
+
+echo "Assuming standard BSD C/f77 calling conventions for $file"
+exit 0

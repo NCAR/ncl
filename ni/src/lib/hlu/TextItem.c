@@ -1,6 +1,5 @@
-
 /*
- *      $Id: TextItem.c,v 1.2 1993-06-03 15:11:55 ethan Exp $
+ *      $Id: TextItem.c,v 1.3 1993-10-19 17:52:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +28,7 @@
 #include <string.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/Converters.h>
 #include <ncarg/hlu/TextItemP.h>
 
 /* SUPPRESS 112 */
@@ -150,27 +150,33 @@ float   * /*yot */
 
 TextItemLayerClassRec textItemLayerClassRec = {
 	{
-/* superclass			*/	(LayerClass)&viewLayerClassRec,
 /* class_name			*/	"TextItem",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(TextItemLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(LayerClass)&viewLayerClassRec,
+
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
-/* child_resources		*/	NULL,
 /* all_resources		*/	NULL,
+
 /* class_part_initialize	*/	NULL,
-/* class_inited			*/	False,
 /* class_initialize		*/	TextItemClassInitialize,
 /* layer_initialize		*/	TextItemInitialize,
 /* layer_set_values		*/	TextItemSetValues,
-/* layer_set_values_not		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
-/* layer_pre_draw		*/	NULL,
+/* layer_reparent		*/	NULL,
+/* layer_destroy		*/	TextItemDestroy,
+
+/* child_resources		*/	NULL,
+
 /* layer_draw			*/	TextItemDraw,
+
+/* layer_pre_draw		*/	NULL,
 /* layer_draw_segonly		*/	NULL,
 /* layer_post_draw		*/	NULL,
-/* layer_clear			*/	NULL,
-/* layer_destroy		*/	TextItemDestroy
+/* layer_clear			*/	NULL
 	},
 	{
 /* segment_workstation */ -1,
@@ -215,7 +221,7 @@ static NhlErrorTypes TextItemSetValues
 	TextItemLayer told = (TextItemLayer) old;
 	TextItemLayer tnew = (TextItemLayer) new;
 	NhlErrorTypes ret = NOERROR,ret1 = NOERROR;
-	float tmpvx0,tmpvx1,tmpvy0,tmpvy1,delt;
+	float tmpvx0,tmpvx1,tmpvy0,tmpvy1;
 	float fl,fr,ft,fb,ul,ur,ut,ub;
 	int ll;
 	char *tmp,buf[10];
@@ -254,7 +260,6 @@ static NhlErrorTypes TextItemSetValues
 			tnew->text.font_height = (float)sqrt((float)(
 				((tmpvx1-tmpvx0)*(tmpvx1-tmpvx0)) 
 				+((tmpvy1-tmpvy0)*(tmpvy1-tmpvy0))));
-			delt = tnew->text.font_height/told->text.font_height;
 		
 		} else {
 		  NhlPError(WARNING,E_UNKNOWN,"TextItemSetValues: Can not change x,y,width,and height when other text attribute changes have been requested also, proceding with other text attribute requests");
@@ -538,135 +543,6 @@ static NhlErrorTypes    TextItemDestroy
 	return(NOERROR);
 }
 
-
-/*
- * Function:	NhlCvtStringToFQuality
- *
- * Description:	converter for font quality resources
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-NhlCvtStringToFQuality
-#if     __STDC__
-(
-        NrmValue        *from,  /* ptr to from data     */
-        NrmValue        *to,    /* ptr to to data       */
-        NrmValue        *args,  /* add'n args for conv  */
-        int             nargs   /* number of args       */
-)
-#else
-(from,to,args,nargs)
-        NrmValue        *from;  /* ptr to from data     */
-        NrmValue        *to;    /* ptr to to data       */
-        NrmValue        *args;  /* add'n args for conv  */
-        int             nargs;  /* number of args       */
-#endif
-{
-	FontQuality tmp;
-	NhlErrorTypes ret = NOERROR;
-	
-	if(nargs != 0) {
-		ret = WARNING;
-	}
-	
-	if(strncmp((char*)from->addr,"HIGH",strlen("HIGH"))==0) 
-		tmp = HIGH;
-	else if(strncmp((char*)from->addr,"MEDIUM",strlen("MEDIUM"))==0)
-		tmp = MEDIUM;
-	else if(strncmp((char*)from->addr,"LOW",strlen("LOW"))==0)
-		tmp = LOW;
-	else 
-		NhlPError(WARNING,E_UNKNOWN,"NhlCvtStringToFQuality: Could not convert %s to either HIGH, MEDIUM or LOW, incorrect string",(char*)from->addr);
-	
-	if((to->size >0) && (to->addr != NULL)) {
-		/* caller provided space */
-		if(to->size < sizeof(FontQuality)) {
-			to->size = (unsigned int)sizeof(FontQuality);
-			return(FATAL);
-		}
-		to->size = (unsigned int)sizeof(FontQuality);
-		*((FontQuality*)(to->addr)) = tmp;
-		return(ret);
-	} else {
-		static FontQuality val;
-		to->size = (unsigned int)sizeof(FontQuality);
-		val = tmp;
-		to->addr = &val;
-		return(ret);
-	}
-}
-/*
- * Function:	NhlCvtStringToTextDirection
- *
- * Description:	converter for TextDirectionresources
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-NhlCvtStringToTextDirection
-#if     __STDC__
-(
-        NrmValue        *from,  /* ptr to from data     */
-        NrmValue        *to,    /* ptr to to data       */
-        NrmValue        *args,  /* add'n args for conv  */
-        int             nargs   /* number of args       */
-)
-#else
-(from,to,args,nargs)
-        NrmValue        *from;  /* ptr to from data     */
-        NrmValue        *to;    /* ptr to to data       */
-        NrmValue        *args;  /* add'n args for conv  */
-        int             nargs;  /* number of args       */
-#endif
-{
-	TextDirection tmp;
-	NhlErrorTypes ret = NOERROR;
-	
-	if(nargs != 0) {
-		ret = WARNING;
-	}
-	
-	if(strncmp((char*)from->addr,"DOWN",strlen("DOWN"))==0) 
-		tmp = DOWN;
-	else if(strncmp((char*)from->addr,"UP",strlen("UP"))==0)
-		tmp = UP;
-	else if(strncmp((char*)from->addr,"ACROSS",strlen("ACROSS"))==0)
-		tmp = ACROSS;
-	else 
-		NhlPError(WARNING,E_UNKNOWN,"NhlCvtStringToTextDirection: Could not convert %s to either UP, DOWN or ACROSS, incorrect string",(char*)from->addr);
-	
-	if((to->size >0) && (to->addr != NULL)) {
-		/* caller provided space */
-		if(to->size < sizeof(TextDirection)) {
-			to->size = (unsigned int)sizeof(TextDirection);
-			return(FATAL);
-		}
-		to->size = (unsigned int)sizeof(TextDirection);
-		*((TextDirection*)(to->addr)) = tmp;
-		return(ret);
-	} else {
-		static TextDirection val;
-		to->size = (unsigned int)sizeof(TextDirection);
-		val = tmp;
-		to->addr = &val;
-		return(ret);
-	}
-}
 /*
  * Function:	TextItemClassInitialize
  *
@@ -687,12 +563,23 @@ static NhlErrorTypes    TextItemClassInitialize
 ()
 #endif
 {
-	(void)NrmStringToQuark(NhlTFQuality);	
-	(void)NrmStringToQuark(NhlTTextDirection);
-	NhlRegisterConverter(NhlTString,NhlTFQuality,
-		NhlCvtStringToFQuality,NULL,0,False,NULL);
-	NhlRegisterConverter(NhlTString,NhlTTextDirection,
-		NhlCvtStringToTextDirection,NULL,0,False,NULL);
+	NhlConvertArg	fontqlist[] = {
+				{NHLSTRENUM,	HIGH,	"high"},
+				{NHLSTRENUM,	MEDIUM,	"medium"},
+				{NHLSTRENUM,	LOW,	"low"}
+				};
+
+	NhlConvertArg	textdirlist[] = {
+				{NHLSTRENUM,	DOWN,	"down"},
+				{NHLSTRENUM,	ACROSS,	"across"},
+				{NHLSTRENUM,	UP,	"up"}
+				};
+
+	NhlRegisterConverter(NhlTString,NhlTFQuality,NhlCvtStringToEnum,
+				fontqlist,NhlNumber(fontqlist),False,NULL);
+	NhlRegisterConverter(NhlTString,NhlTTextDirection,NhlCvtStringToEnum,
+				textdirlist,NhlNumber(textdirlist),False,NULL);
+
 	return(NOERROR);	
 }
 
@@ -792,9 +679,11 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 * following to be correct 
 *
 */
-			tnew->text.cntr = -1.0;
-			tnew->text.real_x_pos = tnew->text.pos_x;
-			tnew->text.real_y_pos = tnew->text.pos_y;
+			if(tnew->text.direction == ACROSS) {
+				tnew->text.cntr = -1.0;
+			} else {
+				tnew->text.cntr = 0.0;
+			}
 			c_plchhq(tnew->text.real_x_pos,tnew->text.real_y_pos,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
@@ -802,6 +691,13 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
+			if(tnew->text.direction == ACROSS) {
+				tnew->text.real_x_pos = tnew->text.pos_x;
+				tnew->text.real_y_pos = tnew->text.pos_y;
+			} else {
+				tnew->text.real_x_pos = tnew->text.pos_x + tmpdl;
+				tnew->text.real_y_pos = tnew->text.pos_y;
+			}
 			break;
 		case 4:
 /*
@@ -828,9 +724,11 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 * following to be correct 
 *
 */
-			tnew->text.real_x_pos = tnew->text.pos_x;
-			tnew->text.real_y_pos = tnew->text.pos_y;
-			tnew->text.cntr = 1.0;
+			if(tnew->text.direction == ACROSS) {
+				tnew->text.cntr = 1.0;
+			} else {
+				tnew->text.cntr = 0.0;
+			}
 			c_plchhq(tnew->text.real_x_pos,tnew->text.real_y_pos,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
@@ -838,6 +736,13 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
+			if(tnew->text.direction == ACROSS) {
+				tnew->text.real_x_pos = tnew->text.pos_x;
+				tnew->text.real_y_pos = tnew->text.pos_y;
+			} else {
+				tnew->text.real_x_pos = tnew->text.pos_x - tmpdr;
+				tnew->text.real_y_pos = tnew->text.pos_y;
+			}
 			break;
 /*
 * Top justification points
@@ -849,6 +754,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 * following to be correct 
 *
 */
+			
 			tnew->text.cntr = -1.0;
 			c_plchhq(.5,.5,
 				tnew->text.real_string,tnew->text.real_size,
@@ -857,8 +763,13 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
-			tnew->text.real_x_pos = tnew->text.pos_x;
-			tnew->text.real_y_pos = tnew->text.pos_y - tmpdt;
+			if(tnew->text.direction == ACROSS) {
+				tnew->text.real_x_pos = tnew->text.pos_x;
+				tnew->text.real_y_pos = tnew->text.pos_y - tmpdt;
+			} else {
+				tnew->text.real_x_pos = tnew->text.pos_x + tmpdl;
+				tnew->text.real_y_pos = tnew->text.pos_y;
+			}
 /* 
 * when on top real_y is below pos_y
 */
@@ -870,7 +781,11 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 * following to be correct 
 *
 */
-			tnew->text.cntr = 0.0;
+			if(tnew->text.direction == ACROSS) {
+				tnew->text.cntr = 0.0;
+			} else {
+				tnew->text.cntr = -1.0;
+			}
 			c_plchhq(.5,.5,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
@@ -878,8 +793,13 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
-			tnew->text.real_x_pos = tnew->text.pos_x;
-			tnew->text.real_y_pos = tnew->text.pos_y - tmpdt;
+			if(tnew->text.direction == ACROSS) {
+				tnew->text.real_x_pos = tnew->text.pos_x;
+				tnew->text.real_y_pos = tnew->text.pos_y - tmpdt;
+			} else {
+				tnew->text.real_x_pos = tnew->text.pos_x;
+				tnew->text.real_y_pos = tnew->text.pos_y;
+			}
 			break;
 		case 6:
 /*
@@ -888,7 +808,11 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 * following to be correct 
 *
 */
-			tnew->text.cntr = 1.0;
+			if(tnew->text.direction == ACROSS) {
+				tnew->text.cntr = 1.0;
+			} else {
+				tnew->text.cntr = -1.0;
+			}
 			c_plchhq(tnew->text.real_x_pos,tnew->text.real_y_pos,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
@@ -896,8 +820,13 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
-			tnew->text.real_x_pos = tnew->text.pos_x;
-			tnew->text.real_y_pos = tnew->text.pos_y - tmpdt;
+			if(tnew->text.direction == ACROSS) {
+				tnew->text.real_x_pos = tnew->text.pos_x;
+				tnew->text.real_y_pos = tnew->text.pos_y - tmpdt;
+			} else {
+				tnew->text.real_x_pos = tnew->text.pos_x - tmpdr;
+				tnew->text.real_y_pos = tnew->text.pos_y;
+			}
 			break;
 /*
 * Bottom justification points
@@ -909,7 +838,11 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 * following to be correct 
 *
 */
-			tnew->text.cntr = -1.0;
+			if(tnew->text.direction == ACROSS) {
+				tnew->text.cntr = -1.0;
+			} else {
+				tnew->text.cntr = 1.0;
+			}
 			c_plchhq(.5,.5,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
@@ -917,8 +850,13 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
-			tnew->text.real_x_pos = tnew->text.pos_x;
-			tnew->text.real_y_pos = tnew->text.pos_y + tmpdb;
+			if(tnew->text.direction == ACROSS) {
+				tnew->text.real_x_pos = tnew->text.pos_x;
+				tnew->text.real_y_pos = tnew->text.pos_y + tmpdb;
+			} else {
+				tnew->text.real_x_pos = tnew->text.pos_x + tmpdl;
+				tnew->text.real_y_pos = tnew->text.pos_y;
+			}
 			break;
 		case 5:
 /*
@@ -927,7 +865,11 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 * following to be correct 
 *
 */
-			tnew->text.cntr = 0.0;
+			if(tnew->text.direction == ACROSS) {
+				tnew->text.cntr = 0.0;
+			} else {
+				tnew->text.cntr = 1.0;
+			}
 			c_plchhq(.5,.5,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
@@ -935,8 +877,13 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
-			tnew->text.real_x_pos = tnew->text.pos_x;
-			tnew->text.real_y_pos = tnew->text.pos_y + tmpdb;
+			if(tnew->text.direction == ACROSS) {
+				tnew->text.real_x_pos = tnew->text.pos_x;
+				tnew->text.real_y_pos = tnew->text.pos_y + tmpdb;
+			} else {
+				tnew->text.real_x_pos = tnew->text.pos_x;
+				tnew->text.real_y_pos = tnew->text.pos_y;
+			}
 			break;
 		case 8:
 /*
@@ -953,8 +900,13 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
-			tnew->text.real_x_pos = tnew->text.pos_x;
-			tnew->text.real_y_pos = tnew->text.pos_y + tmpdb;
+			if(tnew->text.direction == ACROSS) {
+				tnew->text.real_x_pos = tnew->text.pos_x;
+				tnew->text.real_y_pos = tnew->text.pos_y + tmpdb;
+			} else {
+				tnew->text.real_x_pos = tnew->text.pos_x - tmpdr;
+				tnew->text.real_y_pos = tnew->text.pos_y;
+			}
 			break;
 		default:
 			NhlPError(WARNING,E_UNKNOWN,"TextItemInitialize: Incorect justification point, using default");

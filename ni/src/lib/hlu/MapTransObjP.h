@@ -1,6 +1,5 @@
-
 /*
- *      $Id: MapTransObjP.h,v 1.1 1993-04-30 17:23:00 boote Exp $
+ *      $Id: MapTransObjP.h,v 1.2 1993-10-19 17:51:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -59,7 +58,7 @@ typedef struct _MapTransObjLayerPart{
 }MapTransObjLayerPart;
 
 typedef struct _MapTransObjLayerRec {
-	BaseLayerPart	base;
+	ObjLayerPart	base;
 	TransObjLayerPart trobj;
 	MapTransObjLayerPart mptrans;
 } MapTransObjLayerRec;
@@ -69,7 +68,7 @@ typedef struct _MapTransObjLayerClassPart {
 } MapTransObjLayerClassPart;
 
 typedef struct _MapTransObjLayerClassRec {
-	BaseLayerClassPart	base_class;
+	ObjLayerClassPart	base_class;
 	TransObjLayerClassPart	trobj_class;
 	MapTransObjLayerClass	mptrans_class;
 } MapTransObjLayerClassRec;

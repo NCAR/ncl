@@ -1,15 +1,9 @@
 #
-#	$Id: yMakefile,v 1.4 1992-11-09 21:52:29 fred Exp $
+#	$Id: yMakefile,v 1.5 1993-10-19 17:12:28 boote Exp $
 #
-NCARG	= ../../..
 
 MYNAME	= fontcap
 
-#
-# the "all" target is a dummy because it depends upon
-# the "fontc" program, which is not installed until the
-# "install" cycle.
-#
 GENERIC_SRCS = \
 	font1.fc font2.fc font3.fc font4.fc font5.fc \
 	font6.fc font7.fc font8.fc .fc font9.fc font10.fc \
@@ -28,151 +22,12 @@ FONTCAPS = \
 	font30 font33 font34 font35 font36 \
         font37
 
-all::
+# Rule for processing fontcaps
+.SUFFIXES: .fc
 
-install:: $(FONTCAPS)
-
-install::
-	@$(MV) $(FONTCAPS) $(FONTCAPPATH)
-
-MakefileTarget
-CleanTarget
-
-Update:
-	@echo "Updating <$(MYNAME)> from Generic NCAR Graphics"
-	@-$(RM) $(GENERIC_SRCS) $(GENERIC_OBJS)
-	@echo "	File listing after removing old generics"
-	@ls
-	@echo "	Copying Generic source"
-	@for name in $(FONTCAPS); do\
-	($(CP) $(NCARG)/generic/$$name/src $$name.fc);\
-	done
-	@if (test -x Generic2Unix) then \
-	echo "	Applying local modifications"; Generic2Unix; fi
-
-clean::
-	@-$(RM) $(FONTCAPS)
-
-font1: font1.fc
+.fc:
 	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
+	@$(FONTC) $< $@
 
-font2: font2.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font3: font3.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font4: font4.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font5: font5.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font6: font6.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font7: font7.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font8: font8.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font9: font9.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font10: font10.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font11: font11.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font12: font12.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font13: font13.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font14: font14.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font15: font15.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font16: font16.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font17: font17.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font18: font18.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font19: font19.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font20: font20.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font21: font21.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font22: font22.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font25: font25.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font26: font26.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font29: font29.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font30: font30.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font33: font33.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font34: font34.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font35: font35.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font36: font36.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
-
-font37: font37.fc
-	@echo "	Processing fontcap $@"
-	@$(FONTC) $? $@
+InstallTarget($(FONTCAPS),$(INSTALL_LIB),$(FONTCAPPATH))
+CleanFilesTarget($(FONTCAPS))

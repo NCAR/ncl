@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.h,v 1.1 1993-07-12 22:36:08 boote Exp $
+ *      $Id: DataItem.h,v 1.2 1993-10-19 17:50:27 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,8 +24,17 @@
 #include <ncarg/hlu/Base.h>
 #include <ncarg/hlu/DataMgr.h>
 
-#define	NhlNUserData	"userData"
-#define	NhlCUserData	"UserData"
+/*
+ * These resources are not actually in the DataItem record, but the
+ * names should be standardized so the names are defined here.  The
+ * reason they are not in the DataItem record is that they don't necessarily
+ * apply to all DataItem's.
+ */
+#define	NhlNdiUserData	"diUserData"
+#define	NhlCdiUserData	"DiUserData"
+
+#define	NhlNdiType	"diType"
+#define	NhlCdiType	"DiType"
 
 typedef struct _DataItemLayerClassRec *DataItemLayerClass;
 typedef struct _DataItemLayerRec *DataItemLayer;

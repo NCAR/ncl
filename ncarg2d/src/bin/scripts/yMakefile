@@ -1,7 +1,6 @@
 #
-#	$Id: yMakefile,v 1.19 1993-05-08 16:42:15 haley Exp $
+#	$Id: yMakefile,v 1.20 1993-10-19 17:20:48 boote Exp $
 #
-NCARG	= ../../../..
 
 MYNAME	= scripts
 
@@ -23,7 +22,7 @@ sedscript:      Makefile
 	@echo 's+VERSION+$(VERSION)+' > $@
 	@echo '$$a\' >> $@
 
-#if defined(cray) || defined(CRAY2)
+#if defined(Cray) || defined(Cray2)
 ncargf77: ncargf77.cry Makefile
 	@sed \
 	-e 's+SED_F77+$(F77)+' \
@@ -44,7 +43,7 @@ ncargf77: ncargf77.csh Makefile
 	<ncargf77.csh >ncargf77
 #endif
 
-#if defined(cray) || defined(CRAY2)
+#if defined(Cray) || defined(Cray2)
 ncargcc: ncargcc.cry Makefile
 	@sed \
 	-e 's+SED_CC+$(CC)+' \
@@ -97,10 +96,4 @@ ncargsrcy: ncargsrcy.csh Makefile
 #endif
 
 InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
-
-MakefileTarget
-CleanTarget
-
-clean::
-	@-$(RM) ncargf77 ncargcc ncargex ncargcex ncargsrc ncargsrcy \
-	ncargversion
+CleanFilesTarget(ncargf77 ncargcc ncargex ncargcex ncargsrc ncargsrcy ncargversion)

@@ -1,5 +1,5 @@
 /*
- *      $Id: VarArg.h,v 1.2 1993-05-27 19:11:31 ethan Exp $
+ *      $Id: VarArg.h,v 1.3 1993-10-19 17:53:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,9 @@
 #ifndef	_VARARG_H_
 #define	_VARARG_H_
 
+
+#include <ncarg/hlu/hluP.h>
+
 #ifdef	__STDC__
 #include <stdarg.h>
 #define VA_START(ap,last)       va_start(ap,last) 
@@ -45,17 +48,17 @@ extern int _NhlCountGetVarList(
 
 extern void _NhlVarToSetArgList(
 #ifdef	NhlNeedProto
-	va_list         ap,             /* vararg list  */ 
-	_NhlArgList     *args,          /* pointer to return arglist in */ 
-	int             num_vargs       /* number of arg pairs in ap    */ 
+	va_list		ap,		/* vararg list			*/ 
+	_NhlExtArgList	args,		/* pointer to return arglist in	*/ 
+	int		num_vargs	/* number of arg pairs in ap	*/ 
 #endif
 );
 
 extern void _NhlVarToGetArgList(
 #ifdef	NhlNeedProto
-	va_list         ap,             /* vararg list  */ 
-	_NhlArgList     *args,          /* pointer to return arglist in */ 
-	int             num_vargs       /* number of arg pairs in ap    */ 
+	va_list		ap,		/* vararg list			*/ 
+	_NhlExtArgList	args,		/* pointer to return arglist in	*/ 
+	int		num_vargs	/* number of arg pairs in ap	*/ 
 #endif
 );
 

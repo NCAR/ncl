@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ncarg_path.c,v 1.7 1992-09-29 17:49:17 ncargd Exp $
+ *      $Id: ncarg_path.c,v 1.8 1993-10-19 17:12:46 boote Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -175,6 +175,7 @@ const	char	*GetNCARGPath(dir)
 	char	*tmp = "tmp";
 	char	*inc = "include";
 	char	*man = "man";
+	char	*config = "config";
 	char	*db = "database";
 	char	*fontcap = "fontcaps";
 	char	*graphcap = "graphcaps";
@@ -196,6 +197,7 @@ const	char	*GetNCARGPath(dir)
 		return(dir_2_path(dir));
 	}
 	else if ((strcmp(db, dir) == 0)
+		||  (strcmp(config, dir) == 0)
 		||  (strcmp(fontcap, dir) == 0)
 		||  (strcmp(graphcap, dir) == 0)
 		||  (strcmp(examples, dir) == 0)

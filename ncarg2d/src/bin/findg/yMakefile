@@ -1,16 +1,9 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:34:43 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1993-10-19 17:19:47 boote Exp $
 #
-NCARG	= ../../../..
 
 MYNAME	= findg
-
 GENERIC_OBJS = findg.o lw2up.o fngbkd.o
-
 GENERIC_SRCS = findg.f lw2up.f fngbkd.f
 
-all:: findg
-
-FortranProgramLeaf(findg,$(GENERIC_OBJS),$(LIBS))
-
-UpdateTarget
+FortranTarget(findg,$(GENERIC_OBJS))

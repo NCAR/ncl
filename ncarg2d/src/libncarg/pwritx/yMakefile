@@ -1,8 +1,6 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-25 19:35:54 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1993-10-19 17:30:50 boote Exp $
 #
-NCARG	= ../../../..
-
 MYNAME	= pwritx
 
 GENERIC_SRCS = \
@@ -14,50 +12,17 @@ GENERIC_OBJS = \
 	 htable.o mkmsk.o pwritx.o pwrx.o pwrxbd.o xtch.o
 
 NEW_SRCS = openpw.f
-
 NEW_OBJS = openpw.o
-
 SOURCES = $(GENERIC_SRCS) $(NEW_SRCS)
-
 OBJECTS = $(GENERIC_OBJS) $(NEW_OBJS)
 
 FCPP_OPJS	= openpw.f
 
-PartialLibrary(libncarg.a,$(OBJECTS))
+PartialLibraryTarget(libncarg.a,$(OBJECTS))
+PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
+CleanFilesTarget($(FCPP_OBJS) openpw.F)
 
 openpw.F: openpw.F.sed Makefile
 	@sed \
 	-e 's+SED_DBDIR+$(DBDIR)+' \
 	<openpw.F.sed >openpw.F
-
-#if defined(sgi) || defined(ardent) || (defined(u370) && defined(unix)) \
-	|| defined(RS6000) || defined(hpux) || defined(cray) || defined(CRAY2)
-
-.SUFFIXES: .F
-
-.F.o:
-	@$(FCPP) $< $*.f
-	$(F77) $(FFLAGS) -c $*.f
-	@$(RM) $*.f
-#endif
-
-clean::
-	@-$(RM) openpw.f
-
-#ifdef  BuildNCARGSourceLibrary
-all:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_QUICK) $(LIBPATH)/srcncarg.a $(MYNAME) $(SOURCES)
-	@-$(RM) $(MYNAME)
-
-install:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBPATH)/srcncarg.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBPATH)/srcncarg.a
-	@-$(RM) $(MYNAME)
-
-FRule
-#endif
-
-clean::
-	@-$(RM) $(FCPP_OBJS)

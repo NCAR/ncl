@@ -1,17 +1,8 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-24 21:21:47 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-10-19 17:24:49 boote Exp $
 #
-NCARG	= ../../../..
-
 MYNAME	= fdashline
 
 GENERIC_SRCS = fdlcurvd.f fdldashc.f fdldashd.f fdlsmth.f
 
-install::
-	@for file in $(GENERIC_SRCS); do\
-	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
-	done
-
-MakefileTarget
-CleanTarget
-UpdateTarget
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))

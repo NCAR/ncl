@@ -1,6 +1,5 @@
-
 /*
- *      $Id: IrregularTransObjP.h,v 1.1 1993-04-30 17:22:22 boote Exp $
+ *      $Id: IrregularTransObjP.h,v 1.2 1993-10-19 17:50:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -61,7 +60,7 @@ typedef struct _IrregularTransObjLayerPart {
 } IrregularTransObjLayerPart;
 
 typedef struct _IrregularTransObjLayerRec {
-	BaseLayerPart	base;
+	ObjLayerPart	base;
 	TransObjLayerPart trobj;
 	IrregularTransObjLayerPart irtrans;
 } IrregularTransObjLayerRec;
@@ -71,7 +70,7 @@ typedef struct _IrregularTransObjLayerClassPart {
 }IrregularTransObjLayerClassPart;
 
 typedef struct _IrregularTransObjLayerClassRec {
-	BaseLayerClassPart	base_class;
+	ObjLayerClassPart	base_class;
 	TransObjLayerClassPart	trobj_class;
 	IrregularTransObjLayerClassPart	irtrans_class;
 }IrregularTransObjLayerClassRec;

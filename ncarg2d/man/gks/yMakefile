@@ -1,50 +1,21 @@
 #
-#	$Id: yMakefile,v 1.3 1993-04-01 23:56:27 haley Exp $
+#	$Id: yMakefile,v 1.4 1993-10-19 17:16:31 boote Exp $
 #
-NCARG	= ../../..
 
-MAN3 = gactm gacwk gca gclks gclrwk gclsg gclwk gcrsg gcsgwk gdawk gdsg gesc \
-	gevtm gfa gks gopks gopwk gpl gpm gqasf gqchh gqchsp gqchup gqchxp gqclip \
-	gqcntn gqcr gqfaci gqfais gqfasi gqln gqlwsc gqmk gqmksc gqmntn gqnt \
-	gqops gqopsg gqplci gqpmci gqsgus gqtxal gqtxci gqtxfp gqtxp gsasf gschh \
-	gschsp gschup gschxp gsclip gscr gselnt gsfaci gsfais gsfasi gsln gslwsc \
-	gsmk gsmksc gsplci gspmci gssgt gstxal gstxci gstxfp gstxp gsvp gswn gtx \
-	guwk
+MAN =	gactm gacwk gca gclks gclrwk gclsg gclwk gcrsg gcsgwk gdawk gdsg gesc \
+	gevtm gfa gks gopks gopwk gpl gpm gqasf gqchh gqchsp gqchup gqchxp \
+	gqclip gqcntn gqcr gqfaci gqfais gqfasi gqln gqlwsc gqmk gqmksc gqmntn \
+	gqnt gqops gqopsg gqplci gqpmci gqsgus gqtxal gqtxci gqtxfp gqtxp \
+	gsasf gschh gschsp gschup gschxp gsclip gscr gselnt gsfaci gsfais \
+	gsfasi gsln gslwsc gsmk gsmksc gsplci gspmci gssgt gstxal gstxci \
+	gstxfp gstxp gsvp gswn gtx guwk
 
-MAN = $(MAN3)
-
-all:
-
-preformatted:
-	@for name in $(MAN3); do \
-	echo "Formatting $$name.m"; \
-	nroff -man $$name.m >$$name.p; \
-	done
-
-#if defined(CRAY) || defined(sgi) || defined(ardent)
 # Install preformatted troff documents on systems without troff
+#if UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m
 #endif
 
-#ifdef	InstallManToLocal
-
-install::
-	@for name in $(MAN); do\
-	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MANLPATH)/$$name.$(MANL_SECTION) );\
-	done
-
-#else	/* ! InstallManToLocal	*/
-
-install::
-	@for name in $(MAN3); do\
-	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MAN3PATH)/$$name.$(MAN3_SECTION) );\
-	done
-
-#endif	/* InstallManToLocal	*/
-
-MakefileTarget
-CleanTarget
+InstallManPages($(MAN),$(FORMAT_EXT),$(MAN3PATH),$(MAN3_SECTION))
+FormatManPages($(MAN),.m,.p)

@@ -1,5 +1,5 @@
 /*
- *      $Id: ResourcesP.h,v 1.1 1993-04-30 17:23:57 boote Exp $
+ *      $Id: ResourcesP.h,v 1.2 1993-10-19 17:52:12 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #define NRESP_H
 
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/ConvertP.h>
 
 typedef struct _NrmResource {
 	NrmQuark	nrm_name;
@@ -47,10 +48,11 @@ typedef NhlErrorTypes (*NrmResourceDefaultProc)(
 
 extern NhlErrorTypes _NhlGetResources(
 #if	NhlNeedProto
-	Layer		l,		/* layer to set resources of	*/
-	_NhlArgList	args,		/* args to override res defaults*/
-	int		num_args,	/* number of args		*/
-	NrmQuarkList	child		/* layer is auto-managed chld	*/
+	_NhlConvertContext	ctxt,	/* convert context		*/
+	Layer			l,	/* layer to set resources of	*/
+	_NhlExtArgList		args,	/* args to override res defaults*/
+	int			num_args,/* number of args		*/
+	NrmQuarkList		child	/* layer is auto-managed chld	*/
 #endif
 );
 
@@ -91,11 +93,11 @@ extern void _NhlCopyToArg(
 
 extern void _NhlMergeArgLists(
 #if	NhlNeedProto
-	_NhlArgList	*ret_args,	/* return args		*/
+	_NhlExtArgList	ret_args,	/* return args		*/
 	int		*num_ret_args,	/* num ret_args		*/
-	_NhlArgList	oargs,		/* over-ride args	*/
+	_NhlExtArgList	oargs,		/* over-ride args	*/
 	int		num_oargs,	/* num oargs		*/
-	_NhlArgList	args,		/* args			*/
+	_NhlExtArgList	args,		/* args			*/
 	int		num_args	/* num args		*/
 #endif
 );
@@ -103,11 +105,12 @@ extern void _NhlMergeArgLists(
 extern NhlErrorTypes _NhlSortChildArgs(
 #if	NhlNeedProto
 	Layer			l,		/* layer		*/
-	_NhlArgList		args_in,	/* args to sort		*/
+	_NhlExtArgList		args_in,	/* args to sort		*/
 	int			nargs_in,	/* number args to sort	*/
-	_NhlArgList		args_out,	/* args not forwarded	*/
+	_NhlExtArgList		*args_out,	/* args not forwarded	*/
 	int			*nargs_out,	/* num args_out		*/
 	_NhlChildArgList	*forw_list,	/* list of args to frwd	*/
+	NhlBoolean		*args_used,	/* args used		*/
 	NhlBoolean		getvalues	/* called frm getvalues	*/
 #endif
 );
@@ -125,5 +128,10 @@ extern NhlBoolean _NhlResInClass(
 #endif
 );
 
+extern void _NhlDestroyResDatabase(
+#if	NhlNeedProto
+	void
+#endif
+);
 
 #endif /* NRESP_H */

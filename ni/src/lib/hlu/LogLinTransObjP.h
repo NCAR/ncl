@@ -1,6 +1,5 @@
-
 /*
- *      $Id: LogLinTransObjP.h,v 1.1 1993-04-30 17:22:47 boote Exp $
+ *      $Id: LogLinTransObjP.h,v 1.2 1993-10-19 17:51:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -51,7 +50,7 @@ typedef struct _LogLinTransObjLayerPart {
 } LogLinTransObjLayerPart;
 
 typedef struct _LogLinTransObjLayerRec {
-	BaseLayerPart	base;
+	ObjLayerPart	base;
 	TransObjLayerPart trobj;
 	LogLinTransObjLayerPart lltrans;
 } LogLinTransObjLayerRec;
@@ -61,7 +60,7 @@ typedef struct _LogLinTransObjLayerClassPart {
 }LogLinTransObjLayerClassPart;
 
 typedef struct _LogLinTransObjLayerClassRec {
-	BaseLayerClassPart	base_class;
+	ObjLayerClassPart	base_class;
 	TransObjLayerClassPart	trobj_class;
 	LogLinTransObjLayerClassPart	lltrans_class;
 }LogLinTransObjLayerClassRec;

@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.1 1993-04-30 17:22:06 boote Exp $
+ *      $Id: GetValues.c,v 1.2 1993-10-19 17:50:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -20,6 +20,7 @@
  *	Description:	This file contains all the functions neccessary to
  *			retrieve a resource value from a layer instance.
  */
+#include <string.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/VarArg.h>
 #include <ncarg/hlu/ResourcesP.h>
@@ -51,7 +52,7 @@ GetValues
  	char*		base,		/* base address to copy vals from */
 	NrmResourceList	resources,	/* resource list with offsets	*/
 	int		num_res,	/* number of resources		*/
-	_NhlArgList	args,		/* names of resources to retrieve*/
+	_NhlExtArgList	args,		/* names of resources to retrieve*/
 	int		nargs		/* number of args		*/
 )
 #else
@@ -59,7 +60,7 @@ GetValues
  	char*		base;		/* base address to copy vals from */
 	NrmResourceList	resources;	/* resource list with offsets	*/
 	int		num_res;	/* number of resources		*/
-	_NhlArgList	args;		/* names of resources to retrieve*/
+	_NhlExtArgList	args;		/* names of resources to retrieve*/
 	int		nargs;		/* number of args		*/
 #endif
 {
@@ -74,11 +75,16 @@ GetValues
 		return NOERROR;
 
 	/* Mark each arg as not found */
-	bzero((char *) argfound, (int)(nargs * sizeof(NhlBoolean)));
+	memset((char*)argfound,0,(nargs * sizeof(NhlBoolean)));
 
 	for(i=0; i < nargs; i++){
 		for(j=0; j < num_res; j++){
 			if(args[i].quark == resources[j].nrm_name){
+				if(args[i].type != NrmNULLQUARK){
+					NHLPERROR((FATAL,E_UNKNOWN,
+						"Unimplimented Feature"));
+					break;
+				}
 				_NhlCopyToArg(
 					(char*)(base + resources[j].nrm_offset),
 					&args[i].value,
@@ -172,22 +178,26 @@ _NhlGetValues
 #if	__STDC__
 (
 	Layer		l,		/* layer instance	*/
-	_NhlArgList	args,		/* args to retrieve	*/
+	_NhlExtArgList	args,		/* args to retrieve	*/
 	int		nargs		/* number of args	*/
 )
 #else
 (l,args,nargs)
 	Layer		l;		/* layer instance	*/
-	_NhlArgList	args;		/* args to retrieve	*/
+	_NhlExtArgList	args;		/* args to retrieve	*/
 	int		nargs;		/* number of args	*/
 #endif
 {
+	int			i;
 	LayerClass		lc = _NhlClass(l);
-	_NhlArg			largs[MAXARGLIST];
+	_NhlExtArg		stackargs[MAXARGLIST];
+	_NhlExtArgList		largs=stackargs;
 	int			nlargs;
-	_NhlChildArgList	chld_args=NULL;
 	_NhlChildArgList	targnode=NULL;
+	_NhlChildArgList	chld_args=NULL;
+	NhlBoolean		chld_args_used[MAXARGLIST];
 	_NhlChildList		tchldnode=NULL;
+	_NhlArg			get_args[MAXARGLIST];
 	NhlErrorTypes		ret= NOERROR, lret = NOERROR;
 
 	if(l == NULL){
@@ -204,60 +214,86 @@ _NhlGetValues
 		return(FATAL);
 	}
 
-	/*
-	 * Sort the args into args for this layer and it's children
-	 * If there are no children it just copies the args to largs
-	 */
-	lret = _NhlSortChildArgs(l,args,nargs,largs,&nlargs,&chld_args,True);
-	if(lret < WARNING){
-		NhlPError(lret,E_UNKNOWN,
-				"Unable to Sort Arg Lists - Can't GetValues");
-		return lret;
+	if(_NhlIsObj(l)){
+		largs = args;
+		nlargs = nargs;
 	}
-	ret = MIN(ret,lret);
 
-	/*
-	 * If this layer has children forward args to them
-	 */
-	if(l->base.children != NULL){
+	else{
+		/*
+		 * Sort the args into args for this layer and it's children
+		 * If there are no children it just copies the args to largs
+		 */
+		lret = _NhlSortChildArgs(l,args,nargs,&largs,&nlargs,&chld_args,
+							chld_args_used,True);
+		if(lret < WARNING){
+			NhlPError(lret,E_UNKNOWN,
+				"Unable to Sort Arg Lists - Can't GetValues");
+			return lret;
+		}
+		ret = MIN(ret,lret);
 
-		tchldnode = l->base.children;
+		/*
+		 * If this layer has children forward args to them
+		 */
+		if(l->base.children != NULL){
 
-		while(tchldnode != NULL){
+			tchldnode = l->base.children;
 
-			targnode = chld_args;
+			while(tchldnode != NULL){
 
-			while((targnode != NULL) &&
+				targnode = chld_args;
+
+				while((targnode != NULL) &&
 					(tchldnode->class != targnode->class))
-				targnode = targnode->next;
+					targnode = targnode->next;
 
-			if(targnode == NULL){
-				NHLPERROR((FATAL,E_UNKNOWN,
-				"GetValues can't find args to get child's resources"));
-				return FATAL;
-			}
+				if(targnode == NULL){
+					NHLPERROR((FATAL,E_UNKNOWN,
+			"GetValues can't find args to get child's resources"));
+					return FATAL;
+				}
 
-			lret = _NhlGetValues(_NhlGetLayer(tchldnode->pid),
+				lret = _NhlGetValues(
+						_NhlGetLayer(tchldnode->pid),
 						targnode->args,targnode->nargs);
-			if(lret < WARNING){
-				NHLPERROR((lret,E_UNKNOWN,
+				if(lret < WARNING){
+					NHLPERROR((lret,E_UNKNOWN,
 				"GetValues can't get values of hidden child %s",
 						NhlName(tchldnode->pid)));
-				return lret;
-			}
-			ret = MIN(ret,lret);
+					return lret;
+				}
+				ret = MIN(ret,lret);
 
-			tchldnode = tchldnode->next;
+				for(i=0;i<targnode->nargs;i++){
+					*(targnode->args_used[i]) = True;
+				}
+
+				tchldnode = tchldnode->next;
+			}
+			_NhlFreeChildArgs(chld_args);
+			for(i=0;i<nargs;i++){
+				if(!chld_args_used[i]){
+					NhlPError(WARNING,E_UNKNOWN,
+				"%s is not a valid resource in %s at this time",
+				NrmNameToString(args[i].quark),_NhlName(l));
+					ret = MIN(ret,WARNING);
+				}
+			}
 		}
-		_NhlFreeChildArgs(chld_args);
 	}
 
 	lret = GetValues((char*)l,(NrmResourceList)(lc->base_class.resources),
 				lc->base_class.num_resources, largs, nlargs);
 
 	if(lret != FATAL) {
+		int i;
+		for(i=0;i<nargs;i++){
+			get_args[i].quark = args[i].quark;
+			get_args[i].value = args[i].value;
+		}
 		ret = MIN(ret,lret);
-		lret = CallGetValues(lc, l, args, nargs);
+		lret = CallGetValues(lc,l,get_args,nargs);
 	}
 
 	return MIN(ret,lret);
@@ -296,7 +332,7 @@ NhlGetValues
 {
 	va_list         ap; 
 	int             num_args; 
-	_NhlArgList     args = NULL; 
+	_NhlExtArg	args[MAXARGLIST];
 	NhlErrorTypes	ret;
 	Layer		l = NULL;
 
@@ -307,7 +343,7 @@ NhlGetValues
 
 	/* create an arglist from varargs */
 	VA_START(ap,pid); 
-	_NhlVarToGetArgList(ap,&args,num_args); 
+	_NhlVarToGetArgList(ap,args,num_args); 
 	va_end(ap); 
 
 	l = _NhlGetLayer(pid);
@@ -316,8 +352,6 @@ NhlGetValues
 		return(FATAL);
 	}
 	ret = _NhlGetValues(l,args,num_args);
-
-	(void)NhlFree(args);
 
 	return(ret);
 }
@@ -356,12 +390,12 @@ NhlALGetValues
 	int		nargs;		/* num of GArg's		*/
 #endif
 {
-	_NhlArgList     args = NULL; 
+	_NhlExtArg	args[MAXARGLIST];
 	NhlErrorTypes	ret;
 	Layer		l = NULL;
 
 	/* create an arglist from gargs */
-	_NhlGArgToGetArgList(&args,gargs,nargs); 
+	_NhlGArgToGetArgList(args,gargs,nargs); 
 
 	l = _NhlGetLayer(pid);
 	if(l == NULL){
@@ -369,8 +403,6 @@ NhlALGetValues
 		return(FATAL);
 	}
 	ret = _NhlGetValues(l,args,nargs);
-
-	(void)NhlFree(args);
 
 	return(ret);
 }

@@ -1,12 +1,7 @@
 #
-#	$Id: yMakefile,v 1.1 1993-04-09 17:38:24 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-10-19 17:40:08 boote Exp $
 #
-NCARG	= ../../..
+
+#define IHaveSubdirs
 
 SUBDIRS = pgks
-
-MakeSubdirs($(SUBDIRS))
-MakefilesSubdirs($(SUBDIRS))
-InstallSubdirs($(SUBDIRS))
-CleanSubdirs($(SUBDIRS))
-

@@ -1,40 +1,29 @@
 #
-#	$Id: yMakefile,v 1.6 1993-03-01 23:12:58 haley Exp $
+#	$Id: yMakefile,v 1.7 1993-10-19 17:24:11 boote Exp $
 #
-NCARG	= ../../..
 
 CSRCS = \
-	c_colcon.c c_eezmpa.c c_elblba.c c_epltch.c \
-	c_sfex02.c c_slex01.c c_gtxpac.c
+	c_agex07.c c_colcon.c c_eezmpa.c c_elblba.c c_epltch.c \
+	c_mpex05.c c_sfex02.c c_slex01.c c_gtxpac.c
 
 SED_SRCS = \
 	c_cbex01.c c_agex07.c c_mpex05.c
 
 GENERIC_SRCS = $(CSRCS) $(SED_SRCS) $(FSRCS)
 
-all::
-
-install:: $(GENERIC_SRCS)
-	@for name in $(GENERIC_SRCS); do\
-	($(INSTALL) -m $(INSTALL_LIB) $$name $(EXAMPLESPATH) );\
-	done
-
-MakefileTarget
-CleanTarget
-
-clean::
-	@-$(RM) $(SED_SRCS)
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+CleanFilesTarget($(SED_SRCS))
 
 # Files containing C functions that are called from FORTRAN or that have to
 # be modified to include a macro from the configuration file.
 
-c_agex07.c: c_agex07.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ agutol
-
 c_cbex01.c: c_cbex01.c.sed Makefile
 	@-$(RM) $@
 	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ cpchhl cpchll amapra idsfft cpdrpl
+
+c_agex07.c: c_agex07.c.sed Makefile
+	@-$(RM) $@
+	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ agutol
 
 c_mpex05.c: c_mpex05.c.sed Makefile
 	@-$(RM) $@

@@ -1,6 +1,5 @@
-
 /*
- *      $Id: IrregularTransObj.c,v 1.2 1993-05-27 19:11:11 ethan Exp $
+ *      $Id: IrregularTransObj.c,v 1.3 1993-10-19 17:50:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -224,26 +223,23 @@ float* /*ymissing*/
 
 IrregularTransObjLayerClassRec irregularTransObjLayerClassRec = {
         {
-/* superclass			*/	(LayerClass)&transObjLayerClassRec,
 /* class_name			*/	"IrregularTransObj",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(IrregularTransObjLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(LayerClass)&transObjLayerClassRec,
+
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
-/* child_resources		*/	NULL,
 /* all_resources		*/	NULL,
+
 /* class_part_initialize	*/	NULL,
-/* class_inited			*/	False,
 /* class_initialize		*/	NULL,
 /* layer_initialize		*/	IrTransInitialize,
 /* layer_set_values		*/	IrTransSetValues,
-/* layer_set_values_not		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
-/* layer_pre_draw		*/	NULL,
-/* layer_draw			*/	NULL,
-/* layer_draw_segonly		*/	NULL,
-/* layer_post_draw		*/	NULL,
-/* layer_clear			*/	NULL,
+/* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NULL
         },
         {
@@ -429,11 +425,11 @@ static NhlErrorTypes IrTransInitialize
 				sizeof(float) *(ireq->irtrans.x_num_points));
 		inew->irtrans.y_coord_points = (float*)NhlMalloc((unsigned)
 				sizeof(float) *(ireq->irtrans.y_num_points));
-		bcopy(ireq->irtrans.x_coord_points,
-			inew->irtrans.x_coord_points,
+		memcpy((char*)inew->irtrans.x_coord_points,
+			(char*)ireq->irtrans.x_coord_points,
 			sizeof(float)*ireq->irtrans.x_num_points);
-		bcopy(ireq->irtrans.y_coord_points,
-			inew->irtrans.y_coord_points,
+		memcpy((char*)inew->irtrans.y_coord_points,
+			(char*)ireq->irtrans.y_coord_points,
 			sizeof(float)*ireq->irtrans.y_num_points);
 		inew->irtrans.ul = inew->irtrans.x_coord_points[0];
 		inew->irtrans.ur = inew->irtrans.x_coord_points[ireq->irtrans.x_num_points-1];
@@ -443,13 +439,15 @@ static NhlErrorTypes IrTransInitialize
 	if((ireq->irtrans.x_inter_points != NULL)) {
 		inew->irtrans.x_inter_points = (float*)NhlMalloc((unsigned)
 				sizeof(float) * (ireq->irtrans.x_num_points));
-		bcopy(ireq->irtrans.x_inter_points,inew->irtrans.x_inter_points,
+		memcpy((char*)inew->irtrans.x_inter_points,
+			(char*)ireq->irtrans.x_inter_points,
 			sizeof(float)*ireq->irtrans.x_num_points);
 	} 
 	if((ireq->irtrans.y_inter_points != NULL)) {
 		inew->irtrans.y_inter_points = (float*)NhlMalloc((unsigned)
 				sizeof(float) * (ireq->irtrans.y_num_points));
-		bcopy(ireq->irtrans.y_inter_points,inew->irtrans.y_inter_points,
+		memcpy((char*)inew->irtrans.y_inter_points,
+			(char*)ireq->irtrans.y_inter_points,
 			sizeof(float)*ireq->irtrans.y_num_points);
 	} 
 

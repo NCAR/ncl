@@ -1,23 +1,9 @@
 #
-#	$Id: yMakefile,v 1.5 1993-04-16 17:02:14 haley Exp $
+#	$Id: yMakefile,v 1.6 1993-10-19 17:22:51 boote Exp $
 #
-NCARG	= ../../../..
-
-FSPLIT	= ncarguncat
 
 MYNAME	= emisc
+GENERIC_SRCS = bnchmk.f example.f
+GENERIC_OBJS = bnchmk.o example.o
 
-GENERIC_SRCS = \
-	 bnchmk.f example.f
-
-GENERIC_OBJS = \
-	 bnchmk.o example.o
-
-install::
-	@for file in $(GENERIC_SRCS); do\
-	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
-	done
-
-MakefileTarget
-CleanTarget
-UpdateTarget
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))

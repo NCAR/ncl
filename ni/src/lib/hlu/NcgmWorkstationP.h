@@ -1,6 +1,5 @@
-
 /*
- *      $Id: NcgmWorkstationP.h,v 1.1 1993-04-30 17:23:26 boote Exp $
+ *      $Id: NcgmWorkstationP.h,v 1.2 1993-10-19 17:51:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -59,7 +58,5 @@ typedef struct _NcgmWorkstationLayerClassRec {
 } NcgmWorkstationLayerClassRec;
 
 extern NcgmWorkstationLayerClassRec ncgmWorkstationLayerClassRec;
-
- 
 
 #endif /* _NCgmWorkstation_h */

@@ -1,8 +1,6 @@
 #
-#	$Id: yMakefile,v 1.2 1993-01-13 21:53:43 haley Exp $
+#	$Id: yMakefile,v 1.3 1993-10-19 17:41:21 boote Exp $
 #
-NCARG	= ../../../..
-
 MYNAME	= tezmap
 
 GENERIC_SRCS = \
@@ -11,13 +9,4 @@ GENERIC_SRCS = \
 	cmplot.f cmpmsk.f cmpou.f cmppos.f cmpsat.f cmpsup.f cmptit.f cmptra.f \
 	cmpusr.f
 
-all::
-
-install:: $(GENERIC_SRCS)
-	@for name in $(GENERIC_SRCS); do\
-	($(INSTALL) -m $(INSTALL_LIB) $$name $(TUTORIALPATH));\
-	done
-
-MakefileTarget
-CleanTarget
-
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(TUTORIALPATH))

@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.1 1993-04-30 17:21:24 boote Exp $
+ *      $Id: Convert.c,v 1.2 1993-10-19 17:49:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,14 +25,93 @@
  *			a member of that structure contains all the cached
  *			values converted by that function.
  */
-
+#include <string.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/ConvertP.h>
 
 
-#define HASHFUNC(a,b)	((((a)*HASHMULT) + (b)) & HASHMASK)
+#define HASHFUNC(a,b,c)	((((a)*HASHMULT) + (b) + (c)) & HASHMASK)
 
 static NhlConvertPtr HashTable[HASHSIZE] = { NULL};
+
+static	_NhlCtxtStack	 ctxt_stack = NULL;
+
+/*
+ * Function:	_NhlCreateConvertContext
+ *
+ * Description:	This function is used to allocate a Converter context to
+ *		be used by each layer during it's initialization/reparenting
+ *		so that memory allocated on behalf of converters can be
+ *		free'd in an easy way later.
+ *
+ * In Args:	void
+ *
+ * Out Args:	void
+ *
+ * Scope:	Global Private
+ * Returns:	NhlConvertContext
+ * Side Effect:	
+ */
+_NhlConvertContext
+_NhlCreateConvertContext
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	_NhlConvertContext	context = NULL;
+	_NhlConvertContextRec	init = {0,{NULL},NULL};
+
+	context = (_NhlConvertContext)NhlMalloc(sizeof(_NhlConvertContextRec));
+	if(context == NULL){
+		NhlPError(FATAL,ENOMEM,"_NhlCreateConvertContext needs memory");
+		return NULL;
+	}
+
+	*context = init;
+
+	return context;
+}
+
+/*
+ * Function:	_NhlFreeConvertContext
+ *
+ * Description:	This function is used to free a converter context and all
+ *		the memory allocated on behalf of the context.
+ *
+ * In Args:	_NhlConvertContext
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Private
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NhlFreeConvertContext
+#if	__STDC__
+(
+	_NhlConvertContext	context	/* context to free	*/
+)
+#else
+(context)
+	_NhlConvertContext	context;/* context to free	*/
+#endif
+{
+	int	i;
+
+	if(context->next != NULL)
+		_NhlFreeConvertContext(context->next);
+
+	for(i=0;i < context->num_alloced;i++)
+		(void)NhlFree(context->alloc_list[i]);
+	(void)NhlFree(context);
+
+	return;
+}
 
 /*
  * Function:	CreateConvArgs
@@ -49,7 +128,7 @@ static NhlConvertPtr HashTable[HASHSIZE] = { NULL};
  * Returns:	NrmValue*
  * Side Effect:	
  */
-static NrmValue*
+static NhlConvertArgList
 CreateConvArgs
 #if	__STDC__
 (
@@ -62,10 +141,10 @@ CreateConvArgs
 	int			nargs;	/* number of args	*/
 #endif
 {
-	register int	i;
-	NrmValue*	newargs=NULL;
+	register int		i;
+	NhlConvertArgList	newargs=NULL;
 
-	newargs = (NrmValue*)NhlMalloc(nargs * sizeof(NrmValue));
+	newargs = (NhlConvertArgList)NhlMalloc(nargs * sizeof(NhlConvertArg));
 	if(newargs == NULL){
 		NhlPError(FATAL,E_UNKNOWN,"Unable to copy convert Args");
 		return NULL;
@@ -76,17 +155,37 @@ CreateConvArgs
 		switch(args[i].addressmode){
 
 			case NHLIMMEDIATE:
-				*(unsigned int*)&newargs[i].addr = args[i].addr;
-				/* -size means don't call free on addr later */
-				newargs[i].size = -args[i].size;
+				newargs[i].addr = args[i].addr;
+				newargs[i].size = args[i].size;
 
 				break;
 
 			case NHLADDR:
-				newargs[i].addr = (void*)
-							NhlMalloc(args[i].size);
-				bcopy((char *)(args[i].addr),
-					(char *)(newargs[i].addr),args[i].size);
+				newargs[i].addr = NhlMalloc(args[i].size);
+				memcpy((void *)(newargs[i].addr),
+					(void *)(args[i].addr),args[i].size);
+				newargs[i].size = args[i].size;
+
+				break;
+
+			case NHLSTRENUM:
+				/*
+				 * This is a hack - Since string to enumerated
+				 * types are so frequent it made sense to put
+				 * it in.  This addr type basically means
+				 * the addr is a null terminated string and
+				 * the size is being used for integer data.
+				 * The addr should be malloc'ed as in NHLADDR
+				 * but it should allocate the size needed by
+				 * doing a strlen, and then just set the
+				 * value of size to the size part.
+				 */
+				newargs[i].addr = NhlMalloc(
+						strlen((char*)args[i].addr)+1);
+
+				strcpy((char*)newargs[i].addr,
+							(char*)args[i].addr);
+
 				newargs[i].size = args[i].size;
 
 				break;
@@ -97,6 +196,8 @@ CreateConvArgs
 				(void)NhlFree(newargs);
 				return(NULL);
 		}
+
+		newargs[i].addressmode = args[i].addressmode;
 	}
 
 	return(newargs);
@@ -129,7 +230,7 @@ insertConverter
 {
 	int entry;
 
-	entry = HASHFUNC(ptr->fromtype,ptr->totype);
+	entry = HASHFUNC(ptr->fromtype,ptr->totype,ptr->converter_type);
 
 	if(HashTable[entry] != (NhlConvertPtr)NULL)
 		ptr->next = HashTable[entry];
@@ -165,6 +266,7 @@ _NhlRegisterConverter
 ( 
 	NrmQuark		from,		/* from type		*/
 	NrmQuark		to,		/* to type		*/
+	NrmQuark		convert_type,	/* type of converter	*/
 	NhlTypeConverter	convert,	/* the converter function*/ 
 	NhlConvertArgList	args,		/* conversion args	*/ 
 	int			nargs,		/* number of args	*/ 
@@ -172,9 +274,10 @@ _NhlRegisterConverter
 	NhlCacheClosure		close		/* for freeing cache data*/ 
 )
 #else
-(from,to,convert,args,nargs,cache,close)
+(from,to,convert_type,convert,args,nargs,cache,close)
 	NrmQuark		from;		/* from type		*/
 	NrmQuark		to;		/* to type		*/
+	NrmQuark		convert_type;	/* type of converter	*/
 	NhlTypeConverter	convert;	/* the converter function*/ 
 	NhlConvertArgList	args;		/* conversion args	*/ 
 	int			nargs;		/* number of args	*/ 
@@ -197,6 +300,7 @@ _NhlRegisterConverter
 	cvtrec->next = NULL;
 	cvtrec->fromtype = from;
 	cvtrec->totype = to;
+	cvtrec->converter_type = convert_type;
 	cvtrec->converter = convert;
 	cvtrec->cacheit = cache;
 	cvtrec->closure = (cache) ? close : (NhlCacheClosure)NULL;
@@ -216,6 +320,12 @@ _NhlRegisterConverter
 	else
 		cvtrec->args = NULL;
 
+	/*
+	 * If there is a current converter installed - delete it.
+	 * ignore return value - we don't care if one was actually removed
+	 * or not.
+	 */
+	(void)_NhlDeleteConverter(from,to,convert_type);
 
 	return(insertConverter(cvtrec));
 }
@@ -264,7 +374,53 @@ NhlRegisterConverter
 #endif 
 {
 	return(_NhlRegisterConverter(NrmStringToName(from),NrmStringToName(to),
-					convert, args, nargs, cache, close));
+			NrmNULLQUARK,convert, args, nargs, cache, close));
+}
+
+/*
+ * Function:	_NhlExtRegisterConverter
+ *
+ * Description:	This function is the public interface for registering a
+ *		converter function.
+ *
+ * In Args:
+ *	NrmQuark		from,		from type
+ *	NrmQuark		to,		to type
+ *	NrmQuark		conv_type,	conv type
+ *	NhlExtTypeConverter	convert,	the converter function
+ *	NhlConvertArgList	args,		conversion args
+ *	int			nargs		number of args
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Public
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+_NhlExtRegisterConverter
+#if     __STDC__
+( 
+	NhlString		from,		/* from type		*/
+	NhlString		to,		/* to type		*/
+	NhlString		conv_type,	/* conv type		*/
+	NhlTypeConverter	convert,	/* the converter function*/ 
+	NhlConvertArgList	args,		/* conversion args	*/ 
+	int			nargs		/* number of args	*/ 
+)
+#else
+(from,to,conv_type,convert,args,nargs,cache,close)
+	NhlString		from;		/* from type		*/
+	NhlString		to;		/* to type		*/
+	NhlString		conv_type;	/* conv type		*/
+	NhlTypeConverter	convert;	/* the converter function*/ 
+	NhlConvertArgList	args;		/* conversion args	*/ 
+	int			nargs;		/* number of args	*/ 
+#endif 
+{
+	return(_NhlRegisterConverter(NrmStringToQuark(from),
+			NrmStringToQuark(to),NrmStringToQuark(conv_type),
+			convert,args,nargs,False,NULL));
 }
 
 /*
@@ -313,7 +469,7 @@ FreeConverter
 	 * free the args
 	 */
 	for(i=0;i < ptr->nargs;i++)
-		if(ptr->args[i].size > 0)
+		if(ptr->args[i].addressmode == NHLADDR)
 			(void)NhlFree((void *)(ptr->args[i].addr));
 
 	(void)NhlFree(ptr->args);
@@ -334,8 +490,9 @@ FreeConverter
  *		closure function that was provided at registration time to
  *		free any cached data.
  *
- * In Args:	NrmQuark		from	from type
- *		NrmQuark		to	to type
+ * In Args:	NrmQuark		from		from type
+ *		NrmQuark		to		to type
+ *		NrmQuark		conv_type	conv type
  *
  * Out Args:	
  *
@@ -348,12 +505,14 @@ _NhlDeleteConverter
 #if     __STDC__
 ( 
 	NrmQuark		fromQ,		/* from type	*/
-	NrmQuark		toQ		/* to type	*/
+	NrmQuark		toQ,		/* to type	*/
+	NrmQuark		ctypeQ		/* conv type	*/
 )
 #else
-(fromQ,toQ)
+(fromQ,toQ,ctypeQ)
 	NrmQuark		fromQ;		/* from type	*/
 	NrmQuark		toQ;		/* to type	*/
+	NrmQuark		ctypeQ;		/* conv type	*/
 #endif 
 {
 	NhlConvertPtr	*ptr = NULL, tmp = NULL;
@@ -362,16 +521,14 @@ _NhlDeleteConverter
 	 * ptr becomes the record containing the converter to delete
 	 * last becomes the node before
 	 */
-	ptr = &HashTable[HASHFUNC(fromQ,toQ)];
+	ptr = &HashTable[HASHFUNC(fromQ,toQ,ctypeQ)];
 
 	while((*ptr != NULL) &&
-		    (((*ptr)->fromtype != fromQ) || ((*ptr)->totype != toQ)))
+	    (((*ptr)->fromtype != fromQ) || ((*ptr)->totype != toQ) ||
+					((*ptr)->converter_type != ctypeQ)))
 		ptr = &((*ptr)->next);
 
 	if(*ptr == NULL){
-		NhlPError(FATAL,E_UNKNOWN,
-				"Unable to Find Converter %s to %s to remove",
-				NrmNameToString(fromQ),NrmNameToString(toQ));
 		return(FATAL);
 	}
 
@@ -410,7 +567,8 @@ NhlDeleteConverter
 	NhlString		to;		/* to type	*/
 #endif 
 {
-	return(_NhlDeleteConverter(NrmStringToName(from),NrmStringToName(to)));
+	return(_NhlDeleteConverter(NrmStringToName(from),NrmStringToName(to),
+								NrmNULLQUARK));
 }
 
 /*
@@ -438,12 +596,14 @@ _NhlUnRegisterConverter
 ( 
 	NrmQuark	from,		/* from type		*/
 	NrmQuark	to,		/* to type		*/
+	NrmQuark	type,		/* to type		*/
  	NhlConvertPtr	converter	/* pointer to converter	*/
 )
 #else
-(from,to,converter)
+(from,to,type,converter)
 	NrmQuark	from;		/* from type		*/
 	NrmQuark	to;		/* to type		*/
+	NrmQuark	type;		/* to type		*/
  	NhlConvertPtr	converter;	/* pointer to converter	*/
 #endif 
 {
@@ -452,10 +612,11 @@ _NhlUnRegisterConverter
 	/*
 	 * ptr becomes the record containing the converter to remove
 	 */
-	ptr = &HashTable[HASHFUNC(from,to)];
+	ptr = &HashTable[HASHFUNC(from,to,type)];
 
 	while((*ptr != NULL) &&
-		    (((*ptr)->fromtype != from) || ((*ptr)->totype != to)))
+		    (((*ptr)->fromtype != from) || ((*ptr)->totype != to) ||
+					((*ptr)->converter_type != type)))
 		ptr = &((*ptr)->next);
 
 	if(*ptr == NULL){
@@ -513,7 +674,7 @@ NhlUnRegisterConverter
 #endif 
 {
 	return(_NhlUnRegisterConverter(NrmStringToName(from),
-					NrmStringToName(to),converter));
+				NrmStringToName(to),NrmNULLQUARK,converter));
 }
 
 /*
@@ -547,11 +708,13 @@ NhlReRegisterConverter
 	 * ptr becomes the record containing the converter to delete
 	 * last becomes the node before
 	 */
-	ptr = &HashTable[HASHFUNC(converter->fromtype,converter->totype)];
+	ptr = &HashTable[HASHFUNC(converter->fromtype,converter->totype,
+						converter->converter_type)];
 
 	while((*ptr != NULL) &&
 		    (((*ptr)->fromtype != converter->fromtype) ||
-		     ((*ptr)->totype != converter->totype))		)
+		     ((*ptr)->totype != converter->totype) ||
+		     ((*ptr)->converter_type != converter->converter_type)))
 		ptr = &((*ptr)->next);
 
 	if(*ptr != NULL){
@@ -586,20 +749,23 @@ _NhlConverterExists
 #if     __STDC__
 ( 
 	NrmQuark		from,		/* from type		*/
-	NrmQuark		to		/* to type		*/
+	NrmQuark		to,		/* to type		*/
+	NrmQuark		conv_type	/* conv_type		*/
 )
 #else
-(from,to)
+(from,to,conv_type)
 	NrmQuark		from;		/* from type		*/
 	NrmQuark		to;		/* to type		*/
+	NrmQuark		conv_type;	/* conv_type		*/
 #endif 
 {
 	NhlConvertPtr	ptr = NULL;
 
-	ptr = HashTable[HASHFUNC(from,to)];
+	ptr = HashTable[HASHFUNC(from,to,conv_type)];
 
 	while((ptr != NULL) &&
-		    ((ptr->fromtype != from) || (ptr->totype != to)))
+		((ptr->fromtype != from) || (ptr->totype != to) ||
+					(ptr->converter_type != conv_type)))
 		ptr = ptr->next;
 
 	if(ptr == NULL)
@@ -636,7 +802,7 @@ NhlConverterExists
 	NhlString	to;		/* to type		*/
 #endif 
 {
-	return(_NhlConverterExists(NrmStringToName(from),NrmStringToName(to)));
+	return(_NhlConverterExists(NrmStringToName(from),NrmStringToName(to),NrmNULLQUARK));
 }
 
 /*
@@ -673,8 +839,7 @@ RetrieveCache
 
 		if(from->size != node->from.size)
 			continue;
-		if(bcmp((char *)(from->addr),(char *)(node->from.addr),
-							from->size) == 0)
+		if(memcmp((from->addr),(node->from.addr),from->size) == 0)
 			return(node);
 		node = node->next;
 	}
@@ -730,7 +895,7 @@ SetConvertVal
 		/* give caller copy */
 
 		to->size = from.size;
-		bcopy((char *)from.addr,(char *)to->addr, to->size);
+		memcpy(to->addr,from.addr,to->size);
 		return(NOERROR);
 	}
 
@@ -783,12 +948,12 @@ InsertInCache
 
 	newnode->from.size = from->size;
 	newnode->from.addr = NhlMalloc(from->size);
-	(void)bcopy((char*)(from->addr),(char*)(newnode->from.addr),from->size);
+	memcpy(newnode->from.addr,from->addr,from->size);
 
 
 	newnode->to.size = to->size;
 	newnode->to.addr = NhlMalloc(to->size);
-	(void)bcopy((char*)(from->addr),(char*)(newnode->from.addr),from->size);
+	memcpy(newnode->from.addr,from->addr,from->size);
 
 	newnode->next = conv->cache;
 	conv->cache = newnode;
@@ -820,20 +985,21 @@ static NhlErrorTypes
 Convert
 #if	__STDC__
 (
-	NhlConvertPtr	conv,		/* ptr to converter	*/
-	NrmValue	*fromdata,	/* data to convert	*/
-	NrmValue	*todata		/* return converted data*/
+	NhlConvertPtr		conv,		/* ptr to converter	*/
+	NrmValue		*fromdata,	/* data to convert	*/
+	NrmValue		*todata		/* return converted data*/
 )
 #else
 (conv,fromdata,todata)
-	NhlConvertPtr	conv;		/* ptr to converter	*/
-	NrmValue	*fromdata;	/* data to convert	*/
-	NrmValue	*todata;	/* return converted data*/
+	NhlConvertPtr		conv;		/* ptr to converter	*/
+	NrmValue		*fromdata;	/* data to convert	*/
+	NrmValue		*todata;	/* return converted data*/
 #endif
 {
 	NhlErrorTypes	ret = NOERROR, lret = NOERROR;
 
-	ret = (*(conv->converter))(fromdata,todata,conv->args,conv->nargs);
+	ret = (*conv->converter)(fromdata,todata,conv->args,conv->nargs);
+
 	if(ret < WARNING)
 		return(ret);
 
@@ -846,16 +1012,14 @@ Convert
 }
 
 /*
- * Function:	_NhlConvertData
+ * Function:	ConvertData
  *
- * Description:	This function is the private interface that calls the requested
- *		converter on the "from" data and places the result in "to"
- *		data.  If the converter was registered with cache = True, then
- *		the "to data" will be copied into a cache.
+ * Description:	
  *
- * In Args:	NrmQuark	fromtype	from type
- *		NrmQuark	totype		to type
- * 		NrmValue	*fromdata	from type
+ * In Args:
+ *		NrmQuark		fromtype	from type
+ *		NrmQuark		totype		to type
+ * 		NrmValue		*fromdata	from type
  *
  * Out Args:
  *		NrmValue	*todata		to type
@@ -864,30 +1028,46 @@ Convert
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
-NhlErrorTypes
-_NhlConvertData
+static NhlErrorTypes
+ConvertData
 #if     __STDC__
 ( 
-	NrmQuark	fromQ,		/* from type		*/
-	NrmQuark	toQ,		/* to type		*/
-	NrmValue	*fromdata,	/* from type		*/
-	NrmValue	*todata		/* to type		*/
+	_NhlConvertContext	context,	/* context		*/
+	NrmQuark		convert_type,	/* convert_type		*/
+	NrmQuark		fromQ,		/* from type		*/
+	NrmQuark		toQ,		/* to type		*/
+	NrmValue		*fromdata,	/* from type		*/
+	NrmValue		*todata		/* to type		*/
 )
 #else
-(fromQ,toQ,fromdata,todata)
-	NrmQuark	fromQ;		/* from type		*/
-	NrmQuark	toQ;		/* to type		*/
-	NrmValue	*fromdata;	/* from type		*/
-	NrmValue	*todata;	/* to type		*/
+(context,convert_type,fromQ,toQ,fromdata,todata)
+	_NhlConvertContext	context;	/* context		*/
+	NrmQuark		convert_type;	/* convert_type		*/
+	NrmQuark		fromQ;		/* from type		*/
+	NrmQuark		toQ;		/* to type		*/
+	NrmValue		*fromdata;	/* from type		*/
+	NrmValue		*todata;	/* to type		*/
 #endif 
 {
 	NhlConvertPtr	ptr = NULL;
 	CachePtr	cache=NULL;
+	_NhlCtxtStack	ctxt = NULL;
+	NhlErrorTypes	ret=NOERROR;
 
-	ptr = HashTable[HASHFUNC(fromQ,toQ)];
+	ctxt = (_NhlCtxtStack)NhlMalloc(sizeof(_NhlCtxtStackRec));
+	if(ctxt == NULL){
+		NHLPERROR((FATAL,ENOMEM,NULL));
+		return FATAL;
+	}
+	ctxt->context = context;
+	ctxt->next = ctxt_stack;
+	ctxt_stack = ctxt;
+
+	ptr = HashTable[HASHFUNC(fromQ,toQ,convert_type)];
 
 	while((ptr != NULL) &&
-		    ((ptr->fromtype != fromQ) || (ptr->totype != toQ)))
+		    ((ptr->fromtype != fromQ) || (ptr->totype != toQ) ||
+					(ptr->converter_type != convert_type)))
 		ptr = ptr->next;
 
 	if(ptr == NULL){
@@ -900,7 +1080,98 @@ _NhlConvertData
 		if((cache = RetrieveCache(ptr->cache, fromdata)) != NULL)
 			return(SetConvertVal(cache->to, todata));
 
-	return(Convert(ptr,fromdata,todata));
+	ret = Convert(ptr,fromdata,todata);
+
+	ctxt_stack = ctxt->next;
+	(void)NhlFree(ctxt);
+
+	return ret;
+}
+
+/*
+ * Function:	_NhlExtConvertData
+ *
+ * Description:	This function is the private interface that calls the requested
+ *		converter on the "from" data and places the result in "to"
+ *		data.  If the converter was registered with cache = True, then
+ *		the "to data" will be copied into a cache.
+ *
+ * In Args:	_NhlConvertContext	context		context
+ *		NrmQuark		fromtype	from type
+ *		NrmQuark		totype		to type
+ * 		NrmValue		*fromdata	from type
+ *
+ * Out Args:
+ *		NrmValue	*todata		to type
+ *
+ * Scope:	Global Private
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+_NhlExtConvertData
+#if     __STDC__
+( 
+	_NhlConvertContext	context,	/* context		*/
+	NrmQuark		typeQ,		/* conv type		*/
+	NrmQuark		fromQ,		/* from type		*/
+	NrmQuark		toQ,		/* to type		*/
+	NrmValue		*fromdata,	/* from type		*/
+	NrmValue		*todata		/* to type		*/
+)
+#else
+(context,typeQ,fromQ,toQ,fromdata,todata)
+	_NhlConvertContext	context;	/* context		*/
+	NrmQuark		typeQ;		/* conv type		*/
+	NrmQuark		fromQ;		/* from type		*/
+	NrmQuark		toQ;		/* to type		*/
+	NrmValue		*fromdata;	/* from type		*/
+	NrmValue		*todata;	/* to type		*/
+#endif 
+{
+	return ConvertData(context,typeQ,fromQ,toQ,fromdata,todata);
+}
+
+/*
+ * Function:	_NhlConvertData
+ *
+ * Description:	This function is the private interface that calls the requested
+ *		converter on the "from" data and places the result in "to"
+ *		data.  If the converter was registered with cache = True, then
+ *		the "to data" will be copied into a cache.
+ *
+ * In Args:	_NhlConvertContext	context		context
+ *		NrmQuark		fromtype	from type
+ *		NrmQuark		totype		to type
+ * 		NrmValue		*fromdata	from type
+ *
+ * Out Args:
+ *		NrmValue	*todata		to type
+ *
+ * Scope:	Global Private
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+_NhlConvertData
+#if     __STDC__
+( 
+	_NhlConvertContext	context,	/* context		*/
+	NrmQuark		fromQ,		/* from type		*/
+	NrmQuark		toQ,		/* to type		*/
+	NrmValue		*fromdata,	/* from type		*/
+	NrmValue		*todata		/* to type		*/
+)
+#else
+(context,fromQ,toQ,fromdata,todata)
+	_NhlConvertContext	context;	/* context		*/
+	NrmQuark		fromQ;		/* from type		*/
+	NrmQuark		toQ;		/* to type		*/
+	NrmValue		*fromdata;	/* from type		*/
+	NrmValue		*todata;	/* to type		*/
+#endif 
+{
+	return ConvertData(context,NrmNULLQUARK,fromQ,toQ,fromdata,todata);
 }
 
 /*
@@ -938,6 +1209,97 @@ NhlConvertData
 	NrmValue	*todata;	/* to data		*/
 #endif 
 {
-	return(_NhlConvertData(NrmStringToName(from),NrmStringToName(to),
-							fromdata,todata));
+	static _NhlCtxtStack	free_list = NULL;
+	_NhlCtxtStack		tptr = NULL;
+	_NhlConvertContext	context = _NhlCreateConvertContext();
+	NhlErrorTypes		ret;
+
+	/*
+	 * Clean up memory that is no longer in use.
+	 */
+	while(free_list != NULL){
+		_NhlFreeConvertContext(free_list->context);
+		tptr = free_list;
+		free_list = free_list->next;
+		(void)NhlFree(tptr);
+	}
+
+	if(context == NULL){
+		NhlPError(FATAL,ENOMEM,"Unable to Create Context");
+		return FATAL;
+	}
+
+	tptr = (_NhlCtxtStack)NhlMalloc(sizeof(_NhlCtxtStackRec));
+	if(tptr == NULL){
+		NHLPERROR((FATAL,ENOMEM,NULL));
+		return FATAL;
+	}
+	tptr->context = context;
+
+	ret = _NhlConvertData(context,NrmStringToName(from),
+					NrmStringToName(to),fromdata,todata);
+
+	tptr->next = free_list;
+	free_list = tptr;
+
+	return ret;
+}
+
+/*
+ * Function:	NhlConvertMalloc
+ *
+ * Description:	This function should be used by converters that need to
+ *		dynamically allocate the memory to return the converted
+ *		data.  It should not be used for memory that will be free'd
+ *		inside the converter function.  This memory is automatically
+ *		free'd the next time the Convert utility is used.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Public (only used in "Converter" functions)
+ * Returns:	NhlPointer
+ * Side Effect:	
+ */
+NhlPointer
+NhlConvertMalloc
+#if	__STDC__
+(
+	unsigned int	size	/* size of memory requested	*/
+)
+#else
+(size)
+	unsigned int	size;	/* size of memory requested	*/
+#endif
+{
+	void			*ptr;
+	_NhlConvertContext	context;
+	
+	if((ctxt_stack == NULL) || (ctxt_stack->context == NULL)){
+		NhlPError(FATAL, E_UNKNOWN,
+					"NhlConvertMalloc:Context not active");
+		return NULL;
+	}
+
+	context = ctxt_stack->context;
+
+	while(context->num_alloced >= NHLCONVALLOCLISTLEN){
+		if(context->next == NULL){
+			context->next = _NhlCreateConvertContext();
+			if(context->next == NULL){
+				NhlPError(FATAL, E_UNKNOWN,
+				"NhlConvertMalloc:Unable to Grow Context");
+				return NULL;
+			}
+		}
+		context = context->next;
+	}
+
+	ptr = NhlMalloc(size);
+
+	if(ptr != NULL)
+		context->alloc_list[context->num_alloced++] = ptr;
+
+	return ptr;
 }

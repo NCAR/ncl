@@ -1,5 +1,5 @@
 /*
- *      $Id: TitleP.h,v 1.1 1993-04-30 17:25:07 boote Exp $
+ *      $Id: TitleP.h,v 1.2 1993-10-19 17:52:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,6 @@
 #ifndef  _NTitleP_h
 #define _NTitleP_h 
 
-#include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/ViewP.h>
 #include <ncarg/hlu/Title.h>
 #include <ncarg/hlu/TextItem.h>
@@ -31,7 +30,7 @@ typedef struct _TitleLayerPart {
 /* Publically setable resource fields */
 	float	delta;
 	char	*main_string;
-	int	main_on;
+	NhlBoolean	main_on;
 	TitlePositions	main_side;
 	TitlePositions	main_position;
 	int	main_just;
@@ -51,7 +50,7 @@ typedef struct _TitleLayerPart {
 					used for all the titles */
 	int 	main_font_color;
 	char	*x_axis_string;
-	int	x_axis_on;
+	NhlBoolean	x_axis_on;
 	TitlePositions	x_axis_side;
 	TitlePositions	x_axis_position;
 	int	x_axis_just;
@@ -69,7 +68,7 @@ typedef struct _TitleLayerPart {
 	int 	x_axis_font_color;
 
 	char	*y_axis_string;
-	int	y_axis_on;
+	NhlBoolean	y_axis_on;
 	TitlePositions	y_axis_side;
 	TitlePositions	y_axis_position;
 	int	y_axis_just;

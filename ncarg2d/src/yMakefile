@@ -1,16 +1,11 @@
 #
-#	$Id: yMakefile,v 1.6 1993-04-09 17:36:58 haley Exp $
+#	$Id: yMakefile,v 1.7 1993-10-19 17:19:13 boote Exp $
 #
 #
 #	Makefile for NCAR Graphics source directories
 #
 
-NCARG	= ../..
+#define IHaveSubdirs
 
 SUBDIRS = libncarg libncarg_gks liboptional libncargC libncarg_gksC bin db \
 	examples fundamental tests tutorial examplesC pdocexamples
-
-MakeSubdirs($(SUBDIRS))
-InstallSubdirs($(SUBDIRS))
-MakefilesSubdirs($(SUBDIRS))
-CleanSubdirs($(SUBDIRS))

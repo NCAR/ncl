@@ -1,6 +1,5 @@
-
 /*
- *      $Id: BoundingBox.c,v 1.1 1993-04-30 17:21:18 boote Exp $
+ *      $Id: BoundingBox.c,v 1.2 1993-10-19 17:49:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -63,7 +62,8 @@ static NhlErrorTypes CallGetBB
 	ViewLayerClass	vclass = (ViewLayerClass) class;
 	NhlErrorTypes ancestor=NOERROR, ret = NOERROR;
 
-	if(vclass->base_class.superclass != &baseLayerClassRec) {
+	if(vclass->base_class.superclass->base_class.class_inited &
+							ViewLayerClassFlag) {
 		ancestor =CallGetBB(instance,vclass->base_class.superclass,
 			thebox);
 
@@ -76,8 +76,6 @@ static NhlErrorTypes CallGetBB
 
 	return(MIN(ancestor,ret));
 }
-
-
 
 /*
  * Function:	_NhlGetBB
@@ -114,7 +112,6 @@ NhlErrorTypes _NhlGetBB
 		return(FATAL);
 	}
 }
-
 
 /*
  * Function:	NhlGetBB
@@ -157,5 +154,3 @@ NhlErrorTypes NhlGetBB
 		return(FATAL);
 	}
 }
-
-

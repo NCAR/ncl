@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.1 1993-04-30 17:24:12 boote Exp $
+ *      $Id: SetValues.c,v 1.2 1993-10-19 17:52:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -83,6 +83,61 @@ CallSetValues
 }
 
 /*
+ * Function:	CallSetValuesHook
+ *
+ * Description:	This function is used to call the SetValues methods of the
+ *		given layer.
+ *
+ * In Args:	
+ *		LayerClass	class,		Class of Layer being set
+ *		Layer		oldl,		Layer w/ old values
+ *		Layer		reql,		Layer w/ requested values
+ *		Layer		newl,		Layer to update
+ *		_NhlArgList	args,		res names and values to set
+ *		int		num_args	num of resources to set
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+CallSetValuesHook
+#if	__STDC__
+(
+	LayerClass	class,		/* Class of Layer being set	*/
+	Layer		oldl,		/* Layer w/ old values		*/
+	Layer		reql,		/* Layer w/ requested values	*/
+	Layer		newl,		/* Layer to update		*/
+	_NhlArgList	args,		/* res names and values to set	*/
+	int		num_args	/* num of resources to set	*/
+)
+#else
+(class,oldl,reql,newl,args,num_args) 
+	LayerClass	class;		/* Class of Layer being set	*/
+	Layer		oldl;		/* Layer w/ old values		*/
+	Layer		reql;		/* Layer w/ requested values	*/
+	Layer		newl;		/* Layer to update		*/
+	_NhlArgList	args;		/* res names and values to set	*/
+	int		num_args;	/* num of resources to set	*/
+#endif
+{
+	NhlErrorTypes ansestorerr=NOERROR, thisclasserr=NOERROR;
+
+	if(class->base_class.layer_set_values_hook != NULL)
+		thisclasserr = (*(class->base_class.layer_set_values_hook))
+						(oldl,reql,newl,args,num_args);
+
+	if(class->base_class.superclass != NULL)
+		ansestorerr = CallSetValuesHook(class->base_class.superclass,
+						oldl,reql,newl,args,num_args);
+
+
+	return(MIN(ansestorerr,thisclasserr));
+}
+
+/*
  * Function:	SetValues
  *
  * Description:	This function sets resource values addressed by base + resource
@@ -105,24 +160,26 @@ static NhlErrorTypes
 SetValues
 #if	__STDC__
 (
-	char*		base,		/* base address to write values to*/
-	NrmResourceList	resources,	/* resource list with offsets	*/
-	int		num_res,	/* number of resources		*/
-	_NhlArgList	args,		/* names and values of resources*/
-	int		nargs		/* number of args		*/
+	_NhlConvertContext	context,/* convert context for mem	*/
+	char*			base,	/* base address to write values to*/
+	NrmResourceList		resources,/* resource list with offsets	*/
+	int			num_res,/* number of resources		*/
+	_NhlExtArgList		args,	/* names and values of resources*/
+	int			nargs	/* number of args		*/
 )
 #else
-(base, resources, num_res, args, nargs)
-	char*		base;		/* base address to write values to*/
-	NrmResourceList	resources;	/* resource list with offsets	*/
-	int		num_res;	/* number of resources		*/
-	_NhlArgList	args;		/* names and values of resources*/
-	int		nargs;		/* number of args		*/
+(context,base,resources,num_res,args,nargs)
+	_NhlConvertContext	context;/* convert context for mem	*/
+	char*			base;	/* base address to write values to*/
+	NrmResourceList		resources;/* resource list with offsets	*/
+	int			num_res;/* number of resources		*/
+	_NhlExtArgList		args;	/* names and values of resources*/
+	int			nargs;	/* number of args		*/
 #endif
 {
 	register int	i,j;
 	NhlBoolean	argfound[MAXARGLIST];
-	NhlErrorTypes	retcode = NOERROR;
+	NhlErrorTypes	ret = NOERROR;
 
 	/*
 	 * all args could have been used in children
@@ -131,29 +188,62 @@ SetValues
 		return NOERROR;
 
 	/* Mark each arg as not found */ 
-	bzero((char *) argfound, (int)(nargs * sizeof(NhlBoolean))); 
+	memset((char*)argfound,0,(nargs * sizeof(NhlBoolean))); 
 		 
 	for(i=0; i < nargs; i++){
 		for(j=0; j < num_res; j++){
-			if(args[i].quark == resources[j].nrm_name){
-				/* SUPPRESS 112 */
-				_NhlCopyFromArg(args[i].value,
-					(char*)(base + resources[j].nrm_offset),
-					resources[j].nrm_size); 
+			if(args[i].quark == resources[j].nrm_name) {
+				if((args[i].type == NrmNULLQUARK) ||
+					(args[i].type==resources[j].nrm_type)){
+
+					_NhlCopyFromArg(args[i].value,
+				(char*)((char*)base + resources[j].nrm_offset),
+					resources[j].nrm_size);
+				}
+				else if(_NhlConverterExists(args[i].type,
+					resources[j].nrm_type,NrmNULLQUARK)){
+					/* 
+					 * call converter
+					 */
+					NrmValue	from, to;
+
+					from.size = sizeof(NhlPointer);
+					from.addr = (void*)args[i].value;
+					to.size = resources[j].nrm_size;
+					to.addr =(void *)((char*)base +
+						resources[j].nrm_offset);
+
+					if(NOERROR != _NhlConvertData(context,
+							args[i].type,
+							resources[j].nrm_type,
+							&from, &to)){
+					
+						NhlPError(WARNING,E_UNKNOWN,
+			"Error retrieving resource %s from args - Ignoring Arg",
+					NrmNameToString(resources[i].nrm_name));
+						ret = MIN(WARNING,ret);
+					}
+				}
+				else{
+					NhlPError(WARNING,E_UNKNOWN,
+				"The %s resource is not setable using a %s",
+						NrmQuarkToString(args[i].quark),
+						NrmQuarkToString(args[i].type));
+				}
 				argfound[i] = True;
 				break;
-			}
+			}	
 		}
 
 		if(!argfound[i]){
-			NhlPError(INFO,E_UNKNOWN,
+			NhlPError(WARNING,E_UNKNOWN,
 				"%s is not a resource in the given object",
 						NrmNameToString(args[i].quark));
-			retcode = MIN(retcode,INFO);
+			ret = MIN(ret,WARNING);
 		}
 	}
 
-	return(retcode);
+	return(ret);
 }
 
 /*
@@ -171,30 +261,35 @@ SetValues
  * Returns:	NhlErrorTypes
  * Side Effect:	The layer is modified to set the requested values
  */
-static NhlErrorTypes
+NhlErrorTypes
 _NhlSetValues
 #if	__STDC__
 (
 	Layer		l,		/* layer instance	*/
-	_NhlArgList	args,		/* args to change	*/
+	_NhlExtArgList	args,		/* args to change	*/
 	int		nargs		/* number of args	*/
 )
 #else
 (l,args,nargs)
 	Layer		l;		/* layer instance	*/
-	_NhlArgList	args;		/* args to change	*/
+	_NhlExtArgList	args;		/* args to change	*/
 	int		nargs;		/* number of args	*/
 #endif
 {
+	int			i;
 	Layer			oldl,
 				reql;
-	int			layersize;
 	LayerClass		lc = _NhlClass(l);
 	NhlErrorTypes		ret=NOERROR, lret=NOERROR;
-	_NhlArg			largs[MAXARGLIST];
+	_NhlExtArg		stackargs[MAXARGLIST];
+	_NhlExtArgList		largs=stackargs;
 	int			nlargs;
+	_NhlChildArgList	child_args=NULL;
+	NhlBoolean		child_args_used[MAXARGLIST];
+	_NhlArg			sval_args[MAXARGLIST];
 	_NhlChildArgList	targnode=NULL;
 	_NhlChildList		tchldnode=NULL;
+	_NhlConvertContext	context;
 
 	if(l == NULL){
 		NHLPERROR((FATAL,E_UNKNOWN,
@@ -206,75 +301,100 @@ _NhlSetValues
 		return NOERROR;
 
 	/*
-	 * Sort the args into args for this instance and for it's children
-	 * If there are no children it just copies the args to largs
+	 * Obj's don't support children.
 	 */
-	lret = _NhlSortChildArgs(l,args,nargs,largs,&nlargs,&l->base.child_args,
-									False);
-
-	if(lret < WARNING){
-		NhlPError(lret,E_UNKNOWN,
-				"Unable to Create Arg Lists - Can't SetValues");
-		return lret;
+	if(_NhlIsObj(l)){
+		largs = args;
+		nlargs = nargs;
 	}
-	ret = MIN(ret,lret);
 
-	/*
-	 * If this layer has children forward args to them if autosetval = True.
-	 */
-	if(l->base.children != NULL){
-		tchldnode = l->base.children;
+	else{
 
-		while(tchldnode != NULL){
+		/*
+		 * Sort the args into args for instance and for it's children
+		 * If there are no children it just copies the args to largs
+		 */
+		lret =_NhlSortChildArgs(l,args,nargs,&largs,&nlargs,&child_args,
+							child_args_used,False);
+		if(lret < WARNING){
+			NhlPError(lret,E_UNKNOWN,
+				"Unable to Create Arg Lists - Can't SetValues");
+			return lret;
+		}
+		ret = MIN(ret,lret);
+		l->base.child_args = child_args;
 
-			targnode = l->base.child_args;
+		/*
+		 * If this layer has children forward args to them if
+		 * autosetval = True.
+		 */
+		if(l->base.children != NULL){
+			tchldnode = l->base.children;
 
-			while((targnode != NULL) &&
+			while(tchldnode != NULL){
+
+				targnode = l->base.child_args;
+
+				while((targnode != NULL) &&
 					(tchldnode->class != targnode->class))
-				targnode = targnode->next;
+					targnode = targnode->next;
 			
-			if(targnode == NULL){
-				NHLPERROR((FATAL,E_UNKNOWN,
-					"SetValues can't find args to set child's resources %s",_NhlClassName(tchldnode->class)));
-				tchldnode = tchldnode->next;
-				continue;
-			}
-
-			if(targnode->autosetval){
-				lret = _NhlSetValues(
-					_NhlGetLayer(tchldnode->pid),
-						targnode->args,targnode->nargs);
-				if(lret < WARNING){
-					NHLPERROR((lret,E_UNKNOWN,
-				"SetValues can't set values of hidden child %s",
-						NhlName(tchldnode->pid)));
+				if(targnode == NULL){
+					NHLPERROR((FATAL,E_UNKNOWN,
+			"SetValues can't find args to set child's resources %s",
+					_NhlClassName(tchldnode->class)));
 					tchldnode = tchldnode->next;
 					continue;
 				}
-				ret = MIN(lret,ret);
 
-				tchldnode->svalscalled = True;
+				if(targnode->autosetval){
+					lret = _NhlSetValues(
+						_NhlGetLayer(tchldnode->pid),
+						targnode->args,targnode->nargs);
+					if(lret < WARNING){
+						NHLPERROR((lret,E_UNKNOWN,
+				"SetValues can't set values of hidden child %s",
+						NhlName(tchldnode->pid)));
+						tchldnode = tchldnode->next;
+						continue;
+					}
+					ret = MIN(lret,ret);
+
+					for(i=0;i<targnode->nargs;i++)
+						*(targnode->args_used[i]) =True;
+
+					tchldnode->svalscalled = True;
+				}
+
+				tchldnode = tchldnode->next;
 			}
-
-			tchldnode = tchldnode->next;
 		}
 	}
 
-	layersize = lc->base_class.layer_size;
-	oldl = (Layer)NhlMalloc((unsigned)layersize);
-	reql = (Layer)NhlMalloc((unsigned)layersize);
+/*
+ * context is a structure that remembers the memory that is allocated
+ * by any converters on behalf of this object.  It needs to be free'd -
+ * along with all that memory after the SetValues method has had a chance
+ * to copy the memory.
+ */
+	context = _NhlCreateConvertContext();
 
-	if((oldl == NULL) || (reql == NULL)){
-		NhlPError(FATAL,12,"Unable to set values of PID #%d",
-								l->base.id);
+	oldl = (Layer)NhlMalloc((unsigned)lc->base_class.layer_size);
+	reql = (Layer)NhlMalloc((unsigned)lc->base_class.layer_size);
+
+	if((oldl == NULL) || (reql == NULL) || (context == NULL)){
+		NhlPError(FATAL,ENOMEM,"Unable to set values of Layer %s",
+							NhlName(l->base.id));
 		(void)NhlFree(oldl);
 		(void)NhlFree(reql);
+		_NhlFreeChildArgs(child_args);
 		return FATAL;
 	}
 
-	bcopy((char*)l,(char*)oldl,(int)layersize);
+	memcpy((char*)oldl,(char*)l,(int)lc->base_class.layer_size);
 
-	lret = SetValues((char*)l,(NrmResourceList)(lc->base_class.resources),
+	lret = SetValues(context,(char*)l,
+				(NrmResourceList)(lc->base_class.resources),
 				lc->base_class.num_resources, largs,nlargs);
 
 	if (lret < WARNING) {
@@ -285,42 +405,63 @@ _NhlSetValues
 							l->base.id);
 		NhlPError(FATAL,E_UNKNOWN,
 			"PID #%d Destroyed to recover from errors",l->base.id);
-		_NhlFreeChildArgs(l->base.child_args);
+		_NhlFreeChildArgs(child_args);
+		_NhlFreeConvertContext(context);
 		(void)NhlDestroy(l->base.id);
-		(void)_NhlRemoveLayer(l);
-		(void)NhlFree(l);
 		(void)NhlFree(oldl);
 		(void)NhlFree(reql);
 	} 
 	ret = MIN(ret,lret);
 
-	bcopy((char*)l,(char*)reql,(int)layersize);
+	memcpy((char*)reql,(char*)l,(int)lc->base_class.layer_size);
 
-	lret = CallSetValues(lc,oldl,reql,l,largs,nlargs);
-
+	for(i=0;i<nlargs;i++){
+		sval_args[i].quark = largs[i].quark;
+		sval_args[i].value = largs[i].value;
+	}
+	lret = CallSetValues(lc,oldl,reql,l,sval_args,nlargs);
 	ret = MIN(lret,ret);
 
+	lret = CallSetValuesHook(lc,oldl,reql,l,sval_args,nlargs);
+	ret = MIN(lret,ret);
+
+	/*
+	 * memory should have been copied in CallSetValues.
+	 */
+	_NhlFreeConvertContext(context);
 /*
  * LOOP threw child_list and make sure they have all had setvalues called
  * on them - if not print out an error. - Also reset svalscalled to False
  * for next SetValues call.
  */
 
-	tchldnode = l->base.children;
-	while(tchldnode != NULL){
-		if(!tchldnode->svalscalled){
-			NHLPERROR((WARNING,E_UNKNOWN,
-				"SetValues never occured on %s: Error in %s",
+	if(!_NhlIsObj(l)){
+
+		tchldnode = l->base.children;
+		while(tchldnode != NULL){
+			if(!tchldnode->svalscalled){
+				NHLPERROR((WARNING,E_UNKNOWN,
+			"SetValuesChild never occured on %s: Error in %s",
 						NhlName(tchldnode->pid),
 						_NhlClassName(_NhlClass(l))));
+			}
+			tchldnode->svalscalled = False;
+
+			tchldnode = tchldnode->next;
 		}
-		tchldnode->svalscalled = False;
 
-		tchldnode = tchldnode->next;
+		_NhlFreeChildArgs(child_args);
+		l->base.child_args = NULL;
+
+		for(i=0;i<nargs;i++){
+			if(!child_args_used[i]){
+				NhlPError(WARNING,E_UNKNOWN,
+				"%s is not a valid resource in %s at this time",
+				NrmNameToString(args[i].quark),_NhlName(l));
+				ret = MIN(ret,WARNING);
+			}
+		}
 	}
-
-	_NhlFreeChildArgs(l->base.child_args);
-	l->base.child_args = NULL;
 
 	(void)NhlFree(oldl);
 	(void)NhlFree(reql);
@@ -359,7 +500,7 @@ NhlSetValues
 {
         va_list         ap; 
 	int             num_args; 
-	_NhlArgList     args = NULL; 
+	_NhlExtArg	args[MAXARGLIST];
 	NhlErrorTypes	ret;
 	Layer		l = NULL;
 
@@ -370,7 +511,7 @@ NhlSetValues
 
 	/* create an arglist from the varargs */
 	VA_START(ap,id); 
-	_NhlVarToSetArgList(ap,&args,num_args); 
+	_NhlVarToSetArgList(ap,args,num_args); 
 	va_end(ap); 
 
 	l = _NhlGetLayer(id);
@@ -379,9 +520,7 @@ NhlSetValues
 				"PID #%d can't be found in NhlSetValues",id);
 		return(FATAL);
 	}
-	ret = _NhlSetValues(l, args, num_args);
-
-	(void)NhlFree(args);
+	ret = _NhlSetValues(l,args,num_args);
 
 	return(ret);
 }
@@ -416,12 +555,12 @@ NhlALSetValues
 	int		nargs;		/* num SArg's		*/
 #endif
 {
-	_NhlArgList     args = NULL; 
+	_NhlExtArg	args[MAXARGLIST];
 	NhlErrorTypes	ret;
 	Layer		l = NULL;
 
 	/* create an arglist from the sargs */
-	_NhlSArgToSetArgList(&args,args_in,nargs); 
+	_NhlSArgToSetArgList(args,args_in,nargs); 
 
 	l = _NhlGetLayer(id);
 	if(l == NULL){
@@ -430,8 +569,6 @@ NhlALSetValues
 		return(FATAL);
 	}
 	ret = _NhlSetValues(l, args, nargs);
-
-	(void)NhlFree(args);
 
 	return(ret);
 }
@@ -462,25 +599,33 @@ SetValuesChild
 (
 	int		pid,		/* pid			*/
 	Layer		parent,		/* parent of child	*/
-	_NhlArgList	sargs,		/* resources to set	*/
+	_NhlExtArgList	sargs,		/* resources to set	*/
 	int		num_sargs	/* number of res to set	*/
 )
 #else
 (pid,parent,sargs,num_sargs)
 	int		pid;		/* pid			*/
 	Layer		parent;		/* parent of child	*/
-	_NhlArgList	sargs;		/* resources to set	*/
+	_NhlExtArgList	sargs;		/* resources to set	*/
 	int		num_sargs;	/* number of res to set	*/
 #endif
 {
+	int			i;
 	int			num_pargs=0;
-	_NhlArgList		pargs = NULL;
+	_NhlExtArgList		pargs = NULL;
 	int			num_args=0;
-	_NhlArgList		args = NULL;
+	_NhlExtArg		args[MAXARGLIST];
 	_NhlChildArgList	targnode=NULL;
 	NhlErrorTypes		ret=NOERROR;
 	_NhlChildList		tchldnode=NULL;
 	Layer			child = _NhlGetLayer(pid);
+
+	if(_NhlIsObj(parent)){
+		NhlPError(FATAL,E_UNKNOWN,
+	"ChildSetValues:%s is a sub-class of Obj so it can't have children",
+						NhlName(parent->base.id));
+		return FATAL;
+	}
 
 	if(child == NULL){
 		NHLPERROR((FATAL,E_UNKNOWN,"Unable to retrieve child PID#%d",
@@ -513,6 +658,11 @@ SetValuesChild
 		if(targnode->class == tchldnode->class){
 			pargs = targnode->args;
 			num_pargs = targnode->nargs;
+			/*
+			 * Mark each arg as used
+			 */
+			for(i=0;i<targnode->nargs;i++)
+				*(targnode->args_used[i]) = True;
 			break;
 		}
 		targnode = targnode->next;
@@ -528,16 +678,12 @@ SetValuesChild
 	/*
 	 * merge the pargs and sargs into a single args list for _NhlSetValues
 	 */
-	_NhlMergeArgLists(&args,&num_args,sargs,num_sargs,pargs,num_pargs);
-
-
+	_NhlMergeArgLists(args,&num_args,sargs,num_sargs,pargs,num_pargs);
 
 	/*
 	 * SetValues of the child
 	 */
 	ret = _NhlSetValues(child,args,num_args);
-
-	(void)NhlFree(args);
 
 	/*
 	 * fill in the child node infomation and add it into the children
@@ -593,7 +739,7 @@ _NhlSetValuesChild
 {
 	va_list			ap;
 	int			num_vargs;
-	_NhlArgList		vargs = NULL;
+	_NhlExtArg		vargs[MAXARGLIST];
 	NhlErrorTypes		ret;
 
 	/*
@@ -604,12 +750,10 @@ _NhlSetValuesChild
 	va_end(ap);
 
 	VA_START(ap,parent);
-	_NhlVarToSetArgList(ap,&vargs,num_vargs);
+	_NhlVarToSetArgList(ap,vargs,num_vargs);
 	va_end(ap);
 
 	ret = SetValuesChild(pid,parent,vargs,num_vargs);
-
-	(void)NhlFree(vargs);
 
 	return ret;
 }
@@ -659,14 +803,12 @@ _NhlALSetValuesChild
 	int		nargs;		/* number args		*/
 #endif
 {
-	_NhlArgList		args = NULL;
+	_NhlExtArg		args[MAXARGLIST];
 	NhlErrorTypes		ret;
 
-	_NhlSArgToSetArgList(&args,args_in,nargs);
+	_NhlSArgToSetArgList(args,args_in,nargs);
 
 	ret = SetValuesChild(pid,parent,args,nargs);
-
-	(void)NhlFree(args);
 
 	return ret;
 }

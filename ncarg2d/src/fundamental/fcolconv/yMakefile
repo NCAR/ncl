@@ -1,17 +1,8 @@
 #
-#	$Id: yMakefile,v 1.1 1993-04-08 22:35:26 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-10-19 17:24:41 boote Exp $
 #
-NCARG	= ../../../..
-
 MYNAME	= fcolconv
 
 GENERIC_SRCS = fcce01.f fcce02.f
 
-install::
-	@for file in $(GENERIC_SRCS); do\
-	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
-	done
-
-MakefileTarget
-CleanTarget
-UpdateTarget
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))

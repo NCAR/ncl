@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.2 1993-05-27 19:11:40 ethan Exp $
+ *      $Id: hlu.h,v 1.3 1993-10-19 17:53:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,11 +24,13 @@
 #define _NHLU_h
 
 #include <stdio.h>
+#include <string.h>
 
 #include <ncarg/hlu/defs.h>
 
-#ifdef	__STDC__ 
+#ifdef	__STDC__
 #define NeedVarArgProto         True 
+#include <stdlib.h>
 #else
 #define NeedVarArgProto		False
 #endif
@@ -39,9 +41,34 @@
 #else
 #ifdef	__STDC__
 #define Const const
-#endif
+#else
 #define Const
 #endif
+#endif
+
+/*
+ * Macro:	_NHLCALLF
+ *
+ * Description:	This macro is used whenever a Fortran fuction is being called
+ *		from C.  It is used to deal with different calling conventions.
+ */
+#ifndef	_NHLCALLF
+#if	defined(Cray2) || defined(Cray)
+/* Brain dead cray's */
+#define	_NHLCALLF(reg,caps)	caps
+
+#elif	defined(RS6000) || defined(_HPUX_SOURCE)
+/* No munging of names - wow how unique */
+#define	_NHLCALLF(reg,caps)	reg
+
+#else	/* Regular old BSD */
+#ifdef	__STDC__
+#define	_NHLCALLF(reg,caps)	reg##_
+#else
+#define	_NHLCALLF(reg,caps)	reg/**/_
+#endif	/* __STDC__ */
+#endif	/* defined... */
+#endif	/* _NHLCALLF	*/
 
 #define True 1
 #define False 0
@@ -63,14 +90,26 @@
 #define NhlTFloatPtr	"FloatPtr"
 #define NhlTFloatPtrPtr	"FloatPtrPtr"
 #define NhlTDoublePtr	"DoublePtr"
-#define NhlTPtr		"Ptr"
+#define NhlTPointer	"Pointer"
 #define NhlTImmediate	"Immediate"
 #define NhlTProcedure	"Procedure"
+#define	NhlTGenArray	"GenArray"
+#define	NhlTQuark	"Quark"
+#define	NhlTArray1D	"Array1D"
 #define NhlTNull	"NULL"
+#define NhlTExtraLayer	"ExtraLayer"
 
 typedef	char	*NhlString;
 typedef	void	*NhlPointer;
 typedef	int	NhlBoolean;
+
+typedef	struct NhlGenArrayRec_ *NhlGenArray;
+
+typedef	struct NhlArray1DRec_{
+	int		len;
+	NhlString	type;
+	NhlPointer	data;
+} NhlArray1DRec, *NhlArray1D;
 
 typedef enum _NhlErrType{
 	FATAL	= -4,
@@ -78,6 +117,47 @@ typedef enum _NhlErrType{
 	INFO	= -2,
 	NOERROR	= -1
 } NhlErrorTypes;
+
+
+/* pseudo Boolean types */
+
+#define NhlTOrientation NhlTBoolean
+#define NhlHORIZONTAL	0
+#define NhlVERTICAL	1
+typedef NhlBoolean NhlOrientation;
+
+/* position enumeration */
+
+#define NhlTPosition "Position"
+typedef enum _NhlPosition {
+	NhlTOP,
+	NhlBOTTOM,
+	NhlRIGHT,
+	NhlLEFT,
+	NhlCENTER,
+	NhlBOTH       /* LabelBar needs this */
+} NhlPosition;
+
+/* justification enumeration */
+
+#define NhlTJustification "Justification"
+typedef enum _NhlJustification {
+	NhlTOPLEFT,
+	NhlCENTERLEFT,
+	NhlBOTTOMLEFT,
+	NhlTOPCENTER,
+	NhlCENTERCENTER,
+	NhlBOTTOMCENTER,
+	NhlTOPRIGHT,
+	NhlCENTERRIGHT,
+	NhlBOTTOMRIGHT
+} NhlJustification;
+
+/* 
+ * Special Fill index values
+ */
+#define NhlHOLLOWFILL	-1
+#define NhlSOLIDFILL	0
 
 #define NhlOffset(p_type,field) \
         ((unsigned int) (((char *) (&(((p_type*)NULL)->field))) - ((char *) NULL)))
@@ -114,6 +194,10 @@ typedef struct _NhlBoundingBox {
         float   r;
 } NhlBoundingBox;
 
+typedef struct _NhlCoord {
+	float x;
+	float y;
+} NhlCoord;
 
 typedef struct _LayerClassRec *LayerClass;
 typedef struct _LayerRec *Layer;
@@ -129,7 +213,27 @@ typedef struct _LayerList {
 #include <ncarg/hlu/Error.h>
 
 /*
- * These functions will allow us to impliment our on malloc if we need to
+ * These functions are used to create and destroy NhlGenArray description
+ * records.
+ */
+extern NhlGenArray NhlCreateGenArray(
+#ifdef	NhlNeedProto
+	NhlPointer	data,		/* data array		*/
+	NhlString	type,		/* type of each element	*/
+	unsigned int	size,		/* size of each element	*/
+	int		num_dimensions,	/* number of dimensions	*/
+	int		*len_dimensions	/* number of dimensions	*/
+#endif
+);
+
+extern void NhlFreeGenArray(
+#ifdef	NhlNeedProto
+	NhlGenArray	gen	/* GenArray description record to free	*/
+#endif
+);
+
+/*
+ * These functions will allow us to impliment our own malloc if we need to
  */
 
 extern void *NhlMalloc(
@@ -191,22 +295,22 @@ extern void NhlSetGArg(
 /*VARARGS4*/
 extern NhlErrorTypes NhlCreate(
 #if	NeedVarArgProto
-	int*,		/* return plot id				*/
-	NhlString,	/* name						*/
-	LayerClass,	/* requested class				*/
-	int,		/* parent's id					*/
-	...		/* resource names and values - NULL terminated	*/
+	int*,			/* return plot id			*/
+	Const char*,		/* name					*/
+	LayerClass,		/* requested class			*/
+	int,			/* parent's id				*/
+	...			/* res names/values - NULL terminated	*/
 #endif
 );
 
 extern NhlErrorTypes NhlALCreate(
 #if	NhlNeedProto
-	int*,		/* return plot id				*/
-	NhlString,	/* name						*/
-	LayerClass,	/* requested class				*/
-	int,		/* parent's id					*/
-	NhlSArgList,	/* setarg list					*/
-	int		/* number of Sarg's				*/
+	int*,			/* return plot id	*/
+	Const char*,		/* name			*/
+	LayerClass,		/* requested class	*/
+	int,			/* parent's id		*/
+	NhlSArgList,		/* setarg list		*/
+	int			/* number of Sarg's	*/
 #endif
 );
 
@@ -327,6 +431,29 @@ extern int NhlGetGksCi(
 int NhlGetGksWorkId(
 #ifdef NhlNeedProto
 int /* workid */
+#endif
+);
+
+int NhlNewMarker(
+#ifdef NhlNeedProto
+	Layer instance, 
+	char *marker_string, 
+	float x_off, 
+	float y_off,
+	float aspect_adj,
+	float size_adj
+#endif
+);
+
+NhlErrorTypes NhlSetMarker(
+#ifdef NhlNeedProto
+	Layer instance, 
+	int	index,
+	char	*marker_string, 
+	float	x_off, 
+	float	y_off,
+	float	aspect_adj,
+	float	size_adj
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: ErrorP.h,v 1.1 1993-04-30 17:22:01 boote Exp $
+ *      $Id: ErrorP.h,v 1.2 1993-10-19 17:50:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -84,7 +84,7 @@ typedef struct _ErrorLayerPart {
 } ErrorLayerPart;
 
 typedef struct _ErrorLayerRec {
-	BaseLayerPart	base;
+	ObjLayerPart	base;
 	ErrorLayerPart	error;
 } ErrorLayerRec;
 
@@ -93,7 +93,7 @@ typedef struct _ErrorLayerClassPart {
 } ErrorLayerClassPart;
 
 typedef struct _ErrorLayerClassRec {
-	BaseLayerClassPart	base_class;
+	ObjLayerClassPart	base_class;
 	ErrorLayerClassPart	error_class;
 } ErrorLayerClassRec;
 

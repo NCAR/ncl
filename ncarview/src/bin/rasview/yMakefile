@@ -1,31 +1,24 @@
 #
 #
-#	$Id: yMakefile,v 1.14 1993-03-28 14:50:28 haley Exp $
+#	$Id: yMakefile,v 1.15 1993-10-19 17:44:16 boote Exp $
 #
 #	Makefile for rasview
 #
-NCARG		= ../../../..
 
 MYNAME		= rasview
 
-LOCLIBS		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a
+SRCS	= rasdraw.c rasview.c
+OBJS	= rasdraw.o rasview.o
 
-SRCS		= rasdraw.c rasview.c
+PROG_LIBS	=	$(NCARGRASLIB) $(NCARGCLIB)
+DEPLIBS		=	$(DEPNCARGRASLIB) $(DEPNCARGCLIB)
 
-OBJS		= rasdraw.o rasview.o
+XLIBS		=	$(XTOOLLIB) $(XLIB)
+EXTRA_LIBS	=	$(XLIBS) $(NETCDFLIB) $(HDFLIB)
+SYS_LIBS	=	-lm
 
-XLIBS		= $(XTOOLLIB) $(XLIB)
-
-LIBS		= $(LOCLIBS) $(CSTATIC) $(XLIBS) $(NETCDFLIB) $(HDFLIB) \
-				$(CDYNAMIC) -lm
-
-CDEFINES	= 
-
-all::	$(MYNAME)
-
-CTarget($(MYNAME),$(OBJS),$(LIBS))
-MakefileTarget
-CleanTarget
+CProgram($(MYNAME),$(OBJS),$(DEPLIBS))
+DependTarget($(SRCS))
 
 lint: $(HDR) $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1

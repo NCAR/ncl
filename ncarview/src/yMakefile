@@ -2,11 +2,6 @@
 #	Makefile for NCAR Graphics source directories
 #
 
-NCARG	= ../..
+#define IHaveSubdirs
 
 SUBDIRS = lib bin
-
-MakeSubdirs($(SUBDIRS))
-InstallSubdirs($(SUBDIRS))
-MakefilesSubdirs($(SUBDIRS))
-CleanSubdirs($(SUBDIRS))

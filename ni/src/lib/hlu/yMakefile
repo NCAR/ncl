@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.2 1993-05-27 19:11:44 ethan Exp $
+#      $Id: yMakefile,v 1.3 1993-10-19 17:53:48 boote Exp $
 #
 #########################################################################
 #									#
@@ -18,20 +18,9 @@
 #	Date:		Tue Apr 27 15:05:52 MDT 1993
 #
 #	Description:	yMakefile for ncarg/ni/src/lib/hlu
-#ifndef DependTarget
-#define DependTarget(srcs)\
-depend:: srcs]\
-        makedepend -s "# DO NOT DELETE" -- $(CFLAGS) -- srcs
-#endif /* DependTarget */
-
-
-NCARG	= ../../../..
-
 MYNAME		= libhlu.a
 
-CDEFINES	= 
-
-INCLUDES	= Base.h BaseP.h Convert.h ConvertP.h \
+HDRS		= Base.h BaseP.h Convert.h ConvertP.h Converters.h\
 		CoordApprox.h Error.h ErrorP.h IrregularTransObj.h \
 		IrregularTransObjP.h IrregularType2TransObj.h \
 		IrregularType2TransObjP.h LogLinTransObj.h LogLinTransObjP.h \
@@ -41,7 +30,12 @@ INCLUDES	= Base.h BaseP.h Convert.h ConvertP.h \
 		Title.h TitleP.h TransObj.h TransObjP.h Transform.h \
 		TransformP.h VarArg.h View.h ViewP.h Workstation.h \
 		WorkstationP.h XWorkstation.h XWorkstationP.h XyPlot.h \
-		XyPlotP.h defs.h hlu.h hluP.h
+		XyPlotP.h defs.h hlu.h hluP.h DataComm.h DataCommP.h \
+		DataCommF.h DataItem.h DataItemP.h DataMgr.h DataMgrF.h \
+		DataMgrP.h Legend.h LegendP.h LabelBar.h LabelBarP.h \
+		CoordArrTable.h CoordArrTableP.h CoordArrTableIntP.h \
+		CoordArrTableFloatP.h CoordArrays.h CoordArraysP.h \
+		CoordArraysFloatP.h CoordArraysIntP.h
 
 SRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
@@ -50,7 +44,8 @@ SRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Quarks.c Reparent.c Resources.c Segments.c SetValues.c \
 		SplineCoord.c TextItem.c TickMark.c Title.c Trans.c \
 		TransObj.c Transform.c VarArg.c View.c Workstation.c \
-		XWorkstation.c XyPlot.c hlu.c 
+		XWorkstation.c XyPlot.c hlu.c DataComm.c DataItem.c DataMgr.c \
+		Legend.c LabelBar.c CoordArrTable.c CoordArrays.c
 
 OBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
@@ -59,10 +54,11 @@ OBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Quarks.o Reparent.o Resources.o Segments.o SetValues.o \
 		SplineCoord.o TextItem.o TickMark.o Title.o Trans.o \
 		TransObj.o Transform.o VarArg.o View.o Workstation.o \
-		XWorkstation.o XyPlot.o hlu.o 
+		XWorkstation.o XyPlot.o hlu.o DataComm.o DataItem.o DataMgr.o \
+		Legend.o LabelBar.o CoordArrTable.o CoordArrays.o
 
-InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(HLUINCPATH))
-
-Library($(MYNAME),$(OBJS))
-
+LibraryTarget($(MYNAME),$(OBJS))
+BuildIncludes($(HDRS),ncarg/hlu,../..)
+InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
+InstallTarget(hluresfile,$(INSTALL_INC),$(LIBNCARGPATH))
 DependTarget($(SRCS))

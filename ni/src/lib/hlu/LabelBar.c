@@ -1,6 +1,5 @@
-
 /*
- *      $Id: LabelBar.c,v 1.1 1993-07-27 18:02:55 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.2 1993-10-19 17:51:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -18,7 +17,9 @@
  *
  *	Date:		Fri Jun 11 15:17:49 MDT 1993
  *
- *	Description:	LabelBar source for drawing text. 
+ *	Description:	
+ *		
+ *		Creates and manages a LabelBar
  */
 
 #include <stdio.h>
@@ -35,13 +36,12 @@ static int def_patterns[] = {
 	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 static int def_colors[] = { 
 	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-static float def_values[] = { 
-	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 
 /* SUPPRESS 112 */
 
 #define DEFSTRING "NOTHING"
 #define DEGTORAD 0.017453293
+
 static NhlResource resources[] = { 
 
 {NhlNlbLabelBar, NhlClbLabelBar, NhlTInteger,
@@ -50,56 +50,83 @@ static NhlResource resources[] = {
 {NhlNlbOrientation, NhlClbOrientation, NhlTOrientation,
 	 sizeof(NhlOrientation), NhlOffset(LabelBarLayerRec,labelbar.orient),
 	 NhlTImmediate,(NhlPointer) NhlVERTICAL},
-{NhlNlbJustification, NhlClbJustification, NhlTJustification,
-	 sizeof(NhlJustification), NhlOffset(LabelBarLayerRec,labelbar.just),
-	 NhlTImmediate,(NhlPointer) NhlCENTERCENTER},
-{NhlNlbXF, NhlClbXF, NhlTFloat,
-	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.lb_x),
-	 NhlTString,"0.2"},
-{NhlNlbYF, NhlClbYF, NhlTFloat,
-	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.lb_y),
-	 NhlTString,"0.8"},
-{NhlNlbWidthF, NhlClbWidthF, NhlTFloat,
-	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.lb_width),
-	 NhlTString,"0.3"},
-{NhlNlbHeightF, NhlClbHeightF, NhlTFloat,
-	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.lb_height),
-	 NhlTString,"0.6"},
+{NhlNlbJustification, NhlClbJustification, NhlTJustification, 
+	 sizeof(NhlJustification),
+	 NhlOffset(LabelBarLayerRec,labelbar.just),
+	 NhlTImmediate,(NhlPointer)NhlBOTTOMLEFT},
 {NhlNlbBoxMajorExtentF, NhlClbBoxMajorExtentF, NhlTFloat,
 	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.box_major_ext),
 	 NhlTString,"1.0"},
 {NhlNlbBoxMinorExtentF, NhlClbBoxMinorExtentF, NhlTFloat,
 	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.box_minor_ext),
 	 NhlTString,"0.33"},
-{NhlNlbAlignment, NhlClbAlignment, NhlTInteger,
-	 sizeof(int), NhlOffset(LabelBarLayerRec,labelbar.alignment),
-	 NhlTImmediate,(NhlPointer) 0},
 {NhlNlbBoxCount, NhlClbBoxCount, NhlTInteger,
 	 sizeof(int), NhlOffset(LabelBarLayerRec,labelbar.box_count),
 	 NhlTImmediate,(NhlPointer) 16},
-{NhlNlbBoxMode, NhlClbBoxMode, NhlTInteger,
-	 sizeof(int), NhlOffset(LabelBarLayerRec,labelbar.box_mode),
-	 NhlTImmediate,(NhlPointer) 0},
 {NhlNlbBoxSizing, NhlClbBoxSizing, NhlTInteger,
 	 sizeof(int), NhlOffset(LabelBarLayerRec,labelbar.box_sizing),
 	 NhlTImmediate,(NhlPointer) NhlLB_UNIFORMSIZING},
+
+{NhlNlbAutoManage, NhlClbAutoManage, NhlTBoolean,
+	 sizeof(NhlBoolean), NhlOffset(LabelBarLayerRec,labelbar.auto_manage),
+	 NhlTImmediate,(NhlPointer) True},
+{NhlNlbMonoFillColor, NhlClbMonoFillColor, NhlTBoolean,
+	 sizeof(NhlBoolean), 
+	 NhlOffset(LabelBarLayerRec,labelbar.mono_fill_color),
+	 NhlTImmediate,(NhlPointer) False},
+{NhlNlbMonoFillPattern, NhlClbMonoFillPattern, NhlTBoolean,
+	 sizeof(NhlBoolean), 
+	 NhlOffset(LabelBarLayerRec,labelbar.mono_fill_pattern),
+	 NhlTImmediate,(NhlPointer) False},
+{NhlNlbMonoFillScale, NhlClbMonoFillScale, NhlTBoolean,
+	 sizeof(NhlBoolean), 
+	 NhlOffset(LabelBarLayerRec,labelbar.mono_fill_scale),
+	 NhlTImmediate,(NhlPointer) True},
+{NhlNlbMaxLabelAngleAdditionF, NhlClbMaxLabelAngleAdditionF, NhlTFloat,
+	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.label_angle_add),
+	 NhlTString,"0.15"},
+{NhlNlbLabelOffsetF, NhlClbLabelOffsetF, NhlTFloat,
+	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.label_off),
+	 NhlTString,"0.0"},
+{NhlNlbTitleOffsetF, NhlClbTitleOffsetF, NhlTFloat,
+	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.title_off),
+	 NhlTString,"0.03"},
+{NhlNlbLeftMarginF, NhlClbLeftMarginF, NhlTFloat,
+	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.margin.l),
+	 NhlTString,"0.05"},
+{NhlNlbLeftMarginF, NhlClbLeftMarginF, NhlTFloat,
+	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.margin.l),
+	 NhlTString,"0.05"},
+{NhlNlbRightMarginF, NhlClbRightMarginF, NhlTFloat,
+	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.margin.r),
+	 NhlTString,"0.05"},
+{NhlNlbBottomMarginF, NhlClbBottomMarginF, NhlTFloat,
+	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.margin.b),
+	 NhlTString,"0.05"},
+{NhlNlbTopMarginF, NhlClbTopMarginF, NhlTFloat,
+	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.margin.t),
+	 NhlTString,"0.05"},
+{NhlNlbMarginMode, NhlClbMarginMode, NhlTInteger,
+	 sizeof(int), NhlOffset(LabelBarLayerRec,labelbar.margin_mode),
+	 NhlTImmediate,(NhlPointer) 0},
+
 	
-{NhlNlbFillPatterns, NhlClbFillPatterns, NhlTIntegerPtr,
-	 sizeof(int *), NhlOffset(LabelBarLayerRec,labelbar.fill_patterns),
+{NhlNlbFillPatterns, NhlClbFillPatterns, NhlTGenArray,
+	 sizeof(NhlPointer), 
+	 NhlOffset(LabelBarLayerRec,labelbar.fill_patterns),
 	 NhlTImmediate,(NhlPointer) NULL},
-{NhlNlbColors, NhlClbColors, NhlTIntegerPtr,
-	 sizeof(int *), NhlOffset(LabelBarLayerRec,labelbar.colors),
+{NhlNlbFillColors, NhlClbFillColors, NhlTGenArray,
+	 sizeof(NhlPointer), NhlOffset(LabelBarLayerRec,labelbar.fill_colors),
 	 NhlTImmediate,(NhlPointer) NULL},
-{NhlNlbValues, NhlClbValues, NhlTFloatPtr,
-	 sizeof(float *), NhlOffset(LabelBarLayerRec,labelbar.values),
+{NhlNlbFillScales, NhlClbFillScales, NhlTGenArray,
+	 sizeof(NhlPointer), NhlOffset(LabelBarLayerRec,labelbar.fill_scales),
 	 NhlTImmediate,(NhlPointer) NULL },
-	
-{NhlNlbLabelStrings, NhlClbLabelStrings, NhlTStringPtr,
-	 sizeof(NhlString *), 
+{NhlNlbLabelStrings, NhlClbLabelStrings, NhlTGenArray,
+	 sizeof(NhlPointer), 
 	 NhlOffset(LabelBarLayerRec,labelbar.label_strings),
 	 NhlTImmediate,(NhlPointer) NULL},
-{NhlNlbBoxFractions, NhlClbBoxFractions, NhlTFloatPtr,
-	 sizeof(float *), NhlOffset(LabelBarLayerRec,labelbar.box_fractions),
+{NhlNlbBoxFractions, NhlClbBoxFractions, NhlTGenArray,sizeof(NhlPointer), 
+	 NhlOffset(LabelBarLayerRec,labelbar.box_fractions),
 	 NhlTImmediate,(NhlPointer) NULL },
 	
 {NhlNlbDrawLabels, NhlClbDrawLabels, NhlTInteger, 
@@ -113,7 +140,7 @@ static NhlResource resources[] = {
 	 NhlTString,"0.0"},
 {NhlNlbLabelAlignment, NhlClbLabelAlignment, NhlTInteger, 
 	 sizeof(int), NhlOffset(LabelBarLayerRec,labelbar.label_alignment),
-	 NhlTImmediate,(NhlPointer) 0},
+	 NhlTImmediate,(NhlPointer) NhlLB_BOXCENTERS},
 {NhlNlbLabelDirection,NhlClbLabelDirection,NhlTTextDirection,
 	 sizeof(TextDirection),
 	 NhlOffset(LabelBarLayerRec,labelbar.label_direction),
@@ -129,7 +156,7 @@ static NhlResource resources[] = {
 	 NhlTImmediate,(NhlPointer) 1},
 {NhlNlbLabelFontHeightF, NhlClbLabelFontHeightF, NhlTFloat, 
 	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.label_height),
-	 NhlTString,"0.07"},
+	 NhlTString,"0.02"},
 {NhlNlbLabelFontAspectF, NhlClbLabelFontAspectF, NhlTFloat, 
 	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.label_aspect),
 	 NhlTString,"1.0"},
@@ -160,8 +187,8 @@ static NhlResource resources[] = {
 {NhlNlbTitlePosition, NhlClbTitlePosition, NhlTInteger, 
 	 sizeof(NhlPosition), NhlOffset(LabelBarLayerRec,labelbar.title_pos),
 	 NhlTImmediate,(NhlPointer) NhlTOP},
-{NhlNlbTitleExtentF, NhlClbTitleExtentF, NhlTFloat,
-	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.title_ext),
+{NhlNlbMaxTitleExtentF, NhlClbMaxTitleExtentF, NhlTFloat,
+	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.max_title_ext),
 	 NhlTString,"0.15"},
 {NhlNlbTitleAngleF, NhlClbTitleAngleF, NhlTFloat, 
 	 sizeof(float), NhlOffset(LabelBarLayerRec,labelbar.title_angle),
@@ -225,6 +252,12 @@ static NhlResource resources[] = {
 {NhlNlbPerimColor, NhlClbPerimColor, NhlTInteger, 
 	 sizeof(int), NhlOffset(LabelBarLayerRec,labelbar.perim_color),
 	 NhlTImmediate,(NhlPointer) 1},
+{NhlNlbPerimFill, NhlClbPerimFill, NhlTInteger, 
+	 sizeof(int), NhlOffset(LabelBarLayerRec,labelbar.perim_fill),
+	 NhlTImmediate,(NhlPointer) -1},
+{NhlNlbPerimFillColor, NhlClbPerimFillColor, NhlTInteger, 
+	 sizeof(int), NhlOffset(LabelBarLayerRec,labelbar.perim_fill_color),
+	 NhlTImmediate,(NhlPointer) 1},
 {NhlNlbPerimThicknessF, NhlClbPerimThicknessF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(LabelBarLayerRec,labelbar.perim_thickness),
@@ -238,9 +271,9 @@ static NhlResource resources[] = {
 	 NhlOffset(LabelBarLayerRec,labelbar.perim_dash_length),
 	 NhlTString,"0.15"},
 
-{NhlNlbFillLineColor, NhlClbFillLineColor, NhlTInteger, 
-	 sizeof(int), NhlOffset(LabelBarLayerRec,labelbar.fill_line_color),
-	 NhlTImmediate,(NhlPointer) 1},
+{NhlNlbFillBackground, NhlClbFillBackground, NhlTInteger,
+	 sizeof(int), NhlOffset(LabelBarLayerRec,labelbar.fill_background),
+	 NhlTImmediate,(NhlPointer) -1},
 {NhlNlbFillLineThicknessF, NhlClbFillLineThicknessF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(LabelBarLayerRec,labelbar.fill_line_thickness),
@@ -258,6 +291,14 @@ static NhlErrorTypes LabelBarSetValues(
         Layer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args*/
+#endif
+);
+
+static NhlErrorTypes 	LabelBarGetValues(
+#ifdef NhlNeedProto
+	Layer,		/* l */
+	_NhlArgList, 	/* args */
+	int		/* num_args */
 #endif
 );
 
@@ -317,15 +358,16 @@ static NhlErrorTypes    SetBoxLocations(
 #endif
 );
 
-static NhlErrorTypes    ValidateBoxFractions(
+static NhlErrorTypes    ManageBoxFractionsArray(
 #ifdef NhlNeedProto
-	LabelBarLayerPart, /* *lb_p */
+	float	*box_fractions,
+	int	count
 #endif
 );
 
 static void CreateIntermediates(
 #ifdef NhlNeedProto
-	float,		/* *flist */
+	float*,		/* *flist */
 	int,		/* start  */
 	int		/* end    */
 #endif
@@ -351,45 +393,95 @@ static NhlErrorTypes    AdjustGeometry(
 #endif
 );
 
-static NhlBoolean    	InCriticalZone(
+static NhlErrorTypes    ManageDynamicArrays(
 #ifdef NhlNeedProto
-	LabelBarLayerPart,	/* *lb_p */
-	float,			/* height */
-	float *,		/* critical_angle */
+	Layer,		/* new		*/ 
+	Layer,		/* old		*/
+	_NhlArgList,	/* args		*/
+	int		/* num_args	*/
 #endif
 );
 
+static NhlErrorTypes    InitializeDynamicArrays(
+#ifdef NhlNeedProto
+	Layer,		/* new		*/ 
+	Layer,		/* old		*/
+	_NhlArgList,	/* args		*/
+	int		/* num_args	*/
+#endif
+);
+
+static NhlErrorTypes   	AdjustLabels(
+#ifdef NhlNeedProto
+	LabelBarLayerPart *lb_p,
+	float		height,
+	float		avail_space,
+	int		max_strlen,
+	float		area_x,
+	float		area_y
+#endif
+);
+
+static NhlErrorTypes ValidatedGenArrayCopy(
+#ifdef NhlNeedProto
+	NhlGenArray	*gnew, 
+	NhlGenArray	gold,
+	NrmQuark	type,
+	int		max_ex,
+	void		*def_val,
+	char		*res_name,
+	char		*caller
+#endif
+);
+
+static NhlGenArray GenArraySubsetCopy(
+#ifdef NhlNeedProto
+	NhlGenArray	ga,
+	int		length
+#endif
+);
+
+#if 0
 static NhlBoolean    	LabelBarChanged(
 #ifdef NhlNeedProto
 	Layer,		/* new		*/ 
 	Layer,		/* old		*/
 	int,            /* init         */
+	_NhlArgList	args,
+	int		num_args
 #endif
 );
+#endif
 
 LabelBarLayerClassRec labelBarLayerClassRec = {
 	{
-/* superclass			*/	(LayerClass)&viewLayerClassRec,
 /* class_name			*/	"LabelBar",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(LabelBarLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(LayerClass)&viewLayerClassRec,
+
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
-/* child_resources		*/	NULL,
 /* all_resources		*/	NULL,
+
 /* class_part_initialize	*/	NULL,
-/* class_inited			*/	False,
 /* class_initialize		*/	LabelBarClassInitialize,
 /* layer_initialize		*/	LabelBarInitialize,
 /* layer_set_values		*/	LabelBarSetValues,
-/* layer_set_values_not		*/	NULL,
-/* layer_get_values		*/	NULL,
-/* layer_pre_draw		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
+/* layer_get_values		*/	LabelBarGetValues,
+/* layer_reparent		*/	NULL,
+/* layer_destroy		*/	LabelBarDestroy,
+
+/* child_resources		*/	NULL,
+
 /* layer_draw			*/	LabelBarDraw,
+
+/* layer_pre_draw		*/	NULL,
 /* layer_draw_segonly		*/	NULL,
 /* layer_post_draw		*/	NULL,
-/* layer_clear			*/	NULL,
-/* layer_destroy		*/	LabelBarDestroy
+/* layer_clear			*/	NULL
 	},
 	{
 /* segment_workstation */ -1,
@@ -402,6 +494,156 @@ LabelBarLayerClassRec labelBarLayerClassRec = {
 
 LayerClass labelBarLayerClass = (LayerClass)&labelBarLayerClassRec;
 
+static NrmQuark	Qfloat = NrmNULLQUARK;
+static NrmQuark Qint = NrmNULLQUARK;
+static NrmQuark Qstring = NrmNULLQUARK;
+static NrmQuark	Qfill_patterns = NrmNULLQUARK;
+static NrmQuark	Qfill_colors = NrmNULLQUARK;
+static NrmQuark	Qfill_scales = NrmNULLQUARK;
+static NrmQuark	Qlabel_strings = NrmNULLQUARK;
+static NrmQuark	Qbox_fractions = NrmNULLQUARK;
+
+/*
+ * Function:	LabelBarInitialize
+ *
+ * Description:	Performs initialization of LabelBar. 
+ *              1) Initialize some internal parameters, and coerce
+ *                 several others into the proper boundaries.
+ *              2) Copy the view settings.
+ *              2) Create a default title string.
+ *              3) InitializeDynamicArrays
+ *
+ * In Args:	Standard initialize parameters
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error condition
+ *
+ * Side Effects: 
+ */
+/*ARGSUSED*/
+static NhlErrorTypes    LabelBarInitialize
+#if __STDC__
+	(LayerClass class, 
+	 Layer req, 
+	 Layer new, 
+	 _NhlArgList args,
+	 int num_args)
+#else
+(class,req,new,args,num_args)
+	LayerClass	class;
+	Layer		req;
+	Layer		new;
+	_NhlArgList	args;
+	int		num_args;
+#endif
+{
+	LabelBarLayer	tnew = (LabelBarLayer) new;
+	LabelBarLayerPart *lb_p = &(tnew->labelbar);
+	NhlErrorTypes	ret=NOERROR,ret1 = NOERROR;
+
+	lb_p->labels_id = -1;
+	lb_p->title_id = -1;
+	lb_p->stride_labels = NULL;
+	lb_p->box_locs = NULL;
+	lb_p->label_locs = NULL;
+
+/*
+ * Ensure that the label and title angles range is between 0 and 360
+ */
+	lb_p->label_angle = fmod(lb_p->label_angle,360.0);
+	lb_p->title_angle = fmod(lb_p->title_angle,360.0);
+
+	if (lb_p->box_count < 1) {
+		NhlPError(WARNING,E_UNKNOWN,"Minimum box count is 1");
+		ret = WARNING;
+		lb_p->box_count = 1;
+	}
+
+/*
+ * Adjust the title direction according to the position unless
+ * it is explicitly set.
+ */
+	if (_NhlArgIsSet(args,num_args,NhlNlbTitlePosition) &&
+	    !_NhlArgIsSet(args,num_args,NhlNlbTitleDirection)) {
+		switch (lb_p->title_pos) {
+		case NhlTOP:
+		case NhlBOTTOM:
+		default:
+			lb_p->title_direction = ACROSS;
+			break;
+		case NhlRIGHT:
+		case NhlLEFT:
+			lb_p->title_direction = DOWN;
+			break;
+		}
+	}
+
+	lb_p->lb_x = tnew->view.x;
+	lb_p->lb_y = tnew->view.y;
+	lb_p->lb_width = tnew->view.width;
+	lb_p->lb_height = tnew->view.height;
+
+	lb_p->perim.l = lb_p->lb_x;
+	lb_p->perim.r = lb_p->lb_x + lb_p->lb_width;
+	lb_p->perim.b = lb_p->lb_y - lb_p->lb_height;
+	lb_p->perim.t = lb_p->lb_y;
+
+/*
+ * Set the orientation flag so it can be consulted on the first set call.
+ */
+	if (!_NhlArgIsSet(args,num_args,NhlNlbOrientation))
+		lb_p->orient_set = False;
+	else
+		lb_p->orient_set = True;
+
+/*
+ * Create a default title string
+ */
+
+	lb_p->title_string = (char*)
+		NhlMalloc((unsigned)strlen(tnew->base.name) +1);
+	strcpy(lb_p->title_string,tnew->base.name);
+
+	ret1 = InitializeDynamicArrays(new,req,args,num_args);
+	ret = MIN(ret,ret1);
+
+/*
+ * Calculate labelbar geometry
+ */
+
+	ret1 = SetLabelBarGeometry(new,args,num_args);
+	ret = MIN(ret1,ret);
+/*
+ * Set up the title using a text object
+ */
+
+	ret1 = SetTitle(new,req,1,args,num_args);
+	ret = MIN(ret1,ret);
+
+/*
+ * Set the box locations
+ */
+	ret1 = SetBoxLocations(new,req,1,args,num_args);
+	ret = MIN(ret1,ret);
+
+/*
+ * Set up the labels using a multitext object
+ */
+
+	ret1 = SetLabels(new,req,1,args,num_args);
+	ret = MIN(ret1,ret);
+
+/*
+  Adjust the geometry
+  */
+
+	ret1 = AdjustGeometry(new,req,1,args,num_args);
+	ret = MIN(ret1,ret);
+	
+
+	return(MIN(ret,ret1));
+}
 
 /*
  * Function:	LabelBarSetValues
@@ -440,147 +682,22 @@ static NhlErrorTypes LabelBarSetValues
 	LabelBarLayerPart *olb_p = &(told->labelbar);
 	LabelBarLayerPart *lb_p = &(tnew->labelbar);
 	NhlErrorTypes ret = NOERROR,ret1 = NOERROR;
-	float fl,fr,ft,fb,ul,ur,ut,ub;
-	int i, ll;
-	char number[10];
-	char **cold_pp, **cnew_pp;
-	float ftmp;
 
-/*
- * Since the color array is allocated only once copy the new information 
- * into the old array then change the new pointer to the old one. Otherwise
- * if the number of label boxes has increased, find the GKS color index
- * for the workstation indices (which if not otherwise defined are set to
- * the default value 0).
- */
-
-	if (lb_p->colors != olb_p->colors) {
-
-		memcpy((void *) olb_p->colors,(Const void *) lb_p->colors,
-		       lb_p->box_count * sizeof(int));
-		lb_p->colors = olb_p->colors;
-
-		for (i=0; i<lb_p->box_count; i++) {
-			lb_p->gks_colors[i] = _NhlGetGksCi(tnew->base.wkptr,
-							    lb_p->colors[i]);
-		}
-	}
-	else if (lb_p->box_count > olb_p->box_count) {
-
-		for (i=olb_p->box_count;i<lb_p->box_count;i++) {
-			lb_p->gks_colors[i] =_NhlGetGksCi(tnew->base.wkptr,
-							   lb_p->colors[i]);
-		}
+	if (lb_p->box_count < 1) {
+		NhlPError(WARNING,E_UNKNOWN,"Minimum box count is 1");
+		ret = WARNING;
+		lb_p->box_count = 1;
 	}
 
 /*
- * Since the pattern array is allocated only once copy the new information 
- * into the old array then change the new pointer to the old one. If the
- * number of label boxes has increased, no action is necessary, since all
- * members of the array contain the default pattern index, if they have not
- * otherwise been set.
+ * Ensure that the label and title angles range is between 0 and 360
  */
+	lb_p->label_angle = fmod(lb_p->label_angle,360.0);
+	lb_p->title_angle = fmod(lb_p->title_angle,360.0);
 
-	if (lb_p->fill_patterns != olb_p->fill_patterns) {
+	ret1 = ManageDynamicArrays(new,old,args,num_args);
+	ret = MIN(ret,ret1);
 
-		memcpy((void *) olb_p->fill_patterns,
-		       (Const void *) lb_p->fill_patterns,
-		       lb_p->box_count * sizeof(int));
-		lb_p->fill_patterns = olb_p->fill_patterns;
-	}
-
-/* 
- * The pointer array is only allocated once, but each string is allocated
- * as needed. Stuff from the new string array is copied into the old
- * array. If the new string array contains a NULL pointer a default string
- * is created. If there are no explicit changes to the label array, but the
- * number of boxes has increased, default strings are created for all
- * currently NULL pointers.
- */
-
-	cold_pp = olb_p->label_strings;
-	cnew_pp = lb_p->label_strings;
-	if (cnew_pp != cold_pp) {
-		
-		for (i=0;i<lb_p->box_count+1;i++) {
-
-			if (cold_pp[i] != NULL)
-				NhlFree(cold_pp[i]);
-			if (cnew_pp[i] != NULL) {
-				cold_pp[i] = (char *)
-					NhlMalloc((strlen(cnew_pp[i])+1));
-				strcpy(cold_pp[i],(Const char *)cnew_pp[i]);
-			} 
-			else {
-				sprintf(number,"%d",i);
-				cold_pp[i] = (char *)
-					NhlMalloc((strlen(NhlLB_DEF_STRING) +
-						   strlen(number) + 1));
-				strcpy(cold_pp[i],
-				       (Const char *)NhlLB_DEF_STRING);
-				strcat(cold_pp[i],number);
-				strcat(cold_pp[i],"M");
-			}
-		}
-		cnew_pp = cold_pp;
-	}
-	else if (lb_p->box_count > olb_p->box_count) {
-
-		for (i=olb_p->box_count+1;i<lb_p->box_count+1;i++) {
-
-			if (cnew_pp[i] == NULL) { 
-				sprintf(number,"%d",i);
-				cnew_pp[i] = (char *)
-					NhlMalloc((strlen(NhlLB_DEF_STRING) +
-						   strlen(number) + 2));
-				strcpy(cnew_pp[i],
-				       (Const char *)NhlLB_DEF_STRING);
-				strcat(cnew_pp[i],number);
-				strcat(cnew_pp[i],"M");
-			}
-
-		}
-	}
-
-	if ((tnew->view.x != told->view.x)
-	   ||(tnew->view.width != told->view.width)
-	   ||(tnew->view.y != told->view.y)
-	   ||(tnew->view.height != told->view.height)){
-#if 0		
-
-		if (LabelBarChanged(tnew, told, 0, args, num_args)) {
-			NhlPError(WARNING,E_UNKNOWN,"LabelBarSetValues: Can not change x,y,width,and height when other labelbar attribute changes have been requested also, proceding with other text attribute requests");
-                  ret1 = WARNING;
-			
-		}
-	}
-	else {
-
-		ret1 = TransformPoints(tnew);
-#endif
-		_NhlEvalTrans(tnew->view.trans_children,
-			      lb_p->perim.l,lb_p->perim.b,
-			      &lb_p->perim.l,&lb_p->perim.b);
-
-		_NhlEvalTrans(tnew->view.trans_children,
-			      lb_p->perim.r,lb_p->perim.t,
-			      &lb_p->perim.r,&lb_p->perim.t);
-	}
-
-#if 0
-/*
- * Adjust the size
- */
-
-	ftmp = lb_p->lb_x;
-	lb_p->lb_x -= lb_p->adjust_frac.l * lb_p->lb_width;
-	lb_p->lb_width -= lb_p->adjust_frac.r * lb_p->lb_width +
-		ftmp - lb_p->lb_x;
-	ftmp = lb_p->lb_y;
-	lb_p->lb_y -= lb_p->adjust_frac.t * lb_p->lb_height;
-	lb_p->lb_height += lb_p->adjust_frac.b * lb_p->lb_height +
-		lb_p->lb_y - ftmp;
-#endif
 
 /*
  * Adjust the title direction according to the position unless
@@ -601,6 +718,81 @@ static NhlErrorTypes LabelBarSetValues
 		}
 	}
 
+	if (tnew->view.x != told->view.x
+	    || tnew->view.y != told->view.y) {
+
+		_NhlEvalTrans(tnew->view.trans_children,
+			      lb_p->lb_x,lb_p->lb_y,
+			      &lb_p->lb_x,&lb_p->lb_y);
+	}
+	if (tnew->view.width != told->view.width
+	    || tnew->view.height != told->view.height) {
+
+		
+		float tx, ty;
+		float ow = lb_p->lb_width;
+		float oh = lb_p->lb_height;
+
+		_NhlEvalTrans(tnew->view.trans_children,
+			      olb_p->lb_x + lb_p->lb_width, 
+			      olb_p->lb_y - lb_p->lb_height,
+			      &tx, &ty);
+
+		lb_p->lb_width  = tx - lb_p->lb_x;
+		lb_p->lb_height = lb_p->lb_y - ty;
+
+		tx = lb_p->lb_width / ow;
+		ty = lb_p->lb_height / oh;
+
+
+		if (! _NhlArgIsSet(args,num_args,NhlNlbLabelFontHeightF)) {
+
+			if (lb_p->label_direction == ACROSS)
+				lb_p->label_height *= tx;
+			else 
+				lb_p->label_height *= ty;
+		}
+		if (! _NhlArgIsSet(args,num_args,NhlNlbTitleFontHeightF)) {
+
+			if (lb_p->title_direction == ACROSS)
+				lb_p->label_height *= tx;
+			else
+				lb_p->label_height *= ty;
+		}
+	}
+#if 0		
+
+		if (LabelBarChanged(tnew, told, 0, args, num_args)) {
+			NhlPError(WARNING,E_UNKNOWN,"LabelBarSetValues: Can not change x,y,width,and height when other labelbar attribute changes have been requested also, proceding with other text attribute requests");
+                  ret1 = WARNING;
+			
+		}
+	}
+	else {
+
+		ret1 = TransformPoints(tnew);
+#endif
+
+
+	lb_p->perim.l = lb_p->lb_x;
+	lb_p->perim.r = lb_p->lb_x + lb_p->lb_width;
+	lb_p->perim.b = lb_p->lb_y - lb_p->lb_height;
+	lb_p->perim.t = lb_p->lb_y;
+
+/*
+ * Set the orientation according to the aspect ratio if it is not explicitly
+ * set: one time only!
+ */
+	if (!lb_p->orient_set && 
+	    !_NhlArgIsSet(args,num_args,NhlNlbOrientation)) {
+
+		if (lb_p->lb_height/lb_p->lb_width > 1.0)
+			lb_p->orient = NhlVERTICAL;
+		else
+			lb_p->orient = NhlHORIZONTAL;
+	}
+	lb_p->orient_set = True;
+		
 /*
  * Calculate labelbar geometry
  */
@@ -621,261 +813,142 @@ static NhlErrorTypes LabelBarSetValues
 	ret1 = AdjustGeometry(new,old,0,args,num_args);
 	ret = MIN(ret1,ret);
 		     
-	lb_p->last_box_count = lb_p->box_count;
-#if 0
-        c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
-        ret1 = FigureAndSetTextBBInfo(tnew);
-        c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
-#endif
         return(MIN(ret,ret1));
 }
 
 /*
- * Function:	LabelBarInitialize
+ * Function:	LegendGetValues
  *
- * Description:	Performs initilization of LabelBar. This involves copying
- *		user data into internal space and then makes calls to 
- *		plotchar to set plotchars space so text extent computations 
- *		can be done.
+ * Description:	
  *
- * In Args:	Standard initialize parameters
+ * In Args:
  *
- * Out Args:	NONE
+ * Out Args:
  *
- * Return Values: Error condition
+ * Return Values:
  *
- * Side Effects: Plotchar state affected
+ * Side Effects: 
+ *	Memory is allocated when the following resources are retrieved:
+ *		NhlNlbFillPatterns
+ *		NhlNlbFillColors
+ *		NhlNlbFillScales
+ *		NhlNlbLabelStrings
+ *		NhlNlbBoxFractions
+ *	The caller is responsible for freeing this memory.
  */
-/*ARGSUSED*/
-static NhlErrorTypes    LabelBarInitialize
+
+static NhlErrorTypes	LabelBarGetValues
 #if __STDC__
-	(LayerClass class, 
-	 Layer req, 
-	 Layer new, 
-	 _NhlArgList args,
-	 int num_args)
+(Layer l, _NhlArgList args, int num_args)
 #else
-(class,req,new,args,num_args)
-	LayerClass	class;
-	Layer		req;
-	Layer		new;
+(l,args,num_args)
+	Layer	l;
 	_NhlArgList	args;
-	int		num_args;
+	int	num_args;
 #endif
 {
-	LabelBarLayer	tnew = (LabelBarLayer) new;
-	LabelBarLayerPart *lb_p = &(tnew->labelbar);
-	char *c_p;
-	int  *ifrom_p;
-	float *ffrom_p;
-	char **cfrom_pp;
-	NhlErrorTypes	ret=NOERROR,ret1 = NOERROR;
-	int i,count;
-	float fr,fl,ft,fb,ur,ul,ut,ub;
-	char number[10];
-	float ftmp;
-	int fill_len;
-
-	lb_p->last_box_count = 0;
-	lb_p->labels_id = -1;
-	lb_p->title_id = -1;
-	lb_p->title_string = NULL;
-	lb_p->stride_labels = NULL;
-	lb_p->box_locs = NULL;
-	lb_p->label_locs = NULL;
-
-/* temporary */
-
-	lb_p->margin.l = 0.05;
-	lb_p->margin.r = 0.05;
-	lb_p->margin.b = 0.05;
-	lb_p->margin.t = 0.05;
-
-/* 
- * There seems to be no way to ensure that a SetValues array contains
- * enough elements, so there is always a core dump possibility here.
- */
-
-/* The box colors array */
-
-
-	if ( _NhlArgIsSet(args,num_args,NhlNlbColors)) {
-		ifrom_p = lb_p->colors;
-		count = lb_p->box_count;
-	}
-	else {
-		ifrom_p = def_colors;
-		count = NhlLB_DEF_BOX_COUNT;
-	}
-	lb_p->colors = (int *) NhlMalloc(NhlLB_MAX_BOXES * sizeof(int));
-	memset((void *) lb_p->colors,NhlLB_DEF_COLOR,
-	       NhlLB_MAX_BOXES * sizeof(int));
-
-	memcpy((void *)lb_p->colors,(Const void *) ifrom_p, 
-	       count * sizeof(int));
-	lb_p->gks_colors = (int *) NhlMalloc(NhlLB_MAX_BOXES * sizeof(int));
-	for (i=0; i<lb_p->box_count; i++) {
-		lb_p->gks_colors[i] =
-			_NhlGetGksCi(tnew->base.wkptr,lb_p->colors[i]);
-	}
-
-/* The fill patterns array, first retrieve the number of defined patterns */
-
-	NhlGetValues(tnew->base.wkptr->base.id,
-		     NhlNwkFillTableLength, &fill_len, NULL);
+	LabelBarLayer lbl = (LabelBarLayer)l;
+	LabelBarLayerPart *lb_p = &(lbl->labelbar);
+	NhlGenArray ga;
+	char *e_text;
+	int i, count = 0;
+	char *type = "";
 	
-	if (_NhlArgIsSet(args,num_args,NhlNlbFillPatterns)) {
-		ifrom_p = lb_p->fill_patterns;
-		count = lb_p->box_count;
-	}
-	else {
-		ifrom_p = def_patterns;
-		count = NhlLB_DEF_BOX_COUNT;
-	}
-	lb_p->fill_patterns = (int *) NhlMalloc(NhlLB_MAX_BOXES * sizeof(int));
-	memset((void *) lb_p->fill_patterns,
-	       NhlLB_DEF_PATTERN,NhlLB_MAX_BOXES * sizeof(int));
-	for (i=0; i<count; i++) {
-		if (ifrom_p[i] > fill_len)
-			lb_p->fill_patterns[i] = NhlLB_DEF_PATTERN;
-		else
-			lb_p->fill_patterns[i] = ifrom_p[i];
-	}
+	for( i = 0; i< num_args; i++ ) {
 
-/* The values array */
-
-	if (_NhlArgIsSet(args,num_args,NhlNlbValues)) {
-		ffrom_p = lb_p->values;
-		count = lb_p->box_count;
-	}
-	else {
-		ffrom_p = def_values;
-		count = NhlLB_DEF_BOX_COUNT;
-	}
-	lb_p->values = (float *) NhlMalloc(NhlLB_MAX_LBL_STRINGS * 
-					   sizeof(float));
-	memset((void *) lb_p->values,NhlLB_DEF_VALUE,
-	       NhlLB_MAX_LBL_STRINGS * sizeof(float));
-	memcpy((void *)lb_p->values,(Const void *) ifrom_p, 
-	       count * sizeof(float));
-
-/* 
- * The label strings array: note that if the label position mode is
- * external edges, then there is one more label than the number of boxes
- * For this reason, for simplicity always prepare one more label string
- * than the box count
- */
-
-	if (_NhlArgIsSet(args,num_args,NhlNlbLabelStrings))
-		cfrom_pp = lb_p->label_strings;
-	else
-		cfrom_pp = NULL;
-	lb_p->label_strings =
-		(char **) NhlMalloc(NhlLB_MAX_LBL_STRINGS * sizeof(char *));
-	memset((void *)lb_p->label_strings,0,
-	       NhlLB_MAX_LBL_STRINGS * sizeof(char *));
-	for (i=0;i<lb_p->box_count+1;i++) {
-		if (cfrom_pp != NULL && cfrom_pp[i] != NULL) {
-			c_p = (char *)NhlMalloc(strlen(cfrom_pp[i])+1); 
-			strcpy(c_p, cfrom_pp[i]);
-		} else {
-			sprintf(number,"%d",i);
-			c_p = (char *)NhlMalloc(strlen(NhlLB_DEF_STRING) + 
-						strlen(number) + 2); 
-			strcpy(c_p, NhlLB_DEF_STRING);
-			strcat(c_p, number);
-			strcat(c_p, "M");
+		ga = NULL;
+		if(args[i].quark == Qfill_patterns) {
+			ga = lb_p->fill_patterns;
+			count = lb_p->mono_fill_pattern ? 1 : lb_p->box_count;
+			type = NhlNlbFillPatterns;
 		}
-		lb_p->label_strings[i] = c_p;
-	}
-
-/*
- * Adjust the title direction according to the position unless
- * it is explicitly set.
- */
-	if (_NhlArgIsSet(args,num_args,NhlNlbTitlePosition) &&
-	    !_NhlArgIsSet(args,num_args,NhlNlbTitleDirection)) {
-		switch (lb_p->title_pos) {
-		case NhlTOP:
-		case NhlBOTTOM:
-		default:
-			lb_p->title_direction = ACROSS;
-			break;
-		case NhlRIGHT:
-		case NhlLEFT:
-			lb_p->title_direction = DOWN;
-			break;
+		else if (args[i].quark == Qfill_colors) {
+			ga = lb_p->fill_colors;
+			count = lb_p->mono_fill_color ? 1 : lb_p->box_count;
+			type = NhlNlbFillColors;
+		}
+		else if (args[i].quark == Qfill_scales) {
+			ga = lb_p->fill_scales;
+			count = lb_p->mono_fill_scale ? 1 : lb_p->box_count;
+			type = NhlNlbFillScales; 
+		}
+		else if (args[i].quark == Qlabel_strings) {
+			ga = lb_p->label_strings;
+			count = lb_p->current_label_count;
+			type = NhlNlbLabelStrings;
+		}
+		else if (args[i].quark == Qbox_fractions) {
+			ga = lb_p->box_fractions;
+			count = lb_p->box_count+1;
+			type = NhlNlbBoxFractions;
+		}
+		if (ga != NULL) {
+			if ((ga = GenArraySubsetCopy(ga, count)) == NULL) {
+				e_text = "%s: error copying %s GenArray";
+				NhlPError(FATAL,E_UNKNOWN,e_text,
+					  "LabelBarGetValues",type);
+				return FATAL;
+			}
+			*((NhlGenArray *)(args[i].value)) = ga;
 		}
 	}
 
-/* planning to eliminate */
+	return(NOERROR);
 
-	lb_p->lb_x = tnew->view.x;
-	lb_p->lb_y = tnew->view.y;
-	lb_p->lb_width = tnew->view.width;
-	lb_p->lb_height = tnew->view.height;
-/* */
-	lb_p->perim.l = tnew->view.x;
-	lb_p->perim.r = tnew->view.x + tnew->view.width;
-	lb_p->perim.b = tnew->view.y - tnew->view.height;
-	lb_p->perim.t = tnew->view.y;
-
-/*
- * Calculate labelbar geometry
- */
-
-	ret1 = SetLabelBarGeometry(new,args,num_args);
-	ret = MIN(ret1,ret);
-/*
- * Set up the title using a text object
- */
-
-	ret1 = SetTitle(new,req,1,args,num_args);
-	ret = MIN(ret1,ret);
-
-/*
- * Set the box locations
- */
-	ret1 = SetBoxLocations(new,req,1,args,num_args);
-	ret = MIN(ret1,ret);
-
-/*
- * Set up the labels using a multitext object
- */
-
-	ret1 = SetLabels(new,req,1,args,num_args);
-	ret = MIN(ret1,ret);
-
-/*
-  Adjust the geometry
-  */
-
-	ret1 = AdjustGeometry(new,req,1,args,num_args);
-	ret = MIN(ret1,ret);
-	
-	lb_p->last_box_count = lb_p->box_count;
-#if 0
-	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
-	ret1 = FigureAndSetTextBBInfo(tnew);
-	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
+}
+static NhlGenArray GenArraySubsetCopy
+#if __STDC__
+	(NhlGenArray	ga,
+	int		length)
+#else
+(ga,length)
+	NhlGenArray	ga;
+	int		length;
 #endif
-	return(MIN(ret,ret1));
+{
+	NhlGenArray gto;
+
+	if (length > ga->num_elements)
+		return NULL;
+
+	if ((gto = _NhlCopyGenArray(ga,False)) == NULL) {
+		return NULL;
+	}
+	if ((gto->data = (NhlPointer) NhlMalloc(length * ga->size)) == NULL) {
+		return NULL;
+	}
+	if (ga->typeQ != Qstring) {
+		memcpy((void *)gto->data, (Const void *) ga->data, 
+		       length * ga->size);
+	}
+	else {
+		NhlString *cfrom = (NhlString *) ga->data;
+		NhlString *cto = (NhlString *) gto->data;
+		int i;
+		for (i=0; i<length; i++) {
+			if ((*cto = (char *) 
+			     NhlMalloc(strlen(*cfrom)+1)) == NULL) {
+				return NULL;
+			}
+			strcpy(*cto++,*cfrom++);
+		}
+	}
+	gto->num_elements = length;
+	return gto;
+			
 }
 
-
 /*ARGSUSED*/
-static NhlBoolean    	LabelBarChanged
+static NhlErrorTypes    ManageDynamicArrays
 #if __STDC__
 	(Layer		new, 
 	Layer		old,
-	int		init,
 	_NhlArgList	args,
 	int		num_args)
 #else
-(new,old,init,args,num_args)
+(new,old,args,num_args)
 	Layer		new;
 	Layer		old;
-	int		init;
 	_NhlArgList	args;
 	int		num_args;
 #endif
@@ -884,52 +957,655 @@ static NhlBoolean    	LabelBarChanged
 	LabelBarLayer	told = (LabelBarLayer) old;
 	LabelBarLayerPart *lb_p = &(tnew->labelbar);
 	LabelBarLayerPart *olb_p = &(told->labelbar);
-	NhlErrorTypes ret = NOERROR, ret1 = NOERROR;
+	NhlErrorTypes ret = NOERROR, ret_1 = NOERROR;
+	int i;
+	int count, len;
+	char number[10];
+	char *entry_name = "LabelBarSetValues";
+	char *e_text;
+	int  *i_p;
+	float *f_p;
+	NhlString *s_p;
+	int def_int;
+	float def_float;
+	char *def_string;
 
-	if (lb_p->orient != olb_p->orient    ||
-	    lb_p->just != olb_p->just    ||
-	    lb_p->box_major_ext != olb_p->box_major_ext    ||
-	    lb_p->box_minor_ext != olb_p->box_minor_ext    ||
-	    lb_p->alignment != olb_p->alignment    ||
-	    lb_p->box_count != olb_p->box_count    ||
-	    lb_p->box_mode != olb_p->box_mode    ||
-	    lb_p->box_sizing != olb_p->box_sizing    ||
-	    lb_p->label_strings != olb_p->label_strings    ||
-	    lb_p->box_fractions != olb_p->box_fractions    ||
-	    lb_p->labels_on != olb_p->labels_on    ||
-	    lb_p->label_angle != olb_p->label_angle    ||
-	    lb_p->label_font != olb_p->label_font    ||
-	    lb_p->label_color != olb_p->label_color    ||
-	    lb_p->label_height != olb_p->label_height    ||
-	    lb_p->label_aspect != olb_p->label_aspect    ||
-	    lb_p->label_thickness != olb_p->label_thickness    ||
-	    lb_p->label_quality != olb_p->label_quality    ||
-	    lb_p->label_const_spacing != olb_p->label_const_spacing    ||
-	    lb_p->label_func_code != olb_p->label_func_code    ||
-	    lb_p->label_direction != olb_p->label_direction    ||
-	    lb_p->title_ext != olb_p->title_ext    ||
-	    lb_p->title_string != olb_p->title_string    ||
-	    lb_p->title_on != olb_p->title_on    ||
-	    lb_p->title_pos != olb_p->title_pos    ||
-	    lb_p->title_just != olb_p->title_just    ||
-	    lb_p->title_direction != olb_p->title_direction    ||
-	    lb_p->title_angle != olb_p->title_angle    ||
-	    lb_p->title_font != olb_p->title_font    ||
-	    lb_p->title_color != olb_p->title_color    ||
-	    lb_p->title_height != olb_p->title_height    ||
-	    lb_p->title_aspect != olb_p->title_aspect    ||
-	    lb_p->title_thickness != olb_p->title_thickness    ||
-	    lb_p->title_quality != olb_p->title_quality    ||
-	    lb_p->title_const_spacing != olb_p->title_const_spacing ||
-	    lb_p->title_func_code != olb_p->title_func_code) {
+/*=======================================================================*/
+/*
+ * Manage the colors array: if the array has changed copy the new
+ * array elements, check them for validity and get the GKS index.
+ * Then if the box count is greater than the current array size, enlarge
+ * the array and give initial values to the new elements.
+ */
+
+	NhlGetValues(tnew->base.wkptr->base.id,
+		     NhlNwkColorMapLen, &len, NULL);
+	count = lb_p->mono_fill_color ? 1 : lb_p->box_count;
+
+	if (lb_p->fill_colors != olb_p->fill_colors) {
+		def_int = NhlLB_DEF_COLOR; 
+		ret_1 = ValidatedGenArrayCopy(&(lb_p->fill_colors),
+					      olb_p->fill_colors,Qint,
+					      NhlLB_MAX_BOXES,&def_int,
+					      NhlNlbFillColors, entry_name);
 		
-		return True;
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+				return ret;
+		i_p = (int *) lb_p->fill_colors->data;
+		for (i=0; i<MIN(count,lb_p->fill_colors->num_elements); i++) {
+			if (i_p[i] < 0 || i_p[i] > len) {
+				e_text =
+		"%s: %s index %d holds an invalid color value, %d: defaulting";
+				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+					  NhlNlbFillColors, i, i_p[i]);
+				ret = MIN(ret, WARNING);
+				i_p[i] = NhlLB_DEF_COLOR;
+			}
+			lb_p->gks_colors[i] =
+				_NhlGetGksCi(tnew->base.wkptr, i_p[i]);
+		}
 	}
 
-	return False;
+	if (lb_p->fill_colors->num_elements < count) {
+		i_p = (int *) lb_p->fill_colors->data;
+		if ((i_p = (int *)
+		     NhlRealloc(i_p, count * sizeof (int))) == NULL) {
+			e_text = "%s: error allocating %s data";
+			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				  NhlNlbFillColors);
+			return FATAL;
+		}
+		if ((lb_p->gks_colors = (int *)
+		     NhlRealloc(lb_p->gks_colors, 
+				count * sizeof (int))) == NULL) {
+			e_text = "%s: error allocating private %s data";
+			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				  NhlNlbFillColors);
+			return FATAL;
+		}
+		for (i=lb_p->fill_colors->num_elements; i<count; i++) {
+			i_p[i] = i < len ? i : NhlLB_DEF_COLOR;
+			lb_p->gks_colors[i] =
+				_NhlGetGksCi(tnew->base.wkptr, i_p[i]);
+		}
 
+		lb_p->fill_colors->data = (NhlPointer) i_p;
+		lb_p->fill_colors->num_elements = count;
+	}
+/*=======================================================================*/
+
+/*
+ * Manage the fill pattern array
+ */
+
+	count = lb_p->mono_fill_pattern ? 1 : lb_p->box_count;
+	NhlGetValues(tnew->base.wkptr->base.id,
+		     NhlNwkFillTableLength, &len, NULL);
+
+	if (lb_p->fill_patterns != olb_p->fill_patterns) {
+		def_int = NhlLB_DEF_PATTERN;
+		ret_1 = ValidatedGenArrayCopy(&(lb_p->fill_patterns),
+					      olb_p->fill_patterns,Qint,
+					      NhlLB_MAX_BOXES,&def_int,
+					      NhlNlbFillPatterns, entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+				return ret;
+		i_p = (int *) lb_p->fill_patterns->data;
+		for (i=0; i<MIN(count,
+				lb_p->fill_patterns->num_elements); i++) {
+			if (i_p[i] < NhlHOLLOWFILL || i_p[i] > len) {
+				e_text =
+	      "%s: %s index %d holds an invalid pattern value, %d: defaulting";
+				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+					  NhlNlbFillPatterns, i, i_p[i]);
+				ret = MIN(ret, WARNING);
+				i_p[i] = NhlLB_DEF_PATTERN;
+			}
+
+		}
+	}
+
+	if (lb_p->fill_patterns->num_elements < count) {
+		i_p = (int *) lb_p->fill_patterns->data;
+		if ((i_p = (int *)
+		     NhlRealloc(i_p, count * sizeof (int))) == NULL) {
+			e_text = "%s: error allocating %s data";
+			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				  NhlNlbFillPatterns);
+			return FATAL;
+		}
+		for (i=lb_p->fill_patterns->num_elements; i<count; i++) {
+			i_p[i] = (i < len) ? i : NhlLB_DEF_PATTERN;
+		}
+
+		lb_p->fill_patterns->data = (NhlPointer) i_p;
+		lb_p->fill_patterns->num_elements = count;
+	}
+
+/*=======================================================================*/
+/* 
+ * Handle the fill scales
+ */
+
+	count = lb_p->mono_fill_scale ? 1 : lb_p->box_count;
+	def_float = 1.0;
+
+	if (lb_p->fill_scales != olb_p->fill_scales) {
+		
+		ret_1 = ValidatedGenArrayCopy(&(lb_p->fill_scales),
+					      olb_p->fill_scales,Qfloat,
+					      NhlLB_MAX_BOXES,&def_float,
+					      NhlNlbFillScales, entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+				return ret;
+		f_p = (float *) lb_p->fill_scales->data;
+		for (i=0; i<MIN(count,lb_p->fill_scales->num_elements); i++) {
+			if (f_p[i] <= 0.0) {
+				e_text =
+	      "%s: %s index %d holds an invalid fill scale value: defaulting";
+				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+					  NhlNlbFillScales, i);
+				ret = MIN(ret, WARNING);
+				f_p[i] = 1.0;
+			}
+		}
+	}
+
+	if (lb_p->fill_scales->num_elements < count) {
+		f_p = (float *) lb_p->fill_scales->data;
+		if ((f_p = (float *)
+		     NhlRealloc(f_p, count * sizeof (float))) == NULL) {
+			e_text = "%s: error allocating %s data";
+			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				  NhlNlbFillScales);
+			return FATAL;
+		}
+		for (i=lb_p->fill_scales->num_elements; i<count; i++) {
+			f_p[i] = 1.0;
+		}
+
+		lb_p->fill_scales->data = (NhlPointer) f_p;
+		lb_p->fill_scales->num_elements = count;
+	}
+
+/*======================================================================*/
+
+/* 
+ * Handle the label strings. Copy the new array into the old.
+ * NULL strings generate an error message and are replaced by empty 
+ * (single byte null terminator) strings within the Validated copy function. 
+ * If the box count has increased, but the string gen array does not 
+ * contain enough elements, the array is resized and default strings are
+ * created for the additional elements.
+ */
+
+	if (lb_p->label_alignment == NhlLB_BOXCENTERS)
+		count = lb_p->box_count;
+	else if (lb_p->label_alignment == NhlLB_INTERIOREDGES)
+		count = lb_p->box_count - 1;
+	else
+		count = lb_p->box_count + 1;
+	lb_p->current_label_count = count;
+	def_string = "";
+
+	if (lb_p->label_strings != olb_p->label_strings) {
+		
+		ret_1 = ValidatedGenArrayCopy(&(lb_p->label_strings),
+					      olb_p->label_strings,Qstring,
+					      NhlLB_MAX_BOXES,&def_string,
+					      NhlNlbLabelStrings, entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+				return ret;
+	}
+
+	if (lb_p->label_strings->num_elements < count) {
+		s_p = (NhlString *) lb_p->label_strings->data;
+		if ((s_p = (NhlString *)
+		     NhlRealloc(s_p, count * sizeof (NhlString))) == NULL) {
+			e_text = "%s: error allocating %s data";
+			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				  NhlNlbLabelStrings);
+			return FATAL;
+		}
+		for (i=lb_p->label_strings->num_elements; i<count; i++) {
+			sprintf(number,"%d",i);
+			if ((s_p[i] = (char *)
+			     NhlMalloc(strlen(NhlLB_DEF_STRING) + 
+				       strlen(number) + 1)) == NULL) {
+				e_text = "%s: error creating %s string";
+				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+					  NhlNlbLabelStrings);
+				return FATAL;
+			}
+			strcpy(s_p[i],(Const char *)NhlLB_DEF_STRING);
+			strcat(s_p[i],number);
+		}
+
+		lb_p->label_strings->data = (NhlPointer) s_p;
+		lb_p->label_strings->num_elements = count;
+	}
+
+
+/*======================================================================*/
+/* 
+ * Manage the box_fraction array. If the box count changes then reset the
+ * box fraction array to a default (uniform) state. This is because there
+ * is no obvious way to modify explicitly set sizes to handle a different
+ * number of boxes. Even if the box_fraction resource is set in the 
+ * same call the reset occurs because it is difficult to ensure that 
+ * the passed in array contains the appropriate elements for the new 
+ * box_count. Note that error checking for the elements of this resource 
+ * is handled later. The box fraction array contains one more element than
+ * the box count.
+ */
+	count = lb_p->box_count+1;
+	if (lb_p->box_fractions != olb_p->box_fractions) {
+		def_float = -1.0;
+		ret_1 = ValidatedGenArrayCopy(&(lb_p->box_fractions),
+					      olb_p->box_fractions,Qfloat,
+					      NhlLB_MAX_BOXES+1,&def_float,
+					      NhlNlbBoxFractions, entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+			return ret;
+	}
+	
+	if (lb_p->box_fractions->num_elements < count) {
+		f_p = (float *) lb_p->box_fractions->data;
+		if ((f_p = (float *)
+		     NhlRealloc(f_p, (count) * 
+				sizeof (float))) == NULL) {
+			e_text = "%s: error allocating %s data";
+			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				  NhlNlbBoxFractions);
+			return FATAL;
+		}
+
+		lb_p->box_fractions->data = (NhlPointer) f_p;
+		lb_p->box_fractions->num_elements = count;
+	}
+
+	if (lb_p->box_count != olb_p->box_count) {
+		f_p = (float *) lb_p->box_fractions->data;
+		f_p[0] = 0.0;
+		for (i=1;i<lb_p->box_count; i++)
+			f_p[i] = -1.0;
+		f_p[lb_p->box_count] = 1.0;
+	}
+
+/*======================================================================*/
+	     
+/*
+ * Allocate or reallocate the location arrays: use one more than
+ * the current box count so that both ends of the labelbar can be stored
+ */
+
+	if (lb_p->box_count > olb_p->box_count) {
+		if (lb_p->box_locs == NULL) {
+			lb_p->box_locs = (float *) 
+				NhlMalloc((lb_p->box_count+1) * sizeof(float));
+		}
+		else {
+			lb_p->box_locs = (float *) 
+				NhlRealloc(lb_p->box_locs, 
+					   (lb_p->box_count+1) *
+					   sizeof(float));
+		}
+	}
+	
+	return (ret);
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes    InitializeDynamicArrays
+#if __STDC__
+	(Layer		new, 
+	Layer		old,
+	_NhlArgList	args,
+	int		num_args)
+#else
+(new,old,args,num_args)
+	Layer		new;
+	Layer		old;
+	_NhlArgList	args;
+	int		num_args;
+#endif
+
+{
+	LabelBarLayer	tnew = (LabelBarLayer) new;
+	LabelBarLayerPart *lb_p = &(tnew->labelbar);
+	NhlErrorTypes ret = NOERROR, ret_1 = NOERROR;
+	int i,count;
+	int len;
+	char number[10];
+	NhlGenArray ga;
+	char *entry_name = "LabelBarInitialize";
+	char *e_text;
+	int *i_p;
+	float * f_p;
+	NhlString *s_p;
+	float def_float;
+	int def_int;
+	char *def_string;
+
+/*=======================================================================*/
+/* 
+ * Initialize the color array:  
+ * Create an array that contains the larger of the default box
+ * count and the supplied box count. Fill it with the default color array 
+ * values up to the default box count size, and the single default color value
+ * for the rest of the elements. 
+ * Then if the user has supplied a generic array copy it over the 
+ * created array. Then check each element to ensure that
+ * it is a valid color index.
+ * Finally, create a private array for GKS color indices, convert each
+ * workstation index into a GKS index, and copy into the GKS array.
+ */
+
+	NhlGetValues(tnew->base.wkptr->base.id,
+		     NhlNwkColorMapLen, &len, NULL);
+	count = MAX(lb_p->box_count, NhlLB_DEF_BOX_COUNT);
+	if ((i_p = (int *) NhlMalloc(count * sizeof(int))) == NULL) {
+		e_text = "%s: error creating %s array";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  NhlNlbFillColors);
+		return FATAL;
+	}
+	for (i=0; i < NhlLB_DEF_BOX_COUNT; i++) 
+		i_p[i] = def_colors[i];
+	for (i=NhlLB_DEF_BOX_COUNT; i<count; i++)
+		i_p[i] = i < len ? i : NhlLB_DEF_COLOR;
+			
+	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
+				    sizeof(int),1,&count)) == NULL) {
+		e_text = "%s: error creating %s GenArray";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  NhlNlbFillColors);
+		return FATAL;
+	}
+	ga->my_data = True;
+
+	if (lb_p->fill_colors == NULL) {
+		lb_p->fill_colors = ga;
+	}
+	else {
+		def_int =  NhlLB_DEF_COLOR;
+		ret_1 = ValidatedGenArrayCopy(&(lb_p->fill_colors),
+					      ga,Qint,
+					      NhlLB_MAX_BOXES,&def_int,
+					      NhlNlbFillColors, entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+				return ret;
+		i_p = (int *) lb_p->fill_colors->data;
+	}
+
+	/* check for validity, and copy the GKS index into a private array */
+
+	if ((lb_p->gks_colors = 
+	     (int *) NhlMalloc(count * sizeof(int))) == NULL) {
+		e_text = "%s: error creating private storage array";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
+		return FATAL;
+	}
+
+	for (i=0; i<count; i++) {
+		if (i_p[i] < 0 || i_p[i] > len) {
+			e_text =
+	       "%s: %s index %d holds an invalid color value, %d: defaulting";
+			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+				  NhlNlbFillColors, i, i_p[i]);
+		        ret = MIN(ret, WARNING);
+			i_p[i] = NhlLB_DEF_COLOR;
+		}
+		lb_p->gks_colors[i] =
+			_NhlGetGksCi(tnew->base.wkptr,i_p[i]);
+	}
+
+/*=======================================================================*/
+/* The fill patterns array
+ */
+
+	count = MAX(lb_p->box_count, NhlLB_DEF_BOX_COUNT);
+	NhlGetValues(tnew->base.wkptr->base.id,
+		     NhlNwkFillTableLength, &len, NULL);
+
+	if ((i_p = (int *) NhlMalloc(count * sizeof(int))) == NULL) {
+		e_text = "%s: error creating %s array";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  NhlNlbFillPatterns);
+		return FATAL;
+	}
+	for (i=0; i < count; i++) 
+		for (i=0; i < NhlLB_DEF_BOX_COUNT; i++) 
+			i_p[i] = def_patterns[i];
+		for (i=NhlLB_DEF_BOX_COUNT; i<count; i++)
+			i_p[i] = (i<len) ? i : NhlLB_DEF_PATTERN;
+
+	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
+				    sizeof(int),1,&count)) == NULL) {
+		e_text = "%s: error creating %s GenArray";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  NhlNlbFillPatterns);
+		return FATAL;
+	}
+	ga->my_data = True;
+
+/* If an item types resource array has been passed in, copy it to the ga */
+
+	if (lb_p->fill_patterns == NULL) {
+		lb_p->fill_patterns = ga;
+	}
+	else {
+		def_int = NhlLB_DEF_PATTERN;
+		ret_1 = ValidatedGenArrayCopy(&(lb_p->fill_patterns),
+					      ga,Qint,
+					      NhlLB_MAX_BOXES,&def_int,
+					      NhlNlbFillPatterns, entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+				return ret;
+		i_p = (int *) lb_p->fill_patterns->data;
+	}
+/*
+ * Replace any invalid elements in the array with the default value
+ */
+	for (i=0; i<count; i++) {
+		if (i_p[i] < NhlHOLLOWFILL || i_p[i] > len) {
+			e_text =
+	       "%s: %s index %d holds an invalid color value, %d: defaulting";
+			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+				  NhlNlbFillPatterns, i, i_p[i]);
+		        ret = MIN(ret, WARNING);
+			i_p[i] = NhlLB_DEF_PATTERN;
+		}
+	}
+
+/*=======================================================================*/
+/* The fill_scales array */
+
+	count = MAX(lb_p->box_count, NhlLB_DEF_BOX_COUNT);
+	if ((f_p = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
+		e_text = "%s: error creating %s array";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  NhlNlbFillScales);
+		return FATAL;
+	}
+	for (i=0; i < count; i++) 
+		f_p[i] = 1.0;
+
+	if ((ga = NhlCreateGenArray((NhlPointer)f_p,NhlTFloat,
+				    sizeof(float),1,&count)) == NULL) {
+		e_text = "%s: error creating %s GenArray";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  NhlNlbFillScales);
+		return FATAL;
+	}
+	ga->my_data = True;
+
+/* If an item types resource array has been passed in, copy it to the ga */
+
+	if (lb_p->fill_scales == NULL) {
+		lb_p->fill_scales = ga;
+	}
+	else {
+		def_float=1.0;
+		ret_1 = ValidatedGenArrayCopy(&(lb_p->fill_scales),
+					      ga,Qfloat,
+					      NhlLB_MAX_BOXES,&def_float,
+					      NhlNlbFillScales, entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+				return ret;
+		f_p = (float *) lb_p->fill_scales->data;
+	}
+/*
+ * Replace any invalid elements in the array with the default value
+ */
+	for (i=0; i<count; i++) {
+		if (f_p[i] <= 0.0) {
+			e_text =
+	       "%s: %s index %d holds an invalid item type: defaulting";
+			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+				  NhlNlbFillScales, i);
+		        ret = MIN(ret, WARNING);
+			f_p[i] = 1.0;
+		}
+	}
+
+/*=======================================================================*/
+
+/* 
+ * The label strings array: 
+ * Subsidary arrays managed in SetLabels hold the
+ * position of labels that will be drawn, and copies of pointers to
+ * the strings selected by the stride function. The two variables 
+ * initialized to 0 here, keep track of the currently allocated size of
+ * these arrays (called label_locs and stride_labels).
+ */
+
+	lb_p->max_label_stride_count = 0;
+	lb_p->max_label_draw_count = 0;
+	if (lb_p->label_alignment == NhlLB_BOXCENTERS)
+		lb_p->current_label_count = lb_p->box_count;
+	else if (lb_p->label_alignment == NhlLB_INTERIOREDGES)
+		lb_p->current_label_count = lb_p->box_count - 1;
+	else
+		lb_p->current_label_count = lb_p->box_count + 1;
+
+	count = MAX(lb_p->current_label_count, NhlLB_DEF_BOX_COUNT);
+	if ((s_p = (NhlString *) 
+	     NhlMalloc(count * sizeof(NhlString))) == NULL) {
+		e_text = "%s: error creating %s array";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  NhlNlbLabelStrings);
+		return FATAL;
+	}
+	for (i=0;i<count;i++) {
+		sprintf(number,"%d",i);
+		if ((s_p[i] = (char *)
+		     NhlMalloc(strlen(NhlLB_DEF_STRING) + 
+			       strlen(number) + 1)) == NULL) {
+			e_text = "%s: error creating %s string";
+			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				  NhlNlbLabelStrings);
+			return FATAL;
+		}
+		strcpy(s_p[i], NhlLB_DEF_STRING);
+		strcat(s_p[i], number);
+	}
+
+	if ((ga = NhlCreateGenArray((NhlPointer)s_p,NhlTString,
+				    sizeof(NhlString),1,&count)) == NULL) {
+		e_text = "%s: error creating %s GenArray";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  NhlNlbLabelStrings);
+		return FATAL;
+	}
+	ga->my_data = True;
+
+/* If a label strings resource array has been passed in, copy it to the ga */
+
+	if (lb_p->label_strings == NULL) {
+		lb_p->label_strings = ga;
+	}
+	else {
+		def_string="";
+		ret_1 = ValidatedGenArrayCopy(&(lb_p->label_strings),
+					      ga,Qstring,
+					      NhlLB_MAX_LBL_STRINGS,
+					      &def_string,
+					      NhlNlbLabelStrings, entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+				return ret;
+	}
+/*
+ * Copy function should have replaced any NULL strings - nothing else is
+ * invalid.
+ */
+
+
+/*=======================================================================*/
+/* 
+ * Set up the box_fraction array. If no array
+ * is provided create a uniform array, allowing future modification of 
+ * the sizing. Set it up whether or not it is going to be used.
+ */
+	
+	count = MAX(lb_p->box_count, NhlLB_DEF_BOX_COUNT) + 1;
+	if ((f_p = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
+		e_text = "%s: error creating %s array";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  NhlNlbBoxFractions);
+		return FATAL;
+	}
+	
+	f_p[0] = 0.0;
+	for (i=1;i<lb_p->box_count; i++)
+		f_p[i] = -1.0;
+	f_p[lb_p->box_count] = 1.0;
+	
+	if ((ga = NhlCreateGenArray((NhlPointer)f_p,NhlTFloat,
+				    sizeof(float),1,&count)) == NULL) {
+		e_text = "%s: error creating %s GenArray";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  NhlNlbBoxFractions);
+		return FATAL;
+	}
+	ga->my_data = True;
+		
+/* If a box fractions array has been passed in, copy it to the ga */
+
+	if (lb_p->box_fractions == NULL) {
+		lb_p->box_fractions = ga;
+	}
+	else {
+		def_float=-1.0;
+		ret_1 = ValidatedGenArrayCopy(&(lb_p->box_fractions),
+					      ga,Qfloat,
+					      NhlLB_MAX_BOXES+1,&def_float,
+					      NhlNlbBoxFractions, entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+				return ret;
+	}
+		
+/*
+ * Allocate the location array: use one more than
+ * the current box count so that both ends of the labelbar can be stored
+ */
+
+	lb_p->box_locs = (float *) 
+		NhlMalloc((lb_p->box_count+1) * sizeof(float));
+	
+	return (ret);
 		
 }
+
 /*ARGSUSED*/
 static NhlErrorTypes    AdjustGeometry
 #if __STDC__
@@ -948,142 +1624,355 @@ static NhlErrorTypes    AdjustGeometry
 #endif
 {
 	LabelBarLayer	tnew = (LabelBarLayer) new;
-	LabelBarLayer	told = (LabelBarLayer) old;
 	LabelBarLayerPart *lb_p = &(tnew->labelbar);
-	LabelBarLayerPart *olb_p = &(told->labelbar);
 	NhlErrorTypes ret = NOERROR, ret1 = NOERROR;
 	NhlBoundingBox titleBB;
 	NhlBoundingBox labelsBB;
-	float x_off, y_off;
+	NhlBoundingBox labelbarBB;
+	NhlBoundingBox tmpBB;
 	float title_x = lb_p->title_x;
 	float title_y = lb_p->title_y;
-	NhlBoundingBox labelbarBB;
+	float pos_offset = 0.0;
+	float obj_offset = 0.0;
+	float x_off, y_off;
+	float small_axis;
+	float minor_off;
+	float major_off;
+	float center_off;
+	int i;
 
-	if ((ret1 = NhlGetBB(lb_p->title_id, &titleBB)) < WARNING)
-		return FATAL;
-	ret = MIN(ret1,ret);
-
-	if ((ret1 = NhlGetBB(lb_p->labels_id, &labelsBB)) < WARNING)
-		return FATAL;
-	ret = MIN(ret1,ret);
-
-	lb_p->expand_perim.l = lb_p->perim.l;
-	lb_p->expand_perim.r = lb_p->perim.r;
-	lb_p->expand_perim.b = lb_p->perim.b;
-	lb_p->expand_perim.t = lb_p->perim.t;
-	if (lb_p->orient == NhlHORIZONTAL) {
-
-		if (labelsBB.l < lb_p->labels.l) {
-			x_off = lb_p->labels.l - labelsBB.l;
-			lb_p->expand_perim.l -= x_off; 
-			if (lb_p->title_on && lb_p->title_pos == NhlLEFT)
-				lb_p->title_x -= x_off;
-		}
-		if (labelsBB.r > lb_p->labels.r) {
-			x_off = labelsBB.r - lb_p->labels.r;
-			lb_p->expand_perim.r += x_off; 
-			if (lb_p->title_on && lb_p->title_pos == NhlRIGHT)
-				lb_p->title_x += x_off;
-		}
-		if (lb_p->label_pos != NhlTOP) {
-			if (labelsBB.b < lb_p->labels.b) {
-				y_off = lb_p->labels.b - labelsBB.b;
-				lb_p->expand_perim.b -= y_off; 
-				if (lb_p->title_on && 
-				    lb_p->title_pos == NhlBOTTOM)
-					lb_p->title_y -= y_off;
-			}
-		}
-		if (lb_p->label_pos != NhlBOTTOM) {
-			if (labelsBB.t > lb_p->labels.t) {
-				y_off = labelsBB.t - lb_p->labels.t;
-				lb_p->expand_perim.t += y_off; 
-				if (lb_p->title_on && 
-				    lb_p->title_pos == NhlTOP)
-					lb_p->title_y += y_off;
-			}
-		}
+	small_axis = MIN(lb_p->lb_width, lb_p->lb_height);
+/*
+ * Get the bounding box of the labels, then adjust the box if it
+ * overlaps the bar boundary. Next combine the two bounding boxes,
+ * and adjust both the bar and the labels to the center of the combined box.
+ */
+	if (! lb_p->labels_on) {
+		labelbarBB.l = lb_p->adj_bar.l;
+		labelbarBB.r = lb_p->adj_bar.r;
+		labelbarBB.b = lb_p->adj_bar.b;
+		labelbarBB.t = lb_p->adj_bar.t;
 	}
 	else {
+		if ((ret1 = NhlGetBB(lb_p->labels_id, &labelsBB)) < WARNING)
+			return ret1;
+		ret = MIN(ret1,ret);
+		
+		if (lb_p->orient == NhlHORIZONTAL) {
+			
+			obj_offset = lb_p->label_off * 
+				(lb_p->adj_perim.t - lb_p->adj_perim.b);
+			if (lb_p->label_pos == NhlTOP) {
+				if (labelsBB.b < 
+				    lb_p->adj_bar.t + obj_offset) {
+					pos_offset = lb_p->adj_bar.t + 
+						obj_offset - labelsBB.b;
+				}
+			}
+			else if (lb_p->label_pos == NhlBOTTOM) {
+				if (labelsBB.t > 
+				    lb_p->adj_bar.b - obj_offset) {
+					pos_offset = lb_p->adj_bar.b - 
+						obj_offset - labelsBB.t;
+				}
+			}
+			labelsBB.b += pos_offset;
+			labelsBB.t += pos_offset;
+		}
+		else {
+			
+			obj_offset = lb_p->label_off * 
+				(lb_p->adj_perim.r - lb_p->adj_perim.l);
+			if (lb_p->label_pos == NhlRIGHT) {
+				if (labelsBB.l < 
+				    lb_p->adj_bar.r + obj_offset) {
+					pos_offset = lb_p->adj_bar.r + 
+						obj_offset - labelsBB.l;
+				}
+			}
+			else if (lb_p->label_pos == NhlLEFT) {
+				if (labelsBB.r > 
+				    lb_p->adj_bar.l - obj_offset) {
+					pos_offset = lb_p->adj_bar.l - 
+						obj_offset - labelsBB.r;
+				}
+				
+			}
+			labelsBB.l += pos_offset;
+			labelsBB.r += pos_offset;
+		}
+		
+		tmpBB.l = MIN(labelsBB.l, lb_p->adj_bar.l);
+		tmpBB.r = MAX(labelsBB.r, lb_p->adj_bar.r);
+		tmpBB.b = MIN(labelsBB.b, lb_p->adj_bar.b);
+		tmpBB.t = MAX(labelsBB.t, lb_p->adj_bar.t);
+		labelbarBB.l = MIN(tmpBB.l, lb_p->labels.l);
+		labelbarBB.r = MAX(tmpBB.r, lb_p->labels.r);
+		labelbarBB.b = MIN(tmpBB.b, lb_p->labels.b);
+		labelbarBB.t = MAX(tmpBB.t, lb_p->labels.t);
 
-		if (labelsBB.b < lb_p->labels.b) {
-			y_off = lb_p->labels.b - labelsBB.b;
-			lb_p->expand_perim.b -= y_off; 
-			if (lb_p->title_on && lb_p->title_pos == NhlBOTTOM)
-				lb_p->title_y -= y_off;
+		if (lb_p->orient == NhlHORIZONTAL) {
+
+			center_off = (labelbarBB.t - tmpBB.t + 
+				      labelbarBB.b - tmpBB.b) / 2.0;
+			labelsBB.b += center_off;
+			labelsBB.t += center_off;
+			lb_p->adj_bar.b += center_off;
+			lb_p->adj_bar.t += center_off;
+			pos_offset += center_off;
 		}
-		if (labelsBB.t > lb_p->labels.t) {
-			y_off = labelsBB.t - lb_p->labels.t;
-			lb_p->expand_perim.t += y_off; 
-			if (lb_p->title_on && lb_p->title_pos == NhlTOP)
-				lb_p->title_y += y_off;
+		else {
+
+			center_off = (labelbarBB.r - tmpBB.r +
+				      labelbarBB.l - tmpBB.l) / 2.0;
+			labelsBB.l += center_off;
+			labelsBB.r += center_off;
+			lb_p->adj_bar.l += center_off;
+			lb_p->adj_bar.r += center_off;
+			pos_offset += center_off;
+		}		
+		
+	}
+
+/*
+ * handle the title
+ */
+	if (! lb_p->title_on || lb_p->max_title_ext <= 0.0) {
+		titleBB.l = labelbarBB.l;
+		titleBB.r = labelbarBB.r;
+		titleBB.b = labelbarBB.b;
+		titleBB.t = labelbarBB.t;
+	}
+	else {
+		if ((ret1 = NhlGetBB(lb_p->title_id, &titleBB)) < WARNING)
+			return ret1;
+		ret = MIN(ret1,ret);
+		
+		
+		/*
+		 * Adjust for the title: 
+		 * first move it out of the way of the labelbar, 
+		 * then adjust for possibly larger justification area.
+		 */
+		
+		
+		if (lb_p->title_pos == NhlBOTTOM || lb_p->title_pos == NhlTOP)
+			obj_offset = lb_p->title_off *
+				(lb_p->adj_perim.t - lb_p->adj_perim.b);
+		else
+			obj_offset = lb_p->title_off *
+				(lb_p->adj_perim.r - lb_p->adj_perim.l);
+		if (lb_p->title_pos == NhlBOTTOM &&
+		    titleBB.t > labelbarBB.b - obj_offset) {
+			title_y -= titleBB.t + obj_offset - labelbarBB.b;
 		}
-		if (lb_p->label_pos != NhlRIGHT) {
-			if (labelsBB.l < lb_p->labels.l) {
-				x_off = lb_p->labels.l - labelsBB.l;
-				lb_p->expand_perim.l -= x_off; 
-				if (lb_p->title_on && 
-				    lb_p->title_pos == NhlLEFT)
-					lb_p->title_x -= x_off;
+		else if (lb_p->title_pos == NhlTOP &&
+			 titleBB.b < labelbarBB.t + obj_offset) {
+			title_y += labelbarBB.t + obj_offset - titleBB.b;
+		}
+		else if (lb_p->title_pos == NhlLEFT &&
+			 titleBB.r > labelbarBB.l - obj_offset) {
+			title_x -= titleBB.r + obj_offset - labelbarBB.l;
+		}
+		else if (lb_p->title_pos == NhlRIGHT &&
+			 titleBB.l < labelbarBB.r + obj_offset) {
+			title_x += labelbarBB.r + obj_offset - titleBB.l;
+		}
+		
+		if (lb_p->title_pos == NhlTOP
+		    || lb_p->title_pos == NhlBOTTOM) {
+			switch (lb_p->title_just) {
+			case NhlBOTTOMLEFT:
+			case NhlCENTERLEFT:
+			case NhlTOPLEFT:
+				title_x = labelbarBB.l;
+				break;
+			case NhlBOTTOMCENTER:
+			case NhlCENTERCENTER:
+			case NhlTOPCENTER:
+			default:
+				title_x = labelbarBB.l + 
+					(labelbarBB.r - labelbarBB.l) / 2.0;
+				break;
+			case NhlBOTTOMRIGHT:
+			case NhlCENTERRIGHT:
+			case NhlTOPRIGHT:
+				title_x = labelbarBB.r;
+				break;
 			}
 		}
-		if (lb_p->label_pos != NhlLEFT) {
-			if (labelsBB.r > lb_p->labels.r) {
-				x_off = labelsBB.r - lb_p->labels.r;
-				lb_p->expand_perim.r += x_off; 
-				if (lb_p->title_on && 
-				    lb_p->title_pos == NhlRIGHT)
-					lb_p->title_x += x_off;
+		else if (lb_p->title_pos == NhlLEFT
+			 || lb_p->title_pos == NhlRIGHT) {
+			switch (lb_p->title_just) {
+			case NhlBOTTOMLEFT:
+			case NhlBOTTOMCENTER:
+			case NhlBOTTOMRIGHT:
+				title_y = labelbarBB.b;
+				break;
+			case NhlCENTERLEFT:
+			case NhlCENTERCENTER:
+			case NhlCENTERRIGHT:
+			default:
+				title_y = labelbarBB.b + 
+					(labelbarBB.t - labelbarBB.b) / 2.0;
+				break;
+			case NhlTOPLEFT:
+			case NhlTOPCENTER:
+			case NhlTOPRIGHT:
+				title_y = labelbarBB.t;
+				break;
 			}
 		}
+		titleBB.l += title_x - lb_p->title_x;
+		titleBB.r += title_x - lb_p->title_x;
+		titleBB.b += title_y - lb_p->title_y;
+		titleBB.t += title_y - lb_p->title_y;
+		titleBB.l = MIN(titleBB.l, lb_p->title.l);
+		titleBB.r = MAX(titleBB.r, lb_p->title.r);
+		titleBB.b = MIN(titleBB.b, lb_p->title.b);
+		titleBB.t = MAX(titleBB.t, lb_p->title.t);
 	}
-	labelbarBB.l = MIN(labelsBB.l, lb_p->adj_bar.l);
-	labelbarBB.r = MAX(labelsBB.r, lb_p->adj_bar.r);
-	labelbarBB.b = MIN(labelsBB.b, lb_p->adj_bar.b);
-	labelbarBB.t = MAX(labelsBB.t, lb_p->adj_bar.t);
+/*
+ * Determine the real perimeter and set the view accordingly
+ */
 
-	if (title_x != lb_p->title_x) {
-		title_x = lb_p->title_x - title_x;
+	lb_p->real_perim.l = MIN(labelbarBB.l - lb_p->margin.l * small_axis, 
+				 titleBB.l - lb_p->margin.l * small_axis);
+	lb_p->real_perim.r = MAX(labelbarBB.r + lb_p->margin.r * small_axis, 
+				 titleBB.r + lb_p->margin.r * small_axis);
+	lb_p->real_perim.b = MIN(labelbarBB.b - lb_p->margin.b * small_axis, 
+				 titleBB.b - lb_p->margin.b * small_axis);
+	lb_p->real_perim.t = MAX(labelbarBB.t + lb_p->margin.t * small_axis, 
+				 titleBB.t + lb_p->margin.t * small_axis);
+
+/*
+ * Adjust position based on the justification
+ */
+	switch (lb_p->just) {
+
+	case NhlBOTTOMLEFT:
+		x_off = lb_p->real_perim.l - lb_p->perim.l;
+		y_off = lb_p->real_perim.b - lb_p->perim.b;
+		break;
+	case NhlCENTERLEFT:
+		x_off = lb_p->real_perim.l - lb_p->perim.l;
+		y_off = lb_p->real_perim.b + 
+			(lb_p->real_perim.t - lb_p->real_perim.b)/2.0 -
+				(lb_p->lb_y - lb_p->lb_height/2.0);
+		break;
+	case NhlTOPLEFT:
+		x_off = lb_p->real_perim.l - lb_p->perim.l;
+		y_off = lb_p->real_perim.t - lb_p->perim.t;
+		break;
+	case NhlBOTTOMCENTER:
+		x_off = lb_p->real_perim.l + 
+			(lb_p->real_perim.r - lb_p->real_perim.l)/2.0 -
+				(lb_p->lb_x + lb_p->lb_width/2.0);
+		y_off = lb_p->real_perim.b - lb_p->perim.b;
+		break;
+	case NhlCENTERCENTER:
+	default:
+		x_off = lb_p->real_perim.l + 
+			(lb_p->real_perim.r - lb_p->real_perim.l)/2.0 -
+				(lb_p->lb_x + lb_p->lb_width/2.0);
+		y_off = lb_p->real_perim.b + 
+			(lb_p->real_perim.t - lb_p->real_perim.b)/2.0 -
+				(lb_p->lb_y - lb_p->lb_height/2.0);
+		break;
+	case NhlTOPCENTER:
+		x_off = lb_p->real_perim.l + 
+			(lb_p->real_perim.r - lb_p->real_perim.l)/2.0 -
+				(lb_p->lb_x + lb_p->lb_width/2.0);
+		y_off = lb_p->real_perim.t - lb_p->perim.t;
+		break;
+	case NhlBOTTOMRIGHT:
+		x_off = lb_p->real_perim.r - lb_p->perim.r;
+		y_off = lb_p->real_perim.b - lb_p->perim.b;
+		break;
+	case NhlCENTERRIGHT:
+		x_off = lb_p->real_perim.r - lb_p->perim.r;
+		y_off = lb_p->real_perim.b + 
+			(lb_p->real_perim.t - lb_p->real_perim.b)/2.0 -
+				(lb_p->lb_y - lb_p->lb_height/2.0);
+		break;
+	case NhlTOPRIGHT:
+		x_off = lb_p->real_perim.r - lb_p->perim.r;
+		y_off = lb_p->real_perim.t - lb_p->perim.t;
 	}
-	if (title_y != lb_p->title_y) {
-		title_y = lb_p->title_y - title_y;
+
+	minor_off = (lb_p->orient == NhlHORIZONTAL) ? y_off : x_off;
+	major_off = (lb_p->orient == NhlHORIZONTAL) ? x_off : y_off;
+/*
+ * Adjust the perimeter
+ */
+
+	lb_p->real_perim.l -= x_off;
+	lb_p->real_perim.r -= x_off;
+	lb_p->real_perim.b -= y_off;
+	lb_p->real_perim.t -= y_off;
+/*
+ * Adjust the bar position
+ */
+
+	lb_p->adj_bar.l -= x_off;
+	lb_p->adj_bar.r -= x_off;
+	lb_p->adj_bar.b -= y_off;
+	lb_p->adj_bar.t -= y_off;
+	for (i=0; i<lb_p->box_count+1; i++) {
+		lb_p->box_locs[i] -= major_off;
 	}
+/*
+ * Adjust the labels position
+ */
 
-#if 0
-	lb_p->adjust_frac.l = (lb_p->perim.l - lb_p->lb_x) /
-		(lb_p->perim.r - lb_p->perim.l);
-	lb_p->adjust_frac.r = (lb_p->perim.r - lb_p->lb_x - lb_p->lb_width) /
-		(lb_p->perim.r - lb_p->perim.l);
-	lb_p->adjust_frac.b = (lb_p->perim.b - lb_p->lb_y + lb_p->lb_height) /
-		(lb_p->perim.r - lb_p->perim.l);
-	lb_p->adjust_frac.t = (lb_p->perim.t - lb_p->lb_y) /
-		(lb_p->perim.r - lb_p->perim.l);
-	lb_p->lb_x = lb_p->perim.l;
-	lb_p->lb_y = lb_p->perim.t;
-	lb_p->lb_width = lb_p->perim.r - lb_p->perim.l;
-	lb_p->lb_height = lb_p->perim.t - lb_p->perim.b;
-#endif
+	if (lb_p->labels_on) {
+		for (i=0; i<lb_p->label_draw_count; i++) {
+			lb_p->label_locs[i] -= major_off;
+		}
+		
+		if ((ret1 = NhlSetValues(lb_p->labels_id,
+					 NhlNMtextConstPosF,
+					 lb_p->const_pos + 
+					 pos_offset - minor_off,
+					 NhlNMtextPosArray,lb_p->label_locs,
+					 NULL)) < WARNING)
+			return (ret1);
+		ret = MIN(ret1,ret);
+	}
+/*
+ * Set the title position
+ */
 
-	ret1 = NhlSetValues(lb_p->title_id,
-			    NhlNtxPosXF,lb_p->title_x,
-			    NhlNtxPosYF,lb_p->title_y,
-			    NULL);
+	if (lb_p->title_on && lb_p->max_title_ext > 0.0) {
+		title_x -= x_off;
+		title_y -= y_off;
+		if ((ret1 = NhlSetValues(lb_p->title_id,
+					 NhlNtxPosXF, title_x,
+					 NhlNtxPosYF, title_y,
+					 NULL)) < WARNING)
+			return (ret1);
+		ret = MIN(ret1,ret);
+	}
 
 	_NhlInternalSetView((ViewLayer)tnew,
-			    lb_p->expand_perim.l, lb_p->expand_perim.t,
-			    lb_p->expand_perim.r - lb_p->expand_perim.l,
-			    lb_p->expand_perim.t - lb_p->expand_perim.b
-			    ,False);
+			    lb_p->real_perim.l, lb_p->real_perim.t,
+			    lb_p->real_perim.r - lb_p->real_perim.l,
+			    lb_p->real_perim.t - lb_p->real_perim.b,
+			    False);
+	return (ret);
 
 }
+
 /*ARGSUSED*/
 static NhlErrorTypes    SetBoxLocations
 #if __STDC__
+(
 	Layer		new, 
 	Layer		old,
 	int		init,
 	_NhlArgList	args,
-	int		num_args)
+	int		num_args
+)
 #else
 (new,old,init,args,num_args)
 	Layer		new;
@@ -1094,90 +1983,19 @@ static NhlErrorTypes    SetBoxLocations
 #endif
 {
 	LabelBarLayer	tnew = (LabelBarLayer) new;
-	LabelBarLayer	told = (LabelBarLayer) old;
 	LabelBarLayerPart *lb_p = &(tnew->labelbar);
-	LabelBarLayerPart *olb_p = &(told->labelbar);
 	NhlErrorTypes ret = NOERROR, ret1 = NOERROR;
-	float *f_p;
-	int first_neg, last_neg;
 	float bar_len;
 	int i;
+	float *box_fractions = (float *)lb_p->box_fractions->data;
+
+	if (lb_p->box_sizing == NhlLB_EXPLICITSIZING) {
+		ret1 = ManageBoxFractionsArray(box_fractions,lb_p->box_count);
+	}
+	ret = MIN(ret,ret1);
 
 /* 
- * Set up the box_fraction array
- */
-	if (init && lb_p->box_sizing == NhlLB_UNIFORMSIZING) {
-		lb_p->box_fractions = NULL;
-	}
-	else if (lb_p->box_sizing == NhlLB_EXPLICITSIZING) {
-		if (init && !_NhlArgIsSet(args,num_args,NhlNlbBoxFractions)) {
-			/* WARNING */
-			printf("WARNING, defaulting to UNIFORM SIZING\n");
-			lb_p->box_sizing = NhlLB_UNIFORMSIZING;
-			lb_p->box_fractions = NULL;
-		}
-		else if (init) {
-			f_p = (float *)
-				NhlMalloc(lb_p->box_count * sizeof(float));
-			memcpy((void *)f_p,(Const void *) lb_p->box_fractions,
-			       lb_p->box_count * sizeof(float));
-			lb_p->box_fractions = f_p;
-		}
-		else if (lb_p->box_fractions == NULL) {
-			/* WARNING */
-			printf("WARNING, defaulting to UNIFORM SIZING\n");
-			lb_p->box_sizing = NhlLB_UNIFORMSIZING;
-		}
-		else if (lb_p->box_fractions != olb_p->box_fractions) {
-			NhlFree(olb_p->box_fractions);
-			f_p = (float *) 
-				NhlMalloc(lb_p->box_count * sizeof(float));
-			memcpy((void *)f_p,(Const void *) lb_p->box_fractions,
-			       lb_p->box_count * sizeof(float));
-			lb_p->box_fractions = f_p;
-		}
-		else if (lb_p->box_count > lb_p->last_box_count) {
-			f_p = (float *) 
-				NhlMalloc(lb_p->box_count * sizeof(float));
-			memcpy((void *)f_p,(Const void *) lb_p->box_fractions,
-			       lb_p->box_count * sizeof(float));
-			NhlFree(lb_p->box_fractions);
-			lb_p->box_fractions = f_p;
-			for (i=lb_p->last_box_count; i < lb_p->box_count; i++)
-				lb_p->box_fractions[i] = -1.0;
-		}
-
-		if (lb_p->box_sizing == NhlLB_EXPLICITSIZING) {
-			ret1 = ValidateBoxFractions(lb_p);
-			if (ret1 <= WARNING) {
-				printf("invalid box fraction array\n");
-				lb_p->box_sizing = NhlLB_UNIFORMSIZING;
-			}
-		}
-					
-	}
-	
-	     
-/*
- * Allocate or reallocate the location arrays: use one more than
- * the current box count so that both ends of the labelbar can be stored
- */
-
-	if (lb_p->box_count > lb_p->last_box_count) {
-		if (lb_p->box_locs == NULL) {
-			lb_p->box_locs = (float *) 
-				NhlMalloc((lb_p->box_count+1) * sizeof(float));
-		}
-		else {
-			lb_p->box_locs = (float *) 
-				NhlRealloc(lb_p->box_locs, 
-					   (lb_p->box_count+1) *
-					   sizeof(float));
-		}
-	}
-
-/* 
- * Adjust boundary of bar area, depending on the label state.
+ * Adjust boundary of bar and label area, depending on the label state.
  */
 
 	memcpy((void *)&lb_p->adj_bar, (Const void *)&lb_p->bar, 
@@ -1188,19 +2006,30 @@ static NhlErrorTypes    SetBoxLocations
 		if (lb_p->orient == NhlHORIZONTAL) {
 			lb_p->adj_box_size.x = lb_p->box_size.x * 
 				lb_p->box_count / (lb_p->box_count + 1);
-			lb_p->adj_bar.l = lb_p->bar.l + lb_p->box_size.x / 2.0;
-			lb_p->adj_bar.r = lb_p->bar.r - lb_p->box_size.x / 2.0;
+			lb_p->adj_bar.l = 
+				lb_p->bar.l + lb_p->adj_box_size.x / 2.0;
+			lb_p->adj_bar.r = 
+				lb_p->bar.r - lb_p->adj_box_size.x / 2.0;
 		}
 		else {
 			lb_p->adj_box_size.y = lb_p->box_size.y * 
 				lb_p->box_count / (lb_p->box_count + 1);
-			lb_p->adj_bar.b = lb_p->bar.b + lb_p->box_size.y / 2.0;
-			lb_p->adj_bar.t = lb_p->bar.t - lb_p->box_size.y / 2.0;
+			lb_p->adj_bar.b = 
+				lb_p->bar.b + lb_p->adj_box_size.y / 2.0;
+			lb_p->adj_bar.t = 
+				lb_p->bar.t - lb_p->adj_box_size.y / 2.0;
 		}
 	}
-/*
- * still need an angle adjustment
- */
+	else if (lb_p->label_alignment == NhlLB_INTERIOREDGES) {
+		if (lb_p->orient == NhlHORIZONTAL) {
+			lb_p->labels.l = lb_p->bar.l + lb_p->box_size.x / 2.0;
+			lb_p->labels.r = lb_p->bar.r - lb_p->box_size.x / 2.0;
+		}
+		else {
+			lb_p->labels.b = lb_p->bar.b + lb_p->box_size.y / 2.0;
+			lb_p->labels.t = lb_p->bar.t - lb_p->box_size.y / 2.0;
+		}
+	}
 
 /*
  * create an array of the left or bottom varying coordinates -- 
@@ -1227,7 +2056,7 @@ static NhlErrorTypes    SetBoxLocations
 		bar_len = lb_p->adj_bar.r - lb_p->adj_bar.l;
 		for (i=0; i < lb_p->box_count; i++) {
 			lb_p->box_locs[i] = lb_p->adj_bar.l + 
-				bar_len * lb_p->box_fractions[i];
+				bar_len * box_fractions[i];
 		}
 		lb_p->box_locs[lb_p->box_count] = lb_p->adj_bar.r;
 	}
@@ -1236,24 +2065,29 @@ static NhlErrorTypes    SetBoxLocations
 		bar_len = lb_p->adj_bar.t - lb_p->adj_bar.b;
 		for (i=0; i < lb_p->box_count; i++) {
 			lb_p->box_locs[i] = lb_p->adj_bar.b + 
-				bar_len * lb_p->box_fractions[i];
+				bar_len * box_fractions[i];
 		}
 		lb_p->box_locs[lb_p->box_count] = lb_p->adj_bar.t;
 	}
 
+	return(ret);
+
 }
 
 /*ARGSUSED*/
-static NhlErrorTypes    ValidateBoxFractions
+static NhlErrorTypes    ManageBoxFractionsArray
 #if __STDC__
-	(LabelBarLayerPart *lb_p) 
+	(float *box_fractions, 
+	 int count) 
 #else
-(lb_p)
-	LabelBarLayerPart *lb_p;
+(box_fractions, count)
+	float *box_fractions;
+	int count;
 #endif
 
 {
-	int i, first_neg;
+	int i, first_neg = -1;
+	int ret = NOERROR;
 			
 /*
  * At this point it should be guaranteed that the box_fraction array exists
@@ -1261,42 +2095,63 @@ static NhlErrorTypes    ValidateBoxFractions
  * Now check the validity of the explicit sizing fractions. Negative values
  * are not an error, but cause equal divisions between the two surrounding
  * specified values. Non-monotonically increasing positive values, or
- * values greater than 1.0 are an error causing a warning and a mode
- * change to uniform spacing.
+ * values greater than 1.0 are an error causing a warning. However, this
+ * function modifies incorrect values to make them usable.
  */
 	/* deal with first element manually, since in the loop the
 	   previous element must be compared */
+	/* trial version */
 
-	if (lb_p->box_fractions[0] < 0.0)
-		lb_p->box_fractions[0] = 0.0;
-	else if (lb_p->box_fractions[0] > 1.0)
-		return (WARNING);
+	/* the first value must be 0.0 and the last 1.0 */
 
-	first_neg = -1;
-	for (i=1; i<lb_p->box_count;i++) {
-		if (lb_p->box_fractions[i] < 0.0) {
+	if (box_fractions[0] < 0.0)
+		box_fractions[0] = 0.0;
+	else if (box_fractions[0] > 0.0) {
+		NhlPError(WARNING,E_UNKNOWN,
+			  "Modifying invalid box fraction array element: 0");
+		ret = WARNING;
+		box_fractions[0] = 0.0;
+	}
+	if (box_fractions[count] < 0.0)
+		box_fractions[count] = 1.0;
+	else if (box_fractions[count] != 1.0) {
+		NhlPError(WARNING,E_UNKNOWN,
+			  "Modifying invalid box fraction array element: %d",
+			  count);
+		ret = WARNING;
+		box_fractions[count] = 1.0;
+	}
+
+	for (i=1; i<count+1;i++) {
+		if (box_fractions[i] < 0.0) {
 			if (first_neg == -1)
 				first_neg = i;
-			else
-				continue;
 		}
 		else if (first_neg != -1) {
-			if (lb_p->box_fractions[i] > 1.0 ||
-			    lb_p->box_fractions[i] <
-			    lb_p->box_fractions[first_neg-1]) {
-				return (WARNING);
+			if (box_fractions[i] > 1.0 ||
+			    box_fractions[i] <
+			    box_fractions[first_neg-1]) {
+				NhlPError(WARNING,E_UNKNOWN,
+		    "Modifying invalid box fraction array element: %d",i);
+				ret = WARNING;
+				box_fractions[i] = -1.0;
 			}
-			CreateIntermediates(lb_p->box_fractions, 
-					    first_neg, i);
-			first_neg = -1;
+			else {
+				CreateIntermediates(box_fractions, 
+						    first_neg, i);
+				first_neg = -1;
+			}
 		}
-		else if (lb_p->box_fractions[i] > 1.0 ||
-			 (lb_p->box_fractions[i] < lb_p->box_fractions[i-1])) {
-			return (WARNING);
+		else if (box_fractions[i] > 1.0 ||
+			 (box_fractions[i] < box_fractions[i-1])) {
+			NhlPError(WARNING,E_UNKNOWN,
+		        "Modifying invalid box fraction array element: %d",i);
+			ret = WARNING;
+			box_fractions[i] = -1.0;
+			first_neg = i;
 		}
 	}
-	return (NOERROR);
-
+	return (ret);
 }
 
 /*
@@ -1326,10 +2181,10 @@ static void CreateIntermediates
 	count = end - start + 1;
 	spacing = (flist[end] - flist[start - 1]) / count;
 	for (i=0; i<count-1; i++) {
-		flist[start+i] = flist[start-1] + (float) i * spacing;
+		flist[start+i] = flist[start-1] + (float) (i+1) * spacing;
 	}
 }
-#define DEGTORAD 0.017453293
+
 /*ARGSUSED*/
 static NhlErrorTypes    SetLabels
 #if __STDC__
@@ -1348,48 +2203,52 @@ static NhlErrorTypes    SetLabels
 #endif
 {
 	LabelBarLayer	tnew = (LabelBarLayer) new;
-	LabelBarLayer	told = (LabelBarLayer) old;
 	LabelBarLayerPart *lb_p = &(tnew->labelbar);
-	LabelBarLayerPart *olb_p = &(told->labelbar);
 	NhlErrorTypes ret = NOERROR, ret1 = NOERROR;
 	char buffer[MAXRESNAMLEN];
-	static int label_draw_count = 0;
 	char **labels_p;
 	int count; 
 	int itmp, max_strlen = 0;
 	int i,j,ix;
+	float label_offset;
 	NhlMTextOrientatonType mtext_orient;
 	float label_height, char_space, avail_char_space;
-	float const_pos;
-	float base_pos, offset, increment;
+	float base_pos = 0.0, offset = 0.0, increment = 0.0;
 	NhlCoord larea;
-	NhlBoundingBox stringBB;
-	float w, h, wta, hta, factor1, factor2;
-	float wb, wt, hb, ht;
-	float tol_angle = 0.5;
-	float max_char_size;
-	float c_angle;
+	float c_frac = 1.0;
 
+		
 	if (! lb_p->labels_on)
-		return;
+		return NOERROR;
 
 /*
- * Determine the multitext orientation
+ * Determine the multitext orientation and the NDC label offset
  */
 
-	if (lb_p->orient == NhlHORIZONTAL)
+	if (lb_p->orient == NhlHORIZONTAL) {
 		mtext_orient = MTEXT_Y_CONST;
-	else
+		label_offset = lb_p->label_off * 
+			(lb_p->adj_perim.t - lb_p->adj_perim.b);
+	}
+	else {
 		mtext_orient = MTEXT_X_CONST;
+		label_offset = lb_p->label_off *
+			(lb_p->adj_perim.r - lb_p->adj_perim.l);
+	}
+#if 0
+/*
+ * If not in auto-manage mode the label offset should cause the 
+ * bar to grow. Set it to 0.0 here so that it will take effect in the
+ * AdjustGeometry routine.
+ */ 
+	if (! lb_p->auto_manage) 
+		label_offset = 0.0;
+#endif
 /*
  * The number of labels varies depending on the label alignment
  */
 
-	count = lb_p->box_count;
-	if (lb_p->label_alignment == NhlLB_INTERIOREDGES)
-		count--;
-	else if (lb_p->label_alignment == NhlLB_EXTERNALEDGES) 
-		count++;
+	count = lb_p->current_label_count;
 		
 /*
  * If the label stride is greater than 1, find the number of
@@ -1397,10 +2256,13 @@ static NhlErrorTypes    SetLabels
  * the array used to point to the correct labels.
  */
 	
-	labels_p = lb_p->label_strings;
+	lb_p->label_draw_count = count;
+	labels_p = (NhlString *) lb_p->label_strings->data;
 	if (lb_p->label_stride > 1) {
-		count /= lb_p->label_stride;
-		if (count > label_draw_count) {
+		count = (count % lb_p->label_stride == 0) ?
+			count / lb_p->label_stride :  
+			count / lb_p->label_stride + 1;
+		if (count > lb_p->max_label_stride_count) {
 			if (lb_p->stride_labels == NULL) {
 				lb_p->stride_labels = (char **) 
 					NhlMalloc(count * sizeof(char *));
@@ -1410,17 +2272,20 @@ static NhlErrorTypes    SetLabels
 					NhlRealloc(lb_p->stride_labels,
 						   count * sizeof(char *));
 			}
+			lb_p->max_label_stride_count = count;
 		}
 		labels_p = lb_p->stride_labels;
 		for (i=0,j=0; i<count; i++,j+=lb_p->label_stride) {
-			labels_p[i] = lb_p->label_strings[j];
+			labels_p[i] = 
+				((NhlString *)lb_p->label_strings->data)[j];
 		}
+		lb_p->label_draw_count = count;
 	}
 
 /*
  * Now allocate the location array
  */
-	if (count > label_draw_count) {
+	if (count > lb_p->max_label_draw_count) {
 		if (lb_p->label_locs == NULL) {
 			lb_p->label_locs = (float *) 
 				NhlMalloc(count * sizeof(float));
@@ -1430,15 +2295,14 @@ static NhlErrorTypes    SetLabels
 				NhlRealloc(lb_p->label_locs,
 					   count * sizeof(float));
 		}
+		lb_p->max_label_draw_count = count;
 	}
 
-	label_draw_count = count;
-	
 /*
  * Find the size of the longest text string, 
- * then determine a suitable text size -
- * if the text angle is not 0, there will be extra complications
- * don't deal with that issue yet.
+ * then determine a preliminary text size - text angle is accounted for later.
+ * If auto-manage is off the size set by the user will override this
+ * value.
  */
 	for (i=0; i<count; i++) {
 		if ((itmp = strlen(labels_p[i])) > max_strlen) {
@@ -1447,20 +2311,48 @@ static NhlErrorTypes    SetLabels
 	}
 	
 	if (lb_p->label_pos == NhlCENTER) {
-		larea.x = lb_p->adj_bar.r - lb_p->adj_bar.l;
-		larea.y = lb_p->adj_bar.t - lb_p->adj_bar.b;
+		if (lb_p->orient == NhlHORIZONTAL) {
+			larea.x = lb_p->labels.r - lb_p->labels.l;
+			larea.y = lb_p->adj_bar.t - lb_p->adj_bar.b;
+		}
+		else {
+			larea.x = lb_p->adj_bar.r - lb_p->adj_bar.l;
+			larea.y = lb_p->labels.t - lb_p->labels.b;
+		}
 	}
 	else {
-		larea.x = lb_p->labels.r - lb_p->labels.l;
-		larea.y = lb_p->labels.t - lb_p->labels.b;
+		if (lb_p->orient == NhlHORIZONTAL) {
+			larea.x = lb_p->labels.r - lb_p->labels.l;
+			larea.y = lb_p->labels.t - lb_p->labels.b - 
+				label_offset;
+		}
+		else {
+			larea.x = lb_p->labels.r - lb_p->labels.l - 
+				label_offset;
+			larea.y = lb_p->labels.t - lb_p->labels.b;
+		}
 	}
-	lb_p->label_angle = fmod(lb_p->label_angle,360.0);
 		
+/*
+ * Account for the box_major_ext fraction if centered or label
+ * offset is negative
+ */
+	if (lb_p->label_pos == NhlCENTER || label_offset < 0.0) {
+		if (lb_p->label_alignment == NhlLB_BOXCENTERS) {
+			c_frac = lb_p->box_major_ext;
+		}
+		else {
+			c_frac = 1.0 - lb_p->box_major_ext;
+		}
+	}
+
+	 
 	if (lb_p->orient == NhlHORIZONTAL && 
 	    lb_p->label_direction == ACROSS) {
 
 		char_space = 0.8 * larea.y / (max_strlen + 1.0);
-		avail_char_space = 0.5 * larea.x / label_draw_count;
+		avail_char_space = c_frac * 0.5 * 
+			larea.x / lb_p->label_draw_count;
 
 		if (char_space < avail_char_space)
 			label_height = char_space;
@@ -1470,16 +2362,16 @@ static NhlErrorTypes    SetLabels
 		/* Set the constant Y axis value and the justification */
 		if (lb_p->label_pos == NhlBOTTOM) {
 				
-			const_pos = lb_p->labels.t - 
-				label_height;
+			lb_p->const_pos = lb_p->labels.t -
+				label_height - label_offset;
 		}
 		else if (lb_p->label_pos == NhlCENTER) {
-			const_pos = lb_p->adj_bar.b + 
+			lb_p->const_pos = lb_p->adj_bar.b + 
 				lb_p->adj_box_size.y / 2.0;
 		}
 		else if (lb_p->label_pos == NhlTOP) {
-			const_pos = lb_p->labels.b + 
-				label_height;
+			lb_p->const_pos = lb_p->labels.b + 
+				label_height + label_offset;
 		}
 		else if (lb_p->label_pos == NhlBOTH) {
 			printf("NhlBOTH not implemented\n");
@@ -1490,7 +2382,8 @@ static NhlErrorTypes    SetLabels
 		/* Set the font height */
 
 		char_space = 0.8 * larea.y / (max_strlen + 1.0);
-		avail_char_space = 0.5 * larea.x / label_draw_count;
+		avail_char_space = c_frac * 0.5 * 
+			larea.x / lb_p->label_draw_count;
 
 		if (char_space < avail_char_space)
 			label_height = char_space;
@@ -1499,16 +2392,16 @@ static NhlErrorTypes    SetLabels
 
 		/* Set the constant Y axis value and the justification */
 		if (lb_p->label_pos == NhlBOTTOM) {
-			const_pos = lb_p->labels.t - 
-				label_height;
+			lb_p->const_pos = lb_p->labels.t - 
+				label_height - label_offset;
 		}
 		else if (lb_p->label_pos == NhlCENTER) {
-			const_pos = lb_p->adj_bar.b + 
+			lb_p->const_pos = lb_p->adj_bar.b + 
 				lb_p->adj_box_size.y / 2.0;
 		}
 		else if (lb_p->label_pos == NhlTOP) {
-			const_pos = lb_p->labels.b + 
-				label_height;
+			lb_p->const_pos = lb_p->labels.b + 
+				label_height + label_offset;
 		}
 		else if (lb_p->label_pos == NhlBOTH) {
 			printf("NhlBOTH not implemented\n");
@@ -1518,7 +2411,8 @@ static NhlErrorTypes    SetLabels
 		 lb_p->label_direction == ACROSS) {
 
 		char_space = 0.8 * larea.x / (max_strlen + 1.0);
-		avail_char_space = 0.5 * larea.y / label_draw_count;
+		avail_char_space = c_frac * 0.5 * 
+			larea.y / lb_p->label_draw_count;
 
 		if (char_space < avail_char_space)
 			label_height = char_space;
@@ -1527,24 +2421,26 @@ static NhlErrorTypes    SetLabels
 
 		/* Set the constant X axis position and the justification */
 		if (lb_p->label_pos == NhlLEFT) {
-			const_pos = lb_p->labels.r - 
-				label_height;
+			lb_p->const_pos = lb_p->labels.r - 
+				label_height - label_offset;
 		}
 		else if (lb_p->label_pos == NhlCENTER) {
-			const_pos = lb_p->adj_bar.l + 
+			lb_p->const_pos = lb_p->adj_bar.l + 
 				lb_p->adj_box_size.x / 2.0;
 		}
 		else if (lb_p->label_pos == NhlRIGHT) {
-			const_pos = lb_p->labels.l + 
-				label_height;
+			lb_p->const_pos = lb_p->labels.l + 
+				label_height + label_offset;
 		}
 		else if (lb_p->label_pos == NhlBOTH) {
 			printf("NhlBOTH not implemented\n");
 		}
 	}
 	else { /* NhlVERTICAL DOWN or UP */
+
 		char_space = 0.8 * larea.x / (max_strlen + 1.0);
-		avail_char_space = 0.5 * larea.y / label_draw_count;
+		avail_char_space = c_frac * 0.5 * 
+			larea.y / lb_p->label_draw_count;
 
 		if (char_space < avail_char_space)
 			label_height = char_space;
@@ -1553,16 +2449,16 @@ static NhlErrorTypes    SetLabels
 
 		/* Set the constant X axis position and the justification */
 		if (lb_p->label_pos == NhlLEFT) {
-			const_pos = lb_p->labels.r - 
-				label_height;
+			lb_p->const_pos = lb_p->labels.r - 
+				label_height - label_offset;
 		}
 		else if (lb_p->label_pos == NhlCENTER) {
-			const_pos = lb_p->adj_bar.l + 
+			lb_p->const_pos = lb_p->adj_bar.l + 
 				lb_p->adj_box_size.x / 2.0;
 		}
 		else if (lb_p->label_pos == NhlRIGHT) {
-			const_pos = lb_p->labels.l + 
-				label_height;
+			lb_p->const_pos = lb_p->labels.l + 
+				label_height + label_offset;
 		}
 		else if (lb_p->label_pos == NhlBOTH) {
 			printf("NhlBOTH not implemented\n");
@@ -1579,7 +2475,7 @@ static NhlErrorTypes    SetLabels
 		
 			/* position array contains X values */
 
-			base_pos = lb_p->labels.l;
+			base_pos = lb_p->adj_bar.l;
 		       
 			/* determine offset */
 			if (lb_p->label_alignment == NhlLB_BOXCENTERS)
@@ -1595,7 +2491,7 @@ static NhlErrorTypes    SetLabels
 		
 			/* position array contains Y values */
 
-			base_pos = lb_p->labels.b;
+			base_pos = lb_p->adj_bar.b;
 		       
 			/* determine offset */
 			if (lb_p->label_alignment == NhlLB_BOXCENTERS)
@@ -1607,12 +2503,12 @@ static NhlErrorTypes    SetLabels
 
 			increment = lb_p->adj_box_size.y * lb_p->label_stride;
 		}
-		for (i=0; i<label_draw_count; i++) 
+		for (i=0; i<lb_p->label_draw_count; i++) 
 			lb_p->label_locs[i] = base_pos + offset + 
 				(float) i * increment;
 	}
 	else {
-		for (i=0; i < label_draw_count; i++) {
+		for (i=0; i < lb_p->label_draw_count; i++) {
 
 			ix = i * lb_p->label_stride;
 			if (lb_p->label_alignment == NhlLB_BOXCENTERS)
@@ -1627,15 +2523,18 @@ static NhlErrorTypes    SetLabels
 		}
 	}
 
+	if (! lb_p->auto_manage && lb_p->label_height > 0.0) 
+		label_height = lb_p->label_height;
+
 	if (init) {
 		strcpy(buffer,tnew->base.name);
 		strcat(buffer,".Labels");
 		ret1 = NhlCreate(&(lb_p->labels_id),buffer,
 				 multiTextLayerClass,tnew->base.id,
-				 NhlNMtextNumStrings,label_draw_count,
+				 NhlNMtextNumStrings,lb_p->label_draw_count,
 				 NhlNMtextStrings,labels_p,
 				 NhlNMtextOrientation,mtext_orient,
-				 NhlNMtextConstPosF,const_pos,
+				 NhlNMtextConstPosF,lb_p->const_pos ,
 				 NhlNMtextPosArray,lb_p->label_locs,
 				 NhlNtxAngleF,lb_p->label_angle,
 				 NhlNtxFont,lb_p->label_font,
@@ -1646,6 +2545,7 @@ static NhlErrorTypes    SetLabels
 				 NhlNtxConstantSpacingF,
 				 lb_p->label_const_spacing,
 				 NhlNtxFontColor,lb_p->label_color,
+				 NhlNtxFontThicknessF,lb_p->label_thickness,
 				 NULL);
 		if(ret1 < WARNING) {
 			NhlPError(FATAL,E_UNKNOWN,"MultiText create error");
@@ -1656,10 +2556,10 @@ static NhlErrorTypes    SetLabels
 	} 
 	else {
 		ret1 = NhlSetValues(lb_p->labels_id,
-				    NhlNMtextNumStrings,label_draw_count,
+				    NhlNMtextNumStrings,lb_p->label_draw_count,
 				    NhlNMtextStrings,labels_p,
 				    NhlNMtextOrientation,mtext_orient,
-				    NhlNMtextConstPosF,const_pos,
+				    NhlNMtextConstPosF,lb_p->const_pos,
 				    NhlNMtextPosArray,lb_p->label_locs,
 				    NhlNtxAngleF,lb_p->label_angle,
 				    NhlNtxFont,lb_p->label_font,
@@ -1668,6 +2568,7 @@ static NhlErrorTypes    SetLabels
 				    NhlNtxFontAspectF,lb_p->label_aspect,
 				    NhlNtxDirection,lb_p->label_direction,
 				    NhlNtxFontColor,lb_p->label_color,
+				    NhlNtxFontThicknessF,lb_p->label_thickness,
 				    NULL);
 		if(ret1 < WARNING) {
 			NhlPError(FATAL,E_UNKNOWN,
@@ -1678,133 +2579,140 @@ static NhlErrorTypes    SetLabels
 
 	}
 
-/*
- * Unless the label height has been set explicitly adjust it to fit
- * the size it has available
- */
 
+	if (lb_p->auto_manage || lb_p->label_height <= 0.0) {
 
-	ret = NhlGetBB(lb_p->labels_id, &stringBB);
-	if ((w=stringBB.r-stringBB.l) <= 0.0 ||
-	    (h=stringBB.t-stringBB.b) <= 0.0) {
-		printf("error getting BB\n");
+		ret1 = AdjustLabels(lb_p, label_height, avail_char_space, 
+				   max_strlen, larea.x, larea.y);
+		ret = MIN(ret, ret1);
 	}
-	if (lb_p->orient == NhlHORIZONTAL) {
-		wb = larea.x / count;
-		wt = wb - larea.x + w;
-		hb = larea.y;
-		ht = h;
-	}
-	else {
-		wb = larea.x;
-		wt = w;
-		hb = larea.y / count;
-		ht = hb - larea.y + h;
-	}
-		
-	{
-		float theta = DEGTORAD * lb_p->label_angle;
-		float ct = fabs(cos(theta));
-		float st = fabs(sin(theta));
-		factor1 = (ct*larea.x + st*larea.y) /
-			(ct*w+st*h);
-		if (i == 0) {
-			factor2 = wb / wt < hb / ht ?  
-				wb / wt  : hb / ht;
-			factor1 = factor1 > factor2 ? 
-				factor1 : factor2;
-		}
-		if (lb_p->orient == NhlHORIZONTAL) {
-			if (ct == 0.0) printf ("whoops\n");
-			else 
-				label_height /= st;
-		}
-		else {
-			if (ct == 0.0) printf ("whoops\n");
-			else 
-				label_height /= ct;
-		}
-		label_height = label_height < avail_char_space ?
-			label_height : avail_char_space;
-		if (InCriticalZone(lb_p, label_height, &c_angle)) {
-			if (lb_p->orient == NhlHORIZONTAL) {
-				factor1 = 0.8 * wb / (max_strlen +2);
-				factor2 = factor1 +
-					(st / fabs(sin(DEGTORAD * c_angle))) *
-#if 0
-					(ct * ct /
-					 fabs(cos(DEGTORAD * c_angle)) *
-					 fabs(cos(DEGTORAD * c_angle))) *
-#endif
-					fabs(0.8 *avail_char_space - factor1);
-				label_height = label_height < factor2 ?
-					label_height : factor2;
-			}
-			else {
-				factor1 = 0.8 * hb / (max_strlen +2);
-				factor2 = factor1 + 
-					(ct / fabs(cos(DEGTORAD * c_angle))) *
-#if 0
-					(ct * ct /
-					 fabs(cos(DEGTORAD * c_angle)) *
-					 fabs(cos(DEGTORAD * c_angle))) *
-#endif
-					fabs(0.8 * avail_char_space - factor1);
-				label_height = label_height < factor2 ?
-					label_height : factor2;
-			}
-		}
-	}
-#if 0
-			factor1 = wb / wt < hb / ht ?  wb / wt  : hb / ht;
-			label_height *= factor1 * 0.8;
-		}
-		label_height = label_height < avail_char_space ?
-			label_height : avail_char_space;
-#endif
-	ret = NhlSetValues(lb_p->labels_id,
-			   NhlNtxFontHeightF,label_height,
-			   NhlNtxJust,lb_p->label_just,
-			   NULL);
 
 	return (ret);
 }
 
+/*
+ * This function adjusts the label height to fit
+ * the size it has available. This should probably be replaced by an option
+ * within Multitext itself. The routine tries to ensure that under 
+ * any rotation, no piece of multitext overlap another piece of the 
+ * same text. The text size is adjusted based on some primitive 
+ * heuristics to accomplish this. Also the label text justification is
+ * managed to ensure that the label always lines up with its correct box.
+ */
+
 #define NhlLB_TRANSITIONANGLE 7.5
-static NhlBoolean    	InCriticalZone
+static NhlErrorTypes   	AdjustLabels
 #if __STDC__
 	(LabelBarLayerPart *lb_p,
-	float		height,
-	float		*critical_angle)
+	 float		height,
+	 float		avail_space,
+	 int		max_strlen,
+	 float		area_x,
+	 float		area_y)
 #else
-(lb_p, height, critical_angle)
+(lb_p, height, avail_space, max_strlen, area_x, area_y)
 	LabelBarLayerPart *lb_p;
 	float		height;
-	float		*critical_angle;
+	float		avail_space;
+	int		max_strlen;
+	float		area_x;
+	float		area_y;
 #endif
 {
-	float theta1, theta2, theta3, theta4;
-	float w_weight;
-	int yes_or_no = 0;
+	float tmp, theta1, theta2, theta3, theta4;
+	NhlErrorTypes ret = NOERROR;
+	NhlBoundingBox stringBB;
+	float w, h;
+	float wb, wt, hb, ht;
+	float c_angle;
+	float t1,t2;
+	float theta, ct, st;
+
+/*
+ * Get the multitext bounding box.Then figure out the size of an
+ * individual (maximum size) string in the multitext. Also figure out
+ * the amount of space the string has available
+ */
+	ret = NhlGetBB(lb_p->labels_id, &stringBB);
+	w=stringBB.r-stringBB.l; 	    
+	h=stringBB.t-stringBB.b;
+	if (w <= 0.0 || h <= 0.0) {
+		printf("error getting BB\n");
+	}
+	if (lb_p->orient == NhlHORIZONTAL) {
+		wb = area_x / lb_p->label_draw_count;
+		wt = wb - area_x + w;
+		hb = area_y;
+		ht = h;
+	}
+	else {
+		wb = area_x;
+		wt = w;
+		hb = area_y / lb_p->label_draw_count;
+		ht = hb - area_y + h;
+	}
+
+/*
+ * If labels are centered in the boxes just fit the text in the box
+ * then get out.
+ */
 
 	if (lb_p->label_pos == NhlCENTER) {
-		return 1;
+		t1 = wb / wt < hb / ht ?  wb / wt  : hb / ht;
+		height *= t1 * 0.8;
+		height = MIN(height,avail_space);
+		lb_p->label_just = NhlCENTERCENTER;
+		lb_p->label_height = height;
+		ret = NhlSetValues(lb_p->labels_id,
+				   NhlNtxFontHeightF,lb_p->label_height,
+				   NhlNtxJust,lb_p->label_just,
+				   NULL);
+		return (ret);
 	}
+
+/*
+ * Get the sin and cos of the label angle - then create some
+ * permutations of the angle in order to set the justification properly
+ */
+	theta = DEGTORAD * lb_p->label_angle;
+	ct = fabs(cos(theta));
+	st = fabs(sin(theta));
+	
+	if (ct < 0.01) ct = 0.01;
+	if (st < 0.01) st = 0.01;
 	
 	theta1 = lb_p->label_angle < 360.0 - lb_p->label_angle ?
 		lb_p->label_angle : 360.0 - lb_p->label_angle;
-	theta2 = fabs(90 - lb_p->label_angle);
-	theta3 = fabs(180 - lb_p->label_angle);
-	theta4 = fabs(270 - lb_p->label_angle);
+	theta2 = fabs(90.0 - lb_p->label_angle);
+	theta3 = fabs(180.0 - lb_p->label_angle);
+	theta4 = fabs(270.0 - lb_p->label_angle);
 
+/*
+ * Modify the text height: the critical angle is the point where text
+ * begins to overlap. Outside the critical area the size of the text
+ * is adjusted to make it as large as possible with no increase in the
+ * size of the labelbar's minor axis. Inside the critical area, the size
+ * of the text is reduced using (at the moment) a rather clumsy algorithm,
+ * until it reaches a minimum size at the point where the text line is 
+ * parallel to the labelbar major axis.
+ * Then manage the text justification.
+ */
 	if (lb_p->orient == NhlHORIZONTAL && 
 	    lb_p->label_direction == ACROSS) {
 
- 		*critical_angle = asin(1.5 * height / 
-				       lb_p->box_size.x) / DEGTORAD;
-		if (theta1 <= *critical_angle ||
-		    theta3 <= *critical_angle)
-			yes_or_no = 1;
+		height /= st;
+		height = MIN(height, avail_space);
+		tmp = height / lb_p->adj_box_size.x > 1.0 ? 1.0 :
+			height / lb_p->adj_box_size.x;
+ 		c_angle = asin(tmp) / DEGTORAD;
+
+		if (theta1 <= c_angle || theta3 <= c_angle) {
+			c_angle = MIN(c_angle,45.0);
+			t1 = 0.8 * wb / (max_strlen +2);
+			t2 = t1 + (st / fabs(sin(DEGTORAD * c_angle))) *
+				fabs(0.8 *avail_space - t1);
+			height = height < t2 ? height : t2;
+		}
 
 		if (theta1 <= NhlLB_TRANSITIONANGLE) {
 			if (lb_p->label_pos == NhlBOTTOM) {
@@ -1857,11 +2765,19 @@ static NhlBoolean    	InCriticalZone
 	}
 	else if (lb_p->orient == NhlHORIZONTAL){ /* DOWN or UP */
 
- 		*critical_angle = asin(height / lb_p->box_size.x) / DEGTORAD;
-		if (theta2 <= *critical_angle ||
-		    theta4 <= *critical_angle)
-			yes_or_no = 1;
+		height /= ct;
+		height = MIN(height, avail_space);
+		tmp = height / lb_p->adj_box_size.x > 1.0 ? 1.0 :
+			height / lb_p->adj_box_size.x;
+ 		c_angle = asin(tmp) / DEGTORAD;
 
+		if (theta2 <= c_angle || theta4 <= c_angle) {
+			c_angle = MIN(c_angle,45.0);
+			t1 = 0.8 * hb / (max_strlen +2);
+			t2 = t1 + (ct / fabs(cos(DEGTORAD * c_angle))) *
+				fabs(0.8 * avail_space - t1);
+			height = MIN(height, t2);
+		}
 
 		if (theta2 <= NhlLB_TRANSITIONANGLE) {
 			if (lb_p->label_pos == NhlBOTTOM) {
@@ -1901,11 +2817,19 @@ static NhlBoolean    	InCriticalZone
 	else if (lb_p->orient == NhlVERTICAL && 
 		 lb_p->label_direction == ACROSS) {
 
- 		*critical_angle = asin(height / lb_p->box_size.y) / DEGTORAD;
-		if (theta2 <= *critical_angle ||
-		    theta4 <= *critical_angle)
-			yes_or_no = 1;
+		height /= ct;
+		height = MIN(height, avail_space);
+		tmp = height / lb_p->adj_box_size.y > 1.0 ? 1.0 :
+			height / lb_p->adj_box_size.y;
+ 		c_angle = asin(tmp) / DEGTORAD;
 
+		if (theta2 <= c_angle || theta4 <= c_angle) {
+			c_angle = MIN(c_angle,45.0);
+			t1 = 0.8 * hb / (max_strlen +2);
+			t2 = t1 + (ct / fabs(cos(DEGTORAD * c_angle))) *
+				fabs(0.8 * avail_space - t1);
+			height = MIN(height, t2);
+		}
 
 		if (theta2 <= NhlLB_TRANSITIONANGLE) {
 			if (lb_p->label_pos == NhlLEFT) {
@@ -1944,12 +2868,18 @@ static NhlBoolean    	InCriticalZone
 	}
 	else { /* NhlVERTICAL DOWN or UP */
 
- 		*critical_angle = asin(height / lb_p->box_size.y) / DEGTORAD;
-		if (theta1 <= *critical_angle ||
-		    theta3 <= *critical_angle)
-			yes_or_no = 1;
-
-
+		height /= st;
+		height = MIN(height, avail_space);
+		tmp = height / lb_p->adj_box_size.y > 1.0 ? 1.0 :
+			height / lb_p->adj_box_size.y;
+ 		c_angle = asin(tmp) / DEGTORAD;
+		if (theta1 <= c_angle || theta3 <= c_angle) {
+			c_angle = MIN(c_angle,45.0);
+			t1 = 0.8 * wb / (max_strlen +2);
+			t2 = t1 + (st / fabs(sin(DEGTORAD * c_angle))) *
+				fabs(0.8 * avail_space - t1);
+			height = height < t2 ? height : t2;
+		}
 
 		if (theta1 <=NhlLB_TRANSITIONANGLE) {
 			if (lb_p->label_pos == NhlLEFT) {
@@ -1985,12 +2915,21 @@ static NhlBoolean    	InCriticalZone
 		}
 	}
 
-	return (yes_or_no);
+/*
+ * Set the newly determined text height and justification
+ */
+	lb_p->label_height = height;
+	ret = NhlSetValues(lb_p->labels_id,
+			   NhlNtxFontHeightF,lb_p->label_height,
+			   NhlNtxJust,lb_p->label_just,
+			   NULL);
+	return (ret);
 }
+
 /*ARGSUSED*/
 static NhlErrorTypes    SetTitle
 #if __STDC__
-	Layer		new, 
+	(Layer		new, 
 	Layer		old,
 	int		init,
 	_NhlArgList	args,
@@ -2011,13 +2950,14 @@ static NhlErrorTypes    SetTitle
 	NhlErrorTypes ret = NOERROR, ret1 = NOERROR;
 	char buffer[MAXRESNAMLEN];
 	char *c_p;
-	NhlBoundingBox stringBB;
-	float w, h, wta, hta, factor;
+	NhlBoundingBox titleBB;
+	float w, h, wta, hta, factor, height;
 
 /*
  * Only initialize a text item for the title if it is turned on
+ * and the maximum title extent is greater than 0.0.
  */
-	if (!lb_p->title_on)
+	if (!lb_p->title_on || lb_p->max_title_ext <= 0.0)
 		return ret;
 
 /*
@@ -2087,6 +3027,10 @@ static NhlErrorTypes    SetTitle
 		break;
 	}
 
+	if (lb_p->title_height <= 0.0) 
+		height = NhlLB_DEF_CHAR_HEIGHT;
+	else 
+		height = lb_p->title_height;
 
 	if (init || lb_p->title_id < 0) {
 		strcpy(buffer,tnew->base.name);
@@ -2102,7 +3046,7 @@ static NhlErrorTypes    SetTitle
 				 NhlNtxAngleF,lb_p->title_angle,
 				 NhlNtxJust,(int)lb_p->title_just,
 				 NhlNtxFontColor,lb_p->title_color,
-				 NhlNtxFontHeightF,lb_p->title_height,
+				 NhlNtxFontHeightF,height,
 				 NhlNtxFontAspectF,lb_p->title_aspect,
 				 NhlNtxConstantSpacingF,
 				 	lb_p->title_const_spacing,
@@ -2110,7 +3054,11 @@ static NhlErrorTypes    SetTitle
 				 NhlNtxFuncCode,lb_p->title_func_code,
 				 NhlNtxFontThicknessF,lb_p->title_thickness,
 				 NULL);
-		
+		if (ret1 < WARNING) {
+			NhlPError(FATAL,E_UNKNOWN,"Text item create error");
+			return(FATAL);
+		}
+		ret = MIN(ret,ret1);
 	}
 	else {
 		ret1 = NhlSetValues(lb_p->title_id,
@@ -2122,7 +3070,7 @@ static NhlErrorTypes    SetTitle
 				    NhlNtxAngleF,lb_p->title_angle,
 				    NhlNtxJust,(int)lb_p->title_just,
 				    NhlNtxFontColor,lb_p->title_color,
-				    NhlNtxFontHeightF,lb_p->title_height,
+				    NhlNtxFontHeightF,height,
 				    NhlNtxFontAspectF,lb_p->title_aspect,
 				    NhlNtxConstantSpacingF,
 				    	lb_p->title_const_spacing,
@@ -2130,45 +3078,48 @@ static NhlErrorTypes    SetTitle
 				    NhlNtxFuncCode,lb_p->title_func_code,
 				    NhlNtxFontThicknessF,lb_p->title_thickness,
 				    NULL);
+		if (ret1 < WARNING) {
+			NhlPError(FATAL,E_UNKNOWN,
+				  "Text item set values error");
+			return(FATAL);
+		}
+		ret = MIN(ret,ret1);
 	}
+	
 
 /*
- * Unless the title height has been set explicitly adjust it to fit
- * the size it has available
+ * If title_height is 0.0 or auto-manage is in effect adjust the title
+ * to the space available
  */
+	ret1 = NhlGetBB(lb_p->title_id, &titleBB);
+	if (ret1 < WARNING) {
+		NhlPError(FATAL,E_UNKNOWN,"NhlGetBB error");
+		return(FATAL);
+	}
+	ret = MIN(ret,ret1);
 
-	ret = NhlGetBB(lb_p->title_id, &stringBB);
-	if ((w=stringBB.r-stringBB.l) <= 0.0 ||
-	    (h=stringBB.t-stringBB.b) <= 0.0) {
-		printf("error getting BB\n");
+	w=titleBB.r-titleBB.l;
+	h=titleBB.t-titleBB.b;
+	if (w <= 0.0 || h <= 0.0) {
+		NhlPError(WARNING,E_UNKNOWN,"no area in bounding box");
 	}
-	if ((wta=lb_p->title.r-lb_p->title.l) <= 0.0 ||
-	    (hta=lb_p->title.t-lb_p->title.b) <= 0.0) {
-		printf("error in title area\n");
+	wta=lb_p->title.r-lb_p->title.l;
+	hta=lb_p->title.t-lb_p->title.b;
+	if (wta <= 0.0 || hta <= 0.0) {
+		NhlPError(WARNING,E_UNKNOWN,"no title area");
 	}
-	factor = wta / w < hta / h ? wta / w : hta / h;
-	lb_p->title_height *= factor * 0.8;
-#if 0
-	switch (lb_p->title_direction) {
-	case ACROSS:
-		lb_p->title_height *= (wta / w);
-		lb_p->title_height = (lb_p->title_height < hta) ?
-			lb_p->title_height : hta;
-		break;
-	case DOWN:
-	case UP:
-		lb_p->title_height *= (hta / h);
-		lb_p->title_height = (lb_p->title_height < wta) ?
-			lb_p->title_height : wta;
-		break;
-	default:
-		/* fatal */
-		break;
+	if (lb_p->title_height <= 0.0 || lb_p->auto_manage) {
+		factor = wta / w < hta / h ? wta / w : hta / h;
+		lb_p->title_height = height * factor;
 	}
-#endif
-	ret = NhlSetValues(lb_p->title_id,
+	ret1 = NhlSetValues(lb_p->title_id,
 			   NhlNtxFontHeightF,lb_p->title_height,
 			   NULL);
+	if (ret1 < WARNING) {
+		NhlPError(FATAL,E_UNKNOWN,"error setting text item values");
+		return(FATAL);
+	}
+	ret = MIN(ret,ret1);
 
 	return ret;
 }
@@ -2176,7 +3127,7 @@ static NhlErrorTypes    SetTitle
 /*ARGSUSED*/
 static NhlErrorTypes    SetLabelBarGeometry
 #if __STDC__
-	 Layer new, 
+	 (Layer new, 
 	 _NhlArgList args,
 	 int num_args)
 #else
@@ -2188,72 +3139,116 @@ static NhlErrorTypes    SetLabelBarGeometry
 {
 	LabelBarLayer	tnew = (LabelBarLayer) new;
 	LabelBarLayerPart *lb_p = &(tnew->labelbar);
-	int max_str_adjust = False;
 	enum {NO_TITLE, MINOR_AXIS, MAJOR_AXIS} title_loc;
-	float bar_ext, title_ext, adj_perim_width, adj_perim_height;
-
-#if 0
-/* Calculate the perimeter */
-
-	lb_p->perim.l = lb_p->lb_x;
-	lb_p->perim.t = lb_p->lb_y;
-	lb_p->perim.r = lb_p->lb_x + lb_p->lb_width;
-	lb_p->perim.b = lb_p->lb_y - lb_p->lb_height;
-#endif
+	float bar_ext, max_title_ext, adj_perim_width, adj_perim_height;
+	float small_axis;
+	float title_off = 0.0, angle_adj = 0.0;
+	float title_angle, tan_t;
 
 /* Calculate the ndc margin from the fractional margin */
 
-	lb_p->adj_perim.l = lb_p->perim.l + lb_p->margin.l * lb_p->lb_width;
-	lb_p->adj_perim.r = lb_p->perim.r - lb_p->margin.r * lb_p->lb_width;
-	lb_p->adj_perim.b = lb_p->perim.b + lb_p->margin.b * lb_p->lb_height;
-	lb_p->adj_perim.t = lb_p->perim.t - lb_p->margin.t * lb_p->lb_height;
+	small_axis = MIN(lb_p->lb_width, lb_p->lb_height);
+
+	lb_p->adj_perim.l = lb_p->perim.l + lb_p->margin.l * small_axis;
+	lb_p->adj_perim.r = lb_p->perim.r - lb_p->margin.r * small_axis;
+	lb_p->adj_perim.b = lb_p->perim.b + lb_p->margin.b * small_axis;
+	lb_p->adj_perim.t = lb_p->perim.t - lb_p->margin.t * small_axis;
 	adj_perim_width = lb_p->adj_perim.r - lb_p->adj_perim.l;
 	adj_perim_height = lb_p->adj_perim.t - lb_p->adj_perim.b;
 		
 /*
- * Locate the title
+ * Check the title extent to make sure it does not exceed the hard-coded
+ * limit; then locate the title
  */
+	if (lb_p->auto_manage && 
+	    lb_p->max_title_ext + lb_p->title_off > 0.5) {
+		/* need a WARNING */
+		lb_p->max_title_ext = NhlLB_DEF_MAX_TITLE_EXT;
+		lb_p->title_off = NhlLB_DEF_TITLE_OFF;
+	}
+	title_angle = lb_p->title_angle * DEGTORAD;
+	tan_t = fabs(sin(title_angle)) / 
+		     MAX(0.01, fabs(cos(title_angle)));
+		    
 	if (!lb_p->title_on)
 		title_loc = NO_TITLE;
 	else if (lb_p->orient == NhlHORIZONTAL) {
 		if (lb_p->title_pos == NhlRIGHT ||
-		    lb_p->title_pos == NhlLEFT)
+		    lb_p->title_pos == NhlLEFT) {
 			title_loc = MAJOR_AXIS;
-		else 
+			title_off = lb_p->title_off * adj_perim_width;
+			if (lb_p->title_direction == ACROSS)
+				angle_adj = adj_perim_height / tan_t;
+			else
+				angle_adj = adj_perim_height * tan_t;
+						
+		}
+		else {
 			title_loc = MINOR_AXIS;
+			title_off = lb_p->title_off * adj_perim_height;
+			if (lb_p->title_direction == ACROSS)
+				angle_adj = adj_perim_width * tan_t; 
+			else
+				angle_adj = adj_perim_width / tan_t;
+		}
 	}
 	else {
 		if (lb_p->title_pos == NhlRIGHT ||
-		    lb_p->title_pos == NhlLEFT)
+		    lb_p->title_pos == NhlLEFT) {
 			title_loc = MINOR_AXIS;
-		else 
+			title_off = lb_p->title_off * adj_perim_width;
+			if (lb_p->title_direction == ACROSS)
+				angle_adj = adj_perim_height / tan_t;
+			else
+				angle_adj = adj_perim_height * tan_t;
+		}
+		else {
 			title_loc = MAJOR_AXIS;
+			title_off = lb_p->title_off * adj_perim_height;
+			if (lb_p->title_direction == ACROSS)
+				angle_adj = adj_perim_width * tan_t; 
+			else
+				angle_adj = adj_perim_width / tan_t;
+		}
+	}
+/*
+ * If not in auto manage mode the title offset should make the label bar
+ * grow. By setting it to 0.0 here, it will be added into the total size
+ * in the AdjustGeometry routine.
+ */
+
+	if (! lb_p->auto_manage) {
+		title_off = 0.0;
 	}
 
 /*
- * Fix the label position if necessary
+ * Silently modify the label position if not appropriate for the
+ * current labelbar orientation. Also determine the maximum critical
+ * angle for label angle adjustments.
  */
 
 	if (lb_p->orient == NhlHORIZONTAL) {
 		switch (lb_p->label_pos) {
 		case NhlLEFT:
-			lb_p->label_pos = NhlBOTTOM;
+			lb_p->label_pos = NhlTOP;
 			break;
 		case NhlRIGHT:
-			lb_p->label_pos = NhlTOP;
+			lb_p->label_pos = NhlBOTTOM;
 			break;
 		}
 	}
 	else {
 		switch (lb_p->label_pos) {
 		case NhlBOTTOM:
-			lb_p->label_pos = NhlLEFT;
-			break;
-		case NhlTOP:
 			lb_p->label_pos = NhlRIGHT;
 			break;
+		case NhlTOP:
+			lb_p->label_pos = NhlLEFT;
+			break;
 		}
+
 	}
+		
 /*
  * Determine dimensions: first pass determines basic position for
  * title, bar and labels. Bar dimensions may be adjusted later to 
@@ -2292,24 +3287,27 @@ static NhlErrorTypes    SetLabelBarGeometry
 			break;
 
 		case MAJOR_AXIS:
-			if (lb_p->title_ext > 0.5) {
-				/* need a WARNING */
-				lb_p->title_ext = 0.5;
-			}
-			title_ext = adj_perim_width * lb_p->title_ext;
+			
+			max_title_ext = 
+				MIN(lb_p->max_title_ext * adj_perim_width,
+					adj_perim_height / 
+					strlen(lb_p->title_string) + 
+					angle_adj);
 			lb_p->title.b = lb_p->adj_perim.b;
 			lb_p->title.t = lb_p->adj_perim.t;
 				
 			if (lb_p->title_pos == NhlLEFT) {
-				lb_p->bar.l = lb_p->adj_perim.l + title_ext;
+				lb_p->bar.l = lb_p->adj_perim.l +
+					max_title_ext + title_off;
 				lb_p->bar.r = lb_p->adj_perim.r;
 				lb_p->title.l = lb_p->adj_perim.l;
-				lb_p->title.r = lb_p->bar.l;
+				lb_p->title.r = lb_p->bar.l - title_off;
 			}
 			else if (lb_p->title_pos == NhlRIGHT) {
 				lb_p->bar.l = lb_p->adj_perim.l;
-				lb_p->bar.r = lb_p->adj_perim.r - title_ext;
-				lb_p->title.l = lb_p->bar.r;
+				lb_p->bar.r = lb_p->adj_perim.r - 
+					max_title_ext - title_off;
+				lb_p->title.l = lb_p->bar.r + title_off;
 				lb_p->title.r = lb_p->adj_perim.r;
 			}
 			lb_p->labels.l = lb_p->bar.l;
@@ -2338,19 +3336,21 @@ static NhlErrorTypes    SetLabelBarGeometry
 			break;
 
 		case MINOR_AXIS:
-			if (lb_p->title_ext > 0.5) {
-				/* need a WARNING */
-				lb_p->title_ext = 0.5;
-			}
-			if (lb_p->title_ext + lb_p->box_minor_ext > 1.0) {
-				/* need a WARNING */
-				lb_p->box_minor_ext = 
-					1.0 - lb_p->title_ext;
-				bar_ext = adj_perim_height * 
-					lb_p->box_minor_ext;
-			}
-			title_ext = adj_perim_height * lb_p->title_ext;
 
+			max_title_ext = 
+				MIN(lb_p->max_title_ext * adj_perim_height,
+					adj_perim_width / 
+					strlen(lb_p->title_string) + 
+					angle_adj);
+			if (max_title_ext + title_off + bar_ext > 
+			    adj_perim_height) {
+				/* need a WARNING */
+				printf("adjusting bar size smaller\n");
+				bar_ext = adj_perim_height - 
+					max_title_ext - title_off;
+				lb_p->box_minor_ext = 
+					bar_ext / adj_perim_height;
+			}
 			lb_p->title.l = lb_p->adj_perim.l;
 			lb_p->title.r = lb_p->adj_perim.r;
 			lb_p->bar.l = lb_p->adj_perim.l;
@@ -2361,14 +3361,15 @@ static NhlErrorTypes    SetLabelBarGeometry
 			if (lb_p->title_pos == NhlBOTTOM) {
 				lb_p->title.b = lb_p->adj_perim.b;
 				lb_p->title.t = lb_p->adj_perim.b + 
-					title_ext;
-				lb_p->bar.b = lb_p->title.t;
+					max_title_ext;
+				lb_p->bar.b = lb_p->title.t + title_off;
 				lb_p->bar.t = lb_p->adj_perim.t;
 			}
 			else if (lb_p->title_pos == NhlTOP) {
 				lb_p->bar.b = lb_p->adj_perim.b;
-				lb_p->bar.t = lb_p->adj_perim.t - title_ext;
-				lb_p->title.b = lb_p->bar.t;
+				lb_p->bar.t = lb_p->adj_perim.t - 
+					max_title_ext - title_off;
+				lb_p->title.b = lb_p->bar.t + title_off;
 				lb_p->title.t = lb_p->adj_perim.t;
 			}
 
@@ -2392,8 +3393,8 @@ static NhlErrorTypes    SetLabelBarGeometry
 			}
 			break;
 		default:
-			/* FATAL */
-			break;
+			/* need error message */
+			return FATAL;
 		}
 		/* get the box size */
 		
@@ -2436,24 +3437,27 @@ static NhlErrorTypes    SetLabelBarGeometry
 			break;
 
 		case MAJOR_AXIS:
-			if (lb_p->title_ext > 0.5) {
-				/* need a WARNING */
-				lb_p->title_ext = 0.5;
-			}
-			title_ext = adj_perim_height * lb_p->title_ext;
+			max_title_ext = 
+				MIN(lb_p->max_title_ext * adj_perim_height,
+					adj_perim_width / 
+					strlen(lb_p->title_string) + 
+					angle_adj);
+
 			lb_p->title.l = lb_p->adj_perim.l;
 			lb_p->title.r = lb_p->adj_perim.r;
 				
 			if (lb_p->title_pos == NhlBOTTOM) {
-				lb_p->bar.b = lb_p->adj_perim.b + title_ext;
+				lb_p->bar.b = lb_p->adj_perim.b + 
+					max_title_ext + title_off;
 				lb_p->bar.t = lb_p->adj_perim.t;
 				lb_p->title.b = lb_p->adj_perim.b;
-				lb_p->title.t = lb_p->bar.b;
+				lb_p->title.t = lb_p->bar.b - title_off;
 			}
 			else if (lb_p->title_pos == NhlTOP) {
 				lb_p->bar.b = lb_p->adj_perim.b;
-				lb_p->bar.t = lb_p->adj_perim.t - title_ext;
-				lb_p->title.b = lb_p->bar.t;
+				lb_p->bar.t = lb_p->adj_perim.t - 
+					max_title_ext - title_off;
+				lb_p->title.b = lb_p->bar.t + title_off;
 				lb_p->title.t = lb_p->adj_perim.t;
 			}
 			lb_p->labels.b = lb_p->bar.b;
@@ -2482,18 +3486,21 @@ static NhlErrorTypes    SetLabelBarGeometry
 			break;
 
 		case MINOR_AXIS:
-			if (lb_p->title_ext > 0.5) {
+
+			max_title_ext = 
+				MIN(lb_p->max_title_ext * adj_perim_width,
+					adj_perim_height / 
+					strlen(lb_p->title_string) + 
+					angle_adj);
+			if (max_title_ext + title_off + bar_ext > 
+			    adj_perim_width) {
 				/* need a WARNING */
-				lb_p->title_ext = 0.5;
-			}
-			if (lb_p->title_ext + lb_p->box_minor_ext > 1.0) {
-				/* need a WARNING */
+				printf("adjusting bar size smaller\n");
+				bar_ext = adj_perim_width - 
+					max_title_ext - title_off;
 				lb_p->box_minor_ext = 
-					1.0 - lb_p->title_ext;
-				bar_ext = adj_perim_width * 
-					lb_p->box_minor_ext;
+					bar_ext / adj_perim_width;
 			}
-			title_ext = adj_perim_width * lb_p->title_ext;
 
 			lb_p->title.b = lb_p->adj_perim.b;
 			lb_p->title.t = lb_p->adj_perim.t;
@@ -2505,14 +3512,15 @@ static NhlErrorTypes    SetLabelBarGeometry
 			if (lb_p->title_pos == NhlLEFT) {
 				lb_p->title.l = lb_p->adj_perim.l;
 				lb_p->title.r = lb_p->adj_perim.l + 
-					title_ext;
-				lb_p->bar.l = lb_p->title.r;
+					max_title_ext;
+				lb_p->bar.l = lb_p->title.r + title_off;
 				lb_p->bar.r = lb_p->adj_perim.r;
 			}
 			else if (lb_p->title_pos == NhlRIGHT) {
 				lb_p->bar.l = lb_p->adj_perim.l;
-				lb_p->bar.r = lb_p->adj_perim.r - title_ext;
-				lb_p->title.l = lb_p->bar.r;
+				lb_p->bar.r = lb_p->adj_perim.r - 
+					max_title_ext - title_off;
+				lb_p->title.l = lb_p->bar.r + title_off;
 				lb_p->title.r = lb_p->adj_perim.r;
 			}
 
@@ -2536,13 +3544,14 @@ static NhlErrorTypes    SetLabelBarGeometry
 			}
 			break;
 		default:
-			/* FATAL */
-			break;
+			/* need error message */
+			return FATAL;
 		}
 		lb_p->box_size.x = lb_p->bar.r - lb_p->bar.l;
 		lb_p->box_size.y = 
 			(lb_p->bar.t - lb_p->bar.b) / lb_p->box_count;
 	}
+	return (NOERROR);
 				
 }
 
@@ -2574,55 +3583,49 @@ static NhlErrorTypes    LabelBarDraw
 	LabelBarLayerPart *lb_p = &(tlayer->labelbar);
 	NhlErrorTypes ret = NOERROR;
 
-	float fl,fr,fb,ft,ul,ur,ub,ut;
-	int ll;
-	int lbab;
-
-	Gfill_int_style save_fillstyle;
-	int save_txfont;
-	Gint save_linecolor;
-	Gint save_linetype;
-	Gdouble save_linewidth;
-	Gint err_ind;
-	Gpoint points[5];
-	Gpoint_list box;
 	float xpoints[5];
 	float ypoints[5];
-	float frac_width, frac_height;
 	int i;
-	float rwrk[6];
-	int iwrk[8];
+	int fill_color, fill_pattern;
+	int *colors, *patterns;
+	float fill_scale, *fill_scales;
+	float frac, dist;
 
 	if (! lb_p->labelbar_on)
 		return(ret);
 
-	lb_p->fill_line_color = 1;
-
 	_NhlActivateWorkstation(tlayer->base.wkptr);
 
-#if 0	
-	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
-	c_lbseti("CBL - box line color", 
-		 _NhlGetGksCi(tlayer->base.wkptr,lb_p->box_line_color));
-	c_lbseti("CFL - fill line color", 
-		 _NhlGetGksCi(tlayer->base.wkptr,lb_p->fill_line_color));
+/* first draw the perimeter: it may have a solid background */
 
-	c_lbsetr("WBL - box line width", lb_p->box_line_thickness);
-	c_lbsetr("WFL - fill line width", lb_p->fill_line_thickness);
-	c_sfseti("type of fill", 0);
-	gset_fill_int_style(1);
+	if (lb_p->perim_on) {
 
-	if (lb_p->orient == NhlVERTICAL) {
-		frac_width = lb_p->box_minor_ext;
-		frac_height = lb_p->box_major_ext;
+		xpoints[0] = lb_p->real_perim.l;
+		ypoints[0] = lb_p->real_perim.b;
+		xpoints[1] = lb_p->real_perim.r;;
+		ypoints[1] = lb_p->real_perim.b;
+		xpoints[2] = lb_p->real_perim.r;
+		ypoints[2] = lb_p->real_perim.t;
+		xpoints[3] = lb_p->real_perim.l;
+		ypoints[3] = lb_p->real_perim.t;
+		xpoints[4] = lb_p->real_perim.l;
+		ypoints[4] = lb_p->real_perim.b;
+
+		NhlSetValues(tlayer->base.wkptr->base.id,
+			     NhlNwkDrawEdges, 1,
+			     NhlNwkEdgeDashPattern, lb_p->perim_dash_pattern,
+			     NhlNwkEdgeThicknessF, lb_p->perim_thickness,
+			     NhlNwkEdgeDashSegLenF, lb_p->perim_dash_length,
+			     NhlNwkEdgeColor, lb_p->perim_color,
+			     NhlNwkFillColor, lb_p->perim_fill_color,
+			     NhlNwkFillIndex, lb_p->perim_fill,
+			     NULL);
+			
+		_NhlSetFillInfo(tlayer->base.wkptr, layer);
+		_NhlWorkstationFill(tlayer->base.wkptr,
+				    xpoints,ypoints,5);
+			
 	}
-	else {
-		frac_width = lb_p->box_major_ext;
-		frac_height = lb_p->box_minor_ext;
-	}
-	frac_width = 1.0;
-	frac_height = 1.0;
-#endif
 
 /*
  * Set the values that remain constant for all boxes
@@ -2634,12 +3637,18 @@ static NhlErrorTypes    LabelBarDraw
 		     NhlNwkEdgeThicknessF, lb_p->box_line_thickness,
 		     NhlNwkEdgeDashSegLenF, lb_p->box_line_dash_length,
 		     NhlNwkEdgeColor, lb_p->box_line_color,
-		     NhlNwkFillLineThickness, lb_p->fill_line_thickness,
+		     NhlNwkFillLineThicknessF, lb_p->fill_line_thickness,
+		     NhlNwkFillBackground, lb_p->fill_background,
 		     NULL);
 				     
 /* 
  * Draw the boxes
  */
+	frac = (1.0 - lb_p->box_major_ext) / 2.0;
+	colors = (int *)lb_p->fill_colors->data;
+	patterns = (int *)lb_p->fill_patterns->data;
+	fill_scales = (float *) lb_p->fill_scales->data;
+
 	if (lb_p->orient == NhlHORIZONTAL) {
 
 		ypoints[0] = lb_p->adj_bar.b;
@@ -2648,15 +3657,32 @@ static NhlErrorTypes    LabelBarDraw
 		ypoints[3] = lb_p->adj_bar.t;
 		ypoints[4] = lb_p->adj_bar.b;
 		for (i=0; i<lb_p->box_count; i++) {
-			xpoints[0] = lb_p->box_locs[i];
-			xpoints[1] = lb_p->box_locs[i+1];
-			xpoints[2] = lb_p->box_locs[i+1];
-			xpoints[3] = lb_p->box_locs[i];
-			xpoints[4] = lb_p->box_locs[i];
+			dist = lb_p->box_locs[i+1] - lb_p->box_locs[i];
+			xpoints[0] = lb_p->box_locs[i] + dist * frac;
+			xpoints[1] = lb_p->box_locs[i+1] - dist * frac;
+			xpoints[2] = xpoints[1];
+			xpoints[3] = xpoints[0];
+			xpoints[4] = xpoints[0];
 			
+			if (lb_p->mono_fill_color)
+				fill_color = colors[0];
+			else
+				fill_color = colors[i];
+
+			if (lb_p->mono_fill_pattern)
+				fill_pattern = patterns[0];
+			else
+				fill_pattern = patterns[i];
+			
+			if (lb_p->mono_fill_scale)
+				fill_scale = fill_scales[0];
+			else
+				fill_scale = fill_scales[i];
+
 			NhlSetValues(tlayer->base.wkptr->base.id,
-				     NhlNwkFillIndex, lb_p->fill_patterns[i],
-				     NhlNwkFillColor, lb_p->fill_line_color,
+				     NhlNwkFillIndex, fill_pattern,
+				     NhlNwkFillColor, fill_color,
+				     NhlNwkFillScaleFactorF, fill_scale,
 				     NULL);
 			
 			_NhlSetFillInfo(tlayer->base.wkptr, layer);
@@ -2672,15 +3698,33 @@ static NhlErrorTypes    LabelBarDraw
 		xpoints[3] = lb_p->adj_bar.l;
 		xpoints[4] = lb_p->adj_bar.l;
 		for (i=0; i< lb_p->box_count; i++) {
-			ypoints[0] = lb_p->box_locs[i];
-			ypoints[1] = lb_p->box_locs[i];
-			ypoints[2] = lb_p->box_locs[i+1];
-			ypoints[3] = lb_p->box_locs[i+1];
-			ypoints[4] = lb_p->box_locs[i];
+			dist = lb_p->box_locs[i+1] - lb_p->box_locs[i];
+			ypoints[0] = lb_p->box_locs[i] + dist * frac;
+			ypoints[1] = ypoints[0];
+			ypoints[2] = lb_p->box_locs[i+1] - dist * frac;
+			ypoints[3] = ypoints[2];
+			ypoints[4] = ypoints[0];
+
+			
+			if (lb_p->mono_fill_color)
+				fill_color = colors[0];
+			else
+				fill_color = colors[i];
+
+			if (lb_p->mono_fill_pattern)
+				fill_pattern = patterns[0];
+			else
+				fill_pattern = patterns[i];
+			
+			if (lb_p->mono_fill_scale)
+				fill_scale = fill_scales[0];
+			else
+				fill_scale = fill_scales[i];
 
 			NhlSetValues(tlayer->base.wkptr->base.id,
-				     NhlNwkFillIndex, lb_p->fill_patterns[i],
-				     NhlNwkFillColor, lb_p->fill_line_color,
+				     NhlNwkFillIndex, fill_pattern,
+				     NhlNwkFillColor, fill_color,
+				     NhlNwkFillScaleFactorF, fill_scale,
 				     NULL);
 			
 			_NhlSetFillInfo(tlayer->base.wkptr, layer);
@@ -2690,72 +3734,16 @@ static NhlErrorTypes    LabelBarDraw
 		}
 	}
 
-	if (lb_p->perim_on) {
-#if 0		
-		xpoints[0] = lb_p->lb_x;
-		ypoints[0] = lb_p->lb_y - lb_p->lb_height;
-		xpoints[1] = lb_p->lb_x + lb_p->lb_width;
-		ypoints[1] = lb_p->lb_y - lb_p->lb_height;
-		xpoints[2] = lb_p->lb_x + lb_p->lb_width;
-		ypoints[2] = lb_p->lb_y;
-		xpoints[3] = lb_p->lb_x;
-		ypoints[3] = lb_p->lb_y;
-		xpoints[4] = lb_p->lb_x;
-		ypoints[4] = lb_p->lb_y - lb_p->lb_height;
-#endif
 
-		xpoints[0] = lb_p->expand_perim.l;
-		ypoints[0] = lb_p->expand_perim.b;
-		xpoints[1] = lb_p->expand_perim.r;;
-		ypoints[1] = lb_p->expand_perim.b;
-		xpoints[2] = lb_p->expand_perim.r;
-		ypoints[2] = lb_p->expand_perim.t;
-		xpoints[3] = lb_p->expand_perim.l;
-		ypoints[3] = lb_p->expand_perim.t;
-		xpoints[4] = lb_p->expand_perim.l;
-		ypoints[4] = lb_p->expand_perim.b;
-
-
-		NhlSetValues(tlayer->base.wkptr->base.id,
-			     NhlNwkDrawEdges, 1,
-			     NhlNwkEdgeDashPattern, lb_p->perim_dash_pattern,
-			     NhlNwkEdgeThicknessF, lb_p->perim_thickness,
-			     NhlNwkEdgeDashSegLenF, lb_p->perim_dash_length,
-			     NhlNwkEdgeColor, lb_p->perim_color,
-			     NhlNwkFillIndex, NhlHOLLOWFILL,
-			     NULL);
-			
-		_NhlSetFillInfo(tlayer->base.wkptr, layer);
-		_NhlWorkstationFill(tlayer->base.wkptr,
-				    xpoints,ypoints,5);
-			
-	}
-
-#if 0	
-/* for debugging */
-
-	xpoints[0] = lb_p->bar.l;
-	ypoints[0] = lb_p->bar.b;
-	xpoints[1] = lb_p->bar.r;
-	ypoints[1] = lb_p->bar.b;
-	xpoints[2] = lb_p->bar.r;
-	ypoints[2] = lb_p->bar.t;
-	xpoints[3] = lb_p->bar.l;
-	ypoints[3] = lb_p->bar.t;
-	xpoints[4] = lb_p->bar.l;
-	ypoints[4] = lb_p->bar.b;
-
-
-#endif
 	_NhlDeactivateWorkstation(tlayer->base.wkptr);
 
 /*
  * Draw the child objects
  */
-	if (lb_p->title_on)
+	if (lb_p->title_on && lb_p->max_title_ext > 0.0)
 		NhlDraw(lb_p->title_id);
 
-	if (lb_p->labels_on)
+	if (lb_p->labels_on )
 		NhlDraw(lb_p->labels_id);
 
 	return(ret);
@@ -2764,7 +3752,8 @@ static NhlErrorTypes    LabelBarDraw
 /*
  * Function:	LabelBarClassInitialize
  *
- * Description: Just calls StringToQuark to register new types
+ * Description: Initializes the child classes, TextItem and MultiText
+ *              Gets Quark values for the array data types.
  *
  * In Args:	NONE
  *
@@ -2781,8 +3770,18 @@ static NhlErrorTypes    LabelBarClassInitialize
 ()
 #endif
 {
+	Qint = NrmStringToQuark(NhlTInteger);
+	Qstring = NrmStringToQuark(NhlTString);
+	Qfloat = NrmStringToQuark(NhlTFloat);
+	Qfill_patterns = NrmStringToQuark(NhlNlbFillPatterns);
+	Qfill_colors = NrmStringToQuark(NhlNlbFillColors);
+	Qfill_scales = NrmStringToQuark(NhlNlbFillScales);
+	Qlabel_strings = NrmStringToQuark(NhlNlbLabelStrings);
+	Qbox_fractions = NrmStringToQuark(NhlNlbBoxFractions);
+
 	_NhlInitializeLayerClass(textItemLayerClass);
 	_NhlInitializeLayerClass(multiTextLayerClass);
+
 	return(NOERROR);	
 }
 
@@ -2810,26 +3809,20 @@ static NhlErrorTypes    LabelBarDestroy
 {
 	LabelBarLayer tinst = (LabelBarLayer) inst;
 	LabelBarLayerPart *lb_p = &(tinst->labelbar);
-	int i;
 	
-	NhlFree(lb_p->colors);
 	NhlFree(lb_p->gks_colors);
-	NhlFree(lb_p->fill_patterns);
-	NhlFree(lb_p->values);
-	for (i=0;i<NhlLB_MAX_LBL_STRINGS;i++) {
-		if (lb_p->label_strings[i] != NULL) {
-			NhlFree(lb_p->label_strings[i]);
-		}
-	}
-	if (lb_p->box_fractions != NULL)
-		NhlFree(lb_p->box_fractions);
 	if (lb_p->stride_labels != NULL)
 		NhlFree(lb_p->stride_labels);
 	if (lb_p->label_locs != NULL)
 		NhlFree(lb_p->label_locs);
 	if (lb_p->box_locs != NULL)
 		NhlFree(lb_p->box_locs);
-			
+
+	NhlFreeGenArray(lb_p->label_strings);
+	NhlFreeGenArray(lb_p->fill_colors);
+	NhlFreeGenArray(lb_p->fill_patterns);
+	NhlFreeGenArray(lb_p->fill_scales);
+	NhlFreeGenArray(lb_p->box_fractions);
 
 	if (lb_p->labels_id >=0)
 		NhlDestroy(lb_p->labels_id);
@@ -2838,7 +3831,183 @@ static NhlErrorTypes    LabelBarDestroy
 		NhlFree(lb_p->title_string);
 		NhlDestroy(lb_p->title_id);
 	}
-
 	return(NOERROR);
 }
 
+/*
+ * Function:    ValidatedGenArrayCopy
+ *
+ * Description: Copies int, float or string generic arrays, with checking.
+ *		If gold is NULL, or gold has fewer elements than gnew,
+ *              makes a copy of the array. If gold has enough room, the
+ *              data only is copied from gnew to the already allocated gold, 
+ *              then gnew is made to point to the gold array.
+ *		The type and element size of gnew are checked, as well as
+ *		the number of elements in gnew. If any of these are invalid,
+ *              A warning is returned and gnew is pointed to the unmodified
+ *		gold array.
+ *
+ * In Args:     
+ *
+ * Out Args:
+ *
+ * Scope:       
+ * Returns:     if successful NOERROR, FATAL on memory allocation errors
+ *              WARNING if the new GenArray is invalid in some way.
+ *
+ * Side Effect: the pointer to the new gen array is modified to point to
+ *              allocated data with the new array data. The gold array may
+ *              no longer be allocated. 
+ */
+
+static NhlErrorTypes ValidatedGenArrayCopy
+#if __STDC__
+	(NhlGenArray	*gnew, 
+	 NhlGenArray	gold,
+	 NrmQuark	type,
+	 int		max_el,
+	 void		*def_val,
+	 char		*res_name,
+	 char		*caller)
+#else
+(gnew,gold,type,max_el,def_val,res_name,caller)
+	(NhlGenArray	*gnew; 
+	 NhlGenArray	gold;
+	 NrmQuark	type;
+	 int		max_el;
+	 void		*def_value;
+	 char		*res_name;
+	 char		*caller;
+#endif
+{
+	NhlGenArray 	ga;
+	char		*e_text;
+	int		i;
+
+	ga = *gnew;
+	
+	if (ga == NULL) {
+		e_text = 
+		 "%s: %s NULL array passed in: ignoring";
+		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
+		*gnew = gold;
+		return WARNING;
+	}
+	if (ga->num_elements <= 0) {
+		e_text = 
+		 "%s: %s invalid element count: ignoring";
+		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
+		*gnew=gold;
+		return WARNING;
+	}
+	else if (ga->num_elements > max_el) {
+		e_text =
+		 "%s: %s exceeds maximum number of elements, %d: ignoring";
+		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name,max_el);
+		*gnew=gold;
+		return WARNING;
+	}
+
+	if (type == Qint) {
+		if (ga->typeQ != Qint || ga->size != sizeof(int)) {
+			e_text =
+			   "%s: %s must be a generic integer array: ignoring";
+			NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
+			*gnew = gold;
+			return WARNING; 
+		}
+	}
+	else if (type == Qfloat) {
+		if (ga->typeQ != Qfloat || ga->size != sizeof(float)) {
+			e_text =
+			   "%s: %s must be a generic float array: ignoring";
+			NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
+			*gnew = gold;
+			return WARNING; 
+		}
+	}
+	else if (type == Qstring) {
+		if (ga->typeQ != Qstring || ga->size != sizeof(char *)) {
+			e_text =
+			   "%s: %s must be a generic string array: ignoring";
+			NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
+			*gnew = gold;
+			return WARNING; 
+		}
+	}
+	else {
+		e_text = "%s: %s type is unrecognized: ignoring";
+		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
+		*gnew = gold;
+		return WARNING; 
+	}
+
+	if (gold == NULL) { 
+		if ((*gnew = _NhlCopyGenArray(ga,True)) == NULL) {
+			e_text = "%s: error copying %s GenArray";
+			NhlPError(FATAL,E_UNKNOWN,e_text,caller, res_name);
+			return FATAL;
+		}
+	}
+	else if (ga->num_elements > gold->num_elements) {
+		if ((*gnew = _NhlCopyGenArray(ga,True)) == NULL) {
+			e_text = "%s: error copying %s GenArray";
+			NhlPError(FATAL,E_UNKNOWN,e_text,caller,res_name);
+			return FATAL;
+		}
+		NhlFreeGenArray(gold);
+	}
+	else if (type == Qint) {
+		memcpy((void *)gold->data, (Const void *)ga->data,
+			       ga->num_elements * sizeof(int));
+		*gnew = gold;
+	} 
+	else if (type == Qfloat) {
+		memcpy((void *)gold->data, (Const void *)ga->data,
+			       ga->num_elements * sizeof(float));
+		*gnew = gold;
+	}
+	else if (type == Qstring) {
+		NhlString *from = (NhlString *) ga->data;
+		NhlString *to = (NhlString *) gold->data;
+		for (i=0; i<ga->num_elements; i++,to++,from++) {
+			if (*from == NULL) {
+				*to = (NhlString) 
+					NhlRealloc(*to,
+						   strlen((char *)def_val)+1);
+				if (*to == NULL) {
+					e_text = "%s: error copying %s string";
+					NhlPError(FATAL,E_UNKNOWN,e_text,
+						  caller,res_name);
+					return FATAL;
+				}
+				strcpy(*to,(char *)def_val);
+			}
+			else if (*to == NULL) {
+				*to = (NhlString) NhlMalloc(strlen(from[i])+1);
+				if (*to == NULL) {
+					e_text = "%s: error copying %s string";
+					NhlPError(FATAL,E_UNKNOWN,e_text,
+						  caller,res_name);
+					return FATAL;
+				}
+				strcpy(*to,*from);
+			}
+			else if (strcmp(*to,*from)) {
+				*to = (NhlString) 
+					NhlRealloc(*to, strlen(*from)+1);
+				if (*to == NULL) {
+					e_text = "%s: error copying %s string";
+					NhlPError(FATAL,E_UNKNOWN,e_text,
+						  caller,res_name);
+					return FATAL;
+				}
+				strcpy(*to,*from);
+			}
+		}
+		*gnew = gold;
+	}
+
+	return NOERROR;
+
+}

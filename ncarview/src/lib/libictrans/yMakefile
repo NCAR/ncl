@@ -1,19 +1,18 @@
-NCARG		= ../../../..
 #
-#	$Id: yMakefile,v 1.15 1993-04-19 20:01:30 clyne Exp $
+#	$Id: yMakefile,v 1.16 1993-10-19 17:45:21 boote Exp $
 #
 
-MYNAME1		= $(ROBJPATH)/libictrans.o
-MYNAME2		= $(ROBJPATH)/libictrans_.o
+MYNAME1		= libictrans.o
+MYNAME2		= libictrans_.o
 
 #
 # name of the spooler translator
 #
 SPOOL_TRANS	= ctrans
 
-EQUALHACK	= =
-
-CDEFINES	=
+EXTRA_CDEFINES	=	-DSPOOL_TRANS='"$(SPOOL_TRANS)"' -DTMPDIR='"$(TMPDIR)"'\
+			-DBINDIR='"$(BINDIR)"' -DLIBDIR='"$(LIBDIR)"'\
+			-DNCARGDIR='"$(NCARGDIR)"'
 
 EXTENSION_OBJS	= ictrans_mem.o ictrans_wks.o fort_ictrans.o
 
@@ -28,51 +27,16 @@ GENERIC_SRCS	= commands.c cmd_tab.c get_cmd.c \
 OBJS	= $(GENERIC_OBJS) $(EXTENSION_OBJS)
 SRCS	= $(GENERIC_SRCS) $(EXTENSION_SRCS)
 
-all::   $(MYNAME1)
-
-$(MYNAME1):	$(OBJS)
-	$(LD_REL) -r -o $(MYNAME1) $(OBJS)
-
-all::   $(MYNAME2)
-
-$(MYNAME2):	$(GENERIC_OBJS)
-	$(LD_REL) -r -o $(MYNAME2) $(GENERIC_OBJS)
-
-install::
-
-MakefileTarget
-CleanTarget
-
+RelocatableTarget($(MYNAME1),$(OBJS))
+RelocatableTarget($(MYNAME2),$(GENERIC_OBJS))
+DependTarget($(SRCS))
+CleanFilesTarget(lex.yy.c lex.yy.c.sed sedscript ictrans_wks.c)
 
 # Files that contain C functions that are called by Fortran
 
 ictrans_wks.c: ictrans_wks.c.sed Makefile
         @$(CALLCONV) $(SYSTEM_INCLUDE) ictrans_wks.c \
         initic ictarg opnwks clswks wrtwks rdwks begwks lstwks flswks
-
-# Files that need to know installation directories
-
-commands.o:	commands.c Makefile
-	$(CC) $(CFLAGS) \
-	-DSPOOL_TRANS$(EQUALHACK)'"$(SPOOL_TRANS)"' \
-	-DBINDIR$(EQUALHACK)'"$(BINDIR)"' \
-	-DTMPDIR$(EQUALHACK)'"$(TMPDIR)"' \
-	-c $*.c
-
-spooler.o:	spooler.c Makefile
-	$(CC) $(CFLAGS) \
-	-DLIBDIR$(EQUALHACK)'"$(LIBDIR)"' \
-	-DNCARGDIR$(EQUALHACK)'"$(NCARGDIR)"' \
-	-c $*.c
-
-#
-# Brain-damaged SGI C compiler won't compile its own lex output in
-# ANSI mode.
-#
-#ifdef	sgi
-lex.yy.o:	lex.yy.c
-	$(CC) -c $(CDEBUG) $(COPT) $*.c
-#endif
 
 lex.yy.c: lex.l Makefile
 	@echo '1a\' > sedscript
@@ -85,11 +49,5 @@ lex.yy.c: lex.l Makefile
 	@sed -f sedscript < lex.yy.c.sed > lex.yy.c
 	@$(RM) lex.yy.c.sed sedscript
 
-clean::
-	@-$(RM) lex.yy.c.sed sedscript ictrans_wks.c
-
 lint: $(SRCS)
-	lint $(CDEFINES) $(LINTLIBS) $(CINC) $(SRCS) \ 
-		-DSPOOL_TRANS$(EQUALHACK)'"$(SPOOL_TRANS)"' 1> lint.out 2>&1
-
-
+	lint $(CFLAGS) 1> lint.out 2>&1

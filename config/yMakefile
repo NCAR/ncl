@@ -1,0 +1,49 @@
+/*
+ *      $Id: yMakefile,v 1.1 1993-10-19 17:14:03 boote Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1993			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		yMakefile
+ *
+ *	Author:		Jeff W. Boote
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue May 4 12:31:14 MDT 1993
+ *
+ *	Description:	This is the yMakefile for the config area of the ncarg
+ *			distribution.
+ */
+SRCS	=	ymake-filter.c
+OBJS	=	ymake-filter.o
+CONFIG-PROGRAMS	= ymake-filter fcpp callconv mkdirhier
+
+ARCHFILES	=	AIX370 AIX_RS6000 Ardent Cray DECRISC \
+			HPUX_snake SGI4D Sun3 Sun386i Sun4 \
+			Sun4Solaris SystemV
+YMAKEFILES	=	Project Rules Site Template
+CONFIGFILES	=	$(ARCHFILES) $(YMAKEFILES)
+
+#if	UseCatDirs
+EXTENSION	=	.cat
+#else
+EXTENSION	=	.man
+#endif	/* UseCatDirs */
+
+
+CNotInstalledTarget(ymake-filter,$(OBJS))
+
+FormatManPages(ymake,.man,.cat)
+
+#ifdef	InstallYmake
+InstallTarget($(CONFIGFILES),$(INSTALL_INC),$(CONFIGPATH))
+InstallTarget($(CONFIG-PROGRAMS),$(INSTALL_BIN),$(CONFIGPATH))
+InstallTarget(ymake,$(INSTALL_BIN),$(BINPATH))
+InstallManPages(ymake,$(EXTENSION),$(MAN1PATH),$(MAN1_SECTION))
+#endif	/* InstallYmake */

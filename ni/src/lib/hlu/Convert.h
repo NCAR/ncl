@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.h,v 1.1 1993-04-30 17:21:27 boote Exp $
+ *      $Id: Convert.h,v 1.2 1993-10-19 17:49:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,19 @@
 #ifndef _NCONVERT_H
 #define _NCONVERT_H
 
+/* used to set args for converters during registration */
+typedef enum _NhlConvertAddrModes{
+	NHLIMMEDIATE,	/* values that fit in an NhlPointer only! */
+	NHLADDR,
+	NHLSTRENUM	/* a hack - the size parameter is data	*/
+} NhlConvertAddrModes;
+
+typedef struct _NhlConvertArg{
+	NhlConvertAddrModes	addressmode;
+	int			size;
+	NhlPointer		addr;
+} NhlConvertArg, *NhlConvertArgList;
+
 /* opaque type for un-re registering */
 typedef struct _NhlConvertRec NhlConvertRec, *NhlConvertPtr;
 
@@ -32,10 +45,10 @@ typedef struct _NhlConvertRec NhlConvertRec, *NhlConvertPtr;
 
 typedef NhlErrorTypes (*NhlTypeConverter)(
 #if	NhlNeedProto
-	NrmValue	*from,
-	NrmValue	*to,
-	NrmValue	*args,
-	int		nargs
+	NrmValue		*from,
+	NrmValue		*to,
+	NhlConvertArgList	args,
+	int			nargs
 #endif
 );
 
@@ -47,19 +60,6 @@ typedef void (*NhlCacheClosure)(
 	NrmValue	to
 #endif
 );
-
-/* used to set args for converters during registration */
-
-typedef enum _NhlConvertAddrModes{
-	NHLIMMEDIATE,	/* unsigned int values only! */
-	NHLADDR
-} NhlConvertAddrModes;
-
-typedef struct _NhlConvertArg{
-	NhlConvertAddrModes	addressmode;
-	unsigned int		size;
-	unsigned int		addr;
-} NhlConvertArg, *NhlConvertArgList;
 
 /*
  * Conversion functions
@@ -111,6 +111,16 @@ NhlErrorTypes NhlConvertData(
 	NhlString,		/* to type - usually a NHLT*** constant	*/
 	NrmValue*,	/* from data				*/
 	NrmValue*	/* to data				*/
+#endif
+);
+
+/*
+ * These functions are for use inside Converter functions.
+ */
+
+NhlPointer NhlConvertMalloc(
+#ifdef	NhlNeedProto
+	unsigned int	size	/* size of memory requested	*/
 #endif
 );
 

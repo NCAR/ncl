@@ -1,158 +1,25 @@
-#define BuildXlibDependentCode
-#define BuildAthenaApplications
 /*
-** Define which raster drivers will be built.
-*/
-#define	BuildRasterHDF
-#define	BuildRasterHPPCL
-#define	BuildRasterNrif
-#define	BuildRasterSun
-#define BuildRasterAVS
-#define BuildRasterSGI
-#define BuildRasterAbekas
-#define BuildRasterBinary
-
+ *      $Id: Ardent,v 1.7 1993-10-19 17:13:13 boote Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1993			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
 /*
-**  Stuff that should be edited by Configure
-*/
-VERSION     = 3.2
-BINROOT     = /usr/local/bin
-LIBROOT     = /usr/local/lib
-INCROOT     = /usr/local/include
-MANROOT     = /usr/local/man
-TMPROOT     = /tmp
-LOCAL_LIB_SEARCH        = -L/usr/local/lib
-LOCAL_INC_SEARCH        = -I/usr/local/include
-
-/*
-**  Order of assignment to LIB_SEARCH and to INC_SEARCH is
-**  important.
-*/
-LIB_SEARCH        = -L$(LIBROOT) $(LOCAL_LIB_SEARCH)
-INC_SEARCH        = -I$(INCROOT) $(LOCAL_INC_SEARCH)
-
-NCARGDIR          = ncarg
-BINDIR            = bin
-LIBDIR            = lib
-INCDIR            = include
-MANDIR            = man
-DOCDIR            = doc
-TMPDIR            = tmp
-DBDIR             = database
-FONTCAPDIR        = fontcaps
-GRAPHCAPDIR       = graphcaps
-EXAMPLESDIR       = examples
-TUTORIALDIR       = tutorial
-TESTSDIR          = tests
-XAPPDIR           = xapp
-CONFIGDIR         = config
-GENERICDIR        = generic
-
-BINPATH           = $(BINROOT)
-LIBPATH           = $(LIBROOT)
-INCPATH           = $(INCROOT)/$(NCARGDIR)
-TMPPATH           = $(TMPROOT)
-MANPATH           = $(MANROOT)
-
-MANLPATH          = $(MANPATH)/manl
-MAN1PATH          = $(MANPATH)/man1
-MAN3PATH          = $(MANPATH)/man3
-MAN5PATH          = $(MANPATH)/man5
-MAN6PATH          = $(MANPATH)/man6
-MAN8PATH          = $(MANPATH)/man8
-
-LIBNCARGPATH      = $(LIBPATH)/$(NCARGDIR)
-DBPATH            = $(LIBNCARGPATH)/$(DBDIR)
-FONTCAPPATH       = $(LIBNCARGPATH)/$(FONTCAPDIR)
-GRAPHCAPPATH      = $(LIBNCARGPATH)/$(GRAPHCAPDIR)
-DOCPATH           = $(LIBNCARGPATH)/$(DOCDIR)
-EXAMPLESPATH      = $(LIBNCARGPATH)/$(EXAMPLESDIR)
-TESTSPATH         = $(LIBNCARGPATH)/$(TESTSDIR)
-TUTORIALPATH      = $(LIBNCARGPATH)/$(TUTORIALDIR)
-XAPPPATH          = $(LIBNCARGPATH)/$(XAPPDIR)
-
-MANL_SECTION      = l
-MAN1_SECTION      = 1
-MAN3_SECTION      = 3
-MAN5_SECTION      = 5
-MAN6_SECTION      = 6
-MAN8_SECTION      = 8
-
-XLIB              = -lX11
-EXTENSIONLIB      = -lXext
-XTOOLLIB          = -lXt
-XMULIB            = -lXmu
-XAWLIB            = -lXaw
-#ifdef BuildRasterHDF
-HDFLIB            = -ldf
-#endif
-XDRLIB            =
-#ifdef BuildRasterNetcdf
-NETCDFLIB         = -lnetcdf $(XDRLIB)
-#endif
-
-
-GENERICPATH       = $(NCARG)/$(GENERICDIR)
-
-CONFIGPATH        = $(NCARG)/$(CONFIGDIR)
-YMAKE             = $(CONFIGPATH)/ymake -I$(CONFIGPATH)
-
-MAKE              = make
-FLOAT_OPT         =
-OS                = -DSYSV
-ARCH              =
-VDEFINE           = -DVERSION='"$(VERSION)"'
-CC                = cc
-CC_LD             = $(CC)
-CDEBUG            =
-COPT              =
-CMISC             = -DNeedFuncProto
-CSTATIC           =
-CDYNAMIC          =
-CINC              = $(INC_SEARCH)
-CFLAGS            = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
-                    $(FLOAT_OPT) $(CINC) $(VDEFINE)
-LD_CFLAGS         = $(LIB_SEARCH) $(CFLAGS) 
-CPP               = /lib/cpp
-FCPP              = $(NCARG)/utils/fcpp $(CPP)
-F77               = fc
-F77_LD            = $(F77)
-FDEBUG            =
-FOPT              = -O0
-FMISC             =
-FFLAGS            = $(OS) $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
-                    $(FLOAT_OPT)
-LD_FFLAGS         = $(LIB_SEARCH) $(FFLAGS) 
-LD                = ld
-LD_REL            = $(LD)
-AR                = ar
-AR_QUICK          = $(AR) ql
-AR_CHECK          = $(AR) vrul
-AR_SRC            = ar
-AR_SRC_QUICK      = $(AR_SRC) q
-AR_SRC_CHECK      = $(AR_SRC) vru
-RM                = rm -f
-CAT               = cat
-CP                = cp
-MV                = mv -f
-RANLIB            = $(AR) ml
-NO_OP             = touch -c
-LINT              = alint
-INSTALL           = $(NCARG)/utils/install -c
-INSTALL_RM        = $(RM)
-INSTALL_BIN       = 0755
-INSTALL_MAN       = 0644
-INSTALL_DOC       = 0644
-INSTALL_APP       = 0644
-INSTALL_LIB       = 0644
-INSTALL_DB        = 0644
-INSTALL_INC       = 0644
-
-GRAPHC            = $(BINPATH)/graphc
-FONTC             = $(BINPATH)/fontc
-
-FSPLIT            = fsplit
-CALLCONV          = $(NCARG)/utils/callconv
-SHELL             = /bin/sh
-
-GKS_BUFFER_SIZE   = 0
+ *	File:		Ardent
+ *
+ *	Author:		Jeff W. Boote
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Mon May 3 15:04:29 MDT 1993
+ *
+ *	Description:	
+ */
+#define	FCompiler	fc
+#define	FOptimizeFlag	-O0
+#define	RanLib		$(AR) ml
+#define	LintCommand	alint

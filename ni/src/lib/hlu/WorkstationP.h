@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.1 1993-04-30 17:26:08 boote Exp $
+ *      $Id: WorkstationP.h,v 1.2 1993-10-19 17:53:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -56,11 +56,43 @@ typedef NhlErrorTypes (*NhlWorkstationProc)(
 #endif
 );
 
+typedef NhlErrorTypes (*NhlWorkstationLineTo)(
+#if	NhlNeedProto
+	Layer	l	/* layer to operate on	*/,
+	float   x,
+	float   y,	
+	int     upordown
+#endif
+);
+
+typedef NhlErrorTypes (*NhlWorkstationFill)(
+#if	NhlNeedProto
+	Layer	l	/* layer to operate on	*/,
+	float   *x,
+	float   *y,	
+	int     num_points
+#endif
+);
+
+typedef NhlErrorTypes (*NhlWorkstationMarker)(
+#if	NhlNeedProto
+	Layer	l	/* layer to operate on	*/,
+	float   *x,
+	float   *y,	
+	int     num_points
+#endif
+);
+
+#define NhlWK_ALLOC_UNIT 16
+
 /*
  * This is used as the Inheritance constant
  */
 #define NhlInheritUpdate ((NhlWorkstationProc)_NhlInherit)
 #define NhlInheritClear ((NhlWorkstationProc)_NhlInherit)
+#define NhlInheritFill   ((NhlWorkstationFill)_NhlInherit)
+#define NhlInheritMarker ((NhlWorkstationMarker)_NhlInherit)
+
 
 typedef struct _WorkstationLayerPart {
 	/* User setable resource fields */
@@ -68,6 +100,44 @@ typedef struct _WorkstationLayerPart {
 	NhlColor	*color_map;
 	int		color_map_len;
 	NhlColor	*bkgnd_color;
+        int dash_pattern;
+        char *line_label;
+        float line_thickness;
+        int line_color;
+        float line_label_font_height;
+        float line_dash_seglen;
+	int	dash_table_len;
+
+	int	fill_table_len;
+	int	fill_index;
+	int	fill_color;
+	int	fill_background;
+	float	fill_scale_factor;
+	float	fill_line_thickness;
+
+	int	edges_on;
+	int	edge_dash_pattern;
+	float	edge_thickness;
+	float	edge_dash_seglen;
+	int	edge_color;
+
+	int	marker_table_len;
+	char	**marker_table_strings;
+	NhlMarkerTableParams *marker_table_params;
+
+	char	*marker_string;
+	int	marker_index;
+	int	marker_color;
+	float	marker_size;
+	float	marker_x_off;
+	float	marker_y_off;
+	float	marker_thickness;
+
+	int	marker_lines_on;
+	int	marker_line_dash_pattern;
+	float	marker_line_thickness;
+	float	marker_line_dash_seglen;
+	int	marker_line_color;
 
 	/* Private internal fields */
 
@@ -75,6 +145,17 @@ typedef struct _WorkstationLayerPart {
 	int		num_children;
 	NhlPrivateColor	private_color_map[MAX_COLOR_MAP];
 	int		num_private_colors;
+
+        int char_size;
+        int dash_dollar_size;
+	int edge_char_size;
+	int edge_dash_dollar_size;
+	int real_fill_table_len; 
+	int real_marker_table_len;
+	int marker_table_alloc_len;
+	NhlMarkerSpec	*markers_p;
+	int marker_line_char_size;
+	int marker_line_dash_dollar_size;
 
 	/* Export Values */
 
@@ -97,6 +178,10 @@ typedef struct _WorkstationLayerClassPart {
 	NhlWorkstationProc	deactivate_work;
 	NhlWorkstationProc	update_work;
 	NhlWorkstationProc	clear_work;
+	NhlWorkstationLineTo	lineto_work;
+	NhlWorkstationFill      fill_work;
+	NhlWorkstationMarker    marker_work;
+
 } WorkstationLayerClassPart;
 
 typedef struct _WorkstationLayerClassRec {

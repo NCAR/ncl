@@ -1,5 +1,5 @@
 /*
- *	$Id: ymake-filter.c,v 1.2 1992-04-21 17:58:28 ncargd Exp $
+ *	$Id: ymake-filter.c,v 1.3 1993-10-19 17:14:07 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -18,6 +18,9 @@
  *
  *	Date:	Originally written 1988
  *		12/91 Modified to deal with Saber-C Makefiles
+ *		5/93 Modified to Insert tabs for lines that have \= in them
+ *			if they are not a target,macro definition or already
+ *			have a leading tab.
  *
  *	Description:
  *		* Removes cpp comments.
@@ -37,7 +40,7 @@
 
 main()
 {
-	char	*line, *getcppline(), *index();
+	char	*line, *getcppline(), *index(), *tchar, *tchar2;
 	int	len, lastlen, strlen();
 	int	isacppcomment();
 
@@ -45,13 +48,34 @@ main()
 
 	while ( (line = getcppline()) != NULL )
 	{
+		tchar = NULL;
+		tchar2 = NULL;
+
 		if ( isacppcomment(line) ) continue;
 
 		if ( (len = strlen(line)) > 0)
 		{
-			if (index(line,':') == NULL &&
-			    index(line,'=') == NULL &&
-			    line[0] != '#' && line[0] != '\t') {
+			if ((tchar2 = index(line,':')) == NULL &&
+			    line[0] != '#' && line[0] != '\t' &&
+			    ((tchar = index(line,'=')) == NULL)) {
+				(void) printf("\t");
+			}
+			/*
+			 * Need to add the tab if the '=' is escaped
+			 * but be sure the = is not the first charactor in
+			 * the line before looking at the char before it.
+			 */
+			else if(tchar != (char*)NULL && (tchar != line) &&
+				(*(tchar-1) == '\\')) {
+				(void) printf("\t");
+			}
+			/*
+			 * Need to add the tab if the ':' is escaped
+			 * but be sure the : is not the first charactor in
+			 * the line before looking at the char before it.
+			 */
+			else if(tchar2 != (char*)NULL && (tchar2 != line) &&
+				(*(tchar2-1) == '\\')) {
 				(void) printf("\t");
 			}
 

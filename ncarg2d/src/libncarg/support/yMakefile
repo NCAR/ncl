@@ -1,8 +1,6 @@
 #
-#	$Id: yMakefile,v 1.6 1993-09-23 17:21:40 kennison Exp $
+#	$Id: yMakefile,v 1.7 1993-10-19 17:32:35 boote Exp $
 #
-NCARG	= ../../../..
-
 MYNAME	= support
 
 GENERIC_SRCS = \
@@ -22,32 +20,14 @@ GENERIC_OBJS = \
 	idptip.o idsfft.o idtang.o idxchg.o uliber.o
 
 SOURCES = $(GENERIC_SRCS)
-
 OBJECTS = $(GENERIC_OBJS)
  
-PartialLibrary(libncarg.a,$(OBJECTS))
+PartialLibraryTarget(libncarg.a,$(OBJECTS))
+PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
 
 bzbkd.o : bzcom.h
- 
 bzcurv.o : bzcom.h
- 
 bzgeti.o : bzcom.h
- 
 bzgetr.o : bzcom.h
- 
 bzseti.o : bzcom.h
- 
 bzsetr.o : bzcom.h
-
-#ifdef  BuildNCARGSourceLibrary
-all:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_QUICK) $(LIBPATH)/srcncarg.a $(MYNAME) $(SOURCES)
-	@-$(RM) $(MYNAME)
-
-install:: $(SOURCES)
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBPATH)/srcncarg.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBPATH)/srcncarg.a
-	@-$(RM) $(MYNAME)
-#endif

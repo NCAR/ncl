@@ -1,6 +1,5 @@
-
 /*
- *      $Id: XyPlotP.h,v 1.2 1993-06-03 15:12:25 ethan Exp $
+ *      $Id: XyPlotP.h,v 1.3 1993-10-19 17:53:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -10,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		
+ *	File:		XyPlotP.h
  *
  *	Author:		Ethan Alpert
  *			National Center for Atmospheric Research
@@ -23,130 +22,153 @@
 #ifndef _NXyPlotP_h
 #define _NXyPlotP_h
 
-#include <ncarg/hlu/TransformP.h>
+#include <ncarg/hlu/DataCommP.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/TickMark.h>
 
+typedef struct _XyDataDepLayerPart{
+	/* Public resources	*/
+	NhlGenArray	colors;
+	int		color;
+
+	NhlGenArray	dash_patterns;
+	int		dash;
+
+	LineLabelModes	label_mode;
+	NhlGenArray	labels;
+
+	/* Private fields	*/
+} XyDataDepLayerPart;
+
 typedef struct _XyPlotLayerPart {
 	/* Publically setable resources */
-	LineLabelModes curve_line_label_mode;
-	int	num_curves;
-	float	**x_values;
-	float	**y_values;
-	int	*curve_colors;
-	int	*curve_lengths;
-	int	*curve_dash_patterns;
-	char	**curve_line_labels;
-	float	curve_thickness;
-	float	x_missing;
-	float	y_missing;
-	TickMarkStyles	x_style;
-	TickMarkStyles 	y_style;
-	int	clip;
-	int 	x_num_irregular_points;
-	float	*x_irregular_points;
-	int 	y_num_irregular_points;
-	float	*y_irregular_points;
-	int	x_reverse;
-	int	y_reverse;
-	float	x_left;
-	float	x_right;
-	float	y_top;
-	float	y_bottom;
-	int	titles;
-	AlternatePlace	x_alternate;
-	AlternatePlace	y_alternate;
-	int		x_num_alternate_coords;
-	float		*x_alternate_coords;
-	float		*x_original_coords;
-	int		y_num_alternate_coords;
-	float		*y_alternate_coords;
-	float		*y_original_coords;
-	float		line_label_font_height;
-	float		dash_segment_length;
-	
-	float 		ti_main_offset_x;
-	float		ti_x_axis_offset_x;
-	float		ti_y_axis_offset_y;
-	TitlePositions	ti_x_axis_position;
-	TitlePositions	ti_y_axis_position;
-	TitlePositions 	ti_main_position;
-	int		ti_main_on;
-	int		ti_x_axis_on;
-	int		ti_y_axis_on;
-	char*		ti_main_string;
-	char*		ti_x_axis_string;
-	char*		ti_y_axis_string;
 
-	TickMarkModes 	tm_x_b_mode;
-	TickMarkModes	tm_x_t_mode;
-	TickMarkModes	tm_y_r_mode;
-	TickMarkModes	tm_y_l_mode;
-	float		tm_x_b_tick_start;
-	float		tm_x_b_tick_end;
-	float 		tm_x_b_tick_spacing;
-	int		tm_x_b_spacing_type;
-	float		tm_x_t_tick_start;
-	float		tm_x_t_tick_end;
-	float 		tm_x_t_tick_spacing;
-	int		tm_x_t_spacing_type;
-	float		tm_y_r_tick_start;
-	float		tm_y_r_tick_end;
-	float 		tm_y_r_tick_spacing;
-	int		tm_y_r_spacing_type;
-	float		tm_y_l_tick_start;
-	float		tm_y_l_tick_end;
-	float 		tm_y_l_tick_spacing;
-	int		tm_y_l_spacing_type;
+	/* DataResources should use the NhlPointer type */
+	NhlGenArray		curve_data;
+
+	float			curve_thickness;
+
+	TickMarkStyles		x_style;
+	TickMarkStyles 		y_style;
+
+	NhlGenArray		x_irregular_points;
+	NhlGenArray		y_irregular_points;
+
+	NhlBoolean		x_reverse;
+	NhlBoolean		y_reverse;
+
+	NhlBoolean		compute_x_min;
+	NhlBoolean		compute_x_max;
+	NhlBoolean		compute_y_max;
+	NhlBoolean		compute_y_min;
+	float			x_min;
+	float			x_max;
+	float			y_max;
+	float			y_min;
+
+	AlternatePlace		x_alternate;
+	AlternatePlace		y_alternate;
+
+	NhlGenArray		x_alternate_coords;
+	NhlGenArray		x_original_coords;
+	NhlGenArray		y_alternate_coords;
+	NhlGenArray		y_original_coords;
+
+	NhlBoolean		titles;
+
+
+	float			line_label_font_height;
+	float			dash_segment_length;
+	
+	float 			ti_main_offset_x;
+	float			ti_x_axis_offset_x;
+	float			ti_y_axis_offset_y;
+	TitlePositions 		ti_main_position;
+	TitlePositions		ti_x_axis_position;
+	TitlePositions		ti_y_axis_position;
 
 	/* Private fields */
-	Layer	ticks;
-	Layer	ttitles;
-	Layer	thetrans;
-	float	x_data_min;
-	float	x_data_max;
-	float	y_data_min;
-	float	y_data_max;
-	float   x_irr_min;
-	float   x_irr_max;
-	float	y_irr_min;
-	float	y_irr_max;
-	float   **x_final_values;
-	float   **y_final_values;
-	int	noxvalues;
-	int	noyvalues;
-	float	real_main_offset_x;
-	float	real_x_axis_offset_x;
-	float	real_y_axis_offset_y;
-	float   *thexmissing;
-	float   *theymissing;
-	float   *dummy_array;
-	float   *dummy_array_final;
-	int	dummy_array_length;
-	int	dash_dollar_size;
-	int	char_size;
+	Layer		ticks;
+	Layer		ttitles;
+	Layer		thetrans;
+	NhlBoolean	have_irreg_trans;
+	NhlBoolean	fake_x;
+	float		fake_x_max;
+	float		fake_x_min;
+	NhlBoolean	fake_y;
+	float		fake_y_max;
+	float		fake_y_min;
+
+	NhlBoolean	x_min_set;
+	NhlBoolean	x_max_set;
+	NhlBoolean	y_max_set;
+	NhlBoolean	y_min_set;
+	NhlBoolean	comp_x_min_set;
+	NhlBoolean	comp_x_max_set;
+	NhlBoolean	comp_y_max_set;
+	NhlBoolean	comp_y_min_set;
+
+	NhlBoolean	data_ranges_set;
+	NhlBoolean	check_ranges;
+
+	float		x_data_min;
+	float		x_data_max;
+
+	float		y_data_min;
+	float		y_data_max;
+
+	float		x_irreg_min;
+	float		x_irreg_max;
+	float		y_irreg_min;
+	float		y_irreg_max;
+
+	float		real_main_offset_x;
+	float		real_x_axis_offset_x;
+	float		real_y_axis_offset_y;
 }XyPlotLayerPart;
 
+typedef struct _XyDataDepLayerRec{
+	ObjLayerPart		base;
+	DataSpecLayerPart	dataspec;
+	XyDataDepLayerPart	xydata;
+} XyDataDepLayerRec;
+
 typedef struct _XyPlotLayerRec {
-	BaseLayerPart	base;
-	ViewLayerPart	view;
+	BaseLayerPart		base;
+	ViewLayerPart		view;
 	TransformLayerPart	trans;
-	XyPlotLayerPart	xyplot;
+	DataCommLayerPart	datacomm;
+	XyPlotLayerPart		xyplot;
 }XyPlotLayerRec;
+
+typedef struct _XyDataDepLayerClassPart{
+	int	foo;
+} XyDataDepLayerClassPart;
 
 typedef struct _XyPlotLayerClassPart {
 	char *foo;
 } XyPlotLayerClassPart;
 
+typedef struct _XyDataDepLayerClassRec{
+	ObjLayerClassPart	base_class;
+	DataSpecLayerClassPart	dataspec_class;
+	XyDataDepLayerClassPart	xydata_class;
+} XyDataDepLayerClassRec;
+
 typedef struct _XyPlotLayerClassRec {
 	BaseLayerClassPart	base_class;
 	ViewLayerClassPart	view_class;
 	TransformLayerClassPart	trans_class;
+	DataCommLayerClassPart	datacomm_class;
 	XyPlotLayerClassPart	xyplot_class;
 }XyPlotLayerClassRec;
 
+extern XyDataDepLayerClassRec xyDataDepLayerClassRec;
 extern XyPlotLayerClassRec xyPlotLayerClassRec;
 
+extern LayerClass xyDataDepLayerClass;
+
+typedef struct _XyDataDepLayerClassRec *XyDataDepLayerClass;
+typedef struct _XyDataDepLayerRec *XyDataDepLayer;
+
 #endif /* _NXyPlotP_h */
-
-
