@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.5 2003-03-31 16:34:42 shea Exp $
+;      $Id: contributed.ncl,v 1.6 2003-05-02 03:16:35 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -1418,9 +1418,9 @@ begin
  dimx = dimsizes(x)
  Ndx  = dimsizes(dimx)      ; number of dimensions
  if (.not.ismissing(x!(Ndx-1))) then   
-      xsum@standardize_op= "dim_standardize over dimension: "+x!(Ndx-1)
+      xStd@standardize_op= "dim_standardize over dimension: "+x!(Ndx-1)
  else
-      xsum@standardize_op= "dim_standardize function was applied"
+      xStd@standardize_op= "dim_standardize function was applied"
  end if
  
  return (xStd)
@@ -3555,8 +3555,8 @@ begin
   return  (eof)                ; return
 end
  
-undef ("eofcor_Wrap")
-function eofcor_Wrap (data:numeric, neval:integer, pcrit:numeric) 
+undef ("eofcor_pcmsg_Wrap")
+function eofcor_pcmsg_Wrap (data:numeric, neval:integer, pcrit:numeric) 
 ; wrapper for NCL function "eofcor_pcmsg"  that copies attributes and coordinate vars
 local eof
 begin
