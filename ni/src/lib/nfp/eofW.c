@@ -25,14 +25,12 @@ extern void NGCALLF(deoftsca,DEOFTSCA)(double *,int *,int *,int *,int *,
                                        double *,double *,int *,double *,
                                        double *);
 
-extern void NGCALLF(dtdrvprc,DTDRVPRDC)(double *, int *, int *, int *, int *,
-                                        double *, int *, double *, double *,
+extern void NGCALLF(dtdrvprc,DTDRVPRDC)(double *, int *, int *, int *,
+                                        int *, double *, int *, double *,
                                         float *, double *, int *, int *,
                                         double *, int *, double *, int *,
                                         double *, int *, int *, int *, 
                                         int *, double *, double *, double *,
-                                        double *, double *, double *,
-                                        double *, double *, double *,
                                         double *, double *, int *);
 
 extern NGCALLF(dtncleof,DTNCLEOF)(double *, int *, int *, int *, int *,
@@ -45,6 +43,9 @@ extern NGCALLF(dtncleof,DTNCLEOF)(double *, int *, int *, int *, int *,
 extern void NGCALLF(deof2data,DEOF2DATA)(int *,int *,int *,double *,
                                          double *, double *, double *);
 
+extern void NGCALLF(dstat2,DSTAT2)(double *, int *, double *, double *,
+                                   double *, double *, int *, int *);
+
 NhlErrorTypes eof_W( void )
 {
 /*
@@ -56,8 +57,8 @@ NhlErrorTypes eof_W( void )
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, total_size_x;
-  int *neval;
+  int nrow, ncol, nobs, msta, mcsta, nc, nr, kntx, total_size_x;
+  int *neval, ne;
 /*
  * Various.
  */
@@ -72,7 +73,8 @@ NhlErrorTypes eof_W( void )
  * Work array variables.
  */
   double *cssm, *work, *weval, *teof, *w2d, *xave, *wevec;
-  double *xdata, *con, *pcx, *xdvar, *xvar, *xsd;
+  double con, pcx, xsd;
+  double *xdata, *xdvar, *xvar;
   int   *iwork, *ifail;
   int lwork, liwork, lifail, lweval, lcssm;
   long long int llcssm;
@@ -191,78 +193,26 @@ NhlErrorTypes eof_W( void )
   trace = (double *)calloc(1,sizeof(double));
   eval  = (double *)calloc(*neval,sizeof(double));
   pcvar = (float *)calloc(*neval,sizeof(float));
-  if( trace == NULL || pcvar == NULL || eval == NULL ) {
+  wevec  = (double *)calloc(*neval * ncol,sizeof(double));
+  if( trace == NULL || pcvar == NULL || eval == NULL || wevec == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for attribute arrays");
     return(NhlFATAL);
   }
 
 /*
- * Depending on the size of the rightmost 2D arrays being processed, we
- * one of two different Fortran routines. These routines basically behave
- * the same, except one operates on a transposed version of the 2d array.
+ * Initialize to missing.
  */
-  if(ncol <= nrow) {
-    call_transpose = False;
-  }
-  else {
-    call_transpose = True;
-  }
-
-/*
- * Create some work arrays.  This is necessary to avoid having
- * these arrays created dynamically in the Fortran file (which makes
- * it Fortran 90, and unportable to some systems. 
- * 
- * This first set of work arrays are common to both Fortran routines,
- * just calculated slightly differently.
- */
-  if(call_transpose) {
-    lcssm  = nrow*(nrow+1)/2;
-    lwork  = 8*nrow;
-    liwork = 5*nrow;
-    lifail = nrow;
-    lweval = nrow;
-    cssm   = (double *)calloc(lcssm,sizeof(double));
-  }
-  else {
-    llcssm = msta*(msta+1)/2;
-    lwork  = 8*msta;
-    liwork = 5*msta;
-    lifail = msta;
-    lweval = lifail;
-    cssm   = (double *)calloc(llcssm,sizeof(double));
-  }
-  work   = (double *)calloc(lwork,sizeof(double));
-  weval  = (double *)calloc(lweval,sizeof(double));
-  iwork  =    (int *)calloc(liwork,sizeof(int));
-  ifail  =    (int *)calloc(lifail,sizeof(int));
-  if( cssm == NULL || work == NULL || weval == NULL || iwork == NULL || 
-      ifail == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for work arrays");
-    return(NhlFATAL);
-  }
-/*
- * Additional work arrays for transpose routine.
- */
-  if(call_transpose) {
-    teof   = (double *)calloc(*neval * nrow,sizeof(double));
-    w2d    = (double *)calloc(*neval * nrow,sizeof(double));
-    wevec  = (double *)calloc(*neval * ncol,sizeof(double));
-    xdata  = (double *)calloc(nrow * ncol,sizeof(double));
-    xave   = (double *)calloc(ncol,sizeof(double));
-    xvar   = (double *)calloc(ncol,sizeof(double));
-    xdvar  = (double *)calloc(ncol,sizeof(double));
-    con    = (double *)calloc(1,sizeof(double));
-    pcx    = (double *)calloc(1,sizeof(double));
-    xsd    = (double *)calloc(1,sizeof(double));
-    if( teof == NULL || w2d == NULL || wevec == NULL || xdata == NULL ||
-        xave == NULL || xvar == NULL || xdvar == NULL || con == NULL ||
-        pcx == NULL || xsd == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for additional work arrays");
-      return(NhlFATAL);
+  *trace = missing_dx.doubleval;
+  i = 0;
+  for( ne = 0; ne < *neval; ne++ ) {
+    eval[ne]  = missing_dx.doubleval;
+    pcvar[ne] = missing_dx.doubleval;
+    for( nc = 0; nc < ncol; nc++) {
+      evec[i] = missing_dx.doubleval;
+      i++;
     }
   }
-
+  
 /* 
  * If "opt" is True, then check if any attributes have been set.
  */
@@ -319,7 +269,7 @@ NhlErrorTypes eof_W( void )
  * Check for "pcrit". If user sets this attribute, then we'll return
  * it as an attribute of the return variable.
  */
-          if(call_transpose && !strcmp(attr_list->attname, "pcrit")) {
+          if(!strcmp(attr_list->attname, "pcrit")) {
             type_pcrit   = attr_list->attvalue->multidval.data_type;
             return_pcrit = True;
 /*
@@ -360,9 +310,9 @@ NhlErrorTypes eof_W( void )
             }
           }
 /*
- * Check for "revert" (only if call_transpose is True).
+ * Check for "revert".
  */
-          if (call_transpose && !strcmp(attr_list->attname, "revert")) {
+          if (!strcmp(attr_list->attname, "revert")) {
             if(attr_list->attvalue->multidval.data_type == NCL_logical) {
               revert = *(logical*) attr_list->attvalue->multidval.val;
 /*
@@ -388,10 +338,9 @@ NhlErrorTypes eof_W( void )
   }
 
 /*
- * If user didn't set pcrit, then set it here. It is only used by 
- * transpose routine.
+ * If user didn't set pcrit, then set it here.
  */
-  if(call_transpose && !return_pcrit) {
+  if(!return_pcrit) {
     pcrit = (double *)calloc(1,sizeof(double));
     if( pcrit == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for pcrit");
@@ -401,19 +350,141 @@ NhlErrorTypes eof_W( void )
   }
 
 /*
+ * Create arrays to store non-missing data and to remove mean from
+ * data before entering Fortran routines.
+ */
+  xdata  = (double *)calloc(nrow * ncol,sizeof(double));
+  xave   = (double *)calloc(ncol,sizeof(double));
+  xvar   = (double *)calloc(ncol,sizeof(double));
+  xdvar  = (double *)calloc(ncol,sizeof(double));
+  if( xdata == NULL || xave == NULL || xvar == NULL || xdvar == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+
+/*
+ * Loop over all grid points/stations. Determine statistics at each
+ * grid point. If enouh data, calculate anomalies.
+ */
+  mcsta = 0;
+
+  for( nc = 0; nc < msta; nc++) {
+/*
+ * Statistics for this station/grid-point
+ */
+    NGCALLF(dstat2,DSTAT2)(&dx[nrow*nc],&nrow,&missing_dx.doubleval,
+                           &xave[nc],&xvar[nc],&xsd,&kntx,&ier);
+/*
+ * Eliminate stations/grid-oints with less than pcrit % of data.
+ */
+    pcx = ((double)kntx/(double)nrow)*100.;
+    if (pcx < *pcrit || xsd <= 0.0) {
+      xave[nc] = missing_dx.doubleval;
+    }
+/* 
+ * Create anomalies. If jopt=1, then normalize the anomalies.
+ * mcsta is the number of acceptable grid/station points (mcsta <= msta).
+ */
+    if(xave[nc] != missing_dx.doubleval) {
+      con = 1.0;
+      if(jopt == 1) {
+        con = 1./xsd;
+      }
+/*
+ * Increment counter for acceptable points.
+ */
+      for( nr = 0; nr < nobs; nr++) {
+        if(dx[nc*nrow+nr] != missing_dx.doubleval) {
+          xdata[mcsta*nrow+nr] = (dx[nc*nrow+nr] - xave[nc]) * con;
+        }
+        else {
+          xdata[mcsta*nrow+nr] = missing_dx.doubleval;
+        }
+      }
+      if(jopt == 0) {
+        xdvar[mcsta] = xvar[nc];
+      }
+      else {
+        xdvar[mcsta] = 1.0;
+      }
+      mcsta++;
+    }
+  }
+/*
+ * Depending on the size of the rightmost 2D arrays being processed, we
+ * one of two different Fortran routines. These routines basically behave
+ * the same, except one operates on a transposed version of the 2d array.
+ */
+  if(mcsta <= nrow) {
+    call_transpose = False;
+  }
+  else {
+    call_transpose = True;
+  }
+
+/*
+ * Create some work arrays.  This is necessary to avoid having
+ * these arrays created dynamically in the Fortran file (which makes
+ * it Fortran 90, and unportable to some systems. 
+ * 
+ * This first set of work arrays are common to both Fortran routines,
+ * just calculated slightly differently.
+ */
+  if(call_transpose) {
+    lcssm  = nrow*(nrow+1)/2;
+    lwork  = 8*nrow;
+    liwork = 5*nrow;
+    lifail = nrow;
+    lweval = nrow;
+    cssm   = (double *)calloc(lcssm,sizeof(double));
+  }
+  else {
+    llcssm = msta*(msta+1)/2;
+    lwork  = 8*msta;
+    liwork = 5*msta;
+    lifail = msta;
+    lweval = lifail;
+    cssm   = (double *)calloc(llcssm,sizeof(double));
+  }
+  work   = (double *)calloc(lwork,sizeof(double));
+  weval  = (double *)calloc(lweval,sizeof(double));
+  iwork  =    (int *)calloc(liwork,sizeof(int));
+  ifail  =    (int *)calloc(lifail,sizeof(int));
+  if( cssm == NULL || work == NULL || weval == NULL || iwork == NULL ||
+      ifail == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+/*
+ * Additional work arrays for transpose routine.
+ */
+  if(call_transpose) {
+    teof   = (double *)calloc(*neval * nrow,sizeof(double));
+    w2d    = (double *)calloc(*neval * nrow,sizeof(double));
+    if( teof == NULL || w2d == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for additional work arrays");
+      return(NhlFATAL);
+    }
+  }
+
+/*
  * Call the Fortran 77 version of appropriate routine.
  */
   if(call_transpose) {
-    NGCALLF(dtdrvprc,DTDRVPRDC)(dx,&nrow,&ncol,&nobs,&msta,
-                                &missing_dx.doubleval,neval,eval,evec,pcvar,
+    NGCALLF(dtdrvprc,DTDRVPRDC)(xdata,&nrow,&ncol,&nobs,&mcsta,
+                                &missing_dx.doubleval,neval,eval,pcvar,
                                 trace,&iopt,&jopt,pcrit,&irevert,cssm,
                                 &lcssm,work,&lwork,iwork,&liwork,ifail,
-                                teof,weval,w2d,wevec,xdata,xave,xvar,
-                                xdvar,con,pcx,xsd,&ier);
+                                teof,weval,w2d,wevec,xdvar,&ier);
+/*
+ * Free memory only used by transpose version of routine.
+ */
+    NclFree(teof);
+    NclFree(w2d);
   }
   else {
-    NGCALLF(ddrveof,DDRVEOF)(dx,&nrow,&ncol,&nobs,&msta,
-                             &missing_dx.doubleval,neval,eval,evec,pcvar,
+    NGCALLF(ddrveof,DDRVEOF)(xdata,&nrow,&ncol,&nobs,&mcsta,
+                             &missing_dx.doubleval,neval,eval,wevec,pcvar,
                              trace,&iopt,&jopt,cssm,&llcssm,work,&lwork,
                              weval,iwork,&liwork,ifail,&lifail,&ier);
   }
@@ -435,30 +506,33 @@ NhlErrorTypes eof_W( void )
     }
   }
 /*
+ *  The purpose of the "if" is to reassign to correct locations.
+ */
+  mcsta = 0;
+  for( nc = 0; nc < ncol; nc++) {
+    if (xave[nc] != missing_dx.doubleval) {
+      for( ne = 0; ne < *neval; ne++ ) {
+        evec[ne*ncol+nc] = wevec[ne*ncol+mcsta];
+      }
+      mcsta++;
+    }
+  }
+
+
+/*
  * Free unneeded memory common to both routines.
  */
   if((void*)dx != x) NclFree(dx);
+  NclFree(xdata);
+  NclFree(xave);
+  NclFree(xvar);
+  NclFree(xdvar);
   NclFree(work);
   NclFree(cssm);
   NclFree(weval);
   NclFree(iwork);
   NclFree(ifail);
-
-/*
- * Free memory only used by transpose version of routine.
- */
-  if(call_transpose) {
-    NclFree(teof);
-    NclFree(w2d);
-    NclFree(wevec);
-    NclFree(xdata);
-    NclFree(xave);
-    NclFree(xvar);
-    NclFree(xdvar);
-    NclFree(con);
-    NclFree(pcx);
-    NclFree(xsd);
-  }
+  NclFree(wevec);
 
 /*
  * Return values. 
@@ -1190,8 +1264,8 @@ NhlErrorTypes eofcov_tr_W( void )
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, total_size_x;
-  int *neval;
+  int nrow, ncol, nobs, msta, mcsta, nc, nr, kntx, total_size_x;
+  int *neval, ne;
 /*
  * Various.
  */
@@ -1205,9 +1279,11 @@ NhlErrorTypes eofcov_tr_W( void )
  * Work array variables.
  */
   double *cssm, *work, *weval, *teof, *w2d, *xave, *wevec;
-  double *xdata, *con, *pcx, *xdvar, *xvar, *xsd;
+  double con, pcx, xsd;
+  double *xdata, *xdvar, *xvar;
   int   *iwork, *ifail;
   int lwork, liwork, lifail, lweval, lcssm;
+  long long int llcssm;
 
 /*
  * Variables for retrieving attributes from "opt".
@@ -1224,6 +1300,8 @@ NhlErrorTypes eofcov_tr_W( void )
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
+  char *cmatrix;
+  NclQuark *matrix;
   double *trace, *eval;
   float *pcvar, *rtrace, *reval;
 /*
@@ -1321,51 +1399,26 @@ NhlErrorTypes eofcov_tr_W( void )
   trace = (double *)calloc(1,sizeof(double));
   eval  = (double *)calloc(*neval,sizeof(double));
   pcvar = (float *)calloc(*neval,sizeof(float));
-  if( trace == NULL || pcvar == NULL || eval == NULL ) {
+  wevec  = (double *)calloc(*neval * ncol,sizeof(double));
+  if( trace == NULL || pcvar == NULL || eval == NULL || wevec == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for attribute arrays");
     return(NhlFATAL);
   }
 
 /*
- * Create some work arrays.  This is necessary to avoid having
- * these arrays created dynamically in the Fortran file (which makes
- * it Fortran 90, and unportable to some systems. 
+ * Initialize to missing.
  */
-  lcssm  = nrow*(nrow+1)/2;
-  lwork  = 8*nrow;
-  liwork = 5*nrow;
-  lifail = nrow;
-  lweval = nrow;
-  cssm   = (double *)calloc(lcssm,sizeof(double));
-  work   = (double *)calloc(lwork,sizeof(double));
-  weval  = (double *)calloc(lweval,sizeof(double));
-  iwork  =    (int *)calloc(liwork,sizeof(int));
-  ifail  =    (int *)calloc(lifail,sizeof(int));
-  if( cssm == NULL || work == NULL || weval == NULL || iwork == NULL || 
-      ifail == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for work arrays");
-    return(NhlFATAL);
+  *trace = missing_dx.doubleval;
+  i = 0;
+  for( ne = 0; ne < *neval; ne++ ) {
+    eval[ne]  = missing_dx.doubleval;
+    pcvar[ne] = missing_dx.doubleval;
+    for( nc = 0; nc < ncol; nc++) {
+      evec[i] = missing_dx.doubleval;
+      i++;
+    }
   }
-/*
- * Additional work arrays for transpose routine.
- */
-  teof   = (double *)calloc(*neval * nrow,sizeof(double));
-  w2d    = (double *)calloc(*neval * nrow,sizeof(double));
-  wevec  = (double *)calloc(*neval * ncol,sizeof(double));
-  xdata  = (double *)calloc(nrow * ncol,sizeof(double));
-  xave   = (double *)calloc(ncol,sizeof(double));
-  xvar   = (double *)calloc(ncol,sizeof(double));
-  xdvar  = (double *)calloc(ncol,sizeof(double));
-  con    = (double *)calloc(1,sizeof(double));
-  pcx    = (double *)calloc(1,sizeof(double));
-  xsd    = (double *)calloc(1,sizeof(double));
-  if( teof == NULL || w2d == NULL || wevec == NULL || xdata == NULL ||
-      xave == NULL || xvar == NULL || xdvar == NULL || con == NULL ||
-      pcx == NULL || xsd == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for additional work arrays");
-    return(NhlFATAL);
-  }
-
+  
 /* 
  * If "opt" is True, then check if any attributes have been set.
  */
@@ -1396,16 +1449,33 @@ NhlErrorTypes eofcov_tr_W( void )
 /*
  * Loop through attributes and check them. The current ones recognized are:
  *
- *   "pcrit"
- *   "return_eval"
- *   "revert"
+ *   "jopt"        : both routines
+ *   "return_eval" : both routines (unadvertised)
+ *   "pcrit"       : transpose routine only
+ *   "revert"      : tranpose routine only (unadvertised)
+ *
  */
         while (attr_list != NULL) {
+/*
+ * Check for "jopt".
+ */
+          if (!strcmp(attr_list->attname, "jopt")) {
+            if(attr_list->attvalue->multidval.data_type != NCL_int) {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr: The 'jopt' attribute must be an integer, defaulting to 0.");
+            }
+            else {
+              jopt = *(int*) attr_list->attvalue->multidval.val;
+              if(jopt != 0 && jopt != 1) {
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr: The 'jopt' attribute must be 0 or 1. Defaulting to 0.");
+                jopt = 0;
+              }
+            }
+          }
 /*
  * Check for "pcrit". If user sets this attribute, then we'll return
  * it as an attribute of the return variable.
  */
-          if (!strcmp(attr_list->attname, "pcrit")) {
+          if(!strcmp(attr_list->attname, "pcrit")) {
             type_pcrit   = attr_list->attvalue->multidval.data_type;
             return_pcrit = True;
 /*
@@ -1486,14 +1556,107 @@ NhlErrorTypes eofcov_tr_W( void )
   }
 
 /*
- * Call the Fortran 77 version of transpose routine.
+ * Create arrays to store non-missing data and to remove mean from
+ * data before entering Fortran routines.
  */
-  NGCALLF(dtdrvprc,DTDRVPRDC)(dx,&nrow,&ncol,&nobs,&msta,
-                              &missing_dx.doubleval,neval,eval,evec,pcvar,
+  xdata  = (double *)calloc(nrow * ncol,sizeof(double));
+  xave   = (double *)calloc(ncol,sizeof(double));
+  xvar   = (double *)calloc(ncol,sizeof(double));
+  xdvar  = (double *)calloc(ncol,sizeof(double));
+  if( xdata == NULL || xave == NULL || xvar == NULL || xdvar == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+
+/*
+ * Loop over all grid points/stations. Determine statistics at each
+ * grid point. If enouh data, calculate anomalies.
+ */
+  mcsta = 0;
+
+  for( nc = 0; nc < msta; nc++) {
+/*
+ * Statistics for this station/grid-point
+ */
+    NGCALLF(dstat2,DSTAT2)(&dx[nrow*nc],&nrow,&missing_dx.doubleval,
+                           &xave[nc],&xvar[nc],&xsd,&kntx,&ier);
+/*
+ * Eliminate stations/grid-oints with less than pcrit % of data.
+ */
+    pcx = ((double)kntx/(double)nrow)*100.;
+    if (pcx < *pcrit || xsd <= 0.0) {
+      xave[nc] = missing_dx.doubleval;
+    }
+/* 
+ * Create anomalies. If jopt=1, then normalize the anomalies.
+ * mcsta is the number of acceptable grid/station points (mcsta <= msta).
+ */
+    if(xave[nc] != missing_dx.doubleval) {
+      con = 1.0;
+      if(jopt == 1) {
+        con = 1./xsd;
+      }
+/*
+ * Increment counter for acceptable points.
+ */
+      for( nr = 0; nr < nobs; nr++) {
+        if(dx[nc*nrow+nr] != missing_dx.doubleval) {
+          xdata[mcsta*nrow+nr] = (dx[nc*nrow+nr] - xave[nc]) * con;
+        }
+        else {
+          xdata[mcsta*nrow+nr] = missing_dx.doubleval;
+        }
+      }
+      if(jopt == 0) {
+        xdvar[mcsta] = xvar[nc];
+      }
+      else {
+        xdvar[mcsta] = 1.0;
+      }
+      mcsta++;
+    }
+  }
+
+/*
+ * Create some work arrays.  This is necessary to avoid having
+ * these arrays created dynamically in the Fortran file (which makes
+ * it Fortran 90, and unportable to some systems. 
+ * 
+ */
+  lcssm  = nrow*(nrow+1)/2;
+  lwork  = 8*nrow;
+  liwork = 5*nrow;
+  lifail = nrow;
+  lweval = nrow;
+  cssm   = (double *)calloc(lcssm,sizeof(double));
+  work   = (double *)calloc(lwork,sizeof(double));
+  weval  = (double *)calloc(lweval,sizeof(double));
+  iwork  =    (int *)calloc(liwork,sizeof(int));
+  ifail  =    (int *)calloc(lifail,sizeof(int));
+  if( cssm == NULL || work == NULL || weval == NULL || iwork == NULL ||
+      ifail == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+/*
+ * Additional work arrays.
+ */
+  teof   = (double *)calloc(*neval * nrow,sizeof(double));
+  w2d    = (double *)calloc(*neval * nrow,sizeof(double));
+  wevec  = (double *)calloc(*neval * ncol,sizeof(double));
+  if( teof == NULL || w2d == NULL || wevec == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for additional work arrays");
+    return(NhlFATAL);
+  }
+
+/*
+ * Call the Fortran 77 version of appropriate routine.
+ */
+  NGCALLF(dtdrvprc,DTDRVPRDC)(xdata,&nrow,&ncol,&nobs,&mcsta,
+                              &missing_dx.doubleval,neval,eval,pcvar,
                               trace,&iopt,&jopt,pcrit,&irevert,cssm,
                               &lcssm,work,&lwork,iwork,&liwork,ifail,
-                              teof,weval,w2d,wevec,xdata,xave,xvar,
-                              xdvar,con,pcx,xsd,&ier);
+                              teof,weval,w2d,wevec,xdvar,&ier);
 /*
  * Check various possible error messages.
  */
@@ -1512,9 +1675,27 @@ NhlErrorTypes eofcov_tr_W( void )
     }
   }
 /*
+ *  The purpose of the "if" is to reassign to correct locations.
+ */
+  mcsta = 0;
+  for( nc = 0; nc < ncol; nc++) {
+    if (xave[nc] != missing_dx.doubleval) {
+      for( ne = 0; ne < *neval; ne++ ) {
+        evec[ne*ncol+nc] = wevec[ne*ncol+mcsta];
+      }
+      mcsta++;
+    }
+  }
+
+
+/*
  * Free unneeded memory common to both routines.
  */
   if((void*)dx != x) NclFree(dx);
+  NclFree(xdata);
+  NclFree(xave);
+  NclFree(xvar);
+  NclFree(xdvar);
   NclFree(work);
   NclFree(cssm);
   NclFree(weval);
@@ -1523,13 +1704,6 @@ NhlErrorTypes eofcov_tr_W( void )
   NclFree(teof);
   NclFree(w2d);
   NclFree(wevec);
-  NclFree(xdata);
-  NclFree(xave);
-  NclFree(xvar);
-  NclFree(xdvar);
-  NclFree(con);
-  NclFree(pcx);
-  NclFree(xsd);
 
 /*
  * Return values. 
@@ -1707,9 +1881,9 @@ NhlErrorTypes eofcov_tr_W( void )
   }
 
 /*
- * Only return "pcrit" if it was set by the user. The type returned
- * is a float or a double, depending on what pcrit was set to in the
- * input.
+ * Only return "pcrit" if it was set by the user.
+ * The type returned is a float or a double,
+ * depending on what pcrit was set to in the input.
  */
   if(return_pcrit) {
     dsizes[0] = 1;
@@ -1775,6 +1949,43 @@ NhlErrorTypes eofcov_tr_W( void )
              NULL
              );
 
+/*
+ * "matrix" indicates whether the covariance or correlation matrix
+ * was used.
+ */
+  if(jopt == 0) {
+    cmatrix = (char *)calloc(11,sizeof(char));
+    strcpy(cmatrix,"covariance");
+  }
+  else {
+    cmatrix = (char *)calloc(12,sizeof(char));
+    strcpy(cmatrix,"correlation");
+  }
+  matrix  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *matrix = NrmStringToQuark(cmatrix);
+  NclFree(cmatrix);
+  
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)matrix,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "matrix",
+             att_md,
+             NULL
+             );
+
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -1810,8 +2021,8 @@ NhlErrorTypes eofcor_tr_W( void )
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, total_size_x;
-  int *neval;
+  int nrow, ncol, nobs, msta, mcsta, nc, nr, kntx, total_size_x;
+  int *neval, ne;
 /*
  * Various.
  */
@@ -1825,9 +2036,11 @@ NhlErrorTypes eofcor_tr_W( void )
  * Work array variables.
  */
   double *cssm, *work, *weval, *teof, *w2d, *xave, *wevec;
-  double *xdata, *con, *pcx, *xdvar, *xvar, *xsd;
+  double con, pcx, xsd;
+  double *xdata, *xdvar, *xvar;
   int   *iwork, *ifail;
   int lwork, liwork, lifail, lweval, lcssm;
+  long long int llcssm;
 
 /*
  * Variables for retrieving attributes from "opt".
@@ -1844,6 +2057,8 @@ NhlErrorTypes eofcor_tr_W( void )
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
+  char *cmatrix;
+  NclQuark *matrix;
   double *trace, *eval;
   float *pcvar, *rtrace, *reval;
 /*
@@ -1941,51 +2156,26 @@ NhlErrorTypes eofcor_tr_W( void )
   trace = (double *)calloc(1,sizeof(double));
   eval  = (double *)calloc(*neval,sizeof(double));
   pcvar = (float *)calloc(*neval,sizeof(float));
-  if( trace == NULL || pcvar == NULL || eval == NULL ) {
+  wevec = (double *)calloc(*neval * ncol,sizeof(double));
+  if( trace == NULL || pcvar == NULL || eval == NULL || wevec == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_tr: Unable to allocate memory for attribute arrays");
     return(NhlFATAL);
   }
 
 /*
- * Create some work arrays.  This is necessary to avoid having
- * these arrays created dynamically in the Fortran file (which makes
- * it Fortran 90, and unportable to some systems. 
+ * Initialize to missing.
  */
-  lcssm  = nrow*(nrow+1)/2;
-  lwork  = 8*nrow;
-  liwork = 5*nrow;
-  lifail = nrow;
-  lweval = nrow;
-  cssm   = (double *)calloc(lcssm,sizeof(double));
-  work   = (double *)calloc(lwork,sizeof(double));
-  weval  = (double *)calloc(lweval,sizeof(double));
-  iwork  =    (int *)calloc(liwork,sizeof(int));
-  ifail  =    (int *)calloc(lifail,sizeof(int));
-  if( cssm == NULL || work == NULL || weval == NULL || iwork == NULL || 
-      ifail == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_tr: Unable to allocate memory for work arrays");
-    return(NhlFATAL);
+  *trace = missing_dx.doubleval;
+  i = 0;
+  for( ne = 0; ne < *neval; ne++ ) {
+    eval[ne]  = missing_dx.doubleval;
+    pcvar[ne] = missing_dx.doubleval;
+    for( nc = 0; nc < ncol; nc++) {
+      evec[i] = missing_dx.doubleval;
+      i++;
+    }
   }
-/*
- * Additional work arrays for transpose routine.
- */
-  teof   = (double *)calloc(*neval * nrow,sizeof(double));
-  w2d    = (double *)calloc(*neval * nrow,sizeof(double));
-  wevec  = (double *)calloc(*neval * ncol,sizeof(double));
-  xdata  = (double *)calloc(nrow * ncol,sizeof(double));
-  xave   = (double *)calloc(ncol,sizeof(double));
-  xvar   = (double *)calloc(ncol,sizeof(double));
-  xdvar  = (double *)calloc(ncol,sizeof(double));
-  con    = (double *)calloc(1,sizeof(double));
-  pcx    = (double *)calloc(1,sizeof(double));
-  xsd    = (double *)calloc(1,sizeof(double));
-  if( teof == NULL || w2d == NULL || wevec == NULL || xdata == NULL ||
-      xave == NULL || xvar == NULL || xdvar == NULL || con == NULL ||
-      pcx == NULL || xsd == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_tr: Unable to allocate memory for additional work arrays");
-    return(NhlFATAL);
-  }
-
+  
 /* 
  * If "opt" is True, then check if any attributes have been set.
  */
@@ -2016,17 +2206,33 @@ NhlErrorTypes eofcor_tr_W( void )
 /*
  * Loop through attributes and check them. The current ones recognized are:
  *
- *   "pcrit"
- *   "return_eval"
- *   "revert"
+ *   "jopt"        : both routines
+ *   "return_eval" : both routines (unadvertised)
+ *   "pcrit"       : transpose routine only
+ *   "revert"      : tranpose routine only (unadvertised)
  *
  */
         while (attr_list != NULL) {
 /*
+ * Check for "jopt".
+ */
+          if (!strcmp(attr_list->attname, "jopt")) {
+            if(attr_list->attvalue->multidval.data_type != NCL_int) {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_tr: The 'jopt' attribute must be an integer, defaulting to 0.");
+            }
+            else {
+              jopt = *(int*) attr_list->attvalue->multidval.val;
+              if(jopt != 0 && jopt != 1) {
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_tr: The 'jopt' attribute must be 0 or 1. Defaulting to 0.");
+                jopt = 0;
+              }
+            }
+          }
+/*
  * Check for "pcrit". If user sets this attribute, then we'll return
  * it as an attribute of the return variable.
  */
-          if (!strcmp(attr_list->attname, "pcrit")) {
+          if(!strcmp(attr_list->attname, "pcrit")) {
             type_pcrit   = attr_list->attvalue->multidval.data_type;
             return_pcrit = True;
 /*
@@ -2107,14 +2313,107 @@ NhlErrorTypes eofcor_tr_W( void )
   }
 
 /*
- * Call the Fortran 77 version of transpose routine.
+ * Create arrays to store non-missing data and to remove mean from
+ * data before entering Fortran routines.
  */
-  NGCALLF(dtdrvprc,DTDRVPRDC)(dx,&nrow,&ncol,&nobs,&msta,
-                              &missing_dx.doubleval,neval,eval,evec,pcvar,
+  xdata  = (double *)calloc(nrow * ncol,sizeof(double));
+  xave   = (double *)calloc(ncol,sizeof(double));
+  xvar   = (double *)calloc(ncol,sizeof(double));
+  xdvar  = (double *)calloc(ncol,sizeof(double));
+  if( xdata == NULL || xave == NULL || xvar == NULL || xdvar == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_tr: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+
+/*
+ * Loop over all grid points/stations. Determine statistics at each
+ * grid point. If enouh data, calculate anomalies.
+ */
+  mcsta = 0;
+
+  for( nc = 0; nc < msta; nc++) {
+/*
+ * Statistics for this station/grid-point
+ */
+    NGCALLF(dstat2,DSTAT2)(&dx[nrow*nc],&nrow,&missing_dx.doubleval,
+                           &xave[nc],&xvar[nc],&xsd,&kntx,&ier);
+/*
+ * Eliminate stations/grid-oints with less than pcrit % of data.
+ */
+    pcx = ((double)kntx/(double)nrow)*100.;
+    if (pcx < *pcrit || xsd <= 0.0) {
+      xave[nc] = missing_dx.doubleval;
+    }
+/* 
+ * Create anomalies. If jopt=1, then normalize the anomalies.
+ * mcsta is the number of acceptable grid/station points (mcsta <= msta).
+ */
+    if(xave[nc] != missing_dx.doubleval) {
+      con = 1.0;
+      if(jopt == 1) {
+        con = 1./xsd;
+      }
+/*
+ * Increment counter for acceptable points.
+ */
+      for( nr = 0; nr < nobs; nr++) {
+        if(dx[nc*nrow+nr] != missing_dx.doubleval) {
+          xdata[mcsta*nrow+nr] = (dx[nc*nrow+nr] - xave[nc]) * con;
+        }
+        else {
+          xdata[mcsta*nrow+nr] = missing_dx.doubleval;
+        }
+      }
+      if(jopt == 0) {
+        xdvar[mcsta] = xvar[nc];
+      }
+      else {
+        xdvar[mcsta] = 1.0;
+      }
+      mcsta++;
+    }
+  }
+
+/*
+ * Create some work arrays.  This is necessary to avoid having
+ * these arrays created dynamically in the Fortran file (which makes
+ * it Fortran 90, and unportable to some systems. 
+ * 
+ */
+  lcssm  = nrow*(nrow+1)/2;
+  lwork  = 8*nrow;
+  liwork = 5*nrow;
+  lifail = nrow;
+  lweval = nrow;
+  cssm   = (double *)calloc(lcssm,sizeof(double));
+  work   = (double *)calloc(lwork,sizeof(double));
+  weval  = (double *)calloc(lweval,sizeof(double));
+  iwork  =    (int *)calloc(liwork,sizeof(int));
+  ifail  =    (int *)calloc(lifail,sizeof(int));
+  if( cssm == NULL || work == NULL || weval == NULL || iwork == NULL || 
+      ifail == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_tr: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+/*
+ * Additional work arrays.
+ */
+  teof   = (double *)calloc(*neval * nrow,sizeof(double));
+  w2d    = (double *)calloc(*neval * nrow,sizeof(double));
+  wevec  = (double *)calloc(*neval * ncol,sizeof(double));
+  if( teof == NULL || w2d == NULL || wevec == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_tr: Unable to allocate memory for additional work arrays");
+    return(NhlFATAL);
+  }
+
+/*
+ * Call the Fortran 77 version of appropriate routine.
+ */
+  NGCALLF(dtdrvprc,DTDRVPRDC)(xdata,&nrow,&ncol,&nobs,&mcsta,
+                              &missing_dx.doubleval,neval,eval,pcvar,
                               trace,&iopt,&jopt,pcrit,&irevert,cssm,
                               &lcssm,work,&lwork,iwork,&liwork,ifail,
-                              teof,weval,w2d,wevec,xdata,xave,xvar,
-                              xdvar,con,pcx,xsd,&ier);
+                              teof,weval,w2d,wevec,xdvar,&ier);
 /*
  * Check various possible error messages.
  */
@@ -2133,9 +2432,27 @@ NhlErrorTypes eofcor_tr_W( void )
     }
   }
 /*
+ *  The purpose of the "if" is to reassign to correct locations.
+ */
+  mcsta = 0;
+  for( nc = 0; nc < ncol; nc++) {
+    if (xave[nc] != missing_dx.doubleval) {
+      for( ne = 0; ne < *neval; ne++ ) {
+        evec[ne*ncol+nc] = wevec[ne*ncol+mcsta];
+      }
+      mcsta++;
+    }
+  }
+
+
+/*
  * Free unneeded memory common to both routines.
  */
   if((void*)dx != x) NclFree(dx);
+  NclFree(xdata);
+  NclFree(xave);
+  NclFree(xvar);
+  NclFree(xdvar);
   NclFree(work);
   NclFree(cssm);
   NclFree(weval);
@@ -2144,13 +2461,6 @@ NhlErrorTypes eofcor_tr_W( void )
   NclFree(teof);
   NclFree(w2d);
   NclFree(wevec);
-  NclFree(xdata);
-  NclFree(xave);
-  NclFree(xvar);
-  NclFree(xdvar);
-  NclFree(con);
-  NclFree(pcx);
-  NclFree(xsd);
 
 /*
  * Return values. 
@@ -2328,9 +2638,9 @@ NhlErrorTypes eofcor_tr_W( void )
   }
 
 /*
- * Only return "pcrit" if it was set by the user. The type returned
- * is a float or a double, depending on what pcrit was set to in the
- * input.
+ * Only return "pcrit" if it was set by the user.
+ * The type returned is a float or a double,
+ * depending on what pcrit was set to in the input.
  */
   if(return_pcrit) {
     dsizes[0] = 1;
@@ -2392,6 +2702,43 @@ NhlErrorTypes eofcor_tr_W( void )
   _NclAddAtt(
              att_id,
              "pcvar",
+             att_md,
+             NULL
+             );
+
+/*
+ * "matrix" indicates whether the covariance or correlation matrix
+ * was used.
+ */
+  if(jopt == 0) {
+    cmatrix = (char *)calloc(11,sizeof(char));
+    strcpy(cmatrix,"covariance");
+  }
+  else {
+    cmatrix = (char *)calloc(12,sizeof(char));
+    strcpy(cmatrix,"correlation");
+  }
+  matrix  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *matrix = NrmStringToQuark(cmatrix);
+  NclFree(cmatrix);
+  
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)matrix,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "matrix",
              att_md,
              NULL
              );

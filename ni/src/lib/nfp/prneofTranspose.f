@@ -1,24 +1,21 @@
 C NCLFORTSTART
-      SUBROUTINE DTDRVPRC(X,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,EVAL,EVEC,
+      SUBROUTINE DTDRVPRC(XDATA,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,EVAL,
      +                    PCVAR,TRACE,IOPT,JOPT,PCRIT,IREVERT,CSSM,
      +                    LCSSM,WORK,LWORK,IWORK,LIWORK,IFAIL,TEOF,
-     +                    WEVAL,W2D,WEVEC,XDATA,XAVE,XVAR,XDVAR,CON,
-     +                    PCX,XSD,IER)
+     +                    WEVAL,W2D,WEVEC,XDVAR,IER)
       IMPLICIT NONE
 
 c this operates on the TRANSPOSE of the array "x"
 c .   It results in [sometimes, MUCH] faster execution
-c Note for NCL: in *this* routine NROBS=NROW, NCSTA=NCOL
+c Note for NCL: in *this* routine NROBS=NROW, NCSTA<=NCOL
 
       INTEGER NROW,NCOL,NROBS,NCSTA,NEVAL,IOPT,JOPT,IREVERT,IER
-      DOUBLE PRECISION X(NROW,NCOL),EVAL(NEVAL),EVEC(NCOL,NEVAL),
-     +                 TRACE,XMSG,PCRIT
+      DOUBLE PRECISION EVAL(NEVAL),TRACE,XMSG,PCRIT
       REAL PCVAR(NEVAL)
       INTEGER LWORK,LIWORK,LCSSM
       DOUBLE PRECISION CSSM(LCSSM),WORK(LWORK),TEOF(NROW,NEVAL),
      +                 WEVAL(NROW),W2D(NROW,NEVAL),WEVEC(NCOL,NEVAL),
-     +                 CON,PCX,XDATA(NROW,NCOL),XDVAR(NCOL),XAVE(NCOL),
-     +                 XVAR(NCOL),XSD
+     +                 XDATA(NROW,NCOL),XDVAR(NCOL)
 
       INTEGER IWORK(LIWORK),IFAIL(NROW)
 
@@ -29,28 +26,19 @@ c SGI/dataproc: WRAPIT -L /usr/lib64 -l complib.sgimath_mp prneofTranspose.f
 c Sun/CGD: WRAPIT -L /opt/SUNWspro/lib -l sunmath -l fsu -l fui -lsunperf prneofTranspose.f
 c======================================
 
-c temporary arrays (automatic ... ?add to interface?) and variables
-c
-c      INTEGER LSSM,LWORK,LIWORK
-c      DOUBLE PRECISION CSSM(NROW* (NROW+1)/2),WORK(8*NROW),
-c     +                 TEOF(NROW,NEVAL),WEVAL(NROW),W2D(NROW,NEVAL),
-c     +                 WEVEC(NCOL,NEVAL),CON,PCX,XDATA(NROW,NCOL),
-c     +                 XDVAR(NCOL),XAVE(NCOL),XVAR(NCOL),XSD
-c
-c      INTEGER IWORK(5*NROW),IFAIL(NROW)
-      INTEGER K,KNTX,NE,NR,NC,MCSTA
+      INTEGER K,NE,NR,NC
 
-c initialize
+c initialize.
 
       DO NR = 1,NROW
          WEVAL(NR) = XMSG
       END DO
 
+C Don't need to do this because are doing this in C wrapper.
       DO NE = 1,NEVAL
           EVAL(NE) = XMSG
 
           DO NC = 1,NCOL
-              EVEC(NC,NE)  = XMSG
               WEVEC(NC,NE) = XMSG
           END DO
 
@@ -60,51 +48,10 @@ c initialize
           END DO
       END DO
 
-      MCSTA = 0
-      DO NC = 1,NCOL
-
-c statistics for this station/grid-point
-
-          CALL DSTAT2(X(1,NC),NROW,XMSG,XAVE(NC),XVAR(NC),XSD,KNTX,IER)
-
-c quick way of eliminating stations/grid-points
-
-          PCX = (DBLE(KNTX)/DBLE(NROW))*100.D0
-          IF (PCX.LT.PCRIT .OR. XSD.LE.0.0D0) THEN
-              XAVE(NC) = XMSG
-          END IF
-
-c possible normalizing for jopt=1
-
-          CON = 1.0D0
-          IF (JOPT.EQ.1 .AND. XAVE(NC).NE.XMSG) CON = 1.D0/XSD
-
-c work with anomalies: XDAVE=0.0 [or standardized anomalies]
-
-          IF (XAVE(NC).NE.XMSG) THEN
-              MCSTA = MCSTA + 1
-
-              DO NR = 1,NROW
-                  IF (X(NR,NC).NE.XMSG) THEN
-                      XDATA(NR,MCSTA) = (X(NR,NC)-XAVE(NC))*CON
-                  ELSE
-                      XDATA(NR,MCSTA) = XMSG
-                  END IF
-              END DO
-
-              IF (JOPT.EQ.0) THEN
-                  XDVAR(MCSTA) = XVAR(NC)
-              ELSE
-                  XDVAR(MCSTA) = 1.0D0
-              END IF
-          END IF
-
-      END DO
-
-c Note: NROW=NROBS but, it is possible for  MCSTA<=NCOL
+c Note: NROW=NROBS but, it is possible for  NCSTA<=NCOL
 c .                     when some stations/grid_pts do not have enough data
 
-      CALL DXRVEOFT(XDATA,NROW,NCOL,NROBS,MCSTA,XMSG,NEVAL,WEVAL,WEVEC,
+      CALL DXRVEOFT(XDATA,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,WEVAL,WEVEC,
      +              PCVAR,TRACE,IOPT,JOPT,CSSM,LCSSM,WORK,LWORK,IWORK,
      +              LIWORK,IFAIL,TEOF,W2D,XDVAR,IREVERT,IER)
 
@@ -112,22 +59,6 @@ c return only the requested number of eigenvalues
 
       DO K = 1,NEVAL
           EVAL(K) = WEVAL(K)
-          DO NC = 1,NCOL
-              EVEC(NC,K) = XMSG
-          END DO
-      END DO
-
-c return the requested eigenvector
-c .   the purpose of the "if" is to reassign to correct locations
-
-      MCSTA = 0
-      DO NC = 1,NCOL
-          IF (XAVE(NC).NE.XMSG) THEN
-              MCSTA = MCSTA + 1
-              DO K = 1,NEVAL
-                  EVEC(NC,K) = WEVEC(MCSTA,K)
-              END DO
-          END IF
       END DO
 
       RETURN
@@ -142,7 +73,7 @@ c ---------------------------------------------------------
 c operate on the *TRANSPOSE* OF XDATA: then use matrix stuff to
 c .   get the desired eof information.
 
-c Note: NROW=NROBS but, it is possible for  MCSTA<=NCOL
+c Note: NROW=NROBS but, it is possible for  NCSTA<=NCOL
 c .                     when some stations/grid_pts do not have enough data
 
 c driver to calculate :
