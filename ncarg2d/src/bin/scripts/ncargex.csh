@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.110 1998-05-07 23:09:13 kennison Exp $
+#   $Id: ncargex.csh,v 1.111 1998-05-26 16:19:59 kennison Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -256,7 +256,7 @@ set ezmap_fttr  = (cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel \
                   cmpusr)
 set ezmap_flist = ($ezmap_fex $ezmap_ftst $ezmap_fttr)
 
-set ezmap_cex   = (c_mpex05 c_eezmpa)
+set ezmap_cex   = (c_mpex05 c_eezmpa c_eezmpb)
 set ezmap_clist = ($ezmap_cex)
 
 set f_list = ($f_list $ezmap_flist)
