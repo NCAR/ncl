@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.9 1995-06-14 13:56:51 haley Exp $
+#	$Id: yMakefile,v 1.10 2002-04-04 22:10:23 fred Exp $
 #
 
 MYNAME	= emisc
 
-SRCS = bnchmk.f example.f
-OBJS = bnchmk.o example.o
+SRCS = bnchmk.f example.f miex01.f
+OBJS = bnchmk.o example.o miex01.o
 
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
@@ -15,3 +15,4 @@ InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 
 FExampleTarget(bnchmk,bnchmk.o)
 FExampleTarget(example,example.o)
+FExampleTarget(miex01,miex01.o)
