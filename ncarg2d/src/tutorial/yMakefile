@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.4 1993-01-13 21:10:20 haley Exp $
+#	$Id: yMakefile,v 1.5 1993-03-05 14:43:30 haley Exp $
 #
 NCARG	= ../../..
 
 SUBDIRS = \
-	tareas tconpack tezmap tsoftfill
+	tareas tconpack tezmap
 
 MakeSubdirs($(SUBDIRS))
 MakefilesSubdirs($(SUBDIRS))
