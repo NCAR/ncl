@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.66 2003-05-20 22:09:52 grubin Exp $
+ *      $Id: AddBuiltIns.c,v 1.67 2003-05-21 18:38:35 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1714,8 +1714,7 @@ void _NclAddBuiltIns
 
     nargs = 0;
     args = NewArgs(1);
-    dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "string", NclANY, NclANY);  nargs++;
     NclRegisterFunc( _NclIFileIsPresent, args, "isfilepresent", nargs);
 
     nargs = 0;
