@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.59 1997-03-06 00:20:56 ethan Exp $
+ *      $Id: Machine.c,v 1.60 1997-04-01 23:45:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -596,6 +596,10 @@ int access_type;
 		previous = (NclFrame*)(thestack + fp);
 		while(i != the_sym->level) {
 			i--;
+			if(i < 0) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclRetrieveRec: Stack underflow\n");
+				return(NULL);
+			}
 			previous = (NclFrame*)((NclStackEntry*)thestack + previous->static_link.u.offset);
 		}
 
@@ -663,24 +667,31 @@ void _NclAbortFrame
 	struct _NclFrameList *tmp;
 	struct _NclFrame *tmp_fp;
 	int n = sb_off - 5;
+	int k = 0;
 
 	if(flist.next != NULL) {
 		while(flist.next != NULL) {
+/*
+* have to pop each incomplete frame off the
+* stack
+*/
 			tmp = flist.next;
 			tmp_fp = (NclFrame*)(thestack + tmp->fp);
+        		sb_off = sb - tmp->fp + sb_off;
+        		sb = tmp->fp;
 			if((tmp_fp->parameter_map.u.the_list->fpsym != NULL) 
 				&&(tmp_fp->parameter_map.u.the_list->fpsym->u.procfunc->thescope != NULL)) {
 				(void)_NclPopScope();
 			}
 			flist.next = flist.next->next;
 			NclFree(tmp);
+			_NclCleanUpStack(sb_off - 5);
+			_NclPopFrame(BPROC_CALL_OP);
+
 		}
-/*
-* May need to reset sb_off
-*/
-		_NclLeaveFrame(current_scope_level-1);
-		_NclCleanUpStack(n);
-		_NclPopFrame(BPROC_CALL_OP);
+		sb_off = sb_off + (sb - fp);
+		sb = fp;
+		flist.next = NULL;
 	}
 }
 
@@ -2475,64 +2486,75 @@ void _NclCleanUpStack
 	int n;
 #endif
 {
-	int i;
+	int i,k;
 	NclStackEntry data;
-	for( i = 0 ; i < n; i++) {
-			data = _NclPop();
-			switch(data.kind) {
-			case NclStk_VAL:
-				if((data.u.data_obj != NULL)&&(data.u.data_obj->obj.status != PERMANENT)) {
-					_NclDestroyObj((NclObj)data.u.data_obj);
-				}
-				break;
-			case NclStk_VAR:
-				if((data.u.data_var != NULL) &&( data.u.data_var->obj.status != PERMANENT)) {
-					_NclDestroyObj((NclObj)data.u.data_var);
-				} 
-				break;
-			case NclStk_SUBREC:
-					_NclFreeSubRec(&data.u.sub_rec);
-				break;
-			default:
-				break;
+
+	if(n == -1) {
+		if(flist.next != NULL) {
+			_NclAbortFrame();
+			k = sb_off;
+		} else {
+			k = sb_off;
+		}
+	} else {
+		k = n;
+	}
+	for( i = 0 ; i < k; i++) {
+		data = _NclPop();
+		switch(data.kind) {
+		case NclStk_VAL:
+			if((data.u.data_obj != NULL)&&(data.u.data_obj->obj.status != PERMANENT)) {
+				_NclDestroyObj((NclObj)data.u.data_obj);
 			}
+			break;
+		case NclStk_VAR:
+			if((data.u.data_var != NULL) &&( data.u.data_var->obj.status != PERMANENT)) {
+				_NclDestroyObj((NclObj)data.u.data_var);
+			} 
+			break;
+		case NclStk_SUBREC:
+				_NclFreeSubRec(&data.u.sub_rec);
+			break;
+		default:
+			break;
 		}
 	}
+}
 
-	int _NclPutRealInstr
-	#if	NhlNeedProto
-	(float val, int line, char* file)
-	#else
-	(val,line,file)
+int _NclPutRealInstr
+#if	NhlNeedProto
+(float val, int line, char* file)
+#else
+(val,line,file)
 	float val;
 	int line;
 	char *file;
-	#endif
-	{
-	/* 
-	* Sometimes the parser needs to know the offset of the instruction it put
-	* into the instruction list (i.e. function return addresses, loops and 
-	* conditionals. Therefore it is necessary to return the offset of the instruct
-	* being placed in the list.
-	*/
-		int old_offset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
+#endif
+{
+/* 
+* Sometimes the parser needs to know the offset of the instruction it put
+* into the instruction list (i.e. function return addresses, loops and 
+* conditionals. Therefore it is necessary to return the offset of the instruct
+* being placed in the list.
+*/
+	int old_offset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
 
-	/*
-	* Check for overflow
-	*/
-		if(mstk->the_rec->pc >= &(mstk->the_rec->themachine[mstk->the_rec->current_machine_size -1])) {
-	/*
-	* Will take care of updating mstk->the_rec->pc
-	*/
-			IncreaseMachineSize();
-		}
-		*((float*)mstk->the_rec->pc++) = val;
-		*(mstk->the_rec->lc++) = line;
-		*(mstk->the_rec->fn++) = file;
-		mstk->the_rec->pcoffset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
-
-		return(old_offset);
+/*
+* Check for overflow
+*/
+	if(mstk->the_rec->pc >= &(mstk->the_rec->themachine[mstk->the_rec->current_machine_size -1])) {
+/*
+* Will take care of updating mstk->the_rec->pc
+*/
+		IncreaseMachineSize();
 	}
+	*((float*)mstk->the_rec->pc++) = val;
+	*(mstk->the_rec->lc++) = line;
+	*(mstk->the_rec->fn++) = file;
+	mstk->the_rec->pcoffset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
+
+	return(old_offset);
+}
 	#ifdef __cplusplus
 	}
 #endif

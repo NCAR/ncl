@@ -220,6 +220,7 @@ digit	[0-9]
 	cur_line_length = 0;
 	*cur_line_text_pos = '\0';
 	cur_line_text_pos = &(cur_line_text[0]);
+	IncLine();
 }
 \;[^\n]*[\n] { 
 	printtoken(yytext[0],(char*)NULL); 

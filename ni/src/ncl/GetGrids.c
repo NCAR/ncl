@@ -504,11 +504,12 @@ int ny;
 /*
 * lat0 is always closest to pole
 */
+/*
 	tlon = (lon1-lon0) / 2.0;
 	tlat = (lat1-lat0) / 2.0;
 	NhlDataToNDC(mapid,&tlon,&tlat,1,&dumx,&dumy,NULL,NULL,&status,&orv);
 	tlon = lon0 + dlon;
-	NhlDataToNDC(mapid,&start_lon,&lat0,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+	NhlDataToNDC(mapid,&lo1,&lat0,1,&nx0,&ny0,NULL,NULL,&status,&orv);
 	NhlDataToNDC(mapid,&tlon,&lat0,1,&nx1,&ny1,NULL,NULL,&status,&orv);
 	ndcdx = fabs(nx0 - nx1);
 	ndcdy = dy/dx * ndcdx;
@@ -527,6 +528,7 @@ int ny;
 		(*lon)[j] = ((*lon)[j] < 0)? ((*lon)[j] + 360) : (*lon)[j];
 	}
 	NclFree(dummy);
+*/
 }
 
 void GetGrid_210
@@ -3184,7 +3186,7 @@ int** dimsizes_lon;
 	int ny;
 	float la1;
 	float lo1;
-	float lov;
+	float lov,tlon;
 	float dx;
 	float dy;
 	float deltax;
@@ -3192,26 +3194,51 @@ int** dimsizes_lon;
 	float latin1;
 	float latin2;
 	int north;
-	float tmp_x[3];
-	float tmp_y[3];
-	float ndc_y_start;
-	float ndc_x_start;
-	float deg_per_gp_y;
+	unsigned char tmpc[4];
 	int status,idir,jdir,i,j;
 	float orv;
 	unsigned char *gds = (unsigned char*)thevarrec->thelist->rec_inq->gds;
+	float nx0,nx1,ny0,ny1;
+	float C,d_per_km,dlon,dlat;
+	float start_ndcx,start_ndcy;
+
 	
 
 
 	nx = UnsignedCnvtToDecimal(2,&(gds[6]));
 	ny = UnsignedCnvtToDecimal(2,&(gds[8]));
-	la1 = (UnsignedCnvtToDecimal(3,&(gds[10])))/1000.0;
-	lo1 = (UnsignedCnvtToDecimal(3,&(gds[13])))/1000.0;
-	lov = (UnsignedCnvtToDecimal(3,&(gds[17])))/1000.0;
+	tmpc[0] = gds[10] & (unsigned char) 0177;
+	tmpc[1] = gds[11];
+	tmpc[2] = gds[12];
+	la1 = (UnsignedCnvtToDecimal(3,tmpc))/1000.0;
+	la1 = ((gds[10] & (unsigned char) 0200)? -la1:la1);
+
+	tmpc[0] = gds[13] & (unsigned char) 0177;
+	tmpc[1] = gds[14];
+	tmpc[2] = gds[15];
+	lo1 = (UnsignedCnvtToDecimal(3,tmpc))/1000.0;
+	lo1 = ((gds[13] & (unsigned char) 0200)? -lo1:lo1);
+
+	tmpc[0] = gds[17] & (unsigned char) 0177;
+	tmpc[1] = gds[18];
+	tmpc[2] = gds[19];
+	lov = (UnsignedCnvtToDecimal(3,tmpc))/1000.0;
+	lov = ((gds[17] & (unsigned char) 0200)? -lov:lov);
+
 	dx = (float)UnsignedCnvtToDecimal(3,&(gds[20]));
 	dy = (float)UnsignedCnvtToDecimal(3,&(gds[23]));
-	latin1 = UnsignedCnvtToDecimal(3,&(gds[28]))/1000.0;
-	latin2 = UnsignedCnvtToDecimal(3,&(gds[31]))/1000.0;
+	tmpc[0] = gds[28] & (unsigned char) 0177;
+	tmpc[1] = gds[29];
+	tmpc[2] = gds[30];
+	latin1 = UnsignedCnvtToDecimal(3,tmpc)/1000.0;
+	latin1 = ((gds[28] & (unsigned char) 0200)? -latin1:latin1);
+
+	tmpc[0] = gds[31] & (unsigned char) 0177;
+	tmpc[1] = gds[32];
+	tmpc[2] = gds[33];
+	latin2 = UnsignedCnvtToDecimal(3,tmpc)/1000.0;
+	latin2 = ((gds[28] & (unsigned char) 0200)? -latin2:latin2);
+
         *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
         *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
         *n_dims_lat = 2;
@@ -3225,28 +3252,96 @@ int** dimsizes_lon;
 	north= ((unsigned char)0200 & (unsigned char)gds[26])?1:0;
 	idir = ((unsigned char)0200 & (unsigned char)gds[27])?-1:1;
 	jdir = ((unsigned char)0100 & (unsigned char)gds[27])?1:-1;
-	if(mapid == -1) {
-		rlist = NhlRLCreate(NhlSETRL);
-		NhlRLClear(rlist);
-		NhlCreate(&vpid,"Map0",NhldummyWorkstationClass,NULL,rlist);
-		NhlRLClear(rlist);
-		NhlRLSetFloat(rlist,NhlNvpXF,0.01);
-		NhlRLSetFloat(rlist,NhlNvpYF,0.99);
-		NhlRLSetFloat(rlist,NhlNvpWidthF,0.98);
-		NhlRLSetFloat(rlist,NhlNvpHeightF,0.98);
-		NhlRLSetString(rlist,NhlNmpProjection,"LAMBERTCONFORMAL");
-		NhlRLSetFloat(rlist,NhlNmpLambertParallel1F,latin1);
-		NhlRLSetFloat(rlist,NhlNmpLambertParallel2F,latin2);
-		NhlRLSetFloat(rlist,NhlNmpLambertMeridianF,lov);
-		NhlCreate(&mapid,"Map0",NhlmapPlotClass,vpid,rlist);
+	if((latin1 < 0)&&(latin2 < 0)) {
+		
+		if(mapid == -1) {
+			rlist = NhlRLCreate(NhlSETRL);
+			NhlRLClear(rlist);
+			NhlCreate(&vpid,"Map0",NhldummyWorkstationClass,NULL,rlist);
+			NhlRLClear(rlist);
+			NhlRLSetFloat(rlist,NhlNvpXF,0.01);
+			NhlRLSetFloat(rlist,NhlNvpYF,0.99);
+			NhlRLSetFloat(rlist,NhlNvpWidthF,0.98);
+			NhlRLSetFloat(rlist,NhlNvpHeightF,0.98);
+			NhlRLSetString(rlist,NhlNmpProjection,"LAMBERTCONFORMAL");
+			NhlRLSetFloat(rlist,NhlNmpLambertParallel1F,(latin1<latin2)?latin1:latin2);
+			NhlRLSetFloat(rlist,NhlNmpLambertParallel2F,(latin1<latin2)?latin2:latin1);
+			NhlRLSetFloat(rlist,NhlNmpLambertMeridianF,lov);
+			NhlCreate(&mapid,"Map0",NhlmapPlotClass,vpid,rlist);
+		} else {
+			NhlRLClear(rlist);
+			NhlRLSetFloat(rlist,NhlNmpLambertParallel1F,(latin1<latin2)?latin1:latin2);
+			NhlRLSetFloat(rlist,NhlNmpLambertParallel2F,(latin1<latin2)?latin2:latin1);
+			NhlRLSetFloat(rlist,NhlNmpLambertMeridianF,lov);
+			NhlSetValues(mapid,rlist);
+		}
+		C = 2 * pi * EAR * cos(degtorad * latin1)*1000.0;
+		d_per_km = 360.0/C;
+		dlon = dx * d_per_km;
+/*
+* latin1 is always closest to pole
+*/
+		tlon = lov + dlon;
+		NhlDataToNDC(mapid,&lov,((latin1<latin2)?&latin1:&latin2),1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		NhlDataToNDC(mapid,&lov,((latin1<latin2)?&latin1:&latin2),1,&nx1,&ny1,NULL,NULL,&status,&orv);
+		deltax = fabs(nx0 - nx1);
+		deltay = dy/dx * deltax;
+		NhlDataToNDC(mapid,&lo1,&la1,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		for(j = 0; j < ny; j++) {
+			for(i = 0; i < nx; i++) {
+				(*lon)[j * nx + i] = nx0 + idir * i * deltax;
+				(*lat)[j * nx + i] = ny0 + jdir * j * deltay;
+			}
+		}
+		NhlNDCToData(mapid,*lon,*lat,nx*ny,*lon,*lat,NULL,NULL,&status,&orv);
 	} else {
-		NhlRLClear(rlist);
-		NhlRLSetFloat(rlist,NhlNmpLambertParallel1F,latin1);
-		NhlRLSetFloat(rlist,NhlNmpLambertParallel2F,latin2);
-		NhlRLSetFloat(rlist,NhlNmpLambertMeridianF,lov);
-		NhlSetValues(mapid,rlist);
+		if(mapid == -1) {
+			rlist = NhlRLCreate(NhlSETRL);
+			NhlRLClear(rlist);
+			NhlCreate(&vpid,"Map0",NhldummyWorkstationClass,NULL,rlist);
+			NhlRLClear(rlist);
+			NhlRLSetFloat(rlist,NhlNvpXF,0.01);
+			NhlRLSetFloat(rlist,NhlNvpYF,0.99);
+			NhlRLSetFloat(rlist,NhlNvpWidthF,0.98);
+			NhlRLSetFloat(rlist,NhlNvpHeightF,0.98);
+			NhlRLSetString(rlist,NhlNmpProjection,"LAMBERTCONFORMAL");
+			NhlRLSetFloat(rlist,NhlNmpLambertParallel1F,(latin1>latin2)?latin1:latin2);
+			NhlRLSetFloat(rlist,NhlNmpLambertParallel2F,(latin1>latin2)?latin2:latin1);
+			NhlRLSetFloat(rlist,NhlNmpLambertMeridianF,lov);
+			NhlCreate(&mapid,"Map0",NhlmapPlotClass,vpid,rlist);
+		} else {
+			NhlRLClear(rlist);
+			NhlRLSetFloat(rlist,NhlNmpLambertParallel1F,(latin1>latin2)?latin1:latin2);
+			NhlRLSetFloat(rlist,NhlNmpLambertParallel2F,(latin1>latin2)?latin2:latin1);
+			NhlRLSetFloat(rlist,NhlNmpLambertMeridianF,lov);
+			NhlSetValues(mapid,rlist);
+		}
+/*
+* Northern case
+*/
+		C = 2 * pi * EAR * cos(degtorad * latin1)*1000.0;
+		d_per_km = 360.0/C;
+		dlon = dx * d_per_km;
+/*
+* latin1 is always closest to pole
+*/
+		tlon = lov + dlon;
+		NhlDataToNDC(mapid,&lov,(latin1>latin2)?&latin1:&latin2,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		NhlDataToNDC(mapid,&tlon,(latin1>latin2)?&latin1:&latin2,1,&nx1,&ny1,NULL,NULL,&status,&orv);
+		deltax = fabs(nx0 - nx1);
+		deltay = dy/dx * deltax;
+		NhlDataToNDC(mapid,&lo1,&la1,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		for(j = 0; j < ny; j++) {
+			for(i = 0; i < nx; i++) {
+				(*lon)[j * nx + i] = nx0 + idir * i * deltax;
+				(*lat)[j * nx + i] = ny0 + jdir * j * deltay;
+			}
+		}
+		NhlNDCToData(mapid,*lon,*lat,nx*ny,*lon,*lat,NULL,NULL,&status,&orv);
 	}
 
+
+/*
 	deg_per_gp_y = 360.0 * (dy / (2 * pi * (ear*1000.0)));
 	tmp_x[0] = lov;
 	tmp_x[1] = lov;
@@ -3267,7 +3362,7 @@ int** dimsizes_lon;
 	}
 	NhlNDCToData(mapid,*lon,*lat,nx*ny,*lon,*lat,NULL,NULL,&status,&orv);
 
-	
+*/	
 	
 	
 	
