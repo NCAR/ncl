@@ -1,5 +1,5 @@
 ;
-;      $Id: skewt_func.ncl,v 1.6 2004-09-14 20:32:52 shea Exp $
+;      $Id: skewt_func.ncl,v 1.7 2005-03-22 23:36:00 fred Exp $
 ;
 ; -------------------------------------------------
 ; This library requires that the "gsn_code.ncl" library
@@ -315,7 +315,7 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
    
   if (localOpts@DrawColAreaFill) then
       color1 = "PaleGreen"       ; "LightGreen"
-      color2 = "MintCream"       ; "Azure"
+      color2 = "White"
       gsOpts = True
       do i=0,ntemp-2
          if (i%2 .eq. 0) then    ; alternate colors
@@ -360,7 +360,7 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
 
       gsOpts@gsFillColor  = color2
       sy(0:2) = (/ ymax, 0.13, ymax   /) ; lower right triangle
-      sx(0:2) = (/ xmax, xmax, 27.0   /) ; skewtx(51.6,ymax)
+      sx(0:2) = (/ xmax, xmax, 26.15  /) ; skewtx(51.6,ymax)
       gsn_polygon(wks, xy, sx(0:2),sy(0:2),gsOpts) 
       delete (gsOpts)
   end if
@@ -687,9 +687,23 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
   if (isatt(localOpts,"colDewPt")) then
       colDewPt  = localOpts@colDewPt              ; new color   
   end if
-
   if (isatt(localOpts,"colCape")) then
       colCape   = localOpts@colCape               ; new color   
+  end if
+  if (isatt(localOpts,"colZLabel")) then
+      colZLabel = localOpts@colZLabel             ; new color   
+  end if
+  if (isatt(localOpts,"colWindP")) then
+      colWindP  = localOpts@colWindP              ; new color   
+  end if
+  if (isatt(localOpts,"colWindZ")) then
+      colWindZ  = localOpts@colWindZ              ; new color   
+  end if
+  if (isatt(localOpts,"colWindH")) then
+      colWindH  = localOpts@colWindH              ; new color   
+  end if
+  if (isatt(localOpts,"colThermoInfo")) then
+      colThermoInfo  = localOpts@colThermoInfo    ; new color   
   end if
                                           ; Change defaults
                                           ; gs settings for gsn_polyline
