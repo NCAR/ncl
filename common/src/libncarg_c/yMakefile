@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.13 1993-11-12 02:43:53 boote Exp $
+#	$Id: yMakefile,v 1.14 1993-12-16 22:32:26 haley Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common C utilities
@@ -19,6 +19,10 @@ SRCS		= options.c misc.c ncarg_path.c version.c \
 		error.c atoargv.c usleep.c $(VMSSRCS)
 OBJS		= options.o misc.o ncarg_path.o version.o \
 		error.o atoargv.o usleep.o $(VMSOBJS)
+
+#if defined(IRIX) && (MAJOR == 5)
+EXTRA_CDEFINES = -D_BSD_TYPES
+#endif
 
 LibraryTarget($(MYNAME),$(OBJS))
 InstallTarget($(HDRS),$(INSTALL_INC),$(NCARGINCPATH))
