@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypeobj.c.specific,v 1.8 1996-08-29 23:39:20 ethan Exp $
+ *      $Id: NclTypeobj.c.specific,v 1.9 1999-07-13 23:24:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -148,16 +148,22 @@ int nargs;
 	int n_dims = 1,len_dims = 1;
 	NhlLayer tmp_layer;
 	NclHLUObj tmp_hlu;
+	NclScalar missing;
 
 	tmp = NclMalloc((unsigned)sizeof(int));
 	tmp_layer = _NhlGetLayer(*(int*)&(from->data));
-	tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,*(int*)&(from->data),-1,tmp_layer->base.layer_class);
-	*(int*)tmp = tmp_hlu->obj.id;
+	missing = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis;
+	if(tmp_layer != NULL) {
+		tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,*(int*)&(from->data),-1,tmp_layer->base.layer_class);
+		*(int*)tmp = tmp_hlu->obj.id;
+	} else {
+		*(int*)tmp = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval; 
+	}
 	
 	
 	tmp_md = _NclMultiDValHLUObjDataCreate(
 		NULL,NULL, Ncl_MultiDValHLUObjData,
-		0,(void*)tmp,NULL,n_dims,
+		0,(void*)tmp,&missing,n_dims,
 		&len_dims,TEMPORARY,NULL);
 	if(to->size < sizeof(NclMultiDValData)) {
 		return(NhlFATAL);

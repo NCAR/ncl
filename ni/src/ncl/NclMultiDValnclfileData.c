@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValnclfileData.c,v 1.8 1997-09-05 22:13:12 ethan Exp $
+ *      $Id: NclMultiDValnclfileData.c,v 1.9 1999-07-13 23:24:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -849,11 +849,13 @@ static NhlErrorTypes MultiDVal_nclfile_s_WriteSection
 */
 
 	val = (int*)value_md->multidval.val;
+/*
 	if(chckmiss) {
 		if(*val == value_md->multidval.missing_value.value.intval){
 			*val = target_md->multidval.missing_value.value.intval;
 		}
 	}
+*/
 	while(!done) {
 		to = 0;
 		for(i = 0; i < n_dims_target;i++) {
