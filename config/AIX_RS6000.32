@@ -1,5 +1,5 @@
 /*
- *      $Id: AIX_RS6000.32,v 1.1 2002-11-21 14:43:50 haley Exp $
+ *      $Id: AIX_RS6000.32,v 1.2 2002-11-27 15:26:22 haley Exp $
  */
 /************************************************************************
 *									*
@@ -23,15 +23,15 @@
  */
 #define HdfDefines    -DIBM6000
 #define StdDefines    -DSYSV -D_POSIX_SOURCE -DRS6000 -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1
-#define CCompiler     xlc
-#define FCompiler     xlf
-#define CcOptions     -q32 -qalign=natural
-#define FcOptions     -q32
+#define CCompiler     xlc_r
+#define FCompiler     xlf_r
+#define CcOptions     -q32 -qalign=natural -qarch=pwr3 -bmaxdata:2000000000 -bmaxstack:256000000 
+#define FcOptions     -q32 -qarch=pwr3 -bmaxdata:2000000000 -bmaxstack:256000000 
 #define LdCommand     ld -b32
 #define ArCommand     ar -X 32
 #define COptimizeFlag -O3 -qstrict
 #define FOptimizeFlag -O3 -qstrict
 #define Cstatic       -bnso
 #define Cdynamic      -bso
-#define CtoFLibraries -lm -lxlf90 -lxlopt
+#define CtoFLibraries -lm -lxlf90
 

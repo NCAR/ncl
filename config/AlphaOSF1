@@ -1,5 +1,5 @@
 /*
- *      $Id: AlphaOSF1,v 1.6 1997-01-09 16:51:30 haley Exp $
+ *      $Id: AlphaOSF1,v 1.7 2002-11-27 15:26:23 haley Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,6 @@
  */
 #define ByteSwapped
 #define	StdDefines	-DByteSwapped -DSYSV -std1
-#define	FCppCommand	/lib/cpp
 #define CtoFLibraries   -lots -lfor -lm
 #define HdfDefines      -DDEC_ALPHA
 
