@@ -1,5 +1,5 @@
 /*
- *	$Id: ncarg_ras.h,v 1.10 1992-09-14 18:57:09 clyne Exp $
+ *	$Id: ncarg_ras.h,v 1.11 1992-09-14 22:20:36 don Exp $
  */
 #ifndef _RASTER_
 #define _RASTER_
@@ -20,7 +20,7 @@ typedef enum {
 #define RAS_DEFAULT_NCOLORS	256
 
 typedef enum {
-	RAS_INVALID_ENCODING,
+	RAS_UNKNOWN,
 	RAS_INDEXED,
 	RAS_DIRECT
 } RasterEncoding;
@@ -302,12 +302,19 @@ extern	int RasterDestroy(
         Raster  *ras
 #endif
 	);
+
 extern	int	RasterStat(
 #ifdef	NeedFuncProto
 	char	*path,
 	char	*format,
 	RasStat	*ras_stat,
 	int	*icount
+#endif
+	);
+
+extern const char *RasterGetFormatFromName(
+#ifdef NeedFuncProto
+	const char	*name
 #endif
 	);
 
