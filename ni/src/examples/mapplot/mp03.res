@@ -42,7 +42,7 @@
 ! spacing, and choose the automatic level selection mode
 !
 *mp03Work.Contour1*cnMaxLevelCount : 22
-*mp03Work.Contour1*cnLevelSelectionMode : automaticlevels
+*mp03Work.Contour1*cnLevelSelectionMode : automatic
 !
 ! set the map labels and grid off
 !
