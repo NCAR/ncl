@@ -1,4 +1,5 @@
 C
+C       $Id: vvdrwb.f,v 1.2 1998-01-21 17:15:16 dbrown Exp $
 C
       SUBROUTINE VVDRWB (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
 C
@@ -122,15 +123,6 @@ C
 C --------------------------------------------------------------------
 C
 C Local parameters
-C
-C Number of points in a triangle
-C
-      PARAMETER (IPAPCT=4)
-C
-C Local arrays
-C
-      DIMENSION IAI(IPAGMX),IAG(IPAGMX)
-      DIMENSION XO(IPAPCT),YO(IPAPCT)
 C
 C  PENINC - Increment for which triangles are drawn.
 C  BRBINC - Increment for which a full tic is drawn.
