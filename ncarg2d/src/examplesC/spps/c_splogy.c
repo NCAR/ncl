@@ -1,5 +1,5 @@
 /*
- * $Id: c_splogy.c,v 1.1 1994-07-27 22:54:06 haley Exp $
+ * $Id: c_splogy.c,v 1.2 1994-07-27 23:03:28 haley Exp $
  */
 
 #include <stdio.h>
@@ -36,8 +36,8 @@ main()
  * Generate a straight line of 100 points.
  */
 	for( i = 0; i < 100; i++ ) {
-		x[i] = (float)i;
-		y[i] = 10.*i;
+		x[i] = (float)(i+1);
+		y[i] = 10.*(i+1);
 	}
 /*
  * Select axes of linear in X, logarithmic in Y,
