@@ -1,4 +1,4 @@
-.TH NCARGINTRO 5NCARG "March 1993" NCAR "NCAR GRAPHICS"
+.TH NCARGINTRO 5NCARG "November 1994" NCAR "NCAR GRAPHICS"
 .SH NAME
 ncargintro \- NCAR Graphics Overview
 .SH SYNOPSIS
@@ -59,6 +59,7 @@ Commands which facilitate compiling and running with NCAR Graphics:
 .sp
 .BR ncargf77(1NCARG),
 .BR ncargcc(1NCARG),
+.BR ncargpath(1NCARG)
 .BR ncargrun(1NCARG)
 .sp
 FORTRAN utilities in NCAR Graphics:
