@@ -1,5 +1,5 @@
 /*
-**      $Id: xy03c.c,v 1.1 1995-02-03 18:16:27 haley Exp $
+**      $Id: xy03c.c,v 1.2 1995-02-04 23:56:36 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -17,13 +17,15 @@
 **
 **  Date:       Fri Jan 27 08:24:42 MST 1995
 **
-**  Description:    This program shows how to create an XY plot with some
-**                  of the XY Plot line resources tweaked.  A resource file
-**                  is used to changed the resources except in those cases
-**                  where a resource has to be change programmatically, like
-**                  array resources.  This program uses the same dataset as
-**                  the example "xy02c", but this time values for the X axis
-**                  are specified, changing the look of the plot.
+**  Description:    This program shows how to create an XY plot object with
+**                  some of the XY Plot line resources tweaked.  A resource
+**                  file is used to changed the resources except in those
+**                  cases where a resource has to be change programmatically,
+**                  like array resources.  This program uses the same dataset
+**                  as the example "xy02c", but this time values for the X
+**                  axis are specified, changing the look of the plot.
+**
+**                  The "CoordArrays" object is used to set up the data.
 */
 
 

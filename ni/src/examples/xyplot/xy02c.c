@@ -1,5 +1,5 @@
 /*
-**      $Id: xy02c.c,v 1.2 1995-02-03 18:16:25 haley Exp $
+**      $Id: xy02c.c,v 1.3 1995-02-04 23:56:35 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -17,11 +17,13 @@
 **
 **  Date:       Fri Jan 27 08:24:42 MST 1995
 **
-**  Description:    This program shows how to create an XY plot with some
-**                  of the XY Plot axis resources tweaked.  A resource file
-**                  is used to changed the resources except in those cases
-**                  where a resource has to be change programmatically, like
-**                  array resources.
+**  Description:    This program shows how to create an XY plot object with
+**                  some of the XY Plot axis resources tweaked.  A resource
+**                  file is used to changed the resources except in those
+**                  cases where a resource has to be change programmatically,
+**                  like array resources.
+**
+**                  The "CoordArrays" object is used to set up the data.
 */
 
 
@@ -63,8 +65,8 @@ main()
 	NhlCreate(&appid,"xy02",NhlappLayerClass,NhlDEFAULT_APP,0);
 	NhlCreate(&xworkid,"xy02Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
 /*
- * Define the data object.  Since only the Y values are specified here, the
- * Y values will be paired with their integer array index.  The id for this
+ * Define the data object.  Since only the Y values are specified here, each
+ * Y values will be paired with its integer array index.  The id for this
  * object will later be used as the value for the XYPlot data resource,
  * "xyCurveData".
  */
