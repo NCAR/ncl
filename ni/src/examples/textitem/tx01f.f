@@ -33,7 +33,6 @@ C
 C Initialize the high level utility library
 C
       call nhlfinitialize
-
 C
 C Create an application context. Set the app dir to the current
 C directory so the application looks for a resource file in the
