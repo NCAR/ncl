@@ -71,7 +71,8 @@ Y-direction (must be 1 or greater).
 .IP "KREG" 12
 (Integer, Input) - 
 First dimension of ZREG 
-as declared in the calling program. KREG³MREG, 
+as declared in the calling program. KREG
+must be greater than or equal to MREG,
 else an error return occurs.
 .IP "XREG(MREG)" 12
 (Real array, Input) - 
