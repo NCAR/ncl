@@ -1,5 +1,5 @@
 /*
- * $Id: ftproto.h,v 1.7 2003-08-11 22:44:01 haley Exp $
+ * $Id: ftproto.h,v 1.8 2003-09-19 23:05:55 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,15 @@
 
 #include <stdio.h>
  
+/*
+ * Prototypes for internal routines.
+ */
+
+extern void *copy_dtof(void *dval, int size);
+extern void *copy_ftod(void *fval, int size);
+extern void convert_to_double(FTdata *z);
+extern void convert_to_float(FTdata *z);
+
 /*
  *  Specify all of the function prototypes.
  */
@@ -68,7 +77,7 @@ int c_ftcurvpdp(int, double [], double [], double, int, double [],
                 double []);
 int c_ftcurvpidp(double, double, double, int, double [], double [], double *);
 int c_ftcurvsdp(int, double [], double [], int, double [], int, double [],
-				double []);
+                double []);
 int c_ftcurvs1dp(int, double [], double [], int, double [],
                  int, double, double, double [], double []);
 int c_ftcurvpsdp(int, double [], double [], double, int, double [],
@@ -76,11 +85,11 @@ int c_ftcurvpsdp(int, double [], double [], double, int, double [],
 int c_ftkurvdp(int, double [], double [], int, double [], double [], 
                double []);
 int c_ftkurvpdp(int, double [], double [], int, double [], double [],
-				double []);
+                double []);
 int c_ftkurvddp(int, double [], double [], int, double [], double [],
-				double [], double [], double [], double [], double []);
+                double [], double [], double [], double [], double []);
 int c_ftkurvpddp(int, double [], double [], int, double [], double [],
-				 double [], double [], double [], double [], double []);
+                 double [], double [], double [], double [], double []);
 double *c_ftsurfdp(int, int, double *, double *, double *,
                    int, int, double *, double *, int *);
 

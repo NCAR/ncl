@@ -1,5 +1,5 @@
 /*
- * $Id: c_ftcurv.c,v 1.7 2003-08-11 22:43:58 haley Exp $
+ * $Id: c_ftcurv.c,v 1.8 2003-09-19 23:05:55 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -387,11 +387,12 @@ int c_ftkurvpd(int n, float xi[], float yi[], int m, float t[],
 }
 
 float *c_ftsurf(int mi, int ni, float *xi, float *yi, float *zi,
-              int mo, int no, float *xo, float *yo, int *ier)
+                int mo, int no, float *xo, float *yo, int *ier)
 {
   int   i, j, sflag;
   float *zp, *temp, *fz, *output;
   float ft_sigma_tmp, ft_z11_tmp, ft_zm1_tmp, ft_z1n_tmp, ft_zmn_tmp;
+  float *ft_zx1_tmp, *ft_zxm_tmp, *ft_zy1_tmp, *ft_zyn_tmp;
 
   fz   = (float *) calloc(mi*ni, sizeof(float));
   zp   = (float *) calloc(3*mi*ni, sizeof(float));
@@ -406,30 +407,63 @@ float *c_ftsurf(int mi, int ni, float *xi, float *yi, float *zi,
       fz[j*mi+i] = zi[i*ni+j];
     }
   }
+/*
+ * zx1, zxn, zy1, and zym are parameter arrays that can either be
+ * float or double. If the user set them as doubles, then we have to
+ * coerce to float since the Fortran routines below expect floats.
+ */
   sflag = 0;
   if (ft_df1 != 0) {
     ft_zx1.size = ni;
-    ft_zx1.data = (float *) calloc(ni, sizeof(float));
-    ft_zx1.type = ft_float;
+    ft_zx1_tmp = (float *) calloc(ni, sizeof(float));
     sflag = sflag + 1;
+  }
+  else {
+    if(ft_zx1.type == ft_double) {
+      ft_zx1_tmp = (float *)copy_dtof(ft_zx1.data,ft_zx1.size);
+    }
+    else {
+      ft_zx1_tmp = (float *)ft_zx1.data;
+    }
   }
   if (ft_df2 != 0) {
     ft_zxm.size = ni;
-    ft_zxm.data = (float *) calloc(ni, sizeof(float));
-    ft_zxm.type = ft_float;
+    ft_zxm_tmp  = (float *) calloc(ni, sizeof(float));
     sflag = sflag + 2;
+  }
+  else {
+    if(ft_zxm.type == ft_double) {
+      ft_zxm_tmp = (float *)copy_dtof(ft_zxm.data,ft_zxm.size);
+    }
+    else {
+      ft_zxm_tmp = (float *)ft_zxm.data;
+    }
   }
   if (ft_df3 != 0) {
     ft_zy1.size = mi;
-    ft_zy1.data = (float *) calloc(mi, sizeof(float));
-    ft_zy1.type = ft_float;
+    ft_zy1_tmp  = (float *) calloc(mi, sizeof(float));
     sflag = sflag + 4;
+  }
+  else {
+    if(ft_zy1.type == ft_double) {
+      ft_zy1_tmp = (float *)copy_dtof(ft_zy1.data,ft_zy1.size);
+    }
+    else {
+      ft_zy1_tmp = (float *)ft_zy1.data;
+    }
   }
   if (ft_df4 != 0) {
     ft_zyn.size = mi;
-    ft_zyn.data = (float *) calloc(mi, sizeof(float));
-    ft_zyn.type = ft_float;
+    ft_zyn_tmp  = (float *) calloc(mi, sizeof(float));
     sflag = sflag + 8;
+  }
+  else {
+    if(ft_zyn.type == ft_double) {
+      ft_zyn_tmp = (float *)copy_dtof(ft_zyn.data,ft_zyn.size);
+    }
+    else {
+      ft_zyn_tmp = (float *)ft_zyn.data;
+    }
   }
   if (ft_df5 != 0) {
     sflag = sflag + 16;
@@ -456,7 +490,7 @@ float *c_ftsurf(int mi, int ni, float *xi, float *yi, float *zi,
   ft_zmn_tmp   = (float) ft_zmn;
 
   NGCALLF(surf1,SURF1)(&mi, &ni, xi, yi, fz, &mi, 
-          ft_zx1.data, ft_zxm.data, ft_zy1.data, ft_zyn.data,
+          ft_zx1_tmp, ft_zxm_tmp, ft_zy1_tmp, ft_zyn_tmp,
           &ft_z11_tmp, &ft_zm1_tmp, &ft_z1n_tmp, &ft_zmn_tmp, &sflag,
           zp, temp, &ft_sigma_tmp, &ft_err);
 
@@ -476,19 +510,19 @@ float *c_ftsurf(int mi, int ni, float *xi, float *yi, float *zi,
   free(temp);
   if (ft_df1 != 0) {
     ft_zx1.size = 0;
-    free(ft_zx1.data);
+    free(ft_zx1_tmp);
   }
   if (ft_df2 != 0) {
     ft_zxm.size = ni;
-    free(ft_zxm.data);
+    free(ft_zxm_tmp);
   }
   if (ft_df3 != 0) {
     ft_zy1.size = mi;
-    free(ft_zy1.data);
+    free(ft_zy1_tmp);
   }
   if (ft_df4 != 0) {
     ft_zyn.size = mi;
-    free(ft_zyn.data);
+    free(ft_zyn_tmp);
   }
   return(output);
 }
@@ -813,10 +847,11 @@ int c_ftkurvpddp(int n, double xi[], double yi[], int m, double t[],
 }
 
 double *c_ftsurfdp(int mi, int ni, double *xi, double *yi, double *zi,
-              int mo, int no, double *xo, double *yo, int *ier)
+                   int mo, int no, double *xo, double *yo, int *ier)
 {
   int   i, j, sflag;
   double *zp, *temp, *fz, *output;
+  double *ft_zx1_tmp, *ft_zxm_tmp, *ft_zy1_tmp, *ft_zyn_tmp;
 
   fz   = (double *) calloc(mi*ni, sizeof(double));
   zp   = (double *) calloc(3*mi*ni, sizeof(double));
@@ -831,30 +866,63 @@ double *c_ftsurfdp(int mi, int ni, double *xi, double *yi, double *zi,
       fz[j*mi+i] = zi[i*ni+j];
     }
   }
+/*
+ * zx1, zxn, zy1, and zym are parameter arrays that can either be
+ * float or double. If the user set them as floats, then we have to
+ * coerce to double since the Fortran routines below expect doubles
+ */
   sflag = 0;
   if (ft_df1 != 0) {
     ft_zx1.size = ni;
-    ft_zx1.data = (double *) calloc(ni, sizeof(double));
-    ft_zx1.type = ft_double;
+    ft_zx1_tmp  = (double *) calloc(ni, sizeof(double));
     sflag = sflag + 1;
+  }
+  else {
+    if(ft_zx1.type == ft_float) {
+      ft_zx1_tmp = (double *)copy_ftod(ft_zx1.data,ft_zx1.size);
+    }
+    else {
+      ft_zx1_tmp = (double *)ft_zx1.data;
+    }
   }
   if (ft_df2 != 0) {
     ft_zxm.size = ni;
-    ft_zxm.data = (double *) calloc(ni, sizeof(double));
-    ft_zxm.type = ft_double;
+    ft_zxm_tmp  = (double *) calloc(ni, sizeof(double));
     sflag = sflag + 2;
+  }
+  else {
+    if(ft_zxm.type == ft_float) {
+      ft_zxm_tmp = (double *)copy_ftod(ft_zxm.data,ft_zxm.size);
+    }
+    else {
+      ft_zxm_tmp = (double *)ft_zxm.data;
+    }
   }
   if (ft_df3 != 0) {
     ft_zy1.size = mi;
-    ft_zy1.data = (double *) calloc(mi, sizeof(double));
-    ft_zy1.type = ft_double;
+    ft_zy1_tmp  = (double *) calloc(mi, sizeof(double));
     sflag = sflag + 4;
+  }
+  else {
+    if(ft_zy1.type == ft_float) {
+      ft_zy1_tmp = (double *)copy_ftod(ft_zy1.data,ft_zy1.size);
+    }
+    else {
+      ft_zy1_tmp = (double *)ft_zy1.data;
+    }
   }
   if (ft_df4 != 0) {
     ft_zyn.size = mi;
-    ft_zyn.data = (double *) calloc(mi, sizeof(double));
-    ft_zyn.type = ft_double;
+    ft_zyn_tmp  = (double *) calloc(mi, sizeof(double));
     sflag = sflag + 8;
+  }
+  else {
+    if(ft_zyn.type == ft_float) {
+      ft_zyn_tmp = (double *)copy_ftod(ft_zyn.data,ft_zyn.size);
+    }
+    else {
+      ft_zyn_tmp = (double *)ft_zyn.data;
+    }
   }
   if (ft_df5 != 0) {
     sflag = sflag + 16;
@@ -870,7 +938,7 @@ double *c_ftsurfdp(int mi, int ni, double *xi, double *yi, double *zi,
   }
   
   NGCALLF(surf1dp,SURF1DP)(&mi, &ni, xi, yi, fz, &mi, 
-          ft_zx1.data, ft_zxm.data, ft_zy1.data, ft_zyn.data,
+          ft_zx1_tmp, ft_zxm_tmp, ft_zy1_tmp, ft_zyn_tmp,
           &ft_z11, &ft_zm1, &ft_z1n, &ft_zmn, &sflag,
           zp, temp, &ft_sigma, &ft_err);
 
@@ -890,19 +958,19 @@ double *c_ftsurfdp(int mi, int ni, double *xi, double *yi, double *zi,
   free(temp);
   if (ft_df1 != 0) {
     ft_zx1.size = 0;
-    free(ft_zx1.data);
+    free(ft_zx1_tmp );
   }
   if (ft_df2 != 0) {
     ft_zxm.size = ni;
-    free(ft_zxm.data);
+    free(ft_zxm_tmp );
   }
   if (ft_df3 != 0) {
     ft_zy1.size = mi;
-    free(ft_zy1.data);
+    free(ft_zy1_tmp );
   }
   if (ft_df4 != 0) {
     ft_zyn.size = mi;
-    free(ft_zyn.data);
+    free(ft_zyn_tmp );
   }
   return(output);
 }

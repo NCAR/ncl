@@ -1,5 +1,5 @@
 /*
- * $Id: ftuser.c,v 1.5 2003-08-11 22:44:01 haley Exp $
+ * $Id: ftuser.c,v 1.6 2003-09-19 23:05:56 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -18,7 +18,7 @@
 * General Public License for more details.                              *
 *                                                                       *
 * You should have received a copy of the GNU General Public License     *
-* along with this software; if not, write to the Free Software         *
+* along with this software; if not, write to the Free Software          *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307   *
 * USA.                                                                  *
 *                                                                       *
@@ -36,7 +36,7 @@ void *copy_dtof(void *dval, int size)
 
    fval = (float *) calloc(size, sizeof(float));
    for( i = 0; i < size; i++ ) {
-      ((float*)fval)[i]  = (float)((double*)dval)[i];
+     ((float*)fval)[i]  = (float)((double*)dval)[i];
    }
    return(fval);
 }
@@ -51,9 +51,47 @@ void *copy_ftod(void *fval, int size)
 
    dval = (double *) calloc(size, sizeof(double));
    for( i = 0; i < size; i++ ) {
-       ((double*)dval)[i]  = (double)((float*)fval)[i];
+     ((double*)dval)[i]  = (double)((float*)fval)[i];
    }
    return(dval);
+}
+
+/*
+ * Copy double data to float array, using a void array. 
+ */
+void convert_to_float(FTdata *z)
+{
+   int i;
+   void *fval;
+
+   fval = copy_dtof(z->data,z->size);
+   if(fval != NULL) {
+/* 
+ * Free up old pointer, and point to new memory.
+ */
+     free(z->data);
+     z->data = fval;
+     z->type = ft_float;
+   }
+}
+
+/*
+ * Copy float data to double array, using a void array. 
+ */
+void convert_to_double(FTdata *z)
+{
+   int i;
+   void *dval;
+
+   dval = copy_ftod(z->data,z->size);
+   if(dval != NULL) {
+/* 
+ * Free up old pointer, and point to new memory.
+ */
+     free(z->data);
+     z->data = dval;
+     z->type = ft_double;
+   }
 }
 
 /*
@@ -336,23 +374,23 @@ int c_ftsetfa(char *pnam, int n, float *far)
 {
    if (!strncmp(pnam,"zx1",3) || !strncmp(pnam,"ZX1",3)) {
       ft_zx1.size = n;
-	  ft_zx1.data = (float *) far;
+      ft_zx1.data = far;
       ft_zx1.type = ft_float;
    }
    else if (!strncmp(pnam,"zxm",3) || !strncmp(pnam,"ZXM",3)) {
       ft_zxm.size = n;
       ft_zxm.type = ft_float;
-	  ft_zxm.data = (float *) far;
+      ft_zxm.data = far;
    }
    else if (!strncmp(pnam,"zy1",3) || !strncmp(pnam,"ZY1",3)) {
       ft_zy1.size = n;
       ft_zy1.type = ft_float;
-	  ft_zy1.data = (float *) far;
+      ft_zy1.data = far;
    }
    else if (!strncmp(pnam,"zyn",3) || !strncmp(pnam,"ZYN",3)) {
       ft_zyn.size = n;
       ft_zyn.type = ft_float;
-	  ft_zyn.data = (float *) far;
+      ft_zyn.data = far;
    }
    else {
       return(1);
@@ -366,22 +404,22 @@ int c_ftsetda(char *pnam, int n, double *dar)
 {
    if (!strncmp(pnam,"zx1",3) || !strncmp(pnam,"ZX1",3)) {
       ft_zx1.size = n;
-	  ft_zx1.data = (double *) dar;
+      ft_zx1.data = dar;
       ft_zx1.type = ft_double;
    }
    else if (!strncmp(pnam,"zxm",3) || !strncmp(pnam,"ZXM",3)) {
       ft_zxm.size = n;
-	  ft_zxm.data = (double *) dar;
+      ft_zxm.data = dar;
       ft_zxm.type = ft_double;
    }
    else if (!strncmp(pnam,"zy1",3) || !strncmp(pnam,"ZY1",3)) {
       ft_zy1.size = n;
-	  ft_zy1.data = (double *) dar;
+      ft_zy1.data = dar;
       ft_zy1.type = ft_double;
    }
    else if (!strncmp(pnam,"zyn",3) || !strncmp(pnam,"ZYN",3)) {
       ft_zyn.size = n;
-	  ft_zyn.data = (double *) dar;
+      ft_zyn.data = dar;
       ft_zyn.type = ft_double;
    }
    else {
@@ -414,44 +452,36 @@ int c_ftgetfa_size(char *pnam)
 
 
 /*
- *  Retreive floating array data.
+ *  Retrieve floating array data.
+ *
+ * If ft_xxxx.type is ft_double, this means that the user set
+ * this parameter using c_ftsetda, and thus we'll have to
+ * convert it to float.
  */
 float *c_ftgetfa_data(char *pnam)
 {
    void *fval;
    if (!strncmp(pnam,"zx1",3) || !strncmp(pnam,"ZX1",3)) {
       if(ft_zx1.type == ft_double) {
-         ft_zx1.type = ft_float;
-         fval        = copy_dtof(ft_zx1.data,ft_zx1.size);
-         free(ft_zx1.data);
-		 ft_zx1.data = fval;
+         convert_to_float(&ft_zx1);
       }
       return((float *)ft_zx1.data);
    }
    else if (!strncmp(pnam,"zxm",3) || !strncmp(pnam,"ZXM",3)) {
       if(ft_zxm.type == ft_double) {
-         ft_zxm.type = ft_float;
-         fval =      copy_dtof(ft_zxm.data,ft_zxm.size);
-         free(ft_zxm.data);
-         ft_zxm.data = fval;
+         convert_to_float(&ft_zxm);
       }
       return((float *)ft_zxm.data);
    }
    else if (!strncmp(pnam,"zy1",3) || !strncmp(pnam,"ZY1",3)) {
       if(ft_zy1.type == ft_double) {
-         ft_zy1.type = ft_float;
-         fval =      copy_dtof(ft_zy1.data,ft_zy1.size);
-         free(ft_zy1.data);
-         ft_zy1.data = fval;
+         convert_to_float(&ft_zy1);
       }
       return((float *)ft_zy1.data);
    }
    else if (!strncmp(pnam,"zyn",3) || !strncmp(pnam,"ZYN",3)) {
       if(ft_zyn.type == ft_double) {
-         ft_zyn.type = ft_float;
-         fval =      copy_dtof(ft_zyn.data,ft_zyn.size);
-         free(ft_zyn.data);
-         ft_zyn.data = fval;
+         convert_to_float(&ft_zyn);
       }
       return((float *)ft_zyn.data);
    }
@@ -461,49 +491,41 @@ float *c_ftgetfa_data(char *pnam)
 }
 
 /*
- *  Retreive double array data.
+ *  Retrieve double array data.
+ *
+ * If ft_xxxx.type is ft_float, this means that the user set
+ * this parameter using c_ftsetra, and thus we'll have to
+ * convert it to double.
  */
 double *c_ftgetda_data(char *pnam)
 {
    void *dval;
    if (!strncmp(pnam,"zx1",3) || !strncmp(pnam,"ZX1",3)) {
-      if(ft_zx1.type == ft_float) {
-         ft_zx1.type = ft_double;
-         dval        = copy_ftod(ft_zx1.data,ft_zx1.size);
-         free(ft_zx1.data);
-		 ft_zx1.data = dval;
-      }
-      return((double *)ft_zx1.data);
+     if(ft_zx1.type == ft_float) {
+       convert_to_double(&ft_zx1);
+     }
+     return((double *)ft_zx1.data);
    }
    else if (!strncmp(pnam,"zxm",3) || !strncmp(pnam,"ZXM",3)) {
-	 if(ft_zxm.type == ft_float) {
-        ft_zxm.type = ft_double;
-	    dval        = copy_ftod(ft_zxm.data,ft_zxm.size);
-	    free(ft_zxm.data);
-	    ft_zxm.data = dval;
-	  }
-      return((double *)ft_zxm.data);
+     if(ft_zxm.type == ft_float) {
+       convert_to_double(&ft_zxm);
+     }
+     return((double *)ft_zxm.data);
    }
    else if (!strncmp(pnam,"zy1",3) || !strncmp(pnam,"ZY1",3)) {
-	  if(ft_zy1.type == ft_float) {
- 	     ft_zy1.type = ft_double;
-	     dval        = copy_ftod(ft_zy1.data,ft_zy1.size);
-	     free(ft_zy1.data);
-	     ft_zy1.data = dval;
- 	  }
-      return((double *)ft_zy1.data);
+     if(ft_zy1.type == ft_float) {
+       convert_to_double(&ft_zy1);
+     }
+     return((double *)ft_zy1.data);
    }
    else if (!strncmp(pnam,"zyn",3) || !strncmp(pnam,"ZYN",3)) {
-	  if(ft_zyn.type == ft_float) {
-	     ft_zyn.type = ft_double;
-	     dval      = copy_ftod(ft_zyn.data,ft_zyn.size);
-	     free(ft_zyn.data);
-	     ft_zyn.data = dval;
-  	  }
-      return((double *)ft_zyn.data);
+     if(ft_zyn.type == ft_float) {
+       convert_to_double(&ft_zyn);
+     }
+     return((double *)ft_zyn.data);
    }
    else {
-      return(NULL);
+     return(NULL);
    }
 }
 
