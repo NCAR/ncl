@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.3 1995-02-15 22:39:17 haley Exp $
+#   $Id: yMakefile,v 1.4 1995-03-20 19:16:15 stautler Exp $
 #
 #   Makefile for HLU MapPlot examples
 #
@@ -11,6 +11,7 @@ EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
 CSRCS    = mp01c.c mp02c.c mp03c.c
+NSRCS    = mp01n.ncl mp02n.ncl
 FSRCS    = mp01f.f mp02f.f mp03f.f
 COBJS    = mp01c.o mp02c.o mp03c.o
 FOBJS    = mp01f.o mp02f.o mp03f.o
@@ -19,6 +20,7 @@ OBJS     = $(COBJS) $(FOBJS)
 RESFILES = mp01.res mp02.res mp03.res
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
 HLUCExampleTarget(mp01c,mp01c.o)
