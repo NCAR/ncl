@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.45 1995-05-03 22:42:33 clyne Exp $
+#	$Id: yMakefile,v 1.46 1995-05-18 20:24:03 clyne Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -103,7 +103,7 @@ YUV_DEFS =	-DBuildRasterYUV
 EXTRA_DEFINES =	$(HDF_DEFS) $(HPPCL_DEFS) $(NRIF_DEFS) $(SUN_DEFS) \
 		$(XWD_DEFS) $(PARALLAX_DEFS) $(AVS_DEFS) $(SGI_DEFS) \
 		$(ABEKAS_DEFS) $(NETCDF_DEFS) $(BINARY_DEFS) $(YUV_DEFS) \
-		-DNGTMPDIR='"$(NGTMPDIR)"'
+		-DNGTMPDIR='"$(NGTMPDIR)"' $(ARCH_DEF)
 
 DEVICE_OBJS =	$(HDF_OBJS) $(HPPCL_OBJS) $(NRIF_OBJS) $(SUN_OBJS) \
 		$(XWD_OBJS) $(PARALLAX_OBJS) $(AVS_OBJS) $(SGI_OBJS) \

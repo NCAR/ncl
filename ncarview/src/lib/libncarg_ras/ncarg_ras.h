@@ -1,5 +1,5 @@
 /*
- *	$Id: ncarg_ras.h,v 1.17 1995-04-20 18:50:43 clyne Exp $
+ *	$Id: ncarg_ras.h,v 1.18 1995-05-18 20:23:58 clyne Exp $
  */
 #ifndef _RASTER_
 #define _RASTER_
@@ -152,8 +152,10 @@ typedef struct _RasterfileStruct {
 
 #ifdef CRAY
 #define B32	:32
+#define B16	:16
 #else
 #define B32
+#define B16
 #endif /* CRAY */
 
 /**************************** ERROR CODES ********************************/

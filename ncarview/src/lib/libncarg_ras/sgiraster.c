@@ -1,5 +1,5 @@
 /*
- *	$Id: sgiraster.c,v 1.7 1995-05-03 22:42:31 clyne Exp $
+ *	$Id: sgiraster.c,v 1.8 1995-05-18 20:23:59 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -46,6 +46,22 @@ static int	_SGIReadPixelInterleaved();
 static int	_SGIReadScanplaneInterleaved();
 static int	_SGIExpandRLE();
 static int	_SGIExpand();
+
+static void	swap_sgiinfo(
+	SGIInfo		*sgiinfo
+) {
+	_swapshort((char *) &sgiinfo->imagic, sizeof(sgiinfo->imagic));
+	_swapshort((char *) &sgiinfo->type, sizeof(sgiinfo->type));
+	_swapshort((char *) &sgiinfo->dim, sizeof(sgiinfo->dim));
+	_swapshort((char *) &sgiinfo->xsize, sizeof(sgiinfo->xsize));
+	_swapshort((char *) &sgiinfo->ysize, sizeof(sgiinfo->ysize));
+	_swapshort((char *) &sgiinfo->zsize, sizeof(sgiinfo->zsize));
+
+	_swaplong((char *) &sgiinfo->min, sizeof(sgiinfo->min));
+	_swaplong((char *) &sgiinfo->max, sizeof(sgiinfo->max));
+	_swaplong((char *) &sgiinfo->wastebytes, sizeof(sgiinfo->wastebytes));
+	
+}
 
 Raster *
 SGIOpen(name)
@@ -121,8 +137,8 @@ SGIRead(ras)
 	disk screws up temp storage for multiple frame files.
 	*/
 
-	hdr_length = sizeof(SGIInfo) - 3 * sizeof(unsigned short *) -
-		 2 * sizeof(long) - 2 * sizeof(unsigned long *);
+	hdr_length = sizeof(SGIInfo) - 3 * sizeof(UInt16_T *) -
+		 2 * sizeof(UInt32_T) - 2 * sizeof(UInt32_T *);
 
 	/* Read the SGI raster file header and swap bytes if necessary. */
 
@@ -138,7 +154,7 @@ SGIRead(ras)
 
 	/* Swap those bytes. */
 	if (*(char *) &swaptest) {
-		_swaplong((char *) dep, sizeof(SGIInfo));
+		swap_sgiinfo(dep);
 	}
 
 	/* Make sure magic number is there. */
@@ -205,8 +221,8 @@ SGIRead(ras)
 		just to be safe.
 		*/
 
-		dep->tmpbuf = (unsigned short *) ras_calloc(3*dep->xsize, 1);
-		if (dep->tmpbuf == (unsigned short *) NULL) {
+		dep->tmpbuf = (UInt16_T *) ras_calloc(3*dep->xsize, 1);
+		if (dep->tmpbuf == (UInt16_T *) NULL) {
 			(void) ESprintf(errno, "SGIRead(\"%s\")", ras->name);
 			return(RAS_ERROR);
 		}
@@ -253,12 +269,12 @@ SGIRead(ras)
 	if (SGI_ISRLE(dep->type)) { /* We've got an RLE file. */
 
 		/* Allocate memory for RLE tables. */
-		tablesize = dep->ysize * dep->zsize * sizeof(long);
-		dep->rowstart = (unsigned long *) ras_calloc(tablesize, 1);
-		dep->rowsize  = (long *) ras_calloc(tablesize, 1);
+		tablesize = dep->ysize * dep->zsize * sizeof(Int32_T);
+		dep->rowstart = (UInt32_T *) ras_calloc(tablesize, 1);
+		dep->rowsize  = (Int32_T *) ras_calloc(tablesize, 1);
 
-		if (dep->rowstart == (unsigned long *) NULL ||
-		    dep->rowsize  == (long *) NULL) {
+		if (dep->rowstart == (UInt32_T *) NULL ||
+		    dep->rowsize  == (Int32_T *) NULL) {
 			(void) ESprintf(errno, "SGIRead(\"%s\")", ras->name);
 			return(RAS_ERROR);
 		}
@@ -583,7 +599,7 @@ SGIWrite(ras)
 	/* Write the header, swapping bytes if necessary. */
 
 	if (*(char *) &swaptest)
-		_swaplong((char *) dep, sizeof(SGIInfo));
+		swap_sgiinfo(dep);
 
 	nb = fwrite(ras->dep, sizeof(SGIInfo),1, ras->fp);
 	if (nb != 1) {
@@ -693,10 +709,10 @@ SGIClose(ras)
 
 	dep = (SGIInfo *) ras->dep;
 
-	if (dep->rowstart != (unsigned long *)NULL)
+	if (dep->rowstart != (UInt32_T *)NULL)
 		ras_free((void *)dep->rowstart);
 
-	if(dep->rowsize  != (long *) NULL) {
+	if(dep->rowsize  != (Int32_T *) NULL) {
 		ras_free( (void *) dep->rowsize);
 	}
 

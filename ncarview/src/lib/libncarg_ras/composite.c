@@ -1,11 +1,11 @@
 /*
- *	$Id: composite.c,v 1.4 1992-09-10 21:34:02 don Exp $
+ *	$Id: composite.c,v 1.5 1995-05-18 20:23:57 clyne Exp $
  */
 #include <stdio.h>
 #include "ncarg_ras.h"
 
 /**********************************************************************
- *	Function: RasterDissolve(a, b, dst, alpha)
+ *	Function: RasterDissolve(a, b, dst, alpha1)
  *
  *	Author:	Don Middleton
  *		National Center for Atmospheric Research
@@ -18,25 +18,25 @@
  *		RasterDissolve combines two images according to the
  *		standard dissolve equation:
  *
- *			dst = a * alpha + b * (1 - alpha)
+ *			dst = a * alpha1 + b * (1 - alpha1)
  *		
- *		If alpha is 1.0, "dst" is "a". If alpha is 0.0,
+ *		If alpha1 is 1.0, "dst" is "a". If alpha1 is 0.0,
  *		"dst" is "b".
  *
  *		"a" and "b" can be Raster* structures of any
  *		type. "dst" must be a preallocated (Raster *)
- *		structure of type RAS_DIRECT. "alpha" is a float.
+ *		structure of type RAS_DIRECT. "alpha1" is a float.
  *		
  *********************************************************************/
 int
-RasterDissolve(a, b, dst, alpha)
+RasterDissolve(a, b, dst, alpha1)
 	Raster		*a, *b, *dst;
-	float		alpha;
+	float		alpha1;
 {
 	int		p, nx, ny, x, y;
 	RasterEncoding	atype, btype;
 	unsigned char	ra, ga, ba, rb, gb, bb;
-	float		p_alpha[256], p_alpha_one[256];
+	float		p_alpha1[256], p_alpha1_one[256];
 
 	if (a->nx != b->nx || a->ny != b->ny) {
 		(void) ESprintf(RAS_E_PROGRAMMING,
@@ -54,8 +54,8 @@ RasterDissolve(a, b, dst, alpha)
 	atype = a->type; btype = b->type;
 
 	for(p=0; p<256; p++) {
-		p_alpha[p] = (float) p * alpha;
-		p_alpha_one[p] = (float) p * (1.0 - alpha);
+		p_alpha1[p] = (float) p * alpha1;
+		p_alpha1_one[p] = (float) p * (1.0 - alpha1);
 	}
 
 	for(y = 0; y < ny; y++) {
@@ -85,11 +85,11 @@ RasterDissolve(a, b, dst, alpha)
 		}
 
 		DIRECT_RED(dst, x, y) = (unsigned char)
-					p_alpha[ra] + p_alpha_one[rb];
+					p_alpha1[ra] + p_alpha1_one[rb];
 		DIRECT_GREEN(dst, x, y) = (unsigned char) 
-					p_alpha[ga] + p_alpha_one[gb];
+					p_alpha1[ga] + p_alpha1_one[gb];
 		DIRECT_BLUE(dst, x, y) = (unsigned char)
-					p_alpha[ba] + p_alpha_one[bb];
+					p_alpha1[ba] + p_alpha1_one[bb];
 	}}
 	return(RAS_OK);
 }

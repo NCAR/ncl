@@ -39,36 +39,48 @@ SGI reserves 512 bytes for the header, but the structure itself
 is not (yet) that large.
 */
 
+#ifdef	alpha
+typedef	unsigned int	UInt32_T;
+typedef	unsigned short	UInt16_T;
+typedef	int		Int32_T;
+typedef	short		Int16_T;
+#else
+typedef	unsigned long	UInt32_T;
+typedef	unsigned short	UInt16_T;
+typedef	long		Int32_T;
+typedef	short		Int16_T;
+#endif
+
 #define RAS_SGI_RESERVED	512
 
 typedef struct {
 	/* Saved on disk. */
-	unsigned short	imagic;
-	unsigned short 	type;
-	unsigned short 	dim;
-	unsigned short 	xsize;
-	unsigned short 	ysize;
-	unsigned short 	zsize;
-	unsigned long 	min;
-	unsigned long 	max;
-	unsigned long	wastebytes;	
+	UInt16_T	imagic B16;
+	UInt16_T 	type B16;
+	UInt16_T 	dim B16;
+	UInt16_T 	xsize B16;
+	UInt16_T 	ysize B16;
+	UInt16_T 	zsize B16;
+	UInt32_T 	min B32;
+	UInt32_T 	max B32;
+	UInt32_T	wastebytes B32;	
 	char 		name[80];
-	SgiColormapType	colormap;
+	SgiColormapType	colormap B32;
 	/* Used in memory. */
-	long 		file;
-	unsigned short 	flags;
-	short		dorev;
-	short		x;
-	short		y;
-	short		z;
-	short		cnt;
-	unsigned short	*ptr;
-	unsigned short	*base;
-	unsigned short	*tmpbuf;
-	unsigned long	offset;
-	unsigned long	rleend;		/* for rle images */
-	unsigned long	*rowstart;	/* for rle images */
-	long		*rowsize;	/* for rle images */
+	Int32_T 	file B32;
+	UInt16_T 	flags B16;
+	Int16_T		dorev B16;
+	Int16_T		x B16;
+	Int16_T		y B16;
+	Int16_T		z B16;
+	Int16_T		cnt B16;
+	UInt16_T	*ptr B16;
+	UInt16_T	*base B16;
+	UInt16_T	*tmpbuf B16;
+	UInt32_T	offset B32;
+	UInt32_T	rleend B32;		/* for rle images */
+	UInt32_T	*rowstart B32;	/* for rle images */
+	Int32_T		*rowsize B32;	/* for rle images */
 } SGIInfo;
 
 #endif	/* !__SGIRASTER_H__ */
