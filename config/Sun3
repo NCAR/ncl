@@ -15,7 +15,7 @@
 /*
 **  Stuff that should be edited by Configure
 */
-VERSION           = 3.2.x
+VERSION           = 3.2.alpha
 BINROOT           = /usr/local/bin
 LIBROOT           = /usr/local/lib
 INCROOT           = /usr/local/include
@@ -112,11 +112,11 @@ FLOAT_OPT         = -fswitch
 OS                =
 ARCH              =
 VDEFINE           = -DVERSION='"$(VERSION)"'
-CC                = acc
+CC                = cc
 CC_LD             = $(CC)
 CDEBUG            =
 COPT              = -O
-CMISC             = -Xa -DNeedFuncProto
+CMISC             =
 CINC              = $(INC_SEARCH)
 CFLAGS            = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
                     $(FLOAT_OPT) $(CINC) $(VDEFINE)
