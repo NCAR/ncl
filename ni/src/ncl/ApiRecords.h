@@ -4,6 +4,7 @@ typedef struct _NclApiFuncInfoRec NclApiFuncInfoRec;
 typedef struct _NclApiVarInfoRec NclApiVarInfoRec;
 typedef struct _NclApiFileInfoRec NclApiFileInfoRec;
 typedef struct _NclApiHLUVarInfoRec NclApiHLUVarInfoRec;
+typedef struct _NclApiHLUObjInfoRec NclApiHLUObjInfoRec;
 typedef struct _NclApiHLUInfoRec NclApiHLUInfoRec;
 
 #define VARIABLE_LIST 1
@@ -11,6 +12,7 @@ typedef struct _NclApiHLUInfoRec NclApiHLUInfoRec;
 #define FILE_LIST 3
 #define FILEVAR_LIST 4
 #define HLU_LIST 5
+#define HLUOBJ_LIST 6
 
 struct  _NclApiDataList {
 	int kind;
@@ -20,7 +22,14 @@ struct  _NclApiDataList {
 		struct _NclApiVarInfoRec *var;
 		struct _NclApiFileInfoRec *file;
 		struct _NclApiHLUVarInfoRec *hlu;
+		struct _NclApiHLUObjInfoRec *hlu_obj;
 	} u;
+};
+
+struct _NclApiHLUObjInfoRec {
+	NclQuark name;
+	int obj_id;
+	NhlLayerClass obj_class;
 };
 struct _NclApiHLUVarInfoRec {
 	NclQuark name;

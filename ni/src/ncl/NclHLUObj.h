@@ -34,6 +34,7 @@ typedef struct _NclHLUChildList NclHLUChildList;
 typedef struct _NclHLUObjPart {
 	int hlu_id;
 	int parent_hluobj_id;
+	NhlLayerClass class_ptr;
 	NclHLUChildList *c_list;
 }NclHLUObjPart;
  
@@ -61,7 +62,8 @@ NclObjTypes /*obj_type */,
 unsigned int /*obj_type_mask*/, 
 NclStatus /*status*/, 
 int /*id*/,
-int /* pid*/
+int /* pid*/,
+NhlLayerClass /* class_ptr */
 #endif
 );
 

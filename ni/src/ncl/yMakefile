@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.21 1994-11-07 15:07:52 boote Exp $
+#      $Id: yMakefile,v 1.22 1994-11-10 20:59:38 ethan Exp $
 #
 #########################################################################
 #									#
@@ -97,8 +97,8 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			Symbol.c Translate.c VarSupport.c NclFileVar.c \
 			NclHLUVar.c HLUSupport.c
 
-API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o
-EXE_OBJS	=	Ncl.o yywrap.o scanner.o parser.o io.o
+API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o
+EXE_OBJS	=	Ncl.o yywrap.o scanner.o parser.o io.o NclHLUObj.o
 
 APIOBJS		=	$(API_OBJS) $(OBJS)
 EXEOBJS		=	$(EXE_OBJS) $(OBJS)
@@ -114,7 +114,7 @@ GEN_OBJS	=	NclMultiDValdoubleData.o NclMultiDValfloatData.o \
 STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			AddIntrinsics.o AttSupport.o DataSupport.o Execute.o \
 			FileSupport.o Formats.o InitData.o Machine.o Memory.o \
-			NclAtt.o NclData.o NclFile.o NclHLUObj.o \
+			NclAtt.o NclData.o NclFile.o \
 			NclMultiDValData.o NclMultiDValHLUObjData.o \
 			NclNetCdf.o NclVar.o OpsFuncs.o Printtoken.o SrcTree.o \
 			Symbol.o Translate.o VarSupport.o NclFileVar.o \
@@ -140,6 +140,9 @@ CleanFilesTarget($(GEN_HDRS) $(GEN_SRCS))
 
 ioapi.o : io.c
 	$(CC) -c $(API_DEFS) $(CFLAGS) io.c -o ioapi.o
+
+NclHLUObjapi.o : NclHLUObj.c
+	$(CC) -c $(API_DEFS) $(CFLAGS) NclHLUObj.c -o NclHLUObjapi.o
 
 scanapi.c: scanner.c
 	$(CP) scanner.c scanapi.c

@@ -2120,7 +2120,7 @@ NclStackEntry _NclCreateHLUObjOp
 	tmp_id = (int*)NclMalloc((unsigned)sizeof(int));
 
 	NhlCreate(&tmp_ho_id,the_hlu_obj,the_hlu_obj_class->u.obj_class_ptr,(parent_id == -1? NhlNOPARENT:parent_id),rl_list);
-	tmp_ho = _NclHLUObjCreate(NULL,nclHLUObjClass,Ncl_HLUObj,0,TEMPORARY,tmp_ho_id,(parent_id == -1 ? -1 : *(int*)parent->multidval.val)); 
+	tmp_ho = _NclHLUObjCreate(NULL,nclHLUObjClass,Ncl_HLUObj,0,TEMPORARY,tmp_ho_id,(parent_id == -1 ? -1 : *(int*)parent->multidval.val),the_hlu_obj_class->u.obj_class_ptr); 
 	*tmp_id = tmp_ho->obj.id;
 	tmp_md = _NclMultiDValHLUObjDataCreate(
 		NULL,

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.7 1994-11-07 03:02:14 ethan Exp $
+ *      $Id: NclApi.c,v 1.8 1994-11-10 20:59:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -362,6 +362,77 @@ NclExtValueRec* val;
 		NclFree(val);
 		return;
 	}
+}
+static NclApiDataList *new_list = NULL;
+static NclApiDataList *del_list = NULL;
+
+void _NclAddToNewList
+#if __STDC__
+(int id,NclQuark name,NhlLayerClass cl_ptr)
+#else
+(int id,NclQuark name,NhlLayerClass cl_ptr)
+int id;
+NclQuark name;
+NhlLayerClass cl_ptr;
+#endif
+{
+	NclApiDataList* tmp;
+
+	tmp = NclMalloc(sizeof(NclApiDataList));
+	tmp->u.hlu_obj =(NclApiHLUObjInfoRec*)NclMalloc(sizeof(NclApiHLUObjInfoRec));
+	tmp->u.hlu_obj->name = name;
+	tmp->u.hlu_obj->obj_id = id;
+	tmp->u.hlu_obj->obj_class = cl_ptr;
+	tmp->next = new_list;
+	return;
+}
+
+void _NclAddToDelList
+#if __STDC__
+(int id,NclQuark name,NhlLayerClass cl_ptr)
+#else
+(int id,NclQuark name,NhlLayerClass cl_ptr)
+int id;
+NclQuark name;
+NhlLayerClass cl_ptr;
+#endif
+{
+	NclApiDataList* tmp;
+
+	tmp = NclMalloc(sizeof(NclApiDataList));
+	tmp->u.hlu_obj =(NclApiHLUObjInfoRec*)NclMalloc(sizeof(NclApiHLUObjInfoRec));
+	tmp->u.hlu_obj->name = name;
+	tmp->u.hlu_obj->obj_id = id;
+	tmp->u.hlu_obj->obj_class = cl_ptr;
+	tmp->next = del_list;
+}
+
+struct _NclApiDataList* NclGetNewHLUObjsList
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	NclApiDataList *tmp;
+
+	tmp = new_list;
+	new_list = NULL;
+	return(tmp);
+}
+
+struct _NclApiDataList* NclGetDelHLUObjsList
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	NclApiDataList *tmp;
+
+	tmp = del_list;
+	del_list = NULL;
+	return(tmp);
 }
 
 

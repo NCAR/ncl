@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.4 1994-11-07 03:02:16 ethan Exp $
+ *      $Id: NclApi.h,v 1.5 1994-11-10 20:59:30 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -92,6 +92,18 @@ NclQuark /*filevar*/
 );
 
 extern struct _NclApiDataList* NclGetHLUObjsList(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern struct _NclApiDataList* NclGetNewHLUObjsList(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern struct _NclApiDataList* NclGetDelHLUObjsList(
 #if NhlNeedProto
 void
 #endif

@@ -6,6 +6,22 @@
 #include "defs.h"
 #include <errno.h>
 #include "NclHLUObj.h"
+#ifdef MAKEAPI
+extern void _NclAddToDelList(
+#ifdef NhlNeedProto
+int /*id*/,
+NclQuark /*name*/,
+NhlLayerClass /*cl_ptr*/
+#endif
+);
+extern void _NclAddToNewList(
+#ifdef NhlNeedProto
+int /*id*/,
+NclQuark /*name*/,
+NhlLayerClass /*cl_ptr*/
+#endif
+);
+#endif /*MAKEAPI*/
 static NhlErrorTypes HLUObjAddParent
 #if __STDC__
 (NclObj theobj, NclObj parent)
@@ -102,6 +118,9 @@ static void HLUObjDestroy
 				_NclDelHLUChild(ptmp,self->obj.id);
 			}
 		}
+#ifdef MAKEAPI
+		_NclAddToDelList(hlu_obj->hlu.hlu_id,NrmStringToQuark(NhlName(hlu_obj->hlu.hlu_id)),hlu_obj->hlu.class_ptr);
+#endif /* MAKEAPI */
 		NhlDestroy(hlu_obj->hlu.hlu_id);
 		_NclUnRegisterObj(self);
 		NclFree(self);
@@ -188,9 +207,9 @@ NclObjClass nclHLUObjClass = (NclObjClass)&nclHLUObjClassRec;
 
 struct _NclHLUObjRec * _NclHLUObjCreate
 #if     __STDC__
-(NclObj inst , NclObjClass theclass , NclObjTypes obj_type , unsigned int obj_type_mask, NclStatus status, int id,int parentid)
+(NclObj inst , NclObjClass theclass , NclObjTypes obj_type , unsigned int obj_type_mask, NclStatus status, int id,int parentid,NhlLayerClass class_ptr)
 #else
-(inst , theclass , obj_type ,obj_type_mask, status,id,parentid)
+(inst , theclass , obj_type ,obj_type_mask, status,id,parentid,class_ptr)
 NclObj inst ;
 NclObjClass theclass ;
 NclObjTypes obj_type ;
@@ -198,6 +217,7 @@ unsigned int obj_type_mask;
 NclStatus status;
 int id;
 int parentid;
+NhlLayerClass class_ptr;
 #endif
 {
 	NclHLUObj tmp,ptmp;
@@ -210,6 +230,10 @@ int parentid;
 	tmp->hlu.parent_hluobj_id = parentid;
 	tmp->hlu.hlu_id = id;
 	tmp->hlu.c_list = NULL;
+	tmp->hlu.class_ptr = class_ptr;
+#ifdef MAKEAPI
+	_NclAddToNewList(tmp->hlu.hlu_id,NrmStringToQuark(NhlName(tmp->hlu.hlu_id)),tmp->hlu.class_ptr);
+#endif /*MAKEAPI*/
         (void)_NclObjCreate((NclObj)tmp , theclass , obj_type ,(obj_type_mask | Ncl_HLUObj), status);
 	if(parentid > -1) {
 		ptmp = (NclHLUObj)_NclGetObj(parentid);
