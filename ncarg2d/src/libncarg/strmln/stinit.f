@@ -1,5 +1,5 @@
 C
-C	$Id: stinit.f,v 1.5 1993-03-31 00:31:19 dbrown Exp $
+C	$Id: stinit.f,v 1.6 1993-04-20 16:40:27 dbrown Exp $
 C
 C-----------------------------------------------------------------------
 C
@@ -282,12 +282,10 @@ C The error flag is set if necessary within STCYCL
 C
       IF (ICYK.NE.0) CALL STCYCL(U,V)
 C
-C Calculate the grid size and a the NDC arrow length
-C from the fraction of viewport arrow size parameter
+C Calculate the grid size
 C
       XGDS=(XHIV-XLOV)/(REAL(NXCT)-1.0)
       YGDS=(YHIV-YLOV)/(REAL(NYCT)-1.0)
-      RNDA=FW2W*RARL
 C
 C Done.
 C

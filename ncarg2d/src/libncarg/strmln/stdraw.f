@@ -1,5 +1,5 @@
 C
-C	$Id: stdraw.f,v 1.9 1993-04-05 23:39:44 dbrown Exp $
+C	$Id: stdraw.f,v 1.10 1993-04-20 16:40:24 dbrown Exp $
 C
       SUBROUTINE STDRAW  (U,V,UX,VY,IAM,STUMSL)
 C
@@ -191,30 +191,34 @@ C
 C --------------------------------------------------------------------
 C
 C Initialize local variables.
-C If not using the FX,FY routines, then the vector normalization
-C value is fixed. 
 C
-      IF (ICPM.LT.1) THEN
-         VNML=1.0/PTHREE
-      ELSE
-         VNML=RVNL
-      END IF
+C Bit manipulation values
+C
       VSM = R1MACH(3)*VNML
-C
       ISK = I1MACH(5) - 2
       IS1 = ISK + 1
-      DFMG=RDFM*FW2W
+C
+C Stream spacing and critical displacement
+C
       SSP=RSSP*FW2W
       CDS=RCDS*DFMG
+C
+C Stream counters
+C
       LCT=0
       ITO=0
 C
+C Crossover list variables
+C
       LCU = 1
       LCK = 1
-      XLS(1) = 0.
-      YLS(1) = 0.
+      XLS(1) = 0.0
+      YLS(1) = 0.0
+C
+C Current streamline variables
+C
       IDR = 0
-      SGN = 1.
+      SGN = 1.0
       IPC = 0
       ICT = 0
 C

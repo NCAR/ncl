@@ -1,5 +1,5 @@
 C
-C	$Id: strmln.f,v 1.10 1993-03-31 00:31:26 dbrown Exp $
+C	$Id: strmln.f,v 1.11 1993-04-20 16:40:32 dbrown Exp $
 C
       SUBROUTINE STRMLN (U,V,WORK,IMAX,IPTSX,JPTSY,NSET,IER)
 C
@@ -278,10 +278,6 @@ C
       DISPL     = 0.33
       DISPC     = 0.67
       CSTOP     = 0.50
-C
-C The following call is for gathering statistics on library use at ncar.
-C
-      CALL Q8QST4 ('CRAYLIB','STRMLN','STRMLN','VERSION  4')
 C
 C Save the values of all parameters that may get changed
 C

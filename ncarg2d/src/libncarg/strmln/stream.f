@@ -1,5 +1,5 @@
 C
-C	$Id: stream.f,v 1.6 1993-03-31 00:31:24 dbrown Exp $
+C	$Id: stream.f,v 1.7 1993-04-20 16:40:29 dbrown Exp $
 C
       SUBROUTINE STREAM (U,V,P,IAM,STUMSL,WRK)
 C
@@ -117,11 +117,6 @@ C
 C
 C -----------------------------------------------------------------
 C
-C
-C The following call is for monitoring library use at NCAR
-C
-      CALL Q8QST4 ( 'GRAPHX', 'STREAM', 'STREAM', 'VERSION 01')
-C
 C Check for valid area map and area group overflow if masking is enabled
 C
       IF (IMSK.GT.0) THEN
@@ -144,6 +139,21 @@ C
       CALL GQTXCI(IER,IOT)
       CALL GQLWSC(IER,ROW)
       CALL GSLWSC(WDLV)
+C
+C Calculate NDC arrow length given length as fraction of VP width.
+C Do the same for the differential magnitude.
+C
+      RNDA=RARL*FW2W
+      DFMG=RDFM*FW2W
+C
+C If not using the FX,FY routines, then the vector normalization
+C value is fixed. 
+C
+      IF (ICPM.LT.1) THEN
+         VNML=0.3333333
+      ELSE
+         VNML=RVNL
+      END IF
 C
 C Draw the streamlines.
 C Break the work array into two parts.  See STDRAW for further
