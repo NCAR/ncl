@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.18 1993-12-16 22:35:19 haley Exp $
+#	$Id: yMakefile,v 1.19 1994-03-03 17:40:40 haley Exp $
 #
 
 MYNAME1		= libictrans.o
@@ -11,11 +11,11 @@ MYNAME2		= libictrans_.o
 SPOOL_TRANS	= ctrans
 
 #if defined(IRIX) && (MAJOR == 5)
-EXTRA_CDEFINES	=	-DSPOOL_TRANS='"$(SPOOL_TRANS)"' -DTMPDIR='"$(TMPDIR)"'\
+EXTRA_CDEFINES	=	-DSPOOL_TRANS='"$(SPOOL_TRANS)"' -DNGTMPDIR='"$(NGTMPDIR)"'\
 			-DBINDIR='"$(BINDIR)"' -DLIBDIR='"$(LIBDIR)"'\
 			-DNCARGDIR='"$(NCARGDIR)"' -D_BSD_TYPES
 #else
-EXTRA_CDEFINES	=	-DSPOOL_TRANS='"$(SPOOL_TRANS)"' -DTMPDIR='"$(TMPDIR)"'\
+EXTRA_CDEFINES	=	-DSPOOL_TRANS='"$(SPOOL_TRANS)"' -DNGTMPDIR='"$(NGTMPDIR)"'\
 			-DBINDIR='"$(BINDIR)"' -DLIBDIR='"$(LIBDIR)"'\
 			-DNCARGDIR='"$(NCARGDIR)"'
 #endif

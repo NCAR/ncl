@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.12 1994-03-02 21:32:37 haley Exp $
+ *      $Id: Template,v 1.13 1994-03-03 17:41:16 haley Exp $
  */
 /************************************************************************
 *									*
@@ -486,7 +486,7 @@ LIBDIR			= lib
 INCDIR			= include
 MANDIR			= man
 DOCDIR			= doc
-TMPDIR			= tmp
+NGTMPDIR		= tmp
 CONFIGDIR		= config
 
 #ifdef	InstallManToLocal

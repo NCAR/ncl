@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.19 1993-02-03 22:17:14 clyne Exp $
+ *	$Id: meta_edit.c,v 1.20 1994-03-03 17:38:37 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -931,7 +931,7 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp, verbose_fp)
 		return(ERR);	/* no file	*/
 	}
 
-	if (! (tmp_path = GetNCARGPath(TMPDIR))) {
+	if (! (tmp_path = GetNCARGPath(NGTMPDIR))) {
 		return ((Directory *) NULL);
 	}
 

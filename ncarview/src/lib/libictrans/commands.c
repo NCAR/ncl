@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.29 1993-11-29 23:55:57 clyne Exp $
+ *	$Id: commands.c,v 1.30 1994-03-03 17:40:38 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1433,7 +1433,7 @@ char	*create_tmp_fname()
 {
 	char	*fname;
 	char	pidbuf[20];
-	const char	*tmp_path = GetNCARGPath(TMPDIR);
+	const char	*tmp_path = GetNCARGPath(NGTMPDIR);
 
 	(void) sprintf(pidbuf, "ictrans.%d", getpid());
 

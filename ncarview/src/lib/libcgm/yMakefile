@@ -10,7 +10,7 @@ INCLUDES	= cgm_tools.h cgmdef.h
 SRCS		= cgm_tools.c meta_edit.c misc.c mem_file.c name.c
 OBJECTS		= cgm_tools.o meta_edit.o misc.o mem_file.o name.o
 
-EXTRA_DEFINES	= -DTMPDIR='"$(TMPDIR)"'
+EXTRA_DEFINES	= -DNGTMPDIR='"$(NGTMPDIR)"'
 
 LibraryTarget($(MYNAME),$(OBJECTS))
 BuildIncludes($(INCLUDES),ncarg,..)
@@ -19,7 +19,7 @@ InstallTarget($(INCLUDES), $(INSTALL_INC), $(NCARGINCPATH))
 
 lint:
 	$(LINT) $(CINC) $(SRCS) \
-	-DTMPDIR$(EQUALHACK)'"$(TMPDIR)"' \
+	-DNGTMPDIR$(EQUALHACK)'"$(NGTMPDIR)"' \
 	1> lint.out 2>&1
 
 cgm_tools.o:	cgmP.h
