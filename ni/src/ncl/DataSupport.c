@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.42 2002-11-13 21:43:48 dbrown Exp $
+ *      $Id: DataSupport.c,v 1.43 2003-02-28 00:59:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@
 #include "defs.h"
 #include "Symbol.h"
 #include "NclMdInc.h"
+#include "NclTypelist.h"
 #include "parser.h"
 #include "OpsList.h"
 #include "DataSupport.h"
@@ -410,8 +411,8 @@ NclTypeClass _NclNameToTypeClass
 #endif
 {
 	static int first = 1;
-	static NclQuark quarks[12];
-	static NclTypeClass classes[12];
+	static NclQuark quarks[13];
+	static NclTypeClass classes[13];
 	int i;
 
 	if(first) {
@@ -440,8 +441,10 @@ NclTypeClass _NclNameToTypeClass
 		classes[10] =(NclTypeClass)nclTypeobjClass;
 		quarks[11] = NrmStringToQuark("obj");
 		classes[11] = (NclTypeClass)nclTypeobjClass;
+		quarks[12] = NrmStringToQuark("list");
+		classes[12] = (NclTypeClass)nclTypelistClass;
 	}	
-	for(i = 0; i < 12; i++) {
+	for(i = 0; i < 13; i++) {
 		if(quarks[i] == typename) {
 			return(classes[i]);
 		}
@@ -1488,7 +1491,7 @@ NclBasicDataTypes dt;
 		quarks[3] = NrmStringToQuark("integer");
 		quarks[4] = NrmStringToQuark("short");
 		quarks[5] = NrmStringToQuark("string");
-		quarks[6] = NrmStringToQuark("char");
+		quarks[6] = NrmStringToQuark("character");
 		quarks[7] = NrmStringToQuark("byte");
 		quarks[8] = NrmStringToQuark("logical");
 		quarks[9] = NrmStringToQuark("obj");
