@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargf77.csh,v 1.10 1993-03-11 05:39:02 haley Exp $
+#	$Id: ncargf77.csh,v 1.11 1993-04-19 17:27:27 haley Exp $
 #
 set XLIBPATH = ""
 set system   = "SED_SYSTEM_INCLUDE"
@@ -129,6 +129,9 @@ foreach arg ($argv)
     case "-ictrans"
         echo "Output to ictrans"
         set ctrans_libs = `ctlib`
+        set libX11   = ""
+        set libmath  = ""
+        set stub_file = $ro/ggkwdr_stub.o
         breaksw
 
     case "-noX11"
