@@ -1,5 +1,5 @@
 /*
- *	$Id: fontlist.c,v 1.14 1995-07-07 22:49:37 clyne Exp $
+ *	$Id: fontlist.c,v 1.15 1997-04-11 22:29:25 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -142,7 +142,8 @@ CGMC *c;
 		if (! (i==0 && DefaultFont)) {
 
 			if (Fontlist[i]) free(Fontlist[i]);
-			Fontlist[i++] = my_strdup(c->s->string[i]);
+			Fontlist[i] = my_strdup(c->s->string[i]);
+			i++;
 		}
 
 	}
