@@ -1,7 +1,4 @@
 C
-C	$Id: mapgtl.f,v 1.1.1.1 1992-04-17 22:32:00 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE MAPGTL (WHCH,LVAL)
@@ -20,17 +17,17 @@ C
       COMMON /MAPCMB/ IIER
       SAVE /MAPCMB/
 C
-      IF (WHCH(1:2).EQ.'DL') THEN
+      IF      (WHCH(1:2).EQ.'DL'.OR.WHCH(1:2).EQ.'dl') THEN
         LVAL=IDTL.NE.0
-      ELSE IF (WHCH(1:2).EQ.'DO') THEN
+      ELSE IF (WHCH(1:2).EQ.'DO'.OR.WHCH(1:2).EQ.'do') THEN
         LVAL=IDOT.NE.0
-      ELSE IF (WHCH(1:2).EQ.'EL') THEN
+      ELSE IF (WHCH(1:2).EQ.'EL'.OR.WHCH(1:2).EQ.'el') THEN
         LVAL=ELPF
-      ELSE IF (WHCH(1:2).EQ.'IN') THEN
+      ELSE IF (WHCH(1:2).EQ.'IN'.OR.WHCH(1:2).EQ.'in') THEN
         LVAL=INTF
-      ELSE IF (WHCH(1:2).EQ.'LA') THEN
+      ELSE IF (WHCH(1:2).EQ.'LA'.OR.WHCH(1:2).EQ.'la') THEN
         LVAL=LBLF
-      ELSE IF (WHCH(1:2).EQ.'PE') THEN
+      ELSE IF (WHCH(1:2).EQ.'PE'.OR.WHCH(1:2).EQ.'pe') THEN
         LVAL=PRMF
       ELSE
         GO TO 901

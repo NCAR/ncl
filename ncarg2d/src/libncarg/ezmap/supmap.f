@@ -1,7 +1,4 @@
 C
-C	$Id: supmap.f,v 1.1.1.1 1992-04-17 22:32:07 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE SUPMAP (JPRJ,PLAT,PLON,ROTA,PLM1,PLM2,PLM3,PLM4,JLTS,
@@ -12,8 +9,8 @@ C
 C Declare required common blocks.  See MAPBD for descriptions of these
 C common blocks and the variables in them.
 C
-      COMMON /MAPCM5/ DDCT(5),LDCT(5),PDCT(10)
-      CHARACTER*2     DDCT,LDCT,PDCT
+      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(5),LDCL(5),PDCT(10),PDCL(10)
+      CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
       SAVE /MAPCM5/
       COMMON /MAPCMB/ IIER
       SAVE /MAPCMB/

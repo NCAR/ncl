@@ -1,7 +1,4 @@
 C
-C	$Id: mapgtr.f,v 1.1.1.1 1992-04-17 22:32:00 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE MAPGTR (WHCH,RVAL)
@@ -26,53 +23,53 @@ C
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE /MAPDPS/
 C
-      IF (WHCH(1:2).EQ.'DD') THEN
+      IF      (WHCH(1:2).EQ.'DD'.OR.WHCH(1:2).EQ.'dd') THEN
         RVAL=DDTS
-      ELSE IF (WHCH(1:2).EQ.'GD') THEN
+      ELSE IF (WHCH(1:2).EQ.'GD'.OR.WHCH(1:2).EQ.'gd') THEN
         RVAL=GRDR
-      ELSE IF (WHCH(1:2).EQ.'GR') THEN
+      ELSE IF (WHCH(1:2).EQ.'GR'.OR.WHCH(1:2).EQ.'gr') THEN
         RVAL=GRID
-      ELSE IF (WHCH(1:2).EQ.'MV') THEN
+      ELSE IF (WHCH(1:2).EQ.'MV'.OR.WHCH(1:2).EQ.'mv') THEN
         RVAL=DPLT
-      ELSE IF (WHCH(1:2).EQ.'PN') THEN
+      ELSE IF (WHCH(1:2).EQ.'PN'.OR.WHCH(1:2).EQ.'pn') THEN
         RVAL=PHIO
-      ELSE IF (WHCH(1:2).EQ.'PT') THEN
+      ELSE IF (WHCH(1:2).EQ.'PT'.OR.WHCH(1:2).EQ.'pt') THEN
         RVAL=PHIA
-      ELSE IF (WHCH(1:2).EQ.'P1') THEN
+      ELSE IF (WHCH(1:2).EQ.'P1'.OR.WHCH(1:2).EQ.'p1') THEN
         RVAL=PLA1
-      ELSE IF (WHCH(1:2).EQ.'P2') THEN
+      ELSE IF (WHCH(1:2).EQ.'P2'.OR.WHCH(1:2).EQ.'p2') THEN
         RVAL=PLA2
-      ELSE IF (WHCH(1:2).EQ.'P3') THEN
+      ELSE IF (WHCH(1:2).EQ.'P3'.OR.WHCH(1:2).EQ.'p3') THEN
         RVAL=PLA3
-      ELSE IF (WHCH(1:2).EQ.'P4') THEN
+      ELSE IF (WHCH(1:2).EQ.'P4'.OR.WHCH(1:2).EQ.'p4') THEN
         RVAL=PLA4
-      ELSE IF (WHCH(1:2).EQ.'P5') THEN
+      ELSE IF (WHCH(1:2).EQ.'P5'.OR.WHCH(1:2).EQ.'p5') THEN
         RVAL=PLB1
-      ELSE IF (WHCH(1:2).EQ.'P6') THEN
+      ELSE IF (WHCH(1:2).EQ.'P6'.OR.WHCH(1:2).EQ.'p6') THEN
         RVAL=PLB2
-      ELSE IF (WHCH(1:2).EQ.'P7') THEN
+      ELSE IF (WHCH(1:2).EQ.'P7'.OR.WHCH(1:2).EQ.'p7') THEN
         RVAL=PLB3
-      ELSE IF (WHCH(1:2).EQ.'P8') THEN
+      ELSE IF (WHCH(1:2).EQ.'P8'.OR.WHCH(1:2).EQ.'p8') THEN
         RVAL=PLB4
-      ELSE IF (WHCH(1:2).EQ.'RE') THEN
+      ELSE IF (WHCH(1:2).EQ.'RE'.OR.WHCH(1:2).EQ.'re') THEN
         RVAL=PLTR
-      ELSE IF (WHCH(1:2).EQ.'RO') THEN
+      ELSE IF (WHCH(1:2).EQ.'RO'.OR.WHCH(1:2).EQ.'ro') THEN
         RVAL=ROTA
-      ELSE IF (WHCH(1:2).EQ.'SA') THEN
+      ELSE IF (WHCH(1:2).EQ.'SA'.OR.WHCH(1:2).EQ.'sa') THEN
         RVAL=SALT
-      ELSE IF (WHCH(1:2).EQ.'S1') THEN
+      ELSE IF (WHCH(1:2).EQ.'S1'.OR.WHCH(1:2).EQ.'s1') THEN
         RVAL=ALFA
-      ELSE IF (WHCH(1:2).EQ.'S2') THEN
+      ELSE IF (WHCH(1:2).EQ.'S2'.OR.WHCH(1:2).EQ.'s2') THEN
         RVAL=BETA
-      ELSE IF (WHCH(1:2).EQ.'SR') THEN
+      ELSE IF (WHCH(1:2).EQ.'SR'.OR.WHCH(1:2).EQ.'sr') THEN
         RVAL=SRCH
-      ELSE IF (WHCH(1:2).EQ.'XL') THEN
+      ELSE IF (WHCH(1:2).EQ.'XL'.OR.WHCH(1:2).EQ.'xl') THEN
         RVAL=XLOW
-      ELSE IF (WHCH(1:2).EQ.'XR') THEN
+      ELSE IF (WHCH(1:2).EQ.'XR'.OR.WHCH(1:2).EQ.'xr') THEN
         RVAL=XROW
-      ELSE IF (WHCH(1:2).EQ.'YB') THEN
+      ELSE IF (WHCH(1:2).EQ.'YB'.OR.WHCH(1:2).EQ.'yb') THEN
         RVAL=YBOW
-      ELSE IF (WHCH(1:2).EQ.'YT') THEN
+      ELSE IF (WHCH(1:2).EQ.'YT'.OR.WHCH(1:2).EQ.'yt') THEN
         RVAL=YTOW
       ELSE
         GO TO 901

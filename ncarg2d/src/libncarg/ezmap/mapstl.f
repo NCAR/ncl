@@ -1,7 +1,4 @@
 C
-C	$Id: mapstl.f,v 1.1.1.1 1992-04-17 22:32:06 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE MAPSTL (WHCH,LVAL)
@@ -20,17 +17,17 @@ C
       COMMON /MAPCMB/ IIER
       SAVE /MAPCMB/
 C
-      IF (WHCH(1:2).EQ.'DL') THEN
+      IF      (WHCH(1:2).EQ.'DL'.OR.WHCH(1:2).EQ.'dl') THEN
         IDTL=0
         IF (LVAL) IDTL=1
-      ELSE IF (WHCH(1:2).EQ.'DO') THEN
+      ELSE IF (WHCH(1:2).EQ.'DO'.OR.WHCH(1:2).EQ.'do') THEN
         IDOT=0
         IF (LVAL) IDOT=1
-      ELSE IF (WHCH(1:2).EQ.'EL') THEN
+      ELSE IF (WHCH(1:2).EQ.'EL'.OR.WHCH(1:2).EQ.'el') THEN
         ELPF=LVAL
-      ELSE IF (WHCH(1:2).EQ.'LA') THEN
+      ELSE IF (WHCH(1:2).EQ.'LA'.OR.WHCH(1:2).EQ.'la') THEN
         LBLF=LVAL
-      ELSE IF (WHCH(1:2).EQ.'PE') THEN
+      ELSE IF (WHCH(1:2).EQ.'PE'.OR.WHCH(1:2).EQ.'pe') THEN
         PRMF=LVAL
       ELSE
         GO TO 901

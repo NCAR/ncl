@@ -1,7 +1,4 @@
 C
-C	$Id: mapgtc.f,v 1.1.1.1 1992-04-17 22:32:00 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE MAPGTC (WHCH,CVAL)
@@ -19,8 +16,8 @@ C
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
-      COMMON /MAPCM5/ DDCT(5),LDCT(5),PDCT(10)
-      CHARACTER*2     DDCT,LDCT,PDCT
+      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(5),LDCL(5),PDCT(10),PDCL(10)
+      CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
       SAVE /MAPCM5/
       COMMON /MAPCMB/ IIER
       SAVE /MAPCMB/
@@ -30,13 +27,20 @@ C
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE /MAPDPS/
 C
-      IF (WHCH(1:2).EQ.'AR') THEN
+      IF (     WHCH(1:2).EQ.'AR') THEN
         CVAL=LDCT(ILTS)
       ELSE IF (WHCH(1:2).EQ.'OU') THEN
         CVAL=DDCT(NOUT+1)
       ELSE IF (WHCH(1:2).EQ.'PR') THEN
         CVAL=PDCT(JPRJ)
         IF (JPRJ.EQ.3.AND.ABS(SALT).GT.1.) CVAL=PDCT(10)
+      ELSE IF (WHCH(1:2).EQ.'ar') THEN
+        CVAL=LDCL(ILTS)
+      ELSE IF (WHCH(1:2).EQ.'ou') THEN
+        CVAL=DDCL(NOUT+1)
+      ELSE IF (WHCH(1:2).EQ.'pr') THEN
+        CVAL=PDCL(JPRJ)
+        IF (JPRJ.EQ.3.AND.ABS(SALT).GT.1.) CVAL=PDCL(10)
       ELSE
         GO TO 901
       END IF

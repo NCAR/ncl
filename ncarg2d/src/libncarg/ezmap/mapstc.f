@@ -1,7 +1,4 @@
 C
-C	$Id: mapstc.f,v 1.1.1.1 1992-04-17 22:32:05 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE MAPSTC (WHCH,CVAL)
@@ -19,14 +16,15 @@ C
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
-      COMMON /MAPCM5/ DDCT(5),LDCT(5),PDCT(10)
-      CHARACTER*2     DDCT,LDCT,PDCT
+      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(5),LDCL(5),PDCT(10),PDCL(10)
+      CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
       SAVE /MAPCM5/
       COMMON /MAPCMB/ IIER
       SAVE /MAPCMB/
 C
-      IF (WHCH(1:2).EQ.'OU') THEN
+      IF (WHCH(1:2).EQ.'OU'.OR.WHCH(1:2).EQ.'ou') THEN
         I=IDICTL(CVAL,DDCT,5)
+        IF (I.EQ.0) I=IDICTL(CVAL,DDCL,5)
         IF (I.EQ.0) GO TO 901
         NOUT=I-1
       ELSE

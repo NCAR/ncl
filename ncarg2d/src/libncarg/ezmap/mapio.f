@@ -1,7 +1,4 @@
 C
-C	$Id: mapio.f,v 1.1.1.1 1992-04-17 22:31:56 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE MAPIO (IACT)
@@ -24,10 +21,6 @@ C
       SAVE /MAPCM3/
       COMMON /MAPCMB/ IERR
       SAVE /MAPCMB/
-C
-C Generic-to-UNIX Modification.
-C
-      CALL OPENMP (ITPN)
 C
       IF (IACT.EQ.1) THEN
 C

@@ -1,7 +1,4 @@
 C
-C	$Id: maproj.f,v 1.1.1.1 1992-04-17 22:32:05 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE MAPROJ (ARG1,ARG2,ARG3,ARG4)
@@ -16,8 +13,8 @@ C
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
-      COMMON /MAPCM5/ DDCT(5),LDCT(5),PDCT(10)
-      CHARACTER*2     DDCT,LDCT,PDCT
+      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(5),LDCL(5),PDCT(10),PDCL(10)
+      CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
       SAVE /MAPCM5/
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
       SAVE /MAPSAT/
@@ -28,6 +25,7 @@ C
 C Transfer the parameters defining the projection.
 C
       I=IDICTL(ARG1,PDCT,10)
+      IF (I.EQ.0) I=IDICTL(ARG1,PDCL,10)
       IF (I.EQ.0) GO TO 901
 C
       JPRJ=I
