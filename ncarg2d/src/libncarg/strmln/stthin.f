@@ -1,5 +1,5 @@
 C
-C       $Id: stthin.f,v 1.1 2001-06-13 23:10:45 dbrown Exp $
+C       $Id: stthin.f,v 1.2 2002-01-14 22:32:58 dbrown Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -172,21 +172,23 @@ C Vectors not to be plotted are marked with the following special codes:
 C      -1.0: vector removed by thinning process
 C      -2.0: special value
 C      -3.0: below minimum magnitude
-C      -4.0: abobe maximum magnitude
 C      -5.0: zero-length vector
 C      -6.0: rejected by mapping routine
 C
       DO 201 J=1,IYDN,IYIN
          DO 200 I=1,IXDM,IXIN
 C
+C Cull out special values
+C
+            CALL STSVCK(U,V,I,J,IST)
+            IF (IST .NE. 0) GO TO 199
+C
             UI = U(I,J)
             VI = V(I,J)
 C
-C Cull out special values
-C
-            IF (ISVF .GT. 0) THEN
-               IF (UI .EQ. RUSV .OR. VI .EQ. RVSV) GO TO 199
-            END IF
+C            IF (ISVF .GT. 0) THEN
+C               IF (UI .EQ. RUSV .OR. VI .EQ. RVSV) GO TO 199
+C            END IF
 C
 C Calculate the vector magnitude or if the polar flag is set
 C compute the cartesian component values
@@ -224,7 +226,7 @@ C
 C
 C Vectors rejected by mapping routine
 C
-            UFR(I,J) = -5.0
+            UFR(I,J) = -6.0
             GO TO 200
 C
  196        CONTINUE
@@ -232,13 +234,6 @@ C
 C Vectors under minimum magnitude
 C
             UFR(I,J) = -3.0
-            GO TO 200
-C
- 197        CONTINUE
-C
-C Vectors over maximum magnitude
-C
-            UFR(I,J) = -4.0
             GO TO 200
 C
 C Zero length vectors cannot be drawn even if UVMN is 0.0, but
@@ -522,7 +517,7 @@ C IPGRCT - Number of groups supported for area masking
 C
       PARAMETER (IPNPTS = 256, IPLSTL = 750, IPGRCT = 64)
 C
-      IF (UFR(I,J) .EQ. -1.0) THEN
+      IF (UFR(I,J) .LE. -1.0) THEN
          IS = 1
       ELSE
          IS = 0

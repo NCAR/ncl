@@ -1,5 +1,5 @@
 C
-C       $Id: stdrcv.f,v 1.1 2001-06-13 23:10:42 dbrown Exp $
+C       $Id: stdrcv.f,v 1.2 2002-01-14 22:32:58 dbrown Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -380,6 +380,12 @@ C
       LST=0
 C
 C Find an available box for starting a streamline.
+C First check to see if the box has already been marked as
+C ineligible. Then if thinning is in effect check to see
+C if the thinning array rules it out (note that special values
+C have been marked in the thinning array). If so, mark it ineligible.
+C Otherwise check for a special value, and if positive mark it
+C ineligible. 
 C
       IF (IDR .EQ. 0) THEN
 C
@@ -392,7 +398,18 @@ C
                IF (IAND(IUX,IPONE) .EQ. IPZERO) THEN
                   IF (RSMD .GT. 0) THEN
                      CALL STTHND(I,J,WRK(1),IS)
-                     IF (IS .EQ. 0) GO TO 80
+                     IF (IS .EQ. 0) THEN
+                        GO TO 80
+                     ELSE
+                        CALL SBYTES(UX(I,J),IPONE,IS1,1,0,1)
+                     END IF
+                  ELSE IF (ISVF .NE. 0) THEN
+                     CALL STSVCK(U,V,I,J,IST)
+                     IF (IST .EQ. 0) THEN
+                        GO TO 80
+                     ELSE
+                        CALL SBYTES(UX(I,J),IPONE,IS1,1,0,1)
+                     END IF
                   ELSE
                      GO TO 80
                   END IF
@@ -413,13 +430,9 @@ C If the special value parameter is turned on, check to see if
 C this box has missing data. If so, find a new starting box.
 C
          CALL SBYTES(UX(I,J),IPONE,IS1,1,0,1)
-         IF (ISVF .NE. 0) THEN
-            CALL STSVCK(U,V,I,J,IST)
-            IF (IST .NE. 0) GO TO 50
-         END IF
-C
          ISV = I
          JSV = J
+C
 C
 C Depending on the vector position flag draw in both directions or only
 C in one direction

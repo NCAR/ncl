@@ -1,5 +1,5 @@
 C
-C       $Id: stutil.f,v 1.1 2001-06-13 23:10:45 dbrown Exp $
+C       $Id: stutil.f,v 1.2 2002-01-14 22:32:58 dbrown Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -470,8 +470,10 @@ C
 C
       IF (U(I,J).EQ.RUSV) THEN
          IST = -1
+         RETURN
       ELSE IF (V(I,J).EQ.RVSV) THEN
          IST = -1
+         RETURN
       END IF
 C
       IF (I.EQ.IXDM .OR. J.EQ.IYDN) THEN
