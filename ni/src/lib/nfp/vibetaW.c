@@ -6,8 +6,6 @@
 #include "wrapper.h"
 #include <math.h>
 
-#define max(x,y)  ((x) > (y) ? (x) : (y))
-
 extern void NGCALLF(dvibeta,DVIBETA)(double *,double *,int *,double *,
                                      int *,double *,double *,double *,
                                      double *,double *,double *,int *);

@@ -251,6 +251,7 @@ extern NhlErrorTypes fourier_info_W(void);
 
 extern NhlErrorTypes rdsstoi_W(void);
 extern NhlErrorTypes vibeta_W(void);
+extern NhlErrorTypes prcwater_dp_W(void);
 extern NhlErrorTypes int2p_W(void);
 extern NhlErrorTypes hydro_W(void);
 extern NhlErrorTypes linmsg_W(void);
@@ -3047,6 +3048,17 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(vibeta_W,args,"vibeta",nargs);
+/*
+ * Register "prcwater_dp".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(prcwater_dp_W,args,"prcwater_dp",nargs);
 /*
  * Register "int2p".
  */
