@@ -1,5 +1,5 @@
 /*
- *      $Id: go.h,v 1.4 1999-05-22 00:36:17 dbrown Exp $
+ *      $Id: go.h,v 1.5 1999-09-23 19:48:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,7 +32,9 @@
  */ 
 
 #define NDV_PLOT_STYLE_PATH	"NDV_PLOT_STYLE_PATH"
+#ifndef NDV_COLORMAP_PATH
 #define NDV_COLORMAP_PATH	"NDV_COLORMAP_PATH"
+#endif
 
 extern NhlClass NggOClass;
 
