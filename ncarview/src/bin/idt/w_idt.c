@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.8 1991-04-10 12:53:55 clyne Exp $
+ *	$Id: w_idt.c,v 1.9 1991-04-18 15:21:53 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -87,6 +87,10 @@ static  XtResource      resources[] = {
         {
 	"translatorReverse", "TranslatorReverse", XtRBoolean, sizeof (Boolean),
                 XtOffset(AppDataPtr, reverse), XtRString, "False" 
+	},
+        {
+	"translatorPal", "TranslatorPal", XtRString, sizeof (char *),
+                XtOffset(AppDataPtr, pal), XtRString, NULL 
 	}
 };
 
@@ -139,7 +143,8 @@ static	XrmOptionDescRec 	options[] = {
 	{"-lscale",	"*translatorLscale",	XrmoptionSepArg,	NULL},
 	{"-foreground",	"*translatorForeground",XrmoptionSepArg,	NULL},
 	{"-background",	"*translatorBackground",XrmoptionSepArg,	NULL},
-	{"-reverse",	"*translatorReverse",	XrmoptionNoArg,		"True"}
+	{"-reverse",	"*translatorReverse",	XrmoptionNoArg,		"True"},
+	{"-pal",	"*translatorPal",	XrmoptionSepArg,	NULL}
 };
 
 
@@ -446,6 +451,14 @@ static	char	**get_trans_commandline(targc, app_data)
 	if (app_data->reverse) {	/* reverse video		*/
 		targv[i] = icMalloc (strlen (TR_REVERSE) + 1);
 		strcpy(targv[i], TR_REVERSE);
+		i++;
+	}
+	if (app_data->pal) {	/* optional color palette 	*/
+		targv[i] = icMalloc (strlen (TR_PAL) + 1);
+		strcpy(targv[i], TR_PAL);
+		i++;
+		targv[i] = icMalloc (strlen(app_data->pal) + 1);
+		strcpy(targv[i], app_data->pal);
 		i++;
 	}
 

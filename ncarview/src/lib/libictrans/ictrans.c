@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.3 1991-01-09 11:13:19 clyne Exp $
+ *	$Id: ictrans.c,v 1.4 1991-04-18 15:19:58 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -55,6 +55,7 @@ static	struct	{
 	FloatType_ 	min_line_width;	/* minimum line width		*/
 	FloatType_ 	max_line_width;	/* maximun line width		*/
 	FloatType_ 	line_scale;	/* additional line scaling	*/
+	StringType_     pal;            /* optional color palette       */
 	} commLineOpt;
 
 static	OptDescRec	set_options[] = {
@@ -65,7 +66,8 @@ static	OptDescRec	set_options[] = {
 	{"lmin", OptSepArg, "-1"},	
 	{"lmax", OptSepArg, "-1"},	
 	{"lscale", OptSepArg, "-1"},	
-	{NULL},	
+        {"pal", OptSepArg, NULL},
+	{NULL}
 	};
 
 static	Option	get_options[] = {
@@ -83,7 +85,10 @@ static	Option	get_options[] = {
 							sizeof (FloatType_ )},
         {"lscale", FloatType, (unsigned long) &commLineOpt.line_scale, 
 							sizeof (FloatType_ )},
-	{NULL},
+	{"pal", StringType, (unsigned long) &(commLineOpt.pal),
+							sizeof(StringType_)},
+
+	{NULL}
 	};
 
 extern	boolean	*softFill;
@@ -176,6 +181,15 @@ ICTrans(argc, argv, mem_cgm)
 
 	icState.font = (icState.font = strrchr(fcap, '/')) ?
 						++icState.font : fcap;
+
+	/*
+	 * inform ctrans to use a default color palette if one was
+	 * requested
+	 */
+	if (commLineOpt.pal) {
+		SetDefaultPalette(commLineOpt.pal);
+	}
+
 
 	/*
 	 *	init ctrans
