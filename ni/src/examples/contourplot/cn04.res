@@ -8,7 +8,7 @@
 ! spacing, and choose the automatic level selection mode
 !
 *cn04Work.ContourPlot1*cnMaxLevelCount : 22
-*cn04Work.ContourPlot1*cnLevelSelectionMode : automatic
+*cn04Work.ContourPlot1*cnLevelSelectionMode : automaticlevels
 !
 ! set the formatting of the Max data value (which by default controls the
 ! formatting of all numeric labels in the plot)

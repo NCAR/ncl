@@ -1,5 +1,5 @@
 /*
- *      $Id: cn04c.c,v 1.2 1995-04-01 22:20:44 dbrown Exp $
+ *      $Id: cn04c.c,v 1.3 1995-04-07 00:42:16 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -151,7 +151,7 @@ main(int argc, char *argv[])
  * specifies attributes of areas greater than the maximum contour level. 
  */
     for (i = 0; i < level_count; i++) {
-        if (lvlflags[i] == NhlcnLINEANDLABEL)
+        if (lvlflags[i] == NhlLINEANDLABEL)
           thicknesses[i] = 2.0;
         if (levels[i] >= .000045 && levels[i] < .000055)
           pats[i] = 6;
