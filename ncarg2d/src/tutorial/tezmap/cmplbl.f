@@ -1,5 +1,5 @@
 C
-C	$Id: cmplbl.f,v 1.2 1993-01-13 23:16:32 haley Exp $
+C	$Id: cmplbl.f,v 1.3 1993-04-12 18:01:57 adrianne Exp $
 C
 C
 C Open GKS, Turn Clipping off
@@ -58,7 +58,7 @@ C Set grid spacing to 10 degrees, and anchor grid curve at 10 degree
 C intervals.
 C
 	CALL MAPSTR ('GR - GRID SPACING',10.)
-	CALL MAPSTR ('GD - GRID DISTANCE',10.)
+	CALL MAPSTR ('GD - GRID DRAWING RESOLUTION',10.)
 C
 C Make sure Labels are turned on
 C
