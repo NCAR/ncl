@@ -1,5 +1,5 @@
 C
-C	$Id: wmrgwt.f,v 1.1 1994-09-09 23:55:26 fred Exp $
+C	$Id: wmrgwt.f,v 1.2 1994-10-25 23:35:41 fred Exp $
 C
       SUBROUTINE WMRGWT(N,X,Y,IFNT,NASC)
 C
@@ -133,7 +133,6 @@ C
           XP = SEEDX+(I-1)*CHRWID-
      +           REAL(MOD(J-1,2))*REAL(IOFFLG)*ROFFLG*CHRWID
           L = 1
-          DO 50 M=1,100
             K = 0
    60       CONTINUE
             L = L+2
@@ -176,7 +175,6 @@ C
                 RWORK(K+MDGU+MDGUH) = YP+SSCALE*RWORK(L+1)
               ENDIF
             GO TO 60
-   50     CONTINUE
    70     CONTINUE
    30   CONTINUE
    20 CONTINUE
