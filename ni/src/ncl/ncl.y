@@ -216,13 +216,14 @@ statement_list :  statement eoln			{
 #endif
 								if($2->u.package->so_handle == NULL) {
 #if defined(HPUX)
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n",$3);
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$3,strerror(errno));
 #else
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$3,dlerror());
 #endif
 								} else {
 #if defined(HPUX)
-									(void)shl_findsym(&$2->u.package->so_handle, "Init",TYPE_UNDEFINED,(void*)init_function);
+									init_function = NULL;
+									(void)shl_findsym(&($2->u.package->so_handle), "Init",TYPE_UNDEFINED,(void*)&init_function);
 #else
 									init_function = dlsym($2->u.package->so_handle, "Init");
 #endif
@@ -258,7 +259,8 @@ statement_list :  statement eoln			{
 #endif
 								} else {
 #if defined(HPUX)
-									(void)shl_findsym(&$3->u.package->so_handle, "Init",TYPE_UNDEFINED,(void*)init_function);
+									init_function = NULL;
+									(void)shl_findsym(&($3->u.package->so_handle), "Init",TYPE_UNDEFINED,(void*)&init_function);
 #else
 									init_function = dlsym($3->u.package->so_handle, "Init");
 #endif
@@ -371,7 +373,8 @@ block_statement_list : statement eoln {
 #endif
 								} else {
 #if defined(HPUX)
-									(void)shl_findsym(&$2->u.package->so_handle, "Init",TYPE_UNDEFINED,(void*)init_function);
+									init_function = NULL;
+									(void)shl_findsym(&($2->u.package->so_handle), "Init",TYPE_UNDEFINED,(void*)&init_function);
 #else
 									init_function = dlsym($2->u.package->so_handle, "Init");
 #endif
@@ -406,7 +409,8 @@ block_statement_list : statement eoln {
 #endif
 								} else {
 #if defined(HPUX)
-									(void)shl_findsym(&$3->u.package->so_handle, "Init",TYPE_UNDEFINED,(void*)init_function);
+									init_function = NULL;
+									(void)shl_findsym(&($3->u.package->so_handle), "Init",TYPE_UNDEFINED,(void*)&init_function);
 #else
 									init_function = dlsym($3->u.package->so_handle, "Init");
 #endif

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.49 1998-02-22 17:42:33 haley Exp $
+ *      $Id: NclApi.c,v 1.50 1998-03-13 22:47:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -212,7 +212,8 @@ int NclInitServer
 #endif
 					if(so_handle != NULL) {
 #if defined(HPUX)
-						(void)shl_findsym(so_handle, "Init",TYPE_UNDEFINED,(void*)init_function);
+						init_function = NULL;
+						(void)shl_findsym(so_handle, "Init",TYPE_UNDEFINED,(void*)&init_function);
 #else
 						init_function = dlsym(so_handle, "Init");
 #endif
