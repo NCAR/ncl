@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.155 2003-03-19 23:16:00 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.156 2003-04-29 18:39:47 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -905,7 +905,7 @@ NhlErrorTypes _Nclsystemfunc
 			}
 			while(( tmp_id = wait(&status)) != id);
 			NclFree(buffer);
-			
+			close(fildes[0]);
 		}
 		if(nelem < 1) {
 			data.kind = NclStk_VAL;
