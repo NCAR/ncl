@@ -4,9 +4,9 @@ ti03.ti03Work.Titles.tiYAxisString        : Total Ozone Concentration
 ti03.ti03Work.Titles.tiMainFont           : 30
 ti03.ti03Work.Titles.tiXAxisFont          : 22
 ti03.ti03Work.Titles.tiYAxisFont          : 26
-ti03.ti03Work.Titles.tiMainFontColor      : 20
-ti03.ti03Work.Titles.tiXAxisFontColor     : 23
-ti03.ti03Work.Titles.tiYAxisFontColor     : 65
+ti03.ti03Work.Titles.tiMainFontColor      : 97
+ti03.ti03Work.Titles.tiXAxisFontColor     : 85
+ti03.ti03Work.Titles.tiYAxisFontColor     : 7
 ti03.ti03Work.Titles.tiMainFontHeightF    : .04
 ti03.ti03Work.Titles.tiXAxisFontHeightF   : .03
 ti03.ti03Work.Titles.tiYAxisFontHeightF   : .03
