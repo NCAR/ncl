@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.18 1995-02-18 00:48:34 boote Exp $
+#      $Id: yMakefile,v 1.19 1995-03-31 21:56:41 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -21,7 +21,7 @@
 
 #define IHaveSubdirs
 
-SUBDIRS	= basic annotation contour labelbar legend mapplot \
+SUBDIRS	= basic annotation contourplot labelbar legend mapplot \
 	textitem tickmark title xyplot
 
 SCRIPTS		= ng4ex 
