@@ -1,5 +1,5 @@
 C
-C $Id: mapio.f,v 1.8 1995-06-30 23:49:32 kennison Exp $
+C $Id: mapio.f,v 1.9 1995-09-18 22:26:15 kennison Exp $
 C
       SUBROUTINE MAPIO (IACT)
 C
@@ -57,6 +57,7 @@ C
 C
         IF (ISTA.EQ.4) THEN
           IF (NPTS.LE.1) THEN
+            CALL NGCLFI (IFDE)
             NPTS=0
             RETURN
           ELSE
