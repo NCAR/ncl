@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.29 1996-10-25 21:08:45 boote Exp $
+ *      $Id: Project,v 1.30 1996-11-01 15:31:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -300,17 +300,20 @@ NGOLIBSRC	= $(NILIBSRC)/ngo
 NCLLIBSRC	= $(NISRC)/ncl
 
 #ifdef	BuildShared
-NCARGCLIB	= -lNGcommon
+NCARGCLIB	= -lNGc
 NCARGLIB	= -lNGllu
 CNCARGLIB	= -lNGlluC
 NCARGGKSLIB	= -lNGgks
 CNCARGGKSLIB	= -lNGgksC
-CGMLIB		= -lNotDoneLib
-NCARGRASLIB	= -lNotDoneLib
+CGMLIB		= -lNGcgm
+NCARGRASLIB	= -lNGras
 HLULIB		= -lNGhlu
 NGOLIB		= -lNGgo
 NCLLIB		=
 NCLAPILIB	= -lNGncl
+
+CTRANSLIB	= -lNGctrans
+ICTRANS_LIB	= -lNGictrans
 
 DEPNCARGCLIB	=
 DEPNCARGLIB	=
@@ -323,6 +326,9 @@ DEPHLULIB	=
 DEPNGOLIB	=
 DEPNCLLIB	=
 DEPNCLAPILIB	=
+
+DEPCTRANSLIB	=
+DEPICTRANS_LIB	=
 
 #else	/* BuildShared */
 NCARGCLIB	= _UseLib(-L$(NCARGCLIBSRC),-lncarg_c)
@@ -337,6 +343,9 @@ NGOLIB		= _UseLib(-L$(NGOLIBSRC),-lngo)
 NCLLIB		= _UseLib(-L$(NCLLIBSRC),-lncl)
 NCLAPILIB	= _UseLib(-L$(NCLLIBSRC),-lnclapi)
 
+CTRANSLIB	= _DepLib($(CTRANSLIBSRC),$(ROBJROOT),libctrans.o)
+ICTRANS_LIB	= _DepLib($(ICTRANSLIBSRC),$(ROBJROOT),libictrans_.o)
+
 DEPNCARGCLIB	= _DepLib($(NCARGCLIBSRC),$(LIBROOT),libncarg_c.a)
 DEPNCARGLIB	= _DepLib($(NCARGLIBSRC),$(LIBROOT),libncarg.a)
 DEPCNCARGLIB	= _DepLib($(CNCARGLIBSRC),$(LIBROOT),libncargC.a)
@@ -349,15 +358,12 @@ DEPNGOLIB	= _DepLib($(NGOLIBSRC),$(LIBROOT),libngo.a)
 DEPNCLLIB	= _DepLib($(NCLLIBSRC),$(LIBROOT),libncl.a)
 DEPNCLAPILIB	= _DepLib($(NCLLIBSRC),$(LIBROOT),libnclapi.a)
 
+DEPCTRANSLIB	= $(CTRANSLIB)
+DEPICTRANS_LIB	= $(ICTRANS_LIB)
 #endif	/* BuildShared */
 
-CTRANSLIB	= _DepLib($(CTRANSLIBSRC),$(ROBJROOT),libctrans.o)
 ICTRANSLIB	= _DepLib($(ICTRANSLIBSRC),$(ROBJROOT),libictrans.o)
-ICTRANS_LIB	= _DepLib($(ICTRANSLIBSRC),$(ROBJROOT),libictrans_.o)
-
-DEPCTRANSLIB	= $(CTRANSLIB)
 DEPICTRANSLIB	= $(ICTRANSLIB)
-DEPICTRANS_LIB	= $(ICTRANS_LIB)
 
 NCARGLIBS	= $(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB)
 CNCARGLIBS	= $(CNCARGLIB) $(CNCARGGKSLIB)
