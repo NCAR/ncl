@@ -3,9 +3,8 @@ INS_DIR	= $(ROOT_DIR)/INSTALL
 SRC_TAR	= $(ROOT_DIR)/SRC.TAR
 
 TARGETS		=	HPUX_HP9000_7xx AIX_RS6000 SunOS_sun4 \
-			SunOS_sun3 Solaris_sun4 ULTRIX_RISC IRIX_IP \
-			UNICOS_YMP OSF1_alpha
-
+			Solaris_sun4 ULTRIX_RISC IRIX_IP UNICOS_YMP \
+			OSF1_alpha
 
 
 

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: perf_install,v 1.7 1993-12-30 17:51:14 haley Exp $
+#      $Id: perf_install,v 1.8 1994-03-15 14:43:20 haley Exp $
 #
 #########################################################################
 #									#
@@ -176,11 +176,6 @@ case	"cdrom":
 
 	case	"SunOS_sun4"
 		set cd_system = "sunos_s4"
-		set tars = ($ltars)
-		breaksw
-
-	case	"SunOS_sun3"
-		set cd_system = "sunos_s3"
 		set tars = ($ltars)
 		breaksw
 
