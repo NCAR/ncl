@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.40 2000-06-30 18:55:26 haley Exp $
+;      $Id: gsn_code.ncl,v 1.41 2000-07-10 20:13:00 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -59,6 +59,7 @@ undef("gsn_open_wks")
 undef("gsn_define_colormap")
 undef("gsn_retrieve_colormap")
 undef("gsn_polygon")
+undef("gsn_add_primitive")
 undef("gsn_add_polygon")
 undef("gsn_polygon_ndc")
 undef("gsn_polyline")
@@ -973,34 +974,39 @@ begin
 
 
     getvalues wks 
-; Procedure : gsn_add_polygon                                           ;
+        "wkDefGraphicStyleId":  gsid
     end getvalues
 
     gsres = get_res_eq(resources,"gs")
     attsetvalues_check(gsid,gsres)
+
 ; Draw a polygon.
 
-; This procedure adds a polygon to the plot "plotid", in the same data  ;
+    xf = tofloat(x)
     yf = tofloat(y)
 
-; and y locations of each point in the polygon, and should be in the    ;
+    if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
       NhlDataPolygon(plotid,gsid,xf,yf)
-; list of resources.                                                    ;
+    else
+      x2 = xf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
+      y2 = yf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
       NhlDataPolygon(plotid,gsid,x2,y2)
-; This procedure is different from gsn_polygon because it actually      ;
-; attaches the polygon to the to the plot. This means that if you resize;
-; or move the plot, the polygon will stay with the plot.                ;
     end if
 
-procedure gsn_add_polygon(wks:graphic,plotid:graphic,x[*]:numeric,\
-                          y[*]:numeric,resources:logical)
-local gsid, gsres, prim_object, before
+end
+
+;***********************************************************************;
 ; Function : gsn_add_primitive                                          ;
 ;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                     x: 1-dimensional array of x points                ;
+;                     y: 1-dimensional array of y points                ;
+;              polytype: type of primitive                              ;
+;               resources: optional resources                           ;
 ;                                                                       ;
-; the default one, because if we add two gons to a plot and assign each
-; one a different color, the two gons will have the same color as the
-; last color that was set.
+; This function adds a primitive to the plot "plotid", in the same data ;
+; space as the data in the plot ("plotid" is returned from a previous   ;
+; call to one of the gsn_* plotting functions). "x" and "y" are the x   ;
 ; and y locations of each point in the primitive, and should be in the  ;
 ; same data space as the data from "plotid". "resources" is an optional ;
 ; list of resources.  This function returns the primitive object        ;
@@ -1013,36 +1019,52 @@ local gsid, gsres, prim_object, before
   if(.not.any(polytype.eq.(/"polymarker","polygon","polyline"/)))
     if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
               polytype2 = "polymarker"
-; No data is missing, so create a primitive polygon object.
+              if(first_marker)
                 attsetvalues_check(gsid,gmres)
-      prim_object = create "primitive" primitiveClass noparent
+                first_marker = False
               end if
             else
-        "prPolyType"     : "polygon"
+              polytype2 = "polyline"
             end if
             prim_object(i) = create astring(i) primitiveClass noparent
               "prXArray"       : x(ibeg:iend)
-; Add polygon to the plot object.  First retrieve the current list
-; of poly objects, and add the new one to the end of the list.
+              "prYArray"       : y(ibeg:iend)
               "prPolyType"     : polytype2
-      getvalues plotid 
-        "tfPolyDrawList" : polylist
-      end getvalues
-
-      if(ismissing(polylist(0)))
-        new_polylist = prim_object
-      else
-        new_polylist = new(dimsizes(polylist)+1,typeof(polylist))
-        new_polylist(0:dimsizes(polylist)-1) = polylist
-        new_polylist(dimsizes(polylist))     = prim_object
-      end if
-
-      setvalues plotid 
-        "tfPolyDrawList" : new_polylist
-      end setvalues
+              "prGraphicStyle" : gsid
+            end create
     else
-      print("Warning: gsn_add_polygon: x and/or y contains missing values, cannot add polygon.")
+      prim_object = new(1,graphic)
             NhlAddPrimitive(plotid,prim_object(i),dummy)
+          end do
+        else
+          prim_object = new(1,graphic)
+        end if
+
+      end if
+    else
+;
+; No data is missing, so create a primitive object.
+;
+      prim_object = create polytype primitiveClass noparent
+        "prXArray"       : x
+        "prYArray"       : y
+        "prPolyType"     : polytype
+        "prGraphicStyle" : gsid
+      end create
+;
+; Add primitive to the plot object.
+;
+      dummy = new(1,graphic)
+      NhlAddPrimitive(plotid,prim_object,dummy)
+    end if
+
+    return(prim_object)
+end
+
+
+;***********************************************************************;
+; Function : gsn_add_polygon                                            ;
+;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
 ;                     x: 1-dimensional array of x points                ;
 ;                     y: 1-dimensional array of y points                ;
@@ -1178,79 +1200,29 @@ begin
     if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
       NhlDataPolyline(plotid,gsid,xf,yf)
     else
-; Procedure : gsn_add_polyline                                          ;
+      first_marker = True
       indices = get_non_missing_pairs(xf,yf)
       i = 0
       do while(.not.ismissing(indices(i,0)).and.i.lt.dimsizes(xf))
         ibeg = indices(i,0)
         iend = indices(i,1)
         if(iend.gt.ibeg)
-; This procedure adds a polyline to the plot "plotid", in the same data ;
+          NhlDataPolyline(plotid,gsid,xf(ibeg:iend),yf(ibeg:iend))
         else    ; iend = ibeg --> only one point
            if(first_marker)
              attsetvalues_check(gsid,gmres)
              first_marker = False
-; of resources.                                                         ;
+           end if
            NhlDataPolymarker(plotid,gsid,xf(ibeg),yf(ibeg))
-; This procedure is different from gsn_polyline because it actually     ;
-; attaches the line to the to the plot. This means that if you resize   ;
-; or move the plot, the line will stay with the plot.                   ;
+        end if
+        i = i + 1
+      end do
     end if
 
-procedure gsn_add_polyline(wks:graphic,plotid:graphic,x[*]:numeric,\
+end
 
-local i, gsid, prim_object, res, x2, y2
 ;***********************************************************************;
-
-; Create a graphic style object.  We have to do this instead of using
-; the default one, because if we add two lines to a plot and assign each
-; one a different color, the two lines will have the same color as the
-; last color that was set.
-
-    gsid = create "graphic_style" graphicStyleClass wks end create
-;
-; Set graphic style resources, if any.
-;
-    gsres = get_res_eq(resources,"gs")
-    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
-      attsetvalues(gsid,gsres)
-    end if
-
-    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
-;
-; No data is missing, so create a primitive polyline object.
-;
-      prim_object = create "primitive" primitiveClass noparent
-        "prXArray"       : x
-        "prYArray"       : y
-        "prPolyType"     : "polyline"
-        "prGraphicStyle" : gsid
-      end create
-;
-; Add polyline to the plot object.  First retrieve the current list
-; of poly objects, and add the new one to the end of the list.
-;
-      dummy = new(1,graphic)
-print(prim_object)
-      NhlAddPrimitive(plotid,prim_object,dummy)
-
-;      getvalues plotid 
-;        "tfPolyDrawList" : polylist
-;      end getvalues
-;      if(ismissing(polylist(0)))
-;        new_polylist = prim_object
-;      else
-;        new_polylist = new(dimsizes(polylist)+1,typeof(polylist))
-;        new_polylist(0:dimsizes(polylist)-1) = polylist
-;        new_polylist(dimsizes(polylist))     = prim_object
-;      end if
-;
-;      setvalues plotid 
-;        "tfPolyDrawList" : new_polylist
-;      end setvalues
-    else
-      print("Warning: gsn_add_polyline: x and/or y contains missing values, cannot add polyline.")
-    end if
+; Function : gsn_add_polyline                                           ;
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
 ;                     x: 1-dimensional array of x points                ;
@@ -1269,7 +1241,7 @@ print(prim_object)
 
 ; the plot, the line will stay with the plot.                           ;
 ;***********************************************************************;
-local i, gsid, plot_object, res, xf, yf, x2, y2
+function gsn_add_polyline(wks:graphic,plotid:graphic,x[*]:numeric,\
                            y[*]:numeric,resources:logical)
 begin
   return(gsn_add_primitive(wks,plotid,x,y,"polyline",resources))
@@ -1381,76 +1353,29 @@ begin
         "wkDefGraphicStyleId":  gsid
     end getvalues
 
-; Procedure : gsn_add_polymarker                                        ;
+    gsres = get_res_eq(resources,"gs")
     attsetvalues_check(gsid,gsres)
 ;
 ; Make sure data is float, since NhlDataPolymarker only takes floats.
 ;
     xf = tofloat(x)
     yf = tofloat(y)
-; This procedure adds a polymarkers to the plot "plotid", in the same   ;
+;
 ; Since NhlDataPolymarker doesn't accept missing values, this routine
 ; only draws the ones that aren't missing.
 ;
     if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
-; resources.                                                            ;
+      NhlDataPolymarker(plotid,gsid,xf,yf)
     else
-; This procedure is different from gsn_polymarker because it actually   ;
-; attaches the markers to the to the plot. This means that if you resize;
-; or move the plot, the markers will stay with the plot.                ;
+      x2 = xf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
+      y2 = yf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
+      NhlDataPolymarker(plotid,gsid,x2,y2)
     end if
 
-procedure gsn_add_polymarker(wks:graphic,plotid:graphic,x[*]:numeric,\
-                             y[*]:numeric,resources:logical)
-local i, gsid, prim_object, res, x2, y2
+end
+
 ;***********************************************************************;
-
-; Create a graphic style object.  We have to do this instead of using
-; the default one, because if we add two sets of markers to a plot and
-; assign each set a different color, the two sets will have the same 
-; color as the last color that was set.
-
-    gsid = create "graphic_style" graphicStyleClass wks end create
-;
-; Set graphic style resources, if any.
-;
-    gsres = get_res_eq(resources,"gs")
-    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
-      attsetvalues(gsid,gsres)
-    end if
-
-    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
-;
-; No data is missing, so create a primitive polymarker object.
-;
-      prim_object = create "primitive" primitiveClass noparent
-        "prXArray"       : x
-        "prYArray"       : y
-        "prPolyType"     : "polymarker"
-        "prGraphicStyle" : gsid
-      end create
-;
-; Add polymarkers to the plot object.  First retrieve the current list
-; of poly objects, and add the new one to the end of the list.
-;
-      getvalues plotid 
-        "tfPolyDrawList" : polylist
-      end getvalues
-
-      if(ismissing(polylist(0)))
-        new_polylist = prim_object
-      else
-        new_polylist = new(dimsizes(polylist)+1,typeof(polylist))
-        new_polylist(0:dimsizes(polylist)-1) = polylist
-        new_polylist(dimsizes(polylist))     = prim_object
-      end if
-
-      setvalues plotid 
-        "tfPolyDrawList" : new_polylist
-      end setvalues
-    else
-      print("Warning: gsn_add_polymarker: x and/or y contains missing values, cannot add polymarkers.")
-    end if
+; Function : gsn_add_polymarker                                         ;
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
 ;                     x: 1-dimensional array of x points                ;
@@ -1468,7 +1393,7 @@ local i, gsid, prim_object, res, x2, y2
 procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
 ;***********************************************************************;
 procedure gsn_polymarker_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
-                         resources:logical)
+		 resources:logical)
 local i, gsid, plot_object, res, xf, yf, x2, y2
 begin
 ; variable returned from a previous call to "gsn_open_wks").  "x" and   ;

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.42 2000-06-20 15:10:00 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.43 2000-07-10 20:13:02 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1060,8 +1060,8 @@ local hgt, hnice, pnice, ptmp
 ;
 ; Set up the "nice" pressure values for which to label the left axis.
 ;
-procedure fill_xy(wks:graphic,xy:graphic,xin[*]:numeric,yin[*]:numeric,\
-                  ref:numeric,ref_line_above_color,ref_line_below_color)
+function fill_xy(wks:graphic,xy:graphic,xin[*]:numeric,yin[*]:numeric,\
+                 ref:numeric,ref_line_above_color,ref_line_below_color)
     res@tmYLValues = (/1000.,  850., 700., 500., 400., 300., 250.,\
                          200., 150., 100.,  70., 50., 30., 10./)
     res@tmYLLabels = (/"1000","850","700","500","400","300","250",\
@@ -1071,9 +1071,88 @@ procedure fill_xy(wks:graphic,xy:graphic,xin[*]:numeric,yin[*]:numeric,\
 ;
 ; Calculate "nice" height values for which to label the right axis
 ;
+  if(.not.isatt(res,"tmYRMode"))
+    add_hgt = True
+    hgt    = gsn_geop_hgt(ptmp)     ; Calculate hgts as a fcn of pres.
+    hrange = fabs(hgt(0)-hgt(dimsizes(hgt)-1))
     if(hrange.le.35) then
       step = 4
+    anumgons = 0  ; Count the number of polygons
+    else
+      if(hrange.le.70) then
+        step = 7
+      else
+        step = 10
+      end if
+    end if
+                                            ; Set range of "nice" hgt values.
+    hnice = 1.*ispan(tointeger(floor(hgt(0))), \
+                     tointeger(ceil(hgt(dimsizes(hgt)-1))),step)
+    pnice = ftcurv(hgt,ptmp,hnice)  ; Get pres vals at nice hgt vals.
+    res@tmYRMode      = "Explicit"
+    res@tmYUseLeft    = False
+    res@tmYRValues    = pnice     ; At each "nice" pressure value, 
+    res@tmYRLabels    = hnice     ; put a "height" value label.
+    res@tmYROn        = True      ; Turn on right axis tick marks.
+    res@tmYRLabelsOn  = True      ; Turn on right axis tick marks.
+    res@tmYRMinorOn   = False     ; No minor tick marks.
+    delete(hnice)
+    delete(hgt)
+    delete(pnice)
+  else
+    add_hgt = False
+  end if
+  delete(ptmp)
+  return
 end
+
+;***********************************************************************;
+; Function : fill_xy_ref                                                ;
+;                    wks: graphic                                       ;
+;                     xy: graphic                                       ;
+;                 xin[*]: numeric                                       ;
+;                 yin[*]: numeric                                       ;
+;                    ref: numeric                                       ;
+;   ref_line_above_color: integer or string or RGB value                ;
+    bnumgons    = 0
+;   ref_line_below_color: integer or string or RGB value                ;
+;                                                                       ;
+; Take a set of X and Y points, and fill the Y points in one color if   ;
+; they are above the ref line, and in another color if they are below   ;
+; the ref line.                                                         ;
+;***********************************************************************;
+
+function fill_xy_ref(wks:graphic,xy:graphic,xin[*]:numeric,yin[*]:numeric,\
+                     ref:numeric,ref_line_above_color,ref_line_below_color)
+local npts, yabove_gon, ybelow_gon, i, gsresa, gsresb, gsresr, \
+fill_above, fill_below
+begin
+
+  npts = dimsizes(yin)
+
+  anumgons = 0  ; Count the number of polygons
+  bnumgons = 0
+  if(ref_line_above_color.ne.-1)
+    gsresa             = True
+    gsresa@gsFillColor = ref_line_above_color
+;
+; First count the number of the above-the-y-reference-line polygons we
+; need to create.
+;
+    igon       = 0
+    create_gon = False
+    do i=0,npts-1
+      if(.not.ismissing(yin(i)).and..not.ismissing(xin(i)))
+        if(yin(i).ge.ref)
+          if(igon.eq.0)
+            igon = 1
+          else
+            igon = igon + 1
+          end if
+          if(i.eq.npts-1)      ; On the last point.
+            create_gon = True
+          end if
+        else
           create_gon = True
         end if
       else
@@ -1118,9 +1197,10 @@ end
       if(create_gon)
         if(igon.gt.1)
           bnumgons = bnumgons + 1 
-          gsn_polygon(wks,xy,xabove_gon(0:newgon-1),yabove_gon(0:newgon-1),\
-                      gsresa)
-; Initialize everything back to 0
+        igon       = 0
+        create_gon = False
+      end if
+    end do
   end if
   if(anumgons.gt.0.or.bnumgons.gt.0) then
     polygons = new(anumgons+bnumgons,graphic) 
@@ -1132,10 +1212,12 @@ end
 ;
   if(ref_line_above_color.ne.-1.and.anumgons.gt.0)
     ngons      = 0
-  if(ref_line_below_color.ne.-1)
-    gsresb             = True
-    gsresb@gsFillColor = ref_line_below_color
-    igon      = 0
+    igon       = 0
+    create_gon = False
+    do i=0,npts-1
+      if(.not.ismissing(yin(i)).and..not.ismissing(xin(i)))
+        if(yin(i).ge.ref)
+          if(igon.eq.0)
             xabove_line = new(npts+2,typeof(xin))
             yabove_line = new(npts+2,typeof(yin))
             yabove_line(0) = yin(i)
@@ -1181,9 +1263,10 @@ end
                                             yabove_gon(0:newgon-1),gsresa)
           ngons = ngons + 1 
 ; Delete temporary arrays so we can recreate them.
-          gsn_polygon(wks,xy,xbelow_gon(0:newgon-1),ybelow_gon(0:newgon-1),\
-                      gsresb)
-; Initialize everything back to 0
+          delete(yabove_line)
+          delete(xabove_gon)
+          delete(yabove_gon)
+        end if
         igon       = 0
         create_gon = False
       end if
@@ -1194,8 +1277,7 @@ end
 ; Loop through and add below-ref-line polygons.
 ;
   if(ref_line_below_color.ne.-1.and.bnumgons.gt.0) then
-
-  return
+    igon       = 0
     create_gon = False
 
     do i=0,npts-1
@@ -4246,8 +4328,9 @@ begin
           if(na_max.le.0.and.nb_max.le.0)
             print("gsn_csm_xy: Fatal: There are no values above or below the chosen reference line.")
             print("Cannot draw a bar chart.")
-        fill_xy(wks,xy_object,xinterp(i,0:npts(i)-1),yinterp(i,0:npts(i)-1),\
+        p = fill_xy(wks,xy_object,xinterp(i,0:npts(i)-1),yinterp(i,0:npts(i)-1),\
                 yref_line(i),fill_above,fill_below)
+        xy_object@polygons = p
 
             if(na_max.gt.0)
               xinterp(0:2*ncurves-1:2,0:na_max-1) = xabove(:,0:na_max-1)
@@ -4264,7 +4347,8 @@ begin
 ; polygons look better if the lines are drawn thicker.
 ;
       xyres_tmp = True
-        gsn_polyline(wks,xy_object,xline,yline,gsres)
+        xpolyline = gsn_add_polyline(wks,xy_object,xline,yline,gsres)
+        xy_object@xpolyline = xpolyline
 
       fill_above = yref_line_above(0)
       fill_below = yref_line_below(0)
@@ -4282,7 +4366,8 @@ begin
     if(yref_fill_on.and.bar_chart.and..not.bar_outline_only)
       gsres = True
         yline = fspan(yref_line(i),yref_line(i),2)
-        gsn_polyline(wks,xy_object,xline,yline,gsres)
+        ypolyline = gsn_add_polyline(wks,xy_object,xline,yline,gsres)
+        xy_object@ypolyline = ypolyline
 
           if(dimsizes(yref_line_above).gt.1)
             gsres@gsFillColor = yref_line_above(i)
@@ -5282,6 +5367,7 @@ begin
     right_string  = new(1,logical)
 
     check_for_subtitles(res2,left_string,center_string,right_string)
+
 
                   right_string,subres)
 
