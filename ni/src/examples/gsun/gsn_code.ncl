@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.138 2004-04-01 22:27:50 haley Exp $
+;      $Id: gsn_code.ncl,v 1.139 2004-04-02 20:29:00 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1804,10 +1804,11 @@ begin
 ; Only do this type of maximization for PS or PDF workstations.
 ; The device coordinates mean nothing for NCGM and X11 workstations.
 ;
+  max_device = False
   class = NhlClassName(wks)
   if((class.eq."psWorkstationClass").or. \
      (class.eq."pdfWorkstationClass")) then
-
+    max_device = True
 ;
 ; Get bounding box of everything on the frame.
 ;
@@ -1838,6 +1839,19 @@ begin
   end if
   if(callframe) then
     frame(wks)
+;
+; Only set the device coordinates back if the frame is advanced, because 
+; if we do it when the frame hasn't been advanced, then anything that
+; gets drawn on this plot later will be drawn under the old device
+; coordinates.
+;
+; This means that the user will have to be aware that if he/she decides to
+; advance the frame him/herself, then any subsequent plots draw (in which
+; the device coordinates are not recalculated), may be drawn incorrectly.
+;
+    if(max_device) then
+      reset_device_coordinates(wks)
+    end if
   end if
 end
 

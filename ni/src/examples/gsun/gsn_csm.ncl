@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.159 2004-03-30 21:27:27 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.160 2004-04-02 20:29:01 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4079,7 +4079,7 @@ begin
                          get_res_value_keep(res2,"txFontHeightF",\
                          font_height))
       text_font        = get_res_value(res2,"gsnPolarLabelFont", \
-                         get_res_value_keep(res2,"txFont","helvetica-bold"))
+                         get_res_value_keep(res2,"txFont","helvetica"))
 
 ; Create an array of TextItem objects that we'll use to label the
 ; lat/lon grid.  
@@ -4193,7 +4193,7 @@ begin
     subres = get_res_eq(res2,"tx")  ; Get textitem resources
     subres                  = True
     set_attr(subres,"txFontHeightF",1.2*font_height)
-    set_attr(subres,"txFont","helvetica-bold")
+    set_attr(subres,"txFont","helvetica")
     subres@amOrthogonalPosF = 0.06 
     add_subtitles(wks,map_object,left_string,center_string,right_string, \
                   subres)
