@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.182 2005-02-15 22:03:13 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.183 2005-03-29 21:58:55 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -10172,7 +10172,7 @@ begin
 ; If pressure values are Pascals, convert them to millibars.
 ;
         if(any(data&$data!0$@units.eq.get_allowed_pres_units_pa()))
-          pres = data&$data!0$ * 0.01  ; convert to mb
+          pres = tofloat(data&$data!0$) * 0.01  ; convert to mb
           pres@units = "mb"
         end if
       else
