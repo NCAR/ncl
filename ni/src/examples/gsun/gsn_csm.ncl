@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.60 2001-02-09 21:59:13 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.61 2001-02-22 17:44:04 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -668,11 +668,16 @@ begin
 ; just indices. This is determined by the "units" attribute, which must ;
 ; be set by CSM convention.                                             ;
 ;                                                                       ;
-; p must lie between 1013.25 mb and 0.010 mb.                           ;
+; p must lie between 1013.25 mb and 2.54e-05 mb.                        ;
+function is_valid_lat_ycoord(data:numeric)
 begin
   if(is_valid_ycoord(data))
     if(any(data!0.eq.get_allowed_latnames()))
       if(isatt(data&$data!0$,"units"))
+        if(any(data&$data!0$@units.eq.get_allowed_lat_units))
+          return(True)
+        else
+          print("is_valid_lat_ycoord: Warning: The units attribute of the Y coordinate array is not set to one of the allowable units values (i.e. 'degrees_north'). Your latitude labels may not be correct.")
           return(True)
         end if
       else
@@ -685,29 +690,34 @@ begin
       end if
     end if
   end if
-  if ( any(ptmp.lt.0.010) .or. any(ptmp.gt.1013.25)) then
-    print("gsn_geop_hgt: Fatal: Argument p (pressure) does not lie between")
-    print("0.010 mb and 1013.25 mb.")
-    print("Execution halted.")
-    exit
-  end if
- 
-  nsa = 40
+  nsa = 52
 end
 
 ;***********************************************************************;
-  zsa = (/ 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0,      \
-           5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0,          \
-           11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, \
-           25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 60.0, 70.0, 80.0       /)
- 
+  zsa = (/  0.0,  0.5,  1.0,  1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5, \
+            5.0,  5.5,  6.0,  6.5,  7.0,  7.5,  8.0,  8.5,  9.0,  9.5, \
+           10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, \
+           20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 60.0, 70.0, 80.0, \
+           84.8, 87.7, 90.6, 93.3, 96.1, 97.5,100.4,104.9,110.0,114.2, \
+          116.7,119.7/)
+;                                                                       ;
   psa = (/ 1013.25, 954.61, 898.76, 845.59, 795.01, 746.91, 701.21,    \
 ;                                                                       ;
 ;***********************************************************************;
  
 function gsn_geop_hgt( p[*]:numeric )
-           0.798, 0.220, 0.052, 0.010 /)
+local nsa,psa,zsa,ptmp,npres,found,i,j
+ 
+begin
   if(isatt(p,"units").and.(any(p@units.eq.get_allowed_pres_units_pa())))
+    ptmp = p * 0.01  ; Convert to mb
+  else
+    ptmp = 1.* p     ; Assume already converted to mb!
+  end if
+
+  nsa = 53
+  psa = new( (/nsa/), float, 1.e36 )
+  zsa = new( (/nsa/), float, 1.e36 )
  
   zsa = (/ -0.3, \                      ; km
             0.0,  0.5,  1.0,  1.5,  2.0,  2.5,  3.0, \

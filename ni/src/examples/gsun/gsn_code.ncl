@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.61 2001-02-09 21:59:11 haley Exp $
+;      $Id: gsn_code.ncl,v 1.62 2001-02-22 17:44:03 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2989,7 +2989,7 @@ begin
       set_attr(lbres,"lbLabelFontHeightF",labelbar_font_height)
 ;
 ; Check if we want different fill patterns or fill scales.  If so, we
-       print("Warning: gsn_panel: unrecognized plot type. Unable to extract information for creating a labelbar.")
+; have to pass these on to the labelbar.
 ;
       set_attr(lbres,"lbMonoFillColor",mono_fill_col)
       if(.not.mono_fill_pat)
@@ -3048,7 +3048,7 @@ begin
   draw_and_frame(wks,newplots,calldraw,callframe,maxbb)
 ;
 ; Draw bounding boxes around each plot object for debugging purposes.
-    do i=0,nplot-1
+;
   if(draw_boxes)
     gsres = True
     gsres@gsLineThicknessF = 3.0
