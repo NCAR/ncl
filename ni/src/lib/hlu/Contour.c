@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.31 1994-10-07 18:47:55 dbrown Exp $
+ *      $Id: Contour.c,v 1.32 1994-10-12 23:03:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -296,7 +296,7 @@ static NhlResource resources[] = {
 		 Oset(llabel_interval_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNcnLineLabelInterval,NhlCcnLineLabelInterval,
-		  NhlTFloat,sizeof(float),
+		  NhlTInteger,sizeof(int),
 		  Oset(llabel_interval),
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNcnLineLabelSpacing,NhlCcnLineLabelSpacing,
@@ -326,10 +326,10 @@ static NhlResource resources[] = {
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNcnLineLabelFont,NhlCcnLineLabelFont,NhlTFont, 
 		 sizeof(int),Oset(line_lbls.font),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
 	{NhlNcnLineLabelFontAspectF,NhlCcnLineLabelFontAspectF,NhlTFloat, 
 		 sizeof(float),Oset(line_lbls.aspect),
-		 NhlTString, _NhlUSET("1.0"),0,NULL},
+		 NhlTString, _NhlUSET("1.3125"),0,NULL},
 	{NhlNcnLineLabelFontThicknessF,NhlCcnLineLabelFontThicknessF,
 		 NhlTFloat,sizeof(float),Oset(line_lbls.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
@@ -382,13 +382,13 @@ static NhlResource resources[] = {
 		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNcnHighLabelFont,NhlCcnHighLabelFont,NhlTFont, 
 		 sizeof(int),Oset(high_lbls.font),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
 	{NhlNcnHighLabelFontColor,NhlCcnHighLabelFontColor,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(high_lbls.mono_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNcnHighLabelFontAspectF,NhlCcnHighLabelFontAspectF,NhlTFloat, 
 		 sizeof(float),Oset(high_lbls.aspect),
-		 NhlTString, _NhlUSET("1.0"),0,NULL},
+		 NhlTString, _NhlUSET("1.3125"),0,NULL},
 	{NhlNcnHighLabelFontThicknessF,NhlCcnHighLabelFontThicknessF,
 		 NhlTFloat,sizeof(float),Oset(high_lbls.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
@@ -441,13 +441,13 @@ static NhlResource resources[] = {
 		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNcnLowLabelFont,NhlCcnLowLabelFont,NhlTFont, 
 		 sizeof(int),Oset(low_lbls.font),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
 	{NhlNcnLowLabelFontColor,NhlCcnLowLabelFontColor,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(low_lbls.mono_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNcnLowLabelFontAspectF,NhlCcnLowLabelFontAspectF,NhlTFloat, 
 		 sizeof(float),Oset(low_lbls.aspect),
-		 NhlTString, _NhlUSET("1.0"),0,NULL},
+		 NhlTString, _NhlUSET("1.3125"),0,NULL},
 	{NhlNcnLowLabelFontThicknessF,NhlCcnLowLabelFontThicknessF,
 		 NhlTFloat,sizeof(float),Oset(low_lbls.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
@@ -504,13 +504,13 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlACROSS),0,NULL},
 	{NhlNcnInfoLabelFont,NhlCcnInfoLabelFont,NhlTFont, 
 		 sizeof(int),Oset(info_lbl.font),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
 	{NhlNcnInfoLabelFontColor,NhlCcnInfoLabelFontColor,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(info_lbl.mono_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNcnInfoLabelFontAspectF,NhlCcnInfoLabelFontAspectF,NhlTFloat, 
 		 sizeof(float),Oset(info_lbl.aspect),
-		 NhlTString, _NhlUSET("1.0"),0,NULL},
+		 NhlTString, _NhlUSET("1.3125"),0,NULL},
 	{NhlNcnInfoLabelFontThicknessF,NhlCcnInfoLabelFontThicknessF,
 		 NhlTFloat,sizeof(float),Oset(info_lbl.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
@@ -584,13 +584,13 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlACROSS),0,NULL},
 	{NhlNcnConstFLabelFont,NhlCcnConstFLabelFont,NhlTFont, 
 		 sizeof(int),Oset(constf_lbl.font),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
 	{NhlNcnConstFLabelFontColor,NhlCcnConstFLabelFontColor,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(constf_lbl.mono_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNcnConstFLabelFontAspectF,NhlCcnConstFLabelFontAspectF,NhlTFloat, 
 		 sizeof(float),Oset(constf_lbl.aspect),
-		 NhlTString, _NhlUSET("1.0"),0,NULL},
+		 NhlTString, _NhlUSET("1.3125"),0,NULL},
 	{NhlNcnConstFLabelFontThicknessF,NhlCcnConstFLabelFontThicknessF,
 		 NhlTFloat,sizeof(float),Oset(constf_lbl.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
@@ -1151,6 +1151,14 @@ static char *ContourFormat(
 	NhlContourLayerPart	*cnp,
 	cnValueType		vtype,
 	NhlFormatRec		*format,
+	NhlString		entry_name
+#endif
+);
+
+static NhlErrorTypes    cnComputeRefLevel(
+#ifdef NhlNeedProto
+	NhlContourLayerPart	*cnp,
+	float			*levels,
 	NhlString		entry_name
 #endif
 );
@@ -2672,7 +2680,7 @@ static NhlErrorTypes cnSegDraw
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name;
+	char			*entry_name  = NULL;
 	char			*e_text;
 	NhlContourLayerPart	*cnp = &(cnl->contour);
 	NhlTransDat		*seg_dat;
@@ -3039,7 +3047,7 @@ static NhlErrorTypes cnDraw
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name;
+	char			*entry_name = NULL;
 	char			*e_text;
 	NhlContourLayerPart	*cnp = &(cnl->contour);
 	NhlTransformLayerPart	*tfp = &(cnl->trans);
@@ -3658,7 +3666,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 		c_cpsetr("HLS",height);
 		c_cpsetr("HLW",cnp->high_lbls.perim_space  * height);
 		c_cpsetr("HLA",cnp->high_lbls.angle);
-		c_cpsetr("HLO",cnp->high_low_overlap);
+		c_cpseti("HLO", (int) cnp->high_low_overlap);
 
 		if (cnp->high_lbls.back_color == NhlTRANSPARENT) {
 			if (! cnp->high_lbls.perim_on) 
@@ -3766,7 +3774,7 @@ static NhlErrorTypes SetUpLLTransObj
 	int			tmpid;
         NhlSArg			sargs[16];
         int			nargs = 0;
-	NhlBoolean		yrev,xrev,oyrev,oxrev;
+	NhlBoolean		yrev = False,xrev = False,oyrev,oxrev;
 
 
 	entry_name = (init) ? "ContourInitialize" : "ContourSetValues";
@@ -4489,6 +4497,9 @@ static NhlErrorTypes SetLabelScale
 	int power, i, count;
 	int divpwr,sig_digits;
 	float *fp;
+	NhlcnLevelUseMode *lusep, luse = NhlcnLABELONLY;
+	float test_high, test_low, max_fac = 1.0;
+	int max_digit = 0;
 
 	if (! init &&
 	    ! cnp->data_changed &&
@@ -4560,25 +4571,52 @@ static NhlErrorTypes SetLabelScale
 		if (cnp->const_field) {
 			fp = &cnp->zmax;
 			count = 1;
+			lusep = &luse;
 		}
 		else {
 			fp = (float *) cnp->levels->data;
+			lusep = (NhlcnLevelUseMode *) cnp->level_flags->data;
 			count = cnp->level_count;
 		}
-		sigval = FLT_MAX;
-		power = 1000000;
-		for (i = 0; i < count; i++) {
-			if (_NhlCmpFAny(fp[i],0.0,
-				       cnp->max_data_format.sig_digits) == 0.0)
-				continue;
+		sig_digits = cnp->max_data_format.sig_digits;
+		test_high = pow(10.0,sig_digits);
+		test_low  = pow(10.0,sig_digits - 1);
 
-			subret = _NhlGetScaleInfo(fp[i],
-					  &divpwr,&sig_digits,entry_name);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-			power = divpwr - sig_digits < power ?
-				divpwr - sig_digits : power;
+		for (i = 0; i < count; i++) {
+			int	j;
+			float	test_fac = 1.0, test_val;
+			char	buf[32];
+
+			if (lusep[i] < NhlcnLABELONLY)
+				continue;
+			test_val = fabs(fp[i]);
+			if (fabs(fp[i]) < test_low) {
+				while (test_val < test_low) {
+					test_val *= 10.0;
+					test_fac *= 10.0;
+				}
+			}
+			else if (fabs(fp[i]) >= test_high) {
+				while (test_val >= test_high) {
+					test_val /= 10.0;
+					test_fac /= 10.0;
+				}
+			}
+			test_val = (float) (int) (test_val + 0.5);
+
+			sprintf(buf,"%f",test_val);
+			j = strcspn(buf,"0.");
+			if (j > max_digit) {
+				max_digit = j;
+				max_fac = test_fac;
+			}
 		}
-		cnp->label_scale_factor = pow(10.0,(double)power);
+		while (sig_digits > max_digit) {
+			max_fac /= 10.0;
+			sig_digits--;
+		}
+	
+		cnp->label_scale_factor = 1.0 / max_fac;
 		break;
 	default:
 		e_text = "%s: internal enumeration error";
@@ -6001,7 +6039,7 @@ static NhlErrorTypes SetFormatRec
 			}
 		}
 	}
-	memcpy(format,frec,sizeof(NhlFormatRec));
+	memcpy((void *)format,(Const void *)frec,sizeof(NhlFormatRec));
 
 /* 
  * Since at this point the format string itself is not owned by the 
@@ -6076,8 +6114,12 @@ static char *ContourFormat
 		break;
 	case cnDATAMAXVAL:
 		value = cnp->zmax / cnp->label_scale_factor;
+		break;
 	case cnSCALEFACTOR:
 		value = cnp->label_scale_factor;
+		break;
+	default:
+		value = 1e12;
 	}
 
 	cp = _NhlFormatFloat(format,value,NULL,
@@ -6556,7 +6598,7 @@ static NhlErrorTypes    CopyTextAttrs
 		}
 		strcpy(save_fstring,source->format.fstring);
 	}
-	memcpy(dest,source,sizeof(NhlcnLabelAttrs));
+	memcpy((void *)dest,(Const void *)source,sizeof(NhlcnLabelAttrs));
 
 	dest->format.fstring = save_fstring;
 	dest->text = save_text;
@@ -7676,6 +7718,77 @@ static NhlErrorTypes	CheckColorArray
 
 
 /*
+ * Function:  cnComputeRefLevel
+ *
+ * Description: Finds the reference level, the level used as a base for
+ *		line labelling based on linelabelinterval. 
+ *
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+/*ARGSUSED*/
+static NhlErrorTypes    cnComputeRefLevel
+#if __STDC__
+(
+	NhlContourLayerPart	*cnp,
+	float			*levels,
+	NhlString		entry_name
+)
+#else
+(cnp,levels,entry_name)
+	NhlContourLayerPart	*cnp;
+	float			*levels;
+	NhlString		entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR, subret = NhlNOERROR;
+	int	i;
+	int	divpwr,sigdig,ref_level = 0;
+	int	min_sig_digits = 64;
+	float	test_fac = 1.0, test_val = fabs(cnp->zmax);
+	float	test_high = pow(10.0,cnp->max_data_format.sig_digits);
+	float	test_low  = pow(10.0,cnp->max_data_format.sig_digits - 1);
+
+	if (fabs(cnp->zmax) < test_low) {
+		while (test_val < test_low) {
+			test_val *= 10.0;
+			test_fac *= 10.0;
+		}
+	}
+	else if (fabs(cnp->zmax) >= test_high) {
+		while (test_val >= test_high) {
+			test_val /= 10.0;
+			test_fac /= 10.0;
+		}
+	}
+	for (i = 0; i < cnp->level_count; i++) {
+		test_val = (float) (int) (fabs((levels)[i]) * test_fac + 0.5);
+		if (test_val == 0.0) {
+			ref_level = i;
+			break;
+		}
+		subret = _NhlGetScaleInfo(test_val,
+					  &divpwr,&sigdig,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING)
+			return ret;
+		if (sigdig < min_sig_digits) {
+			min_sig_digits = sigdig;
+			ref_level = i;
+		}
+	}
+	cnp->ref_level = ref_level;
+	
+	return ret;
+}
+
+/*
  * Function:  SetupLevels
  *
  * Description: Depending on the setting of the LevelCount resource,
@@ -7696,8 +7809,8 @@ static NhlErrorTypes	CheckColorArray
 /*ARGSUSED*/
 static NhlErrorTypes    SetupLevels
 #if __STDC__
-	(NhlLayer		new, 
-	 NhlLayer		old,
+	(NhlLayer	new, 
+	 NhlLayer	old,
 	 NhlBoolean	init,
 	 float		**levels,
 	 NhlBoolean	*modified)
@@ -7726,98 +7839,97 @@ static NhlErrorTypes    SetupLevels
 	if (! cnp->min_level_set) cnp->min_level_val = cnp->zmin; 
 	if (! cnp->max_level_set) cnp->max_level_val = cnp->zmax; 
 
-	if (init || cnp->data_changed ||
-	    cnp->levels != ocnp->levels ||
-	    cnp->level_selection_mode != ocnp->level_selection_mode ||
-	    cnp->max_level_count != ocnp->max_level_count ||
-	    cnp->level_spacing_set ||
-	    cnp->min_level_val != ocnp->min_level_val ||
-	    cnp->max_level_val != ocnp->max_level_val) {
+	if (! init && cnp->data_changed &&
+	    (cnp->levels == ocnp->levels) &&
+	    (cnp->level_selection_mode == ocnp->level_selection_mode) &&
+	    (cnp->max_level_count == ocnp->max_level_count) &&
+	    cnp->level_spacing_set &&
+	    (cnp->min_level_val == ocnp->min_level_val) &&
+	    (cnp->max_level_val == ocnp->max_level_val))
+		return ret;
 
-		cnp->new_draw_req = True;
-		cnp->ref_level = 0;
+	cnp->new_draw_req = True;
+	cnp->ref_level = 0;
 
-		cnp->below_min.on = False;
-		cnp->above_max.on = False;
+	cnp->below_min.on = False;
+	cnp->above_max.on = False;
 
-		if (cnp->level_spacing <= 0.0) {
-			e_text = 
-                           "%s: Invalid level spacing value set: defaulting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-			ret = MIN(ret,NhlWARNING);
-			cnp->level_spacing = 5.0;
-		}
-
-		if (cnp->min_level_val >= cnp->max_level_val) {
-			e_text =
-		"%s: Invalid level values set: defaulting to AUTOMATIC mode ";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-			ret = MIN(ret,NhlWARNING);
-			cnp->min_level_val = cnp->zmin;
-			cnp->max_level_val = cnp->zmax;
-			cnp->level_selection_mode = NhlcnAUTOMATIC;
-		}
-			
-		if (cnp->zmax <= cnp->min_level_val || 
-		    cnp->zmin > cnp->max_level_val) {
-			e_text =
-  "%s: Data values and min/max levels are disjoint sets: defaulting to AUTOMATIC mode ";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-			ret = MIN(ret,NhlWARNING);
-			cnp->min_level_val = cnp->zmin;
-			cnp->max_level_val = cnp->zmax;
-			cnp->level_selection_mode = NhlcnAUTOMATIC;
-		}
-
-		switch (cnp->level_selection_mode) {
-
-		case NhlcnMANUAL:
-
-			subret = SetupLevelsManual(cnew,cold,
-						   levels,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				return ret;
-			}
-			*modified = True;
-			break;
-
-		case NhlcnEQUALSPACING:
-
-			subret = SetupLevelsEqual(cnew,cold,
-						  levels,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				return ret;
-			}
-			*modified = True;
-			break;
-
-		case NhlcnAUTOMATIC:
-
-			subret = SetupLevelsAutomatic(cnew,cold,
-						      levels,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				return ret;
-			}
-			*modified = True;
-			break;
-			
-		case NhlcnEXPLICIT:
-
-			subret = SetupLevelsExplicit(cnew,cold,
-						     levels,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				return ret;
-			}
-			*modified = True;
-			break;
-
-		default:
-			ret = NhlFATAL;
-			e_text = "%s: Invalid level selection mode";
-			NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
+	if (cnp->level_spacing <= 0.0) {
+		e_text = 
+			"%s: Invalid level spacing value set: defaulting";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ret = MIN(ret,NhlWARNING);
+		cnp->level_spacing = 5.0;
 	}
+	
+	if (cnp->min_level_val >= cnp->max_level_val) {
+		e_text =
+		"%s: Invalid level values set: defaulting to AUTOMATIC mode ";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ret = MIN(ret,NhlWARNING);
+		cnp->min_level_val = cnp->zmin;
+		cnp->max_level_val = cnp->zmax;
+		cnp->level_selection_mode = NhlcnAUTOMATIC;
+	}
+			
+	if (cnp->zmax <= cnp->min_level_val || 
+	    cnp->zmin > cnp->max_level_val) {
+		e_text =
+			"%s: Data values and min/max levels are disjoint sets: defaulting to AUTOMATIC mode ";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ret = MIN(ret,NhlWARNING);
+		cnp->min_level_val = cnp->zmin;
+		cnp->max_level_val = cnp->zmax;
+		cnp->level_selection_mode = NhlcnAUTOMATIC;
+	}
+	
+	switch (cnp->level_selection_mode) {
+
+	case NhlcnMANUAL:
+
+		subret = SetupLevelsManual(cnew,cold,levels,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			return ret;
+		}
+		*modified = True;
+		break;
+
+	case NhlcnEQUALSPACING:
+
+		subret = SetupLevelsEqual(cnew,cold,levels,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			return ret;
+		}
+		*modified = True;
+		break;
+
+	case NhlcnAUTOMATIC:
+
+		subret = SetupLevelsAutomatic(cnew,cold,levels,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			return ret;
+		}
+		*modified = True;
+		break;
+			
+	case NhlcnEXPLICIT:
+
+		subret = SetupLevelsExplicit(cnew,cold,levels,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			return ret;
+		}
+		*modified = True;
+		break;
+
+	default:
+		ret = NhlFATAL;
+		e_text = "%s: Invalid level selection mode";
+		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	subret = cnComputeRefLevel(cnp,*levels,entry_name);
+	ret = MIN(subret,ret);
 
 	return ret;
 
@@ -8007,10 +8119,9 @@ static NhlErrorTypes    SetupLevelsAutomatic
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	NhlContourLayerPart	*cnp = &(cnew->contour);
-	int			i,count,divpwr,sigdig,ref_level;
+	int			i,count;
 	float			zmin,zmax,spacing,ftmp,ftest;
 	NhlBoolean		add_min = False, add_max = False;
-	int			min_sig_digits = 64;
 
 	zmin = cnp->zmin;
 	zmax = cnp->zmax;
@@ -8071,27 +8182,10 @@ static NhlErrorTypes    SetupLevelsAutomatic
 			(*levels)[i] = zmin + i * spacing;
 		(*levels)[count - 1] = zmax;
 	}
-#if 0
-	for (i = 0; i < count; i++) {
-		subret = _NhlGetScaleInfo((*levels)[i],
-					  &divpwr,&sigdig,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		subret = _NhlGetScaleInfo((*levels)[i] / pow(10,divpwr),
-					  &divpwr,&sigdig,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		if (sigdig < min_sig_digits) {
-			min_sig_digits = sigdig;
-			ref_level = i;
-		}
-	}
-#endif
 	cnp->level_spacing = spacing;
 	cnp->level_count = count;
 	cnp->fill_count = count - 1;
 	cnp->line_count = cnp->level_count - 2;
-#if 0
-	cnp->ref_level = i;
-#endif
 
 	return ret;
 }

@@ -62,7 +62,7 @@ static NhlFormatRec Init_Format = {
 	NhlffUNSPECED,  /* point_position_flag */
         0,		/* point_position */
 	NhlffUNSPECED,  /* exp_switch_len_flag */
-        6,		/* exp_switch_len */
+        5,		/* exp_switch_len */
 	NhlffUNSPECED,  /* exp_field_width_flag */
         0,		/* exp_field_width */
         False,		/* exp_plus */
@@ -660,7 +660,7 @@ static NhlErrorTypes parse_field_type(void)
 
 static char *find_exp(char *start)
 {
-        char cexp;
+        char cexp = 'e';
 
         switch (Format.exp_type) {
         case NhlffELITTLE:
@@ -718,7 +718,8 @@ NhlFormatRec *_NhlScanFString
 {
         Entry_Name = entry_name == NULL ? Init_Entry_Name : entry_name;
 	Cp = fstring;
-	memcpy(&Format,&Init_Format,sizeof(NhlFormatRec));
+	memcpy((void *)&Format,
+	       (const void *)&Init_Format,sizeof(NhlFormatRec));
         if (Cp == NULL)
                 return &Format;
 	Format.fstring = fstring;
@@ -818,7 +819,7 @@ NhlString _NhlFormatFloat
         char *exp_pos = NULL;
         int field_width,apparent_fwidth;
 	NhlBoolean left_justify = False;
-	int move_cnt, set_ppos;
+	int set_ppos,move_cnt = 0;
 
 	lmsd = format->left_sig_digit;
         if (format->left_sig_digit_flag) {
@@ -865,13 +866,13 @@ NhlString _NhlFormatFloat
         iodp = (int) ! format->pound;
         iotz = (int) ! format->zero;
 
-        cpinrc_();
-        cpnumb_(&value,&ndgd,&lmsd,&iexp,&lexp,
-                         cex1[ix],cex2[ix],cex3[ix],
-                         &lex1[ix],&lex2[ix],&lex3[ix],
-                         &ioma,&iodp,&iotz,cbuf,&nbuf,&ndgs,&ieva,
-                         strlen(cex1[ix]),strlen(cex2[ix]),strlen(cex3[ix]),
-                         128);
+        NGCALLF(cpinrc,CPINRC)();
+        NGCALLF(cpnumb,CPNUMB)(&value,&ndgd,&lmsd,&iexp,&lexp,
+			       cex1[ix],cex2[ix],cex3[ix],
+			       &lex1[ix],&lex2[ix],&lex3[ix],
+			       &ioma,&iodp,&iotz,cbuf,&nbuf,&ndgs,&ieva,
+			       strlen(cex1[ix]),strlen(cex2[ix]),
+			       strlen(cex3[ix]),128);
 
 /*
  * If not a forced float field find the position of possible exponent.
