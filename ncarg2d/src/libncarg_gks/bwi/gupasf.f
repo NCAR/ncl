@@ -1,5 +1,5 @@
 C
-C	$Id: gupasf.f,v 1.5 2000-08-22 15:09:43 haley Exp $
+C	$Id: gupasf.f,v 1.6 2003-02-13 23:58:23 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,7 +25,7 @@ C
 C  Update aspect source flag context.
 C
       include 'gksin.h'
-      include 'g01arq.h'
+      include 'g01rqa.h'
       include 'g01ast.h'
       include 'g01adc.h'
 C

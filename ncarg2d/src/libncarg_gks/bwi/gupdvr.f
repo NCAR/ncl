@@ -1,5 +1,5 @@
 C
-C	$Id: gupdvr.f,v 1.4 2000-08-22 15:09:45 haley Exp $
+C	$Id: gupdvr.f,v 1.5 2003-02-13 23:58:23 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -42,7 +42,7 @@ C      OUTPUT
 C        Adjustment of attribute deferral control parameters in COMMON.        
 C
       include 'g01prm.h'
-      include 'g01arq.h'
+      include 'g01rqa.h'
       include 'g01ast.h'
       include 'g01adc.h'
 C

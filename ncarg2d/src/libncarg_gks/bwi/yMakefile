@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.11 1996-10-25 21:41:14 boote Exp $
+#	$Id: yMakefile,v 1.12 2003-02-13 23:58:24 fred Exp $
 #
 
 MYNAME	= bwi
@@ -42,8 +42,8 @@ g01bkd.o : g01bkd.f \
    g01wdt.h \
    g01ins.doc \
    g01ins.h \
-   g01adf.doc \
-   g01adf.h \
+   g01dfa.doc \
+   g01dfa.h \
    g01adc.doc \
    g01adc.h \
    g01io.doc \
@@ -71,13 +71,13 @@ g01clp.o : g01clp.f \
  
 g01clw.o : g01clw.f \
    g01prm.h \
-   g01arq.h \
+   g01rqa.h \
    gksin.h \
    g01wsl.h \
    g01io.h \
    g01ins.h \
    g01ast.h \
-   g01adf.h \
+   g01dfa.h \
    g01opc.h \
    gksenu.h 
  
@@ -91,13 +91,13 @@ g01ctb.o : g01ctb.f \
  
 g01d2r.o : g01d2r.f \
    g01prm.h \
-   g01arq.h \
-   g01adf.h 
+   g01rqa.h \
+   g01dfa.h 
  
 g01d2s.o : g01d2s.f \
    g01prm.h \
    g01ast.h \
-   g01adf.h 
+   g01dfa.h 
  
 g01diq.o : g01diq.f \
    g01prm.h \
@@ -110,9 +110,9 @@ g01dmp.o : g01dmp.f \
    g01wdt.h \
    g01wsl.h \
    g01adc.h \
-   g01arq.h \
+   g01rqa.h \
    g01ast.h \
-   g01adf.h \
+   g01dfa.h \
    g01io.h \
    g01ins.h \
    g01opc.h \
@@ -129,7 +129,7 @@ g01fa.o : g01fa.f \
    g01io.h \
    g01ins.h \
    g01wsl.h \
-   g01arq.h \
+   g01rqa.h \
    g01ast.h \
    g01adc.h \
    g01opc.h \
@@ -141,9 +141,9 @@ g01flb.o : g01flb.f \
  
 g01iac.o : g01iac.f \
    g01prm.h \
-   g01arq.h \
+   g01rqa.h \
    g01ast.h \
-   g01adf.h \
+   g01dfa.h \
    g01adc.h 
  
 g01iws.o : g01iws.f \
@@ -170,7 +170,7 @@ g01pl.o : g01pl.f \
    g01io.h \
    g01ins.h \
    g01wsl.h \
-   g01arq.h \
+   g01rqa.h \
    g01ast.h \
    g01adc.h \
    g01opc.h \
@@ -181,7 +181,7 @@ g01pm.o : g01pm.f \
    g01io.h \
    g01ins.h \
    g01wsl.h \
-   g01arq.h \
+   g01rqa.h \
    g01ast.h \
    g01adc.h \
    g01opc.h \
@@ -191,7 +191,7 @@ g01sas.o : g01sas.f \
    g01prm.h \
    g01ins.h \
    g01adc.h \
-   g01arq.h \
+   g01rqa.h \
    g01ast.h \
    g01opc.h 
  
@@ -219,7 +219,7 @@ g01tx.o : g01tx.f \
    g01io.h \
    g01ins.h \
    g01wsl.h \
-   g01arq.h \
+   g01rqa.h \
    g01ast.h \
    g01adc.h \
    g01opc.h \
@@ -231,9 +231,9 @@ g01wdr.o : g01wdr.f \
    g01wdt.h \
    g01wsl.h \
    g01adc.h \
-   g01arq.h \
+   g01rqa.h \
    g01ast.h \
-   g01adf.h \
+   g01dfa.h \
    g01io.h \
    g01ins.h \
    g01opc.h \
@@ -288,25 +288,25 @@ gtnlen.o : gtnlen.f
  
 gupasf.o : gupasf.f \
    gksin.h \
-   g01arq.h \
+   g01rqa.h \
    g01ast.h \
    g01adc.h 
  
 gupdva.o : gupdva.f \
    g01prm.h \
    gksin.h \
-   g01arq.h \
+   g01rqa.h \
    g01ast.h \
    g01adc.h 
  
 gupdvi.o : gupdvi.f \
    g01prm.h \
-   g01arq.h \
+   g01rqa.h \
    g01ast.h \
    g01adc.h 
  
 gupdvr.o : gupdvr.f \
    g01prm.h \
-   g01arq.h \
+   g01rqa.h \
    g01ast.h \
    g01adc.h 

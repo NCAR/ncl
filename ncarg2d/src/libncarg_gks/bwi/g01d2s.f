@@ -1,5 +1,5 @@
 C
-C	$Id: g01d2s.f,v 1.4 2000-08-22 15:09:32 haley Exp $
+C	$Id: g01d2s.f,v 1.5 2003-02-13 23:58:20 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -30,7 +30,7 @@ C  using the equivalencing arrays and the sign of IP2AEA).
 C
       include 'g01prm.h'
       include 'g01ast.h'
-      include 'g01adf.h'
+      include 'g01dfa.h'
 C
       INTEGER  I
 C

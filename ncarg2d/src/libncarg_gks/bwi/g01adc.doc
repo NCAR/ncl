@@ -6,7 +6,7 @@ C       valchg  - array of logical variables indicating whether
 C                 value changes are pending for each of the
 C                 attributes.  There is a one-to-one relationship
 C                 between the elements of VALCHG and and the
-C                 aspect/bundle variables in G01ARQ, etc.
+C                 aspect/bundle variables in G01RQA, etc.
 C
 C       asfchg  - array of logical variables indicating whether
 C                 changes are pending for each of the ASFs.  There

@@ -1,5 +1,5 @@
 C
-C	$Id: g01clw.f,v 1.6 2003-01-15 18:59:59 fred Exp $
+C	$Id: g01clw.f,v 1.7 2003-02-13 23:58:20 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,13 +25,13 @@ C
 C CLEAR WORKSTATION
 C
       include 'g01prm.h'
-      include 'g01arq.h'
+      include 'g01rqa.h'
       include 'gksin.h'
       include 'g01wsl.h'
       include 'g01io.h'
       include 'g01ins.h'
       include 'g01ast.h'
-      include 'g01adf.h'
+      include 'g01dfa.h'
       include 'g01opc.h'
       include 'gksenu.h'
 C

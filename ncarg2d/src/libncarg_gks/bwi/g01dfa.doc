@@ -1,12 +1,12 @@
 C
-C     G01ADF  -- Contains the default values of the workstation
+C     G01DFA  -- Contains the default values of the workstation
 C                independent attributes.  These are the values which
 C                the attributes implicitly assume after BEGIN PICTURE.
 C                BEGIN PICTURE effectively causes these to be the
 C                "sent" variables, even though the send is implicit.
 C
 C                The first part of the structure exactly parallels
-C                the structure G01ARQ.  Following the first part
+C                the structure G01RQA.  Following the first part
 C                are defaults for clipping control parameters, ...
 C
 C

@@ -1,5 +1,5 @@
 C
-C $Id: g01arq.h,v 1.3 2000-08-22 03:45:40 haley Exp $
+C $Id: g01rqa.h,v 1.1 2003-02-13 23:58:22 fred Exp $
 C
 C This file is free software; you can redistribute it and/or modify
 C it under the terms of the GNU General Public License as published
@@ -16,8 +16,7 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-
-      COMMON  /G01ARQ/  MRPLIX  ,MRLTYP ,ARLWSC ,MRPLCI ,
+      COMMON  /G01RQA/  MRPLIX  ,MRLTYP ,ARLWSC ,MRPLCI ,
      +                  MRPMIX  ,MRMTYP ,ARMSZS ,MRPMCI ,
      +                  MRTXIX  ,MRTXP  ,MRTXAL(2)      ,MRCHH  ,
      +                  MRCHOV(4)       ,MRTXFO ,MRTXPR ,ARCHXP ,

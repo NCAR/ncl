@@ -1,5 +1,5 @@
 C
-C $Id: g01adf.h,v 1.3 2000-08-22 03:45:40 haley Exp $
+C $Id: g01dfa.h,v 1.1 2003-02-13 23:58:21 fred Exp $
 C
 C This file is free software; you can redistribute it and/or modify
 C it under the terms of the GNU General Public License as published
@@ -16,8 +16,7 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-
-      COMMON  /G01ADF/  MDPLIX  ,MDLTYP ,ADLWSC ,MDPLCI ,MDPMIX ,
+      COMMON  /G01DFA/  MDPLIX  ,MDLTYP ,ADLWSC ,MDPLCI ,MDPMIX ,
      +                  MDMTYP  ,ADMSZS ,MDPMCI ,MDTXIX ,MDTXP  ,
      +                  MDTXAL(2)       ,MDCHH  ,MDCHOV(4)      ,
      +                  MDTXFO  ,MDTXPR ,ADCHXP ,ADCHSP ,MDTXCI ,

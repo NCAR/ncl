@@ -1,5 +1,5 @@
 C
-C	$Id: g01dmp.f,v 1.5 2000-08-22 15:09:33 haley Exp $
+C	$Id: g01dmp.f,v 1.6 2003-02-13 23:58:21 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -31,9 +31,9 @@ C
       include 'g01wdt.h'
       include 'g01wsl.h'
       include 'g01adc.h'
-      include 'g01arq.h'
+      include 'g01rqa.h'
       include 'g01ast.h'
-      include 'g01adf.h'
+      include 'g01dfa.h'
       include 'g01io.h'
       include 'g01ins.h'
       include 'g01opc.h'
