@@ -35,9 +35,8 @@ C
 C
 C Retrieve an array of test data.
 C
-      OPEN (11,FILE='ccpila.dat',STATUS='OLD')
       DO 10, I=1,M
-         READ (11,*) (ZDAT(I,J),J=1,N)
+         READ (*,*) (ZDAT(I,J),J=1,N)
  10   CONTINUE
 C
 C Tell CONPACK to use 12 contour levels, splitting the range into 13

@@ -52,10 +52,9 @@ C
       INTEGER I,J,K,M,N
       REAL Z(K,N)
       
-      OPEN (10,FILE='ccpex.dat',STATUS='OLD')
       L=K
       DO 10, I=1,L
-         READ (10,*) (Z(I,J),J=1,N)
+         READ (*,*) (Z(I,J),J=1,N)
  10   CONTINUE
       
       RETURN

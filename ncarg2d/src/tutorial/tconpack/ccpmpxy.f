@@ -15,16 +15,14 @@ C
 C 
 C Read arrays containing data 
 C 
-      OPEN(FILE='cpmpxy1.dat',STATUS='OLD',UNIT=13)
       DO 10, I=1,JX
          DO 20 J=1,KX
-            READ (13,*) Z(I,J)
+            READ (*,*) Z(I,J)
  20      CONTINUE
  10   CONTINUE
-      OPEN(FILE='cpmpxy2.dat',STATUS='OLD',UNIT=14)
       DO 30, I=1,JX
          DO 40 J=1,KX
-            READ (14,*) CNTR(I,J)
+            READ (*,*) CNTR(I,J)
  40      CONTINUE
  30   CONTINUE
 C 
