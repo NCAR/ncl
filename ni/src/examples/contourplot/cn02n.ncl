@@ -16,7 +16,7 @@
 ;
 ;   Date:       Tue Oct  4 18:48:08 MDT 1994
 ;
-;   Description:    Demonstrates basic features of the Contour object
+;   Description:    Demonstrates basic features of the ContourPlot object
 ;
 
 begin
@@ -84,15 +84,15 @@ dataid = create "bullseye" scalarFieldLayerClass appid
 end create
 
 ;
-; Create a Contour object, supplying the ScalarField object as data
+; Create a ContourPlot object, supplying the ScalarField object as data
 ;
-cnid = create "Contour1" contourPlotLayerClass wid
+cnid = create "ContourPlot1" contourPlotLayerClass wid
     "cnScalarFieldData" : dataid
 end create
 
 ;
 ; Draw the plot, notice that it illustrates the basic default behavior of
-; the Contour object. The contours appear as solid lines with unboxed
+; the ContourPlot object. The contours appear as solid lines with unboxed
 ; labels in a linear coordinate system with the origin at the lower left. 
 ; Tickmarks with labels show the data coordinate range, and an 
 ; informational label at the lower right gives the minimum and maximum
@@ -103,7 +103,7 @@ draw(cnid)
 frame(wid)
 
 ;
-; In the Contour object, many resources that apply to the lines 
+; In the ContourPlot object, many resources that apply to the lines 
 ; representing the contour levels and the fill areas between the levels
 ; have both a scalar and an array form. You control which applies by 
 ; setting an associated boolean flag, indentified by the prefix "Mono".
