@@ -1,5 +1,5 @@
 C
-C $Id: mprset.f,v 1.4 1999-04-02 22:59:45 kennison Exp $
+C $Id: mprset.f,v 1.5 1999-04-07 21:11:56 kennison Exp $
 C
       SUBROUTINE MPRSET
 C
@@ -105,7 +105,7 @@ C
       ULOW=0.
       UROW=1.
       DPLT=1.
-      DDTS=12.
+      DDTS=96.
       DSCA=1.
       IGI1=1
       IGI2=2
