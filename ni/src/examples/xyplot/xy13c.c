@@ -1,5 +1,5 @@
 /*
- *      $Id: xy13c.c,v 1.11 1995-04-19 14:46:25 haley Exp $
+ *      $Id: xy13c.c,v 1.12 1995-06-15 01:42:13 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -540,7 +540,7 @@ main
     xdata[1] = dry_minusfourtyT;
     ydata[1] = dry_minusfourtyP;
     lengths[1] = sizeof(dry_minusfourtyT)/sizeof(float);
-    line_labels[0] = "-40";
+    line_labels[1] = "-40";
     xdata[2] = dry_minusthirtyT;
     ydata[2] = dry_minusthirtyP;
     lengths[2] = sizeof(dry_minusthirtyT)/sizeof(float);
