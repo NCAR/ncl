@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.43 2000-07-10 20:13:02 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.44 2000-07-24 21:04:09 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -35,7 +35,6 @@
 
 undef("xy_interp")
 undef("ref_line_interp")
-undef("gsn_geop_hgt")
 undef("check_for_subtitles")
 undef("set_right_subtitle")
 undef("set_left_subtitle")
@@ -45,6 +44,11 @@ undef("set_subtitles_res")
 undef("check_for_coord_arrays")
 undef("get_allowed_latnames")
 undef("get_allowed_lonnames")
+undef("get_allowed_pres_units_mb")
+undef("get_allowed_pres_units_pa")
+undef("get_allowed_pres_units_hpa")
+undef("get_allowed_pres_units")
+undef("gsn_geop_hgt")
 undef("check_for_y_lat_coord")
 undef("check_for_x_lat_coord")
 undef("check_for_lon_coord")
@@ -219,76 +223,6 @@ begin
   return(npts)
 end
 
-;***********************************************************************;
-; Procedure : gsn_geop_hgt                                              ;
-;                                                                       ;
-; Returns geopotential height (in km) given array p (pressure in mb)    ;
-; p must lie between 1013.25 mb and 0.010 mb.                           ;
-; Algorithm is simply logarithmic interpolation from Standard           ;
-; Atmosphere.                                                           ;
-; Intended to provide an ESTIMATE of geopotential height when           ;
-; temperature and geopotential data are lacking.                        ;
-;***********************************************************************;
- 
-function gsn_geop_hgt( p[*]:numeric )
-local nsa,psa,zsa,ptmp,npres,found,i,j
- 
-begin
-  if(isatt(p,"units").and.(p@units.eq."Pascals".or.p@units.eq."Pa"))
-    ptmp = p * 0.01  ; Convert to mb
-  else
-    ptmp = 1.* p     ; Assume already converted to mb!
-  end if
-
-  if ( any(ptmp.lt.0.010) .or. any(ptmp.gt.1013.25)) then
-    print("gsn_geop_hgt: Fatal: Argument p (pressure) does not lie between")
-    print("0.010 mb and 1013.25 mb.")
-    print("Execution halted.")
-    exit
-  end if
- 
-  nsa = 40
-  psa = new( (/nsa/), float, 1.e36 )
-  zsa = new( (/nsa/), float, 1.e36 )
- 
-  zsa = (/ 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0,      \
-           5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0,          \
-           11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, \
-           25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 60.0, 70.0, 80.0       /)
- 
-  psa = (/ 1013.25, 954.61, 898.76, 845.59, 795.01, 746.91, 701.21,    \
-           657.80, 616.60, 577.52, 540.48, 505.39, 472.17, 440.75,     \
-           411.05, 382.99, 356.51, 331.54, 308.00, 285.84, 264.99,     \
-           226.99, 193.99, 165.79, 141.70, 121.11, 103.52, 88.497,     \
-           75.652, 64.674, 55.293, 25.492, 11.970, 5.746, 2.871, 1.491,\
-           0.798, 0.220, 0.052, 0.010 /)
-
-  npres = dimsizes(ptmp)
-  gph = new(npres,float)
-
-  do i = 0,npres-1
-    found = False
-    j = 0
-
-    do while(.not.found.and.j.le.nsa-2)
-     if ( ( ptmp(i) .le. psa(j) ) .and. ( ptmp(i) .ge. psa(j+1) ) ) then
-       gph(i) = zsa(j) + (zsa(j+1) - zsa(j)) * \
-                log( psa(j)/ptmp(i) )/log( psa(j)/psa(j+1) )
-       found = True 
-     end if
-     j = j + 1
-    end do
-
-  end do
- 
-  delete(psa)
-  delete(zsa)
-  delete(ptmp)
- 
-  return(gph)
- 
-end
- 
 ;***********************************************************************;
 ; Procedure : check_for_subtitles                                       ;
 ;                 res: logical                                          ;
@@ -529,8 +463,131 @@ end
            "long","lon_u","lon_t"/))
 ;***********************************************************************;
 function get_allowed_latnames()
+begin
+begin
+  return((/"g0_lat_2","g0_lat_3","g0_lat_4"/))
+end
+
+;***********************************************************************;
+; Function : get_allowed_lonnames                                       ;
+;                                                                       ;
+; Get list of names allowed for a longitude coordinate array.           ; 
+;                                                                       ;
+;***********************************************************************;
+function get_allowed_lonnames()
+begin
+  return((/"lon","Lon","Longitude","LON","longitude","LONGITUDE","hlon",\
+           "long","lon_u","lon_t","xc"/))
+end
+
+;***********************************************************************;
+; Function : get_allowed_lonnames_without_units                         ;
+;                                                                       ;
+; Get list of names allowed for a longitude coordinate array.  These    ; 
 ; are longitudes names from a grib file, so their units are assumed to  ;
 ; be "degrees_east".                                                    ;
+;***********************************************************************;
+function get_allowed_lonnames_without_units()
+begin
+  return((/"g0_lon_2","g0_lon_3","g0_lon_4"/))
+end
+
+;***********************************************************************;
+; Function : get_allowed_pres_units_pa                                  ;
+;                                                                       ;
+; Get list of names allowed for pressure units in pascals.              ; 
+;                                                                       ;
+;***********************************************************************;
+function get_allowed_pres_units_pa()
+begin
+  return((/"Pa","pa","PA","Pascals","pascals","PASCALS"/))
+end
+
+;***********************************************************************;
+; Function : get_allowed_pres_units_hpa                                 ;
+;                                                                       ;
+; Get list of names allowed for pressure units in hecto-pascals.        ; 
+;                                                                       ;
+;***********************************************************************;
+function get_allowed_pres_units_hpa()
+begin
+  return((/"hpa","hPa","HPA","hecto-pascals","HECTO-PASCALS"/))
+end
+
+;***********************************************************************;
+; Function : get_allowed_pres_units_mb                                  ;
+;                                                                       ;
+; Get list of names allowed for pressure units in millibars.            ; 
+; just indices. This is determined by the "units" attribute, which must ;
+; be set by CSM convention.                                             ;
+;                                                                       ;
+; p must lie between 1013.25 mb and 0.010 mb.                           ;
+begin
+  if(is_valid_ycoord(data))
+    if(any(data!0.eq.get_allowed_latnames()))
+      if(isatt(data&$data!0$,"units"))
+          return(True)
+        end if
+      else
+        print("is_valid_lat_ycoord: Warning: The units attribute of the Y coordinate array is not set. Assuming units to be degrees_north.")
+        return(True)
+      end if
+  if(isatt(p,"units").and.any(p@units.eq.get_allowed_pres_units_pa()))
+      if(any(data!0.eq.get_allowed_latnames_without_units()))
+        return(True)
+      end if
+    end if
+  end if
+  if ( any(ptmp.lt.0.010) .or. any(ptmp.gt.1013.25)) then
+    print("gsn_geop_hgt: Fatal: Argument p (pressure) does not lie between")
+    print("0.010 mb and 1013.25 mb.")
+    print("Execution halted.")
+    exit
+  end if
+ 
+  nsa = 40
+end
+
+;***********************************************************************;
+  zsa = (/ 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0,      \
+           5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0,          \
+           11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, \
+           25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 60.0, 70.0, 80.0       /)
+ 
+  psa = (/ 1013.25, 954.61, 898.76, 845.59, 795.01, 746.91, 701.21,    \
+;                                                                       ;
+;***********************************************************************;
+ 
+function gsn_geop_hgt( p[*]:numeric )
+           0.798, 0.220, 0.052, 0.010 /)
+  if(isatt(p,"units").and.(any(p@units.eq.get_allowed_pres_units_pa())))
+ 
+  zsa = (/ -0.3, \                      ; km
+            0.0,  0.5,  1.0,  1.5,  2.0,  2.5,  3.0, \
+            3.5,  4.0,  4.5,  5.0,  5.5,  6.0,  6.5, \
+            7.0,  7.5,  8.0,  8.5,  9.0,  9.5, 10.0, \
+           11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, \
+           18.0, 19.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, \
+           50.0, 60.0, 70.0, 80.0, 84.8, 87.7, 90.6, \
+           93.3, 96.1, 97.5,100.4,104.9, \
+          110.0,114.2,116.7,119.7/)
+
+  psa = (/ 1050., \                     ; mb (hPa)
+           1013.25, 954.61, 898.76, 845.59, 795.01, 746.91, 701.21,    \
+           657.80, 616.60, 577.52, 540.48, 505.39, 472.17, 440.75,     \
+           411.05, 382.99, 356.51, 331.54, 308.00, 285.84, 264.99,     \
+           226.99, 193.99, 165.79, 141.70, 121.11, 103.52, 88.497,     \
+           75.652, 64.674, 55.293, 25.492, 11.970, 5.746, 2.871, 1.491,\
+           0.798, 0.220, 0.052, 0.010, 0.00485,0.00294,0.000178, \
+           0.000108, 0.0000656, 0.0000511, 0.0000310, 0.0000146, \
+           0.00000691, 0.00000419, 0.00000327, 0.00000254 /)
+
+
+  if ( any(ptmp.lt.min(psa)) .or. any(ptmp.gt.max(psa))) then
+    print("gsn_geop_hgt: Fatal: Argument p (pressure) does not lie between")
+    print(min(psa) + " mb and " + max(psa) + " mb.")
+    print("Execution halted.")
+    exit
   end if
  
   npres = dimsizes(ptmp)
@@ -2044,7 +2101,7 @@ min_lon, max_lon, res2, tmres, ticks_on
       print("Execution halted.")
       exit
     end if
-    mpres = get_res_ne(res2,(/"tm","tx"/))  ; Get rest of resources
+; 
     if(mpres.and..not.any(ismissing(getvaratts(mpres))))
       attsetvalues(map_object,mpres)
     end if
@@ -2085,7 +2142,7 @@ min_lon, max_lon, res2, tmres, ticks_on
 ; By default, mpOutlineOn is False, unless mpFillOn is set to False,
 ; then it is set back to True.
 ;
-    subres = get_res_eq(res2,"tx")  ; Get textitem resources
+    set_attr(res2,"mpOutlineOn",.not.res2@mpFillOn)
 ;    
 ; Create the map object. We have to use this code instead of gsn_map
 ; because we want to set the size of the map.  If we set the size of the
@@ -2716,9 +2773,9 @@ begin
 ;       is used for the right string title.                             ;
 ;    7. If either of the resources "gsnPolarNH" or "gsnPolarSH" are set ;
     lbres = get_res_eq(res2,"lb")
-    mpres = get_res_eq(res2,(/"mp","ti","vp","tx"/))
+    mpres = get_res_eq(res2,(/"mp","ti","vp","tx","am"/))
+    cnres = get_res_ne(res2,(/"mp","vp","lb","tx","am"/))
 
-    cnres = get_res_ne(res2,(/"mp","vp","lb","tx"/))
 function gsn_csm_contour_map_polar(wks:graphic,data[*][*]:numeric, \
       if(isatt(cnres,"cnFillOn").and.cnres@cnFillOn)
 local i, contour_object, map_object, res, lbar_pos, lbar_zone, \
@@ -2962,8 +3019,8 @@ begin
           else
             map_vphf  = 0.7 ; make sure zonalplot will fit in view port
     lbres = get_res_eq(res2,"lb")
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx"/))
-    cnres = get_res_ne(res2,(/"mp","vp","tm","lb","tx"/))
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
+    cnres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am"/))
             set_attr(res2,     "vpXF",0.1)
             set_attr(res2,     "vpYF",0.9)
       if(isatt(cnres,"cnFillOn").and.cnres@cnFillOn)
@@ -3253,8 +3310,8 @@ end
 ;                                                                       ;
 ; This function creates and draws a contour plot over a map plot to the ;
     lbres = get_res_eq(res2,"lb")
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx"/))
-    cnres = get_res_ne(res2,(/"mp","vp","tm","lb","tx"/))
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
+    cnres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am"/))
 ; plot is returned.                                                     ;
 ;                                                                       ;
       if(isatt(cnres,"cnFillOn").and.cnres@cnFillOn)
@@ -3461,8 +3518,8 @@ end
     mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
                                 resources:logical)
 local i, vector_object, map_object, res, res2, calldraw, vcres, \
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx"/))
-    vcres = get_res_ne(res2,(/"mp","vp","tm","tx"/))
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
+    vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am"/))
     lbres = get_res_eq(res2,"lb")
 
 ; Initialize.
@@ -3657,8 +3714,8 @@ end
     mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
 ;       is used for the right string title.                             ;
 ;***********************************************************************;
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx"/))
-    stres = get_res_ne(res2,(/"mp","vp","tm","tx"/))
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
+function gsn_csm_streamline_map_ce(wks:graphic,u[*][*]:numeric,\
                                    v[*][*]:numeric,resources:logical)
 local i, stream_object, map_object, stres, calldraw, callframe, \
 min_lat, max_lat, unew, vnew, res, res2, map_vpwf, map_vphf, vpwf, vphf
@@ -3845,9 +3902,8 @@ begin
     mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
 
     lbres = get_res_eq(res2,(/"lb","pm"/))
-
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx"/))
-    vcres = get_res_ne(res2,(/"mp","vp","tm","lb","tx"/))
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
+    vcres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am"/))
     scalar_contour = get_res_value(res2,"gsnScalarContour",False)
 
 ; Check for subtitles at top and add to mpres if exist.
@@ -4330,7 +4386,11 @@ begin
             print("Cannot draw a bar chart.")
         p = fill_xy(wks,xy_object,xinterp(i,0:npts(i)-1),yinterp(i,0:npts(i)-1),\
                 yref_line(i),fill_above,fill_below)
+        if(isatt(xy_object,"polygons"))
+          delete(xy_object@polygons)
+        end if
         xy_object@polygons = p
+        delete(p)
 
             if(na_max.gt.0)
               xinterp(0:2*ncurves-1:2,0:na_max-1) = xabove(:,0:na_max-1)
@@ -4891,25 +4951,35 @@ local res, contour_object, res2, font_height, calldraw, callframe, \
 datanew, lat_spacing
 begin
 
-    if(.not.ismissing(data!0).and.iscoord(data,data!0).and.data!0.eq."lev")
+    if(.not.ismissing(data!0).and.iscoord(data,data!0))
     res2         = get_resources(resources)
 
     calldraw     = get_res_value(res2,"gsnDraw", True)
     callframe    = get_res_value(res2,"gsnFrame",True)
     maxbb        = get_bb_res(res2)
     lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",15)
-        pres = data&$data!0$(::-1)  ; reverse the values
-        pres_reverse =  False       ; pres values weren't already reversed
+    mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",5)
+
     if((res2).and..not.any(ismissing(getvaratts(res2))))
-        pres = data&$data!0$
+      set_attr(res2,"tiXAxisString","")
     end if
 
+; Use coordinate variable for X if it exists.
+
+    check_for_x_lat_coord(data,res2,"contour")
+
+    res2           = True
     res2@gsnDraw   = False
     res2@gsnFrame  = False
-      if(isatt(data&$data!0$,"units").and.(data&$data!0$@units.eq."Pa".or.\
-                                           data&$data!0$@units.eq."Pascals"))
-        pres = data&$data!0$ * 0.01  ; convert to mb
-        pres@units = "mb"
+
+    contour_object = gsn_csm_contour(wks,data,res2) ; Create a contour plot.
+
+; Get min and max X axis values (latitude units)
+
+        print("gsn_csm_pres_hgt: Fatal: The coordinate array for the first dimension of the input data must be in Pascals or millibars")
+        print("and it must contain the attribute 'units' (set to 'pa' or 'mb') to indicate which one it is.")
+        print("Execution halted.")
+      "trXMaxF"   : max_lat
     end getvalues
 
     add_lat_labels_xaxis(contour_plot,min_lat,max_lat,lat_spacing,\
@@ -5367,6 +5437,8 @@ begin
     right_string  = new(1,logical)
 
     check_for_subtitles(res2,left_string,center_string,right_string)
+
+
 
 
                   right_string,subres)
