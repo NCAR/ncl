@@ -1,0 +1,28 @@
+#
+#   $Id: yMakefile,v 1.1 1995-01-24 23:27:43 haley Exp $
+#
+#   Makefile for HLU MapPlot examples
+#
+
+NCGMS   =   mp01c.ncgm mp02c.ncgm mp03c.ncgm mp01f.ncgm mp02f.ncgm mp03f.ncgm
+
+PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
+SYS_LIBS    =   $(CTOFLIBS) -lm
+
+SRCS        = mp01c.c mp02c.c mp03c.c mp01f.f mp02f.f mp03f.f
+RES         = mp01.res mp02.res mp03.res
+EXFILES     = $(SRCS) $(RES)
+
+InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
+
+HLUCExampleTarget(mp01c,mp01c.o)
+HLUCExampleTarget(mp02c,mp02c.o)
+HLUCExampleTarget(mp03c,mp03c.o)
+HLUFExampleTarget(mp01f,mp01f.o)
+HLUFExampleTarget(mp02f,mp02f.o)
+HLUFExampleTarget(mp03f,mp03f.o)
+
+CleanFilesTarget($(NCGMS))
+DependTarget($(SRCS))
+
