@@ -1,5 +1,5 @@
 /*
-**      $Id: cn13c.c,v 1.4 1996-01-04 16:46:34 haley Exp $
+**      $Id: cn13c.c,v 1.5 1996-03-07 20:51:54 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -42,9 +42,10 @@
 #define max(x,y)   ((x) > (y) ? (x) : (y))
 #define min(x,y)   ((x) < (y) ? (x) : (y))
 
+float x[NCLS*NCLS], y[NCLS*NCLS],rlat[NCLS*NCLS], rlon[NCLS*NCLS];
+
 main()
 {
-    float x[NCLS*NCLS], y[NCLS*NCLS],rlat[NCLS*NCLS], rlon[NCLS*NCLS];
     float dval, oor,  icra[NCLS][NCLS], miss_val = 1.e12;
     int appid, workid, dataid, cnid, mpid;
     int srlist, i, j, l, status, count[2];
