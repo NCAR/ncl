@@ -1,4 +1,3 @@
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
 ;                Copyright (C)  1995                                   ;
@@ -9,7 +8,7 @@
 ;
 ;      File:           tm02n.ncl
 ;
-;      Author:         Ed Stautler
+;      Author:         Bob Lackman (converted by Ed Stautler)
 ;          National Center for Atmospheric Research
 ;          PO 3000, Boulder, Colorado
 ;
@@ -25,25 +24,26 @@
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
 ;
-appid = create "tm02" appLayerClass noparent
-	"appUsrDir" : "./"
+appid = create "tm02" appLayerClass defaultapp
+    "appUsrDir" : "./"
+    "appDefaultParent" : "True"
 end create
 
 ;
 ; Create an XWorkstation object.
 ;
-wid = create "tm02Work" xWorkstationLayerClass noparent
-	"wkPause" : "True"
+wid = create "tm02Work" xWorkstationLayerClass defaultapp
+    "wkPause" : "True"
 end create
 
 ;
 ; Specify the viewport extent of the object.
 ;
 pid = create "TickMarks" tickMarkLayerClass wid
-	"vpXF" : .2
-	"vpYF" : .8
-	"vpWidthF" : .6
-	"vpHeightF" : .6
+    "vpXF" : .2
+    "vpYF" : .8
+    "vpWidthF" : .6
+    "vpHeightF" : .6
 end create
 
 draw(pid)
