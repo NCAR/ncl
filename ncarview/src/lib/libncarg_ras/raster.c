@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.10 1992-02-12 11:40:03 clyne Exp $
+ *	$Id: raster.c,v 1.11 1992-02-27 22:57:42 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -404,6 +404,7 @@ RasterPrintInfo(ras)
 	(void) fprintf(stderr, "NY:               %d\n", ras->ny);
 	(void) fprintf(stderr, 
 		"Encoding:         %s\n", raster_encodings[ras->type]);
+	(void) fprintf(stderr, "Image Length:     %d\n", ras->length);
 
 	if (ras->text != (char *) NULL)
 		(void) fprintf(stderr, "Text:             %s\n", ras->text);
