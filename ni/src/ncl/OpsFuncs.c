@@ -112,7 +112,7 @@ int operation ;
 				if(rhs.kind == NclStk_VAL) {
 					rhs_data_obj = rhs.u.data_obj;
 				} else {
-					rhs_data_obj = _NclGetVarVal(rhs.u.data_var);
+					rhs_data_obj = _NclVarValueRead(rhs.u.data_var,NULL);
 				}
 
 			}
@@ -124,19 +124,19 @@ int operation ;
 			if(lhs.kind == NclStk_VAL) {
 				lhs_data_obj = lhs.u.data_obj;
 			} else {
-				lhs_data_obj = _NclGetVarVal(lhs.u.data_var);
+				lhs_data_obj = _NclVarValueRead(lhs.u.data_var,NULL);
 			}
 		}
 	} else {
 		if(lhs.kind == NclStk_VAL) {
 			lhs_data_obj = lhs.u.data_obj;
 		} else {
-			lhs_data_obj = _NclGetVarVal(lhs.u.data_var);
+			lhs_data_obj = _NclVarValueRead(lhs.u.data_var,NULL);
 		}
 		if(rhs.kind == NclStk_VAL) {
 			rhs_data_obj = rhs.u.data_obj;
 		} else {
-			rhs_data_obj = _NclGetVarVal(rhs.u.data_var);
+			rhs_data_obj = _NclVarValueRead(rhs.u.data_var,NULL);
 		}
 	}
 	if((lhs_data_obj != NULL)&&(rhs_data_obj != NULL)) {
@@ -173,7 +173,7 @@ int operation;
         if(operand.kind == NclStk_VAL) {
 		operand_md = operand.u.data_obj;
 	} else if(operand.kind == NclStk_VAR) {
-		operand_md = _NclGetVarVal(operand.u.data_var);
+		operand_md = _NclVarValueRead(operand.u.data_var,NULL);
         } else {
                 return(FATAL);
         }
@@ -308,7 +308,7 @@ NhlErrorTypes _NclBuildArray
 			}
 			theobj = coerce_res;
 		} else {
-			theobj = _NclGetVarVal(data.u.data_var);
+			theobj = _NclVarValueRead(data.u.data_var,NULL);
 			if(theobj == NULL) {
 				NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
 				return(FATAL);
@@ -344,6 +344,9 @@ NhlErrorTypes _NclBuildArray
 		result->u.data_obj = NULL; 
 		return(FATAL);
 	}
+/*
+****** HEY THIS DOESN"T WORK FOR STRINGS 
+*/
 	ptr = (char*)value;
 	memcpy(ptr,(char*)theobj->multidval.val,partsize);
 	ptr += partsize;
@@ -388,7 +391,7 @@ NhlErrorTypes _NclBuildArray
 				}
 				theobj = coerce_res;
 			} else {
-				theobj = _NclGetVarVal(data.u.data_var);
+				theobj = _NclVarValueRead(data.u.data_var,NULL);
 				if(theobj == NULL) {
 					NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
 					return(FATAL);

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.6 1994-01-25 00:24:05 ethan Exp $
+ *      $Id: Execute.c,v 1.7 1994-01-27 00:48:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -174,7 +174,7 @@ NclExecuteReturnStatus _NclExecute
 						break;
 					case NclStk_VAR:
 						data.u.range_rec->start = 
-								_NclGetVarVal(start.u.data_var);
+								_NclVarValueRead(start.u.data_var,NULL);
 						if(data.u.range_rec->start == NULL) {
 							status = FATAL;
 						}
@@ -196,7 +196,7 @@ NclExecuteReturnStatus _NclExecute
 						}
 						break;
 					case NclStk_VAR:
-						data.u.range_rec->finish= _NclGetVarVal(finish.u.data_var);
+						data.u.range_rec->finish= _NclVarValueRead(finish.u.data_var,NULL);
 						if(data.u.range_rec->finish == NULL) {
 							status = FATAL;
 						}
@@ -218,7 +218,7 @@ NclExecuteReturnStatus _NclExecute
 						}
 						break;
 					case NclStk_VAR:
-						data.u.range_rec->stride= _NclGetVarVal(stride.u.data_var);
+						data.u.range_rec->stride= _NclVarValueRead(stride.u.data_var,NULL);
 						if(data.u.range_rec->stride == NULL){
 							status = FATAL;
 						}
@@ -254,7 +254,7 @@ NclExecuteReturnStatus _NclExecute
 				data = _NclPop();
 				switch(data.kind) {
 				case NclStk_VAR: 
-					val = _NclGetVarVal(data.u.data_var);;
+					val = _NclVarValueRead(data.u.data_var,NULL);;
 					if(val == NULL){
 						status = FATAL;
 					}
@@ -720,7 +720,7 @@ NclExecuteReturnStatus _NclExecute
 			break;
 			case ASSIGN_VAR_DIM_OP: {
 				NclSymbol *thesym = NULL;
-				int	dim_num;
+				long	dim_num;
 				char	*dim_name = NULL;
 				NclStackEntry dim_ref;
 				NclStackEntry dim_expr;
@@ -774,7 +774,7 @@ NclExecuteReturnStatus _NclExecute
 					} else {
 						dim_name = *(char**)dim_expr_md->multidval.val;
 					}
-					if(!(dim_ref_md->multidval.data_type != Ncl_MultiDVallongData)) {
+					if((dim_ref_md->multidval.data_type != NCL_long)) {
 						NclScalarCoerce(
 							(void*)dim_ref_md->multidval.val,
 							dim_ref_md->multidval.data_type,
@@ -939,7 +939,7 @@ NclExecuteReturnStatus _NclExecute
 						if(rhs.kind == NclStk_VAL) {
 							rhs_md = rhs.u.data_obj;
 						} else if(rhs.kind == NclStk_VAR) {
-							rhs_md = _NclGetVarVal(rhs.u.data_var);
+							rhs_md = _NclVarValueRead(rhs.u.data_var,NULL);
 						} else {
 							NhlPError(FATAL,E_UNKNOWN,"Illegal right-hand side type for assignment");
 							status = FATAL;
@@ -952,7 +952,7 @@ NclExecuteReturnStatus _NclExecute
 */
 								rhs_md= _NclCopyVal(rhs_md);
 							}
-							lhs_var->u.data_var= _NclVarCreate(sym,rhs_md,0,NULL,0,NULL,0,NULL,NORMAL);
+							lhs_var->u.data_var= _NclVarCreate(sym,rhs_md,0,NULL,0,NULL,0,NULL,NORMAL,sym->name);
 							if(lhs_var->u.data_var != NULL) {
 								(void)_NclChangeSymbolType(sym,VAR);
 								lhs_var->kind = NclStk_VAR;
@@ -1006,7 +1006,7 @@ NclExecuteReturnStatus _NclExecute
 					if(rhs.kind == NclStk_VAL) {
 						rhs_md = rhs.u.data_obj;
 					} else if(rhs.kind == NclStk_VAR) {
-						rhs_md = _NclGetVarVal(rhs.u.data_var);
+						rhs_md = _NclVarValueRead(rhs.u.data_var,NULL);
 					} else {
 						NhlPError(FATAL,E_UNKNOWN,"Illegal right-hand side type for assignment");
 						status = FATAL;
@@ -1351,7 +1351,7 @@ NclExecuteReturnStatus _NclExecute
 					if(!(status < INFO)) {
 						value = _NclPop();
 						if(value.kind == NclStk_VAR) {
-							value_md = _NclGetVarVal(value.u.data_var);
+							value_md = _NclVarValueRead(value.u.data_var,NULL);
 							if(value_md == NULL) {
 								status = FATAL;
 							}
