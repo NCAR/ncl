@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.30 1993-03-31 17:09:18 clyne Exp $
+ *	$Id: w_idt.c,v 1.31 1996-01-18 14:44:30 boote Exp $
  */
 /*
  *	w_idt.c
@@ -31,8 +31,11 @@
 #include "idt.h"
 #include "text.h"
 #include "file.h"
+#include "display.h"
 #include "w_file.h"
+#include "w_display.h"
 #include "w_dialog.h"
+#include "xt_env.h"
 
 
 AppData	App_Data;	/* global data settable by user resources	*/

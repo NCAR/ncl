@@ -1,5 +1,5 @@
 /*
- *	$Id: w_text.c,v 1.8 1992-12-14 22:05:41 clyne Exp $
+ *	$Id: w_text.c,v 1.9 1996-01-18 14:44:31 boote Exp $
  */
 /*
  *	w_text.c
@@ -42,10 +42,10 @@ static	char	*strccpy(s, t, c)
 {
 	char	*cptr = s;
 
-	while ((*t != c) && (*s++ = *t++))
-		;
+	/*SUPPRESS 570*/
+	while ((*t != c) && (*s++ = *t++));
 
-	if (*s)
+	if (*(--s))
 		*s = '\0';
 
 	return(cptr);
@@ -139,12 +139,6 @@ void	AppendText(t)
 	char	*t;
 {
 	char	*buf;
-	char	*s;
-	int	i;
-	String		text;
-	Arg		args[5];
-	Cardinal	n;
-	XawTextPosition	position = 0;	/* char displayed in upper left */
 
 
 	if (! (buf = malloc((unsigned) (strlen(t) + 1)))) {

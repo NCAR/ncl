@@ -1,5 +1,5 @@
 /*
- *	$Id: xrubber.c,v 1.14 1995-01-09 23:31:56 clyne Exp $
+ *	$Id: xrubber.c,v 1.15 1996-01-18 14:44:32 boote Exp $
  */
 /*
  *	xrubber.c
@@ -385,8 +385,9 @@ static	rubber_band_window(dpy, root, fg, x, y,
  *	original rectangle.
  */
 void	get_largest_rect(ar, x, y, width, height)
-	double	ar;
-	int	*x, *y, *width, *height;
+	double		ar;
+	int		*x, *y;
+	unsigned	*width, *height;
 {
 	double	ar2;
 
@@ -453,7 +454,6 @@ char	*ZoomCoords(
 	float		norm_bx, norm_by;	/* normalized band origin */
 	float		norm_band_width,
 			norm_band_height;	/* normalized band height */
-	int		tmp;
 	float		a, b;
 	float		llx_, lly_, urx_, ury_;
 	unsigned	band_width, band_height;

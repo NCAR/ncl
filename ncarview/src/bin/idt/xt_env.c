@@ -1,5 +1,5 @@
 /*
- *      $Id: xt_env.c,v 1.7 1992-10-14 19:52:53 clyne Exp $
+ *      $Id: xt_env.c,v 1.8 1996-01-18 14:44:32 boote Exp $
  */
 /*
  *	File:		xt_env.c
@@ -19,6 +19,8 @@
 #include <ncarg/c.h>
 #include <string.h>
 
+#include "xt_env.h"
+
 /*
  *	XAppDirPath
  *
@@ -32,8 +34,7 @@
 void	XAppDirPath()
 {
 	const char	*xapp_path;
-	char	*xufsp_env	= "XUSERFILESEARCHPATH";
-	char	*xapp_env	= "XAPPLRESDIR";
+	char		*xapp_env = "XAPPLRESDIR";
 
 	static	char	*bufptr = NULL;
 
