@@ -102,9 +102,9 @@ tagupw,
 tautog.
 .SH ACCESS 
 To use EZMXY, load the NCAR Graphics libraries ncarg, ncarg_gks, 
-and ncarg_loc, preferably in that order.  To use c_ezmxy, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_ezmxy, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
-and ncarg_loc, preferably in that order.  To get smoother curves, 
+ncarg_c, and ncarg_loc, preferably in that order.  To get smoother curves, 
 drawn using spline interpolation, also load libdashsmth.o.  Or,
 you can use the ncargf77 command to compile your program and load 
 the above libraries, then, to get smoother curves, use the 

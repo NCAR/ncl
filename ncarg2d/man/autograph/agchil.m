@@ -29,7 +29,7 @@ Note:  A user version of AGCHIL should not call any other
 Autograph routine.
 .SH ACCESS
 To use AGCHIL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 autograph,

@@ -47,7 +47,7 @@ tagupw,
 tautog.
 .SH ACCESS 
 To use EZY, load the NCAR Graphics libraries ncarg, ncarg_gks, 
-and ncarg_loc, preferably in that order.  To use c_ezy, load the
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_ezy, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.  To get smoother curves, 
 drawn using spline interpolation, also load libdashsmth.o.  Or,
