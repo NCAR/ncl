@@ -145,9 +145,7 @@ digit	[0-9]
 %%
 	if(inc_line) {
 		IncLine();
-		if(cmd_line == 1) {
-			fprintf(stdout,"ncl %d> ",cur_line_number);
-		} else if(cmd_line == 2) {
+		if(cmd_line) {
 			_NclCallPromptFunc(cur_line_number);
 		} 
 		inc_line = 0;
@@ -161,9 +159,7 @@ digit	[0-9]
 <incl>["][^"\n]*[\n] {
 	NhlPError(NhlFATAL,NhlEUNKNOWN,"Syntax Error : \\n not allowed in strings");
 	IncLine();
-	if(cmd_line == 1) {
-		fprintf(stdout,"ncl %d> ",cur_line_number);
-        } else if(cmd_line == 2) {
+	if(cmd_line) {
         	_NclCallPromptFunc(cur_line_number);
         }
 	BEGIN 0;

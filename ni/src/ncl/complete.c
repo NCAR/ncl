@@ -1,9 +1,13 @@
-/*  $Revision: 1.1 $
+/*  $Revision: 1.2 $
 **
 **  History and file completion functions for editline library.
 */
 #include "editline.h"
 #include <stdlib.h>
+
+extern  const char      *_NGResolvePath(
+        const char      *rawfname
+);
 
 
 #if	defined(NEED_STRDUP)
@@ -128,7 +132,7 @@ SplitPath(path, dirpart, filepart)
 	    return -1;
 	}
     }
-    *dirpart = dpart;
+    *dirpart = strdup(_NGResolvePath(dpart));
     *filepart = fpart;
     return 0;
 }

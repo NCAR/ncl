@@ -111,6 +111,7 @@ main() {
 	if(cmd_line == 1) {
 		InitializeReadLine(1);
 		NclSetPromptFunc(nclprompt,NULL);
+		cmd_line = 1;
 	} else {
 		InitializeReadLine(0);
 	}

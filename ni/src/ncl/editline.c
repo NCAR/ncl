@@ -1,4 +1,4 @@
-/*  $Revision: 1.1 $
+/*  $Revision: 1.2 $
 **
 **  Main editing routines for editline library.
 */
@@ -1033,7 +1033,7 @@ end_line()
 STATIC CHAR *
 find_word()
 {
-    static char	SEPS[] = "#;&|^$=`'{}()<>\n\t ";
+    static char	SEPS[] = ",:\"#;&|^$=`'{}()<>\n\t ";
     CHAR	*p;
     CHAR	*new;
     SIZE_T	len;
@@ -1068,7 +1068,53 @@ c_possible()
     }
     return ring_bell();
 }
+STATIC STATUS
+res_complete()
+{
+    CHAR	*p;
+    CHAR	*word;
+    int		unique;
+    STATUS	s;
+	word = find_word();
 
+	/*p = (CHAR*)_NclResComplete((char*)word,&unique);*/
+        if(word)
+		DISPOSE(word);
+	if(p&&*p) {
+		s = insert_string(p);
+		if (!unique)
+	    		(void)ring_bell();
+		DISPOSE(p);
+		return s;
+	}
+    	(void)c_possible();
+    	(void)redisplay();
+	return CSstay;
+}
+
+STATIC STATUS
+sym_complete()
+{
+    CHAR	*p;
+    CHAR	*word;
+    int		unique;
+    STATUS	s;
+	word = find_word();
+
+	/*p = (CHAR*)_NclSymComplete((char*)word,&unique);*/
+        if(word)
+		DISPOSE(word);
+	if(p&&*p) {
+		s = insert_string(p);
+		if (!unique)
+	    		(void)ring_bell();
+		DISPOSE(p);
+		return s;
+	}
+    	(void)c_possible();
+    	(void)redisplay();
+	return CSstay;
+}
 STATIC STATUS
 c_complete()
 {
@@ -1344,13 +1390,13 @@ STATIC KEYMAP	Map[33] = {
     {	CTL('L'),	redisplay	},
     {	CTL('M'),	accept_line	},
     {	CTL('N'),	h_next		},
-    {	CTL('O'),	ring_bell	},
+    {	CTL('O'),	sym_complete	},
     {	CTL('P'),	h_prev		},
     {	CTL('Q'),	ring_bell	},
     {	CTL('R'),	h_search	},
     {	CTL('S'),	ring_bell	},
     {	CTL('T'),	transpose	},
-    {	CTL('U'),	ring_bell	},
+    {	CTL('U'),	res_complete	},
     {	CTL('V'),	quote		},
     {	CTL('W'),	wipe		},
     {	CTL('X'),	exchange	},

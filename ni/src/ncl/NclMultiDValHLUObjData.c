@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.19 1997-06-10 16:08:06 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.20 1997-08-08 19:41:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -742,6 +742,7 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 
 	val = (obj*)value_md->multidval.val;
 	from = 0;
+	cbdata.ptrval = NclMalloc(sizeof(NclHLUCbData));
 	while(!done) {
 		to = 0;
 		for(i = 0; i < n_dims_target;i++) {
@@ -897,6 +898,7 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 		}
 		from++;
 	}
+	NclFree(cbdata.ptrval);
 	return(NhlNOERROR);
 }
 static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
