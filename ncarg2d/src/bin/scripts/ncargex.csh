@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.127 2002-03-21 23:59:59 haley Exp $
+#   $Id: ncargex.csh,v 1.128 2002-03-26 22:15:08 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -1826,7 +1826,7 @@ endsw
 # Remove unwanted files #
 #                       #
 #***********************#
-set rmfiles = ($data_files $src_files $name)
+set rmfiles = ($data_files $src_files $nameSED_EXE_SUFFIX)
 foreach file($src_files)
   set obj_file = {$file:r}.o
   set rmfiles = ($rmfiles $obj_file)
