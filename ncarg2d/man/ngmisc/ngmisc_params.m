@@ -218,7 +218,7 @@ ngsetr,
 ngpswk,
 ncarg_cbind.
 .sp
-http://ngwww.ucar.edu/ngdoc/ng4.1/gks/gkshome.html
+http://ngwww.ucar.edu/ngdoc/ng/gks/gkshome.html
 .sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version;

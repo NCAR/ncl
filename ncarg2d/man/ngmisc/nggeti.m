@@ -42,7 +42,7 @@ nggetr,
 ngsetr,
 ncarg_cbind.
 .sp
-Online URL:  http://ngwww.ucar.edu/ngdoc/ng4.1/gks/gkshome.html
+Online URL:  http://ngwww.ucar.edu/ngdoc/ng/gks/gkshome.html
 .sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version;

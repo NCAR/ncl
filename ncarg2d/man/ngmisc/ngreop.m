@@ -162,7 +162,7 @@ Online:
 ngmftc(3NCARG),
 ngsrat(3NCARG),
 .sp
-Online URL:  http://ngwww.ucar.edu/ngdoc/ng4.1/gks/gkshome.html
+Online URL:  http://ngwww.ucar.edu/ngdoc/ng/gks/gkshome.html
 .SH COPYRIGHT
 Copyright (C) 1987-1998
 .br

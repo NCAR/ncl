@@ -30,7 +30,7 @@ sets IOPEN to "1" if WKID is open and sets IOPEN to "0" otherwise.
 To use NGCKOP or c_ngckop, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.  
 .SH SEE ALSO
-Online URL: http://ngwww.ucar.edu/ngdoc/ng4.1/gks/gkshome.html
+Online URL: http://ngwww.ucar.edu/ngdoc/ng/gks/gkshome.html
 .SH COPYRIGHT
 Copyright (C) 1987-1998
 .br

@@ -64,7 +64,7 @@ Online:
 ngsrat(3NCARG),
 ngreop(3NCARG),
 .sp
-Online URL:  http://ngwww.ucar.edu/ngdoc/ng4.1/gks/gkshome.html
+Online URL:  http://ngwww.ucar.edu/ngdoc/ng/gks/gkshome.html
 .sp
 Hardcopy:
 .SH COPYRIGHT
