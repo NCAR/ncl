@@ -18,10 +18,10 @@ C      Description:    Demonstrates the TextItem Object
 C                      Writes "NCAR Graphics" in a series of
 C                      114 different colors. (The default colormap.)
 C
-      external nhlfapplayerclass
-      external nhlfxworkstationlayerclass
-      external nhlfncgmworkstationlayerclass
-      external nhlftextitemlayerclass
+      external NhlFAppLayerClass
+      external NhlFXWorkstationLayerClass
+      external NhlFNcgmWorkstationLayerClass
+      external NhlFTextItemLayerClass
 
       integer appid, wid, pid
       integer rlist, ierr
@@ -36,34 +36,34 @@ C
 C
 C Initialize the high level utility library
 C
-      call nhlfinitialize
+      call NhlFInitialize
 C
 C Create an application context. Set the app dir to the current
 C directory so the application looks for a resource file in the
 C working directory. In this example the resource file supplies the
 C plot title only.
 C
-      call nhlfrlcreate(rlist,'setrl')
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
-      call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
-      call nhlfcreate(appid,'tx03',nhlfapplayerclass,0,rlist,ierr)
+      call NhlFRLCreate(rlist,'setrl')
+      call NhlFRLClear(rlist)
+      call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
+      call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
+      call NhlFCreate(appid,'tx03',NhlFAppLayerClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'wkMetaName','./tx03f.ncgm',ierr)
-         call nhlfcreate(wid,'tx03Work',nhlfncgmworkstationlayerclass,0,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkMetaName','./tx03f.ncgm',ierr)
+         call NhlFCreate(wid,'tx03Work',NhlFNcgmWorkstationLayerClass,0,
      1        rlist,ierr)
       else
 C
 C Create an X Workstation.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'wkPause','True',ierr)
-         call nhlfcreate(wid,'tx03Work',nhlfxworkstationlayerclass,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPause','True',ierr)
+         call NhlFCreate(wid,'tx03Work',NhlFXWorkstationLayerClass,
      $        0,rlist,ierr)
       endif
 C
@@ -71,20 +71,20 @@ C Create 114 plots varying the fill color of the text bounding box
 C to all entries of the default workstation color map.
 C
       do 10, i=1,m
-         call nhlfrlclear(rlist)
-         call nhlfrlsetinteger(rlist,'txBackgroundFillColor',
+         call NhlFRLClear(rlist)
+         call NhlFRLSetinteger(rlist,'txBackgroundFillColor',
      $        i,ierr)
-         call nhlfcreate(pid,'TextItems',nhlftextitemlayerclass,
+         call NhlFCreate(pid,'TextItems',NhlFTextItemLayerClass,
      $        wid,rlist,ierr)
 
-         call nhlfdraw(pid,ierr)
-         call nhlfframe(wid,ierr)
+         call NhlFDraw(pid,ierr)
+         call NhlFFrame(wid,ierr)
  10   continue
 
-      call nhlfdestroy(pid,ierr)
-      call nhlfdestroy(wid,ierr)
-      call nhlfdestroy(appid,ierr)
-      call nhlfclose
+      call NhlFDestroy(pid,ierr)
+      call NhlFDestroy(wid,ierr)
+      call NhlFDestroy(appid,ierr)
+      call NhlFClose
 
       stop
       end
