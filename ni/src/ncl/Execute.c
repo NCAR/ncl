@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.113 2000-02-15 16:46:42 ethan Exp $
+ *      $Id: Execute.c,v 1.114 2000-02-28 22:49:48 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2425,9 +2425,6 @@ void CallCONVERT_TO_LOCAL(void) {
 /*
 * Attention: missing value may be different type than variable data until code is put here to fix it
 */
-								if(data.u.data_var->obj.status != PERMANENT) {
-									_NclDestroyObj((NclObj)data.u.data_var);
-								} 
 							} else {
 								tmp_md = NULL;
 							}
@@ -2482,6 +2479,9 @@ void CallCONVERT_TO_LOCAL(void) {
                                                                                 	PARAM,
                                                                                 	argsym->name,PERMANENT);
 									}
+									if(data.u.data_var->obj.status != PERMANENT) {
+										_NclDestroyObj((NclObj)data.u.data_var);
+									} 
                                                         	} else {
 									tmp_md = (NclMultiDValData)_NclGetObj(data.u.data_var->var.thevalue_id);
 									if(tmp_md->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
