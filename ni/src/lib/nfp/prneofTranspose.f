@@ -24,7 +24,7 @@ c AUTOMATIC FORTRAN ARRAYS TO HOLD DATA AND DATA STATS
 
 C LOCAL VARIABLES
       DOUBLE PRECISION PCX, CON, XSD
-      INTEGER          K,KNTX,KER,NE,NR,NC,MCSTA,LSSM,LWORK,LIWORK
+      INTEGER          KNTX,KER,NR,NC,MCSTA
 
 
 c strip all grid points that have less that "PCRIT" valid values
@@ -160,9 +160,8 @@ c temporary arrays (automatic or passed in via interface)
 
 c local
       CHARACTER*16     LABEL
-      DOUBLE PRECISION TEMP,TOL,EPSMACH,TRACER,TRACEO,
-     +                 TBAR,TVAR,TSTD,VLOW,VUP
-      INTEGER          N,NE,NR,NC,MEVAL,KNT,IPR,IPRFLG,
+      DOUBLE PRECISION TEMP,TOL,EPSMACH,VLOW,VUP
+      INTEGER          N,NE,NR,NC,MEVAL,IPR,IPRFLG,
      +                 MEVOUT,ILOW,IUP,INFO,MCSTA
 
       DATA IPR/6/
