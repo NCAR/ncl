@@ -1,5 +1,5 @@
 /*
- *	$Id: parallax.c,v 1.11 1992-09-17 18:18:34 don Exp $
+ *	$Id: parallax.c,v 1.12 1992-11-11 23:19:29 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -397,6 +397,14 @@ ParallaxInit()
 	if ( (int) parallax == -1) {
 		(void) ESprintf(errno, 
 			"Yikes, the Parallax mmap() call failed!");
+		return(RAS_ERROR);
+	}
+
+	/* Make sure board isn't in live mode. */
+	arg = 0;
+	status = ioctl(parallax_fd, TVIOSLIVE, &arg);
+	if ( status == -1) {
+		(void) ESprintf(errno, "ParallaxInit() - ioctl(TVIOSLIVE)");
 		return(RAS_ERROR);
 	}
 
