@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.42 1999-04-02 23:51:04 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.43 2001-01-09 22:39:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -399,7 +399,7 @@ static int GetOrdering
 	if(i == nv) {
 		*min = v[0];
 		*max = v[nv-1];
-                if (_NhlCmpFAny(*min,*max,5) == 0.0)
+                if (_NhlCmpFAny2(*min,*max,5,_NhlMIN_NONZERO) == 0.0)
                         return(NOSPAN);
 		return(INCREASING);
 	}
@@ -410,7 +410,7 @@ static int GetOrdering
 	if(i==nv){
 		*max = v[0];
 		*min = v[nv-1];
-                if (_NhlCmpFAny(*min,*max,5) == 0.0)
+                if (_NhlCmpFAny2(*min,*max,5,_NhlMIN_NONZERO) == 0.0)
                         return(NOSPAN);
 		return(DECREASING);
 	} else {
@@ -757,7 +757,8 @@ static NhlErrorTypes SetUpTrans
 			       ordering == DECREASING)) {
                                 NhlPError(NhlWARNING,NhlEUNKNOWN,
       "%s: %s contains invalid coordinate array: defaulting %s to LinearAxis",
-                                          error_lead,NhlNtrXAxisType);
+                                          error_lead,NhlNtrXCoordPoints,
+					  NhlNtrXAxisType);
                                 ret = MIN(ret,NhlWARNING);
                                 irp->x_axis_type = NhlLINEARAXIS;
                         }
@@ -793,8 +794,8 @@ static NhlErrorTypes SetUpTrans
                         if (! irp->x_irr_points) {
                                 NhlPError(NhlWARNING,NhlEUNKNOWN,
  "%s: Must specify %s resource for IrregularAxis: defaulting %s to LinearAxis",
-                                          error_lead,NhlNtrXAxisType,
-                                          NhlNtrXCoordPoints);
+                                          error_lead, NhlNtrXCoordPoints,
+					  NhlNtrXAxisType);
                                 ret = MIN(ret,NhlWARNING);
                                 irp->x_axis_type = NhlLINEARAXIS;
                                 break;
@@ -912,7 +913,8 @@ static NhlErrorTypes SetUpTrans
 			       ordering == DECREASING)) {
                                 NhlPError(NhlWARNING,NhlEUNKNOWN,
       "%s: %s contains invalid coordinate array: defaulting %s to LinearAxis",
-                                          error_lead,NhlNtrYAxisType);
+                                          error_lead,NhlNtrYCoordPoints,
+					  NhlNtrYAxisType);
                                 ret = MIN(ret,NhlWARNING);
                                 irp->y_axis_type = NhlLINEARAXIS;
                         }
@@ -947,8 +949,8 @@ static NhlErrorTypes SetUpTrans
                         if (! irp->y_irr_points) {
                                 NhlPError(NhlWARNING,NhlEUNKNOWN,
  "%s: Must specify %s resource for IrregularAxis: defaulting %s to LinearAxis",
-                                          error_lead,NhlNtrYAxisType,
-                                          NhlNtrYCoordPoints);
+                                          error_lead,NhlNtrYCoordPoints,
+					  NhlNtrYAxisType);
                                 ret = MIN(ret,NhlWARNING);
                                 irp->y_axis_type = NhlLINEARAXIS;
                                 break;
@@ -1474,10 +1476,10 @@ static NhlBoolean compare_view
 {
         int xmndif,xmxdif,ymndif,ymxdif;
 
-        if ((xmndif = _NhlCmpFAny(*x,xmin,5)) < 0 ||
-            (xmxdif = _NhlCmpFAny(*x,xmax,5)) > 0 ||
-            (ymndif = _NhlCmpFAny(*y,ymin,5)) < 0 ||
-            (ymxdif = _NhlCmpFAny(*y,ymax,5)) > 0) {
+        if ((xmndif = _NhlCmpFAny2(*x,xmin,5,_NhlMIN_NONZERO)) < 0 ||
+            (xmxdif = _NhlCmpFAny2(*x,xmax,5,_NhlMIN_NONZERO)) > 0 ||
+            (ymndif = _NhlCmpFAny2(*y,ymin,5,_NhlMIN_NONZERO)) < 0 ||
+            (ymxdif = _NhlCmpFAny2(*y,ymax,5,_NhlMIN_NONZERO)) > 0) {
                 return False;
         }
 
