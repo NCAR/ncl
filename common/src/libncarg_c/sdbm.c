@@ -31,6 +31,7 @@
 #include "c.h"
 
 #include <sys/types.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <memory.h>
@@ -54,7 +55,6 @@ extern int errno;
 
 extern char *malloc proto((unsigned int));
 extern void free proto((void *));
-extern long lseek();
 
 /*
  * forward
