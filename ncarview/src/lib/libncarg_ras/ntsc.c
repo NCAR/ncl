@@ -1,12 +1,10 @@
 /*
- *	$Id: ntsc.c,v 1.3 1992-03-20 18:43:44 don Exp $
+ *	$Id: ntsc.c,v 1.4 1992-09-10 21:30:43 don Exp $
  */
 #include <stdio.h>
 #include <math.h>
 #include "ncarg_ras.h"
 #include "ntsc.h"
-
-extern char	*ProgramName;
 
 static double yiq_matrix[3][3] = {
 	0.2989,  0.5866,  0.1144,
@@ -25,18 +23,23 @@ RasterYIQfilter(src, dst)
 	static		init = 0;
 	int		x, y, p;
 	unsigned char	r, g, b;
-	float		Y, I, Q;
+	/*float		Y;*/
+	float		I, Q;
 	float		chroma_mag_sq, max_chroma_mag_sq;
 	float		f;
 	unsigned char	red[256], green[256], blue[256];
 
 	if (dst->type != RAS_DIRECT) {
-		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		(void) ESprintf(RAS_E_PROGRAMMING,
+			"RasterYIQfilter(src,dst) - %s",
+			"dst type must be RAS_DIRECT");
 		return(RAS_ERROR);
 	}
 
 	if (src->nx != dst->nx || src->ny != dst->ny) {
-		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		(void) ESprintf(RAS_E_PROGRAMMING,
+			"RasterYIQfilter(src,dst) - %s",
+			"src and dst resolutions are different");
 		return(RAS_ERROR);
 	}
 
@@ -57,7 +60,8 @@ RasterYIQfilter(src, dst)
 			g = INDEXED_GREEN(src, p);
 			b = INDEXED_BLUE(src, p);
 
-			Y = tab[0][0][r] + tab[0][1][g] + tab[0][2][b];
+			/* Y is not yet used. */
+			/* Y = tab[0][0][r] + tab[0][1][g] + tab[0][2][b]; */
 			I = tab[1][0][r] + tab[1][1][g] + tab[1][2][b];
 			Q = tab[2][0][r] + tab[2][1][g] + tab[2][2][b];
 
@@ -87,7 +91,8 @@ RasterYIQfilter(src, dst)
 			g = DIRECT_GREEN(src, x, y);
 			b = DIRECT_BLUE(src, x, y);
 
-			Y = tab[0][0][r] + tab[0][1][g] + tab[0][2][b];
+			/* Y is not yet used. */
+			/* Y = tab[0][0][r] + tab[0][1][g] + tab[0][2][b]; */
 			I = tab[1][0][r] + tab[1][1][g] + tab[1][2][b];
 			Q = tab[2][0][r] + tab[2][1][g] + tab[2][2][b];
 
@@ -102,6 +107,7 @@ RasterYIQfilter(src, dst)
 		
 		}}
 	}
+
 	return(RAS_OK);
 }
 
@@ -134,12 +140,16 @@ RasterVHS(src, dst)
 	int		x, y;
 
 	if (dst->type != RAS_DIRECT) {
-		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		(void) ESprintf(RAS_E_PROGRAMMING,
+			"RasterVHS(src,dst) - %s",
+			"dst type must be RAS_DIRECT");
 		return(RAS_ERROR);
 	}
 
 	if (src->nx != dst->nx || src->ny != dst->ny) {
-		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		(void) ESprintf(RAS_E_PROGRAMMING,
+			"RasterVHS(src,dst) - %s",
+			"src and dst resolutions are different");
 		return(RAS_ERROR);
 	}
 
@@ -204,18 +214,22 @@ RasterFIRfilter(src, dst, fir_coeff)
 	int		fx, delta;
 
 	if (dst->type != RAS_DIRECT) {
-		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		(void) ESprintf(RAS_E_PROGRAMMING,
+			"RasterFIRfilter(src,dst) - %s",
+			"dst type must be RAS_DIRECT");
 		return(RAS_ERROR);
 	}
 
 	if (src->nx != dst->nx || src->ny != dst->ny) {
-		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		(void) ESprintf(RAS_E_PROGRAMMING,
+			"RasterFIRfilter(src,dst) - %s",
+			"src and dst resolutions are different");
 		return(RAS_ERROR);
 	}
 
 	if (filter_length%2 == 0) {
-		(void) fprintf(stderr, 
-			"%s: FIR must be odd length\n", ProgramName);
+		(void) ESprintf(RAS_E_PROGRAMMING,
+			"FIR must be odd length");
 		return(RAS_ERROR);
 	}
 
