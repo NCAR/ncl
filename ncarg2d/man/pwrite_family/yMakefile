@@ -1,9 +1,9 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-27 15:45:11 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-29 21:29:36 haley Exp $
 #
 NCARG	= ../../..
 
-MAN3 = pwritx pwrity
+MAN3 = pwritx pwrity pwrite_family
 
 MAN = $(MAN3)
 
