@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenus.c,v 1.15 1999-11-19 02:10:11 dbrown Exp $
+ *      $Id: varmenus.c,v 1.16 2000-06-29 01:44:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -323,6 +323,7 @@ static void DoHluVarButtons
 				}
 			if (found) {
 				show[i] = False;
+				NclFreeDataList(dl);
 				continue;
 			}
 		}

@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.26 2000-06-28 19:24:06 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.27 2000-06-29 01:44:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1023,7 +1023,8 @@ NewCoordValue
         int index;
         char *sval;
         int slen;
-        static NrmQuark qfile = NrmNULLQUARK, qvar = NrmNULLQUARK;
+        static NrmQuark qfile = NrmNULLQUARK;
+	static NrmQuark qvar = NrmNULLQUARK;
         static int last_column = -1;
         static NclExtValueRec *val = NULL;
 

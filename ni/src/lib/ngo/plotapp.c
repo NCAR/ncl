@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.28 2000-05-16 01:59:29 dbrown Exp $
+ *      $Id: plotapp.c,v 1.29 2000-06-29 01:44:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5344,6 +5344,8 @@ static NhlErrorTypes HandleOverlayRes
 		sprintf(buf,"overlay(%s,%s)\n",ncl_name,objects[i]);
 		(void)NgNclSubmitBlock(go->go.nclstate,buf);
 	}
+
+	_NhlFreeConvertContext(context);
 		
 	return NhlNOERROR;
 }

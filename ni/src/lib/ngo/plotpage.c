@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.19 2000-06-28 19:24:03 dbrown Exp $
+ *      $Id: plotpage.c,v 1.20 2000-06-29 01:44:26 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -3660,6 +3660,7 @@ static void DestroyPlotPage
 		NgDestroyFuncGrid(rec->func_grid);
 
 	NgDestroyPlotTree(rec->plot_tree);
+	NhlFree(rec->hlu_ids);
         
         NhlFree(data);
 	return;
@@ -4207,8 +4208,10 @@ _NgGetPlotPage
         rec->public.plot_style_dir = copy_rec->public.plot_style_dir;
 	rec->hlu_count = copy_rec->hlu_count;
 	rec->max_seq_num = copy_rec->max_seq_num;
-	if (rec->hlu_ids)
+	if (rec->hlu_ids) {
 		NhlFree(rec->hlu_ids);
+		rec->hlu_ids = NULL;
+	}
 	if (copy_rec->hlu_ids) {
 		rec->hlu_ids = NhlMalloc(sizeof(int) * copy_rec->hlu_count);
 		memcpy(rec->hlu_ids,copy_rec->hlu_ids,

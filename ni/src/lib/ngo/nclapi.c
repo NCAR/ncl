@@ -1,5 +1,5 @@
 /*
- *      $Id: nclapi.c,v 1.1 2000-06-28 19:24:02 dbrown Exp $
+ *      $Id: nclapi.c,v 1.2 2000-06-29 01:44:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -115,6 +115,8 @@ NgNclReadCoordValue(
 		return NULL;
 
 	qcoord = vinfo->coordnames[dim_ix];
+
+	NclFreeDataList(dl);
 
 	if (qcoord <= NrmNULLQUARK)
 		return NULL;

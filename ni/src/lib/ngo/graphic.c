@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.18 2000-05-16 01:59:25 dbrown Exp $
+ *      $Id: graphic.c,v 1.19 2000-06-29 01:44:24 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -998,11 +998,14 @@ NrmQuark NgGraphicArrayofGraphic
 			if (! val)
 				return NrmNULLQUARK;
 			sval = NgTypedValueToString(val,0,False,&len);
+			NclFreeExtValue(val);
+			NclFreeDataList(dl);
 			if (! sval)
 				return NrmNULLQUARK;
 			return NrmStringToQuark(sval);
 		}
 	}
+	NclFreeDataList(dl);
 	return NrmNULLQUARK;
 }
 	
