@@ -116,9 +116,7 @@ begin
 ;
   icra = 2 + ((.25*(1.+cos(DTOR*10.* y))+.25*(1.+sin(DTOR*10.*x ))*cos(DTOR* y))*(NCOLORS-2))
 
-print(icra)
   icra = icra < NCOLORS-1
-print(icra)
 ;
 ; Create a scalar field object.
 ;
