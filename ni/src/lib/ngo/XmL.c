@@ -1,5 +1,5 @@
 /*
- *      $Id: XmL.c,v 1.4 1999-09-11 01:05:44 dbrown Exp $
+ *      $Id: XmL.c,v 1.5 2000-05-16 01:59:13 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -987,8 +987,8 @@ Boolean useAverageWidth;
 #endif
 */
 #if 0        
-        printf("XmVERSION %d XmVERSION_STRING %s\n",
-               XmVERSION,XmVERSION_STRING);
+        fprintf(stderr,"XmVERSION %d XmVERSION_STRING %s\n",
+		XmVERSION,XmVERSION_STRING);
 #endif        
 	*width = 0;
 	*height = 0;

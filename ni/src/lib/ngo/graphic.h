@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.h,v 1.8 2000-02-17 01:36:23 dbrown Exp $
+ *      $Id: graphic.h,v 1.9 2000-05-16 01:59:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #include <ncarg/ngo/app.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/ngo/dataprofile.h>
+#include <ncarg/hlu/Callbacks.h>
 
 
 
@@ -66,6 +67,7 @@ typedef struct _NgHluDataRec {
 	int		go_id;
 	NgCBWP		destroy_cb;
 	NhlBoolean	draw_req;
+	_NhlCB		xregion_cb;
 } NgHluDataRec, *NgHluData;
 
 extern NgHluData NgGetHluData(

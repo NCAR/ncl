@@ -1,5 +1,5 @@
 /*
- *      $Id: functree.c,v 1.7 2000-03-29 04:01:20 dbrown Exp $
+ *      $Id: functree.c,v 1.8 2000-05-16 01:59:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -605,7 +605,7 @@ static void FocusCB
         if (! cb->reason == XmCR_CELL_FOCUS_IN)
 		return;
 #if DEBUG_FUNCTREE
-	printf("in functree focus in cb\n");
+	fprintf(stderr,"in functree focus in cb\n");
 #endif
 	MakeRowsVisible(ftp,cb->row,cb->row);
 	AdjustTextWidget(ftp,cb->row,0);

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.15 2000-03-21 02:35:45 dbrown Exp $
+ *      $Id: plotpage.c,v 1.16 2000-05-16 01:59:31 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -26,6 +26,7 @@
 #include <ncarg/ngo/xinteract.h>
 #include <ncarg/ngo/stringutil.h>
 #include <ncarg/ngo/plotapp.h>
+#include <math.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
@@ -38,11 +39,226 @@
 #include <ncarg/hlu/View.h>
 #include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/DataItem.h>
+#include <ncarg/hlu/MapPlot.h>
 
 static NrmQuark QString = NrmNULLQUARK;
 static NrmQuark QGenArray = NrmNULLQUARK;
 static NrmQuark QngPlotClass = NrmNULLQUARK;
+static NrmQuark Qgrid_number = NrmNULLQUARK;
+static NrmQuark Qcorners = NrmNULLQUARK;
 
+static void
+XRegionCB(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+);
+
+static NhlBoolean IsGribVar
+(
+        NclApiVarInfoRec	*vinfo
+)
+{
+	int i;
+
+	if (Qgrid_number == NrmNULLQUARK) {
+		Qgrid_number = NrmStringToQuark("grid_number");
+		Qcorners = NrmStringToQuark("corners");
+	}
+
+	for (i = 0; i < vinfo->n_atts; i++) {
+		if (vinfo->attnames[i] == Qgrid_number)
+			return True;
+	}
+	return False;
+}	
+
+static double
+ValToDouble
+(
+        NclExtValueRec	*val,
+        int		index
+        )
+{
+        char *valp = ((char *) val->value) + index * val->elem_size;
+        double dout;
+
+        switch (val->type) {
+            case NCLAPI_float:
+                    dout = (double)*(float*)valp;
+                    return dout;
+            case NCLAPI_double:
+                    dout = *(double*)valp;
+                    return dout;
+            case NCLAPI_byte:
+            case NCLAPI_char:
+                    dout = (double)*(char*)valp;
+                    return dout;
+            case NCLAPI_int:
+                    dout = (double)*(int*)valp;
+                    return dout;
+            case NCLAPI_short:
+                    dout = (double)*(short*)valp;
+                    return dout;
+            case NCLAPI_long:
+                    dout = (double)*(long*)valp;
+                    return dout;
+            default:
+                    NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			      "type not supported for coordinate variable\n"));
+        }
+        return 0.0;
+}
+
+static	NclExtValueRec *
+ReadCoord
+(
+        NclApiVarInfoRec	*vinfo,
+        NrmQuark		qfile,
+	int			dim_ix,
+	long			*start,
+	long			*finish,
+	long			*stride
+)
+{
+	NclExtValueRec *val;
+
+        if (vinfo->coordnames[dim_ix] <= NrmNULLQUARK)
+                return NULL;
+        
+        if (qfile) {
+                val = NclReadFileVarCoord(qfile,vinfo->name,
+                                          vinfo->coordnames[dim_ix],
+                                          start,finish,stride);
+        }
+        else {
+                val = NclReadVarCoord(vinfo->name,
+                                      vinfo->coordnames[dim_ix],
+                                      start,finish,stride);
+        }
+        return val;
+
+}
+
+static void
+SetPlotAppFunc
+(
+	NgDataItem ditem,
+	NgResInfo  rinfo,
+	int	      arg_count,
+	NrmQuark      *qarg_names,
+	NhlString     *values,
+	NhlBoolean    disable,
+	NhlBoolean    restore
+	)
+{
+	int i,j;
+	NhlBoolean modified = False;
+	int newlen = 0;
+	char *func,*val;
+
+	/*
+	 * if disable or restore, args are ignored
+	 */
+
+	if (disable) {
+		if (ditem->vdata->set_state != _NgUSER_DISABLED) {
+			rinfo->last_state = ditem->vdata->set_state;
+			ditem->vdata->set_state = _NgUSER_DISABLED;
+		}
+		return;
+	}
+	else if (ditem->vdata->set_state == _NgUSER_DISABLED) {
+		ditem->vdata->set_state = rinfo->last_state;
+	}
+	/* not handling restore yet */
+
+	for (i = 0; i < arg_count; i++) {
+		NgArgInfo arg = NULL;
+		int len;
+		for (j = 0; j < rinfo->argcount; j++) {
+			if (qarg_names[i] != rinfo->args[j].qargname)
+				continue;
+			arg = &rinfo->args[j];
+			break;
+		}
+		if (! arg)
+			continue;
+		len = strlen(values[i]);
+		if (len > strlen(arg->sval))
+			arg->sval = NhlRealloc(arg->sval,len+1);
+		if (strcmp(arg->sval,values[i])) {
+			strcpy(arg->sval,values[i]);
+			arg->modified = True;
+			modified = True;
+		}
+	}
+	if (! modified)
+		return;
+
+	func = NrmQuarkToString(rinfo->qsym);
+	newlen = strlen(func) + rinfo->argcount + 2;
+	for (i = 0; i < rinfo->argcount; i++) {
+                newlen += strlen(rinfo->args[i].sval);
+        }
+	val = ditem->vdata->expr_val;
+	if (newlen > strlen(ditem->vdata->expr_val))
+		val = NhlRealloc(val,newlen+1);
+	sprintf(val,"%s(",func);
+	for (i = 0; i < rinfo->argcount; i++) {
+		sprintf(&val[strlen(val)],"%s,",rinfo->args[i].sval);
+	}
+	if (rinfo->argcount)
+                /* write over last comma */
+                sprintf(&val[strlen(val)-1],")");
+        else
+                sprintf(&val[strlen(val)],")");
+
+	ditem->vdata->expr_val = val;
+
+	ditem->vdata->cflags = _NgALL_CHANGE;
+	ditem->vdata->set_state = _NgUSER_EXPRESSION;
+
+	return;
+}
+	
+static void
+SetPlotAppFuncs
+(
+	NgDataProfile dprof,
+	NrmQuark      qobject,
+	NhlString     func_name,
+	int	      arg_count,
+	NrmQuark      *qarg_names,
+	NhlString     *values,
+	NhlBoolean    disable,
+	NhlBoolean    restore
+	)
+{
+	NgDataItem ditem;
+	NgResInfo  rinfo;
+	int i;
+
+	for (i = 0; i < dprof->n_dataitems; i++) {
+
+		ditem = dprof->ditems[i];
+		rinfo = ditem->res_info;
+
+		if (! rinfo) 
+			continue;
+
+		if (qobject > NrmNULLQUARK &&
+		    qobject != ditem->qhlu_name)
+			continue;
+		
+		if (strncmp(ditem->vdata->expr_val,
+			    func_name,
+			    strlen(func_name)))
+			continue;
+
+		SetPlotAppFunc(ditem,rinfo,arg_count,qarg_names,
+			       values,disable,restore);
+	}
+}
 
 static void FreeDataLinks(
 	XmLArray datalinks
@@ -69,93 +285,6 @@ static void PlotPageFocusNotify (
         return;
 }
 
-static void
-SetValCB
-(
-	NhlArgVal	cbdata,
-	NhlArgVal	udata
-)
-{
-	brSetValCBInfo   *info = (brSetValCBInfo *)udata.lngval;
-	brPlotPageRec	*rec;
-
-#if DEBUG_PLOTPAGE
-        fprintf(stderr,"in setval cb\n");
-#endif
-	rec = (brPlotPageRec *)NgPageData(info->goid,info->pid);
-        if (! rec || rec->hlu_ids == NULL)
-                return;
-/*
- * The setvalue callback must be blocked for setvalues calls performed from
- * the plotpage itself.
- */
-
-        return;
-}
-
-
-static NhlBoolean UpdateDataLink
-(
-	brPlotPageRec		*rec,
-	NhlBoolean		on,
-	NgPageMessageType	message_type,
-	NgPageId		page_id,
-	NrmQuark		qfile,
-	NrmQuark		qvar
-)
-
-{
-	int		i,count,pos;
-	NgPageReply 	link;
-	NhlBoolean	new = False;
-
-	if (! rec->datalinks) {
-		rec->datalinks = XmLArrayNew(0,0);
-		if (! rec->datalinks) {
-			NHLPERROR((NhlFATAL,ENOMEM,NULL));
-			return False;
-		}
-	}
-
-	pos = count = XmLArrayGetCount(rec->datalinks);
-
-	for (i = 0; i < count; i++) {
-		link = XmLArrayGet(rec->datalinks,i);
-		if (link->id == page_id &&
-		    link->req == message_type) {
-			pos = i;
-			break;
-		}
-	}
-	if (pos == count) {
-		if (! on) 
-			return True;
-		pos = 0;
-		link = NhlMalloc(sizeof(NgPageReplyRec));
-		if (! link) {
-			NHLPERROR((NhlFATAL,ENOMEM,NULL));
-			return False;
-		}
-		new = True;
-	}
-	else if (! on) {
-		XmLArrayDel(rec->datalinks,pos,1);
-		NhlFree(link);
-		return True;
-	}
-
-	link->req = message_type;
-	link->id = page_id;
-	link->qfile = qfile;
-	link->qvar = qvar;
-
-	if (new) {
-		XmLArrayAdd(rec->datalinks,0,1);
-		XmLArraySet(rec->datalinks,0,link);
-	}
-
-	return True;
-}
 
 static void PostDataProfileMessage
 (
@@ -173,60 +302,6 @@ static void PostDataProfileMessage
 
 }
 
-static void TalkToDataLinks
-(
-	brPage			*from_page,
-	NgPageMessageType	link_type,
-	int			skip_id
-)
-{
-        brPageData	*pdp = from_page->pdata;
-	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
-	NgPageReply 	link;
-	int		i, count;
-
-	if (! rec->datalinks)
-		return;
-
-	count = XmLArrayGetCount(rec->datalinks);
-
-	for (i = 0; i < count; i++) {
-		link = (NgPageReply) XmLArrayGet(rec->datalinks,i);
-		if (link->id == skip_id)
-			continue;
-		switch (link->req) {
-		case _NgDATAPROFILE:
-			if (link_type == _NgDATAPROFILE) {
-				PostDataProfileMessage(from_page,link->qvar);
-			}
-			else if (link_type == _NgDOSETVALCB) {
-				NgPostPageMessage
-					(rec->go->base.id,from_page->id,
-				 _NgNOMESSAGE,
-				 link->qfile ? _brFILEVAR : _brREGVAR,
-				 link->qfile,link->qvar,_NgDOSETVALCB,
-				 (NhlPointer)rec->do_setval_cb,
-				 True,NULL,True);
-			}
-			break;
-		case _NgVARDATALINK_REQ:
-			if (link_type != _NgVARDATALINK_REQ)
-				continue;
-			NgPostPageMessage
-				(rec->go->base.id,from_page->id,
-				 _NgVARDATA,
-				 link->qfile ? _brFILEVAR : _brREGVAR,
-				 link->qfile,link->qvar,_NgVARDATALINK_REQ,
-				 (NhlPointer)&rec->data_profile->linked,
-				 True,NULL,True);
-			break;
-		default:
-			break;
-		}
-	}
-
-	return;
-}
 
 static void SetInputDataFlag
 (
@@ -322,8 +397,6 @@ static NhlErrorTypes GetDataProfileMessage
 	}
 
 	SetInputDataFlag(rec);
-	TalkToDataLinks(page,_NgDATAPROFILE,message->from_id);
-	
 	return NhlNOERROR;
 }
 
@@ -373,11 +446,6 @@ static NhlErrorTypes GetDataLinkReqMessage
 	}
 	frpage = _NgGetPageRef(rec->go->base.id,message->from_id);
 
-	if (frpage) {
-		UpdateDataLink
-			(rec,dlink->on,mesg_type,frpage->id,
-			 frpage->qfile,frpage->qvar);
-	}
 	if (message->message_free)
 		(*message->message_free)(message->message);
 
@@ -407,14 +475,155 @@ static NhlErrorTypes GetVarDataMessage
 			 page->qvar,rec->data_profile);
 	}
 	
-	TalkToDataLinks(page,_NgDATAPROFILE,message->from_id);
-
 	if (message->message_free)
 		(*message->message_free)(message->message);
 	
 	return NhlNOERROR;
 }
 
+void GetGribDimGrids
+(
+	NgVarData	vdata,
+	NrmQuark	*qgridlon,
+	NrmQuark	*qgridlat
+	)
+{
+	NclExtValueRec *val;
+	int grid_num;
+	char buf[32];
+
+	val = NclReadFileVarAtt(vdata->qfile,vdata->qvar,Qgrid_number);
+	grid_num = (int) ValToDouble(val,0);
+	NclFreeExtValue(val);
+
+	sprintf(buf,"gridlat_%d",grid_num);
+	*qgridlat = NrmStringToQuark(buf);
+	sprintf(buf,"gridlon_%d",grid_num);
+	*qgridlon = NrmStringToQuark(buf);
+	return;
+}
+
+static NhlBoolean GetGribDataExtent
+(
+	NgVarData	vdata,
+	int		lon_ix,
+	int		lat_ix,
+	float		*lmin,
+	float		*rmax,
+	float		*bmin,
+	float		*tmax,
+	NhlMapLimitMode *lmode
+)
+{
+	NrmQuark qlon,qlat;
+	NclExtValueRec *lonval,*latval;
+	int fdim_size,sdim_size;
+
+	GetGribDimGrids(vdata,&qlon,&qlat);
+
+	if (! (qlon && qlat))
+		return False;
+
+	lonval = NclReadFileVar(vdata->qfile,qlon,NULL,NULL,NULL);
+	latval = NclReadFileVar(vdata->qfile,qlat,NULL,NULL,NULL);
+	
+	if (! (lonval && latval))
+		return False;
+
+	fdim_size = lonval->dim_sizes[1];
+
+	*lmin = ValToDouble(lonval,fdim_size * vdata->start[lat_ix] +
+			    vdata->start[lon_ix]);
+	*bmin = ValToDouble(latval,fdim_size * vdata->start[lat_ix] +
+			    vdata->start[lon_ix]);
+	*rmax = ValToDouble(lonval,fdim_size * vdata->finish[lat_ix] +
+			    vdata->finish[lon_ix]);
+	*tmax = ValToDouble(latval,fdim_size * vdata->finish[lat_ix] +
+			    vdata->finish[lon_ix]);
+
+	*lmode = NhlCORNERS;
+
+	NclFreeExtValue(lonval);
+	NclFreeExtValue(latval);
+
+	return True;
+}
+
+static NhlBoolean GetDataExtent
+(
+	NgVarData	vdata,
+	float		*lmin,
+	float		*rmax,
+	float		*bmin,
+	float		*tmax,
+	NhlMapLimitMode *lmode
+)
+{
+	NclApiVarInfoRec	*vinfo = NULL;
+	int i,lon_ix = -999,lat_ix = -999;
+	NclExtValueRec *val;
+	float tmp;
+
+	for (i = 0; i < vdata->ndims; i++) {
+		if (vdata->order_ix[i] == vdata->ndims - 1)
+			lon_ix = i;
+		if (vdata->order_ix[i] == vdata->ndims - 2)
+			lat_ix = i;
+	}
+	if (lat_ix < 0 || lon_ix < 0)
+		return False;
+
+	if (! vdata->dl) {
+		if (vdata->qfile > NrmNULLQUARK)
+			vdata->dl = NclGetFileVarInfo
+				(vdata->qfile,vdata->qvar);
+		else 	
+			vdata->dl = NclGetVarInfo(vdata->qvar);
+		if (! vdata->dl)
+			return False;
+	}
+	vinfo = vdata->dl->u.var;
+
+	val = ReadCoord(vinfo,vdata->qfile,lon_ix,NULL,NULL,NULL);
+
+	if (! val) {
+		if (IsGribVar(vinfo) && vdata->qfile != NrmNULLQUARK) {
+			return GetGribDataExtent(vdata,lon_ix,lat_ix,
+						 lmin,rmax,bmin,tmax,lmode);
+		}
+		else
+			return False;
+	}
+
+	*lmin = ValToDouble(val,vdata->start[lon_ix]);
+	*rmax = ValToDouble(val,vdata->finish[lon_ix]);
+	if (*lmin > *rmax) {
+		tmp = *lmin;
+		*lmin = *rmax;
+		*rmax = tmp;
+	}
+	NclFreeExtValue(val);
+
+	val = ReadCoord(vinfo,vdata->qfile,lat_ix,NULL,NULL,NULL);
+	if (! val) 
+		return False;
+
+
+
+	*bmin = ValToDouble(val,vdata->start[lat_ix]);
+	*tmax = ValToDouble(val,vdata->finish[lat_ix]);
+	if (*bmin > *tmax) {
+		tmp = *bmin;
+		*bmin = *tmax;
+		*tmax = tmp;
+	}
+	NclFreeExtValue(val);
+
+	*lmode = NhlLATLON;
+
+	return True;
+}
+	
 static NhlErrorTypes HandleDataVarUpdateMessage
 (
         brPage		*page,
@@ -424,18 +633,94 @@ static NhlErrorTypes HandleDataVarUpdateMessage
 {
         brPageData	*pdp = page->pdata;
 	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
-	NhlBoolean	data_update;
+	int		data_ix;
 
-	data_update = message->message ? True : False;
+	data_ix = (int) message->message;
 
-	if (data_update)
+	if (data_ix >= 0 && data_ix < rec->data_var_grid->plotdata_count)
 		rec->new_data = True;
 	
-	TalkToDataLinks(page,_NgDATAPROFILE,message->from_id);
-
 	if (message->message_free)
 		(*message->message_free)(message->message);
 	
+	if (rec->new_data) {
+		NgVarData	vdata;
+		float		lmin,rmax,bmin,tmax;
+		NhlMapLimitMode lmode;
+		char buf0[32],buf1[32],buf2[32],buf3[32],buf4[32];
+		NhlString values[5];
+		NrmQuark qargs[5];
+		NgVarData	ovdata;
+		float		olmin,ormax,obmin,otmax;
+		NhlMapLimitMode olmode;
+
+		values[0] = buf0;
+		values[1] = buf1;
+		values[2] = buf2;
+		values[3] = buf3;
+		values[4] = buf4;
+
+		vdata = rec->data_var_grid->plotdata[data_ix].vdata;
+		if (! GetDataExtent(vdata,&lmin,&rmax,&bmin,&tmax,&lmode))
+			return NhlWARNING;
+		/*
+		 * Since latlon mode does not give the same results as the
+		 * the NDC mode used when selecting data using the rubber
+		 * box, we must be sure not to switch to LATLON mode unless
+		 * necessary
+		 */
+
+		ovdata = rec->data_profile->plotdata[data_ix].vdata;
+		if (! GetDataExtent
+		    (ovdata,&olmin,&ormax,&obmin,&otmax,&olmode))
+			return NhlWARNING;
+
+		if (lmode == NhlLATLON) {
+
+			if (! (lmin == olmin && rmax == ormax)) {
+			
+				/*
+				 * Set the "NgAdjustLongitude..." functions
+				 */
+
+				sprintf(values[0],"%f",lmin);
+				sprintf(values[1],"%f",rmax);
+				qargs[0] = NrmStringToQuark("start_lon");
+				qargs[1] = NrmStringToQuark("end_lon");
+				SetPlotAppFuncs(rec->data_profile,NrmNULLQUARK,
+						"NgAdjustLongitude",
+						2,qargs,values,False,False);
+			}
+		}
+
+		if (! (lmin == olmin && rmax == ormax &&
+		       bmin == obmin && tmax == otmax &&
+		       lmode == olmode)) {
+			/*
+			 * Set the "NgSetMapLimits" function
+			 */
+			if (lmode == NhlCORNERS) {
+				sprintf(values[0],"%d",lmode);
+			}
+			else {
+				sprintf(values[0],"%d",-1);
+			}
+			sprintf(values[1],"%f",lmin);
+			sprintf(values[2],"%f",rmax);
+			sprintf(values[3],"%f",bmin);
+			sprintf(values[4],"%f",tmax);
+			qargs[0] = NrmStringToQuark("limit_mode");
+			qargs[1] = NrmStringToQuark("left_min");
+			qargs[2] = NrmStringToQuark("right_max");
+			qargs[3] = NrmStringToQuark("bottom_min");
+			qargs[4] = NrmStringToQuark("top_max");
+			SetPlotAppFuncs(rec->data_profile,NrmNULLQUARK,
+					"NgSetMapLimits",5,qargs,values,
+					False,False);
+		}
+	}
+
+		
 	return NhlNOERROR;
 }
 
@@ -576,7 +861,8 @@ static NhlBoolean GetDataVal
 					NrmQuarkToString(vdata->qvar));
 				break;
 			default:
-				fprintf(stderr,"invalid var type\n");
+				NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+					   "invalid var type\n"));
 				return False;
 			}
 		}
@@ -815,50 +1101,23 @@ static NhlBoolean GetFillValue
 	return (*ditem->get_val)(ditem,value,type,preview);
 }
 
-extern void NgFreePlotObjCreateRec
-(
-	brPlotObjCreate obj_create
-)
-
-{
-	NgFreeDataProfile(obj_create->dprof);
-	NhlFree(obj_create);
-	return;
-}
-
-extern brPlotObjCreate NgNewPlotObjCreateRec
-(
-        NhlString	class_name,
-	NgDataProfile	data_profile,
-	NhlString	plot_style,
-	NhlString	plot_style_dir,
-	int		obj_count,
-	int		*obj_ids,
-	int		app_id,
-	NhlBoolean	has_input_data,
-	_plotState	state
+static NhlBoolean DestroyFirstCB(
+        NhlArgVal       cbdata,
+        NhlArgVal       udata,
+        NhlArgVal       *ret
 )
 {
-	brPlotObjCreate obj_create = 
-		NhlMalloc(sizeof(brPlotObjCreateRec));
-	if (! obj_create) {
-		NHLPERROR((NhlFATAL,ENOMEM,NULL));
-		return NULL;
+	NgHluData 	hdata = (NgHluData) udata.ptrval; 
+
+	if (! hdata)
+		return False;
+
+	if (hdata->xregion_cb) {
+		_NhlCBDelete(hdata->xregion_cb);
 	}
- 	obj_create->obj_ids = obj_ids;
- 	obj_create->obj_count = obj_count;
-	obj_create->class_name = class_name;
-	obj_create->plot_style = plot_style;
-	obj_create->plot_style_dir = plot_style_dir;
-	obj_create->has_input_data = has_input_data;
-	obj_create->state = state;
-	obj_create->dprof = data_profile;
-	obj_create->app_id = app_id;
 
-	return obj_create;
-
+	return True;
 }
-
 static void
 DestroyCB
 (
@@ -867,7 +1126,6 @@ DestroyCB
 )
 {
 	NgHluData 	hdata = (NgHluData) udata.ptrval; 
-
 
 #if DEBUG_PLOTPAGE
         fprintf(stderr,"in destroy cb\n");
@@ -882,8 +1140,149 @@ DestroyCB
         return;
 }
 
+NhlString SetGribDataRegionString
+(
+	brPlotPageRec	*rec,
+	int		data_ix,
+	int		xb_ix,
+	int		xe_ix,
+	int		yb_ix,
+	int		ye_ix,
+	NhlBoolean	full_region
+	)
+{
+	NgPlotData pd = &rec->data_var_grid->plotdata[data_ix];
+	NgVarData  vdata = pd->vdata;
+	char buf[256];
+	int i;
+	NhlString vdata_string;
+
+	if (! vdata->qvar)
+		return NULL;
+
+	buf[0] = '\0';
+	if (vdata->qfile) {
+		sprintf(buf,"%s->",NrmQuarkToString(vdata->qfile));
+	}
+	sprintf(&buf[strlen(buf)],"%s(",NrmQuarkToString(vdata->qvar));
+
+	for (i = 0; i < vdata->ndims; i++) {
+		if (vdata->order_ix[i] < vdata->ndims - 2) {
+			sprintf(&buf[strlen(buf)],"%d,",vdata->start[i]);
+		}
+		else if (full_region) {
+			sprintf(&buf[strlen(buf)],":,");
+		}
+		else if (vdata->order_ix[i] < vdata->ndims - 1) {
+			sprintf(&buf[strlen(buf)],"%d:%d,",yb_ix,ye_ix);
+		}
+		else if (vdata->order_ix[i] < vdata->ndims) {
+			if (xb_ix > xe_ix) {
+				sprintf(&buf[strlen(buf)],":,");
+			}
+			else {
+				sprintf(&buf[strlen(buf)],"%d:%d,",
+					xb_ix,xe_ix);
+			}
+		}
+	}
+			
+	/* remove last comma */
+	sprintf(&buf[strlen(buf)-1],")"); 
+
+	vdata_string = NhlMalloc(strlen(buf)+1);
+	if (! vdata_string) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NULL;
+	}
+	strcpy(vdata_string,buf);
+	
+	return vdata_string;
+}
+
+NhlString SetVarDataRegionString
+(
+	brPlotPageRec	*rec,
+	int		data_ix,
+	float		xb,
+	float		xe,
+	float		yb,
+	float		ye,
+	NhlBoolean	full_region
+	)
+{
+	NgPlotData pd = &rec->data_var_grid->plotdata[data_ix];
+	NgVarData  vdata = pd->vdata;
+	char buf[256];
+	int i;
+	NhlString vdata_string;
+	NclApiVarInfoRec	*vinfo = NULL;
+
+	if (! vdata->qvar)
+		return NULL;
+
+	if (! vdata->dl) {
+		if (vdata->qfile > NrmNULLQUARK)
+			vdata->dl = NclGetFileVarInfo
+				(vdata->qfile,vdata->qvar);
+		else 	
+			vdata->dl = NclGetVarInfo(vdata->qvar);
+		if (! vdata->dl) 
+			return NULL;
+	}
+	vinfo = vdata->dl->u.var;
+
+	buf[0] = '\0';
+	if (vdata->qfile) {
+		sprintf(buf,"%s->",NrmQuarkToString(vdata->qfile));
+	}
+	sprintf(&buf[strlen(buf)],"%s(",NrmQuarkToString(vdata->qvar));
+
+	for (i = 0; i < vdata->ndims; i++) {
+		NrmQuark qcoord = vinfo->coordnames[i];
+		if (vdata->order_ix[i] < vdata->ndims - 2) {
+			sprintf(&buf[strlen(buf)],"%d,",vdata->start[i]);
+		}
+		else if (full_region) {
+			sprintf(&buf[strlen(buf)],":,");
+		}
+		else if (vdata->order_ix[i] < vdata->ndims - 1) {
+			if (qcoord > NrmNULLQUARK) 
+				sprintf(&buf[strlen(buf)],"{%f:%f},",yb,ye);
+			else
+				sprintf(&buf[strlen(buf)],"%d:%d,",
+					(int)yb,(int)(ye + 1.0));
+		}
+		else if (vdata->order_ix[i] < vdata->ndims) {
+			if (xb > xe && qcoord > NrmNULLQUARK) {
+				sprintf(&buf[strlen(buf)],":,");
+			}
+			else if (qcoord > NrmNULLQUARK) {
+				sprintf(&buf[strlen(buf)],"{%f:%f},",xb,xe);
+			}
+			else {
+				sprintf(&buf[strlen(buf)],"%d:%d,",
+					(int)xb,(int)(xe + 1.0));
+			}
+		}
+	}
+			
+	/* remove last comma */
+	sprintf(&buf[strlen(buf)-1],")"); 
+
+	vdata_string = NhlMalloc(strlen(buf)+1);
+	if (! vdata_string) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NULL;
+	}
+	strcpy(vdata_string,buf);
+	
+	return vdata_string;
+}
+	
+
 static void
-RegisterHluDataDestroyCB
+RegisterCallbacks
 (
         brPage		*page,
 	int		hlu_id,
@@ -892,8 +1291,9 @@ RegisterHluDataDestroyCB
 {
 	brPageData	*pdp = page->pdata;
 	brPlotPageRec	*rec = (brPlotPageRec *) pdp->type_rec;
-	NgHluData 	hdata;
+	NgHluData 	hdata,whdata;
 	NhlArgVal 	sel,user_data;
+	NhlLayer	xwk;
 
 	NhlLayer l = _NhlGetLayer(hlu_id);
 
@@ -922,8 +1322,38 @@ RegisterHluDataDestroyCB
 	sel.lngval = 0;
 	user_data.ptrval = hdata;
 	hdata->destroy_cb = NgCBWPAdd
-		(page->go->go.appmgr,NULL,NULL,_NhlGetLayer(hlu_id),
+		(page->go->go.appmgr,DestroyFirstCB,NULL,_NhlGetLayer(hlu_id),
 		 _NhlCBobjDestroy,sel,DestroyCB,user_data);
+
+	if (! (l->base.wkptr && _NhlIsXWorkstation(l->base.wkptr)))
+		return;
+
+	if (hlu_id != _NhlTopLevelView(hlu_id))
+		return;
+	if (! NhlIsTransform(hlu_id))
+		return;
+
+	xwk = NULL;
+	whdata = l->base.wkptr->base.gui_data2;
+	if (whdata) {
+		NgWksObj wobj = (NgWksObj) whdata->gdata;
+		
+		if (wobj) {
+			xwk = _NhlGetLayer(wobj->wks_wrap_id);
+		}
+	}
+	if (! xwk)
+		return;
+
+	sel.lngval = hlu_id;
+	user_data.intval = page->go->base.id;
+	hdata->xregion_cb = _NhlAddObjCallback((NhlLayer)xwk,
+			   NgCBXRegionDef,sel,XRegionCB,user_data);
+
+#if DEBUG_PLOTPAGE
+	fprintf(stderr,"adding region callback for %s\n",l->base.name);
+#endif
+
 	return;
 }
 
@@ -963,109 +1393,6 @@ CreatePreviewInstance
 	}
 
 	return;
-}
-
-static NhlBoolean
-CopySVCB
-(
-        NhlArgVal       cbdata,
-	NhlArgVal	udata,
-        NhlArgVal       *ret
-)
-{
-	brSetValCBInfo   *info = (brSetValCBInfo *)udata.lngval;
-	_NhlValueSetCBData vsdata = (_NhlValueSetCBData) cbdata.ptrval;
-	brPlotPageRec	*rec;
-	_NhlValueSetCBData new;
-
-	rec = (brPlotPageRec *)NgPageData(info->goid,info->pid);
-	
-        if (! rec || rec->hlu_ids == NULL)
-                return False;
-#if DEBUG_PLOTPAGE
-        fprintf(stderr,"data profile in setval copy cb: %s\n",
-		NrmQuarkToString(vsdata->resq));
-#endif
-
-/*
- * The setvalue callback must be blocked for setvalues calls performed from
- * the plotpage itself.
- */
-	if  (! rec->do_setval_cb)
-		return False;
-
-        new = NhlMalloc(sizeof(_NhlobjChangeChildRec));
-        if(!new){
-                NHLPERROR((NhlFATAL,ENOMEM,NULL));
-                return False;
-        }
-
-        *new = *vsdata;
-        ret->ptrval = new;
-
-        return True;
-}
-
-static void
-FreeSVCB
-(
-        NhlArgVal       cbdata
-)
-{
-        NhlFree(cbdata.ptrval);
-
-        return;
-}
-
-static void
-DProfSetValCB
-(
-	NhlArgVal	cbdata,
-	NhlArgVal	udata
-)
-{
-	brSetValCBInfo   *info = (brSetValCBInfo *)udata.lngval;
-	_NhlValueSetCBData vsdata = (_NhlValueSetCBData) cbdata.ptrval;
-	brPlotPageRec	*rec;
-	int		i;
-	NgDataProfile	dprof;
-	NgDataItem	ditem;
-	brPage		*page;
-
-	rec = (brPlotPageRec *)NgPageData(info->goid,info->pid);
-	
-        if (! rec || rec->hlu_ids == NULL)
-                return;
-#if DEBUG_PLOTPAGE
-        fprintf(stderr,"data profile in setval cb: %s\n",
-		NrmQuarkToString(vsdata->resq));
-#endif
-
-	if  (! rec->do_setval_cb)
-		return;
-/*
- * The setvalue callback must be blocked for setvalues calls performed from
- * the plotpage itself.
- */
-	dprof = rec->data_profile;
-	for (i = 0; i < dprof->n_dataitems; i++) {
-
-		ditem = dprof->ditems[i];
-		if (ditem->resq != vsdata->resq)
-			continue;
-#if DEBUG_PLOTPAGE
-		fprintf(stderr,
-			"%s has been set\n",NrmQuarkToString(ditem->resq));
-#endif
-		NgSetUnknownDataItem(ditem);
-		NgSetDependentVarData(dprof,-1,False);
-	}
-	page = _NgGetPageRef(info->goid,info->pid);
-	if (rec->func_grid)
-		NgUpdateFuncGrid
-			(rec->func_grid,page->qvar,rec->data_profile);
-	
-        return;
 }
 
 static NhlBoolean CreateGraphic
@@ -1245,7 +1572,6 @@ static NhlBoolean CreateGraphic
 		}
 			
 		rec->hlu_ids[obj_ix] = hlu_id;
-		RegisterHluDataDestroyCB(page,hlu_id,False);
 		for (i = 0; i < dprof->n_dataitems; i++) {
 			NgDataItem ditem = dprof->ditems[i];
 			if (ditem->qhlu_name != qobj_name)
@@ -1281,7 +1607,6 @@ static NhlBoolean CreateGraphic
 			(void)NgNclSubmitBlock(rec->go->go.nclstate,buf);
 		}
 	}
-	NgGraphicArrayofGraphic(NrmStringToQuark(ncl_name));
 	return True;
 }
 
@@ -1392,8 +1717,9 @@ static NhlBoolean UpdateGraphic
 				 NrmStringToQuark(rec->public.plot_style),
 				 page->qvar,dprof,obj_ix,i,resdata,&count,
 				 False);
-#if 0
-			printf("synthetic resource: %s\n",ditem->resname);
+#if DEBUG_PLOTPAGE
+			fprintf(stderr,
+				"synthetic resource: %s\n",ditem->resname);
 #endif
 			continue;
 		default:
@@ -1714,6 +2040,7 @@ CreateInstance
 
 		if (! DoPlotTreeUpdate(page,i))
 			continue;
+		RegisterCallbacks(page,rec->hlu_ids[i],False);
 	}
 
 	return ret;
@@ -2086,15 +2413,11 @@ CreateUpdate
 	SetInputDataFlag(rec);
         rec->do_setval_cb = False;
 
-	TalkToDataLinks(page,_NgDOSETVALCB,NgNoPage);
-
 	if (rec->state == _plotNOTCREATED)
 		rec->state = _plotPREVIEW;
         if (rec->state == _plotNOTCREATED) {
 		CreatePreviewInstance(page,wk_id);
                 rec->state = _plotPREVIEW;
-		if (rec->new_data)
-			TalkToDataLinks(page,_NgDATAPROFILE,NgNoPage);
         }
         else  if (rec->state == _plotPREVIEW) {
                 XmString xmstring;
@@ -2124,7 +2447,6 @@ CreateUpdate
 						(rec->go->base.id,vdata);
 				}
 			}
-			TalkToDataLinks(page,_NgDATAPROFILE,NgNoPage);
 		}
 		for (i = 0; i < rec->data_profile->n_dataitems; i++)
 			rec->data_profile->ditems[i]->vdata->cflags = 0; 
@@ -2148,31 +2470,11 @@ CreateUpdate
 						(rec->go->base.id,vdata);
 				}
 			}
-			TalkToDataLinks(page,_NgDATAPROFILE,NgNoPage);
 		}
 		for (i = 0; i < rec->data_profile->n_dataitems; i++)
 			rec->data_profile->ditems[i]->vdata->cflags = 0;
 		rec->new_data = False;
         }
-
-#if 0
-        if (rec->state == _plotCREATED && ! already_created) {
-                NhlArgVal sel,user_data;
-                
-                NhlINITVAR(sel);
-                NhlINITVAR(user_data);
-                sel.lngval = 0;
-		rec->setval_info.pid = page->id;
-		rec->setval_info.goid = page->go->base.id;
-                user_data.ptrval = &rec->setval_info;
-                rec->setval_cb = _NhlAddObjCallback
-                        (_NhlGetLayer(rec->hlu_id),_NhlCBobjValueSet,
-                         sel,SetValCB,user_data);
-        }
-	rec->do_setval_cb = True;
-
-	TalkToDataLinks(page,_NgDOSETVALCB,NgNoPage);
-#endif
 
 	if (do_draw && rec->state == _plotCREATED &&
 	    _NhlIsClass(wl,NhlxWorkstationClass)) {
@@ -2181,7 +2483,7 @@ CreateUpdate
 		if (! wks) 
 			return;
 		for (i = 0; i < rec->hlu_count; i++) {
-			int draw_id = _NhlTopLevelView(rec->hlu_ids[0]);
+			int draw_id = _NhlTopLevelView(rec->hlu_ids[i]);
 			NhlLayer drawl = _NhlGetLayer(draw_id);
 		
 			if (drawl) {
@@ -2218,6 +2520,849 @@ static int GetWorkstation
                         (page->go->go.appmgr,True,work_created);
         }
         return wk_id;
+}
+
+static void AnalyzeGribMapLocation
+(
+	int map_id,
+	NgVarData vdata,
+	float *xloc,
+	float *yloc,
+	int	*sx_ix,
+	int	*fx_ix,
+	int	*sy_ix,
+	int	*fy_ix
+)
+{
+	float xt[2],yt[2];
+	float xmp[2],ymp[2];
+	float mpw,mph;
+	int status;
+	float oor;
+	int i,j;
+	NrmQuark qlon,qlat;
+	NclExtValueRec *lonval,*latval;
+	float xlp,xrp,ybp,ytp;
+	int lon_ix,lat_ix;
+	int lon_ext, lat_ext;
+	float tlat,tlon,tdist,mindist;
+	int fdim_size,sdim_size;
+	int x_ix,y_ix;
+	NhlBoolean changed;
+
+	for (i = 0; i < vdata->ndims; i++) {
+		if (vdata->order_ix[i] == vdata->ndims - 1)
+			lon_ix = i;
+		if (vdata->order_ix[i] == vdata->ndims - 2)
+			lat_ix = i;
+	}
+	lat_ext = vdata->finish[lat_ix] - vdata->start[lat_ix];
+	lon_ext = vdata->finish[lon_ix] - vdata->start[lon_ix];
+		
+	NhlVAGetValues(map_id,
+		       NhlNmpLeftMapPosF,&xmp[0],
+		       NhlNmpRightMapPosF,&xmp[1],
+		       NhlNmpBottomMapPosF,&ymp[0],
+		       NhlNmpTopMapPosF,&ymp[1],
+		       NULL);
+	mpw = xmp[1] - xmp[0];
+	mph = ymp[1] - ymp[0];
+	xlp = (xloc[0] - xmp[0]) / mpw;
+	xrp = (xloc[1] - xmp[0]) / mpw;
+	ybp = (yloc[0] - ymp[0]) / mph;
+	ytp = (yloc[1] - ymp[0]) / mph;
+
+	*sx_ix = vdata->start[lon_ix] + (int) (xlp * lon_ext);
+	*fx_ix = vdata->start[lon_ix] + (int) (xrp * lon_ext);
+	*sy_ix = vdata->start[lat_ix] + (int) (ybp * lat_ext);
+	*fy_ix = vdata->start[lat_ix] + (int) (ytp * lat_ext);
+	
+#if DEBUG_PLOTPAGE
+	fprintf(stderr,"sx %d fx %d sy %d fy %d\n",
+		*sx_ix,*fx_ix,*sy_ix,*fy_ix);
+#endif
+
+	GetGribDimGrids(vdata,&qlon,&qlat);
+	lonval = NclReadFileVar(vdata->qfile,qlon,NULL,NULL,NULL);
+	latval = NclReadFileVar(vdata->qfile,qlat,NULL,NULL,NULL);
+
+	NhlNDCToData(map_id,
+		     xloc,yloc,2,xt,yt,NULL,NULL,&status,&oor);
+
+	fdim_size = lonval->dim_sizes[1];
+	sdim_size = lonval->dim_sizes[0];
+	tlat = ValToDouble(latval,fdim_size * *sy_ix + *sx_ix);
+	tlon = ValToDouble(lonval,fdim_size * *sy_ix + *sx_ix);
+	mindist = (tlon - xt[0]) * (tlon - xt[0]) + 
+		(tlat - yt[0]) * (tlat - yt[0]);
+
+	changed = True;
+	while (changed) {
+		changed = False;
+		for (i = MAX(0,*sx_ix - 1); 
+		     i < MIN(fdim_size,*sx_ix + 2); i++) {
+			for (j = MAX(0,*sy_ix - 1); 
+				     j < MIN(sdim_size,*sy_ix+2); j++) {
+				if (i == *sx_ix && j == *sy_ix)
+					continue;
+				tlat = ValToDouble(latval,fdim_size * j + i);
+				tlon = ValToDouble(lonval,fdim_size * j + i);
+				tdist = (tlon - xt[0]) * (tlon - xt[0]) + 
+					(tlat - yt[0]) * (tlat - yt[0]);
+				if (tdist >= mindist)
+					continue;
+				mindist = tdist;
+				x_ix = i;
+				y_ix = j;
+				changed = True;
+			}
+		}
+		if (changed) {
+			*sx_ix = x_ix;
+			*sy_ix = y_ix;
+		}
+	}
+
+
+	tlat = ValToDouble(latval,fdim_size * *fy_ix + *fx_ix);
+	tlon = ValToDouble(lonval,fdim_size * *fy_ix + *fx_ix);
+	mindist = (tlon - xt[1]) * (tlon - xt[1]) + 
+		(tlat - yt[1]) * (tlat - yt[1]);
+
+	changed = True;
+	while (changed) {
+		changed = False;
+		for (i = MAX(0,*fx_ix - 1); 
+		     i < MIN(fdim_size,*fx_ix + 2); i++) {
+			for (j = MAX(0,*fy_ix - 1); 
+				     j < MIN(sdim_size,*fy_ix+2); j++) {
+				if (i == *fx_ix && j == *fy_ix)
+					continue;
+				tlat = ValToDouble(latval,fdim_size * j + i);
+				tlon = ValToDouble(lonval,fdim_size * j + i);
+				tdist = (tlon - xt[1]) * (tlon - xt[1]) + 
+					(tlat - yt[1]) * (tlat - yt[1]);
+				if (tdist >= mindist)
+					continue;
+				mindist = tdist;
+				x_ix = i;
+				y_ix = j;
+				changed = True;
+			}
+		}
+		if (changed) {
+			*fx_ix = x_ix;
+			*fy_ix = y_ix;
+		}
+	}
+#if DEBUG_PLOTPAGE
+	fprintf(stderr,"after - sx %d fx %d sy %d fy %d\n",
+		*sx_ix,*fx_ix,*sy_ix,*fy_ix);
+#endif
+	/*
+	 * Given these data adjust the location so that the map is 
+	 * registered correctly
+	 */
+	xt[0] = ValToDouble(lonval,fdim_size * *sy_ix + *sx_ix);
+	yt[0] = ValToDouble(latval,fdim_size * *sy_ix + *sx_ix);
+	xt[1] = ValToDouble(lonval,fdim_size * *fy_ix + *fx_ix);
+	yt[1] = ValToDouble(latval,fdim_size * *fy_ix + *fx_ix);
+	
+	NhlDataToNDC(map_id,
+		     xt,yt,2,xloc,yloc,NULL,NULL,&status,&oor);
+
+	NclFreeExtValue(lonval);
+	NclFreeExtValue(latval);
+
+	return;
+}
+
+static void AnalyzeMapLocation
+(
+	int map_id,
+	int cycle_point,
+	float *xloc,
+	float *yloc,
+	float *xout,
+	float *yout
+)
+{
+	int proj;
+	float clon,crot,clat;
+	NhlBoolean rel_lon,rel_lat;
+	NhlBoolean northpole = False, southpole = False;
+	float xt[180],yt[180];
+	int status;
+	float oor;
+	float dist;
+	float xmin = 999,ymin = 999,xmax = -999,ymax = -999,lastx;
+	float xmin1 = 999,xmax1 = -999;
+	NhlBoolean firstpart = True;
+	int i;
+	
+	NhlVAGetValues(map_id,
+		       NhlNmpProjection,&proj,
+		       NhlNmpCenterLonF,&clon,
+		       NhlNmpCenterRotF,&crot,
+		       NhlNmpCenterLatF,&clat,
+		       NhlNmpRelativeCenterLon,&rel_lon,
+		       NhlNmpRelativeCenterLat,&rel_lat,
+		       NULL);
+
+	/* if it's a straight cyleq or mercator, and the data boundary 
+	   line is not crossed then the data locs need no further processing */
+
+	if ((proj == 8 || proj == 7) && clat == 0.0 && crot == 0.0) {
+		NhlNDCToData(map_id,
+			     xloc,yloc,2,xout,yout,NULL,NULL,&status,&oor);
+		/* no problem */
+		return;
+	}
+
+	/*
+	 * see if the north or south pole is inside the area
+	 */
+	xt[0] = xt[1] = cycle_point % 360 + 180;
+	yt[0] = -90;
+	yt[1] = 90;
+
+	NhlDataToNDC(map_id,xt,yt,2,xt,yt,NULL,NULL,&status,&oor);
+
+	if (yt[0] >= yloc[0] && yt[0] <= yloc[1] &&
+	    xt[0] >= xloc[0] && xt[0] <= xloc[1])
+		southpole = True;
+	if (yt[1] >= yloc[0] && yt[1] <= yloc[1] &&
+	    xt[1] >= xloc[0] && xt[1] <= xloc[1])
+		northpole = True;
+
+	/*
+	 * sample points along each edge and determine the min and max
+	 * data values
+	 */
+
+	dist = xloc[1] - xloc[0];
+	for (i = 0; i < 25; i++) {
+		xt[i] = xloc[0] + i * dist / 25.0;
+		yt[i] = yloc[0];
+	}
+	dist = yloc[1] - yloc[0];
+	for (i = 0; i < 25; i++) {
+		xt[25+i] = xloc[1];
+		yt[25+i] = yloc[0] + i * dist / 25.0;;
+	}
+	dist = xloc[0] - xloc[1];
+	for (i = 0; i < 25; i++) {
+		xt[50+i] = xloc[1] + i * dist / 25.0;
+		yt[50+i] = yloc[1];
+	}
+	dist = yloc[0] - yloc[1];
+	for (i = 0; i < 25; i++) {
+		xt[75+i] = xloc[0];
+		yt[75+i] = yloc[1] + i * dist / 25.0;;
+	}
+	NhlNDCToData(map_id,
+		     xt,yt,100,xt,yt,NULL,NULL,&status,&oor);
+
+	if (northpole) {
+		for (i = 0; i < 100; i++) {
+			if (ymin > yt[i]) ymin = yt[i];
+		}
+		xout[0] = 0;
+		xout[1] = 360;
+		yout[0] = ymin;
+		yout[1] = 90;
+		return;
+	}
+	else if (southpole) {
+		for (i = 0; i < 100; i++) {
+			if (ymax < yt[i] && yt[i] < 1e10) ymax = yt[i];
+		}
+		xout[0] = 0;
+		xout[1] = 360;
+		yout[0] = -90;
+		yout[1] = ymax;
+		return;
+	}
+	else if (cycle_point == -9999) {
+		for (i = 0; i < 100; i++) {
+			if (xmin > xt[i]) xmin = xt[i];
+			if (xmax < xt[i] && xt[i] < 1e10) xmax = xt[i];
+			if (ymin > yt[i]) ymin = yt[i];
+			if (ymax < yt[i] && yt[i] < 1e10) ymax = yt[i];
+		}
+		xout[0] = xmin;
+		xout[1] = xmax;
+		yout[0] = ymin;
+		yout[1] = ymax;
+		return;
+	}
+	/*
+	 * this is the most general situation; the data may cross the
+	 * cyclic point, and since we're not at the poles, it needs to
+	 * be determined how much of the longitudinal extent to include
+	 */
+	lastx = xt[0];
+	for (i = 0; i < 100; i++) {
+		if (abs((int)(xt[i]-lastx)) > 50	)
+			firstpart = ! firstpart;
+		if (firstpart) {
+			if (xmin > xt[i]) xmin = xt[i];
+			if (xmax < xt[i] && xt[i] < 1e10) xmax = xt[i];
+		}
+		else {
+			if (xmin1 > xt[i]) xmin1 = xt[i];
+			if (xmax1 < xt[i] && xt[i] < 1e10) xmax1 = xt[i];
+		}
+		if (ymin > yt[i]) ymin = yt[i];
+		if (ymax < yt[i] && yt[i] < 1e10) ymax = yt[i];
+		lastx = xt[i];
+	}
+	if (xmin1 != 999) {
+		xout[0] = MAX(xmin,xmin1);
+		xout[1] = MIN(xmax,xmax1);
+	}
+	else {
+		xout[0] = xmin;
+		xout[1] = xmax;
+	}
+	yout[0] = ymin;
+	yout[1] = ymax;
+	return;
+}
+
+void GetGribGridDataLimits
+(
+	NgVarData	vdata,
+	NclApiVarInfoRec	*vinfo,
+	float 		*ymin,
+	float 		*ymax,
+	float 		*yinc,
+	float 		*xmin,
+	float 		*xmax,
+	float 		*xinc
+	)
+{
+	NclExtValueRec *val;
+	int i;
+	NrmQuark qlon,qlat;
+
+	GetGribDimGrids(vdata,&qlon,&qlat);
+
+	for (i = 0; i < vdata->ndims; i++) {
+		NrmQuark qgrid = vinfo->coordnames[i];
+		NhlBoolean do_y = False;
+
+		if (vdata->order_ix[i] < vdata->ndims - 2)
+			continue;
+		if (vdata->dstart[i] != vdata->dfinish[i])
+			continue;
+		if (vdata->order_ix[i] < vdata->ndims - 1)
+			do_y = True;
+
+		qgrid = do_y ?  qlat : qlon;
+		val = NclReadFileVarAtt(vdata->qfile,qgrid,Qcorners);
+
+		if (! val) {
+			vdata->dstart[i] = 0;
+			vdata->dfinish[i] = (double)vdata->size[i]-1;
+			if (do_y) {
+				*ymin = vdata->dstart[i];
+				*ymax = vdata->dfinish[i];
+				*yinc = 1;
+			}
+			else {
+				*xmin = vdata->dstart[i];
+				*xmax = vdata->dfinish[i];
+				*xinc = 1;
+			}
+			continue;
+		}
+		if (do_y) {
+			*ymin = ValToDouble(val,0);
+			*ymax = ValToDouble(val,2);
+			*yinc = 0;
+		}
+		else {
+			*xmin = ValToDouble(val,0);
+			*xmax = ValToDouble(val,2);
+			*xinc = 0;
+		}
+		NclFreeExtValue(val);
+	}
+	return;
+}	
+
+
+void GetDataLimits2D
+(
+	NgVarData	vdata,
+	float 		*ymin,
+	float 		*ymax,
+	float 		*yinc,
+	float 		*xmin,
+	float 		*xmax,
+	float 		*xinc,
+	NhlBoolean	*is_grib
+	)
+{
+	int i,j;
+	NclApiVarInfoRec	*vinfo = NULL;
+	int sign;
+	float tinc,inc;
+	NhlBoolean monotonic;
+		
+	*is_grib = False;
+
+	if (vdata->dl) {
+		vinfo = vdata->dl->u.var;
+	}
+	else {
+		if (vdata->qfile > NrmNULLQUARK)
+			vdata->dl = NclGetFileVarInfo
+				(vdata->qfile,vdata->qvar);
+		else 	
+			vdata->dl = NclGetVarInfo(vdata->qvar);
+		vinfo = vdata->dl->u.var;
+	}
+
+	for (i = 0; i < vdata->ndims; i++) {
+		NrmQuark qcoord = vinfo->coordnames[i];
+		NclExtValueRec *val;
+		NhlBoolean do_y = False;
+		
+		if (vdata->order_ix[i] < vdata->ndims - 2)
+			continue;
+		if (vdata->order_ix[i] < vdata->ndims - 1)
+			do_y = True;
+		if (qcoord <= NrmNULLQUARK) {
+			/*
+			 * see if there's a grid number attribute --
+			 * which we will take as an indicator that the
+			 * data is preprojected GRIB data -- in that case
+			 * use the Grib data limits routine.
+			 */
+			if (IsGribVar(vinfo) && vdata->qfile) {
+				*is_grib = True;
+				GetGribGridDataLimits
+					(vdata,vinfo,ymin,ymax,yinc,
+					 xmin,xmax,xinc);
+				return;
+			}
+			/*
+			 * otherwise set the data limits to the index values
+			 */
+			vdata->dstart[i] = 0;
+			vdata->dfinish[i] = (double)vdata->size[i]-1;
+			if (do_y) {
+				*ymin = vdata->dstart[i];
+				*ymax = vdata->dfinish[i];
+				*yinc = 1;
+			}
+			else {
+				*xmin = vdata->dstart[i];
+				*xmax = vdata->dfinish[i];
+				*xinc = 1;
+			}
+			continue;
+		}
+		else {
+			if (vdata->qfile)
+				val = NclReadFileVarCoord
+					(vdata->qfile,vinfo->name,
+					 qcoord,NULL,NULL,NULL);
+			else
+				val = NclReadVarCoord
+					(vinfo->name,qcoord,NULL,NULL,NULL);
+			if (! val)
+				continue;
+			vdata->dstart[i] = ValToDouble(val,0);
+			vdata->dfinish[i] = ValToDouble
+				(val,vinfo->dim_info[i].dim_size - 1);
+		}
+		tinc = ValToDouble(val,1) - vdata->dstart[i];
+		sign = (tinc < 0.0) ? -1.0 : 1.0;
+		inc = tinc * sign;
+		monotonic = True;
+		for (j = 2; j < vdata->size[i]; j++) {
+			tinc = ValToDouble(val,j)-ValToDouble(val,j-1);
+			if (tinc * sign < 0.0) {
+				monotonic = False;
+				break;
+			}
+			if (tinc * sign > inc)
+				inc = tinc * sign;
+		}
+		if (do_y) {
+			if (! monotonic) {
+				*ymin = vdata->dstart[i];
+				*ymax = vdata->dfinish[i];
+				*yinc = 1;
+				NclFreeExtValue(val);
+				continue;
+			}
+			*ymin = MIN(vdata->dstart[i],vdata->dfinish[i]);
+			*ymax = MAX(vdata->dstart[i],vdata->dfinish[i]);
+			*yinc = inc;
+		}
+		else {
+			if (! monotonic) {
+				*xmin = vdata->dstart[i];
+				*xmax = vdata->dfinish[i];
+				*xinc = 1;
+				NclFreeExtValue(val);
+				continue;
+			}
+			*xmin = MIN(vdata->dstart[i],vdata->dfinish[i]);
+			*xmax = MAX(vdata->dstart[i],vdata->dfinish[i]);
+			*xinc = inc;
+		}
+		NclFreeExtValue(val);
+	}
+	return;
+}
+
+static void
+SetMapRegion
+(
+	brPage		*page,	
+	NgVarData	vdata,
+	int		map_id,
+	NhlBoolean	full_region,
+	float		x,
+	float		y,
+	float		width,
+	float		height
+	)
+{
+	brPageData	*pdp = page->pdata;
+	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
+	float minlon,maxlon,loninc,minlat,maxlat,latinc;
+	float mnlon,mxlon;
+	float lmin,rmax,bmin,tmax;
+	NhlBoolean is_grib;
+	NhlMapLimitMode lmode = NhlMAXIMALAREA;
+	char buf0[32],buf1[32],buf2[32],buf3[32],buf4[32];
+	NhlString values[5];
+	NrmQuark qargs[5];
+	NhlString var_string;
+	float xt[2],yt[2];
+	int slon_ix,flon_ix,slat_ix,flat_ix;
+	int wk_id;
+	NhlBoolean work_created;
+
+	GetDataLimits2D
+		(vdata,&minlat,&maxlat,&latinc,
+		 &minlon,&maxlon,&loninc,&is_grib);
+
+	if (minlon < -360) {
+		mnlon = -540; mxlon = -180;
+	}
+	else if (minlon < -180) {
+		mnlon = -360; mxlon = 0;
+	}
+	else if (minlon < 0) {
+		mnlon = -180; mxlon = 180;
+	}
+	else if (maxlon < 360) {
+		mnlon =  0; mxlon = 360;
+	}
+	else {
+		mnlon = 180; mxlon = 540;
+	}
+/*
+ * Normally shouldn't be setting HLU values without going through NCL, but
+ * these values are reset at every draw by the plot objects anyway, so the
+ * state is not affected. These need to be set correctly for the current
+ * data, in order for NDCToData calls to work properly.
+ */
+
+	NhlVASetValues(map_id,
+		       NhlNmpDataMinLonF,mnlon,
+		       NhlNmpDataMaxLonF,mxlon,
+		       NULL);
+
+/*
+ * Note: full_region is used to expand the data region to the maximal
+ * area that contains data. It is not necessarily the maximal possible
+ * map area.
+ */	
+	if (full_region) {
+		if (is_grib) {
+			lmode = NhlCORNERS;
+			slon_ix = flon_ix = slat_ix = flat_ix = 0;
+		}
+		else if ((int) (maxlon - minlon + loninc + 0.5) >= 360 &&
+		    (int)(maxlat - minlat + 2 * latinc + 0.5) >= 180)
+			lmode = NhlMAXIMALAREA;
+		else
+			lmode = NhlLATLON;
+
+		lmin = minlon;
+		rmax = maxlon;
+		bmin = minlat;
+		tmax = maxlat;
+		xt[0] = xt[1] = yt[0] = yt[1] = 0.0;
+	}
+	else {
+		float xp[2],yp[2],vx,vy,vw,vh;
+
+		NhlVAGetValues(map_id,
+			       NhlNmpLeftMapPosF,&xp[0],
+			       NhlNmpRightMapPosF,&xp[1],
+			       NhlNmpBottomMapPosF,&yp[0],
+			       NhlNmpTopMapPosF,&yp[1],
+			       NULL);
+		vx = xp[0];
+		vy = yp[1];
+		vw = xp[1] - xp[0];
+		vh = yp[1] - yp[0];
+	
+		xp[0] = MIN(vx+vw,MAX(vx,x));
+		xp[1] = MAX(vx,MIN(x+width,vx+vw));
+		yp[0] = MIN(vy,MAX(y-height,vy-vh));
+		yp[1] = MAX(vy-vh,MIN(y,vy));
+
+#if DEBUG_PLOTPAGE
+		fprintf(stderr,"clipped region: %f %f %f %f\n",
+			xp[0],xp[1],yp[0],yp[1]);
+#endif
+
+		if (xp[1]-xp[0] < 0.005 ||
+		    yp[1]-yp[0] < 0.005)
+			return;
+
+
+		if (is_grib) {
+			AnalyzeGribMapLocation(map_id,vdata,
+					       xp,yp,
+					       &slon_ix,&flon_ix,
+					       &slat_ix,&flat_ix);
+#if DEBUG_PLOTPAGE
+			fprintf(stderr,"grib adj: %f %f %f %f\n",
+				xp[0],xp[1],yp[0],yp[1]);
+#endif
+		}
+		else {
+			int cycleval;
+
+			if ((int) (maxlon - minlon + loninc + 0.5) < 360) {
+				cycleval = -9999;
+			}
+			else {
+				cycleval = minlon;
+			}
+			AnalyzeMapLocation(map_id,cycleval,
+					   xp,yp,xt,yt);
+#if DEBUG_PLOTPAGE
+			fprintf(stderr,"data coords of region: %f %f %f %f\n",
+				xt[0],xt[1],yt[0],yt[1]);
+#endif
+		}
+		lmode = NhlNDC;
+		lmin = xp[0];
+		rmax = xp[1];
+		bmin = yp[0];
+		tmax = yp[1];
+	}
+	values[0] = buf0;
+	values[1] = buf1;
+	values[2] = buf2;
+	values[3] = buf3;
+	values[4] = buf4;
+
+	if (is_grib)
+		var_string = SetGribDataRegionString
+			(rec,0,slon_ix,flon_ix,slat_ix,flat_ix,full_region);
+	else {
+		var_string = SetVarDataRegionString
+			(rec,0,xt[0],xt[1],yt[0],yt[1],full_region);
+
+/*
+ * Set the "NgAdjustLongitude.." functions
+ */
+		sprintf(values[0],"%f",xt[0]);
+		sprintf(values[1],"%f",xt[1]);
+		qargs[0] = NrmStringToQuark("start_lon");
+		qargs[1] = NrmStringToQuark("end_lon");
+		SetPlotAppFuncs(rec->data_profile,NrmNULLQUARK,
+				"NgAdjustLongitude",
+				2,qargs,values,False,False);
+	}
+/*
+ * Set the "NgSetMapLimits" function
+ */
+	sprintf(values[0],"%d",lmode);
+	sprintf(values[1],"%f",lmin);
+	sprintf(values[2],"%f",rmax);
+	sprintf(values[3],"%f",bmin);
+	sprintf(values[4],"%f",tmax);
+	qargs[0] = NrmStringToQuark("limit_mode");
+	qargs[1] = NrmStringToQuark("left_min");
+	qargs[2] = NrmStringToQuark("right_max");
+	qargs[3] = NrmStringToQuark("bottom_min");
+	qargs[4] = NrmStringToQuark("top_max");
+	SetPlotAppFuncs(rec->data_profile,NrmNULLQUARK,
+			"NgSetMapLimits",5,qargs,values,False,False);
+
+	if (! rec->data_var_grid->var_string_count) {
+		rec->data_var_grid->var_strings = 
+			NhlMalloc(1 * sizeof(NhlString));
+		if (! rec->data_var_grid->var_strings) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return;
+		}
+		rec->data_var_grid->var_string_count = 1;
+	}
+	rec->data_var_grid->var_strings[0] = var_string;
+
+	NgUpdateDataVarGrid(rec->data_var_grid,page->qvar,
+			    rec->data_var_grid->plotdata_count,
+			    rec->data_var_grid->plotdata);
+	
+        wk_id = GetWorkstation(page,&work_created);
+	CreateUpdate(page,wk_id,True);
+
+/*
+ * if the map limits were set using NDC then it's necessary to adjust
+ * the map_limits function because NDC values are reset after each
+ * setvalues.
+ */
+	if (lmode == NhlNDC) {
+		SetPlotAppFuncs(rec->data_profile,NrmNULLQUARK,
+				"NgSetMapLimits",0,NULL,NULL,True,False);
+	}
+
+}
+
+
+static void
+XRegionCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	int	go_id = udata.lngval; 
+	NgGO go = (NgGO) _NhlGetLayer(go_id);
+	int page_id;
+	NgXRegionData rdata = (NgXRegionData) cbdata.ptrval;
+	NhlString name;
+	NrmQuark qplot;
+	NhlPointer pdata;
+	float x = 0.0,y = 0.0,width = 0.0,height = 0.0;
+	float vx,vy,vw,vh;
+	float xt[2],yt[2],xp[2],yp[2];
+	int status;
+	float oor;
+	brPage *page;
+	brPlotPageRec	*rec;
+	char *var_string;
+	int wk_id;
+	NhlBoolean work_created;
+	NgPlotData plotdata;
+	NgVarData vdata;
+	NhlBoolean ismap;
+
+	if (! (go && rdata))
+		return;
+
+	/*
+	 * this callback is not interested in single point selections
+	 */
+		
+#if DEBUG_PLOTPAGE
+	if (rdata->full_region)
+		fprintf(stderr,"full region\n");
+#endif
+	if (rdata->single_point && ! rdata->full_region)
+		return;
+		
+	name = NgNclGetHLURef(go->go.nclstate,rdata->view_id);
+	qplot = NgGraphicArrayofGraphic(NrmStringToQuark(name));
+	page_id = NgGetPageId(go_id,qplot,NrmNULLQUARK);
+	pdata = NgPageData(go_id,page_id);
+	
+	if (! pdata) {
+		page_id = NgOpenPage(go_id,_brPLOTVAR,&qplot,1,NULL);
+	}
+	if (page_id == NgNoPage)
+		return;
+
+	page = _NgGetPageRef(go_id,page_id);
+	rec = (brPlotPageRec *)page->pdata->type_rec;
+
+	/* this will need elaboration */
+	plotdata = &rec->data_profile->plotdata[0];
+	vdata = plotdata->vdata;
+
+	if (! rdata->full_region) {
+		NgXCoordToNDC(rdata->xwkid,&rdata->xbbox,&x,&y,&width,&height);
+		if (width <= 0.0 || height <= 0.0)
+			return;
+	}
+		
+	ismap = NhlIsClass(rdata->view_id,NhlmapPlotClass);
+	if (ismap) {
+		SetMapRegion(page,vdata,rdata->view_id,rdata->full_region,
+			     x,y,width,height);
+		return;
+	}
+	else {
+		xt[0] = xt[1] = yt[0] = yt[1] = 0.0;
+		if (! rdata->full_region) {
+
+			NhlVAGetValues(rdata->view_id,
+				       NhlNvpXF,&vx,
+				       NhlNvpYF,&vy,
+				       NhlNvpHeightF,&vh,
+				       NhlNvpWidthF,&vw,
+				       NULL);
+
+			xp[0] = MIN(vx+vw,MAX(vx,x));
+			xp[1] = MAX(vx,MIN(x+width,vx+vw));
+			yp[0] = MIN(vy,MAX(y-height,vy-vh));
+			yp[1] = MAX(vy-vh,MIN(y,vy));
+
+#if DEBUG_PLOTPAGE
+			fprintf(stderr,"clipped region: %f %f %f %f\n",
+				xp[0],xp[1],yp[0],yp[1]);
+#endif
+			if (xp[1]-xp[0] < 0.005 ||
+			    yp[1]-yp[0] < 0.005)
+				return;
+
+			NhlNDCToData(rdata->view_id,
+				     xp,yp,2,xt,yt,NULL,NULL,&status,&oor);
+			if (status)
+				return;
+
+#if DEBUG_PLOTPAGE
+			fprintf(stderr,"data coords of region: %f %f %f %f\n",
+				xt[0],xt[1],yt[0],yt[1]);
+#endif
+		}
+		var_string = SetVarDataRegionString
+			(rec,0,xt[0],xt[1],yt[0],yt[1],rdata->full_region);
+	}
+	if (! rec->data_var_grid->var_string_count) {
+		rec->data_var_grid->var_strings = 
+			NhlMalloc(1 * sizeof(NhlString));
+		if (! rec->data_var_grid->var_strings) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return;
+		}
+		rec->data_var_grid->var_string_count = 1;
+	}
+	rec->data_var_grid->var_strings[0] = var_string;
+
+	NgUpdateDataVarGrid(rec->data_var_grid,page->qvar,
+			    rec->data_var_grid->plotdata_count,
+			    rec->data_var_grid->plotdata);
+	
+        wk_id = GetWorkstation(page,&work_created);
+	CreateUpdate(page,wk_id,True);
+
+        return;
 }
 
 static void CreateUpdateCB 
@@ -2309,15 +3454,6 @@ static NhlPointer PublicPlotPageData (
 #endif
         
         return (NhlPointer) pub;
-}
-static void SetValuesCB 
-(
-	Widget		cbw,
-	XtPointer	udata,
-	XtPointer	cb_data
-)
-{
-	return;
 }
 static void
 FreePlotSaveState
@@ -2677,27 +3813,6 @@ static NhlErrorTypes ResetPlotPage
 		}
 
 		SetInputDataFlag(rec);
-#if 0
-		if (rec->state == _plotCREATED) {
-			NhlArgVal       sel,udata;
-
-			NhlINITVAR(sel);
-			NhlINITVAR(udata);
-			udata.ptrval = &rec->setval_info;
-
-			for (i = 0; i < rec->data_profile->n_dataitems; i++) {
-				NgDataItem ditem = 
-					rec->data_profile->ditems[i];
-				if (! ditem->hlu_id)
-					continue;
-				sel.lngval = ditem->resq;
-				ditem->svcb = NgCBWPAdd
-				(page->go->go.appmgr,CopySVCB,FreeSVCB,
-				 _NhlGetLayer(ditem->hlu_id),_NhlCBobjValueSet,
-				 sel,DProfSetValCB,udata);
-			}
-		}
-#endif			
 	}
 
         
@@ -3129,17 +4244,6 @@ _NgGetPlotPage
                         rec->state = _plotPREVIEW;
                 else
                         rec->state = _plotCREATED;
-#if 0
-                NhlINITVAR(sel);
-                NhlINITVAR(user_data);
-                sel.lngval = 0;
-		rec->setval_info.pid = page->id;
-		rec->setval_info.goid = page->go->base.id;
-                user_data.ptrval = &rec->setval_info;
-                rec->setval_cb = _NhlAddObjCallback
-                        (_NhlGetLayer(hlu_id),_NhlCBobjValueSet,
-                         sel,SetValCB,user_data);
-#endif
 	}
 	if (save_state) {
 		RestorePlotState(rec,save_state);

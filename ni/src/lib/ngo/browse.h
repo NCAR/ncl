@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.h,v 1.15 2000-03-21 02:35:32 dbrown Exp $
+ *      $Id: browse.h,v 1.16 2000-05-16 01:59:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 
 #include <ncarg/ngo/go.h>
 #include <ncarg/ngo/ncl.h>
+#include <ncarg/ngo/dataprofile.h>
 
 extern NhlClass NgbrowseClass;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.h,v 1.12 2000-03-21 02:35:35 dbrown Exp $
+ *      $Id: dataprofile.h,v 1.13 2000-05-16 01:59:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -79,6 +79,8 @@ typedef struct _NgVarDataRec
         long			*stride;
 	long			*size;
 	long			*order_ix;
+	double			*dstart;
+	double			*dfinish;
         int			data_ix;     /* not sure we need this */
 	int			goid;	     /* required for expressions */
 	NhlString		expr_val;    /* sent verbatim to ncl */
@@ -146,7 +148,6 @@ typedef struct _NgArgInfoRec {
 	NrmQuark		qargdatatype;
 	NrmQuark		qargname;
 	NgValType		valtype;
-	NrmQuark		qvalsym;
 	int			argcount;
 	struct _NgArgInfoRec  	*args;
 } NgArgInfoRec, *NgArgInfo;
@@ -353,6 +354,12 @@ NhlBoolean NgSetVarData
 	long			*stride,
 	NgVarDataSetState	set_state
 );
+
+extern
+void NgUpdateVarDataLimits
+(
+	NgVarData	vdata
+	);
 
 extern
 int NgVarDataRank

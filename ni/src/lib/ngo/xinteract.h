@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.h,v 1.5 1999-10-18 22:12:37 dbrown Exp $
+ *      $Id: xinteract.h,v 1.6 2000-05-16 01:59:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -64,6 +64,15 @@ typedef struct _NgViewObjRec {
 	NhlBoolean		visible;
 } NgViewObjRec, *NgViewObj;
 
+typedef struct _NgXRegionDataRec {
+	int		xwkid;
+	int		view_id;
+	NgXBBox		xbbox;
+	NhlBoolean	single_point;
+	NhlBoolean	full_region;
+} NgXRegionDataRec, *NgXRegionData;
+
+#define	NgCBXRegionDef	"CBXRegionDef"	/* cbdata.ptrval is NgXRegionData */
 
 extern void NgNDCToXCoord(
 	int		xwkid,

@@ -1,5 +1,5 @@
 /*
- *      $Id: Grid.c,v 1.9 1999-12-07 19:08:34 dbrown Exp $
+ *      $Id: Grid.c,v 1.10 2000-05-16 01:59:09 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -7342,7 +7342,7 @@ Cardinal *nparam;
 	if (*nparam != 1)
 		return;
 #if 0
-	printf("in Select\n");
+	fprintf(stderr"in Select\n");
 #endif
 	if (XmLIsGrid(w))
 		g = (XmLGridWidget)w;
@@ -7420,7 +7420,7 @@ Cardinal *nparam;
 		   selection after an invalid edit string in datasourcegrid */
 		   
 		if (g->grid.inMode != InNormal) {
-			printf("not InNormal\n");
+			fprintf(stderr,"not InNormal\n");
 			return;
 			}
 #endif
@@ -7531,7 +7531,7 @@ Cardinal *nparam;
 			cbs.rowType = RowPosToType(g, row);
 			cbs.row = RowPosToTypePos(g, cbs.rowType, row);
 #if 0
-			printf("calling selectCallbacks\n");
+			fprintf(stderr,"calling selectCallbacks\n");
 #endif
 			XtCallCallbackList((Widget)g, g->grid.selectCallback,
 				(XtPointer)&cbs);

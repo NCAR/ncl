@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.30 2000-03-29 04:01:28 dbrown Exp $
+ *      $Id: xwk.c,v 1.31 2000-05-16 01:59:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -57,6 +57,11 @@ static NhlResource resources[] = {
 	 sizeof(NhlBoolean),Oset(raise_on_draw),NhlTImmediate,
 	 _NhlUSET((NhlPointer)False),_NhlRES_GONLY,NULL}
 };
+
+static _NhlRawObjCB callbacks[] = {
+	{NgCBXRegionDef,Oset(xregion_cb),8,NULL,NULL,NULL}
+};
+
 #undef	Oset
 
 static NhlErrorTypes XWkClassInitialize(
@@ -95,8 +100,8 @@ NgXWkClassRec NgxWkClassRec = {
 /* layer_resources	*/	resources,
 /* num_resources	*/	NhlNumber(resources),
 /* all_resources	*/	NULL,
-/* callbacks		*/	NULL,
-/* num_callbacks	*/	0,
+/* callbacks		*/	callbacks,
+/* num_callbacks	*/	NhlNumber(callbacks),
 /* class_callbacks	*/	NULL,
 /* num_class_callbacks	*/	0,
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.23 2000-03-21 02:35:49 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.24 2000-05-16 01:59:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -380,7 +380,8 @@ ValToDouble
                     dout = (double)*(long*)valp;
                     return dout;
             default:
-                    printf("type not supported for coordinate variable\n");
+                    NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+		             "type not supported for coordinate variable\n"));
         }
         return 0.0;
 }
@@ -1573,17 +1574,3 @@ void NgDestroyShapeInfoGrid
         
         return;
 }
-
-#if 0
-static void EditCompleteAction
-(
-	Widget		w,
-	XEvent		*xev,
-	String		*params,
-	Cardinal	*num_params
-)
-{
-	printf("in edit complete action\n");
-}
-
-#endif

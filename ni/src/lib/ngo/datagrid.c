@@ -1,5 +1,5 @@
 /*
- *      $Id: datagrid.c,v 1.11 2000-03-21 02:35:34 dbrown Exp $
+ *      $Id: datagrid.c,v 1.12 2000-05-16 01:59:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -146,7 +146,7 @@ static NclExtValueRec *ReadMoreData
                              dgrp->istart,dgrp->ifinish,dgrp->stride);
                     break;
             default:
-                    fprintf(stderr,"invalid var type\n");
+                    NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid var type\n"));
         }
 
         if (dgrp->row_dim > -1)
@@ -247,7 +247,8 @@ static void FillVisibleGrid
                         val = ReadMoreData(dgrp,start_col,start_row+i,
                                            nrows - i,&last_row_read);
                         if (!val) {
-                                fprintf(stderr,"error reading var\n");
+                                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					   "error reading var"));
                                 return;
                         }
                         vix = 0;
@@ -298,9 +299,9 @@ static void FillVisibleGrid
                                              XmCONTENT,i,True,&clipped);
                         XmLGridRowColumnToXY(dgp->grid,XmCONTENT,start_row,
                                              XmCONTENT,i,False,&unclipped);
-                        printf("clipped %d unclipped %d\n",
+                        fprintf(stderr,"clipped %d unclipped %d\n",
                                clipped.width,unclipped.width);
-                        printf("column %d is visible\n",i);
+                        fprintf(stderr,"column %d is visible\n",i);
                         dgp->sub_width = clipped.width;
                         width =  clipped.width < unclipped.width ?
                                 clipped.x : clipped.x + clipped.width;
@@ -512,10 +513,12 @@ static void SetData
                                      &dgrp->stride[dgrp->col_dim]);
                             break;
                     default:
-                            fprintf(stderr,"invalid var type\n");
+			    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				       "invalid var type"));
                 }
                 if (!val) {
-                        fprintf(stderr,"error reading var\n");
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				   "error reading var"));
                         return;
                 }
                 for (i = 0; i < cols; i++) {
@@ -599,10 +602,12 @@ static void SetData
                                              &dgrp->stride[i]);
                                     break;
                             default:
-                                    fprintf(stderr,"invalid var type\n");
+				    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					       "invalid var type"));
                         }
                         if (!val) {
-                                fprintf(stderr,"error reading var\n");
+                                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					   "error reading var"));
                                 return;
                         }
 			vix = 0;

@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.c,v 1.16 2000-03-29 04:01:19 dbrown Exp $
+ *      $Id: datavargrid.c,v 1.17 2000-05-16 01:59:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -356,9 +356,13 @@ static void UpdateDataVarShape
 	if (page_id == NgNoPage)
 		return;
 
+/*
+ * the message is the index of the var that has been updated.
+ */
 	NgPostPageMessage(dvp->go->base.id,page_id,_NgNOMESSAGE,
 			  _brPLOTVAR,NrmNULLQUARK,dvp->qname,
-			  _NgDATAVARUPDATE,(NhlPointer)True,True,NULL,True);
+			  _NgDATAVARUPDATE,(NhlPointer)dvp->data_ix,
+			  True,NULL,True);
 
 	NgUpdateShaperCoords(dvp->shaper);
 
@@ -792,13 +796,244 @@ PossibleNclSymbol
 	return True;
 }
 
+static double
+ValToDouble
+(
+        NclExtValueRec	*val,
+        int		index
+        )
+{
+        char *valp = ((char *) val->value) + index * val->elem_size;
+        double dout;
+
+        switch (val->type) {
+            case NCLAPI_float:
+                    dout = (double)*(float*)valp;
+                    return dout;
+            case NCLAPI_double:
+                    dout = *(double*)valp;
+                    return dout;
+            case NCLAPI_byte:
+            case NCLAPI_char:
+                    dout = (double)*(char*)valp;
+                    return dout;
+            case NCLAPI_int:
+                    dout = (double)*(int*)valp;
+                    return dout;
+            case NCLAPI_short:
+                    dout = (double)*(short*)valp;
+                    return dout;
+            case NCLAPI_long:
+                    dout = (double)*(long*)valp;
+                    return dout;
+            default:
+		    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			       "type not supported for coordinate variable"));
+        }
+        return 0.0;
+}
+
+/*
+ * get the shape for a dimension specified in coordinate value format.
+ * assumes that reasonable default index values have already been specified.
+ */
 static char *
-GetShape(char *shape,
-	 NclApiDataList *dl,
-	 int *ndims,
-	 long **start,
-	 long **finish,
-	 long **stride)
+GetCoordDimShape
+(
+	char *cdim,
+	NrmQuark qfile,
+	NclApiDataList *dl,
+	int dim_ix,
+	long *start,
+	long *finish,
+	long *stride
+)
+{
+	float s,f;
+	long str;
+	char *lcp,*cp = cdim;
+	int i,dimsize;
+	NhlBoolean done = False;
+	NhlBoolean has_start = False, has_finish = False, has_stride = False;
+	NclExtValueRec *val;
+	NrmQuark qcoord;
+	double vfirst,vlast;
+	NhlBoolean ascending,sub_ascending;
+
+	if (*cp != '{')
+		return NULL;
+	cp++;
+	i = 0;
+	while (! done) {
+		
+		EATWHITESPACE(cp);
+
+		switch (*cp) {
+		case ':':
+			if (i == 2)
+				goto err_ret;
+			i++;
+			cp++;
+			continue;
+		case '}':
+			if (i == 0)
+				goto err_ret;
+			done = True;
+			cp++;
+			continue;
+		}
+
+		/*
+		 * since we've already looked for the other possible
+		 * characters since the last whitespace, if we don't
+		 * get a number then it's got to be a syntax error.
+		 */
+		switch (i) {
+		case 0:
+			lcp = cp;
+			s = strtod(lcp,&cp);
+			if (cp > lcp)
+				has_start = True;
+			else
+				goto err_ret;
+			break;
+		case 1:
+			lcp = cp;
+			f = strtod(lcp,&cp);
+			if (cp > lcp)
+				has_finish = True;
+			else
+				goto err_ret;
+			break;
+		case 2:
+			lcp = cp;
+			str = strtol(lcp,&cp,10);
+			if (cp > lcp)
+				has_stride = True;
+			else
+				goto err_ret;
+			break;
+		}
+	}
+	if (has_stride)
+		*stride = str;
+
+	if (! (has_start || has_finish))
+		return cp;
+
+	qcoord = dl->u.var->coordnames[dim_ix];
+	if (qcoord <= NrmNULLQUARK)
+		return NULL;
+	if (qfile)
+		val = NclReadFileVarCoord
+			(qfile,dl->u.var->name,qcoord,NULL,NULL,NULL);
+	else
+		val = NclReadVarCoord
+			(dl->u.var->name,qcoord,NULL,NULL,NULL);
+	dimsize = dl->u.var->dim_info[dim_ix].dim_size;
+	vfirst = ValToDouble(val,0);
+	vlast = ValToDouble(val,dimsize-1);
+
+	ascending = vlast > vfirst;
+	sub_ascending = True;
+	if (has_start && has_finish)
+		sub_ascending = f > s;
+
+	if (ascending) {
+		if (sub_ascending) {
+			if (has_start) {
+				for (i = 0; i < dimsize; i++) {
+					if (ValToDouble(val,i) > s) {
+						*start = MAX(0,i-1);
+						break;
+					}
+				}
+			}
+			if (has_finish) {
+				for (i = dimsize-1; i>-1; i--) {
+					if (ValToDouble(val,i) < f) {
+						*finish = MIN(dimsize-1,i+1);
+						break;
+					}
+				}
+			}
+		}
+		else {
+			if (has_start) {
+				for (i = dimsize-1; i>-1; i--) {
+					if (ValToDouble(val,i) < s) {
+						*start = MIN(dimsize-1,i+1);
+						break;
+					}
+				}
+			}
+			if (has_finish) {
+				for (i = 0; i < dimsize; i++) {
+					if (ValToDouble(val,i) > f) {
+						*finish = MAX(0,i-1);
+						break;
+					}
+				}
+			}
+		}
+	}		
+	else {
+		if (sub_ascending) {
+			if (has_start) {
+				for (i = dimsize-1; i>-1; i--) {
+					if (ValToDouble(val,i) > s) {
+						*start = MIN(dimsize-1,i+1);
+						break;
+					}
+				}
+			}
+			if (has_finish) {
+				for (i = 0; i < dimsize; i++) {
+					if (ValToDouble(val,i) < f) {
+						*finish = MAX(0,i-1);
+						break;
+					}
+				}
+			}
+		}
+		else {
+			if (has_start) {
+				for (i = 0; i < dimsize; i++) {
+					if (ValToDouble(val,i) < s) {
+						*start = MAX(0,i-1);
+						break;
+					}
+				}
+			}
+			if (has_finish) {
+				for (i = dimsize-1; i>-1; i--) {
+					if (ValToDouble(val,i) > f) {
+						*finish = MIN(dimsize-1,i+1);
+						break;
+					}
+				}
+			}
+		}
+	}
+	NclFreeExtValue(val);
+
+	return cp;
+
+ err_ret:
+	return NULL;
+}
+
+static char *
+GetShape
+(
+	char *shape,
+	NrmQuark qfile,
+	NclApiDataList *dl,
+	int *ndims,
+	long **start,
+	long **finish,
+	long **stride
+)
 {
 	char *cp = shape;
 	char *tcp,*end;
@@ -836,6 +1071,28 @@ GetShape(char *shape,
 		(*start)[i] = 0;
 		(*finish)[i] = dl->u.var->dim_info[i].dim_size - 1;
 		(*stride)[i] = 1;
+
+		EATWHITESPACE(cp);
+
+		if (*cp == '{') {
+			cp = GetCoordDimShape
+				(cp,qfile,dl,i,
+				 &(*start)[i],&(*finish)[i],&(*stride)[i]);
+			if (! cp)
+				goto err_ret;
+			EATWHITESPACE(cp);
+			switch (*cp) {
+			case ',':
+				cp++;
+				continue;
+			case ')':
+				continue;
+			default:
+				/* invalid syntax */
+				goto err_ret;
+			}
+			continue;
+		}
 
 		for (j = 0; j < 3; j++) {
 			long tmp = strtol(cp,&tcp,10);
@@ -1126,7 +1383,7 @@ GetVar
 	*dl = GetInfo(*qfile,*qvar,*qcoord);
 
 	if (cp && *cp)
-		cp = GetShape(cp,*dl,ndims,start,finish,stride);
+		cp = GetShape(cp,*qfile,*dl,ndims,start,finish,stride);
 	
 	if (cp)
 		EATWHITESPACE(cp);
@@ -1457,7 +1714,7 @@ EditCB
 	int data_ix;
 
 #if DEBUG_DATA_VAR_GRID
-	printf("entered DataVarGrid EditCB\n");
+	fprintf(stderr,"entered DataVarGrid EditCB\n");
 #endif
 
 	colptr = XmLGridGetColumn(pub->grid,XmCONTENT,cb->column);
@@ -1751,8 +2008,10 @@ NhlErrorTypes NgUpdateDataVarGrid
 		CWidth = cw;
                 first = False;
         }
-	CopyPlotData(&data_var_grid->plotdata,&data_var_grid->plotdata_count,
+	CopyPlotData(&data_var_grid->plotdata,
+		     &data_var_grid->plotdata_count,
 		     plotdata,count);
+
         dvp->qname = qname;
         XtVaSetValues(data_var_grid->grid,
 		      XmNselectionPolicy,XmSELECT_NONE,
@@ -1820,6 +2079,16 @@ NhlErrorTypes NgUpdateDataVarGrid
 			      NULL);
 	} 
 
+	for (i = 0; i < data_var_grid->var_string_count; i++) {
+		NhlString vstring = data_var_grid->var_strings[i];
+		if (vstring) {
+			XmLGridEditBegin(data_var_grid->grid,False,i,1);
+			XmTextSetString(dvp->text,vstring);
+			XmLGridEditComplete(data_var_grid->grid);
+			NhlFree(vstring);
+			data_var_grid->var_strings[i] = NULL;
+		}
+	}
         return NhlNOERROR;
 }
 static void
@@ -1952,7 +2221,7 @@ static void CellDropCB
                       NULL);
 	if (editable) {
 		dvp->text_dropped = True;
-		XmLGridEditBegin(pub->grid,True,cb->row,True);
+		XmLGridEditBegin(pub->grid,True,cb->row,1);
 	}
 
 	dvp->selected_row = cb->row;
@@ -1989,6 +2258,8 @@ NgDataVarGrid *NgCreateDataVarGrid
         data_var_grid = &dvp->public;
 	data_var_grid->plotdata = NULL;
 	data_var_grid->plotdata_count = 0;
+	data_var_grid->var_strings = NULL;
+	data_var_grid->var_string_count = 0;
 	CopyPlotData(&data_var_grid->plotdata,&data_var_grid->plotdata_count,
 		     plotdata,count);
 	dvp->go = go;
@@ -2049,6 +2320,7 @@ void NgDeactivateDataVarGrid
         Boolean	editable;
 	XmLGridColumn colptr;
 	XmLGridRow rowptr;
+	int i;
         
         dvp = (NgDataVarGridRec *) pub;
 
@@ -2070,7 +2342,21 @@ void NgDeactivateDataVarGrid
 		NhlFree(dvp->finish);
 	if (dvp->stride) 
 		NhlFree(dvp->stride);
-	dvp->start = dvp->finish = dvp->stride;
+	dvp->start = dvp->finish = dvp->stride = NULL;
+
+/*
+ * Note that var_strings is an array of pointers. Here we free and NULL the
+ * elements but leave the array itself.
+ */
+	if (data_var_grid->var_string_count) {
+		for (i = 0; i < data_var_grid->var_string_count; i++) {
+			NhlString vstring = data_var_grid->var_strings[i];
+			if (vstring) {
+				NhlFree(vstring);
+				data_var_grid->var_strings[i] = NULL;
+			}
+		}
+	}
 
 	if (dvp->selected_row <= -1) 
 		return;
@@ -2114,6 +2400,7 @@ void NgDestroyDataVarGrid
         )
 {
         NgDataVarGridRec *dvp;
+	int i;
         
         dvp = (NgDataVarGridRec *) data_var_grid;
         if (!dvp) return;
@@ -2122,6 +2409,14 @@ void NgDestroyDataVarGrid
 		XmStringFree(dvp->edit_save_string);
 	CopyPlotData(&data_var_grid->plotdata,&data_var_grid->plotdata_count,
 		     NULL,0);
+	if (data_var_grid->var_string_count) {
+		for (i = 0; i < data_var_grid->var_string_count; i++) {
+			NhlString vstring = data_var_grid->var_strings[i];
+			if (vstring)
+				NhlFree(vstring);
+		}
+		NhlFree(data_var_grid->var_strings);
+	}
         NhlFree(dvp);
         
         return;

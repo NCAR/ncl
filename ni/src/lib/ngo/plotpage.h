@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.h,v 1.3 2000-03-21 02:35:46 dbrown Exp $
+ *      $Id: plotpage.h,v 1.4 2000-05-16 01:59:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,7 @@
 
 #include <ncarg/ngo/go.h>
 #include <ncarg/ngo/ncl.h>
-#include <ncarg/ngo/dataprofile.h>
+#include <ncarg/ngo/browse.h>
 
 typedef enum __plotState
 {

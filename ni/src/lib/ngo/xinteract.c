@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.c,v 1.14 2000-03-29 04:01:27 dbrown Exp $
+ *      $Id: xinteract.c,v 1.15 2000-05-16 01:59:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -487,10 +487,11 @@ static void Manipulate
 	vobj = hdata ? (NgViewObj) hdata->gdata : NULL;
 
 	XGRABSERVER(dpy);
-	if(XGrabPointer(dpy,win,False,
-			(Button2MotionMask|ButtonPressMask|ButtonReleaseMask),
-			GrabModeAsync,GrabModeAsync,win,None,
-			CurrentTime) != GrabSuccess){
+	if(XGRABPOINTER \
+	   (dpy,win,False, \
+	     (Button2MotionMask|ButtonPressMask|ButtonReleaseMask), \
+	     GrabModeAsync,GrabModeAsync,win,None, \
+	     CurrentTime) != GrabSuccess){
 
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 						"Unable to grab pointer");
@@ -652,7 +653,7 @@ static void Manipulate
 
 	XUNGRABSERVER(dpy);
 	XUndefineCursor(dpy,win);
-	XUngrabPointer(dpy, CurrentTime);
+	XUNGRABPOINTER(dpy, CurrentTime);
 
 
 	if (rubber.type != MOVE) {
@@ -817,7 +818,51 @@ ManipulateEH
 	return;
 }
 
+static void DoInteraction
+(
+	NgXWk		xwk,
+	int		view_id,
+	NgXBBox         *bbox,
+	NhlBoolean	full_region
+)
+{
+	NhlLayer l = _NhlGetLayer(view_id);
+	NgViewObj vobj = NULL;
+	NgHluData hdata;
+	NgXRegionDataRec rdata;
+	NhlArgVal cbdata,sel;
 
+	if (! l)
+		return;
+
+	hdata = (NgHluData) l->base.gui_data2;
+	vobj = hdata ? (NgViewObj) hdata->gdata : NULL;
+
+	if (! vobj)
+		return;
+
+#if DEBUG_XINTERACT
+	fprintf(stderr,"in DoInteraction\n");
+#endif
+
+	rdata.xwkid = xwk->base.id;
+	rdata.view_id = view_id;
+	memcpy(&rdata.xbbox,bbox,sizeof(NgXBBox));
+	rdata.single_point = 
+		((abs(bbox->p0.x - bbox->p1.x) <= FUZZFACTOR &&
+		  abs(bbox->p0.y - bbox->p1.y) <= FUZZFACTOR)) ?
+		True : False;
+	rdata.full_region = full_region;
+
+	NhlINITVAR(sel);
+	NhlINITVAR(cbdata);
+	sel.lngval = view_id;
+	cbdata.ptrval = &rdata;
+
+	_NhlCallObjCallbacks((NhlLayer)xwk,NgCBXRegionDef,
+			     sel,cbdata);
+	return;
+}
 static void Select
 (
 	NgXWk		xwk,
@@ -836,10 +881,10 @@ static void Select
 
 	if (do_rubber) {
 		XGRABSERVER(dpy);
-		if(XGrabPointer
-		   (dpy,XtWindow(xwk->xwk.graphics),False,
-		    (ButtonReleaseMask|Button1MotionMask),GrabModeAsync,
-		    GrabModeAsync,None,None,CurrentTime) != GrabSuccess){
+		if(XGRABPOINTER \
+		   (dpy,XtWindow(xwk->xwk.graphics),False, \
+		    (ButtonReleaseMask|Button1MotionMask),GrabModeAsync, \
+		    GrabModeAsync,None,None,CurrentTime) != GrabSuccess) {
 
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "Unable to grab pointer");
@@ -849,7 +894,7 @@ static void Select
 		RubberRect(&rubber,dpy,
 			   XtWindow(xwk->xwk.graphics),xwk->xwk.xor_gc);
 
-		XUngrabPointer(dpy, CurrentTime);
+		XUNGRABPOINTER(dpy, CurrentTime);
 		XUNGRABSERVER(dpy);
 	}
 	/*
@@ -866,11 +911,8 @@ static void Select
 #if DEBUG_XINTERACT
 	fprintf(stderr,"view count %d \n",view_count);
 #endif
-
-	XUngrabPointer(dpy, CurrentTime);
-	XUNGRABSERVER(dpy);
-
 	if (xwk->xwk.selected_view_id) {
+		NhlBoolean full_region = (event->button == Button3);
 		for (i = 0; i < view_count; i++) {
 			if (xwk->xwk.views[i] == xwk->xwk.selected_view_id) {
 				xwk->xwk.selected_view_ix = i;
@@ -879,6 +921,8 @@ static void Select
 				xwk->xwk.lastp.y = event->y;
 				XorDrawViewPort
 					(xwk,xwk->xwk.selected_view_id,False);
+				DoInteraction(xwk,xwk->xwk.selected_view_id,
+					      &rubber.bbox,full_region);
 				return;
 			}
 		}
@@ -952,9 +996,11 @@ _NgSelectionEH
 		Select(xwk,event,False,True);
 		Manipulate(xwk,event,_NhlGetLayer(xwk->xwk.selected_view_id));
 	}
+	if (event->button == Button3)
+		Select(xwk,event,False,False);
 
 	/*
-	 * This event handler is only interested in button 1
+	 * The rest of this event handler is only interested in button 1
 	 */
 	if(event->button != Button1){
 		return;

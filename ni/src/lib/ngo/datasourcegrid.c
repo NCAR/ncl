@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegrid.c,v 1.14 2000-03-21 02:35:37 dbrown Exp $
+ *      $Id: datasourcegrid.c,v 1.15 2000-05-16 01:59:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1027,7 +1027,7 @@ EditCB
 	int data_ix;
 
 #if DEBUG_DATA_SOURCE_GRID
-	printf("entered DataSourceGrid EditCB\n");
+	fprintf(stderr,"entered DataSourceGrid EditCB\n");
 #endif
 
 

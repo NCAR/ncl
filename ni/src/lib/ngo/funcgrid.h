@@ -1,5 +1,5 @@
 /*
- *      $Id: funcgrid.h,v 1.3 2000-03-21 02:35:41 dbrown Exp $
+ *      $Id: funcgrid.h,v 1.4 2000-05-16 01:59:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,6 @@
 
 #include <ncarg/ngo/go.h>
 #include <ncarg/ngo/browse.h>
-#include <ncarg/ngo/dataprofile.h>
 
 /*
  * Public api

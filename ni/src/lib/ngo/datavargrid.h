@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.h,v 1.2 2000-03-21 02:35:38 dbrown Exp $
+ *      $Id: datavargrid.h,v 1.3 2000-05-16 01:59:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,6 @@
 
 #include <ncarg/ngo/go.h>
 #include <ncarg/ngo/browse.h>
-#include <ncarg/ngo/dataprofile.h>
 
 /*
  * Public api
@@ -37,6 +36,8 @@ typedef struct _NgDataVarGrid
         Dimension		height;
 	int			plotdata_count;
         NgPlotData		plotdata;
+	int			var_string_count;
+	NhlString		*var_strings;
 } NgDataVarGrid;
 
 

@@ -1,4 +1,4 @@
-/* $Id: MegaB.c,v 1.9 1999-09-28 00:47:32 dbrown Exp $ */
+/* $Id: MegaB.c,v 1.10 2000-05-16 01:59:11 dbrown Exp $ */
 /*
  * Copyright 1994 John L. Cwikla
  *
@@ -534,7 +534,7 @@ static XtInitProc initialize(XmMegaButtonWidget _request, XmMegaButtonWidget _ne
                 to_black.addr = (XtPointer)(&BLACK(_new));
                 if (! XtConvertAndStore
                     ((Widget)_new,XtRString,&from_black,XtRPixel,&to_black))
-                        printf("convert error\n");
+                        fprintf(stderr,"convert error\n");
         }
         
 	TIMER(_new) = -1;
@@ -572,7 +572,7 @@ static XtWidgetProc destroy(XmMegaButtonWidget _mbw)
                 XtFree((XtPointer)COLORS(_mbw));
         }
 #if 0        
-        printf("colors allocated at destroy: %d\n", count);
+        fprintf(stderr,"colors allocated at destroy: %d\n", count);
 #endif        
         
 	return (XtWidgetProc)NULL;

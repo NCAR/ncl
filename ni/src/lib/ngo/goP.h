@@ -1,5 +1,5 @@
 /*
- *      $Id: goP.h,v 1.13 1999-05-22 00:36:18 dbrown Exp $
+ *      $Id: goP.h,v 1.14 2000-05-16 01:59:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -40,9 +40,15 @@
 #ifdef  DEBUG
 #define XGRABSERVER(dpy)
 #define XUNGRABSERVER(dpy)
+#define XGRABPOINTER(dpy,win,own,emask,pmode,kmode,cwin,cursor,time) \
+			GrabSuccess
+#define XUNGRABPOINTER(dpy,time) 
 #else
 #define XGRABSERVER(dpy)        XGrabServer(dpy)
 #define XUNGRABSERVER(dpy)      XUngrabServer(dpy)
+#define XGRABPOINTER(dpy,win,own,emask,pmode,kmode,cwin,cursor,time) \
+	XGrabPointer(dpy,win,own,emask,pmode,kmode,cwin,cursor,time)
+#define XUNGRABPOINTER(dpy,time)	XUngrabPointer(dpy,time)
 #endif
 
 typedef struct _NgGOClassRec *NgGOClass;

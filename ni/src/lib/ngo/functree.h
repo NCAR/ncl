@@ -1,5 +1,5 @@
 /*
- *      $Id: functree.h,v 1.2 2000-03-21 02:35:42 dbrown Exp $
+ *      $Id: functree.h,v 1.3 2000-05-16 01:59:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,7 @@
 
 #include <ncarg/ngo/go.h>
 #include <ncarg/ngo/ncl.h>
-#include <ncarg/ngo/dataprofile.h>
+#include <ncarg/ngo/browse.h>
 
 /*
  * Public api

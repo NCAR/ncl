@@ -1,5 +1,5 @@
 /*
- *      $Id: xwkP.h,v 1.10 1999-10-22 00:37:32 dbrown Exp $
+ *      $Id: xwkP.h,v 1.11 2000-05-16 01:59:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -77,6 +77,7 @@ typedef struct _NgXWkPart {
 	NhlBoolean		ignore_color_cb;
 	NhlBoolean		color_cb_pending;
 	NhlGenArray		last_colormap;
+	_NhlCB			xregion_cb;  /* xregion def by user */
 } NgXWkPart;
 
 typedef struct _NgXWkRec {

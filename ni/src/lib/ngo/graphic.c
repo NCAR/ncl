@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.17 2000-03-29 04:01:20 dbrown Exp $
+ *      $Id: graphic.c,v 1.18 2000-05-16 01:59:25 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -802,6 +802,7 @@ extern NgHluData NgGetHluData
 	hlu_data->qplotstyle = NrmNULLQUARK;
 	hlu_data->destroy_cb = NULL;
 	hlu_data->draw_req = False;
+	hlu_data->xregion_cb = NULL;
 
 	return hlu_data;
 }

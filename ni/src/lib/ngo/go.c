@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.28 1999-12-07 19:08:45 dbrown Exp $
+ *      $Id: go.c,v 1.29 2000-05-16 01:59:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1109,7 +1109,7 @@ InstallTranslations
          */
         if(XmIsText(w) && ! XmLIsGrid(XtParent(w))){
 #if 0
-                printf("%s\n",XrmQuarkToString(w->core.xrm_name));
+                fprintf(stderr,"%s\n",XrmQuarkToString(w->core.xrm_name));
 #endif
                 XtOverrideTranslations(w,gp->editing_trans);
 #if 0
@@ -1118,14 +1118,14 @@ InstallTranslations
         }
 	else if (XmIsTextField(w)) {
 #if 0
-                printf("%s\n",XrmQuarkToString(w->core.xrm_name));
+                fprintf(stderr,"%s\n",XrmQuarkToString(w->core.xrm_name));
 #endif
                 XtOverrideTranslations(w,gp->tf_editing_trans);
 	}
 #if 0
 
 	else if (XmIsList(w)) {
-                printf("%s\n",XrmQuarkToString(w->core.xrm_name));
+                fprintf(stderr,"%s\n",XrmQuarkToString(w->core.xrm_name));
 		_XtDisplayTranslations(w,NULL,NULL,NULL);
 	}
 #endif
@@ -1558,7 +1558,7 @@ DeleteVarCB
 		      NULL);
 	qvar = (NrmQuark)userData;
 #if 0
-        printf("deleting %s\n", NrmQuarkToString(qvar));
+        fprintf(stderr,"deleting %s\n", NrmQuarkToString(qvar));
 #endif
         sprintf(buf,"delete(%s)\n",NrmQuarkToString(qvar));
         (void)NgNclSubmitBlock(go->go.nclstate,buf);
@@ -2163,13 +2163,16 @@ static void DragItem(
 		first = False;
 	}
 		
-	printf("drag initiated\n");
+#if 0
+	fprintf(stderr,"drag initiated\n");
+#endif
 
 	XGRABSERVER(dpy);
-	if(XGrabPointer(dpy,win,False,
-			(Button2MotionMask|ButtonPressMask|ButtonReleaseMask),
-			GrabModeAsync,GrabModeAsync,None,DragCursor,
-			CurrentTime) != GrabSuccess){
+	if(XGRABPOINTER \
+	   (dpy,win,False, \
+	     (Button2MotionMask|ButtonPressMask|ButtonReleaseMask), \
+	     GrabModeAsync,GrabModeAsync,None,DragCursor, \
+	     CurrentTime) != GrabSuccess){
 
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 						"Unable to grab pointer");
@@ -2179,18 +2182,18 @@ static void DragItem(
 #if 0
 	XDefineCursor(dpy,win,DragCursor);
         XSync(dpy,False);
-#endif
 
 	if (XmIsList(w)) {
-		printf("in a list\n");
+		fprintf(stderr,"in a list\n");
 		
 	}
+#endif
 
 	sleep(3);
 	
 	XUNGRABSERVER(dpy);
 	XUndefineCursor(dpy,win);
-	XUngrabPointer(dpy, CurrentTime);
+	XUNGRABPOINTER(dpy, CurrentTime);
 
 	return;
 }

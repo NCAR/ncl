@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.34 2000-03-21 02:35:42 dbrown Exp $
+ *      $Id: hlupage.c,v 1.35 2000-05-16 01:59:27 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -1484,7 +1484,7 @@ CopySVCB
         NhlArgVal       *ret
 )
 {
-	brSetValCBInfo   *info = (brSetValCBInfo *)udata.lngval;
+	brSetValCBInfo   *info = (brSetValCBInfo *)udata.ptrval;
 	_NhlValueSetCBData vsdata = (_NhlValueSetCBData) cbdata.ptrval;
 	brHluPageRec	*rec;
 	_NhlValueSetCBData new;
@@ -1506,7 +1506,7 @@ CopySVCB
 	if  (! rec->do_setval_cb)
 		return False;
 
-        new = NhlMalloc(sizeof(_NhlobjChangeChildRec));
+        new = NhlMalloc(sizeof(_NhlValueSetCBDataRec));
         if(!new){
                 NHLPERROR((NhlFATAL,ENOMEM,NULL));
                 return False;

@@ -1,5 +1,5 @@
 /*
- *      $Id: print.c,v 1.7 1999-11-19 02:10:09 dbrown Exp $
+ *      $Id: print.c,v 1.8 2000-05-16 01:59:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -247,7 +247,7 @@ static void CancelCB
 	NgPrint	l = (NgPrint)udata;
 
 #if DEBUG_PRINT
-        printf("releasing focus\n");
+        fprintf(stderr,"releasing focus\n");
 #endif        
 	NgGOPopdown(l->base.id);
 }
@@ -301,13 +301,13 @@ OverwriteMessageCB
 
 	if (cbs->reason == XmCR_OK) {
 #if DEBUG_PRINT
-		printf("OK\n");
+		fprintf(stderr,"OK\n");
 #endif        
 		ret = SavePlotToFile((NgPrint) l,True);
 	}
 	else if (cbs->reason == XmCR_CANCEL) {
 #if DEBUG_PRINT
-		printf("CANCEL\n");
+		fprintf(stderr,"CANCEL\n");
 #endif        
 		return;
 	}
@@ -954,7 +954,8 @@ PrintPlot
 
 	wait(&status);
 #if DEBUG_PRINT
-	printf("the status is %d ,errno is %d\n",WEXITSTATUS(status),errno);
+	fprintf(stderr,
+		"the status is %d ,errno is %d\n",WEXITSTATUS(status),errno);
 #endif
 	
 	sprintf(buf,"%s/%d%s",tmpdir,pid,basename);
@@ -1839,7 +1840,7 @@ MapEH
         
 
 #if DEBUG_PRINT
-        printf("in map eh\n");
+        fprintf(stderr"in map eh\n");
 #endif        
 	if(event->type != MapNotify)
 		return;
@@ -1850,7 +1851,7 @@ MapEH
         if (! l->print.up) {
 		UpdateDialog(l);
 #if DEBUG_PRINT
-                printf("grabbing focus\n");
+                fprintf(stderr,"grabbing focus\n");
 #endif        
                 NgAppGrabFocus(l->go.appmgr,l->base.id);
                 l->print.up = True;
@@ -2360,7 +2361,7 @@ Release
 	if(!np->up)
 		return;
 #if DEBUG_PRINT
-		printf("releasing focus\n");
+		fprintf(stderr,"releasing focus\n");
 #endif        
 	NgAppReleaseFocus(go->go.appmgr,go->base.id);
 	np->up = False;

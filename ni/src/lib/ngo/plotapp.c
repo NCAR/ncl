@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.27 2000-03-29 04:01:24 dbrown Exp $
+ *      $Id: plotapp.c,v 1.28 2000-05-16 01:59:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4635,21 +4635,6 @@ static NhlErrorTypes InitializePlotDataRecs
 	return NhlNOERROR;
 }
 
-void NgFreePlotDataRecs
-(
-	NgPlotData	plotdata,
-	int		count
-)
-{
-	int i;
-
-	for (i = 0; i < count; i++) 
-		NgFreeVarData(plotdata[i].vdata);
-
-	NhlFree(plotdata);
-
-	return;
-}
 					    
 NhlErrorTypes NgUpdatePlotAppDataProfile
 (
@@ -4697,7 +4682,7 @@ static void TransferVarData
 )
 {
 	NclApiVarInfoRec *vinfo = dt->dl->u.var;
-	int i,j,coord_ix = dt->appdata->ndims - 1;
+	int i,coord_ix = dt->appdata->ndims - 1;
 	NgVarData vd = &dt->vd_rec;
 
 	dt->reorder = DimReorderRequired(dt);
@@ -4722,23 +4707,23 @@ static void TransferVarData
 			}
 			vd->finish[i] = vinfo->dim_info[i].dim_size - 1;
 			coord_ix--;
+			vd->order_ix[i] = i;
 		}
 		return;
 	}
 	for (i = 0; i < vinfo->n_dims; i++) {
+		int ix = vinfo->n_dims - dt->dim_ix[i] - 1;
+		if (ix < 0 || ! (ix < vinfo->n_dims)) {
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"internal error"));
+			continue;
+		} 
 		vd->start[i] = 0;
 		vd->stride[i] = 1;
-
-		for (j = 0; j < dt->appdata->ndims; j++) {
-			if (i == dt->dim_ix[j])
-				break;
-		}
-		if (j == dt->appdata->ndims) {
-			/* not found */
+		vd->order_ix[i] = ix;
+		if (dt->dim_ix[i] < dt->appdata->ndims)
+			vd->finish[i] = vinfo->dim_info[i].dim_size - 1;
+		else 
 			vd->finish[i] = vd->start[i];
-			continue;
-		}
-		vd->finish[i] = vinfo->dim_info[i].dim_size - 1;
 	}
 }
 

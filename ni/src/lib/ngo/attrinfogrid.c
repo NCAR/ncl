@@ -1,5 +1,5 @@
 /*
- *      $Id: attrinfogrid.c,v 1.6 1999-11-03 20:29:22 dbrown Exp $
+ *      $Id: attrinfogrid.c,v 1.7 2000-05-16 01:59:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -290,18 +290,18 @@ NhlErrorTypes NgUpdateAttrInfoGrid
         memcpy(aip->last_too_long,aip->too_long,nattrs*sizeof(short));
 
         aip->height = 6+Row_Height*(nattrs+1)+2*nattrs;
-#if 0        
+#if DEBUG_ATTR_INFO_GRID        
         XtVaGetValues(aip->grid,
                       XmNheight,&height,
                       NULL);
-        printf("height of attr grid %d\n",height);
+        fprintf(stderr,"height of attr grid %d\n",height);
         XtVaSetValues(aip->grid,
                       XmNheight,,
                       NULL);
         XtVaGetValues(aip->grid,
                       XmNheight,&height,
                       NULL);
-        printf("height of attr grid %d\n",height);
+        fprintf(stderr,"height of attr grid %d\n",height);
 #endif        
         return NhlNOERROR;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.18 2000-03-29 04:01:17 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.19 2000-05-16 01:59:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -339,6 +339,11 @@ static NhlBoolean GetFillValue
 	char *lvalue;
 	NgVarData vdata;
 	NrmQuark qfile,qvar;
+	static NrmQuark qnull = NrmNULLQUARK;
+
+	if (qnull == NrmNULLQUARK) {
+		qnull = NrmStringToQuark("null");
+	}
 
 	*value = NULL;
 	*type = QString;
@@ -351,7 +356,7 @@ static NhlBoolean GetFillValue
 	else
 		qvar = vdata->qvar;
 
-	if (!qvar)
+	if (!qvar || qvar == qnull)
 		return False;
 
 	if (! (vdata->cflags & _NgSYMBOL_CHANGE))
@@ -781,6 +786,7 @@ NgVarData NgNewVarData
 	vdata->rank = vdata->ndims = vdata->dims_alloced = 0;
 	vdata->start = vdata->finish = vdata->stride = NULL;
 	vdata->size = vdata->order_ix = NULL;
+	vdata->dstart = vdata->dfinish = NULL;
 	vdata->dl = NULL;
 	vdata->qfile = vdata->qvar = vdata->qcoord = NrmNULLQUARK;
 	vdata->size_only = False;
@@ -809,6 +815,8 @@ void NgFreeVarData
 		NhlFree(var_data->stride);
 		NhlFree(var_data->size);
 		NhlFree(var_data->order_ix);
+		NhlFree(var_data->dstart);
+		NhlFree(var_data->dfinish);
 	}
 	if (var_data->dl)
 		NclFreeDataList(var_data->dl);
@@ -828,6 +836,7 @@ NhlBoolean NgCopyVarData
 	)
 {
 	int size = from_var_data->ndims * sizeof(long);
+	int dsize = from_var_data->ndims * sizeof(double);
 
 /*
  * False is returned only for invalid input or for a memory allocation problem
@@ -897,9 +906,12 @@ NhlBoolean NgCopyVarData
                 to_var_data->stride = NhlRealloc(to_var_data->stride,size);
                 to_var_data->size = NhlRealloc(to_var_data->size,size);
                 to_var_data->order_ix = NhlRealloc(to_var_data->order_ix,size);
+                to_var_data->dstart = NhlRealloc(to_var_data->dstart,dsize);
+                to_var_data->dfinish = NhlRealloc(to_var_data->dfinish,dsize);
 		if (! (to_var_data->start && 
 		       to_var_data->finish && to_var_data->stride &&
-		       to_var_data->size && to_var_data->order_ix)) {
+		       to_var_data->size && to_var_data->order_ix &&
+		       to_var_data->dstart && to_var_data->dfinish)) {
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return False;
 		}
@@ -911,9 +923,99 @@ NhlBoolean NgCopyVarData
 	memcpy(to_var_data->stride,from_var_data->stride,size);
 	memcpy(to_var_data->size,from_var_data->size,size);
 	memcpy(to_var_data->order_ix,from_var_data->order_ix,size);
+	memcpy(to_var_data->dstart,from_var_data->dstart,dsize);
+	memcpy(to_var_data->dfinish,from_var_data->dfinish,dsize);
 
 	return True;
 }
+
+static double
+ValToDouble
+(
+        NclExtValueRec	*val,
+        int		index
+        )
+{
+        char *valp = ((char *) val->value) + index * val->elem_size;
+        double dout;
+
+        switch (val->type) {
+            case NCLAPI_float:
+                    dout = (double)*(float*)valp;
+                    return dout;
+            case NCLAPI_double:
+                    dout = *(double*)valp;
+                    return dout;
+            case NCLAPI_byte:
+            case NCLAPI_char:
+                    dout = (double)*(char*)valp;
+                    return dout;
+            case NCLAPI_int:
+                    dout = (double)*(int*)valp;
+                    return dout;
+            case NCLAPI_short:
+                    dout = (double)*(short*)valp;
+                    return dout;
+            case NCLAPI_long:
+                    dout = (double)*(long*)valp;
+                    return dout;
+            default:
+		    NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			       "type not supported for coordinate variable"));
+        }
+        return 0.0;
+}
+
+extern
+void NgUpdateVarDataLimits(
+	NgVarData	vdata
+)
+{
+	int i;
+	NclApiVarInfoRec	*vinfo = NULL;
+
+	if (vdata->dl) {
+		vinfo = vdata->dl->u.var;
+	}
+	else {
+		if (vdata->qfile > NrmNULLQUARK)
+			vdata->dl = NclGetFileVarInfo
+				(vdata->qfile,vdata->qvar);
+		else 	
+			vdata->dl = NclGetVarInfo(vdata->qvar);
+		vinfo = vdata->dl->u.var;
+	}
+
+	for (i = 0; i < vdata->ndims; i++) {
+		NrmQuark qcoord = vinfo->coordnames[i];
+		NclExtValueRec *val;
+		
+		if (vdata->dstart[i] != vdata->dfinish[i])
+			continue;
+
+		if (qcoord <= NrmNULLQUARK) {
+			vdata->dstart[i] = (double)vdata->start[i];
+			vdata->dfinish[i] = (double)vdata->finish[i];
+			continue;
+		}
+		if (vdata->qfile)
+			val = NclReadFileVarCoord
+				(vdata->qfile,vinfo->name,
+				 qcoord,NULL,NULL,NULL);
+		else
+			val = NclReadVarCoord
+				(vinfo->name,qcoord,NULL,NULL,NULL);
+		if (! val)
+			continue;
+		vdata->dstart[i] = ValToDouble(val,0);
+		vdata->dfinish[i] = ValToDouble
+			(val,vinfo->dim_info[i].dim_size - 1);
+		NclFreeExtValue(val);
+	}
+	return;
+}
+		
+		
 
 extern
 int NgVarDataRank(
@@ -941,7 +1043,7 @@ extern NhlBoolean NgSetUnknownDataItem
 {
 	static	int grlist = -1;
 	NgVarData vdata = ditem->vdata;
-	int i,size;
+	int i,size,dsize;
 	NhlGenArray gen;
 
 	if (grlist < 0)
@@ -986,8 +1088,12 @@ extern NhlBoolean NgSetUnknownDataItem
                 vdata->stride = NhlRealloc(vdata->stride,size);
                 vdata->size = NhlRealloc(vdata->size,size);
                 vdata->order_ix = NhlRealloc(vdata->order_ix,size);
+		dsize = gen->num_dimensions * sizeof(double);
+                vdata->dstart = NhlRealloc(vdata->dstart,dsize);
+                vdata->dfinish = NhlRealloc(vdata->dfinish,dsize);
 		if (! (vdata->start && vdata->finish && vdata->stride &&
-			vdata->size && vdata->order_ix)) {
+			vdata->size && vdata->order_ix &&
+			vdata->start && vdata->finish)) {
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return False;
 		}
@@ -999,6 +1105,7 @@ extern NhlBoolean NgSetUnknownDataItem
 		vdata->stride[i] = 1;
 		vdata->size[i] = gen->len_dimensions[i];
 		vdata->order_ix[i] = -1;
+		vdata->dstart[i] = vdata->dfinish[i] = -9999.0;
 	}
 	vdata->size_only = True;
 	vdata->rank = vdata->ndims = gen->num_dimensions;
@@ -1128,7 +1235,7 @@ NhlBoolean NgSetExpressionVarData
 {
 	NclApiDataList	*dl = NULL;
 	NhlBoolean	copy_expr = False;
-	int 		i,size;
+	int 		i,size,dsize;
 	NgGO		go = (NgGO) _NhlGetLayer(go_id);
 	NhlBoolean	do_eval = False;
 
@@ -1208,9 +1315,14 @@ NhlBoolean NgSetExpressionVarData
 				vdata->size = NhlRealloc(vdata->size,size);
 				vdata->order_ix = 
 					NhlRealloc(vdata->order_ix,size);
+				dsize = dl->u.var->n_dims * sizeof(double);
+				vdata->dstart =NhlRealloc(vdata->dstart,dsize);
+				vdata->dfinish = 
+					NhlRealloc(vdata->dfinish,dsize);
 				if (! (vdata->start && 
 				       vdata->finish && vdata->stride &&
-					vdata->size && vdata->order_ix)) {
+				       vdata->size && vdata->order_ix &&
+				       vdata->dstart && vdata->dfinish)) {
 					NHLPERROR((NhlFATAL,ENOMEM,NULL));
 					return False;
 				}
@@ -1224,6 +1336,7 @@ NhlBoolean NgSetExpressionVarData
 				vdata->size[i] = 
 					dl->u.var->dim_info[i].dim_size;
 				vdata->order_ix[i] = -1;
+				vdata->dstart[i] = vdata->dfinish[i] = -9999;
 				if (vdata->rank != dl->u.var->n_dims)
 					vdata->cflags |= _NgRANK_CHANGE;
 				vdata->ndims = vdata->rank = dl->u.var->n_dims;
@@ -1260,7 +1373,7 @@ NhlBoolean NgSetVarData
 )
 {
 	NclApiVarInfoRec	*vinfo = NULL;
-	int 			i,size,rank;
+	int 			i,size,dsize,rank;
 /*
  * dl, the NclApiDataList may optionally be supplied if the caller wants to.
  * Note that the VarData appropriates it, so the the caller should not then
@@ -1348,16 +1461,23 @@ NhlBoolean NgSetVarData
                 var_data->stride = NhlRealloc(var_data->stride,size);
                 var_data->size = NhlRealloc(var_data->size,size);
                 var_data->order_ix = NhlRealloc(var_data->order_ix,size);
+		dsize = vinfo->n_dims * sizeof(double);
+                var_data->dstart = NhlRealloc(var_data->dstart,dsize);
+                var_data->dfinish = NhlRealloc(var_data->dfinish,dsize);
+		
 		if (! (var_data->start && 
 		       var_data->finish && var_data->stride &&
-			var_data->size && var_data->order_ix)) {
+			var_data->size && var_data->order_ix && 
+		       var_data->start && var_data->finish)) {
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return False;
 		}
-		for (i = var_data->dims_alloced; i < vinfo->n_dims; i++)
+		for (i = var_data->dims_alloced; i < vinfo->n_dims; i++) {
 			var_data->start[i] = var_data->finish[i] = 
 				var_data->stride[i] =  var_data->size[i] =
 				var_data->order_ix[i] = -1;
+			var_data->dstart[i] = var_data->dfinish[i] = -9999.0;
+		}
 
 		var_data->dims_alloced = vinfo->n_dims;
 		var_data->cflags |= _NgSHAPE_CHANGE;
@@ -2542,4 +2662,21 @@ NhlBoolean NgConformingDataItem
 			j--;
 	}
 	return True;
+}
+
+void NgFreePlotDataRecs
+(
+	NgPlotData	plotdata,
+	int		count
+)
+{
+	int i;
+
+	for (i = 0; i < count; i++) {
+		NgFreeVarData(plotdata[i].vdata);
+	}
+
+	NhlFree(plotdata);
+
+	return;
 }

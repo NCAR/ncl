@@ -1,5 +1,5 @@
 /*
- *      $Id: funcgrid.c,v 1.7 2000-03-22 00:42:18 dbrown Exp $
+ *      $Id: funcgrid.c,v 1.8 2000-05-16 01:59:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1278,7 +1278,7 @@ SaveExpressionString(
 		_NgCONDITIONAL_EVAL : _NgNOEVAL;
 
 	return NgSetExpressionVarData
-		(fgp->go->base.id,vdata,var_string,eval,True);
+		(fgp->go->base.id,vdata,var_string,True,True);
 }
 
 static NhlBoolean 
@@ -1515,7 +1515,7 @@ EditCB
 	int data_ix;
 
 #if DEBUG_FUNC_GRID
-	printf("entered FuncGrid EditCB\n");
+	fprintf(stderr,"entered FuncGrid EditCB\n");
 #endif
 
 
