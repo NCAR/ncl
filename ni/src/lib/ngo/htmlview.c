@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.c,v 1.11 1999-03-05 01:02:35 dbrown Exp $
+ *      $Id: htmlview.c,v 1.12 1999-03-05 16:53:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -127,56 +127,6 @@ AdjustSize
 
         return;
 }	
-
-#if 0
-static void
-AdjustSize
-(
-        NgHtmlViewRec *hvp
-)
-{
-        Dimension form_width,form_height,height,width;
-	brPane *pane;
-	XRectangle rect;
-        XmHTMLWidget		xmhtml = (XmHTMLWidget) hvp->html;
-	Dimension	avail_width, avail_height;
-	
-	pane = _NgGetPaneOfPage(hvp->go->base.id,hvp->public.user_page_id);
-
-        _NgGetPaneVisibleArea((NhlLayer)hvp->go,pane,&rect);
-
-	width = rect.width - 5;
-	height = rect.height - 30;
-	XtVaSetValues(hvp->html,
-		      XmNwidth,width,
-		      XmNheight,height,
-		      NULL);
-
-	if (xmhtml->html.formatted_height > height) {
-		/* vertical scrollbar */
-		width -= 20;
-		XtVaSetValues(hvp->html,
-			      XmNwidth,width,
-			      NULL);
-	}
-	height = MAX(xmhtml->html.formatted_height,height);
-	XtVaSetValues(hvp->html,
-		      XmNwidth,width,
-		      XmNheight,height,
-		      NULL);
-
-        XtVaGetValues(hvp->public.htmlview,
-                      XmNwidth,&form_width,
-		      XmNheight,&form_height,
-                      NULL);
-
-
-        hvp->public.height = form_height;
-        hvp->public.width = form_width;
-
-        return;
-}	
-#endif
 static void
 anchorCB(Widget w, XtPointer udata, XtPointer data)
 {
@@ -187,7 +137,7 @@ anchorCB(Widget w, XtPointer udata, XtPointer data)
 	XRectangle rect;
         XmHTMLWidget		xmhtml = (XmHTMLWidget) hvp->html;
 
-#if 1        
+#if DEBUG_HTML        
 	fprintf(stderr,"in anchor CB!\n");
 #endif
 	if (hvp->type != _hbGENERIC)
@@ -199,11 +149,15 @@ anchorCB(Widget w, XtPointer udata, XtPointer data)
 		return;
 	switch (anchor->url_type) {
 	case ANCHOR_JUMP:
+#if DEBUG_HTML        
 		fprintf(stderr,"jump in current file\n");
+#endif
 		break;
 	case ANCHOR_FILE_REMOTE:
 	case ANCHOR_FILE_LOCAL:
+#if DEBUG_HTML        
 		fprintf(stderr,"jump to local file\n");
+#endif
 		_NgSetHtmlContent((NgHtmlView*)hvp,
 				  NrmStringToQuark(anchor->href),
 				  NrmNULLQUARK);
@@ -716,7 +670,7 @@ SetGeneric
         )
 {
 	AdjustSize(hvp);
-	return True;
+	return NhlNOERROR;
 }
 
 
