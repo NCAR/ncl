@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.16 2000-05-16 01:59:31 dbrown Exp $
+ *      $Id: plotpage.c,v 1.17 2000-05-19 00:12:51 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -3054,6 +3054,7 @@ SetMapRegion
 		(vdata,&minlat,&maxlat,&latinc,
 		 &minlon,&maxlon,&loninc,&is_grib);
 
+#if 0
 	if (minlon < -360) {
 		mnlon = -540; mxlon = -180;
 	}
@@ -3069,6 +3070,9 @@ SetMapRegion
 	else {
 		mnlon = 180; mxlon = 540;
 	}
+#endif
+	mnlon = minlon; 
+	mxlon = minlon + 360;
 /*
  * Normally shouldn't be setting HLU values without going through NCL, but
  * these values are reset at every draw by the plot objects anyway, so the
