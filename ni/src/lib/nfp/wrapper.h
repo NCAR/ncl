@@ -29,6 +29,7 @@ extern double *coerce_output_double(void*,NclBasicDataTypes,int);
 extern float *set_output_float_missing(double*,int,double);
 
 extern int contains_missing(double *,int,int,double);
+extern int contains_missing_float(float *,int,int,float);
 
 extern void set_subset_output_missing(void *,int,NclBasicDataTypes,int,double);
 

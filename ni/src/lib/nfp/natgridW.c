@@ -1,19 +1,11 @@
 #include <string.h>
 #include <stdio.h>
-/*
-* The following are the required NCAR Graphics include files.
-* They should be located in ${NCARG_ROOT}/include
-*/
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include <ncarg/gks.h>
+
+#include "wrapper.h"
 #include <ncarg/ngmath.h>
 
 extern void drwsrfc (int WKID, int nx, int ny, float *x, float *y, float *z,
-              float s1, float s2, float s3, int *iwk);
+                     float s1, float s2, float s3, int *iwk);
 extern void drwvctc (int WKID, int lx, int ly, float *u, float *v);
 
 extern void drwconc (int WKID, int i, int j, float *z);
@@ -22,297 +14,348 @@ NhlErrorTypes natgrids_W( void )
 {
   int ier = 0;
   float *x;
-  int ndims_x,dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   float *y;
-  int ndims_y,dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
   float *z;
-  int ndims_z,dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
+  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
   float *xo;
-  int ndims_xo,dsizes_xo[NCL_MAX_DIMENSIONS], has_missing_xo;
+  int dsizes_xo[NCL_MAX_DIMENSIONS], has_missing_xo;
   float *yo;
-  int ndims_yo,dsizes_yo[NCL_MAX_DIMENSIONS], has_missing_yo;
+  int dsizes_yo[NCL_MAX_DIMENSIONS], has_missing_yo;
   NclScalar missing_x, missing_y, missing_z, missing_xo, missing_yo;
-  float *zo;
-  int ndims_zo,dsizes_zo[NCL_MAX_DIMENSIONS];
-  int i;
-/*
- * Retrieve parameters
- */
+  float *zo, *zo_tmp;
+  int ndims_zo, *dsizes_zo;
+  int i, j, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
+  int index_in = 0, index_out = 0;
 
 /*
+ * Retrieve parameters
+ *
  * Note any of the pointer parameters can be set to NULL, which
  * implies you don't care about its value. In this example
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
   x = (float*)NclGetArgValue(
-							 0,
-							 5,
-							 &ndims_x,
-							 dsizes_x,
-							 &missing_x,
-							 &has_missing_x,
-							 NULL,
-							 2);
+                             0,
+                             5,
+                             &ndims_x,
+                             dsizes_x,
+                             &missing_x,
+                             &has_missing_x,
+                             NULL,
+                             2);
   y = (float*)NclGetArgValue(
-							 1,
-							 5,
-							 &ndims_y,
-							 dsizes_y,
-							 &missing_y,
-							 &has_missing_y,
-							 NULL,
-							 2);
+                             1,
+                             5,
+                             &ndims_y,
+                             dsizes_y,
+                             &missing_y,
+                             &has_missing_y,
+                             NULL,
+                             2);
   z = (float*)NclGetArgValue(
-							 2,
-							 5,
-							 &ndims_z,
-							 dsizes_z,
-							 &missing_z,
-							 &has_missing_z,
-							 NULL,
-							 2);
+                             2,
+                             5,
+                             &ndims_z,
+                             dsizes_z,
+                             &missing_z,
+                             &has_missing_z,
+                             NULL,
+                             2);
+  
+/*
+ * Check dimension sizes for x, y and z.
+ */
+  if(ndims_x != ndims_y || ndims_x != ndims_z) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: the dimension sizes of parameters x, y and z must be identical");
+    return(NhlFATAL);
+  }
+  for( i = 0; i < ndims_x; i++) {
+    if(dsizes_x[i] != dsizes_y[i] || dsizes_x[i] != dsizes_z[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: the dimension sizes of parameters x, y and z must be identical");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Compute the total size of the input and the leftmost dimensions.
+ */
+  npts = dsizes_x[ndims_x-1];
+
+  size_leftmost = 1;
+  for( i = 0; i < ndims_x-1; i++ ) size_leftmost *= dsizes_x[i];
+  size_input = size_leftmost * npts;
+
+/*
+ * Get rest of parameters.
+ */
 
   xo = (float*)NclGetArgValue(
-							 3,
-							 5,
-							 &ndims_xo,
-							 dsizes_xo,
-							 &missing_xo,
-							 &has_missing_xo,
-							 NULL,
-							 2);
+                              3,
+                              5,
+                              NULL,
+                              dsizes_xo,
+                              &missing_xo,
+                              &has_missing_xo,
+                              NULL,
+                              2);
   yo = (float*)NclGetArgValue(
-							 4,
-							 5,
-							 &ndims_yo,
-							 dsizes_yo,
-							 &missing_yo,
-							 &has_missing_yo,
-							 NULL,
-							 2);
-/*
- * This is the only dimension size check needed since the function
- * is registered to only accept single dimension parameters.
- */
-   if((dsizes_x[0] == dsizes_y[0])&&(dsizes_x[0] == dsizes_z[0])) {
+                              4,
+                              5,
+                              NULL,
+                              dsizes_yo,
+                              &missing_yo,
+                              &has_missing_yo,
+                              NULL,
+                              2);
+  nxo = dsizes_xo[0];
+  nyo = dsizes_yo[0];
+  nzo = nxo * nyo;
+
 /*
  * Check for missing values. 
  */
-	 if(has_missing_x) {
-	   for( i = 0; i < dsizes_x[0]; i++ ) {
-		 if(x[i] == missing_x.floatval) {
-		   NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: x cannot contain any missing values" );
-		   return(NhlFATAL);
-		 }
-	   }
-	 }
-	 if(has_missing_y) {
-	   for( i = 0; i < dsizes_y[0]; i++ ) {
-		 if(y[i] == missing_y.floatval) {
-		   NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: y cannot contain any missing values" );
-		   return(NhlFATAL);
-		 }
-	   }
-	 }
-	 if(has_missing_z) {
-	   for( i = 0; i < dsizes_z[0]; i++ ) {
-		 if(z[i] == missing_z.floatval) {
-		   NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: z cannot contain any missing values" );
-		   return(NhlFATAL);
-		 }
-	   }
-	 }
-	 if(has_missing_xo) {
-	   for( i = 0; i < dsizes_xo[0]; i++ ) {
-		 if(xo[i] == missing_xo.floatval) {
-		   NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: xo cannot contain any missing values" );
-		   return(NhlFATAL);
-		 }
-	   }
-	 }
-	 if(has_missing_yo) {
-	   for( i = 0; i < dsizes_yo[0]; i++ ) {
-		 if(yo[i] == missing_yo.floatval) {
-		   NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: yo cannot contain any missing values" );
-		   return(NhlFATAL);
-		 }
-	   }
-	 }
-/*
- * The following section calls the c_natgrids function.
- */
-	zo = (float*)c_natgrids (dsizes_x[0],x,y,z,dsizes_xo[0],dsizes_yo[0],xo,yo,&ier);
-	if(!ier || (ier >= 4 && ier <= 6)) {
-/*
- * Returns value to NCL
- */
-	  ndims_zo = 2;
-	  dsizes_zo[0] = dsizes_xo[0];
-	  dsizes_zo[1] = dsizes_yo[0];
-	  if(ier) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"natgrids: ier = %d", ier);
-	  }
-	  return(NclReturnValue((void*)zo,ndims_zo,dsizes_zo,NULL,NCL_float,0));
-	}
-	else {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: ier = %d", ier);
-	  return(NhlFATAL);
-	}
+  if(contains_missing_float(x,size_input,has_missing_x,missing_x.floatval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: x cannot contain any missing values" );
+    return(NhlFATAL);
   }
-  else {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: the dimension sizes of parameters x, y and z must be identical");
-	return(NhlFATAL);
+  if(contains_missing_float(y,size_input,has_missing_y,missing_y.floatval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: y cannot contain any missing values" );
+    return(NhlFATAL);
   }
-  
+  if(contains_missing_float(z,size_input,has_missing_z,missing_z.floatval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: z cannot contain any missing values" );
+    return(NhlFATAL);
+  }
+  if(contains_missing_float(xo,nxo,has_missing_xo,missing_xo.floatval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: xo cannot contain any missing values" );
+    return(NhlFATAL);
+  }
+  if(contains_missing_float(yo,nyo,has_missing_yo,missing_yo.floatval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: yo cannot contain any missing values" );
+    return(NhlFATAL);
+  }
+
+/*
+ * Calculate space for output array and its dimension sizes.
+ */
+  ndims_zo    = ndims_x + 1;
+  size_output = size_leftmost * nzo;
+  zo          = (float *) calloc(size_output, sizeof(float));
+  dsizes_zo   =   (int *) calloc(ndims_zo, sizeof(int));
+
+  if(zo == NULL || dsizes_zo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+              "natgrids: Unable to allocate memory for output arrays");
+    return(NhlFATAL);
+  }
+
+  for( i = 0; i < ndims_zo-2; i++ ) dsizes_zo[i] = dsizes_x[i];
+  dsizes_zo[ndims_zo-2] = nxo;
+  dsizes_zo[ndims_zo-1] = nyo;
+
+/*
+ * The following section loops through the leftmost dimensions and calls
+ * the c_natgrids function.
+ */
+  for( i = 0; i < size_leftmost; i++ ) {
+    zo_tmp = c_natgrids (npts,&x[index_in],&y[index_in],&z[index_in],
+                         nxo,nyo,xo,yo,&ier);
+
+    if(!ier || (ier >= 4 && ier <= 6)) {
+      if(ier) {
+        NhlPError(NhlWARNING,NhlEUNKNOWN,"natgrids: ier = %d", ier);
+      }
+      for (j = 0; j < nzo; j++) {
+        zo[index_out+j] = zo_tmp[j];
+      }    
+    }
+    else {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: ier = %d", ier);
+      free(zo_tmp);
+      return(NhlFATAL);
+    }
+    index_in  += npts;
+    index_out += nzo;
+    free(zo_tmp);
+  }
+  return(NclReturnValue((void*)zo,ndims_zo,dsizes_zo,NULL,NCL_float,0));
 }
 
 NhlErrorTypes natgridd_W( void )
 {
   int ier = 0;
   double *x;
-  int ndims_x,dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   double *y;
-  int ndims_y,dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
   double *z;
-  int ndims_z,dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
+  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
   double *xo;
-  int ndims_xo,dsizes_xo[NCL_MAX_DIMENSIONS], has_missing_xo;
+  int dsizes_xo[NCL_MAX_DIMENSIONS], has_missing_xo;
   double *yo;
-  int ndims_yo,dsizes_yo[NCL_MAX_DIMENSIONS], has_missing_yo;
+  int dsizes_yo[NCL_MAX_DIMENSIONS], has_missing_yo;
   NclScalar missing_x, missing_y, missing_z, missing_xo, missing_yo;
-  double *zo;
-  int ndims_zo,dsizes_zo[NCL_MAX_DIMENSIONS];
-  int i;
-/*
- * Retrieve parameters
- */
+  double *zo, *zo_tmp;
+  int ndims_zo, *dsizes_zo;
+  int i, j, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
+  int index_in = 0, index_out = 0;
 
 /*
+ * Retrieve parameters
+ *
  * Note any of the pointer parameters can be set to NULL, which
  * implies you don't care about its value. In this example
  * the type parameter is set to NULL because the function
- * is later registered to only accept floating point numbers.
+ * is later registered to only accept doubles.
  */
   x = (double*)NclGetArgValue(
-							 0,
-							 5,
-							 &ndims_x,
-							 dsizes_x,
-							 &missing_x,
-							 &has_missing_x,
-							 NULL,
-							 2);
+                              0,
+                              5,
+                              &ndims_x,
+                              dsizes_x,
+                              &missing_x,
+                              &has_missing_x,
+                              NULL,
+                              2);
   y = (double*)NclGetArgValue(
-							 1,
-							 5,
-							 &ndims_y,
-							 dsizes_y,
-							 &missing_y,
-							 &has_missing_y,
-							 NULL,
-							 2);
+                              1,
+                              5,
+                              &ndims_y,
+                              dsizes_y,
+                              &missing_y,
+                              &has_missing_y,
+                              NULL,
+                              2);
   z = (double*)NclGetArgValue(
-							 2,
-							 5,
-							 &ndims_z,
-							 dsizes_z,
-							 &missing_z,
-							 &has_missing_z,
-							 NULL,
-							 2);
+                              2,
+                              5,
+                              &ndims_z,
+                              dsizes_z,
+                              &missing_z,
+                              &has_missing_z,
+                              NULL,
+                              2);
+
+/*
+ * Check dimension sizes for x, y and z.
+ */
+  if(ndims_x != ndims_y || ndims_x != ndims_z) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: the dimension sizes of parameters x, y and z must be identical");
+    return(NhlFATAL);
+  }
+  for( i = 0; i < ndims_x; i++) {
+    if(dsizes_x[i] != dsizes_y[i] || dsizes_x[i] != dsizes_z[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: the dimension sizes of parameters x, y and z must be identical");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Compute the total size of the input and the leftmost dimensions.
+ */
+  npts = dsizes_x[ndims_x-1];
+
+  size_leftmost = 1;
+  for( i = 0; i < ndims_x-1; i++ ) size_leftmost *= dsizes_x[i];
+  size_input = size_leftmost * npts;
+
+/*
+ * Get rest of parameters.
+ */
 
   xo = (double*)NclGetArgValue(
-							 3,
-							 5,
-							 &ndims_xo,
-							 dsizes_xo,
-							 &missing_xo,
-							 &has_missing_xo,
-							 NULL,
-							 2);
+                               3,
+                               5,
+                               NULL,
+                               dsizes_xo,
+                               &missing_xo,
+                               &has_missing_xo,
+                               NULL,
+                               2);
   yo = (double*)NclGetArgValue(
-							 4,
-							 5,
-							 &ndims_yo,
-							 dsizes_yo,
-							 &missing_yo,
-							 &has_missing_yo,
-							 NULL,
-							 2);
-/*
- * This is the only dimension size check needed since the function
- * is registered to only accept single dimension parameters.
- */
-   if((dsizes_x[0] == dsizes_y[0])&&(dsizes_x[0] == dsizes_z[0])) {
+                               4,
+                               5,
+                               NULL,
+                               dsizes_yo,
+                               &missing_yo,
+                               &has_missing_yo,
+                               NULL,
+                               2);
+  nxo = dsizes_xo[0];
+  nyo = dsizes_yo[0];
+  nzo = nxo * nyo;
+
 /*
  * Check for missing values. 
  */
-	 if(has_missing_x) {
-	   for( i = 0; i < dsizes_x[0]; i++ ) {
-		 if(x[i] == missing_x.doubleval) {
-		   NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: x cannot contain any missing values" );
-		   return(NhlFATAL);
-		 }
-	   }
-	 }
-	 if(has_missing_y) {
-	   for( i = 0; i < dsizes_y[0]; i++ ) {
-		 if(y[i] == missing_y.doubleval) {
-		   NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: y cannot contain any missing values" );
-		   return(NhlFATAL);
-		 }
-	   }
-	 }
-	 if(has_missing_z) {
-	   for( i = 0; i < dsizes_z[0]; i++ ) {
-		 if(z[i] == missing_z.doubleval) {
-		   NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: z cannot contain any missing values" );
-		   return(NhlFATAL);
-		 }
-	   }
-	 }
-	 if(has_missing_xo) {
-	   for( i = 0; i < dsizes_xo[0]; i++ ) {
-		 if(xo[i] == missing_xo.doubleval) {
-		   NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: xo cannot contain any missing values" );
-		   return(NhlFATAL);
-		 }
-	   }
-	 }
-	 if(has_missing_yo) {
-	   for( i = 0; i < dsizes_yo[0]; i++ ) {
-		 if(yo[i] == missing_yo.doubleval) {
-		   NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: yo cannot contain any missing values" );
-		   return(NhlFATAL);
-		 }
-	   }
-	 }
-/*
- * The following section calls the c_natgridd function.
- */
-	zo = (double*)c_natgridd (dsizes_x[0],x,y,z,dsizes_xo[0],dsizes_yo[0],xo,yo,&ier);
-	if(!ier || (ier >= 4 && ier <= 6)) {
-/*
- * Returns value to NCL
- */
-	  ndims_zo = 2;
-	  dsizes_zo[0] = dsizes_xo[0];
-	  dsizes_zo[1] = dsizes_yo[0];
-	  if(ier) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"natgridd: ier = %d", ier);
-	  }
-	  return(NclReturnValue((void*)zo,ndims_zo,dsizes_zo,NULL,NCL_double,0));
-	}
-	else {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: ier = %d", ier);
-	  return(NhlFATAL);
-	}
+  if(contains_missing(x,size_input,has_missing_x,missing_x.doubleval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: x cannot contain any missing values" );
+    return(NhlFATAL);
   }
-  else {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: the dimension sizes of parameters x, y and z must be identical");
-	return(NhlFATAL);
+  if(contains_missing(y,size_input,has_missing_y,missing_y.doubleval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: y cannot contain any missing values" );
+    return(NhlFATAL);
   }
+  if(contains_missing(z,size_input,has_missing_z,missing_z.doubleval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: z cannot contain any missing values" );
+    return(NhlFATAL);
+  }
+  if(contains_missing(xo,nxo,has_missing_xo,missing_xo.doubleval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: xo cannot contain any missing values" );
+    return(NhlFATAL);
+  }
+  if(contains_missing(yo,nyo,has_missing_yo,missing_yo.doubleval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: yo cannot contain any missing values" );
+    return(NhlFATAL);
+  }
+
+/*
+ * Calculate space for output array and its dimension sizes.
+ */
+  ndims_zo    = ndims_x + 1;
+  size_output = size_leftmost * nzo;
+  zo          = (double *) calloc(size_output, sizeof(double));
+  dsizes_zo   =   (int *) calloc(ndims_zo, sizeof(int));
+
+  if(zo == NULL || dsizes_zo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+              "natgridd: Unable to allocate memory for output arrays");
+    return(NhlFATAL);
+  }
+
+  for( i = 0; i < ndims_zo-2; i++ ) dsizes_zo[i] = dsizes_x[i];
+  dsizes_zo[ndims_zo-2] = nxo;
+  dsizes_zo[ndims_zo-1] = nyo;
+
+/*
+ * The following section loops through the leftmost dimensions and calls
+ * the c_natgridd function.
+ */
+  for( i = 0; i < size_leftmost; i++ ) {
+    zo_tmp = c_natgridd (npts,&x[index_in],&y[index_in],&z[index_in],
+                         nxo,nyo,xo,yo,&ier);
+
+    if(!ier || (ier >= 4 && ier <= 6)) {
+      if(ier) {
+        NhlPError(NhlWARNING,NhlEUNKNOWN,"natgridd: ier = %d", ier);
+      }
+      for (j = 0; j < nzo; j++) {
+        zo[index_out+j] = zo_tmp[j];
+      }    
+    }
+    else {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: ier = %d", ier);
+      free(zo_tmp);
+      return(NhlFATAL);
+    }
+    index_in  += npts;
+    index_out += nzo;
+    free(zo_tmp);
+  }
+  return(NclReturnValue((void*)zo,ndims_zo,dsizes_zo,NULL,NCL_double,0));
 }
 
 NhlErrorTypes nnsetp_W(void)
@@ -341,10 +384,10 @@ NhlErrorTypes nnsetp_W(void)
  * Input array variables
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
-  int ndims_pvalue, dsizes_pvalue[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_pname, type_pvalue;
+  int dsizes_pvalue[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_pvalue;
 
 /*
  * Retrieve argument #1
@@ -352,21 +395,13 @@ NhlErrorTypes nnsetp_W(void)
   pname = (string *) NclGetArgValue(
           0,
           2,
-          &ndims_pname,
+          NULL,
           dsizes_pname,
           NULL,
           NULL,
-          &type_pname,
+          NULL,
           2);
 
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_pname != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "nnsetp: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
   arg1 = NrmQuarkToString(*pname);
 
 /*
@@ -399,7 +434,7 @@ NhlErrorTypes nnsetp_W(void)
 OK_NAME:  pvalue = (void *) NclGetArgValue(
            1,
            2,
-           &ndims_pvalue,
+           NULL,
            dsizes_pvalue,
            NULL,
            NULL,
@@ -486,11 +521,10 @@ NhlErrorTypes nngetp_W(void)
  * Input array variable
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_pname;
+  int dsizes_pname[NCL_MAX_DIMENSIONS];
   float *fval;
   int *ival;
-  int ret_size = 1;	
+  int ret_size = 1;     
 
 /*
  * Retrieve argument #1
@@ -498,22 +532,13 @@ NhlErrorTypes nngetp_W(void)
   pname = (string *) NclGetArgValue(
           0,
           1,
-          &ndims_pname,
+          NULL,
           dsizes_pname,
           NULL,
           NULL,
-          &type_pname,
+          NULL,
           2);
 
-
-/*
- * Check number of dimensions for argument #1.
- */
-  if(ndims_pname != 1) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "nngetp: Argument #1 has the wrong number of dimensions.");
-    return(NhlFATAL);
-  }
   arg1 = NrmQuarkToString(*pname);
 
 /*
@@ -607,15 +632,15 @@ NhlErrorTypes nngetaspects_W( void )
  */
   c_nngetaspects(*i,*j,rtmp,&ier);
   if(!ier || (ier >= 4 && ier <= 6)) {
-	dsizes[0] = 1;
-	if(ier) {
-	  NhlPError(NhlWARNING,NhlEUNKNOWN,"nngetaspects: ier = %d", ier);
-	}
-	return(NclReturnValue((void*)rtmp,1,dsizes,NULL,NCL_float,0));
+        dsizes[0] = 1;
+        if(ier) {
+          NhlPError(NhlWARNING,NhlEUNKNOWN,"nngetaspects: ier = %d", ier);
+        }
+        return(NclReturnValue((void*)rtmp,1,dsizes,NULL,NCL_float,0));
   }
   else {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"nngetaspects: ier = %d", ier);
-	return(NhlFATAL);
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"nngetaspects: ier = %d", ier);
+        return(NhlFATAL);
   }
 }
 
@@ -645,15 +670,15 @@ NhlErrorTypes nngetaspectd_W( void )
  */
   c_nngetaspectd(*i,*j,dtmp,&ier);
   if(!ier || (ier >= 4 && ier <= 6)) {
-	dsizes[0] = 1;
-	if(ier) {
-	  NhlPError(NhlWARNING,NhlEUNKNOWN,"nngetaspectd: ier = %d", ier);
-	}
-	return(NclReturnValue((void*)dtmp,1,dsizes,NULL,NCL_double,0));
+        dsizes[0] = 1;
+        if(ier) {
+          NhlPError(NhlWARNING,NhlEUNKNOWN,"nngetaspectd: ier = %d", ier);
+        }
+        return(NclReturnValue((void*)dtmp,1,dsizes,NULL,NCL_double,0));
   }
   else {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"nngetaspectd: ier = %d", ier);
-	return(NhlFATAL);
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"nngetaspectd: ier = %d", ier);
+        return(NhlFATAL);
   }
 }
 
@@ -683,15 +708,15 @@ NhlErrorTypes nngetslopes_W( void )
  */
   c_nngetslopes(*i,*j,rtmp,&ier);
   if(!ier || (ier >= 4 && ier <= 6)) {
-	dsizes[0] = 1;
-	if(ier) {
-	  NhlPError(NhlWARNING,NhlEUNKNOWN,"nngetslopes: ier = %d", ier);
-	}
-	return(NclReturnValue((void*)rtmp,1,dsizes,NULL,NCL_float,0));
+        dsizes[0] = 1;
+        if(ier) {
+          NhlPError(NhlWARNING,NhlEUNKNOWN,"nngetslopes: ier = %d", ier);
+        }
+        return(NclReturnValue((void*)rtmp,1,dsizes,NULL,NCL_float,0));
   }
   else {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"nngetslopes: ier = %d", ier);
-	return(NhlFATAL);
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"nngetslopes: ier = %d", ier);
+        return(NhlFATAL);
   }
 }
 
@@ -721,15 +746,15 @@ NhlErrorTypes nngetsloped_W( void )
  */
   c_nngetsloped(*i,*j,dtmp,&ier);
   if(!ier || (ier >= 4 && ier <= 6)) {
-	dsizes[0] = 1;
-	if(ier) {
-	  NhlPError(NhlWARNING,NhlEUNKNOWN,"nngetsloped: ier = %d", ier);
-	}
-	return(NclReturnValue((void*)dtmp,1,dsizes,NULL,NCL_double,0));
+        dsizes[0] = 1;
+        if(ier) {
+          NhlPError(NhlWARNING,NhlEUNKNOWN,"nngetsloped: ier = %d", ier);
+        }
+        return(NclReturnValue((void*)dtmp,1,dsizes,NULL,NCL_double,0));
   }
   else {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"nngetsloped: ier = %d", ier);
-	return(NhlFATAL);
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"nngetsloped: ier = %d", ier);
+        return(NhlFATAL);
   }
 }
 
@@ -738,11 +763,11 @@ NhlErrorTypes drwsrfc_W( void )
 {
   int ier = 0;
   float *x;
-  int ndims_x,dsizes_x[NCL_MAX_DIMENSIONS];
+  int dsizes_x[NCL_MAX_DIMENSIONS];
   float *y;
-  int ndims_y,dsizes_y[NCL_MAX_DIMENSIONS];
+  int dsizes_y[NCL_MAX_DIMENSIONS];
   float *z;
-  int ndims_z,dsizes_z[NCL_MAX_DIMENSIONS];
+  int dsizes_z[NCL_MAX_DIMENSIONS];
   float *x1,*y1,*z1;
   int *gkswid;
   int i;
@@ -757,9 +782,9 @@ NhlErrorTypes drwsrfc_W( void )
  * is later registered to only accept floating point numbers.
  */
   gkswid = (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,2);
-  x = (float*)NclGetArgValue(1,7, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
-  y = (float*)NclGetArgValue(2,7, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
-  z = (float*)NclGetArgValue(3,7, &ndims_z, dsizes_z, NULL,NULL,NULL,2 );
+  x = (float*)NclGetArgValue(1,7, NULL, dsizes_x, NULL,NULL,NULL,2);
+  y = (float*)NclGetArgValue(2,7, NULL, dsizes_y, NULL,NULL,NULL,2);
+  z = (float*)NclGetArgValue(3,7, NULL, dsizes_z, NULL,NULL,NULL,2 );
   x1 = (float*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,2);
   y1 = (float*)NclGetArgValue(5,7,NULL,NULL,NULL,NULL,NULL,2);
   z1 = (float*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,2);
@@ -772,16 +797,16 @@ NhlErrorTypes drwsrfc_W( void )
  * The following section allocates the work memory and calls the
  * drwsrfc function.
  */
-	 iwk = (int*)NclMalloc(2*dsizes_x[0]*dsizes_y[0]*sizeof(int));
-	 if( iwk == NULL ) {
-	   NhlPError(NhlFATAL,NhlEUNKNOWN,"drwsrfc: Unable to allocate memory for work array");
-	   return(NhlFATAL);
-	 }
-	 drwsrfc(*gkswid,dsizes_x[0],dsizes_y[0],x,y,z,*x1,*y1,*z1,iwk);
+         iwk = (int*)NclMalloc(2*dsizes_x[0]*dsizes_y[0]*sizeof(int));
+         if( iwk == NULL ) {
+           NhlPError(NhlFATAL,NhlEUNKNOWN,"drwsrfc: Unable to allocate memory for work array");
+           return(NhlFATAL);
+         }
+         drwsrfc(*gkswid,dsizes_x[0],dsizes_y[0],x,y,z,*x1,*y1,*z1,iwk);
   }
   else {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"drwsrfc: the dimension sizes of parameters x, y and z must be identical");
-	return(NhlFATAL);
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"drwsrfc: the dimension sizes of parameters x, y and z must be identical");
+        return(NhlFATAL);
   }
    return(NhlNOERROR);
   
@@ -790,9 +815,9 @@ NhlErrorTypes drwsrfc_W( void )
 NhlErrorTypes drwvctc_W( void )
 {
   float *u;
-  int ndims_u,dsizes_u[NCL_MAX_DIMENSIONS];
+  int dsizes_u[NCL_MAX_DIMENSIONS];
   float *v;
-  int ndims_v,dsizes_v[NCL_MAX_DIMENSIONS];
+  int dsizes_v[NCL_MAX_DIMENSIONS];
   int i;
   int *gkswid;
 /*
@@ -805,8 +830,8 @@ NhlErrorTypes drwvctc_W( void )
  * is later registered to only accept floating point numbers.
  */
   gkswid = (int*)NclGetArgValue(0,3,NULL,NULL,NULL,NULL,NULL,2);
-  u = (float*)NclGetArgValue(1,3, &ndims_u, dsizes_u, NULL,NULL,NULL,2);
-  v = (float*)NclGetArgValue(2,3, &ndims_v, dsizes_v, NULL,NULL,NULL,2);
+  u = (float*)NclGetArgValue(1,3, NULL, dsizes_u, NULL,NULL,NULL,2);
+  v = (float*)NclGetArgValue(2,3, NULL, dsizes_v, NULL,NULL,NULL,2);
 /*
  * This is the only dimension size check needed since the function
  * is registered to only accept single dimension parameters.
@@ -816,11 +841,11 @@ NhlErrorTypes drwvctc_W( void )
  * The following section allocates the work memory and calls the
  * drwvctc function.
  */
-	 drwvctc(*gkswid,dsizes_u[0],dsizes_u[1],u,v);
+         drwvctc(*gkswid,dsizes_u[0],dsizes_u[1],u,v);
   }
   else {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"drwvctc: the dimension sizes of parameters u and v must be identical");
-	return(NhlFATAL);
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"drwvctc: the dimension sizes of parameters u and v must be identical");
+        return(NhlFATAL);
   }
    return(NhlNOERROR);
 }
@@ -829,7 +854,7 @@ NhlErrorTypes drwvctc_W( void )
 NhlErrorTypes drwconc_W( void )
 {
   float *z;
-  int ndims_z,dsizes_z[NCL_MAX_DIMENSIONS];
+  int dsizes_z[NCL_MAX_DIMENSIONS];
   int i;
   int *gkswid;
 /*
@@ -842,7 +867,7 @@ NhlErrorTypes drwconc_W( void )
  * is later registered to only accept floating point numbers.
  */
   gkswid = (int*)NclGetArgValue(0,2,NULL,NULL,NULL,NULL,NULL,2);
-  z = (float*)NclGetArgValue(1,2, &ndims_z, dsizes_z, NULL,NULL,NULL,2);
+  z = (float*)NclGetArgValue(1,2, NULL, dsizes_z, NULL,NULL,NULL,2);
 /*
  * This is the only dimension size check needed since the function
  * is registered to only accept single dimension parameters.
@@ -859,43 +884,43 @@ NhlErrorTypes drwconc_W( void )
 NhlErrorTypes nnpntinits_W( void )
 {
   float *x;
-  int ndims_x,dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   float *y;
-  int ndims_y,dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  int dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
   float *z;
-  int ndims_z,dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
+  int dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
   NclScalar missing_x, missing_y, missing_z;
   int i;
 /*
  * Retrieve parameters
  */
   x = (float*)NclGetArgValue(
-							 0,
-							 3,
-							 &ndims_x,
-							 dsizes_x,
-							 &missing_x,
-							 &has_missing_x,
-							 NULL,
-							 2);
+                                                         0,
+                                                         3,
+                                                         NULL,
+                                                         dsizes_x,
+                                                         &missing_x,
+                                                         &has_missing_x,
+                                                         NULL,
+                                                         2);
   y = (float*)NclGetArgValue(
-							 1,
-							 3,
-							 &ndims_y,
-							 dsizes_y,
-							 &missing_y,
-							 &has_missing_y,
-							 NULL,
-							 2);
+                                                         1,
+                                                         3,
+                                                         NULL,
+                                                         dsizes_y,
+                                                         &missing_y,
+                                                         &has_missing_y,
+                                                         NULL,
+                                                         2);
   z = (float*)NclGetArgValue(
-							 2,
-							 3,
-							 &ndims_z,
-							 dsizes_z,
-							 &missing_z,
-							 &has_missing_z,
-							 NULL,
-							 2);
+                                                         2,
+                                                         3,
+                                                         NULL,
+                                                         dsizes_z,
+                                                         &missing_z,
+                                                         &has_missing_z,
+                                                         NULL,
+                                                         2);
 
 /*
  * Note any of the pointer parameters can be set to NULL, which
@@ -907,83 +932,83 @@ NhlErrorTypes nnpntinits_W( void )
 /*
  * Check for missing values. 
  */
-	 if(has_missing_x) {
-	   for( i = 0; i < dsizes_x[0]; i++ ) {
-		 if(x[i] == missing_x.floatval) {
-		   NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinits: x cannot contain any missing values" );
-		   return(NhlFATAL);
-		 }
-	   }
-	 }
-	 if(has_missing_y) {
-	   for( i = 0; i < dsizes_y[0]; i++ ) {
-		 if(y[i] == missing_y.floatval) {
-		   NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinits: y cannot contain any missing values" );
-		   return(NhlFATAL);
-		 }
-	   }
-	 }
-	 if(has_missing_z) {
-	   for( i = 0; i < dsizes_z[0]; i++ ) {
-		 if(z[i] == missing_z.floatval) {
-		   NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinits: z cannot contain any missing values" );
-		   return(NhlFATAL);
-		 }
-	   }
-	 }
+         if(has_missing_x) {
+           for( i = 0; i < dsizes_x[0]; i++ ) {
+                 if(x[i] == missing_x.floatval) {
+                   NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinits: x cannot contain any missing values" );
+                   return(NhlFATAL);
+                 }
+           }
+         }
+         if(has_missing_y) {
+           for( i = 0; i < dsizes_y[0]; i++ ) {
+                 if(y[i] == missing_y.floatval) {
+                   NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinits: y cannot contain any missing values" );
+                   return(NhlFATAL);
+                 }
+           }
+         }
+         if(has_missing_z) {
+           for( i = 0; i < dsizes_z[0]; i++ ) {
+                 if(z[i] == missing_z.floatval) {
+                   NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinits: z cannot contain any missing values" );
+                   return(NhlFATAL);
+                 }
+           }
+         }
 /*
  * The following section allocates the work memory and calls the
  * c_nnpntinits function.
  */
-	 c_nnpntinits(dsizes_x[0],x,y,z);
-	 return(NhlNOERROR);
+         c_nnpntinits(dsizes_x[0],x,y,z);
+         return(NhlNOERROR);
    }
   else {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinits: the dimension sizes of parameters x, y and z must be identical");
-	return(NhlFATAL);
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinits: the dimension sizes of parameters x, y and z must be identical");
+        return(NhlFATAL);
   }
 }
 
 NhlErrorTypes nnpntinitd_W( void )
 {
   double *x;
-  int ndims_x,dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   double *y;
-  int ndims_y,dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  int dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
   double *z;
-  int ndims_z,dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
+  int dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
   NclScalar missing_x, missing_y, missing_z;
   int i;
 /*
  * Retrieve parameters
  */
   x = (double*)NclGetArgValue(
-							 0,
-							 3,
-							 &ndims_x,
-							 dsizes_x,
-							 &missing_x,
-							 &has_missing_x,
-							 NULL,
-							 2);
+                                                         0,
+                                                         3,
+                                                         NULL,
+                                                         dsizes_x,
+                                                         &missing_x,
+                                                         &has_missing_x,
+                                                         NULL,
+                                                         2);
   y = (double*)NclGetArgValue(
-							 1,
-							 3,
-							 &ndims_y,
-							 dsizes_y,
-							 &missing_y,
-							 &has_missing_y,
-							 NULL,
-							 2);
+                                                         1,
+                                                         3,
+                                                         NULL,
+                                                         dsizes_y,
+                                                         &missing_y,
+                                                         &has_missing_y,
+                                                         NULL,
+                                                         2);
   z = (double*)NclGetArgValue(
-							 2,
-							 3,
-							 &ndims_z,
-							 dsizes_z,
-							 &missing_z,
-							 &has_missing_z,
-							 NULL,
-							 2);
+                                                         2,
+                                                         3,
+                                                         NULL,
+                                                         dsizes_z,
+                                                         &missing_z,
+                                                         &has_missing_z,
+                                                         NULL,
+                                                         2);
 
 /*
  * Note any of the pointer parameters can be set to NULL, which
@@ -995,40 +1020,40 @@ NhlErrorTypes nnpntinitd_W( void )
 /*
  * Check for missing values. 
  */
-	 if(has_missing_x) {
-	   for( i = 0; i < dsizes_x[0]; i++ ) {
-		 if(x[i] == missing_x.doubleval) {
-		   NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinitd: x cannot contain any missing values" );
-		   return(NhlFATAL);
-		 }
-	   }
-	 }
-	 if(has_missing_y) {
-	   for( i = 0; i < dsizes_y[0]; i++ ) {
-		 if(y[i] == missing_y.doubleval) {
-		   NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinitd: y cannot contain any missing values" );
-		   return(NhlFATAL);
-		 }
-	   }
-	 }
-	 if(has_missing_z) {
-	   for( i = 0; i < dsizes_z[0]; i++ ) {
-		 if(z[i] == missing_z.doubleval) {
-		   NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinitd: z cannot contain any missing values" );
-		   return(NhlFATAL);
-		 }
-	   }
-	 }
+         if(has_missing_x) {
+           for( i = 0; i < dsizes_x[0]; i++ ) {
+                 if(x[i] == missing_x.doubleval) {
+                   NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinitd: x cannot contain any missing values" );
+                   return(NhlFATAL);
+                 }
+           }
+         }
+         if(has_missing_y) {
+           for( i = 0; i < dsizes_y[0]; i++ ) {
+                 if(y[i] == missing_y.doubleval) {
+                   NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinitd: y cannot contain any missing values" );
+                   return(NhlFATAL);
+                 }
+           }
+         }
+         if(has_missing_z) {
+           for( i = 0; i < dsizes_z[0]; i++ ) {
+                 if(z[i] == missing_z.doubleval) {
+                   NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinitd: z cannot contain any missing values" );
+                   return(NhlFATAL);
+                 }
+           }
+         }
 /*
  * The following section allocates the work memory and calls the
  * c_nnpntinitd function.
  */
-	 c_nnpntinitd(dsizes_x[0],x,y,z);
-	 return(NhlNOERROR);
+         c_nnpntinitd(dsizes_x[0],x,y,z);
+         return(NhlNOERROR);
    }
   else {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinitd: the dimension sizes of parameters x, y and z must be identical");
-	return(NhlFATAL);
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinitd: the dimension sizes of parameters x, y and z must be identical");
+        return(NhlFATAL);
   }
 }
 

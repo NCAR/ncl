@@ -24,6 +24,13 @@
 #include "ListSupport.h"
 #include "NclFileInterfaces.h"
 #include <ncarg/ncl/NclBuiltIns.h>
+
+/*
+ * The following are the required NCAR Graphics include files.
+ * They should be located in ${NCARG_ROOT}/include
+ */
+#include <ncarg/ngmath.h>
+
 /*
  * Declare wrapper function
  */
@@ -70,6 +77,8 @@ extern NhlErrorTypes ptlcl_skewt_W(void);
 extern NhlErrorTypes showal_skewt_W(void);
 extern NhlErrorTypes pw_skewt_W(void);
 extern NhlErrorTypes cape_thermo_W(void);
+extern NhlErrorTypes gaus_lobat_W(void);
+extern NhlErrorTypes gaus_lobat_wgt_W(void);
 
 extern NhlErrorTypes dv2uvf_W(void);
 extern NhlErrorTypes dv2uvg_W(void);
@@ -204,8 +213,12 @@ extern NhlErrorTypes csa3lxs_W(void);
 extern NhlErrorTypes drwsrfc_W(void);
 extern NhlErrorTypes drwvctc_W(void);
 extern NhlErrorTypes drwconc_W(void);
+extern NhlErrorTypes tdinit_W(void);
+extern NhlErrorTypes tdpara_W(void);
 extern NhlErrorTypes tdez2d_W(void);
 extern NhlErrorTypes tdez3d_W(void);
+extern NhlErrorTypes tdsetp_W(void);
+extern NhlErrorTypes tdgetp_W(void);
 extern NhlErrorTypes wmsetp_W(void);
 extern NhlErrorTypes wmgetp_W(void);
 extern NhlErrorTypes wmbarb_W(void);
@@ -850,6 +863,27 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(cape_thermo_W,args,"cape_thermo",nargs);
+/*
+ * Register gaus_lobat".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(gaus_lobat_W,args,"gaus_lobat",nargs);
+/*
+ * Register gaus_lobat_wgt".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+
+    NclRegisterFunc(gaus_lobat_wgt_W,args,"gaus_lobat_wgt",nargs);
 /*
  * Register "dv2uvf".
  *
@@ -1660,9 +1694,9 @@ void NclAddUserFuncs(void)
  * Configure five parameters identically as single dimension float
  * arrays of any size.
  */
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
 /*
@@ -1678,9 +1712,9 @@ void NclAddUserFuncs(void)
  * Configure five parameters identically as single dimension double
  * arrays of any size.
  */
-        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
 /*
@@ -1735,6 +1769,33 @@ void NclAddUserFuncs(void)
  */
         NclRegisterProc(drwconc_W,args,"drwconc",nargs);
 /*
+ * Register tdinit.
+ */
+        nargs = 0;
+        args = NewArgs(4);
+
+		dimsizes[0] = 3;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+
+		dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+
+        NclRegisterProc(tdinit_W,args,"tdinit",nargs);
+/*
+ * Register tdpara.
+ */
+        nargs = 0;
+        args = NewArgs(3);
+
+		dimsizes[0] = 3;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+
+        NclRegisterProc(tdpara_W,args,"tdpara",nargs);
+/*
  * Register tdez2d.
  */
         nargs = 0;
@@ -1779,6 +1840,18 @@ void NclAddUserFuncs(void)
         NclRegisterProc(tdez3d_W,args,"tdez3d",nargs);
 
 /*
+ *  Register tdsetp.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);
+    nargs++;
+    SetArgTemplate(args, nargs, NclANY, 1, dimsizes);
+    nargs++;
+    NclRegisterProc(tdsetp_W, args, "tdsetp", nargs);
+
+/*
  *  Register wmsetp.
  */
     nargs = 0;
@@ -1799,6 +1872,16 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "string", 1, dimsizes);
     nargs++;
     NclRegisterFunc(wmgetp_W, args, "wmgetp", nargs);
+
+/*
+ *  Register tdgetp.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);
+    nargs++;
+    NclRegisterFunc(tdgetp_W, args, "tdgetp", nargs);
 
 /*
  * Register wmbarb
@@ -1890,9 +1973,8 @@ void NclAddUserFuncs(void)
  */
         nargs = 0;
         args = NewArgs(2);
-        dimsizes[0] = 1;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates
  */
@@ -2292,9 +2374,10 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(4);
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   NclRegisterFunc(csa1s_W,args,"csa1s",nargs);
 
@@ -2303,12 +2386,13 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(7);
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  SetArgTemplate(args,nargs,"float",1,dimsizes); nargs++;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   NclRegisterFunc(csa1xs_W,args,"csa1xs",nargs);
 
@@ -2317,10 +2401,11 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(6);
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   NclRegisterFunc(csa2s_W,args,"csa2s",nargs);
@@ -2330,13 +2415,18 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(9);
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"float",1,dimsizes); nargs++;
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   NclRegisterFunc(csa2xs_W,args,"csa2xs",nargs);
@@ -2346,10 +2436,13 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(6);
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   NclRegisterFunc(csa2ls_W,args,"csa2ls",nargs);
@@ -2359,13 +2452,18 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(9);
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"float",1,dimsizes); nargs++;
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   NclRegisterFunc(csa2lxs_W,args,"csa2lxs",nargs);
@@ -2375,11 +2473,14 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(8);
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
@@ -2390,14 +2491,19 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(11);
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"float",1,dimsizes); nargs++;
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
@@ -2408,11 +2514,14 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(8);
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
@@ -2423,14 +2532,19 @@ void NclAddUserFuncs(void)
  */
   nargs = 0;
   args = NewArgs(11);
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
-  SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"float",NclANY,NclANY); nargs++;
+
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"float",1,dimsizes); nargs++;
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
@@ -3665,6 +3779,26 @@ NclScalar         *missing_dx
 }
 
 /*
+ * Checks if a variable is a scalar or not.
+ * Returns 1 if it is, and a 0 if it isn't.
+ */
+int is_scalar(
+int    ndims_x,
+int    *dsizes_x
+)
+{
+  int is_scalar;
+  if(ndims_x == 1 && dsizes_x[0] == 1) {
+    is_scalar = 1;
+  }
+  else {
+    is_scalar = 0;
+  }
+  return(is_scalar);
+}
+
+
+/*
  * Copy a scalar to an array of scalars.
  */
 double *copy_scalar_to_array(
@@ -3679,7 +3813,7 @@ int          size_x)
  * Check if x is a scalar. If so, then allocate an array to hold
  * this scalar value in every element.
  */
-  if(ndims_x == 1 && dsizes_x[ndims_x-1] == 1) {
+  if(is_scalar(ndims_x,dsizes_x)) {
     dx = (double*)calloc(size_x,sizeof(double));
     if( dx == NULL ) return(NULL);
     for(i = 0; i < size_x; i++) dx[i] = *x;
@@ -3789,6 +3923,30 @@ double missing
 }
 
 /*
+ * Checks if the input contains any missing values, and returns a
+ * 1 if it does, and a 0 if it doesn't.
+ */
+int contains_missing_float(
+float *x,
+int    size_x,
+int    has_missing_x,
+float missing
+)
+{
+  int l, found_missing = 0;
+/*
+ * Check for missing values.
+ */
+  if(has_missing_x) {
+    l = 0;
+    while( l < size_x && !found_missing ) {
+      if(x[l++] == missing) found_missing = 1;
+    }
+  }
+  return(found_missing);
+}
+
+/*
  * Sets a subset of the output data to missing.
  */
 void set_subset_output_missing(
@@ -3807,26 +3965,6 @@ double            missing_x)
       ((double*)x)[index_x+i] = missing_x;
     }
   }
-}
-
-
-/*
- * Checks if a variable is a scalar or not.
- * Returns 1 if it is, and a 0 if it isn't.
- */
-int is_scalar(
-int    ndims_x,
-int    *dsizes_x
-)
-{
-  int is_scalar;
-  if(ndims_x == 1 && dsizes_x[0] == 1) {
-    is_scalar = 1;
-  }
-  else {
-    is_scalar = 0;
-  }
-  return(is_scalar);
 }
 
 
