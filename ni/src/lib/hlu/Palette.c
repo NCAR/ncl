@@ -1,5 +1,5 @@
 /*
- *      $Id: Palette.c,v 1.9 2001-10-02 16:48:53 haley Exp $
+ *      $Id: Palette.c,v 1.10 2002-02-22 18:12:38 haley Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,9 @@
  */
 
 #include <stdlib.h>
+#if defined(Darwin) 
+#include <machine/types.h>
+#endif
 #include <dirent.h>
 
 #include <ncarg/hlu/hluP.h>

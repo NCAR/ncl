@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.53 2001-11-28 02:47:51 dbrown Exp $
+#      $Id: yMakefile,v 1.54 2002-02-22 18:12:38 haley Exp $
 #
 #########################################################################
 #									#
@@ -92,13 +92,13 @@ COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		bsearch.o linaprox.o wksisact.o simpletrans.o wksisopn.o \
 		cmpf.o nicevals.o
 
-FSRCS		= DATACOMMF.f ERRORF.f HLU.f PLOTMANAGERF.f RLGEN.f RLSET.f \
+FSRCS		= DATACOMMF.f ERRORF.f HLUF.f PLOTMANAGERF.f RLGEN.f RLSET.f \
 		RLGET.f TRANSFORMF.f VIEWF.f WORKSPACEF.f WORKSTATIONF.f \
 		DATAITEMF.f APPF.f \
 		coeff1.f interp.f sdot.f sgesl.f trip.f fitpack.f isamax.f \
 		search.f sscal.f saxpy.f sgefa.f terp1.f gerhnd.f
 
-FOBJS		= DATACOMMF.o ERRORF.o HLU.o PLOTMANAGERF.o RLGEN.o RLSET.o \
+FOBJS		= DATACOMMF.o ERRORF.o HLUF.o PLOTMANAGERF.o RLGEN.o RLSET.o \
 		RLGET.o TRANSFORMF.o VIEWF.o WORKSPACEF.o WORKSTATIONF.o \
 		DATAITEMF.o APPF.o \
 		coeff1.o interp.o sdot.o sgesl.o trip.o fitpack.o isamax.o \
