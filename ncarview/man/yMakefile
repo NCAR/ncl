@@ -1,11 +1,12 @@
 
 NCARG	= ../..
 #
-#	$Id: yMakefile,v 1.9 1992-12-14 23:49:08 don Exp $
+#	$Id: yMakefile,v 1.10 1993-02-03 16:32:23 haley Exp $
 #
 
 MAN1	= ctrans ictrans ncgm2cgm cgm2ncgm med gcaps fcaps \
-	xwdtohdf nriftohdf rasview idt cgm_edit 
+	xwdtohdf nriftohdf rasview idt cgm_edit rascat rasgetpal \
+	rasls rassplit
 MAN3	= cgm 
 MAN5	= ncarv_spool ras_palette
 MAN6	=
