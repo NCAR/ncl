@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.6 2004-02-03 16:09:54 haley Exp $
+;      $Id: shea_util.ncl,v 1.7 2004-02-05 19:15:54 haley Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -1540,7 +1540,8 @@ end
 ; whether this is a dual Y or X axis situation.
 ;
 function plot_x2y2 (wks:graphic, w:numeric, z1:numeric, z2:numeric \
-                               , resLB:logical, resRT:logical, axis:string)
+                               , resLB:logical, resRT:logical, axis:string \
+                               , plot_type:string)
 local  locResLB, locResRT, AttsLB, AttsRT, xyLB, xyRT, FRAME, DRAW 
  begin
     locResLB = True
@@ -1567,7 +1568,7 @@ local  locResLB, locResRT, AttsLB, AttsRT, xyLB, xyRT, FRAME, DRAW
 
     locResLB@gsnFrame   = False  ; Don't auto advance the
     locResLB@gsnDraw    = False  ; frame or draw the plot when
-                                ; gsn_xy is called.
+                                 ; gsn_xy/gsn_csm_xy is called.
     if(axis.eq."y") then
         locResLB@tmYROn       = False  ; Turn off right tick marks.
         locResLB@tmYRMinorOn  = False  ; Turn off right minor tick marks.
@@ -1578,9 +1579,17 @@ local  locResLB, locResRT, AttsLB, AttsRT, xyLB, xyRT, FRAME, DRAW
         locResLB@tmXUseBottom = False  ; Keep independent of top.
     end if
     if(axis.eq."y") then
-        xyLB = gsn_xy (wks,w,z1,locResLB)
+        if(plot_type.eq."csm") then
+            xyLB = gsn_csm_xy (wks,w,z1,locResLB)
+        else
+            xyLB = gsn_xy (wks,w,z1,locResLB)
+        end if
     else
-        xyLB = gsn_xy (wks,z1,w,locResLB)
+        if(plot_type.eq."csm") then
+            xyLB = gsn_csm_xy (wks,z1,w,locResLB)
+        else
+            xyLB = gsn_xy (wks,z1,w,locResLB)
+        end if
     end if
     if (.not.any(ismissing(AttsLB))) then   
         if(axis.eq."y") then
@@ -1674,9 +1683,17 @@ local  locResLB, locResRT, AttsLB, AttsRT, xyLB, xyRT, FRAME, DRAW
     locResRT@gsnDraw            = False 
 
     if(axis.eq."y") then
-        xyRT = gsn_xy(wks,w,z2,locResRT)  
+        if(plot_type.eq."csm") then
+            xyRT = gsn_csm_xy(wks,w,z2,locResRT)  
+        else
+            xyRT = gsn_xy(wks,w,z2,locResRT)  
+        end if
     else
-        xyRT = gsn_xy(wks,z2,w,locResRT)  
+        if(plot_type.eq."csm") then
+            xyRT = gsn_csm_xy(wks,z2,w,locResRT)  
+        else
+            xyRT = gsn_xy(wks,z2,w,locResRT)  
+        end if
     end if
 
     if (.not.any(ismissing(AttsRT))) then 
@@ -1730,7 +1747,7 @@ local  locResLB, locResRT, AttsLB, AttsRT, xyLB, xyRT, FRAME, DRAW
 function plot_xy2 (wks:graphic, x:numeric, yL:numeric,yR:numeric \
                               , resL:logical, resR:logical)
 begin
-    xyL = plot_x2y2 (wks, x, yL, yR, resL, resR, "y")
+    xyL = plot_x2y2 (wks, x, yL, yR, resL, resR, "y", "gsun")
     return ( xyL )
 end
 
@@ -1738,7 +1755,24 @@ end
 function plot_x2y (wks:graphic, xB:numeric, xT:numeric, y:numeric \
                               , resB:logical, resT:logical)
 begin
-    xyT = plot_x2y2 (wks, y, xB, xT, resB, resT, "x")
+    xyT = plot_x2y2 (wks, y, xB, xT, resB, resT, "x", "gsun")
+    return ( xyT )
+end
+
+
+; ------------------------------------------------------------------
+function gsn_csm_xy2 (wks:graphic, x:numeric, yL:numeric,yR:numeric \
+                                 , resL:logical, resR:logical)
+begin
+    xyL = plot_x2y2 (wks, x, yL, yR, resL, resR, "y", "csm")
+    return ( xyL )
+end
+
+; ------------------------------------------------------------------
+function gsn_csm_x2y (wks:graphic, xB:numeric, xT:numeric, y:numeric \
+                                 , resB:logical, resT:logical)
+begin
+    xyT = plot_x2y2 (wks, y, xB, xT, resB, resT, "x", "csm")
     return ( xyT )
 end
 
