@@ -1,0 +1,17 @@
+#
+#       $Id: yMakefile,v 1.1 1999-06-08 20:29:30 kennison Exp $
+#
+
+MYNAME  = ezmapdemo
+
+SRC    = EzmapDemo.f
+OBJ    = EzmapDemo.o
+
+PROG_LIBS =	$(NCARGLIBS)
+DEP_LIBS =	$(DEPNCARGLIBS)
+SYS_LIBS	= $(XLIB) -lm
+EXTRA_FCOPTIONS  = -NS32704
+#endif
+
+FortranProgram($(MYNAME),$(OBJ),$(DEP_LIBS))
+InstallTarget($(SRC),$(INSTALL_LIB),$(EXAMPLESPATH))
