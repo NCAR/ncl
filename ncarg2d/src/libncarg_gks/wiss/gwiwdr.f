@@ -1,5 +1,5 @@
 C
-C	$Id: gwiwdr.f,v 1.6 1994-09-15 00:26:55 fred Exp $
+C	$Id: gwiwdr.f,v 1.7 1997-01-17 18:16:28 fred Exp $
 C
       SUBROUTINE GWIWDR(ICNTX,RCNTX)
 C
@@ -19,8 +19,8 @@ C
 C  The current GKS attribut context is passed in via the arrays
 C  ICNTX and RCNTX (see GZSRAT in awi for details on the order).
 C
-      INTEGER ICNTX(31)
-      REAL    RCNTX(15)
+      INTEGER ICNTX(*)
+      REAL    RCNTX(*)
 C
 C  Include all COMMONs .
 C
