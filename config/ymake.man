@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: ymake.man,v 1.1 1993-06-15 20:50:11 boote Exp $
+.\"	$Id: ymake.man,v 1.2 1993-06-16 17:55:04 boote Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -22,7 +22,7 @@
 .\"	Description:	This file explains what ymake is, and how to use it.
 .\"
 .ps 12
-.TH YMAKE 1NCARG "June 1993" "NCAR Graphics Local" "NCAR Graphics"
+.TH ymake 1NCARG "June 1993" "NCAR Graphics Local" "NCAR Graphics"
 .SH NAME
 .nh
 ymake \- C preprocessor interface to the \fBmake\fP utility
@@ -56,7 +56,7 @@ various items to be built.
 on the command line and passes it the following line:
 .sp
 .nf
-		#include Template
+	#include Template
 .fi
 .sp
 .PP
@@ -87,7 +87,7 @@ point to your working version of the library:
 .sp
 .PP
 It is important to override the library using a hard coded path to the
-library instead of using the "-L" flag because the installed library directory
+library instead of using the "\-L" flag because the installed library directory
 will be listed on the compile line before the \fBmake\fP symbol defining
 your development directory.
 .PP
@@ -226,6 +226,151 @@ the
 .I #define DEBUG
 line can go in this file, and all \fIMakefiles\fP created using
 it will use the debugging Optimization flags.
+.SH "NCAR GRAPHICS LIBRARY SYMBOLS"
+The following list of \fBmake\fP symbols are defined by \fBymake\fP.  These
+should be used in \fIyMakefiles\fP instead of specifying the file
+with a direct path name or "\-l" flag.
+.LP
+.ta 1.5i
+\fINCARGLOCLIB\fP	libncarg_loc.a
+.br
+\fINCARGCLIB\fP	libncarg_c.a
+.br
+\fINCARGLIB\fP	libncarg.a
+.br
+\fICNCARGLIB\fP	libncargC.a
+.br
+\fINCARGGKSLIB\fP	libncarg_gks.a
+.br
+\fICNCARGGKSLIB\fP	libncarg_gksC.a
+.br
+\fICGMLIB\fP	libcgm.a
+.br
+\fINCARGRASLIB\fP	libncarg_ras.a
+.br
+\fIHLULIB\fP	libhlu.a
+.br
+\fIHLUUTILLIB\fP	libhlu_util.a
+.br
+\fICTRANSLIB\fP	libctrans.o
+.br
+\fIICTRANSLIB\fP	libictrans.o
+.br
+\fIICTRANS_LIB\fP	libictrans_.o
+.LP
+Additionally, the following symbols have been defined that combine the above
+\fBmake\fP symbols into the groups they are usually used in:
+.IP \fINCARGLIBS\fP 1.5i
+$(NCARGLIB) $(NCARGGKSLIB) $(NCARGLOCLIB) $(NCARGCLIB)
+.IP \fICNCARGLIBS\fP 1.5i
+$(CNCARGLIB) $(CNCARGGKSLIB)
+.IP \fIHLULIBS\fP 1.5i
+$(HLULIB) $(HLUUTILLIB)
+.LP
+There are also a full set of \fBdependent\fP library symbols to go along with
+the above symbols.  These \fBmake\fP symbols indicate the full path name
+of the library they represent.  This is useful for putting the libraries on
+the dependency list of a link command. (See the \fBFortranProgram\fP and
+\fBCProgram\fP rules in the \fBCOMPILE/LINK RULES\fP section.)
+.LP
+\fIDEPNCARGLOCLIB\fP
+.br
+\fIDEPNCARGCLIB\fP
+.br
+\fIDEPNCARGLIB\fP
+.br
+\fIDEPCNCARGLIB\fP
+.br
+\fIDEPNCARGGKSLIB\fP
+.br
+\fIDEPCNCARGGKSLIB\fP
+.br
+\fIDEPCGMLIB\fP
+.br
+\fIDEPNCARGRASLIB\fP
+.br
+\fIDEPHLULIB\fP
+.br
+\fIDEPHLUUTILLIB\fP
+.br
+\fIDEPCTRANSLIB\fP
+.br
+\fIDEPICTRANSLIB\fP
+.br
+\fIDEPICTRANS_LIB\fP
+.br
+\fIDEPNCARGLIBS\fP
+.br
+\fIDEPCNCARGLIBS\fP
+.br
+\fIDEPHLULIBS\fP
+.SH "COMPILE/LINK RULES"
+.B ymake
+has some basic rules that are used to compile executables.
+.B ymake
+uses three \fBmake\fP symbols to define the libraries to link with the object
+code in the current directory to create executables.  These three symbols
+are:
+.IP \fIPROG_LIBS\fP 1.5i
+This symbol defines the libraries that are part of the current directory
+hierarchy.  These libraries are linked in \fBstatically\fP and they come
+before the "\-L" flags on the link line.
+.IP \fIEXTRA_LIBS\fP 1.5i
+This symbol defines the libraries on the system that are not part of the
+current directory hierarchy, but that may not exist on all systems.  These
+libraries must also be linked \fBstatically\fP but they come after the
+"\-L" flags on the link line.
+.IP \fISYS_LIBS\fP 1.5i
+This symbol defines the system libraries that need to be linked into the
+executable.  These libraries should be standard libraries on the system.
+They should be linked in \fBdynamically\fP so the executable has a better
+chance of running on multiple versions of the OS.
+.LP
+These \fBmake\fP symbols are used with the following rules to create
+an executable.  \fIprogram\fP indicates the name of the executable to
+create. \fIobjects\fP indicates the object files that need to be linked
+to create the executable.  \fIdeplibs\fP indicate the libraries that the
+executable is dependent upon.
+.IP \fBFortranProgram\fP(\fIprogram\fP,\fIobjects\fP,\fIdeplibs\fP) 1.5i
+This rule creates a program by linking the listed objects with the
+libraries indicated by setting the $(PROG_LIBS), $(EXTRA_LIBS) and
+$(SYS_LIBS) make symbols. This rule also puts the install rule in.
+It installs the executable into the \fIBIN_PATH\fP defined in the \fISite\fP
+file.  The deplibs indicate a full
+path name to the libraries used in this link that should be put on the
+dependency line of the link rule.  If the DEP[...] Library \fBmake\fP
+symbols are used \fBymake\fP will determine the path.
+.IP \fBFortranTarget\fP(\fIprogram\fP,\fIobjects\fP) 1.5i
+This rule is essentially identical to \fBFortranProgram\fP except that it
+doesn't keep track of the dependent libraries, so it doesn't re-link
+if the libraries are re-compiled.
+.IP \fBFNotInstalledTarget\fP(\fIprogram\fP,\fIobjects\fP) 1.5i
+This rule is essentially identical to \fBFortranTarget\fP except that it
+doesn't put the install rule in.  It is intended to be used to create
+programs that are only used within the distribution or are installed
+into a different directory than the default \fIBIN_PATH\fP.
+.IP \fBCProgram\fP(\fIprogram\fP,\fIobjects\fP,\fIdeplibs\fP) 1.5i
+This rule is the same as \fBFortranProgram\fP except
+that it uses the C Compiler
+to link instead of the Fortran Compiler as the \fBFortranProgram\fP rule does.
+.IP \fBCTarget\fP(\fIprogram\fP,\fIobjects\fP) 1.5i
+This rule is the same as \fBFortranTarget\fP except
+that it uses the C Compiler
+to link instead of the Fortran Compiler as the \fBFortranTarget\fP rule does.
+.IP \fBCNotInstalledTarget\fP(\fIprogram\fP,\fIobjects\fP) 1.5i
+This rule is the same as the \fBFNotInstalledTarget\fP except
+that it uses the C Compiler
+to link instead of the Fortran Compiler as the \fBFNotInstalledTarget\fP rule
+does.
+.SH "MANAGING SUBDIRECTORIES"
+.B ymake
+manages all subdirectory handling itself.  It just needs to be told that the
+given directory has subdirectories, and what those subdirectories are.  To
+do that, you use the
+.I #define IHaveSubdirs
+.B cpp
+directive in the \fIyMakefile\fP.  Then you have to set the \fBmake\fP symbol
+\fISUBDIRS\fP to the list of subdirectories.
 .SH "ENVIRONMENT VARIABLES"
 The following environment variables may be set.
 .TP 5
