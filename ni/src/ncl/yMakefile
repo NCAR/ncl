@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.95 2004-05-12 17:43:57 haley Exp $
+#      $Id: yMakefile,v 1.96 2004-08-26 15:47:20 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2004-05-12 17:43:57 $
+#	$Date: 2004-08-26 15:47:20 $
 #
 #	Description:	
 #
@@ -191,6 +191,7 @@ LibraryTarget($(MYLIB),$(ALLOBJS))
 LibraryTarget($(MYLIB_API),$(APIOBJS))
 BuildSharedLibTarget(libNGncl,$(APIOBJS),1,0,$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) $(CTOFLIBS) -lm -lc)
 CProgram($(MYBIN),$(EXEOBJS),$(DEPLIBS))
+InstallTarget(MakeNcl,$(INSTALL_BIN),$(BINPATH))
 BuildIncludes($(INSTALL_HDRS),ncarg/ncl,../..)
 InstallTarget($(INSTALL_HDRS),$(INSTALL_INC),$(NCLINCPATH))
 
@@ -324,4 +325,15 @@ BuiltInFuncs.o:  BuiltInFuncs.c
  
 NclHDF.o: NclHDF.c
       $(CC) -c $(HDFDEFINES) $(CFLAGS) NclHDF.c
+
+
+MakeNcl: MakeNcl.csh Makefile
+	@sed \
+	-e 's+SED_CC_LD+$(CC_LD)+' \
+	-e 's+SED_CC_OPT+$(CCOPTIONS)+' \
+	-e 's+SED_LDLIBS+$(LDLIBS)+' \
+	-e 's+SED_EXTRA_LDLIBS+$(EXTRA_LDLIBS)+' \
+	-e 's+SED_LIBPATH+$(LIBPATH)+' \
+	-e 's+SED_INCPATH+$(INCPATH)+' \
+	<MakeNcl.csh > MakeNcl
 
