@@ -1,5 +1,5 @@
 NGCOMM
-NGCOMM	$Id: LinuxLib,v 1.1 1997-05-14 23:05:54 boote Exp $
+NGCOMM	$Id: LinuxLib,v 1.2 1997-05-20 16:00:28 boote Exp $
 NGCOMM
 NGCOMM###################################################################
 NGCOMM#									#
@@ -154,7 +154,7 @@ library.so:: library.so.major]\
 ]\
 library.so.major:: objects]\
 	MakeDir($(TOP)/shared)]\
-	$(LD) -shared -o $@ objects $(_LIBROOTSEARCH) reqlibs ]\
+	$(LD) -shared -o $@ objects $(SHAREDLIBSEARCH) $(_LIBROOTSEARCH) $(LIB_SEARCH) reqlibs ]\
 	@cd $(TOP)/shared;\ ]\
 	$(RM) library.so.major; \ ]\
 	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\

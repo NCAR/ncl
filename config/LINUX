@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX,v 1.4 1997-05-14 23:05:54 boote Exp $
+ *      $Id: LINUX,v 1.5 1997-05-20 16:00:27 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,7 @@
 #define FcOptions
 #define COptimizeFlag   
 #define FOptimizeFlag   
+#define XToolLibrary	-lXt -lSM -lICE
 
 #define	ArchRecLibSearch	-L/usr/X11/lib -L/usr/local/lib
 #define	ArchRecIncSearch	-I/usr/X11/include -I/usr/local/include

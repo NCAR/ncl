@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.37 1997-05-14 23:05:56 boote Exp $
+ *	$Id: Rules,v 1.38 1997-05-20 16:00:28 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -115,7 +115,7 @@ makesubdirs:]\
 	@for dir in dirs ; do \ ]\
 	if (test -d $$dir) then \ ]\
 	(cd $$dir; echo "Making $(CURRENT_DIR)/$$dir";\ ]\
-	$(MAKE) $(MFLAGS));\ ]\
+	$(MAKE) $(MFLAGS));sleep 1;\ ]\
 	else echo "NOT Making $(CURRENT_DIR)/$$dir"; fi \ ]\
 	done]\
 ]\
