@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.12 1997-08-25 20:24:23 boote Exp $
+ *      $Id: addfile.c,v 1.13 1997-09-17 16:41:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -204,6 +204,7 @@ NgAddFileClassRec NgaddFileClassRec = {
 /* top_win_chain	*/	False,
 /* create_win		*/	AddFileCreateWin,
 /* create_win_hook	*/	NULL,
+/* close		*/	_NgGOInheritClose,
 	},
 	{
 /* foo			*/	0,
@@ -1932,7 +1933,6 @@ AddFileCreateWin
  */
         XtVaSetValues(go->go.manager,
                       XmNdialogType,XmDIALOG_TEMPLATE,
-                      XmNuserData,go,
                       NULL);
 	XtAddCallback(go->go.manager,
                       XmNcancelCallback,_NgGOPopdownCB,(XtPointer)go->base.id);

@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.9 1997-09-04 17:05:44 boote Exp $
+ *      $Id: ncledit.c,v 1.10 1997-09-17 16:41:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -109,6 +109,7 @@ NgNclEditClassRec NgnclEditClassRec = {
 /* top_win_chain	*/	False,
 /* create_win		*/	NECreateWin,
 /* create_win_hook	*/	NULL,
+/* close		*/	_NgGOInheritClose,
 	},
 	{
 /* nedit		*/	0,

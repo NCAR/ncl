@@ -1,5 +1,5 @@
 /*
- *      $Id: load.c,v 1.3 1997-02-27 20:25:44 boote Exp $
+ *      $Id: load.c,v 1.4 1997-09-17 16:41:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -85,6 +85,7 @@ NgLoadClassRec NgloadClassRec = {
 /* top_win_chain	*/	False,
 /* create_win		*/	LoadCreateWin,
 /* create_win_hook	*/	NULL,
+/* create_win_hook	*/	_NgGOInheritClose,
 	},
 	{
 /* foo			*/	0,
@@ -167,7 +168,7 @@ LoadScriptOkCB
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid nclstate id",func));
 		return;
 	}
-	(void)NgNclSubmitBlock(nsid,line);
+	(void)NgNclSubmitLine(nsid,line,True);
 
 	return;
 }

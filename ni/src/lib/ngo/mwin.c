@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.9 1997-09-04 17:05:43 boote Exp $
+ *      $Id: mwin.c,v 1.10 1997-09-17 16:41:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -98,6 +98,7 @@ NgMWinClassRec NgmWinClassRec = {
 /* top_win_chain	*/	False,
 /* create_win		*/	MWCreateWin,
 /* create_win_hook	*/	NULL,
+/* close		*/	_NgGOInheritClose,
 	},
 	{
 /* foo			*/	0,

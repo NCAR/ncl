@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.5 1997-09-04 17:05:46 boote Exp $
+ *      $Id: xwk.c,v 1.6 1997-09-17 16:41:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -102,6 +102,7 @@ NgXWkClassRec NgxWkClassRec = {
 /* top_win_chain	*/	False,
 /* create_win		*/	XWkCreateWin,
 /* create_win_hook	*/	XWkCreateWinHook,
+/* close		*/	_NgGOInheritClose,
 	},
 	{
 /* foo			*/	0,

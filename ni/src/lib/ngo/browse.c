@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.11 1997-09-08 19:29:20 dbrown Exp $
+ *      $Id: browse.c,v 1.12 1997-09-17 16:41:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -119,6 +119,7 @@ NgBrowseClassRec NgbrowseClassRec = {
 /* top_win_chain	*/	False,
 /* create_win		*/	BrowseCreateWin,
 /* create_win_hook	*/	NULL,
+/* close		*/	_NgGOInheritClose,
 	},
 	{
 /* foo			*/	0,

@@ -1,5 +1,5 @@
 /*
- *      $Id: goP.h,v 1.6 1997-09-04 17:05:43 boote Exp $
+ *      $Id: goP.h,v 1.7 1997-09-17 16:41:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -80,6 +80,8 @@ typedef NhlBoolean (*_NgGOFunc)(
 	NgGO	go
 );
 
+#define _NgGOInheritClose	((_NgGOFunc)_NhlInherit)
+
 typedef struct _NgGOClassPart {
 	/*
 	 * These three widgetclasses are settable in sub-classes in
@@ -97,6 +99,7 @@ typedef struct _NgGOClassPart {
 	NhlBoolean	top_win_chain;
 	_NgGOFunc	create_win;		/* D chained	*/
 	_NgGOFunc	create_win_hook;	/* D chained	*/
+	_NgGOFunc	close;
 
 } NgGOClassPart;
 
@@ -152,6 +155,11 @@ extern void _NgGOSetTitle(
 	NgGO		go,
 	Const char	*title,
 	Const char	*icon_title
+);
+
+extern void _NgGOWidgetTranslations(
+	NgGO	go,
+	Widget	w
 );
 
 #endif	/* _NG_GOP_H_ */

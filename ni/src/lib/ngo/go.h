@@ -1,5 +1,5 @@
 /*
- *      $Id: go.h,v 1.1 1996-10-10 18:55:21 boote Exp $
+ *      $Id: go.h,v 1.2 1997-09-17 16:41:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -56,6 +56,10 @@ extern void NgGOPopup(
 );
 
 extern void NgGOPopdown(
+	int	goid
+);
+
+extern void NgGOClose(
 	int	goid
 );
 

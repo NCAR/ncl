@@ -1,4 +1,4 @@
-/* $Id: MegaB.c,v 1.2 1997-09-11 01:01:49 dbrown Exp $ */
+/* $Id: MegaB.c,v 1.3 1997-09-17 16:41:03 boote Exp $ */
 /*
  * Copyright 1994 John L. Cwikla
  *
@@ -166,6 +166,21 @@ static char traversalTranslations[] =
 <Key>osfActivate:ArmAndActivate()\n\
 ~s ~m ~a <Key>Return:ArmAndActivate()\n\
 ~s ~m ~a <Key>space:ArmAndActivate()";
+
+#if	(XmVERSION >= 2)
+
+#define	_XmStringCreate(s)	XmStringCopy(s)
+#define _XmStringCreateExternal(font,s)	(s)
+
+static _XmSelectColorDefault(
+	Widget		w,
+	int		offset,
+	XrmValue	*value
+)
+{
+	XmeGetDefaultPixel(w,XmSELECT,offset,value);
+}
+#endif
 
 #define TheOffset(field) XtOffset(XmMegaButtonWidget, mega_button.field)
 static XtResource resources[] =
@@ -570,7 +585,7 @@ static void expose(XmMegaButtonWidget _mbw, XEvent *_event, Region _region)
 
 	findGoodShowPos(_mbw);
 
-	gc = XtIsSensitive(_mbw) ? LABEL(_mbw).normal_GC : LABEL(_mbw).insensitive_GC;
+	gc = XtIsSensitive((Widget)_mbw) ? LABEL(_mbw).normal_GC : LABEL(_mbw).insensitive_GC;
 
 	first = FPOS(_mbw);
 	y = 0;

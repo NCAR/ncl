@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.9 1997-09-04 17:05:42 boote Exp $
+ *      $Id: go.c,v 1.10 1997-09-17 16:41:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -76,6 +76,10 @@ static NhlBoolean GOCreateWinHook(
 	NgGO		go
 );
 
+static NhlBoolean GOClose(
+	NgGO		go
+);
+
 NgGOClassRec NggOClassRec = {
 	{
 /* class_name			*/	"gOClass",
@@ -111,6 +115,7 @@ NgGOClassRec NggOClassRec = {
 /* top_win_chain	*/	True,
 /* create_win		*/	GOCreateWin,		/* D chained	*/
 /* create_win_hook	*/	GOCreateWinHook,	/* U chained	*/
+/* close		*/	GOClose,		/* Not chained	*/
 
 	}
 };
@@ -148,8 +153,11 @@ GOClassPartInitialize
 		return ret;
 
 	/*
-	 * Do Inheritance here - none currently.
+	 * Do Inheritance here
 	 */
+	if(gc->go_class.close == _NgGOInheritClose)
+		gc->go_class.close = sc->go_class.close;
+
 
 	return ret;
 }
@@ -199,7 +207,7 @@ closeWindow
 	}
 
 	goid = NgGOWidgetToGoId(w);
-	NgGOPopdown(goid);
+	NgGOClose(goid);
 }
 
 /*
@@ -981,6 +989,22 @@ GOCreateWinHook
 
 	return True;
 }
+
+static NhlBoolean
+GOClose
+(
+	NgGO	go
+)
+{
+	char			func[]="GOClose";
+	NgGOPart		*gp = &go->go;
+	NgGOClass		gc = (NgGOClass)go->base.layer_class;
+
+	NgGOPopdown(go->base.id);
+
+	return True;
+}
+
 /*
  * Static funcs that are not methods
  */
@@ -1574,6 +1598,18 @@ _NgGOSetTitle
 	return;
 }
 
+void
+_NgGOWidgetTranslations
+(
+	NgGO	go,
+	Widget	w
+)
+{
+	if(!go)
+		return;
+	InstallTranslations(w,&go->go);
+}
+
 /*
  * Public API
  */
@@ -1682,6 +1718,7 @@ NgGOPopup
 		return;
 
 	XtPopup(gp->shell,XtGrabNone);
+	XMapRaised(gp->x->dpy,XtWindow(gp->shell));
 
 	if(!go->go.sensitive)
 		Disable(go);
@@ -1713,6 +1750,29 @@ NgGOPopdown
 
 	if(gp->shell)
 		XtPopdown(gp->shell);
+
+	return;
+}
+
+void
+NgGOClose
+(
+	int		goid
+)
+{
+	char		func[] = "NgGOClose";
+	NgGO		go = (NgGO)_NhlGetLayer(goid);
+	NgGOClass	gc;
+
+	if(!go || !_NhlIsClass((NhlLayer)go,NggOClass)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid goid %d",
+								func,goid));
+		return;
+	}
+
+	gc = (NgGOClass)go->base.layer_class;
+
+	(void)(*gc->go_class.close)(go);
 
 	return;
 }
