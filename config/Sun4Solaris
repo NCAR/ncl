@@ -125,7 +125,7 @@ FCPP              = /usr/ccs/lib/cpp
 F77               = f77
 F77_LD            = $(F77)
 FDEBUG            =
-FOPT              = -g
+FOPT              = -O
 FMISC             =
 FFLAGS            = $(OS) $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
                     $(FLOAT_OPT)
