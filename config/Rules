@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.34 1996-11-24 22:11:55 boote Exp $
+ *	$Id: Rules,v 1.35 1997-03-16 17:34:25 haley Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -726,7 +726,7 @@ CleanFilesTarget(library)
 #endif	/* PartialLibraryRoot */
 
 /*
- * Macro:	ExampleTarget
+ * Macro:	CExampleTarget
  *
  * Description:	Sources for CExampleTarget are any of the ncargex or
  *      ng4ex C example files.
