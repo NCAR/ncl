@@ -1,5 +1,5 @@
 C
-C      $Id: cn06f.f,v 1.7 1997-06-19 15:40:26 haley Exp $
+C      $Id: cn06f.f,v 1.8 1997-10-08 17:21:48 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -27,7 +27,7 @@ C
       external NhlFScalarFieldClass
       external NhlFContourPlotClass
 
-      parameter(NLON=36,NLAT=33)
+      parameter(NLON=36,NLAT=33,NCOLORS=17)
       integer xbvalues(6),ylvalues(5)
       character*4 xblabels(6)
       character*3 yllabels(5)
@@ -40,6 +40,7 @@ C Declare variables for the HLU routine calls.
 C
       integer appid, workid, field1, con1
       integer srlist, i
+      real   cmap(3,NCOLORS)
 C
 C Declare variables for getting information from netCDF file.
 C
@@ -71,11 +72,67 @@ C
       call NhlFRLSetString(srlist,'appUsrDir','./',ierr)
       call NhlFCreate(appid,'cn06',NhlFAppClass,0,srlist,ierr)
 
+      cmap(1,1) = 0.0
+      cmap(2,1) = 0.0
+      cmap(3,1) = 0.0
+      cmap(1,2) = 1.0
+      cmap(2,2) = 1.0
+      cmap(3,2) = 1.0
+      cmap(1,3) = 0.0
+      cmap(2,3) = 0.0
+      cmap(3,3) = 0.0
+      cmap(1,4) = 1.0
+      cmap(2,4) = 0.0
+      cmap(3,4) = 0.0
+      cmap(1,5) = 0.0
+      cmap(2,5) = 1.0
+      cmap(3,5) = 0.0
+      cmap(1,6) = 0.0
+      cmap(2,6) = 0.0
+      cmap(3,6) = 1.0
+      cmap(1,7) = 1.0
+      cmap(2,7) = 1.0
+      cmap(3,7) = 0.0
+      cmap(1,8) = 0.0
+      cmap(2,8) = 1.0
+      cmap(3,8) = 1.0
+      cmap(1,9) = 1.0
+      cmap(2,9) = 0.0
+      cmap(3,9) = 1.0
+      cmap(1,10) = 0.5
+      cmap(2,10) = 0.0
+      cmap(3,10) = 0.0
+      cmap(1,11) = 0.5
+      cmap(2,11) = 1.0
+      cmap(3,11) = 1.0
+      cmap(1,12) = 0.0
+      cmap(2,12) = 0.0
+      cmap(3,12) = 0.5
+      cmap(1,13) = 1.0
+      cmap(2,13) = 1.0
+      cmap(3,13) = 0.5
+      cmap(1,14) = 0.5
+      cmap(2,14) = 0.0
+      cmap(3,14) = 1.0
+      cmap(1,15) = 1.0
+      cmap(2,15) = 0.5
+      cmap(3,15) = 0.0
+      cmap(1,16) = 0.0
+      cmap(2,16) = 0.5
+      cmap(3,16) = 1.0
+      cmap(1,17) = 0.5
+      cmap(2,17) = 1.0
+      cmap(3,17) = 0.0
+
+      count(1) = 3
+      count(2) = NCOLORS
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation.
 C
          call NhlFRLClear(srlist)
+         call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,count,
+     +        ierr)
          call NhlFRLSetString(srlist,'wkMetaName','./cn06f.ncgm',ierr)
          call NhlFCreate(workid,'cn06Work',
      +        NhlFNcgmWorkstationClass,0,srlist,ierr)
@@ -84,6 +141,8 @@ C
 C Create an xworkstation object.
 C
          call NhlFRLClear(srlist)
+         call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,count,
+     +        ierr)
          call NhlFRLSetString(srlist,'wkPause','True',ierr)
          call NhlFCreate(workid,'cn06Work',NhlFXWorkstationClass,
      +        0,srlist,ierr)
@@ -92,6 +151,8 @@ C
 C Create a PostScript workstation.
 C
          call NhlFRLClear(srlist)
+         call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,count,
+     +        ierr)
          call NhlFRLSetString(srlist,'wkPSFileName','./cn06f.ps',ierr)
          call NhlFCreate(workid,'cn06Work',
      +        NhlFPSWorkstationClass,0,srlist,ierr)
@@ -211,6 +272,8 @@ C
       call NhlFRLSetString(srlist,'tmYLMode','EXPLICIT',ierr)
       call NhlFRLSetIntegerArray(srlist,'tmYLValues',ylvalues,5,ierr)
       call NhlFRLSetStringArray(srlist,'tmYLLabels',yllabels,5,ierr)
+      call NhlFRLSetString(srlist,'cnLowLabelsOn','True',ierr)
+      call NhlFRLSetString(srlist,'cnHighLabelsOn','True',ierr)
       call NhlFRLSetString(srlist,'tmXMajorGrid','True',ierr)
       call NhlFRLSetString(srlist,'tmYMajorGrid','True',ierr)
       call NhlFRLSetString(srlist,'tmXBMinorOn','False',ierr)

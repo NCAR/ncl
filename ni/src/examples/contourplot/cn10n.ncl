@@ -36,39 +36,40 @@ file1 = addfile(ncargpath("data") + "/cdf/cn10n.cdf","r")
 ;
 ;  Set up color map.
 ;
-cmap = new( (/26, 3/), float)
+cmap = new( (/27, 3/), float)
 ;
 ;  Colors for contour fill areas varying from blue to red.
 ;
 cmap( 0,:) = (/1.00, 1.00, 1.00/)
-cmap( 1,:) = (/0.00, 0.15, 1.00/)
-cmap( 2,:) = (/0.00, 0.05, 1.00/)
-cmap( 3,:) = (/0.04, 0.00, 1.00/)
-cmap( 4,:) = (/0.14, 0.00, 1.00/)
-cmap( 5,:) = (/0.24, 0.00, 1.00/)
-cmap( 6,:) = (/0.34, 0.00, 1.00/)
-cmap( 7,:) = (/0.43, 0.00, 1.00/)
-cmap( 8,:) = (/0.53, 0.00, 1.00/)
-cmap( 9,:) = (/0.63, 0.00, 1.00/)
-cmap(10,:) = (/0.73, 0.00, 1.00/)
-cmap(11,:) = (/0.83, 0.00, 1.00/)
-cmap(12,:) = (/0.92, 0.00, 1.00/)
-cmap(13,:) = (/1.00, 0.00, 0.98/)
-cmap(14,:) = (/1.00, 0.00, 0.88/)
-cmap(15,:) = (/1.00, 0.00, 0.78/)
-cmap(16,:) = (/1.00, 0.00, 0.68/)
-cmap(17,:) = (/1.00, 0.00, 0.59/)
-cmap(18,:) = (/1.00, 0.00, 0.49/)
-cmap(19,:) = (/1.00, 0.00, 0.39/)
-cmap(20,:) = (/1.00, 0.00, 0.29/)
-cmap(21,:) = (/1.00, 0.00, 0.20/)
-cmap(22,:) = (/1.00, 0.00, 0.10/)
-cmap(23,:) = (/1.00, 0.00, 0.00/)
+cmap( 1,:) = (/0.00,0.00, 0.00/)
+cmap( 2,:) = (/0.00, 0.15, 1.00/)
+cmap( 3,:) = (/0.00, 0.05, 1.00/)
+cmap( 4,:) = (/0.04, 0.00, 1.00/)
+cmap( 5,:) = (/0.14, 0.00, 1.00/)
+cmap( 6,:) = (/0.24, 0.00, 1.00/)
+cmap( 7,:) = (/0.34, 0.00, 1.00/)
+cmap( 8,:) = (/0.43, 0.00, 1.00/)
+cmap( 9,:) = (/0.53, 0.00, 1.00/)
+cmap(10,:) = (/0.63, 0.00, 1.00/)
+cmap(11,:) = (/0.73, 0.00, 1.00/)
+cmap(12,:) = (/0.83, 0.00, 1.00/)
+cmap(13,:) = (/0.92, 0.00, 1.00/)
+cmap(14,:) = (/1.00, 0.00, 0.98/)
+cmap(15,:) = (/1.00, 0.00, 0.88/)
+cmap(16,:) = (/1.00, 0.00, 0.78/)
+cmap(17,:) = (/1.00, 0.00, 0.68/)
+cmap(18,:) = (/1.00, 0.00, 0.59/)
+cmap(19,:) = (/1.00, 0.00, 0.49/)
+cmap(20,:) = (/1.00, 0.00, 0.39/)
+cmap(21,:) = (/1.00, 0.00, 0.29/)
+cmap(22,:) = (/1.00, 0.00, 0.20/)
+cmap(23,:) = (/1.00, 0.00, 0.10/)
+cmap(24,:) = (/1.00, 0.00, 0.00/)
 ;
 ;  Colors used for labels.
 ;
-cmap(24,:) = (/0.00, 0.00, 0.00/)
-cmap(25,:) = (/0.40, 0.00, 0.40/)
+cmap(25,:) = (/0.00, 0.00, 0.00/)
+cmap(26,:) = (/0.40, 0.00, 0.40/)
 
 ;
 ; Default is to display output to an X workstation
@@ -154,41 +155,41 @@ setvalues con1
   "cnSmoothingOn": True
   "cnMaxPointDistanceF" : 0.0
   "cnLineColor": 0
-  "cnLineLabelFontColor": 24
+  "cnLineLabelFontColor": 25
   "cnLineLabelFont": 22
   "cnLineLabelFontHeightF": .02
   "cnLineLabelInterval": 3
   "cnLineLabelPlacementMode": "COMPUTED"
   "cnHighLabelFont": 22
   "cnHighLabelFontHeightF": .025
-  "cnHighLabelFontColor": 24
+  "cnHighLabelFontColor": 25
   "cnInfoLabelOn": "False"
 
   "tmXBMinorPerMajor": 2
 
-  "tmYLMajorLineColor": 25
-  "tmYLMinorLineColor": 25
+  "tmYLMajorLineColor": 26
+  "tmYLMinorLineColor": 26
   "tmYLMinorThicknessF": 2.
-  "tmXBMajorLineColor": 25
-  "tmXBMinorLineColor": 25
+  "tmXBMajorLineColor": 26
+  "tmXBMinorLineColor": 26
   "tmXBMinorThicknessF": 2.
 
   "tmXBLabelFont": 21
   "tmXBLabelFontHeightF": .03
-  "tmXBLabelFontColor": 25
+  "tmXBLabelFontColor": 26
 
   "tmYLLabelFont": 21
   "tmYLLabelFontHeightF": .03
-  "tmYLLabelFontColor": 25
+  "tmYLLabelFontColor": 26
 
-  "tmBorderLineColor": 25
+  "tmBorderLineColor": 26
 
   "tiMainOn": "True"
   "tiMainFont": 26
   "tiMainFontHeightF": .04
   "tiMainString": "The Hot Zone"
   "tiMainOffsetYF": -0.025
-  "tiMainFontColor": 25
+  "tiMainFontColor": 26
 end setvalues
 
 draw(con1)
@@ -240,43 +241,43 @@ xy_id = create "XyPlotData" xyPlotClass workstation_id
   "tiMainFontHeightF": .0275
   "tiMainString": "For X = 10."
   "tiMainOffsetYF": -0.00
-  "tiMainFontColor": 25
+  "tiMainFontColor": 26
   "tiXAxisString": "Y"
   "tiXAxisFont": 26
-  "tiXAxisFontColor": 25
+  "tiXAxisFontColor": 26
   "tiXAxisFontHeightF": .025
   "tiYAxisString": "F(Y)"
   "tiYAxisFont": 26
-  "tiYAxisFontColor": 25
+  "tiYAxisFontColor": 26
   "tiYAxisFontHeightF": .025
 
   "tmXTBorderOn": "False"
   "tmYRBorderOn": "False"
   "tmXTOn": "False"
   "tmYROn": "False"
-  "tmYLMajorLineColor": 25
-  "tmYLMinorLineColor": 25
+  "tmYLMajorLineColor": 26
+  "tmYLMinorLineColor": 26
   "tmYLMinorThicknessF": 2.
-  "tmXBMajorLineColor": 25
-  "tmXBMinorLineColor": 25
+  "tmXBMajorLineColor": 26
+  "tmXBMinorLineColor": 26
   "tmXBMinorThicknessF": 2.
 
   "tmXBMinorPerMajor": 2
   "tmYLMinorPerMajor": 2
-  "tmBorderLineColor": 25
+  "tmBorderLineColor": 26
 
   "tmXBLabelFont": 21
   "tmXBLabelFontHeightF": .025
-  "tmXBLabelFontColor": 25
+  "tmXBLabelFontColor": 26
   "tmYLLabelFont": 21
   "tmYLLabelFontHeightF": .025
-  "tmYLLabelFontColor": 25
+  "tmYLLabelFontColor": 26
 end create
 
 dataspec = NhlAddData(xy_id,"xyCoordData",y_dataid)
 setvalues dataspec
   "xyMonoLineColor": "True"
-  "xyLineColor": 23
+  "xyLineColor": 24
   "xyLineThicknessF": 2.
 end setvalues
 
@@ -303,7 +304,7 @@ mapid = create "Map0" mapPlotClass workstation_id
   "tiMainFont": 26
   "tiMainFontHeightF": .037
   "tiMainOffsetYF": -0.00
-  "tiMainFontColor": 25
+  "tiMainFontColor": 26
   "tiMainString" : "Mound over Colorado"
 
   "vpXF": .1
@@ -322,10 +323,11 @@ mapid = create "Map0" mapPlotClass workstation_id
   "mpMaxLatF": 44.
   "mpMinLonF": -115.
   "mpMaxLonF": -93.
-  "mpUSStateLineColor": 24
+  "mpUSStateLineColor": 25
   "mpUSStateLineThicknessF": 2.
   "mpGridAndLimbOn": "False"
-  "mpPerimLineColor": 25
+  "mpPerimOn": "True"
+  "mpPerimLineColor": 26
   "mpPerimLineThicknessF": 2.
 end create
 

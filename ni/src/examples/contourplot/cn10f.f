@@ -1,5 +1,5 @@
 C
-C      $Id: cn10f.f,v 1.4 1997-05-22 16:19:05 haley Exp $
+C      $Id: cn10f.f,v 1.5 1997-10-08 17:21:55 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -39,7 +39,7 @@ C
 C
 C Define the maximum number of colors.
 C
-      parameter(NCOLORS=26)
+      parameter(NCOLORS=27)
 C
 C Declare variables for the HLU routine calls.
 C
@@ -82,83 +82,86 @@ C
       cmap(2, 1) = 1.00
       cmap(3, 1) = 1.00
       cmap(1, 2) = 0.00
-      cmap(2, 2) = 0.15
-      cmap(3, 2) = 1.00
+      cmap(2, 2) = 0.00
+      cmap(3, 2) = 0.00
       cmap(1, 3) = 0.00
-      cmap(2, 3) = 0.05
+      cmap(2, 3) = 0.15
       cmap(3, 3) = 1.00
-      cmap(1, 4) = 0.04
-      cmap(2, 4) = 0.00
+      cmap(1, 4) = 0.00
+      cmap(2, 4) = 0.05
       cmap(3, 4) = 1.00
-      cmap(1, 5) = 0.14
+      cmap(1, 5) = 0.04
       cmap(2, 5) = 0.00
       cmap(3, 5) = 1.00
-      cmap(1, 6) = 0.24
+      cmap(1, 6) = 0.14
       cmap(2, 6) = 0.00
       cmap(3, 6) = 1.00
-      cmap(1, 7) = 0.34
+      cmap(1, 7) = 0.24
       cmap(2, 7) = 0.00
       cmap(3, 7) = 1.00
-      cmap(1, 8) = 0.43
+      cmap(1, 8) = 0.34
       cmap(2, 8) = 0.00
       cmap(3, 8) = 1.00
-      cmap(1, 9) = 0.53
+      cmap(1, 9) = 0.43
       cmap(2, 9) = 0.00
       cmap(3, 9) = 1.00
-      cmap(1,10) = 0.63
+      cmap(1,10) = 0.53
       cmap(2,10) = 0.00
       cmap(3,10) = 1.00
-      cmap(1,11) = 0.73
+      cmap(1,11) = 0.63
       cmap(2,11) = 0.00
       cmap(3,11) = 1.00
-      cmap(1,12) = 0.83
+      cmap(1,12) = 0.73
       cmap(2,12) = 0.00
       cmap(3,12) = 1.00
-      cmap(1,13) = 0.92
+      cmap(1,13) = 0.83
       cmap(2,13) = 0.00
       cmap(3,13) = 1.00
-      cmap(1,14) = 1.00
+      cmap(1,14) = 0.92
       cmap(2,14) = 0.00
-      cmap(3,14) = 0.98
+      cmap(3,14) = 1.00
       cmap(1,15) = 1.00
       cmap(2,15) = 0.00
-      cmap(3,15) = 0.88
+      cmap(3,15) = 0.98
       cmap(1,16) = 1.00
       cmap(2,16) = 0.00
-      cmap(3,16) = 0.78
+      cmap(3,16) = 0.88
       cmap(1,17) = 1.00
       cmap(2,17) = 0.00
-      cmap(3,17) = 0.68
+      cmap(3,17) = 0.78
       cmap(1,18) = 1.00
       cmap(2,18) = 0.00
-      cmap(3,18) = 0.59
+      cmap(3,18) = 0.68
       cmap(1,19) = 1.00
       cmap(2,19) = 0.00
-      cmap(3,19) = 0.49
+      cmap(3,19) = 0.59
       cmap(1,20) = 1.00
       cmap(2,20) = 0.00
-      cmap(3,20) = 0.39
+      cmap(3,20) = 0.49
       cmap(1,21) = 1.00
       cmap(2,21) = 0.00
-      cmap(3,21) = 0.29
+      cmap(3,21) = 0.39
       cmap(1,22) = 1.00
       cmap(2,22) = 0.00
-      cmap(3,22) = 0.20
+      cmap(3,22) = 0.29
       cmap(1,23) = 1.00
       cmap(2,23) = 0.00
-      cmap(3,23) = 0.10
+      cmap(3,23) = 0.20
       cmap(1,24) = 1.00
       cmap(2,24) = 0.00
-      cmap(3,24) = 0.00
+      cmap(3,24) = 0.10
+      cmap(1,25) = 1.00
+      cmap(2,25) = 0.00
+      cmap(3,25) = 0.00
 C
 C  Colors used for labels.
 C
-      cmap(1,25) = 0.00
-      cmap(2,25) = 0.00
-      cmap(3,25) = 0.00
-      cmap(1,26) = 0.40
+      cmap(1,26) = 0.00
       cmap(2,26) = 0.00
-      cmap(3,26) = 0.40
+      cmap(3,26) = 0.00
+      cmap(1,27) = 0.40
+      cmap(2,27) = 0.00
+      cmap(3,27) = 0.40
       length(1) = 3
       length(2) = NCOLORS
 C
@@ -282,7 +285,7 @@ C
       call NhlFRLSetString(srlist,'cnSmoothingOn','True',ierr)
       call NhlFRLSetFloat(srlist,'cnMaxPointDistanceF',0.0,ierr)
       call NhlFRLSetInteger(srlist,'cnLineColor',0,ierr)
-      call NhlFRLSetInteger(srlist,'cnLineLabelFontColor',24,ierr)
+      call NhlFRLSetInteger(srlist,'cnLineLabelFontColor',25,ierr)
       call NhlFRLSetInteger(srlist,'cnLineLabelFont',22,ierr)
       call NhlFRLSetFloat(srlist,'cnLineLabelFontHeightF',.02,ierr)
       call NhlFRLSetInteger(srlist,'cnLineLabelInterval',3,ierr)
@@ -290,34 +293,34 @@ C
      +     ierr)
       call NhlFRLSetInteger(srlist,'cnHighLabelFont',22,ierr)
       call NhlFRLSetFloat(srlist,'cnHighLabelFontHeightF',.025,ierr)
-      call NhlFRLSetInteger(srlist,'cnHighLabelFontColor',24,ierr)
+      call NhlFRLSetInteger(srlist,'cnHighLabelFontColor',25,ierr)
       call NhlFRLSetString(srlist,'cnInfoLabelOn','False',ierr)
 
       call NhlFRLSetInteger(srlist,'tmXBMinorPerMajor',2,ierr)
 
-      call NhlFRLSetInteger(srlist,'tmYLMajorLineColor',25,ierr)
-      call NhlFRLSetInteger(srlist,'tmYLMinorLineColor',25,ierr)
+      call NhlFRLSetInteger(srlist,'tmYLMajorLineColor',26,ierr)
+      call NhlFRLSetInteger(srlist,'tmYLMinorLineColor',26,ierr)
       call NhlFRLSetFloat(srlist,'tmYLMinorThicknessF',2.,ierr)
-      call NhlFRLSetInteger(srlist,'tmXBMajorLineColor',25,ierr)
-      call NhlFRLSetInteger(srlist,'tmXBMinorLineColor',25,ierr)
+      call NhlFRLSetInteger(srlist,'tmXBMajorLineColor',26,ierr)
+      call NhlFRLSetInteger(srlist,'tmXBMinorLineColor',26,ierr)
       call NhlFRLSetFloat(srlist,'tmXBMinorThicknessF',2.,ierr)
 
       call NhlFRLSetInteger(srlist,'tmXBLabelFont',21,ierr)
       call NhlFRLSetFloat(srlist,'tmXBLabelFontHeightF',.03,ierr)
-      call NhlFRLSetInteger(srlist,'tmXBLabelFontColor',25,ierr)
+      call NhlFRLSetInteger(srlist,'tmXBLabelFontColor',26,ierr)
 
       call NhlFRLSetInteger(srlist,'tmYLLabelFont',21,ierr)
       call NhlFRLSetFloat(srlist,'tmYLLabelFontHeightF',.03,ierr)
-      call NhlFRLSetInteger(srlist,'tmYLLabelFontColor',25,ierr)
+      call NhlFRLSetInteger(srlist,'tmYLLabelFontColor',26,ierr)
 
-      call NhlFRLSetInteger(srlist,'tmBorderLineColor',25,ierr)
+      call NhlFRLSetInteger(srlist,'tmBorderLineColor',26,ierr)
 
       call NhlFRLSetString(srlist,'tiMainOn','True',ierr)
       call NhlFRLSetInteger(srlist,'tiMainFont',26,ierr)
       call NhlFRLSetFloat(srlist,'tiMainFontHeightF',.04,ierr)
       call NhlFRLSetString(srlist,'tiMainString','The Hot Zone',ierr)
       call NhlFRLSetFloat(srlist,'tiMainOffsetYF',-0.025,ierr)
-      call NhlFRLSetInteger(srlist,'tiMainFontColor',25,ierr)
+      call NhlFRLSetInteger(srlist,'tiMainFontColor',26,ierr)
       call NhlFSetValues(con1,srlist,ierr)
       call NhlFDraw(con1,ierr)
       call NhlFFrame(work_id,ierr)
@@ -376,37 +379,37 @@ C
       call NhlFRLSetFloat(srlist,'tiMainFontHeightF',.0275,ierr)
       call NhlFRLSetString(srlist,'tiMainString','For X = 10.',ierr)
       call NhlFRLSetFloat(srlist,'tiMainOffsetYF',-0.00,ierr)
-      call NhlFRLSetInteger(srlist,'tiMainFontColor',25,ierr)
+      call NhlFRLSetInteger(srlist,'tiMainFontColor',26,ierr)
       call NhlFRLSetString(srlist,'tiXAxisString','Y',ierr)
       call NhlFRLSetInteger(srlist,'tiXAxisFont',26,ierr)
-      call NhlFRLSetInteger(srlist,'tiXAxisFontColor',25,ierr)
+      call NhlFRLSetInteger(srlist,'tiXAxisFontColor',26,ierr)
       call NhlFRLSetFloat(srlist,'tiXAxisFontHeightF',.025,ierr)
       call NhlFRLSetString(srlist,'tiYAxisString','F(Y)',ierr)
       call NhlFRLSetInteger(srlist,'tiYAxisFont',26,ierr)
-      call NhlFRLSetInteger(srlist,'tiYAxisFontColor',25,ierr)
+      call NhlFRLSetInteger(srlist,'tiYAxisFontColor',26,ierr)
       call NhlFRLSetFloat(srlist,'tiYAxisFontHeightF',.025,ierr)
 
       call NhlFRLSetString(srlist,'tmXTBorderOn','False',ierr)
       call NhlFRLSetString(srlist,'tmYRBorderOn','False',ierr)
       call NhlFRLSetString(srlist,'tmXTOn','False',ierr)
       call NhlFRLSetString(srlist,'tmYROn','False',ierr)
-      call NhlFRLSetInteger(srlist,'tmYLMajorLineColor',25,ierr)
-      call NhlFRLSetInteger(srlist,'tmYLMinorLineColor',25,ierr)
+      call NhlFRLSetInteger(srlist,'tmYLMajorLineColor',26,ierr)
+      call NhlFRLSetInteger(srlist,'tmYLMinorLineColor',26,ierr)
       call NhlFRLSetFloat(srlist,'tmYLMinorThicknessF',2.,ierr)
-      call NhlFRLSetInteger(srlist,'tmXBMajorLineColor',25,ierr)
-      call NhlFRLSetInteger(srlist,'tmXBMinorLineColor',25,ierr)
+      call NhlFRLSetInteger(srlist,'tmXBMajorLineColor',26,ierr)
+      call NhlFRLSetInteger(srlist,'tmXBMinorLineColor',26,ierr)
       call NhlFRLSetFloat(srlist,'tmXBMinorThicknessF',2.,ierr)
 
       call NhlFRLSetInteger(srlist,'tmXBMinorPerMajor',2,ierr)
       call NhlFRLSetInteger(srlist,'tmYLMinorPerMajor',2,ierr)
-      call NhlFRLSetInteger(srlist,'tmBorderLineColor',25,ierr)
+      call NhlFRLSetInteger(srlist,'tmBorderLineColor',26,ierr)
 
       call NhlFRLSetInteger(srlist,'tmXBLabelFont',21,ierr)
       call NhlFRLSetFloat(srlist,'tmXBLabelFontHeightF',.025,ierr)
-      call NhlFRLSetInteger(srlist,'tmXBLabelFontColor',25,ierr)
+      call NhlFRLSetInteger(srlist,'tmXBLabelFontColor',26,ierr)
       call NhlFRLSetInteger(srlist,'tmYLLabelFont',21,ierr)
       call NhlFRLSetFloat(srlist,'tmYLLabelFontHeightF',.025,ierr)
-      call NhlFRLSetInteger(srlist,'tmYLLabelFontColor',25,ierr)
+      call NhlFRLSetInteger(srlist,'tmYLLabelFontColor',26,ierr)
       call NhlFCreate(xy_id,'XyPlotData',nhlfxyplotclass,work_id,srlist,
      +     ierr)
 
@@ -414,7 +417,7 @@ C
       
       call NhlFRLClear(srlist)
       call NhlFRLSetString(srlist,'xyMonoLineColor','True',ierr)
-      call NhlFRLSetInteger(srlist,'xyLineColor',23,ierr)
+      call NhlFRLSetInteger(srlist,'xyLineColor',24,ierr)
       call NhlFRLSetFloat(srlist,'xyLineThicknessF',2.,ierr)
       call NhlFSetValues(dataspec,srlist,ierr)
 
@@ -442,7 +445,7 @@ C
       call NhlFRLSetInteger(srlist,'tiMainFont',26,ierr)
       call NhlFRLSetFloat(srlist,'tiMainFontHeightF',0.037,ierr)
       call NhlFRLSetFloat(srlist,'tiMainOffsetYF',-0.00,ierr)
-      call NhlFRLSetInteger(srlist,'tiMainFontColor',25,ierr)
+      call NhlFRLSetInteger(srlist,'tiMainFontColor',26,ierr)
       call NhlFRLSetString(srlist,'tiMainString','Mound over Colorado',
      +     ierr)
 
@@ -464,10 +467,11 @@ C
       call NhlFRLSetFloat(srlist,'mpMaxLatF',44.,ierr)
       call NhlFRLSetFloat(srlist,'mpMinLonF',-115.,ierr)
       call NhlFRLSetFloat(srlist,'mpMaxLonF',-93.,ierr)
-      call NhlFRLSetInteger(srlist,'mpUSStateLineColor',24,ierr)
+      call NhlFRLSetInteger(srlist,'mpUSStateLineColor',25,ierr)
       call NhlFRLSetFloat(srlist,'mpUSStateLineThicknessF',2.,ierr)
+      call NhlFRLSetString(srlist,'mpPerimOn','True',ierr)
       call NhlFRLSetString(srlist,'mpGridAndLimbOn','False',ierr)
-      call NhlFRLSetInteger(srlist,'mpPerimLineColor',25,ierr)
+      call NhlFRLSetInteger(srlist,'mpPerimLineColor',26,ierr)
       call NhlFRLSetFloat(srlist,'mpPerimLineThicknessF',2.,ierr)
       call NhlFCreate(mapid,'Map0',nhlfmapplotclass,work_id,srlist,ierr)
 

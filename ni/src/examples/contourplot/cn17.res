@@ -54,6 +54,7 @@
 *mpOutlineDrawOrder:    postdraw
 *mpUSStateLineThicknessF: 2.0
 *mpGeophysicalLineThicknessF: 2.0
+*mpPerimOn:             True
 
 ; 
 ; Set resources for US state names.

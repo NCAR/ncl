@@ -29,6 +29,28 @@ filedir = ncargpath("data")
 filename = filedir + "/cdf/contour.cdf"
 a = addfile(filename,"r")
 
+;
+; Set the color map.
+;
+cmap = new((/17,3/),float)
+cmap(0,:) = (/0.0, 0.0, 0.0/)
+cmap(1,:) = (/1.0, 1.0, 1.0/)
+cmap(2,:) = (/0.0, 0.0, 0.0/)
+cmap(3,:) = (/1.0, 0.0, 0.0/)
+cmap(4,:) = (/0.0, 1.0, 0.0/)
+cmap(5,:) = (/0.0, 0.0, 1.0/)
+cmap(6,:) = (/1.0, 1.0, 0.0/)
+cmap(7,:) = (/0.0, 1.0, 1.0/)
+cmap(8,:) = (/1.0, 0.0, 1.0/)
+cmap(9,:) = (/0.5, 0.0, 0.0/)
+cmap(10,:) = (/0.5, 1.0, 1.0/)
+cmap(11,:) = (/0.0, 0.0, 0.5/)
+cmap(12,:) = (/1.0, 1.0, 0.5/)
+cmap(13,:) = (/0.5, 0.0, 1.0/)
+cmap(14,:) = (/1.0, 0.5, 0.0/)
+cmap(15,:) = (/0.0, 0.5, 1.0/)
+cmap(16,:) = (/0.5, 1.0, 0.0/)
+
 NCGM=1
 X11=0
 PS=0
@@ -39,6 +61,7 @@ if (NCGM.eq.1) then
 ;
     wks = create "cn06Work" ncgmWorkstationClass defaultapp 
         "wkMetaName" : "cn06n.ncgm"
+        "wkColorMap" : cmap
     end create
 else
   if (X11.eq.1) then
@@ -47,6 +70,7 @@ else
 ;
     wks = create "cn06Work" xWorkstationClass defaultapp
       "wkPause" : "True"
+      "wkColorMap" : cmap
     end create
   else
     if (PS .eq. 1) then
@@ -55,6 +79,7 @@ else
 ;
       wks = create "cn06Work" psWorkstationClass defaultapp 
         "wkPSFileName" : "cn06n.ps"
+        "wkColorMap" : cmap
       end create
     end if
   end if
@@ -104,6 +129,8 @@ con1 = create "con1" contourPlotClass wks
     "tmYLMode" : "EXPLICIT"
     "tmYLValues" : (/60, 50, 40 , 30, 20/)
     "tmYLLabels" : (/"60N", "50N", "40N", "30N", "20N"/)
+    "cnLowLabelsOn" : "True"
+    "cnHighLabelsOn" : "True"
     "tmXMajorGrid" : "True"
     "tmYMajorGrid" : "True"
     "tmXBMinorOn" : "False"

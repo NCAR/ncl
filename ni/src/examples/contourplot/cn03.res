@@ -8,6 +8,8 @@
 !
 ! Info label resources
 !
+*cn03Work.ContourPlot1*cnLowLabelOn: true
+*cn03Work.ContourPlot1*cnHighLabelOn: true
 *cn03Work.ContourPlot1*cnInfoLabelZone : 5
 *cn03Work.ContourPlot1*cnInfoLabelOrthogonalPosF : 0.075
 *cn03Work.ContourPlot1*cnInfoLabelJust : centercenter

@@ -1,5 +1,5 @@
 /*
-**      $Id: cn10c.c,v 1.6 1996-04-04 15:26:06 haley Exp $
+**      $Id: cn10c.c,v 1.7 1997-10-08 17:21:54 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -46,7 +46,7 @@
 /*
  * Define the maximum number of colors.
  */
-#define NCOLORS    26
+#define NCOLORS    27
 
 main()
 {
@@ -83,34 +83,35 @@ main()
  * and foreground colors respectively.
  */
     cmap[ 0][0] = 1.00; cmap[ 0][1] = 1.00; cmap[ 0][2] = 1.00;
-    cmap[ 1][0] = 0.00; cmap[ 1][1] = 0.15; cmap[ 1][2] = 1.00;
-    cmap[ 2][0] = 0.00; cmap[ 2][1] = 0.05; cmap[ 2][2] = 1.00;
-    cmap[ 3][0] = 0.04; cmap[ 3][1] = 0.00; cmap[ 3][2] = 1.00;
-    cmap[ 4][0] = 0.14; cmap[ 4][1] = 0.00; cmap[ 4][2] = 1.00;
-    cmap[ 5][0] = 0.24; cmap[ 5][1] = 0.00; cmap[ 5][2] = 1.00;
-    cmap[ 6][0] = 0.34; cmap[ 6][1] = 0.00; cmap[ 6][2] = 1.00;
-    cmap[ 7][0] = 0.43; cmap[ 7][1] = 0.00; cmap[ 7][2] = 1.00;
-    cmap[ 8][0] = 0.53; cmap[ 8][1] = 0.00; cmap[ 8][2] = 1.00;
-    cmap[ 9][0] = 0.63; cmap[ 9][1] = 0.00; cmap[ 9][2] = 1.00;
-    cmap[10][0] = 0.73; cmap[10][1] = 0.00; cmap[10][2] = 1.00;
-    cmap[11][0] = 0.83; cmap[11][1] = 0.00; cmap[11][2] = 1.00;
-    cmap[12][0] = 0.92; cmap[12][1] = 0.00; cmap[12][2] = 1.00;
-    cmap[13][0] = 1.00; cmap[13][1] = 0.00; cmap[13][2] = 0.98;
-    cmap[14][0] = 1.00; cmap[14][1] = 0.00; cmap[14][2] = 0.88;
-    cmap[15][0] = 1.00; cmap[15][1] = 0.00; cmap[15][2] = 0.78;
-    cmap[16][0] = 1.00; cmap[16][1] = 0.00; cmap[16][2] = 0.68;
-    cmap[17][0] = 1.00; cmap[17][1] = 0.00; cmap[17][2] = 0.59;
-    cmap[18][0] = 1.00; cmap[18][1] = 0.00; cmap[18][2] = 0.49;
-    cmap[19][0] = 1.00; cmap[19][1] = 0.00; cmap[19][2] = 0.39;
-    cmap[20][0] = 1.00; cmap[20][1] = 0.00; cmap[20][2] = 0.29;
-    cmap[21][0] = 1.00; cmap[21][1] = 0.00; cmap[21][2] = 0.20;
-    cmap[22][0] = 1.00; cmap[22][1] = 0.00; cmap[22][2] = 0.10;
-    cmap[23][0] = 1.00; cmap[23][1] = 0.00; cmap[23][2] = 0.00;
+    cmap[ 1][0] = 0.00; cmap[ 1][1] = 0.00; cmap[ 1][2] = 0.00;
+    cmap[ 2][0] = 0.00; cmap[ 2][1] = 0.15; cmap[ 2][2] = 1.00;
+    cmap[ 3][0] = 0.00; cmap[ 3][1] = 0.05; cmap[ 3][2] = 1.00;
+    cmap[ 4][0] = 0.04; cmap[ 4][1] = 0.00; cmap[ 4][2] = 1.00;
+    cmap[ 5][0] = 0.14; cmap[ 5][1] = 0.00; cmap[ 5][2] = 1.00;
+    cmap[ 6][0] = 0.24; cmap[ 6][1] = 0.00; cmap[ 6][2] = 1.00;
+    cmap[ 7][0] = 0.34; cmap[ 7][1] = 0.00; cmap[ 7][2] = 1.00;
+    cmap[ 8][0] = 0.43; cmap[ 8][1] = 0.00; cmap[ 8][2] = 1.00;
+    cmap[ 9][0] = 0.53; cmap[ 9][1] = 0.00; cmap[ 9][2] = 1.00;
+    cmap[10][0] = 0.63; cmap[10][1] = 0.00; cmap[10][2] = 1.00;
+    cmap[11][0] = 0.73; cmap[11][1] = 0.00; cmap[11][2] = 1.00;
+    cmap[12][0] = 0.83; cmap[12][1] = 0.00; cmap[12][2] = 1.00;
+    cmap[13][0] = 0.92; cmap[13][1] = 0.00; cmap[13][2] = 1.00;
+    cmap[14][0] = 1.00; cmap[14][1] = 0.00; cmap[14][2] = 0.98;
+    cmap[15][0] = 1.00; cmap[15][1] = 0.00; cmap[15][2] = 0.88;
+    cmap[16][0] = 1.00; cmap[16][1] = 0.00; cmap[16][2] = 0.78;
+    cmap[17][0] = 1.00; cmap[17][1] = 0.00; cmap[17][2] = 0.68;
+    cmap[18][0] = 1.00; cmap[18][1] = 0.00; cmap[18][2] = 0.59;
+    cmap[19][0] = 1.00; cmap[19][1] = 0.00; cmap[19][2] = 0.49;
+    cmap[20][0] = 1.00; cmap[20][1] = 0.00; cmap[20][2] = 0.39;
+    cmap[21][0] = 1.00; cmap[21][1] = 0.00; cmap[21][2] = 0.29;
+    cmap[22][0] = 1.00; cmap[22][1] = 0.00; cmap[22][2] = 0.20;
+    cmap[23][0] = 1.00; cmap[23][1] = 0.00; cmap[23][2] = 0.10;
+    cmap[24][0] = 1.00; cmap[24][1] = 0.00; cmap[24][2] = 0.00;
 /*
  *  Colors used for labels.
  */
-    cmap[24][0] = 0.00; cmap[24][1] = 0.00; cmap[24][2] = 0.00;
-    cmap[25][0] = 0.40; cmap[25][1] = 0.00; cmap[25][2] = 0.40;
+    cmap[25][0] = 0.00; cmap[25][1] = 0.00; cmap[25][2] = 0.00;
+    cmap[26][0] = 0.40; cmap[26][1] = 0.00; cmap[26][2] = 0.40;
     length[0] = NCOLORS;  length[1] = 3;
 /*
  * Create Application object.  The Application object name is used to
@@ -215,41 +216,41 @@ main()
     NhlRLSetInteger(srlist,NhlNcnSmoothingOn,True);
     NhlRLSetFloat(srlist,NhlNcnMaxPointDistanceF,0.0);
     NhlRLSetInteger(srlist,NhlNcnLineColor,0);
-    NhlRLSetInteger(srlist,NhlNcnLineLabelFontColor,24);
+    NhlRLSetInteger(srlist,NhlNcnLineLabelFontColor,25);
     NhlRLSetInteger(srlist,NhlNcnLineLabelFont,22);
     NhlRLSetFloat(srlist,NhlNcnLineLabelFontHeightF,.02);
     NhlRLSetInteger(srlist,NhlNcnLineLabelInterval,3);
     NhlRLSetString(srlist,NhlNcnLineLabelPlacementMode,"COMPUTED");
     NhlRLSetInteger(srlist,NhlNcnHighLabelFont,22);
     NhlRLSetFloat(srlist,NhlNcnHighLabelFontHeightF,.025);
-    NhlRLSetInteger(srlist,NhlNcnHighLabelFontColor,24);
+    NhlRLSetInteger(srlist,NhlNcnHighLabelFontColor,25);
     NhlRLSetInteger(srlist,NhlNcnInfoLabelOn,False);
 
     NhlRLSetInteger(srlist,NhlNtmXBMinorPerMajor,2);
 
-    NhlRLSetInteger(srlist,NhlNtmYLMajorLineColor,25);
-    NhlRLSetInteger(srlist,NhlNtmYLMinorLineColor,25);
+    NhlRLSetInteger(srlist,NhlNtmYLMajorLineColor,26);
+    NhlRLSetInteger(srlist,NhlNtmYLMinorLineColor,26);
     NhlRLSetFloat(srlist,NhlNtmYLMinorThicknessF,2.);
-    NhlRLSetInteger(srlist,NhlNtmXBMajorLineColor,25);
-    NhlRLSetInteger(srlist,NhlNtmXBMinorLineColor,25);
+    NhlRLSetInteger(srlist,NhlNtmXBMajorLineColor,26);
+    NhlRLSetInteger(srlist,NhlNtmXBMinorLineColor,26);
     NhlRLSetFloat(srlist,NhlNtmXBMinorThicknessF,2.);
 
     NhlRLSetInteger(srlist,NhlNtmXBLabelFont,21);
     NhlRLSetFloat(srlist,NhlNtmXBLabelFontHeightF,.03);
-    NhlRLSetInteger(srlist,NhlNtmXBLabelFontColor,25);
+    NhlRLSetInteger(srlist,NhlNtmXBLabelFontColor,26);
 
     NhlRLSetInteger(srlist,NhlNtmYLLabelFont,21);
     NhlRLSetFloat(srlist,NhlNtmYLLabelFontHeightF,.03);
-    NhlRLSetInteger(srlist,NhlNtmYLLabelFontColor,25);
+    NhlRLSetInteger(srlist,NhlNtmYLLabelFontColor,26);
 
-    NhlRLSetInteger(srlist,NhlNtmBorderLineColor,25);
+    NhlRLSetInteger(srlist,NhlNtmBorderLineColor,26);
 
     NhlRLSetInteger(srlist,NhlNtiMainOn,True);
     NhlRLSetInteger(srlist,NhlNtiMainFont,26);
     NhlRLSetFloat(srlist,NhlNtiMainFontHeightF,.04);
     NhlRLSetString(srlist,NhlNtiMainString,"The Hot Zone");
     NhlRLSetFloat(srlist,NhlNtiMainOffsetYF,-0.025);
-    NhlRLSetInteger(srlist,NhlNtiMainFontColor,25);
+    NhlRLSetInteger(srlist,NhlNtiMainFontColor,26);
     NhlSetValues(con1,srlist);
     NhlDraw(con1);
     NhlFrame(work_id);
@@ -304,44 +305,44 @@ main()
     NhlRLSetFloat(srlist,NhlNtiMainFontHeightF,.0275);
     NhlRLSetString(srlist,NhlNtiMainString,"For X = 10.");
     NhlRLSetFloat(srlist,NhlNtiMainOffsetYF,-0.00);
-    NhlRLSetInteger(srlist,NhlNtiMainFontColor,25);
+    NhlRLSetInteger(srlist,NhlNtiMainFontColor,26);
     NhlRLSetString(srlist,NhlNtiXAxisString,"Y");
     NhlRLSetInteger(srlist,NhlNtiXAxisFont,26);
-    NhlRLSetInteger(srlist,NhlNtiXAxisFontColor,25);
+    NhlRLSetInteger(srlist,NhlNtiXAxisFontColor,26);
     NhlRLSetFloat(srlist,NhlNtiXAxisFontHeightF,.025);
     NhlRLSetString(srlist,NhlNtiYAxisString,"F(Y)");
     NhlRLSetInteger(srlist,NhlNtiYAxisFont,26);
-    NhlRLSetInteger(srlist,NhlNtiYAxisFontColor,25);
+    NhlRLSetInteger(srlist,NhlNtiYAxisFontColor,26);
     NhlRLSetFloat(srlist,NhlNtiYAxisFontHeightF,.025);
 
     NhlRLSetInteger(srlist,NhlNtmXTBorderOn,False);
     NhlRLSetInteger(srlist,NhlNtmYRBorderOn,False);
     NhlRLSetInteger(srlist,NhlNtmXTOn,False);
     NhlRLSetInteger(srlist,NhlNtmYROn,False);
-    NhlRLSetInteger(srlist,NhlNtmYLMajorLineColor,25);
-    NhlRLSetInteger(srlist,NhlNtmYLMinorLineColor,25);
+    NhlRLSetInteger(srlist,NhlNtmYLMajorLineColor,26);
+    NhlRLSetInteger(srlist,NhlNtmYLMinorLineColor,26);
     NhlRLSetFloat(srlist,NhlNtmYLMinorThicknessF,2.);
-    NhlRLSetInteger(srlist,NhlNtmXBMajorLineColor,25);
-    NhlRLSetInteger(srlist,NhlNtmXBMinorLineColor,25);
+    NhlRLSetInteger(srlist,NhlNtmXBMajorLineColor,26);
+    NhlRLSetInteger(srlist,NhlNtmXBMinorLineColor,26);
     NhlRLSetFloat(srlist,NhlNtmXBMinorThicknessF,2.);
 
     NhlRLSetInteger(srlist,NhlNtmXBMinorPerMajor,2);
     NhlRLSetInteger(srlist,NhlNtmYLMinorPerMajor,2);
-    NhlRLSetInteger(srlist,NhlNtmBorderLineColor,25);
+    NhlRLSetInteger(srlist,NhlNtmBorderLineColor,26);
 
     NhlRLSetInteger(srlist,NhlNtmXBLabelFont,21);
     NhlRLSetFloat(srlist,NhlNtmXBLabelFontHeightF,.025);
-    NhlRLSetInteger(srlist,NhlNtmXBLabelFontColor,25);
+    NhlRLSetInteger(srlist,NhlNtmXBLabelFontColor,26);
     NhlRLSetInteger(srlist,NhlNtmYLLabelFont,21);
     NhlRLSetFloat(srlist,NhlNtmYLLabelFontHeightF,.025);
-    NhlRLSetInteger(srlist,NhlNtmYLLabelFontColor,25);
+    NhlRLSetInteger(srlist,NhlNtmYLLabelFontColor,26);
     NhlCreate(&xy_id,"XyPlotData",NhlxyPlotClass,work_id,srlist);
 
     dataspec = NhlAddData(xy_id,"xyCoordData",y_dataid);
 
     NhlRLClear(srlist);
     NhlRLSetInteger(srlist,NhlNxyMonoLineColor,True);
-    NhlRLSetInteger(srlist,NhlNxyLineColor,23);
+    NhlRLSetInteger(srlist,NhlNxyLineColor,24);
     NhlRLSetFloat(srlist,NhlNxyLineThicknessF,2.);
     NhlSetValues(dataspec,srlist);
 
@@ -369,7 +370,7 @@ main()
     NhlRLSetInteger(srlist,NhlNtiMainFont,26);
     NhlRLSetFloat(srlist,NhlNtiMainFontHeightF,0.037);
     NhlRLSetFloat(srlist,NhlNtiMainOffsetYF,-0.00);
-    NhlRLSetInteger(srlist,NhlNtiMainFontColor,25);
+    NhlRLSetInteger(srlist,NhlNtiMainFontColor,26);
     NhlRLSetString(srlist,NhlNtiMainString,"Mound over Colorado");
 
     NhlRLSetFloat(srlist,NhlNvpXF,.1);
@@ -388,10 +389,11 @@ main()
     NhlRLSetFloat(srlist,NhlNmpMaxLatF,44.);
     NhlRLSetFloat(srlist,NhlNmpMinLonF,-115.);
     NhlRLSetFloat(srlist,NhlNmpMaxLonF,-93.);
-    NhlRLSetInteger(srlist,NhlNmpUSStateLineColor,24);
+    NhlRLSetInteger(srlist,NhlNmpUSStateLineColor,25);
     NhlRLSetFloat(srlist,NhlNmpUSStateLineThicknessF,2.);
     NhlRLSetInteger(srlist,NhlNmpGridAndLimbOn,False);
-    NhlRLSetInteger(srlist,NhlNmpPerimLineColor,25);
+    NhlRLSetInteger(srlist,NhlNmpPerimOn,True);
+    NhlRLSetInteger(srlist,NhlNmpPerimLineColor,26);
     NhlRLSetFloat(srlist,NhlNmpPerimLineThicknessF,2.);
     NhlCreate(&mapid,"Map0",NhlmapPlotClass,work_id,srlist);
 

@@ -1,6 +1,6 @@
 /*
-**      $Id: cn06c.c,v 1.4 1996-04-04 15:26:04 haley Exp $
-*/
+ *      $Id: cn06c.c,v 1.5 1997-10-08 17:21:47 haley Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                Copyright (C)  1996                                   *
@@ -40,8 +40,9 @@ int ylvalues[] = {60,50,40,30,20};
 char *xblabels[] = {"60W","75W","90W","105W","120W","135W"};
 char *yllabels[] = {"60N","50N","40N","30N","20N"};
 
-#define NLON  36
 #define NLAT  33
+#define NLON  36
+#define NCOLORS 17
 
 main()
 {
@@ -52,6 +53,7 @@ main()
     int     appid, workid, field1, con1;
     int     srlist, i, j, k;
     int     icount[2];
+	float cmap[NCOLORS][3];
 /*
  * Declare variables for getting information from netCDF file.
  */
@@ -82,12 +84,33 @@ main()
     NhlRLSetString(srlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"cn06",NhlappClass,NhlDEFAULT_APP,srlist);
 
+	cmap[0][0] = 0.0; cmap[0][1] = 0.0; cmap[0][2] = 0.0;
+	cmap[1][0] = 1.0; cmap[1][1] = 1.0; cmap[1][2] = 1.0;
+	cmap[2][0] = 0.0; cmap[2][1] = 0.0; cmap[2][2] = 0.0;
+	cmap[3][0] = 1.0; cmap[3][1] = 0.0; cmap[3][2] = 0.0;
+	cmap[4][0] = 0.0; cmap[4][1] = 1.0; cmap[4][2] = 0.0;
+	cmap[5][0] = 0.0; cmap[5][1] = 0.0; cmap[5][2] = 1.0;
+	cmap[6][0] = 1.0; cmap[6][1] = 1.0; cmap[6][2] = 0.0;
+	cmap[7][0] = 0.0; cmap[7][1] = 1.0; cmap[7][2] = 1.0;
+	cmap[8][0] = 1.0; cmap[8][1] = 0.0; cmap[8][2] = 1.0;
+	cmap[9][0] = 0.5; cmap[9][1] = 0.0; cmap[9][2] = 0.0;
+	cmap[10][0] = 0.5; cmap[10][1] = 1.0; cmap[10][2] = 1.0;
+	cmap[11][0] = 0.0; cmap[11][1] = 0.0; cmap[11][2] = 0.5;
+	cmap[12][0] = 1.0; cmap[12][1] = 1.0; cmap[12][2] = 0.5;
+	cmap[13][0] = 0.5; cmap[13][1] = 0.0; cmap[13][2] = 1.0;
+	cmap[14][0] = 1.0; cmap[14][1] = 0.5; cmap[14][2] = 0.0;
+	cmap[15][0] = 0.0; cmap[15][1] = 0.5; cmap[15][2] = 1.0;
+	cmap[16][0] = 0.5; cmap[16][1] = 1.0; cmap[16][2] = 0.0;
+
+    icount[0] = NCOLORS;
+    icount[1] = 3;
     if (NCGM) {
 /*
  * Create a meta file object.
  */
         NhlRLClear(srlist);
         NhlRLSetString(srlist,NhlNwkMetaName,"./cn06c.ncgm");
+		NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,icount);
         NhlCreate(&workid,"cn06Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,srlist);
     }
@@ -96,6 +119,7 @@ main()
  * Create an XWorkstation object.
  */
         NhlRLClear(srlist);
+		NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,icount);
         NhlRLSetString(srlist,NhlNwkPause,"True");
         NhlCreate(&workid,"cn06Work",NhlxWorkstationClass,
               NhlDEFAULT_APP,srlist);
@@ -105,6 +129,7 @@ main()
  * Create a PS workstation.
  */
         NhlRLClear(srlist);
+		NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,icount);
         NhlRLSetString(srlist,NhlNwkPSFileName,"./cn06c.ps");
         NhlCreate(&workid,"cn06Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,srlist);
@@ -209,6 +234,8 @@ main()
     NhlRLSetString(srlist,NhlNtmYLMode,"EXPLICIT");
     NhlRLSetIntegerArray(srlist,NhlNtmYLValues,ylvalues,NhlNumber(ylvalues));
     NhlRLSetStringArray(srlist,NhlNtmYLLabels,yllabels,NhlNumber(yllabels));
+    NhlRLSetString(srlist,NhlNcnLowLabelsOn,"True");
+    NhlRLSetString(srlist,NhlNcnHighLabelsOn,"True");
     NhlRLSetString(srlist,NhlNtmXMajorGrid,"True");
     NhlRLSetString(srlist,NhlNtmYMajorGrid,"True");
     NhlRLSetString(srlist,NhlNtmXBMinorOn,"False");
