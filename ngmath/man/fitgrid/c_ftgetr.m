@@ -1,0 +1,33 @@
+.\"
+.\"	$Id: c_ftgetr.m,v 1.1 1998-03-05 22:41:45 fred Exp $
+.\"
+.TH c_ftgetr 3NCARG "March 1998" UNIX "NCAR GRAPHICS"
+.SH NAME
+c_ftgetr - retrieve a float valued parameter
+.SH FUNCTION PROTOTYPE
+void c_ftgetr(char *, float *);
+.SH SYNOPSIS
+void c_ftgetr (pnam, fval);
+.SH DESCRIPTION
+.IP pnam 12
+The name of the control parameter to be assigned a float value. 
+.IP fval 12
+*fval will be the value currently assigned to the control parameter 
+whose name is pointed to by pnam. 
+.SH USAGE
+c_ftgetr is used to get values for any of the control parameters 
+that take float values.
+.SH ACCESS
+To use c_ftgetr, load the NCAR Graphics library ngmath.
+.SH SEE ALSO
+fitgrid_params, c_ftsetr
+.sp
+Complete documentation for Fitgrid is available at URL
+.br
+http://ngwww.ucar.edu/ngdoc/ng/ngmath/fitgrid/fithome.html
+.SH COPYRIGHT
+Copyright (C) 1998
+.br
+University Corporation for Atmospheric Research
+.br
+The use of this Software is governed by a License Agreement.
