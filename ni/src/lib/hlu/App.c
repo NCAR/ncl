@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.12 1995-03-31 21:51:10 boote Exp $
+ *      $Id: App.c,v 1.13 1995-03-31 23:06:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -930,7 +930,7 @@ _NHLCALLF(nhl_fappgetdefaultparentid,NHL_FAPPGETDEFAULTPARENTID)
 	int	*id;
 #endif
 {
-	*id = NhlAppGetDefaultParentId();
+	*id = NhlAppGetDefaultParentID();
 }
 
 /*
