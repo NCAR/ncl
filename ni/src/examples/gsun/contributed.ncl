@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.59 2005-03-03 18:52:02 shea Exp $
+;      $Id: contributed.ncl,v 1.60 2005-03-10 18:07:20 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -390,19 +390,19 @@ end
 ; D. Shea   
 ; Determine the number of columns in an ascii file
 ; This assumes that all rows have the same number of columns
+;      and the columns are separated by spaces.
 ;
 ; Usage:   ncol = numAsciiCol ("/my/path/ascii_file") 
 
 undef ("numAsciiCol")
 function numAsciiCol (fNam:string)
-
-local nrow, filChr, ncol
+local tokens, filString, nrow, ncol
 begin
-  nrow      = numAsciiRow (fNam)
-  filChr    = asciiread ( fNam, -1, "character") 
-  ncol      = dimsizes(filChr)/nrow - 1    ; ignore end of line
-  delete (filChr)             ; not needed but to be explicit
+  tokens    = stringtointeger( systemfunc("wc -w "+fNam) )
 
+  filString = asciiread ( fNam, -1, "string")
+  nrow      = dimsizes(filString)
+  ncol      = words/nrow
   return (ncol)
 end
 
