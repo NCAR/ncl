@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.3 1995-01-30 19:49:38 stautler Exp $
+#   $Id: yMakefile,v 1.4 1995-01-31 16:44:55 stautler Exp $
 #
 #   Makefile for HLU Title examples
 #
@@ -10,7 +10,7 @@ PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-SRCS        = ti01c.c ti02c.c ti03c.c
+SRCS        = ti01c.c ti02c.c ti03c.c ti01f.f ti02f.f ti03f.f
 RES	    = ti01.res ti02.res ti03.res
 EXFILES     = $(SRCS) $(RES) $(INCLUDES)
 
