@@ -116,7 +116,7 @@ C
         PRINT * , ' '
         PRINT * , 'READING INPUT DATA FILE'
 C
-        OPEN (UNIT=29,FILE='cpex14.data',STATUS='OLD',FORM='FORMATTED')
+        OPEN (UNIT=29,FILE='cpex14.dat',STATUS='OLD',FORM='FORMATTED')
 C
 C Read argument values and call SET to duplicate the user's mapping of
 C user coordinates into the plotter frame.
