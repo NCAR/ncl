@@ -2,27 +2,6 @@
 #include <string.h>
 #include "wrapper.h"
 
-/*
- * The following are required NCAR Graphics include files.
- * They should be located in ${NCARG_ROOT}/include.
- */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include <ncarg/gks.h>
-
-#include "Symbol.h"
-#include "NclMdInc.h"
-#include "Machine.h"
-#include <ncarg/ncl/NclVar.h>
-#include "DataSupport.h"
-#include "VarSupport.h"
-#include "NclCoordVar.h"
-#include <ncarg/ncl/NclCallBacksI.h>
-
-
 extern int   *c_csstri(int, float [], float [], int *, int *);
 extern float *c_cssgrid(int, float [], float [], float [],
                  int, int, float [], float [], int *);
@@ -1102,7 +1081,7 @@ NhlErrorTypes cssgrid_W(void)
  */
   if (atypes[2] == NCL_double) {
     ztype = NCL_double;
-    zoutd = (double *) NclMalloc(nxo*nyo*(nt/psize)*sizeof(double));
+    zoutd = (double *) calloc(nxo*nyo*(nt/psize),sizeof(double));
     if (zoutd == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,
          "cssgrid: unable to allocate memory for zoutd\n");
@@ -1111,7 +1090,7 @@ NhlErrorTypes cssgrid_W(void)
   }
   else {
     ztype = NCL_float;
-    zout =  (float *) NclMalloc(nxo*nyo*(nt/psize)*sizeof(float));
+    zout =  (float *) calloc(nxo*nyo*(nt/psize),sizeof(float));
     if (zout == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,
          "cssgrid: unable to allocate memory for zout\n");
@@ -1123,25 +1102,25 @@ NhlErrorTypes cssgrid_W(void)
  *  Allocate space for temporary arrays that are just large
  *  enough to hold input data for a single interpolation.
  */
-  platdt = (double *) NclMalloc(psize*sizeof(double));
+  platdt = (double *) calloc(psize,sizeof(double));
   if (platdt == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
        "cssgrid: unable to allocate memory for platdt\n");
     return(NhlFATAL);
   }
-  plondt = (double *) NclMalloc(psize*sizeof(double));
+  plondt = (double *) calloc(psize,sizeof(double));
   if (plondt == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
        "cssgrid: unable to allocate memory for plondt\n");
     return(NhlFATAL);
   }
-  fvaldt = (double *) NclMalloc(psize*sizeof(double));
+  fvaldt = (double *) calloc(psize,sizeof(double));
   if (fvaldt == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
        "cssgrid: unable to allocate memory for fvaldt\n");
     return(NhlFATAL);
   }
-  fvald = (double *) NclMalloc(psize*sizeof(double));
+  fvald = (double *) calloc(psize,sizeof(double));
   if (fvald == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
        "cssgrid: unable to allocate memory for fvald\n");
@@ -1203,21 +1182,21 @@ NhlErrorTypes cssgrid_W(void)
  *  Free allocated space.
  */
   if ( (void *) platd != datav[0]) {
-    NclFree (platd);
+    free (platd);
   }
   if ( (void *) plond != datav[1]) {
-    NclFree (plond);
+    free (plond);
   }
   if ( (void *) rlatd != datav[3]) {
-    NclFree (platd);
+    free (rlatd);
   }
   if ( (void *) rlond != datav[4]) {
-    NclFree (platd);
+    free (rlond);
   }
-  NclFree(platdt);
-  NclFree(plondt);
-  NclFree(fvaldt);
-  NclFree(fvald);
+  free(platdt);
+  free(plondt);
+  free(fvaldt);
+  free(fvald);
 
 /*
  *  Return the array.
