@@ -65,10 +65,6 @@ icra is dimensioned n by ica1 where n is greater than or equal to the
 value of the argument ican
 .IP ica1 12
 The second dimension of the array icra.
-.IP icam 12
-The second dimension of the user's cell array.
-.IP ican 12
-The first dimension of the user's cell array.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples:
