@@ -100,7 +100,7 @@ C Set the dashed lines and the line characters to the same colors.
 C
       call NhlFRLSetintegerarray(rlist,'lgLineColors',colors,
      1      5,ierr)
-      call NhlFRLSetintegerarray(rlist,'lgLineLabelColors',
+      call NhlFRLSetintegerarray(rlist,'lgLineLabelFontColors',
      1      colors,5,ierr)
       call NhlFRLSetintegerarray(rlist,'lgDashIndexes',item_ind,
      1      5,ierr)

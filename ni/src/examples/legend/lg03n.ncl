@@ -82,7 +82,7 @@ pid = create "Legend" legendLayerClass wid
 ; Set the dashed lines and the line characters to the same colors.
 ;
     "lgLineColors" : colors
-    "lgLineLabelColors" : colors
+    "lgLineLabelFontColors" : colors
     "lgDashIndexes" : item_ind
     "lgMonoLineThickness" : "False"
     "lgLineThicknesses" : lnthik
