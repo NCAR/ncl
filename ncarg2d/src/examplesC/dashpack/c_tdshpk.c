@@ -1,5 +1,5 @@
 /*
- *  $Id: c_tdshpk.c,v 1.2 1994-11-03 22:38:01 haley Exp $
+ *  $Id: c_tdshpk.c,v 1.3 1994-12-22 17:36:26 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -13,7 +13,11 @@
 
 main()
 {
+#ifdef NeedFuncProto
+    extern void tdshpk(int *);
+#else
     extern void tdshpk();
+#endif
     int ierr;
 /*
  * Invoke demo driver.
@@ -31,13 +35,22 @@ main()
     gclose_gks();
 }
 
-void tdshpk (ierr)
+void tdshpk
+#ifdef NeedFuncProto
+(int *ierr)
+#else
+(ierr)
 int *ierr;
+#endif
 {
     Gcolr_rep rgb;
     float ycen, angd, rrho, thta;
     int i;
+#ifdef NeedFuncProto
+    extern int ipkbts(int *,int);
+#else
     extern int ipkbts();
+#endif
 /*
  * Declare arrays in which to put coordinates for calls to DPCURV.
  */ 
@@ -623,8 +636,13 @@ int *ierr;
  * is the integer resulting from packing those bits together, to be
  * used as an integer dash pattern.
  */ 
-int ipkbts (ibts,nbts)
+int ipkbts
+#ifdef NeedFuncProto
+(int *ibts,int nbts)
+#else
+(ibts,nbts)
 int *ibts, nbts;
+#endif
 {
     int i, j, k;
     int ii, jj, kk;

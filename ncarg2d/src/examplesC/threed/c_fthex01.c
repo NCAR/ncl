@@ -1,5 +1,5 @@
 /*
- *	$Id: c_fthex01.c,v 1.2 1994-11-03 21:13:58 haley Exp $
+ *	$Id: c_fthex01.c,v 1.3 1994-12-22 17:36:46 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -24,7 +24,11 @@ main()
 	float umin, umax, vmin, vmax, wmin, wmax;
 	float upos, vpos, wpos, ptmp, qtmp, utmp, vtmp;
 	int i, j, ilab, ibeg, iend, ichr;
+#ifdef NeedFuncProto
+	extern float wfun(float,float);
+#else
 	extern float wfun();
+#endif
 	extern void color();
 /*
  * Declare an array in which to put an eye position for THREED.
@@ -193,8 +197,13 @@ main()
  * Declare a function wfun(u,v) to be used in the example.
  */
 	
-float wfun(u,v)
+float wfun
+#ifdef NeedFuncProto
+(float u, float v)
+#else
+(u,v)
 float u, v;
+#endif
 {
 	return((.5+.25*sin(5.*u)+.25*cos(5.*v)));
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: c_fcoord2.c,v 1.1 1994-07-27 22:54:03 haley Exp $
+ * $Id: c_fcoord2.c,v 1.2 1994-12-22 17:36:41 haley Exp $
  */
 
 #include <stdio.h>
@@ -13,7 +13,11 @@
 
 main()
 {
+#ifdef NeedFuncProto
+	extern void coord2(int *);
+#else
 	extern void coord2();
+#endif
 	int ierr;
 /*
  * Open GKS, open and activate a workstation.
@@ -33,8 +37,13 @@ main()
 	gclose_gks();
 }
 
-void coord2 (ierror)
+void coord2
+#ifdef NeedFuncProto
+(int *ierror)
+#else
+(ierror)
 int *ierror;
+#endif
 {
 	int i;
 	float xclw, xcrw, ycbw, yctw, vpl, vpr, vpb, vpt;

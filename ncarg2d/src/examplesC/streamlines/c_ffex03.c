@@ -1,5 +1,5 @@
 /*
- *  $Id: c_ffex03.c,v 1.1 1994-10-31 04:08:15 haley Exp $
+ *  $Id: c_ffex03.c,v 1.2 1994-12-22 17:36:44 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -50,10 +50,16 @@ main()
 /*
  * External subroutine declarations
  */
+#ifdef NeedFuncProto
+	extern int drawcl(float *,float *,int *, int *, int *, int *);
+	extern void setcla(int);
+#else
 	extern int drawcl();
+	extern void setcla();
+#endif
 	extern int NGCALLF(stumsl,STUMSL)();
 	extern void rddata();
-    extern void setcgt(), setcla();
+    extern void setcgt();
 	Gcolr_rep rgb[NCLRS];
 
 	rgb[0].rgb.red = 1.0; rgb[0].rgb.green = 0.0; rgb[0].rgb.blue = 0.0;
@@ -215,9 +221,14 @@ void rddata()
 	return;
 }
 
-int drawcl (xcs,ycs,ncs,iai,iag,nai)
+int drawcl
+#ifdef NeedFuncProto
+(float *xcs,float *ycs,int *ncs,int *iai,int *iag,int *nai)
+#else
+(xcs,ycs,ncs,iai,iag,nai)
 float *xcs, *ycs;
 int *ncs, *iai, *iag, *nai;
+#endif
 {
 /*
  * Routine for masked drawing of contour and grid lines
@@ -264,8 +275,13 @@ void setcgt()
 	return;
 }
 
-void setcla (nclv)
+void setcla
+#ifdef NeedFuncProto
+(int nclv)
+#else
+(nclv)
 int nclv;
+#endif
 {
 /*
  * Sets contour line attributes

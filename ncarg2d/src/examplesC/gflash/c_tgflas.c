@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tgflas.c,v 1.2 1994-06-21 15:00:20 haley Exp $
+ *	$Id: c_tgflas.c,v 1.3 1994-12-22 17:36:29 haley Exp $
  */
 #include <stdio.h>
 #include <ncarg/ncargC.h>
@@ -37,7 +37,7 @@ int *ierror;
     float x0p,y0p,rp,xc,yc;
     float x0s,y0s,rs;
     float dtheta,ang;
-    extern double sin(), cos();
+    extern double sin(double), cos(double);
 /*
  *  Data for the graphical objects.
  */

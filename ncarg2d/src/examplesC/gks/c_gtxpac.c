@@ -33,7 +33,11 @@ main()
     Gpoint          pos;
     float x,y;
     int i;
+#ifdef NeedFuncProto
+    extern void cross(float,float);
+#else
     extern void cross();
+#endif
 /*
  *  Open GKS, open and activate the metafile workstation.
  */
@@ -148,8 +152,13 @@ main()
 /*
  *  Draw a green filled cross at coordinate (X,Y) using color index 3.
  */
-void cross(x,y)
+void cross
+#ifdef NeedFuncProto
+(float x,float y)
+#else
+(x,y)
 float x, y;
+#endif
 {
     int i, icx[ID],icy[ID];
     Gpoint_list     area;

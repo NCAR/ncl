@@ -24,7 +24,11 @@ float y[8] = {0.80, 0.67, 0.80, 0.35, 0.19, 0.03, 0.35, 0.14};
 
 main()
 {
+#ifdef NeedFuncProto
+	extern void drawv(float,float,int,int,float,float,int,float);
+#else
 	extern void drawv();
+#endif
 	Gcolr_rep rgb;
 	int i;
 /*
@@ -115,9 +119,14 @@ main()
 	gclose_gks();
 }
 
-void drawv(x,y,iorien,idot,ang,scale,icolor,thick)
+void drawv
+#ifdef NeedFuncProto
+(float x,float y,int iorien,int idot,float ang,float scale,int icolor,float thick)
+#else
+(x,y,iorien,idot,ang,scale,icolor,thick)
 float x, y, ang, scale, thick;
 int iorien, idot, icolor;
+#endif
 {
 /*
  *  Draw a "V" where:

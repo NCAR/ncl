@@ -1,5 +1,5 @@
 /*
- *  $Id: c_fngwsym.c,v 1.2 1994-06-21 15:01:19 haley Exp $
+ *  $Id: c_fngwsym.c,v 1.3 1994-12-22 17:36:36 haley Exp $
  */
 #include <stdio.h>
 
@@ -33,7 +33,13 @@ main()
     float size, yy, r, dy, spc, yb, yinc;
     int i, j, nc, nr, nf;
     char stmp1[20], stmp2[20];
-    extern void dtable(), nputs();
+#ifdef NeedFuncProto
+	extern void dtable(char *,int,int,float,float,float,float,float,int,int,int);
+	extern void nputs(float,char *,char *,float);
+#else
+	extern void dtable();
+    extern void nputs();
+#endif
 
 	gopen_gks("stdout",0);
 	gopen_ws(WKID, NULL, WSTYPE);
@@ -98,11 +104,16 @@ main()
 	gclose_gks();
 }
 
-void dtable(font,nr,nc,x1,y1,x2,y2,y3,itx1,itx2,ilnc)
+void dtable
+#ifdef NeedFuncProto
+(char *font,int nr,int nc,float x1,float y1,float x2,float y2,float y3,int itx1,int itx2,int ilnc)
+#else
+(font,nr,nc,x1,y1,x2,y2,y3,itx1,itx2,ilnc)
 char *font;
 int nr, nc;
 float x1, y1, x2, y2, y3;
 int itx1, itx2, ilnc;
+#endif
 {
 /*
  *  Draw table of characters from font FONT with NR rows and NC columns.
@@ -184,10 +195,15 @@ int itx1, itx2, ilnc;
     }
 }
 
-void nputs(yy,str1,str2,size)
+void nputs
+#ifdef NeedFuncProto
+(float yy,char *str1,char *str2,float size)
+#else
+(yy,str1,str2,size)
 float yy;
 char *str1, *str2;
 float size;
+#endif
 {
 /*
  *  put out str1, then a dash, then str2 at size size.

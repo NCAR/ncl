@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ppex01.c,v 1.4 1994-11-16 18:16:16 haley Exp $
+ *	$Id: c_ppex01.c,v 1.5 1994-12-22 17:36:38 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -41,12 +41,17 @@ main()
 	Gpoint_list line, area;
 	Gcolr_rep rgb;
 	int i, ierr;
-	extern int mergpo();
+#ifdef NeedFuncProto
+	extern int mergpo(float *,float *, int*);
+	extern int fillpo(float *,float *, int*);
+	extern int filltr(float *,float *,float *,float *,float *,float *);
+#else
+	extern int mergpo(), fillpo(), filltr();
+#endif
 /*
  * Tell the compiler that the fill and merge routines for polygons and
  * the fill routine for trapezoids are EXTERNALs, not REALs.
  */
-	extern int fillpo(), filltr();
 	extern void tstclp();
 /*
  * Define the clip polygon to be a small square.
@@ -509,7 +514,11 @@ void tstclp()
 /*
  * The routine DRAWEM is called by the polyline clipping routine.
  */
+#ifdef NeedFuncProto
+	extern int drawem(float *,float *,int *);
+#else
 	extern int drawem();
+#endif
 /*
  * Initialize the polyline color index and the line width scale factor.
  */
@@ -572,9 +581,14 @@ void tstclp()
 	return;
 }
 
-int fillpo (xcra,ycra,ncra)
+int fillpo
+#ifdef NeedFuncProto
+(float *xcra,float *ycra,int *ncra)
+#else
+(xcra,ycra,ncra)
 float *xcra, *ycra;
 int *ncra;
+#endif
 {
 	int i;
 /*
@@ -603,9 +617,14 @@ int *ncra;
 	return(0);
 }
 
-int mergpo (xcra,ycra,ncra)
+int mergpo
+#ifdef NeedFuncProto
+(float *xcra,float *ycra,int *ncra)
+#else
+(xcra,ycra,ncra)
 float *xcra, *ycra;
 int *ncra;
+#endif
 {
 	int i;
 /*
@@ -675,8 +694,14 @@ int *ncra;
  */
     return(0);
 }
-int filltr (xcbl,xcbr,ycob,dxle,dxre,ycot)
+
+int filltr
+#ifdef NeedFuncProto
+(float *xcbl,float *xcbr,float *ycob,float *dxle,float *dxre,float *ycot)
+#else
+(xcbl,xcbr,ycob,dxle,dxre,ycot)
 float *xcbl, *xcbr, *ycob, *dxle, *dxre, *ycot;
+#endif
 {
     Gpoint_list area;
 /*
@@ -723,9 +748,14 @@ float ppfran()
 	return((float)x);
 }
 
-int drawem (xcra,ycra,ncra)
+int drawem
+#ifdef NeedFuncProto
+(float *xcra,float *ycra,int *ncra)
+#else
+(xcra,ycra,ncra)
 float *xcra, *ycra;
 int *ncra;
+#endif
 {
 /*
  * Draw the polyline fragment defined by the arguments.

@@ -26,7 +26,12 @@ float zreg[NREG][MREG];
 
 main()
 {
+#ifdef NeedFuncProto
+	extern void colcon(int,char *,float,float,float,float,float,float);
+	extern void gendat(int,int,float,float);
+#else
     extern void colcon(), gendat();
+#endif
 
     gendat(15,13,13.,18.);
 /*
@@ -49,10 +54,15 @@ main()
     gclose_gks();
 }
 
-void colcon(ncl,proj,rlatmn,rlatmx,rlonmn,rlonmx,plat,plon)
+void colcon
+#ifdef NeedFuncProto
+(int ncl,char *proj,float rlatmn,float rlatmx,float rlonmn,float rlonmx,float plat,float plon)
+#else
+(ncl,proj,rlatmn,rlatmx,rlonmn,rlonmx,plat,plon)
 int ncl;
 float rlatmn, rlatmx, rlonmn, rlonmx, plat, plon;
 char *proj;
+#endif
 {
     int i, ncll, idum;
     float xmin, xmax, ymin, ymax, dum1, dum2, dum3, dum4;
@@ -62,8 +72,14 @@ char *proj;
 	float rwrk[LRWK], xwrk[NWRK], ywrk[NWRK];
 	int map[LMAP],iarea[NOGRPS],igrp[NOGRPS];
 	char *lbls[35];
+#ifdef NeedFuncProto
+    extern void color(int);
+	extern int fill(float *,float *,int *,int *,int *,int *);
+	extern int mask(float *,float *,int *,int *,int *,int *);
+#else
     extern void color();
     extern int fill(), mask();
+#endif
 
     rltmn[0] = rlatmn;
     rltmx[0] = rlatmx;
@@ -143,11 +159,14 @@ char *proj;
 	return;
 }
 
-
-int fill (xwrk,ywrk,n,iarea,igrp,ngrps)
+int fill
+#ifdef NeedFuncProto
+(float *xwrk,float *ywrk,int *n,int *iarea,int *igrp,int *ngrps)
+#else
+(xwrk,ywrk,n,iarea,igrp,ngrps)
 float *xwrk, *ywrk;
-int *iarea, *igrp;
-int *n, *ngrps;
+int *n, *iarea, *igrp, *ngrps;
+#endif
 {
     int i, j;
     int idmap, idcont;
@@ -202,9 +221,14 @@ int *n, *ngrps;
     return(1);
 }
 
-int mask(xwrk,ywrk,n,iarea,igrp,ngrps)
+int mask
+#ifdef NeedFuncProto
+(float *xwrk,float *ywrk,int *n,int *iarea,int *igrp,int *ngrps)
+#else
+(xwrk,ywrk,n,iarea,igrp,ngrps)
 float *xwrk, *ywrk;
 int *n, *iarea, *igrp, *ngrps;
+#endif
 {
     int i;
     int idmap, idcont;
@@ -231,9 +255,14 @@ int *n, *iarea, *igrp, *ngrps;
     return(1);
 }
 
-void gendat (mlow,mhgh,dlow,dhgh)
+void gendat
+#ifdef NeedFuncProto
+(int mlow,int mhgh,float dlow,float dhgh)
+#else
+(mlow,mhgh,dlow,dhgh)
 int mlow, mhgh;
 float dlow, dhgh;
+#endif
 {
 /*
  * This is a routine to generate test data for two-dimensional graphics

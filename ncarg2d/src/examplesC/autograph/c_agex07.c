@@ -1,5 +1,5 @@
 /*
- *	$Id: c_agex07.c,v 1.1 1994-10-31 02:14:09 haley Exp $
+ *	$Id: c_agex07.c,v 1.2 1994-12-22 17:36:18 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -23,7 +23,11 @@ main()
     float xdra[101],ydra[9][101];
     char dshp[9][29], stmp[17];
     int i, j, fj;
+#ifdef NeedFuncProto
+    extern char *agdshn(int);
+#else
     extern char *agdshn();
+#endif
     extern void bndary();
 /*
  * initialize gks.
