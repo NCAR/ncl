@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.3 1997-06-20 16:35:36 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.4 1997-06-20 21:48:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1419,6 +1419,8 @@ NgShapeInfoGrid *NgCreateShapeInfoGrid
         sirp->finish_coords = NULL;
         sirp->float_types = NULL;
         sirp->edit_row = -1;
+        sirp->qfileref = NrmNULLQUARK;
+        sirp->vinfo = NULL;
         sip->index_mode = False;
         sip->headline_on = headline_on;
         sip->highlight_on = highlight_on;
@@ -1485,8 +1487,6 @@ void NgDestroyShapeInfoGrid
         NhlFree(sirp->start_coords);
         NhlFree(sirp->finish_coords);
         NhlFree(sirp->float_types);
-        
-        XtDestroyWidget(sip->grid);
 
         NhlFree(sirp);
         

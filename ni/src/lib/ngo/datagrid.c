@@ -1,5 +1,5 @@
 /*
- *      $Id: datagrid.c,v 1.3 1997-06-20 16:35:29 dbrown Exp $
+ *      $Id: datagrid.c,v 1.4 1997-06-20 21:48:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -680,11 +680,12 @@ NhlErrorTypes NgUpdateDataGrid
 		}
 	}
 	else if (!dgrp->start ||
-		 (dgrp->vinfo && ndims > dgrp->vinfo->n_dims) ||
+		 (ndims > dgrp->dims_alloced) ||
 		 (vinfo && !dgrp->vinfo)) {
 		dgrp->start = NhlRealloc(dgrp->start,ndims * sizeof(long));
 		dgrp->finish = NhlRealloc(dgrp->finish,ndims * sizeof(long));
 		dgrp->stride = NhlRealloc(dgrp->stride,ndims * sizeof(long));
+                dgrp->dims_alloced = ndims;
 	}
 	memcpy(dgrp->start,start,ndims *sizeof(long));
 	memcpy(dgrp->finish,finish,ndims *sizeof(long));
@@ -812,6 +813,7 @@ NgDataGrid *NgCreateDataGrid
         dgp = &dgrp->datagrid;
         dgrp->go = go;
 	dgrp->vinfo = NULL;
+        dgrp->dims_alloced = 0;
 
         nrows = headline_on ? 4 : 3;
         sel_policy = highlight_on ? XmSELECT_BROWSE_ROW : XmSELECT_NONE;
@@ -917,8 +919,12 @@ void NgDestroyDataGrid
 
         NgDeactivateDataGrid(data_grid);
 
-        XtDestroyWidget(dgp->grid);
-
+        if (dgrp->start)
+                NhlFree(dgrp->start);
+        if (dgrp->finish)
+                NhlFree(dgrp->finish);
+        if (dgrp->stride)
+                NhlFree(dgrp->stride);
         NhlFree(dgrp);
         
         return;

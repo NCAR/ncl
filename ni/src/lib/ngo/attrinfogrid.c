@@ -1,5 +1,5 @@
 /*
- *      $Id: attrinfogrid.c,v 1.2 1997-06-04 18:08:20 dbrown Exp $
+ *      $Id: attrinfogrid.c,v 1.3 1997-06-20 21:48:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -376,7 +376,6 @@ void NgDestroyAttrInfoGrid
         aip = (NgAttrInfoGridRec *) attr_info_grid;
         if (!aip) return;
 
-        XtDestroyWidget(aip->grid);
         NhlFree(aip->too_long);
         NhlFree(aip->last_too_long);
 

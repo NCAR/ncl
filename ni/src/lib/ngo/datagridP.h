@@ -1,5 +1,5 @@
 /*
- *      $Id: datagridP.h,v 1.2 1997-06-06 03:14:50 dbrown Exp $
+ *      $Id: datagridP.h,v 1.3 1997-06-20 21:48:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,7 +43,9 @@ typedef struct _NgDataGridRec
         NrmQuark		qsymbol; /* fileref if filevar,
                                             NULL if regvar,
                                             var if var coord */
- 	NclApiVarInfoRec	*vinfo;
+ 	NclApiVarInfoRec	*vinfo;  /* copy of pointer in shaper, could
+                                            be freed between any update call */
+        int			dims_alloced;
         int			head_rows;
         int			head_cols;
         int			col_dim;

@@ -1,5 +1,5 @@
 /*
- *      $Id: vartree.c,v 1.1 1997-06-04 18:08:36 dbrown Exp $
+ *      $Id: vartree.c,v 1.2 1997-06-20 21:48:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1236,9 +1236,6 @@ void NgDestroyVarTree
         if (!vtp) return;
 
         FreeSubNodes(&vtp->var);
-        
-        XtDestroyWidget(vtp->tree);
-
 
         NhlFree(vtp);
         

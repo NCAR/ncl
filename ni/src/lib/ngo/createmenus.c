@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenus.c,v 1.1 1997-06-20 16:38:14 dbrown Exp $
+ *      $Id: createmenus.c,v 1.2 1997-06-20 21:48:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -391,6 +391,17 @@ void NgDestroyCreateMenus
 	NgCreateMenus	*pub = create_menus;
 	CreateMenusRec	*priv = (CreateMenusRec	*)pub;
 
+        if (priv->plot.count)
+                NhlFree(priv->plot.buttons);
+        if (priv->output) {
+                NhlFree(priv->output->start);
+                NhlFree(priv->output->finish);
+                NhlFree(priv->output->stride);
+                NhlFree(priv->output);
+        }
+        if (priv->page_ids)
+                NhlFree(priv->page_ids);
+        
         NhlFree(priv);
 
         return;

@@ -1,5 +1,5 @@
 /*
- *      $Id: filetree.c,v 1.3 1997-06-20 16:35:31 dbrown Exp $
+ *      $Id: filetree.c,v 1.4 1997-06-20 21:48:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1434,9 +1434,6 @@ void NgDestroyFileTree
         if (!ftp) return;
 
         FreeSubNodes(&ftp->file);
-        
-        XtDestroyWidget(ftp->tree);
-
 
         NhlFree(ftp);
         

@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.2 1997-06-06 03:14:54 dbrown Exp $
+ *      $Id: shaper.c,v 1.3 1997-06-20 21:48:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -870,8 +870,7 @@ void NgDestroyShaper
         NgDestroyDataGrid(shaper->datagrid);
         NgDestroyShapeInfoGrid(shaper->shapeinfogrid);
         NgDestroyVcrControl(shaper->vcr);
-        
-        XtDestroyWidget(si->frame);
+
         if (shaper->coord_indexes_set) {
                 NhlFree(shaper->coord_indexes_set);
         }
@@ -882,7 +881,7 @@ void NgDestroyShaper
                 NclFreeDataList(shaper->tgl_coord_dlist);
         }
         if (shaper->coords_selected_only_set) {
-                NhlFree(shaper->selected);
+                NhlFree(shaper->coords_selected_only_set);
         }
         
         NhlFree(shaper);

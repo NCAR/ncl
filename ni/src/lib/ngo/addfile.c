@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.9 1997-06-20 16:35:24 dbrown Exp $
+ *      $Id: addfile.c,v 1.10 1997-06-20 21:48:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -542,6 +542,7 @@ static void SetApplyForm
                         XtVaSetValues(np->vname_label,
                                       XmNlabelString,xmstring,
                                       NULL);
+                        XmStringFree(xmstring);
                 }
                 XtSetSensitive(np->ok,False);
                 XtSetSensitive(np->apply,False);
@@ -554,6 +555,7 @@ static void SetApplyForm
                 XtVaSetValues(np->vname_label,
                               XmNlabelString,xmstring,
                               NULL);
+                XmStringFree(xmstring);
                 XtVaSetValues(np->vname,
                               XmNeditable,True,
                               XtVaTypedArg,XmNbackground,
@@ -696,7 +698,7 @@ DoDimInfoPopup
         if (new) {
                 XtVaSetValues (dip->popup,
                                XmNx,root_x+x,
-                               XmNy,root_y+y-p_h,
+                               XmNy,root_y+y,
                                NULL);
                 XtPopup(dip->popup,XtGrabNone);
                 XtPopdown(dip->popup);
@@ -1578,6 +1580,8 @@ static void ListUpOrDown
 		XmListSetPos(list,position);
 	else if ((top + vis_count) <= position)
 		XmListSetBottomPos(list,position);
+
+        XtFree((char*)pos_list);
         
         return;
 }

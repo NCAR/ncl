@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.3 1997-06-20 16:35:26 dbrown Exp $
+ *      $Id: browse.c,v 1.4 1997-06-20 21:48:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -623,6 +623,7 @@ DestroyFolder
 
 	DestroyPageDataList(go,pane->var_pages);
 	DestroyPageDataList(go,pane->fileref_pages);
+	DestroyPageDataList(go,pane->hlu_pages);
 	for (i = 0; i < pane->tabcount; i++) {
 		brTab *tab = XmLArrayGet(pane->tablist,i);
 		XtDestroyWidget(tab->tab);
@@ -643,6 +644,7 @@ DestroyFolder
         pane->last_pagecount = pane->pagecount = 0;
 	pane->fileref_pages = NULL;
 	pane->var_pages = NULL;
+	pane->hlu_pages = NULL;
         pane->active_pos = 0;
 }
 
@@ -679,6 +681,7 @@ InitPane
         pane->last_pagecount = pane->pagecount = 0;
 	pane->fileref_pages = NULL;
 	pane->var_pages = NULL;
+	pane->hlu_pages = NULL;
         pane->active_pos = 0;
 
         return;

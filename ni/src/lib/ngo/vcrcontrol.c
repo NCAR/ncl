@@ -1,5 +1,5 @@
 /*
- *      $Id: vcrcontrol.c,v 1.2 1997-06-04 18:08:37 dbrown Exp $
+ *      $Id: vcrcontrol.c,v 1.3 1997-06-20 21:48:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -201,8 +201,7 @@ void NgDestroyVcrControl
         
         vcrp = (NgVcrControlRec *) vcr_control;
         if (!vcrp) return;
-        
-        XtDestroyWidget(vcrp->form);
+
         NhlFree(vcrp);
 
         return;

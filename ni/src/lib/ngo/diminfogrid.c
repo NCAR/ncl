@@ -1,5 +1,5 @@
 /*
- *      $Id: diminfogrid.c,v 1.2 1997-06-04 18:08:24 dbrown Exp $
+ *      $Id: diminfogrid.c,v 1.3 1997-06-20 21:48:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -383,8 +383,6 @@ void NgDestroyDimInfoGrid
         
         dip = (NgDimInfoGridRec *) dim_info_grid;
         if (!dip) return;
-
-        XtDestroyWidget(dip->grid);
 
         NhlFree(dip);
         
