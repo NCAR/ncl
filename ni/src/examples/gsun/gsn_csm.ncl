@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.115 2003-01-03 00:48:52 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.116 2003-01-14 23:44:52 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3234,7 +3234,18 @@ begin
       tmres = True
       gsnp_turn_off_tickmarks(tmres)
     end if
-    mpres = get_res_ne(res2,(/"tx","am"/))  ; Get rest of resources
+;
+; If user has turned on built-in map tickmarks, then go ahead and
+; let the tickmark resources (if any) be passed to the map object.
+;
+    if(display_mode.eq.1.or.display_mode.eq.2) then
+      mpres = get_res_ne(res2,(/"tx","am"/))       ; Get rest of resources
+    else
+      mpres = get_res_ne(res2,(/"tx","am","tm"/))  ; Get rest of resources
+    end if
+;
+; Set some map resources
+;
     attsetvalues_check(map_object,mpres)
 ;
 ; Add tickmark object, even if the tickmarks have been turned off, because
@@ -3436,9 +3447,10 @@ begin
 ; then it is set back to True.
 ;
     set_attr(res2,"mpOutlineOn",.not.res2@mpFillOn)
-
-; This section tests for regular resources.
-    mpres = get_res_ne(res2,(/"gs","tx"/))
+;
+; Retrieve the map resources.
+;
+    mpres = get_res_ne(res2,(/"gs","tx","tm"/))
 
     attsetvalues_check(map_object,mpres)
 
@@ -3771,7 +3783,21 @@ begin
 
 ; This section tests for regular resources.
 
-    mpres = get_res_ne(res2,"tx")  ; Get rest of resources
+    mpres = get_res_ne(res2,(/"tx","tm"/))  ; Get rest of resources
+;
+; If user has turned on built-in map tickmarks, then go ahead and
+; let the tickmark resources (if any) be passed to the map object.
+;
+    display_mode = get_display_mode(res2,"pmTickMarkDisplayMode","nocreate")
+
+    if(display_mode.eq.1.or.display_mode.eq.2) then
+      mpres = get_res_ne(res2,(/"tx","am"/))       ; Get rest of resources
+    else
+      mpres = get_res_ne(res2,(/"tx","am","tm"/))  ; Get rest of resources
+    end if
+;
+; Set some map resources.
+;
     attsetvalues_check(map_object,mpres)
 
 ; Make sure axes labels (if any) are the same size.
