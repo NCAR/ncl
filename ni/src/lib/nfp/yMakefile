@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.64 2003-01-24 18:27:47 haley Exp $
+#      $Id: yMakefile,v 1.65 2003-01-29 18:51:20 grubin Exp $
 #
 #########################################################################
 #									#
@@ -37,7 +37,7 @@ CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cdf_dpW.c chiinvW.c \
     shgridW.c sindexW.c slpW.c skewtW.c smth9W.c sortW.c specxW.c sph2W.c \
 	sphintW.c sstoiW.c statW.c svdW.c taperW.c tdpackW.c tempnamW.c \
 	trvsphW.c varimaxW.c vibetaW.c waveletW.c wgneW.c wmapW.c \
-	wrunaveW.c wrapper.c utilW.c vinth2pW.c vinth2peW.c zonmpsiW.c
+	wrunaveW.c wrapper.c utilW.c vinth2pW.c vinth2peW.c zonmpsiW.c print2dW.c
 
 COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cdf_dpW.o chiinvW.o \
 	conformW.o csagridW.o cssgridW.o cz2ccmW.o datesW.o drwvctc.o \
@@ -51,7 +51,7 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cdf_dpW.o chiinvW.o \
     shgridW.o sindexW.o slpW.o skewtW.o smth9W.o sortW.o specxW.o sph2W.o \
 	sphintW.o sstoiW.o statW.o svdW.o taperW.o tdpackW.o tempnamW.o \
 	trvsphW.o varimaxW.o vibetaW.o waveletW.o wgneW.o wmapW.o \
-	wrunaveW.o wrapper.o utilW.o vinth2pW.o vinth2peW.o zonmpsiW.o
+	wrunaveW.o wrapper.o utilW.o vinth2pW.o vinth2peW.o zonmpsiW.o print2dW.o
 
 FSRCS = aam.f areaAve.f areaRmse.f areaSum.f calcorc_dp.f cdf_dp.f cfftb.f \
 	cfftb1.f cfftf.f cfftf1.f cffti.f cffti1.f chiin_dp.f cntrFiniteDiff.f \
@@ -68,7 +68,7 @@ FSRCS = aam.f areaAve.f areaRmse.f areaSum.f calcorc_dp.f cdf_dp.f cfftb.f \
 	sp2_util_dp.f specx_dp.f statx.f statx_dp.f svd_lap_dp.f \
 	svd_util_dp.f taper.f tdez1d.f trssphx.f trvsphx.f ttest.f upsl_dp.f \
 	varimax_dp.f vibeta_dp.f vinth2p_dp.f vinth2p_ecmwf.f volAve.f \
-	volRmse.f wavelet.f wrunave_dp.f zon_mpsi.f
+	volRmse.f wavelet.f wrunave_dp.f zon_mpsi.f writeAscii2d.f
 
 FOBJS = aam.o areaAve.o areaRmse.o areaSum.o calcorc_dp.o cdf_dp.o cfftb.o \
 	cfftb1.o cfftf.o cfftf1.o cffti.o cffti1.o chiin_dp.o cntrFiniteDiff.o \
@@ -85,7 +85,7 @@ FOBJS = aam.o areaAve.o areaRmse.o areaSum.o calcorc_dp.o cdf_dp.o cfftb.o \
 	sp2_util_dp.o specx_dp.o statx.o statx_dp.o svd_lap_dp.o \
 	svd_util_dp.o taper.o tdez1d.o trssphx.o trvsphx.o ttest.o upsl_dp.o \
 	varimax_dp.o vibeta_dp.o vinth2p_dp.o vinth2p_ecmwf.o volAve.o \
-	volRmse.o wavelet.o wrunave_dp.o zon_mpsi.o
+	volRmse.o wavelet.o wrunave_dp.o zon_mpsi.o writeAscii2d.o
 
 OBJS = $(COBJS) $(FOBJS) $(EXFOBJS)
 
