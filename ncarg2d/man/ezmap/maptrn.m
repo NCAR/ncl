@@ -36,10 +36,11 @@ argument descriptions.
 Use the ncargex command to see the following relevant
 examples: 
 cpex03,
-mpex09.
+mpex09,
+bnchmk.
 .SH ACCESS
 To use MAPTRN, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_maptrn, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_maptrn, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
 ncarg_loc, preferably in that order.
 .SH MESSAGES

@@ -35,6 +35,11 @@ in this utility, see the ezmap_params man page.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
+caredg,
+ccpcica,
+ccpmovi,
+ccppole,
+ccpvp,
 cmppos,
 cmptit,
 cpex03,
@@ -43,11 +48,14 @@ mpex04,
 mpex05,
 mpex06,
 mpex07,
+epltch,
+fgkgpl,
+fpchiqu.
 .SH ACCESS
 To use MAPPOS, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_mappos, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_mappos, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the ezmap man page for a description of all Ezmap error
 messages and/or informational messages.

@@ -47,8 +47,10 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
-tdashc, tdashp, tdashs, fdldashc, fdldashd, spset1,
-spset2
+spset1,
+spset2,
+tdashc, tdashp, tdashs, 
+fdldashc, fdldashd. 
 .SH ACCESS
 To use DASHDC, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  To use c_dashdc, load 

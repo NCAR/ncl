@@ -23,7 +23,7 @@ argument descriptions.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
 tdashc, tdashl, tdashp, tdashs,
-fdldashc, fdldashd
+fdldashc, fdldashd.
 .SH ACCESS
 To use VECTD load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  To use c_vectd, load 

@@ -21,6 +21,8 @@ directly.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
+ccpmap,
+ccpvp,
 cezmap1,
 cezmap2,
 cezmap3,
@@ -39,12 +41,15 @@ mpex05,
 mpex06,
 mpex07,
 mpex10,
-tezmap.
+tezmap,
+fgkgpl,
+fgkgtx,
+fngngdts.
 .SH ACCESS
 To use MAPDRW, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_mapdrw, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_mapdrw, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 ezmap, 

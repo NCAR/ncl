@@ -20,6 +20,10 @@ If Ezmap currently needs initialization, or if the error flag
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
+ccpcica,
+ccpmovi,
+ccppole,
+colcon,
 cmpclr,
 cmpel,
 cmpfil,
@@ -34,12 +38,14 @@ cmptit,
 cpex08,
 mpex09,
 eezmpa,
-tezmpa.
+epltch,
+tezmpa,
+fpchiqu.
 .SH ACCESS
 To use MAPLOT, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_maplot, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_maplot, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 ezmap,

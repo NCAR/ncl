@@ -103,6 +103,12 @@ in this utility, see the ezmap_params man page.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
+ccpcica,
+ccpmap,
+ccpmovi,
+ccppole,
+ccpvp,
+colcon,
 cezmap1,
 cezmap2,
 cezmap3,
@@ -111,6 +117,7 @@ cmpdd,
 cmpdrw,
 cmpel,
 cmpfil,
+cmpgrd,
 cmpgrp,
 cmpita,
 cmpitm,
@@ -121,6 +128,12 @@ cmpmsk,
 cmpou,
 cmpsat,
 cmptit,
+cmptra,
+cmpusr,
+cpex01,
+cpex03,
+cpex08,
+cpex09,
 mpex01,
 mpex02,
 mpex04,
@@ -129,12 +142,16 @@ mpex06,
 mpex07,
 mpex09,
 mpex10,
-eezmpa
+eezmpa,
+epltch,
 tezmap,
-tezmpa.
+tezmpa,
+fgkgtx,
+fngngdts,
+fpchiqu.
 .SH ACCESS
 To use MAPROJ, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_maproj, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_maproj, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
 ncarg_loc, preferably in that order.
 .SH MESSAGES

@@ -62,6 +62,8 @@ MAPSTI and MAPGTI.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
+ccppole,
+colcon,
 cmpfil,
 cmpgrp,
 cmpita,
@@ -74,9 +76,9 @@ eezmpa,
 tezmpa.
 .SH ACCESS
 To use MAPBLA, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_mapbla, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_mapbla, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 ezmap, 

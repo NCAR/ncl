@@ -20,8 +20,20 @@ The C-binding argument description is the same as the FORTRAN
 argument description.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
-tdashc, tdashl, tdashp, tdashs, fdldashd, carline,
-cmpfil, cmpgrp, cmpitm, cmplab, cmpmsk, cmptit, cmpusr
+carline,
+colcon,
+cmpfil,
+cmpitm,
+cmplab,
+cmpmsk,
+cmptit,
+cmpusr,
+mpex08,
+tdashc,
+tdashl,
+tdashp,
+tdashs,
+fdldashd.
 .SH ACCESS
 To use DASHDB, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  To use c_dashdb, load 

@@ -30,11 +30,14 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
-example: 
-cmptra.
+examples: 
+ccpmpxy,
+cmptra,
+fgkgtx,
+fngngdts.
 .SH ACCESS
 To use MAPTRA, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_maptra, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_maptra, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
 ncarg_loc, preferably in that order.
 .SH SEE ALSO
@@ -88,6 +91,9 @@ mpsetr,
 supmap,
 supcon,
 ncarg_cbind
+.sp
+Hardcopy:
+Tutorial: A Step-by-Step Guide to Contouring and Mapping
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

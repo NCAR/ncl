@@ -31,11 +31,12 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
-example: 
+examples: 
+ccpmpxy,
 mpex10.
 .SH ACCESS
 To use MAPTRI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_maptri, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_maptri, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
 ncarg_loc, preferably in that order.
 .SH SEE ALSO

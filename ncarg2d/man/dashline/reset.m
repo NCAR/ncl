@@ -26,7 +26,8 @@ Therefore, a call to entry RESET should be made before any new picture
 is generated which uses the Dashline "Super" option.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
-tdashp.f, fdlsmth.f
+tdashp, 
+fdlsmth.
 .SH ACCESS
 To use RESET, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  To use c_reset, load the 

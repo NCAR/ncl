@@ -94,6 +94,7 @@ routine.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
+ccppole,
 cmpfil,
 cmpgrp,
 cmpitm,
@@ -105,9 +106,9 @@ eezmpa,
 tezmpa.
 .SH ACCESS
 To use MAPGRM, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_mapgrm, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_mapgrm, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 ezmap, 

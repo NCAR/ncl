@@ -24,10 +24,10 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument description.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
-tdashc, tdashl, tdashp, tdashs, carline,
-cmpfil, cmpgrp, cmpitm, cmplab, cmpmsk, cmptit,
+carline, colcon, cmpfil, cmpgrp, cmpitm, cmplab, cmpmsk, cmptit,
 cpex01, cpex02, cpex03, cpex04, cpex06, vvex01,
-fdlcurvd, fdldashd, fdlsmth, fpcloqu
+tdashc, tdashl, tdashp, tdashs, carline,
+fdlcurvd, fdldashd, fdlsmth, fpcloqu.
 .SH ACCESS
 To use CURVED, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  To use c_curved, load 

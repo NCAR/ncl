@@ -37,18 +37,21 @@ by the dash package.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
+ccpcica,
+ccpmovi,
 cmpclr,
 cmpdd,
 cmpgrd,
 cmplbl,
 cmplot,
 cmptit,
-mpex09.
+epltch,
+fpchiqu.
 .SH ACCESS
 To use MAPGRD, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_mapgrd, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_mapgrd, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 ezmap, 

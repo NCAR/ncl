@@ -20,10 +20,10 @@ a call to MAPBLA.
 The C-binding argument description is the same as the FORTRAN 
 argument description.
 .SH USAGE@@@
-ICI = MAPACI (IAI)
+ICIR = MAPACI (IAID)
 .sp
 Gives ICI a value between 1 and 7, inclusive, that may be used to select
-a color index for the area whose area identifier is IAI.  It is guaranteed
+a color index for the area whose area identifier is IAID.  It is guaranteed
 that MAPACI will not return the same value for adjacent areas; this fact
 can be used to ensure that adjacent areas will have different colors.
 .sp
@@ -35,9 +35,9 @@ Use the ncargex command to see the following relevant
 example: eezmpa.
 .SH ACCESS
 To use MAPACI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_mapaci, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_mapaci, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 ezmap, 

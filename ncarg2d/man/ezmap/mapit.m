@@ -87,12 +87,11 @@ you wish to view.
 Use the ncargex command to see the following relevant
 examples: 
 cmpgci,
-cmpit,
 cmptra,
 mpexfi.
 .SH ACCESS
 To use MAPIT, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_mapit, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_mapit, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
 ncarg_loc, preferably in that order.
 .SH SEE ALSO

@@ -16,11 +16,11 @@ In many filled or masked maps, you may need a limb line.
 You can draw a limb line by calling MAPLMB.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
-examples: 
-
+example: 
+mppex07.
 .SH ACCESS
-To use MAPLMB, load the NCAR Graphics libraries @@@ ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_maplmb, load the 
+To use MAPLMB, load the NCAR Graphics libraries ncarg, ncarg_gks,
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_maplmb, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
 ncarg_loc, preferably in that order.
 .SH SEE ALSO
