@@ -1,5 +1,5 @@
 /*
- *      $Id: Fortran.c,v 1.7 1995-03-03 02:56:28 boote Exp $
+ *      $Id: Fortran.c,v 1.8 1995-03-14 21:06:02 haley Exp $
  */
 /************************************************************************
 *									*
@@ -959,7 +959,7 @@ CvtGenArrToFArr
 	if(exp->num_dim != NULL){
 		if(*exp->num_dim < gen->num_dimensions){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
-	"%s:Array Resource has %d dimensions, only space for %d provied",
+	"%s:Array Resource has %d dimensions, only space for %d provided",
 				err,gen->num_dimensions,*exp->num_dim);
 			ret = MIN(ret,NhlWARNING);
 			num_dim = *exp->num_dim;

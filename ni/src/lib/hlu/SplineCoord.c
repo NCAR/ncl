@@ -1,5 +1,5 @@
 /*
- *      $Id: SplineCoord.c,v 1.5 1994-12-16 20:04:44 boote Exp $
+ *      $Id: SplineCoord.c,v 1.6 1995-03-14 21:06:04 haley Exp $
  */
 /************************************************************************
 *									*
@@ -283,7 +283,7 @@ NhlStatus *ystatus)
 * ERROR: NOT ENOUGH X COORDINATE POINTS
 */
 	
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"A Miniumum of 3 coordinates points must be provided to CreateSplineApprox");	
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"A minimum of 3 coordinates points must be provided to CreateSplineApprox");	
 		xret = NhlFATAL;
 		*xstatus = NhlNONE;
 	}
@@ -424,7 +424,7 @@ NOTYET
 /*
 * ERROR: NOT ENOUGH Y COORDINATE POINTS
 */
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"A Miniumum of 3 coordinates points must be provided to CreateSplineApprox");	
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"A minimum of 3 coordinates points must be provided to CreateSplineApprox");	
 		yret = NhlFATAL;
 		thedat->ystatus = *ystatus = NhlNONE;
 	}

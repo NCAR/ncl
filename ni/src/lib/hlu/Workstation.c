@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.30 1995-03-13 21:47:37 dbrown Exp $
+ *      $Id: Workstation.c,v 1.31 1995-03-14 21:06:16 haley Exp $
  */
 /************************************************************************
 *									*
@@ -1864,7 +1864,7 @@ static NhlErrorTypes WorkstationDeactivate
 /*
 * ERROR WORKSTATION NOT ACTIVE OR NOT INITIALIZED
 */
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"WorkstationDeactivate: workstation not active or not openned");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"WorkstationDeactivate: workstation not active or not opened");
 		retcode = NhlWARNING;
 	}
 

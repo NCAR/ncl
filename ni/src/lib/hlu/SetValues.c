@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.14 1995-02-19 08:18:33 boote Exp $
+ *      $Id: SetValues.c,v 1.15 1995-03-14 21:06:03 haley Exp $
  */
 /************************************************************************
 *									*
@@ -438,7 +438,7 @@ _NhlSetValues
 		while(tchldnode != NULL){
 			if(!tchldnode->svalscalled){
 				NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-			"SetValuesChild never occured on %s: Error in %s",
+			"SetValuesChild never occurred on %s: Error in %s",
 						NhlName(tchldnode->pid),
 						_NhlClassName(_NhlClass(l))));
 			}

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.26 1995-03-13 21:47:24 dbrown Exp $
+ *      $Id: DataComm.c,v 1.27 1995-03-14 21:06:01 haley Exp $
  */
 /************************************************************************
 *									*
@@ -1632,7 +1632,7 @@ _NhlRegisterDataRes
 	}
 	if(!found){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-		"Trying to register a non-existant DataList resource %s",
+		"Trying to register a non-existent DataList resource %s",
 								res_name);
 		return NhlFATAL;
 	}
@@ -1713,7 +1713,7 @@ _NhlRegisterDataRes
 		}
 		if(!found){
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
-		"Trying to register a non-existant DataSpecList resource %s",
+		"Trying to register a non-existent DataSpecList resource %s",
 								dsres_name);
 			NhlFree(qlist);
 			NhlFree(oset);

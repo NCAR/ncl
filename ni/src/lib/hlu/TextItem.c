@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.21 1995-03-08 23:44:14 haley Exp $
+ *      $Id: TextItem.c,v 1.22 1995-03-14 21:06:05 haley Exp $
  */
 /************************************************************************
 *									*
@@ -783,7 +783,7 @@ static NhlErrorTypes TextItemSetValues
 				+((tmpvy1-tmpvy0)*(tmpvy1-tmpvy0))));
 		
 		} else {
-		  NhlPError(NhlWARNING,NhlEUNKNOWN,"TextItemSetValues: Can not change x,y,width,and height when other text attribute changes have been requested also, proceding with other text attribute requests");
+		  NhlPError(NhlWARNING,NhlEUNKNOWN,"TextItemSetValues: Can not change x,y,width,and height when other text attribute changes have been requested also, preceding with other text attribute requests");
 		  ret = MIN(ret,NhlWARNING);
 		}
 	} 

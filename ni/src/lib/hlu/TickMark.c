@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.29 1995-03-03 02:56:32 boote Exp $
+ *      $Id: TickMark.c,v 1.30 1995-03-14 21:06:09 haley Exp $
  */
 /************************************************************************
 *									*
@@ -1214,7 +1214,7 @@ static NhlErrorTypes	TickMarkSetValues
 
 	ret = ChangeTransformInfo(tnew,told,args,num_args);
 	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkSetValues: A fatal error was detected while setting up tranformation information,cannot continue");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkSetValues: A fatal error was detected while setting up transformation information,cannot continue");
 		return(ret);
 	}
 	if(ret < realret)
@@ -1428,14 +1428,14 @@ static NhlErrorTypes	TickMarkInitialize
 */
 	ret = CreateXBYLTransformInfo(tnew,args,num_args);
 	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkInitialize: A fatal error was detected while setting up tranformation information,cannot continue");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkInitialize: A fatal error was detected while setting up transformation information,cannot continue");
 		return(ret);
 	}
 	if(ret < realret)
 		realret = ret;
 	ret = CreateXTYRTransformInfo(tnew,args,num_args);
 	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkInitialize: A fatal error was detected while setting up tranformation information,cannot continue");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkInitialize: A fatal error was detected while setting up transformation information,cannot continue");
 		return(ret);
 	}
 	if(ret < realret)
@@ -1783,7 +1783,7 @@ static NhlErrorTypes	TickMarkDraw
 	if (tlayer->view.use_segments) {
 		ret = _NhlActivateWorkstation(tlayer->base.wkptr);
 		if(ret < NhlWARNING) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: An error has occured while activating the workstation, can not continue");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: An error has occurred while activating the workstation, can not continue");
 			return(ret);
 		}
 		if (tlayer->tick.trans_dat != NULL)
@@ -1808,7 +1808,7 @@ static NhlErrorTypes	TickMarkDraw
 	if (! tlayer->view.use_segments) {
 		ret = _NhlActivateWorkstation(tlayer->base.wkptr);
 		if(ret < NhlWARNING) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: An error has occured while activating the workstation, can not continue");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: An error has occurred while activating the workstation, can not continue");
 			return(ret);
 		}
 	}
@@ -1839,7 +1839,7 @@ static NhlErrorTypes	TickMarkDraw
 	}
 	ret = _NhlDeactivateWorkstation(tlayer->base.wkptr);
 	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: An error has occured while deactivating the workstation, can not continue");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: An error has occurred while deactivating the workstation, can not continue");
 	}
 	if(ret < realret)
 		realret = ret;
@@ -2526,7 +2526,7 @@ int		cutoff;
 			cnvt_precision = compare_precision;
 		}
 		if((min_compare > 7) &&(max_compare > 7)) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"AutoComputeMajorTickMarks: min and max are so close together or so far appart that arithmetic error may cause problems, proceed at own risk");
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"AutoComputeMajorTickMarks: min and max are so close together or so far apart that arithmetic error may cause problems, proceed at own risk");
 			ret = NhlWARNING;
 		}
 		if((cnvt_precision < max_compare)&&(cnvt_precision < min_compare)) {
@@ -2760,7 +2760,7 @@ int		cutoff;
 			cnvt_precision = compare_precision;
 		}
 		if((min_compare > 7)&&(max_compare > 7)) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"ManualComputeMajorTickMarks: min and max are so close together or so far appart that arithmetic error may cause problems, proceed at own risk");
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"ManualComputeMajorTickMarks: min and max are so close together or so far apart that arithmetic error may cause problems, proceed at own risk");
 			ret = NhlWARNING;
 		}
 		if((cnvt_precision < max_compare)&&(cnvt_precision < min_compare)) {
@@ -3031,7 +3031,7 @@ int	max_ticks;
 	npts = 6;
 
 	if((*tstart <= 0.0)||(*tend <= 0.0)||((*tend-*tstart)<=0.0)) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"ChooseSpacingLog: An internal error that should not have occured has been detected, can not continue");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ChooseSpacingLog: An internal error that should not have occurred has been detected, can not continue");
 		return(NhlFATAL);
 	}
 
@@ -3313,7 +3313,7 @@ static NhlErrorTypes ComputeMinorTickMarks
 					}
 					if(k == MAXMINORTICKS) {
 						*nminor = k-1;
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
 						return(NhlWARNING);
 					}
 				}
@@ -3340,7 +3340,7 @@ static NhlErrorTypes ComputeMinorTickMarks
 							pow(10.0,minor_spacing);
 						if(k == MAXMINORTICKS) {
 							*nminor = k-1;
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
 							return(NhlWARNING);
 						}
 
@@ -3364,7 +3364,7 @@ static NhlErrorTypes ComputeMinorTickMarks
 					      *pow(10.0,minor_spacing);
 					if(k == MAXMINORTICKS) {
 						*nminor = k-1;
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
 						return(NhlWARNING);
 					}
 				}
@@ -3384,7 +3384,7 @@ static NhlErrorTypes ComputeMinorTickMarks
                                         tmp = m_locs[0] - j * pow(10.0,minor_spacing);
 					if(k == MAXMINORTICKS) {
 						*nminor = k-1;
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
 						return(NhlWARNING);
 					}
                                 }
@@ -3410,7 +3410,7 @@ static NhlErrorTypes ComputeMinorTickMarks
 					tmp = pow(10.0,ceil(max)) - j *pow(10.0,minor_spacing);
 					if(k == MAXMINORTICKS) {
 						*nminor = k-1;
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
 						return(NhlWARNING);
 					}
 				}
@@ -3475,7 +3475,7 @@ static NhlErrorTypes ComputeMinorTickMarks
 					tmp = m_locs[0] - j *minor_spacing;
 					if(k == MAXMINORTICKS) {
 						*nminor = k-1;
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
 						return(NhlWARNING);
 					}
 				}
@@ -3487,7 +3487,7 @@ static NhlErrorTypes ComputeMinorTickMarks
 					k++;
 					if(k == MAXMINORTICKS) {
 						*nminor = k-1;
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
 						return(NhlWARNING);
 					}
 				}
@@ -3502,7 +3502,7 @@ static NhlErrorTypes ComputeMinorTickMarks
 					tmp = m_locs[nmajor-1] + j * minor_spacing;
 					if(k == MAXMINORTICKS) {
 						*nminor = k-1;
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
 						return(NhlWARNING);
 					}
 				}
@@ -3526,7 +3526,7 @@ static NhlErrorTypes ComputeMinorTickMarks
 					tmp = min2 + j * minor_spacing;
 					if(k == MAXMINORTICKS) {
 						*nminor = k-1;
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"ComputeMinorTickMarks: Maximum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
 						return(NhlWARNING);
 					}
 				}
@@ -5441,7 +5441,7 @@ static NhlErrorTypes ComputeTickInfo
 		tnew->tick.x_b_nminor = 0;
 	}
 	if((majorret < NhlWARNING)||(minorret < NhlWARNING)) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"ComputeTickInfo: A NhlFATAL error occured while computing Tick information for the X-Axis bottom ticks");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ComputeTickInfo: A NhlFATAL error occurred while computing Tick information for the X-Axis bottom ticks");
 		bottom = MIN(majorret,minorret);
 	}
 	majorret = NhlNOERROR;
@@ -5527,7 +5527,7 @@ static NhlErrorTypes ComputeTickInfo
 		tnew->tick.x_t_nminor = 0;
 	}
 	if((majorret < NhlWARNING)||(minorret < NhlWARNING)) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"ComputeTickInfo: A NhlFATAL error occured while computing Tick information for the X-Axis top ticks");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ComputeTickInfo: A NhlFATAL error occurred while computing Tick information for the X-Axis top ticks");
 		top = MIN(majorret,minorret);
 	}
 	majorret = NhlNOERROR;
@@ -5611,7 +5611,7 @@ static NhlErrorTypes ComputeTickInfo
 		tnew->tick.y_l_nminor = 0;
 	}
 	if((majorret < NhlWARNING)||(minorret < NhlWARNING)) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"ComputeTickInfo: A NhlFATAL error occured while computing Tick information for the Y-Axis left ticks");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ComputeTickInfo: A NhlFATAL error occurred while computing Tick information for the Y-Axis left ticks");
 		left = MIN(majorret,minorret);
 	}
 	majorret = NhlNOERROR;
@@ -5697,7 +5697,7 @@ static NhlErrorTypes ComputeTickInfo
 		tnew->tick.y_r_nminor = 0;
 	}
 	if((majorret < NhlWARNING)||(minorret < NhlWARNING)) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"ComputeTickInfo: A NhlFATAL error occured while computing Tick information for the Y-Axis right ticks");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ComputeTickInfo: A NhlFATAL error occurred while computing Tick information for the Y-Axis right ticks");
 		right = MIN(majorret,minorret);
 	}
 	majorret = NhlNOERROR;
@@ -5792,7 +5792,7 @@ static NhlErrorTypes TransformLocations
                 tnew->tick.x_b_major_ndc_locs,tnew->tick.y_l_major_ndc_locs,
                 &status,NULL,NULL);
 	if(subret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: An Error occured while mapping the bottom and left tick marks to the window, cannot continue",error_lead);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: An Error occurred while mapping the bottom and left tick marks to the window, cannot continue",error_lead);
 		return(NhlFATAL);
 	} else if(subret < ret) {
 		ret = subret;
@@ -5841,7 +5841,7 @@ static NhlErrorTypes TransformLocations
                 tnew->tick.x_b_major_ndc_locs,tnew->tick.y_l_major_ndc_locs,
                 &status,NULL,NULL);
 	if(subret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: An Error occured while mapping the bottom and left tick marks from the window to NDC, cannot continue",error_lead);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: An Error occurred while mapping the bottom and left tick marks from the window to NDC, cannot continue",error_lead);
 		return(NhlFATAL);
 	} else if(subret < ret) {
 		ret = subret;
@@ -5906,7 +5906,7 @@ static NhlErrorTypes TransformLocations
                 tnew->tick.x_b_minor_ndc_locs,tnew->tick.y_l_minor_ndc_locs,
                 &status,NULL,NULL);
 	if(subret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: A NhlFATAL error occured while mapping minor tickmarks to the window, cannot continue",error_lead);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: A NhlFATAL error occurred while mapping minor tickmarks to the window, cannot continue",error_lead);
 		return(NhlFATAL);
 	} else if(subret < ret) {
 		ret = subret;
@@ -5945,7 +5945,7 @@ static NhlErrorTypes TransformLocations
                 tnew->tick.x_b_minor_ndc_locs,tnew->tick.y_l_minor_ndc_locs,
                 &status,NULL,NULL);
 	if(subret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: A NhlFATAL error occured while mapping minor tickmarks from the window to NDC, cannot continue",error_lead);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: A NhlFATAL error occurred while mapping minor tickmarks from the window to NDC, cannot continue",error_lead);
 		return(NhlFATAL);
 	} else if(subret < ret) {
 		ret = subret;
@@ -6022,7 +6022,7 @@ static NhlErrorTypes TransformLocations
                 tnew->tick.x_t_major_ndc_locs,tnew->tick.y_r_major_ndc_locs,
                 &status,NULL,NULL);
 	if(subret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: An Error occured while mapping the top and right tick marks to the window, cannot continue",error_lead);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: An Error occurred while mapping the top and right tick marks to the window, cannot continue",error_lead);
 		return(NhlFATAL);
 	} else if(subret < ret) {
 		ret = subret;
@@ -6061,7 +6061,7 @@ static NhlErrorTypes TransformLocations
                 tnew->tick.x_t_major_ndc_locs,tnew->tick.y_r_major_ndc_locs,
                 &status,NULL,NULL);
 	if(subret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: An Error occured while mapping the top and right tick marks from the window to NDC, cannot continue",error_lead);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: An Error occurred while mapping the top and right tick marks from the window to NDC, cannot continue",error_lead);
 		return(NhlFATAL);
 	} else if(subret < ret) {
 		ret = subret;
@@ -6123,7 +6123,7 @@ static NhlErrorTypes TransformLocations
                 tnew->tick.x_t_minor_ndc_locs,tnew->tick.y_r_minor_ndc_locs,
                 &status,NULL,NULL);
 	if(subret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: An Error occured while mapping the top and right minor tick marks to the window, cannot continue",error_lead);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: An Error occurred while mapping the top and right minor tick marks to the window, cannot continue",error_lead);
 		return(NhlFATAL);
 	} else if(subret < ret) {
 		ret = subret;
@@ -6162,7 +6162,7 @@ static NhlErrorTypes TransformLocations
                 tnew->tick.x_t_minor_ndc_locs,tnew->tick.y_r_minor_ndc_locs,
                 &status,NULL,NULL);
 	if(subret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: An Error occured while mapping the top and right minor tick marks from the window to NDC, cannot continue",error_lead);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: An Error occurred while mapping the top and right minor tick marks from the window to NDC, cannot continue",error_lead);
 		return(NhlFATAL);
 	} else if(subret < ret) {
 		ret = subret;

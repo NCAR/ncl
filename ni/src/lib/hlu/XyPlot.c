@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.33 1995-03-03 17:36:55 boote Exp $
+ *      $Id: XyPlot.c,v 1.34 1995-03-14 21:06:20 haley Exp $
  */
 /************************************************************************
 *									*
@@ -3392,7 +3392,7 @@ ComputeDataExtents
 		if((xnew->xyplot.x_data_min <= 0.0) &&
 					(xnew->xyplot.x_style == NhlLOG)){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
-"%s:The Minimuim X value is <= 0.0 NhlLOG invalid:Changing %s to NhlLINEAR",
+"%s:The Minimum X value is <= 0.0 NhlLOG invalid:Changing %s to NhlLINEAR",
 						error_lead,NhlNxyXStyle);
 			ret = MIN(ret,NhlWARNING);
 			xnew->xyplot.x_style = NhlLINEAR;
@@ -3400,7 +3400,7 @@ ComputeDataExtents
 		if((xnew->xyplot.y_data_min <= 0.0) &&
 					(xnew->xyplot.y_style == NhlLOG)){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
-"%s:The Minimuim Y value is <= 0.0 NhlLOG invalid:Changing %s to NhlLINEAR",
+"%s:The Minimum Y value is <= 0.0 NhlLOG invalid:Changing %s to NhlLINEAR",
 						error_lead,NhlNxyYStyle);
 			ret = MIN(ret,NhlWARNING);
 			xnew->xyplot.y_style = NhlLINEAR;

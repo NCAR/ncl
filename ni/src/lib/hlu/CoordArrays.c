@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.23 1995-03-03 02:56:25 boote Exp $
+ *      $Id: CoordArrays.c,v 1.24 1995-03-14 21:06:00 haley Exp $
  */
 /************************************************************************
 *									*
@@ -569,7 +569,7 @@ GetMinMax
 
 		if(!init){
 			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-		"No Valid values in Array, unable to complute Min or Max"));
+		"No Valid values in Array, unable to compute Min or Max"));
 		}
 	}
 
