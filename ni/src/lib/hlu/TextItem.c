@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.13 1994-10-31 01:08:43 boote Exp $
+ *      $Id: TextItem.c,v 1.14 1994-11-07 03:10:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -262,7 +262,7 @@ float   * /*yot */
 
 NhlTextItemLayerClassRec NhltextItemLayerClassRec = {
 	{
-/* class_name			*/	"TextItem",
+/* class_name			*/	"textItemLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlTextItemLayerRec),
 /* class_inited			*/	False,
@@ -1306,8 +1306,8 @@ static NhlErrorTypes FigureAndSetTextBBInfo
  * Save the text perimeter points so that the perimeter can be drawn if
  * required.
  */
-	memcpy(tnew->text.xperim,xpoints,4*sizeof(float));
-	memcpy(tnew->text.yperim,ypoints,4*sizeof(float));
+	memcpy((char*)tnew->text.xperim,(char*)xpoints,4*sizeof(float));
+	memcpy((char*)tnew->text.yperim,(char*)ypoints,4*sizeof(float));
 	tnew->text.xperim[4] = tnew->text.xperim[0];
 	tnew->text.yperim[4] = tnew->text.yperim[0];
 

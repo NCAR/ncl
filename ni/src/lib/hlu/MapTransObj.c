@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.11 1994-09-23 23:36:51 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.12 1994-11-07 03:09:58 ethan Exp $
 */
 /************************************************************************
 *									*
@@ -344,7 +344,7 @@ static NhlErrorTypes CheckMapLimits(
 
 NhlMapTransObjLayerClassRec NhlmapTransObjLayerClassRec = {
 {
-/* class_name			*/	"MapTransObj",
+/* class_name			*/	"mapTransObjLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlMapTransObjLayerRec),
 /* class_inited			*/	False,

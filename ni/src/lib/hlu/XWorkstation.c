@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.6 1994-09-23 23:37:05 dbrown Exp $
+ *      $Id: XWorkstation.c,v 1.7 1994-11-07 03:10:47 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -173,7 +173,7 @@ static NhlErrorTypes XWorkstationClear(
 
 NhlXWorkstationLayerClassRec NhlxWorkstationLayerClassRec = {
         {
-/* class_name			*/	"XWorkstation",
+/* class_name			*/	"xWorkstationLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlXWorkstationLayerRec),
 /* class_inited			*/	False,

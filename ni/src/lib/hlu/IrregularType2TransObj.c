@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObj.c,v 1.11 1994-07-12 20:52:09 boote Exp $
+ *      $Id: IrregularType2TransObj.c,v 1.12 1994-11-07 03:09:32 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -300,7 +300,7 @@ static NhlBoolean compare_view(
 
 NhlIrregularType2TransObjLayerClassRec NhlirregularType2TransObjLayerClassRec = {
         {
-/* class_name			*/	"IrregularType2TransObj",
+/* class_name			*/	"irregularType2TransObjLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlIrregularType2TransObjLayerRec),
 /* class_inited			*/	False,

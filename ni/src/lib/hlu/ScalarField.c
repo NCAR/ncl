@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.10 1994-10-13 19:30:08 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.11 1994-11-07 03:10:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -168,7 +168,7 @@ static NhlErrorTypes    CheckCopyVType(
 NhlScalarFieldFloatLayerClassRec NhlscalarFieldFloatLayerClassRec = {
 	/* NhlBaseLayerClassPart */
 	{
-/* class_name			*/	"ScalarFieldFloat",
+/* class_name			*/	"scalarFieldFloatLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlScalarFieldFloatLayerRec),
 /* class_inited			*/	False,
@@ -196,7 +196,7 @@ NhlScalarFieldFloatLayerClassRec NhlscalarFieldFloatLayerClassRec = {
 NhlScalarFieldLayerClassRec NhlscalarFieldLayerClassRec = {
 	/* NhlBaseLayerClassPart */
 	{
-/* class_name			*/	"ScalarField",
+/* class_name			*/	"scalarFieldLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlScalarFieldLayerRec),
 /* class_inited			*/	False,

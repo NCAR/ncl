@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.36 1994-11-04 21:06:30 dbrown Exp $
+ *      $Id: Contour.c,v 1.37 1994-11-07 03:09:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1392,7 +1392,7 @@ extern void   (_NHLCALLF(cpmpxy,CPMPXY))(
 NhlContourDataDepLayerClassRec NhlcontourDataDepLayerClassRec = {
 	/* base_class */
         {
-/* class_name			*/	"ContourDataDep",
+/* class_name			*/	"contourDataDepLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlContourDataDepLayerRec),
 /* class_inited			*/	False,
@@ -1425,7 +1425,7 @@ NhlContourDataDepLayerClassRec NhlcontourDataDepLayerClassRec = {
 NhlContourLayerClassRec NhlcontourLayerClassRec = {
 	/* base_class */
         {
-/* class_name			*/      "Contour",
+/* class_name			*/      "contourLayerClass",
 /* nrm_class			*/      NrmNULLQUARK,
 /* layer_size			*/      sizeof(NhlContourLayerRec),
 /* class_inited			*/      False,

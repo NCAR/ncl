@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.16 1994-10-15 00:29:55 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.17 1994-11-07 03:09:54 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,7 @@
 #include <ncarg/hlu/FortranP.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <ncarg/c.h>
 
 /*
  * Function:	ResourceUnset
@@ -717,7 +718,7 @@ extern int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))(
 
 NhlMapPlotLayerClassRec NhlmapPlotLayerClassRec = {
         {
-/* class_name			*/      "MapPlot",
+/* class_name			*/      "mapPlotLayerClass",
 /* nrm_class			*/      NrmNULLQUARK,
 /* layer_size			*/      sizeof(NhlMapPlotLayerRec),
 /* class_inited			*/      False,

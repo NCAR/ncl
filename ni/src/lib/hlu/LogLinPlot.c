@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.8 1994-10-13 19:30:07 dbrown Exp $
+ *      $Id: LogLinPlot.c,v 1.9 1994-11-07 03:09:49 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -93,7 +93,7 @@ static NhlErrorTypes SetUpTransObj(
 
 NhlLogLinPlotLayerClassRec NhllogLinPlotLayerClassRec = {
         {
-/* class_name			*/      "LogLinPlot",
+/* class_name			*/      "logLinPlotLayerClass",
 /* nrm_class			*/      NrmNULLQUARK,
 /* layer_size			*/      sizeof(NhlLogLinPlotLayerRec),
 /* class_inited			*/      False,

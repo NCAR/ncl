@@ -1,5 +1,5 @@
 /*
- *      $Id: Annotation.c,v 1.5 1994-09-23 23:36:34 dbrown Exp $
+ *      $Id: Annotation.c,v 1.6 1994-11-07 03:08:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -100,7 +100,7 @@ static NhlErrorTypes 	AnnotationClassInitialize();
 
 NhlAnnotationLayerClassRec NhlannotationLayerClassRec = {
 	{
-/* class_name			*/	"Annotation",
+/* class_name			*/	"annotationLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlAnnotationLayerRec),
 /* class_inited			*/	False,

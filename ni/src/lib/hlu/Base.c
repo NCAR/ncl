@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.6 1994-10-28 03:13:39 boote Exp $
+ *      $Id: Base.c,v 1.7 1994-11-07 03:08:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -54,7 +54,7 @@ static NhlErrorTypes BaseLayerReparent(
 
 NhlObjLayerClassRec NhlobjLayerClassRec = {
 	{
-/* class_name			*/	"Obj",
+/* class_name			*/	"objLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlObjLayerRec),
 /* class_inited			*/	False,
@@ -77,7 +77,7 @@ NhlObjLayerClassRec NhlobjLayerClassRec = {
 
 NhlLayerClassRec NhllayerClassRec = {
 	{
-/* class_name			*/	"Base",
+/* class_name			*/	"baseLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlLayerRec),
 /* class_inited			*/	False,

@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.10 1994-10-27 01:36:57 dbrown Exp $
+ *      $Id: Transform.c,v 1.11 1994-11-07 03:10:34 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -112,7 +112,7 @@ static NhlErrorTypes TransformNDCPolyline(
 
 NhlTransformLayerClassRec NhltransformLayerClassRec = {
         {
-/* class_name			*/      "Transform",
+/* class_name			*/      "transformLayerClass",
 /* nrm_class			*/      NrmNULLQUARK,
 /* layer_size			*/      sizeof(NhlTransformLayerRec),
 /* class_inited			*/      False,

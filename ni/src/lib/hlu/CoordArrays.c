@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.15 1994-09-23 23:36:39 dbrown Exp $
+ *      $Id: CoordArrays.c,v 1.16 1994-11-07 03:09:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -205,7 +205,7 @@ static NhlErrorTypes CoordArraysDestroy(
 NhlCoordArraysLayerClassRec NhlcoordArraysLayerClassRec = {
 	/* NhlBaseLayerClassPart */
 	{
-/* class_name			*/	"CoordArrays",
+/* class_name			*/	"coordArraysLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlCoordArraysLayerRec),
 /* class_inited			*/	False,

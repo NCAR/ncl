@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.11 1994-10-31 01:08:44 boote Exp $
+ *      $Id: View.c,v 1.12 1994-11-07 03:10:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -232,7 +232,7 @@ static NhlErrorTypes    ViewGetBB(
 
 NhlViewLayerClassRec NhlviewLayerClassRec = {
         {
-/* class_name			*/	"View",
+/* class_name			*/	"viewLayerClass",
 /* nrm_class			*/	NrmNULLQUARK, 
 /* layer_size			*/	sizeof(NhlViewLayerRec),
 /* class_inited			*/	False,

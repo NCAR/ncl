@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.12 1994-09-23 23:36:59 dbrown Exp $
+ *      $Id: Title.c,v 1.13 1994-11-07 03:10:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -319,7 +319,7 @@ static NhlErrorTypes TitleDraw(
 
 NhlTitleLayerClassRec NhltitleLayerClassRec = {
         {
-/* class_name                   */      "Title",
+/* class_name                   */      "titleLayerClass",
 /* nrm_class                    */      NrmNULLQUARK,
 /* layer_size                   */      sizeof(NhlTitleLayerRec),
 /* class_inited                 */      False,

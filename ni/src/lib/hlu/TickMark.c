@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.20 1994-09-23 23:36:58 dbrown Exp $
+ *      $Id: TickMark.c,v 1.21 1994-11-07 03:10:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -930,7 +930,7 @@ static char *ConvertToString(
 
 NhlTickMarkLayerClassRec NhltickMarkLayerClassRec = {
         {
-/* class_name		*/      "TickMark",
+/* class_name		*/      "tickMarkLayerClass",
 /* nrm_class		*/      NrmNULLQUARK,
 /* layer_size		*/      sizeof(NhlTickMarkLayerRec),
 /* class_inited		*/      False,

@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.17 1994-10-27 01:36:52 dbrown Exp $
+ *      $Id: Legend.c,v 1.18 1994-11-07 03:09:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -490,7 +490,7 @@ static NhlGenArray GenArraySubsetCopy(
 
 NhlLegendLayerClassRec NhllegendLayerClassRec = {
 	{
-/* class_name			*/	"Legend",
+/* class_name			*/	"legendLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlLegendLayerRec),
 /* class_inited			*/	False,

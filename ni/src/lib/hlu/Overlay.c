@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.27 1994-11-04 21:06:31 dbrown Exp $
+ *      $Id: Overlay.c,v 1.28 1994-11-07 03:10:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,8 @@
 #include <ncarg/hlu/OverlayP.h>
 #include <ncarg/hlu/LogLinTransObjP.h>
 #include <ncarg/hlu/IrregularTransObj.h>
+#include <ncarg/hlu/IrregularType2TransObj.h>
+#include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/AnnotationP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
@@ -532,7 +534,7 @@ static NhlErrorTypes DissolveOverlay(
 
 NhlOverlayLayerClassRec NhloverlayLayerClassRec = {
         {
-/* class_name			*/      "Overlay",
+/* class_name			*/      "overlayLayerClass",
 /* nrm_class			*/      NrmNULLQUARK,
 /* layer_size			*/      sizeof(NhlOverlayLayerRec),
 /* class_inited			*/      False,
@@ -3064,15 +3066,15 @@ ManageTickMarks
 	
 	trobj_name = (trobj->base.layer_class)->base_class.class_name;
 
-	if (! strcmp(trobj_name,"LogLinTransObj")) {
+	if (trobj_name== NhllogLinTransObjLayerClass->base_class.class_name) {
 		ovp->x_tm_style = (x_log == 1) ? NhlLOG : NhlLINEAR;
 		ovp->y_tm_style = (y_log == 1) ? NhlLOG : NhlLINEAR;
 	}
-	else if (! strcmp(trobj_name,"IrregularTransObj")) {
+	else if (trobj_name==NhlirregularTransObjLayerClass->base_class.class_name) {
 		ovp->x_tm_style = NhlLINEAR;
 		ovp->y_tm_style = NhlLINEAR;
 	}
-	else if (! strcmp(trobj_name,"MapTransObj")) {
+	else if (trobj_name==NhlmapTransObjLayerClass->base_class.class_name) {
 		e_text = 
 	"%s: MAP tick mark style not yet implemented; turning tick marks off";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
@@ -3090,7 +3092,7 @@ ManageTickMarks
 			return MIN(subret,ret);
 		}
 	}
-	else if (! strcmp(trobj_name,"IrregularType2TransObj")) {
+	else if (trobj_name== NhlirregularType2TransObjLayerClass->base_class.class_name) {
 		tm_style = NhlIRREGULAR;
 		ovp->x_tm_style = NhlIRREGULAR;
 		ovp->y_tm_style = NhlIRREGULAR;

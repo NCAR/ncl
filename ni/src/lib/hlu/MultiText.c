@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.8 1994-07-12 20:52:33 boote Exp $
+ *      $Id: MultiText.c,v 1.9 1994-11-07 03:10:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -119,7 +119,7 @@ static NhlErrorTypes MultiTextDestroy(
 
 NhlMultiTextLayerClassRec NhlmultiTextLayerClassRec = {
 	{
-/* class_name			*/	"MultiText",
+/* class_name			*/	"multiTextLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlMultiTextLayerRec),
 /* class_inited			*/	False,

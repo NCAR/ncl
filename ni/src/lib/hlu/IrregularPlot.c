@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.8 1994-10-27 01:36:48 dbrown Exp $
+ *      $Id: IrregularPlot.c,v 1.9 1994-11-07 03:09:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -86,7 +86,7 @@ static NhlErrorTypes SetUpTransObj(
 
 NhlIrregularPlotLayerClassRec NhlirregularPlotLayerClassRec = {
         {
-/* class_name			*/      "IrregularPlot",
+/* class_name			*/      "irregularPlotLayerClass",
 /* nrm_class			*/      NrmNULLQUARK,
 /* layer_size			*/      sizeof(NhlIrregularPlotLayerRec),
 /* class_inited			*/      False,

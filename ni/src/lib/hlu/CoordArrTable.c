@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.19 1994-10-04 01:02:04 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.20 1994-11-07 03:09:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -156,7 +156,7 @@ static NhlErrorTypes CoordArrTableDestroy(
 NhlCoordArrTableFloatLayerClassRec NhlcoordArrTableFloatLayerClassRec = {
 	/* NhlBaseLayerClassPart */
 	{
-/* class_name			*/	"CoordArrTableFloat",
+/* class_name			*/	"coordArrTableFloatLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlCoordArrTableFloatLayerRec),
 /* class_inited			*/	False,
@@ -184,7 +184,7 @@ NhlCoordArrTableFloatLayerClassRec NhlcoordArrTableFloatLayerClassRec = {
 NhlCoordArrTableLayerClassRec NhlcoordArrTableLayerClassRec = {
 	/* NhlBaseLayerClassPart */
 	{
-/* class_name			*/	"CoordArrTable",
+/* class_name			*/	"coordArrTableLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlCoordArrTableLayerRec),
 /* class_inited			*/	False,

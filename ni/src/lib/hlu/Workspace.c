@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.18 1994-09-23 23:37:03 dbrown Exp $
+ *      $Id: Workspace.c,v 1.19 1994-11-07 03:10:38 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -213,7 +213,7 @@ static NhlResource resources[] = {
 NhlWorkspaceLayerClassRec NhlworkspaceLayerClassRec = {
 	/* BaseClassPart */
 	{
-/* class_name			*/	"Workspace",
+/* class_name			*/	"workspaceLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlWorkspaceLayerRec),
 /* class_inited			*/	False,

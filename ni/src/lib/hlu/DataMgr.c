@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgr.c,v 1.6 1994-07-12 20:51:53 boote Exp $
+ *      $Id: DataMgr.c,v 1.7 1994-11-07 03:09:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -56,7 +56,7 @@ static NhlErrorTypes DataMgrDestroy(
 NhlDataMgrLayerClassRec NhldataMgrLayerClassRec = {
 	/* NhlBaseLayerClassPart */
 	{
-/* class_name			*/	"DataMgr",
+/* class_name			*/	"dataMgrLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlDataMgrLayerRec),
 /* class_inited			*/	False,

@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.4 1994-10-04 01:02:02 boote Exp $
+ *      $Id: App.c,v 1.5 1994-11-07 03:08:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -141,7 +141,7 @@ static NhlResource resources[] = {
 
 NhlAppLayerClassRec NhlappLayerClassRec = {
 	{
-/* class_name			*/	"App",
+/* class_name			*/	"appLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlAppLayerRec),
 /* class_inited			*/	False,

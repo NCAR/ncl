@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.16 1994-10-04 01:02:07 boote Exp $
+ *      $Id: DataComm.c,v 1.17 1994-11-07 03:09:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -125,7 +125,7 @@ static NhlErrorTypes DataCommDraw(
 NhlDataCommLayerClassRec NhldataCommLayerClassRec = {
 	/* NhlBaseLayerClassPart */
 	{
-/* class_name			*/	"DataComm",
+/* class_name			*/	"dataCommLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlDataCommLayerRec),
 /* class_inited			*/	False,
@@ -208,7 +208,7 @@ static NhlErrorTypes DataSpecDestroy(
 NhlDataSpecLayerClassRec NhldataSpecLayerClassRec = {
 	/* NhlBaseLayerClassPart */
 	{
-/* class_name			*/	"DataSpec",
+/* class_name			*/	"dataSpecLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlDataSpecLayerRec),
 /* class_inited			*/	False,

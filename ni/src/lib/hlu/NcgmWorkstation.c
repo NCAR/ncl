@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.7 1994-09-23 23:36:52 dbrown Exp $
+ *      $Id: NcgmWorkstation.c,v 1.8 1994-11-07 03:10:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -95,7 +95,7 @@ static int default_conid = NCGM_DEFAULT_CONID;
 
 NhlNcgmWorkstationLayerClassRec NhlncgmWorkstationLayerClassRec = {
         {
-/* class_name			*/	"NcgmWorkstation",
+/* class_name			*/	"ncgmWorkstationLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlNcgmWorkstationLayerRec),
 /* class_inited			*/	False,

@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.12 1994-09-23 23:36:49 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.13 1994-11-07 03:09:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -168,7 +168,7 @@ int* 	/*status*/
 
 NhlLogLinTransObjLayerClassRec NhllogLinTransObjLayerClassRec = {
         {
-/* class_name			*/	"LogLinTransObj",
+/* class_name			*/	"logLinTransObjLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlLogLinTransObjLayerRec),
 /* class_inited			*/	False,

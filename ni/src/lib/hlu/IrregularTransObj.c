@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.9 1994-09-23 23:36:42 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.10 1994-11-07 03:09:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -259,7 +259,7 @@ int     /* upordown */
 
 NhlIrregularTransObjLayerClassRec NhlirregularTransObjLayerClassRec = {
         {
-/* class_name			*/	"IrregularTransObj",
+/* class_name			*/	"irregularTransObjLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlIrregularTransObjLayerRec),
 /* class_inited			*/	False,

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.c,v 1.6 1994-05-12 23:51:01 boote Exp $
+ *      $Id: DataItem.c,v 1.7 1994-11-07 03:09:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -90,7 +90,7 @@ static NhlErrorTypes DataItemDestroy(
 NhlDataItemLayerClassRec NhldataItemLayerClassRec = {
 	/* NhlBaseLayerClassPart */
 	{
-/* class_name			*/	"DataItem",
+/* class_name			*/	"dataItemLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlDataItemLayerRec),
 /* class_inited			*/	False,

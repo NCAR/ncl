@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.13 1994-09-23 23:36:41 dbrown Exp $
+ *      $Id: Error.c,v 1.14 1994-11-07 03:09:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -146,7 +146,7 @@ static NhlErrorTypes ErrorDestroy(
 NhlErrorLayerClassRec NhlerrorLayerClassRec = {
 	/* BaseClassPart */
 	{
-/* class_name			*/	"Error",
+/* class_name			*/	"errorLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlErrorLayerRec),
 /* class_inited			*/	False,
@@ -180,7 +180,7 @@ NhlErrorLayerClassRec NhlerrorLayerClassRec = {
 static _NhlErrorLayerCClassRec _NhlerrorLayerCClassRec = {
 	/* BaseClassPart */
 	{
-/* class_name			*/	"ErrorC",
+/* class_name			*/	"errorCLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(_NhlErrorLayerCRec),
 /* class_inited			*/	False,
@@ -208,7 +208,7 @@ static _NhlErrorLayerCClassRec _NhlerrorLayerCClassRec = {
 static _NhlErrorLayerFClassRec _NhlerrorLayerFClassRec = {
 	/* BaseClassPart */
 	{
-/* class_name			*/	"ErrorF",
+/* class_name			*/	"errorFLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(_NhlErrorLayerFRec),
 /* class_inited			*/	False,

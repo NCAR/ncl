@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.17 1994-10-27 01:36:49 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.18 1994-11-07 03:09:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -460,7 +460,7 @@ static NhlBoolean    	LabelBarChanged(
 
 NhlLabelBarLayerClassRec NhllabelBarLayerClassRec = {
 	{
-/* class_name			*/	"LabelBar",
+/* class_name			*/	"labelBarLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlLabelBarLayerRec),
 /* class_inited			*/	False,

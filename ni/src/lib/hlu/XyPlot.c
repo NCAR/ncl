@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.24 1994-11-03 05:17:37 boote Exp $
+ *      $Id: XyPlot.c,v 1.25 1994-11-07 03:10:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -598,7 +598,7 @@ static NhlErrorTypes DrawCurves(
 NhlXyDataDepLayerClassRec NhlxyDataDepLayerClassRec = {
 	/* base_class */
         {
-/* class_name			*/	"XyDataDep",
+/* class_name			*/	"xyDataDepLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlXyDataDepLayerRec),
 /* class_inited			*/	False,
@@ -631,7 +631,7 @@ NhlXyDataDepLayerClassRec NhlxyDataDepLayerClassRec = {
 NhlXyPlotLayerClassRec NhlxyPlotLayerClassRec = {
 	/* base_class */
         {
-/* class_name                   */      "XyPlot",
+/* class_name                   */      "xyPlotLayerClass",
 /* nrm_class                    */      NrmNULLQUARK,
 /* layer_size                   */      sizeof(NhlXyPlotLayerRec),
 /* class_inited                 */      False,

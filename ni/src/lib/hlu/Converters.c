@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.21 1994-11-03 05:17:34 boote Exp $
+ *      $Id: Converters.c,v 1.22 1994-11-07 03:09:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1017,7 +1017,7 @@ CvtArgs
 		return NhlFATAL;
 	}
 
-	memcpy(&val.data,gen->data,gen->size);
+	memcpy((char*)&val.data,(char*)gen->data,gen->size);
 	val.size = gen->size;
 
 	return _NhlReConvertData(gen->typeQ,to->typeQ,&val,to);

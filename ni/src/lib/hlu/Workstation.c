@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.18 1994-10-31 01:08:46 boote Exp $
+ *      $Id: Workstation.c,v 1.19 1994-11-07 03:10:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -540,7 +540,7 @@ NhlLayer	/* instance */
 
 NhlWorkstationLayerClassRec NhlworkstationLayerClassRec = {
         {
-/* class_name			*/	"Workstation",
+/* class_name			*/	"workstationLayerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlWorkstationLayerRec),
 /* class_inited			*/	False,

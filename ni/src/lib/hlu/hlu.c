@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.21 1994-10-28 03:13:43 boote Exp $
+ *      $Id: hlu.c,v 1.22 1994-11-07 03:10:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,8 @@
 #include <ncarg/hlu/VarArg.h>
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/ErrorI.h>
-
+#include <ncarg/c.h>
+#include <stdio.h>
 /************************************************************************
  *									*
  * These functions are used for memory management			*
@@ -1550,4 +1551,34 @@ _NhlLLErrCheckPrnt
 	}
 
 	return False;
+}
+
+
+/*
+ * Function:	NhlIsWorkstation
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+int NhlIsWorkstation
+#if __STDC__
+(int plotid)
+#else
+(plotid)
+	int plotid;
+#endif
+{
+	NhlLayer l = _NhlGetLayer(plotid);
+	if(l != NULL) {
+		return(_NhlIsWorkstation(l));
+	} else {
+		return(0);
+	}
 }
