@@ -1,5 +1,5 @@
 C
-C $Id: gksin.h,v 1.3 2000-08-22 03:45:41 haley Exp $
+C $Id: gksin.h,v 1.4 2003-10-08 20:39:45 fred Exp $
 C
 C This file is free software; you can redistribute it and/or modify
 C it under the terms of the GNU General Public License as published
@@ -26,5 +26,5 @@ C
       INTEGER        FCODE , CONT  , IL1   , IL2   , ID    , IC1   ,
      +               IC2   , IC    , RL1   , RL2   , STRL1 , STRL2 ,
      +               RERR
-      CHARACTER*80   STR
+      CHARACTER*160  STR
       REAL           RX    , RY
