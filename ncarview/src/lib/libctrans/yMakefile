@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.23 1994-04-14 20:47:50 haley Exp $
+#	$Id: yMakefile,v 1.24 1994-04-18 20:59:57 haley Exp $
 #
 
 
@@ -8,10 +8,6 @@ INCLUDES	= ctrans.h
 
 #if defined(alpha)
 #define COptOrDebugFlag -g3
-#endif
-
-#if defined(IRIX) && (MAJOR==5)
-#define COptOrDebugFlag
 #endif
 
 #ifdef	VMS
