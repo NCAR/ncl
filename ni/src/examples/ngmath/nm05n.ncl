@@ -60,7 +60,7 @@ if (NCGM .eq. 1) then
 ; Create an ncgmWorkstation object.
 ;
   wid = create "dsgrid" ncgmWorkstationClass defaultapp
-      "wkMetaName" : "nm05.ncgm"
+      "wkMetaName" : "nm05n.ncgm"
   end create
 else
   if (X11 .eq. 1) then
@@ -76,7 +76,7 @@ else
 ; Create a PSWorkstation object.
 ;
       wid = create "dsgrid" psWorkstationClass defaultapp
-        "wkPSFileName" : "nm05.ps"
+        "wkPSFileName" : "nm05n.ps"
       end create
     end if
   end if
