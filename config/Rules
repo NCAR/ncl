@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.15 1994-03-02 20:17:05 haley Exp $
+ *	$Id: Rules,v 1.16 1994-03-03 15:18:09 haley Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -419,7 +419,7 @@ PartialLibraryRoot(library,dirs)
 all-local:: ../library]\
 ]\
 ../library: sources]\
-	@echo "sources" > name]\
+	@echo sources > name]\
 	$(AR_REG) ../library name sources]\
 	$(RM) name]\
 #else	/* !BuildNCARGSourceLibrary */

@@ -1,5 +1,5 @@
 /*
- *      $Id: Cray,v 1.20 1994-03-02 21:32:33 haley Exp $
+ *      $Id: Cray,v 1.21 1994-03-03 15:18:08 haley Exp $
  */
 /************************************************************************
 *									*
@@ -30,5 +30,7 @@
 #define FOptimizeFlag	/**/
 #define LdRelCommand	$(TOP)/utils/ldrel
 #define	ArCommand	bld
+#define ArRegOpt        vr
+
 #define DoesRanlib	NO
 #define GksBufferSize	1024
