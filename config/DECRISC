@@ -74,7 +74,7 @@ CC                = cc
 CC_LD             = $(CC)
 CDEBUG            =
 COPT              = -O
-CMISC             = 
+CMISC             = -D__STDC__ -DNeedFuncProto
 CINC              = $(INC_SEARCH)
 CFLAGS            = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
                     $(FLOAT_OPT) $(CINC) $(VDEFINE)

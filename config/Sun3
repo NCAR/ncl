@@ -70,11 +70,11 @@ FLOAT_OPT         = -fswitch
 OS                =
 ARCH              =
 VDEFINE           = -DVERSION='"$(VERSION)"'
-CC                = cc
+CC                = acc
 CC_LD             = $(CC)
 CDEBUG            =
 COPT              = -O
-CMISC             =
+CMISC             = -Xa -DNeedFuncProto
 CINC              = $(INC_SEARCH)
 CFLAGS            = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
                     $(FLOAT_OPT) $(CINC) $(VDEFINE)

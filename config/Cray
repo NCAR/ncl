@@ -73,7 +73,7 @@ CC                = cc
 CC_LD             = $(CC)
 CDEBUG            =
 COPT              = -h noopt
-CMISC             = -DUSG
+CMISC             = -DUSG -DNeedFuncProto
 CINC              = $(INC_SEARCH) -I$(INCROOT)
 CFLAGS            = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
                     $(FLOAT_OPT) $(CINC) $(VDEFINE)
