@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.20 1992-10-02 16:29:22 don Exp $
+ *	$Id: raster.c,v 1.21 1993-01-13 20:18:14 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -545,6 +545,12 @@ RasterCopyColormap(src, dst)
 	  (void) ESprintf(RAS_E_IMPROPER_COLORMAP_LOAD,
 		"You can't load a colormap for a direct-color image");
 	  return(RAS_ERROR);
+	}
+
+	if (dst->map_forced) {
+	  (void) ESprintf(RAS_E_IMPROPER_COLORMAP_LOAD,
+		"Attempt to reload a color map for a rasterfile");
+	  return(RAS_OK);
 	}
 
 	for(i=0; i<src->ncolor; i++) {
