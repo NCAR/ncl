@@ -1,10 +1,11 @@
 .\"
-.\"	$Id: ncargcc.m,v 1.4 1994-12-22 17:49:29 haley Exp $
+.\"	$Id: ncargcc.m,v 1.5 1995-04-26 18:21:23 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGCC 1NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
-ncargcc \- Command for compiling C code that uses NCAR Graphics
+ncargcc \- Command for compiling C code that uses the NCAR Graphics low-level
+utilities
 .SH SYNOPSIS
 \fBncargcc\fP 
 [\fB\-smooth\fR]
@@ -21,15 +22,19 @@ ncargcc \- Command for compiling C code that uses NCAR Graphics
 [\fB\-conran\fR]
 [\fB\-conransmooth\fR]
 [\fB\-conranquick\fR]
-[\fB\-noX11\fR]
+[\fB\-noX11\fR] ...
 .SH DESCRIPTION
 .sp
-\fIncargcc\fP is a script that invokes the C compiler/linker (cc) with the
-proper NCAR Graphics libraries.  Arguments presented above are
-associated with NCAR Graphics.  All other arguments and options
-are identical to the cc command on your particular machine;
-arguments that include quoted strings may
-have to be enclosed in single quotes.
+\fIncargcc\fP is a script that invokes the C compiler/linker with the
+proper NCAR Graphics LLU (low-level utility) libraries.  Arguments
+presented above are associated with NCAR Graphics.  All other
+arguments and options are identical to the cc command on your
+particular machine; arguments that include quoted strings may have to
+be enclosed in single quotes.
+.sp
+NOTE: \fIncargcc\fP cannot be used to compile NCAR Graphics C programs
+that call the HLUs (high-level utilities).  You must use \fInhlcc\fP
+instead.  See the \fInhlcc\fP man page for more information.
 .sp
 If you don't want to use \fIncargcc\fP, you can just type it on the
 command line to see what gets included in the link line, and then you
@@ -66,6 +71,8 @@ Online:
 ictrans(1NCARG),
 .BR gcaps(1NCARG),
 .BR ncargf77(1NCARG),
+.BR nhlcc(1NCARG),
+.BR nhlf77(1NCARG),
 .BR ncargintro(5NCARG)
 .sp
 Hardcopy: NCAR Graphics Fundamentals, UNIX Version

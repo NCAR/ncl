@@ -1,9 +1,10 @@
 .\"
-.\"	$Id: ncargf77.m,v 1.3 1993-04-15 16:11:29 haley Exp $
+.\"	$Id: ncargf77.m,v 1.4 1995-04-26 18:21:24 haley Exp $
 .\"
 .TH NCARGF77 1NCARG "March 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
-ncargf77 \- Command for compiling Fortran code that uses NCAR Graphics
+ncargf77 \- Command for compiling Fortran code that uses the NCAR Graphics
+low-level utilities
 .SH SYNOPSIS
 \fBncargf77\fP 
 [\fB\-smooth\fR]
@@ -13,12 +14,17 @@ ncargf77 \- Command for compiling Fortran code that uses NCAR Graphics
 [\fB\-ictrans\fR]
 [\fB\-noX11\fR] ...
 .SH DESCRIPTION
-\fIncargf77\fP is a script that invokes the FORTRAN 77 
-compiler/linker with the proper NCAR Graphics libraries.  
-Arguments presented above are associated with NCAR Graphics.  
-All other arguments and options are identical to the f77 command 
-on your particular machine; arguments that include quoted strings may
-have to be enclosed in single quotes.
+\fIncargf77\fP is a script that invokes the FORTRAN 77 compiler/linker
+with the proper NCAR Graphics LLU (low-level utility) libraries.
+Arguments presented above are associated with NCAR Graphics.  All
+other arguments and options are identical to the f77 command on your
+particular machine; arguments that include quoted strings may have to
+be enclosed in single quotes.
+.sp
+NOTE: \fIncargf77\fP cannot be used to compile NCAR Graphics Fortran
+programs that call the HLUs (high-level utilities).  You must use
+\fInhlf77\fP instead.  See the \fInhlf77\fP man page for more
+information.
 .sp
 In order to run \fIncargf77\fP, you must have your NCARG_ROOT
 environment variable set to the directory pathname where the NCAR
@@ -32,9 +38,7 @@ Please see "man ncargintro" for more information.
 .sp
 Note that, on some systems, if you supply your own binary libraries in
 addition to the ones automatically referenced by \fIncargf77\fR, all the
-libraries must have been created in a similar fashion.  For example,
-on a "Sun3", problems may arise if the "-fswitch" option was used for
-some of the libraries and not for others.
+libraries must have been created in a similar fashion.
 .sp
 .I OPTIONS
 .IP "\-smooth"
@@ -72,6 +76,8 @@ Online:
 .BR ictrans(1NCARG),
 .BR gcaps(1NCARG),
 .BR ncargcc(1NCARG),
+.BR nhlcc(1NCARG),
+.BR nhlf77(1NCARG),
 .BR ncargintro(5NCARG)
 .sp
 Hardcopy:
