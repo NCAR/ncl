@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.45 2004-06-25 17:47:39 haley Exp $
+#	$Id: ymake,v 1.46 2004-08-04 18:24:21 haley Exp $
 #
 ######################################################################
 #
@@ -363,6 +363,7 @@ case    Linux:
         case    i*86:
         case    x*86:
         case    i*64:
+        case    x*64:
         case    alpha:
             set model   = $mach
             set arch    = $mach
