@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.h,v 1.5 1995-04-07 10:44:20 boote Exp $
+ *      $Id: Workspace.h,v 1.6 1997-01-31 20:59:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,7 @@
 
 extern NhlClass NhlworkspaceClass;
 
-extern int NhlGetWorkspaceObjectID(
+extern int NhlGetWorkspaceObjectId(
 #if	NhlNeedProto
 	void
 #endif

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.33 1997-01-17 18:57:49 boote Exp $
+ *      $Id: Workspace.c,v 1.34 1997-01-31 20:59:41 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -591,7 +591,7 @@ WorkspaceDestroy
  */
 
 /*
- * Function:	NhlGetWorkspaceObjectID
+ * Function:	NhlGetWorkspaceObjectId
  *
  * Description:	This function returns the pid associated with the 
  *		workspaceLayer object, so that a user can set Workspace
@@ -607,7 +607,7 @@ WorkspaceDestroy
  * Side Effect:	
  */
 int
-NhlGetWorkspaceObjectID
+NhlGetWorkspaceObjectId
 #if	NhlNeedProto
 (
 	void
@@ -617,7 +617,7 @@ NhlGetWorkspaceObjectID
 #endif
 {
         char            *e_text;
-        char            *entry_name = "NhlWorkspaceGetID";
+        char            *entry_name = "NhlWorkspaceGetId";
 
 	if (WSLayer != NULL)
 		return WSLayer->base.id;
@@ -650,7 +650,7 @@ void _NHLCALLF(nhl_fgetworkspaceobjectid,NHL_FGETWORKSPACEOBJECTID)
 	int	*id;
 #endif
 {
-	*id = NhlGetWorkspaceObjectID();
+	*id = NhlGetWorkspaceObjectId();
 
 	return;
 }
