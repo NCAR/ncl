@@ -36,7 +36,6 @@ C                        when using a non-NCAR GKS package.  The third
 C                        argument must be the workstation type for WISS.
 C
 C
-      CHARACTER STR*60
       REAL XCOORD(120), YCOORD(120)
       REAL XCOOR2(120), YCOOR2(120)
       REAL XCOOR3(120), YCOOR3(120)
