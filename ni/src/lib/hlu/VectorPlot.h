@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.h,v 1.7 1999-03-29 18:31:40 dbrown Exp $
+ *      $Id: VectorPlot.h,v 1.8 2001-06-13 23:53:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -41,7 +41,8 @@ typedef enum _NhlVectorPositionMode {
 typedef enum _NhlVectorGlyphStyle {
 	NhlLINEARROW,
 	NhlFILLARROW,
-	NhlWINDBARB
+	NhlWINDBARB,
+	NhlCURLYVECTOR,
 } NhlVectorGlyphStyle;
 #define NhlTVectorGlyphStyle		"VectorGlyphStyle"
 

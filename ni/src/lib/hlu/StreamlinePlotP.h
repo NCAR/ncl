@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlotP.h,v 1.11 1999-03-27 00:44:55 dbrown Exp $
+ *      $Id: StreamlinePlotP.h,v 1.12 2001-06-13 23:53:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,12 +35,14 @@
 #define Nhl_stDEF_ARRAY_SIZE	16
 #define Nhl_stMAX_LEVELS	255
 #define Nhl_stDEF_COLOR		NhlFOREGROUND
+#define Nhl_stCOLOR_ARRAY_START 2
 #define Nhl_stDEF_PATTERN	1
 #define Nhl_stDEF_DASH_PATTERN  0
 #define NhlstMAPVAL		99
 #define NhlstDEF_NODATA_LABEL	"NO STREAMLINE DATA"
 #define NhlstDEF_ZEROF_LABEL	"ZERO FIELD"
 #define NhlstDEF_FORMAT		"*+^sg"
+#define NhlstPRECISION		6
 #ifndef FLT_MAX
 #define FLT_MAX			10.0e37
 #endif
@@ -117,6 +119,7 @@ typedef struct _NhlStreamlinePlotLayerPart {
 	NhlBoolean		map_direction;
 
 	float			line_thickness;
+	NhlBoolean		mono_line_color;
 	NhlColorIndex		line_color;
 	NhlBoolean		arrow_length_set;
 	float			arrow_length;
@@ -135,12 +138,43 @@ typedef struct _NhlStreamlinePlotLayerPart {
 	int			crossover_check_count;
 	int			line_start_stride;
 	int			arrow_stride;
+	
+	NhlBoolean		curly_vector_mode;
+	float			ref_magnitude;
+	NhlBoolean		ref_length_set;
+	float			ref_length;
+	float			min_frac_len;
+	int			position_mode;
+	float			arrow_frac_len;
+	NhlBoolean		min_distance_set;
+	float			min_distance;
+	float			min_magnitude;
 
-
+	NhlGenArray		levels;
+	int			level_count;
+	NhlLevelSelectionMode	level_selection_mode;
+	int			max_level_count;
+	NhlBoolean		level_spacing_set;
+	float			level_spacing;
+	NhlBoolean		min_level_set;
+	float			min_level_val;
+	NhlBoolean		max_level_set;
+	float			max_level_val;
+	NhlGenArray		level_colors;
+	NhlBoolean		use_scalar_array;
+	NhlColorIndex		scalar_mval_color;
+	NhlBoolean		scalar_data_init;
+	NhlScalarFieldFloatLayerPart	*sfp;
+	NhlScalarFieldFloatLayerPart	*osfp;
+	float			scalar_min, scalar_max;
+	
 	NhlString		zerof_string; /* before substitution */
 	NhlstLabelAttrs 	zerof_lbl;
 	NhlAnnotationRec	zerof_lbl_rec;
 
+	NhlBoolean		explicit_lbar_labels_on;
+	NhlBoolean		lbar_end_labels_on;
+	NhlstScaleInfo		scale;
 
 /* intercepted resources */
 
@@ -150,6 +184,9 @@ typedef struct _NhlStreamlinePlotLayerPart {
 	NhlAnnotationDisplayMode	display_tickmarks;
 	float		x_tension;
 	float		y_tension;
+	NhlGenArray	lbar_labels_res;
+	char		lbar_func_code;
+	NhllbLabelAlignmentMode lbar_alignment;
 
 	/* private resource */
 
@@ -169,6 +206,7 @@ typedef struct _NhlStreamlinePlotLayerPart {
 
 	NhlLayer	overlay_object;
 	NhlBoolean	data_init;
+	NhlBoolean      levels_set;
 	NhlVectorFieldFloatLayerPart	*vfp;
 	NhlVectorFieldFloatLayerPart	*ovfp;
 	float		zmin;
@@ -187,6 +225,13 @@ typedef struct _NhlStreamlinePlotLayerPart {
 	NhlBoolean	wk_active;
 	NhlBoolean	do_low_level_log;
 	NhlBoolean	low_level_log_on;
+
+	/* labelbar stuff */
+
+	NhlString	*level_strings;
+	NhlBoolean	lbar_labels_res_set;
+	NhlBoolean	lbar_labels_set;
+	NhlGenArray	lbar_labels;
 
 	/* workspace */
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.42 2000-11-11 02:35:30 dbrown Exp $
+ *      $Id: Workspace.c,v 1.43 2001-06-13 23:53:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4150,7 +4150,7 @@ NhlErrorTypes _NhlStinit
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
 		return NhlFATAL;
 	}
-	req_size = 2 * m * n * sizeof(float);
+	req_size = 5 * m * n * sizeof(float);
 	if (fwsrp->cur_size != req_size) {
 		int amount = req_size - fwsrp->cur_size;
 		ret = ChangeWorkspaceSize(fwsrp,amount,entry_name);

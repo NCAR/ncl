@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.102 2001-06-06 19:27:31 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.103 2001-06-13 23:53:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2089,6 +2089,7 @@ ContourPlotInitialize
         cnp->grid_bound.fill_color = cnp->out_of_range.fill_color = 0;
         cnp->grid_bound.fill_pat = cnp->out_of_range.fill_pat = 0;
         cnp->grid_bound.fill_scale = cnp->out_of_range.fill_scale = 1.0;
+	cnp->levels_set = True;
 
 /*
  * Set up the data
@@ -2197,6 +2198,7 @@ ContourPlotInitialize
 	cnp->lbar_labels_res_set = False;
 	cnp->lgnd_labels_res_set = False;
 	cnp->llabel_interval_set = False;
+	cnp->levels_set = False;
 
         cnew->trans.x_reverse_set = cnew->trans.y_reverse_set = False;
         cnew->trans.x_log_set = cnew->trans.y_log_set = False;
@@ -2409,6 +2411,8 @@ static NhlErrorTypes ContourPlotSetValues
 		cnp->lbar_labels_res_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNlgLabelStrings))
 		cnp->lgnd_labels_res_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNcnLevels))
+		cnp->levels_set = True;
 /*
  * raster mode implies fill on
  */
@@ -2509,6 +2513,7 @@ static NhlErrorTypes ContourPlotSetValues
 	cnp->lbar_labels_res_set = False;
 	cnp->lgnd_labels_res_set = False;
 	cnp->llabel_interval_set = False;
+	cnp->levels_set = False;
 
         cnew->trans.x_reverse_set = cnew->trans.y_reverse_set = False;
         cnew->trans.x_log_set = cnew->trans.y_log_set = False;
@@ -7885,8 +7890,7 @@ static NhlErrorTypes ReplaceSubstitutionChars
 
 	switch (atype) {
 	case _cnINFO:
-		if (! cnp->data_changed && ! init && 
-		    (cnp->levels == ocnp->levels) &&
+		if (! cnp->data_changed && ! cnp->levels_set && 
 		    (cnp->info_string == ocnp->info_string) &&
 		    (cnp->max_data_format.fstring == 
 		    ocnp->max_data_format.fstring) &&
@@ -9826,7 +9830,7 @@ static NhlErrorTypes    SetupLevels
 	if ((! init) && 
 	    (! cnp->data_changed) &&
 	    (! cnp->level_spacing_set) && 
-	    (cnp->levels == ocnp->levels) &&
+	    (! cnp->levels_set) &&
 	    (cnp->level_selection_mode == ocnp->level_selection_mode) &&
 	    (cnp->max_level_count == ocnp->max_level_count) &&
 	    (cnp->min_level_val == ocnp->min_level_val) &&
@@ -10286,7 +10290,7 @@ static NhlErrorTypes    SetupLevelsExplicit
                 return MIN(ret,subret);
         }
                 
-	if (init || cnp->levels != ocnp->levels)
+	if (cnp->levels_set)
 		count = cnp->levels->num_elements;
 	else 
 		count = cnp->level_count;

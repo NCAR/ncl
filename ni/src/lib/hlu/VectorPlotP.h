@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlotP.h,v 1.12 1998-11-06 22:16:18 dbrown Exp $
+ *      $Id: VectorPlotP.h,v 1.13 2001-06-13 23:53:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -50,6 +50,9 @@
 #define NhlvcPRECISION		6
 #ifndef FLT_MAX
 #define FLT_MAX			10.0e37
+#endif
+#ifndef FLT_MIN
+#define FLT_MIN			10.0e-37
 #endif
 typedef enum { _vcZEROF, _vcREFVECANNO, _vcMINVECANNO } _vcAnnoType;
 
@@ -155,6 +158,7 @@ typedef struct _NhlVectorPlotLayerPart {
         NhlBoolean		glyph_style_set;
         NhlVectorGlyphStyle	glyph_style;
         
+	NhlBoolean		min_distance_set;
 	float			min_distance;
 	float			min_magnitude;
 	float			max_magnitude;
@@ -260,6 +264,7 @@ typedef struct _NhlVectorPlotLayerPart {
 
 	NhlLayer	overlay_object;
 	NhlBoolean	data_init;
+	NhlBoolean      levels_set;
 	NhlVectorFieldFloatLayerPart	*vfp;
 	NhlVectorFieldFloatLayerPart	*ovfp;
 	float		zmin;
@@ -302,6 +307,10 @@ typedef struct _NhlVectorPlotLayerPart {
 
 	_NhlvaArrowParams a_params;
 	_NhlvaDrawParams  d_params;
+
+	int		curly_vector_id;
+	int		vector_field_id;
+	int             scalar_field_id;
 
 } NhlVectorPlotLayerPart;
 

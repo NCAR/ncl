@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.24 2000-11-11 02:35:30 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.25 2001-06-13 23:53:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -243,9 +243,8 @@ typedef struct _NhlContourPlotLayerPart {
 
 	NhlLayer	overlay_object;
 	NhlBoolean	data_init;
-	NhlBoolean	cprect_call_req;
+	NhlBoolean	levels_set;
 	int		ref_level;
-	float		*real_levels;
 	NhlColorIndex	*gks_fill_colors;
 	NhlColorIndex	*gks_line_colors;
 	NhlColorIndex	*gks_llabel_colors;

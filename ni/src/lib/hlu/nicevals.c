@@ -1,5 +1,5 @@
 /*
- *      $Id: nicevals.c,v 1.2 2000-08-22 21:49:42 dbrown Exp $
+ *      $Id: nicevals.c,v 1.3 2001-06-13 23:53:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -51,7 +51,7 @@
  * Out Args: double *min_out     a "nice" minimum value
  *           double *max_out     a "nice" maximum value
  *           double *step_size   a step value such that 
- *                              (where n is an integer <= max_steps):
+ *                              (where n is an integer < max_steps):
  *                              *min_out + n * *step_size == *max_out 
  *                               with no remainder 
  *
@@ -112,7 +112,7 @@ NhlErrorTypes _NhlGetEndpointsAndStepSize
 			if(((i>=npts-1)&&(*step_size == u))||
 			   ((t <= *step_size)&&
 			    (_NhlCmpFAny2((float)((ax1-am1)/t),
-					  (float)max_steps,7,
+					  (float)(max_steps - 1),7,
 					  _NhlMIN_NONZERO) <= 0.0))){
 				*step_size = t;
 				ax2 = ax1;
@@ -128,7 +128,7 @@ NhlErrorTypes _NhlGetEndpointsAndStepSize
 			if(((i>=npts-1)&&(*step_size == u))||
 			   ((t <= *step_size)&&
 			    (_NhlCmpFAny2((float)((ax1-am1)/t),
-					  (float)max_steps,7,
+					  (float)(max_steps - 1),7,
 					  _NhlMIN_NONZERO) <= 0.0))){
 				*step_size = t;
 				ax2 = ax1;

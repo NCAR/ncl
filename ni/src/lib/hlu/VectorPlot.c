@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.70 2001-04-30 21:38:32 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.71 2001-06-13 23:53:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/VectorPlotP.h>
+#include <ncarg/hlu/StreamlinePlotP.h>
 #include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/IrregularTransObjP.h>
 #include <ncarg/hlu/MapTransObj.h>
@@ -73,9 +74,12 @@ static NhlResource resources[] = {
          	sizeof(NhlVectorGlyphStyle),Oset(glyph_style),
          	NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(min_distance_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNvcMinDistanceF,NhlCvcMinDistanceF,
-		  NhlTFloat,sizeof(float),Oset(min_distance),NhlTString,
-		  _NhlUSET("0.0"),0,NULL},
+		  NhlTFloat,sizeof(float),Oset(min_distance),
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ NhlNvcMinMagnitudeF,NhlCvcMinMagnitudeF,
 		  NhlTFloat,sizeof(float),Oset(min_magnitude),NhlTString,
 		  _NhlUSET("0.0"),0,NULL},
@@ -1532,7 +1536,8 @@ VectorPlotClassInitialize
         _NhlEnumVals   glyphstylelist[] = {
         {NhlLINEARROW,		"LineArrow"},
         {NhlFILLARROW, 		"FillArrow"},
-        {NhlWINDBARB, 		"WindBarb"}
+        {NhlWINDBARB, 		"WindBarb"},
+	{NhlCURLYVECTOR,        "CurlyVector"}
         };
 
 	load_hlucp_routines(False);
@@ -1660,7 +1665,7 @@ VectorPlotClassPartInitialize
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering data resource %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhlcoordArrTableFloatClass");
+			  "NhlvectorFieldFloatClass");
 		return(NhlFATAL);
 	}
 
@@ -1675,12 +1680,121 @@ VectorPlotClassPartInitialize
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering data resource %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhlcoordArrTableFloatClass");
+			  "NhlscalarFieldFloatClass");
 		return(NhlFATAL);
 	}
 
 	return ret;
 }
+
+
+/*
+ * Function:	CurlyVectorInitialize
+ *
+ * Description: 
+ *
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+CurlyVectorInitialize
+#if	NhlNeedProto
+(
+	NhlVectorPlotLayer	vcl,
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(vcl,args,num_args)
+	NhlVectorPlotLayer	vcl;
+        _NhlArgList     args;
+        int             num_args;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*entry_name = InitName;
+	char			*e_text;
+	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
+	char buffer[_NhlMAXRESNAMLEN];
+	float afr;
+	int rlist;
+
+	if (! vcp->l_arrowhead_max_size_set) 
+		vcp->l_arrowhead_max_size = 0.012;
+
+	afr = MAX(0.0001,MIN(1.0,vcp->l_arrowhead_min_size / 
+			     vcp->l_arrowhead_max_size));
+
+	strcpy(buffer,vcl->base.name);
+	strcat(buffer,".CurlyVector");
+
+/*
+ * we're forced to use the RL interface because it is the only one that
+ * allows a data object to be set.
+ */
+	rlist = NhlRLCreate(NhlSETRL);
+	NhlRLClear(rlist);
+	NhlRLSetFloat(rlist,NhlNvpXF,vcl->view.x);
+	NhlRLSetFloat(rlist,NhlNvpYF,vcl->view.y);
+	NhlRLSetFloat(rlist,NhlNvpWidthF,vcl->view.width);
+	NhlRLSetFloat(rlist,NhlNvpHeightF,vcl->view.height);
+	NhlRLSetFloat(rlist,NhlNstLineThicknessF,vcp->l_arrow_thickness);
+	NhlRLSetFloat(rlist,NhlNstArrowLengthF,vcp->l_arrowhead_max_size);
+	NhlRLSetFloat(rlist,NhlNstArrowFracLengthF,afr);
+	NhlRLSetFloat(rlist,NhlNstRefMagnitudeF,vcp->ref_magnitude);
+	NhlRLSetFloat(rlist,NhlNstRefLengthF,vcp->ref_length);
+	NhlRLSetFloat(rlist,NhlNstMinFracLengthF,vcp->min_frac_len);
+	NhlRLSetFloat(rlist,NhlNstStepSizeF,0.0008);
+	NhlRLSetFloat(rlist,NhlNstMinDistanceF,vcp->min_distance);
+	if (vcp->vector_field_id > NhlNULLOBJID) 
+		NhlRLSetInteger(rlist,
+				NhlNstVectorFieldData,vcp->vector_field_id);
+	NhlRLSetInteger(rlist,NhlNtfPlotManagerOn,False);
+	NhlRLSetInteger(rlist,NhlNvpUseSegments,vcl->view.use_segments);
+	NhlRLSetInteger(rlist,NhlNstCurlyVectorMode,True);
+	NhlRLSetInteger(rlist,NhlNstLineStartStride,1);
+	NhlRLSetInteger(rlist,NhlNstStreamlineDrawOrder,vcp->vector_order);
+	NhlRLSetInteger(rlist,NhlNstLineColor,vcp->l_arrow_color);
+	NhlRLSetInteger(rlist,NhlNstMonoLineColor,vcp->mono_l_arrow_color);
+	NhlRLSetInteger(rlist,
+			NhlNstLevelSelectionMode,vcp->level_selection_mode);
+	NhlRLSetInteger(rlist,NhlNstMaxLevelCount,vcp->max_level_count);
+	NhlRLSetInteger(rlist,NhlNstUseScalarArray,vcp->use_scalar_array);
+	NhlRLSetInteger(rlist,
+			NhlNstScalarMissingValColor,vcp->scalar_mval_color);
+	if (vcp->scalar_field_id > NhlNULLOBJID) 
+		NhlRLSetInteger(rlist,
+				NhlNstScalarFieldData,vcp->scalar_field_id);
+	NhlRLSetInteger(rlist,NhlNstPositionMode,vcp->position_mode);
+
+	NhlRLSetFloatArray(rlist,NhlNstLevels,
+			   (float *)vcp->levels->data,
+			   vcp->levels->num_elements);
+	NhlRLSetIntegerArray(rlist,NhlNstLevelColors,
+			     (int *)vcp->level_colors->data,
+			     vcp->level_colors->num_elements);
+/*
+ * conditional 
+ */
+	if (vcp->level_spacing_set) 
+		NhlRLSetFloat(rlist,NhlNstLevelSpacingF,vcp->level_spacing);
+	if (vcp->min_level_set) 
+		NhlRLSetFloat(rlist,NhlNstMinLevelValF,vcp->min_level_val);
+	if (vcp->max_level_set)
+		NhlRLSetFloat(rlist,NhlNstMaxLevelValF,vcp->max_level_val);
+
+	ret = NhlCreate(&vcp->curly_vector_id,buffer,NhlstreamlinePlotClass,
+			vcl->base.id,rlist);
+
+	NhlRLDestroy(rlist);
+
+	return ret;
+}
+			  
 
 /*
  * Function:	VectorPlotInitialize
@@ -1737,7 +1851,7 @@ VectorPlotInitialize
 /* Initialize unset resources */
 
 	if (! vcp->level_spacing_set) vcp->level_spacing = 5.0;
-	if (! vcp->min_level_set) vcp->min_level_val = -FLT_MAX;
+	if (! vcp->min_level_set) vcp->min_level_val = FLT_MIN;
 	if (! vcp->max_level_set) vcp->max_level_val = FLT_MAX;
 
 	if (! vcp->lbls.height_set) 
@@ -1786,6 +1900,10 @@ VectorPlotInitialize
 	vcp->osfp = NULL;
 	vcp->fws_id = -1;
         vcp->gks_level_colors = NULL;
+	vcp->curly_vector_id = NhlNULLOBJID;
+	vcp->vector_field_id = NhlNULLOBJID;
+	vcp->scalar_field_id = NhlNULLOBJID;
+	vcp->levels_set = True;
         
 /*
  * Constrain resources
@@ -1935,6 +2053,14 @@ VectorPlotInitialize
 				return ret;
 		}
 	}
+	if (vcp->glyph_style == NhlCURLYVECTOR) {
+		subret = CurlyVectorInitialize(vcnew,args,num_args);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error initializing curly vector mode";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(ret);
+		}
+	}
 
 	vcp->data_changed = False;
 	vcp->level_spacing_set = False;
@@ -1944,8 +2070,10 @@ VectorPlotInitialize
 	vcp->zerof_lbl.height_set = False;
 	vcp->lbar_labels_res_set = False;
 	vcp->ref_length_set = False;
+	vcp->min_distance_set = False;
 	vcp->l_arrowhead_min_size_set = False;
 	vcp->l_arrowhead_max_size_set = False;
+	vcp->levels_set = False;
 
         vcnew->trans.x_reverse_set = vcnew->trans.y_reverse_set = False;
         vcnew->trans.x_log_set = vcnew->trans.y_log_set = False;
@@ -2096,6 +2224,145 @@ static NhlBoolean NewDrawArgs
 	return False;
 }
 
+
+/*
+ * Function:	CurlyVectorSetValues
+ *
+ * Description: 
+ *
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Condition1s
+ *
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+CurlyVectorSetValues
+#if	NhlNeedProto
+(
+	NhlVectorPlotLayer	vcnew,
+	NhlVectorPlotLayer	vcold,
+	_NhlArgList		args,
+	int			num_args
+)
+#else
+(vcnew,vcold,args,num_args)
+	NhlVectorPlotLayer	vcnew;
+	NhlVectorPlotLayer	vcold;
+        _NhlArgList     	args;
+        int             	num_args;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*entry_name = InitName;
+	char			*e_text;
+ 	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
+ 	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
+        NhlSArg			sargs[32];
+        int			nargs = 0;
+	float			afr;
+	int			rlist;
+
+/*
+ * we're forced to use the RL interface because it is the only one that
+ * allows a data object to be set.
+ */
+	rlist = NhlRLCreate(NhlSETRL);
+	NhlRLClear(rlist);
+
+	if (vcnew->view.x != vcold->view.x)
+		NhlRLSetFloat(rlist,NhlNvpXF,vcnew->view.x);
+	if (vcnew->view.y != vcold->view.y)
+		NhlRLSetFloat(rlist,NhlNvpYF,vcnew->view.y);
+	if (vcnew->view.width != vcold->view.width)
+		NhlRLSetFloat(rlist,NhlNvpWidthF,vcnew->view.width);
+	if (vcnew->view.height != vcold->view.height)
+		NhlRLSetFloat(rlist,NhlNvpHeightF,vcnew->view.height);
+	if (vcp->new_draw_req || (vcp->vector_order != ovcp->vector_order))
+		NhlRLSetInteger(rlist,NhlNstStreamlineDrawOrder,
+				vcp->vector_order);
+	if (vcp->l_arrow_color != ovcp->l_arrow_color)
+		NhlRLSetInteger(rlist,NhlNstLineColor,vcp->l_arrow_color);
+	if (vcp->mono_l_arrow_color != ovcp->mono_l_arrow_color)
+		NhlRLSetInteger(rlist,
+				NhlNstMonoLineColor,vcp->mono_l_arrow_color);
+	if (vcp->l_arrow_thickness != ovcp->l_arrow_thickness)
+		NhlRLSetFloat(rlist,NhlNstLineThicknessF,
+			      vcp->l_arrow_thickness);
+	if (vcp->ref_magnitude != ovcp->ref_magnitude)
+		NhlRLSetFloat(rlist,NhlNstRefMagnitudeF,vcp->ref_magnitude);
+	if (vcp->ref_length != ovcp->ref_length)
+		NhlRLSetFloat(rlist,NhlNstRefLengthF,vcp->ref_length);
+	if (vcp->min_frac_len != ovcp->min_frac_len)
+		NhlRLSetFloat(rlist,NhlNstMinFracLengthF,vcp->min_frac_len);
+	if (vcp->min_distance != ovcp->min_distance)
+		NhlRLSetFloat(rlist,NhlNstMinDistanceF,vcp->min_distance);
+	if (vcp->l_arrowhead_min_size_set || vcp->l_arrowhead_max_size_set) {
+		afr = MAX(0.0001,MIN(1.0,vcp->l_arrowhead_min_size / 
+			  vcp->l_arrowhead_max_size));
+		NhlRLSetFloat(rlist,NhlNstArrowFracLengthF,afr);
+	}
+	if (vcp->l_arrowhead_max_size_set)
+		NhlRLSetFloat(rlist,NhlNstArrowLengthF,
+			      vcp->l_arrowhead_max_size);
+	if (vcp->data_changed) {
+		NhlRLSetFloat(rlist,NhlNstArrowLengthF,
+			      vcp->l_arrowhead_max_size);
+		NhlRLSetFloat(rlist,NhlNstStepSizeF,0.0008);
+		if (vcp->vector_field_id > NhlNULLOBJID)
+			NhlRLSetInteger(rlist,NhlNstVectorFieldData,
+					vcp->vector_field_id);
+		if (vcp->scalar_field_id > NhlNULLOBJID)
+			NhlRLSetInteger(rlist,NhlNstScalarFieldData,
+					vcp->scalar_field_id);
+	}
+	if (vcp->level_selection_mode != ovcp->level_selection_mode)
+		NhlRLSetInteger(rlist,NhlNstLevelSelectionMode,
+				vcp->level_selection_mode);
+
+	if (vcp->max_level_count != ovcp->max_level_count)
+		NhlRLSetInteger(rlist,
+				NhlNstMaxLevelCount,vcp->max_level_count);
+	if (vcp->use_scalar_array != ovcp->use_scalar_array)
+		NhlRLSetInteger(rlist,NhlNstUseScalarArray,
+				vcp->use_scalar_array);
+	if (vcp->scalar_mval_color != ovcp->scalar_mval_color)
+		NhlRLSetInteger(rlist,NhlNstScalarMissingValColor,
+				vcp->scalar_mval_color);
+	if (vcp->position_mode != ovcp->position_mode)
+		NhlRLSetInteger(rlist,NhlNstPositionMode,vcp->position_mode);
+	if (vcp->level_spacing_set)
+		NhlRLSetFloat(rlist,NhlNstLevelSpacingF,vcp->level_spacing);
+	if (_NhlArgIsSet(args,num_args,NhlNvcMinLevelValF))
+		NhlRLSetFloat(rlist,NhlNstMinLevelValF,vcp->min_level_val);
+	if (_NhlArgIsSet(args,num_args,NhlNvcMaxLevelValF))
+		NhlRLSetFloat(rlist,NhlNstMaxLevelValF,vcp->max_level_val);
+
+	if (_NhlArgIsSet(args,num_args,NhlNvcLevels)) 
+		NhlRLSetFloatArray(rlist,NhlNstLevels,
+				   (float *)vcp->levels->data,
+				   vcp->levels->num_elements);
+
+	if (_NhlArgIsSet(args,num_args,NhlNvcLevelColors))
+		NhlRLSetIntegerArray(rlist,NhlNstLevelColors,
+				     (int *)vcp->level_colors->data,
+				     vcp->level_colors->num_elements);
+
+	subret = NhlSetValues(vcp->curly_vector_id,rlist);
+	NhlRLDestroy(rlist);
+
+	if (vcp->glyph_style == NhlCURLYVECTOR) {
+		NhlVAGetValues(vcp->curly_vector_id,
+			       NhlNstArrowLengthF,&vcp->l_arrowhead_max_size,
+			       NhlNstArrowFracLengthF,&afr,
+			       NULL);
+		vcp->l_arrowhead_min_size = vcp->l_arrowhead_max_size * afr;
+	}
+		       
+	return MIN(ret,subret);
+}
+
 /*
  * Function:	VectorPlotSetValues
  *
@@ -2178,6 +2445,8 @@ static NhlErrorTypes VectorPlotSetValues
 		vcp->zerof_lbl.height_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNvcRefLengthF))
 		vcp->ref_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNvcMinDistanceF))
+		vcp->min_distance_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNvcLineArrowHeadMinSizeF))
 		vcp->l_arrowhead_min_size_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNvcLineArrowHeadMaxSizeF))
@@ -2188,7 +2457,7 @@ static NhlErrorTypes VectorPlotSetValues
 	if (_NhlArgIsSet(args,num_args,NhlNvcMinLevelValF))
 		vcp->min_level_set = True;
 	else if (vcp->use_scalar_array != ovcp->use_scalar_array) {
-		vcp->min_level_val = -FLT_MAX;
+		vcp->min_level_val = FLT_MIN;
 		vcp->min_level_set = False;
 	}
 
@@ -2203,6 +2472,8 @@ static NhlErrorTypes VectorPlotSetValues
 		vcp->glyph_style = vcp->fill_arrows_on ?
 		  NhlFILLARROW : NhlLINEARROW;
 	}
+	if (_NhlArgIsSet(args,num_args,NhlNvcLevels))
+		vcp->levels_set = True;
 
 /*
  * Constrain resources
@@ -2323,6 +2594,18 @@ static NhlErrorTypes VectorPlotSetValues
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		return(ret);
 	}
+/*
+ * If the curly vector plot style has been initialized keep it up-to-date
+ * Otherwise, initialize it if required.
+ */
+	if (vcp->curly_vector_id > NhlNULLOBJID) {
+		subret = CurlyVectorSetValues(vcnew,vcold,args,num_args);
+		ret = MIN(ret,subret);
+	}
+	else if (vcp->glyph_style == NhlCURLYVECTOR) {
+		subret = CurlyVectorInitialize(vcnew,args,num_args);
+		ret = MIN(ret,subret);
+	}
 
 	vcp->update_req = False;
 	vcp->data_changed = False;
@@ -2333,8 +2616,10 @@ static NhlErrorTypes VectorPlotSetValues
 	vcp->zerof_lbl.height_set = False;
 	vcp->lbar_labels_res_set = False;
 	vcp->ref_length_set = False;
+	vcp->min_distance_set = False;
 	vcp->l_arrowhead_min_size_set = False;
 	vcp->l_arrowhead_max_size_set = False;
+	vcp->levels_set = False;
 
         vcnew->trans.x_reverse_set = vcnew->trans.y_reverse_set = False;
         vcnew->trans.x_log_set = vcnew->trans.y_log_set = False;
@@ -2635,6 +2920,9 @@ NhlLayer inst;
 	}
 	if (vcp->zerof_lbl_rec.id != NhlNULLOBJID) {
  		(void) NhlDestroy(vcp->zerof_lbl_rec.id);
+	}
+	if (vcp->curly_vector_id != NhlNULLOBJID) {
+ 		(void) NhlDestroy(vcp->curly_vector_id);
 	}
 
 	NhlFreeGenArray(vcp->levels);
@@ -3019,6 +3307,163 @@ static NhlErrorTypes vcUpdateTrans
 	return ret;
 }
 
+
+/*
+ * Function:	SetVecAnnoParams
+ *
+ * Description:	Set draw params for the vector annotion
+ *
+ * In Args:	layer	VectorPlot instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects:
+ */	
+
+static NhlErrorTypes SetVecAnnoParams
+#if	NhlNeedProto
+(
+	NhlVectorPlotLayer	vcl
+)
+#else
+(vcl)
+        NhlVectorPlotLayer vcl;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
+	float wlx,wrx,wby,wty; 
+	int lnlg,invx,invy;
+	_NhlvaDrawParams *dp = &vcp->d_params;
+
+	c_getset(&dp->xvpl,&dp->xvpr,&dp->xvpb,&dp->xvpt,
+		 &wlx,&wrx,&wby,&wty,&lnlg);
+
+	invx = wlx < wrx ? 0 : 1;
+	invy = wby < wty ? 0 : 1;
+	dp->invx = (float) invx;
+	dp->invy = (float) invy;
+	dp->lnlg = (float) lnlg;
+
+	if (invx) {
+		dp->wxmn = wrx;
+		dp->wxmx = wlx;
+	}
+	else {
+		dp->wxmn = wlx;
+		dp->wxmx = wrx;
+	}
+	if (invy) {
+		dp->wymn = wty;
+		dp->wymx = wby;
+	}
+	else {
+		dp->wymn = wby;
+		dp->wymx = wty;
+	}
+	if (vcp->refvec_anno_rec.id != NhlNULLOBJID) {
+		subret = NhlVASetValues(
+			vcp->refvec_anno_rec.id,
+			NhlNvaDrawParams,dp,NULL);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			return(ret);
+		}
+	}
+	if (vcp->minvec_anno_rec.id != NhlNULLOBJID) {
+		subret = NhlVASetValues(
+			vcp->minvec_anno_rec.id,
+			NhlNvaDrawParams,dp,NULL);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			return(ret);
+		}
+	}
+	return ret;
+}
+
+/*
+ * Function:	CurlyVectorDraw
+ *
+ * Description:	draws curly vectors by calling the child StreamlinePlot;
+ *              this requires intrusion into the private StreamlinePlot
+ *              fields to force the StreamlinePlot into the same 
+ *              transformation as the VectorPlot. Possibly this could
+ *              be accomplished at the public level by overlaying the
+ *              StreamlinePlot, but then it would be visible to the user
+ *              and efficiency would suffer, I think.
+ *
+ * In Args:	layer	VectorPlot instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes CurlyVectorDraw
+#if	NhlNeedProto
+(
+	NhlVectorPlotLayer	vcl,
+	NhlDrawOrder	order,
+	NhlString	entry_name
+)
+#else
+(vcl,order,entry_name)
+        NhlVectorPlotLayer vcl;
+	NhlDrawOrder	order;
+	NhlString	entry_name;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
+	NhlTransformLayerPart	*tfp = &(vcl->trans);
+	NhlStreamlinePlotLayer stl = (NhlStreamlinePlotLayer) 
+		_NhlGetLayer(vcp->curly_vector_id);
+	NhlStreamlinePlotLayerPart *stp = &(stl->streamlineplot);
+	NhlTransformLayerPart *stfp = &(stl->trans);
+	NhlTransformLayerPart save_trans;
+
+	/*
+	 * fool the StreamlinePlot into using the VectorPlot trans obj.
+	 */
+
+	memcpy(&save_trans,stfp,sizeof(NhlTransformLayerPart));
+	memcpy(stfp,tfp,sizeof(NhlTransformLayerPart));
+
+	/*
+	 * call the private draw functions to keep the PlotManager out of
+	 * the loop
+	 */
+	switch (order) {
+	case NhlPREDRAW:
+		ret = _NhlPreDraw((NhlLayer) stl);
+		break;
+	case NhlDRAW:
+		ret = _NhlDraw((NhlLayer) stl);
+		break;
+	case NhlPOSTDRAW:
+		ret = _NhlPostDraw((NhlLayer) stl);
+		break;
+	}
+	/*
+	 * restore the StreamlinePlot to its original state
+	 */
+
+	memcpy(stfp,&save_trans,sizeof(NhlTransformLayerPart));
+
+	subret = SetVecAnnoParams(vcl);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		VectorAbortDraw(vcl);
+		return(ret);
+	}
+
+	return ret;
+}
+
 /*
  * Function:	VectorPlotPreDraw
  *
@@ -3077,14 +3522,16 @@ static NhlErrorTypes VectorPlotPreDraw
 		return ret;
 	}
 
-	if (seg_draw) {
-		ret = _NhltfDrawSegment((NhlLayer)vcl,vcp->trans_obj,
+	if (vcp->glyph_style == NhlCURLYVECTOR) {
+		subret = CurlyVectorDraw(vcl,NhlPREDRAW,entry_name);
+	}
+	else if (seg_draw) {
+		subret = _NhltfDrawSegment((NhlLayer)vcl,vcp->trans_obj,
 					vcp->predraw_dat,entry_name);
 	}
 	else {
 		subret = vcDraw(vcl,NhlPREDRAW,entry_name);
 	}
-
 
 	Vcp = NULL;
 	return MIN(subret,ret);
@@ -3138,8 +3585,11 @@ static NhlErrorTypes VectorPlotDraw
 		return ret;
 	}
 
-	if (seg_draw) {
-		ret = _NhltfDrawSegment((NhlLayer)vcl,vcp->trans_obj,
+	if (vcp->glyph_style == NhlCURLYVECTOR) {
+		subret = CurlyVectorDraw(vcl,NhlDRAW,entry_name);
+	}
+	else if (seg_draw) {
+		subret = _NhltfDrawSegment((NhlLayer)vcl,vcp->trans_obj,
 					vcp->draw_dat,entry_name);
 	}
 	else {
@@ -3195,21 +3645,28 @@ static NhlErrorTypes VectorPlotPostDraw
         seg_draw = vcl->view.use_segments && ! vcp->new_draw_req &&
 		vcp->postdraw_dat && vcp->postdraw_dat->id != NgNOT_A_SEGMENT;
         
-
 	if (vcp->vector_order == NhlPOSTDRAW) {
                 subret = vcUpdateTrans(vcl,seg_draw,entry_name);
                 if ((ret = MIN(subret,ret)) < NhlWARNING) {
                         VectorAbortDraw(vcl);
                         return ret;
                 }
-		if (seg_draw) {
-			ret = _NhltfDrawSegment((NhlLayer)vcl,vcp->trans_obj,
-						vcp->postdraw_dat,entry_name);
+		if (vcp->glyph_style == NhlCURLYVECTOR) {
+			subret = CurlyVectorDraw(vcl,NhlPOSTDRAW,entry_name);
+		}
+		else if (seg_draw) {
+			subret = _NhltfDrawSegment
+				((NhlLayer)vcl,vcp->trans_obj,
+				 vcp->postdraw_dat,entry_name);
 		}
 		else {
-			ret = vcDraw((NhlVectorPlotLayer) layer,
+			subret = vcDraw((NhlVectorPlotLayer) layer,
 				     NhlPOSTDRAW,entry_name);
 		}
+                if ((ret = MIN(subret,ret)) < NhlWARNING) {
+                        VectorAbortDraw(vcl);
+                        return ret;
+                }
 	}
 
 	vcp->new_draw_req = False;
@@ -3535,7 +3992,7 @@ static NhlErrorTypes vcDraw
 					    clr[vcp->level_count]));
 	}
 
-	c_vvsetr("VMD",vcp->min_distance);
+	c_vvsetr("VMD",vcp->min_distance / vcl->view.width);
 
 	/* set up a workspace if required */
 
@@ -3610,55 +4067,10 @@ static NhlErrorTypes vcDraw
 			return(ret);
  		}
 	}
-		
-	{ /* set draw params for the vector annotion */
-		float wlx,wrx,wby,wty; 
-		int lnlg,invx,invy;
-		_NhlvaDrawParams *dp = &vcp->d_params;
-
-		c_getset(&dp->xvpl,&dp->xvpr,&dp->xvpb,&dp->xvpt,
-			 &wlx,&wrx,&wby,&wty,&lnlg);
-
-		invx = wlx < wrx ? 0 : 1;
-		invy = wby < wty ? 0 : 1;
-		dp->invx = (float) invx;
-		dp->invy = (float) invy;
-		dp->lnlg = (float) lnlg;
-
-		if (invx) {
-			dp->wxmn = wrx;
-			dp->wxmx = wlx;
-		}
-		else {
-			dp->wxmn = wlx;
-			dp->wxmx = wrx;
-		}
-		if (invy) {
-			dp->wymn = wty;
-			dp->wymx = wby;
-		}
-		else {
-			dp->wymn = wby;
-			dp->wymx = wty;
-		}
-		if (vcp->refvec_anno_rec.id != NhlNULLOBJID) {
-			subret = NhlVASetValues(
-						vcp->refvec_anno_rec.id,
-						NhlNvaDrawParams,dp,NULL);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				VectorAbortDraw(vcl);
-				return(ret);
-			}
-		}
-		if (vcp->minvec_anno_rec.id != NhlNULLOBJID) {
-			subret = NhlVASetValues(
-						vcp->minvec_anno_rec.id,
-						NhlNvaDrawParams,dp,NULL);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				VectorAbortDraw(vcl);
-				return(ret);
-			}
-		}
+	subret = SetVecAnnoParams(vcl);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		VectorAbortDraw(vcl);
+		return(ret);
 	}
 
 	gset_clip_ind(GIND_NO_CLIP);
@@ -4472,8 +4884,7 @@ static NhlErrorTypes SetScale
 	int max_digit = 0;
 	float test_high,test_low,max_fac = 1.0;
 
-	if (! init &&
-	    (vcp->levels == ovcp->levels) &&
+	if ((! vcp->levels_set) &&
 	    (sip->mode == osip->mode) &&
 	    (sip->scale_value == osip->scale_value) &&
 	    (sip->min_val == osip->min_val) &&
@@ -5118,8 +5529,7 @@ static NhlErrorTypes PrepareAnnoString
 
 	*changed = False;
 
-	if (! vcp->data_changed && ! init && 
-	    (vcp->levels == ovcp->levels) &&
+	if (! vcp->data_changed && ! vcp->levels_set && 
 	    (value == old_value) &&
 	    (*new_string == *old_string)) {
 		return NhlNOERROR;
@@ -5323,6 +5733,7 @@ static NhlErrorTypes ManageVecAnno
         switch(vcp->glyph_style) {
             default:
             case NhlLINEARROW:
+	    case NhlCURLYVECTOR:
                     ilp->aap->real_arrow_line_thickness =
                             vcp->l_arrow_thickness;
                     if (! ilp->aap->use_vec_color)
@@ -5375,6 +5786,7 @@ static NhlErrorTypes ManageVecAnno
                 
                 switch(vcp->glyph_style) {
                     default:
+		    case NhlCURLYVECTOR:
                     case NhlLINEARROW:
                             if (scalar || vcp->mono_l_arrow_color)
                                     ilp->aap->real_arrow_line_color =
@@ -5398,8 +5810,11 @@ static NhlErrorTypes ManageVecAnno
                             break;
                 }
         }
-        
-	vcp->a_params.ast_iast = (float) vcp->glyph_style;
+
+        if (vcp->glyph_style == NhlCURLYVECTOR)
+		vcp->a_params.ast_iast = (float) NhlLINEARROW;
+	else
+		vcp->a_params.ast_iast = (float) vcp->glyph_style;
 	vcp->a_params.fw2w = vcnew->view.width;
 	vcp->a_params.uvmg = ilp->aap->real_vec_mag;
 	vcp->a_params.vlc_vlom = MAX(0.0,vcp->min_magnitude);
@@ -6444,10 +6859,12 @@ static NhlErrorTypes    ManageVectorData
 				vcp->zmax = MAX(1.0,vcp->zmin*10.0);
 		vcp->data_init = False;
 		vcp->vfp = NULL;
+		vcp->vector_field_id = NhlNULLOBJID;
 		return NhlNOERROR;
 	}
 	else if (ndata != 1) {
 		vcp->data_init = False;
+		vcp->vector_field_id = NhlNULLOBJID;
 		e_text = "%s: internal error retrieving data info";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
@@ -6456,11 +6873,12 @@ static NhlErrorTypes    ManageVectorData
  	vfl = (NhlVectorFieldFloatLayer) _NhlGetDataSet(dlist[0],&new);
 	if (vfl == NULL) {
 		vcp->data_init = False;
+		vcp->vector_field_id = NhlNULLOBJID;
 		e_text = "%s: internal error retrieving data set";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-	
+	vcp->vector_field_id = vfl->base.parent->base.id;
 	vcp->vfp = (NhlVectorFieldFloatLayerPart *) &vfl->vfieldfloat;
 
 	if (vcp->vfp->miss_mode != vfNONE) {
@@ -6591,6 +7009,7 @@ static NhlErrorTypes    ManageScalarData
 			vcp->svalue_scale.max_val = vcp->scalar_max = 
 				MAX(1.0,vcp->scalar_min*10.0);
 		vcp->scalar_data_init = False;
+		vcp->scalar_field_id = NhlNULLOBJID;
 		vcp->sfp = NULL;
 		if (ndata > 1) {
 			e_text = "%s: internal error retrieving data info";
@@ -6617,12 +7036,13 @@ static NhlErrorTypes    ManageScalarData
 
  	sfl = (NhlScalarFieldFloatLayer) _NhlGetDataSet(dlist[0],&new);
 	if (sfl == NULL) {
+		vcp->scalar_field_id = NhlNULLOBJID;
 		vcp->scalar_data_init = False;
 		e_text = "%s: internal error retrieving data set";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-	
+	vcp->scalar_field_id = sfl->base.parent->base.id;
 	vcp->sfp = (NhlScalarFieldFloatLayerPart *) &sfl->sfieldfloat;
 
 	if (vcp->data_init && 
@@ -6704,9 +7124,11 @@ static NhlErrorTypes    ManageViewDepResources
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name;
-	NhlVectorPlotLayer		vcnew = (NhlVectorPlotLayer) new;
-	NhlVectorPlotLayerPart		*vcp = &(vcnew->vectorplot);
-	NhlVectorPlotLayer		vcold = (NhlVectorPlotLayer) old;
+	NhlVectorPlotLayer	vcnew = (NhlVectorPlotLayer) new;
+	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
+	NhlVectorPlotLayer	vcold = (NhlVectorPlotLayer) old;
+	NhlBoolean		view_changed;
+	float			ratio,old_width,old_height;
 
 	entry_name = (init) ? InitName : SetValuesName;
 
@@ -6724,6 +7146,21 @@ static NhlErrorTypes    ManageViewDepResources
 		sy = vcnew->view.height / ny;
 		vcp->a_params.dvmx = sqrt((sx*sx + sy*sy) / 2.0);
 	}
+	if (init) {
+		old_width = NHL_DEFAULT_VIEW_WIDTH;
+		old_height = NHL_DEFAULT_VIEW_HEIGHT;
+	}
+	else {
+		old_width = vcold->view.width;
+		old_height = vcold->view.height;
+	}
+
+	ratio = sqrt((vcnew->view.width * vcnew->view.width
+		      + vcnew->view.height * vcnew->view.height) /
+		     (old_width * old_width + old_height * old_height));
+
+	view_changed = init || vcnew->view.width != vcold->view.width ||
+		vcnew->view.height != vcold->view.height;
 
 	if (vcp->ref_length > 0.0) {
 		vcp->real_ref_length = vcp->ref_length;
@@ -6734,30 +7171,19 @@ static NhlErrorTypes    ManageViewDepResources
 	}
 
 	if (! vcp->ref_length_set) {
-		if (vcnew->view.width != vcold->view.width ||
-		    vcnew->view.height != vcold->view.height) {
-			float ratio;
-			ratio = sqrt((vcnew->view.width * vcnew->view.width
-				   + vcnew->view.height * vcnew->view.height) /
-				  (vcold->view.width * vcold->view.width
-				   + vcold->view.height * vcold->view.height));
+		if (view_changed) {
 			vcp->real_ref_length *= ratio;
 			if (vcp->ref_length > 0.0)
 				vcp->ref_length = vcp->real_ref_length;
 		}
 	}
 
-	if (! vcp->l_arrowhead_min_size_set) {
-		if (init) {
-			vcp->l_arrowhead_min_size *= 
-				vcnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
-		}
-		else if (vcnew->view.width != vcold->view.width) {
-			vcp->l_arrowhead_min_size *= 
-				vcnew->view.width / vcold->view.width;
-		}
+	if (view_changed && ! vcp->l_arrowhead_min_size_set) {
+		vcp->l_arrowhead_min_size *= ratio;
 	}
-	if (! vcp->l_arrowhead_max_size_set) {
+	if (view_changed && ! vcp->l_arrowhead_max_size_set) {
+		vcp->l_arrowhead_max_size *= ratio;
+#if 0
 		if (init) {
 			vcp->l_arrowhead_max_size *= 
 				vcnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
@@ -6765,6 +7191,15 @@ static NhlErrorTypes    ManageViewDepResources
 		else if (vcnew->view.width != vcold->view.width) {
 			vcp->l_arrowhead_max_size *= 
 				vcnew->view.width / vcold->view.width;
+		}
+#endif
+	}
+	if (! vcp->min_distance_set) {
+		if (init) {
+			vcp->min_distance = 0.0;
+		}
+		else if (view_changed) {
+			vcp->min_distance *= ratio;
 		}
 	}
 
@@ -7406,10 +7841,9 @@ static NhlErrorTypes    SetupLevels
 	entry_name = init ? "VectorPlotInitialize" : "VectorPlotSetValues";
 	*modified = False;
 
-	if ((! init) && 
+	if ((! vcp->levels_set) &&
 	    (! vcp->data_changed) &&
 	    (! vcp->level_spacing_set) && 
-	    (vcp->levels == ovcp->levels) &&
 	    (vcp->level_selection_mode == ovcp->level_selection_mode) &&
 	    (vcp->max_level_count == ovcp->max_level_count) &&
 	    (vcp->min_level_val == ovcp->min_level_val) &&
@@ -7482,7 +7916,7 @@ static NhlErrorTypes    SetupLevels
         }
 	if (init ||
 	    vcp->level_count != ovcp->level_count ||
-	    memcmp((*levels),vcp->levels->data,
+	    memcmp((*levels),ovcp->levels->data,
 		   vcp->levels->size * vcp->level_count)) {
 		*modified = True;
 	}
@@ -7934,7 +8368,7 @@ static NhlErrorTypes    SetupLevelsExplicit
                 return MIN(ret,subret);
         }
                 
-	if (init || vcp->levels != ovcp->levels)
+	if (vcp->levels_set)
 		count = vcp->levels->num_elements;
 	else 
 		count = vcp->level_count;

@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.h,v 1.6 1999-03-29 18:31:35 dbrown Exp $
+ *      $Id: StreamlinePlot.h,v 1.7 2001-06-13 23:53:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,10 +36,12 @@
  */
 
 #define NhlNstVectorFieldData		"stVectorFieldData"
+#define NhlNstScalarFieldData		"stScalarFieldData"
 #define NhlNstMapDirection		"stMapDirection"	/* TRT */
 #define NhlNstStreamlineDrawOrder	"stStreamlineDrawOrder"
 
 #define NhlNstLineThicknessF		"stLineThicknessF"	/* LWD */
+#define NhlNstMonoLineColor		"stMonoLineColor"
 #define NhlNstLineColor			"stLineColor"
 #define NhlNstArrowLengthF		"stArrowLengthF"	/* ARL */
 #define NhlNstStepSizeF			"stStepSizeF"		/* DFM */
@@ -47,11 +49,19 @@
 #define NhlNstLengthCheckCount		"stLengthCheckCount" 	/* CKP */
 #define NhlNstCrossoverCheckCount	"stCrossoverCheckCount" /* CKX */
 
-#define NhlNstMinLineLengthF		"stMinLineLengthF"	/* SMD */
 #define NhlNstMinArrowSpacingF		"stMinArrowSpacingF"	/* AMD */
 #define NhlNstMinLineSpacingF		"stMinLineSpacingF"	/* SSP */
 #define NhlNstLineStartStride		"stLineStartStride"     /* SGD */
 #define NhlNstArrowStride		"stArrowStride"    	/* AGD */
+
+#define NhlNstCurlyVectorMode           "stCurlyVectorMode"     /* STM */
+#define NhlNstRefMagnitudeF		"stRefMagnitudeF"       /* VRM */
+#define NhlNstRefLengthF		"stRefLengthF"          /* VRL */
+#define NhlNstMinFracLengthF		"stMinFracLengthF"      /* VRF */
+#define NhlNstPositionMode		"stPositionMode"        /* VPO */
+#define NhlNstArrowFracLengthF          "stArrowFracLengthF"    /* AFR */
+#define NhlNstMinDistanceF		"stMinDistanceF"        /* SMD */
+#define NhlNstMinMagnitudeF		"stMinMagnitudeF"       
 
 #define NhlNstLevels			"stLevels"
 #define NhlNstLevelCount		"stLevelCount"		/* read-only */
@@ -60,6 +70,9 @@
 #define NhlNstLevelSpacingF		"stLevelSpacingF"
 #define NhlNstMinLevelValF		"stMinLevelValF"
 #define NhlNstMaxLevelValF		"stMaxLevelValF"
+#define NhlNstLevelColors		"stLevelColors"
+#define NhlNstUseScalarArray		"stUseScalarArray"
+#define NhlNstScalarMissingValColor	"stScalarMissingValColor"
 
 #define NhlNstNoDataLabelOn		"stNoDataLabelOn"
 #define NhlNstNoDataLabelString		"stNoDataLabelString"
@@ -88,9 +101,14 @@
 #define NhlNstZeroFLabelParallelPosF	"stZeroFLabelParallelPosF"
 #define NhlNstZeroFLabelOrthogonalPosF	"stZeroFLabelOrthogonalPosF"
 
+#define NhlNstExplicitLabelBarLabelsOn	"stExplicitLabelBarLabelsOn"
+#define NhlNstLabelBarEndLabelsOn	"stLabelBarEndLabelsOn"
+#define NhlNstLabelFormat		"stLabelFormat"
+
 /*class resources */
 
 #define NhlCstVectorFieldData		"StVectorFieldData"
+#define NhlCstScalarFieldData		"StScalarFieldData"
 #define NhlCstMapDirection		"StMapDirection"
 #define NhlCstStreamlineDrawOrder		"StStreamlineDrawOrder"
 
@@ -100,20 +118,25 @@
 #define NhlCstLengthCheckCount		"StLengthCheckCount" 	/* CKP */
 #define NhlCstCrossoverCheckCount	"StCrossoverCheckCount" /* CKX */
 
-#define NhlCstMinLineLengthF		"StMinLineLengthF"	
+#define NhlCstMonoLineColor		"StMonoLineColor"
 #define NhlCstMinArrowSpacingF		"StMinArrowSpacingF"	/* AMD */
 #define NhlCstMinLineSpacingF		"StMinLineSpacingF"	/* SSP */
 #define NhlCstLineStartStride		"StLineStartStride"     /* SGD */
 #define NhlCstArrowStride		"StArrowStride"         /* AGD */
 
-#define NhlCstLevels			"StLevels"
-#define NhlCstLevelCount		"StLevelCount"		/* read-only */
-#define NhlCstLevelSelectionMode	"StLevelSelectionMode"
-#define NhlCstMaxLevelCount		"StMaxLevelCount"
-#define NhlCstLevelSpacingF		"StLevelSpacingF"
-#define NhlCstMinLevelValF		"StMinLevelValF"
-#define NhlCstMaxLevelValF		"StMaxLevelValF"
+#define NhlCstCurlyVectorMode           "StCurlyVectorMode"     /* STM */
+#define NhlCstRefMagnitudeF		"StRefMagnitudeF"       /* VRM */
+#define NhlCstRefLengthF		"StRefLengthF"          /* VRL */
+#define NhlCstMinFracLengthF		"StMinFracLengthF"      /* VRF */
+#define NhlCstPositionMode		"StPositionMode"        /* VPO */
+#define NhlCstArrowFracLengthF          "StArrowFracLengthF"    /* AFR */
+#define NhlCstMinDistanceF		"StMinDistanceF"        /* SMD */
+#define NhlCstMinMagnitudeF		"StMinMagnitudeF"       
 
+#define NhlCstLevelCount		"StLevelCount"	/* read-only */
+#define NhlCstLevelColors		"StLevelColors"
+#define NhlCstUseScalarArray		"StUseScalarArray"
+#define NhlCstScalarMissingValColor	"StScalarMissingValColor"
 
 #define NhlCstNoDataLabelString		"StNoDataLabelString"
 #define NhlCstZeroFLabelString		"StZeroFLabelString"
@@ -123,6 +146,10 @@
 #define NhlCstZeroFLabelJust		"StZeroFLabelJust"
 #define NhlCstZeroFLabelParallelPosF	"StZeroFLabelParallelPosF"
 #define NhlCstZeroFLabelOrthogonalPosF	"StZeroFLabelOrthogonalPosF"
+
+#define NhlCstExplicitLabelBarLabelsOn	"StExplicitLabelBarLabelsOn"
+#define NhlCstLabelBarEndLabelsOn	"StLabelBarEndLabelsOn"
+#define NhlCstLabelFormat		"StLabelFormat"
 
 /*
  * These class resources have been eliminated
