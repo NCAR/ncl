@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.46 1999-04-10 00:22:13 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.47 2000-02-17 01:24:31 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -581,7 +581,7 @@ NhlLayer parent;
 	float v_angle_lim, h_angle_lim, center_lat, center_lon;
 	float rl1[2],rl2[2],rl3[2],rl4[2];
         NhlBoolean outside_viewspace = False;
-        float pxl,pxr,pyb,pyt;
+        float pxl,pxr,pyb,pyt,pw,ph;
 
 	ret =(*NhltransObjClassRec.trobj_class.set_trans)(instance,parent);
 
@@ -600,18 +600,26 @@ NhlLayer parent;
                 c_mappos(xl,xr,yb,yt);
         }
         else {
-                    /* temporarily resize and reposition map so that it lies
-                       completely within the viewspace */
-                pxl = 0.0;
-                pyb = 0.0;
+		/* temporarily resize and reposition map so that it lies
+		   completely within the viewspace */
+		/* well it turns out that floating point error can sometimes
+		 * turn 0.0 into small negative numbers somewhere in Ezmap
+		 * so now I will resort to a slightly more difficult 
+		 * calculation and a space inside the viewport.
+		 */
                 if (width > height) {
-                        pxr = 1.0;
-                        pyt = height / width;
+			pw = 0.9;
+			ph = 0.9 * (height / width);
                 }
                 else {
-                        pxr = width / height;
-                        pyt = 1.0;
+			ph = 0.9;
+                        pw = 0.9  * (width / height);
                 }
+                pxl = 0.05;
+                pyb = 0.05;
+		pxr = pxl + pw;
+		pyt = pyb + ph;
+		
                 c_mappos(pxl,pxr,pyb,pyt);
                 
         }
@@ -857,10 +865,10 @@ NhlLayer parent;
                 float npl,npr,npb,npt;
 
                     /* reposition to the real location */
-                npl = xl + width * (mtp->map_pos_l/pxr);
-                npr = xl + width * (mtp->map_pos_r/pxr);
-                npb = yb + height * (mtp->map_pos_b/pyt);
-                npt = yb + height * (mtp->map_pos_t/pyt);
+                npl = xl + width * ((mtp->map_pos_l - pxl)/pw);
+                npr = xl + width * ((mtp->map_pos_r - pxl)/pw);
+                npb = yb + height * ((mtp->map_pos_b - pyb)/ph);
+                npt = yb + height * ((mtp->map_pos_t - pyb)/ph);
                 mtp->map_pos_l = npl;
                 mtp->map_pos_r = npr;
                 mtp->map_pos_b = npb;
@@ -1235,7 +1243,6 @@ static NhlErrorTypes GetMinMaxLatLon
 	float			*maxlat
 #endif
 {
-	NhlMapTransObjLayerPart	*mtp = &(mpl->mptrans);
         float tlat,tlon,uval,vval;
         float tmplon,tminlon,tmaxlon;
         
@@ -1412,7 +1419,6 @@ static NhlErrorTypes MapTransInitialize
 #endif
 {
 	NhlMapTransObjLayer mnew = (NhlMapTransObjLayer) new;
-	NhlMapTransObjLayerPart	*mtp = &(mnew->mptrans);
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	char *e_text, *entry_name = "MapTransInitialize";
 
@@ -1944,16 +1950,12 @@ int upordown;
 {
 	
 	NhlString entry_name = "MapDataLineTo";
-	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlMapTransObjLayer mpl = (NhlMapTransObjLayer)instance;
+	NhlMapTransObjLayer	mpl = (NhlMapTransObjLayer) instance;
 	static float x_last,y_last;
 	float *xbuf, *ybuf;
 	float xdist, ydist;
 	int npoints;
-	int i,ifst;
-	float minlat,maxlat,minlon,maxlon;
-	static int save_change_count = -999;
-	static float dlat = 180.0, dlon = 360.0;
+	int i;
 #if 0
 	if (save_change_count != mpl->trobj.change_count) {
 		GetMinMaxLatLon(mpl,
@@ -2148,10 +2150,8 @@ NhlBoolean closed;
 NhlBoolean *out_of_range;
 #endif
 {
-	int ixmin,iymin,ixmax,iymax;
-	int i,imin;
+	int i;
 	NhlBoolean clockwise = False;
-	float x1,x2,y1,y2;
 	float area = 0.0;
 	float lat0,lon0,lat1,lon1;
 
