@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.10 1997-09-04 17:05:40 boote Exp $
+ *      $Id: browse.c,v 1.11 1997-09-08 19:29:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1909,7 +1909,7 @@ static void CycleSelectionCB
         }
         
         return;
-
+	
 }
 
 
@@ -2013,6 +2013,7 @@ SetupPaneControl
                  parent,
                  XmNleftAttachment,	XmATTACH_WIDGET,
                  XmNleftWidget,		pcp->vcr->form,
+		 XmNleftOffset,		15,
                  XmNrightAttachment,	XmATTACH_NONE,
                  NULL);
 
@@ -2040,18 +2041,6 @@ SetupPaneControl
                  XmNbottomOffset,	5,
                  NULL);
         XtAddCallback(pb,XmNactivateCallback,DeleteSelectionCB,go);
-
-#if 0        
-        XtVaGetValues(pb,
-                      XmNforeground,&foreground,
-                      XmNbackground,&background,
-                      NULL);
-        
-        XtVaSetValues(pb,
-                      XmNforeground,background,
-                      XmNbackground,foreground,
-                      NULL);
-#endif        
         return;
 }
 

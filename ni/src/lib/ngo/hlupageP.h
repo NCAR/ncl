@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupageP.h,v 1.4 1997-08-20 20:49:05 dbrown Exp $
+ *      $Id: hlupageP.h,v 1.5 1997-09-08 19:29:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -50,8 +50,6 @@ typedef struct _brHluPageRec
         NgResTree	*res_tree;
         Widget		create_update;
         NhlBoolean	created;
-	Widget		set_values;
-	int		pre_hlu_id;
         int		hlu_id;
         Widget		auto_update;
         NhlBoolean	do_auto_update;

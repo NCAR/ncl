@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.2 1997-08-21 16:35:38 dbrown Exp $
+ *      $Id: restree.c,v 1.3 1997-09-08 19:29:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,8 @@
 #include <Xm/Protocols.h>
 #include <Xm/MenuShell.h>
 #include <Xm/RowColumn.h>
+#include <Xm/Frame.h>
+#include <Xm/Form.h>
 #include <Xm/PushBG.h>
 #include  <Xm/Text.h>
 #include  <XmL/Tree.h>
@@ -33,9 +35,11 @@
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/sort.h>
 #include <ncarg/ngo/stringutil.h>
+#include <ncarg/ngo/MegaB.h>
 #include <ncarg/hlu/AppI.h>
 #include <ncarg/hlu/View.h>
 #include <ncarg/hlu/DataCommP.h>
+
 
 
 static NrmQuark Qlong_name;
@@ -43,7 +47,7 @@ static Dimension Row_Height;
 static Dimension Char_Height;
 static Pixel Foreground,Background;
 static NrmQuark Qpointer,Qimmediate,Qdatalist;
-static NrmQuark Qgenarray,Qdouble,Qfloat,Qvariable,Qstring,Qenum;
+static NrmQuark Qgenarray,Qdouble,Qfloat,Qvariable,Qstring,Qenum,Qcolorindex;
 static int Grlist;
 
 #define PIXMAP_WIDTH 9
@@ -59,8 +63,9 @@ static char No_Check_Bits[] = {
         0x00,0x00,0x00,0x00,0x00,0x00 
 };
 
-static Pixmap Check_Pixmap, No_Check_Pixmap;
+static Pixmap Check_Pixmap, No_Check_Pixmap,Test_Pixmap;
 
+static Pixel Black,White;
 
 static NhlBoolean IsInstantiatedChild
 (
@@ -167,6 +172,7 @@ static void ExpandClassGroup
                 rowdefs[i].string = XmStringCreateLocalized(buf);
                 ndata->subdata[i].parent = ndata;
                 ndata->subdata[i].info = (void*)rtp->classes[start_ix+i];
+                ndata->subdata[i].row = row+i;
                 ndata->subdata[i].expanded = False;
                 ndata->subdata[i].subcount = 0;
                 ndata->subdata[i].subdata = NULL;
@@ -244,7 +250,9 @@ static void GetInstanceResValues
         NhlGetValues(rtp->hlu_id,Grlist);
         resp = res_data;
         for (i = 0; i < nrows; i++) {
+                NhlBoolean null_val = False;
 		if (! values[i]) {
+                        null_val = True;
 			sprintf(buf,"<null>");
                 }
                 else if (_NhlIsSubtypeQ(Qgenarray,resp->res->nrm_type) &&
@@ -252,11 +260,13 @@ static void GetInstanceResValues
                         NhlGenArray ga = (NhlGenArray) values[i];
                         sprintf(buf,"%dD array of %d elements",
                                 ga->num_dimensions,ga->num_elements);
+                        NhlFreeGenArray(ga);
                 }
 		else {
                         sprintf(buf,"%s",(NhlString)values[i]);
+                        NhlFree(values[i]);
 		}
-                if (values[i] && (resp->res->nrm_type == Qfloat ||
+                if (! null_val && (resp->res->nrm_type == Qfloat ||
                     resp->res->nrm_type == Qdouble ||
                     resp->res->nrm_type == Qvariable)) {
                         NgFixFloat(buf);
@@ -274,10 +284,7 @@ static void GetInstanceResValues
                                       NULL);
                 }
                 rtp->c2_width = MAX(rtp->c2_width,strlen(buf));
-                if (values[i])
-                        NhlFree(values[i]);
                 resp->vis = True;
-                resp->row = start_row+i;
                 resp++;
         }
         NhlFree(values);
@@ -553,9 +560,11 @@ static void ExpandClass
                 rowdefs[i].string = XmStringCreateLocalized(buf);
                 ndata->subdata[i].parent = ndata;
                 ndata->subdata[i].info = (void*)resp;
+                ndata->subdata[i].row = row+i;
                 ndata->subdata[i].expanded = False;
                 ndata->subdata[i].subcount = 0;
                 ndata->subdata[i].subdata = NULL;
+                resp->ndata = &ndata->subdata[i];
                 resp++;
         }
         XmLTreeAddRows(pub_rtp->tree,rowdefs,nrows,row);
@@ -662,6 +671,7 @@ static void ExpandRes
         XmLTreeAddRows(pub_rtp->tree,rowdefs,rowcount,row);
         ndata->expanded = True;
         ndata->subcount = rowcount;
+        ndata->subdata = NULL;
         
         for (i = 0; i < rowcount; i++) {
                 XmStringFree(rowdefs[i].string);
@@ -702,6 +712,44 @@ static void ExpandRes
         return;
 }
 
+static void UpdateRowIndexes
+(
+        rtNodeData	*ndata,
+        int		start_ix,
+        int		row_inc
+        )
+{
+        int i;
+        
+        if (start_ix < 0) {
+                    /* up the tree from current node */
+                if (! ndata->parent)
+                        return;
+                for (i = 0; i < ndata->parent->subcount; i++) {
+                        if (ndata == &ndata->parent->subdata[i])
+                                break;
+                }
+                if (i >= ndata->parent->subcount - 1) {
+                        UpdateRowIndexes(ndata->parent,-1,row_inc);
+                }
+                else {
+                        UpdateRowIndexes(ndata->parent,i+1,row_inc);
+                        UpdateRowIndexes(ndata->parent,-1,row_inc);
+                }
+                return;
+        }
+        if (! ndata->subdata)
+                return;
+            /* sibling nodes following the current node */
+        for (i = start_ix; i < ndata->subcount; i++) {
+                ndata->subdata[i].row += row_inc;
+                if (ndata->subdata[i].subcount)
+                        UpdateRowIndexes(&ndata->subdata[i],0,row_inc);
+        }
+        return;
+}
+                
+
 static void ExpandTree 
 (
         NgResTreeRec	*rtp,
@@ -710,24 +758,6 @@ static void ExpandTree
         )
 {
         NgResTree *pub_rtp = &rtp->restree;
-#if 0        
-        static NhlBoolean first = True;
-        
-        if (first) {
-                XmLGridColumn colptr;
-                XmLGridRow rowptr;
-
-                first = False;
-                colptr = XmLGridGetColumn(pub_rtp->tree,XmCONTENT,0);
-                rowptr = XmLGridGetRow(pub_rtp->tree,XmCONTENT,0);
-                XtVaGetValues(pub_rtp->tree,
-                              XmNcolumnPtr,colptr,
-                              XmNrowPtr,rowptr,
-                              XmNcellForeground,&Foreground,
-                              XmNcellBackground,&Background,
-                              NULL);
-        }
-#endif        
         
         if (! rtp->expand_called) {
                 short		cw,ch;
@@ -772,6 +802,8 @@ static void ExpandTree
                     ExpandRes(rtp,ndata,row+1);
                     break;
         }
+        UpdateRowIndexes(ndata,-1,ndata->subcount);
+        
         return;
 }
         
@@ -799,6 +831,95 @@ static void SetNodeDataVisFlags
                         rtResData *resp = (rtResData *)ndata[i].info;
                         resp->vis = on;
                 }
+        }
+        return;
+}
+static void DetachRows
+(
+        rtNodeData	*ndata,
+        int 		*count
+        )
+{
+        int i;
+
+        *count += ndata->subcount;
+        if (! ndata->subdata)
+                return;
+        
+        for (i = 0; i < ndata->subcount; i++) {
+                if (ndata->subdata[i].type % 10 == _rtRes) {
+                        rtResData *resp = (rtResData *) ndata->subdata[i].info;
+                        resp->vis = False;
+                        resp->ndata = NULL;
+                }
+                if (ndata->subdata[i].subcount)
+                        DetachRows(&ndata->subdata[i],count);
+        }
+        NhlFree(ndata->subdata);
+        return;
+}
+        
+static void UpdateClassFolderState
+(
+        NgResTreeRec	*rtp,
+        rtNodeData	*ndata
+        )
+{
+        NgResTree *pub_rtp = &rtp->restree;
+        NhlClass class = (NhlClass) ndata->info;
+        int i;
+        
+        for (i = rtp->super_class_count+1; i < rtp->class_count; i++) {
+                if (class == rtp->classes[i]) {
+                        if (! rtp->instantiated[i]) {
+                                if (ndata->expanded) {
+                                        int dcount = 0;
+                                        DetachRows(ndata,&dcount);
+                                        XmLGridDeleteRows
+                                                (pub_rtp->tree,XmCONTENT,
+                                                 ndata->row+1,dcount);
+                                        UpdateRowIndexes
+                                                (ndata,-1,-dcount);
+                                        ndata->subcount = 0;
+                                        ndata->subdata = NULL;
+                                        ndata->expanded = False;
+                                }
+                                XtVaSetValues(pub_rtp->tree,
+                                              XmNrow,ndata->row,
+                                              XmNrowIsExpanded,False,
+                                              XmNrowExpands,False,
+                                              NULL);
+                        }
+                        else if (!ndata->expanded) {
+                              XtVaSetValues(pub_rtp->tree,
+                                              XmNrow,ndata->row,
+                                              XmNrowExpands,True,
+                                              NULL);  
+                        }
+                        break;
+                }
+        }
+        return;
+}
+                                              
+                        
+static void UpdateInstantiatedStatus
+(
+        NgResTreeRec	*rtp,
+        rtNodeData	*ndata,
+        int		node_count
+        )
+{
+        NgResTree *pub_rtp = &rtp->restree;
+        int i;
+
+        for (i = 0; i < node_count; i++) {
+                NhlClass class;
+		if (ndata[i].type % 10 ==_rtClass)
+                        UpdateClassFolderState(rtp,&ndata[i]);
+		else if (ndata[i].type % 10 < _rtClass && ndata[i].subcount)
+                        UpdateInstantiatedStatus(rtp,ndata[i].subdata,
+                                                 ndata[i].subcount);
         }
         return;
 }
@@ -908,7 +1029,7 @@ static void UnFocusCB
 	NgResTreeRec *rtp = (NgResTreeRec *) udata;
         NgResTree *pub_rtp = &rtp->restree;
 
-        if (rtp->edit_row > -1) {
+        if (! rtp->enum_info.up) {
                 XtVaSetValues(pub_rtp->tree,
                               XmNcolumn,2,
                               XmNrow,rtp->edit_row,
@@ -919,7 +1040,9 @@ static void UnFocusCB
                               XtVaTypedArg,XmNbackground,
                               XmRString,"#d0d0d0",8,
                               NULL);
+#if 0
                 rtp->edit_row = -1;
+#endif
         }
 	if (rtp->manual_edit_started) {
 		XmLGridEditCancel(pub_rtp->tree);
@@ -959,13 +1082,13 @@ static void FocusCB
 static void RemoveFromSetValList 
 (
         NgResTreeRec	*rtp,
-        int		row
+        rtSetValNode	*svp
         )
 {
-        rtSetValNode *svp, *lastsvp = NULL;
+        rtSetValNode *csvp, *lastsvp = NULL;
 
-        for (svp = rtp->set_val_list; svp != NULL; svp = svp->next) {
-                if (row == svp->row) {
+        for (csvp = rtp->set_val_list; csvp != NULL; csvp = csvp->next) {
+                if (svp == csvp) {
                         if (lastsvp)
                                 lastsvp->next = svp->next;
                         else
@@ -983,15 +1106,25 @@ static void RemoveFromSetValList
 static void AddToSetValList 
 (
         NgResTreeRec	*rtp,
-        int		row,
-        rtResData	*res_data
+        rtResData	*res_data,
+	XtPointer	value
         )
 {
         rtSetValNode *setvalp;
 
-        setvalp = NhlMalloc(sizeof(rtSetValNode));
+	/* if already in the list just replace the value, updating the
+	   row as well in case it is out of date */
+	for (setvalp = rtp->set_val_list; 
+	     setvalp != NULL; setvalp = setvalp->next) {
+		if (res_data == setvalp->res_data) {
+			XtFree(res_data->value);
+			res_data->value = value;
+			return;
+		}
+	}
 
-        setvalp->row = row;
+        setvalp = NhlMalloc(sizeof(rtSetValNode));
+	res_data->value = value;
         setvalp->res_data = res_data;
         setvalp->next = rtp->set_val_list;
         rtp->set_val_list = setvalp;
@@ -1005,7 +1138,7 @@ void EmptySetValList
         )
 {
         while (rtp->set_val_list)
-                RemoveFromSetValList(rtp,rtp->set_val_list->row);
+                RemoveFromSetValList(rtp,rtp->set_val_list);
                 
         rtp->set_val_list = NULL;
         return;
@@ -1024,6 +1157,8 @@ static NhlBoolean CheckToggleSetState
         rtResData *row_res_data;
         XmLGridRow	rowptr;
         char buf[256];
+        NhlBoolean null_val = False;
+        
                 
         rowptr = XmLGridGetRow(pub_rtp->tree,XmCONTENT,row);
         XtVaGetValues(pub_rtp->tree,
@@ -1056,9 +1191,11 @@ static NhlBoolean CheckToggleSetState
                          NhlTString,&value);
         
         NhlGetValues(rtp->hlu_id,Grlist);
-        
+        NhlRLClear(Grlist);
+
         if (! value) {
                 sprintf(buf,"<null>");
+                null_val = True;
         }
         else if (_NhlIsSubtypeQ(Qgenarray,
                                 svp->res_data->res->nrm_type) &&
@@ -1066,11 +1203,13 @@ static NhlBoolean CheckToggleSetState
                 NhlGenArray ga = (NhlGenArray) value;
                 sprintf(buf,"%dD array of %d elements",
                         ga->num_dimensions,ga->num_elements);
+                NhlFreeGenArray(ga);
         }
         else {
                 sprintf(buf,"%s",(NhlString)value);
+                NhlFree(value);
         }
-        if (value && (svp->res_data->res->nrm_type == Qfloat ||
+        if (! null_val && (svp->res_data->res->nrm_type == Qfloat ||
                           svp->res_data->res->nrm_type == Qdouble ||
                           svp->res_data->res->nrm_type == Qvariable)) {
                 NgFixFloat(buf);
@@ -1079,12 +1218,155 @@ static NhlBoolean CheckToggleSetState
         XmLGridSetStringsPos
                 (pub_rtp->tree,XmCONTENT,row,XmCONTENT,2,buf);
 
-        if (value)
-                NhlFree(value);
-        
-        RemoveFromSetValList(rtp,svp->row);
+        RemoveFromSetValList(rtp,svp);
 
         return True;
+}
+
+/* the mega button version */
+static void EnumEdCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	NgResTreeRec *rtp = (NgResTreeRec *) udata;
+        NgResTree *pub_rtp = &rtp->restree;
+	rtEnumInfoRec		*ep = &rtp->enum_info;
+        int		i,count = 0;
+        XmString	string;
+        char 		*sval;
+        XmLGridRow	rowptr;
+        rtNodeData	*ndata;
+        rtResData	*resp;
+	XRectangle	rect;
+        Position	root_x,root_y;
+        XButtonEvent	*xev;
+        NhlString	param1 = "BEGIN",param2 = "END";
+        XmMegaButtonCallbackStruct *cb = (XmMegaButtonCallbackStruct *)cb_data;
+        xev = &cb->event->xbutton;
+        
+        printf("in enum ed cb\n");
+        
+        rowptr = XmLGridGetRow(pub_rtp->tree,XmCONTENT,rtp->edit_row);
+        
+        XtVaGetValues(pub_rtp->tree,
+                      XmNrowPtr,rowptr,
+                      XmNrowUserData,&ndata,
+                      NULL);
+        resp = (rtResData *)ndata->info;
+        sval = XtMalloc(strlen(ep->strings[cb->pos])+1);
+        strcpy(sval,ep->strings[cb->pos]);
+        
+        AddToSetValList(rtp,resp,(XtPointer)sval);
+        
+        XtVaSetValues(pub_rtp->tree,
+                      XmNcolumn,1,
+                      XmNrow,rtp->edit_row,
+                      XmNcellPixmap,Check_Pixmap,
+                      NULL);
+        string = NgXAppCreateXmString(rtp->go->go.appmgr,sval);
+        XtVaSetValues(pub_rtp->tree,
+                      XmNcolumn,2,
+                      XmNrow,rtp->edit_row,
+                      XmNcellString,string,
+                      NULL);
+        NgXAppFreeXmString(rtp->go->go.appmgr,string);
+
+        AdjustTextWidget(rtp,rtp->edit_row,2);
+        XmLGridSetFocus(pub_rtp->tree,rtp->edit_row,2);
+	XmLGridRowColumnToXY
+                (pub_rtp->tree,
+                 XmCONTENT,rtp->edit_row,XmCONTENT,2,False,&rect);
+	XtTranslateCoords(pub_rtp->tree,(Position) 0,(Position) 0,
+                          &root_x,&root_y);
+        xev->type = ButtonPress;
+        xev->window = XtWindow(pub_rtp->tree);
+        xev->x = rect.x +rect.width / 2;
+        xev->y = rect.y +rect.height / 2;
+        xev->x_root = root_x + xev->x;
+        xev->y_root = root_y + xev->y;
+        xev->button = Button1;
+        xev->state = 0;
+        xev->same_screen = True;
+        
+        printf("calling action proc\n");
+        XtCallActionProc
+                (pub_rtp->tree,"XmLGridSelect",(XEvent*)&xev,&param1,1);
+
+        xev->type = ButtonRelease;
+        xev->state = Button1Mask;
+        XtCallActionProc
+                (pub_rtp->tree,"XmLGridSelect",(XEvent*)xev,&param2,1);
+        
+        return;
+        
+}
+static void UnmapEnumEdCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	NgResTreeRec	*rtp = (NgResTreeRec *) udata;
+        NgResTree	*pub_rtp = &rtp->restree;
+	rtEnumInfoRec	*ep = &rtp->enum_info;
+
+        XtDestroyWidget(ep->popup);
+
+        ep->up = False;
+        return;
+        
+}
+static void SetUpColorList
+(
+        NgResTreeRec	*rtp,
+        char		*current_val
+)
+{
+        NgResTree 	*pub_rtp = &rtp->restree;
+	rtEnumInfoRec	*ep = &rtp->enum_info;
+        int		ncolors;
+        NhlGenArray	ga;
+        float		*cmap;
+        NhlLayer	l = _NhlGetLayer(rtp->hlu_id);
+        int		i;
+        int		cur_ix;
+
+        if (ep->cmap) {
+                NhlFree(ep->cmap);
+                ep->cmap = NULL;
+        }
+        if (! l || _NhlIsObj(l) || ! l->base.wkptr) {
+                return;
+        }
+        if (ep->selected < 0) {
+                sscanf(current_val,"%d",&cur_ix);
+                ep->selected = cur_ix + 1;
+        }
+        
+        NhlRLGet(Grlist,"wkColorMapLen",NhlTInteger,&ncolors);
+        NhlRLGet(Grlist,"wkColorMap",NhlTGenArray,&ga);
+        NhlGetValues(l->base.wkptr->base.id,Grlist);
+        NhlRLClear(Grlist);
+                
+        ep->cmap = NhlMalloc(sizeof(float) * 3*(ncolors+1));
+        ep->strings = NhlRealloc
+                (ep->strings,sizeof(NhlString) * (ncolors+1));
+        ep->count = ncolors+1;
+        ep->cmap[0] = ep->cmap[1] = ep->cmap[2] = -1.0;
+        memcpy(&(ep->cmap[3]),ga->data,3*ncolors*sizeof(float));
+        NhlFreeGenArray(ga);
+        for (i = 2; i < ncolors; i++) {
+                char	buf[20];
+                sprintf(buf,"%d",i);
+                ep->strings[i+1] = NhlMalloc(strlen(buf)+1);
+                strcpy(ep->strings[i+1],buf);
+        }
+        return;
+                               
 }
 
 static void EditEnum
@@ -1095,81 +1377,114 @@ static void EditEnum
         )
 {
         NgResTree *pub_rtp = &rtp->restree;
+	rtEnumInfoRec		*ep = &rtp->enum_info;
 	NhlConvertArgList       args;
-	int			lastopt,i,nargs,noptions = 0;
+	int			i,j,nargs,noptions = 0;
 	XRectangle		rect;
-
-	_NhlConverterGetArgs(resp->real_class,resp->res->nrm_type,Qstring,
-			     &args,&nargs);
-	lastopt = -999999;
-	for (i = 0; i < nargs; i++) {
-		if (args[i].size != lastopt) {
-			noptions++;
-			lastopt = args[i].size;
-		}
-	}
-	XmLGridRowColumnToXY(pub_rtp->tree,XmCONTENT,row,XmCONTENT,1,False,
+	Boolean			unique[128];
+        int			ivalue,current_arg,cur_button_num;
+        XmString 		xmname;
+        Widget			form,button,last_set;
+        Dimension		height,width;
+	NhlBoolean		new = False;
+	Dimension		root_w,root_h;
+	Position		root_x,root_y,x,y;
+        char 			*current_val;
+        XmString		*xmstrings;
+        int mode		= (int) XmMODE_TOGGLE_BUTTON;
+        
+	XmLGridRowColumnToXY(pub_rtp->tree,XmCONTENT,row,XmCONTENT,2,False,
 			     &rect);
-	if (! rtp->enum_ed) {
-		Widget menush,menu;
-		menush = XtVaCreatePopupShell
-			("enumMenush",xmMenuShellWidgetClass,
-			 pub_rtp->tree,
-			 XmNwidth,5,
-			 XmNheight,5,
-			 XmNallowShellResize,True,
-			 XmNoverrideRedirect,True,
-			 NULL);
+	XtTranslateCoords(pub_rtp->tree,(Position) 0,(Position) 0,
+                          &root_x,&root_y);
+        root_w = WidthOfScreen(XtScreen(rtp->go->go.shell));
+        root_h = HeightOfScreen(XtScreen(rtp->go->go.shell));
 
-		rtp->enum_menu = XtVaCreateWidget
-			("enumMenu",xmRowColumnWidgetClass,menush,
-			 XmNrowColumnType,XmMENU_PULLDOWN,
-			 NULL);
-		rtp->enum_ed = XtVaCreateManagedWidget
-			  ("enumOptMenu",
-			   xmRowColumnWidgetClass,pub_rtp->tree,
-			   XmNspacing,0,
-			   XmNrowColumnType,XmMENU_OPTION,
-			   XmNsubMenuId,rtp->enum_menu,
-			   NULL);
-		rtp->enum_buttons_used = 0;
-		rtp->enum_buttons_alloced = 0;
-		rtp->enum_buttons = NULL;
-	}
-	XtMoveWidget(rtp->enum_ed,rect.x,rect.y);
+	_NhlConverterGetArgs(resp->real_class,Qstring,resp->res->nrm_type,
+			     &args,&nargs);
+	if (!nargs)
+		return;
+	
+        XmStringGetLtoR
+                (rtp->selected_row_xmstr,XmFONTLIST_DEFAULT_TAG,&current_val);
 
-	if (rtp->enum_buttons_used) 
-		XtUnmanageChildren(rtp->enum_buttons,rtp->enum_buttons_used);
-	if (noptions > rtp->enum_buttons_alloced) {
-		rtp->enum_buttons = NhlRealloc(rtp->enum_buttons,
-					       noptions * sizeof(Widget));
-		for (i = rtp->enum_buttons_alloced; i < noptions; i++)
-			rtp->enum_buttons[i] = XtVaCreateWidget
-				("enum_option",xmPushButtonGadgetClass,
-				 rtp->enum_menu,NULL);
-		rtp->enum_buttons_alloced = noptions;
-	}
-
-	lastopt = -999999;
-	noptions = 0;
+        for (i = ep->str_assigned_count; i < ep->count; i++)
+                NhlFree(ep->strings[i]);
+        
+        ep->strings = NhlRealloc
+                (ep->strings,sizeof(NhlString) * nargs);
+        ep->selected = -1;
 	for (i = 0; i < nargs; i++) {
-	  	XmString xmname;
-		if (args[i].size != lastopt) {
-			lastopt = args[i].size;
-
-			xmname = NgXAppCreateXmString(rtp->go->go.appmgr,
-						      args[i].data.strval);
-                
-			XtVaSetValues(rtp->enum_buttons[noptions++],
-				      XmNlabelString,xmname,
-				      NULL);
-			NgXAppFreeXmString(rtp->go->go.appmgr,xmname);
+		unique[i] = True;
+		for (j=i-1;j>-1;j--) {
+		  if (args[j].size == args[i].size) {
+				unique[i] = False;
+				break;
+		  }
 		}
+		if (unique[i]){
+			ep->strings[noptions] = args[i].data.strval;
+                        if (!strcmp(current_val,args[i].data.strval)) {
+                                current_arg = i;
+                                ep->selected = noptions;
+                        }
+			noptions++;
+                }
 	}
+	ep->count = ep->str_assigned_count = noptions;
+            /* ep->count will be increased for mixed enumerations */
+        if (resp->res->nrm_type == Qcolorindex) {
+                SetUpColorList(rtp,current_val);
+                mode = (int) XmMODE_RECT_AND_BUTTON;
+        }
+        xmstrings = NhlMalloc(sizeof(XmString) * ep->count);
+        for (i = 0; i < ep->count; i++) {
+                xmstrings[i] = NgXAppCreateXmString
+                        (rtp->go->go.appmgr,ep->strings[i]);
+        }
+        
+        ep->popup = XmCreatePopupMenu(rtp->go->go.manager,
+                                      "EnumInfo",NULL,0);
+        ep->mega = XtVaCreateManagedWidget
+                ("mega",xmMegaButtonWidgetClass,ep->popup,
+                 XmNitems,xmstrings,
+                 XmNpixmaps,ep->pixmaps,
+                 XmNrgbVals,ep->cmap,
+                 XmNxcb,rtp->go->go.xcb,
+                 XmNitemCount,ep->count,
+                 XmNsetPosition,ep->selected,
+                 XmNbuttonMode,mode,
+                 XmNselectColor,White,
+                 XmNalignment,XmALIGNMENT_CENTER,
+                 NULL);
+        XtAddCallback(ep->mega,XmNactivateCallback,EnumEdCB,rtp);
+        XtAddCallback(ep->popup, XmNunmapCallback,
+                      UnmapEnumEdCB,rtp);
+                
 
-	rtp->enum_buttons_used = noptions;
-	XtManageChildren(rtp->enum_buttons,noptions);
+        for (i = 0; i < ep->count; i++) {
+                NgXAppFreeXmString(rtp->go->go.appmgr,xmstrings[i]);
+        }
+        NhlFree(xmstrings);
+        
+        XtVaGetValues(ep->mega,
+		      XmNheight,&height,
+		       XmNwidth,&width,
+                      NULL);
+	x = MAX(0,MIN(root_w-width,root_x+rect.x));
+	y = MAX(0,MIN(root_h-height,root_y+rect.y-
+		      (height*((float)ep->selected/(float)ep->count))));
+        XtVaSetValues(ep->popup,
+                       XmNx,x,
+                       XmNy,y,
+                       NULL);
 
+        printf("managing enum editor\n");
+        XtManageChild(ep->popup); 
+
+	ep->up = True;
+        XtFree(current_val);
+        
 	return;
 }
 
@@ -1192,10 +1507,17 @@ static void SelectCB
 	rtResData 	*resp;
 
         printf("in select callback, col %d row %d\n",cb->column,cb->row);
+        if (rtp->enum_info.up) {
+                printf("unmanaging enum editor\n");
+#if 0
+                XtUnmanageChild(rtp->enum_info.popup);
+                XtPopdown(rtp->enum_info.popup);
+#endif                
+                rtp->enum_info.up = False;
+        }
         
-        if (cb->column != 2 & cb->column != 1)
+        if (! (cb->column == 2 || cb->column == 1))
                 return;
-                
                 
         rowptr = XmLGridGetRow(pub_rtp->tree,XmCONTENT,cb->row);
         colptr = XmLGridGetColumn(pub_rtp->tree,XmCONTENT,2);
@@ -1208,26 +1530,31 @@ static void SelectCB
 
         if (editable && cb->column == 1)
                 off = CheckToggleSetState(rtp,cb->row);
-#if 0
+
         XtVaGetValues(pub_rtp->tree,
                       XmNrowPtr,rowptr,
                       XmNrowUserData,&ndata,
                       NULL);
 	resp = (rtResData *)ndata->info;
 
-	if (_NhlIsSubtypeQ(Qenum,resp->res->nrm_type))
-		EditEnum(rtp,cb->row,resp);
-#endif
-        if (rtp->edit_row > -1) {
+
+        if (rtp->edit_row != cb->row) {
                 XtVaSetValues(pub_rtp->tree,
                               XmNcolumn,2,
                               XmNrow,rtp->edit_row,
                               XtVaTypedArg,XmNcellBackground,
                               XmRString,"#d0d0d0",8,
                               NULL);
-                rtp->edit_row = -1;
         }
         if (! off && editable) {
+                if (rtp->selected_row_xmstr)
+                        XmStringFree(rtp->selected_row_xmstr);
+                XtVaGetValues
+                        (pub_rtp->tree,
+                         XmNcolumnPtr,colptr,
+                         XmNrowPtr,rowptr,
+                         XmNcellString,&rtp->selected_row_xmstr,
+                         NULL);
                 XtVaSetValues(pub_rtp->tree,
                               XmNcolumn,2,
                               XmNrow,cb->row,
@@ -1235,6 +1562,8 @@ static void SelectCB
                               XmRString,"lightsalmon",12,
                               NULL);
                 rtp->edit_row = cb->row;
+                if (_NhlIsSubtypeQ(Qenum,resp->res->nrm_type))
+                        EditEnum(rtp,cb->row,resp);
         }
         return;
 }
@@ -1248,7 +1577,6 @@ static void EditCB
 {
 	NgResTreeRec *rtp = (NgResTreeRec *) udata;
         NgResTree *pub_rtp = &rtp->restree;
-        static XmString cell_string = NULL;
         XmLGridCallbackStruct *cb;
         XmLGridRow	rowptr;
         XmLGridColumn	colptr;
@@ -1262,14 +1590,6 @@ static void EditCB
         switch (cb->reason) {
             case XmCR_EDIT_BEGIN:
                     fprintf(stderr,"edit begin\n");
-                    if (cell_string)
-                            XmStringFree(cell_string);
-                    XtVaGetValues
-                            (pub_rtp->tree,
-                             XmNcolumnPtr,colptr,
-                             XmNrowPtr,rowptr,
-                             XmNcellString,&cell_string,
-                             NULL);
                     XtVaSetValues(rtp->text,
                                   XtVaTypedArg,XmNbackground,
                                   XmRString,"lightsalmon",12,
@@ -1289,14 +1609,6 @@ static void EditCB
             case XmCR_EDIT_INSERT:
                     fprintf(stderr,"edit insert\n");
 		    rtp->manual_edit_started = True;
-                    if (cell_string)
-                            XmStringFree(cell_string);
-                    XtVaGetValues
-                            (pub_rtp->tree,
-                             XmNcolumnPtr,colptr,
-                             XmNrowPtr,rowptr,
-                             XmNcellString,&cell_string,
-                             NULL);
                     XtVaSetValues(rtp->text,
                                   XmNcursorPosition,0,
                                   XmNborderWidth,2,
@@ -1318,15 +1630,13 @@ static void EditCB
                               NULL);
                 string = XmTextGetString(rtp->text);
                 resp = (rtResData *)ndata->info;
-                resp->value = string;
-                AddToSetValList(rtp,cb->row,resp);
+                AddToSetValList(rtp,resp,(XtPointer)string);
                 XtVaSetValues(w,
                               XmNcolumn,1,
                               XmNrow,cb->row,
                               XmNcellPixmap,Check_Pixmap,
                               NULL);
         }
-        rtp->edit_row = -1;
         XtVaSetValues(pub_rtp->tree,
                       XmNcolumn,2,
                       XmNrow,cb->row,
@@ -1334,7 +1644,7 @@ static void EditCB
                       XmRString,"#d0d0d0",8,
                       NULL);
         XtVaSetValues(rtp->text,
-                      XmNvalue,cell_string,
+                      XmNvalue,rtp->selected_row_xmstr,
                       XtVaTypedArg,XmNbackground,
                       XmRString,"#d0d0d0",8,
                       NULL);
@@ -1596,7 +1906,7 @@ static void OrderResources
                                         native_res[0]->nhlclass;
                         rtp->res_data[count].value = NULL;
                         rtp->res_data[count].vis = False;
-                        rtp->res_data[count].row = 0;
+                        rtp->res_data[count].ndata = NULL;
                         count++;
                         
                 }
@@ -1605,7 +1915,7 @@ static void OrderResources
                         rtp->res_data[count].real_class = res->nhlclass;
                         rtp->res_data[count].value = NULL;
                         rtp->res_data[count].vis = False;
-                        rtp->res_data[count].row = 0;
+                        rtp->res_data[count].ndata = NULL;
                         count++;
                 }
         }
@@ -1631,110 +1941,6 @@ static void OrderResources
         return;
 }
 
-#if 0
-NhlErrorTypes NgResTreeResUpdateComplete
-(
-        NgResTree	*res_tree,
-        int		hlu_id,
-        NhlBoolean	update_all
-        )
-{
-        NgResTreeRec *rtp;
-        NgResTree *pub_rtp;
-	rtSetValNode *svp;
-        int i,res_count = 0,row_count;
-        NhlPointer *values;
-        char buf[256];
-        
-	printf("in res tree res update complete\n");
-
-        rtp = (NgResTreeRec *) res_tree;
-        if (!rtp) return NhlFATAL;
-        pub_rtp = &rtp->restree;
-        rtp->hlu_id = hlu_id;
-        
-        for (svp = rtp->set_val_list; svp != NULL; svp = svp->next) {
-                res_count++;
-        }
-        values = NhlMalloc(res_count * sizeof(NhlPointer));
-        memset(values,0,res_count * sizeof(NhlPointer));
-        
-        XtVaSetValues(pub_rtp->tree,
-                      XmNlayoutFrozen,True,
-                      NULL);
-        XtVaGetValues(pub_rtp->tree,
-                      XmNrows,&row_count,
-                      NULL);
-        
- 	for (svp = rtp->set_val_list,i=0; svp != NULL; svp = svp->next,i++) {
-                    /*opening up the grid can change the row number */
-                while (svp->row < row_count) {
-                        rtNodeData *ndata;
-                        XmLGridRow rowptr = XmLGridGetRow
-                                (pub_rtp->tree,XmCONTENT,svp->row);
-                        
-                        XtVaGetValues(pub_rtp->tree,
-                                      XmNrowPtr,rowptr,
-                                      XmNrowUserData,&ndata,
-                                      NULL);
-                        if (svp->res_data == (rtResData *)ndata->info)
-                                break;
-                        svp->row++;
-                }
-                XtVaSetValues(pub_rtp->tree,
-                              XmNcolumn,1,
-                              XmNrow,svp->row,
-                              XmNcellPixmap,No_Check_Pixmap,
-                              NULL);
-                if (_NhlIsSubtypeQ(Qgenarray,svp->res_data->res->nrm_type) &&
-                    ! (svp->res_data->res->nrm_type == Qvariable))
-                       NhlRLGet(Grlist,
-                                NrmQuarkToString(svp->res_data->res->nrm_name),
-                                NhlTGenArray,&values[i]);
-                else
-                       NhlRLGet(Grlist,
-                                NrmQuarkToString(svp->res_data->res->nrm_name),
-                                NhlTString,&values[i]);
-        }
-        
-        NhlGetValues(rtp->hlu_id,Grlist);
-        
- 	for (svp = rtp->set_val_list,i=0; svp != NULL; svp = svp->next,i++) {
-		if (! values[i]) {
-			sprintf(buf,"<null>");
-                }
-                else if (_NhlIsSubtypeQ(Qgenarray,
-                                        svp->res_data->res->nrm_type) &&
-                         ! (svp->res_data->res->nrm_type == Qvariable)) {
-                        NhlGenArray ga = (NhlGenArray) values[i];
-                        sprintf(buf,"%dD array of %d elements",
-                                ga->num_dimensions,ga->num_elements);
-                }
-		else {
-                        sprintf(buf,"%s",(NhlString)values[i]);
-		}
-                if (values[i] && (svp->res_data->res->nrm_type == Qfloat ||
-                    svp->res_data->res->nrm_type == Qdouble ||
-                    svp->res_data->res->nrm_type == Qvariable)) {
-                        NgFixFloat(buf);
-                        NgRemoveZeros(buf);
-                }
-                XmLGridSetStringsPos
-                        (pub_rtp->tree,XmCONTENT,svp->row,XmCONTENT,2,buf);
-                if (values[i])
-                        NhlFree(values[i]);
-        }
-        XtVaSetValues(pub_rtp->tree,
-                      XmNlayoutFrozen,False,
-                      NULL);
-
-        NhlFree(values);
-	EmptySetValList(rtp);
-        NhlRLClear(Grlist);
-        
-}
-#endif
-
 NhlErrorTypes NgResTreeResUpdateComplete
 (
         NgResTree	*res_tree,
@@ -1750,20 +1956,27 @@ NhlErrorTypes NgResTreeResUpdateComplete
         char buf[256];
         rtResData *resp;
         rtResData **res_data;
-        int row = 0,last_row = 0;
+        int row = 0;
         NhlBoolean done = False;
         int getval_count = 0;
         
 	printf("in res tree res update complete\n");
 
+
         rtp = (NgResTreeRec *) res_tree;
         if (!rtp) return NhlFATAL;
         pub_rtp = &rtp->restree;
         rtp->hlu_id = hlu_id;
-        
+
         XtVaSetValues(pub_rtp->tree,
                       XmNlayoutFrozen,True,
                       NULL);
+        
+        if (!pub_rtp->preview_instance) {
+                MarkInstantiated(rtp);
+                UpdateInstantiatedStatus(rtp,&rtp->top,1);
+        }
+        
         XtVaGetValues(pub_rtp->tree,
                       XmNrows,&row_count,
                       NULL);
@@ -1773,34 +1986,16 @@ NhlErrorTypes NgResTreeResUpdateComplete
 
         for (i=0,resp = rtp->res_data; i < rtp->res_data_count; i++,resp++) {
                 NhlBoolean found = False;
-
+                rtNodeData *ndata;
+                
+                
                 if (! resp->vis)
                         continue;
-
-                resp->row = MAX(resp->row,last_row+1);
-                while (resp->row < row_count) {
-                        rtNodeData *ndata;
-                        XmLGridRow rowptr = XmLGridGetRow
-                                (pub_rtp->tree,XmCONTENT,resp->row);
-
-                        getval_count++;
-                        XtVaGetValues(pub_rtp->tree,
-                                      XmNrowPtr,rowptr,
-                                      XmNrowUserData,&ndata,
-                                      NULL);
-                        if (ndata && resp == (rtResData *)ndata->info) {
-                                found = True;
-                                break;
-                        }
-                        resp->row++;
-                }
-                if (!found) {
-                        printf("big problem\n");
-                }
+                ndata = resp->ndata;
                 
                 XtVaSetValues(pub_rtp->tree,
                               XmNcolumn,1,
-                              XmNrow,resp->row,
+                              XmNrow,ndata->row,
                               XmNcellPixmap,No_Check_Pixmap,
                               NULL);
                 if (_NhlIsSubtypeQ(Qgenarray,resp->res->nrm_type) &&
@@ -1814,7 +2009,6 @@ NhlErrorTypes NgResTreeResUpdateComplete
                                 NhlTString,&values[res_count]);
                 res_data[res_count] = resp;
                 res_count++;
-                last_row = resp->row;
                 
         }
         printf("res count is %d; getval_count is %d\n",res_count,getval_count);
@@ -1823,10 +2017,12 @@ NhlErrorTypes NgResTreeResUpdateComplete
         
         printf("updating tree\n");
         for (i=0; i < res_count; i++,resp++) {
+                NhlBoolean null_val = False;
                 resp = res_data[i];
                 
 		if (! values[i]) {
 			sprintf(buf,"<null>");
+                        null_val = True;
                 }
                 else if (_NhlIsSubtypeQ(Qgenarray,
                                         resp->res->nrm_type) &&
@@ -1834,20 +2030,21 @@ NhlErrorTypes NgResTreeResUpdateComplete
                         NhlGenArray ga = (NhlGenArray) values[i];
                         sprintf(buf,"%dD array of %d elements",
                                 ga->num_dimensions,ga->num_elements);
+                        NhlFreeGenArray(ga);
                 }
 		else {
                         sprintf(buf,"%s",(NhlString)values[i]);
+                        NhlFree(values[i]);
 		}
-                if (values[i] && (resp->res->nrm_type == Qfloat ||
+                if (! null_val && (resp->res->nrm_type == Qfloat ||
                     resp->res->nrm_type == Qdouble ||
                     resp->res->nrm_type == Qvariable)) {
                         NgFixFloat(buf);
                         NgRemoveZeros(buf);
                 }
                 XmLGridSetStringsPos
-                        (pub_rtp->tree,XmCONTENT,resp->row,XmCONTENT,2,buf);
-                if (values[i])
-                        NhlFree(values[i]);
+                        (pub_rtp->tree,XmCONTENT,
+                         resp->ndata->row,XmCONTENT,2,buf);
         }
         XtVaSetValues(pub_rtp->tree,
                       XmNlayoutFrozen,False,
@@ -1902,148 +2099,6 @@ NhlErrorTypes NgResTreeAddResList
         
         return NhlNOERROR;
 }
-
-#if 0
-#define MAXBUFSIZE 512
-
-NhlErrorTypes NgResTreeSetValues
-(
-        NgResTree	*res_tree
-        )
-{
-        NgResTreeRec *rtp;
-        NgResTree *pub_rtp;
-	rtSetValNode *svp;
-        char buf[MAXBUFSIZE];
-        int i,buflen = 512;
-	char *val, *res;
-        static NhlBoolean first = True;
-	static int srlist;
-        int res_count = 0;
-        NhlPointer *values;
-        
-        if (first) {
-                srlist = NhlRLCreate(NhlSETRL);
-                first = False;
-        }
-
-	printf("in set values\n");
-
-        rtp = (NgResTreeRec *) res_tree;
-        if (!rtp) return NhlFATAL;
-        pub_rtp = &rtp->restree;
-/*
- * If it's the preview instance, don't go through ncl. Otherwise, the
- * ncl needs to know about what was set. CAN't do setvalues before create!!!
- */
-        if (pub_rtp->preview_instance) {
-                for (svp = rtp->set_val_list; svp != NULL; svp = svp->next) {
-                        val = svp->res_data->value;
-                        res = NrmQuarkToString(svp->res_data->res->nrm_name);
-                        NhlRLSetString(srlist,res,val);
-                        svp->res_data->set = True;
-                        res_count++;
-                }
-                NhlSetValues(rtp->hlu_id,srlist);
-        }
-        else {
-                char *endstr = "end setvalues\n";
-                int startlen,endlen = strlen(endstr);
-                NhlBoolean out = True;
-                
-                sprintf(buf,"setvalues %s\n",NrmQuarkToString(rtp->qhlu));
-                startlen = buflen = strlen(buf);
-                for (svp = rtp->set_val_list; svp != NULL; svp = svp->next) {
-                        if (out) {
-                                out = False;
-                        }
-                        val = svp->res_data->value;
-                        res = NrmQuarkToString(svp->res_data->res->nrm_name);
-                        if (strlen(val) + strlen(res) + 5 + endlen + buflen >
-                            MAXBUFSIZE) {
-                                strcat(buf,endstr);
-                                (void)NgNclSubmitBlock(rtp->nclstate,buf);
-                                sprintf(buf,"setvalues %s\n",
-                                        NrmQuarkToString(rtp->qhlu));
-                                startlen = buflen = strlen(buf);
-                        }
-                        sprintf(&buf[buflen],"\"%s\" : \"%s\"\n",res,val);
-                        buflen = strlen(buf);
-                        svp->res_data->set = True;
-                        res_count++;
-                }
-                if (buflen > startlen) {
-                        strcat(buf,endstr);
-                        (void)NgNclSubmitBlock(rtp->nclstate,buf);
-                }
-        }
-
-            /* reset the check pixmap to the unset state and
-               retrieve values in order to replace strings with canonical
-               form */
-        
-        values = NhlMalloc(res_count * sizeof(NhlPointer));
-        memset(values,0,res_count * sizeof(NhlPointer));
-        
-        XtVaSetValues(pub_rtp->tree,
-                      XmNlayoutFrozen,True,
-                      NULL);
- 	for (svp = rtp->set_val_list,i=0; svp != NULL; svp = svp->next,i++) {
-                XtVaSetValues(pub_rtp->tree,
-                              XmNcolumn,1,
-                              XmNrow,svp->row,
-                              XmNcellPixmap,No_Check_Pixmap,
-                              NULL);
-                if (_NhlIsSubtypeQ(Qgenarray,svp->res_data->res->nrm_type) &&
-                    ! (svp->res_data->res->nrm_type == Qvariable))
-                       NhlRLGet(Grlist,
-                                NrmQuarkToString(svp->res_data->res->nrm_name),
-                                NhlTGenArray,&values[i]);
-                else
-                       NhlRLGet(Grlist,
-                                NrmQuarkToString(svp->res_data->res->nrm_name),
-                                NhlTString,&values[i]);
-        }
-        
-        NhlGetValues(rtp->hlu_id,Grlist);
-        
- 	for (svp = rtp->set_val_list,i=0; svp != NULL; svp = svp->next,i++) {
-		if (! values[i]) {
-			sprintf(buf,"<null>");
-                }
-                else if (_NhlIsSubtypeQ(Qgenarray,
-                                        svp->res_data->res->nrm_type) &&
-                         ! (svp->res_data->res->nrm_type == Qvariable)) {
-                        NhlGenArray ga = (NhlGenArray) values[i];
-                        sprintf(buf,"%dD array of %d elements",
-                                ga->num_dimensions,ga->num_elements);
-                }
-		else {
-                        sprintf(buf,"%s",(NhlString)values[i]);
-		}
-                if (values[i] && (svp->res_data->res->nrm_type == Qfloat ||
-                    svp->res_data->res->nrm_type == Qdouble ||
-                    svp->res_data->res->nrm_type == Qvariable)) {
-                        NgFixFloat(buf);
-                        NgRemoveZeros(buf);
-                }
-                XmLGridSetStringsPos
-                        (pub_rtp->tree,XmCONTENT,svp->row,XmCONTENT,2,buf);
-                if (values[i])
-                        NhlFree(values[i]);
-        }
-        XtVaSetValues(pub_rtp->tree,
-                      XmNlayoutFrozen,False,
-                      NULL);
-
-        NhlFree(values);
-	EmptySetValList(rtp);
-        NhlRLClear(srlist);
-        NhlRLClear(Grlist);
-        
-        return;
-}
-#endif        
         
 NhlErrorTypes NgUpdateResTree
 (
@@ -2073,7 +2128,7 @@ NhlErrorTypes NgUpdateResTree
 
         rtp->qhlu = qhlu;
         rtp->hlu_id = hlu_id;
-        rtp->edit_row = -1;
+        rtp->edit_row = 0;
         
         ndata = &rtp->top;
         ndata->parent = NULL;
@@ -2159,6 +2214,7 @@ NhlErrorTypes NgUpdateResTree
                             break;
                 }
                 ndata->subdata[i].type += _rtLevel1;
+                ndata->subdata[i].row = i;
                 ndata->subdata[i].parent = ndata;
                 ndata->subdata[i].expanded = False;
                 ndata->subdata[i].subcount = 0;
@@ -2209,7 +2265,7 @@ NgResTree *NgCreateResTree
         NgResTreeRec *rtp;
         NgResTree *pub_rtp;
         static NhlBoolean first = True;
-        Pixel black,white;
+        static XrmValue from_black,to_black,from_white,to_white;
  
         if (first) {
                 Qlong_name = NrmStringToQuark("long_name");
@@ -2222,12 +2278,27 @@ NgResTree *NgCreateResTree
                 Qimmediate = NrmStringToQuark(NhlTImmediate);
                 Qdatalist = NrmStringToQuark(_NhlTDataList);
 		Qenum = NrmStringToQuark(NhlTEnum);
+		Qcolorindex = NrmStringToQuark(NhlTColorIndex);
                 Grlist = NhlRLCreate(NhlGETRL);
 
                 XtVaGetValues(go->go.shell,
                               XmNforeground,&Foreground,
                               XmNbackground,&Background,
                               NULL);
+                from_black.size = sizeof(String);
+                from_black.addr = (XPointer) "black";
+                to_black.size = sizeof(Pixel);
+                to_black.addr = (XPointer)&Black;
+                if (! XtConvertAndStore
+                    (go->go.shell,XtRString,&from_black,XtRPixel,&to_black))
+                        printf("convert error\n");
+                
+                from_white.size = sizeof(String);
+                from_white.addr = (XPointer) "white";
+                to_white.size = sizeof(Pixel);
+                to_white.addr = (XPointer)&White;
+                XtConvertAndStore(go->go.shell,
+                                  XtRString,&from_white,XtRPixel,&to_white);
                 first = False;
         }
         
@@ -2259,8 +2330,14 @@ NgResTree *NgCreateResTree
         rtp->scroll_cbs_installed = False;
         rtp->manual_edit_started = False;
 	rtp->text = NULL;
-	rtp->enum_ed = NULL;
-	rtp->enum_buttons_alloced = 0;
+        rtp->selected_row_xmstr = NULL;
+	rtp->enum_info.mega = NULL;
+	rtp->enum_info.strings = NULL;
+	rtp->enum_info.pixmaps = NULL;
+	rtp->enum_info.cmap = NULL;
+        rtp->enum_info.count = 0;
+        rtp->enum_info.str_assigned_count = 0;
+	rtp->enum_info.up = False;
                 
         pub_rtp->tree = XtVaCreateManagedWidget
                 ("ResTree",
@@ -2269,8 +2346,6 @@ NgResTree *NgCreateResTree
                  XmNverticalSizePolicy,XmVARIABLE,
                  XmNhorizontalSizePolicy,XmVARIABLE,
                  XmNcolumns, 3,
-		 XmNheadingRows,1,
-		 XmNsimpleHeadings,"Resource|Set|Value",
                  NULL);
         
         XtVaSetValues(pub_rtp->tree,
@@ -2295,19 +2370,25 @@ NgResTree *NgCreateResTree
 		      XmNcolumnWidth,2,
 		      NULL);
 
+#if 0        
         black = BlackPixelOfScreen(XtScreen(go->go.shell));
         white = WhitePixelOfScreen(XtScreen(go->go.shell));
-        
+#endif        
         Check_Pixmap = XCreatePixmapFromBitmapData
                 (XtDisplay(go->go.shell),
                  DefaultRootWindow(XtDisplay(go->go.shell)),
-                 Check_Bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,Foreground,Background,
+                 Check_Bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,Black,White,
                  DefaultDepthOfScreen(XtScreen(go->go.shell)));
         No_Check_Pixmap = XCreatePixmapFromBitmapData
                 (XtDisplay(go->go.shell),
                  DefaultRootWindow(XtDisplay(go->go.shell)),
                  No_Check_Bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,
-                 Foreground,Background,
+                 Black,White,
+                 DefaultDepthOfScreen(XtScreen(go->go.shell)));
+        Test_Pixmap = XCreatePixmapFromBitmapData
+                (XtDisplay(go->go.shell),
+                 DefaultRootWindow(XtDisplay(go->go.shell)),
+                 No_Check_Bits,1,1,Foreground,Background,
                  DefaultDepthOfScreen(XtScreen(go->go.shell)));
                                    
         XtAddCallback(pub_rtp->tree,XmNexpandCallback,ExpandCB,rtp);

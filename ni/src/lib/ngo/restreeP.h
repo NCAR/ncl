@@ -1,5 +1,5 @@
 /*
- *      $Id: restreeP.h,v 1.1 1997-08-21 16:33:05 dbrown Exp $
+ *      $Id: restreeP.h,v 1.2 1997-09-08 19:29:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@
 #include <ncarg/hlu/ResourcesP.h>
 
 #include <ncarg/ngo/restree.h>
+#include <ncarg/ngo/listgrid.h>
 
  
 #define DEBUG_ENTRY 1
@@ -58,32 +59,45 @@ typedef char _rtNodeType;
 
 typedef char _rtBool;
 
-typedef struct _rtResData
-{
-        NrmResource	*res;
-        NhlClass	real_class;
-        _rtBool		vis;
-        int		row;
-        NhlString	value;
-} rtResData;
-
-typedef struct _rtSetValNode 
-{
-        struct _rtSetValNode	*next;
-        int			row;
-        rtResData		*res_data;
-} rtSetValNode;
         
 typedef struct _rtNodeData 
 {
         struct _rtNodeData	*parent;
         void			*info;
+        unsigned short		row;
         _rtNodeType		type;
         _rtBool			expanded;
         unsigned short		subcount;
 	struct _rtNodeData  	*subdata;
 } rtNodeData;
 
+typedef struct _rtResData
+{
+        NrmResource	*res;
+        NhlClass	real_class;
+        _rtBool		vis;
+        rtNodeData	*ndata;
+        NhlString	value;
+} rtResData;
+
+typedef struct _rtSetValNode 
+{
+        struct _rtSetValNode	*next;
+        rtResData		*res_data;
+} rtSetValNode;
+
+typedef struct _rtEnumInfoRec {
+	NhlString		*strings;
+        int			str_assigned_count;
+        Pixmap			*pixmaps;
+        float			*cmap;
+	int			count;
+	int			selected;
+        Widget 			popup;
+        Widget			mega;
+	NhlBoolean		up;
+} rtEnumInfoRec;
+	
 typedef struct _NgResTreeRec 
 {
             /* public data */
@@ -109,16 +123,13 @@ typedef struct _NgResTreeRec
         NhlBoolean		created;
         NhlBoolean		expand_called;
         rtNodeData		top;
+        XmString		selected_row_xmstr;
         int			edit_row;
 	Boolean			manual_edit_started;
         rtSetValNode		*set_val_list;
         Boolean			scroll_cbs_installed;
         Widget			text;
-	Widget			enum_ed;
-	Widget			enum_menu;
-	Widget			*enum_buttons;
-	int			enum_buttons_alloced;
- 	int			enum_buttons_used;
+  	rtEnumInfoRec		enum_info;
 } NgResTreeRec;
 
 #endif	/* _NG_RESTREEP_H_ */

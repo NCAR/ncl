@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.7 1997-08-25 20:24:27 boote Exp $
+ *      $Id: hlupage.c,v 1.8 1997-09-08 19:29:22 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -363,7 +363,7 @@ ContourCreateUpdate
         NgDataSinkRec *dsp = rec->public.data_info;
 	char *dataitemlist[2];
 	char *fillvalue = NULL;
-	NhlBoolean create,clear;
+	NhlBoolean create,created;
 	NclApiDataList		*dl;
 	NclExtValueRec *val = NULL;
 	char *sval;
@@ -371,6 +371,7 @@ ContourCreateUpdate
         static NrmQuark QFillValue = NrmNULLQUARK;
         NhlErrorTypes ret;
         
+	created = rec->created;
         if (QFillValue == NrmNULLQUARK) {
                 QFillValue = NrmStringToQuark("_FillValue"); 
         }
@@ -442,9 +443,15 @@ ContourCreateUpdate
                         (rec->res_tree,page->qvar,rec->class,rec->hlu_id);
 #endif                
         }
-        
+	if (! created && rec->created) {
+		XmString xmstring = NgXAppCreateXmString
+			(rec->go->go.appmgr,"Update");
+		XtVaSetValues(rec->create_update,
+			      XmNlabelString,xmstring,
+			      NULL);
+		NgXAppFreeXmString(rec->go->go.appmgr,xmstring);
+	}     
 	return;
-        
 }
 
 static void CreateUpdateCB 
@@ -684,9 +691,6 @@ DeactivateHluPage
         if (rec->auto_update)
                 XtRemoveCallback(rec->auto_update,
                                  XmNvalueChangedCallback,AutoUpdateCB,page);
-        if (rec->set_values)
-                XtRemoveCallback(rec->set_values,
-                                 XmNactivateCallback,SetValuesCB,page);
 
         rec->created = False;
         rec->do_auto_update = False;
@@ -831,7 +835,7 @@ static NhlErrorTypes UpdateHluPage
                               XmNbottomAttachment,XmATTACH_NONE,
                               XmNtopOffset,8,
                               XmNtopAttachment,XmATTACH_WIDGET,
-                              XmNtopWidget,rec->set_values,
+                              XmNtopWidget,rec->create_update,
                               NULL);
                 rec->res_tree->geo_notify = AdjustHluPageGeometry;
         }
@@ -893,7 +897,6 @@ NewHluPage
         rec->res_tree = NULL;
         rec->create_update = NULL;
         rec->auto_update = NULL;
-	rec->set_values = NULL;
         rec->var_data_count = 0;
         rec->var_data = NULL;
         rec->created = False;
@@ -902,7 +905,6 @@ NewHluPage
         rec->public.class_name = NULL;
         rec->class = NULL;
         rec->hlu_id = NhlNULLOBJID;
-	rec->pre_hlu_id = NhlNULLOBJID;
         for (i=0; i <  8; i++)
                 rec->data_objects[i] = NrmNULLQUARK;
         
@@ -950,7 +952,8 @@ NgGetHluPage
 		NgNappNclState,	&nclstate,
 		NULL);
 
-	hlu_id = NgNclGetHluObjId(nclstate,NrmQuarkToString(page->qvar),&hlu_array);
+	hlu_id = NgNclGetHluObjId(nclstate,
+				  NrmQuarkToString(page->qvar),&hlu_array);
 	if (hlu_id < NhlNOERROR)
 		return NULL;
 	if (hlu_array) {
@@ -984,6 +987,13 @@ NgGetHluPage
                               NULL);
         }
         if (! rec->create_update) {
+		XmString xmstring;
+		if (copy_page && copy_rec->created)
+			xmstring = NgXAppCreateXmString
+				(rec->go->go.appmgr,"Update");
+		else
+			xmstring = NgXAppCreateXmString
+				(rec->go->go.appmgr,"Create");
                 rec->create_update = XtVaCreateManagedWidget
                         ("Create/Update",xmPushButtonGadgetClass,
                          pdp->form,
@@ -991,7 +1001,9 @@ NgGetHluPage
                          XmNtopWidget,rec->data_sink_grid->grid,
                          XmNrightAttachment,XmATTACH_NONE,
                          XmNbottomAttachment,XmATTACH_NONE,
+			 XmNlabelString,xmstring,
                          NULL);
+		NgXAppFreeXmString(rec->go->go.appmgr,xmstring);
         }
         if (! rec->auto_update) {
                 rec->auto_update = XtVaCreateManagedWidget
@@ -1005,24 +1017,12 @@ NgGetHluPage
                          XmNbottomAttachment,XmATTACH_NONE,
                          NULL);
         }
-        if (! rec->set_values) {
-                rec->set_values = XtVaCreateManagedWidget
-                        ("Set Values",xmPushButtonGadgetClass,
-                         pdp->form,
-                         XmNtopAttachment,XmATTACH_WIDGET,
-                         XmNtopWidget,rec->create_update,
-                         XmNrightAttachment,XmATTACH_NONE,
-                         XmNbottomAttachment,XmATTACH_NONE,
-                         NULL);
-        }
         if (! rec->activated) {
                 rec->activated = True;
                 XtAddCallback(rec->create_update,
                               XmNactivateCallback,CreateUpdateCB,page);
                 XtAddCallback(rec->auto_update,
                               XmNvalueChangedCallback,AutoUpdateCB,page);
-                XtAddCallback(rec->set_values,
-                              XmNactivateCallback,SetValuesCB,page);
         }
 	if (hlu_id > NhlNULLOBJID) {
 		rec->hlu_id = hlu_id;
@@ -1060,7 +1060,7 @@ NgGetHluPage
                               XmNbottomAttachment,XmATTACH_NONE,
                               XmNtopOffset,8,
                               XmNtopAttachment,XmATTACH_WIDGET,
-                              XmNtopWidget,rec->set_values,
+                              XmNtopWidget,rec->create_update,
                               NULL);
                 rec->res_tree->geo_notify = AdjustHluPageGeometry;
         }
