@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.38 2000-08-22 15:10:58 haley Exp $
+ *	$Id: main.c,v 1.39 2002-03-26 17:50:33 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -51,9 +51,9 @@
 #include	<sys/types.h>
 #include	<fcntl.h>
 #include	<signal.h>
-#include        <string.h>
-#include        <ncarg/c.h>
-#include        <ncarg/ctrans.h>
+#include	<string.h>
+#include	<ncarg/c.h>
+#include	<ncarg/ctrans.h>
 #include	"main.h"
 
 #define	NCAR_REC_SIZE	1440
@@ -156,8 +156,6 @@ static	char	*progName;
 extern	boolean *softFill;
 extern	boolean *deBug;
 extern	boolean *doBell;
-extern	char	*sys_errlist[];
-	
 
 usage(od, progName, msg)
 	int	od;
@@ -386,7 +384,7 @@ char	**argv;
 		if (! (tty = fopen(tty_in, "r"))) {
 			fprintf(
 				logFP, "%s : Error opening tty(%s) [ %s ]\n",
-				progName, tty_in, sys_errlist[errno]
+				progName, tty_in, strerror(errno)
 			);
 			cleanup(1);
 		}
@@ -519,7 +517,7 @@ char	**argv;
 		if ((cgm_fd = CGM_open(*meta_files, NCAR_REC_SIZE, "r")) < 0) {
 			fprintf(
 				logFP, "%s: Can't open metafile(%s) [ %s ]\n",
-				progName, *meta_files, sys_errlist[errno]
+				progName, *meta_files, strerror(errno)
 			);
 			continue;
 		}
