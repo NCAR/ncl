@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class5.c,v 1.4 1991-05-16 11:41:19 clyne Exp $
+ *	$Id: X11_class5.c,v 1.5 1991-07-19 12:25:40 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -85,7 +85,7 @@ CGMC *c;
 	Pixeltype	planedummy[1];		/* not used	*/
 	Pixeltype	pixel_return[1];	/* device index	*/
 
-	int	start = 0;
+	int	start;
 
 	Ct_err	X11_BackColr();
 
@@ -107,7 +107,8 @@ CGMC *c;
 	 * in the case that colr table index 0 is changed *and* no
 	 * coresponding CGM BACKGROUND COLOUR is received
 	 */
-	if (c->ci[start] == 0) {
+	start = c->ci[0];
+	if (start == 0) {
 		(void) X11_BackColr(c);
 		start++;	/* skip index 0 for the rest of this func */
 	}
@@ -122,7 +123,7 @@ CGMC *c;
 
 		/*	load the colours from the cgmc into the colour map */
 		i = start;
-		for(index=c->ci[i]; i < c->CDnum; i++,index++) {
+		for(index=start; i < c->CDnum; i++,index++) {
 
 
 		/* convert CGM rgb values to X rgb values	*/
@@ -147,7 +148,7 @@ CGMC *c;
 	 * load the colours from the cgmc into the colour map 
 	 */
 	i = start;
-	for (index=c->ci[i]; i<c->CDnum; index++,i++) {
+	for (index=start; i<c->CDnum; index++,i++) {
 		/*
 		 * if this index has not had a cell allocated to it previously
 		 * we need to do it now.
