@@ -128,6 +128,7 @@ pid = create "FormatDemo" logLinPlotClass wid
     "tiMainPosition" : "left"
     "tiMainJust" : "centerleft"
     "tiMainFuncCode" : "~"
+    "tiYAxisFuncCode" : "\"
     "tiYAxisAngleF" : 0.0
     "tiYAxisJust" : "BottomRight"
 end create
