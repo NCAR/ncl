@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.44 2003-09-10 21:29:53 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.45 2003-10-07 21:27:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2341,6 +2341,29 @@ int upordown;
 	
 }
 
+/*ARGSUSED*/
+static int ResizeOut
+#if	NhlNeedProto
+(float **xout, float **yout, int n )
+#else
+(xout, yout, n )
+NhlLayer instance;
+float **xout;
+float **yout;
+int n;
+#endif
+{
+	n *= 2;
+
+	*xout = NhlRealloc(*xout,n * sizeof(float));
+	*yout = NhlRealloc(*yout,n * sizeof(float));
+	if (xout == NULL || yout == NULL) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return (int) NhlFATAL;
+	}
+	return n;
+}
+			  
 
 /*ARGSUSED*/
 static NhlErrorTypes IrDataPolygon
@@ -2368,6 +2391,7 @@ int n;
 	NhlBoolean open, done = False, first, firstpoint;
 	int count, pcount, cix, pix, status = 0, npoints = 256;
 	float xdist,ydist,tdist;
+	int outcount;
 
 	npoints = irinst->trobj.point_count;
 	open = (x[0] != x[n-1] || y[0] != y[n-1]) ?  True : False;
@@ -2469,6 +2493,7 @@ int n;
 		/* include some extra space for safety */
 		xout = NhlMalloc((npoints+count)*sizeof(float));
 		yout = NhlMalloc((npoints+count)*sizeof(float));
+		outcount = npoints+count;
 		if (xout == NULL || yout == NULL) {
 			e_text = "%s: dynamic memory allocation error";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -2492,12 +2517,19 @@ int n;
 				      &cx,&cy,NULL,NULL,&status);
 				if (! status) {
 					ixout++;
+					if (ixout >= outcount) {
+						outcount = 
+							ResizeOut(&xout,&yout,
+								  outcount);
+						if (outcount < 0)
+							return NhlFATAL;
+					}
 					xout[ixout] = c_cufx(cx);
 					yout[ixout] = c_cufy(cy);
 				}
 			}
 		}
-		if (npoints+count < ixout+1) {
+		if (outcount < ixout+1) {
 			e_text = "%s: internal error: memory overrun";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
@@ -2627,6 +2659,7 @@ int n;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
+	outcount = npoints+count;
 	xout[0] = xbuf[0];
 	yout[0] = ybuf[0];
 	ixout = 0;
@@ -2668,6 +2701,12 @@ int n;
 						return NhlFATAL;
 				}
 				ixout++;
+				if (ixout >= outcount) {
+					outcount = ResizeOut(&xout,&yout,
+							     outcount);
+					if (outcount < 0)
+						return NhlFATAL;
+				}
 				xout[ixout] = c_cufx(tx);
 				yout[ixout] = c_cufy(ty);
 			}
@@ -2679,6 +2718,12 @@ int n;
 						 &dx,&dy,&tx,&ty) < NhlNOERROR)
 					return NhlFATAL;
 				ixout++;
+				if (ixout >= outcount) {
+					outcount = ResizeOut(&xout,&yout,
+							     outcount);
+					if (outcount < 0)
+						return NhlFATAL;
+				}
 				xout[ixout] = c_cufx(tx);
 				yout[ixout] = c_cufy(ty);
 			}
@@ -2691,10 +2736,16 @@ int n;
 	}
 	if (xout[ixout] != xout[0] || yout[ixout] != yout[0]) {
 		ixout++;
+		if (ixout >= outcount) {
+			outcount = ResizeOut(&xout,&yout,
+					     outcount);
+			if (outcount < 0)
+				return NhlFATAL;
+		}
 		xout[ixout] = xout[0];
 		yout[ixout] = yout[0];
 	}
-	if (npoints+count < ixout+1) {
+	if (outcount < ixout+1) {
 		e_text = "%s: internal error: memory overrun";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
