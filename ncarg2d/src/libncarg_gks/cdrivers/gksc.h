@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.h,v 1.6 1996-03-16 21:43:48 boote Exp $
+ *	$Id: gksc.h,v 1.7 1996-09-10 17:01:56 fred Exp $
  */
 /*
  *      File:		gksc.h
@@ -174,9 +174,6 @@ typedef	struct	GKSC_	{
 #define	ERR_INV_RECT	51	/* transformation rect. def. is invalid	*/
 #define	ERR_INV_LINE	63	/* invalid line type			*/
 #define	ERR_INV_MARKER	67	/* invalid polymarker type		*/
-#define	ERR_INV_FONT	71	/* invalid text font			*/
-#define	ERR_INV_FILL	77	/* invalid fill style			*/
-#define	ERR_INV_HATCH	80	/* invalid fill hatch style		*/
 #define	ERR_FILL_PAT	83	/* Fill style pattern not supported	*/
 #define	ERR_CELL_DIM	91	/* dimensions of color array invalid	*/
 #define	ERR_INV_IND	94	/* invalid or undefined color index	*/

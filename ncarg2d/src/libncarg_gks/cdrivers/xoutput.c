@@ -1,5 +1,5 @@
 /*
- *	$Id: xoutput.c,v 1.5 1996-08-24 19:38:13 boote Exp $
+ *	$Id: xoutput.c,v 1.6 1996-09-10 17:01:59 fred Exp $
  */
 /*
  *      File:		xoutput.c
@@ -132,7 +132,7 @@ static	hatch_fill
 	switch (hatch_index) {
 
 	default:
-		status = ERR_INV_HATCH;
+		/* fall through */
 
 	case HORIZONTAL_HATCH:
 
@@ -828,6 +828,9 @@ X11_FillArea(gksc)
 	 *	switch on interior style of fill area
 	 */
 	switch (fill_style) {
+                default:
+                        /* fall through to HOLLOW_FILL  */
+
 		case	HOLLOW_FILL:
 
 			/*	
@@ -874,9 +877,6 @@ X11_FillArea(gksc)
 						&xi->hatch_gc,xi->depth);
 			break;
 
-		default:
-			status = ERR_INV_FILL;
-			break;
 	}
 
 	return(status);
