@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.h,v 1.4 2000-12-21 22:27:51 fred Exp $
+ *	$Id: ps.h,v 1.5 2003-11-24 19:17:45 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -183,6 +183,13 @@ typedef struct 	PSDeviceSpace_	{
 		xspan,		/* span of X coordinates */
 		yspan;		/* span of Y coordinates */
 	} PSDeviceSpace;
+
+typedef struct 	PSBoundingBox_	{
+	int	llx,
+		lly,
+		urx,
+		ury;
+	} PSBoundingBox;
 
 typedef struct 	PSCharInfo_ {
 	int 	font;           /* A PostScript font number */

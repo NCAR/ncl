@@ -1,5 +1,5 @@
 /*
- *	$Id: psddi.h,v 1.4 2000-12-21 22:27:52 fred Exp $
+ *	$Id: psddi.h,v 1.5 2003-11-24 19:17:45 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -50,6 +50,7 @@ typedef	struct	PSddi_	{
 	Transform2D	transform;
 	TransSystem	tsystem;
 	PSDeviceSpace	dspace;
+        PSBoundingBox   bspace;
 	ps_color	color;
 	ps_file_type	type;
 	ps_orientation 	orientation;

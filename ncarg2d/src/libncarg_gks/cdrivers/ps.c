@@ -1,5 +1,5 @@
 /*
- *      $Id: ps.c,v 1.35 2003-11-19 01:46:57 fred Exp $
+ *      $Id: ps.c,v 1.36 2003-11-24 19:17:44 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2163,14 +2163,11 @@ ps_CloseWorkstation(gksc)
 
         if (psa->type != RPS) {
            (void) fprintf(psa->file_pointer, "%%%%BoundingBox: ");
-           (void) fprintf(psa->file_pointer, "%d ",
-                  (int) ((psa->scaling) * ((float)(psa->dspace.llx))));
-           (void) fprintf(psa->file_pointer, "%d ",
-                  (int) ((psa->scaling) * ((float)(psa->dspace.lly))));
-           (void) fprintf(psa->file_pointer, "%d ",
-                  (int) ((psa->scaling) * ((float)(psa->dspace.urx))+1));
-           (void) fprintf(psa->file_pointer, "%d\n",
-                  (int) ((psa->scaling) * ((float)(psa->dspace.ury))+1));
+           (void) fprintf(psa->file_pointer, "%d ", (psa->bspace.llx)-1);
+           (void) fprintf(psa->file_pointer, "%d ", (psa->bspace.lly)-1);
+           (void) fprintf(psa->file_pointer, "%d ", (psa->bspace.urx)+1);
+           (void) fprintf(psa->file_pointer, "%d ", (psa->bspace.ury)+1);
+           (void) fprintf(psa->file_pointer,"\n");
         }
 
         (void) fprintf(psa->file_pointer, "%%%%EOF\n");
@@ -8646,6 +8643,17 @@ ps_Esc(gksc)
                 strng = strtok((char *) NULL, " ");
                 logos = (float) atof(strng);
                 ps_NcarLogo(gksc,logox,logoy,logos); 
+                break;
+        case -1528:  /* Corner points for bounding box */
+                strng = strtok(sptr, " ");  /* Skip over the workstation ID */
+                strng = strtok((char *) NULL, " ");
+                psa->bspace.llx = atoi(strng);
+                strng = strtok((char *) NULL, " ");
+                psa->bspace.lly = atoi(strng);
+                strng = strtok((char *) NULL, " ");
+                psa->bspace.urx = atoi(strng);
+                strng = strtok((char *) NULL, " ");
+                psa->bspace.ury = atoi(strng);
                 break;
         default:
                 return ERR_INV_ESCAPE;
