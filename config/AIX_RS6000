@@ -1,5 +1,5 @@
 /*
- *      $Id: AIX_RS6000,v 1.12 2002-11-21 14:43:50 haley Exp $
+ *      $Id: AIX_RS6000,v 1.13 2004-12-14 23:54:49 haley Exp $
  */
 /************************************************************************
 *									*
@@ -25,10 +25,6 @@
 #define StdDefines    -DSYSV -D_POSIX_SOURCE -DRS6000 -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1
 #define CCompiler     xlc
 #define FCompiler     xlf
-#define CcOptions     -q32 -qalign=natural
-#define FcOptions     -q32
-#define LdCommand     ld -b32
-#define ArCommand     ar -X 32
 #define COptimizeFlag -O3 -qstrict
 #define FOptimizeFlag -O3 -qstrict
 #define Cstatic       -bnso
