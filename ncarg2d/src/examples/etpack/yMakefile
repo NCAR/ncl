@@ -1,0 +1,16 @@
+#
+#       $Id: yMakefile,v 1.1 1997-06-18 22:43:03 kennison Exp $
+#
+MYNAME  = etpack
+
+SRCS = tdex01.f tdex02.f
+OBJS = tdex01.o tdex02.o
+
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(tdex01,tdex01.o)
+FExampleTarget(tdex02,tdex02.o)
