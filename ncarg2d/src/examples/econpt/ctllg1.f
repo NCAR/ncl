@@ -124,9 +124,7 @@ C   1. the base index, in IEDG, of edge 1 of the triangle;
 C   2. the base index, in IEDG, of edge 2 of the triangle;
 C   3. the base index, in IEDG, of edge 3 of the triangle;
 C   4. a flag set non-zero to block use of the triangle, effectively
-C      removing it from the mesh.  Use the ISSCP grid and play with
-C      the setting of the parameter ISCP (which see, below) to get
-C      examples of the use of this feature.
+C      removing it from the mesh.
 C
 C The "base index" of a point node, an edge node, or a triangle node is
 C always a multiple of the length of the node, to which can be added an
