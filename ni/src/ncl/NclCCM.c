@@ -156,6 +156,27 @@ float FloatIt(char* buffer) {
 	return(tmp_out);
 }
 int CompareHeaders(CCMI *initial_iheader,CCMC *initial_cheader,CCMR *initial_rheader,CCMI* tmp_iheader,CCMC* tmp_cheader,CCMR* tmp_rheader) {
+	if(initial_iheader->NOREC != tmp_iheader->NOREC) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: Number of latitude records varies between timesteps (0) and (%d). Can not read this CCM file.",tmp_iheader->MFILH);
+		return(0);
+	}
+	if(initial_iheader->NLON!= tmp_iheader->NLON) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: Number of longitude points varies between timesteps (0) and (%d). Can not read this CCM file.",tmp_iheader->MFILH);
+		return(0);
+	}
+	if(initial_iheader->NLEV > tmp_iheader->NLEV) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: Number of levels varies between timesteps (0) and (%d). Can not read this CCM file.",tmp_iheader->MFILH);
+		return(0);
+	} else if(initial_iheader->NLEV < tmp_iheader->NLEV) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclCCM: Number of levels varies between timesteps (0) and (%d). Trying to continue anyways. Coordinate levels may be incorrect!",tmp_iheader->MFILH);
+	}
+	if(initial_iheader->MAXSIZ != tmp_iheader->MAXSIZ) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclCCM: Record size varies between timesteps (0) and (%d). Trying to continue anyways. Coordinate levels may be incorrect!",tmp_iheader->MFILH);
+	}
+	if(initial_iheader->NDAVU/initial_iheader->MAXSIZ != tmp_iheader->NDAVU/tmp_iheader->MAXSIZ) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: Packing varies between timesteps (0) and (%d). Can not read this CCM file.",tmp_iheader->MFILH);
+		return(0);
+	}
 	return(1);
 }
 
@@ -1054,6 +1075,9 @@ int	wr_status;
 				if(tmp_off == -1) {
 					therec->dims[TIME_DIM_NUMBER].size = i+1;	
 					therec->header.iheader.MFILTH = i+1;       
+					for(j = 0; j < therec->n_vars; j++) {
+						therec->vars[j].var_info.dim_sizes[0] = i+1;
+					}
 					break;
 				}
 				cb = tmp_off / BLOCK_SIZE;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.42 1997-03-11 17:52:12 ethan Exp $
+ *      $Id: NclVar.c,v 1.43 1997-03-12 19:19:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1599,10 +1599,35 @@ NclSelectionRecord *sel_ptr;
 					}
 					coords[j] = coord_var->obj.id; 
 				} else {
+                                        switch(sel_ptr->selection[i].sel_type) {
+                                        case Ncl_VECSUBSCR:
+                                                if(sel_ptr->selection[i].u.vec.n_ind == 1) {
+                                                        single = 1;
+                                                }
+                                                break;
+                                        case Ncl_SUB_ALL:
+                                                if(self->var.dim_info[sel_ptr->selection[i].dim_num].dim_size == 1) {
+                                                        single = 1;
+                                                }
+                                                break;
+                                        case Ncl_SUB_VAL_DEF:
+                                                if(sel_ptr->selection[i].u.sub.start == self->var.dim_info[sel_ptr->selection[i].dim_num].dim_size -1) {
+                                                        single = 1;
+                                                }
+                                                break;
+                                        case Ncl_SUB_DEF_VAL:
+                                                if(sel_ptr->selection[i].u.sub.finish== 0) {
+                                                        single = 1;
+                                                }
+                                                break;
+                                        case Ncl_SUBSCR:
+                                                if(sel_ptr->selection[i].u.sub.start == sel_ptr->selection[i].u.sub.finish) {
+                                                        single = 1;
+                                                }
+                                                break;
+                                        }
+
 					coords[j] = -1;
-					if(((sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR)&&(sel_ptr->selection[i].u.vec.n_ind == 1))||(sel_ptr->selection[i].u.sub.start == sel_ptr->selection[i].u.sub.finish)) {
-						single = 1;
-					}
 						
 				}
 				if(single){ 

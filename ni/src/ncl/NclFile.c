@@ -2099,8 +2099,32 @@ struct _NclSelectionRecord* sel_ptr;
 						return(NULL);
 					}
 				} else {
-					if(((sel[i].sel_type == Ncl_VECSUBSCR)&&(sel[i].u.vec.n_ind == 1)) || (sel[i].u.sub.start == sel[i].u.sub.finish)) {
-						single = 1;
+					switch(sel[i].sel_type) {
+					case Ncl_VECSUBSCR:
+						if(sel[i].u.vec.n_ind == 1) {
+							single = 1;
+						}
+						break;
+					case Ncl_SUB_ALL:
+						if(thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel[i].dim_num]]->dim_size == 1) {
+							single = 1;
+						}
+						break;
+					case Ncl_SUB_VAL_DEF:
+						if(sel[i].u.sub.start == thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel[i].dim_num]]->dim_size -1) {
+							single = 1;
+						}
+						break;
+					case Ncl_SUB_DEF_VAL:
+						if(sel[i].u.sub.finish== 0) {
+							single = 1;
+						}
+						break;
+					case Ncl_SUBSCR:
+						if(sel[i].u.sub.start == sel[i].u.sub.finish) {
+							single = 1;
+						}
+						break;
 					}
 					coords[j] = -1;
 				}
