@@ -1,5 +1,6 @@
 ;
-;      $Id: contributed.ncl,v 1.39 2004-04-02 15:43:48 shea Exp $
+;      $Id: contributed.ncl,v 1.40 2004-04-28 16:29:17 haley Exp $
+;
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
