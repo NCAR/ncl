@@ -1,5 +1,5 @@
 /*
- *	$Id: nrif.c,v 1.15 1993-03-17 22:15:54 haley Exp $
+ *	$Id: nrif.c,v 1.16 1993-03-25 22:19:29 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -144,7 +144,9 @@ NrifRead(ras)
 		status = fread((char *) buf, 1, 4, ras->fp);
 		if (status != 4) return(RAS_EOF);
 		if (strncmp( (char *) buf, NRIF_MAGIC, 4)) {
-			(void) ESprintf(RAS_E_BOGUS_COOKIE, errmsg, ras->name);
+			(void) ESprintf(E_UNKNOWN,
+			"NrifOpen(\"%s\") - File is not in NRIF format",
+			ras->name);
 			return(RAS_ERROR);
 		}
 		else {
@@ -323,10 +325,10 @@ _NrifReadIndexed(ras)
 	/* Allocate space for color tables and image. */
 	
 	if (ras->data == (unsigned char *) NULL) {
-		ras->red = (unsigned char *)ras_calloc((unsigned) ras->ncolor,1);
-		ras->green =(unsigned char *)ras_calloc((unsigned) ras->ncolor,1);
-		ras->blue = (unsigned char *)ras_calloc((unsigned) ras->ncolor,1);
-		ras->data = (unsigned char *)ras_calloc((unsigned) ras->length,1);
+		ras->red  =(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		ras->green=(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		ras->blue =(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		ras->data =(unsigned char *)ras_calloc((unsigned)ras->length,1);
 	}
 
 	/* Read color table and image frame. */
@@ -647,12 +649,7 @@ NrifClose(ras)
 {
 	int	status;
 
-	if (tmpbuf != (unsigned char *) NULL) {
-		(void) ras_free( (Voidptr) tmpbuf);
-	}
-
 	status = GenericClose(ras);
-
 	return(status);
 }
 
