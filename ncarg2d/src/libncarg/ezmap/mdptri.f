@@ -1,5 +1,5 @@
 C
-C $Id: mdptri.f,v 1.2 2001-11-02 22:37:15 kennison Exp $
+C $Id: mdptri.f,v 1.3 2002-08-19 21:52:45 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -311,10 +311,11 @@ C
         RLAT=ASIN(VTMP)*RTOD
         IF (1.D0-VTMP*VTMP.NE.0.D0) THEN
           RLON=PHOC+90.D0*UTMP/SQRT(1.D0-VTMP*VTMP)
+          IF (ABS(RLON-PHOC).GT.180.D0) GO TO 301
         ELSE
+          IF (UTMP.NE.0.D0) GO TO 301
           RLON=PHOC
         END IF
-        IF (ABS(RLON-PHOC).GT.180.D0) GO TO 301
         GO TO 200
 C
 C Robinson, fast path.
