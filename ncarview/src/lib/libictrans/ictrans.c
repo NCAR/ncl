@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.24 1995-03-16 22:54:54 haley Exp $
+ *	$Id: ictrans.c,v 1.25 1996-08-27 00:06:51 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -263,6 +263,7 @@ ICTrans(argc, argv, mem_cgm)
 	 */
 	if (opt.pal) {
 		SetDefaultPalette(opt.pal);
+		icState.palette_file = opt.pal;
 	}
 
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.h,v 1.8 1994-03-09 00:44:14 clyne Exp $
+ *	$Id: ictrans.h,v 1.9 1996-08-27 00:06:52 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -117,6 +117,7 @@ typedef	struct	_icState {
 	char	*spool_alias;
 	char	*device;
 	char	*font;
+	char	*palette_file;
 	char	*save_file;
 	char	**file;
 	DevWindow	dev_window;

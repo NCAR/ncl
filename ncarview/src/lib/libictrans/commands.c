@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.34 1995-01-10 01:04:23 clyne Exp $
+ *	$Id: commands.c,v 1.35 1996-08-27 00:06:50 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -29,7 +29,8 @@
 #include "glob.h"
 
 IcState	icState = {
-		FALSE, 1, 1, 1, 0, 0, FALSE, 0, NULL, NULL, NULL, NULL, NULL,
+		FALSE, 1, 1, 1, 0, 0, FALSE, 0, NULL, NULL, NULL, NULL, 
+		NULL, NULL,
 		{0.0, 0.0, 1.0, 1.0}
 		};
 
@@ -739,7 +740,7 @@ static	print_file(ic, translator, dev_win_string)
 		count += ABS(ic->cmd.src_frames.fc[i].num_frames);
 	}
 
-	if ( !(argv = (char **) malloc ((count + 7) * sizeof (char *)))) {
+	if ( !(argv = (char **) malloc ((count + 9) * sizeof (char *)))) {
 		perror("malloc()");
 		return(-1);
 	}
@@ -750,6 +751,10 @@ static	print_file(ic, translator, dev_win_string)
 	argv[argc++] = window_opt;
 	argv[argc++] = dev_win_string;
 	argv[argc++] = record_opt;
+	if (icState.palette_file) {
+		argv[argc++] = "-pal";
+		argv[argc++] = icState.palette_file;
+	}
 
 	/*
 	 * build the arg list from the list of frames
