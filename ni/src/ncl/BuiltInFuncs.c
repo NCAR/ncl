@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.36 1996-05-22 21:51:40 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.37 1996-06-17 22:15:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -640,8 +640,10 @@ NhlErrorTypes _NclINhlDataToNDC
 				*missing1 = *missing;
 				tmp_miss_md3 = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)missing1, NULL, 1 , &tmp_dimsizes, TEMPORARY, NULL,(NclObjClass) tmp_mds[3]->multidval.type);
 				_NclWriteAtt(tmp_vars[3],NCL_MISSING_VALUE_ATT,tmp_miss_md3,NULL);
-			} else {
-				_NclResetMissingValue(tmp_mds[3],missing);
+			} else {	
+				if(missing != NULL) {
+					_NclResetMissingValue(tmp_mds[3],missing);
+				}
 			}
 			if((tmp_vars[4] != NULL)&&(_NclVarIsAtt(tmp_vars[4],NCL_MISSING_VALUE_ATT))) {
 				missing1 = (NclScalar*)NclMalloc((unsigned)sizeof(NclScalar));
@@ -649,7 +651,9 @@ NhlErrorTypes _NclINhlDataToNDC
 				tmp_miss_md4 = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)missing1, NULL, 1 , &tmp_dimsizes, TEMPORARY, NULL, (NclObjClass)tmp_mds[4]->multidval.type);
 				_NclWriteAtt(tmp_vars[4],NCL_MISSING_VALUE_ATT,tmp_miss_md4,NULL);
 			} else {
-				_NclResetMissingValue(tmp_mds[4],missing);
+				if(missing != NULL) {
+					_NclResetMissingValue(tmp_mds[4],missing);
+				}
 			}
 		}
 		return(NhlEUNKNOWN);	
@@ -745,7 +749,9 @@ NhlErrorTypes _NclINhlNDCToData
 				tmp_miss_md3 = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)missing1, NULL, 1 , &tmp_dimsizes, TEMPORARY, NULL,(NclObjClass) tmp_mds[3]->multidval.type);
 				_NclWriteAtt(tmp_vars[3],NCL_MISSING_VALUE_ATT,tmp_miss_md3,NULL);
 			} else {
-				_NclResetMissingValue(tmp_mds[3],missing);
+				if(missing != NULL) {
+					_NclResetMissingValue(tmp_mds[3],missing);
+				}
 			}
 			if((tmp_vars[4] != NULL)&&(_NclVarIsAtt(tmp_vars[4],NCL_MISSING_VALUE_ATT))) {
 				missing1 = (NclScalar*)NclMalloc((unsigned)sizeof(NclScalar));
@@ -753,7 +759,9 @@ NhlErrorTypes _NclINhlNDCToData
 				tmp_miss_md4 = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)missing1, NULL, 1 , &tmp_dimsizes, TEMPORARY, NULL, (NclObjClass)tmp_mds[4]->multidval.type);
 				_NclWriteAtt(tmp_vars[4],NCL_MISSING_VALUE_ATT,tmp_miss_md4,NULL);
 			} else {
-				_NclResetMissingValue(tmp_mds[4],missing);
+				if(missing != NULL) {
+					_NclResetMissingValue(tmp_mds[4],missing);
+				}
 			}
 		}
 		return(NhlEUNKNOWN);	

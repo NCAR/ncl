@@ -1,5 +1,5 @@
 /*
- *      $Id: AttSupport.c,v 1.4 1996-04-23 00:10:06 ethan Exp $
+ *      $Id: AttSupport.c,v 1.5 1996-06-17 22:15:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,7 @@
 
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Callbacks.h>
 #include "defs.h"
 #include "NclAtt.h"
 #include "NclMultiDValData.h"

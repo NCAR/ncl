@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.49 1996-05-22 21:51:49 ethan Exp $
+ *      $Id: Machine.c,v 1.50 1996-06-17 22:15:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@ extern "C" {
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Callbacks.h>
 #include <errno.h>
 #include <math.h>
 #include "defs.h"

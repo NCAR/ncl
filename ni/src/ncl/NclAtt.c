@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.11 1996-04-02 00:35:08 ethan Exp $
+ *      $Id: NclAtt.c,v 1.12 1996-06-17 22:15:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -21,13 +21,19 @@
  */
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Callbacks.h>
 #include "defs.h"
 #include "Symbol.h"
 #include "NclAtt.h"
 #include "NclMultiDValData.h"
 #include "DataSupport.h"
 #include "AttSupport.h"
-
+extern void _NclVarMissingNotify(
+#if     NhlNeedProto
+NhlArgVal,
+NhlArgVal
+#endif
+);
 
 static void AttDestroyObj
 #if	NhlNeedProto
@@ -54,6 +60,7 @@ NclObj att;
 		tmp = tmp->next;
 		NclFree(tmp1);
 	}
+	_NhlCBDestroy(((NclAtt)att)->att.cblist);
 	NclFree(att);
 	return;
 }
@@ -140,9 +147,20 @@ NclSelectionRecord * sel_ptr;
 	int lhs_type,rhs_type;
 	int att_quark;
 	NhlErrorTypes ret;
+	NhlArgVal cbdata;
+	NhlArgVal selector;
+	NclScalar tmp_scalar;
+	
+	selector.lngval = 0;
+	cbdata.ptrval = NULL;
 
 	att_quark = NrmStringToQuark(attname);
 
+	if(att_quark == NrmStringToQuark(NCL_MISSING_VALUE_ATT)) {
+		memcpy((void*)&tmp_scalar,value->multidval.val,value->multidval.type->type_class.size);
+		cbdata.ptrval = &tmp_scalar;
+		_NhlCBCallCallbacks(theattobj->att.cblist,selector,cbdata);
+	}
         thelist = theattobj->att.att_list;
         while(thelist != NULL) {
                 if(thelist->quark == att_quark) {
@@ -310,7 +328,14 @@ NclObj parent;
 {
 /* Preconditions: parent better only be add once */
 	NclRefList *tmp;
+	NclAttCBRec *tmpcb;
 	NclAtt theattobj = (NclAtt) theobj;
+	NhlArgVal selector;
+        NhlArgVal udata;
+
+	selector.lngval = 0;
+	udata.intval = parent->obj.id;
+
 
 	if(theattobj->obj.parents == NULL) {
 		theattobj->obj.parents = (NclRefList*)NclMalloc(sizeof(NclRefList));
@@ -323,6 +348,20 @@ NclObj parent;
 		theattobj->obj.parents->next = tmp;
 		theattobj->obj.parents->pptr = parent;
 		theattobj->obj.ref_count++;
+	}
+	if(parent->obj.obj_type_mask & Ncl_Var) {
+		if(theattobj->att.cbr_list == NULL) {
+			theattobj->att.cbr_list = (NclAttCBRec*)NclMalloc(sizeof(NclAttCBRec));
+			theattobj->att.cbr_list->pid = parent->obj.id;
+			theattobj->att.cbr_list->next = NULL;
+			theattobj->att.cbr_list->cb = _NhlCBAdd(theattobj->att.cblist,selector,_NclVarMissingNotify,udata);
+		} else {
+			tmpcb = theattobj->att.cbr_list;
+			theattobj->att.cbr_list = (NclAttCBRec*)NclMalloc(sizeof(NclAttCBRec));
+                	theattobj->att.cbr_list->pid = parent->obj.id;
+                	theattobj->att.cbr_list->next = tmpcb;
+               		theattobj->att.cbr_list->cb = _NhlCBAdd(theattobj->att.cblist,selector,_NclVarMissingNotify,udata);
+		}
 	}
 	return(NhlNOERROR);
 }
@@ -338,6 +377,8 @@ NclObj parent;
 {
 	NclAtt theattobj = (NclAtt)theobj;
 	NclRefList *tmp,*tmp1;
+	NclAttCBRec *tmpcb, *tmpcb1;
+
 	tmp = theattobj->obj.parents;
 	if((tmp != NULL)&&(tmp->pptr == parent)){
 		theattobj->obj.parents = theattobj->obj.parents->next;
@@ -358,6 +399,29 @@ NclObj parent;
 		}
 	}
 	theattobj->obj.ref_count--;
+	if(parent->obj.obj_type_mask & Ncl_Var) {
+		tmpcb = theattobj->att.cbr_list;
+		if((tmpcb != NULL)&&(tmpcb->pid == parent->obj.id)){
+			_NhlCBDelete(theattobj->att.cbr_list->cb);
+			theattobj->att.cbr_list = theattobj->att.cbr_list->next;
+			NclFree(tmpcb);
+		} else {
+			if(tmpcb == NULL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"AttDelParent: Attempt to delete element from empty list");
+				return(NhlFATAL);
+			}
+			while(tmpcb->next != NULL) {
+				if(tmpcb->next->pid== parent->obj.id) {
+					tmpcb1 = tmpcb->next;
+					tmpcb->next = tmpcb->next->next;
+				 	_NhlCBDelete(tmpcb1->cb);
+					NclFree(tmpcb1);
+				} else {
+					tmpcb = tmpcb->next;
+				}
+			}
+		}
+	}
 	if(theattobj->obj.parents == NULL) {
 		_NclDestroyObj((NclObj)theattobj);
 	}
@@ -374,12 +438,21 @@ char *attname;
 #endif
 {
 	NclAttList *tmp,*tmp1;
+	NclAttCBRec *tmpcb, *tmpcb1;
+	NhlArgVal cbdata;
+	NhlArgVal selector;
 	int att_quark = NrmStringToQuark(attname);
+
+	cbdata.ptrval = NULL;
+	selector.lngval = 0;
 
 	tmp = theattobj->att.att_list;
 	if((tmp!= NULL)&&(tmp->quark == att_quark)) {
 		theattobj->att.att_list = theattobj->att.att_list->next;
 		theattobj->att.n_atts--;
+		if(NrmStringToQuark(NCL_MISSING_VALUE_ATT)==att_quark) {
+			_NhlCBCallCallbacks(theattobj->att.cblist,selector,cbdata);
+		}
 		if(tmp->attname != NULL) {
 			NclFree(tmp->attname);
 		}
@@ -389,6 +462,9 @@ char *attname;
 	}
 	while(tmp->next != NULL) {
 		if(tmp->next->quark == att_quark) {
+			if(NrmStringToQuark(NCL_MISSING_VALUE_ATT)==att_quark) {
+				_NhlCBCallCallbacks(theattobj->att.cblist,selector,cbdata);
+			}
 			tmp1 = tmp->next;
 			tmp->next = tmp->next->next;
 			if(tmp1->attname != NULL) {
@@ -512,11 +588,14 @@ struct _NclObjRec *parent;
 	}
 	(void)_NclObjCreate((NclObj)my_inst,class_ptr,obj_type,(obj_type_mask | Ncl_Att),PERMANENT);
 
+	my_inst->att.n_atts = 0;
+	my_inst->att.att_list  = NULL;
+	my_inst->att.cbr_list = NULL;
+	my_inst->att.cblist = _NhlCBCreate(0,NULL,NULL);
 	if(parent != NULL) {
 		AttAddParent((NclObj)my_inst,parent);
 	}
-	my_inst->att.n_atts = 0;
-	my_inst->att.att_list  = NULL;
+
 	return(my_inst->obj.id);
 }
 

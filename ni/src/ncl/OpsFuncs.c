@@ -593,7 +593,9 @@ NhlErrorTypes _NclBuildArray
 					}
 					theobj = coerce_res;
 				} else {
-					_NclResetMissingValue(theobj,mis_ptr);
+					if(mis_ptr != NULL) {
+						_NclResetMissingValue(theobj,mis_ptr);
+					}
 				}
 			}
 		} else if(data.kind == NclStk_VAR){
@@ -632,7 +634,9 @@ NhlErrorTypes _NclBuildArray
 					themissing = theobj->multidval.missing_value.value;
 				} else if((theobj->multidval.missing_value.has_missing)&&(!still_no_missing)) {
 					if(theobj->obj.status == TEMPORARY) {
-						_NclResetMissingValue(theobj,mis_ptr);
+						if(mis_ptr != NULL) {
+							_NclResetMissingValue(theobj,mis_ptr);
+						}
 					} else {
 						coerce_res = _NclCopyVal(theobj,mis_ptr);
 						if(theobj->obj.status != PERMANENT) {
