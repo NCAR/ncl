@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.h,v 1.15 1994-09-28 20:16:34 dbrown Exp $
+ *      $Id: Contour.h,v 1.16 1994-09-30 01:11:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,9 @@
 #include <ncarg/hlu/Workspace.h>
 #include <ncarg/hlu/DataComm.h>
 #include <ncarg/hlu/Overlay.h>
+#include <ncarg/hlu/LogLinTransObj.h>
+#include <ncarg/hlu/IrregularTransObj.h>
+#include <ncarg/hlu/ScalarField.h>
 
 /* Level selection modes */
 

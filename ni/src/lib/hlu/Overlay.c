@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.22 1994-09-23 23:36:54 dbrown Exp $
+ *      $Id: Overlay.c,v 1.23 1994-09-30 01:11:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -94,14 +94,14 @@ static NhlResource resources[] = {
 
 /* Annotation resources  */
 
-	{ NhlNovDisplayTitles,NhlCovDisplayTitles,
+	{ NhlNovTitleDisplayMode,NhlCovTitleDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_titles),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlNOCREATE),0,NULL},
 	{ NhlNovTitleZone,NhlCovTitleZone,NhlTInteger,sizeof(int),
 		  Oset(title_zone),NhlTImmediate,
 		  _NhlUSET((NhlPointer) NhlOV_DEF_TITLE_ZONE),0,NULL},
-	{ NhlNovDisplayTickMarks,NhlCovDisplayTickMarks,
+	{ NhlNovTickMarkDisplayMode,NhlCovTickMarkDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_tickmarks),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlNOCREATE),0,NULL},
@@ -111,7 +111,7 @@ static NhlResource resources[] = {
 
 /* LabelBar resources */
 
-	{ NhlNovDisplayLabelBar,NhlCovDisplayLabelBar,
+	{ NhlNovLabelBarDisplayMode,NhlCovLabelBarDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_labelbar),NhlTImmediate,
 		  _NhlUSET((NhlPointer) NhlNOCREATE),0,NULL},
@@ -153,7 +153,7 @@ static NhlResource resources[] = {
 
 /* Legend resources */
 
-	{ NhlNovDisplayLegend,NhlCovDisplayLegend,
+	{ NhlNovLegendDisplayMode,NhlCovLegendDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_legend),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlNOCREATE),0,NULL},
@@ -972,7 +972,7 @@ static NhlErrorTypes OverlaySetValues
 		e_text = 
 		 "%s: overlay TickMarks can be created only during NhlCreate";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-			  entry_name,NhlNovDisplayTickMarks);
+			  entry_name,NhlNovTickMarkDisplayMode);
 		ovp->display_tickmarks = NhlNOCREATE;
 	}
 
@@ -982,7 +982,7 @@ static NhlErrorTypes OverlaySetValues
 		e_text = 
 		 "%s: overlay Titles can be created only during NhlCreate";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-			  entry_name,NhlNovDisplayTitles);
+			  entry_name,NhlNovTitleDisplayMode);
 		ovp->display_titles = NhlNOCREATE;
 	}
 
@@ -992,7 +992,7 @@ static NhlErrorTypes OverlaySetValues
 		e_text =
 		 "%s: overlay LabelBar can be created only during NhlCreate";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-			  entry_name,NhlNovDisplayLabelBar);
+			  entry_name,NhlNovLabelBarDisplayMode);
 		ovp->display_labelbar = NhlNOCREATE;
 	}
 
@@ -1002,7 +1002,7 @@ static NhlErrorTypes OverlaySetValues
 		e_text =
 		    "%s: overlay Legend can be created only during NhlCreate";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-			  entry_name,NhlNovDisplayLegend);
+			  entry_name,NhlNovLegendDisplayMode);
 		ovp->display_legend = NhlNOCREATE;
 	}
 
@@ -2304,7 +2304,7 @@ static NhlErrorTypes SetExternalView
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
-	if (anno_rec->just < NhlTOPLEFT || anno_rec->just > NhlTOPRIGHT) {
+	if (anno_rec->just < NhlTOPLEFT || anno_rec->just > NhlBOTTOMRIGHT) {
 		e_text = "%s: internal enumeration error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
@@ -2801,7 +2801,7 @@ ManageExtAnnotation
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
-	if (anno_rec->just < NhlTOPLEFT || anno_rec->just > NhlTOPRIGHT) {
+	if (anno_rec->just < NhlTOPLEFT || anno_rec->just > NhlBOTTOMRIGHT) {
 		e_text = "%s: internal enumeration error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
@@ -3722,7 +3722,7 @@ ManageLabelBar
 		return(ret);
 	}
 	anno_rec->just = ovp->lbar_just;
-	if (anno_rec->just < NhlTOPLEFT || anno_rec->just > NhlTOPRIGHT) {
+	if (anno_rec->just < NhlTOPLEFT || anno_rec->just > NhlBOTTOMRIGHT) {
 		e_text = "%s: internal enumeration error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
@@ -3962,7 +3962,7 @@ ManageLegend
 		return(ret);
 	}
 	anno_rec->just = ovp->lgnd_just;
-	if (anno_rec->just < NhlTOPLEFT || anno_rec->just > NhlTOPRIGHT) {
+	if (anno_rec->just < NhlTOPLEFT || anno_rec->just > NhlBOTTOMRIGHT) {
 		e_text = "%s: internal enumeration error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);

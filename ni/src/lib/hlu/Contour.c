@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.29 1994-09-28 20:16:32 dbrown Exp $
+ *      $Id: Contour.c,v 1.30 1994-09-30 01:11:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -115,8 +115,12 @@ static NhlResource resources[] = {
 	{ NhlNcnMaxLevelCount,NhlCcnMaxLevelCount,NhlTInteger,sizeof(int),
 		  Oset(max_level_count),NhlTImmediate,
 		  _NhlUSET((NhlPointer) 16),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(level_spacing_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNcnLevelSpacingF,NhlCcnLevelSpacingF,NhlTFloat,sizeof(float),
-		  Oset(level_spacing),NhlTString,_NhlUSET("5.0"),0,NULL},
+		  Oset(level_spacing),NhlTProcedure,
+		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(min_level_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),0,NULL},
@@ -346,7 +350,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
 	{NhlNcnLineLabelPerim,NhlCcnLineLabelPerim,NhlTInteger,sizeof(int),
 		 Oset(line_lbls.perim_on),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 	{NhlNcnLineLabelPerimSpaceF,NhlCcnLineLabelPerimSpaceF,
 		 NhlTFloat,sizeof(float),Oset(line_lbls.perim_space),
 		 NhlTString,_NhlUSET("0.33"),0,NULL},
@@ -404,7 +408,7 @@ static NhlResource resources[] = {
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
 	{ NhlNcnHighLabelPerim,NhlCcnHighLabelPerim,NhlTInteger,sizeof(int),
 		Oset(high_lbls.perim_on),
-		NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 	{ NhlNcnHighLabelPerimSpaceF,NhlCcnHighLabelPerimSpaceF,
 		  NhlTFloat,sizeof(float),Oset(high_lbls.perim_space),
 		  NhlTString,_NhlUSET("0.33"),0,NULL},
@@ -462,7 +466,7 @@ static NhlResource resources[] = {
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
 	{ NhlNcnLowLabelPerim,NhlCcnLowLabelPerim,NhlTInteger,sizeof(int),
 		Oset(low_lbls.perim_on),
-		NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 	{ NhlNcnLowLabelPerimSpaceF,NhlCcnLowLabelPerimSpaceF,
 		  NhlTFloat,sizeof(float),Oset(low_lbls.perim_space),
 		  NhlTString,_NhlUSET("0.33"),0,NULL},
@@ -537,7 +541,7 @@ static NhlResource resources[] = {
 
 	{NhlNcnInfoLabelZone,NhlCcnInfoLabelZone,NhlTInteger,
 		 sizeof(int),Oset(info_lbl_rec.zone),NhlTImmediate,
-		 _NhlUSET((NhlPointer) 5),0,NULL},
+		 _NhlUSET((NhlPointer) 3),0,NULL},
 	{NhlNcnInfoLabelSide,NhlCcnInfoLabelSide,NhlTPosition,
 		 sizeof(NhlPosition),Oset(info_lbl_rec.side),NhlTImmediate,
 		 _NhlUSET((NhlPointer)NhlBOTTOM),0,NULL},
@@ -751,11 +755,11 @@ static NhlResource resources[] = {
 	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(y_reverse),
 		NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
-	{ NhlNovDisplayLabelBar,NhlCovDisplayLabelBar,
+	{ NhlNovLabelBarDisplayMode,NhlCovLabelBarDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_labelbar),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlNEVER),0,NULL},
-	{ NhlNovDisplayLegend,NhlCovDisplayLegend,
+	{ NhlNovLegendDisplayMode,NhlCovLegendDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_legend),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlNEVER),0,NULL},
@@ -775,11 +779,11 @@ static NhlResource resources[] = {
 		 sizeof(NhlPointer),Oset(labelbar_title),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFree},
-	{NhlNovDisplayTickMarks,NhlCovDisplayTickMarks,
+	{NhlNovTickMarkDisplayMode,NhlCovTickMarkDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_tickmarks),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlCONDITIONAL),0,NULL},
-	{NhlNovDisplayTitles,NhlCovDisplayTitles,
+	{NhlNovTitleDisplayMode,NhlCovTitleDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_titles),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlCONDITIONAL),0,NULL},
@@ -1750,10 +1754,10 @@ ContourClassPartInitialize
  */
 	subret = _NhlRegisterChildClass(lc,NhloverlayLayerClass,
 					False,False,
-					NhlNovDisplayLegend,
-					NhlNovDisplayLabelBar,
-					NhlNovDisplayTickMarks,
-					NhlNovDisplayTitles,
+					NhlNovLegendDisplayMode,
+					NhlNovLabelBarDisplayMode,
+					NhlNovTickMarkDisplayMode,
+					NhlNovTitleDisplayMode,
 					NhlNlgItemCount,
 					NhlNlgTitleString,
 					NhlNlgItemIndexes,
@@ -1869,7 +1873,8 @@ ContourInitialize
 	cnp->constf_lbl_rec.id = -1;
 
 /* Initialize unset resources */
-	
+
+	if (! cnp->level_spacing_set) cnp->level_spacing = 5.0;
 	if (! cnp->min_level_set) cnp->min_level_val = FLT_MAX;
 	if (! cnp->max_level_set) cnp->max_level_val = -FLT_MAX;
 	if (! cnp->llabel_interval_set) cnp->llabel_interval = 2;
@@ -1877,11 +1882,11 @@ ContourInitialize
 		cnp->line_dash_seglen = 0.075;
 
 	if (! cnp->line_lbls.height_set) 
-		cnp->line_lbls.height = 0.0075;
+		cnp->line_lbls.height = 0.010;
 	if (! cnp->high_lbls.height_set) 
-		cnp->high_lbls.height = 0.0075;
+		cnp->high_lbls.height = 0.010;
 	if (! cnp->low_lbls.height_set) 
-		cnp->low_lbls.height = 0.0075;
+		cnp->low_lbls.height = 0.0010;
 	if (! cnp->info_lbl.height_set) 
 		cnp->info_lbl.height = 0.01;
 	if (! cnp->constf_lbl.height_set) 
@@ -2013,6 +2018,7 @@ ContourInitialize
 		}
 	}
 	cnp->data_changed = False;
+	cnp->level_spacing_set = False;
 	cnp->line_dash_seglen_set = False;
 	cnp->line_lbls.height_set = False;
 	cnp->high_lbls.height_set = False;
@@ -2076,6 +2082,8 @@ static NhlErrorTypes ContourSetValues
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 	}
 
+	if (_NhlArgIsSet(args,num_args,NhlNcnLevelSpacingF))
+		cnp->level_spacing_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNcnMinLevelValF))
 		cnp->min_level_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNcnMaxLevelValF))
@@ -2185,6 +2193,7 @@ static NhlErrorTypes ContourSetValues
 
 	cnp->update_req = False;
 	cnp->data_changed = False;
+	cnp->level_spacing_set = False;
 	cnp->line_dash_seglen_set = False;
 	cnp->high_lbls.height_set = False;
 	cnp->low_lbls.height_set = False;
@@ -3536,6 +3545,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 		*do_labels = True;
 		c_cpseti("LLP",1);
 		c_cpsetr("DPS",cnp->line_lbls.real_height / cl->view.width);
+		c_cpsetr("DPV",.015);
 	}
 	else if (cnp->llabel_spacing == NhlcnRANDOMIZED) {
 		*do_labels = True;
@@ -4602,7 +4612,7 @@ static NhlErrorTypes ManageTickMarks
 	if (init || 
 	    cnp->display_tickmarks != ocnp->display_tickmarks) {
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNovDisplayTickMarks,
+				   NhlNovTickMarkDisplayMode,
 				   cnp->display_tickmarks);
 	}
 
@@ -4659,7 +4669,7 @@ static NhlErrorTypes ManageTitles
 	if (init || 
 	    cnp->display_titles != ocnp->display_titles) {
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNovDisplayTitles,
+				   NhlNovTitleDisplayMode,
 				   cnp->display_titles);
 	}
 
@@ -4723,11 +4733,12 @@ static NhlErrorTypes ManageLegend
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNovDisplayLegend,NhlNEVER);
+				   NhlNovLegendDisplayMode,NhlNEVER);
 		}
 		else
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNovDisplayLegend,cnp->display_legend);
+				   NhlNovLegendDisplayMode,
+				   cnp->display_legend);
 	}
 
 	if (init) {
@@ -4958,10 +4969,11 @@ static NhlErrorTypes ManageLabelBar
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNovDisplayLabelBar,NhlNEVER);
+				   NhlNovLabelBarDisplayMode,NhlNEVER);
 		}
 		else
-			NhlSetSArg(&sargs[(*nargs)++],NhlNovDisplayLabelBar,
+			NhlSetSArg(&sargs[(*nargs)++],
+				   NhlNovLabelBarDisplayMode,
 				   cnp->display_labelbar);
 	}
 
@@ -6624,7 +6636,6 @@ static NhlErrorTypes    ManageDynamicArrays
  * Level flags
  */
 
-
 	if (init) {
 		ga = NULL;
 		count = cnp->level_count;
@@ -6656,7 +6667,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		else {
 			for (i = 0; i < count; i++)
-				ip[i] = (i+1) % cnp->llabel_interval == 0 ?
+				ip[i] = i % cnp->llabel_interval == 0 ?
 					NhlcnLINEANDLABEL : NhlcnLINEONLY;
 		}
 	}
@@ -6668,7 +6679,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		else {
 			for (i = init_count; i < count; i++)
-				ip[i] = (i+1) % cnp->llabel_interval == 0 ?
+				ip[i] = i % cnp->llabel_interval == 0 ?
 					NhlcnLINEANDLABEL : NhlcnLINEONLY;
 		}
 		for (i=0; i<init_count; i++) {
@@ -7574,7 +7585,7 @@ static NhlErrorTypes    SetupLevels
 	    cnp->levels != ocnp->levels ||
 	    cnp->level_selection_mode != ocnp->level_selection_mode ||
 	    cnp->max_level_count != ocnp->max_level_count ||
-	    cnp->level_spacing != ocnp->level_spacing ||
+	    cnp->level_spacing_set ||
 	    cnp->min_level_val != ocnp->min_level_val ||
 	    cnp->max_level_val != ocnp->max_level_val) {
 
@@ -7582,6 +7593,13 @@ static NhlErrorTypes    SetupLevels
 
 		cnp->below_min.on = False;
 		cnp->above_max.on = False;
+
+		if (_NhlCmpFAny(cnp->level_spacing,0.0,5) <= 0.0) {
+			"%s: Invalid level spacing value set: defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+			cnp->level_spacing = 5.0;
+		}
 
 		if (cnp->min_level_val >= cnp->max_level_val) {
 			e_text =
@@ -7847,6 +7865,10 @@ static NhlErrorTypes    SetupLevelsAutomatic
 	zmin = cnp->zmin;
 	zmax = cnp->zmax;
 
+	if (cnp->level_spacing_set) {
+		cnp->max_level_count = 
+			(int)(zmax - zmin) / cnp->level_spacing + 1; 
+	}
 	subret = ChooseSpacingLin(&zmin,&zmax,&spacing,7,
 				  cnp->max_level_count,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -7899,6 +7921,7 @@ static NhlErrorTypes    SetupLevelsAutomatic
 			(*levels)[i] = zmin + i * spacing;
 		(*levels)[count - 1] = zmax;
 	}
+	cnp->level_spacing = spacing;
 	cnp->level_count = count;
 	cnp->fill_count = count - 1;
 
@@ -8040,21 +8063,12 @@ static NhlErrorTypes ChooseSpacingLin
 	int	max_ticks;
 #endif
 {
-	double table[10],d,u,t,am1,am2=0.0,ax1,ax2=0.0;
-	int	npts,i;
+	double	table[10] = { 1.0,2.0,3.0,4.0,5.0,10.0,20.0,30.0,40.0,50.0 };
+	double	d,u,t,am1,ax1;
+	double	am2=0.0,ax2=0.0;
+	int	npts = 10;
+	int	i;
 	char	*e_text;
-
-	table[0] = 1.0;
-	table[1] = 2.0;
-	table[2] = 3.0;
-	table[3] = 4.0;
-	table[4] = 5.0;
-	table[5] = 10.0;
-	table[6] = 20.0;
-	table[7] = 30.0;
-	table[8] = 40.0;
-	table[9] = 50.0;
-	npts = 10;
 
 	if(_NhlCmpFAny(*tend,*tstart,8)<=0.0) {
 		e_text = "%s: Scalar field is constant";
@@ -8062,7 +8076,7 @@ static NhlErrorTypes ChooseSpacingLin
 		return(NhlFATAL);
 	}
 
-	d = pow(10.0,floor(log10(*tend-*tstart)) - 1.0);
+	d = pow(10.0,floor(log10(*tend-*tstart)) - 2.0);
 	u = *spacing = 1e30;
 	for(i=0;i<npts; i++) {
 		t = table[i] * d;
@@ -8217,11 +8231,10 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 	c_cpgeti("PAI", &pai);
 	if (pai > 0 && pai < 256) {
 		if (! Cnp->do_lines) return;
-		pai -= 1;
-		thickness = Cnp->mono_line_thickness ? thp[0] : thp[pai];
+		thickness = Cnp->mono_line_thickness ? thp[0] : thp[pai-1];
 		lcol = Cnp->mono_line_color ? 
-			Cnp->gks_line_colors[0] : Cnp->gks_line_colors[pai];
-		dpix = Cnp->mono_line_dash_pattern ? dpp[0] : dpp[pai];
+			Cnp->gks_line_colors[0] : Cnp->gks_line_colors[pai-1];
+		dpix = Cnp->mono_line_dash_pattern ? dpp[0] : dpp[pai-1];
 	}
 	else {
 		NhlcnRegionAttrs *reg_attrs;
@@ -8261,20 +8274,25 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 
 	if (pai > 0 && Cnp->llabel_spacing == NhlcnCONSTANT) {
 		int tstart;
-
+		NhlcnLevelUseMode *lup = 
+			(NhlcnLevelUseMode *) Cnp->level_flags->data;
+		
 		p1 = Cnp->line_lbls.height;
 		p1 = c_kfpy(p1);
 		jsize = (int) (p1 - p0);
 		jsize = jsize > 3 ? jsize : 4;
 
 		llcol = Cnp->line_lbls.mono_color ?
-			Cnp->line_lbls.colors[0] : Cnp->line_lbls.colors[pai];
+			Cnp->line_lbls.colors[0] : 
+				Cnp->line_lbls.colors[pai-1];
 		if (llcol > NhlTRANSPARENT)
 			gset_text_colr_ind(llcol);
-		tstart = slen - 
-			strlen(((NhlString *)Cnp->line_lbls.text)[pai]);
-		strcpy(&buffer[tstart],
-		       ((NhlString *)Cnp->line_lbls.text)[pai]);
+		if (lup[pai-1] > NhlcnLINEONLY) {
+			tstart = slen - strlen(((NhlString *)
+						Cnp->line_lbls.text)[pai-1]);
+			strcpy(&buffer[tstart],
+			       ((NhlString *)Cnp->line_lbls.text)[pai-1]);
+		}
 	}
 	
 	c_dashdc(buffer,jcrt,jsize);

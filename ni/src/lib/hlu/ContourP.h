@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.16 1994-09-28 20:16:35 dbrown Exp $
+ *      $Id: ContourP.h,v 1.17 1994-09-30 01:11:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -123,8 +123,8 @@ typedef struct _NhlContourLayerPart {
 	NhlcnLevelSelectionMode		level_selection_mode;
 	int		level_count;
 	int		max_level_count;
+	NhlBoolean	level_spacing_set;
 	float		level_spacing;
-	NhlBoolean	label_masking;
 	NhlBoolean	min_level_set;
 	float		min_level_val;
 	NhlBoolean	max_level_set;
@@ -134,6 +134,7 @@ typedef struct _NhlContourLayerPart {
 	NhlBoolean	llabel_interval_set;
 	int		llabel_interval;
 	NhlDrawOrder	label_order;
+	NhlBoolean	label_masking;
 	NhlDrawOrder	line_order;
 	NhlDrawOrder	fill_order;
 	NhlBoolean	lines_on;

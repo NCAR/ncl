@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.h,v 1.9 1994-09-08 01:34:35 dbrown Exp $
+ *      $Id: Overlay.h,v 1.10 1994-09-30 01:11:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,13 +43,13 @@ typedef enum _NhlAnnotationDisplayMode {
 #define NhlNovOverlayIds	".ovOverlayIds"
 #define NhlNovPreDrawOrder	".ovPreDrawOrder"
 #define NhlNovPostDrawOrder	".ovPostDrawOrder"
-#define NhlNovDisplayTitles	"ovDisplayTitles"
+#define NhlNovTitleDisplayMode	"ovTitleDisplayMode"
 #define NhlNovTitleZone		"ovTitleZone"
-#define NhlNovDisplayTickMarks	"ovDisplayTickMarks"
+#define NhlNovTickMarkDisplayMode	"ovTickMarkDisplayMode"
 #define NhlNovTickMarkZone	"ovTickMarkZone"
-#define NhlNovDisplayLabelBar	"ovDisplayLabelBar"
+#define NhlNovLabelBarDisplayMode	"ovLabelBarDisplayMode"
 #define NhlNovLabelBarZone	"ovLabelBarZone"
-#define NhlNovDisplayLegend	"ovDisplayLegend"
+#define NhlNovLegendDisplayMode	"ovLegendDisplayMode"
 #define NhlNovLegendZone	"ovLegendZone"
 
 #define NhlNovLabelBarWidthF	"ovLabelBarWidth"
@@ -78,13 +78,13 @@ typedef enum _NhlAnnotationDisplayMode {
 #define NhlCovOverlayIds	".OvOverlayIds"
 #define NhlCovPreDrawOrder	".OvPreDrawOrder"
 #define NhlCovPostDrawOrder	".OvPostDrawOrder"
-#define NhlCovDisplayTitles	"OvDisplayTitles"
+#define NhlCovTitleDisplayMode	"OvTitleDisplayMode"
 #define NhlCovTitleZone		"OvTitleZone"
-#define NhlCovDisplayTickMarks	"OvDisplayTickMarks"
+#define NhlCovTickMarkDisplayMode	"OvTickMarkDisplayMode"
 #define NhlCovTickMarkZone	"OvTickMarkZone"
-#define NhlCovDisplayLabelBar	"OvDisplayLabelBar"
+#define NhlCovLabelBarDisplayMode	"OvLabelBarDisplayMode"
 #define NhlCovLabelBarZone	"OvLabelBarZone"
-#define NhlCovDisplayLegend	"OvDisplayLegend"
+#define NhlCovLegendDisplayMode	"OvLegendDisplayMode"
 #define NhlCovLegendZone	"OvLegendZone"
 #define NhlCovLabelBarWidthF	"OvLabelBarWidth"
 #define NhlCovLabelBarHeightF	"OvLabelBarHeight"
