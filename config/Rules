@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.41 2002-09-12 14:20:03 haley Exp $
+ *	$Id: Rules,v 1.42 2004-01-20 21:21:48 haley Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -301,6 +301,23 @@ _FortranLinkProgram(program,objects,NullArgument)
 
 
 /*
+ * Macro:	BuildAndInstallCProgram
+ *
+ * Description:	This rule is basically the same as CProgram, but it
+ *		installs the C program without having to do an "install".
+ */
+#ifndef	BuildAndInstallCProgram
+#define	BuildAndInstallCProgram(program,objects,deplibs)\
+]\
+all::]\
+]\
+all-local:: program]\
+]\
+_CLinkAndInstallProgram(program,objects,deplibs)\
+CleanFilesTarget(program objects)
+#endif	/* BuildAndInstallCProgram */
+
+/*
  * Macro:	CProgram
  *
  * Description:	This rule is basically the same as CTarget but it
@@ -336,6 +353,23 @@ all-local:: program]\
 _CLinkProgram(program,objects,NullArgument)\
 InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
 #endif	/* CTarget */
+
+/*
+ * Macro:	_CLinkAndInstallProgram
+ *
+ * Description:	This rule is used to link and insetall a C program - 
+ *      It may be different
+ *		for each architecture to resolve the differences in linking
+ *		some libraries statically and some dynamically on different
+ *		systems.
+ */
+#ifndef	_CLinkAndInstallProgram
+#define	_CLinkAndInstallProgram(program,objects,deplib)\
+program: objects deplib]\
+	$(CC_LD) $(CC_LDOPTIONS) -o program objects $(PROG_LIBS) $(LDLIBS) $(EXTRA_LDLIBS)]\
+	MakeDir($(BINPATH))]\
+	$(INSTALL) -m $(INSTALL_BIN) program $(BINPATH)]
+#endif	/* _CLinkAndInstallProgram */
 
 /*
  * Macro:	_CLinkProgram
@@ -376,7 +410,7 @@ all::]\
 all-local:: program]\
 ]\
 _CLinkProgram(program,objects,NullArgument)
-#endif	/* FNotInstalledTarget */
+#endif	/* CNotInstalledTarget */
 
 /*
  * Macro:	BuildLibTarget
@@ -458,6 +492,29 @@ PrintError(BuildSharedLibTarget,"BuildSharedLibTarget","Rule hasn't been defined
 #define BuildSharedLibTarget(library,objects,major,minor,reqlibs)	/**/
 #endif	/* BuildShared */
 #endif	/* BuildSharedLibTarget */
+
+/*
+ * Macro:	BuildAndInstallLibraryTarget
+ *
+ * Description:	This rule builds and installs a library without
+ * waiting for the "install" command.
+ */
+#ifndef	BuildAndInstallLibraryTarget
+#define BuildAndInstallLibraryTarget(library,objects)\
+]\
+all::]\
+]\
+all-local:: library.a]\
+]\
+library.a:: objects]\
+	-$(RM) library.a]\
+	@$(AR_QUICK) library.a objects]\
+	$(RANLIB) library.a]\
+	MakeDir($(LIBPATH))]\
+	$(INSTALL) -m $(INSTALL_LIB) library.a $(LIBPATH)]\
+	$(RANLIB) $(LIBPATH)/library.a]\
+CleanFilesTarget(library.a objects)
+#endif	/* BuildAndInstallLibraryTarget */
 
 /*
  * Macro:	LibraryTarget
