@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.169 2004-07-01 14:34:27 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.170 2004-08-06 14:50:45 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -84,7 +84,7 @@ undef("add_map_tickmarks")
 undef("gsn_add_cyclic_point")
 undef("pop_tick_locs")
 undef("pop_latlon_grid")
-undef("mask_lambert")
+undef("mask_lambert_conformal")
 undef("gsn_csm_map_ce")
 undef("gsn_csm_map_polar")
 undef("gsn_csm_map")
@@ -3269,7 +3269,7 @@ begin
 end
 
 ;***********************************************************************;
-; Function : mask_lambert                                               ;
+; Function : mask_lambert_conformal                                     ;
 ;                 wks: graphic                                          ;
 ;               maplc: graphic                                          ;
 ;              minlat: numeric                                          ;
@@ -3292,9 +3292,9 @@ end
 ;   will alter the min/max to be in that range.                         ;
 ;                                                                       ;
 ;***********************************************************************;
-function mask_lambert(wks:graphic, maplc:graphic, \
-                      minlat:numeric, maxlat:numeric, \
-                      minlon:numeric, maxlon:numeric, maskoutln, res)
+function mask_lambert_conformal(wks:graphic, maplc:graphic, minlat:numeric,\
+                                maxlat:numeric, minlon:numeric, \
+                                maxlon:numeric, maskoutln, res)
 local pres, var_string, maplc, mpres, tmplat, vpx, vpy, vpw, vph, \
 xlft, xrgt, ytop, ybot, nscirc, nncirc, nxpoly, nypoly, sxpoly, sypoly, \
 var_string, scirc_xndc, scirc_yndc, ncirc_xndc, ncirc_yndc, mask_outline, \
@@ -3305,18 +3305,21 @@ begin
 ; Some error checking.
 ;
   if(maxlat.gt.0.and.minlat.lt.0) then
-    print("mask_lambert: warning: you are not authorized to specify a maxlat that is above the equator and a minlat that is below the equator.")
-    print("        No masking will take place.")
+    print("mask_lambert_conformal: warning: you are not authorized to specify.")
+    print("  a maxlat that is above the equator and a minlat that is below")
+    print("  the equator. No masking will take place.")
     return(maplc)
   end if
 
   if (minlon.gt.maxlon) then
-     print("mask_lambert: warning: Minimum longitude is greated than maximum, subtracting 360 from minumum")
+     print("mask_lambert_conformal: warning: Minimum longitude is greated than")
+     print("  maximum, subtracting 360 from minumum.")
      minlon = minlon - 360
      print("minlon = "+minlon+", maxlon = "+maxlon)
   end if
   if (minlat.gt.maxlat) then
-     print("mask_lambert: warning: Minimum latitude is greater than maximum, swapping the two.")
+     print("mask_lambert_conformal: warning: Minimum latitude is greater than")
+     print("  maximum, swapping the two.")
      tmplat = minlat
      minlat = maxlat
      maxlat = tmplat
@@ -3337,8 +3340,21 @@ begin
 ; be sure to use these values.
 ;
   meridian = minlon + (maxlon - minlon)/2.
-  mpres                        = True
-  mpres@mpProjection           = "LambertConformal"
+  mpres = True
+  if(isatt(res,"mpProjection")) then
+    iproj = res@mpProjection
+    if((typeof(iproj).eq."integer".and.iproj.ne.9).or.\
+       (typeof(iproj).eq."string".and. \
+        lower_case(iproj).ne."LambertConformal")) then
+      print("mask_lambert_conformal: warning: you are using a projection other")
+      print("  than LambertConformal. Unexpected results will likely occur.")
+    end if
+    delete(iproj)
+  end if
+
+  mpres@mpProjection = get_res_value_keep(res,"mpProjection", \
+                                          "LambertConformal")
+
   if(isatt(res,"mpLimitMode")) then
     need_to_set_limits = False
   else
@@ -4444,9 +4460,9 @@ begin
 ; and masking polygons will be attached to map_object.
 ;
     if(masklc) then
-      map_object = mask_lambert(wks,map_object,res2@mpMinLatF, \
-                                res2@mpMaxLatF,res2@mpMinLonF, \
-                                res2@mpMaxLonF,maskoutln,res2)
+      map_object = mask_lambert_conformal(wks,map_object,res2@mpMinLatF, \
+                                          res2@mpMaxLatF,res2@mpMinLonF, \
+                                          res2@mpMaxLonF,maskoutln,res2)
     end if
 
 ; Make sure axes labels (if any) are the same size.
