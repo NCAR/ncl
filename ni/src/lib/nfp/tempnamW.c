@@ -5,51 +5,65 @@
 
 /*
  * This is equivalent to the C version of tempnam.
+ *
+ * August 2003: replace call to C library function tempnam() with
+ * call to C library function mkstemp().
  */
 NhlErrorTypes tempnam_W(void)
 {
-  char  *dir, *prefix, *return_name;
-  string *dname, *pname, *rname;
-  int ret_size = 1;
+    char    *dir,
+            *prefix,
+            return_name[255];
 
-/*
- * Retrieve directory name.
- */
-  dname = (string *) NclGetArgValue(
-          0,
-          2,
-          NULL,
-          NULL,
-          NULL,
-          NULL,
-          NULL,
-          2);
-/*
- * Retrieve prefix name.
- */
-   pname = (string *) NclGetArgValue(
-           1,
-           2,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           2);
-/*
- * Convert to character strings.
- */
-  prefix = NrmQuarkToString(*pname);
-  dir    = NrmQuarkToString(*dname);
-/*
- * Call the C library routine.
- */
-  return_name = tempnam(dir, prefix);
+    string  *dname,
+            *pname,
+            *rname;
+    int ret_size = 1;
 
-  rname  = (string *) calloc(1,sizeof(string));
-  *rname = NrmStringToQuark(return_name);
-  return(NclReturnValue( (void *) rname, 1, &ret_size, NULL, NCL_string, 0));
+    /*
+     * Retrieve directory name.
+     */
+    dname = (string *) NclGetArgValue(
+        0,
+        2,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        2);
 
+    /*
+     * Retrieve prefix name.
+     */
+    pname = (string *) NclGetArgValue(
+        1,
+        2,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        2);
+
+    /*
+     * Convert to character strings.
+     */
+    prefix = NrmQuarkToString(*pname);
+    dir    = NrmQuarkToString(*dname);
+
+    /*
+     * Build a string like tempnam() would generate, guaranteeing a
+     * writeable directory, and call the C library routine.
+     */
+    (void) sprintf(return_name, "/tmp/%sXXXXXX", prefix);
+    (void) mkstemp(return_name);
+
+    rname  = (string *) calloc(1, sizeof(string));
+    *rname = NrmStringToQuark(return_name);
+
+    return NclReturnValue((void *) rname, 1, &ret_size,
+                NULL, NCL_string, 0);
 }
 
 /*
