@@ -1,7 +1,7 @@
 *ndvPlotStyleName : color
 *ndvPlotName      : color_ce
 *ndvData          : (/ cndata : 2 /)
-*ndvFuncFiles     : (/ ../csm_utils.ncl /)
+*ndvFuncFiles     : (/ ../csm_utils.ncl, ../../common.ncl /)
 
 ;
 ; Define the objects we created.
@@ -28,9 +28,9 @@
 ;
 ; Scalar field setup.
 ;
-*sf@sfDataArray         : FixLongitude($cndata$)
+*sf@sfDataArray         : NgAdjustLongitude($cndata$,0,0)
 *sf@sfDataArray%Profile : (/ Name : Primary Data Var /)
-*sf@sfXArray            : FixLongitudeCoord($cndata$&-1)
+*sf@sfXArray            : NgAdjustLongitudeCoord($cndata$&-1,0,0)
 *sf@sfXArray%Profile    : (/ Name : Longitude /)
 *sf@sfYArray            : $cndata$&-2
 *sf@sfYArray%Profile    : (/ Name : Latitude /)
@@ -38,10 +38,12 @@
 ;
 ; map resources
 ;
-*map@pmOverlays    : (/ $contour$, $tickmark$ /)
-*map@pmAnnoViews   : (/ $left_title$, $center_title$, $right_title$ /)
-*map@ndvUpdateFunc  : SetColormap($map$,"rainbow")
-*map@ndvUpdateFunc%Profile : (/ InitializeOnly : True, Name : Set Colormap /)
+*map@pmOverlays     : (/ $contour$, $tickmark$ /)
+*map@pmAnnoViews    : (/ $left_title$, $center_title$, $right_title$ /)
+*map@ndvUpdateFunc0 : NgSetMapLimits($map$,$contour$,-1,0,0,0,0)
+*map@ndvUpdateFunc0%Profile : (/ Name : Map Limits /)
+*map@ndvUpdateFunc1 : SetColormap($map$,"rainbow")
+*map@ndvUpdateFunc1%Profile : (/ InitializeOnly : True, Name : Set Colormap /)
 *map@ndvUpdateFunc2 : PlotTitles($map$,  $left_title$, $cndata$@long_name,\
                                         $center_title$, "", \
                                         $right_title$, $cndata$@units, \
@@ -52,11 +54,15 @@
 
 *map*mpPerimOn        : True
 *map*mpGridAndLimbOn  : False
+*map*vpWidthF    : 0.85
+*map*vpHeightF   : 0.425
+*map*mpShapeMode : FIXEDASPECTNOFITBB
 
 ;
 ; map tickmark resources
 ;
-*tickmark@ndvUpdateFunc         : MapTickmarks($map$,$tickmark$)
+*tickmark@ndvUpdateFunc         : NgMapTickmarks \
+               ($map$,$tickmark$,0.011,0.012,0.006)
 *tickmark*tfDoNDCOverlay        : True
 *tickmark*pmTickMarkDisplayMode : always
 *tickmark*amZone                : 0

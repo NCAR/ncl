@@ -1,7 +1,7 @@
 *ndvPlotStyleName : b/w with dashed lines below zero
 *ndvPlotName      : bw_ce
 *ndvData          : (/ cndata : 2 /)
-*ndvFuncFiles     : (/ ../csm_utils.ncl /)
+*ndvFuncFiles     : (/ ../csm_utils.ncl, ../../common.ncl /)
 
 ;
 ; Define the objects we created.
@@ -28,9 +28,9 @@
 ;
 ; Scalar field setup.
 ;
-*sf@sfDataArray         : FixLongitude($cndata$)
+*sf@sfDataArray         : NgAdjustLongitude($cndata$,0,0)
 *sf@sfDataArray%Profile : (/ Name : Primary Data Var /)
-*sf@sfXArray            : FixLongitudeCoord($cndata$&-1)
+*sf@sfXArray            : NgAdjustLongitudeCoord($cndata$&-1,0,0)
 *sf@sfXArray%Profile    : (/ Name : Longitude /)
 *sf@sfYArray            : $cndata$&-2
 *sf@sfYArray%Profile    : (/ Name : Latitude /)
@@ -40,8 +40,10 @@
 ;
 *map@pmOverlays     : (/ $contour$, $tickmark$ /)
 *map@pmAnnoViews    : (/ $left_title$, $center_title$, $right_title$ /)
-*map@ndvUpdateFunc  : SetColormap($map$,"hlu_default")
-*map@ndvUpdateFunc%Profile : (/ InitializeOnly : True, Name : Set Colormap /)
+*map@ndvUpdateFunc0 : NgSetMapLimits($map$,$contour$,-1,0,0,0,0)
+*map@ndvUpdateFunc0%Profile : (/ Name : Map Limits /)
+*map@ndvUpdateFunc1 : SetColormap($map$,"hlu_default")
+*map@ndvUpdateFunc1%Profile : (/ InitializeOnly : True, Name : Set Colormap /)
 *map@ndvUpdateFunc2 : SetMapFillColors($map$,"white","transparent", \
                                   "lightgray","transparent")
 *map@ndvUpdateFunc2%Profile : (/ Name : Set Map Fill Colors /)
@@ -56,11 +58,15 @@
 *map*mpOutlineOn      : False
 *map*mpFillColors     : (/white,transparent,lightgray,transparent,transparent/)
 *map*mpGridAndLimbOn  : False
+*map*vpWidthF    : 0.85
+*map*vpHeightF   : 0.425
+*map*mpShapeMode : FIXEDASPECTNOFITBB
 
 ;
 ; map tickmark resources
 ;
-*tickmark@ndvUpdateFunc         : MapTickmarks($map$,$tickmark$)
+*tickmark@ndvUpdateFunc         : NgMapTickmarks \
+               ($map$,$tickmark$,0.011,0.012,0.006)
 *tickmark*tfDoNDCOverlay        : True
 *tickmark*pmTickMarkDisplayMode : always
 *tickmark*amZone                : 0
