@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.22 1999-10-26 20:09:11 haley Exp $
+;      $Id: gsn_code.ncl,v 1.23 1999-11-09 20:39:47 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2711,7 +2711,7 @@ begin
         setvalues sfdata_object
             "sfMissingValueV" :data@_FillValue
         end setvalues
-        "vcMonoLineArrowColor"  : "false"
+    end if
 
 ; Check for missing values.
     check_for_draw_and_frame(res2,calldraw,callframe)
@@ -2915,10 +2915,10 @@ begin
     end if
     if(isatt(v,"_FillValue")) then
         setvalues vfdata_object
-        "vcVectorFieldData" : vfdata_object
-        "vcScalarFieldData" : sfdata_object
-        "vcUseScalarArray"  : True
-        "vcMonoLineArrowColor"  : "false"
+            "vfMissingVValueV" :v@_FillValue
+        end setvalues
+    end if
+
 ; Create the scalar field object.
 
     sfdata_object = create wksname + "_sfdata" scalarFieldClass noparent
