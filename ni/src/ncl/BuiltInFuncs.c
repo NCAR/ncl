@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.22 1995-12-01 01:04:32 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.23 1996-01-31 23:53:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -399,7 +399,52 @@ NhlErrorTypes _NclIListFuncs
         return(NhlNOERROR);
 }
 
+NhlErrorTypes _NclIGetFileVarNames
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclApiDataList *tmp,*step;
+	NclQuark file_q;
+	NclQuark *var_names = NULL;
+	int i,ret =0;
+	int dimsize = 0;
+	
 
+	data = _NclGetArg(0,1,DONT_CARE);
+	switch(data.kind) {
+	case NclStk_VAR:
+		 file_q = data.u.data_var->var.var_quark;
+		break;
+	case NclStk_VAL:
+		return(NhlFATAL);
+	}
+	tmp = _NclGetFileVarInfo(file_q);
+	step = tmp;
+	i = 0;
+	while(step != NULL) {
+		i++;
+		step = step->next;
+	}
+	var_names = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark)*i);
+	step = tmp;
+	dimsize = i;
+	i = 0;
+	while(step != NULL) {
+		var_names[i] = step->u.var->name;
+		step = step->next;
+		i++;
+	}
+		
+	data.kind = NclStk_VAL;
+	data.u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)var_names,NULL,1,&dimsize,TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
+	_NclPlaceReturn(data);
+	_NclFreeApiDataList((void*)tmp);
+       	return(NhlNOERROR);
+}
 
 NhlErrorTypes _NclIListFileVariables
 #if	NhlNeedProto

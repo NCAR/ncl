@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.50 1996-01-22 22:31:37 ethan Exp $
+ *      $Id: Execute.c,v 1.51 1996-01-31 23:53:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1337,6 +1337,17 @@ NclExecuteReturnStatus _NclExecute
 						estatus = _NclPush(data);
 					}
 				} else {
+					if((data_md != NULL)&&!(data_md->multidval.type->type_class.type & valid_dims)){
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce ref dim to long");
+					} else if((data_md != NULL)&&(data_md->multidval.kind != SCALAR)) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Reference dims must be scalar");
+					} else if(var == NULL) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is undefined",thesym->name);
+					}
+			
+					if((data_md != NULL)&&(data_md->obj.status != PERMANENT)) {
+						_NclDestroyObj((NclObj)data_md);
+					}	
 					estatus = NhlFATAL;
 				}
 			}
@@ -1421,6 +1432,19 @@ NclExecuteReturnStatus _NclExecute
 						_NclDestroyObj((NclObj)dim_ref_md);
 					}
 				} else {
+					if((data_var != NULL)&&(data_var->u.data_var != NULL)) {
+						if((dim_expr_md != NULL) &&!(dim_expr_md->multidval.type->type_class.type & valid_expr)) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Right hand side of dimension expression must be a string or character result");
+						} else if((dim_ref_md != NULL) &&!(dim_ref_md->multidval.type->type_class.type & valid_dims)) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce ref dim to long");
+						} else if((dim_expr_md != NULL) &&dim_expr_md->multidval.kind != SCALAR) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Right hand side of dimension expression must be SCALAR");
+						} else if((dim_ref_md != NULL) &&dim_ref_md->multidval.kind != SCALAR) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Reference dimension expression must be SCALAR");
+						}
+					} else {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is undefined",thesym->name);
+					}
 					estatus = NhlFATAL;
 				}
 			}
@@ -2202,19 +2226,45 @@ NclExecuteReturnStatus _NclExecute
 				break;
 			case ASSIGN_FILEVAR_DIM_OP: {
 				NclFile file;
-				NclStackEntry* file_ptr,data,rhs_data;
-				NclMultiDValData file_md,rhs_md,dim_expr_md;
+				NclStackEntry* file_ptr,data,rhs_data,fvar;
+				NclMultiDValData file_md,rhs_md,dim_expr_md,thevalue;
 				NclSymbol* file_sym;
 				NclQuark var_name;
 				long dim_num;
 				NclQuark dim_name;
+
+
+				fvar = _NclPop();
+				switch(fvar.kind) {
+				case NclStk_VAL: 
+					thevalue = fvar.u.data_obj;
+					break;
+				case NclStk_VAR:
+					thevalue = _NclVarValueRead(fvar.u.data_var,NULL,NULL);
+					break;
+				default:
+					thevalue = NULL;
+					estatus = NhlFATAL;
+					break;
+				}
+				if((thevalue == NULL)||(thevalue->multidval.kind != SCALAR)&&(thevalue->multidval.type != (NclTypeClass)nclTypestringClass)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"File Variable names must be scalar string values can't continue");
+					estatus = NhlFATAL;
+				} else {
+					var_name = *(NclQuark*)thevalue->multidval.val;
+					if(fvar.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)fvar.u.data_obj);
+					}
+				}
 				
 				ptr++;lptr++;fptr++;
 				file_sym = (NclSymbol*)(*ptr);	
+/*
 				ptr++;lptr++;fptr++;
 				var_name = (NclQuark)*ptr;
+*/
 				file_ptr = _NclRetrieveRec(file_sym,READ_IT);
-				if((file_ptr != NULL)&&(file_ptr->u.data_var != NULL)) {
+				if((estatus != NhlFATAL)&&(file_ptr != NULL)&&(file_ptr->u.data_var != NULL)) {
 					file_md = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
 					if((file_md != NULL)&&(file_md->obj.obj_type_mask & Ncl_MultiDValnclfileData)) {
 						file = (NclFile)_NclGetObj((int)*(obj*)file_md->multidval.val);
@@ -2268,7 +2318,9 @@ NclExecuteReturnStatus _NclExecute
 							}
 						}
 					}
-				}
+				} else {
+					_NclCleanUpStack(2);
+				} 
 			break;
 			}
 			case FILEVAR_DIM_OP:	
@@ -2276,19 +2328,44 @@ NclExecuteReturnStatus _NclExecute
 				NclSymbol *file;
 				NclQuark var_name;
 				NclStackEntry dim_expr;
-				NclMultiDValData tmp_md,tmp1_md,file_md;
-				NclStackEntry *file_ptr,data;
+				NclMultiDValData tmp_md,tmp1_md,file_md,thevalue;
+				NclStackEntry *file_ptr,data,fvar;
 				NclFile file_obj;
-				ptr++;lptr++;fptr++;
-				file = (NclSymbol*)*ptr;
-				ptr++;lptr++;fptr++;
-				var_name = (NclQuark)(*ptr);
-				dim_expr = _NclPop();
-				file_ptr = _NclRetrieveRec(file,READ_IT);
-				if((file_ptr == NULL) || (file_ptr->u.data_var == NULL)) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) is undefined",file->name);
+
+				fvar = _NclPop();
+				switch(fvar.kind) {
+				case NclStk_VAL: 
+					thevalue = fvar.u.data_obj;
+					break;
+				case NclStk_VAR:
+					thevalue = _NclVarValueRead(fvar.u.data_var,NULL,NULL);
+					break;
+				default:
+					thevalue = NULL;
+					estatus = NhlFATAL;
+					break;
+				}
+				if((thevalue == NULL)||(thevalue->multidval.kind != SCALAR)&&(thevalue->multidval.type != (NclTypeClass)nclTypestringClass)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"File Variable names must be scalar string values can't continue");
 					estatus = NhlFATAL;
 				} else {
+					var_name = *(NclQuark*)thevalue->multidval.val;
+					if(fvar.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)fvar.u.data_obj);
+					}
+				}
+				ptr++;lptr++;fptr++;
+				file = (NclSymbol*)*ptr;
+/*
+				ptr++;lptr++;fptr++;
+				var_name = (NclQuark)(*ptr);
+*/
+				dim_expr = _NclPop();
+				file_ptr = _NclRetrieveRec(file,READ_IT);
+				if((estatus != NhlFATAL)&&((file_ptr == NULL) || (file_ptr->u.data_var == NULL))) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) is undefined",file->name);
+					estatus = NhlFATAL;
+				} else if(estatus != NhlFATAL){
 					file_md = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
 					if(file_md->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 						file_obj = (NclFile)_NclGetObj(*(int*)file_md->multidval.val);
@@ -2313,20 +2390,23 @@ NclExecuteReturnStatus _NclExecute
 							tmp1_md = _NclCoerceData(tmp_md,Ncl_Typelong,NULL);
 							if(tmp1_md == NULL) {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not corece dimension ref into long");
+								estatus = NhlFATAL;
 							} else if((tmp1_md != NULL)&&(tmp_md->obj.status != PERMANENT)) {
 								_NclDestroyObj((NclObj)tmp_md);
 								tmp_md =tmp1_md;
 							} 	
 						}
-						if(tmp_md->multidval.kind == SCALAR) {
-							tmp1_md = _NclFileVarReadDim(file_obj,var_name,(NclQuark)-1,*(long*)tmp_md->multidval.val);
-							if(tmp1_md != NULL) {
-								data.kind = NclStk_VAL;
-								data.u.data_obj = tmp1_md;
-								estatus = _NclPush(data);
+						if(estatus != NhlFATAL) {
+							if(tmp_md->multidval.kind == SCALAR) {
+								tmp1_md = _NclFileVarReadDim(file_obj,var_name,(NclQuark)-1,*(long*)tmp_md->multidval.val);
+								if(tmp1_md != NULL) {
+									data.kind = NclStk_VAL;
+									data.u.data_obj = tmp1_md;
+									estatus = _NclPush(data);
+								}
+							} else 	{
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension references must be scalar");
 							}
-						} else {
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension references must be scalar");
 						}
 					}
 				}
@@ -2705,11 +2785,16 @@ NclExecuteReturnStatus _NclExecute
 			}
 			break;
 			case ASSIGN_FILE_VAR_OP :{
+/*
+* Changed to a two operand function 1/30
+*/
 				NclSymbol *file_sym;
 				NclQuark var;
 				NclStackEntry *file_ptr = NULL;
 				NclStackEntry rhs;
 				NclStackEntry data;
+				NclStackEntry fvar;
+				NclMultiDValData thevalue;
 				int nsubs = 0;
 				NclFile file = NULL;
 				NclSelectionRecord* sel_ptr = NULL;
@@ -2719,14 +2804,38 @@ NclExecuteReturnStatus _NclExecute
 
 
 
+				fvar = _NclPop();
+				switch(fvar.kind) {
+				case NclStk_VAL: 
+					thevalue = fvar.u.data_obj;
+					break;
+				case NclStk_VAR:
+					thevalue = _NclVarValueRead(fvar.u.data_var,NULL,NULL);
+					break;
+				default:
+					thevalue = NULL;
+					estatus = NhlFATAL;
+					break;
+				}
+				if((thevalue == NULL)||(thevalue->multidval.kind != SCALAR)&&(thevalue->multidval.type != (NclTypeClass)nclTypestringClass)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"File Variable names must be scalar string values can't continue");
+					estatus = NhlFATAL;
+				} else {
+					var = *(NclQuark*)thevalue->multidval.val;
+					if(fvar.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)fvar.u.data_obj);
+					}
+				}
 				ptr++;lptr++;fptr++;
 				file_sym = (NclSymbol*)*ptr;
 				ptr++;lptr++;fptr++;
+/*
 				var = (NclQuark)*ptr;
 				ptr++;lptr++;fptr++;
+*/
 				nsubs = *ptr;
 				file_ptr = _NclRetrieveRec(file_sym,WRITE_IT);
-				if((file_ptr != NULL)&&(file_ptr->kind == NclStk_VAR)) {
+				if((file_ptr != NULL)&&(file_ptr->kind == NclStk_VAR)&&(estatus != NhlFATAL)) {
 					value = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
 					if(value->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 						if(value != NULL)
@@ -2822,17 +2931,23 @@ NclExecuteReturnStatus _NclExecute
 							
 						}
 					}
+				} else {
+					_NclCleanUpStack(nsubs +1);
 				}
 				break;
 			}
 			case PARAM_FILE_VAR_OP:
 			case FILE_VAR_OP : {
+/*
+* Changed to a two operand function 1/31/96
+*/
 				NclSymbol *dfile = NULL;
 				NclQuark var;
 				int nsubs;
 				NclStackEntry *file_ptr = NULL;
 				NclStackEntry out_var,data;
-				NclMultiDValData value;
+				NclStackEntry fvar;
+				NclMultiDValData value,thevalue;
 				NclFile file = NULL;
 				int i;
 				int dim_is_ref[NCL_MAX_DIMENSIONS];
@@ -2845,17 +2960,41 @@ NclExecuteReturnStatus _NclExecute
 /*
 				kind = *ptr;
 */
+				fvar = _NclPop();
+				switch(fvar.kind) {
+				case NclStk_VAL: 
+					thevalue = fvar.u.data_obj;
+					break;
+				case NclStk_VAR:
+					thevalue = _NclVarValueRead(fvar.u.data_var,NULL,NULL);
+					break;
+				default:
+					thevalue = NULL;
+					estatus = NhlFATAL;
+					break;
+				}
+				if((thevalue == NULL)||(thevalue->multidval.kind != SCALAR)&&(thevalue->multidval.type != (NclTypeClass)nclTypestringClass)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"File Variable names must be scalar string values can't continue");
+					estatus = NhlFATAL;
+				} else {
+					var = *(NclQuark*)thevalue->multidval.val;
+					if(fvar.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)fvar.u.data_obj);
+					}
+				}
 				ptr++;lptr++;fptr++;
 				dfile = (NclSymbol*)*ptr;
 				ptr++;lptr++;fptr++;
+/*
 				var = (NclQuark)*ptr;
 				ptr++;lptr++;fptr++;
+*/
 				nsubs = (NclQuark)*ptr;
 				for(i = 0 ; i < nsubs ; i++) {
 					dim_is_ref[i] = 0;
 				}
 				file_ptr =  _NclRetrieveRec(dfile,READ_IT);
-				if((file_ptr != NULL)&&(file_ptr->kind == NclStk_VAR)) {
+				if((file_ptr != NULL)&&(file_ptr->kind == NclStk_VAR)&&(estatus != NhlFATAL)) {
 					value = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
 					if(value->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 						if(value != NULL) 
@@ -2942,9 +3081,11 @@ NclExecuteReturnStatus _NclExecute
 						estatus = NhlFATAL;
 					}
 				} else {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is undefined or does not reference a file",dfile->name);
+					if((file_ptr != NULL)&&(file_ptr->kind == NclStk_VAR)) { 
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is undefined or does not reference a file",dfile->name);
+						estatus = NhlFATAL;
+					}
 					_NclCleanUpStack(nsubs);
-					estatus = NhlFATAL;
 				}
 				
 				break;
@@ -3039,7 +3180,7 @@ NclExecuteReturnStatus _NclExecute
 *****************************/
 			case ASSIGN_FILEVARATT_OP: {
 				NclSymbol *file_sym;
-				NclStackEntry *file_ptr,data1,rhs;
+				NclStackEntry *file_ptr,data1,rhs,fvar;
 				NclMultiDValData file_md,rhs_md;
 				NclSelectionRecord *sel_ptr;
 				NclFile		file;
@@ -3047,17 +3188,42 @@ NclExecuteReturnStatus _NclExecute
 				NclQuark	att;
 				int nsubs;
 				NhlErrorTypes ret = NhlNOERROR;
+				NclMultiDValData thevalue;
 
+				fvar = _NclPop();
+				switch(fvar.kind) {
+				case NclStk_VAL: 
+					thevalue = fvar.u.data_obj;
+					break;
+				case NclStk_VAR:
+					thevalue = _NclVarValueRead(fvar.u.data_var,NULL,NULL);
+					break;
+				default:
+					thevalue = NULL;
+					estatus = NhlFATAL;
+					break;
+				}
+				if((thevalue == NULL)||(thevalue->multidval.kind != SCALAR)&&(thevalue->multidval.type != (NclTypeClass)nclTypestringClass)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"File Variable names must be scalar string values can't continue");
+					estatus = NhlFATAL;
+				} else {
+					var = *(NclQuark*)thevalue->multidval.val;
+					if(fvar.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)fvar.u.data_obj);
+					}
+				}
 				ptr++;lptr++;fptr++;
 				file_sym = (NclSymbol*)(*ptr);
+/*
 				ptr++;lptr++;fptr++;
 				var = (NclQuark)(*ptr);
+*/
 				ptr++;lptr++;fptr++;
 				att = (NclQuark)(*ptr);
 				ptr++;lptr++;fptr++;
 				nsubs = *ptr;
 				file_ptr = _NclRetrieveRec(file_sym,WRITE_IT);
-				if((file_ptr != NULL)&&(file_ptr->u.data_var != NULL)) {
+				if((estatus!=NhlFATAL)&&(file_ptr != NULL)&&(file_ptr->u.data_var != NULL)) {
 					file_md = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
 					if((file_md != NULL)&&(file_md->obj.obj_type_mask & Ncl_MultiDValnclfileData)) {
 						file = (NclFile)_NclGetObj((int)*(obj*)file_md->multidval.val);
@@ -3116,29 +3282,55 @@ NclExecuteReturnStatus _NclExecute
 							
 						}
 					}
+				} else {
+					_NclCleanUpStack(nsubs);
 				}
 				break;
 			}
 			case ASSIGN_FILEVAR_COORD_OP:{
 				NclFile file;
-				NclStackEntry *file_ptr,rhs_data,data;
+				NclStackEntry *file_ptr,rhs_data,data,fvar;
 				NclMultiDValData file_md;
 				NclSymbol *file_sym;
 				NclQuark coord_name;
 				NclQuark var_name;
 				int nsubs;
 				NclSelectionRecord *sel_ptr;
-				NclMultiDValData rhs_md;
+				NclMultiDValData rhs_md,thevalue;
 				NclAtt theatt;
 				NclAttList *step;
 				NhlErrorTypes ret = NhlNOERROR;
 	
+				fvar = _NclPop();
+				switch(fvar.kind) {
+				case NclStk_VAL: 
+					thevalue = fvar.u.data_obj;
+					break;
+				case NclStk_VAR:
+					thevalue = _NclVarValueRead(fvar.u.data_var,NULL,NULL);
+					break;
+				default:
+					thevalue = NULL;
+					estatus = NhlFATAL;
+					break;
+				}
+				if((thevalue == NULL)||(thevalue->multidval.kind != SCALAR)&&(thevalue->multidval.type != (NclTypeClass)nclTypestringClass)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"File Variable names must be scalar string values can't continue");
+					estatus = NhlFATAL;
+				} else {
+					var_name = *(NclQuark*)thevalue->multidval.val;
+					if(fvar.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)fvar.u.data_obj);
+					}
+				}
 				
 				ptr++;lptr++;fptr++;
 				file_sym = (NclSymbol*)(*ptr);
 				ptr++;lptr++;fptr++;
+/*
 				var_name = (NclQuark)(*ptr);
 				ptr++;lptr++;fptr++;
+*/
 				coord_name = (NclQuark)(*ptr);
 				ptr++;lptr++;fptr++;
 				nsubs = (int)(*ptr);
@@ -3147,7 +3339,7 @@ NclExecuteReturnStatus _NclExecute
 * the file object id doesn't change
 */
 				file_ptr = _NclRetrieveRec(file_sym,READ_IT);
-				if((file_ptr != NULL) &&(file_ptr->u.data_var != NULL)) {
+				if((estatus != NhlFATAL)&&(file_ptr != NULL) &&(file_ptr->u.data_var != NULL)) {
 					file_md = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
 					if((file_md != NULL)&&(file_md->obj.obj_type_mask & Ncl_MultiDValnclfileData)) {
 						file = (NclFile)_NclGetObj((int)*(obj*)file_md->multidval.val);
@@ -3229,14 +3421,16 @@ NclExecuteReturnStatus _NclExecute
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%s) does not exist in file (%s), can not assign coordinate variable",coord_name,NrmQuarkToString(file->file.fname));
 						}
 					}
+				} else {
+					_NclCleanUpStack(nsubs +1);
 				}
 				break;
 			}
 			case FILEVARATT_OP:
 			case PARAM_FILEVARATT_OP: {
 				NclSymbol *file_sym;
-				NclStackEntry *file_ptr;
-				NclMultiDValData file_md;
+				NclStackEntry *file_ptr,fvar;
+				NclMultiDValData file_md,thevalue;
 				NclFile	file;
 				NclQuark var_name,att_name;
 				int nsubs = 0;
@@ -3245,17 +3439,41 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry data;
 				NhlErrorTypes ret = NhlNOERROR;
 			
+				fvar = _NclPop();
+				switch(fvar.kind) {
+				case NclStk_VAL: 
+					thevalue = fvar.u.data_obj;
+					break;
+				case NclStk_VAR:
+					thevalue = _NclVarValueRead(fvar.u.data_var,NULL,NULL);
+					break;
+				default:
+					thevalue = NULL;
+					estatus = NhlFATAL;
+					break;
+				}
+				if((thevalue == NULL)||(thevalue->multidval.kind != SCALAR)&&(thevalue->multidval.type != (NclTypeClass)nclTypestringClass)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"File Variable names must be scalar string values can't continue");
+					estatus = NhlFATAL;
+				} else {
+					var_name = *(NclQuark*)thevalue->multidval.val;
+					if(fvar.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)fvar.u.data_obj);
+					}
+				}
 				ptr++;lptr++;fptr++;
 				file_sym = (NclSymbol*)*ptr;
+/*
 				ptr++;lptr++;fptr++;
 				var_name = (NclQuark)(*ptr);
+*/
 				ptr++;lptr++;fptr++;
 				att_name = (NclQuark)(*ptr);
 				ptr++;lptr++;fptr++;
 				nsubs = *ptr;
 	
 				file_ptr = _NclRetrieveRec(file_sym,READ_IT);
-				if((file_ptr != NULL)&&(file_ptr->u.data_var != NULL))  {
+				if((estatus != NhlFATAL)&&(file_ptr != NULL)&&(file_ptr->u.data_var != NULL))  {
 					file_md = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
 					if(file_md->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 						file = (NclFile)_NclGetObj(*((int*)file_md->multidval.val));
@@ -3305,14 +3523,16 @@ NclExecuteReturnStatus _NclExecute
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to reference a file variable attribute from a non-file");
 						estatus = NhlFATAL;
 					}
+				} else {
+					_NclCleanUpStack(nsubs);
 				}
 				break;
 			}
 			case FILEVAR_COORD_OP:
 			case PARAM_FILEVAR_COORD_OP: {
 				NclSymbol *file_sym;
-				NclStackEntry *file_ptr;
-				NclMultiDValData file_md;
+				NclStackEntry *file_ptr,fvar;
+				NclMultiDValData file_md,thevalue;
 				NclFile	file;
 				NclQuark var_name,coord_name;
 				int nsubs = 0;
@@ -3320,17 +3540,43 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry out_data;
 				NclStackEntry data;
 				NhlErrorTypes ret = NhlNOERROR;
+
+
+				fvar = _NclPop();
+				switch(fvar.kind) {
+				case NclStk_VAL: 
+					thevalue = fvar.u.data_obj;
+					break;
+				case NclStk_VAR:
+					thevalue = _NclVarValueRead(fvar.u.data_var,NULL,NULL);
+					break;
+				default:
+					thevalue = NULL;
+					estatus = NhlFATAL;
+					break;
+				}
+				if((thevalue == NULL)||(thevalue->multidval.kind != SCALAR)&&(thevalue->multidval.type != (NclTypeClass)nclTypestringClass)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"File Variable names must be scalar string values can't continue");
+					estatus = NhlFATAL;
+				} else {
+					var_name = *(NclQuark*)thevalue->multidval.val;
+					if(fvar.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)fvar.u.data_obj);
+					}
+				}
 				
 				ptr++;lptr++;fptr++;
 				file_sym = (NclSymbol*)(*ptr);
 				ptr++;lptr++;fptr++;
+/*
 				var_name = (NclQuark)(*ptr);
 				ptr++;lptr++;fptr++;
+*/
 				coord_name = (NclQuark)(*ptr);
 				ptr++;lptr++;fptr++;
 				nsubs = (*ptr);
 				file_ptr = _NclRetrieveRec(file_sym,READ_IT);
-				if((file_ptr != NULL)&&(file_ptr->u.data_var != NULL)) {
+				if((estatus != NhlFATAL)&&(file_ptr != NULL)&&(file_ptr->u.data_var != NULL)) {
 					file_md = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
 					if(file_md->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 						file = (NclFile)_NclGetObj(*(int*)file_md->multidval.val);
@@ -3384,6 +3630,8 @@ NclExecuteReturnStatus _NclExecute
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to reference a file variable coordinate with a non file ");
 						estatus = NhlFATAL;
 					}
+				} else {
+					_NclCleanUpStack(nsubs);
 				}
 				break;
 			}

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.16 1995-04-19 00:01:43 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.17 1996-01-31 23:53:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -122,6 +122,12 @@ void
 
 extern NhlErrorTypes _NclIIsMissing(
 #if	NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIGetFileVarNames(
+#if     NhlNeedProto
 void
 #endif
 );
@@ -433,6 +439,13 @@ void _NclAddIntrinsics
 	args[0].dim_sizes[0] = 1;
 	args[0].n_dims = 1;
 	_NclRegisterProc(_NclIListFileVariables,args,"list_filevars",1,IPROC);
+
+	args = NclCalloc(1,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("file");
+	args[0].is_dimsizes = 1;
+	args[0].dim_sizes[0] = 1;
+	args[0].n_dims = 1;
+	_NclRegisterFunc(_NclIGetFileVarNames,args,"getfilevarnames",1,IFUNC);
 
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("numeric");

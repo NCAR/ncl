@@ -1358,21 +1358,28 @@ Unneeded translations
 			NclFileVarDim *filevardim = (NclFileVarDim*)root;
 
 			off1 = _NclTranslate(filevardim->dim_expr,fp);
+			_NclTranslate(filevardim->filevarnode,fp);
 			switch(filevardim->ref_type) {
 			case Ncl_READIT:
 				_NclPutInstr(FILEVAR_DIM_OP,filevardim->line,filevardim->file);
 				_NclPutInstr((NclValue)filevardim->filesym,filevardim->line,filevardim->file);
+/*
 				_NclPutInstr((NclValue)filevardim->filevar_q,filevardim->line,filevardim->file);
+*/
 				break;
 			case Ncl_WRITEIT:
 				_NclPutInstr(ASSIGN_FILEVAR_DIM_OP,filevardim->line,filevardim->file);
 				_NclPutInstr((NclValue)filevardim->filesym,filevardim->line,filevardim->file);
+/*
 				_NclPutInstr((NclValue)filevardim->filevar_q,filevardim->line,filevardim->file);
+*/
 				break;
 			case Ncl_PARAMIT:
 				_NclPutInstr(PARAM_FILEVAR_DIM_OP,filevardim->line,filevardim->file);
 				_NclPutInstr((NclValue)filevardim->filesym,filevardim->line,filevardim->file);
+/*
 				_NclPutInstr((NclValue)filevardim->filevar_q,filevardim->line,filevardim->file);
+*/
 				break;
 			}
 			break;
@@ -1414,12 +1421,16 @@ Unneeded translations
 						step = step->next;
 						nsubs++;
 					}
+					_NclTranslate(filevaratt->filevarnode,fp);
 					_NclPutInstr(FILEVARATT_OP,filevaratt->line,filevaratt->file);
 				} else {
-					off1 = _NclPutInstr(FILEVARATT_OP,filevaratt->line,filevaratt->file);
+					off1 = _NclTranslate(filevaratt->filevarnode,fp);
+					_NclPutInstr(FILEVARATT_OP,filevaratt->line,filevaratt->file);
 				}
 				_NclPutInstr((NclValue)filevaratt->filesym,filevaratt->line,filevaratt->file);
+/*
 				_NclPutInstr((NclValue)filevaratt->filevar_q,filevaratt->line,filevaratt->file);
+*/
 				_NclPutInstr((NclValue)filevaratt->attname_q,filevaratt->line,filevaratt->file);
 				_NclPutInstr((NclValue)nsubs,filevaratt->line,filevaratt->file);
 				break;
@@ -1434,12 +1445,16 @@ Unneeded translations
 						step = step->next;
 						nsubs++;
 					}
+					_NclTranslate(filevaratt->filevarnode,fp);
 					_NclPutInstr(ASSIGN_FILEVARATT_OP,filevaratt->line,filevaratt->file);
 				} else {
-					off1 = _NclPutInstr(ASSIGN_FILEVARATT_OP,filevaratt->line,filevaratt->file);
+					off1 = _NclTranslate(filevaratt->filevarnode,fp);
+					_NclPutInstr(ASSIGN_FILEVARATT_OP,filevaratt->line,filevaratt->file);
 				}
 				_NclPutInstr((NclValue)filevaratt->filesym,filevaratt->line,filevaratt->file);
+/*
 				_NclPutInstr((NclValue)filevaratt->filevar_q,filevaratt->line,filevaratt->file);
+*/
 				_NclPutInstr((NclValue)filevaratt->attname_q,filevaratt->line,filevaratt->file);
 				_NclPutInstr((NclValue)nsubs,filevaratt->line,filevaratt->file);
 				break;	
@@ -1454,12 +1469,16 @@ Unneeded translations
 						step = step->next;
 						nsubs++;
 					}
+					_NclTranslate(filevaratt->filevarnode,fp);
 					_NclPutInstr(PARAM_FILEVARATT_OP,filevaratt->line,filevaratt->file);
 				} else {
-					off1 = _NclPutInstr(PARAM_FILEVARATT_OP,filevaratt->line,filevaratt->file);
+					off1 = _NclTranslate(filevaratt->filevarnode,fp);
+					_NclPutInstr(PARAM_FILEVARATT_OP,filevaratt->line,filevaratt->file);
 				}
 				_NclPutInstr((NclValue)filevaratt->filesym,filevaratt->line,filevaratt->file);
+/*
 				_NclPutInstr((NclValue)filevaratt->filevar_q,filevaratt->line,filevaratt->file);
+*/
 				_NclPutInstr((NclValue)filevaratt->attname_q,filevaratt->line,filevaratt->file);
 				_NclPutInstr((NclValue)nsubs,filevaratt->line,filevaratt->file);
 				break;	
@@ -1546,13 +1565,17 @@ Unneeded translations
 						nsubs++;
 						step = step->next;
 					}
+					_NclTranslate(filecoord->filevarnode,fp);
 					_NclPutInstr(FILEVAR_COORD_OP,filecoord->line,filecoord->file);
 				} else {
-					off1 = _NclPutInstr(FILEVAR_COORD_OP,filecoord->line,filecoord->file);
+					off1 = _NclTranslate(filecoord->filevarnode,fp);
+					_NclPutInstr(FILEVAR_COORD_OP,filecoord->line,filecoord->file);
 			
 				}
 				_NclPutInstr((NclValue)filecoord->filesym,filecoord->line,filecoord->file);
+/*
 				_NclPutInstr((NclValue)filecoord->filevar_q,filecoord->line,filecoord->file);
+*/
 				_NclPutInstr((NclValue)filecoord->coord_name_q,filecoord->line,filecoord->file);
 				_NclPutInstr((NclValue)nsubs,filecoord->line,filecoord->file);
 				break;
@@ -1566,12 +1589,16 @@ Unneeded translations
 						nsubs++;
 						step = step->next;
 					}
+					_NclTranslate(filecoord->filevarnode,fp);
 					_NclPutInstr(ASSIGN_FILEVAR_COORD_OP,filecoord->line,filecoord->file);
 				} else {
-					off1 = _NclPutInstr(ASSIGN_FILEVAR_COORD_OP,filecoord->line,filecoord->file);
+					off1 = _NclTranslate(filecoord->filevarnode,fp);
+					_NclPutInstr(ASSIGN_FILEVAR_COORD_OP,filecoord->line,filecoord->file);
 				}
 				_NclPutInstr((NclValue)filecoord->filesym,filecoord->line,filecoord->file);
+/*
 				_NclPutInstr((NclValue)filecoord->filevar_q,filecoord->line,filecoord->file);
+*/
 				_NclPutInstr((NclValue)filecoord->coord_name_q,filecoord->line,filecoord->file);
 				_NclPutInstr((NclValue)nsubs,filecoord->line,filecoord->file);
 				break;
@@ -1585,12 +1612,16 @@ Unneeded translations
 						nsubs++;
 						step = step->next;
 					}
+					_NclTranslate(filecoord->filevarnode,fp);
 					_NclPutInstr(PARAM_FILEVAR_COORD_OP,filecoord->line,filecoord->file);
 				} else {
-					off1 = _NclPutInstr(PARAM_FILEVAR_COORD_OP,filecoord->line,filecoord->file);
+					off1 = _NclTranslate(filecoord->filevarnode,fp);
+					_NclPutInstr(PARAM_FILEVAR_COORD_OP,filecoord->line,filecoord->file);
 				}
 				_NclPutInstr((NclValue)filecoord->filesym,filecoord->line,filecoord->file);
+/*
 				_NclPutInstr((NclValue)filecoord->filevar_q,filecoord->line,filecoord->file);
+*/
 				_NclPutInstr((NclValue)filecoord->coord_name_q,filecoord->line,filecoord->file);
 				_NclPutInstr((NclValue)nsubs,filecoord->line,filecoord->file);
 				break;
@@ -1676,12 +1707,16 @@ Unneeded translations
 						step = step->next;
 						nsubs++;
 					}
+					_NclTranslate(filevar->filevarnode,fp);
 					_NclPutInstr(FILE_VAR_OP,filevar->line,filevar->file);
 				} else {
-					off1= _NclPutInstr(FILE_VAR_OP,filevar->line,filevar->file);
+					off1 = _NclTranslate(filevar->filevarnode,fp);
+					_NclPutInstr(FILE_VAR_OP,filevar->line,filevar->file);
 				}
 				_NclPutInstr((NclValue)filevar->dfile,filevar->line,filevar->file);
+/*
 				_NclPutInstr((NclValue)filevar->filevar_q,filevar->line,filevar->file);
+*/
 				_NclPutInstr((NclValue)nsubs,filevar->line,filevar->file);
 				break;
 			case Ncl_WRITEIT:
@@ -1695,12 +1730,16 @@ Unneeded translations
 						step = step->next;
 						nsubs++;
 					}
+					_NclTranslate(filevar->filevarnode,fp);
 					_NclPutInstr(ASSIGN_FILE_VAR_OP,filevar->line,filevar->file);
 				} else {
-					off1= _NclPutInstr(ASSIGN_FILE_VAR_OP,filevar->line,filevar->file);
+					off1 = _NclTranslate(filevar->filevarnode,fp);
+					 _NclPutInstr(ASSIGN_FILE_VAR_OP,filevar->line,filevar->file);
 				}
 				_NclPutInstr((NclValue)filevar->dfile,filevar->line,filevar->file);
+/*
 				_NclPutInstr((NclValue)filevar->filevar_q,filevar->line,filevar->file);
+*/
 				_NclPutInstr((NclValue)nsubs,filevar->line,filevar->file);
 				break;
 			case Ncl_PARAMIT:
@@ -1714,12 +1753,16 @@ Unneeded translations
 						step = step->next;
 						nsubs++;
 					}
+					_NclTranslate(filevar->filevarnode,fp);
 					_NclPutInstr(PARAM_FILE_VAR_OP,filevar->line,filevar->file);
 				} else {
-					off1= _NclPutInstr(PARAM_FILE_VAR_OP,filevar->line,filevar->file);
+					off1 = _NclTranslate(filevar->filevarnode,fp);
+					_NclPutInstr(PARAM_FILE_VAR_OP,filevar->line,filevar->file);
 				}
 				_NclPutInstr((NclValue)filevar->dfile,filevar->line,filevar->file);
+/*
 				_NclPutInstr((NclValue)filevar->filevar_q,filevar->line,filevar->file);
+*/
 					_NclPutInstr((NclValue)nsubs,filevar->line,filevar->file);
 				break;
 			}

@@ -65,7 +65,7 @@ char *cur_load_file = NULL;
 
 %token	<void> EOLN 
 %token  <void> EOFF
-%token	<void> RP LP RBC LBC RBK LBK COLON ',' '*' SEMI MARKER LPSLSH SLSHRP DIM_MARKER
+%token	<void> RP LP RBC LBC RBK LBK COLON ',' '*' SEMI MARKER LPSLSH SLSHRP DIM_MARKER FSTRING EFSTRING
 %token <integer> INT DIMNUM
 %token <real> REAL
 %token <str> STRING DIM DIMNAME ATTNAME COORDV FVAR 
@@ -110,7 +110,7 @@ char *cur_load_file = NULL;
 %type <src_node> visblk statement_list
 %type <src_node> declaration identifier expr v_parent 
 %type <src_node> subscript0 break_cont vcreate
-%type <src_node> subscript1 subexpr primary function array error
+%type <src_node> subscript1 subexpr primary function array error filevarselector
 %type <list> the_list arg_dec_list subscript_list opt_arg_list 
 %type <list> block_statement_list resource_list dim_size_list  
 %type <list> arg_list do_stmnt resource vset vget get_resource get_resource_list
@@ -1368,40 +1368,47 @@ assignment :  identifier '=' expr		{
 */
 ;
 
+filevarselector : FVAR {
+			$$ = _NclMakeIdnExpr(_NclMakeStringExpr(&(($1)[2])));
+		}
+	| FSTRING primary EFSTRING {
+		$$ = $2;
+	}
+
 identifier : vname {
 			$$ = _NclMakeVarRef($1,NULL);
 		  }
-	| vname FVAR 			{
-						$$ = _NclMakeFileVarRef($1,&(($2)[2]),NULL,Ncl_FILEVAR);
+	| vname filevarselector {
+						$$ = _NclMakeFileVarRef($1,$2,NULL,Ncl_FILEVAR);
 					}
-	| vname FVAR MARKER		{
-						$$ = _NclMakeFileVarRef($1,&(($2)[2]),NULL,Ncl_FILEVAR);
+	| vname filevarselector MARKER		{
+						$$ = _NclMakeFileVarRef($1,$2,NULL,Ncl_FILEVAR);
 					}
-	| vname FVAR LP subscript_list RP MARKER {
+	| vname filevarselector LP subscript_list RP MARKER {
 				
-						$$ = _NclMakeFileVarRef($1,&(($2)[2]),$4,Ncl_FILEVAR);
+						$$ = _NclMakeFileVarRef($1,$2,$4,Ncl_FILEVAR);
 					}
-	| vname FVAR LP subscript_list RP	{	
+	| vname filevarselector LP subscript_list RP	{	
 				
-						$$ = _NclMakeFileVarRef($1,&(($2)[2]),$4,Ncl_FILEVAR);
+						$$ = _NclMakeFileVarRef($1,$2,$4,Ncl_FILEVAR);
 					}
-	| vname FVAR DIM_MARKER primary	{
-						$$ = _NclMakeFileVarDimRef($1,&(($2)[2]),$4);		
+	| vname filevarselector DIM_MARKER primary	{
+						$$ = _NclMakeFileVarDimRef($1,$2,$4);		
 					}
-        | vname FVAR ATTNAME			{
-						$$ = _NclMakeFileVarAttRef($1,&(($2)[2]),$3,NULL);
+        | vname filevarselector ATTNAME			{
+						$$ = _NclMakeFileVarAttRef($1,$2,$3,NULL);
 					}
-        | vname FVAR ATTNAME LP subscript_list RP	{
-						$$ = _NclMakeFileVarAttRef($1,&(($2)[2]),$3,$5);
+        | vname filevarselector ATTNAME LP subscript_list RP	{
+						$$ = _NclMakeFileVarAttRef($1,$2,$3,$5);
 					}
-	| vname FVAR COORDV			{
-						$$ = _NclMakeFileVarCoordRef($1,&(($2)[2]),&(($3)[1]),NULL);
+	| vname filevarselector COORDV			{
+						$$ = _NclMakeFileVarCoordRef($1,$2,&(($3)[1]),NULL);
 					}
-	| vname FVAR COORDV ATTNAME {
-						$$ = _NclMakeFileVarCoordRef($1,&(($2)[2]),&(($3)[1]),NULL);
+	| vname filevarselector COORDV ATTNAME {
+						$$ = _NclMakeFileVarCoordRef($1,$2,&(($3)[1]),NULL);
 					}
-	| vname FVAR COORDV LP subscript_list RP{
-						$$ = _NclMakeFileVarCoordRef($1,&(($2)[2]),&(($3)[1]),$5);
+	| vname filevarselector COORDV LP subscript_list RP{
+						$$ = _NclMakeFileVarCoordRef($1,$2,&(($3)[1]),$5);
 					}
 	| vname DIM_MARKER primary  {
 						$$ = _NclMakeVarDimRef($1,$3);		

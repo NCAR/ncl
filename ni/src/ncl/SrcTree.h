@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.15 1995-10-26 22:31:13 ethan Exp $
+ *      $Id: SrcTree.h,v 1.16 1996-01-31 23:53:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -174,8 +174,10 @@ typedef struct ncl_filevar {
 	NclSymbol *dfile;
 /*
 	char *filevar;
-*/
 	int  filevar_q;
+*/
+	void *filevarnode;
+	
 	NclSrcListNode *subscript_list;
 }NclFileVar;
 
@@ -189,8 +191,9 @@ typedef struct ncl_filevardim{
 	NclSymbol *filesym;
 /*
 	char *filevar;
-*/
 	int filevar_q;
+*/
+	void *filevarnode;
 	void *dim_expr;
 }NclFileVarDim;
 
@@ -215,11 +218,12 @@ typedef struct ncl_filevaratt{
 	NclSymbol *filesym;
 /*
 	char *filevar;
-*/
+
 	int filevar_q;
-/*
+
 	char *attname;
 */
+	void *filevarnode;
 	int attname_q;
 	NclSrcListNode *subscript_list;
 }NclFileVarAtt;
@@ -260,11 +264,10 @@ typedef struct ncl_filecoord {
 	NclSymbol *filesym;
 /*
 	char *filevar;
-*/
 	int filevar_q;
-/*
 	char *coord_name;
 */
+	void *filevarnode;
 	int coord_name_q;
 	NclSrcListNode *subscript_list;
 }NclFileCoord;
@@ -847,7 +850,7 @@ extern void *_NclMakeFileRef(
 extern void *_NclMakeFileVarRef(
 #if	NhlNeedProto
 	NclSymbol * /* dfile */,
-	char * /* filevar */,
+	void * /* filevar */,
 	NclSrcListNode * /* subscript_list */,
 	int /*type*/
 #endif
@@ -879,7 +882,7 @@ extern void *_NclMakeVarDimRef(
 extern void *_NclMakeFileVarDimRef(
 #if	NhlNeedProto
 	NclSymbol * /* var */,
-	char *	/*filevar*/,
+	void*	/*filevar*/,
 	void*	/* dimexpr */
 #endif
 );
@@ -887,7 +890,7 @@ extern void *_NclMakeFileVarDimRef(
 extern void *_NclMakeFileVarAttRef(
 #if	NhlNeedProto
 	NclSymbol * /* var */,
-	char * /* filevar */,
+	void * /* filevarnode */,
 	char * /* attname */,
 	NclSrcListNode * /*subscript_list*/
 #endif
@@ -903,7 +906,7 @@ extern void *_NclMakeVarAttRef(
 extern void *_NclMakeFileVarCoordRef(
 #if	NhlNeedProto
 	NclSymbol * /* var */,
-	char * /* filevar*/,
+	void * /* filevar*/,
 	char * /* coord */,
 	NclSrcListNode * /* subscript_list */
 #endif

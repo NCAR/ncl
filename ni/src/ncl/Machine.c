@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.43 1995-07-18 19:42:45 ethan Exp $
+ *      $Id: Machine.c,v 1.44 1996-01-31 23:53:32 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1194,8 +1194,10 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
+/*
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
+*/
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d\n",(int)*ptr);
@@ -1220,8 +1222,10 @@ void _NclPrintMachine
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+/*
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
+*/
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
@@ -1247,9 +1251,11 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
+/*
 				fprintf(fp,"\t");
 				fprintf(fp,"%s\n",NrmQuarkToString(*ptr),fp);
 				ptr++;lptr++;fptr++;
+*/
 				fprintf(fp,"\t%d\n",*ptr);
 				break;
 			case VAR_READ_OP :
@@ -1306,9 +1312,11 @@ void _NclPrintMachine
 			case PARAM_FILEVAR_DIM_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++,fptr++;
+/*
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++,fptr++;
+*/
 				fprintf(fp,"\t");
 				fprintf(fp,"%s\n",NrmQuarkToString(*ptr));
 				break;

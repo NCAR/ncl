@@ -326,6 +326,22 @@ digit	[0-9]
 	cur_line_text_pos += yyleng;
 	return FVAR;
 }
+"$" {
+	strcpy(yylval.str,yytext);
+	printtoken(FVAR,yylval.str);
+	cur_line_length += yyleng;
+	strcpy(cur_line_text_pos,yytext);
+	cur_line_text_pos += yyleng;
+	return EFSTRING;
+}
+"->$" {
+	strcpy(yylval.str,yytext);
+	printtoken(FVAR,yylval.str);
+	cur_line_length += yyleng;
+	strcpy(cur_line_text_pos,yytext);
+	cur_line_text_pos += yyleng;
+	return FSTRING;
+}
 {let}{alnum}* {
         NclSymbol *s;
 
