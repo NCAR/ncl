@@ -289,6 +289,7 @@ extern NhlErrorTypes wmgetp_W(void);
 extern NhlErrorTypes wmbarb_W(void);
 extern NhlErrorTypes wmdrft_W(void);
 extern NhlErrorTypes wmlabs_W(void);
+extern NhlErrorTypes wmstnm_W(void);
 
 extern NhlErrorTypes regcoef_W(void);
 extern NhlErrorTypes regCoef_W(void);
@@ -2458,6 +2459,19 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
     NclRegisterProc(wmlabs_W,args,"wmlabs",nargs);
+
+/*
+ * Register wmstnm
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    dimsizes[0] = 1;
+    
+    SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    NclRegisterProc(wmstnm_W,args,"wmstnm",nargs);
 
 /*
  *  Register nnsetp.

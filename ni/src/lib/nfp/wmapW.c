@@ -809,3 +809,124 @@ NhlErrorTypes wmlabs_W( void )
   return(NhlNOERROR);
   
 }
+
+NhlErrorTypes wmstnm_W( void )
+{
+  int ier;
+  Gclip clip_ind_rect;
+
+  int grlist,gkswid,i;
+  int *nwid,nid,ezf;
+  char *arg1;
+  float xt,yt;
+
+/*
+ *  Definte a variable to store the HLU object identifier.
+ */
+  NclHLUObj tmp_hlu_obj;
+
+  float *x;
+  int ndims_x,dsizes_x[1];
+  float *y;
+  int ndims_y,dsizes_y[1];
+  string *symtyp;
+  int ndims_symtyp, dsizes_symtyp[NCL_MAX_DIMENSIONS];
+  
+
+/*
+ * Retrieve parameters
+ */
+
+/*
+ *  nwid points to the HLU identifier of the graphic object; this is
+ *  converted to the NCL workstation identifier below.
+ */
+  nwid = (int*)  NclGetArgValue(0,4,     NULL,     NULL, NULL,NULL,NULL,2);
+
+  x   = (float*) NclGetArgValue(1,4, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
+  y   = (float*) NclGetArgValue(2,4, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
+
+/*
+ * Check the input dimension sizes.
+ */
+  if( ndims_x != 1 || ndims_y != 1) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+               "wmstnm: input arguments must be singly-dimensioned");
+        return(NhlFATAL);
+  }
+/*
+ * Check the input sizes.
+ */
+  if (dsizes_x[0] != dsizes_y[0]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+               "wmstnm: input arguments must be the same size");
+        return(NhlFATAL);
+  }
+
+/*
+ * Retrieve the station model data.
+ */
+  symtyp = (string *) NclGetArgValue(
+          3,
+          4,
+          &ndims_symtyp,
+          dsizes_symtyp,
+          NULL,
+          NULL,
+          NULL,
+          2);
+
+/*
+ * Check number of dimensions for the model data.
+ */
+  if(ndims_symtyp != 1) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN,
+              "wmstnm: Argument #4 has the wrong number of dimensions.");
+    return(NhlFATAL);
+  }
+  arg1 = NrmQuarkToString(*symtyp);
+
+
+/*
+ *  Determine the NCL identifier for the graphic object in nid.
+ */
+  tmp_hlu_obj = (NclHLUObj) _NclGetObj(*nwid);
+  nid = tmp_hlu_obj->hlu.hlu_id;
+
+/*
+ * Retrieve the GKS workstation id from the workstation object.
+ */
+  
+  grlist = NhlRLCreate(NhlGETRL);
+  NhlRLClear(grlist);
+  NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
+  NhlGetValues(nid,grlist);
+
+/*
+ * The following section calls the c_wmstnm function.
+ */
+  gactivate_ws (gkswid);
+  ginq_clip(&ier,&clip_ind_rect);
+  gset_clip_ind(GIND_CLIP);
+  c_wmgeti("ezf",&ezf);
+  if (ezf != -1) {
+    for (i = 0; i < dsizes_x[0]; i++) {
+      c_maptrn(x[i],y[i],&xt,&yt);
+      if (xt != 1.e12) {
+        c_wmstnm(xt, yt, arg1);
+      }
+    }
+  }
+  else {
+    for (i = 0; i < dsizes_x[0]; i++) {
+      c_wmstnm(*(x+i), *(y+i), arg1);
+    }
+  }
+  gset_clip_ind(clip_ind_rect.clip_ind);
+  gdeactivate_ws (gkswid);
+
+  NhlRLDestroy(grlist);
+
+  return(NhlNOERROR);
+  
+}
