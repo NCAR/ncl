@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.4 1991-01-09 10:51:32 clyne Exp $
+ *	$Id: w_idt.c,v 1.5 1991-02-05 13:15:38 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -64,7 +64,7 @@ static	String fallback_resources[] = {
 	"*file*selection.value:	\ ",
 	"*file*selection*value.translations: #override \\n\
 		 <Key>Return: okFileTranslation()",
-	"*file*textDisplay*translations: #override \\n\
+	"*file*textDisplay*Text*translations: #override \\n\
 		 <Key>Return: selectFileTranslation() \\n\
 		 <Btn1Down>: select-start() selectFileTranslation()",
 	"*simpleDialog*dialog*value.translations: #override \\n\
