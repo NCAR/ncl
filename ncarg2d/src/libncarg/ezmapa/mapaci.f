@@ -1,5 +1,5 @@
 C
-C $Id: mapaci.f,v 1.5 1994-03-17 00:04:22 kennison Exp $
+C $Id: mapaci.f,v 1.6 1994-03-17 02:42:49 kennison Exp $
 C
       FUNCTION MAPACI (IAI)
 C
@@ -83,17 +83,21 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPACI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (.NOT.(ICFELL('MAPACI - UNCLEARED PRIOR ERROR',1).NE.0))
+     +GO TO 10000
+      MAPACI=1
+      RETURN
+10000 CONTINUE
 C
 C Pull out the appropriate color index, taking precautions to prevent
 C an out-of-array reference.
 C
-      IF (.NOT.(IAI.GE.1.AND.IAI.LE.1361)) GO TO 10000
+      IF (.NOT.(IAI.GE.1.AND.IAI.LE.1361)) GO TO 10001
       MAPACI=ICI(IAI)
-      GO TO 10001
-10000 CONTINUE
-      MAPACI=1
+      GO TO 10002
 10001 CONTINUE
+      MAPACI=1
+10002 CONTINUE
 C
 C Done.
 C
