@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.51 1996-01-31 23:53:35 ethan Exp $
+ *      $Id: Execute.c,v 1.52 1996-02-14 23:11:49 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2930,8 +2930,16 @@ NclExecuteReturnStatus _NclExecute
 							}
 							
 						}
+					} else {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) does not reference a file",file_sym->name);
+						_NclCleanUpStack(nsubs+1);
+						estatus = NhlFATAL;
 					}
 				} else {
+					if((file_ptr == NULL)||(file_ptr->kind != NclStk_VAR)) { 
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is undefined or does not reference a file",file_sym->name);
+						estatus = NhlFATAL;
+					}
 					_NclCleanUpStack(nsubs +1);
 				}
 				break;
@@ -3081,7 +3089,7 @@ NclExecuteReturnStatus _NclExecute
 						estatus = NhlFATAL;
 					}
 				} else {
-					if((file_ptr != NULL)&&(file_ptr->kind == NclStk_VAR)) { 
+					if((file_ptr == NULL)||(file_ptr->kind != NclStk_VAR)) { 
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is undefined or does not reference a file",dfile->name);
 						estatus = NhlFATAL;
 					}
