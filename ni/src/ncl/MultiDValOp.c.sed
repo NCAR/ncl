@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MultiDValOp.c.sed,v 1.12 1998-06-10 16:23:24 ethan Exp $
+ *      $Id: MultiDValOp.c.sed,v 1.13 1999-02-03 23:05:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -84,10 +84,10 @@ NclData result;
 			result_md->multidval.hlu_type_rep[1] = the_type->type_class.hlu_type_rep[1];
 			result_md->multidval.totalsize = result_md->multidval.totalelements * the_type->type_class.size;
 		} else {
-			if((result_md != NULL) &&((result_md != self_md)||(result_md != other_md))) {
+			if((result_md != NULL) &&((result_md != self_md)&&(result_md != other_md))) {
 				_NclDestroyObj((NclObj)result_md);
-				result_md = NULL;
 			}
+			result_md = NULL;
 			result_val = (void*)NclMalloc(self_md->multidval.totalelements * the_type->type_class.size);
 			if(result_val == NULL) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNNAME: Could not allocate memory for result type, can't continue\n");
@@ -214,10 +214,10 @@ NclData result;
                         result_md->multidval.hlu_type_rep[1] = the_type->type_class.hlu_type_rep[1];
                         result_md->multidval.totalsize = result_md->multidval.totalelements * the_type->type_class.size;
                 } else {
-                        if(result_md != NULL)  {
+			if((result_md != NULL) &&((result_md != self_md)&&(result_md != other_md))) {
                                 _NclDestroyObj((NclObj)result_md);
-                                result_md = NULL;
                         }
+                        result_md = NULL;
                         result_val = (void*)NclMalloc(total * the_type->type_class.size);
                         if(result_val == NULL) {
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNNAME: Could not allocate memory for result type, can't continue\n");
