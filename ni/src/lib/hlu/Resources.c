@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.27 1995-05-10 06:07:34 boote Exp $
+ *      $Id: Resources.c,v 1.28 1995-10-12 21:33:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -435,6 +435,7 @@ _NhlGetResources
 
 	for (i=0; i < num_res; i++){
 		NhlBoolean	raccess;
+		int		immediate;
 
 		if(resfound[i])		/* resource set via arg or datares*/
 			goto found;
@@ -641,15 +642,18 @@ _NhlGetResources
 					to.size= strlen(to.data.strval) + 1;
 				}
 				else{
-					to.data.ptrval =
-						&resources[i].nrm_default_val;
-					/*
-					 * size is size of first element of
-					 * _NhlArgVal union.  Should be
-					 * NhlPointer so func's and strings
-					 * work correctly.
-					 */
-					to.size = resources[i].nrm_size;
+					if(resources[i].nrm_size ==
+							 sizeof(NhlPointer)){
+						to.data.ptrval =
+						 &resources[i].nrm_default_val;
+						to.size = sizeof(NhlPointer);
+					}
+					else{
+					immediate = (int)
+					resources[i].nrm_default_val.lngval;
+					to.data.ptrval = &immediate;
+					to.size = sizeof(int);
+					}
 				}
 			}
 

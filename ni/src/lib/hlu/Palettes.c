@@ -1,5 +1,5 @@
 /*
- *      $Id: Palettes.c,v 1.4 1995-05-10 06:07:33 boote Exp $
+ *      $Id: Palettes.c,v 1.5 1995-10-12 21:33:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,7 @@
  */
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/Workstation.h>
+#include <ncarg/hlu/ConvertP.h>
 #include <ncarg/hlu/PalettesP.h>
 #include <ncarg/hlu/ConvertersP.h>
 
@@ -783,6 +784,7 @@ static CmapDefs cmaps[] = {
 
 static NrmQuark	strgenQ = NrmNULLQUARK;
 static NrmQuark	fltgenQ = NrmNULLQUARK;
+static NrmQuark	fltQ = NrmNULLQUARK;
 static NrmQuark	scalarQ = NrmNULLQUARK;
 
 /*
@@ -900,7 +902,7 @@ NhlCvtGenArrayToCmap
 		return NhlFATAL;
 	}
 
-	if(gen->typeQ == fltgenQ){
+	if(gen->typeQ == fltQ){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
 	}
 
@@ -960,6 +962,7 @@ _NhlInitPalettes
 
 	strgenQ = NrmStringToQuark(NhlTStringGenArray);
 	fltgenQ = NrmStringToQuark(NhlTFloatGenArray);
+	fltQ = NrmStringToQuark(NhlTFloat);
 	scalarQ = NrmStringToQuark(NhlTScalar);
 
 	return NhlNOERROR;

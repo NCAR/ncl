@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.40 1995-10-10 20:05:08 boote Exp $
+ *      $Id: Converters.c,v 1.41 1995-10-12 21:33:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -647,7 +647,7 @@ NhlCvtScalarToEnum
 	}
 
 	for(i=0;i<nargs;i++){
-		if(tint == args[i].data.intval){
+		if(tint == args[i].data.lngval){
 			set = True;
 			break;
 		}
@@ -876,7 +876,7 @@ NhlCvtGenArrayToEnumGenArray
 		set = False;
 
 		for(j=0;j<nargs;j++){
-			if(tdata[i] == args[j].data.intval){
+			if(tdata[i] == args[j].data.lngval){
 				set = True;
 				break;
 			}
@@ -988,7 +988,7 @@ _NhlRegisterEnumType
 	for(i=0;i<nvals;i++){
 		args[i].addressmode = NhlIMMEDIATE;
 		args[i].size = sizeof(int);
-		args[i].data.intval = enum_vals[i].value;
+		args[i].data.lngval = enum_vals[i].value;
 	}
 	if(NhlRegisterConverter(NhlTScalar,enum_name,NhlCvtScalarToEnum,args,
 					nvals,False,NULL) != NhlNOERROR){
@@ -1051,12 +1051,12 @@ _NhlCvtScalarToIndex
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if((nargs < 2) ||
-		((args[0].data.intval != _NhlRngMIN) &&
-			(args[0].data.intval != _NhlRngMAX) &&
-			(args[0].data.intval != _NhlRngMINMAX)) ||
-		((args[0].data.intval == _NhlRngMIN) && (nargs != 2)) ||
-		((args[0].data.intval == _NhlRngMAX) && (nargs != 2)) ||
-		((args[0].data.intval == _NhlRngMINMAX) && (nargs != 3))){
+		((args[0].data.lngval != _NhlRngMIN) &&
+			(args[0].data.lngval != _NhlRngMAX) &&
+			(args[0].data.lngval != _NhlRngMINMAX)) ||
+		((args[0].data.lngval == _NhlRngMIN) && (nargs != 2)) ||
+		((args[0].data.lngval == _NhlRngMAX) && (nargs != 2)) ||
+		((args[0].data.lngval == _NhlRngMINMAX) && (nargs != 3))){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"%s:Called with improper args",func);
 		to->size = 0;
@@ -1072,25 +1072,25 @@ _NhlCvtScalarToIndex
 		return NhlFATAL;
 	}
 
-	if((args[0].data.intval == _NhlRngMINMAX) &&
-		(tint < args[1].data.intval || tint > args[2].data.intval)){
+	if((args[0].data.lngval == _NhlRngMINMAX) &&
+		(tint < args[1].data.lngval || tint > args[2].data.lngval)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"%s:Value %d is not within index range %d - %d",func,
-			tint,args[1].data.intval,args[2].data.intval);
+			tint,args[1].data.lngval,args[2].data.lngval);
 		return NhlFATAL;
 	}
-	else if((args[0].data.intval == _NhlRngMIN) &&
-		(tint < args[1].data.intval)){
+	else if((args[0].data.lngval == _NhlRngMIN) &&
+		(tint < args[1].data.lngval)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"%s:Value %d is less than index min %d",func,tint,
-			args[1].data.intval);
+			args[1].data.lngval);
 		return NhlFATAL;
 	}
-	else if((args[0].data.intval == _NhlRngMAX) &&
-		(tint > args[1].data.intval)){
+	else if((args[0].data.lngval == _NhlRngMAX) &&
+		(tint > args[1].data.lngval)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"%s:Value %d is more than index max %d",func,tint,
-			args[1].data.intval);
+			args[1].data.lngval);
 		return NhlFATAL;
 	}
 
@@ -1123,12 +1123,12 @@ _NhlCvtGenArrayToIndexGenArray
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if((nargs < 2) ||
-		((args[0].data.intval != _NhlRngMIN) &&
-			(args[0].data.intval != _NhlRngMAX) &&
-			(args[0].data.intval != _NhlRngMINMAX)) ||
-		((args[0].data.intval == _NhlRngMIN) && (nargs != 2)) ||
-		((args[0].data.intval == _NhlRngMAX) && (nargs != 2)) ||
-		((args[0].data.intval == _NhlRngMINMAX) && (nargs != 3))){
+		((args[0].data.lngval != _NhlRngMIN) &&
+			(args[0].data.lngval != _NhlRngMAX) &&
+			(args[0].data.lngval != _NhlRngMINMAX)) ||
+		((args[0].data.lngval == _NhlRngMIN) && (nargs != 2)) ||
+		((args[0].data.lngval == _NhlRngMAX) && (nargs != 2)) ||
+		((args[0].data.lngval == _NhlRngMINMAX) && (nargs != 3))){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"%s:Called with improper args",func);
 		to->size = 0;
@@ -1147,32 +1147,32 @@ _NhlCvtGenArrayToIndexGenArray
 
 	tint = (int*)tgen->data;
 
-	if(args[0].data.intval == _NhlRngMINMAX){
+	if(args[0].data.lngval == _NhlRngMINMAX){
 		for(i=0;i < tgen->num_elements;i++){
-			if(tint[i] < args[1].data.intval ||
-					tint[i] > args[2].data.intval){
+			if(tint[i] < args[1].data.lngval ||
+					tint[i] > args[2].data.lngval){
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"%s:Value %d is not within index range %d - %d",
-				func,tint[i],args[1].data.intval,
-				args[2].data.intval);
+				func,tint[i],args[1].data.lngval,
+				args[2].data.lngval);
 				return NhlFATAL;
 			}
 		}
 	}
-	else if(args[0].data.intval == _NhlRngMIN){
+	else if(args[0].data.lngval == _NhlRngMIN){
 		for(i=0;i < tgen->num_elements;i++){
-			if(tint[i] < args[1].data.intval){
+			if(tint[i] < args[1].data.lngval){
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					"%s:Value %d is less than index min %d",					func,tint[i],args[1].data.intval);
+					"%s:Value %d is less than index min %d",					func,tint[i],args[1].data.lngval);
 				return NhlFATAL;
 			}
 		}
 	}
 	else{
 		for(i=0;i < tgen->num_elements;i++){
-			if(tint[i] > args[1].data.intval){
+			if(tint[i] > args[1].data.lngval){
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					"%s:Value %d is more than index max %d",					func,tint[i],args[1].data.intval);
+					"%s:Value %d is more than index max %d",					func,tint[i],args[1].data.lngval);
 				return NhlFATAL;
 			}
 		}

@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.10 1994-07-28 22:11:30 boote Exp $
+ *      $Id: Convert.c,v 1.11 1995-10-12 21:33:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -804,8 +804,8 @@ _NhlRegSymConvQ
 {
 	char			*fname = "_NhlRegSymConv";
 	NhlConvertArg		cvtargs[2] = {
-					{NhlIMMEDIATE,sizeof(NrmQuark),0},
-					{NhlIMMEDIATE,sizeof(NrmQuark),0}
+				{NhlIMMEDIATE,sizeof(NrmQuark),(NhlPointer)0},
+				{NhlIMMEDIATE,sizeof(NrmQuark),(NhlPointer)0}
 					};
 	NhlConvertPtr		cvtrec = NULL;
 	NhlConvertPtr		tmp = NULL;
@@ -846,8 +846,8 @@ _NhlRegSymConvQ
 	cvtrec->cache = (CachePtr)NULL;
 	cvtrec->closure = (NhlCacheClosure)NULL;
 
-	cvtargs[0].data.intval = from;
-	cvtargs[1].data.intval = to;
+	cvtargs[0].data.lngval = from;
+	cvtargs[1].data.lngval = to;
 
 	cvtrec->nargs = 2;
 	cvtrec->args = CreateConvArgs(cvtargs,2);
@@ -1368,8 +1368,8 @@ GetCvtHash
 		 * ptr is actually pointing to a "ref" converter -
 		 * need to get the actual one.
 		 */
-		from = ptr->args[0].data.intval;
-		to = ptr->args[1].data.intval;
+		from = ptr->args[0].data.lngval;
+		to = ptr->args[1].data.lngval;
 	}
 }
 
