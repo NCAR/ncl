@@ -1,0 +1,32 @@
+#
+#       $Id: yMakefile,v 1.1 1999-04-13 18:09:59 fred Exp $
+#
+ 
+MYNAME  = cssgrid
+ 
+OBJECTS =  \
+csaddnod.o  csaplyr.o   csaplyrt.o  csarcint.o  csarclen.o  csareas.o  \
+csbdyadd.o  csbnodes.o  cscircum.o  csconstr.o  cscovsph.o  cscrlist.o \
+csdelarc.o  csdelnb.o   csdelnod.o  csedge.o    csfval.o    csgetnp.o  \
+csgetsig.o  csgivens.o  csgradg.o   csgradl.o   csgrcoef.o  cshval.o   \
+csinsert.o  csinside.o  csintadd.o  csintrc0.o  csintrc1.o  csintrsc.o \
+csjrand.o   csleft.o    cslstptr.o  csnbcnt.o   csnearnd.o  csoptim.o  \
+csrotate.o  csscoord.o  cssetup.o   cssgprnt.o  cssig0.o    cssig1.o   \
+cssig2.o    cssmsgs.o   cssmsurf.o  cssnhcsh.o  csstore.o   csswap.o   \
+csswptst.o  cstrans.o   cstrfind.o  cstrlist.o  cstrlprt.o  cstrmesh.o \
+cstrprnt.o  csunif.o    csstri.o    cssgrid.o   c_cssuser.o
+ 
+SOURCES =  \
+csaddnod.f  csaplyr.f   csaplyrt.f  csarcint.f  csarclen.f  csareas.f  \
+csbdyadd.f  csbnodes.f  cscircum.f  csconstr.f  cscovsph.f  cscrlist.f \
+csdelarc.f  csdelnb.f   csdelnod.f  csedge.f    csfval.f    csgetnp.f  \
+csgetsig.f  csgivens.f  csgradg.f   csgradl.f   csgrcoef.f  cshval.f   \
+csinsert.f  csinside.f  csintadd.f  csintrc0.f  csintrc1.f  csintrsc.f \
+csjrand.f   csleft.f    cslstptr.f  csnbcnt.f   csnearnd.f  csoptim.f  \
+csrotate.f  csscoord.f  cssetup.f   cssgprnt.f  cssig0.f    cssig1.f   \
+cssig2.f    cssmsgs.f   cssmsurf.f  cssnhcsh.f  csstore.f   csswap.f   \
+csswptst.f  cstrans.f   cstrfind.f  cstrlist.f  cstrlprt.f  cstrmesh.f \
+cstrprnt.f  csunif.f    csstri.f    cssgrid.f   c_cssuser.c
+ 
+PartialLibraryTarget(../libngmath.a,$(OBJECTS))
+DependTarget($(SOURCES))
