@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.53 1998-10-22 17:39:31 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.54 1998-10-23 20:32:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2848,25 +2848,6 @@ static NhlErrorTypes vcInitDraw
 	NhlVASetValues(vcl->base.wkptr->base.id,
 		       _NhlNwkReset,	True,
 		       NULL);
-
-	if (vcp->min_distance > 0.0) {
-		if (vcp->fws_id < 1) {
-			if ((vcp->fws_id = 
-			     _NhlNewWorkspace(NhlwsOTHER,NhlwsNONE,
-					    100*sizeof(float))) < 1) {
-				e_text = 
-					"%s: float workspace allocation error";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return NhlFATAL;
-			}
-		}
-		if ((vcp->fws = _NhlUseWorkspace(vcp->fws_id)) == NULL) {
-			e_text = "%s: error reserving float workspace";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return(ret);
-		}
-	}
  /*
  * Set up LLU interface coordinate boundaries 
  */
@@ -3252,11 +3233,6 @@ static NhlErrorTypes VectorPlotPostDraw
 			ret = MIN(subret,ret);
 		}
 	}
-	if (vcp->fws != NULL) {
-		subret = _NhlIdleWorkspace(vcp->fws);
-		ret = MIN(subret,ret);
-		vcp->fws = NULL;
-	}
 
 	return ret;
 }
@@ -3564,7 +3540,29 @@ static NhlErrorTypes vcDraw
 	}
 
 	c_vvsetr("VMD",vcp->min_distance);
-				 
+
+	/* set up a workspace if required */
+
+	if (vcp->min_distance > 0.0) {
+		if (vcp->fws_id < 1) {
+			if ((vcp->fws_id = 
+			     _NhlNewWorkspace(NhlwsOTHER,NhlwsNONE,
+					    100*sizeof(float))) < 1) {
+				e_text = 
+					"%s: float workspace allocation error";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				VectorAbortDraw(vcl);	
+				return NhlFATAL;
+			}
+		}
+		if ((vcp->fws = _NhlUseWorkspace(vcp->fws_id)) == NULL) {
+			e_text = "%s: error reserving float workspace";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			VectorAbortDraw(vcl);	
+			return(NhlFATAL);
+		}
+	}
 	/* Draw the vectors */
 
 	gset_clip_ind(GIND_CLIP);
@@ -3685,6 +3683,12 @@ static NhlErrorTypes vcDraw
         subret = _NhlDeactivateWorkstation(vcl->base.wkptr);
 	vcp->wk_active = False;
 	ret = MIN(subret,ret);
+
+	if (vcp->fws != NULL) {
+		subret = _NhlIdleWorkspace(vcp->fws);
+		ret = MIN(subret,ret);
+		vcp->fws = NULL;
+	}
 
 	return MIN(subret,ret);
 }

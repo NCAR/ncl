@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.77 1998-10-22 17:39:27 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.78 1998-10-23 20:32:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3048,19 +3048,6 @@ static NhlErrorTypes cnInitDraw
 	subret = GetData(cnl,&cnp->data,&n,&m);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
-/* Retrieve workspace pointers */
-
-	if ((cnp->fws = _NhlUseWorkspace(cnp->fws_id)) == NULL) {
-		e_text = "%s: error reserving float workspace";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-	if ((cnp->iws = _NhlUseWorkspace(cnp->iws_id)) == NULL) {
-		e_text = "%s: error reserving integer workspace";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
 /*
  * Set up LLU interface coordinate boundaries 
  */
@@ -3835,21 +3822,6 @@ static NhlErrorTypes ContourPlotPostDraw
 		ret = MIN(subret,ret);
 		cnp->aws = NULL;
 	}
-	if (cnp->cws != NULL) {
-		subret = _NhlIdleWorkspace(cnp->cws);
-		ret = MIN(subret,ret);
-		cnp->cws = NULL;
-	}
-	if (cnp->fws != NULL) {
-		subret = _NhlIdleWorkspace(cnp->fws);
-		ret = MIN(subret,ret);
-		cnp->fws = NULL;
-	}
-	if (cnp->iws != NULL) {
-		subret = _NhlIdleWorkspace(cnp->iws);
-		cnp->iws = NULL;
-		ret = MIN(subret,ret);
-	}
 
 	return ret;
 }
@@ -3953,7 +3925,7 @@ static NhlErrorTypes cnDraw
 	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
 	NhlTransformLayerPart	*tfp = &(cnl->trans);
-        
+
         subret = _NhlActivateWorkstation(cnl->base.wkptr);
         if ((ret = MIN(subret,ret)) < NhlWARNING) {
                 e_text = "%s: Error activating workstation";
@@ -4051,6 +4023,21 @@ static NhlErrorTypes cnDraw
 		return ret;
 	}
 
+
+/* Retrieve workspace pointers */
+
+	if ((cnp->fws = _NhlUseWorkspace(cnp->fws_id)) == NULL) {
+		e_text = "%s: error reserving float workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		ContourAbortDraw(cnl);
+		return(ret);
+	}
+	if ((cnp->iws = _NhlUseWorkspace(cnp->iws_id)) == NULL) {
+		e_text = "%s: error reserving integer workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		ContourAbortDraw(cnl);
+		return(ret);
+	}
 	/* Draw the contours */
 
 	subret = _NhlCprect(cnp->data,cnp->sfp->fast_dim,cnp->sfp->fast_len,
@@ -4079,6 +4066,12 @@ static NhlErrorTypes cnDraw
 				return ret;
 			}
 		}
+		if (! cnp->aws) {
+			e_text = "%s: Error reserving workspace";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			ContourAbortDraw(cnl);
+			return NhlFATAL;
+		}
 
 		subret = _NhlCplbam(cnp->data,
 				    cnp->fws,cnp->iws,cnp->aws,entry_name);
@@ -4097,6 +4090,13 @@ static NhlErrorTypes cnDraw
 					ContourAbortDraw(cnl);
 					return ret;
 				}
+			}
+			if (! cnp->aws) {
+				e_text = "%s: Error reserving workspace";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				ContourAbortDraw(cnl);
+				return NhlFATAL;
 			}
 			subret = _NhlArscam(cnp->aws,
 					    (_NHLCALLF(hlucpfill,HLUCPFILL)),
@@ -4125,7 +4125,11 @@ static NhlErrorTypes cnDraw
 				ContourAbortDraw(cnl);
 				return ret;
 			}
-			
+			if (cnp->cws != NULL) {
+				subret = _NhlIdleWorkspace(cnp->cws);
+				ret = MIN(subret,ret);
+				cnp->cws = NULL;
+			}
 		}
 	}
 
@@ -4181,6 +4185,16 @@ static NhlErrorTypes cnDraw
 	cnp->wk_active = False;
 	ret = MIN(subret,ret);
 
+	if (cnp->fws != NULL) {
+		subret = _NhlIdleWorkspace(cnp->fws);
+		ret = MIN(subret,ret);
+		cnp->fws = NULL;
+	}
+	if (cnp->iws != NULL) {
+		subret = _NhlIdleWorkspace(cnp->iws);
+		cnp->iws = NULL;
+		ret = MIN(subret,ret);
+	}
 	return MIN(subret,ret);
 }
 /*

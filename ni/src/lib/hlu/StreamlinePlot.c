@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.46 1998-10-22 17:39:29 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.47 1998-10-23 20:32:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1825,22 +1825,6 @@ static NhlErrorTypes stInitDraw
 	NhlVASetValues(stl->base.wkptr->base.id,
 		       _NhlNwkReset,	True,
 		       NULL);
-
-	if (stp->fws_id < 1) {
-		if ((stp->fws_id = 
-		     _NhlNewWorkspace(NhlwsOTHER,NhlwsNONE,
-			       2 * stp->vfp->fast_len * stp->vfp->slow_len *
-				      sizeof(float))) < 1) {
-			e_text = "%s: float workspace allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-	}
-	if ((stp->fws = _NhlUseWorkspace(stp->fws_id)) == NULL) {
-		e_text = "%s: error reserving float workspace";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
 /*
  * Set up LLU interface coordinate boundaries 
  */
@@ -2228,11 +2212,6 @@ static NhlErrorTypes StreamlinePlotPostDraw
 	stp->new_draw_req = False;
 	Stp = NULL;
 
-	if (stp->fws != NULL) {
-		subret = _NhlIdleWorkspace(stp->fws);
-		ret = MIN(subret,ret);
-		stp->fws = NULL;
-	}
 
 	return ret;
 }
@@ -2371,6 +2350,26 @@ static NhlErrorTypes stDraw
 
 	gset_line_colr_ind(cix);
 
+	/* set up the workspace */
+
+	if (stp->fws_id < 1) {
+		if ((stp->fws_id = 
+		     _NhlNewWorkspace(NhlwsOTHER,NhlwsNONE,
+			       2 * stp->vfp->fast_len * stp->vfp->slow_len *
+				      sizeof(float))) < 1) {
+			e_text = "%s: float workspace allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			StreamlineAbortDraw(stl);
+			return NhlFATAL;
+		}
+	}
+	if ((stp->fws = _NhlUseWorkspace(stp->fws_id)) == NULL) {
+		e_text = "%s: error reserving float workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		StreamlineAbortDraw(stl);
+		return(ret);
+	}
+
 	/* Draw the streamlines */
 
 	Need_Info = True;
@@ -2415,6 +2414,12 @@ static NhlErrorTypes stDraw
         subret = _NhlDeactivateWorkstation(stl->base.wkptr);
 	stp->wk_active = False;
 	ret = MIN(subret,ret);
+
+	if (stp->fws != NULL) {
+		subret = _NhlIdleWorkspace(stp->fws);
+		ret = MIN(subret,ret);
+		stp->fws = NULL;
+	}
 
 	return MIN(subret,ret);
 }
