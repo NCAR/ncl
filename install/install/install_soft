@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: install_soft,v 1.3 1993-03-26 00:20:14 clyne Exp $
+#      $Id: install_soft,v 1.4 1993-05-19 22:03:38 clyne Exp $
 #
 #########################################################################
 #									#
@@ -86,7 +86,7 @@ cat <<EOF
 
 				NCAR Graphics
 			        Version $VERSION
-			     Copyright (C)  1992
+			     Copyright (C)  1993
 		University Corporation for Atmospheric Research
 			     All Rights Reserved
 
