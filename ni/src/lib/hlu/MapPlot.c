@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.22 1995-01-11 20:33:51 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.23 1995-02-11 02:42:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@
 #include <ncarg/hlu/LogLinTransObj.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
+#include <ncarg/hlu/hluutil.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <ncarg/c.h>
@@ -92,6 +93,9 @@ static NhlResource resources[] = {
 
 /* Map area database resources */
 
+	{NhlNmpShapeMode, NhlCmpShapeMode, NhlTMapShapeMode,
+		 sizeof(NhlBoolean),Oset(shape_mode),NhlTImmediate,
+		 _NhlUSET((NhlPointer) NhlmpFIXEDASPECTFITBB),0,NULL},
 	{NhlNmpAreaNames,NhlCmpAreaNames,
 		 NhlTStringGenArray,sizeof(NhlPointer),
 		 Oset(area_names),NhlTImmediate,
@@ -100,10 +104,17 @@ static NhlResource resources[] = {
 		 NhlTIntegerGenArray,sizeof(NhlPointer),
 		 Oset(area_types),NhlTImmediate,
 		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNmpAreaGroups,NhlCmpAreaGroups,
+	{NhlNmpDynamicAreaGroups,NhlCmpDynamicAreaGroups,
 		 NhlTIntegerGenArray,sizeof(NhlPointer),
-		 Oset(area_groups),NhlTImmediate,
+		 Oset(dynamic_groups),NhlTImmediate,
 		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNmpFixedAreaGroups,NhlCmpFixedAreaGroups,
+		 NhlTIntegerGenArray,sizeof(NhlPointer),
+		 Oset(fixed_groups),NhlTImmediate,
+		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNmpDataBaseVersion,NhlCmpDataBaseVersion,
+		 NhlTString,sizeof(NhlString),Oset(database_version),
+		 NhlTString, _NhlUSET("NCARG_4.0"),0,NULL},
 
 /* Outline resources */
 
@@ -121,6 +132,14 @@ static NhlResource resources[] = {
 		 sizeof(NhlPointer),Oset(outline_specs),NhlTImmediate,
 		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 
+	{NhlNmpAreaMaskingOn, NhlCmpAreaMaskingOn, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(area_masking_on),
+		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+	{NhlNmpMaskAreaSpecifiers,NhlCmpMaskAreaSpecifiers,NhlTStringGenArray,
+		 sizeof(NhlPointer),Oset(mask_area_specs),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
+
 /* Fill resources */
 
 	{NhlNmpFillOn, NhlCmpFillOn, NhlTBoolean,
@@ -129,56 +148,71 @@ static NhlResource resources[] = {
 	{NhlNmpFillDrawOrder,NhlCmpFillDrawOrder,NhlTDrawOrder,
 		 sizeof(NhlDrawOrder),Oset(fill_order),NhlTImmediate,
 		 _NhlUSET((NhlPointer)NhlDRAW),0,NULL},
-	{NhlNmpAreaGroupPriority,NhlCmpAreaGroupPriority,NhlTAreaGroupPriority,
-		 sizeof(NhlAreaGroupPriority),Oset(group_priority),
-		 NhlTImmediate,
-		 _NhlUSET((NhlPointer)NhlmpGEOPHYSICALPRIORITY),0,NULL},
-	{NhlNmpFillBoundarySets,NhlCmpFillBoundarySets,
-                 NhlTMapBoundarySets,sizeof(NhlMapBoundarySets),
-                 Oset(fill_boundaries),NhlTImmediate,
-		 _NhlUSET((NhlPointer)NhlmpGEOPHYSICAL),0,NULL},
-	{NhlNmpFillGroupCount,NhlCmpFillGroupCount,NhlTInteger,
-		 sizeof(int),Oset(fill_group_count),NhlTImmediate,
-		 _NhlUSET((NhlPointer) Nhl_mpMIN_FILL_GROUPS),0,NULL},
-	{NhlNmpFillAreaSpecifiers,NhlCmpFillAreaSpecifiers, 
-		 NhlTStringGenArray,sizeof(NhlPointer),Oset(fill_area_specs),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNmpMaskAreaSpecifiers,NhlCmpMaskAreaSpecifiers,NhlTStringGenArray,
-		 sizeof(NhlPointer),Oset(mask_area_specs),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNmpFillAreaColors,NhlCmpFillAreaColors,
-		 NhlTColorIndexGenArray,sizeof(NhlPointer),
-		 Oset(fill_area_colors),NhlTImmediate,
-		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNmpDirectFillAreaColor, NhlCmpDirectFillAreaColor, 
-		 NhlTBoolean,sizeof(NhlBoolean),Oset(direct_fill_area_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNmpFillPatternBackground,NhlCmpFillPatternBackground,
 		 NhlTColorIndex,sizeof(NhlColorIndex),
 		 Oset(fill_pattern_background),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
+	{NhlNmpFillBoundarySets,NhlCmpFillBoundarySets,
+                 NhlTMapBoundarySets,sizeof(NhlMapBoundarySets),
+                 Oset(fill_boundaries),NhlTImmediate,
+		 _NhlUSET((NhlPointer)NhlmpGEOPHYSICAL),0,NULL},
 
-	{NhlNmpMonoFillGroupColor, NhlCmpMonoFillGroupColor, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(mono_fill_group_color),
+	{NhlNmpFillAreaSpecifiers,NhlCmpFillAreaSpecifiers, 
+		 NhlTStringGenArray,sizeof(NhlPointer),Oset(fill_area_specs),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNmpSpecifiedFillPriority,NhlCmpSpecifiedFillPriority,
+		 NhlTSpecifiedFillPriority,
+		 sizeof(NhlSpecifiedFillPriority),Oset(spec_fill_priority),
+		 NhlTImmediate,
+		 _NhlUSET((NhlPointer)NhlmpPOLITICALPRIORITY),0,NULL},
+	{NhlNmpSpecifiedFillDirectIndexing, NhlCmpSpecifiedFillDirectIndexing, 
+		 NhlTBoolean,sizeof(NhlBoolean),Oset(spec_fill_direct),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNmpSpecifiedFillColors,NhlCmpSpecifiedFillColors,
+		 NhlTColorIndexGenArray,sizeof(NhlPointer),
+		 Oset(spec_fill_colors),NhlTImmediate,
+		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNmpSpecifiedFillPatterns,NhlCmpSpecifiedFillPatterns,
+		 NhlTFillIndexGenArray,sizeof(NhlPointer),
+		 Oset(spec_fill_patterns),NhlTImmediate,
+		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNmpSpecifiedFillScales,NhlCmpSpecifiedFillScales,
+		 NhlTFloatGenArray,sizeof(NhlPointer),
+		 Oset(spec_fill_scales),NhlTImmediate,
+		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+
+	{NhlNmpFillGroupCount,NhlCmpFillGroupCount,NhlTInteger,
+		 sizeof(int),Oset(fill_group_count),NhlTImmediate,
+		 _NhlUSET((NhlPointer) Nhl_mpMIN_FILL_GROUPS),0,NULL},
+	{NhlNmpMonoFillColor, NhlCmpMonoFillColor, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(mono_fill_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-	{NhlNmpFillGroupColors, NhlCmpFillGroupColors, NhlTColorIndexGenArray,
-		 sizeof(NhlPointer),Oset(fill_group_colors),
+	{NhlNmpFillColor, NhlCmpFillColor, NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(fill_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+	{NhlNmpFillColors, NhlCmpFillColors, NhlTColorIndexGenArray,
+		 sizeof(NhlPointer),Oset(fill_colors),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
- 	{NhlNmpMonoFillGroupPattern, NhlCmpMonoFillGroupPattern, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(mono_fill_group_pattern),
+ 	{NhlNmpMonoFillPattern, NhlCmpMonoFillPattern, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(mono_fill_pattern),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNmpFillGroupPatterns,NhlCmpFillGroupPatterns,NhlTFillIndexGenArray,
-		 sizeof(NhlPointer),Oset(fill_group_patterns),
+ 	{NhlNmpFillPattern, NhlCmpFillPattern, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(fill_pattern),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlSOLIDFILL),0,NULL},
+	{NhlNmpFillPatterns,NhlCmpFillPatterns,NhlTFillIndexGenArray,
+		 sizeof(NhlPointer),Oset(fill_patterns),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNmpMonoFillGroupScale, NhlCmpMonoFillGroupScale, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(mono_fill_group_scale),
+	{NhlNmpMonoFillScale, NhlCmpMonoFillScale, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(mono_fill_scale),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNmpFillGroupScales, NhlCmpFillGroupScales,  NhlTFloatGenArray,
-		 sizeof(NhlPointer),Oset(fill_group_scales),
+	{NhlNmpFillScale, NhlCmpFillScale, NhlTFloat,
+		 sizeof(float),Oset(fill_scale),
+		 NhlTString,_NhlUSET("1.0"),0,NULL},
+	{NhlNmpFillScales, NhlCmpFillScales,  NhlTFloatGenArray,
+		 sizeof(NhlPointer),Oset(fill_scales),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
 
@@ -230,6 +264,7 @@ static NhlResource resources[] = {
 	{NhlNmpInlandWaterFillScaleF,NhlCmpInlandWaterFillScaleF,NhlTFloat,
 		 sizeof(float),Oset(inland_water.scale),
 		 NhlTString,_NhlUSET("NhlmpUNSETFILLSCALE"),0,NULL},
+
 
 /* Geophysical line resources */
 
@@ -369,12 +404,12 @@ static NhlResource resources[] = {
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(labels.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
-        {NhlNmpLabelTextHeightF,NhlCmpLabelTextHeightF,
+        {NhlNmpLabelFontHeightF,NhlCmpLabelFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(labels.height),
 		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{NhlNmpLabelFontColor,NhlCmpLabelFontColor,NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(labels.color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNmpLabelFontColor,NhlCmpLabelFontColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(labels.color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 
 /* End-documented-resources */
 
@@ -407,7 +442,7 @@ static NhlResource resources[] = {
 	{NhlNmpLabelBackgroundColor,NhlCmpLabelBackgroundColor,
 		 NhlTColorIndex,sizeof(NhlColorIndex),Oset(labels.back_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
-	{NhlNmpLabelPerim,NhlCmpLabelPerim,NhlTInteger,
+	{NhlNmpLabelPerimOn,NhlCmpLabelPerimOn,NhlTInteger,
 		 sizeof(int),Oset(labels.perim_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNmpLabelPerimSpaceF,NhlCmpLabelPerimSpaceF,
@@ -416,7 +451,7 @@ static NhlResource resources[] = {
 	{NhlNmpLabelPerimColor,NhlCmpLabelPerimColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(labels.perim_lcolor),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
-	{NhlNmpLabelPerimThicknessF,NhlCmpLabelFontThicknessF,
+	{NhlNmpLabelPerimThicknessF,NhlCmpLabelPerimThicknessF,
 		 NhlTFloat,sizeof(float),Oset(labels.perim_lthick),
 		 NhlTString, _NhlUSET("1.0"),0,NULL}
 
@@ -570,10 +605,11 @@ static NhlErrorTypes mpSetUpStateDrawIds(
 static NhlErrorTypes mpExpandId(
 #if	NhlNeedProto
 	NhlMapPlotLayerPart	*mpp,
-	int			ix,
-	int			draw_mode,
-	int			color,
-	NhlString		entry_name
+	int			id,
+	mpFlags			uflags,
+	int			index,
+	unsigned char		s_index,
+ 	NhlString		entry_name
 #endif
 );
 
@@ -778,26 +814,25 @@ NhlLayerClass NhlmapPlotLayerClass = (NhlLayerClass)&NhlmapPlotLayerClassRec;
 static NrmQuark	Qfloat = NrmNULLQUARK;
 static NrmQuark Qint = NrmNULLQUARK;
 static NrmQuark Qstring = NrmNULLQUARK;
+static NrmQuark Qdatabase_version = NrmNULLQUARK;
 static NrmQuark Qfill_area_specs = NrmNULLQUARK;
 static NrmQuark Qmask_area_specs = NrmNULLQUARK;
 static NrmQuark Qoutline_specs = NrmNULLQUARK;
 static NrmQuark Qarea_names = NrmNULLQUARK;
 static NrmQuark Qarea_types = NrmNULLQUARK;
-static NrmQuark Qarea_groups = NrmNULLQUARK;
-static NrmQuark Qfill_area_colors = NrmNULLQUARK;
-static NrmQuark Qfill_group_colors = NrmNULLQUARK;
-static NrmQuark Qfill_group_patterns = NrmNULLQUARK;
-static NrmQuark Qfill_group_scales = NrmNULLQUARK;
+static NrmQuark Qdynamic_groups = NrmNULLQUARK;
+static NrmQuark Qfixed_groups = NrmNULLQUARK;
+static NrmQuark Qspec_fill_colors = NrmNULLQUARK;
+static NrmQuark Qspec_fill_patterns = NrmNULLQUARK;
+static NrmQuark Qspec_fill_scales = NrmNULLQUARK;
+static NrmQuark Qfill_colors = NrmNULLQUARK;
+static NrmQuark Qfill_patterns = NrmNULLQUARK;
+static NrmQuark Qfill_scales = NrmNULLQUARK;
 
 static NhlMapPlotLayerPart *Mpp, *Ompp;
 static NhlMapPlotLayer Mpl, Ompl;
 static NhlBoolean Global_Amap_Inited;
 static NhlBoolean US_Amap_Inited;
-
-/* Areamap types - not to be confused with area set list types */
-
-#define mpGLOBAL_AMAP	0
-#define mpUSSTATES_AMAP	1
 
 static int Init_Colors[] ={106,104,57,104,19,23,41,53,60,88,90,100,110};
 
@@ -814,33 +849,10 @@ static short Id_End_Reg[4] = { 222,1361,439,1003 };
 static short Draw_Special_Check[] = { 2,1005,223,441 };
 static short Draw_Check;
 static short US_Border;
-static short US_Color;
+static short US_Index;
 
 #define mpUS_PO_IX	1031
 #define mpUS_PS_IX	1015
-
-/* draw Modes */
-
-#define mpBACKGROUND	0
-#define mpDRAW		1
-#define mpMASK		2
-#define mpSYSEXCLUDE	3
-#define mpDRAWSPECIAL	4
-
-static char *BGroup_Names[] = { 
-	NhlmpALLNATIONAL,
-	NhlmpALLGEOPHYSICAL,
-	NhlmpLAND,
-	NhlmpWATER,
-	NhlmpINLANDWATER,
-	NhlmpOCEANS,
-	NhlmpCONTINENTS,
-	NhlmpISLANDS,
-	NhlmpLARGEISLANDS,
-	NhlmpSMALLISLANDS,
-	NhlmpALLUSSTATES,
-	NhlmpUSSTATESLAND,
-	NhlmpUSSTATESWATER };
 
 /*
  * The following areas representing the US and the Great Lakes must
@@ -854,7 +866,7 @@ static short National_Excludes[] = { 1031,1058,1065,1071,1072,1081 };
 static short USState_Excludes[] = { 223 };
 
 /*
- * The following area groupings allow areas from the Geophysical map set
+ * The following area groupngs allow areas from the Geophysical map set
  * (the Ezmap 'CO' set) to be simulated using the National set (Ezmap 'PO').
  */
 
@@ -1048,9 +1060,9 @@ MapPlotClassInitialize
         {NhlmpALLBOUNDARIES,    	"allboundaries"},
         };
 
-	_NhlEnumVals areagroupprioritylist[] =  {
-	{NhlmpGEOPHYSICALPRIORITY,	"geophysicalpriority"},
-	{NhlmpPOLITICALPRIORITY,	"politicalpriority"}
+	_NhlEnumVals specifiedfillprioritylist[] =  {
+	{NhlmpGEOPHYSICALPRIORITY,		"geophysicalpriority"},
+	{NhlmpPOLITICALPRIORITY,		"politicalpriority"}
 	};
 
 	_NhlEnumVals mapgridmaskmodelist[] =  {
@@ -1063,28 +1075,42 @@ MapPlotClassInitialize
 	{NhlmpMASKMASKAREA,	"maskmaskarea"}
 	};
 
+	_NhlEnumVals mapshapemodelist[] =  {
+	{NhlmpFREEASPECT,		"freeaspect"},
+	{NhlmpFIXEDASPECTFITBB,		"fixedaspectfitbb"},
+	{NhlmpFIXEDASPECTNOFITBB,	"fixedaspectnofitbb"}
+	};
+
         _NhlRegisterEnumType(NhlTMapBoundarySets,mapboundarysetslist,
                              NhlNumber(mapboundarysetslist));
 
-        _NhlRegisterEnumType(NhlTAreaGroupPriority,areagroupprioritylist,
-                             NhlNumber(areagroupprioritylist));
+        _NhlRegisterEnumType(NhlTSpecifiedFillPriority,
+			     specifiedfillprioritylist,
+                             NhlNumber(specifiedfillprioritylist));
 
         _NhlRegisterEnumType(NhlTMapGridMaskMode,mapgridmaskmodelist,
                              NhlNumber(mapgridmaskmodelist));
 
+        _NhlRegisterEnumType(NhlTMapShapeMode,mapshapemodelist,
+                             NhlNumber(mapshapemodelist));
+
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);
 	Qfloat = NrmStringToQuark(NhlTFloat);
+	Qdatabase_version = NrmStringToQuark(NhlNmpDataBaseVersion);
 	Qfill_area_specs = NrmStringToQuark(NhlNmpFillAreaSpecifiers);
 	Qmask_area_specs = NrmStringToQuark(NhlNmpMaskAreaSpecifiers);
 	Qoutline_specs = NrmStringToQuark(NhlNmpOutlineSpecifiers);
 	Qarea_names = NrmStringToQuark(NhlNmpAreaNames);
 	Qarea_types = NrmStringToQuark(NhlNmpAreaTypes);
-	Qarea_groups = NrmStringToQuark(NhlNmpAreaGroups);
-	Qfill_area_colors = NrmStringToQuark(NhlNmpFillAreaColors);
-	Qfill_group_colors = NrmStringToQuark(NhlNmpFillGroupColors);
-	Qfill_group_patterns = NrmStringToQuark(NhlNmpFillGroupPatterns);
-	Qfill_group_scales = NrmStringToQuark(NhlNmpFillGroupScales);
+	Qdynamic_groups = NrmStringToQuark(NhlNmpDynamicAreaGroups);
+	Qfixed_groups = NrmStringToQuark(NhlNmpFixedAreaGroups);
+	Qspec_fill_colors = NrmStringToQuark(NhlNmpSpecifiedFillColors);
+	Qspec_fill_patterns = NrmStringToQuark(NhlNmpSpecifiedFillPatterns);
+	Qspec_fill_scales = NrmStringToQuark(NhlNmpSpecifiedFillScales);
+	Qfill_colors = NrmStringToQuark(NhlNmpFillColors);
+	Qfill_patterns = NrmStringToQuark(NhlNmpFillPatterns);
+	Qfill_scales = NrmStringToQuark(NhlNmpFillScales);
 
 	return NhlNOERROR;
 }
@@ -1126,7 +1152,8 @@ MapPlotClassPartInitialize
 	 */
 
 	subret = _NhlRegisterChildClass(lc,NhloverlayLayerClass,
-					False,False,NULL);
+					False,False,
+					NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
@@ -1136,7 +1163,9 @@ MapPlotClassPartInitialize
 	}
 
 	subret = _NhlRegisterChildClass(lc,NhlmapTransObjLayerClass,
-					False,False,NULL);
+					False,False,
+					NhlNmpPreserveAspectRatio,
+					NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
@@ -1350,7 +1379,10 @@ MapPlotInitialize
 
 	Mpl = (NhlMapPlotLayer) new;
 	Mpp = &(Mpl->mapplot);
-	
+#if 0
+	Mpl->view.keep_aspect = True;
+#endif
+
 /* Initialize private fields */
 
 	Mpp->overlay_object = NULL;
@@ -1371,6 +1403,9 @@ MapPlotInitialize
 	Mpp->outline_recs = NULL;
 	Mpp->limb.on = Mpp->grid.on;
 	Mpp->limb.order = Mpp->grid.order;
+	Mpp->spec_fill_color_count = 0;
+	Mpp->spec_fill_pattern_count = 0;
+	Mpp->spec_fill_scale_count = 0;
 		
 /*
  * If the Outline Records are not yet initialized, do it now.
@@ -1383,6 +1418,13 @@ MapPlotInitialize
 			return(ret);
 		}
 	}
+
+
+/* Set up the Map transformation */
+
+	subret = mpSetUpTransObj(Mpl, (NhlMapPlotLayer) req, True);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) 
+		return ret;
 
 /* Set view dependent resources */
 
@@ -1430,12 +1472,6 @@ MapPlotInitialize
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-
-/* Set up the Map transformation */
-
-	subret = mpSetUpTransObj(Mpl, (NhlMapPlotLayer) req, True);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) 
-		return ret;
 
 /* Manage the overlay */
 
@@ -1506,6 +1542,13 @@ static NhlErrorTypes MapPlotSetValues
 	Mpp->limb.on = Mpp->grid.on;
 	Mpp->limb.order = Mpp->grid.order;
 
+
+/* Set up the Map transformation */
+
+	subret = mpSetUpTransObj(Mpl,Ompl,False);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) 
+		return ret;
+
 /* Set view dependent resources */
 
 	subret = mpManageViewDepResources(Mpl,Ompl,False);
@@ -1551,12 +1594,6 @@ static NhlErrorTypes MapPlotSetValues
 		return(ret);
 	}
 
-/* Set up the Map transformation */
-
-	subret = mpSetUpTransObj(Mpl,Ompl,False);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) 
-		return ret;
-
 /* Manage the overlay */
 
 	/* 1 arg */
@@ -1597,11 +1634,11 @@ static NhlErrorTypes MapPlotSetValues
  *		NhlNmpOutlineSpecifiers
  *		NhlNmpAreaNames
  *		NhlNmpAreaTypes
- *		NhlNmpAreaGroups
- *		NhlNmpFillAreaColors
- *		NhlNmpFillGroupColors
- *		NhlNmpFillGroupPatterns
- *		NhlNmpFillGroupScales
+ *		NhlNmpDynamicAreaGroups
+ *		NhlNmpSpecifiedFillColors
+ *		NhlNmpFillColors
+ *		NhlNmpFillPatterns
+ *		NhlNmpFillScales
  *
  *      The caller is responsible for freeing this memory.
  */
@@ -1621,84 +1658,140 @@ static NhlErrorTypes    MapPlotGetValues
         NhlGenArray ga;
         char *e_text;
         int i, count = 0;
-        char *type = "";
+        char *resname = "";
 	NhlBoolean create_it;
+	int size;
+	char *type;
 
         for (i = 0; i < num_args; i++ ) {
 
 		create_it = False;
                 ga = NULL;
+                if(args[i].quark == Qdatabase_version) {
+			if ((mpp->database_version == NULL) || 
+			    ! (*((NhlString*)(args[i].value.ptrval)) =
+			       NhlMalloc(strlen(mpp->database_version)+1))) {
+                                e_text = 
+				 "%s: error copying NhlNmpDataBaseVersion";
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+					  "MapPlotGetValues");
+				
+				return NhlFATAL;
+			}
+			strcpy(*((NhlString*)(args[i].value.ptrval)),
+			       mpp->database_version);
+                }
                 if(args[i].quark == Qfill_area_specs) {
                         ga = mpp->fill_area_specs;
                         count = ga ? ga->num_elements : 0;
-                        type = NhlNmpFillAreaSpecifiers;
+                        resname = NhlNmpFillAreaSpecifiers;
+			size = sizeof(NhlPointer);
+			type = NhlTStringGenArray;
+			create_it = count == 0 ? True : False;
                 }
                 else if (args[i].quark == Qmask_area_specs) {
                         ga = mpp->mask_area_specs;
                         count = ga ? ga->num_elements : 0;
-                        type = NhlNmpMaskAreaSpecifiers;
+                        resname = NhlNmpMaskAreaSpecifiers;
+			size = sizeof(NhlPointer);
+			type = NhlTStringGenArray;
+			create_it = count == 0 ? True : False;
                 }
                 else if (args[i].quark == Qoutline_specs) {
                         ga = mpp->outline_specs;
                         count = ga ? ga->num_elements : 0;
-                        type = NhlNmpOutlineSpecifiers;
+                        resname = NhlNmpOutlineSpecifiers;
+			size = sizeof(NhlPointer);
+			type = NhlTStringGenArray;
+			create_it = count == 0 ? True : False;
                 }
                 else if (args[i].quark == Qarea_names) {
 			create_it = True;
                         ga = mpp->area_names;
                         count = ga ? ga->num_elements : 0;
-                        type = NhlNmpAreaNames;
+                        resname = NhlNmpAreaNames;
                 }
                 else if (args[i].quark == Qarea_types) {
 			create_it = True;
                         ga = mpp->area_types;
                         count = ga ? ga->num_elements : 0;
-                        type = NhlNmpAreaTypes;
+                        resname = NhlNmpAreaTypes;
                 }
-                else if (args[i].quark == Qarea_groups) {
+                else if (args[i].quark == Qdynamic_groups) {
 			create_it = True;
-                        ga = mpp->area_groups;
+                        ga = mpp->dynamic_groups;
                         count = ga ? ga->num_elements : 0;
-                        type = NhlNmpAreaGroups;
+                        resname = NhlNmpDynamicAreaGroups;
                 }
-                else if (args[i].quark == Qfill_area_colors) {
-                        ga = mpp->fill_area_colors;
+                else if (args[i].quark == Qfixed_groups) {
+			create_it = True;
+                        ga = mpp->fixed_groups;
                         count = ga ? ga->num_elements : 0;
-                        type = NhlNmpFillAreaColors;
+                        resname = NhlNmpFixedAreaGroups;
                 }
-                else if (args[i].quark == Qfill_group_colors) {
-                        ga = mpp->fill_group_colors;
-                        count = mpp->mono_fill_group_color ? 
-				1 : mpp->fill_group_count;
-                        type = NhlNmpFillGroupColors;
+                else if (args[i].quark == Qspec_fill_colors) {
+                        ga = mpp->spec_fill_colors;
+                        count = ga ? ga->num_elements : 0;
+                        resname = NhlNmpSpecifiedFillColors;
+			size = sizeof(NhlPointer);
+			type = NhlTIntegerGenArray;
+			create_it = count == 0 ? True : False;
                 }
-                else if (args[i].quark == Qfill_group_patterns) {
-                        ga = mpp->fill_group_patterns;
-                        count = mpp->mono_fill_group_pattern ? 
-				1 : mpp->fill_group_count;
-                        type = NhlNmpFillGroupPatterns;
+                else if (args[i].quark == Qspec_fill_patterns) {
+                        ga = mpp->spec_fill_patterns;
+                        count = ga ? ga->num_elements : 0;
+                        resname = NhlNmpSpecifiedFillPatterns;
+			size = sizeof(NhlPointer);
+			type = NhlTIntegerGenArray;
+			create_it = count == 0 ? True : False;
                 }
-                else if (args[i].quark == Qfill_group_scales) {
-                        ga = mpp->fill_group_scales;
-                        count = mpp->mono_fill_group_scale ? 
+                else if (args[i].quark == Qspec_fill_scales) {
+                        ga = mpp->spec_fill_scales;
+                        count = ga ? ga->num_elements : 0;
+                        resname = NhlNmpSpecifiedFillScales;
+			size = sizeof(NhlPointer);
+			type = NhlTFloatGenArray;
+			create_it = count == 0 ? True : False;
+                }
+                else if (args[i].quark == Qfill_colors) {
+                        ga = mpp->fill_colors;
+                        count = mpp->mono_fill_color ? 
 				1 : mpp->fill_group_count;
-                        type = NhlNmpFillGroupScales;
+                        resname = NhlNmpFillColors;
+			size = sizeof(NhlPointer);
+			type = NhlTIntegerGenArray;
+                }
+                else if (args[i].quark == Qfill_patterns) {
+                        ga = mpp->fill_patterns;
+                        count = mpp->mono_fill_pattern ? 
+				1 : mpp->fill_group_count;
+                        resname = NhlNmpFillPatterns;
+			size = sizeof(NhlPointer);
+			type = NhlTIntegerGenArray;
+                }
+                else if (args[i].quark == Qfill_scales) {
+                        ga = mpp->fill_scales;
+                        count = mpp->mono_fill_scale ? 
+				1 : mpp->fill_group_count;
+                        resname = NhlNmpFillScales;
+			size = sizeof(NhlPointer);
+			type = NhlTFloatGenArray;
                 }
                 if (ga != NULL) {
                         if ((ga = mpGenArraySubsetCopy(ga, count)) == NULL) {
                                 e_text = "%s: error copying %s GenArray";
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-                                          "MapPlotGetValues",type);
+                                          "MapPlotGetValues",resname);
                                 return NhlFATAL;
                         }
                         *((NhlGenArray *)(args[i].value.ptrval)) = ga;
                 }
 		else if (create_it) {
-			if ((ga = mpGetNewGenArray(mpp,args[i].quark,type)) 
+			if ((ga = mpGetNewGenArray(mpp,args[i].quark,resname)) 
 			    == NULL) {
 				e_text = "%s: error getting %s GenArray";
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-                                          "MapPlotGetValues",type);
+                                          "MapPlotGetValues",resname);
                                 return NhlFATAL;
                         }
                         *((NhlGenArray *)(args[i].value.ptrval)) = ga;
@@ -1791,8 +1884,10 @@ static NhlGenArray mpGetNewGenArray
 		return ga;
 
 	}
-	else if (quark == Qarea_groups) {
+	else if (quark == Qdynamic_groups || quark == Qfixed_groups) {
 		int	*ip;
+		int	index = quark == Qdynamic_groups ? 1 : 0;
+
 		len = OutRec_Count;
 		if ((ip = NhlMalloc(sizeof(int)*len)) == NULL) {
 			e_text = "%s: dynamic memory allocation error";
@@ -1801,9 +1896,86 @@ static NhlGenArray mpGetNewGenArray
 			return NULL;
 		}
 		for (i = 0; i < len; i++) {
-			ip[i] = (int) OutRecs[i].cix[1];
+			ip[i] = (int) OutRecs[i].cix[index];
 		}
 		if ((ga = NhlCreateGenArray(ip,NhlTInteger,sizeof(int),
+					    1,&len)) == NULL) {
+			e_text = "%s: error creating gen array";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  e_text,"MapPlotGetValues");
+			return NULL;
+		}
+		return ga;
+	}
+	else if (quark == Qfill_area_specs ||
+		 quark == Qmask_area_specs ||
+		 quark == Qoutline_specs) {
+		char	**spp;
+
+		len = 1;
+		if ((spp = NhlMalloc(sizeof(char *))) == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,
+				  NhlEUNKNOWN,e_text,"MapPlotGetValues");
+			return NULL;
+		}
+		if ((spp[0] = NhlMalloc(strlen(NhlmpNULLAREA)+1)) == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,
+				  NhlEUNKNOWN,e_text,"MapPlotGetValues");
+			return NULL;
+		}
+		strcpy(spp[0],NhlmpNULLAREA);
+		if ((ga = NhlCreateGenArray(spp,NhlTString,sizeof(char *),
+					    1,&len)) == NULL) {
+			e_text = "%s: error creating gen array";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  e_text,"MapPlotGetValues");
+			return NULL;
+		}
+		return ga;
+	}
+	else if (quark == Qspec_fill_colors ||
+		 quark == Qspec_fill_patterns) {
+		int	*ip;
+		char	*type = quark == Qspec_fill_colors ?
+			NhlTColorIndex : NhlTFillIndex;
+		len = mpp->fill_area_specs ?
+			mpp->fill_area_specs->num_elements : 1;
+		
+		if ((ip = NhlMalloc(sizeof(int)*len)) == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,
+				  NhlEUNKNOWN,e_text,"MapPlotGetValues");
+			return NULL;
+		}
+		for (i = 0; i < len; i++) {
+			ip[i] = -1;
+		}
+		if ((ga = NhlCreateGenArray(ip,type,sizeof(int),
+					    1,&len)) == NULL) {
+			e_text = "%s: error creating gen array";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  e_text,"MapPlotGetValues");
+			return NULL;
+		}
+		return ga;
+	}
+	else if (quark == Qspec_fill_scales) {
+		float	*fp;
+		len = mpp->fill_area_specs ?
+			mpp->fill_area_specs->num_elements : 1;
+		
+		if ((fp = NhlMalloc(sizeof(float)*len)) == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,
+				  NhlEUNKNOWN,e_text,"MapPlotGetValues");
+			return NULL;
+		}
+		for (i = 0; i < len; i++) {
+			fp[i] = 0.0;
+		}
+		if ((ga = NhlCreateGenArray(fp,type,sizeof(int),
 					    1,&len)) == NULL) {
 			e_text = "%s: error creating gen array";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1914,9 +2086,9 @@ NhlLayer inst;
 	NhlFreeGenArray(mpp->fill_area_specs);
 	NhlFreeGenArray(mpp->mask_area_specs);
 	NhlFreeGenArray(mpp->outline_specs);
-	NhlFreeGenArray(mpp->fill_group_colors);
-	NhlFreeGenArray(mpp->fill_group_patterns);
-	NhlFreeGenArray(mpp->fill_group_scales);
+	NhlFreeGenArray(mpp->fill_colors);
+	NhlFreeGenArray(mpp->fill_patterns);
+	NhlFreeGenArray(mpp->fill_scales);
 
 	if (mpp->fill_recs != NULL)
 		NhlFree(mpp->fill_recs);
@@ -2207,6 +2379,8 @@ static NhlErrorTypes mpDraw
 /* Draw labels and/or the perimeter */
 
 	if (mpp->labels.on && mpp->labels.order == order) {
+		int ls = mpp->labels.real_height * 1024;
+		c_mpseti("LS",ls);
  		c_mpseti("C3",mpp->labels.gks_color);
 		c_mpseti("LA",1);
 		do_labels = True;
@@ -2351,8 +2525,11 @@ static NhlErrorTypes mpFill
                flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
 #endif
 
+	if (1) {
+#if 0
 	if (mpp->global_fill_mode != mpNONE) {
-
+#endif
+		
 		subret = mpSetUpAreamap(mp,&aws,mpGLOBAL_AMAP,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 #if 0
@@ -2628,17 +2805,17 @@ static NhlErrorTypes mpSetUpDrawIds
 	mpNameRec	*groups;
 	mpNameRec	*nrecs;
 	int		count;
-	unsigned char	draw_mode;
+	mpFlags		uflags;
 	mpGlobalSetMode gmode;
 	mpStateSetMode	smode;
-	int		color;
-	int		*fgp;
-	int		*agroups = NULL;
-	NhlBoolean	use_agroups = False;
+	int		index;
+	unsigned char	s_index;
+	int		*dyn_grps = NULL;
+	NhlBoolean	use_dyn_grps = False;
 	int		us_ix = -999;
 
 	US_Border = 0;
-	US_Color = -999;
+	US_Index = -999;
 
 	switch (draw_op) {
 	case mpDRAWFILL:
@@ -2680,9 +2857,9 @@ static NhlErrorTypes mpSetUpDrawIds
 			id_ix = 1;
 		}
 		cix_ix = 1;
-		if (mpp->area_groups != NULL) {
-			agroups = (int *) mpp->area_groups->data;
-			use_agroups = True;
+		if (mpp->dynamic_groups != NULL) {
+			dyn_grps = (int *) mpp->dynamic_groups->data;
+			use_dyn_grps = True;
 		}
 		break;
 	case mpIMPLIED_NAT:
@@ -2705,10 +2882,11 @@ static NhlErrorTypes mpSetUpDrawIds
 	end_ix = Id_End_Reg[Outline_Set];
 	Draw_Check = Draw_Special_Check[Outline_Set];
 
-	fgp = (int *) mpp->fill_group_colors->data;
+	uflags.flags = 0;
 	for (i = 0; i < NhlNumber(DrawIds); i++) {
-		DrawIds[i].draw_mode = mpBACKGROUND;
-		DrawIds[i].cix = fgp[NhlmpDEFAULTGROUPINDEX];
+		DrawIds[i].u.flags = 0;
+		DrawIds[i].s_ix = (unsigned char) -1;
+		DrawIds[i].ix = NhlmpDEFAULTGROUPINDEX;
 	}
 
 /*
@@ -2716,30 +2894,30 @@ static NhlErrorTypes mpSetUpDrawIds
  * lists are parsed later and thus overrride the general catagories.
  */
 	for (i = 0; i < NhlmpOUTLINE_TYPE_COUNT - 2; i++) {
-		if (groups[i].draw_mode > mpBACKGROUND) {
-			draw_mode = groups[i].draw_mode;
+		if (groups[i].u.f.draw_mode > mpBACKGROUND) {
+			uflags.flags = groups[i].u.flags;
+			s_index = groups[i].s_ix;
 			for (j = Otype_Start[i]; j < Otype_Start[i+1]; j++) {
 				ix = OutRecs[j].id[id_ix];
-				if (groups[i].cix != NhlmpUNSETCOLOR)
-					color = groups[i].cix;
-				else
-					color = use_agroups ?
-						fgp[agroups[i]] :
-						fgp[OutRecs[j].cix[cix_ix]];
+				if (use_dyn_grps)
+					index = dyn_grps[j];
+				else {
+					index = OutRecs[j].cix[cix_ix];
+				}
 				if (ix > end_ix) {
 					if (draw_op == mpDRAWOUTLINE &&
-					    draw_mode == mpDRAW)
-						draw_mode = mpDRAWSPECIAL;
-					subret = mpExpandId(mpp,
-						      ix-end_ix-1,draw_mode,
-						       color,entry_name);
+					    uflags.f.draw_mode == mpDRAW)
+					    uflags.f.draw_mode = mpDRAWSPECIAL;
+					subret = mpExpandId(mpp,ix-end_ix-1,
+					      uflags,index,s_index,entry_name);
 					if ((ret = MIN(ret,subret) 
 					     < NhlWARNING)) return ret;
 				}
 				else {
 					ix -= start_ix;
-					DrawIds[ix].draw_mode = draw_mode;
-					DrawIds[ix].cix = (unsigned char)color;
+					DrawIds[ix].u.flags = uflags.flags;
+					DrawIds[ix].ix = index;
+					DrawIds[ix].s_ix = s_index;
 				}
 			}
 		}
@@ -2763,41 +2941,43 @@ static NhlErrorTypes mpSetUpDrawIds
 			us_ix = i;
 			continue;
 		}
-		draw_mode = nrecs[i].draw_mode;
-		color = nrecs[i].cix;
-		if (draw_op == mpDRAWOUTLINE && draw_mode == mpDRAW)
-			draw_mode = mpDRAWSPECIAL;
-		subret = mpExpandId(mpp,
-				    ix-end_ix-1,draw_mode,color,entry_name);
+		uflags.flags = nrecs[i].u.flags;
+		index = nrecs[i].ix;
+		s_index = nrecs[i].s_ix;
+		if (draw_op == mpDRAWOUTLINE && uflags.f.draw_mode == mpDRAW)
+			uflags.f.draw_mode = mpDRAWSPECIAL;
+		subret = mpExpandId(mpp,ix-end_ix-1,
+				    uflags,index,s_index,entry_name);
 		if ((ret = MIN(ret,subret) < NhlWARNING)) return ret;
 	}
 	if (us_ix >= 0) {
 		j = nrecs[us_ix].name_ix;
 		ix = OutRecs[j].id[id_ix];
-		draw_mode = nrecs[us_ix].draw_mode;
-		color = nrecs[us_ix].cix;
-		if (draw_mode == mpMASK) {
-			subret = mpExpandId(mpp,ix-end_ix-1,
-					    draw_mode,color,entry_name);
+		uflags.flags = nrecs[us_ix].u.flags;
+		index = nrecs[us_ix].ix;
+		s_index = nrecs[us_ix].s_ix;
+		if (uflags.f.draw_mode == mpMASK) {
+			subret = mpExpandId(mpp,ix-end_ix-1,uflags,
+					    index,s_index,entry_name);
 			if ((ret = MIN(ret,subret) < NhlWARNING)) return ret;
-			groups[mpUSStateLand].draw_mode = draw_mode;
+			groups[mpUSStateLand].u.flags = uflags.flags;
 		}
 		else {
 			US_Border = 2;
-			US_Color = color;
+			US_Index = index;
 		}
 	}
 
 	for (i = 0; i < count; i++) {
 		j = nrecs[i].name_ix;
 		ix = OutRecs[j].id[id_ix];
-		color = nrecs[i].cix;
-		draw_mode = nrecs[i].draw_mode;
-		if (OutRecs[j].type > mpNational && draw_mode != mpMASK)
+		if (OutRecs[j].type > mpNational && 
+		    nrecs[i].u.f.draw_mode != mpMASK)
 			continue;
 		ix -= start_ix;
-		DrawIds[ix].draw_mode = draw_mode;
-		DrawIds[ix].cix = (unsigned char) color;
+		DrawIds[ix].s_ix = nrecs[i].s_ix;
+		DrawIds[ix].u.flags = nrecs[i].u.flags;
+		DrawIds[ix].ix = nrecs[i].ix;
 	}
 /*
  * If the US set is in implied set mode, set the draw mode for the groups
@@ -2807,10 +2987,10 @@ static NhlErrorTypes mpSetUpDrawIds
 	if (smode == mpIMPLIED_SET) {
 		us_ix = (Outline_Set == mpPO ?
 			 mpUS_PO_IX : mpUS_PS_IX) - start_ix;
-		draw_mode = DrawIds[us_ix].draw_mode;
-		if (draw_op == mpDRAWOUTLINE && draw_mode == mpDRAW)
-			draw_mode = mpDRAWSPECIAL;
-		groups[mpUSStateLand].draw_mode = draw_mode;
+		uflags = DrawIds[us_ix].u;
+		if (draw_op == mpDRAWOUTLINE && uflags.f.draw_mode == mpDRAW)
+			uflags.f.draw_mode = mpDRAWSPECIAL;
+		groups[mpUSStateLand].u.flags = uflags.flags;
 	}
 
 	return ret;
@@ -2850,12 +3030,11 @@ static NhlErrorTypes mpSetUpStateDrawIds
 	mpNameRec	*land_group,*water_group;
 	mpNameRec	*nrecs;
 	int		count;
-	unsigned char	draw_mode;
+	mpFlags		uflags;
 	mpGlobalSetMode gmode;
 	mpStateSetMode	smode;
-	int		*fgp;
-	int		*agroups = NULL;
-	NhlBoolean	use_agroups = False;
+	int		*dyn_grps = NULL;
+	NhlBoolean	use_dyn_grps = False;
 
 	switch (draw_op) {
 	case mpDRAWFILL:
@@ -2888,62 +3067,60 @@ static NhlErrorTypes mpSetUpStateDrawIds
 	else
 		Draw_Check = -999;
 
-	fgp = (int *) mpp->fill_group_colors->data;
+	uflags.flags = 0;
 	for (i = 0; i < NhlNumber(DrawIds); i++) {
-		DrawIds[i].draw_mode = (unsigned char) mpBACKGROUND;
-		DrawIds[i].cix = (unsigned char) fgp[NhlmpDEFAULTGROUPINDEX];
+		DrawIds[i].u.flags = 0;
+		DrawIds[i].s_ix = (unsigned char) -1;
+		DrawIds[i].ix = NhlmpDEFAULTGROUPINDEX;
 	}
-	if (mpp->area_groups != NULL) {
-		agroups = (int *) mpp->area_groups->data;
-		use_agroups = True;
+	if (mpp->dynamic_groups != NULL) {
+		dyn_grps = (int *) mpp->dynamic_groups->data;
+		use_dyn_grps = True;
 	}
-
-	if (land_group->draw_mode > mpBACKGROUND) {
-		draw_mode = land_group->draw_mode;
+	
+	if (land_group->u.f.draw_mode > mpBACKGROUND) {
+		uflags.flags = land_group->u.flags;
 		for (j = Otype_Start[mpUSStateLand]; 
 		     j < Otype_Start[mpUSStateLand + 1]; j++) {
 			ix = OutRecs[j].id[1] - offset;
-			DrawIds[ix].draw_mode = draw_mode;
-			if (smode == mpIMPLIED_SET && US_Color > 0)
-				DrawIds[ix].cix = (unsigned char) US_Color;
-			else if (land_group->cix != NhlmpUNSETCOLOR)
-				DrawIds[ix].cix = 
-					(unsigned char) land_group->cix;
-			else
-				DrawIds[ix].cix = (unsigned char) use_agroups ?
-					fgp[agroups[j]] :
-					fgp[OutRecs[j].cix[1]];
+			DrawIds[ix].s_ix = land_group->s_ix;
+			if (smode == mpIMPLIED_SET && US_Index > 0) {
+				DrawIds[ix].u.flags = 0;
+				DrawIds[ix].ix = (unsigned char) US_Index;
 			}
+			else {
+				DrawIds[ix].u.flags = uflags.flags;
+				DrawIds[ix].ix = (unsigned char)use_dyn_grps ?
+					dyn_grps[j] : OutRecs[j].cix[1];
+			}
+			DrawIds[ix].u.f.draw_mode = uflags.f.draw_mode;
+		}
 	}
-	if (water_group->draw_mode > mpBACKGROUND) {
-		draw_mode = water_group->draw_mode;
+
+	if (water_group->u.f.draw_mode > mpBACKGROUND) {
 		for (j = Otype_Start[mpUSStateWater]; 
 		     j < Otype_Start[mpUSStateWater + 1]; j++) {
 			ix = OutRecs[j].id[1] - offset;
-			DrawIds[ix].draw_mode = draw_mode;
-			if (water_group->cix != NhlmpUNSETCOLOR) 
-				DrawIds[ix].cix = 
-					(unsigned char) water_group->cix;
-			else
-				DrawIds[ix].cix = (unsigned char) use_agroups ?
-					fgp[agroups[j]] :
-					fgp[OutRecs[j].cix[1]];
-			}
+			DrawIds[ix].s_ix = water_group->s_ix;
+			DrawIds[ix].u.flags = water_group->u.flags;
+			DrawIds[ix].ix = (unsigned char)use_dyn_grps ?
+				dyn_grps[j] : OutRecs[j].cix[1];
+		}
 	}
 
 	for (i = 0; i < count; i++) {
 		j = nrecs[i].name_ix;
-		draw_mode = nrecs[i].draw_mode;
 		if (OutRecs[j].type < mpUSStateLand)
 			continue;
 		ix = OutRecs[j].id[1] - offset;
-		DrawIds[ix].draw_mode = draw_mode;
-		DrawIds[ix].cix = (unsigned char) nrecs[i].cix;
+		DrawIds[ix].s_ix = nrecs[i].s_ix;
+		DrawIds[ix].u.flags = nrecs[i].u.flags;
+		DrawIds[ix].ix = nrecs[i].ix;
 	}
 
 	if (draw_op != mpDRAWOUTLINE) {
 		for (i = 0; i < NhlNumber(USState_Excludes); i++) {
-			DrawIds[USState_Excludes[i]-offset].draw_mode = 
+			DrawIds[USState_Excludes[i]-offset].u.f.draw_mode = 
 				mpSYSEXCLUDE;
 		}
 	}
@@ -2970,16 +3147,18 @@ static NhlErrorTypes mpExpandId
 (
 	NhlMapPlotLayerPart	*mpp,
 	int			id,
-	int			draw_mode,
-	int			color,	
+	mpFlags			uflags,
+	int			index,
+	unsigned char		s_index,
  	NhlString		entry_name
 )
 #else
-(mpp,id,draw_mode,color,entry_name)
+(mpp,id,uflags,index,s_index,entry_name)
 	NhlMapPlotLayerPart	*mpp;
 	int			id;
-	int			draw_mode;
-	int			color;
+	mpFlags			uflags;
+	int			index;
+	unsigned char		s_index;
 	NhlString		entry_name;
 #endif
 {
@@ -2987,11 +3166,9 @@ static NhlErrorTypes mpExpandId
 	short	*idp;
 	int	count,ix,i,set;
 	NhlBoolean do_us = False;
-	int	*fgp;
-	int		*agroups = NULL;
-	NhlBoolean	use_agroups = False;
+	int		*dyn_grps = NULL;
+	NhlBoolean	use_dyn_grps = False;
 
-	fgp = (int *) mpp->fill_group_colors->data;
 	count = NhlNumber(Exp_Ids);
 	if (id >= count) {
 		e_text = "%s: invalid expansion id";
@@ -3005,16 +3182,16 @@ static NhlErrorTypes mpExpandId
 
 	if (id == 11 && set == 1) {	/* US outline */
 		US_Border = 2;
-		if (mpp->area_groups != NULL) {
-			agroups = (int *) mpp->area_groups->data;
-			use_agroups = True;
+		if (mpp->dynamic_groups != NULL) {
+			dyn_grps = (int *) mpp->dynamic_groups->data;
+			use_dyn_grps = True;
 		}
-		US_Color = color;
+		US_Index = index;
 		do_us = True;
 	}
 	else if (id == 0 && set == 1)  { /* North-and-South-America */
 		US_Border = 1;
-		US_Color = color;
+		US_Index = index;
 		do_us = True;
 	}
 	else if (idp == NULL) {
@@ -3026,24 +3203,26 @@ static NhlErrorTypes mpExpandId
 	if (idp != NULL) {
 		for (i = 0; i < count; i++) {
 			ix = idp[i] - Id_Offset[Outline_Set];
-			DrawIds[ix].draw_mode = draw_mode;
-			DrawIds[ix].cix = (unsigned char) color;
+			DrawIds[ix].u.flags = uflags.flags;
+			DrawIds[ix].ix = index;
+			DrawIds[ix].s_ix = s_index;
 		}
 	}
 	if (do_us) {
 		for (i = Otype_Start[mpUSStateLand]; 
 		     i < Otype_Start[mpUSStateLand + 1]; i++) {
 			ix = OutRecs[i].id[2] - Id_Offset[Outline_Set];
-			DrawIds[ix].draw_mode = draw_mode;
-			DrawIds[ix].cix = (unsigned char)color;
+			DrawIds[ix].u.flags = uflags.flags;
+			DrawIds[ix].ix = index;
+			DrawIds[ix].s_ix = s_index;
 		}
 		for (i = Otype_Start[mpUSStateWater]; 
 		     i < Otype_Start[mpUSStateWater + 1]; i++) {
 			ix = OutRecs[i].id[2] - Id_Offset[Outline_Set];
-			DrawIds[ix].draw_mode = draw_mode;
-			DrawIds[ix].cix = (unsigned char) use_agroups ?
-				fgp[agroups[i]] :
-				fgp[OutRecs[i].cix[US_Border-1]];
+			DrawIds[ix].u.flags = uflags.flags;
+			DrawIds[ix].s_ix = s_index;
+			DrawIds[ix].ix = use_dyn_grps ?
+				dyn_grps[i] : OutRecs[i].cix[US_Border-1];
 		}
 	}
 	return NhlNOERROR;
@@ -3371,37 +3550,19 @@ static NhlErrorTypes    mpManageDynamicArrays
 		mpp->fill_group_count = Nhl_mpMIN_FILL_GROUPS;
 	}
 /*
- * Fill group color and fill group patterns cannot both be set to mono
- */ 
-	if (mpp->mono_fill_group_color && mpp->mono_fill_group_pattern) {
-		e_text = 
-			"%s: %s and %s must both be True; setting %s False";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-			  NhlNmpMonoFillGroupColor,NhlNmpMonoFillGroupPattern,
-			  NhlNmpMonoFillGroupPattern);
-		ret = MIN(ret, NhlWARNING);
-		mpp->mono_fill_group_pattern = False;
-	}
-/*
  * Fill group colors
  */
 
-	if (init) {
-		ga = NULL;
-		count = mpp->fill_group_count;
-	}
-	else {
-		ga = ompp->fill_group_colors;
-		count = mpp->mono_fill_group_color ? 1 : mpp->fill_group_count;
-	}
-  	subret = mpManageGenArray(&ga,count,mpp->fill_group_colors,Qint,NULL,
+	ga = init ? NULL : ompp->fill_colors;
+	count = mpp->fill_group_count;
+  	subret = mpManageGenArray(&ga,count,mpp->fill_colors,Qint,NULL,
 				  &old_count,&init_count,&need_check,&changed,
-				  NhlNmpFillGroupColors,entry_name);
+				  NhlNmpFillColors,entry_name);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
-	ompp->fill_group_colors = changed ? NULL : mpp->fill_group_colors;
-	mpp->fill_group_colors = ga;
+	ompp->fill_colors = changed ? NULL : mpp->fill_colors;
+	mpp->fill_colors = ga;
 
 	ip = (int *) ga->data;
 	NhlVAGetValues(mpnew->base.wkptr->base.id,
@@ -3449,40 +3610,36 @@ static NhlErrorTypes    mpManageDynamicArrays
 /*
  * Fill patterns
  */
-	if (init) {
-		ga = NULL;
-		count = mpp->fill_group_count;
-	}
-	else {
-		ga = ompp->fill_group_patterns;
-		count = mpp->mono_fill_group_pattern ? 
-			1 : mpp->fill_group_count;
-	}
-	subret = mpManageGenArray(&ga,count,mpp->fill_group_patterns,Qint,NULL,
+
+	ga = init ? NULL : ompp->fill_patterns;
+	count = mpp->fill_group_count;
+	subret = mpManageGenArray(&ga,count,mpp->fill_patterns,Qint,NULL,
 				  &old_count,&init_count,&need_check,&changed,
-				  NhlNmpFillGroupPatterns,entry_name);
+				  NhlNmpFillPatterns,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
-	ompp->fill_group_patterns = changed ? NULL : mpp->fill_group_patterns;
-	mpp->fill_group_patterns = ga;
+	ompp->fill_patterns = changed ? NULL : mpp->fill_patterns;
+	mpp->fill_patterns = ga;
 
 	if (need_check) {
+		int len;
+
 		ip = (int *) ga->data;
-		if (mpp->mono_fill_group_pattern && init_count == 0)
-			ip[0] = NhlSOLIDFILL;
-		else
-			for (i=init_count; i < count; i++) {
-				ip[i] = i + 1;
-			}
+		NhlVAGetValues(mpnew->base.wkptr->base.id,
+			        NhlNwkFillTableLength, &len, NULL);
+
+		for (i=init_count; i < count; i++) {
+			ip[i] = i  % len + 1;
+		}
 		for (i=0; i<init_count; i++) {
-			if (ip[i] < NhlHOLLOWFILL) {
+			if (ip[i] < NhlHOLLOWFILL || ip[i] > len) {
 				e_text =
 	      "%s: %s index %d holds an invalid pattern value, %d: defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 					  entry_name,
-					  NhlNmpFillGroupPatterns,i,ip[i]);
+					  NhlNmpFillPatterns,i,ip[i]);
 				ret = MIN(ret, NhlWARNING);
-				ip[i] = NhlHOLLOWFILL;
+				ip[i] = NhlSOLIDFILL;
 			}
 		}
 	}
@@ -3516,25 +3673,19 @@ static NhlErrorTypes    mpManageDynamicArrays
  * Fill scales
  */
 
-	if (init) {
-		ga = NULL;
-		count = mpp->fill_group_count;
-	}
-	else {
-		ga = ompp->fill_group_scales;
-		count = mpp->mono_fill_group_scale ? 1 : mpp->fill_group_count;
-	}
+	ga = init ? NULL : ompp->fill_scales;
+	count = mpp->fill_group_count;
 	fval = 1.0;
-	subret = mpManageGenArray(&ga,count,mpp->fill_group_scales,
+	subret = mpManageGenArray(&ga,count,mpp->fill_scales,
 				  Qfloat,&fval,&old_count,&init_count,
 				  &need_check,&changed,
-				  NhlNmpFillGroupScales,entry_name);
+				  NhlNmpFillScales,entry_name);
 	
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
 
-	ompp->fill_group_scales = changed ? NULL : mpp->fill_group_scales;
-	mpp->fill_group_scales = ga;
+	ompp->fill_scales = changed ? NULL : mpp->fill_scales;
+	mpp->fill_scales = ga;
 	
 	if (need_check) {
 		fp = (float *) ga->data;
@@ -3543,7 +3694,7 @@ static NhlErrorTypes    mpManageDynamicArrays
 				e_text =
 	            "%s: %s index %d holds an invalid fill scale: defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNmpFillGroupScales,i);
+					  entry_name,NhlNmpFillScales,i);
 				ret = MIN(ret, NhlWARNING);
 				fp[i] = 1.0;
 			}
@@ -3661,22 +3812,22 @@ static NhlErrorTypes    mpManageDynamicArrays
 	}
 
 /*
- * Area Groups
+ * The dynamic area Groups
  */
-	ga = init ? NULL : ompp->area_groups;
+	ga = init ? NULL : ompp->dynamic_groups;
 
 	need_check = False;
-	if (ga != mpp->area_groups) {
-		if (mpp->area_groups->num_elements != OutRec_Count) {
+	if (ga != mpp->dynamic_groups) {
+		if (mpp->dynamic_groups->num_elements != OutRec_Count) {
 			e_text = 
 			  "%s: %s GenArray must contain %d elements: ignoring";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNmpAreaGroups,OutRec_Count);
+				  NhlNmpDynamicAreaGroups,OutRec_Count);
 			ret = MIN(NhlWARNING,ret);
 		}
 		else {
 			NhlFreeGenArray(ga);
-			if ((ga = _NhlCopyGenArray(mpp->area_groups,
+			if ((ga = _NhlCopyGenArray(mpp->dynamic_groups,
 						   True)) == NULL) {
 				e_text = "%s: error copying %s GenArray";
 				NhlPError(NhlFATAL,
@@ -3685,9 +3836,9 @@ static NhlErrorTypes    mpManageDynamicArrays
 				return NhlFATAL;
 			}
 			need_check = True;
-			ompp->area_groups = NULL;
+			ompp->dynamic_groups = NULL;
 		}
-		mpp->area_groups = ga;
+		mpp->dynamic_groups = ga;
 
 	}
 	if (need_check || mpp->fill_group_count < ompp->fill_group_count) {
@@ -3700,7 +3851,8 @@ static NhlErrorTypes    mpManageDynamicArrays
 				e_text =
 	         "%s: %s index %d holds an invalid fill group id: defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNmpAreaGroups,i);
+					  entry_name,
+					  NhlNmpDynamicAreaGroups,i);
 				ret = MIN(ret, NhlWARNING);
 				use_default = True;
 			}
@@ -3708,6 +3860,21 @@ static NhlErrorTypes    mpManageDynamicArrays
 				ip[i] = OutRecs[i].cix[1];
 		}
 	}
+
+
+/*
+ * The fixed area groups are read only
+ */
+	ga = init ? NULL : ompp->fixed_groups;
+
+	if (ga != mpp->fixed_groups) {
+		e_text = "%s: attempt to set read-only resource %s ignored";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+			  NhlNmpFixedAreaGroups);
+		ret = MIN(ret, NhlWARNING);
+		mpp->fixed_groups = ga;
+	}
+
 
 /*
  * Area types are read only
@@ -3723,58 +3890,150 @@ static NhlErrorTypes    mpManageDynamicArrays
 	}
 
 /*
- * Fill Colors; fill colors may be indexed either to the fill groups
+ * The specified fill colors may be indexed either to the fill groups
  * or directly to the hlu color index depending on the setting of 
- * mpDirectFillAreaColor. Issue a warning if the number of elements is
+ * mpSpecifiedFillDirectIndexing. Issue a warning if the number of elements is
  * not the same as the elements in the fill_area_specs list.
  */		
 
-	ga = init ? NULL : ompp->fill_area_colors;
+	ga = init ? NULL : ompp->spec_fill_colors;
 
-	if (ga != mpp->fill_area_colors) {
+	if (ga != mpp->spec_fill_colors) {
 		int max_val;
-		if (mpp->fill_area_colors == NULL) {
+		if (mpp->spec_fill_colors == NULL) {
 			NhlFreeGenArray(ga);
-			count = 0;
+			mpp->spec_fill_color_count = 0;
 		}
 		else {
 			NhlFreeGenArray(ga);
-			ga = _NhlCopyGenArray(mpp->fill_area_colors,True);
+			ga = _NhlCopyGenArray(mpp->spec_fill_colors,True);
 			if (ga == NULL) {
 				e_text = "%s: error copying %s GenArray";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNmpFillAreaColors);
+					  entry_name,
+					  NhlNmpSpecifiedFillColors);
 				return NhlFATAL;
 			}
-			ompp->fill_area_colors = NULL;
-			mpp->fill_area_colors = ga;
-			count = mpp->fill_area_colors->num_elements;
+			ompp->spec_fill_colors = NULL;
+			mpp->spec_fill_colors = ga;
+			mpp->spec_fill_color_count 
+				= mpp->spec_fill_colors->num_elements;
 		}
-		if (mpp->fill_area_specs == NULL ||
-		    count != mpp->fill_area_specs->num_elements) {
-			e_text = 
-		"%s: %s and %s element count unequal: defaulting as necessary";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNmpFillAreaColors,
-				  NhlNmpFillAreaSpecifiers);
-			ret = MIN(ret, NhlWARNING);
-		}
-		if (mpp->direct_fill_area_color)
+		if (mpp->spec_fill_direct)
 			NhlVAGetValues(mpnew->base.wkptr->base.id,
 				       NhlNwkColorMapLen, &max_val, NULL);
 		else
 			max_val = mpp->fill_group_count - 1;
 
-		ip = (int *) mpp->fill_area_colors->data; 
-		for (i = 0; i < count; i++) {
+		ip = (int *) mpp->spec_fill_colors->data; 
+		for (i = 0; i < mpp->spec_fill_color_count; i++) {
 			if (ip[i] > max_val) {
 				e_text = 
 	           "%s: %s index %d holds an invalid color index: defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					  e_text,entry_name,
-					  NhlNmpFillAreaColors,i);
+					  NhlNmpSpecifiedFillColors,i);
 				ret = MIN(ret, NhlWARNING);
 				ip[i] = NhlmpUNSETCOLOR;
+			}
+		}
+	}
+
+/*
+ * The specified fill patterns may be indexed either to the fill groups
+ * or directly to the hlu color index depending on the setting of 
+ * mpSpecifiedFillDirectIndexing. Issue a warning if the number of elements is
+ * not the same as the elements in the fill_area_specs list.
+ */		
+
+	ga = init ? NULL : ompp->spec_fill_patterns;
+	if (ga != mpp->spec_fill_patterns) {
+		int max_val;
+		if (mpp->spec_fill_patterns == NULL) {
+			NhlFreeGenArray(ga);
+			mpp->spec_fill_pattern_count = 0;
+		}
+		else {
+			NhlFreeGenArray(ga);
+			ga = _NhlCopyGenArray(mpp->spec_fill_patterns,True);
+			if (ga == NULL) {
+				e_text = "%s: error copying %s GenArray";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+					  entry_name,
+					  NhlNmpSpecifiedFillPatterns);
+				return NhlFATAL;
+			}
+			ompp->spec_fill_patterns = NULL;
+			mpp->spec_fill_patterns = ga;
+			mpp->spec_fill_pattern_count = 
+				mpp->spec_fill_patterns->num_elements;
+		}
+		if (mpp->spec_fill_direct)
+			NhlVAGetValues(mpnew->base.wkptr->base.id,
+				       NhlNwkFillTableLength, &max_val, NULL);
+		else
+			max_val = mpp->fill_group_count - 1;
+
+		ip = (int *) mpp->spec_fill_patterns->data; 
+		for (i = 0; i < mpp->spec_fill_pattern_count; i++) {
+			if (ip[i] > max_val) {
+				e_text = 
+	         "%s: %s index %d holds an invalid pattern index: defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  e_text,entry_name,
+					  NhlNmpSpecifiedFillPatterns,i);
+				ret = MIN(ret, NhlWARNING);
+				ip[i] = NhlmpUNSETFILLPATTERN;
+			}
+		}
+	}
+
+/*
+ * The specified fill scales may be indexed either to the fill groups
+ * or directly to the hlu scale index depending on the setting of 
+ * mpSpecifiedFillDirectIndexing. Issue a warning if the number of elements is
+ * not the same as the elements in the fill_area_specs list.
+ */		
+
+
+	ga = init ? NULL : ompp->spec_fill_scales;
+
+	if (ga != mpp->spec_fill_scales) {
+		float max_val;
+		if (mpp->spec_fill_scales == NULL) {
+			NhlFreeGenArray(ga);
+			mpp->spec_fill_scale_count = 0;
+		}
+		else {
+			NhlFreeGenArray(ga);
+			ga = _NhlCopyGenArray(mpp->spec_fill_scales,True);
+			if (ga == NULL) {
+				e_text = "%s: error copying %s GenArray";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+					  entry_name,
+					  NhlNmpSpecifiedFillScales);
+				return NhlFATAL;
+			}
+			ompp->spec_fill_scales = NULL;
+			mpp->spec_fill_scales = ga;
+			mpp->spec_fill_scale_count = 
+				mpp->spec_fill_scales->num_elements;
+		}
+		fp = (float *) mpp->spec_fill_scales->data; 
+		if (! mpp->spec_fill_direct)
+			max_val = mpp->fill_group_count - 1;
+		else
+			max_val = FLT_MAX;
+
+		for (i = 0; i < mpp->spec_fill_scale_count; i++) {
+			if (fp[i] > max_val || fp[i] < 0.0) {
+				e_text = 
+	           "%s: %s index %d holds an invalid scale: defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  e_text,entry_name,
+					  NhlNmpSpecifiedFillScales,i);
+				ret = MIN(ret, NhlWARNING);
+				ip[i] = NhlmpUNSETFILLSCALE;
 			}
 		}
 	}
@@ -3804,16 +4063,16 @@ static NhlErrorTypes    mpUpdateDrawGroups
 	NhlMapPlotLayerPart	*mpp,
 	mpDrawOp		draw_op,
 	int			draw_mode,
-	int			color,
+	int			index,
 	int			group_ix,
 	char			*entry_name
 )
 #else
-(mpp,draw_op,draw_mode,color,group_ix,entry_name)
+(mpp,draw_op,draw_mode,index,group_ix,entry_name)
 	NhlMapPlotLayerPart	*mpp;
 	mpDrawOp		draw_op;
 	int			draw_mode;
-	int			color;
+	int			index;
 	int			group_ix;
 	char			*entry_name;
 
@@ -3821,9 +4080,11 @@ static NhlErrorTypes    mpUpdateDrawGroups
 {
 	char		*e_text;
 	mpNameRec	*groups;
+	mpNameRec	tmpl;
 	mpGlobalSetMode *gmode;
 	mpStateSetMode	*smode;
-	int		*fgp;
+	int		list[NhlmpOUTLINE_TYPE_COUNT];
+	int		i,count = 0;
 
 	switch (draw_op) {
 	case mpDRAWFILL:
@@ -3841,105 +4102,87 @@ static NhlErrorTypes    mpUpdateDrawGroups
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(NhlFATAL);
 	}
-	fgp = (int *) mpp->fill_group_colors->data;
-	if (! mpp->direct_fill_area_color && color > NhlTRANSPARENT)
-		color = fgp[color];
 
-/* 
- * Note that the color parameter is ignored for groupings named "ALL..."
- */
 	switch ((mpBGroups) group_ix) {
+	case mpNULLAREA:
+		break;
 	case mpALLNATIONAL:
-		groups[mpNational].draw_mode = draw_mode;
-		groups[mpOcean].draw_mode = draw_mode;
-		groups[mpContinent].draw_mode = draw_mode;
-		groups[mpLargeIsland].draw_mode = draw_mode;
-		groups[mpSmallIsland].draw_mode = draw_mode;
-		groups[mpInlandWater].draw_mode = draw_mode;
-		groups[mpNational].cix = color;
-		groups[mpOcean].cix = color;
-		groups[mpContinent].cix = color;
-		groups[mpLargeIsland].cix = color;
-		groups[mpSmallIsland].cix = color;
-		groups[mpInlandWater].cix = color;
+		list[0] = mpNational;
+		list[1] = mpOcean;
+		list[2] = mpContinent;
+		list[3] = mpLargeIsland;
+		list[4] = mpSmallIsland;
+		list[5] = mpInlandWater;
+		count = 6;
 		*gmode = mpNAT;
 		break;
 	case mpALLGEOPHYSICAL:
-		groups[mpOcean].draw_mode = draw_mode;
-		groups[mpContinent].draw_mode = draw_mode;
-		groups[mpLargeIsland].draw_mode = draw_mode;
-		groups[mpSmallIsland].draw_mode = draw_mode;
-		groups[mpInlandWater].draw_mode = draw_mode;
-		groups[mpOcean].cix = color;
-		groups[mpContinent].cix = color;
-		groups[mpLargeIsland].cix = color;
-		groups[mpSmallIsland].cix = color;
-		groups[mpInlandWater].cix = color;
+		list[0] = mpOcean;
+		list[1] = mpContinent;
+		list[2] = mpLargeIsland;
+		list[3] = mpSmallIsland;
+		list[4] = mpInlandWater;
+		count = 5;
 		*gmode = MAX(*gmode,mpGEO);
 		break;
 	case mpLAND:
-		groups[mpContinent].draw_mode = draw_mode;
-		groups[mpLargeIsland].draw_mode = draw_mode;
-		groups[mpSmallIsland].draw_mode = draw_mode;
-		groups[mpContinent].cix = color;
-		groups[mpLargeIsland].cix = color;
-		groups[mpSmallIsland].cix = color;
+		list[0] = mpContinent;
+		list[1] = mpLargeIsland;
+		list[2] = mpSmallIsland;
+		count = 3;
 		*gmode = MAX(*gmode,mpGEO);
 		break;
 	case mpWATER:
-		groups[mpOcean].draw_mode = draw_mode;
-		groups[mpInlandWater].draw_mode = draw_mode;
-		groups[mpOcean].cix = color;
-		groups[mpInlandWater].cix = color;
+		list[0] = mpOcean;
+		list[1] = mpInlandWater;
+		count = 2;
 		*gmode = MAX(*gmode,mpGEO);
 		break;
 	case mpINLANDWATER:
-		groups[mpInlandWater].draw_mode = draw_mode;
-		groups[mpInlandWater].cix = color;
+		list[0] = mpInlandWater;
+		count = 1;
 		*gmode = MAX(*gmode,mpGEO);
 		break;
 	case mpOCEANS:
-		groups[mpOcean].draw_mode = draw_mode;
-		groups[mpOcean].cix = color;
+		list[0] = mpOcean;
+		count = 1;
 		*gmode = MAX(*gmode,mpGEO);
 		break;
 	case mpCONTINENTS:
- 		groups[mpContinent].draw_mode = draw_mode;
- 		groups[mpContinent].cix = color;
+		list[0] = mpContinent;
+		count = 2;
 		*gmode = MAX(*gmode,mpGEO);
 		break;
 	case mpISLANDS:
-		groups[mpLargeIsland].draw_mode = draw_mode;
-		groups[mpSmallIsland].draw_mode = draw_mode;
-		groups[mpLargeIsland].cix = color;
-		groups[mpSmallIsland].cix = color;
+		list[0] = mpLargeIsland;
+		list[1] = mpSmallIsland;
+		count = 2;
 		*gmode = MAX(*gmode,mpGEO);
 		break;
 	case mpLARGEISLANDS:
-		groups[mpLargeIsland].draw_mode = draw_mode;
-		groups[mpLargeIsland].cix = color;
+		list[0] = mpLargeIsland;
+		count = 1;
 		*gmode = MAX(*gmode,mpGEO);
 		break;
 	case mpSMALLISLANDS:
-		groups[mpSmallIsland].draw_mode = draw_mode;
-		groups[mpSmallIsland].cix = color;
+		list[0] = mpSmallIsland;
+		count = 1;
 		*gmode = MAX(*gmode,mpGEO);
 		break;
 	case mpALLUSSTATES:
-		groups[mpUSStateLand].draw_mode = draw_mode;
-		groups[mpUSStateWater].draw_mode= draw_mode;
-		groups[mpUSStateLand].cix = color;
-		groups[mpUSStateWater].cix= color;
+		list[0] = mpUSStateLand;
+		list[1] = mpUSStateWater;
+		count = 2;
 		*smode = mpSET;
 		break;
 	case mpUSSTATESLAND:
-		groups[mpUSStateLand].draw_mode = draw_mode;
-		groups[mpUSStateLand].cix = color;
+		list[0] = mpUSStateLand;
+		count = 1;
 		*smode = mpSET;
 		break;
 	case mpUSSTATESWATER:
-		groups[mpUSStateWater].draw_mode= draw_mode;
-		groups[mpUSStateWater].cix= color;
+		list[0] = mpUSStateWater;
+		count = 1;
 		*smode = MAX(*smode,mpIMPLIED_SET);
 		break;
 	default:
@@ -3947,9 +4190,111 @@ static NhlErrorTypes    mpUpdateDrawGroups
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(NhlFATAL);
 	}
+
+	tmpl.u.f.s_col = 0;
+	tmpl.u.f.s_pat = 0;
+	tmpl.u.f.s_scl = 0;
+	tmpl.u.f.draw_mode = draw_mode;
+	if (index != mpNOINDEX) {
+		if (mpp->spec_fill_color_count > index) {
+			int *ip = (int *) mpp->spec_fill_colors->data;
+			if (ip[index] != NhlmpUNSETCOLOR)
+				tmpl.u.f.s_col =  1;
+		}
+		if (mpp->spec_fill_pattern_count > index) {
+			int *ip = (int *) mpp->spec_fill_patterns->data;
+			if (ip[index] != NhlmpUNSETFILLPATTERN)
+				tmpl.u.f.s_pat =  1;
+		}
+		if (mpp->spec_fill_scale_count > index) {
+			float *fp = (float *) mpp->spec_fill_scales->data;
+			if (fp[index] > NhlmpUNSETFILLSCALE)
+				tmpl.u.f.s_scl =  1;
+		}
+	}
+	for (i = 0; i < count; i++) {
+		groups[list[i]].s_ix = index;
+		groups[list[i]].u.flags = tmpl.u.flags;
+	}
+
 	return NhlNOERROR;
 }
 
+/*
+ * Function:	mpSetFlags
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes mpSetFlags
+#if	NhlNeedProto
+(
+	NhlMapPlotLayerPart	*mpp,
+	mpNameRec		*nrec,
+	NhlBoolean		invert,
+	int			index
+)
+#else
+(mpp,nrec,orec,invert,index)
+	NhlMapPlotLayerPart	*mpp;
+	mpNameRec		*nrec;
+	NhlBoolean		invert;
+	int			index;
+#endif
+{
+
+	nrec->s_ix = index;
+	nrec->u.f.s_col = 0;
+	nrec->u.f.s_pat = 0;
+	nrec->u.f.s_scl = 0;
+	
+	if (index != mpNOINDEX) {
+		if (mpp->spec_fill_color_count > index) {
+			int *ip = (int *) mpp->spec_fill_colors->data;
+			if (ip[index] != NhlmpUNSETCOLOR)
+				nrec->u.f.s_col =  1;
+		}
+		if (mpp->spec_fill_pattern_count > index) {
+			int *ip = (int *) mpp->spec_fill_patterns->data;
+			if (ip[index] != NhlmpUNSETFILLPATTERN)
+				nrec->u.f.s_pat =  1;
+		}
+		if (mpp->spec_fill_scale_count > index) {
+			float *fp = (float *) mpp->spec_fill_scales->data;
+			if (fp[index] > NhlmpUNSETFILLSCALE)
+				nrec->u.f.s_scl =  1;
+		}
+	}
+	if (mpp->spec_fill_priority == NhlmpGEOPHYSICALPRIORITY) {
+		if (! invert)
+			nrec->ix = OutRecs[nrec->name_ix].cix[0];
+		else if (mpp->dynamic_groups != NULL) {
+			int *dyn_grps = (int *) mpp->dynamic_groups->data;
+			nrec->ix = dyn_grps[nrec->name_ix];
+		}
+		else 
+			nrec->ix = OutRecs[nrec->name_ix].cix[1];
+	}
+	else {
+		if (invert)
+			nrec->ix = OutRecs[nrec->name_ix].cix[0];
+		else if (mpp->dynamic_groups != NULL) {
+			int *dyn_grps = (int *) mpp->dynamic_groups->data;
+			nrec->ix = dyn_grps[nrec->name_ix];
+		}
+		else 
+			nrec->ix = OutRecs[nrec->name_ix].cix[1];
+	}
+	return NhlNOERROR;
+}
 /*
  * Function:	mpUpdateNameRecs
  *
@@ -3971,16 +4316,16 @@ static NhlErrorTypes mpUpdateNameRecs
 	mpDrawOp		draw_op,
 	NhlString		name,
 	int			draw_mode,
-	int			color,
+	int			index,
 	NhlString		entry_name
 )
 #else
-(mpp,draw_op,name,draw_mode,color,entry_name)
+(mpp,draw_op,name,draw_mode,index,entry_name)
 	NhlMapPlotLayerPart	*mpp;
 	mpDrawOp		draw_op;
 	NhlString		name;
 	int			draw_mode;
-	int			color;
+	int			index;
 	NhlString		entry_name;
 #endif
 {
@@ -3989,7 +4334,6 @@ static NhlErrorTypes mpUpdateNameRecs
 	int		len = strlen(name);
 	NhlBoolean	found = False, found_all = False, found_one = False;
 	NhlString	*names = NULL;
-	int		*agroups = NULL;
 	char		*cp, *np = name;
 	NhlBoolean	invert = False;
 	NhlString	comp_name;
@@ -4002,7 +4346,6 @@ static NhlErrorTypes mpUpdateNameRecs
 	int		*count;
 	mpGlobalSetMode *gmode;
 	mpStateSetMode	*smode;
-	int		*fgp;
 
 	switch (draw_op) {
 	case mpDRAWFILL:
@@ -4018,7 +4361,6 @@ static NhlErrorTypes mpUpdateNameRecs
 		count = &mpp->outline_rec_count;
 		gmode = &mpp->global_outline_mode;
 		smode = &mpp->usstates_outline_mode;
-		fgp = NULL;
 		break;
 	default:
 		e_text = "%s: internal enumeration error";
@@ -4028,8 +4370,6 @@ static NhlErrorTypes mpUpdateNameRecs
 
 	if (mpp->area_names != NULL)
 		names = (NhlString *) mpp->area_names->data;
-	if (mpp->area_groups != NULL)
-		agroups = (int *) mpp->area_groups->data;
 
 	if (*nrecs == NULL) {
 		if ((*nrecs = (mpNameRec *) 
@@ -4060,7 +4400,6 @@ static NhlErrorTypes mpUpdateNameRecs
 		np++;
 	}
 	
-	fgp = (int *) mpp->fill_group_colors->data;
 	for (i = 0; i < OutRec_Count; i++) {
 		comp_name = names ? names[i] : OutRecs[i].name; 
 		if (*count == *alloc) {
@@ -4104,27 +4443,8 @@ static NhlErrorTypes mpUpdateNameRecs
 		}
 		if (found) {
 			(*nrecs)[*count].name_ix = i;
-			(*nrecs)[*count].draw_mode = draw_mode;
-			if (color == NhlTRANSPARENT)
-				(*nrecs)[*count].cix = color;
-			else if (color > NhlTRANSPARENT) 
-				if (mpp->direct_fill_area_color)
-					(*nrecs)[*count].cix = color;
-				else 
-					(*nrecs)[*count].cix = fgp[color];
-			else if (OutRecs[i].id[0] < 0)
-				(*nrecs)[*count].cix = agroups ?
-				      fgp[agroups[i]] : fgp[OutRecs[i].cix[1]];
-			else if (mpp->group_priority == 
-				 NhlmpPOLITICALPRIORITY && ! invert)
-				(*nrecs)[*count].cix = agroups ?
-				      fgp[agroups[i]] : fgp[OutRecs[i].cix[1]];
-			else if (mpp->group_priority == 
-				 NhlmpGEOPHYSICALPRIORITY && invert)
-				(*nrecs)[*count].cix = agroups ?
-				      fgp[agroups[i]] : fgp[OutRecs[i].cix[1]];
-			else
-				(*nrecs)[*count].cix = fgp[OutRecs[i].cix[0]];
+			(*nrecs)[*count].u.f.draw_mode = draw_mode;
+			mpSetFlags(mpp,&((*nrecs)[*count]),invert,index);
 
 			if (OutRecs[i].type == mpNational) {
 				*gmode = MAX(*gmode,mpIMPLIED_NAT);
@@ -4133,6 +4453,10 @@ static NhlErrorTypes mpUpdateNameRecs
 					OutRecs[i].type == mpUSStateWater) {
 				*smode = MAX(*smode,mpIMPLIED_SET);
 			}
+			else {
+				*gmode = MAX(*gmode,mpGEO);
+			}
+
 			found = False;
 			(*count)++;
 		}
@@ -4185,7 +4509,7 @@ static NhlErrorTypes    mpBuildFillDrawList
 	char			*entry_name;
 	NhlMapPlotLayerPart	*mpp = &(mpnew->mapplot);
 	NhlMapPlotLayerPart	*ompp = &(mpold->mapplot);
-	int			i,j,color_count,color;
+	int			i,j;
 	NhlString		*sp;
 	NhlBoolean		found;
 	int			*clrs;
@@ -4207,21 +4531,25 @@ static NhlErrorTypes    mpBuildFillDrawList
 	    mpp->fill_boundaries == ompp->fill_boundaries &&
 	    mpp->fill_area_specs == ompp->fill_area_specs &&
 	    mpp->mask_area_specs == ompp->mask_area_specs &&
-	    mpp->fill_area_colors == ompp->fill_area_colors &&
-	    mpp->direct_fill_area_color == ompp->direct_fill_area_color &&
+	    mpp->spec_fill_colors == ompp->spec_fill_colors &&
+	    mpp->spec_fill_patterns == ompp->spec_fill_patterns &&
+	    mpp->spec_fill_scales == ompp->spec_fill_scales &&
+	    mpp->spec_fill_direct == ompp->spec_fill_direct &&
 	    mpp->area_names == ompp->area_names &&
-	    mpp->area_groups == ompp->area_groups)
+	    mpp->dynamic_groups == ompp->dynamic_groups &&
+	    mpp->area_masking_on == ompp->area_masking_on &&
+	    mpp->spec_fill_priority == ompp->spec_fill_priority)
 		return ret;
 
-	clrs = (int *) mpp->fill_group_colors->data;
+	clrs = (int *) mpp->fill_colors->data;
 	for (i = 0; i < NhlNumber(mpp->fill_groups); i++) {
-		mpp->fill_groups[i].draw_mode = mpBACKGROUND;
-		mpp->fill_groups[i].cix = clrs[NhlmpDEFAULTGROUPINDEX];
+		mpp->fill_groups[i].u.flags = 0;
+		mpp->fill_groups[i].ix = 0;
+		mpp->fill_groups[i].s_ix = (unsigned char) -1;
 	}
 	mpp->global_fill_mode = mpNONE;
 	mpp->usstates_fill_mode = mpNOSET;
 	mpp->fill_rec_count = 0;
-	mpp->usstates_color = -999;
 
 /* 
  * Determine which map element types are required and consequently which
@@ -4234,63 +4562,54 @@ static NhlErrorTypes    mpBuildFillDrawList
 		break;
 	case NhlmpGEOPHYSICAL:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
-					    NhlmpUNSETCOLOR,
+					    mpNOINDEX,
 					    mpALLGEOPHYSICAL,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
 	case NhlmpNATIONAL:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
-					    NhlmpUNSETCOLOR,
+					    mpNOINDEX,
 					    mpALLNATIONAL,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
 	case NhlmpUSSTATES:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
-					    NhlmpUNSETCOLOR,
+					    mpNOINDEX,
 					    mpALLUSSTATES,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
 	case NhlmpGEOPHYSICALANDUSSTATES:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
-					    NhlmpUNSETCOLOR,
+					    mpNOINDEX,
 					    mpALLGEOPHYSICAL,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
-					    NhlmpUNSETCOLOR,
+					    mpNOINDEX,
 					    mpALLUSSTATES,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
 	case NhlmpALLBOUNDARIES:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
-					    NhlmpUNSETCOLOR,
+					    mpNOINDEX,
 					    mpALLNATIONAL,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
-					    NhlmpUNSETCOLOR,
+					    mpNOINDEX,
 					    mpALLUSSTATES,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
 	}
 
 	if (mpp->fill_area_specs != NULL) {
-		if (mpp->fill_area_colors != NULL) {
-			color_count = mpp->fill_area_colors->num_elements;
-			clrs = (int *) mpp->fill_area_colors->data;
-		}
-		else {
-			color_count = 0;
-			clrs = NULL;
-		}
 		sp = (NhlString *) mpp->fill_area_specs->data;
 		for (i = 0; i < mpp->fill_area_specs->num_elements; i++) {
 			found = False;
 			mpLowerCase(sp[i]);
-			color = (i < color_count) ? clrs[i] : NhlmpUNSETCOLOR;
 			for (j = 0; j < NhlNumber(BGroup_Names); j++) {
 				if (! strcmp(sp[i],BGroup_Names[j])) {
 					subret = mpUpdateDrawGroups(mpp,
 					       mpDRAWFILL,mpDRAW,
-					       color,j,entry_name);
+					       i,j,entry_name);
 					if ((ret = MIN(ret,subret)) < 
 					    NhlWARNING)
 						return ret;
@@ -4300,14 +4619,14 @@ static NhlErrorTypes    mpBuildFillDrawList
 			}   
 			if (! found) 
 				subret = mpUpdateNameRecs(mpp,mpDRAWFILL,sp[i],
-						     mpDRAW,color,entry_name);
+						     mpDRAW,i,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
 				return ret;
 
 		}
 	}
 
-	if (mpp->mask_area_specs != NULL) {
+	if (mpp->area_masking_on && mpp->mask_area_specs != NULL) {
 		sp = (NhlString *) mpp->mask_area_specs->data;
 		for (i = 0; i < mpp->mask_area_specs->num_elements; i++) {
 			found = False;
@@ -4316,7 +4635,7 @@ static NhlErrorTypes    mpBuildFillDrawList
 				if (! strcmp(sp[i],BGroup_Names[j])) {
 					subret = mpUpdateDrawGroups(mpp,
 					       mpDRAWFILL,mpMASK,
-					       NhlTRANSPARENT,j,entry_name);
+					       mpNOINDEX,j,entry_name);
 					if ((ret = MIN(ret,subret)) < 
 					    NhlWARNING)
 						return ret;
@@ -4326,7 +4645,7 @@ static NhlErrorTypes    mpBuildFillDrawList
 			}   
 			if (! found) 
 				subret = mpUpdateNameRecs(mpp,mpDRAWFILL,sp[i],
-					     mpMASK,NhlTRANSPARENT,entry_name);
+					     mpMASK,mpNOINDEX,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
 				return ret;
 		}
@@ -4394,8 +4713,9 @@ static NhlErrorTypes    mpBuildOutlineDrawList
 		return ret;
 
 	for (i = 0; i < NhlNumber(mpp->outline_groups); i++) {
-		mpp->outline_groups[i].draw_mode = mpBACKGROUND;
-		mpp->outline_groups[i].cix = NhlmpUNSETCOLOR;
+		mpp->outline_groups[i].u.flags = 0;
+		mpp->outline_groups[i].ix = mpNOINDEX;
+		mpp->outline_groups[i].s_ix = (unsigned char) -1;
 	}
 	mpp->global_outline_mode = mpNONE;
 	mpp->usstates_outline_mode = mpNOSET;
@@ -4412,39 +4732,39 @@ static NhlErrorTypes    mpBuildOutlineDrawList
 		break;
 	case NhlmpGEOPHYSICAL:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
-					    NhlmpUNSETCOLOR,
+					    mpNOINDEX,
 					    mpALLGEOPHYSICAL,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
 	case NhlmpNATIONAL:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
-					    NhlmpUNSETCOLOR,
+					    mpNOINDEX,
 					    mpALLNATIONAL,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
 	case NhlmpUSSTATES:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
-					    NhlmpUNSETCOLOR,
+					    mpNOINDEX,
 					    mpALLUSSTATES,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
 	case NhlmpGEOPHYSICALANDUSSTATES:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
-					    NhlmpUNSETCOLOR,
+					    mpNOINDEX,
 					    mpALLGEOPHYSICAL,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
-					    NhlmpUNSETCOLOR,
+					    mpNOINDEX,
 					    mpALLUSSTATES,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
 	case NhlmpALLBOUNDARIES:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
-					    NhlmpUNSETCOLOR,
+					    mpNOINDEX,
 					    mpALLNATIONAL,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
-					    NhlmpUNSETCOLOR,
+					    mpNOINDEX,
 					    mpALLUSSTATES,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
@@ -4459,7 +4779,7 @@ static NhlErrorTypes    mpBuildOutlineDrawList
 				if (! strcmp(sp[i],BGroup_Names[j])) {
 					subret = mpUpdateDrawGroups(mpp,
 						    mpDRAWOUTLINE,mpDRAW,
-						 NhlmpUNSETCOLOR,j,entry_name);
+						 mpNOINDEX,j,entry_name);
 					if ((ret = MIN(ret,subret)) < 
 					    NhlWARNING)
 						return ret;
@@ -4470,7 +4790,7 @@ static NhlErrorTypes    mpBuildOutlineDrawList
 			if (! found) 
 				subret = mpUpdateNameRecs(mpp,mpDRAWOUTLINE,
 						      sp[i],mpDRAW,
-						   NhlmpUNSETCOLOR,entry_name);
+						   mpNOINDEX,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
 				return ret;
 
@@ -4693,7 +5013,7 @@ static NhlErrorTypes    mpManageGenArray
 
 
 /*
- * Function:	mpSetUpTransObjs
+ * Function:	mpSetUpTransObj
  *
  * Description: Sets up the Map transformation object for the generic
  *		Map plot object. Note that since this trans object
@@ -4731,14 +5051,16 @@ static NhlErrorTypes mpSetUpTransObj
 	NhlTransformLayerPart	*tfp = &(mpnew->trans);
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
-        NhlSArg			sargs[16];
+        NhlSArg			sargs[8];
         int			nargs = 0;
 	NhlBoolean		trans_changed;
+	float			map_left,map_right,map_bottom,map_top;
+	NhlBoolean		preserve_aspect = True;
 
 
 	entry_name = (init) ? "MapPlotInitialize" : "MapPlotSetValues";
 /*
- * Since no dynamic memory is involved a Map transformation only
+ * Since the Map Plot only uses one transformation a MapTransObj only
  * needs to be created once. It will not be freed until the object
  * is destroyed. For now all map trans resources are simply passed through.
  */
@@ -4748,9 +5070,15 @@ static NhlErrorTypes mpSetUpTransObj
 		sprintf(buffer,"%s",mpnew->base.name);
 		strcat(buffer,".Trans");
 
+		if (mpnew->mapplot.shape_mode == NhlmpFREEASPECT)
+			preserve_aspect = False;
+
 		subret = _NhlVACreateChild(&tmpid,buffer,
 					   NhlmapTransObjLayerClass,
-					   (NhlLayer) mpnew, NULL);
+					   (NhlLayer) mpnew, 
+					   NhlNmpPreserveAspectRatio,
+					   preserve_aspect,
+					   NULL);
 
 		ret = MIN(subret,ret);
 
@@ -4762,16 +5090,47 @@ static NhlErrorTypes mpSetUpTransObj
 			return NhlFATAL;
 		}
 
-		return ret;
+	}
+	else {
+		if (mpnew->mapplot.shape_mode != mpold->mapplot.shape_mode) {
+			if (mpnew->mapplot.shape_mode == NhlmpFREEASPECT)
+				preserve_aspect = False;
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNmpPreserveAspectRatio,preserve_aspect);
+		}
+		subret = _NhlALSetValuesChild(tfp->trans_obj->base.id,
+					      (NhlLayer) mpnew,sargs,nargs);
+
+		if (mpnew->view.x != mpold->view.x ||
+		    mpnew->view.y != mpold->view.y ||
+		    mpnew->view.height != mpold->view.height ||
+		    mpnew->view.width != mpold->view.width)
+			_NhlSetTrans(tfp->trans_obj,
+				     tfp->trans_obj->base.parent);
 	}
 
-	subret = _NhlALSetValuesChild(tfp->trans_obj->base.id,
-				      (NhlLayer) mpnew,sargs,nargs);
-
 	NhlVAGetValues(tfp->trans_obj->base.id,
+		       NhlNmpLeftMapPosF, &map_left,
+		       NhlNmpRightMapPosF, &map_right,
+		       NhlNmpBottomMapPosF, &map_bottom,
+		       NhlNmpTopMapPosF, &map_top,
 		       NhlNmpTransChanged,&trans_changed,
 		       NULL);
 
+	if ((mpnew->mapplot.shape_mode == NhlmpFIXEDASPECTFITBB) && 
+	    (_NhlCmpFAny(mpnew->view.x,map_left,6) != 0.0 ||
+	     _NhlCmpFAny(mpnew->view.y,map_top,6) != 0.0 ||
+	     _NhlCmpFAny(mpnew->view.width,map_right - map_left,6) != 0.0 ||
+	     _NhlCmpFAny(mpnew->view.height,map_top - map_bottom,6) != 0.0) ) {
+
+		_NhlInternalSetView((NhlViewLayer)mpnew,
+				    map_left,map_top,
+				    map_right - map_left,
+				    map_top - map_bottom, False);
+		mpnew->mapplot.update_req = True;
+		mpnew->mapplot.new_draw_req = True;
+	}
+		
 	if (trans_changed) {
 		mpnew->mapplot.update_req = True;
 		mpnew->mapplot.new_draw_req = True;
@@ -4914,7 +5273,7 @@ void   (_NHLCALLF(mapeod,MAPEOD))
 		il = *idls - Id_Offset[Outline_Set];
 		ir = *idrs - Id_Offset[Outline_Set];
 		if (il >= 0) {
-			switch (DrawIds[il].draw_mode) {
+			switch (DrawIds[il].u.f.draw_mode) {
 			case mpDRAW:
 				keep = True;
 				break;
@@ -4927,7 +5286,7 @@ void   (_NHLCALLF(mapeod,MAPEOD))
 			}
 		}
 		if (ir >= 0) {
-			switch (DrawIds[ir].draw_mode) {
+			switch (DrawIds[ir].u.f.draw_mode) {
 			case mpDRAW:
 				keep = True;
 				break;
@@ -4945,16 +5304,16 @@ void   (_NHLCALLF(mapeod,MAPEOD))
 	case mpDRAWFILL:
 		il = *idls - Id_Offset[Outline_Set];
 		ir = *idrs - Id_Offset[Outline_Set];
-		if (il >= 0 && DrawIds[il].draw_mode != mpBACKGROUND)
+		if (il >= 0 && DrawIds[il].u.f.draw_mode != mpBACKGROUND)
+			keep = True;
+		else if (ir >= 0 && DrawIds[ir].u.f.draw_mode != mpBACKGROUND)
 			keep = True;
 
-		else if (ir >= 0 && DrawIds[ir].draw_mode != mpBACKGROUND)
-			keep = True;
 
 		if (! keep)
 			*npts = 0;
-		else if (DrawIds[ir].draw_mode == DrawIds[il].draw_mode &&
-			 DrawIds[ir].cix == DrawIds[il].cix) {
+		else if (DrawIds[ir].u.flags == DrawIds[il].u.flags &&
+			 DrawIds[ir].ix == DrawIds[il].ix) {
 			*npts = 0;
 		}
 		break;
@@ -5026,7 +5385,7 @@ int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))
 		break;
 	case NhlmpMASKNOTOCEAN:
 		if (id == 1 ||
-		    DrawIds[id].draw_mode == mpBACKGROUND) {
+		    DrawIds[id].u.f.draw_mode == mpBACKGROUND) {
 			draw_line = True;
 		}
 		break;
@@ -5106,12 +5465,12 @@ int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))
 		}
 		break;
 	case NhlmpMASKFILLAREA:
-		if (DrawIds[id].draw_mode == mpBACKGROUND) {
+		if (DrawIds[id].u.f.draw_mode == mpBACKGROUND) {
 			draw_line = True;
 		}
 		break;
 	case NhlmpMASKMASKAREA:
-		if (DrawIds[id].draw_mode < mpMASK) {
+		if (DrawIds[id].u.f.draw_mode < mpMASK) {
 			draw_line = True;
 		}
 		break;
@@ -5176,27 +5535,72 @@ int (_NHLCALLF(nhlezmapfill,NHLEZMAPFILL))
 #endif
 {
 	int ix, pat_ix, col_ix, id;
-	int *ip, *cip;
-	float *fp;
 	float fscale;
+	unsigned char s_ix;
 
-	ip = (int *) Mpp->fill_group_patterns->data;
-	cip = (int *) Mpp->fill_group_colors->data;
-	fp = (float *) Mpp->fill_group_scales->data;
+	int *fcp = (int *) Mpp->fill_colors->data;
+	int *fpp = (int *) Mpp->fill_patterns->data;
+	float *fsp = (float *) Mpp->fill_scales->data;
 
 	if (*iai < 1) return 0;
 	id = *iai - Id_Offset[Outline_Set];
 #if 0
 	printf("iai %d id %d use %d color %d\n", *iai,id,
-	       DrawIds[id].draw_mode,DrawIds[id].cix);
+	       DrawIds[id].u.f.draw_mode,DrawIds[id].cix);
 #endif
-	if (id < 0 || DrawIds[id].draw_mode > mpDRAW)
+	if (id < 0 || DrawIds[id].u.f.draw_mode > mpDRAW)
 		return 0;
 
-	ix = DrawIds[id].cix;
-	col_ix = Mpp->mono_fill_group_color ? cip[0] : ix;
-	pat_ix = Mpp->mono_fill_group_pattern ? ip[0] : ip[ix];
-	fscale = Mpp->mono_fill_group_scale ? fp[0] : fp[ix];
+	ix = DrawIds[id].ix;
+	s_ix = DrawIds[id].s_ix;
+
+	if (! DrawIds[id].u.f.s_col) {
+		if (Mpp->mono_fill_color)
+			col_ix = Mpp->fill_color;
+		else
+			col_ix = fcp[ix];
+	}
+	else if (Mpp->spec_fill_direct) {
+		int *sfcp = (int *) Mpp->spec_fill_colors->data;
+		col_ix = sfcp[s_ix];
+	}
+	else {
+		int *sfcp = (int *) Mpp->spec_fill_colors->data;
+		if (sfcp[s_ix] < Mpp->fill_group_count)
+			col_ix = fcp[sfcp[s_ix]];
+	} 
+
+	if (! DrawIds[id].u.f.s_pat) {
+		if (Mpp->mono_fill_pattern)
+			pat_ix = Mpp->fill_pattern;
+		else
+			pat_ix = fpp[ix];
+	}
+	else if (Mpp->spec_fill_direct) {
+		int *sfpp = (int *) Mpp->spec_fill_patterns->data;
+		pat_ix = sfpp[s_ix];
+	}
+	else {
+		int *sfpp = (int *) Mpp->spec_fill_patterns->data;
+		if (sfpp[s_ix] < Mpp->fill_group_count)
+			pat_ix = fpp[sfpp[s_ix]];
+	}
+
+	if (! DrawIds[id].u.f.s_scl) {
+		if (Mpp->mono_fill_scale)
+			fscale = Mpp->fill_scale;
+		else
+			fscale = fsp[ix];
+	}
+	else if (Mpp->spec_fill_direct) {
+		float *sfsp = (float *) Mpp->spec_fill_scales->data;
+		fscale = sfsp[s_ix];
+	}
+	else {
+		float *sfsp = (float *) Mpp->spec_fill_scales->data;
+		if ((int)sfsp[s_ix] < Mpp->fill_group_count)
+			fscale = fsp[(int)sfsp[s_ix]];
+	}
 
 	NhlVASetValues(Mpl->base.wkptr->base.id,
 		       NhlNwkFillBackground, Mpp->fill_pattern_background,

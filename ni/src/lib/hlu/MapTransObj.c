@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.14 1995-01-25 01:15:42 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.15 1995-02-11 02:42:07 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -48,35 +48,91 @@ static NhlResource resources[] = {
 {NhlNmpCenterRotF,NhlCmpCenterRotF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.center_rot),
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpRelativeCenterLat,NhlCmpRelativeCenterLat,NhlTBoolean,
+	 sizeof(NhlBoolean),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.rel_center_lat),
+	 NhlTImmediate,_NhlUSET((NhlPointer)False) ,0,NULL},
+{NhlNmpRelativeCenterLon,NhlCmpRelativeCenterLon,NhlTBoolean,
+	 sizeof(NhlBoolean),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.rel_center_lon),
+	 NhlTImmediate,_NhlUSET((NhlPointer)False) ,0,NULL},
+{NhlNmpPreserveAspectRatio,NhlCmpPreserveAspectRatio,NhlTBoolean,
+	 sizeof(NhlBoolean),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.preserve_aspect),
+	 NhlTImmediate,_NhlUSET((NhlPointer)False) ,0,NULL},
+
 
 {NhlNmpMapLimitMode,NhlCmpMapLimitMode,NhlTMapLimitMode,
 	 sizeof(NhlMapLimitMode),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.map_limit_mode),
 	 NhlTImmediate,_NhlUSET((NhlPointer)NhlMAXIMALAREA),0,NULL},
+
 {NhlNmpMinLatF,NhlCmpMinLatF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.min_lat),
-	 NhlTString,_NhlUSET("0.0"),0,NULL},
+	 NhlTString,_NhlUSET("-90.0"),0,NULL},
 {NhlNmpMaxLatF,NhlCmpMaxLatF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.max_lat),
-	 NhlTString,_NhlUSET("0.0"),0,NULL},
+	 NhlTString,_NhlUSET("90.0"),0,NULL},
 {NhlNmpMinLonF,NhlCmpMinLonF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.min_lon),
-	 NhlTString,_NhlUSET("0.0"),0,NULL},
+	 NhlTString,_NhlUSET("-180.0"),0,NULL},
 {NhlNmpMaxLonF,NhlCmpMaxLonF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.max_lon),
-	 NhlTString,_NhlUSET("0.0"),0,NULL},
+	 NhlTString,_NhlUSET("180.0"),0,NULL},
+
 {NhlNmpLeftAngleF,NhlCmpLeftAngleF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.left_angle),
-	 NhlTString,_NhlUSET("0.0"),0,NULL},
+	 NhlTString,_NhlUSET("80.0"),0,NULL},
 {NhlNmpRightAngleF,NhlCmpRightAngleF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.right_angle),
-	 NhlTString,_NhlUSET("0.0"),0,NULL},
+	 NhlTString,_NhlUSET("80.0"),0,NULL},
 {NhlNmpBottomAngleF,NhlCmpBottomAngleF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.bottom_angle),
-	 NhlTString,_NhlUSET("0.0"),0,NULL},
+	 NhlTString,_NhlUSET("80.0"),0,NULL},
 {NhlNmpTopAngleF,NhlCmpTopAngleF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.top_angle),
+	 NhlTString,_NhlUSET("80.0"),0,NULL},
+
+{NhlNmpLeftNPCF,NhlCmpLeftNPCF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.left_npc),
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpRightNPCF,NhlCmpRightNPCF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.right_npc),
+	 NhlTString,_NhlUSET("1.0"),0,NULL},
+{NhlNmpBottomNPCF,NhlCmpBottomNPCF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.bottom_npc),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpTopNPCF,NhlCmpTopNPCF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.top_npc),
+	 NhlTString,_NhlUSET("1.0"),0,NULL},
+
+{NhlNmpLeftNDCF,NhlCmpLeftNDCF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.left_ndc),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpRightNDCF,NhlCmpRightNDCF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.right_ndc),
+	 NhlTString,_NhlUSET("1.0"),0,NULL},
+{NhlNmpBottomNDCF,NhlCmpBottomNDCF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.bottom_ndc),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpTopNDCF,NhlCmpTopNDCF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.top_ndc),
+	 NhlTString,_NhlUSET("1.0"),0,NULL},
+
+{NhlNmpLeftMapPosF,NhlCmpLeftMapPosF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.map_pos_l),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpRightMapPosF,NhlCmpRightMapPosF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.map_pos_r),
+	 NhlTString,_NhlUSET("1.0"),0,NULL},
+{NhlNmpBottomMapPosF,NhlCmpBottomMapPosF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.map_pos_b),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpTopMapPosF,NhlCmpTopMapPosF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.map_pos_t),
+	 NhlTString,_NhlUSET("1.0"),0,NULL},
+
+
 {NhlNmpActualMinLatF,NhlCmpActualMinLatF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.actual_min_lat),
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
@@ -90,6 +146,7 @@ static NhlResource resources[] = {
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.actual_max_lon),
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
 
+
 {NhlNmpLeftCornerLatF,NhlCmpLeftCornerLatF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.left_corner_lat),
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
@@ -102,6 +159,33 @@ static NhlResource resources[] = {
 {NhlNmpRightCornerLonF,NhlCmpRightCornerLonF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.right_corner_lon),
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
+
+{NhlNmpLeftPointLatF,NhlCmpLeftPointLatF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.left_point_lat),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpLeftPointLonF,NhlCmpLeftPointLonF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.left_point_lon),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpRightPointLatF,NhlCmpRightPointLatF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.right_point_lat),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpRightPointLonF,NhlCmpRightPointLonF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.right_point_lon),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpBottomPointLatF,NhlCmpBottomPointLatF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.bottom_point_lat),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpBottomPointLonF,NhlCmpBottomPointLonF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.bottom_point_lon),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpTopPointLatF,NhlCmpTopPointLatF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.top_point_lat),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{NhlNmpTopPointLonF,NhlCmpTopPointLonF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.top_point_lon),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
+
+
 {NhlNmpLeftWindowF,NhlCmpLeftWindowF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.left_window),
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
@@ -143,32 +227,6 @@ static NhlResource resources[] = {
 
 /* End-documented-resources */
 
-/* not sure these are needed,
-{ NhlNmpMapPosRF, NhlCmpMapPosRF, NhlTFloat,sizeof(float),
-	NhlOffset(NhlMapTransObjLayerRec,mptrans.map_pos_r),
-	NhlTString,_NhlUSET("0.95") ,0,NULL},
-{ NhlNmpMapPosTF, NhlCmpMapPosTF, NhlTFloat,sizeof(float),
-	NhlOffset(NhlMapTransObjLayerRec,mptrans.map_pos_t),
-	NhlTString,_NhlUSET("0.95") ,0,NULL},
-{ NhlNmpMapPosTF, NhlCmpMapPosTF, NhlTFloat,sizeof(float),
-	NhlOffset(NhlMapTransObjLayerRec,mptrans.map_pos_t),
-	NhlTString,_NhlUSET("0.0") ,0,NULL}
-*/
-{ NhlNmpRectLimitType, NhlCmpRectLimitType, NhlTString, sizeof(char*),
-	NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_type),
-	NhlTString,_NhlUSET("MA"),0,(NhlFreeFunc)NhlFree},
-{ NhlNmpRectLimit1, NhlCmpRectLimit1, NhlTPointer, sizeof(float*),
-	NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_1),
-	NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
-{ NhlNmpRectLimit2, NhlCmpRectLimit2, NhlTPointer, sizeof(float*),
-	NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_2),
-	NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
-{ NhlNmpRectLimit3, NhlCmpRectLimit3, NhlTPointer, sizeof(float*),
-	NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_3),
-	NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
-{ NhlNmpRectLimit4, NhlCmpRectLimit4, NhlTPointer, sizeof(float*),
-	NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_4),
-	NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
 {NhlNmpTransChanged,NhlNmpTransChanged,NhlTBoolean,sizeof(NhlBoolean),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.trans_changed),
 	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL}
@@ -386,6 +444,28 @@ NhlMapTransObjLayerClassRec NhlmapTransObjLayerClassRec = {
 
 NhlLayerClass NhlmapTransObjLayerClass = (NhlLayerClass) &NhlmapTransObjLayerClassRec;
 
+typedef struct _mpWinLimits {
+	float u_min;
+	float u_range;
+	float v_min;
+	float v_range;
+} mpWinLimits;
+
+#define mpPI 3.14159265358979323846
+
+static mpWinLimits Win_Limits[] = {
+	{ -1.0, 2.0, -1.0, 2.0 },
+	{ -2.0, 4.0, -2.0, 4.0 },
+	{ -2.0, 4.0, -2.0, 4.0 },
+	{ -2.0, 4.0, -2.0, 4.0 },
+	{ -mpPI, 2.0 * mpPI, -mpPI, 2.0 * mpPI },
+	{ -2.0, 4.0, -1.0, 2.0 },
+	{ -mpPI, 2.0 * mpPI, -mpPI, 2.0 * mpPI },
+	{ -180.0, 360.0, -90.0, 180.0 },
+	{ -1.0, 2.0, -1.0, 2.0 },
+	{ -1.0, 2.0, -1.0, 2.0 }
+};
+
 /*
 * Function:	MapSetTrans
 *
@@ -411,15 +491,15 @@ NhlLayer parent;
 	NhlErrorTypes	ret = NhlNOERROR, subret = NhlNOERROR;
 	char		*entry_name = "MapSetTrans";
 	char		*e_text;
-	float xl;
-	float yt;
-	float width,xr;
-	float height,yb;
-	int irold,nerr,loglin;
+	float	xl;
+	float	yt;
+	float	width,xr;
+	float	height,yb;
+	int 	ix,irold,nerr,loglin;
 	NhlMapTransObjLayer minstance = (NhlMapTransObjLayer)instance;
 	NhlMapTransObjLayerPart	*mtp = &(minstance->mptrans);
 	char *cproj, *climit;
-	float v_angle_lim, h_angle_lim;
+	float v_angle_lim, h_angle_lim, center_lat, center_lon;
 	float rl1[2],rl2[2],rl3[2],rl4[2];
 
 	NhlVAGetValues(parent->base.id,
@@ -427,8 +507,12 @@ NhlLayer parent;
 		       NhlNvpYF,&yt,
 		       NhlNvpWidthF,&width,
 		       NhlNvpHeightF,&height,NULL);
-	xr = xl + width;
-	yb = yt - height;
+	xr = MIN(1.0,xl + width);
+	yb = MAX(0.0,yt - height);
+	xl = MAX(0.0,xl);
+	yt = MIN(1.0,yt);
+	width = xr - xl;
+	height = yt -yb;
 	c_mappos(xl,xr,yb,yt);
 	c_mapsti("EL",mtp->elliptical_boundary);
 
@@ -436,36 +520,44 @@ NhlLayer parent;
 	case NhlORTHOGRAPHIC:
 		cproj = "OR";
 		h_angle_lim = v_angle_lim = 90;
+		ix = 0;
 		break;
 	case NhlSTEREOGRAPHIC:
 		cproj = "ST";
 		h_angle_lim = v_angle_lim = 180;
+		ix = 1;
 		break;
 	case NhlLAMBERTEQUALAREA:
 		cproj = "LE";
 		h_angle_lim = v_angle_lim = 180;
+		ix = 2;
 		break;
 	case NhlGNOMONIC:
 		cproj = "GN";
 		h_angle_lim = v_angle_lim = 85;
+		ix = 3;
 		break;
 	case NhlAZIMUTHALEQUIDISTANT:
 		cproj = "AE";
 		h_angle_lim = v_angle_lim = 180;
+		ix = 4;
 		break;
 	case NhlMOLLWEIDE:
 		cproj = "MO";
 		h_angle_lim = v_angle_lim = 180;
+		ix = 5;
 		break;
 	case NhlMERCATOR:
 		cproj = "ME";
 		h_angle_lim = 180;
 		v_angle_lim = 85;
+		ix = 6;
 		break;
 	case NhlCYLINDRICALEQUIDISTANT:
 		cproj = "CE";
 		h_angle_lim = 90;
 		v_angle_lim = 180;
+		ix = 7;
 		break;
 	case NhlLAMBERTCONFORMAL:
 		if (mtp->map_limit_mode == NhlANGLES) {
@@ -474,6 +566,7 @@ NhlLayer parent;
 			return NhlFATAL;
 		}
 		cproj = "LC";
+		ix = 8;
 		break;
 	case NhlSATELLITE:
 		c_mapstr("SA",mtp->satellite_dist);
@@ -481,6 +574,7 @@ NhlLayer parent;
 		c_mapstr("S2",mtp->satellite_angle_2);
 		h_angle_lim = v_angle_lim = 90;
 		cproj = "SV";
+		ix = 9;
 		break;
 	default:
 		e_text = "%s: internal enumeration error - projection";
@@ -488,13 +582,24 @@ NhlLayer parent;
 		return NhlFATAL;
 	}
 
+	if (mtp->rel_center_lat && mtp->map_limit_mode == NhlLATLON)
+		center_lat = (mtp->max_lat + mtp->min_lat) / 2.0 
+			+ mtp->center_lat;
+	else
+		center_lat = mtp->center_lat;
+
+	center_lon = mtp->projection == NhlLAMBERTCONFORMAL ?
+		mtp->lambert_meridian : mtp->center_lon;
+	if (mtp->rel_center_lon && mtp->map_limit_mode == NhlLATLON)
+		center_lon = (mtp->max_lon + mtp->min_lon) / 2.0
+			+ center_lon;
 
 	if (mtp->projection == NhlLAMBERTCONFORMAL) {
-		c_maproj(cproj,mtp->lambert_parallel_1,mtp->lambert_meridian,
+		c_maproj(cproj,mtp->lambert_parallel_1,center_lon,
 			 mtp->lambert_parallel_2);
 	}
 	else {
-		c_maproj(cproj,mtp->center_lat,mtp->center_lon,
+		c_maproj(cproj,center_lat,center_lon,
 			 mtp->center_rot);
 	}
 
@@ -533,6 +638,34 @@ NhlLayer parent;
 		rl3[0] = mtp->bottom_angle;
 		rl4[0] = mtp->top_angle;
 		break;
+	case NhlNPC:
+	case NhlNDC:
+
+		/* set window limits */
+
+		climit = "LI";
+		rl1[0] = Win_Limits[ix].u_min + 
+			Win_Limits[ix].u_range * mtp->left_npc;
+		rl2[0] = Win_Limits[ix].u_min + 
+			Win_Limits[ix].u_range * mtp->right_npc;
+		rl3[0] = Win_Limits[ix].v_min + 
+			Win_Limits[ix].v_range * mtp->bottom_npc;
+		rl4[0] = Win_Limits[ix].v_min + 
+			Win_Limits[ix].v_range * mtp->top_npc;
+		break;
+
+	case NhlPOINTS:
+		climit = "PO";
+		rl1[0] = mtp->left_point_lat;
+		rl1[1] = mtp->left_point_lon;
+		rl2[0] = mtp->right_point_lat;
+		rl2[1] = mtp->right_point_lon;
+		rl3[0] = mtp->bottom_point_lat;
+		rl3[1] = mtp->bottom_point_lon;
+		rl4[0] = mtp->top_point_lat;
+		rl4[1] = mtp->top_point_lon;
+		break;
+
 	case NhlCORNERS:
 		climit = "CO";
 		rl1[0] = mtp->left_corner_lat;
@@ -572,9 +705,11 @@ NhlLayer parent;
 		if (strstr(e_msg,"MAP HAS ZERO AREA") ||
 		    strstr(e_msg,"MAP LIMITS INAPPROPRIATE")) {
 			e_text = "%s: map limits invalid - using maximal area";
+			mtp->map_limit_mode = NhlMAXIMALAREA;
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
 			c_mapset("MA",rl1,rl2,rl3,rl4);
+			c_mapint();
 			c_mapint();
 			c_nerro(&nerr);
 			if (nerr > 0) {	
@@ -598,21 +733,38 @@ NhlLayer parent;
 
 	mtp->aspect = ((mtp->map_pos_r - mtp->map_pos_l)/
 		       (mtp->map_pos_t - mtp->map_pos_b));
-/*
- * This destroys the nicely selected aspect ratio but is the only way
- * to guarantee WYSIWYG display and Point and Click after 
- * a plot has been transformed.
- */
-	mtp->map_pos_l = xl;
-	mtp->map_pos_r = xr;
-	mtp->map_pos_t = yt;
-	mtp->map_pos_b = yb;
+
 	mtp->left_window = mtp->ul;
 	mtp->right_window = mtp->ur;
 	mtp->bottom_window = mtp->ub;
 	mtp->top_window = mtp->ut;
 
-	c_set (xl,xr,yb,yt,mtp->ul,mtp->ur,mtp->ub,mtp->ut,loglin);
+	if (! mtp->preserve_aspect) {
+
+		c_set (xl,xr,yb,yt,mtp->ul,mtp->ur,mtp->ub,mtp->ut,loglin);
+
+		mtp->map_pos_l = xl;
+		mtp->map_pos_r = xr;
+		mtp->map_pos_t = yt;
+		mtp->map_pos_b = yb;
+	}
+
+	mtp->left_ndc = mtp->map_pos_l;
+	mtp->right_ndc = mtp->map_pos_r;
+	mtp->bottom_ndc = mtp->map_pos_b;
+	mtp->top_ndc = mtp->map_pos_t;
+
+	if (mtp->map_limit_mode != NhlNDC && mtp->map_limit_mode != NhlNPC) {
+		mtp->left_npc = (mtp->left_window - Win_Limits[ix].u_min) /
+			Win_Limits[ix].u_range;
+		mtp->right_npc = (mtp->right_window - Win_Limits[ix].u_min) /
+			Win_Limits[ix].u_range;
+		mtp->bottom_npc = (mtp->bottom_window - Win_Limits[ix].v_min) /
+			Win_Limits[ix].v_range;
+		mtp->top_npc = (mtp->top_window - Win_Limits[ix].v_min) /
+			Win_Limits[ix].v_range;
+	}
+		
 
 	mtp->trans_changed = False;
 
@@ -790,7 +942,7 @@ static NhlErrorTypes MapDataToCompc
 			c_maptra(y[i],x[i],&tmpx,&tmpy);
 /*
 * A problem could develop here if 1e12 is not represented identically in
-* FORTRAN and C because of arithmentic error
+* FORTRAN and C because of arithmetic error
 */
 			if((tmpx == 1e12) ||(tmpy == 1e12)) {
 				*status = 1;
@@ -955,11 +1107,21 @@ static NhlErrorTypes  MapTransSetValues
 #endif
 {
 	NhlMapTransObjLayer mnew = (NhlMapTransObjLayer) new;
+	NhlMapTransObjLayer mold = (NhlMapTransObjLayer) old;
 	NhlMapTransObjLayerPart	*mtp = &(mnew->mptrans);
+	NhlMapTransObjLayerPart	*omtp = &(mold->mptrans);
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	char *e_text, *entry_name = "MapTransSetValues";
-
+	
 	mtp->trans_changed = True;
+
+/*
+ * Ignore any attempts to set map pos directly
+ */
+	mtp->map_pos_l = omtp->map_pos_l;
+	mtp->map_pos_r = omtp->map_pos_r;
+	mtp->map_pos_b = omtp->map_pos_b;
+	mtp->map_pos_t = omtp->map_pos_t;
 
 	if (_NhlCmpFAny(mnew->trobj.out_of_range,1e12,6) != 0) {
 		e_text = 
@@ -971,6 +1133,35 @@ static NhlErrorTypes  MapTransSetValues
 	} 
 
 	subret = CheckMapLimits(mnew,entry_name);
+	ret = MIN(ret,subret);
+
+	if (mtp->map_limit_mode == NhlNDC &&
+	    (mtp->left_ndc != omtp->left_ndc ||
+	     mtp->right_ndc != omtp->right_ndc ||
+	     mtp->bottom_ndc != omtp->bottom_ndc ||
+	     mtp->top_ndc != omtp->top_ndc) ) {	     
+
+		/* convert to fraction of map projection area */
+
+		float width  = mtp->map_pos_r - mtp->map_pos_l;
+		float height = mtp->map_pos_t - mtp->map_pos_b;
+		float fl = (mtp->left_ndc - mtp->map_pos_l) / width;
+		float fr = (mtp->right_ndc - mtp->map_pos_l) / width;
+		float fb = (mtp->bottom_ndc - mtp->map_pos_b) / height;
+		float ft = (mtp->top_ndc - mtp->map_pos_b) / height;
+
+		/* now convert to normalized projection coordinates 
+		   (using old NPC values in case they were set)   */
+
+		width = omtp->right_npc - omtp->left_npc;
+		height = omtp->top_npc - omtp->bottom_npc;
+		mtp->right_npc = MIN(1.0,mtp->left_npc + fr * width);
+		mtp->left_npc = MAX(0.0,mtp->left_npc + fl * width);
+		mtp->top_npc = MIN(1.0,mtp->bottom_npc + ft * height);
+		mtp->bottom_npc = MAX(0.0,mtp->bottom_npc + fb * height);
+	}
+
+	subret = _NhlSetTrans(new,new->base.parent);
 	ret = MIN(ret,subret);
 
 	return(ret);
@@ -1017,6 +1208,9 @@ static NhlErrorTypes MapTransInitialize
 	} 
 	
 	subret = CheckMapLimits(mnew,entry_name);
+	ret = MIN(ret,subret);
+
+	subret = _NhlSetTrans(new,new->base.parent);
 	ret = MIN(ret,subret);
 
 	return(ret);
@@ -1192,7 +1386,6 @@ static NhlErrorTypes CheckMapLimits
 			"%s: latitude min exceeds max: exchanging values";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
-			mtp->map_limit_mode = NhlMAXIMALAREA;
 			ftmp = mtp->min_lat;
 			mtp->min_lat = mtp->max_lat;
 			mtp->max_lat = ftmp;
@@ -1210,7 +1403,6 @@ static NhlErrorTypes CheckMapLimits
 			"%s: longitude min exceeds max: exchanging values";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
-			mtp->map_limit_mode = NhlMAXIMALAREA;
 			ftmp = mtp->min_lon;
 			mtp->min_lon = mtp->max_lon;
 			mtp->max_lon = ftmp;
@@ -1262,7 +1454,84 @@ static NhlErrorTypes CheckMapLimits
 			mtp->map_limit_mode = NhlMAXIMALAREA;
 		}
 		break;
+	case NhlNPC:
+		ftmp = _NhlCmpFAny(mtp->left_npc,
+				   mtp->right_npc,6);
+		if (ftmp == 0) {
+			e_text = 
+	         "%s: min/max latitude limits result in zero area: defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+			mtp->map_limit_mode = NhlMAXIMALAREA;
+		}
+		else if (ftmp > 0) {
+			e_text = 
+			"%s: latitude min exceeds max: exchanging values";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+			ftmp = mtp->left_npc;
+			mtp->left_npc = mtp->right_npc;
+			mtp->right_npc = ftmp;
+		}
+		ftmp = _NhlCmpFAny(mtp->bottom_npc,
+				   mtp->top_npc,6);
+		if (ftmp == 0) {
+			e_text = 
+		"%s: min/max longitude limits result in zero area: defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+			mtp->map_limit_mode = NhlMAXIMALAREA;
+		}
+		else if (ftmp > 0) {
+			e_text = 
+			"%s: longitude min exceeds max: exchanging values";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+			ftmp = mtp->bottom_npc;
+			mtp->bottom_npc = mtp->top_npc;
+			mtp->top_npc = ftmp;
+		}
+		break;
+	case NhlNDC:
+		ftmp = _NhlCmpFAny(mtp->left_ndc,
+				   mtp->right_ndc,6);
+		if (ftmp == 0) {
+			e_text = 
+	         "%s: min/max latitude limits result in zero area: defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+			mtp->map_limit_mode = NhlMAXIMALAREA;
+		}
+		else if (ftmp > 0) {
+			e_text = 
+			"%s: latitude min exceeds max: exchanging values";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+			ftmp = mtp->left_ndc;
+			mtp->left_ndc = mtp->right_ndc;
+			mtp->right_ndc = ftmp;
+		}
+		ftmp = _NhlCmpFAny(mtp->bottom_ndc,
+				   mtp->top_ndc,6);
+		if (ftmp == 0) {
+			e_text = 
+		"%s: min/max longitude limits result in zero area: defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+			mtp->map_limit_mode = NhlMAXIMALAREA;
+		}
+		else if (ftmp > 0) {
+			e_text = 
+			"%s: longitude min exceeds max: exchanging values";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+			ftmp = mtp->bottom_ndc;
+			mtp->bottom_ndc = mtp->top_ndc;
+			mtp->top_ndc = ftmp;
+		}
+		break;
 	case NhlCORNERS:
+	case NhlPOINTS:
 		break;
 	case NhlWINDOW:
 		ftmp = _NhlCmpFAny(mtp->left_window,mtp->right_window,6);
@@ -1278,7 +1547,6 @@ static NhlErrorTypes CheckMapLimits
 			"%s: window left exceeds right: exchanging values";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
-			mtp->map_limit_mode = NhlMAXIMALAREA;
 			ftmp = mtp->left_window;
 			mtp->left_window = mtp->right_window;
 			mtp->right_window = ftmp;
@@ -1296,7 +1564,6 @@ static NhlErrorTypes CheckMapLimits
 			"%s: window bottom exceeds top: exchanging values";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
-			mtp->map_limit_mode = NhlMAXIMALAREA;
 			ftmp = mtp->bottom_window;
 			mtp->bottom_window = mtp->top_window;
 			mtp->top_window = ftmp;
@@ -1334,8 +1601,11 @@ static NhlErrorTypes    MapTransClassInitialize
         {NhlMAXIMALAREA,	"maximalarea"},
         {NhlLATLON,		"latlon"},
         {NhlANGLES,		"angles"},
+	{NhlNPC,		"npc"},
+	{NhlNDC,		"ndc"},
         {NhlCORNERS,		"corners"},
-        {NhlWINDOW,		"window"}
+        {NhlPOINTS,		"points"},
+        {NhlWINDOW,		"window"},
         };
 
         _NhlEnumVals   projectionlist[] = {

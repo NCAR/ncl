@@ -1,5 +1,5 @@
 /*
- *      $Id: MapTransObjP.h,v 1.5 1994-09-08 01:34:29 dbrown Exp $
+ *      $Id: MapTransObjP.h,v 1.6 1995-02-11 02:42:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,28 +39,53 @@ typedef struct _NhlMapTransObjLayerPart{
 
 	NhlProjection	projection;
 
-	float	center_lat;
-	float	center_lon;
-	float	center_rot;
+	float		center_lat;
+	float		center_lon;
+	float		center_rot;
+	NhlBoolean	rel_center_lat;
+	NhlBoolean	rel_center_lon;
+	NhlBoolean	preserve_aspect;
+
+	float		map_pos_l;    /* read only */
+	float		map_pos_r;    /* read only */
+	float 		map_pos_t;    /* read only */
+	float		map_pos_b;    /* read only */
 
 	NhlMapLimitMode	map_limit_mode;
+
 	float		min_lat;
 	float		max_lat;
 	float		min_lon;
 	float		max_lon;
+
 	float		left_angle;
 	float		right_angle;
 	float		bottom_angle;
 	float		top_angle;
-	float		actual_min_lat;
-	float		actual_max_lat;
-	float		actual_min_lon;
-	float		actual_max_lon;
-	
+
+	float		left_npc;
+	float		right_npc;
+	float		bottom_npc;
+	float		top_npc;
+
+	float		left_ndc;
+	float		right_ndc;
+	float		bottom_ndc;
+	float		top_ndc;
+
 	float		left_corner_lat;
 	float		left_corner_lon;
 	float		right_corner_lat;
 	float		right_corner_lon;
+
+	float		left_point_lon;
+	float		left_point_lat;
+	float		right_point_lon;
+	float		right_point_lat;
+	float		bottom_point_lon;
+	float		bottom_point_lat;
+	float		top_point_lon;
+	float		top_point_lat;
 
 	float		left_window;
 	float		right_window;
@@ -75,11 +100,10 @@ typedef struct _NhlMapTransObjLayerPart{
 	float		satellite_angle_2;
 	NhlBoolean	elliptical_boundary;
 
-	char	*rect_limit_type;
-	float	*rect_limit_1;
-	float	*rect_limit_2;
-	float	*rect_limit_3;
-	float	*rect_limit_4;
+	float		actual_min_lat;
+	float		actual_max_lat;
+	float		actual_min_lon;
+	float		actual_max_lon;
 
 	/* Private resources */
 
@@ -88,10 +112,6 @@ typedef struct _NhlMapTransObjLayerPart{
 	/* Private Fields */
 
 	float	aspect;
-	float	map_pos_l;
-	float	map_pos_r;
-	float 	map_pos_t;
-	float	map_pos_b;
 	float	ul;
 	float	ur;
 	float 	ut;

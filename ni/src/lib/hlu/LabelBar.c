@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.26 1995-02-02 17:34:04 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.27 1995-02-11 02:41:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -163,9 +163,9 @@ static NhlResource resources[] = {
 	 NhlTImmediate,
 	 _NhlUSET((NhlPointer) NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
 	
-{NhlNlbLabelsOn, NhlClbLabelsOn, NhlTInteger, 
-	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.labels_on),
-	 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
+{NhlNlbLabelsOn, NhlClbLabelsOn, NhlTBoolean, 
+	 sizeof(NhlBoolean), NhlOffset(NhlLabelBarLayerRec,labelbar.labels_on),
+	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 {NhlNlbLabelPosition, NhlClbLabelPosition, NhlTPosition, 
 	 sizeof(NhlPosition), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_pos),
@@ -219,8 +219,8 @@ static NhlResource resources[] = {
 {NhlNlbTitleString, NhlClbTitleString, NhlTString, 
 	 sizeof(char *), NhlOffset(NhlLabelBarLayerRec,labelbar.title_string),
 	 NhlTImmediate,_NhlUSET(lbDefTitle),0,(NhlFreeFunc)NhlFree},
-{NhlNlbTitleOn, NhlClbTitleOn, NhlTInteger, 
-	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.title_on),
+{NhlNlbTitleOn, NhlClbTitleOn, NhlTBoolean, 
+	 sizeof(NhlBoolean), NhlOffset(NhlLabelBarLayerRec,labelbar.title_on),
 	 NhlTProcedure,_NhlUSET((NhlPointer)SetTitleOn),0,NULL},
 {NhlNlbTitlePosition, NhlClbTitlePosition, NhlTInteger, 
 	 sizeof(NhlPosition), 
@@ -271,7 +271,7 @@ static NhlResource resources[] = {
 {NhlNlbBoxLinesOn,NhlClbBoxLinesOn,NhlTBoolean, 
 	 sizeof(NhlBoolean),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_line_on),
-	 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
+	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 {NhlNlbBoxLineColor, NhlClbBoxLineColor, NhlTColorIndex, 
 	 sizeof(NhlColorIndex),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_line_color),
@@ -290,8 +290,8 @@ static NhlResource resources[] = {
 	 NhlTString,_NhlUSET("0.15"),0,NULL},
 
 {NhlNlbPerimOn, NhlClbPerimOn, NhlTBoolean,
-	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.perim_on),
-	 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
+	 sizeof(NhlBoolean), NhlOffset(NhlLabelBarLayerRec,labelbar.perim_on),
+	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 {NhlNlbPerimColor, NhlClbPerimColor, NhlTColorIndex, 
 	 sizeof(NhlColorIndex),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.perim_color),

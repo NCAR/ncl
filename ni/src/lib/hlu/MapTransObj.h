@@ -1,5 +1,5 @@
 /*
- *      $Id: MapTransObj.h,v 1.4 1994-09-08 01:34:27 dbrown Exp $
+ *      $Id: MapTransObj.h,v 1.5 1995-02-11 02:42:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,13 +24,13 @@
 #define _NMapTransObj_h
 
 typedef enum _NhlMapLimitMode {
-	NhlMAXIMALAREA = 0, NhlLATLON, NhlANGLES, NhlCORNERS,
-	NhlWINDOW } NhlMapLimitMode;
+	NhlMAXIMALAREA = 0, NhlLATLON, NhlANGLES, NhlNPC, NhlNDC,
+	NhlCORNERS, NhlPOINTS, NhlWINDOW } NhlMapLimitMode;
 
 #define NhlTMapLimitMode	"maplimitmode"
 
 typedef enum _NhlProjection {
-	NhlORTHOGRAPHIC, NhlSTEREOGRAPHIC, NhlLAMBERTEQUALAREA,
+	NhlORTHOGRAPHIC = 0, NhlSTEREOGRAPHIC, NhlLAMBERTEQUALAREA,
 	NhlGNOMONIC, NhlAZIMUTHALEQUIDISTANT, NhlSATELLITE,
 	NhlMOLLWEIDE, NhlMERCATOR, NhlCYLINDRICALEQUIDISTANT,
 	NhlLAMBERTCONFORMAL } NhlProjection;
@@ -43,16 +43,37 @@ typedef enum _NhlProjection {
 #define NhlNmpCenterLatF		"mpCenterLatF"
 #define NhlNmpCenterLonF		"mpCenterLonF"
 #define NhlNmpCenterRotF		"mpCenterRotF"
+#define NhlNmpRelativeCenterLat		"mpRelativeCenterLat"
+#define NhlNmpRelativeCenterLon		"mpRelativeCenterLon"
+#define NhlNmpPreserveAspectRatio	"mpPreserveAspectRatio"
+
+#define NhlNmpLeftMapPosF		"mpLeftMapPosF"
+#define NhlNmpRightMapPosF		"mpRightMapPosF"
+#define NhlNmpBottomMapPosF		"mpBottomMapPosF"
+#define NhlNmpTopMapPosF		"mpTopMapPosF"
 
 #define NhlNmpMapLimitMode		"mpMapLimitMode"
+
 #define NhlNmpMinLatF			"mpMinLatF"
 #define NhlNmpMaxLatF			"mpMaxLatF"
 #define NhlNmpMinLonF			"mpMinLonF"
 #define NhlNmpMaxLonF			"mpMaxLonF"
+
 #define NhlNmpLeftAngleF		"mpLeftAngleF"
 #define NhlNmpRightAngleF		"mpRightAngleF"
 #define NhlNmpBottomAngleF		"mpBottomAngleF"
 #define NhlNmpTopAngleF			"mpTopAngleF"
+
+#define NhlNmpLeftNPCF			"mpLeftNPCF"
+#define NhlNmpRightNPCF			"mpRightNPCF"
+#define NhlNmpBottomNPCF		"mpBottomNPCF"
+#define NhlNmpTopNPCF			"mpTopNPCF"
+
+#define NhlNmpLeftNDCF			"mpLeftNDCF"
+#define NhlNmpRightNDCF			"mpRightNDCF"
+#define NhlNmpBottomNDCF		"mpBottomNDCF"
+#define NhlNmpTopNDCF			"mpTopNDCF"
+
 #define NhlNmpActualMinLatF		"mpActualMinLatF"
 #define NhlNmpActualMaxLatF		"mpActualMaxLatF"
 #define NhlNmpActualMinLonF		"mpActualMinLonF"
@@ -62,16 +83,20 @@ typedef enum _NhlProjection {
 #define NhlNmpLeftCornerLonF		"mpLeftCornerLonF"
 #define NhlNmpRightCornerLatF		"mpRightCornerLatF"
 #define NhlNmpRightCornerLonF		"mpRightCornerLonF"
+
+#define NhlNmpLeftPointLonF		"mpLeftPointLonF"
+#define NhlNmpLeftPointLatF		"mpLeftPointLatF"
+#define NhlNmpRightPointLonF		"mpRightPointLonF"
+#define NhlNmpRightPointLatF		"mpRightPointLatF"
+#define NhlNmpBottomPointLonF		"mpBottomPointLonF"
+#define NhlNmpBottomPointLatF		"mpBottomPointLatF"
+#define NhlNmpTopPointLonF		"mpTopPointLonF"
+#define NhlNmpTopPointLatF		"mpTopPointLatF"
+
 #define NhlNmpLeftWindowF		"mpLeftWindowF"
 #define NhlNmpRightWindowF		"mpRightWindowF"
 #define NhlNmpBottomWindowF		"mpBottomWindowF"
 #define NhlNmpTopWindowF		"mpTopWindowF"
-
-#define NhlNmpRectLimitType		"mpRectLimitType"
-#define NhlNmpRectLimit1		"mpRectLimit1"
-#define NhlNmpRectLimit2		"mpRectLimit2"
-#define NhlNmpRectLimit3		"mpRectLimit3"
-#define NhlNmpRectLimit4		"mpRectLimit4"
 
 #define NhlNmpLambertParallel1F		"mpLambertParallel1F"
 #define NhlNmpLambertParallel2F		"mpLambertParallel2F"
@@ -87,16 +112,37 @@ typedef enum _NhlProjection {
 #define NhlCmpCenterLatF		"MpCenterLatF"
 #define NhlCmpCenterLonF		"MpCenterLonF"
 #define NhlCmpCenterRotF		"MpCenterRotF"
+#define NhlCmpRelativeCenterLat		"MpRelativeCenterLat"
+#define NhlCmpRelativeCenterLon		"MpRelativeCenterLon"
+#define NhlCmpPreserveAspectRatio	"MpPreserveAspectRatio"
 
 #define NhlCmpMapLimitMode		"MpMapLimitMode"
+
 #define NhlCmpMinLatF			"MpMinLatF"
 #define NhlCmpMaxLatF			"MpMaxLatF"
 #define NhlCmpMinLonF			"MpMinLonF"
 #define NhlCmpMaxLonF			"MpMaxLonF"
+
 #define NhlCmpLeftAngleF		"MpLeftAngleF"
 #define NhlCmpRightAngleF		"MpRightAngleF"
 #define NhlCmpBottomAngleF		"MpBottomAngleF"
 #define NhlCmpTopAngleF			"MpTopAngleF"
+
+#define NhlCmpLeftNPCF			"MpLeftNPCF"
+#define NhlCmpRightNPCF			"MpRightNPCF"
+#define NhlCmpBottomNPCF		"MpBottomNPCF"
+#define NhlCmpTopNPCF			"MpTopNPCF"
+
+#define NhlCmpLeftNDCF			"MpLeftNDCF"
+#define NhlCmpRightNDCF			"MpRightNDCF"
+#define NhlCmpBottomNDCF		"MpBottomNDCF"
+#define NhlCmpTopNDCF			"MpTopNDCF"
+
+#define NhlCmpLeftMapPosF		"MpLeftMapPosF"
+#define NhlCmpRightMapPosF		"MpRightMapPosF"
+#define NhlCmpBottomMapPosF		"MpBottomMapPosF"
+#define NhlCmpTopMapPosF		"MpTopMapPosF"
+
 #define NhlCmpActualMinLatF		"MpActualMinLatF"
 #define NhlCmpActualMaxLatF		"MpActualMaxLatF"
 #define NhlCmpActualMinLonF		"MpActualMinLonF"
@@ -106,16 +152,21 @@ typedef enum _NhlProjection {
 #define NhlCmpLeftCornerLonF		"MpLeftCornerLonF"
 #define NhlCmpRightCornerLatF		"MpRightCornerLatF"
 #define NhlCmpRightCornerLonF		"MpRightCornerLonF"
+
+#define NhlCmpLeftPointLonF		"MpLeftPointLonF"
+#define NhlCmpLeftPointLatF		"MpLeftPointLatF"
+#define NhlCmpRightPointLonF		"MpRightPointLonF"
+#define NhlCmpRightPointLatF		"MpRightPointLatF"
+#define NhlCmpBottomPointLonF		"MpBottomPointLonF"
+#define NhlCmpBottomPointLatF		"MpBottomPointLatF"
+#define NhlCmpTopPointLonF		"MpTopPointLonF"
+#define NhlCmpTopPointLatF		"MpTopPointLatF"
+
 #define NhlCmpLeftWindowF		"MpLeftWindowF"
 #define NhlCmpRightWindowF		"MpRightWindowF"
 #define NhlCmpBottomWindowF		"MpBottomWindowF"
 #define NhlCmpTopWindowF		"MpTopWindowF"
 
-#define NhlCmpRectLimitType		"MpRectLimitType"
-#define NhlCmpRectLimit1		"MpRectLimit1"
-#define NhlCmpRectLimit2		"MpRectLimit2"
-#define NhlCmpRectLimit3		"MpRectLimit3"
-#define NhlCmpRectLimit4		"MpRectLimit4"
 #define NhlCmpLambertParallel1F		"MpLambertParallel1F"
 #define NhlCmpLambertParallel2F		"MpLambertParallel2F"
 #define NhlCmpLambertMeridianF		"MpLambertMeridianF"

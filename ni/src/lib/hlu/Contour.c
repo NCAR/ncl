@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.48 1995-02-02 17:33:59 dbrown Exp $
+ *      $Id: Contour.c,v 1.49 1995-02-11 02:41:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -144,7 +144,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 	{NhlNcnLevelFlag, NhlCcnLevelFlag, NhlTcnLevelUseMode,
 		 sizeof(NhlcnLevelUseMode),Oset(level_flag),
-		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlcnLINEONLY),0,NULL},
 	{NhlNcnLevelFlags, NhlCcnLevelFlags,NhlTcnLevelUseModeGenArray,
 		 sizeof(NhlPointer),Oset(level_flags),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
@@ -1730,7 +1730,8 @@ ContourClassInitialize
 			     NhlNumber(levelselectionlist));
 	_NhlRegisterEnumType(NhlTcnLevelUseMode,leveluselist,
 			     NhlNumber(leveluselist));
-	_NhlRegisterEnumType(NhlTcnLineLabelPlacementMode,linelabelplacementlist,
+	_NhlRegisterEnumType(NhlTcnLineLabelPlacementMode,
+			     linelabelplacementlist,
 			     NhlNumber(linelabelplacementlist));
 	_NhlRegisterEnumType(NhlTcnLabelScalingMode,labelscalingmodelist,
 			     NhlNumber(labelscalingmodelist));
@@ -1829,6 +1830,7 @@ ContourClassPartInitialize
 					NhlNlgItemFontHeights,
 					NhlNlgLineLabelsOn,
 					NhlNlbBoxCount,
+					NhlNlbLabelAlignment,
 					NhlNlbLabelStrings,
 					NhlNlbMonoFillColor,
 					NhlNlbFillColor,
@@ -1839,7 +1841,6 @@ ContourClassPartInitialize
 					NhlNlbMonoFillScale,
 					NhlNlbFillScaleF,
 					NhlNlbFillScales,
-					NhlNlbLabelAlignment,
 					NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -7213,7 +7214,7 @@ static NhlErrorTypes    ManageDynamicArrays
 					  entry_name,
 					  NhlNcnFillPatterns,i,ip[i]);
 				ret = MIN(ret, NhlWARNING);
-				ip[i] = NhlHOLLOWFILL;
+				ip[i] = NhlSOLIDFILL;
 			}
 		}
 	}

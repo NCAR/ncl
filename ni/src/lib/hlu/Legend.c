@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.23 1995-02-02 17:34:09 dbrown Exp $
+ *      $Id: Legend.c,v 1.24 1995-02-11 02:42:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -69,7 +69,7 @@ static NhlResource resources[] = {
 
 {NhlNlgLegendOn, NhlClgLegendOn, NhlTBoolean,
 	 sizeof(NhlBoolean), NhlOffset(NhlLegendLayerRec,legend.legend_on),
-	 NhlTImmediate, _NhlUSET((NhlPointer) 1),0,NULL},  
+	 NhlTImmediate, _NhlUSET((NhlPointer) True),0,NULL},  
 {NhlNlgOrientation, NhlClgOrientation, NhlTOrientation,
 	 sizeof(NhlOrientation), NhlOffset(NhlLegendLayerRec,legend.orient),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NhlVERTICAL),0,NULL},
@@ -234,9 +234,9 @@ static NhlResource resources[] = {
 	 NhlTString, _NhlUSET(":"),0,NULL},
 
 	
-{NhlNlgLabelsOn, NhlClgLabelsOn, NhlTInteger, 
-	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.labels_on),
-	 NhlTImmediate, _NhlUSET((NhlPointer) 1),0,NULL},
+{NhlNlgLabelsOn, NhlClgLabelsOn, NhlTBoolean, 
+	 sizeof(NhlBoolean), NhlOffset(NhlLegendLayerRec,legend.labels_on),
+	 NhlTImmediate, _NhlUSET((NhlPointer) True),0,NULL},
 {NhlNlgLabelPosition, NhlClgLabelPosition, NhlTPosition, 
 	 sizeof(NhlPosition), NhlOffset(NhlLegendLayerRec,legend.label_pos),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NhlRIGHT),0,NULL},
@@ -287,8 +287,8 @@ static NhlResource resources[] = {
 {NhlNlgTitleString, NhlClgTitleString, NhlTString, 
 	 sizeof(char *), NhlOffset(NhlLegendLayerRec,legend.title_string),
 	 NhlTImmediate, _NhlUSET(lgDefTitle),0,(NhlFreeFunc)NhlFree},
-{NhlNlgTitleOn, NhlClgTitleOn, NhlTInteger, 
-	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.title_on),
+{NhlNlgTitleOn, NhlClgTitleOn, NhlTBoolean, 
+	 sizeof(NhlBoolean), NhlOffset(NhlLegendLayerRec,legend.title_on),
 	 NhlTProcedure,_NhlUSET((NhlPointer)SetTitleOn),0,NULL},
 {NhlNlgTitlePosition, NhlClgTitlePosition, NhlTInteger, 
 	 sizeof(NhlPosition), NhlOffset(NhlLegendLayerRec,legend.title_pos),
@@ -336,7 +336,7 @@ static NhlResource resources[] = {
 	
 {NhlNlgBoxLinesOn, NhlClgBoxLinesOn, NhlTBoolean, 
 	 sizeof(NhlBoolean), NhlOffset(NhlLegendLayerRec,legend.box_line_on),
-	 NhlTImmediate, _NhlUSET((NhlPointer) 0),0,NULL},
+	 NhlTImmediate, _NhlUSET((NhlPointer) False),0,NULL},
 {NhlNlgBoxLineColor, NhlClgBoxLineColor, NhlTColorIndex, 
 	 sizeof(NhlColorIndex),
 	 NhlOffset(NhlLegendLayerRec,legend.box_line_color),
@@ -356,7 +356,7 @@ static NhlResource resources[] = {
 
 {NhlNlgPerimOn, NhlClgPerimOn, NhlTBoolean, 
 	 sizeof(NhlBoolean), NhlOffset(NhlLegendLayerRec,legend.perim_on),
-	 NhlTImmediate, _NhlUSET((NhlPointer) 1),0,NULL},
+	 NhlTImmediate, _NhlUSET((NhlPointer) True),0,NULL},
 {NhlNlgPerimColor, NhlClgPerimColor, NhlTColorIndex, 
 	 sizeof(NhlColorIndex), 
 	 NhlOffset(NhlLegendLayerRec,legend.perim_color),
