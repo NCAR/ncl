@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.48 2000-08-30 22:23:32 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.49 2000-09-13 21:56:18 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1965,25 +1965,24 @@ begin
     tickmark = create "tickmarks" tickMarkClass wks
        "vpXF"            : vpxf       ; Set the viewport location of the
        "vpYF"            : vpyf       ; tick marks to be the same as 
-
        "vpWidthF"        : vpwf       ; the map.
        "vpHeightF"       : vphf
 
-    first_val  = newdata&$newdata!1$(0)
-    second_val = newdata&$newdata!1$(1)
-    last_val   = newdata&$newdata!1$(mx-1)
-    delta      = second_val - first_val
-    range      = last_val - first_val
-
-    if((range+delta).lt.359.)
-      print("gsn_add_cyclic: Warning: The range of your longitude data is not 360.")
-      print("You may want to set gsnAddCyclic to False to avoid a warning")
-      print("message from the Spline function.")
-    end if
        "tmYLDataBottomF" : min_lat    ; Use the lat/lon limits
-        newdata&$newdata!1$(mx) = newdata&$newdata!1$(0) + 360
+       "tmYLDataTopF"    : max_lat    ; from the coordinate variables.
+       "tmXBDataLeftF"   : min_lon
+       "tmXBDataRightF"  : max_lon
+
+       "tmXBMode"         : "Explicit" ; Indicate that we want to 
+       "tmXBLabels"       : lonlabels  ; explicitly label the X axis.
+       "tmXBValues"       : lonvalues
+       "tmXBMinorValues"  : lonvalues@minor
+
+       "tmYLMode"         : "Explicit" ; Indicate that we want to 
+       "tmYLLabels"       : latlabels  ; explicitly label the Y axis.
+       "tmYLValues"       : latvalues
        "tmYLMinorValues"  : latvalues@minor
- 
+    end create
 
     attsetvalues_check(tickmark,tmres)
 
@@ -3657,6 +3656,27 @@ end
       set_attr(res2,"mpOutlineOn",True)
     end if
 ;                     u: 2-dimensional data                             ;
+;                     v: 2-dimensional data                             ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function creates and draws a vector plot over a map plot to the  ;
+; workstation "wks" (the variable returned from a previous call to      ;
+; "gsn_open_wks").  "u,v" is the 2-dimensional data to be vectorized,   ;
+; and "resources" is an optional list of resources. The Id of the map   ;
+; plot is returned.                                                     ;
+;                                                                       ;
+; This function behaves differently from gsn_vector in that it will     ;
+; create a special kind of plot if certain attributes are set.          ;
+;                                                                       ;
+;    1. The lat/lon grid is labeled with tickmarks.                     ;
+;    2. If any of the special GSUN resources "gsnLeftString,"           ;
+;       "gsnCenterString," and/or "gsnRightString" are set, then they   ;
+;       are used to title the top left, center, and right of the plot   ;
+;       (in addition, the regular resource "tiMainString" can be set to ;
+;       create a regular title).                                        ;
+;    3. If data has an attribute called "long_name," and "gsnLeftString";
+;       hasn't explicitly been set, then the value of this attribute    ;
+;       is used for the left string title.                              ;
 ;    4. If data has an attribute called "units," and "gsnRightString"   ;
 ;       hasn't explicitly been set, then the value of this attribute    ;
     mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
@@ -3853,6 +3873,26 @@ end
       set_attr(res2,"mpOutlineOn",True)
     end if
 
+
+;***********************************************************************;
+; Function : gsn_csm_streamline_map_ce                                  ;
+;                   wks: workstation object                             ;
+;                     u: 2-dimensional data                             ;
+;                     v: 2-dimensional data                             ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function creates and draws a streamline plot over a map plot to  ;
+; the workstation "wks" (the variable returned from a previous call to  ;
+; "gsn_open_wks").  "u,v" is the 2-dimensional data to be streamlined,  ;
+; and "resources" is an optional list of resources. The Id of the map   ;
+; plot is returned.                                                     ;
+;                                                                       ;
+; This function behaves differently from gsn_streamline in that it will ;
+; create a special kind of plot if certain attributes are set.          ;
+;                                                                       ;
+;    1. The lat/lon grid is labeled with tickmarks.                     ;
+;    2. If any of the special GSUN resources "gsnLeftString,"           ;
+;       "gsnCenterString," and/or "gsnRightString" are set, then they   ;
 ;       are used to title the top left, center, and right of the plot   ;
 ;       (in addition, the regular resource "tiMainString" can be set to ;
     mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
@@ -3987,6 +4027,27 @@ local i, attnames, vector_object, map_object, res, res2, \
 ; Return plot object and data object (as attribute of plot object).
 
     vector_object@vfdata  = vector_object@vfdata
+    vector_object@sfdata  = vector_object@sfdata
+    if(scalar_contour)
+      vector_object@contour = vector_object@contour
+    end if
+    return(vector_object)
+end
+
+;***********************************************************************;
+; Function : gsn_csm_vector_scalar_map_ce                               ;
+;                   wks: workstation object                             ;
+;                     u: 2-dimensional data                             ;
+;                     v: 2-dimensional data                             ;
+;                  data: 2-dimensional scalar data                      ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function is similar to gsn_csm_vector_map_ce except it colors the;
+; vectors according to a scalar field.                                  ;
+;                                                                       ;
+; There's a special resource associated with this function called       ;
+; "gsnScalarContour".  If it's set to True, then the scalar field will  ;
+; be drawn as a contour plot.  Otherwise, the vectors will be colored   ;
 ; according to the scalar field. This resource defaults to False.       ;
 ;***********************************************************************;
 
