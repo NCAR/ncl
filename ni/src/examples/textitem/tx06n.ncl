@@ -1,5 +1,5 @@
 ;
-;   $Id: tx06n.ncl,v 1.2 1995-03-22 21:46:00 haley Exp $
+;   $Id: tx06n.ncl,v 1.3 1995-03-27 21:53:36 fred Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -70,7 +70,7 @@ labels = (/                                                  \
           /)
 
 ;
-;  Draw a string with various heights and at various angles.
+;  Draw a string with various justifications.
 ;
 char_height = 0.035
 Xmarker_height = .03

@@ -1,5 +1,5 @@
 ;
-;   $Id: tx05n.ncl,v 1.2 1995-03-22 21:45:58 haley Exp $
+;   $Id: tx05n.ncl,v 1.3 1995-03-27 21:53:34 fred Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -25,18 +25,6 @@
 ; Begin NCL script.
 ;
 begin
-
-;
-; Define the MAX function of two variables.
-;
-function MAX(x:float, y:float)
-begin
-  if (x .lt. y) then
-    return y
-  else
-    return x
-  end if
-end
 
 ;
 ; Create an X11 workstation, defining the desired colors.
@@ -96,7 +84,7 @@ do while (angle .lt. 136.)
 
   draw(text_item_id)
 
-  angle   = angle + MAX(210.*height,1.)
+  angle   = angle + (210.*height > 1.)
 end do
 
 ;
