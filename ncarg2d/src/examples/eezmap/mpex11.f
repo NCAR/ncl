@@ -343,7 +343,7 @@ C
      +            MPNAME(IAI1).EQ.'Cambodia') THEN
                 CALL GSFACI (16)
               ELSE
-                CALL GSFACI (100+MPISCI(MPIOAR(IAI1,IAI5)))
+                CALL GSFACI (100+MPISCI(MPIOSA(IAI1,IAI5)))
               END IF
               CALL GFA (NCRA-1,XCRA,YCRA)
             END IF
