@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.5 1995-03-25 00:58:40 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.6 1995-04-01 00:54:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -25,10 +25,15 @@ extern "C" {
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+#include <ncarg/c.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
-#include <ncarg/hlu/Overlay.h>
+#include <ncarg/hlu/PlotManager.h>
 #include <ncarg/ncargC.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include "defs.h"
 #include <errno.h>
 #include "Symbol.h"
@@ -573,7 +578,7 @@ NhlErrorTypes _NclIAddToOverlay
 	default:
 		return(NhlFATAL);
 	}
-	NhlAddToOverlay(base_hl->hlu.hlu_id,over_hl->hlu.hlu_id,-1);
+	NhlAddOverlay(base_hl->hlu.hlu_id,over_hl->hlu.hlu_id,-1);
 	return(NhlNOERROR);
 }
 NhlErrorTypes _NclIAddFile
@@ -1639,22 +1644,135 @@ NhlErrorTypes _NclIcbinread
 ()
 #endif
 {
-	NclStackEntry args ;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclStackEntry fpath;
+	NclStackEntry dimensions;
+	NclStackEntry type;
+	NclTypeClass thetype;
+	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
+	Const char *path_string;
+	int n_dimensions = 0;
+	int *dimsizes = NULL;
+	int size = 1;
+	int i;
+	void *tmp_ptr;
+	struct stat buf;
+	int fd;
+	int totalsize = 0;
+	int n;
+	char *step = NULL;
+	NclStackEntry data_out;
 
 
-	args  = _NclGetArg(0,1,DONT_CARE);
-	switch(args.kind) {
+	fpath = _NclGetArg(0,3,DONT_CARE);
+	dimensions = _NclGetArg(1,3,DONT_CARE);
+	type = _NclGetArg(2,3,DONT_CARE);
+	switch(fpath.kind) {
 	case NclStk_VAL:
-		tmp_md = args.u.data_obj;
+		tmp_md = fpath.u.data_obj;
 		break;
 	case NclStk_VAR:
-		tmp_md = _NclVarValueRead(args.u.data_var,NULL,NULL);
+		tmp_md = _NclVarValueRead(fpath.u.data_var,NULL,NULL);
 		break;
 	default:
 		return(NhlFATAL);
 	}
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"Function or procedure not implemented");
+	if(tmp_md != NULL) {
+		path_string = _NGResolvePath(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
+		if(path_string == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinread: An error in the file path was detected could not resolve file path");
+			return(NhlFATAL);
+		}
+		if(stat(path_string,&buf) == -1) {
+			NhlPError(NhlFATAL, NhlEUNKNOWN,"cbinread: Unable to open input file (%s)",path_string);
+			return(NhlFATAL);
+		}
+	}
+	tmp_md = NULL;
+	switch(dimensions.kind){
+	case NclStk_VAL:
+		tmp_md = dimensions.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(dimensions.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		n_dimensions = tmp_md->multidval.totalelements;
+		dimsizes = (int*)tmp_md->multidval.val;
+	}
+	for(i = 0; i < n_dimensions; i++) {
+		size *= dimsizes[i];
+	}
+	tmp_md = NULL;
+	switch(type.kind) {
+	case NclStk_VAL:
+		tmp_md = type.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(type.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		thetype = _NclNameToTypeClass(*(NclQuark*)tmp_md->multidval.val);
+		if(thetype == NULL) 
+			return(NhlFATAL);	
+	}
+	if(size*thetype->type_class.size > buf.st_size) {
+		ret = NhlWARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"cbinread: The size implied by the dimension arrays is greater that the size of the file.\n The default _FillValue for the specified type will be filled in.\n Note dimensions and values may not be aligned properly");
+		totalsize = buf.st_size;
+	} else if(size*thetype->type_class.size < buf.st_size) {
+		ret = NhlWARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"cbinread: The size implied by the dimension arrays is less that the size of the file. \n Only the first %d contiguous bytes of the file will be read in.\nNote dimensions and values may not be aligned properly",size*thetype->type_class.size);
+		totalsize = size*thetype->type_class.size;
+	}  else {
+		totalsize = size*thetype->type_class.size;
+	}
+	tmp_ptr = NclMalloc(size*thetype->type_class.size);
+	fd = open(path_string,O_RDONLY);
+	if((tmp_ptr != NULL)&&(fd > 0)) {
+		
+		tmp_md = _NclCreateMultiDVal(
+			NULL,
+			NULL,
+			Ncl_MultiDValData,
+			0,
+			tmp_ptr,
+			&(thetype->type_class.default_mis),
+			n_dimensions,
+			dimsizes,
+			TEMPORARY,
+			NULL,
+			thetype);
+		if(tmp_md == NULL) 
+			return(NhlFATAL);
+
+		step = tmp_ptr;
+		for(i = 0; i < (int)(totalsize / buf.st_blksize); i++) {
+			n = read(fd, step,buf.st_blksize);
+			step = step + buf.st_blksize;
+		}
+		n = read(fd,step,totalsize % buf.st_blksize);
+		step = step + totalsize % buf.st_blksize;
+
+		while((int)(step - (char*)tmp_ptr) < totalsize) {
+			memcpy(step,&(thetype->type_class.default_mis),thetype->type_class.size);
+			step += thetype->type_class.size;
+		}
+		data_out.kind = NclStk_VAL;
+		data_out.u.data_obj = tmp_md;
+		_NclPlaceReturn(data_out);
+		close(fd);
+		return(ret);
+	} else if (fd == -1) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinread: could not open file check permissions");
+	}
 	return(NhlFATAL);
 }
 NhlErrorTypes _NclIfbinread
@@ -1664,24 +1782,115 @@ NhlErrorTypes _NclIfbinread
 ()
 #endif
 {
-	NclStackEntry args;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclStackEntry fpath;
+	NclStackEntry dimensions;
+	NclStackEntry type;
+	NclTypeClass thetype;
+	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
+	Const char *path_string;
+	int n_dimensions = 0;
+	int *dimsizes = NULL;
+	int size = 1;
+	int i;
+	void *tmp_ptr;
+	struct stat buf;
+	int fd;
+	int totalsize = 0;
+	int n;
+	char *step = NULL;
+	NclStackEntry data_out;
 
 
-	args  = _NclGetArg(0,1,DONT_CARE);
-	switch(args.kind) {
+	fpath = _NclGetArg(0,3,DONT_CARE);
+	dimensions = _NclGetArg(1,3,DONT_CARE);
+	type = _NclGetArg(2,3,DONT_CARE);
+	switch(fpath.kind) {
 	case NclStk_VAL:
-		tmp_md = args.u.data_obj;
+		tmp_md = fpath.u.data_obj;
 		break;
 	case NclStk_VAR:
-		tmp_md = _NclVarValueRead(args.u.data_var,NULL,NULL);
+		tmp_md = _NclVarValueRead(fpath.u.data_var,NULL,NULL);
 		break;
 	default:
 		return(NhlFATAL);
 	}
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"Function or procedure not implemented");
+	if(tmp_md != NULL) {
+		path_string = _NGResolvePath(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
+		if(path_string == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: An error in the file path was detected could not resolve file path");
+			return(NhlFATAL);
+		}
+		if(stat(path_string,&buf) == -1) {
+			NhlPError(NhlFATAL, NhlEUNKNOWN,"fbinread: Unable to open input file (%s)",path_string);
+			return(NhlFATAL);
+		}
+	}
+	tmp_md = NULL;
+	switch(dimensions.kind){
+	case NclStk_VAL:
+		tmp_md = dimensions.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(dimensions.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		n_dimensions = tmp_md->multidval.totalelements;
+		dimsizes = (int*)tmp_md->multidval.val;
+	}
+	for(i = 0; i < n_dimensions; i++) {
+		size *= dimsizes[i];
+	}
+	tmp_md = NULL;
+	switch(type.kind) {
+	case NclStk_VAL:
+		tmp_md = type.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(type.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		thetype = _NclNameToTypeClass(*(NclQuark*)tmp_md->multidval.val);
+		if(thetype == NULL) 
+			return(NhlFATAL);	
+	}
+	totalsize = size*thetype->type_class.size;
+	tmp_ptr = NclMalloc(totalsize);
+	NGCALLF(ncl_fortranread,NCL_FORTRANREAD)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
+	if((tmp_ptr != NULL)&&(fd > 0)) {
+		
+		tmp_md = _NclCreateMultiDVal(
+			NULL,
+			NULL,
+			Ncl_MultiDValData,
+			0,
+			tmp_ptr,
+			&(thetype->type_class.default_mis),
+			n_dimensions,
+			dimsizes,
+			TEMPORARY,
+			NULL,
+			thetype);
+		if(tmp_md == NULL) 
+			return(NhlFATAL);
+		data_out.kind = NclStk_VAL;
+		data_out.u.data_obj = tmp_md;
+		_NclPlaceReturn(data_out);
+		return(ret);
+	} else if (fd == -1) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: could not open file check permissions");
+	}
 	return(NhlFATAL);
 }
+
+
 NhlErrorTypes _NclIasciread
 #if	NhlNeedProto
 (void)
@@ -1739,22 +1948,71 @@ NhlErrorTypes _NclIcbinwrite
 ()
 #endif
 {
-	NclStackEntry args ;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclStackEntry fpath;
+	NclStackEntry value;
+	NclStackEntry type;
+	NclTypeClass thetype;
+	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
+	Const char *path_string;
+	int n_dimensions = 0;
+	int *dimsizes = NULL;
+	int size = 1;
+	int i;
+	void *tmp_ptr;
+	struct stat buf;
+	int fd;
+	int totalsize = 0;
+	int n;
+	char *step = NULL;
+	NclStackEntry data_out;
 
 
-	args  = _NclGetArg(0,1,DONT_CARE);
-	switch(args.kind) {
+	fpath = _NclGetArg(0,2,DONT_CARE);
+	value = _NclGetArg(1,2,DONT_CARE);
+
+	switch(fpath.kind) {
 	case NclStk_VAL:
-		tmp_md = args.u.data_obj;
+		tmp_md = fpath.u.data_obj;
 		break;
 	case NclStk_VAR:
-		tmp_md = _NclVarValueRead(args.u.data_var,NULL,NULL);
+		tmp_md = _NclVarValueRead(fpath.u.data_var,NULL,NULL);
 		break;
 	default:
 		return(NhlFATAL);
 	}
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"Function or procedure not implemented");
+	if(tmp_md != NULL) {
+		path_string = _NGResolvePath(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
+		if(path_string == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinwrite: An error in the file path was detected could not resolve file path");
+			return(NhlFATAL);
+		}
+	}
+	tmp_md = NULL;
+	switch(value.kind){
+	case NclStk_VAL:
+		tmp_md = value.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(value.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		tmp_ptr = tmp_md->multidval.val;
+		thetype = tmp_md->multidval.type;
+		totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
+	}
+	fd = open(path_string,(O_CREAT | O_RDWR),0777);
+	if((tmp_ptr != NULL)&&(fd >= 0)) {
+		n = write(fd, tmp_ptr,totalsize);
+		close(fd);
+		return(ret);
+	} else if(fd < 0) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinwrite: Could not create file");
+	}
 	return(NhlFATAL);
 }
 NhlErrorTypes _NclIfbinwrite
@@ -1764,22 +2022,71 @@ NhlErrorTypes _NclIfbinwrite
 ()
 #endif
 {
-	NclStackEntry args;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclStackEntry fpath;
+	NclStackEntry value;
+	NclStackEntry type;
+	NclTypeClass thetype;
+	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
+	Const char *path_string;
+	int n_dimensions = 0;
+	int *dimsizes = NULL;
+	int size = 1;
+	int i;
+	void *tmp_ptr;
+	struct stat buf;
+	int fd;
+	int totalsize = 0;
+	int n;
+	char *step = NULL;
+	NclStackEntry data_out;
 
 
-	args  = _NclGetArg(0,1,DONT_CARE);
-	switch(args.kind) {
+	fpath = _NclGetArg(0,2,DONT_CARE);
+	value = _NclGetArg(1,2,DONT_CARE);
+
+	switch(fpath.kind) {
 	case NclStk_VAL:
-		tmp_md = args.u.data_obj;
+		tmp_md = fpath.u.data_obj;
 		break;
 	case NclStk_VAR:
-		tmp_md = _NclVarValueRead(args.u.data_var,NULL,NULL);
+		tmp_md = _NclVarValueRead(fpath.u.data_var,NULL,NULL);
 		break;
 	default:
 		return(NhlFATAL);
 	}
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"Function or procedure not implemented");
+	if(tmp_md != NULL) {
+		path_string = _NGResolvePath(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
+		if(path_string == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinwrite: An error in the file path was detected could not resolve file path");
+			return(NhlFATAL);
+		}
+	}
+	tmp_md = NULL;
+	switch(value.kind){
+	case NclStk_VAL:
+		tmp_md = value.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(value.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		tmp_ptr = tmp_md->multidval.val;
+		thetype = tmp_md->multidval.type;
+		totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
+	}
+	NGCALLF(ncl_fortranwrite,NCL_FORTRANWRITE)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
+	fd = open(path_string,(O_CREAT | O_RDWR),0777);
+	if((tmp_ptr != NULL)&&(fd >= 0)) {
+		n = write(fd, tmp_ptr,totalsize);
+		return(ret);
+	} else if(fd < 0) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinwrite: Could not create file");
+	}
 	return(NhlFATAL);
 }
 NhlErrorTypes _NclIsleep

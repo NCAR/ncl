@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.10 1995-02-17 01:00:35 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.11 1995-04-01 00:54:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -189,7 +189,7 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
 	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
 	SetArgTemplate(args,2,"graphic",1,NclANY);nargs++;
-	NclRegisterProc(_NclIAddData,args,"NhlAddData",nargs);
+	NclRegisterFunc(_NclIAddData,args,"NhlAddData",nargs);
 
 	nargs = 0;
 	args = NewArgs(3);
@@ -205,21 +205,21 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,0,"graphic",1,dimsizes);nargs++;
 	SetArgTemplate(args,1,"graphic",1,NclANY);nargs++;
 	SetArgTemplate(args,2,"logical",1,dimsizes);nargs++;
-	NclRegisterProc(_NclIRemoveFromOverlay,args,"NhlRemoveFromOverlay",nargs);
+	NclRegisterProc(_NclIRemoveOverlay,args,"NhlRemoveOverlay",nargs);
 
 	nargs = 0;
 	args = NewArgs(2);
 	dimsizes[0] = 1;
 	SetArgTemplate(args,0,"graphic",1,dimsizes);nargs++;
 	SetArgTemplate(args,1,"graphic",1,NclANY);nargs++;
-	NclRegisterProc(_NclIRegisterAnnotation,args,"NhlRegisterAnnotation",nargs);
+	NclRegisterFunc(_NclIAddAnnotation,args,"NhlAddAnnotation",nargs);
 
 	nargs = 0;
 	args = NewArgs(2);
 	dimsizes[0] = 1;
 	SetArgTemplate(args,0,"graphic",1,dimsizes);nargs++;
 	SetArgTemplate(args,1,"graphic",1,NclANY);nargs++;
-	NclRegisterProc(_NclIUnregisterAnnotation,args,"NhlUnregisterAnnotation",nargs);
+	NclRegisterProc(_NclIRemoveAnnotation,args,"NhlRemoveAnnotation",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);

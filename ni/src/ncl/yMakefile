@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.32 1995-03-28 23:39:33 boote Exp $
+#      $Id: yMakefile,v 1.33 1995-04-01 00:54:51 ethan Exp $
 #
 #########################################################################
 #									#
@@ -106,13 +106,16 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			NclOneDValCoordData.c BuiltInSupport.c BuiltInFuncs.c \
 			HLUFunctions.c
 
+FSRCS		=	fortranio.f
+FOBJS		=	fortranio.o
+
 API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o 
 EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o 
 
 APIOBJS		=	$(API_OBJS) $(OBJS)
-EXEOBJS		=	$(EXE_OBJS) $(OBJS)
+EXEOBJS		=	$(EXE_OBJS) $(OBJS) 
 ALLOBJS		=	$(EXEOBJS)
-OBJS		=	$(GEN_OBJS) $(STATIC_OBJS)
+OBJS		=	$(GEN_OBJS) $(STATIC_OBJS) $(FOBJS)
 
 GEN_OBJS	=	NclTypedouble.o NclTypefloat.o \
 			NclTypeint.o NclTypelogical.o \

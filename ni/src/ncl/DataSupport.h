@@ -1,6 +1,6 @@
 
 /*
- *      $Id: DataSupport.h,v 1.5 1995-03-28 00:05:00 ethan Exp $
+ *      $Id: DataSupport.h,v 1.6 1995-04-01 00:54:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -188,7 +188,7 @@ int /*the_id*/
 #endif
 );
 
-extern  struct _NclTypeClass *_NclNameToTypeClass(
+extern  struct _NclTypeClassRec *_NclNameToTypeClass(
 #if  NhlNeedProto
 NclQuark /*obj_type*/
 #endif

@@ -4,10 +4,13 @@
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/Workstation.h>
 #include "defs.h"
+#include "Symbol.h"
+
 #include "NclDataDefs.h"
 #include "NclMdInc.h"
 #include "NclHLUObj.h"
 #include "NclBuiltInSupport.h"
+#include "Machine.h"
 
 NhlErrorTypes _NclIChangeWorkstation
 #if	NhlNeedProto
@@ -693,6 +696,12 @@ NhlErrorTypes _NclIAddData
 	obj *ncl_hlu_obj_ids;
 	string *resname;
 	obj *ncl_data_obj_ids;
+	int n_dims_ =1, len_dims = 1;
+	struct _NclHLUObjRec *tmp_hlu;
+	NclStackEntry data_out;
+	int tmp;
+	int *newid = NclMalloc(sizeof(int));
+	NhlLayer tmp_layer;
 	
 	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
 			0,
@@ -760,7 +769,30 @@ NhlErrorTypes _NclIAddData
 		if(tmp_hlu_ptr[i] != NULL) {
 			for(l = 0; l < k ; l++) {
 				if(tmp_data_ptr[l] != NULL) {
-					NhlAddData(tmp_hlu_ptr[i]->hlu.hlu_id,NrmQuarkToString(*resname),tmp_data_ptr[l]->hlu.hlu_id);
+					tmp = NhlAddData(tmp_hlu_ptr[i]->hlu.hlu_id,NrmQuarkToString(*resname),tmp_data_ptr[l]->hlu.hlu_id);
+					tmp_layer = _NhlGetLayer(tmp);
+
+					if(tmp > 0) {
+                                                tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,tmp,-1,tmp_layer->base.layer_class);
+                                                *newid =  tmp_hlu->obj.id;
+                                                data_out.kind = NclStk_VAL;
+                                                data_out.u.data_obj = _NclMultiDValHLUObjDataCreate(
+                NULL,NULL, Ncl_MultiDValHLUObjData,
+                0,(void*)newid,NULL,n_dims_,
+                &len_dims,TEMPORARY,NULL);
+
+                                                _NclPlaceReturn(data_out);
+                                                return(NhlNOERROR);
+
+
+                                        } else {
+                                                NclFree(newid);
+                                                data_out.kind = NclStk_NOVAL;
+                                                data_out.u.data_obj= NULL;
+                                                _NclPlaceReturn(data_out);
+                                                return(NhlFATAL);
+                                        }
+
 				}
 			}
 		}
@@ -863,7 +895,7 @@ NhlErrorTypes _NclIRemoveData
 		}
 	}
 }
-NhlErrorTypes _NclIRemoveFromOverlay
+NhlErrorTypes _NclIRemoveOverlay
 #if	NhlNeedProto
 (void)
 #else
@@ -934,7 +966,7 @@ NhlErrorTypes _NclIRemoveFromOverlay
 	if(overlay_obj_ptr != NULL) {
 		for( i = 0; i < j; i++) {
 			if(tmp_hlu_ptr[i] != NULL ) {
-				NhlRemoveFromOverlay(overlay_obj_ptr->hlu.hlu_id,tmp_hlu_ptr[i]->hlu.hlu_id,(has_missing2 ? ( missing2.logicalval == *restore ? 0 : *restore) : *restore));
+				NhlRemoveOverlay(overlay_obj_ptr->hlu.hlu_id,tmp_hlu_ptr[i]->hlu.hlu_id,(has_missing2 ? ( missing2.logicalval == *restore ? 0 : *restore) : *restore));
 			}
 		}
 	}
@@ -1012,7 +1044,7 @@ NhlErrorTypes _NclIAddToOverlay2
 		
 	}
 }
-NhlErrorTypes _NclIRegisterAnnotation
+NhlErrorTypes _NclIAddAnnotation
 #if	NhlNeedProto
 (void)
 #else
@@ -1022,14 +1054,18 @@ NhlErrorTypes _NclIRegisterAnnotation
 	int nargs = 2;
 	int has_missing,has_missing1,n_dims1,n_dims,dimsizes[NCL_MAX_DIMENSIONS],dimsizes1[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
-        int total=1;
-        int i,j=0;
+        int total=1,n_dims_ = 1, len_dims = 1;
+        int i,j=0,tmp;
+	int *newid = NclMalloc(sizeof(int));
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj tmp_base_ptr;
+	struct _NclHLUObjRec *tmp_hlu;
 	NclScalar missing;
 	NclScalar missing1;
 	obj *ncl_hlu_obj_ids;
 	obj *ncl_ano_obj_ids;
+	NclStackEntry data_out;
+	NhlLayer tmp_layer;
 	
 	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
 			0,
@@ -1073,7 +1109,29 @@ NhlErrorTypes _NclIRegisterAnnotation
 		if(tmp_base_ptr != NULL) {
 			for( i = 0; i < j; i++) {
 				if(tmp_hlu_ptr[i] != NULL ) { 
-					NhlRegisterAnnotation(tmp_base_ptr->hlu.hlu_id,tmp_hlu_ptr[i]->hlu.hlu_id);
+					tmp= NhlAddAnnotation(tmp_base_ptr->hlu.hlu_id,tmp_hlu_ptr[i]->hlu.hlu_id);
+					tmp_layer = _NhlGetLayer(tmp);
+
+					if(tmp > 0) {
+						tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,tmp,-1,tmp_layer->base.layer_class);
+						*newid =  tmp_hlu->obj.id;
+						data_out.kind = NclStk_VAL;
+						data_out.u.data_obj = _NclMultiDValHLUObjDataCreate(
+                NULL,NULL, Ncl_MultiDValHLUObjData,
+                0,(void*)newid,NULL,n_dims_,
+                &len_dims,TEMPORARY,NULL);
+
+						_NclPlaceReturn(data_out);
+						return(NhlNOERROR);
+						
+
+					} else {
+						NclFree(newid);
+						data_out.kind = NclStk_NOVAL;
+						data_out.u.data_obj= NULL;
+						_NclPlaceReturn(data_out);
+						return(NhlFATAL);
+					}
 				}
 			}
 		}
@@ -1081,7 +1139,7 @@ NhlErrorTypes _NclIRegisterAnnotation
 		return(NhlFATAL);
 	}
 }
-NhlErrorTypes _NclIUnregisterAnnotation
+NhlErrorTypes _NclIRemoveAnnotation
 #if	NhlNeedProto
 (void)
 #else
@@ -1142,7 +1200,7 @@ NhlErrorTypes _NclIUnregisterAnnotation
 		if(tmp_base_ptr != NULL) {
 			for( i = 0; i < j; i++) {
 				if(tmp_hlu_ptr[i] != NULL ) { 
-					NhlUnregisterAnnotation(tmp_base_ptr->hlu.hlu_id,tmp_hlu_ptr[i]->hlu.hlu_id);
+					NhlRemoveAnnotation(tmp_base_ptr->hlu.hlu_id,tmp_hlu_ptr[i]->hlu.hlu_id);
 				}
 			}
 		}

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.15 1995-03-28 21:49:02 haley Exp $
+ *      $Id: NclApi.c,v 1.16 1995-04-01 00:54:45 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -100,6 +100,7 @@ int NclInitServer
 		NULL);
 	_NclInitMachine();
 	_NclInitSymbol();
+	_NclInitTypeClasses();
 	_NclInitDataClasses();
 	_NhlRegSymConv(NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
 

@@ -40,7 +40,7 @@ extern NhlErrorTypes _NclIRemoveData(
 void
 #endif
 );
-extern NhlErrorTypes _NclIRemoveFromOverlay(
+extern NhlErrorTypes _NclIRemoveOverlay(
 #if	NhlNeedProto
 void
 #endif
@@ -50,12 +50,12 @@ extern NhlErrorTypes _NclIAddToOverlay2 (
 void
 #endif
 );
-extern NhlErrorTypes _NclIRegisterAnnotation(
+extern NhlErrorTypes _NclIAddAnnotation(
 #if	NhlNeedProto
 void
 #endif
 );
-extern NhlErrorTypes _NclIUnregisterAnnotation(
+extern NhlErrorTypes _NclIRemoveAnnotation(
 #if	NhlNeedProto
 void
 #endif

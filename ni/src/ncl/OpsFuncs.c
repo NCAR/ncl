@@ -4,7 +4,7 @@ extern "C" {
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
-#include <ncarg/hlu/Overlay.h>
+#include <ncarg/hlu/PlotManager.h>
 #include <ncarg/ncargC.h>
 #include "defs.h"
 #include <errno.h>

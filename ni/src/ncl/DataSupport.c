@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.13 1995-03-28 00:04:57 ethan Exp $
+ *      $Id: DataSupport.c,v 1.14 1995-04-01 00:54:38 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -234,8 +234,8 @@ NclTypeClass _NclNameToTypeClass
 #endif
 {
 	static int first = 1;
-	static NclQuark quarks[10];
-	NclTypeClass classes[10];
+	static NclQuark quarks[12];
+	static NclTypeClass classes[12];
 	int i;
 
 	if(first) {

@@ -2,7 +2,7 @@
 
 
 /*
- *      $Id: AddHLUObjs.c,v 1.10 1995-03-25 21:55:25 ethan Exp $
+ *      $Id: AddHLUObjs.c,v 1.11 1995-04-01 00:54:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -41,7 +41,7 @@ extern NhlLayerClass NhltickMarkLayerClass;
 extern NhlLayerClass NhltitleLayerClass;
 extern NhlLayerClass NhlxWorkstationLayerClass;
 extern NhlLayerClass NhlncgmWorkstationLayerClass;
-extern NhlLayerClass NhlcontourLayerClass;
+extern NhlLayerClass NhlcontourPlotLayerClass;
 extern NhlLayerClass NhltextItemLayerClass;
 extern NhlLayerClass NhlxyPlotLayerClass;
 extern NhlLayerClass NhllabelBarLayerClass;
@@ -50,7 +50,7 @@ extern NhlLayerClass NhlcoordArraysLayerClass;
 extern NhlLayerClass NhlscalarFieldLayerClass;
 extern NhlLayerClass NhlmapPlotLayerClass;
 extern NhlLayerClass NhlappLayerClass;
-extern NhlLayerClass NhlannotationLayerClass;
+extern NhlLayerClass NhlannoManagerLayerClass;
 extern NhlLayerClass NhlpsWorkstationLayerClass;
 
 
@@ -67,7 +67,7 @@ void _NclAddHLUObjs
 	_NclAddSingleObj(NhltitleLayerClass->base_class.class_name,NhltitleLayerClass);
 	_NclAddSingleObj(NhlxWorkstationLayerClass->base_class.class_name,NhlxWorkstationLayerClass);
 	_NclAddSingleObj(NhlncgmWorkstationLayerClass->base_class.class_name,NhlncgmWorkstationLayerClass);
-	_NclAddSingleObj(NhlcontourLayerClass->base_class.class_name,NhlcontourLayerClass);
+	_NclAddSingleObj(NhlcontourPlotLayerClass->base_class.class_name,NhlcontourPlotLayerClass);
 	_NclAddSingleObj(NhltextItemLayerClass->base_class.class_name,NhltextItemLayerClass);
 	_NclAddSingleObj(NhlxyPlotLayerClass->base_class.class_name,NhlxyPlotLayerClass);
 	_NclAddSingleObj(NhllabelBarLayerClass->base_class.class_name,NhllabelBarLayerClass);
@@ -76,7 +76,7 @@ void _NclAddHLUObjs
 	_NclAddSingleObj(NhlscalarFieldLayerClass->base_class.class_name,NhlscalarFieldLayerClass);
 	_NclAddSingleObj(NhlmapPlotLayerClass->base_class.class_name,NhlmapPlotLayerClass);
 	_NclAddSingleObj(NhlappLayerClass->base_class.class_name,NhlappLayerClass);
-	_NclAddSingleObj(NhlannotationLayerClass->base_class.class_name,NhlannotationLayerClass);
+	_NclAddSingleObj(NhlannoManagerLayerClass->base_class.class_name,NhlannoManagerLayerClass);
 	_NclAddSingleObj(NhlpsWorkstationLayerClass->base_class.class_name,NhlpsWorkstationLayerClass);
 	return;
 	

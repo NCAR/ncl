@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.11 1995-02-17 01:00:38 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.12 1995-04-01 00:54:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -382,7 +382,7 @@ void _NclAddIntrinsics
 	args[1].n_dims = 1;
 	_NclRegisterFunc(_NclIbsearch,args,"bsearch",1,IFUNC);
 
-	args = NclCalloc(2,sizeof(NclArgTemplate));
+	args = NclCalloc(3,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("string");
 	args[0].dim_sizes[0] = 1;
 	args[0].is_dimsizes = 1;
@@ -390,9 +390,12 @@ void _NclAddIntrinsics
 	args[1].arg_data_type = _NclLookUp("integer");
 	args[1].is_dimsizes = 0;
 	args[1].n_dims = 1;
-	_NclRegisterFunc(_NclIcbinread,args,"cbinread",1,IFUNC);
+	args[2].arg_data_type = _NclLookUp("string");
+	args[2].is_dimsizes = 0;
+	args[2].n_dims = 1;
+	_NclRegisterFunc(_NclIcbinread,args,"cbinread",3,IFUNC);
 
-	args = NclCalloc(2,sizeof(NclArgTemplate));
+	args = NclCalloc(3,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("string");
 	args[0].dim_sizes[0] = 1;
 	args[0].is_dimsizes = 1;
@@ -400,7 +403,10 @@ void _NclAddIntrinsics
 	args[1].arg_data_type = _NclLookUp("integer");
 	args[1].is_dimsizes = 0;
 	args[1].n_dims = 1;
-	_NclRegisterFunc(_NclIfbinread,args,"fbinread",1,IFUNC);
+	args[2].arg_data_type = _NclLookUp("string");
+	args[2].is_dimsizes = 0;
+	args[2].n_dims = 1;
+	_NclRegisterFunc(_NclIfbinread,args,"fbinread",3,IFUNC);
 
 	args = NclCalloc(2,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("string");
@@ -426,7 +432,7 @@ void _NclAddIntrinsics
 	args[0].n_dims = 1;
 	args[1].arg_data_type = NULL;
 	args[1].is_dimsizes = 0;
-	_NclRegisterProc(_NclIcbinwrite,args,"cbinwrite",1,IPROC);
+	_NclRegisterProc(_NclIcbinwrite,args,"cbinwrite",2,IPROC);
 
 	args = NclCalloc(2,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("string");
@@ -435,7 +441,7 @@ void _NclAddIntrinsics
 	args[0].n_dims = 1;
 	args[1].arg_data_type = NULL;
 	args[1].is_dimsizes = 0;
-	_NclRegisterProc(_NclIfbinwrite,args,"fbinwrite",1,IPROC);
+	_NclRegisterProc(_NclIfbinwrite,args,"fbinwrite",2,IPROC);
 
 	_NclRegisterFunc(_NclIrand,NULL,"rand",0,IFUNC);
 
