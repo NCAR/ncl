@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.23 1997-10-01 18:21:10 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.24 1998-01-06 18:21:52 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -156,10 +156,13 @@ static void *NetMapFromNcl
 		*(nc_type*)out_type = NC_SHORT;
                 break;
 	case NCL_int:
+		*(nc_type*)out_type = NC_LONG;
+                break;
 	case NCL_long:
 		if(long_type == the_type) {
 			*(nc_type*)out_type = NC_LONG;
 		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Can't map type, netCDF does not support 64 bit longs use longtoint to convert your data to and integer type");
 			NclFree(out_type);
 			out_type = NULL;
 		}
