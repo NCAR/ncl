@@ -368,6 +368,310 @@ NhlErrorTypes natgridd_W( void )
   return(NclReturnValue((void*)zo,ndims_zo,dsizes_zo,NULL,NCL_double,0));
 }
 
+NhlErrorTypes natgrid_W( void )
+{
+/* 
+ * Input values
+ */
+  void *x, *y, *z;
+  double *tmp_x, *tmp_y, *tmp_z;
+  int dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
+  NclBasicDataTypes type_x, type_y, type_z;
+  NclScalar missing_x, missing_y, missing_z;
+  NclScalar missing_dx, missing_dy, missing_dz, missing_rz;
+/*
+ * Output grid to interpolate on.
+ */
+  void *xo, *yo;
+  double *tmp_xo, *tmp_yo;
+  int dsizes_xo[NCL_MAX_DIMENSIONS], has_missing_xo;
+  int dsizes_yo[NCL_MAX_DIMENSIONS], has_missing_yo;
+  NclBasicDataTypes type_xo, type_yo;
+  NclScalar missing_xo, missing_yo, missing_dxo, missing_dyo;
+/*
+ * Output variables.
+ */
+  void *zo;
+  double *tmp_zo;
+  int ndims_zo, *dsizes_zo;
+  NclBasicDataTypes type_zo;
+  NclScalar missing_zo, missing_dzo;
+/*
+ * Various
+ */
+  int i, j, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
+  int ier = 0, nmiss = 0, index_z = 0, index_zo = 0;
+
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value. In this example
+ * the type parameter is set to NULL because the function
+ * is later registered to only accept numerics.
+ */
+  x = (void*)NclGetArgValue(
+                              0,
+                              5,
+                              NULL,
+                              dsizes_x,
+                              &missing_x,
+                              &has_missing_x,
+                              &type_x,
+                              2);
+  y = (void*)NclGetArgValue(
+                              1,
+                              5,
+                              NULL,
+                              dsizes_y,
+                              &missing_y,
+                              &has_missing_y,
+                              &type_y,
+                              2);
+/*
+ * Check dimension sizes for x and y.
+ */
+  if(dsizes_x[0] != dsizes_y[0]) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrid: x and y must be the same length");
+    return(NhlFATAL);
+  }
+
+  npts = dsizes_x[0];
+
+/*
+ * Get z.
+ */
+  z = (void*)NclGetArgValue(
+                              2,
+                              5,
+                              &ndims_z,
+                              dsizes_z,
+                              &missing_z,
+                              &has_missing_z,
+                              &type_z,
+                              2);
+/*
+ * Check rightmost dimension size for z.
+ */
+  if(dsizes_z[ndims_z-1] != npts) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrid: the last (rightmost) dimension of z must be the same length as x and y");
+    return(NhlFATAL);
+  }
+
+/*
+ * Get rest of parameters.
+ */
+
+  xo = (void*)NclGetArgValue(
+                               3,
+                               5,
+                               NULL,
+                               dsizes_xo,
+                               &missing_xo,
+                               &has_missing_xo,
+                               &type_xo,
+                               2);
+  yo = (void*)NclGetArgValue(
+                               4,
+                               5,
+                               NULL,
+                               dsizes_yo,
+                               &missing_yo,
+                               &has_missing_yo,
+                               &type_yo,
+                               2);
+  nxo = dsizes_xo[0];
+  nyo = dsizes_yo[0];
+  nzo = nxo * nyo;
+
+/*
+ * Compute the total size of the input and the leftmost dimensions.
+ */
+
+  size_leftmost = 1;
+  for( i = 0; i < ndims_z-1; i++ ) size_leftmost *= dsizes_z[i];
+  size_input = size_leftmost * npts;
+
+/*
+ * Coerce missing values.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
+  coerce_missing(type_z,has_missing_z,&missing_z,&missing_dz,&missing_rz);
+  coerce_missing(type_xo,has_missing_xo,&missing_xo,&missing_dxo,NULL);
+  coerce_missing(type_yo,has_missing_yo,&missing_yo,&missing_dyo,NULL);
+/*
+ * Coerce input arrays to double, if necessary.
+ */
+  tmp_x  = coerce_input_double(x,type_x,npts,has_missing_x,&missing_x,
+                               &missing_dx);
+  tmp_y  = coerce_input_double(y,type_y,npts,has_missing_y,&missing_y,
+                               &missing_dy);
+  tmp_xo = coerce_input_double(xo,type_xo,nxo,has_missing_xo,&missing_xo,
+                               &missing_dxo);
+  tmp_yo = coerce_input_double(yo,type_yo,nyo,has_missing_yo,&missing_yo,
+                               &missing_dyo);
+/*
+ * Allocate space for temporary input array. The temporary array
+ * tmp_z is just big enough to hold a 1-dimensional subsection of the
+ * z array. We only need to allocate space for it if the
+ * input is not already double. Otherwise, we just have it point
+ * to the appropriate locations in z.
+ */
+  if(type_z != NCL_double) {
+    tmp_z = (double*)calloc(npts,sizeof(double));
+    if(tmp_z == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrid: Unable to allocate memory for coercing z array to double precision");
+      return(NhlFATAL);
+    }
+  } 
+
+/*
+ * Check for missing values.
+ */
+  if(contains_missing(tmp_x,npts,has_missing_x,missing_dx.doubleval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrid: x cannot contain any missing values" );
+    return(NhlFATAL);
+  }
+  if(contains_missing(tmp_y,npts,has_missing_y,missing_dy.doubleval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrid: y cannot contain any missing values" );
+    return(NhlFATAL);
+  }
+  if(contains_missing(tmp_xo,nxo,has_missing_xo,missing_dxo.doubleval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrid: xo cannot contain any missing values" );
+    return(NhlFATAL);
+  }
+  if(contains_missing(tmp_yo,nyo,has_missing_yo,missing_dyo.doubleval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrid: yo cannot contain any missing values" );
+    return(NhlFATAL);
+  }
+
+/*
+ * Calculate space for output array and its dimension sizes.
+ */
+  ndims_zo    = ndims_z + 1;
+  size_output = size_leftmost * nzo;
+  dsizes_zo   = (int *) calloc(ndims_zo, sizeof(int));
+
+  if(type_z != NCL_double) {
+    type_zo = NCL_float;
+    zo = (void*)calloc(size_output,sizeof(float));
+  }
+  else {
+    type_zo = NCL_double;
+    zo = (void*)calloc(size_output,sizeof(double));
+  }
+  if(zo == NULL || dsizes_zo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+              "natgrid: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
+  if(has_missing_z) {
+    if(type_zo == NCL_double) missing_zo = missing_dz;
+    else                      missing_zo = missing_rz;
+    missing_dzo = missing_dz;
+  }
+
+  for( i = 0; i < ndims_zo-2; i++ ) dsizes_zo[i] = dsizes_z[i];
+  dsizes_zo[ndims_zo-2] = nxo;
+  dsizes_zo[ndims_zo-1] = nyo;
+
+/*
+ * The following section loops through the leftmost dimensions and calls
+ * the c_natgridd function.
+ */
+  for( i = 0; i < size_leftmost; i++ ) {
+    if(type_z != NCL_double) {
+/*
+ * Coerce npts subsection of z (tmp_z) to double.
+ */
+      coerce_subset_input_double(z,tmp_z,index_z,type_z,npts,has_missing_z,
+                                 &missing_z,&missing_dz);
+    }
+    else {
+/*
+ * Point tmp_z to appropriate location in z.
+ */
+      tmp_z = &((double*)z)[index_z];
+    }
+/*
+ * Check for missing values in z.
+ */
+    if(contains_missing(tmp_z,npts,has_missing_z,missing_dz.doubleval)) {
+      nmiss++;
+/*
+ * Set all elements of this 2D grid to a missing value, if a missing
+ * value exists.
+ */
+      set_subset_output_missing(zo,index_zo,type_zo,nzo,missing_dzo.doubleval);
+    }
+    else {
+/*
+ * Call c_natgridd.
+ */
+      tmp_zo = c_natgridd (npts,tmp_x,tmp_y,tmp_z,nxo,nyo,tmp_xo,tmp_yo,&ier);
+/*
+ * Check for errors.
+ */
+      if(!ier || (ier >= 4 && ier <= 6)) {
+        if(ier) {
+          NhlPError(NhlWARNING,NhlEUNKNOWN,"natgrid: ier = %d", ier);
+        }
+        if(type_zo == NCL_float) {
+          for (j = 0; j < nzo; j++) {
+            ((float*)zo)[index_zo+j] = (float)tmp_zo[j];
+          }    
+        }
+        else {
+          for (j = 0; j < nzo; j++) {
+            ((double*)zo)[index_zo+j] = tmp_zo[j];
+          }    
+        }
+        index_z  += npts;
+        index_zo += nzo;
+        NclFree(tmp_zo);
+      }
+      else {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrid: ier = %d", ier);
+/*
+ * Free arrays
+ */
+        if(type_x  != NCL_double) NclFree(tmp_x);
+        if(type_y  != NCL_double) NclFree(tmp_y);
+        if(type_z  != NCL_double) NclFree(tmp_z);
+        if(type_xo != NCL_double) NclFree(tmp_xo);
+        if(type_yo != NCL_double) NclFree(tmp_yo);
+        NclFree(tmp_zo);
+        return(NhlFATAL);
+      }
+    }
+  }
+/*
+ * Check if z array had missing values. If so, print a warning message.
+ */
+  if(nmiss) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"natgrid: %d 1-dimensional input array contained missing values. No interpolation performed on these arrays",nmiss);
+  }
+/*
+ * Free arrays
+ */
+  if(type_x  != NCL_double) NclFree(tmp_x);
+  if(type_y  != NCL_double) NclFree(tmp_y);
+  if(type_z  != NCL_double) NclFree(tmp_z);
+  if(type_xo != NCL_double) NclFree(tmp_xo);
+  if(type_yo != NCL_double) NclFree(tmp_yo);
+
+  if(has_missing_z) {
+    return(NclReturnValue(zo,ndims_zo,dsizes_zo,&missing_zo,type_zo,0));
+  }
+  else {
+    return(NclReturnValue(zo,ndims_zo,dsizes_zo,NULL,type_zo,0));
+  }
+}
+
 NhlErrorTypes nnsetp_W(void)
 {
 

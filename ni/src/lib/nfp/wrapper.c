@@ -151,6 +151,7 @@ extern NhlErrorTypes nggcog_W(void);
 
 extern NhlErrorTypes natgrids_W(void);
 extern NhlErrorTypes natgridd_W(void);
+extern NhlErrorTypes natgrid_W(void);
 extern NhlErrorTypes nnsetp_W (void);
 extern NhlErrorTypes nngetp_W (void);
 extern NhlErrorTypes nngetaspects_W(void);
@@ -161,8 +162,10 @@ extern NhlErrorTypes nnpntend_W(void);
 
 extern NhlErrorTypes dsgrid2s_W(void);
 extern NhlErrorTypes dsgrid2d_W(void);
+extern NhlErrorTypes dsgrid2_W(void);
 extern NhlErrorTypes dsgrid3s_W(void);
 extern NhlErrorTypes dsgrid3d_W(void);
+extern NhlErrorTypes dsgrid3_W(void);
 extern NhlErrorTypes dspnt2s_W(void);
 extern NhlErrorTypes dspnt2d_W(void);
 extern NhlErrorTypes dspnt3s_W(void);
@@ -1734,6 +1737,8 @@ void NclAddUserFuncs(void)
  */
         NclRegisterFunc(natgrids_W,args,"natgrids",nargs);
 /*
+ * Register "natgridd".
+ *
  * Create private argument array
  */
         nargs = 0;
@@ -1751,6 +1756,26 @@ void NclAddUserFuncs(void)
  * Register wrapper function pointer and argument templates.
  */
         NclRegisterFunc(natgridd_W,args,"natgridd",nargs);
+/*
+ * Register "natgrid".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(5);
+/*
+ * Configure five parameters identically as single dimension numeric
+ * arrays of any size.
+ */
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+/*
+ * Register wrapper function pointer and argument templates.
+ */
+        NclRegisterFunc(natgrid_W,args,"natgrid",nargs);
 /*
  * Create private argument array
  */
@@ -2621,6 +2646,26 @@ void NclAddUserFuncs(void)
  */
         NclRegisterFunc(dsgrid2d_W,args,"dsgrid2d",nargs);
 /*
+ * Register "dsgrid2".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(5);
+/*
+ * Configure five parameters identically as single dimension double
+ * arrays of any size.
+ */
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+/*
+ * Register wrapper function pointer and argument templates.
+ */
+        NclRegisterFunc(dsgrid2_W,args,"dsgrid2",nargs);
+/*
  * Register "dsgrid3s".
  *
  * Create private argument array
@@ -2664,6 +2709,28 @@ void NclAddUserFuncs(void)
  * Register wrapper function pointer and argument templates.
  */
         NclRegisterFunc(dsgrid3d_W,args,"dsgrid3d",nargs);
+/*
+ * Register "dsgrid3".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(7);
+/*
+ * Configure five parameters identically as single dimension float
+ * arrays of any size.
+ */
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+/*
+ * Register wrapper function pointer and argument templates.
+ */
+        NclRegisterFunc(dsgrid3_W,args,"dsgrid3",nargs);
 /*
  * Register "dspnt2s".
  *
