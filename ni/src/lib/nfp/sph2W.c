@@ -313,7 +313,7 @@ NhlErrorTypes dv2uvf_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -344,8 +344,9 @@ NhlErrorTypes dv2uvf_W( void )
   lwork  = max(2*(nlat+1),nlat*(nt*nlon+max(3*l2,nlon)));
   ldwork = nlat+1;
   lshaec = 2*nlat*l2+3*(max(l1-2,0)*(nlat+nlat-l1-1))/2+nlon+15;
-  a =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  b =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+
+  a      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  b      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wshaec = (double*)calloc(        lshaec,sizeof(double));
   work   = (double*)calloc(         lwork,sizeof(double));
   dwork  = (double*)calloc(        ldwork,sizeof(double));
@@ -403,7 +404,7 @@ NhlErrorTypes dv2uvf_W( void )
  * Allocate space for work array.
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -570,7 +571,7 @@ NhlErrorTypes dv2uvg_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -602,11 +603,11 @@ NhlErrorTypes dv2uvg_W( void )
   lwork *= 10;
   ldwork = nlat*(nlat+4);
 
-  a =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  b =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  a      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  b      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wshagc = (double*)calloc(        lshagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(       ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( a == NULL || b == NULL || wshagc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvg: Unable to allocate memory for work arrays");
@@ -662,7 +663,7 @@ NhlErrorTypes dv2uvg_W( void )
  * Allocate space for work array.
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -830,7 +831,7 @@ NhlErrorTypes gradsf_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -861,10 +862,10 @@ NhlErrorTypes gradsf_W( void )
   ldwork = nlat+1;
   lshaec = 2*nlat*l2+3*(max(l1-2,0)*(nlat+nlat-l1-1))/2+nlon+15;
 
-  a =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  b =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  a      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  b      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wshaec = (double*)calloc(        lshaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
   dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( a == NULL || b == NULL || wshaec == NULL || work == NULL || dwork == NULL ) {
@@ -888,9 +889,9 @@ NhlErrorTypes gradsf_W( void )
 
   lwork *= 10;
 
-  work   = (double*)calloc( lwork,sizeof(double));
-  dwork = (double*)calloc( ldwork,sizeof(double));
-  wvhsec = (double*)calloc(lvhsec,sizeof(double));
+  work   = (double*)calloc(  lwork,sizeof(double));
+  dwork  = (double*)calloc( ldwork,sizeof(double));
+  wvhsec = (double*)calloc( lvhsec,sizeof(double));
   if( wvhsec == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsf: Unable to allocate memory for work arrays");
     return(NhlFATAL);
@@ -913,7 +914,7 @@ NhlErrorTypes gradsf_W( void )
  */
  
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -1077,7 +1078,7 @@ NhlErrorTypes gradsg_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -1108,11 +1109,11 @@ NhlErrorTypes gradsg_W( void )
   lshagc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
   ldwork = nlat*(nlat+4);
 
-  a =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  b =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  a      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  b      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wshagc = (double*)calloc(        lshagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(       ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( a == NULL || b == NULL || wshagc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsg: Unable to allocate memory for work arrays");
@@ -1160,7 +1161,7 @@ NhlErrorTypes gradsg_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -1335,7 +1336,7 @@ NhlErrorTypes igradsf_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -1369,10 +1370,10 @@ NhlErrorTypes igradsf_W( void )
   lwork  *= 10;
   lvhaec *= 10;
 
-  br =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     =  (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     =  (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     =  (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     =  (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhaec =  (double*)calloc(        lvhaec,sizeof(double));
   work   =  (double*)calloc(         lwork,sizeof(double));
   dwork  =  (double*)calloc(        ldwork,sizeof(double));
@@ -1402,6 +1403,7 @@ NhlErrorTypes igradsf_W( void )
 
   lwork  *= 10;
   lshsec *= 10;
+
   work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
   wshsec = (double*)calloc(lshsec,sizeof(double));
@@ -1427,7 +1429,7 @@ NhlErrorTypes igradsf_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -1568,7 +1570,7 @@ NhlErrorTypes igradsF_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsF: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -1602,10 +1604,10 @@ NhlErrorTypes igradsF_W( void )
   lwork  *= 10;
   lvhaec *= 10;
 
-  br =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     =  (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     =  (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     =  (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     =  (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhaec =  (double*)calloc(        lvhaec,sizeof(double));
   work   =  (double*)calloc(         lwork,sizeof(double));
   dwork  =  (double*)calloc(        ldwork,sizeof(double));
@@ -1635,6 +1637,7 @@ NhlErrorTypes igradsF_W( void )
 
   lwork  *= 10;
   lshsec *= 10;
+
   work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
   wshsec = (double*)calloc(lshsec,sizeof(double));
@@ -1658,7 +1661,7 @@ NhlErrorTypes igradsF_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsF: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -1851,7 +1854,7 @@ NhlErrorTypes igradsg_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -1882,13 +1885,13 @@ NhlErrorTypes igradsg_W( void )
   lvhagc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+l2+15;
   ldwork = 2*nlat*(nlat+1)+1;
 
-  br =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhagc = (double*)calloc(        lvhagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(  ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhagc == NULL || work == NULL || dwork == NULL ) {
@@ -1912,9 +1915,10 @@ NhlErrorTypes igradsg_W( void )
   lwork  = max(4*nlat*(nlat+2)+2,nlat*(nlon*nt+max(3*l2,nlon)+2*nt*l3+1));
   ldwork = nlat*(nlat+4);
   lshsgc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
+
   work   = (double*)calloc( lwork,sizeof(double));
   wshsgc = (double*)calloc(lshsgc,sizeof(double));
-  dwork = (double*)calloc(ldwork,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
   if( wshsgc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsg: Unable to allocate memory for work arrays");
     return(NhlFATAL);
@@ -1935,7 +1939,7 @@ NhlErrorTypes igradsg_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -2075,7 +2079,7 @@ NhlErrorTypes igradsG_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsG: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -2106,13 +2110,13 @@ NhlErrorTypes igradsG_W( void )
   lvhagc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+l2+15;
   ldwork = 2*nlat*(nlat+1)+1;
 
-  br =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  wvhagc = (double*)calloc(        lvhagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(  ldwork,sizeof(double));
+  br     =  (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     =  (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     =  (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     =  (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  wvhagc = (double*)calloc(         lvhagc,sizeof(double));
+  work   = (double*)calloc(          lwork,sizeof(double));
+  dwork  = (double*)calloc(         ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhagc == NULL || work == NULL || dwork == NULL ) {
@@ -2136,9 +2140,10 @@ NhlErrorTypes igradsG_W( void )
   lwork  = max(4*nlat*(nlat+2)+2,nlat*(nlon*nt+max(3*l2,nlon)+2*nt*l3+1));
   ldwork = nlat*(nlat+4);
   lshsgc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
+
   work   = (double*)calloc( lwork,sizeof(double));
   wshsgc = (double*)calloc(lshsgc,sizeof(double));
-  dwork = (double*)calloc(ldwork,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
   if( wshsgc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsG: Unable to allocate memory for work arrays");
     return(NhlFATAL);
@@ -2159,7 +2164,7 @@ NhlErrorTypes igradsG_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsG: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -2383,7 +2388,7 @@ NhlErrorTypes ilapsf_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -2413,11 +2418,11 @@ NhlErrorTypes ilapsf_W( void )
   lwork  = max(2*(nlat+1),nlat*(nlon*nt+max(3*l2,nlon)));
   lshaec = 2*nlat*l2+3*(max(l1-2,0)*(nlat+nlat-l1-1))/2+nlon+15;
   ldwork = nlat+1;
-  a =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  b =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  a     =  (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  b     =  (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wshaec = (double*)calloc(        lshaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(        ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( a == NULL || b == NULL || wshaec == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: Unable to allocate memory for work arrays");
@@ -2439,9 +2444,9 @@ NhlErrorTypes ilapsf_W( void )
   lshsec = 2*nlat*l2+3*(max(l1-2,0)*(nlat+nlat-l1-1))/2+nlon+15;
 
   wshsec = (double*)calloc(lshsec,sizeof(double));
-  work =   (double*)calloc( lwork,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
-  pertrb = (double*)calloc(     nt,sizeof(double));
+  pertrb = (double*)calloc(    nt,sizeof(double));
 
   if( pertrb == NULL || wshsec == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: Unable to allocate memory for work arrays");
@@ -2464,7 +2469,7 @@ NhlErrorTypes ilapsf_W( void )
  *  (math) nlat is the first dim
  */ 
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -2637,7 +2642,7 @@ NhlErrorTypes ilapsF_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -2667,11 +2672,12 @@ NhlErrorTypes ilapsF_W( void )
   lwork  = max(2*(nlat+1),nlat*(nlon*nt+max(3*l2,nlon)));
   lshaec = 2*nlat*l2+3*(max(l1-2,0)*(nlat+nlat-l1-1))/2+nlon+15;
   ldwork = nlat+1;
-  a =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  b =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+
+  a      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  b      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wshaec = (double*)calloc(        lshaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(        ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( a == NULL || b == NULL || wshaec == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: Unable to allocate memory for work arrays");
@@ -2694,9 +2700,9 @@ NhlErrorTypes ilapsF_W( void )
   lshsec = 2*nlat*l2+3*(max(l1-2,0)*(nlat+nlat-l1-1))/2+nlon+15;
 
   wshsec = (double*)calloc(lshsec,sizeof(double));
-  work =   (double*)calloc( lwork,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
-  pertrb = (double*)calloc(     nt,sizeof(double));
+  pertrb = (double*)calloc(    nt,sizeof(double));
 
   if( pertrb == NULL || wshsec == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: Unable to allocate memory for work arrays");
@@ -2719,7 +2725,7 @@ NhlErrorTypes ilapsF_W( void )
  *  (math) nlat is the first dim
  */ 
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -2941,7 +2947,7 @@ NhlErrorTypes ilapsg_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -2972,11 +2978,11 @@ NhlErrorTypes ilapsg_W( void )
   lshagc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
   ldwork = nlat*(nlat+4);
 
-  a =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  b =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  a      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  b      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wshagc = (double*)calloc(        lshagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(       ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( a == NULL || b == NULL || wshagc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: Unable to allocate memory for work arrays");
@@ -2996,10 +3002,9 @@ NhlErrorTypes ilapsg_W( void )
   ldwork = nlat*(nlat+4);
   lshsgc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
 
-
   wshsgc = (double*)calloc(lshsgc,sizeof(double));
-  work =   (double*)calloc( lwork,sizeof(double));
-  pertrb = (double*)calloc(     nt,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
+  pertrb = (double*)calloc(    nt,sizeof(double));
 
   dwork = (double*)calloc(ldwork,sizeof(double));
   if( pertrb == NULL || wshsgc == NULL || work == NULL || dwork == NULL ) {
@@ -3023,7 +3028,7 @@ NhlErrorTypes ilapsg_W( void )
  *  (math) nlat is the first dim
  */ 
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -3197,7 +3202,7 @@ NhlErrorTypes ilapsG_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -3228,11 +3233,11 @@ NhlErrorTypes ilapsG_W( void )
   lshagc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
   ldwork = nlat*(nlat+4);
 
-  a =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  b =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  a      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  b      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wshagc = (double*)calloc(        lshagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(       ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( a == NULL || b == NULL || wshagc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: Unable to allocate memory for work arrays");
@@ -3252,10 +3257,9 @@ NhlErrorTypes ilapsG_W( void )
   ldwork = nlat*(nlat+4);
   lshsgc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
 
-
   wshsgc = (double*)calloc(lshsgc,sizeof(double));
-  work =   (double*)calloc( lwork,sizeof(double));
-  pertrb = (double*)calloc(     nt,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
+  pertrb = (double*)calloc(    nt,sizeof(double));
 
   dwork = (double*)calloc(ldwork,sizeof(double));
   if( pertrb == NULL || wshsgc == NULL || work == NULL || dwork == NULL ) {
@@ -3279,7 +3283,7 @@ NhlErrorTypes ilapsG_W( void )
  *  (math) nlat is the first dim
  */ 
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -3475,7 +3479,7 @@ NhlErrorTypes ilapvf_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -3506,13 +3510,13 @@ NhlErrorTypes ilapvf_W( void )
   ldwork = 2*(nlat+2);
   lvhaec = 4*nlat*l2+3*max(l1-2,0)*(nlat+nlat-l1-1)+nlon+15;
 
-  br =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhaec = (double*)calloc(        lvhaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(        ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhaec == NULL || work == NULL || dwork == NULL ) {
@@ -3535,8 +3539,8 @@ NhlErrorTypes ilapvf_W( void )
   lvhsec = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
   ldwork = 2*(nlat+2);
 
-  wvhsec = (double*)calloc(lvhsec,sizeof(double));
-  work   = (double*)calloc( lwork,sizeof(double));
+  wvhsec = (double*)calloc( lvhsec,sizeof(double));
+  work   = (double*)calloc(  lwork,sizeof(double));
   dwork  = (double*)calloc( ldwork,sizeof(double));
 
   if( wvhsec == NULL || work == NULL || dwork == NULL ) {
@@ -3563,7 +3567,7 @@ NhlErrorTypes ilapvf_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -3751,7 +3755,7 @@ NhlErrorTypes ilapvg_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -3782,13 +3786,13 @@ NhlErrorTypes ilapvg_W( void )
   lvhagc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+l2+15;
   ldwork = 2*nlat*(nlat+1)+1;
 
-  br =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhagc = (double*)calloc(        lvhagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(  ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhagc == NULL || work == NULL || dwork == NULL ) {
@@ -3839,7 +3843,7 @@ NhlErrorTypes ilapvg_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -3992,7 +3996,7 @@ NhlErrorTypes lapsf_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -4023,11 +4027,11 @@ NhlErrorTypes lapsf_W( void )
   lshaec = 2*nlat*l2+3*(max(l1-2,0)*(nlat+nlat-l1-1))/2+nlon+15;
   ldwork = nlat+1;
 
-  a =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  b =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  a      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  b      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wshaec = (double*)calloc(        lshaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(        ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( a == NULL || b == NULL || wshaec == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsf: Unable to allocate memory for work arrays");
@@ -4048,7 +4052,7 @@ NhlErrorTypes lapsf_W( void )
   lshsec = 2*nlat*l2+3*(max(l1-2,0)*(nlat+nlat-l1-1))/2+nlon+15;
 
   wshsec = (double*)calloc(lshsec,sizeof(double));
-  work =   (double*)calloc( lwork,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( wshsec == NULL || work == NULL || dwork == NULL ) {
@@ -4070,7 +4074,7 @@ NhlErrorTypes lapsf_W( void )
  *  (math) nlat is the first dim
  */ 
   lwork = nlatnlon;
-  work  = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -4189,7 +4193,7 @@ NhlErrorTypes lapsF_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsF: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -4220,11 +4224,11 @@ NhlErrorTypes lapsF_W( void )
   lshaec = 2*nlat*l2+3*(max(l1-2,0)*(nlat+nlat-l1-1))/2+nlon+15;
   ldwork = nlat+1;
 
-  a =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  b =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  a      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  b      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wshaec = (double*)calloc(        lshaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(        ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( a == NULL || b == NULL || wshaec == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsF: Unable to allocate memory for work arrays");
@@ -4246,7 +4250,7 @@ NhlErrorTypes lapsF_W( void )
   lshsec = 2*nlat*l2+3*(max(l1-2,0)*(nlat+nlat-l1-1))/2+nlon+15;
 
   wshsec = (double*)calloc(lshsec,sizeof(double));
-  work =   (double*)calloc( lwork,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( wshsec == NULL || work == NULL || dwork == NULL ) {
@@ -4268,7 +4272,7 @@ NhlErrorTypes lapsF_W( void )
  *  (math) nlat is the first dim
  */ 
   lwork = nlatnlon;
-  work  = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsF: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -4428,7 +4432,7 @@ NhlErrorTypes lapsg_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -4459,11 +4463,11 @@ NhlErrorTypes lapsg_W( void )
   lshagc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
   ldwork = nlat*(nlat+4);
 
-  a =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  b =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  a      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  b      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wshagc = (double*)calloc(        lshagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(       ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( a == NULL || b == NULL || wshagc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsg: Unable to allocate memory for work arrays");
@@ -4484,7 +4488,7 @@ NhlErrorTypes lapsg_W( void )
   lshsgc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
 
   wshsgc = (double*)calloc(lshsgc,sizeof(double));
-  work =   (double*)calloc( lwork,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
 
   dwork = (double*)calloc(ldwork,sizeof(double));
   if( wshsgc == NULL || work == NULL || dwork == NULL ) {
@@ -4506,7 +4510,7 @@ NhlErrorTypes lapsg_W( void )
  *  (math) nlat is the first dim
  */ 
   lwork = nlatnlon;
-  work  = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -4625,7 +4629,7 @@ NhlErrorTypes lapsG_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsG: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -4656,11 +4660,11 @@ NhlErrorTypes lapsG_W( void )
   lshagc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
   ldwork = nlat*(nlat+4);
 
-  a =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  b =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  a      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  b      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wshagc = (double*)calloc(        lshagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(       ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( a == NULL || b == NULL || wshagc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsG: Unable to allocate memory for work arrays");
@@ -4681,7 +4685,7 @@ NhlErrorTypes lapsG_W( void )
   lshsgc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
 
   wshsgc = (double*)calloc(lshsgc,sizeof(double));
-  work =   (double*)calloc( lwork,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
 
   dwork = (double*)calloc(ldwork,sizeof(double));
   if( wshsgc == NULL || work == NULL || dwork == NULL ) {
@@ -4703,7 +4707,7 @@ NhlErrorTypes lapsG_W( void )
  *  (math) nlat is the first dim
  */ 
   lwork = nlatnlon;
-  work  = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsG: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -4895,7 +4899,7 @@ NhlErrorTypes lapvf_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -4931,8 +4935,8 @@ NhlErrorTypes lapvf_W( void )
   cr =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
   ci =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhaec = (double*)calloc(        lvhaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(        ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhaec == NULL || work == NULL || dwork == NULL ) {
@@ -4957,7 +4961,7 @@ NhlErrorTypes lapvf_W( void )
 
   wvhsec = (double*)calloc(lvhsec,sizeof(double));
   work   = (double*)calloc( lwork,sizeof(double));
-  dwork = (double*)calloc( ldwork,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( wvhsec == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvf: Unable to allocate memory for work arrays");
@@ -4982,7 +4986,7 @@ NhlErrorTypes lapvf_W( void )
  */
  
   lwork = nlatnlon;
-  work  = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -5170,7 +5174,7 @@ NhlErrorTypes lapvg_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -5201,13 +5205,13 @@ NhlErrorTypes lapvg_W( void )
   lvhagc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+l2+15;
   ldwork = 2*nlat*(nlat+1)+1;
 
-  br =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhagc = (double*)calloc(        lvhagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(  ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhagc == NULL || work == NULL || dwork == NULL ) {
@@ -5256,7 +5260,7 @@ NhlErrorTypes lapvg_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work  = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -5445,7 +5449,7 @@ NhlErrorTypes uv2sfvpf_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -5476,13 +5480,13 @@ NhlErrorTypes uv2sfvpf_W( void )
   ldwork = 2*(nlat+2);
   lvhaec = 4*nlat*l2+3*max(l1-2,0)*(nlat+nlat-l1-1)+nlon+15;
 
-  br =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhaec = (double*)calloc(        lvhaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(        ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhaec == NULL || work == NULL || dwork == NULL ) {
@@ -5529,7 +5533,7 @@ NhlErrorTypes uv2sfvpf_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work  = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -5717,7 +5721,7 @@ NhlErrorTypes uv2sfvpg_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -5748,13 +5752,13 @@ NhlErrorTypes uv2sfvpg_W( void )
   lvhagc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+l2+15;
   ldwork = 2*nlat*(nlat+1)+1;
 
-  br =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhagc = (double*)calloc(        lvhagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(  ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhagc == NULL || work == NULL || dwork == NULL ) {
@@ -5801,7 +5805,7 @@ NhlErrorTypes uv2sfvpg_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work  = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -5989,7 +5993,7 @@ NhlErrorTypes lderuvf_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -6022,14 +6026,14 @@ NhlErrorTypes lderuvf_W( void )
   lwvts  = 4*nlat*l2 +3*max(l1-2,0)*(nlat+nlat-l1-1)+nlon +15;
   lvhaec = 4*nlat*l2+3*max(l1-2,0)*(nlat+nlat-l1-1)+nlon+15;
 
-  br =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhaec = (double*)calloc(        lvhaec,sizeof(double));
-  wvts =   (double*)calloc(         lwvts,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(        ldwork,sizeof(double));
+  wvts   = (double*)calloc(         lwvts,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvts == NULL || wvhaec == NULL || work == NULL || dwork == NULL ) {
@@ -6048,10 +6052,10 @@ NhlErrorTypes lderuvf_W( void )
  * compute derivative of (u,v) with respect to colatitude theta
  * [upon return: derivative of (u,v) with respect to latitude]
  */ 
-
-  lwork = nlat*(2*nt*nlon+max(6*l2,nlon));
-  work  = (double*)calloc(lwork,sizeof(double));
+  lwork  = nlat*(2*nt*nlon+max(6*l2,nlon));
   ldwork = 2*(nlat+1);
+
+  work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( work == NULL || dwork == NULL ) {
@@ -6076,7 +6080,7 @@ NhlErrorTypes lderuvf_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -6262,7 +6266,7 @@ NhlErrorTypes lderuvg_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -6293,13 +6297,13 @@ NhlErrorTypes lderuvg_W( void )
   ldwork = 2*nlat*(nlat+1)+1;
   lvhagc = 4*nlat*l2+3*max(l1-2,0)*(nlat+nlat-l1-1)+nlon+l2+15;
 
-  br =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhagc = (double*)calloc(        lvhagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(        ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhagc == NULL || work == NULL || dwork == NULL ) {
@@ -6323,8 +6327,8 @@ NhlErrorTypes lderuvg_W( void )
   lwork  = nlat*(2*nt*nlon+max(6*l2,nlon));
   ldwork = nlat*(nlat+4);
 
-  wvts   =  (double*)calloc( lwvts,sizeof(double));
-  work   =  (double*)calloc( lwork,sizeof(double));
+  wvts   = (double*)calloc( lwvts,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( wvts == NULL || work == NULL || dwork == NULL ) {
@@ -6349,7 +6353,7 @@ NhlErrorTypes lderuvg_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -6522,7 +6526,7 @@ NhlErrorTypes uv2dvf_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -6553,13 +6557,13 @@ NhlErrorTypes uv2dvf_W( void )
   ldwork = 2*(nlat+2);
   lvhaec = 4*nlat*l2+3*max(l1-2,0)*(nlat+nlat-l1-1)+nlon+15;
 
-  br =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhaec = (double*)calloc(        lvhaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(        ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhaec == NULL || work == NULL || dwork == NULL ) {
@@ -6610,7 +6614,7 @@ NhlErrorTypes uv2dvf_W( void )
  */
  
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -6749,7 +6753,7 @@ NhlErrorTypes uv2dvF_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvF: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -6780,13 +6784,13 @@ NhlErrorTypes uv2dvF_W( void )
   ldwork = 2*(nlat+2);
   lvhaec = 4*nlat*l2+3*max(l1-2,0)*(nlat+nlat-l1-1)+nlon+15;
 
-  br =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhaec = (double*)calloc(        lvhaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(        ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhaec == NULL || work == NULL || dwork == NULL ) {
@@ -6837,7 +6841,7 @@ NhlErrorTypes uv2dvF_W( void )
  */
  
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvF: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -7021,7 +7025,7 @@ NhlErrorTypes uv2dvg_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -7052,13 +7056,13 @@ NhlErrorTypes uv2dvg_W( void )
   lvhagc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+l2+15;
   ldwork = 2*nlat*(nlat+1)+1;
 
-  br =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhagc = (double*)calloc(        lvhagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(  ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhagc == NULL || work == NULL || dwork == NULL ) {
@@ -7109,7 +7113,7 @@ NhlErrorTypes uv2dvg_W( void )
  */
  
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -7248,7 +7252,7 @@ NhlErrorTypes uv2dvG_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvG: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -7279,13 +7283,13 @@ NhlErrorTypes uv2dvG_W( void )
   lvhagc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+l2+15;
   ldwork = 2*nlat*(nlat+1)+1;
 
-  br =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhagc = (double*)calloc(        lvhagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(  ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhagc == NULL || work == NULL || dwork == NULL ) {
@@ -7312,8 +7316,8 @@ NhlErrorTypes uv2dvG_W( void )
 
   work   = (double*)calloc( lwork,sizeof(double));
   wshsgc = (double*)calloc(lshsgc,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
 
-  dwork = (double*)calloc(ldwork,sizeof(double));
   if( wshsgc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvG: Unable to allocate memory for work arrays");
     return(NhlFATAL);
@@ -7336,7 +7340,7 @@ NhlErrorTypes uv2dvG_W( void )
  */
  
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvG: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -7519,7 +7523,7 @@ NhlErrorTypes uv2vrf_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -7550,13 +7554,13 @@ NhlErrorTypes uv2vrf_W( void )
   ldwork = 2*(nlat+2);
   lvhaec = 4*nlat*l2+3*max(l1-2,0)*(nlat+nlat-l1-1)+nlon+15;
 
-  br =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhaec = (double*)calloc(        lvhaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(        ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhaec == NULL || work == NULL || dwork == NULL ) {
@@ -7607,7 +7611,7 @@ NhlErrorTypes uv2vrf_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -7747,7 +7751,7 @@ NhlErrorTypes uv2vrF_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrF: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -7778,13 +7782,13 @@ NhlErrorTypes uv2vrF_W( void )
   ldwork = 2*(nlat+2);
   lvhaec = 4*nlat*l2+3*max(l1-2,0)*(nlat+nlat-l1-1)+nlon+15;
 
-  br =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhaec = (double*)calloc(        lvhaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(        ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhaec == NULL || work == NULL || dwork == NULL ) {
@@ -7835,7 +7839,7 @@ NhlErrorTypes uv2vrF_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrF: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -8022,7 +8026,7 @@ NhlErrorTypes uv2vrg_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -8054,13 +8058,13 @@ NhlErrorTypes uv2vrg_W( void )
   lvhagc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+l2+15;
   ldwork = 2*nlat*(nlat+1)+1;
 
-  br =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhagc = (double*)calloc(        lvhagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(  ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhagc == NULL || work == NULL || dwork == NULL ) {
@@ -8082,13 +8086,13 @@ NhlErrorTypes uv2vrg_W( void )
  * coefficients br and bi computed by 'sub vhagc'
  */
   lshsgc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
-  lwork = nlat*(nlon*nt+max(3*l2,nlon)+2*nt*l1+1);
+  lwork  = nlat*(nlon*nt+max(3*l2,nlon)+2*nt*l1+1);
   ldwork = nlat*(nlat+4);
 
   work   = (double*)calloc( lwork,sizeof(double));
   wshsgc = (double*)calloc(lshsgc,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
 
-  dwork = (double*)calloc(ldwork,sizeof(double));
   if( wshsgc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrg: Unable to allocate memory for work arrays");
     return(NhlFATAL);
@@ -8110,7 +8114,7 @@ NhlErrorTypes uv2vrg_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -8250,7 +8254,7 @@ NhlErrorTypes uv2vrG_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrG: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -8281,13 +8285,13 @@ NhlErrorTypes uv2vrG_W( void )
   lvhagc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+l2+15;
   ldwork = 2*nlat*(nlat+1)+1;
 
-  br =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wvhagc = (double*)calloc(        lvhagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(  ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhagc == NULL || work == NULL || dwork == NULL ) {
@@ -8337,7 +8341,7 @@ NhlErrorTypes uv2vrG_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrG: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -8536,7 +8540,7 @@ NhlErrorTypes uv2vrdvf_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -8568,12 +8572,12 @@ NhlErrorTypes uv2vrdvf_W( void )
   lvhaec = 4*nlat*l2+3*max(l1-2,0)*(nlat+nlat-l1-1)+nlon+15;
 
   wvhaec = (double*)calloc(        lvhaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  br =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  dwork = (double*)calloc(        ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhaec == NULL || work == NULL || dwork == NULL ) {
@@ -8623,7 +8627,7 @@ NhlErrorTypes uv2vrdvf_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -8809,7 +8813,7 @@ NhlErrorTypes uv2vrdvg_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -8841,12 +8845,12 @@ NhlErrorTypes uv2vrdvg_W( void )
   ldwork = 2*nlat*(nlat+1)+1;
 
   wvhagc = (double*)calloc(        lvhagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  br =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bi =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  cr =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  ci =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  dwork = (double*)calloc(  ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  br     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bi     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  cr     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ci     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( br == NULL || bi == NULL || cr == NULL || ci == NULL ||
       wvhagc == NULL || work == NULL || dwork == NULL ) {
@@ -8871,7 +8875,7 @@ NhlErrorTypes uv2vrdvg_W( void )
 
   wshsgc = (double*)calloc(lshsgc,sizeof(double));
   work   = (double*)calloc( lwork,sizeof(double));
-  dwork = (double*)calloc(ldwork,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
   if( wshsgc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvg: Unable to allocate memory for work arrays");
     return(NhlFATAL);
@@ -8896,7 +8900,7 @@ NhlErrorTypes uv2vrdvg_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -9062,7 +9066,7 @@ NhlErrorTypes vr2uvf_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -9093,11 +9097,11 @@ NhlErrorTypes vr2uvf_W( void )
   lshaec = 2*nlat*l2+3*(max(l1-2,0)*(nlat+nlat-l1-1))/2+nlon+15;
   ldwork = nlat+1;
 
-  a =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  b =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  a      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  b      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wshaec = (double*)calloc(        lshaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(        ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( a == NULL || b == NULL || wshaec == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvf: Unable to allocate memory for work arrays");
@@ -9120,9 +9124,9 @@ NhlErrorTypes vr2uvf_W( void )
   lvhsec = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
   ldwork = 2*(nlat+2);
 
-  pertrb = (double*)calloc(  nt,sizeof(double));
+  pertrb = (double*)calloc(    nt,sizeof(double));
   work   = (double*)calloc( lwork,sizeof(double));
-  dwork = (double*)calloc( ldwork,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
   wvhsec = (double*)calloc(lvhsec,sizeof(double));
 
   if( pertrb == NULL || wvhsec == NULL || work == NULL || dwork == NULL ) {
@@ -9148,7 +9152,7 @@ NhlErrorTypes vr2uvf_W( void )
  */
  
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -9312,7 +9316,7 @@ NhlErrorTypes vr2uvg_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -9343,11 +9347,11 @@ NhlErrorTypes vr2uvg_W( void )
   lshagc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
   ldwork = nlat*(nlat+4);
 
-  a =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  b =      (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  a      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  b      = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wshagc = (double*)calloc(        lshagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(       ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( a == NULL || b == NULL || wshagc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvg: Unable to allocate memory for work arrays");
@@ -9372,7 +9376,7 @@ NhlErrorTypes vr2uvg_W( void )
   work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
   wvhsgc = (double*)calloc(lvhsgc,sizeof(double));
-  pertrb = (double*)calloc( nt,sizeof(double));
+  pertrb = (double*)calloc(    nt,sizeof(double));
 
   if( pertrb == NULL || wvhsgc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvg: Unable to allocate memory for work arrays");
@@ -9397,7 +9401,7 @@ NhlErrorTypes vr2uvg_W( void )
  */
  
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -9582,7 +9586,7 @@ NhlErrorTypes vrdv2uvf_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -9614,13 +9618,13 @@ NhlErrorTypes vrdv2uvf_W( void )
   lshaec = 2*nlat*l2+3*(max(l1-2,0)*(nlat+nlat-l1-1))/2+nlon+15;
   ldwork = nlat+1;
 
-  ad =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bd =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  av =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bv =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ad     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bd     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  av     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bv     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wshaec = (double*)calloc(        lshaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(        ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( ad == NULL || bd == NULL || av == NULL || bv == NULL ||
       wshaec == NULL || work == NULL || dwork == NULL ) {
@@ -9646,9 +9650,9 @@ NhlErrorTypes vrdv2uvf_W( void )
 
   wvhsec = (double*)calloc(lvhsec,sizeof(double));
   work   = (double*)calloc( lwork,sizeof(double));
-  dwork = (double*)calloc( ldwork,sizeof(double));
-  pertbd = (double*)calloc( nt,sizeof(double));
-  pertbv = (double*)calloc( nt,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
+  pertbd = (double*)calloc(    nt,sizeof(double));
+  pertbv = (double*)calloc(    nt,sizeof(double));
 
   if( pertbd == NULL || pertbv == NULL || wvhsec == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvf: Unable to allocate memory for work arrays");
@@ -9675,7 +9679,7 @@ NhlErrorTypes vrdv2uvf_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvf: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -9862,7 +9866,7 @@ NhlErrorTypes vrdv2uvg_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -9894,13 +9898,13 @@ NhlErrorTypes vrdv2uvg_W( void )
   lshagc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
   ldwork = nlat*(nlat+4);
 
-  ad =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bd =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  av =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
-  bv =     (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  ad     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bd     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  av     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
+  bv     = (double*)calloc(  mdab*ndab*nt,sizeof(double));
   wshagc = (double*)calloc(        lshagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(       ldwork,sizeof(double));
+  work   = (double*)calloc(         lwork,sizeof(double));
+  dwork  = (double*)calloc(        ldwork,sizeof(double));
 
   if( ad == NULL || bd == NULL || av == NULL || bv == NULL ||
       wshagc == NULL || work == NULL || dwork == NULL ) {
@@ -9926,8 +9930,8 @@ NhlErrorTypes vrdv2uvg_W( void )
   wvhsgc = (double*)calloc(lvhsgc,sizeof(double));
   work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
-  pertbd = (double*)calloc( nt,sizeof(double));
-  pertbv = (double*)calloc( nt,sizeof(double));
+  pertbd = (double*)calloc(    nt,sizeof(double));
+  pertbv = (double*)calloc(    nt,sizeof(double));
 
   if( pertbd == NULL || pertbv == NULL || wvhsgc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvg: Unable to allocate memory for work arrays");
@@ -9954,7 +9958,7 @@ NhlErrorTypes vrdv2uvg_W( void )
  * (math) nlon is the last dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvg: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -10155,7 +10159,7 @@ NhlErrorTypes vhaec_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaec: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -10208,7 +10212,7 @@ NhlErrorTypes vhaec_W( void )
  * (math) nlon is the first dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaec: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -10328,7 +10332,7 @@ NhlErrorTypes vhaeC_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaeC: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -10382,7 +10386,7 @@ NhlErrorTypes vhaeC_W( void )
  * (math) nlon is the first dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaeC: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -10597,7 +10601,7 @@ NhlErrorTypes vhagc_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagc: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -10630,8 +10634,8 @@ NhlErrorTypes vhagc_W( void )
   ldwork = 2*nlat*(nlat+1)+1;
 
   wvhagc = (double*)calloc( lvhagc,sizeof(double));
-  work =   (double*)calloc(  lwork,sizeof(double));
-  dwork = (double*)calloc( ldwork,sizeof(double));
+  work   = (double*)calloc(  lwork,sizeof(double));
+  dwork  = (double*)calloc( ldwork,sizeof(double));
 
   if( wvhagc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagc: Unable to allocate memory for work arrays");
@@ -10650,7 +10654,7 @@ NhlErrorTypes vhagc_W( void )
  * (math) nlon is the first dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagc: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -10769,7 +10773,7 @@ NhlErrorTypes vhagC_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagC: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -10802,7 +10806,7 @@ NhlErrorTypes vhagC_W( void )
   ldwork = 2*nlat*(nlat+1)+1;
 
   wvhagc = (double*)calloc( lvhagc,sizeof(double));
-  work   =(double*)calloc(  lwork,sizeof(double));
+  work   = (double*)calloc(  lwork,sizeof(double));
   dwork  = (double*)calloc( ldwork,sizeof(double));
 
   if( wvhagc == NULL || work == NULL || dwork == NULL ) {
@@ -10823,7 +10827,7 @@ NhlErrorTypes vhagC_W( void )
  * (math) nlon is the first dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagC: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -11047,9 +11051,9 @@ NhlErrorTypes vhsec_W( void )
   lvhsec = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
   ldwork = 2*(nlat+2);
 
-  wvhsec = (double*)calloc(        lvhsec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc( ldwork,sizeof(double));
+  wvhsec = (double*)calloc(lvhsec,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( wvhsec == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsec: Unable to allocate memory for work arrays");
@@ -11068,7 +11072,7 @@ NhlErrorTypes vhsec_W( void )
  * (math) nlon is the first dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsec: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -11203,9 +11207,9 @@ NhlErrorTypes vhseC_W( void )
   lvhsec = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+ *nlon+15;
   ldwork = 2*(nlat+2);
 
-  wvhsec = (double*)calloc(        lvhsec,sizeof(double));
-  work   = (double*)calloc(         lwork,sizeof(double));
-  dwork  = (double*)calloc( ldwork,sizeof(double));
+  wvhsec = (double*)calloc(lvhsec,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( wvhsec == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhseC: Unable to allocate memory for work arrays");
@@ -11226,7 +11230,7 @@ NhlErrorTypes vhseC_W( void )
  * (math) nlon is the first dim
  */
   lwork = nlatnlon;
-  work  = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhseC: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -11450,8 +11454,8 @@ NhlErrorTypes vhsgc_W( void )
   lvhsgc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
   ldwork = 2*nlat*(nlat+1)+1;
 
-  wvhsgc = (double*)calloc(        lvhsgc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
+  wvhsgc = (double*)calloc(lvhsgc,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( wvhsgc == NULL || work == NULL || dwork == NULL ) {
@@ -11471,7 +11475,7 @@ NhlErrorTypes vhsgc_W( void )
  * (math) nlon is the first dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsgc: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -11606,8 +11610,8 @@ NhlErrorTypes vhsgC_W( void )
   lvhsgc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+*nlon+15;
   ldwork = 2*nlat*(nlat+1)+1;
 
-  wvhsgc = (double*)calloc(        lvhsgc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
+  wvhsgc = (double*)calloc(lvhsgc,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( wvhsgc == NULL || work == NULL || dwork == NULL ) {
@@ -11629,7 +11633,7 @@ NhlErrorTypes vhsgC_W( void )
  * (math) nlon is the first dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsgC: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -11806,7 +11810,7 @@ NhlErrorTypes shaec_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shaec: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -11826,19 +11830,23 @@ NhlErrorTypes shaec_W( void )
  * grid(s) and returns the coefficients in array(s) a,b
  * Here the scalar grid is "g" 
  */
-  isym   = 0;
-  idg    = nlat;
-  jdg    = nlon;
-  l1     = mdab;
-  l2     = (nlat+1)/2;
-
+  isym = 0;
+  idg  = nlat;
+  jdg  = nlon;
+  l1   = mdab;
+  if(nlat % 2) {
+    l2 = (nlat+1)/2;
+  }
+  else {
+    l2 = (nlat+2)/2;
+  }
   lwork  = max(2*(nlat+1),nlat*(nt*nlon+max(3*l2,nlon)));
   lshaec = 2*nlat*l2+3*(max(l1-2,0)*(2*nlat-l1-1))/2+nlon+15;
   ldwork = nlat+1;
 
-  wshaec = (double*)calloc(        lshaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(       ldwork,sizeof(double));
+  wshaec = (double*)calloc(lshaec,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( wshaec == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shaec: Unable to allocate memory for work arrays");
@@ -11856,7 +11864,7 @@ NhlErrorTypes shaec_W( void )
  * (math) nlon is the first dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shaec: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -11885,7 +11893,7 @@ NhlErrorTypes shagc_W( void )
 /*
  * Input array variables
  */
-  void *g;
+  void    *g;
   double *dg;
   int ndims_g, dsizes_g[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_g;
@@ -12007,7 +12015,7 @@ NhlErrorTypes shagc_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shagc: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -12027,19 +12035,24 @@ NhlErrorTypes shagc_W( void )
  * grid(s) and returns the coefficients in array(s) a,b
  * Here the scalar grid is "g" 
  */
-  isym   = 0;
-  idg    = nlat;
-  jdg    = nlon;
-  l1     = mdab;
-  l2     = (nlat+1)/2;
+  isym = 0;
+  idg  = nlat;
+  jdg  = nlon;
+  l1   = mdab;
+  if(nlat % 2) {
+    l2 = (nlat+1)/2;
+  }
+  else {
+    l2 = nlat/2;
+  }
 
-  lwork  = max(4*nlat*(nlat+2)+2,nlat*(nlon*nt+max(3*l2,nlon)));
-  lshagc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
+  lwork  = nlat*(nlon*nt+max(3*l2,nlon));
+  lshagc = nlat*(2*l2+3*l1-2)+3*l1*max(0,1-l1)/2+nlon+15;
   ldwork = nlat*(nlat+4);
 
-  wshagc = (double*)calloc(        lshagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(       ldwork,sizeof(double));
+  wshagc = (double*)calloc(lshagc,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( wshagc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shagc: Unable to allocate memory for work arrays");
@@ -12057,7 +12070,7 @@ NhlErrorTypes shagc_W( void )
  * (math) nlon is the first dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shagc: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -12215,7 +12228,7 @@ NhlErrorTypes shsec_W( void )
 /*
  * Calculate work space sizes.
  */
-  isym   = 0; 
+  isym   = 0;
   idg    = nlat;
   jdg    = nlon;
   l1     = mdab;
@@ -12225,8 +12238,8 @@ NhlErrorTypes shsec_W( void )
   lshsec = 2*nlat*l2+3*(max(l1-2,0)*(2*nlat-l1-1))/2+nlon+15;
   ldwork = nlat+1;
 
-  wshsec = (double*)calloc(        lshsec,sizeof(double));
-  work   = (double*)calloc(         lwork,sizeof(double));
+  wshsec = (double*)calloc(lshsec,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( wshsec == NULL || work == NULL || dwork == NULL ) {
@@ -12245,7 +12258,7 @@ NhlErrorTypes shsec_W( void )
  * (math) nlon is the first dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shsec: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -12413,9 +12426,9 @@ NhlErrorTypes shsgc_W( void )
   ldwork = nlat*(nlat+4);
   lshsgc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
 
-  wshsgc = (double*)calloc(        lshsgc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork = (double*)calloc(ldwork,sizeof(double));
+  wshsgc = (double*)calloc(lshsgc,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( wshsgc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc: Unable to allocate memory for work arrays");
@@ -12433,7 +12446,7 @@ NhlErrorTypes shsgc_W( void )
  * (math) nlon is the first dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -12541,7 +12554,7 @@ NhlErrorTypes shaeC_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shaeC: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -12560,19 +12573,24 @@ NhlErrorTypes shaeC_W( void )
 /*
  * Calculate work space sizes.
  */
-  isym   = 0;
-  idg    = nlat;
-  jdg    = nlon;
-  l1     = mdab;
-  l2     = (nlat+1)/2;
+  isym = 0;
+  idg  = nlat;
+  jdg  = nlon;
+  l1   = mdab;
+  if(nlat % 2) {
+    l2 = (nlat+1)/2;
+  }
+  else {
+    l2 = (nlat+2)/2;
+  }
 
   lwork  = max(2*(nlat+1),nlat*(nt*nlon+max(3*l2,nlon)));
   lshaec = 2*nlat*l2+3*(max(l1-2,0)*(2*nlat-l1-1))/2+nlon+15;
   ldwork = nlat+1;
 
-  wshaec = (double*)calloc(        lshaec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(       ldwork,sizeof(double));
+  wshaec = (double*)calloc(lshaec,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( wshaec == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shaeC: Unable to allocate memory for work arrays");
@@ -12591,7 +12609,7 @@ NhlErrorTypes shaeC_W( void )
  * (math) nlon is the first dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shaeC: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -12643,7 +12661,7 @@ NhlErrorTypes shagC_W( void )
 /*
  * Input array variables
  */
-  void *g;
+  void    *g;
   double *dg;
   int ndims_g, dsizes_g[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_g;
@@ -12671,14 +12689,14 @@ NhlErrorTypes shagC_W( void )
  * implies you don't care about its value.
  */
   g = (void*)NclGetArgValue(
-           0,
-           1,
-           &ndims_g,
-           dsizes_g,
-           NULL,
-           NULL,
-           &type_g,
-           2);
+             0,
+             1,
+             &ndims_g,
+             dsizes_g,
+             NULL,
+             NULL,
+             &type_g,
+             2);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -12708,6 +12726,7 @@ NhlErrorTypes shagC_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shagC: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
   }
+
 /*
  * Allocate space for output array.
  */
@@ -12721,7 +12740,7 @@ NhlErrorTypes shagC_W( void )
  * Determine the workspace size.
  */
   lwork = nlatnlon;
-  work = (double*)calloc(lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shagC: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -12740,19 +12759,24 @@ NhlErrorTypes shagC_W( void )
 /*
  * Calculate work space sizes.
  */
-  isym   = 0;
-  idg    = nlat;
-  jdg    = nlon;
-  l1     = mdab;
-  l2     = (nlat+1)/2;
+  isym = 0;
+  idg  = nlat;
+  jdg  = nlon;
+  l1   = mdab;
+  if(nlat % 2) {
+    l2 = (nlat+1)/2;
+  }
+  else {
+    l2 = nlat/2;
+  }
 
-  lwork  = max(4*nlat*(nlat+2)+2,nlat*(nlon*nt+max(3*l2,nlon)));
-  lshagc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
+  lwork  = nlat*(nlon*nt+max(3*l2,nlon));
+  lshagc = nlat*(2*l2+3*l1-2)+3*l1*max(0,1-l1)/2+nlon+15;
   ldwork = nlat*(nlat+4);
 
-  wshagc = (double*)calloc(        lshagc,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
-  dwork =  (double*)calloc(       ldwork,sizeof(double));
+  wshagc = (double*)calloc(lshagc,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( wshagc == NULL || work == NULL || dwork == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shagC: Unable to allocate memory for work arrays");
@@ -12760,9 +12784,9 @@ NhlErrorTypes shagC_W( void )
   }
   NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork,&ldwork,&jer);
   j = nt * ndab * mdab;
-  NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&nt,&dg[0],&idg,&jdg,
-                         &dab[0],&dab[j],
+  NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&nt,dg,&idg,&jdg,&dab[0],&dab[j],
                          &mdab,&ndab,wshagc,&lshagc,work,&lwork,&ker);
+
   NclFree(wshagc);
   NclFree(work);
   NclFree(dwork);
@@ -12772,7 +12796,7 @@ NhlErrorTypes shagC_W( void )
  * (math) nlon is the first dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shagC: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -12939,8 +12963,8 @@ NhlErrorTypes shseC_W( void )
   lshsec = 2*nlat*l2+3*(max(l1-2,0)*(2*nlat-l1-1))/2+ *nlon +15;
   ldwork = nlat+1;
 
-  wshsec = (double*)calloc(        lshsec,sizeof(double));
-  work =   (double*)calloc(         lwork,sizeof(double));
+  wshsec = (double*)calloc(lshsec,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( wshsec == NULL || work == NULL || dwork == NULL ) {
@@ -12961,7 +12985,7 @@ NhlErrorTypes shseC_W( void )
  * (math) nlon is the first dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shseC: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -13121,14 +13145,19 @@ NhlErrorTypes shsgC_W( void )
   idg    = nlat;
   jdg    = *nlon;
   l1     = mdab;
-  l2     = (nlat+1)/2;
+  if (nlat % 2) {
+    l2 = (nlat+1)/2;
+  }
+  else {
+    l2 = nlat/2;
+  }
 
-  lwork  = max(4*nlat*(nlat+2)+2,nlat*(*nlon*nt+max(3*l2,*nlon)));
+  lwork  = nlat*(*nlon*nt+max(3*l2,*nlon));
   ldwork = nlat*(nlat+4);
   lshsgc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+ *nlon +15;
 
-  wshsgc = (double*)calloc(        lshsgc,sizeof(double));
-  work   = (double*)calloc(         lwork,sizeof(double));
+  wshsgc = (double*)calloc(lshsgc,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
 
   if( wshsgc == NULL || work == NULL || dwork == NULL ) {
@@ -13149,7 +13178,7 @@ NhlErrorTypes shsgC_W( void )
  * (math) nlon is the first dim
  */
   lwork = nlatnlon;
-  work   = (double*)calloc( lwork,sizeof(double));
+  work  = (double*)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgC: Unable to allocate memory for work array");
     return(NhlFATAL);

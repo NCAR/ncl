@@ -96,7 +96,7 @@ C historical reasons
       NAV2 = NAV/2
       LWORK = NPTS + 2*NAV2
       NOE = 0
-      IF (MOD(NPTS,2).EQ.0) NOE = 1
+      IF (MOD(NWGT,2).EQ.0) NOE = 1
 
       DO N = 1,LWORK
 C preset to xmsg

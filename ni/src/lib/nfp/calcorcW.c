@@ -229,7 +229,7 @@ NhlErrorTypes escorc_W( void )
         ((float*)corc)[index_corc] = (float)(*tmp_corc);
       } 
 
-      if(ier < 0) ier_count++;
+      if(ier != 0) ier_count++;
       index_corc++;
       index_x   += nxy;
     }
@@ -283,7 +283,7 @@ NhlErrorTypes escorc_W( void )
           ((float*)corc)[index_corc] = (float)(*tmp_corc);
         } 
 
-        if(ier < 0) ier_count++;
+        if(ier != 0) ier_count++;
         
         index_corc++;
         index_y   += nxy;
