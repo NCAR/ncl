@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.71 1998-11-12 21:40:02 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.72 1999-01-26 20:11:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -793,7 +793,6 @@ static NrmQuark Qfill_patterns = NrmNULLQUARK;
 static NrmQuark Qfill_scales = NrmNULLQUARK;
 
 static NhlMapPlotLayerPart *Mpp = NULL, *Ompp;
-static NhlMapPlotLayer Mpl, Ompl;
 
 static int Init_Colors[] ={16,10, 8,10,26,22,11,23,13,19,24,25,21,20,18};
 
@@ -1026,72 +1025,71 @@ MapPlotInitialize
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name = "MapPlotInitialize";
 	char			*e_text;
-        
+        NhlMapPlotLayer		mpl = (NhlMapPlotLayer) new;
+	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
 
-	Mpl = (NhlMapPlotLayer) new;
-	Mpp = &(Mpl->mapplot);
 #if 0
-	Mpl->view.keep_aspect = True;
+	mpl->view.keep_aspect = True;
 #endif
 
 /* Initialize private fields */
 
-	Mpp->overlay_object = NULL;
-        Mpp->map_data_handler = NULL;
-	Mpp->dash_table = NULL;
-	Mpp->predraw_dat = NULL;
-	Mpp->draw_dat = NULL;
-	Mpp->postdraw_dat = NULL;
-	Mpp->new_draw_req = True;
-	Mpp->update_req = False;
-	Mpp->limb.on = Mpp->grid.on;
-	Mpp->limb.order = Mpp->grid.order;
-	Mpp->spec_fill_color_count = 0;
-	Mpp->spec_fill_pattern_count = 0;
-	Mpp->spec_fill_scale_count = 0;
-	Mpp->trans_change_count = 0;
-        Mpp->view_changed = True;
-        if (! Mpp->area_masking_on_set)
-                Mpp->area_masking_on = Mpp->mask_area_specs ? True : False;
+	mpp->overlay_object = NULL;
+        mpp->map_data_handler = NULL;
+	mpp->dash_table = NULL;
+	mpp->predraw_dat = NULL;
+	mpp->draw_dat = NULL;
+	mpp->postdraw_dat = NULL;
+	mpp->new_draw_req = True;
+	mpp->update_req = False;
+	mpp->limb.on = mpp->grid.on;
+	mpp->limb.order = mpp->grid.order;
+	mpp->spec_fill_color_count = 0;
+	mpp->spec_fill_pattern_count = 0;
+	mpp->spec_fill_scale_count = 0;
+	mpp->trans_change_count = 0;
+        mpp->view_changed = True;
+        if (! mpp->area_masking_on_set)
+                mpp->area_masking_on = mpp->mask_area_specs ? True : False;
         
-        if (Mpp->grid_spacing_set)
-                Mpp->grid_lat_spacing = Mpp->grid_lon_spacing =
-                        Mpp->grid_spacing;
+        if (mpp->grid_spacing_set)
+                mpp->grid_lat_spacing = mpp->grid_lon_spacing =
+                        mpp->grid_spacing;
         else
-                Mpp->grid_spacing = 15.0;
-        if (Mpp->grid_lat_spacing <= 0.0) Mpp->grid_lat_spacing = 15.0;
-        if (Mpp->grid_lon_spacing <= 0.0) Mpp->grid_lon_spacing = 15.0;
+                mpp->grid_spacing = 15.0;
+        if (mpp->grid_lat_spacing <= 0.0) mpp->grid_lat_spacing = 15.0;
+        if (mpp->grid_lon_spacing <= 0.0) mpp->grid_lon_spacing = 15.0;
                 
 /*
  * Necessary to initialize these for NDCToData to work correctly.
  */
-	Mpl->trans.data_xstart = -180.0;
-	Mpl->trans.data_xend = 180.0;
-	Mpl->trans.data_ystart = -90.0;
-	Mpl->trans.data_yend = 90.0;
+	mpl->trans.data_xstart = -180.0;
+	mpl->trans.data_xend = 180.0;
+	mpl->trans.data_ystart = -90.0;
+	mpl->trans.data_yend = 90.0;
         
 /* Set up the Map data handler */
 
-        subret = mpSetUpDataHandler(Mpl, (NhlMapPlotLayer) req, True);
+        subret = mpSetUpDataHandler(mpl, (NhlMapPlotLayer) req, True);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
                                     
 /* Set up the Map transformation */
 
-	subret = mpSetUpTransObj(Mpl, (NhlMapPlotLayer) req, True);
+	subret = mpSetUpTransObj(mpl, (NhlMapPlotLayer) req, True);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
 /* Set view dependent resources */
 
-	subret = mpManageViewDepResources(Mpl,(NhlMapPlotLayer)req,True);
+	subret = mpManageViewDepResources(mpl,(NhlMapPlotLayer)req,True);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error setting view dependent resources";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
 
-	subret = SetLineAttrs(Mpl,(NhlMapPlotLayer)req,True);
+	subret = SetLineAttrs(mpl,(NhlMapPlotLayer)req,True);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error setting view dependent resources";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -1100,7 +1098,7 @@ MapPlotInitialize
 
 /* Manage the dynamic arrays */
 
-	subret = mpManageDynamicArrays(Mpl,(NhlMapPlotLayer)req,
+	subret = mpManageDynamicArrays(mpl,(NhlMapPlotLayer)req,
 				     True,args,num_args);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error managing dynamic arrays";
@@ -1108,18 +1106,18 @@ MapPlotInitialize
 		return(ret);
 	}
 
-        _NhlUpdateDrawList(Mpp->map_data_handler,True,
-                           Mpl,(NhlMapPlotLayer)req,args,num_args);
+        _NhlUpdateDrawList(mpp->map_data_handler,True,
+                           mpl,(NhlMapPlotLayer)req,args,num_args);
         
                 
 /* Manage the overlay */
 
-	subret = _NhlManageOverlay(&Mpp->overlay_object,new,req,
+	subret = _NhlManageOverlay(&mpp->overlay_object,new,req,
 				   _NhlCREATE,NULL,0,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
         
-        Mpp->view_changed = False;
+        mpp->view_changed = False;
 
 /*
  * MapPlot simply passes these resources to the DataHandler, because they
@@ -1128,13 +1126,13 @@ MapPlotInitialize
  * the next SetValues call will be able notice they have changed. (Otherwise
  * they could be assigned to the same memory as the last time.
  */
-        Mpp->area_names = NULL;
-        Mpp->dynamic_groups = NULL;
-	Mpp->data_set_name = NULL;
-        Mpp->area_masking_on_set = False;
-        Mpp->grid_spacing_set = False;
+        mpp->area_names = NULL;
+        mpp->dynamic_groups = NULL;
+	mpp->data_set_name = NULL;
+        mpp->area_masking_on_set = False;
+        mpp->grid_spacing_set = False;
         
-	Mpp = NULL;
+	mpp = NULL;
 	return ret;
 }
 
@@ -1210,123 +1208,121 @@ static NhlErrorTypes MapPlotSetValues
 	int			view_args = 0;
         NhlSArg			sargs[16];
         int			nargs = 0;
+        NhlMapPlotLayer		mpl = (NhlMapPlotLayer) new;
+	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
+        NhlMapPlotLayer		ompl = (NhlMapPlotLayer) old;
+	NhlMapPlotLayerPart	*ompp = &(ompl->mapplot);
 
-	Mpl = (NhlMapPlotLayer) new;
-	Mpp = &(Mpl->mapplot);
-	Ompl = (NhlMapPlotLayer) old;
-
-	Ompp = &(Ompl->mapplot);
-
-        if (Mpl->view.x != Ompl->view.x ||
-            Mpl->view.y != Ompl->view.y ||
-            Mpl->view.width != Ompl->view.width ||
-            Mpl->view.height != Ompl->view.height) {
-                Mpp->view_changed = True;
+        if (mpl->view.x != ompl->view.x ||
+            mpl->view.y != ompl->view.y ||
+            mpl->view.width != ompl->view.width ||
+            mpl->view.height != ompl->view.height) {
+                mpp->view_changed = True;
         }
                 
-	if (Mpl->view.use_segments != Ompl->view.use_segments) {
-		Mpp->new_draw_req = True;
+	if (mpl->view.use_segments != ompl->view.use_segments) {
+		mpp->new_draw_req = True;
 	}
-	if (Mpl->view.use_segments) {
+	if (mpl->view.use_segments) {
                 NhlTransDat *trans_dat = NULL;
                 
 		if (NewDrawArgs(args,num_args))
-			Mpp->new_draw_req = True;
+			mpp->new_draw_req = True;
                 else {
-                        if (Mpp->draw_dat)
-                                trans_dat = Mpp->draw_dat;
-                        else if (Mpp->postdraw_dat)
-                                trans_dat = Mpp->postdraw_dat;
-                        else if (Mpp->predraw_dat)
-                                trans_dat = Mpp->predraw_dat;
+                        if (mpp->draw_dat)
+                                trans_dat = mpp->draw_dat;
+                        else if (mpp->postdraw_dat)
+                                trans_dat = mpp->postdraw_dat;
+                        else if (mpp->predraw_dat)
+                                trans_dat = mpp->predraw_dat;
                         if (! _NhlSegmentSpansArea
                             (trans_dat,
-                             Mpl->view.x,
-                             Mpl->view.x + Mpl->view.width,
-                             Mpl->view.y - Mpl->view.height,
-                             Mpl->view.y))
-                                Mpp->new_draw_req = True;
+                             mpl->view.x,
+                             mpl->view.x + mpl->view.width,
+                             mpl->view.y - mpl->view.height,
+                             mpl->view.y))
+                                mpp->new_draw_req = True;
                 }
 	}
 
-	Mpp->limb.on = Mpp->grid.on;
-	Mpp->limb.order = Mpp->grid.order;
+	mpp->limb.on = mpp->grid.on;
+	mpp->limb.order = mpp->grid.order;
 
 	if (_NhlArgIsSet(args,num_args,NhlNmpDefaultFillColor))
-		Mpp->fill_default.color_set = True;
+		mpp->fill_default.color_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpDefaultFillPattern))
-		Mpp->fill_default.pattern_set = True;
+		mpp->fill_default.pattern_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpDefaultFillScaleF))
-		Mpp->fill_default.scale_set = True;
+		mpp->fill_default.scale_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpOceanFillColor))
-		Mpp->ocean.color_set = True;
+		mpp->ocean.color_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpOceanFillPattern))
-		Mpp->ocean.pattern_set = True;
+		mpp->ocean.pattern_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpOceanFillScaleF))
-		Mpp->ocean.scale_set = True;
+		mpp->ocean.scale_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpLandFillColor))
-		Mpp->land.color_set = True;
+		mpp->land.color_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpLandFillPattern))
-		Mpp->land.pattern_set = True;
+		mpp->land.pattern_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpLandFillScaleF))
-		Mpp->land.scale_set = True;
+		mpp->land.scale_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpInlandWaterFillColor))
-		Mpp->inland_water.color_set = True;
+		mpp->inland_water.color_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpInlandWaterFillPattern))
-		Mpp->inland_water.pattern_set = True;
+		mpp->inland_water.pattern_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpInlandWaterFillScaleF))
-		Mpp->inland_water.scale_set = True;
+		mpp->inland_water.scale_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpGeophysicalLineDashSegLenF))
-		Mpp->geophysical.dash_seglen_set = True;
+		mpp->geophysical.dash_seglen_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpUSStateLineDashSegLenF))
-		Mpp->us_state.dash_seglen_set = True;
+		mpp->us_state.dash_seglen_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpNationalLineDashSegLenF))
-		Mpp->national.dash_seglen_set = True;
+		mpp->national.dash_seglen_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpGridLineDashSegLenF))
-		Mpp->grid.dash_seglen_set = True;
+		mpp->grid.dash_seglen_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpLimbLineDashSegLenF))
-		Mpp->limb.dash_seglen_set = True;
+		mpp->limb.dash_seglen_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpPerimLineDashSegLenF))
-		Mpp->perim.dash_seglen_set = True;
+		mpp->perim.dash_seglen_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpLabelFontHeightF))
-		Mpp->labels.height_set = True;
+		mpp->labels.height_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpAreaMaskingOn))
-		Mpp->area_masking_on_set = True;
+		mpp->area_masking_on_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpMaskAreaSpecifiers)) {
-                if (! Mpp->area_masking_on_set)
-                        Mpp->area_masking_on = True;
+                if (! mpp->area_masking_on_set)
+                        mpp->area_masking_on = True;
         }
         if ( _NhlArgIsSet(args,num_args,NhlNmpGridSpacingF))
-                Mpp->grid_lat_spacing = Mpp->grid_lon_spacing =
-                        Mpp->grid_spacing;
+                mpp->grid_lat_spacing = mpp->grid_lon_spacing =
+                        mpp->grid_spacing;
         else 
-                Mpp->grid_spacing = 15.0;
-        if (Mpp->grid_lat_spacing <= 0.0) Mpp->grid_lat_spacing = 15.0;
-        if (Mpp->grid_lon_spacing <= 0.0) Mpp->grid_lon_spacing = 15.0;
+                mpp->grid_spacing = 15.0;
+        if (mpp->grid_lat_spacing <= 0.0) mpp->grid_lat_spacing = 15.0;
+        if (mpp->grid_lon_spacing <= 0.0) mpp->grid_lon_spacing = 15.0;
         
         
 /* Set up the Map data handler */
 
-        subret = mpSetUpDataHandler(Mpl,Ompl,False);
+        subret = mpSetUpDataHandler(mpl,ompl,False);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
         
 /* Set up the Map transformation */
 
-	subret = mpSetUpTransObj(Mpl,Ompl,False);
+	subret = mpSetUpTransObj(mpl,ompl,False);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
 /* Set view dependent resources */
 
-	subret = mpManageViewDepResources(Mpl,Ompl,False);
+	subret = mpManageViewDepResources(mpl,ompl,False);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error setting view dependent resources";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
 
-	subret = SetLineAttrs(Mpl,Ompl,False);
+	subret = SetLineAttrs(mpl,ompl,False);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error setting view dependent resources";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -1335,7 +1331,7 @@ static NhlErrorTypes MapPlotSetValues
 
 /* Manage the dynamic arrays */
 
-	subret = mpManageDynamicArrays(Mpl,Ompl,False,args,num_args);
+	subret = mpManageDynamicArrays(mpl,ompl,False,args,num_args);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error managing dynamic arrays";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -1343,22 +1339,22 @@ static NhlErrorTypes MapPlotSetValues
 	}
 
 
-        _NhlUpdateDrawList(Mpp->map_data_handler,False,
-                           Mpl,Ompl,args,num_args);
+        _NhlUpdateDrawList(mpp->map_data_handler,False,
+                           mpl,ompl,args,num_args);
 
 /* Manage the overlay */
 
 	/* 1 arg */
-	if (Mpp->update_req) {
+	if (mpp->update_req) {
 		NhlSetSArg(&sargs[(nargs)++],NhlNpmUpdateReq,True);
 	}
 	
-	subret = _NhlManageOverlay(&Mpp->overlay_object,new,old,
+	subret = _NhlManageOverlay(&mpp->overlay_object,new,old,
 			       _NhlSETVALUES,sargs,nargs,entry_name);
 	ret = MIN(ret,subret);
 
-	Mpp->update_req = False;
-	Mpp->view_changed = False;
+	mpp->update_req = False;
+	mpp->view_changed = False;
 
 /*
  * MapPlot simply passes these resources to the DataHandler, because they
@@ -1367,14 +1363,14 @@ static NhlErrorTypes MapPlotSetValues
  * the next SetValues call will be able notice they have changed. (Otherwise
  * they could be assigned to the same memory as the last time.
  */
-        Mpp->area_names = NULL;
-        Mpp->dynamic_groups = NULL;
-        Mpp->data_set_name = NULL;
+        mpp->area_names = NULL;
+        mpp->dynamic_groups = NULL;
+        mpp->data_set_name = NULL;
         
-        Mpp->area_masking_on_set = False;
-        Mpp->grid_spacing_set = False;
+        mpp->area_masking_on_set = False;
+        mpp->grid_spacing_set = False;
         
-	Mpp = NULL;
+	mpp = NULL;
         
 	return ret;
 }
@@ -1763,7 +1759,6 @@ static NhlErrorTypes MapPlotPreDraw
 		return NhlNOERROR;
 
 	Mpp = mpp;
-	Mpl = mpl;
 
 	if (mpl->view.use_segments && ! mpp->new_draw_req &&
 	    mpp->predraw_dat && mpp->predraw_dat->id != NgNOT_A_SEGMENT) {
@@ -1842,7 +1837,6 @@ static NhlErrorTypes MapPlotDraw
 		return NhlNOERROR;
 
 	Mpp = mpp;
-	Mpl = mpl;
 
 	if (mpl->view.use_segments && ! mpp->new_draw_req &&
 	    mpp->draw_dat && mpp->draw_dat->id != NgNOT_A_SEGMENT) {
@@ -1926,7 +1920,6 @@ static NhlErrorTypes MapPlotPostDraw
 	}
 
 	Mpp = mpp;
-	Mpl = mpl;
 
 	if (mpl->view.use_segments && ! mpp->new_draw_req &&
 	    mpp->postdraw_dat && mpp->postdraw_dat->id != NgNOT_A_SEGMENT) {
@@ -3206,6 +3199,7 @@ static NhlErrorTypes mpSetUpDataHandler
 #endif
 {
 	NhlMapPlotLayerPart 	*mpp = &(mpnew->mapplot);
+	NhlMapPlotLayerPart 	*ompp = &(mpold->mapplot);
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name;
@@ -3227,16 +3221,16 @@ static NhlErrorTypes mpSetUpDataHandler
                 NhlSetSArg(&sargs[nargs++],
                            NhlNmpDataSetName,mpp->data_set_name);
         
-	if (! init && Mpp->database_version != Ompp->database_version) {
-                NhlDestroy(Mpp->map_data_handler->base.id);
-                Mpp->map_data_handler = NULL;
+	if (! init && mpp->database_version != ompp->database_version) {
+                NhlDestroy(mpp->map_data_handler->base.id);
+                mpp->map_data_handler = NULL;
         }
-	if (! Mpp->map_data_handler) {
+	if (! mpp->map_data_handler) {
 
-                if (Mpp->database_version == NhlNCARG4_0) {
+                if (mpp->database_version == NhlNCARG4_0) {
                         mapdh_class = NhlmapV40DataHandlerClass;
                 }
-		else if (Mpp->database_version == NhlNCARG4_1) {
+		else if (mpp->database_version == NhlNCARG4_1) {
 			mapdh_class = NhlmapV41DataHandlerClass;
                 }		
                 

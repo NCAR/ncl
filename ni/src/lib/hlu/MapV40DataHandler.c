@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV40DataHandler.c,v 1.7 1998-11-10 17:18:45 dbrown Exp $
+ *      $Id: MapV40DataHandler.c,v 1.8 1999-01-26 20:11:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3271,6 +3271,9 @@ static NhlErrorTypes MapV40DHDrawMapList
                     return mpGrid(mv40l,mpl,entry_name);
         }
                     
+	Mpp = NULL;
+	Mpl = NULL;
+
         return ret;
 }
 

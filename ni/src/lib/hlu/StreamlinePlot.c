@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.49 1998-11-18 19:21:11 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.50 1999-01-26 20:11:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -866,7 +866,6 @@ static NrmQuark	Qzerof_label_string = NrmNULLQUARK;
 static char *InitName = "StreamlinePlotInitialize";
 static char *SetValuesName = "StreamlinePlotSetValues";
 
-static NhlStreamlinePlotLayer	Stl = NULL;
 static NhlStreamlinePlotLayerPart	*Stp = NULL;
 static NhlBoolean		Need_Info;
 static NhlBoolean		Over_Map;
@@ -1884,7 +1883,6 @@ static void StreamlineAbortDraw
 	char *e_text;
 
 	Stp = NULL;
-	Stl = NULL;
 
 	if (stl->view.use_segments && stp->current_trans_dat) {
 		_NhlEndSegment(stp->current_trans_dat);
@@ -2053,7 +2051,6 @@ static NhlErrorTypes StreamlinePlotPreDraw
 	}
 
 	Stp = stp;
-	Stl = stl;
 
 	subret = stInitDraw(stl,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -2123,7 +2120,6 @@ static NhlErrorTypes StreamlinePlotDraw
 	}
 
 	Stp = stp;
-	Stl = stl;
         
         seg_draw = stl->view.use_segments && ! stp->new_draw_req &&
 		stp->draw_dat && stp->draw_dat->id != NgNOT_A_SEGMENT;
@@ -2178,7 +2174,6 @@ static NhlErrorTypes StreamlinePlotPostDraw
 
 
 	Stp = stp;
-	Stl = stl;
 
 	if (! stp->data_init || stp->zero_field) {
 		if (stp->display_zerof_no_data &&
