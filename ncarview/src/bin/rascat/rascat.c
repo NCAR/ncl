@@ -1,6 +1,5 @@
-
 /*
- *      $Id: rascat.c,v 1.16 1992-11-06 19:41:32 clyne Exp $
+ *      $Id: rascat.c,v 1.17 1993-02-10 23:40:08 don Exp $
  */
 /*
  *	File:		rascat.c
@@ -97,6 +96,7 @@ static	struct	{
 	float		rgbscale;
 	Dimension2D	resolution;
 	boolean		do_help;
+	char		*pal;
 	int		(*resample)();
 	} opt;
 
@@ -113,6 +113,7 @@ static  OptDescRec      set_options[] = {
 	{"resolution", 1, "0x0", "Specify output image resolution"},
 	{"help", 0, "NULL", "Print this message and exit"},
 	{"ira", 1, "nn", "Specify resampling algo, nn or bl"},
+	{"pal", 1, NULL, "Specify a color palette"},
 	{NULL},
 };
 
@@ -147,6 +148,9 @@ static	Option get_options[] = {
 							sizeof(opt.do_help)
 	},
 	{"ira", cvt_to_rsfunc, (Voidptr) &opt.resample, sizeof(opt.resample)
+	},
+	{"pal", NCARGCvtToString, (Voidptr) &opt.pal, 
+							sizeof(opt.pal)
 	},
 	{NULL
 	}
@@ -183,7 +187,6 @@ main(argc, argv)
 	boolean		do_res  = False;
 
 	char		*Comment = "Created by rascat";
-	char		*arg;
 	Raster		*src, *dst;
 	int		frame = 1;	/* num frames processed		*/
 	int		src_frame;	/* current source frame		*/
@@ -198,9 +201,19 @@ main(argc, argv)
 	Raster	*sca_ras = (Raster *) NULL;
 	int		err = 0;	/* exit rc			*/
 	int		i;
+	unsigned char	colors[768];
 
 
+#ifdef DEAD
 	progName = (progName = strrchr(argv[0],'/')) ? ++progName : *argv;
+#endif
+
+	if ((progName = strrchr(argv[0],'/')) == (char *) NULL) {
+		progName = *argv;
+	}
+	else {
+		++progName;
+	}
 
 	(void) RasterInit(&argc, argv);
 
@@ -286,9 +299,9 @@ main(argc, argv)
 
 		src = RasterOpen(rfiles[i], opt.srcformat);
 		if (src == (Raster *) NULL) {
-			(void) fprintf(
-				stderr, "RasterOpen(%s, %s) [ %s ]\n",
-				rfiles[i],opt.srcformat, ErrGetMsg()
+			(void) fprintf(stderr,
+				"%s: RasterOpen(%s, %s) [ %s ]\n",
+				progName, rfiles[i],opt.srcformat, ErrGetMsg()
 			);
 			err++;
 			continue;
@@ -297,8 +310,8 @@ main(argc, argv)
 		rc = RasterRead(src);
 		if (rc != RAS_OK) {
 			fprintf(
-				stderr, "Reading input file(%s) [ %s ]\n",
-				rfiles[i], ErrGetMsg()
+				stderr, "%s: Reading input file(%s) [ %s ]\n",
+				progName, rfiles[i], ErrGetMsg()
 			);
 			(void) RasterClose(src);
 			err++;
@@ -381,8 +394,8 @@ main(argc, argv)
 			);
 			if (dst == (Raster *) NULL) {
 				(void) fprintf(stderr, 
-					"RasterOpenWrite(%s, %d, %d, %s,%d,%s) [ %s ]\n",
-					opt.dstfile, nx, ny, Comment, 
+					"%s: RasterOpenWrite(%s, %d, %d, %s,%d,%s) [ %s ]\n",
+					progName, opt.dstfile, nx, ny, Comment, 
 					src->type, opt.dstformat,ErrGetMsg()
 				);
 				(void) RasterClose(src);
@@ -397,7 +410,8 @@ main(argc, argv)
 			if (! (src->nx == nX && src->ny == nY)) {
 				(void) fprintf(
 					stderr, 
-					"Raster size changes not allowed\n"
+					"%s: Raster size changes not allowed\n",
+					progName
 				);
 				RasterClose(src); 
 				continue;
@@ -405,7 +419,8 @@ main(argc, argv)
 			if (src->type != rasterType) {
 				(void) fprintf(
 					stderr, 
-					"Raster enconding changes not allowed\n"
+				"%s: Raster enconding changes not allowed\n",
+					progName
 					);
 				RasterClose(src);
 				continue;
@@ -444,11 +459,36 @@ main(argc, argv)
 				if (RasterRGBScale(dst, opt.rgbscale) < 0) {
 					(void) fprintf(
 						stderr, 
-						"%s: Color scaling failed : %s\n",
+					"%s: Color scaling failed : %s\n",
 						progName, RasterGetError()
 						);
 					err++;
 				}
+			}
+
+			if (dst->type == RAS_INDEXED && opt.pal &&
+			!dst->map_forced) {
+				rc = PaletteRead(opt.pal,NULL,colors);
+				if (rc != RAS_OK) {
+				  (void) fprintf(stderr,
+				  "%s: PaletteRead of \"%s\" failed: %s\n",
+				  progName, opt.pal, RasterGetError());
+				  err++;
+				}
+				rc = RasterLoadPalette(dst, colors);
+				if (rc != RAS_OK) {
+				  (void) fprintf(stderr,
+				  "%s: RasterLoadPalette failed\n",
+				  progName, opt.pal, RasterGetError());
+				  err++;
+				}
+			}
+
+			if (dst->type == RAS_DIRECT && opt.pal) {
+				(void) fprintf(stderr,
+			"%s: You can't add a palette to a true-color image\n",
+				progName);
+				exit(1);
 			}
 
 			rc = RasterWrite(dst);
