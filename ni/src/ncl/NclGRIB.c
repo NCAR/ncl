@@ -33,6 +33,9 @@
 #include "ecmwf_190_gtb.h"
 #include "ncep_opn_gtb.h"
 #include "ncep_reanal_gtb.h"
+#include "ncep_129_gtb.h"
+#include "ncep_130_gtb.h"
+#include "ncep_131_gtb.h"
 #include "omb_gtb.h"
 #include "fsl0_gtb.h"
 #include "fsl1_gtb.h"
@@ -4108,6 +4111,18 @@ int wr_status;
 						case 128: /* ocean modeling branch */
 							ptable = &omb_params[0];
 							ptable_count = sizeof(omb_params)/sizeof(TBLE2);
+							break;
+						case 129: 
+							ptable = &ncep_129_params[0];
+							ptable_count = sizeof(ncep_129_params)/sizeof(TBLE2);
+							break;
+						case 130: 
+							ptable = &ncep_130_params[0];
+							ptable_count = sizeof(ncep_130_params)/sizeof(TBLE2);
+							break;
+						case 131: 
+							ptable = &ncep_131_params[0];
+							ptable_count = sizeof(ncep_131_params)/sizeof(TBLE2);
 							break;
 						}
 						break;
