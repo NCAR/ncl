@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.54 2003-02-27 18:26:50 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.55 2003-04-04 18:33:44 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -529,6 +529,7 @@ typedef struct _mpWinLimits {
 } mpWinLimits;
 
 #define mpPI 3.14159265358979323846
+#define mpDATAEPS 0.00036
 
 static mpWinLimits Win_Limits[] = {
 	{ -1.0, 2.0, -1.0, 2.0 },
@@ -1278,7 +1279,7 @@ static NhlErrorTypes MapWinToData
 			}
 			else if (xout[i] < mtp->data_xmin) {
 				xout[i] += 360.0;
-				if (xout[i] > mtp->data_xmax) {
+				if (xout[i] > mtp->data_xmax + mpDATAEPS) {
 					*status = 1;
 					xout[i]=yout[i]=
 						minstance->trobj.out_of_range;
@@ -1286,7 +1287,7 @@ static NhlErrorTypes MapWinToData
 			}
 			else if (xout[i] > mtp->data_xmax) {
 				xout[i] -= 360.0;
-				if (xout[i] < mtp->data_xmin) {
+				if (xout[i] < mtp->data_xmin - mpDATAEPS) {
 					*status = 1;
 					xout[i]=yout[i]=
 						minstance->trobj.out_of_range;

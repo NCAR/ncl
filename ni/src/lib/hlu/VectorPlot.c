@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.80 2002-12-17 23:56:27 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.81 2003-04-04 18:34:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3301,11 +3301,29 @@ static NhlErrorTypes vcUpdateTrans
 		vcp->trans_obj = tfp->overlay_trans_obj;
                 if ((vcp->trans_obj->base.layer_class)->base_class.class_name 
 		    == NhlmapTransObjClass->base_class.class_name) {
-			subret = NhlVASetValues
-				(vcp->trans_obj->base.id,
-				 NhlNtrDataXStartF,tfp->data_xstart,
-				 NhlNtrDataXEndF,tfp->data_xend,
-				 NULL);
+			float xmin, xmax;
+			float cell_size;
+
+			xmin = MIN (vcp->vfp->x_start,vcp->vfp->x_end);
+			xmax = MAX (vcp->vfp->x_start,vcp->vfp->x_end);
+
+			cell_size = (xmax - xmin) / (vcp->vfp->fast_len-1);
+			xmin -= 0.5 * cell_size;
+			xmax += 0.5 * cell_size;
+			if (vcp->vfp->x_start < vcp->vfp->x_end) {
+				subret = NhlVASetValues
+					(vcp->trans_obj->base.id,
+					 NhlNtrDataXStartF,xmin,
+					 NhlNtrDataXEndF,xmax,
+					 NULL);
+			}
+			else {
+				subret = NhlVASetValues
+					(vcp->trans_obj->base.id,
+					 NhlNtrDataXStartF,xmax,
+					 NhlNtrDataXEndF,xmin,
+					 NULL);
+			}
 
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				return(ret);

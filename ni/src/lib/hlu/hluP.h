@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.41 1997-09-19 14:41:21 boote Exp $
+ *      $Id: hluP.h,v 1.42 2003-04-04 18:34:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,6 @@
 
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
-#include <ncarg/hlu/Segments.h>
 #include <ncarg/hlu/Callbacks.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
@@ -150,9 +149,6 @@ typedef struct _NhlLayerRec *NhlLayer;
 #define	_NhlIsXWorkstation(inst) \
 	(((NhlLayer)(inst))->base.layer_class->base_class.class_inited & \
 						_NhlXWorkstationClassFlag)
-
-#define MIN(a,b)	(((a)<(b))?(a):(b))
-#define MAX(a,b)	(((a)>(b))?(a):(b))
 
 typedef	NhlArgVal	_NhlArgVal;
 

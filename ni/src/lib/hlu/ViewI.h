@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewI.h,v 1.7 1998-11-06 22:16:18 dbrown Exp $
+ *      $Id: ViewI.h,v 1.8 2003-04-04 18:34:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #define	_NVIEWI_H
 
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/Segments.h>
 #include <ncarg/hlu/View.h>
 
 /*

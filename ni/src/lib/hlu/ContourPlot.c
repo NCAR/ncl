@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.115 2002-11-07 22:23:06 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.116 2003-04-04 18:33:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3408,6 +3408,12 @@ static NhlErrorTypes GetDataBound
 	*mcount = cnp->sfp->fast_len;
 	*ncount = cnp->sfp->slow_len;
 
+
+	cxd[0] = cnp->xlb;
+	cxd[1] = cnp->xub;
+	cyd[0] = cnp->ylb;
+	cyd[1] = cnp->yub;
+
         if (cnp->trans_type == cnIRREGULAR) {
                 int i;
                 float *coords,start_diff,diff,eps,sum;
@@ -3457,10 +3463,6 @@ static NhlErrorTypes GetDataBound
 			*ylinear = False;
 		}
 
-		cxd[0] = cnp->xlb;
-		cxd[1] = cnp->xub;
-		cyd[0] = cnp->ylb;
-		cyd[1] = cnp->yub;
 
 		tx[0] = cnp->xc1;
 		tx[1] = cnp->xcm;
@@ -3482,10 +3484,6 @@ static NhlErrorTypes GetDataBound
 			*ylinear = False;
 		}
 
-		cxd[0] = cnp->xlb;
-		cxd[1] = cnp->xub;
-		cyd[0] = cnp->ylb;
-		cyd[1] = cnp->yub;
 
 		_NhlDataToWin(cnp->trans_obj,cxd,cyd,
 			      2,tx,ty,&status,
@@ -3514,11 +3512,6 @@ static NhlErrorTypes GetDataBound
 		if (cl->trans.y_log || y_irr ||
 		    cnp->trans_type == cnCURVILINEAR)
 			*ylinear = False;
-
-		cxd[0] = cnp->xlb;
-		cxd[1] = cnp->xub;
-		cyd[0] = cnp->ylb;
-		cyd[1] = cnp->yub;
 
 		if (_NhlIsOverlay(cl->base.id)) {
 			float xmin,xmax,ymin,ymax;
@@ -3618,6 +3611,13 @@ static NhlErrorTypes GetDataBound
 			if (! status) {
 				_NhlWinToData(cnp->trans_obj,tx,ty,
 					      2,cxd,cyd,&status,NULL,NULL);
+			}
+			if (status) {
+				e_text = "%s: data boundary is out of range";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  e_text,entry_name);
+				ret = MIN(ret,NhlWARNING);
+				return ret;
 			}
 			if (limit_mode == NhlLATLON & rel_center_lon)
 				center_lon = center_lon + min_lon 
@@ -3849,11 +3849,31 @@ static NhlErrorTypes cnUpdateTrans
 		 */
 		if ((cnp->trans_obj->base.layer_class)->base_class.class_name 
 		    == NhlmapTransObjClass->base_class.class_name) {
-			subret = NhlVASetValues
-                                (cnp->trans_obj->base.id,
-                                 NhlNtrDataXStartF,tfp->data_xstart,
-                                 NhlNtrDataXEndF,tfp->data_xend,
-                                 NULL);
+			float xmin, xmax;
+			float cell_size;
+
+			xmin = MIN (cnp->sfp->x_start,cnp->sfp->x_end);
+			xmax = MAX (cnp->sfp->x_start,cnp->sfp->x_end);
+
+			if (! cnp->sfp->xc_is_bounds) {
+				cell_size = (xmax - xmin) / (cnp->sfp->fast_len-1);
+				xmin -= 0.5 * cell_size;
+				xmax += 0.5 * cell_size;
+			}
+			if (cnp->sfp->x_start < cnp->sfp->x_end) {
+				subret = NhlVASetValues
+					(cnp->trans_obj->base.id,
+					 NhlNtrDataXStartF,xmin,
+					 NhlNtrDataXEndF,xmax,
+					 NULL);
+			}
+			else {
+				subret = NhlVASetValues
+					(cnp->trans_obj->base.id,
+					 NhlNtrDataXStartF,xmax,
+					 NhlNtrDataXEndF,xmin,
+					 NULL);
+			}
 
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				return(ret);

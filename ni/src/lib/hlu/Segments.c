@@ -1,5 +1,5 @@
 /*
- *      $Id: Segments.c,v 1.8 1998-11-06 22:16:13 dbrown Exp $
+ *      $Id: Segments.c,v 1.9 2003-04-04 18:33:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,9 +34,9 @@
  */
 
 #include <stdio.h>
-#include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/hluutil.h>
+#include <ncarg/hlu/Segments.h>
 
 
 void ludcmp3d();

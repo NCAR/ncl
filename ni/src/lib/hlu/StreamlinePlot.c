@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.66 2002-11-08 00:48:59 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.67 2003-04-04 18:33:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2460,13 +2460,31 @@ static NhlErrorTypes stUpdateTrans
                 Overlay_Trans_Obj = tfp->overlay_trans_obj;
                 if ((stp->trans_obj->base.layer_class)->base_class.class_name
 		    == NhlmapTransObjClass->base_class.class_name) {
-                        Over_Map = True;	
-			subret = NhlVASetValues
-				(stp->trans_obj->base.id,
-				 NhlNtrDataXStartF,tfp->data_xstart,
-				 NhlNtrDataXEndF,tfp->data_xend,
-				 NULL);
+			float xmin, xmax;
+			float cell_size;
 
+                        Over_Map = True;	
+
+			xmin = MIN (stp->vfp->x_start,stp->vfp->x_end);
+			xmax = MAX (stp->vfp->x_start,stp->vfp->x_end);
+
+			cell_size = (xmax - xmin) / (stp->vfp->fast_len-1);
+			xmin -= 0.5 * cell_size;
+			xmax += 0.5 * cell_size;
+			if (stp->vfp->x_start < stp->vfp->x_end) {
+				subret = NhlVASetValues
+					(stp->trans_obj->base.id,
+					 NhlNtrDataXStartF,xmin,
+					 NhlNtrDataXEndF,xmax,
+					 NULL);
+			}
+			else {
+				subret = NhlVASetValues
+					(stp->trans_obj->base.id,
+					 NhlNtrDataXStartF,xmax,
+					 NhlNtrDataXEndF,xmin,
+					 NULL);
+			}
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				return(ret);
 			}

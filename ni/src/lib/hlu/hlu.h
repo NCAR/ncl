@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.38 2000-06-07 21:44:30 dbrown Exp $
+ *      $Id: hlu.h,v 1.39 2003-04-04 18:34:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -62,6 +62,9 @@
 #define False 0
 #define BIGNUMBER 99e99
 #define LITTLENUMBER -99e99
+
+#define MIN(a,b)	(((a)<(b))?(a):(b))
+#define MAX(a,b)	(((a)>(b))?(a):(b))
 
 #define NhlTImmediate	"Immediate"
 #define NhlTProcedure	"Procedure"
