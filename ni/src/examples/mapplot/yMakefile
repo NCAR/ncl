@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.6 1995-04-01 00:43:19 haley Exp $
+#   $Id: yMakefile,v 1.7 1995-04-06 19:56:20 haley Exp $
 #
 #   Makefile for HLU MapPlot examples
 #
@@ -11,7 +11,7 @@ EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
 CSRCS    = mp01c.c mp02c.c mp03c.c mp04c.c
-NSRCS    = mp01n.ncl mp02n.ncl mp03n.ncl
+NSRCS    = mp01n.ncl mp02n.ncl 
 FSRCS    = mp01f.f mp02f.f mp03f.f mp04f.f
 COBJS    = mp01c.o mp02c.o mp03c.o mp04c.o
 FOBJS    = mp01f.o mp02f.o mp03f.o mp04f.o
