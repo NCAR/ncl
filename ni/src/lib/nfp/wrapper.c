@@ -296,6 +296,8 @@ extern NhlErrorTypes tdez3d_W(void);
 
 extern NhlErrorTypes wmsetp_W(void);
 extern NhlErrorTypes wmgetp_W(void);
+extern NhlErrorTypes ngsetp_W(void);
+extern NhlErrorTypes nggetp_W(void);
 extern NhlErrorTypes wmbarb_W(void);
 extern NhlErrorTypes wmdrft_W(void);
 extern NhlErrorTypes wmlabs_W(void);
@@ -2497,6 +2499,26 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "string", 1, dimsizes);
     nargs++;
     NclRegisterFunc(wmgetp_W, args, "wmgetp", nargs);
+/*
+ *  Register ngsetp.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);
+    nargs++;
+    SetArgTemplate(args, nargs, NclANY, 1, dimsizes);
+    nargs++;
+    NclRegisterProc(ngsetp_W, args, "ngsetp", nargs);
+/*
+ *  Register nggetp.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);
+    nargs++;
+    NclRegisterFunc(nggetp_W, args, "nggetp", nargs);
 /*
  * Register tdez1d.
  */
