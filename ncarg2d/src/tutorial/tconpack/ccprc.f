@@ -1,5 +1,11 @@
 	PROGRAM CCPRC
 
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
         PARAMETER (LRWK=3500,LIWK=4000,LMAP=75000)
         PARAMETER (M=50,N=50)
 	REAL X(M),Y(N),Z(M,N), RWRK(LRWK)
@@ -9,7 +15,9 @@
 
 	CALL GETDAT (X, Y, Z, M, N, RWRK, IWRK, LRWK, LIWK)
 C Open GKS
-	CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C Initialize Areas
 	CALL ARINAM(MAP,LMAP)
 C Choose which labelling scheme will be used.
@@ -37,7 +45,9 @@ C Draw Contours
 
 C Close frame and close GKS
 	CALL FRAME
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	WRITE (6,*) 'AREA MAP SIZE =',MAP(1) - MAP(6) + MAP(5)
 	STOP

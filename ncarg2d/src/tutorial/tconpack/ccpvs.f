@@ -1,5 +1,10 @@
       PROGRAM CCPVS
 C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
 C Declare required data arrays and workspace arrays.
 C
         PARAMETER(LMAP=100000,LWRK=1000)
@@ -12,7 +17,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Turn off the clipping indicator.
 C
@@ -24,7 +31,7 @@ C
 C
 C Define color indices.
 C
-        CALL COLOR
+        CALL COLOR(IWKID)
 C
 C Generate an array of test data.
 C
@@ -64,7 +71,9 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C
@@ -191,7 +200,7 @@ C
         FRAN=RSEQ(ISEQ)
         RETURN
       END
-      SUBROUTINE COLOR
+      SUBROUTINE COLOR(IWKID)
 C
 C     BACKGROUND COLOR
 C     BLACK

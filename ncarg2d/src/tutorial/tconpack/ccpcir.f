@@ -31,7 +31,7 @@ C turn on mapping to an EZMAP background. Define the out-of-range value
 C (returned by MAPTRN for an unprojectable point).
 C 
       CALL SET (0.05,0.95,0.05,0.95,
-     1      -RHOMX,RHOMX,-RHOMX,RHOMX,1)
+     1     -RHOMX,RHOMX,-RHOMX,RHOMX,1)
       CALL CPSETI ('SET - DO SET-CALL FLAG',0)
       CALL CPSETR ('XC1 - X COORDINATE AT INDEX 1',RHOMN)
       CALL CPSETR ('XCM - X COORDINATE AT INDEX M',RHOMX)

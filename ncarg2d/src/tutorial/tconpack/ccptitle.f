@@ -1,12 +1,20 @@
 	PROGRAM CCPTIT
 
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
         PARAMETER (M=40,N=40,LRWK=3500,LIWK=4000)
 	REAL Z(M,N), RWRK(LRWK), SIZE, Y
 	INTEGER IWRK(LIWK)
 
 	CALL GETDAT (Z, M, M, N)
 C Open GKS
-	CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 	CALL GSCLIP (0)
 C Initialize Conpack
 	CALL CPRECT(Z, M, M, N, RWRK, LRWK, IWRK, LIWK)
@@ -24,7 +32,9 @@ C Draw a Title
 
 C Close frame and close GKS
 	CALL FRAME
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	STOP
 	END

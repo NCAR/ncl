@@ -1,5 +1,11 @@
 	PROGRAM CCPKCL
 
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
         PARAMETER (K=40,N=40,LRWK=1000,LIWK=1000)
 	REAL ZREG(K,N), RWRK(LRWK)
 	INTEGER M, NOCL, IWRK(LIWK)
@@ -7,7 +13,9 @@
 	CALL GETDAT (ZREG, K, M, N) 
 
 C Open GKS
-	CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 
 	CALL CPSETI('CLS - CONTOUR LEVEL SELECTION FLAG',-20)
 	CALL CPRECT(ZREG,K,M,N,RWRK,LRWK,IWRK,LIWK)
@@ -25,7 +33,9 @@ C Get the number of contour levels chosen
 
 C Close frame and close GKS
 	CALL FRAME
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	STOP
 	END

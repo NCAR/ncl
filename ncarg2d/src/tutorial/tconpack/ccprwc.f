@@ -1,5 +1,11 @@
 	PROGRAM CCPRWC
 
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
         PARAMETER (K=400,N=400,LRWK=2000,LIWK=2000)
 	REAL Z(K,N), RWRK(LRWK)
 	INTEGER M, IWRK(LIWK)
@@ -7,7 +13,9 @@
 	CALL GETDAT (Z, K, M, N) 
 
 C Open GKS
-	CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 
 C Initialize Conpack
 	CALL CPRECT(Z,K,M,N,RWRK,LRWK,IWRK,LIWK)
@@ -30,7 +38,9 @@ C Draw Contours
 
 C Close frame and close GKS
 	CALL FRAME
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	STOP
 	END

@@ -21,7 +21,7 @@ C
 C Set up label options
 C
       CALL CPSETC('HLT - HIGH/LOW TEXT',
-     1      'Local High ($ZDV$)''Local Low ($ZDV$)')
+     1     'Local High ($ZDV$)''Local Low ($ZDV$)')
       CALL CPSETI('HLX - HIGH/LOW SEARCH RADIUS IN X',3)
       CALL CPSETI('HLY - HIGH/LOW SEARCH RADIUS IN Y',2)
       CALL CPSETR('HLL - HIGH/LOW LINE WIDTH',3.0)
@@ -39,7 +39,7 @@ C
       CALL CPCLDR(Z,RWRK,IWRK)
       CALL CPLBDR(Z,RWRK,IWRK)
 C     
-C Close frame
+C Close frame and close GKS
 C
       CALL FRAME
 C 

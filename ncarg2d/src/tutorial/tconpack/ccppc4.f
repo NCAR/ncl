@@ -1,5 +1,11 @@
 	PROGRAM CCPPC4
 
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
         PARAMETER (LRWK=3500,LIWK=4000,LMAP=75000)
         PARAMETER (MREG=50,NREG=50)
 	REAL X(MREG),Y(NREG),ZREG(MREG,NREG), RWRK(LRWK)
@@ -9,7 +15,9 @@
 
 	CALL GETDAT (X, Y, ZREG, MREG, NREG, RWRK, IWRK, LRWK, LIWK)
 C Open GKS
-	CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C Initialize Areas
 	CALL ARINAM(MAP,LMAP)
 C Choose which labelling scheme will be used.
@@ -43,7 +51,9 @@ C Draw Labels
 
 C Close frame and close GKS
 	CALL FRAME
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	STOP
 	END

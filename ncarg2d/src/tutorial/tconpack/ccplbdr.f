@@ -1,15 +1,23 @@
 	PROGRAM CCPLBL
 
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
         PARAMETER (M=40,N=40,LRWK=3500,LIWK=4000)
 	REAL Z(M,N), RWRK(LRWK), SIZE, Y
 	INTEGER IWRK(LIWK)
 
 	CALL GETDAT (Z, M, M, N)
 C Open GKS
-	CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 	CALL GSCLIP (0)
 C Set up color table
-	CALL COLOR
+	CALL COLOR(IWKID)
 C Set up plot annotation color and text options
 	CALL CPSETI('HLC - HIGH/LOW LABEL COLOR INDEX',9)
 	CALL CPSETC('HLT - HIGH/LOW LABEL TEXT','High''Low')
@@ -44,7 +52,9 @@ C Draw a Title
 
 C Close frame and close GKS
 	CALL FRAME
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	STOP
 	END
@@ -61,7 +71,7 @@ C Close frame and close GKS
 
 	RETURN
 	END
-      SUBROUTINE COLOR
+      SUBROUTINE COLOR(IWKID)
 C
 C     BACKGROUND COLOR
 C     BLACK

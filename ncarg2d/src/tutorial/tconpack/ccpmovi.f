@@ -1,4 +1,11 @@
         PROGRAM CCPMVI
+
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
         PARAMETER (NLON=361,NLAT=181,N=5)
         REAL ZDAT(NLON,NLAT)
         INTEGER IASF(13)
@@ -12,15 +19,15 @@ C
 C Open GKS, turn clipping off, and set up GKS flags.
 C Use workstation type 3 for use with Gflash.
 C
-        CALL GOPKS(6,IDUM)
-        CALL GOPWK(1,2,1)
-        CALL GACWK(1)
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
         CALL GSCLIP (0)
         CALL GSASF (IASF)
 C
 C Set up a color table
 C
-        CALL COLOR
+        CALL COLOR(IWKID)
 C
 C Initialize the Gflash package.
 C
@@ -66,8 +73,8 @@ C
 C
 C Close GKS 
 C
-        CALL GDAWK(1)
-        CALL GCLWK(1)
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
         CALL GCLKS
 
         STOP
@@ -202,7 +209,7 @@ C
 
 	RETURN
 	END
-        SUBROUTINE COLOR
+        SUBROUTINE COLOR(IWKID)
         CALL GSCR (IWKID, 0,0.000,0.000,0.000)
         CALL GSCR (IWKID, 1,1.000,1.000,1.000)
         CALL GSCR (IWKID, 2,0.500,1.000,1.000)

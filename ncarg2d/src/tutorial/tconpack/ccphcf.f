@@ -39,7 +39,7 @@ C Draw Contours
 C
       CALL CPCLDR(ZREG,RWRK,IWRK)
 C     
-C Close frame
+C Close frame and close GKS
 C
       CALL FRAME
 C 
@@ -90,9 +90,9 @@ C
             DATA(I,J)=.5*(DLOW+DHGH)
             DO 102 K=1,NCNT
                TEMP=-((FOVM*(FLOAT(I)-CCNT(1,K)))**2+
-     1               (FOVN*(FLOAT(J)-CCNT(2,K)))**2)
+     1              (FOVN*(FLOAT(J)-CCNT(2,K)))**2)
                IF (TEMP.GE.-20.) DATA(I,J)=DATA(I,J)+
-     1               .5*(DHGH-DLOW)*CCNT(3,K)*EXP(TEMP)
+     1              .5*(DHGH-DLOW)*CCNT(3,K)*EXP(TEMP)
  102        CONTINUE
             DMIN=AMIN1(DMIN,DATA(I,J))
             DMAX=AMAX1(DMAX,DATA(I,J))

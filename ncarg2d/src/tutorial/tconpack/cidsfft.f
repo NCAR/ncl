@@ -1,5 +1,11 @@
 	PROGRAM CIDSFT
 
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
         PARAMETER (NRAN=30,LRWK=3500,LIWK=4000)
         PARAMETER (MREG=50,NREG=50)
 	REAL XRAN(NRAN), YRAN(NRAN), ZRAN(NRAN)
@@ -18,7 +24,9 @@
 
 
 C Open GKS
-	CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C  Find the min and max data values.
 C
@@ -55,7 +63,9 @@ C Mark data points
 
 C Close frame and close GKS
 	CALL FRAME
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	STOP
 	END

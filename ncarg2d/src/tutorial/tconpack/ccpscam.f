@@ -1,3 +1,9 @@
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
       PARAMETER (MREG=50,NREG=50)
       REAL XREG(MREG),YREG(NREG),ZREG(MREG,NREG)
 
@@ -5,7 +11,9 @@ C Get data array
       CALL GETDAT(XREG,YREG,ZREG,MREG,NREG)
 
 C Open GKS and turn off clipping
-      CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
       CALL GSCLIP(0)
 
 C Call contour B&W fill routine
@@ -15,7 +23,9 @@ C Call contour B&W fill routine
 
 C Close frame and close GKS
       CALL FRAME
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 
       STOP
       END

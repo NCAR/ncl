@@ -1,5 +1,11 @@
 	PROGRAM CCPSP2
 
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
         PARAMETER (M=20,N=30,LRWK=3500,LIWK=3500,LZRG=2000)
 	REAL X(M), Y(N), Z(M,N), ZREG(LZRG), RWRK(LRWK)
 	INTEGER IWRK(LIWK)
@@ -9,7 +15,9 @@
 	CALL GETDAT (X, Y, Z, M, N) 
 
 C Open GKS
-	CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C Turn clipping off
 	CALL GSCLIP(0)
 C Limit viewport so there's room to mark the data points
@@ -26,7 +34,9 @@ C Mark data points
 
 C Close frame and close GKS
 	CALL FRAME
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	STOP
 	END

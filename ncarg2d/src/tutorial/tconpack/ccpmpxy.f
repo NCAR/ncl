@@ -1,5 +1,11 @@
 	PROGRAM CMPXY
 
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
 	PARAMETER(JX=60,KX=26)
 	PARAMETER(LRWK=5000,LIWK=5000)
 C
@@ -26,7 +32,9 @@ C
 C
 C Do a contour plot
 C
-	CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 	CALL SET (.1,.95,.25,.85,-110.,-60.,1000.,0.,1)
 	CALL CPSETI ('SET - DO-SET-CALL FLAG',0)
 	CALL CPSETI ('MAP - MAPPING FLAG',4)
@@ -40,7 +48,9 @@ C
 	CALL SET (0.,1.,0.,1.,0.,1.,0.,1.,1)
 	CALL PLCHHQ (.03,.6,'PRESSURE',.012,90.,0.)
 	CALL PLCHHQ (.5,.2,'LONGITUDE',.012,0.,0.)
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	STOP
 	END

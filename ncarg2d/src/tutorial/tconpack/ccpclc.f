@@ -4,6 +4,7 @@ C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
       PARAMETER (K=40,N=40,LRWK=1000,LIWK=1000)
       REAL Z(K,N), RWRK(LRWK)
       INTEGER I, M, IWRK(LIWK)
@@ -65,7 +66,7 @@ C
       DO 10, I=1,M
          DO 20, J=1,N
             Z(I,J)= 10.E-5*(-16.*REAL(I**2*J) +
-     1            34*REAL(I*J**2) - REAL(6*I) + 93.)
+     1           34*REAL(I*J**2) - REAL(6*I) + 93.)
  20      CONTINUE
  10   CONTINUE
       

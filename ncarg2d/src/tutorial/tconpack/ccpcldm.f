@@ -3,6 +3,7 @@ C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
       PARAMETER (MREG=50,NREG=50)
       REAL XREG(MREG),YREG(NREG),ZREG(MREG,NREG)
 
@@ -163,8 +164,8 @@ C
 
       SUBROUTINE COLOR (N,IWKID)
 C
-C Background color
-C Black
+C BACKGROUND COLOR
+C BLACK
 C
       CALL GSCR(IWKID,0,0.,0.,0.)
 C

@@ -1,5 +1,11 @@
 	PROGRAM CCPMAP
 
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
         PARAMETER (M=30,N=20,LRWK=3500,LIWK=3500)
 C
 C United States corner latitude and longitudes
@@ -18,7 +24,9 @@ C
 C
 C Open GKS
 C
-	CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Turn off clipping.
 C
@@ -66,7 +74,9 @@ C
 
 C Close frame and close GKS
 	CALL FRAME
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	STOP
 	END

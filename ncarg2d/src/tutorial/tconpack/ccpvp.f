@@ -1,5 +1,11 @@
         PROGRAM CCPVP
 
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
         PARAMETER (M=40,N=40,LRWK=1000,LIWK=1000)
         PARAMETER (RMNLON=-125.,RMXLON=-65.,RMNLAT=20.,RMXLAT=50.)
         REAL Z(M,N), RWRK(LRWK), RLON1(2), RLON2(2), RLAT1(2), RLAT2(2)
@@ -11,7 +17,9 @@
         DATA RLAT2 /RMXLAT,0.0/
 
 C Open GKS
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Draw first plot in upper left corner of plot
 C
@@ -99,7 +107,9 @@ C
 
 C Close frame and close GKS
         CALL FRAME
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
         STOP
         END

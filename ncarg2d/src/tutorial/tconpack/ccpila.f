@@ -36,7 +36,7 @@ C
       CALL CPLBDR(Z,RWRK,IWRK)
       CALL CPCLDR(Z,RWRK,IWRK)
 C
-C Close frame
+C Close frame and close GKS
 C
       CALL FRAME
 C 

@@ -1,5 +1,11 @@
 	PROGRAM CCPNET
 
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
         PARAMETER (NRAN=30,LRWK=3500,LIWK=4000)
         PARAMETER (MREG=50,NREG=50)
 	REAL XRAN(NRAN), YRAN(NRAN), ZRAN(NRAN)
@@ -45,7 +51,9 @@ C Interpolate data onto a regular grid
      +		MREG,NREG,MREG,XREG,YREG,ZREG,IWRK,RWRK)
 
 C Open GKS and turn off clipping
-	CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 	CALL GSCLIP(0)
 C Set up exponent flags to get reasonable labels
 	CALL CPSETI('NEU - NUMERIC EXPONENT USE FLAG',0)
@@ -60,7 +68,9 @@ C Draw Labels
 
 C Close frame and close GKS
 	CALL FRAME
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	STOP
 	END

@@ -45,7 +45,7 @@ C
 C Draw Contours
       CALL CPCLDR(Z,RWRK,IWRK)
       
-C Close frame
+C Close frame and close GKS
 C
       CALL FRAME
 C 
@@ -66,7 +66,7 @@ C
       DO 10, I=1,M
          DO 20, J=1,N
             Z(I,J)= 10.E-5*(-16.*REAL(I**2*J) +
-     1            34*REAL(I*J**2) - REAL(6*I) + 93.)
+     1           34*REAL(I*J**2) - REAL(6*I) + 93.)
  20      CONTINUE
  10   CONTINUE
       

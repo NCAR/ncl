@@ -1,3 +1,9 @@
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
       PARAMETER (MREG=50,NREG=50)
       REAL XREG(MREG),YREG(NREG),ZREG(MREG,NREG)
 
@@ -7,19 +13,23 @@ C Get data array
       CALL GETDAT(XREG,YREG,ZREG,MREG,NREG)
 
 C Open GKS
-      CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 
 C Call Conpack color fill routine
-      CALL CCPLLB(ZREG,MREG,NREG,COLOR)
+      CALL CCPLLB(ZREG,MREG,NREG,COLOR,IWKID)
 
 C Close frame and close GKS
       CALL FRAME
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
       
       STOP
       END
 
-      SUBROUTINE CCPLLB(ZREG,MREG,NREG,COLOR)
+      SUBROUTINE CCPLLB(ZREG,MREG,NREG,COLOR,IWKID)
 
       PARAMETER (LRWK=5000,LIWK=5000,LMAP=50000,NWRK=5000,NOGRPS=5)
       REAL ZREG(MREG,NREG),RWRK(LRWK), XWRK(NWRK), YWRK(NWRK)
@@ -47,7 +57,7 @@ C Initialize Conpack
 C Set up color table
       CALL CPPKCL (ZREG, RWRK, IWRK)
       CALL CPGETI('NCL - NUMBER OF CONTOUR LEVELS',NCL)
-      CALL COLOR(NCL+1)
+      CALL COLOR(NCL+1,IWKID)
 
 C Draw Perimeter
       CALL CPBACK(ZREG, RWRK, IWRK)
@@ -132,7 +142,7 @@ C Interpolate data onto a regular grid
 
       RETURN
       END
-      SUBROUTINE COLOR (N)
+      SUBROUTINE COLOR (N,IWKID)
 
 C BACKGROUND COLOR
 C BLACK

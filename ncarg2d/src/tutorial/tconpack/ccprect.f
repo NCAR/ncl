@@ -1,5 +1,11 @@
 	PROGRAM CCPREC
 
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
         PARAMETER (M=40,N=40,LRWK=1000,LIWK=1000)
 	REAL Z(M,N), RWRK(LRWK)
 	INTEGER IWRK(LIWK)
@@ -7,7 +13,9 @@
 	CALL GETDAT (Z, M, N) 
 
 C Open GKS
-	CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 
 C Initialize Conpack
 	CALL CPRECT(Z,M,M,N,RWRK,LRWK,IWRK,LIWK)
@@ -19,7 +27,9 @@ C Mark data locations
 	CALL MARK (M,N)
 C Close frame and close GKS
 	CALL FRAME
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	STOP
 	END

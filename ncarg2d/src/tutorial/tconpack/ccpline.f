@@ -1,5 +1,11 @@
 	PROGRAM CCPLIN
 
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
         PARAMETER (K=9,N=7,LRWK=1000,LIWK=1000,LZDT=2000)
 	REAL Z(K,N), ZDAT(LZDT), RWRK(LRWK)
 	INTEGER M, IWRK(LIWK)
@@ -7,10 +13,12 @@
 	CALL GETDAT (Z, K, M, N) 
 
 C Open GKS
-	CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 
 C Set up a color table
-	CALL COLOR
+	CALL COLOR(IWKID)
 
 C Set each contour level value
 	CALL CPSETI ('CLS - CONTOUR LEVEL SELECTION',0)
@@ -43,7 +51,9 @@ C Draw Contours
 
 C Close frame and close GKS
 	CALL FRAME
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	STOP
 	END
@@ -67,7 +77,7 @@ C Close frame and close GKS
 	RETURN
 	END
 
-	SUBROUTINE COLOR
+	SUBROUTINE COLOR(IWKID)
 
 	CALL GSCR(IWKID,0,0.,0.,0.)
 	CALL GSCR(IWKID,1,1.,1.,1.)

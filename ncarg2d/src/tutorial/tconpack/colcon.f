@@ -1,3 +1,9 @@
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
         PARAMETER (MREG=50,NREG=50)
         REAL ZREG(MREG,NREG)
 C
@@ -9,18 +15,22 @@ C
 C
 C Open GKS, and turn clipping off.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
         CALL GSCLIP(0)
 C
 C Call Conpack color fill routine.
 C
         CALL COLCON(ZREG,MREG,NREG,-15,COLOR,
-     +          'CE',-90.,90.,-180.,180.,0.,0.)
+     +          'CE',-90.,90.,-180.,180.,0.,0.,IWKID)
 C
 C Close frame and close GKS.
 C
         CALL FRAME
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
         STOP
 C
@@ -29,7 +39,7 @@ C
 
 
         SUBROUTINE COLCON(ZREG,MREG,NREG,NCL,COLOR,
-     +          PROJ,RLATMN,RLATMX,RLONMN,RLONMX,PLAT,PLON)
+     +          PROJ,RLATMN,RLATMX,RLONMN,RLONMX,PLAT,PLON,IWKID)
 
         PARAMETER (LRWK=5000,LIWK=5000,LMAP=200000,NWRK=15000,NOGRPS=5)
         INTEGER MREG,NREG,IWRK(LIWK), LFIN(35)
@@ -79,7 +89,7 @@ C
 C Choose a color for every contour level.
 C
         CALL CPGETI('NCL',NCLL)
-        CALL COLOR (NCLL+1)
+        CALL COLOR (NCLL+1,IWKID)
 C
 C Fill contours and areas over land.
 C
@@ -312,7 +322,7 @@ C
         RETURN
       END
 
-        SUBROUTINE COLOR (N)
+        SUBROUTINE COLOR (N,IWKID)
 C
 C The background color is black.
 C
