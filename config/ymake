@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.31 1998-01-09 16:29:30 haley Exp $
+#	$Id: ymake,v 1.32 1998-06-14 21:45:44 haley Exp $
 #
 ######################################################################
 #
@@ -247,9 +247,14 @@ onintr error_cleanup
 # configuration options permanently with the distribution.
 
 set hostname = "UnKnown"
+set foo = `/bin/uname -s`
 
 if (-e /bin/hostname) then
+  if ("$foo" == "Linux") then
+        set hostname    = `/bin/hostname -s`
+  else
         set hostname    = `/bin/hostname`
+  endif
 endif
 
 if (-e /usr/bsd/hostname) then
@@ -264,7 +269,6 @@ set defines=($defines -D$hostname)
 #       Figure out what kind of system we are on. We need to know the OS
 #       and the machine architecture. 
 #
-set foo = `/bin/uname -s`
 if ($status != 0) then
         echo "$0 : Unknown operating system" > /dev/tty
         exit 1
@@ -515,6 +519,7 @@ default:
         set major = `uname -r | cut -d. -f1`
         set minor = `uname -r | cut -d. -f2`
         set subminor = `uname -r | cut -d. -f3`
+        if ($minor == "5SE") set minor = 5
         breaksw
 endsw
 
