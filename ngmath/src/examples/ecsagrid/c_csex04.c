@@ -1,25 +1,64 @@
 /*
- *  $Id: c_csex04.c,v 1.2 1998-12-11 22:42:49 fred Exp $
+ *  $Id: c_csex04.c,v 1.3 1999-01-28 23:55:27 fred Exp $
  */
 
 #include <math.h>
+#include <stdlib.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 #include <ncarg/ngmath.h>
 
+/*
+ *  The dimensionality of the problem.
+ */
 #define NDIM    2
+
+/*
+ *  The number of output data points in the X coordinate direction.
+ */
 #define NX     29
+
+/*
+ *  The number of output data points in the Y coordinate direction.
+ */
 #define NY     25
+
+/*
+ *  The number of input data points.
+ */
 #define NI    1000
+
+/*
+ *  The number of knots in the X direction.
+ */
 #define N1      4
+
+/*
+ *  The number of knots in the Y direction.
+ */
 #define N2      4
+
+/*
+ *  Data limits.
+ */
 #define XMIN   -1.0
 #define XMAX    1.0
 #define YMIN   -1.0
 #define YMAX    1.0
+
+/*
+ *  The GKS workstation type (NCGM).
+ */
 #define IWTYPE 1
+
+/*
+ *  The GKS workstaton identifier.
+ */
 #define WKID   1
 
+/*
+ *  Function prototype for the random number generator.
+ */
 float dsrnd1();
 
 /*
@@ -27,6 +66,7 @@ float dsrnd1();
  */
 main () 
 {
+
   float xi[NI],yi[NI],zi[NI],xo[NX],yo[NY],*function,*derivs,wts[1];
   float ssmth=0.0,*zor,t1,t2;
   int   i,j,knots[2],nderiv[2]={1,1},ier;
@@ -104,7 +144,8 @@ main ()
   c_tdez2d(NX, NY, xo, yo, zor, 2.7, 45., 78., 6);
   c_set(0.,1.,0.,1.,0.,1.,0.,1.,1);
   c_plchhq(0.5,0.85,
-      ":F25:z = f(x,y) = y:S:2:E:  - -:H-10::S:1:E::B::V-6:2:E:  x:S:2:E:",
+            ":F25:z = f(x,y) = y:S:2"
+            ":E:  - -:H-10::S:1:E::B::V-6:2:E:  y:V-6:*:V+6:x:S:2:E:",
       0.04,0.,0.);
   c_frame();
 
@@ -138,12 +179,9 @@ main ()
 
 float dsrnd1()
 {
-  static unsigned int iseed = 1;
-  int it,it0,it1=-16,it2=32767;
 
-  iseed = iseed*1103515245 + 12345;
-  it0   = NGCALLF(ishift,ISHIFT)(&iseed,&it1);
-  it    = NGCALLF(iand,IAND)(&it0,&it2);
-
-  return( (float) it/ 32767.);
+/*
+ *  Random number generator returns float.
+ */
+  return (((float) rand()/ (float) RAND_MAX));
 }

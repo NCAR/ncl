@@ -1,13 +1,46 @@
 C
-C       $Id: csex04.f,v 1.1 1998-12-10 00:09:10 fred Exp $
+C       $Id: csex04.f,v 1.2 1999-01-28 23:55:29 fred Exp $
 C
       PROGRAM CSEX04
 C
-C  Do a 2D approximation and find mixed second partial derivatives.
+C  Do a 2D approximation and find mixed second order partial derivatives.
+C
+C
+C  The dimensionality of the problem.
+C
+      PARAMETER (NDIM=2)
+C
+C  The number of input data points.
+C
+      PARAMETER (NDATA=1000)
+C
+C  The number of output data points in the X coordinate direction.
+C
+      PARAMETER (NX=29)
+C
+C  The number of output data points in the Y coordinate direction.
+C
+      PARAMETER (NY=25)
+C
+C  Specifty the number of knots in the X direction.
+C
+      PARAMETER (N1=4)
+C
+C  Specifty the number of knots in the Y direction.
+C
+      PARAMETER (N2=4)
+C
+C  The size of the workspace.
+C
+      PARAMETER (NCF=N1*N2, NWRK=NCF*(NCF+3))
+C
+C  Define error file, Fortran unit number, workstation type,
+C  and workstation ID.
 C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
-      PARAMETER (NDIM=2, NDATA=1000, NX=29, NY=25,
-     +           N1=4, N2=4,NCF=N1*N2, NWRK=NCF*(NCF+3))
+C
+C  Dimension the arrays.
+C
       DIMENSION XDATA(NDIM,NDATA),YDATA(NDATA),KNOTS(NDIM),WORK(NWRK),
      +          NDERIV(2)
       DATA XMIN,YMIN,XMAX,YMAX / -1.0, -1.0, 1.0, 1.0/
@@ -43,14 +76,14 @@ C  Calculate the approximated functuion values.
 C
       CALL CSA2S (INDX,XDATA,YDATA,KNOTS,NX,NY,XO,YO,FUNC,NWRK,WORK,IER)
 C
-C  Calculate the second order mixed partial.
+C  Calculate the second order mixed partial derivative.
 C
       NDERIV(1) = 1
       NDERIV(2) = 1
       CALL CSA2XS (INDX,XDATA,YDATA,-1.,KNOTS,0.,NDERIV,NX,NY,
      +                  XO,YO,FUNCD,NWRK,WORK,IER)
 C
-C  Plot a surfaces.
+C  Plot a surface.
 C
 C  Open GKS and define the foreground and background color.
 C
@@ -63,8 +96,8 @@ C
       CALL TDEZ2D(NX, NY, XO, YO, FUNC, 2.7, 45., 78., 6)
       CALL SET(0.,1.,0.,1.,0.,1.,0.,1.,1)
       CALL PLCHHQ(0.5,0.85,
-     +   ':F25:z = f(x,y) = y:S:2:E:  - -:H-10::S:1:E::B::V-6:2:E:  x:S:
-     +2:E:',0.04,0.,0.)
+     +   ':F25:z = f(x,y) = y:S:2:E:  - -:H-10::S:1:E::B::V-6:2:E:  y:V-
+     +6:*:V+6:x:S:2:E:',0.04,0.,0.)
       CALL FRAME()
 C
 C  Mixed partial.
@@ -85,6 +118,8 @@ C
       STOP
       END
       REAL FUNCTION DSRND1()
+C
+C  Random number generator.
 C
       DATA ISEED/1/
       SAVE ISEED

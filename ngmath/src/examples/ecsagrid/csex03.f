@@ -1,11 +1,28 @@
 C
-C       $Id: csex03.f,v 1.1 1998-12-10 00:09:09 fred Exp $
+C       $Id: csex03.f,v 1.2 1999-01-28 23:55:28 fred Exp $
 C
       PROGRAM CSEX03
 C
 C  Demo of extrapolation into data sparse regions using CSA1XS.
 C
-      PARAMETER (NDATA=9, NX=101, N1=8, NCF=N1, NWRK=NCF*(NCF+3))
+C  The number of input data points.
+C
+      PARAMETER (NDATA=9)
+C
+C  The number of output data points.
+C
+      PARAMETER (NX=101)
+C
+C  The maximum number of knots used in any call.
+C
+      PARAMETER (NCF=8)
+C
+C  The size of the workspace.
+C
+      PARAMETER (NWRK=NCF*(NCF+3))
+C
+C  Dimension the arrays.
+C
       DIMENSION XDATA(1,NDATA),YDATA(NDATA),XDATAT(NDATA)
       DIMENSION WORK(NWRK)
       DIMENSION XO(NX),Y1(NX),Y2(NX)
@@ -24,12 +41,13 @@ C
         XO(I) = (I-1)*XINC
    10 CONTINUE
 C
-C  Calculate the approximating curve with no extrapolation.
+C  Calculate the approximating curve with no extrapolation.  Note
+C  the unexpected oscillation in the approximation curve.
 C
       SSMTH = 0.
       NDERIV = 0
       WTS = -1.
-      CALL CSA1XS (NDATA,XDATA,YDATA,WTS,N1,
+      CALL CSA1XS (NDATA,XDATA,YDATA,WTS,NCF,
      +             SSMTH,NDERIV,NX,XO,Y1,NWRK,WORK,IER)       
       IF (IER .NE. 0) THEN
         WRITE(6,520) IER
@@ -41,7 +59,7 @@ C  Calculate the approximating curve with the extrapolation parameter
 C  set to 1.0.
 C
       SSMTH = 1.0
-      CALL CSA1XS (NDATA,XDATA,YDATA,WTS,N1,
+      CALL CSA1XS (NDATA,XDATA,YDATA,WTS,NCF,
      +             SSMTH,NDERIV,NX,XO,Y2,NWRK,WORK,IER)       
       IF (IER .NE. 0) THEN
         WRITE(6,520) IER
@@ -59,10 +77,14 @@ C
       END
       SUBROUTINE DRWFT1(NUMIN,X,Y,NUMOUT,XO,Y1,Y2)
 C
+C  This subroutine uses NCAR Graphics to plot curves.
+C
 C  Define error file, Fortran unit number, workstation type,
 C  and workstation ID.
 C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+C
+C  Vertical position for initial curve.
 C
       DATA YPOS_TOP/0.86/
 C
@@ -87,12 +109,19 @@ C
      +            0.030,0.,0.)
 C
 C  Graph the approximation curve with extrapolation into data sparse
-C  regions turned off.
+C  regions turned off.  Note the unexpected oscillation in the curve.
+C
+C
+C  Draw a background grid for the first curve.
 C
       YB = -2.0
       YT =  1.0
       CALL BKGFT1(YPOS_TOP,'SMTH = 0.',YB,YT)
       CALL GRIDAL(5,5,5,1,1,1,10,0.0,YB)
+C
+C  Graph the approximation curve with no extrapolation into data
+C  sparse areas.
+C
       CALL GPL(NUMOUT,XO,Y1)
 C
 C  Mark the original data points.
@@ -116,13 +145,22 @@ C
       RETURN
       END
       SUBROUTINE BKGFT1(YPOS,LABEL,YB,YT)
+C
+C  This subroutine draws a background grid.
+C
       DIMENSION XX(2),YY(2)
       CHARACTER*(*) LABEL
 C
       CALL SET(0.,1.,0.,1.,0.,1.,0.,1.,1)
+C
+C  Plot the curve label using font 21 (Helvetica).
+C
       CALL PCSETI('FN',21)
       CALL PLCHHQ(0.20,YPOS - 0.2,LABEL,0.023,0.,-1.)
       CALL SET(0.13,0.93,YPOS-0.28,YPOS,0.0,1., YB, YT, 1)
+C
+C  Draw a horizontal line at Y=0. using color index 2.
+C
       XX(1) = 0.
       XX(2) = 1.
       YY(1) = 0.
@@ -130,13 +168,26 @@ C
       CALL GSPLCI(2)
       CALL GPL(2,XX,YY)
       CALL GSPLCI(1)
-
+C
+C  Set Gridal parameters.
+C
+C
+C   Set LTY to indicate that the Plotchar routine PLCHHQ should be used.
+C
       CALL GASETI('LTY',1)
-      CALL PCSETI('FN',21)
+C
+C   Size and format for X axis labels.
+C
       CALL GASETR('XLS',0.02)
       CALL GASETC('XLF','(F3.1)')
+C
+C   Size and format for Y axis labels.
+C
       CALL GASETR('YLS',0.02)
       CALL GASETC('YLF','(F5.1)')
+C
+C   Length of major tick marks for the X and Y axes.
+C
       CALL GASETR('XMJ',0.02)
       CALL GASETR('YMJ',0.02)
 C

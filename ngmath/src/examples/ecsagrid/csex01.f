@@ -1,12 +1,34 @@
 C
-C       $Id: csex01.f,v 1.1 1998-12-10 00:09:09 fred Exp $
+C       $Id: csex01.f,v 1.2 1999-01-28 23:55:28 fred Exp $
 C
       PROGRAM CSEX01
 C
-C  Use CSA1S with differing numbers of knots.
+C  This example illustrates the effects of using differing numbers
+C  of knots in calls to CSA1S with the same input data.
 C
-      PARAMETER (NDIM=1, NDATA=10, NPTS=101, N1=9, NCF=N1, 
-     +           NWRK=NCF*(NCF+3))
+C
+C  The dimensionality of the problem.
+C
+      PARAMETER (NDIM=1)
+C
+C  The number of input data points.
+C
+      PARAMETER (NDATA=10) 
+C
+C  The number of output data points.
+C
+      PARAMETER (NPTS=101) 
+C  
+C  The maximum number of knots used in any call.
+C
+      PARAMETER (NCF=9)
+C
+C  The size of the workspace.
+C
+      PARAMETER (NWRK=NCF*(NCF+3))
+C
+C  Dimension arrays.
+C
       DIMENSION XDATA(NDIM,NDATA),YDATA(NDATA),XDATAT(NDATA)
       DIMENSION WORK(NWRK)
       DIMENSION XO(NPTS),YO4(NPTS),YO7(NPTS),YO9(NPTS)
@@ -63,10 +85,19 @@ C
       END
       SUBROUTINE DRWFT1(NUMO,X,Y,IO,XO,CURVE1,CURVE2,CURVE3)
 C
-C  Define error file, Fortran unit number, and workstation ID.
+C  This subroutine uses NCAR Graphics to plot three curves on
+C  the same picture showing the results from calling CSA1X with
+C  differing number of knots.  The values for the curves are
+C  contained in arrays CURVE1, CURVE2, and CURVE3.
 C
       DIMENSION XO(IO),CURVE1(IO),CURVE2(IO),CURVE3(IO)
+C
+C  Define error file, Fortran unit number, workstation type
+C  and workstation ID.
+C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+C
+C  Vertical position for initial curve.
 C
       DATA YPOS_TOP/0.88/
 C
@@ -84,9 +115,11 @@ C
       CALL GSCR(IWKID, 3, 0.0, 0.0, 1.0)
       CALL GSCLIP(0)
 C
-C  Plot main title.
+C  Plot the main title.
 C
       CALL PLCHHQ(0.50,0.95,':F21:Demo for csa1s',0.035,0.,0.)
+C
+C  Draw a background grid for the first curve.
 C
       YB = -1.2
       YT =  1.2
@@ -129,13 +162,22 @@ C
       RETURN
       END
       SUBROUTINE BKGFT1(YPOS,LABEL,YB,YT)
+C
+C  This subroutine draws a background grid.
+C
       DIMENSION XX(2),YY(2)
       CHARACTER*(*) LABEL
 C
       CALL SET(0.,1.,0.,1.,0.,1.,0.,1.,1)
+C
+C  Plot the curve label using font 21 (Helvetica).
+C
       CALL PCSETI('FN',21)
       CALL PLCHHQ(0.25,YPOS - 0.03,LABEL,0.025,0.,-1.)
       CALL SET(0.13,0.93,YPOS-0.2,YPOS,0.0,1., YB, YT, 1)
+C
+C  Draw a horizontal line at Y=0. using color index 2.
+C
       XX(1) = 0.
       XX(2) = 1.
       YY(1) = 0.
@@ -143,13 +185,26 @@ C
       CALL GSPLCI(2)
       CALL GPL(2,XX,YY)
       CALL GSPLCI(1)
-
+C
+C  Set Gridal parameters. 
+C
+C
+C   Set LTY to indicate that the Plotchar routine PLCHHQ should be used.
+C
       CALL GASETI('LTY',1)
-      CALL PCSETI('FN',21)
+C
+C   Size and format for X axis labels.
+C
       CALL GASETR('XLS',0.02)
       CALL GASETC('XLF','(F3.1)')
+C
+C   Size and format for Y axis labels.
+C
       CALL GASETR('YLS',0.02)
       CALL GASETC('YLF','(F5.1)')
+C
+C   Length of major tick marks for the X and Y axes.
+C
       CALL GASETR('XMJ',0.02)
       CALL GASETR('YMJ',0.02)
 C

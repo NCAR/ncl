@@ -1,13 +1,48 @@
 C
-C       $Id: csex06.f,v 1.1 1998-12-10 00:09:10 fred Exp $
+C       $Id: csex06.f,v 1.2 1999-01-28 23:55:29 fred Exp $
 C
       PROGRAM CSEX06
 C
 C  Do a 3D approximation and plot an isosurface.
 C
-      PARAMETER (NDIM=3, NDATA=1000, NX=21, NY=31, NZ=41, 
-     +           N1=4, N2=4, N3=4, NCF=N1*N2*N3, 
-     +           NWRK=NCF*(NCF+3))
+C
+C  The dimensionality of the problem.
+C
+      PARAMETER (NDIM=3)
+C
+C  The number of input data points.
+C
+      PARAMETER (NDATA=1000)
+C
+C  The number of output data points in the X coordinate direction.
+C
+      PARAMETER (NX=21)
+C
+C  The number of output data points in the Y coordinate direction.
+C
+      PARAMETER (NY=31)
+C
+C  The number of output data points in the Z coordinate direction.
+C
+      PARAMETER (NZ=41)
+C
+C  Specifty the number of knots in the X direction.
+C
+      PARAMETER (N1=4)
+C
+C  Specifty the number of knots in the Y direction.
+C
+      PARAMETER (N2=4)
+C
+C  Specifty the number of knots in the Z direction.
+C
+      PARAMETER (N3=4)
+C
+C  The size of the workspace.
+C
+      PARAMETER (NCF=N1*N2*N3, NWRK=NCF*(NCF+3))
+C
+C  Dimension the arrays.
 C
       DIMENSION XDATA(NDIM,NDATA),YDATA(NDATA),KNOTS(NDIM),WORK(NWRK)
 C
@@ -75,6 +110,8 @@ C
       STOP
       END
       REAL FUNCTION DSRND1()
+C
+C  Random number generator.
 C
       DATA ISEED/1/
       SAVE ISEED

@@ -1,25 +1,64 @@
 /*
- *  $Id: c_csex07.c,v 1.1 1998-12-10 00:09:09 fred Exp $
+ *  $Id: c_csex07.c,v 1.2 1999-01-28 23:55:28 fred Exp $
  */
 
 #include <math.h>
+#include <stdlib.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 #include <ncarg/ngmath.h>
 
+/*
+ *  The number of input data points.
+ */
 #define NDATA   500
+
+/*
+ *  The number of output data points in the X coordinate direction.
+ */
 #define NX      29
+
+/*
+ *  The number of output data points in the Y coordinate direction.
+ */
 #define NY      25
+
+/*
+ *  The number of output data points.
+ */
 #define NO     NX*NY
+
+/*
+ *  The number of knots in the X direction.
+ */
 #define N1      10
+
+/*
+ *  The number of knots in the Y direction.
+ */
 #define N2      10
+
+/*
+ *  Data limits.
+ */
 #define XMIN   -1.4
 #define XMAX    1.4
 #define YMIN   -1.2
 #define YMAX    1.2
+
+/*
+ *  The GKS workstation type (NCGM).
+ */
 #define IWTYPE  1
+
+/*
+ *  The GKS workstaton identifier.
+ */
 #define WKID    1
 
+/*
+ *  Function prototype for the random number generator.
+ */
 float dsrnd1();
 
 /*
@@ -96,12 +135,9 @@ main ()
 
 float dsrnd1()
 {
-  static unsigned int iseed = 1;
-  int it,it0,it1=-16,it2=32767;
 
-  iseed = iseed*1103515245 + 12345;
-  it0   = NGCALLF(ishift,ISHIFT)(&iseed,&it1);
-  it    = NGCALLF(iand,IAND)(&it0,&it2);
-
-  return( (float) it/ 32767.);
+/*
+ *  Random number generator returns float.
+ */
+  return (((float) rand()/ (float) RAND_MAX));
 }

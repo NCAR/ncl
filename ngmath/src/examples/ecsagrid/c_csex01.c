@@ -1,5 +1,5 @@
 /*
- *  $Id: c_csex01.c,v 1.1 1998-12-10 00:09:07 fred Exp $
+ *  $Id: c_csex01.c,v 1.2 1999-01-28 23:55:26 fred Exp $
  */
 
 #include <stdio.h>
@@ -7,46 +7,79 @@
 #include <ncarg/gks.h>
 #include <ncarg/ngmath.h>
 
+/*
+ *  Function prototypes for plotting backgrounds and curves.
+ */
 void c_bkgft1(float, char *, float, float);
 void c_drwft1(int, float [], float [], int, float [], float [], 
               float [], float []);
 
+/*
+ *  The number of input data points.
+ */
 #define NDATA  10
+
+/*
+ *  The number of output data points.
+ */
 #define NPTS  101
+
+/*
+ *  The GKS workstation type (NCGM).
+ */
 #define IWTYPE  1
+
+/*
+ *  The GKS workstaton identifier.
+ */
 #define WKID    1
 
 /*
- *  Use c_csa1s with differing numbers of knots.
+ * This example illustrates the effects of using differing numbers
+ * of knots in calls to c_csa1s with the same input data.
  */
 main () 
 {
-  float xo[NPTS],yo4[NPTS],yo7[NPTS],yo9[NPTS],xinc;
 
+/*
+ *  Set up the output arrays.
+ */
+  float xo[NPTS],*yo4,*yo7,*yo9,xinc;
+
+/*
+ *  Define the input data.
+ */
   float xi[] = {0.0, 0.1,  0.2,  0.3, 0.5,  0.6, 0.65,  0.8,  0.9, 1.};
   float yi[] = {0.0, 0.8, -0.9, -0.9, 0.9,  1.0, 0.90, -0.8, -0.8, 0.};
 
   int i,knots,ier;
 
+/*
+ *  Create the output X coordinate array.
+ */
   xinc = 1./ (float) (NPTS-1);
   for (i = 0; i < NPTS; i++) {
     xo[i] = (float) i * xinc;
   }
 
+/*
+ *  Calculate the approximated function values using differing
+ *  number of knots.
+ */
   knots = 4;
-  ier = c_csa1s(NDATA,xi,yi,knots,NPTS,xo,yo4);
+  yo4 = c_csa1s(NDATA,xi,yi,knots,NPTS,xo,&ier);
   if (ier != 0) {
     printf("Error return from c_csa1s: %d\n",ier);
     exit(1);
   }
   knots = 7;
-  ier = c_csa1s(NDATA,xi,yi,knots,NPTS,xo,yo7);
+  yo7 = c_csa1s(NDATA,xi,yi,knots,NPTS,xo,&ier);
   if (ier != 0) {
     printf("Error return from c_csa1s: %d\n",ier);
     exit(1);
   }
   knots = 9;
-  ier = c_csa1s(NDATA,xi,yi,knots,NPTS,xo,yo9);
+  yo9 = c_csa1s(NDATA,xi,yi,knots,NPTS,xo,&ier);
   if (ier != 0) {
     printf("Error return from c_csa1s: %d\n",ier);
     exit(1);
@@ -62,10 +95,18 @@ main ()
 void c_drwft1(int n, float x[], float y[], int m, float xo[], 
               float curve1[], float curve2[], float curve3[])
 {
-
+/*
+ *  This function uses NCAR Graphics to plot three curves on
+ *  the same picture showing the results from calling c_csa1x with
+ *  differing number of knots.  The values for the curves are
+ *  contained in arrays curve1, curve2, and curve3.
+ */
   int   i;
   float yb, yt, ypos_top = 0.88;
 
+/*
+ *  Declare variables used in GKS calls.
+ */
   Gcolr_rep rgb;
   Gpoint plist[NDATA];
   Gpoint_list pmk;
@@ -98,12 +139,16 @@ void c_drwft1(int n, float x[], float y[], int m, float xo[],
   c_plchhq(.5,.95,":F21:Demo for c_csa1s",0.035,0.,0.);
 
 /*
- *  Graph the approximated function values for knots=4.
+ *  Draw a background grid for the first curve.
  */
   yb = -1.2;
   yt =  1.2;
   c_bkgft1(ypos_top,"knots = 4",yb,yt);
   c_gridal(5,5,4,1,1,1,10,0.0,yb);
+
+/*
+ *  Graph the approximated function values for knots=4.
+ */
   c_curve(xo,curve1,m);
 
 /*
@@ -164,6 +209,7 @@ void c_drwft1(int n, float x[], float y[], int m, float xo[],
   gpolymarker(&pmk);
   
   c_frame();
+
 /*
  *  Deactivate and close workstation, close GKS.
  */
@@ -172,21 +218,50 @@ void c_drwft1(int n, float x[], float y[], int m, float xo[],
   gclose_gks();
 }
 
+/*
+ *  Draw a background.
+ */
 void c_bkgft1(float ypos, char *label, float yb, float yt) {
   c_set(0.,1.,0.,1.,0.,1.,0.,1.,1);
+
+/*
+ *   Plot the curve label using font 21 (Helvetica).
+ */
   c_pcseti("fn",21);
   c_plchhq(.25,ypos-0.03,label,0.025,0.,-1.0);
+
+/*
+ *  Draw a horizontal line at Y=0. using color index 2.
+ */
   c_set(0.13,0.93,ypos-0.2,ypos,0.0,1., yb, yt, 1);
   gset_line_colr_ind(2);
   c_line(0.,0.,1.,0.); 
   c_sflush();
   gset_line_colr_ind(1);
+
+/*
+ *  Set Gridal parameters.
+ *
+ *
+ *   Set lty to indicate that the Plotchar routine PLCHHQ should be used.
+ */
   c_gaseti("lty",1);
-  c_pcseti("fn",21);
+
+/*
+ *   Size and format for X axis labels.
+ */
   c_gasetr("xls",0.02);
   c_gasetc("xlf","(f3.1)");
+
+/*
+ *   Size and format for X axis labels.
+ */
   c_gasetr("yls",0.02);
   c_gasetc("ylf","(f5.1)");
+
+/*
+ *  Length of major tick marks for the X and Y axes.
+ */
   c_gasetr("xmj",0.02);
   c_gasetr("ymj",0.02);
 }

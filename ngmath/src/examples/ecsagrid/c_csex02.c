@@ -1,5 +1,5 @@
 /*
- *  $Id: c_csex02.c,v 1.1 1998-12-10 00:09:08 fred Exp $
+ *  $Id: c_csex02.c,v 1.2 1999-01-28 23:55:26 fred Exp $
  */
 
 #include <stdio.h>
@@ -7,17 +7,32 @@
 #include <ncarg/gks.h>
 #include <ncarg/ngmath.h>
 
+/*
+ *  Function prototypes for plotting backgrounds and curves.
+ */
 void c_bkgft1(float, char *, float, float);
 void c_drwft1(int, float [], float [], int, float [], float [], 
               float [], float []);
 
-/*
- *  Use c_csa1xs with differing weights.
- */
 
+/*
+ *  The number of input data points.
+ */
 #define NDATA   6
+
+/*
+ *  The number of output data points.
+ */
 #define NPTS  101
+
+/*
+ *  The GKS workstation type (NCGM).
+ */
 #define IWTYPE  1
+
+/*
+ *  The GKS workstaton identifier.
+ */
 #define WKID    1
 
 /*
@@ -25,7 +40,10 @@ void c_drwft1(int, float [], float [], int, float [], float [],
  */
 main () 
 {
-  float xo[NPTS],yo1[NPTS],yo2[NPTS],yo3[NPTS],xinc;
+/*
+ *  Set up the output arrays.
+ */
+  float xo[NPTS],*yo1,*yo2,*yo3,xinc;
 
 /*
  *  Specify the input data and initial weighting array.
@@ -48,7 +66,7 @@ main ()
 /*
  *  Calculate the approximating curve with all weights equal.
  */
-  ier = c_csa1xs(NDATA,xi,yi,wts,knots,smth,nderiv,NPTS,xo,yo1);
+  yo1 = c_csa1xs(NDATA,xi,yi,wts,knots,smth,nderiv,NPTS,xo,&ier);
   if (ier != 0) {
     printf("Error return from c_csa1xs: %d\n",ier);
     exit(1);
@@ -59,7 +77,7 @@ main ()
  *  weighted as half the other weights.
  */
   wts[1] = 0.5;
-  ier = c_csa1xs(NDATA,xi,yi,wts,knots,smth,nderiv,NPTS,xo,yo2);
+  yo2 = c_csa1xs(NDATA,xi,yi,wts,knots,smth,nderiv,NPTS,xo,&ier);
   if (ier != 0) {
     printf("Error return from c_csa1xs: %d\n",ier);
     exit(1);
@@ -70,7 +88,7 @@ main ()
  *  ignored (i.e. with a weight of zero).
  */
   wts[1] = 0.0;
-  ier = c_csa1xs(NDATA,xi,yi,wts,knots,smth,nderiv,NPTS,xo,yo3);
+  yo3 = c_csa1xs(NDATA,xi,yi,wts,knots,smth,nderiv,NPTS,xo,&ier);
   if (ier != 0) {
     printf("Error return from c_csa1xs: %d\n",ier);
     exit(1);
@@ -87,9 +105,16 @@ void c_drwft1(int n, float x[], float y[], int m, float xo[],
               float curve1[], float curve2[], float curve3[])
 {
 
+/*
+ *  This function uses NCAR Graphics to plot curves.
+ */
+
   int   i;
   float yb, yt, ypos_top = 0.88;
 
+/*
+ *  Declare variables used in GKS calls.
+ */
   Gcolr_rep rgb;
   Gpoint plist[NDATA];
   Gpoint_list pmk;
@@ -122,13 +147,16 @@ void c_drwft1(int n, float x[], float y[], int m, float xo[],
   c_plchhq(.5,.95,":F21:Effect of data weights",0.035,0.,0.);
 
 /*
- *  Graph the approximation curve where all input coordinates were
- *  wieghted equally.
+ *  Draw a background grid for the first curve.
  */
   yb = -1.0;
   yt =  1.0;
   c_bkgft1(ypos_top,"Weights = (1., 1., 1., 1., 1., 1.)",yb,yt);
   c_gridal(5,5,4,1,1,1,10,0.0,yb);
+
+/*
+ *  Graph the approximation curve.
+ */
   c_curve(xo,curve1,m);
 
 /*
@@ -146,7 +174,7 @@ void c_drwft1(int n, float x[], float y[], int m, float xo[],
 
 /*
  *  Graph the approximation curve where the second input coordinate was
- *  given a weight of 0.5 .
+ *  given a weight of 0.5.
  */
   c_bkgft1(ypos_top-0.3,"Weights = (1., .5, 1., 1., 1., 1.)",yb,yt);
   c_gridal(5,5,4,1,1,1,10,0.0,yb);
@@ -172,21 +200,50 @@ void c_drwft1(int n, float x[], float y[], int m, float xo[],
   gclose_gks();
 }
 
+/*
+ *  Draw a background.
+ */
 void c_bkgft1(float ypos, char *label, float yb, float yt) {
   c_set(0.,1.,0.,1.,0.,1.,0.,1.,1);
+
+/*
+ *   Plot the curve label using font 21 (Helvetica).
+ */
   c_pcseti("fn",21);
   c_plchhq(.65,ypos-0.03,label,0.025,0.,0.0);
+
+/*
+ *  Draw a horizontal line at Y=0. using color index 2.
+ */
   c_set(0.13,0.93,ypos-0.2,ypos,0.0,1., yb, yt, 1);
   gset_line_colr_ind(2);
   c_line(0.,0.,1.,0.); 
   c_sflush();
   gset_line_colr_ind(1);
+
+/*
+ *  Set Gridal parameters.
+ *
+ *
+ *   Set lty to indicate that the Plotchar routine PLCHHQ should be used.
+ */
   c_gaseti("lty",1);
-  c_pcseti("fn",21);
+
+/*
+ *   Size and format for X axis labels.
+ */
   c_gasetr("xls",0.02);
   c_gasetc("xlf","(f3.1)");
+
+/*
+ *   Size and format for X axis labels.
+ */
   c_gasetr("yls",0.02);
   c_gasetc("ylf","(f5.1)");
+
+/*
+ *  Length of major tick marks for the X and Y axes.
+ */
   c_gasetr("xmj",0.02);
   c_gasetr("ymj",0.02);
 }

@@ -1,13 +1,50 @@
 C
-C       $Id: csex07.f,v 1.1 1998-12-10 00:09:10 fred Exp $
+C       $Id: csex07.f,v 1.2 1999-01-28 23:55:29 fred Exp $
 C
       PROGRAM CSEX07
 C
 C  Do a 2D approximation using a list of output coordinates.  
 C
+C
+C  The dimensionality of the problem.
+C
+      PARAMETER (NDIM=2)
+C
+C  The number of input data points.
+C
+      PARAMETER (NDATA=500)
+C
+C  The number of output data points in the X coordinate direction.
+C
+      PARAMETER (NX=29)
+C
+C  The number of output data points in the Y coordinate direction.
+C
+      PARAMETER (NY=25)
+C
+C  The number of output data points.
+C
+      PARAMETER (NO=NX*NY)
+C
+C  Specifty the number of knots in the X direction.
+C
+      PARAMETER (N1=10)
+C
+C  Specifty the number of knots in the Y direction.
+C
+      PARAMETER (N2=10)
+C
+C  The size of the workspace.
+C
+      PARAMETER (NCF=N1*N2, NWRK=NCF*(NCF+3))
+C
+C  Define error file, Fortran unit number, workstation type,
+C  and workstation ID.
+C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
-      PARAMETER (NDIM=2, NDATA=500, NX=29, NY=25,
-     +           NO=NX*NY, N1=10, N2=10, NCF=N1*N2, NWRK=NCF*(NCF+3))
+C
+C  Dimension the arrays.
+C
       DIMENSION XDATA(NDIM,NDATA),YDATA(NDATA),NODES(NDIM),WORK(NWRK)
       DATA XMIN,YMIN,XMAX,YMAX / -1.4, -1.2, 1.4, 1.2/
       REAL XO(NO),  YO(NO), OUTPUT(NO)
@@ -70,6 +107,8 @@ C
         YP(J) = YMIN+(REAL(J-1)/REAL(NY-1))*(YMAX-YMIN)
   106 CONTINUE
 C
+C  Plot the surface.
+C
       CALL TDEZ2D(NX, NY, XP, YP, OPLOT, 2.5, -154., 80., 6)
       CALL FRAME()
 C
@@ -82,6 +121,8 @@ C
       STOP
       END
       REAL FUNCTION DSRND1()
+C
+C  Random number generator.
 C
       DATA ISEED/1/
       SAVE ISEED
