@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-24 21:24:16 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-04-08 22:36:46 haley Exp $
 #
 NCARG	= ../../../..
 
 MYNAME	= fplotchar
 
-GENERIC_SRCS = fpchiqu.f fpcloqu.f
+GENERIC_SRCS = fpcfonts.f fpchiqu.f fpcloqu.f
 
 install::
 	@for file in $(GENERIC_SRCS); do\
