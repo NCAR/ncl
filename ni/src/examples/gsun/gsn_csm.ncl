@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.5 1999-04-15 18:25:13 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.6 1999-04-16 13:49:02 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1700,6 +1700,7 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
             cn_res_index = ind(chartostring(res(:,0:1)).ne."mp".and.\
                                chartostring(res(:,0:1)).ne."vp".and.\
                                chartostring(res(:,0:1)).ne."tm".and.\
+                               chartostring(res(:,0:1)).ne."lb".and.\
                                chartostring(res(:,0:1)).ne."ti")
             if(.not.all(ismissing(mp_res_index)))
                 do i = 0,dimsizes(mp_res_index)-1
