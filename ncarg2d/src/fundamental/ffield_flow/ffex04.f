@@ -1,17 +1,22 @@
 C
-C	$Id: ffex04.f,v 1.1 1993-04-08 22:35:44 haley Exp $
+C	$Id: ffex04.f,v 1.2 1994-07-08 17:44:20 haley Exp $
 C
       PROGRAM FFEX04
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
       PARAMETER ( M=20 , N=36 , NPR=155)
       DIMENSION U(M,N),V(M,N)
       DIMENSION WRK(2*M*N)
 C
-C     Open GKS, open workstation, activate workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (6,ISZ)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
       CALL STSETR('DFM -- Differential Magnitude', 0.01)
 C
@@ -56,8 +61,8 @@ C
 C
 C     Deactivate and close workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
       STOP
       END

@@ -1,29 +1,34 @@
 C
-C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
 C
-      CALL GOPKS (6,IDUM) 
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
+C  Open GKS, open and activate a workstation.
+C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TPWRZI(IERR)
+      CALL TPWRZI(IWKID,IERR)
 C
 C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP
       END
 C
-      SUBROUTINE TPWRZI (IERROR)
+      SUBROUTINE TPWRZI (IWKID,IERROR)
 C
 C PURPOSE                To provide a simple demonstration of
 C                        entry PWRZI with the ISOSRF utility.
 C
-C USAGE                  CALL TPWRZI (IERROR)
+C USAGE                  CALL TPWRZI (IWKID,IERROR)
 C
 C ARGUMENTS
 C
@@ -31,6 +36,9 @@ C ON OUTPUT              IERROR
 C                          An integer variable
 C                          = 0, if the test was successful,
 C                          = 1, otherwise
+C
+C ON INPUT               IWKID
+C                          A workstation id
 C
 C I/O                    If the test is successful, the message
 C
@@ -78,16 +86,24 @@ C
 C Set up a color table
 C
 C     White background
-      CALL GSCR (1,0,1.,1.,1.)
+C
+      CALL GSCR (IWKID,0,1.,1.,1.)
+C
 C     Black foreground
-      CALL GSCR (1,1,0.,0.,0.)
+C
+      CALL GSCR (IWKID,1,0.,0.,0.)
+C
 C     Red
-      CALL GSCR (1,2,1.,0.,0.)
+C
+      CALL GSCR (IWKID,2,1.,0.,0.)
+C
 C     Green
-      CALL GSCR (1,3,0.,1.,0.)
+C
+      CALL GSCR (IWKID,3,0.,1.,0.)
+C
 C     Blue
-      CALL GSCR (1,4,0.,0.,1.)
-
+C
+      CALL GSCR (IWKID,4,0.,0.,1.)
 C
 C Fill the 3-D array to be plotted.
 C
@@ -109,11 +125,11 @@ C
                FKP1 = (1.-F1)*FKMID
                FKP2 = (1.-F2)*FKMID
                T(I,J,K) = AMIN1(FIMID*FIMID+FJP1*FJP1+FKP1*FKP1-
-     1                    RSML1*RSML1,
-     2                      FKMID*FKMID+FIP2*FIP2+FJP2*FJP2-RSML2*RSML2)
-   10       CONTINUE
-   20    CONTINUE
-   30 CONTINUE
+     1              RSML1*RSML1,
+     2              FKMID*FKMID+FIP2*FIP2+FJP2*FJP2-RSML2*RSML2)
+ 10         CONTINUE
+ 20      CONTINUE
+ 30   CONTINUE
 C
 C Define the eye position.
 C

@@ -1,6 +1,12 @@
-C	$Id: ffex05.f,v 1.4 1993-12-13 21:06:35 haley Exp $
+C
+C	$Id: ffex05.f,v 1.5 1994-07-08 17:44:21 haley Exp $
 C
       PROGRAM FFEX05
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C This program requires the input data file 'ffex05.dat'
 C It reads the data from standard input, e.g.: ffex05 < ffex05.dat
@@ -81,16 +87,16 @@ C
 C
 C -----------------------------------------------------------------
 C
-C Open GKS, open workstation, activate workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (6,ISZ)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Set up auxiliary colors
 C
       DO 10 I=1,NCLRS2,1
-         CALL GSCR(1,ICLR2(I),RGB2(1,I),RGB2(2,I),RGB2(3,I))
+         CALL GSCR(IWKID,ICLR2(I),RGB2(1,I),RGB2(2,I),RGB2(3,I))
  10   CONTINUE
 C
 C Read the input array data
@@ -177,7 +183,7 @@ C
       CALL VVSETI('CTV -- Color Thresholds Value', 2)
       CALL VVSETI('NLV -- Number Of Levels', NCLRS1)
       DO 100 I=1,NCLRS1,1
-         CALL GSCR(1,ICLR1(I),RGB1(1,I),RGB1(2,I),RGB1(3,I))
+         CALL GSCR(IWKID,ICLR1(I),RGB1(1,I),RGB1(2,I),RGB1(3,I))
          CALL VVSETI('PAI -- Parameter Array Index', I)
          CALL VVSETI('CLR -- GKS Color Index', ICLR1(I))
  100  CONTINUE
@@ -188,8 +194,8 @@ C For the last frame modify the color table for a black background
 C and modify the contour attributes
 C
          IF (I.EQ.6) THEN
-            CALL GSCR(1,ICLR2(1),RGB2(1,2),RGB2(2,2),RGB2(3,2))
-            CALL GSCR(1,ICLR2(2),RGB2(1,1),RGB2(2,1),RGB2(3,1))
+            CALL GSCR(IWKID,ICLR2(1),RGB2(1,2),RGB2(2,2),RGB2(3,2))
+            CALL GSCR(IWKID,ICLR2(2),RGB2(1,1),RGB2(2,1),RGB2(3,1))
             CALL SETCLA(NCLV, ICLR2(7),ICLR2(3))
          END IF
 C
@@ -271,8 +277,8 @@ C
 C
 C     Deactivate and close workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
       STOP
       END

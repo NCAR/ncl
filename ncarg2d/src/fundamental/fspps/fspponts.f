@@ -1,7 +1,12 @@
 C
-C
+C     $Id: fspponts.f,v 1.2 1994-07-08 17:44:51 haley Exp $
 C
       PROGRAM NSP001
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Create a line plot with connected markers using points.
 C
@@ -10,26 +15,27 @@ C
       REAL X3DRA(20),Y3DRA(20)
 
       DATA NPTS/20/
-
 C
-C Initialize GKS.
+C  Open GKS, open and activate a workstation.
 C
-      CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Set up a color table
 C
-       CALL DFCLRS
+      CALL DFCLRS (IWKID)
 C
 C Fill the data arrays.
 C
       DO 101 I=1,NPTS
-        XDRA(I)=SIN(REAL(I))
-        YDRA(I)=COS(REAL(I))
-        X2DRA(I)=XDRA(I) * .66
-        Y2DRA(I)=YDRA(I) * .66
-        X3DRA(I)=XDRA(I) * .3
-        Y3DRA(I)=YDRA(I) * .3
-  101 CONTINUE
+         XDRA(I)=SIN(REAL(I))
+         YDRA(I)=COS(REAL(I))
+         X2DRA(I)=XDRA(I) * .66
+         Y2DRA(I)=YDRA(I) * .66
+         X3DRA(I)=XDRA(I) * .3
+         Y3DRA(I)=YDRA(I) * .3
+ 101  CONTINUE
 C
 C Draw a boundary around the edge of the plotter frame.
 C
@@ -80,9 +86,11 @@ C Advance the frame.
 C
       CALL FRAME
 C
-C Close GKS.
+C Deactivate and close workstation, close GKS.
 C
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 C
       STOP
 C
@@ -100,43 +108,43 @@ C
       RETURN
       END
 
-      SUBROUTINE DFCLRS
+      SUBROUTINE DFCLRS (IWKID)
 C
 C Define a set of RGB color triples for colors 1 through 15.
 C
-        DIMENSION RGBV(3,15)
+      DIMENSION RGBV(3,15)
 C
 C Define the RGB color triples needed below.
 C
-        DATA RGBV / 0.00 , 0.00 , 0.00 ,
-     +              0.70 , 0.70 , 0.70 ,
-     +              0.75 , 0.50 , 1.00 ,
-     +              0.50 , 0.00 , 1.00 ,
-     +              0.00 , 0.00 , 1.00 ,
-     +              0.00 , 0.50 , 1.00 ,
-     +              0.00 , 1.00 , 1.00 ,
-     +              0.00 , 1.00 , 0.60 ,
-     +              0.00 , 1.00 , 0.00 ,
-     +              0.70 , 1.00 , 0.00 ,
-     +              1.00 , 1.00 , 0.00 ,
-     +              1.00 , 0.75 , 0.00 ,
-     +              1.00 , 0.38 , 0.38 ,
-     +              1.00 , 0.00 , 0.38 ,
-     +              1.00 , 0.00 , 0.00 /
+      DATA RGBV / 0.00 , 0.00 , 0.00 ,
+     +     0.70 , 0.70 , 0.70 ,
+     +     0.75 , 0.50 , 1.00 ,
+     +     0.50 , 0.00 , 1.00 ,
+     +     0.00 , 0.00 , 1.00 ,
+     +     0.00 , 0.50 , 1.00 ,
+     +     0.00 , 1.00 , 1.00 ,
+     +     0.00 , 1.00 , 0.60 ,
+     +     0.00 , 1.00 , 0.00 ,
+     +     0.70 , 1.00 , 0.00 ,
+     +     1.00 , 1.00 , 0.00 ,
+     +     1.00 , 0.75 , 0.00 ,
+     +     1.00 , 0.38 , 0.38 ,
+     +     1.00 , 0.00 , 0.38 ,
+     +     1.00 , 0.00 , 0.00 /
 C
 C Define 16 different color indices, for indices 0 through 15.  The
 C color corresponding to index 0 is black and the color corresponding
 C to index 1 is white.
 C
-        CALL GSCR (1,0,1.,1.,1.)
+      CALL GSCR (IWKID,0,1.,1.,1.)
 C
-        DO 101 I=1,15
-          CALL GSCR (1,I,RGBV(1,I),RGBV(2,I),RGBV(3,I))
-  101   CONTINUE
+      DO 101 I=1,15
+         CALL GSCR (IWKID,I,RGBV(1,I),RGBV(2,I),RGBV(3,I))
+ 101  CONTINUE
 C
 C Done.
 C
-        RETURN
+      RETURN
 C
       END
 

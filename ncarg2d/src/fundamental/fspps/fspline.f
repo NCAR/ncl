@@ -1,32 +1,44 @@
       PROGRAM LINEEX
-
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
 C This is an example program which demonstrates how to use
 C the NCAR Graphics LINE routine.  The program draws a
 C simple flow diagram and labels the diagram objects.
-
 C
-C Open GKS
+C  Open GKS, open and activate a workstation.
 C
-      CALL OPNGKS
-
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Set up a color table
 C
-      CALL GSCR (1,0,1.,1.,1.)
-C     Black foreground
-      CALL GSCR (1,1,0.,0.,0.)
-C     Red
-      CALL GSCR (1,2,1.,0.,0.)
-C     Green
-      CALL GSCR (1,3,0.,1.,0.)
-C     Blue
-      CALL GSCR (1,4,0.,0.,1.)
-
+      CALL GSCR (IWKID,0,1.,1.,1.)
+C
+C Black foreground
+C
+      CALL GSCR (IWKID,1,0.,0.,0.)
+C
+C Red
+C
+      CALL GSCR (IWKID,2,1.,0.,0.)
+C
+C Green
+C
+      CALL GSCR (IWKID,3,0.,1.,0.)
+C
+C Blue
+C
+      CALL GSCR (IWKID,4,0.,0.,1.)
 C
 C Set the line color
 C 
       CALL GSPLCI(2)
-
+C
 C Set the plotter mapping space
 C
       CALL SET (0.,1.,0.,1.,0.,20., 0.,20.,1)
@@ -34,7 +46,6 @@ C
 C Set the line width
 C
       CALL GSLWSC(4.)
-
 C
 C
 C Draw a box
@@ -47,8 +58,6 @@ C
 C Add text
 C
       CALL PLCHLQ(3.5,9.,'Read I',15.,0.,0.)
-
-
 C
 C Draw a diamond
 C
@@ -56,16 +65,12 @@ C
       CALL LINE(9.5,11.,11.,9.)
       CALL LINE(11.,9.,9.5,7.)
       CALL LINE(9.5,7.,8.,9.)
-
 C
 C Add text in Diamond
 C
       CALL PLCHLQ(9.5,9.,'Is I<3?',15.,0.,0.)
       CALL PLCHLQ(10.,11.5,'yes',15.,0.,0.)
       CALL PLCHLQ(9.9,6.5,'no',15.,0.,0.)
-
-
-
 C
 C Draw a box
 C 
@@ -77,7 +82,6 @@ C
 C Add text in box
 C
       CALL PLCHLQ(16.5,12.,'I = I+1',15.,0.,0.)
-
 C
 C Draw a box
 C 
@@ -89,17 +93,14 @@ C
 C Add text in box
 C
       CALL PLCHLQ(16.5,6.,'I = I-1',15.,0.,0.)
-
 C
 C Set the line width
 C
       CALL GSLWSC(2.)
-
 C
 C Set the line color
 C
       CALL GSPLCI(4)
-
 C
 C Connect the objects
 C
@@ -108,7 +109,6 @@ C
       CALL LINE(9.5,12.,15.,12.)
       CALL LINE(9.5,7.,9.5,6.)
       CALL LINE(9.5,6.,15.,6.)
-
 C
 C Label top of plot
 C
@@ -122,12 +122,12 @@ C
       CALL LINE(0.,20.,0.,0.)
 
       CALL FRAME
-
 C
-C Close GKS
+C Deactivate and close workstation, close GKS.
 C
-      CALL CLSGKS
-
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
       STOP
 
       END

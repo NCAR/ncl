@@ -1,5 +1,10 @@
       PROGRAM TESTIT
 C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
 C Declare an array in which to put an eye position for THREED.
 C
         DIMENSION PEYE(3)
@@ -16,9 +21,11 @@ C Declare a function W(U,V) to be used in the example.
 C
         WFUN(U,V)=.5+.25*SIN(5.*U)+.25*COS(5.*V)
 C
-C Open GKS.
+C  Open GKS, open and activate a workstation.
 C
-        CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Make the tick marks drawn by PERIM3 twice as long as the default.
 C
@@ -146,9 +153,11 @@ C Advance the frame.
 C
         CALL FRAME
 C
-C Close GKS.
+C Deactivate and close workstation, close GKS.
 C
-        CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 C
 C Done.
 C

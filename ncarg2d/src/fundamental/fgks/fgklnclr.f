@@ -1,31 +1,38 @@
 C
-C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
 C
-      CALL GOPKS (6,IDUM) 
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
+C  Open GKS, open and activate a workstation.
+C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C INVOKE DEMO DRIVER
 C
-      CALL LINEEX
+      CALL LINEEX (IWKID)
 C
-C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
+C Deactivate and close workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
       STOP
       END
 C
-C
-      SUBROUTINE LINEEX 
+      SUBROUTINE LINEEX (IWKID)
 C
 C PURPOSE                To provide a simple demonstration of 
 C                        how to change line color..
 C
-C USAGE                  CALL LINEEX 
+C USAGE                  CALL LINEEX (IWKID)
 C
 C ARGUMENTS
+C
+C ON INPUT               IWKID
+C                          Workstation id
 C
 C LANGUAGE               FORTRAN
 C
@@ -35,8 +42,6 @@ C NOTE                   The call to GOPWK will have to be modified
 C                        when using a non-NCAR GKS package.  The third
 C                        argument must be the workstation type for WISS.
 C
-C
-
 C  Data for the graphical objects.
 C
       DATA    TWOPI/6.283185/
@@ -45,8 +50,6 @@ C
 C Declare the constant for converting from degrees to radians.
 C
       DATA DTR / .017453292519943 /
-
-
 C
 C Establish the viewport and window.
 C
@@ -55,46 +58,54 @@ C
 C Turn buffering off
 C
       CALL SETUSV('PB',2)
-
 C
 C Set up a color table
 C
 C     White background
-      CALL GSCR (1,0,1.,1.,1.)
-C     Black foreground
-      CALL GSCR (1,1,0.,0.,0.)
-C     Red
-      CALL GSCR (1,2,1.,0.,0.)
-C     Green
-      CALL GSCR (1,3,0.,1.,0.)
-C     Blue
-      CALL GSCR (1,4,0.,0.,1.)
-
+C
+      CALL GSCR (IWKID,0,1.,1.,1.)
+C
+C  Black foreground
+C
+      CALL GSCR (IWKID,1,0.,0.,0.)
+C
+C  Red
+C
+      CALL GSCR (IWKID,2,1.,0.,0.)
+C
+C  Green
+C
+      CALL GSCR (IWKID,3,0.,1.,0.)
+C
+C  Blue
+C 
+     CALL GSCR (IWKID,4,0.,0.,1.)
 C
 C  Create a polygonal fan 
 C
       DTHETA = TWOPI/NPTP
       DO 10 I=1,16
-      	ANG = DTHETA*REAL(I) + .19625
-      	XC = RP*COS(ANG)
-      	YC = RP*SIN(ANG)
+         ANG = DTHETA*REAL(I) + .19625
+         XC = RP*COS(ANG)
+         YC = RP*SIN(ANG)
 C
 C Set the line color
 C 
-	CALL GSPLCI (MOD(I,4)+1)
+         CALL GSPLCI (MOD(I,4)+1)
 C
 C Set line width 
 C 
-	CALL GSLWSC(6.) 
-
+         CALL GSLWSC(6.) 
 C
 C Draw a line
 C
-      	CALL LINED(X0P,Y0P,X0P+XC,Y0P+YC)
-  10  CONTINUE
+         CALL LINED(X0P,Y0P,X0P+XC,Y0P+YC)
+ 10   CONTINUE
       
       CALL SET(0.,1.,0.,1.,0.,1.,0.,1.,1)
+C
 C     Set the line color to black
+C
       CALL GSPLCI (1)
 C
 C  Create a background perimeter 

@@ -1,5 +1,13 @@
       PROGRAM TGFLAS
 C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
 C PURPOSE                To provide a simple demonstration of the
 C                        GFLASH package.
 C
@@ -30,11 +38,11 @@ C
       DATA      RLIN2X/.75,.25/
       DATA      RLIN2Y/.25,.75/
 C
-C Open GKS, open a workstation of type 1, activate the workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (6,IDUM) 
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C  Initialize the GFLASH package.  If using a non-NCAR GKS package
 C  the final argument in the following call should be replaced with
@@ -73,8 +81,8 @@ C
 C
 C  Deactivate and close the metafile workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       END

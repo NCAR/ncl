@@ -1,5 +1,10 @@
       PROGRAM EXMPLS
 C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
 C --- D E C L A R A T I O N S -----------------------------------------
 C
 C Define arrays for column labels and row labels for the plots showing
@@ -49,14 +54,16 @@ C
 C
 C --- E X E C U T A B L E   C O D E -----------------------------------
 C
-C Open GKS.
+C  Open GKS, open and activate a workstation.
 C
-      CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Set up the background and foreground colors
 C
-      CALL GSCR (1,0,1.,1.,1.)
-      CALL GSCR (1,1,0.,0.,0.)
+      CALL GSCR (IWKID,0,1.,1.,1.)
+      CALL GSCR (IWKID,1,0.,0.,0.)
 C
 C Set the "fill area interior style" to "solid".
 C
@@ -310,9 +317,11 @@ C Advance the frame.
 C
       CALL FRAME
 C
-C Close GKS.
+C Deactivate and close workstation, close GKS.
 C
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 C
 C Done.
 C

@@ -1,34 +1,42 @@
 C
-C	$Id: fsrpwrzs.f,v 1.1 1993-03-24 21:25:12 haley Exp $
+C	$Id: fsrpwrzs.f,v 1.2 1994-07-08 17:44:56 haley Exp $
 C
 C
-C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
 C
-      CALL GOPKS (6,IDUM) 
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
+C  Open GKS, open and activate a workstation.
+C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TPWRZS(IERR)
+      CALL TPWRZS(IWKID,IERR)
 C
-C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
+C Deactivate and close workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP
       END
 C
-      SUBROUTINE TPWRZS (IERROR)
+      SUBROUTINE TPWRZS (IWKID,IERROR)
 C
 C PURPOSE                To provide a simple demonstration of
 C                        entry PWRZS with the SRFACE utility.
 C
-C USAGE                  CALL TPWRZS (IERROR)
+C USAGE                  CALL TPWRZS (IWKID,IERROR)
 C
 C ARGUMENTS
+C
+C ON INPUT               IWKID
+C                          A workstation id number
 C
 C ON OUTPUT              IERROR
 C                          An integer variable
@@ -87,30 +95,39 @@ C
 C
 C Set up a color table
 C
-C     White background
-      CALL GSCR (1,0,1.,1.,1.)
-C     Black foreground
-      CALL GSCR (1,1,0.,0.,0.)
-C     Red
-      CALL GSCR (1,2,1.,0.,0.)
-C     Green
-      CALL GSCR (1,3,0.,1.,0.)
-C     Blue
-      CALL GSCR (1,4,0.,0.,1.)
+C White background
+C
+      CALL GSCR (IWKID,0,1.,1.,1.)
+C
+C Black foreground
+C
+      CALL GSCR (IWKID,1,0.,0.,0.)
+C
+C Red
+C
+      CALL GSCR (IWKID,2,1.,0.,0.)
+C
+C Green
+C
+      CALL GSCR (IWKID,3,0.,1.,0.)
+C
+C Blue
+C
+      CALL GSCR (IWKID,4,0.,0.,1.)
 C
 C Define the function values and store them in the Z array.
 C
       DO  10 I=1,M
          X(I) = -1.+FLOAT(I-1)/FLOAT(M-1)*2.
-   10 CONTINUE
+ 10   CONTINUE
       DO  20 J=1,N
          Y(J) = -1.+FLOAT(J-1)/FLOAT(N-1)*2.
-   20 CONTINUE
+ 20   CONTINUE
       DO  40 J=1,N
          DO  30 I=1,M
             Z(I,J) = EXP(-2.*SQRT(X(I)**2+Y(J)**2))
-   30    CONTINUE
-   40 CONTINUE
+ 30      CONTINUE
+ 40   CONTINUE
 C
 C Set SRFACE parameters to supress the FRAME call and draw contours.
 C
@@ -137,7 +154,7 @@ C     Set the label color
       CALL PWRZS (0.,1.1,0.,'FRONT',5,ISIZE,-1,3,0)
       CALL PWRZS (1.1,0.,0.,'SIDE',4,ISIZE,2,-1,0)
       CALL PWRZS (0.,-1.1,.2,' BACK BACK BACK BACK BACK',25,ISIZE,-1,
-     1            3,0)
+     1     3,0)
       CALL FRAME
 C
       IERROR = 0

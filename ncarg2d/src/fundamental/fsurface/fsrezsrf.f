@@ -1,30 +1,38 @@
 C
-C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
 C
-      CALL GOPKS (6,IDUM) 
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
+C  Open GKS, open and activate a workstation.
+C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TSRFAC(IERR)
+      CALL TSRFAC(IWKID,IERR)
 C
-C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
+C Deactivate and close workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP
       END
 C
-      SUBROUTINE TSRFAC (IERROR)
+      SUBROUTINE TSRFAC (IWKID,IERROR)
 C
 C PURPOSE                To provide a simple demonstration of EZSRFC.
 C
-C USAGE                  CALL TSRFAC (IERROR)
+C USAGE                  CALL TSRFAC (IWKID,IERROR)
 C
 C ARGUMENTS
+C
+C ON INPUT               IWKID
+C                          A workstation id number
 C
 C ON OUTPUT              IERROR
 C                          An integer variable
@@ -79,10 +87,13 @@ C
 C
 C Set up a the background and foreground colors
 C
-C     White background
-      CALL GSCR (1,0,1.,1.,1.)
-C     Blue foreground
-      CALL GSCR (1,1,0.,0.,1.)
+C White background
+C
+      CALL GSCR (IWKID,0,1.,1.,1.)
+C
+C Blue foreground
+C
+      CALL GSCR (IWKID,1,0.,0.,1.)
 C
 C Fill the Z function array.
 C
@@ -91,9 +102,9 @@ C
          DO  10 J=1,25
             Y = .1*FLOAT(J-13)
             Z(I,J) = (X+Y+1./((X-.1)**2+Y**2+.09)-
-     1                                      1./((X+.1)**2+Y**2+.09))*.25
-   10    CONTINUE
-   20 CONTINUE
+     1           1./((X+.1)**2+Y**2+.09))*.25
+ 10      CONTINUE
+ 20   CONTINUE
 C
 C Select the normalization transformation 0.
 C

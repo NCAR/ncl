@@ -1,52 +1,59 @@
       PROGRAM EXMPLE
 C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
 C Define arrays to hold data defining a spiral in the user coordinate
 C system.
 C
-        DIMENSION X(476),Y(476)
+      DIMENSION X(476),Y(476)
 C
 C Define arrays to hold the numbers defining the viewport and window,
 C as retrieved from GKS.
 C
-        DIMENSION VIEW(4),WIND(4)
+      DIMENSION VIEW(4),WIND(4)
 C
 C Define a character variable in which to construct labels.
 C
-        CHARACTER*26 CHRS
+      CHARACTER*26 CHRS
 C
-C Open GKS.  Open and activate a single metacode workstation.
+C  Open GKS, open and activate a workstation.
 C
-        CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Turn off clipping at the edges of the viewport (which GKS does by
 C default).
 C
-        CALL GSCLIP (0)
+      CALL GSCLIP (0)
 C
 C Define the X and Y coordinates of a spiral in the user coordinate
 C system.  It lies in a rectangular region bounded by the lines
 C "X=100", "X=1000", "Y=100", and "Y=1000".
 C
-        DO 101 I=1,476
-          THETA=.031415926535898*FLOAT(I-1)
-          X(I)=500.+.9*FLOAT(I-1)*COS(THETA)
-          Y(I)=500.+.9*FLOAT(I-1)*SIN(THETA)
-  101   CONTINUE
+      DO 101 I=1,476
+         THETA=.031415926535898*FLOAT(I-1)
+         X(I)=500.+.9*FLOAT(I-1)*COS(THETA)
+         Y(I)=500.+.9*FLOAT(I-1)*SIN(THETA)
+ 101  CONTINUE
 C
 C Loop through the possible values of 'LS'.
 C
-        DO 103 ILS=1,4
+      DO 103 ILS=1,4
 C
 C Define the fractional coordinates of the left and right edges of the
 C viewport.
 C
-          VPL=REAL(ILS-1)/4.+.020
-          VPR=REAL(ILS  )/4.-.020
+         VPL=REAL(ILS-1)/4.+.020
+         VPR=REAL(ILS  )/4.-.020
 C
 C For each of the possible values of 'LS', loop through the possible
 C values of 'MI'.
 C
-          DO 102 IMI=1,4
+         DO 102 IMI=1,4
 C
 C Define the fractional coordinates of the bottom and top edges of the
 C viewport.
@@ -81,7 +88,7 @@ C to the user coordinates required by PLCHMQ.
 C
             WRITE (CHRS,'(''MI='',I1,'' LS='',I1)') IMI,ILS
             CALL PLCHMQ (CFUX(.5*(VPL+VPR)),CFUY(VPB-.0120),
-     +                                 CHRS(1:9),.012,0.,0.)
+     +           CHRS(1:9),.012,0.,0.)
 C
 C Retrieve the values defining the window and viewport, using GKS
 C calls.
@@ -96,26 +103,27 @@ C
             CHRS(16:16)=' '
             CHRS(22:22)=' '
             CALL PLCHMQ (CFUX(.5*(VPL+VPR)),CFUY(VPB-.0320),
-     +                                CHRS(1:26),.008,0.,0.)
+     +           CHRS(1:26),.008,0.,0.)
             WRITE (CHRS,'(''WD='',F5.0,3('','',F5.0))') (WIND(I),I=1,4)
             CALL PLCHMQ (CFUX(.5*(VPL+VPR)),CFUY(VPB-.0480),
-     +                                CHRS(1:26),.008,0.,0.)
-
+     +           CHRS(1:26),.008,0.,0.)
 C
 C End of loop through the values of 'MI'.
 C
-  102     CONTINUE
+ 102     CONTINUE
 C
 C End of loop through the values of 'LS'.
 C
-  103   CONTINUE
+ 103  CONTINUE
 C
-C Terminate GKS.
+C Deactivate and close workstation, close GKS.
 C
-        CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 C
 C Done.
 C
-        STOP
+      STOP
 C
       END

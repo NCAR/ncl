@@ -1,5 +1,10 @@
       PROGRAM FCCE01
 C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
 C  This program provides a demonstration of setting up a color table 
 C  and specifying colors for the GKS primitives: lines, markers, text, 
 C  and filled areas.
@@ -11,12 +16,11 @@ C
        DATA X2/0.65, 0.85, 0.85, 0.65, 0.65/
        DATA Y /0.45, 0.45, 0.65, 0.65, 0.45/
 C
-C  Open GKS and open and activate a CGM workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS(6,0)
-      IWK = 1
-      CALL GOPWK(IWK,2,1)
-      CALL GACWK(IWK)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C  Set up the color table for the CGM workstation:
 C    
@@ -29,12 +33,12 @@ C      3    Green
 C      4    Yellow
 C      5    Cyan
 C
-      CALL GSCR(IWK, 0, 0.0, 0.0, 0.0)
-      CALL GSCR(IWK, 1, 1.0, 1.0, 1.0)
-      CALL GSCR(IWK, 2, 1.0, 0.0, 0.0)
-      CALL GSCR(IWK, 3, 0.0, 1.0, 0.0)
-      CALL GSCR(IWK, 4, 1.0, 1.0, 0.0)
-      CALL GSCR(IWK, 5, 0.0, 1.0, 1.0)
+      CALL GSCR(IWKID, 0, 0.0, 0.0, 0.0)
+      CALL GSCR(IWKID, 1, 1.0, 1.0, 1.0)
+      CALL GSCR(IWKID, 2, 1.0, 0.0, 0.0)
+      CALL GSCR(IWKID, 3, 0.0, 1.0, 0.0)
+      CALL GSCR(IWKID, 4, 1.0, 1.0, 0.0)
+      CALL GSCR(IWKID, 5, 0.0, 1.0, 1.0)
 C
 C  Draw a green rectangle.
 C
@@ -65,8 +69,8 @@ C
 C  Terminate the picture, deactivate and close the CGM workstation, 
 C  close GKS.
 C
-      CALL GDAWK(1)
-      CALL GCLWK(1)
+      CALL GDAWK(IWKID)
+      CALL GCLWK(IWKID)
       CALL GCLKS
 C
       END

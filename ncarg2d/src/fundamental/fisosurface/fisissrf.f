@@ -1,27 +1,32 @@
 C
-C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
 C
-      CALL GOPKS (6,IDUM) 
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
+C  Open GKS, open and activate a workstation.
+C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TISOSR(IERR)
+      CALL TISOSR(IWKID,IERR)
 C
 C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
       STOP
       END
 C
-      SUBROUTINE TISOSR (IERROR)
+      SUBROUTINE TISOSR (IWKID,IERROR)
 C
 C PURPOSE                To provide a simple demonstration of ISOSRF.
 C
-C USAGE                  CALL TISOSR (IERROR)
+C USAGE                  CALL TISOSR (IWKID,IERROR)
 C
 C ARGUMENTS
 C
@@ -29,6 +34,9 @@ C ON OUTPUT              IERROR
 C                          An integer variable
 C                          = 0, if the test was successful,
 C                          = 1, the test was not successful.
+C
+C ON INPUT               IWKID
+C                          A workstation id
 C
 C I/O                    If the test is successful, the message
 C
@@ -73,8 +81,8 @@ C
 C
 C Set the background and foreground colors
 C
-      CALL GSCR (1,0,1.,1.,1.)
-      CALL GSCR (1,1,0.,0.,0.)
+      CALL GSCR (IWKID,0,1.,1.,1.)
+      CALL GSCR (IWKID,1,0.,0.,0.)
 
 C
 C Fill the 3-D array to be plotted.

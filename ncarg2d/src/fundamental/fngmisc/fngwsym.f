@@ -1,5 +1,10 @@
       PROGRAM PLTCHR
 C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
 C  Plots tables of all the weather symbols.
 C
       CHARACTER*2 CFNT(7)
@@ -21,11 +26,14 @@ C
      +          2,10,
      +          1,11/ 
 C
-C  Open GKS, set color table and line width.
+C  Open GKS, open and activate a workstation.
 C
-      CALL OPNGKS
-      CALL GSCR(1,0,1.,1.,1.)
-      CALL GSCR(1,1,0.,0.,0.)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
+
+      CALL GSCR(IWKID,0,1.,1.,1.)
+      CALL GSCR(IWKID,1,0.,0.,0.)
       CALL GSLWSC(1.)
 C
 C  Font WW -- Present Weather table.
@@ -60,20 +68,25 @@ C
       DY = .095
       SPC = 1./7.-(1.+R)*DY
       DO 10 NF=1,7
-        YB = (NF-1)*((1.+R)*DY+SPC)
-        Y1 = YB
-        Y2 = YB+DY
-        Y3 = YB+(1+R)*DY
-        CALL DTABLE(CFNT(NF),NR,NC,X1,Y1,X2,Y2,Y3,1,1,1)
-        YY = .5*(Y2+Y3)
-        CALL NPUTS(YY,YLAB(1,NF)(1:YLEN(1,NF)),YLAB(2,NF)(1:YLEN(2,NF)),
-     +             .5*(Y3-Y2))
-   10 CONTINUE
+         YB = (NF-1)*((1.+R)*DY+SPC)
+         Y1 = YB
+         Y2 = YB+DY
+         Y3 = YB+(1+R)*DY
+         CALL DTABLE(CFNT(NF),NR,NC,X1,Y1,X2,Y2,Y3,1,1,1)
+         YY = .5*(Y2+Y3)
+         CALL NPUTS(YY,YLAB(1,NF)(1:YLEN(1,NF)),YLAB(2,NF)(1:YLEN(2,NF)),
+     +        .5*(Y3-Y2))
+ 10   CONTINUE
       CALL FRAME
 C
-      CALL CLSGKS
+C Deactivate and close workstation, close GKS.
+C
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
       STOP
       END
+
       SUBROUTINE DTABLE(FONT,NR,NC,X1,Y1,X2,Y2,Y3,ITX1,ITX2,ILNC)
 C
 C  Draw table of characters from font FONT with NR rows and NC columns.
@@ -97,29 +110,29 @@ C
       CALL GSPLCI(ILNC)
       YINC = (Y2-Y1)/REAL(NR)
       DO 10 J=1,NR+1
-        YY(1) = Y1+(J-1)*YINC
-        YY(2) = YY(1)
-        XX(1) = X1
-        XX(2) = X2
-        CALL GPL(2,XX,YY)
-        IF (J .LE. NR) THEN
-          YC(J) = YY(1)+.4*YINC
-          YLC(J) = YY(1)+.8*YINC
-        ENDIF
-   10 CONTINUE
-C
+         YY(1) = Y1+(J-1)*YINC
+         YY(2) = YY(1)
+         XX(1) = X1
+         XX(2) = X2
+         CALL GPL(2,XX,YY)
+         IF (J .LE. NR) THEN
+            YC(J) = YY(1)+.4*YINC
+            YLC(J) = YY(1)+.8*YINC
+         ENDIF
+ 10   CONTINUE
+C     
       XINC = (X2-X1)/REAL(NC)
       DO 20 I=1,NC+1
-        YY(1) = Y1
-        YY(2) = Y2
-        XX(1) = X1+(I-1)*XINC
-        XX(2) = XX(1)
-        CALL GPL(2,XX,YY)
-        IF (I .LE. NC) THEN
-          XC(I) = XX(1)+.6*XINC
-          XLC(I) = XX(1)+.2*XINC
-        ENDIF
-   20 CONTINUE
+         YY(1) = Y1
+         YY(2) = Y2
+         XX(1) = X1+(I-1)*XINC
+         XX(2) = XX(1)
+         CALL GPL(2,XX,YY)
+         IF (I .LE. NC) THEN
+            XC(I) = XX(1)+.6*XINC
+            XLC(I) = XX(1)+.2*XINC
+         ENDIF
+ 20   CONTINUE
       CALL GSLWSC(1.)
 C
 C  Draw the characters in the boxes.
@@ -129,28 +142,29 @@ C
 C    
       CALL GSTXCI(ITX2)
       DO 30 J=1,NR
-        DO 40 I=1,NC
-          NUM = (NR-J)*NC+I-1
-          CALL NGWSYM(FONT,NUM,XC(I),YC(J),.43*YINC,1,0)
-   40   CONTINUE
-   30 CONTINUE
+         DO 40 I=1,NC
+            NUM = (NR-J)*NC+I-1
+            CALL NGWSYM(FONT,NUM,XC(I),YC(J),.43*YINC,1,0)
+ 40      CONTINUE
+ 30   CONTINUE
 C    
 C  Draw the character number in the upper left of the box.
 C
       CHGT = .14*YINC
       DO 50 J=1,NR
-        DO 60 I=1,NC
-          NUM = (NR-J)*NC+I-1
-          WRITE(NLAB,500) NUM
-  500     FORMAT(I2)
-          CALL PCSETI('FN',26)
-          CALL PCSETI('CC',ITX1)
-          CALL PLCHHQ(XLC(I),YLC(J),NLAB,6.*CHGT/7.,0.,0.)
-   60   CONTINUE
-   50 CONTINUE
+         DO 60 I=1,NC
+            NUM = (NR-J)*NC+I-1
+            WRITE(NLAB,500) NUM
+ 500        FORMAT(I2)
+            CALL PCSETI('FN',26)
+            CALL PCSETI('CC',ITX1)
+            CALL PLCHHQ(XLC(I),YLC(J),NLAB,6.*CHGT/7.,0.,0.)
+ 60      CONTINUE
+ 50   CONTINUE
 C
       RETURN
       END
+
       SUBROUTINE NPUTS(YY,STR1,STR2,SIZE)
 C
 C  Put out STR1, then a dash, then STR2 at size SIZE.

@@ -1,3 +1,8 @@
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
       PARAMETER (M=21,N=25)
       REAL U(M,N), V(M,N), WRK(2*M*N)
       INTEGER IDM
@@ -8,11 +13,11 @@ C Generate some data
 C
       CALL MKDAT(U,V,M,N)
 C
-C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (6,IDUM) 
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Select normalization transformation 0 (user coordinates are the same
 C as NDC coordinates), so that title is drawn at top of plot.
@@ -22,7 +27,7 @@ C
 C Call PLCHLQ to write the plot title.
 C
       CALL PLCHLQ (.5,.9765,'Example Streamlines Plot',16.,
-     1            0.,0.)
+     1     0.,0.)
 C
 C Define normalization transformation 1, and set up linear scaling.
 C
@@ -33,7 +38,6 @@ C set spacing of stream lines.
 C
       CALL STSETI('SET -- Set Call Flag', 0)
       CALL STSETR('SSP -- Stream Spacing', 0.015)
-
 C
 C Initialize Streamlines, and draw streamlines
 C
@@ -44,10 +48,10 @@ C Close Frame
 C
       CALL FRAME
 C
-C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
+C Deactivate and close workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 
       STOP

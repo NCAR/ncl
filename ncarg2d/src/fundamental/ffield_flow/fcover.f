@@ -1,6 +1,12 @@
-C	$Id: fcover.f,v 1.3 1994-05-26 16:20:25 haley Exp $
+C
+C	$Id: fcover.f,v 1.4 1994-07-08 17:44:16 haley Exp $
 C
       PROGRAM FCOVER
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C This program requires the input data file 'fun-cover.dat'
 C It reads the data from standard input, e.g.: fun-cover < fun-cover.dat
@@ -99,11 +105,11 @@ C     +     0.0,0.9,1.0,
 C
 C -----------------------------------------------------------------
 C
-C Open GKS, open workstation, activate workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (6,ISZ)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Give initial value to fill color index stored common block CBFILL
 C
@@ -114,7 +120,7 @@ C
 C Set up auxiliary colors
 C
       DO 10 I=1,NCLRS2,1
-         CALL GSCR(1,ICLR2(I),RGB2(1,I),RGB2(2,I),RGB2(3,I))
+         CALL GSCR(IWKID,ICLR2(I),RGB2(1,I),RGB2(2,I),RGB2(3,I))
  10   CONTINUE
 C
 C Read the input array data
@@ -210,7 +216,7 @@ C
       CALL VVSETI('CTV -- Color Thresholds Value', 2)
       CALL VVSETI('NLV -- Number Of Levels', NCLRS1)
       DO 100 J=1,NCLRS1,1
-         CALL GSCR(1,ICLR1(J),RGB1(1,J),RGB1(2,J),RGB1(3,J))
+         CALL GSCR(IWKID,ICLR1(J),RGB1(1,J),RGB1(2,J),RGB1(3,J))
          CALL VVSETI('PAI -- Parameter Array Index', J)
          CALL VVSETI('CLR -- GKS Color Index', ICLR1(J))
  100  CONTINUE
@@ -218,8 +224,8 @@ C
 C Modify the color table for a blue background
 C and modify the contour attributes
 C
-      CALL GSCR(1,ICLR2(1),RGB2(1,8),RGB2(2,8),RGB2(3,8))
-      CALL GSCR(1,ICLR2(2),RGB2(1,1),RGB2(2,1),RGB2(3,1))
+      CALL GSCR(IWKID,ICLR2(1),RGB2(1,8),RGB2(2,8),RGB2(3,8))
+      CALL GSCR(IWKID,ICLR2(2),RGB2(1,1),RGB2(2,1),RGB2(3,1))
       CALL SETCLA(NCLV, ICLR2(7),ICLR2(3))
 C
 C Draw four frames showing first the complete picture, then the
@@ -298,8 +304,8 @@ C
 C
 C     Deactivate and close workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
       STOP
       END

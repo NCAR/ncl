@@ -1,23 +1,30 @@
       PROGRAM POLYM
 C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
 C  Illustrate polymarkers.
 C
-      PARAMETER (ID=50,IWTYPE=1)
+      PARAMETER (ID=50)
       DIMENSION XM1(ID),YM1(ID),XM2(ID),YM2(ID),XM3(ID),YM3(ID)
 C
-      CALL GOPKS (6,IDUM)
-      CALL GOPWK (1, 2, IWTYPE)
-      CALL GACWK (1)
+C  Open GKS, open and activate a workstation.
+C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C  Define the necessary color indices.
 C
-      CALL GSCR(1,0,1.,1.,1.)
-      CALL GSCR(1,1,0.,0.,0.)
-      CALL GSCR(1,2,1.,1.,0.)
-      CALL GSCR(1,3,0.,1.,0.)
-      CALL GSCR(1,4,1.,1.,0.)
-      CALL GSCR(1,5,0.,1.,1.)
-      CALL GSCR(1,6,1.,0.,1.)
+      CALL GSCR(IWKID,0,1.,1.,1.)
+      CALL GSCR(IWKID,1,0.,0.,0.)
+      CALL GSCR(IWKID,2,1.,1.,0.)
+      CALL GSCR(IWKID,3,0.,1.,0.)
+      CALL GSCR(IWKID,4,1.,1.,0.)
+      CALL GSCR(IWKID,5,0.,1.,1.)
+      CALL GSCR(IWKID,6,1.,0.,1.)
 C
 C  Marker 1, dot (fill a large circular dot with markers of type 1).
 C
@@ -217,8 +224,8 @@ C
 C
 C  Deactivate and close the workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP

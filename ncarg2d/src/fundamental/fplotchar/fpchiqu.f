@@ -1,8 +1,15 @@
       PROGRAM EXMPLS
 C
-C Open GKS.
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
 C
-      CALL OPNGKS
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
+C  Open GKS, open and activate a workstation.
+C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Set the "fill area interior style" to "solid".
 C
@@ -14,14 +21,14 @@ C
 C
 C Define some colors to use.
 C
-      CALL GSCR (1,0,1.,1.,1.)
-      CALL GSCR (1,1,0.,.0,.0)
-      CALL GSCR (1,2,0.,.5,.5)
-      CALL GSCR (1,3,.9,.9,0.)
-      CALL GSCR (1,4,1.,.3,.3)
-      CALL GSCR (1,5,0.,0.,1.)
-      CALL GSCR (1,6,.2,.2,.2)
-      CALL GSCR (1,7,.8,.8,.8)
+      CALL GSCR (IWKID,0,1.,1.,1.)
+      CALL GSCR (IWKID,1,0.,.0,.0)
+      CALL GSCR (IWKID,2,0.,.5,.5)
+      CALL GSCR (IWKID,3,.9,.9,0.)
+      CALL GSCR (IWKID,4,1.,.3,.3)
+      CALL GSCR (IWKID,5,0.,0.,1.)
+      CALL GSCR (IWKID,6,.2,.2,.2)
+      CALL GSCR (IWKID,7,.8,.8,.8)
 C
 C Do a single frame showing various capabilities of PLCHHQ.
 C
@@ -363,9 +370,11 @@ C Advance the frame.
 C
       CALL FRAME
 C
-C Close GKS.
+C Deactivate and close workstation, close GKS.
 C
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 C
 C Done.
 C

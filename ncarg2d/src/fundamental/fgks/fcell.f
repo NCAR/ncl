@@ -1,9 +1,13 @@
       PROGRAM FCELL
 C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
 C  Produce an NX x NY  CELL ARRAY based on the Mandelbrot set--color
 C  the cells depending upon the speed of convergence or divergence.
 C
-      PARAMETER (IWTYPE=1)
       PARAMETER (NX=50, NY=50, NITER=201)
       INTEGER COLIA(NX,NY)
       COMPLEX Z
@@ -13,12 +17,12 @@ C
 C     DATA XL,XR,YB,YT/-0.1,.5,-0.,1.00/
       DATA XL,XR,YB,YT/.25,.375,-0.,0.50/
 C
-C  Open GKS, open and activate the metafile workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (6,IDUM)
-      CALL GOPWK (1, 2, IWTYPE)
-      CALL GACWK (1)
-C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
+
       CALL GSWN(1,XL,XR,YB,YT)
       CALL GSVP(1,0.,1.,0.,1.)
       CALL GSELNT(1)
@@ -29,9 +33,9 @@ C
         H = REAL(K)/REAL(NITER)*360.
 C       CALL HLSRGB(H,50.,100.,RV,GV,BV)
         CALL HLSRGB(H,50.,100.,RV,GV,BV)
-        CALL GSCR(1,K,RV,GV,BV)
+        CALL GSCR(IWKID,K,RV,GV,BV)
    11 CONTINUE
-      CALL GSCR(1,NITER+1,1.,0.,0.)
+      CALL GSCR(IWKID,NITER+1,1.,0.,0.)
 C
 C  Set up the cell array and call GFA.
 C
@@ -51,8 +55,8 @@ C
 C
 C  Deactivate and close the workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C	
       STOP

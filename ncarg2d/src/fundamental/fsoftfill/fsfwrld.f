@@ -1,4 +1,9 @@
       PROGRAM CSFWLD
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
       PARAMETER (NPTS=101,LRWK=1000,LIWK=1000)
       INTEGER IWRK(LIWK)
       REAL X1(NPTS),Y1(NPTS),X2(NPTS),Y2(NPTS),X3(NPTS),Y3(NPTS)
@@ -23,9 +28,11 @@ C  Generate three intersecting circles of radius 1.
         Y3(II) = Y - .5
  100  CONTINUE
 C
-C  Initialize the GKS package
+C  Open GKS, open and activate a workstation.
 C
-      CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C  Define the entire Viewport and a Window from -2. to 2 with linear scaling.
 C
@@ -44,7 +51,12 @@ C
 C  Do all the rest necesary to display the picture and end the plot
 C
       CALL FRAME
-      CALL CLSGKS
+C
+C Deactivate and close workstation, close GKS.
+C
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
       STOP
       END
 

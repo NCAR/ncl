@@ -1,6 +1,12 @@
-C	$Id: ffex02.f,v 1.3 1993-10-01 19:37:50 dbrown Exp $
+C
+C	$Id: ffex02.f,v 1.4 1994-07-08 17:44:18 haley Exp $
 C
       PROGRAM FFEX02
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C This program requires the input data file 'ffex02.dat'
 C It reads the data from standard input, e.g.: ffex02 < ffex02.dat
@@ -29,11 +35,11 @@ C
      +     0.92549,0.0745098,0.074509,
      +     1.0,0.0,0.0 /
 C
-C Open GKS, open workstation, activate workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (6,ISZ)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Read the input array data
 C
@@ -82,7 +88,7 @@ C
             CALL VVSETI('NLV -- Number Of Levels', NCLRS)
             DO 100 I=1,NCLRS,1
                ICLRIX=2+(I-1)*200/NCLRS
-               CALL GSCR(1,ICLRIX,RGBV(1,I),RGBV(2,I),RGBV(3,I))
+               CALL GSCR(IWKID,ICLRIX,RGBV(1,I),RGBV(2,I),RGBV(3,I))
                CALL VVSETI('PAI -- Parameter Array Index', I)
                CALL VVSETI('CLR -- GKS Color Index', ICLRIX)
  100        CONTINUE
@@ -123,8 +129,8 @@ C
 C
 C     Deactivate and close workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
       STOP
       END

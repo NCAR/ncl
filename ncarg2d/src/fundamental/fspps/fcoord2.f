@@ -1,9 +1,14 @@
 C
-C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
 C
-      CALL GOPKS (6,IDUM) 
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
+C  Open GKS, open and activate a workstation.
+C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C INVOKE DEMO DRIVER
 C
@@ -11,8 +16,8 @@ C
 C
 C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
       STOP
       END
@@ -35,34 +40,34 @@ C
 C
       CALL PCSETC('FC','%')
       CALL PLCHHQ (.50,.98,
-     +          'Mapping from a window in the user coordinate system',
-     +                                                     .02,0.,0.)
+     +     'Mapping from a window in the user coordinate system',
+     +     .02,0.,0.)
       CALL PLCHHQ (.50,.94,
      +     'to a viewport in the normalized device coordinate system',
-     +                                                     .02,0.,0.)
+     +     .02,0.,0.)
       CALL PLCHHQ (.50,.90,
-     +                'using a transformation defined by calling SET',
-     +                                                     .02,0.,0.)
+     +     'using a transformation defined by calling SET',
+     +     .02,0.,0.)
       CALL PCSETI('FN',21)
       CALL PLCHHQ (.50,.86,
-     +               '(Used in calls to most NCAR Graphics routines)',
-     +                                                     .016,0.,0.)
+     +     '(Used in calls to most NCAR Graphics routines)',
+     +     .016,0.,0.)
       CALL PCSETI('FN',29)
       CALL PLCHHQ (.50,.22,
-     + 'Assume a CALL SET (.15,.95,.10,.90,1000.,100.,100.,1000.,2).',
-     +                                                     .013,0.,0.)
+     +     'Assume a CALL SET (.15,.95,.10,.90,1000.,100.,100.,1000.,2).',
+     +     .013,0.,0.)
       CALL PLCHHQ (.50,.185,
-     +                'The GKS viewport is:  .15, .95, .10, .90',
-     +                                                     .013,0.,0.)
+     +     'The GKS viewport is:  .15, .95, .10, .90',
+     +     .013,0.,0.)
       CALL PLCHHQ (.50,.15,
-     +                 'The GKS window is:  100., 1000., 2., 3.',
-     +                                                     .013,0.,0.)
+     +     'The GKS window is:  100., 1000., 2., 3.',
+     +     .013,0.,0.)
       CALL PLCHHQ (.50,.115,
-     +      'The value of ''MI'' is 3 (mirror-imaging of X''s).',
-     +                                                       .013,0.,0.)
+     +     'The value of ''MI'' is 3 (mirror-imaging of X''s).',
+     +     .013,0.,0.)
       CALL PLCHHQ (.50,.08,
-     +         'The value of ''LS'' is 2 (log scaling of Y''s).',
-     +                                                       .013,0.,0.)
+     +     'The value of ''LS'' is 2 (log scaling of Y''s).',
+     +     .013,0.,0.)
       CALL PCSETI('FN',22)
       CALL SET    (.01,.55,.29,.83,0.,1100.,0.,1100.,1)
       CALL LINE   (   0.,   0.,1100.,   0.)
@@ -78,16 +83,16 @@ C
       CALL LINE   (1000.,1000., 100.,1000.)
       CALL LINE   ( 100.,1000., 100., 100.)
       CALL PLCHHQ (CFUX(CUFX(100.)+.005),CFUY(CUFY(1000.)-.01),
-     +               'WINDOW',.01,0.,-1.)
+     +     'WINDOW',.01,0.,-1.)
       CALL PLCHHQ (100.,CFUY(CUFY(100.)-.01),'100',.008,0.,0.)
       CALL PLCHHQ (1000.,CFUY(CUFY(100.)-.01),'1000',.008,0.,0.)
       CALL PLCHHQ (CFUX(CUFX(100.)-.005),100.,'100',.008,0.,1.)
       CALL PLCHHQ (CFUX(CUFX(100.)-.005),1000.,'1000',.008,0.,1.)
       DO 101 I=1,101
-        XCRA(I)=200.+7.*REAL(I-1)
-        YCRA(I)=200.+700.*(10.**((XCRA(I)-200.)/700.)-1.)/9.+
-     +          100.*SIN((XCRA(I)-200.)/30.)
-  101 CONTINUE
+         XCRA(I)=200.+7.*REAL(I-1)
+         YCRA(I)=200.+700.*(10.**((XCRA(I)-200.)/700.)-1.)/9.+
+     +        100.*SIN((XCRA(I)-200.)/30.)
+ 101  CONTINUE
       CALL CURVE  (XCRA,YCRA,101)
       XCLW=CUFX(100.)
       XCRW=CUFX(1000.)
@@ -119,14 +124,14 @@ C
       CALL LINE   (1.,1.,0.,1.)
       CALL LINE   (0.,1.,0.,0.)
       CALL PLCHHQ (CFUX(CUFX(0.)+.005),CFUY(CUFY(1.)-.01),
-     +             'DEVICE',.01,0.,-1.)
+     +     'DEVICE',.01,0.,-1.)
       CALL SET    (PFL,PFR,PFB,PFT,0.,1.,0.,1.,1)
       CALL LINE   (0.,0.,1.,0.)
       CALL LINE   (1.,0.,1.,1.)
       CALL LINE   (1.,1.,0.,1.)
       CALL LINE   (0.,1.,0.,0.)
       CALL PLCHHQ (CFUX(CUFX(0.)+.005),CFUY(CUFY(1.)-.01),
-     +             'PLOTTER FRAME',.01,0.,-1.)
+     +     'PLOTTER FRAME',.01,0.,-1.)
       CALL PLCHHQ (0.,CFUY(CUFY(0.)-.01),'0',.008,0.,0.)
       CALL PLCHHQ (1.,CFUY(CUFY(0.)-.01),'1',.008,0.,0.)
       CALL PLCHHQ (CFUX(CUFX(0.)-.005),0.,'0',.008,0.,1.)
@@ -141,7 +146,7 @@ C
       CALL LINE   ( 100.,1000.,1000.,1000.)
       CALL LINE   (1000.,1000.,1000., 100.)
       CALL PLCHHQ (CFUX(CUFX(1000.)+.005),CFUY(CUFY(1000.)-.01),
-     +             'VIEWPORT',.01,0.,-1.)
+     +     'VIEWPORT',.01,0.,-1.)
       CALL PLCHHQ (1000.,CFUY(CUFY(100.)-.01),'.15',.008,0.,0.)
       CALL PLCHHQ (100.,CFUY(CUFY(100.)-.01),'.95',.008,0.,0.)
       CALL PLCHHQ (CFUX(CUFX(1000.)-.005),100.,'.10',.008,0.,1.)
@@ -184,6 +189,6 @@ C
       RETURN
 C
  1001 FORMAT ('     COORD2 TEST SUCCESSFUL',24X,
-     1        'SEE PLOTS TO VERIFY PERFORMANCE')
+     1     'SEE PLOTS TO VERIFY PERFORMANCE')
 C
       END

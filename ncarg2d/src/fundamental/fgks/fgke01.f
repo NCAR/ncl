@@ -1,27 +1,33 @@
       PROGRAM GKE01
 C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IWKID2=2)
+C
 C  Simple example illustrating opening GKS, opening and activating
 C  a CGM workstation and an X11 workstation.
 C
-      CALL GOPKS(6,0)
+      CALL GOPKS (IERRF, ISZDM)
 C
 C  Specify text alignment of (center, half) and set character height.
 C
       CALL GSTXAL(2,3)
       CALL GSCHH(.05)
 C
-C  Open a CGM workstation with workstation ID of 1.
+C  Open a CGM workstation with workstation ID of IWKID.
 C
-      CALL GOPWK(1,2,1)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
 C
-C  Open an X11 workstation with workstation ID of 2.
+C  Open an X11 workstation with workstation ID of IWKID2.
 C
-      CALL GOPWK(2,0,8)
+      CALL GOPWK(IWKID2,0,8)
 C
 C  Activate the workstations.
 C
-      CALL GACWK(1)
-      CALL GACWK(2)
+      CALL GACWK(IWKID)
+      CALL GACWK(IWKID2)
 C
 C  Draw a text string.
 C
@@ -30,10 +36,10 @@ C
 C
 C  Close things down.
 C
-      CALL GDAWK(1)
-      CALL GDAWK(2)
-      CALL GCLWK(1)
-      CALL GCLWK(2)
+      CALL GDAWK(IWKID)
+      CALL GDAWK(IWKID2)
+      CALL GCLWK(IWKID)
+      CALL GCLWK(IWKID2)
       CALL GCLKS
 C
       STOP

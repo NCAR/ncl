@@ -1,6 +1,12 @@
-C	$Id: ffex00.f,v 1.2 1993-04-13 23:32:03 dbrown Exp $
+C
+C	$Id: ffex00.f,v 1.3 1994-07-08 17:44:17 haley Exp $
 C
       PROGRAM FFEX00
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Draws a uniform field over an azimuthal projection of the globe
 C Continental boundaries are filled with a grayscale value
@@ -30,16 +36,16 @@ C Give initial value to fill color index stored common block CBFILL
 C
       IFILIX = 196
 C
-C Open GKS, open workstation, activate workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (6,ISZ)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Set up colors for fixed table grayscale and color workstations
 C
       DO 100 I=1,NCLRS,1
-         CALL GSCR(1,ICLR(I),RGBV(1,I),RGBV(2,I),RGBV(3,I))
+         CALL GSCR(IWKID,ICLR(I),RGBV(1,I),RGBV(2,I),RGBV(3,I))
  100  CONTINUE
 C     
 C Generate uniform field intended for polar input mode.
@@ -126,8 +132,8 @@ C
 C
 C     Deactivate and close workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
       STOP
       END

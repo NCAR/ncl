@@ -1,32 +1,40 @@
 C
-C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
+C	$Id: fsppoint.f,v 1.2 1994-07-08 17:44:51 haley Exp $
 C
-      CALL GOPKS (6,IDUM) 
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
+C  Open GKS, open and activate a workstation.
+C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TAREAS(IERR)
+      CALL TAREAS(IWKID,IERR)
 C
-C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
+C Deactivate and close workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
       STOP
       END
-C
-C	$Id: fsppoint.f,v 1.1 1993-03-24 21:24:58 haley Exp $
-C
-      SUBROUTINE TAREAS (IERROR)
+
+      SUBROUTINE TAREAS (IWKID,IERROR)
 C
 C PURPOSE                To provide a simple demonstration of the use
 C                        of AREAS.
 C
-C USAGE                  CALL TAREAS (IERROR)
+C USAGE                  CALL TAREAS (IWKID,IERROR)
 C
 C ARGUMENTS
+C
+C ON INPUT               IWKID
+C                          A workstation id number
 C
 C ON OUTPUT              IERROR
 C
@@ -129,13 +137,13 @@ C
 C
 C Set the background color to white
 C
-        CALL GSCR(1,0,1.,1.,1.)
+        CALL GSCR(IWKID,0,1.,1.,1.)
 C
 C Define 15 different color indices.
 C
         DO 101 J=1,15
-          I=IOC(J)
-          CALL GSCR(1,J,RGB(1,I),RGB(2,I),RGB(3,I))
+           I=IOC(J)
+           CALL GSCR(IWKID,J,RGB(1,I),RGB(2,I),RGB(3,I))
   101   CONTINUE
 C
 C Initialize the area map.
@@ -151,10 +159,10 @@ C area inside the circle has area identifier zero and the area outside
 C has area identifier -1.
 C
         DO 102 ING=1,73
-        ANG=DTR*REAL(5*(ING-1))
-        XCA(ING)=COS(ANG)
-        YCA(ING)=SIN(ANG)
-  102   CONTINUE
+           ANG=DTR*REAL(5*(ING-1))
+           XCA(ING)=COS(ANG)
+           YCA(ING)=SIN(ANG)
+ 102    CONTINUE
         CALL AREDAM (IAM,XCA,YCA,73,1,0,-1)
 C
 C Add lines splitting the circle into wedges.  The area identifiers
@@ -163,21 +171,21 @@ C
         XCA(1)=0.
         YCA(1)=0.
         DO 103 ING=1,15
-          ANG=DTR*REAL(24*(ING-1))
-          XCA(2)=COS(ANG)
-          YCA(2)=SIN(ANG)
-          CALL AREDAM (IAM,XCA,YCA,2,1,ING,MOD(ING+13,15)+1)
-  103   CONTINUE
+           ANG=DTR*REAL(24*(ING-1))
+           XCA(2)=COS(ANG)
+           YCA(2)=SIN(ANG)
+           CALL AREDAM (IAM,XCA,YCA,2,1,ING,MOD(ING+13,15)+1)
+ 103    CONTINUE
 C
 C Now, put in another, smaller, off-center circle, using a group 2
 C edge.  The interior of the circle has area identifier 1 and the
 C exterior of the circle has group identifier 2.
 C
         DO 104 ING=1,73
-        ANG=DTR*REAL(5*(ING-1))
-        XCA(ING)=.25+.5*COS(ANG)
-        YCA(ING)=.25+.5*SIN(ANG)
-  104   CONTINUE
+           ANG=DTR*REAL(5*(ING-1))
+           XCA(ING)=.25+.5*COS(ANG)
+           YCA(ING)=.25+.5*SIN(ANG)
+ 104    CONTINUE
         CALL AREDAM (IAM,XCA,YCA,73,2,1,2)
 C
 C Pre-process the area map.
@@ -196,64 +204,64 @@ C
 C In contrasting colors, draw three stars on the plot.
 C
         DO 105 I=1,3
-          IF (I.EQ.1) THEN
-            XCN=-.5
-            YCN=+.5
-          ELSE IF (I.EQ.2) THEN
-            XCN=-.5
-            YCN=-.5
-          ELSE IF (I.EQ.3) THEN
-            XCN=+.5
-            YCN=-.5
-          END IF
-          XCA(1)=XCN+.25*COS( 162.*DTR)
-          YCA(1)=YCN+.25*SIN( 162.*DTR)
-          XCA(2)=XCN+.25*COS(  18.*DTR)
-          YCA(2)=YCN+.25*SIN(  18.*DTR)
-          XCA(3)=XCN+.25*COS(-126.*DTR)
-          YCA(3)=YCN+.25*SIN(-126.*DTR)
-          XCA(4)=XCN+.25*COS(  90.*DTR)
-          YCA(4)=YCN+.25*SIN(  90.*DTR)
-          XCA(5)=XCN+.25*COS( -54.*DTR)
-          YCA(5)=YCN+.25*SIN( -54.*DTR)
-          XCA(6)=XCN+.25*COS( 162.*DTR)
-          YCA(6)=YCN+.25*SIN( 162.*DTR)
-          CALL ARDRLN (IAM,XCA,YCA,6,XCS,YCS,150,IAI,IAG,2,COLRLN)
-  105   CONTINUE
-C
-C Draw a spiral of points in the blanked-out circle, using the colors
-C from edge group 1.
-C
+           IF (I.EQ.1) THEN
+              XCN=-.5
+              YCN=+.5
+           ELSE IF (I.EQ.2) THEN
+              XCN=-.5
+              YCN=-.5
+           ELSE IF (I.EQ.3) THEN
+              XCN=+.5
+              YCN=-.5
+           END IF
+           XCA(1)=XCN+.25*COS( 162.*DTR)
+           YCA(1)=YCN+.25*SIN( 162.*DTR)
+           XCA(2)=XCN+.25*COS(  18.*DTR)
+           YCA(2)=YCN+.25*SIN(  18.*DTR)
+           XCA(3)=XCN+.25*COS(-126.*DTR)
+           YCA(3)=YCN+.25*SIN(-126.*DTR)
+           XCA(4)=XCN+.25*COS(  90.*DTR)
+           YCA(4)=YCN+.25*SIN(  90.*DTR)
+           XCA(5)=XCN+.25*COS( -54.*DTR)
+           YCA(5)=YCN+.25*SIN( -54.*DTR)
+           XCA(6)=XCN+.25*COS( 162.*DTR)
+           YCA(6)=YCN+.25*SIN( 162.*DTR)
+           CALL ARDRLN (IAM,XCA,YCA,6,XCS,YCS,150,IAI,IAG,2,COLRLN)
+ 105    CONTINUE
+C     
+C     Draw a spiral of points in the blanked-out circle, using the colors
+C     from edge group 1.
+C     
         ICF=1
         DO 108 ING=1,1500
-          RAD=REAL(ING)/1000.
-          ANG=DTR*REAL(ING-1)
-          XCD=.25+.5*RAD*COS(ANG)
-          YCD=.25+.5*RAD*SIN(ANG)
-          CALL ARGTAI (IAM,XCD,YCD,IAI,IAG,2,NAI,ICF)
-          ITM=1
-          DO 106 I=1,NAI
-            IF (IAI(I).LT.0) ITM=0
-  106     CONTINUE
-          IF (ITM.NE.0) THEN
-            IT1=0
-            IT2=0
-            DO 107 I=1,NAI
-              IF (IAG(I).EQ.1) IT1=IAI(I)
-              IF (IAG(I).EQ.2) IT2=IAI(I)
-  107       CONTINUE
-            IF (IT1.GT.0.AND.IT2.EQ.1) THEN
-C
-C Flush the polyline buffers and set polyline color index.
-C
-              CALL SFLUSH
-              CALL GSPLCI(IT1)
-C
-              CALL POINT (XCD,YCD)
-            END IF
-          END IF
-          ICF=0
-  108   CONTINUE
+           RAD=REAL(ING)/1000.
+           ANG=DTR*REAL(ING-1)
+           XCD=.25+.5*RAD*COS(ANG)
+           YCD=.25+.5*RAD*SIN(ANG)
+           CALL ARGTAI (IAM,XCD,YCD,IAI,IAG,2,NAI,ICF)
+           ITM=1
+           DO 106 I=1,NAI
+              IF (IAI(I).LT.0) ITM=0
+ 106       CONTINUE
+           IF (ITM.NE.0) THEN
+              IT1=0
+              IT2=0
+              DO 107 I=1,NAI
+                 IF (IAG(I).EQ.1) IT1=IAI(I)
+                 IF (IAG(I).EQ.2) IT2=IAI(I)
+ 107          CONTINUE
+              IF (IT1.GT.0.AND.IT2.EQ.1) THEN
+C     
+C     Flush the polyline buffers and set polyline color index.
+C     
+                 CALL SFLUSH
+                 CALL GSPLCI(IT1)
+C     
+                 CALL POINT (XCD,YCD)
+              END IF
+           END IF
+           ICF=0
+ 108    CONTINUE
 C
 C Advance the frame.
 C
@@ -270,51 +278,51 @@ C
 C
       END
       SUBROUTINE COLRAM (XCS,YCS,NCS,IAI,IAG,NAI)
-        DIMENSION XCS(*),YCS(*),IAI(*),IAG(*)
-        ITM=1
-        DO 101 I=1,NAI
-          IF (IAI(I).LT.0) ITM=0
-  101   CONTINUE
-        IF (ITM.NE.0) THEN
-          IT1=0
-          DO 102 I=1,NAI
+      DIMENSION XCS(*),YCS(*),IAI(*),IAG(*)
+      ITM=1
+      DO 101 I=1,NAI
+         IF (IAI(I).LT.0) ITM=0
+ 101  CONTINUE
+      IF (ITM.NE.0) THEN
+         IT1=0
+         DO 102 I=1,NAI
             IF (IAG(I).EQ.1) IT1=IAI(I)
             IF (IAG(I).EQ.2) IT2=IAI(I)
-  102     CONTINUE
-          IF (IT1.GT.0.AND.IT2.NE.1) THEN
+ 102     CONTINUE
+         IF (IT1.GT.0.AND.IT2.NE.1) THEN
 C
 C Set fill area color index.
 C
             CALL GSFACI(IT1)
-C
+C     
             CALL GFA (NCS-1,XCS,YCS)
-          END IF
-        END IF
-        RETURN
+         END IF
+      END IF
+      RETURN
       END
       SUBROUTINE COLRLN (XCS,YCS,NCS,IAI,IAG,NAI)
-        DIMENSION XCS(*),YCS(*),IAI(*),IAG(*)
-        ITM=1
-        DO 101 I=1,NAI
-          IF (IAI(I).LT.0) ITM=0
-  101   CONTINUE
-        IF (ITM.NE.0) THEN
-          IT1=0
-          IT2=0
-          DO 102 I=1,NAI
+      DIMENSION XCS(*),YCS(*),IAI(*),IAG(*)
+      ITM=1
+      DO 101 I=1,NAI
+         IF (IAI(I).LT.0) ITM=0
+ 101  CONTINUE
+      IF (ITM.NE.0) THEN
+         IT1=0
+         IT2=0
+         DO 102 I=1,NAI
             IF (IAG(I).EQ.1) IT1=IAI(I)
             IF (IAG(I).EQ.2) IT2=IAI(I)
-  102     CONTINUE
-          IF (IT1.GT.0.AND.IT2.NE.1) THEN
-C
-C Flush PLOTIT's buffers and set polyline color index.
-C
+ 102     CONTINUE
+         IF (IT1.GT.0.AND.IT2.NE.1) THEN
+C     
+C     Flush PLOTIT's buffers and set polyline color index.
+C     
             CALL PLOTIT(0,0,0)
             CALL GSPLCI(MOD(IT1+3,15)+1)
-C
+C     
             CALL GPL (NCS,XCS,YCS)
-          END IF
-        END IF
-        RETURN
+         END IF
+      END IF
+      RETURN
       END
 

@@ -1,5 +1,10 @@
       PROGRAM CELLAR
 C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
 C  Demonstration of the GKS CELL ARRAY entry.
 C
       PARAMETER   (IDX=2,IDY=3)
@@ -12,22 +17,22 @@ C
       DATA LABEL/'  Red  ',' Cyan  ',' Green ','Magenta',
      +           ' Blue  ','Yellow '/
 C
-C  Open GKS, open and activate a CGM workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (6,0)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C  Set up a color table and define the color index array.
 C
-      CALL GSCR(1,0,1.,1.,1.)
-      CALL GSCR(1,1,1.,1.,1.)
-      CALL GSCR(1,2,1.,0.,0.)
-      CALL GSCR(1,3,0.,1.,0.)
-      CALL GSCR(1,4,0.,0.,1.)
-      CALL GSCR(1,5,0.,1.,1.)
-      CALL GSCR(1,6,1.,0.,1.)
-      CALL GSCR(1,7,1.,1.,0.)
+      CALL GSCR(IWKID,0,1.,1.,1.)
+      CALL GSCR(IWKID,1,1.,1.,1.)
+      CALL GSCR(IWKID,2,1.,0.,0.)
+      CALL GSCR(IWKID,3,0.,1.,0.)
+      CALL GSCR(IWKID,4,0.,0.,1.)
+      CALL GSCR(IWKID,5,0.,1.,1.)
+      CALL GSCR(IWKID,6,1.,0.,1.)
+      CALL GSCR(IWKID,7,1.,1.,0.)
 C
       DO 10 I=1,IDX
         DO 20 J=1,IDY
@@ -59,8 +64,8 @@ C
 C
 C  Deactivate and close the workstation, close gks.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP

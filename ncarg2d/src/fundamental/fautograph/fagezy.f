@@ -1,4 +1,9 @@
       PROGRAM FAGEZY
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
       PARAMETER (NPTS=200)
       REAL YDRA(NPTS)
 
@@ -6,9 +11,24 @@
          YDRA(I)=SIN(I*0.1)*EXP(-0.01*I*0.1*4)
   10  CONTINUE
 
-      CALL OPNGKS
+C
+C  Open GKS, open and activate a workstation.
+C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
+
       CALL EZY (YDRA,NPTS,'EZY$')
-      CALL CLSGKS
+C
+C  Deactivate and close the workstation, close GKS.
+C
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
+C
+      STOP
+      END
+
 
       STOP
       END
