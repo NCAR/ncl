@@ -25,12 +25,9 @@ C
       external NhlFTextItemClass
 
       integer appid, widx,widn,widp, pidx,pidn,pidp
-      integer srlist, grlist,ierr
-      integer m,i
+      integer srlist, ierr
+      integer i
       integer NCGM, PS, X11
-C------------------------------------------------------
-C  For HLU/LLU use:
-      INTEGER GLIST,GKSWID
 C------------------------------------------------------
 C
 C  Call a subroutine that generates an LLU
