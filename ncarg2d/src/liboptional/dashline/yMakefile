@@ -1,8 +1,6 @@
 #
-#	$Id: yMakefile,v 1.3 1993-10-19 17:39:25 boote Exp $
+#	$Id: yMakefile,v 1.4 1993-11-01 17:42:06 boote Exp $
 #
-NCARG	= ../../../..
-
 MYNAME	= dashline
 
 GENERIC_SRCS = \
@@ -18,12 +16,4 @@ SOURCES = $(GENERIC_SRCS)
 OBJECTS = $(GENERIC_OBJS)
 
 RelocatableTarget(libdashline.o,$(OBJECTS))
-
-#ifdef  BuildNCARGSourceLibrary
-install:: $(SOURCES)
-	@-$(RM) $(LIBPATH)/srcdashline.a
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBPATH)/srcdashline.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBPATH)/srcdashline.a
-	@-$(RM) $(MYNAME)
-#endif
+SourceLibraryTarget($(MYNAME),srcdashline.a,$(SOURCES))

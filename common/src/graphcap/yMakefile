@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1993-10-19 17:12:38 boote Exp $
+#	$Id: yMakefile,v 1.6 1993-11-01 17:28:42 boote Exp $
 #
 
 MYNAME	= graphcap
@@ -32,12 +32,12 @@ GRAPHCAPS = \
 	versaterm vt100 vt125 vt220 vt240 vt330 vt340 \
 	vt340w ditroff
 
+InstallTarget($(GRAPHCAPS),$(INSTALL_DB),$(GRAPHCAPPATH))
+CleanFilesTarget($(GRAPHCAPS))
+
 # rule for processing graphcaps
 .SUFFIXES:
 .SUFFIXES: .gc
 .gc:
 	@echo "	Processing graphcap $@"
 	@$(GRAPHC) $< $@
-
-InstallTarget($(GRAPHCAPS),$(INSTALL_DB),$(GRAPHCAPPATH))
-CleanFilesTarget($(GRAPHCAPS))

@@ -1,7 +1,6 @@
 #
-#	$Id: yMakefile,v 1.3 1993-10-19 17:38:36 boote Exp $
+#	$Id: yMakefile,v 1.4 1993-11-01 17:41:21 boote Exp $
 #
-NCARG	= ../../../..
 
 MYNAME	= agupwrtx
 
@@ -14,12 +13,4 @@ OBJECTS = $(GENERIC_OBJS)
 SOURCES = $(GENERIC_SRCS)
 
 RelocatableTarget(libagupwrtx.o,$(OBJECTS))
-
-#ifdef  BuildNCARGSourceLibrary
-install:: $(SOURCES)
-	@-$(RM) $(LIBPATH)/srcagupwrtx.a
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_QUICK) $(LIBPATH)/srcagupwrtx.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBPATH)/srcagupwrtx.a
-	@-$(RM) $(MYNAME)
-#endif
+SourceLibraryTarget($(MYNAME),srcagupwrtx.a,$(SOURCES))

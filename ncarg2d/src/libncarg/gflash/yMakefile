@@ -1,8 +1,6 @@
 #
-#	$Id: yMakefile,v 1.3 1993-10-19 17:29:08 boote Exp $
+#	$Id: yMakefile,v 1.4 1993-11-01 17:35:10 boote Exp $
 #
-NCARG	= ../../../..
-
 MYNAME	= gflash
 
 GENERIC_SRCS = \

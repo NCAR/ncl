@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1993-10-19 17:37:22 boote Exp $
+#	$Id: yMakefile,v 1.8 1993-11-01 17:40:34 boote Exp $
 #
 
 MYNAME	= awi
@@ -7,12 +7,11 @@ MYNAME	= awi
 /*
  * The Sun f77 optimizer appears to have troubles with the GKS system.
  */
-#if defined(sun) || (defined(u370) && (unix))
-#ifdef	FOptimizeFlag
-#undef	FOptimizeFlag
-#endif	/* FOptimizeFlag */
-#define	FOptimizeFlag	/**/
+#ifdef	NOT_SURE_IF_NEEDED_ANYMORE
+#if defined(SUN)
+#define	DisableOptimize
 #endif	/* sun	*/
+#endif
 
 GENERIC_SRCS = \
 gactm.f   gacwk.f   gaspar.f  gatelm.f  gca.f     gcelcd.f  gceldc.f  gceldr.f \
@@ -77,7 +76,7 @@ CleanFilesTarget($(FCPP_OBJS) $(ROBJ_SRC) $(ROBJ_OBJ))
 
 all::	ggkwdr_stub.o
 
-#if defined(cray)
+#if defined(CRAY)
 gztowk.o: gztowk.f
 	$(CFT) $(FFLAGS) -o off gztowk.f
 #endif

@@ -1,15 +1,6 @@
 #
-#	$Id: yMakefile,v 1.3 1993-10-19 17:29:38 boote Exp $
+#	$Id: yMakefile,v 1.4 1993-11-01 17:35:39 boote Exp $
 #
-
-#ifdef	sun
-#ifdef	FOptimizeFlag
-#undef	FOptimizeFlag
-#endif	/* FOptimizeFlag */
-#define	FOptimizeFlag /**/
-#endif	/* sun */
-
-NCARG	= ../../../..
 
 MYNAME	= histgr
 

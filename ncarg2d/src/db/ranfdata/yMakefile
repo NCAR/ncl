@@ -1,11 +1,5 @@
 #
-#	$Id: yMakefile,v 1.3 1993-10-19 17:21:25 boote Exp $
+#	$Id: yMakefile,v 1.4 1993-11-01 17:32:18 boote Exp $
 #
-
-MYNAME	= ranfdata
-
-GENERICS = ranfdata
-
-all::
 
 InstallTarget(ranfdata,$(INSTALL_DB),$(DBPATH))

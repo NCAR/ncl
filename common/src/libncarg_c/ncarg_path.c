@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ncarg_path.c,v 1.8 1993-10-19 17:12:46 boote Exp $
+ *      $Id: ncarg_path.c,v 1.9 1993-11-01 17:28:54 boote Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -124,6 +124,12 @@ static	const char *dir_2_path(dir)
 
 	if ((s = getenv(ROOT_ENV))) {
 		strcpy(buf, s);
+		/*
+		 * root is another special case
+		 */
+		if (strcmp("root", dir) == 0){
+			return(buf);
+		}
 		strcat(buf, "/");
 		strcat(buf, dir);
 		return(buf);
@@ -170,6 +176,7 @@ const	char	*GetNCARGPath(dir)
 	/*
 	 * these should all be passed in as macros from the makefile
 	 */
+	char	*root = "root";
 	char	*bin = "bin";
 	char	*lib = "lib";
 	char	*tmp = "tmp";
@@ -188,7 +195,8 @@ const	char	*GetNCARGPath(dir)
 	const char	*libpath;
 	static	char	buf[PATH_MAX];
 
-	if ((strcmp(bin, dir) == 0) 
+	if ((strcmp(root, dir) == 0) 
+		|| (strcmp(bin, dir) == 0)
 		|| (strcmp(lib, dir) == 0)
 		|| (strcmp(tmp, dir) == 0)
 		|| (strcmp(inc, dir) == 0)

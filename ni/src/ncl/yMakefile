@@ -1,6 +1,5 @@
-
 #
-#      $Id: yMakefile,v 1.4 1993-10-18 16:11:21 ethan Exp $
+#      $Id: yMakefile,v 1.5 1993-11-01 17:44:56 boote Exp $
 #
 #########################################################################
 #									#
@@ -29,7 +28,7 @@
 #
 #	Options:
 
-#ifdef  HPUX_snakeArch
+#ifdef  HPUX
 SYS_LIBS        =       $(CTOFLIBS) -lm -lPW -ll
 #else
 SYS_LIBS        =       $(CTOFLIBS) -lm 

@@ -1,18 +1,16 @@
 #
-#	$Id: yMakefile,v 1.20 1993-10-19 17:20:48 boote Exp $
+#	$Id: yMakefile,v 1.21 1993-11-01 17:31:45 boote Exp $
 #
 
-MYNAME	= scripts
-
-#if ! defined BuildNCARGSourceLibrary
-SCRIPTS = cgmtrans ncargf77 ncargfile ncargcc ncargversion \
-	ncargrun ftrans ncargex ncargcex pre2ncgm plt
-#else
-SCRIPTS = cgmtrans ncargf77 ncargcc ncargfile ncargversion plt \
-	ncargrun ftrans ncargex ncargcex pre2ncgm ncargsrc ncargsrcy
+#ifdef	BuildNCARGSourceLibrary
+SRC_SCRIPTS	=	ncargsrc ncargsrcy
 #endif
 
-all:: $(SCRIPTS)
+SCRIPTS = cgmtrans ncargf77 ncargfile ncargcc ncargversion \
+	ncargrun ftrans ncargex ncargcex pre2ncgm plt $(SRC_SCRIPTS)
+
+InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
+CleanFilesTarget(ncargf77 ncargcc ncargex ncargcex ncargsrc ncargsrcy ncargversion)
 
 ncargversion:	sedscript
 	@sed -f sedscript < version.sed > ncargversion
@@ -22,7 +20,7 @@ sedscript:      Makefile
 	@echo 's+VERSION+$(VERSION)+' > $@
 	@echo '$$a\' >> $@
 
-#if defined(Cray) || defined(Cray2)
+#if defined(CRAY)
 ncargf77: ncargf77.cry Makefile
 	@sed \
 	-e 's+SED_F77+$(F77)+' \
@@ -43,7 +41,7 @@ ncargf77: ncargf77.csh Makefile
 	<ncargf77.csh >ncargf77
 #endif
 
-#if defined(Cray) || defined(Cray2)
+#if defined(CRAY)
 ncargcc: ncargcc.cry Makefile
 	@sed \
 	-e 's+SED_CC+$(CC)+' \
@@ -83,7 +81,7 @@ ncargcex: ncargcex.csh Makefile
 	-e 's+SED_TESTSDIR+$(TESTSDIR)+' \
 	<ncargcex.csh >ncargcex
 
-#if defined BuildNCARGSourceLibrary
+#ifdef	BuildNCARGSourceLibrary
 ncargsrc: ncargsrc.csh Makefile
 	@sed \
 	-e 's+SED_BINDIR+$(BINDIR)+' \
@@ -94,6 +92,3 @@ ncargsrcy: ncargsrcy.csh Makefile
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	<ncargsrcy.csh >ncargsrcy
 #endif
-
-InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
-CleanFilesTarget(ncargf77 ncargcc ncargex ncargcex ncargsrc ncargsrcy ncargversion)

@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.1 1993-10-19 17:13:29 boote Exp $
+ *      $Id: Project,v 1.2 1993-11-01 17:29:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -223,5 +223,5 @@ XDRLIB		= XdrLibrary
 HDFDEFINES	= HdfDefines
 GENERICPATH	= $(NCARG)/$(GENERICDIR)
 VDEFINE		= -DVERSION='"$(VERSION)"'
-PROJECTDEFINES	= ProjectDefines $(VDEFINE)
+PROJECTDEFINES	= ProjectDefines
 GKS_BUFFER_SIZE	= GksBufferSize

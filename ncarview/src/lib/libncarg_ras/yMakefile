@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.37 1993-10-19 17:45:33 boote Exp $
+#	$Id: yMakefile,v 1.38 1993-11-01 17:43:49 boote Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -22,7 +22,7 @@
 MYNAME		= libncarg_ras.a
 INCLUDES	= ncarg_ras.h
 
-#ifdef sgi
+#ifdef IRIX
 LOCLIB		= $(NCARGRASLIB) $(NCARGCLIB) -ldf $(NCDFLIBS) -lsun
 #else
 LOCLIB		= $(NCARGRASLIB) $(NCARGCLIB) -ldf
@@ -58,7 +58,7 @@ XWD_SRCS =	xwd.c
 XWD_DEFS = 	-DBuildRasterXWD
 #endif
 
-#if defined (BuildRasterParallax) && defined(sun)
+#if defined (BuildRasterParallax) && defined(SUN)
 PARALLAX_OBJS =	parallax.o
 PARALLAX_SRCS =	parallax.c
 PARALLAX_DEFS =	-DBuildRasterParallax

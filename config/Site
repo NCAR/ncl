@@ -1,5 +1,5 @@
 /*
- *      $Id: Site,v 1.1 1993-10-19 17:13:39 boote Exp $
+ *      $Id: Site,v 1.2 1993-11-01 17:29:36 boote Exp $
  *
  ************************************************************************
  *									*
@@ -57,7 +57,7 @@
  */
 /* #define TmpRoot /tmp */
 
-#ifdef	HPUX_snakeArch
+#ifdef	HPUX
 #define LibSearch -L/usr/local/lib 
 #define IncSearch -I/usr/local/include
 #else

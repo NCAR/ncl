@@ -1,5 +1,5 @@
 /*
- *      $Id: SGI4D,v 1.16 1993-10-19 17:13:37 boote Exp $
+ *      $Id: SGI4D,v 1.17 1993-11-01 17:29:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,4 +25,4 @@
 #define	HdfDefines	-DIRIS4
 #define	StdDefines	-DSYSV
 #define CcOptions	-ansiposix
-#define	RanLib	$(AR) m
+#define	RanLib		$(AR) m

@@ -1,7 +1,6 @@
 #
-#	$Id: yMakefile,v 1.3 1993-10-19 17:28:37 boote Exp $
+#	$Id: yMakefile,v 1.4 1993-11-01 17:34:36 boote Exp $
 #
-NCARG	= ../../../..
 
 MYNAME	= dashchar
 

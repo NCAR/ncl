@@ -1,7 +1,6 @@
 #
-#	$Id: yMakefile,v 1.3 1993-10-19 17:39:34 boote Exp $
+#	$Id: yMakefile,v 1.4 1993-11-01 17:42:17 boote Exp $
 #
-NCARG	= ../../../..
 
 MYNAME	= dashsmth
 
@@ -18,12 +17,4 @@ SOURCES = $(GENERIC_SRCS)
 OBJECTS = $(GENERIC_OBJS)
 
 RelocatableTarget(libdashsmth.o,$(OBJECTS))
-
-#ifdef  BuildNCARGSourceLibrary
-install:: $(SOURCES)
-	@-$(RM) $(LIBPATH)/srcdashsmth.a
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBPATH)/srcdashsmth.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBPATH)/srcdashsmth.a
-	@-$(RM) $(MYNAME)
-#endif
+SourceLibraryTarget($(MYNAME),srcdashsmth.a,$(SOURCES))

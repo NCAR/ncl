@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1993-10-19 17:19:58 boote Exp $
+#	$Id: yMakefile,v 1.8 1993-11-01 17:31:02 boote Exp $
 #
 
 MYNAME	= impltest
@@ -31,21 +31,19 @@ GENERIC_OBJS = \
 	 lcm.o mskout.o implbd.o tgbyte.o tgks0a.o tiand.o\
 	 tior.o tlocal.o tsbyte.o tshift.o
 
-#ifdef Cray
+#ifdef CRAY
 
 TLOCAL_OBJS = \
 	tlocalcray.o tiand.o tior.o lcm.o tgbyte.o tshift.o tsbyte.o\
 	mskout.o
 
-#else
-#ifdef Ardent
+#elif	defined(Ardent)
 
 TLOCAL_OBJS = \
 	tlocalardent.o tiand.o tior.o lcm.o tgbyte.o tshift.o tsbyte.o\
 	mskout.o
 
-#else
-#if defined(AIX370)
+#elif defined(AIX370)
 
 TLOCAL_OBJS = \
 	tlocalibm.o tiand.o tior.o lcm.o tgbyte.o tshift.o tsbyte.o\
@@ -57,9 +55,7 @@ TLOCAL_OBJS = \
 	tlocal32.o tiand.o tior.o lcm.o tgbyte.o tshift.o tsbyte.o\
 	mskout.o
 
-#endif	/* AIX370 */
-#endif	/* Ardent */
-#endif	/* Cray */
+#endif	/* CRAY */
 
 FortranProgram(tlocal,$(TLOCAL_OBJS) $(REL_OBJS),$(DEPLIBS))
 FortranProgram(tgks0a,tgks0a.o $(REL_OBJS),$(DEPLIBS))

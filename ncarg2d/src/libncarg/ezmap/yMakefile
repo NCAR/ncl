@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1993-10-19 17:28:51 boote Exp $
+#	$Id: yMakefile,v 1.6 1993-11-01 17:34:48 boote Exp $
 #
 
 MYNAME	= ezmap
@@ -30,7 +30,7 @@ SOURCES = $(GENERIC_SRCS) $(UNIX_SRCS)
 
 OBJECTS	= $(GENERIC_OBJS) $(UNIX_OBJS)
 
-FCPP_OBJS	= openmp.f
+FCPP_OBJS	= openmp.f openmp.F
 
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))

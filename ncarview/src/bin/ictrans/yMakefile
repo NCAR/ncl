@@ -23,7 +23,7 @@ PROG_LIBS	=	$(ICTRANS_LIB) $(CTRANSLIB) $(CGMLIB) $(NCARGRASLIB) \
 DEP_LIBS	=	$(DEPICTRANS_LIB) $(DEPCTRANSLIB) $(DEPCGMLIB) \
 			$(DEPNCARGRASLIB) $(DEPNCARGCLIB)
 
-#ifdef  sgi
+#ifdef  IRIX
 MORE_LIBS	= -lmalloc
 #endif
 
@@ -33,11 +33,11 @@ SYS_LIBS	= -lm $(MORE_LIBS)
 SRCS		= main.c 
 OBJS		= main.o 
 
-all::
-	@$(CAT) Copyright
-
 CProgram($(MYNAME),$(OBJS),$(DEP_LIBS))
 DependTarget($(SRCS))
+
+all-local::
+	@$(CAT) Copyright
 
 lint: $(HDR) $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1

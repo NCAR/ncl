@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1993-10-19 17:20:32 boote Exp $
+#	$Id: yMakefile,v 1.7 1993-11-01 17:31:29 boote Exp $
 #
 
 MYNAME  = pre2ncgm
@@ -33,8 +33,6 @@ FCPP_OBJS	= fndarg.f metred.f mninst.f trans.f trassn.f \
 
 PROG_LIBS = $(NCARGLIBS)
 DEP_LIBS = $(DEPNCARGLIBS)
-
-all:: pre2ncgm.prog
 
 FortranProgram(pre2ncgm.prog,$(OBJECTS),$(DEP_LIBS))
 CleanFilesTarget($(FCPP_OBJS))

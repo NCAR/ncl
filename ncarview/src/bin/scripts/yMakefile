@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.12 1993-10-19 17:44:25 boote Exp $
+#	$Id: yMakefile,v 1.13 1993-11-01 17:43:18 boote Exp $
 #
 
 MYNAME		= scripts
@@ -45,8 +45,6 @@ CTRANS_LIBS_B   = $(X11LIBS) $(SUNLIBS) $(GENLIBS)
 DEVICE_SPECIFIERS = \
 	$(RASTER_SPECIFIERS) $(CTXT_SPECIFIER) \
 	$(SUN_SPECIFIER) $(X11_SPECIFIER)
-
-all:: $(SCRIPTS)
 
 InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
 CleanFilesTarget(fcaps gcaps ctlib ncarvversion)

@@ -1,7 +1,6 @@
 #
-#	$Id: yMakefile,v 1.3 1993-10-19 17:38:55 boote Exp $
+#	$Id: yMakefile,v 1.4 1993-11-01 17:41:38 boote Exp $
 #
-NCARG	= ../../../..
 
 MYNAME	= conras
 
@@ -14,12 +13,4 @@ SOURCES = $(GENERIC_SRCS)
 OBJECTS = $(GENERIC_OBJS)
 
 RelocatableTarget(libconras.o,$(OBJECTS))
-
-#ifdef  BuildNCARGSourceLibrary
-install:: $(SOURCES)
-	@-$(RM) $(LIBPATH)/srcconras.a
-	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBPATH)/srcconras.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBPATH)/srcconras.a
-	@-$(RM) $(MYNAME)
-#endif
+SourceLibraryTarget($(MYNAME),srcconras.a,$(SOURCES))

@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.16 1993-10-19 17:10:45 boote Exp $
+ *      $Id: yMakefile,v 1.17 1993-11-01 17:27:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,11 +25,19 @@
 
 SUBDIRS	= config common ncarg2d ncarview ni unsupported
 
-Info:
+#ifdef	YMAKEDEVFILE
+Info::
+	@echo;\
+	echo -n "**WARNING**";\
+	echo -n " Using YMAKE_DEV_FILE - This is not a regular build! ";\
+	echo "**WARNING**";
+#endif
+
+Info::
 	@echo;\
 	echo "	NCAR Graphics - Version $(VERSION) Installation Configuration";\
 	echo;\
-	echo "System			"$(SYSTEM_INCLUDE);\
+	echo "System File		"$(SYSTEM_INCLUDE);\
 	echo "Binary Directory	"$(BINPATH);\
 	echo "Library Directory	"$(LIBPATH);\
 	echo "Include Directory	"$(INCPATH);\

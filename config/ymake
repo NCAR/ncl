@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.7 1993-10-21 17:21:49 haley Exp $
+#	$Id: ymake,v 1.8 1993-11-01 17:29:45 boote Exp $
 #
 ######################################################################
 #
@@ -47,6 +47,11 @@ while ($#argv)
 		shift
 		if ($#argv) then
 			set config_dir = "$argv[1]"
+			if (! -d $config_dir) then
+				echo "$0 : Unable to open NCARG_CONFIG dir : $config_dir" > /dev/tty
+				exit 1
+			endif
+				
 			set defines = (-I$argv[1] $defines)
 			@ useinstalled = 0
 		else
@@ -68,21 +73,26 @@ if($useinstalled != 0) then
 		echo "$0 : Unable to find NCARG_CONFIG dir" > /dev/tty
 		exit 1
 	endif
+	if (! -d $config_dir) then
+		echo "$0 : Unable to open NCARG_CONFIG dir : $config_dir" > /dev/tty
+		exit 1
+	endif
 	set defines = (-I$config_dir -DUseInstalled $defines)
-	set bin_dir = `ncargpath bin`
-	set lib_dir = `ncargpath lib`
-	set defines = ($defines -D_InstBin\=$bin_dir -D_InstLib\=$lib_dir)
-	set inc_dir = `ncargpath include`
-	set man_dir = `ncargpath man`
-	set defines = ($defines -D_InstInc\=$inc_dir -D_InstMan\=$man_dir)
+	set root_dir = `ncargpath root`
+	if ($status != 0) then
+		echo "$0 : Unable to find NCARG_ROOT dir" > /dev/tty
+		exit 1
+	endif
+	set defines = ($defines -D_InstRoot\=$root_dir)
 	set tmp_dir = `ncargpath tmp`
 	set defines = ($defines -D_InstTmp\=$tmp_dir)
-	if ($?YMAKE_DEV_FILE) then
-		if (-e $YMAKE_DEV_FILE) then
+endif
+
+if ($?YMAKE_DEV_FILE) then
+	if (-e $YMAKE_DEV_FILE) then
 		set defines=($defines -DYMAKEDEVFILE=\"$YMAKE_DEV_FILE\")
-		else
-			echo "unable to open YMAKE_DEV_FILE $YMAKE_DEV_FILE"
-		endif
+	else
+		echo "unable to open YMAKE_DEV_FILE $YMAKE_DEV_FILE" > /dev/tty
 	endif
 endif
 
@@ -127,7 +137,7 @@ onintr error_cleanup
 # off of it. This is used to install local host-specific
 # configuration options permanently with the distribution.
 
-set hostname
+set hostname = "UnKnown"
 
 if (-e /bin/hostname) then
 	set hostname    = `/bin/hostname`
@@ -186,7 +196,8 @@ case	SunOS:
 
 	switch ("$foo")
 	case	5*:
-		set os = Solaris
+		set os = $opsys
+		set extraos = Solaris
 		breaksw
 	default:
 		set os = $opsys
@@ -196,30 +207,46 @@ case	SunOS:
 	switch ("$mach")
 	case	sun4*:
 		set arch = sun4
+
+		if($?extraos == 0) then
+			set sysincs = Sun4
+			breaksw
+		endif
+
+		if("$extraos" == Solaris) then
+			set sysincs = Sun4Solaris
+			breaksw
+		endif
 		breaksw
 	case	sun3*:
 		set arch = sun3
-		breaksw
-	case	sun2*:
-		set arch = sun2
+		set sysincs = Sun3
 		breaksw
 	default:
 		echo "$0 : Unkown machine type" > /dev/tty
 		exit 1
 	endsw
+
+	set vendor = SUN
+
 	breaksw
 
 case	AIX:
 	set os = $opsys
 
 	switch ("$mach")
-	case	00*:
-		set arch = RS6000
+	case	00*00:
+		set model = `echo $mach | cut -c9-10`
+		set arch = RS6k$model
 		breaksw
 	default:
 		echo "$0 : Unknown machine type" > /dev/tty
 		exit 1
 	endsw
+
+	set sysincs = AIX_RS6000
+	set vendor = IBM
+
 	breaksw
 
 case	IRIX:
@@ -227,18 +254,31 @@ case	IRIX:
 
 	switch ("$mach")
 	case	IP*:
-		set arch = IP
+		set arch = $mach
 		breaksw
 	default:
 		echo "$0 : Unknown machine type" > /dev/tty
 		exit 1
 	endsw
+
+	set sysincs = SGI4D
+	set vendor = SGI
+
 	breaksw
 
 case	ULTRIX:
 case	OSF1:
 	set os = $opsys
 	set arch = $mach
+
+	if("$os" == ULTRIX) then
+		set sysincs = DECRISC
+	else
+		set sysincs = AlphaOSF1
+	endif
+
+	set vendor = DEC
+
 	breaksw
 
 case	HP-UX:
@@ -246,12 +286,17 @@ case	HP-UX:
 
 	switch ("$mach")
 	case	9000/7*:
-		set arch = HP9000_7xx
+		set model = `echo $mach | cut -c7-8`
+		set arch = HP9000_7$model
 		breaksw
 	default:
 		echo "$0 : Unknown machine type" > /dev/tty
 		exit 1
 	endsw
+
+	set sysincs = HPUX_snake
+	set vendor = HP
+
 	breaksw
 
 case	UNICOS:
@@ -265,18 +310,73 @@ case	UNICOS:
 		echo "$0 : Unknown machine type" > /dev/tty
 		exit 1
 	endsw
+
+	set sysincs = Cray
+	set vendor = CRAY
+
 	breaksw
 
 default:
-	set os = $opsys
-	set arch = $mach
+	echo "$0 : Unknown System Type - No Config file" > /dev/tty
+	exit 1
+	breaksw
+endsw
+
+if($?sysincs == 0) then
+	echo "$0 : Unknown System Type - No Config file" > /dev/tty
+	exit 1
+endif
+
+#
+#	add sysincs defs to list
+#
+if (-e $config_dir/$sysincs) then
+	set defines=($defines -DSystemIncludes=\"$sysincs\")
+	set defines=($defines -DSystemIncludesName=$sysincs)
+else
+	echo "$0 : Unable to open Config file: $sysincs" > /dev/tty
+	exit 1
+endif
+
+switch ("$opsys")
+case	AIX:
+	set major = `uname -v`
+	set minor = `uname -r`
+	breaksw
+case	SunOS:
+case	IRIX:
+case	ULTRIX:
+case	OSF1:
+case	HP-UX:
+case	UNICOS:
+default:
+	set major = `uname -r | cut -d. -f1`
+	set minor = `uname -r | cut -d. -f2`
+	set subminor = `uname -r | cut -d. -f3`
+	if("$subminor" == "") then
+		unset subminor
+	endif
 	breaksw
 endsw
 
 #
 #	add os and arch to our defines list
+#	also add major minor and sub-minor
 #
-set defines=($defines -D$os -D$arch)
+
+
+if ($?extraos) then
+	set defines=($defines -D"$extraos" -D_OpSys2Def=-D"$extraos")
+else
+	set defines=($defines -D_OpSys2Def="")
+endif
+set defines=($defines -D"$os" -D_OpSysDef=-D"$os")
+set defines=($defines -D"$arch" -D"$vendor")
+set defines=($defines -D_ArchDef=-D"$arch" -D_VendorDef=-D"$vendor")
+set defines=($defines -D_Major=$major -D_Minor=$minor)
+if ($?subminor) then
+	set defines=($defines -D_SubMinor=$subminor)
+endif
 
 
 # Leave the cpp commands unmolested but insert a C null comment
@@ -300,19 +400,19 @@ sed <$ymakefile >! $tmp1 \
 	-e '/^	#/s$$/**/_COMMENT_&$'
 
 cat <<'EOF' >! $outfile
-#######################################################################
-#
-#	This Makefile was created by the "ymake" utility.
-#	If you wish to make changes in the "Makefile" or "makefile", 
-#	do so by making changes to "yMakefile" or "ymakefile" 
-#       and executing "make local-Makefile".
-#
-#######################################################################
+#########################################################################
+#									#
+#	This Makefile was created by the "ymake" utility.		#
+#	If you wish to make changes in the "Makefile" or "makefile",	#
+#	do so by making changes to "yMakefile" or "ymakefile"		#
+#       and executing "make local-Makefile".				#
+#									#
+#########################################################################
 
 'EOF'
 
 echo '#include "Template"' | \
-$cpp -I. -D_COMMENT_="" $defines -DYMAKEFILE=\"$tmp1\" | \
+$cpp -I. -D_COMMENT_="" -DNGCOMM=\# $defines -DYMAKEFILE=\"$tmp1\" | \
 "$config_dir"/ymake-filter >>$outfile
 
 /bin/rm -f $outfile.bak $tmp1
@@ -320,8 +420,8 @@ onintr
 exit 0
 
 error_cleanup:
-echo ""
-echo "Error in <ymake>: Interrupted in" `pwd` "- restoring $outfile"
+echo "" > /dev/tty
+echo "Error in <ymake>: Interrupted in" `pwd` "- restoring $outfile" > /dev/tty
 /bin/rm -f $outfile $tmp1
 cp $outfile.bak $outfile
 /bin/rm -f $outfile.bak

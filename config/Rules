@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.7 1993-10-21 17:21:39 haley Exp $
+ *	$Id: Rules,v 1.8 1993-11-01 17:29:30 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -54,7 +54,7 @@ me: local-Makefile]
 #ifndef	InstallTarget
 #define InstallTarget(names, mode, dest)\
 ]\
-all:: names]\
+all-local:: names]\
 ]\
 install:: names]\
 	MakeDir(dest)]\
@@ -91,7 +91,7 @@ makesubdirs:]\
 	$(MAKE) $(MFLAGS));\]\
 	done]\
 ]\
-all:: makesubdirs]
+all:: all-local makesubdirs]
 #endif	/* InternalMakeSubdirs */
 
 /*
@@ -103,9 +103,9 @@ all:: makesubdirs]
 #ifndef	InternalCleanSubdirs
 #define InternalCleanSubdirs(dirs)\
 ]\
-clean::]\
-	@for dir in dirs ; do\]\
-	(cd $$dir; echo "Cleaning in $(CURRENT_DIR)/$$dir";\]\
+clean:: clean-local]\
+	-@for dir in dirs ; do\]\
+	(cd $$dir;\]\
 	$(MAKE) $(MFLAGS) clean);\]\
 	done]
 #endif	/* InternalCleanSubdirs */
@@ -119,11 +119,13 @@ clean::]\
 #ifndef	InternalDistCleanSubdirs
 #define	InternalDistCleanSubdirs(dirs)\
 ]\
-dist-clean::]\
-	@if (test "$(CURRENT_DIR)" \= ".") then $(MAKE) $(MFLAGS) clean; else continue; fi]\
-	@for dir in dirs ; do\]\
+dist-clean:: clean-local]\
+	-@for dir in dirs ; do\]\
 	(cd $$dir; $(MAKE) $(MFLAGS) dist-clean);\]\
-	done]
+	done]\
+	@$(RM) Makefile]\
+	@echo "dist-clean in $(CURRENT_DIR)"]\
+
 #endif	/* InternalDistCleanSubdirs */
 
 /*
@@ -189,7 +191,7 @@ Makefiles::]\
 #ifndef	RelocatableTarget
 #define RelocatableTarget(name,objects)\
 ]\
-all::	name]\
+all-local::	name]\
 ]\
 name:	objects]\
 	@$(LD_REL) -r -o name objects]\
@@ -234,7 +236,7 @@ InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
 #ifndef	_FortranLinkProgram
 #define	_FortranLinkProgram(program,objects,deplib)\
 ]\
-all:: program]\
+all-local:: program]\
 ]\
 program: objects deplib]\
 	$(F77_LD) $(FC_LDOPTIONS) -o program objects $(PROG_LIBS) $(LDLIBS) $(EXTRA_LDLIBS)]\
@@ -291,19 +293,19 @@ InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
  *		systems.
  */
 #ifndef	_CLinkProgram
-#ifndef	AIX_RS6000Arch
+#ifndef	AIX
 #define	_CLinkProgram(program,objects,deplib)\
 ]\
-all:: program]\
+all-local:: program]\
 ]\
 program: objects deplib]\
 	$(CC_LD) $(CC_LDOPTIONS) -o program objects $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)]\
 ]\
 CleanFilesTarget(program objects)
-#else	/* AIX_RS6000Arch */
+#else	/* AIX	*/
 #define	_CLinkProgram(program,objects,deplib)\
 ]\
-all::	program]\
+all-local::	program]\
 ]\
 program: program.nonshr.o]\
 	$(CC_LD) $(CC_LDOPTIONS) $(CDYNAMIC) -o program program.nonshr.o $(EXTRA_LDLIBS)]\
@@ -312,7 +314,7 @@ program.nonshr.o: objects deplib]\
 	$(LD) -r $(CSTATIC) -bhalt\:4 -o program.nonshr.o objects $(PROG_LIBS) $(LDLIBS)]\
 ]\
 CleanFilesTarget(program program.nonshr.o objects)
-#endif	/* AIX_RS6000Arch */
+#endif	/* AIX	*/
 #endif	/* _CLinkProgram */
 
 /*
@@ -334,7 +336,7 @@ _CLinkProgram(program,objects,NullArgument)
 #ifndef	LibraryTarget
 #define LibraryTarget(library,objects)\
 ]\
-all:: library]\
+all-local:: library]\
 ]\
 library:: objects]\
 	-$(RM) library]\
@@ -353,7 +355,7 @@ CleanFilesTarget(library objects)
 #ifndef	SourceLibraryTarget
 #ifdef  BuildNCARGSourceLibrary
 #define	SourceLibraryTarget(name,library,sources)\
-all:: library]\
+all-local:: library]\
 ]\
 library:: sources]\
 	@echo "sources" > name;\]\
@@ -395,11 +397,11 @@ PartialLibraryRoot(library,dirs)
 #ifndef	PartialSourceLibraryTarget
 #ifdef  BuildNCARGSourceLibrary
 #define PartialSourceLibraryTarget(name,library,sources)\
-all:: ../library]\
+all-local:: ../library]\
 ]\
 ../library: sources]\
 	@echo "sources" > name]\
-	$(AR) ../library name sources]\
+	$(AR_REG) ../library name sources]\
 	$(RM) name]\
 #else	/* !BuildNCARGSourceLibrary */
 #define PartialSourceLibraryTarget(name,library,sources) /**/
@@ -414,7 +416,7 @@ all:: ../library]\
 #ifndef	CleanFilesTarget
 #define CleanFilesTarget(files)\
 ]\
-clean::]\
+clean-local::]\
 	-@$(RM) files]
 #endif	/* CleanFilesTarget */
 
@@ -428,10 +430,10 @@ clean::]\
 #ifndef	PartialLibraryTarget
 #define PartialLibraryTarget(library,objects)\
 ]\
-all::../library]\
+all-local::../library]\
 ]\
 ../library:: objects]\
-	$(AR) ../library objects]\
+	$(AR_REG) ../library objects]\
 ]\
 CleanFilesTarget(objects)
 #endif	/* PartialLibraryTarget */
@@ -446,7 +448,7 @@ CleanFilesTarget(objects)
 #ifndef	PartialLibraryRoot
 #define PartialLibraryRoot(library,dirs)\
 ]\
-all:: library]\
+all-local:: library]\
 ]\
 library::]\
 	@echo "Making in dirs First..."]\
@@ -483,7 +485,7 @@ InstallTarget(sources, $(INSTALL_INC), $(HLUEXPATH))
  */
 #ifndef	DependTarget
 #define	DependTarget(srcs)\
-depend:: srcs]\
+depend-local:: srcs]\
 	$(DEPEND) -s "# DO NOT DELETE" -- $(ALLDEFINES) -- srcs
 #endif /* DependTarget */
 
@@ -495,7 +497,7 @@ depend:: srcs]\
 #ifndef	InternalDependSubdirs
 #define InternalDependSubdirs(dirs)\
 ]\
-depend::]\
+depend:: depend-local]\
 	@for dir in dirs ; do\]\
 	(cd $$dir; echo "Depending $(CURRENT_DIR)/$$dir";\]\
 	$(MAKE) $(MFLAGS) depend);\]\
@@ -523,7 +525,7 @@ depend::]\
 #ifndef	BuildIncludes
 #define	BuildIncludes(srclist,dstsubdir,dstupdir)\
 ]\
-includes::]\
+includes-local::]\
 	MakeDir($(BUILDINCDIR)/dstsubdir)]\
 	@cd $(BUILDINCDIR)/dstsubdir;\]\
 	$(RM) srclist; \]\
@@ -541,7 +543,7 @@ includes::]\
 #ifndef	InternalIncludesSubdirs
 #define	InternalIncludesSubdirs(dirs)\
 ]\
-includes::]\
+includes:: includes-local]\
 	@for dir in dirs ; do\]\
 	(cd $$dir; echo "including in $(CURRENT_DIR)/$$dir";\]\
 	$(MAKE) $(MFLAGS) includes);\]\
@@ -556,7 +558,7 @@ includes::]\
 #ifndef InstallManPages
 #define InstallManPages(files,suffix,destdir,section)\
 ]\
-all::]\
+all-local::]\
 ]\
 install::]\
 	MakeDir(destdir)]\
@@ -573,7 +575,7 @@ install::]\
 #ifndef InstallManPageAliases
 #define InstallManPageAliases(file,destdir,section,aliases)\
 ]\
-all::]\
+all-local::]\
 ]\
 install::]\
 	@if (test ! -f destdir/file.section) then \]\
@@ -612,7 +614,7 @@ preformatted::]\
 #ifndef	InstallXappFiles
 #define	InstallXappFiles(appfiles)\
 ]\
-all::]\
+all-local::]\
 ]\
 install::]\
 	MakeDir($(XAPPPATH))]\

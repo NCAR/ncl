@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.8 1993-10-21 18:45:54 haley Exp $
+ *      $Id: Template,v 1.9 1993-11-01 17:29:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -20,130 +20,93 @@
  *	Description:	Template file for ymake
  */
 
+NGCOMM########################################################################
+NGCOMM
+NGCOMM In main Template
+NGCOMM
+NGCOMM########################################################################
+
 #define YES 1
 #define NO 0
 
-#if defined(HPUX) && defined(HP9000_7xx)
-#define SystemIncludes		"HPUX_snake"
-#define SystemIncludesName	HPUX_snake
-#define	HPUX_snakeArch
-#endif
-
-#if defined(AIX) && defined(RS6000)
-#define SystemIncludes		"AIX_RS6000"
-#define SystemIncludesName	AIX_RS6000
-#define	AIX_RS6000Arch
-#endif
-
-#if defined(u370) && defined(unix)
-#define SystemIncludes		"AIX370"
-#define SystemIncludesName	AIX370
-#define	AIX370Arch
-#endif
-
-#if defined(sun) && defined(i386)
-#define SystemIncludes		"Sun386i"
-#define SystemIncludesName	Sun386i
-#define	Sun386iArch
-#endif
-
-#if defined(SunOS) && defined(sun4)
-#define SystemIncludes		"Sun4"
-#define SystemIncludesName	Sun4
-#define	Sun4Arch
-#endif
-
-#if defined(SunOS) && defined(sun3)
-#define SystemIncludes		"Sun3"
-#define SystemIncludesName	Sun3
-#define	Sun3Arch
-#endif
-
-#if defined(Solaris) && defined(sun4)
-#define SystemIncludes		"Sun4Solaris"
-#define SystemIncludesName	Sun4Solaris
-#define	Sun4SolarisArch
-#endif
-
-#if defined(pyr) || defined(pyramid)
-#define SystemIncludes		"Pyramid"
-#define SystemIncludesName	Pyramid
-#define	PyramidArch
-#endif
-
-#if defined(ULTRIX) && defined(RISC)
-#define SystemIncludes		"DECRISC"
-#define SystemIncludesName	DECRISC
-#define	DECRISCArch
-#endif
-
-#if defined(OSF1) && defined(alpha)
-#define SystemIncludes		"AlphaOSF1"
-#define SystemIncludesName	AlphaOSF1
-#define	AlphaOSF1Arch
-#endif
-
-#if defined(vax)
-
-#if defined(ultrix)
-#define SystemIncludes		"DECVAX"
-#define SystemIncludesName	DECVAX
-#define	DECVAXArch
-#else
-#define SystemIncludes		"DECBSD"
-#define SystemIncludesName	DECBSD
-#define	DECBSDArch
-#endif
-
-#endif vax
-
-#if defined(mc300) || defined(mc500) || defined(mc700) || defined(mc6000)
-#define SystemIncludes		"Masscomp"
-#define SystemIncludesName	Masscomp
-#define	MasscompArch
-#endif
-
-#if defined(IRIX) && defined(IP)
-#define SystemIncludes		"SGI4D"
-#define SystemIncludesName	SGI4D
-#define	SGI4DArch
-#endif
-
-#if defined(CRAY2)
-#define SystemIncludes		"Cray2"
-#define SystemIncludesName	Cray2
-#define	Cray2Arch
-#endif
-
-#if defined(UNICOS) && defined(YMP)
-#define SystemIncludes          "Cray"
-#define SystemIncludesName      Cray
-#define	CrayArch
-#endif
-
-#if defined(ardent)
-#define SystemIncludes		"Ardent"
-#define SystemIncludesName	Ardent
-#define	ArdentArch
-#endif
-
-#ifndef SystemIncludesName
-#define SystemIncludes		"SystemV"
-#define SystemIncludesName	SystemV
-#define	SystemVArch
-#endif
-
 SYSTEM_INCLUDE		= SystemIncludesName
 
+OS1_DEF		=	_OpSysDef
+OS2_DEF		=	_OpSys2Def
+OS_DEF		=	$(OS1_DEF) $(OS2_DEF)
+ARCH_DEF	=	_ArchDef
+VENDOR_DEF	=	_VendorDef
+
+#define	MAJOR		_Major
+#define	MINOR		_Minor
+
+MAJOR_DEF	=	-DMAJOR=_Major
+MINOR_DEF	=	-DMINOR=_Minor
+#ifdef	_SubMinor
+#define	SUBMINOR	_SubMinor
+SUBMINOR_DEF	=	-DSUBMINOR=_SubMinor
+#else
+SUBMINOR_DEF	=
+#endif
+
+NGCOMM########################################################################
+NGCOMM
+NGCOMM Including Site - first time
+NGCOMM
+NGCOMM########################################################################
 #define FirstSite
 #include "Site"
 #undef FirstSite
+NGCOMM########################################################################
+NGCOMM
+NGCOMM After Including Site - first time
+NGCOMM
+NGCOMM########################################################################
 
+NGCOMM########################################################################
+NGCOMM
+NGCOMM Including SystemIncludesName
+NGCOMM
+NGCOMM########################################################################
 #include SystemIncludes
+NGCOMM########################################################################
+NGCOMM
+NGCOMM After Including SystemIncludesName
+NGCOMM
+NGCOMM########################################################################
 
+NGCOMM########################################################################
+NGCOMM
+NGCOMM Including Site - second time
+NGCOMM
+NGCOMM########################################################################
 #define SecondSite
 #include "Site"
 #undef SecondSite
+NGCOMM########################################################################
+NGCOMM
+NGCOMM After Including Site - second time
+NGCOMM
+NGCOMM########################################################################
+
+/*
+ * This allows developers to over-ride the values of any of the pre-defined
+ * make symbols on a project wide bases - even if they are using the installed
+ * version of ymake.
+ */
+#ifdef	YMAKEDEVFILE
+NGCOMM########################################################################
+NGCOMM
+NGCOMM Including YMAKEDEVFILE
+NGCOMM
+NGCOMM########################################################################
+#include YMAKEDEVFILE
+NGCOMM########################################################################
+NGCOMM
+NGCOMM After Including YMAKEDEVFILE
+NGCOMM
+NGCOMM########################################################################
+#endif
 
 /************************************************************************
 *									*
@@ -152,14 +115,18 @@ SYSTEM_INCLUDE		= SystemIncludesName
 ************************************************************************/
 
 #ifndef	NcargRoot
+#ifdef	UseInstalled
+#define	NcargRoot	_InstRoot
+#else
 #define	NcargRoot	/usr/local
+#endif	/* UseInstalled	*/
 #endif	/* NcargRoot */
 
 #ifndef	BinRoot
 #define	BinRoot	NcargRoot/bin
 #endif	/* BinRoot */
 
-#ifndef LibRoot
+#ifndef	LibRoot
 #define LibRoot NcargRoot/lib
 #endif	/* LibRoot */
 
@@ -172,7 +139,11 @@ SYSTEM_INCLUDE		= SystemIncludesName
 #endif	/* ManRoot */
 
 #ifndef	TmpRoot
+#ifdef	UseInstalled
+#define	TmpRoot	_InstTmp
+#else
 #define	TmpRoot	/tmp
+#endif
 #endif	/* TmpRoot */
 
 #ifndef	XLibrary
@@ -238,6 +209,10 @@ SYSTEM_INCLUDE		= SystemIncludesName
 #ifndef	StdDefines
 #define	StdDefines	/**/
 #endif	/* StdDefines */
+
+#ifndef	SysDefines
+#define	SysDefines	$(OS_DEF)
+#endif
 
 #ifndef	Cdynamic
 #define	Cdynamic	/**/
@@ -401,19 +376,12 @@ SYSTEM_INCLUDE		= SystemIncludesName
 #define CURDIR	.
 #endif	/* CURDIR */
 
-#ifndef	UseInstalled
+NCARGROOT		= NcargRoot
 BINROOT			= BinRoot
 LIBROOT			= LibRoot
 INCROOT			= IncRoot
 MANROOT			= ManRoot
 TMPROOT			= TmpRoot
-#else
-BINROOT			= _InstBin
-LIBROOT			= _InstLib
-INCROOT			= _InstInc
-MANROOT			= _InstMan
-TMPROOT			= _InstTmp
-#endif
 
 LIB_SEARCH		= LibSearch ExtraLibSearch
 INC_SEARCH		= IncSearch ExtraIncSearch
@@ -530,7 +498,7 @@ CC		= CCompiler
 CC_LD		= CLoader
 CDYNAMIC	= Cdynamic
 CSTATIC		= Cstatic
-CCOPTIONS	= CcOptions
+CCOPTIONS	= CcOptions $(EXTRA_CCOPTIONS)
 
 BUILDINCDIR	= $(TOP)/include
 /*
@@ -558,8 +526,9 @@ EXTRA_LDLIBS	= $(SYS_LIBS) $(EXTRA_SYS_LIBS)
 
 ALLINCLUDES	= $(EXTRA_INCLUDES) $(TOP_INCLUDES) $(INC_SEARCH)
 STD_DEFINES	= StdDefines
+SYS_DEFINES	= SysDefines
 XTRA_CDEFINES	= $(EXTRA_CDEFINES) $(EXTRA_DEFINES)
-ALLDEFINES	= $(ALLINCLUDES) $(DEV_DEFINES) $(XTRA_CDEFINES) $(STD_DEFINES) $(PROJECTDEFINES) $(DEFINES)
+ALLDEFINES	= $(ALLINCLUDES) $(DEV_DEFINES) $(XTRA_CDEFINES) $(SYS_DEFINES) $(STD_DEFINES) $(PROJECTDEFINES) $(DEFINES)
 CFLAGS		= $(CCOPTIONS) $(COPT) $(ALLDEFINES)
 XTRA_CLDFLAGS	= $(EXTRA_CLDFLAGS) $(EXTRA_LDFLAGS)
 EXTRA_SYS_LIBS	= ExtraSysLibraries
@@ -578,8 +547,9 @@ XTRA_FLDFLAGS	= $(EXTRA_FLDFLAGS) $(EXTRA_LDFLAGS)
 
 LD		= LdCommand
 LD_REL		= LdRelCommand
-AR		= ArCommand ArRegOpt
-AR_QUICK	= ArCommand ArQuickOpt
+AR		= ArCommand
+AR_REG		= $(AR) ArRegOpt
+AR_QUICK	= $(AR) ArQuickOpt
 
 RM		= RmCommand
 CAT		= CatCommand
@@ -625,9 +595,29 @@ CALLCONV	= $(CONFIGSRC)/callconv
 MKDIRHIER	= $(CONFIGSRC)/mkdirhier
 #endif
 
+NGCOMM########################################################################
+NGCOMM
+NGCOMM Including Project file
+NGCOMM
+NGCOMM########################################################################
 #include "Project"
+NGCOMM########################################################################
+NGCOMM
+NGCOMM After Including Project file
+NGCOMM
+NGCOMM########################################################################
 
+NGCOMM########################################################################
+NGCOMM
+NGCOMM Including Rules file
+NGCOMM
+NGCOMM########################################################################
 #include "Rules"
+NGCOMM########################################################################
+NGCOMM
+NGCOMM After Including Rules file
+NGCOMM
+NGCOMM########################################################################
 
 #if	defined(AIX) || defined(IRIX) || defined(HPUX) || defined(UNICOS)
 .SUFFIXES: .F
@@ -638,17 +628,23 @@ MKDIRHIER	= $(CONFIGSRC)/mkdirhier
 	@$(RM) $*.f
 #endif
 
-
-/*
- * This allows developers to over-ride the values of any of the pre-defined
- * make symbols on a project wide bases - even if they are using the installed
- * version of ymake.
- */
-#ifdef	YMAKEDEVFILE
-#include YMAKEDEVFILE
-#endif
-
+NGCOMM########################################################################
+NGCOMM
+NGCOMM	local y(mM)akefile is included HERE.
+NGCOMM
+NGCOMM########################################################################
 #include YMAKEFILE
+NGCOMM########################################################################
+NGCOMM
+NGCOMM	after local y(mM)akefile included.
+NGCOMM
+NGCOMM########################################################################
+
+NGCOMM########################################################################
+NGCOMM
+NGCOMM	The Rest of this file is generated from the Template file.
+NGCOMM
+NGCOMM########################################################################
 
 /*
  * Disable Optimization for a given yMakefile
@@ -687,19 +683,32 @@ MKDIRHIER	= $(CONFIGSRC)/mkdirhier
 COPT	= COptOrDebugFlag
 FOPT	= FOptOrDebugFlag
 
+
 #ifdef	IHaveSubdirs
 InternalMakeSubdirs($(SUBDIRS))
 #else
-/*
- * null all rule is here to pick up the all target in case the yMakefile
- * is empty - don't want all to default to clean.
- */
+NGCOMM
+NGCOMM null all rule is here to pick up the all target in case the yMakefile
+NGCOMM is empty - don't want all to default to clean
+NGCOMM
 null_rule::
+
+all:: all-local
 #endif
+
+
+clean-local::
+	@echo "cleaning in $(CURRENT_DIR)"
 
 CleanFilesTarget(core Makefile.bak)
 
 InternalMakefileTarget
+
+all-local::
+
+depend-local::
+
+includes-local::
 
 #ifdef	IHaveSubdirs
 
@@ -717,12 +726,14 @@ install::
 
 Makefiles::
 
-includes::
+includes:: includes-local
 
-depend::
+depend:: depend-local
 
-#endif	/* IHaveSubdirs */
+clean:: clean-local
 
-dist-clean::
+dist-clean:: clean-local
 	@$(RM) Makefile
 	@echo "dist-clean in $(CURRENT_DIR)"
+
+#endif	/* IHaveSubdirs */

@@ -1,8 +1,6 @@
 #
-#	$Id: yMakefile,v 1.3 1993-10-19 17:29:59 boote Exp $
+#	$Id: yMakefile,v 1.4 1993-11-01 17:35:58 boote Exp $
 #
-NCARG	= ../../../..
-
 MYNAME	= isosrfhr
 
 GENERIC_SRCS = dandr.f init3d.f
