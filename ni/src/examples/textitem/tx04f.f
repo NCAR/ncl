@@ -25,9 +25,9 @@ C
       integer i,appid,text_item_id,wid,rlist,ierr
       integer NCGM
 C
-C Default is to create a metafile.
+C Default output is to an X workstation.
 C
-      NCGM=1
+      NCGM=0
 C     
 C  Initialize the high level utility library.
 C     

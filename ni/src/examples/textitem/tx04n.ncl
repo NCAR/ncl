@@ -1,5 +1,5 @@
 ;
-;;      $Id: tx04n.ncl,v 1.5 1995-04-07 10:54:39 boote Exp $
+;      $Id: tx04n.ncl,v 1.6 1995-06-21 16:05:47 stautler Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -9,15 +9,15 @@
 ;                                                                      ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-;;  File:       tx04c.c
-;;
-;;  Author:     Jeff Boote
-;;          National Center for Atmospheric Research
-;;          PO 3000, Boulder, Colorado
-;;
-;;  Date:       Tue Jan 24 10:44:51 MST 1995
-;;
-;;  Description:         Demonstrates TextItem object.
+;  File:       tx04c.c
+;
+;  Author:     Jeff Boote
+;          National Center for Atmospheric Research
+;          PO 3000, Boulder, Colorado
+;
+;  Date:       Tue Jan 24 10:44:51 MST 1995
+;
+;  Description:         Demonstrates TextItem object.
 ;
 
 ;
@@ -36,9 +36,9 @@ app_id = create "tx04" appClass defaultapp
 end create
     
 ;
-; Default is to create a metafile.
+; Default output is to an X workstation. 
 ;
-NCGM=1
+NCGM=0
 
 if (NCGM .eq. 1) then
 ;
