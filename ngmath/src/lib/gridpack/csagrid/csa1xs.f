@@ -6,13 +6,13 @@ C
 C  Check on the number of knots.
 C
       IF (KNOTS .LT. 4) THEN
-        CALL CFAERR (202,' CSA1S - must have at least four knots',38)       
+        CALL CFAERR (202,' CSA1XS - must have at least four knots',39)       
       ENDIF
 C
 C  Check on the size of the workspace.
 C
       IF (NWRK .LT. KNOTS*(KNOTS+3)) THEN
-        CALL CFAERR (203,' CSA1S - workspace too small',28)
+        CALL CFAERR (203,' CSA1XS - workspace too small',29)
       ENDIF
 C
 C  Calculate the min and max for the knots as the minimum value of

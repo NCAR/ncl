@@ -101,7 +101,13 @@ C
   110 DO 112 J=1,K1
          IDIAG = IDIAG+(NP1-J+2)
          I1 = IL1+J
-         S = SQRT(A(IDIAG)*A(IDIAG)+A(I1)*A(I1))
+         IF (ABS(A(I1)) .LE. 1.E-18) THEN
+           S = SQRT(A(IDIAG)*A(IDIAG))
+         ELSE if (ABS(A(IDIAG)) .LT. 1.E-18) THEN
+           S = SQRT(A(I1)*A(I1))
+         ELSE
+           S = SQRT(A(IDIAG)*A(IDIAG)+A(I1)*A(I1))
+         ENDIF
          IF (S .EQ. 0.) GO TO 112
          TEMP = A(IDIAG)
          A(IDIAG) = S
