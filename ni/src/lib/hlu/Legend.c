@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.42 1995-06-23 22:37:31 dbrown Exp $
+ *      $Id: Legend.c,v 1.43 1995-07-28 22:51:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -927,6 +927,8 @@ static NhlErrorTypes LegendSetValues
 	char			*entry_name = SetValues_Name;
 	int			view_args = 0;
 	NhlBoolean		do_scaling = False;
+	float			tx = 1.0, ty = 1.0;
+	float			lxtr,rxtr,bxtr,txtr;
 
 	if (tnew->view.use_segments != told->view.use_segments) {
 		tnew->view.use_segments = told->view.use_segments;
@@ -970,10 +972,9 @@ static NhlErrorTypes LegendSetValues
  * Ensure that the label and title angles range is between 0 and 360
  */
 	lg_p->label_angle = fmod(lg_p->label_angle,360.0);
+
 	lg_p->title_angle = fmod(lg_p->title_angle,360.0);
 
-	ret1 = ManageDynamicArrays(new,old,args,num_args);
-	ret = MIN(ret,ret1);
 /*
  * if the title string is set, turn on the title unless it is simultaneously
  * explicitly turned off.
@@ -999,20 +1000,23 @@ static NhlErrorTypes LegendSetValues
 			break;
 		}
 	}
+
+	lg_p->lg_x = tnew->view.x;
+	lg_p->lg_y = tnew->view.y;
+	lg_p->lg_width = tnew->view.width;
+	lg_p->lg_height = tnew->view.height;
+
 	if (do_scaling) {
-		float tx, ty;
 		tx = tnew->view.width / told->view.width;
 		ty = tnew->view.height / told->view.height;
 
 		if (! _NhlArgIsSet(args,num_args,NhlNlgLabelFontHeightF)) {
-
 			if (lg_p->label_direction == NhlACROSS)
 				lg_p->label_height *= tx;
 			else 
 				lg_p->label_height *= ty;
 		}
 		if (! _NhlArgIsSet(args,num_args,NhlNlgTitleFontHeightF)) {
-
 			if (lg_p->title_direction == NhlACROSS)
 				lg_p->title_height *= tx;
 			else
@@ -1020,16 +1024,39 @@ static NhlErrorTypes LegendSetValues
 		}
 	}
 
-	lg_p->lg_x = tnew->view.x;
-	lg_p->lg_y = tnew->view.y;
-	lg_p->lg_width = tnew->view.width;
-	lg_p->lg_height = tnew->view.height;
-	lg_p->perim.l = lg_p->lg_x + (lg_p->perim.l - lg_p->perim.lxtr);
-	lg_p->perim.r = lg_p->lg_x + lg_p->lg_width - 
-		(lg_p->perim.rxtr - lg_p->perim.r);
-	lg_p->perim.b = lg_p->lg_y - lg_p->lg_height + 
-		(lg_p->perim.b - lg_p->perim.bxtr);
-	lg_p->perim.t = lg_p->lg_y - (lg_p->perim.txtr - lg_p->perim.t);
+	lxtr = tx * (lg_p->perim.l - lg_p->perim.lxtr);
+	rxtr = tx * (lg_p->perim.rxtr - lg_p->perim.r);
+	bxtr = ty * (lg_p->perim.b - lg_p->perim.bxtr);
+	txtr = tx * (lg_p->perim.txtr - lg_p->perim.t);
+	lg_p->perim.l = lg_p->lg_x + lxtr;
+	lg_p->perim.r = lg_p->lg_x + lg_p->lg_width - rxtr;
+	lg_p->perim.b = lg_p->lg_y - lg_p->lg_height + bxtr;
+	lg_p->perim.t = lg_p->lg_y - txtr;
+	lg_p->perim.lxtr = lg_p->lg_x;
+	lg_p->perim.rxtr = lg_p->perim.r + rxtr;
+	lg_p->perim.bxtr = lg_p->perim.b - bxtr;
+	lg_p->perim.txtr = lg_p->lg_y;
+
+/*
+ * Return now if using segments and only the view has changed
+ */
+	if (tnew->view.use_segments && ! lg_p->new_draw_req) {
+		return ret;
+	}
+
+	ret1 = ManageDynamicArrays(new,old,args,num_args);
+	ret = MIN(ret,ret1);
+
+/*
+ * Return now if the legend is turned off, the auto_manage flag is on
+ * and it was previously on.
+ */
+
+	if (lg_p->auto_manage && 
+	    (lg_p->auto_manage == olg_p->auto_manage) &&
+	    ! lg_p->legend_on) {
+		return ret;
+	}
 
 	ret1 = SetLegendGeometry(new,old,False,args,num_args);
 	ret = MIN(ret1,ret);
@@ -4178,7 +4205,7 @@ static NhlErrorTypes    SetLabels
  *	multi-text object
  */
 
-#define NhlLB_TRANSITIONANGLE 7.5
+#define NhlLG_TRANSITIONANGLE 7.5
 static NhlErrorTypes   	AdjustLabels
 #if	NhlNeedProto
 (
@@ -4339,7 +4366,7 @@ static NhlErrorTypes   	AdjustLabels
 	}
 	else if (lg_p->orient == NhlHORIZONTAL && 
 	    lg_p->label_direction == NhlACROSS) {
-		if (theta1 <= NhlLB_TRANSITIONANGLE) {
+		if (theta1 <= NhlLG_TRANSITIONANGLE) {
 			if (lg_p->label_pos == NhlBOTTOM) {
 				lg_p->label_just = NhlTOPCENTER;
 			}
@@ -4347,7 +4374,7 @@ static NhlErrorTypes   	AdjustLabels
 				lg_p->label_just = NhlBOTTOMCENTER;
 			}
 		}
-		else if (theta3 <= NhlLB_TRANSITIONANGLE) {
+		else if (theta3 <= NhlLG_TRANSITIONANGLE) {
 			if (lg_p->label_pos == NhlBOTTOM) {
 				lg_p->label_just = NhlBOTTOMCENTER;
 			}
@@ -4373,7 +4400,7 @@ static NhlErrorTypes   	AdjustLabels
 		}
 	}
 	else if (lg_p->orient == NhlHORIZONTAL){ /* NhlDOWN or UP */
-		if (theta2 <= NhlLB_TRANSITIONANGLE) {
+		if (theta2 <= NhlLG_TRANSITIONANGLE) {
 			if (lg_p->label_pos == NhlBOTTOM) {
 				lg_p->label_just = NhlCENTERRIGHT;
 			}
@@ -4381,7 +4408,7 @@ static NhlErrorTypes   	AdjustLabels
 				lg_p->label_just = NhlCENTERLEFT;
 			}
 		}
-		else if (theta4 <= NhlLB_TRANSITIONANGLE) {
+		else if (theta4 <= NhlLG_TRANSITIONANGLE) {
 			if (lg_p->label_pos == NhlBOTTOM) {
 				lg_p->label_just = NhlCENTERLEFT;
 			}
@@ -4409,7 +4436,7 @@ static NhlErrorTypes   	AdjustLabels
 	}
 	else if (lg_p->orient == NhlVERTICAL && 
 		 lg_p->label_direction == NhlACROSS) {
-		if (theta2 <= NhlLB_TRANSITIONANGLE) {
+		if (theta2 <= NhlLG_TRANSITIONANGLE) {
 			if (lg_p->label_pos == NhlLEFT) {
 				lg_p->label_just = NhlBOTTOMCENTER;
 			}
@@ -4417,7 +4444,7 @@ static NhlErrorTypes   	AdjustLabels
 				lg_p->label_just = NhlTOPCENTER;
 			}
 		}
-		else if (theta4 <= NhlLB_TRANSITIONANGLE) {
+		else if (theta4 <= NhlLG_TRANSITIONANGLE) {
 			if (lg_p->label_pos == NhlLEFT) {
 				lg_p->label_just = NhlTOPCENTER;
 			}
@@ -4445,7 +4472,7 @@ static NhlErrorTypes   	AdjustLabels
 	}
 	else { /* NhlVERTICAL NhlDOWN or UP */
 
-		if (theta1 <=NhlLB_TRANSITIONANGLE) {
+		if (theta1 <=NhlLG_TRANSITIONANGLE) {
 			if (lg_p->label_pos == NhlLEFT) {
 				lg_p->label_just = NhlCENTERRIGHT;
 			}
@@ -4453,7 +4480,7 @@ static NhlErrorTypes   	AdjustLabels
 				lg_p->label_just = NhlCENTERLEFT;
 			}
 		}
-		else if (theta3 <= NhlLB_TRANSITIONANGLE) {
+		else if (theta3 <= NhlLG_TRANSITIONANGLE) {
 			if (lg_p->label_pos == NhlLEFT) {
 				lg_p->label_just = NhlCENTERLEFT;
 			}

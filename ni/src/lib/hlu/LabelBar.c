@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.40 1995-06-23 18:34:29 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.41 1995-07-28 22:51:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -797,6 +797,8 @@ static NhlErrorTypes LabelBarSetValues
 	char			*entry_name = SetValues_Name;
 	int			view_args = 0;
 	NhlBoolean	        do_scaling = False;
+	float			tx = 1.0, ty = 1.0;
+	float			lxtr,rxtr,bxtr,txtr;
 
 	if (tnew->view.use_segments != told->view.use_segments) {
 		tnew->view.use_segments = told->view.use_segments;
@@ -829,7 +831,7 @@ static NhlErrorTypes LabelBarSetValues
 		lb_p->box_count = 1;
 	}
 		
-/*
+	/*
  * Ensure that the label and title angles range is between -360 and 360
  */
 	lb_p->label_angle = fmod(lb_p->label_angle,360.0);
@@ -861,21 +863,22 @@ static NhlErrorTypes LabelBarSetValues
 		}
 	}
 
+	lb_p->lb_x = tnew->view.x;
+	lb_p->lb_y = tnew->view.y;
+	lb_p->lb_width = tnew->view.width;
+	lb_p->lb_height = tnew->view.height;
+
 	if (do_scaling) {
-		
-		float tx, ty;
 		tx = tnew->view.width / told->view.width;
 		ty = tnew->view.height / told->view.height;
 
 		if (! _NhlArgIsSet(args,num_args,NhlNlbLabelFontHeightF)) {
-
 			if (lb_p->label_direction == NhlACROSS)
 				lb_p->label_height *= tx;
 			else 
 				lb_p->label_height *= ty;
 		}
 		if (! _NhlArgIsSet(args,num_args,NhlNlbTitleFontHeightF)) {
-
 			if (lb_p->title_direction == NhlACROSS)
 				lb_p->title_height *= tx;
 			else
@@ -883,27 +886,40 @@ static NhlErrorTypes LabelBarSetValues
 		}
 	}
 
-	lb_p->lb_x = tnew->view.x;
-	lb_p->lb_y = tnew->view.y;
-	lb_p->lb_width = tnew->view.width;
-	lb_p->lb_height = tnew->view.height;
-		
-	lb_p->perim.l = lb_p->lb_x + (lb_p->perim.l - lb_p->perim.lxtr);
-	lb_p->perim.r = lb_p->lb_x + lb_p->lb_width - 
-		(lb_p->perim.rxtr - lb_p->perim.r);
-	lb_p->perim.b = lb_p->lb_y - lb_p->lb_height + 
-		(lb_p->perim.b - lb_p->perim.bxtr);
-	lb_p->perim.t = lb_p->lb_y - (lb_p->perim.txtr - lb_p->perim.t);
+	lxtr = tx * (lb_p->perim.l - lb_p->perim.lxtr);
+	rxtr = tx * (lb_p->perim.rxtr - lb_p->perim.r);
+	bxtr = ty * (lb_p->perim.b - lb_p->perim.bxtr);
+	txtr = tx * (lb_p->perim.txtr - lb_p->perim.t);
+	lb_p->perim.l = lb_p->lb_x + lxtr;
+	lb_p->perim.r = lb_p->lb_x + lb_p->lb_width - rxtr;
+	lb_p->perim.b = lb_p->lb_y - lb_p->lb_height + bxtr;
+	lb_p->perim.t = lb_p->lb_y - txtr;
+	lb_p->perim.lxtr = lb_p->lb_x;
+	lb_p->perim.rxtr = lb_p->perim.r + rxtr;
+	lb_p->perim.bxtr = lb_p->perim.b - bxtr;
+	lb_p->perim.txtr = lb_p->lb_y;
+
+/*
+ * Return now if using segments and only the view has changed
+ */
+	if (tnew->view.use_segments && ! lb_p->new_draw_req) {
+		return ret;
+	}
 
 	ret1 = ManageDynamicArrays(new,old,args,num_args);
 	ret = MIN(ret,ret1);
 
 /*
- * Return now if the labelbar is turned off
+ * Return now if the labelbar is turned off, the auto_manage flag is on
+ * and it was previously on.
  */
 
-	if (! lb_p->labelbar_on)
+	if (lb_p->auto_manage && 
+	    (lb_p->auto_manage == olb_p->auto_manage) &&
+	    ! lb_p->labelbar_on) {
 		return ret;
+	}
+
 /*
  * Calculate labelbar geometry
  */

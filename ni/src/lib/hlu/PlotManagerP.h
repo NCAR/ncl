@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManagerP.h,v 1.4 1995-05-18 20:05:45 dbrown Exp $
+ *      $Id: PlotManagerP.h,v 1.5 1995-07-28 22:51:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -57,6 +57,7 @@ typedef struct _NhlAnnoRec {
 	float			ortho_pos;
 	ovAnnoType		type;
 	int			status;
+	int			suppress_status;
 	NhlBoolean		track_data;
 	float			data_x;
 	float			data_y;
@@ -69,6 +70,8 @@ typedef struct _NhlpmRec {
 	NhlLayer		ov_obj;	   /* plot's PlotManager object */
 	NhlAnnoRec		*anno_list; /* list of annotation records */
 	int			max_zone;  /* the max annotation zone */
+	float			ox,oy;		/* original vp values */
+	float			owidth,oheight;
 } NhlpmRec;
 
 typedef struct _NhlPlotManagerLayerPart {

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.40 1995-06-22 01:59:05 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.41 1995-07-28 22:51:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4500,7 +4500,7 @@ static NhlErrorTypes mpUpdateNameRecs
 	int		len = strlen(name);
 	NhlBoolean	found = False, found_all = False, found_one = False;
 	NhlString	*names = NULL;
-	char		*cp, *np = name;
+	char		*cp;
 	NhlBoolean	invert = False;
 	NhlString	comp_name;
 	typedef enum _mpCompType {
@@ -4512,6 +4512,10 @@ static NhlErrorTypes mpUpdateNameRecs
 	int		*count;
 	mpGlobalSetMode *gmode;
 	mpStateSetMode	*smode;
+	char		buf[256];
+	char		*np = buf;
+
+	strcpy(buf,name);
 
 	switch (draw_op) {
 	case mpDRAWFILL:
@@ -4547,8 +4551,9 @@ static NhlErrorTypes mpUpdateNameRecs
 		mpp->fill_rec_alloc = mpALLOC_UNIT;
 	}
 
-	if (name[len - 1] == '*') {
+	if (np[len - 1] == '*') {
 		comp_type = mpSTRNCMP;
+		np[len - 1] = '\0';
 		len --;
 	}
 

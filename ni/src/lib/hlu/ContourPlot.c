@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.24 1995-06-27 21:12:09 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.25 1995-07-28 22:51:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4898,8 +4898,6 @@ static NhlErrorTypes SetUpLLTransObj
 
 		return ret;
 	}
-
-	if (! cnp->data_init) return ret;
 
 	if (cnp->x_min != ocnp->x_min)
 		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,cnp->x_min);

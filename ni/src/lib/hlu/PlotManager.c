@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.14 1995-06-16 20:57:00 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.15 1995-07-28 22:51:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3381,8 +3381,8 @@ ManageTickMarks
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 			return(NhlFATAL);
 		}
-		if (ovp->display_tickmarks == NhlNEVER ||
-		    (! ovp->trans_changed && ! view_changed)) {
+		if (ovp->display_tickmarks == NhlNEVER &&
+		    ! ovp->trans_changed && ! view_changed) {
 			return _NhlALSetValuesChild(ovp->tickmarks->base.id,
 						    (NhlLayer)ovnew,
 						    sargs,nargs);
@@ -3396,24 +3396,28 @@ ManageTickMarks
 	trobj_name = (trobj->base.layer_class)->base_class.class_name;
 
 	if (trobj_name == NhlmapTransObjClass->base_class.class_name) {
+/*
+ * Set the tickmarks to dummy values if they are turned on. Set the
+ * AnnoRec status to Never, to ensure that they do not actually get
+ * displayed but do not disturb the TickMarkDisplaymode. That
+ * way, it is possible to ensure that the TickMarks stay up to date.
+ */
 		if (ovp->display_tickmarks > NhlNEVER) {
 			e_text = 
 	"%s: MAP tick mark style not yet implemented; turning tick marks off";
 			NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
 		}
-		if (init) {
-			anno_rec->status = 
-				ovp->display_tickmarks = NhlNOCREATE;
-			return ret;
-		}
-		else {
-			anno_rec->status = 
-				ovp->display_tickmarks =  NhlNEVER;
-			subret = _NhlALSetValuesChild(ovp->tickmarks->base.id,
-						      (NhlLayer)ovnew,
-						      sargs,nargs);
-			return MIN(subret,ret);
-		}
+		anno_rec->status = NhlNEVER;
+		x_min = 0.0;
+		x_max = 1.0;
+		x_log = False;
+		x_reverse = False;
+		y_min = 0.0;
+		y_max = 1.0;
+		y_log = False;
+		y_reverse = False;
+		ovp->x_tm_style = NhlLINEAR;
+		ovp->y_tm_style = NhlLINEAR;
 	}
 	else if (trobj_name == 
 		 NhllogLinTransObjClass->base_class.class_name) {
@@ -4556,9 +4560,9 @@ NhlErrorTypes NhlAddOverlay
 	char			*e_text;
 	char			*entry_name = "NhlAddOverlay";
 
-	NhlLayer			base = _NhlGetLayer(base_id);
-	NhlLayer			plot = _NhlGetLayer(transform_id);
-	NhlLayer			after = _NhlGetLayer(after_id);
+	NhlLayer		base = _NhlGetLayer(base_id);
+	NhlLayer		plot = _NhlGetLayer(transform_id);
+	NhlLayer		after = _NhlGetLayer(after_id);
 
 	NhlTransformLayerPart	*base_tfp;
 	NhlPlotManagerLayer	ovl;
@@ -4570,7 +4574,7 @@ NhlErrorTypes NhlAddOverlay
 	int			plot_count = 0;
 	NhlpmRec			**sub_recs = NULL;
 	int			i, j;
-
+	float			ox,oy,owidth,oheight;
 /*
  * Check validity of the plot layers, then root out the pointer to the overlay
  * layer.
@@ -4690,7 +4694,23 @@ NhlErrorTypes NhlAddOverlay
 			(NhlTransformLayer) _NhlGetLayer(transform_id);
 		sub_recs[0]->ov_obj = NULL;
 	}
-			
+/*
+ * Get the current viewport of the transform and store it in sub_rec[0]
+ * so it can be restored if the transform is removed later.
+ */
+	
+	subret = NhlVAGetValues(transform_id,
+				NhlNvpXF,&ox,
+				NhlNvpYF,&oy,
+				NhlNvpWidthF,&owidth,
+				NhlNvpHeightF,&oheight,
+				NULL);
+	if ((ret = MIN(subret,ret)) < NhlWARNING)
+		return ret;
+	sub_recs[0]->ox = ox;
+	sub_recs[0]->oy = oy;
+	sub_recs[0]->owidth = owidth;
+	sub_recs[0]->oheight = oheight;
 
 /*
  * Reallocate the array of overlay record pointers if necessary
@@ -5822,12 +5842,12 @@ DissolveOverlay
 	NhlPlotManagerLayerPart	*ovp = 
 				  &((NhlPlotManagerLayer)overlay_object)->plotmanager;
 	int			i;
-	NhlSArg			sargs[3];
+	NhlSArg			sargs[10];
 	int			nargs = 0;
 
 	while (ovp->overlay_count > 1) {
-			
-		if (ovp->pm_recs[1]->ov_obj != NULL) {
+		NhlpmRec *orec = ovp->pm_recs[1];
+		if (orec->ov_obj != NULL) {
 			subret = RestoreOverlayBase(ovp,1);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				return ret;
@@ -5838,8 +5858,13 @@ DissolveOverlay
 			NhlSetSArg(&sargs[nargs++],NhlNtfOverlayTrans,NULL);
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtfOverlayStatus,_tfNotInOverlay);
+			NhlSetSArg(&sargs[nargs++],NhlNvpXF,orec->ox);
+			NhlSetSArg(&sargs[nargs++],NhlNvpYF,orec->oy);
+			NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,orec->owidth);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNvpHeightF,orec->oheight);
 
-			subret = NhlALSetValues(ovp->pm_recs[1]->plot->base.id,
+			subret = NhlALSetValues(orec->plot->base.id,
 						sargs,nargs); 
 			if ((ret = MIN(subret,ret)) < NhlWARNING)
 				return ret;
@@ -5991,11 +6016,12 @@ RestoreOverlayBase
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "NhlRemoveOverlay";
-	NhlPlotManagerLayer		plot_ovl = (NhlPlotManagerLayer) 
+	NhlPlotManagerLayer	plot_ovl = (NhlPlotManagerLayer) 
 					ovp->pm_recs[plot_number]->ov_obj;
-	NhlTransformLayer		plot = ovp->pm_recs[plot_number]->plot;
+	NhlTransformLayer	plot = ovp->pm_recs[plot_number]->plot;
 	NhlGenArray		ga;
-	NhlpmRec			**sub_recs = NULL;
+	NhlpmRec		**sub_recs = NULL;
+	NhlpmRec		*orec = ovp->pm_recs[plot_number];
 	NhlSArg			sargs[10];
         int			nargs = 0;
 	int			i, j, k;
@@ -6062,6 +6088,10 @@ RestoreOverlayBase
 		NhlSetSArg(&sargs[nargs++],NhlNtfOverlayObject, plot_ovl);
 		NhlSetSArg(&sargs[nargs++],
 			   NhlNtfOverlayTrans,plot->trans.trans_obj);
+		NhlSetSArg(&sargs[nargs++],NhlNvpXF,orec->ox);
+		NhlSetSArg(&sargs[nargs++],NhlNvpYF,orec->oy);
+		NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,orec->owidth);
+		NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,orec->oheight);
 
 		subret = NhlALSetValues(sub_recs[i]->plot->base.id,
 					sargs,nargs); 
@@ -6069,7 +6099,7 @@ RestoreOverlayBase
 			return ret;
 
 	}
-			
+	nargs = 0;
 
 /*
  * If the new plot count is different from the old, (indicating that a plot
@@ -6091,6 +6121,11 @@ RestoreOverlayBase
 	NhlSetSArg(&sargs[nargs++],NhlNtfOverlayStatus,_tfCurrentOverlayBase);
 	NhlSetSArg(&sargs[nargs++],NhlNtfOverlayObject,plot_ovl);
 	NhlSetSArg(&sargs[nargs++],NhlNtfOverlayTrans,plot->trans.trans_obj);
+	NhlSetSArg(&sargs[nargs++],NhlNpmUpdateReq,True);
+	NhlSetSArg(&sargs[nargs++],NhlNvpXF,orec->ox);
+	NhlSetSArg(&sargs[nargs++],NhlNvpYF,orec->oy);
+	NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,orec->owidth);
+	NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,orec->oheight);
 	
 	subret = NhlALSetValues(plot->base.id,sargs,nargs); 
 	ret = MIN(subret,ret);
