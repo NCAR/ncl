@@ -192,6 +192,10 @@ C
                IMACH( 1) = 5
                IMACH( 2) = 6
                IMACH( 3) = 0
+C
+C Note: the original version returns '6' for IMACH(4). But, we've
+C been using '0' for years, so we hard-coded it to '0' here.
+C
                IMACH( 4) = 0
                IMACH( 5) = 64
                IMACH( 6) = 8
@@ -234,7 +238,7 @@ C
          IMACH( 1) = 5
          IMACH( 2) = 6
          IMACH( 3) = 7
-         IMACH( 4) = 6
+         IMACH( 4) = 0
          IMACH( 5) = 32
          IMACH( 6) = 4
          IMACH( 7) = 2
