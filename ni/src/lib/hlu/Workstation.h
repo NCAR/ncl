@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.6 1994-04-05 00:51:38 dbrown Exp $
+ *      $Id: Workstation.h,v 1.7 1994-04-19 00:07:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -169,13 +169,6 @@ typedef float NhlMarkerTableParams[4];
 /*
  * Public access functions to support Workstation Class
  */
-
-extern NhlErrorTypes NhlChangeWorkstation(
-#if	NhlNeedProto
-	int	plotid,		/* plotid to move to new workstation	*/
-	int	workid		/* workid of workstation		*/
-#endif
-);
 
 extern NhlErrorTypes NhlUpdateWorkstation(
 #if	NhlNeedProto
