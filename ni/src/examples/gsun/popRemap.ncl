@@ -1,5 +1,5 @@
 ;
-;      $Id: popRemap.ncl,v 1.8 2004-09-25 00:17:04 shea Exp $
+;      $Id: popRemap.ncl,v 1.9 2004-09-25 17:42:38 shea Exp $
 ;
 ;===========================================================
 ; D. Shea
@@ -35,6 +35,7 @@
 ;- T62   : gaussian grid
 ;- T63   : gaussian ccm grid
 ;- T85   : gaussian ccm grid
+;- T170  : gaussian ccm grid
 ;- 1x1d  : 1 degree lat/lon grid used by Levitus
 
 ; --------------------------------------------------------------------
@@ -201,17 +202,17 @@ begin
   nadd = nlat%2
   dlat = 180./(nlat-nadd)
 
-  if (gDst.eq."T85" .or.                    \
+  if (gDst.eq."T170".or. gDst.eq."T85" .or. \
       gDst.eq."T63" .or. gDst.eq."T62" .or. \
       gDst.eq."T42" .or. gDst.eq."T21" .or. \
       gDst.eq."TwoD" .or.gDst.eq."OneD".or. \
       gDst.eq."HlfD" .or.gDst.eq."1x1d".or. \
       gDst.eq."T31") then
 
-      if (gDst.eq."T85" .or.                    \
+      if (gDst.eq."T170".or. gDst.eq."T85" .or. \
           gDst.eq."T63" .or. gDst.eq."T62" .or. \
-         gDst.eq."T42"  .or. gDst.eq."T21" .or. \
-	 gDst.eq."T31") then
+          gDst.eq."T42" .or. gDst.eq."T21" .or. \
+          gDst.eq."T31") then
           if (typeof(x).eq."double") then
               gau_info= gaus(nlat/2)             ; gaussian latitudes and wts
           else
