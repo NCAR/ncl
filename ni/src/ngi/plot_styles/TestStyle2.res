@@ -15,23 +15,29 @@
 ! Load these files containing the non-intrinsic Ncl functions referenced
 ! in this plot style file. Functions used in the plot style file are
 ! of two types, and used in two different contexts:
+!
 ! The first type is used as a resource value and must return a value 
 ! convertable to the resource type. In this category also belong expressions
 ! that evaluate to a value of a suitable type. (These are defined in line 
 ! within the plot style file and could be considered 'anonymous' functions.)
-! These could be called "filter" functions. They should generally avoid
+! These functions are "filter" type functions. They should generally avoid
 ! side effects, since their purpose is simply to return a value.
 !
 ! The other function type is used as the value of the special NDV resource:
-! "ndvUpdateFunc". Functions of this type must return only a Boolean value
-! indicating success or failure. They are evaluated only for their side
-! effects, such as setting values of objects passed in as parameters. 
-! Update functions are only executed after all objects belonging to the
-! plot have been created, so you may freely pass as a parameter any object
-! in the ndvObjects list, knowing it will exist by the time the function is
-! called. Objects should not be created inside an update func (except 
-! perhaps as a local variable), since there currently no way to ensure a 
-! unique name for such an object.
+! "ndvUpdateFunc[x]" (where [x] represents a small integer). Functions of 
+! this type must return a three-way value where -1 indicates an error,
+! 0 indicates that the function did not actually do anything, and 1
+! indicates that the function changed something.
+! These functions are evaluated for their side effects, such as setting 
+! the values of objects passed in as parameters. Update functions are 
+! only executed after all objects belonging to the plot have been created, 
+! so you may freely pass as a parameter any object in the ndvObjects list, 
+! knowing it will exist by the time the function is called. Also note that
+! if an object is to have more than one update function, the resource name 
+! must have a different integer suffix. When more than one update function
+! exists they will be executed in the order of their extensions. No
+! extension is equivalent to an extension value of 0. 
+! All variables created inside the functions should be declared local.
 !
 
 *ndvFuncFiles : (/ test_style.ncl /)
@@ -187,3 +193,5 @@
 !
 *vpUseSegments : True
 *MaxLevelCount : 20
+*TextFuncCode : ~
+
