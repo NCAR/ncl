@@ -1,10 +1,10 @@
-.\"
-.\"	$Id: pcgetc.m,v 1.1 1993-03-11 16:29:00 haley Exp $
-.\"
 .TH PCGETC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
-PCGETC -  Retrieves current character values for a specified
-parameter.
+PCGETC -  
+Retrieves the value of a specified internal parameter
+of type CHARACTER.
 .SH SYNOPSIS
 CALL PCGETC (PNAM,CVAL)
 .SH C-BINDING SYNOPSIS
@@ -13,29 +13,55 @@ CALL PCGETC (PNAM,CVAL)
 void c_pcgetc (char *pnam, char *cval, int len)
 .SH DESCRIPTION 
 .IP PNAM 12
-The parameter name of type character (for example, 'FC').
+(an input expression of type CHARACTER) specifies the name of the
+parameter to get. The name must appear as the first two
+characters of the string. If the internal parameter is one
+of the two (\'BC\' and \'CC\') that are arrays, the index of
+the desired array element may appear, enclosed in
+parentheses, in columns 3 and following. Other characters
+may be used to document the use of the parameter being
+retrieved; for example, instead of just \'MA\', one can use
+\'MA - MAPPING FLAG\' and, instead of \'CC(10)\', one can use
+\'CC(10) - SPECIAL COLOR 10\'.
 .IP CVAL 12
-A character variable in which the current value
-of the parameter is to be returned.
+(an output variable of type CHARACTER) is the name of the variable
+into which the value of the internal parameter specified by PNAM
+is to be retrieved.
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions with the following exception:
-.SP
 .IP len 12
 The size of cval as dimensioned in the calling program.
+.SH USAGE
+This routine allows you to retrieve the current value of
+Plotchar parameters.  For a complete list of parameters available
+in this utility, see the plotchar_params man page.
 .SH ACCESS
 To use PCGETC, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  To use c_pcgetc, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.
+.SH MESSAGES
+See the plotchar man page for a description of all Plotchar error
+messages and/or informational messages.
 .SH SEE ALSO
-Online: 
-pcgetc, pcgeti, pcgetr, pcsetc, pcseti, pcsetr, plchhq, plchlq,
-plchmq, plotchar, ncarg_cbind
-.sp
-Hardcopy:  "NCAR Graphics User's Guide," Version 2.00
+Online:
+plotchar,
+plotchar_params,
+pcdlsc,
+pcgeti,
+pcgetr,
+pchiqu,
+pcloqu,
+pcmequ,
+pcmpxy,
+pcpnwi,
+pcsetc,
+pcseti,
+pcsetr,
+ncarg_cbind.
 .SH COPYRIGHT
-(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved

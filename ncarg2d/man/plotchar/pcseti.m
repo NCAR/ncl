@@ -1,9 +1,10 @@
-.\"
-.\"	$Id: pcseti.m,v 1.1 1993-03-11 16:29:23 haley Exp $
-.\"
 .TH PCSETI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
-PCSETI -  Sets integer values for a specified parameter.
+PCSETI -  
+Gives a new value to a specified internal parameter
+of type INTEGER.
 .SH SYNOPSIS
 CALL PCSETI (PNAM,IVAL)
 .SH C-BINDING SYNOPSIS
@@ -12,25 +13,60 @@ CALL PCSETI (PNAM,IVAL)
 void c_pcseti (char *pnam, int ival)
 .SH DESCRIPTION 
 .IP PNAM 12
-The parameter name of type character (for example, 'CD').
+(an input expression of type CHARACTER) specifies the name of the
+parameter to be set. The name must appear as the first two
+characters of the string. If the internal parameter is one
+of the two (\'BC\' and \'CC\') that are arrays, the index of
+the desired array element may appear, enclosed in
+parentheses, in columns 3 and following. Other characters
+may be used to document the use of the parameter being
+retrieved; for example, instead of just \'MA\', one can use
+\'MA - MAPPING FLAG\' and, instead of \'CC(10)\', one can use
+\'CC(10) - SPECIAL COLOR 10\'.
 .IP IVAL 12
-The integer value you select for the parameter.
+(an input expression of type INTEGER)
+is the value to be assigned to the
+internal parameter specified by PNAM.
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
+.SH USAGE
+This routine allows you to set the current value of
+Plotchar parameters.  For a complete list of parameters available
+in this utility, see the plotchar_params man page.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+examples: 
+cpex01,
+cpex09,
+cpexcc,
+coex02,
+coex03,
+epltch,
+srex01.
 .SH ACCESS
 To use PCSETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  To use c_pcseti, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.
 .SH SEE ALSO
-Online: 
-pcgetc, pcgeti, pcgetr, pcsetc, pcseti, pcsetr, plchhq, plchlq,
-plchmq, plotchar, ncarg_cbind
-.sp
-Hardcopy:  "NCAR Graphics User's Guide," Version 2.00
+Online:
+plotchar,
+plotchar_params,
+pcdlsc,
+pcgetc,
+pcgeti,
+pcgetr,
+pchiqu,
+pcloqu,
+pcmequ,
+pcmpxy,
+pcpnwi,
+pcsetc,
+pcsetr,
+ncarg_cbind.
 .SH COPYRIGHT
-(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved

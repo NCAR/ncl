@@ -1,35 +1,85 @@
-.\"
-.\"	$Id: plotchar.m,v 1.1 1993-03-11 16:29:37 haley Exp $
-.\"
-.TH PLOTCHAR 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH Plotchar 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
-PLOTCHAR - Plots text using one of three quality levels.
+Plotchar - Allows a user to draw characters of high, medium,
+or low quality.  
 .SH SYNOPSIS
-PLCHHQ - Plots characters of high quality -- using Hershey set.
-.br
-PLCHMQ - Plots characters of medium quality -- Roman font available.
-.br
-PLCHLQ - Plots characters of low quality -- uses GKS text routines.
-.br
-PCGETC - Retrieves current parameter character values.
-.br
-PCGETI - Retrieves current parameter integer values.
-.br
-PCGETR - Retrieves current parameter real values.
-.br
-PCSETC - Sets character parameter values.
-.br
-PCSETI - Sets integer parameter values.
-.br
-PCSETR - Sets real parameter values.
+PCDLSC -
+Defines the default list of "special colors" used by
+PCHIQU in drawing certain characters from the filled fonts.
+Such a call will define color indices IFCI, IFCI+1, IFCI+2,
+\&. . . , IFCI+15 and it will set all elements of the
+internal parameter array \'CC\' corresponding to indices 1
+through 16. At the moment, though such a call does define a
+set of sixteen colors (ranging from blue to red) and set
+the elements of \'CC\', it\'s a bit pointless, since there are
+no characters for which the special colors are used. In the
+future, there will be a few such (like the state highway
+symbol, which is normally drawn in a particular pair of
+colors); at that time, the routine will be of more use.
+.sp
+PCGETC -
+Retrieves the value of a specified internal parameter
+of type CHARACTER.
+.sp
+PCGETI -
+Retrieves the value of a specified internal parameter
+of type INTEGER.
+.sp
+PCGETR -
+Retrieves the value of a specified internal parameter
+of type REAL.
+.sp
+PCHIQU -
+Draws high quality characters. By default, it uses
+the same database as the old NCAR Graphics routine PWRITX,
+but it can also use characters from any of the fontcap-defined
+databases, it has an improved interface, and it has
+many more capabilities than PWRITX.
+.sp
+PCLOQU -
+Draws characters of "low quality" by calling the GKS
+character-drawing routines. No function codes may be used.
+Using PCLOQU to draw a given string of characters will
+create a smaller metafile than if PCHIQU or PCMEQU were
+used; the results will depend on capabilities of the
+translator.
+.sp
+PCMEQU -
+Draws characters of "medium quality". It does this
+by drawing lines, just as PCHIQU does, but it does not
+produce quite such fancy characters. No function codes may
+be used. Using PCMEQU to draw a given string of characters
+will create a larger metafile than if PCLOQU were used,
+which may be a disadvantage. However, it may also be more
+dependable, in that it does not depend on capabilities the
+translator may or may not have.
+.sp
+PCPNWI -
+Is a character function.
+.sp
+PCSETC -
+Gives a new value to a specified internal parameter
+of type CHARACTER.
+.sp
+PCSETI -
+Gives a new value to a specified internal parameter
+of type INTEGER.
+.sp
+PCSETR -
+Gives a new value to a specified internal parameter
+of type REAL.
+.sp
+PLCHHQ - Is an alternate name for the routine PCHIQU.
+.sp
+PLCHLQ - Is an alternate name for the routine PCLOQU.
+.sp
+PLCHMQ - Is an alternate name for the routine PCMEQU.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-c_plchhq
-.br
-c_plchmq
-.br
-c_plchlq
+c_pcdlsc
 .br
 c_pcgetc
 .br
@@ -37,24 +87,167 @@ c_pcgeti
 .br
 c_pcgetr
 .br
+c_pchiqu
+.br
+c_pcloqu
+.br
+c_pcmequ
+.br
+c_pcpnwi
+.br
 c_pcsetc
 .br
 c_pcseti
 .br
 c_pcsetr
+.br
+c_plchhq
+.br
+c_plchlq
+.br
+c_plchmq
+.SH USER-MODIFIABLE INTERNAL ROUTINES
+PCMPXY - This routine is normally not called directly by the user
+(though it can be). It is called by PCHIQU and by PCMEQU
+when the user has set the mapping flag \'MA\' non-zero to
+request mapping of characters from one X/Y coordinate
+system to another.
 .SH ACCESS 
-To use PLOTCHAR, routines load the NCAR Graphics libraries ncarg,
-ncarg_gks, and ncarg_loc, preferably in that order.  To use the PLOTCHAR
+To use Plotchar, routines load the NCAR Graphics libraries ncarg,
+ncarg_gks, and ncarg_loc, preferably in that order.  To use the Plotchar
 C-binding routines load the NCAR Graphics libraries ncargC, ncarg_gksC, 
 ncarg, ncarg_gks, and ncarg_loc, preferably in that order.
-.SH SEE ALSO
-Online: 
-pcgetc, pcgeti, pcgetr, pcsetc, pcseti, pcsetr, plchhq, plchlq,
-plchmq, plotchar, ncarg_cbind
+.SH MESSAGES
+The following error messages may be written by Plotchar.
+They are written by means of a call to the error-handling
+support routine SETER; in all cases, the final argument in
+the call says that the error is fatal and that execution
+should be terminated.
 .sp
-Hardcopy: "NCAR Graphics User's Guide," Version 2.00
+.in +5
+PLCHHQ - DATASET NOT LOADED CORRECTLY
+.in +5
+.sp
+Probably indicates an error in the implementation of
+Plotchar. See a consultant.
+.sp
+.in -5
+PLCHHQ - INTERNAL LOGIC ERROR (NDGU = 0) - SEE CONSULTANT
+.br
+PLCHHQ - INTERNAL LOGIC ERROR (XCRA/YCRA TOO SMALL) - SEE
+CONSULTANT
+.br
+PLCHHQ - INTERNAL LOGIC ERROR (NPCS TOO BIG) - SEE
+CONSULTANT
+.br
+PLCHHQ - INTERNAL LOGIC ERROR (NCRA TOO BIG) - SEE
+CONSULTANT
+.br
+PLCHHQ - INTERNAL LOGIC ERROR (XCP1 OR XCP2 = OORV - SEE
+CONSULTANT
+.in +5
+.sp
+An "impossible" situation has arisen. Indicates a compiler
+problem, core clobbering, an error in the implementation or
+installation of Plotchar, and/or the presence of unfriendly
+gremlins. See a consultant.
+.sp
+.in -5
+PLCHHQ - ERROR EXIT FROM GQPLCI
+.br
+PLCHHQ - ERROR EXIT FROM GQFACI
+.br
+PLCHHQ - ERROR EXIT FROM GQTXCI
+.br
+PLCHHQ - ERROR EXIT FROM GQLWSC
+.br
+PLCHHQ - ERROR EXIT FROM GQFAIS
+.sp
+.in +5
+One of the GKS "query" routines has returned an error flag.
+This may mean that GKS is not in the proper state.
+.sp
+.in -5
+PCDLSC - FIRST COLOR INDEX IS LESS THAN ZERO
+.sp
+.in +5
+PCDLSC has been called with an argument whose value is less
+than zero, which is illegal.
+.sp
+.in -5
+PCGETC - UNRECOGNIZED PARAMETER NAME
+.br
+PCGETR - UNRECOGNIZED PARAMETER NAME
+.br
+PCSETC - UNRECOGNIZED PARAMETER NAME
+.br
+PCSETR - UNRECOGNIZED PARAMETER NAME
+.sp
+.in +5
+The parameter name used is not recognized. Since PCGETI is
+implemented using a call to PCGETR, the second error
+message above may result from a call to PCGETI. Similarly,
+since PCSETI is implemented using a call to PCSETR, the
+fourth error message may result from a call to PCSETI.
+.sp
+.in -5
+PCGETR - BOX COLOR ARRAY INDEX IS OUT OF RANGE
+.br
+PCSETR - BOX COLOR ARRAY INDEX IS OUT OF RANGE
+.sp
+.in +5
+The parameter name begins with \'BC\' and contains a
+subscript that is outside the range 1 to 3, which is the
+legal range for that internal parameter.
+.sp
+.in -5
+PCGETR - COLOR ARRAY INDEX IS OUT OF RANGE
+.br
+PCSETR - COLOR ARRAY INDEX IS OUT OF RANGE
+.sp
+.in +5
+The parameter name begins with \'CC\' and contains a
+subscript that is outside the range from 0 to 16, which is
+the legal range for that internal parameter.
+.sp
+.in -5
+PCPNWI - PARAMETER NAME TOO SHORT
+.br
+PCPNWI - INTERNAL ERROR - SEE CONSULTANT
+.sp
+.in +5
+PCPNWI is an internal routine that examines a parameter
+name string for an embedded subscript. Both of these error
+messages indicate a problem with such a parameter name.
+.sp
+.in -5
+PCSETC - UNRECOGNIZED FONT NAME
+.sp
+.in +5
+If PCSETC is called with first argument \'FN\', the second
+argument must be the name of a font to be used. The name of
+the font must be spelled exactly as given in Table 2, "Font
+Numbers vs. Font Names", above. In particular, the name
+must be given in upper case.
+.in -5
+.SH SEE ALSO
+Online:
+plotchar_params,
+pcdlsc,
+pcgetc,
+pcgeti,
+pcgetr,
+pchiqu,
+pcloqu,
+pcmequ,
+pcmpxy,
+pcpnwi,
+pcsetc,
+pcseti,
+pcsetr,
+ncarg_cbind.
 .SH COPYRIGHT
-(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved
