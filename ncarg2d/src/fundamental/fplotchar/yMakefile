@@ -1,0 +1,17 @@
+#
+#	$Id: yMakefile,v 1.1 1993-03-24 21:24:16 haley Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= fplotchar
+
+GENERIC_SRCS = fpchiqu.f fpcloqu.f
+
+install::
+	@for file in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateTarget
