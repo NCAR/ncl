@@ -31,6 +31,9 @@ integer workspace array.
 (INTEGER array, dimensioned as specified in a call to 
 ARINAM, in the package Areas) is the array containing the 
 area map to which contour lines are to be added.
+.SH C-BINDING DESCRIPTION
+The C-binding argument descriptions are the same as the FORTRAN
+argument descriptions.
 .SH USAGE
 The routine CPCLAM, which adds contour lines generated from the
 data in the array ZDAT to the area map in the array IAMA, may
@@ -111,6 +114,27 @@ added, however.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
+ccpcldm,
+ccpfil,
+ccplbam,
+ccpllb,
+ccpllc,
+ccplll,
+ccpllo,
+ccpllp,
+ccpllt,
+ccpllw,
+ccppc,
+ccppc1,
+ccppc2,
+ccppc3,
+ccppc4,
+ccppole,
+ccprc,
+ccpscam,
+ccpt2d,
+ccpvs,
+colcon,
 cpex01,
 cpex02,
 cpex03,
@@ -118,7 +142,9 @@ cpex04,
 cpex05,
 cpex07,
 cpex08,
-tconpa.
+vvex01,
+tconpa,
+fsfsgfa.
 .SH ACCESS
 To use CPCLAM, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpclam, 

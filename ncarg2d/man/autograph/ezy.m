@@ -42,6 +42,7 @@ argument descriptions.
 Use the ncargex command to see the following relevant
 examples: 
 agex01,
+bnchmk,
 example,
 tagupw,
 tautog.

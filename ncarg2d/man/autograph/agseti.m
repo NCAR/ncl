@@ -30,8 +30,20 @@ in this utility, see the autograph_params man page.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
+agex05,
+agex06,
+agex07,
+agex08,
+agex09,
+agex10,
+agex11,
+agex12,
+agex13,
+bnchmk,
+cbex01,
 tagupw,
 tautog.
+fspponts.
 .SH ACCESS 
 To use AGSETI, load the NCAR Graphics libraries ncarg, ncarg_gks, 
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_agseti, load 

@@ -111,7 +111,9 @@ Use the ncargex command to see the following relevant
 examples: 
 agex08,
 agex10,
-agex13.
+agex13,
+bnchmk,
+sprevx.
 .SH ACCESS
 To use ANOTAT, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_anotat, load the 

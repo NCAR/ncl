@@ -88,10 +88,34 @@ situation in various ways.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
+ccpclc,
+ccpcld,
+ccpcldm,
+ccpcll,
+ccpklb,
+ccplbam,
+ccplbdr,
+ccpllb,
+ccpllc,
+ccplll,
+ccpllo,
+ccpllp,
+ccpllt,
+ccpllw,
+ccppc,
+ccppc1,
+ccppc2,
+ccppc3,
+ccppc4,
+ccppkcl,
+ccprc,
+ccprwc,
+ccpscam,
 cpex01,
 cpex02,
 cpex03,
-cpex06.
+cpex06,
+vvex01.
 .SH ACCESS
 To use CPPKCL, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_cppkcl, 

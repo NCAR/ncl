@@ -42,6 +42,7 @@ See the man page for CPCNRC.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
+ccpezct,
 cpex09,
 tconpa.
 .SH ACCESS

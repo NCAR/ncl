@@ -98,6 +98,9 @@ in this utility, see the autograph_params man page.
 Use the ncargex command to see the following relevant
 example: 
 agex13.
+bnchmk,
+splogy,
+sprevx.
 .SH ACCESS
 To use DISPLA, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_displa, load the 

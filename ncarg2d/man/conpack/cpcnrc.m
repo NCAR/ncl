@@ -256,6 +256,7 @@ frame, put a CALL FRAME after the call to CPCNRC.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
+ccpcnrc,
 cpex09,
 tconpa.
 .SH ACCESS

@@ -71,12 +71,30 @@ are to be labeled.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
+ccpcldm,
+ccplbam,
+ccpllb,
+ccpllc,
+ccplll,
+ccpllo,
+ccpllp,
+ccpllt,
+ccpllw,
+ccppc,
+ccppc1,
+ccppc2,
+ccppc3,
+ccppc4,
+ccprc,
+ccpscam,
+colcon,
 cpex01,
 cpex02,
 cpex03,
 cpex04,
 cpex06,
-cbex01.
+cbex01,
+vvex01.
 .SH ACCESS
 To use CPLBAM, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_cplbam, 

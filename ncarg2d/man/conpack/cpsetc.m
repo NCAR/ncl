@@ -31,6 +31,15 @@ in this utility, see the conpack_params man page.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
+ccpcica,
+ccphlt,
+ccpilt,
+ccpklb,
+ccplbdr,
+ccpllc,
+ccpllp,
+ccpllt,
+ccpmovi,
 cpex02,
 cpex04,
 cpex05,

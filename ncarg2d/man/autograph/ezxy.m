@@ -57,8 +57,11 @@ agex09,
 agex10,
 agex11,
 agex12,
+splogy,
+sprevx,
 tagupw,
-tautog.
+tautog,
+fspponts.
 .SH ACCESS 
 To use EZXY, load the NCAR Graphics libraries ncarg, ncarg_gks, 
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_ezxy, load the 

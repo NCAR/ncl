@@ -69,6 +69,11 @@ The second dimension of the array icra.
 The second dimension of the user's cell array.
 .IP ican 12
 The first dimension of the user's cell array.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+examples:
+ccpcica,
+ccpmovi.
 .SH ACCESS
 To use CPCICA, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpcica, load the 

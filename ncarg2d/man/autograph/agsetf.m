@@ -27,6 +27,14 @@ argument descriptions.
 This routine allows you to set the current value of
 Autograph parameters.  For a complete list of parameters available
 in this utility, see the autograph_params man page.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+examples:
+agex05,
+agex07,
+agex08,
+agex10,
+agex13.
 .SH ACCESS 
 To use AGSETF, load the NCAR Graphics libraries ncarg, 
 ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use c_agsetf, 

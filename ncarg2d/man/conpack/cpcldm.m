@@ -176,16 +176,31 @@ If, during the last call to CPRECT, CPSPS1, or CPSPS2, the data
 being contoured were found to be essentially constant, then no
 contour lines are generated; instead, the constant-field label
 is written.  Other lines are still generated.
-.SH EXAMPLES
+.SH E,XAMPLES
 Use the ncargex command to see the following relevant
 examples: 
+ccpcldm,
+ccpllc,
+ccpllo,
+ccpllp,
+ccpllt,
+ccppc,
+ccppc1,
+ccppc2,
+ccppc3,
+ccppc4,
+ccppole,
+ccprc,
+ccpscam,
+colcon,
 cpex01,
 cpex02,
 cpex03,
 cpex04,
 cpex06,
 cpex08,
-cbex01.
+cbex01,
+vvex01.
 .SH ACCESS
 To use CPCLDM, load the NCAR Graphics libraries ncarg,
 ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use 

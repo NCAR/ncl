@@ -114,6 +114,10 @@ resulting array is used to obtain the dense array; then, the
 special values in the sparse array are restored and the
 corresponding elements of the dense array are also given the
 special value.  
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+example:
+ccpsps2.
 .SH ACCESS
 To use CPSPS2, load the NCAR Graphics libraries ncarg,
 ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use 
