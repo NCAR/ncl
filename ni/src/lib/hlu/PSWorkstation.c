@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.1 1995-03-24 11:27:33 boote Exp $
+ *      $Id: PSWorkstation.c,v 1.2 1995-03-24 18:52:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,8 +21,8 @@
  */
 #include <stdio.h>
 #include <string.h>
-#include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/PSWorkstationP.h>
+#include <ncarg/hlu/ConvertersP.h>
 
 #define Oset(field)	NhlOffset(NhlPSWorkstationLayerRec,ps.field)
 static NhlResource resources[] = {
@@ -259,6 +259,25 @@ PSWorkstationClassInitialize
 ()
 #endif
 {
+	_NhlEnumVals	visvals[] = {
+		{NhlCOLOR,	"color"},
+		{NhlMONOCHROME,	"monochrome"}
+	};
+	_NhlEnumVals	fmtvals[] = {
+		{NhlPS,		"ps"},
+		{NhlEPS,	"eps"},
+		{NhlEPSI,	"epsi"}
+	};
+	_NhlEnumVals	orientvals[] = {
+		{NhlPORTRAIT,	"portrait"},
+		{NhlLANDSCAPE,	"landscape"}
+	};
+
+	(void)_NhlRegisterEnumType(NhlTVisualType,visvals,NhlNumber(visvals));
+	(void)_NhlRegisterEnumType(NhlTPSFormat,fmtvals,NhlNumber(fmtvals));
+	(void)_NhlRegisterEnumType(NhlTWorkOrientation,orientvals,
+							NhlNumber(orientvals));
+
 	fnameQ = NrmStringToQuark(NhlNwkPSFileName);
 
 	return NhlNOERROR;
