@@ -1,5 +1,5 @@
 /*
- *      $Id: vc09c.c,v 1.1 1997-07-09 14:34:05 haley Exp $
+ *      $Id: vc09c.c,v 1.2 1997-07-09 15:02:37 haley Exp $
  */
 /************************************************************************
  *                                                                      *
@@ -50,7 +50,7 @@ void main ()
  *
  */
 
-    int ZOOM=0, NCGM=0, X11=1, PS=0;
+    int ZOOM=0, NCGM=1, X11=0, PS=0;
 
     int i, j, k, u_id, v_id, p_id, t_id, len_dims [2], *time, *timestep;
     int rlist, uf, vf, pf, tf, tim_id, lat_id, lon_id, tit_id;

@@ -41,8 +41,8 @@ begin
 ; Output to an ncgm.
 ;
 
-  NCGM=0
-  X11=1
+  NCGM=1
+  X11=0
   PS=0
 
 ;
