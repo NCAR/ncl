@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.10 1994-01-05 18:41:06 boote Exp $
+ *      $Id: XyPlot.c,v 1.11 1994-01-06 21:30:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -778,13 +778,8 @@ XyPlotClassPartInitialize
         		NhlNtiYAxisOffsetYF, 
         		NhlNtiXAxisPosition, 
         		NhlNtiYAxisPosition, 
-        		NhlNtiMainPosition ,
-			NhlNtiMainString,
-			NhlNtiXAxisString,
-			NhlNtiYAxisString,
-			NhlNtiMainOn,
-			NhlNtiXAxisOn,
-			NhlNtiYAxisOn,NULL);
+        		NhlNtiMainPosition,
+			NULL);
 
 	ret = _NhlRegisterChildClass(lc,tickMarkLayerClass,False,False,
 			NhlNtmXBDataLeftF,NhlNtmXBDataRightF,NhlNtmXTDataRightF,
@@ -1326,7 +1321,8 @@ DrawCurves
 			NhlSetValues(xlayer->base.wkptr->base.id,
 				NhlNwkLineColor,	color,
 				NhlNwkDashPattern,	dpattern,
-				NhlNwkDashSegLenF,	dash_segment_length,
+				NhlNwkLineDashSegLenF,
+					xlayer->xyplot.dash_segment_length,
 				NhlNwkLineLabel,	label,
 				NULL);
 
