@@ -2,7 +2,13 @@
 #       $Id:
 #
 
-MAN =
+MAN = fitgrid fitgrid_params curv1
+# curv2 curvd curvi curvp1 curvp2          \
+# curvpi curvs curvps kurv1 kurv2 kurvd kurvp1 kurvp2 kurvpd          \
+# surf1 surf2 c_ftcurv c_ftcurvd c_ftcurvi c_ftcurvp c_ftcurvpi       \
+# c_ftcurvs c_ftcurvps c_ftkurv c_ftkurvp c_ftkurvd c_ftkurvpd        \
+# c_ftsurf c_ftseti c_ftgeti c_ftsetr c_ftgetr c_ftsetc c_ftgetc      \
+# c_ftsetfa c_ftgetfa_size c_ftgetfa_data
 
 # Install preformatted troff documents on systems without troff
 #if UseCatDirs
