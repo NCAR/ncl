@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.26 1993-03-30 23:25:22 clyne Exp $
+ *	$Id: X11_class4.c,v 1.27 1993-04-04 20:53:21 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -187,6 +187,7 @@ static	int	GCsetlinewidth(linewidth)
 	Rtype	linewidth;
 {
 	unsigned long	mask;
+	int	ilinewidth;
 
 	if (LINE_WIDTH_MODE != MODE_SCALED) {
 		ESprintf(ENOSYS,"Unsupported scaling mode(%d)",LINE_WIDTH_MODE);
@@ -197,19 +198,22 @@ static	int	GCsetlinewidth(linewidth)
 	 * scale the line. A hack for super high resolution pixmaps
 	 */
 	linewidth *= lineWidthScale;
+	linewidth = linewidth < 0.0 ? 0.0 : linewidth;
+
+	ilinewidth = (int) ROUND(linewidth);
 	/* 
-	 * if line width is 1.0 then set it to the X11 line with of 
+	 * if line width is 1 then set it to the X11 line with of 
 	 * 0. A line width of 0 in X is actually a line width of one
 	 * pixel but is drawn with a faster algorithm. 
 	 * If linewidth is 0 than no line is to be drawn. The simplest 
 	 * way to implement this is to set the src/dest pixel function to
 	 * `noop'
 	 */
-	if (linewidth == 0) {	/* draw nothing	*/
+	if (ilinewidth == 0) {	/* draw nothing	*/
 		gcv.function = GXnoop;
 		mask = GCFunction;
 
-	} else if (linewidth <= 1.5) {
+	} else if (ilinewidth == 1) {
 		gcv.line_width = 0;
 		gcv.join_style = JoinMiter;
 		gcv.function = GXcopy;
@@ -222,7 +226,7 @@ static	int	GCsetlinewidth(linewidth)
 		 * for fat lines change the join style to round instead of
 	 	 * miter
 		 */
-		gcv.line_width = (int) ROUND(linewidth);
+		gcv.line_width = ilinewidth;
 		gcv.function = GXcopy;
 		mask = GCLineWidth | GCJoinStyle | GCFunction;
 	}

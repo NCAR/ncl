@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.20 1993-01-07 00:32:45 clyne Exp $
+ *	$Id: commondev.c,v 1.21 1993-04-04 20:53:24 clyne Exp $
  */
 #include <math.h>
 #include <stdio.h>
@@ -914,6 +914,8 @@ ComFatLine(x1, y1, x2, y2, line_width, pix_width)
 
 	VDCtype	dx, dy;		/* increment in x or y direction	*/
 
+	if (line_width == 0) return(0);
+
 	pix_width = (pix_width == 0) ? 1 : pix_width;
 
 	/*
@@ -943,5 +945,7 @@ ComFatLine(x1, y1, x2, y2, line_width, pix_width)
 	}
 
 	fat_segment(x1, y1, x2, y2, dx, dy, line_width);
+
+	return(0);
 }
 

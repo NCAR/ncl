@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.20 1992-11-25 16:27:55 clyne Exp $
+ *	$Id: gcapdev.c,v 1.21 1993-04-04 20:53:27 clyne Exp $
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -151,6 +151,8 @@ boolean polysim;	/* True if to simulate polygons with lines */
 	int	line_width = ROUND(LINE_WIDTH);
 
 	int	ComLineSim();
+
+	if (line_width == 0 && ! polyflag) return;
 
 
 	/*
@@ -641,20 +643,24 @@ CItype	index;
 void	gcap_linewidth(width)
 float	width;
 {
+	int	iwidth;
 
 	if (LINE_WIDTH_START_SIZE == 0)
 		return;
 
+	width *= 8.0 * LINE_WIDTH_SCALE;
+	width = width < 0.0 ? 0.0 : width;
+
+	iwidth = (int) ROUND(width);
+
 	buffer(LINE_WIDTH_START, LINE_WIDTH_START_SIZE);
 
-	width *= 8.0 * LINE_WIDTH_SCALE;
-
-	if ((int)width < LINE_WIDTH_MIN)
+	if (iwidth < LINE_WIDTH_MIN)
 		(void)formatwidth(LINE_WIDTH_MIN);
-	else if ((int)width > LINE_WIDTH_MAX)
+	else if (iwidth > LINE_WIDTH_MAX)
 		(void)formatwidth(LINE_WIDTH_MAX);
 	else
-		(void)formatwidth((int)width);
+		(void)formatwidth(iwidth);
 
 	buffer(LINE_WIDTH_TERM, LINE_WIDTH_TERM_SIZE);
 

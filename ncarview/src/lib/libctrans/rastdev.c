@@ -1,5 +1,5 @@
 /*
- *	$Id: rastdev.c,v 1.14 1993-01-07 00:33:03 clyne Exp $
+ *	$Id: rastdev.c,v 1.15 1993-04-04 20:53:29 clyne Exp $
  */
 #include <stdio.h>
 #include <ncarg/ncarg_ras.h>
@@ -15,7 +15,7 @@ extern	boolean	startedDrawing;
 
 static	int	rasColorIndex;
 
-static	float	rasLineWidth; 
+static	int	rasLineWidth; 
 
 /*
  * line_:	scan convert a line from (x1, y1) to (x2, y2), using
@@ -120,10 +120,10 @@ void	rast_pointflush(coord_buf, coord_buf_num)
 	/*
 	 * use fat line algo for linewidths greater then 1.
 	 */
-	if (rasLineWidth == 0.0) {
+	if (rasLineWidth == 0) {
 		return;	/* don't draw 0 width lines	*/
 	} 
-	else if (rasLineWidth <= 1.5) {
+	else if (rasLineWidth == 1) {
 		for (i=1; i<*coord_buf_num; i++) {
 		line_((int) XConvert(coord_buf[i-1].x), 
 			(int) YConvert(coord_buf[i-1].y), 
@@ -134,7 +134,7 @@ void	rast_pointflush(coord_buf, coord_buf_num)
 	else {
 		for (i=1; i<*coord_buf_num; i++) {
 		ComFatLine(coord_buf[i-1].x, coord_buf[i-1].y, 
-			coord_buf[i].x, coord_buf[i].y, ROUND(rasLineWidth), 1);
+			coord_buf[i].x, coord_buf[i].y, rasLineWidth, 1);
 		}
 	}
 }
@@ -185,7 +185,8 @@ void	rast_fillcolour(index)
 void	rast_linewidth(line_width)
 	Rtype	line_width;
 {
-	rasLineWidth = line_width;
+	line_width = line_width < 0.0 ? 0.0 : line_width;
+	rasLineWidth = (int) ROUND(line_width);
 }
 
 #ifdef	DEAD
