@@ -1,5 +1,5 @@
 C
-C	$Id: ffex00.f,v 1.3 1994-07-08 17:44:17 haley Exp $
+C	$Id: ffex00.f,v 1.4 1994-10-25 14:20:31 haley Exp $
 C
       PROGRAM FFEX00
 C
@@ -44,6 +44,8 @@ C
 C
 C Set up colors for fixed table grayscale and color workstations
 C
+      CALL GSCR(IWKID,0,0.,0.,0.)
+      CALL GSCR(IWKID,1,1.,1.,1.)
       DO 100 I=1,NCLRS,1
          CALL GSCR(IWKID,ICLR(I),RGBV(1,I),RGBV(2,I),RGBV(3,I))
  100  CONTINUE
