@@ -1,6 +1,3 @@
-C
-C $Id: dpsmth.f,v 1.1 1994-08-24 17:08:40 kennison Exp $
-C
       SUBROUTINE DPSMTH (XCPF,YCPF,IFVL)
 C
 C DPSMTH is called just like DPDRAW, but it arranges for the curve
@@ -21,7 +18,7 @@ C
 C Declare the real/integer common block.
 C
         COMMON /DPCMRI/ ANGF,DBPI,EPSI,IDPI,IDPS,ILTL,INDP,IPCF,ISBF,
-     +                  ISCF,LCDP,RMFS,TENS,WADD,WCHR,WGAP,WSLD
+     +                  ISCF,LCDP,RLS1,RLS2,RMFS,TENS,WCHR,WGAP,WSLD
         SAVE   /DPCMRI/
 C
 C Declare scratch arrays needed by the smoothing routines.

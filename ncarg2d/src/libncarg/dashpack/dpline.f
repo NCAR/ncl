@@ -1,6 +1,3 @@
-C
-C $Id: dpline.f,v 1.1 1994-08-24 17:08:35 kennison Exp $
-C
       SUBROUTINE DPLINE (XCP1,YCP1,XCP2,YCP2)
 C
 C Given the user coordinates of the two points (XCP1,YCP1) and
@@ -10,7 +7,7 @@ C
 C Declare the real/integer common block.
 C
         COMMON /DPCMRI/ ANGF,DBPI,EPSI,IDPI,IDPS,ILTL,INDP,IPCF,ISBF,
-     +                  ISCF,LCDP,RMFS,TENS,WADD,WCHR,WGAP,WSLD
+     +                  ISCF,LCDP,RLS1,RLS2,RMFS,TENS,WCHR,WGAP,WSLD
         SAVE   /DPCMRI/
 C
 C Check for an uncleared prior error.

@@ -1,6 +1,3 @@
-C
-C $Id: dpblda.f,v 1.1 1994-08-24 17:08:24 kennison Exp $
-C
       BLOCK DATA DPBLDA
 C
 C This is the BLOCK DATA routine for DASHPACK; it provides initial
@@ -17,7 +14,7 @@ C
 C Declare the real/integer common block.
 C
         COMMON /DPCMRI/ ANGF,DBPI,EPSI,IDPI,IDPS,ILTL,INDP,IPCF,ISBF,
-     +                  ISCF,LCDP,RMFS,TENS,WADD,WCHR,WGAP,WSLD
+     +                  ISCF,LCDP,RLS1,RLS2,RMFS,TENS,WCHR,WGAP,WSLD
         SAVE   /DPCMRI/
 C
 C ANGF is the internal parameter 'SAF' (for "String Angle Flag").  When
@@ -174,6 +171,16 @@ C the use of fewer characters of the string previously given.
 C
         DATA LCDP / 16 /
 C
+C RLS1 and RLS2 are the internal parameters 'LS1' and 'LS2' (for "Label
+C Spacing 1 and 2").  The first of these specifies the widths of extra
+C gaps to be placed before and after a label.  The second specifies the
+C amount of additional gap space that will be provided for each label
+C substring written by a single call to PLCHHQ/MQ/LQ (in addition to
+C the length of the string itself).  Both are stated as multipliers of
+C the current character width.
+C
+        DATA RLS1,RLS2 / .5 , .25 /
+C
 C RMFS is the internal parameter 'MFS' (for "Multiplier for First
 C Solid").  If the first element of a dash pattern specifies a solid
 C chunk of line, its length is multiplied by the current value of RMFS.
@@ -193,15 +200,6 @@ C overflows in the smoothing routines.  Note that DPSMTH always smooths;
 C it treats a negative value of TENS as zero and uses cubic splines.
 C
         DATA TENS / -1. /
-C
-C WADD is the internal parameter 'WOA' (for "Width Of Additional
-C space"), which specifies the width of the "additional" space to be
-C left as part of the gap in which a character string is written, given
-C as a fraction of the width of the plotter frame.  (The space left
-C will be the actual length of the character string, plus the value
-C of 'WOA'.)
-C
-        DATA WADD / .01 /
 C
 C WCHR is the internal parameter 'WOC' (for "Width Of Character"), which
 C specifies the width of the characters to be used in writing character

@@ -1,6 +1,3 @@
-C
-C $Id: dpgetc.f,v 1.1 1994-08-24 17:08:30 kennison Exp $
-C
       SUBROUTINE DPGETC (PNAM,CVAL)
 C
 C This routine is used to get the value of an internal parameter of
@@ -18,7 +15,7 @@ C
 C Declare the real/integer common block.
 C
         COMMON /DPCMRI/ ANGF,DBPI,EPSI,IDPI,IDPS,ILTL,INDP,IPCF,ISBF,
-     +                  ISCF,LCDP,RMFS,TENS,WADD,WCHR,WGAP,WSLD
+     +                  ISCF,LCDP,RLS1,RLS2,RMFS,TENS,WCHR,WGAP,WSLD
         SAVE   /DPCMRI/
 C
 C Declare the block data external to force it to load.

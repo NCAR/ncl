@@ -1,6 +1,3 @@
-C
-C $Id: dpseti.f,v 1.1 1994-08-24 17:08:38 kennison Exp $
-C
       SUBROUTINE DPSETI (PNAM,IVAL)
 C
 C This routine, given an integer value, sets the value of an internal

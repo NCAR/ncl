@@ -1,6 +1,3 @@
-C
-C $Id: dpcurv.f,v 1.1 1994-08-24 17:08:26 kennison Exp $
-C
       SUBROUTINE DPCURV (XCPU,YCPU,NPTS)
 C
 C The routine DPCURV, given the user-system coordinates of NPTS points
@@ -12,7 +9,7 @@ C
 C Declare the real/integer common block.
 C
         COMMON /DPCMRI/ ANGF,DBPI,EPSI,IDPI,IDPS,ILTL,INDP,IPCF,ISBF,
-     +                  ISCF,LCDP,RMFS,TENS,WADD,WCHR,WGAP,WSLD
+     +                  ISCF,LCDP,RLS1,RLS2,RMFS,TENS,WCHR,WGAP,WSLD
         SAVE   /DPCMRI/
 C
 C Check for an uncleared prior error.

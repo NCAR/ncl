@@ -1,6 +1,3 @@
-C
-C $Id: dpgetr.f,v 1.1 1994-08-24 17:08:32 kennison Exp $
-C
       SUBROUTINE DPGETR (PNAM,RVAL)
 C
 C This routine is used to get the real value of an internal parameter
@@ -11,7 +8,7 @@ C
 C Declare the real/integer common block.
 C
         COMMON /DPCMRI/ ANGF,DBPI,EPSI,IDPI,IDPS,ILTL,INDP,IPCF,ISBF,
-     +                  ISCF,LCDP,RMFS,TENS,WADD,WCHR,WGAP,WSLD
+     +                  ISCF,LCDP,RLS1,RLS2,RMFS,TENS,WCHR,WGAP,WSLD
         SAVE   /DPCMRI/
 C
 C Declare the block data external to force it to load.
@@ -40,6 +37,10 @@ C
           RVAL=REAL(INDP)
         ELSE IF (PNAM(1:3).EQ.'EPS'.OR.PNAM(1:3).EQ.'eps') THEN
           RVAL=EPSI
+        ELSE IF (PNAM(1:3).EQ.'LS1'.OR.PNAM(1:3).EQ.'ls1') THEN
+          RVAL=RLS1
+        ELSE IF (PNAM(1:3).EQ.'LS2'.OR.PNAM(1:3).EQ.'ls2') THEN
+          RVAL=RLS2
         ELSE IF (PNAM(1:3).EQ.'LTL'.OR.PNAM(1:3).EQ.'ltl') THEN
           RVAL=REAL(ILTL)
         ELSE IF (PNAM(1:3).EQ.'MFS'.OR.PNAM(1:3).EQ.'mfs') THEN
@@ -56,8 +57,6 @@ C
           RVAL=DBPI
         ELSE IF (PNAM(1:3).EQ.'TCS'.OR.PNAM(1:3).EQ.'tcs') THEN
           RVAL=TENS
-        ELSE IF (PNAM(1:3).EQ.'WOA'.OR.PNAM(1:3).EQ.'woa') THEN
-          RVAL=WADD
         ELSE IF (PNAM(1:3).EQ.'WOC'.OR.PNAM(1:3).EQ.'woc') THEN
           RVAL=WCHR
         ELSE IF (PNAM(1:3).EQ.'WOG'.OR.PNAM(1:3).EQ.'wog') THEN

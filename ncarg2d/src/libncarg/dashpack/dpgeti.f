@@ -1,6 +1,3 @@
-C
-C $Id: dpgeti.f,v 1.1 1994-08-24 17:08:31 kennison Exp $
-C
       SUBROUTINE DPGETI (PNAM,IVAL)
 C
 C This routine is used to get the integral value of an internal

@@ -1,6 +1,3 @@
-C
-C $Id: dpdraw.f,v 1.1 1994-08-24 17:08:27 kennison Exp $
-C
       SUBROUTINE DPDRAW (XCPF,YCPF,IFVL)
 C
 C DPDRAW is the workhorse routine of DASHPACK.  When IFVL is less than
@@ -47,7 +44,7 @@ C
 C Declare the real/integer common block.
 C
         COMMON /DPCMRI/ ANGF,DBPI,EPSI,IDPI,IDPS,ILTL,INDP,IPCF,ISBF,
-     +                  ISCF,LCDP,RMFS,TENS,WADD,WCHR,WGAP,WSLD
+     +                  ISCF,LCDP,RLS1,RLS2,RMFS,TENS,WCHR,WGAP,WSLD
         SAVE   /DPCMRI/
 C
 C Declare the block data external to force it to load.
@@ -165,15 +162,15 @@ C
             NCHR=IDPS
             IF (NCHR.EQ.0) NCHR=LCDP
 C
+            CHRN=CHDP(1:1)
+C
             CHRL=CHRG
-            IF (CHDP(1:1).EQ.CHRG) CHRL=CHRS
+            IF (CHRL.EQ.CHRN) CHRL=CHRS
 C
 C Initially, generate the descriptors of the dash-pattern elements
 C assuming that PLCHMQ or PLCHLQ will be used.
 C
             DO 102 I=1,NCHR
-C
-              CHRN=CHDP(I:I)
 C
               IF (CHRN.EQ.CHRG) THEN
 C
@@ -200,10 +197,29 @@ C
               ELSE IF (CHRN.NE.CHRB) THEN
 C
                 IF (CHRL.EQ.CHRB.OR.CHRL.EQ.CHRG.OR.CHRL.EQ.CHRS) THEN
+C
+                  IF (CHRL.NE.CHRB.AND.ILTL.EQ.0.AND.RLS1.NE.0.) THEN
+                    IF (NDPE.NE.0) THEN
+                      IF (IDPE(NDPE).LT.0) THEN
+                        RDPE(NDPE)=RDPE(NDPE)+RLS1*WCHR
+                      ELSE
+                        IF (NDPE.GE.LDPA) GO TO 103
+                        NDPE=NDPE+1
+                        IDPE(NDPE)=-1
+                        RDPE(NDPE)=RLS1*WCHR
+                      END IF
+                    ELSE
+                      NDPE=1
+                      IDPE(NDPE)=-1
+                      RDPE(NDPE)=RLS1*WCHR
+                    END IF
+                  END IF
+C
                   IF (NDPE.GE.LDPA) GO TO 103
                   NDPE=NDPE+1
                   IDPE(NDPE)=REAL(LDPA*I+I-1)
-                  RDPE(NDPE)=WADD
+                  RDPE(NDPE)=RLS2*WCHR
+C
                 END IF
 C
                 IDPE(NDPE)=IDPE(NDPE)+1
@@ -219,12 +235,39 @@ C
 C
               CHRL=CHRN
 C
+              IF (I.NE.NCHR) THEN
+                CHRN=CHDP(I+1:I+1)
+              ELSE
+                CHRN=CHRG
+              END IF
+C
+              IF ((CHRN.EQ.CHRG.OR.CHRN.EQ.CHRS).AND.NDPE.NE.0) THEN
+C
+                IF (IDPE(NDPE).GT.0.AND.ILTL.EQ.0.AND.RLS1.NE.0.) THEN
+                  IF (NDPE.GE.LDPA) GO TO 103
+                  NDPE=NDPE+1
+                  IDPE(NDPE)=-1
+                  RDPE(NDPE)=RLS1*WCHR
+                  CHRL=CHRG
+                END IF
+C
+              END IF
+C
   102       CONTINUE
+C
+C If there were nothing but break characters in the dash pattern, use a
+C solid line.
+C
+  103       IF (NDPE.EQ.0) THEN
+              NDPE=1
+              IDPE(1)=0
+              RDPE(1)=1.
+            END IF
 C
 C If PLCHHQ is to be used, post-process the list to compute the correct
 C gap lengths for the character-string elements.
 C
-  103       IF (IPCF.EQ.0) THEN
+            IF (IPCF.EQ.0) THEN
 C
               CALL PCGETI ('TE - TEXT EXTENT COMPUTATION FLAG',ITEF)
               IF (ICFELL('DPDRAW',2).NE.0) RETURN
@@ -248,7 +291,7 @@ C
                   CALL PCGETR ('DR - DISTANCE TO RIGHT END',DRGT)
                   IF (ICFELL('DPDRAW',6).NE.0) RETURN
 C
-                  RDPE(I)=WADD+MAX(0.,DLFT+DRGT)
+                  RDPE(I)=RLS2*WCHR+MAX(0.,DLFT+DRGT)
 C
   104             IF (IFCH.LE.ILCH) THEN
                     IF (CHDP(IFCH:IFCH).EQ.' ') THEN
@@ -559,17 +602,22 @@ C
 C
                         WTMP=WTMP-DTMP
 C
-                        XC2F=RSPX(NTMP)
-                        YC2F=RSPY(NTMP)
+                        XC2F=XC3F
+                        YC2F=YC3F
 C
                         IF (NTMP.GT.1) THEN
                           NTMP=NTMP-1
                           XC3F=RSPX(NTMP)
                           YC3F=RSPY(NTMP)
                         ELSE
-                          NTMP=MAX(-NPSB,MIN(-2,NTMP-1))
-                          XC3F=RSPX(1)-(RSPX(ABS(NTMP))-RSPX(1))*1000.
-                          YC3F=RSPY(1)-(RSPY(ABS(NTMP))-RSPY(1))*1000.
+                          NTMP=MIN(-2,NTMP-1)
+                          IF (-NTMP.LE.NPSB) THEN
+                            XC3F=RSPX(1)-(RSPX(-NTMP)-RSPX(1))*1000.
+                            YC3F=RSPY(1)-(RSPY(-NTMP)-RSPY(1))*1000.
+                          ELSE
+                            XC3F=RSPX(1)-(XCLF-RSPX(1))*1000.
+                            YC3F=RSPY(1)-(YCLF-RSPY(1))*1000.
+                          END IF
                         END IF
 C
                         DTMP=SQRT((XC3F-XC2F)**2+(YC3F-YC2F)**2)
@@ -578,8 +626,8 @@ C
 C
                       END IF
 C
-                      XC2F=XC2F+(WTMP/DTMP)*(RSPX(NTMP)-XC2F)
-                      YC2F=YC2F+(WTMP/DTMP)*(RSPY(NTMP)-YC2F)
+                      XC2F=XC2F+(WTMP/DTMP)*(XC3F-XC2F)
+                      YC2F=YC2F+(WTMP/DTMP)*(YC3F-YC2F)
 C
                       DTMP=DTMP-WTMP
 C

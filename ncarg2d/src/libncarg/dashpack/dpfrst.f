@@ -1,6 +1,3 @@
-C
-C $Id: dpfrst.f,v 1.1 1994-08-24 17:08:28 kennison Exp $
-C
       SUBROUTINE DPFRST (XCPU,YCPU)
 C
 C Given the user coordinates of the point (XCPU,YCPU), this routine
@@ -10,7 +7,7 @@ C
 C Declare the real/integer common block.
 C
         COMMON /DPCMRI/ ANGF,DBPI,EPSI,IDPI,IDPS,ILTL,INDP,IPCF,ISBF,
-     +                  ISCF,LCDP,RMFS,TENS,WADD,WCHR,WGAP,WSLD
+     +                  ISCF,LCDP,RLS1,RLS2,RMFS,TENS,WCHR,WGAP,WSLD
         SAVE   /DPCMRI/
 C
 C Check for an uncleared prior error.
