@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.142 2003-11-25 19:45:12 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.143 2003-11-25 19:47:17 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4927,12 +4927,17 @@ begin
           "tiYAxisOn"              : False
         end create
 
+;
+; Check if user wants to change minimum of X axis.
+;
         if(zonal_xmin) then
           setvalues xy_object
             "trXMinF" : trxmin
           end setvalues
         end if 
-
+;
+; Check if user wants to change maximum of X axis.
+;
         if(zonal_xmax) then
           setvalues xy_object
             "trXMaxF" : trxmax
