@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.24 1994-10-29 00:57:24 ethan Exp $
+ *      $Id: Machine.c,v 1.25 1994-11-17 20:53:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -951,8 +951,9 @@ void _NclPrintMachine
 	int	*lptr;
 	char **fptr;
 
+
 	if(fp == NULL)
-		fp = stdout;
+		return;
 	if(from == -1){
 		from = 0;
 	}

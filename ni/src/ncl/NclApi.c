@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.9 1994-11-12 02:55:28 boote Exp $
+ *      $Id: NclApi.c,v 1.10 1994-11-17 20:53:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@ extern "C" {
 #include "ApiRecords.h"
 #include "NclApi.h"
 #include <errno.h>
+#include <netcdf.h>
 
 FILE *the_err_file;
 extern FILE *yyin;
@@ -64,8 +65,11 @@ int NclInitServer
         extern int yydebug;
         yydebug = 1;
 #endif
+	ncopts = NC_VERBOSE;
+/*
 	thefptr = fopen("ncl.tree","w");
         theoptr = fopen("ncl.seq","w");
+*/
 	NhlOpen();
 
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.15 1994-11-12 00:58:37 ethan Exp $
+ *      $Id: Symbol.c,v 1.16 1994-11-17 20:53:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -747,6 +747,7 @@ void _NclPrintSym
 	NclSymTableListNode *st;
 	NclSymbol *s;
 	int i;
+	if(fp == NULL) return;
 
 	st = thetablelist;
 

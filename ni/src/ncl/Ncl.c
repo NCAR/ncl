@@ -12,6 +12,7 @@ extern "C" {
 #include <unistd.h>
 #include <ncarg/hlu/Convert.h>
 #include <ncarg/hlu/Error.h>
+#include <netcdf.h>
 
 FILE *thefptr;
 FILE *theoptr;
@@ -40,14 +41,19 @@ main() {
 	extern int yydebug;
 	yydebug = 1;
 #endif
+	ncopts = NC_VERBOSE;
 
 	cmd_line =isatty(fileno(stdin));
 
 	error_fp = stderr;
 	stdout_fp = stdout;
 	stdin_fp = stdin;
+/*
 	thefptr = fopen("ncl.tree","w");
 	theoptr = fopen("ncl.seq","w");
+*/
+	thefptr = NULL;
+	theoptr = NULL;
 	NhlOpen();
 	errid = NhlErrGetID();
 	NhlVASetValues(errid,

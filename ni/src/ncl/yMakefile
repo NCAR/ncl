@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.22 1994-11-10 20:59:38 ethan Exp $
+#      $Id: yMakefile,v 1.23 1994-11-17 20:53:33 boote Exp $
 #
 #########################################################################
 #									#
@@ -86,7 +86,7 @@ GEN_SRCS	=	NclMultiDValdoubleData.c NclMultiDValfloatData.c \
 			NclMultiDVallongData.c NclMultiDValnclfileData.c \
 			NclMultiDValshortData.c NclMultiDValstringData.c \
 			scanner.c parser.c NclMultiDValbyteData.c \
-			NclMultiDValcharData.c
+			NclMultiDValcharData.c scanapi.c parseapi.c
 
 STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			AddIntrinsics.c AttSupport.c DataSupport.c Execute.c \

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.18 1994-10-29 00:57:58 ethan Exp $
+ *      $Id: SrcTree.c,v 1.19 1994-11-17 20:53:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1813,6 +1813,7 @@ void _NclPrintSymbol
 	FILE *fp;
 #endif
 {
+	if(fp == NULL) return;
 	switch(sym->type) {
 	case INTEGER:
 		fprintf(fp,"%s\t","INTEGER");
@@ -1944,6 +1945,7 @@ void _NclPrintTree
 	NclSrcListNode *step;
 	static int i = 0;;
 
+	if(fp == NULL) return;
 if(groot != NULL) {
 /*
 	if(groot->file != NULL) {
