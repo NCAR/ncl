@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.76 1994-11-08 23:07:05 haley Exp $
+#   $Id: ncargex.csh,v 1.77 1994-11-16 15:26:58 haley Exp $
 #
 
 #*************************#
@@ -1214,7 +1214,7 @@ switch ($name)
     breaksw
 
     case ccpmpxy:
-        set data_files = (cpmpxy1.dat cpmpxy2.dat)
+        set data_files = (cpmpxy1.dat)
     breaksw
 
     case class1:

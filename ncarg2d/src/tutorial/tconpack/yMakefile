@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1993-10-19 17:41:06 boote Exp $
+#	$Id: yMakefile,v 1.6 1994-11-16 15:25:29 haley Exp $
 #
 MYNAME	= tconpack
 
@@ -13,6 +13,6 @@ GENERIC_SRCS = \
 	ccpnsd.f ccppc.f ccppc1.f ccppc2.f ccppc3.f ccppc4.f ccppkcl.f \
 	ccppole.f ccprc.f ccprect.f ccprwc.f ccprwu.f ccpscam.f ccpset.f \
 	ccpsps1.f ccpsps2.f ccpspv.f ccpt2d.f ccptitle.f ccpvp.f ccpvs.f \
-	cidsfft.f colcon.f ggdini.f ccpex.dat ccpila.dat cpmpxy1.dat cpmpxy2.dat
+	cidsfft.f colcon.f ggdini.f ccpex.dat ccpila.dat cpmpxy1.dat
 
 InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(TUTORIALPATH))
