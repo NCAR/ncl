@@ -92,7 +92,7 @@ int off;
 								tmp->ref_list[i].n_refs++;
 								if(tmp->ref_list[i].n_refs == tmp->ref_list[i].refs_size) {
 									tmp->ref_list[i].refs_size *= 2;
-									tmp->ref_list[i].refs = NclRealloc(tmp->ref_list[i].refs,tmp->ref_list[i].refs_size);
+									tmp->ref_list[i].refs = NclRealloc(tmp->ref_list[i].refs,tmp->ref_list[i].refs_size*sizeof(char*));
 
 								} 
 								return(NhlNOERROR);
@@ -102,7 +102,7 @@ int off;
 						tmp->ref_list[i].n_refs++;
 						if(tmp->ref_list[i].n_refs == tmp->ref_list[i].refs_size) {
                                                          tmp->ref_list[i].refs_size *= 2;
-                                                         tmp->ref_list[i].refs = NclRealloc(tmp->ref_list[i].refs,tmp->ref_list[i].refs_size);
+                                                         tmp->ref_list[i].refs = NclRealloc(tmp->ref_list[i].refs,tmp->ref_list[i].refs_size*sizeof(char*));
                                                 }
                                                 return(NhlNOERROR);
 					}
@@ -122,7 +122,7 @@ int off;
 					tmp->n_entries++;
 					if(i == tmp->ref_list_size) {
 						tmp->ref_list_size *= 2;
-						tmp->ref_list = NclRealloc(tmp->ref_list,tmp->ref_list_size);
+						tmp->ref_list = NclRealloc(tmp->ref_list,tmp->ref_list_size*sizeof(char*));
 					}
 					return(NhlNOERROR);
  
