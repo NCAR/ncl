@@ -34,8 +34,16 @@ struct file_load_list {
 	struct file_load_list *next;
 };
 
+struct ninbuf{
+	int using_buffer;
+	char *buffer;
+	char *ptr;
+	int  size;
+};
+
 typedef struct str_load_list NclStrLoadList;
 typedef struct file_load_list NclFileLoadList;
+typedef struct ninbuf NclInputBuffer;
 
 FILE *error_fp = stderr;
 FILE *stdout_fp = stdout;
@@ -44,6 +52,63 @@ int pager_id;
 
 void *prompt_user_data = NULL;
 NclPromptFunc prompt = NULL;
+extern char *readline();
+extern void add_history();
+
+NclInputBuffer ncl_input_buffer;
+
+void InitializeReadLine
+#if	NhlNeedProto
+(int opt)
+#else
+(opt)
+int opt;
+#endif
+{
+	ncl_input_buffer.using_buffer = opt;
+	ncl_input_buffer.buffer = NULL;
+	ncl_input_buffer.ptr = NULL;
+	ncl_input_buffer.size = 0;
+}
+void nclprompt
+#if     NhlNeedProto
+(void * user_data,int arg)
+#else
+( user_data,arg)
+void * user_data;
+int arg;
+#endif
+{
+	char prmpt[10];
+	sprintf(prmpt,"ncl %d>",arg);
+	if(ncl_input_buffer.using_buffer) {
+		if(ncl_input_buffer.buffer != NULL)
+			NclFree(ncl_input_buffer.buffer); 
+		ncl_input_buffer.buffer = readline(prmpt);
+		ncl_input_buffer.size = strlen(ncl_input_buffer.buffer);
+		ncl_input_buffer.ptr = ncl_input_buffer.buffer;
+		add_history(ncl_input_buffer.buffer);
+	} 
+}
+char ncl_getc
+#if	NhlNeedProto
+(FILE *fp)
+#else
+(fp)
+FILE *fp;
+#endif
+{
+	if((ncl_input_buffer.using_buffer)&&(ncl_input_buffer.buffer != NULL)) {
+		if(*ncl_input_buffer.ptr == '\0') {
+			ncl_input_buffer.ptr++;
+			return('\n');
+		} else {
+			return(*ncl_input_buffer.ptr++);
+		}
+	} else {
+		return(getc(fp));
+	}
+}
 
 void NclSetPromptFunc
 #if	NhlNeedProto

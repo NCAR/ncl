@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.47 1997-06-11 20:03:50 ethan Exp $
+ *      $Id: Symbol.c,v 1.48 1997-08-01 21:02:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1391,7 +1391,58 @@ int     *num_names;
 	}
 	return(tmp_out);
 }
+NhlClass *_NclGetHLUClassPtrs
+#if	NhlNeedProto
+(int    *num_names)
+#else
+(num_names)
+int     *num_names;
+#endif
+{
+	NclSymTableListNode *st;
+	int i = 0;
+	NhlClass  *tmp_out;
+	NclSymbol *s;
+	int current_size = NCL_SYM_TAB_SIZE;
 
+	*num_names = 0;
+/*
+* Start out with a guess
+*/
+	tmp_out = (NhlClass*)NclMalloc(sizeof(NhlClass)*current_size);
+	st = thetablelist;
+	while(st != NULL) {
+		for(i = 0; i < NCL_SYM_TAB_SIZE; i++) {
+                        if(st->sr->this_scope[i].nelem != 0) {
+				s = st->sr->this_scope[i].thelist;
+                                while(s != NULL) {
+					switch(s->type) {
+					case OBJTYPE:
+						if(*num_names < current_size) {
+							tmp_out[*num_names] = s->u.obj_class_ptr;
+						} else {
+							tmp_out = NclRealloc(tmp_out,current_size * 2);
+							current_size *= 2;
+							tmp_out[*num_names] = s->u.obj_class_ptr;
+						}
+						(*num_names)++;
+						break;
+					default:
+
+						break;
+					}
+					s = s->symnext;
+				}
+			}
+		}
+                st = st->previous;
+	}
+	if(*num_names == 0) {
+		NclFree(tmp_out);
+		return(NULL);
+	}
+	return(tmp_out);
+}
 NclQuark *_NclGetProcFuncSymNames
 #if	NhlNeedProto
 (int    *num_names)

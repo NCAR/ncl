@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValnclfileData.c,v 1.6 1997-06-20 22:45:25 ethan Exp $
+ *      $Id: NclMultiDValnclfileData.c,v 1.7 1997-08-01 21:02:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -719,6 +719,8 @@ static NhlErrorTypes MultiDVal_nclfile_s_WriteSection
 		} else {
 			chckmiss = 1;
 		}
+	} else if(value_md->multidval.missing_value.has_missing){
+		chckmiss = 1;
 	} else {
 		chckmiss = 0;
 	}

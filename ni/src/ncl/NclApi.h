@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.19 1997-05-09 21:37:57 ethan Exp $
+ *      $Id: NclApi.h,v 1.20 1997-08-01 21:02:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -212,6 +212,11 @@ int * /*num_names*/
 #endif
 );
 
+extern NhlClass *NclGetHLUClassPtrs(
+#if NhlNeedProto
+int * /*num_names*/
+#endif
+);
 extern NclQuark *NclGetProcFuncSymNames(
 #if NhlNeedProto
 int * /*num_names*/

@@ -46,6 +46,19 @@ extern FILE *stdin_fp ;
 extern int number_of_constants;
 
 
+extern void nclprompt(
+#if	NhlNeedProto
+void * user_data,
+int arg
+#endif
+);
+
+extern void InitializeReadLine(
+#if	NhlNeedProto
+int opt
+#endif
+);
+
 main() {
 
 	int errid = -1;
@@ -80,7 +93,8 @@ main() {
 #endif
 	NhlInitialize();
 	NhlVACreate(&appid,"ncl",NhlappClass,NhlDEFAULT_APP,
-		NhlNappDefaultParent,1,NULL);
+		NhlNappDefaultParent,1,
+		NhlNappUsrDir,"./",NULL);
 	errid = NhlErrGetID();
 	NhlVASetValues(errid,
 		NhlNerrFilePtr,stdout,NULL);
@@ -94,6 +108,13 @@ main() {
 	if(cmd_line)	
 		fprintf(stdout_fp,"ncl %d> ",0);
 */
+	if(cmd_line == 1) {
+		InitializeReadLine(1);
+		NclSetPromptFunc(nclprompt,NULL);
+	} else {
+		InitializeReadLine(0);
+	}
+
 /*
 #if     defined(SunOS) && (MAJOR == 4)
 	nclparse(1);

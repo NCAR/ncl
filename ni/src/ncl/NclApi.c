@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.44 1997-07-02 15:26:09 boote Exp $
+ *      $Id: NclApi.c,v 1.45 1997-08-01 21:02:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -369,7 +369,16 @@ int	*num_names;
 {
 	return(_NclGetVarSymNames(num_names));	
 }
-
+NhlClass *NclGetHLUClassPtrs
+if     NhlNeedProto
+(int    *num_names)
+#else
+(num_names)
+int     *num_names;
+#endif
+{
+        return(_NclGetHLUClassPtrs(num_names));
+}
 NclQuark* NclGetFileSymNames
 #if 	NhlNeedProto
 (int	*num_names)

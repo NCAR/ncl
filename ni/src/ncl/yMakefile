@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.59 1997-07-01 00:02:10 ethan Exp $
+#      $Id: yMakefile,v 1.60 1997-08-01 21:02:31 ethan Exp $
 #
 #########################################################################
 #									#
@@ -53,7 +53,7 @@ API_DEFS	=	-DMAKEAPI
 PROG_LIBS	=	$(HLULIBS) $(NCARGLIBS)
 DEPLIBS		=	$(DEPHLULIBS) $(DEPNCARGLIBS)
 EXTRA_LIBS	=	$(NCDFLIBS) $(HDFLIB)
-SYS_LIBS	=	$(XLIB) $(CTOFLIBS) -lm $(ARCH_LIBS) $(DYNAMIC_LIBS)
+SYS_LIBS	=	$(XLIB) $(CTOFLIBS) -lm $(ARCH_LIBS) $(DYNAMIC_LIBS) -ledit
 
 HDRS		=	$(GEN_HDRS) $(STATIC_HDRS) $(INSTALL_HDRS)
 
