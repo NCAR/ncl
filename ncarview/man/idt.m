@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: idt.m,v 1.18 1995-10-16 15:15:31 haley Exp $
+.\"	$Id: idt.m,v 1.19 1997-08-05 20:23:09 haley Exp $
 .\"
 .\" NCAR View: idt.man,v 1.0 89/09/10 clyne 
 .\" Revision 3.01 90/11/15 clyne
@@ -116,7 +116,7 @@ for a description of their use.
 .TP
 .BI \-lmax " linewidth"
 .TP
-.BI \-scale " linewidth"
+.BI \-lscale " linewidth"
 .TP
 .BI \-pal " pal_fname"
 .TP
