@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.34 1998-03-23 22:47:04 dbrown Exp $
+ *      $Id: NcgmWorkstation.c,v 1.35 1998-03-26 17:55:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -520,6 +520,8 @@ UpdateGKSState
 	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
 	NhlErrorTypes subret = NhlNOERROR,retcode= NhlNOERROR;
 	NhlBoolean new = False;
+	int i;
+	Gcolr_rep ctab[_NhlMAX_COLOR_MAP];
 
 	if (wlc->ncgm_class.current_ncgm_wkid == NhlNULLOBJID) {
 		new = True;
@@ -540,9 +542,14 @@ UpdateGKSState
 	fprintf(stderr,"calling ngreop: hlu_id %d;  gkswkid %d; metafile %s\n",
                 l->base.id,wl->work.gkswksid,np->meta_name);
 #endif
+		for( i = 0; i < wl->work.color_map_len; i++) {
+			ctab[i].rgb.red = wl->work.private_color_map[i].red;
+			ctab[i].rgb.green = wl->work.private_color_map[i].green;
+			ctab[i].rgb.blue = wl->work.private_color_map[i].blue;
+		}
 		c_ngreop(wl->work.gkswksid,wl->work.gkswksconid,1,
 			 np->meta_name,1,
-			 np->gks_iat,np->gks_rat,0,0,NULL);
+			 np->gks_iat,np->gks_rat,wl->work.color_map_len,0,ctab);
 		if(_NhlLLErrCheckPrnt(NhlFATAL,func))
 			return NhlFATAL;
 		wlc->ncgm_class.current_ncgm_wkid = l->base.id;
