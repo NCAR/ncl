@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.144 2003-11-26 05:32:05 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.145 2003-11-27 22:11:42 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -506,6 +506,7 @@ begin
   return((/x0,y0/))
 end
 
+
 ;***********************************************************************;
 ; Procedure : check_for_subtitles                                       ;
 ;                 res: logical                                          ;
@@ -656,27 +657,22 @@ begin
 ; Before calling this routine, you should be using a copy of your
 ; data.
 ;
-  data_atts        = getvaratts(data)
-  found_valid_name = False
-
-  if(.not.any(ismissing(data_atts))) then
-    valid_long_names = (/"long_name","description","DataFieldName"/)
-    n = 0
-    do while(n.lt.dimsizes(data_atts).and..not.found_valid_name)
-      if (any(valid_long_names.eq.data_atts(n))) then
-        newres = True
-        newres@gsnLeftString = get_res_value_keep(res,"gsnLeftString", \
-                                                  data@$data_atts(n)$)
+  lname = get_valid_long_name_value(data)
+  if(.not.any(ismissing(lname)))    
+    newres = True
+    newres@gsnLeftString = get_res_value_keep(res,"gsnLeftString",lname(1))
 ;
 ; Delete so it doesn't get used for main title
 ;
-        delete(data@$data_atts(n)$)
-        found_valid_name = True
-      end if
-      n = n + 1
-    end do
+    delete(data@$lname(0)$)
   end if
-  if(.not.found_valid_name.and.isatt(res,"gsnLeftString"))
+
+;
+; Of course, if gsnLeftString is set, use it. We had to do the test
+; above first to make sure the attribute got removed, if it existed,
+; so it doesn't get used again for another resource.
+;
+  if(isatt(res,"gsnLeftString"))
     newres = True
     newres@gsnLeftString = res@gsnLeftString
   end if
@@ -797,9 +793,11 @@ begin
   if(check_attr(res,"tmYLMode","Explicit",True))
     set_attr(tires,"tiYAxisString","")
   else
-    if(.not.is_xyplot.and.is_valid_ycoord(data).and.\
-       isatt(data&$data!0$,"long_name")) then
-      set_attr(tires,"tiYAxisString",data&$data!0$@long_name)
+    if(.not.is_xyplot.and.is_valid_ycoord(data)) then
+      lname = get_valid_long_name_value(data)
+      if(.not.any(ismissing(lname))) then
+        set_attr(tires,"tiYAxisString",lname(1))
+      end if
     end if
   end if
 
@@ -9307,8 +9305,11 @@ begin
     lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",0)
     mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",0)
 
-    if(is_valid_ycoord(data).and.isatt(data&$data!0$,"long_name"))
-      set_attr(res2,"tiYAxisString",data&$data!0$@long_name)
+    if(is_valid_ycoord(data))
+      lname = get_valid_long_name_value(data)
+      if(.not.any(ismissing(lname))) then
+        set_attr(res2,"tiYAxisString",lname(1))
+      end if
     end if
 
 ;
