@@ -13,7 +13,7 @@
 #include "tables.h"
 #include <math.h>
 
-#define NCL_GRIB_CACHE_SIZE  2000
+#define NCL_GRIB_CACHE_SIZE  150
 
 extern int grid_index[];
 extern int grid_gds_index[];

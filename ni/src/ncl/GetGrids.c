@@ -2681,10 +2681,10 @@ GribParamList* thevarrec;
 			}
 			*outdat = data;
 		}
-		if((therec->gds[6] & (char)0377)&&(therec->gds[7] & (char)0377)){
+		if((therec->gds[6] == (char)0377)&&(therec->gds[7] == (char)0377)){
 			nv = (int)therec->gds[3];
 			pl = (int)therec->gds[4];
-			if((nv == 0)&&(therec->gds[4]&(char)0377)) {
+			if((nv == 0)&&(therec->gds[4]==(char)0377)) {
 				the_start_off = 32;
 			} else if(nv != 0){
 				the_start_off = 4*nv+(pl-1);
@@ -3663,7 +3663,7 @@ int** dimsizes_lon;
 		if((thevarrec->thelist != NULL)&&(thevarrec->thelist->rec_inq != NULL)) {
 			nv = (int)thevarrec->thelist->rec_inq->gds[3];
 			pl = (int)thevarrec->thelist->rec_inq->gds[4];
-			if((nv == 0)&&(thevarrec->thelist->rec_inq->gds[4]&(char)0377)) {
+			if((nv == 0)&&(thevarrec->thelist->rec_inq->gds[4]==(char)0377)) {
 				the_start_off = 32;
 			} else if(nv != 0){
 				the_start_off = 4*nv+(pl-1);
@@ -3710,7 +3710,7 @@ int** dimsizes_lon;
 
 			tmpc[0] = thevarrec->thelist->rec_inq->gds[23];
 			tmpc[1] = thevarrec->thelist->rec_inq->gds[24];
-			if(!((tmpc[0] & (char)0377)&&(tmpc[1] & (char)0377))) {
+			if(!((tmpc[0] == (char)0377)&&(tmpc[1] == (char)0377))) {
 /*
 * ECMWF Quasi regular grid
 */
@@ -3778,7 +3778,7 @@ int** dimsizes_lon;
 			}
 			*n_dims_lon = 1;
 			*dimsizes_lon = malloc(sizeof(int));
-			if((thevarrec->thelist->rec_inq->gds[6] & (char)0377)&&(thevarrec->thelist->rec_inq->gds[7] & (char)0377)){
+			if((thevarrec->thelist->rec_inq->gds[6] == (char)0377)&&(thevarrec->thelist->rec_inq->gds[7] == (char)0377)){
 				max_lon = (int)UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[the_start_off]));
 				for(i = 0; i < thevarrec->thelist->rec_inq->gds_size - the_start_off; i+=2) {
 					num = (int)UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[the_start_off+i]));
