@@ -898,7 +898,7 @@ NclStackEntry _NclCreateHLUObjOp
 			data_out.u.data_obj = NULL;
 			return(data_out);
 		}
-	} else if(defaultapp_hluobj_id != -1) {
+	} else if((defaultapp_hluobj_id != -1)&&(the_hlu_obj_class->u.obj_class_ptr != NhlappClass)) {
 		tmp_ho = (NclHLUObj)_NclGetObj(defaultapp_hluobj_id);
 		if((tmp_ho != NULL)&&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)) {
                         parent_id = tmp_ho->hlu.hlu_id;
