@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX.intel,v 1.1 2003-05-22 21:14:46 haley Exp $
+ *      $Id: LINUX.64.GNU,v 1.1 2004-12-17 06:52:25 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -9,7 +9,7 @@
 *                                                                       *
 ************************************************************************/
 /*
- *  File:       LINUX
+ *  File:       LINUX.64.GNU
  *
  *  Author:     Tim Fredrick
  *          National Center for Atmospheric Research
@@ -18,8 +18,8 @@
  *  Date:       Wed Oct 25 14:56:41 MDT 1995
  *
  *  Description:    This file contains all the directives needed to
- *          tell ymake how LINUX is different from a
- *          default setup.
+ *          tell ymake how to build NCAR Graphics on a 64-bit LINUX
+ *          system using the GNU compilers.
  */
 #define HdfDefines  -DLINUX
 #define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped
@@ -27,15 +27,15 @@
 #define Cstatic
 #define Cdynamic
 #define CppCommand '/usr/bin/cpp -traditional'
-#define CCompiler   icc -mp
-#define FCompiler   ifc -mp -Vaxlib
-#define CtoFLibraries   -lCEPCF90 -lF90 -lm
+#define CCompiler   gcc
+#define FCompiler   g77
+#define CtoFLibraries   -lg2c -lgcc -lm
 #define CcOptions      -ansi
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
-#define XLibrary -lXpm -lX11 -lXext
+#define XLibrary -lX11 -lXext
 
-#define ArchRecLibSearch    -L/usr/X11R6/lib
+#define ArchRecLibSearch    -L/usr/X11R6/lib64
 #define ArchRecIncSearch    -I/usr/X11R6/include
 
 FC = $(F77)

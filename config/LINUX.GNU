@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX.IA64,v 1.5 2004-12-17 06:52:26 haley Exp $
+ *      $Id: LINUX.GNU,v 1.1 2004-12-17 06:52:26 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -9,7 +9,7 @@
 *                                                                       *
 ************************************************************************/
 /*
- *  File:       LINUX.IA64
+ *  File:       LINUX.GNU
  *
  *  Author:     Tim Fredrick
  *          National Center for Atmospheric Research
@@ -18,22 +18,19 @@
  *  Date:       Wed Oct 25 14:56:41 MDT 1995
  *
  *  Description:    This file contains all the directives needed to
- *          tell ymake how to build NCAR Graphics on a 64-bit Itanium
- *          Linux system using the INTEL compilers.
+ *          tell ymake how to build NCAR Graphics on a 32-bit LINUX
+ *          system using the GNU compilers.
  */
-
-#define HdfDefines  -DIA64
-#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped 
+#define HdfDefines  -DLINUX
+#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped
 #define ByteSwapped
 #define Cstatic
 #define Cdynamic
 #define CppCommand '/usr/bin/cpp -traditional'
-#define CCompiler   icc
-#define FCompiler   ifort
-#define CtoFLibraries   -lm -lifcore
-#define CcOptions    -ansi 
-#define COptimizeFlag    -O2
-#define FOptimizeFlag    -O2
+#define CCompiler   gcc
+#define FCompiler   g77
+#define CtoFLibraries   -lg2c -lgcc -lm
+#define CcOptions      -ansi
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lX11 -lXext
@@ -54,3 +51,4 @@ FC = $(F77)
 #ifndef MakeDir
 #define MakeDir(dir)    @if (test ! -d dir); then ($(MKDIRHIER) dir); fi
 #endif
+

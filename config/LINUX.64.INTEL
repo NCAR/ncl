@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX.64.intel,v 1.4 2004-08-16 15:44:18 haley Exp $
+ *      $Id: LINUX.64.INTEL,v 1.1 2004-12-17 06:52:25 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -9,7 +9,7 @@
 *                                                                       *
 ************************************************************************/
 /*
- *  File:       LINUX.64.intel
+ *  File:       LINUX.64.INTEL
  *
  *  Author:     Mary Haley
  *          National Center for Atmospheric Research
@@ -17,9 +17,9 @@
  *
  *  Date:       Mon Jul 12 21:08:59 MDT 2004
  *
- *  Description:    This file contains the setup for a Linux 64-bit
- *          system using the intel compilers. You may need to change
- *          some of the compiler options.
+ *  Description:    This file contains all the directives needed to
+ *          tell ymake how to build NCAR Graphics on a 64-bit Linux
+ *          system using the INTEL compilers.
  */
 #define HdfDefines  -DIA64
 #define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped
