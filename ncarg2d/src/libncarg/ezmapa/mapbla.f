@@ -1,5 +1,5 @@
 C
-C $Id: mapbla.f,v 1.14 1999-04-10 00:18:40 kennison Exp $
+C $Id: mapbla.f,v 1.15 1999-04-19 21:34:27 kennison Exp $
 C
       SUBROUTINE MAPBLA (IAMP)
 C
@@ -39,8 +39,9 @@ C
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
       SAVE   /MAPSAT/
 C
-      COMMON /USGSC1/ IPRF,UTPA(15),UUMN,UUMX,UVMN,UVMX
-      DOUBLE PRECISION UTPA
+      COMMON /USGSC1/ UTPA(15),UUMN,UUMX,UVMN,UVMX,IPRF
+      DOUBLE PRECISION UTPA,UUMN,UUMX,UVMN,UVMX
+      INTEGER IPRF
       SAVE   /USGSC1/
 C
 C Define some required double-precision variables.
