@@ -1,6 +1,9 @@
 #
-#	$Id: yMakefile,v 1.1 1994-09-07 18:02:06 dbrown Exp $
+#	$Id: yMakefile,v 1.2 2002-03-29 16:33:00 haley Exp $
 #
+
+#define	IHaveSubdirs
+SUBDIRS = rgb
 
 DBFILES = NhlMapData
 
