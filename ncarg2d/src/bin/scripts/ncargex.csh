@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.42 1993-04-16 21:24:49 haley Exp $
+#   $Id: ncargex.csh,v 1.43 1993-04-20 19:20:53 haley Exp $
 #
 
 #********************#
@@ -775,11 +775,13 @@ switch ($name)
         set rmfiles = (vvexcc.o)
     breaksw
 
+    case ccpcica:
     case ccpcir:
     case ccpcnrc:
     case ccpezct:
     case ccphl:
     case ccpmap:
+    case ccpmovi:
     case ccpvp:
         set f_files = ($f_files ggdini.f)
         set rmfiles = (ggdini.o)
