@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.7 1998-03-27 18:31:37 haley Exp $
+#   $Id: yMakefile,v 1.8 1998-12-08 00:15:01 fred Exp $
 #
 #   Makefile for HLU Ngmath examples
 #
@@ -13,7 +13,9 @@ SYS_LIBS    =   $(CTOFLIBS) -lm
 CSRCS = nm01c.c nm02c.c nm03c.c nm04c.c nm05c.c nm06c.c
 FSRCS = nm01f.f nm02f.f nm03f.f nm04f.f nm05f.f nm06f.f
 NSRCS = nm01n.ncl nm02n.ncl nm03n.ncl nm04n.ncl nm05n.ncl nm06n.ncl \
-	nm07n.ncl nm08n.ncl nm09n.ncl nm10n.ncl nm11n.ncl nm12n.ncl
+	nm07n.ncl nm08n.ncl nm09n.ncl nm10n.ncl nm11n.ncl nm12n.ncl \
+	nm13n.ncl nm14n.ncl nm15n.ncl nm16n.ncl nm17n.ncl nm18n.ncl \
+	nm19n.ncl 
 SRCS  = $(CSRCS) $(FSRCS)
 RESFILES    = nm03.res
 
