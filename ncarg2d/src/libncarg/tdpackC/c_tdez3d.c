@@ -1,3 +1,6 @@
+/*
+ *      $Id: c_tdez3d.c,v 1.2 1998-12-02 01:27:44 fred Exp $
+ */
 #include <ncarg/ncargC.h>
 
 void c_tdez3d
