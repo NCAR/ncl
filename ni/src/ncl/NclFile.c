@@ -2607,7 +2607,7 @@ int rw_status;
 			return(NULL);
 		}
 	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"An internal error in the extension code for the requested file format has occured, could not open (%s)",NrmQuarkToString(path));
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"An internal error has occurred. The file format requested does not appear to be supported, could not open (%s)",NrmQuarkToString(path));
 		if(file_out_free) 
 			NclFree((void*)file_out);
 		return(NULL);
