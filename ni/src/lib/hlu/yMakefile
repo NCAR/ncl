@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.70 2004-10-29 16:41:40 haley Exp $
+#      $Id: yMakefile,v 1.71 2004-11-16 23:28:25 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -140,14 +140,7 @@ cmpf.o: cmpf.c
 	$(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c cmpf.c
 #endif
 
-#if defined(linux) || defined(Darwin)
-MeshScalarField.o: MeshScalarField.c
-        $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c MeshScalarField.c
-#endif
-
 #if defined(AIX)
-MeshScalarField.o: MeshScalarField.c
-        $(CC) $(CCOPTIONS) $(ALLDEFINES) -c MeshScalarField.c
 SetValues.o: SetValues.c
         $(CC) $(CCOPTIONS) $(ALLDEFINES) -O2 -qstrict -g -c SetValues.c
 View.o: View.c
