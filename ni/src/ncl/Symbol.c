@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.57 1999-10-26 05:17:20 dbrown Exp $
+ *      $Id: Symbol.c,v 1.58 1999-11-04 23:39:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -90,6 +90,69 @@ extern void NclAddUserFuncs(
 void
 #endif
 );
+
+void _NclFreeProcFuncInfo
+#if	NhlNeedProto
+(NclSymbol *sym)
+#else
+(sym)
+NclSymbol *sym;
+#endif
+{
+	_NclMachineRec* tmp;
+	NclScopeRec* sr;
+	NclSymbol *tmps,*s;
+	int i;
+	switch(sym->type) {
+		case IFUNC:
+			NclFree(sym->u.bfunc->theargs);
+			NclFree(sym->u.bfunc->thescope);
+			NclFree(sym->u.bfunc);
+			sym->u.bfunc = NULL;
+			break;
+		case IPROC:
+		case PIPROC:
+			NclFree(sym->u.bproc->theargs);
+			NclFree(sym->u.bproc->thescope);
+			NclFree(sym->u.bproc);
+			sym->u.bproc = NULL;
+			break;
+		case NPROC:
+		case NFUNC:
+			for(i = 0; i < NCL_SYM_TAB_SIZE; i++) {
+				if(sym->u.procfunc->thescope->this_scope[i].nelem != 0) {
+					s = sym->u.procfunc->thescope->this_scope[i].thelist;
+					while(s != NULL) {
+						tmps = s;
+						switch(s->type) {
+						case IPROC:
+						case PIPROC:
+						case IFUNC:
+						case NPROC:
+						case NFUNC:
+							_NclFreeProcFuncInfo(s);
+						}
+						s = s->symnext;
+						NclFree(tmps);
+					}
+				}
+				
+			}
+			NclFree(sym->u.procfunc->thescope->this_scope);
+			tmp = (_NclMachineRec*)sym->u.procfunc->mach_rec_ptr;
+			NclFree(tmp->themachine);
+			NclFree(tmp->thefiles);
+			NclFree(tmp->thelines);
+			NclFree(sym->u.procfunc->mach_rec_ptr);
+			NclFree(sym->u.procfunc->theargs);
+			NclFree(sym->u.procfunc->thescope);
+			NclFree(sym->u.procfunc);
+			sym->u.procfunc = NULL;
+			break;
+
+	}
+	sym->type = UNDEF;
+}
 
 NhlErrorTypes _NclWalkSymTable 
 #if	NhlNeedProto

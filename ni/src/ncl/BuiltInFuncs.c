@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.109 1999-04-27 17:57:49 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.110 1999-11-04 23:39:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -6287,8 +6287,9 @@ NhlErrorTypes _NclIUnDef
 						case IPROC:
 						case NFUNC:
 						case IFUNC:
+							_NclFreeProcFuncInfo(s);
+							break;
 						case UNDEF:
-							s->type = UNDEF;
 							break;
 						case VAR:
 						case FVAR:
@@ -6327,6 +6328,8 @@ NhlErrorTypes _NclIUnDef
 						case IPROC:
 						case NFUNC:
 						case IFUNC:
+							_NclFreeProcFuncInfo(s);
+							break;
 						case UNDEF:
 							s->type = UNDEF;
 							break;

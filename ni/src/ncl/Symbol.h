@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.26 1998-02-22 17:42:34 haley Exp $
+ *      $Id: Symbol.h,v 1.27 1999-11-04 23:39:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -268,6 +268,12 @@ void
 void _NclAddIntrinsics(
 #if	NhlNeedProto
 void
+#endif
+);
+
+void _NclFreeProcFuncInfo(
+#if	NhlNeedProto
+NclSymbol * /*sym*/
 #endif
 );
 
