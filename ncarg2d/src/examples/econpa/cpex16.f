@@ -23,8 +23,9 @@ C
 C Define the error file, the Fortran unit number, the workstation type,
 C and the workstation ID.
 C
-        PARAMETER (IERR=6,LUNI=2,IWTY= 1,IWID=1)  !  NCGM
-C       PARAMETER (IERR=6,LUNI=2,IWTY=20,IWID=1)  !  PostScript
+        PARAMETER (IERR=6,LUNI=2,IWTYPE=1, IWID=1)  !  NCGM
+C       PARAMETER (IERR=6,LUNI=2,IWTYPE=20,IWID=1)  !  PostScript
+C       PARAMETER (IERR=6,LUNI=2,IWTYPE=11,IWID=1)  !  PDF
 C
 C The parameters MCRA and NCRA declare the dimensions of the cell array,
 C ICRA, to be used.  Using larger values of MCRA and NCRA gives a better
@@ -443,7 +444,7 @@ C
 C Open GKS.
 C
         CALL GOPKS (IERR,0)
-        CALL GOPWK (IWID,LUNI,IWTY)
+        CALL GOPWK (IWID,LUNI,IWTYPE)
         CALL GACWK (IWID)
 C
 C Turn GKS clipping off.
