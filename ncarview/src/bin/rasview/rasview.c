@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.12 1993-03-25 17:23:20 clyne Exp $
+ *	$Id: rasview.c,v 1.13 1993-03-31 20:28:35 clyne Exp $
  */
 /*
  *	rasview.c
@@ -83,6 +83,15 @@ static	int	display_image(ras, context, verbose)
 {
 	static	Raster	*indexed_ras = (Raster *) NULL;
 	int	status;
+
+	if (context->encoding == RASDRAW_0BIT) {
+		(void) fprintf(
+			stderr, 
+			"%s : Unsupported display depth - Only 8 and 24 bit frame buffers supported\n", 
+			progName
+		);
+		return(-1);
+	}
 
 	if (ras->type == RAS_INDEXED && (context->encoding & RASDRAW_8BIT)) {
 		(void) RasDraw(ras, context);

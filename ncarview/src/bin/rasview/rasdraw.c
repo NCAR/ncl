@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.10 1993-03-25 01:48:26 clyne Exp $
+ *	$Id: rasdraw.c,v 1.11 1993-03-31 20:28:31 clyne Exp $
  */
 /*
  *	rasdraw.c
@@ -768,10 +768,10 @@ ras_draw_init(context, nx, ny, encoding_hint)
 	);
 
 	context->canvas = create_graphics_canvas(context->toplevel, nx, ny);
-	context->gc = XtGetGC(context->canvas, 0L, &xgcvalues); 
 
 	XtRealizeWidget(context->toplevel);
 
+	context->gc = XtGetGC(context->canvas, 0L, &xgcvalues); 
 	/*
 	 * turn on backing store
 	 */
