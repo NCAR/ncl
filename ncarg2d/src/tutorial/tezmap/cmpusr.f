@@ -1,5 +1,5 @@
 C
-C   $Id: cmpusr.f,v 1.4 1995-06-14 14:07:19 haley Exp $
+C   $Id: cmpusr.f,v 1.5 1999-04-07 21:25:09 kennison Exp $
 C
 C
 C Define error file, Fortran unit number, and workstation type,
@@ -40,7 +40,7 @@ C
 C
 C Set Dot Distance to be 1
 C
-      CALL MAPSTR ('DD - DISTANCE BETWEEN DOTS',1.)
+      CALL MAPSTR ('DD - DISTANCE BETWEEN DOTS',8.)
 C
       CALL MAPDRW
       

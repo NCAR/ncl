@@ -1,5 +1,5 @@
 C
-C   $Id: cmplot.f,v 1.6 1995-06-14 14:07:11 haley Exp $
+C   $Id: cmplot.f,v 1.7 1999-04-07 21:25:09 kennison Exp $
 C
 C
 C Define error file, Fortran unit number, and workstation type,
@@ -81,7 +81,7 @@ C Draw dotted continental outlines, and make dots reasonably close
 C together
 C
       CALL MAPSTI ('DO - DOTTED-OUTLINE SELECTOR',1)
-      CALL MAPSTI ('DD - DISTANCE BETWEEN DOTS',7)
+      CALL MAPSTI ('DD - DISTANCE BETWEEN DOTS',56)
 C
 C Initialize Maps.
 C
