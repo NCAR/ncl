@@ -58,12 +58,12 @@ C
 C Interpolate to get more closely-spaced data in the array QDAT.
 C
       DO 30 J=1,100
-         FL=1.+38.99999999*FLOAT(J-1)/99.
-         L=IFIX(FL)
+         FL=1.+39.*FLOAT(J-1)/99.
+         L=MAX0(1,MIN0(39,IFIX(FL)))
          FL=FL-FLOAT(L)
          DO 40 I=1,100
-            FK=1.+38.99999999*FLOAT(I-1)/99.
-            K=IFIX(FK)
+            FK=1.+39.*FLOAT(I-1)/99.
+            K=MAX0(1,MIN0(39,IFIX(FK)))
             FK=FK-FLOAT(K)
             QDAT(I,J)=(1.-FL)*((1.-FK)*ODAT(K,L  )+FK*ODAT(K+1,L  ))+
      +                    FL *((1.-FK)*ODAT(K,L+1)+FK*ODAT(K+1,L+1))
