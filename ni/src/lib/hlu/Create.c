@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.28 1996-12-03 17:29:58 ethan Exp $
+ *      $Id: Create.c,v 1.29 1997-01-03 01:37:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,8 @@
  */
 #include <stdio.h>
 #include <string.h>
+#include <setjmp.h>
+#include <signal.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/VarArg.h>
 #include <ncarg/hlu/ResListP.h>
@@ -315,6 +317,7 @@ _NhlCreate
 	NhlLayer		parent;
 	NhlLayer		layer;
 	NhlLayer		request;
+	NhlLayer		app;
 	NhlErrorTypes		ret=NhlNOERROR, lret=NhlNOERROR;
 	_NhlArg			stackargs[_NhlMAXARGLIST];
 	_NhlArgList		largs=stackargs;
@@ -323,7 +326,11 @@ _NhlCreate
 	NhlBoolean		chld_args_used[_NhlMAXARGLIST];
 	_NhlConvertContext	context=NULL;
 	int			i;
+	NrmValue		from,to;
+	static NrmQuark		Qint = NrmNULLQUARK;
 
+	if(Qint == NrmNULLQUARK)
+		Qint = NrmPermStringToQuark(NhlTInteger);
 
 	if(!(lc->base_class.class_inited)){
 		ret = InitializeClass(lc);
@@ -369,13 +376,6 @@ _NhlCreate
 	layer->base.nrm_name = NrmStringToName((name)?name:"");
 	layer->base.name = (Const NhlString)
 					NrmNameToString(layer->base.nrm_name);
-	if(parent == NULL)
-		layer->base.appobj = layer;
-	else
-		layer->base.appobj = parent->base.appobj;
-
-	layer->base.being_destroyed = False;
-	layer->base.all_children = NULL;
 
 /*
  * context is a structure that remembers the memory that is allocated
@@ -390,6 +390,54 @@ _NhlCreate
 		(void)NhlFree(layer);
 		return NhlFATAL;
 	}
+
+/*
+ * Find app object to use for resource database.
+ */
+	layer->base.appobj = NULL;
+	layer->base.app_destroy = NULL;
+	if(parent == NULL){
+		layer->base.appobj = layer;
+	}
+	else{
+		if(i = _NhlArgIsSet(args,nargs,NhlNobjAppObj)){
+			int		appid;
+	
+			from.size = args[i-1].size;
+			from.data = args[i-1].value;
+			to.size = sizeof(int);
+			to.data.ptrval = &appid;
+	
+			lret = _NhlConvertData(context,args[i-1].type,Qint,
+								&from,&to);
+	
+			layer->base.app_destroy = NULL;
+			layer->base.appobj = _NhlGetLayer(appid);
+		}
+	
+		if(!layer->base.appobj || !_NhlIsApp(layer->base.appobj))
+			layer->base.appobj = parent->base.appobj;
+	
+		if((layer->base.appobj != parent->base.appobj) ||
+			parent->base.app_destroy){
+			NhlArgVal	dummy,udata;
+	
+	#ifdef	DEBUG
+			memset(&dummy,0,sizeof(NhlArgVal));
+			memset(&udata,0,sizeof(NhlArgVal));
+	#endif
+			/* INSTALL CB to handle destroy of appobj */
+			dummy.lngval = 0;
+			udata.ptrval = layer;
+			layer->base.app_destroy = _NhlAddObjCallback(
+						layer->base.appobj,
+						_NhlCBobjDestroy,dummy,
+						_NhlBaseAppDestroyCB,udata);
+		}
+	}
+
+	layer->base.being_destroyed = False;
+	layer->base.all_children = NULL;
 
 /*
  * Check for valid parent for Obj sub-classes
@@ -724,6 +772,29 @@ NhlCreate
 	return _NhlCreate(pid, name, lc, parentid, args, nargs, NULL);
 }
 
+static sigjmp_buf	flc_env;
+
+#if	!defined(IRIX) && !defined(SIG_PF)
+
+typedef void (*vfunc)(
+#if	NhlNeedProto
+	int
+#endif
+);
+#define	SIG_PF	vfunc
+#endif
+
+static void
+handle_ill
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	siglongjmp(flc_env,1);
+}
+
 /*
  * Function:	nhl_fcreate
  *
@@ -768,25 +839,49 @@ _NHLCALLF(nhl_fcreate,NHL_FCREATE)
 	char		cname[_NhlMAXRESNAMLEN];
 	char		*name;
 	NhlClass	lc = NULL;
+	struct sigaction	sact;
 	
 	/*
-	 * A better test would be nice, but what can we say.
+	 * Catch SIGILL to try and detect a bad class func
+	 * (A bad class func would happen if the user forgot to declare
+	 * the function external, or if they misspelled it.  I recommend
+	 * using "implicit none", which would correct these stupid errors.)
 	 */
-	if(lc_func != NULL){
-#if	!defined(UNICOS) && !defined(AIX) && !defined(HPUX) && !defined(OSF1)
-		extern etext[];
 
-		if((void *)lc_func < (void *)etext)
-#endif
-			lc = (*lc_func)();
-	}
-
-	if(lc == NULL){
+	/*
+	 * Set the jump point - this is where we come back to if the
+	 * signal handler gets called. (sigsetjmp will return 1 if it
+	 * is coming from the handler and 0 if it is from this direct
+	 * call.)
+	 */
+	if(sigsetjmp(flc_env,1)){
+		/*
+		 * Reset SIGILL since it doesn't happen automatically.
+		 */
+		sact.sa_flags = 0;
+		sact.sa_handler = SIG_DFL;
+		sigemptyset(&sact.sa_mask);
+		sigaction(SIGILL,&sact,NULL);
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"nhlfcreate:Invalid Class Function");
 		*pid = *err_ret = NhlFATAL;
 		return;
 	}
+
+	/*
+	 * Catch SIGILL with handle_ill.
+	 */
+	sact.sa_flags = 0;
+	sact.sa_handler = (SIG_PF)handle_ill;
+	sigemptyset(&sact.sa_mask);
+	sigaction(SIGILL,&sact,NULL);
+	lc = (*lc_func)();
+
+	/*
+	 * reset SIGILL to SIG_DFL
+	 */
+	sact.sa_handler = SIG_DFL;
+	sigaction(SIGILL,&sact,NULL);
 
 	name = _NhlFstrToCstr(cname,NhlNumber(cname),fname,*fname_len);
 
@@ -936,7 +1031,6 @@ InitAllResources
 	 * Initialize list
 	 */
 	memset((char*)list,0,sizeof(list));
-	memset((char*)tlist,0,sizeof(list));
 
 	/*
 	 * If the class uses children add their resources to the list

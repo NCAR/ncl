@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.19 1996-11-28 01:14:19 dbrown Exp $
+ *      $Id: Base.c,v 1.20 1997-01-03 01:37:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -43,6 +43,9 @@ static _NhlRawObjCB ocallbacks[] = {
 };
 
 static NhlResource bresources[] = {
+	{NhlNobjAppObj,NhlCobjAppObj,NhlTInteger,sizeof(int),
+		NhlOffset(NhlBaseLayerRec,base.appid),
+		NhlTImmediate,_NhlUSET(NhlDEFAULT_APP),_NhlRES_CONLY,NULL},
 	{_NhlNnclData,_NhlCnclData,NhlTPointer,sizeof(NhlPointer),
 		NhlOffset(NhlBaseLayerRec,base.ncl_data),
 		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
@@ -55,14 +58,17 @@ static NhlResource bresources[] = {
 };
 
 static NhlResource oresources[] = {
+	{NhlNobjAppObj,NhlCobjAppObj,NhlTInteger,sizeof(int),
+		NhlOffset(NhlBaseLayerRec,base.appid),
+		NhlTImmediate,_NhlUSET(NhlDEFAULT_APP),_NhlRES_CONLY,NULL},
 	{_NhlNnclData,_NhlCnclData,NhlTPointer,sizeof(NhlPointer),
-		NhlOffset(NhlObjLayerRec,base.ncl_data),
+		NhlOffset(NhlBaseLayerRec,base.ncl_data),
 		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
 	{_NhlNguiData,_NhlCguiData,NhlTPointer,sizeof(NhlPointer),
 		NhlOffset(NhlBaseLayerRec,base.gui_data),
 		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
 	{_NhlNguiData2,_NhlCguiData2,NhlTPointer,sizeof(NhlPointer),
-		NhlOffset(NhlObjLayerRec,base.gui_data2),
+		NhlOffset(NhlBaseLayerRec,base.gui_data2),
 		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
 };
 
@@ -519,18 +525,34 @@ BaseLayerReparent
 #if	NhlNeedProto
 (
 	NhlLayer	l,	/* layer to reparent	*/
-	NhlLayer	parent	/* new parent		*/
+	NhlLayer	p	/* new parent		*/
 )
 #else
-(l,parent)
+(l,p)
 	NhlLayer	l;	/* layer to reparent	*/
-	NhlLayer	parent;	/* new parent		*/
+	NhlLayer	p;	/* new parent		*/
 #endif
 {
-	if(_NhlIsWorkstation(parent))
-		l->base.wkptr = parent;
+	if(_NhlIsWorkstation(p))
+		l->base.wkptr = p;
 	else
-		l->base.wkptr = parent->base.wkptr;
+		l->base.wkptr = p->base.wkptr;
+
+	if(!l->base.app_destroy){
+		l->base.appobj = p->base.appobj;
+		if(p->base.app_destroy){
+			NhlArgVal	dummy,udata;
+#ifdef	DEBUG
+			memset(&dummy,0,sizeof(NhlArgVal));
+			memset(&udata,0,sizeof(NhlArgVal));
+#endif
+			dummy.lngval = 0;
+			udata.ptrval = l;
+			l->base.app_destroy = _NhlAddObjCallback(
+					l->base.appobj,_NhlCBobjDestroy,dummy,
+					_NhlBaseAppDestroyCB,udata);
+		}
+	}
 
 	return ReparentChildren(l);
 }
@@ -568,6 +590,8 @@ ObjLayerDestroy
 				(_NhlCookedObjCBList)lc->base_class.callbacks;
 	int			ncbs = lc->base_class.num_callbacks;
 	int			i;
+
+	_NhlCBDelete(l->base.app_destroy);
 
 	/*
 	 * Destroy all object callbacks
@@ -625,4 +649,63 @@ BaseLayerDestroy
 	lret = ObjLayerDestroy(l);
 
 	return MIN(ret,lret);
+}
+
+/*
+ * Function:	AppDestroyCB
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NhlBaseAppDestroyCB
+#if	NhlNeedProto
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+#else
+(cbdata,udata)
+	NhlArgVal	cbdata;
+	NhlArgVal	udata;
+#endif
+{
+	NhlLayer	app = (NhlLayer)cbdata.ptrval;
+	NhlLayer	l = (NhlLayer)udata.ptrval;
+	NhlLayer	p = l->base.parent;
+
+	_NhlCBDelete(l->base.app_destroy);
+	l->base.app_destroy = NULL;
+
+	while(p && p->base.appobj == app)
+		p = p->base.parent;
+
+	if(p){
+		l->base.appobj = p->base.appobj;
+		if(p->base.app_destroy){
+			NhlArgVal	dummy,udata;
+#ifdef	DEBUG
+			memset(&dummy,0,sizeof(NhlArgVal));
+			memset(&udata,0,sizeof(NhlArgVal));
+#endif
+			dummy.lngval = 0;
+			udata.ptrval = l;
+			l->base.app_destroy = _NhlAddObjCallback(
+					l->base.appobj,_NhlCBobjDestroy,dummy,
+					_NhlBaseAppDestroyCB,udata);
+		}
+	}
+	else{
+		l->base.appid = _NhlGetDefaultApp();
+		l->base.appobj = _NhlGetLayer(l->base.appid);
+	}
+
+	return;
 }

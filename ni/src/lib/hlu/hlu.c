@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.37 1996-12-03 01:36:54 dbrown Exp $
+ *      $Id: hlu.c,v 1.38 1997-01-03 01:37:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1634,7 +1634,7 @@ NhlClassIsSubclass
 	NhlClass	ref_cptr;
 #endif
 {
-	if(!cptr)
+	if(!cptr || !ref_cptr)
 		return False;
 
 	if(cptr == ref_cptr)
@@ -1669,6 +1669,9 @@ _NhlIsClass
 	NhlClass	cl;
 #endif
 {
+	if(!l || !cl)
+		return False;
+
 	return NhlClassIsSubclass(l->base.layer_class,cl);
 }
 

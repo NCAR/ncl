@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.28 1996-11-28 01:14:17 dbrown Exp $
+ *      $Id: App.c,v 1.29 1997-01-03 01:37:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -167,6 +167,9 @@ static NhlResource resources[] = {
 	{_NhlNappArgvInOut,_NhlCappArgvInOut,NhlTPointer,
 		sizeof(NhlPointer),Oset(argv_in_out),NhlTImmediate,
 		(NhlPointer)NULL,_NhlRES_CONLY,NULL},
+	{NhlNobjAppObj,NhlCobjAppObj,NhlTInteger,sizeof(int),
+		NhlOffset(NhlBaseLayerRec,base.appid),NhlTImmediate,
+		(NhlPointer)NhlDEFAULT_APP,_NhlRES_NOACCESS,NULL},
 };
 
 #undef	appDefResDef
@@ -479,7 +482,6 @@ AppInitialize
 	NrmResourceList		rlist;
 	_NhlConvertContext	context;
 	NrmDatabase		db;
-
 
 	if(anew->app.default_app){
 		if(ac->app_class.default_app){
