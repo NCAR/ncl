@@ -1,5 +1,5 @@
 /*
- *      $Id: Site,v 1.7 1994-08-10 21:22:45 boote Exp $
+ *      $Id: Site,v 1.8 1996-10-25 21:08:49 boote Exp $
  *
  ************************************************************************
  *									*
@@ -58,8 +58,8 @@
 /* #define TmpRoot "/tmp" */
 
 #define	InstallYmake
-#define LibSearch -L/X/X11/lib -L/usr/local/lib 
-#define IncSearch -I/X/X11/include -I/usr/local/include
+#define LibSearch -L/usr/local/lib 
+#define IncSearch -I/usr/local/include
 
 #ifdef	hostshavano
 #define	BuildNCARGSourceLibrary

@@ -1,5 +1,5 @@
 /*
- *	$Id: ymake-filter.c,v 1.10 1995-07-18 16:42:27 boote Exp $
+ *	$Id: ymake-filter.c,v 1.11 1996-10-25 21:08:52 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -59,11 +59,11 @@ main()
 		if ( (len = strlen(line)) > 0){
 			int	do_tab = TRUE;
 			int	i;
+			char	*tchar;
 
 			/* look for escapable chars */
 
 			for(i=0; i < sizeof(tab_chars);i++){
-				char	*tchar;
 
 				tchar = strchr(line,tab_chars[i]);
 				if(tchar != NULL){
@@ -81,15 +81,25 @@ main()
 				}
 			}
 
+			if(line[0] == '\t'){
+				do_tab = FALSE;
+				/* Eat any extra tabs... */
+				while(line[1] == '\t'){
+					tchar = &line[1];
+					while(*tchar != '\0'){
+						*tchar = *(tchar+1);
+						tchar++;
+					}
+				}
+			}
 			/* don't tab if Make comment or tab'd already */
-			if((line[0] == '#') || (line[0] == '\t'))
+			if(line[0] == '#')
 				do_tab = FALSE;
 
 			/*
 			 * Impliment ## concat for bsd cpp's.
 			 */
 			if(line[0] != '#'){
-				char	*tchar;
 
 				while((tchar = strstr(line,"##")) != NULL){
 					/*

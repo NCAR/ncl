@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.31 1995-07-09 03:52:47 haley Exp $
+ *	$Id: Rules,v 1.32 1996-10-25 21:08:47 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -209,6 +209,16 @@ Makefiles-local::]\
 	done]
 #endif	/* InternalMakefilesSubdirs */
 
+#ifndef	BuildRelObj
+#define	BuildRelObj(name,objects)\
+]\
+all::]\
+]\
+all-local::	name]\
+]\
+name:	objects]\
+	$(LD_REL) -r -o name objects]
+#endif
 /*
  * Macro:	RelocatableTarget
  *
@@ -216,14 +226,7 @@ Makefiles-local::]\
  */
 #ifndef	RelocatableTarget
 #define RelocatableTarget(name,objects)\
-]\
-all::]\
-]\
-all-local::	name]\
-]\
-name:	objects]\
-	@$(LD_REL) -r -o name objects]\
-]\
+BuildRelObj(name,objects)\
 InstallTarget(name,$(INSTALL_LIB),$(ROBJPATH))\
 CleanFilesTarget(name objects)
 #endif	/* RelocatableTarget */
@@ -343,6 +346,14 @@ InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
  *		systems.
  */
 #ifndef	_CLinkProgram
+#ifdef	BuildShared
+#define	_CLinkProgram(program,objects,deplib)\
+BuildRelObj(program.obj.o,objects)\
+program: program.obj.o deplib]\
+	$(CC_LD) $(CC_LDOPTIONS) -o program program.obj.o $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)]\
+]\
+CleanFilesTarget(program program.obj.o objects)
+#else
 #ifndef	AIX
 #define	_CLinkProgram(program,objects,deplib)\
 program: objects deplib]\
@@ -359,6 +370,7 @@ program.nonshr.o: objects deplib]\
 ]\
 CleanFilesTarget(program program.nonshr.o objects)
 #endif	/* AIX	*/
+#endif	/* BuildShared */
 #endif	/* _CLinkProgram */
 
 /*
@@ -387,15 +399,116 @@ _CLinkProgram(program,objects,NullArgument)
 ]\
 all::]\
 ]\
-all-local:: library]\
+all-local:: library.a]\
 ]\
-library:: objects]\
-	-$(RM) library]\
-	@$(AR_QUICK) library objects]\
-	$(RANLIB) library]\
+library.a:: objects]\
+	-$(RM) library.a]\
+	@$(AR_QUICK) library.a objects]\
+	$(RANLIB) library.a]\
 ]\
-CleanFilesTarget(library objects)
+CleanFilesTarget(library.a objects)
 #endif	/* BuildLibTarget */
+
+/*
+ * Macro:	BuildSharedPartialLib
+ *
+ * Description:	Build a shared lib that should only be linked from
+ *		another shared lib - it may have unresolved references,
+ *		and it should me delay_loaded.
+ */
+#ifndef	BuildSharedPartialLib
+#ifdef	BuildShared
+#define	BuildSharedPartialLib(library,objects,arch,major,minor,reqlibs)\
+]\
+all::]\
+]\
+all-local:: library.so]\
+]\
+library.so:: library.so.major]\
+	@$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+library.so.major:: objects arch]\
+	MakeDir($(TOP)/shared)]\
+	$(LD) -shared -default_delay_load -set_version sgi##major.minor -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ -all arch -none $(SHAREDLDLIBSEARCH) reqlibs ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so.major; \ ]\
+	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
+]\
+CleanFilesTarget(library.so library.so.major arch)
+#else
+#define	BuildSharedFromArch(library,objects,arch,major,minor,reqlibs) /**/
+#endif	/* BuildShared */
+#endif	/* BuildSharedFromArch */
+
+/*
+ * Macro:	BuildSharedFromArch
+ *
+ * Description:	Build a shared library from a .a file
+ */
+#ifndef	BuildSharedFromArch
+#ifdef	BuildShared
+#define	BuildSharedFromArch(library,arch,major,minor,reqlibs)\
+]\
+all::]\
+]\
+all-local:: library.so]\
+]\
+library.so:: library.so.major]\
+	@$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+library.so.major:: arch]\
+	MakeDir($(TOP)/shared)]\
+	$(LD) -shared -set_version sgi##major.minor -no_unresolved -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ -all arch -none $(SHAREDLDLIBSEARCH) reqlibs ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so.major; \ ]\
+	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
+]\
+CleanFilesTarget(library.so library.so.major arch)
+#else
+#define	BuildSharedFromArch(library,arch,major,minor,reqlibs) /**/
+#endif	/* BuildShared */
+#endif	/* BuildSharedFromArch */
+
+/*
+ * Macro:	BuildSharedLibTarget
+ *
+ * Description: Build a shared library
+ */
+#ifndef	BuildSharedLibTarget
+#ifdef	BuildShared
+#define	BuildSharedLibTarget(library,objects,major,minor,reqlibs)\
+]\
+all::]\
+]\
+all-local:: library.so]\
+]\
+library.so:: library.so.major]\
+	@$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+library.so.major:: objects]\
+	MakeDir($(TOP)/shared)]\
+	$(LD) -shared -set_version sgi##major.minor -no_unresolved -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ objects $(SHAREDLDLIBSEARCH) reqlibs ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so.major; \ ]\
+	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
+]\
+CleanFilesTarget(library.so library.so.major)
+#else
+#define	BuildSharedLibTarget(library,objects,major,minor,reqlibs) /**/
+#endif	/* IRIX */
+#endif	/* BuildSharedLibTarget */
 
 /*
  * Macro:	LibraryTarget
@@ -405,7 +518,7 @@ CleanFilesTarget(library objects)
 #ifndef	LibraryTarget
 #define LibraryTarget(library,objects)\
 BuildLibTarget(library,objects)]\
-InstallLibTarget(library)
+InstallLibTarget(library.a)
 #endif	/* LibraryTarget */
 
 /*

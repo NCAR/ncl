@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.28 1996-10-10 18:53:09 boote Exp $
+ *      $Id: Project,v 1.29 1996-10-25 21:08:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -233,7 +233,8 @@ ROOTPATHCHECK		= "/lib/ncarg/fontcaps/font1"
  *		an error message is reported and NULL is returned from the
  *		functions and ncargpath reports the error.
  */
-NGENV_DESCRIPT	= '{"tmp","TMPDIR",NULL,"$(TMPROOT)",NULL,	\
+NGENV_DESCRIPT	= \
+		'{"tmp","TMPDIR",NULL,"$(TMPROOT)",NULL,	\
 		"fontcap","FONTCAP",NULL,NULL,NULL,		\
 		"graphcap","GRAPHCAP",NULL,NULL,NULL,		\
 		"root",NULL,NULL,"$(ROOTPATH)",$(ROOTPATHCHECK),\
@@ -298,6 +299,32 @@ HLULIBSRC	= $(NILIBSRC)/hlu
 NGOLIBSRC	= $(NILIBSRC)/ngo
 NCLLIBSRC	= $(NISRC)/ncl
 
+#ifdef	BuildShared
+NCARGCLIB	= -lNGcommon
+NCARGLIB	= -lNGllu
+CNCARGLIB	= -lNGlluC
+NCARGGKSLIB	= -lNGgks
+CNCARGGKSLIB	= -lNGgksC
+CGMLIB		= -lNotDoneLib
+NCARGRASLIB	= -lNotDoneLib
+HLULIB		= -lNGhlu
+NGOLIB		= -lNGgo
+NCLLIB		=
+NCLAPILIB	= -lNGncl
+
+DEPNCARGCLIB	=
+DEPNCARGLIB	=
+DEPCNCARGLIB	=
+DEPNCARGGKSLIB	=
+DEPCNCARGGKSLIB	=
+DEPCGMLIB	=
+DEPNCARGRASLIB	=
+DEPHLULIB	=
+DEPNGOLIB	=
+DEPNCLLIB	=
+DEPNCLAPILIB	=
+
+#else	/* BuildShared */
 NCARGCLIB	= _UseLib(-L$(NCARGCLIBSRC),-lncarg_c)
 NCARGLIB	= _UseLib(-L$(NCARGLIBSRC),-lncarg)
 CNCARGLIB	= _UseLib(-L$(CNCARGLIBSRC),-lncargC)
@@ -310,10 +337,6 @@ NGOLIB		= _UseLib(-L$(NGOLIBSRC),-lngo)
 NCLLIB		= _UseLib(-L$(NCLLIBSRC),-lncl)
 NCLAPILIB	= _UseLib(-L$(NCLLIBSRC),-lnclapi)
 
-CTRANSLIB	= _DepLib($(CTRANSLIBSRC),$(ROBJROOT),libctrans.o)
-ICTRANSLIB	= _DepLib($(ICTRANSLIBSRC),$(ROBJROOT),libictrans.o)
-ICTRANS_LIB	= _DepLib($(ICTRANSLIBSRC),$(ROBJROOT),libictrans_.o)
-
 DEPNCARGCLIB	= _DepLib($(NCARGCLIBSRC),$(LIBROOT),libncarg_c.a)
 DEPNCARGLIB	= _DepLib($(NCARGLIBSRC),$(LIBROOT),libncarg.a)
 DEPCNCARGLIB	= _DepLib($(CNCARGLIBSRC),$(LIBROOT),libncargC.a)
@@ -325,6 +348,12 @@ DEPHLULIB	= _DepLib($(HLULIBSRC),$(LIBROOT),libhlu.a)
 DEPNGOLIB	= _DepLib($(NGOLIBSRC),$(LIBROOT),libngo.a)
 DEPNCLLIB	= _DepLib($(NCLLIBSRC),$(LIBROOT),libncl.a)
 DEPNCLAPILIB	= _DepLib($(NCLLIBSRC),$(LIBROOT),libnclapi.a)
+
+#endif	/* BuildShared */
+
+CTRANSLIB	= _DepLib($(CTRANSLIBSRC),$(ROBJROOT),libctrans.o)
+ICTRANSLIB	= _DepLib($(ICTRANSLIBSRC),$(ROBJROOT),libictrans.o)
+ICTRANS_LIB	= _DepLib($(ICTRANSLIBSRC),$(ROBJROOT),libictrans_.o)
 
 DEPCTRANSLIB	= $(CTRANSLIB)
 DEPICTRANSLIB	= $(ICTRANSLIB)
