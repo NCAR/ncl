@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.39 1998-02-25 15:02:45 haley Exp $
+ *      $Id: Resources.c,v 1.40 1998-10-24 01:38:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -441,7 +441,7 @@ _NhlGetResources
 				if(lret<NhlINFO){
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"Error retrieving resource %s from args - Ignoring Arg",
-					NrmNameToString(resources[i].nrm_name));
+					NrmNameToString(resources[j].nrm_name));
 						ret = MIN(NhlWARNING,ret);
 				}
 				else{
