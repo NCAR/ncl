@@ -1,5 +1,5 @@
 C
-C $Id: cptrcl.f,v 1.4 1994-09-12 22:10:53 kennison Exp $
+C $Id: cptrcl.f,v 1.5 1995-04-19 17:04:54 kennison Exp $
 C
       SUBROUTINE CPTRCL (ZDAT,RWRK,IWRK,CLVL,IJMP,IRW1,IRW2,NRWK)
 C
@@ -332,9 +332,9 @@ C
 10039   CONTINUE
 C
 C Zero the number of points in the coordinate arrays, initialize the
-C flag which indicates that we're working on the first segment, and
-C zero the variable which keeps track of the ratio of segment length
-C in the user system and segment length in the data-index system.
+C flag that indicates we're working on the first segment, and zero
+C the variable that keeps track of the ratio of segment length in
+C the user system to segment length in the data-index system.
 C
         NPLS=0
         IFSF=1
@@ -401,8 +401,8 @@ C If the point is very close to a grid intersection, put it at the
 C intersection.  This avoids problems caused by very short line
 C segments.
 C
-            IF (.NOT.(MOD(XCND,1.).LT..0001.AND.MOD(YCND,1.).LT..0001))
-     +      GO TO 10048
+            IF (.NOT.(ABS(XCND-ANINT(XCND)).LT.SMGX.AND.ABS(YCND-ANINT(Y
+     +CND)).LT.SMGY)) GO TO 10048
               XCND=ANINT(XCND)
               YCND=ANINT(YCND)
 10048       CONTINUE

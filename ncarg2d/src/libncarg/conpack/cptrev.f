@@ -1,5 +1,5 @@
 C
-C $Id: cptrev.f,v 1.4 1994-09-12 22:10:55 kennison Exp $
+C $Id: cptrev.f,v 1.5 1995-04-19 17:04:55 kennison Exp $
 C
       SUBROUTINE CPTREV (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
 C
@@ -112,6 +112,10 @@ C If this is a re-entry after coordinate processing by the caller, jump
 C back to the appropriate point in the code.
 C
       IF (IJMP.NE.0) GO TO (103,106,107) , IJMP
+C
+C Save the initial value of IAIC.
+C
+      IAID=IAIC
 C
 C Assign space to use for storing the X and Y coordinates of points.
 C
@@ -319,7 +323,7 @@ C
         GO TO 10030
 10031   CONTINUE
 C
-        IF (.NOT.(NPLS.NE.0)) GO TO 10038
+        IF (.NOT.(NPLS.GT.1)) GO TO 10038
           IJMP=1
           IRW1=IR01
           IRW2=IR01+MPLS
@@ -374,7 +378,7 @@ C
         GO TO 10039
 10041   CONTINUE
 C
-        IF (.NOT.(IAIC.NE.-9.AND.IAIC.LE.0)) GO TO 10043
+        IF (.NOT.(IAID.NE.-9)) GO TO 10043
           XTMP=1.+((XCVD-XAT1)/(XATM-XAT1))*REAL(IZDM-1)
           YTMP=1.+((YCVD-YAT1)/(YATN-YAT1))*REAL(IZDN-1)
           ITMP=INT(XTMP)
@@ -384,14 +388,14 @@ C
           IF (.NOT.(SVAL.NE.0..AND.(ZDAT(ITMP,JTMP).EQ.SVAL.OR.ZDAT(ITMP
      +,JTP1).EQ.SVAL.OR.ZDAT(ITP1,JTMP).EQ.SVAL.OR.ZDAT(ITP1,JTP1).EQ.SV
      +AL))) GO TO 10044
-            IAIC=IAIA(258)
+            IAID=IAIA(258)
           GO TO 10045
 10044     CONTINUE
             IF (.NOT.(NCLV.LE.0)) GO TO 10046
-              IAIC=1
+              IAID=1
             GO TO 10047
 10046       CONTINUE
-              IAIC=0
+              IAID=0
               XDEL=XTMP-REAL(ITMP)
               YDEL=YTMP-REAL(JTMP)
               ZINT=(1.-YDEL)*
@@ -402,7 +406,7 @@ C
                 JCLV=ICLP(J)
                 IF (.NOT.(ZINT.LE.CLEV(JCLV))) GO TO 10049
                   IF (.NOT.(IAIB(JCLV).NE.0)) GO TO 10050
-                    IAIC=IAIB(JCLV)
+                    IAID=IAIB(JCLV)
                     GO TO 105
 10050             CONTINUE
                     IF (J.EQ.NCLV) GO TO 104
@@ -415,7 +419,7 @@ C
                 JCLV=ICLP(J)
                 IF (.NOT.(ZINT.GE.CLEV(JCLV))) GO TO 10052
                   IF (.NOT.(IAIA(JCLV).NE.0)) GO TO 10053
-                    IAIC=IAIA(JCLV)
+                    IAID=IAIA(JCLV)
                     GO TO 105
 10053             CONTINUE
                     IF (J.EQ.1) GO TO 105
@@ -556,7 +560,12 @@ C
 C
 10068   CONTINUE
 C
-        IF (.NOT.(NPLS.GE.MPLS)) GO TO 10073
+        NPLS=NPLS+1
+        RWRK(IR01     +NPLS)=XCVU
+        RWRK(IR01+MPLS+NPLS)=YCVU
+C
+        IF (.NOT.(NPLS.GE.MPLS.OR.(NPLS.GT.1.AND.IAID.NE.IAIC)))
+     +  GO TO 10073
           XSAV=RWRK(IR01     +NPLS)
           YSAV=RWRK(IR01+MPLS+NPLS)
           IJMP=3
@@ -570,11 +579,8 @@ C
           NPLP=1
 10073   CONTINUE
 C
-        NPLS=NPLS+1
-        RWRK(IR01     +NPLS)=XCVU
-        RWRK(IR01+MPLS+NPLS)=YCVU
+  108   IAIC=IAID
 C
-  108 CONTINUE
       GO TO (10028,10035) , L10029
 C
       END

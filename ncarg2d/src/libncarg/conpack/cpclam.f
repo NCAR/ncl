@@ -1,5 +1,5 @@
 C
-C $Id: cpclam.f,v 1.4 1994-09-12 22:10:18 kennison Exp $
+C $Id: cpclam.f,v 1.5 1995-04-19 17:04:52 kennison Exp $
 C
       SUBROUTINE CPCLAM (ZDAT,RWRK,IWRK,IAMA)
 C
@@ -228,11 +228,11 @@ C
               RWRK(IRW2+I)=CUFY(RWRK(IRW2+I))
               IF (ICFELL('CPCLAM',17).NE.0) RETURN
 10006       CONTINUE
-            CALL CPTROE (RWRK(IRW1+1),RWRK(IRW2+1),NRWK,+.001,RWKL,
-     +                            IOCF,IAMA,IGCL,IAIA(259),IAIC)
+            CALL CPTROE (RWRK(IRW1+1),RWRK(IRW2+1),NRWK,+.0005,RWKL,
+     +                             IOCF,IAMA,IGCL,IAIA(259),IAIC)
             IF (ICFELL('CPCLAM',18).NE.0) RETURN
-            CALL CPTROE (RWRK(IRW1+1),RWRK(IRW2+1),NRWK,-.001,RWKR,
-     +                            IOCF,IAMA,IGCL,IAIA(259),IAIC)
+            CALL CPTROE (RWRK(IRW1+1),RWRK(IRW2+1),NRWK,-.0005,RWKR,
+     +                             IOCF,IAMA,IGCL,IAIA(259),IAIC)
             IF (ICFELL('CPCLAM',19).NE.0) RETURN
           GO TO 10004
 10005     CONTINUE
