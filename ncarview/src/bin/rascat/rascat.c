@@ -1,6 +1,6 @@
 
 /*
- *      $Id: rascat.c,v 1.4 1992-03-30 17:27:13 clyne Exp $
+ *      $Id: rascat.c,v 1.5 1992-03-30 20:31:37 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -179,7 +179,8 @@ main(argc, argv)
 	char		*Comment = "Created by rascat";
 	char		*arg;
 	Raster		*src, *dst;
-	int		frame = 0;	/* num frames processed		*/
+	int		frame = 1;	/* num frames processed		*/
+	int		src_frame;	/* current source frame		*/
 	int		rc;		/* return codes			*/
 	int		nX, nY;		/* source dimension		*/
 	RasterEncoding	rasterType;	/* source encoding type		*/
@@ -200,7 +201,7 @@ main(argc, argv)
 
 	if (ParseOptionTable(&argc, argv, set_options) < 0) {
 		fprintf(
-			stderr, "%s : Error parsing options - %s\n", 
+			stderr, "%s : Error parsing options : %s\n", 
 			progName, ErrGetMsg()
 		);
 		exit(1);
@@ -211,7 +212,7 @@ main(argc, argv)
 	 */
 	if (GetOptions(get_options) < 0) {
 		fprintf(
-			stderr, "%s : Error getting options - %s\n", 
+			stderr, "%s : Error getting options : %s\n", 
 			progName, ErrGetMsg()
 		);
 		Usage(NULL);
@@ -247,7 +248,7 @@ main(argc, argv)
 	for(i=1; i<argc; i++) {
 		if (*argv[i] == '-') {
 			fprintf(
-				stderr, "%s: Invalid option - %s\n", 
+				stderr, "%s: Invalid option : %s\n", 
 				progName, argv[i]
 			);
 			Usage(NULL);
@@ -269,6 +270,7 @@ main(argc, argv)
 	dst = (Raster *) NULL;
 	err = 0;
 	for(i=0; i<rcount; i++) {
+		src_frame = 1;
 
 		/* Open the source file and read the header. */
 
@@ -421,8 +423,10 @@ main(argc, argv)
 
 			if (opt.do_verbose) {
 				fprintf(
-					stderr, "Copied frame %5d to %s\n", 
-					frame++, opt.dstfile
+					stderr, 
+					"Copied frame %s[%d] to %s[%d]\n", 
+					rfiles[i], src_frame++, 
+					opt.dstfile, frame++
 				);
 			}
 		
