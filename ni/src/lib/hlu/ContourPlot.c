@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.90 1999-06-23 16:18:47 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.91 1999-10-20 23:53:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2339,7 +2339,6 @@ static NhlErrorTypes ContourPlotSetValues
 	/* Note that both ManageLegend and ManageLabelBar add to sargs */
 	NhlSArg			sargs[128];
 	int			nargs = 0;
-	int			view_args = 0;
 
 	if (cnew->view.use_segments != cold->view.use_segments) {
 		cnp->new_draw_req = True;
@@ -3049,7 +3048,6 @@ static NhlErrorTypes cnInitDraw
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
 	NhlTransformLayerPart	*tfp = &(cnl->trans);
 	int m,n;
@@ -3196,13 +3194,12 @@ static NhlErrorTypes GetDataBound
 	NhlString		entry_name;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
 	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = 
 		(NhlContourPlotLayerPart *) &cl->contourplot;
 	int			status;
 	NhlBoolean		ezmap = False,x_irr = False,y_irr = False;
-	NhlTransformLayerPart	*tfp = &(cl->trans);
 
 #define EPSILON 1e-2
         
@@ -3651,7 +3648,7 @@ static NhlErrorTypes ContourPlotPreDraw
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlString		e_text,entry_name = "ContourPlotPreDraw";
+	NhlString		entry_name = "ContourPlotPreDraw";
 	NhlContourPlotLayer	cnl = (NhlContourPlotLayer) layer;
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
         NhlBoolean		seg_draw;
@@ -3720,7 +3717,7 @@ static NhlErrorTypes ContourPlotDraw
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlContourPlotLayer	cnl = (NhlContourPlotLayer) layer;
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
-	NhlString	e_text,entry_name = "ContourPlotDraw";
+	NhlString	entry_name = "ContourPlotDraw";
         NhlBoolean		seg_draw;
 
 	if (! cnp->data_init || cnp->const_field) {
@@ -3786,7 +3783,7 @@ static NhlErrorTypes ContourPlotPostDraw
 	NhlContourPlotLayer		cnl = (NhlContourPlotLayer) layer;
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
 	NhlTransformLayerPart	*tfp = &cnl->trans;
-	NhlString		e_text,entry_name = "ContourPostPlotDraw";
+	NhlString		entry_name = "ContourPostPlotDraw";
         NhlBoolean		seg_draw;
 
 	Cnp = cnp;
@@ -3873,7 +3870,7 @@ static NhlErrorTypes SetCpParams
 	NhlString	entry_name;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
 	NhlString		*sp;
 	int			i,j;
@@ -4265,7 +4262,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 	NhlString	entry_name;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
 	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = 
 		(NhlContourPlotLayerPart *) &cl->contourplot;
@@ -4275,6 +4272,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 	int			xrev,yrev;
 	float			xa[5],ya[5];
 
+#define _cnBBOXGID 3
 #if 0
 #define _cnMAPBOUNDINC	3700
 #endif
@@ -4298,6 +4296,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 		float txmin,txmax,tymin,tymax;
 		float gxmin,gxmax,gymin,gymax;
 		NhlBoolean lbox, rbox, bbox, tbox;
+		float	   xeps,yeps;
 
 		ret = NhlVAGetValues(cnp->trans_obj->base.id,
 				     NhlNtrXMinF,&txmin,
@@ -4353,24 +4352,51 @@ static NhlErrorTypes AddDataBoundToAreamap
 
 		xrev = twlx > twrx;
 		yrev = twby > twuy;
+/*
+ * added a hack to prevent fill dropout in certain cases, where because
+ * of floating point precision issues in the mapping routines, contour
+ * lines were being removed because they didn't quite touch the viewport
+ * edge. Now a very thin rectangle is drawn just to the inside of each
+ * viewport edge in this situation.
+ */
+		xeps = 1e-5 * fabs(twrx-twlx);
+		yeps = 1e-5 * fabs(twuy-twby);
 
 		if (! xrev) {
+			if (gwlx >= twlx && gwlx - twlx < xeps)
+				gwlx = twlx + xeps;
+			if (gwrx <= twrx && twrx - gwrx < xeps)
+				gwrx = twrx - xeps;
 			lbox = gwlx > twlx;
 			rbox = gwrx < twrx;
 		}
 		else {
+			if (gwrx >= twrx && gwrx - twrx < xeps)
+				gwrx = twrx + xeps;
+			if (gwlx <= twlx && twlx - gwlx < xeps)
+				gwlx = twlx - xeps;
 			lbox = gwlx < twlx;
 			rbox = gwrx > twrx;
 		}
 		if (! yrev) {
+			if (gwby >= twby && gwby - twby < xeps)
+				gwby = twby + yeps;
+			if (gwuy <= twuy && twuy - gwuy < yeps)
+				gwuy = twuy - yeps;
 			bbox = gwby > twby;
 			tbox = gwuy < twuy;
 		}
 		else {
+			if (gwuy >= twuy && gwuy - twuy < yeps)
+				gwuy = twuy + yeps;
+			if (gwby <= twby && twby - gwby < yeps)
+				gwby = twby - yeps;
 			bbox = gwby > twby;
 			tbox = gwuy < twuy;
 		}
+
 		if (lbox) {
+				
 			xa[0] = xa[1] = xa[4] = twlx;
 			xa[2] = xa[3] = gwlx;
 			ya[0] = ya[3] = ya[4] = twuy;
@@ -4378,10 +4404,10 @@ static NhlErrorTypes AddDataBoundToAreamap
 
 			if (! (xrev || yrev) || (xrev && yrev)) 
 				_NhlAredam(cnp->aws,xa,ya,
-					   5,17,9999,0,entry_name);
+					   5,_cnBBOXGID,9999,0,entry_name);
 			else
 				_NhlAredam(cnp->aws,xa,ya,
-					   5,17,0,9999,entry_name);
+					   5,_cnBBOXGID,0,9999,entry_name);
 		}
 		if (rbox) {
 			xa[0] = xa[1] = xa[4] = gwrx;
@@ -4390,10 +4416,10 @@ static NhlErrorTypes AddDataBoundToAreamap
 			ya[1] = ya[2] = twby;
 			if (! (xrev || yrev) || (xrev && yrev)) 
 				_NhlAredam(cnp->aws,xa,ya,
-					   5,17,9999,0,entry_name);
+					   5,_cnBBOXGID,9999,0,entry_name);
 			else
 				_NhlAredam(cnp->aws,xa,ya,
-					   5,17,0,9999,entry_name);
+					   5,_cnBBOXGID,0,9999,entry_name);
 		}
 		if (bbox) {
 			xa[0] = xa[1] = xa[4] = gwlx;
@@ -4402,10 +4428,10 @@ static NhlErrorTypes AddDataBoundToAreamap
 			ya[1] = ya[2] = twby;
 			if (! (xrev || yrev) || (xrev && yrev)) 
 				_NhlAredam(cnp->aws,xa,ya,
-					   5,17,9999,0,entry_name);
+					   5,_cnBBOXGID,9999,0,entry_name);
 			else
 				_NhlAredam(cnp->aws,xa,ya,
-					   5,17,0,9999,entry_name);
+					   5,_cnBBOXGID,0,9999,entry_name);
 		}
 		if (tbox) {
 			xa[0] = xa[1] = xa[4] = gwlx;
@@ -4414,10 +4440,10 @@ static NhlErrorTypes AddDataBoundToAreamap
 			ya[1] = ya[2] = gwuy;
 			if (! (xrev || yrev) || (xrev && yrev)) 
 				_NhlAredam(cnp->aws,xa,ya,
-					   5,17,9999,0,entry_name);
+					   5,_cnBBOXGID,9999,0,entry_name);
 			else
 				_NhlAredam(cnp->aws,xa,ya,
-					   5,17,0,9999,entry_name);
+					   5,_cnBBOXGID,0,9999,entry_name);
 		}
 	}
 	else {
@@ -4946,8 +4972,6 @@ static NhlErrorTypes InitCoordBounds
 	NhlErrorTypes	ret = NhlNOERROR;
         NhlContourPlotLayerPart	*cnp = &cl->contourplot;
         NhlTransformLayerPart	*tfp = &cl->trans;
-	char		*e_text;
-	NhlBoolean	x_data_reversed,y_data_reversed;
 
 	cnp->do_low_level_log = False;
         cnp->use_irr_trans = False;
@@ -4975,9 +4999,6 @@ static NhlErrorTypes InitCoordBounds
                 return ret;
 	}
         
-	x_data_reversed = cnp->sfp->x_start > cnp->sfp->x_end;
-	y_data_reversed = cnp->sfp->y_start > cnp->sfp->y_end;
-
         tfp->data_xstart = cnp->sfp->x_start;
         tfp->data_xend = cnp->sfp->x_end;
         tfp->data_ystart = cnp->sfp->y_start;
@@ -4997,7 +5018,6 @@ static NhlErrorTypes InitCoordBounds
                 if (cnp->sfp->x_arr && tfp->x_axis_type != NhlIRREGULARAXIS) {
                         tfp->data_xstart = cnp->sfp->ix_start;
                         tfp->data_xend = cnp->sfp->ix_end;
-			x_data_reversed = False;
                 }
                 if (cnp->sfp->y_arr && ! tfp->y_axis_type_set) {
 			if (! cnp->osfp || (cnp->data_changed  &&
@@ -5009,7 +5029,6 @@ static NhlErrorTypes InitCoordBounds
                 if (cnp->sfp->y_arr && tfp->y_axis_type != NhlIRREGULARAXIS) {
                         tfp->data_ystart = cnp->sfp->iy_start;
                         tfp->data_yend = cnp->sfp->iy_end;
-			y_data_reversed = False;
                 }
         }
         
@@ -5053,7 +5072,6 @@ static NhlErrorTypes SetUpLLTransObj
 	char			*e_text;
 	char			*entry_name;
 	NhlContourPlotLayerPart	*cnp = &(cnew->contourplot);
-	NhlContourPlotLayerPart	*ocnp = &(cold->contourplot);
 	NhlTransformLayerPart	*tfp = &(cnew->trans);
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
@@ -5928,13 +5946,10 @@ static NhlErrorTypes ManageTickMarks
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR;
-	char			*entry_name;
 	NhlContourPlotLayerPart	*cnp = &(cnnew->contourplot);
 	NhlContourPlotLayerPart	*ocnp = &(cnold->contourplot);
 	NhlTransformLayerPart	*tfp = &(cnnew->trans);
 
-	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
-        
  	if (! tfp->plot_manager_on)
 		return NhlNOERROR;
 
@@ -5991,13 +6006,10 @@ static NhlErrorTypes ManageTitles
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR;
-	char			*entry_name;
 	NhlContourPlotLayerPart	*cnp = &(cnnew->contourplot);
 	NhlContourPlotLayerPart	*ocnp = &(cnold->contourplot);
 	NhlTransformLayerPart	*tfp = &(cnnew->trans);
 
-	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
-        
  	if (! tfp->plot_manager_on)
 		return NhlNOERROR;
 
@@ -8177,12 +8189,9 @@ static NhlErrorTypes    ManageViewDepResources
 
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name;
 	NhlContourPlotLayer		cnew = (NhlContourPlotLayer) new;
 	NhlContourPlotLayerPart	*cnp = &(cnew->contourplot);
 	NhlContourPlotLayer		cold = (NhlContourPlotLayer) old;
-
-	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
 /* Adjust line dash segment length */
 
@@ -10077,7 +10086,7 @@ int (_NHLCALLF(hlucpfill,HLUCPFILL))
 #if 0
 		printf("i %d iai %d iag %d\n",i,iai[i],iag[i]);
 #endif
-		if (iag[i] == 17 && iai[i] == 9999) {
+		if (iai[i] == 9999) {
 			return 0;
 		}
 		if (iag[i] == 5 && iai[i] == -1) {
@@ -10922,17 +10931,11 @@ NhlErrorTypes _NhlRasterFill
 {
 	NhlErrorTypes	ret = NhlNOERROR;
 	char		*e_text;
-	float		fl,fr,fb,ft,wl,wr,wb,wt;
-	int		ll;
-	int		start = 1;
-	Gint		err_ind;
-	Gclip		clip_ind_rect;
 	float		xc1,xcm,yc1,ycn;
 	float		xmn,xmx,ymn,ymx;
 	int		i,j,k,izd1,izdm,izdn,indx,indy,icaf,map,iaid;
 	float		xccf,xccu,xccd,xcci,yccf,yccu,yccd,ycci;
 	float		zval,orv,spv;
-	NhlBoolean	out_of_range;
         float		*levels;
 
         if (Cnp == NULL) {
@@ -10986,13 +10989,11 @@ NhlErrorTypes _NhlRasterFill
 				  ((ycqf-ycpf)/(float)ican);
 			yccu = c_cfuy(yccf);
 			
-			out_of_range = False;
 			(_NHLCALLF(hlucpmpxy,HLUCPMPXY))
 				(&map,&xccu,&yccu,&xccd,&yccd);
 			if (xccd == orv ||
 			    xccd < xmn || xccd > xmx || 
 			    yccd < ymn || yccd > ymx) {
-				out_of_range = True;
 				iaid = 97;
 			}
 			else {
@@ -11027,7 +11028,7 @@ NhlErrorTypes _NhlRasterFill
 		}
 	}
 
-	return NhlNOERROR;
+	return ret;
 }
 
 
