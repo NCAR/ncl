@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rascat.m,v 1.8 1993-02-20 00:36:26 clyne Exp $
+.\"	$Id: rascat.m,v 1.9 1993-03-01 18:54:18 clyne Exp $
 .\"
 .TH RASCAT 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
@@ -219,8 +219,12 @@ is extracted and written to the file
 .IP
 % rascat -window 512 512 0 0 foo.sun > foo.512x512.sun
 .SH "SEE ALSO"
-.BR ras_palette(5NCARG),
-.BR ras_formats(5NCARG)
+.BR rasgetpal(1NCARG),
+.BR rasls(1NCARG),
+.BR rassplit(1NCARG),
+.BR rasview(1NCARG),
+.BR ras_formats(5NCARG),
+.BR ras_palette(5NCARG)
 .br
 .ne 5
 .SH CAVEATS
