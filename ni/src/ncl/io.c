@@ -283,7 +283,13 @@ int _nclfprintf_pager
 	int n;
 	int id,status;
 
+#if     defined(SunOS) && (MAJOR == 4)
+	vsprintf(buffer,fmt,ap);
+	n = strlen(buffer) + 1;
+#else
 	n = vsprintf(buffer,fmt,ap);
+#endif
+
 	ret = write(fileno(fp),(void*)buffer,n);
 	if(ret < 0) {
 		_NclSetPrintFunc(vfprintf);
@@ -335,6 +341,7 @@ void _NclStartCmdLinePager
 	int id;
 	char *pager =NULL;
 	char *arg0 = NULL;
+	int tmp = 1;
 
 	
 	ret = pipe(fildes);
@@ -360,6 +367,9 @@ void _NclStartCmdLinePager
 				arg0++;
 			}
 		}
+/*
+		while(tmp == 1);
+*/
 		execlp(pager,arg0,NULL);
 		close(new_pipe_fd);
 		exit(0);
