@@ -1,5 +1,5 @@
 /*
- *      $Id: nm01c.c,v 1.1 1997-12-15 18:24:45 haley Exp $
+ *      $Id: nm01c.c,v 1.2 1997-12-15 22:53:56 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -104,7 +104,7 @@ main(int argc, char *argv[])
 	for( i = 0; i < NumYOut; i++ ) {
 	  yo[i] = i * yc;
 	}
-	out = c_natgrids(Npts, x, y, z, NumXOut, NumYOut, xo, yo ,&ier);
+	out = c_natgrids(Npts, y, x, z, NumXOut, NumYOut, xo, yo ,&ier);
 /*
  * Get Workstation ID.
  */
@@ -118,10 +118,6 @@ main(int argc, char *argv[])
 	gactivate_ws (gkswid);
 	drwsrfc(gkswid,NumXOut,NumYOut,xo,yo,out,15.,-25.,90.);
 	gdeactivate_ws (gkswid);
-/*
- * Advance the frame.
- */
-    NhlFrame(wid);
 /*
  * NhlDestroy destroys the given id and all of its children.
  */
@@ -163,7 +159,7 @@ void drwsrfc (int WKID, int nx, int ny, float *x, float *y, float *z,
     float xmn, xmx, ymn, ymx, zmn, zmx, eye[6];
     int i, j, *iwk;
 
-	iwk = (int *)malloc(nx*ny*sizeof(int));
+	iwk = (int *)malloc(2*nx*ny*sizeof(int));
 
 	colval.rgb.red = 1.;
 	colval.rgb.green = 1.;
