@@ -144,7 +144,7 @@ in front (e.g. use "hdf", not ".hdf").
 .if \n(83<\n(38 .nr 83 \n(38
 .nr 38 \wYes
 .if \n(83<\n(38 .nr 83 \n(38
-.nr 38 \wYes
+.nr 38 \wNo
 .if \n(83<\n(38 .nr 83 \n(38
 .nr 38 \wYes
 .if \n(83<\n(38 .nr 83 \n(38
@@ -256,7 +256,7 @@ in front (e.g. use "hdf", not ".hdf").
 .ta \n(80u \n(81u \n(82u \n(83u \n(84u 
 .nr 31 \n(.f
 .nr 35 1m
-\&\h'|\n(40u'Sun(.sun)\h'|\n(41u'Direct-24\h'|\n(42u'Yes\h'|\n(43u'Yes\h'|\n(44u'In
+\&\h'|\n(40u'Sun(.sun)\h'|\n(41u'Direct-24\h'|\n(42u'Yes\h'|\n(43u'No\h'|\n(44u'In
 .ta \n(80u \n(81u \n(82u \n(83u \n(84u 
 .nr 31 \n(.f
 .nr 35 1m
