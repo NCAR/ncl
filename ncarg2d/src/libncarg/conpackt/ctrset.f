@@ -1,5 +1,5 @@
 C
-C $Id: ctrset.f,v 1.1 2003-05-28 15:44:33 kennison Exp $
+C $Id: ctrset.f,v 1.2 2003-08-19 21:07:01 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -150,7 +150,7 @@ C
       LINS=5
       LINU=0
       LIWM=10
-      LRWC=100
+      LRWC=1000
       LRWM=100
       LRWG=1000
       LTCF=31

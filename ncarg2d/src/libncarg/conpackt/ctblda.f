@@ -1,5 +1,5 @@
 C
-C $Id: ctblda.f,v 1.1 2003-05-28 15:44:27 kennison Exp $
+C $Id: ctblda.f,v 1.2 2003-08-19 21:07:01 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -572,7 +572,7 @@ C will be required, LRWC for X coordinates and LRWC for Y coordinates.
 C If line smoothing is turned on, 7*LRWC words will be required, 2*LRWC
 C for X and Y coordinates and 5*LRWC for various scratch arrays.
 C
-      DATA LRWC / 100 /
+      DATA LRWC / 1000 /
 C
 C LRWG is the parameter 'RWG', the number of words to be used in the
 C real workspace array for gradients required by the penalty scheme for
