@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.35 1997-07-25 21:12:30 dbrown Exp $
+ *      $Id: Resources.c,v 1.36 1997-07-31 22:16:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,14 @@
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/AppI.h>
+
+
+extern int
+_NhlInitAllResources(
+#if	NhlNeedProto
+	NhlClass	lc
+#endif
+        );
 
 /*
  * Static vars used to determine resoureces hard-coded defaults
@@ -1226,6 +1234,9 @@ _NhlGetResInfo
 	if(nrmres)
 		return nrmres;
 
+        if (lc->base_class.class_inited & _NhlObjClassFlag)
+                return NULL;
+        
 	chld = lc->base_class.child_resources;
 	while(chld){
 
@@ -1238,12 +1249,67 @@ _NhlGetResInfo
 	return NULL;
 }
 
-extern int
-_NhlInitAllResources(
-#if	NhlNeedProto
-	NhlClass	lc
-#endif
-        );
+/*
+ * Function:	_NhlGetNativeResInfo
+ *
+ * Description:	For resources that are intercepted by a parent, this
+ * function finds the class that ultimately defines the resource. It fills
+ * an NrmResource * array with the res info from each class that defines a
+ * resource for itself, rather than intercept it from a child. In most
+ * cases only one child class defines a particular resource, but in a few
+ * situations more than one child defines the resource. At present no more
+ * than two children define any top level resource in the HLU library, but
+ * that could change eventually.
+ *
+ * Storage for the NrmResource * array must be allocated by the caller.
+ * 2 elements are enough for now but more would be safer.
+ * Since the routine is recursive, the count parameter which returns the
+ * number of children defining the resource must be pre-initialized to 0
+ * by the caller.
+ *
+ * In Args:	
+ *		NhlClass	lc	top level class with intercepted res.
+ *		NrmQuark	res	intercepted resource
+ *
+ * Out Args:	
+ *              int *           count   number of classes defining resource:
+ *                                     	MUST BE PRE-INITIALIZED TO 0.
+ *              NrmResource **  native_res  array of NrmResource *'s:
+ *					MUST CONTAIN AEDEQUATE STORAGE.
+ *              Note there are no checks to ensure that storage is
+ *              aedequate or that count is properly intiialized.
+ *
+ * Scope:	Global Private
+ * Returns:	NhlBoolean
+ * Side Effect:	
+ */
+
+void _NhlGetNativeResInfo
+(
+        NhlClass class,
+        NrmName  res,
+        int	 *count,
+        NrmResource **native_res
+        )
+{
+        _NhlChildResList chld = class->base_class.child_resources;
+
+        while (chld) {
+                NrmResource *chld_res = _NhlGetResInfo(chld->class,res);
+                if (chld_res) {
+                        if (chld_res->res_info & _NhlRES_INTERCEPTED) {
+                                _NhlGetNativeResInfo
+                                        (chld->class,res,count,native_res);
+                        }
+                        else {
+                                native_res[*count] = chld_res;
+                                (*count)++;
+                        }
+                }
+                chld = chld->next;
+        }
+        return;
+}
 
 
 static int

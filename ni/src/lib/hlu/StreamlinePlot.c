@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.30 1997-07-25 21:12:33 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.31 1997-07-31 22:16:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -262,55 +262,62 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
 		 Oset(x_min),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(x_max_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
 		 Oset(x_max),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
 	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_log),NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
+		Oset(x_log),NhlTImmediate,_NhlUSET((NhlPointer)False),
+          	_NhlRES_INTERCEPTED,NULL},
 	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_reverse),
-		  NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
+		Oset(x_reverse),NhlTImmediate,
+          	_NhlUSET((NhlPointer)False),_NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(y_min_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
 		Oset(y_min),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(y_max_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
 		Oset(y_max),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
 	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_log),NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
+		Oset(y_log),NhlTImmediate,_NhlUSET((NhlPointer)False),
+          	_NhlRES_INTERCEPTED,NULL},
 	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(y_reverse),
-		NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)False),
+          	_NhlRES_INTERCEPTED,NULL},
 
 	{ NhlNpmLabelBarDisplayMode,NhlCpmLabelBarDisplayMode,
 		 NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		 Oset(display_labelbar),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlNOCREATE),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlNOCREATE),
+          	 _NhlRES_INTERCEPTED,NULL},
 	{NhlNpmLegendDisplayMode,NhlCpmLegendDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_legend),
-		  NhlTImmediate,_NhlUSET((NhlPointer) NhlNOCREATE),0,NULL},
+		  NhlTImmediate,_NhlUSET((NhlPointer) NhlNOCREATE),
+         	  _NhlRES_INTERCEPTED,NULL},
 	{NhlNpmTickMarkDisplayMode,NhlCpmTickMarkDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_tickmarks),
-		  NhlTImmediate,_NhlUSET((NhlPointer) NhlCONDITIONAL),0,NULL},
+		  NhlTImmediate,_NhlUSET((NhlPointer) NhlCONDITIONAL),
+         	  _NhlRES_INTERCEPTED,NULL},
 	{NhlNpmTitleDisplayMode,NhlCpmTitleDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_titles),
-		  NhlTImmediate,_NhlUSET((NhlPointer) NhlCONDITIONAL),0,NULL},
+		  NhlTImmediate,_NhlUSET((NhlPointer) NhlCONDITIONAL),
+         	  _NhlRES_INTERCEPTED,NULL},
 	{ NhlNpmUpdateReq,NhlCpmUpdateReq,NhlTInteger,sizeof(int),
 		  Oset(update_req),
 		  NhlTImmediate,_NhlUSET((NhlPointer) False),
@@ -1179,6 +1186,24 @@ StreamlinePlotClassPartInitialize
 		return(NhlFATAL);
 	}
 
+	subret = _NhlRegisterChildClass(lc,NhllogLinTransObjClass,
+					False,True,NULL);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error registering %s";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhllogLinTransObjClass");
+		return(NhlFATAL);
+	}
+        
+        subret = _NhlRegisterChildClass(lc,NhlirregularTransObjClass,
+					False,True,NULL);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error registering %s";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhlirregularTransObjClass");
+		return(NhlFATAL);
+	}
+        
 	subret = _NhlRegisterDataRes((NhlDataCommClass)lc,
 				     NhlNstVectorFieldData,
 				     NULL,

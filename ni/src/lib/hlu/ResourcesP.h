@@ -1,5 +1,5 @@
 /*
- *      $Id: ResourcesP.h,v 1.16 1997-07-25 21:12:31 dbrown Exp $
+ *      $Id: ResourcesP.h,v 1.17 1997-07-31 22:16:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -50,7 +50,7 @@ typedef NhlErrorTypes (*NrmResourceDefaultProc)(
 );
 
 /*
- * The class MUST be initialized before this is called!
+ * The class MUST be initialized before either of these is called!
  */
 extern NrmResource *
 _NhlGetResInfo(
@@ -59,6 +59,15 @@ _NhlGetResInfo(
 	NrmQuark	res
 #endif
 );
+
+extern void _NhlGetNativeResInfo(
+#if	NhlNeedProto
+        NhlClass class,
+        NrmName  res,
+        int	 *count,
+        NrmResource **native_res
+#endif
+        );
 
 /*
  * This will initialize the class if necessary

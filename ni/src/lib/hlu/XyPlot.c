@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.69 1997-07-25 21:13:04 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.70 1997-07-31 22:16:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -238,9 +238,11 @@ static NhlResource resources[] = {
 		(NhlPointer)NULL,_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
 
 	{NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_reverse),NhlTImmediate,False,_NhlRES_DEFAULT,NULL},
+		Oset(x_reverse),NhlTImmediate,False,
+         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 	{NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_reverse),NhlTImmediate,False,_NhlRES_DEFAULT,NULL},
+		Oset(y_reverse),NhlTImmediate,False,
+         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(comp_x_min_set),
 		NhlTImmediate,(NhlPointer)True,
@@ -285,13 +287,17 @@ static NhlResource resources[] = {
          	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 
 	{NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),Oset(x_min),
-		NhlTProcedure,(NhlPointer)ResUnset,_NhlRES_DEFAULT,NULL},
+		NhlTProcedure,(NhlPointer)ResUnset,
+         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 	{NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),Oset(x_max),
-		NhlTProcedure,(NhlPointer)ResUnset,_NhlRES_DEFAULT,NULL},
+		NhlTProcedure,(NhlPointer)ResUnset,
+         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 	{NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),Oset(y_max),
-		NhlTProcedure,(NhlPointer)ResUnset,_NhlRES_DEFAULT,NULL},
+		NhlTProcedure,(NhlPointer)ResUnset,
+         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 	{NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),Oset(y_min),
-		NhlTProcedure,(NhlPointer)ResUnset,_NhlRES_DEFAULT,NULL},
+		NhlTProcedure,(NhlPointer)ResUnset,
+         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 
 /*
  * These resources have not been implimented yet.
@@ -321,15 +327,18 @@ static NhlResource resources[] = {
 	{NhlNpmTitleDisplayMode,NhlCpmTitleDisplayMode,
 		NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		Oset(display_titles),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlCONDITIONAL),_NhlRES_DEFAULT,NULL},
+		_NhlUSET((NhlPointer)NhlCONDITIONAL),
+         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 	{NhlNpmTickMarkDisplayMode,NhlCpmTickMarkDisplayMode,
 		NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		Oset(display_tickmarks),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlCONDITIONAL),_NhlRES_DEFAULT,NULL},
+		_NhlUSET((NhlPointer)NhlCONDITIONAL),
+         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 	{NhlNpmLegendDisplayMode,NhlCpmLegendDisplayMode,
 		NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		Oset(display_legend),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlNEVER),_NhlRES_DEFAULT,NULL},
+		_NhlUSET((NhlPointer)NhlNEVER),
+         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 	{_NhlNxyDSpecChanged,_NhlCxyDSpecChanged,NhlTBoolean,
 		 sizeof(NhlBoolean),
 		 Oset(dspec_changed),NhlTImmediate,NULL,
@@ -853,11 +862,13 @@ XyPlotClassPartInitialize
 {
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlErrorTypes lret = NhlNOERROR;
+	char		*e_text;
+	char		*entry_name = "XyPlotClassPartInitialize";
 
 	/*
 	 * Register children objects
 	 */
-	ret = _NhlRegisterChildClass(lc,NhlplotManagerClass,False,False,
+	lret = _NhlRegisterChildClass(lc,NhlplotManagerClass,False,False,
 			NhlNlgDashIndex,NhlNlgDashIndexes,NhlNlgItemCount,
 			NhlNlgItemType,NhlNlgItemTypes,NhlNlgLabelStrings,
 			NhlNlgLineColor,NhlNlgLineColors,NhlNlgLineDashSegLenF,
@@ -882,6 +893,32 @@ XyPlotClassPartInitialize
 			NhlNpmLabelBarDisplayMode,
 			NULL);
 
+	if ((ret = MIN(ret,lret)) < NhlWARNING) {
+		e_text = "%s: error registering %s";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhlplotManagerClass");
+		return(NhlFATAL);
+	}
+
+
+	lret = _NhlRegisterChildClass(lc,NhllogLinTransObjClass,
+					False,True,NULL);
+	if ((ret = MIN(ret,lret)) < NhlWARNING) {
+		e_text = "%s: error registering %s";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhllogLinTransObjClass");
+		return(NhlFATAL);
+	}
+        
+        lret = _NhlRegisterChildClass(lc,NhlirregularTransObjClass,
+					False,True,NULL);
+	if ((ret = MIN(ret,lret)) < NhlWARNING) {
+		e_text = "%s: error registering %s";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhlirregularTransObjClass");
+		return(NhlFATAL);
+	}
+
 	/*
 	 * Register Data Resources
 	 */
@@ -889,7 +926,14 @@ XyPlotClassPartInitialize
 	lret = _NhlRegisterDataRes((NhlDataCommClass)lc,NhlNxyCoordData,
 			NhlNxyCoordDataSpec,NhlxyDataSpecClass,
 			NhlcoordArrTableFloatClass,NULL);
-	return MIN(lret,ret);
+        
+	if ((ret = MIN(ret,lret)) < NhlWARNING) {
+		e_text = "%s: error registering data resource %s";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhlcoordArrTableFloatClass");
+		return(NhlFATAL);
+	}
+	return ret;
 }
 
 /*
