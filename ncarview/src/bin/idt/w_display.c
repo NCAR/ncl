@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.21 1993-10-15 15:17:54 clyne Exp $
+ *	$Id: w_display.c,v 1.22 1996-01-18 14:40:49 boote Exp $
  */
 /*
  *	w_display.c
@@ -34,6 +34,7 @@
 
 #include <ncarg/c.h>
 #include "idt.h"
+#include "w_dialog.h"
 #include "display.h"
 #include "talkto.h"
 #include "bits.h"
@@ -232,7 +233,7 @@ static  void    Loop(widget, client_data, call_data)
 }
 
 void	DupSelect(data, value)
-	Voidptr	*data;
+	Voidptr	data;
 	char	*value;
 {
 	WidgetData	*wd = (WidgetData *) data;
@@ -267,7 +268,7 @@ static  void    Scroll(widget, client_data, call_data)
 }
 
 void	GotoSelect(data, value)
-	Voidptr	*data;
+	Voidptr	data;
 	char	*value;
 {
 	WidgetData	*wd = (WidgetData *) data;
@@ -297,7 +298,7 @@ static  void    Goto_(widget, client_data, call_data)
 }
 
 void	SkipSelect(data, value)
-	Voidptr	*data;
+	Voidptr	data;
 	char	*value;
 {
 	WidgetData	*wd = (WidgetData *) data;
@@ -320,7 +321,7 @@ static  void    Skip(widget, client_data, call_data)
 }
 
 void	DelaySelect(data, value)
-	Voidptr	*data;
+	Voidptr	data;
 	char	*value;
 {
 	WidgetData	*wd = (WidgetData *) data;
@@ -345,7 +346,7 @@ static  void    Delay(widget, client_data, call_data)
 }
 
 void	StartSegmentSelect(data, value)
-	Voidptr	*data;
+	Voidptr	data;
 	char	*value;
 {
 	WidgetData	*wd = (WidgetData *) data;
@@ -370,7 +371,7 @@ static  void    Start_Segment(widget, client_data, call_data)
 }
 
 void	StopSegmentSelect(data, value)
-	Voidptr	*data;
+	Voidptr	data;
 	char	*value;
 {
 	WidgetData	*wd = (WidgetData *) data;
@@ -395,7 +396,7 @@ static  void    Stop_Segment(widget, client_data, call_data)
 }
 
 void	SetWindowSelect(data, value)
-	Voidptr	*data;
+	Voidptr	data;
 	char	*value;
 {
 	WidgetData	*wd = (WidgetData *) data;
@@ -486,7 +487,7 @@ static  void    PrintSelect(widget, client_data, call_data)
  *	
  */
 void	SaveSelect(data, value)
-	Voidptr	*data;
+	Voidptr	data;
 	char	*value;
 {
 	WidgetData	*wd = (WidgetData *) data;
@@ -897,6 +898,8 @@ void	create_print_menu(print, wd)
 	}
 }
 
+#ifdef	DEAD
+
 static	Visual	*get_best_8bit_visual(depth, dpy)
 	int	*depth;
 	Display	*dpy;
@@ -932,6 +935,8 @@ static	Visual	*get_best_8bit_visual(depth, dpy)
 	return (DefaultVisual(dpy, screen));
 }
 
+#endif /* DEAD */
+
 
 /*
  *	CreateDisplayPopup
@@ -949,25 +954,31 @@ void	CreateDisplayPopup(button, metafile)
 	char	*metafile;
 {
 
-	Arg		args[10];
 	Widget	paned;		/* constraint widget		*/
 	Widget	canvas;		/* the drawing canvas		*/
 	Widget	popup;		/* top-level popup		*/
 	Widget	print;		/* "print" button widget	*/
-	Cardinal	n;
 	Window	win;		/* drawing canvas window id	*/
 	WidgetData	*wd;
 	char		*s;
+
+#ifdef	DEAD
+	Arg		args[10];
+	Cardinal	n;
 	Visual		*visual;
 	int		dsp_depth;
 	Colormap	cmap;
+#endif	/* DEAD */
 
 	if (!(wd = (WidgetData *) malloc(sizeof(WidgetData)))) {
 		(void) fprintf(stderr, "Malloc failed\n");
 		return;
 	}
 
-	wd->dpy = XtDisplay(button);	
+	wd->dpy = XtDisplay(button);
+
+	/* init some fields */
+	wd->current_frame_num = -1; /* none initially */
 
 #ifdef	DEAD
 	visual = get_best_8bit_visual(&dsp_depth, wd->dpy);

@@ -1,5 +1,5 @@
 /*
- *	$Id: file.c,v 1.11 1994-03-09 01:04:25 clyne Exp $
+ *	$Id: file.c,v 1.12 1996-01-18 14:40:47 boote Exp $
  */
 /*
  *	file.c
@@ -97,6 +97,7 @@ char	*GetFiles(file_filter, longest)
 	 * and stip off path of file
 	 */
 	for (i = 0, *longest = 0; i < file_count; i++) {
+		/*SUPPRESS 624*/
 		s = (s = strrchr(files[i], '/')) ? ++s : files[i];
 		files[i] = s;
 		len = strlen(files[i]);

@@ -1,5 +1,5 @@
 /*
- *	$Id: glob.c,v 1.12 1994-03-09 01:04:26 clyne Exp $
+ *	$Id: glob.c,v 1.13 1996-01-18 14:40:48 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -89,14 +89,13 @@ static	talkto(argv)
 		exit(1);
 
 	}
-	else if (pid > 0) {		/* we're the parent		*/
-
-	}
-
-	else {	/* error	*/
+	else if (pid < 0) {
 		perror((char *) NULL);
 		(void) exit(1);
 	}
+
+	/* we're the parent		*/
+	return;
 }
 /*
  *	glob
@@ -124,7 +123,6 @@ void	glob(string, r_argv, r_argc)
 	static	int	args;	/* memory alloced to argv	*/
 	static	char	inBuf[4*BUFSIZ];
 
-	int	i;
 	char	outbuf[1024];
 	char	*cptr;
 	int	nbytes;
@@ -151,6 +149,7 @@ void	glob(string, r_argv, r_argc)
 		/*
 		 * if using csh then use csh with the fast option, '-f'
 		 */
+		/*SUPPRESS 624*/
 		t = (t = strrchr(shell_argv[0], '/')) ? ++t : shell_argv[0];
 		if ((strcmp(t, "csh") == 0) || (strcmp(t, "tcsh") == 0)) {
 			shell_argv[1] = "-f";
@@ -221,6 +220,7 @@ void	glob(string, r_argv, r_argc)
 	/*
 	 * replace terminating newline with a null terminator
 	 */
+	/*SUPPRESS 624*/
 	if (s = strchr(inBuf, '\n')) {
 		*s = '\0';
 	}

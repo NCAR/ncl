@@ -1,6 +1,6 @@
 
 /*
- *      $Id: animate_cb.c,v 1.4 1993-03-31 15:17:16 clyne Exp $
+ *      $Id: animate_cb.c,v 1.5 1996-01-18 14:40:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -181,7 +181,6 @@ static	int	animate_on(wd)
 static	int	animate_off(wd)
 	WidgetData	*wd;
 {
-	int	i;
 	Arg			args[5];
 
 	Message(wd->id, "Terminating animation mode\n");

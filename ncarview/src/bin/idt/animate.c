@@ -1,5 +1,5 @@
 /*
- *      $Id: animate.c,v 1.5 1993-03-31 15:17:11 clyne Exp $
+ *      $Id: animate.c,v 1.6 1996-01-18 14:40:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -115,7 +115,6 @@ static	int	ap_load(ap, gc, ximage, index)
 	XImage		*ximage;
 	unsigned	index;
 {
-	int		i;
 	Pixmap		pixmap;
 	int		screen = XDefaultScreen(ap->dpy);
 	unsigned int	depth = DisplayPlanes(ap->dpy, screen);
@@ -199,8 +198,6 @@ static	void	ap_display_prev(ap)
 static	int	ap_current_image(ap) 
 	AnimatePixmaps	*ap;
 {
-	int	image_num;
-
 	return(ap->current->whoami);
 }
 

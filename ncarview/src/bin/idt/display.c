@@ -1,5 +1,5 @@
 /*
- *	$Id: display.c,v 1.12 1993-02-09 22:28:56 clyne Exp $
+ *	$Id: display.c,v 1.13 1996-01-18 14:40:47 boote Exp $
  */
 /*
  *	Display.c
@@ -53,6 +53,7 @@ int	OpenDisplay()
         /*
 	 * find a free id
 	 */
+	/*SUPPRESS 570*/
         for(id = 0; id < MAX_DISPLAYS && ((usedMask >> id) & 1); id++);
 
 	numUsed++;
@@ -70,7 +71,6 @@ int	StartTranslator(id, metafile, wid)
 	char	*metafile;
 	int	wid;
 {
-	char	*s;
 	char	widbuf[10];
 
 
@@ -98,7 +98,7 @@ int	StartTranslator(id, metafile, wid)
 	/*
 	 * find out how many frames there are
 	 */
-	if ((s = TalkTo(id, "count\n", SYNC)) == NULL) return (-1);
+	if (TalkTo(id, "count\n", SYNC) == NULL) return (-1);
 
 	return(1);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.23 1995-03-16 23:10:41 haley Exp $
+ *	$Id: talkto.c,v 1.24 1996-01-18 14:40:48 boote Exp $
  */
 /*
  *	talkto.c
@@ -11,6 +11,7 @@
  *	This file handles all communication between idt and ictrans
  */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
 #include <errno.h>
@@ -114,7 +115,6 @@ static	int	get_trans_msg(fp, buf, size)
 	int	i;
 	boolean	done;
 	int	match;
-	int	over;
 
 	for (i=0, s=prompt, done=FALSE, match=0;! done; i++) {
 		c = getc(fp);
@@ -147,6 +147,7 @@ static	int	get_trans_msg(fp, buf, size)
 	if (i >= size) i = size - 1;
 	buf[i] = '\0';
 
+	/*SUPPRESS 624*/
 	if (s = strrchr(buf, '\n')) *s = '\0';
 
 	return(strlen(buf));
@@ -297,8 +298,8 @@ int	OpenTranslator(channel, argv, hfd)
 		(void) close(to_parent[0]);
 
 		(void) sprintf(fd_ascii, "%d", to_parent[1]);
-		for (argptr = argv; *argptr; argptr++)
-			;
+		/*SUPPRESS 570*/
+		for (argptr = argv; *argptr; argptr++);
 
 		*argptr++ = "-fdn";
 		*argptr++ = fd_ascii;
@@ -379,7 +380,6 @@ char	*TalkTo(id, command_string, mode)
 	int	mode;
 {
 	static	char	buf[8192];
-	char	*b, *s;
 	int	pid;
 
 	/*
@@ -513,8 +513,8 @@ void	Message(id, s)
 	/*
 	 * remove any newlines.
 	 */
-	for(t=s; *t && *t != '\n' && (t-s <= max_len); t++)
-		;
+	/*SUPPRESS 570*/
+	for(t=s; *t && *t != '\n' && (t-s <= max_len); t++);
 	*t = '\0';
 
 	(void) sprintf(buf, format, id, s);
@@ -546,8 +546,8 @@ void	ErrorMessage(id, s)
 	/*
 	 * remove any newlines.
 	 */
-	for(t=s; *t && *t != '\n' && (t-s <= max_len); t++)
-		;
+	/*SUPPRESS 570*/
+	for(t=s; *t && *t != '\n' && (t-s <= max_len); t++);
 	*t = '\0';
 
 	(void) sprintf(buf, format, id, s);

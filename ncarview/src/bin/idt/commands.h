@@ -26,4 +26,7 @@
 #define	NOOP_STRING		"Noop\n"
 
 #define	STOP_SIGNAL		SIGINT
+
+extern void Command();
+
 #endif

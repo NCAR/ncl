@@ -12,13 +12,20 @@ extern	void	OkSDTranslation(
 #endif
 );
 
+typedef void (*SelectFunc)(
+#ifdef	NeedFuncProto
+	Voidptr,
+	char*
+#endif
+);
+
 extern	void	CreateSimpleDialogPopup(
 #ifdef	NeedFuncProto
-	Widget	button,
-	char	*label,
-	void	(*select)(Voidptr, char *),
+	Widget		button,
+	char		*label,
+	SelectFunc	select,
 	Voidptr		data,
-	char	*default_value
+	char		*default_value
 #endif
 );
 
