@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.20 1996-04-01 04:21:43 boote Exp $
+ *	$Id: Xcrm.c,v 1.21 1996-05-13 21:24:20 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -127,6 +127,8 @@ static	rgb_2_Xrgb(red, green, blue, Xcolor)
 
 		Xcolor->blue = (unsigned short)	
 			(((float) blue / max_colour) * X_MAX_RGB);
+		Xcolor->flags = DoRed|DoGreen|DoBlue;
+		Xcolor->pad = '\0';
 }
 
 /*
@@ -204,7 +206,9 @@ AllocColor(color,sindx)
 					XStoreColors(dpy,new,colors,MaxXCol);
 					free(colors);
 				}
+				/*
 				free_colors();
+				*/
 				XFreeColormap(dpy,Cmap);
 				Cmap = new;
 				RoCmap = False;
@@ -213,7 +217,7 @@ AllocColor(color,sindx)
 		}
 		MyCmap = True;
 
-		if(win != 0)
+		if(win != None)
 			XSetWindowColormap(dpy,win,Cmap);
 		return AllocColor(color,sindx);
 	}
