@@ -7,12 +7,12 @@ echo written by Mark Stevens, NCAR/CGD/Climate Modeling Section
 echo e-mail: stevens@ucar.edu
 echo "---------------------------------------------------------------------"
 echo "WRAPIT works on SunOS, IRIX64 (Sgi), AIX (IBM), OSF1 (alpha), MacOSX,"
-echo HP-UX, and Linux operating systems. WRAPIT can handle both f77 and f90 
-echo files. The f77 files must have a suffix of ".f", and the f90 files a 
-echo sufix of ".f90", on all of the operating systems. All "f90" files must 
-echo have a corresponding "stub" file which contains the declartion of the 
-echo f90 subroutine in fortran77 syntax, for example in "file1.stub" we 
-echo might have the following:
+echo HP-UX, Linux, and FreeBSD operating systems. WRAPIT can handle both
+echo f77 and f90 files. The f77 files must have a suffix of ".f", and the 
+echo f90 files a suffix of ".f90", on all of the operating systems. All
+echo "f90" files must have a corresponding "stub" file which contains the
+echo declartion of the f90 subroutine in fortran77 syntax, for example in
+echo "file1.stub" we might have the following:
 echo C NCLFORTSTART
 echo "     subroutine DOIT (x, y, z)"
 echo "     real x, y"
@@ -98,7 +98,8 @@ if ($#argv == 0) then                  # check for arguments
 else
   set OS = `uname`
   if ($OS != "SunOS" && $OS != "IRIX64" && $OS != "AIX" && $OS != "Linux" \
-      && $OS != "OSF1" && $OS != "Darwin" && $OS != "HP-UX") then
+      && $OS != "OSF1" && $OS != "Darwin" && $OS != "HP-UX" \
+      && $OS != "FreeBSD") then
     echo WRAPIT IS NOT SUPPORTED ON THE $OS OPERATING SYSTEM 
     exit
   endif
@@ -243,6 +244,14 @@ switch ($OS)
      set fopts = "-c -O -fno-common"
    endif
    breaksw
+ case FreeBSD:                        # FreeBSD
+   set f90c = g77                     
+   if ($debug == 1) then
+     set fopts = "-c -C"
+   else
+     set fopts = "-c -O"
+   endif
+   breaksw
  case HP-UX:                         # HP-UX
    if ($debug == 1) then
      set fopts = "+z -c -C"
@@ -288,6 +297,13 @@ if ($real8 == 1) then
        set fopts = "+z -c -C +r8" 
      else
        set fopts = "+z -c -O +r8" 
+     endif
+     breaksw
+   case FreeBSD:
+     if ($debug == 1) then
+       set fopts = "-c -C"             # g77 (f77)
+     else
+       set fopts = "-c -O"             # g77 (f77)
      endif
      breaksw
    case SunOS:
@@ -377,14 +393,7 @@ switch ($OS)
      cc +z -c -O -I${NCARG_ROOT}/include WRAPIT.c
    endif
    breaksw
- case Linux:
-   if ($debug == 1) then
-     cc -c -I${NCARG_ROOT}/include WRAPIT.c
-   else
-     cc -c -O -I${NCARG_ROOT}/include WRAPIT.c
-   endif
-   breaksw
- default:          # OSF1 or SunOS
+ default:          # OSF1 or SunOS or Linux or FreeBSD
    if ($debug == 1) then
      cc -c -I${NCARG_ROOT}/include WRAPIT.c
    else
@@ -405,7 +414,7 @@ foreach arg ($args)
         else                               # free format
           xlf90 $fopts -qsuffix=f=f90 $arg
         endif
-      else if ($OS == "Linux" || $OS == "Darwin") then  
+      else if ($OS == "Linux" || $OS == "Darwin" || $OS == "FreeBSD") then  
         $f90c $fopts $arg
       else                                # IRIX64, OSF1, SunOS, HP-UX 
         f90 $fopts $arg
@@ -465,6 +474,9 @@ switch ($OS)
    else                         
      ld -shared $ld_suffix      # g77
    endif
+   breaksw
+ case FreeBSD:         # FreeBSD
+     ld -shared $ld_suffix      # g77
    breaksw
  case OSF1:            # OSF1
    f90 -shared $ld_suffix
