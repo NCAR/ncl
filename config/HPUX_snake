@@ -1,5 +1,5 @@
 /*
- *      $Id: HPUX_snake,v 1.8 1996-11-20 16:06:43 haley Exp $
+ *      $Id: HPUX_snake,v 1.9 1998-02-26 21:15:02 haley Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,9 @@
 #define	Cdynamic	-Wl,-a,default
 #define	Cstatic		-Wl,-a,archive
 #define	FCompiler	fort77
+#define COptimizeFlag    +O2
+#define FOptimizeFlag    +O2
+
 #define	ArQuickOpt	ql
 #define DoesRanlib	NO
 #define	CtoFLibraries	-lf -lm

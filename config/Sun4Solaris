@@ -1,5 +1,5 @@
 /*
- *      $Id: Sun4Solaris,v 1.19 1997-10-22 20:29:49 haley Exp $
+ *      $Id: Sun4Solaris,v 1.20 1998-02-26 21:15:04 haley Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,8 @@
 #define	ArchRecLibSearch	-L/usr/local/lib -L/usr/openwin/lib -L/usr/dt/lib
 #define	ArchRecIncSearch	-I/usr/local/include -I/usr/openwin/include -I/usr/dt/include
 
-#define XLibrary -lX11
+#define XLibrary -lX11 -lXext
 #define XmotifLibrary -Bdynamic -lXm -Bstatic
+
+#define UseCatDirs        YES
 

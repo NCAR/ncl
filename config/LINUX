@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX,v 1.7 1997-09-04 15:55:36 boote Exp $
+ *      $Id: LINUX,v 1.8 1998-02-26 21:15:03 haley Exp $
  */
 /************************************************************************
 *									*
@@ -28,15 +28,17 @@
 #define	Cdynamic -Wl,-Bdynamic
 #define	CCompiler	gcc
 #define	FCompiler	g77
-#define	CtoFLibraries	-lf2c
+#define	CtoFLibraries	-Wl,-Bstatic -lf2c -Wl,-Bdynamic -lm
 #define CcOptions       -ansi
 #define FcOptions
 #define COptimizeFlag   
 #define FOptimizeFlag   
 #define XToolLibrary	-lXt -lSM -lICE
+#define BuildShared NO
 
-#define	ArchRecLibSearch	-L/usr/X11/lib -L/usr/local/lib
-#define	ArchRecIncSearch	-I/usr/X11/include -I/usr/local/include
+
+#define	ArchRecLibSearch	-L/usr/X11R6/lib -L/usr/local/lib
+#define	ArchRecIncSearch	-I/usr/X11R6/include -I/usr/local/include
 
 FC = $(F77)
 
