@@ -1,6 +1,6 @@
 MYLIB = liblapack
 
-SRCS = cbdsqr.f cgbbrd.f cgbcon.f cgbequ.f cgbrfs.f cgbsv.f cgbsvx.f \
+SRCS1 = cbdsqr.f cgbbrd.f cgbcon.f cgbequ.f cgbrfs.f cgbsv.f cgbsvx.f \
 	cgbtf2.f cgbtrf.f cgbtrs.f cgebak.f cgebal.f cgebd2.f cgebrd.f \
 	cgecon.f cgeequ.f cgees.f cgeesx.f cgeev.f cgeevx.f cgegs.f cgegv.f \
 	cgehd2.f cgehrd.f cgelq2.f cgelqf.f cgels.f cgelsd.f cgelss.f \
@@ -42,8 +42,9 @@ SRCS = cbdsqr.f cgbbrd.f cgbcon.f cgbequ.f cgbrfs.f cgbsv.f cgbsvx.f \
 	ctzrzf.f cung2l.f cung2r.f cungbr.f cunghr.f cungl2.f cunglq.f \
 	cungql.f cungqr.f cungr2.f cungrq.f cungtr.f cunm2l.f cunm2r.f \
 	cunmbr.f cunmhr.f cunml2.f cunmlq.f cunmql.f cunmqr.f cunmr2.f \
-	cunmr3.f cunmrq.f cunmrz.f cunmtr.f cupgtr.f cupmtr.f dbdsdc.f \
-	dbdsqr.f ddisna.f dgbbrd.f dgbcon.f dgbequ.f dgbrfs.f dgbsv.f \
+	cunmr3.f cunmrq.f cunmrz.f cunmtr.f cupgtr.f cupmtr.f dbdsdc.f
+
+SRCS2 =	dbdsqr.f ddisna.f dgbbrd.f dgbcon.f dgbequ.f dgbrfs.f dgbsv.f \
 	dgbsvx.f dgbtf2.f dgbtrf.f dgbtrs.f dgebak.f dgebal.f dgebd2.f \
 	dgebrd.f dgecon.f dgeequ.f dgees.f dgeesx.f dgeev.f dgeevx.f dgegs.f \
 	dgegv.f dgehd2.f dgehrd.f dgelq2.f dgelqf.f dgels.f dgelsd.f dgelss.f \
@@ -89,8 +90,9 @@ SRCS = cbdsqr.f cgbbrd.f cgbcon.f cgbequ.f cgbrfs.f cgbsv.f cgbsvx.f \
 	dtgevc.f dtgex2.f dtgexc.f dtgsen.f dtgsja.f dtgsna.f dtgsy2.f \
 	dtgsyl.f dtpcon.f dtprfs.f dtptri.f dtptrs.f dtrcon.f dtrevc.f \
 	dtrexc.f dtrrfs.f dtrsen.f dtrsna.f dtrsyl.f dtrti2.f dtrtri.f \
-	dtrtrs.f dtzrqf.f dtzrzf.f dzsum1.f icmax1.f ieeeck.f ilaenv.f \
-	izmax1.f lsame.f lsamen.f sbdsdc.f sbdsqr.f scsum1.f sdisna.f \
+	dtrtrs.f dtzrqf.f dtzrzf.f dzsum1.f icmax1.f ieeeck.f ilaenv.f
+
+SRCS3 =	izmax1.f lsame.f lsamen.f sbdsdc.f sbdsqr.f scsum1.f sdisna.f \
 	second.f sgbbrd.f sgbcon.f sgbequ.f sgbrfs.f sgbsv.f sgbsvx.f \
 	sgbtf2.f sgbtrf.f sgbtrs.f sgebak.f sgebal.f sgebd2.f sgebrd.f \
 	sgecon.f sgeequ.f sgees.f sgeesx.f sgeev.f sgeevx.f sgegs.f sgegv.f \
@@ -137,8 +139,9 @@ SRCS = cbdsqr.f cgbbrd.f cgbcon.f cgbequ.f cgbrfs.f cgbsv.f cgbsvx.f \
 	stgex2.f stgexc.f stgsen.f stgsja.f stgsna.f stgsy2.f stgsyl.f \
 	stpcon.f stprfs.f stptri.f stptrs.f strcon.f strevc.f strexc.f \
 	strrfs.f strsen.f strsna.f strsyl.f strti2.f strtri.f strtrs.f \
-	stzrqf.f stzrzf.f xerbla.f zbdsqr.f zdrot.f zdrscl.f \
-	zgbbrd.f zgbcon.f zgbequ.f zgbrfs.f zgbsv.f zgbsvx.f zgbtf2.f \
+	stzrqf.f stzrzf.f xerbla.f zbdsqr.f zdrot.f zdrscl.f
+
+SRCS4 =	zgbbrd.f zgbcon.f zgbequ.f zgbrfs.f zgbsv.f zgbsvx.f zgbtf2.f \
 	zgbtrf.f zgbtrs.f zgebak.f zgebal.f zgebd2.f zgebrd.f zgecon.f \
 	zgeequ.f zgees.f zgeesx.f zgeev.f zgeevx.f zgegs.f zgegv.f zgehd2.f \
 	zgehrd.f zgelq2.f zgelqf.f zgels.f zgelsd.f zgelss.f zgelsx.f \
@@ -182,7 +185,7 @@ SRCS = cbdsqr.f cgbbrd.f cgbcon.f cgbequ.f cgbrfs.f cgbsv.f cgbsvx.f \
 	zunml2.f zunmlq.f zunmql.f zunmqr.f zunmr2.f zunmr3.f zunmrq.f \
 	zunmrz.f zunmtr.f zupgtr.f zupmtr.f 
 
-OBJS = cbdsqr.o cgbbrd.o cgbcon.o cgbequ.o cgbrfs.o cgbsv.o cgbsvx.o \
+OBJS1 = cbdsqr.o cgbbrd.o cgbcon.o cgbequ.o cgbrfs.o cgbsv.o cgbsvx.o \
 	cgbtf2.o cgbtrf.o cgbtrs.o cgebak.o cgebal.o cgebd2.o cgebrd.o \
 	cgecon.o cgeequ.o cgees.o cgeesx.o cgeev.o cgeevx.o cgegs.o cgegv.o \
 	cgehd2.o cgehrd.o cgelq2.o cgelqf.o cgels.o cgelsd.o cgelss.o \
@@ -224,8 +227,9 @@ OBJS = cbdsqr.o cgbbrd.o cgbcon.o cgbequ.o cgbrfs.o cgbsv.o cgbsvx.o \
 	ctzrzf.o cung2l.o cung2r.o cungbr.o cunghr.o cungl2.o cunglq.o \
 	cungql.o cungqr.o cungr2.o cungrq.o cungtr.o cunm2l.o cunm2r.o \
 	cunmbr.o cunmhr.o cunml2.o cunmlq.o cunmql.o cunmqr.o cunmr2.o \
-	cunmr3.o cunmrq.o cunmrz.o cunmtr.o cupgtr.o cupmtr.o dbdsdc.o \
-	dbdsqr.o ddisna.o dgbbrd.o dgbcon.o dgbequ.o dgbrfs.o dgbsv.o \
+	cunmr3.o cunmrq.o cunmrz.o cunmtr.o cupgtr.o cupmtr.o dbdsdc.o
+
+OBJS2 =	dbdsqr.o ddisna.o dgbbrd.o dgbcon.o dgbequ.o dgbrfs.o dgbsv.o \
 	dgbsvx.o dgbtf2.o dgbtrf.o dgbtrs.o dgebak.o dgebal.o dgebd2.o \
 	dgebrd.o dgecon.o dgeequ.o dgees.o dgeesx.o dgeev.o dgeevx.o dgegs.o \
 	dgegv.o dgehd2.o dgehrd.o dgelq2.o dgelqf.o dgels.o dgelsd.o dgelss.o \
@@ -271,8 +275,9 @@ OBJS = cbdsqr.o cgbbrd.o cgbcon.o cgbequ.o cgbrfs.o cgbsv.o cgbsvx.o \
 	dtgevc.o dtgex2.o dtgexc.o dtgsen.o dtgsja.o dtgsna.o dtgsy2.o \
 	dtgsyl.o dtpcon.o dtprfs.o dtptri.o dtptrs.o dtrcon.o dtrevc.o \
 	dtrexc.o dtrrfs.o dtrsen.o dtrsna.o dtrsyl.o dtrti2.o dtrtri.o \
-	dtrtrs.o dtzrqf.o dtzrzf.o dzsum1.o icmax1.o ieeeck.o ilaenv.o \
-	izmax1.o lsame.o lsamen.o sbdsdc.o sbdsqr.o scsum1.o sdisna.o \
+	dtrtrs.o dtzrqf.o dtzrzf.o dzsum1.o icmax1.o ieeeck.o ilaenv.o
+
+OBJS3 =	izmax1.o lsame.o lsamen.o sbdsdc.o sbdsqr.o scsum1.o sdisna.o \
 	second.o sgbbrd.o sgbcon.o sgbequ.o sgbrfs.o sgbsv.o sgbsvx.o \
 	sgbtf2.o sgbtrf.o sgbtrs.o sgebak.o sgebal.o sgebd2.o sgebrd.o \
 	sgecon.o sgeequ.o sgees.o sgeesx.o sgeev.o sgeevx.o sgegs.o sgegv.o \
@@ -319,8 +324,9 @@ OBJS = cbdsqr.o cgbbrd.o cgbcon.o cgbequ.o cgbrfs.o cgbsv.o cgbsvx.o \
 	stgex2.o stgexc.o stgsen.o stgsja.o stgsna.o stgsy2.o stgsyl.o \
 	stpcon.o stprfs.o stptri.o stptrs.o strcon.o strevc.o strexc.o \
 	strrfs.o strsen.o strsna.o strsyl.o strti2.o strtri.o strtrs.o \
-	stzrqf.o stzrzf.o xerbla.o zbdsqr.o zdrot.o zdrscl.o \
-	zgbbrd.o zgbcon.o zgbequ.o zgbrfs.o zgbsv.o zgbsvx.o zgbtf2.o \
+	stzrqf.o stzrzf.o xerbla.o zbdsqr.o zdrot.o zdrscl.o
+
+OBJS4 =	zgbbrd.o zgbcon.o zgbequ.o zgbrfs.o zgbsv.o zgbsvx.o zgbtf2.o \
 	zgbtrf.o zgbtrs.o zgebak.o zgebal.o zgebd2.o zgebrd.o zgecon.o \
 	zgeequ.o zgees.o zgeesx.o zgeev.o zgeevx.o zgegs.o zgegv.o zgehd2.o \
 	zgehrd.o zgelq2.o zgelqf.o zgels.o zgelsd.o zgelss.o zgelsx.o \
@@ -362,7 +368,8 @@ OBJS = cbdsqr.o cgbbrd.o cgbcon.o cgbequ.o cgbrfs.o cgbsv.o cgbsvx.o \
 	zung2r.o zungbr.o zunghr.o zungl2.o zunglq.o zungql.o zungqr.o \
 	zungr2.o zungrq.o zungtr.o zunm2l.o zunm2r.o zunmbr.o zunmhr.o \
 	zunml2.o zunmlq.o zunmql.o zunmqr.o zunmr2.o zunmr3.o zunmrq.o \
-	zunmrz.o zunmtr.o zupgtr.o zupmtr.o
+	zunmrz.o zunmtr.o zupgtr.o zupmtr.o 
 
-BuildAndInstallLibraryTarget($(MYLIB),$(OBJS))  
- 
+
+BuildAndInstallLibraryTarget($(MYLIB),$(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4))
+
