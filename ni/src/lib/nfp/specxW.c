@@ -204,7 +204,7 @@ NhlErrorTypes specx_anal_W( void )
 /*
  * Allocate space for work array.
  */
-  lwork = 5 * nx + 17 + abs(*jave);
+  lwork = 5 * nx + 18 + abs(*jave);
   work  = (double *)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: Unable to allocate memory for work array");

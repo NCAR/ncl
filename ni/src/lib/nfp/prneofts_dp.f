@@ -65,7 +65,7 @@ c set to msg as default
           END DO
       END DO
 
-c this if added Sept 2004 to allow computation without
+c this if added Sept 2003 to allow computation without
 c removing the mean.
 
       IF (JOPT.EQ.0 .AND. IFLAG.EQ.1) GO TO 10
@@ -199,7 +199,7 @@ c counter for this location
           END IF
       END DO
 
-c this if added Sept 2004 to allow computation without
+c this if added Sept 2003 to allow computation without
 c removing the mean.
 
       IF (JOPT.EQ.0 .AND. IFLAG.EQ.1) GO TO 10

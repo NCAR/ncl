@@ -73,7 +73,7 @@ c .   work      - work array
 c .               if jave.ne.0 then upon return work(1 thru nspc) will
 c .               contain the raw spectral estimates [i.e. , 
 c .               periodogram]
-c .   lwork     - length of work [ must be >= 5*nx + 17 +iabs(jave)]
+c .   lwork     - length of work [ must be >= 5*nx + 17 +iabs(jave) + 1]
 c .
 c .   output
 c .
@@ -106,7 +106,7 @@ c .               ier'0 : see code
 c sample call :
 
 c .   real x(nx) , frq(nx/2+1) , spcx(nx/2+1)
-c .              , workk(5*nx+17+iabs(jave)) , sinfo(50)
+c .              , workk(5*nx+18+iabs(jave)) , sinfo(50)
 c .   iopt = 0     : remove mean
 c .   jave = 11    : block average 11 periodogram est together
 c .   pct  = 0.10  : taper 10% of the series
@@ -141,7 +141,7 @@ c check input for errors
       IF (NX.LE.3) IER = 1
       IF (IOPT.GT.2) IER = IER + 20
       IF (PCT.LT.0.D0 .OR. PCT.GT.1.0D0) IER = IER + 300
-      IF (LWORK.LT. (5*NX+17+IABS(JAVE))) IER = IER + 4000
+      IF (LWORK.LT. (5*NX+18+IABS(JAVE))) IER = IER + 4000
       IF (IABS(JAVE).GT. (NX/2)) IER = IER + 50000
 
 c c c do 3 n=1,nx
@@ -592,7 +592,6 @@ c smooth the raw spectral estimates (if desired)
 C make sure its odd
       IF (IABS(JAVE).GT.2) THEN
           JAVODD = 2*IABS(JAVE/2) + 1
-
           DO 70 N = 2,JAVODD - 1
    70     WGT(N) = 1.00D0
           WGT(1) = 0.5D0
