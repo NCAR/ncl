@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.27 1993-04-03 17:54:46 clyne Exp $
+ *	$Id: commands.c,v 1.28 1993-11-29 22:33:43 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,6 +43,7 @@ static	CtransRC	plotit(frame)
 	int		record;
 	int		i;
 	CtransRC	ctrc;
+	static	boolean	first = TRUE;
 
 	if (frame < icState.start_segment || frame > icState.stop_segment) {
 		return(OK);
@@ -54,7 +55,16 @@ static	CtransRC	plotit(frame)
 	 * call ctrans to plot the frame begining at record
 	 */
 	for (i = 0; i < icState.dup; i++) {
-		CtransClear();
+
+		/*
+		 * we clear the device before the start of a new frame (as
+		 * opposed to immediately after completing the previous
+		 * frame). However, we don't clear before drawing the 
+		 * frist frame.
+		 */
+		if (! first) CtransClear();
+		else first = FALSE;
+
 		ctrc = ctrans(record);
 
 		if (icState.movie) {
