@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.17 1994-07-08 23:59:00 ethan Exp $
+ *      $Id: Execute.c,v 1.18 1994-07-13 16:03:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2344,6 +2344,9 @@ NclExecuteReturnStatus _NclExecute
 									break;
 								}
 							}
+/*
+* Coercion must wait until inside of File method
+*/
 							rhs = _NclPop();
 							if(estatus != NhlFATAL) {
 								if(rhs.kind == NclStk_VAL) {

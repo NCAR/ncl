@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.10 1994-07-08 21:31:54 ethan Exp $
+ *      $Id: Symbol.c,v 1.11 1994-07-13 16:03:59 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,11 @@ extern "C" {
 #include <data_objs/NclData.h>
 #include <Keywords.h>
 #include <Symbol.h>
-
+extern void _NclAddFileFormats(
+#ifdef NhlNeedProto
+void
+#endif
+);
 /*
 * The following is a pointer to the top of the symbol table stack.
 * It holds a list of pointers to the various scope levels.
