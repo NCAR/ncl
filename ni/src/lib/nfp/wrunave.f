@@ -129,7 +129,7 @@ c c c end if
       do n=1,npts  
          kmsg  = 0 
          sum   = 0.                      
-         nmid  = n+nav2
+         nmid  = n+nav2+noe
          mstrt = nmid-nav2
          mlast = mstrt+nav-1
         do m=mstrt,mlast

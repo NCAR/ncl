@@ -78,7 +78,7 @@ c .               ier = -13 : nave is not odd
       wgt   = 1./real(nav)        
       lwork = npts+2*nav2
       noe   = 0                           ! odd-even offset used below
-      if (mod(nave,2).eq.0) noe = -1
+      if (mod(nave,2).eq.0) noe = 1
 
       do n=1,lwork
          work(n) = xmsg                   ! preset to xmsg
@@ -114,7 +114,7 @@ c          end do
       do n=1,npts  
          kmsg  = 0 
          sum   = 0.                      
-         nmid  = n+nav2
+         nmid  = n+nav2+noe
          mstrt = nmid-nav2
          mlast = mstrt+nav-1
         do m=mstrt,mlast

@@ -1856,7 +1856,7 @@ NhlErrorTypes ilapsf_W( void )
 /*
  * Input array variables
  */
-  float *zlap, *zlmbda;
+  float *zlap, *zlmbda, *zlmbda2;
   int dsizes_zlap[NCL_MAX_DIMENSIONS], dsizes_zlmbda[NCL_MAX_DIMENSIONS];
   int ndims_zlap, ndims_zlmbda;
   NclScalar missing_zlap, missing_zlmbda;
@@ -1911,28 +1911,44 @@ NhlErrorTypes ilapsf_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: The first input array must be at least 2-dimensional and the second input array must be at least 1-dimensional");
     return(NhlFATAL);
   }
-  nlat = dsizes_zlap[ndims_zlap-2];
-  nlon = dsizes_zlap[ndims_zlap-1];
-  if( ndims_zlap == 2 ) {
-    if( ndims_zlmbda != 1 || dsizes_zlmbda[0] != 1 ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: If the first input array is two dimensional, then the second argument must be a constant");
-      return(NhlFATAL);
-    }
-  }
-  else {
-    for( i = 0; i < ndims_zlmbda; i++ ) {
-      if( dsizes_zlmbda[i] != dsizes_zlap[i] ) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: If the first input array has more than two dimensions, then the length of the second input array should be equal to the third to the last dimension size of the first array, otherwise the length should be 1");
-	return(NhlFATAL);
-      }
-    }
-  }
 /*
  * Compute the total number of elements in our array.
  */
   nt = 1;
   for(i = 0; i < ndims_zlap-2; i++) {
     nt *= dsizes_zlap[i];
+  }
+  nlat = dsizes_zlap[ndims_zlap-2];
+  nlon = dsizes_zlap[ndims_zlap-1];
+/*
+ * Check the input array zlmbda.  If it is a constant, and zlap has more
+ * than 2 dimensions, then we need to allocate space for zlmbda.
+ */
+  if( ndims_zlap == 2 ) {
+    if( ndims_zlmbda != 1 || dsizes_zlmbda[0] != 1 ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: If the first input array is two dimensional, then the second argument must be a constant");
+      return(NhlFATAL);
+    }
+    zlmbda2 = zlmbda;
+  }
+  else {
+    if( ndims_zlmbda == 1 && dsizes_zlmbda[0] == 1 ) {
+      zlmbda2 = (float*)calloc(nt*sizeof(float),1);
+      if( zlmbda2 == NULL ) {
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: Unable to allocate memory for zlmbda array");
+	return(NhlFATAL);
+      }
+      for( i = 0; i < nt; i++ ) zlmbda2[i] = *zlmbda;
+    }
+    else {
+      for( i = 0; i < ndims_zlmbda; i++ ) {
+	if( dsizes_zlmbda[i] != dsizes_zlap[i] ) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: zlmbda must either be a scalar or have the same dimensions as all but the last two dimensions of the first input array");
+	  return(NhlFATAL);
+	}
+      }
+      zlmbda2 = zlmbda;
+    }
   }
 /*
  * Get output array.
@@ -1965,7 +1981,7 @@ NhlErrorTypes ilapsf_W( void )
   if(has_missing_zlmbda) {
     l = 0;
     while( l < nt && !found_missing ) {
-      if(zlmbda[l++] == missing_zlmbda.floatval) found_missing = 1;
+      if(zlmbda2[l++] == missing_zlmbda.floatval) found_missing = 1;
     }
     missing = missing_zlmbda.floatval;
   }
@@ -2053,7 +2069,7 @@ NhlErrorTypes ilapsf_W( void )
   }
 
   NGCALLF(shseci,SHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork,&ldwork,&jer);
-  NGCALLF(islapec,ISLAPEC)(&nlat,&nlon,&isym,&nt,&zlmbda[0],&z[0],
+  NGCALLF(islapec,ISLAPEC)(&nlat,&nlon,&isym,&nt,&zlmbda2[0],&z[0],
 			   &idvw,&jdvw,a,b,&mdab,&ndab,wshsec,&lshsec,
 			   work,&lwork,pertrb,&ker);
   free(a);
@@ -2101,7 +2117,7 @@ NhlErrorTypes ilapsF_W( void )
 /*
  * Input array variables
  */
-  float *zlap, *zlmbda;
+  float *zlap, *zlmbda, *zlmbda2;
   int dsizes_zlap[NCL_MAX_DIMENSIONS], dsizes_zlmbda[NCL_MAX_DIMENSIONS];
   int ndims_zlap, ndims_zlmbda;
   NclScalar missing_zlap, missing_zlmbda;
@@ -2156,28 +2172,44 @@ NhlErrorTypes ilapsF_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: The first input array must be at least 2-dimensional and the second input array must be at least 1-dimensional");
     return(NhlFATAL);
   }
-  nlat = dsizes_zlap[ndims_zlap-2];
-  nlon = dsizes_zlap[ndims_zlap-1];
-  if( ndims_zlap == 2 ) {
-    if( ndims_zlmbda != 1 || dsizes_zlmbda[0] != 1 ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: If the first input array is two dimensional, then the second argument must be a constant");
-      return(NhlFATAL);
-    }
-  }
-  else {
-    for( i = 0; i < ndims_zlmbda; i++ ) {
-      if( dsizes_zlmbda[i] != dsizes_zlap[i] ) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: If the first input array has more than two dimensions, then the length of the second input array should be equal to the third to the last dimension size of the first array, otherwise the length should be 1");
-	return(NhlFATAL);
-      }
-    }
-  }
 /*
  * Compute the total number of elements in our array.
  */
   nt = 1;
   for(i = 0; i < ndims_zlap-2; i++) {
     nt *= dsizes_zlap[i];
+  }
+  nlat = dsizes_zlap[ndims_zlap-2];
+  nlon = dsizes_zlap[ndims_zlap-1];
+/*
+ * Check the input array zlmbda.  If it is a constant, and zlap has more
+ * than 2 dimensions, then we need to allocate space for zlmbda.
+ */
+  if( ndims_zlap == 2 ) {
+    if( ndims_zlmbda != 1 || dsizes_zlmbda[0] != 1 ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: If the first input array is two dimensional, then the second argument must be a constant");
+      return(NhlFATAL);
+    }
+    zlmbda2 = zlmbda;
+  }
+  else {
+    if( ndims_zlmbda == 1 && dsizes_zlmbda[0] == 1 ) {
+      zlmbda2 = (float*)calloc(nt*sizeof(float),1);
+      if( zlmbda2 == NULL ) {
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: Unable to allocate memory for zlmbda array");
+	return(NhlFATAL);
+      }
+      for( i = 0; i < nt; i++ ) zlmbda2[i] = *zlmbda;
+    }
+    else {
+      for( i = 0; i < ndims_zlmbda; i++ ) {
+	if( dsizes_zlmbda[i] != dsizes_zlap[i] ) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: zlmbda must either be a scalar or have the same dimensions as all but the last two dimensions of the first input array");
+	  return(NhlFATAL);
+	}
+      }
+      zlmbda2 = zlmbda;
+    }
   }
 /*
  * Allocate space for output array
@@ -2193,7 +2225,7 @@ NhlErrorTypes ilapsF_W( void )
   if(has_missing_zlmbda) {
     l = 0;
     while( l < nt && !found_missing ) {
-      if(zlmbda[l++] == missing_zlmbda.floatval) found_missing = 1;
+      if(zlmbda2[l++] == missing_zlmbda.floatval) found_missing = 1;
     }
     missing = missing_zlmbda.floatval;
   }
@@ -2282,7 +2314,7 @@ NhlErrorTypes ilapsF_W( void )
   }
 
   NGCALLF(shseci,SHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork,&ldwork,&jer);
-  NGCALLF(islapec,ISLAPEC)(&nlat,&nlon,&isym,&nt,&zlmbda[0],&z[0],
+  NGCALLF(islapec,ISLAPEC)(&nlat,&nlon,&isym,&nt,&zlmbda2[0],&z[0],
 			   &idvw,&jdvw,a,b,&mdab,&ndab,wshsec,&lshsec,
 			   work,&lwork,pertrb,&ker);
   free(a);
@@ -2331,7 +2363,7 @@ NhlErrorTypes ilapsg_W( void )
 /*
  * Input array variables
  */
-  float *zlap, *zlmbda;
+  float *zlap, *zlmbda, *zlmbda2;
   int dsizes_zlap[NCL_MAX_DIMENSIONS], dsizes_zlmbda[NCL_MAX_DIMENSIONS];
   int ndims_zlap, ndims_zlmbda;
   NclScalar missing_zlap, missing_zlmbda;
@@ -2386,28 +2418,44 @@ NhlErrorTypes ilapsg_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: The first input array must be at least 2-dimensional and the second input array must be at least 1-dimensional");
     return(NhlFATAL);
   }
-  nlat = dsizes_zlap[ndims_zlap-2];
-  nlon = dsizes_zlap[ndims_zlap-1];
-  if( ndims_zlap == 2 ) {
-    if( ndims_zlmbda != 1 || dsizes_zlmbda[0] != 1 ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: If the first input array is two dimensional, then the second argument must be a constant");
-      return(NhlFATAL);
-    }
-  }
-  else {
-    for( i = 0; i < ndims_zlmbda; i++ ) {
-      if( dsizes_zlmbda[i] != dsizes_zlap[i] ) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: If the first input array has more than two dimensions, then the length of the second input array should be equal to the third to the last dimension size of the first array, otherwise the length should be 1");
-	return(NhlFATAL);
-      }
-    }
-  }
 /*
  * Compute the total number of elements in our array.
  */
   nt = 1;
   for(i = 0; i < ndims_zlap-2; i++) {
     nt *= dsizes_zlap[i];
+  }
+  nlat = dsizes_zlap[ndims_zlap-2];
+  nlon = dsizes_zlap[ndims_zlap-1];
+/*
+ * Check the input array zlmbda.  If it is a constant, and zlap has more
+ * than 2 dimensions, then we need to allocate space for zlmbda.
+ */
+  if( ndims_zlap == 2 ) {
+    if( ndims_zlmbda != 1 || dsizes_zlmbda[0] != 1 ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: If the first input array is two dimensional, then the second argument must be a constant");
+      return(NhlFATAL);
+    }
+    zlmbda2 = zlmbda;
+  }
+  else {
+    if( ndims_zlmbda == 1 && dsizes_zlmbda[0] == 1 ) {
+      zlmbda2 = (float*)calloc(nt*sizeof(float),1);
+      if( zlmbda2 == NULL ) {
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: Unable to allocate memory for zlmbda array");
+	return(NhlFATAL);
+      }
+      for( i = 0; i < nt; i++ ) zlmbda2[i] = *zlmbda;
+    }
+    else {
+      for( i = 0; i < ndims_zlmbda; i++ ) {
+	if( dsizes_zlmbda[i] != dsizes_zlap[i] ) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: zlmbda must either be a scalar or have the same dimensions as all but the last two dimensions of the first input array");
+	  return(NhlFATAL);
+	}
+      }
+      zlmbda2 = zlmbda;
+    }
   }
 /*
  * Get output array.
@@ -2440,7 +2488,7 @@ NhlErrorTypes ilapsg_W( void )
   if(has_missing_zlmbda) {
     l = 0;
     while( l < nt && !found_missing ) {
-      if(zlmbda[l++] == missing_zlmbda.floatval) found_missing = 1;
+      if(zlmbda2[l++] == missing_zlmbda.floatval) found_missing = 1;
     }
     missing = missing_zlmbda.floatval;
   }
@@ -2529,7 +2577,7 @@ NhlErrorTypes ilapsg_W( void )
   }
 
   NGCALLF(shsgci,SHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork,&ldwork,&jer);
-  NGCALLF(islapgc,ISLAPGC)(&nlat,&nlon,&isym,&nt,&zlmbda[0],&z[0],
+  NGCALLF(islapgc,ISLAPGC)(&nlat,&nlon,&isym,&nt,&zlmbda2[0],&z[0],
 			   &idvw,&jdvw,a,b,&mdab,&ndab,wshsgc,&lshsgc,
 			   work,&lwork,pertrb,&ker);
   free(a);
@@ -2577,7 +2625,7 @@ NhlErrorTypes ilapsG_W( void )
 /*
  * Input array variables
  */
-  float *zlap, *zlmbda;
+  float *zlap, *zlmbda, *zlmbda2;
   int dsizes_zlap[NCL_MAX_DIMENSIONS], dsizes_zlmbda[NCL_MAX_DIMENSIONS];
   int ndims_zlap, ndims_zlmbda;
   NclScalar missing_zlap, missing_zlmbda;
@@ -2632,28 +2680,44 @@ NhlErrorTypes ilapsG_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: The first input array must be at least 2-dimensional and the second input array must be at least 1-dimensional");
     return(NhlFATAL);
   }
-  nlat = dsizes_zlap[ndims_zlap-2];
-  nlon = dsizes_zlap[ndims_zlap-1];
-  if( ndims_zlap == 2 ) {
-    if( ndims_zlmbda != 1 || dsizes_zlmbda[0] != 1 ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: If the first input array is two dimensional, then the second argument must be a constant");
-      return(NhlFATAL);
-    }
-  }
-  else {
-    for( i = 0; i < ndims_zlmbda; i++ ) {
-      if( dsizes_zlmbda[i] != dsizes_zlap[i] ) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: If the first input array has more than two dimensions, then the length of the second input array should be equal to the third to the last dimension size of the first array, otherwise the length should be 1");
-	return(NhlFATAL);
-      }
-    }
-  }
 /*
  * Compute the total number of elements in our array.
  */
   nt = 1;
   for(i = 0; i < ndims_zlap-2; i++) {
     nt *= dsizes_zlap[i];
+  }
+  nlat = dsizes_zlap[ndims_zlap-2];
+  nlon = dsizes_zlap[ndims_zlap-1];
+/*
+ * Check the input array zlmbda.  If it is a constant, and zlap has more
+ * than 2 dimensions, then we need to allocate space for zlmbda.
+ */
+  if( ndims_zlap == 2 ) {
+    if( ndims_zlmbda != 1 || dsizes_zlmbda[0] != 1 ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: If the first input array is two dimensional, then the second argument must be a constant");
+      return(NhlFATAL);
+    }
+    zlmbda2 = zlmbda;
+  }
+  else {
+    if( ndims_zlmbda == 1 && dsizes_zlmbda[0] == 1 ) {
+      zlmbda2 = (float*)calloc(nt*sizeof(float),1);
+      if( zlmbda2 == NULL ) {
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: Unable to allocate memory for zlmbda array");
+	return(NhlFATAL);
+      }
+      for( i = 0; i < nt; i++ ) zlmbda2[i] = *zlmbda;
+    }
+    else {
+      for( i = 0; i < ndims_zlmbda; i++ ) {
+	if( dsizes_zlmbda[i] != dsizes_zlap[i] ) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: zlmbda must either be a scalar or have the same dimensions as all but the last two dimensions of the first input array");
+	  return(NhlFATAL);
+	}
+      }
+      zlmbda2 = zlmbda;
+    }
   }
 /*
  * Allocate space for output array
@@ -2669,7 +2733,7 @@ NhlErrorTypes ilapsG_W( void )
   if(has_missing_zlmbda) {
     l = 0;
     while( l < nt && !found_missing ) {
-      if(zlmbda[l++] == missing_zlmbda.floatval) found_missing = 1;
+      if(zlmbda2[l++] == missing_zlmbda.floatval) found_missing = 1;
     }
     missing = missing_zlmbda.floatval;
   }
@@ -2758,7 +2822,7 @@ NhlErrorTypes ilapsG_W( void )
   }
 
   NGCALLF(shsgci,SHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork,&ldwork,&jer);
-  NGCALLF(islapgc,ISLAPGC)(&nlat,&nlon,&isym,&nt,&zlmbda[0],&z[0],
+  NGCALLF(islapgc,ISLAPGC)(&nlat,&nlon,&isym,&nt,&zlmbda2[0],&z[0],
 			   &idvw,&jdvw,a,b,&mdab,&ndab,wshsgc,&lshsgc,
 			   work,&lwork,pertrb,&ker);
   free(a);

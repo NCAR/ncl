@@ -205,7 +205,7 @@ NhlErrorTypes specx_anal_W( void )
  */
   att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 
-  dsizes[0] = nspcmx;
+  dsizes[0] = nspcmx-1;      /* returning nx/2 points, not nx/2 + 1 */
   att_md = _NclCreateVal(
                          NULL,
                          NULL,
@@ -624,7 +624,7 @@ NhlErrorTypes specxy_anal_W( void )
  */
   att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 
-  dsizes[0] = nspcmx;
+  dsizes[0] = nspcmx-1;      /* returning nx/2 points, not nx/2 + 1 */
   att_md = _NclCreateVal(
                          NULL,
                          NULL,
