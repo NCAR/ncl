@@ -25,7 +25,7 @@
 *EdgeColor : 2
 *gsLineLabelString : ????
 *gsLineLabelFontHeightF : 0.02
-*LineLabelFont : helvetica-bold
+*gsLineLabelFont : helvetica-bold
 *gsMarkerIndex : 12
 *gsMarkerColor : 3
 *gsMarkerSizeF : 0.035

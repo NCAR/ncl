@@ -11,7 +11,7 @@
 *gsLineThicknessF : 2.0
 *gsLineLabelFontHeightF : 0.02
 *gsLineLabelFontColor : 0
-*LineLabelFont : helvetica-bold
+*Font : helvetica-bold
 !*gsLineDashSegLenF : 0.21
 *gsMarkerIndex : 15
 *gsMarkerSizeF : 0.02
