@@ -1,5 +1,5 @@
 /*
- *      $Id: NresDB.h,v 1.5 1996-10-16 16:18:36 boote Exp $
+ *      $Id: NresDB.h,v 1.6 2004-10-04 20:46:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -258,7 +258,7 @@ extern void NrmPutLineResource(
 #endif
 );
 
-extern  NrmQGetResource(
+extern NhlBoolean NrmQGetResource(
 #if NhlNeedProto
     NrmDatabase		/* database */,
     NrmNameList		/* quark_name */,
