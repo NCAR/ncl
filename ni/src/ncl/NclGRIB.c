@@ -2494,6 +2494,9 @@ static GribParamList *_NewListNode
 	tmp->var_info.data_type = GribMapToNcl((void*)&(grib_rec->int_or_float));
 	tmp->param_number = grib_rec->param_number;
 	tmp->grid_number = grib_rec->grid_number;
+/*
+	tmp->grid_number = 255;
+*/
 	tmp->grid_tbl_index = grib_rec->grid_tbl_index;
 	tmp->grid_gds_tbl_index = grib_rec->grid_gds_tbl_index;
 	tmp->has_gds= grib_rec->has_gds;
@@ -2689,6 +2692,9 @@ int wr_status;
 				grib_rec->has_bms = (grib_rec->pds[7] & (char)0100) ? 1 : 0;
 				grib_rec->param_number = (int)grib_rec->pds[8];
 				grib_rec->grid_number = (int)grib_rec->pds[6];
+/*
+				grib_rec->grid_number = 255;
+*/
 			
 /*
 				if((grib_rec->has_gds) && (grib_rec->grid_number != 255)) {
@@ -2700,9 +2706,15 @@ int wr_status;
 */
 				grib_rec->start = offset;
 
-				grib_rec->initial_time.year = (short)(((short)grib_rec->pds[24] - 1 )*100 + (short)(int)grib_rec->pds[12]);
-				grib_rec->initial_time.days_from_jan1 = JulianDayDiff(1,1,grib_rec->initial_time.year,(int)grib_rec->pds[14],(int)grib_rec->pds[13],grib_rec->initial_time.year);
-        			grib_rec->initial_time.minute_of_day = (short)grib_rec->pds[15] * 60 + (short)grib_rec->pds[16];
+				if(version) {
+					grib_rec->initial_time.year = (short)(((short)grib_rec->pds[24] - 1 )*100 + (short)(int)grib_rec->pds[12]);
+					grib_rec->initial_time.days_from_jan1 = JulianDayDiff(1,1,grib_rec->initial_time.year,(int)grib_rec->pds[14],(int)grib_rec->pds[13],grib_rec->initial_time.year);
+        				grib_rec->initial_time.minute_of_day = (short)grib_rec->pds[15] * 60 + (short)grib_rec->pds[16];
+				} else {
+					grib_rec->initial_time.year = (short)(1900 + (short)(int)grib_rec->pds[12]);
+					grib_rec->initial_time.days_from_jan1 = JulianDayDiff(1,1,grib_rec->initial_time.year,(int)grib_rec->pds[14],(int)grib_rec->pds[13],grib_rec->initial_time.year);
+        				grib_rec->initial_time.minute_of_day = (short)grib_rec->pds[15] * 60 + (short)grib_rec->pds[16];
+				}
 				if(grib_rec->version != 0) {
 					if(((int)grib_rec->pds[24] < 1)|| ((int)grib_rec->pds[15] > 24)||((int)grib_rec->pds[16] > 60)||((int)grib_rec->pds[13] > 12)||((int)grib_rec->pds[12] > 100)){
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Corrupted record found. Time values out of appropriate ranges, skipping record");
@@ -2726,7 +2738,7 @@ int wr_status;
 					lseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size),SEEK_SET);
 					read(fd,(void*)buffer,6);
 					grib_rec->gds_size = CnvtToDecimal(3,buffer);
-					grib_rec->gds_off = 8 + grib_rec->pds_size;
+					grib_rec->gds_off = (version?8:4) + grib_rec->pds_size;
 					grib_rec->gds_type = (int)buffer[5];
 /*
 					fprintf(stdout,"%d\n",grib_rec->gds_type);
@@ -2780,12 +2792,12 @@ int wr_status;
 					lseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size + grib_rec->gds_size),SEEK_SET);
 					read(fd,(void*)tmpc,3);
 					grib_rec->bms_size = CnvtToDecimal(3,tmpc);
-					grib_rec->bms_off = 8 + grib_rec->pds_size + grib_rec->gds_size;
+					grib_rec->bms_off = (version?8:4) + grib_rec->pds_size + grib_rec->gds_size;
 				} else {
 					grib_rec->bms_off = 0;
 					grib_rec->bms_size = 0;
 				}
-				grib_rec->bds_off = 8 + grib_rec->pds_size + grib_rec->bms_size + grib_rec->gds_size;
+				grib_rec->bds_off = (version ? 8:4) + grib_rec->pds_size + grib_rec->bms_size + grib_rec->gds_size;
 				lseek(fd,(unsigned)(grib_rec->start + grib_rec->bds_off),SEEK_SET);
 				read(fd,(void*)tmpc,4);
 				grib_rec->bds_flags = tmpc[3];

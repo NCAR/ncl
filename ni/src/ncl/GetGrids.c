@@ -286,6 +286,9 @@ float pi2 = 1.57079632679489661923;
 float pi4 = 0.78539816339744830962;
 float degtorad = 1.745329e-02;
 float radtodeg = 5.729578e+01;
+double dpi = (double)3.14159265358979323846;
+double rtod = (double)180.0/(double)3.14159265358979323846;
+double dtor = (double)3.14159265358979323846/(double)180.0;
 
 
 static int is_gpoint
@@ -3202,13 +3205,13 @@ int** dimsizes_lon;
 
 	nx = UnsignedCnvtToDecimal(2,&(gds[6]));
 	ny = UnsignedCnvtToDecimal(2,&(gds[8]));
-	la1 = ((float)UnsignedCnvtToDecimal(3,&(gds[10])))/1000.0;
-	lo1 = ((float)UnsignedCnvtToDecimal(3,&(gds[13])))/1000.0;
-	lov = ((float)UnsignedCnvtToDecimal(3,&(gds[17])))/1000.0;
+	la1 = (UnsignedCnvtToDecimal(3,&(gds[10])))/1000.0;
+	lo1 = (UnsignedCnvtToDecimal(3,&(gds[13])))/1000.0;
+	lov = (UnsignedCnvtToDecimal(3,&(gds[17])))/1000.0;
 	dx = (float)UnsignedCnvtToDecimal(3,&(gds[20]));
 	dy = (float)UnsignedCnvtToDecimal(3,&(gds[23]));
-	latin1 = (float)UnsignedCnvtToDecimal(3,&(gds[28]))/1000.0;
-	latin2 = (float)UnsignedCnvtToDecimal(3,&(gds[31]))/1000.0;
+	latin1 = UnsignedCnvtToDecimal(3,&(gds[28]))/1000.0;
+	latin2 = UnsignedCnvtToDecimal(3,&(gds[31]))/1000.0;
         *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
         *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
         *n_dims_lat = 2;
@@ -3346,31 +3349,47 @@ int** dimsizes_lon;
 			if(!(thevarrec->thelist->rec_inq->gds[27] & (char)0100)) {
 /* -j direction implies north to south*/
 				i = nlat -1;
-				while((i >= 0)&&(ila1 != (int)(RADDEG*theta[i] * 1000.0 + .5) - 90000)) {
-					i--;	
+				while(i >= 0) {
+					if((ila1 == (int)(rtod*theta[i] * 1000.0) - 90000)||(ila1 == (int)(rtod*theta[i] * 1000.0 + .5) - 90000)) {
+						break;
+					} else {
+						i--;	
+					}
 				}
 				k = 0;
-				while((k<(*dimsizes_lat)[0])&&(i>=0)&&(ila2 != (int)(RADDEG*theta[i] * 1000.0 + .5) - 90000)) {
-					(*lat)[k++] = RADDEG*theta[i] - 90.0;
-					i--;	
+				while((k<(*dimsizes_lat)[0])&&(i>=0)) {
+					if((ila2 == (int)(rtod*theta[i] * 1000.0) - 90000)||(ila2 == (int)(rtod*theta[i] * 1000.0+.5) - 90000)) {
+						break;
+					} else {
+						(*lat)[k++] = rtod*theta[i] - 90.0;
+						i--;	
+					}
 				}
 				if((i >=0)&&(k<(*dimsizes_lat)[0])) {
-					(*lat)[k] = RADDEG*theta[i] - 90.0;
+					(*lat)[k] = rtod*theta[i] - 90.0;
 				}
 	
 			} else {
 /* +j direction implies south to north*/
 				i = 0;
-				while((i<nlat)&&(ila1 != (int)(RADDEG*theta[i] * 1000.0 + .5) - 90000)) {
-					i++;	
+				while(i<nlat) {
+					if((ila1 == (int)(rtod*theta[i] * 1000.0 + .5) - 90000)||(ila1 == (int)(rtod*theta[i] * 1000.0) - 90000)) {
+						break;
+					} else {
+						i++;		
+					}
 				}
 				k = 0;
-				while((i<nlat)&&(k<(*dimsizes_lat)[0])&&(ila2 != (int)(RADDEG*theta[i] * 1000.0 + .5) - 90000)) {
-					(*lat)[k++] = RADDEG*theta[i] - 90.0;
-					i++;	
+				while((i<nlat)&&(k<(*dimsizes_lat)[0])) {
+					if((ila2 == (int)(rtod*theta[i] * 1000.0 + .5) - 90000)||(ila2 == (int)(rtod*theta[i] * 1000.0) - 90000)) {
+						break;
+					} else {
+						(*lat)[k++] = rtod*theta[i] - 90.0;
+						i++;	
+					}
 				}
 				if((i < nlat)&&(k<(*dimsizes_lat)[0])) {
-					(*lat)[i] = RADDEG*theta[i] - 90.0;
+					(*lat)[i] = rtod*theta[i] - 90.0;
 				}
 
 			}
