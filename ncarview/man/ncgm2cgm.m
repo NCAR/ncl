@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncgm2cgm.m,v 1.14 1999-03-23 16:48:52 haley Exp $
+.\"	$Id: ncgm2cgm.m,v 1.15 2000-07-12 17:36:47 haley Exp $
 .\"
 .\"	ncgm2cgm.l 3.00 10/5/89 NCAR View
 .TH NCGM2CGM 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -44,8 +44,23 @@ not be the case that the aforementioned interpreters will be able to translate
 vanilla metafiles, such as produced by 
 .B ncgm2cgm.
 .SH COPYRIGHT
-Copyright (C) 1987-1999
+Copyright (C) 1987-2000
 .br
 University Corporation for Atmospheric Research
 .br
-The use of this Software is governed by a License Agreement.
+
+This documentation is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation; either version 2.1 of the
+License, or (at your option) any later version.
+
+This software is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this software; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+USA.
+
