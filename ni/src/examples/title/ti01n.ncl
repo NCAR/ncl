@@ -1,5 +1,5 @@
 ;
-;   $Id: ti01n.ncl,v 1.7 1995-06-22 21:09:07 haley Exp $
+;   $Id: ti01n.ncl,v 1.8 2003-03-03 17:46:23 grubin Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -42,6 +42,7 @@ end create
 NCGM=0
 X11=1
 PS=0
+PDF=0
 
 if (NCGM .eq. 1) then
 ;
@@ -66,6 +67,15 @@ else
       wid = create "ti01Work" psWorkstationClass defaultapp
         "wkPSFileName"         : "ti01n.ps"
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+        wid = create "ti01Work" pdfWorkstationClass defaultapp
+          "wkPDFFileName"         : "ti01n.pdf"
+        end create
+      end if
     end if
   end if
 end if

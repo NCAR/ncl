@@ -1,5 +1,5 @@
 ;
-;   $Id: ti03n.ncl,v 1.9 1998-04-23 22:20:29 ethan Exp $
+;   $Id: ti03n.ncl,v 1.10 2003-03-03 17:46:23 grubin Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -50,6 +50,7 @@ end create
 NCGM=0
 X11=1
 PS=0
+PDF=0
 
 if (NCGM .eq. 1) then
 ;
@@ -77,6 +78,16 @@ else
         "wkColorMap"    : cmap
         "wkPSFileName"  : "ti03n.ps"
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+        wid = create "ti03Work" pdfWorkstationClass defaultapp
+          "wkColorMap"    : cmap
+          "wkPDFFileName"  : "ti03n.pdf"
+        end create
+      end if
     end if
   end if
 end if

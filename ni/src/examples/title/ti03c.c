@@ -24,12 +24,13 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 
 main()
 {
     int appid, wid, pid;
     int rlist;
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 	int len[2];
 	float cmap[4][3];
 /*
@@ -88,6 +89,15 @@ main()
         NhlCreate(&wid,"ti03Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }       
+    else if (PDF) {
+/*
+ * Create a PDFWorkstation object.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./ti03c.pdf");
+        NhlCreate(&wid,"ti03Work",NhlpdfWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
 /*
  * Specify the viewport extent of the object.
  */
