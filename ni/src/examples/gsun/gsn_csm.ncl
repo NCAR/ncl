@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.46 2000-07-27 21:42:30 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.47 2000-08-09 01:00:49 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1254,6 +1254,7 @@ begin
       if(create_gon)
         if(igon.gt.1)
           bnumgons = bnumgons + 1 
+        end if
         igon       = 0
         create_gon = False
       end if
@@ -1320,6 +1321,7 @@ begin
                                             yabove_gon(0:newgon-1),gsresa)
           ngons = ngons + 1 
 ; Delete temporary arrays so we can recreate them.
+          delete(xabove_line)
           delete(yabove_line)
           delete(xabove_gon)
           delete(yabove_gon)
@@ -4449,6 +4451,7 @@ begin
     if(yref_fill_on)
 ; to gsn_xy routine. Make the 5h point missing, since the 5th point
 ; closes the polygon, and we only want an outline here.
+;
           na_max  = max(nabove)
           nb_max  = max(nbelow)
           nab_max = na_max + nb_max
@@ -4456,13 +4459,10 @@ begin
           if(na_max.le.0.and.nb_max.le.0)
             print("gsn_csm_xy: Fatal: There are no values above or below the chosen reference line.")
             print("Cannot draw a bar chart.")
-        p = fill_xy(wks,xy_object,xinterp(i,0:npts(i)-1),yinterp(i,0:npts(i)-1),\
-                yref_line(i),fill_above,fill_below)
-        if(isatt(xy_object,"polygons"))
-          delete(xy_object@polygons)
-        end if
-        xy_object@polygons = p
-        delete(p)
+        var_string = "polygons" + i
+        xy_object@$var_string$ =fill_xy(wks,xy_object,xinterp(i,0:npts(i)-1), \
+                                     yinterp(i,0:npts(i)-1),\
+                       yref_line(i),fill_above,fill_below)
 
             if(na_max.gt.0)
               xinterp(0:2*ncurves-1:2,0:na_max-1) = xabove(:,0:na_max-1)
@@ -4474,13 +4474,16 @@ begin
       yline = (/min(yinterp),max(yinterp)/)
 
     if(yref_fill_on.and..not.bar_chart)
+;
 ; Make sure polygons get filled before xy plot is drawn. This way,
 ; any lines will be drawn *after* the fill. This makes the filled 
 ; polygons look better if the lines are drawn thicker.
 ;
       xyres_tmp = True
-        xpolyline = gsn_add_polyline(wks,xy_object,xline,yline,gsres)
-        xy_object@xpolyline = xpolyline
+
+        var_string = "xpolyline" + i     
+      attsetvalues_check(xy_object,xyres_tmp)
+      delete(xyres_tmp)
 
       fill_above = yref_line_above(0)
       fill_below = yref_line_below(0)
@@ -4493,13 +4496,17 @@ begin
       xline = (/min(xinterp),max(xinterp)/)
       end do
     end if
+
 ; Fill bar charts.
 
     if(yref_fill_on.and.bar_chart.and..not.bar_outline_only)
       gsres = True
         yline = fspan(yref_line(i),yref_line(i),2)
-        ypolyline = gsn_add_polyline(wks,xy_object,xline,yline,gsres)
-        xy_object@ypolyline = ypolyline
+
+        var_string = "ypolyline" + i     
+;
+        gsres@gsFillColor = yref_line_above(0)
+
 
           if(dimsizes(yref_line_above).gt.1)
             gsres@gsFillColor = yref_line_above(i)
