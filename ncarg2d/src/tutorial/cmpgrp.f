@@ -1,5 +1,5 @@
 C
-C	$Id: cmpgrp.f,v 1.1 1992-09-29 16:10:00 ncargd Exp $
+C	$Id: cmpgrp.f,v 1.2 1992-10-01 21:56:17 ncargd Exp $
 C
 	REAL PLIM1(2), PLIM2(2), PLIM3(2), PLIM4(2)
 
@@ -45,6 +45,7 @@ C
 C Set up Maps.
 C
 	CALL COLOR
+	CALL DASHDB(65535)
 C
 C Set up 9 vertical strips
 C

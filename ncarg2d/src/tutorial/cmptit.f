@@ -1,5 +1,5 @@
 C
-C	$Id: cmptit.f,v 1.1 1992-09-29 16:10:22 ncargd Exp $
+C	$Id: cmptit.f,v 1.2 1992-10-01 21:56:24 ncargd Exp $
 C
 	PROGRAM MAPTIT
 C
@@ -27,9 +27,10 @@ C Turn off the clipping indicator.
 C
 	CALL GSCLIP (0)
 C
-C Set up color table
+C Set up color table and dash pattern
 C 
 	CALL COLOR
+	CALL DASHDB(65535)
 C
 C Set the outline-dataset parameter.
 C

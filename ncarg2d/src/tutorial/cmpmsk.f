@@ -1,5 +1,5 @@
 C
-C	$Id: cmpmsk.f,v 1.1 1992-09-29 16:10:13 ncargd Exp $
+C	$Id: cmpmsk.f,v 1.2 1992-10-01 21:56:22 ncargd Exp $
 C
 	REAL PLIM1(2), PLIM2(2), PLIM3(2), PLIM4(2)
 
@@ -40,6 +40,10 @@ C
 	REAL PLIM1(2), PLIM2(2), PLIM3(2), PLIM4(2)
 C
 C CMPLOT demonstrates MAPLOT drawing continental and political outlines
+C
+C Use solid lines for grid
+C
+	CALL DASHDB(65535)
 C
 C Draw Continental, political outlines 
 C
