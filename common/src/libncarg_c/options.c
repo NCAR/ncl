@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.9 1992-03-31 00:18:08 clyne Exp $
+ *	$Id: options.c,v 1.10 1992-04-10 00:56:04 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -25,9 +25,14 @@
  *	as determined by the command line.
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <string.h>
 #include <ncarv.h>
+#include "options.h"
+
+
 
 static	OptDescRec	*optDescRec = NULL;	/* the option table	*/
 static	int		optDescRecSize = 0;	/* mem alloced to table */
@@ -158,7 +163,10 @@ int	NCARGCvtToDimension2D(from, to)
 	if (! from) {
 		dptr->nx = dptr->ny = 0;
 	}
-	else if (sscanf(from, "%dx%d", &(dptr->nx), &(dptr->ny)) != 2) {
+	else if (! (
+		(sscanf(from, "%dx%d", &(dptr->nx), &(dptr->ny)) == 2) ||
+		(sscanf(from, "%dX%d", &(dptr->nx), &(dptr->ny)) == 2))) {
+
 		ESprintf(EINVAL, "Convert(%s) to dimension failed", from);
 		return(-1);
 	}
@@ -466,6 +474,64 @@ ParseOptionTable(argc, argv, optds)
 	*argc = new_argc;
 	argv[*argc] = NULL;
 
+	return(1);
+}
+
+/*
+ *	ParseEnvOptions()
+ *
+ *	ParseEnvOptions() is analogous to ParseOptionTable except that
+ *	it takes a list of environment variables and their coresponding
+ *	option names instead of an argv list. If a given environment
+ *	variable is set its value is used as the argument value for the 
+ *	option with  which it is associated. If the environment variable
+ *	is not set the option/environemnt variable pair are ignored.
+ *
+ * on entry
+ *	*envv		: NUll-terminated list of option/env pairs
+ *	*optds		: additional options to merge into the option table
+ *
+ * on exit
+ *	return		: -1 => error, else OK
+ */
+ParseEnvOptions(envv, optds)
+	EnvOpt		*envv;
+	OptDescRec	*optds;
+{
+	int	envc;		/* size of envv list		*/
+	EnvOpt	*envptr;	/* pointer to envv		*/
+	char	**argv;		/* arg vector created from envv	*/
+	int	argc;		/* size of argv list		*/
+	char	*arg_string;	/* env variable value		*/
+	char	buf[MAX_ATOARGV_STRING];
+
+	/*
+	 * if any options to be merged do so
+	 */
+	if (optds) {
+		(void) LoadOptionTable(optds);
+	}
+
+	/*
+ 	 * look for environment variables. Generate the argument vector, argv
+	 */
+	for (envptr = envv; envptr->option; envptr++) {
+		if (arg_string = getenv(envptr->env_var)) {
+
+			(void) strcpy(buf, "-");
+			(void) strcat(buf, envptr->option);
+			(void) strcat(buf, " ");
+			(void) strncat(buf,arg_string,sizeof(buf)-strlen(buf)-1);
+			if (! (argv = AToArgv(buf, "dummy", &argc))) {
+				return(-1);
+			}
+			if (ParseOptionTable(
+				&argc, argv, (OptDescRec *) NULL) == -1) {
+
+				return(-1);
+			}
+		}
+	}
 	return(1);
 }
 

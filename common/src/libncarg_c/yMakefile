@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.5 1992-03-26 18:23:03 clyne Exp $
+#	$Id: yMakefile,v 1.6 1992-04-10 00:56:10 clyne Exp $
 #
 #
 #	Makefile for libncarv -- NCAR View library of general routines
@@ -21,9 +21,9 @@ VMSSRCS		= vms-unix.c
 
 INCLUDES	= ncarv.h 
 SRCS		= options.c icmalloc.c misc.c ncarg_path.c version.c \
-		error.c $(VMSSRCS)
+		error.c atoargv.c $(VMSSRCS)
 OBJECTS		= options.o icmalloc.o misc.o ncarg_path.o version.o \
-		error.o $(VMSOBJS)
+		error.o atoargv.o $(VMSOBJS)
 
 EQUALHACK	= =
 

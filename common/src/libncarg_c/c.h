@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.7 1992-03-31 00:18:04 clyne Exp $
+ *	$Id: c.h,v 1.8 1992-04-10 00:56:01 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,6 +43,11 @@ typedef	struct	_Option {
 	int		size;		/* size of option in bytes	*/
 	} Option;
 
+typedef	struct	_EnvOpt {
+	char	*option;		/* option name			*/
+	char	*env_var;		/* coresponding enviroment var	*/
+	} EnvOpt;
+
 extern	int	NCARGCvtToInt();
 extern	int	NCARGCvtToFloat();
 extern	int	NCARGCvtToChar();
@@ -53,6 +58,8 @@ extern	int	GetOption();
 extern	int	LoadOptionTable();
 extern	int	ParseOptionTable();
 extern	void	PrintOptionHelp();
+extern	char	**AToArgv();
+extern	void	FreeArgv();
 
 typedef	unsigned int	boolean;
 
