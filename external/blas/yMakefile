@@ -13,7 +13,7 @@ SRCS = caxpy.f ccopy.f cdotc.f cdotu.f cgbmv.f cgemm.f cgemv.f cgerc.f \
 	sgemv.f sger.f snrm2.f srot.f srotg.f ssbmv.f sscal.f sspmv.f sspr.f \
 	sspr2.f sswap.f ssymm.f ssymv.f ssyr.f ssyr2.f ssyr2k.f ssyrk.f \
 	stbmv.f stbsv.f stpmv.f stpsv.f strmm.f strmv.f strsm.f strsv.f \
-	xerbla.f yMakefile zaxpy.f zcopy.f zdotc.f zdotu.f zdscal.f zgbmv.f \
+	xerbla.f zaxpy.f zcopy.f zdotc.f zdotu.f zdscal.f zgbmv.f \
 	zgemm.f zgemv.f zgerc.f zgeru.f zhbmv.f zhemm.f zhemv.f zher.f \
 	zher2.f zher2k.f zherk.f zhpmv.f zhpr.f zhpr2.f zrotg.f zscal.f \
 	zswap.f zsymm.f zsyr2k.f zsyrk.f ztbmv.f ztbsv.f ztpmv.f ztpsv.f \
@@ -32,7 +32,7 @@ OBJS = caxpy.o ccopy.o cdotc.o cdotu.o cgbmv.o cgemm.o cgemv.o cgerc.o \
 	sgemv.o sger.o snrm2.o srot.o srotg.o ssbmv.o sscal.o sspmv.o sspr.o \
 	sspr2.o sswap.o ssymm.o ssymv.o ssyr.o ssyr2.o ssyr2k.o ssyrk.o \
 	stbmv.o stbsv.o stpmv.o stpsv.o strmm.o strmv.o strsm.o strsv.o \
-	xerbla.o yMakefile zaxpy.o zcopy.o zdotc.o zdotu.o zdscal.o zgbmv.o \
+	xerbla.o zaxpy.o zcopy.o zdotc.o zdotu.o zdscal.o zgbmv.o \
 	zgemm.o zgemv.o zgerc.o zgeru.o zhbmv.o zhemm.o zhemv.o zher.o \
 	zher2.o zher2k.o zherk.o zhpmv.o zhpr.o zhpr2.o zrotg.o zscal.o \
 	zswap.o zsymm.o zsyr2k.o zsyrk.o ztbmv.o ztbsv.o ztpmv.o ztpsv.o \
