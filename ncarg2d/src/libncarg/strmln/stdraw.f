@@ -1,5 +1,5 @@
 C
-C       $Id: stdraw.f,v 1.11 1993-12-03 21:18:33 kennison Exp $
+C       $Id: stdraw.f,v 1.12 1996-02-01 20:25:02 dbrown Exp $
 C
       SUBROUTINE STDRAW  (U,V,UX,VY,IAM,STUMSL)
 C
@@ -203,10 +203,11 @@ C
       SSP=RSSP*FW2W
       CDS=RCDS*DFMG
 C
-C Stream counters
+C Stream and arrow counters
 C
       LCT=0
       ITO=0
+      IAC=0
 C
 C Crossover list variables
 C
@@ -276,17 +277,19 @@ C available boxes is immaterial.
 C
  50   CONTINUE
 C
-      LCT=LCT+1
-      LST=0
-C
 C First ensure that the point buffer is clear
 C
-      IF (IPC .GT. 1) CALL STLNSG(PX,PY,IPC,IAM,STUMSL)
+      IF (IPC.GT.1) CALL STLNSG(PX,PY,IPC,IAM,STUMSL)
+C
+      LST=0
 C
 C Find an available box for starting a streamline.
 C
       IF (IDR .EQ. 0) THEN
 C
+         LCT=LCT+1
+         ITO = ITO+ICT
+         ICT = 0
          DO  70 J=IYD1,IYM1
             DO  60 I=IXD1,IXM1
                CALL GBYTES(UX(I,J),IUX,ISK,2,0,1)
@@ -332,8 +335,6 @@ C Start all streamlines in the center of a box.
 C Find the initial normalized interpolated vector components.
 C
       NBX = 0
-      ITO = ITO+ICT
-      ICT = 0
       IF (IDR.NE.0) LBC = LCK+1
       IF (LBC.GT.IPLSTL) LBC = 1
       X = FLOAT(I)+0.5
@@ -352,7 +353,7 @@ C
 C
          XDA=XLOV+(X-1.0)*XGDS
          YDA=YLOV+(Y-1.0)*YGDS
-         CALL STMPXY(XDA,YDA,XUS,YUS,IST)
+         CALL HLUSTMPXY(XDA,YDA,XUS,YUS,IST)
          IF (IST .LT. 0) GO TO 50
          XND=CUFX(XUS)
          YND=CUFY(YUS)
@@ -360,7 +361,7 @@ C
          YNS=YND
          XN1=XND
          YN1=YND
-         CALL STMPTA(XDA,YDA,XUS,YUS,XND,YND,DU,DV,TA,IST)
+         CALL HLUSTMPTA(XDA,YDA,XUS,YUS,XND,YND,DU,DV,TA,IST)
          IF (IST .LT. 0) GO TO 50
 C
       ELSE
@@ -420,7 +421,7 @@ C
 C Get the tangent angle of the streamline at the current point
 C in NDC space
 C
-            CALL STMPTA(XDA,YDA,XUS,YUS,XND,YND,DU,DV,TA,IST)
+            CALL HLUSTMPTA(XDA,YDA,XUS,YUS,XND,YND,DU,DV,TA,IST)
             IF (IST.NE.0) GO TO 50
 C            
          ELSE
@@ -471,6 +472,9 @@ C
             YN1=YND+(YN2-YND)/PTHREE
             XND=XN1+CSA*DFMG*DUV
             YND=YN1+SNA*DFMG*DUV
+            xd = xnd - xn1
+            yd = ynd - yn1
+            DST = DST + sqrt(xd*xd+yd*yd)
 C
 C If the increment takes the line outside the viewport, find an
 C interpolated point on the grid edge. Set a flag indicating
@@ -518,7 +522,7 @@ C Even if the point is within NDC and User boundaries it can still be
 C outside the data area. In this case we use an iterative technique to
 C determine the end of the streamline.
 C
-            CALL STIMXY(XUS,YUS,XDA,YDA,IST)
+            CALL HLUSTIMXY(XUS,YUS,XDA,YDA,IST)
             IF (IST.GE.0) THEN
                X=(XDA-XLOV)/XGDS+1.0
                Y=(YDA-YLOV)/YGDS+1.0
@@ -535,10 +539,10 @@ C
      +              ABS(YUS-YU1).LE.PSMALL) THEN
                   XUS=XU1
                   YUS=YU1
-                  CALL STIMXY(XUS,YUS,XDA,YDA,IST)
+                  CALL HLUSTIMXY(XUS,YUS,XDA,YDA,IST)
                   IF (IST.LT.0) GO TO 50
                ELSE
-                  CALL STIMXY(XT,YT,XDA,YDA,IST)
+                  CALL HLUSTIMXY(XT,YT,XDA,YDA,IST)
                   NCT=NCT+1
                   IF (IST.LT.0) THEN
                      XUS=XT
@@ -825,6 +829,7 @@ C PLWFCT - Linewidth factor, arrow size is increased by this
 C          much when the linewidth is greater than 1.0
 
       PARAMETER (PHFANG=0.5, PLWFCT=0.15)
+c$$$      character *10 lbl
 C
 C ---------------------------------------------------------------------
 C
@@ -847,7 +852,12 @@ C
 C
  10   CONTINUE
 C
+      IAC=IAC+1
+c$$$      cwrite(lbl,*) iac
+c$$$      call vvtxln(lbl,10,lb,le)
+c$$$      call plchhq(ax(2),ay(2),lbl(lb:le),0.01,0.0,0.0)
       CALL STLNSG(AX,AY,3,IAM,STUMSL)
+      
 C
 C Done
 C
@@ -1230,3 +1240,6 @@ C Done
 C
       RETURN
       END
+
+
+

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1993-10-19 17:32:22 boote Exp $
+#	$Id: yMakefile,v 1.6 1996-02-01 20:25:03 dbrown Exp $
 #
 MYNAME	= strmln
 
@@ -7,13 +7,13 @@ GENERIC_SRCS    = stcycl.f stdraw.f ezstrm.f stdudv.f strmln.f \
 	 	  stinit.f stream.f stdata.f \
 		  stseti.f stsetr.f stgeti.f stgetr.f \
          	  stmpxy.f stumxy.f strset.f stumsl.f \
-		  chkcyc.f drwstr.f gnewpt.f
+		  chkcyc.f drwstr.f gnewpt.f sthluint.f hlustmpxy.f
 
 GENERIC_OBJS    = stcycl.o stdraw.o ezstrm.o stdudv.o strmln.o \
 	 	  stinit.o stream.o stdata.o \
 		  stseti.o stsetr.o stgeti.o stgetr.o \
          	  stmpxy.o stumxy.o strset.o stumsl.o \
-		  chkcyc.o drwstr.o gnewpt.o
+		  chkcyc.o drwstr.o gnewpt.o sthluint.o hlustmpxy.o
 
 SOURCES = $(GENERIC_SRCS)
 OBJECTS = $(GENERIC_OBJS)
