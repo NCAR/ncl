@@ -120,7 +120,7 @@ C If the area is between the ring and the star, hatch fill in yellow
 C
       ELSE IF (AREAID(IDSIZE) .EQ. 2) THEN
          CALL GSFAIS(3)
-         call gsfasi(6)
+         CALL GSFASI(6)
          CALL GSFACI(3)
          CALL GFA(PTS,XC,YC)
 C
