@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.5 2002-02-23 00:41:25 haley Exp $
+#       $Id: yMakefile,v 1.6 2003-05-01 22:43:45 haley Exp $
 #
 
 MYNAME  = ezmapdemo
@@ -12,7 +12,7 @@ DEP_LIBS =	$(DEPNCARGLIBS)
 SYS_LIBS	= $(XLIB)
 
 #if defined(Darwin)
-EXTRA_FCOPTIONS  = -N11
+#EXTRA_FCOPTIONS  = -N11
 #elif defined(AIX)
 EXTRA_FCOPTIONS  = -NS32704
 #endif
