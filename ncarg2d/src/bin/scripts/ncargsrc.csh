@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargsrc.csh,v 1.2 1992-09-29 15:31:46 ncargd Exp $
+#	$Id: ncargsrc.csh,v 1.3 1994-08-11 19:15:44 haley Exp $
 #
 
 # If no arguments, tell user how "ncargsrc" works.
@@ -62,7 +62,6 @@ The following three source libraries are normally searched first:
     srcncarg.a      -  NCAR Graphics utilities (including the default members
 		       of the CONRAN, CONREC, and DASH families).
     srcncarg_gks.a  -  NCAR Graphics GKS package.
-    srcncarg_loc.a  -  NCAR Graphics support routines.
 
 The following eight source libraries are normally searched after the first
 three:
@@ -148,7 +147,6 @@ source libraries:
 		       pwritx pwrity pwrzi pwrzs pwrzt softfill spps srface
 		       stitle strmln support threed velvct
     srcncarg_gks.a  -  awi bwi
-    srcncarg_loc.a  -  local
     srcagupwrtx.a   -  agupwrtx
     srcconraq.a     -  conraq
     srcconras.a     -  conras

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.66 1994-07-13 22:36:32 haley Exp $
+#   $Id: ncargex.csh,v 1.67 1994-08-11 19:15:44 haley Exp $
 #
 
 #********************#
@@ -368,8 +368,7 @@ set fnd_gks    = (fgke02 fgke03 fcell fcell0 fgpm01 fgkgpl fgkgpm fgkgtx \
 set fnd_intgks = (fgke01 fgke04)
 set pdc_gks    = (pgkex01 pgkex02 pgkex03 pgkex04 pgkex05 pgkex06 pgkex07 \
                   pgkex08 pgkex09 pgkex10 pgkex11 pgkex12 pgkex13 pgkex14 \
-                  pgkex15 pgkex16 pgkex17 pgkex18 pgkex19 pgkex20 pgkex21 \
-                  pgkex22 pgkex23 pgkex24 pgkex25 pgkex26)
+                  pgkex15 pgkex16 pgkex17 pgkex18 pgkex19 pgkex20 pgkex21)
 set gks_list   = ($fnd_gks $pdc_gks)
 
 #****************************#
@@ -1120,53 +1119,36 @@ if (! $?NoRunOption) then
 #                 #
 #*****************#
    
+	if ($?ncgmfile) setenv NCARG_GKS_OUTPUT $name.ncgm
     switch( $name )
         case mpexfi:
             $name < mpexfi.dat
         breaksw
-
         case srex01:
             $name < srex01.dat
         breaksw
-
         case agex13:
             $name < agda13.dat
         breaksw
-
         case ffex02:
         case ffex03:
             ./$name < ffex02.dat
         breaksw
-
         case ffex05:
             ./$name < ffex05.dat
         breaksw
-
         case fcover:
             ./$name < fcover.dat
         breaksw
-
         case class1:
             ./$name < class1.dat
         breaksw
-
         case fgke03:
-        case pgkex26:
-            ./$name
-            set not_valid_metafile
-            echo "Metafiles META01 and META02 produced"
             echo ""
-        breaksw
-
-        case pgkex22:
-        case pgkex23:
-            ./$name
-            set not_valid_metafile
-            echo "PostScript file $name.ps produced."
+            echo "Metafiles META01 and META02 produced."
             echo ""
-            /bin/mv ./gmeta1.ps ./$name.ps
+            set no_file
         breaksw
-
         case ccpcff:
         case tcolcv:
         case fcce02:
@@ -1175,12 +1157,16 @@ if (! $?NoRunOption) then
             echo "NOTE: This example is for testing purposes only."
             echo "      No metafile will produced."
             echo ""
+            ./$name
+        breaksw
         default:
             ./$name
     endsw
 
-    if ( ! $?not_valid_metafile ) then
-        /bin/mv $default_file $graphic_file
+    if ( ! $?not_valid_metafile && ! $?no_file ) then
+        if (! $?ncgmfile ) then
+            mv ./$default_file $graphic_file
+        endif
         echo ""
         echo "$message $graphic_file"
         echo ""
@@ -1200,10 +1186,6 @@ switch ($name)
         set rmfiles = ($rmfiles GNFB00)
     breaksw
 
-    case slex01:
-        set rmfiles = ($rmfiles GNFB09)
-    breaksw
-
     case fgke02:
         set rmfiles = ($rmfiles GNFB01 GNFB02)
     breaksw
@@ -1213,6 +1195,7 @@ switch ($name)
     breaksw
 
     case tstitl:
+    case slex01:
     case fslfont:
         set rmfiles = ($rmfiles GNFB09)
     breaksw

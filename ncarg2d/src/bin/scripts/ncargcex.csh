@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.13 1994-07-13 16:26:53 haley Exp $
+#	$Id: ncargcex.csh,v 1.14 1994-08-11 19:15:43 haley Exp $
 #
 
 #********************#
@@ -26,7 +26,7 @@ endif
 setenv NCARG_ROOT  `ncargpath root`
 
 if ($status != 0) then
-	exit 1
+    exit 1
 endif
 
 #*********************************#
@@ -94,7 +94,8 @@ set ex_list = ($ex_list $ezmap_list)
 # set gks examples #
 #                  #
 #******************#
-set gks_list   = (c_gtxpac)
+
+set gks_list = (c_gtxpac)
 set ex_list = ($ex_list $gks_list)
 
 #***********************#
@@ -104,7 +105,6 @@ set ex_list = ($ex_list $gks_list)
 #***********************#
 set labelbar_list   = (c_elblba)
 set ex_list = ($ex_list $labelbar_list)
-
 #***********************#
 #                       #
 # set plotchar examples #
@@ -135,7 +135,6 @@ set ex_list = ($ex_list $softfill_list)
 #                          #
 #**************************#
 set interactive_list = (c_xwndws)
-
 #*********************************#
 #                                 #
 # Default is to load in X library #
@@ -143,6 +142,11 @@ set interactive_list = (c_xwndws)
 #*********************************#
 set X11_option
 
+#***************#
+#               #
+# Parse options #
+#               #
+#***************#
 set names
 
 #*********************************#
@@ -151,16 +155,8 @@ set names
 # Default graphic is NCGM         #
 #                                 #
 #*********************************#
+set ncgmfile
 set ws_type = "1"
-set default_file = "gmeta"
-set graphic_type = "ncgm"
-set message = "Metafile is named"
-
-#***************#
-#               #
-# Parse options #
-#               #
-#***************#
 
 while ($#argv > 0)
     
@@ -219,7 +215,7 @@ while ($#argv > 0)
 
         case "-inter":
             shift
-	        set interfile
+            set interfile
             set ws_type = "8"
             set names=($names $interactive_list)
             breaksw
@@ -257,37 +253,33 @@ while ($#argv > 0)
             
             case  "1":
             case "10":
+                set ncgmfile
             breaksw
 
             case "8":
                 set interfile
             breaksw
 
+
             case "20":
             case "23":
             case "26":
             case "29":
-                set default_file = "gmeta1.ps"
-                set graphic_type = "ps"
-                set message = "PostScript file is named"
+                set psfile
             breaksw
 
             case "21":
             case "24":
             case "27":
             case "30":
-                set default_file = "gmeta1.eps"
-                set graphic_type = "eps"
-                set message = "Encapsulated PostScript file is named"
+                set epsfile
             breaksw
 
             case "22":
             case "25":
             case "28":
             case "31":
-                set default_file = "gmeta1.epsi"
-                set graphic_type = "epsi"
-                set message = "Interchange Encapsulated PostScript file is named"
+                set epsifile
             breaksw
 
             default:
@@ -346,13 +338,37 @@ if ($?interfile && $ws_type != "8") then
     set ws_type = "8"
 endif
 
-#***********************#
-#                       #
-# Generate each example #
-#                       #
-#***********************#
-
 foreach name ($names)
+
+switch($name)
+    case c_pgkex19:
+    case c_pgkex20:
+    case c_pgkex21:
+        set graphic_type = "ps"
+        set default_file = "gmeta1.ps"
+        set message = "PostScript file is named"
+    breaksw
+
+    default:
+        if ($?psfile) then
+            set default_file = "gmeta1.ps"
+            set graphic_type = "ps"
+            set message = "PostScript file is named"
+        else if ($?epsfile) then
+            set default_file = "gmeta1.eps"
+            set graphic_type = "eps"
+            set message = "Encapsulated PostScript file is named"
+        else if ($?epsifile) then
+            set default_file = "gmeta1.epsi"
+            set graphic_type = "epsi"
+            set message = "Interchange Encapsulated PostScript file is named"
+        else 
+            set default_file = "gmeta"
+            set graphic_type = "ncgm"
+            set message = "Metafile file is named"
+        endif
+    breaksw
+endsw
 
 set graphic_file = $name.$graphic_type
 
@@ -454,6 +470,7 @@ end
 #******************************#
 
 unset not_valid_metafile
+unset no_file
 
 if (! $?NoRunOption) then
     if ($type == "Interactive_Example" && $?interfile) then
@@ -485,9 +502,12 @@ if (! $?NoRunOption) then
 #                 #
 #*****************#
    
+	if ($?ncgmfile) setenv NCARG_GKS_OUTPUT $name.ncgm
     ./$name
-    if ( ! $?not_valid_metafile ) then
-        mv ./$default_file $graphic_file
+    if ( ! $?not_valid_metafile && ! $?no_file ) then
+        if (! $?ncgmfile ) then
+            mv ./$default_file $graphic_file
+        endif
         echo ""
         echo "$message $graphic_file"
         echo ""
@@ -501,9 +521,11 @@ endif
 # Keep track of unwanted files #
 #                              #
 #******************************#
-if ($name == "c_slex01") then
-    set rmfiles = ($rmfiles GNFB09)
-endif
+switch ($name)
+    case c_slex01:
+        set rmfiles = ($rmfiles GNFB09)
+    breaksw
+endsw
 
 
 #************************#
@@ -529,3 +551,4 @@ endif
 theend:
 
 end
+

@@ -1,6 +1,6 @@
 #!/bin/csh -f -b
 #
-#	$Id: ncargsrcy.csh,v 1.2 1992-09-29 15:31:48 ncargd Exp $
+#	$Id: ncargsrcy.csh,v 1.3 1994-08-11 19:15:45 haley Exp $
 #
 
 set path = (/bin /usr/bin)
@@ -13,7 +13,7 @@ if ($status != 0) then
         exit 1
 endif
 
-set nlibs = "$l/srcncarg.a $l/srcncarg_gks.a $l/srcncarg_loc.a"
+set nlibs = "$l/srcncarg.a $l/srcncarg_gks.a"
 set alibs = ""
 set blibs = ""
 
@@ -33,10 +33,6 @@ Contents of the library srcncarg.a:
 Contents of the library srcncarg_gks.a:
 
 `ar t $l/srcncarg_gks.a | sort | pr -t -5 -l1`
-
-Contents of the library srcncarg_loc.a:
-
-`ar t $l/srcncarg_loc.a | sort | pr -t -5 -l1`
 
 Contents of the library srcagupwrtx.a:
 
