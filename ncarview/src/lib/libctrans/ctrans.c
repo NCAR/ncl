@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.30 1993-01-12 20:10:49 clyne Exp $
+ *	$Id: ctrans.c,v 1.31 1993-02-17 20:36:47 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -766,23 +766,29 @@ CtransRC	ctrans_merge(record1, record2)
 		elog(ErrGetMsg());
 		return (WARN);
 	}
+	if (Instr_Dec(&command) < 1) {
+		elog(ErrGetMsg());
+		return(FATAL);
+	}
 
 	/*
 	 * 	Do until get a END PICTURE or END METAFILE element
 	 */
-	do {
-		if (Instr_Dec(&command) < 1) {
-			elog(ErrGetMsg());
-			return(FATAL);
-		}
+	while (((command.class != DEL_ELEMENT) 
+			|| (command.command != END_PIC_ID))
+		&& ((command.class != DEL_ELEMENT) 
+			|| (command.command != END_MF_ID))) {
+			
 
 		if ((rc = Process(&command)) == FATAL) return(FATAL);
 		if (rc == WARN) rcx = WARN;
 
-	} while (((command.class != DEL_ELEMENT) 
-			|| (command.command != END_PIC_ID))
-		&& ((command.class != DEL_ELEMENT) 
-			|| (command.command != END_MF_ID)));
+		if (Instr_Dec(&command) < 1) {
+			elog(ErrGetMsg());
+			return(FATAL);
+		}
+	}
+
 
 	/*
 	 * advance to second record (skip the END_PIC command)
