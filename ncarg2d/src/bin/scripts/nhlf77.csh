@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlf77.csh,v 1.4 1995-04-12 15:22:58 haley Exp $
+#	$Id: nhlf77.csh,v 1.5 1995-05-17 17:13:46 haley Exp $
 #
 
 #*********************************************#
@@ -42,11 +42,12 @@ set extra_libs
 foreach arg ($argv)
   switch ($arg)
 
-  case "-libnetcdf":
+  case "-netcdf":
+  case "-cdf":
     set extra_libs = "-lnetcdf"
     breaksw
 
-  case "-libhdf":
+  case "-hdf":
     set extra_libs = "$extra_libs -ldf"
     breaksw
 

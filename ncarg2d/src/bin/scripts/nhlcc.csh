@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlcc.csh,v 1.4 1995-04-12 15:19:12 haley Exp $
+#	$Id: nhlcc.csh,v 1.5 1995-05-17 17:13:44 haley Exp $
 #
 
 #*********************************************#
@@ -43,15 +43,17 @@ set extra_libs
 foreach arg ($argv)
   switch ($arg)
 
-  case "-libXmXt":
+  case "-XmXt":
+  case "-xmxt":
     set extra_libs = "$extra_libs SED_XMOTIFLIB SED_XTOOLLIB"
     breaksw
 
-  case "-libnetcdf":
+  case "-netcdf":
+  case "-cdf":
     set extra_libs = "$extra_libs SED_NCDFLIBS"
     breaksw
 
-  case "-libhdf":
+  case "-hdf":
     set extra_libs = "$extra_libs SED_HDFLIB"
     breaksw
 
