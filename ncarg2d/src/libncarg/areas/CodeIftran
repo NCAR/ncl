@@ -1,0 +1,5634 @@
+.OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 IF=2
+.EL I
+I ---------------------------------------------------------------------
+I I N T R O D U C T I O N
+I ---------------------------------------------------------------------
+I
+I This file contains implementation instructions and the code for a
+I graphics package called AREAS.  Given a set of "edges" dividing the
+I plane into separate areas, the package allows one to recover the
+I polygons defining all of those areas.  The polygons may then be
+I color-filled, shaded, or used as "shields" in the drawing of other
+I objects.
+I
+I ---------------------------------------------------------------------
+I I M P L E M E N T A T I O N   I N S T R U C T I O N S
+I ---------------------------------------------------------------------
+I
+I This is the IFTRAN version of AREAS.  It is more readable than the
+I FORTRAN version and is extensively parameterized.  It must be run
+I through the IFTRAN preprocessor to create the FORTRAN version.
+I
+I ---------------------------------------------------------------------
+I I F T R A N   P R E A M B L E
+I ---------------------------------------------------------------------
+I
+I Definition of array sizes.
+I ---------- -- ----- -----
+I
+I The parameter $MPL$ defines the maximum size of a multiple-precision
+I integer operand.  The largest value required should be approximately
+I "log to the base IBS of LIO", where IBS is a common variable set by
+I the routine ARINIT and LIO is the largest integer operand expected.
+I If this value is set too small, the routine ARMPIA may generate a
+I quantity which is too big to be representable and return an error
+I flag; the default value (20) is huge and ought to provide for any
+I reasonable case.
+I
+.RE /$MPL$/20/
+I
+I Definition of various constants.
+I ---------- -- ------- ---------
+I
+I The following IFTRAN statements define constants used in the code.
+I
+.RE /$HP$/1.57079632679490/
+.RE /$PI$/3.14159265358979/
+.RE /$TP$/6.28318530717958/
+I
+.RE /$DPHP$/1.57079632679489661923132169164D0/
+.RE /$DPPI$/3.14159265358979323846264338328D0/
+.RE /$DPTP$/6.28318530717958647692528676656D0/
+I
+I Definition of nodes in an area map.
+I ---------- -- ----- -- -- ---- ---
+I
+I The first few elements of the area-map array are used individually;
+I the remainder are used to form a linked list of nodes.  Each node
+I represents a point along a user-defined edge.  Two sets of links
+I order the nodes; one set gives the order in which the points are
+I connected while drawing the edge and the other set gives the order
+I in which the points are encountered by a vertical "scan line" moving
+I across the screen from left to right.  (Points which the scan line
+I encounters simultaneously are ordered by increasing Y coordinate.)
+I
+I Each node in the area map consists of a number of elements, the first
+I of which is always a "marker", for use by algorithms which examine the
+I nodes and need to be able to mark each one in some fashion.  The other
+I elements of a node are indexed by adding one of the following values
+I to the index of the "marker":
+I
+I    Addend  Use of indexed node element
+I    ------  ---------------------------
+I    $XC$    X coordinate of the point defined by the node.
+I    $YC$    Y coordinate of the point defined by the node.
+I    $ND$    Base index of the next node (in drawing order).
+I    $PD$    Base index of the previous node (in drawing order).
+I    $NC$    Base index of the next node (in coordinate order).
+I    $PC$    Base index of the previous node (in coordinate order).
+I    $GI$    Group identifier (says which group last line belongs to).
+I    $IL$    Identifier of area to left of last line.
+I    $IR$    Identifier of area to right of last line.
+I
+I These values are defined by the following code:
+I
+.RE /$XX$/0/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$XC$/$XX$/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$YC$/$XX$/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$ND$/$XX$/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$PD$/$XX$/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$NC$/$XX$/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$PC$/$XX$/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$GI$/$XX$/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$IL$/$XX$/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$IR$/$XX$/
+I
+I Define also a parameter $NL$, the node length.
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$NL$/$XX$/
+I
+I Definition of the layout of an area map.
+I ---------- -- --- ------ -- -- ---- ---
+I
+I The following statements define indices of the first few elements of
+I the area-map array and of the initial and final nodes, which serve to
+I tie down the ends of the linked lists, as follows:
+I
+I    Index  Item indexed (contents of area-map-array element indexed
+I    -----  --------------------------------------------------------
+I    $LM$   Length of map - set by ARINAM.
+I    $MD$   Maximum distance between consecutive points in the map -
+I           set by ARINAM.
+I    $PX$   Index of the last node worked with - preserved from call
+I           to call for reasons of efficiency.
+I    $MS$   Map state - zeroed when edges are entered in the area map -
+I           set non-zero after intersections are detected and entered
+I           and area identifiers are adjusted.
+I    $LL$   Lower limit - index of last element used at the beginning
+I           of the area-map array.
+I    $UL$   Upper limit - index of last element used at the end of the
+I           area-map array.
+I    $NG$   Number of groups of edges currently installed in the area
+I           map
+I    $FN$   First element of first node.
+I    $LN$   First element of last node.
+I    $LE$   Last element used - $LE$ is the mimimum acceptable length
+I           of the area-map array.
+I
+.RE /$XX$/0/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$LM$/$XX$/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$MD$/$XX$/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$PX$/$XX$/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$MS$/$XX$/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$LL$/$XX$/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$UL$/$XX$/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$NG$/$XX$/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$FN$/$XX$/
+.RE /$XX$/<$XX$+$NL$-1>/
+I
+.RE /$XX$/<$XX$+1>/
+.RE /$LN$/$XX$/
+.RE /$XX$/<$XX$+$NL$-1>/
+I
+I Define the index of the last element used so far.
+I
+.RE /$LE$/$XX$/
+I
+I Selection of code to print timing information.
+I --------- -- ---- -- ----- ------ -----------
+I
+I The following statement either activates (.AC) or eliminates (.EL)
+I printing of timing information.  If timing is activated, a function
+I "SECOND(X)", where X is a dummy argument, must be provided; its
+I value is the elapsed CPU time.  Such a function is automatically
+I available from COS, on the Cray.
+I
+.EL T
+I
+I Selection of code to include CVS "$Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $" comments.
+I --------- -- ---- -- ------- --- ------ --------
+I
+I To include a CVS "$Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $" comment in each routine, use ".DE A"; else,
+I use ".EL A".
+I
+.DE A
+I
+I The AREAS common blocks
+I --- ----- ------ ------
+I
+I The following SAVE block contains the AREAS common block.  For
+I descriptions of all of the variables, see the commenting in the
+I block data routine ARBLDA, below.
+I
+.SAVE ARCOMN
+C
+C ARCOMN contains variables which are used by all the AREAS routines.
+C
+        COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
+     +                  IDC,IDI,IRC(16),RLA,RWA,RDI,RSI
+        SAVE   /ARCOMN/
+.END
+I
+I ---------------------------------------------------------------------
+I C O D E
+I ---------------------------------------------------------------------
+I
+I The BLOCK DATA routine ARBLDA
+I --- ----- ---- ------- ------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      BLOCK DATA ARBLDA
+C
+C Declare the AREAS common block.
+C
+.USE  ARCOMN
+C
+C Below are descriptions of all the common variables and default values
+C for those which require defaults.
+C
+C IAD is the type of arithmetic desired by the user, as follows:
+C
+C IAD=0 allows AREAS to decide what type of arithmetic to use.
+C IAD=1 forces the use of real arithmetic.
+C IAD=2 forces the use of double-precision arithmetic.
+C IAD=3 forces the use of multiple-precision arithmetic.
+C
+        DATA IAD / 0 /
+C
+C IAU is the type of arithmetic actually chosen for use, either by the
+C user or by AREAS itself, as follows:
+C
+C IAU=0 says that no choice has been made yet.
+C IAU=1 specifies the use of real arithmetic.
+C IAU=2 specifies the use of double-precision arithmetic.
+C IAU=3 specifies the use of multiple-precision arithmetic.
+C
+        DATA IAU / 0 /
+C
+C ILC is the largest coordinate value to be used.  ARINIT sets RLC
+C equal to REAL(ILC).
+C
+        DATA ILC / 1000000 /
+C
+C ILM is equal to ILC-1, RLM is equal to ILM, ILP is equal to ILC+1,
+C and RLP is equal to ILP.  All of these values are set by ARINIT.
+C
+C IBS is the base for the multiple-precision arithmetic, when that type
+C of arithmetic is selected.  Its value is set by ARINIT.  RBS is made
+C equal to REAL(IBS) and DBS is made equal to DBLE(IBS).
+C
+        DATA IBS / 0 /
+C
+C IDB is the internal parameter 'DB', which may be set non-zero by a
+C user program to turn on the production of debug plots.
+C
+        DATA IDB / 0 /
+C
+C IDC is the internal parameter 'DC', which may be set by a user
+C program to change the range of color indices used by ARDBPA.
+C
+        DATA IDC / 100 /
+C
+C IDI is the internal parameter 'DI', which may be retrieved in a user
+C version of the routine "APR".  Its value will be 1 if the polygon to
+C be processed is traced counter-clockwise (interior to the left), or a
+C 2 if the polygon is traced clockwise (interior to the right).
+C
+        DATA IDI / 0 /
+C
+C IRC is the internal parameter 'RC'.  For IGI = 1 to 16, IRC(IGI) says
+C how to reconcile contradictory area-identifier information for group
+C IGI.  (Groups with group identifiers greater than 16 are affected by
+C IRC(16).)  The default value of IRC(IGI) is zero, which says to do it
+C the original way, using the most recently-provided information for a
+C given area.  The value 1 says to do it a new way, using that area
+C identifier seen most frequently, but ignoring zeroes; the value 2
+C says to do it the new way, but not to ignore zeroes.  The values -1
+C and -2 mean the same as 1 and 2, respectively, except that, if there
+C are any negative values among the set of possible area identifiers
+C for a given area, then a -1 is used for the area.
+C
+        DATA IRC / 16*0 /
+C
+C RLA is the internal parameter 'AL', which specifies the length of the
+C arrowheads to be used on debug plots, stated as a fraction of the
+C distance across the plotter frame.
+C
+        DATA RLA / .008 /
+C
+C RWA is the internal parameter 'AW', which specifies the width of the
+C arrowheads to be used on debug plots, stated as a fraction of the
+C distance across the plotter frame.  RWA is actually half the width
+C of an arrowhead.
+C
+        DATA RWA / .002 /
+C
+C RDI is the internal parameter 'ID', which specifies the distance from
+C an edge to an identifier on a debug plot, stated as a fraction of the
+C distance across the plotter frame.
+C
+        DATA RDI / .004 /
+C
+C RSI is the internal parameter 'IS', which specifies the size (width)
+C of characters used to write identifiers on a debug plot, stated as a
+C fraction of the distance across the plotter frame.
+C
+        DATA RSI / .001 /
+C
+      END
+I
+I The function ARRAT2
+I --- -------- ------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      FUNCTION ARRAT2 (YVL,XVL)
+C
+C The function ARRAT2, given two real values YVL and XVL, approximates
+C the value of ATAN2 (YVL,XVL).  Because of the way in which ARRAT2 is
+C used, the approximation need not be very accurate; what's important
+C is that it should be fast.
+C
+        IF      (XVL.LT.0..AND.YVL.LE.0.)
+          IF (-XVL.GT.-YVL) THEN
+            ARRAT2=-$PI$+(YVL/XVL)/(1.+.28*(YVL/XVL)*(YVL/XVL))
+          ELSE
+            ARRAT2=-$HP$-(XVL/YVL)/(1.+.28*(XVL/YVL)*(XVL/YVL))
+          END IF
+        ELSE IF (XVL.GE.0..AND.YVL.LT.0.)
+          IF ( XVL.LT.-YVL) THEN
+            ARRAT2=-$HP$-(XVL/YVL)/(1.+.28*(XVL/YVL)*(XVL/YVL))
+          ELSE
+            ARRAT2=      (YVL/XVL)/(1.+.28*(YVL/XVL)*(YVL/XVL))
+          END IF
+        ELSE IF (XVL.GT.0..AND.YVL.GE.0.)
+          IF ( XVL.GT. YVL) THEN
+            ARRAT2=      (YVL/XVL)/(1.+.28*(YVL/XVL)*(YVL/XVL))
+          ELSE
+            ARRAT2= $HP$-(XVL/YVL)/(1.+.28*(XVL/YVL)*(XVL/YVL))
+          END IF
+        ELSE IF (XVL.LE.0..AND.YVL.GT.0.)
+          IF (-XVL.LT. YVL) THEN
+            ARRAT2= $HP$-(XVL/YVL)/(1.+.28*(XVL/YVL)*(XVL/YVL))
+          ELSE
+            ARRAT2= $PI$+(YVL/XVL)/(1.+.28*(YVL/XVL)*(YVL/XVL))
+          END IF
+        ELSE
+          ARRAT2=0.
+        END IF
+        RETURN
+      END
+I
+I The function ARDAT2
+I --- -------- ------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      FUNCTION ARDAT2 (YVL,XVL)
+C
+C The function ARDAT2, given two double precision values YVL and XVL,
+C approximates the value of DATAN2 (YVL,XVL).  Because of the way in
+C which ARDAT2 is used, the approximation need not be very accurate;
+C what's important is that it should be fast.
+C
+        DOUBLE PRECISION YVL,XVL
+C
+        IF      (XVL.LT.0.D0.AND.YVL.LE.0.D0)
+          IF (-XVL.GT.-YVL) THEN
+            ARDAT2=REAL(-$DPPI$+(YVL/XVL)/
+     +                                 (1.D0+.28D0*(YVL/XVL)*(YVL/XVL)))
+          ELSE
+            ARDAT2=REAL(-$DPHP$-(XVL/YVL)/
+     +                                 (1.D0+.28D0*(XVL/YVL)*(XVL/YVL)))
+          END IF
+        ELSE IF (XVL.GE.0.D0.AND.YVL.LT.0.D0)
+          IF ( XVL.LT.-YVL) THEN
+            ARDAT2=REAL(-$DPHP$-(XVL/YVL)/
+     +                                 (1.D0+.28D0*(XVL/YVL)*(XVL/YVL)))
+          ELSE
+            ARDAT2=REAL(        (YVL/XVL)/
+     +                                 (1.D0+.28D0*(YVL/XVL)*(YVL/XVL)))
+          END IF
+        ELSE IF (XVL.GT.0.D0.AND.YVL.GE.0.D0)
+          IF ( XVL.GT. YVL) THEN
+            ARDAT2=REAL(        (YVL/XVL)/
+     +                                 (1.D0+.28D0*(YVL/XVL)*(YVL/XVL)))
+          ELSE
+            ARDAT2=REAL( $DPHP$-(XVL/YVL)/
+     +                                 (1.D0+.28D0*(XVL/YVL)*(XVL/YVL)))
+          END IF
+        ELSE IF (XVL.LE.0.D0.AND.YVL.GT.0.D0)
+          IF (-XVL.LT. YVL) THEN
+            ARDAT2=REAL( $DPHP$-(XVL/YVL)/
+     +                                 (1.D0+.28D0*(XVL/YVL)*(XVL/YVL)))
+          ELSE
+            ARDAT2=REAL( $DPPI$+(YVL/XVL)/
+     +                                 (1.D0+.28D0*(YVL/XVL)*(YVL/XVL)))
+          END IF
+        ELSE
+          ARDAT2=0.
+        END IF
+        RETURN
+      END
+I
+I The subroutine ARDBDA.
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE ARDBDA (X1,Y1,X2,Y2,IL,IR,IF,IG)
+C
+C The routine ARDBDA is called by ARDBPA, below, to draw an arrow from
+C the point (X1,Y1) to the point (X2,Y2), in the fractional coordinate
+C system.  The left and right area identifiers IL and IR are written
+C in the proper positions relative to the arrow.  If IF is less than
+C or equal to zero, the group identifier IG is written on the arrow.
+C In order to prevent too many arrowheads from appearing, we keep track
+C of the cumulative distance along edges being drawn (in DT).
+C
+C Declare the AREAS common block.
+C
+.USE  ARCOMN
+C
+C Declare a local common block used to communicate with ARDBPA.
+C
+        COMMON /ARCOM1/ DT
+C
+C Define character variables required to write the area identifiers.
+C
+        CHARACTER*7 CS
+        CHARACTER*1 IC
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('ARDBDA - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Draw the body of the arrow.
+C
+        CALL PLOTIF(X1,Y1,0)
+        IF (ICFELL('ARDBDA',2).NE.0) RETURN
+        CALL PLOTIF(X2,Y2,1)
+        IF (ICFELL('ARDBDA',3).NE.0) RETURN
+C
+C Compute the length of the arrow.  If it's zero, quit.
+C
+        DX=X2-X1
+        DY=Y2-Y1
+        DP=SQRT(DX*DX+DY*DY)
+C
+        IF (DP.EQ.0.) RETURN
+C
+C If area identifiers are to be written and they are in a reasonable
+C range (less than 1,000,000 in absolute value), write them on either
+C side of the arrow.
+C
+        IF (RDI.GT.0..AND.RSI.GT.0..AND.ABS(IL).LT.1000000.AND.
+     +                                  ABS(IR).LT.1000000) THEN
+C
+          XC=.5*(X1+X2)
+          YC=.5*(Y1+Y2)
+          XL=XC-RDI*DY/DP
+          YL=YC+RDI*DX/DP
+          WRITE (CS,'(I7)') IL
+          NC=0
+          DO 101 I=1,7
+            IC=CS(I:I)
+            IF (IC.NE.' ') THEN
+              NC=NC+1
+              CS(NC:NC)=IC
+            END IF
+  101     CONTINUE
+          CALL PLCHLQ (XL,YL,CS(1:NC),RSI,0.,0.)
+          IF (ICFELL('ARDBDA',4).NE.0) RETURN
+C
+          XR=XC+RDI*DY/DP
+          YR=YC-RDI*DX/DP
+          WRITE (CS,'(I7)') IR
+          NC=0
+          DO 102 I=1,7
+            IC=CS(I:I)
+            IF (IC.NE.' ') THEN
+              NC=NC+1
+              CS(NC:NC)=IC
+            END IF
+  102     CONTINUE
+          CALL PLCHLQ (XR,YR,CS(1:NC),RSI,0.,0.)
+          IF (ICFELL('ARDBDA',5).NE.0) RETURN
+C
+        END IF
+C
+C If all groups of edges are being put on the same plot, write the
+C group identifier on the arrow.
+C
+        IF (RSI.GT.0..AND.IF.LE.0.AND.IG.LT.1000000) THEN
+          XC=.5*(X1+X2)
+          YC=.5*(Y1+Y2)
+          WRITE (CS,'(I6)') IG
+          NC=0
+          DO 103 I=1,6
+            IC=CS(I:I)
+            IF (IC.NE.' ') THEN
+              NC=NC+1
+              CS(NC:NC)=IC
+            END IF
+  103     CONTINUE
+          CALL PLCHLQ (XC,YC,CS(1:NC),RSI,0.,0.)
+          IF (ICFELL('ARDBDA',6).NE.0) RETURN
+        END IF
+C
+C If an arrowhead is to be drawn, do that now, making sure that the
+C cumulative length of the edge being drawn is great enough.
+C
+        IF (RLA.GT.0..AND.RWA.GT.0.) THEN
+          DT=DT+DP
+          IF(DT.LE.RLA) RETURN
+          DT=0.
+          B=(DP-RLA)/DP
+          A=1.-B
+          XT=A*X1+B*X2
+          YT=A*Y1+B*Y2
+          X3=XT-RWA*DY/DP
+          Y3=YT+RWA*DX/DP
+          X4=XT+RWA*DY/DP
+          Y4=YT-RWA*DX/DP
+          CALL PLOTIF (X3,Y3,0)
+          IF (ICFELL('ARDBDA',7).NE.0) RETURN
+          CALL PLOTIF (X2,Y2,1)
+          IF (ICFELL('ARDBDA',8).NE.0) RETURN
+          CALL PLOTIF (X4,Y4,1)
+          IF (ICFELL('ARDBDA',9).NE.0) RETURN
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
+I
+I The subroutine ARDBPA.
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE ARDBPA (IAMA,IGIP,LABL)
+C
+        DIMENSION IAMA(*)
+C
+        CHARACTER*(*) LABL
+C
+C The routine ARDBPA produces a picture of that part of the contents of
+C the area map IAMA which belongs to the group IGIP; if IGIP is zero or
+C negative, all groups of edges are shown.  The character string LABL
+C will be used as a label for the picture.
+C
+C Declare the AREAS common block.
+C
+.USE  ARCOMN
+C
+C The common block ARCOM1 is used to communicate with the arrow-drawing
+C routine ARDBDA.
+C
+        COMMON /ARCOM1/ DT
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('ARDBPA - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Pull out the length of the area map and check for initialization.
+C
+        LAMA=IAMA($LM$)
+C
+        IF (IAU.EQ.0.OR.IAMA(LAMA).NE.LAMA)
+          CALL SETER ('ARDBPA - INITIALIZATION DONE IMPROPERLY',2,1)
+          RETURN
+        END IF
+C
+C Save the current polyline color index and text color index.
+C
+        CALL GQPLCI (IERR,IPCI)
+        IF (IERR.NE.0)
+          CALL SETER ('ARDBPA - ERROR EXIT FROM GQPLCI',3,1)
+          RETURN
+        END IF
+        CALL GQTXCI (IERR,ITCI)
+        IF (IERR.NE.0)
+          CALL SETER ('ARDBPA - ERROR EXIT FROM GQTXCI',4,1)
+          RETURN
+        END IF
+C
+C Save the current state of the SET call and switch to the fractional
+C coordinate system.
+C
+        CALL GETSET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+        IF (ICFELL('ARDBPA',5).NE.0) RETURN
+        CALL    SET (  0.,  1.,  0.,  1.,  0.,  1.,  0.,  1.,   1)
+        IF (ICFELL('ARDBPA',6).NE.0) RETURN
+C
+C Define colors to use for different kinds of edges, as follows:
+C
+C   COLOR      LEFT AREA IDENTIFIER          RIGHT AREA IDENTIFIER
+C
+C   Magenta    less than or equal to zero    less than or equal to zero
+C   Yellow     less than or equal to zero    greater than zero
+C   Cyan       greater than zero             less than or equal to zero
+C   White      great than zero               greater than zero
+C
+C Gray is used for edges for which the group identifier is negated,
+C which has a special meaning.
+C
+        CALL GSCR (1,IDC+1,1.,0.,1.)
+        CALL GSCR (1,IDC+2,1.,1.,0.)
+        CALL GSCR (1,IDC+3,0.,1.,1.)
+        CALL GSCR (1,IDC+4,1.,1.,1.)
+        CALL GSCR (1,IDC+5,.8,.8,.8)
+C
+C Switch to white initially.
+C
+        CALL PLOTIF (0.,0.,2)
+        IF (ICFELL('ARDBPA',7).NE.0) RETURN
+        CALL GSPLCI (IDC+4)
+        CALL GSTXCI (IDC+4)
+        ICLO=IDC+4
+C
+C Put a label at the top of the plot.
+C
+        CALL PLCHLQ (.5,.98,LABL,.015,0.,0.)
+        IF (ICFELL('ARDBPA',8).NE.0) RETURN
+C
+C Trace the edges in the area map, drawing arrows as we go.
+C
+        DT=0.
+        INDX=$FN$
+        RXCN=.5
+        RYCN=.5
+C
+  101   RXCO=RXCN
+        RYCO=RYCN
+C
+        IF (INDX.LT.$FN$.OR.
+     +      INDX.GT.IAMA($LL$).OR.
+     +      MOD(INDX-$FN$,$NL$).NE.0)
+          CALL SETER ('ARDBPA - BAD POINTERS IN AREA MAP',9,1)
+          RETURN
+        END IF
+C
+        RXCN=REAL(IAMA(INDX+$XC$))/RLC
+        RYCN=REAL(IAMA(INDX+$YC$))/RLC
+C
+        IF (IAMA(INDX+$GI$).NE.0) THEN
+          IGID=ABS(IAMA(INDX+$GI$))
+          IF (IGID.LT.IAMA($UL$)) THEN
+            IGID=IAMA(IAMA($LM$)-IGID)/2
+          ELSE
+            IGID=IAMA(IGID)/2
+          END IF
+          IF (IGIP.LE.0.OR.IGID.EQ.IGIP) THEN
+            IAIL=IAMA(INDX+$IL$)
+            IF (IAIL.GT.0) IAIL=IAMA(IAIL)/2
+            IAIR=IAMA(INDX+$IR$)
+            IF (IAIR.GT.0) IAIR=IAMA(IAIR)/2
+            IF (IAMA(INDX+$GI$).GT.0) THEN
+              IF (IAIL.LE.0.AND.IAIR.LE.0) ICLN=IDC+1
+              IF (IAIL.LE.0.AND.IAIR.GT.0) ICLN=IDC+2
+              IF (IAIL.GT.0.AND.IAIR.LE.0) ICLN=IDC+3
+              IF (IAIL.GT.0.AND.IAIR.GT.0) ICLN=IDC+4
+            ELSE
+              ICLN=IDC+5
+            END IF
+            IF (ICLN.NE.ICLO) THEN
+              CALL PLOTIF (0.,0.,2)
+              IF (ICFELL('ARDBPA',10).NE.0) RETURN
+              CALL GSPLCI (ICLN)
+              CALL GSTXCI (ICLN)
+              ICLO=ICLN
+            END IF
+            CALL ARDBDA (RXCO,RYCO,RXCN,RYCN,IAIL,IAIR,IGIP,IGID)
+            IF (ICFELL('ARDBPA',11).NE.0) RETURN
+          END IF
+        ELSE
+          DT=0.
+        END IF
+C
+        IF (IAMA(INDX+$ND$).NE.0) THEN
+          INDX=IAMA(INDX+$ND$)
+          GO TO 101
+        END IF
+C
+C Advance the frame.
+C
+        CALL FRAME
+        IF (ICFELL('ARDBPA',12).NE.0) RETURN
+C
+C Restore the polyline color index and the text color index.
+C
+        CALL GSPLCI (IPCI)
+        CALL GSTXCI (ITCI)
+C
+C Restore the original SET call.
+C
+        CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+        IF (ICFELL('ARDBPA',13).NE.0) RETURN
+C
+C Done.
+C
+        RETURN
+C
+      END
+I
+I The subroutine ARDRLN.
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE ARDRLN (IAM,XCD,YCD,NCD,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+C
+        DIMENSION IAM(*),XCD(*),YCD(*),XCS(*),YCS(*),IAI(*),IAG(*)
+C
+C The routine ARDRLN allows the caller to draw a polyline across the
+C area represented by an area map.  The polyline is broken into pieces
+C by the boundary lines in the map.  For each piece, the user routine
+C LPR is called.
+C
+C IAM is the array holding the area map, created by prior calls to the
+C routines ARINAM and AREDAM.
+C
+C The arrays XCD and YCD hold the NCD coordinates of the points defining
+C the polyline.  Coordinates are given in the current user system, as
+C defined by the last SET call.
+C
+C The arrays XCS and YCS are used, in a call to LPR, to hold the X
+C and Y coordinates of points defining a particular subline.  Each is
+C dimensioned MCS.
+C
+C The arrays IAG and IAI are used, in a call to LPR, to hold group and
+C area identifiers of the subline defined by XCS and YCS.  Each is
+C dimensioned MAI.
+C
+C LPR is the user's line-processing routine.  It must be declared in
+C an EXTERNAL statement in the routine which calls ARDRLN.  It will be
+C called using a statement like
+C
+C       CALL LPR (XCS,YCS,NCS,IAI,IAG,NAI)
+C
+C where XCS and YCS hold the normalized device coordinates of NCS points
+C defining a portion of the original polyline and IAI and IAG hold NAI
+C area-identifier/group-identifier pairs for the area within which that
+C piece of the polyline lies.
+C
+C Declare the AREAS common block.
+C
+.USE  ARCOMN
+C
+C Declare the BLOCK DATA routine external, which should force it to
+C load from a binary library.
+C
+        EXTERNAL ARBLDA
+C
+C Define a few double precision variables.
+C
+        DOUBLE PRECISION DPT,DX0,DY0
+C
+C Declare the arrays which keep track of intersection points.
+C
+        DIMENSION XCI(10),YCI(10),DSI(10)
+C
+C Define the arrays which determine the multiple-precision operations
+C to be done by ARMPIA.
+C
+        DIMENSION IO1(4,8),IO2(4,18),IO3(4,4)
+C
+        DATA IO1 / 1 ,  1 ,  0 ,  0 ,
+     +             1 ,  2 ,  0 ,  0 ,
+     +             1 ,  3 ,  0 ,  0 ,
+     +             1 ,  4 ,  0 ,  0 ,
+     +             4 ,  5 ,  1 ,  2 ,
+     +             4 ,  6 ,  3 ,  4 ,
+     +             3 ,  7 ,  5 ,  6 ,
+     +             5 ,  7 ,  0 ,  0 /
+        DATA IO2 / 1 ,  7 ,  0 ,  0 ,
+     +             1 ,  8 ,  0 ,  0 ,
+     +             4 ,  9 ,  7 ,  8 ,
+     +             1 ,  7 ,  0 ,  0 ,
+     +             1 ,  8 ,  0 ,  0 ,
+     +             4 , 10 ,  7 ,  8 ,
+     +             3 ,  5 ,  9 , 10 ,
+     +             1 ,  7 ,  0 ,  0 ,
+     +             1 ,  8 ,  0 ,  0 ,
+     +             4 ,  9 ,  7 ,  8 ,
+     +             1 ,  7 ,  0 ,  0 ,
+     +             1 ,  8 ,  0 ,  0 ,
+     +             4 , 10 ,  7 ,  8 ,
+     +             3 ,  6 ,  9 , 10 ,
+     +             4 ,  7 ,  3 ,  5 ,
+     +             4 ,  8 ,  1 ,  6 ,
+     +             3 ,  9 ,  7 ,  8 ,
+     +             5 ,  9 ,  0 ,  0 /
+        DATA IO3 / 4 ,  7 ,  2 ,  5 ,
+     +             4 ,  8 ,  4 ,  6 ,
+     +             3 ,  9 ,  7 ,  8 ,
+     +             5 ,  9 ,  0 ,  0 /
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('ARDRLN - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Pull out the length of the area map and check for initialization.
+C
+        LAM=IAM($LM$)
+C
+        IF (IAU.EQ.0.OR.IAM(LAM).NE.LAM)
+          CALL SETER ('ARDRLN - INITIALIZATION DONE IMPROPERLY',2,1)
+          RETURN
+        END IF
+C
+C If there are too few points in the input arrays, do nothing.
+C
+        IF (NCD.LE.1) RETURN
+C
+C If it has not already been done, find points of intersection and
+C incorporate them into the map and then adjust area identifiers.
+C
+        IF (IAM($MS$).EQ.0)
+          CALL ARPRAM (IAM,0,0,0)
+          IF (ICFELL('ARDRLN',3).NE.0) RETURN
+        END IF
+C
+C Pull out the current value of the pointer IPX.
+C
+        IPX=IAM($PX$)
+C
+C Use GETSET to set up parameters allowing us to map X and Y coordinates
+C from the user system to the local integer system.
+C
+        CALL GETSET (FFL,FFR,FFB,FFT,FUL,FUR,FUB,FUT,ILL)
+        IF (ICFELL('ARDRLN',4).NE.0) RETURN
+        ILX=(ILL-1)/2
+        ILY=MOD(ILL-1,2)
+C
+C Re-call SET as needed for LPR.
+C
+        CALL SET (FFL,FFR,FFB,FFT,FFL,FFR,FFB,FFT,1)
+        IF (ICFELL('ARDRLN',5).NE.0) RETURN
+C
+C If the printing of timing information is turned on, initialize the
+C two elapsed-time cells.
+C
+T       ET1=0.
+T       ET2=0.
+C
+C Transform the coordinates of the first point of the polyline and put
+C them in the output coordinate arrays.
+C
+        ICD=1
+        INVOKE (COMPUTE-XCN-AND-YCN)
+C
+        XCS(1)=XCN
+        YCS(1)=YCN
+        NCS=1
+C
+C Loop through the rest of the points of the polyline.  At each point,
+C check for intersections of the line segment ending at that point with
+C edges in the area map and take the appropriate actions.
+C
+        FOR (ICD = 2 TO NCD)
+C
+          IXO=IXN
+          IYO=IYN
+          XCO=XCN
+          YCO=YCN
+C
+          INVOKE (COMPUTE-XCN-AND-YCN)
+C
+          REPEAT
+C
+            NIF=0
+C
+T           ETM=SECOND(DMY)
+C
+            IX1=IXO
+            IY1=IYO
+            IX2=IXN
+            IY2=IYN
+            FX1=XCO
+            FY1=YCO
+            FX2=XCN
+            FY2=YCN
+C
+            X21=SIGN(.1,FX2-FX1)
+            Y21=SIGN(.1,FY2-FY1)
+C
+            IXL=MIN(IXO,IXN)
+            IXR=MAX(IXO,IXN)+1
+C
+            LOOP
+              IF (IAM(IPX+$XC$)+IAM($MD$).LE.IXL)
+                IPX=IAM(IPX+$NC$)
+              ELSE IF (IAM(IAM(IPX+$PC$)+$XC$)+IAM($MD$).GT.IXL)
+                IPX=IAM(IPX+$PC$)
+              ELSE
+                EXIT
+              END IF
+            END LOOP
+C
+            WHILE (IAM(IPX+$XC$).LT.IXR)
+              IF (IAM(IPX+$GI$).GT.0.AND.
+     +           (IAM(IAM(IPX+$PD$)+$XC$).GT.IAM(IPX+$XC$).OR.
+     +           (IAM(IAM(IPX+$PD$)+$XC$).EQ.IAM(IPX+$XC$).AND.
+     +            IAM(IAM(IPX+$PD$)+$YC$).GT.IAM(IPX+$YC$))).AND.
+     +            IAM(IAM(IPX+$PD$)+$XC$).GT.IXL)
+                IX3=IAM(IPX+$XC$)
+                IY3=IAM(IPX+$YC$)
+                IX4=IAM(IAM(IPX+$PD$)+$XC$)
+                IY4=IAM(IAM(IPX+$PD$)+$YC$)
+                FX3=REAL(IX3)
+                FY3=REAL(IY3)
+                FX4=REAL(IX4)
+                FY4=REAL(IY4)
+                IF (ABS(IX1+IX2-IX3-IX4).LE.
+     +              ABS(IX1-IX2)+ABS(IX3-IX4).AND.
+     +              ABS(IY1+IY2-IY3-IY4).LE.
+     +              ABS(IY1-IY2)+ABS(IY3-IY4))
+                  INVOKE (CHECK-FOR-INTERSECTION)
+                END IF
+              END IF
+              IF (IAM(IAM(IPX+$ND$)+$GI$).GT.0.AND.
+     +           (IAM(IAM(IPX+$ND$)+$XC$).GT.IAM(IPX+$XC$).OR.
+     +           (IAM(IAM(IPX+$ND$)+$XC$).EQ.IAM(IPX+$XC$).AND.
+     +            IAM(IAM(IPX+$ND$)+$YC$).GT.IAM(IPX+$YC$))).AND.
+     +            IAM(IAM(IPX+$ND$)+$XC$).GT.IXL)
+                IX3=IAM(IPX+$XC$)
+                IY3=IAM(IPX+$YC$)
+                IX4=IAM(IAM(IPX+$ND$)+$XC$)
+                IY4=IAM(IAM(IPX+$ND$)+$YC$)
+                FX3=REAL(IX3)
+                FY3=REAL(IY3)
+                FX4=REAL(IX4)
+                FY4=REAL(IY4)
+                IF (ABS(IX1+IX2-IX3-IX4).LE.
+     +              ABS(IX1-IX2)+ABS(IX3-IX4).AND.
+     +              ABS(IY1+IY2-IY3-IY4).LE.
+     +              ABS(IY1-IY2)+ABS(IY3-IY4))
+                  INVOKE (CHECK-FOR-INTERSECTION)
+                END IF
+              END IF
+              IPX=IAM(IPX+$NC$)
+            END WHILE
+C
+T           ET1=ET1+(SECOND(DMY)-ETM)
+C
+            IF (NCS.EQ.MCS)
+              INVOKE (DUMP-THE-CURRENT-POLYLINE)
+            END IF
+C
+            FOR (IIF = 1 TO MIN(NIF,10))
+              NCS=NCS+1
+              XCS(NCS)=XCI(IIF)
+              YCS(NCS)=YCI(IIF)
+              INVOKE (DUMP-THE-CURRENT-POLYLINE)
+            END FOR
+C
+            XCO=XCS(NCS)
+            YCO=YCS(NCS)
+            IXO=INT(XCO)
+            IYO=INT(YCO)
+C
+          UNTIL (NIF.LE.10)
+C
+          IF (ABS(XCN-XCS(NCS)).GT.1..OR.
+     +        ABS(YCN-YCS(NCS)).GT.1.)
+            NCS=NCS+1
+            XCS(NCS)=XCN
+            YCS(NCS)=YCN
+          END IF
+C
+        END FOR
+C
+C Dump the remaining polyline fragment, if any.
+C
+        INVOKE (DUMP-THE-CURRENT-POLYLINE)
+C
+T       PRINT * , 'ARDRLN - TIME SPENT ON INTERSECTION SEARCH = ',ET1
+T       PRINT * , 'ARDRLN - TIME SPENT ON SETTING IDS = ',ET2
+C
+C Restore the new value of IPX to the area map.
+C
+        IAM($PX$)=IPX
+C
+C Restore the original SET call.
+C
+        CALL SET (FFL,FFR,FFB,FFT,FUL,FUR,FUB,FUT,ILL)
+        IF (ICFELL('ARDRLN',6).NE.0) RETURN
+C
+C Return.
+C
+        RETURN
+C
+C The following internal procedure computes the X and Y coordinates of
+C the next point of the polyline, in the internal coordinate system used
+C in the area map.
+C
+        BLOCK (COMPUTE-XCN-AND-YCN)
+C
+          IF (ILX.EQ.0)
+            IXN=NINT(MAX(1.,MIN(RLM,
+     +                   RLC*(FFL+(FFR-FFL)*(XCD(ICD)-FUL)/(FUR-FUL)))))
+          ELSE
+            IXN=NINT(MAX(1.,MIN(RLM,
+     +                    RLC*(FFL+(FFR-FFL)*(ALOG(XCD(ICD))-ALOG(FUL))/
+     +                                         (ALOG(FUR)-ALOG(FUL))))))
+          END IF
+          IF (ILY.EQ.0)
+            IYN=NINT(MAX(1.,MIN(RLM,
+     +                   RLC*(FFB+(FFT-FFB)*(YCD(ICD)-FUB)/(FUT-FUB)))))
+          ELSE
+            IYN=NINT(MAX(1.,MIN(RLM,
+     +                    RLC*(FFB+(FFT-FFB)*(ALOG(YCD(ICD))-ALOG(FUB))/
+     +                                         (ALOG(FUT)-ALOG(FUB))))))
+          END IF
+C
+          XCN=REAL(IXN)
+          YCN=REAL(IYN)
+C
+        END BLOCK
+C
+C The following internal procedure checks for intersection of the line
+C joining (FX1,FY1) and (FX2,FY2) with the line joining (FX3,FY3) and
+C (FX4,FY4).  For each such point of intersection found, an entry is
+C made in a stack.
+C
+        BLOCK (CHECK-FOR-INTERSECTION)
+C
+          X43=SIGN(.1,FX4-FX3)
+          Y43=SIGN(.1,FY4-FY3)
+C
+          IF (IAU.EQ.1)
+            TMP=(FX2-FX1)*(FY4-FY3)-(FX4-FX3)*(FY2-FY1)
+          ELSE IF (IAU.EQ.2)
+            DPT=DBLE(IX2-IX1)*DBLE(IY4-IY3)-
+     +          DBLE(IX4-IX3)*DBLE(IY2-IY1)
+            TMP=REAL(DPT)
+          ELSE
+            IO1(3, 1)=IX2-IX1
+            IO1(3, 2)=IY4-IY3
+            IO1(3, 3)=IX4-IX3
+            IO1(3, 4)=IY2-IY1
+            CALL ARMPIA (IO1,DPT,IER)
+            IF (IER.NE.0)
+              INVOKE (ERROR-IN-ARMPIA,NR)
+            END IF
+            TMP=REAL(DPT)
+          END IF
+C
+          IF (TMP.NE.0.)
+C
+            IF (IAU.EQ.1)
+              FX0=((FX4-FX3)*(FX2*FY1-FX1*FY2)
+     +            -(FX2-FX1)*(FX4*FY3-FX3*FY4))/TMP
+            ELSE IF (IAU.EQ.2)
+              FX0=REAL((DBLE(IX4-IX3)*
+     +                 (DBLE(IX2)*DBLE(IY1)-DBLE(IX1)*DBLE(IY2))
+     +                 -DBLE(IX2-IX1)*
+     +                 (DBLE(IX4)*DBLE(IY3)-DBLE(IX3)*DBLE(IY4)))/DPT)
+            ELSE
+              IO2(3, 1)=IX2
+              IO2(3, 2)=IY1
+              IO2(3, 4)=IX1
+              IO2(3, 5)=IY2
+              IO2(3, 8)=IX4
+              IO2(3, 9)=IY3
+              IO2(3,11)=IX3
+              IO2(3,12)=IY4
+              CALL ARMPIA (IO2,DX0,IER)
+              IF (IER.NE.0)
+                INVOKE (ERROR-IN-ARMPIA,NR)
+              END IF
+              FX0=REAL(DX0/DPT)
+            END IF
+C
+            IF (IAU.EQ.1)
+              FY0=((FY4-FY3)*(FX2*FY1-FX1*FY2)
+     +            -(FY2-FY1)*(FX4*FY3-FX3*FY4))/TMP
+            ELSE IF (IAU.EQ.2)
+              FY0=REAL((DBLE(IY4-IY3)*
+     +                 (DBLE(IX2)*DBLE(IY1)-DBLE(IX1)*DBLE(IY2))
+     +                 -DBLE(IY2-IY1)*
+     +                 (DBLE(IX4)*DBLE(IY3)-DBLE(IX3)*DBLE(IY4)))/DPT)
+            ELSE
+              CALL ARMPIA (IO3,DY0,IER)
+              IF (IER.NE.0)
+                INVOKE (ERROR-IN-ARMPIA,NR)
+              END IF
+              FY0=REAL(DY0/DPT)
+            END IF
+C
+            IF ((FX0-FX1+X21)*(FX0-FX2-X21).LT.0..AND.
+     +          (FY0-FY1+Y21)*(FY0-FY2-Y21).LT.0..AND.
+     +          (FX0-FX3+X43)*(FX0-FX4-X43).LT.0..AND.
+     +          (FY0-FY3+Y43)*(FY0-FY4-Y43).LT.0.)
+C
+              DS0=ABS(FX0-FX1)+ABS(FY0-FY1)
+C
+              FOR (IIF = 1 TO MIN(NIF,10))
+                IF (ABS(DS0-DSI(IIF)).LT.1.) GO TO 102
+                IF (DS0.LT.DSI(IIF))
+                  IOF=IIF
+                  GO TO 101
+                END IF
+              END FOR
+C
+              IOF=NIF+1
+C
+  101         IF (IOF.LE.10)
+                FOR (IIF = MIN(NIF,9) TO IOF BY -1)
+                  XCI(IIF+1)=XCI(IIF)
+                  YCI(IIF+1)=YCI(IIF)
+                  DSI(IIF+1)=DSI(IIF)
+                END FOR
+                XCI(IOF)=FX0
+                YCI(IOF)=FY0
+                DSI(IOF)=DS0
+              END IF
+C
+              NIF=NIF+1
+C
+            END IF
+C
+          END IF
+C
+  102     CONTINUE
+C
+        END BLOCK
+C
+C The following internal procedure dumps the current contents of the
+C polyline output arrays and prepares them to continue receiving points.
+C
+        BLOCK (DUMP-THE-CURRENT-POLYLINE)
+C
+          IF (NCS.GT.1)
+C
+            XCP=REAL(INT(.5*(XCS(NCS/2)+XCS(NCS/2+1))))+.5
+            YCP=REAL(INT(.5*(YCS(NCS/2)+YCS(NCS/2+1))))+.5
+C
+            INVOKE (GET-AREA-AND-GROUP-INFO)
+C
+            XSV=XCS(NCS)
+            YSV=YCS(NCS)
+C
+            DO (I=1,NCS)
+              XCS(I)=XCS(I)/RLC
+              YCS(I)=YCS(I)/RLC
+            END DO
+C
+            IF (NAI.EQ.IAM($NG$))
+              CALL LPR (XCS,YCS,NCS,IAI,IAG,NAI)
+              IF (ICFELL('ARDRLN',7).NE.0) RETURN
+            ELSE
+              CALL SETER ('ARDRLN - ALGORITHM FAILURE',8,1)
+              RETURN
+            END IF
+C
+            XCS(1)=XSV
+            YCS(1)=YSV
+            NCS=1
+C
+          END IF
+C
+        END BLOCK
+C
+C The following internal procedure picks up area identifier and group
+C identifier information for the point (XCP,YCP) and puts it into the
+C user's arrays.
+C
+        BLOCK (GET-AREA-AND-GROUP-INFO)
+C
+T         ETM=SECOND(DMY)
+C
+          IXP=INT(XCP)
+C
+          NAI=0
+C
+          LOOP
+            IF (IAM(IPX+$XC$)+IAM($MD$).LE.IXP)
+              IPX=IAM(IPX+$NC$)
+            ELSE IF (IAM(IAM(IPX+$PC$)+$XC$)+IAM($MD$).GT.IXP)
+              IPX=IAM(IPX+$PC$)
+            ELSE
+              EXIT
+            END IF
+          END LOOP
+C
+          IGI=LAM
+C
+          WHILE (IGI.GT.IAM($UL$))
+            IGI=IGI-1
+            IF (MOD(IAM(IGI),2).EQ.0)
+              IAF=0
+              YCM=RLP
+              IPT=IPX
+              WHILE (IAM(IPT+$XC$).LE.IXP)
+                IF (ABS(IAM(IPT+$GI$)).EQ.IGI.AND.
+     +              IAM(IAM(IPT+$PD$)+$XC$).GT.IXP)
+                  IF (IAU.EQ.1)
+                    YTM=REAL(IAM(IPT+$YC$))+
+     +                 (XCP-REAL(IAM(IPT+$XC$)))*
+     +                 (REAL(IAM(IAM(IPT+$PD$)+$YC$)-IAM(IPT+$YC$))/
+     +                  REAL(IAM(IAM(IPT+$PD$)+$XC$)-IAM(IPT+$XC$)))
+                  ELSE
+                    YTM=REAL(DBLE(IAM(IPT+$YC$))+
+     +                 (DBLE(XCP)-DBLE(IAM(IPT+$XC$)))*
+     +                 (DBLE(IAM(IAM(IPT+$PD$)+$YC$)-IAM(IPT+$YC$))/
+     +                  DBLE(IAM(IAM(IPT+$PD$)+$XC$)-IAM(IPT+$XC$))))
+                  END IF
+                  IF (YTM.GE.YCP.AND.YTM.LT.YCM)
+                    IAF=IPT+$IL$
+                    YCM=YTM
+                  END IF
+                END IF
+                IF (ABS(IAM(IAM(IPT+$ND$)+$GI$)).EQ.IGI.AND.
+     +              IAM(IAM(IPT+$ND$)+$XC$).GT.IXP)
+                  IF (IAU.EQ.1)
+                    YTM=REAL(IAM(IPT+$YC$))+
+     +                 (XCP-REAL(IAM(IPT+$XC$)))*
+     +                 (REAL(IAM(IAM(IPT+$ND$)+$YC$)-IAM(IPT+$YC$))/
+     +                  REAL(IAM(IAM(IPT+$ND$)+$XC$)-IAM(IPT+$XC$)))
+                  ELSE
+                    YTM=REAL(DBLE(IAM(IPT+$YC$))+
+     +                 (DBLE(XCP)-DBLE(IAM(IPT+$XC$)))*
+     +                 (DBLE(IAM(IAM(IPT+$ND$)+$YC$)-IAM(IPT+$YC$))/
+     +                  DBLE(IAM(IAM(IPT+$ND$)+$XC$)-IAM(IPT+$XC$))))
+                  END IF
+                  IF (YTM.GE.YCP.AND.YTM.LT.YCM)
+                    IAF=IAM(IPT+$ND$)+$IR$
+                    YCM=YTM
+                  END IF
+                END IF
+                IPT=IAM(IPT+$NC$)
+              END WHILE
+C
+              IF (IAF.NE.0)
+                ITI=IAM(IAF)
+                IF (ITI.GE.IAM($UL$)) ITI=IAM(ITI)/2
+              ELSE
+                ITI=-1
+              END IF
+C
+              IF (NAI.LT.MAI)
+                NAI=NAI+1
+                IAI(NAI)=ITI
+                IAG(NAI)=IAM(IGI)/2
+              ELSE
+                CALL SETER ('ARDRLN - MAI TOO SMALL',9,1)
+                RETURN
+              END IF
+C
+            END IF
+C
+          END WHILE
+C
+T         ET2=ET2+(SECOND(DMY)-ETM)
+C
+        END BLOCK
+C
+C This internal procedure is called when an error occurs in ARMPIA.
+C
+        BLOCK (ERROR-IN-ARMPIA,NR)
+          CALL SETER
+     +   ('ARDRLN/ARMPIA - MULTIPLE-PRECISION QUANTITY IS TOO BIG',10,1)
+          RETURN
+        END BLOCK
+C
+      END
+I
+I The subroutine AREDAM.
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE AREDAM (IAM,XCA,YCA,LCA,IGI,IDL,IDR)
+C
+        DIMENSION IAM(*),XCA(*),YCA(*)
+C
+C The routine AREDAM allows the caller to add an edge, separating two
+C areas from each other, to an existing area map.  The input arguments
+C are as follows:
+C
+C IAM is an integer array (dimensioned as specified by a prior call to
+C the routine ARINAM) in which resides the area map to which an edge is
+C to be added.  The user should make no direct changes in the area map;
+C only routines in the package AREAS should be allowed to modify it.
+C
+C XCA is an array of X coordinates of edge points.
+C
+C YCA is an array of Y coordinates of edge points.
+C
+C LCA is the number of edge points defined by XCA and YCA, negated if
+C AREDAM is to skip the test that might cause it to provide a boundary
+C rectangle.
+C
+C IGI is the identifier of the group to which this edge belongs.
+C
+C IDL is the identifier of the area to the left of the new edge, in the
+C current user coordinate system.
+C
+C IDR is the identifier of the area to the right of the new edge, in the
+C current user coordinate system.
+C
+C Upon return from AREDAM, all arguments are unchanged except IAM, which
+C contains the augmented area map.
+C
+C Declare the AREAS common block.
+C
+.USE  ARCOMN
+C
+C Declare the BLOCK DATA routine external, which should force it to
+C load from a binary library.
+C
+        EXTERNAL ARBLDA
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('AREDAM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Pull out the length of the area map and check for initialization.
+C
+        LAM=IAM($LM$)
+C
+        IF (IAU.EQ.0.OR.IAM(LAM).NE.LAM)
+          CALL SETER ('AREDAM - INITIALIZATION DONE IMPROPERLY',2,1)
+          RETURN
+        END IF
+C
+C Pull out the current value of the pointer IPX.
+C
+        IPX=IAM($PX$)
+C
+C Use GETSET to set up parameters allowing us to map X and Y coordinates
+C from the user system to the local integer system.
+C
+        CALL GETSET (FFL,FFR,FFB,FFT,FUL,FUR,FUB,FUT,ILL)
+        IF (ICFELL('AREDAM',3).NE.0) RETURN
+        ILX=(ILL-1)/2
+        ILY=MOD(ILL-1,2)
+C
+C Set the left and right area identifiers for the edge in the viewport.
+C
+        IF ((FUL.LT.FUR.AND.FUB.LT.FUT).OR.(FUL.GT.FUR.AND.FUB.GT.FUT))
+          JDL=IDL
+          JDR=IDR
+        ELSE
+          JDL=IDR
+          JDR=IDL
+        END IF
+C
+C Add the group identifier to the list at the end of the area map (if
+C it's not already there) and set IGN to its index.  If the identifier
+C is a new one, provide a boundary rectangle.
+C
+        IGN=LAM
+C
+        LOOP
+          IGN=IGN-1
+          IF (IGN.GE.IAM($UL$))
+            EXIT IF (MOD(IAM(IGN),2).EQ.0.AND.IAM(IGN)/2.EQ.IGI)
+          ELSE
+            IF ((LCA.LT.0.AND.IGN.LE.IAM($LL$)).OR.
+     +          (LCA.GE.0.AND.IGN.LE.IAM($LL$)+<5*$NL$>))
+              CALL SETER ('AREDAM - AREA-MAP ARRAY OVERFLOW',4,1)
+              RETURN
+            END IF
+            IAM($UL$)=IGN
+            IAM(IGN)=IGI*2
+            IF (LCA.GE.0) THEN
+              ILN=-1
+              IRN=0
+              IXN=0
+              IYN=0
+              INVOKE (ADD-A-POINT)
+              IAM(IPN+$GI$)=0
+              IAM(IPN+$IL$)=0
+              IYN=ILC
+              INVOKE (ADD-A-POINT)
+              IXN=ILC
+              INVOKE (ADD-A-POINT)
+              IYN=0
+              INVOKE (ADD-A-POINT)
+              IXN=0
+              INVOKE (ADD-A-POINT)
+            END IF
+            IAM($NG$)=IAM($NG$)+1
+            EXIT
+          END IF
+        END LOOP
+C
+C Add the area identifiers to the list at the end of the area map (if
+C they're not already there) and set ILN and IRN to their indices.
+C
+        IF (JDL.LE.0)
+          ILN=JDL
+        ELSE
+          ILN=LAM
+          LOOP
+            ILN=ILN-1
+            IF (ILN.GE.IAM($UL$))
+              EXIT IF (MOD(IAM(ILN),2).EQ.1.AND.IAM(ILN)/2.EQ.JDL)
+            ELSE
+              IF (ILN.LE.IAM($LL$))
+                CALL SETER ('AREDAM - AREA-MAP ARRAY OVERFLOW',5,1)
+                RETURN
+              END IF
+              IAM($UL$)=ILN
+              IAM(ILN)=JDL*2+1
+              EXIT
+            END IF
+          END LOOP
+        END IF
+C
+        IF (JDR.LE.0)
+          IRN=JDR
+        ELSE
+          IRN=LAM
+          LOOP
+            IRN=IRN-1
+            IF (IRN.GE.IAM($UL$))
+              EXIT IF (MOD(IAM(IRN),2).EQ.1.AND.IAM(IRN)/2.EQ.JDR)
+            ELSE
+              IF (IRN.LE.IAM($LL$))
+                CALL SETER ('AREDAM - AREA-MAP ARRAY OVERFLOW',6,1)
+                RETURN
+              END IF
+              IAM($UL$)=IRN
+              IAM(IRN)=JDR*2+1
+              EXIT
+            END IF
+          END LOOP
+        END IF
+C
+C Make sure there's room for 3*LCA/2 points in the area map.  (Even
+C with increases due to clipping, this is the largest number of points
+C that could be added to the area map by an LCA-point edge.)
+C
+        IF (IAM($LL$)+(3*ABS(LCA)/2)*$NL$.GE.IAM($UL$))
+          CALL SETER ('AREDAM - AREA-MAP ARRAY OVERFLOW',7,1)
+          RETURN
+        END IF
+C
+C Add the points of the user's edge to the area map.  IXL and IYL are
+C the coordinates of the last point inserted in the area map, and IGL
+C is the group identifier of the last point.
+C
+        IXL=IAM(IAM(<$LN$+$PD$>)+$XC$)
+        IYL=IAM(IAM(<$LN$+$PD$>)+$YC$)
+        IGL=IAM(IAM(<$LN$+$PD$>)+$GI$)
+C
+C Loop through the points in the user list.
+C
+        FOR (ICA = 1 TO ABS(LCA))
+C
+C Get the X and Y coordinates of the next point.
+C
+          IF (ILX.EQ.0)
+            XNX=RLC*(FFL+(FFR-FFL)*(XCA(ICA)-FUL)/(FUR-FUL))
+          ELSE
+            XNX=RLC*(FFL+(FFR-FFL)*(ALOG(XCA(ICA))-ALOG(FUL))/
+     +                             (ALOG(     FUR)-ALOG(FUL)))
+          END IF
+C
+          IF (ILY.EQ.0)
+            YNX=RLC*(FFB+(FFT-FFB)*(YCA(ICA)-FUB)/(FUT-FUB))
+          ELSE
+            YNX=RLC*(FFB+(FFT-FFB)*(ALOG(YCA(ICA))-ALOG(FUB))/
+     +                             (ALOG(     FUT)-ALOG(FUB)))
+          END IF
+C
+C Clip the edge against the viewport and put the resulting pieces into
+C the area map.
+C
+C Compute a "next-point-outside-window" flag.  The value of this flag
+C is between -4 and +4, depending on where the next point is relative
+C to the window, as shown in the following diagram:
+C
+C                      |      |
+C                   -2 |  +1  | +4
+C            YMAX -----+------+-----
+C                   -3 |   0  | +3
+C            YMIN -----+------+-----
+C                   -4 |  -1  | +2
+C                      |      |
+C                    XMIN    XMAX
+C
+C Ultimately, we combine the values of this flag for two consecutive
+C points in such a way as to get an integer between 1 and 81, telling
+C us what combination of inside/outside we have to deal with.
+C
+          NPO=0
+C
+          IF (XNX.LT.0.) THEN
+            NPO=NPO-3
+          ELSE IF (XNX.GT.RLC) THEN
+            NPO=NPO+3
+          END IF
+C
+          IF (YNX.LT.0.) THEN
+            NPO=NPO-1
+          ELSE IF (YNX.GT.RLC) THEN
+            NPO=NPO+1
+          END IF
+C
+          IF (ICA.EQ.1)
+            IF (NPO.EQ.0)
+              IXN=NINT(XNX)
+              IYN=NINT(YNX)
+              IF (IXN.NE.IXL.OR.IYN.NE.IYL.OR.IGN.NE.IGL)
+                INVOKE (ADD-A-POINT)
+                IAM(IPN+$GI$)=0
+                IAM(IPN+$IL$)=0
+                IAM(IPN+$IR$)=0
+                IGL=IGN
+              END IF
+            END IF
+          ELSE
+            IF (LPO.EQ.0)
+              IF (NPO.EQ.0)
+                IXN=NINT(XNX)
+                IYN=NINT(YNX)
+                IF (IXN.NE.IXL.OR.IYN.NE.IYL)
+                  INVOKE (ADD-A-POINT)
+                END IF
+                GO TO 112
+              ELSE
+                XPE=XLS
+                YPE=YLS
+                XDI=XNX-XLS
+                YDI=YNX-YLS
+                IF (ABS(XDI).GT..000001*RLC) THEN
+                  XPE=0.
+                  IF (XDI.GE.0.) XPE=RLC
+                  YPE=YLS+(XPE-XLS)*YDI/XDI
+                  IF (YPE.GE.0..AND.YPE.LE.RLC) GO TO 101
+                END IF
+                IF (ABS(YDI).GT..000001*RLC) THEN
+                  YPE=0.
+                  IF (YDI.GE.0.) YPE=RLC
+                  XPE=XLS+(YPE-YLS)*XDI/YDI
+                END IF
+  101           IXN=NINT(XPE)
+                IYN=NINT(YPE)
+                IF (IXN.NE.IXL.OR.IYN.NE.IYL)
+                  INVOKE (ADD-A-POINT)
+                END IF
+                GO TO 112
+              END IF
+            ELSE
+              IF (NPO.EQ.0)
+                XPE=XNX
+                YPE=YNX
+                XDI=XLS-XNX
+                YDI=YLS-YNX
+                IF (ABS(XDI).GT..000001*RLC) THEN
+                  XPE=0.
+                  IF (XDI.GE.0.) XPE=RLC
+                  YPE=YNX+(XPE-XNX)*YDI/XDI
+                  IF (YPE.GE.0..AND.YPE.LE.RLC) GO TO 102
+                END IF
+                IF (ABS(YDI).GT..000001*RLC) THEN
+                  YPE=0.
+                  IF (YDI.GE.0.) YPE=RLC
+                  XPE=XNX+(YPE-YNX)*XDI/YDI
+                END IF
+  102           IXN=NINT(XPE)
+                IYN=NINT(YPE)
+                IF (IXN.NE.IXL.OR.IYN.NE.IYL)
+                  INVOKE (ADD-A-POINT)
+                  IAM(IPN+$GI$)=0
+                  IAM(IPN+$IL$)=0
+                  IAM(IPN+$IR$)=0
+                END IF
+                IXN=NINT(XNX)
+                IYN=NINT(YNX)
+                IF (IXN.NE.IXL.OR.IYN.NE.IYL)
+                  INVOKE (ADD-A-POINT)
+                END IF
+                GO TO 112
+              ELSE
+                MPOW=9*LPO+NPO+41
+                GO TO ( 112,112,112,112,112,103,112,103,103,
+     +                  112,112,112,104,112,103,104,103,103,
+     +                  112,112,112,104,112,112,104,104,112,
+     +                  112,106,106,112,112,103,112,103,103,
+     +                  112,112,112,112,112,112,112,112,112,
+     +                  105,105,112,105,112,112,104,104,112,
+     +                  112,106,106,112,112,106,112,112,112,
+     +                  105,105,106,105,112,106,112,112,112,
+     +                  105,105,112,105,112,112,112,112,112 ) , MPOW
+C
+  103           XE1=0.
+                YT1=0.
+                XE2=RLC
+                YT2=RLC
+                GO TO 107
+  104           XE1=0.
+                YT1=RLC
+                XE2=RLC
+                YT2=0.
+                GO TO 107
+  105           XE1=RLC
+                YT1=RLC
+                XE2=0.
+                YT2=0.
+                GO TO 107
+  106           XE1=RLC
+                YT1=0.
+                XE2=0.
+                YT2=RLC
+  107           XDI=XNX-XLS
+                YDI=YNX-YLS
+                IF (ABS(XDI).LE..000001*RLC) GO TO 109
+                YE1=YLS+(XE1-XLS)*YDI/XDI
+                YE2=YLS+(XE2-XLS)*YDI/XDI
+                IF (ABS(YDI).LE..000001*RLC) THEN
+                  IF (YE1.LT.0..OR.YE1.GT.RLC) GO TO 112
+                  IF (YE2.LT.0..OR.YE2.GT.RLC) GO TO 112
+                  GO TO 111
+                END IF
+                IF (YE1.GE.0..AND.YE1.LE.RLC) GO TO 108
+                YE1=YT1
+                XE1=XLS+(YE1-YLS)*XDI/YDI
+                IF (XE1.LT.0..OR.XE1.GT.RLC) GO TO 112
+  108           IF (YE2.GE.0..AND.YE2.LE.RLC) GO TO 111
+                GO TO 110
+  109           YE1=YT1
+                XE1=XLS+(YE1-YLS)*XDI/YDI
+                IF (XE1.LT.0..OR.XE1.GT.RLC) GO TO 112
+  110           YE2=YT2
+                XE2=XLS+(YE2-YLS)*XDI/YDI
+                IF (XE2.LT.0..OR.XE2.GT.RLC) GO TO 112
+  111           IXN=NINT(XE1)
+                IYN=NINT(YE1)
+                IF (IXN.NE.IXL.OR.IYN.NE.IYL)
+                  INVOKE (ADD-A-POINT)
+                  IAM(IPN+$GI$)=0
+                  IAM(IPN+$IL$)=0
+                  IAM(IPN+$IR$)=0
+                END IF
+                IXN=NINT(XE2)
+                IYN=NINT(YE2)
+                IF (IXN.NE.IXL.OR.IYN.NE.IYL)
+                  INVOKE (ADD-A-POINT)
+                END IF
+                GO TO 112
+              END IF
+            END IF
+          END IF
+C
+C Processing of the next point is done.  It becomes the last point and
+C we return to the user for a new next point.
+C
+  112     XLS=XNX
+          YLS=YNX
+          LPO=NPO
+C
+        END FOR
+C
+C Restore the value of the pointer IPX to its position in the area map.
+C
+        IAM($PX$)=IPX
+C
+C Set the map state to say that an edge has been entered.
+C
+        IAM($MS$)=0
+C
+C Done.
+C
+        RETURN
+C
+C This internal procedure adds the point (IXN,IYN) to the area map,
+C using identifiers IGN, ILN, and IRN.  It also sets IXL = IXN and
+C IYL = IYN.
+C
+        BLOCK (ADD-A-POINT)
+          IPN=IAM($LL$)+1
+          IAM($LL$)=IAM($LL$)+$NL$
+          IAM(IPN)=IAM(IAM(<$LN$+$PD$>))+4
+          IAM(IPN+$XC$)=IXN
+          IAM(IPN+$YC$)=IYN
+          IAM(IPN+$ND$)=$LN$
+          IAM(IPN+$PD$)=IAM(<$LN$+$PD$>)
+          IAM(IAM(<$LN$+$PD$>)+$ND$)=IPN
+          IAM(<$LN$+$PD$>)=IPN
+          LOOP
+            IF (IAM(IPN+$XC$).LT.IAM(IPX+$XC$))
+              IPX=IAM(IPX+$PC$)
+            ELSE IF (IAM(IPN+$XC$).GT.IAM(IAM(IPX+$NC$)+$XC$))
+              IPX=IAM(IPX+$NC$)
+            ELSE
+              LOOP
+                IF (IAM(IPN+$XC$).EQ.IAM(IPX+$XC$).AND.
+     +              IAM(IPN+$YC$).LT.IAM(IPX+$YC$))
+                  IPX=IAM(IPX+$PC$)
+                ELSE IF (IAM(IPN+$XC$).EQ.IAM(IAM(IPX+$NC$)+$XC$).AND.
+     +                   IAM(IPN+$YC$).GT.IAM(IAM(IPX+$NC$)+$YC$))
+                  IPX=IAM(IPX+$NC$)
+                ELSE
+                  EXIT
+                END IF
+              END LOOP
+              EXIT
+            END IF
+          END LOOP
+          IAM(IPN+$NC$)=IAM(IPX+$NC$)
+          IAM(IPN+$PC$)=IAM(IAM(IPX+$NC$)+$PC$)
+          IAM(IAM(IPX+$NC$)+$PC$)=IPN
+          IAM(IPX+$NC$)=IPN
+          IAM(IPN+$GI$)=IGN
+          IAM(IPN+$IL$)=ILN
+          IAM(IPN+$IR$)=IRN
+          IXL=IXN
+          IYL=IYN
+        END BLOCK
+C
+      END
+I
+I The subroutine ARGETI.
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE ARGETI (IPN,IVL)
+C
+        CHARACTER*(*) IPN
+C
+C This subroutine is called to retrieve the integer value of a specified
+C parameter.
+C
+C IPN is the name of the parameter whose value is to be retrieved.
+C
+C IVL is an integer variable in which the desired value is to be
+C returned by ARGETI.
+C
+C Declare the AREAS common block.
+C
+.USE  ARCOMN
+C
+C Declare the BLOCK DATA routine external, which should force it to
+C load from a binary library.
+C
+        EXTERNAL ARBLDA
+C
+C Define a character temporary to hold an error message.
+C
+        CHARACTER*38 CTM
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('ARGETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Check for a parameter name that is too short.
+C
+        IF (LEN(IPN).LT.2)
+          CTM(1:36)='ARGETI - PARAMETER NAME TOO SHORT - '
+          CTM(37:36+LEN(IPN))=IPN
+          CALL SETER (CTM(1:36+LEN(IPN)),2,1)
+          RETURN
+        END IF
+C
+C Get the appropriate parameter value.
+C
+        IF      (IPN(1:2).EQ.'AL'.OR.IPN(1:2).EQ.'al')
+          IVL=INT(RLA)
+        ELSE IF (IPN(1:2).EQ.'AT'.OR.IPN(1:2).EQ.'at')
+          IF (IAU.EQ.0)
+            CALL ARINIT (IER)
+            IF (IER.NE.0)
+              CALL SETER
+     +        ('ARGETI/ARINIT - VALUE OF ''LC'' IS TOO LARGE',3,1)
+              RETURN
+            END IF
+          END IF
+          IVL=IAU
+          IF (IVL.GE.3) IVL=IBS
+        ELSE IF (IPN(1:2).EQ.'AW'.OR.IPN(1:2).EQ.'aw')
+          IVL=INT(RWA)
+        ELSE IF (IPN(1:2).EQ.'DB'.OR.IPN(1:2).EQ.'db')
+          IVL=IDB
+        ELSE IF (IPN(1:2).EQ.'DC'.OR.IPN(1:2).EQ.'dc')
+          IVL=IDC
+        ELSE IF (IPN(1:2).EQ.'DI'.OR.IPN(1:2).EQ.'di')
+          IVL=IDI
+        ELSE IF (IPN(1:2).EQ.'ID'.OR.IPN(1:2).EQ.'id')
+          IVL=INT(RDI)
+        ELSE IF (IPN(1:2).EQ.'IS'.OR.IPN(1:2).EQ.'is')
+          IVL=INT(RSI)
+        ELSE IF (IPN(1:2).EQ.'LC'.OR.IPN(1:2).EQ.'lc')
+          IVL=ILC
+        ELSE IF (IPN(1:2).EQ.'RC'.OR.IPN(1:2).EQ.'rc')
+          CALL ARGPAI (IPN,3,IPI)
+          IF (IPI.EQ.0) THEN
+            IVL=IRC(1)
+          ELSE IF (IPI.GE.1.AND.IPI.LE.16) THEN
+            IVL=IRC(IPI)
+          ELSE
+            CALL SETER ('ARGETI - ''RC'' INDEX IS OUT OF RANGE',4,1)
+            RETURN
+          END IF
+        ELSE
+          CTM(1:36)='ARGETI - PARAMETER NAME NOT KNOWN - '
+          CTM(37:38)=IPN(1:2)
+          CALL SETER (CTM(1:38),5,1)
+          RETURN
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
+I
+I The subroutine ARGETR.
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE ARGETR (IPN,RVL)
+C
+        CHARACTER*(*) IPN
+C
+C This subroutine is called to retrieve the real value of a specified
+C parameter.
+C
+C IPN is the name of the parameter whose value is to be retrieved.
+C
+C RVL is a real variable in which the desired value is to be
+C returned by ARGETR.
+C
+C Declare the AREAS common block.
+C
+.USE  ARCOMN
+C
+C Declare the BLOCK DATA routine external, which should force it to
+C load from a binary library.
+C
+        EXTERNAL ARBLDA
+C
+C Define a character temporary to hold an error message.
+C
+        CHARACTER*38 CTM
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('ARGETR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Check for a parameter name that is too short.
+C
+        IF (LEN(IPN).LT.2)
+          CTM(1:36)='ARGETR - PARAMETER NAME TOO SHORT - '
+          CTM(37:36+LEN(IPN))=IPN
+          CALL SETER (CTM(1:36+LEN(IPN)),2,1)
+          RETURN
+        END IF
+C
+C Get the appropriate parameter value.
+C
+        IF      (IPN(1:2).EQ.'AL'.OR.IPN(1:2).EQ.'al')
+          RVL=RLA
+        ELSE IF (IPN(1:2).EQ.'AT'.OR.IPN(1:2).EQ.'at')
+          IF (IAU.EQ.0)
+            CALL ARINIT (IER)
+            IF (IER.NE.0)
+              CALL SETER
+     +        ('ARGETR/ARINIT - VALUE OF ''LC'' IS TOO LARGE',3,1)
+              RETURN
+            END IF
+          END IF
+          RVL=REAL(IAU)
+          IF (RVL.GE.3.) RVL=REAL(IBS)
+        ELSE IF (IPN(1:2).EQ.'AW'.OR.IPN(1:2).EQ.'aw')
+          RVL=RWA
+        ELSE IF (IPN(1:2).EQ.'DB'.OR.IPN(1:2).EQ.'db')
+          RVL=REAL(IDB)
+        ELSE IF (IPN(1:2).EQ.'DC'.OR.IPN(1:2).EQ.'dc')
+          RVL=REAL(IDC)
+        ELSE IF (IPN(1:2).EQ.'DI'.OR.IPN(1:2).EQ.'di')
+          RVL=REAL(IDI)
+        ELSE IF (IPN(1:2).EQ.'ID'.OR.IPN(1:2).EQ.'id')
+          RVL=RDI
+        ELSE IF (IPN(1:2).EQ.'IS'.OR.IPN(1:2).EQ.'is')
+          RVL=RSI
+        ELSE IF (IPN(1:2).EQ.'LC'.OR.IPN(1:2).EQ.'lc')
+          RVL=REAL(ILC)
+        ELSE IF (IPN(1:2).EQ.'RC'.OR.IPN(1:2).EQ.'rc')
+          CALL ARGPAI (IPN,3,IPI)
+          IF (IPI.EQ.0) THEN
+            RVL=REAL(IRC(1))
+          ELSE IF (IPI.GE.1.AND.IPI.LE.16) THEN
+            RVL=REAL(IRC(IPI))
+          ELSE
+            CALL SETER ('ARGETR - ''RC'' INDEX IS OUT OF RANGE',4,1)
+            RETURN
+          END IF
+        ELSE
+          CTM(1:36)='ARGETR - PARAMETER NAME NOT KNOWN - '
+          CTM(37:38)=IPN(1:2)
+          CALL SETER (CTM(1:38),5,1)
+          RETURN
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
+I
+I The subroutine ARGPAI.
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE ARGPAI (CHS,IBG,IVL)
+C
+C This routine looks for a subscript of the form "(n)" in positions IBG
+C and following of the character string CHS.  It returns the value of
+C "n" (which may be negative) in IVL.  If no subscript is found, IVL
+C is zeroed.
+C
+        CHARACTER*(*) CHS
+        CHARACTER*1 ICH
+C
+        IVL=0
+        ISN=1
+C
+        IST=0
+C
+        DO 101 ICHS=IBG,LEN(CHS)
+          ICH=CHS(ICHS:ICHS)
+          IF (ICH.NE.' ') THEN
+            IF (IST.EQ.0) THEN
+              IF (ICH.NE.'(') GO TO 102
+              IST=1
+            ELSE IF (IST.EQ.1) THEN
+              IF (ICHAR(CHS(ICHS:ICHS)).GE.ICHAR('0').AND.
+     +            ICHAR(CHS(ICHS:ICHS)).LE.ICHAR('9')) THEN
+                IVL=ICHAR(CHS(ICHS:ICHS))-ICHAR('0')
+              ELSE IF (ICH.EQ.'-') THEN
+                ISN=-1
+              ELSE IF (ICH.NE.'+') THEN
+                GO TO 102
+              END IF
+              IST=2
+            ELSE IF (IST.EQ.2) THEN
+              IF (ICHAR(CHS(ICHS:ICHS)).GE.ICHAR('0').AND.
+     +            ICHAR(CHS(ICHS:ICHS)).LE.ICHAR('9')) THEN
+                IVL=IVL*10+ICHAR(CHS(ICHS:ICHS))-ICHAR('0')
+              ELSE IF (ICH.NE.')') THEN
+                GO TO 102
+              ELSE
+                GO TO 103
+              END IF
+            END IF
+          END IF
+  101   CONTINUE
+C
+  102   IVL=0
+        RETURN
+C
+  103   IVL=ISN*IVL
+        RETURN
+C
+      END
+I
+I The subroutine ARGTAI.
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE ARGTAI (IAM,XCD,YCD,IAI,IAG,MAI,NAI,ICF)
+C
+        DIMENSION IAM(*),IAI(*),IAG(*)
+C
+C The routine ARGTAI is called to obtain information about a specific
+C point in an existing area map created by calls to ARINAM and AREDAM.
+C
+C IAM is the area-map array.
+C
+C XCD and YCD are the coordinates, in the current user coordinate
+C system, of the point at which information is desired.
+C
+C The arrays IAG and IAI, each of which is dimensioned MAI, are used to
+C return information to the caller.  For each I from 1 to NAI, IAI(I)
+C will be the area identifier associated with group identifier IAG(I).
+C
+C ICF is a flag set non-zero to indicate that GETSET should be called
+C to get the information necessary to do the mapping from the current
+C user coordinate system to the internal coordinate system; if ICF is
+C zero, no such calls are done and it is assumed that the information
+C saved from a previous call is still correct.
+C
+C Declare the AREAS common block.
+C
+.USE  ARCOMN
+C
+C Declare the BLOCK DATA routine external, which should force it to
+C load from a binary library.
+C
+        EXTERNAL ARBLDA
+C
+C Force values retrieved by the calls to GETSET to be saved from call
+C to call.
+C
+        SAVE FFL,FFR,FFB,FFT,FUL,FUR,FUB,FUT,ILL,ILX,ILY
+C
+C Initialize the value of ILL so as to force calls to GETSET on the
+C first call ever, no matter what the user says.
+C
+        DATA ILL / 0 /
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('ARGTAI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Pull out the length of the area map and check for initialization.
+C
+        LAM=IAM($LM$)
+C
+        IF (IAU.EQ.0.OR.IAM(LAM).NE.LAM)
+          CALL SETER ('ARGTAI - INITIALIZATION DONE IMPROPERLY',2,1)
+          RETURN
+        END IF
+C
+C If it has not already been done, find points of intersection and
+C incorporate them into the map and then adjust area identifiers.
+C
+        IF (IAM($MS$).EQ.0)
+          CALL ARPRAM (IAM,0,0,0)
+          IF (ICFELL('ARGTAI',3).NE.0) RETURN
+        END IF
+C
+C Pull out the current value of the pointer IPX.
+C
+        IPX=IAM($PX$)
+C
+C Use GETSET to set up parameters allowing us to map X and Y coordinates
+C from the user system to the local integer system.
+C
+        IF (ICF.NE.0.OR.ILL.EQ.0)
+          CALL GETSET (FFL,FFR,FFB,FFT,FUL,FUR,FUB,FUT,ILL)
+          IF (ICFELL('ARGTAI',4).NE.0) RETURN
+          ILX=(ILL-1)/2
+          ILY=MOD(ILL-1,2)
+        END IF
+C
+C Convert the X and Y coordinates to values in the internal coordinate
+C range.
+C
+        IF (ILX.EQ.0)
+          XCO=NINT(MAX(1.,MIN(RLM,
+     +                        RLC*(FFL+(FFR-FFL)*(XCD-FUL)/(FUR-FUL)))))
+        ELSE
+          XCO=NINT(MAX(1.,MIN(RLM,
+     +                        RLC*(FFL+(FFR-FFL)*(ALOG(XCD)-ALOG(FUL))/
+     +                                         (ALOG(FUR)-ALOG(FUL))))))
+        END IF
+        IF (ILY.EQ.0)
+          YCO=NINT(MAX(1.,MIN(RLM,
+     +                        RLC*(FFB+(FFT-FFB)*(YCD-FUB)/(FUT-FUB)))))
+        ELSE
+          YCO=NINT(MAX(1.,MIN(RLM,
+     +                        RLC*(FFB+(FFT-FFB)*(ALOG(YCD)-ALOG(FUB))/
+     +                                         (ALOG(FUT)-ALOG(FUB))))))
+        END IF
+C
+C Adjust the X coordinate to keep it away from any integral value and
+C compute the integer coordinate which is just to the left of it.
+C
+        IXO=INT(XCO)
+        XCO=REAL(IXO)+.5
+C
+C Retrieve the desired information from the area map.
+C
+        NAI=0
+C
+        LOOP
+          IF (IAM(IPX+$XC$).LE.IXO-IAM($MD$))
+            IPX=IAM(IPX+$NC$)
+          ELSE IF (IAM(IAM(IPX+$PC$)+$XC$).GT.IXO-IAM($MD$))
+            IPX=IAM(IPX+$PC$)
+          ELSE
+            EXIT
+          END IF
+        END LOOP
+C
+        IGI=LAM
+C
+        WHILE (IGI.GT.IAM($UL$))
+          IGI=IGI-1
+          IF (MOD(IAM(IGI),2).EQ.0)
+            IAF=0
+            YCI=RLP
+            IPT=IPX
+            WHILE (IAM(IPT+$XC$).LE.IXO)
+              IF (ABS(IAM(IPT+$GI$)).EQ.IGI.AND.
+     +            IAM(IAM(IPT+$PD$)+$XC$).GT.IXO)
+                IF (IAU.EQ.1)
+                  YTM=REAL(IAM(IPT+$YC$))+
+     +               (XCO-REAL(IAM(IPT+$XC$)))*
+     +               (REAL(IAM(IAM(IPT+$PD$)+$YC$)-IAM(IPT+$YC$))/
+     +                REAL(IAM(IAM(IPT+$PD$)+$XC$)-IAM(IPT+$XC$)))
+                ELSE
+                  YTM=REAL(DBLE(IAM(IPT+$YC$))+
+     +               (DBLE(XCO)-DBLE(IAM(IPT+$XC$)))*
+     +               (DBLE(IAM(IAM(IPT+$PD$)+$YC$)-IAM(IPT+$YC$))/
+     +                DBLE(IAM(IAM(IPT+$PD$)+$XC$)-IAM(IPT+$XC$))))
+                END IF
+                IF (YTM.GE.YCO.AND.YTM.LT.YCI)
+                  IAF=IPT+$IL$
+                  YCI=YTM
+                END IF
+              END IF
+              IF (ABS(IAM(IAM(IPT+$ND$)+$GI$)).EQ.IGI.AND.
+     +            IAM(IAM(IPT+$ND$)+$XC$).GT.IXO)
+                IF (IAU.EQ.1)
+                  YTM=REAL(IAM(IPT+$YC$))+
+     +               (XCO-REAL(IAM(IPT+$XC$)))*
+     +               (REAL(IAM(IAM(IPT+$ND$)+$YC$)-IAM(IPT+$YC$))/
+     +                REAL(IAM(IAM(IPT+$ND$)+$XC$)-IAM(IPT+$XC$)))
+                ELSE
+                  YTM=REAL(DBLE(IAM(IPT+$YC$))+
+     +               (DBLE(XCO)-DBLE(IAM(IPT+$XC$)))*
+     +               (DBLE(IAM(IAM(IPT+$ND$)+$YC$)-IAM(IPT+$YC$))/
+     +                DBLE(IAM(IAM(IPT+$ND$)+$XC$)-IAM(IPT+$XC$))))
+                END IF
+                IF (YTM.GE.YCO.AND.YTM.LT.YCI)
+                  IAF=IAM(IPT+$ND$)+$IR$
+                  YCI=YTM
+                END IF
+              END IF
+              IPT=IAM(IPT+$NC$)
+            END WHILE
+C
+            IF (IAF.NE.0)
+              ITI=IAM(IAF)
+              IF (ITI.GE.IAM($UL$)) ITI=IAM(ITI)/2
+            ELSE
+              ITI=-1
+            END IF
+C
+            IF (NAI.LT.MAI)
+              NAI=NAI+1
+              IAI(NAI)=ITI
+              IAG(NAI)=IAM(IGI)/2
+            ELSE
+              CALL SETER ('ARGTAI - MAI TOO SMALL',5,1)
+              RETURN
+            END IF
+C
+          END IF
+C
+        END WHILE
+C
+C Restore the new value of IPX to the area map.
+C
+        IAM($PX$)=IPX
+C
+C Check for a bad value of NAI.
+C
+        IF (NAI.NE.IAM($NG$))
+          CALL SETER ('ARGTAI - ALGORITHM FAILURE',6,1)
+          RETURN
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
+I
+I The subroutine ARINAM.
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE ARINAM (IAM,LAM)
+C
+        DIMENSION IAM(LAM)
+C
+C The routine ARINAM is called to initialize a given area map.  It must
+C be called prior to any AREDAM call for that area map.  Input arguments
+C are as follows:
+C
+C IAM is the integer array in which an area map is to be initialized.
+C
+C LAM is the length of the array IAM.
+C
+C On output, elements of IAM have been changed, but LAM is unchanged.
+C
+C Declare the AREAS common block.
+C
+.USE  ARCOMN
+C
+C Declare the BLOCK DATA routine external, which should force it to
+C load from a binary library.
+C
+        EXTERNAL ARBLDA
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('ARINAM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C If AREAS itself has not been initialized, do it now.
+C
+        IF (IAU.EQ.0)
+          CALL ARINIT (IER)
+          IF (IER.NE.0)
+            CALL SETER
+     +      ('ARINAM/ARINIT - VALUE OF ''LC'' IS TOO LARGE',2,1)
+            RETURN
+          END IF
+        END IF
+C
+C Log an error if the user's array is too small.
+C
+        IF (LAM.LE.$LE$)
+          CALL SETER ('ARINAM - AREA-MAP ARRAY IS TOO SMALL',3,1)
+          RETURN
+        END IF
+C
+C Proceed with initialization.  Store the length of the array as its
+C first element and as its last; this allows for later error checking.
+C
+        IAM($LM$)=LAM
+        IAM(LAM)=LAM
+C
+C Zero the maximum-distance parameter.
+C
+        IAM($MD$)=0
+C
+C Initialize the value of IPX, which preserves from call to call the
+C approximate position of the last node with which we did anything.
+C
+        IAM($PX$)=$FN$
+C
+C Initialize the map state.
+C
+        IAM($MS$)=0
+C
+C Set the pointers indicating the locations of the last cells used at
+C the beginning and end of the area-map array.
+C
+        IAM($LL$)=$LE$
+        IAM($UL$)=LAM
+C
+C Zero the number of groups.
+C
+        IAM($NG$)=0
+C
+C Set up two dummy nodes to serve as "anchors", preventing searches
+C from going past them.
+C
+        IAM(<$FN$     >)=0
+        IAM(<$FN$+$XC$>)=-1
+        IAM(<$FN$+$YC$>)=-1
+        IAM(<$FN$+$ND$>)=$LN$
+        IAM(<$FN$+$PD$>)=0
+        IAM(<$FN$+$NC$>)=$LN$
+        IAM(<$FN$+$PC$>)=0
+        IAM(<$FN$+$GI$>)=0
+        IAM(<$FN$+$IL$>)=0
+        IAM(<$FN$+$IR$>)=0
+C
+        IAM(<$LN$     >)=0
+        IAM(<$LN$+$XC$>)=ILP
+        IAM(<$LN$+$YC$>)=ILP
+        IAM(<$LN$+$ND$>)=0
+        IAM(<$LN$+$PD$>)=$FN$
+        IAM(<$LN$+$NC$>)=0
+        IAM(<$LN$+$PC$>)=$FN$
+        IAM(<$LN$+$GI$>)=0
+        IAM(<$LN$+$IL$>)=0
+        IAM(<$LN$+$IR$>)=0
+C
+C Done.
+C
+        RETURN
+C
+      END
+I
+I The subroutine ARINIT
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE ARINIT (IER)
+C
+C Declare the AREAS common block.
+C
+.USE  ARCOMN
+C
+C Declare the BLOCK DATA routine external, which should force it to
+C load from a binary library.
+C
+        EXTERNAL ARBLDA
+C
+C Declare some needed double-precision variables.
+C
+        DOUBLE PRECISION DS1,DS2,DS3
+C
+C Decide what type of arithmetic to use.  These tests are somewhat
+C heuristic and are based on experience with the package to date.
+C
+        IAU=IAD
+C
+        IF (IAU.EQ.0)
+          CALL ARINI2 (ILC,RS1,RS2,RS3,DS1,DS2,DS3,RS4,RS5,RS6)
+          IF      (RS2.NE.RS1.AND.RS3.NE.RS2)
+            IAU=1
+          ELSE IF (DS2.NE.DS1.AND.DS3.NE.DS2)
+            IAU=2
+          ELSE IF (RS5.NE.RS4.AND.RS6.NE.RS5)
+            IAU=3
+          ELSE
+            IER=1
+            RETURN
+          END IF
+        END IF
+C
+C If multiple precision integer arithmetic is to be used, decide what
+C base to use.
+C
+        IF (IAU.GE.3)
+          IBS=IAU
+          IF (IBS.EQ.3)
+            IBS=4
+            WHILE (IBS*2.LT.I1MACH(9).AND.
+     +        REAL(IBS*2)*REAL(IBS*2)+.25E0.NE.REAL(IBS*2)*REAL(IBS*2))
+              IBS=IBS*2
+            END WHILE
+          END IF
+        END IF
+C
+C Set required secondary constants.
+C
+        ILM=ILC-1
+        ILP=ILC+1
+        RLC=REAL(ILC)
+        RLM=REAL(ILM)
+        RLP=REAL(ILP)
+        RBS=REAL(IBS)
+        DBS=DBLE(IBS)
+C
+C Done.
+C
+        IER=0
+        RETURN
+C
+      END
+I
+I The subroutine ARINI2.
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE ARINI2 (ILC,RS1,RS2,RS3,DS1,DS2,DS3,RS4,RS5,RS6)
+C
+        DOUBLE PRECISION DS1,DS2,DS3
+C
+C This code had to be moved here from the routine ARINIT in order to
+C force compilers (on the Mac and possibly elsewhere) to set up code
+C that not only computes these quantities to the stated precision,
+C but actually uses the values computed and stored, instead of using
+C values from extended-precision arithmetic registers.
+C
+        RS1=REAL(ILC)*REAL(ILC)
+        RS2=RS1+.25E0
+        RS3=RS2+.25E0
+        DS1=DBLE(ILC)*DBLE(ILC)
+        DS2=DS1+.25D0
+        DS3=DS2+.25D0
+        RS4=REAL(ILC)
+        RS5=RS4+.25E0
+        RS6=RS5+.25E0
+C
+C Done.
+C
+        RETURN
+C
+      END
+I
+I The subroutine ARMPIA.
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE ARMPIA (IOP,DPV,IER)
+C
+        DOUBLE PRECISION DPV
+C
+        DIMENSION IOP(4,*),SGN(10),VAL(10,$MPL$),LEN(10)
+        SAVE SGN,VAL,LEN
+C
+C Frequently AREAS needs to evaluate simple expressions in which the
+C use of extended precision becomes important.  Consider, for example,
+C the expression
+C
+C      (X4-X3)(X2*Y1-X1*Y2)-(X2-X1)(X4*Y3-X3*Y4)
+C      -----------------------------------------
+C            (X4-X3)(Y1-Y2)-(X2-X1)(Y3-Y4)
+C
+C All of the simple terms in this expression have integer values which
+C represent coordinates and are small enough to be exactly represented,
+C either as integers or as reals.  Unfortunately, as the numerator and
+C the denominator are evaluated, intermediate values may arise which
+C are too large to be represented as integers or as reals.  Sometimes,
+C it happens that one such quantity is subtracted from another and the
+C two are nearly enough equal so that most or all of the precision is
+C lost.  Then, the final division will yield an erroneous result.
+C
+C The routine ARMPIA allows one to evaluate the numerator and the
+C denominator of such an expression exactly, using multiple-precision
+C adds, subtracts, and multiplies.  (The final division is done using
+C double precision arithmetic.)
+C
+C The operations to be performed are specified by the contents of the
+C array IOP, operands are kept in the arrays SGN, VAL, and LEN, and the
+C final result is returned as the value of the argument DPV.  For an
+C arbitrary value of I (I = 1, 2, 3, ...), let I1 be the value of
+C IOP(1,I), I2 the value of IOP(2,I), I3 the value of IOP(3,I), and I4
+C the value of IOP(4,I).
+C
+C When I1 = 1, the multiple-precision integer with index I2 is given
+C the value I3.
+C
+C When I1 = 2, the multiple-precision integer with index I2 is reset
+C to the sum of those with indices I3 and I4.
+C
+C When I1 = 3, the multiple-precision integer with index I2 is reset
+C to the difference of those with indices I3 and I4.
+C
+C When I1 = 4, the multiple-precision integer with index I2 is reset
+C to the product of those with indices I3 and I4.
+C
+C When I1 = 5, the multiple-precision integer with index I2 is returned
+C as the real value of DPV.
+C
+C The argument IER is an error flag; it is normally returned with value
+C zero.  When an error occurs, IER is returned with a positive value
+C indicating the nature of the error (currently, the only error is
+C error number 1).
+C
+C Declare the AREAS common block.
+C
+.USE  ARCOMN
+C
+        NOP=1
+C
+        LOOP
+C
+          II1=IOP(1,NOP)
+          II2=IOP(2,NOP)
+          II3=IOP(3,NOP)
+          II4=IOP(4,NOP)
+C
+          IF (II1.EQ.1)
+C
+            SGN(II2)=REAL(SIGN(1,II3))
+            II3=ABS(II3)
+            LEN(II2)=0
+            REPEAT
+              LEN(II2)=LEN(II2)+1
+              IF (LEN(II2).GT.$MPL$)
+                INVOKE (MULTIPLE-PRECISION-QUANTITY-TOO-BIG,NR)
+              END IF
+              VAL(II2,LEN(II2))=REAL(MOD(II3,IBS))
+              II3=II3/IBS
+            UNTIL (II3.EQ.0)
+C
+          ELSE IF (II1.EQ.2.OR.II1.EQ.3)
+C
+            IF (II1.EQ.3) SGN(II4)=-SGN(II4)
+            IF (SGN(II3).EQ.SGN(II4))
+              SGN(II2)=SGN(II3)
+              LEN(II2)=MAX(LEN(II3),LEN(II4))
+              CRY=0.
+              DO (III=1,LEN(II2))
+                VAL(II2,III)=CRY
+                IF (III.LE.LEN(II3)) VAL(II2,III)=VAL(II2,III)+
+     +                                            VAL(II3,III)
+                IF (III.LE.LEN(II4)) VAL(II2,III)=VAL(II2,III)+
+     +                                            VAL(II4,III)
+                IF (VAL(II2,III).LT.RBS)
+                  CRY=0.
+                ELSE
+                  CRY=1.
+                  VAL(II2,III)=VAL(II2,III)-RBS
+                END IF
+              END DO
+              IF (CRY.NE.0.)
+                IF (LEN(II2).GE.$MPL$)
+                  INVOKE (MULTIPLE-PRECISION-QUANTITY-TOO-BIG,NR)
+                END IF
+                LEN(II2)=LEN(II2)+1
+                VAL(II2,LEN(II2))=1.
+              END IF
+            ELSE
+              IF (LEN(II3).GT.LEN(II4))
+                JMP=0
+              ELSE IF (LEN(II3).LT.LEN(II4))
+                JMP=1
+              ELSE
+                JMP=-1
+                IIA=LEN(II3)
+                LOOP
+                  IF (VAL(II3,IIA).GT.VAL(II4,IIA))
+                    JMP=0
+                    EXIT
+                  ELSE IF (VAL(II3,IIA).LT.VAL(II4,IIA))
+                    JMP=1
+                    EXIT
+                  END IF
+                  IIA=IIA-1
+                  EXIT IF (IIA.EQ.0)
+                END LOOP
+              END IF
+              IF (JMP.EQ.0)
+                SGN(II2)=SGN(II3)
+                BRO=0.
+                DO (III=1,LEN(II3))
+                  VAL(II2,III)=VAL(II3,III)-BRO
+                  IF (III.LE.LEN(II4)) VAL(II2,III)=VAL(II2,III)-
+     +                                              VAL(II4,III)
+                  IF (VAL(II2,III).GE.0.)
+                    BRO=0.
+                  ELSE
+                    VAL(II2,III)=VAL(II2,III)+RBS
+                    BRO=1.
+                  END IF
+                  IF (VAL(II2,III).NE.0.) LEN(II2)=III
+                END DO
+              ELSE IF (JMP.GT.0)
+                SGN(II2)=SGN(II4)
+                BRO=0.
+                DO (III=1,LEN(II4))
+                  VAL(II2,III)=VAL(II4,III)-BRO
+                  IF (III.LE.LEN(II3)) VAL(II2,III)=VAL(II2,III)-
+     +                                              VAL(II3,III)
+                  IF (VAL(II2,III).GE.0.)
+                    BRO=0.
+                  ELSE
+                    VAL(II2,III)=VAL(II2,III)+RBS
+                    BRO=1.
+                  END IF
+                  IF (VAL(II2,III).NE.0.) LEN(II2)=III
+                END DO
+              ELSE
+                SGN(II2)=1.
+                LEN(II2)=1
+                VAL(II2,1)=0.
+              END IF
+            END IF
+            IF (II1.EQ.3) SGN(II4)=-SGN(II4)
+C
+          ELSE IF (II1.EQ.4)
+C
+            IF ((LEN(II3).EQ.1.AND.VAL(II3,1).EQ.0.).OR.
+     +          (LEN(II4).EQ.1.AND.VAL(II4,1).EQ.0.))
+              SGN(II2)=1.
+              LEN(II2)=1
+              VAL(II2,1)=0.
+            ELSE
+              SGN(II2)=SGN(II3)*SGN(II4)
+              LEN(II2)=LEN(II3)+LEN(II4)
+              IF (LEN(II2).GT.$MPL$)
+                INVOKE (MULTIPLE-PRECISION-QUANTITY-TOO-BIG,NR)
+              END IF
+              DO (III=1,LEN(II2))
+                VAL(II2,III)=0.
+              END DO
+              DO (IIA=1,LEN(II3))
+                DO (IIB=1,LEN(II4))
+                  IIC=IIA+IIB-1
+                  VAL(II2,IIC)=VAL(II2,IIC)+VAL(II3,IIA)*VAL(II4,IIB)
+                  IF (VAL(II2,IIC).GE.RBS)
+                    VAL(II2,IIC+1)=VAL(II2,IIC+1)+
+     +                             REAL(INT(VAL(II2,IIC))/IBS)
+                    VAL(II2,IIC)=REAL(MOD(INT(VAL(II2,IIC)),IBS))
+                  END IF
+                END DO
+              END DO
+              IF (VAL(II2,LEN(II2)).EQ.0.) LEN(II2)=LEN(II2)-1
+            END IF
+C
+          ELSE
+C
+            DPV=DBLE(VAL(II2,LEN(II2)))
+            DO (III=LEN(II2)-1,1,-1)
+              DPV=DPV*DBS+DBLE(VAL(II2,III))
+            END DO
+            DPV=DPV*DBLE(SGN(II2))
+            EXIT
+C
+          END IF
+C
+          NOP=NOP+1
+C
+        END LOOP
+C
+C Done.
+C
+        IER=0
+        RETURN
+C
+C Error exit.
+C
+        BLOCK (MULTIPLE-PRECISION-QUANTITY-TOO-BIG,NR)
+          IER=1
+          RETURN
+        END BLOCK
+C
+      END
+I
+I The subroutine ARMVAM.
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE ARMVAM (IAM,IAN,LAN)
+C
+        DIMENSION IAM(*),IAN(*)
+C
+C Move an area map from one integer array (IAM) to another (IAN).  The
+C length of the first area map can be inferred from its contents; the
+C length of the second one is given by the value of the argument LAN.
+C
+C Declare the AREAS common block.
+C
+.USE  ARCOMN
+C
+C Declare the BLOCK DATA routine external, which should force it to
+C load from a binary library.
+C
+        EXTERNAL ARBLDA
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('ARMVAM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Pull out the length of the area map and check for initialization.
+C
+        LAM=IAM($LM$)
+C
+        IF (IAU.EQ.0.OR.IAM(LAM).NE.LAM)
+          CALL SETER ('ARMVAM - INITIALIZATION DONE IMPROPERLY',2,1)
+          RETURN
+        END IF
+C
+C See if the new array is too small.
+C
+        IF (LAN.LT.LAM-(IAM($UL$)-IAM($LL$)-1))
+          CALL SETER ('ARMVAM - NEW AREA-MAP ARRAY IS TOO SMALL',3,1)
+          RETURN
+        END IF
+C
+C Move the part of the area map stored at the beginning of the array.
+C
+        DO (IPT=1,IAM($LL$))
+          IAN(IPT)=IAM(IPT)
+        END DO
+C
+C Move the part of the area map stored at the end of the array, taking
+C into account the possibility that the arrays may start at the same
+C place in memory and we need to avoid overstoring an element that will
+C be needed later.
+C
+        IF (LAN.LT.LAM)
+          DO (IPT=IAM($UL$),LAM)
+            IAN(IPT-LAM+LAN)=IAM(IPT)
+          END DO
+        ELSE
+          DO (IPT=LAM,IAM($UL$),-1)
+            IAN(IPT-LAM+LAN)=IAM(IPT)
+          END DO
+        END IF
+C
+C Adjust the three elements (other than those in the point nodes) whose
+C values change when the length of the array changes.
+C
+        IAN($LM$)=LAN
+        IAN($UL$)=IAN($UL$)-LAM+LAN
+        IAN(LAN)=LAN
+C
+C Adjust the values of pointers (in the point nodes) that are indices
+C of stuff at the end of the array.
+C
+        ITM=IAN($UL$)+LAM-LAN
+C
+        DO (IPT=$FN$,IAN($LL$)-<$NL$-1>,$NL$)
+          IF (ABS(IAN(IPT+$GI$)).GE.ITM) IAN(IPT+$GI$)=
+     +    SIGN(ABS(IAN(IPT+$GI$))-LAM+LAN,IAN(IPT+$GI$))
+          IF (IAN(IPT+$IL$).GT.0) IAN(IPT+$IL$)=IAN(IPT+$IL$)-LAM+LAN
+          IF (IAN(IPT+$IR$).GT.0) IAN(IPT+$IR$)=IAN(IPT+$IR$)-LAM+LAN
+        END DO
+C
+C Done.
+C
+        RETURN
+C
+      END
+I
+I The subroutine ARPRAM.
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE ARPRAM (IAM,IF1,IF2,IF3)
+C
+        DIMENSION IAM(*)
+C
+C Examine the area map.  Find points of intersection, delete redundant
+C edge segments, and adjust the area identifiers.
+C
+C IAM is the array which holds an area map previously initialized by a
+C call to ARINAM and augmented by calls to AREDAM.
+C
+C IF1 specifies what kind of search is made for intersections.  If IF1
+C is zero, all pairs of edge segments which could possibly intersect
+C are examined for actual intersection, a very time-consuming process.
+C If IF1 is one, a pair is examined only if one of its members has a
+C left or a right identifier less than or equal to zero; this saves a
+C lot of time and is intended for use with contour lines.
+C
+C IF2 specifies what kind of action is taken to remove unclosed edges.
+C If IF2 is zero, a search is made for such edges and they are simply
+C removed from the area map.  If IF2 is one, no such search is made;
+C all edges are assumed closed.
+C
+C IF3 specifies what kind of search is made for area identifiers to be
+C changed.  If IF3 is zero, all edges of all subareas are examined in
+C complete detail, a very time-consuming process.  If IF3 is one, only
+C those edges having a zero or negative area identifier are examined
+C (all others being assumed correct) and holes are ignored, which saves
+C a lot of time; this is intended for use with contour lines.
+C
+C Declare the AREAS common block.
+C
+.USE  ARCOMN
+C
+C Declare the BLOCK DATA routine external, which should force it to
+C load from a binary library.
+C
+        EXTERNAL ARBLDA
+C
+C Define some double precision variables.
+C
+        DOUBLE PRECISION DPT,DP1,DP2,DX0,DY0,DLP
+C
+C Define the arrays which determine the multiple-precision operations
+C to be done by ARMPIA.
+C
+        DIMENSION IO1(4,8),IO2(4,4),IO3(4,8),IO4(4,18),IO5(4,4)
+        DIMENSION IO6(4,8),IO7(4,4)
+C
+        DATA IO1 / 1 ,  1 ,  0 ,  0 ,
+     +             1 ,  2 ,  0 ,  0 ,
+     +             1 ,  3 ,  0 ,  0 ,
+     +             1 ,  4 ,  0 ,  0 ,
+     +             4 ,  5 ,  1 ,  3 ,
+     +             4 ,  6 ,  2 ,  4 ,
+     +             2 ,  7 ,  5 ,  6 ,
+     +             5 ,  7 ,  0 ,  0 /
+        DATA IO2 / 4 ,  3 ,  1 ,  1 ,
+     +             4 ,  4 ,  2 ,  2 ,
+     +             2 ,  5 ,  3 ,  4 ,
+     +             5 ,  5 ,  0 ,  0 /
+        DATA IO3 / 1 ,  1 ,  0 ,  0 ,
+     +             1 ,  2 ,  0 ,  0 ,
+     +             1 ,  3 ,  0 ,  0 ,
+     +             1 ,  4 ,  0 ,  0 ,
+     +             4 ,  5 ,  1 ,  2 ,
+     +             4 ,  6 ,  3 ,  4 ,
+     +             3 ,  7 ,  5 ,  6 ,
+     +             5 ,  7 ,  0 ,  0 /
+        DATA IO4 / 1 ,  7 ,  0 ,  0 ,
+     +             1 ,  8 ,  0 ,  0 ,
+     +             4 ,  9 ,  7 ,  8 ,
+     +             1 ,  7 ,  0 ,  0 ,
+     +             1 ,  8 ,  0 ,  0 ,
+     +             4 , 10 ,  7 ,  8 ,
+     +             3 ,  5 ,  9 , 10 ,
+     +             1 ,  7 ,  0 ,  0 ,
+     +             1 ,  8 ,  0 ,  0 ,
+     +             4 ,  9 ,  7 ,  8 ,
+     +             1 ,  7 ,  0 ,  0 ,
+     +             1 ,  8 ,  0 ,  0 ,
+     +             4 , 10 ,  7 ,  8 ,
+     +             3 ,  6 ,  9 , 10 ,
+     +             4 ,  7 ,  3 ,  5 ,
+     +             4 ,  8 ,  1 ,  6 ,
+     +             3 ,  9 ,  7 ,  8 ,
+     +             5 ,  9 ,  0 ,  0 /
+        DATA IO5 / 4 ,  7 ,  2 ,  5 ,
+     +             4 ,  8 ,  4 ,  6 ,
+     +             3 ,  9 ,  7 ,  8 ,
+     +             5 ,  9 ,  0 ,  0 /
+        DATA IO6 / 1 ,  1 ,  0 ,  0 ,
+     +             1 ,  2 ,  0 ,  0 ,
+     +             1 ,  3 ,  0 ,  0 ,
+     +             1 ,  4 ,  0 ,  0 ,
+     +             4 ,  5 ,  1 ,  2 ,
+     +             4 ,  6 ,  3 ,  4 ,
+     +             3 ,  7 ,  5 ,  6 ,
+     +             5 ,  7 ,  0 ,  0 /
+        DATA IO7 / 4 ,  5 ,  1 ,  4 ,
+     +             4 ,  6 ,  2 ,  3 ,
+     +             2 ,  7 ,  5 ,  6 ,
+     +             5 ,  7 ,  0 ,  0 /
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('ARPRAM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Pull out the length of the area map and check for initialization.
+C
+        LAM=IAM($LM$)
+C
+        IF (IAU.EQ.0.OR.IAM(LAM).NE.LAM)
+          CALL SETER ('ARPRAM - INITIALIZATION DONE IMPROPERLY',2,1)
+          RETURN
+        END IF
+C
+C Save the pointer to the last word of the last node, so that, in case
+C of error, we can remove new nodes added to the area map.  Also, zero
+C the variable that saves the upper-end pointer; again, this is done so
+C that, when an error occurs, the proper action can be taken to dispose
+C of any space temporarily used at the upper end of the area map array.
+C
+        ILW=IAM($LL$)
+        ISU=0
+C
+C Get a double-precision version of ILP.
+C
+        DLP=DBLE(ILP)
+C
+C Copy the fast-path flags to internal variables.
+C
+        KF1=IF1
+        KF2=IF2
+        KF3=IF3
+C
+C Initialize the pointer used in determining the coordinate ordering of
+C new nodes.
+C
+        IPX=$FN$
+C
+C If debugging is turned on, produce an initial plot.
+C
+        IF (IDB.NE.0) THEN
+          CALL ARDBPA (IAM,IDB,'AT START OF ARPRAM')
+          IF (ICFELL('ARPRAM',3).NE.0) RETURN
+        END IF
+C
+C First, find the average length of the projection on the X axis of the
+C line segments in the area map.
+C
+T       ETM=SECOND(DMY)
+C
+        NXL=0
+        FXL=0.
+        IPT=$FN$
+        WHILE (IAM(IPT+$ND$).NE.$LN$)
+          IPT=IAM(IPT+$ND$)
+          IF (IAM(IPT+$GI$).NE.0)
+            NXL=NXL+1
+            FXL=FXL+REAL(ABS(IAM(IPT+$XC$)-IAM(IAM(IPT+$PD$)+$XC$)))
+          END IF
+        END WHILE
+        IF (NXL.EQ.0)
+          CALL SETER ('ARPRAM - NO EDGES IN AREA MAP',4,1)
+          INVOKE (CLEAN-UP-AND-RETURN,NR)
+        END IF
+        IXL=INT(FXL/REAL(NXL))
+C
+C Decide what the maximum such length should be and save it.  Adjust
+C the X and Y coordinates in the dummy nodes at the ends of the list.
+C
+        IAM($MD$)=MAX(2,MIN(ILC,2*IXL))
+        IAM(<$FN$+$XC$>)=-(IAM($MD$)+1)
+        IAM(<$FN$+$YC$>)=-(IAM($MD$)+1)
+        IAM(<$LN$+$XC$>)=ILC+(IAM($MD$)+1)
+        IAM(<$LN$+$YC$>)=ILC+(IAM($MD$)+1)
+C
+T       ETM=SECOND(DMY)-ETM
+T       PRINT * , 'ARPRAM - TIME TO FIND AVERAGE SEGMENT LENGTH = ',ETM
+C
+C Now, break up any edge segments whose projections on the X axis are
+C greater than the maximum.
+C
+T       ETM=SECOND(DMY)
+C
+        IPI=$FN$
+        WHILE (IAM(IPI+$ND$).NE.$LN$)
+          IPI=IAM(IPI+$ND$)
+          IF (IAM(IPI+$GI$).NE.0)
+            NDO=1+(ABS(IAM(IPI+$XC$)-IAM(IAM(IPI+$PD$)+$XC$))-1)/
+     +                                                         IAM($MD$)
+            IF (NDO.GT.1)
+              IXL=IAM(IAM(IPI+$PD$)+$XC$)
+              IYL=IAM(IAM(IPI+$PD$)+$YC$)
+              FXD=REAL(IAM(IPI+$XC$)-IXL)/REAL(NDO)
+              FYD=REAL(IAM(IPI+$YC$)-IYL)/REAL(NDO)
+              FOR (I = 1 TO NDO-1)
+                IX0=IXL+NINT(REAL(I)*FXD)
+                IY0=IYL+NINT(REAL(I)*FYD)
+                INVOKE (ADD-A-POINT)
+              END FOR
+            END IF
+          END IF
+        END WHILE
+C
+C If debugging is turned on, produce a plot.
+C
+        IF (IDB.NE.0) THEN
+          CALL ARDBPA (IAM,IDB,'AFTER BREAKING UP LONG EDGE SEGMENTS')
+          IF (ICFELL('ARPRAM',5).NE.0) RETURN
+        END IF
+C
+T       ETM=SECOND(DMY)-ETM
+T       PRINT * , 'ARPRAM - TIME FOR SHORTENING EDGES = ',ETM
+C
+C Now, look for points of intersection between edges.  The algorithm
+C used should run in O(nlogn) time, rather than O(n**2) time.  A
+C vertical sweep line is passed over the plane from left to right.
+C A list is kept of all the edge segments intersected by the sweep
+C line, sorted in order of increasing Y coordinate.  Whenever a new
+C edge segment is added to the list, a check is made for intersection
+C of it with the edge segments on either side of it.  Whenever an edge
+C segment is removed from the list, a check is made for intersection
+C of the edge segments which were on either side of it.  There are
+C various complications, mostly having to do with the fact that points
+C of intersection are incorporated in the area map as they are found
+C and that we are working with a discrete grid, rather than with the
+C classic Euclidean plane.
+C
+C The list is kept at the upper end of the area map.  Each five-word
+C node in it represents one edge segment intersecting the sweep line
+C and has the following format:
+C
+C   Word 0:  A pointer to the next node in the list (0 if no more).
+C   Word 1:  A pointer to the last node in the list (0 if no more).
+C   Word 2:  A pointer to the left end of the edge segment.
+C   Word 3:  A pointer to the right end of the edge segment.
+C   Word 4:  A pointer to the drawing end of the edge segment.
+C
+  101   CONTINUE
+T       ETM=SECOND(DMY)
+C
+C Save the index of the last element used at the upper end of the area
+C map.
+C
+        ISU=IAM($UL$)
+C
+C IQB points to the beginning of the edge-segment list and IQE to a
+C linked list of nodes removed from the edge-segment list and available
+C for re-use.  Both start out empty.
+C
+        IQB=0
+        IQE=0
+C
+C ISP points to the node in the area map defining the current position
+C of the sweep line.
+C
+        ISP=$FN$
+C
+C A WHILE loop moves the sweep line, one point position at a time,
+C across the area map.
+C
+        WHILE (IAM(ISP+$NC$).NE.$LN$)
+C
+          ISP=IAM(ISP+$NC$)
+C
+C Pull out the X and Y coordinates of the point defining the current
+C position of the sweep line.
+C
+          ISX=IAM(ISP+$XC$)
+          FSX=REAL(ISX)
+          ISY=IAM(ISP+$YC$)
+          FSY=REAL(ISY)
+C
+C Interpolate the new point along any line segment which passes within
+C one unit of it and, at the same time, remove any line segment having
+C the current point, or any with the same coordinates, as a right
+C endpoint.
+C
+          IQT=IQB
+C
+          LOOP
+C
+            EXIT IF (IQT.EQ.0)
+C
+            IX1=IAM(IAM(IQT+2)+$XC$)
+            FX1=REAL(IX1)
+            IY1=IAM(IAM(IQT+2)+$YC$)
+            FY1=REAL(IY1)
+            IX2=IAM(IAM(IQT+3)+$XC$)
+            FX2=REAL(IX2)
+            IY2=IAM(IAM(IQT+3)+$YC$)
+            FY2=REAL(IY2)
+C
+            IF (IAU.EQ.1)
+              TMP=MAX(0.,MIN(1.,
+     +            ((FSX-FX1)*(FX2-FX1)+(FSY-FY1)*(FY2-FY1))/
+     +            ((FX2-FX1)*(FX2-FX1)+(FY2-FY1)*(FY2-FY1))))
+              DSQ=(FX1-FSX+(FX2-FX1)*TMP)**2+(FY1-FSY+(FY2-FY1)*TMP)**2
+            ELSE IF (IAU.EQ.2)
+              DPT=MAX(0.D0,MIN(1.D0,(DBLE(ISX-IX1)*DBLE(IX2-IX1)+
+     +                               DBLE(ISY-IY1)*DBLE(IY2-IY1))/
+     +                              (DBLE(IX2-IX1)*DBLE(IX2-IX1)+
+     +                               DBLE(IY2-IY1)*DBLE(IY2-IY1))))
+              DSQ=REAL((DBLE(IX1-ISX)+DBLE(IX2-IX1)*DPT)**2+
+     +                 (DBLE(IY1-ISY)+DBLE(IY2-IY1)*DPT)**2)
+            ELSE
+              IO1(3,1)=IX2-IX1
+              IO1(3,2)=IY2-IY1
+              IO1(3,3)=ISX-IX1
+              IO1(3,4)=ISY-IY1
+              CALL ARMPIA (IO1,DP1,IER)
+              IF (IER.NE.0)
+                INVOKE (ERROR-IN-ARMPIA,NR)
+              END IF
+              CALL ARMPIA (IO2,DP2,IER)
+              IF (IER.NE.0)
+                INVOKE (ERROR-IN-ARMPIA,NR)
+              END IF
+              DPT=MAX(0.D0,MIN(1.D0,DP1/DP2))
+              DSQ=REAL((DBLE(IX1-ISX)+DBLE(IX2-IX1)*DPT)**2+
+     +                 (DBLE(IY1-ISY)+DBLE(IY2-IY1)*DPT)**2)
+            END IF
+C
+            IF ((DSQ.LT.1.).AND.(IX1.NE.ISX.OR.IY1.NE.ISY).AND.
+     +                          (IX2.NE.ISX.OR.IY2.NE.ISY))
+              IPI=IAM(IQT+4)
+              IX0=ISX
+              IY0=ISY
+              INVOKE (ADD-A-POINT)
+              IAM(IQT+3)=IPN
+              IF (IAM(IQT+4).NE.IAM(IQT+2)) IAM(IQT+4)=IPN
+            END IF
+C
+            IF (IAM(IAM(IQT+3)+$XC$).EQ.ISX.AND.
+     +          IAM(IAM(IQT+3)+$YC$).EQ.ISY)
+              IF (IAM(IQT+1).EQ.0)
+                IQB=IAM(IQT)
+                IF (IQB.NE.0) IAM(IQB+1)=0
+                IAM(IQT)=IQE
+                IQE=IQT
+                IQT=IQB
+              ELSE IF (IAM(IQT).EQ.0)
+                IAM(IAM(IQT+1))=0
+                IAM(IQT)=IQE
+                IQE=IQT
+                IQT=0
+              ELSE
+                IQL=IAM(IQT+1)
+                IQU=IAM(IQT)
+                IAM(IQL)=IQU
+                IAM(IQU+1)=IQL
+                IAM(IQT)=IQE
+                IQE=IQT
+                IF (IAM(IAM(IQU+3)+$XC$).NE.ISX.OR.
+     +              IAM(IAM(IQU+3)+$YC$).NE.ISY)
+                  INVOKE (CHECK-FOR-INTERSECTION)
+                END IF
+                IQT=IQU
+              END IF
+            ELSE
+              IQT=IAM(IQT)
+            END IF
+C
+          END LOOP
+C
+C Add line segments having the current point as a left endpoint.
+C
+          IF (IAM(ISP+$GI$).NE.0.AND.
+     +       (IAM(ISP+$XC$).LT.IAM(IAM(ISP+$PD$)+$XC$).OR.
+     +       (IAM(ISP+$XC$).EQ.IAM(IAM(ISP+$PD$)+$XC$).AND.
+     +        IAM(ISP+$YC$).LT.IAM(IAM(ISP+$PD$)+$YC$))))
+            ISL=ISP
+            ISR=IAM(ISP+$PD$)
+            ISD=ISP
+            INVOKE (ADD-SEGMENT-TO-LIST)
+          END IF
+C
+          IF (IAM(IAM(ISP+$ND$)+$GI$).NE.0.AND.
+     +       (IAM(ISP+$XC$).LT.IAM(IAM(ISP+$ND$)+$XC$).OR.
+     +       (IAM(ISP+$XC$).EQ.IAM(IAM(ISP+$ND$)+$XC$).AND.
+     +        IAM(ISP+$YC$).LT.IAM(IAM(ISP+$ND$)+$YC$))))
+            ISL=ISP
+            ISR=IAM(ISP+$ND$)
+            ISD=ISR
+            INVOKE (ADD-SEGMENT-TO-LIST)
+          END IF
+C
+        END WHILE
+C
+C The following internal procedure adds a segment to the list.  It also
+C checks for intersection of that segment with the segments on either
+C side of it in the list.
+C
+        BLOCK (ADD-SEGMENT-TO-LIST)
+C
+          IQS=0
+          IQT=IQB
+          ILX=IAM(ISL+$XC$)
+          RLY=REAL(IAM(ISL+$YC$))
+C
+          IF (IAM(ISL+$XC$).NE.IAM(ISR+$XC$))
+            SLL=REAL(IAM(ISR+$YC$)-IAM(ISL+$YC$))/
+     +          REAL(IAM(ISR+$XC$)-IAM(ISL+$XC$))
+          ELSE
+            SLL=RLP
+          END IF
+C
+          LOOP
+            EXIT IF (IQT.EQ.0)
+            IF (IAM(IAM(IQT+2)+$XC$).NE.IAM(IAM(IQT+3)+$XC$))
+              IF (IAU.EQ.1)
+                SLP=REAL(IAM(IAM(IQT+3)+$YC$)-IAM(IAM(IQT+2)+$YC$))/
+     +              REAL(IAM(IAM(IQT+3)+$XC$)-IAM(IAM(IQT+2)+$XC$))
+                RTY=REAL(IAM(IAM(IQT+2)+$YC$))+
+     +              REAL(ILX-IAM(IAM(IQT+2)+$XC$))*SLP
+              ELSE
+                DPT=DBLE(IAM(IAM(IQT+3)+$YC$)-IAM(IAM(IQT+2)+$YC$))/
+     +              DBLE(IAM(IAM(IQT+3)+$XC$)-IAM(IAM(IQT+2)+$XC$))
+                SLP=REAL(DPT)
+                RTY=DBLE(IAM(IAM(IQT+2)+$YC$))+
+     +              DBLE(ILX-IAM(IAM(IQT+2)+$XC$))*DPT
+              END IF
+            ELSE
+              SLP=RLP
+              RTY=REAL(IAM(IAM(IQT+2)+$YC$))
+            END IF
+            EXIT IF (RLY.LT.RTY.OR.(RLY.EQ.RTY.AND.SLL.LT.SLP))
+            IQS=IQT
+            IQT=IAM(IQT)
+          END LOOP
+C
+          IF (IQE.NE.0)
+            IQI=IQE
+            IQE=IAM(IQE)
+          ELSE
+            IF (IAM($UL$)-5.LE.IAM($LL$))
+              CALL SETER ('ARPRAM - AREA-MAP ARRAY OVERFLOW',6,1)
+              INVOKE (CLEAN-UP-AND-RETURN,NR)
+            END IF
+            IQI=IAM($UL$)-5
+            IAM($UL$)=IQI
+          END IF
+C
+          IAM(IQI)=IQT
+          IAM(IQI+1)=IQS
+          IAM(IQI+2)=ISL
+          IAM(IQI+3)=ISR
+          IAM(IQI+4)=ISD
+C
+          IF (IQS.NE.0) IAM(IQS)=IQI
+          IF (IQT.NE.0) IAM(IQT+1)=IQI
+C
+          IF (IQB.EQ.IQT) IQB=IQI
+C
+          IF (IQS.NE.0)
+            IQL=IQS
+            IQU=IQI
+            INVOKE (CHECK-FOR-INTERSECTION)
+          END IF
+C
+          IF (IQT.NE.0)
+            IQL=IQI
+            IQU=IQT
+            INVOKE (CHECK-FOR-INTERSECTION)
+          END IF
+C
+        END BLOCK
+C
+C The following internal procedure looks for intersection between the
+C segments identified by the pointers IQL and IQU.  When such points of
+C intersection are found, they are interpolated along the intersecting
+C line segments and any line segments which pass within one unit.
+C
+        BLOCK (CHECK-FOR-INTERSECTION)
+C
+          IF (KF1.EQ.0.OR.IAM(IAM(IQL+4)+$IL$).LE.0.OR.
+     +                    IAM(IAM(IQL+4)+$IR$).LE.0.OR.
+     +                    IAM(IAM(IQU+4)+$IL$).LE.0.OR.
+     +                    IAM(IAM(IQU+4)+$IR$).LE.0)
+C
+            IX1=IAM(IAM(IQL+2)+$XC$)
+            FX1=REAL(IX1)
+            IY1=IAM(IAM(IQL+2)+$YC$)
+            FY1=REAL(IY1)
+            IX2=IAM(IAM(IQL+3)+$XC$)
+            FX2=REAL(IX2)
+            IY2=IAM(IAM(IQL+3)+$YC$)
+            FY2=REAL(IY2)
+            IX3=IAM(IAM(IQU+2)+$XC$)
+            FX3=REAL(IX3)
+            IY3=IAM(IAM(IQU+2)+$YC$)
+            FY3=REAL(IY3)
+            IX4=IAM(IAM(IQU+3)+$XC$)
+            FX4=REAL(IX4)
+            IY4=IAM(IAM(IQU+3)+$YC$)
+            FY4=REAL(IY4)
+C
+            IF (IAU.EQ.1)
+              TMP=(FX2-FX1)*(FY4-FY3)-(FX4-FX3)*(FY2-FY1)
+            ELSE IF (IAU.EQ.2)
+              DPT=DBLE(IX2-IX1)*DBLE(IY4-IY3)-
+     +            DBLE(IX4-IX3)*DBLE(IY2-IY1)
+              TMP=REAL(DPT)
+            ELSE
+              IO3(3, 1)=IX2-IX1
+              IO3(3, 2)=IY4-IY3
+              IO3(3, 3)=IX4-IX3
+              IO3(3, 4)=IY2-IY1
+              CALL ARMPIA (IO3,DPT,IER)
+              IF (IER.NE.0)
+                INVOKE (ERROR-IN-ARMPIA,NR)
+              END IF
+              TMP=REAL(DPT)
+            END IF
+C
+            IF (ABS(TMP).GT..1)
+C
+              IF (IAU.EQ.1)
+                IX0=INT(MAX(-1.,MIN(RLP,
+     +                  ((FX4-FX3)*(FX2*FY1-FX1*FY2)-
+     +                   (FX2-FX1)*(FX4*FY3-FX3*FY4))/TMP+.5)))
+              ELSE IF (IAU.EQ.2)
+                IX0=INT(MAX(-1.D0,MIN(DLP,
+     +                  (DBLE(IX4-IX3)*
+     +                  (DBLE(IX2)*DBLE(IY1)-DBLE(IX1)*DBLE(IY2))-
+     +                   DBLE(IX2-IX1)*
+     +                  (DBLE(IX4)*DBLE(IY3)-DBLE(IX3)*DBLE(IY4)))/
+     +                                                       DPT+.5D0)))
+              ELSE
+                IO4(3, 1)=IX2
+                IO4(3, 2)=IY1
+                IO4(3, 4)=IX1
+                IO4(3, 5)=IY2
+                IO4(3, 8)=IX4
+                IO4(3, 9)=IY3
+                IO4(3,11)=IX3
+                IO4(3,12)=IY4
+                CALL ARMPIA (IO4,DX0,IER)
+                IF (IER.NE.0)
+                  INVOKE (ERROR-IN-ARMPIA,NR)
+                END IF
+                IX0=INT(MAX(-1.D0,MIN(DLP,DX0/DPT+.5D0)))
+              END IF
+C
+              IF (IAU.EQ.1)
+                IY0=INT(MAX(-1.,MIN(RLP,
+     +                  ((FY4-FY3)*(FX2*FY1-FX1*FY2)-
+     +                   (FY2-FY1)*(FX4*FY3-FX3*FY4))/TMP+.5)))
+              ELSE IF (IAU.EQ.2)
+                IY0=INT(MAX(-1.D0,MIN(DLP,
+     +                  (DBLE(IY4-IY3)*
+     +                  (DBLE(IX2)*DBLE(IY1)-DBLE(IX1)*DBLE(IY2))-
+     +                   DBLE(IY2-IY1)*
+     +                  (DBLE(IX4)*DBLE(IY3)-DBLE(IX3)*DBLE(IY4)))/
+     +                                                       DPT+.5D0)))
+              ELSE
+                CALL ARMPIA (IO5,DY0,IER)
+                IF (IER.NE.0)
+                  INVOKE (ERROR-IN-ARMPIA,NR)
+                END IF
+                IY0=INT(MAX(-1.D0,MIN(DLP,DY0/DPT+.5D0)))
+              END IF
+C
+              IF (IX0.EQ.ISX.AND.IY0.LT.ISY) IX0=IX0+1
+C
+              FX0=REAL(IX0)
+              FY0=REAL(IY0)
+C
+              IF ((FX0-FX1)*(FX0-FX2).LE.0..AND.
+     +            (FY0-FY1)*(FY0-FY2).LE.0..AND.
+     +            (FX0-FX3)*(FX0-FX4).LE.0..AND.
+     +            (FY0-FY3)*(FY0-FY4).LE.0.)
+C
+                INP=0
+C
+                IF ((IX0.NE.IX1.OR.IY0.NE.IY1).AND.
+     +              (IX0.NE.IX2.OR.IY0.NE.IY2))
+                  INP=1
+                  IPI=IAM(IQL+4)
+                  INVOKE (ADD-A-POINT)
+                  IAM(IQL+3)=IPN
+                  IF (IAM(IQL+4).NE.IAM(IQL+2)) IAM(IQL+4)=IPN
+                END IF
+C
+                IF ((IX0.NE.IX3.OR.IY0.NE.IY3).AND.
+     +              (IX0.NE.IX4.OR.IY0.NE.IY4))
+                  INP=1
+                  IPI=IAM(IQU+4)
+                  INVOKE (ADD-A-POINT)
+                  IAM(IQU+3)=IPN
+                  IF (IAM(IQU+4).NE.IAM(IQU+2)) IAM(IQU+4)=IPN
+                END IF
+C
+                IF (INP.NE.0)
+                  IQT=IQB
+                  LOOP
+                    EXIT IF (IQT.EQ.0)
+                    IX1=IAM(IAM(IQT+2)+$XC$)
+                    FX1=REAL(IX1)
+                    IY1=IAM(IAM(IQT+2)+$YC$)
+                    FY1=REAL(IY1)
+                    IX2=IAM(IAM(IQT+3)+$XC$)
+                    FX2=REAL(IX2)
+                    IY2=IAM(IAM(IQT+3)+$YC$)
+                    FY2=REAL(IY2)
+C
+                    IF (IAU.EQ.1)
+                      TMP=MAX(0.,MIN(1.,
+     +                    ((FX0-FX1)*(FX2-FX1)+(FY0-FY1)*(FY2-FY1))/
+     +                    ((FX2-FX1)*(FX2-FX1)+(FY2-FY1)*(FY2-FY1))))
+                      DSQ=(FX1-FX0+(FX2-FX1)*TMP)**2+
+     +                    (FY1-FY0+(FY2-FY1)*TMP)**2
+                    ELSE IF (IAU.EQ.2)
+                      DPT=MAX(0.D0,MIN(1.D0,
+     +                                   (DBLE(IX0-IX1)*DBLE(IX2-IX1)+
+     +                                    DBLE(IY0-IY1)*DBLE(IY2-IY1))/
+     +                                   (DBLE(IX2-IX1)*DBLE(IX2-IX1)+
+     +                                    DBLE(IY2-IY1)*DBLE(IY2-IY1))))
+                      DSQ=(DBLE(IX1-IX0)+DBLE(IX2-IX1)*DPT)**2+
+     +                    (DBLE(IY1-IY0)+DBLE(IY2-IY1)*DPT)**2
+                    ELSE
+                      IO1(3,1)=IX2-IX1
+                      IO1(3,2)=IY2-IY1
+                      IO1(3,3)=IX0-IX1
+                      IO1(3,4)=IY0-IY1
+                      CALL ARMPIA (IO1,DP1,IER)
+                      IF (IER.NE.0)
+                        INVOKE (ERROR-IN-ARMPIA,NR)
+                      END IF
+                      CALL ARMPIA (IO2,DP2,IER)
+                      IF (IER.NE.0)
+                        INVOKE (ERROR-IN-ARMPIA,NR)
+                      END IF
+                      DPT=MAX(0.D0,MIN(1.D0,DP1/DP2))
+                      DSQ=(DBLE(IX1-IX0)+DBLE(IX2-IX1)*DPT)**2+
+     +                    (DBLE(IY1-IY0)+DBLE(IY2-IY1)*DPT)**2
+                    END IF
+C
+                    IF ((DSQ.LT.1.).AND.(IX1.NE.IX0.OR.IY1.NE.IY0).AND.
+     +                                  (IX2.NE.IX0.OR.IY2.NE.IY0))
+                      IPI=IAM(IQT+4)
+                      INVOKE (ADD-A-POINT)
+                      IAM(IQT+3)=IPN
+                      IF (IAM(IQT+4).NE.IAM(IQT+2)) IAM(IQT+4)=IPN
+                    END IF
+                    IQT=IAM(IQT)
+                  END LOOP
+                END IF
+C
+              END IF
+C
+            END IF
+C
+          END IF
+C
+        END BLOCK
+C
+C Restore the index of the last element used at the upper end of the
+C area map.
+C
+        IAM($UL$)=ISU
+        ISU=0
+C
+C If debugging is turned on, produce a plot.
+C
+        IF (IDB.NE.0) THEN
+          CALL ARDBPA (IAM,IDB,'AFTER FINDING POINTS OF INTERSECTION')
+          IF (ICFELL('ARPRAM',7).NE.0) RETURN
+        END IF
+C
+T       ETM=SECOND(DMY)-ETM
+T       PRINT * , 'ARPRAM - TIME FOR FINDING INTERSECTIONS = ',ETM
+C
+C Now look for coincident line segments in the list and remove them.
+C
+T       ETM=SECOND(DMY)
+        ISP=$FN$
+        WHILE (IAM(ISP+$NC$).NE.$LN$)
+          ISP=IAM(ISP+$NC$)
+          IF (IAM(ISP+$GI$).NE.0)
+            IF (IAM(IAM(ISP+$ND$)+$GI$).NE.0.AND.
+     +          IAM(IAM(ISP+$ND$)+$XC$).EQ.IAM(IAM(ISP+$PD$)+$XC$).AND.
+     +          IAM(IAM(ISP+$ND$)+$YC$).EQ.IAM(IAM(ISP+$PD$)+$YC$))
+              IP1=ISP
+              IP2=IAM(ISP+$ND$)
+              INVOKE (COINCIDENT-SEGMENTS-FOUND)
+            END IF
+            ISQ=IAM(ISP+$NC$)
+            WHILE (IAM(ISQ+$XC$).EQ.IAM(ISP+$XC$).AND.
+     +             IAM(ISQ+$YC$).EQ.IAM(ISP+$YC$))
+              IF (IAM(ISQ+$GI$).NE.0.AND.
+     +            IAM(IAM(ISQ+$PD$)+$XC$).EQ.
+     +            IAM(IAM(ISP+$PD$)+$XC$).AND.
+     +            IAM(IAM(ISQ+$PD$)+$YC$).EQ.
+     +            IAM(IAM(ISP+$PD$)+$YC$))
+                IP1=ISP
+                IP2=ISQ
+                INVOKE (COINCIDENT-SEGMENTS-FOUND)
+              END IF
+              IF (IAM(IAM(ISQ+$ND$)+$GI$).NE.0.AND.
+     +            IAM(IAM(ISQ+$ND$)+$XC$).EQ.
+     +            IAM(IAM(ISP+$PD$)+$XC$).AND.
+     +            IAM(IAM(ISQ+$ND$)+$YC$).EQ.
+     +            IAM(IAM(ISP+$PD$)+$YC$))
+                IP1=ISP
+                IP2=IAM(ISQ+$ND$)
+                INVOKE (COINCIDENT-SEGMENTS-FOUND)
+              END IF
+              ISQ=IAM(ISQ+$NC$)
+            END WHILE
+          END IF
+          IF (IAM(IAM(ISP+$ND$)+$GI$).NE.0)
+            ISQ=IAM(ISP+$NC$)
+            WHILE (IAM(ISQ+$XC$).EQ.IAM(ISP+$XC$).AND.
+     +             IAM(ISQ+$YC$).EQ.IAM(ISP+$YC$))
+              IF (IAM(ISQ+$GI$).NE.0.AND.
+     +            IAM(IAM(ISQ+$PD$)+$XC$).EQ.
+     +            IAM(IAM(ISP+$ND$)+$XC$).AND.
+     +            IAM(IAM(ISQ+$PD$)+$YC$).EQ.
+     +            IAM(IAM(ISP+$ND$)+$YC$))
+                IP1=IAM(ISP+$ND$)
+                IP2=ISQ
+                INVOKE (COINCIDENT-SEGMENTS-FOUND)
+              END IF
+              IF (IAM(IAM(ISQ+$ND$)+$GI$).NE.0.AND.
+     +            IAM(IAM(ISQ+$ND$)+$XC$).EQ.
+     +            IAM(IAM(ISP+$ND$)+$XC$).AND.
+     +            IAM(IAM(ISQ+$ND$)+$YC$).EQ.
+     +            IAM(IAM(ISP+$ND$)+$YC$))
+                IP1=IAM(ISP+$ND$)
+                IP2=IAM(ISQ+$ND$)
+                INVOKE (COINCIDENT-SEGMENTS-FOUND)
+              END IF
+              ISQ=IAM(ISQ+$NC$)
+            END WHILE
+          END IF
+        END WHILE
+C
+C This internal procedure processes coincident pairs of segments found.
+C If both members of the pair belong to the same group, area identifier
+C information from both members is reconciled and one of the pair is
+C deleted.  If they belong to different groups, the group id in one of
+C them is negated, so that it is present when we are looking at edges
+C belonging to a single group, but absent when we are looking at all
+C the edges together.
+C
+        BLOCK (COINCIDENT-SEGMENTS-FOUND)
+          IF (ABS(IAM(IP1+$GI$)).EQ.ABS(IAM(IP2+$GI$)))
+            IL1=IAM(IP1+$IL$)
+            IR1=IAM(IP1+$IR$)
+            IF (IAM(IP1+$XC$).EQ.IAM(IP2+$XC$).AND.
+     +          IAM(IP1+$YC$).EQ.IAM(IP2+$YC$))
+              IL2=IAM(IP2+$IL$)
+              IR2=IAM(IP2+$IR$)
+            ELSE
+              IL2=IAM(IP2+$IR$)
+              IR2=IAM(IP2+$IL$)
+            END IF
+            IMN=MAX(-1,MIN(IL1,IL2))
+            IMX=MAX(-1,MAX(IL1,IL2))
+            IF (IMN.EQ.IMX)
+              IAM(IP1+$IL$)=IMN
+            ELSE
+              IAM(IP1+$IL$)=0
+            END IF
+            IMN=MAX(-1,MIN(IR1,IR2))
+            IMX=MAX(-1,MAX(IR1,IR2))
+            IF (IMN.EQ.IMX)
+              IAM(IP1+$IR$)=IMN
+            ELSE
+              IAM(IP1+$IR$)=0
+            END IF
+            IAM(IP2+$IL$)=0
+            IAM(IP2+$IR$)=0
+            IAM(IP2+$GI$)=0
+          ELSE
+            IF (IAM(IP1+$GI$).GT.0) IAM(IP2+$GI$)=-ABS(IAM(IP2+$GI$))
+          END IF
+        END BLOCK
+C
+C If debugging is turned on, produce a plot.
+C
+        IF (IDB.NE.0) THEN
+          CALL ARDBPA (IAM,IDB,'AFTER REMOVING COINCIDENT SEGMENTS')
+          IF (ICFELL('ARPRAM',8).NE.0) RETURN
+        END IF
+C
+T       ETM=SECOND(DMY)-ETM
+T       PRINT * , 'ARPRAM - TIME FOR FINDING COINCIDENT EDGES = ',ETM
+C
+C Look for unclosed edges, if that is to be done.
+C
+        IF (KF2.EQ.0)
+T         ETM=SECOND(DMY)
+          REPEAT
+            NPF=0
+            IPT=$FN$
+            WHILE (IAM(IPT+$ND$).NE.$LN$)
+              IPT=IAM(IPT+$ND$)
+              IF (IAM(IPT+$GI$).NE.0.AND.IAM(IAM(IPT+$PD$)+$GI$).EQ.0)
+                IGI=ABS(IAM(IPT+$GI$))
+                IP1=IAM(IPT+$PD$)
+                IP2=IP1
+                WHILE (IAM(IAM(IP2+$PC$)+$XC$).EQ.IAM(IP1+$XC$).AND.
+     +                 IAM(IAM(IP2+$PC$)+$YC$).EQ.IAM(IP1+$YC$))
+                  IP2=IAM(IP2+$PC$)
+                END WHILE
+                IP3=IP2
+                IPF=0
+                LOOP
+                  IF (IP2.NE.IP1.AND.(ABS(IAM(IP2+$GI$)).EQ.IGI.OR.
+     +                ABS(IAM(IAM(IP2+$ND$)+$GI$)).EQ.IGI))
+                    IPF=1
+                    EXIT
+                  END IF
+                  IP2=IAM(IP2+$NC$)
+                  EXIT IF (IAM(IP2+$XC$).NE.IAM(IP1+$XC$).OR.
+     +                     IAM(IP2+$YC$).NE.IAM(IP1+$YC$))
+                END LOOP
+                IF (IPF.EQ.0)
+                  IF (IAM(IPT+$GI$).GT.0)
+                    IP2=IP3
+                    LOOP
+                      IF (IP2.NE.IP1)
+                        IF (IAM(IP2+$GI$).LT.0.AND.
+     +                      ABS(IAM(IP2+$GI$)).NE.IGI.AND.
+     +                      IAM(IAM(IP2+$PD$)+$XC$).EQ.
+     +                      IAM(    IPT      +$XC$).AND.
+     +                      IAM(IAM(IP2+$PD$)+$YC$).EQ.
+     +                      IAM(    IPT      +$YC$))
+                          IAM(IP2+$GI$)=ABS(IAM(IP2+$GI$))
+                          EXIT
+                        END IF
+                        IF (IAM(IAM(IP2+$ND$)+$GI$).LT.0.AND.
+     +                      ABS(IAM(IAM(IP2+$ND$)+$GI$)).NE.IGI.AND.
+     +                      IAM(IAM(IP2+$ND$)+$XC$).EQ.
+     +                      IAM(    IPT      +$XC$).AND.
+     +                      IAM(IAM(IP2+$ND$)+$YC$).EQ.
+     +                      IAM(    IPT      +$YC$))
+                          IAM(IAM(IP2+$ND$)+$GI$)=
+     +                                      ABS(IAM(IAM(IP2+$ND$)+$GI$))
+                          EXIT
+                        END IF
+                      END IF
+                      IP2=IAM(IP2+$NC$)
+                      EXIT IF (IAM(IP2+$XC$).NE.IAM(IP1+$XC$).OR.
+     +                         IAM(IP2+$YC$).NE.IAM(IP1+$YC$))
+                    END LOOP
+                  END IF
+                  IAM(IPT+$GI$)=0
+                  NPF=NPF+1
+                END IF
+              END IF
+            END WHILE
+            IPT=$LN$
+            WHILE (IAM(IPT+$PD$).NE.$FN$)
+              IPT=IAM(IPT+$PD$)
+              IF (IAM(IPT+$GI$).NE.0.AND.IAM(IAM(IPT+$ND$)+$GI$).EQ.0)
+                IGI=ABS(IAM(IPT+$GI$))
+                IP1=IPT
+                IP2=IP1
+                WHILE (IAM(IAM(IP2+$PC$)+$XC$).EQ.IAM(IP1+$XC$).AND.
+     +                 IAM(IAM(IP2+$PC$)+$YC$).EQ.IAM(IP1+$YC$))
+                  IP2=IAM(IP2+$PC$)
+                END WHILE
+                IP3=IP2
+                IPF=0
+                LOOP
+                  IF (IP2.NE.IP1.AND.(ABS(IAM(IP2+$GI$)).EQ.IGI.OR.
+     +                ABS(IAM(IAM(IP2+$ND$)+$GI$)).EQ.IGI))
+                    IPF=1
+                    EXIT
+                  END IF
+                  IP2=IAM(IP2+$NC$)
+                  EXIT IF (IAM(IP2+$XC$).NE.IAM(IP1+$XC$).OR.
+     +                     IAM(IP2+$YC$).NE.IAM(IP1+$YC$))
+                END LOOP
+                IF (IPF.EQ.0)
+                  IF (IAM(IPT+$GI$).GT.0)
+                    IP2=IP3
+                    LOOP
+                      IF (IP2.NE.IP1)
+                        IF (IAM(IP2+$GI$).LT.0.AND.
+     +                      ABS(IAM(IP2+$GI$)).NE.IGI.AND.
+     +                      IAM(IAM(IP2+$PD$)+$XC$).EQ.
+     +                      IAM(IAM(IPT+$PD$)+$XC$).AND.
+     +                      IAM(IAM(IP2+$PD$)+$YC$).EQ.
+     +                      IAM(IAM(IPT+$PD$)+$YC$))
+                          IAM(IP2+$GI$)=ABS(IAM(IP2+$GI$))
+                          EXIT
+                        END IF
+                        IF (IAM(IAM(IP2+$ND$)+$GI$).LT.0.AND.
+     +                      ABS(IAM(IAM(IP2+$ND$)+$GI$)).NE.IGI.AND.
+     +                      IAM(IAM(IP2+$ND$)+$XC$).EQ.
+     +                      IAM(IAM(IPT+$PD$)+$XC$).AND.
+     +                      IAM(IAM(IP2+$ND$)+$YC$).EQ.
+     +                      IAM(IAM(IPT+$PD$)+$YC$))
+                          IAM(IAM(IP2+$ND$)+$GI$)=
+     +                                      ABS(IAM(IAM(IP2+$ND$)+$GI$))
+                          EXIT
+                        END IF
+                      END IF
+                      IP2=IAM(IP2+$NC$)
+                      EXIT IF (IAM(IP2+$XC$).NE.IAM(IP1+$XC$).OR.
+     +                         IAM(IP2+$YC$).NE.IAM(IP1+$YC$))
+                    END LOOP
+                  END IF
+                  IAM(IPT+$GI$)=0
+                  NPF=NPF+1
+                END IF
+              END IF
+            END WHILE
+          UNTIL (NPF.EQ.0)
+C
+C If debugging is turned on, produce a plot.
+C
+          IF (IDB.NE.0) THEN
+            CALL ARDBPA (IAM,IDB,'AFTER REMOVING UNCLOSED EDGES')
+            IF (ICFELL('ARPRAM',9).NE.0) RETURN
+          END IF
+C
+T         ETM=SECOND(DMY)-ETM
+T         PRINT * , 'ARPRAM - TIME FOR FINDING UNCLOSED EDGES = ',ETM
+C
+        END IF
+C
+C Adjust the area identifiers for all edge segments in the map.  We
+C first make a pass over the entire area map, looking for holes and
+C eliminating them by the insertion of some temporary connecting lines.
+C
+C Save the pointer to the last word of the last node, so that we can
+C remove the nodes implementing the temporary connecting lines before
+C returning to the caller.
+C
+        ILW=IAM($LL$)
+C
+C Each pass through the following loop traces the boundary of one
+C connected loop.  In some cases (for contour maps, for example),
+C this step can be omitted; in those cases, there is a small chance
+C of failure, in which case we have to come back and force the step
+C to occur.
+C
+  104   IF (KF3.EQ.0)
+C
+T         ETM=SECOND(DMY)
+C
+          IPT=$FN$
+C
+          LOOP
+C
+C Move to the right across the area map, looking for an edge segment
+C that has not yet been completely processed.  If no such segment can
+C be found, all subareas have been done.
+C
+            WHILE (MOD(IAM(IPT),4).EQ.3.OR.
+     +             ABS(IAM(IPT+$GI$)).LT.IAM($UL$))
+              IPT=IAM(IPT+$NC$)
+              EXIT IF (IPT.EQ.$LN$)
+            END WHILE
+C
+C Pull out the group identifier for the segment.
+C
+            IGI=ABS(IAM(IPT+$GI$))
+C
+C Decide whether to scan the subarea to the left of the edge being
+C traced (IPU=1) or the one to the right (IPU=2).
+C
+            IF (MOD(IAM(IPT),2).EQ.0)
+              IPU=1
+            ELSE
+              IPU=2
+            END IF
+C
+C IPQ points to the node defining the beginning of the edge segment,
+C IPR to the node defining the end of the edge segment, and IPS to
+C the node defining the beginning of the edge, so that we can tell
+C when we've gone all the way around it.
+C
+            IPQ=IAM(IPT+$PD$)
+            IPR=IPT
+            IPS=IPQ
+            IPM=IPR
+            IPV=IPU
+C
+C We need to keep track of the highest point found along the loop and
+C the total change in direction.  Initialize the variables involved.
+C
+            IPH=IPQ
+            ANT=0.
+C
+C Each pass through the following loop moves one step along the edge of
+C the subarea.
+C
+            LOOP
+C
+C Update the pointer to the highest point found along the loop.
+C
+              IF (IAM(IPR+$YC$).GT.IAM(IPH+$YC$)) IPH=IPR
+C
+C Move IPQ to IPP and IPR to IPQ.  They point to the nodes defining the
+C ends of the current edge segment.
+C
+              IPP=IPQ
+              IPQ=IPR
+C
+C Get the coordinates of the ends of the edge segment for use in
+C computing change in direction to a possible next point.
+C
+              IXP=IAM(IPP+$XC$)
+              IYP=IAM(IPP+$YC$)
+              IXQ=IAM(IPQ+$XC$)
+              IYQ=IAM(IPQ+$YC$)
+              FXP=REAL(IXP)
+              FYP=REAL(IYP)
+              FXQ=REAL(IXQ)
+              FYQ=REAL(IYQ)
+C
+C Back up IPR to the beginning of the group of nodes which have the
+C same X and Y coordinates as it does.
+C
+              WHILE (IAM(IPR+$XC$).EQ.IAM(IAM(IPR+$PC$)+$XC$).AND.
+     +               IAM(IPR+$YC$).EQ.IAM(IAM(IPR+$PC$)+$YC$))
+                IPR=IAM(IPR+$PC$)
+              END WHILE
+C
+C Go through the group of nodes, examining all the possible ways to
+C move from the current position to a new one.  Pick the direction
+C which is leftmost (if IPU=1) or rightmost (if IPU=2).
+C
+              IP1=IPR
+              IP2=IPR
+              IPR=0
+              IF (IPU.EQ.1)
+                ANM=-$PI$
+              ELSE
+                ANM=+$PI$
+              END IF
+C
+              WHILE (IAM(IP2+$XC$).EQ.IAM(IP1+$XC$).AND.
+     +               IAM(IP2+$YC$).EQ.IAM(IP1+$YC$))
+                IF (ABS(IAM(IAM(IP2+$ND$)+$GI$)).EQ.IGI.AND.
+     +              (IAM(IAM(IP2+$ND$)+$XC$).NE.IAM(IPP+$XC$).OR.
+     +               IAM(IAM(IP2+$ND$)+$YC$).NE.IAM(IPP+$YC$)))
+                  IXR=IAM(IAM(IP2+$ND$)+$XC$)
+                  IYR=IAM(IAM(IP2+$ND$)+$YC$)
+                  FXR=REAL(IXR)
+                  FYR=REAL(IYR)
+C
+                  IF (IAU.EQ.1)
+                    ANG=ARRAT2((FXQ-FXP)*(FYR-FYQ)-(FYQ-FYP)*(FXR-FXQ),
+     +                         (FXQ-FXP)*(FXR-FXQ)+(FYQ-FYP)*(FYR-FYQ))
+                  ELSE IF (IAU.EQ.2)
+                    ANG=ARDAT2(DBLE(IXQ-IXP)*DBLE(IYR-IYQ)-
+     +                         DBLE(IYQ-IYP)*DBLE(IXR-IXQ),
+     +                         DBLE(IXQ-IXP)*DBLE(IXR-IXQ)+
+     +                         DBLE(IYQ-IYP)*DBLE(IYR-IYQ))
+                  ELSE
+                    IO6(3,1)=IXQ-IXP
+                    IO6(3,2)=IYR-IYQ
+                    IO6(3,3)=IYQ-IYP
+                    IO6(3,4)=IXR-IXQ
+                    CALL ARMPIA (IO6,DP1,IER)
+                    IF (IER.NE.0)
+                      INVOKE (ERROR-IN-ARMPIA,NR)
+                    END IF
+                    CALL ARMPIA (IO7,DP2,IER)
+                    IF (IER.NE.0)
+                      INVOKE (ERROR-IN-ARMPIA,NR)
+                    END IF
+                    ANG=ARDAT2(DP1,DP2)
+                  END IF
+C
+                  IF (IPU.EQ.1)
+                    IF (ANG.GT.ANM)
+                      IPR=IAM(IP2+$ND$)
+                      ANM=ANG
+                      IPM=IPR
+                      IPV=1
+                    END IF
+                  ELSE
+                    IF (ANG.LT.ANM)
+                      IPR=IAM(IP2+$ND$)
+                      ANM=ANG
+                      IPM=IPR
+                      IPV=2
+                    END IF
+                  END IF
+                END IF
+                IF (ABS(IAM(IP2+$GI$)).EQ.IGI.AND.
+     +              (IAM(IAM(IP2+$PD$)+$XC$).NE.IAM(IPP+$XC$).OR.
+     +               IAM(IAM(IP2+$PD$)+$YC$).NE.IAM(IPP+$YC$)))
+                  IXR=IAM(IAM(IP2+$PD$)+$XC$)
+                  IYR=IAM(IAM(IP2+$PD$)+$YC$)
+                  FXR=REAL(IXR)
+                  FYR=REAL(IYR)
+C
+                  IF (IAU.EQ.1)
+                    ANG=ARRAT2((FXQ-FXP)*(FYR-FYQ)-(FYQ-FYP)*(FXR-FXQ),
+     +                         (FXQ-FXP)*(FXR-FXQ)+(FYQ-FYP)*(FYR-FYQ))
+                  ELSE IF (IAU.EQ.2)
+                    ANG=ARDAT2(DBLE(IXQ-IXP)*DBLE(IYR-IYQ)-
+     +                         DBLE(IYQ-IYP)*DBLE(IXR-IXQ),
+     +                         DBLE(IXQ-IXP)*DBLE(IXR-IXQ)+
+     +                         DBLE(IYQ-IYP)*DBLE(IYR-IYQ))
+                  ELSE
+                    IO6(3,1)=IXQ-IXP
+                    IO6(3,2)=IYR-IYQ
+                    IO6(3,3)=IYQ-IYP
+                    IO6(3,4)=IXR-IXQ
+                    CALL ARMPIA (IO6,DP1,IER)
+                    IF (IER.NE.0)
+                      INVOKE (ERROR-IN-ARMPIA,NR)
+                    END IF
+                    CALL ARMPIA (IO7,DP2,IER)
+                    IF (IER.NE.0)
+                      INVOKE (ERROR-IN-ARMPIA,NR)
+                    END IF
+                    ANG=ARDAT2(DP1,DP2)
+                  END IF
+C
+                  IF (IPU.EQ.1)
+                    IF (ANG.GT.ANM)
+                      IPR=IAM(IP2+$PD$)
+                      ANM=ANG
+                      IPM=IP2
+                      IPV=2
+                    END IF
+                  ELSE
+                    IF (ANG.LT.ANM)
+                      IPR=IAM(IP2+$PD$)
+                      ANM=ANG
+                      IPM=IP2
+                      IPV=1
+                    END IF
+                  END IF
+                END IF
+                IP2=IAM(IP2+$NC$)
+              END WHILE
+C
+C If no possible exit was found, reverse direction.
+C
+              IF (IPR.EQ.0)
+                IPR=IPP
+                IPV=3-IPV
+                IF (IPU.EQ.1)
+                  ANM=+$PI$
+                ELSE
+                  ANM=-$PI$
+                END IF
+              END IF
+C
+C Update the total angular change.
+C
+              ANT=ANT+ANM
+C
+C Set the marker for the edge segment picked.  If the marker is set
+C already, either go back and do a slow-path intersection search or
+C log an error.
+C
+              IF (IPV.EQ.1.AND.MOD(IAM(IPM),2).EQ.0)
+                  IAM(IPM)=IAM(IPM)+1
+              ELSE IF (IPV.EQ.2.AND.MOD(IAM(IPM)/2,2).EQ.0)
+                  IAM(IPM)=IAM(IPM)+2
+              ELSE
+                IPT=IAM($LL$)-<$NL$-1>
+                WHILE (IPT.GT.ILW)
+                  IAM(IAM(IPT+$PD$)+$ND$)=IAM(IPT+$ND$)
+                  IAM(IAM(IPT+$ND$)+$PD$)=IAM(IPT+$PD$)
+                  IAM(IAM(IPT+$PC$)+$NC$)=IAM(IPT+$NC$)
+                  IAM(IAM(IPT+$NC$)+$PC$)=IAM(IPT+$PC$)
+                  IPT=IPT-$NL$
+                END WHILE
+                IAM($LL$)=ILW
+                DO (IPT=$FN$,IAM($LL$)-<$NL$-1>,$NL$)
+                  IAM(IPT)=4*(IAM(IPT)/4)
+                END DO
+                IF (KF1.NE.0)
+                  KF1=0
+T                 ETM=SECOND(DMY)-ETM
+T                 PRINT * , 'ARPRAM - FORCING SLOW-PATH INTERSECTION ',
+T    +                      'SEARCH - WASTED TIME = ',ETM
+                  GO TO 101
+                ELSE
+                  CALL SETER ('ARPRAM - ALGORITHM FAILURE',10,1)
+                  INVOKE (CLEAN-UP-AND-RETURN,NR)
+                END IF
+              END IF
+C
+C Exit if we're passing the start of the subarea.
+C
+              EXIT IF (IAM(IPQ+$XC$).EQ.IAM(IPS+$XC$).AND.
+     +                 IAM(IPQ+$YC$).EQ.IAM(IPS+$YC$).AND.
+     +                 IAM(IPR+$XC$).EQ.IAM(IPT+$XC$).AND.
+     +                 IAM(IPR+$YC$).EQ.IAM(IPT+$YC$))
+C
+            END LOOP
+C
+C If the closed loop just traced was a hole, insert a temporary
+C connecting line to get rid of the hole.
+C
+            IF ((IPU.EQ.1.AND.ANT.LT.0.).OR.
+     +          (IPU.EQ.2.AND.ANT.GT.0.))
+              IOF=0
+              XCI=REAL(IAM(IPH+$XC$))
+              YCI=REAL(IAM(IPH+$YC$))
+              YCO=RLP
+              IP1=IPH
+              WHILE (IAM(IAM(IP1+$NC$)+$XC$).EQ.IAM(IPH+$XC$))
+                IP1=IAM(IP1+$NC$)
+              END WHILE
+              WHILE (IAM(IP1+$XC$).GE.IAM(IPH+$XC$)-IAM($MD$))
+                IF (ABS(IAM(IP1+$GI$)).EQ.IGI.AND.
+     +              IAM(IAM(IP1+$PD$)+$XC$).GT.IAM(IP1+$XC$).AND.
+     +              IAM(IAM(IP1+$PD$)+$XC$).GE.IAM(IPH+$XC$))
+                  IF (IAU.EQ.1)
+                    YTM=REAL(IAM(IP1+$YC$))+
+     +                 (XCI-REAL(IAM(IP1+$XC$)))*
+     +                 (REAL(IAM(IAM(IP1+$PD$)+$YC$)-IAM(IP1+$YC$))/
+     +                  REAL(IAM(IAM(IP1+$PD$)+$XC$)-IAM(IP1+$XC$)))
+                  ELSE
+                    YTM=REAL(DBLE(IAM(IP1+$YC$))+
+     +                 (DBLE(XCI)-DBLE(IAM(IP1+$XC$)))*
+     +                 (DBLE(IAM(IAM(IP1+$PD$)+$YC$)-IAM(IP1+$YC$))/
+     +                  DBLE(IAM(IAM(IP1+$PD$)+$XC$)-IAM(IP1+$XC$))))
+                  END IF
+                  IF (YTM.GT.YCI.AND.YTM.LT.YCO)
+                    IOF=IP1
+                    YCO=YTM
+                  END IF
+                END IF
+                IF (ABS(IAM(IAM(IP1+$ND$)+$GI$)).EQ.IGI.AND.
+     +              IAM(IAM(IP1+$ND$)+$XC$).GT.IAM(IP1+$XC$).AND.
+     +              IAM(IAM(IP1+$ND$)+$XC$).GE.IAM(IPH+$XC$))
+                  IF (IAU.EQ.1)
+                    YTM=REAL(IAM(IP1+$YC$))+
+     +                 (XCI-REAL(IAM(IP1+$XC$)))*
+     +                 (REAL(IAM(IAM(IP1+$ND$)+$YC$)-IAM(IP1+$YC$))/
+     +                  REAL(IAM(IAM(IP1+$ND$)+$XC$)-IAM(IP1+$XC$)))
+                  ELSE
+                    YTM=REAL(DBLE(IAM(IP1+$YC$))+
+     +                 (DBLE(XCI)-DBLE(IAM(IP1+$XC$)))*
+     +                 (DBLE(IAM(IAM(IP1+$ND$)+$YC$)-IAM(IP1+$YC$))/
+     +                  DBLE(IAM(IAM(IP1+$ND$)+$XC$)-IAM(IP1+$XC$))))
+                  END IF
+                  IF (YTM.GT.YCI.AND.YTM.LT.YCO)
+                    IOF=IAM(IP1+$ND$)
+                    YCO=YTM
+                  END IF
+                END IF
+                IP1=IAM(IP1+$PC$)
+              END WHILE
+              IF (IOF.NE.0)
+                IX0=IAM(IPH+$XC$)
+                IY0=IAM(IPH+$YC$)
+                IF (INT(YCO+.5).NE.IY0)
+                  IPI=$LN$
+                  INVOKE (ADD-A-POINT)
+                  IAM(IPN+$GI$)=0
+                  IAM(IPN+$IL$)=0
+                  IAM(IPN+$IR$)=0
+                  IY0=INT(YCO+.5)
+                  INVOKE (ADD-A-POINT)
+                  IAM(IPN+$GI$)=LAM-IGI
+                  IAM(IPN+$IL$)=0
+                  IAM(IPN+$IR$)=0
+                END IF
+                IF ((IX0.NE.IAM(IOF+$XC$).OR.IY0.NE.IAM(IOF+$YC$)).AND.
+     +              (IX0.NE.IAM(IAM(IOF+$PD$)+$XC$).OR.
+     +               IY0.NE.IAM(IAM(IOF+$PD$)+$YC$)))
+                  IPI=IOF
+                  INVOKE (ADD-A-POINT)
+                END IF
+              END IF
+C
+            END IF
+C
+          END LOOP
+C
+C Zero the lower bits in the markers in all the nodes.
+C
+          DO (IPT=$FN$,IAM($LL$)-<$NL$-1>,$NL$)
+            IAM(IPT)=4*(IAM(IPT)/4)
+          END DO
+C
+C If debugging is turned on, produce a plot.
+C
+          IF (IDB.NE.0) THEN
+            CALL ARDBPA (IAM,IDB,'AFTER LOOKING FOR HOLES')
+            IF (ICFELL('ARPRAM',11).NE.0) RETURN
+          END IF
+C
+T         ETM=SECOND(DMY)-ETM
+T         PRINT * , 'ARPRAM - TIME TO LOOK FOR HOLES = ',ETM
+C
+        END IF
+C
+C Now, make another pass through the area map, tracing one subarea at a
+C time and setting the area identifiers in each.
+C
+C Each pass through the following loop traces the boundary of one
+C subarea.
+C
+T       ETM=SECOND(DMY)
+C
+        IPT=$FN$
+C
+        LOOP
+C
+C Move to the right across the area map, looking for an edge segment
+C that has not yet been completely processed.  If no such segment can
+C be found, all subareas have been done.
+C
+          WHILE (MOD(IAM(IPT),4).EQ.3.OR.
+     +           ABS(IAM(IPT+$GI$)).LT.IAM($UL$).OR.
+     +           (KF3.NE.0.AND.
+     +            ((MOD(IAM(IPT),2).NE.0.OR.IAM(IPT+$IL$).GT.0).AND.
+     +             (MOD(IAM(IPT)/2,2).NE.0.OR.IAM(IPT+$IR$).GT.0))))
+            IPT=IAM(IPT+$NC$)
+            EXIT IF (IPT.EQ.$LN$)
+          END WHILE
+C
+C Pull out the group identifier for the segment.
+C
+          IGI=ABS(IAM(IPT+$GI$))
+C
+C Decide how contradictory area identifiers are to be reconciled.
+C
+          JRC=IRC(MAX(1,MIN(16,IAM(IGI)/2)))
+C
+C Decide whether to scan the subarea to the left of the edge being
+C traced (IPU=1) or the one to the right (IPU=2) and initialize the
+C area identifier.
+C
+          IF (MOD(IAM(IPT),2).EQ.0.AND.(KF3.EQ.0.OR.IAM(IPT+$IL$).LE.0))
+            IPU=1
+          ELSE
+            IPU=2
+          END IF
+C
+          IAI=0
+          IAP=0
+          IAX=0
+C
+          IF (JRC.NE.0)
+            ICN=0
+            ICZ=0
+            IOS=LAM-IAM($UL$)
+            IF (IOS.GT.IAM($UL$)-1-IAM($LL$))
+              CALL SETER ('ARPRAM - AREA-MAP ARRAY OVERFLOW',12,1)
+              INVOKE (CLEAN-UP-AND-RETURN,NR)
+            END IF
+            DO (ITM=IAM($UL$),LAM-1)
+              IAM(ITM-IOS)=0
+            END DO
+          END IF
+C
+C IPQ points to the node defining the beginning of the edge segment,
+C IPR to the node defining the end of the edge segment, and IPS to
+C the node defining the beginning of the edge, so that we can tell
+C when we've gone all the way around it.
+C
+          IPQ=IAM(IPT+$PD$)
+          IPR=IPT
+          IPS=IPQ
+          IPM=IPR
+          IPV=IPU
+C
+C Each pass through the following loop moves one step along the edge of
+C the subarea.
+C
+          LOOP
+C
+C Move IPQ to IPP and IPR to IPQ.
+C
+            IPP=IPQ
+            IPQ=IPR
+C
+C Get the coordinates of the ends of the edge segment for use in
+C computing change in direction to a possible next point.
+C
+            IXP=IAM(IPP+$XC$)
+            IYP=IAM(IPP+$YC$)
+            IXQ=IAM(IPQ+$XC$)
+            IYQ=IAM(IPQ+$YC$)
+            FXP=REAL(IXP)
+            FYP=REAL(IYP)
+            FXQ=REAL(IXQ)
+            FYQ=REAL(IYQ)
+C
+C Back up IPR to the beginning of the group of nodes which have the
+C same X and Y coordinates as it does.
+C
+            WHILE (IAM(IPR+$XC$).EQ.IAM(IAM(IPR+$PC$)+$XC$).AND.
+     +             IAM(IPR+$YC$).EQ.IAM(IAM(IPR+$PC$)+$YC$))
+              IPR=IAM(IPR+$PC$)
+            END WHILE
+C
+C If there is only one node in the group, the exit path is obvious.
+C
+            IF (IAM(IPR+$XC$).NE.IAM(IAM(IPR+$NC$)+$XC$).OR.
+     +          IAM(IPR+$YC$).NE.IAM(IAM(IPR+$NC$)+$YC$))
+              IF (IAM(IAM(IPR+$ND$)+$XC$).NE.IAM(IPP+$XC$).OR.
+     +            IAM(IAM(IPR+$ND$)+$YC$).NE.IAM(IPP+$YC$))
+                IF (IAM(IAM(IPR+$ND$)+$GI$).EQ.LAM-IGI.OR.
+     +              ABS(IAM(IAM(IPR+$ND$)+$GI$)).EQ.IGI)
+                  IPM=IAM(IPR+$ND$)
+                  IPR=IPM
+                  IPV=IPU
+                ELSE
+                  IPR=0
+                END IF
+              ELSE
+                IF (IAM(IPR+$GI$).EQ.LAM-IGI.OR.
+     +              ABS(IAM(IPR+$GI$)).EQ.IGI)
+                  IPM=IPR
+                  IPR=IAM(IPR+$PD$)
+                  IPV=3-IPU
+                ELSE
+                  IPR=0
+                END IF
+              END IF
+C
+C Otherwise, go through the group of nodes, examining all the possible
+C ways to move from the current position to a new one.  Pick the
+C direction which is leftmost (if IPU=1) or rightmost (if IPU=2).
+C
+            ELSE
+C
+              IP1=IPR
+              IP2=IPR
+              IPR=0
+              IF (IPU.EQ.1)
+                ANM=-$PI$
+              ELSE
+                ANM=+$PI$
+              END IF
+C
+              WHILE (IAM(IP2+$XC$).EQ.IAM(IP1+$XC$).AND.
+     +               IAM(IP2+$YC$).EQ.IAM(IP1+$YC$))
+                IF ((IAM(IAM(IP2+$ND$)+$GI$).EQ.LAM-IGI.OR.
+     +              ABS(IAM(IAM(IP2+$ND$)+$GI$)).EQ.IGI).AND.
+     +              (IAM(IAM(IP2+$ND$)+$XC$).NE.IAM(IPP+$XC$).OR.
+     +               IAM(IAM(IP2+$ND$)+$YC$).NE.IAM(IPP+$YC$)))
+                  IXR=IAM(IAM(IP2+$ND$)+$XC$)
+                  IYR=IAM(IAM(IP2+$ND$)+$YC$)
+                  FXR=REAL(IXR)
+                  FYR=REAL(IYR)
+C
+                  IF (IAU.EQ.1)
+                    ANG=ARRAT2((FXQ-FXP)*(FYR-FYQ)-(FYQ-FYP)*(FXR-FXQ),
+     +                         (FXQ-FXP)*(FXR-FXQ)+(FYQ-FYP)*(FYR-FYQ))
+                  ELSE IF (IAU.EQ.2)
+                    ANG=ARDAT2(DBLE(IXQ-IXP)*DBLE(IYR-IYQ)-
+     +                         DBLE(IYQ-IYP)*DBLE(IXR-IXQ),
+     +                         DBLE(IXQ-IXP)*DBLE(IXR-IXQ)+
+     +                         DBLE(IYQ-IYP)*DBLE(IYR-IYQ))
+                  ELSE
+                    IO6(3,1)=IXQ-IXP
+                    IO6(3,2)=IYR-IYQ
+                    IO6(3,3)=IYQ-IYP
+                    IO6(3,4)=IXR-IXQ
+                    CALL ARMPIA (IO6,DP1,IER)
+                    IF (IER.NE.0)
+                      INVOKE (ERROR-IN-ARMPIA,NR)
+                    END IF
+                    CALL ARMPIA (IO7,DP2,IER)
+                    IF (IER.NE.0)
+                      INVOKE (ERROR-IN-ARMPIA,NR)
+                    END IF
+                    ANG=ARDAT2(DP1,DP2)
+                  END IF
+C
+                  IF (IPU.EQ.1)
+                    IF (ANG.GT.ANM)
+                      IPR=IAM(IP2+$ND$)
+                      ANM=ANG
+                      IPM=IPR
+                      IPV=1
+                    END IF
+                  ELSE
+                    IF (ANG.LT.ANM)
+                      IPR=IAM(IP2+$ND$)
+                      ANM=ANG
+                      IPM=IPR
+                      IPV=2
+                    END IF
+                  END IF
+                END IF
+                IF ((IAM(IP2+$GI$).EQ.LAM-IGI.OR.
+     +              ABS(IAM(IP2+$GI$)).EQ.IGI).AND.
+     +              (IAM(IAM(IP2+$PD$)+$XC$).NE.IAM(IPP+$XC$).OR.
+     +               IAM(IAM(IP2+$PD$)+$YC$).NE.IAM(IPP+$YC$)))
+                  IXR=IAM(IAM(IP2+$PD$)+$XC$)
+                  IYR=IAM(IAM(IP2+$PD$)+$YC$)
+                  FXR=REAL(IXR)
+                  FYR=REAL(IYR)
+C
+                  IF (IAU.EQ.1)
+                    ANG=ARRAT2((FXQ-FXP)*(FYR-FYQ)-(FYQ-FYP)*(FXR-FXQ),
+     +                         (FXQ-FXP)*(FXR-FXQ)+(FYQ-FYP)*(FYR-FYQ))
+                  ELSE IF (IAU.EQ.2)
+                    ANG=ARDAT2(DBLE(IXQ-IXP)*DBLE(IYR-IYQ)-
+     +                         DBLE(IYQ-IYP)*DBLE(IXR-IXQ),
+     +                         DBLE(IXQ-IXP)*DBLE(IXR-IXQ)+
+     +                         DBLE(IYQ-IYP)*DBLE(IYR-IYQ))
+                  ELSE
+                    IO6(3,1)=IXQ-IXP
+                    IO6(3,2)=IYR-IYQ
+                    IO6(3,3)=IYQ-IYP
+                    IO6(3,4)=IXR-IXQ
+                    CALL ARMPIA (IO6,DP1,IER)
+                    IF (IER.NE.0)
+                      INVOKE (ERROR-IN-ARMPIA,NR)
+                    END IF
+                    CALL ARMPIA (IO7,DP2,IER)
+                    IF (IER.NE.0)
+                      INVOKE (ERROR-IN-ARMPIA,NR)
+                    END IF
+                    ANG=ARDAT2(DP1,DP2)
+                  END IF
+C
+                  IF (IPU.EQ.1)
+                    IF (ANG.GT.ANM)
+                      IPR=IAM(IP2+$PD$)
+                      ANM=ANG
+                      IPM=IP2
+                      IPV=2
+                    END IF
+                  ELSE
+                    IF (ANG.LT.ANM)
+                      IPR=IAM(IP2+$PD$)
+                      ANM=ANG
+                      IPM=IP2
+                      IPV=1
+                    END IF
+                  END IF
+                END IF
+                IP2=IAM(IP2+$NC$)
+              END WHILE
+C
+            END IF
+C
+C If no possible exit was found, reverse direction.
+C
+            IF (IPR.EQ.0)
+              IPR=IPP
+              IPV=3-IPV
+            END IF
+C
+C Update the markers for the edge segment picked.
+C
+            IF (IPV.EQ.1.AND.MOD(IAM(IPM),2).EQ.0)
+              IAM(IPM)=IAM(IPM)+1
+              IAQ=IPM+$IL$
+            ELSE IF (IPV.EQ.2.AND.MOD(IAM(IPM)/2,2).EQ.0)
+              IAM(IPM)=IAM(IPM)+2
+              IAQ=IPM+$IR$
+            ELSE
+              CALL SETER ('ARPRAM - ALGORITHM FAILURE',13,1)
+              INVOKE (CLEAN-UP-AND-RETURN,NR)
+            END IF
+C
+            IF (IAM(IAQ).LE.0.OR.IAM(IAQ).GE.IAM($UL$))
+C
+              IF (JRC.EQ.0)
+C
+                IF (IAM(IAQ).LT.0)
+                  IAI=-1
+                  IAX=LAM*4
+                ELSE IF (IAM(IAQ).GE.IAM($UL$).AND.IAM(IPM).GT.IAX)
+                  IAI=IAM(IAQ)
+                  IAX=IAM(IPM)
+                END IF
+C
+              ELSE
+C
+                IF (IAM(IAQ).LT.0)
+                  ICN=ICN+1
+                ELSE IF (IAM(IAQ).EQ.0)
+                  ICZ=ICZ+1
+                ELSE IF (IAM(IAQ).GE.IAM($UL$))
+                  IAM(IAM(IAQ)-IOS)=IAM(IAM(IAQ)-IOS)+1
+                END IF
+C
+              END IF
+C
+              IAM(IAQ)=IAP
+              IAP=IAQ
+C
+            END IF
+C
+C Exit if we're passing the start of the subarea.
+C
+            EXIT IF (IAM(IPQ+$XC$).EQ.IAM(IPS+$XC$).AND.
+     +               IAM(IPQ+$YC$).EQ.IAM(IPS+$YC$).AND.
+     +               IAM(IPR+$XC$).EQ.IAM(IPT+$XC$).AND.
+     +               IAM(IPR+$YC$).EQ.IAM(IPT+$YC$))
+C
+          END LOOP
+C
+C If the new way of reconciling contradictory area-identifier info was
+C requested, set IAI accordingly, using the counts that were generated
+C while tracing the boundary of the area.
+C
+          IF (JRC.LT.0.AND.ICN.GT.0)
+            IAI=-1
+          ELSE IF (JRC.NE.0)
+            IF (ICN.GT.0)
+              IAI=-1
+              IAX=ICN
+            END IF
+            IF (ICZ.GT.IAX.AND.ABS(JRC).EQ.2)
+              IAI=0
+              IAX=ICZ
+            END IF
+            DO (ITM=IAM($UL$),LAM-1)
+              IF (IAM(ITM-IOS).GT.IAX)
+                IAI=ITM
+                IAX=IAM(ITM-IOS)
+              END IF
+            END DO
+          END IF
+C
+C Go through the chain of area identifiers, updating them.
+C
+          WHILE (IAP.NE.0)
+            IAQ=IAM(IAP)
+            IAM(IAP)=IAI
+            IAP=IAQ
+          END WHILE
+C
+C If a zero identifier was selected for the area, see if the search for
+C holes was suppressed and, if so, re-do it.
+C
+          IF (IAI.EQ.0.AND.KF3.NE.0)
+            DO (IPT=$FN$,IAM($LL$)-<$NL$-1>,$NL$)
+              IAM(IPT)=4*(IAM(IPT)/4)
+            END DO
+            KF3=0
+T           ETM=SECOND(DMY)-ETM
+T           PRINT *, 'ARPRAM - FORCING HOLE SEARCH - WASTED TIME = ',ETM
+            GO TO 104
+          END IF
+C
+        END LOOP
+C
+C Delete the nodes used to put in the temporary connecting lines.
+C
+        IPT=IAM($LL$)-<$NL$-1>
+C
+        WHILE (IPT.GT.ILW)
+          IAM(IAM(IPT+$PD$)+$ND$)=IAM(IPT+$ND$)
+          IAM(IAM(IPT+$ND$)+$PD$)=IAM(IPT+$PD$)
+          IAM(IAM(IPT+$PC$)+$NC$)=IAM(IPT+$NC$)
+          IAM(IAM(IPT+$NC$)+$PC$)=IAM(IPT+$PC$)
+          IPT=IPT-$NL$
+        END WHILE
+C
+        IAM($LL$)=ILW
+C
+C Zero the markers in all the remaining nodes.
+C
+        DO (IPT=$FN$,IAM($LL$)-<$NL$-1>,$NL$)
+          IAM(IPT)=0
+        END DO
+C
+C Update the map state.
+C
+        IAM($MS$)=1
+C
+C If debugging is turned on, produce a plot.
+C
+        IF (IDB.NE.0) THEN
+          CALL ARDBPA (IAM,IDB,'AFTER UPDATING AREA IDENTIFIERS')
+          IF (ICFELL('ARPRAM',14).NE.0) RETURN
+        END IF
+C
+T       ETM=SECOND(DMY)-ETM
+T       PRINT * , 'ARPRAM - TIME TO UPDATE AREA IDENTIFIERS = ',ETM
+C
+C Done.
+C
+        RETURN
+C
+C This internal procedure adds a new point in the existing part of the
+C area map.  Note that ADD-A-POINT puts a new point which has the same
+C coordinates as an old point after the old point in the area map (in
+C coordinate order); this is important.
+C
+        BLOCK (ADD-A-POINT)
+          IPN=IAM($LL$)+1
+          IF (IAM($LL$)+$NL$.GE.IAM($UL$))
+            CALL SETER ('ARPRAM - AREA-MAP ARRAY OVERFLOW',15,1)
+            INVOKE (CLEAN-UP-AND-RETURN,NR)
+          END IF
+          IAM($LL$)=IAM($LL$)+$NL$
+          IAM(IPN)=IAM(IPI)
+          IAM(IPN+$XC$)=IX0
+          IAM(IPN+$YC$)=IY0
+          IAM(IPN+$ND$)=IPI
+          IAM(IPN+$PD$)=IAM(IPI+$PD$)
+          IAM(IAM(IPI+$PD$)+$ND$)=IPN
+          IAM(IPI+$PD$)=IPN
+          LOOP
+            IF (IAM(IPN+$XC$).LT.IAM(IPX+$XC$))
+              IPX=IAM(IPX+$PC$)
+            ELSE IF (IAM(IPN+$XC$).GT.IAM(IAM(IPX+$NC$)+$XC$))
+              IPX=IAM(IPX+$NC$)
+            ELSE
+              LOOP
+                IF (IAM(IPN+$XC$).EQ.IAM(IPX+$XC$).AND.
+     +              IAM(IPN+$YC$).LT.IAM(IPX+$YC$))
+                  IPX=IAM(IPX+$PC$)
+                ELSE IF (IAM(IPN+$XC$).EQ.IAM(IAM(IPX+$NC$)+$XC$).AND.
+     +                   IAM(IPN+$YC$).GT.IAM(IAM(IPX+$NC$)+$YC$))
+                  IPX=IAM(IPX+$NC$)
+                ELSE
+                  WHILE (IAM(IAM(IPX+$NC$)+$XC$).EQ.IAM(IPN+$XC$).AND.
+     +                   IAM(IAM(IPX+$NC$)+$YC$).EQ.IAM(IPN+$YC$))
+                    IPX=IAM(IPX+$NC$)
+                  END WHILE
+                  EXIT
+                END IF
+              END LOOP
+              EXIT
+            END IF
+          END LOOP
+          IAM(IPN+$NC$)=IAM(IPX+$NC$)
+          IAM(IPN+$PC$)=IAM(IAM(IPX+$NC$)+$PC$)
+          IAM(IAM(IPX+$NC$)+$PC$)=IPN
+          IAM(IPX+$NC$)=IPN
+          IAM(IPN+$GI$)=IAM(IPI+$GI$)
+          IAM(IPN+$IL$)=IAM(IPI+$IL$)
+          IAM(IPN+$IR$)=IAM(IPI+$IR$)
+        END BLOCK
+C
+C This internal procedure is called when an error occurs in ARMPIA.
+C
+        BLOCK (ERROR-IN-ARMPIA,NR)
+          CALL SETER
+     +    ('ARPRAM/ARMPIA - MULTIPLE-PRECISION QUANTITY IS TOO BIG',
+     +                                                         16,1)
+          INVOKE (CLEAN-UP-AND-RETURN,NR)
+        END BLOCK
+C
+C This internal procedure cleans up after an error condition occurs.
+C It removes nodes used to put in temporary connecting lines, if any,
+C and returns markers in the remaining nodes to zero.
+C
+        BLOCK (CLEAN-UP-AND-RETURN,NR)
+C
+C Delete new nodes from the area map.
+C
+          IPT=IAM($LL$)-<$NL$-1>
+C
+          WHILE (IPT.GT.ILW)
+            IAM(IAM(IPT+$PD$)+$ND$)=IAM(IPT+$ND$)
+            IAM(IAM(IPT+$ND$)+$PD$)=IAM(IPT+$PD$)
+            IAM(IAM(IPT+$PC$)+$NC$)=IAM(IPT+$NC$)
+            IAM(IAM(IPT+$NC$)+$PC$)=IAM(IPT+$PC$)
+            IPT=IPT-$NL$
+          END WHILE
+C
+          IAM($LL$)=ILW
+C
+C Zero the low-order bits of the markers in all the remaining nodes.
+C
+          DO (IPT=$FN$,IAM($LL$)-<$NL$-1>,$NL$)
+            IAM(IPT)=4*(IAM(IPT)/4)
+          END DO
+C
+C If appropriate, delete space temporarily used at the upper end of
+C the area map array.
+C
+          IF (ISU.NE.0) IAM($UL$)=ISU
+C
+C Return to the calling routine.
+C
+          RETURN
+C
+        END BLOCK
+C
+      END
+I
+I The subroutine ARSCAM.
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE ARSCAM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,APR)
+C
+        DIMENSION IAM(*),XCS(MCS),YCS(MCS),IAI(MAI),IAG(MAI)
+C
+C The routine ARSCAM is called to scan an area map created by calls to
+C ARINAM and AREDAM.  For each subarea of the map, the user routine APR
+C is called.
+C
+C IAM is the array holding the area map, created by prior calls to the
+C routines ARINAM and AREDAM.
+C
+C The arrays XCS and YCS are used, in a call to APR, to hold the X
+C and Y coordinates of the points defining a particular subarea.  Each
+C is dimensioned MCS.
+C
+C The arrays IAG and IAI are used, in a call to APR, to hold the
+C group and area identifiers of the subarea defined by XCS and YCS.
+C Each is dimensioned MAI.
+C
+C APR is the user's area-processing routine.  It must be declared in
+C an EXTERNAL statement in the routine which calls ARSCAM.  It will be
+C called using a FORTRAN statement like
+C
+C       CALL APR (XCS,YCS,NCS,IAI,IAG,NAI)
+C
+C where XCS and YCS hold the normalized device coordinates of NCS points
+C defining a single subarea (point number NCS being a duplicate of point
+C number 1) and IAI and IAG hold NAI area-identifier/group-identifier
+C pairs for that subarea.
+C
+C Declare the AREAS common block.
+C
+.USE  ARCOMN
+C
+C Declare the BLOCK DATA routine external, which should force it to
+C load from a binary library.
+C
+        EXTERNAL ARBLDA
+C
+C Define some double-precision variables.
+C
+        DOUBLE PRECISION DP1,DP2
+C
+C Define the arrays which determine the multiple-precision operations
+C to be done by ARMPIA.
+C
+        DIMENSION IO1(4,8),IO2(4,4)
+C
+        DATA IO1 / 1 ,  1 ,  0 ,  0 ,
+     +             1 ,  2 ,  0 ,  0 ,
+     +             1 ,  3 ,  0 ,  0 ,
+     +             1 ,  4 ,  0 ,  0 ,
+     +             4 ,  5 ,  1 ,  2 ,
+     +             4 ,  6 ,  3 ,  4 ,
+     +             3 ,  7 ,  5 ,  6 ,
+     +             5 ,  7 ,  0 ,  0 /
+        DATA IO2 / 4 ,  5 ,  1 ,  4 ,
+     +             4 ,  6 ,  2 ,  3 ,
+     +             2 ,  7 ,  5 ,  6 ,
+     +             5 ,  7 ,  0 ,  0 /
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('ARSCAM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Pull out the length of the area map and check for initialization.
+C
+        LAM=IAM($LM$)
+C
+        IF (IAU.EQ.0.OR.IAM(LAM).NE.LAM)
+          CALL SETER ('ARSCAM - INITIALIZATION DONE IMPROPERLY',2,1)
+          RETURN
+        END IF
+C
+C Save the current user-system mapping and reset it as required for
+C calls to APR.
+C
+        CALL GETSET (FFL,FFR,FFB,FFT,FUL,FUR,FUB,FUT,ILL)
+        IF (ICFELL('ARSCAM',3).NE.0) RETURN
+        CALL SET    (FFL,FFR,FFB,FFT,FFL,FFR,FFB,FFT,  1)
+        IF (ICFELL('ARSCAM',4).NE.0) RETURN
+C
+C Initialize IPX, which is used to position nodes in coordinate order.
+C
+        IPX=$FN$
+C
+C If it has not already been done, find points of intersection and
+C incorporate them into the map and then adjust area identifiers.
+C
+        IF (IAM($MS$).EQ.0)
+          CALL ARPRAM (IAM,0,0,0)
+          IF (ICFELL('ARSCAM',5).NE.0) RETURN
+        END IF
+C
+C We first make a pass over the entire area map, looking for holes and
+C eliminating them by the insertion of some temporary connecting lines.
+C
+C Save the pointer to the last word of the last node, so that we can
+C remove the nodes implementing the temporary connecting lines before
+C returning to the caller.
+C
+        ILW=IAM($LL$)
+C
+C Each pass through the following loop traces the boundary of one
+C connected loop.
+C
+T       ETM=SECOND(DMY)
+C
+        IPT=$FN$
+C
+        LOOP
+C
+C Move to the right across the area map, looking for an edge segment
+C that has not yet been completely processed.  If no such segment can
+C be found, all subareas have been done.
+C
+          WHILE (IAM(IPT).GE.3.OR.IAM(IPT+$GI$).LE.1)
+            IPT=IAM(IPT+$NC$)
+            EXIT IF (IPT.EQ.$LN$)
+          END WHILE
+C
+C Decide whether to scan the subarea to the left of the edge being
+C traced (IPU=1) or the one to the right (IPU=2).
+C
+          IF (IAM(IPT).EQ.0.OR.IAM(IPT).EQ.2)
+            IPU=1
+          ELSE
+            IPU=2
+          END IF
+C
+C IPQ points to the node defining the beginning of the edge segment,
+C IPR to the node defining the end of the edge segment, and IPS to
+C the node defining the beginning of the edge, so that we can tell
+C when we've gone all the way around it.
+C
+          IPQ=IAM(IPT+$PD$)
+          IPR=IPT
+          IPS=IPQ
+          IPM=IPR
+          IPV=IPU
+C
+C We need to keep track of the highest point found along the loop and
+C the total change in direction.  Initialize the variables involved.
+C
+          IPH=IPQ
+          ANT=0.
+C
+C Each pass through the following loop moves one step along the edge of
+C the subarea.
+C
+          LOOP
+C
+C Update the pointer to the highest point found along the loop.
+C
+            IF (IAM(IPR+$YC$).GT.IAM(IPH+$YC$)) IPH=IPR
+C
+C Move IPQ to IPP and IPR to IPQ.
+C
+            IPP=IPQ
+            IPQ=IPR
+C
+C Get the coordinates of the ends of the edge segment for use in
+C computing change in direction to a possible next point.
+C
+            IXP=IAM(IPP+$XC$)
+            IYP=IAM(IPP+$YC$)
+            IXQ=IAM(IPQ+$XC$)
+            IYQ=IAM(IPQ+$YC$)
+            FXP=REAL(IXP)
+            FYP=REAL(IYP)
+            FXQ=REAL(IXQ)
+            FYQ=REAL(IYQ)
+C
+C Back up IPR to the beginning of the group of nodes which have the
+C same X and Y coordinates as it does.
+C
+            WHILE (IAM(IPR+$XC$).EQ.IAM(IAM(IPR+$PC$)+$XC$).AND.
+     +             IAM(IPR+$YC$).EQ.IAM(IAM(IPR+$PC$)+$YC$))
+              IPR=IAM(IPR+$PC$)
+            END WHILE
+C
+C Go through the group of nodes, examining all the possible ways to
+C move from the current position to a new one.  Pick the direction
+C which is leftmost (if IPU=1) or rightmost (if IPU=2).
+C
+            IP1=IPR
+            IP2=IPR
+            IPR=0
+            IF (IPU.EQ.1)
+              ANM=-$PI$
+            ELSE
+              ANM=+$PI$
+            END IF
+C
+            WHILE (IAM(IP2+$XC$).EQ.IAM(IP1+$XC$).AND.
+     +             IAM(IP2+$YC$).EQ.IAM(IP1+$YC$))
+              IF (IAM(IAM(IP2+$ND$)+$GI$).GT.1.AND.
+     +            (IAM(IAM(IP2+$ND$)+$XC$).NE.IAM(IPP+$XC$).OR.
+     +             IAM(IAM(IP2+$ND$)+$YC$).NE.IAM(IPP+$YC$)))
+                IXR=IAM(IAM(IP2+$ND$)+$XC$)
+                IYR=IAM(IAM(IP2+$ND$)+$YC$)
+                FXR=REAL(IXR)
+                FYR=REAL(IYR)
+C
+                IF (IAU.EQ.1)
+                  ANG=ARRAT2((FXQ-FXP)*(FYR-FYQ)-(FYQ-FYP)*(FXR-FXQ),
+     +                       (FXQ-FXP)*(FXR-FXQ)+(FYQ-FYP)*(FYR-FYQ))
+                ELSE IF (IAU.EQ.2)
+                  ANG=ARDAT2(DBLE(IXQ-IXP)*DBLE(IYR-IYQ)-
+     +                       DBLE(IYQ-IYP)*DBLE(IXR-IXQ),
+     +                       DBLE(IXQ-IXP)*DBLE(IXR-IXQ)+
+     +                       DBLE(IYQ-IYP)*DBLE(IYR-IYQ))
+                ELSE
+                  IO1(3,1)=IXQ-IXP
+                  IO1(3,2)=IYR-IYQ
+                  IO1(3,3)=IYQ-IYP
+                  IO1(3,4)=IXR-IXQ
+                  CALL ARMPIA (IO1,DP1,IER)
+                  IF (IER.NE.0)
+                    INVOKE (ERROR-IN-ARMPIA,NR)
+                  END IF
+                  CALL ARMPIA (IO2,DP2,IER)
+                  IF (IER.NE.0)
+                    INVOKE (ERROR-IN-ARMPIA,NR)
+                  END IF
+                  ANG=ARDAT2(DP1,DP2)
+                END IF
+C
+                IF (IPU.EQ.1)
+                  IF (ANG.GT.ANM)
+                    IPR=IAM(IP2+$ND$)
+                    ANM=ANG
+                    IPM=IPR
+                    IPV=1
+                  END IF
+                ELSE
+                  IF (ANG.LT.ANM)
+                    IPR=IAM(IP2+$ND$)
+                    ANM=ANG
+                    IPM=IPR
+                    IPV=2
+                  END IF
+                END IF
+              END IF
+              IF (IAM(IP2+$GI$).GT.1.AND.
+     +            (IAM(IAM(IP2+$PD$)+$XC$).NE.IAM(IPP+$XC$).OR.
+     +             IAM(IAM(IP2+$PD$)+$YC$).NE.IAM(IPP+$YC$)))
+                IXR=IAM(IAM(IP2+$PD$)+$XC$)
+                IYR=IAM(IAM(IP2+$PD$)+$YC$)
+                FXR=REAL(IXR)
+                FYR=REAL(IYR)
+C
+                IF (IAU.EQ.1)
+                  ANG=ARRAT2((FXQ-FXP)*(FYR-FYQ)-(FYQ-FYP)*(FXR-FXQ),
+     +                       (FXQ-FXP)*(FXR-FXQ)+(FYQ-FYP)*(FYR-FYQ))
+                ELSE IF (IAU.EQ.2)
+                  ANG=ARDAT2(DBLE(IXQ-IXP)*DBLE(IYR-IYQ)-
+     +                       DBLE(IYQ-IYP)*DBLE(IXR-IXQ),
+     +                       DBLE(IXQ-IXP)*DBLE(IXR-IXQ)+
+     +                       DBLE(IYQ-IYP)*DBLE(IYR-IYQ))
+                ELSE
+                  IO1(3,1)=IXQ-IXP
+                  IO1(3,2)=IYR-IYQ
+                  IO1(3,3)=IYQ-IYP
+                  IO1(3,4)=IXR-IXQ
+                  CALL ARMPIA (IO1,DP1,IER)
+                  IF (IER.NE.0)
+                    INVOKE (ERROR-IN-ARMPIA,NR)
+                  END IF
+                  CALL ARMPIA (IO2,DP2,IER)
+                  IF (IER.NE.0)
+                    INVOKE (ERROR-IN-ARMPIA,NR)
+                  END IF
+                  ANG=ARDAT2(DP1,DP2)
+                END IF
+C
+                IF (IPU.EQ.1)
+                  IF (ANG.GT.ANM)
+                    IPR=IAM(IP2+$PD$)
+                    ANM=ANG
+                    IPM=IP2
+                    IPV=2
+                  END IF
+                ELSE
+                  IF (ANG.LT.ANM)
+                    IPR=IAM(IP2+$PD$)
+                    ANM=ANG
+                    IPM=IP2
+                    IPV=1
+                  END IF
+                END IF
+              END IF
+              IP2=IAM(IP2+$NC$)
+            END WHILE
+C
+C If no possible exit was found, reverse direction.
+C
+            IF (IPR.EQ.0)
+              IPR=IPP
+              IPV=3-IPV
+              IF (IPU.EQ.1)
+                ANM=+$PI$
+              ELSE
+                ANM=-$PI$
+              END IF
+            END IF
+C
+C Update the total angular change.
+C
+            ANT=ANT+ANM
+C
+C Update the markers for the edge segment picked.
+C
+            IF (IPV.EQ.1)
+              IF (MOD(IAM(IPM),2).EQ.0)
+                IAM(IPM)=IAM(IPM)+1
+              ELSE
+                CALL SETER ('ARSCAM - ALGORITHM FAILURE',6,1)
+                RETURN
+              END IF
+            ELSE
+              IF (MOD(IAM(IPM)/2,2).EQ.0)
+                IAM(IPM)=IAM(IPM)+2
+              ELSE
+                CALL SETER ('ARSCAM - ALGORITHM FAILURE',7,1)
+                RETURN
+              END IF
+            END IF
+C
+C Exit if we're passing the start of the subarea.
+C
+            EXIT IF (IAM(IPQ+$XC$).EQ.IAM(IPS+$XC$).AND.
+     +               IAM(IPQ+$YC$).EQ.IAM(IPS+$YC$).AND.
+     +               IAM(IPR+$XC$).EQ.IAM(IPT+$XC$).AND.
+     +               IAM(IPR+$YC$).EQ.IAM(IPT+$YC$))
+C
+          END LOOP
+C
+C If the closed loop just traced was a hole, insert a temporary
+C connecting line to get rid of the hole.
+C
+          IF ((IPU.EQ.1.AND.ANT.LT.0.).OR.(IPU.EQ.2.AND.ANT.GT.0.))
+            IOF=0
+            XCI=REAL(IAM(IPH+$XC$))
+            YCI=REAL(IAM(IPH+$YC$))
+            YCO=RLP
+            IP1=IPH
+            WHILE (IAM(IAM(IP1+$NC$)+$XC$).EQ.IAM(IPH+$XC$))
+              IP1=IAM(IP1+$NC$)
+            END WHILE
+            WHILE (IAM(IP1+$XC$).GE.IAM(IPH+$XC$)-IAM($MD$))
+              IF (IAM(IP1+$GI$).GT.1.AND.
+     +            IAM(IAM(IP1+$PD$)+$XC$).GT.IAM(IP1+$XC$).AND.
+     +            IAM(IAM(IP1+$PD$)+$XC$).GE.IAM(IPH+$XC$))
+                IF (IAU.EQ.1)
+                  YTM=REAL(IAM(IP1+$YC$))+
+     +               (XCI-REAL(IAM(IP1+$XC$)))*
+     +               (REAL(IAM(IAM(IP1+$PD$)+$YC$)-IAM(IP1+$YC$))/
+     +                REAL(IAM(IAM(IP1+$PD$)+$XC$)-IAM(IP1+$XC$)))
+                ELSE
+                  YTM=REAL(DBLE(IAM(IP1+$YC$))+
+     +               (DBLE(XCI)-DBLE(IAM(IP1+$XC$)))*
+     +               (DBLE(IAM(IAM(IP1+$PD$)+$YC$)-IAM(IP1+$YC$))/
+     +                DBLE(IAM(IAM(IP1+$PD$)+$XC$)-IAM(IP1+$XC$))))
+                END IF
+                IF (YTM.GT.YCI.AND.YTM.LT.YCO)
+                  IOF=IP1
+                  YCO=YTM
+                END IF
+              END IF
+              IF (IAM(IAM(IP1+$ND$)+$GI$).GT.1.AND.
+     +            IAM(IAM(IP1+$ND$)+$XC$).GT.IAM(IP1+$XC$).AND.
+     +            IAM(IAM(IP1+$ND$)+$XC$).GE.IAM(IPH+$XC$))
+                IF (IAU.EQ.1)
+                  YTM=REAL(IAM(IP1+$YC$))+
+     +               (XCI-REAL(IAM(IP1+$XC$)))*
+     +               (REAL(IAM(IAM(IP1+$ND$)+$YC$)-IAM(IP1+$YC$))/
+     +                REAL(IAM(IAM(IP1+$ND$)+$XC$)-IAM(IP1+$XC$)))
+                ELSE
+                  YTM=REAL(DBLE(IAM(IP1+$YC$))+
+     +               (DBLE(XCI)-DBLE(IAM(IP1+$XC$)))*
+     +               (DBLE(IAM(IAM(IP1+$ND$)+$YC$)-IAM(IP1+$YC$))/
+     +                DBLE(IAM(IAM(IP1+$ND$)+$XC$)-IAM(IP1+$XC$))))
+                END IF
+                IF (YTM.GT.YCI.AND.YTM.LT.YCO)
+                  IOF=IAM(IP1+$ND$)
+                  YCO=YTM
+                END IF
+              END IF
+              IP1=IAM(IP1+$PC$)
+            END WHILE
+            IF (IOF.NE.0)
+              IX0=IAM(IPH+$XC$)
+              IY0=IAM(IPH+$YC$)
+              IF (INT(YCO+.5).NE.IY0)
+                IPI=$LN$
+                INVOKE (ADD-A-POINT)
+                IY0=INT(YCO+.5)
+                INVOKE (ADD-A-POINT)
+                IAM(IPN+$GI$)=1
+              END IF
+              IF ((IX0.NE.IAM(IOF+$XC$).OR.IY0.NE.IAM(IOF+$YC$)).AND.
+     +            (IX0.NE.IAM(IAM(IOF+$PD$)+$XC$).OR.
+     +             IY0.NE.IAM(IAM(IOF+$PD$)+$YC$)))
+                IPI=IOF
+                INVOKE (ADD-A-POINT)
+                IAM(IPN)=IAM(IPI)
+                IAM(IPN+$GI$)=IAM(IPI+$GI$)
+                IAM(IPN+$IL$)=IAM(IPI+$IL$)
+                IAM(IPN+$IR$)=IAM(IPI+$IR$)
+              END IF
+            END IF
+C
+          END IF
+C
+        END LOOP
+C
+C Zero the markers for all the nodes.
+C
+        DO (IPT=$FN$,IAM($LL$)-<$NL$-1>,$NL$)
+          IAM(IPT)=0
+        END DO
+C
+T       ETM=SECOND(DMY)-ETM
+T       PRINT * , 'ARSCAM - TIME TO LOOK FOR HOLES = ',ETM
+C
+C Now, make a pass through the area map, tracing one subarea at a time
+C and calling the routine APR to do with it what the user wants.
+C
+C Each pass through the following loop traces the boundary of one
+C subarea.
+C
+T       ETM=SECOND(DMY)
+C
+        IPT=$FN$
+C
+        LOOP
+C
+C Move to the right across the area map, looking for an edge segment
+C that has not yet been completely processed.  If no such segment can
+C be found, all subareas have been done.
+C
+          WHILE (IAM(IPT).GE.3.OR.IAM(IPT+$GI$).LE.1)
+            IPT=IAM(IPT+$NC$)
+            EXIT IF (IPT.EQ.$LN$)
+          END WHILE
+C
+C Decide whether to scan the subarea to the left of the edge being
+C traced (IPU=1) or the one to the right (IPU=2).
+C
+          IF (IAM(IPT).EQ.0.OR.IAM(IPT).EQ.2)
+            IPU=1
+            IAQ=IPT+$IL$
+          ELSE
+            IPU=2
+            IAQ=IPT+$IR$
+          END IF
+C
+C Store the first group identifier and area identifier for the subarea
+C and clear the flag that is set when all identifiers have been found.
+C
+          NAI=1
+          IAI(NAI)=IAM(IAQ)
+          IF (IAI(NAI).GE.IAM($UL$)) IAI(NAI)=IAM(IAI(NAI))/2
+          IAG(NAI)=IAM(IAM(IPT+$GI$))/2
+C
+          IAF=0
+C
+C IPQ points to the node defining the beginning of the edge segment,
+C IPR to the node defining the end of the edge segment, and IPS to
+C the node defining the beginning of the edge, so that we can tell
+C when we've gone all the way around it.
+C
+          IPQ=IAM(IPT+$PD$)
+          IPR=IPT
+          IPS=IPQ
+          IPM=IPR
+          IPV=IPU
+C
+C Put the first point in the list defining this subarea.
+C
+          NCS=1
+          XCS(1)=REAL(IAM(IPQ+$XC$))/RLC
+          YCS(1)=REAL(IAM(IPQ+$YC$))/RLC
+C
+C Each pass through the following loop moves one step along the edge of
+C the subarea.
+C
+          LOOP
+C
+C Add the end of the current segment to the description of the subarea.
+C
+            IF (NCS.LT.MCS)
+              NCS=NCS+1
+              XCS(NCS)=REAL(IAM(IPR+$XC$))/RLC
+              YCS(NCS)=REAL(IAM(IPR+$YC$))/RLC
+            ELSE
+              CALL SETER ('ARSCAM - MCS TOO SMALL',8,1)
+              RETURN
+            END IF
+C
+C If the group/area identifier information is incomplete and the current
+C edge segment spans a portion of the X axis of non-zero length, scan
+C outwards from the subarea for group/area identifier information.
+C
+            IF (IAF.EQ.0.AND.IAM(IPQ+$XC$).NE.IAM(IPR+$XC$))
+C
+              IF (IAM(IPQ+$XC$).LT.IAM(IPR+$XC$))
+                IP1=IPQ
+                IP2=IPR
+                IDU=3-IPU
+              ELSE
+                IP1=IPR
+                IP2=IPQ
+                IDU=IPU
+              END IF
+C
+              IXC=INT(.5*(REAL(IAM(IP1+$XC$))+REAL(IAM(IP2+$XC$))))
+              XCO=REAL(IXC)+.5
+              IF (IAU.EQ.1)
+                YCO=REAL(IAM(IP1+$YC$))+(XCO-REAL(IAM(IP1+$XC$)))*
+     +             (REAL(IAM(IP2+$YC$)-IAM(IP1+$YC$))/
+     +              REAL(IAM(IP2+$XC$)-IAM(IP1+$XC$)))
+              ELSE
+                YCO=REAL(DBLE(IAM(IP1+$YC$))+
+     +             (DBLE(XCO)-DBLE(IAM(IP1+$XC$)))*
+     +             (DBLE(IAM(IP2+$YC$)-IAM(IP1+$YC$))/
+     +              DBLE(IAM(IP2+$XC$)-IAM(IP1+$XC$))))
+              END IF
+C
+              IGI=LAM
+C
+              WHILE (IGI.GT.IAM($UL$))
+                IGI=IGI-1
+                IF (MOD(IAM(IGI),2).EQ.0.AND.IAM(IPT+$GI$).NE.IGI)
+                  IAF=0
+                  IF (IDU.EQ.1)
+                    YCI=RLP
+                  ELSE
+                    YCI=-1.
+                  END IF
+                  IP3=IAM(IP2+$PC$)
+                  WHILE (IAM(IP3+$XC$)+IAM($MD$).GT.IXC)
+                    IF (IAM(IP3+$XC$).LE.IXC)
+                      IF (ABS(IAM(IP3+$GI$)).EQ.IGI.AND.
+     +                    IAM(IP3+$XC$).LT.IAM(IAM(IP3+$PD$)+$XC$).AND.
+     +                    IXC          .LT.IAM(IAM(IP3+$PD$)+$XC$))
+                        IF (IAU.EQ.1)
+                          YTM=REAL(IAM(IP3+$YC$))+
+     +                       (XCO-REAL(IAM(IP3+$XC$)))*
+     +                       (REAL(IAM(IAM(IP3+$PD$)+$YC$)-
+     +                                 IAM(IP3      +$YC$))/
+     +                        REAL(IAM(IAM(IP3+$PD$)+$XC$)-
+     +                                 IAM(IP3      +$XC$)))
+                        ELSE
+                          YTM=REAL(DBLE(IAM(IP3+$YC$))+
+     +                       (DBLE(XCO)-DBLE(IAM(IP3+$XC$)))*
+     +                       (DBLE(IAM(IAM(IP3+$PD$)+$YC$)-
+     +                                 IAM(IP3      +$YC$))/
+     +                        DBLE(IAM(IAM(IP3+$PD$)+$XC$)-
+     +                                 IAM(IP3      +$XC$))))
+                        END IF
+                        IF (IDU.EQ.1.AND.YTM.LT.YCI.AND.YTM.GE.YCO)
+                          IAF=IP3
+                          IAQ=IAF+$IL$
+                          YCI=YTM
+                        END IF
+                        IF (IDU.EQ.2.AND.YTM.GT.YCI.AND.YTM.LE.YCO)
+                          IAF=IP3
+                          IAQ=IAF+$IR$
+                          YCI=YTM
+                        END IF
+                      END IF
+                      IF (ABS(IAM(IAM(IP3+$ND$)+$GI$)).EQ.IGI.AND.
+     +                    IAM(IP3+$XC$).LT.IAM(IAM(IP3+$ND$)+$XC$).AND.
+     +                    IXC          .LT.IAM(IAM(IP3+$ND$)+$XC$))
+                        IF (IAU.EQ.1)
+                          YTM=REAL(IAM(IP3+$YC$))+
+     +                       (XCO-REAL(IAM(IP3+$XC$)))*
+     +                       (REAL(IAM(IAM(IP3+$ND$)+$YC$)-
+     +                                 IAM(IP3      +$YC$))/
+     +                        REAL(IAM(IAM(IP3+$ND$)+$XC$)-
+     +                                 IAM(IP3      +$XC$)))
+                        ELSE
+                          YTM=REAL(DBLE(IAM(IP3+$YC$))+
+     +                       (DBLE(XCO)-DBLE(IAM(IP3+$XC$)))*
+     +                       (DBLE(IAM(IAM(IP3+$ND$)+$YC$)-
+     +                                 IAM(IP3      +$YC$))/
+     +                        DBLE(IAM(IAM(IP3+$ND$)+$XC$)-
+     +                                 IAM(IP3      +$XC$))))
+                        END IF
+                        IF (IDU.EQ.1.AND.YTM.LT.YCI.AND.YTM.GE.YCO)
+                          IAF=IAM(IP3+$ND$)
+                          IAQ=IAF+$IR$
+                          YCI=YTM
+                        END IF
+                        IF (IDU.EQ.2.AND.YTM.GT.YCI.AND.YTM.LE.YCO)
+                          IAF=IAM(IP3+$ND$)
+                          IAQ=IAF+$IL$
+                          YCI=YTM
+                        END IF
+                      END IF
+                    END IF
+                    IP3=IAM(IP3+$PC$)
+                  END WHILE
+                  IF (IAF.NE.0)
+                    IF (NAI.LT.MAI)
+                      NAI=NAI+1
+                      IF (IAM(IAQ).LT.IAM($UL$))
+                        IAI(NAI)=IAM(IAQ)
+                      ELSE
+                        IAI(NAI)=IAM(IAM(IAQ))/2
+                      END IF
+                      IAG(NAI)=IAM(IGI)/2
+                    ELSE
+                      CALL SETER ('ARSCAM - MAI TOO SMALL',9,1)
+                      RETURN
+                    END IF
+                  END IF
+                END IF
+              END WHILE
+              IAF=1
+C
+            END IF
+C
+C Move IPQ to IPP and IPR to IPQ.
+C
+            IPP=IPQ
+            IPQ=IPR
+C
+C Get the coordinates of the ends of the edge segment for use in
+C computing change in direction to a possible next point.
+C
+            IXP=IAM(IPP+$XC$)
+            IYP=IAM(IPP+$YC$)
+            IXQ=IAM(IPQ+$XC$)
+            IYQ=IAM(IPQ+$YC$)
+            FXP=REAL(IXP)
+            FYP=REAL(IYP)
+            FXQ=REAL(IXQ)
+            FYQ=REAL(IYQ)
+C
+C Back up IPR to the beginning of the group of nodes which have the
+C same X and Y coordinates as it does.
+C
+            WHILE (IAM(IPR+$XC$).EQ.IAM(IAM(IPR+$PC$)+$XC$).AND.
+     +             IAM(IPR+$YC$).EQ.IAM(IAM(IPR+$PC$)+$YC$))
+              IPR=IAM(IPR+$PC$)
+            END WHILE
+C
+C If there is only one node in the group, the exit path is obvious.
+C
+            IF (IAM(IPR+$XC$).NE.IAM(IAM(IPR+$NC$)+$XC$).OR.
+     +          IAM(IPR+$YC$).NE.IAM(IAM(IPR+$NC$)+$YC$))
+              IF (IAM(IAM(IPR+$ND$)+$XC$).NE.IAM(IPP+$XC$).OR.
+     +            IAM(IAM(IPR+$ND$)+$YC$).NE.IAM(IPP+$YC$))
+                IF (IAM(IAM(IPR+$ND$)+$GI$).GT.0)
+                  IPM=IAM(IPR+$ND$)
+                  IPR=IPM
+                  IPV=IPU
+                ELSE
+                  IPR=0
+                END IF
+              ELSE
+                IF (IAM(IPR+$GI$).GT.0)
+                  IPM=IPR
+                  IPR=IAM(IPR+$PD$)
+                  IPV=3-IPU
+                ELSE
+                  IPR=0
+                END IF
+              END IF
+C
+C Otherwise, go through the group of nodes, examining all the possible
+C ways to move from the current position to a new one.  Pick the
+C direction which is leftmost (if IPU=1) or rightmost (if IPU=2).
+C
+            ELSE
+C
+              IP1=IPR
+              IP2=IPR
+              IPR=0
+              IF (IPU.EQ.1)
+                ANM=-$PI$
+              ELSE
+                ANM=+$PI$
+              END IF
+C
+              WHILE (IAM(IP2+$XC$).EQ.IAM(IP1+$XC$).AND.
+     +               IAM(IP2+$YC$).EQ.IAM(IP1+$YC$))
+                IF (IAM(IAM(IP2+$ND$)+$GI$).GT.0.AND.
+     +              (IAM(IAM(IP2+$ND$)+$XC$).NE.IAM(IPP+$XC$).OR.
+     +               IAM(IAM(IP2+$ND$)+$YC$).NE.IAM(IPP+$YC$)))
+                  IXR=IAM(IAM(IP2+$ND$)+$XC$)
+                  IYR=IAM(IAM(IP2+$ND$)+$YC$)
+                  FXR=REAL(IXR)
+                  FYR=REAL(IYR)
+C
+                  IF (IAU.EQ.1)
+                    ANG=ARRAT2((FXQ-FXP)*(FYR-FYQ)-(FYQ-FYP)*(FXR-FXQ),
+     +                         (FXQ-FXP)*(FXR-FXQ)+(FYQ-FYP)*(FYR-FYQ))
+                  ELSE IF (IAU.EQ.2)
+                    ANG=ARDAT2(DBLE(IXQ-IXP)*DBLE(IYR-IYQ)-
+     +                         DBLE(IYQ-IYP)*DBLE(IXR-IXQ),
+     +                         DBLE(IXQ-IXP)*DBLE(IXR-IXQ)+
+     +                         DBLE(IYQ-IYP)*DBLE(IYR-IYQ))
+                  ELSE
+                    IO1(3,1)=IXQ-IXP
+                    IO1(3,2)=IYR-IYQ
+                    IO1(3,3)=IYQ-IYP
+                    IO1(3,4)=IXR-IXQ
+                    CALL ARMPIA (IO1,DP1,IER)
+                    IF (IER.NE.0)
+                      INVOKE (ERROR-IN-ARMPIA,NR)
+                    END IF
+                    CALL ARMPIA (IO2,DP2,IER)
+                    IF (IER.NE.0)
+                      INVOKE (ERROR-IN-ARMPIA,NR)
+                    END IF
+                    ANG=ARDAT2(DP1,DP2)
+                  END IF
+C
+                  IF (IPU.EQ.1)
+                    IF (ANG.GT.ANM)
+                      IPR=IAM(IP2+$ND$)
+                      ANM=ANG
+                      IPM=IPR
+                      IPV=1
+                    END IF
+                  ELSE
+                    IF (ANG.LT.ANM)
+                      IPR=IAM(IP2+$ND$)
+                      ANM=ANG
+                      IPM=IPR
+                      IPV=2
+                    END IF
+                  END IF
+                END IF
+                IF (IAM(IP2+$GI$).GT.0.AND.
+     +              (IAM(IAM(IP2+$PD$)+$XC$).NE.IAM(IPP+$XC$).OR.
+     +               IAM(IAM(IP2+$PD$)+$YC$).NE.IAM(IPP+$YC$)))
+                  IXR=IAM(IAM(IP2+$PD$)+$XC$)
+                  IYR=IAM(IAM(IP2+$PD$)+$YC$)
+                  FXR=REAL(IXR)
+                  FYR=REAL(IYR)
+C
+                  IF (IAU.EQ.1)
+                    ANG=ARRAT2((FXQ-FXP)*(FYR-FYQ)-(FYQ-FYP)*(FXR-FXQ),
+     +                         (FXQ-FXP)*(FXR-FXQ)+(FYQ-FYP)*(FYR-FYQ))
+                  ELSE IF (IAU.EQ.2)
+                    ANG=ARDAT2(DBLE(IXQ-IXP)*DBLE(IYR-IYQ)-
+     +                         DBLE(IYQ-IYP)*DBLE(IXR-IXQ),
+     +                         DBLE(IXQ-IXP)*DBLE(IXR-IXQ)+
+     +                         DBLE(IYQ-IYP)*DBLE(IYR-IYQ))
+                  ELSE
+                    IO1(3,1)=IXQ-IXP
+                    IO1(3,2)=IYR-IYQ
+                    IO1(3,3)=IYQ-IYP
+                    IO1(3,4)=IXR-IXQ
+                    CALL ARMPIA (IO1,DP1,IER)
+                    IF (IER.NE.0)
+                      INVOKE (ERROR-IN-ARMPIA,NR)
+                    END IF
+                    CALL ARMPIA (IO2,DP2,IER)
+                    IF (IER.NE.0)
+                      INVOKE (ERROR-IN-ARMPIA,NR)
+                    END IF
+                    ANG=ARDAT2(DP1,DP2)
+                  END IF
+C
+                  IF (IPU.EQ.1)
+                    IF (ANG.GT.ANM)
+                      IPR=IAM(IP2+$PD$)
+                      ANM=ANG
+                      IPM=IP2
+                      IPV=2
+                    END IF
+                  ELSE
+                    IF (ANG.LT.ANM)
+                      IPR=IAM(IP2+$PD$)
+                      ANM=ANG
+                      IPM=IP2
+                      IPV=1
+                    END IF
+                  END IF
+                END IF
+                IP2=IAM(IP2+$NC$)
+              END WHILE
+C
+            END IF
+C
+C If no possible exit was found, reverse direction.
+C
+            IF (IPR.EQ.0)
+              IPR=IPP
+              IPV=3-IPV
+            END IF
+C
+C Update the markers for the edge segment picked.
+C
+            IF (IPV.EQ.1)
+              IF (MOD(IAM(IPM),2).EQ.0)
+                IAM(IPM)=IAM(IPM)+1
+              ELSE
+                CALL SETER ('ARSCAM - ALGORITHM FAILURE',10,1)
+                RETURN
+              END IF
+            ELSE
+              IF (MOD(IAM(IPM)/2,2).EQ.0)
+                IAM(IPM)=IAM(IPM)+2
+              ELSE
+                CALL SETER ('ARSCAM - ALGORITHM FAILURE',11,1)
+                RETURN
+              END IF
+            END IF
+C
+C Exit if we're passing the start of the subarea.
+C
+            EXIT IF (IAM(IPQ+$XC$).EQ.IAM(IPS+$XC$).AND.
+     +               IAM(IPQ+$YC$).EQ.IAM(IPS+$YC$).AND.
+     +               IAM(IPR+$XC$).EQ.IAM(IPT+$XC$).AND.
+     +               IAM(IPR+$YC$).EQ.IAM(IPT+$YC$))
+C
+          END LOOP
+C
+C A complete subarea has been found.  Let the user do what he wants
+C with it.
+C
+          IF (NAI.EQ.IAM($NG$))
+            IDI=IPU
+            CALL APR (XCS,YCS,NCS,IAI,IAG,NAI)
+            IF (ICFELL('ARSCAM',12).NE.0) RETURN
+          ELSE
+            IF (IAF.NE.0)
+              CALL SETER ('ARSCAM - ALGORITHM FAILURE',13,1)
+              RETURN
+            END IF
+          END IF
+C
+        END LOOP
+C
+C Delete the nodes used to put in the temporary connecting lines.
+C
+        IPT=IAM($LL$)-<$NL$-1>
+        WHILE (IPT.GT.ILW)
+          IAM(IAM(IPT+$PD$)+$ND$)=IAM(IPT+$ND$)
+          IAM(IAM(IPT+$ND$)+$PD$)=IAM(IPT+$PD$)
+          IAM(IAM(IPT+$PC$)+$NC$)=IAM(IPT+$NC$)
+          IAM(IAM(IPT+$NC$)+$PC$)=IAM(IPT+$PC$)
+          IPT=IPT-$NL$
+        END WHILE
+        IAM($LL$)=ILW
+C
+C Zero the markers in all the remaining nodes.
+C
+        DO (IPT=$FN$,IAM($LL$)-<$NL$-1>,$NL$)
+          IAM(IPT)=0
+        END DO
+C
+T       ETM=SECOND(DMY)-ETM
+T       PRINT * , 'ARSCAM - TIME FOR FINAL SCAN OF ALL AREAS = ',ETM
+C
+C Done.  Restore the SET parameters and return to the caller.
+C
+        CALL SET (FFL,FFR,FFB,FFT,FUL,FUR,FUB,FUT,ILL)
+        IF (ICFELL('ARSCAM',14).NE.0) RETURN
+C
+        RETURN
+C
+C This internal procedure adds a new point in the existing part of the
+C area map.
+C
+        BLOCK (ADD-A-POINT)
+          IPN=IAM($LL$)+1
+          IF (IAM($LL$)+$NL$.GE.IAM($UL$))
+            CALL SETER ('ARSCAM - AREA-MAP ARRAY OVERFLOW',15,1)
+            RETURN
+          END IF
+          IAM($LL$)=IAM($LL$)+$NL$
+          IAM(IPN)=0
+          IAM(IPN+$XC$)=IX0
+          IAM(IPN+$YC$)=IY0
+          IAM(IPN+$ND$)=IPI
+          IAM(IPN+$PD$)=IAM(IPI+$PD$)
+          IAM(IAM(IPI+$PD$)+$ND$)=IPN
+          IAM(IPI+$PD$)=IPN
+          LOOP
+            IF (IAM(IPN+$XC$).LT.IAM(IPX+$XC$))
+              IPX=IAM(IPX+$PC$)
+            ELSE IF (IAM(IPN+$XC$).GT.IAM(IAM(IPX+$NC$)+$XC$))
+              IPX=IAM(IPX+$NC$)
+            ELSE
+              LOOP
+                IF (IAM(IPN+$XC$).EQ.IAM(IPX+$XC$).AND.
+     +              IAM(IPN+$YC$).LT.IAM(IPX+$YC$))
+                  IPX=IAM(IPX+$PC$)
+                ELSE IF (IAM(IPN+$XC$).EQ.IAM(IAM(IPX+$NC$)+$XC$).AND.
+     +                   IAM(IPN+$YC$).GT.IAM(IAM(IPX+$NC$)+$YC$))
+                  IPX=IAM(IPX+$NC$)
+                ELSE
+                  EXIT
+                END IF
+              END LOOP
+              EXIT
+            END IF
+          END LOOP
+          IAM(IPN+$NC$)=IAM(IPX+$NC$)
+          IAM(IPN+$PC$)=IAM(IAM(IPX+$NC$)+$PC$)
+          IAM(IAM(IPX+$NC$)+$PC$)=IPN
+          IAM(IPX+$NC$)=IPN
+          IAM(IPN+$GI$)=0
+          IAM(IPN+$IL$)=0
+          IAM(IPN+$IR$)=0
+        END BLOCK
+C
+C This internal procedure is called when an error occurs in ARMPIA.
+C
+        BLOCK (ERROR-IN-ARMPIA,NR)
+          CALL SETER
+     +    ('ARSCAM/ARMPIA - MULTIPLE-PRECISION QUANTITY IS TOO BIG',
+     +                                                         16,1)
+          RETURN
+        END BLOCK
+C
+      END
+I
+I The subroutine ARSETI.
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE ARSETI (IPN,IVL)
+C
+        CHARACTER*(*) IPN
+C
+C This subroutine is called to set the integer value of a specified
+C parameter.
+C
+C IPN is the name of the parameter whose value is to be retrieved.
+C
+C IVL is an integer variable containing the desired new value.
+C
+C Declare the AREAS common block.
+C
+.USE  ARCOMN
+C
+C Declare the BLOCK DATA routine external, which should force it to
+C load from a binary library.
+C
+        EXTERNAL ARBLDA
+C
+C Define a character temporary to hold an error message.
+C
+        CHARACTER*38 CTM
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('ARSETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Check for a parameter name that is too short.
+C
+        IF (LEN(IPN).LT.2)
+          CTM(1:36)='ARSETI - PARAMETER NAME TOO SHORT - '
+          CTM(37:36+LEN(IPN))=IPN
+          CALL SETER (CTM(1:36+LEN(IPN)),2,1)
+          RETURN
+        END IF
+C
+C Set the appropriate parameter value.
+C
+        IF      (IPN(1:2).EQ.'AL'.OR.IPN(1:2).EQ.'al')
+          RLA=REAL(IVL)
+        ELSE IF (IPN(1:2).EQ.'AT'.OR.IPN(1:2).EQ.'at')
+          IAD=MAX(0,IVL)
+          IAU=0
+        ELSE IF (IPN(1:2).EQ.'AW'.OR.IPN(1:2).EQ.'aw')
+          RWA=REAL(IVL)
+        ELSE IF (IPN(1:2).EQ.'DB'.OR.IPN(1:2).EQ.'db')
+          IDB=IVL
+        ELSE IF (IPN(1:2).EQ.'DC'.OR.IPN(1:2).EQ.'dc')
+          IDC=MAX(0,IVL)
+        ELSE IF (IPN(1:2).EQ.'ID'.OR.IPN(1:2).EQ.'id')
+          RDI=REAL(IVL)
+        ELSE IF (IPN(1:2).EQ.'IS'.OR.IPN(1:2).EQ.'is')
+          RSI=REAL(IVL)
+        ELSE IF (IPN(1:2).EQ.'LC'.OR.IPN(1:2).EQ.'lc')
+          ILC=MAX(1000,IVL)
+          IAU=0
+        ELSE IF (IPN(1:2).EQ.'RC'.OR.IPN(1:2).EQ.'rc')
+          CALL ARGPAI (IPN,3,IPI)
+          IF (IPI.EQ.0) THEN
+            DO 101 I=1,16
+              IRC(I)=MAX(-2,MIN(2,IVL))
+  101       CONTINUE
+          ELSE IF (IPI.GE.1.AND.IPI.LE.16) THEN
+            IRC(IPI)=MAX(-2,MIN(2,IVL))
+          ELSE
+            CALL SETER ('ARSETI - ''RC'' INDEX IS OUT OF RANGE',3,1)
+            RETURN
+          END IF
+        ELSE
+          CTM(1:36)='ARSETI - PARAMETER NAME NOT KNOWN - '
+          CTM(37:38)=IPN(1:2)
+          CALL SETER (CTM(1:38),4,1)
+          RETURN
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
+I
+I The subroutine ARSETR.
+I --- ---------- -------
+I
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
+A
+      SUBROUTINE ARSETR (IPN,RVL)
+C
+        CHARACTER*(*) IPN
+C
+C This subroutine is called to set the real value of a specified
+C parameter.
+C
+C IPN is the name of the parameter whose value is to be retrieved.
+C
+C RVL is a real variable containing the desired new value.
+C
+C Declare the AREAS common block.
+C
+.USE  ARCOMN
+C
+C Declare the BLOCK DATA routine external, which should force it to
+C load from a binary library.
+C
+        EXTERNAL ARBLDA
+C
+C Define a character temporary to hold an error message.
+C
+        CHARACTER*38 CTM
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('ARSETR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Check for a parameter name that is too short.
+C
+        IF (LEN(IPN).LT.2)
+          CTM(1:36)='ARSETR - PARAMETER NAME TOO SHORT - '
+          CTM(37:36+LEN(IPN))=IPN
+          CALL SETER (CTM(1:36+LEN(IPN)),2,1)
+          RETURN
+        END IF
+C
+C Set the appropriate parameter value.
+C
+        IF      (IPN(1:2).EQ.'AL'.OR.IPN(1:2).EQ.'al')
+          RLA=RVL
+        ELSE IF (IPN(1:2).EQ.'AT'.OR.IPN(1:2).EQ.'at')
+          IAD=MAX(0,INT(RVL))
+          IAU=0
+        ELSE IF (IPN(1:2).EQ.'AW'.OR.IPN(1:2).EQ.'aw')
+          RWA=RVL
+        ELSE IF (IPN(1:2).EQ.'DB'.OR.IPN(1:2).EQ.'db')
+          IDB=INT(RVL)
+        ELSE IF (IPN(1:2).EQ.'DC'.OR.IPN(1:2).EQ.'dc')
+          IDC=MAX(0,INT(RVL))
+        ELSE IF (IPN(1:2).EQ.'ID'.OR.IPN(1:2).EQ.'id')
+          RDI=RVL
+        ELSE IF (IPN(1:2).EQ.'IS'.OR.IPN(1:2).EQ.'is')
+          RSI=RVL
+        ELSE IF (IPN(1:2).EQ.'LC'.OR.IPN(1:2).EQ.'lc')
+          ILC=MAX(1000,INT(RVL))
+          IAU=0
+        ELSE IF (IPN(1:2).EQ.'RC'.OR.IPN(1:2).EQ.'rc')
+          CALL ARGPAI (IPN,3,IPI)
+          IF (IPI.EQ.0) THEN
+            DO 101 I=1,16
+              IRC(I)=MAX(-2,MIN(2,INT(RVL)))
+  101       CONTINUE
+          ELSE IF (IPI.GE.1.AND.IPI.LE.16) THEN
+            IRC(IPI)=MAX(-2,MIN(2,INT(RVL)))
+          ELSE
+            CALL SETER ('ARSETR - ''RC'' INDEX IS OUT OF RANGE',3,1)
+            RETURN
+          END IF
+        ELSE
+          CTM(1:36)='ARSETR - PARAMETER NAME NOT KNOWN - '
+          CTM(37:38)=IPN(1:2)
+          CALL SETER (CTM(1:38),4,1)
+          RETURN
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
