@@ -1,5 +1,5 @@
 /*
- *      $Id: Open.c,v 1.14 1997-05-05 21:45:19 boote Exp $
+ *      $Id: Open.c,v 1.15 1998-06-04 16:22:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -59,10 +59,11 @@ static void _NhlOpen
 	}
 	LIB_INITIALIZED = True;
 
+	_NhlSetLang(init_type);
+
 	(void)NhlVACreate(&tint,"hlu",NhlappClass,0,
-			_NhlNappMode,		init_type,
 			_NhlNnoAppDB,		True,
-			_NhlNdefApp,		True,
+			NhlNappDefaultParent,	True,
 			NULL);
 
 	return;
