@@ -26,7 +26,6 @@ C
       CALL OPNGKS
       CALL GSCR(1,0,1.,1.,1.)
       CALL GSCR(1,1,0.,0.,0.)
-      CALL GSCR(1,2,1.,1.,0.)
       CALL GSLWSC(1.)
 C
 C  Font WW -- Present Weather table.
@@ -85,6 +84,12 @@ C
       DIMENSION XX(2),YY(2),XC(10),YC(10),XLC(10),YLC(10)
       CHARACTER*(*) FONT
       CHARACTER*2 NLAB
+C
+C  Change the flag for Plotchar function codes to a non-printing
+C  ASCII character since function codes will not be  
+C  used and all printing ASCII characters will be used.
+C
+      CALL PCSETC('FC',CHAR(30))
 C
 C  Draw table grid and compute the centers of the grid boxes.
 C
