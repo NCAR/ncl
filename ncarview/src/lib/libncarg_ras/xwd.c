@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.9 1992-09-01 23:44:41 clyne Exp $
+ *	$Id: xwd.c,v 1.10 1992-09-10 21:06:50 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -31,6 +31,9 @@
  *			* 8-bit indexed	color with 8-bit color map values.
  *		
  */
+#include <stdlib.h>
+#include <errno.h>
+
 #ifndef CRAY
 #include <fcntl.h>
 #include <sys/types.h>
@@ -40,11 +43,9 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/XWDFile.h>
-#include <stdlib.h>
 #include "ncarg_ras.h"
 
 static char	*FormatName = "xwd";
-extern char	*ProgramName;
 static char	*Comment = "XWD file from NCAR raster utilities";
 
 Raster *
@@ -52,23 +53,22 @@ XWDOpen(name)
 	char	*name;
 {
 	Raster		*ras;
-
 	XWDFileHeader	*dep;
 
 	if (name == (char *) NULL) {
-		(void) RasterSetError(RAS_E_NULL_NAME);
+		(void) ESprintf(RAS_E_NULL_NAME, "XWDOpen(\"%s\")", name);
 		return( (Raster *) NULL );
 	}
 
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, "XWDOpen(\"%s\")", name);
 		return( (Raster *) NULL );
 	}
 
 	ras->dep = calloc(sizeof(XWDFileHeader),1);
 	if (ras->dep == (char *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, "XWDOpen(\"%s\")", name);
 		return( (Raster *) NULL );
 	}
 	
@@ -87,14 +87,13 @@ XWDOpen(name)
 	else {
 		ras->fd  = open(name, O_RDONLY);
 		if (ras->fd == -1) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "XWDOpen(\"%s\")", name);
 			return( (Raster *) NULL );
 		}
 
 		ras->fp = fdopen(ras->fd, "r");
-
 		if (ras->fp == (FILE *) NULL) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "XWDOpen(\"%s\")", name);
 			return( (Raster *) NULL );
 		}
 	}
@@ -202,7 +201,8 @@ XWDRead(ras)
 	}
 
 	if (dep->header_size < sizeof(XWDFileHeader)) {
-		(void) RasterSetError(RAS_E_NOT_IN_CORRECT_FORMAT);
+		(void) ESprintf(RAS_E_NOT_IN_CORRECT_FORMAT,
+			"XWDRead(\"%s\")", ras->name);
 		return(RAS_ERROR);
 	}
 
@@ -211,7 +211,8 @@ XWDRead(ras)
 	ras->length = ras->nx * ras->ny;
 
 	if (dep->ncolors > 256) {
-		(void) RasterSetError(RAS_E_COLORMAP_TOO_BIG);
+		(void) ESprintf(RAS_E_COLORMAP_TOO_BIG,
+			"XWDRead(\"%s\")", ras->name);
 		return(RAS_ERROR);
 	}
 
@@ -220,7 +221,8 @@ XWDRead(ras)
 	/* Make sure we have a format we can handle */
 
 	if (dep->pixmap_format != ZPixmap) {
-		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
+			"XWDRead(\"%s\") - Only ZPixmap supported", ras->name);
 		return(RAS_ERROR);
 	}
 
@@ -228,7 +230,8 @@ XWDRead(ras)
 		ras->type = RAS_INDEXED;
 	}
 	else {
-		(void) RasterSetError(RAS_E_8BIT_PIXELS_ONLY);
+		(void) ESprintf(RAS_E_8BIT_PIXELS_ONLY,
+			"XWDRead(\"%s\")", ras->name);
 		return(RAS_ERROR);
 	}
 
@@ -240,7 +243,7 @@ XWDRead(ras)
 		buffer_size = image_size(dep);
 		ras->data = (unsigned char *) malloc (buffer_size);
 		if (ras->data == (unsigned char *) NULL) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "XWDRead(\"%s\")", ras->name);
 			return(RAS_ERROR);
 		}
 
@@ -250,12 +253,14 @@ XWDRead(ras)
 	}
 	else {
 		if (dep->pixmap_width != old_dep.pixmap_width) {
-			(void) RasterSetError(RAS_E_IMAGE_SIZE_CHANGED);
+			(void) ESprintf(RAS_E_IMAGE_SIZE_CHANGED,
+				"XWDRead(\"%s\")", ras->name);
 			return(RAS_ERROR);
 		}
 
 		if (dep->pixmap_height != old_dep.pixmap_height) {
-			(void) RasterSetError(RAS_E_IMAGE_SIZE_CHANGED);
+			(void) ESprintf(RAS_E_IMAGE_SIZE_CHANGED,
+				"XWDRead(\"%s\")", ras->name);
 			return(RAS_ERROR);
 		}
 	}
@@ -264,7 +269,7 @@ XWDRead(ras)
 
 	win_name_size = (dep->header_size - sizeof(XWDFileHeader));
 	if ((ras->text = malloc((unsigned) win_name_size)) == NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, "XWDRead(\"%s\")", ras->name);
 		return(RAS_ERROR);
 	}
 
@@ -275,7 +280,10 @@ XWDRead(ras)
 
 	status  = fread((char *) xcolors, 1, 
 		(int) (ras->ncolor * sizeof(XColor)), ras->fp);
-	if (status != ras->ncolor * sizeof(XColor)) return(RAS_EOF);
+	if (status != ras->ncolor * sizeof(XColor)) {
+		(void) ESprintf(RAS_E_NOT_IN_CORRECT_FORMAT,
+			"XWDRead(\"%s\")", ras->name);
+	}
 
 	/* Swap bytes in the color table, if appropriate. */
 
@@ -288,7 +296,7 @@ XWDRead(ras)
 
 	/* Load ras with the color palette, if there isn't one already. */
 
-	if (ras->map_loaded != True) {
+	if (ras->map_forced != True) {
 		for (i = 0; i < ras->ncolor; i++ ) {
 			ras->red[i]	= xcolors[i].red / 256;
 			ras->green[i]	= xcolors[i].green / 256;
@@ -299,7 +307,10 @@ XWDRead(ras)
 	/* Read in the image */
 
 	status   = fread((char *) ras->data, 1, (int) buffer_size, ras->fp);
-	if (status != buffer_size) return(RAS_EOF);
+	if (status != buffer_size) {
+		(void) ESprintf(RAS_E_NOT_IN_CORRECT_FORMAT,
+			"XWDRead(\"%s\")", ras->name);
+	}
 
 	/* Remove padding if it exists (X dumps padded to word boundaries) */
 
@@ -334,26 +345,25 @@ XWDOpenWrite(name, nx, ny, comment, encoding)
 	int		nx;
 	int		ny;
 	char		*comment;
-	int		encoding;
+	RasterEncoding	encoding;
 {
 	Raster		*ras;
 	XWDFileHeader	*dep;
 
 	if (name == (char *) NULL) {
-		(void) RasterSetError(RAS_E_NULL_NAME);
+		(void) ESprintf(RAS_E_NULL_NAME, "XWDOpenWrite(\"%s\")", name);
 		return( (Raster *) NULL );
 	}
 
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 
 	ras->dep = calloc(sizeof(XWDFileHeader),1);
-
-	dep = (XWDFileHeader *) ras->dep;
-
 	if (ras == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, "XWDOpenWrite(\"%s\")", name);
 		return( (Raster *) NULL );
 	}
+
+	dep = (XWDFileHeader *) ras->dep;
 
 	if (!strcmp(name, "stdout")) {
 		ras->fd = fileno(stdout);
@@ -362,7 +372,7 @@ XWDOpenWrite(name, nx, ny, comment, encoding)
 		ras->fd = open(name, O_WRONLY | O_CREAT, 0644);
 
 		if (ras->fd == -1) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "XWDOpenWrite(\"%s\")", name);
 			return( (Raster *) NULL );
 		}
 	}
@@ -384,7 +394,8 @@ XWDOpenWrite(name, nx, ny, comment, encoding)
 	ras->data	= (unsigned char *) calloc((unsigned) ras->length, 1);
 
 	if (encoding != RAS_INDEXED) {
-		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
+			"Only INDEXED encoding is supported for XWD");
 		return( (Raster *) NULL );
 	}
 	else {
@@ -436,10 +447,16 @@ XWDWrite(ras)
 	}
 
 	nb = write(ras->fd, (char *) ras->dep, sizeof(XWDFileHeader));
-	if (nb != sizeof(XWDFileHeader)) return(RAS_EOF);
+	if (nb != sizeof(XWDFileHeader)) {
+		(void) ESprintf(errno, "XWDWrite(\"%s\")", ras->name);
+		return(RAS_ERROR);
+	}
 
 	nb = write(ras->fd, Comment, strlen(Comment));
-	if (nb != strlen(Comment)) return(RAS_EOF);
+	if (nb != strlen(Comment)) {
+		(void) ESprintf(errno, "XWDWrite(\"%s\")", ras->name);
+		return(RAS_ERROR);
+	}
 
 	for(i=0; i<ras->ncolor; i++) {
 		xcolors[i].red = ras->red[i] * 256;
@@ -457,10 +474,16 @@ XWDWrite(ras)
         }
 
 	nb = write(ras->fd, (char *) xcolors, sizeof(xcolors));
-	if (nb != sizeof(xcolors)) return(RAS_EOF);
+	if (nb != sizeof(xcolors)) {
+		(void) ESprintf(errno, "XWDWrite(\"%s\")", ras->name);
+		return(RAS_ERROR);
+	}
 
 	nb = write(ras->fd, (char *) ras->data, ras->nx * ras->ny);
-	if (nb != ras->nx * ras->ny) return(RAS_EOF);
+	if (nb != ras->nx * ras->ny) {
+		(void) ESprintf(errno, "XWDWrite(\"%s\")", ras->name);
+		return(RAS_ERROR);
+	}
 
 	return(RAS_OK);
 }
