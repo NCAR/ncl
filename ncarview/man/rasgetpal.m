@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rasgetpal.m,v 1.2 1993-02-17 23:52:37 don Exp $
+.\"	$Id: rasgetpal.m,v 1.3 1993-03-15 23:52:52 haley Exp $
 .\"
 .TH RASGETPAL 1NCARG "January 1993" NCARG "NCAR VIEW"
 .SH NAME
@@ -7,7 +7,6 @@ rasgetpal \- extract the color palette of a rasterfile and write it
 to standard output
 .SH SYNOPSIS
 \fBrasgetpal\fP 
-[\fB\-verbose\fR]
 [\fB\-Version\fR]
 \fIsrcfile\fP
 [\fIdstfile\fP]
@@ -33,9 +32,6 @@ different formats.
 .TP
 .BI \-help
 Print help information.
-.TP
-.BI \-verbose
-Print a message each time an output rasterfile is written.
 .TP
 .BI \-Version
 Print the version number.
