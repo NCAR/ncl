@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.18 1992-09-23 23:03:57 clyne Exp $
+ *	$Id: X11_class0.c,v 1.19 1992-10-21 20:05:59 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -787,7 +787,7 @@ do_geometry(Geometry, xsh)
 			(void) strncpy(Geostr, value.addr, (int) value.size);
 		}
 		else
-			Geostr[0] = NULL;
+			Geostr[0] = '\0';
 		
 	}
 	else {	/* no default applications file, bummer => hardwire	*/
