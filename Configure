@@ -162,7 +162,7 @@ if ("$system" == "SystemV") then
 	system, so it has selected the default configuration file
 	called "$system". It is unlikely that you will get through
 	the installation procedure without having to make some
-	changes; you should refer to the Release Notice shipped with
+	changes; you should refer to the Release Notes shipped with
 	this package.
 
 EOF
@@ -176,10 +176,21 @@ endif
 if ($?verbose_option) then
   cat <<"EOF"
 
-	The NCAR Graphics installation scheme will install
-	executables, libraries, include files, man pages, database
-	files, PostScript documentation, fontcaps, graphcaps, and
-	example codes.
+	As of version 3.2 of NCAR Graphics, every user will need to
+	set at least one environment variable in order to use the
+	package.  Depending on how you install NCAR Graphics on
+	your system, users may also need set additional environment
+	variables.  To keep from having to do this, it is a good
+	idea to install NCAR Graphics libraries, binaries, and
+	include files under one root directory; for example,
+	/usr/local/lib, /usr/local/bin, and /usr/local/include.
+	The root directory in this case is /usr/local.
+
+	If you install everything to one root directory, then users
+	will only need to setenv NCARG_ROOT to this directory.
+	Otherwise, they will need to set the environment variables
+	NCARG_BIN, NCARG_LIB, and NCARG_INCLUDE to point to the
+	respective directories.
 
 "EOF"
 
@@ -439,13 +450,13 @@ proc_tmp:
 if ($?verbose_option) then
   cat <<"EOF"
 
-	A couple of the "ncarview" utilities make use of temporary
+	A couple of the translators make use of temporary
 	file space.  On most systems, the directory "/tmp" is the
 	logical choice.  You may specify a different directory to
 	use for this purpose.  The directory must be writable by
-	users of the installed "ncarview".  This procedure will
-	check only to make sure that the directory specified is
-	writable by the installation process.
+	NCAR Grahpics users.  This procedure will check only to
+	make sure that the directory specified is writable by the
+	installation process.
 
 "EOF"
 endif
@@ -502,9 +513,9 @@ if ($?verbose_option) then
 	allow you to convert from one raster format to another,
 	split raster files, and view raster files.
 
-	In order to build pieces of NCAR View, you need the basic
-	X11 libraries.  If you don't have these libraries, answer
-	"n" to the next question.
+	In order to build pieces of these applications, you need the
+	basic X11 libraries.  If you don't have these libraries,
+	answer "n" to the next question.
 
 "EOF"
 endif
@@ -724,6 +735,36 @@ endif
 #
 # Summarize configuration
 #
+if ($?verbose_option) then
+  if ($libdir:h != $bindir:h || $libdir:h != $incdir:h || $bindir:h != $incdir:h ) then
+    cat <<EOF
+
+	Since you did not specify to have the libraries, binaries, and
+	include files installed under one root directory, every user of
+	NCAR Graphics will need to set the following environment
+	variables:
+
+        setenv NCARG_LIB $libdir
+        setenv NCARG_BIN $bindir
+        setenv NCARG_INCLUDE $incdir
+
+EOF
+	
+  else
+    cat <<EOF
+
+	Since you specified to have the libraries, binaries, and
+	include files installed under one root directory, every user
+	of NCAR Graphics will only need to set the following
+	environment variable:
+
+        setenv NCARG_ROOT $libdir:h
+
+EOF
+	
+  endif
+endif
+
 echo ""
 echo "Go back and make more changes or review? (n) "
 echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
