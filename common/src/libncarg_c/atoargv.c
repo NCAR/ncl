@@ -1,5 +1,5 @@
 /*
- *      $Id: atoargv.c,v 1.6 2000-08-22 04:03:31 haley Exp $
+ *      $Id: atoargv.c,v 1.7 2002-02-22 18:37:36 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -54,7 +54,7 @@ static	int	compile_string(s)
 	const char	*s;
 {
 	if (bufSize < (strlen(s) + 1)) {
-		if (buf) cfree(buf);
+		if (buf) free(buf);
 		buf = NULL;
 		bufSize = 0;
 	} 

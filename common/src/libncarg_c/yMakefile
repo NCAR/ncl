@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.41 2001-10-10 15:00:13 haley Exp $
+#	$Id: yMakefile,v 1.42 2002-02-22 18:37:36 haley Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common utilities
@@ -28,7 +28,7 @@ EXCSRCS = logic32.c
 EXFSRCS = gbytes.f sbytes.f
 EXOBJS  = sbytes.o gbytes.o logic32.o
 
-#elif defined(linux) || defined(i386)
+#elif defined(__ppc__)
 EXCSRCS = bcopyswap.c gsbytes.c logic32.c
 EXOBJS  = bcopyswap.o gsbytes.o logic32.o
 SHLIBSRCS = g77.c
@@ -65,12 +65,15 @@ InstallTarget($(HDRS),$(INSTALL_INC),$(NCARGINCPATH))
 BuildIncludes($(HDRS),ncarg,..)
 DependTarget($(CSRCS))
 
-#if defined(i386)
+#if defined(i386) || defined(Darwin)
 usleep.o: usleep.c
 	$(CC) $(CCOPTIONS) $(COPT) -c usleep.c
+
+sdbm.o: sdbm.c
+	$(CC) $(CCOPTIONS) $(COPT) -c sdbm.c
 #endif
 
-#if !defined(i386) || defined(linux)
+#if (!defined(i386) || defined(linux)) && !defined(Darwin)
 CleanFilesTarget($(FCPP_FSRCS))
 #endif
 

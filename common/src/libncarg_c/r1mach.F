@@ -1,5 +1,5 @@
 C
-C	$Id: r1mach.F,v 1.1 1994-08-11 16:29:57 haley Exp $
+C	$Id: r1mach.F,v 1.2 2002-02-22 18:37:36 haley Exp $
 C
       REAL FUNCTION R1MACH (I)  
 C
@@ -401,11 +401,11 @@ C
       DATA RMACH(4) / '34000000'X /
       DATA RMACH(5) / '3E9A209B'X /
 #else
-      DATA SMALL / X'00800000' /
-      DATA LARGE / X'7F7FFFFF' /
-      DATA RIGHT / X'33800000' /
-      DATA DIVER / X'34000000' /
-      DATA LOG10 / X'3E9A209B' /
+      DATA SMALL / Z'00800000' /
+      DATA LARGE / Z'7F7FFFFF' /
+      DATA RIGHT / Z'33800000' /
+      DATA DIVER / Z'34000000' /
+      DATA LOG10 / Z'3E9A209B' /
 #endif       
 #endif       
       IF (I .LT. 1 .OR. I .GT. 5) WRITE(6,500)
