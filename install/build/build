@@ -1,0 +1,433 @@
+#!/usr/local/bin/perl
+#
+#      $Id: build,v 1.1 1993-02-20 00:10:15 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		build
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Wed Dec 2 11:28:04 MST 1992
+#
+#	Description:	generate an NCAR G binary tar file for the platform
+#			this script is run on.
+#
+#	Usage:		build [-debug]
+#
+#	Environment:	NCARG	path to NCAR G source
+#
+#	Files:
+#
+#
+#	Options:
+
+#
+#	Return the leaf of a directory path
+#
+sub	path_leaf {
+	local	($path) = @_;
+
+	split(m;/;, $path);
+
+	if (! @_) {
+		return($path);
+	}
+	return(@_[$#_]);
+
+}
+
+#
+#	Rename files to $file.$version and generate a file containing
+#	a list of the symbolic links necessary to point $file at 
+#	$file.version.
+#
+# on entry
+#
+#	$version	: version number to append to file names
+#
+#	$root_dir	: root of directory where parent directory of
+#			files to be renamed reside
+#
+#	@dirs		: List of directories under $root_dir to search
+#			for files/dirs to be renamed. All files/dirs
+#			under $root_dir/@dirs are renamed. The symlink list
+#			genenerated is relative to @dirs, not $root_dir/@dirs
+#
+# on exit
+#		exit on error
+#
+sub	rename_files {
+	local($version, $root_dir, @dirs) = @_;
+
+	local($dir, $file, $path, $cmd);
+
+	#
+	# rename the files to file.$version
+	#
+	foreach $dir (@dirs) {
+		if ($dir eq "man") {	# man is a special case
+			@files = <$root_dir/$dir/man?/*>;
+		}
+		else {
+			@files = <$root_dir/$dir/*>;
+		}
+		if (@files) {
+			$cmd = "$ncarg/install/build/rename s/\$/.$version/ @files";
+			system ($cmd);
+			if ($? != 0) {
+				print "\"$cmd\" exited with error\n";
+				print "Terminating build session\n";
+				exit 1;
+			}
+
+			#
+			# install symlinks
+			#
+			foreach $path (@files) {
+				$path =~ s#^$root_dir/##;
+				$file = &path_leaf($path);
+				$file .= ".$version";
+				$cmd = "cd $root_dir; ln -s $file $path";
+				system ($cmd);
+				if ($? != 0) {
+					print "\"$cmd\" exited with error\n";
+					print "Terminating build session\n";
+					exit 1;
+				}
+
+			}
+		}
+	}
+}
+
+sub	disk_space {
+	local($space_file, $root_dir, @dirs) = @_;
+
+	local($dir, $file, $size, $total);
+
+
+	open(FP, ">$space_file") || die "Can't open file <$space_file>: $!\n";
+
+	print FP <<"EOF";
+#
+#                       Disk Space Requirements
+#
+#       This file is generated automatically and stores the software
+#       installation size requirements for listed directories. The 
+#	sizes are given in Kbytes.
+#
+
+EOF
+
+	foreach $dir (@dirs) {
+		open(PIPE, "find $root_dir/$dir -print |");
+		$total = 0;
+		while ($file = <PIPE>) {
+			chop $file;
+			$size = -s $file;
+			$total += $size;
+		}
+		$total = ($total / 1024) + 1;
+		printf FP "$dir\t\t%d\n", $total;
+		close(PIPE);
+	}
+
+	close(FP);
+
+}
+	
+sub	create_tars {
+	local($build_dir, $version, @dirs) = @_;
+
+	local($cmd, $dir);
+
+	foreach $dir (@dirs) {
+		$cmd = "cd $build_dir/$dir; tar -cf ../$dir.tar .";
+		system($cmd);
+		if ($? != 0) {
+			print "\"$cmd\" exited with error\n";
+			print "Terminating build session\n";
+			exit 1;
+		}
+	}
+}
+
+sub	vgen {
+	local($build_dir, $version) = @_;
+
+	local($file) = "$build_dir/version";
+	open(FP, ">$file") || die "Can't open file <$file>: $!\n";
+
+	print FP "$version\n";
+
+	close(FP);
+}
+
+sub	sigint_handler {
+	local ($sig) = @_;
+
+	print STDOUT "Caught a SIG$sig -- shutting down\n";
+	do CloseConfig();
+	exit 1;
+}
+	
+
+require 'config.pl';
+
+##########################################################################
+##
+##      M A I N   P R O G R A M
+##
+##########################################################################
+
+
+#
+#       Global vars
+#
+$progName = $& if ($0 =~ /\w+$/);
+$doDebug = 0;				# do operate in debug mode
+$buildDirRoot = "/ncargbin";		# default build repository
+$configFile;  				# NCAR G config file
+$Version; 				# NCAR G version number
+$sizesFile; 				# path to size requirements file
+$do_quick = 0;				# make Everything?
+$install_dir = "INSTALL";		# where the INSTALL script lives
+%configFiles = (			# map sys type to config file name
+	'HPUX_HP9000_7xx', 	'HPUX_snake',
+	'AIX_RS6000', 		'AIX_RS6000',
+	'SunOS_sun4', 		'Sun4',
+	'SunOS_sun3', 		'Sun3',
+	'Solaris_sun4',		'Sun4Solaris',
+	'ULTRIX_RISC',		'DECRISC',
+	'IRIX_IP',		'SGI4D',
+	'UNICOS_YMP',		'Cray'
+	);
+
+$SIG{'INT'} = 'sigint_handler';
+
+while ($ARGV[0] =~ /-/) {
+        $_ = shift @ARGV;
+
+        if (/-debug/) {
+		$doDebug = 1;
+        }
+        elsif (/-quick/) {
+		$do_quick = 1;
+        }
+	else {
+		print STDERR "Usage: $progName [-debug]\n";
+		print STDERR "Terminating build session\n";
+		exit 1;
+	}
+}
+
+if (@ARGV) {
+	print STDERR "Usage: $progName [-debug]\n";
+	print STDERR "Terminating build session\n";
+	exit 1;
+}
+
+
+
+select(STDERR); $| = 1;         # make unbuffered
+
+print "Beginning build session.\n";
+
+#
+# NCARG points to root of NCARG source will distribution will be
+# compiled.
+#
+if (! defined ($ncarg = $ENV{'NCARG'})) {
+	print STDERR "NCARG environment variable not set\n";
+	print STDERR "Terminating build session\n";
+	exit 1;
+}
+
+#
+#	set LOCALDIR so we get use the 'sys_type' command in install
+#
+$ENV{'LOCALDIR'} = "$ncarg/install/install";
+
+#
+#	get the system type
+#
+$cmd = "cd $ncarg/install/install; sys_type";
+$sys_type = `$cmd`;
+if ($? != 0) {
+	print STDERR "progName: \"$cmd\" exited with error\n";
+	print STDERR "Terminating build session\n";
+	exit 1;
+}
+chop $sys_type;
+
+#
+#	paths to files we'll either create or access
+#
+$configFile = "$configFiles{$sys_type}";
+$sizesFile = "sizes";
+
+$Version = `cat $ncarg/version`;
+chop $Version;
+
+#
+# 	verify everything looks correct before we begin
+#
+print STDOUT "Building version $Version binaries from $ncarg for a ";
+print STDOUT "$sys_type platform\n";
+print STDOUT "Is this correct [y/n](y) ? ";
+$_ = <STDIN>;
+chop;
+if ( ! (/^y/ || /^Y/ || $_ eq "") ) {
+	print "Terminating build session\n";
+	exit 1;
+}
+
+
+for ($done=0; $done==0; ) {
+	print STDOUT "\n\nCreate tar files in $buildDirRoot\n";
+	print STDOUT "Press <RETURN>  for default, new directory, or q(quit) > ";
+
+	$_ = <STDIN>;
+	chop;
+	if (/^q/ || /^Q/) {
+		print "Terminating build session\n";
+		exit 1;
+	}
+	if (/^\./) {
+		print STDERR "\n<$_> is not an absolute path name\n";
+	}
+	elsif ($_ eq "") {
+		$done = 1;
+	}
+	else {
+		$buildDirRoot = $_;
+	}
+}
+
+#
+# $build_dir is  the directory where NCAR G will be temporarily installed
+# and where the tar files created by 'build' will be deposited.
+#
+$build_dir = "$buildDirRoot" . "/$sys_type";
+
+if (! -d $build_dir ) {
+	system("mkdir $build_dir");
+}
+
+if (! (-d $build_dir && -w $build_dir)) {
+	print "$build_dir is not writable or does not exist\n";
+	print "Terminating build session\n";
+	exit 1;
+}
+
+
+#
+#	clean the $build_dir directory before we begin. We don't want 
+#	obsolete files ending up in the binary distribution.
+#
+if (! $do_quick) {
+	print "\n\nCleaning the install directory. This may take a while...\n\n";
+	@list = <$build_dir/*>;
+	$files = join(' ',@list);
+	if ($files) {
+		$cmd = "cd $build_dir; /bin/rm -fr $files";
+		system($cmd);
+		if ($? != 0) {
+			print "\"$cmd\" exited with error\n";
+			print "Terminating build session\n";
+			exit 1;
+		}
+	}
+}
+
+
+#
+#	nuke the install directory so we're sure its updated by INSTALL
+#	before anyone makes a tape
+#
+$cmd = "cd $build_dir; /bin/rm -fr $install_dir";
+system($cmd);
+if ($? != 0) {
+	print "\"$cmd\" exited with error\n";
+	print "Terminating build session\n";
+	exit 1;
+}
+
+#
+#	Verify that the config file for the installation is correct
+#	for this system
+#
+if (&DoConfig("$ncarg/config", $configFile, $build_dir, $Version)) {
+	print "Terminating build session\n";
+	exit 1;
+}
+
+
+print "NCARG=$ncarg, version=$Version, system=$sys_type build_dir=$build_dir\n";
+print "Start building NCAR G\n";
+
+#
+#	compile and install NCAR G to the build directory
+#
+if ($do_quick) {
+	$cmd = "cd $ncarg; (make Makefiles; make dirs all install) 1> $build_dir/make-output 2>&1";
+}
+else {
+	$cmd = "cd $ncarg; make Everything 1> $build_dir/make-output 2>&1";
+}
+
+print "\n\nBuilding NCAR Graphics. This may take a while...\n\n";
+system("$cmd");
+if ($? != 0) {
+	print "\"$cmd\" exited with error - \n";
+	print "Terminating build session\n";
+	exit 1;
+}
+print "Completed building NCAR Graphics\n";
+
+
+#
+#	rename the top-level installed files and directories to 
+#	whatever.$Version and generate an file which can be sourced to
+#	create symbolic links from whatever to whatever.$version.
+#
+@dirs = ("bin", "include", "lib", "man");	# all the installed dirs
+do rename_files($Version, $build_dir, @dirs);
+
+#
+#	Calculate the disk space required for the directories 
+#	bin, include, lib and man
+#
+do disk_space("$build_dir/$sizesFile", $build_dir, "bin","include","lib","man");
+
+
+#
+#	tar up the installables
+#
+do create_tars($build_dir, $Version, "bin","include","lib","man");
+
+
+#
+#	generate the version file
+#
+do vgen($build_dir, $Version);
+
+if (! $doDebug) {
+	$cmd = "cd $build_dir; /bin/rm -r bin include lib man make-output";
+	system($cmd);
+}
+
+do CloseConfig();
+
+print "Completed building binaries\n";
+
+exit 0;

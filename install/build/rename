@@ -1,0 +1,46 @@
+#!/usr/local/bin/perl
+
+#
+#      $Id: rename,v 1.1 1993-02-20 00:10:20 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		rename
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Thu Dec 3 16:40:00 MST 1992
+#
+#	Description:	Rename files. Taken from "The PERL Programming 
+#			Language";
+#
+#	Usage:		rename perlexpr [file...]
+#
+#	Environment:
+#
+#	Files:
+#
+#
+#	Options:
+
+($op = shift) || die "Usage: rename perlexpr [file...]";
+
+if (!@ARGV) {
+	@ARGV = <STDIN>;
+	chop (@ARGV);
+}
+for (@ARGV) {
+	$old = $_;
+	eval $op;
+	die $@ if $@;
+	rename ($old, $_) unless $old eq $_;
+}
+exit 0;

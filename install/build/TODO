@@ -1,0 +1,3 @@
+on interupt should restore default config file and do whatever else is
+necessary.
+
