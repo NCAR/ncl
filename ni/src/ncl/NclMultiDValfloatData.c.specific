@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValfloatData.c.specific,v 1.3 1994-09-01 17:41:49 ethan Exp $
+ *      $Id: NclMultiDValfloatData.c.specific,v 1.4 1994-11-07 15:07:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -41,7 +41,7 @@ static struct _NclDataRec *MultiDVal_float_md_Coerce
 	NclScalar missing;
 	int i,chckmiss = 0;
 
-	ASSERT(self->obj.obj_type_mask & Ncl_MultiDfloatData);
+	ASSERT(self->obj.obj_type_mask & Ncl_MultiDValfloatData);
 /*
 * new_missing is either NULL or is a value of data_type belonging to
 * the coerce_to_type
@@ -151,7 +151,7 @@ static struct _NclDataRec *MultiDVal_float_s_Coerce
 	int chckmiss = 0;
 
 	
-	ASSERT(self->obj.obj_type_mask & Ncl_MultiDfloatData);
+	ASSERT(self->obj.obj_type_mask & Ncl_MultiDValfloatData);
 
 	switch(coerce_to_obj) {
 	case Ncl_MultiDValdoubleData:

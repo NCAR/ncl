@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.20 1994-11-07 03:02:41 ethan Exp $
+#      $Id: yMakefile,v 1.21 1994-11-07 15:07:52 boote Exp $
 #
 #########################################################################
 #									#
@@ -36,6 +36,7 @@ MYBIN		=	ncl
 MYLIB		=	libncl.a
 MYLIB_API	=	libnclapi.a
 YACC		=	./yacc/byacc
+YACCDIR		=	./yacc
 
 
 #ifdef  HPUX
@@ -126,7 +127,8 @@ CProgram($(MYBIN),$(EXEOBJS),$(DEPLIBS))
 BuildIncludes($(INSTALL_HDRS),ncarg/ncl,../..)
 InstallTarget($(INSTALL_HDRS),$(INSTALL_INC),$(NCLINCPATH))
 
-depend-local::	$(GEN_HDRS) $(GEN_SRCS)
+all-local:: makesubdirs
+depend-local:: $(GEN_HDRS) $(GEN_SRCS)
 DependTarget($(ALLSRCS))
 
 CleanFilesTarget(lex.yy.c y.tab.c y.tab.h)
@@ -174,7 +176,10 @@ parser.c:	y.tab.c
 lex.yy.c: ncl.l
 	$(LEX) ncl.l
 
-y.tab.c y.tab.h: ncl.y makesubdirs
+$(YACC):
+	@cd $(YACCDIR); $(MAKE) all
+
+y.tab.c y.tab.h: ncl.y $(YACC)
 	$(YACC) -d -t ncl.y
 
 #

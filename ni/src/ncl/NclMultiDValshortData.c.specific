@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValshortData.c.specific,v 1.3 1994-09-01 17:41:54 ethan Exp $
+ *      $Id: NclMultiDValshortData.c.specific,v 1.4 1994-11-07 15:07:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -49,7 +49,7 @@ static struct _NclDataRec *MultiDVal_short_md_Coerce
 	int i;
 	int chckmiss = 0;
 
-	ASSERT(self->obj.obj_type_mask & Ncl_MultiDshortData);
+	ASSERT(self->obj.obj_type_mask & Ncl_MultiDValshortData);
 
 	switch(coerce_to_obj) {
 	case Ncl_MultiDValdoubleData:
@@ -263,7 +263,7 @@ static struct _NclDataRec *MultiDVal_short_s_Coerce
         NclScalar missing;
 	int chckmiss = 0;
 
-	ASSERT(self->obj.obj_type_mask & Ncl_MultiDshortData);
+	ASSERT(self->obj.obj_type_mask & Ncl_MultiDValshortData);
 
 	switch(coerce_to_obj) {
 	case Ncl_MultiDValdoubleData:
