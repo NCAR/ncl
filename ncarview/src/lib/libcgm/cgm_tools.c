@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.2 1991-01-09 11:04:28 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.3 1991-02-06 15:23:56 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -441,7 +441,7 @@ Directory	*CGM_directory(cgm_fd)
 
 	enum {
 		BEGIN,
-		END,
+		END
 	} state = END;			/* record state of metafile	*/
 
 	Directory	*dir = NULL;	/* the directory to creat	*/
