@@ -1,5 +1,5 @@
 C
-C	$Id: dashbd1024.f,v 1.3 2000-08-22 15:10:23 haley Exp $
+C	$Id: dashbd1024.f,v 1.4 2003-06-02 19:17:38 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -51,6 +51,10 @@ C
 C
       COMMON/INTPR/IPAU,FPART,TENSN,NP,SMALL,L1,ADDLR,ADDTB,MLLINE,
      1    ICLOSE
+C
+      COMMON /BLGASO/ IBLK,IGAP,ISOL
+      CHARACTER*1     IBLK,IGAP,ISOL
+C
       SAVE
 C **********************************************************************
 C
@@ -150,6 +154,8 @@ C PARAMETERS FROM FDVDLD TO MSKRV1 WITHOUT BEING DEFINED.
 C
       DATA SLP1,SLPN /-9999.,-9999./
 C
+C Define characters representing a blank, a gap, and a solid.
 C
+      DATA IBLK,IGAP,ISOL / ' ' , '''' , '$' /
 C
       END
