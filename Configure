@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.4 1994-04-08 04:13:56 boote Exp $
+#      $Id: Configure,v 1.5 1994-04-08 19:36:37 boote Exp $
 #
 #########################################################################
 #									#
@@ -22,8 +22,6 @@
 #			build this one.
 
 onintr cleanup
-
-set makecmd = make
 
 set shell = $SHELL
 if ($shell:t != "csh") then
@@ -64,6 +62,29 @@ if ($#argv > 0) then
 	end
 endif
 
+foreach dir ($path)
+	if (-x $dir/make) then
+		set makecmd=$dir/make
+		break
+	endif
+end
+
+if (! $?makecmd) then
+	echo "This Configure Script depends upon the 'make' program."
+	echo "It doesn't appear to be available.  Please check your PATH"
+	echo "and restart this script."
+	goto cleanup
+endif
+
+foreach dir ($path)
+	if (-x $dir/makedepend) then
+		set makedependcmd=$dir/makedepend
+		break
+	endif
+end
+
+if(! $?makedependcmd) set nomakedepend
+
 if (-e config/Site.local) then
 	echo "	*** WARNING:There is a previous configuration saved."
 	echo ""
@@ -75,6 +96,7 @@ endif
 
 echo "/* Default Config */" > config/Site.local
 echo "#define EmptySite" >> config/Site.local
+if ($?nomakedepend) echo "#define NoMakeDepend" >> config/Site.local
 
 echo ""
 echo "Building top-level Makefile to determine System defaults"
@@ -686,7 +708,6 @@ echo "" >> Site.local
 echo "" >> Site.local
 echo "#ifdef SecondSite" >> Site.local
 echo "" >> Site.local
-echo "" >> Site.local
 
 if ($?commonroot) then
 	echo "#define YmakeRoot $commonroot" >> Site.local
@@ -696,9 +717,6 @@ else
 	echo "#define LibRoot $libdir" >> Site.local
 endif
 
-echo "" >> Site.local
-echo "" >> Site.local
-
 if ($?newman) then
 	echo "#define ManRoot $mandir" >> Site.local
 endif
@@ -706,7 +724,6 @@ if ($?newtmp) then
 	echo "#define TmpRoot $tmpdir" >> Site.local
 endif
 
-echo "" >> Site.local
 echo "" >> Site.local
 
 if ($?nloclib) then
@@ -716,7 +733,6 @@ if ($?nlocinc) then
 	echo "#define IncSearch $locinc" >> Site.local
 endif
 
-echo "" >> Site.local
 echo "" >> Site.local
 
 if ($?newbuildxlibstuff) then
@@ -734,8 +750,8 @@ if ($?newbuildhdf) then
 		echo "#define BuildRasterHDF FALSE" >> Site.local
 	endif
 endif
-
 echo "" >> Site.local
+if ($?nomakedepend) echo "#define NoMakeDepend" >> config/Site.local
 echo "" >> Site.local
 echo "#endif /* SecondSite */" >> Site.local
 
