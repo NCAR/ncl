@@ -2744,8 +2744,8 @@ GribParamList* thevarrec;
 			jmain = UnsignedCnvtToDecimal(2,&(therec->gds[6]));
 			kmain = UnsignedCnvtToDecimal(2,&(therec->gds[8]));
 			mmain = UnsignedCnvtToDecimal(2,&(therec->gds[10]));
-			if((j==k)&&(k==m)&&(jmain==kmain)&&(kmain==mmain)) {
-				factor = malloc(sizeof(float)*(kmain+1));
+			if((j==k)&&(k==m)/*&&(jmain==kmain)&&(kmain==mmain)*/) {
+				factor = malloc(sizeof(float)*(jmain+1));
 /*
 * compute number of values  in the unpcacked portion
 */
@@ -4216,7 +4216,17 @@ int * lonatts;
 #endif
 {
 	int j,k,m,type,mode;
-	unsigned char *gds = (unsigned char*)thevarrec->thelist->rec_inq->gds;
+	unsigned char *gds;
+
+
+	m = 0;	
+	while((m<thevarrec->n_entries)&&(thevarrec->thelist[m].rec_inq == NULL)) m++;
+
+	if(m == thevarrec->n_entries) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"GdsSHGrid: No valid records can't continue");
+		return;
+	}
+	gds = (unsigned char*)thevarrec->thelist[m].rec_inq->gds;
 
 
 	j = UnsignedCnvtToDecimal(2,&(gds[6]));

@@ -721,7 +721,7 @@ int** valid_lv_vals1;
 #endif
 {
 	int i;
-	GribRecordInqRecList *strt,*fnsh,*fstep;
+	GribRecordInqRecList *strt,*fnsh,*fstep,*last;
 	int n_fts = 0;
 	int n_nodes;
 	int current_offset;
@@ -737,10 +737,12 @@ int** valid_lv_vals1;
 	
 	strt = fstep = step;
 
+	last = fstep;
 	current_offset = strt->rec_inq->time_offset;
 	while(fstep->next != NULL) {
 		if(fstep->next->rec_inq->time_offset != current_offset) {
 			fnsh = fstep;
+			last = fstep;
 			fstep = fstep->next;
 			fnsh->next = NULL;
 			the_end->next = (FTLIST*)NclMalloc((unsigned)sizeof(FTLIST));
@@ -778,7 +780,11 @@ int** valid_lv_vals1;
 			current_offset = strt->rec_inq->time_offset;
 			n_fts++;
 		} else {
-			fstep = fstep->next;
+			if(last != NULL) {
+				last->next = fstep->next;
+				fstep = last->next;
+				thevar->n_entries--;
+			}
 		}
 	}
 	the_end->next =(FTLIST*)NclMalloc((unsigned)sizeof(FTLIST));
@@ -1258,7 +1264,7 @@ GribFileRecord *therec;
 	int *rhs, *lhs;
 	int *rhs1, *lhs1;
 	float *rhs_f, *lhs_f;
-	int i,j;
+	int i,j,m;
 	int current_dim = 0;
 	NclMultiDValData tmp_md;
 	NclMultiDValData tmp_md1;
@@ -1658,6 +1664,8 @@ GribFileRecord *therec;
 	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	*/
 		
+					m = 0;
+					while((m<step->n_entries)&&(step->thelist[m].rec_inq == NULL)) m++;
 					if((n_dims_lon == 1)&&(n_dims_lat == 1)) {
 						if((step->has_gds )&& (step->gds_type == 50)) {
 							step->var_info.dim_sizes[current_dim] = 2;
@@ -1672,9 +1680,11 @@ GribFileRecord *therec;
 							tmp->size = 2;
 							tmp->dim_name = NrmStringToQuark(buffer);
 							tmp->is_gds = step->gds_type;
-							tmp->gds_size = step->thelist->rec_inq->gds_size;
-							tmp->gds = (unsigned char*)NclMalloc(step->thelist->rec_inq->gds_size);
-							memcpy(tmp->gds,step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size);
+							tmp->gds = (unsigned char*)NclMalloc(step->thelist[m].rec_inq->gds_size);
+
+
+							tmp->gds_size = step->thelist[m].rec_inq->gds_size;
+							memcpy(tmp->gds,step->thelist[m].rec_inq->gds,step->thelist[m].rec_inq->gds_size);
 							ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
 							ptr->dim_inq= tmp;
 							ptr->next = therec->grid_dims;
@@ -1701,9 +1711,9 @@ GribFileRecord *therec;
 						tmp->size = dimsizes_lon[0];
 						tmp->dim_name = NrmStringToQuark(buffer);
 						tmp->is_gds = step->gds_type;
-						tmp->gds_size = step->thelist->rec_inq->gds_size;
-						tmp->gds = (unsigned char*)NclMalloc(step->thelist->rec_inq->gds_size);
-						memcpy(tmp->gds,step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size);
+						tmp->gds_size = step->thelist[m].rec_inq->gds_size;
+						tmp->gds = (unsigned char*)NclMalloc(step->thelist[m].rec_inq->gds_size);
+						memcpy(tmp->gds,step->thelist[m].rec_inq->gds,step->thelist[m].rec_inq->gds_size);
 						ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
 						ptr->dim_inq= tmp;
 						ptr->next = therec->grid_dims;
@@ -1743,9 +1753,9 @@ GribFileRecord *therec;
 						tmp->size = dimsizes_lat[0];
 						tmp->dim_name = NrmStringToQuark(buffer);
 						tmp->is_gds = step->gds_type;
-						tmp->gds_size = step->thelist->rec_inq->gds_size;
-						tmp->gds = (unsigned char*)NclMalloc(step->thelist->rec_inq->gds_size);
-						memcpy(tmp->gds,step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size);
+						tmp->gds_size = step->thelist[m].rec_inq->gds_size;
+						tmp->gds = (unsigned char*)NclMalloc(step->thelist[m].rec_inq->gds_size);
+						memcpy(tmp->gds,step->thelist[m].rec_inq->gds,step->thelist[m].rec_inq->gds_size);
 						ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
 						ptr->dim_inq= tmp;
 						ptr->next = therec->grid_dims;
@@ -1795,9 +1805,9 @@ GribFileRecord *therec;
 						tmp->size = dimsizes_lon[1];
 						tmp->dim_name = NrmStringToQuark(buffer);
 						tmp->is_gds = step->gds_type;
-						tmp->gds_size = step->thelist->rec_inq->gds_size;
-						tmp->gds = (unsigned char*)NclMalloc(step->thelist->rec_inq->gds_size);
-						memcpy(tmp->gds,step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size);
+						tmp->gds_size = step->thelist[m].rec_inq->gds_size;
+						tmp->gds = (unsigned char*)NclMalloc(step->thelist[m].rec_inq->gds_size);
+						memcpy(tmp->gds,step->thelist[m].rec_inq->gds,step->thelist[m].rec_inq->gds_size);
 						ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
 						ptr->dim_inq= tmp;
 						ptr->next = therec->grid_dims;
@@ -1841,9 +1851,9 @@ GribFileRecord *therec;
 						tmp->size = dimsizes_lat[0];
 						tmp->dim_name = NrmStringToQuark(buffer);
 						tmp->is_gds = step->gds_type;
-						tmp->gds_size = step->thelist->rec_inq->gds_size;
-						tmp->gds = (unsigned char*)NclMalloc(step->thelist->rec_inq->gds_size);
-						memcpy(tmp->gds,step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size);
+						tmp->gds_size = step->thelist[m].rec_inq->gds_size;
+						tmp->gds = (unsigned char*)NclMalloc(step->thelist[m].rec_inq->gds_size);
+						memcpy(tmp->gds,step->thelist[m].rec_inq->gds,step->thelist[m].rec_inq->gds_size);
 						ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
 						ptr->dim_inq= tmp;
 						ptr->next = therec->grid_dims;
