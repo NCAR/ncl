@@ -1,5 +1,5 @@
 /*
- *      $Id: filetree.c,v 1.10 1999-07-30 03:20:52 dbrown Exp $
+ *      $Id: filetree.c,v 1.11 1999-09-11 01:06:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,6 @@
 
 static NrmQuark Qlong_name;
 static Dimension Row_Height;
-static Dimension Char_Height;
 
 static void Button3Action(
 	Widget		w,
@@ -165,7 +164,7 @@ FixFloat
 	char		*buf
         )
 {
-        char *cp,tcp;
+        char *cp;
                             
         if (!strchr(buf,'.')) {
                 strcat(buf,".0");
@@ -258,7 +257,7 @@ static void ExpandAttr
         xmempty = NgXAppCreateXmString(ftp->go->go.appmgr," ");
         for (i = 0; i < val->totalelements; i++) {
                 char *attvalue,*cp,*lastcp;
-                int ncols,nlcount = 1,rows,size,j,len;
+                int nlcount = 1,rows,j,len;
                 XmString xmattval;
                 
                 attvalue = NgTypedValueToString(val,i,False,&len);
@@ -359,9 +358,8 @@ static void DoSingleLineAttrVal
 
         buf[0] = '\0';
         for (i = 0,bufp = buf; i < val->totalelements; i++) {
-                XmLTreeRowDefinition *rowdefs;
                 char *attvalue,*cp,*nextp;
-                int ncols,nlcount = 1,rows,vlen;
+                int nlcount = 1,rows,vlen;
                 
                 attvalue = NgTypedValueToString(val,i,False,&vlen);
                 
@@ -526,11 +524,10 @@ static void ExpandDim
         XmLTreeRowDefinition *rowdefs;
         int rowcount,i;
         char buf[256];
-        NrmQuark *ql;
         _ftNodeType subtype;
         long    stride;
         NhlBoolean is_coord_var = False;
-        int size = 0,dim_ix;
+        int dim_ix;
         
 #if	DEBUG_FILETREE
 	fprintf(stderr,"ExpandDim(IN)\n");
@@ -861,13 +858,11 @@ static void ExpandVar
         int pos
         )
 {
-        NclApiFileInfoRec *finfo;
         NclApiVarInfoRec *vinfo;
         NclApiDataList	*dlist = NULL;
         XmLTreeRowDefinition *rowdefs;
         int rowcount,i;
         char buf[256];
-        NrmQuark *ql;
         _ftNodeType subtype;
         
 #if	DEBUG_FILETREE
@@ -1075,7 +1070,6 @@ static void ExpandTree
                               XmNrowSizePolicy,XmVARIABLE,
                               NULL);
                 XmLFontListGetDimensions(fontlist,&cw,&ch,True);
-                Char_Height = ch;
                 Row_Height = MAX(rh,h/nrows);
                 Row_Height = 20;
                 ftp->expand_called = True;
@@ -1156,7 +1150,7 @@ static void ExpandCB
         XmLGridCallbackStruct *cbs;
         XmLGridRow	row;
         ftNodeData	*ndata;
-        int		pos,row_change;
+        int		row_change;
         
         cbs = (XmLGridCallbackStruct *)cb_data;
         row = XmLGridGetRow(w,XmCONTENT,cbs->row);
@@ -1337,11 +1331,8 @@ NhlErrorTypes NgUpdateFileTree
         NclApiDataList		*dlist
         )
 {
-        NhlErrorTypes ret;
         NgFileTreeRec *ftp;
-        int	i,nrows,nvisrows;
-        static Dimension height;
-        NhlBoolean first = True;
+        int	i;
         NclApiFileInfoRec *finfo;
         int	nattrs,nvars,ndims,tcount;
         XmLTreeRowDefinition *rowdefs;
@@ -1409,7 +1400,6 @@ NhlErrorTypes NgUpdateFileTree
         XmLTreeAddRows(ftp->tree,rowdefs,tcount,0);
 
         for (i = 0; i < tcount; i++) {
-                XtPointer udata;
                 
                 switch (i) {
                     case 0:

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.4 1999-08-28 00:18:43 dbrown Exp $
+ *      $Id: plotapp.c,v 1.5 1999-09-11 01:06:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -141,6 +141,8 @@ typedef struct _AppObjResRec {
 	struct _AppObjResRec	*next;
 	NrmQuark		qres;
 	NhlString		value;
+	NhlBoolean		bogus;
+	int			bogus_pos;
 	ObjResType		type;
 	AppResProfile		prof;
 	AppResSymRef		symrefs;
@@ -173,6 +175,8 @@ typedef struct _AppDataResRec {
 	struct _AppDataResRec	*next;
 	NrmQuark		qres;
 	NhlString		value;
+	NhlBoolean		bogus;
+	int			bogus_pos;
 	NhlBoolean		is_coord;
 	int			coord_ix;
 	AppResSymRef		symrefs;
@@ -253,6 +257,33 @@ typedef struct _FuncFileRec {
 } FuncFileRec, *FuncFile;
 
 static FuncFile FuncFileList = NULL;
+
+#define BUFINC  256
+static char	*Buffer;
+static int	BufSize;
+
+static NhlBoolean UpdateBufSize
+(
+	int req_size
+)
+{
+	int newsize;
+
+	if (req_size < BufSize)
+		return True;
+
+	newsize = BufSize;
+	while (newsize <= req_size)
+		newsize += BUFINC;
+		
+	Buffer = NhlRealloc(Buffer,newsize);
+
+	if (! Buffer) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return False;
+	}
+	return True;
+}
 
 static _NhlConvertContext 
 StringResToStringArray 
@@ -385,6 +416,124 @@ SetAppResProfile
 	return;
 }
 
+/*
+ * states: 
+ */
+
+#define BASIC 0
+#define INQUOTES 1
+#define INHANDLE 2
+
+static NhlBoolean CheckValueSyntax
+(
+	PlotApp papp,
+	char	*res,
+	char	*value,
+	int	*bogus_pos
+)
+{
+	int state = BASIC;
+	int  arraylevel = 0;
+	int  parenlevel = 0;
+	NhlBoolean begin = False;
+	char *ch = value;
+	NhlBoolean bogus = False;
+	int bufpos = 0;
+/*
+ * Finds some basic syntax errors
+ * Also eliminates extra white space by copying the string w/o whitespace
+ * to the Buffer.
+ */
+	if (! UpdateBufSize(strlen(value)+1))
+		return True;
+	
+	*bogus_pos = 0;
+	while (*ch != '\0') {
+		switch (state) {
+		case INQUOTES:
+			switch (*ch) {
+			case '"':
+				state = BASIC;
+				break;
+			default:
+				break;
+			}
+			break;
+		case BASIC:
+			/* 
+			 * replace any amount of whitespace with 1 space
+			 */
+			if (isspace(*ch)) {
+				while(isspace(*ch))
+					ch++;
+				ch--;
+				*ch = ' ';
+				break;
+			}
+			switch (*ch) {
+			case '"':
+				state = INQUOTES;
+				break;
+			case '(':
+				if (*(ch+1) == '/')
+					arraylevel++;
+				else
+					parenlevel++;
+				break;
+			case ')':
+				if (*(ch-1) == '/')
+					arraylevel--;
+				else
+					parenlevel--;
+				break;
+			case '$':
+				state = INHANDLE;
+				begin = True;
+				break;
+			default:
+				break;
+			}
+			break;
+		case INHANDLE:
+			if (begin) {
+				if (! (isalpha(*ch) || *ch == '_')) {
+					bogus = True;
+				}
+				begin = False;
+				break;
+			}
+			if (*ch == '$') 
+				state = BASIC;
+			else if (! (isalnum(*ch) || *ch == '_')) {
+				bogus = True;
+			}
+			break;
+		}
+		if (parenlevel < 0 || arraylevel < 0)
+			bogus = True;
+		if (bogus)
+			break;
+		Buffer[bufpos++] = *ch;
+		ch++;
+	}
+	Buffer[bufpos] = '\0';
+	if (parenlevel > 0 || arraylevel > 0)
+		bogus = True;
+	if (state != BASIC)
+		bogus = True;
+
+	if (bogus) {
+		*bogus_pos = ch - value;
+		Buffer[*bogus_pos] = '\0';
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+	  " Resource %s syntax error; suspending parsing at: \n%s\n\tplot style is : %s\n\tplot style file is: %s/%s.res",
+			  res,Buffer,NrmQuarkToString(papp->qstyle_name),
+			  NrmQuarkToString(papp->qdir),
+			  NrmQuarkToString(papp->qname));
+	}
+	return bogus;
+}
+
 static void ParseAppObjRes
 (
 	PlotApp		papp,
@@ -394,7 +543,6 @@ static void ParseAppObjRes
 	int 		i,j;
 	char 		*obj_name = NrmQuarkToString(appobj->qbasename);
 	int 		len, toklen;
-	NrmQuark	*qappres;
 	AppObjRes 	objres;
 	int		update_func_len = strlen(NhlNndvUpdateFunc);
 
@@ -402,9 +550,8 @@ static void ParseAppObjRes
 	toklen = strlen(DYNRES_TOKEN);
 
 	for (i = 0; papp->qapp_res[i] != NrmNULLQUARK; i++) {
-		char buf[256];
 		char *res,*cp;
-		NrmQuark qobjres,qfake;
+		NrmQuark qobjres;
 		NhlString value,objresstr;
 
 		res = NrmQuarkToString(papp->qapp_res[i]);
@@ -424,17 +571,21 @@ static void ParseAppObjRes
 		NhlVAGetValues(papp->app_id,
 			       res,&value,
 			       NULL);
+		objres->bogus = CheckValueSyntax
+			(papp,res,value,&objres->bogus_pos);
 		objres->value = value;
-
+		strcpy(objres->value,Buffer);
 		objres->type = _NgRES_REGULAR;
 		objres->prof = NULL;
 		objres->symrefs = NULL;
 		if ((cp = strstr(objresstr,PROFILESTRING))) {
 			int reslen = cp - objresstr;
 			objres->type = _NgRES_PROFILE;
-			strncpy(buf,objresstr,reslen);
-			buf[reslen] = '\0';
-			qobjres = NrmStringToQuark(buf);
+			if (! UpdateBufSize(reslen))
+				return;
+			strncpy(Buffer,objresstr,reslen);
+			Buffer[reslen] = '\0';
+			qobjres = NrmStringToQuark(Buffer); /* overwritable */
 			objres->qres = qobjres;
 		}
 		else if (! strncmp(objresstr,
@@ -461,6 +612,8 @@ static void ParseAppObjRes
 #endif
 	}
 	for (objres = appobj->objres; objres; objres = objres->next) {
+		if (objres->bogus)
+			continue;
 		if (objres->type == _NgRES_PROFILE) {
 			AppObjRes 	refres;
 			for (refres = appobj->objres; refres; 
@@ -483,16 +636,18 @@ static AppResRefLoc GetAppRefLocs
 	NhlString	refname
 )
 {
-	int		i;
 	AppObject	appobj;
 	int		len = strlen(refname);
-	AppResRefLoc 	base_rloc = NULL,last_rloc = NULL;;
+	AppResRefLoc 	base_rloc = NULL,last_rloc = NULL;
 
 	for (appobj = papp->objects; appobj != NULL; appobj = appobj->next) {
 		AppObjRes res;
 		for (res = appobj->objres; res != NULL; res = res->next) {
 			AppResRefLoc rloc = NULL;
-			char *loc = strchr(res->value,'$');
+			char *loc;
+			if (res->bogus)
+				continue;
+			loc = strchr(res->value,'$');
 			while (loc) {
 				if (! strncmp(loc+1,refname,len) &&
 				    *(loc + len + 1) == '$') {
@@ -513,8 +668,13 @@ static AppResRefLoc GetAppRefLocs
 					loc = strchr(loc+len+2,'$');
 				}
 				else {
-					/* the '$'s come in pairs remember */
+					/*
+					 * end of this Handle
+					 */
 					loc = strchr(loc+1,'$');
+					/*
+					 * beginning of next Handle
+					 */
 					loc = strchr(loc+1,'$');
 				}
 			}
@@ -618,10 +778,9 @@ static void ParseAppDataRes
 	AppData		appdata
 )
 {
-	int 		i,j;
+	int 		i;
 	char 		*data_sym = NrmQuarkToString(appdata->qdataname);
 	int 		len, toklen, coord_toklen;
-	NrmQuark	*qappres;
 	AppDataRes 	datares;
 
 	len = strlen(data_sym);
@@ -629,7 +788,6 @@ static void ParseAppDataRes
 	coord_toklen = strlen(COORD_TOKEN);
 
 	for (i = 0; papp->qapp_res[i] != NrmNULLQUARK; i++) {
-		char buf[256];
 		char *res,*cp;
 		NrmQuark qdatares;
 		NhlString value,dataresstr;
@@ -679,7 +837,10 @@ static void ParseAppDataRes
 			datares->next = appdata->datares;
 			appdata->datares = datares;
 
+			datares->bogus = CheckValueSyntax
+				(papp,res,value,&datares->bogus_pos);
 			datares->value = value;
+			strcpy(datares->value,Buffer);
 			datares->is_coord = is_coord;
 			datares->coord_ix = coord_ix;
 			datares->symrefs = NULL;
@@ -732,7 +893,6 @@ static void RecordData
 	papp->data_count = data_count;
 	for (i = data_count - 1; i >= 0; i--) {
 		AppData    appdata;
-		AppResRefLoc dlocs;
 		char *str,*name,*tcp;
 		int  ndims;
 		
@@ -791,16 +951,21 @@ static NhlBoolean Readable
         struct stat statbuf;
 	NhlString funcfile = NrmQuarkToString(qfuncfile);
 	NhlString dir = NrmQuarkToString(qdir);
-	char buf[1024];
 
+	/*
+	 * include enough space for the load command, which is to follow,
+	 * avoiding an extra redundant check
+	 */
+	if (! UpdateBufSize(strlen(funcfile) + strlen(dir) + 20))
+		return False;
 
 	if (funcfile[0] == '/') { /* full path -- ignore the directory */
-		sprintf(buf,"%s",funcfile);
+		sprintf(Buffer,"%s",funcfile);
 	}
 	else {
-		sprintf(buf,"%s/%s",dir,funcfile);
+		sprintf(Buffer,"%s/%s",dir,funcfile);
 	}
-	if (stat(buf,&statbuf))
+	if (stat(Buffer,&statbuf))
 		return False;
 
 	if ((statbuf.st_mode & S_IROTH) ||
@@ -820,17 +985,16 @@ static void Load
 {
 	NhlString	funcfile = NrmQuarkToString(qfuncfile);
 	NhlString	dir = NrmQuarkToString(qdir);
-	char		buf[1024];
 	FuncFile	ffile;
 	
 	if (funcfile[0] == '/') {
-		sprintf(buf,"load \"%s\"\n",funcfile);
+		sprintf(Buffer,"load \"%s\"\n",funcfile);
 	}
 	else {
-		sprintf(buf,"load \"%s/%s\"\n",dir,funcfile);
+		sprintf(Buffer,"load \"%s/%s\"\n",dir,funcfile);
 	}
 
-	(void)NgNclSubmitLine(go->go.nclstate,buf,True);
+	(void)NgNclSubmitLine(go->go.nclstate,Buffer,True);
 
 	ffile = NhlMalloc(sizeof(FuncFileRec));
 	if (! ffile) {
@@ -857,7 +1021,6 @@ static void RecordAndLoadFunctions
 	int		i,j;
 	NhlString	func_dir_array;
 	NhlString	func_file_array;
-	char 		buf[256];
 	NhlString	*func_files = NULL,*func_dirs = NULL;
 	int		func_file_count = 0, func_dir_count = 0;
 
@@ -925,14 +1088,16 @@ static void RecordObjResRefs
 	AppObjRes res
 )
 {
-	char buf[256];
 	char *sp,*ep;
 	int  rlen;
 
-	strcpy(buf,res->value);
-	rlen = strlen(buf);
+	if (! UpdateBufSize(strlen(res->value + 1)))
+		return;
 
-	ep = buf;
+	strcpy(Buffer,res->value);
+	rlen = strlen(Buffer);
+
+	ep = Buffer;
 	while ((sp = strchr(ep,'$')) != NULL) {
 		NrmQuark	qref;
 		AppObject	appobj;
@@ -944,8 +1109,7 @@ static void RecordObjResRefs
 		if (! ep)
 			return;
 
-		if (ep < buf + rlen + 1) {
-			char *cp;
+		if (ep < Buffer + rlen + 1) {
 
 			switch (*(ep+1)) {
 			default:
@@ -986,7 +1150,7 @@ static void RecordObjResRefs
 				symref->sym.d = appdata;
 				symref->kind = _NgDATA_REF;
 				symref->rtype = rtype;
-				symref->offset = sp - buf;
+				symref->offset = sp - Buffer;
 				symref->count = ep - sp;
 				found = True;
 				break;
@@ -1009,7 +1173,7 @@ static void RecordObjResRefs
 				symref->sym.o = appobj;
 				symref->kind = _NgOBJ_REF;
 				symref->rtype = rtype;
-				symref->offset = sp - buf;
+				symref->offset = sp - Buffer;
 				symref->count  = ep - sp;
 				break;
 			}
@@ -1026,14 +1190,16 @@ static void RecordDataResRefs
 	AppDataRes res
 )
 {
-	char buf[256];
 	char *sp,*ep;
 	int  rlen;
 
-	strcpy(buf,res->value);
-	rlen = strlen(buf);
+	if (! UpdateBufSize(strlen(res->value + 1)))
+		return;
 
-	ep = buf;
+	strcpy(Buffer,res->value);
+	rlen = strlen(Buffer);
+
+	ep = Buffer;
 	while ((sp = strchr(ep,'$')) != NULL) {
 		NrmQuark qref;
 		AppObject appobj;
@@ -1045,7 +1211,7 @@ static void RecordDataResRefs
 		if (! sp)
 			return;
 
-		if (ep < buf + rlen + 1) {
+		if (ep < Buffer + rlen + 1) {
 			switch (*(ep+1)) {
 			default:
 				rtype = _NgREF_REGULAR;
@@ -1077,7 +1243,7 @@ static void RecordDataResRefs
 				symref->sym.d = appdata;
 				symref->kind = _NgDATA_REF;
 				symref->rtype = rtype;
-				symref->offset = sp - buf;
+				symref->offset = sp - Buffer;
 				symref->count = ep - sp;
 				found = True;
 				break;
@@ -1100,7 +1266,7 @@ static void RecordDataResRefs
 				symref->sym.o = appobj;
 				symref->kind = _NgOBJ_REF;
 				symref->rtype = rtype;
-				symref->offset = sp - buf;
+				symref->offset = sp - Buffer;
 				symref->count = ep - sp;
 				break;
 			}
@@ -1123,6 +1289,8 @@ static void RecordObjectAndDataReferences
 	for (appobj = papp->objects; appobj != NULL; appobj = appobj->next) {
 		AppObjRes res;
 		for (res = appobj->objres; res != NULL; res = res->next) {
+			if (res->bogus)
+				continue;
 			RecordObjResRefs(papp,res);
 		}
 		
@@ -1130,6 +1298,8 @@ static void RecordObjectAndDataReferences
 	for (appdata = papp->data; appdata != NULL; appdata = appdata->next) {
 		AppDataRes res;
 		for (res = appdata->datares; res != NULL; res = res->next) {
+			if (res->bogus)
+				continue;
 			RecordDataResRefs(papp,res);
 		}
 	}
@@ -1215,6 +1385,8 @@ static int ObjectComp
 			continue;
 		for (objres = appobj->objres; objres; objres = objres->next) {
 			AppResSymRef	symref;
+			if (objres->bogus)
+				continue;
 			for (symref = objres->symrefs; symref; 
 			     symref = symref->next) {
 				if (! symref->kind == _NgOBJ_REF)
@@ -1275,7 +1447,6 @@ static void SetUpObjDependencyList
 	AppObject appobj;
 	int obj_count = papp->obj_count;
 	int i;
-	int end = -1;
 
 	papp->qobj_deps = NhlMalloc(sizeof(NrmQuark) * (obj_count + 1));
 	papp->obj_classes = NhlMalloc(sizeof(NhlClass) * (obj_count + 1));
@@ -1290,29 +1461,6 @@ static void SetUpObjDependencyList
 	}
 	papp->qobj_deps[obj_count] = NrmNULLQUARK;
 
-#if 0
-	qsort(papp->qobj_deps,obj_count,sizeof(NrmQuark),ObjectComp);
-
-	while (end < obj_count) {
-		for (appobj = papp->objects; appobj; appobj = appobj->next) {
-			AppResRefLoc rloc;
-			NrmQuark     qlastname = NrmNULLQUARK;
-			if (! appobj->olocs)
-				continue;
-			for (rloc = appobj->olocs; rloc; rloc = rloc->next) {
-				if (rloc->obj->qbasename == 
-				    appobj->qbasename ||
-				    rloc->obj->qbasename == qlastname)
-					continue;
-				end = ReorderObjDependencies
-					(papp->qobj_deps,obj_count,
-					 appobj->qbasename,
-					 rloc->obj->qbasename);
-				qlastname = rloc->obj->qbasename;
-			}
-		}
-	}
-#endif
 	for (i = 0; i < obj_count; i++) {
 		for (appobj = papp->objects; appobj; appobj = appobj->next) {
 			if (papp->qobj_deps[i] == appobj->qbasename) {
@@ -1340,7 +1488,6 @@ PreProcessPlotStyleFile
 	NhlString pstyle
 )
 {
-	char buf[1024];
         struct stat statbuf;
         FILE *fpin, *fpout;
 	char *cp;
@@ -1348,18 +1495,20 @@ PreProcessPlotStyleFile
 	int i,pid;
 
 	static char outfilehead[] = "*appResources : (/ \\\n\t";
-
-	sprintf(buf,"%s/%s.res",dir,pstyle);
+	
+	if (! UpdateBufSize(strlen(dir)+strlen(pstyle)+10))
+		return NULL;
+	sprintf(Buffer,"%s/%s.res",dir,pstyle);
 /*
  * if no res file, just return
  */
-	if (stat(buf,&statbuf))
+	if (stat(Buffer,&statbuf))
 		return NULL;
 
-	if (! (fpin = fopen(buf,"r"))) {
+	if (! (fpin = fopen(Buffer,"r"))) {
 		NHLPERROR((NhlFATAL,
 			   NhlEUNKNOWN,"Error opening resource file: %s",
-			   buf));
+			   Buffer));
 		return NULL;
 	}
 /*
@@ -1369,11 +1518,13 @@ PreProcessPlotStyleFile
 	
 	pid = getpid();
 	sprintf(priv_pstyle_buf,"_Ng%s%d",pstyle,pid);
-	sprintf(buf,"%s/%s.res",priv_dir,priv_pstyle_buf);
-	if (! (fpout = fopen(buf,"w"))) {
+	if (! UpdateBufSize(strlen(priv_pstyle_buf)+strlen(priv_dir)+10))
+		return NULL;
+	sprintf(Buffer,"%s/%s.res",priv_dir,priv_pstyle_buf);
+	if (! (fpout = fopen(Buffer,"w"))) {
 		NHLPERROR((NhlFATAL,
 			   NhlEUNKNOWN,"Error opening resource file: %s",
-			   buf));
+			   Buffer));
 		fclose(fpin);
 		return NULL;
 	}
@@ -1391,7 +1542,7 @@ PreProcessPlotStyleFile
 	}
 	
 
-	while (cp = fgets(buf,255,fpin)) {
+	while (cp = fgets(Buffer,255,fpin)) {
 		char *acp,*ccp,*scp,*dcp;
 		while (isspace(*cp))
 			cp++;
@@ -1420,7 +1571,7 @@ PreProcessPlotStyleFile
 	fputs(" /)\n\n",fpout);
 
 	rewind(fpin);
-	while (cp = fgets(buf,255,fpin)) {
+	while (cp = fgets(Buffer,255,fpin)) {
 		fputs(cp,fpout);
 	}
 	fclose(fpin);
@@ -1442,7 +1593,6 @@ static int CreatePlotApp
 	NhlString	plotstyledir,plotstyle,priv_plotstyle;
 	const char 	*tmpdir;
 	NgResData 	app_res_data;
-        NgSetResProc	setresproc[2];
         NhlPointer	appresdata;
 	int		app_id;
 /*
@@ -1564,7 +1714,6 @@ void NgDeletePlotAppRef
 {
 	PlotApp	*papp = &PlotAppList;
 	PlotApp	dpapp = NULL;
-	NrmQuark	qname;
 
 	while (*papp) {
 		if ((*papp)->qname == qplotstyle) {
@@ -1641,7 +1790,6 @@ int NgNewPlotAppRef
 	NrmQuark	qplotstyle,qplotstyledir,qstylename;
 	PlotApp 	papp = PlotAppList;
 	int 		app_id;
-	NrmQuark	qname;
 	NhlBoolean	found = False;
 	NgGO		go = (NgGO)_NhlGetLayer(go_id);
 	NhlString	priv_style_name;
@@ -1692,6 +1840,13 @@ int NgNewPlotAppRef
 		QAppResList[qapp_rescount++] = QmpDataLimitObject;
 		QAppResList[qapp_rescount++] = QndvUpdateFunc;
 		QAppResList[qapp_rescount] = NrmNULLQUARK;
+
+		BufSize = BUFINC;
+		Buffer = NhlMalloc(BufSize);
+		if (! Buffer) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return (int) NhlFATAL;
+		}
 	}
 	while (papp) {
 		if (papp->qname == qplotstyle) {
@@ -1784,7 +1939,6 @@ static void EditDataItem
 	
 )
 {
-	int i;
 	AppResProfile rprof = res->prof;	
 
 	if (! rprof)
@@ -1858,6 +2012,8 @@ static void MergeObjResDataItems
 
 		if (res->type == _NgRES_PROFILE)
 			continue;
+		if (res->bogus)
+			continue;
 
 		set_only = True;
 		if (res->type == _NgRES_UPDATE_FUNC) {
@@ -1915,7 +2071,6 @@ NgDataProfile NgNewPlotAppDataProfile
 )
 {
 	PlotApp	papp = PlotAppList;
-	NrmQuark	qname;
 	AppObject	obj;
 	NgDataProfile	dprof = NULL;
 	NgGO		go = (NgGO) _NhlGetLayer(go_id);
@@ -1972,12 +2127,15 @@ static NhlBoolean PerlMatch
 )
 {
 	char cmd[] = "echo %s | perl  -e 'while (<>){exit 1 if %s; exit 0}'";
-	char buf[512];
 	int ret;
 
-	sprintf(buf,cmd,match_text,pattern);
+	if (! UpdateBufSize
+	    (strlen(cmd) + strlen(match_text) +strlen(pattern) +1))
+		return False;
+
+	sprintf(Buffer,cmd,match_text,pattern);
 	errno = 0;
-	ret = system(buf);
+	ret = system(Buffer);
 #if 0
 	perror(match_text);
 	printf("status %d %d\n",WIFEXITED(ret), WEXITSTATUS(ret));
@@ -2048,10 +2206,28 @@ static NhlBoolean AlreadyAssigned
 }
 
 #define MIN_ELEMENTS 3
+static NhlBoolean HasMinElementCount
+(
+	NgVarData vdata,
+	int	  dim_ix
+)
+{
+	if (vdata->set_state <= _NgDEFAULT_SHAPE) {
+		if (vdata->size[dim_ix] >= MIN_ELEMENTS)
+			return True;
+	}
+	if (abs((vdata->finish[dim_ix] - vdata->start[dim_ix]) /
+		vdata->stride[dim_ix]) + 1 >= MIN_ELEMENTS) {
+		return True;
+	}
+	return False;
+}
+
 static NhlBoolean MatchDimensions
 (
 	AppData	  appdata,
-	int	  dcount
+	int	  dcount,
+	NgVarData vdata
 )
 {
 	AppDataRes	datares;
@@ -2083,6 +2259,8 @@ static NhlBoolean MatchDimensions
 				if (! matched[j] && 
 				    vinfo->dim_info[j].dim_quark > 
 				    NrmNULLQUARK) {
+					if (!HasMinElementCount(vdata,j))
+						continue;
 					if (PerlMatch
 					    (patterns[i],NrmQuarkToString
 					     (vinfo->dim_info[j].dim_quark))) {
@@ -2099,7 +2277,6 @@ static NhlBoolean MatchDimensions
 	for (i = 0; i < appdata->ndims; i++) {
 		if (! dt->qdims[i] > NrmNULLQUARK) {
 			if (patterns[i])
-
 				return False;
 			for (j = vinfo->n_dims - 1; j >=0; j--) {
 				if (! matched[j]) {
@@ -2166,6 +2343,21 @@ static NhlBoolean GetInfo
 	}
 	return True;
 }
+static void ScratchVar
+(
+	DataTable	dt
+)
+{
+	dt->qfile = NrmNULLQUARK;
+	dt->qvar = NrmNULLQUARK;
+	if (dt->free_dl) {
+		 NclFreeDataList(dt->dl);
+		 dt->dl = NULL;
+		 dt->free_dl = False;
+	}
+	return;
+}
+
 static NgVarData MatchVarData
 (
 	PlotApp		papp,
@@ -2175,12 +2367,7 @@ static NgVarData MatchVarData
 	NgVarData	*vdata
 )
 {
-	AppDataRes	datares;
-	NhlString	*patterns = NULL;
-	int		pat_count = 0;
-	_NhlConvertContext context = NULL;
-	NgVarData	vd;
-	int		i,j;
+	int		i;
 	DataTable	dt = &Data_Table[dcount];
 
 	if (! (count && vdata))
@@ -2200,15 +2387,21 @@ static NgVarData MatchVarData
 		dt->qfile = vdata[i]->qfile;
 		dt->qvar = vdata[i]->qvar;
 		if (! GetInfo(dt,vdata[i])) {
-			dt->qvar = NrmNULLQUARK;
-			return False;
+			ScratchVar(dt);
+			continue;
 		}
-		if (! MatchDimensions(appdata,dcount))
+		if (! MatchDimensions(appdata,dcount,vdata[i])) {
+			ScratchVar(dt);
 			continue;
-		if (! MatchUnits(appdata,dcount))
+		}
+		if (! MatchUnits(appdata,dcount)) {
+			ScratchVar(dt);
 			continue;
-		if (! MatchAttributes(appdata,dcount))
+		}
+		if (! MatchAttributes(appdata,dcount)) {
+			ScratchVar(dt);
 			continue;
+		}
 		return vdata[i];
 	}
 	return NULL;
@@ -2297,7 +2490,7 @@ static NhlBoolean MatchCoordAttr
 	return True;
 }
 
-static void WriteCoords
+static NhlBoolean WriteCoords
 (
 	char 		*buf,
 	NclApiVarInfoRec *vinfo,
@@ -2308,6 +2501,9 @@ static void WriteCoords
 	int i,coord_ix = dt->appdata->ndims - 1;
 	char *cp;
 		
+	if (!(vd && vd->start && vd->finish && vd->stride) ||
+	    vd->ndims < vinfo->n_dims)
+		return False;
 	sprintf(buf,"(");
 	for (i = 0; i < vinfo->n_dims; i++) {
 		cp = &buf[strlen(buf)];
@@ -2329,10 +2525,10 @@ static void WriteCoords
 		}
 	}
 	buf[strlen(buf)-1] = ')';
-	return;
+	return True;
 }
 
-static void WriteReorderedCoords
+static NhlBoolean WriteReorderedCoords
 (
 	char 		*buf,
 	NclApiVarInfoRec *vinfo,
@@ -2344,6 +2540,10 @@ static void WriteReorderedCoords
 	char *cp;
 	int dim_ix;
 	NrmQuark qdim;
+
+	if (!(vd && vd->start && vd->finish && vd->stride) ||
+	    vd->ndims < vinfo->n_dims)
+		return False;
 /*
  * this takes two passes through the dimensions:
  * unreferenced dimensions will be the slow ones and have only one element.
@@ -2365,7 +2565,7 @@ static void WriteReorderedCoords
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 		   "Variable %s unnamed dimension: reordering not possible",
 				   NrmQuarkToString(dt->qvar)));
-			return;
+			return False;
 		}
 		 /* one element only is accepted */
 
@@ -2390,7 +2590,7 @@ static void WriteReorderedCoords
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 		   "Variable %s unnamed dimension: reordering not possible",
 				   NrmQuarkToString(dt->qvar)));
-			return;
+			return False;
 		}
  		if (vd->start[ix] == 0 &&
 		     vd->finish[ix] == vinfo->dim_info[ix].dim_size - 1 &&
@@ -2404,19 +2604,18 @@ static void WriteReorderedCoords
 		dim_ix++;
 	}
 	buf[strlen(buf)-1] = ')';
-	return;
+	return True;
 }
 
-static void ReplaceDataSymRef
+static NhlBoolean ReplaceDataSymRef
 (
 	PlotApp		papp,
 	AppObjRes	res,
 	int		index,
-	char		*buf,
 	AppResSymRef	sref
 )
 {
-	char		tbuf[256];
+	char		tbuf[512];
 	DataTable	dt = &Data_Table[index];
 	int		coord_ix,n_to_move;
 	char		*cp,*sp,*ep;
@@ -2424,14 +2623,15 @@ static void ReplaceDataSymRef
 	int 		i;
 	NrmQuark	qdim;
 	NgVarData	vd;
+	NhlBoolean	status = False;
 
 	if (! dt->qvar) /* this data is not specified yet */
-		return;
+		return False;
 
 	if (! dt->dl) {
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			   "Internal error: no var info"));
-		return;
+		return False;
 	}
 		
 	vinfo = dt->dl->u.var;
@@ -2442,8 +2642,8 @@ static void ReplaceDataSymRef
 		 * attribute of this var
 		 * the attribute starts beyond the char count by 2
 		 */
-		cp = &buf[sref->offset + sref->count + 2];
-		strncpy(tbuf,cp,255);
+		cp = &Buffer[sref->offset + sref->count + 2];
+		strncpy(tbuf,cp,512);
 		cp = tbuf;
 		if (! (isalpha(*cp) || *cp == '_')) {
 			i = vinfo->n_atts;
@@ -2462,32 +2662,33 @@ static void ReplaceDataSymRef
 		}
 		if (i == vinfo->n_atts) {
 			/* replace with empty string */
-			sp = &buf[sref->offset+sref->count + strlen(tbuf)+2];
+			sp = &Buffer[sref->offset+sref->count+strlen(tbuf)+2];
 			sprintf(tbuf,"\"\"");
 		}
 		else if (dt->qfile) {
 			sprintf(tbuf,"%s->%s",
 				NrmQuarkToString(dt->qfile),
 				NrmQuarkToString(dt->qvar));
-			sp = &buf[sref->offset + sref->count + 1];
+			sp = &Buffer[sref->offset + sref->count + 1];
 		}
 		else {
 			sprintf(tbuf,"%s",
 				NrmQuarkToString(dt->qvar));
-			sp = &buf[sref->offset + sref->count + 1];
+			sp = &Buffer[sref->offset + sref->count + 1];
 		}
+		status = True;
 		break;
 	case _NgREF_COORD:
 		/*
 		 * the coordinate index is beyond the char count by 2
 		 */
-		cp = &buf[sref->offset + sref->count + 2];
+		cp = &Buffer[sref->offset + sref->count + 2];
 
 		coord_ix = strtol(cp,&sp,10);
 		if (! (sp > cp)) {
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			"Syntax error in res file coord index specification"));
-			return;
+			return False;
 		}
 		/*
 		 * the DataTable is stored in fast to slow order
@@ -2501,12 +2702,13 @@ static void ReplaceDataSymRef
 		if (coord_ix < 0 || coord_ix > 4) {
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			   "Invalid coord index in res file specification"));
-			return;
+			return False;
 		}
 		qdim = dt->qdims[coord_ix];
 		
 		/* check for coordinate attribute */
 		if (*sp == '@') { 
+			status = True;
 			if (!(qdim > NrmNULLQUARK && 
 			      MatchCoordAttr(dt->qfile,dt->qvar,
 					     qdim,sp+1,&sp))) {
@@ -2547,6 +2749,7 @@ static void ReplaceDataSymRef
 					vd->start[i],vd->finish[i],
 					vd->stride[i]);
 			}
+			status = True;
 		}
 		else {
 			tbuf[0] = '\0';
@@ -2563,41 +2766,47 @@ static void ReplaceDataSymRef
 				NrmQuarkToString(dt->qvar));
 		}
 		if (! dt->reorder) {
- 			WriteCoords(&tbuf[strlen(tbuf)],vinfo,dt,vd);
+ 			if (! WriteCoords(&tbuf[strlen(tbuf)],vinfo,dt,vd))
+				break;
 		}
 		else {
- 			WriteReorderedCoords(&tbuf[strlen(tbuf)],vinfo,dt,vd);
+			if (! WriteReorderedCoords
+			    (&tbuf[strlen(tbuf)],vinfo,dt,vd))
+				break;
 		}
-		sp = &buf[sref->offset + sref->count + 1];
+		sp = &Buffer[sref->offset + sref->count + 1];
+		status = True;
 		break;
 		
 	default:
 		break;
 	}
 
-	ep = &buf[sref->offset + strlen(tbuf)];
+	if (! UpdateBufSize(strlen(Buffer) + strlen(tbuf)+4))
+		return False;
+
+	ep = &Buffer[sref->offset + strlen(tbuf)];
 	n_to_move = strlen(sp);
 	memmove(ep,sp,n_to_move);
 	*(ep+n_to_move) = '\0';
 
-	strncpy(&buf[sref->offset],tbuf,strlen(tbuf));
+	strncpy(&Buffer[sref->offset],tbuf,strlen(tbuf));
 
-	return;
+	return status;
 }
 
-static void ReplaceObjSymRef
+static NhlBoolean ReplaceObjSymRef
 (
 	PlotApp		papp,
 	AppObjRes	res,
 	AppObject 	appobj,
-	char		*buf,
 	AppResSymRef	sref,
 	NhlString	plotname
 )
 {
-	char		tbuf[256];
+	char		tbuf[512];
 	int		i,ix = -1;
-	char		*cp,*sp,*ep;
+	char		*sp,*ep;
 	int		n_to_move;
 
 	/* 
@@ -2611,36 +2820,37 @@ static void ReplaceObjSymRef
 	}
 	if (ix == -1) {
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
-		return;
+		return False;
 	}
 	sprintf(tbuf,"%s_%s",plotname,NrmQuarkToString(papp->qobj_deps[ix]));
 
-	sp = &buf[sref->offset + sref->count + 1];
-	ep = &buf[sref->offset + strlen(tbuf)];
+	if (! UpdateBufSize(strlen(Buffer) + strlen(tbuf)+4))
+		return False;
+	sp = &Buffer[sref->offset + sref->count + 1];
+	ep = &Buffer[sref->offset + strlen(tbuf)];
 	n_to_move = strlen(sp);
 	memmove(ep,sp,n_to_move);
 	*(ep+n_to_move) = '\0';
 
-	strncpy(&buf[sref->offset],tbuf,strlen(tbuf));
+	
+	strncpy(&Buffer[sref->offset],tbuf,strlen(tbuf));
 
-	return;
+	return True;
 }
-static void ReplaceSymRef
+static NhlBoolean ReplaceSymRef
 (
 	PlotApp		papp,
 	AppObjRes	res,
-	char		*buf,
 	AppResSymRef	sref,
 	NhlString	plotname
 )
 {
-	char tbuf[256];
 	int  i;
 
 	if (sref->kind == _NgDATA_REF) {
 		for (i = 0; i < papp->data_count; i++) {
 			if (sref->sym.d == Data_Table[i].appdata) {
-				ReplaceDataSymRef(papp,res,i,buf,sref);
+				return ReplaceDataSymRef(papp,res,i,sref);
 			}
 		}
 	}
@@ -2648,13 +2858,13 @@ static void ReplaceSymRef
 		AppObject appobj;
 		for (appobj = papp->objects; appobj; appobj = appobj->next) {
 			if (sref->sym.o == appobj) {
-				ReplaceObjSymRef(papp,res,
-						 appobj,buf,sref,plotname);
+				return ReplaceObjSymRef
+					(papp,res,appobj,sref,plotname);
 			}
 		}
 	}
 	
-	return;
+	return False;
 }
 
 static void SubstituteVarSyms
@@ -2666,21 +2876,37 @@ static void SubstituteVarSyms
 )
 {
 	int i;
+	NhlBoolean status;
 
 	for (i = 0; i < dprof->n_dataitems; i++) {
-		char buf[512];
 		NgDataItem ditem = dprof->ditems[i];
 		AppObjRes res = (AppObjRes)ditem->appres_info;
 		AppResSymRef sref;
 
-		if (! res)
+/*
+ * Eventually we will try to figure out whether user expressions contain
+ * references to the plot app objects or data, but for now just leave them
+ * alone.
+ */
+		if (! res || res->bogus ||
+		    ditem->vdata->set_state == _NgBOGUS_EXPRESSION ||
+		    ditem->vdata->set_state == _NgUSER_EXPRESSION)
 			continue;
-		strcpy(buf,res->value);
+
+		if (! UpdateBufSize(strlen(res->value)+1))
+			return;
+		strcpy(Buffer,res->value);
 
 		for (sref = res->symrefs; sref; sref = sref->next) {
-			ReplaceSymRef(papp,res,buf,sref,plotname);
+			status = ReplaceSymRef(papp,res,sref,plotname);
+			if (! status)
+				break;
 		}
-		NgSetExpressionVarData(papp->go_id,ditem->vdata,buf,False);
+		if (status) {
+			NgSetExpressionVarData
+				(papp->go_id,
+				 ditem->vdata,Buffer,_NgNOEVAL,False);
+		}
 	}
 		
 	return;
@@ -2729,7 +2955,6 @@ NhlBoolean NgPlotAppDataUsable
 	PlotApp	papp = PlotAppList;
 	NgGO		go = (NgGO) _NhlGetLayer(go_id);
 	AppData		data;
-	int		dcount;
 	
 
 	if (! go)
@@ -2751,6 +2976,14 @@ NhlBoolean NgPlotAppDataUsable
  * whatever other requirements come up.
  */
 	for (data = papp->data; data; data = data->next) {
+		/*
+		 * if the var has been shaped then its current rank 
+		 * must meet dimensionality requirements. Otherwise,
+		 * any of its dimensions can be used to meet the requirements.
+		 */
+		if (vdata->set_state == _NgSHAPED_VAR &&
+		    data->ndims <= vdata->rank)
+			return True;
 		if (data->ndims <= vdata->ndims)
 			return True;
 	}
@@ -2804,9 +3037,6 @@ NhlErrorTypes NgUpdatePlotAppDataProfile
 {
 	PlotApp	papp = PlotAppList;
 	NgGO		go = (NgGO) _NhlGetLayer(go_id);
-	AppData		data;
-	int		dcount;
-	NgPlotData 	plotdata;
 
 	if (! go)
 		return NhlFATAL;
@@ -2998,7 +3228,9 @@ static NhlErrorTypes HandleOverlayRes
 		/* not handled yet */
 		return NhlNOERROR;
 	}
-	if (ditem->vdata->set_state != _NgEXPRESSION)
+	if (! ((ditem->vdata->set_state == _NgEXPRESSION ||
+	       ditem->vdata->set_state == _NgUSER_EXPRESSION) &&
+	       ditem->vdata->expr_val))
 		return NhlNOERROR;
 
 	if (! go)
@@ -3036,9 +3268,7 @@ static NhlErrorTypes HandleDataLimitObjectRes
 	NhlBoolean	preview
 )
 {
-	NrmQuark		qobj = ditem->qhlu_name;
 	int			i;
-	char			ncl_name[256];
 	NgGO			go = (NgGO)_NhlGetLayer(papp->go_id);
 	float			xmin,ymin,xmax,ymax;
 	char			buf[32];
@@ -3058,13 +3288,13 @@ static NhlErrorTypes HandleDataLimitObjectRes
 		/* not handled yet */
 		return NhlNOERROR;
 	}
-	if (ditem->vdata->set_state != _NgEXPRESSION)
-		return NhlNOERROR;
 
 	if (! go)
 		return NhlFATAL;
 
-	if (! (vdata->set_state == _NgEXPRESSION && vdata->expr_val))
+	if (! ((vdata->set_state == _NgEXPRESSION ||
+		vdata->set_state == _NgUSER_EXPRESSION) &&
+	       vdata->expr_val))
 		return NhlFATAL;
 
 	hlu_id = NgNclGetHluObjId(go->go.nclstate,vdata->expr_val,&count,
@@ -3130,7 +3360,6 @@ extern NhlErrorTypes NgHandleSyntheticResource
 {
 	PlotApp		papp = PlotAppList;
 	NgDataItem 	ditem = dprof->ditems[item_ix];
-	NrmQuark   	qobj = dprof->qobjects[obj_ix];
 	NrmQuark   	qres = ditem->resq;
 
 	while (papp) {

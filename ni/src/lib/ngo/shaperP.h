@@ -1,5 +1,5 @@
 /*
- *      $Id: shaperP.h,v 1.4 1999-08-28 00:18:45 dbrown Exp $
+ *      $Id: shaperP.h,v 1.5 1999-09-11 01:06:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -65,7 +65,6 @@ typedef struct _NgShaperRec {
 	Widget		all_selected_tgl;
 	Widget		indexes_tgl;
 	Widget		synchro_step_tgl;
-	NhlBoolean	ignore_synchro_step_cb;
 } NgShaperRec;
 
 #endif	/* _NX_SHAPERP_H */

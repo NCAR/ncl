@@ -1,5 +1,5 @@
 /*
- *      $Id: colormap.c,v 1.5 1999-07-30 03:20:47 dbrown Exp $
+ *      $Id: colormap.c,v 1.6 1999-09-11 01:06:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -126,12 +126,8 @@ ColorMapInitialize
 )
 {
 	char			func[] = "ColorMapInitialize";
-	NgColorMap		cm = (NgColorMap)new;
 	NgColorMapPart		*np = &((NgColorMap)new)->colormap;
-	NgColorMapPart		*rp = &((NgColorMap)req)->colormap;
-	int			n,i;
-	NhlErrorTypes		ret=NhlNOERROR;
-	float			red,green,blue;
+	int			i;
 	XColor			xcol;
 
 	if(!NhlIsClass(np->work,NhlworkstationClass)){
@@ -240,7 +236,6 @@ SetCurrent
 {
 	NgColorMapPart	*cp = &cm->colormap;
 	int		indx = cp->sel_indx;
-	XColor		xcol;
 	float		red,green,blue;
 	char		buffer[10];
 
@@ -471,7 +466,6 @@ ResetColCB
 	NgColorMap	cm = (NgColorMap)udata;
 	NgColorMapPart	*cp = &cm->colormap;
 	float		f;
-	XColor		xcol;
 	int		i = cp->sel_indx;
 
 
@@ -662,7 +656,6 @@ DragSizeCB
 	XtPointer	cdata
 )
 {
-	char			func[] = "DragSizeCB";
 	NgColorMap		cm = (NgColorMap)udata;
 	XmScaleCallbackStruct	*cbs = (XmScaleCallbackStruct *)cdata;
 
@@ -686,9 +679,8 @@ SetWorkstationCmap
 {
 	char		func[]="SetWorkstationCmap";
 	NgColorMapPart	*cp = &cm->colormap;
-	int		i,min,max,limit,num_chg;
+	int		i,min,max,num_chg;
 	int		chgs[NhlwkMAX_COLORS];
-	NhlBoolean	fullcmap = False;
 	char		buffer[NCL_MAX_STRING];
 	char		wkbuff[NCL_MAX_STRING];
 	char		*wkname;
@@ -978,16 +970,16 @@ ColorMapCreateWin
 	char		func[]="ColorMapCreateWin";
 	NgColorMapPart	*np = &((NgColorMap)go)->colormap;
 
-	Widget		ok,apply,cancel,help,bottom,cmapdpy;
+	Widget		ok,apply,cancel,bottom,cmapdpy;
 	Widget		mbar,pmenu,w,mega;
 	Widget		cframe,cform,clabel,csize;
 	Widget		curframe,curform;
-	Widget		indxl,indxt,redt,redl,greent,greenl,bluet,bluel;
+	Widget		indxt,redt,greent,bluet;
 	Widget		eframe,eform,sform,elabel;
 	Widget		rsframe,gsframe,bsframe;
-	Widget		cdefl,rsform,gsform,bsform,bscale,gscale,rscale;
+	Widget		rsform,gsform,bsform,bscale,gscale,rscale;
 	Widget		bscalel,gscalel,rscalel;
-	int		i,pmenu_count;
+	int		i;
 	NhlString	*pname;
 	XmString	*xm_pname;
 	int		num_pname;
@@ -1100,7 +1092,7 @@ ColorMapCreateWin
 	XtAddCallback(cancel,XmNactivateCallback,_NgGOPopdownCB,
 							(XtPointer)go->base.id);
 
-	help = XtVaCreateManagedWidget("help",xmPushButtonGadgetClass,
+	XtVaCreateManagedWidget("help",xmPushButtonGadgetClass,
 								go->go.manager,
 		XmNsensitive,	False,
 		NULL);
@@ -1122,7 +1114,7 @@ ColorMapCreateWin
 		NULL);
 	np->indxt = indxt;
 
-	indxl = XtVaCreateManagedWidget("indxl",xmLabelGadgetClass,curform,
+	XtVaCreateManagedWidget("indxl",xmLabelGadgetClass,curform,
 		XmNtopWidget,		indxt,
 		XmNrightWidget,		indxt,
 		NULL);
@@ -1131,7 +1123,7 @@ ColorMapCreateWin
 		NULL);
 	np->redt = redt;
 
-	redl = XtVaCreateManagedWidget("redl",xmLabelGadgetClass,curform,
+	XtVaCreateManagedWidget("redl",xmLabelGadgetClass,curform,
 		XmNrightWidget,		redt,
 		XmNtopWidget,		redt,
 		NULL);
@@ -1141,7 +1133,7 @@ ColorMapCreateWin
 		NULL);
 	np->greent = greent;
 
-	greenl = XtVaCreateManagedWidget("greenl",xmLabelGadgetClass,curform,
+	XtVaCreateManagedWidget("greenl",xmLabelGadgetClass,curform,
 		XmNrightWidget,		greent,
 		XmNtopWidget,		greent,
 		NULL);
@@ -1150,7 +1142,7 @@ ColorMapCreateWin
 		NULL);
 	np->bluet = bluet;
 
-	bluel = XtVaCreateManagedWidget("bluel",xmLabelGadgetClass,curform,
+	XtVaCreateManagedWidget("bluel",xmLabelGadgetClass,curform,
 		XmNrightWidget,		bluet,
 		XmNtopWidget,		bluet,
 		NULL);
@@ -1161,7 +1153,7 @@ ColorMapCreateWin
 		NULL);
 	XtAddCallback(np->cur_def,XmNactivateCallback,ResetColCB,go);
 
-	cdefl = XtVaCreateManagedWidget("cdefl",xmLabelGadgetClass,curform,
+	XtVaCreateManagedWidget("cdefl",xmLabelGadgetClass,curform,
 		XmNbottomWidget,	bluet,
 		XmNrightWidget,		np->cur_def,
 		XmNtopWidget,		np->cur_def,
@@ -1276,7 +1268,6 @@ ColorMapCreateWinHook
 	NgGO	go
 )
 {
-	char		func[]="ColorMapCreateWinHook";
 	NgColorMapPart	*np = &((NgColorMap)go)->colormap;
 	XGCValues	gcvalues;
 

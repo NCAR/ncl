@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.29 1999-07-30 03:20:44 dbrown Exp $
+ *      $Id: browse.c,v 1.30 1999-09-11 01:05:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -164,7 +164,6 @@ BrowseInitialize
 	char			func[] = "BrowseInitialize";
 	NgBrowse		browse = (NgBrowse)new;
 	NgBrowsePart		*np = &((NgBrowse)new)->browse;
-	NgBrowsePart		*rp = &((NgBrowse)req)->browse;
 
 	np->nsid = NhlDEFAULT_APP;
 	NhlVAGetValues(browse->go.appmgr,
@@ -187,12 +186,6 @@ BrowseDestroy
 	NhlLayer	l
 )
 {
-	NgBrowse	browse = (NgBrowse)l;
-	NgBrowsePart	*np = &((NgBrowse)l)->browse;
-
-#if 0        
-	NgAppRemoveGO(browse->go.appmgr,l->base.id);
-#endif
 	return NhlNOERROR;
 }
 
@@ -511,12 +504,7 @@ static void ActiveTabCB
 {
         brPane		*pane = (brPane *)udata;
 	NgGO		go = pane->go;
-	NgBrowse	browse = (NgBrowse)go;
-	NgBrowsePart	*np = &browse->browse;
-        brPaneControl	*pcp = &np->pane_ctrl;
-        brPage		*page,*oldpage = NULL;
-        int		i;
-        char		*string;
+        brPage		*page;
         
         XmLFolderCallbackStruct *cbs = (XmLFolderCallbackStruct *)cb_data;
 
@@ -532,8 +520,6 @@ static void ActiveTabCB
                 return;
 	}
         page = XmLArrayGet(pane->pagelist,cbs->pos);
-        if (pane->active_page)
-                oldpage = XmLArrayGet(pane->pagelist,pane->active_pos);
 
         if (pane->active_page && pane->active_page != page)
                 NgReleasePageHtmlViews(go->base.id,pane->active_page->id);
@@ -575,7 +561,6 @@ TabFocusEH
         brPaneControl	*pcp = &np->pane_ctrl;
         brPage		*page;
         int		pos;
-        char		*string;
         
 
 	switch (event->type) {
@@ -601,9 +586,8 @@ TabFocusEH
                 return;
 	}
 
-        string = PageString(pane,page,False);
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
-        fprintf(stderr,"focus: %s tab #%d\n",string,pos);
+        fprintf(stderr,"focus: %s tab #%d\n",PageString(pane,page,False),pos);
 #endif
 
         pcp->focus_pane = pane;
@@ -619,8 +603,6 @@ CreateFolder
         brPane	 	*pane
 )
 {
-        WidgetList	children;
-        int		i,num_children;
 #if 0
 	int		value,size,inc,page_inc,min,max;
 	char *name;
@@ -787,8 +769,6 @@ InitPane
         brPane	 	*pane
 )
 {
-        XtActionList actions;
-        Cardinal num_actions;
 	int n;
 	Arg args[2];
         
@@ -849,7 +829,6 @@ MapFirstPaneEH
 )
 {
 	brPane		*pane = (brPane *) udata;
-	Dimension	height;
 
 	if(event->type != MapNotify)
 		return;
@@ -949,7 +928,6 @@ RemovePane
 {
 	NgBrowse	browse = (NgBrowse)go;
 	NgBrowsePart	*np = &browse->browse;
-        NhlString	e_text;
         brPaneControl	*pcp = &np->pane_ctrl;
         brPane		*pane;
         int		i;
@@ -1061,10 +1039,8 @@ NewTab
         brPane		*pane
 )
 {
-	NgBrowse		browse = (NgBrowse)go;
-	NgBrowsePart		*np = &browse->browse;
         NhlString		e_text;
-        brTab			*tp,*tlp;
+        brTab			*tp;
         int			pos = 0;
 
 	if (!(tp = NhlMalloc(sizeof(brTab)))) {
@@ -1108,16 +1084,11 @@ UpdateTabs
         TabUpdateMode	mode
 )
 {
-	NgBrowse		browse = (NgBrowse)go;
-	NgBrowsePart		*np = &browse->browse;
-        brPaneControl		*pcp = &np->pane_ctrl;
-        NhlString		e_text;
 	char			*name;
 	XmString		xmname;
         brPage			*page;
         NrmQuark		qfile = NrmNULLQUARK;
-        int			count = 0;
-        Dimension		x,width,tab_x,tab_width,form_width;
+        Dimension		tab_x,tab_width;
         brTab			*tab;
         int			i;
 
@@ -1159,7 +1130,6 @@ UpdateTabs
         }
         
         for (i = 0; i < pane->pagecount; i++) {
-		NhlBoolean abbrev;
                 tab = XmLArrayGet(pane->tablist,i);
                 page = XmLArrayGet(pane->pagelist,i);
                 
@@ -1324,7 +1294,6 @@ DeleteVarPage
 	brPage	*page
 )
 {
-        NrmQuark	qvar,qfile;
 	NgGO		go;
 
 	go = (NgGO) page->go;
@@ -1473,11 +1442,9 @@ static brPage *AddPage
         )
 {
 	NgBrowse	browse = (NgBrowse)go;
-	NgBrowsePart	*np = &browse->browse;
         char		*e_text;
         brPage		*page;
         int		pos;
-        Dimension	tab_height;
         Dimension	w,h;
 	NgPageSaveState ps_state = NULL;
       
@@ -1599,7 +1566,6 @@ static void DeletePage(
         brPage		*page
         )
 {
-        int i;
         
         if (pane->active_page == page)
                 pane->active_page = NULL;
@@ -1679,7 +1645,7 @@ UpdatePanes
 	NgBrowsePart	*np = &browse->browse;
         brPaneControl	*pcp = &np->pane_ctrl;
         NhlBoolean	page_found = False;
-        int 		i,j,pos = -1;
+        int 		i,j;
         brPane		*delete_pane = NULL;
         brPage		*page = NULL,*copy_page = NULL;
 
@@ -1787,11 +1753,7 @@ static void BrowseHluCB
 )
 {
 	NgGO		go = (NgGO) udata;
-	NgBrowse	browse = (NgBrowse)udata;
-	NgBrowsePart	*np = &browse->browse;
 	NrmQuark	qvar;
-        brPage		*page;
-        brPane		*pane;
         static timer_data tdata;
         
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
@@ -1823,11 +1785,7 @@ static void BrowseVarCB
 )
 {
 	NgGO		go = (NgGO) udata;
-	NgBrowse	browse = (NgBrowse)udata;
-	NgBrowsePart	*np = &browse->browse;
 	NrmQuark	qvar;
-        brPage		*page;
-        brPane		*pane;
         static timer_data tdata;
         
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
@@ -1859,11 +1817,7 @@ static void BrowseFileCB
 )
 {
 	NgGO		go = (NgGO) udata;
-	NgBrowse	browse = (NgBrowse)udata;
-	NgBrowsePart	*np = &browse->browse;
 	NrmQuark	qfile;
-        brPage		*page;
-        brPane		*pane;
         static timer_data tdata;
 
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
@@ -1894,11 +1848,7 @@ static void BrowseFileVarCB
 )
 {
 	NgGO		go = (NgGO) udata;
-	NgBrowse	browse = (NgBrowse)go;
-	NgBrowsePart	*np = &browse->browse;
 	NrmQuark	qvar;
-        brPage		*page;
-        brPane		*pane;
         static timer_data tdata;
 
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
@@ -1930,11 +1880,7 @@ static void BrowseFunctionCB
 )
 {
 	NgGO		go = (NgGO) udata;
-	NgBrowse	browse = (NgBrowse)udata;
-	NgBrowsePart	*np = &browse->browse;
 	NrmQuark	qvar;
-        brPage		*page;
-        brPane		*pane;
         static timer_data tdata;
         
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
@@ -1966,11 +1912,7 @@ static void BrowsePlotCB
 )
 {
 	NgGO		go = (NgGO) udata;
-	NgBrowse	browse = (NgBrowse)udata;
-	NgBrowsePart	*np = &browse->browse;
 	NrmQuark	qvar;
-        brPage		*page;
-        brPane		*pane;
         static timer_data tdata;
         
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
@@ -2001,7 +1943,6 @@ CreateVarMenus
 )
 {
 	NgBrowse	browse = (NgBrowse)go;
-	NgBrowsePart	*np = &browse->browse;
         Widget		menubar,label;
 
         label = XtVaCreateManagedWidget
@@ -2116,9 +2057,6 @@ static void DeleteSelectionCB
 	NgBrowsePart	*np = &browse->browse;
         brPaneControl	*pcp = &np->pane_ctrl;
         brPage		*page;
-        brPane		*pane;
-        NrmQuark	qvar,qfile;
-        int		i;
         
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
 	fprintf(stderr,"CycleSelectionCB(IN)\n");
@@ -2145,8 +2083,6 @@ static void CycleSelectionCB
 	NgBrowsePart	*np = &browse->browse;
         brPaneControl	*pcp = &np->pane_ctrl;
         brPage		*page;
-        brPane		*pane;
-        NrmQuark	qvar,qfile;
         int		i;
         
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
@@ -2156,8 +2092,6 @@ static void CycleSelectionCB
             || pcp->focus_pos >= pcp->focus_pane->pagecount)
                 return;
         page = XmLArrayGet(pcp->focus_pane->pagelist,pcp->focus_pos);
-        qvar = page->qvar;
-        qfile = page->qfile;
 
         for (i = 0; i < pcp->current_count; i++) {
                 if (pcp->panes[i] == pcp->focus_pane) {
@@ -2184,9 +2118,7 @@ static void UpdatePagesCB
 	NgBrowse	browse = (NgBrowse)go;
 	NgBrowsePart	*np = &browse->browse;
         brPaneControl	*pcp = &np->pane_ctrl;
-        brPage		*page;
         brPane		*pane;
-        NrmQuark	qvar,qfile;
         int		i,j;
 	NgWksState 	wks_state;
         
@@ -2222,8 +2154,6 @@ static void HelpCB
 )
 {
 	NgGO		go = (NgGO) udata;
-	NgBrowse	browse = (NgBrowse)go;
-	NgBrowsePart	*np = &browse->browse;
 	NrmQuark	qhtml;
 
 	qhtml = NrmStringToQuark("Start.html");
@@ -2242,8 +2172,6 @@ ChangeSizeEH
         NgGO go		= (NgGO) udata;
 	NgBrowse	browse = (NgBrowse)go;
 	NgBrowsePart	*np = &browse->browse;
-        brPaneControl	*pcp = &np->pane_ctrl;
-	NrmQuark	qhtml;
         static timer_data tdata;
 
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
@@ -2267,7 +2195,7 @@ ChangeSizeEH
 			np->mapped = True;
 
 			tdata.go = go;
-			tdata.qvar = qhtml = NrmStringToQuark("Start.html");
+			tdata.qvar = NrmStringToQuark("Start.html");
 			tdata.type = _brHTML;
 			XtAppAddTimeOut(go->go.x->app,200,
 					BrowseTimeoutCB,&tdata);
@@ -2294,7 +2222,6 @@ SetupPaneControl
 	NgBrowsePart	*np = &browse->browse;
         Widget		label,pb;
         brPaneControl	*pcp = &np->pane_ctrl;
-        Pixel		foreground,background;
 
         label = XtVaCreateManagedWidget
                 ("Panes:",xmLabelGadgetClass,
@@ -2400,13 +2327,9 @@ BrowseCreateWin
 	NgGO	go
 )
 {
-	char		func[]="BrowseCreateWin";
 	NgBrowse	browse = (NgBrowse)go;
 	NgBrowsePart	*np = &browse->browse;
-        Widget		datamenubar;
 	Widget		w,form,sep;
-        brPane		*pane;
-        XmString	xmstring;
 	NhlArgVal	sel,user_data;
 	NhlLayer	ncl = _NhlGetLayer(np->nsid);
                 
@@ -2472,7 +2395,7 @@ BrowseCreateWin
                  NULL);
 
 
-        pane = AddPane(go);
+        (void) AddPane(go);
         
 	NhlINITVAR(sel);
 	NhlINITVAR(user_data);
@@ -2495,7 +2418,6 @@ extern void _NgGetPaneVisibleArea(
 {
         Position form_x, form_y, clip_x, clip_y;
         Dimension clip_width, clip_height;
-	Dimension vsb_width = 0, hsb_height = 0;
         
         XtVaGetValues(pane->form,
                       XmNx,&form_x,
@@ -2712,9 +2634,7 @@ extern NhlErrorTypes NgUpdatePages
 	NgBrowse	browse = (NgBrowse)go;
 	NgBrowsePart	*np;
         brPaneControl	*pcp;
-        brPage		*page;
         brPane		*pane;
-        NrmQuark	qvar,qfile;
         int		i,j;
 	NgWksState 	wks_state;
          
@@ -3164,7 +3084,6 @@ static void TabFocusAction
 	Cardinal	*num_params
 )
 {
-	NgGO	go;
         
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
 	fprintf(stderr,"TabFocusAction(IN)\n");

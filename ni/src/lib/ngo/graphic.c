@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.13 1999-08-14 01:32:56 dbrown Exp $
+ *      $Id: graphic.c,v 1.14 1999-09-11 01:06:22 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -71,7 +71,6 @@ NhlErrorTypes NgCreatePreviewGraphic
         static NhlBoolean first = True;
         NhlClass class;
         NgGO go = (NgGO)_NhlGetLayer(goid);
-	NhlLayer l;
 	NgHluData 	hdata = NULL;
 
         if (!go) {
@@ -130,7 +129,7 @@ NhlErrorTypes NgCreatePreviewGraphic
         ret = NhlCreate(hlu_id,hlu_name,class,parent_id,srlist);
 	
 	if (ret < NhlWARNING || *hlu_id <= NhlNULLOBJID 
-	    || ! (l = _NhlGetLayer(*hlu_id))) {
+	    || ! _NhlGetLayer(*hlu_id)) {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
                            "Unable to create preview graphic for %s",
 			   ncl_graphic));
@@ -244,7 +243,6 @@ NhlErrorTypes NgCreateGraphic
         int block_id;
         NhlString hlu_parent = "defaultapp";
         NgGO go = (NgGO)_NhlGetLayer(goid);
-	NhlLayer l;
 
         if (!go) {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid graphic object"));
@@ -286,7 +284,7 @@ NhlErrorTypes NgCreateGraphic
                            ncl_graphic));
                 NhlFree(id_array);
         }
-        if (*hlu_id <= NhlNULLOBJID || ! (l = _NhlGetLayer(*hlu_id))) {
+        if (*hlu_id <= NhlNULLOBJID || ! _NhlGetLayer(*hlu_id)) {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
                            "unable to create graphic object %s",ncl_graphic));
                 return NhlFATAL;
@@ -443,7 +441,7 @@ NhlErrorTypes DestroyGraphicArray
 		if (_NhlIsView(l) && _NhlIsXWorkstation(l->base.wkptr) &&
 		    (_NhlTopLevelView(id_array[i]) == id_array[i])) {
 			NgWksObj wkobj;
-			int selected_view_id,wk_id;
+			int selected_view_id;
 			NhlBoolean draw_selected_only;
 				
 			NgHluData hdata = 
@@ -561,7 +559,7 @@ NhlErrorTypes NgDestroyGraphic
 {
         char buf[512];
         NgGO go = (NgGO)_NhlGetLayer(goid);
-	int i,hlu_id, *id_array, count;
+	int hlu_id, *id_array, count;
 	NhlLayer l;
 
         if (!(go && ncl_graphic)) {
@@ -606,8 +604,6 @@ NhlErrorTypes DrawGraphicArray
         NhlBoolean	clear
 )
 {
-	NhlErrorTypes ret = NhlNOERROR;
-	NclExtValueRec *attval;
 	NhlLayer l;
 	int i;
         char buf[512];
@@ -686,8 +682,7 @@ NhlErrorTypes NgDrawGraphic
         )
 {
         char buf[512];
-        int i,hlu_id,wk_id,base_id,count,*id_array;
-        NhlBoolean has_drawable = False;
+        int hlu_id,wk_id,base_id,count,*id_array;
         NhlLayer layer;
         NhlString wk_name;
 	char base_name[512];

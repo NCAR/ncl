@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.h,v 1.12 1999-07-30 03:20:46 dbrown Exp $
+ *      $Id: browse.h,v 1.13 1999-09-11 01:05:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -61,7 +61,8 @@ typedef enum _NgPageMessageType
 	_NgDATAPROFILELINK_REQ,
 	_NgVARDATA,  	   /* msg type: NgVarData     - dataprofile.h */
 	_NgVARDATALINK_REQ,
-	_NgDOSETVALCB	   /* msg type: NhlBoolean */
+	_NgDOSETVALCB,	   /* msg type: NhlBoolean */
+	_NgDATAVARUPDATE   /* msg type: NhlBoolean */
 } NgPageMessageType;
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.15 1999-08-28 00:18:44 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.16 1999-09-11 01:06:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,7 +32,6 @@
 
 static char *Buffer;
 static int  Buflen;
-static NrmQuark Qlong_name;
 static Pixel Foreground,Background,Right_Border_Color,Left_Border_Color;
 static NhlString Unnamed = "<unnamed>";
 
@@ -316,7 +315,6 @@ ReadCoord
 	long			*stride
 )
 {
-	char buf[512];
 	NclExtValueRec *val;
 
         if (vinfo->coordnames[dim_ix] <= NrmNULLQUARK)
@@ -381,8 +379,6 @@ SetSelectedDim
 {
         NgShapeInfoGridRec *sirp = (NgShapeInfoGridRec *) sip;
         static NhlBoolean first = True;
-        int row,col;
-        Boolean focus;
         
         if (first) {
                 XmLGridColumn colptr;
@@ -474,7 +470,6 @@ SelectDimCB
 	XtPointer	cb_data
 )
 {
-        NgShapeInfoGridRec *sirp = (NgShapeInfoGridRec *) data;
         NgShapeInfoGrid *sip = (NgShapeInfoGrid *) data;
         XmLGridCallbackStruct *cb = (XmLGridCallbackStruct *) cb_data;
         
@@ -500,7 +495,6 @@ CellFocusCB
         NgShapeInfoGridRec *sirp = (NgShapeInfoGridRec *) data;
         NgShapeInfoGrid *sip = (NgShapeInfoGrid *) data;
         XmLGridCallbackStruct *cb = (XmLGridCallbackStruct *) cb_data;
-        static int focus_row = -1, focus_col = -1;
         int start_row,finish_row;
 
 	if (sirp->ignore_focus_cb) 
@@ -526,8 +520,6 @@ CellFocusCB
                         start_row = cb->row;
                         finish_row = cb->row;
                 }
-                focus_row = cb->row;
-                focus_col = cb->column;
                 sip->edit_row = cb->row;
                 XtVaSetValues(sip->grid,
                               XmNrowRangeStart,start_row,
@@ -602,7 +594,7 @@ UpdateCoordValue
         NclExtValueRec *val;
         double coordval;
 	NhlBoolean ascending_coords,ascending_bounds;
-	double dval,firstval,lastval;
+	double firstval,lastval;
 	double fmin, fmax;
 	double fstart,ffinish;
         int i,imin,imax;
@@ -610,7 +602,6 @@ UpdateCoordValue
         char *sval;
         int slen;
         NhlBoolean retval;
-	int add_row = -1;
 
         
 	val = ReadCoord(sirp->vinfo,sirp->qfileref,column,NULL,NULL,NULL);
@@ -849,17 +840,19 @@ DimEditCB
         Widget tw;
         char *string;
         static XmString cell_string = NULL;
-        int index;
         NhlBoolean update = True;
-        char *dimstr;
         XmLGridColumn colptr;
         XmLGridRow rowptr;
         Widget text;
+#if DEBUG_SHAPE_INFO_GRID      
 	NhlBoolean insert_mode = False;
+#endif
         
         switch (cb->reason) {
             case XmCR_EDIT_INSERT:
+#if DEBUG_SHAPE_INFO_GRID      
 		    insert_mode = True;
+#endif
             case XmCR_EDIT_BEGIN:
 #if DEBUG_SHAPE_INFO_GRID      
                     fprintf(stderr,"edit begin %s\n",
@@ -944,9 +937,7 @@ NewIndexValue
 {
         NgShapeInfoGridRec *sirp = (NgShapeInfoGridRec *) sip;
         int index;
-        NhlBoolean reverse = sip->start[column] > sip->finish[column];
         int dim_size = sirp->vinfo->dim_info[column].dim_size;
-        int i;
 
         switch (how) {
             case NG_INCREMENT:
@@ -1080,7 +1071,6 @@ NewCoordValue
         int index;
         char *sval;
         int slen;
-        int dim_size = sirp->vinfo->dim_info[column].dim_size;
         static NgShapeInfoGrid *last_sip = NULL;
         static int last_column = -1;
         static NclExtValueRec *val = NULL;
@@ -1111,11 +1101,9 @@ NhlErrorTypes NgShapeInfoGridEditFocusCell
         Boolean			synchro_mode_update
         )
 {
-        NhlErrorTypes ret;
         NgShapeInfoGridRec *sirp;
         NgShapeInfoGrid *sip;
         int row,col,start_row,finish_row;
-        Boolean focus;
         
         sirp = (NgShapeInfoGridRec *) shape_info_grid;
         if (!sirp) return NhlFATAL;
@@ -1209,15 +1197,12 @@ NhlErrorTypes NgShapeInfoGridEditFocusCell
 
 NhlErrorTypes NgShapeInfoGridEditFocusCellComplete
 (
-        NgShapeInfoGrid		*shape_info_grid
+        NgShapeInfoGrid		*shape_info_grid,
+	NhlBoolean		notify
         )
 {
-        NhlErrorTypes ret;
         NgShapeInfoGridRec *sirp;
         NgShapeInfoGrid *sip;
-        int row,col;
-        Boolean focus;
-        int start_row,finish_row;
         
         sirp = (NgShapeInfoGridRec *) shape_info_grid;
         if (!sirp) return NhlFATAL;
@@ -1229,7 +1214,7 @@ NhlErrorTypes NgShapeInfoGridEditFocusCellComplete
 	if (sirp->manual_edit_started)
 		XmLGridEditComplete(sip->grid);
 
-        UpdateState(shape_info_grid,sip->edit_row,sip->selected_dim,True);
+        UpdateState(shape_info_grid,sip->edit_row,sip->selected_dim,notify);
         if (! sip->synchro_step)
                 sip->edit_row = -1;
 	else if (sip->edit_row == STRIDE_ROW) {
@@ -1251,12 +1236,10 @@ NhlErrorTypes NgShapeInfoGridSynchroStepMode
         NhlBoolean		on
         )
 {
-        NhlErrorTypes ret;
         NgShapeInfoGridRec *sirp;
         NgShapeInfoGrid *sip;
         int row,col;
         Boolean focus;
-        int start_row,finish_row;
         
 #if DEBUG_SHAPE_INFO_GRID      
         fprintf(stderr,"synchro step mode %s\n",on ? "True" : "False");
@@ -1300,7 +1283,7 @@ NhlErrorTypes NgShapeInfoGridSynchroStepMode
         if (sip->synchro_step && sip->edit_row != STRIDE_ROW) {
 		UpdateState(shape_info_grid,
 			    sip->edit_row,sip->selected_dim,False);
-		NgShapeInfoGridEditFocusCellComplete(shape_info_grid);
+		NgShapeInfoGridEditFocusCellComplete(shape_info_grid,False);
                 XtVaSetValues(sip->grid,
                               XmNrowRangeStart,START_ROW,
                               XmNrowRangeEnd,FINISH_ROW,
@@ -1334,13 +1317,10 @@ NhlErrorTypes NgUpdateShapeInfoGrid
         NclApiVarInfoRec	*vinfo
         )
 {
-        NhlErrorTypes ret;
         NgShapeInfoGridRec *sirp;
         NgShapeInfoGrid *sip;
-        int	i,nrows,nvisrows;
-        static Dimension height;
+        int	i;
         static NhlBoolean first = True;
-	int selected_dim;
         
         sirp = (NgShapeInfoGridRec *) shape_info_grid;
         if (!sirp) return NhlFATAL;
@@ -1348,7 +1328,6 @@ NhlErrorTypes NgUpdateShapeInfoGrid
 
         if (first) {
                 first = False;
-                Qlong_name = NrmStringToQuark("long_name");
                 Buffer = NhlMalloc(BUFINC);
                 Buflen = BUFINC;
         }
@@ -1432,19 +1411,15 @@ NgShapeInfoGrid *NgCreateShapeInfoGrid
         NhlBoolean		highlight_on
         )
 {
-        NhlErrorTypes ret;
         NgShapeInfoGridRec *sirp;
         NgShapeInfoGrid *sip;
         int nrows;
-        unsigned char sel_policy;
-        Widget text;
         
         sirp = NhlMalloc(sizeof(NgShapeInfoGridRec));
         if (!sirp) return NULL;
         sip = &sirp->shapeinfogrid;
 
         nrows = 3;
-        sel_policy = highlight_on ? XmSELECT_BROWSE_ROW : XmSELECT_NONE;
         
         sip->grid = XtVaCreateManagedWidget
                 ("ShapeInfoGrid",
@@ -1545,11 +1520,9 @@ void NgDestroyShapeInfoGrid
         )
 {
         NgShapeInfoGridRec *sirp;
-        NgShapeInfoGrid *sip;
         
         sirp = (NgShapeInfoGridRec *) shape_info_grid;
         if (!sirp) return;
-        sip = &sirp->shapeinfogrid;
         
         NhlFree(sirp->start_coords);
         NhlFree(sirp->finish_coords);

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.25 1999-07-30 03:20:54 dbrown Exp $
+ *      $Id: hlupage.c,v 1.26 1999-09-11 01:06:24 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -341,9 +341,9 @@ static NhlErrorTypes GetHluObjCreateMessage
 	/* call reset on this page */
 
 	if (reset)
-		return NgResetPage(rec->go->base.id,page->id);
+		return MIN(ret,NgResetPage(rec->go->base.id,page->id));
 	else
-		return NhlNOERROR;
+		return ret;
 }
 
 static void SetInputDataFlag
@@ -368,9 +368,14 @@ static void SetInputDataFlag
 		if (ditem->item_type == _NgDATAVAR) {
 			switch (ditem->vdata->set_state) {
 			case _NgEXPRESSION:
+			case _NgUSER_EXPRESSION:
 				if (ditem->vdata->expr_val)
 					datavar_count++;
 				else if (ditem->required)
+					rec->has_input_data = False;
+				break;
+			case _NgBOGUS_EXPRESSION:
+				if (ditem->required)
 					rec->has_input_data = False;
 				break;
 			case _NgUNKNOWN_DATA:
@@ -476,7 +481,6 @@ static NhlErrorTypes GetDoSetValCBMessage
 {
         brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec	*)pdp->type_rec;
-        NgHluPage 	*pub = &rec->public;
 
 	rec->do_setval_cb = (NhlBoolean) message->message;
 /*
@@ -501,7 +505,6 @@ static NhlErrorTypes GetDataLinkReqMessage
 {
         brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec	*)pdp->type_rec;
-        NgHluPage 	*pub = &rec->public;
 	brDataLinkReq	dlink;
 	NgPageMessageType mesg_type = _NgNOMESSAGE;
 	brPage		*frpage;
@@ -539,7 +542,6 @@ static NhlErrorTypes GetVarDataMessage
 {
         brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec	*)pdp->type_rec;
-        NgHluPage 	*pub = &rec->public;
 	NgVarData	vdata;
 
 	vdata = (NgVarData) message->message;
@@ -569,9 +571,6 @@ static NhlErrorTypes GetPageMessages
 	NhlBoolean	reset
         )
 {
-        brPageData	*pdp = page->pdata;
-	brHluPageRec	*rec = (brHluPageRec	*)pdp->type_rec;
-        NgHluPage 	*pub = &rec->public;
 	NgPageMessage   *messages;
 	int 		i,count;
 	NhlErrorTypes	ret = NhlNOERROR,subret = NhlNOERROR;
@@ -625,7 +624,6 @@ static NhlBoolean GetDataVal
 )
 {
 	int i;
-	NclApiVarInfoRec *vinfo;
 	NclExtValueRec *val = NULL;
 	NhlString type_str;
 
@@ -633,20 +631,25 @@ static NhlBoolean GetDataVal
 	*value = NULL;
 	*type = NrmNULLQUARK;
 
-	if (! vdata || vdata->set_state == _NgUNKNOWN_DATA)
+	if (! vdata || vdata->set_state == _NgUNKNOWN_DATA ||
+	    vdata->set_state == _NgBOGUS_EXPRESSION)
 		return False;
 
 
 	if (! preview) {
 		char buf[1024];
 
-		if (vdata->set_state == _NgEXPRESSION) {
+		if (vdata->set_state == _NgEXPRESSION ||
+		    vdata->set_state == _NgUSER_EXPRESSION) {
 			if (! vdata->qexpr_var) {
+				NhlBoolean user = 
+					vdata->set_state == _NgEXPRESSION ?
+					False : True;
 				if (! (vdata->expr_val && vdata->go))
 					return False;
 				if (! NgSetExpressionVarData
 				    (vdata->go->base.id,vdata,
-				     vdata->expr_val,True))
+				     vdata->expr_val,_NgCONDITIONAL_EVAL,user))
 					return False;
 			}
 			sprintf(buf,"%s(",
@@ -708,7 +711,8 @@ static NhlBoolean GetDataVal
 		return True;
 	}
 
-	if (vdata->set_state == _NgEXPRESSION) {
+	if (vdata->set_state == _NgEXPRESSION ||
+	    vdata->set_state == _NgUSER_EXPRESSION) {
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"invalid var data set state"));
 		return False;
 	}
@@ -869,7 +873,6 @@ static void PostHluObjCreateMessage
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
 	brHluObjCreate  obj_create;
 	NgDataProfile 	dprof;
-	NgPageMessageRec   message_rec;
 
 	dprof = NgNewDataProfile(page->go,class_name);
 	NgTransferDataProfileInfo(dprof,rec->data_profile);
@@ -966,7 +969,7 @@ static Boolean ManageDataObj
 {
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
-	int i, res_count = 0;
+	int i;
 	NhlBoolean preview = rec->state == _hluNOTCREATED;
 	int hlu_id;
 	char *class_name;
@@ -1537,7 +1540,6 @@ DProfSetValCB
 	int		i;
 	NgDataProfile	dprof;
 	NgDataItem	ditem;
-	static		int grlist = -1;
 	brPage		*page;
 
 	rec = (brHluPageRec *)NgPageData(info->goid,info->pid);
@@ -1558,7 +1560,6 @@ DProfSetValCB
  */
 	dprof = rec->data_profile;
 	for (i = 0; i < dprof->n_dataitems; i++) {
-		NhlGenArray gen;
 
 		ditem = dprof->ditems[i];
 		if (ditem->resq != vsdata->resq)
@@ -1590,11 +1591,9 @@ CreateInstance
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
         int		i,hlu_id;
         NhlString	parent = NULL;
-	NgWksObj	wks = NULL;
 	NgDataProfile	dprof = rec->data_profile;
 	int		count = 0;
         NhlArgVal       sel,udata;
-	NhlBoolean	is_preview;
 
 	if (rec->public.plot_style) {
 		rec->app_id = NgNewPlotAppRef
@@ -1791,7 +1790,6 @@ DestroyPreviewDataObjects
 {
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
-	NclExtValueRec 	*hval;
 	NrmQuark	qname;
 	NhlLayer	l;
 	int i, new_id;
@@ -1863,7 +1861,8 @@ UpdateDataProfileFromResTree
 			if (setval) {
 				NgSetExpressionVarData
 					(rec->go->base.id,
-					 ditem->vdata,setval,True);
+					 ditem->vdata,setval,
+					 _NgCONDITIONAL_EVAL,True);
 				new_data = True;
 			}
 		}
@@ -1964,7 +1963,8 @@ CreateUpdate
 			for (i = 0; i < rec->data_profile->n_dataitems; i++) {
 				NgVarData vdata = 
 					rec->data_profile->ditems[i]->vdata;
-				if (vdata->set_state == _NgEXPRESSION &&
+				if ((vdata->set_state == _NgEXPRESSION ||
+				     vdata->set_state == _NgUSER_EXPRESSION) &&
 				    vdata->qexpr_var) {
 					NgDeleteExpressionVarData
 						(rec->go->base.id,vdata);
@@ -1986,7 +1986,8 @@ CreateUpdate
 			for (i = 0; i < rec->data_profile->n_dataitems; i++) {
 				NgVarData vdata = 
 					rec->data_profile->ditems[i]->vdata;
-				if (vdata->set_state == _NgEXPRESSION &&
+				if ((vdata->set_state == _NgEXPRESSION ||
+				     vdata->set_state == _NgUSER_EXPRESSION) &&
 				    vdata->qexpr_var) {
 					NgDeleteExpressionVarData
 						(rec->go->base.id,vdata);
@@ -2122,7 +2123,6 @@ static NhlErrorTypes HluPageMessageNotify (
 {
         brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec	*)pdp->type_rec;
-        NgHluPage 	*pub = &rec->public;
         
         
 #if DEBUG_HLUPAGE
@@ -2164,13 +2164,6 @@ static void SetValuesCB
 	XtPointer	cb_data
 )
 {
-        brPage		*page = (brPage *)udata;
-	brPageData	*pdp = page->pdata;
-	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
-
-#if	0
-	NgResTreeSetValues(rec->res_tree);
-#endif
 	return;
 }
 static void
@@ -2324,7 +2317,6 @@ static void DestroyHluPage
 )
 {
 	brHluPageRec	*rec = (brHluPageRec *)data;
-        int i;
 	NhlLayer l = _NhlGetLayer(rec->hlu_id);
         
 	
@@ -2384,9 +2376,6 @@ static NhlErrorTypes UpdateHluPage
         brPage *page
 )
 {
-        brPageData	*pdp = page->pdata;
-	brHluPageRec	*rec = (brHluPageRec	*)pdp->type_rec;
-        NgHluPage 	*pub = &rec->public;
         int		wk_id;
         NhlBoolean	work_created;
 
@@ -2409,9 +2398,7 @@ static NhlErrorTypes ResetHluPage
         brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec	*)pdp->type_rec;
         NgHluPage 	*pub = &rec->public;
-	int		hlu_id,i;
-	NhlBoolean	preview = rec->state < _hluCREATED;
-	NhlBoolean	reset;
+	int		i;
         
 #if DEBUG_HLUPAGE
         fprintf(stderr,"in updata hlu page\n");
@@ -2464,8 +2451,6 @@ static NhlErrorTypes ResetHluPage
 		
 	rec->data_profile = pub->data_profile;
 	if (rec->data_profile->n_dataitems) {
-		int mix = rec->data_profile->master_data_ix;
-		int datavar_count = 0;
 		NgUpdateDataSourceGrid
 			(rec->data_source_grid,page->qvar,rec->data_profile);
 		if (! XtIsManaged(rec->data_source_grid->grid))
@@ -2558,7 +2543,6 @@ NewHluPage
 	brPageData	*pdp;
 	brHluPageRec	*rec;
         NhlString	e_text;
-        int		i;
 
 	if (!(pdp = NhlMalloc(sizeof(brPageData)))) {
 		e_text = "%s: dynamic memory allocation error";
@@ -2689,19 +2673,12 @@ _NgGetHluPage
 	NhlPointer	init_data
 )
 {
-	NgBrowse		browse = (NgBrowse)go;
-	NgBrowsePart		*np = &browse->browse;
-        NhlString		e_text;
 	brPageData		*pdp;
 	brHluPageRec		*rec,*copy_rec = NULL;
-        NrmQuark		*qhlus;
-        NhlBoolean		is_hlu = False;
         int			i;
-        static int		first = True;
 	int			hlu_id,count,*hlu_array = NULL;
 	int			nclstate;
         XmString		xmstring;
-	NhlBoolean		update = False;
 	NhlBoolean		new = False;
 
         if (QString == NrmNULLQUARK) {
@@ -2746,7 +2723,6 @@ _NgGetHluPage
         
 	if (hlu_id > NhlNULLOBJID && 
 	    ((rec->class = NhlClassOfObject(hlu_id)) != NULL)) {
-                NhlArgVal sel,user_data;
                 
 		rec->hlu_id = hlu_id;
 		rec->public.class_name = rec->class->base_class.class_name;

@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenu.c,v 1.12 1999-07-30 03:20:47 dbrown Exp $
+ *      $Id: createmenu.c,v 1.13 1999-09-11 01:06:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -68,12 +68,9 @@ static void CreateCB
 )
 {
 	CreateMenuRec	*priv = (CreateMenuRec	*)udata;
-	NgCreateMenu	*pub = &priv->public;
-        NgMenuRec	*plot = &priv->plot;
         NrmQuark	qname;
         char		*vartext;
         NgPageId	page_id;
-        NgHluPage	*hlu_page;
         int		browse_id = NhlDEFAULT_APP;
         XmAnyCallbackStruct	*xmcb = (XmAnyCallbackStruct*)cb_data;
         NgGO		browse;
@@ -229,7 +226,6 @@ static void CreateHluDialog
 {
 	Arg	args[50];
 	int	nargs;
-	NgCreateMenu	*pub = &priv->public;
 	char    buf[128] = "",prefix[8];
         char    *cp;
         XmString xmname;
@@ -299,7 +295,6 @@ static void CreateDataItemDialog
 {
 	Arg	args[50];
 	int	nargs;
-	NgCreateMenu	*pub = &priv->public;
 	char    buf[128] = "",prefix[8];
         char    *cp;
         XmString xmname;
@@ -369,8 +364,6 @@ static void CreateHluDialogCB
 )
 {
 	CreateMenuRec	*priv = (CreateMenuRec	*)udata;
-	NgCreateMenu	*pub = &priv->public;
-        NgMenuRec	*plot = &priv->plot;
         NhlClass	class;
 
 #if	DEBUG_CREATEMENU
@@ -397,7 +390,6 @@ static void DataMenuCB
 )
 {
 	CreateMenuRec	*priv = (CreateMenuRec	*)udata;
-	NgCreateMenu	*pub = &priv->public;
         NgMenuRec	*data = &priv->data;
         int		i,count,data_count = 0;
         NhlClass	*classes,data_classes[20];
@@ -446,7 +438,6 @@ static void WorkstationMenuCB
 )
 {
 	CreateMenuRec	*priv = (CreateMenuRec	*)udata;
-	NgCreateMenu	*pub = &priv->public;
         NgMenuRec	*wks = &priv->wks;
         int		i,count,wks_count = 0;
         NhlClass	*classes,wks_classes[20];
@@ -494,7 +485,6 @@ static void PlotMenuCB
 )
 {
 	CreateMenuRec	*priv = (CreateMenuRec	*)udata;
-	NgCreateMenu	*pub = &priv->public;
         NgMenuRec	*plot = &priv->plot;
         int		i,count,plot_count = 0;
         NhlClass	*classes,plot_classes[20];
@@ -542,7 +532,6 @@ static void AnnoMenuCB
 )
 {
 	CreateMenuRec	*priv = (CreateMenuRec	*)udata;
-	NgCreateMenu	*pub = &priv->public;
         NgMenuRec	*anno = &priv->anno;
         int		i,count,anno_count = 0;
         NhlClass	*classes,anno_classes[20];
@@ -591,7 +580,6 @@ static void OtherMenuCB
 )
 {
 	CreateMenuRec	*priv = (CreateMenuRec	*)udata;
-	NgCreateMenu	*pub = &priv->public;
         NgMenuRec	*other = &priv->other;
         int		i,count,other_count = 0;
         NhlClass	*classes,other_classes[20];
@@ -638,8 +626,6 @@ NhlErrorTypes NgUpdateCreateMenu
         NgCreateMenu		*create_menu
         )
 {
-	NgCreateMenu	*pub = create_menu;
-	CreateMenuRec	*priv = (CreateMenuRec	*)pub;
         return NhlNOERROR;
 }
 

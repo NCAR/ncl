@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargridP.h,v 1.1 1999-07-30 03:20:50 dbrown Exp $
+ *      $Id: datavargridP.h,v 1.2 1999-09-11 01:06:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #include <ncarg/ngo/goP.h>
 
 #include <ncarg/ngo/datavargrid.h>
+#include <ncarg/ngo/shaper.h>
 
  
 #define DEBUG_DATA_VAR_GRID 0
@@ -48,14 +49,15 @@ typedef struct _NgDataVarGridRec
         NrmQuark		qname;
  	NclApiDataList		*dlist;        
         int			cwidths[2];
-        int			c_alloc;
 	NhlBoolean		created;
 	NhlBoolean		in_edit;
 	int			selected_row;
-	int			vis_row_count;
 	XmString		edit_save_string;
 	Widget			text;
 	NhlBoolean		text_dropped;
+	int			shape_tool_id;
+	int			data_ix;
+	NgShaper		*shaper;
 } NgDataVarGridRec;
 
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.15 1999-05-22 00:36:21 dbrown Exp $
+ *      $Id: ncledit.c,v 1.16 1999-09-11 01:06:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -132,7 +132,6 @@ NEInitialize
 	char			func[] = "NEInitialize";
 	NgNclEdit		ncl = (NgNclEdit)new;
 	NgNclEditPart		*np = &((NgNclEdit)new)->ncledit;
-	NgNclEditPart		*rp = &((NgNclEdit)req)->ncledit;
 
 	np->nsid = NhlDEFAULT_APP;
 	NhlVAGetValues(ncl->go.appmgr,
@@ -236,9 +235,9 @@ ActivateCB
 	NgNclEditPart	*np = &ncl->ncledit;
 	char		*cmd_stack[128];
 	char		*cmd_buff;
-	char		*last_nl,*nl;
+	char		*nl;
 	char		*cmd;
-	int		len,nl_count = 0;
+	int		len;
 	
 
 	if(np->edit)
@@ -648,8 +647,6 @@ EraseHighlight
 )
 {
 	NgNclEditPart	*np = &ncl->ncledit;
-	int		x,y;
-	unsigned int	width,height;
 
 	if(!np->high_drawn)
 		return;
@@ -818,7 +815,6 @@ MapPromptEH
 	char			func[] = "MapPromptEH";
 	NgNclEdit		ncl = (NgNclEdit)udata;
 	NgNclEditPart		*np = &ncl->ncledit;
-	NgGOPart		*gp = &ncl->go;
 	NgXAppExport		x = ncl->go.x;
 	XSetWindowAttributes	att;
 	unsigned long		vmask;
@@ -943,8 +939,6 @@ LoseFocusCB
 {
 	NgNclEdit	ncl = (NgNclEdit)udata;
 	NgNclEditPart	*np = &ncl->ncledit;
-	int		x,y;
-	unsigned int	width,height;
 
 	XtRemoveEventHandler(np->iform,ExposureMask,False,
 					ExposeFocusEH,(XtPointer)ncl);
@@ -1040,26 +1034,24 @@ NECreateWin
 	NgGO	go
 )
 {
-	char		func[]="NECreateWin";
 	NgNclEditPart	*np = &((NgNclEdit)go)->ncledit;
 	NgNclEditClass	nec = (NgNclEditClass)go->base.layer_class;
-	Widget		pane,sform,sform1;
+	Widget		pane,sform;
 	Widget		slabel;
-	Widget		hoframe,holabel;
-	Widget		vframe,vlabel;
-	Widget		fframe,flabel;
-	Widget		fuframe,fulabel;
-	Widget		oform,olabel;
+	Widget		hoframe;
+	Widget		vframe;
+	Widget		fframe;
+	Widget		fuframe;
 	Widget		iform,scroll;
 	Widget		hsbar;
 	Widget		w;
-	Dimension	width,height;
 	Arg		args[10];
 	int		nargs;
 	NhlLayer	nstate;
 	NhlArgVal	dummy,udata;
 	char		buff[20];
 	XmString	msg;
+	Dimension	width;
 
 	if(nec->ncledit_class.nedit)
 		sprintf(buff,"NCL Editor %d",nec->ncledit_class.nedit++);
@@ -1109,7 +1101,7 @@ NECreateWin
 		XmNrightAttachment,	XmATTACH_POSITION,
 		NULL);
 
-	holabel = XtVaCreateManagedWidget("holabel",xmLabelWidgetClass,hoframe,
+	XtVaCreateManagedWidget("holabel",xmLabelWidgetClass,hoframe,
 		XmNchildType,			XmFRAME_TITLE_CHILD,
 		NULL);
 
@@ -1126,7 +1118,7 @@ NECreateWin
 		XmNrightAttachment,	XmATTACH_POSITION,
 		NULL);
 
-	vlabel = XtVaCreateManagedWidget("vlabel",xmLabelWidgetClass,vframe,
+	XtVaCreateManagedWidget("vlabel",xmLabelWidgetClass,vframe,
 		XmNchildType,			XmFRAME_TITLE_CHILD,
 		NULL);
 
@@ -1142,7 +1134,7 @@ NECreateWin
 		XmNrightAttachment,	XmATTACH_POSITION,
 		NULL);
 
-	flabel = XtVaCreateManagedWidget("flabel",xmLabelWidgetClass,fframe,
+	XtVaCreateManagedWidget("flabel",xmLabelWidgetClass,fframe,
 		XmNchildType,			XmFRAME_TITLE_CHILD,
 		NULL);
 
@@ -1157,7 +1149,7 @@ NECreateWin
 		XmNleftAttachment,	XmATTACH_POSITION,
 		NULL);
 
-	fulabel = XtVaCreateManagedWidget("fulabel",xmLabelWidgetClass,fuframe,
+	XtVaCreateManagedWidget("fulabel",xmLabelWidgetClass,fuframe,
 		XmNchildType,			XmFRAME_TITLE_CHILD,
 		NULL);
 

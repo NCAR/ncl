@@ -1,5 +1,5 @@
 /*
- *      $Id: diminfogrid.c,v 1.6 1998-12-16 23:51:34 dbrown Exp $
+ *      $Id: diminfogrid.c,v 1.7 1999-09-11 01:06:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -69,7 +69,7 @@ VarTypeText
 	int	i;
         NclApiVarInfoRec *vinfo = dip->vinfo;
 	NclExtValueRec *val;
-        char *cp,*sval = NULL;
+        char *cp;
         int cwidth,twidth,len;
 
         sprintf(Buffer,"%dD %s|",vinfo->n_dims,NgTypeString(vinfo->data_type));
@@ -89,7 +89,7 @@ VarTypeText
                 else {
                         val = NclReadVarAtt(vinfo->name,vinfo->attnames[i]);
                 }
-                cp = sval = NgTypedValueToString(val,0,False,&len);
+                cp = NgTypedValueToString(val,0,False,&len);
                 if (val->constant != 0)
                         NclFree(val->value);
                 NclFreeExtValue(val);
@@ -178,8 +178,6 @@ RangeText
 	NgDimInfoGridRec *dip
 )
 {
-	Arg	args[50];
-	int	nargs = 0;
 	int	i;
 	char	substr[32];
 	NclExtValueRec *val;
@@ -206,7 +204,7 @@ RangeText
 			strcat(Buffer,substr);
 		}
 		else {
-                        char    *vstart,*sval;
+                        char    *sval;
                         int size,len;
                         long    stride;
                         
@@ -259,11 +257,10 @@ NhlErrorTypes NgUpdateDimInfoGrid
         NclApiVarInfoRec	*vinfo
         )
 {
-        NhlErrorTypes ret;
         NgDimInfoGridRec *dip;
         int	i,nrows,nvisrows;
         static Dimension height;
-        NhlBoolean first = True;
+        static NhlBoolean first = True;
         
         dip = (NgDimInfoGridRec *) dim_info_grid;
         if (!dip) return NhlFATAL;

@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenus.c,v 1.12 1999-03-05 01:02:36 dbrown Exp $
+ *      $Id: varmenus.c,v 1.13 1999-09-11 01:07:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -525,7 +525,6 @@ NgCreateVarMenus
 	VarMenusRec	*vp;
         NgVarMenus	vmenus;
         Widget		menush;
-        XmString	xmstring;
 	NhlArgVal	sel,user_data;
         NrmQuark	*qvars;
         int		count;

@@ -1,5 +1,5 @@
 /*
- *      $Id: print.c,v 1.5 1999-05-22 00:36:23 dbrown Exp $
+ *      $Id: print.c,v 1.6 1999-09-11 01:06:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -180,8 +180,6 @@ static String		Print_Command = NULL;
 static NhlBoolean	Overwrite_Warning = True;
 static int		Resolution = 600;
 static NhlBoolean	Select_All_Views = True;
-static int		Selected_View_Count = 0;
-static unsigned int	*Selected_View_Positions = NULL;
 
 static NhlErrorTypes
 PrintClassPartInitialize
@@ -210,10 +208,7 @@ PrintInitialize
 	int		nargs
 )
 {
-	char		func[] = "PrintInitialize";
-	NgPrint		ncl = (NgPrint)new;
 	NgPrintPart	*np = &((NgPrint)new)->print;
-	NgPrintPart	*rp = &((NgPrint)req)->print;
         int		i;
 
 	np->qwks = NULL;
@@ -249,8 +244,6 @@ static void CancelCB
 	XtPointer	cbdata
 )
 {
-	XmAnyCallbackStruct	*cbs =
-				(XmAnyCallbackStruct*)cbdata;
 	NgPrint	l = (NgPrint)udata;
 
 #if DEBUG_PRINT
@@ -268,7 +261,6 @@ BasicErrorCB
 	XtPointer	cbdata
 )
 {
-	XmAnyCallbackStruct	*cbs = (XmAnyCallbackStruct*)cbdata;
         NgGO go = (NgGO) udata;
 	NgPrint	l = (NgPrint)go;
 	NhlBoolean close_dialog;
@@ -343,7 +335,7 @@ static void Message(
 	XtPointer	user_data
 )
 {
-	Widget dialogsh,dialog;
+	Widget dialog;
 	XmString xmmessage;
 	Arg	ar[20];
 	int	ac = 0;
@@ -531,7 +523,6 @@ OutputNcgm(
 	NhlGenArray 	cmap = NULL;
 	NhlColor	*cmap_data;
         int             rl;
-	Boolean		all_set;
 	char		buf[512];
 	int		i;
 
@@ -604,7 +595,6 @@ OutputGif(
      )
 {
         NgPrintPart	*np = &l->print;
-        NhlErrorTypes   ret = NhlNOERROR;
         const char	*tmpdir;
         char		buf[1024];
         char		buf1[1024];
@@ -617,7 +607,6 @@ OutputGif(
 	float		wlx,wly,wux,wuy;
 	int		rh,rw;
 	long		res;
-	char		*postprocess;
         struct 		stat statbuf;
 
 	if (ReadInteger(np->resolution_text,&res))
@@ -820,10 +809,8 @@ QualifyPathname(
 	String pathname
 	)
 {
-        int ret;
         struct stat statbuf;
 	FILE *fp;
-	char pathbuf[1024];
 	char buf[1024];
 
 /*
@@ -847,7 +834,6 @@ QualifyPathname(
 			fclose(fp);
 
 		if (Overwrite_Warning) {
-			int len;
 			sprintf(buf,"Overwrite %s?",pathname);
 			Message((NgGO)l,"Overwrite?", buf,
 				XmDIALOG_QUESTION,
@@ -1010,14 +996,8 @@ PrintScriptOkCB
 	XtPointer	cbdata
 )
 {
-	XmAnyCallbackStruct	*cbs =
-				(XmAnyCallbackStruct*)cbdata;
-	char	func[] = "PrintScriptOkCB";
 	NgPrint	l = (NgPrint)udata;
 	NgPrintPart	*np = &l->print;
-	int	nsid = NhlDEFAULT_APP;
-	char	line[512];
-	Boolean	sensitive;
 	Boolean ret;
 
 	
@@ -1041,7 +1021,6 @@ static NhlErrorTypes UpdateHLUObjectList
 {
 	NgPrintPart	*np = &((NgPrint)go)->print;
 	int		hlu_count;
-	int		wk_count, view_count;
         NrmQuark	*hlu_qvars;
 	int		i,selected_work_id = 0;
 	int		id, *id_array;
@@ -1181,10 +1160,8 @@ ChooseOutputDestinationCB
 {
 	XmToggleButtonCallbackStruct *cbs =
                 (XmToggleButtonCallbackStruct*)cbdata;
-	char	func[] = "ChooseOutputDestinationCB";
         NgPrint l = (NgPrint) udata;
 	NgPrintPart	*np = &l->print;
-	int		dest;
 
 	if (! cbs->set) {
 		XtVaSetValues (w, XmNset, True, 0);
@@ -1235,8 +1212,6 @@ SelectFileTypeCB
 	XtPointer	cbdata
         )
 {
-	XmAnyCallbackStruct	*cbs = (XmAnyCallbackStruct*)cbdata;
-	char	func[] = "SelectFileTypeCB";
 	NgPrint	l = (NgPrint)udata;
         NgPrintPart *pp = &l->print;
 	int	file_type;
@@ -1277,9 +1252,6 @@ OverwriteCB
 {
 	XmToggleButtonCallbackStruct *cbs = 
 		(XmToggleButtonCallbackStruct *)cbdata;
-	char	func[] = "OverwriteCB";
-	NgPrint	l = (NgPrint)udata;
-        NgPrintPart *pp = &l->print;
 
 	if (cbs->set)
 		Overwrite_Warning = True;
@@ -1299,7 +1271,6 @@ SelectViewCB
 	XmListCallbackStruct *lcb = (XmListCallbackStruct *)cbdata;
         NgPrint l = (NgPrint) udata;
 	NgPrintPart	*np = &l->print;
-	int count;
 
 	if (Select_All_Views) {
 		if (! XmListPosSelected(np->view_list,lcb->item_position))
@@ -1325,7 +1296,6 @@ SelectAllViewsCB
 {
 	XmToggleButtonCallbackStruct *cbs =
                 (XmToggleButtonCallbackStruct*)cbdata;
-	char	func[] = "SelectAllViewsCB";
         NgPrint l = (NgPrint) udata;
 	NgPrintPart	*np = &l->print;
 
@@ -1383,10 +1353,6 @@ SelectPaperSizeCB
 	XtPointer	cbdata
         )
 {
-	XmAnyCallbackStruct	*cbs = (XmAnyCallbackStruct*)cbdata;
-	char	func[] = "SelectPaperSizeCB";
-	NgPrint	l = (NgPrint)udata;
-        NgPrintPart *pp = &l->print;
 	int	paper_type;
 
         XtVaGetValues(w,
@@ -1404,10 +1370,6 @@ SelectOrientationCB
 	XtPointer	cbdata
         )
 {
-	XmAnyCallbackStruct	*cbs = (XmAnyCallbackStruct*)cbdata;
-	char	func[] = "SelectOrientationCB";
-	NgPrint	l = (NgPrint)udata;
-        NgPrintPart *pp = &l->print;
 	int	orient;
 
         XtVaGetValues(w,
@@ -1427,10 +1389,8 @@ MaximizeBBCB
 {
 	XmToggleButtonCallbackStruct *cbs =
                 (XmToggleButtonCallbackStruct*)cbdata;
-	char	func[] = "MaximizeBBCB";
         NgPrint l = (NgPrint) udata;
 	NgPrintPart	*np = &l->print;
-	int		dest;
 
 	if (! cbs->set) {
 		XtVaSetValues (w, XmNset, True, 0);
@@ -1460,8 +1420,6 @@ UpdateViewListBox
 	NhlBoolean	create;
         int		i,n;
 	Arg		args[32];
-        int		id,id_array_count;
-        int		*id_array;
         Boolean		sensitive;
         
 	create = top ? True : False;
@@ -1540,8 +1498,6 @@ SelectWorkstationCB
 	XtPointer	cbdata
         )
 {
-	XmAnyCallbackStruct	*cbs = (XmAnyCallbackStruct*)cbdata;
-	char	func[] = "SelectWorkstationCB";
 	NgPrint	l = (NgPrint)udata;
         NgPrintPart *pp = &l->print;
         NrmQuark qsym;
@@ -1727,7 +1683,6 @@ UpdateSourceDialog
         if (create) {
                 Widget 		work_lbl,plot_views_lbl,labelg;
 		Arg		arg[12];
-		int		ac = 0;
 		int		wc = 0;
 		Widget		w[12];
 		Dimension	work_width,plot_views_width;
@@ -1853,7 +1808,6 @@ UpdateDialog
 	NgPrint	l
 )
 {
-	NgPrintPart	*np = &l->print;
 
 	UpdateGlobalSettings(l);
 
@@ -1903,21 +1857,20 @@ CreateLayoutDialog(
 	Dimension	*max_label_width
 )
 {
-	NgPrintPart	*np = &((NgPrint)go)->print;
-        Widget		form,label,printer,file;
-	Widget		pb,selected_pb;
+        Widget		label;
+	Widget		pb;
         Widget		menush,menu,optmenu;
-        Widget		maximize,sep;
+        Widget		sep;
         int		i;
 	Widget		orientation_lbl,plot_bounds_lbl,paper_size_lbl,
 			resolution_lbl;
 	Dimension	orientation_width,plot_bounds_width,
 			paper_size_width,resolution_width,max_width;
 	Arg		arg[30];
-	int		ac = 0;
 	int		wc = 0;
 	Widget		w[30];
 	char		res_text[12];
+	NgPrintPart	*np = &((NgPrint)go)->print;
 
             /* orientation  */
 
@@ -2162,18 +2115,16 @@ CreateDestinationDialog(
 )
 {
 	NgPrintPart	*np = &((NgPrint)go)->print;
-	NhlErrorTypes   ret = NhlNOERROR;
 	Arg		arg[30];
-	int		ac = 0;
 	int		wc = 0;
 	Widget		w[30];
         Widget		label,printer,file;
         Widget		print_destination_lbl,print_command_lbl,
 	  		filename_lbl,filetype_lbl;
 	Widget		print_command_text,filename_text;
-	Widget		pb,selected_pb;
+	Widget		pb;
         Widget		menush,menu,optmenu;
-        Widget		overwrite,maximize,sep,folder;
+        Widget		overwrite,sep;
         int		i;
 	Dimension	print_destination_width,print_command_width,
 			filename_width,filetype_width,max_width;
@@ -2414,11 +2365,8 @@ PrintCreateWin
 	NgGO	go
 )
 {
-	char		func[]="PrintCreateWin";
 	NgPrintPart	*np = &((NgPrint)go)->print;
-	NhlErrorTypes   ret = NhlNOERROR;
         Widget		form;
-        Widget		folder;
 	Dimension	max_label_width;
 	Widget		bottom_widget;
 

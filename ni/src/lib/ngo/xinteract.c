@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.c,v 1.7 1999-08-14 01:32:58 dbrown Exp $
+ *      $Id: xinteract.c,v 1.8 1999-09-11 01:07:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -296,10 +296,7 @@ static void SetViewPort
 	NhlBoolean	move_only
 	)
 {
-	char		func[]="SetViewport";
-	float		x,y,width,height;
 	NhlString 	view_name;
-	char		buf[1024];
 	NhlString	res_names[4] = 
 	{NhlNvpXF,NhlNvpYF,NhlNvpWidthF,NhlNvpHeightF};
 	float		fv[4];
@@ -312,7 +309,6 @@ static void SetViewPort
 	NgXCoordToNDC(xwk->base.id,xvp,&fv[0],&fv[1],&fv[2],&fv[3]);
 
 	count = move_only ? 2 : 4;
-	buf[0] = '\0';
 	for (i = 0; i < count; i++) {
 		svalues[i] = &cfv[i][0];
 		sprintf(svalues[i],"%f",fv[i]);
@@ -976,8 +972,6 @@ _NgClearAllViewsCB
 )
 {
 	char			func[]="ClearAllViewsCB";
-	XmAnyCallbackStruct	*xmcb = 
-		(XmAnyCallbackStruct*)cbdata;
 	NgXWk			xwk = (NgXWk)udata;
 
 #if DEBUG_XINTERACT
@@ -1157,8 +1151,6 @@ extern void NgDrawXwkView
 {
 
 	NgXWk xwk = (NgXWk)_NhlGetLayer(xwkid);
-        char buf[512];
-	NhlString wk_name,view_name;
 	NgWksState wks_state;
 	int top_level_count = 0;
 	int *top_level_views;
@@ -1310,8 +1302,6 @@ extern void NgClearXwkView
 {
 
 	NgXWk xwk = (NgXWk)_NhlGetLayer(xwkid);
-        char buf[512];
-	NhlString wk_name,view_name;
 	NgWksState wks_state;
 	NgViewObj vobj = NULL;
 	int top_level_count = 0;

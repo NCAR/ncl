@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.2 1999-08-14 01:32:57 dbrown Exp $
+ *      $Id: plotpage.c,v 1.3 1999-09-11 01:06:44 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -43,7 +43,6 @@
 
 static NrmQuark QString = NrmNULLQUARK;
 static NrmQuark QGenArray = NrmNULLQUARK;
-static NrmQuark QInteger = NrmNULLQUARK;
 static NrmQuark QngPlotClass = NrmNULLQUARK;
 
 
@@ -69,9 +68,6 @@ static void PlotPageFocusNotify (
         NhlBoolean in
         )
 {
-        brPageData	*pdp = page->pdata;
-	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
-
         return;
 }
 
@@ -83,7 +79,6 @@ SetValCB
 )
 {
 	brSetValCBInfo   *info = (brSetValCBInfo *)udata.lngval;
-	_NhlValueSetCBData vsdata = (_NhlValueSetCBData) cbdata.ptrval;
 	brPlotPageRec	*rec;
 
 #if DEBUG_PLOTPAGE
@@ -248,7 +243,7 @@ static NhlErrorTypes GetPlotObjCreateMessage
 	brPlotObjCreate	obj_create;
 	NhlBoolean	do_link = False;
 	NgPageMessageType reply_req = _NgNOMESSAGE;
-	NhlErrorTypes 	ret = NhlNOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 
 	obj_create = (brPlotObjCreate) message->message;
 	pub->plot_style = obj_create->plot_style;
@@ -344,9 +339,9 @@ static NhlErrorTypes GetPlotObjCreateMessage
 	/* call update on this page */
 
 	if (reset)
-		return NgResetPage(rec->go->base.id,page->id);
+		return MIN(ret,NgResetPage(rec->go->base.id,page->id));
 	else
-		return NhlNOERROR;
+		return ret;
 }
 
 static void SetInputDataFlag
@@ -366,9 +361,14 @@ static void SetInputDataFlag
 		if (ditem->item_type == _NgDATAVAR) {
 			switch (ditem->vdata->set_state) {
 			case _NgEXPRESSION:
+			case _NgUSER_EXPRESSION:
 				if (ditem->vdata->expr_val)
 					datavar_count++;
 				else if (ditem->required)
+					rec->has_input_data = False;
+				break;
+			case _NgBOGUS_EXPRESSION:
+				if (ditem->required)
 					rec->has_input_data = False;
 				break;
 			case _NgUNKNOWN_DATA:
@@ -474,7 +474,6 @@ static NhlErrorTypes GetDoSetValCBMessage
 {
         brPageData	*pdp = page->pdata;
 	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
-        NgPlotPage 	*pub = &rec->public;
 
 	rec->do_setval_cb = (NhlBoolean) message->message;
 /*
@@ -494,7 +493,6 @@ static NhlErrorTypes GetDataLinkReqMessage
 {
         brPageData	*pdp = page->pdata;
 	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
-        NgPlotPage 	*pub = &rec->public;
 	brDataLinkReq	dlink;
 	NgPageMessageType mesg_type = _NgNOMESSAGE;
 	brPage		*frpage;
@@ -532,7 +530,6 @@ static NhlErrorTypes GetVarDataMessage
 {
         brPageData	*pdp = page->pdata;
 	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
-        NgPlotPage 	*pub = &rec->public;
 	NgVarData	vdata;
 
 	vdata = (NgVarData) message->message;
@@ -556,15 +553,36 @@ static NhlErrorTypes GetVarDataMessage
 	return NhlNOERROR;
 }
 
+static NhlErrorTypes HandleDataVarUpdateMessage
+(
+        brPage		*page,
+	NgPageMessage   message,
+	NhlBoolean	update
+        )
+{
+        brPageData	*pdp = page->pdata;
+	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
+	NhlBoolean	data_update;
+
+	data_update = (NhlBoolean) message->message;
+
+	if (data_update)
+		rec->new_data = True;
+	
+	TalkToDataLinks(page,_NgDATAPROFILE,message->from_id);
+
+	if (message->message_free)
+		(*message->message_free)(message->message);
+	
+	return NhlNOERROR;
+}
+
 static NhlErrorTypes GetPageMessages
 (
         brPage 		*page,
 	NhlBoolean	update
         )
 {
-        brPageData	*pdp = page->pdata;
-	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
-        NgPlotPage 	*pub = &rec->public;
 	NgPageMessage   *messages;
 	int 		i,count;
 	NhlErrorTypes	ret = NhlNOERROR,subret = NhlNOERROR;
@@ -578,7 +596,12 @@ static NhlErrorTypes GetPageMessages
 	 * parsed and acted on before data update messages.
 	 */
 	for (i = count - 1; i >= 0; i--) {
-		switch (messages[i]->mtype) {  
+		switch (messages[i]->mtype) { 
+		case _NgDATAVARUPDATE:
+			subret = HandleDataVarUpdateMessage
+				(page,messages[i],update);
+			ret = MIN(ret,subret);
+			break;
 		case _NgPLOTCREATE:
 			subret = GetPlotObjCreateMessage
 				(page,messages[i],update);
@@ -618,7 +641,6 @@ static NhlBoolean GetDataVal
 )
 {
 	int i;
-	NclApiVarInfoRec *vinfo;
 	NclExtValueRec *val = NULL;
 	NhlString type_str;
 
@@ -626,20 +648,25 @@ static NhlBoolean GetDataVal
 	*value = NULL;
 	*type = NrmNULLQUARK;
 
-	if (! vdata || vdata->set_state == _NgUNKNOWN_DATA)
+	if (! vdata || vdata->set_state == _NgUNKNOWN_DATA ||
+	    vdata->set_state == _NgBOGUS_EXPRESSION)
 		return False;
 
 
 	if (! preview) {
 		char buf[1024];
 
-		if (vdata->set_state == _NgEXPRESSION) {
+		if (vdata->set_state == _NgEXPRESSION ||
+		    vdata->set_state == _NgUSER_EXPRESSION) {
 			if (! vdata->qexpr_var) {
+				NhlBoolean user = 
+					vdata->set_state == _NgEXPRESSION ?
+					False : True;
 				if (! (vdata->expr_val && vdata->go))
 					return False;
 				if (! NgSetExpressionVarData
 				    (vdata->go->base.id,vdata,
-				     vdata->expr_val,True))
+				     vdata->expr_val,_NgCONDITIONAL_EVAL,user))
 					return False;
 			}
 			sprintf(buf,"%s",
@@ -705,7 +732,8 @@ static NhlBoolean GetDataVal
 		return True;
 	}
 
-	if (vdata->set_state == _NgEXPRESSION) {
+	if (vdata->set_state == _NgEXPRESSION ||
+	    vdata->set_state == _NgUSER_EXPRESSION) {
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"invalid var data set state"));
 		return False;
 	}
@@ -757,7 +785,6 @@ static NhlBoolean GetDataObjValue
 {
         NgVarData       vdata;
         NrmQuark qname;
-        int i;
 	int id,count;
 	int *id_array;
 
@@ -765,14 +792,18 @@ static NhlBoolean GetDataObjValue
         *type = NrmNULLQUARK;
         vdata = ditem->vdata;
 
-        if (vdata->set_state == _NgEXPRESSION) {
+        if (vdata->set_state == _NgEXPRESSION ||
+	    vdata->set_state == _NgUSER_EXPRESSION) {
                 char buf[1024];
+		NhlBoolean user = 
+			vdata->set_state == _NgEXPRESSION ? False : True;
 
                 if (! vdata->qexpr_var) {
                         if (! (vdata->expr_val && vdata->go))
                                 return False;
                         if (! NgSetExpressionVarData
-                            (vdata->go->base.id,vdata,vdata->expr_val,True))
+                            (vdata->go->base.id,vdata,vdata->expr_val,
+			     _NgCONDITIONAL_EVAL,user))
                                 return False;
                 }
                 sprintf(buf,"%s",
@@ -812,18 +843,20 @@ static NhlBoolean DataChanged
 {
 	NclExtValueRec *oldval = NULL;
 	NclExtValueRec *newval = NULL;
-	NhlString expr_val;
 	NhlBoolean ret = False;
+	NhlBoolean user = vdata->set_state == _NgEXPRESSION ? False : True;
 
 	oldval = NclReadVar(vdata->qexpr_var,NULL,NULL,NULL);
 
-	/* this forces the expression to be reevaluated */
-	expr_val = vdata->expr_val;
-	vdata->expr_val = NULL;
-
-	NgSetExpressionVarData(vdata->go->base.id,vdata,expr_val,True);
+	ret = NgSetExpressionVarData(vdata->go->base.id,vdata,
+				     vdata->expr_val,_NgFORCED_EVAL,user);
+	if (! ret)
+		return False;
 
 	newval = NclReadVar(vdata->qexpr_var,NULL,NULL,NULL);
+
+	if (! newval)
+		return False;
 
 	if (oldval->totalelements != newval->totalelements ||
 	    oldval->elem_size != newval->elem_size) {
@@ -849,25 +882,28 @@ static NhlBoolean GetConfigValue
 	NhlBoolean 	preview
 )
 {
-	int i;
 	NgVarData 	vdata;
 	
 	*value = NULL;
 	*type = NrmNULLQUARK;
 	vdata = ditem->vdata;
 
-	if (! vdata || vdata->set_state == _NgUNKNOWN_DATA)
+	if (! vdata || vdata->set_state == _NgUNKNOWN_DATA ||
+	    vdata->set_state == _NgBOGUS_EXPRESSION)
 		return False;
 
-	if (vdata->set_state == _NgEXPRESSION) {
+	if (vdata->set_state == _NgEXPRESSION ||
+	    vdata->set_state == _NgUSER_EXPRESSION) {
 		char buf[1024];
-
+		NhlBoolean user = vdata->set_state == _NgEXPRESSION ?
+			False : True;
 
 		if (! vdata->qexpr_var) {
 			if (! (vdata->expr_val && vdata->go))
 				return False;
 			if (! NgSetExpressionVarData
-			    (vdata->go->base.id,vdata,vdata->expr_val,True))
+			    (vdata->go->base.id,vdata,vdata->expr_val,
+			     _NgCONDITIONAL_EVAL,user))
 				return False;
 		}
 		else if (ditem->save_to_compare) {
@@ -1031,14 +1067,10 @@ CreatePreviewInstance
         int	wk_id
 )
 {
-        NhlErrorTypes	ret = NhlNOERROR;
 	brPageData	*pdp = page->pdata;
 	brPlotPageRec	*rec = (brPlotPageRec *) pdp->type_rec;
-        NgPreviewResProc	resproc[2];
-        XtPointer	resdata[2];
-        NhlString	parent = NULL;
 	NgDataProfile	dprof = rec->data_profile;
-	int		i,count = 0;
+	int		i;
 
 	if (rec->app_id <= NhlNULLOBJID) {
 		rec->app_id =  NgNewPlotAppRef
@@ -1121,7 +1153,6 @@ DProfSetValCB
 	int		i;
 	NgDataProfile	dprof;
 	NgDataItem	ditem;
-	static		int grlist = -1;
 	brPage		*page;
 
 	rec = (brPlotPageRec *)NgPageData(info->goid,info->pid);
@@ -1141,7 +1172,6 @@ DProfSetValCB
  */
 	dprof = rec->data_profile;
 	for (i = 0; i < dprof->n_dataitems; i++) {
-		NhlGenArray gen;
 
 		ditem = dprof->ditems[i];
 		if (ditem->resq != vsdata->resq)
@@ -1351,7 +1381,6 @@ static NhlBoolean UpdateGraphic
 	brPlotPageRec	*rec = (brPlotPageRec *) pdp->type_rec;
 	NgDataProfile	dprof = rec->data_profile;
 	NrmQuark 	qobj_name = dprof->qobjects[obj_ix];
-	NhlClass	obj_class = dprof->obj_classes[obj_ix];
 	int		i,count;
         NgSetResProc	setresproc[2];
         NhlPointer	setresdata[2];
@@ -1471,30 +1500,31 @@ static NhlErrorTypes DoUpdateFunc
 {
 	NhlErrorTypes	ret = NhlNOERROR;
 	NgVarData 	vdata = ditem->vdata;
-	NhlString	expr_val;
 	NclExtValueRec	*val = NULL;
+	NhlBoolean	user;
 
 	*plot_changed = False;
 
-	if (! vdata || vdata->set_state == _NgUNKNOWN_DATA)
+	if (! vdata)
 		return NhlNOERROR;
 
-	if (vdata->set_state != _NgEXPRESSION)
+	if (vdata->set_state == _NgEXPRESSION)
+		user = False;
+	else if (vdata->set_state == _NgUSER_EXPRESSION)
+		user = True;
+	else
 		return NhlNOERROR;
-
 
 	if (! (vdata->expr_val && vdata->go))
 		return NhlNOERROR;
-	/* force reevaluation of the expression */
-
-	expr_val = vdata->expr_val;
-	vdata->expr_val = NULL;
 		
 	if (! NgSetExpressionVarData
-	    (vdata->go->base.id,vdata,expr_val,True)) {
+	    (vdata->go->base.id,vdata,vdata->expr_val,_NgFORCED_EVAL,user)) {
 		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-			   "Error evaluating expression: %s",
-			   expr_val));
+	   "Disabling resource %s@%s; error evaluating expression value:\n %s",
+			   NrmQuarkToString(ditem->qhlu_name),
+			   NrmQuarkToString(ditem->resq),
+			   vdata->expr_val));
 		return NhlWARNING;
 	}
 	val = NclReadVar(vdata->qexpr_var,NULL,NULL,NULL);
@@ -1509,7 +1539,7 @@ static NhlErrorTypes DoUpdateFunc
 		case -1:
 			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 				   "Expression %s reports error",
-				   expr_val));
+				   vdata->expr_val));
 			ret = NhlWARNING;
 			break;
 		case 0:
@@ -1585,16 +1615,11 @@ CreateInstance
 	NhlErrorTypes	subret = NhlNOERROR, ret = NhlNOERROR;
 	brPageData	*pdp = page->pdata;
 	brPlotPageRec	*rec = (brPlotPageRec *) pdp->type_rec;
-        int		i,j,hlu_id;
-        NgSetResProc	setresproc[2];
-        XtPointer	setresdata[2];
-        NhlString	parent = NULL;
-	NgWksObj	wks = NULL;
+        int		i,j;
 	NgDataProfile	dprof = rec->data_profile;
-	int		count = 0;
-        NhlArgVal       sel,udata;
-	NhlBoolean	is_preview;
+#if 0
 	NhlBoolean	success = True;
+#endif
 	NgResData	resdata = NgReallocResData(NULL,0);
 
 	if (rec->app_id <= NhlNULLOBJID) {
@@ -1609,7 +1634,10 @@ CreateInstance
 	for (i = 0; i < dprof->obj_count; i++) {
 		resdata->res_count = 0;
 		if (! CreateGraphic(page,wk_id,i,resdata))
+			;
+#if 0
 			success = False;
+#endif
 	}
 	/*
 	 * After the create, call update to handle the set_only resources,
@@ -1618,7 +1646,7 @@ CreateInstance
 	for (i = 0; i < dprof->obj_count; i++) {
 		resdata->res_count = 0;
 		if (! UpdateGraphic(page,wk_id,i,resdata))
-			success = False;
+			;
 	}
 	NgFreeResData(resdata);
 
@@ -1672,14 +1700,13 @@ UpdateInstance
 	brPlotPageRec	*rec = (brPlotPageRec *) pdp->type_rec;
 	NhlLayer	wl = _NhlGetLayer(wk_id);
 	NgDataProfile	dprof = rec->data_profile;
-	int		i,j,count = 0;
+	int		i,j;
 	NgResData	resdata = NgReallocResData(NULL,0);
-	NhlBoolean	success = True;
 
 	for (i = 0; i < dprof->obj_count; i++) {
 		resdata->res_count = 0;
 		if (! UpdateGraphic(page,wk_id,i,resdata))
-			success = False;
+			;
 		if (NgViewOn(rec->hlu_ids[i]) &&
 			(do_draw || resdata->res_count)) {
 			int top_id = _NhlTopLevelView(rec->hlu_ids[i]);
@@ -1756,13 +1783,11 @@ PostDataCompletionDialog(
 {
         brPageData	*pdp = page->pdata;
 	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
-        NgPlotPage 	*pub = &rec->public;
 	char    buf[512] = "";
 	Arg	args[50];
 	int	nargs;
         XmString xmname,xmtext;
         Widget  help,cancel;
-	char *name;
 	int status = 0;
 	XtAppContext context;
 	Widget data_config,shell;
@@ -1900,11 +1925,9 @@ CreateUpdate
 	NhlBoolean	do_draw
 )
 {
-	NhlErrorTypes	ret = NhlNOERROR;
 	brPageData	*pdp = page->pdata;
 	brPlotPageRec	*rec = (brPlotPageRec *) pdp->type_rec;
-        NhlBoolean 	already_created = False;
-        int		i,hlu_id;
+        int		i;
 	NhlLayer	wl = _NhlGetLayer(wk_id);
 	
 
@@ -1963,7 +1986,7 @@ CreateUpdate
 		}
 		rec->preview_destroy = False;
 #endif
-		ret = CreateInstance(page,wk_id);
+		CreateInstance(page,wk_id);
 		rec->state = _plotCREATED;
 		xmstring = NgXAppCreateXmString(rec->go->go.appmgr,"Update");
 		XtVaSetValues(rec->create_update,
@@ -1974,9 +1997,10 @@ CreateUpdate
 			for (i = 0; i < rec->data_profile->n_dataitems; i++) {
 				NgDataItem ditem =rec->data_profile->ditems[i];
 				NgVarData vdata = ditem->vdata;
-				if (vdata->set_state == _NgEXPRESSION &&
+				if ((vdata->set_state == _NgEXPRESSION ||
+				     vdata->set_state == _NgUSER_EXPRESSION) &&
 				    vdata->qexpr_var && 
-					! ditem->save_to_compare) {
+				    ! ditem->save_to_compare) {
 					NgDeleteExpressionVarData
 						(rec->go->base.id,vdata);
 				}
@@ -1992,15 +2016,15 @@ CreateUpdate
 		rec->state = _plotCREATED;
 	}
 	else {
-                ret = UpdateInstance(page,wk_id,do_draw);
-                already_created = True;
+                UpdateInstance(page,wk_id,do_draw);
 		if (rec->new_data) {
 			for (i = 0; i < rec->data_profile->n_dataitems; i++) {
 				NgDataItem ditem =rec->data_profile->ditems[i];
 				NgVarData vdata = ditem->vdata;
-				if (vdata->set_state == _NgEXPRESSION &&
-				    vdata->qexpr_var &&
-					! ditem->save_to_compare) {
+				if ((vdata->set_state == _NgEXPRESSION ||
+				     vdata->set_state == _NgUSER_EXPRESSION) &&
+				    vdata->qexpr_var && 
+				    ! ditem->save_to_compare) {
 					NgDeleteExpressionVarData
 						(rec->go->base.id,vdata);
 				}
@@ -2060,7 +2084,6 @@ static int GetWorkstation
 	brPageData	*pdp = page->pdata;
 	brPlotPageRec	*rec = (brPlotPageRec *) pdp->type_rec;
         int wk_id = NhlNULLOBJID;
-	NhlBoolean found = False;
 	int i;
 
 	for (i = 0; i < rec->hlu_count; i++) {
@@ -2134,7 +2157,6 @@ static NhlErrorTypes PlotPageMessageNotify (
 {
         brPageData	*pdp = page->pdata;
 	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
-        NgPlotPage 	*pub = &rec->public;
         
         
 #if DEBUG_PLOTPAGE
@@ -2176,10 +2198,6 @@ static void SetValuesCB
 	XtPointer	cb_data
 )
 {
-        brPage		*page = (brPage *)udata;
-	brPageData	*pdp = page->pdata;
-	brPlotPageRec	*rec = (brPlotPageRec *) pdp->type_rec;
-
 	return;
 }
 static void
@@ -2252,7 +2270,6 @@ DeactivatePlotPage
 {
 	brPlotPageRec *rec = (brPlotPageRec *)page->pdata->type_rec;
 	NhlLayer l;
-        int i;
 
 	GetPageMessages(page,False);
 
@@ -2286,7 +2303,7 @@ DeactivatePlotPage
 	}
 	rec->hlu_count = 0;
 	rec->app_id = NhlNULLOBJID;
-        rec->do_auto_update = False;
+        rec->do_auto_update = True;
         rec->public.class_name = NULL;
         rec->public.plot_style = NULL;
 	rec->public.plot_style_dir = NULL;
@@ -2372,9 +2389,6 @@ static NhlErrorTypes UpdatePlotPage
         brPage *page
 )
 {
-        brPageData	*pdp = page->pdata;
-	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
-        NgPlotPage 	*pub = &rec->public;
         int		wk_id;
         NhlBoolean	work_created;
 
@@ -2398,10 +2412,7 @@ static NhlErrorTypes ResetPlotPage
 {
         brPageData	*pdp = page->pdata;
 	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
-        NgPlotPage 	*pub = &rec->public;
-	int		hlu_id,i;
-	NhlBoolean	preview = rec->state < _plotCREATED;
-	NhlBoolean	update;
+	int		i;
         
 #if DEBUG_PLOTPAGE
         fprintf(stderr,"in reset plot page\n");
@@ -2423,8 +2434,6 @@ static NhlErrorTypes ResetPlotPage
 	UpdateVData(rec);
 
 	if (rec->data_profile && rec->data_profile->n_dataitems) {
-		int mix = rec->data_profile->master_data_ix;
-		int datavar_count = 0;
 		NgUpdateDataSourceGrid
 			(rec->data_source_grid,page->qvar,rec->data_profile);
 		if (! XtIsManaged(rec->data_source_grid->grid))
@@ -2490,7 +2499,6 @@ NewPlotPage
 	brPageData	*pdp;
 	brPlotPageRec	*rec;
         NhlString	e_text;
-        int		i;
 
 	if (!(pdp = NhlMalloc(sizeof(brPageData)))) {
 		e_text = "%s: dynamic memory allocation error";
@@ -2517,7 +2525,7 @@ NewPlotPage
         rec->new_data = True;
         rec->has_input_data = False;
         rec->state = _plotNOTCREATED;
-        rec->do_auto_update = False;
+        rec->do_auto_update = True;
         rec->public.class_name = NULL;
         rec->public.plot_style = NULL;
         rec->public.plot_style_dir = NULL;
@@ -2586,6 +2594,7 @@ NewPlotPage
 
         rec->auto_update = XtVaCreateManagedWidget
                 ("Auto Update",xmToggleButtonGadgetClass,pdp->form,
+		 XmNset,rec->do_auto_update,
                  XmNtopAttachment,XmATTACH_WIDGET,
                  XmNtopWidget,rec->data_source_grid->grid,
                  XmNleftAttachment,XmATTACH_WIDGET,
@@ -2720,7 +2729,7 @@ InitializePlot
         NgPlotPage 	*pub = &rec->public;
 	brPlotObjCreate	cdata = (brPlotObjCreate) init_data;
 	NgVarData	*vdata = NULL;
-	int		i,vdata_count = 0;
+	int		vdata_count = 0;
 
 	if (cdata) {
 		pub->class_name = cdata->class_name;
@@ -2802,25 +2811,17 @@ _NgGetPlotPage
 	NhlPointer	init_data
 )
 {
-	NgBrowse		browse = (NgBrowse)go;
-	NgBrowsePart		*np = &browse->browse;
-        NhlString		e_text;
 	brPageData		*pdp;
 	brPlotPageRec		*rec,*copy_rec = NULL;
-        NrmQuark		*qhlus;
-        NhlBoolean		is_hlu = False;
         int			i;
-        static int		first = True;
 	int			hlu_id,count,*hlu_array = NULL;
 	int			nclstate;
         XmString		xmstring;
-	NhlBoolean		update = False;
 	NhlBoolean		new = False;
 
         if (QString == NrmNULLQUARK) {
 		QString = NrmStringToQuark(NhlTString);
 		QGenArray = NrmStringToQuark(NhlTGenArray);
-		QInteger = NrmStringToQuark(NhlTInteger);
 		QngPlotClass = NrmStringToQuark(NGPLOTCLASS);
         }
 
@@ -2877,7 +2878,6 @@ _NgGetPlotPage
 	}
 
 	if (hlu_id > NhlNULLOBJID) {
-                NhlArgVal sel,user_data;
 
                 if (copy_rec && copy_rec->state == _plotPREVIEW)
                         rec->state = _plotPREVIEW;

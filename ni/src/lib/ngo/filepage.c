@@ -1,5 +1,5 @@
 /*
- *      $Id: filepage.c,v 1.8 1999-07-30 03:20:51 dbrown Exp $
+ *      $Id: filepage.c,v 1.9 1999-09-11 01:06:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -124,8 +124,6 @@ _NgGetFileRefPage
 	NhlPointer	init_data
 )
 {
-	NgBrowse		browse = (NgBrowse)go;
-	NgBrowsePart		*np = &browse->browse;
         NhlString		e_text;
 	brPageData		*pdp;
 	brFileRefPageRec	*rec;

@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.24 1999-07-30 03:20:52 dbrown Exp $
+ *      $Id: go.c,v 1.25 1999-09-11 01:06:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -684,13 +684,10 @@ GOInitialize
 {
 	static NhlBoolean	init = True;
 	char			func[] = "GOInitialize";
-	NgGOClass		gc = (NgGOClass)lc;
 	NgGOPart		*go = &((NgGO)new)->go;
 	NgGOPart		*rgo = &((NgGO)req)->go;
-	NgGO			pgo;
 	NhlArgVal		dummy,udata;
 	NhlErrorTypes		ret = NhlNOERROR,lret;
-	NhlString		color_name;
 
 	go->subshell = _NhlIsClass(new->base.parent,NggOClass);
 
@@ -1154,9 +1151,7 @@ GOCreateWinHook
 	NgGO	go
 )
 {
-	char			func[]="GOCreateWinHook";
 	NgGOPart		*gp = &go->go;
-	NgGOClass		gc = (NgGOClass)go->base.layer_class;
 
 	InstallTranslations(gp->shell,gp);
 
@@ -1169,10 +1164,6 @@ GOClose
 	NgGO	go
 )
 {
-	char			func[]="GOClose";
-	NgGOPart		*gp = &go->go;
-	NgGOClass		gc = (NgGOClass)go->base.layer_class;
-
 	NgGOPopdown(go->base.id);
 
 	return True;
@@ -1237,7 +1228,6 @@ _NgIGOSensitive
 )
 {
 	NgGOPart	*gp = &go->go;
-	NgGOClass	gc = (NgGOClass)go->base.layer_class;
 
 	if(sensitive){
 		if(gp->x_sensitive && !gp->sensitive){
@@ -1522,7 +1512,6 @@ EnumWindows
 	NhlPointer	udata
 )
 {
-	Widget	w;
 	NgGO	go = (NgGO)udata;
 
 	AddGOWin(go,goid);
@@ -1585,7 +1574,6 @@ DeleteHLUCB
         NgGO		go = (NgGO) udata;
 	NrmQuark	qvar;
 	XtPointer	userData;
-        int 		i,hlu_id,count,*id_array;
 	NhlString	varname;
 
         XUNGRABSERVER(XtDisplay(w));
@@ -1600,31 +1588,7 @@ DeleteHLUCB
 #if 0
         printf("deleting %s\n", varname);
 #endif
-#if 0
-	hlu_id = NgNclGetHluObjId
-		(go->go.nclstate,NrmQuarkToString(qvar),&count,&id_array);
-	printf("count = %d\n",count);
-	if (! id_array) {
-#endif
-		NgDestroyGraphic(go->base.id,varname);
-#if 0
-	}
-	else {
-		char buf[256];
-		NrmQuark *qhlus;
-		qhlus = NclGetHLUVarSymNames(&count);
-		for (i = 0; i < count; i++) {
-			NhlString obj_name = NrmQuarkToString(qhlus[i]); 
-			if (! strstr(obj_name,varname))
-				continue;
-			if (qhlus[i] == qvar)
-				continue;
-			NgDestroyGraphic(go->base.id,obj_name);
-		}
-		NgDestroyGraphic(go->base.id,varname);
-		NhlFree(id_array);
-	}
-#endif
+	NgDestroyGraphic(go->base.id,varname);
 	return;
 }
 
@@ -1636,9 +1600,11 @@ _NgGOCreateMenubar
 {
 	char		func[]="_NgGOCreateMenubar";
 	NgGOPart	*gp = &go->go;
-	Widget		addfile,load,close,quit,delete,create,pulldown,menush;
+	Widget		addfile,load,close,quit,pulldown,menush;
 	Widget		ncledit,browse,print;
+#if 0
 	static char	*new[]= {"new",NULL};
+#endif
 	NhlArgVal	sel,udata;
 
 	if(gp->menubar){
@@ -1780,7 +1746,7 @@ _NgGOCreateMenubar
         gp->create_menu = NgCreateCreateMenu(go->base.id,
                                              pulldown);
                                                    
-	create = XtVaCreateManagedWidget
+	XtVaCreateManagedWidget
                 ("Create",xmCascadeButtonGadgetClass,
                  gp->fmenu,
                  XmNsubMenuId,pulldown,
@@ -1807,7 +1773,7 @@ _NgGOCreateMenubar
                                            DeleteVarCB,
                                            NULL,NULL,go);
                                                    
-	delete = XtVaCreateManagedWidget
+	XtVaCreateManagedWidget
                 ("Delete",xmCascadeButtonGadgetClass,
                  gp->fmenu,
                  XmNsubMenuId,pulldown,
@@ -1986,7 +1952,6 @@ NgGOSensitive
 	char		func[] = "NgGOSensitive";
 	NgGO		go = (NgGO)_NhlGetLayer(goid);
 	NgGOPart	*gp;
-	NgGOClass	gc;
 
 #if 0
 	fprintf(stderr,"NgGOSensitive %s sensitive %s\n",
@@ -1998,7 +1963,6 @@ NgGOSensitive
 		return;
 	}
 	gp = &go->go;
-	gc = (NgGOClass)go->base.layer_class;
 
 	if(sensitive){
 		if(gp->i_sensitive && !gp->sensitive){
@@ -2027,7 +1991,6 @@ NgGOPopup
 	char		func[] = "NgGOPopup";
 	NgGO		go = (NgGO)_NhlGetLayer(goid);
 	NgGOPart	*gp;
-	NgGOClass	gc;
 
 	if(!go || !_NhlIsClass((NhlLayer)go,NggOClass)){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid goid %d",
@@ -2063,7 +2026,6 @@ NgGOCreateUnmapped
 	char		func[] = "NgGOCreateUnmapped";
 	NgGO		go = (NgGO)_NhlGetLayer(goid);
 	NgGOPart	*gp;
-	NgGOClass	gc;
 
 	if(!go || !_NhlIsClass((NhlLayer)go,NggOClass)){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid goid %d",
@@ -2139,7 +2101,6 @@ NgGOWidgetToGoId
 	Widget		shell=w;
 	WidgetList	list;
 	Cardinal	nlist;
-	Widget		manager;
 	int		i;
 	int		goid=NhlDEFAULT_APP;
 	XtPointer	userData;

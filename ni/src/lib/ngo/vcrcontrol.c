@@ -1,5 +1,5 @@
 /*
- *      $Id: vcrcontrol.c,v 1.5 1998-08-21 01:14:22 dbrown Exp $
+ *      $Id: vcrcontrol.c,v 1.6 1999-09-11 01:07:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,12 +35,7 @@ NhlErrorTypes NgUpdateVcrControl
         NgVcrControl		vcr_control
         )
 {
-        NhlErrorTypes ret;
         NgVcrControlRec *vcrp;
-        int	nattrs,i;
-        int	max_width,root_w;
-        short	cw,ch;
-        XmFontList      fontlist;
         
         vcrp = (NgVcrControlRec *) vcr_control;
         if (!vcrp) return NhlFATAL;
@@ -112,9 +107,7 @@ NgVcrControl NgCreateVcrControl
         NhlBoolean		end
         )
 {
-        NhlErrorTypes ret;
         NgVcrControlRec *vcrp;
-        NhlBoolean first = True;
         int pos,count = 0,ix = 0;
 
         if (begin) count++;
@@ -197,7 +190,6 @@ void NgDestroyVcrControl
         NgVcrControl		vcr_control
         )
 {
-        NhlErrorTypes ret;
         NgVcrControlRec *vcrp;
         
         vcrp = (NgVcrControlRec *) vcr_control;

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenu.c,v 1.12 1999-07-30 03:20:58 dbrown Exp $
+ *      $Id: plotspecmenu.c,v 1.13 1999-09-11 01:06:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -110,8 +110,6 @@ static void CancelCB
 	XtPointer	cb_data
 )
 {
-	PlotSpecMenuRec	*priv = (PlotSpecMenuRec	*)udata;
-	NgPlotSpecMenu	*pub = &priv->public;
 	NgPlotStyle	pstyle;
 
         XtVaGetValues(w,
@@ -155,13 +153,11 @@ static void CreateCB
 {
 	PlotSpecMenuRec	*priv = (PlotSpecMenuRec *)udata;
 	NgPlotSpecMenu	*pub = &priv->public;
-        NgMenuRec	*plot = &priv->plot;
         NgDataProfile	prof;
 	NgPlotStyle	pstyle;
         NrmQuark	qname;
-        char		*vartext,*varname;
+        char		*vartext;
         NgPageId	page_id;
-	int		i;
 	NgVarData	vdata = pub->vdata;
         
 #if	DEBUG_PLOTSPECMENU
@@ -341,7 +337,6 @@ static void CreateDialog
         XmString xmname;
         Widget  form,label,help;
 	char *name;
-        NgDataProfile	prof = NULL;
 
 #if	DEBUG_PLOTSPECMENU
         fprintf(stderr,"%s\n",pstyle->name);
@@ -428,8 +423,6 @@ static void CreateDialogCB
 )
 {
 	PlotSpecMenuRec	*priv = (PlotSpecMenuRec	*)udata;
-	NgPlotSpecMenu	*pub = &priv->public;
-        NgMenuRec	*plot = &priv->plot;
 	NgPlotStyle	pstyle;
 
 #if	DEBUG_PLOTSPECMENU
@@ -452,7 +445,6 @@ static void PlotMenuCB
 )
 {
 	PlotSpecMenuRec	*priv = (PlotSpecMenuRec	*)udata;
-	NgPlotSpecMenu	*pub = &priv->public;
         NgMenuRec	*plot = &priv->plot;
         int		i;
 
@@ -481,8 +473,7 @@ NhlErrorTypes NgUpdatePlotSpecMenu
         NgPlotSpecMenu		*plot_spec_menu
         )
 {
-	NgPlotSpecMenu	*pub = plot_spec_menu;
-	PlotSpecMenuRec	*priv = (PlotSpecMenuRec	*)pub;
+
         return NhlNOERROR;
 }
 
@@ -497,7 +488,6 @@ GetPlotStylesInPath
 	const char	*path
 )
 {
-	struct stat	statbuf;
 	struct dirent	*dirp;  
 	DIR		*dp;
 	int		i,j;
@@ -529,7 +519,6 @@ GetPlotStylesInPath
 	count = 0;
 	while ( (dirp = readdir(dp)) != NULL) {
 		char *cp;
-		char buf[256];
 
 		if (! strcmp(dirp->d_name, ".")  ||
 		    ! strcmp(dirp->d_name, ".."))
@@ -610,7 +599,6 @@ GetPlotStylesInPath
 		PlotStyles[count].plot_name = NULL;
 		while (cp = fgets(buf,255,fp)) {
 			char *name,*np;
-			NhlClass class;
 
 			while (np = strrchr(cp,'\n'))
 			       *np = '\0';
@@ -796,7 +784,6 @@ NgCreatePlotSpecMenu
 	PlotSpecMenuRec	*priv;
 	NgPlotSpecMenu	*pub;
         Widget		menush;
-	int		i;
 
 
         priv = NhlMalloc(sizeof(PlotSpecMenuRec));

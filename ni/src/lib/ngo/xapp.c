@@ -1,5 +1,5 @@
 /*
- *      $Id: xapp.c,v 1.12 1999-05-27 02:28:35 dbrown Exp $
+ *      $Id: xapp.c,v 1.13 1999-09-11 01:07:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -310,11 +310,8 @@ XAppMgrInitialize
 )
 {
 	char		func[] = "XAppMgrInitialize";
-	NgXAppMgrClass	ac = (NgXAppMgrClass)lc;
 	NgXAppMgrPart	*xapp = &((NgXAppMgr)new)->xapp;
 	NgAppMgrPart	*app = &((NgXAppMgr)new)->app;
-	unsigned long	mask = 0;
-	XcbAttrRec	xcbattr;
 
 	if(!xapp->x.app){
 		if(xapp->x.dpy)
@@ -406,7 +403,6 @@ XAppMgrGetValues
 )
 {
 	NgXAppMgrPart	*xapp = &((NgXAppMgr)l)->xapp;
-	NgAppMgrPart	*app = &((NgAppMgr)l)->app;
 	int		i;
 
 	for(i=0;i<nargs;i++){

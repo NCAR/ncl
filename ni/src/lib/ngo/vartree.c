@@ -1,5 +1,5 @@
 /*
- *      $Id: vartree.c,v 1.10 1998-12-16 23:51:43 dbrown Exp $
+ *      $Id: vartree.c,v 1.11 1999-09-11 01:07:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,7 +32,6 @@
 
 static NrmQuark Qlong_name;
 static Dimension Row_Height;
-static Dimension Char_Height;
 static NhlString Unnamed = "<unnamed>";
 
 
@@ -262,7 +261,7 @@ FixFloat
 	char		*buf
         )
 {
-        char *cp,tcp;
+        char *cp;
                             
         if (!strchr(buf,'.')) {
                 strcat(buf,".0");
@@ -365,7 +364,7 @@ static void ExpandAttr
         xmempty = NgXAppCreateXmString(vtp->go->go.appmgr," ");
         for (i = 0; i < val->totalelements; i++) {
                 char *attvalue,*cp,*lastcp;
-                int len,ncols,nlcount = 1,rows,size,j;
+                int len,nlcount = 1,rows,j;
                 XmString xmattval;
 
                 attvalue = NgTypedValueToString(val,i,False,&len);
@@ -474,9 +473,8 @@ static void DoSingleLineAttrVal
 
         buf[0] = '\0';
         for (i = 0,bufp = buf; i < val->totalelements; i++) {
-                XmLTreeRowDefinition *rowdefs;
                 char *attvalue,*cp,*nextp;
-                int ncols,nlcount = 1,rows,vlen;
+                int nlcount = 1,rows,vlen;
                 
                 attvalue = NgTypedValueToString(val,i,False,&vlen);
                 
@@ -527,7 +525,6 @@ static void ExpandAttrList
         int pos
         )
 {
-        NclApiFileInfoRec *finfo;
         NclApiVarInfoRec *vinfo;
         NclApiDataList	*dlist = NULL;
         XmLTreeRowDefinition *rowdefs;
@@ -629,11 +626,10 @@ static void ExpandDim
         XmLTreeRowDefinition *rowdefs;
         int rowcount,i;
         char buf[256];
-        NrmQuark *ql;
         _vtNodeType subtype;
         long    stride;
         NhlBoolean is_coord_var = False;
-        int size = 0,dim_ix;
+        int dim_ix;
         
 #if	DEBUG_VARTREE & DEBUG_ENTRY
 	fprintf(stderr,"ExpandDim(IN)\n");
@@ -791,7 +787,6 @@ static void ExpandDimList
         int pos
         )
 {
-        NclApiFileInfoRec *finfo;
         NclApiVarInfoRec *vinfo;
         XmLTreeRowDefinition *rowdefs;
         int ndims,i;
@@ -916,7 +911,6 @@ static void ExpandTree
                               XmNrowSizePolicy,XmVARIABLE,
                               NULL);
                 XmLFontListGetDimensions(fontlist,&cw,&ch,True);
-                Char_Height = ch;
                 Row_Height = MAX(rh,h/nrows);
                 Row_Height = 20;
                 vtp->expand_called = True;
@@ -977,7 +971,7 @@ static void ExpandCB
         XmLGridCallbackStruct *cbs;
         XmLGridRow	row;
         vtNodeData	*ndata;
-        int		pos,row_change;
+        int		row_change;
         
         cbs = (XmLGridCallbackStruct *)cb_data;
         row = XmLGridGetRow(w,XmCONTENT,cbs->row);
@@ -1149,11 +1143,8 @@ NhlErrorTypes NgUpdateVarTree
         NclApiDataList		*dlist
         )
 {
-        NhlErrorTypes ret;
         NgVarTreeRec *vtp;
-        int	i,nrows,nvisrows;
-        static Dimension height;
-        NhlBoolean first = True;
+        int	i;
         NclApiVarInfoRec *vinfo;
         int	nattrs,ndims,tcount;
         XmLTreeRowDefinition *rowdefs;
@@ -1221,7 +1212,6 @@ NhlErrorTypes NgUpdateVarTree
         XmLTreeAddRows(vtp->tree,rowdefs,tcount,0);
 
         for (i = 0; i < tcount; i++) {
-                XtPointer udata;
                 
                 switch (i) {
                     case 0:

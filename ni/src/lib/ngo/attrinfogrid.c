@@ -1,5 +1,5 @@
 /*
- *      $Id: attrinfogrid.c,v 1.4 1997-10-03 20:07:52 dbrown Exp $
+ *      $Id: attrinfogrid.c,v 1.5 1999-09-11 01:05:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -206,10 +206,8 @@ NhlErrorTypes NgUpdateAttrInfoGrid
         NclApiDataList		*dlist
         )
 {
-        NhlErrorTypes ret;
         NgAttrInfoGridRec *aip;
         int	nattrs,i;
-        Dimension	height;
         NhlBoolean	first = True;
         
         

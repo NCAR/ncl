@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.23 1999-07-16 18:01:00 dbrown Exp $
+ *      $Id: app.c,v 1.24 1999-09-11 01:05:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -164,7 +164,7 @@ static void GetColormapsInPath
 {
 	struct dirent	*dirp;  
 	DIR		*dp;
-	int		i,j;
+	int		i;
 	int		count;
 	char		fullpath[1024];
 	char		*endp;
@@ -297,7 +297,7 @@ static void ReadUserColormaps
 {
 	const char *path;
 	char buf[1024];
-	char *cp,*last_cp = buf;
+	char *cp;
 
 	path = getenv(NDV_COLORMAP_PATH);
 	if (! path) {
@@ -483,7 +483,7 @@ FreeGOList
 	_NgAppGOList	gol
 )
 {
-	int	i,j;
+	int	i;
 
 	if(!gol)
 		return;
@@ -525,8 +525,6 @@ AppMgrDestroy
 {
 	NgAppMgr	app = (NgAppMgr)l;
 	NgAppMgrPart	*ap = &app->app;
-	NgAppMgrClass	ac = (NgAppMgrClass)NgappMgrClass;
-	int		i;
 	_NgWorkProc	wk1,wk2;
 	_NgAppFStack	afs1,afs2;
 
@@ -710,7 +708,6 @@ NgAppQuit
 {
 	char		func[] = "NgAppQuit";
 	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
-	NgAppMgrClass	ac;
 
 	if(!app || !_NhlIsClass((NhlLayer)app,NgappMgrClass)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid NgAppMgr object!",
@@ -718,7 +715,6 @@ NgAppQuit
 		return;
 	}
 
-	ac = (NgAppMgrClass)app->base.layer_class;
 	NhlDestroy(app->base.id);
 /*
  * TODO:	call a quitConfirm callback - iff cbdata comes back true,
@@ -1204,8 +1200,6 @@ NgCBWPDestroy
 	NgCBWP	cbwp
 )
 {
-	_NgCBWP_WPL	node;
-
 	if(!cbwp)
 		return;
 
@@ -1290,8 +1284,6 @@ NgAppAddGO
 	char			func[] = "NgAppAddGO";
 	NgAppMgr		app = (NgAppMgr)_NhlGetLayer(appid);
 	_NgAppGOList		*go;
-	int			i;
-	NhlBoolean		compress=False;
 	NhlArgVal		cbdata,sel;
 	NgAppGoChangeRec	gc;
 

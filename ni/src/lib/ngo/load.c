@@ -1,5 +1,5 @@
 /*
- *      $Id: load.c,v 1.4 1997-09-17 16:41:08 boote Exp $
+ *      $Id: load.c,v 1.5 1999-09-11 01:06:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -120,11 +120,6 @@ LoadInitialize
 	int		nargs
 )
 {
-	char		func[] = "LoadInitialize";
-	NgLoad		ncl = (NgLoad)new;
-	NgLoadPart	*np = &((NgLoad)new)->load;
-	NgLoadPart	*rp = &((NgLoad)req)->load;
-
 
 	return NhlNOERROR;
 }
@@ -179,8 +174,6 @@ LoadCreateWin
 	NgGO	go
 )
 {
-	char		func[]="LoadCreateWin";
-	NgLoadPart	*np = &((NgLoad)go)->load;
 
 	XtVaSetValues(go->go.manager,
 		XmNresizePolicy,	XmRESIZE_GROW,

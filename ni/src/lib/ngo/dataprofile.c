@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.5 1999-08-14 01:32:54 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.6 1999-09-11 01:06:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -113,10 +113,11 @@ static NhlBoolean ScalarDataDefined(
 	int				dix
 )
 {
-	int i;
 	NgDataItem ref_ditem = dprof->ditems[dix]->ref_ditem;
 
 	switch (ref_ditem->vdata->set_state) {
+	case _NgBOGUS_EXPRESSION:
+		return False;
 	case _NgUNKNOWN_DATA:
 		return True;
 	case _NgEXPRESSION:
@@ -148,6 +149,8 @@ static NhlBoolean VectorDataDefined(
 
 	for (i = 0; i < NhlNumber(ref_ditems); i++) {
 		switch (ref_ditems[i]->vdata->set_state) {
+		case _NgBOGUS_EXPRESSION:
+			return False;
 		case _NgUNKNOWN_DATA:
 			break;
 		case _NgEXPRESSION:
@@ -180,6 +183,8 @@ static NhlBoolean CoordArrayDataDefined(
 
 	for (i = 0; i < NhlNumber(ref_ditems); i++) {
 		switch (ref_ditems[i]->vdata->set_state) {
+		case _NgBOGUS_EXPRESSION:
+			return False;
 		case _NgUNKNOWN_DATA:
 			return True;
 		case _NgEXPRESSION:
@@ -560,12 +565,12 @@ static NgDataItemRec caxmissingv = {
 	False,False,NULL,GetFillValue,NULL,&caxarray,
 	0,NULL,NULL,NULL,False,False };
 static NgDataItemRec caycast = {
-	"x missing value", "caYCast", NrmNULLQUARK,NrmNULLQUARK,
+	"y array type", "caYCast", NrmNULLQUARK,NrmNULLQUARK,
 	_NgCOORDARRAY,_NgCONFIG,0,0,NULL,
 	False,False,NULL,GetCoordArrayValue,NULL,
 	&cayarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec caxcast = {
-	"x missing value", "caXCast", NrmNULLQUARK,NrmNULLQUARK,
+	"x array type", "caXCast", NrmNULLQUARK,NrmNULLQUARK,
 	_NgCOORDARRAY,_NgCONFIG,0,0,NULL,
 	False,False,NULL,GetCoordArrayValue,NULL,
 	&caxarray ,0,NULL,NULL,NULL,False,False };
@@ -768,18 +773,14 @@ NhlBoolean NgCopyVarData
 		
 	}
 
-	if (from_var_data->set_state == _NgEXPRESSION) {
+	if (from_var_data->set_state == _NgEXPRESSION ||
+	    from_var_data->set_state == _NgBOGUS_EXPRESSION) {
 		if (from_var_data->expr_val) {
-			NhlBoolean copy_expr = False;
 			if (to_var_data->expr_val) {
 				if (strcmp(to_var_data->expr_val,
 					   from_var_data->expr_val)) {
 					NhlFree(to_var_data->expr_val);
-					copy_expr = True;
 				}
-			}
-			else {
-				copy_expr = True;
 			}
 			to_var_data->expr_val = 
 				NhlMalloc(strlen(from_var_data->expr_val)+1);
@@ -869,7 +870,6 @@ extern NhlBoolean NgSetUnknownDataItem
 		vdata->expr_val = NULL;
 	}
 	if (vdata->qexpr_var) {
-		char buf[256];
 		DeleteTmpVarRef(vdata->go,vdata->qexpr_var);
 		vdata->qexpr_var = NrmNULLQUARK;
 		vdata->go = NULL;
@@ -1017,13 +1017,15 @@ NhlBoolean NgSetExpressionVarData
 	int		go_id,
 	NgVarData	vdata,
 	NhlString	expr_val,
-	NhlBoolean	do_eval
+	NgEvalAction	eval_action,
+	NhlBoolean	user_set
 )
 {
 	NclApiDataList	*dl = NULL;
 	NhlBoolean	copy_expr = False;
 	int 		i,size;
 	NgGO		go = (NgGO) _NhlGetLayer(go_id);
+	NhlBoolean	do_eval = False;
 
 	if (! go) {
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"invalid go id"));
@@ -1041,22 +1043,6 @@ NhlBoolean NgSetExpressionVarData
 		vdata->expr_val = NULL;
 		copy_expr = True;
 	}
-
-	if (! do_eval) {
-		vdata->go = go;
-	}
-	else if (copy_expr || ! vdata->qexpr_var) {
-		dl = EvaluateExpression(go,expr_val,&vdata->qexpr_var);
-
-                if (! dl)
-                       return False; 
-                if (! vdata->qexpr_var) {
-                        NclFreeDataList(dl);
-			return False;
-                }
-		vdata->go = go;
-	}
-
 	if (copy_expr) {
 		vdata->expr_val = NhlMalloc(strlen(expr_val)+1);
 		if (! vdata->expr_val) {
@@ -1064,9 +1050,35 @@ NhlBoolean NgSetExpressionVarData
 			return False;
 		}
 		strcpy(vdata->expr_val,expr_val);
+	}
+	vdata->go = go;
 
+	switch (eval_action) {
+	case _NgNOEVAL:
+	default:
+		break;
+	case _NgCONDITIONAL_EVAL:
+		if (copy_expr || vdata->qexpr_var <= NrmNULLQUARK)
+			do_eval = True;
+		break;
+	case _NgFORCED_EVAL:
+		do_eval = True;
+		break;
+	}
+
+	if (do_eval) {
+		dl = EvaluateExpression(go,expr_val,&vdata->qexpr_var);
+
+                if (! (dl && vdata->qexpr_var)) {
+			if (dl)
+				NclFreeDataList(dl);
+			vdata->set_state = _NgBOGUS_EXPRESSION;
+			return False;
+                }
+		vdata->go = go;
+	}
+	if (do_eval || copy_expr) {
 		vdata->cflags = _NgSYMBOL_CHANGE | _NgSHAPE_CHANGE;
-
 		vdata->qfile = vdata->qvar = vdata->qcoord = NrmNULLQUARK;
 
 		if (! dl) {
@@ -1103,7 +1115,8 @@ NhlBoolean NgSetExpressionVarData
 			}
 		}
 		vdata->size_only = True;
-		vdata->set_state = _NgEXPRESSION;
+		vdata->set_state = user_set ? 
+			_NgUSER_EXPRESSION : _NgEXPRESSION;
 		vdata->type = NORMAL;
 	}
         if (dl)
@@ -1113,7 +1126,7 @@ NhlBoolean NgSetExpressionVarData
 }
 
 /*
- * if the set_state is _NgExpression or _NgUnknown Data then NgSetVarData
+ * if the set_state is _NgEXPRESSION or _NgUNKNOWN_DATA then NgSetVarData
  * should not be used.
  */
 
@@ -1151,7 +1164,12 @@ NhlBoolean NgSetVarData
 			   "%s: invalid var_data parameter","NgSetVarData"));
 		return False;
 	}
-	if (set_state == _NgEXPRESSION || set_state == _NgUNKNOWN_DATA) {
+	switch (set_state) {
+	default:
+		break;
+	case _NgEXPRESSION:
+	case _NgUNKNOWN_DATA:
+	case _NgBOGUS_EXPRESSION:
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			   "%s: invalid set_state parameter","NgSetVarData"));
 		return False;
@@ -1418,7 +1436,7 @@ static NgDataProfile NewDataProfile(
 	NhlString	class_name
         )
 {
-	int i, j, ix = -1;
+	int i, j;
 	NgDataProfile	dprof,ref_prof = NULL;
 	NgDataItem	*ditems = NULL;
 	static 	NgDataProfile  dlists[2] = { NULL, NULL };
@@ -1540,7 +1558,6 @@ NgDataProfile NgMergeDataProfiles(
         )
 {
 	NgDataProfile	dprof;
-	NgDataItem	ditem;
 	int		i,j,n_dataitems;
 	
 
@@ -1620,7 +1637,6 @@ NgDataProfile  NgCopyDataProfile(
 
 	for (i = 0; i < data_profile->n_dataitems; i++) {
 		NgVarData frvdata,tovdata;
-		int size;
 
 		ditems[i] = NhlMalloc(sizeof(NgDataItemRec));
 		if (! ditems[i]) {
@@ -1731,7 +1747,6 @@ NhlErrorTypes  NgTransferDataProfileInfo(
 	}
 
 	for (i = 0; i < todp->n_dataitems; i++) {
-		int size;
 		NgDataItem frdi,todi = todp->ditems[i];
 		for (j = 0; j < frdp->n_dataitems; j++) {
 			frdi = frdp->ditems[j];
@@ -1936,7 +1951,6 @@ static NhlBoolean UpdateDependentDataShape
 	NgDataItem		ditem
 )
 {
-	char func[] = "UpdateDependentDataShape";
 	NgVarData vdata = ditem->vdata;
 	int cflags;
 
@@ -1968,7 +1982,6 @@ static NhlBoolean GetImpliedVectorDataItem
 	NgVarData vdata = ditem->vdata;
 	char vtestch[] = { 'v','V','\0' };
 	char utestch[] = { 'u','U','\0' };
-	char *testch;
 	NhlString tfname = NULL, tvname;
 	NhlBoolean matched_var = False,matched_file = False;
 	NclApiDataList 	*vdl = NULL,*fdl = NULL;
@@ -2169,12 +2182,12 @@ NhlBoolean NgSetDependentVarData
 	NhlBoolean	init
 )
 {
-	DimProfileRec	rdim_prof_rec,dim_prof_rec;
+	DimProfileRec	rdim_prof_rec;
 	int		i;
 	NgVarData	vdata,rvdata = NULL;
-	int		coord_num,dim,ndims;
-	NclApiDataList          *dl,*rdl = NULL;
-	NclApiVarInfoRec	*vinfo = NULL, *rvinfo = NULL;	
+	int		coord_num,dim;
+	NclApiDataList          *rdl = NULL;
+	NclApiVarInfoRec	*rvinfo = NULL;	
 	int		start,end;
 
 	if (index < 0) {

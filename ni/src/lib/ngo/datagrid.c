@@ -1,5 +1,5 @@
 /*
- *      $Id: datagrid.c,v 1.7 1999-08-28 00:18:41 dbrown Exp $
+ *      $Id: datagrid.c,v 1.8 1999-09-11 01:06:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,8 +30,7 @@
 
 static char *Buffer = NULL;
 static int  Buflen;
-static NrmQuark Qlong_name;
-static Dimension Row_Height,Width_Const,Width_Mult,Width_Char;
+static Dimension Width_Const,Width_Mult,Width_Char;
 
 static void GridTraverseAction(
 	Widget		w,
@@ -52,9 +51,8 @@ static void GridPosToArrayPos
         int	last_dim
         )
 {
-        NgDataGrid *dgp = &dgrp->datagrid;
         int i,j,ndims = last_dim + 1;
-        long size,trow;
+        long trow;
 
         dgrp->array_pos[ndims-1] = dgrp->array_rev[ndims-1] ?
                 dgrp->start[ndims-1] - grid_col * dgrp->stride[ndims-1] :
@@ -98,7 +96,6 @@ static NclExtValueRec *ReadMoreData
 {
         int i;
         NclExtValueRec *val = NULL;
-        NgDataGrid *dgp = &dgrp->datagrid;
 
         GridPosToArrayPos(dgrp,col,row,dgrp->col_dim);
         for (i = 0; i <= dgrp->col_dim; i++) {
@@ -172,10 +169,9 @@ static void FillVisibleGrid
         NclExtValueRec *val = NULL;
         int i,j;
         int ndims = dgrp->col_dim + 1;
-        int end_col, end_row;
         Dimension save_cell_width,cell_width,width,head_width=0;
         int vix,last_row_read;
-        int start_col,start_row,ncols,nrows;
+        int start_col,start_row,nrows;
         XmLGridColumn colptr;
         XmLGridRow rowptr;
         
@@ -218,9 +214,14 @@ static void FillVisibleGrid
 	
 	dgrp->ncols = 2 + (width - Width_Const - head_width) /
 	  (cell_width * Width_Char + Width_Mult);
+
+#if 1
+	if (dgrp->array_size[dgrp->col_dim] <  start_col + dgrp->ncols)
+		start_col = MAX(0,
+				dgrp->array_size[dgrp->col_dim] - dgrp->ncols);
+#endif
         dgrp->ncols = MIN(dgrp->ncols,
 			  dgrp->array_size[dgrp->col_dim] - start_col);
-
         for (i = ndims; i < dgrp->vinfo->n_dims; i++) {
                 dgrp->istart[i] = dgrp->start[i];
                 dgrp->ifinish[i] = dgrp->finish[i];
@@ -389,15 +390,13 @@ static void SetData
         )
 {
         NgDataGrid *dgp = &dgrp->datagrid;
-        int i,j,k;
+        int i,j;
         int ndims;
         NclExtValueRec *val;
         char *sval;
         int vix;
         Dimension width = 0,total_len = 0;
         int col_ix,cols = 0,head_cols = 0,rows = 1;
-        int head_col_count;
-        NhlBoolean rev;
 
         ndims = dgrp->vinfo->n_dims;
         if (!dgrp->array_size) {
@@ -536,6 +535,8 @@ static void SetData
                         NclFreeExtValue(val);
                 }
         }
+	if (Buffer[strlen(Buffer)-1] == '|')
+		Buffer[strlen(Buffer)-1] = '\0';
         XmLGridSetStringsPos(dgp->grid,XmHEADING,0,XmCONTENT,0,Buffer);
 	dgrp->cell_widths[head_cols] = width;
 		
@@ -658,7 +659,6 @@ NhlErrorTypes NgUpdateDataGrid
         )
 {
         static NhlBoolean first = True;
-        NhlErrorTypes ret;
         NgDataGridRec *dgrp;
         NgDataGrid *dgp;
 	int ndims;
@@ -739,7 +739,6 @@ NhlErrorTypes NgUpdateDataGrid
 		Width_Char = cw;
 		Width_Const = shadow * 2;
 		Width_Mult = 4 + ml + mr;
-                Row_Height = ch + 2;
                 first = False;
         }
         
@@ -793,17 +792,14 @@ NgDataGrid *NgCreateDataGrid
         NhlBoolean		highlight_on
         )
 {
-        NhlErrorTypes ret;
         NgDataGridRec *dgrp;
         static NhlBoolean first = True;
-        int i,nrows;
         unsigned char sel_policy;
         NgDataGrid *dgp;
         Widget hsb,vsb;
  
         if (first) {
 		XtAppAddActions(go->go.x->app,myact,NhlNumber(myact));
-                Qlong_name = NrmStringToQuark("long_name");
                 Buffer = NhlMalloc(BUFINC);
                 Buflen = BUFINC;
                 first = False;
@@ -816,7 +812,6 @@ NgDataGrid *NgCreateDataGrid
 	dgrp->vinfo = NULL;
         dgrp->dims_alloced = 0;
 
-        nrows = headline_on ? 4 : 3;
         sel_policy = highlight_on ? XmSELECT_BROWSE_ROW : XmSELECT_NONE;
 
         dgrp->start = NULL;
@@ -912,11 +907,9 @@ void NgDestroyDataGrid
         )
 {
         NgDataGridRec *dgrp;
-        NgDataGrid *dgp;
         
         dgrp = (NgDataGridRec *) data_grid;
         if (!dgrp) return;
-        dgp = &dgrp->datagrid;
 
         NgDeactivateDataGrid(data_grid);
 

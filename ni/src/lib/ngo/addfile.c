@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.25 1999-07-30 03:20:43 dbrown Exp $
+ *      $Id: addfile.c,v 1.26 1999-09-11 01:05:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -254,10 +254,7 @@ AddFileInitialize
 	int		nargs
 )
 {
-	char		func[] = "AddFileInitialize";
-	NgAddFile		ncl = (NgAddFile)new;
 	NgAddFilePart	*np = &((NgAddFile)new)->addfile;
-	NgAddFilePart	*rp = &((NgAddFile)req)->addfile;
 
 	np->vname = np->rw_optmenu = NULL;
         np->dl = NULL;
@@ -366,10 +363,10 @@ static void AdjustSize
 	NgAddFile	l = (NgAddFile)go;
 	NgAddFilePart	*np = &l->addfile;
         int max,ssize,inc,pinc,off,oldoff;
-	Widget wid,dirlabel,hscroll;
+	Widget dirlabel,hscroll;
         XmFontList      fontlist;
         XmString xmlabel;
-        Dimension w, cwidth,add,vwidth,fwidth,formwidth;
+        Dimension w, cwidth,vwidth,fwidth,formwidth;
         Dimension formheight,h;
 	int		vis_items, h_add = 0;
         
@@ -509,14 +506,12 @@ static void SetApplyForm
 	char			*item = NULL;
 	char			*ptr,*ptr2,*ptr3;
 	size_t			len;
-        Dimension		width1,width2;
         char			*vname;
         NclApiDataList          *dlist,*dl;
         NclApiFileInfoRec	*finfo;
         NhlBoolean		added = False;
         NrmQuark		symbol;
         static NhlBoolean	first = True;
-        XmString		xmstring;
 
         if (np->mapped && first) {
                 first = False;
@@ -654,7 +649,7 @@ CreateDimInfoPopup
 	NgafDimInfoRec	*dip
 )
 {
-        Widget frame, form;
+        Widget form;
         
         dip->popup =
                 XtVaCreatePopupShell("DimInfo",overrideShellWidgetClass,
@@ -689,11 +684,8 @@ DoDimInfoPopup
 )
 {
 	NgAddFilePart		*np = &l->addfile;
-        XmString		xmtext;
         Position		x,y,root_x,root_y;
         Dimension		w,h,p_w,p_h,root_w,root_h;
-        char			*grid_text;
-        int			i;
         NhlBoolean		new = False;
 
         XmListPosToBounds(np->vlist,dip->pos,&x,&y,&w,&h);
@@ -749,7 +741,7 @@ CreateAttrPopup
         NclApiDataList	*dlist
 )
 {
-        Widget frame, form;
+        Widget form;
         
         aip->popup =
                 XtVaCreatePopupShell("AttrInfo",overrideShellWidgetClass,
@@ -783,11 +775,8 @@ DoAttrPopup
 )
 {
 	NgAddFilePart		*np = &l->addfile;
-        XmString		xmtext;
         Position		x,y,root_x,root_y;
         Dimension		w,h,p_w,p_h,root_w,root_h;
-        char			*grid_text;
-        int			i;
         NhlBoolean		new = False;
         NclApiDataList		*dlist;
         
@@ -847,8 +836,6 @@ static void ClearVarList
 {
 	NgAddFile		l = (NgAddFile)go;
 	NgAddFilePart		*np = &l->addfile;
-        XmFontList      	fontlist;
-        Dimension 		w, cwidth;
 
         np->finfo = NULL;
         np->file_changed = False;
@@ -887,10 +874,8 @@ static void OpenForPreview
 
 	NgAddFile		l = (NgAddFile)go;
 	NgAddFilePart		*np = &l->addfile;
-	XmString dirspec;
 	static NhlBoolean first = True;
-	NclApiDataList *vlist,*dl;
-        char func[] = "OpenForPreview";
+	NclApiDataList *dl;
         NhlBoolean	writable;
 
 #if	DEBUG_ADDFILE
@@ -954,10 +939,8 @@ DoInfoPopup
 {
 	NgAddFilePart		*np = &l->addfile;
         String			item, sval = NULL;
-        NclApiDataList		*dl;
         XmStringTable		xmstringtable;
         int			*pos, count;
-        NrmQuark		qvar;
 	NgafAttrInfoRec		*aip;
 	NgafDimInfoRec		*dip;
         int			top,vis_count;
@@ -1101,7 +1084,6 @@ CheckInfoPopup
 )
 {
 	NgAddFilePart		*np = &l->addfile;
-        NgafDimInfoRec		*dip;
         int			*pos, count;
         
 
@@ -1144,12 +1126,9 @@ static NhlBoolean ShowVarList
 
 	NgAddFile		l = (NgAddFile)go;
 	NgAddFilePart		*np = &l->addfile;
-	NclApiDataList *vlist,*dl,*vl,*cl;
+	NclApiDataList *vlist,*vl;
 	int i;
-	NhlBoolean recognized = False;
 	XmString xmstring;
-	String *clist;
-        char func[] = "ShowVarList";
         XmFontList      fontlist;
         Dimension maxw = 0, cwidth;
         NgOrderData *vodata;
@@ -1251,8 +1230,6 @@ static void SelectTextCB
 )
 {
 	NgGO go = (NgGO)data;
-	NgAddFile		l = (NgAddFile)go;
-	NgAddFilePart		*np = &l->addfile;
 
 #if	DEBUG_ADDFILE
 	fprintf(stderr,"SelectTextCB(IN)\n");
@@ -1285,12 +1262,6 @@ static void ClearApplyForm
 {
 	NgAddFile		l = (NgAddFile)go;
 	NgAddFilePart		*np = &l->addfile;
-	char			bname[_NhlMAXFNAMELEN];
-	char			cmd[_NhlMAXFNAMELEN];
-	char			*item = NULL;
-	char			*ptr,*ptr2,*ptr3;
-	XmString		cmdstr;
-	size_t			len;
 	char			*vname;
 
 	XtVaSetValues(np->vname,
@@ -1322,13 +1293,10 @@ static void SetSelectText
 {
 	NgAddFile	l = (NgAddFile)go;
 	NgAddFilePart	*np = &l->addfile;
-	char	*selecttext,*tstring = NULL;
-	int	len;
+	char	*selecttext;
 	XmString dirspec;
-	XmTextPosition pos;
 	struct stat statbuf;
 	XmString xmtmp;
-	time_t cur_time;
         NhlBoolean writable;
 
 
@@ -1436,7 +1404,6 @@ static void Filter
 	NgAddFilePart	*np = &l->addfile;
 	char	*filtertext,*tstring = NULL;
 	int	len;
-        Dimension w, cwidth;
 
 	if (! np->mapped)
         	return;
@@ -1620,7 +1587,6 @@ static void ListTimeoutCB
 	NgGO		go = (NgGO) data;
 	NgAddFile	l = (NgAddFile)(go);
 	NgAddFilePart	*np = &l->addfile;
-	NgVcrControl	vcrp = np->vcrp;
         
 #if	DEBUG_ADDFILE
 	fprintf(stderr,"ListTimeoutCB(IN)\n");
@@ -1737,7 +1703,6 @@ static void VcrCB
 	NgAddFile	l = (NgAddFile)(go);
 	NgAddFilePart	*np = &l->addfile;
 	NgVcrControl	vcrp = np->vcrp;
-        int 		type;
 
         
 #if	DEBUG_ADDFILE
@@ -1932,7 +1897,6 @@ FileRefDeleteCB
         NgNclAny	node = (NgNclAny)cbdata.ptrval;
 	NgAddFilePart	*np = &((NgAddFile)go)->addfile;
         char		*vname;
-        XmString	xmstring;
         
 #if	DEBUG_ADDFILE
         fprintf(stderr,"in fileref delete callback\n");
@@ -1964,11 +1928,10 @@ AddFileCreateWin
 	NgGO	go
 )
 {
-	char		func[]="AddFileCreateWin";
 	NgAddFilePart	*np = &((NgAddFile)go)->addfile;
 	Widget		applyform,menu,menush,optmenu;
 	Widget		filterbutton,varinfobutton;
-        Widget		varform,filterform,form,label;
+        Widget		varform,filterform,form;
         Widget		varlabel,filterlabel,sizelabel,datelabel;
         Widget		frame,frame1,sep,pb;
 	XmString	dirspec,xmtmp;
@@ -1977,8 +1940,6 @@ AddFileCreateWin
 	Arg		args[32];
         time_t		tim;
         NgVcrControl	vcrp;
-        Dimension	width1,width2;
-        int		pos;
 	NhlArgVal	sel,user_data;
         XtTranslations	translations;
 	char		*cp;
@@ -2788,8 +2749,6 @@ static void OpenDataFileAction
 )
 {
 	NgGO	go;
-	NgAddFile		l; 
-	NgAddFilePart		*np;
 
 #if	DEBUG_ADDFILE
 	fprintf(stderr,"OpenDataFileAction(IN)\n");
@@ -2798,8 +2757,6 @@ static void OpenDataFileAction
                       XmNuserData,(void*)&go,
                       NULL);
 
-        l = (NgAddFile)go;
-        np = &l->addfile;
 	SetSelectText( go);
 	ShowVarList(go);
 
@@ -2895,13 +2852,11 @@ static void CheckInfoPopupAction
 {
 	NgGO	go;
         NgAddFile	l;
-        int	type;
         XMotionEvent *mev = (XMotionEvent *)xev;
 
 #if	DEBUG_ADDFILE
 	fprintf(stderr,"CheckInfoPopupAction(IN)\n");
 #endif
-	type = atoi(params[0]);
 
 	XtVaGetValues(w,
                       XmNuserData,(void*)&go,
@@ -2928,7 +2883,6 @@ static void InfoPopdownAction
 	NgGO	go;
         NgAddFile	l;
         NgAddFilePart	*np;
-        int	type;
         XButtonEvent *bev = (XButtonEvent *)xev;
 
 
@@ -2936,7 +2890,6 @@ static void InfoPopdownAction
 	fprintf(stderr,"InfoPopdownAction(IN)\n");
 #endif
         
-	type = atoi(params[0]);
 	XtVaGetValues(w,
                       XmNuserData,(void*)&go,
                       NULL);

@@ -1,5 +1,5 @@
 /*
- *      $Id: Grid.c,v 1.7 1999-06-02 03:40:06 dbrown Exp $
+ *      $Id: Grid.c,v 1.8 1999-09-11 01:05:37 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -1521,7 +1521,7 @@ Widget reqW, newW;
 ArgList args;
 Cardinal *narg;
 	{
-	XmLGridWidget g, request;
+	XmLGridWidget g;
 	Display *dpy;
 	Pixmap pix, pixMask;
 	Pixel white, black;
@@ -1537,7 +1537,6 @@ Cardinal *narg;
 
 	g = (XmLGridWidget)newW;
 	dpy = XtDisplay((Widget)g);
-	request = (XmLGridWidget)reqW;
 
 #ifdef POINTER_FOCUS_CHECK
 	shell = XmLShellOfWidget(newW);
@@ -7326,7 +7325,6 @@ Cardinal *nparam;
 	{
 	XmLGridWidget g;
 	Display *dpy;
-	Window win;
 	static XrmQuark qACTIVATE, qBEGIN, qEXTEND, qEND;
 	static XrmQuark qTOGGLE;
 	static int quarksValid = 0;
@@ -7351,7 +7349,7 @@ Cardinal *nparam;
 	else
 		g = (XmLGridWidget)XtParent(w);
 	dpy = XtDisplay(g);
-	win = XtWindow(g);
+
 	if (!quarksValid)
 		{
 		qACTIVATE = XrmStringToQuark("ACTIVATE");
@@ -8014,11 +8012,15 @@ Widget grid;
 static XmLGridRow _GridRowNew(grid)
 Widget grid;
 	{
+#if 0
 	XmLGridWidget g;
+#endif
 	XmLGridRow row;
 	int size;
 
+#if 0
 	g = (XmLGridWidget)grid;
+#endif
 	size = XmLGridClassPartOfWidget(grid).rowRecSize;
 	row = (XmLGridRow)malloc(size);
 	row->grid.grid = grid;
@@ -8168,11 +8170,15 @@ Widget grid;
 static XmLGridColumn _GridColumnNew(grid)
 Widget grid;
 	{
+#if 0
 	XmLGridWidget g;
+#endif
 	XmLGridColumn column;
 	int size;
 
+#if 0
 	g = (XmLGridWidget)grid;
+#endif
 	size = XmLGridClassPartOfWidget(grid).columnRecSize;
 	column = (XmLGridColumn)malloc(size);
 	column->grid.grid = grid;
@@ -8719,7 +8725,6 @@ XmLGridDrawStruct *ds;
 	Display *dpy;
 	Window win;
 	GC gc;
-	Pixel black, white;
 	int x1, x2, y1, y2, loff, roff;
 	int drawLeft, drawRight, drawBot, drawTop;
 	XRectangle *cellRect;
@@ -8730,8 +8735,10 @@ XmLGridDrawStruct *ds;
 	win = XtWindow(w);
 	gc = ds->gc;
 	cellRect = ds->cellRect;
+#if 0
 	black = BlackPixelOfScreen(XtScreen(w));
 	white = WhitePixelOfScreen(XtScreen(w));
+#endif
 	x1 = clipRect->x;
 	x2 = clipRect->x + clipRect->width - 1;
 	y1 = clipRect->y;

@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegrid.c,v 1.8 1999-08-28 00:18:41 dbrown Exp $
+ *      $Id: datasourcegrid.c,v 1.9 1999-09-11 01:06:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -37,11 +37,31 @@
 static NhlBoolean Colors_Set = False;
 static Pixel Foreground,Background;
 static char *Buffer;
-static int  Buflen;
+static int  BufSize;
 static int  Max_Width;
 static int  CWidth;
-static Dimension  Row_Height;
-static  NrmQuark QTestVar = NrmNULLQUARK;
+static NhlBoolean UpdateBufSize
+(
+	int req_size
+)
+{
+	int newsize;
+
+	if (req_size < BufSize)
+		return True;
+
+	newsize = BufSize;
+	while (newsize <= req_size)
+		newsize += BUFINC;
+		
+	Buffer = NhlRealloc(Buffer,newsize);
+
+	if (! Buffer) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return False;
+	}
+	return True;
+}
 
 static int DataIndex(
 	NgDataSourceGridRec *dsp,
@@ -98,7 +118,6 @@ TitleText
 	NgDataSourceGridRec	*dsp
 )
 {
-        NgDataSourceGrid data_source_grid = dsp->public;
         int len;
         
 #if 0
@@ -125,8 +144,13 @@ Column0String
 )
 {
 	XmString xmstring;
+	
+
 
 	if (! (dsp->data_profile && dsp->data_profile->ditems[dataix]))
+		sprintf(Buffer,"<null>");
+	else if (! UpdateBufSize
+		 (strlen(dsp->data_profile->ditems[dataix]->name)))
 		sprintf(Buffer,"<null>");
 	else {
 		sprintf(Buffer,"%s",dsp->data_profile->ditems[dataix]->name);
@@ -146,7 +170,6 @@ Column1String
         int			dataix
 )
 {
-        NgDataSourceGrid *pub = &dsp->public;
 	NgVarData vdata;
 	XmString xmstring;
 	int i;
@@ -169,8 +192,13 @@ Column1String
 			sprintf(&Buffer[strlen(Buffer)-1],")>");
 		}
 	}
-	else if (vdata->set_state == _NgEXPRESSION) {
-		sprintf(Buffer,vdata->expr_val);
+	else if (vdata->set_state == _NgEXPRESSION || 
+		 vdata->set_state == _NgUSER_EXPRESSION ||
+		 vdata->set_state == _NgBOGUS_EXPRESSION) {
+		if (! UpdateBufSize(strlen(vdata->expr_val)+4))
+			sprintf(Buffer,"<null>");
+		else
+			sprintf(Buffer,vdata->expr_val);
 	}
 	else if (! vdata->qvar) {
 		sprintf(Buffer,"<null>");
@@ -630,7 +658,7 @@ EmptySymbol
 	NhlBoolean	*explicit
 )
 {
-	char *sp,*ep;
+	char *sp;
 	
 	*explicit = False;
 	sp = var_string;
@@ -668,8 +696,6 @@ PossibleNclExpression
 	int  paren_level = 0;
 	int  array_level = 0;
 	NhlBoolean in_quote = False;
-	NhlBoolean number = False;
-	NhlBoolean identifier = False;
 
 	*start = NULL;
 
@@ -763,7 +789,8 @@ SaveExpressionString(
 	NgDataProfile prof =  dsp->data_profile;
 	NgVarData vdata = prof->ditems[index]->vdata;
 
-	return NgSetExpressionVarData(dsp->go->base.id,vdata,var_string,True);
+	return NgSetExpressionVarData
+		(dsp->go->base.id,vdata,var_string,_NgCONDITIONAL_EVAL,True);
 }
 
 static NhlBoolean 
@@ -774,7 +801,6 @@ QualifyAndInsertVariable
 	char                *var_string
 )
 {
-        NgDataSourceGrid *pub = &dsp->public;
 	NgDataProfile prof =  dsp->data_profile;
 	NrmQuark qfile = NrmNULLQUARK,
 		qvar = NrmNULLQUARK,qcoord = NrmNULLQUARK;
@@ -888,18 +914,30 @@ QualifyAndInsertVariable
 			}
 		}
 		else if (! NgConformingDataItem(prof->ditems[index])) {
+			NhlBoolean user = False;	
 			/* 
 			 * Here it's necessary to reevaluate back to 
 			 * the previous expression, if there is one;
 			 * Otherwise, restore last variable.
 			 */
 
-			if (last_vdata->expr_val)
-				NgSetExpressionVarData
-					(dsp->go->base.id,vdata,
-					 last_vdata->expr_val,True);
-			else {
+			switch (last_vdata->set_state) {
+			case _NgUSER_EXPRESSION:
+				user = True;
+				/* drop through */
+			case _NgEXPRESSION:
+			case _NgBOGUS_EXPRESSION:
+				if (last_vdata->expr_val) {
+					NgSetExpressionVarData
+						(dsp->go->base.id,vdata,
+						 last_vdata->expr_val,
+						 _NgCONDITIONAL_EVAL,user);
+					break;
+				}
+				/* drop through */
+			default:
 				NgCopyVarData(vdata,last_vdata);
+				break;
 			}
 			NgSetDependentVarData(prof,-1,False);
 			message = INVALID_SHAPE;
@@ -1090,9 +1128,7 @@ EditCB
 	}
 	else {
 		NgDataProfile dprof = dsp->data_profile;
-		int mix = dprof->master_data_ix;
 		int page_id;
-		brPageType ptype;
 		XmString xmstr;
 
 		xmstr = Column0String(dsp,data_ix);
@@ -1115,8 +1151,6 @@ EditCB
 
 		page_id = NgGetPageId
 			(dsp->go->base.id,dsp->qname,NrmNULLQUARK);
-		ptype = dprof->ditems[mix]->vdata->qfile != NrmNULLQUARK ? 
-			_brFILEVAR : _brREGVAR;
 
 		NgPostPageMessage(dsp->go->base.id,page_id,_NgNOMESSAGE,
 				  _brHLUVAR,NrmNULLQUARK,dsp->qname,
@@ -1218,11 +1252,9 @@ NhlErrorTypes NgUpdateDataSourceGrid
         NgDataProfile		data_profile
        )
 {
-        NhlErrorTypes ret;
         NgDataSourceGridRec *dsp;
-        int	nattrs,i;
-        Dimension	height;
-        NhlBoolean	first = True;
+        int	i;
+        static NhlBoolean	first = True;
 	int	row;
         
         dsp = (NgDataSourceGridRec *) data_source_grid;
@@ -1238,7 +1270,6 @@ NhlErrorTypes NgUpdateDataSourceGrid
                 XmLFontListGetDimensions(fontlist,&cw,&ch,True);
                 root_w = WidthOfScreen(XtScreen(data_source_grid->grid));
                 Max_Width = root_w / cw - cw;
-                Row_Height = ch + 2;
 		CWidth = cw;
                 first = False;
         }
@@ -1329,7 +1360,6 @@ FocusEH
 	Boolean		*cont
 )
 {
-	NgDataSourceGridRec *dsp = (NgDataSourceGridRec *)udata;        
 
 	switch (event->type) {
 	case FocusOut:
@@ -1503,15 +1533,13 @@ NgDataSourceGrid *NgCreateDataSourceGrid
         NgDataProfile		data_profile
         )
 {
-        NhlErrorTypes ret;
         NgDataSourceGridRec *dsp;
         NgDataSourceGrid *data_source_grid;
-        int nattrs;
         static NhlBoolean first = True;
 
         if (first) {
                 Buffer = NhlMalloc(BUFINC);
-                Buflen = BUFINC;
+		BufSize = BUFINC;
                 first = False;
         }
         

@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.21 1999-07-30 03:20:57 dbrown Exp $
+ *      $Id: nclstate.c,v 1.22 1999-09-11 01:06:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1170,7 +1170,6 @@ PostSubmit
 )
 {
 	NgNclState	ncl = (NgNclState)cdata;
-	NgNclStatePart	*ns = &ncl->nclstate;
 	NhlArgVal	dummy;
 
 	NhlINITVAR(dummy);

@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.24 1999-07-30 03:20:59 dbrown Exp $
+ *      $Id: restree.c,v 1.25 1999-09-11 01:06:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -49,9 +49,11 @@ static void ResTreeTextAction(
 	Cardinal	*num_params
 );
 
+#if 0
 static XtActionsRec restreeactions[] = {
   { "ResTreeTextAction", ResTreeTextAction }
 };
+#endif
 
 static void CheckCntrlRes
 (
@@ -72,9 +74,8 @@ static XtActionsRec myact[] = {
         { "EnumButtonUpAction", EnumButtonUpAction },
 };
 
-static NrmQuark Qlong_name;
 static Dimension Row_Height = 0;
-static Dimension Char_Height,Char_Width;
+static Dimension Char_Width;
 static Pixel Foreground,Background;
 static NrmQuark Qpointer,Qimmediate,Qdatalist,Qobjid,Qdataspeclist,Qprocedure;
 static NrmQuark Qgenarray,Qdouble,Qfloat,Qvariable,
@@ -521,7 +522,7 @@ static int ExpandClassGroup
 {
         NgResTree *pub_rtp = &rtp->restree;
         int class_group = (int) ndata->info;
-        int nclasses,show_classes, i,j,start_ix,res_start,res_end;
+        int nclasses,show_classes, i,j,start_ix;
         int new_level = 10 * (ndata->type / 10) + 10;
         XmLTreeRowDefinition *rowdefs;
         char buf[256];
@@ -579,7 +580,6 @@ static int ExpandClassGroup
         XmLTreeAddRows(pub_rtp->tree,rowdefs,show_classes,row);
         ndata->subcount = show_classes;
 
-        res_start = 0;
         for (i = 0,j = 0; i < nclasses; i++) {
                 rtClassInfo *cip = &(rtp->class_info[start_ix+i]);
                 
@@ -624,8 +624,6 @@ static void GetInstanceResValues
         NgResTree *pub_rtp = &rtp->restree;
         char buf[256];
         int i;
-        static NhlBoolean first = True;
-        static char arraystring[] = "<array>";
         NhlPointer *values;
         rtResData *resp = res_data;
         int editable_mask;
@@ -761,9 +759,7 @@ static void GetClassDefaultResValues
         NhlClass last_class = NULL;
         _NhlConvertContext      context = _NhlCreateConvertContext(NULL);
         NrmValue from, to;
-        char *fromtype;
         char *strval;
-        static NhlBoolean first = True;
         NrmQuark qfrom;
         
         for (i = 0; i < nrows; i++) {
@@ -829,14 +825,12 @@ static void GetResDBResValues
         NhlClass last_class = NULL;
         _NhlConvertContext      context = _NhlCreateConvertContext(NULL);
         NrmQuark qnames[_NhlMAXTREEDEPTH], qclasses[_NhlMAXTREEDEPTH];
-        int wk_id;
         NrmValue from, to;
-        char *fromtype;
         char *strval;
         NrmQuark qfrom;
         NrmDatabase resdb;
         NhlLayer app,parent;
-        int depth,size = rtp->class->base_class.layer_size;
+        int depth;
 	NrmHashTable	stackslist[_NhlMAXRESLIST];
 	NrmHashTable	*slist = stackslist;
 	int		slistlen = _NhlMAXRESLIST;
@@ -991,7 +985,7 @@ static int ExpandClass
 {
         NgResTree *pub_rtp = &rtp->restree;
         rtClassInfo *cip = (rtClassInfo *) ndata->info;
-        int i,j,class_ix,res_start,res_end,nrows;
+        int i,class_ix,res_start,nrows;
         int new_level = 10 * (ndata->type / 10) + 10;
         XmLTreeRowDefinition *rowdefs;
         char buf[256];
@@ -1016,8 +1010,6 @@ static int ExpandClass
         nrows = rtp->class_info[class_ix].res_count;
         if (nrows == 0)
                 return 0;
-        
-        res_end = res_start + nrows;
         
         rowdefs = NhlMalloc(nrows * sizeof(XmLTreeRowDefinition));
         ndata->subdata = NhlMalloc(nrows * sizeof(rtNodeData));
@@ -1089,7 +1081,6 @@ static int ExpandResGroup
         int		row
         )
 {
-        NgResTree *pub_rtp = &rtp->restree;
 
 #if DEBUG_RESTREE
         fprintf(stderr,"expanding res group\n");
@@ -1110,10 +1101,8 @@ static int ExpandResDoc
 {
         NgResTree *pub_rtp = &rtp->restree;
         rtResData *resp = (rtResData *)ndata->parent->info;
-        XmLTreeRowDefinition *rowdefs;
         int new_level = 10 * (ndata->type / 10) + 10;
-        int i,block_id;
-        char buf[256];
+        int i;
 	XRectangle		rect;
         Dimension	width,height;
         HtmlViewId	htmlview_id = NgNoHtmlView;
@@ -1349,10 +1338,9 @@ static void AdjustOverlayWidgetPositions
         )
 {
         rtHtmlViewInfo 	*hvip;
-        int i,pos;
+        int i;
 
         for (i = 0; i < rtp->htmlview_count; i++) {
-                XRectangle rect;
                 Position new_y;
                 hvip = XmLArrayGet(rtp->htmlview_list,i);
                 if (hvip->ndata->row > row &&
@@ -1377,7 +1365,6 @@ static void SetNodeDataVisFlags
         NhlBoolean	on
         )
 {
-        NgResTree *pub_rtp = &rtp->restree;
         int i;
 
         for (i = 0; i < node_count; i++) {
@@ -1456,7 +1443,6 @@ static int ExpandTree
                               XmNrowSizePolicy,XmVARIABLE,
                               NULL);
                 XmLFontListGetDimensions(fontlist,&cw,&ch,True);
-                Char_Height = ch;
                 Char_Width = cw;
                 Row_Height = MAX(rh,(h-4)/nrows);
                 Row_Height = 20;
@@ -1520,7 +1506,7 @@ static void ExpandCB
         XmLGridCallbackStruct *cbs;
         XmLGridRow	row;
         rtNodeData	*ndata;
-        int		pos,row_change;
+        int		row_change;
         
         cbs = (XmLGridCallbackStruct *)cb_data;
         row = XmLGridGetRow(w,XmCONTENT,cbs->row);
@@ -1594,14 +1580,9 @@ static void UnFocusCB
 	XtPointer	cb_data
 )
 {
+#if 0
 	NgResTreeRec 	*rtp = (NgResTreeRec *) udata;
-        NgResTree 	*pub_rtp = &rtp->restree;
-        XmLGridRow	rowptr;
-        XmLGridColumn	colptr;
-        Boolean		editable;
-        rtNodeData 	*ndata;
-        rtResData	*res_data;
-        int 		i;
+#endif
 
 
 #if DEBUG_RESTREE
@@ -1625,9 +1606,6 @@ static void FocusCB
 	NgResTreeRec *rtp = (NgResTreeRec *) udata;
         NgResTree *pub_rtp = &rtp->restree;
         XmLGridCallbackStruct *cb = (XmLGridCallbackStruct *)cb_data;
-        Boolean		editable;
-        XmLGridRow	rowptr;
-        XmLGridColumn	colptr;
 
         if (cb->reason == XmCR_CELL_FOCUS_IN) {
                 XmLGridRow	rowptr;
@@ -1926,7 +1904,6 @@ static void CheckCntrlRes
 {
         NgResTree *pub_rtp = &rtp->restree;
         rtClassInfo *cip,*ccip;
-        rtNodeData *ndata;
         int i;
 
         if (! pub_rtp->preview_instance)
@@ -2033,7 +2010,6 @@ static void RestoreSensitivity
 )
 {
         NgResTree *pub_rtp = &rtp->restree;
-	rtEnumInfoRec		*ep = &rtp->enum_info;
 	XRectangle	rect;
         Position	root_x,root_y;
         NhlString	param1 = "BEGIN",param2 = "END";
@@ -2090,14 +2066,12 @@ static void EnumEdCB
 	NgResTreeRec *rtp = (NgResTreeRec *) udata;
         NgResTree *pub_rtp = &rtp->restree;
 	rtEnumInfoRec		*ep = &rtp->enum_info;
-        int		i,count = 0;
         XmString	string;
         char 		*sval;
         XmLGridRow	rowptr;
         rtNodeData	*ndata;
         rtResData	*resp;
         XmMegaButtonCallbackStruct *cb = (XmMegaButtonCallbackStruct *)cb_data;
-        XButtonEvent	*xev = &cb->event->xbutton;
 	char *cur_string = NULL;
         
 #if DEBUG_RESTREE
@@ -2154,7 +2128,6 @@ static void UnmapEnumEdCB
 )
 {
 	NgResTreeRec	*rtp = (NgResTreeRec *) udata;
-        NgResTree	*pub_rtp = &rtp->restree;
 	rtEnumInfoRec	*ep = &rtp->enum_info;
 	XmRowColumnCallbackStruct *cb = (XmRowColumnCallbackStruct*)cb_data;
 
@@ -2176,11 +2149,9 @@ static void SetUpColorList
         char		*current_val
 )
 {
-        NgResTree 	*pub_rtp = &rtp->restree;
 	rtEnumInfoRec	*ep = &rtp->enum_info;
         int		ncolors;
         NhlGenArray	ga;
-        float		*cmap;
         NhlLayer	l = _NhlGetLayer(rtp->hlu_id);
         int		i;
         int		cur_ix;
@@ -2228,7 +2199,6 @@ ButtonReleaseEH
 )
 {
 	NgResTreeRec	*rtp = (NgResTreeRec *) udata;
-        NgResTree *pub_rtp = &rtp->restree;
 	rtEnumInfoRec		*ep = &rtp->enum_info;
 
 #if DEBUG_RESTREE
@@ -2276,11 +2246,7 @@ static void EditEnum
 	int			i,j,nargs,noptions = 0;
 	XRectangle		rect;
 	Boolean			unique[128];
-        int			ivalue,current_arg,cur_button_num;
-        XmString 		xmname;
-        Widget			form,button,last_set;
         Dimension		height,width,border;
-	NhlBoolean		new = False;
 	Dimension		root_w,root_h;
 	Position		root_x,root_y,x,y;
         char 			*current_val;
@@ -2332,7 +2298,6 @@ static void EditEnum
 		if (unique[i]){
 			ep->strings[noptions] = args[i].data.strval;
                         if (!strcmp(current_val,args[i].data.strval)) {
-                                current_arg = i;
                                 ep->selected = noptions;
                         }
 			noptions++;
@@ -2459,7 +2424,6 @@ static void SelectCB
 {
 	NgResTreeRec *rtp = (NgResTreeRec *) udata;
         NgResTree *pub_rtp = &rtp->restree;
-        static XmString cell_string = NULL;
         XmLGridCallbackStruct *cb = (XmLGridCallbackStruct *)cb_data;
         NhlBoolean	off = False;
         Boolean		editable;
@@ -2573,7 +2537,6 @@ static void EditCB
         XmLGridColumn	colptr;
         rtNodeData	*ndata;
         NhlBoolean	update = True;
-	NhlString	param = "CURRENT";
 
         cb = (XmLGridCallbackStruct *)cb_data;
         rowptr = XmLGridGetRow(pub_rtp->tree,XmCONTENT,cb->row);
@@ -2706,7 +2669,6 @@ static void ScrollCB
 	XtPointer	cb_data
 )
 {
-	NgResTreeRec *rtp = (NgResTreeRec *) udata;
 
 #if DEBUG_RESTREE
         fprintf(stderr,"in scroll callback\n");
@@ -2770,7 +2732,6 @@ static void OrderClasses
         NgResTreeRec *rtp
         )
 {
-        NgResTree *pub_rtp = &rtp->restree;
 	NhlClass class = rtp->class;
         int count;
 
@@ -2829,7 +2790,6 @@ static void OrderResources
         NgResTreeRec *rtp
         )
 {
-        NgResTree *pub_rtp = &rtp->restree;
         int i,j,k,count = 0;
 
         OrderClasses(rtp);
@@ -2848,7 +2808,7 @@ static void OrderResources
                 }
                 if (res->res_info & _NhlRES_INTERCEPTED) {
                         NrmResource *native_res[8];
-                        int j, native_res_count = 0;
+                        int native_res_count = 0;
                         _NhlGetNativeResInfo(rtp->class,rtp->qnames[i],
                                              &native_res_count,native_res);
                         rtp->res_data[count].res = res;
@@ -2878,7 +2838,6 @@ static void OrderResources
         for (i = 0; i < rtp->class_count; i++) {
                 rtClassInfo *cip = &rtp->class_info[i];
                 NrmQuark qres;
-                int res_start = j;
                 
                 cip->layer = NULL;
                 cip->display_mode = _rtEXPANDABLE;
@@ -2936,9 +2895,6 @@ NhlErrorTypes NgResTreeResUpdateComplete
         char buf[256];
         rtResData *resp;
         rtResData **res_data;
-        int row = 0;
-        NhlBoolean done = False;
-        int getval_count = 0;
         int editable_mask;
         _NhlConvertContext context = NULL;
 	NhlClass last_class = NULL;
@@ -2976,7 +2932,6 @@ NhlErrorTypes NgResTreeResUpdateComplete
         memset(values,0,rtp->res_data_count * sizeof(NhlPointer));
 
         for (i=0,resp = rtp->res_data; i < rtp->res_data_count; i++,resp++) {
-                NhlBoolean found = False;
                 rtNodeData *ndata;
                 
                 
@@ -3127,20 +3082,14 @@ static void GetActualCntrlResValues
         NgResTreeRec	*rtp
         )
 {
-        NgResTree *pub_rtp = &rtp->restree;
-        char buf[256];
         int i;
         NhlClass last_class = NULL;
         _NhlConvertContext      context = _NhlCreateConvertContext(NULL);
         NrmQuark qnames[_NhlMAXTREEDEPTH], qclasses[_NhlMAXTREEDEPTH];
-        int wk_id;
-        NrmValue from, to;
-        char *fromtype;
-        char *strval;
-        NrmQuark qfrom;
+        NrmValue from;
         NrmDatabase resdb;
         NhlLayer app,parent;
-        int depth,size = rtp->class->base_class.layer_size;
+        int depth;
 	NrmHashTable	stackslist[_NhlMAXRESLIST];
 	NrmHashTable	*slist = stackslist;
 	int		slistlen = _NhlMAXRESLIST;
@@ -3224,7 +3173,6 @@ void NgResTreePreviewResList
         )
 {
         NgResTreeRec *rtp;
-        NgResTree *pub_rtp;
         int i;
 
 #if DEBUG_RESTREE
@@ -3233,7 +3181,6 @@ void NgResTreePreviewResList
 
         rtp = (NgResTreeRec *) res_tree;
         if (!rtp) return;
-        pub_rtp = &rtp->restree;
 /*
  * all the Class Control Resources have immediate mode defaults; this code
  * would have to change if string or other values were added.
@@ -3283,7 +3230,6 @@ int NgResTreeAddResList
         )
 {
         NgResTreeRec *rtp;
-        NgResTree *pub_rtp;
 	rtSetValNode *svp;
         int i,res_count = 0;
         NhlString *res_names;
@@ -3296,7 +3242,6 @@ int NgResTreeAddResList
 
         rtp = (NgResTreeRec *) res_tree;
         if (!rtp) return 0;
-        pub_rtp = &rtp->restree;
         
         for (svp = rtp->set_val_list; svp != NULL; svp = svp->next) {
                 res_count++;
@@ -3565,13 +3510,10 @@ NhlErrorTypes NgUpdateResTree
         int			hlu_id
         )
 {
-        NhlErrorTypes ret;
         NgResTreeRec *rtp;
         NgResTree *pub_rtp;
-        int	i,nrows,nvisrows;
-        static Dimension height;
-        NhlBoolean first = True;
-        int	nattrs,ndims,tcount;
+        int	i;
+        int	tcount;
         XmLTreeRowDefinition *rowdefs;
         char	buf[256];
         Dimension width = 0;
@@ -3663,8 +3605,6 @@ NhlErrorTypes NgUpdateResTree
         XmLTreeAddRows(pub_rtp->tree,rowdefs,tcount,0);
 
         for (i = 0; i < tcount; i++) {
-                XtPointer udata;
-                
                 switch (i) {
                     case 0:
                             sprintf(buf,"%d",rtp->super_class_count);
@@ -3763,7 +3703,6 @@ NgResTree *NgCreateResTree
 		unsigned int w,h,b,depth;
 		
 		XtAppAddActions(go->go.x->app,myact,NhlNumber(myact));
-                Qlong_name = NrmStringToQuark("long_name");
                 Qgenarray = NrmStringToQuark(NhlTGenArray);
                 Qdouble = NrmStringToQuark(NhlTDouble);
                 Qfloat = NrmStringToQuark(NhlTFloat);
@@ -3932,17 +3871,13 @@ void NgRestoreResTreeOverlays
 {
         NgResTreeRec *rtp;
         rtHtmlViewInfo 	*hvip;
-        rtNodeData	*ndata;
-        int i,j;
+        int i;
         
         
         rtp = (NgResTreeRec *) res_tree;
         if (!rtp) return;
         
         for (i = 0; i < rtp->htmlview_count; i++) {
-                XRectangle rect;
-                NhlBoolean expanded = True;
-                
                 hvip = XmLArrayGet(rtp->htmlview_list,i);
                 if (! hvip->open)
                         continue;
@@ -3996,7 +3931,6 @@ static void EnumButtonUpAction(
         )
 {
         NgResTreeRec *rtp;
-	rtEnumInfoRec		*ep;
         
 #if DEBUG_RESTREE
         fprintf(stderr,"in enum button up action %x\n",XtWindow(w));
@@ -4009,7 +3943,6 @@ static void EnumButtonUpAction(
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"invalid user data"));	
                 return;
         }
-        ep = &rtp->enum_info;
 
 #if DEBUG_RESTREE
         fprintf(stderr,"%x %x %d %d %d \n",rtp,ep,xev->xbutton.time,
@@ -4024,7 +3957,6 @@ static void ResTreeTextAction(
 	Cardinal	*num_params
 )
 {
-	char func[] = "ResTreeTextAction";
 
 #if DEBUG_RESTREE        
 	fprintf(stderr,"%s in\n",func);

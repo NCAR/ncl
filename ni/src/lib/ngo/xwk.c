@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.18 1999-08-14 01:32:59 dbrown Exp $
+ *      $Id: xwk.c,v 1.19 1999-09-11 01:07:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -131,7 +131,6 @@ ColorCB
 	NhlArgVal	udata
 )
 {
-	char		func[]="ColorCB";
 	NgXWk		xwk = (NgXWk)udata.ptrval;
 	NhlXPixel	bg,fg;
 	XGCValues       gcv;
@@ -291,8 +290,6 @@ NgXWorkPreOpenCB
 	NhlXWorkstationLayer	wk = (NhlXWorkstationLayer)cbdata.ptrval;
 	NgXWk			xwk;
 	int			xwkid,appmgr,selected_work;
-        NclApiVarInfoRec 	*vinfo;
-        NclApiDataList		*dlist = NULL;
 	NgWksObj 		wko;
 	NgHluData		hdata;
 
@@ -450,10 +447,9 @@ colorMapEditor
 
 	if(!xwk->xwk.cmap_editor){
 		NhlVACreate(&xwk->xwk.cmap_editor,"colorMapEditor",
-							NgcolorMapClass,xwkid,
-			NgNcmWork,	xwk->xwk.xwork->base.id,
-			NULL);
-		
+			    NgcolorMapClass,xwkid,
+			    NgNcmWork,xwk->xwk.xwork->base.id,
+			    NULL);
 	}
 
 	NgGOPopup(xwk->xwk.cmap_editor);
@@ -492,7 +488,6 @@ XWkInitialize
 	char			func[] = "XWkInitialize";
 	NgXWk			xwk = (NgXWk)new;
 	NgXWkPart		*np = &((NgXWk)new)->xwk;
-	NgXWkPart		*rp = &((NgXWk)req)->xwk;
 	NhlArgVal		sel,udata;
 	int			nclstate=NhlDEFAULT_APP;
 
@@ -614,9 +609,7 @@ XWkDestroy
 	if(xwk->go.shell)
 		XtRemoveEventHandler(xwk->go.shell,StructureNotifyMask,False,
 				     (XtEventHandler)_NgSelectionEH,xwk);
-#if 0
-	NgAppRemoveGO(xwk->go.appmgr,xwk->base.id);
-#endif
+
 	if(xp->xwork){
 		int	nclstate=NhlDEFAULT_APP;
 		char	*ref;
@@ -673,7 +666,7 @@ XWkSetMainSize
 {
 	NgXWkPart	*xp = &xwk->xwk;
 	Widget		grVP;
-	Dimension	wSW,hSW,wVP,hVP,w,h,mw,mh;
+	Dimension	wSW,hSW,w,h;
 
 	XtVaSetValues(xwk->go.shell,
 		XmNmaxWidth,	WidthOfScreen(XtScreen(xwk->go.shell)),
@@ -767,7 +760,6 @@ DrawSingleViewOptionCB
 	XtPointer	cbdata
 )
 {
-	char			func[]="DrawSingleViewOptionCB";
 	XmToggleButtonCallbackStruct	*xmcb = 
 		(XmToggleButtonCallbackStruct*)cbdata;
 	NgXWk			xwk = (NgXWk)udata;
@@ -788,7 +780,6 @@ AutoRefreshOptionCB
 	XtPointer	cbdata
 )
 {
-	char			func[]="AutoRefreshOptionCB";
 	XmToggleButtonCallbackStruct	*xmcb = 
 		(XmToggleButtonCallbackStruct*)cbdata;
 	NgXWk			xwk = (NgXWk)udata;
@@ -813,7 +804,6 @@ XWkCreateWin
 	NgGO	go
 )
 {
-	char			func[]="XWkCreateWin";
 	NgXWk			xwk = (NgXWk)go;
 	NgXWkPart		*xp = &xwk->xwk;
 	NgXAppExport		x = go->go.x;
@@ -982,7 +972,7 @@ ChangeSizeEH
 	NgXWk		xwk = (NgXWk)go;
 	NgXWkPart	*xp = &xwk->xwk;
 	Widget		grVP;
-	Dimension	grw,grh,wSW,hSW,wVP,hVP,wS,hS;
+	Dimension	grw,grh,wSW,hSW;
 	static Dimension new_wh,w_off,h_off;
 	static NhlBoolean user_generated = True,redo = False;
 	static NhlBoolean first = True;
@@ -1116,12 +1106,10 @@ XWkCreateWinHook
 	NgGO	go
 )
 {
-	char			func[]="XWkCreateWinHook";
 	NgXWk			xwk = (NgXWk)go;
 	NgXWkPart		*xp = &xwk->xwk;
 	NgXAppExport		x = go->go.x;
 	XSetWindowAttributes	xswa;
-	Dimension		dim;
 	_NGCXAllocColor		xalloccolor;
 	Gescape_in_data		gesc_in;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.h,v 1.6 1999-08-28 00:18:45 dbrown Exp $
+ *      $Id: shaper.h,v 1.7 1999-09-11 01:06:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,7 @@
 
 typedef struct _NgShaper {           /* shaper interface struct */
         Widget		frame;	     /* top-level widget for the shaper */
+	Widget		reverse;
 	NrmQuark	qfile;
 	NclApiVarInfoRec  *vinfo;
 	long		*start;

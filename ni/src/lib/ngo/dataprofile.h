@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.h,v 1.5 1999-08-14 01:32:55 dbrown Exp $
+ *      $Id: dataprofile.h,v 1.6 1999-09-11 01:06:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -64,7 +64,9 @@ typedef enum _NgVarDataSetState {
 	_NgDEFAULT_SHAPE,	/* explicitly specified var default shape */
 	_NgSHAPED_VAR,		/* var and shape specified */
 	_NgEXPRESSION,		/* specified expression */
-	_NgUNKNOWN_DATA		/* data source has not been determined */
+	_NgUSER_EXPRESSION,	/* expression set by the user */
+	_NgUNKNOWN_DATA,	/* data source has not been determined */
+	_NgBOGUS_EXPRESSION 	/* an expression found to cause errors */
 } NgVarDataSetState;
 
 typedef struct _NgVarDataRec
@@ -328,12 +330,19 @@ NhlBoolean NgCopyVarData
 	NgVarData	from_var_data
 	);
 
+#define _NgNOEVAL 0
+#define _NgCONDITIONAL_EVAL 1
+#define _NgFORCED_EVAL 2
+
+typedef char NgEvalAction;
+
 NhlBoolean NgSetExpressionVarData
 (
 	int		go_id,
 	NgVarData	var_data,
 	NhlString	expr_val,
-	NhlBoolean	do_eval
+	NgEvalAction	eval_action,
+	NhlBoolean	user_set
 	);
 
 NhlBoolean NgDeleteExpressionVarData

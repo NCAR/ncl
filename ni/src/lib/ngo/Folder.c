@@ -1,5 +1,5 @@
 /*
- *      $Id: Folder.c,v 1.3 1999-03-12 19:13:46 dbrown Exp $
+ *      $Id: Folder.c,v 1.4 1999-09-11 01:05:33 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -479,12 +479,10 @@ ArgList args;
 Cardinal *narg;
 	{
 	Display *dpy;
-	Window root;
-	XmLFolderWidget f, request;
+	XmLFolderWidget f;
  
 	f = (XmLFolderWidget)newW;
 	dpy = XtDisplay((Widget)f);
-	request = (XmLFolderWidget)req;
 
 	if (f->core.width <= 0) 
 		f->core.width = 100;
@@ -583,10 +581,8 @@ Region region;
 	XmLFolderWidget f;
 	XmLFolderConstraintRec *fc;
 	XRectangle eRect, rRect, rect;
-	XSegment *topSeg, *botSeg;
-	int tCount, bCount;
 	Widget tab;
-	int i, st, ht, x, y;
+	int i;
 
 	f = (XmLFolderWidget)w;
 	if (!XtIsRealized(w))
@@ -595,8 +591,10 @@ Region region;
 		return;
 	dpy = XtDisplay(f);
 	win = XtWindow(f);
+#if 0
 	st = f->manager.shadow_thickness;
 	ht = f->folder.highlightThickness;
+#endif
 
 	if (event)
 		{
@@ -849,7 +847,6 @@ static void Layout(f, resizeIfNeeded)
 XmLFolderWidget f;
 int resizeIfNeeded;
 	{
-	Window win;
 
 	if (!f->folder.allowLayout)
 		return;
@@ -2990,7 +2987,6 @@ static void DrawTabHighlight(f, w)
 XmLFolderWidget f;
 Widget w;
 	{
-	XmLFolderConstraintRec *fc;
 	Display *dpy;
 	Window win;
 	int ht;
@@ -3001,7 +2997,6 @@ Widget w;
 		return;
 	dpy = XtDisplay(f);
 	win = XtWindow(f);
-	fc = (XmLFolderConstraintRec *)(w->core.constraints);
 	ht = f->folder.highlightThickness;
 	if (f->folder.focusW == w)
 		XSetForeground(dpy, f->folder.gc, f->manager.highlight_color);

@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlpage.c,v 1.4 1999-07-30 03:20:55 dbrown Exp $
+ *      $Id: htmlpage.c,v 1.5 1999-09-11 01:06:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -50,7 +50,6 @@ AdjustHtmlPageGeometry
 {
 	brPage	*page = (brPage *) data;
         brHtmlPageRec	*rec;
-	Dimension		w,h,y,twidth,theight;
         Dimension		avail_width,avail_height;
 
 	rec = (brHtmlPageRec *)page->pdata->type_rec;
@@ -91,9 +90,6 @@ static void HtmlPageFocusNotify (
         NhlBoolean in
         )
 {
-        brPageData	*pdp = page->pdata;
-	brHtmlPageRec	*rec = (brHtmlPageRec	*)pdp->type_rec;
-        
         if (in) {
                 GetHtmlView(page);
 		AdjustHtmlPageGeometry((NhlPointer)page);
@@ -168,9 +164,6 @@ _NgGetHtmlPage
 	NhlPointer	init_data
 )
 {
-	NgBrowse		browse = (NgBrowse)go;
-	NgBrowsePart		*np = &browse->browse;
-        NhlString		e_text;
 	brPageData		*pdp;
 	brHtmlPageRec		*rec,*copy_rec;
 	NhlBoolean		new = False;

@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.24 1999-07-30 03:20:56 dbrown Exp $
+ *      $Id: mwin.c,v 1.25 1999-09-11 01:06:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -145,10 +145,6 @@ MWInitialize
 	int		nargs
 )
 {
-  char			func[] = "MWInitialize";
-	NgMWin			mwin = (NgMWin)new;
-	NgMWinPart		*np = &((NgMWin)new)->mwin;
-	NgMWinPart		*rp = &((NgMWin)req)->mwin;
 
 	fprintf(stderr,"NCARG Version: %s\n",GetNCARGVersion());
 	return NhlNOERROR;
@@ -160,8 +156,6 @@ MWDestroy
 	NhlLayer	l
 )
 {
-	NgMWin	mwin = (NgMWin)l;
-	NgMWinPart	*mp = &((NgMWin)l)->mwin;
 
 	return NhlNOERROR;
 }
@@ -252,7 +246,6 @@ AllocNode
 	NodeType	type
 )
 {
-	char		func[]="AllocNode";
 	NgObjTreeNode	new = NhlMalloc(sizeof(NgObjTreeNodeRec));
 
 	if(!new){
@@ -944,7 +937,7 @@ GetBasePlotNode
 	int		base_id
 )
 {
-	NgObjTreeNode tn,bnode;
+	NgObjTreeNode bnode;
 
 	if (! node)
 		return NULL;
@@ -1060,7 +1053,7 @@ AddAnnotationNode
 	char		func[]="AddAnnotationNode";
 	NgObjTreeNode	pnode,*ann;
 	NgObjTreeNode	an_node_folder;
-	int		i,level_inc,pos,rowcount;
+	int		level_inc,pos,rowcount;
 	NgViewObj	vobj = (NgViewObj)anno_node->ndata;
         XmLTreeRowDefinition *rowdefs;
 
@@ -1137,9 +1130,9 @@ RemoveAnnotationNode
 )
 {
 	char		func[]="RemoveAnnotationNode";
-	NgObjTreeNode	annode,*ann,an,pnode,wknode;
+	NgObjTreeNode	annode,*ann,wknode;
 	NgObjTreeNode	an_node_folder;
-	int		pos,orow,nrow,row_count,level_dec;
+	int		orow,nrow,row_count,level_dec;
 	NgViewObj	vobj;
 
 	/* 
@@ -1368,7 +1361,7 @@ RemoveOverlayNode
 {
 	char		func[]="RemoveOverlayNode";
 	NgObjTreeNode	ov_node_folder,an_node_folder;
-	NgObjTreeNode	ovnode,ov,an,pnode,wknode;
+	NgObjTreeNode	ovnode,ov,an,wknode;
 	NgObjTreeNode	*ovn,*ann;
 	int 		i,orow, nrow;
 	int		*seq_ids,seq_id_count = 0;
@@ -1569,7 +1562,6 @@ OverlayStatusCB
 		(_NhlOverlayStatusCBData)cbdata.ptrval;
 	NhlLayer	tl;
 	NgObjTree	otree = (NgObjTree)udata.ptrval;
-	NgObjTreeNode   trnode,basenode;
 	NgObjTreeNode	bvp,ovnode,*vp,wp = NULL;
 	NgWksObj	wks;
 
@@ -1723,9 +1715,7 @@ AnnoStatusCB
 	_NhlAnnoStatusCBData anstat = (_NhlAnnoStatusCBData)cbdata.ptrval;
 	NgObjTree	otree = (NgObjTree)udata.ptrval;
 	NhlLayer	vl;
-	NgObjTreeNode   vwnode,basenode;
 	NgObjTreeNode	bnode,annode,*vp,wp = NULL;
-	NgViewObj	vwo;
 	int		base_id;
 	NgWksObj 	wks;
 	NhlBoolean	is_xwork;
@@ -1963,11 +1953,7 @@ SetValuesCB
 	_NhlValueSetCBData svstat = 
 		(_NhlValueSetCBData)cbdata.ptrval;
 	NhlLayer	vl;
-	NgObjTree	otree = (NgObjTree)udata.ptrval;
-	NgObjTreeNode	wp = NULL;
 	NgViewObj	vobj;
-	NgWksObj	wks;
-	int		base_id;
 	NgHluData	hdata;
 
 #if DEBUG_MWIN
@@ -2010,7 +1996,7 @@ AddViewNode
 	NhlArgVal	sel,udata;
 	NgObjTreeNode	*vtp;
 	NgObjTreeNode	bnode;
-	int		i,base_id;
+	int		base_id;
 	Boolean		is_base_plot;
 	int		last_node_pos;
 	NhlBoolean	base_node_not_found = False;
@@ -2536,11 +2522,10 @@ MWCreateWin
 	NgGO	go
 )
 {
-	char		func[]="MWCreateWin";
 	NgMWinPart	*mp = &((NgMWin)go)->mwin;
 	Widget		pane;
-	Widget		pform,ptbform,dtbform,dform;
-	Widget		cwki,cvi;
+	Widget		pform,ptbform,dform;
+	Widget		cwki;
 	Widget		objtree;
 	int		nsid;
 	NgWksState	wks_state;
@@ -2589,7 +2574,7 @@ MWCreateWin
 		 NULL);
 	XtAddCallback(cwki,XmNactivateCallback,CreateXWorkCB,NULL);
 
-	cvi = XtVaCreateManagedWidget("cvi",xmPushButtonWidgetClass,ptbform,
+	XtVaCreateManagedWidget("cvi",xmPushButtonWidgetClass,ptbform,
 		XmNleftAttachment,	XmATTACH_WIDGET,
 		XmNleftWidget,		cwki,
 		NULL);
@@ -2597,7 +2582,7 @@ MWCreateWin
 	dform = XtVaCreateManagedWidget("dform",xmFormWidgetClass,pane,
 		NULL);
 
-	dtbform = XtVaCreateManagedWidget("dtbform",xmFormWidgetClass,dform,
+	XtVaCreateManagedWidget("dtbform",xmFormWidgetClass,dform,
 		NULL);
 
 	return True;
@@ -2609,6 +2594,7 @@ MWCreateWinHook
 	NgGO	go
 )
 {
+#if 0
 	char		func[]="MWCreateWinHook";
 	NgMWinPart	*mp = &((NgMWin)go)->mwin;
 	Pixmap		pmap = None;
@@ -2616,7 +2602,7 @@ MWCreateWinHook
 	XpmAttributes	xpmat;
 	XpmColorSymbol	colsym;
 	Pixel		back;
-#if 0
+
 	XtRealizeWidget(go->go.shell);
 
 	/*
@@ -2879,8 +2865,7 @@ extern int NgTopLevelViews(
 
 	if (views) {
 		for (vwnode = wknode->cnodes; vwnode; vwnode = vwnode->next) {
-			NgViewObj vobj = (NgViewObj) vwnode->ndata;
-		
+
 			if (lcount >= Top_Level_View_Alloc_Count) {
 				Top_Level_View_Alloc_Count++;
 				Top_Level_Views = NhlRealloc
@@ -2933,7 +2918,6 @@ extern void NgUpdateTransformation(
 	NgWksState	wks_state
 )
 {
-	char		func[]="NgUpdateTransformation";
 	NgObjTree	otree = (NgWksState)wks_state;
 	NgObjTreeNode	vwnode,wknode;
 
@@ -2951,7 +2935,6 @@ extern void NgDrawUpdatedViews(
 	NhlBoolean	force_draw
 )
 {
-	char		func[]="NgDrawUpdatedViews";
 	NgObjTree	otree = (NgWksState)wks_state;
 	NgObjTreeNode	vwnode,wknode;
 	NhlBoolean	draw_single;
@@ -3017,7 +3000,6 @@ static void RowMoveAction
 	NgObjTree	otree;
 	NgObjTreeNode	node; 
 	Pixmap		pixmap,pixmap_mask;
-	NgGO		go;
 
 #if DEBUG_MWIN
 	fprintf(stderr,"in row move action\n");
@@ -3076,11 +3058,7 @@ static void RowSetPosAction
         unsigned char	rowtype, coltype;
         int		row,col;
         XmLGridRow	rowptr;
-        XmLGridColumn	colptr;
 	NgObjTree	otree;
-	NgObjTreeNode	node; 
-	Pixmap		pixmap,pixmap_mask;
-	NgGO		go;
 
 #if DEBUG_MWIN
 	fprintf(stderr,"in row set pos action\n");
@@ -3092,7 +3070,6 @@ static void RowSetPosAction
                 return;
 
         rowptr = XmLGridGetRow(w,XmCONTENT,row);
-        colptr = XmLGridGetColumn(w,XmCONTENT,col);
 
         XtVaGetValues(w,
                       XmNrowPtr,rowptr,

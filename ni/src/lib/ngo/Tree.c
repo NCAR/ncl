@@ -1,5 +1,5 @@
 /*
- *      $Id: Tree.c,v 1.4 1998-01-29 16:05:03 boote Exp $
+ *      $Id: Tree.c,v 1.5 1999-09-11 01:05:42 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -472,12 +472,13 @@ XmLGridCallbackStruct *cbs;
 	{
 	XmLTreeWidget t;
 	XmLTreeRow row;
+#if 0
 	XmLGridColumn col;
+#endif
 	XmLGridWidgetClass sc;
 	XmLGridCellActionProc cellActionProc;
 	XmLGridCellRefValues *cellValues;
 	XmLGridCellIcon *icon;
-	XRectangle *rect, cRect;
 	int ret, h, isTreeCell;
 
 	t = (XmLTreeWidget)w;
@@ -519,7 +520,9 @@ XmLGridCallbackStruct *cbs;
 				if (cellValues->type != XmICON_CELL)
 					return 0;
 				icon = (XmLGridCellIcon *)cell->cell.value;
+#if 0
 				col = (XmLGridColumn)cbs->object;
+#endif
 				row = (XmLTreeRow)XmLGridGetRow(w, XmCONTENT, cbs->row);
 				if (row->tree.stringWidthValid == False)
 					{

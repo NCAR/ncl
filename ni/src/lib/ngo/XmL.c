@@ -1,5 +1,5 @@
 /*
- *      $Id: XmL.c,v 1.3 1998-02-20 00:11:27 dbrown Exp $
+ *      $Id: XmL.c,v 1.4 1999-09-11 01:05:44 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -327,7 +327,7 @@ XmLStringToUCharMap *map;
 XrmValuePtr fromVal, toVal;
 {
 	char *from;
-	int i, num, valid;
+	int i, valid;
 
 	from = (char *)fromVal->addr;
 	valid = 0;
@@ -608,8 +608,6 @@ XtPointer clientData, callData;
 	{
 	XmLDrawnBData *dd;
 	XmDrawnButtonWidget b;
-	unsigned char drawDir;
-	unsigned char alignment;
 	Display *dpy;
 	Window win;
 	GC gc;
@@ -1484,7 +1482,6 @@ unsigned char drawing_direction;
 	XImage *sourceImage, *destImage;
 	Pixmap pixmap;
 	GC pixmapGC;
-	int sourceWidth, sourceHeight;
 	int destWidth, destHeight;
 	int stringWidth, stringHeight;
 	int i, j, bytesPerLine;

@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.c,v 1.3 1999-08-28 00:18:42 dbrown Exp $
+ *      $Id: datavargrid.c,v 1.4 1999-09-11 01:06:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,10 +23,12 @@
 #include <ncarg/ngo/datavargridP.h>
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/stringutil.h>
+#include <ncarg/ngo/shell.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
 #include <Xm/Text.h>
+#include <Xm/PushBG.h>
 #include  <ncarg/ngo/Grid.h>
 #include <float.h>
 
@@ -38,15 +40,274 @@
 #define INSUFFICIENT_DIMS_AS_SHAPED \
 "Data var has insufficient dimensionality as currently shaped: %d dims required"
 
+static void PopupShaperAction
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+);
+
 static NhlBoolean Colors_Set = False;
 static Pixel Foreground,Background;
 static char *Buffer;
-static int  Buflen;
 static int  Max_Width;
 static int  CWidth;
-static Dimension  Row_Height;
-static  NrmQuark QTestVar = NrmNULLQUARK;
 
+static XtActionsRec datavargridactions[] = {
+	{ "PopupShaperAction", PopupShaperAction }
+};
+
+/*
+*************************************************************************
+* shape tool functions
+*/
+
+static void AdjustShapeToolGeometry
+(
+	NhlPointer pdata
+)
+{
+        NgDataVarGridRec	*dvp = (NgDataVarGridRec *)pdata;
+	NgShaper		*si = dvp->shaper;
+	Position		x;
+	Dimension		w,twidth;
+
+	if (! si)
+		return;
+	XtVaGetValues(si->shapeinfogrid->grid,
+		      XmNx,&x,
+		      XmNwidth,&w,
+		      NULL);
+        twidth = x + w;
+	XtVaGetValues(si->reverse,
+		      XmNx,&x,
+		      XmNwidth,&w,
+		      NULL);
+	twidth = MAX(twidth,x+w);
+
+	if (si->datagrid && XtIsManaged(si->datagrid->grid)) {
+		XtVaGetValues(si->datagrid->grid,
+			      XmNx,&x,
+			      XmNwidth,&w,
+			      NULL);
+		twidth = MAX(x+w,twidth);
+		XtVaSetValues(si->datagrid->grid,
+                              XmNwidth,twidth -
+                              si->datagrid->sub_width - si->sub_width,
+                              NULL);
+	}
+}
+
+static void UpdateDataVarShape
+(
+	NhlPointer pdata
+)
+{
+        NgDataVarGridRec *dvp = (NgDataVarGridRec *)pdata;
+	NgPlotData pd = &dvp->public.plotdata[dvp->data_ix];
+	NgVarData vdata = pd->vdata;
+	NclApiVarInfoRec *vinfo = NULL;
+	int		page_id;
+
+	if (vdata->dl) {
+		vinfo = vdata->dl->u.var;
+	}
+	else {
+		if (vdata->qfile > NrmNULLQUARK)
+			vdata->dl = 
+				NclGetFileVarInfo(vdata->qfile,vdata->qvar);
+		else 	
+			vdata->dl = NclGetVarInfo(vdata->qvar);
+		if (vdata->dl)
+			vinfo = vdata->dl->u.var;
+	}
+	if (! vinfo) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return;
+	}
+
+	vdata->set_state = _NgSHAPED_VAR;
+	vdata->cflags = _NgSHAPE_CHANGE;
+
+	NgUpdateDataVarGrid((NgDataVarGrid *)dvp,dvp->qname,
+			    dvp->public.plotdata_count,
+			    dvp->public.plotdata);
+
+	page_id = NgGetPageId
+		(dvp->go->base.id,dvp->qname,NrmNULLQUARK);
+	if (page_id == NgNoPage)
+		return;
+
+	NgPostPageMessage(dvp->go->base.id,page_id,_NgNOMESSAGE,
+			  _brPLOTVAR,NrmNULLQUARK,dvp->qname,
+			  _NgDATAVARUPDATE,(NhlPointer)True,True,NULL,True);
+	return;
+}
+
+static void ShapeToolOKCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+        NgDataVarGridRec *dvp = (NgDataVarGridRec *)udata;
+
+	UpdateDataVarShape((NhlPointer)dvp);
+	NgGOPopdown(dvp->shape_tool_id);
+
+}
+
+static void ShapeToolApplyCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+        NgDataVarGridRec *dvp = (NgDataVarGridRec *)udata;
+
+	UpdateDataVarShape((NhlPointer)dvp);
+
+}
+
+static void CreateShapeTool
+(
+	NgGO		go,
+	NhlPointer	data
+)
+{
+        NgDataVarGridRec *dvp = (NgDataVarGridRec *)data;
+	NgPlotData pd = &dvp->public.plotdata[dvp->data_ix];
+	NgVarData vdata = pd->vdata;
+	NclApiVarInfoRec *vinfo = NULL;
+	Widget apply;
+	char 		buf[256];
+
+#if DEBUG_DATA_VAR_GRID      
+	fprintf(stderr,"in create shape tool\n");
+#endif        
+
+	if (vdata->dl) {
+		vinfo = vdata->dl->u.var;
+	}
+	else {
+		if (vdata->qfile > NrmNULLQUARK)
+			vdata->dl = 
+				NclGetFileVarInfo(vdata->qfile,vdata->qvar);
+		else 	
+			vdata->dl = NclGetVarInfo(vdata->qvar);
+		if (vdata->dl)
+			vinfo = vdata->dl->u.var;
+	}
+	if (! vinfo) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return;
+	}
+
+	dvp->shaper = NgCreateShaper(go,go->go.manager,vdata->qfile,
+				     vdata->start,vdata->finish,vdata->stride,
+				     vinfo);
+	dvp->shaper->shape_notify = UpdateDataVarShape;
+	dvp->shaper->geo_notify = AdjustShapeToolGeometry;
+	dvp->shaper->pdata = NULL;
+
+	XtAddCallback(go->go.manager,
+                      XmNokCallback,ShapeToolOKCB,dvp);
+
+	apply = XtVaCreateManagedWidget
+		("Apply",xmPushButtonGadgetClass,go->go.manager,NULL);
+	XtAddCallback(apply,XmNactivateCallback,ShapeToolApplyCB,dvp);
+
+	if (vdata->qfile)
+		sprintf(buf,"%s->%s Shape",
+			NrmQuarkToString(vdata->qfile),
+			NrmQuarkToString(vdata->qvar));
+	else
+		sprintf(buf,"%s Shape",
+			NrmQuarkToString(vdata->qvar));
+
+	XtVaSetValues(go->go.shell,
+		      XmNtitle,buf,
+		      NULL);
+
+	NgUpdateShaper(dvp->shaper,vdata->qfile,
+		       vdata->start,vdata->finish,vdata->stride,
+		       vdata->dl->u.var);
+	dvp->shaper->pdata = dvp;
+
+	_NgGOWidgetTranslations(go,dvp->shaper->frame);
+}
+
+static void PopupShaperAction
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+)
+{
+        NgDataVarGridRec *dvp;
+	XButtonEvent	*xb = (XButtonEvent *) xev;
+	unsigned char	row_type,col_type;
+	int		row,col;
+	char 		buf[256];
+	NgVarData	vdata;
+	NgGO		shape_go;
+
+#if DEBUG_DATA_VAR_GRID      
+	fprintf(stderr,"in popup shaper action\n");
+#endif
+	XmLGridXYToRowColumn(w,xb->x,xb->y,&row_type,&row,&col_type,&col);
+
+	if (row_type != XmCONTENT)
+		return;
+
+
+	XtVaGetValues(w,
+                      XmNuserData,(void*)&dvp,
+                      NULL);
+
+	dvp->data_ix = row;
+	vdata = dvp->public.plotdata[dvp->data_ix].vdata;
+	if (! (vdata && vdata->qvar))
+		return;
+
+	if (vdata->qfile)
+		sprintf(buf,"%s->%s Shape",
+			NrmQuarkToString(vdata->qfile),
+			NrmQuarkToString(vdata->qvar));
+	else
+		sprintf(buf,"%s Shape",
+			NrmQuarkToString(vdata->qvar));
+
+	if (dvp->shape_tool_id <= NhlNULLOBJID) {
+		NhlVACreate(&dvp->shape_tool_id,"ShapeTool",
+			    NgshellClass,dvp->go->base.id,
+			    NgNshContentFunc,CreateShapeTool,
+			    NgNshContentFuncData,dvp,
+			    NULL);
+	}
+	else {
+		shape_go = (NgGO)_NhlGetLayer(dvp->shape_tool_id);
+		if (! shape_go) {
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				   "error creating shapetool dialog"));
+			return;
+		}
+		XtVaSetValues(shape_go->go.shell,
+			      XmNtitle,buf,
+			      NULL);
+	}
+	NgGOPopup(dvp->shape_tool_id);
+		
+	return;
+}
+/*
+*************************************************************************
+* end of shape tool functions
+*/
 static char *
 ColumnWidths
 (
@@ -86,7 +347,6 @@ TitleText
 	NgDataVarGridRec	*dvp
 )
 {
-        NgDataVarGrid data_var_grid = dvp->public;
         int len;
         
         
@@ -133,7 +393,6 @@ Column1String
         int			dataix
 )
 {
-        NgDataVarGrid *pub = &dvp->public;
 	NgVarData vdata;
 	XmString xmstring;
 	int i;
@@ -263,7 +522,7 @@ EmptySymbol
 	NhlBoolean	*explicit
 )
 {
-	char *sp,*ep;
+	char *sp;
 	
 	*explicit = False;
 	sp = var_string;
@@ -319,7 +578,7 @@ GetShape(char *shape,
 	 long **stride)
 {
 	char *cp = shape;
-	char *tcp,*end,*tail;
+	char *tcp,*end;
 	int commas = 0;
 	int i;
 /*
@@ -409,7 +668,7 @@ GetCoordSymbol
 	char		**cp
 )
 {
-	NclApiDataList *dl,*vinfo;
+	NclApiDataList *dl;
 	char buf[256];
 	char *end,*tail;
 	NrmQuark qsym;
@@ -550,8 +809,6 @@ GetFileSymbol
 )
 {
 	NclApiDataList *dl,*finfo;
-	NrmQuark *qfsyms;
-	int count;
 	char buf[256];
 	char *end,*tail;
 	NrmQuark qsym;
@@ -710,14 +967,11 @@ QualifyAndInsertVariable
 	char                *var_string
 )
 {
-        NgDataVarGrid *pub = &dvp->public;
 	NgPlotData pdata =  &dvp->public.plotdata[index];
 	NrmQuark qfile = NrmNULLQUARK,
 		qvar = NrmNULLQUARK,qcoord = NrmNULLQUARK;
 	int ndims;
 	long *start, *finish, *stride;
-
-	char *vsp,*vep,*fsp,*fep,*csp,*cep;
 	NclApiDataList *dl = NULL;
 	NgVarData vdata;
 	NhlBoolean explicit;
@@ -911,9 +1165,6 @@ EditCB
 				      NULL);
 	}
 	else {
-		NgPlotData pdata = &dvp->public.plotdata[data_ix];
-		int page_id;
-		brPageType ptype;
 		XmString xmstr;
 
 		xmstr = Column0String(dvp,data_ix);
@@ -1040,6 +1291,13 @@ CopyPlotData(
 {
 	int i;
 
+	/*
+	 * if the plotdata is actually the same don't do anything
+	 */
+
+	if (*to_pdata == from_pdata)
+		return NhlNOERROR;
+
 	if (*to_pdata_count) {
 		for (i = 0; i < *to_pdata_count; i++) {
 			NgFreeVarData((*to_pdata)[i].vdata);
@@ -1081,11 +1339,9 @@ NhlErrorTypes NgUpdateDataVarGrid
         NgPlotData		plotdata
        )
 {
-        NhlErrorTypes ret;
         NgDataVarGridRec *dvp;
-        int	nattrs,i;
-        Dimension	height;
-        NhlBoolean	first = True;
+        int	i;
+        static NhlBoolean first = True;
 	int	row;
         
         dvp = (NgDataVarGridRec *) data_var_grid;
@@ -1100,7 +1356,6 @@ NhlErrorTypes NgUpdateDataVarGrid
                 XmLFontListGetDimensions(fontlist,&cw,&ch,True);
                 root_w = WidthOfScreen(XtScreen(data_var_grid->grid));
                 Max_Width = root_w / cw - cw;
-                Row_Height = ch + 2;
 		CWidth = cw;
                 first = False;
         }
@@ -1184,7 +1439,6 @@ FocusEH
 	Boolean		*cont
 )
 {
-	NgDataVarGridRec *dvp = (NgDataVarGridRec *)udata;        
 
 	switch (event->type) {
 	case FocusOut:
@@ -1313,6 +1567,7 @@ static void CellDropCB
 	
 	return;
 }
+
 NgDataVarGrid *NgCreateDataVarGrid
 (
 	NgGO			go,
@@ -1322,18 +1577,16 @@ NgDataVarGrid *NgCreateDataVarGrid
         NgPlotData		plotdata
         )
 {
-        NhlErrorTypes ret;
         NgDataVarGridRec *dvp;
         NgDataVarGrid *data_var_grid;
-        int nattrs;
         static NhlBoolean first = True;
-	int i;
 
         if (first) {
                 Buffer = NhlMalloc(BUFINC);
-                Buflen = BUFINC;
                 first = False;
         }
+	XtAppAddActions(go->go.x->app,
+                        datavargridactions,NhlNumber(datavargridactions));
         
         dvp = NhlMalloc(sizeof(NgDataVarGridRec));
         if (!dvp) return NULL;
@@ -1350,7 +1603,8 @@ NgDataVarGrid *NgCreateDataVarGrid
 	dvp->in_edit = False;
 	dvp->edit_save_string = NULL;
 	dvp->text_dropped = False;
-        
+	dvp->shape_tool_id  = NhlNULLOBJID;
+      
         data_var_grid->grid = XtVaCreateManagedWidget
                 ("DataVarGrid",
                  xmlGridWidgetClass,parent,
@@ -1364,6 +1618,9 @@ NgDataVarGrid *NgCreateDataVarGrid
 		 XmNmappedWhenManaged,False,
                  NULL);
         XmLGridAddRows(data_var_grid->grid,XmHEADING,0,1);
+	XtVaSetValues(data_var_grid->grid,
+		      XmNuserData,data_var_grid,
+		      NULL);
 
         XtAddCallback
 		(data_var_grid->grid,XmNeditCallback,EditCB,dvp);

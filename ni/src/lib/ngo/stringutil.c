@@ -1,5 +1,5 @@
 /*
- *      $Id: stringutil.c,v 1.3 1998-12-16 23:51:41 dbrown Exp $
+ *      $Id: stringutil.c,v 1.4 1999-09-11 01:07:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -66,7 +66,7 @@ NgFixFloat
 	char		*fstr
         )
 {
-        char *cp,tcp;
+        char *cp;
                             
         if (!strchr(fstr,'.')) {
                 strcat(fstr,".0");

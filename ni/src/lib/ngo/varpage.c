@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.15 1999-08-28 00:18:46 dbrown Exp $
+ *      $Id: varpage.c,v 1.16 1999-09-11 01:07:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -210,8 +210,6 @@ static NhlErrorTypes VarPageMessageNotify
         brPage		*page
         )
 {
-	brPageData	*pdp = page->pdata;
-	brVarPageRec	*rec = (brVarPageRec *)pdp->type_rec;
 	NgPageMessage   *messages;
 	int 		i,count;
 	NhlErrorTypes	ret = NhlNOERROR,subret = NhlNOERROR;
@@ -251,9 +249,6 @@ static void VarPageDataUpdate
 	brPageData	*pdp = page->pdata;
 	brVarPageRec	*rec = (brVarPageRec *)pdp->type_rec;
         int ndims = pdp->dl->u.var->n_dims;
-        int i,size = ndims * sizeof(long);
-        brPageType ptype = page->qfile > NrmNULLQUARK ? _brFILEVAR : _brREGVAR;
-	NhlBoolean notify_req = False;
 
 	if (! NgSetVarData(pdp->dl,rec->vdata,page->qfile,
 			   pdp->dl->u.var->name,NrmNULLQUARK,
@@ -346,12 +341,10 @@ static void DataGridToggleCB
         brPage		*page = (brPage *)udata;
 	brPageData	*pdp = page->pdata;
 	brVarPageRec *rec = (brVarPageRec *) pdp->type_rec;
-        Widget top;
         
 #if DEBUG_VARPAGE
         fprintf(stderr,"DataGridToggleCB(IN)\n");
 #endif
-        top = rec->shaper_managed ? rec->shaper->frame : rec->shaper_toggle;
         if (! rec->datagrid) {
                 rec->datagrid = NgCreateDataGrid
                         (page->go,pdp->form,
@@ -453,7 +446,7 @@ UpdateShaper
                 rec->shaper->pdata = (NhlPointer) page;
                 rec->new_shape = False;
                 if (! rec->shaper_managed) {
-                        XtManageChild(rec->shaper->frame);
+                        NgShaperOn(rec->shaper,True);
                         rec->shaper_managed = True;
                         XtVaSetValues(rec->data_ctrl_form,
                                       XmNtopWidget,rec->shaper->frame,
@@ -461,14 +454,14 @@ UpdateShaper
                 }
         }
         else if (rec->shaper_managed) {
-                XtUnmanageChild(rec->shaper->frame);
+		NgShaperOn(rec->shaper,False);
                 rec->shaper_managed = False;
                 XtVaSetValues(rec->data_ctrl_form,
                               XmNtopWidget,rec->shaper_toggle,
                               NULL);
         }
         else {
-                XtManageChild(rec->shaper->frame);
+		NgShaperOn(rec->shaper,True);
                 rec->shaper_managed = True;
                 XtVaSetValues(rec->data_ctrl_form,
                               XmNtopWidget,rec->shaper->frame,
@@ -822,13 +815,9 @@ _NgGetVarPage
 	NhlPointer	init_data
 )
 {
-	NgBrowse		browse = (NgBrowse)go;
-	NgBrowsePart		*np = &browse->browse;
         NhlString		e_text;
 	brPageData		*pdp;
 	brVarPageRec		*rec,*copy_rec = NULL;
-        Dimension		h1,h2;
-        Widget			sep;
 	NgVarTree		*copy_vartree;
         Widget			label,top_widget;
 	NhlBoolean		do_shaper = False;

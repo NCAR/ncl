@@ -1,4 +1,4 @@
-/* $Id: MegaB.c,v 1.7 1998-09-18 23:47:35 boote Exp $ */
+/* $Id: MegaB.c,v 1.8 1999-09-11 01:05:40 dbrown Exp $ */
 /*
  * Copyright 1994 John L. Cwikla
  *
@@ -576,7 +576,9 @@ static XtWidgetProc destroy(XmMegaButtonWidget _mbw)
 
 static void expose(XmMegaButtonWidget _mbw, XEvent *_event, Region _region)
 {
+#if 0
 	GC gc;
+#endif
 	int i, first;
 	Position y;
         XmMegaButtonClassPart *mbwcp =
@@ -587,7 +589,9 @@ static void expose(XmMegaButtonWidget _mbw, XEvent *_event, Region _region)
 
 	findGoodShowPos(_mbw);
 
+#if 0
 	gc = XtIsSensitive((Widget)_mbw) ? LABEL(_mbw).normal_GC : LABEL(_mbw).insensitive_GC;
+#endif
 
 	first = FPOS(_mbw);
 	y = 0;
@@ -1801,7 +1805,6 @@ void XmMegaButtonAddItem(Widget _w, XmString _item, int _pos, XtPointer _cbData,
 static void recheckSizesAtPos(XmMegaButtonWidget _mbw, int _pos)
 {
 	ShellWidget popupShell;
-	XtGeometryResult result;
         XmMegaButtonClassPart *mbwcp =
                 &((XmMegaButtonWidgetClass)XtClass(_mbw))->mega_button_class;
 
@@ -1850,8 +1853,9 @@ static void recheckSizesAtPos(XmMegaButtonWidget _mbw, int _pos)
 		if (width == 0)
 			width = 2 * PRIM(_mbw).shadow_thickness;
 
-		while((result = XtMakeResizeRequest((Widget)_mbw, width, height, &replyWidth,
-			&replyHeight)) == XtGeometryAlmost)
+		while(XtMakeResizeRequest
+		      ((Widget)_mbw, width, height, &replyWidth,
+		       &replyHeight) == XtGeometryAlmost)
 		{
 			width = replyWidth;
 			height = replyHeight;
@@ -1863,9 +1867,6 @@ XtPointer XmMegaButtonRemoveItem(Widget _w, int _pos)
 {
 	XtPointer data;
 	XmMegaButtonWidget mbw;
-	XtGeometryResult result;
-	Dimension width, height;
-	Dimension replyWidth, replyHeight, oldWidth;
 
 	mbw = (XmMegaButtonWidget)_w;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.c,v 1.14 1999-08-28 00:18:43 dbrown Exp $
+ *      $Id: htmlview.c,v 1.15 1999-09-11 01:06:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -60,7 +60,7 @@ static void
 swvsbCB(Widget w, XtPointer udata, XtPointer data)
 {
         NgHtmlViewRec	*hvp = (NgHtmlViewRec	*) udata;
-        int val,slide,inc,page_inc,max;
+        int val,slide,inc,page_inc;
 #if DEBUG_HTML        
 	fprintf(stderr,"outvsbCB!\n");
 #endif
@@ -77,7 +77,6 @@ AdjustSize
 {
         Dimension form_width,form_height,height,width;
 	brPane *pane;
-	XRectangle rect;
         XmHTMLWidget		xmhtml = (XmHTMLWidget) hvp->html;
 	Dimension	html_width, html_height, h_diff,w_diff;
 	
@@ -134,8 +133,6 @@ anchorCB(Widget w, XtPointer udata, XtPointer data)
         NgHtmlViewRec	*hvp = (NgHtmlViewRec	*) udata;
         Dimension width,height;
 	brPane *pane;
-	XRectangle rect;
-        XmHTMLWidget		xmhtml = (XmHTMLWidget) hvp->html;
 
 #if DEBUG_HTML        
 	fprintf(stderr,"in anchor CB!\n");
@@ -237,7 +234,6 @@ static int HtmlObjectListSize
         for (hop = hobject_list; hop != NULL; hop = hop->next) 
         {
                 XmHTMLObject *elp;
-                XmHTMLObjectTable *nanp;
                 XmHTMLAnchor *andp;
                 XmHTMLObjectTable *fop;
 
@@ -414,7 +410,6 @@ static String GetContent(
         NrmQuark	locator
         )
 {
-        String url;
         char filename[256];
         char sbuf[1024];
         char *content;
@@ -538,12 +533,8 @@ GetHtmlObject(
         NrmQuark	locator
         )
 {
-        char	filename[64];
-        char	buf[1024];
-        int	count,html_len;
         char	*content;
-        FILE	*fp;
-        char	*cp;
+
 	_hvHtmlObject *hobject;
         XmHTMLWidget	xmhtml = (XmHTMLWidget) hvp->html;
 
@@ -684,15 +675,12 @@ _NgSetHtmlContent(
         NgHtmlViewRec *hvp = (NgHtmlViewRec *) htmlview;
         _hvHtmlObject *hobject;
         char	buf[1024];
-        char		*cp;
-        NhlBoolean	found_hr = False;
         int		max,min;
-        Dimension	form_width,lmax_width = 0;
+        Dimension	form_width;
         Dimension height,form_height,scroll_height,work_height,html_height;
-        XmHTMLObjectTableElement	begin,end,obj,objp,hr_objp;
+        XmHTMLObjectTableElement	begin,end;
         XmHTMLWidget			xmhtml = (XmHTMLWidget) hvp->html;
         static NhlBoolean first = True;
-        NrmQuark error_ret;
 
         if (! htmlview->managed) {
                 XtManageChild(htmlview->htmlview);
@@ -789,7 +777,7 @@ _NgSetHtmlContent(
                       NULL);
 
         {
-        int val,slide,inc,page_inc,max;
+        int val,slide,inc,page_inc;
         
         XmScrollBarGetValues(hvp->vsb,&val,&slide,&inc,&page_inc);
 #if DEBUG_HTML        
@@ -867,8 +855,7 @@ SetHtmlLocation(
         Position	y
         )
 {
-        NgHtmlViewRec *hvp = (NgHtmlViewRec *) htmlview;
-        Position pane_x,pane_y,req_x,req_y,html_x,html_y;
+        Position pane_x,pane_y,req_x,req_y;
 
 /*
  * The requestor widget is the pane descendent
@@ -1149,12 +1136,9 @@ HtmlViewId NgGetHtmlView(
         Position	requestor_y
         )
 {
-        char func[] = "NgGetHtmlView";
         brPane		*pane = _NgGetPaneOfPage(goid,page_id);
-        XRectangle	rect;
-	int		i,j;
-        NhlBoolean	found_one = False;
-        int		pos = -1,new_pos = -1,max_y = 0;
+	int		i;
+        int		pos = -1,new_pos = -1;
         NgHtmlView	*hv,*htmlview = NULL,*save_hv = NULL;
         
 #if DEBUG_HTML        
@@ -1394,7 +1378,6 @@ NhlErrorTypes NgReleasePageHtmlViews(
         NgPageId	page_id
         )
 {
-        char func[] = "NgReleasePageHtmlViews";
         brPane		*pane = _NgGetPaneOfPage(goid,page_id);
 	int		i = 0;
         NgHtmlView	*hv;
@@ -1425,7 +1408,6 @@ extern void NgRefreshHtmlView(
         HtmlViewId	htmlview_id
         )
 {        
-        char func[] = "NgRefreshHtmlView";
         brPane		*pane = _NgGetPaneOfPage(goid,page_id);
 	int		i;
         NgHtmlViewRec	*hv;

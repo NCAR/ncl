@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.15 1999-08-28 00:18:45 dbrown Exp $
+ *      $Id: shaper.c,v 1.16 1999-09-11 01:06:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -99,8 +99,6 @@ UpdateCoordDataGrid
 
 	qsymbol = si->qfile ? si->qfile : si->vinfo->name;
 	if (si->vinfo->coordnames[dim_ix] == -1) {
-		char sval[32];
-                
                 NgUpdateDataGrid(si->datagrid,qsymbol,NULL,
 				 &shaper->start,
 				 &shaper->finish,&shaper->stride);
@@ -183,10 +181,8 @@ UpdateShaperCoord
 {
 	NgShaperRec *shaper = (NgShaperRec *)si;
 	Boolean set;
-	int startpos = 0, finishpos = 0,end;
 	int dim_ix = shaper->tgl_coord;
-	int i,dimsize;
-	long start,finish,stride,count;
+	int i;
 	NhlBoolean reversed = False;
 	char buf[128];
         
@@ -308,7 +304,6 @@ UpdateShaperCoord
 
         if (output_notify && si->shape_notify && si->pdata)
 		(*si->shape_notify)(si->pdata);
-	shaper->ignore_synchro_step_cb = False;
         
 	return;
  
@@ -322,12 +317,9 @@ UpdateShape
 )
 {
 
-	Arg	args[50];
-	int	nargs;
-	int i;
 	NgShaperRec *shaper = (NgShaperRec *)si;
 	int dim_ix;
-	int t,start, finish, stride;
+	int start, finish, stride;
         Dimension frame_width, form_width;
 
         dim_ix = shaper->tgl_coord;
@@ -356,8 +348,6 @@ UpdateShape
 
 	if (start != si->start[dim_ix] || finish != si->finish[dim_ix] ||
 	    stride != si->stride[dim_ix]) {
-		Dimension width,oldwidth;
-		XmString xmstr;
 		
 		si->start[dim_ix] = start;
 		si->finish[dim_ix] = finish;
@@ -403,7 +393,7 @@ DimSelectNotify
 	NgShapeInfoGridSynchroStepMode
 		(si->shapeinfogrid,shaper->synchro_step_set);
 
-        if (si->pdata)
+        if (si->geo_notify && si->pdata)
                 (*si->geo_notify)(si->pdata);
 
 	return;
@@ -427,7 +417,7 @@ ShapeNotify
  * output_notify is set True here 
  */
         UpdateShaperCoord(si,True);
-        if (si->pdata)
+        if (si->geo_notify && si->pdata)
                 (*si->geo_notify)(si->pdata);
         return;
         
@@ -447,12 +437,12 @@ NgShaperOn
 		return;
 
 	if (on) {
-		if (! XtIsManaged(shaper->form))
-			XtManageChild(shaper->form);
+		if (! XtIsManaged(si->frame))
+			XtManageChild(si->frame);
 	}
 	else {
-		if (XtIsManaged(shaper->form))
-			XtUnmanageChild(shaper->form);
+		if (XtIsManaged(si->frame))
+			XtUnmanageChild(si->frame);
 	}
 	return;
 }
@@ -465,8 +455,6 @@ CancelShaperCB
 )
 {
 	NgShaper	*si = (NgShaper *)data;
-	Arg	args[50];
-	int	nargs;
 
 	NgShaperOn(si,False);
 	return;
@@ -502,7 +490,7 @@ ShaperCB
 		NgDoShaper(si);
 	}
 
-        if (si->pdata)
+        if (si->geo_notify && si->pdata)
                 (*si->geo_notify)(si->pdata);
 	return;
 }
@@ -516,15 +504,9 @@ ToggleShaperCoordCB
 )
 {
 	NgShaper	*si = (NgShaper *)data;
-	Arg	args[50];
-	int	nargs;
-	int i;
-	char *address;
-	NgShaperRec *shaper = (NgShaperRec *)si;
-	Boolean set;
 
 	UpdateShape(si,False);
-        if (si->pdata)
+        if (si->geo_notify && si->pdata)
                 (*si->geo_notify)(si->pdata);
 	return;
 }
@@ -539,9 +521,7 @@ ShaperReverseCoordsCB
 )
 {
 	NgShaper	*si = (NgShaper *)data;
-	int dim_ix;
 	NgShaperRec *shaper = (NgShaperRec *)si;
-	int start,finish,tmp;
 	Boolean set = XmToggleButtonGadgetGetState(shaper->reverse_tgl);
 
 	shaper->new_rev_val = True;
@@ -553,7 +533,7 @@ ShaperReverseCoordsCB
  * True.
  */
 	UpdateShape(si,True);
-        if (si->pdata)
+        if (si->geo_notify && si->pdata)
                 (*si->geo_notify)(si->pdata);
 	return;
 
@@ -568,9 +548,7 @@ ShaperSynchroStepCB
 )
 {
 	NgShaper	*si = (NgShaper *)data;
-	int dim_ix;
 	NgShaperRec *shaper = (NgShaperRec *)si;
-	int start,finish,tmp;
 	Boolean set = XmToggleButtonGadgetGetState(shaper->synchro_step_tgl);
 
 	shaper->synchro_step_set = set;
@@ -592,13 +570,8 @@ SelectedElementsOnlyCB
 )
 {
 	NgShaper	*si = (NgShaper *)data;
-	Arg	args[50];
-	int	nargs;
-	int i;
-	char *address;
 	NgShaperRec *shaper = (NgShaperRec *)si;
 	Boolean set;
-	int val,size,increment,page;
 
 	set = XmToggleButtonGadgetGetState(shaper->all_selected_tgl);
 
@@ -663,10 +636,6 @@ ToggleCoordGridCB
                          XmNrightWidget,si->shapeinfogrid->grid,
 			 XmNtopAttachment,XmATTACH_NONE,
 			 NULL);
-#if 0
-                if (si->pdata)
-                        (*si->geo_notify)(si->pdata);
-#endif
 		_NgGOWidgetTranslations(shaper->go,shaper->all_selected_tgl);
 		_NgGOWidgetTranslations(shaper->go,si->datagrid->grid);
 	}
@@ -688,7 +657,7 @@ ToggleCoordGridCB
 			      XmNbottomWidget,si->shapeinfogrid->grid,
 			      NULL);
 	}
-        if (si->pdata)
+        if (si->geo_notify && si->pdata)
                 (*si->geo_notify)(si->pdata);
 	return;
 
@@ -702,13 +671,8 @@ ShaperCoordsorIndexesCB
 )
 {
 	NgShaper	*si = (NgShaper *)data;
-	Arg	args[50];
-	int	nargs;
-	int i;
-	char *address;
 	NgShaperRec *shaper = (NgShaperRec *)si;
 	Boolean set;
-	int val,size,increment,page;
 
 	set = XmToggleButtonGadgetGetState(shaper->indexes_tgl);
         
@@ -757,7 +721,7 @@ static void VcrCB
                                              NG_DECREMENT,True);
         }
         else if (w == vcr->start_stop) {
-                NgShapeInfoGridEditFocusCellComplete(si->shapeinfogrid);
+                NgShapeInfoGridEditFocusCellComplete(si->shapeinfogrid,True);
         }
         else if (w == vcr->forward && shaper->synchro_step_set) {
                 NgShapeInfoGridEditFocusCell(si->shapeinfogrid,
@@ -781,7 +745,6 @@ static void EditTimeoutCB
 {
 	NgShaper	*si = (NgShaper *)data;
 	NgShaperRec 	*shaper = (NgShaperRec *)si;
-        NgVcrControl    vcr = shaper->vcr;
 	Boolean		sensitive;
         
 #if	DEBUG_SHAPER
@@ -861,7 +824,6 @@ void NgDeactivateShaper
 )
 {
 	NgShaperRec *shaper = (NgShaperRec *)si;
-        Boolean set;
 
 #if 0
         if (si->datagrid)
@@ -880,19 +842,6 @@ void NgDeactivateShaper
 		      XmNset,False,
 		      XmNbottomWidget,si->shapeinfogrid->grid,
 		      NULL);
-#if 0        
-        XtVaGetValues(shaper->datagrid_tgl,
-                      XmNset,&set,
-                      NULL);
-        if (set) {
-                XtUnmanageChild(si->datagrid->grid);
-                XtUnmanageChild(shaper->all_selected_tgl);
-                XtVaSetValues(shaper->datagrid_tgl,
-                              XmNset,False,
-                              XmNbottomWidget,si->shapeinfogrid->grid,
-                              NULL);
-        }
-#endif
         shaper->tgl_coord = -1;
 
         NgDeactivateShapeInfoGrid(si->shapeinfogrid);
@@ -948,20 +897,9 @@ void NgDoShaper
 	NgShaper	*si
 )
 {
-	Arg	args[50];
-	int	nargs;
-	char    buf[128] = "";
-	XmString xmtitle;
 	NgShaperRec *shaper = (NgShaperRec *)si;
-	int i, max_digits = 0;
-	NhlBoolean new = False;
-	Widget start_label,end_label,stride_label;
-        Widget dim_elem_label2;
+	int i;
 	static NhlBoolean first = True;
-	Widget bottom_widget;
-	Dimension height;
-	Widget frame;
-        NrmQuark qsymbol;
         NhlBoolean has_coord_vars = False;
 
 	if (first) {
@@ -1046,7 +984,6 @@ void NgDoShaper
 			MAX(shaper->coords_alloced,si->vinfo->n_dims);
 	}
 
-	nargs = 0;
 	if (shaper->new_data || shaper->new_coord) {
 
 		if (shaper->tgl_coord == -1) {
@@ -1056,7 +993,7 @@ void NgDoShaper
 	}
 	
 	shaper->restore = False;
-        if (si->pdata)
+        if (si->geo_notify && si->pdata)
                 (*si->geo_notify)(si->pdata);
 	return;
 }
@@ -1110,7 +1047,6 @@ static NgShaperRec *NewShaper
 	shaper->edit_timer_set = False;
 	shaper->synchro_step_set = False;
 	shaper->coords_synchro_step_set = NULL;
-	shaper->ignore_synchro_step_cb = False;
 
 	si->frame = XtVaCreateManagedWidget
 		("frame",xmFrameWidgetClass,shaper->parent,NULL);
@@ -1178,7 +1114,7 @@ static NgShaperRec *NewShaper
 	XtSetArg(args[nargs],XmNtopAttachment,XmATTACH_NONE);nargs++;
 	XtSetArg(args[nargs],XmNrightAttachment,XmATTACH_NONE);nargs++;
 	XtSetArg(args[nargs],XmNheight,25);nargs++;
-	shaper->reverse_tgl = XmCreateToggleButtonGadget
+	si->reverse = shaper->reverse_tgl = XmCreateToggleButtonGadget
 		(shaper->form,"Reverse",args,nargs);
 	XmToggleButtonGadgetSetState(shaper->reverse_tgl,False,False);
 	XtManageChild(shaper->reverse_tgl);
@@ -1256,7 +1192,6 @@ NhlErrorTypes NgUpdateShaper(
 	NclApiVarInfoRec  *vinfo
 )
 {
-	NgShaperRec	*shaper = (NgShaperRec *) si;
 
 	si->qfile = qfile;
 	si->start = start;
