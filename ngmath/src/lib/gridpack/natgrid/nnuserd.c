@@ -1,6 +1,7 @@
 #include "nnuheadd.h"
 #include "nnuhead.h"
 
+extern   int   error_status;
 
 /*
  *  Get values for double parameters.

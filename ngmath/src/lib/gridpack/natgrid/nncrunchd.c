@@ -633,7 +633,7 @@ void c_nnpntd(double x, double y, double *point)
    out = c_natgridd(idum, xdum, ydum, zdum, nxi, nyi, xi, yi, &ierr);
    if (ierr != 0)
    {
-      ErrorHnd(28, "c_nnpnts", filee, "\n");
+      ErrorHnd(28, "c_nnpntd", filee, "\n");
       error_status = ierr;
       *point = -999.;
    }
