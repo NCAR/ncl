@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.3 1995-02-15 22:35:18 haley Exp $
+#   $Id: yMakefile,v 1.4 1995-02-22 16:48:41 haley Exp $
 #
 #   Makefile for HLU Annotation examples
 #
@@ -17,11 +17,12 @@ FOBJS       = an01f.o
 SRCS        = $(CSRCS) $(FSRCS)
 OBJS        = $(COBJS) $(FOBJS)
 RESFILES    = an01.res
+NCGMS       = an01f.ncgm an01c.ncgm
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
 HLUCExampleTarget(an01c,an01c.o)
 HLUFExampleTarget(an01f,an01f.o)
-CleanFilesTarget($(OBJS))
+CleanFilesTarget($(OBJS) $(NCGMS))
 DependTarget($(CSRCS))

@@ -1,13 +1,10 @@
-C
-C     $Id: an01f.f,v 1.2 1995-02-21 23:13:31 haley Exp $
-C
-C************************************************************************
-C                                                                       *
-C                            Copyright (C)  1995                        *
-C                 University Corporation for Atmospheric Research       *
-C                            All Rights Reserved                        *
-C                                                                       *
-C************************************************************************
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+C                            Copyright (C)  1995                       C
+C                 University Corporation for Atmospheric Research      C
+C                            All Rights Reserved                       C
+C                                                                      C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C      File:            an01f.f
 C
@@ -60,10 +57,11 @@ C Initialize the high level utility library
 C
       call nhlfinitialize
 C
-C Create an application context. Set the app dir to the current directory
-C so the application looks for a resource file in the working directory.
-C The resource file sets most of the Contour resources that remain fixed
-C throughout the life of the Contour object.
+C Create an application context. Set the app dir to the current
+C directory so the application looks for a resource file in the
+C working directory. The resource file sets most of the Contour
+C resources that remain fixed throughout the life of the Contour
+C object.
 C
       call nhlfrlcreate(rlist,'SETRL')
       call nhlfrlclear(rlist)
@@ -82,7 +80,7 @@ C Create a Map Plot object
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetstring(rlist,'ovTitleDisplayMode','always',ierr)
-      call nhlfrlsetstring(rlist,'tiMainString','an01f',ierr)
+      call nhlfrlsetstring(rlist,'tiMainString','an01',ierr)
       call nhlfrlsetstring(rlist,'mpFillOn','TRUE',ierr)
       call nhlfrlsetstring(rlist,'mpProjection','orthographic',ierr)
       call nhlfcreate(mapid,'Map0',nhlfmapplotlayerclass,wid,rlist,ierr)

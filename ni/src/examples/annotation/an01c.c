@@ -1,13 +1,10 @@
-/*
- *      $Id: an01c.c,v 1.3 1995-02-21 23:13:30 haley Exp $
- */
-/************************************************************************
-*                                                                       *
-*                Copyright (C)  1993                                    *
-*        University Corporation for Atmospheric Research                *
-*                All Rights Reserved                                    *
-*                                                                       *
-************************************************************************/
+/***********************************************************************
+*                                                                      *
+*                Copyright (C)  1993                                   *
+*        University Corporation for Atmospheric Research               *
+*                All Rights Reserved                                   *
+*                                                                      *
+***********************************************************************/
 /*
  *  File:       an01c.c
  *
@@ -44,72 +41,72 @@
 #define FRAME_COUNT 36
 
 typedef struct _Anno_List {
-	NhlString	name;
-	float		lat;
-	float		lon;
-	int		anno_id;
-	int		obj_id;
+    NhlString   name;
+    float       lat;
+    float       lon;
+    int     anno_id;
+    int     obj_id;
 } Anno_List;
 
 
 main(int argc, char *argv[])
 {
-	NhlErrorTypes ret = NhlNOERROR;
-	int appid,wid,mapid;
-	int rlist,grlist;
-	int i;
-	char buf[256];
+    NhlErrorTypes ret = NhlNOERROR;
+    int appid,wid,mapid;
+    int rlist,grlist;
+    int i;
+    char buf[256];
 
-	Anno_List anno_list[] = {
-	{"Los Angeles",34.0,-118.28,-1,-1},
-	{"Seattle",47.6,-122.33,-1,-1},
-	{"Toronto",43.7,-79.4167},
-	{"New York",40.67,-73.83,-1,-1},
-	{"Miami",25.75,-80.25,-1,-1},
-	{"Mexico City",19.417,-99.167,-1,-1},
-	{"London",51.32,-0.1,-1,-1},
-	{"Jakarta",-6.13,106.75,-1,-1},
-	{"Moscow",55.75,37.7,-1,-1},
-	{"New Delhi",28.37,77.217,-1,-1},
-	{"Rio de Janeiro",-22.883,-43.283,-1,-1},
-	{"Cairo",30.05,31.25,-1,-1},
-	{"Buenos Aires", -34.67,-58.4167,-1,-1},
-	{"Beijing",39.917,116.4167,-1,-1},
-	{"Tokyo",35.67,139.67,-1,-1},
-	{"Lagos",6.45,3.28,-1,-1},
-	{"Nairobi",-1.283,36.833,-1,-1},
-	{"Sydney",-33.9167,151.167,-1,-1},
-	{"Bogota",4.633,-74.083,-1,-1},
-	{"Lima",-12.1,-77.05,-1,-1},
-	{"Cape Town",-33.933,18.4667,-1,-1},
-	{"Calcutta",22.583,88.35,-1,-1},
-	{"Shanghai",31.217,121.4167,-1,-1},
-	{"Bombay",18.93,72.85,-1,-1},
-	{"Denver",39.716,-105.017,-1,-1}
-	};
+    Anno_List anno_list[] = {
+    {"Los Angeles",34.0,-118.28,-1,-1},
+    {"Seattle",47.6,-122.33,-1,-1},
+    {"Toronto",43.7,-79.4167},
+    {"New York",40.67,-73.83,-1,-1},
+    {"Miami",25.75,-80.25,-1,-1},
+    {"Mexico City",19.417,-99.167,-1,-1},
+    {"London",51.32,-0.1,-1,-1},
+    {"Jakarta",-6.13,106.75,-1,-1},
+    {"Moscow",55.75,37.7,-1,-1},
+    {"New Delhi",28.37,77.217,-1,-1},
+    {"Rio de Janeiro",-22.883,-43.283,-1,-1},
+    {"Cairo",30.05,31.25,-1,-1},
+    {"Buenos Aires", -34.67,-58.4167,-1,-1},
+    {"Beijing",39.917,116.4167,-1,-1},
+    {"Tokyo",35.67,139.67,-1,-1},
+    {"Lagos",6.45,3.28,-1,-1},
+    {"Nairobi",-1.283,36.833,-1,-1},
+    {"Sydney",-33.9167,151.167,-1,-1},
+    {"Bogota",4.633,-74.083,-1,-1},
+    {"Lima",-12.1,-77.05,-1,-1},
+    {"Cape Town",-33.933,18.4667,-1,-1},
+    {"Calcutta",22.583,88.35,-1,-1},
+    {"Shanghai",31.217,121.4167,-1,-1},
+    {"Bombay",18.93,72.85,-1,-1},
+    {"Denver",39.716,-105.017,-1,-1}
+    };
 /*
  * Initialize the high level utility library
  */
 
-	NhlInitialize();
+    NhlInitialize();
 /*
- * Create an application context. Set the app dir to the current directory
- * so the application looks for a resource file in the working directory.
- * The resource file sets most of the Contour resources that remain fixed
- * throughout the life of the Contour object.
+ * Create an application context. Set the app dir to the current
+ * directory so the application looks for a resource file in the
+ * working directory. The resource file sets most of the Contour
+ * resources that remain fixed throughout the life of the Contour
+ * object.
  */
-        rlist = NhlRLCreate(NhlSETRL);
-        NhlRLClear(rlist);
-	NhlRLSetString(rlist,NhlNappUsrDir,"./");
-	NhlRLSetString(rlist,NhlNappDefaultParent,"True");
-	NhlCreate(&appid,"an01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    rlist = NhlRLCreate(NhlSETRL);
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,NhlNappUsrDir,"./");
+    NhlRLSetString(rlist,NhlNappDefaultParent,"True");
+    NhlCreate(&appid,"an01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
 #if XWORK
 /*
  * Create an X workstation
  */
-        NhlRLClear(rlist);
-	NhlCreate(&wid,"an01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&wid,"an01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
 #else
 /*
  * Create a meta file workstation
@@ -124,12 +121,12 @@ main(int argc, char *argv[])
 /* 
  * Create a Map Plot object
  */
-	NhlRLClear(rlist);
-	NhlRLSetString(rlist,NhlNovTitleDisplayMode,"always");
-	NhlRLSetString(rlist,NhlNtiMainString,"an01c");
-	NhlRLSetString(rlist,NhlNmpFillOn,"true");
-	NhlRLSetString(rlist,NhlNmpProjection,"orthographic");
-	NhlCreate(&mapid,"Map0",NhlmapPlotLayerClass,wid,rlist);
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,NhlNovTitleDisplayMode,"always");
+    NhlRLSetString(rlist,NhlNtiMainString,"an01");
+    NhlRLSetString(rlist,NhlNmpFillOn,"true");
+    NhlRLSetString(rlist,NhlNmpProjection,"orthographic");
+    NhlCreate(&mapid,"Map0",NhlmapPlotLayerClass,wid,rlist);
 /*
  * Annotation objects are generic object containers that the Overlay
  * object knows how to manipulate in a uniform fashion. They may be 
@@ -140,54 +137,51 @@ main(int argc, char *argv[])
  * Then create an Annotation object for each TextItem. Register each
  * Annotation with the MapPlot object, the creator of the Overlay.
  */
-	for (i = 0; i < NhlNumber(anno_list); i++) {
+    for (i = 0; i < NhlNumber(anno_list); i++) {
 
-		NhlRLClear(rlist);
-		NhlRLSetString(rlist,NhlNtxString,anno_list[i].name);
-		NhlRLSetFloat(rlist,NhlNtxFontHeightF,0.01);
-		NhlRLSetInteger(rlist,NhlNtxFontColor,18);
-		NhlCreate(&anno_list[i].obj_id,anno_list[i].name,
-			  NhltextItemLayerClass,wid,rlist);
-		
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNtxString,anno_list[i].name);
+        NhlRLSetFloat(rlist,NhlNtxFontHeightF,0.01);
+        NhlRLSetInteger(rlist,NhlNtxFontColor,18);
+        NhlCreate(&anno_list[i].obj_id,anno_list[i].name,
+              NhltextItemLayerClass,wid,rlist);
+        
 
-		NhlRLClear(rlist);
-		NhlRLSetString(rlist,NhlNanResizeNotify,"true");
-		NhlRLSetString(rlist,NhlNanTrackData,"true");
-		NhlRLSetString(rlist,NhlNanJust,"centerleft");
-		NhlRLSetFloat(rlist,NhlNanDataXF,anno_list[i].lon);
-		NhlRLSetFloat(rlist,NhlNanDataYF,anno_list[i].lat);
-		NhlRLSetInteger(rlist,NhlNanPlotId,anno_list[i].obj_id);
-		NhlCreate(&anno_list[i].anno_id,anno_list[i].name,
-			  NhlannotationLayerClass,wid,rlist);
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNanResizeNotify,"true");
+        NhlRLSetString(rlist,NhlNanTrackData,"true");
+        NhlRLSetString(rlist,NhlNanJust,"centerleft");
+        NhlRLSetFloat(rlist,NhlNanDataXF,anno_list[i].lon);
+        NhlRLSetFloat(rlist,NhlNanDataYF,anno_list[i].lat);
+        NhlRLSetInteger(rlist,NhlNanPlotId,anno_list[i].obj_id);
+        NhlCreate(&anno_list[i].anno_id,anno_list[i].name,
+              NhlannotationLayerClass,wid,rlist);
 
-		NhlRegisterAnnotation(mapid,anno_list[i].anno_id);
-	}
+        NhlRegisterAnnotation(mapid,anno_list[i].anno_id);
+    }
 /*
  * Create FRAME_COUNT plots, varying the center longitude by an equal
  * amount each time.
  */
-	for (i = FRAME_COUNT; i > 0; i--) {
-		NhlRLClear(rlist);
-		NhlRLSetFloat(rlist,NhlNmpCenterLonF,i * 360.0 / FRAME_COUNT);
-		NhlSetValues(mapid,rlist);
-		NhlDraw(mapid);
-		NhlFrame(wid);
-	}
+    for (i = FRAME_COUNT; i > 0; i--) {
+        NhlRLClear(rlist);
+        NhlRLSetFloat(rlist,NhlNmpCenterLonF,i * 360.0 / FRAME_COUNT);
+        NhlSetValues(mapid,rlist);
+        NhlDraw(mapid);
+        NhlFrame(wid);
+    }
 
 /*
  * Destroy the objects created, close the HLU library and exit.
  */
 
-	for (i = 0; i < NhlNumber(anno_list); i++) {
-		NhlDestroy(anno_list[i].obj_id);
-		NhlDestroy(anno_list[i].anno_id);
-	}
-	NhlDestroy(mapid);
-	NhlDestroy(wid);
-	NhlDestroy(appid);
-	NhlClose();
-	exit(0);
+    for (i = 0; i < NhlNumber(anno_list); i++) {
+        NhlDestroy(anno_list[i].obj_id);
+        NhlDestroy(anno_list[i].anno_id);
+    }
+    NhlDestroy(mapid);
+    NhlDestroy(wid);
+    NhlDestroy(appid);
+    NhlClose();
+    exit(0);
 }
-
-
-
