@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.9 1994-03-03 18:02:17 haley Exp $
+#	$Id: yMakefile,v 1.10 1994-04-08 21:56:57 haley Exp $
 #
 
 MAN1	= fontc graphc
@@ -11,7 +11,7 @@ MAN8	= ncargmv ncargtar
 MAN	= $(MAN1) $(MAN3) $(MAN5) $(MAN6) $(MAN8)
 
 # Install preformatted troff documents on systems without troff
-#ifdef	UseCatDirs
+#if	UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m
