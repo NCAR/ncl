@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.66 1998-10-08 18:45:26 ethan Exp $
+#      $Id: yMakefile,v 1.67 1999-10-13 20:26:12 ethan Exp $
 #
 #########################################################################
 #									#
@@ -87,7 +87,7 @@ INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h NclBuiltIns.h \
 API_SRCS	=	NclApi.c scanapi.c parseapi.c 
 EXE_SRCS	=	Ncl.c scanner.c parser.c io.c
 
-APISRCS		=	$(API_SRCS) $(SRCS) NclUserFuncStub.c NclUserHLUStub.c \
+APISRCS		=	$(API_SRCS) $(SRCS) NclUserHLUStub.c \
 			NclUserFileFormStub.c
 EXESRCS		=	$(EXE_SRCS) $(SRCS) NclUserFuncStub.c NclUserHLUStub.c \
 			NclUserFileFormStub.c
@@ -146,7 +146,7 @@ EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o
 
 ALLOBJS		=	$(EXE_OBJS) $(OBJS)
 APIOBJS		=	$(API_OBJS) $(OBJS) \
-			NclUserFuncStub.o NclUserHLUStub.o NclUserFileFormStub.o
+			NclUserHLUStub.o NclUserFileFormStub.o
 EXEOBJS		=	$(EXE_OBJS) $(OBJS)  $(HACKOBJS) \
 			NclUserFuncStub.o NclUserHLUStub.o NclUserFileFormStub.o
 
