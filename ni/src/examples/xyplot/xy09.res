@@ -101,6 +101,8 @@
 
 *xyPlot4*trXMaxF:            1000.
 *xyPlot4*trXMinF:            31.628
+*xyPlot4*trYMaxF:            1000.
+*xyPlot4*trYMinF:            100.
 *xyPlot4*vpXF:               0.6
 *xyPlot4*vpYF:               0.45
 *xyPlot4*tiMainString:       No Background
