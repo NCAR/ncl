@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.1 1997-06-19 23:02:20 kennison Exp $
+#       $Id: yMakefile,v 1.2 1998-06-14 21:51:35 haley Exp $
 #
 
 MYNAME  = tdpackdemo
@@ -7,22 +7,10 @@ MYNAME  = tdpackdemo
 SRC    = TdpackDemo.f
 OBJ    = TdpackDemo.o
 
-ROBJS = $(NCARGGKSLIBSRC)/awi/ggkwdr_stub.o
-
-#if defined(Ardent) || defined(AIX370)
-#ifdef	UseInstalled
-OTHER_ROBJS =	$(ROBJROOT)/libncarbd.o
-#else
-OTHER_ROBJS =	$(NCARGOPTLIBSRC)/ncarbd/ncarbd.o
-#endif	/* UseInstalled */
-#endif	/* Ardent || AIX370 */
-
-OBJECTS	= $(OBJ) $(ROBJS) $(OTHER_ROBJS)
-
 PROG_LIBS =	$(NCARGLIBS)
 DEP_LIBS =	$(DEPNCARGLIBS)
-SYS_LIBS	=	-lm
+SYS_LIBS	= $(XLIB) -lm
 
-FortranProgram($(MYNAME),$(OBJECTS),$(DEP_LIBS))
+FortranProgram($(MYNAME),$(OBJ),$(DEP_LIBS))
 InstallTarget($(SRC),$(INSTALL_LIB),$(EXAMPLESPATH))
 
