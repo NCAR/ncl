@@ -83,3 +83,6 @@ vc05.vc05Work.Map2.mpBottomPointLonF : 0.0
 vc05.vc05Work.Map2.mpTopPointLonF : 180.0
 vc05.vc05Work.Map2.mpLeftPointLonF : -90.0
 vc05.vc05Work.Map2.mpRightPointLonF : 90.0
+
+*mpPerimOn: True
+
