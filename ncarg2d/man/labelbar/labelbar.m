@@ -35,33 +35,50 @@ Labelbar C-binding routines, load the NCAR Graphics libraries
 ncargC, ncarg_gksC, ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably 
 in that order.
 .SH MESSAGES
-When error conditions are detected, the support routine SETER 
-is called in such a way that it writes a message to the standard
-error file (as defined by I1MACH(4)) and then terminates 
-execution. The possible error messages are as follows:
+Various error conditions can occur in Labelbar.  Each of these results in
+a call to the error-handling routine SETER, with a final argument indicating
+that the error is recoverable; by default, an error message is printed and
+execution is terminated, but, if you turn on error recovery
+(as described in the "man" page for "error_handling"), you
+can get control back.
 .sp
-LBLBAR - ERROR EXIT FROM GQFACI 
+The error messages are as follows; all should be
+more or less self-explanatory.
+.sp
+.in +5
+LBGETI - UNCLEARED PRIOR ERROR
 .br
-LBLBAR - ERROR EXIT FROM GQPLCI 
+LBGETR - PARAMETER NAME NOT KNOWN - X
 .br
-LBLBAR - ERROR EXIT FROM GQTXCI 
+LBGETR - PARAMETER NAME TOO SHORT - X
 .br
-LBLBAR - ERROR EXIT FROM GQLWSC 
+LBGETR - UNCLEARED PRIOR ERROR
 .br
-LBGETI OR LBGETR - PARAMETER NAME TOO SHORT - x 
+LBLBAR - ERROR EXIT FROM GQFACI
 .br
-LBGETI OR LBGETR - PARAMETER NAME NOT KNOWN - x 
+LBLBAR - ERROR EXIT FROM GQLWSC
 .br
-LBSETI OR LBSETR - PARAMETER NAME TOO SHORT - x 
+LBLBAR - ERROR EXIT FROM GQPLCI
 .br
-LBSETI OR LBSETR - PARAMETER NAME NOT KNOWN - x
+LBLBAR - ERROR EXIT FROM GQTXCI
+.br
+LBLBAR - UNCLEARED PRIOR ERROR
+.br
+LBSETI - UNCLEARED PRIOR ERROR
+.br
+LBSETR - PARAMETER NAME NOT KNOWN - X
+.br
+LBSETR - PARAMETER NAME TOO SHORT - X
+.br
+LBSETR - UNCLEARED PRIOR ERROR
+.in -5
 .sp
 All of these should be more or less self-explanatory. Those 
 that complain of an error exit from a GKS routine probably 
-imply that GKS has somehow been put in the wrong state. The 
-others will result from using an incorrect internal-parameter 
+imply that GKS has somehow been put in the wrong state.
+Others will result from using an incorrect internal-parameter
 name in a call to one of the parameter-access routines. 
-(The "x" will be replaced by the offending name.)
+(The "X" will be replaced by the offending name.)
 .SH SEE ALSO
 Online:
 labelbar_params, lbfill, lbgeti, lbgetr, lblbar, lbseti, lbsetr, ncarg_cbind
