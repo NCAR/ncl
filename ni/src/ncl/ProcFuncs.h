@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ProcFuncs.h,v 1.2 1993-10-18 16:10:55 ethan Exp $
+ *      $Id: ProcFuncs.h,v 1.3 1993-12-21 19:18:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -20,7 +20,9 @@
  *
  *	Description:	
  */
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 #ifndef _NCProcFuncs_h
 #define _NCProcFuncs_h
 
@@ -65,4 +67,8 @@ typedef struct _NclBuiltInFuncInfo {
 	NclBuiltInFuncWrapper thefunc;
 } NclBuiltInFuncInfo;
 
+
 #endif	/* _NCProcFuncs_h */
+#ifdef __cplusplus
+}
+#endif

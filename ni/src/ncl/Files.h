@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Files.h,v 1.1 1993-09-24 23:40:21 ethan Exp $
+ *      $Id: Files.h,v 1.2 1993-12-21 19:17:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,10 @@
 #ifndef _NCFiles_h
 #define _NCFiles_h
 
+#ifdef __cplusplus 
+extern "C" {
+#endif
+
 typedef struct _NclFileInfo {
 	char filename[NCL_MAX_STRING];
 	int level;
@@ -37,5 +41,8 @@ typedef struct _NclFileVarInfo {
 	struct _NclSymbol *parent_file;
 } NclFileVarInfo;
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /*_NCFiles_h*/

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.4 1993-10-18 16:10:51 ethan Exp $
+ *      $Id: Machine.h,v 1.5 1993-12-21 19:17:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,9 @@
  */
 #ifndef _NCMachine_h
 #define _NCMachine_h
+#ifdef __cplusplus
+extern "C" {
+#endif
 /*
 * This is dynamically allocated so that ReAlloc can be used to grow the
 * machine incase of overflow. The reason for making the machine a stack
@@ -67,6 +70,13 @@ void
 #endif
 );
 
+extern int _NclPutIntInstr(
+#ifdef NhlNeedProto
+int /* val */,
+int	/* line */,
+char * /* file*/
+#endif
+);
 extern int _NclPutRealInstr(
 #ifdef NhlNeedProto
 float /* val */,
@@ -98,7 +108,7 @@ char * /* file*/
 #endif
 );
 
-extern int _NclPrintMachine(
+extern void _NclPrintMachine(
 #ifdef NhlNeedProto
 int	/* from */,
 int	/* to */,
@@ -130,13 +140,6 @@ void
 #endif
 );
 
-extern int _NclPrintMachine(
-#ifdef NhlNeedProto
-int /*from */,
-int /*to*/,
-FILE * /* fp*/
-#endif
-);
 
 extern NclValue *_NclGetCurrentMachine(
 #ifdef NhlNeedProto
@@ -156,6 +159,21 @@ void
 #endif
 );
 
+extern NclStackEntry _NclGetArg(
+#ifdef NhlNeedProto
+int  /*arg_num*/,
+int  /*total_arg*/
+#endif
+);
 
+extern NclStackEntry *_NclPeek(
+#ifdef NhlNeedProto
+int  /*offset*/
+#endif
+);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

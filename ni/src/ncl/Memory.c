@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Memory.c,v 1.2 1993-10-14 18:33:26 ethan Exp $
+ *      $Id: Memory.c,v 1.3 1993-12-21 19:17:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -20,9 +20,12 @@
  *
  *	Description:	
  */
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include <ncarg/hlu/hlu.h>
 #include <errno.h>
+#include <data_objs/NclData.h>
 #include <defs.h>
 
 
@@ -67,7 +70,7 @@ NclFree
                 return(NOERROR);
 
         else{
-#ifdef  __sgi
+#ifdef  __sgi 
                 free(ptr);
                 return NOERROR;
 #else
@@ -173,3 +176,6 @@ void
 	}
 }
 
+#ifdef __cplusplus
+}
+#endif

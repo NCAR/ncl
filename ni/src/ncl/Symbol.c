@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.4 1993-10-18 16:11:03 ethan Exp $
+ *      $Id: Symbol.c,v 1.5 1993-12-21 19:18:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -19,9 +19,13 @@
  *
  *	Description:	
  */
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include <stdio.h>
 #include <errno.h>
 #include <ncarg/hlu/hlu.h>
+#include <data_objs/NclData.h>
 #include <defs.h>
 #include <Keywords.h>
 #include <Symbol.h>
@@ -130,7 +134,7 @@ void _NclRegisterBuiltInFunc
 		return;
 	} else {
 		s = _NclAddSym(fname,FUNC);
-		s->u.bfunc = NclMalloc((unsigned)sizeof(NclBuiltInFuncInfo));
+		s->u.bfunc = (NclBuiltInFuncInfo*)NclMalloc((unsigned)sizeof(NclBuiltInFuncInfo));
 		if(s->u.bfunc == NULL)  {
 			NhlPError(FATAL,E_UNKNOWN,"_NclRegisterBuiltIn: Memory allocation error can't add %s",fname);
 			return;
@@ -161,7 +165,7 @@ void _NclRegisterBuiltInProc
 		return;
 	} else {
 		s = _NclAddSym(fname,PROC);
-		s->u.bfunc = NclMalloc((unsigned)sizeof(NclBuiltInProcInfo));
+		s->u.bproc = (NclBuiltInProcInfo*)NclMalloc((unsigned)sizeof(NclBuiltInProcInfo));
 		if(s->u.bproc == NULL)  {
 			NhlPError(FATAL,E_UNKNOWN,"_NclRegisterBuiltIn: Memory allocation error can't add %s",fname);
 			return;
@@ -198,19 +202,19 @@ int _NclNewScope
 #endif
 {
 	int i;
-	NclSymTableListNode *new = (NclSymTableListNode*) NclMalloc((unsigned)
+	NclSymTableListNode *news = (NclSymTableListNode*) NclMalloc((unsigned)
 					sizeof(NclSymTableListNode));
 	
-	if(new == NULL) {
+	if(news == NULL) {
 		NhlPError(FATAL, errno, "NewScope: Can't create a new symbol table node");
 		return(0);
 	}
 
-	new->this_scope = (NclSymTableElem *) NclMalloc((unsigned)
+	news->this_scope = (NclSymTableElem *) NclMalloc((unsigned)
 				sizeof(NclSymTableElem) * NCL_SYM_TAB_SIZE);
 
 
-	if(new->this_scope == NULL) {
+	if(news->this_scope == NULL) {
 		NhlPError(FATAL, errno, "NewScope: Can't create a new symbol table");
 		return(0);
 	}
@@ -220,11 +224,11 @@ int _NclNewScope
 * It will be a multiplier to use to figure out the location of the identifiers
 * value with respect to the frames base pointer.
 */
-	new->cur_offset = 0;
+	news->cur_offset = 0;
 
-	new->level = thetablelist->level + 1;
-	new->previous = thetablelist;
-	thetablelist = new;
+	news->level = thetablelist->level + 1;
+	news->previous = thetablelist;
+	thetablelist = news;
 	
 	for(i = 0; i< NCL_SYM_TAB_SIZE; i++) {
 		thetablelist->this_scope[i].nelem = 0;
@@ -723,3 +727,6 @@ void _NclPrintSym
 		st = st->previous;
 	}
 }
+#ifdef __cplusplus
+}
+#endif

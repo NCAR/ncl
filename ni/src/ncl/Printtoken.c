@@ -1,5 +1,9 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
+#include <data_objs/NclData.h>
 #include <defs.h>
 #include <y.tab.h>
 
@@ -211,3 +215,6 @@ void printtoken
 	}
 }
 #endif
+#ifdef __cplusplus
+}
+#endif 

@@ -1,5 +1,9 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
+#include <data_objs/NclData.h>
 #include <defs.h>
 #include <Symbol.h>
 #include <y.tab.h>
@@ -42,3 +46,6 @@ main() {
 	fclose(thefptr);
 	exit(0);
 }
+#ifdef __cplusplus
+}
+#endif

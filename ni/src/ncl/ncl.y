@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
+#include <data_objs/NclData.h>
 #include <defs.h>
 #include <errno.h>
 #include <Symbol.h>
@@ -97,17 +98,12 @@ char *cur_load_file = NULL;
 statement_list :  statement eoln			{	
 								int strt;
 
-								if(cmd_line) {
-									fprintf(stdout,"ncl %d> ",cur_line_number);
-								}
 								if(($1 != NULL)&&!(is_error)) {
 									_NclPrintTree($1,thefptr);
 									strt = _NclTranslate($1,thefptr);
 									_NclTransTerminate();
 									_NclPrintMachine(strt,-1,theoptr);
-/*
 									_NclExecute(strt);
-*/
 									_NclResetNewSymStack();
 									_NclFreeTree($1,is_error);
 #ifdef MAKEAPI
@@ -121,20 +117,19 @@ statement_list :  statement eoln			{
 									return(1);
 #endif
 								}
+								if(cmd_line) {
+									fprintf(stdout,"ncl %d> ",cur_line_number);
+								}
 							}
 	| statement_list statement eoln			{		
 								int strt;
 
-								if(cmd_line)
-									fprintf(stdout,"ncl %d> ",cur_line_number);
 								if(($2 != NULL) && !(is_error)) {
 									_NclPrintTree($2,thefptr);
 									strt = _NclTranslate($2,thefptr);
 									_NclTransTerminate();
 									_NclPrintMachine(strt,-1,theoptr);
-/*
 									_NclExecute(strt);
-*/
 									_NclResetNewSymStack();
 									_NclFreeTree($2,is_error);
 #ifdef MAKEAPI
@@ -148,6 +143,8 @@ statement_list :  statement eoln			{
 									return(1);
 #endif
 								}
+								if(cmd_line)
+									fprintf(stdout,"ncl %d> ",cur_line_number);
 							}
 	| statement_list RECORD STRING eoln		{ 
 /*
@@ -1074,89 +1071,51 @@ assignment :  identifier '=' expr		{
 ;
 
 identifier : vname {
-					if($1->type == DFILE) {
-						$$ = _NclMakeFileRef($1);
-					} else {
-						$$ = _NclMakeVarRef($1,NULL);
-					}
+			$$ = _NclMakeVarRef($1,NULL);
 		  }
 	| vname FVAR 			{
-						NclSymbol *s = NULL;
-						if($1->type == DFILE) {
-							s = _NclLookUpInScope($1->u.file->filescope,&(($2)[2]));
-							if(s == NULL) {
-								s = _NclAddInScope($1->u.file->filescope,&(($2)[2]),UNDEFFILEVAR);
-							}
-							$$ = _NclMakeFileVarRef($1,s,NULL,Ncl_FILEVAR);
-						} else {
-							/* error condition needed */
-						}
+						$$ = _NclMakeFileVarRef($1,&(($2)[2]),NULL,Ncl_FILEVAR);
 					}
 	| vname FVAR MARKER		{
-						NclSymbol *s;
-						if($1->type == DFILE) {	
-							s = _NclLookUpInScope($1->u.file->filescope,&(($2)[2]));
-							if(s == NULL) {
-								s = _NclAddInScope($1->u.file->filescope,&(($2)[2]),UNDEFFILEVAR);
-							}
-							$$ = _NclMakeFileVarRef($1,s,NULL,Ncl_FILEVAR);
-						} else {
-							/* error condition needed */
-						}
+						$$ = _NclMakeFileVarRef($1,&(($2)[2]),NULL,Ncl_FILEVAR);
 					}
 	| vname FVAR LP subscript_list RP MARKER {
-						NclSymbol *s;
 				
-						if($1->type == DFILE) {	
-							s = _NclLookUpInScope($1->u.file->filescope,&(($2)[2]));
-							if(s == NULL) {
-								s = _NclAddInScope($1->u.file->filescope,&(($2)[2]),UNDEFFILEVAR);
-							} 
-							$$ = _NclMakeFileVarRef($1,s,$4,Ncl_FILEVAR);
-						} else {
-							/* error condition needed */
-						}
+						$$ = _NclMakeFileVarRef($1,&(($2)[2]),$4,Ncl_FILEVAR);
 					}
 	| vname FVAR LP subscript_list RP	{	
-						NclSymbol *s;
 				
-						if($1->type == DFILE) {	
-							s = _NclLookUpInScope($1->u.file->filescope,&(($2)[2]));
-							if(s == NULL) {
-								s = _NclAddInScope($1->u.file->filescope,&(($2)[2]),UNDEFFILEVAR);
-							}
-							$$ = _NclMakeFileVarRef($1,s,$4,Ncl_FILEVAR);
-						} else {
-							/* error condition needed */
-						}
+						$$ = _NclMakeFileVarRef($1,&(($2)[2]),$4,Ncl_FILEVAR);
+					}
+	| vname FVAR DIMNUM		{
+						$$ = _NclMakeFileVarDimNumRef($1,&(($2)[2]),$3);
+					}
+	| vname FVAR DIMNAME			{
+						$$ = _NclMakeFileVarDimNameRef($1,&(($2)[2]),$3);		
+					}
+        | vname FVAR ATTNAME			{
+						$$ = _NclMakeFileVarAttRef($1,&(($2)[2]),$3,NULL);
+					}
+        | vname FVAR ATTNAME LP subscript_list RP	{
+						$$ = _NclMakeFileVarAttRef($1,&(($2)[2]),$3,$5);
+					}
+	| vname FVAR COORD			{
+						$$ = _NclMakeFileVarCoordRef($1,&(($2)[2]),&(($3)[1]),NULL);
+					}
+	| vname FVAR COORD LP subscript_list RP{
+						$$ = _NclMakeFileVarCoordRef($1,&(($2)[2]),&(($3)[1]),$5);
 					}
 	| vname DIMNUM			{
-						if($1->type == DFILE) {
-							$$ = _NclMakeFileDimNumRef($1,$2);
-						} else {
-							$$ = _NclMakeVarDimNumRef($1,$2);
-						}
+						$$ = _NclMakeVarDimNumRef($1,$2);
 					}
 	| vname DIMNAME			{
-						if($1->type == DFILE) {
-							$$ = _NclMakeFileDimNameRef($1,$2);
-						} else {
-							$$ = _NclMakeVarDimNameRef($1,$2);		
-						}
+						$$ = _NclMakeVarDimNameRef($1,$2);		
 					}
         | vname ATTNAME			{
-						if($1->type == DFILE) {
-							$$ = _NclMakeFileAttRef($1,$2,NULL); 
-						} else {
-							$$ = _NclMakeVarAttRef($1,$2,NULL);
-						}
+						$$ = _NclMakeVarAttRef($1,$2,NULL);
 					}
         | vname ATTNAME LP subscript_list RP	{
-						if($1->type == DFILE) {
-							$$ = _NclMakeFileAttRef($1,$2,$4);
-						} else {
-							$$ = _NclMakeVarAttRef($1,$2,$4);
-						}
+						$$ = _NclMakeVarAttRef($1,$2,$4);
 					}
 	| vname MARKER			{
 						$$ = _NclMakeVarRef($1,NULL);
@@ -1168,10 +1127,10 @@ identifier : vname {
 						$$ = _NclMakeVarRef($1,$3);
 					}
 	| vname COORD			{
-						$$ = _NclMakeVarCoordRef($1,$2,NULL);
+						$$ = _NclMakeVarCoordRef($1,&(($2)[1]),NULL);
 					}
 	| vname COORD LP subscript_list RP{
-						$$ = _NclMakeVarCoordRef($1,$2,$4);
+						$$ = _NclMakeVarCoordRef($1,&(($2)[1]),$4);
 					}
 ;
 
@@ -1473,21 +1432,26 @@ expr_list :  expr				{
 							$$->currentitem= $$->list;
 							$$->nelem = 1;
 						}
-	| expr_list ',' expr 		{ 
-						/* array column ordering must be preserved */
+	| expr ',' expr_list   		{ 
+						/* pushed on backwards so they can be popped of in correct order*/
                                          
-                                                	$1->currentitem->next =  _NclMakeNewListNode();
-							$1->currentitem = $1->currentitem->next;
-                                                	$1->currentitem->next = NULL;
-                                                	$1->currentitem->node = $3;
-							$1->nelem++ ;
-							$$ = $1;
+                                                	$3->currentitem->next =  _NclMakeNewListNode();
+							$3->currentitem = $3->currentitem->next;
+                                                	$3->currentitem->next = NULL;
+                                                	$3->currentitem->node = $1;
+							$3->nelem++ ;
+							$$ = $3;
 							 
 						}
 ;
 %%
-yyerror(s)
+yyerror
+#if __STDC__
+(char *s)
+#else 
+(s)
 	char *s;
+#endif
 {
 	extern int is_error;
 	int i,len;

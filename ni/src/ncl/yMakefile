@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.5 1993-11-01 17:44:56 boote Exp $
+#      $Id: yMakefile,v 1.6 1993-12-21 19:18:30 ethan Exp $
 #
 #########################################################################
 #									#
@@ -34,17 +34,20 @@ SYS_LIBS        =       $(CTOFLIBS) -lm -lPW -ll
 SYS_LIBS        =       $(CTOFLIBS) -lm 
 #endif
 
+#define IHaveSubdirs
 
+SUBDIRS = data_objs
 
 
 MYNAME = ncl
 
 PROG_LIBS	=	$(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
-EXTRA_LIBS	=	-ll $(NCDFLIBS) $(XMOTIFCLIENTLIBS)
+EXTRA_LIBS	=	-ll $(NCDFLIBS) $(XMOTIFCLIENTLIBS) \
+		data_objs/libncl_data.a
 
 HDRS	= Files.h ProcFuncs.h Graphics.h Keywords.h Literal.h Machine.h \
 	NclApi.h OpsList.h SrcTree.h Symbol.h Variable.h \
-	defs.h y.tab.h Execute.h
+	defs.h y.tab.h Execute.h OpsFuncs.h
 
 API_SRCS	= NclApi.c
 EXE_SRCS	= Ncl.c
@@ -54,13 +57,14 @@ EXESRCS		= $(EXE_SRCS) $(SRCS)
 ALLSRCS		= $(API_SRCS) $(EXE_SRCS) $(SRCS)
 
 SRCS	= Machine.c Memory.c Printtoken.c SrcTree.c Symbol.c Translate.c \
-	ncl.y ncl.l yywrap.c y.tab.c lex.yy.c Execute.c AddBuiltIns.c
+	ncl.y ncl.l yywrap.c y.tab.c lex.yy.c Execute.c AddBuiltIns.c \
+	OpsFuncs.c
 
 API_OBJS	= NclApi.o
 EXE_OBJS	= Ncl.o
 
 OBJS	= Machine.o Memory.o Printtoken.o SrcTree.o Symbol.o Translate.o \
-	lex.yy.o y.tab.o yywrap.o Execute.o AddBuiltIns.o
+	lex.yy.o y.tab.o yywrap.o Execute.o AddBuiltIns.o OpsFuncs.o
 
 APIOBJS	= $(API_OBJS) $(OBJS)
 EXEOBJS	= $(EXE_OBJS) $(OBJS)

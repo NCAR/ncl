@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.4 1993-10-18 16:11:05 ethan Exp $
+ *      $Id: Symbol.h,v 1.5 1993-12-21 19:18:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -20,9 +20,13 @@
  *
  *	Description:	Type definitions for symbol table entries.
  */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifndef _NCSymbol_h
 #define _NCSymbol_h
+
 #include <Files.h>
 #include <Variable.h>
 #include <Literal.h>
@@ -181,3 +185,6 @@ int                   /* nargs */
 );
 
 #endif /*_NCSymbol_h*/
+#ifdef __cplusplus
+}
+#endif

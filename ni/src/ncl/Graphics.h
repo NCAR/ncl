@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Graphics.h,v 1.1 1993-09-24 23:40:27 ethan Exp $
+ *      $Id: Graphics.h,v 1.2 1993-12-21 19:17:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -22,11 +22,17 @@
  */
 #ifndef _NCGraphics_h
 #define _NCGraphics_h
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct _NclVisBlkInfo {
 	struct _NclSymbol*  obj_type;
 } NclVisBlkInfo;
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /*_NCGraphics_h */

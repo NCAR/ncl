@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Keywords.h,v 1.2 1993-10-06 22:54:19 ethan Exp $
+ *      $Id: Keywords.h,v 1.3 1993-12-21 19:17:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,10 @@
  */
 #ifndef _NCKeywords_h
 #define _NCKeywords_h
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <y.tab.h>
 
@@ -67,7 +71,10 @@ static struct {
 "testvar",	VAR,
 "testproc",	PROC,
 "testfile",	DFILE,
-NULL,NULL
+(char*)NULL,(int)NULL
 };
 
+#ifdef __cplusplus
+}
+#endif
 #endif /*_NCKeywords_h*/

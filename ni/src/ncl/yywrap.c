@@ -1,6 +1,10 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
 #ifndef MAKEAPI
 
 #include <ncarg/hlu/hlu.h>
+#include <data_objs/NclData.h>
 #include <defs.h>
 #include <Symbol.h>
 #include <SrcTree.h>
@@ -35,5 +39,8 @@ int yywrap()
 	} else {
 		return(1);
 	}
+}
+#endif
+#ifdef __cplusplus
 }
 #endif

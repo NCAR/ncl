@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Variable.h,v 1.4 1993-12-21 19:18:20 ethan Exp $
+ *      $Id: Execute.h,v 1.1 1993-12-21 19:17:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -10,13 +10,13 @@
 *									*
 ************************************************************************/
 /*
- *	File:		
+ *	File:		Execute.h
  *
  *	Author:		Ethan Alpert
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	Date:		Mon Jun 28 10:53:34 MDT 1993
+ *	Date:		Thu Oct 14 12:41:56 MDT 1993
  *
  *	Description:	
  */
@@ -24,21 +24,18 @@
 extern "C" {
 #endif
 
-#ifndef _NCVariable_h
-#define _NCVariable_h
+typedef enum {
+			Ncl_ERRORS, 
+			Ncl_STOPS, 
+			Ncl_BREAKS, 
+			Ncl_CONTINUES }NclExecuteReturnStatus ;
 
 
-
-typedef struct _NclVarInfo {
-	char	varname[NCL_MAX_STRING];
-	int level;
-	int datatype;
-	unsigned int offset;
-}NclVarInfo; 
-
-
-#endif  /*_NCVariable_h*/
-
-#ifdef __cplusplus
+NclExecuteReturnStatus _NclExecute(
+#if NhlNeedProto
+	unsigned long start_offset
+#endif
+);
+#ifdef __cpluspus
 }
 #endif

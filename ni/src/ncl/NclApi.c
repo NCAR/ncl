@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.c,v 1.1 1993-09-24 23:40:45 ethan Exp $
+ *      $Id: NclApi.c,v 1.2 1993-12-21 19:17:49 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -21,9 +21,13 @@
  *	Description:	Contains functions for initializing and using
  *			ncl from with in an application.
  */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
+#include <data_objs/NclData.h>
 #include <defs.h>
 #include <Symbol.h>
 #include <errno.h>
@@ -178,3 +182,6 @@ int NclGetErrorId
 {
 	return(NhlErrGetID());
 }
+#ifdef __cplusplus
+}
+#endif

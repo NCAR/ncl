@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.4 1993-10-18 16:10:48 ethan Exp $
+ *      $Id: Machine.c,v 1.5 1993-12-21 19:17:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -21,8 +21,12 @@
  *	Description:	Contains functions for manipulating stacks, frames
  *			and the instruction list.
  */
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
+#include <data_objs/NclData.h>
 #include <defs.h>
 #include <Symbol.h>
 #include <errno.h>
@@ -59,27 +63,40 @@ NclFrame *fp;
 NclStackEntry *sb;
 unsigned int current_scope_level = 0;
 
-static SetUpOpsStrings() {
+static void SetUpOpsStrings() {
+	ops_strings[0] = "NOOP";
 	ops_strings[NOOP] = "NOOP";
 	ops_strings[STOPSEQ] = "STOPSEQ";
+	ops_strings[ENDSTMNT_OP] = "ENDSTMNT_OP";
+	ops_strings[RETURN_OP] = "RETURN_OP";
+	ops_strings[FPDEF] = "FPDEF";
+	ops_strings[NEW_FRAME_OP] = "NEW_FRAME_OP";
+	ops_strings[BPROC_CALL_OP] = "BPROC_CALL_OP";
+	ops_strings[FUNC_CALL_OP] = "FUNC_CALL_OP";
+	ops_strings[PROC_CALL_OP] = "PROC_CALL_OP";
 	ops_strings[JMP] = "JMP";
 	ops_strings[JMPFALSE] = "JMPFALSE";
 	ops_strings[IF_OP] = "IF_OP";
+	ops_strings[DO_FROM_TO_OP] = "DO_FROM_TO_OP";
+	ops_strings[DO_FROM_TO_STRIDE_OP] = "DO_FROM_TO_STRIDE_OP";
+	ops_strings[DO_WHILE_OP] = "DO_WHILE_OP";
+	ops_strings[BREAK_OP] = "BREAK_OP";
+	ops_strings[CONTINUE_OP] = "CONTINUE_OP";
 	ops_strings[CREATE_OBJ_OP] = "CREATE_OBJ_OP";
 	ops_strings[SET_OBJ_OP] = "SET_OBJ_OP";
 	ops_strings[GET_OBJ_OP] = "GET_OBJ_OP";
+	ops_strings[CONVERT_TO_LOCAL] = "CONVERT_TO_LOCAL";
 	ops_strings[PUSH_STRING_LIT_OP] = "PUSH_STRING_LIT_OP";
-	ops_strings[PUSH_VAR_OP] = "PUSH_VAR_OP";
-	ops_strings[DO_FROM_TO_OP] = "DO_FROM_TO_OP";
-	ops_strings[DO_FROM_TO_STRIDE_OP] = "DO_FROM_TO_STRIDE_OP";
-	ops_strings[ASSIGN_OP] = "ASSIGN_OP";
+	ops_strings[PUSH_REAL_LIT_OP] = "PUSH_REAL_LIT_OP";
+	ops_strings[PUSH_INT_LIT_OP] = "PUSH_INT_LIT_OP";
+	ops_strings[ARRAY_LIT_OP] = "ARRAY_LIT_OP";
 	ops_strings[NAMED_INT_SUBSCRIPT_OP] = "NAMED_INT_SUBSCRIPT_OP";
 	ops_strings[INT_SUBSCRIPT_OP] = "INT_SUBSCRIPT_OP";
 	ops_strings[NAMED_COORD_SUBSCRIPT_OP] = "NAMED_COORD_SUBSCRIPT_OP";
 	ops_strings[COORD_SUBSCRIPT_OP] = "COORD_SUBSCRIPT_OP";
 	ops_strings[SINGLE_INDEX_OP] = "SINGLE_INDEX_OP";
 	ops_strings[DEFAULT_RANGE_OP] = "DEFAULT_RANGE_OP";
-	ops_strings[RETURN_OP] = "RETURN_OP";
+	ops_strings[BFUNC_CALL_OP] = "BFUNC_CALL_OP";
 	ops_strings[RANGE_INDEX_OP] = "RANGE_INDEX_OP";
 	ops_strings[NEG_OP] = "NEG_OP";
 	ops_strings[NOT_OP] = "NOT_OP";
@@ -101,66 +118,39 @@ static SetUpOpsStrings() {
 	ops_strings[LT_OP] = "LT_OP";
 	ops_strings[EQ_OP] = "EQ_OP";
 	ops_strings[NE_OP] = "NE_OP";
-	ops_strings[PUSH_REAL_LIT_OP] = "PUSH_REAL_LIT_OP";
-	ops_strings[PUSH_INT_LIT_OP] = "PUSH_INT_LIT_OP";
-	ops_strings[ARRAY_LIT_OP] = "ARRAY_LIT_OP";
-	ops_strings[DO_WHILE_OP] = "DO_WHILE_OP";
-	ops_strings[SUBSCRIPTED_VAR_OP] = "SUBSCRIPTED_VAR_OP";
-	ops_strings[PUSH_FILE_OP] = "PUSH_FILE_OP";
-	ops_strings[SUBSCRIPTED_FILE_VAR_OP] = "SUBSCRIPTED_FILE_VAR_OP";
-	ops_strings[PUSH_FILE_VAR_OP] = "PUSH_FILE_VAR_OP";
-	ops_strings[FILE_DIMNUM_OP] = "FILE_DIMNUM_OP";
-	ops_strings[FILE_DIMNAME_OP] = "FILE_DIMNAME_OP";
-	ops_strings[FILE_ATT_OP] = "FILE_ATT_OP";
-	ops_strings[SUBSCRIPTED_FILE_ATT_OP] = "SUBSCRIPTED_FILE_ATT_OP";
-	ops_strings[SUBSCRIPTED_VARATT_OP] = "SUBSCRIPTED_VARATT_OP";
-	ops_strings[VAR_DIMNUM_OP]= "VAR_DIMNUM_OP";
+	ops_strings[FILE_VAR_OP] = "FILE_VAR_OP";
+	ops_strings[ASSIGN_FILE_VAR_OP] = "ASSIGN_FILE_VAR_OP";
+	ops_strings[PARAM_FILE_VAR_OP] = "PARAM_FILE_VAR_OP";
+	ops_strings[FILEVAR_DIMNAME_OP] = "FILEVAR_DIMNAME_OP";
+	ops_strings[ASSIGN_FILEVAR_DIMNAME_OP] = "ASSIGN_FILEVAR_DIMNAME_OP";
+	ops_strings[PARAM_FILEVAR_DIMNAME_OP] = "PARAM_FILEVAR_DIMNAME_OP";
+	ops_strings[FILEVAR_DIMNUM_OP]= "FILEVAR_DIMNUM_OP";
+	ops_strings[ASSIGN_FILEVAR_DIMNUM_OP]= "ASSIGN_FILEVAR_DIMNUM_OP";
+	ops_strings[PARAM_FILEVAR_DIMNUM_OP]= "PARAM_FILEVAR_DIMNUM_OP";
+	ops_strings[FILEVAR_COORD_OP] = "FILEVAR_COORD_OP";
+	ops_strings[ASSIGN_FILEVAR_COORD_OP] = "ASSIGN_FILEVAR_COORD_OP";
+	ops_strings[PARAM_FILEVAR_COORD_OP] = "PARAM_FILEVAR_COORD_OP";
+	ops_strings[FILEVARATT_OP] = "FILEVARATT_OP";
+	ops_strings[ASSIGN_FILEVARATT_OP] = "ASSIGN_FILEVARATT_OP";
+	ops_strings[PARAM_FILEVARATT_OP] = "PARAM_FILEVARATT_OP";
+	ops_strings[VAR_OP] = "VAR_OP";
+	ops_strings[ASSIGN_VAR_OP] = "ASSIGN_VAR_OP";
+	ops_strings[PARAM_VAR_OP] = "PARAM_VAR_OP";
 	ops_strings[VARATT_OP] = "VARATT_OP";
-	ops_strings[VAR_DIMNAME_OP] = "VAR_DIMNAME_OP";
-	ops_strings[VAR_COORD_OP] = "VAR_COORD_OP";
-	ops_strings[SUBSCRIPTED_VAR_COORD_OP] = "SUBSCRIPTED_VAR_COORD_OP";
-	ops_strings[FPDEF] = "FPDEF";
-	ops_strings[NEW_FRAME_OP] = "NEW_FRAME_OP";
-	ops_strings[BREAK_OP] = "BREAK_OP";
-	ops_strings[CONTINUE_OP] = "CONTINUE_OP";
-	ops_strings[ENDSTMNT_OP] = "ENDSTMNT_OP";
-	ops_strings[FUNC_CALL_OP] = "FUNC_CALL_OP";
-	ops_strings[PROC_CALL_OP] = "PROC_CALL_OP";
-	ops_strings[BFUNC_CALL_OP] = "BFUNC_CALL_OP";
-	ops_strings[BPROC_CALL_OP] = "BPROC_CALL_OP";
-	ops_strings[WRITE_SUBSCRIPTED_VAR_OP] = "WRITE_SUBSCRIPTED_VAR_OP";
-	ops_strings[WRITE_PUSH_VAR_OP] = "WRITE_PUSH_VAR_OP";
-	ops_strings[WRITE_VAR_DIMNUM_OP] = "WRITE_VAR_DIMNUM_OP";
-	ops_strings[WRITE_SUBSCRIPTED_VARATT_OP] = "WRITE_SUBSCRIPTED_VARATT_OP";
-	ops_strings[WRITE_VARATT_OP] = "WRITE_VARATT_OP";
-	ops_strings[WRITE_VAR_DIMNAME_OP] = "WRITE_VAR_DIMNAME_OP";
-	ops_strings[WRITE_SUBSCRIPTED_VAR_COORD_OP] = "WRITE_SUBSCRIPTED_VAR_COORD_OP";
-	ops_strings[WRITE_VAR_COORD_OP] = "WRITE_VAR_COORD_OP";
-	ops_strings[WRITE_PUSH_FILE_OP] = "WRITE_PUSH_FILE_OP";
-	ops_strings[WRITE_SUBSCRIPTED_FILE_VAR_OP] = "WRITE_SUBSCRIPTED_FILE_VAR_OP";
-	ops_strings[WRITE_PUSH_FILE_VAR_OP] = "WRITE_PUSH_FILE_VAR_OP";
-	ops_strings[WRITE_FILE_DIMNUM_OP] = "WRITE_FILE_DIMNUM_OP";
-	ops_strings[WRITE_FILE_DIMNAME_OP] = "WRITE_FILE_DIMNAME_OP";
-	ops_strings[WRITE_FILE_ATT_OP] = "WRITE_FILE_ATT_OP";
-	ops_strings[WRITE_SUBSCRIPTED_FILE_ATT_OP] = "WRITE_SUBSCRIPTED_FILE_ATT_OP";
-	ops_strings[PARAM_SUBSCRIPTED_VAR_OP] = "PARAM_SUBSCRIPTED_VAR_OP";
-	ops_strings[PARAM_PUSH_VAR_OP] = "PARAM_PUSH_VAR_OP";
-	ops_strings[PARAM_VAR_DIMNUM_OP] = "PARAM_VAR_DIMNUM_OP";
-	ops_strings[PARAM_SUBSCRIPTED_VARATT_OP] = "PARAM_SUBSCRIPTED_VARATT_OP";
+	ops_strings[ASSIGN_VARATT_OP] = "ASSIGN_VARATT_OP";
 	ops_strings[PARAM_VARATT_OP] = "PARAM_VARATT_OP";
-	ops_strings[PARAM_VAR_DIMNAME_OP] = "PARAM_VAR_DIMNAME_OP";
-	ops_strings[PARAM_SUBSCRIPTED_VAR_COORD_OP] = "PARAM_SUBSCRIPTED_VAR_COORD_OP";
+	ops_strings[VAR_COORD_OP] = "VAR_COORD_OP";
+	ops_strings[ASSIGN_VAR_COORD_OP] = "ASSIGN_VAR_COORD_OP";
 	ops_strings[PARAM_VAR_COORD_OP] = "PARAM_VAR_COORD_OP";
-	ops_strings[PARAM_PUSH_FILE_OP] = "PARAM_PUSH_FILE_OP";
-	ops_strings[PARAM_SUBSCRIPTED_FILE_VAR_OP] = "PARAM_SUBSCRIPTED_FILE_VAR_OP";
-	ops_strings[PARAM_PUSH_FILE_VAR_OP] = "PARAM_PUSH_FILE_VAR_OP";
-	ops_strings[PARAM_FILE_DIMNUM_OP] = "PARAM_FILE_DIMNUM_OP";
-	ops_strings[PARAM_FILE_DIMNAME_OP] = "PARAM_FILE_DIMNAME_OP";
-	ops_strings[PARAM_FILE_ATT_OP] = "PARAM_FILE_ATT_OP";
-	ops_strings[PARAM_SUBSCRIPTED_FILE_ATT_OP] = "PARAM_SUBSCRIPTED_FILE_ATT_OP";
+	ops_strings[VAR_DIMNUM_OP]= "VAR_DIMNUM_OP";
+	ops_strings[ASSIGN_VAR_DIMNUM_OP]= "ASSIGN_VAR_DIMNUM_OP";
+	ops_strings[PARAM_VAR_DIMNUM_OP]= "PARAM_VAR_DIMNUM_OP";
+	ops_strings[VAR_DIMNAME_OP] = "VAR_DIMNAME_OP";
+	ops_strings[ASSIGN_VAR_DIMNAME_OP] = "ASSIGN_VAR_DIMNAME_OP";
+	ops_strings[PARAM_VAR_DIMNAME_OP] = "PARAM_VAR_DIMNAME_OP";
 }
 
-extern NclValue *_NclGetCurrentMachine
+NclValue *_NclGetCurrentMachine
 #if __STDC__
 (void)
 #else
@@ -170,7 +160,34 @@ extern NclValue *_NclGetCurrentMachine
 	return(mstk->themachine);
 }
 
-extern int *_NclGetCurrentLineRec
+NclStackEntry *_NclPeek
+#if  __STDC__
+(int offset)
+#else
+(offset)
+	int offset;
+#endif
+{
+	return((NclStackEntry*)(sb - (offset + 1)));
+}
+
+NclStackEntry _NclGetArg
+#if  __STDC__
+(int arg_num,int total_args)
+#else
+(arg_num,total_args)
+int arg_num;
+int total_args;
+#endif
+{
+	NclStackEntry *ptr;
+
+	ptr = ((NclStackEntry*)(sb - total_args)) + arg_num;
+
+	return(*ptr);
+}
+
+int *_NclGetCurrentLineRec
 #if __STDC__
 (void)
 #else
@@ -180,7 +197,7 @@ extern int *_NclGetCurrentLineRec
 	return(mstk->thelines);
 }
 
-extern char **_NclGetCurrentFileNameRec
+char **_NclGetCurrentFileNameRec
 #if __STDC__
 (void)
 #else
@@ -240,7 +257,7 @@ void _NclPushMachine
 	_NclMachineStack* tmp;
 
 	tmp = mstk;
-	mstk = the_mach_rec;
+	mstk = (_NclMachineStack*)the_mach_rec;
 	mstk->next = tmp;
 	return;
 }
@@ -333,7 +350,7 @@ void _NclPushFrame
 
 	tmp = (NclFrame*)(sb);
 	tmp->func_ret_value.kind = NclStk_NOVAL;
-	tmp->func_ret_value.u.other = NULL;
+	tmp->func_ret_value.u.data_obj= NULL;
 	if(new_scope->level == current_scope_level+1) {
 		tmp->static_link.u.offset  = (unsigned long)((NclStackEntry*)previous - (NclStackEntry*)thestack);
 		tmp->static_link.kind = NclStk_OFFSET;
@@ -407,12 +424,45 @@ NclStackEntry _NclPop
 		tmp.kind = 0;
 		return(tmp);
 	} else {
-		tmp = (*(sb));
 		sb--;
+		tmp = (*(sb));
 		return(tmp);
 	}
 }
+int _NclPutIntInstr
+#if __STDC__
+(int val,int line,char* file)
+#else
+(val,line,file)
+        int val;
+        int line;
+        char *file;
+#endif
+{
+/* 
+* Sometimes the parser needs to know the offset of the instruction it put
+* into the instruction list (i.e. function return addresses, loops and 
+* conditionals. Therefore it is necessary to return the offset of the instruct
+* being placed in the list.
+*/
+	int old_offset = (int)(mstk->pc - mstk->themachine);
 
+/*
+* Check for overflow
+*/
+	if(mstk->pc >= &(mstk->themachine[mstk->current_machine_size -1])) {
+/*
+* Will take care of updating mstk->pc
+*/
+		IncreaseMachineSize();
+	}
+	*((int*)mstk->pc++) = val;
+	*(mstk->lc++) = line;
+	*(mstk->fn++) = file;
+	mstk->pcoffset = (int)(mstk->pc - mstk->themachine);
+
+	return(old_offset);
+}
 
 int _NclPutRealInstr
 #if __STDC__
@@ -521,7 +571,7 @@ int _NclPutInstrAt
 
 
 
-int _NclPrintMachine
+void _NclPrintMachine
 #if  __STDC__
 (int from, int to,FILE* fp)
 #else
@@ -559,7 +609,6 @@ int _NclPrintMachine
 			case STOPSEQ:
 			case RETURN_OP :
 			case IF_OP :
-			case ASSIGN_OP :
 			case NAMED_COORD_SUBSCRIPT_OP :
 			case INT_SUBSCRIPT_OP :
 			case NAMED_INT_SUBSCRIPT_OP :
@@ -608,14 +657,6 @@ int _NclPrintMachine
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%s\n",(char*)*ptr);
 				break;
-			case PUSH_VAR_OP :
-			case WRITE_PUSH_VAR_OP :
-			case PARAM_PUSH_VAR_OP :
-				fprintf(fp,"%s\n",ops_strings[*ptr]);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				break;
 			case NEW_FRAME_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
@@ -651,8 +692,22 @@ int _NclPrintMachine
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
+			case FILEVAR_COORD_OP:
+			case ASSIGN_FILEVAR_COORD_OP:
+			case PARAM_FILEVAR_COORD_OP:
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t%s\n",(char*)*ptr);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t%s\n",(char*)*ptr);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t%d\n",(int)*ptr);
+				break;
 			case VAR_COORD_OP:
-			case WRITE_VAR_COORD_OP:
+			case ASSIGN_VAR_COORD_OP:
 			case PARAM_VAR_COORD_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
@@ -660,41 +715,25 @@ int _NclPrintMachine
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%s\n",(char*)*ptr);
-				break;
-			case SUBSCRIPTED_VAR_COORD_OP:
-			case WRITE_SUBSCRIPTED_VAR_COORD_OP:
-			case PARAM_SUBSCRIPTED_VAR_COORD_OP:
-				fprintf(fp,"%s\n",ops_strings[*ptr]);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%s\n",(char*)*ptr);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
-			case VAR_DIMNAME_OP:
-			case WRITE_VAR_DIMNAME_OP:
-			case PARAM_VAR_DIMNAME_OP:
+			case FILEVARATT_OP:
+			case ASSIGN_FILEVARATT_OP:
+			case PARAM_FILEVARATT_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%s\n",(char*)*ptr);
-				break;
-			case VAR_DIMNUM_OP:
-			case WRITE_VAR_DIMNUM_OP:
-			case PARAM_VAR_DIMNUM_OP:
-				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				fprintf(fp,"\t%s\n",(char*)*ptr);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
 			case VARATT_OP:
-			case WRITE_VARATT_OP:
+			case ASSIGN_VARATT_OP:
 			case PARAM_VARATT_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
@@ -702,99 +741,29 @@ int _NclPrintMachine
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%s\n",(char*)*ptr);
-				break;
-			case SUBSCRIPTED_VARATT_OP:
-			case WRITE_SUBSCRIPTED_VARATT_OP:
-			case PARAM_SUBSCRIPTED_VARATT_OP:
-				fprintf(fp,"%s\n",ops_strings[*ptr]);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%s\n",(char*)*ptr);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
-			case SUBSCRIPTED_FILE_VAR_OP :
-			case WRITE_SUBSCRIPTED_FILE_VAR_OP :
-			case PARAM_SUBSCRIPTED_FILE_VAR_OP :
+			case FILE_VAR_OP :
+			case ASSIGN_FILE_VAR_OP :
+			case PARAM_FILE_VAR_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				fprintf(fp,"%s\n",(char*)*ptr,fp);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d",*ptr);
 				break;
-			case PUSH_FILE_OP :
-			case WRITE_PUSH_FILE_OP :
-			case PARAM_PUSH_FILE_OP :
+			case VAR_OP :
+			case ASSIGN_VAR_OP :
+			case PARAM_VAR_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				break;
-			case SUBSCRIPTED_VAR_OP :
-			case WRITE_SUBSCRIPTED_VAR_OP :
-			case PARAM_SUBSCRIPTED_VAR_OP :
-				fprintf(fp,"%s\n",ops_strings[*ptr]);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",*ptr);
-				break;
-			case PUSH_FILE_VAR_OP :
-			case WRITE_PUSH_FILE_VAR_OP :
-			case PARAM_PUSH_FILE_VAR_OP :
-				fprintf(fp,"%s\n",ops_strings[*ptr]);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				break;
-			case FILE_DIMNUM_OP :
-			case WRITE_FILE_DIMNUM_OP :
-			case PARAM_FILE_DIMNUM_OP :
-				fprintf(fp,"%s\n",ops_strings[*ptr]);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);	
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",*ptr);
-				break;
-			case FILE_DIMNAME_OP :
-			case WRITE_FILE_DIMNAME_OP :
-			case PARAM_FILE_DIMNAME_OP :
-				fprintf(fp,"%s\n",ops_strings[*ptr]);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%s\n",(char*)*ptr);
-				break;
-			case FILE_ATT_OP :
-			case WRITE_FILE_ATT_OP :
-			case PARAM_FILE_ATT_OP :
-				fprintf(fp,"%s\n",ops_strings[*ptr]);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%s\n",(char*)*ptr);
-				break;
-			case SUBSCRIPTED_FILE_ATT_OP:
-			case PARAM_SUBSCRIPTED_FILE_ATT_OP:
-				fprintf(fp,"%s\n",ops_strings[*ptr]);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%s\n",(char*)*ptr);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d\n",*ptr);
 				break;
@@ -807,11 +776,68 @@ int _NclPrintMachine
 				_NclPrintMachine(-1,-1,fp);
 				(void)_NclPopMachine();
 				break;
-			
+			case CONVERT_TO_LOCAL:
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\tArg #:");
+				fprintf(fp,"%d\n",(int)*ptr,fp);
+				break;
+			case VAR_DIMNAME_OP:
+			case ASSIGN_VAR_DIMNAME_OP:
+			case PARAM_VAR_DIMNAME_OP:
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t%s\n",(char*)*ptr,fp);
+				break;
+			case VAR_DIMNUM_OP :
+			case ASSIGN_VAR_DIMNUM_OP :
+			case PARAM_VAR_DIMNUM_OP :
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t%d\n",(int)*ptr,fp);
+				break;
+			case FILEVAR_DIMNUM_OP :
+			case ASSIGN_FILEVAR_DIMNUM_OP :
+			case PARAM_FILEVAR_DIMNUM_OP :
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t%d\n",(int)*ptr,fp);
+				break;
+			case FILEVAR_DIMNAME_OP:
+			case ASSIGN_FILEVAR_DIMNAME_OP:
+			case PARAM_FILEVAR_DIMNAME_OP:
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t%s\n",(char*)*ptr,fp);
+				break;
 			default:
 				break;
 		}
 		ptr++;lptr++;fptr++;
 	}
+	return;
 }
-
+#ifdef __cplusplus
+}
+#endif

@@ -2,6 +2,7 @@
 /*#include <stdio.h>*/
 #include <string.h>
 #include <ncarg/hlu/hlu.h>
+#include <data_objs/NclData.h>
 #include <defs.h>
 #include <Symbol.h>
 #include <y.tab.h>
@@ -48,13 +49,11 @@ digit	[0-9]
 %%
 <AA>[^\n] {
 	cur_line_number++;
-	fprintf(stdout,"----->inc'ing %d<-----\n",cur_line_number);
 	BEGIN 0;
 	yyless(yyleng-1);
 }
 <AA>[\n] {
 	cur_line_number++;
-	fprintf(stdout,"----->inc'ing %d<-----\n",cur_line_number);
 	printtoken(yytext[0],(char*)NULL); 
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
@@ -84,7 +83,6 @@ digit	[0-9]
 	*cur_line_text_pos = '\0';
 	cur_line_text_pos = &(cur_line_text[0]);
 	cur_line_number++;
-	fprintf(stdout,"----->inc'ing %d<-----\n",cur_line_number);
 	return EOLN;
 }
 [\n] {
@@ -97,7 +95,6 @@ digit	[0-9]
 	cur_line_length = 0;
 	*cur_line_text_pos = '\0';
 	cur_line_text_pos = &(cur_line_text[0]);
-	fprintf(stdout,"NORMAL EOLN\n");
 	BEGIN AA;
 	return EOLN;
 }

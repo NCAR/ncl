@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.3 1993-10-14 18:33:38 ethan Exp $
+ *      $Id: SrcTree.h,v 1.4 1993-12-21 19:18:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,9 @@
  *			and data structures for creating the intermediate 
  *			srctree representation.
  */
+#ifdef __cplusplus
+extern "C" {
+#endif
 #ifndef _NCSrcTree_h
 #define _NCSrcTree_h
 
@@ -43,11 +46,10 @@ typedef enum {Ncl_BLOCK, Ncl_RETURN, Ncl_IFTHEN, Ncl_IFTHENELSE,
 			Ncl_EXTERNFUNCCALL, Ncl_FUNCCALL, Ncl_ARRAY,
 			Ncl_ROWLIST,Ncl_ROWCOLUMNNODE, Ncl_DOWHILE,
 			Ncl_VAR, Ncl_VARDIMNUM, Ncl_VARATT,
-			Ncl_VARDIMNAME, Ncl_VARCOORD, Ncl_FILE,
-			Ncl_FILEVAR, Ncl_FILEDIMNUM, Ncl_FILEDIMNAME,
-			Ncl_FILEATT, Ncl_UNDEFERROR, Ncl_IDNEXPR, 
+			Ncl_VARDIMNAME, Ncl_VARCOORD, Ncl_FILEVAR, Ncl_IDNEXPR, 
 			Ncl_RESOURCE, Ncl_GETRESOURCE, Ncl_OBJ,
-			Ncl_BREAK, Ncl_CONTINUE
+			Ncl_BREAK, Ncl_CONTINUE, Ncl_FILEVARATT,
+			Ncl_FILEVARDIMNAME, Ncl_FILEVARDIMNUM, Ncl_FILEVARCOORD
                         } NclSrcTreeTypes;
 
 typedef enum { Ncl_READIT, Ncl_WRITEIT, Ncl_PARAMIT } NclReferenceTypes;
@@ -146,16 +148,6 @@ typedef struct ncl_real{
 	float real;
 } NclReal;
 
-typedef struct ncl_file {
-	NclSrcTreeTypes kind;
-	char *name;
-	int  line;
-	char *file;
-	NclSrcTreeDestroyProc destroy_it;
-	NclReferenceTypes ref_type;
-	NclSymbol *dfile;
-}NclFile;
-
 typedef struct ncl_filevar {
 	NclSrcTreeTypes kind;
 	char *name;
@@ -164,9 +156,24 @@ typedef struct ncl_filevar {
 	NclSrcTreeDestroyProc destroy_it;
 	NclReferenceTypes ref_type;
 	NclSymbol *dfile;
-	NclSymbol *filevar;
+	char *filevar;
 	NclSrcListNode *subscript_list;
 }NclFileVar;
+
+typedef struct ncl_filevardim{
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	NclSymbol *filesym;
+	char *filevar;
+	union {
+		int	dimnum;
+		char 	*dimname;
+	}u;
+}NclFileVarDim;
 
 typedef struct ncl_vardim{
 	NclSrcTreeTypes kind;
@@ -182,31 +189,18 @@ typedef struct ncl_vardim{
 	}u;
 }NclVarDim;
 
-typedef struct ncl_filedim {
+typedef struct ncl_filevaratt{
 	NclSrcTreeTypes kind;
 	char *name;
 	int  line;
 	char *file;
 	NclSrcTreeDestroyProc destroy_it;
 	NclReferenceTypes ref_type;
-	NclSymbol *dfile;
-	union {
-		int dimnum;
-		char * dimname;
-	}u;
-}NclFileDim;
-
-typedef struct ncl_fileatt {
-	NclSrcTreeTypes kind;
-	char *name;
-	int  line;
-	char *file;
-	NclSrcTreeDestroyProc destroy_it;
-	NclReferenceTypes ref_type;
-	NclSymbol *dfile;
+	NclSymbol *filesym;
+	char *filevar;
 	char *attname;
 	NclSrcListNode *subscript_list;
-}NclFileAtt;
+}NclFileVarAtt;
 
 typedef struct ncl_varatt{
 	NclSrcTreeTypes kind;
@@ -230,6 +224,19 @@ typedef struct ncl_var{
 	NclSymbol *sym;
 	NclSrcListNode *subscript_list;
 }NclVar;
+
+typedef struct ncl_filecoord {
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	NclSymbol *filesym;
+	char *filevar;
+	char *coord_name;
+	NclSrcListNode *subscript_list;
+}NclFileCoord;
 
 typedef struct ncl_coord {
 	NclSrcTreeTypes kind;
@@ -322,7 +329,7 @@ typedef struct ncl_dofromto {
 	char *file;
 	NclSrcTreeDestroyProc destroy_it;
 	int	new_inc_var;
-	NclSymbol *inc_var;
+	void *inc_var;
 	void	*start_expr;
 	void    *end_expr;
 	NclSrcListNode *block_stmnt_list;
@@ -335,7 +342,7 @@ typedef struct ncl_dofromtostride{
 	char *file;
 	NclSrcTreeDestroyProc destroy_it;
 	int new_inc_var;
-	NclSymbol *inc_var;
+	void *inc_var;
 	void	*start_expr;
 	void    *end_expr;
 	void    *stride_expr;
@@ -510,7 +517,7 @@ typedef struct ncl_dowhile{
 	void *cond_expr;
 	NclSrcListNode *stmnts;
 } NclDoWhile;
-
+/*
 typedef struct ncl_obj{
 	NclSrcTreeTypes kind;
 	char *name;
@@ -519,6 +526,7 @@ typedef struct ncl_obj{
 	NclSrcTreeDestroyProc destroy_it;
 	NclSymbol *obj;
 }NclObj;
+*/
 
 extern void *_NclMakeReturn(
 #ifdef NhlNeedProto
@@ -609,7 +617,7 @@ NclSymbol*	/* param_type */
 #endif
 );
 
-extern NclSrcListNode  * _NclMakeDimSizeNode(
+extern void * _NclMakeDimSizeNode(
 #ifdef NhlNeedProto
 int /* size */
 #endif
@@ -756,25 +764,13 @@ extern void *_NclMakeFileRef(
 extern void *_NclMakeFileVarRef(
 #ifdef NhlNeedProto
 	NclSymbol * /* dfile */,
-	NclSymbol * /* filevar */,
+	char * /* filevar */,
 	NclSrcListNode * /* subscript_list */,
 	int /*type*/
 #endif
 );
 
-extern void * _NclMakeFileDimNumRef(
-#ifdef NhlNeedProto
-	NclSymbol*  /* dfile */,
-	int         /* dimnum*/
-#endif
-);
 
-extern void *_NclMakeFileDimNameRef(
-#ifdef NhlNeedProto
-	NclSymbol * /* dfile */,
-	char *	    /* dimname */
-#endif
-);
 
 extern void *_NclMakeFileAttRef(
 #ifdef NhlNeedProto
@@ -797,6 +793,13 @@ extern void *_NclMakeVarDimNumRef(
 	int	/* dimnum */
 #endif
 );
+extern void *_NclMakeFileVarDimNumRef(
+#ifdef NhlNeedProto
+	NclSymbol * /* var */,
+	char *	/*filevar*/,
+	int	/* dimnum */
+#endif
+);
 
 extern void *_NclMakeVarDimNameRef(
 #ifdef NhlNeedProto
@@ -804,7 +807,22 @@ extern void *_NclMakeVarDimNameRef(
 	char * 	/* dimname */
 #endif
 );
+extern void *_NclMakeFileVarDimNameRef(
+#ifdef NhlNeedProto
+	NclSymbol * /* var */,
+	char * 	/* filevar*/,
+	char * 	/* dimname */
+#endif
+);
 
+extern void *_NclMakeFileVarAttRef(
+#ifdef NhlNeedProto
+	NclSymbol * /* var */,
+	char * /* filevar */,
+	char * /* attname */,
+	NclSrcListNode * /*subscript_list*/
+#endif
+);
 extern void *_NclMakeVarAttRef(
 #ifdef NhlNeedProto
 	NclSymbol * /* var */,
@@ -813,6 +831,14 @@ extern void *_NclMakeVarAttRef(
 #endif
 );
 
+extern void *_NclMakeFileVarCoordRef(
+#ifdef NhlNeedProto
+	NclSymbol * /* var */,
+	char * /* filevar*/,
+	char * /* coord */,
+	NclSrcListNode * /* subscript_list */
+#endif
+);
 extern void *_NclMakeVarCoordRef(
 #ifdef NhlNeedProto
 	NclSymbol * /* var */,
@@ -840,12 +866,13 @@ extern void *_NclMakeResource(
 	void* /*expr*/
 #endif
 );
-
+/*
 extern void *_NclMakeObjRef(
 #ifdef NhlNeedProto
-	NclSymbol * /*obj*/
+	NclSymbol * obj
 #endif
 );
+*/
 extern void *_NclMakeEoln(
 #ifdef NhlNeedProto
 void
@@ -875,3 +902,6 @@ int is_error
 
 
 #endif /*_NCSrcTree_h*/
+#ifdef __cplusplus
+}
+#endif

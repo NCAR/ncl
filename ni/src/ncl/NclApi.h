@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.1 1993-09-24 23:40:47 ethan Exp $
+ *      $Id: NclApi.h,v 1.2 1993-12-21 19:17:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,10 @@
  */
 #ifndef _NCNclApi_h
 #define _NCNclApi_h
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 extern int NclInitServer(
@@ -67,5 +71,7 @@ extern int NclGetErrorId(
 void
 #endif
 );
-
+#ifdef __cplusplus
+}
+#endif
 #endif  /*_NCNclApi_h */
