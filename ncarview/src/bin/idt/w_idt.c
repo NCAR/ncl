@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.26 1992-10-14 17:55:22 clyne Exp $
+ *	$Id: w_idt.c,v 1.27 1992-10-14 19:52:47 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -212,7 +212,7 @@ static	char	**get_trans_commandline(targc, app_data)
 	 * get the path to the translator
 	 */
 	if ( !(binpath = GetNCARGPath(BINDIR))) {
-		fprintf(stderr, "NCARG bin path not found [ %s ]", ErrGetMsg());
+		fprintf(stderr, "NCARG bin path not found [ %s ]\n", ErrGetMsg());
 		return((char **) NULL);
 	}
 		
@@ -419,9 +419,9 @@ static	void Select_file(widget, client_data, call_data)
 	XtPointer	client_data;	/* select action	*/
 	XtPointer	call_data;	/* unused		*/
 {
-	FuncPtrPasser *select_action = (FuncPtrPasser *) client_data;
+	FuncPtrPasser *select_act_ptr = (FuncPtrPasser *) client_data;
 
-	CreateFileSelectPopup(widget, select_action);
+	CreateFileSelectPopup(widget, select_act_ptr);
 }
 
 /*

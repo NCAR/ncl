@@ -1,5 +1,5 @@
 /*
- *	$Id: w_file.c,v 1.8 1992-09-01 23:39:14 clyne Exp $
+ *	$Id: w_file.c,v 1.9 1992-10-14 19:52:43 clyne Exp $
  */
 /*
  *	w_file.c
@@ -59,7 +59,7 @@ extern	char	*GetFiles();
  */
 void	CreateFileSelectPopup(button, select_action)
 	Widget	button;
-	FuncPtrPasser	select_action;
+	FuncPtrPasser	*select_action;
 {
 
 	Arg		args[10];
@@ -78,7 +78,7 @@ void	CreateFileSelectPopup(button, select_action)
 	String	files;
 	int	longest;
 
-	selectAction = select_action;
+	selectAction = *select_action;
 
 	/*
 	* This will position the upper left hand corner of the popup at the

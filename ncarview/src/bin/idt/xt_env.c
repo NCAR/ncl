@@ -1,5 +1,5 @@
 /*
- *      $Id: xt_env.c,v 1.6 1992-09-09 15:07:07 clyne Exp $
+ *      $Id: xt_env.c,v 1.7 1992-10-14 19:52:53 clyne Exp $
  */
 /*
  *	File:		xt_env.c
@@ -48,7 +48,7 @@ void	XAppDirPath()
 
 	if ( !(xapp_path = GetNCARGPath(XAPPDIR))) {
 		(void) fprintf(
-			stderr, "NCARG xapp dir path not found [ %s ]",
+			stderr, "NCARG xapp dir path not found [ %s ]\n",
 			ErrGetMsg()
 		);
 		return;
