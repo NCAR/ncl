@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV40DataHandler.c,v 1.8 1999-01-26 20:11:47 dbrown Exp $
+ *      $Id: MapV40DataHandler.c,v 1.9 1999-03-19 22:05:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2762,7 +2762,7 @@ static NhlErrorTypes mpFill
         NhlMapV40DataHandlerLayerPart *mv40p = &mv40l->mapv40dh;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
-        NhlWorkspace		*aws = NULL;
+        NhlWorkspace		*aws = NULL, *us_aws = NULL;
 
 /*
  * for efficiency if the ustates are drawn they go into a separate 
@@ -2807,16 +2807,16 @@ static NhlErrorTypes mpFill
 
         if (mv40p->usstates_fill_mode != mpNOSET) {
 
-		subret = mpSetUpAreamap(mv40l,mpl,&aws,
+		subret = mpSetUpAreamap(mv40l,mpl,&us_aws,
                                         mpUSSTATES_AMAP,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
 #if 0
 		printf("using US for fill\n");
 #endif
-		subret = _NhlArpram(aws,0,0,0,entry_name);
+		subret = _NhlArpram(us_aws,0,0,0,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
 
-		subret = _NhlArscam(aws,(_NHLCALLF(hlumapfill,HLUMAPFILL)),
+		subret = _NhlArscam(us_aws,(_NHLCALLF(hlumapfill,HLUMAPFILL)),
 				    entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
 
@@ -2824,8 +2824,14 @@ static NhlErrorTypes mpFill
 
  error_ret:
 
-	subret = _NhlIdleWorkspace(aws);
-	ret = MIN(subret,ret);
+	if (aws) {
+		subret = _NhlIdleWorkspace(aws);
+		ret = MIN(subret,ret);
+	}
+	if (us_aws) {
+		subret = _NhlIdleWorkspace(us_aws);
+		ret = MIN(subret,ret);
+	}
 		
 	return ret;
 
@@ -3152,7 +3158,7 @@ static NhlErrorTypes mpGrid
         NhlMapV40DataHandlerLayerPart *mv40p = &mv40l->mapv40dh;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
-	NhlWorkspace		*aws;
+	NhlWorkspace		*aws = NULL, *us_aws = NULL;
         float flx,frx,fby,fuy,wlx,wrx,wby,wuy,lon1,lon2,lat1,lat2,spacing;
 	float avlat,avlon;
 	int ll,status;
@@ -3182,7 +3188,7 @@ static NhlErrorTypes mpGrid
 		
 		subret = mpSetUpAreamap(mv40l,mpl,&aws,
                                         mpGLOBAL_AMAP,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
 #if 0
 		switch (Outline_Set) {
 		case mpCO:
@@ -3201,26 +3207,32 @@ static NhlErrorTypes mpGrid
 		subret = _NhlMapgrm(aws,
 				    (_NHLCALLF(hlumaskgrid,HLUMASKGRID)),
 				    entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
 
-		subret = _NhlIdleWorkspace(aws);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 	}
 	if (mv40p->usstates_fill_mode != mpNOSET) {
 
 		subret = mpSetUpAreamap(mv40l,mpl,&aws,
                                         mpUSSTATES_AMAP,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
 #if 0
 		printf("using US for grid\n");
 #endif
 		subret = _NhlMapgrm(aws,
 				    (_NHLCALLF(hlumaskgrid,HLUMASKGRID)),
 				    entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
 
+	}
+ error_ret:
+
+	if (aws) {
 		subret = _NhlIdleWorkspace(aws);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		ret = MIN(subret,ret);
+	}
+	if (us_aws) {
+		subret = _NhlIdleWorkspace(us_aws);
+		ret = MIN(subret,ret);
 	}
 	return ret;
 }
