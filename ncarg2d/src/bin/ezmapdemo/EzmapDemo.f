@@ -1,5 +1,5 @@
 C
-C $Id: EzmapDemo.f,v 1.4 2000-08-22 04:34:15 haley Exp $
+C $Id: EzmapDemo.f,v 1.5 2001-08-31 20:15:14 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -31,17 +31,26 @@ C
 C
         EXTERNAL COLORA,DRAWLA,COLORB,DRAWLB
 C
-C Declare an internal common block so as to be able to retrieve various
-C values for the State Plane projection.
+C Declare some internal common blocks so as to be able to retrieve
+C various values for the State Plane projection.
+C
+        COMMON /MAPCM2/  BLAM,BLOM,PEPS,SLAM,SLOM,UCEN,UMAX,UMIN,UOFF,
+     +                   URNG,VCEN,VMAX,VMIN,VOFF,VRNG,ISSL
+        DOUBLE PRECISION BLAM,BLOM,PEPS,SLAM,SLOM,UCEN,UMAX,UMIN,UOFF,
+     +                   URNG,VCEN,VMAX,VMIN,VOFF,VRNG
+        INTEGER          ISSL
+        SAVE   /MAPCM2/
 C
         COMMON /USGSC1/ UTPA(15),UUMN,UUMX,UVMN,UVMX,IPRF
           DOUBLE PRECISION UTPA,UUMN,UUMX,UVMN,UVMX
           INTEGER IPRF
         SAVE   /USGSC1/
 C
-C Declare the error-recovery routine that returns an error message.
+C Declare a common block in which the directory name will be passed.
 C
-        CHARACTER*113 SEMESS
+        COMMON /EDRGDI/ USNM
+          CHARACTER*60 USNM
+        SAVE
 C
 C Declare a couple of variables that determine what projection will be
 C used and how the portion of the projection to be shown is selected.
@@ -61,7 +70,13 @@ C Declare a character variable into which to read commands.
 C
         CHARACTER*1 COMD
 C
-        CHARACTER*60 LABL,LABT
+C Declare a character variable to hold a plot label.
+C
+        CHARACTER*60 LABL
+C
+C Declar a temporary character variable to read labels and names into.
+C
+        CHARACTER*60 CHRT
 C
 C Declare a couple of arrays in which to define boxes to be filled.
 C
@@ -91,6 +106,11 @@ C the Piet Hein super-ellipses that are used for the zone borders in
 C place of rectangles.
 C
         DOUBLE PRECISION DBLP,DANG,DSNA,DCSA
+C
+C Declare arrays to hold color indices to be passed to MDRGSC, defining
+C the colors to be used on maps drawn from the RANGS/GSHHS database.
+C
+        DIMENSION LCOL(5),LCSF(5)
 C
 C Set the default value of the parameter that says whether or not the
 C X workstation will be updated as changes are made.  (When making a
@@ -136,6 +156,11 @@ C Set the default value of the parameter saying at what level the new
 C database "Earth..1" should be used.
 C
         DATA ILVL / 3 /
+C
+C Set the default value of the parameter saying at what level the new
+C RANGS/GSHHS database should be used.
+C
+        DATA IRGL / 0 /
 C
 C Set the default value of the miscellaneous minor parameters.
 C
@@ -281,6 +306,12 @@ C
           CALL GSCR (IWID,105,.4,.6,.2)
           CALL GSCR (IWID,106,.2,.4,.6)
           CALL GSCR (IWID,107,.6,.6,.6)
+          CALL GSCR (IWID,201,0.,0.,1.)  !  RANGS/GSHHS - Ocean
+          CALL GSCR (IWID,202,0.,1.,0.)  !  RANGS/GSHHS - Land
+          CALL GSCR (IWID,203,0.,1.,1.)  !  RANGS/GSHHS - Lake
+          CALL GSCR (IWID,204,0.,1.,0.)  !  RANGS/GSHHS - Island in lake
+          CALL GSCR (IWID,205,0.,1.,1.)  !  RANGS/GSHHS - Pond on island
+          CALL GSCR (IWID,206,1.,1.,1.)  !  RANGS/GSHHS - Outlines
   101   CONTINUE
 C
 C Deactivate the NCGM and PostScript workstations.
@@ -308,6 +339,23 @@ C
         CALL PCSETR ('BL - BOX LINE WIDTH',2.)
         CALL PCSETR ('BM - BOX MARGIN WIDTH',.5)
 C
+C Tell EZMAP what colors to use for the outlines and filled areas
+C produced from the RANGS/GSHHS data.
+C
+        LCOL(1)=206
+        LCOL(2)=206
+        LCOL(3)=206
+        LCOL(4)=206
+        LCOL(5)=206
+C
+        LCSF(1)=201
+        LCSF(2)=202
+        LCSF(3)=203
+        LCSF(4)=204
+        LCSF(5)=205
+C
+        CALL MDRGSC (LCOL,LCSF)
+C
 C Generate boundary-line data for each of the State Plane zones.
 C
         PRINT * , ' '
@@ -322,24 +370,24 @@ C
             CALL ZERODA (PARA,15)
             CALL MPUTIN (2,IZN0(ISPI),0,PARA,0.D0,0.D0,0.D0,0.D0)
 C
-            EPSI=.001*(UUMX-UUMN)
+            EPSI=.001*(UMAX-UMIN)
 C
-            UCEN=(UUMN+UUMX)/2.
-            VCEN=(UVMN+UVMX)/2.
-            URNG=.999*(UUMX-UCEN)
-            VRNG=.999*(UVMX-VCEN)
+            UMID=(UMIN+UMAX)/2.
+            VMID=(VMIN+VMAX)/2.
+            UDIF=.999*(UMAX-UMID)
+            VDIF=.999*(VMAX-VMID)
 C
-            CALL MAPTRI (UCEN,VCEN,CLT0(ISPI),CLN0(ISPI))
+            CALL MAPTRI (UMID,VMID,CLT0(ISPI),CLN0(ISPI))
 C
             DO 102 I=1,200
 C
               DANG=1.8D0*DBLE(I-1)*.017453292519943D0
               DSNA=SIN(DANG)
               DCSA=COS(DANG)
-              R=1./REAL(((ABS(DCSA)/DBLE(URNG))**DBLP+
-     +                   (ABS(DSNA)/DBLE(VRNG))**DBLP)**(1.D0/DBLP))
-              CALL MAPTRI (UCEN+R*REAL(DCSA),VCEN+R*REAL(DSNA),
-     +                               PLT0(I,ISPI),PLN0(I,ISPI))
+              R=1./REAL(((ABS(DCSA)/DBLE(UDIF))**DBLP+
+     +                   (ABS(DSNA)/DBLE(VDIF))**DBLP)**(1.D0/DBLP))
+              CALL MAPTRI (UMID+R*REAL(DCSA),VMID+R*REAL(DSNA),
+     +                     PLT0(I,ISPI),PLN0(I,ISPI))
   102       CONTINUE
 C
           END IF
@@ -349,28 +397,33 @@ C
             CALL ZERODA (PARA,15)
             CALL MPUTIN (2,IZN8(ISPI),8,PARA,0.D0,0.D0,0.D0,0.D0)
 C
-            EPSI=.001*(UUMX-UUMN)
+            EPSI=.001*(UMAX-UMIN)
 C
-            UCEN=(UUMN+UUMX)/2.
-            VCEN=(UVMN+UVMX)/2.
-            URNG=.999*(UUMX-UCEN)
-            VRNG=.999*(UVMX-VCEN)
+            UMID=(UMIN+UMAX)/2.
+            VMID=(VMIN+VMAX)/2.
+            UDIF=.999*(UMAX-UMID)
+            VDIF=.999*(VMAX-VMID)
 C
-            CALL MAPTRI (UCEN,VCEN,CLT8(ISPI),CLN8(ISPI))
+            CALL MAPTRI (UMID,VMID,CLT8(ISPI),CLN8(ISPI))
 C
             DO 103 I=1,200
               DANG=1.8D0*DBLE(I-1)*.017453292519943D0
               DSNA=SIN(DANG)
               DCSA=COS(DANG)
-              R=1./REAL(((ABS(DCSA)/DBLE(URNG))**DBLP+
-     +                   (ABS(DSNA)/DBLE(VRNG))**DBLP)**(1.D0/DBLP))
-              CALL MAPTRI (UCEN+R*REAL(DCSA),VCEN+R*REAL(DSNA),
-     +                               PLT8(I,ISPI),PLN8(I,ISPI))
+              R=1./REAL(((ABS(DCSA)/DBLE(UDIF))**DBLP+
+     +                   (ABS(DSNA)/DBLE(VDIF))**DBLP)**(1.D0/DBLP))
+              CALL MAPTRI (UMID+R*REAL(DCSA),VMID+R*REAL(DSNA),
+     +                     PLT8(I,ISPI),PLN8(I,ISPI))
   103       CONTINUE
 C
           END IF
 C
   104   CONTINUE
+C
+C Initialize the variable that will be returned to EZMAP when it asks
+C for the name of the directory containing the RANGS/GSHHS data.
+C
+        USNM=' '
 C
 C If the X workstation is not to be updated, jump to get user input.
 C
@@ -417,16 +470,40 @@ C
         IF (ISTY.EQ.0) THEN
           CALL MAPGRD
           CALL MAPLBL
-          IF (ODNM.NE.'E1'.AND.ODNM.NE.'E2') THEN
-            CALL MAPLOT
-          ELSE
+          IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.ODNM.EQ.'E3') THEN
             IF (ODNM.EQ.'E1') CALL MPLNDR ('Earth..1',ILVL)
             IF (ODNM.EQ.'E2') CALL MPLNDR ('Earth..2',ILVL)
+            IF (ODNM.EQ.'E3') CALL MPLNDR ('Earth..3',ILVL)
+          ELSE IF (ODNM.EQ.'RG') THEN
+            CALL MDRGOL (IRGL)
+            IF (NERRO(NERR).NE.0) GO TO 901
+          ELSE
+            CALL MAPLOT
+            IF (NERRO(NERR).NE.0) GO TO 901
           END IF
           CALL DRSPGD (ISPG,IZN0,PLT0,PLN0,CLT0,CLN0,
      +                      IZN8,PLT8,PLN8,CLT8,CLN8,CHSZ)
         ELSE
-          IF (ODNM.NE.'E1'.AND.ODNM.NE.'E2') THEN
+          IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.ODNM.EQ.'E3') THEN
+            CALL MPSETI ('VS',20)
+            CALL ARINAM (IAMA,LAMA)
+            IF (NERRO(NERR).NE.0) GO TO 901
+            IF (ODNM.EQ.'E1') CALL MPLNAM ('Earth..1',ILVL,IAMA)
+            IF (ODNM.EQ.'E2') CALL MPLNAM ('Earth..2',ILVL,IAMA)
+            IF (ODNM.EQ.'E3') CALL MPLNAM ('Earth..3',ILVL,IAMA)
+            IF (NERRO(NERR).NE.0) GO TO 901
+            CALL ARSCAM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,COLORB)
+            IF (NERRO(NERR).NE.0) GO TO 901
+            IF (ODNM.EQ.'E1') CALL MPLNDR ('Earth..1',ILVL)
+            IF (ODNM.EQ.'E2') CALL MPLNDR ('Earth..2',ILVL)
+            IF (ODNM.EQ.'E3') CALL MPLNDR ('Earth..3',ILVL)
+            CALL MAPGRM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,DRAWLB)
+          ELSE IF (ODNM.EQ.'RG') THEN
+            CALL MDRGSF (IRGL)
+            IF (NERRO(NERR).NE.0) GO TO 901
+            CALL MAPGRD
+            IF (NERRO(NERR).NE.0) GO TO 901
+          ELSE
             CALL MPSETC ('OU',ODNM)
             CALL MPSETI ('VS',0)
             CALL ARINAM (IAMA,LAMA)
@@ -437,18 +514,6 @@ C
             CALL MAPLOT
             CALL MAPGRM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,DRAWLA)
             IF (NERRO(NERR).NE.0) GO TO 901
-          ELSE
-            CALL MPSETI ('VS',20)
-            CALL ARINAM (IAMA,LAMA)
-            IF (NERRO(NERR).NE.0) GO TO 901
-            IF (ODNM.EQ.'E1') CALL MPLNAM ('Earth..1',ILVL,IAMA)
-            IF (ODNM.EQ.'E2') CALL MPLNAM ('Earth..2',ILVL,IAMA)
-            IF (NERRO(NERR).NE.0) GO TO 901
-            CALL ARSCAM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,COLORB)
-            IF (NERRO(NERR).NE.0) GO TO 901
-            IF (ODNM.EQ.'E1') CALL MPLNDR ('Earth..1',ILVL)
-            IF (ODNM.EQ.'E2') CALL MPLNDR ('Earth..2',ILVL)
-            CALL MAPGRM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,DRAWLB)
           END IF
           CALL MAPLMB
           CALL MAPLBL
@@ -1893,8 +1958,10 @@ C
             PRINT * , '  US => US outlines only'
             PRINT * , '  PS => Continental, political, and US outlines'
             PRINT * , '  PO => Continental and political outlines'
-            PRINT * , '  E1 => The new database "Earth..1" (1998)'
-            PRINT * , '  E2 => The new database "Earth..2" (1999)'
+            PRINT * , '  E1 => The new database "Earth..1"'
+            PRINT * , '  E2 => The new database "Earth..2"'
+            PRINT * , '  E3 => The new database "Earth..3"'
+            PRINT * , '  RG => The RANGS/GSHHS database'
             PRINT * , ' '
             PRINT * , 'Current outline dataset selector: ',ODNM
             PRINT * , ' '
@@ -1903,13 +1970,25 @@ C
             CALL MUPPER (CTMP)
             IF (CTMP.EQ.'NO'.OR.CTMP.EQ.'CO'.OR.CTMP.EQ.'US'.OR.
      +          CTMP.EQ.'PS'.OR.CTMP.EQ.'PO'.OR.CTMP.EQ.'E1'.OR.
-     +          CTMP.EQ.'E2') ODNM=CTMP
-            IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2') THEN
+     +          CTMP.EQ.'E2'.OR.CTMP.EQ.'E3'.OR.CTMP.EQ.'RG') ODNM=CTMP
+            IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.ODNM.EQ.'E3') THEN
               PRINT * , ' '
               PRINT * , 'Current database level specifier:',ILVL
               PRINT * , ' '
               PRINT * , 'Enter new database level specifier:'
               CALL EMRDIN (ILVL,ILVL)
+            ELSE IF (ODNM.EQ.'RG') THEN
+              PRINT * , ' '
+              PRINT * , 'Current name of data directory:',USNM
+              PRINT * , ' '
+              PRINT * , 'Enter new name of data directory:'
+              READ (*,'(A60)') CHRT
+              IF (CHRT.NE.' ') USNM=CHRT
+              PRINT * , ' '
+              PRINT * , 'Current database level specifier:',IRGL
+              PRINT * , ' '
+              PRINT * , 'Enter new database level specifier:'
+              CALL EMRDIN (IRGL,IRGL)
             END IF
           END IF
 C
@@ -2082,11 +2161,11 @@ C
             PRINT * , '  A new label (60 or fewer characters)'
             PRINT * , '  The word "NONE" or "none" (no label)'
             PRINT * , ' '
-            READ (*,'(A60)') LABT
-            IF (LABT.EQ.'NONE'.OR.LABT.EQ.'none') THEN
+            READ (*,'(A60)') CHRT
+            IF (CHRT.EQ.'NONE'.OR.CHRT.EQ.'none') THEN
               LABL=' '
-            ELSE IF (LABT.NE.' ') THEN
-              LABL=LABT
+            ELSE IF (CHRT.NE.' ') THEN
+              LABL=CHRT
             END IF
 C
             PRINT * , ' '
@@ -2279,16 +2358,33 @@ C
             IF (ISTY.EQ.0) THEN
               CALL MAPGRD
               CALL MAPLBL
-              IF (ODNM.NE.'E1'.AND.ODNM.NE.'E2') THEN
-                CALL MAPLOT
-              ELSE
+              IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.ODNM.EQ.'E3') THEN
                 IF (ODNM.EQ.'E1') CALL MPLNDR ('Earth..1',ILVL)
                 IF (ODNM.EQ.'E2') CALL MPLNDR ('Earth..2',ILVL)
+                IF (ODNM.EQ.'E3') CALL MPLNDR ('Earth..3',ILVL)
+              ELSE IF (ODNM.EQ.'RG') THEN
+                CALL MDRGOL (IRGL)
+              ELSE
+                CALL MAPLOT
               END IF
               CALL DRSPGD (ISPG,IZN0,PLT0,PLN0,CLT0,CLN0,
      +                          IZN8,PLT8,PLN8,CLT8,CLN8,CHSZ)
             ELSE
-              IF (ODNM.NE.'E1'.AND.ODNM.NE.'E2') THEN
+              IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.ODNM.EQ.'E3') THEN
+                CALL MPSETI ('VS',20)
+                CALL ARINAM (IAMA,LAMA)
+                IF (ODNM.EQ.'E1') CALL MPLNAM ('Earth..1',ILVL,IAMA)
+                IF (ODNM.EQ.'E2') CALL MPLNAM ('Earth..2',ILVL,IAMA)
+                IF (ODNM.EQ.'E3') CALL MPLNAM ('Earth..3',ILVL,IAMA)
+                CALL ARSCAM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,COLORB)
+                IF (ODNM.EQ.'E1') CALL MPLNDR ('Earth..1',ILVL)
+                IF (ODNM.EQ.'E2') CALL MPLNDR ('Earth..2',ILVL)
+                IF (ODNM.EQ.'E3') CALL MPLNDR ('Earth..3',ILVL)
+                CALL MAPGRM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,DRAWLB)
+              ELSE IF (ODNM.EQ.'RG') THEN
+                CALL MDRGSF (IRGL)
+                CALL MAPGRD
+              ELSE
                 CALL MPSETC ('OU',ODNM)
                 CALL MPSETI ('VS',0)
                 CALL ARINAM (IAMA,LAMA)
@@ -2296,15 +2392,6 @@ C
                 CALL ARSCAM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,COLORA)
                 CALL MAPLOT
                 CALL MAPGRM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,DRAWLA)
-              ELSE
-                CALL MPSETI ('VS',20)
-                CALL ARINAM (IAMA,LAMA)
-                IF (ODNM.EQ.'E1') CALL MPLNAM ('Earth..1',ILVL,IAMA)
-                IF (ODNM.EQ.'E2') CALL MPLNAM ('Earth..2',ILVL,IAMA)
-                CALL ARSCAM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,COLORB)
-                IF (ODNM.EQ.'E1') CALL MPLNDR ('Earth..1',ILVL)
-                IF (ODNM.EQ.'E2') CALL MPLNDR ('Earth..2',ILVL)
-                CALL MAPGRM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,DRAWLB)
               END IF
               CALL MAPLMB
               CALL MAPLBL
@@ -2392,7 +2479,7 @@ C
             CALL MAPINT
             GO TO 106
           ELSE IF (COMD.EQ.'I'.OR.COMD.EQ.'i') THEN
-            IF (ISTY.NE.0) THEN
+            IF (ISTY.NE.0.AND.ODNM.NE.'RG') THEN
               CALL GSPLCI (2)
               DO 109 I=0,9
                 CALL PLCHMQ (CFUX(REAL(I)/10.+.05),CFUY(.05),
@@ -2445,7 +2532,8 @@ C
                         IF (IAGI(IAIR).EQ.1) IAI1=IAAI(IAIR)
   111                 CONTINUE
                       IF (IAI1.GT.0) THEN
-                        IF (ODNM.NE.'E1'.AND.ODNM.NE.'E2') THEN
+                        IF (ODNM.NE.'E1'.AND.ODNM.NE.'E2'.AND.
+     +                                       ODNM.NE.'E3') THEN
                           CALL GSFACI (MAPACI(IAI1)+100)
                         ELSE
                           CALL GSFACI (MPISCI(IAI1)+100)
@@ -2466,7 +2554,8 @@ C
               GO TO 110
             ELSE
               PRINT * , ' '
-              PRINT * , 'Can''t do that test with "style" flag = 0.'
+              PRINT * , 'Can''t do that test with "style" flag = 0 or'
+              PRINT * , 'when using outline dataset selector "RG".'
               GO TO 106
             END IF
           ELSE IF (COMD.EQ.'S'.OR.COMD.EQ.'s') THEN
@@ -3655,13 +3744,13 @@ C
         END IF
 C
         IF (IDSL.EQ.1) THEN
-          IF (ODNM.NE.'E1'.AND.ODNM.NE.'E2') THEN
+          IF (ODNM.NE.'E1'.AND.ODNM.NE.'E2'.AND.ODNM.NE.'E3') THEN
             ODNM='CO'
           ELSE
             ILVL=1
           END IF
         ELSE
-          IF (ODNM.NE.'E1'.AND.ODNM.NE.'E2') THEN
+          IF (ODNM.NE.'E1'.AND.ODNM.NE.'E2'.AND.ODNM.NE.'E3') THEN
             ODNM='PS'
           ELSE
             ILVL=4
@@ -3811,7 +3900,7 @@ C
         PTLB(ILST+ 1:ILST+12)=' - Database '
         PTLB(ILST+13:ILST+14)=ODNM(1:2)
         ILST=ILST+14
-        IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2') THEN
+        IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.ODNM.EQ.'E3') THEN
           PTLB(ILST+1:ILST+10)=' at level '
           CALL PUTINT (PTLB(ILST+11:ILST+11),ILVL)
           ILST=ILST+11
@@ -3988,6 +4077,30 @@ C
         CALL GSPLCI (1)
         CALL GSTXCI (1)
         CALL GSMKSC (1.)
+C
+C Done.
+C
+        RETURN
+C
+      END
+
+
+      SUBROUTINE MDRGDI (DINM)
+C
+C This is a user-replaceable routine that returns the name of the
+C directory in which the RANGS/GSHHS data files have been placed.
+C
+        CHARACTER*(*) DINM
+C
+C Declare a common block in which the directory name will be passed.
+C
+        COMMON /EDRGDI/ USNM
+          CHARACTER*60 USNM
+        SAVE
+C
+C Return the name of the directory.
+C
+        DINM=USNM
 C
 C Done.
 C
