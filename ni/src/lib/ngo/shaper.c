@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.3 1997-06-20 21:48:29 dbrown Exp $
+ *      $Id: shaper.c,v 1.4 1997-06-23 21:06:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -166,7 +166,7 @@ UpdateCoordDataGrid
 	XtVaSetValues(shaper->all_selected_tgl,
 		      XmNsensitive,(!all_selected),
 		      NULL);
-		
+        
 	return;
 }
 
@@ -293,7 +293,9 @@ UpdateShaperCoord
 		UpdateCoordDataGrid(si);
 
 	shaper->new_coord = False;
-	
+
+        (*si->output_notify)(si->pdata,NgNoPage);
+        
 	return;
  
 }
@@ -401,7 +403,7 @@ DimSelectNotify
                 XtSetSensitive(shaper->synchro_step_tgl,False);
         }
                 
-        (*si->geo_notify)(si->geo_data);
+        (*si->geo_notify)(si->pdata);
 	return;
 }
 
@@ -414,7 +416,7 @@ ShapeNotify
 	NgShaper	*si = (NgShaper *) data;
 
         UpdateShaperCoord(si);
-        (*si->geo_notify)(si->geo_data);
+        (*si->geo_notify)(si->pdata);
         return;
         
 }
@@ -493,7 +495,7 @@ ShaperCB
 		NgDoShaper(si);
 	}
 
-        (*si->geo_notify)(si->geo_data);
+        (*si->geo_notify)(si->pdata);
 	return;
 }
 
@@ -514,7 +516,7 @@ ToggleShaperCoordCB
 	Boolean set;
 
 	UpdateShape(si);
-        (*si->geo_notify)(si->geo_data);
+        (*si->geo_notify)(si->pdata);
 	return;
 }
 
@@ -537,7 +539,7 @@ ShaperReverseCoordsCB
 	shaper->reverse_set = set;
 
 	UpdateShape(si);
-        (*si->geo_notify)(si->geo_data);
+        (*si->geo_notify)(si->pdata);
 	return;
 
 }
@@ -647,7 +649,7 @@ ToggleCoordGridCB
                          XmNrightWidget,shaper->shapeinfogrid->grid,
 			 XmNtopAttachment,XmATTACH_NONE,
 			 NULL);
-                (*si->geo_notify)(si->geo_data);
+                (*si->geo_notify)(si->pdata);
 	}
 	else if (set) {
 		XtManageChild(shaper->datagrid->grid);
@@ -667,7 +669,7 @@ ToggleCoordGridCB
 			      XmNbottomWidget,shaper->shapeinfogrid->grid,
 			      NULL);
 	}
-        (*si->geo_notify)(si->geo_data);
+        (*si->geo_notify)(si->pdata);
 	return;
 
 }
@@ -1160,7 +1162,7 @@ void NgDoShaper
 		si->restore = False;
 	}
 	
-        (*si->geo_notify)(si->geo_data);
+        (*si->geo_notify)(si->pdata);
 	return;
 }
 
@@ -1185,7 +1187,7 @@ ShaperAction
 	XtGetValues(w,args,nargs);
 
 	UpdateShape(si);
-
+#if 0
 	if (si->new_shape) {
 		(si->apply)(si->pdata);
 		si->new_shape = False;
@@ -1194,6 +1196,6 @@ ShaperAction
 	if (si->restore) {
 		NgDoShaper(si);
 	}
-
+#endif
 	return;
 }

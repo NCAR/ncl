@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenus.c,v 1.2 1997-06-20 21:48:23 dbrown Exp $
+ *      $Id: createmenus.c,v 1.3 1997-06-23 21:06:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,6 @@
 #include <ncarg/ngo/createmenusP.h>
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/sort.h>
-#include <ncarg/ngo/browse.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -36,65 +35,63 @@
 #include  <Xm/Form.h>
 #include  <Xm/LabelG.h>
 
-static _cmDataReceptor PlotTypes[] = {
-	{NgLineContour, ngLINECONTOUR,"cn_obj","contourPlotClass"},
-	{NgFillContour, ngFILLCONTOUR,"cn_obj","contourPlotClass"},
-	{NgRasterContour, ngRASTERCONTOUR,"cn_obj","contourPlotClass"},
-	{NgStreamline, ngSTREAMLINE,"st_obj","streamlinePlotClass"},
-	{NgLineVector, ngLINEVECTOR,"vc_obj","vectorPlotClass"},
-	{NgFillVector, ngFILLVECTOR,"vc_obj","vectorPlotClass"},
-	{NgLineXy, ngLINEXY,"xy_obj","xyPlotClass"},
-	{NgScatterXy, ngSCATTERXY,"xy_obj","xyPlotClass"}
+static NgDataSinkRec DataSinks[] = {
+	{NgLineContour, ngLINECONTOUR,"cn_obj","contourPlotClass",
+         3,{ 2, 1, 1 },{ "scalar field", "x coord", "y coord" },
+         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},{ 1, 2 }
+        },
+	{NgFillContour, ngFILLCONTOUR,"cn_obj","contourPlotClass",
+         3,{ 2, 1, 1 },{ "scalar field", "x coord", "y coord" },
+         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},{ 1, 2 }
+        },
+	{NgRasterContour, ngRASTERCONTOUR,"cn_obj","contourPlotClass",
+         3,{ 2, 1, 1 },{ "scalar field", "x coord", "y coord" },
+         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},{ 1, 2 }
+        },
+	{NgStreamline, ngSTREAMLINE,"st_obj","streamlinePlotClass",
+         4,{ 2, 2, 1, 1 },
+         { "vector field u", "vector field v", "x coord", "y coord" },
+         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},{ 2,3 }
+        },
+	{NgLineVector, ngLINEVECTOR,"vc_obj","vectorPlotClass",
+         5,{ 2, 2, 2, 1, 1 }, 
+         { "vector field u", "vector field v", "scalar field",
+           "x coord", "y coord" },
+         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
+         { 3, 4 }
+        },
+	{NgFillVector, ngFILLVECTOR,"vc_obj","vectorPlotClass",
+         5,{ 2, 2, 2, 1, 1 }, 
+         { "vector field u", "vector field v", "scalar field",
+           "x coord", "y coord" },
+         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},
+         { 3, 4 }
+        },
+	{NgLineXy, ngLINEXY,"xy_obj","xyPlotClass",
+         2,{ -2, -2 } , { "x array", "y array" },
+         {NrmNULLQUARK,NrmNULLQUARK},{ 2,3 }
+        },
+	{NgScatterXy, ngSCATTERXY,"xy_obj","xyPlotClass",
+         2,{ -2, -2 } , { "x array", "y array" },
+         {NrmNULLQUARK,NrmNULLQUARK},{ 2, 3 }
+        },
+	{NgCoordArray, ngCOORDARRAY,"ca_obj","coordArraysClass",
+         2,{ -2, -2 } , { "x array", "y array" },
+         {NrmNULLQUARK,NrmNULLQUARK},{ 0,1 }
+        },
+	{NgScalarField, ngSCALARFIELD,"sf_obj","scalarFieldClass",
+         3,{ 2, 1, 1 } ,  { "scalar field", "x coord", "y coord" },
+         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},{ 1, 2 }
+        },
+	{NgVectorField, ngVECTORFIELD,"vc_obj","vectorFieldClass",
+         4,{ 2, 2, 1, 1 } ,
+         { "vector field u", "vector field v", "x coord", "y coord" },
+         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},{ 2, 3 }
+        },
+        {NgNclVariable, ngNCLVARIABLE,"ncl_var","none",
+         1,{ -1 },{"var"},{ 1, 1 }
+        }
 };
-
-static _cmDataReceptor DataItemTypes[] = {
-	{NgCoordArray, ngCOORDARRAY,"ca_obj","coordArraysClass"},
-	{NgScalarField, ngSCALARFIELD,"sf_obj","scalarFieldClass"},
-	{NgVectorField, ngVECTORFIELD,"vc_obj","vectorFieldClass"},
-	{NgNclVariable, ngNCLVARIABLE,"ncl_var","none"}
-};
-
-static void OutputNotify
-(
-        CreateMenusRec	*priv,
-        NgPageId		page
-        )
-{
-	NgCreateMenus	*pub = &priv->public;
-        int ndims = pub->vinfo->n_dims;
-        int i,size = ndims * sizeof(long);
-        brPageType ptype =
-                pub->qsymbol > NrmNULLQUARK ? _brFILEVAR : _brREGVAR;
-
-        if (! priv->output) {
-                priv->output = NhlMalloc(sizeof(NgVarPageOutput));
-                priv->output->ndims = 0;
-                priv->output->start =
-                        priv->output->finish = priv->output->stride = NULL;
-        }
-        if (ndims > priv->output->ndims) {
-                priv->output->ndims = ndims;
-                priv->output->start = NhlRealloc(priv->output->start,size);
-                priv->output->finish = NhlRealloc(priv->output->finish,size);
-                priv->output->stride = NhlRealloc(priv->output->stride,size);
-        }
-        memcpy(priv->output->start,pub->start,size);
-        memcpy(priv->output->finish,pub->finish,size);
-        memcpy(priv->output->stride,pub->stride,size);
-        priv->output->qfile = pub->qsymbol;
-        priv->output->qvar = pub->vinfo->name;
-        
-        if (page > NgNoPage) {
-                NgPageOutputNotify(priv->go->base.id,page,ptype,priv->output);
-                return;
-        }
-        for (i = 0; i < priv->pagecount; i++) {
-                NgPageOutputNotify
-                        (priv->go->base.id,
-                         priv->page_ids[i],ptype,priv->output);
-        }
-        return;
-}
 
 static void CopyShapedVar
 (
@@ -136,21 +133,22 @@ static void CreateCB
 	CreateMenusRec	*priv = (CreateMenusRec	*)udata;
 	NgCreateMenus	*pub = &priv->public;
         NgMenuRec	*plot = &priv->plot;
-        _cmDataReceptor	*type;
+        NgDataSinkRec	*sink;
         NrmQuark	qname;
         char		*vartext;
-        NgPageId		*page;
+        NgPageId	page_id;
+        NgHluPage	*hlu_page;
         
         printf("in create cb\n");
         XtVaGetValues(w,
-                      XmNuserData,&type,
+                      XmNuserData,&sink,
                       NULL);
         XtVaGetValues(priv->dialog_text,
                       XmNvalue,&vartext,
                       NULL);
             /* need to qualify text string, and warn user if it's already
                a symbol */
-        if (type->type == ngNCLVARIABLE) {
+        if (sink->type == ngNCLVARIABLE) {
                 CopyShapedVar(priv,vartext);
                 return;
         }
@@ -166,22 +164,34 @@ static void CreateCB
                 (void)NgNclSubmitBlock(priv->nsid,buf);
 
                 qname = NrmStringToQuark(vartext);
-                priv->page_ids = NhlRealloc
-                        (priv->page_ids,sizeof(NgPageId)*(++priv->pagecount));
+                page_id = NgOpenPage(priv->go->base.id,_brHLUVAR,&qname,1);
+                if (page_id <= NgNoPage) {
+                        printf("unable to open hlu page\n");
+                        return;
+                }
+                hlu_page = (NgHluPage *)NgPageData(priv->go->base.id,page_id);
+                if (! hlu_page) {
+                        printf("unable to get public page data\n");
+                        return;
+                }
+                hlu_page->class_name = sink->class_name;
+                hlu_page->data_info = sink;
+
+                if (NgUpdatePage(priv->go->base.id,page_id) < NhlWARNING) {
+                        printf("error updating hlu page\n");
+                        return;
+                }
                 
-                priv->page_ids[priv->pagecount-1] =
-                        NgOpenPage(priv->go->base.id,
-                                   _brHLUVAR,&qname,1);
-                OutputNotify(priv,priv->page_ids[priv->pagecount-1]);
+                (*pub->output_notify)(pub->pdata,page_id);
         }
-                
+        
         return;
 }
 
 static void CreateDialog
 (
        CreateMenusRec	*priv,
-       _cmDataReceptor 	*type
+       NgDataSinkRec 	*sink
        )
 {
 	Arg	args[50];
@@ -191,17 +201,17 @@ static void CreateDialog
         XmString xmname;
         Widget  form,label,help;
         
-        if (type->type == ngNCLVARIABLE)
-                sprintf(buf,"Create Ncl Variable",type->name);
+        if (sink->type == ngNCLVARIABLE)
+                sprintf(buf,"Create Ncl Variable",sink->name);
         else
-                sprintf(buf,"Create %sPlot",type->name);
+                sprintf(buf,"Create %sPlot",sink->name);
         
         xmname = NgXAppCreateXmString(priv->go->go.appmgr,buf);
         printf("%s\n",buf);
 
         nargs = 0;
 	XtSetArg(args[nargs],XmNdialogTitle,xmname);nargs++;
-	XtSetArg(args[nargs],XmNuserData,type);nargs++;
+	XtSetArg(args[nargs],XmNuserData,sink);nargs++;
         if (! priv->create_dialog) {
                 priv->create_dialog = XmCreateMessageDialog
                         (pub->menubar,"CreateDialog",args,nargs);
@@ -224,14 +234,14 @@ static void CreateDialog
                          form,
                          XmNleftAttachment,XmATTACH_WIDGET,
                          XmNleftWidget,label,
-                         XmNvalue,NgNclGetSymName(type->def_name,True),
+                         XmNvalue,NgNclGetSymName(sink->def_name,True),
                          XmNresizeWidth,True,
                          NULL);
         }
 	else {
 		XtSetValues(priv->create_dialog,args,nargs);
                 XtVaSetValues(priv->dialog_text,
-                              XmNvalue,NgNclGetSymName(type->def_name,True),
+                              XmNvalue,NgNclGetSymName(sink->def_name,True),
                               NULL);
 	}
 	XmStringFree(xmname);
@@ -251,14 +261,14 @@ static void CreateDialogCB
 	CreateMenusRec	*priv = (CreateMenusRec	*)udata;
 	NgCreateMenus	*pub = &priv->public;
         NgMenuRec	*plot = &priv->plot;
-        _cmDataReceptor	*type;
+        NgDataSinkRec	*sink;
 
         printf("in plot create cb\n");
 
         XtVaGetValues(w,
-                      XmNuserData,&type,
+                      XmNuserData,&sink,
                       NULL);
-        CreateDialog(priv,type);
+        CreateDialog(priv,sink);
         return;
         
 }
@@ -278,13 +288,14 @@ static void PlotMenuCB
         printf("in plot menu cb\n");
 
         if (plot->count == 0) {
-                plot->count = NhlNumber(PlotTypes);
+                plot->count = ngSCATTERXY + 1;
                 plot->buttons = NhlMalloc(plot->count * sizeof(Widget));
                 for (i = 0; i < plot->count; i++) {
                         plot->buttons[i] = XtVaCreateManagedWidget
-                                (PlotTypes[i].name,xmCascadeButtonGadgetClass,
+                                (DataSinks[i].name,
+                                 xmCascadeButtonGadgetClass,
                                  plot->menu,
-                                 XmNuserData,&PlotTypes[i],
+                                 XmNuserData,&DataSinks[i],
                                  NULL);
                         XtAddCallback(plot->buttons[i],
                                       XmNactivateCallback,CreateDialogCB,
@@ -322,9 +333,6 @@ NgCreateCreateMenus
 		NgNappNclState,	&priv->nsid,
 		NULL);
         
-        priv->pagecount = 0;
-        priv->page_ids = NULL;
-        priv->output = NULL;
         priv->plot.count = priv->var.count = priv->data.count = 0;
         priv->plot.alloced = priv->var.alloced = priv->data.alloced = 0;
         
@@ -346,7 +354,6 @@ NgCreateCreateMenus
         priv->plot.menu =  XtVaCreateWidget
                 ("Plot",xmRowColumnWidgetClass,menush,
                  XmNrowColumnType,	XmMENU_PULLDOWN,
-		 XmNuserData,	&DataItemTypes[3],
                  NULL);
 	XtAddCallback(priv->plot.menu,
 		      XmNmapCallback,PlotMenuCB,priv);
@@ -361,7 +368,7 @@ NgCreateCreateMenus
         priv->var.menu = XtVaCreateWidget
                 ("Variable",xmRowColumnWidgetClass,menush,
                  XmNrowColumnType,	XmMENU_PULLDOWN,
-                 XmNuserData,&DataItemTypes[3],
+                 XmNuserData,&DataSinks[ngNCLVARIABLE],
                  NULL);
 	XtAddCallback(priv->var.menu,
 		      XmNmapCallback,CreateDialogCB,priv);
@@ -370,7 +377,7 @@ NgCreateCreateMenus
                 XtVaCreateManagedWidget
                 ("Variable",xmCascadeButtonGadgetClass,
                  pub->menubar,
-                 XmNuserData,&DataItemTypes[3],
+                 XmNuserData,&DataSinks[ngNCLVARIABLE],
                  NULL);
         XtAddCallback(pub->var_mbutton,
                       XmNactivateCallback,CreateDialogCB,
@@ -393,14 +400,6 @@ void NgDestroyCreateMenus
 
         if (priv->plot.count)
                 NhlFree(priv->plot.buttons);
-        if (priv->output) {
-                NhlFree(priv->output->start);
-                NhlFree(priv->output->finish);
-                NhlFree(priv->output->stride);
-                NhlFree(priv->output);
-        }
-        if (priv->page_ids)
-                NhlFree(priv->page_ids);
         
         NhlFree(priv);
 

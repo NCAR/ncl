@@ -1,5 +1,5 @@
 /*
- *      $Id: filepage.c,v 1.2 1997-06-20 16:35:30 dbrown Exp $
+ *      $Id: filepage.c,v 1.3 1997-06-23 21:06:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -154,8 +154,9 @@ NgGetFileRefPage
 
         if (! rec->filetree) {
                 if (copy_page)
-                        NgDupFileTree(go,pdp->form,page->qfile,pdp->dl,
-                                      NULL,copy_filetree);
+                        rec->filetree = NgDupFileTree
+                                (go,pdp->form,page->qfile,pdp->dl,
+                                 NULL,copy_filetree);
                 else
                         rec->filetree = NgCreateFileTree
                                 (go,pdp->form,page->qfile,pdp->dl);

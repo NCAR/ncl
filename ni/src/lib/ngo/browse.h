@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.h,v 1.2 1997-06-20 16:35:28 dbrown Exp $
+ *      $Id: browse.h,v 1.3 1997-06-23 21:06:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +38,15 @@ typedef enum _brPageType
 
 #define NgNoPage 0
 typedef int NgPageId;
+
+typedef void (*AdjustPageGeoFunc) (
+ 	NhlPointer data
+);
+
+typedef void (*PageOutputNotify) (
+        NhlPointer	pdata,
+        NgPageId	page_id
+);
 
 extern NgPageId NgOpenPage(
         int		goid,

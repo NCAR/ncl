@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.h,v 1.2 1997-06-06 03:14:55 dbrown Exp $
+ *      $Id: shaper.h,v 1.3 1997-06-23 21:06:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@
 #include <ncarg/ncl/NclApi.h>
 #endif
 
+#include <ncarg/ngo/browse.h>
 #include <ncarg/ngo/datagrid.h>
 
 typedef void (*NgShapeApply)(
@@ -36,9 +37,6 @@ typedef void (*NgShapeApply)(
         void *data
 #endif
 );
-typedef void (*shGeoNotifyFunc) (
-        NhlPointer data
-        );
 
 typedef struct _NgShaper {           /* shaper interface struct */
 	NgGO		go;
@@ -46,7 +44,6 @@ typedef struct _NgShaper {           /* shaper interface struct */
         Widget		frame;
         NgDataGrid	*datagrid;
 	void		*shaper;
-	void		*pdata;
 	NrmQuark	qfile;
 	NclApiVarInfoRec  *vinfo;
 	long		*start;
@@ -57,8 +54,9 @@ typedef struct _NgShaper {           /* shaper interface struct */
 	NhlBoolean	new_data;
 	NhlBoolean	restore;
 	NgShapeApply	apply;
-        shGeoNotifyFunc	geo_notify;
-        NhlPointer	geo_data;
+        AdjustPageGeoFunc geo_notify;
+        PageOutputNotify output_notify;
+        NhlPointer	pdata;
         Dimension	sub_width;
 } NgShaper;
 

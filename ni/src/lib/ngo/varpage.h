@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.h,v 1.1 1997-06-20 16:35:38 dbrown Exp $
+ *      $Id: varpage.h,v 1.2 1997-06-23 21:06:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,7 @@ typedef struct _NgVarPageOutput
         long	*start;
         long	*finish;
         long	*stride;
+        int	data_ix;
 } NgVarPageOutput;
         
 #endif	/* _NG_VARPAGE_H */

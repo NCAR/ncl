@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenus.h,v 1.1 1997-06-20 16:38:14 dbrown Exp $
+ *      $Id: createmenus.h,v 1.2 1997-06-23 21:06:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #define	_NG_CREATEMENUS_H
 
 #include <ncarg/ngo/go.h>
+#include <ncarg/ngo/browse.h>
 
 #ifndef _NCL_H_
 #include <ncarg/ncl/defs.h>
@@ -44,8 +45,12 @@
 #define NgFillVector    "Fill Vector"
 #define NgLineXy        "Line Xy"
 #define NgScatterXy     "Scatter Xy"
+#define NgCoordArray    "CoordArray"
+#define NgScalarField   "ScalarField"
+#define NgVectorField   "VectorField"
+#define NgNclVariable   "NclVariable"
 
-typedef enum __NgPlotType {
+typedef enum _NgDataSinkType {
         ngLINECONTOUR,
         ngFILLCONTOUR,
         ngRASTERCONTOUR,
@@ -53,21 +58,26 @@ typedef enum __NgPlotType {
         ngLINEVECTOR,
         ngFILLVECTOR,
         ngLINEXY,
-        ngSCATTERXY
-} _NgPlotType;
-
-#define NgCoordArray    "CoordArray"
-#define NgScalarField   "ScalarField"
-#define NgVectorField   "VectorField"
-#define NgNclVariable   "NclVariable"
-
-typedef enum __NgDataItemType {
-        ngCOORDARRAY = 1 + (int) ngSCATTERXY,
+        ngSCATTERXY,
+        ngCOORDARRAY,
         ngSCALARFIELD,
         ngVECTORFIELD,
         ngNCLVARIABLE
-} _NgDataItemType;
+} NgDataSinkType;
 
+typedef struct _NgDataSinkRec
+{
+        NhlString	name;
+        NgDataSinkType	type;
+        NhlString	def_name;
+        NhlString	class_name;
+        int		n_dataitems;
+        int		n_datadims[8];
+        NhlString	data_names[8];
+        NrmQuark	data_resnames[8];
+        int		coord_ix[3];
+} NgDataSinkRec;
+        
 typedef struct _NgCreateMenus
 {
         Widget		menubar;
@@ -79,6 +89,8 @@ typedef struct _NgCreateMenus
 	long			*start;
 	long			*finish;
 	long			*stride;
+        PageOutputNotify	output_notify;
+        NhlPointer		pdata;
 } NgCreateMenus;
 
 NgCreateMenus *

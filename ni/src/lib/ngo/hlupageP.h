@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupageP.h,v 1.1 1997-06-20 16:35:33 dbrown Exp $
+ *      $Id: hlupageP.h,v 1.2 1997-06-23 21:06:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,9 @@
 #define	_NG_HLUPAGEP_H_
 
 #include <ncarg/ngo/browseP.h>
+#include <ncarg/ngo/hlupage.h>
 #include <ncarg/ngo/varpage.h>
+#include <ncarg/ngo/datasinkgrid.h>
 
 #define DEBUG_HLUPAGE 0
 
@@ -39,11 +41,15 @@ typedef struct _hluData
         
 typedef struct _brHluPageRec 
 {
+        NgHluPage	public;
+        NhlBoolean	activated;
         NhlClass	class;
+        NgDataSinkGrid	*data_sink_grid;
         Widget		create_update;
+        Widget		auto_update;
         hluData		*data;
-        int		var_page_data_count;
-        NgVarPageOutput	*var_page_data;
+        int		var_data_count;
+        NgVarPageOutput	**var_data;
 } brHluPageRec;
 
 extern brPageData *

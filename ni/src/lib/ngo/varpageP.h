@@ -1,5 +1,5 @@
 /*
- *      $Id: varpageP.h,v 1.3 1997-06-20 16:35:39 dbrown Exp $
+ *      $Id: varpageP.h,v 1.4 1997-06-23 21:06:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,12 @@
 
 #define DEBUG_VARPAGE 0
 
+typedef struct _vpReceiverPage
+{
+        NgPageId	page_id;
+        NhlPointer	page_data;
+} vpReceiverPage;
+
 typedef struct _brVarPageRec 
 {
         NgDimInfoGrid	*diminfogrid;
@@ -49,6 +55,9 @@ typedef struct _brVarPageRec
         long		*start;
         long		*finish;
         long		*stride;
+        int		receiver_count;
+        vpReceiverPage  *receiver_pages;
+        NgVarPageOutput *output;
 } brVarPageRec;
 
 extern brPageData *

@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.3 1997-06-20 16:35:37 dbrown Exp $
+ *      $Id: varpage.c,v 1.4 1997-06-23 21:06:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,54 @@
 #include <Xm/ToggleBG.h>
 #include <Xm/PushBG.h>
 #include <Xm/LabelG.h>
+
+static void VarPageOutputNotify
+(
+        NhlPointer 	pdata,
+        NgPageId	page_id
+        )
+{
+	brPage	*page = (brPage *) pdata;
+	brPageData	*pdp = page->pdata;
+	brVarPageRec	*rec = (brVarPageRec *)pdp->type_rec;
+        int ndims = pdp->dl->u.var->n_dims;
+        int i,size = ndims * sizeof(long);
+        brPageType ptype = page->qfile > NrmNULLQUARK ? _brFILEVAR : _brREGVAR;
+
+        if (page_id > NgNoPage) {
+                rec->receiver_pages = NhlRealloc
+                        (rec->receiver_pages,
+                         sizeof(vpReceiverPage)*(++rec->receiver_count));
+                rec->receiver_pages[rec->receiver_count-1].page_id = page_id;
+                rec->receiver_pages[rec->receiver_count-1].page_data =
+                        (NhlPointer) NgPageData(page->go->base.id,page_id);
+        }
+        if (! rec->output) {
+                rec->output = NhlMalloc(sizeof(NgVarPageOutput));
+                rec->output->ndims = 0;
+                rec->output->data_ix = 0;
+                rec->output->start =
+                        rec->output->finish = rec->output->stride = NULL;
+        }
+        if (ndims > rec->output->ndims) {
+                rec->output->ndims = ndims;
+                rec->output->start = NhlRealloc(rec->output->start,size);
+                rec->output->finish = NhlRealloc(rec->output->finish,size);
+                rec->output->stride = NhlRealloc(rec->output->stride,size);
+        }
+        memcpy(rec->output->start,rec->start,size);
+        memcpy(rec->output->finish,rec->finish,size);
+        memcpy(rec->output->stride,rec->stride,size);
+        rec->output->qfile = page->qfile;
+        rec->output->qvar = pdp->dl->u.var->name;
+        
+        for (i = 0; i < rec->receiver_count; i++) {
+                NgPageOutputNotify
+                        (page->go->base.id,
+                         rec->receiver_pages[i].page_id,ptype,rec->output);
+        }
+        return;
+}
         
 static void
 AdjustVarPageGeometry
@@ -206,7 +254,8 @@ static void ShaperToggleCB
                 rec->shaper->vinfo = pdp->dl->u.var;
                 rec->shaper->qfile = page->qfile;
                 rec->shaper->geo_notify = AdjustVarPageGeometry;
-                rec->shaper->geo_data = (NhlPointer) page;
+                rec->shaper->pdata = (NhlPointer) page;
+                rec->shaper->output_notify = VarPageOutputNotify;
                 
                 NgDoShaper(rec->shaper);
                 XtVaSetValues(rec->shaper->frame,
@@ -230,7 +279,7 @@ static void ShaperToggleCB
                 rec->shaper->restore = False;
                 rec->shaper->vinfo = pdp->dl->u.var;
                 rec->shaper->qfile = page->qfile;
-                rec->shaper->geo_data = (NhlPointer) page;
+                rec->shaper->pdata = (NhlPointer) page;
                 NgDoShaper(rec->shaper);
                 rec->new_shape = False;
                 if (! rec->shaper_managed) {
@@ -327,6 +376,10 @@ DeactivateVarPage
         rec->new_data = True;
         XtRemoveCallback(rec->datagrid_toggle,
                          XmNvalueChangedCallback,DataGridToggleCB,page);
+
+        NhlFree(rec->receiver_pages);
+        rec->receiver_count = 0;
+        
         return;
 }
 
@@ -407,6 +460,9 @@ NewVarPage
         rec->start = NULL;
         rec->finish = NULL;
         rec->stride = NULL;
+        rec->receiver_count = 0;
+        rec->receiver_pages = NULL;
+        rec->output = NULL;
         
         pdp->type_rec = (NhlPointer) rec;
         
@@ -419,7 +475,7 @@ NewVarPage
 	pdp->destroy_page = DestroyVarPage;
 	pdp->adjust_page_geo = AdjustVarPageGeometry;
 	pdp->deactivate_page = DeactivateVarPage;
-	pdp->page_output_notify = NULL;
+	pdp->page_output_notify = VarPageOutputNotify;
         pdp->page_input_notify = NULL;
         pdp->public_page_data = NULL;
         pdp->update_page = NULL;
@@ -494,11 +550,11 @@ NgGetVarPage
         
         if (!rec->vartree) {
 		if (copy_page)
-			NgDupVarTree(go,pdp->form,page->qfile,page->qvar,
-                                     pdp->dl,NULL,copy_vartree);
+			rec->vartree = NgDupVarTree
+                                (go,pdp->form,page->qfile,page->qvar,
+                                 pdp->dl,NULL,copy_vartree);
                 else 
-                        rec->vartree = 
-                                NgCreateVarTree
+                        rec->vartree = NgCreateVarTree
                                 (go,pdp->form,page->qfile,page->qvar,pdp->dl);
                 XtVaSetValues(rec->vartree->tree,
                               XmNrightAttachment,XmATTACH_NONE,
@@ -514,6 +570,8 @@ NgGetVarPage
                              pdp->dl,rec->vartree,copy_vartree);
         else
                 NgUpdateVarTree(rec->vartree,page->qfile,page->qvar,pdp->dl);
+        
+        rec->vartree->geo_data = (NhlPointer) page;
 
 
 /* Shaper */
@@ -573,6 +631,8 @@ NgGetVarPage
         rec->createmenu->start = rec->start;
         rec->createmenu->finish = rec->finish;
         rec->createmenu->stride = rec->stride;
+        rec->createmenu->output_notify = VarPageOutputNotify;
+        rec->createmenu->pdata = page;
 
 /* Data Grid */
         
@@ -599,7 +659,13 @@ NgGetVarPage
                               XmNset,True,
                               NULL);
         }
-        rec->vartree->geo_data = (NhlPointer) page;
+        if (copy_rec && copy_rec->receiver_count > 0) {
+                rec->receiver_pages = NhlMalloc
+                        (sizeof(vpReceiverPage)*copy_rec->receiver_count);
+                memcpy(rec->receiver_pages,copy_rec->receiver_pages,
+                       sizeof(vpReceiverPage)*copy_rec->receiver_count);
+                rec->receiver_count = copy_rec->receiver_count;
+        }
                 
         XtAddCallback(rec->datagrid_toggle,
                       XmNvalueChangedCallback,DataGridToggleCB,page);

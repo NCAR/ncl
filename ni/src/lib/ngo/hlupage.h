@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.h,v 1.1 1997-06-20 16:35:33 dbrown Exp $
+ *      $Id: hlupage.h,v 1.2 1997-06-23 21:06:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #define	_NG_HLUPAGE_H
 
 #include <ncarg/ngo/go.h>
+#include <ncarg/ngo/createmenus.h>
 
 #ifndef _NCL_H_
 #include <ncarg/ncl/defs.h>
@@ -32,8 +33,10 @@
 #define _NCL_H_
 #endif
 
-typedef struct _NgHluPageData
+typedef struct _NgHluPage
 {
-} NgHluPageData;
+        NhlString class_name;
+        NgDataSinkRec	*data_info;
+} NgHluPage;
         
 #endif	/* _NG_HLUPAGE_H */

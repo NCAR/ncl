@@ -1,5 +1,5 @@
 /*
- *      $Id: browseP.h,v 1.2 1997-06-20 16:35:28 dbrown Exp $
+ *      $Id: browseP.h,v 1.3 1997-06-23 21:06:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -82,18 +82,8 @@ typedef void (*DestroyPageFunc) (
 	NhlPointer data
 );
 
-typedef void (*AdjustPageGeoFunc) (
- 	NhlPointer data
-);
-
 typedef void (*DeactivatePageFunc) (
 	brPage	*page
-);
-
-typedef void (*PageOutputNotify) (
-        brPage *page,
-        brPageType input_page_type,
-        NhlBoolean connect
 );
 
 typedef void (*PageInputNotify) (

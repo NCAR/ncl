@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.4 1997-06-20 21:48:22 dbrown Exp $
+ *      $Id: browse.c,v 1.5 1997-06-23 21:06:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1178,7 +1178,11 @@ static brPage *AddPage
         page->qvar = qvar;
         page->qfile = qfile;
         page->tab = NULL;
-        page->id = ++CurrentPageId;
+        
+        if (copy_page) /* assumes the 'copy_page' will be deleted */
+                page->id = copy_page->id;
+        else
+                page->id = ++CurrentPageId;
         
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
         fprintf(stderr,"AddPage: %x -- pane %d %s\n",
@@ -2046,7 +2050,8 @@ extern NhlPointer NgPageData(
 
 }
 
-extern NhlErrorTypes NgUpdatePage(
+extern NhlErrorTypes NgUpdatePage
+(
         int		goid,
         NgPageId	page_id
         )        
