@@ -1,5 +1,5 @@
 /*
- *      $Id: pixwrite_png.c,v 1.6 2004-05-28 22:38:34 fred Exp $
+ *      $Id: pixwrite_png.c,v 1.7 2004-06-11 18:41:21 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -131,7 +131,7 @@ int PIX_Write_PNG (PIXddp *xi)
   }
   image_size = image->bytes_per_line * image->height;
 
-  pixmap = (unsigned char *) calloc(width*height*(depth/3),sizeof(char));
+  pixmap = (unsigned char *) calloc(3*width*height,sizeof(char));
 
   vis = xi->vis;
 
@@ -156,7 +156,7 @@ int PIX_Write_PNG (PIXddp *xi)
     }
   }
 
-  write_png(pixmap,width,height,depth/3,fp);
+  write_png(pixmap,width,height,8,fp);
   return 0;
 }
 

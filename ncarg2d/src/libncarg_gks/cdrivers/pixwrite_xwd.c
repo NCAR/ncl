@@ -1,5 +1,5 @@
 /*
- *      $Id: pixwrite_xwd.c,v 1.3 2004-03-30 01:05:01 dbrown Exp $
+ *      $Id: pixwrite_xwd.c,v 1.4 2004-06-11 18:41:21 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -184,6 +184,7 @@ int PIX_Write_XWD
 	Status s;
 	Window root;
 	int x,y;
+	int ii,jj,red,green,blue,*dc;
 	unsigned int width,height,bw,depth;
 	XImage *image;	       
 	int image_size;
@@ -208,7 +209,22 @@ int PIX_Write_XWD
 	}
 	s = XGetGeometry(xi->dpy,xi->pix,&root,&x,&y,&width,&height,
 			 &bw,&depth);
+        
 	image = XGetImage (xi->dpy,xi->pix,x,y,width,height,AllPlanes,format);
+
+        printf(" height = %d\n",image->height);
+        printf(" width = %d\n",image->width);
+        printf(" format = %d\n",image->format);
+        printf(" byte_order = %d\n",image->byte_order);
+        printf(" bitmap_unit = %d\n",image->bitmap_unit);
+        printf(" bitmap_bit_order = %d\n",image->bitmap_bit_order);
+        printf(" bitmap_pad = %d\n",image->bitmap_pad);
+        printf(" bytes_per_line = %d\n",image->bytes_per_line);
+        printf(" depth = %d\n",image->depth);
+        printf(" bits_per_pixel = %d\n",image->bits_per_pixel);
+        printf(" rred_mask = %d\n", image->red_mask);
+        printf(" blue_mask = %d\n", image->blue_mask);
+        printf(" green_mask = %d\n", image->green_mask);
 
 	if (!image) {
 		ESprintf(ERR_IMAGE_MEMORY,"Error creating XImage");
@@ -259,6 +275,54 @@ int PIX_Write_XWD
 	header.window_y = 0;
 	header.window_bdrwidth = 0;
 
+	printf("header.header_size = %d\n",header.header_size);
+	printf("header.file_version = %d\n",header.file_version);
+	printf("header.pixmap_format = %d\n",header.pixmap_format);
+	printf("header.pixmap_depth = %d\n",header.pixmap_depth);
+	printf("header.pixmap_width = %d\n",header.pixmap_width);
+	printf("header.pixmap_height = %d\n",header.pixmap_height);
+	printf("header.xoffset = %d\n",header.xoffset);
+	printf("header.byte_order = %d\n",header.byte_order);
+	printf("header.bitmap_unit = %d\n",header.bitmap_unit);
+	printf("header.bitmap_bit_order = %d\n",header.bitmap_bit_order);
+	printf("header.bitmap_pad = %d\n",header.bitmap_pad);
+	printf("header.bits_per_pixel = %d\n",header.bits_per_pixel);
+	printf("header.bytes_per_line = %d\n",header.bytes_per_line);
+
+	printf("header.visual_class = %d\n",header.visual_class);
+	printf("header.red_mask = %d\n",header.red_mask);
+	printf("header.green_mask = %d\n",header.green_mask);
+	printf("header.blue_mask = %d\n",header.blue_mask);
+	printf("header.bits_per_rgb = %d\n",header.bits_per_rgb);
+	printf("header.colormap_entries = %d\n",header.colormap_entries);
+
+	printf("header.ncolors = %d\n",header.ncolors);
+	printf("header.window_width = %d\n",header.window_width);
+	printf("header.window_height = %d\n",header.window_height);
+	printf("header.window_x = %d\n",header.window_x);
+	printf("header.window_y = %d\n",header.window_y);
+	printf("header.window_bdrwidth = %d\n",header.window_bdrwidth);
+
+        printf("PseudoColor %d\n",PseudoColor);
+        printf("StaticColor %d\n",StaticColor);
+        printf("GrayScale %d\n",GrayScale);
+        printf("StaticGray %d\n",StaticGray);
+        printf("DirectColor %d\n",DirectColor);
+        printf("TrueColor %d\n",TrueColor);
+
+        printf("AllPlanes %d\n",AllPlanes);
+
+
+        for (ii = 0; ii < image->height; ii++) {
+          for (jj = 0; jj < image->width; jj++) {
+            red = XGetPixel(image,jj,ii) & header.red_mask;
+            green = XGetPixel(image,jj,ii) & header.green_mask;
+            blue = XGetPixel(image,jj,ii) & header.blue_mask;
+            printf("for pixel (%3d,%3d) RGB = %3d %3d %3d\n",ii,jj,
+                           red,green >> 8,blue >> 16);
+          }
+        }
+
 	if (*(char *) &swaptest) {
 		_swaplong((char *) &header, (unsigned int)sizeof(header));
 		for (i = 0; i < ncolors; i++) {
@@ -292,11 +356,13 @@ int PIX_Write_XWD
 			exit(1);
 		}
 	}
+        printf ("ncolors = %d, sizeof XWDcolor = %d, total size = %d\n",
+            ncolors,SIZEOF(XWDColor),ncolors*SIZEOF(XWDColor));
+        printf ("image_size= %d\n",image_size);
 
 	/*
 	 * Write out the buffer.
 	 */
-
 	if (fwrite(image->data, (int) image_size, 1, fp) != 1) {
 		perror("xwd");
 		exit(1);
