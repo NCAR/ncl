@@ -16,6 +16,7 @@
 ;
 ;   Description:  This program illustrates the use of ftsurf.
 ;
+
 begin
 
 ;
@@ -86,9 +87,12 @@ zo = ftsurf(xi,yi,zi,xo,yo)
 ;
 ;  Draw plot.
 ;
-xeye = 3.85
-yeye = 2.75
-zeye = 1.65
-drwtd2(gkswid, xo, yo, zo, xeye, yeye, zeye, -6)
+rho = 5.
+theta = -36.
+phi = 67.
+zo!0 = "i"
+zo!1 = "j"
+tdez2d(gkswid, yo, xo, zo(j|:,i|:), rho, theta, phi, 6)
+frame(wid)
 
 end
