@@ -1,5 +1,5 @@
 C
-C	$Id: gqtxx.f,v 1.5 2000-08-22 15:08:15 haley Exp $
+C	$Id: gqtxx.f,v 1.6 2000-09-13 17:17:22 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,11 +25,11 @@ C
 C
 C  INQUIRE TEXT EXTENT
 C
-      include 'gkscom.h'
-C
 C  Number of NCAR fonts.
 C
       PARAMETER (NFNT=31, NUMX=100)
+C
+      include 'gkscom.h'
 C
       INTEGER WKID,ERRIND
       REAL    PX,PY,CPX,CPY,TXEXPX(4),TXEXPY(4)
