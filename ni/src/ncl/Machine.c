@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.66 1997-10-02 22:44:24 ethan Exp $
+ *      $Id: Machine.c,v 1.67 1997-10-02 22:48:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1885,10 +1885,6 @@ if(the_list != NULL) {
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
 				} else {
-/*
-* Value is a constant
-*/
-					(void)_NclStripVarData(data.u.data_var);
 					_NclDestroyObj((NclObj)data.u.data_var);
 				}
 			} else {
@@ -2355,6 +2351,7 @@ if(the_list != NULL) {
 /*
 * Value is a constant
 */
+					data.u.data_var->obj.status = TEMPORARY;
 					(void)_NclStripVarData(data.u.data_var);
 					_NclDestroyObj((NclObj)data.u.data_var);
 				}
