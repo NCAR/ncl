@@ -1,5 +1,5 @@
 C
-C $Id: mdrgsq.f,v 1.3 2001-09-20 20:20:35 kennison Exp $
+C $Id: mdrgsq.f,v 1.4 2001-09-26 15:20:33 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,19 +20,17 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      SUBROUTINE MDRGSQ (ICAT,ICEL,IRIM,ILAT,ILON,ILNO,IFLL)
+      SUBROUTINE MDRGSQ (ICAT,ICEL,IRIM,ILAT,ILON,IFLL)
 C
-        INTEGER ICAT,ICEL,IRIM,ILAT,ILON,ILNO,IFLL
+        INTEGER ICAT,ICEL,IRIM,ILAT,ILON,IFLL
 C
 C This routine, given the file identifiers ICAT, ICEL, and IRIM for a
 C particular level of the RANGS/GSHHS data, the integer latitude and
 C longitude ILAT and ILON (-90.LE.ILAT.LE.89 and 0.LE.ILON.LE.359) of
-C the lower left-hand corner of a particular 1-degree square, an offset
-C longitude ILNO (a multiple of 360 which is added to the longitudes of
-C all points retrieved before mapping them), and a flag IFLL, retrieves
-C the polygons within the specified square, maps them by calling MDPTRN,
-C and then either fills them (if IFLL is non-zero) or just draws them
-C (if IFLL is zero).
+C the lower left-hand corner of a particular 1-degree square, and a
+C flag IFLL, retrieves the polygons within the specified square, maps
+C them by calling MDPTRN, and then either fills them (if IFLL is
+C non-zero) or just draws them (if IFLL is zero).
 C
 C Declare required common blocks.  See MAPBD for descriptions of these
 C common blocks and the variables in them.
@@ -256,7 +254,7 @@ C
                     XLAT=RLAT
 C
                     DO 103 IINT=IBEG,IEND,IDIR
-                      XLON=DBLE(ILNO)+DBLE(ILON)+DBLE(IINT)*DLON
+                      XLON=DBLE(ILON)+DBLE(IINT)*DLON
                       IF (NCRA+1.LT.MCRA) THEN
                         NCRA=NCRA+1
                         CALL MDPTRN (XLAT,XLON,XCRD,YCRD)
@@ -278,7 +276,7 @@ C
                     IEND=INT((RLAT-DBLE(ILAT))/DLAT)
                     IF (IDIR.GT.0) IBEG=IBEG+1
                     IF (IDIR.LT.0) IEND=IEND+1
-                    XLON=DBLE(ILNO)+RLON
+                    XLON=RLON
 C
                     DO 104 IINT=IBEG,IEND,IDIR
                       XLAT=DBLE(ILAT)+DBLE(IINT)*DLAT
@@ -310,7 +308,7 @@ C
               IF (IFLL.NE.0.OR.I.EQ.1.OR.I.EQ.NPTS) THEN
                 IF (NCRA+1.LT.MCRA) THEN
                   NCRA=NCRA+1
-                  CALL MDPTRN (RLAT,DBLE(ILNO)+RLON,XCRD,YCRD)
+                  CALL MDPTRN (RLAT,RLON,XCRD,YCRD)
                   IF (ICFELL('MDRGSQ',13).NE.0) RETURN
                   XCRA(NCRA)=REAL(XCRD)
                   YCRA(NCRA)=REAL(YCRD)
@@ -450,7 +448,7 @@ C add the u/v coordinates to the point-coordinate buffers.
 C
                 IF (NCRA+1.LT.MCRA) THEN
                   NCRA=NCRA+1
-                  CALL MDPTRN (RLAT,DBLE(ILNO)+RLON,XCRD,YCRD)
+                  CALL MDPTRN (RLAT,RLON,XCRD,YCRD)
                   IF (ICFELL('MDRGSQ',20).NE.0) RETURN
                   XCRA(NCRA)=REAL(XCRD)
                   YCRA(NCRA)=REAL(YCRD)
@@ -505,7 +503,7 @@ C
                   XLAT=RLAT
 C
                   DO 107 IINT=IBEG,IEND,IDIR
-                    XLON=DBLE(ILNO)+DBLE(ILON)+DBLE(IINT)*DLON
+                    XLON=DBLE(ILON)+DBLE(IINT)*DLON
                     IF (NCRA+1.LT.MCRA) THEN
                       NCRA=NCRA+1
                       CALL MDPTRN (XLAT,XLON,XCRD,YCRD)
@@ -527,7 +525,7 @@ C
                   IEND=INT((RLAT-DBLE(ILAT))/DLAT)
                   IF (IDIR.GT.0) IBEG=IBEG+1
                   IF (IDIR.LT.0) IEND=IEND+1
-                  XLON=DBLE(ILNO)+RLON
+                  XLON=RLON
 C
                   DO 108 IINT=IBEG,IEND,IDIR
                     XLAT=DBLE(ILAT)+DBLE(IINT)*DLAT
@@ -553,7 +551,7 @@ C Add the mapped coordinates of the closure point to the buffers and
 C fill the polygon.
 C
               NCRA=NCRA+1
-              CALL MDPTRN (PLAT,DBLE(ILNO)+PLON,XCRD,YCRD)
+              CALL MDPTRN (PLAT,PLON,XCRD,YCRD)
               IF (ICFELL('MDRGSQ',26).NE.0) RETURN
               XCRA(NCRA)=REAL(XCRD)
               YCRA(NCRA)=REAL(YCRD)
@@ -577,7 +575,7 @@ C of the polygon was an interior point, add the closure point to it.
 C
               IF (ITML.EQ.7.OR.IFLG.LT.0) THEN
                 NCRA=NCRA+1
-                CALL MDPTRN (PLAT,DBLE(ILNO)+PLON,XCRD,YCRD)
+                CALL MDPTRN (PLAT,PLON,XCRD,YCRD)
                 IF (ICFELL('MDRGSQ',27).NE.0) RETURN
                 XCRA(NCRA)=REAL(XCRD)
                 YCRA(NCRA)=REAL(YCRD)

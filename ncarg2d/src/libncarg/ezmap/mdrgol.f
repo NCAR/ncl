@@ -1,5 +1,5 @@
 C
-C $Id: mdrgol.f,v 1.2 2001-09-12 17:29:00 kennison Exp $
+C $Id: mdrgol.f,v 1.3 2001-09-26 15:20:33 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -106,14 +106,16 @@ C Look for 1-degree squares that are visible and plot polylines in them.
 C
         DO 103 ILON=0,359
           DO 102 ILAT = -90,89
-            CALL MDPTRA (DBLE(ILAT  ),DBLE(ILON  ),UPRJ,VPRJ)
-            IF (UPRJ.NE.1.D12) GO TO 101  !  LL VISIBLE
-            CALL MDPTRA (DBLE(ILAT  ),DBLE(ILON+1),UPRJ,VPRJ)
-            IF (UPRJ.NE.1.D12) GO TO 101  !  LR VISIBLE
-            CALL MDPTRA (DBLE(ILAT+1),DBLE(ILON  ),UPRJ,VPRJ)
-            IF (UPRJ.NE.1.D12) GO TO 101  !  UL VISIBLE
-            CALL MDPTRA (DBLE(ILAT+1),DBLE(ILON+1),UPRJ,VPRJ)
-            IF (UPRJ.NE.1.D12) GO TO 101  !  UR VISIBLE
+            CALL MDPTRA (DBLE(ILAT)     ,DBLE(ILON)     ,UPRJ,VPRJ)
+            IF (UPRJ.NE.1.D12) GO TO 101
+            CALL MDPTRA (DBLE(ILAT)     ,DBLE(ILON)+1.D0,UPRJ,VPRJ)
+            IF (UPRJ.NE.1.D12) GO TO 101
+            CALL MDPTRA (DBLE(ILAT)+1.D0,DBLE(ILON)     ,UPRJ,VPRJ)
+            IF (UPRJ.NE.1.D12) GO TO 101
+            CALL MDPTRA (DBLE(ILAT)+1.D0,DBLE(ILON)+1.D0,UPRJ,VPRJ)
+            IF (UPRJ.NE.1.D12) GO TO 101
+            CALL MDPTRA (DBLE(ILAT)+.5D0,DBLE(ILON)+.5D0,UPRJ,VPRJ)
+            IF (UPRJ.NE.1.D12) GO TO 101
             CALL MDPTRI (UMIN,VMIN,RLAT,RLON)
             IF (RLON.LT.DBLE(ILON)) RLON=RLON+360.D0
             IF (RLON.GT.DBLE(ILON+360)) RLON=RLON-360.D0
@@ -134,8 +136,13 @@ C
             IF (RLON.GT.DBLE(ILON+360)) RLON=RLON-360.D0
             IF (RLAT.GE.DBLE(ILAT).AND.RLAT.LE.DBLE(ILAT+1).AND.
      +          RLON.GE.DBLE(ILON).AND.RLON.LE.DBLE(ILON+1)) GO TO 101
+            CALL MDPTRI (.5*(UMIN+UMAX),.5*(VMIN+VMAX),RLAT,RLON)
+            IF (RLON.LT.DBLE(ILON)) RLON=RLON+360.D0
+            IF (RLON.GT.DBLE(ILON+360)) RLON=RLON-360.D0
+            IF (RLAT.GE.DBLE(ILAT).AND.RLAT.LE.DBLE(ILAT+1).AND.
+     +          RLON.GE.DBLE(ILON).AND.RLON.LE.DBLE(ILON+1)) GO TO 101
             GO TO 102
-  101       CALL MDRGSQ (ICAT,ICEL,IRIM,ILAT,ILON,0,0)
+  101       CALL MDRGSQ (ICAT,ICEL,IRIM,ILAT,ILON,0)
             IF (ICFELL('MDRGOL',6).NE.0) GO TO 104
   102     CONTINUE
   103   CONTINUE
