@@ -1,5 +1,5 @@
 /*
- *      $Id: MeshScalarField.c,v 1.6 2004-10-07 23:01:25 dbrown Exp $
+ *      $Id: MeshScalarField.c,v 1.7 2004-11-16 22:54:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -549,13 +549,13 @@ DataToFloatArray
 	char		*e_text;
 	NhlGenArray	ga,out_ga;
 	NhlBoolean	overwrite_ok = False;
-	int		out_len[2];
+	int		out_len;
 	int		i,j;
 	float		*ifp,*fp;
 	int		inlen_1;
 	float		tmp;
-	int		istart = sfp->istart;
-	int		iend = sfp->iend;
+	int		istart = sfp->istart - sfp->first_node_index;
+	int		iend = sfp->iend - sfp->first_node_index;
 	int		valid_data_count = 0;
 
 /*
@@ -576,13 +576,9 @@ DataToFloatArray
 	*new_data = False;
 	*dmin = FLT_MAX;
 	*dmax = -FLT_MAX;
-#if 0
-	out_len[0] = (iend - istart + 1) / sfp->istride +
-		((iend - istart + 1) % sfp->istride > 0);
-	*new_data = sfp->istride > 1;
-#endif
+
 	out_ga = ga;
-	out_len[0] = (iend - istart + 1);
+	out_len = (iend - istart + 1);
 	
 	if (*new_data) {
 
@@ -592,7 +588,7 @@ DataToFloatArray
 			fp = ifp;
 		else {
 			if ((fp = (float *) 
-			     NhlConvertMalloc(out_len[0] * sizeof(float))) == NULL) {
+			     NhlConvertMalloc(out_len * sizeof(float))) == NULL) {
 				e_text = "%s: dynamic memory allocation error";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name);
@@ -600,7 +596,7 @@ DataToFloatArray
 			}
 		}
 		if (do_minmax && do_missing) {
-			for (i = 0; i < out_len[0]; i++) {
+			for (i = 0; i < out_len; i++) {
 				tmp = *(ifp + istart+i*sfp->istride);
 				if (tmp != missing_value) {
 					valid_data_count++;
@@ -611,8 +607,8 @@ DataToFloatArray
 			}
 		}
 		else if (do_minmax) {
-			valid_data_count = out_len[0] * out_len[1];
-			for (i = 0; i < out_len[0]; i++) {
+			valid_data_count = out_len;
+			for (i = 0; i < out_len; i++) {
 				tmp = *(ifp + istart+i*sfp->istride);
 				if (tmp < *dmin) *dmin = tmp;
 				if (tmp > *dmax) *dmax = tmp;
@@ -620,8 +616,8 @@ DataToFloatArray
 			}
 		}
 		else {
-			valid_data_count = out_len[0] * out_len[1];
-			for (i = 0; i < out_len[0]; i++) {
+			valid_data_count = out_len;
+			for (i = 0; i < out_len; i++) {
 				tmp = *(ifp + istart+i*sfp->istride);
 				*(fp+i) = tmp;
 			}
@@ -636,7 +632,7 @@ DataToFloatArray
 				return NULL;
 			}
 			out_ga->num_dimensions = 1;
-			out_ga->num_elements = out_len[0];
+			out_ga->num_elements = out_len;
 			out_ga->len_dimensions = &out_ga->num_elements;
 			out_ga->typeQ = Qfloat;
 			out_ga->size = sizeof(float);
@@ -650,7 +646,7 @@ DataToFloatArray
 		ifp = ((float *) ga->data);
 
 		if (do_minmax && do_missing) {
-			for (i = 0; i < out_len[0]; i++) {
+			for (i = 0; i < out_len; i++) {
 				tmp = *(ifp + istart+i*sfp->istride);
 				if (tmp != missing_value) {
 					valid_data_count++;
@@ -660,8 +656,8 @@ DataToFloatArray
 			}
 		}
 		else if (do_minmax) {
-			valid_data_count = out_len[0] * out_len[1];
-			for (i = 0; i < out_len[0]; i++) {
+			valid_data_count = out_len;
+			for (i = 0; i < out_len; i++) {
 				tmp = *(ifp + istart+i*sfp->istride);
 				if (tmp < *dmin) *dmin = tmp;
 				if (tmp > *dmax) *dmax = tmp;
