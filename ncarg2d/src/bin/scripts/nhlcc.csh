@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlcc.csh,v 1.7 1997-03-26 23:23:33 haley Exp $
+#	$Id: nhlcc.csh,v 1.8 1997-04-11 18:11:13 haley Exp $
 #
 
 #*********************************************#
@@ -36,7 +36,6 @@ set libncarg    = "-lncarg"
 set libgks      = "-lncarg_gks"
 set libmath     = ""
 set libncarg_c  = "-lncarg_c"
-set libcbind    = "-lncargC"
 set libhlu      = "-lhlu"
 set extra_libs
 
@@ -66,7 +65,7 @@ foreach arg ($argv)
   endsw
 end
 
-set ncarg_libs = "$libhlu $libcbind $libncarg $libgks $libncarg_c $libmath"
+set ncarg_libs = "$libhlu $libncarg $libgks $libncarg_c $libmath"
 
 set newargv = "$newargv $libpath $incpath $extra_libs $ncarg_libs $xlibs $f77libs"
 

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.41 1997-03-26 23:23:32 haley Exp $
+#	$Id: ncargcc.csh,v 1.42 1997-04-11 18:11:11 haley Exp $
 #
 
 #*********************************************#
@@ -45,7 +45,6 @@ set libncarg    = "-lncarg"
 set libgks      = "-lncarg_gks"
 set libmath     = ""
 set libncarg_c  = "-lncarg_c"
-set libcbind    = "-lncargC"
 
 set robjs
 
@@ -149,7 +148,7 @@ foreach arg ($argv)
 	endsw
 
 end
-set ncarg_libs  = "$libcbind $libncarg $libgks $libncarg_c $libmath"
+set ncarg_libs  = "$libncarg $libgks $libncarg_c $libmath"
 
 set newargv = "$newargv $stub_file $libpath $incpath $ctrans_libs $robjs $ncarg_libs $f77libs $xlib $libextra"
 
