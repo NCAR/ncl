@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.15 1992-06-24 20:41:57 clyne Exp $
+ *	$Id: options.c,v 1.16 1992-07-22 18:42:06 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -210,6 +210,7 @@ OpenOptionTbl()
 		ESprintf(errno, "malloc(%d)",tmp);
 		return(-1);
 	}
+	odr->option = NULL;
 	optTbls[od].opt_desc_rec = odr;
 	optTbls[od].size = SMALL_BLOCK;
 	optTbls[od].num = 0;
@@ -539,7 +540,6 @@ ParseOptionTable(od, argc, argv, optds)
 		ESprintf(EBADF, "");
 		return(-1);	/* invalid option descriptor	*/
 	}
-	odr = optTbls[od].opt_desc_rec;
 
 	/*
 	 * if any options to be merged do so
@@ -547,6 +547,7 @@ ParseOptionTable(od, argc, argv, optds)
 	if (optds) {
 		if (LoadOptionTable(od, optds) == -1) return(-1);
 	}
+	odr = optTbls[od].opt_desc_rec;
 
 	if (! argv) return(1);
 
