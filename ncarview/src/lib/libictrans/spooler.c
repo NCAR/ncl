@@ -1,5 +1,5 @@
 /*
- *	$Id: spooler.c,v 1.12 1993-02-11 21:43:20 clyne Exp $
+ *	$Id: spooler.c,v 1.13 1993-03-16 02:51:13 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -590,13 +590,6 @@ int	InitSpool()
 	spoolers.size = SMALL_MALLOC_BLOCK;
 
 	isInitialized = FALSE;
-#ifdef	CRAY
-	/*
-	 * There is no wait3() in unicos yet. This prevents child processes
-	 * from being zombified after they die
-	 */
-	signal(SIGCLD, SIG_IGN);
-#endif
 
 	/*
  	 * see if spooler given in the NCARV_SPOOL environment variable

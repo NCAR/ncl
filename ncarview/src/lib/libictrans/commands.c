@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.25 1993-02-23 03:27:13 clyne Exp $
+ *	$Id: commands.c,v 1.26 1993-03-16 02:51:07 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -19,10 +19,7 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
-#ifndef	CRAY
 #include <sys/wait.h>
-#endif
 
 #include <errno.h>
 #include <ncarg/c.h>
@@ -84,6 +81,29 @@ static	void	sigint_handler(sig)
 {
 	loopAbort = TRUE;
 }
+
+#ifdef	BOZO
+static	int	system(s)
+	const char	*s;
+{
+	int	status;
+	int	pid, w;
+	register void (*istat)(), (*qstat)();
+
+	if((pid = fork()) == 0) {
+		(void) execl("/bin/sh", "sh", "-c", s, (char *)0);
+		_exit(127);
+	}
+	fprintf(stderr, "pid=%d\n", pid);
+	istat = signal(SIGINT, SIG_IGN);
+	qstat = signal(SIGQUIT, SIG_IGN);
+	while((w = wait(&status)) != pid && w != -1)
+		;
+	(void) signal(SIGINT, istat);
+	(void) signal(SIGQUIT, qstat);
+	return((w == -1)? w: status);
+}
+#endif
 
 /*
 **
@@ -1324,8 +1344,6 @@ int	iCShell(ic)
 	char	*s = ic->cmd.data;
 	FILE	*fp = ic->fp;
 
-	int	system();
-
 	if (!s) return(-1);
 
 	/*
@@ -1434,26 +1452,3 @@ char	*create_tmp_fname()
 }
 
 
-#ifdef	DEAD
-static	system(s)
-char	*s;
-{
-	int	status;
-	int	pid, w;
-	register void (*istat)(), (*qstat)();
-
-	extern int fork(), execl(), wait();
-
-	if((pid = fork()) == 0) {
-		(void) execl("/bin/csh", "sh", "-c", s, (char *)0);
-		_exit(127);
-	}
-	istat = signal(SIGINT, SIG_IGN);
-	qstat = signal(SIGQUIT, SIG_IGN);
-	while((w = wait((union wait *) &status)) != pid && w != -1)
-		;
-	(void) signal(SIGINT, istat);
-	(void) signal(SIGQUIT, qstat);
-	return((w == -1)? w: status);
-}
-#endif

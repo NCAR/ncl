@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.18 1993-01-12 20:11:50 clyne Exp $
+ *	$Id: ictrans.c,v 1.19 1993-03-16 02:51:10 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,11 +28,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#ifndef	CRAY
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <sys/resource.h>
-#endif
 #include <ncarg/cgm_tools.h>
 #include <ncarg/c.h>
 #include "ictrans.h"
@@ -371,23 +369,21 @@ ICTrans(argc, argv, mem_cgm)
 		 * clean up any terminated process spawned by the 
 		 * spooler
 		 */
-#ifndef	CRAY
+#ifdef	CRAY
+		while ((status = waitpid(0, (int *) NULL, WNOHANG)) != 0) {
+#else
 		while ((status = wait3((union wait *) NULL, 
 			WNOHANG, (struct rusage *) NULL)) != 0) {
+#endif
 
 			if (status > 0) {
 				(void) fprintf(fp, "Done	%d\n", status);
 				spoolerJobs--;
 			}
 			else {
-#ifdef	DEAD
-				(void) fprintf(stderr,"bad status %d\n",status);
-				perror(NULL);
-#endif
 				break;
 			}
 		}
-#endif
 		
 
 		status = get_command(&icommand);
