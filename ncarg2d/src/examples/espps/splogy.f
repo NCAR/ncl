@@ -38,6 +38,8 @@ C
 C       Set attributes for output
 C        Assign yellow to color index 2
 C
+      CALL GSCR(IWKID,0,0.,0.,0.)
+      CALL GSCR(IWKID,1,1.,1.,1.)
       CALL GSCR(IWKID,2,1.,1.,0.)
 C
 C       Generate output (GKS, SPPS, or NCAR utilities)
