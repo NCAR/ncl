@@ -53,9 +53,9 @@ C Define a simple color map (index 0 defines the background color).
 C
       real cmap(3,4)
       data cmap / 1.0, 1.0, 1.0,
-    1      0.0, 0.0, 1.0,
-    2      0.0, 1.0, 0.0,
-    3      1.0, 0.0, 0.0 /
+     1      0.0, 0.0, 1.0,
+     2      0.0, 1.0, 0.0,
+     3      1.0, 0.0, 0.0 /
 
       integer dims(2) 
       data dims / 3,4 /
@@ -79,11 +79,11 @@ C Create a meta file workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkMetaName',
-    1         './basic06c.ncgm',ierr)
+     1         './basic06c.ncgm',ierr)
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',
-    1         cmap,2,dims,ierr)
+     1         cmap,2,dims,ierr)
          call NhlFCreate(xwork_id,'simple',
-    1         NhlFncgmWorkstationClass,0,rlist,ierr)
+     1         NhlFncgmWorkstationClass,0,rlist,ierr)
       else
 C
 C Create an X workstation.
@@ -91,20 +91,20 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',
-    1         cmap,2,dims,ierr)
+     1         cmap,2,dims,ierr)
          call NhlFCreate(xwork_id,'simple',NhlFxWorkstationClass,
-    1         0,rlist,ierr)
+     1         0,rlist,ierr)
       endif
 C
 C Create data object for an XyPlot
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetFloatArray(rlist,'caXArray',xdra,
-    1      9,ierr)
+     1      9,ierr)
       call NhlFRLSetFloatArray(rlist,'caYArray',ydra,
-    1      9,ierr)
+     1      9,ierr)
       call NhlFCreate(data_id,'xyData',NhlFcoordArraysClass,
-    1      0,rlist,ierr)
+     1      0,rlist,ierr)
 C
 C Create a simple XyPlot object with no labels or borders.  The
 C parent for this object is xwork_id, hence it will be sent to
@@ -125,7 +125,7 @@ C
       call NhlFRLSetFloat(rlist,'vpWidthF',1.0,ierr)
       call NhlFRLSetFloat(rlist,'vpHeightF',1.0,ierr)
       call NhlFCreate(box_id,'Box',NhlFxyPlotClass,xwork_id,
-    1      rlist,ierr)
+     1    rlist,ierr)
 C
 C Create a TextItem object.
 C
@@ -134,7 +134,7 @@ C
       call NhlFRLSetFloat(rlist,'txPosYF',0.5,ierr)
       call NhlFRLSetInteger(rlist,'txFont',26,ierr)
       call NhlFCreate(text_id,'Text',NhlFtextItemClass,xwork_id,
-    1      rlist,ierr)
+     1      rlist,ierr)
 C
 C Add the data identified by data_id to the XyPlot.
 C
