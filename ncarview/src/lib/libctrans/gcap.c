@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.28 1992-10-15 16:49:19 clyne Exp $
+ *	$Id: gcap.c,v 1.29 1992-11-03 21:35:52 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -491,69 +491,113 @@ CGMC *c;
 int	cellsim(c)
 CGMC *c;
 {
-	float	deltax,deltay;
-	float	px,py,rx,ry,qx,qy;
+	double	delta_r_x, delta_r_y;	/* step from P to R	*/
+	double	delta_q_x, delta_q_y;	/* step from P to Q	*/
+	double	delta_z_x, delta_z_y;	/* step from P to Z	*/
+	Ptype	p, q, r;	/* cell array corners		*/
+	Ptype	z;		/* the fourth corner		*/
 	int	i,j;
 	int	nx,ny;
 
 	Ptype	coord_buf[4];
 	long	coord_buf_num;
 
-	Ctype	index;
+	Ctype	color_index;	/* color index of the current cell	*/
+	int	cgmc_index;	/* index into the cgmc color list	*/
 
-        static  startx = 0,starty = 0;
-        static  offset = 0;
-
-	void	gcap_pointflush(), gcap_fillcolour();
+	extern void	gcap_pointflush(), gcap_fillcolour();
 
 	nx = c->i[0];
 	ny = c->i[1];
+	p = c->p[0];
+	q = c->p[1];
+	r = c->p[2];
 
-	deltax = (c->p[2].x - c->p[0].x) / nx;
-	deltay = (c->p[2].y - c->p[1].y) / ny;
+	/*
+	 * are the nx cells layed out vertically or horizontally? Calculate
+	 * the step increments to go from a Pi to a Qi, Ri, and Zi.
+	 */
+	if (p.x == r.x) {	/* vertically	*/
+		z.x = q.x;
+		z.y = p.y;
+		delta_r_x = 0;
+		delta_r_y = (double) (r.y - p.y) / (double) nx;
+		delta_z_x = (double) (z.x - p.x) / (double) ny;
+		delta_z_y = 0;
+		delta_q_x = delta_z_x;
+		delta_q_y = delta_r_y;
+	}
+	else {
+		z.x = p.x;
+		z.y = q.y;
+		delta_r_x = (double) (r.x - p.x) / (double) nx;
+		delta_r_y = 0;
+		delta_z_x = 0;
+		delta_z_y = (double) (z.y - p.y) / (double) ny;
+		delta_q_x = delta_r_x;
+		delta_q_y = delta_z_y;
+	}
+	
 
-	for(i=starty;i<ny;i++) {
-		px = c->p[0].x;
-		qx = rx = px + deltax;
-		qy = c->p[1].y + (i * deltay);
-		py = ry = qy + deltay;
+	for(i=0, cgmc_index=0; i<ny; i++) {
 
-		for(j=startx;j<nx;j++) {
+		/*
+		 * the coords of the first cell in row i
+		 */
+		coord_buf[0].x = (int) p.x;
+		coord_buf[0].y = (int) p.y;
+		coord_buf[1].x = (int) p.x + delta_r_x;
+		coord_buf[1].y = (int) p.y + delta_r_y;
+		coord_buf[2].x = (int) p.x + delta_q_x;
+		coord_buf[2].y = (int) p.y + delta_q_y;
+		coord_buf[3].x = (int) p.x + delta_z_x;
+		coord_buf[3].y = (int) p.y + delta_z_y;
+
+		for(j=0;j<nx;j++) {
 
 
-			index = c->c[i*nx+j] - offset;
-			if (index > c->Cnum)  {
-                                if (c->more) {
-                                        startx = j;
-                                        starty = i;
-                                        offset = c->Cnum + 1;
+			/* make sure data available in cgmc     */
+			if (cgmc_index >= c->Cnum) {
+				if (c->more) {
+					if (Instr_Dec(c) < 1) {
+						return(-1);
+					}
+					cgmc_index = 0;
 				}
-				return(0);
-			} else {
-
-				gcap_fillcolour((CItype)c->c[index]);
-				
-				coord_buf_num = 4;
-				coord_buf[0].x = (int)px;
-				coord_buf[0].y = (int)py;
-				coord_buf[1].x = (int)rx;
-				coord_buf[1].y = (int)ry;
-				coord_buf[2].x = (int)qx;
-				coord_buf[2].y = (int)qy;
-				coord_buf[3].x = (int)px;
-				coord_buf[3].y = (int)qy;
-
-				gcap_pointflush(coord_buf, 
-					&coord_buf_num,TRUE,FALSE);
+				else {
+					ESprintf(
+						E_UNKNOWN, "Cell array encoding"
+					);
+					return(-1);
+				}
 			}
 
-			px = rx;
-			qx = rx = px + deltax;
+			color_index = c->c[cgmc_index];
+			cgmc_index++;
+
+			gcap_fillcolour(color_index);
+				
+
+			coord_buf_num = 4;	/* need to reset each time */
+			gcap_pointflush(coord_buf, &coord_buf_num,TRUE,FALSE);
+
+			/*
+			 * move to the next cell
+			 */
+			coord_buf[0].x = coord_buf[1].x;
+			coord_buf[0].y = coord_buf[1].y;
+			coord_buf[3].x = coord_buf[2].x;
+			coord_buf[3].y = coord_buf[2].y;
+			coord_buf[1].x = coord_buf[0].x + delta_r_x;
+			coord_buf[1].y = coord_buf[0].y + delta_r_y;
+			coord_buf[2].x = coord_buf[0].x + delta_q_x;
+			coord_buf[2].y = coord_buf[0].y + delta_q_y;
+
 		}
-		startx = 0;
+
+		p.x = p.x + delta_z_x;
+		p.y = p.y + delta_z_y;
 	}
-	starty = 0;
-	offset = 0;
 
 	return (0);
 }

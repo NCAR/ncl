@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.19 1992-09-09 15:08:54 clyne Exp $
+ *	$Id: X11_class4.c,v 1.20 1992-11-03 21:35:48 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1265,8 +1265,6 @@ CGMC *c;
 	int	nx, ny;		/* dimensions of cell array by number of cells*/
 	Etype	mode;		/* cell representation mode		*/
 	int	status = 0;
-
-	int	x11_cell_array(), x11_non_rect_cell_array();
 
 	/*
 	 *	check any control elements
