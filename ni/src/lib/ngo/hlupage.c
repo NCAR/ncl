@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.17 1998-11-20 04:11:03 dbrown Exp $
+ *      $Id: hlupage.c,v 1.18 1998-11-20 21:51:28 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -705,7 +705,7 @@ UpdateInstance
 			wks = (NgWksObj) wl->base.gui_data2;
 		}
 		if (wks && wks->auto_refresh) {
-			NgDrawXwkView(wks->wks_wrap_id,rec->hlu_id,True);
+			NgDrawXwkView(wks->wks_wrap_id,draw_id,True);
 		}
 	}
 
@@ -806,21 +806,17 @@ int GetWorkstation
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
         int wk_id;
+	NhlLayer l = _NhlGetLayer(rec->hlu_id);
         
-        if (NhlClassIsSubclass(rec->class,NhlworkstationClass)||
-            NhlClassIsSubclass(rec->class,NhlappClass) ||
-            NhlClassIsSubclass(rec->class,NhldataItemClass)) {
+        if (! NhlClassIsSubclass(rec->class,NhlviewClass)) {
                 wk_id = NhlNULLOBJID;
         }
-        else { 
+        else if (l) {
+		wk_id = l->base.wkptr->base.id;
+	}
+	else {
                 wk_id = NgAppGetSelectedWork
                         (page->go->go.appmgr,True,work_created);
-#if 0
-                if (*work_created) {
-                        XRaiseWindow(rec->go->go.x->dpy,
-                                     XtWindow(rec->go->go.shell));
-                }
-#endif
         }
         return wk_id;
 }
