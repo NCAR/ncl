@@ -152,7 +152,7 @@ you want to override the default ($NCARG_ROOT/lib/ncarg/xapp).
 .BR ncarg_gks(1NCARG),
 .BR ncargintro(5NCARG)
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1996
 .br
 University Corporation for Atmospheric Research
 .br

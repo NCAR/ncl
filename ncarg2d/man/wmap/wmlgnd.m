@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: wmlgnd.m,v 1.2 1995-10-13 14:48:34 haley Exp $
+.\"	$Id: wmlgnd.m,v 1.3 1996-01-29 17:37:51 haley Exp $
 .\"
 .TH WMLGND 3NCARG "January 1995" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -60,7 +60,7 @@ Hardcopy:
 WMAP - A Package for Producing Daily Weather Maps and Plotting Station 
 Model Data
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1996
 .br
 University Corporation for Atmospheric Research
 .br

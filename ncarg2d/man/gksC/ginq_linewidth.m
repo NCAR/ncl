@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_linewidth.m,v 1.5 1995-10-13 15:10:41 haley Exp $
+.\"	$Id: ginq_linewidth.m,v 1.6 1996-01-29 17:34:27 haley Exp $
 .\"
 .TH GINQ_LINEWIDTH 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -38,7 +38,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1996
 .br
 University Corporation for Atmospheric Research
 .br

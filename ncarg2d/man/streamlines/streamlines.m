@@ -172,7 +172,7 @@ NCAR Graphics Fundamentals, UNIX Version
 Hardcopy: NCAR Graphics Fundamentals, UNIX Version
 >>>>>>> 1.3
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1996
 .br
 University Corporation for Atmospheric Research
 .br

@@ -52,7 +52,7 @@ Online:
 entsr, eprin, errof, error_handling, fdum, icfell, icloem, nerro, retsr,
 seter, ncarg_cbind
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1996
 .br
 University Corporation for Atmospheric Research
 .br

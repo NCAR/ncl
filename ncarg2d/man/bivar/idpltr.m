@@ -47,7 +47,7 @@ Online:
 bivar, bivar_params, idbvip, idsfft, idgeti, idgetr, idseti, idsetr,
 ncarg_cbind
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1996
 .br
 University Corporation for Atmospheric Research
 .br

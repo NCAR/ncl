@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: gks.m,v 1.4 1995-10-13 15:09:46 haley Exp $
+.\"     $Id: gks.m,v 1.5 1996-01-29 17:33:36 haley Exp $
 .\"
 .TH GKS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -106,7 +106,7 @@ Hardcopy:
 "Computer Graphics--Graphical Kernel System (GKS) Functional Description,
 ANSI X3.124-1985"
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1996
 .br
 University Corporation for Atmospheric Research
 .br

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gsclip.m,v 1.5 1995-10-13 15:10:06 haley Exp $
+.\"	$Id: gsclip.m,v 1.6 1996-01-29 17:33:58 haley Exp $
 .\"
 .TH GSCLIP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -40,7 +40,7 @@ set, gsup, gswn, gselnt, gqclip, gset_clip_ind
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1996
 .br
 University Corporation for Atmospheric Research
 .br

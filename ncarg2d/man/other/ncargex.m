@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.29 1995-12-11 23:56:30 kennison Exp $
+.\"	$Id: ncargex.m,v 1.30 1996-01-29 17:35:43 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1995" NCAR "NCAR GRAPHICS"
@@ -494,7 +494,7 @@ Online:
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1996
 .br
 University Corporation for Atmospheric Research
 .br

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqfaci.m,v 1.5 1995-10-13 15:09:53 haley Exp $
+.\"	$Id: gqfaci.m,v 1.6 1996-01-29 17:33:44 haley Exp $
 .\"
 .TH GQFACI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -31,7 +31,7 @@ areas, ginq_fill_colr_ind
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1996
 .br
 University Corporation for Atmospheric Research
 .br

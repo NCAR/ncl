@@ -59,7 +59,7 @@ Online:
 nggcog(3NCARG),
 nggsog(3NCARG).
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1996
 .br
 University Corporation for Atmospheric Research
 .br

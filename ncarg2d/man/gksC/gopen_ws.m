@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gopen_ws.m,v 1.7 1995-10-13 15:10:48 haley Exp $
+.\"	$Id: gopen_ws.m,v 1.8 1996-01-29 17:34:35 haley Exp $
 .\"
 .TH GOPEN_WS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -100,7 +100,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1996
 .br
 University Corporation for Atmospheric Research
 .br
