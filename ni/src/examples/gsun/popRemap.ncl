@@ -1,5 +1,5 @@
 ;
-;      $Id: popRemap.ncl,v 1.2 2003-02-23 00:11:05 haley Exp $
+;      $Id: popRemap.ncl,v 1.3 2003-03-07 05:27:08 haley Exp $
 ;
 ;===========================================================
 ; D. Shea
@@ -97,7 +97,7 @@ local dirPOP, rotPOP, indRot
 begin
   dirPOP  = "/fs/cgd/data0/shea/pop/"   ; dir with transform files
                                         ; names with rot angles
-  rotPOP  = (/ "POPX3","POP23", "POP43", "gx1v3", "gx1v2", "gx3", "hx1" /)
+  rotPOP  = (/ "POPX3","POP23", "POP43", "gx1v3", "gx1v2", "gx3", "hx1", "crx3" /)
 
   indRot  = ind(gridSrc.eq.rotPOP)
   if (ismissing(indRot)) then
@@ -704,7 +704,7 @@ begin
                                          ; uvNew will have extra dim
 
 
-  types = (/"POP","gx3","gx1v2","gx1v3"/)
+  types = (/"POP","gx3","gx1v2","gx1v3", "crx3"/)
  ;print(gridSrcType)
  ;print(types)
   if (nDu.eq.2) then
