@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpsps1.c,v 1.3 1994-06-21 14:59:32 haley Exp $
+ * $Id: c_ccpsps1.c,v 1.4 1994-08-23 22:50:20 haley Exp $
  */
 
 #include <stdio.h>
@@ -20,10 +20,10 @@ main()
 {
     float z[N][K], zdat[LZDT], rwrk[LRWK];
     int j;
-    int m, iwrk[LIWK];
+    int iwrk[LIWK];
     extern void getdat(), mark();
 
-    getdat (z, N, &m, K);
+    getdat (z);
 /*
  * Open GKS
  */
@@ -46,7 +46,7 @@ main()
 /*
  * Mark data points
  */
-    mark (m, N);
+    mark ();
 /*
  * Close frame and close GKS
  */
@@ -56,24 +56,21 @@ main()
 	gclose_gks();
 }
 
-void getdat (z, n, m, k)
+void getdat (z)
 float *z;
-int k, *m, n;
 {
     int i, j, l;
 
     l = 0;
-    *m = k;
-    for( j = 1; j <= n; j++ ) {
-        for( i = 1; i <= *m; i++ ) {
+    for( j = 1; j <= N; j++ ) {
+        for( i = 1; i <= K; i++ ) {
             z[l++] = 10.e-5*(-16.*(float)(i*i*j) + 34.*(float)(i*j*j) - (float)(6*i) + 93.);
         }
     }
     return;
 }
 
-void mark (m, n)
-int m, n;
+void mark()
 {
     int i, j, idum5;
     float x[1], y[1];
@@ -83,10 +80,10 @@ int m, n;
     c_getset(&dum1,&dum2,&dum3,&dum4,&xmin,&xmax,&ymin,&ymax,&idum5);
     gset_marker_size(.5);
 
-    for( i = 1; i <= m; i++ ) {
-        for( j = 1; j <= n; j++ ) {
-            x[0] = (float)(i-1)*(xmax-xmin)/(float)(m-1)+xmin;
-            y[0] = (float)(j-1)*(ymax-ymin)/(float)(n-1)+ymin;
+    for( i = 1; i <= K; i++ ) {
+        for( j = 1; j <= N; j++ ) {
+            x[0] = (float)(i-1)*(xmax-xmin)/(float)(K-1)+xmin;
+            y[0] = (float)(j-1)*(ymax-ymin)/(float)(N-1)+ymin;
             c_points (x, y, 1, -4, 0);
         }
     }

@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpklb.c,v 1.3 1994-06-21 14:59:28 haley Exp $
+ * $Id: c_ccpklb.c,v 1.4 1994-08-23 22:50:10 haley Exp $
  */
 
 #include <stdio.h>
@@ -15,20 +15,23 @@
 #define WSTYPE SED_WSTYPE
 #define WKID   1
 
+float  z[N][K], rwrk[LRWK];
+int iwrk[LIWK];
+
 main()
 {
-    float  z[N][K], rwrk[LRWK], clvl;
-    int i, m, iwrk[LIWK], nocl;
+    float  clvl;
+    int i, m, nocl;
     char string[17];
     extern void getdat();
 
-    getdat (z, N, &m, K);
+    getdat ();
 /*
  *  Open GKS
  */
-	gopen_gks ("stdout",0);
-	gopen_ws (WKID, NULL, WSTYPE);
-	gactivate_ws(WKID);
+    gopen_gks ("stdout",0);
+    gopen_ws (WKID, NULL, WSTYPE);
+    gactivate_ws(WKID);
 /*
  * Initialize Conpack
  */
@@ -55,22 +58,18 @@ main()
  * Close frame and close GKS
  */
     c_frame();
-	gdeactivate_ws(WKID);
-	gclose_ws(WKID);
-	gclose_gks();
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
+    gclose_gks();
 }
 
-void getdat (z, n, m, k)
-float *z;
-int k, *m, n;
+void getdat ()
 {
-    int i,j,l;
+    int i, j;
 
-    l = 0;
-    *m = k;
-    for( j = 1; j <= n; j++ ) {
-        for( i = 1; i <= *m; i++ ) {
-            z[l++] = 10.e-5*(-16.*(float)(i*i*j) + 34.*(float)(i*j*j) - (float)(6*i) + 93.);
+    for( i = 1; i <= K; i++ ) {
+        for( j = 1; j <= N; j++ ) {
+            z[j-1][i-1] = 10.e-8*(-16.*(float)(i*i*j)+34.*(float)(i*j*j)-(float)(6*i)+93.);
         }
     }
     return;

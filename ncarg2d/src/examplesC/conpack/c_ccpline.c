@@ -30,49 +30,49 @@ int main()
 	float zdat[LZDT];	/* interpolated data */
 	float rwrk[LRWK];	/* real work array */
 
-	extern void getdat (float*,int,int*,int);   /* Get data */
+	extern void getdat (float*);   /* Get data */
 	extern void color();			    /* Define color table */
 
-	getdat (&z[0][0], K, &m, N); 
+	getdat (&z[0][0]);
 
 /* Open GKS */
-        gopen_gks(IERRF, ISZDM);
-        gopen_ws(IWKID, LUNIT, IWTYPE);
-        gactivate_ws(IWKID);
-        gset_clip_ind (0);
+	gopen_gks(IERRF, ISZDM);
+	gopen_ws(IWKID, LUNIT, IWTYPE);
+	gactivate_ws(IWKID);
+	gset_clip_ind (0);
 
 /* Set up color table */
-        color();
+	color();
 
 /* Set each contour level value */
 	c_cpseti ("CLS - CONTOUR LEVEL SELECTION",0);
 	c_cpseti ("NCL - NUMBER OF CONTOUR LEVELS",13);
 	for(i=1; i<=13; ++i)
 	{
-	   c_cpseti ("PAI - PARAMETER ARRAY INDEX",i);
-	   c_cpsetr ("CLV - CONTOUR LEVEL VALUE", (i-1.0)*1000.0-500.0);
-	   if ((i%3) == 0)
-	   {
+		c_cpseti ("PAI - PARAMETER ARRAY INDEX",i);
+		c_cpsetr ("CLV - CONTOUR LEVEL VALUE", (i-1.0)*1000.0-500.0);
+		if ((i%3) == 0)
+		{
 /* Make the contour line  dashed */
-	     c_cpseti ("PAI - PARAMETER ARRAY INDEX",i);
-	     c_cpseti ("CLD - CONTOUR LINE DASH PATTERN", 21845);
-	   }
-	   else if ((i%3) == 1)
-	   {
+			c_cpseti ("PAI - PARAMETER ARRAY INDEX",i);
+			c_cpseti ("CLD - CONTOUR LINE DASH PATTERN", 21845);
+		}
+		else if ((i%3) == 1)
+        {
 /* Make the contour line three times as thick */
-	     c_cpseti ("PAI - PARAMETER ARRAY INDEX",i);
-	     c_cpsetr ("CLL - CONTOUR LINE LINE WIDTH", 3.);
-	   }
-	   else if ((i%3) == 2)
-	   {
+			c_cpseti ("PAI - PARAMETER ARRAY INDEX",i);
+			c_cpsetr ("CLL - CONTOUR LINE LINE WIDTH", 3.);
+		}
+		else if ((i%3) == 2)
+ 	    {
 /* Make the contour line  red */
-	     c_cpseti ("PAI - PARAMETER ARRAY INDEX",i);
-	     c_cpseti ("CLC - CONTOUR LINE COLOR INDEX",2);
-	   }
+			c_cpseti ("PAI - PARAMETER ARRAY INDEX",i);
+			c_cpseti ("CLC - CONTOUR LINE COLOR INDEX",2);
+		}
 	}
 
 /* Initialize Conpack */
-	c_cpsps1(&z[0][0],K,m,N,rwrk,LRWK,iwrk,LIWK,zdat,LZDT);
+	c_cpsps1(&z[0][0],K,K,N,rwrk,LRWK,iwrk,LIWK,zdat,LZDT);
 
 /* Draw perimeter */
 	c_cpback(zdat, rwrk, iwrk);
@@ -80,15 +80,15 @@ int main()
 	c_cpcldr(zdat,rwrk,iwrk);
 
 /* Close frame and close GKS */
-        c_frame();
-        gdeactivate_ws(IWKID);
-        gclose_ws(IWKID);
-        gclose_gks();
-        return (0);
+    c_frame();
+    gdeactivate_ws(IWKID);
+    gclose_ws(IWKID);
+    gclose_gks();
+    return (0);
 }
 
 
-void getdat (float* z, int k, int* m, int n)
+void getdat (float* z)
 /*
 ** Generate data for plot.
 **
@@ -97,22 +97,13 @@ void getdat (float* z, int k, int* m, int n)
 ** m	- returned dimension of sparse data
 */
 {
-	int i,j;		/* counters */
+	int i,j,l;		/* counters */
 
-	float rmin, rmax;	/* minimum and maximum data values */
-
-	*m=k;
-	rmin = 0.;
-	rmax = 0.;
-	for(i=0; i<k; ++i)
-	{
-	  for(j=0; j<n; ++j)
-	  {
-	    z[((j*k)+i)] = -16.*pow((i+1.0),2.0)*(j+1.0)+ 
-                           34.0*pow((j+1.0),2.0)*(i+1.0)-(6.0*(i+1.0))+93.;
-	    if (rmin > z[((j*k)+i)]) rmin=z[((j*k)+i)];
-	    if (rmax < z[((j*k)+i)]) rmax=z[((j*k)+i)];
-	  }
+    l = 0;
+    for(j = 1; j <= N; j++) {
+        for(i = 1; i <= K; i++) {
+            z[l++] = -16.*(float)(i*i*j)+34.*(float)(i*j*j)-(float)(6.*i)+93.;
+        }
 	}
 }
 

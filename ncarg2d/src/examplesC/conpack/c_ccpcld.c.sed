@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpcld.c.sed,v 1.1 1994-08-05 19:10:01 stautler Exp $
+ * $Id: c_ccpcld.c.sed,v 1.2 1994-08-23 22:50:00 haley Exp $
  */
 
 #include <stdio.h>
@@ -28,11 +28,11 @@ int ibts[7][16] = { 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1,
 main()
 {
 	float z[N][K], rwrk[LRWK];
-	int i, m, nocl, iwrk[LIWK];
+	int i, nocl, iwrk[LIWK];
 	extern void getdat();
 	extern int ipat();
 
-	getdat (z, K, &m, N) ;
+	getdat (z) ;
 /*
  * Open GKS
  */
@@ -46,7 +46,7 @@ main()
 /*
  * Call conpack normally
  */
-	c_cprect((float *)z,K,m,N,rwrk,LRWK,iwrk,LIWK);
+	c_cprect((float *)z,K,N,N,rwrk,LRWK,iwrk,LIWK);
 	c_cppkcl((float *)z, rwrk, iwrk);
 /*
  * Set a different dash pattern for each contour line
@@ -67,16 +67,14 @@ main()
 	gclose_gks();
 }
 
-void getdat (z, n, m, k)
+void getdat (z)
 float *z;
-int k, *m, n;
 {
     int i,j,l;
 
     l = 0;
-    *m = k;
-    for( j = 1; j <= n; j++ ) {
-        for( i = 1; i <= *m; i++ ) {
+    for( j = 1; j <= K; j++ ) {
+        for( i = 1; i <= N; i++ ) {
             z[l++] = 10.e-5*(-16.0*(float)(i*i*j) + 34.0*(float)(i*j*j) - (float)(6.0*i) + 93.0);
         }
     }
