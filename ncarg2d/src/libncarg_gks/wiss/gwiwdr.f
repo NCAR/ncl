@@ -1,5 +1,5 @@
 C
-C	$Id: gwiwdr.f,v 1.3 1994-04-28 23:40:43 fred Exp $
+C	$Id: gwiwdr.f,v 1.4 1994-05-07 00:46:39 fred Exp $
 C
       SUBROUTINE GWIWDR(ICNTX,RCNTX)
 C
@@ -78,7 +78,7 @@ C
 C
 C   Segmentation functions.
 C
-      GOTO (400, 410) MCODES-79
+      GOTO (420, 400, 410) MCODES-78
 C
 C  Clipping control function(s).
 C
@@ -209,6 +209,14 @@ C
       IL1 = 1
       IL2 = 1
       ID(1) = WRECNM-1
+      RETURN
+C
+C  Delete segment.
+C
+  420 CONTINUE
+      CALL GTNLEN(STR,ILEN,IER)
+      STR(ILEN+1:ILEN+1) = CHAR(0)
+      CALL G01MIO (9, 0, STR, IDUM, 1, RERR)
       RETURN
 C
 C  Activate workstation.
