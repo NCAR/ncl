@@ -3309,7 +3309,7 @@ int wr_status;
 						}
 						if( i ==  sizeof(params_nwsnmc_index)/sizeof(int) ) {
 							if(!_IsDef(therec,grib_rec->param_number)) {
-								NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number);
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
 							}
 							i = -1;
 						} 
