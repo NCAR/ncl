@@ -1,4 +1,4 @@
-C	$Id: ffex03.f,v 1.2 1993-04-08 23:41:08 haley Exp $
+C	$Id: ffex03.f,v 1.3 1993-06-23 17:16:07 dbrown Exp $
 C
       PROGRAM FFEX03
 C
@@ -62,7 +62,7 @@ C
 C Set up the EZMAP transformation
 C
       CALL MAPSET('CO',60.0,-120.0,23.0,-60.0)
-      CALL MAPROJ('LC',45,-75.0,45.0)
+      CALL MAPROJ('LC',0.0,-75.0,45.0)
       CALL MAPINT
       CALL MAPSTI('C5 - Continental Outline Color',ICLR(1))
 C

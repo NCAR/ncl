@@ -1,4 +1,4 @@
-C	$Id: ffex02.f,v 1.1 1993-04-08 22:35:42 haley Exp $
+C	$Id: ffex02.f,v 1.2 1993-06-23 17:16:05 dbrown Exp $
 C
       PROGRAM FFEX02
 C
@@ -42,7 +42,7 @@ C
 C Set up the EZMAP projection
 C
       CALL MAPSET('CO',60.0,-120.0,23.0,-60.0)
-      CALL MAPROJ('LC',45,-75.0,45.0)
+      CALL MAPROJ('LC',0.0,-75.0,45.0)
       CALL MAPINT
 C
 C Tell Vectors to use the mapping established by EZMAP
