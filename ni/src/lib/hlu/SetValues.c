@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.28 1997-05-05 21:45:23 boote Exp $
+ *      $Id: SetValues.c,v 1.29 1997-10-21 01:55:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1008,14 +1008,18 @@ AddValueSetCB
 	_NhlValSetCBInfo	vsinfo;
 	NhlClass		lc = _NhlClass(l);
 	NhlLayer		resl;
-	NrmResource		*res;
+	NrmResource		*res = NULL;
 	_NhlCB			cb;
 	NhlArgVal		sel;
 	NhlArgVal		udata;
-		
-	resl = GetResLayer(l,resq,&res);
-	if (! resl)
-		return NULL;
+
+        if (resq == NrmNULLQUARK)
+                resl = l;
+        else {
+                resl = GetResLayer(l,resq,&res);
+                if (! resl)
+                        return NULL;
+        }
 
 	vsinfo = NhlMalloc(sizeof(_NhlValSetCBInfoRec));
 	
@@ -1032,7 +1036,7 @@ AddValueSetCB
 		vsinfo->forwarded = True;
 		sel.lngval = resq;
 		udata.ptrval = vsinfo;
-		cb =  _NhlAddObjCallback(resl,"CBresValueSet",sel,
+		cb =  _NhlAddObjCallback(resl,"CBobjValueSet",sel,
 					 ForwardedValueSetCB,udata);
 		if (! cb) {
 			NhlFree(vsinfo);
@@ -1040,7 +1044,13 @@ AddValueSetCB
 		}
 		vsinfo->forwarded_cb = cb;
 	}
-	else {
+	else if (! res) {
+		vsinfo->forwarded = False;
+		vsinfo->forwarded_cb = NULL;
+		vsinfo->offset = 0;
+		vsinfo->size = 0;
+	}
+        else {
 		vsinfo->forwarded = False;
 		vsinfo->forwarded_cb = NULL;
 		vsinfo->offset = res->nrm_offset;
@@ -1087,7 +1097,7 @@ NhlErrorTypes _NhlResValueSetCBTask
 			else
 				vsinfo->forwarded_value_set = False;
 		}
-		else {
+		else if (vsinfo->size > 0) {
 			base = (char *) vsinfo->resl;
 			oldbase = (char *) (*cbdata).ptrval;
 			if (! memcmp(base+vsinfo->offset,

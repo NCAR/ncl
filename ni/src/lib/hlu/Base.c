@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.26 1997-08-14 16:29:35 dbrown Exp $
+ *      $Id: Base.c,v 1.27 1997-10-21 01:55:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,7 @@ static _NhlRawObjCB bcallbacks[] = {
 	{_NhlCBobjDestroy,NhlOffset(NhlBaseLayerRec,base.destroycb),
 		 0,NULL,NULL,NULL},
 	{_NhlCBobjValueSet,NhlOffset(NhlBaseLayerRec,base.resvaluesetcb),
-		 0,NULL,NULL,_NhlResValueSetCBTask},
+		 1,NULL,NULL,_NhlResValueSetCBTask},
 	{_NhlCBobjChildChange,NhlOffset(NhlBaseLayerRec,base.cchildcb),
 		 0,NULL,NULL,NULL},
 };
