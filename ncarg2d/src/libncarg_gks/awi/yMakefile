@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.12 1994-05-28 00:42:37 fred Exp $
+#	$Id: yMakefile,v 1.13 1994-06-02 21:17:06 fred Exp $
 #
 
 MYNAME	= awi
@@ -34,8 +34,8 @@ gsmk.f    gsmksc.f  gspa.f    gsparf.f  gsplci.f  gspli.f   gspmci.f  gspmi.f \
 gssgt.f   gsstm.f   gstxal.f  gstxci.f  gstxfp.f  gstxi.f   gstxp.f   gsvp.f \
 gswkvp.f  gswkwn.f  gswn.f    gtflt.f   gtx.f     gtxdrw.f  gtxtat.f  gurec.f \
 guwk.f    gwitm.f   gxlate.f  gxmdef.f  gxopdf.f  gzckst.f  gzckwk.f  gzclpo.f \
-gzcpwk.f \
-gzfmwk.f  gzines.f  gzinsl.f  gziqwk.f  gzn2wx.f  gzn2wy.f  gzname.f  gzputr.f \
+gzcpwk.f  gzfmwk.f  gzgte1.f  gzgte2.f  gzines.f  gzinsl.f  gziqwk.f  \
+gzn2wx.f  gzn2wy.f  gzname.f  gznume.f  gzputr.f \
 gzputs.f  gzroi.f   gzsrat.f  gztowk.f  gzw2gk.f  gzw2nx.f  gzw2ny.f  gzxid.f 
 
 GENERIC_OBJS = \
@@ -59,8 +59,8 @@ gsmk.o    gsmksc.o  gspa.o    gsparf.o  gsplci.o  gspli.o   gspmci.o  gspmi.o \
 gssgt.o   gsstm.o   gstxal.o  gstxci.o  gstxfp.o  gstxi.o   gstxp.o   gsvp.o \
 gswkvp.o  gswkwn.o  gswn.o    gtflt.o   gtx.o     gtxdrw.o  gtxtat.o  gurec.o \
 guwk.o    gwitm.o   gxlate.o  gxmdef.o  gxopdf.o  gzckst.o  gzckwk.o  gzclpo.o \
-gzcpwk.o \
-gzfmwk.o  gzines.o  gzinsl.o  gziqwk.o  gzn2wx.o  gzn2wy.o  gzname.o  gzputr.o \
+gzcpwk.o  gzfmwk.o  gzgte1.o  gzgte2.o  gzines.o  gzinsl.o  gziqwk.o  \
+gzn2wx.o  gzn2wy.o  gzname.o  gznume.o  gzputr.o \
 gzputs.o  gzroi.o   gzsrat.o  gztowk.o  gzw2gk.o  gzw2nx.o  gzw2ny.o  gzxid.o 
 
 SOURCES = $(GENERIC_SRCS)
@@ -365,6 +365,12 @@ gzcpwk.o : gzcpwk.f \
 gzfmwk.o : gzfmwk.f \
    gkscom.h 
  
+gzgte1.o : gzgte1.f \
+   gkscom.h 
+ 
+gzgte2.o : gzgte2.f \
+   gkscom.h 
+ 
 gzines.o : gzines.f \
    gkscom.h 
  
@@ -378,6 +384,9 @@ gzn2wx.o : gzn2wx.f \
    gkscom.h 
  
 gzn2wy.o : gzn2wy.f \
+   gkscom.h 
+
+gznume.o : gznume.f \
    gkscom.h 
  
 gzputr.o : gzputr.f \

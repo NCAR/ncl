@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.6 1994-05-28 00:42:22 fred Exp $
+C	$Id: gksbd.f,v 1.7 1994-06-02 21:16:54 fred Exp $
 C
       BLOCKDATA GKSBD
 C
@@ -119,6 +119,12 @@ C       MXERMG --  MAXIMUM NUMBER OF ERROR MESSAGES TO ISSUE BEFORE ABORT
 C                   
 C-----------------------------------------------------------------------
 C
+C     GKETBI:
+C       IERNMS --  AN ARRAY CONTAINING THE NCAR GKS ERROR NUMERS
+C     GKETBC:
+C       ERMSGS --  AN ARRAY CONTAINING THE NCAR GKS ERROR MESSAGE STRINGS     
+C-----------------------------------------------------------------------
+C
 C     GKENUM: GKS ENUMERATION TYPE VARIABLES
 C       GBUNDL -- BUNDLED
 C       GINDIV -- INDIVIDUAL
@@ -194,6 +200,192 @@ C-----------------------------------------------------------------------
       DATA NOPICT/-1/
       DATA GFNAME/'DEFAULT'/
       DATA CLLX,CLLY,CURX,CURY,CPSCL/-1,-1,-1,-1,-1/
+C
+      DATA IERNMS/    1,    2,    3,    4,    5,    6,    7,    8,
+     +               20,   21,   22,   23,   24,   25,   26,   27,
+     +               28,   29,   30,   32,   33,   34,   35,   36,
+     +               38,   50,   51,   52,   53,   54,   60,   63,
+     +               65,   66,   69,   72,   75,   77,   78,   79,
+     +               80,   84,   85,   87,   91,   92,   93,   96,
+     +              100,  101,  102,  103,  120,  121,  122,  124,
+     +              160,  161,  162,  163,  165,  166,  167,  168,
+     +              180,  182,  300,  302,  303,  304,  305,  306,
+     +              307,  308, 2000, 2001, 2002, 2003, -100, -101,
+     +             -102, -103, -105, -106, -107, -108, -109, -110,
+     +             -111, -112, -200, -201, -202, -203, -204, -205,
+     +             -206, -207, -208, -209, -210, -211, -212, -213,
+     +             -214, -215, -216, -300, -301, -302, -303, -217,
+     +             -218, -219, -220                               /
+      DATA ERMSGS(  1)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
+     +E GKCL'/
+      DATA ERMSGS(  2)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
+     +E GKOP'/
+      DATA ERMSGS(  3)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
+     +E WSAC'/
+      DATA ERMSGS(  4)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
+     +E SGOP'/
+      DATA ERMSGS(  5)/' --GKS NOT IN PROPER STATE: GKS SHALL BE EITHER 
+     +IN THE STATE WSAC OR IN THE STATE SGOP'/
+      DATA ERMSGS(  6)/' --GKS NOT IN PROPER STATE: GKS SHALL BE EITHER 
+     +IN THE STATE WSOP OR IN THE STATE WSAC'/
+      DATA ERMSGS(  7)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN ONE 
+     +OF THE STATES  WSOP, WSAC, OR SGOP'/
+      DATA ERMSGS(  8)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN ONE 
+     +OF THE STATES  GKOP, WSOP, WSAC, OR SGOP'/
+      DATA ERMSGS(  9)/' --SPECIFIED WORKSTATION IDENTIFIER IS INVALID  
+     +'/
+      DATA ERMSGS( 10)/' --SPECIFIED CONNECTION IDENTIFIER IS INVALID'/
+      DATA ERMSGS( 11)/' --SPECIFIED WORKSTATION TYPE IS INVALID'/
+      DATA ERMSGS( 12)/' --SPECIFIED WORKSTATION TYPE DOES NOT EXIST'/
+      DATA ERMSGS( 13)/' --SPECIFIED WORKSTATION IS OPEN'/
+      DATA ERMSGS( 14)/' --SPECIFIED WORKSTATION IS NOT OPEN'/
+      DATA ERMSGS( 15)/' --SPECIFIED WORKSTATION CANNOT BE OPENED'/
+      DATA ERMSGS( 16)/' --WORKSTATION INDEPENDENT SEGMENT STORAGE IS NO       
+     +T OPEN'/
+      DATA ERMSGS( 17)/' --WORKSTATION INDEPENDENT SEGMENT STORAGE IS AL
+     +READY OPEN'/
+      DATA ERMSGS( 18)/' --SPECIFIED WORKSTATION IS ACTIVE'/
+      DATA ERMSGS( 19)/' --SPECIFIED WORKSTATION IS NOT ACTIVE'/
+      DATA ERMSGS( 20)/' --SPECIFIED WORKSTATION IS NOT OF CATEGORY MO'/
+      DATA ERMSGS( 21)/' --SPECIFIED WORKSTATION IS OF CATEGORY MI'/
+      DATA ERMSGS( 22)/' --SPECIFIED WORKSTATION IS NOT OF CATEGORY MI'/
+      DATA ERMSGS( 23)/' --SPECIFIED WORKSTATION IS OF CATEGORY INPUT'/
+      DATA ERMSGS( 24)/' --SPECIFIED WORKSTATION IS WORKSTATION INDEPEND       
+     +ENT SEGMENT STORAGE'/
+      DATA ERMSGS( 25)/' --SPECIFIED WORKSTATION IS NEITHER OF CATEGORY 
+     +INPUT NOR OF CATEGORY OUTIN'/
+      DATA ERMSGS( 26)/' --TRANSFORMATION NUMBER IS INVALID'/
+      DATA ERMSGS( 27)/' --RECTANGLE DEFINITION IS INVALID'/
+      DATA ERMSGS( 28)/' --VIEWPORT IS NOT WITHIN THE NORMALIZED DEVICE 
+     +COORDINATE UNIT SQUARE'/
+      DATA ERMSGS( 29)/' --WORKSTATION WINDOW IS NOT WITHIN THE NORMALIZ
+     +ED DEVICE COORDINATE UNIT SQUARE'/
+      DATA ERMSGS( 30)/' --WORKSTATION VIEWPORT IS NOT WITHIN THE DISPLA
+     +Y SPACE'/
+      DATA ERMSGS( 31)/' --POLYLINE INDEX IS INVALID'/
+      DATA ERMSGS( 32)/' --LINETYPE IS LESS THAN OR EQUAL TO ZERO'/
+      DATA ERMSGS( 33)/' --LINEWIDTH SCALE FACTOR IS LESS THAN ZERO'/
+      DATA ERMSGS( 34)/' --POLYMARKER INDEX IS INVALID'/
+      DATA ERMSGS( 35)/' --MARKER TYPE IS LESS THAN OR EQUAL TO ZERO'/
+      DATA ERMSGS( 36)/' --TEXT INDEX IS INVALID'/
+      DATA ERMSGS( 37)/' --TEXT FONT IS EQUAL TO ZERO'/
+      DATA ERMSGS( 38)/' --CHARACTER EXPANSION FACTOR IS LESS THAN OR EQ
+     +UAL TO ZERO'/
+      DATA ERMSGS( 39)/' --CHARACTER HEIGHT IS LESS THAN OR EQUAL TO ZER
+     +O'/
+      DATA ERMSGS( 40)/' --LENGTH OF CHARACTER UP VECTOR IS ZERO'/
+      DATA ERMSGS( 41)/' --FILL AREA INDEX IS INVALID'/
+      DATA ERMSGS( 42)/' --STYLE (PATTERN OR HATCH) INDEX IS LESS THAN O
+     +R EQUAL TO ZERO'/
+      DATA ERMSGS( 43)/' --SPECIFIED PATTERN INDEX IS INVALID'/
+      DATA ERMSGS( 44)/' --PATTERN SIZE VALUE IS NOT POSITIVE'/
+      DATA ERMSGS( 45)/' --DIMENSIONS OF COLOR ARRAY ARE INVALID'/
+      DATA ERMSGS( 46)/' --COLOR INDEX IS LESS THAN ZERO'/
+      DATA ERMSGS( 47)/' --COLOR INDEX IS INVALID'/
+      DATA ERMSGS( 48)/' --COLOR IS OUTSIDE RANGE ZERO TO ONE INCLUSIVE'
+     +/      
+      DATA ERMSGS( 49)/' --NUMBER OF POINTS IS INVALID'/
+      DATA ERMSGS( 50)/' --INVALID CODE IN STRING'/
+      DATA ERMSGS( 51)/' --GENERALIZED DRAWING PRIMITIVE IDENTIFIER IS I       
+     +NVALID'/
+      DATA ERMSGS( 52)/' --CONTENT OF GENERALIZED DRAWING PRIMITIVE DATA
+     + RECORD IS INVALID'/
+      DATA ERMSGS( 53)/' --SPECIFIED SEGMENT NAME IS INVALID'/
+      DATA ERMSGS( 54)/' --SPECIFIED SEGMENT NAME IS ALREADY IN USE'/
+      DATA ERMSGS( 55)/' --SPECIFIED SEGMENT DOES NOT EXIST'/
+      DATA ERMSGS( 56)/' --SPECIFIED SEGMENT DOES NOT EXIST ON WORKSTATI
+     +ON INDEPENDENT SEGMENT STORAGE'/
+      DATA ERMSGS( 57)/' --ITEM TYPE IS NOT ALLOWED FOR USER ITEMS'/
+      DATA ERMSGS( 58)/' --ITEM LENGTH IS INVALID'/
+      DATA ERMSGS( 59)/' --NO ITEM IS LEFT IN GKS METAFILE INPUT'/
+      DATA ERMSGS( 60)/' --METAFILE ITEM IS INVALID'/
+      DATA ERMSGS( 61)/' --CONTENT OF ITEM DATA RECORD IS INVALID FOR TH
+     +E SPECIFIED ITEM TYPE'/
+      DATA ERMSGS( 62)/' --MAXIMUM ITEM DATA RECORD LENGTH IS INVALID'/
+      DATA ERMSGS( 63)/' --USER ITEM CANNOT BE INTERPRETED'/
+      DATA ERMSGS( 64)/' --SPECIFIED FUNCTION IS NOT SUPPORTED IN THIS L
+     +EVEL OF GKS'/
+      DATA ERMSGS( 65)/' --SPECIFIED ESCAPE FUNCTION IS NOT SUPPORTED'/
+      DATA ERMSGS( 66)/' --CONTENTS OF ESCAPE DATA RECORD ARE INVALID'/
+      DATA ERMSGS( 67)/' --STORAGE OVERFLOW HAS OCCURRED IN GKS'/
+      DATA ERMSGS( 68)/' --INPUT/OUTPUT ERROR HAS OCCURRED WHILE READING
+     +'/     
+      DATA ERMSGS( 69)/' --INPUT/OUTPUT ERROR HAS OCCURRED WHILE WRITING
+     +'/
+      DATA ERMSGS( 70)/' --INPUT/OUTPUT ERROR HAS OCCURRED WHILE SENDING
+     + DATA TO A WORKSTATION'/
+      DATA ERMSGS( 71)/' --INPUT/OUTPUT ERROR HAS OCCURRED WHILE RECEIVI
+     +NG DATA FROM A WORKSTATION'/
+      DATA ERMSGS( 72)/' --INPUT/OUTPUT ERROR HAS OCCURRED DURING PROGRA
+     +M LIBRARY MANAGEMENT'/
+      DATA ERMSGS( 73)/' --INPUT/OUTPUT ERROR HAS OCCURRED WHILE READING
+     + WORKSTATION DESCRIPTION TABLE'/
+      DATA ERMSGS( 74)/' --ARITHMETIC ERROR HAS OCCURRED'/
+      DATA ERMSGS( 75)/' --ENUMERATION TYPE OUT OF RANGE'/
+      DATA ERMSGS( 76)/' --OUTPUT PARAMETER SIZE INSUFFICIENT'/
+      DATA ERMSGS( 77)/' --LIST OR SET ELEMENT NOT AVAILABLE'/
+      DATA ERMSGS( 78)/' --INVALID DATA RECORD'/
+      DATA ERMSGS( 79)/' --UNKNOWN ERROR CODE'/
+      DATA ERMSGS( 80)/' --NO ADDITIONAL WORKSTATIONS MAY BE ACTIVATED'/       
+      DATA ERMSGS( 81)/' --GKS SYSTEM ERROR--IMPROPER CONTINUATION SEQUE
+     +NCE'/
+      DATA ERMSGS( 82)/' --THE NCAR GKS IMPLEMENTATION REQUIRES THAT WIS
+     +S BE ACTIVE BEFORE A SEGMENT IS CREATED'/
+      DATA ERMSGS( 83)/' --ERROR OPENING DISK FILE'/
+      DATA ERMSGS( 84)/' --LOGICAL UNIT NUMBER FOR SEGMENT STORAGE CANNO
+     +T BE THE SAME AS THAT FOR METAFILE OUTPUT'/
+      DATA ERMSGS( 85)/' --MAXIMUM NUMBER OF ERROR MESSAGES EXCEEDED'/
+      DATA ERMSGS( 86)/' --ILLEGAL PLACEMENT OF A CALL TO ASSIGN A PICTU
+     +RE NAME'/
+      DATA ERMSGS( 87)/' --THIS FUNCTION NOT YET IMPLEMENTED FOR WORKSTA
+     +TIONS OF CATEGORY OUTPUT'/
+      DATA ERMSGS( 88)/' --CHARACTER STRING TOO LARGE'/
+      DATA ERMSGS( 89)/' --SYSTEM ERROR'/
+      DATA ERMSGS( 90)/' --ONLY ONE METAFILE WORKSTATION CAN BE OPEN AT 
+     +A TIME'/
+      DATA ERMSGS( 91)/' --X driver error: memory allocation in processi
+     +ng a character from a fontcap'/
+      DATA ERMSGS( 92)/' --X driver error: error opening fontcap'/
+      DATA ERMSGS( 93)/' --X driver error: error reading fontcap'/
+      DATA ERMSGS( 94)/' --X driver warning: invalid font index, using t
+     +he default font'/
+      DATA ERMSGS( 95)/' --X driver error: memory allocation error in cr
+     +eating device table'/
+      DATA ERMSGS( 96)/' --X driver error: too many open devices'/
+      DATA ERMSGS( 97)/' --X driver error: error in internal memory mana
+     +gement'/
+      DATA ERMSGS( 98)/' --X driver error: error in allocating memory fo
+     +r device dependent table'/
+      DATA ERMSGS( 99)/' --X driver error: DISPLAY environment variable 
+     +not set'/
+      DATA ERMSGS(100)/' --X driver error: error opening display'/
+      DATA ERMSGS(101)/' --X driver error: error getting window attribut
+     +es'/
+      DATA ERMSGS(102)/' --X driver error: error creating pixmap'/
+      DATA ERMSGS(103)/' --X driver error: cell array has zero width or 
+     +height'/
+      DATA ERMSGS(104)/' --X driver error: memory allocation error in pr
+     +ocessing cell array'/
+      DATA ERMSGS(105)/' --X driver error: error creating X image'/
+      DATA ERMSGS(106)/' --X driver error: memory allocation error in cr
+     +eating X image'/
+      DATA ERMSGS(107)/' --X driver error: pixel size must be byte multi
+     +ple'/
+      DATA ERMSGS(108)/' --PostScript error: Encapsulated PostScript can
+     + have only one page'/
+      DATA ERMSGS(109)/' --PostScript error: error in allocating memory 
+     +for device dependent table'/
+      DATA ERMSGS(110)/' --PostScript error: error opening output file'/
+      DATA ERMSGS(111)/' --PostScript warning: requested character not a
+     +vailable, asterisk plotted, use Plotchar'/
+      DATA ERMSGS(112)/' --X driver error: error in retrieving fontcap n
+     +ame'/
+      DATA ERMSGS(113)/' --X driver error: invalid index into GKS workst
+     +ation identifiers'/
+      DATA ERMSGS(114)/' --X driver error: color index exceeds maximum a
+     +llowed'/
+      DATA ERMSGS(115)/' --X driver error: cannot allocate color'/
+C
       DATA GNAM(001),GNAM(002),GNAM(003)/'GOPKS' ,'GCLKS' ,'GOPWK' /
       DATA GNAM(004),GNAM(005),GNAM(006)/'GCLWK' ,'GACWK' ,'GDAWK' /
       DATA GNAM(007),GNAM(008),GNAM(009)/'GCLRWK','GRSGWK','GUWK'  /
