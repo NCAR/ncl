@@ -1,5 +1,5 @@
 C
-C $Id: mapita.f,v 1.9 1999-04-02 23:00:28 kennison Exp $
+C $Id: mapita.f,v 1.10 1999-04-13 20:33:07 kennison Exp $
 C
       SUBROUTINE MAPITA (XLAT,XLON,IFST,IAMP,IGRP,IDLT,IDRT)
 C
@@ -174,19 +174,29 @@ C
       RMLO=RMUL
 10001 CONTINUE
 C
+C If there is not enough room in the area map for all the saved points,
+C plus all the interpolated points, plus a few more points, times a
+C fudge factor, don't change anything - just return an overflow error
+C to the caller.
+C
+      IF (.NOT.((NCRA+NOPI+5)*16.GE.IAMP(6)-IAMP(5)-1)) GO TO 10028
+      CALL SETER ('MAPITA - AREA-MAP ARRAY OVERFLOW',3,1)
+      RETURN
+10028 CONTINUE
+C
 C Return here for the next interpolated point.
 C
   101 CONTINUE
-      IF (.NOT.(IOPI.LT.NOPI)) GO TO 10028
+      IF (.NOT.(IOPI.LT.NOPI)) GO TO 10029
       IOPI=IOPI+1
       RLAT=RLATI(IOPI)
       RLON=RLONI(IOPI)
-      GO TO 10029
-10028 CONTINUE
+      GO TO 10030
+10029 CONTINUE
       IOPI=IOPI+1
       RLAT=XLAT
       RLON=XLON
-10029 CONTINUE
+10030 CONTINUE
 C
 C Project the point (RLAT,RLON) to (UNEW,VNEW), using the routine
 C MAPTRA, which returns 1.E12 for UNEW and VNEW in areas outside the
@@ -194,7 +204,7 @@ C perimeter and on the "wrong" side of a limb line.  Also save PNEW
 C for "crossover" testing.
 C
       CALL MAPTRA (RLAT,RLON,UNEW,VNEW)
-      IF (ICFELL('MAPITA',3).NE.0) RETURN
+      IF (ICFELL('MAPITA',4).NE.0) RETURN
       PNEW=P
 C
 C If the new point is invisible, we only have to draw something if it's
@@ -203,21 +213,21 @@ C interpolate to find a point at the edge of the visible area and then
 C extend the line we're drawing to that point.  In any case, we jump to
 C save information about the new point and get another.
 C
-      IF (.NOT.(UNEW.GE.1.E12)) GO TO 10030
+      IF (.NOT.(UNEW.GE.1.E12)) GO TO 10031
       IVIS=0
-      IF (.NOT.(IFST.NE.0.AND.IVSO.NE.0)) GO TO 10031
+      IF (.NOT.(IFST.NE.0.AND.IVSO.NE.0)) GO TO 10032
       CALL MPITVE (RLTO,RLNO,POLD,UOLD,VOLD,
      +             RLAT,RLON,PNEW,UNEW,VNEW,
      +             RLTE,RLNE,PAPE,UCOE,VCOE)
-      IF (ICFELL('MAPITA',4).NE.0) RETURN
+      IF (ICFELL('MAPITA',5).NE.0) RETURN
       XCRD=UCOE
       YCRD=VCOE
-      L10033=    1
-      GO TO 10033
+      L10034=    1
+      GO TO 10034
+10033 CONTINUE
 10032 CONTINUE
-10031 CONTINUE
       GO TO 103
-10030 CONTINUE
+10031 CONTINUE
 C
 C Otherwise, the new point is visible; things get more complicated.
 C
@@ -226,31 +236,31 @@ C
 C If the new point is a first point, initialize a new set of line draws,
 C then jump to save information about the new point and get another.
 C
-      IF (.NOT.(IFST.EQ.0)) GO TO 10034
+      IF (.NOT.(IFST.EQ.0)) GO TO 10035
       XCRD=UNEW
       YCRD=VNEW
-      L10036=    1
-      GO TO 10036
-10035 CONTINUE
+      L10037=    1
+      GO TO 10037
+10036 CONTINUE
       GO TO 103
-10034 CONTINUE
+10035 CONTINUE
 C
 C Otherwise, the new point is visible and it's not a first point; if the
 C last point was invisible, find a point at the edge of the visible area
 C and start a new set of line draws there.
 C
-      IF (.NOT.(IVSO.EQ.0)) GO TO 10037
+      IF (.NOT.(IVSO.EQ.0)) GO TO 10038
       CALL MPITVE (RLAT,RLON,PNEW,UNEW,VNEW,
      +             RLTO,RLNO,POLD,UOLD,VOLD,
      +             RLTO,RLNO,POLD,UOLD,VOLD)
-      IF (ICFELL('MAPITA',5).NE.0) RETURN
+      IF (ICFELL('MAPITA',6).NE.0) RETURN
       IVSO=1
       XCRD=UOLD
       YCRD=VOLD
-      L10036=    2
-      GO TO 10036
+      L10037=    2
+      GO TO 10037
+10039 CONTINUE
 10038 CONTINUE
-10037 CONTINUE
 C
 C The new point is visible; so was the old one.  If the projection type
 C is one of those for which "crossover" is not possible, just jump to
@@ -273,34 +283,34 @@ C
       CALL MPITVE (RLTO,RLNO,POLD,UOLD,VOLD,
      +             RLAT,RLON,PNEW,UNEW,VNEW,
      +             RLTE,RLNE,PAPE,UCOE,VCOE)
-      IF (ICFELL('MAPITA',6).NE.0) RETURN
+      IF (ICFELL('MAPITA',7).NE.0) RETURN
       XCRD=UCOE
       YCRD=VCOE
-      L10033=    2
-      GO TO 10033
-10039 CONTINUE
+      L10034=    2
+      GO TO 10034
+10040 CONTINUE
 C
       CALL MPITVE (RLAT,RLON,PNEW,UNEW,VNEW,
      +             RLTO,RLNO,POLD,UOLD,VOLD,
      +             RLTO,RLNO,POLD,UOLD,VOLD)
-      IF (ICFELL('MAPITA',7).NE.0) RETURN
+      IF (ICFELL('MAPITA',8).NE.0) RETURN
 C
 C Start a new series of line draws with the old point.
 C
       IVSO=1
       XCRD=UOLD
       YCRD=VOLD
-      L10036=    3
-      GO TO 10036
-10040 CONTINUE
+      L10037=    3
+      GO TO 10037
+10041 CONTINUE
 C
 C Continue the line to the new point.
 C
   102 XCRD=UNEW
       YCRD=VNEW
-      L10033=    3
-      GO TO 10033
-10041 CONTINUE
+      L10034=    3
+      GO TO 10034
+10042 CONTINUE
 C
 C Save information about the current point for the next call.
 C
@@ -321,29 +331,29 @@ C
 C
 C The following internal procedure is invoked to start a line.
 C
-10036 CONTINUE
-      IF (.NOT.(NCRA.GT.1)) GO TO 10042
+10037 CONTINUE
+      IF (.NOT.(NCRA.GT.1)) GO TO 10043
       CALL AREDAM (IAMP,XCRA,YCRA,NCRA,IGRP,IDLT,IDRT)
-      IF (ICFELL('MAPITA',8).NE.0) RETURN
-10042 CONTINUE
+      IF (ICFELL('MAPITA',9).NE.0) RETURN
+10043 CONTINUE
       XCRA(1)=XCRD
       YCRA(1)=YCRD
       NCRA=1
-      GO TO (10035,10038,10040) , L10036
+      GO TO (10036,10039,10041) , L10037
 C
 C The following internal procedure is invoked to continue a line.
 C
-10033 CONTINUE
-      IF (.NOT.(NCRA.EQ.100)) GO TO 10043
+10034 CONTINUE
+      IF (.NOT.(NCRA.EQ.100)) GO TO 10044
       CALL AREDAM (IAMP,XCRA,YCRA,NCRA,IGRP,IDLT,IDRT)
-      IF (ICFELL('MAPITA',9).NE.0) RETURN
+      IF (ICFELL('MAPITA',10).NE.0) RETURN
       XCRA(1)=XCRA(100)
       YCRA(1)=YCRA(100)
       NCRA=1
-10043 CONTINUE
+10044 CONTINUE
       NCRA=NCRA+1
       XCRA(NCRA)=XCRD
       YCRA(NCRA)=YCRD
-      GO TO (10032,10039,10041) , L10033
+      GO TO (10033,10040,10042) , L10034
 C
       END
