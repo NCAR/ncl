@@ -3878,7 +3878,7 @@ struct _NclSelectionRecord* sel_ptr;
 				}
 				step = step->next;
 			}
-			thefile->file.file_atts_id = att_id;
+			thefile->file.var_att_ids[index] = att_id;
 			udata.ptrval = (void*)NclMalloc(sizeof(FileCallBackRec));
 			((FileCallBackRec*)udata.ptrval)->thefileid = thefile->obj.id;
 			((FileCallBackRec*)udata.ptrval)->theattid = att_id;

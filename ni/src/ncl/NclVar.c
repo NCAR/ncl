@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.30 1996-07-16 20:58:45 ethan Exp $
+ *      $Id: NclVar.c,v 1.31 1996-07-24 23:41:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -834,8 +834,8 @@ struct _NclObjRec*	self;
 		}
 	}
 	if(self_var->var.att_id != -1) {
-		_NclDelParent(_NclGetObj(self_var->var.att_id),(NclObj)self_var);
 		_NhlCBDelete(self_var->var.att_cb);
+		_NclDelParent(_NclGetObj(self_var->var.att_id),(NclObj)self_var);
 	}
 
 	

@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.33 1996-07-23 23:03:02 ethan Exp $
+ *      $Id: Symbol.c,v 1.34 1996-07-24 23:41:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1331,12 +1331,7 @@ int copy_data;
 						}
 						out_data = (NclExtValueRec*)NclMalloc(sizeof(NclExtValueRec));
 						out_data->constant = 0;
-						if(copy_data) {
-							out_data->value = (void*)NclMalloc(tmp_md->multidval.totalsize);
-							memcpy(out_data->value,tmp_md->multidval.val,tmp_md->multidval.totalsize);
-						} else {
-							out_data->value = tmp_md->multidval.val;
-						}
+						out_data->value = tmp_md->multidval.val;
 						out_data->totalelements = tmp_md->multidval.totalelements;
 						out_data->elem_size = tmp_md->multidval.totalsize/tmp_md->multidval.totalelements;
 						out_data->type = (int)tmp_md->multidval.data_type;
@@ -1398,12 +1393,7 @@ int copy_data;
 						}
 						out_data = (NclExtValueRec*)NclMalloc(sizeof(NclExtValueRec));
 						out_data->constant = 0;
-						if(copy_data) {
-							out_data->value = (void*)NclMalloc(tmp_md->multidval.totalsize);
-							memcpy(out_data->value,tmp_md->multidval.val,tmp_md->multidval.totalsize);
-						} else {
-							out_data->value = tmp_md->multidval.val;
-						}
+						out_data->value = tmp_md->multidval.val;
 						out_data->totalelements = tmp_md->multidval.totalelements;
 						out_data->elem_size = tmp_md->multidval.totalsize/tmp_md->multidval.totalelements;
 						out_data->type = (int)tmp_md->multidval.data_type;
@@ -1463,12 +1453,7 @@ int copy_data;
 						}
 						out_data = (NclExtValueRec*)NclMalloc(sizeof(NclExtValueRec));
 						out_data->constant = 0;
-						if(copy_data) {
-							out_data->value = (void*)NclMalloc(tmp_md->multidval.totalsize);
-							memcpy(out_data->value,tmp_md->multidval.val,tmp_md->multidval.totalsize);
-						} else {
-							out_data->value = tmp_md->multidval.val;
-						}
+						out_data->value = tmp_md->multidval.val;
 						out_data->totalelements = tmp_md->multidval.totalelements;
 						out_data->elem_size = tmp_md->multidval.totalsize/tmp_md->multidval.totalelements;
 						out_data->type = (int)tmp_md->multidval.data_type;
@@ -1523,12 +1508,7 @@ int copy_data;
 						}
 						out_data = (NclExtValueRec*)NclMalloc(sizeof(NclExtValueRec));
 						out_data->constant = 0;
-						if(copy_data) {
-							out_data->value = (void*)NclMalloc(tmp_md->multidval.totalsize);
-							memcpy(out_data->value,tmp_md->multidval.val,tmp_md->multidval.totalsize);
-						} else {
-							out_data->value = tmp_md->multidval.val;
-						}
+						out_data->value = tmp_md->multidval.val;
 						out_data->totalelements = tmp_md->multidval.totalelements;
 						out_data->elem_size = tmp_md->multidval.totalsize/tmp_md->multidval.totalelements;
 						out_data->type = (int)tmp_md->multidval.data_type;
@@ -2271,6 +2251,7 @@ void _NclFreeApiDataList
 				NclFree(list->u.file->var_names);
 				NclFree(list->u.file);
 		}
+		break;
 		case HLU_LIST: {
 			if(list->u.hlu->objs != NULL) 
 				NclFree(list->u.hlu->objs);
@@ -2360,12 +2341,7 @@ int copy_data;
 					}
 					out_data = (NclExtValueRec*)NclMalloc(sizeof(NclExtValueRec));
 					out_data->constant = 0;
-					if(copy_data) {
-					out_data->value = (void*)NclMalloc(tmp_md->multidval.totalsize);
-						memcpy(out_data->value,tmp_md->multidval.val,tmp_md->multidval.totalsize);
-					} else {
-						out_data->value = tmp_md->multidval.val;
-					}
+					out_data->value = tmp_md->multidval.val;
 					out_data->totalelements = tmp_md->multidval.totalelements;
 					out_data->elem_size = tmp_md->multidval.totalsize/tmp_md->multidval.totalelements;
 					out_data->type = (int)tmp_md->multidval.data_type;
@@ -2416,12 +2392,7 @@ int copy_data;
 					}
 					out_data = (NclExtValueRec*)NclMalloc(sizeof(NclExtValueRec));
 					out_data->constant = 0;
-					if(copy_data) {
-					out_data->value = (void*)NclMalloc(tmp_md->multidval.totalsize);
-						memcpy(out_data->value,tmp_md->multidval.val,tmp_md->multidval.totalsize);
-					} else {
-						out_data->value = tmp_md->multidval.val;
-					}
+					out_data->value = tmp_md->multidval.val;
 					out_data->totalelements = tmp_md->multidval.totalelements;
 					out_data->elem_size = tmp_md->multidval.totalsize/tmp_md->multidval.totalelements;
 					out_data->type = (int)tmp_md->multidval.data_type;
@@ -2473,12 +2444,7 @@ int copy_data;
 					}
 					out_data = (NclExtValueRec*)NclMalloc(sizeof(NclExtValueRec));
 					out_data->constant = 0;
-					if(copy_data) {
-						out_data->value = (void*)NclMalloc(tmp_md->multidval.totalsize);
-						memcpy(out_data->value,tmp_md->multidval.val,tmp_md->multidval.totalsize);
-					} else {
-						out_data->value = tmp_md->multidval.val;
-					}
+					out_data->value = tmp_md->multidval.val;
 					out_data->totalelements = tmp_md->multidval.totalelements;
 					out_data->elem_size = tmp_md->multidval.totalsize/tmp_md->multidval.totalelements;
 					out_data->type = (int)tmp_md->multidval.data_type;
