@@ -1,5 +1,5 @@
 /*
- *      $Id: funcgrid.c,v 1.8 2000-05-16 01:59:22 dbrown Exp $
+ *      $Id: funcgrid.c,v 1.9 2001-02-07 02:44:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1272,13 +1272,13 @@ SaveExpressionString(
 {
 	NgDataProfile prof =  fgp->data_profile;
 	NgVarData vdata = prof->ditems[index]->vdata;
-	NhlBoolean	eval;
+	NgEvalAction	eval;
 
 	eval = prof->ditems[index]->save_to_compare ? 
-		_NgCONDITIONAL_EVAL : _NgNOEVAL;
+		_NgNOEVAL :_NgCONDITIONAL_EVAL ;
 
 	return NgSetExpressionVarData
-		(fgp->go->base.id,vdata,var_string,True,True);
+		(fgp->go->base.id,vdata,var_string,eval,True);
 }
 
 static NhlBoolean 
