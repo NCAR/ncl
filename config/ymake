@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.32 1998-06-14 21:45:44 haley Exp $
+#	$Id: ymake,v 1.33 1999-03-09 22:39:32 haley Exp $
 #
 ######################################################################
 #
@@ -371,6 +371,7 @@ case    Linux:
 
     switch ("$mach")
     case    i*86:
+    case    alpha:
         set model = $mach
         set arch = $mach
         breaksw
@@ -450,6 +451,7 @@ case    UNICOS:
                 breaksw
         case    C90:
         case    J90:
+        case    TS:
                         set arch = $mach[1]
                 breaksw
                 default:
