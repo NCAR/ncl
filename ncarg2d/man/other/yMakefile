@@ -1,0 +1,53 @@
+#
+#	$Id: yMakefile,v 1.1 1993-03-11 15:23:21 haley Exp $
+#
+NCARG	= ../../..
+
+MAN1 = cgmtrans findg ftrans ncargcc ncargcex ncargex ncargf77 ncargrun \
+	ncargsrc ncargversion pre2ncgm psblack pswhite
+MAN3 = ncarg_cbind ncarg_gks ncarg_gks_cbind
+
+
+MAN = $(MAN1) $(MAN3)
+
+all:
+
+preformatted:
+	@for name in $(MAN); do\
+	echo "Formatting $$name.m"; \
+	nroff -man $$name.m >$$name.p;\
+	done
+
+#if defined(CRAY) || defined(sgi) || defined(ardent)
+# Install preformatted troff documents on systems without troff
+FORMAT_EXT	= .p
+#else
+FORMAT_EXT	= .m
+#endif
+
+#ifdef	InstallManToLocal
+
+install::
+	@for name in $(MAN); do\
+	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
+	$(MANLPATH)/$$name.$(MANL_SECTION) );\
+	done
+
+#else	/* ! InstallManToLocal	*/
+
+install::
+	@for name in $(MAN1); do\
+	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
+	$(MAN1PATH)/$$name.$(MAN1_SECTION) );\
+	done
+
+install::
+	@for name in $(MAN3); do\
+	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
+	$(MAN3PATH)/$$name.$(MAN3_SECTION) );\
+	done
+
+#endif	/* InstallManToLocal	*/
+
+MakefileTarget
+CleanTarget
