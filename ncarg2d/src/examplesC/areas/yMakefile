@@ -1,8 +1,9 @@
 #
-#	$Id: yMakefile,v 1.1 1994-05-13 14:25:20 haley Exp $
+#	$Id: yMakefile,v 1.2 1994-07-15 21:36:14 haley Exp $
 #
 
-CSRCS = c_cardb2.c c_tareas.c
+CSRCS = c_arex02.c c_cardb1.c c_cardb2.c c_caredg.c c_carfill.c c_carline.c \
+		c_carmap.c c_tareas.c
 
 SED_SRCS = c_arex01.c
 
