@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-cdrom,v 1.15 1998-01-14 21:55:29 haley Exp $
+#      $Id: make-cdrom,v 1.16 1998-08-04 21:21:09 haley Exp $
 #
 #########################################################################
 #									#
@@ -218,9 +218,9 @@ sub	get_archs {
 ##
 
 
-$device = "/dev/rst0";		# tape device
-$nrdevice = "/dev/nrst0";		# no-rewind tape device
-$rhost = "dillon";		# remote tapedrive host
+$device = "/dev/rmt/0";		# tape device. MUST be /dev/rmt/0 for Solaris.
+$nrdevice = "/dev/rmt/0n";		# no-rewind tape device
+$rhost = "ragtime";		# remote tapedrive host
 
 $do_inter = 0;			# do interactive mode?
 $build_root = "/fs/scd/home1/ncargd/dist/binaries";	
