@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.20 1999-10-07 21:26:19 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.21 1999-10-11 15:36:55 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -97,11 +97,14 @@ end
 ; Given a set of points represented by x and y, add interpolated values ;
 ; where the line crosses at y = ref_line. x and y must be the same      ;
 ; length, and ref_line must either be a scalar or the same length as x  ;
-; and y.                                                                ;
+; and y. ref_line can be an array of reference values, as long as there ;
+; is only one X/Y curve.                                                ;
+;                                                                       ;
+; The dimension size of each interpolated set of points is returned.    ;
 ;***********************************************************************;
 
 function ref_line_interp(x,y,xinterp,yinterp,ref_line)
-local nlines, i, j, location, xnew, ynew, npts
+local ncurves, nref_lines, nlines, i, j, location, xnew, ynew, npts
 begin
 
 ; Check for missing values.
@@ -119,39 +122,46 @@ begin
 
 ; Convert x and y into two dimensional arrays so we don't have to
 ; test for whether we have one line or multiple lines.  Convert
-; ref_line to a 1-d array.
-
+; ref_line to a 1-d array (if it isn't already).
+;
   ndimsy = dimsizes(dimsizes(y))
   ndimsx = dimsizes(dimsizes(x))
-  ndimsref = dimsizes(ref_line)
-
+  nref_lines = dimsizes(ref_line)
+  
+;  if(ndimsy.gt.1.and.ndimsy.ne.nref_lines)
+;    print("ref_line_interp: Fatal: if there are multiple curves, there must be")
+;    print("one reference line per curve.")
+;    exit
+;  end if
+    
   if(ndimsy.eq.1)
-    nlines     = 1
+    ncurves    = 1
     nptsy      = dimsizes(y)
 
-    ynew       = new((/1,nptsy/),float,ymsg)
-    ynew(0,:)  = y
+    ynew       = new((/nref_lines,nptsy/),float,ymsg)
+    do i = 0,nref_lines-1
+      ynew(i,:)  = y
+    end do
   else
-    nlines     = dimsizes(y(:,0))
+    ncurves    = dimsizes(y(:,0))
     nptsy      = dimsizes(y(0,:))
 
     ynew       = y
   end if
+
+  nlines = max((/ncurves,nref_lines/))
+
   if(ndimsx.eq.1)
-    xnew       = new((/nlines,nptsy/),float,xmsg)
+    xnew = new((/nlines,nptsy/),float,xmsg)
     do i = 0,nlines-1
-      xnew(i,:)  = x
+        xnew(i,:)  = x
     end do
   else
-    xnew       = x
+    xnew = x
   end if
 
-  if(ndimsref.eq.1)
-    refnew  = new((/nlines/),float)
-    refnew  = ref_line
-  else
-    refnew  = ref_line
-  end if
+  refnew  = new((/nlines/),float)
+  refnew  = ref_line
 
   xinterp(:,0) = xnew(:,0)
   yinterp(:,0) = ynew(:,0)
@@ -3170,8 +3180,8 @@ local calldraw, callframe, res1_tmp, res2_tmp
 begin
   res1_tmp  = get_resources(res1)   ; Transfer attributes
   res2_tmp  = get_resources(res2)   ; Transfer attributes
-; If gsnYRefLine is set to some value, then a reference line will be    ;
-; drawn at this value. In addition, if gsnAboveYRefLineColor and/or     ;
+  res1_tmp  = True 
+  res2_tmp  = True 
   
   calldraw  = get_res_value(res1_tmp,"gsnDraw", True)
   callframe = get_res_value(res1_tmp,"gsnFrame",True)
@@ -3189,7 +3199,7 @@ begin
   res2_tmp@gsnFrame = False
 local res, xy_object, res2, xfontf, yfontf, font_height, \
 lft_str_object, ctr_str_object, rgt_str_object, calldraw, callframe, \
-left_string, center_string, right_string, main_zone
+left_string, center_string, right_string, main_zone, nlines, ncurves
   if(get_res_value(res2_tmp,"gsnAddCyclic",True))
     datanew = gsn_add_cyclic_point(data2)
   else
@@ -3203,14 +3213,25 @@ left_string, center_string, right_string, main_zone
   end if
 
   check_for_y_lat_coord(datanew,res2_tmp,"contour")
-    yref_line_above= -1       ; Fill color above Y ref line
-    yref_line_below= -1       ; Fill color below Y ref line
     res2 = resources
 
   set_attr(res2_tmp,"cnLineLabelBackgroundColor",-1)
   if(.not.isatt(res2_tmp,"cnInfoLabelOrthogonalPosF"))
     check_for_draw_and_frame(res2,calldraw,callframe)
       else
+; Calculate number of X and Y points.
+      end if
+    else
+      set_attr(res2_tmp,"cnInfoLabelOrthogonalPosF",0.12)
+    end if
+  end if
+
+      nptsy   = dimsizes(y)
+
+  overlay(contour1,contour2)
+      nptsy   = dimsizes(y(0,:))
+;               resources: optional resources                           ;
+;                                                                       ;
 ; This function creates and draws a titled XY plot to the workstation   ;
 ; "wks" (the variable returned from a previous call to "gsn_open_wks"). ;
 ; "resources" is an optional list of  resources. The Id of the map plot ;
@@ -3227,29 +3248,77 @@ left_string, center_string, right_string, main_zone
 ; drawn at this value(s). In addition, if gsnAboveYRefLineColor and/or  ;
 ; gsnBelowYRefLineColor is set, the polygons above and below the        ;
 ; reference line will be filled in these colors.                        ;
+;                                                                       ;
+
+        if(.not.(ncurves.eq.nyref.or.ncurves.eq.1.or.nyref.eq.1))
+          print("gsn_csm_xy: Fatal: the number of reference lines must either equal the number")
+          print("of curves, or else the number of curves and/or reference lines must be one.")
+          exit
+        end if
 
 ; If gsnXRefLine is set to some value, then a reference line will be    ;
+; drawn at this value.                                                  ;
+;                                                                       ;
+; If gsnXYBarChart is set to True, then a bar chart will be drawn       ;
+; instead of a line plot. You need to also set gsnYRefLine in order to  ;
+; use this resource.                                                    ;
+;                                                                       ;
+; The resource gsnXYBarChartBarWidth can be used to specify the width   ;
+; of each bar. The smallest dx is used by default.                      ;
+;                                                                       ;
+            exit
+;                                                                       ;
+; If the user sets lgLabelFontHeightF to change the size of the legend  ;
+; labels, then lgAutoManage will be set to False (unless it is being    ;
+; set explicitly by the user.                                           ;
+;                                                                       ;
+
+function gsn_csm_xy(wks:graphic,x:numeric,y:numeric,resources:logical)
+local res, xy_object, res2, xfontf, yfontf, font_height, calldraw, nlines, \
 callframe, left_string, center_string, right_string, main_zone, ncurves, \
-          delete(yref_line_above)
+yabove, ybelow, ya_ind, yb_ind, xinterp, yinterp, bar_chart
+begin
+            print("gsn_csm_xy: Fatal: there must either be an above-line fill color for every reference line, or one global above-line fill color specified ")
+            exit
+    main_zone     = 2         ; Zone for main title (may change later)
     xref_line_on  = False     ; X reference line flag
     yref_line_on  = False     ; Y reference line flag
     yref_fill_on  = False     ; Whether to fill above/below Y ref line.
+    res2          = get_resources(resources)
+          yref_line_above = "transparent"  ; defaults to no fill.
     center_string = False
+    right_string  = False
+    bar_chart     = False
+
 ; Check if frame and/or draw are not supposed to be called.
-          delete(yref_line_below)
+
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+            exit
+
           yref_line_below = res2@gsnBelowYRefLineColor
 
           delete(res2@gsnBelowYRefLineColor)
+    ndimsy = dimsizes(dimsizes(y))
+          yref_line_below = "transparent"    ; defaults to no fill.
         end if
       end if
       if(isatt(res2,"gsnShape").and.res2@gsnShape)
-; Check if gsnYRefLine set.
+        main_zone     = main_zone+1 ; Zone for main title
       end if
 
 ; Check if gsnYRefLine set.
         xref_line    = res2@gsnXRefLine
+      if(isatt(res2,"gsnYRefLine"))
         yref_line_on = True
         delete(res2@gsnXRefLine)
+
+        if(isatt(res2,"gsnXRefLineColor"))
+          xref_line_color = res2@gsnXRefLineColor
+          delete(res2@gsnXRefLineColor)
+        else
+          xref_line_color = "foreground"
+        end if
         nyref        = dimsizes(yref_line)
         delete(res2@gsnYRefLine)
 ;
@@ -3277,19 +3346,6 @@ callframe, left_string, center_string, right_string, main_zone, ncurves, \
                    dimsizes(res2@gsnAboveYRefLineColor).eq.1))
             print("gsn_csm_xy: Fatal: there must either be an above-line fill color for every reference line, or one global above-line fill color specified")
             return
-; Calculate number of X and Y points.
-
-    ndimsy = dimsizes(dimsizes(y))
-    ndimsx = dimsizes(dimsizes(x))
-
-    if(ndimsy.eq.1)
-      nlines = 1
-      nptsy  = dimsizes(y)
-    else
-      nlines = dimsizes(y(:,0))
-      nptsy  = dimsizes(y(0,:))
-    end if
-
 ; Check if we want fill above or below Y reference value.
           yref_fill_on    = True
     if(yref_fill_on)
@@ -3298,7 +3354,6 @@ callframe, left_string, center_string, right_string, main_zone, ncurves, \
         end if
 ;
 
-      npts         = new((/nlines/),integer)
                    dimsizes(res2@gsnBelowYRefLineColor).eq.1))
         xmsg = x@_FillValue
       else
@@ -3309,8 +3364,8 @@ callframe, left_string, center_string, right_string, main_zone, ncurves, \
       else
         ymsg = 1.e36
         else
-      xinterp      = new((/nlines,2*nptsy/),float,xmsg)
-      yinterp      = new((/nlines,2*nptsy/),float,ymsg)
+      xinterp      = new((/nyref,2*nptsy/),float,xmsg)
+      yinterp      = new((/nyref,2*nptsy/),float,ymsg)
       npts = ref_line_interp(x,y,xinterp,yinterp,yref_line)
 ;
       xinterp = x
@@ -3320,25 +3375,11 @@ callframe, left_string, center_string, right_string, main_zone, ncurves, \
 ;
           nyb = 2 * (npts-1) + 1
 
-
-      if(dimsizes(xref_line).eq.1)
-        xref = new((/nlines/),float)
-        xref = fspan(xref_line,xref_line,nlines)
-      else
-        xref = xref_line
-      end if
           yinterp = new((/ncurves,nyb/),double,1e36)
           xinterp = new((/ncurves,nyb/),double,1e36)
 
           if(isatt(x,"_FillValue"))
             xinterp@_FillValue = x@_FillValue
-
-      if(dimsizes(yref_line).eq.1)
-        yref = new((/nlines/),float)
-        yref = fspan(yref_line,yref_line,nlines)
-      else
-        yref = yref_line
-      end if
           end if
           if(isatt(y,"_FillValue"))
             yinterp@_FillValue = y@_FillValue
@@ -3356,9 +3397,17 @@ callframe, left_string, center_string, right_string, main_zone, ncurves, \
           ybelow = new((/ncurves,5*npts/),double,1e36)
 ;
     if(yref_fill_on)
-      do i=0,nlines-1
+; to gsn_xy routine. Make the 5h point missing, since the 5th point
+; closes the polygon, and we only want an outline here.
+          na_max  = max(nabove)
+          nb_max  = max(nbelow)
+          nab_max = na_max + nb_max
+
+          if(na_max.le.0.and.nb_max.le.0)
+            print("gsn_csm_xy: Fatal: There are no values above or below the chosen reference line.")
+            print("Cannot draw a bar chart.")
         fill_xy(wks,xy_object,xinterp(i,0:npts(i)-1),yinterp(i,0:npts(i)-1),\
-                yref(i),yref_line_above,yref_line_below)
+                yref_line(i),fill_above,fill_below)
 
             if(na_max.gt.0)
               xinterp(0:2*ncurves-1:2,0:na_max-1) = xabove(:,0:na_max-1)
@@ -3366,12 +3415,15 @@ callframe, left_string, center_string, right_string, main_zone, ncurves, \
     res2@gsnXAxis = True
 
     delete(res2@gsnXYPlot)
-      gsres@gsLineColor = "black"
 
       yline = (/min(yinterp),max(yinterp)/)
 
-      do i=0,nlines-1
-        xline = fspan(xref(i),xref(i),2)
+    if(yref_fill_on.and..not.bar_chart)
+; Make sure polygons get filled before xy plot is drawn. This way,
+; any lines will be drawn *after* the fill. This makes the filled 
+; polygons look better if the lines are drawn thicker.
+;
+      xyres_tmp = True
         gsn_polyline(wks,xy_object,xline,yline,gsres)
 
       fill_above = yref_line_above(0)
@@ -3382,12 +3434,14 @@ callframe, left_string, center_string, right_string, main_zone, ncurves, \
           fill_above = yref_line_above(i)
         end if
                                      xinterp(i,0:new_npts(i)-1), \
-      gsres@gsLineColor = "black"
-
       xline = (/min(xinterp),max(xinterp)/)
       end do
-      do i=0,nlines-1
-        yline = fspan(yref(i),yref(i),2)
+    end if
+; Fill bar charts.
+
+    if(yref_fill_on.and.bar_chart.and..not.bar_outline_only)
+      gsres = True
+        yline = fspan(yref_line(i),yref_line(i),2)
         gsn_polyline(wks,xy_object,xline,yline,gsres)
 
           if(dimsizes(yref_line_above).gt.1)
