@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.23 1992-09-09 15:06:32 clyne Exp $
+ *	$Id: main.c,v 1.24 1992-09-16 14:18:40 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -255,7 +255,8 @@ int	process(record, batch, sleep_time, verbose, do_all)
  *
  *              interupt signal handler
  */
-static	void    sigint_handler()
+static	void    sigint_handler(sig)
+	int	sig;
 {
 	close_metafile();
 	close_ctrans();
@@ -387,7 +388,7 @@ char	**argv;
 		SetDefaultPalette(opt.pal);
 	}
 
-	if (!batch) (void)signal(SIGINT,sigint_handler);
+	if (!batch) (void)signal(SIGINT,&sigint_handler);
 
 
 	/*

@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.18 1992-09-09 15:09:57 clyne Exp $
+ *	$Id: commands.c,v 1.19 1992-09-16 14:24:54 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -83,7 +83,8 @@ static	CtransRC	plotit(frame)
 	return(ctrc);
 }
 
-static	void	sigint_handler()
+static	void	sigint_handler(sig)
+	int	sig;
 {
 	loopAbort = TRUE;
 }
@@ -455,7 +456,7 @@ int	iCPlot(ic)
 	/*
 	 * enable interupts to abort plotting
 	 */
-	istat = signal(SIGINT, sigint_handler);
+	istat = signal(SIGINT, &sigint_handler);
 	loopAbort = FALSE;
 	last_frame = 0;
 

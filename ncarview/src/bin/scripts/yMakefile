@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1992-09-11 17:50:51 clyne Exp $
+#	$Id: yMakefile,v 1.5 1992-09-16 14:24:32 clyne Exp $
 #
 
 NCARG		= ../../../..
@@ -43,9 +43,9 @@ SUN_SPECIFIER	= sunview
 #       local libraries  (All of these are in $(LIBPATH).)
 #
 CTRANS_LIBS_A   = libictrans.o libctrans.o libcgm.a libncarv.a \
-		  libncarg_ras.a libdf.a
+		  libncarg_ras.a
 
-GENLIBS 	= -lm
+GENLIBS 	= -ldf -lm
 
 DCGILIBS	= -lcgi -lsuntool -lsunwindow -lpixrect
 
