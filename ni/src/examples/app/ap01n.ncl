@@ -1,5 +1,5 @@
 ;
-;      $Id: ap01n.ncl,v 1.1 1995-09-28 14:24:57 haley Exp $
+;      $Id: ap01n.ncl,v 1.2 1997-09-30 16:26:39 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -55,7 +55,7 @@ if (NCGM .eq. 1) then
 ;
 ; Create an NCGM workstation object.
 ;
-  workid = create "ap01Work" ncgmWorkstationClass defaultapp
+  workid = create "x" ncgmWorkstationClass defaultapp
       "wkMetaName" : "ap01n.ncgm"
   end create
 else
@@ -63,7 +63,7 @@ else
 ;
 ; Create an X workstation object.
 ;
-    workid = create "ap01Work" xWorkstationClass defaultapp
+    workid = create "x" xWorkstationClass defaultapp
       "wkPause" : "True"
     end create
   else
@@ -71,7 +71,7 @@ else
 ;
 ; Create a PostScript workstation object.
 ;
-      workid = create "ap01Work" psWorkstationClass defaultapp
+      workid = create "x" psWorkstationClass defaultapp
         "wkPSFileName" : "ap01n.ps"
       end create
     end if

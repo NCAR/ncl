@@ -28,11 +28,11 @@ C
 
       integer appid,workid,textid
       integer rlist,ierr
-      integer NCGM,X11,PS
+      integer NCGM, X11, PS
 
-      NCGM = 1
-      X11 = 0
-      PS = 0
+      NCGM=0
+      X11=1
+      PS= 0
 
 C
 C Initialize the HLU library.

@@ -48,7 +48,8 @@ main()
          */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./ap01c.ncgm");
-        NhlCreate(&workid,"x",NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
+        NhlCreate(&workid,"x",NhlncgmWorkstationClass,NhlDEFAULT_APP,
+				  rlist);
     }
         else if (X11) {
         /*
@@ -56,7 +57,8 @@ main()
          */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlCreate(&workid,"x",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
+        NhlCreate(&workid,"x",NhlxWorkstationClass,NhlDEFAULT_APP,
+				  rlist);
         }
     else if (PS) {
         /*
@@ -64,7 +66,8 @@ main()
          */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"./ap01c.ps");
-        NhlCreate(&workid,"x",NhlpsWorkstationClass,NhlDEFAULT_APP,rlist);
+        NhlCreate(&workid,"x",NhlpsWorkstationClass,NhlDEFAULT_APP,
+				  rlist);
     }
 
     /*
