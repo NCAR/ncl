@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.61 1997-03-14 20:26:00 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.62 1997-03-26 19:57:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -5224,7 +5224,7 @@ NhlErrorTypes _NclIUnDef
 ()
 #endif
 {
-	NclStackEntry arg;
+	NclStackEntry arg,*var,data;
 	NclMultiDValData tmp_md;
 	int i;
 	logical *outval;
@@ -5247,16 +5247,87 @@ NhlErrorTypes _NclIUnDef
 		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
 			if(vals[i] != tmp_md->multidval.missing_value.value.stringval) {
 				s = _NclLookUp(NrmQuarkToString(vals[i]));
-				if(( s != NULL)&&(s->level > 0)) {
-					s->type = UNDEF;
+				if( s != NULL) {
+					switch(s->type) {	
+						case PROC:
+						case EPROC:
+						case NPROC:
+						case PIPROC:
+						case IPROC:
+						case FUNC:
+						case EFUNC:
+						case NFUNC:
+						case IFUNC:
+						case UNDEF:
+							s->type = UNDEF;
+							break;
+						case VAR:
+						case FVAR:
+							var = _NclRetrieveRec(s,DONT_CARE);
+							if((var != NULL)&&(var->u.data_var != NULL)) {
+								if(var->u.data_var->var.var_type == NORMAL) {
+/*
+* Can't destroy symbol since it may be referenced from the instruction
+* sequence. Changing it to UNDEF should do the trick though
+*/
+									_NclChangeSymbolType(s,UNDEF);
+									data.kind = NclStk_NOVAL;
+									data.u.data_obj = NULL;
+									_NclPutRec(s,&data);
+								}
+								_NclDestroyObj((NclObj)var->u.data_var);
+								var->u.data_var = NULL;
+								var->kind = NclStk_NOVAL;
+							}
+							break;
+						default:
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"undef: attempting to undefine a reserved word");
+						break;
+					}
 				}
 			} 
 		}
 	} else {
 		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
 			s = _NclLookUp(NrmQuarkToString(vals[i]));
-			if(( s != NULL)&&(s->level > 0)) {
-				s->type = UNDEF;
+			if(s!=NULL){
+
+			 		switch(s->type) {	
+						case PROC:
+						case EPROC:
+						case NPROC:
+						case PIPROC:
+						case IPROC:
+						case FUNC:
+						case EFUNC:
+						case NFUNC:
+						case IFUNC:
+						case UNDEF:
+							s->type = UNDEF;
+							break;
+						case VAR:
+						case FVAR:
+							var = _NclRetrieveRec(s,DONT_CARE);
+							if((var != NULL)&&(var->u.data_var != NULL)) {
+								if(var->u.data_var->var.var_type == NORMAL) {
+/*
+* Can't destroy symbol since it may be referenced from the instruction
+* sequence. Changing it to UNDEF should do the trick though
+*/
+									_NclChangeSymbolType(s,UNDEF);
+									data.kind = NclStk_NOVAL;
+									data.u.data_obj = NULL;
+									_NclPutRec(s,&data);
+								}
+								_NclDestroyObj((NclObj)var->u.data_var);
+								var->u.data_var = NULL;
+								var->kind = NclStk_NOVAL;
+							}
+							break;
+						default:
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"undef: attempting to undefine a key word");
+						break;
+					}
 			}
 		}
 	}
