@@ -24,7 +24,7 @@ and display. NCL commands can be executed one at a time from the
 command line, or can be gathered into a series of commands, called a
 script, and executed in a batch mode.
 .sp
-4. The prototype GUI interface is an X11-based "point and click"
+4. The prototype GUI interface (xproto) is an X11-based "point and click"
 interface. The prototype qualifier means that this version of the GUI
 will not be supported, but is there if you can use it.
 .sp
@@ -83,6 +83,14 @@ Commands which facilitate compiling and running with NCAR Graphics:
 .BR ncargcc(1NCARG),
 .BR ncargpath(1NCARG),
 .BR ncargrun(1NCARG)
+.sp
+NCAR Command Language:
+.sp
+.BR ncl
+.sp
+Prototype GUI:
+.sp
+.BR xproto
 .sp
 Fortran utilities in NCAR Graphics:
 .sp
