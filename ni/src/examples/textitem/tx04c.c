@@ -159,7 +159,7 @@ main()
     NhlDraw(text_item_id);
 /*
  * Below are examples using the function control characters. In each
- * iteration of the loop a new string is set using call nhlfsetvalues.
+ * iteration of the loop a new string is set using call NhlSetValues.
  * In order to demonstrate what the value of 'txString' is, the
  * function code is temporarily changed causing the entire contents of
  * 'txString' to be drawn.
