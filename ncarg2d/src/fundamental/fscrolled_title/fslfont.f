@@ -1,13 +1,13 @@
 C
 C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
 C
-      CALL GOPKS (6,IDUM) 
+      CALL GOPKS (6,IDUM)
       CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
+      CALL GACWK (1)
 C
 C INVOKE DEMO DRIVER
 C
-      CALL SLFONT(IERR)
+      CALL FSLFNT(IERR)
 C
 C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
@@ -16,31 +16,31 @@ C
       CALL GCLKS
       STOP
       END
-      SUBROUTINE SLFONT (IERROR)
+      SUBROUTINE FSLFNT (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of the
-C                        routine SLFONT.
+C                        routine FSLFNT.
 C
-C USAGE                  CALL SLFONT (IERROR)
+C USAGE                  CALL FSLFNT (IERROR)
 C
 C ARGUMENTS
 C
 C ON OUTPUT              IERROR
 C                          An integer variable
-C                            = 0  If there is a normal exit from SLFONT
+C                            = 0  If there is a normal exit from FSLFNT
 C                            = 1  Otherwise
 C
-C I/O                    If there is a normal exit from SLFONT,
+C I/O                    If there is a normal exit from FSLFNT,
 C                        the message
 C
-C                          SLFONT TEST SUCCESSFUL . . . SEE PLOTS TO
+C                          FSLFNT TEST SUCCESSFUL . . . SEE PLOTS TO
 C                          VERIFY PERFORMANCE
 C
 C                        is written on unit 6
 C
 C PRECISION              SINGLE
 C
-C REQUIRED LIBRARY       SLFONT
+C REQUIRED LIBRARY       FSLFNT
 C FILES
 C
 C LANGUAGE               FORTRAN
@@ -66,16 +66,16 @@ C
       CARDS(1) = '  512  760    1  1.5Demonstration'
       CARDS(2) = '  512  600    1  1.5Plot'
       CARDS(3) = '  512  440    1  1.0for'
-      CARDS(4) = '  512  280    1  1.5SLFONT'
+      CARDS(4) = '  512  280    1  1.5STITLE'
 C
 C Employ the new high quality filled fonts in PLOTCHAR
 C
       CALL PCSETC('FN','times-roman')
 C
-C Define the remaining inputs to routine SLFONT.  Note that the
+C Define the remaining inputs to routine STITLE.  Note that the
 C output produced (a single frame with no scrolling to appear for
 C 6.0 seconds) could equally well have been produced by FTITLE.
-C We call SLFONT in this demo to avoid reading the input lines.
+C We call STITLE in this demo to avoid reading the input lines.
 C
       NYST  = 512
       NYFIN = 512
@@ -84,14 +84,14 @@ C
       TFIN  = 6.0
       MOVIE =   1
 C
-C Call SLFONT.
+C Call STITLE.
 C
-      CALL SLFONT (CARDS,NCARDS,NYST,NYFIN,TST,TMV,TFIN,MOVIE)
+      CALL STITLE (CARDS,NCARDS,NYST,NYFIN,TST,TMV,TFIN,MOVIE)
       IERROR = 0
       WRITE (6,1001)
       RETURN
 C
- 1001 FORMAT ('     SLFONT TEST SUCCESSFUL',24X,
+ 1001 FORMAT ('     FSLFNT TEST SUCCESSFUL',24X,
      1        'SEE PLOTS TO VERIFY PERFORMANCE')
 C
       END
