@@ -1,0 +1,13 @@
+#
+#       $Id: yMakefile,v 1.1 1999-03-05 01:16:37 dbrown Exp $
+#
+HELPFILES	= ChooseDataVariable.html ImportData.html OutputPlot.html \
+		PlotData.html PreviewData.html Start.html
+
+PIXMAPS		= next.xpm parent.xpm previous.xpm
+
+NDVHELPPATH	= $(LIBNCARGPATH)/ndv_help
+INSTALL_PS = $(INSTALL_DB)
+
+FILES = $(HELPFILES) $(PIXMAPS)
+InstallTarget($(FILES),$(INSTALL_PS),$(NDVHELPPATH))
