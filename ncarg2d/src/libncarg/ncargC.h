@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.15 2003-10-06 21:52:04 kennison Exp $
+ *  $Id: ncargC.h,v 1.16 2003-11-24 21:10:52 kennison Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -4313,6 +4313,30 @@ extern void c_tdclrs(
 #endif
 );
 
+extern void c_tdcudp(
+#ifdef NeedFuncProto
+    float *ucrv,
+    float *vcrv,
+    float *wcrv,
+    int    ncrv,
+    int    iarh,
+    float  arhl,
+    float  arhw
+#endif
+);
+
+extern void c_tdcurv(
+#ifdef NeedFuncProto
+    float *ucrv,
+    float *vcrv,
+    float *wcrv,
+    int    ncrv,
+    int    iarh,
+    float  arhl,
+    float  arhw
+#endif
+);
+
 extern void c_tddtri(
 #ifdef NeedFuncProto
     float *rtri,
@@ -4487,7 +4511,27 @@ extern void c_tdline(
 #endif
 );
 
+extern void c_tdlndp(
+#ifdef NeedFuncProto
+    float ucp1,
+    float vcp1,
+    float wcp1,
+    float ucp2,
+    float vcp2,
+    float wcp2
+#endif
+);
+
 extern void c_tdlnpa(
+#ifdef NeedFuncProto
+    float xcp1,
+    float ycp1,
+    float xcp2,
+    float ycp2
+#endif
+);
+
+extern void c_tdlpdp(
 #ifdef NeedFuncProto
     float xcp1,
     float ycp1,
