@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargf77.m,v 1.2 1993-03-29 23:16:43 haley Exp $
+.\"	$Id: ncargf77.m,v 1.3 1993-04-15 16:11:29 haley Exp $
 .\"
 .TH NCARGF77 1NCARG "March 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -19,6 +19,16 @@ Arguments presented above are associated with NCAR Graphics.
 All other arguments and options are identical to the f77 command 
 on your particular machine; arguments that include quoted strings may
 have to be enclosed in single quotes.
+.sp
+In order to run \fIncargf77\fP, you must have your NCARG_ROOT
+environment variable set to the directory pathname where the NCAR
+Graphics libraries, binaries, and include files were installed.  If
+you are not sure what NCARG_ROOT should be set to, please check with 
+your system administrator or the site representative for NCAR Graphics.
+If the NCAR Graphics libraries, binaries, and include files were not
+installed under one root directory, then you will need to set the 
+environment variables NCARG_LIB, NCARG_BIN, and NCARG_INCLUDE instead.
+Please see "man ncargintro" for more information.
 .sp
 Note that, on some systems, if you supply your own binary libraries in
 addition to the ones automatically referenced by \fIncargf77\fR, all the
@@ -59,7 +69,10 @@ option.
 .sp
 .SH SEE ALSO
 Online:
-ictrans(1NCARG), gcaps(1NCARG), ncargcc(1NCARG)
+.BR ictrans(1NCARG),
+.BR gcaps(1NCARG),
+.BR ncargcc(1NCARG),
+.BR ncargintro(5NCARG)
 .sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version

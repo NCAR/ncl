@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_cbind.m,v 1.3 1993-04-08 15:05:04 haley Exp $
+.\"	$Id: ncarg_cbind.m,v 1.4 1993-04-15 16:11:11 haley Exp $
 .\"
 .TH NCARG_CBIND 3NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -118,7 +118,12 @@ it is declared in the main program.
 To compile your NCAR Graphics C program with the C-bindings, use the
 NCARG application \fBncargcc\fP.  \fBncargcc\fP will take care of loading in
 the necessary C/Fortran interface libraries as well as the NCAR
-Graphics C and Fortran libraries.  If you do not wish to use
+Graphics C and Fortran libraries.  You will either need to set the 
+NCARG_ROOT or the NCARG_BIN, NCARG_LIB, and NCARG_INCLUDE environment 
+variables in order to run \fBncargcc\fP.  See "man ncargintro" for more 
+information.
+.sp
+If you do not wish to use
 \fBncargcc\fP, then you can just run it with no arguments to see what
 the necessary libraries are, and then put this information your
 Makefile or whatever else you are using to compile and link your program.
@@ -168,7 +173,8 @@ Online:
 .BR ncargcc(1NCARG),
 .BR ncargcex(1NCARG),
 .BR ncarg_gks_cbind(3NCARG), 
-man pages for any of the user entry points and/or GKS routines.
+.BR ncargintro(5NCARG),
+.BR man pages for any of the user entry points and/or GKS routines.
 .sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version; User's Guide for 

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargcc.m,v 1.2 1993-03-29 23:16:35 haley Exp $
+.\"	$Id: ncargcc.m,v 1.3 1993-04-15 16:11:20 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGCC 1NCARG "February 1993" NCAR "NCAR GRAPHICS"
@@ -31,6 +31,16 @@ are identical to the cc command on your particular machine;
 arguments that include quoted strings may
 have to be enclosed in single quotes.
 .sp
+In order to run \fIncargcc\fP, you must have your NCARG_ROOT
+environment variable set to the directory pathname where the NCAR
+Graphics libraries, binaries, and include files were installed.  If
+you are not sure what NCARG_ROOT should be set to, please check with 
+your system administrator or the site representative for NCAR Graphics.
+If the NCAR Graphics libraries, binaries, and include files were not
+installed under one root directory, then you will need to set the 
+environment variables NCARG_LIB, NCARG_BIN, and NCARG_INCLUDE instead.
+Please see "man ncargintro" for more information.
+.sp
 When \fBncargcc\fR is invoked with the \fB\-ictrans\fR option the resulting
 executable will, upon invocation, send its metafile output to the translator
 \fBictrans\fR . The environment variable GRAPHCAP must be set to a valid
@@ -45,7 +55,10 @@ else you just don't want to link it in, you can use the \fB\-noX11\fR
 option.
 .SH SEE ALSO
 Online:
-ictrans(1NCARG), gcaps(1NCARG), ncargcc(1NCARG)
+.BR ictrans(1NCARG),
+.BR gcaps(1NCARG), 
+.BR ncargcc(1NCARG),
+.BR ncargintro(5NCARG)
 .sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version

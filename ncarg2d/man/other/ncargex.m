@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.5 1993-04-12 22:12:31 haley Exp $
+.\"	$Id: ncargex.m,v 1.6 1993-04-15 16:11:26 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1993" NCAR "NCAR GRAPHICS"
@@ -57,14 +57,24 @@ copies the source code for the specified example(s)
 into the current directory and then compiles, links,
 and executes the example, leaving an NCGM file
 with the same name as the example, suffixed with
-".ncgm". An option allows you to request that
-only the source code be copied to your directory,
-without compilation, linking, or execution.
-Another option allows you to request that only the
-NCGM file be left in your directory and that all other files
-created by \fIncargex\fP be deleted.
-The argument \fIname\fP may be
+".ncgm".
+.sp
+In order to run \fIncargex\fP, you must have your NCARG_ROOT
+environment variable set to the directory pathname where the NCAR
+Graphics libraries, binaries, and include files were installed.  If
+you are not sure what NCARG_ROOT should be set to, please check with 
+your system administrator or the site representative for NCAR Graphics.
+If the NCAR Graphics libraries, binaries, and include files were not
+installed under one root directory, then you will need to set the 
+environment variables NCARG_LIB, NCARG_BIN, and NCARG_INCLUDE instead.
+Please see "man ncargintro" for more information.
+.sp
+An option allows you to request that only the source code be copied 
+to your directory, without compilation, linking, or execution.
+Another option allows you to request that only the NCGM file be left
+in your directory and that all other files The argument \fIname\fP may be
 selected from the lists that appear below.
+.sp
 .I OPTIONS
 .IP "\-all, \-A"
 Generate all available examples, tests, and tutorial examples.
@@ -405,7 +415,9 @@ testing of new releases at NCAR.
 .fi
 .SH SEE ALSO
 Online:
-ncargf77(1NCARG), ncargcex(1NCARG)
+.BR ncargf77(1NCARG),
+.BR ncargcex(1NCARG),
+.BR ncargintro(5NCARG)
 .sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version

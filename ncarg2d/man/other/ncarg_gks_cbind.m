@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_gks_cbind.m,v 1.3 1993-04-05 17:29:55 haley Exp $
+.\"	$Id: ncarg_gks_cbind.m,v 1.4 1993-04-15 16:11:17 haley Exp $
 .\"
 .TH NCARG_GKS_CBIND 3NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -117,18 +117,25 @@ correct function prototypes, include <ncarg/gks.h> in your C program.
 To compile your NCAR Graphics C program with the GKS C-bindings, use the
 application \fBncargcc\fP.  \fBncargcc\fP will take care of loading in
 the necessary C/Fortran interface libraries as well as the NCAR
-Graphics C and Fortran libraries.  If you do not wish to use
-\fBncargcc\fP, then you can just run it with no arguments to see what
-the necessary libraries are, and then put this in your Makefile or
-whatever else you are using to compile your program.
+Graphics C and Fortran libraries.  You will either need to set the 
+NCARG_ROOT or the NCARG_BIN, NCARG_LIB, and NCARG_INCLUDE environment 
+variables in order to run \fBncargcc\fP.  See "man ncargintro" for more 
+information.
+.sp
+If you do not wish to use \fBncargcc\fP, then you can just run it with 
+no arguments to see what the necessary libraries are, and then put this 
+in your Makefile or whatever else you are using to compile your program.
 .SH EXAMPLES
 An example of a C program that calls some of the NCAR Graphics GKS
 C-bindings has been provided.  To copy this C program into your 
 directory, and then compile, link, and run it, type \fBncargcex c_gtxpac\fP.
 .SH SEE ALSO
 Online:
-ncarg_cbind (3NCARG), ncargcex (1NCARG), man pages for any of the GKS 0A 
-routines and/or NCAR Graphics user entry points.
+.BR ncarg_cbind(3NCARG),
+.BR ncargcex(1NCARG),
+.BR ncargintro(5NCARG),
+.BR man pages for any of the GKS 0A routines and/or NCAR Graphics user 
+entry points.
 .sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version

@@ -8,7 +8,7 @@ NCAR Graphics is a collection of graphics libraries that supports the
 display of scientific data. A level 0a GKS package that generates an
 NCGM (NCAR Graphics Computer Graphics Metafile) is also included along with
 NCGM translators and accompanying device drivers.
-.SH "ENVIRONMENT VARIABLES"
+.SH ENVIRONMENT VARIABLES
 Every user of NCAR Graphics will either need to set the environment
 variable NCARG_ROOT or the environment variables NCARG_BIN, NCARG_LIB,
 and NCARG_INCLUDE depending on how NCAR Graphics was installed on your

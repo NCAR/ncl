@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: cgmtrans.m,v 1.2 1993-04-05 17:44:43 haley Exp $
+.\"	$Id: cgmtrans.m,v 1.3 1993-04-15 16:11:05 haley Exp $
 .\"
 .TH CGMTRANS 1NCARG "MARCH 1988" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -54,4 +54,7 @@ information regarding frame boundaries and metacode type.
 The frame boundary information is used by higher-level 
 interfaces to provide random access to metafile frames.
 .SH SEE ALSO
-ctrans(1NCARG), ftrans(1NCARG), graphcap(5NCAR)
+.BR ctrans(1NCARG),
+.BR ftrans(1NCARG),
+.BR graphcap(5NCARG),
+.BR ncargintro(5NCARG)

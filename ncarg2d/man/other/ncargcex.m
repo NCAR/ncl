@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargcex.m,v 1.2 1993-03-29 23:16:37 haley Exp $
+.\"	$Id: ncargcex.m,v 1.3 1993-04-15 16:11:23 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGCEX 1NCARG "January 1993" NCAR "NCAR GRAPHICS"
@@ -22,6 +22,17 @@ with the Fortran examples that you can get with the \fIncargex\fP
 command.  Not every Fortran example is included here, however.
 These examples should be enough to get one started in learning
 how to use the NCAR Graphics C-bindings.
+.sp
+In order to run \fIncargcex\fP, you must have your NCARG_ROOT
+environment variable set to the directory pathname where the NCAR
+Graphics libraries, binaries, and include files were installed.  If
+you are not sure what NCARG_ROOT should be set to, please check with 
+your system administrator or the site representative for NCAR Graphics.
+If the NCAR Graphics libraries, binaries, and include files were not
+installed under one root directory, then you will need to set the 
+environment variables NCARG_LIB, NCARG_BIN, and NCARG_INCLUDE instead.
+Please see "man ncargintro" for more information.
+.sp
 \fIncargcex\fP copies the source code for the specified example(s)
 into the current directory and then compiles, links,
 and executes the example, leaving an NCGM file
@@ -99,7 +110,8 @@ testing of new releases at NCAR.
 Online:
 .BR ncargex(1NCARG),
 .BR ncargcc(1NCARG),
-.BR ncarg_cbind(3NCARG)
+.BR ncarg_cbind(3NCARG),
+.BR ncargintro(5NCARG)
 .sp
 Hardcopy:
 Using NCAR Graphics in a UNIX Environment; NCAR Graphics 

@@ -131,7 +131,6 @@ It's worth saying one more time: if you output standard CGM rather
 then NCGM (NCAR CGM), NCAR Graphics generally won't deal with it.
 The one exception is that you can convert the file back to
 NCGM using \fIcgm2ncgm\fP.
-.sp
 .SH "SEE ALSO"
-cgm2ncgm(1NCARG)
-.LP
+.BR cgm2ncgm(1NCARG),
+.BR ncargintro(5NCARG)
