@@ -1,5 +1,5 @@
 /*
- *	$Id: sgiraster.c,v 1.9 1995-05-24 01:52:16 clyne Exp $
+ *	$Id: sgiraster.c,v 1.10 1995-05-31 03:07:20 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -625,9 +625,9 @@ _SGICompactRLE(
 		}
 
 	}
-	*optr++ = 0;	/* flag end of run	*/
+	*cptr++ = 0;	/* flag end of run	*/
 
-	return(optr - optr_save - 1);
+	return(cptr - optr_save);
 }
 
 static int
@@ -762,16 +762,12 @@ SGIOpenWrite(name, nx, ny, comment, encoding)
 		ras->fp = stdout;
 	}
 	else {
-		ras->fd = open(name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-		if (ras->fd == -1) {
-			(void) ESprintf(errno, "open(%s)", name);
-			return( (Raster *) NULL );
-		}
-		ras->fp = fdopen(ras->fd, "w");
+		ras->fp = fopen(name, "w");
 		if (ras->fp == (FILE *) NULL) {
-			(void) ESprintf(errno, "fdopen(%d)", ras->fd);
+			(void) ESprintf(errno, "fopen(%s)", name);
 			return( (Raster *) NULL );
 		}
+		ras->fd = fileno(ras->fp);
 	}
 
 	ras->name = (char *) ras_calloc((unsigned) (strlen(name) + 1), 1);
@@ -871,6 +867,7 @@ SGIWrite(ras)
 	header->max        = 255;
 	header->wastebytes = 0;
 	header->colormap   = SGI_CM_NORMAL;
+	strcpy(header->name,"no name");
 
 	/* Write the header, swapping bytes if necessary. */
 
@@ -887,6 +884,7 @@ SGIWrite(ras)
 
 	/* Write bytes remaining before actual image data. */
 
+	memset(tmpbuf, 0,RAS_SGI_RESERVED-sizeof(header[0])); 
 	nb = fwrite(tmpbuf, 1, (RAS_SGI_RESERVED-sizeof(header[0])), ras->fp);
 	if (nb != (RAS_SGI_RESERVED-sizeof(header[0]))) { 
 		(void) ESprintf(
