@@ -317,8 +317,10 @@ extern NhlErrorTypes nice_mnmxintvl_W(void);
 extern NhlErrorTypes dim_gbits_W(void);
 extern NhlErrorTypes getbitsone_W(void);
 extern NhlErrorTypes conform_W(void);
-
 extern NhlErrorTypes paleo_outline_W(void);
+extern NhlErrorTypes inverse_matrix_W(void);
+extern NhlErrorTypes solve_linsys_W(void);
+extern NhlErrorTypes wavelet_W(void);
 
 void NclAddUserFuncs(void)
 {
@@ -3836,6 +3838,28 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(conform_W, args, "conform", nargs);
 
 /*
+ *  Register wavelet.
+ */
+
+    nargs = 0;
+    args = NewArgs(12);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);    nargs++;
+
+    NclRegisterFunc(wavelet_W, args, "wavelet", nargs);
+
+/*
  *  Register paleo_outline.
  */
     nargs = 0;
@@ -3847,6 +3871,23 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "float", 1, dimsizes);  nargs++;
     SetArgTemplate(args, nargs, "string", 1, NclANY);  nargs++;
     NclRegisterProc(paleo_outline_W, args, "paleo_outline", nargs);
+
+/*
+ *  Register inverse_matrix.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args, nargs, "numeric", 2, NclANY);  nargs++;
+    NclRegisterFunc(inverse_matrix_W, args, "inverse_matrix", nargs);
+
+/*
+ *  Register solve_linsys.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args, nargs, "numeric", 2, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);  nargs++;
+    NclRegisterFunc(solve_linsys_W, args, "solve_linsys", nargs);
 
     return;
 }
@@ -4288,5 +4329,21 @@ NclBasicDataTypes type_x
         }
   }
   printf("xmin = %g xmax = %g\n", xmin, xmax );
+}
+
+
+/*
+ * Coerce double data back to float, using a void array. 
+ */
+void coerce_output(
+void   *x,
+double *dx,
+int    size_x,
+int    index_x
+)
+{
+  int i;
+
+  for( i = 0; i < size_x; i++ ) ((float*)x)[index_x+i]  = (float)dx[i];
 }
 

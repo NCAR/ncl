@@ -1,0 +1,298 @@
+#include <stdio.h>
+#include <stdlib.h>
+/*
+* The following are the required NCAR Graphics include files.
+* They should be located in ${NCARG_ROOT}/include
+*/
+
+#include "wrapper.h"
+
+extern int NGCALLF(ilaenv,ILAENV)(int*,char*,char*,int*,int*,int*,int*,
+                                  int,int);
+extern void NGCALLF(dgetrf,DGETRF)(int*, int*, double*, int*, int*, int*);
+extern void NGCALLF(dgetri,DGETRI)(int*, double*, int*, int*, double*, 
+                                   int*, int*);
+extern void NGCALLF(dgesv,DGESV)(int*, int*, double*, int*, int*, double*,
+                                 int*, int*);
+
+NhlErrorTypes inverse_matrix_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x;
+  double *tmp_x;
+  int dsizes_x[2];
+  NclBasicDataTypes type_x;
+/*
+ * Output array variables
+ */
+  void *xinv;
+  double xmsg;
+  NclBasicDataTypes type_xinv;
+  NclScalar missing_xinv;
+/*
+ * Various
+ */
+  int i, n, m, nm, one, mone, lwork, lpiv, nb, lda, info=0, *ipiv;
+  double *work;
+/*
+ * Retrieve input array. 
+ */
+  x = (void*)NclGetArgValue(
+           0,
+           1,
+           NULL,
+           dsizes_x,
+           NULL,
+           NULL,
+           &type_x,
+           2);
+
+  n  = dsizes_x[0];
+  m  = dsizes_x[1];
+  nm = n * m;
+
+/*
+ * Coerce input matrix to double no matter what, since it will get
+ * changed by Fortran routine.
+ */
+  tmp_x = (double*)calloc(nm,sizeof(double));
+  if( tmp_x == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"inverse_matrix: Unable to allocate memory for making a copy of the input array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Allocate space for output array.
+ */
+  if(type_x == NCL_double) {
+    xinv = (void*)calloc(nm,sizeof(double));
+    type_xinv = NCL_double;
+    missing_xinv.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    xmsg = missing_xinv.doubleval;
+  }
+  else {
+    xinv = (void*)calloc(nm,sizeof(float));
+    type_xinv = NCL_float;
+    missing_xinv.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    xmsg = (double)missing_xinv.floatval;
+  }
+  if(xinv == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"inverse_matrix: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Allocate space for work arrays.
+ */
+  mone  = -1;
+  one   =  1;
+  lda   = m;
+  nb    = NGCALLF(ilaenv,ILAENV)(&one, "dgetri", " ", &n, &mone, &mone, 
+                                 &mone, 6, 1);
+  lwork = n * nb;
+  lpiv  = min(n,m);
+  work  = (double*)calloc(lwork,sizeof(double));
+  ipiv  = (int*)calloc(lpiv,sizeof(int));
+  if(work == NULL || ipiv == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"inverse_matrix: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+
+/*
+ * Coerce subsection of x (tmp_x) to double no matter what, because the
+ * inverse routine will write over the input array.
+ */
+  coerce_subset_input_double(x,tmp_x,0,type_x,nm,0,NULL,NULL);
+
+  NGCALLF(dgetrf,DGETRF)( &m, &n, tmp_x, &lda, ipiv, &info );
+  if(!info) {
+    NGCALLF(dgetri,DGETRI)( &n, tmp_x, &lda, ipiv, work, &lwork, &info );
+    if(!info) {
+      if(type_xinv == NCL_float) {
+	coerce_output(xinv,tmp_x,nm,0);
+      }
+      else {
+	for( i = 0; i < nm; i++ ) ((double*)xinv)[i] = tmp_x[i];
+      }
+    }
+  }
+  else {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"inverse_matrix: info = %d, missing values returned\n", info );
+  }
+
+/*
+ * Free unneeded memory.
+ */
+  NclFree(tmp_x);
+  NclFree(work);
+  NclFree(ipiv);
+/*
+ * Return.
+ */
+  if(info) {
+    set_subset_output_missing(xinv,0,type_xinv,nm,xmsg);
+    return(NclReturnValue(xinv,2,dsizes_x,&missing_xinv,type_xinv,0));
+  }
+  else {
+    return(NclReturnValue(xinv,2,dsizes_x,NULL,type_xinv,0));
+  }
+}
+
+
+
+NhlErrorTypes solve_linsys_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *a, *b;
+  double *tmp_a, *tmp_b, *tmp_tmp_a;
+  int dsizes_a[NCL_MAX_DIMENSIONS];
+  int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_a, type_b;
+/*
+ * Output array variables
+ */
+  void *x;
+  NclBasicDataTypes type_x;
+  NclScalar missing_x;
+  double xmsg;
+/*
+ * Various
+ */
+  int i, j, l, n, nrhs, nn, nnrhs, lda, ldb, info=0, *ipiv;
+/*
+ * Retrieve input arrays. 
+ */
+  a = (void*)NclGetArgValue(
+           0,
+           2,
+           NULL,
+           dsizes_a,
+           NULL,
+           NULL,
+           &type_a,
+           2);
+
+  b = (void*)NclGetArgValue(
+           1,
+           2,
+           &ndims_b, 
+           dsizes_b,
+           NULL,
+           NULL,
+           &type_b,
+           2);
+
+  n  = dsizes_a[0];
+  if(ndims_b > 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"solve_lynsys: The first input array must be two-dimensionsal, and the second array must be one or two-dimensional");
+    return(NhlFATAL);
+  }
+
+  if(dsizes_b[ndims_b-1] != n || dsizes_a[1] != n) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"solve_linsys: The two dimensions of 'a' and the last dimension of 'b' must be n");
+    return(NhlFATAL);
+  }
+
+  if(ndims_b==2) {
+    nrhs = dsizes_b[1];
+  }
+  else {
+    nrhs = 1;
+  }
+
+  nn    = n * n;
+  nnrhs = n * nrhs;
+
+/*
+ * Coerce input matrix to double no matter what, since it will get
+ * changed by Fortran routine.
+ */
+  tmp_a = (double*)calloc(nn,sizeof(double));
+  tmp_b = (double*)calloc(nnrhs,sizeof(double));
+  tmp_tmp_a = (double*)calloc(nnrhs,sizeof(double));
+  if( tmp_a == NULL || tmp_b == NULL || tmp_tmp_a == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"solve_linsys: Unable to allocate memory for making a copy of the input arrays");
+    return(NhlFATAL);
+  }
+
+/*
+ * Allocate space for output array.
+ */
+  if(type_a == NCL_double || type_b == NCL_double) {
+    x = (void*)calloc(nnrhs,sizeof(double));
+    type_x = NCL_double;
+    missing_x.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    xmsg = missing_x.doubleval;
+  }
+  else {
+    x = (void*)calloc(nnrhs,sizeof(float));
+    type_x = NCL_float;
+    missing_x.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    xmsg = (double)missing_x.floatval;
+  }
+  if(x == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"solve_linsys: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Allocate space for work arrays.
+ */
+  lda = ldb = n;
+  ipiv  = (int*)calloc(n,sizeof(int));
+  if(ipiv == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"solve_linsys: Unable to allocate memory for work array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Coerce subsection of input to double no matter what, because the
+ * inverse routine will write over the input arrays.  We also need to
+ * transpose a.
+ */
+  coerce_subset_input_double(a,tmp_tmp_a,0,type_a,nn,0,NULL,NULL);
+  coerce_subset_input_double(b,tmp_b,0,type_b,nnrhs,0,NULL,NULL);
+
+  l = 0;
+  for(i = 0; i < n; i++ ) {
+    for(j = 0; j < n; j++ ) {
+      tmp_a[l++] = tmp_tmp_a[j*n+i];
+    }
+  }
+  NGCALLF(dgesv,DGESV)( &n, &nrhs, tmp_a, &lda, ipiv, tmp_b, &ldb, &info );
+  if(!info) {
+    if(type_x == NCL_float) {
+      coerce_output(x,tmp_b,nnrhs,0);
+    }
+    else {
+      for( j = 0; j < nnrhs; j++ ) ((double*)x)[j] = tmp_b[j];
+    }
+  }
+  else {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"solve_linsys: info = %d, missing values returned\n", info );
+  }
+
+/*
+ * Free unneeded memory.
+ */
+  NclFree(tmp_a);
+  NclFree(tmp_tmp_a);
+  NclFree(tmp_b);
+  NclFree(ipiv);
+/*
+ * Return.
+ */
+  if(info) {
+    set_subset_output_missing(x,0,type_x,nnrhs,xmsg);
+    return(NclReturnValue(x,ndims_b,dsizes_b,&missing_x,type_x,0));
+  }
+  else {
+    return(NclReturnValue(x,ndims_b,dsizes_b,NULL,type_x,0));
+  }
+}
+
+

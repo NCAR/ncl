@@ -24,6 +24,8 @@ extern double *copy_scalar_to_array(double *, int, int *, int);
 
 extern float *coerce_output_float(double *, void *, int, int);
 
+extern void *coerce_output(void *,double *,int, int);
+
 extern double *coerce_output_double(void*,NclBasicDataTypes,int);
 
 extern float *set_output_float_missing(double*,int,double);
