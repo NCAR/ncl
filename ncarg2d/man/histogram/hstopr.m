@@ -18,10 +18,13 @@ possibilities are:
   \'WIN=ON\' or \'WIN=OFF\'
 .br
   \'SPA=ON\' or \'SPA=OFF\'
+.br
+  \'MVA=ON\' or \'MVA=OFF\'
 .sp
 WIN defines the portion of the frame that will receive
 the histogram. SPA determines the spacing between
-histogram bars.
+histogram bars.  MVA requests a test to detect input
+special values which denote missing data.
 .IP ARRAY 12
 Real, input -- It has a different use depending upon
 which parameter is specified by argument STRING.  See the
@@ -76,6 +79,28 @@ bars when two datasets are compared.  Valid values are
 The Default is 0.
 .sp
 When STRING = \'SPA=OFF\', there is no spacing or overlap.
+.sp2
+Detecting missing values:
+.sp
+.nf
+.in 20
+STRING is \'MVA=ON\'
+LARR = 2
+ARRAY(1) = SETMVA
+ARRAY(2) = SETEPS
+.fi
+.in -20
+.IP "" 
+SETMVA is the special value used to denote missing data.
+The default value is -9999.
+.sp
+SETEPS is an epsilon to use in the special value test.
+If the difference between a data point and SETMVA is
+less than SETEPS, then the data point is assumed to
+be a missing value.
+The Default is 1.E-10.
+.sp
+When STRING = \'MVA=OFF\', there is no testing for missing values.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
@@ -108,6 +133,9 @@ C
       SPAC(2) = 0.0
       CALL HSTOPR(\'SPA=ON\',SPAC,2)
 .fi
+.sp
+Example  "ncargex thstmv" shows three
+examples of histograms with missing values in the input data.
 .SH ACCESS
 To use HSTOPR, load the NCAR Graphics libraries ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.  To use c_hstopr, load the

@@ -148,7 +148,8 @@ on a specific option, see the man pages of the parameter setting routines
 that option.
 .SH EXAMPLES
 Use the command "ncargex thstgr" to generate a three frame example
-of various types of histograms.
+of various types of histograms.  "ncargex thstmv" will show three
+examples of histograms with missing values in the input data.
 .SH ACCESS
 To use HISTGR, load the NCAR Graphics libraries ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.  To use c_histgr, load the

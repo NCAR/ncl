@@ -163,6 +163,9 @@ C
          COLORS(8) = 5
       CALL HSTOPI(\'COL=ON\',3,0,COLORS,8)
 .fi
+.sp
+Example  "ncargex thstmv" shows three
+examples of histograms with missing values in the input data.
 .SH ACCESS
 To use HSTOPI, load the NCAR Graphics libraries ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.  To use c_hstopi, load the

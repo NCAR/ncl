@@ -26,6 +26,10 @@ possibilities are:
 .br
    \'MED=ON\' or \'MED=OFF\'
 .br
+   \'NMV=ON\' or \'NMV=OFF\'
+.br
+   \'PMV=ON\' or \'PMV=OFF\'
+.br
    \'PRM=ON\' or \'PRM=OFF\'
 .br
    \'FRA=ON\' or \'FRA=OFF\'
@@ -71,6 +75,16 @@ value of all points. If \'MED=OFF\', this line is not
 drawn. MED does not apply when assigning Y-values to
 X-values; it is valid only for IFLAG = 1 or 2.
 The default is \'MED=OFF\'.
+.IP NMV 8
+If \'NMV=ON\', histogram bar percentages will be
+calculated with respect to the number of input
+data values (NPTS) minus the number of detected
+missing values (MISS), or NMVA = NPTS - MISS.
+If \'NMV=OFF\', histogram bar percentages will be
+normalized to NPTS.
+.IP PMV 8
+If \'PMV=ON\', missing value counts will be written
+on the plot.  If \'NMV=OFF\', they will not.
 .IP PRM 8
 If \'PRM=ON\', a perimeter is drawn around the histogram.
 If \'PRM=OFF\', no perimeter is drawn.
@@ -98,7 +112,8 @@ HSTOPL is called to toggle histogram options before entry
 HISTGR is called to generate the histogram.
 .SH EXAMPLES
 Use the command "ncargex thstgr" to generate a three frame example
-of histogram options.
+of various types of histograms.  "ncargex thstmv" will show three
+examples of histograms with missing values in the input data.
 .SH ACCESS
 To use HSTOPL, load the NCAR Graphics libraries ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.  To use c_hstopl, load the

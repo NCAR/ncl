@@ -15,7 +15,9 @@ samples in that class interval.
 Various options are available including the
 specification of class values, spacing between histogram bars,
 shading of bars, windowing (i.e. scaling), specification of
-color, labels, titles, etc.  Options are set by calls to
+color, labels, titles, etc.  One can also detect and ignore
+missing data which has been assigned a special value.
+Options are set by calls to
 routines HSTOPL, HSTOPR, HSTOPC, and HSTOPI.
 A call to routine HISTGR then generates the histogram.
 .SH SYNOPSIS

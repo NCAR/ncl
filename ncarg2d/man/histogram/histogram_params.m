@@ -12,7 +12,9 @@ Parameters of type CHARACTER set in calls to entry HSTOPC:
 .IP FOR 12
 Format for class labels.  Default is \'(G10.3)\'.
 .IP TIT 12
-A main title.  Default is no title.
+A main title of up to 96 characters.  Only 45 characters
+are written per line so up to 3 lines may be written.
+The default is no title.
 .IP LAB 12
 A label for the class interval (histogram bar) axis.
 Default value is \'CLASS INTERVALS\' when
@@ -59,6 +61,18 @@ Default is no line.
 .IP MED 12
 Determines if a line is drawn through the median
 value of all points.  Default is no median line.
+.IP NMV 12
+Determines if missing values are to be subtracted
+from the number of input points before bin percentages
+are computed.  The default is to subtract out the
+missing values.  HSTOPR option MVA must be ON to
+activate this option.
+.IP PMV 12
+Determines if the number of input points and the
+number of missing values are to be printed on the
+plot.  The default is to not print.
+HSTOPR option MVA must be ON to
+activate this option.
 .IP PRM 12
 Determines if a perimeter is to be drawn around the
 histogram.  Default is no perimeter.

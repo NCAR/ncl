@@ -43,7 +43,9 @@ Format for class labels.  The \'FOR=OFF\' default is
 integer formats are allowed, in which case HISTGR will
 convert from real to integer before plotting labels.
 .IP TIT 8
-A main title.  The \'TIT=OFF\' default is no title.
+A main title of up to 96 characters.  Only 45 characters
+are written per line so up to 3 lines may be written.
+The \'TIT=OFF\' default is no title.
 .IP LAB 8
 A label for the class interval (histogram bar) axis.
 The \'LAB=OFF\' default value is \'CLASS INTERVALS\' when
@@ -127,6 +129,9 @@ CHARACTER*55 MON
 MON=\'JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC\'
 .br
 CALL HSTOPC(\'CHR=ON\',MON,12,3)
+.sp
+Example  "ncargex thstmv" shows three
+examples of histograms with missing values in the input data.
 .SH ACCESS
 To use HSTOPC, load the NCAR Graphics libraries ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.  To use c_hstopc, load the
