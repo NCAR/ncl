@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrandef.h,v 1.11 1992-09-01 23:41:52 clyne Exp $
+ *	$Id: ctrandef.h,v 1.12 1993-03-15 21:12:15 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -25,15 +25,6 @@ typedef	char	SignedChar;
 
 
 #define	SQR(X)		((X) * (X))
-
-/*
- *	There is not a absolute value function for longs in in this C
- *	but there will be in Ansii C.  Therefore this should be removed then.
- */
-#ifndef	RS6000
-#define	labs(x)	abs((int)(x))
-#endif
-
 
 
 #ifndef	M_PI

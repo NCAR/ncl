@@ -1,5 +1,5 @@
 /*
- *	$Id: format.c,v 1.8 1992-09-23 16:49:41 clyne Exp $
+ *	$Id: format.c,v 1.9 1993-03-15 21:12:18 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -33,18 +33,13 @@
  */
 
 #include 	<stdio.h>
+#include 	<stdlib.h>
 #include	<ncarg/c.h>
 #include	"cgmc.h"
 #include	"defines.h"
 #include	"graphcap.h"
 #include	"bitops.h"
 #include	"format.h"
-
-/*
- *	There is not a absolute value function for longs in in this C
- *	but there will be in Ansii C.  Therefore this should be removed then.
- */
-#define	labs(x)	abs((int)(x))
 
 /*
  *	The different types of encoding

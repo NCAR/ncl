@@ -1,5 +1,5 @@
 /*
- *	$Id: gcaprast.c,v 1.14 1993-01-06 21:12:19 clyne Exp $
+ *	$Id: gcaprast.c,v 1.15 1993-03-15 21:12:20 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -407,8 +407,8 @@ CGMC	*c;
 	rx = R_XConvert(c->p[2].x); ry = R_YConvert(c->p[2].y);
 	qy = R_YConvert(c->p[1].y);
 
-	snx = labs(rx - px);
-	sny = labs(ry - qy);
+	snx = labs((long) rx - px);
+	sny = labs((long) ry - qy);
 	
 	/*
 	 * base dimensions of a cell
