@@ -1,5 +1,5 @@
 /*
- *	$Id: sun_view.c,v 1.11 1992-02-07 16:23:26 clyne Exp $
+ *	$Id: sun_view.c,v 1.12 1992-02-18 20:01:14 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -177,7 +177,7 @@ CGMC *c;
 		/*
 		 * do some more onetime initilization
 		 */
-		init_sunv(colorAva);
+		init_sunv(TRUE);
 
 	}
 
@@ -877,8 +877,8 @@ CGMC *c;
 			 */
 			P.y = Q.y;
 			(void) raster_(c, P, rows, cols, 
-				(int) nx, (int) ny, abs((int) (P.x - R.x)),
-				abs((int) (Q.y - R.y)));
+				(int) nx, (int) ny, abs((int) (P.x - R.x))+1,
+				abs((int) (Q.y - R.y))+1);
 		} 
 		else {
 			(void) fprintf(stderr, 
@@ -1139,7 +1139,7 @@ static	Ct_err	raster_(c, P, rows, cols, nx, ny, width, height)
 
 			/*	the coloumns	*/
 			ptr = md_image;
-			mask = (char) 128;
+			mask = (unsigned char) 128;
 			*ptr = 0;
 			for (k=0; k<nx; k++) {
 
@@ -1156,7 +1156,7 @@ static	Ct_err	raster_(c, P, rows, cols, nx, ny, width, height)
 						mask = mask >> 1;
 						if (!mask) {
 							*(++ptr) = 0;
-							mask = (char) 128;
+							mask=(unsigned char)128;
 						}
 					}
 				}

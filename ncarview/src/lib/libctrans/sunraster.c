@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.10 1992-02-07 16:23:37 clyne Exp $
+ *	$Id: sunraster.c,v 1.11 1992-02-18 20:01:19 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -139,7 +139,7 @@ CGMC *c;
 		/*
 		 * do some more onetime initilization
 		 */
-		init_sunv(colorAva);
+		init_sunv(TRUE);
 
 		/*
 		 * initialize the software fill module. This needs to 
@@ -764,8 +764,8 @@ CGMC *c;
 			 */
 			P.y = Q.y;
 			(void) raster_(c, P, rows, cols, 
-				(int) nx, (int) ny, abs((int) (P.x - R.x)),
-				abs((int) (Q.y - R.y)));
+				(int) nx, (int) ny, abs((int) (P.x - R.x))+1,
+				abs((int) (Q.y - R.y))+1);
 		} 
 		else {
 			(void) fprintf(stderr, 
