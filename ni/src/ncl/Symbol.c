@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.51 1997-09-05 17:28:27 ethan Exp $
+ *      $Id: Symbol.c,v 1.52 1997-09-10 21:19:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1605,7 +1605,7 @@ long* stride;
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
 				index = _NclFileVarIsCoord(thefile,coordname);
 				if(thefile != NULL) {
-					for(k = 0; k < thefile->file.var_info[index]->num_dimensions; k++) {
+					for(k = 0; k < thefile->file.coord_vars[index]->num_dimensions; k++) {
 						dim_sizes[k] = thefile->file.file_dim_info[thefile->file.coord_vars[index]->file_dim_num[k]]->dim_size;
 					}
 					sel_ptr = BuildSel(thefile->file.coord_vars[index]->num_dimensions,dim_sizes,start,finish,stride);
