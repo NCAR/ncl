@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.24 1996-11-27 15:26:55 boote Exp $
+ *      $Id: Create.c,v 1.25 1996-12-03 01:15:41 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -936,6 +936,7 @@ InitAllResources
 	 * Initialize list
 	 */
 	memset((char*)list,0,sizeof(list));
+	memset((char*)tlist,NrmNULLQUARK,sizeof(list));
 
 	/*
 	 * If the class uses children add their resources to the list
@@ -944,7 +945,7 @@ InitAllResources
 	 */
 	while(tnode != NULL){
 
-		memcpy((char*)tlist,list,sizeof(NrmQuark)*(k+1));
+		memcpy((char*)tlist,list,sizeof(NrmQuark)*(k));
 		i=0;j=0;k=0;
 		while((tlist[i] != NrmNULLQUARK) &&
 					(tnode->resources[j] != NrmNULLQUARK)){
@@ -969,7 +970,7 @@ InitAllResources
 	 * have any of the resources that the parent has.
 	 */
 
-	memcpy((char*)tlist,list,sizeof(NrmQuark)*(k+1));
+	memcpy((char*)tlist,list,sizeof(NrmQuark)*(k));
 	i=0;j=0;k=0;
 	while((i < lc->base_class.num_resources) && (tlist[j] != NrmNULLQUARK)){
 		if(parentlist[i].nrm_name < tlist[j])
