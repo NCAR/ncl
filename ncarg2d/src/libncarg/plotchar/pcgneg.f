@@ -1,5 +1,5 @@
 C
-C $Id: pcgneg.f,v 1.1 1992-11-17 18:46:39 kennison Exp $
+C	$Id: pcgneg.f,v 1.2 1992-11-19 01:34:51 fred Exp $
 C
       SUBROUTINE PCGNEG (NUMIN,NUMOUT)
 C

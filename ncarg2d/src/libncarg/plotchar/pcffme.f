@@ -1,34 +1,12 @@
 C
-C $Id: pcffme.f,v 1.1 1992-11-17 18:46:25 kennison Exp $
+C	$Id: pcffme.f,v 1.2 1992-11-19 01:34:43 fred Exp $
 C
       SUBROUTINE PCFFME (CHGT)
 C
 C Extract the informational part of the fontcap.
 C
-C
-      PARAMETER (NUMNTR=29)
-      COMMON /PCMTRC/TYPFLG, CHRSTR, CHREND, FRIGHT, FTOP  , FCAPOV,
-     +               FCAP  , FXHOV , FXH   , FHALF , FBASE , FBOT  ,
-     +               FCHSWD, FCVSWD, FLLX  , FLLY  , FURX  , FURY  ,
-     +               FLLEX , FLLEY , FUREX , FUREY , TABPNT, XBITWD, 
-     +               YBITWD, XBIAS , YBIAS , PKFLWD, LSTPNT
-      INTEGER        TYPFLG, CHRSTR, CHREND, FRIGHT, FTOP  , FCAPOV,
-     +               FCAP  , FXHOV , FXH   , FHALF , FBASE , FBOT  ,
-     +               FCHSWD, FCVSWD, FLLX  , FLLY  , FURX  , FURY  ,
-     +               FLLEX , FLLEY , FUREX , FUREY , TABPNT, XBITWD, 
-     +               YBITWD, XBIAS , YBIAS , PKFLWD, LSTPNT
-      INTEGER FNINFO(NUMNTR)
-      EQUIVALENCE (FNINFO,TYPFLG)
-      SAVE   /PCMTRC/
-C
-      PARAMETER (IFCLEN=3000, ICLEN=150)
-      COMMON /PCINDX/IBFC(IFCLEN)    ,SFLGS(ICLEN)   ,CHRPNT(128),
-     +               IXC(ICLEN)      ,IYC(ICLEN)     ,XC(ICLEN)  ,
-     +               YC(ICLEN)       ,OUTLIN         ,SCALE
-      INTEGER        IBFC            ,SFLGS          ,CHRPNT     , 
-     +               IXC             ,IYC            ,OUTLIN
-      REAL           XC              ,YC             ,SCALE
-      SAVE   /PCINDX/
+      include 'pcffme.h'
+      include 'pcffdx.h'
 C
 C  Type flag.
 C

@@ -1,32 +1,10 @@
 C
-C $Id: pccfff.f,v 1.1 1992-11-17 18:46:09 kennison Exp $
+C	$Id: pccfff.f,v 1.2 1992-11-19 01:34:29 fred Exp $
 C
       SUBROUTINE PCCFFF (IPSS,IBNU,NFNT,NASC,CHGT,SIZE,RDGU,LDGU,NDGU)        
 C
-C
-      PARAMETER (NUMNTR=29)
-      COMMON /PCMTRC/TYPFLG, CHRSTR, CHREND, FRIGHT, FTOP  , FCAPOV,
-     +               FCAP  , FXHOV , FXH   , FHALF , FBASE , FBOT  ,
-     +               FCHSWD, FCVSWD, FLLX  , FLLY  , FURX  , FURY  ,
-     +               FLLEX , FLLEY , FUREX , FUREY , TABPNT, XBITWD, 
-     +               YBITWD, XBIAS , YBIAS , PKFLWD, LSTPNT
-      INTEGER        TYPFLG, CHRSTR, CHREND, FRIGHT, FTOP  , FCAPOV,
-     +               FCAP  , FXHOV , FXH   , FHALF , FBASE , FBOT  ,
-     +               FCHSWD, FCVSWD, FLLX  , FLLY  , FURX  , FURY  ,
-     +               FLLEX , FLLEY , FUREX , FUREY , TABPNT, XBITWD, 
-     +               YBITWD, XBIAS , YBIAS , PKFLWD, LSTPNT
-      INTEGER FNINFO(NUMNTR)
-      EQUIVALENCE (FNINFO,TYPFLG)
-      SAVE   /PCMTRC/
-C
-      PARAMETER (IFCLEN=3000, ICLEN=150)
-      COMMON /PCINDX/IBFC(IFCLEN)    ,SFLGS(ICLEN)   ,CHRPNT(128),
-     +               IXC(ICLEN)      ,IYC(ICLEN)     ,XC(ICLEN)  ,
-     +               YC(ICLEN)       ,OUTLIN         ,SCALE
-      INTEGER        IBFC            ,SFLGS          ,CHRPNT     , 
-     +               IXC             ,IYC            ,OUTLIN
-      REAL           XC              ,YC             ,SCALE
-      SAVE   /PCINDX/
+      include 'pcffme.h'
+      include 'pcffdx.h'
 C
       DIMENSION RDGU(LDGU)
 C
@@ -130,7 +108,6 @@ C Get the font metric information from the fontcap and store in common
 C PCINDX.
 C
         CALL PCFFME (CHGT)
-C
       END IF
 C
 C  Calculate the scale factor to go from the font coordinate space 

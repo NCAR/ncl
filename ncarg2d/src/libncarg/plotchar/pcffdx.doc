@@ -1,0 +1,23 @@
+C
+C	$Id: pcffdx.doc,v 1.1 1992-11-19 01:34:31 fred Exp $
+C
+C
+C  COMMON PCINDX  --  Fontcap indices, flags, and arrays.
+C
+C    IBFC    --  Integer array for holding the binary fontcap.
+C    SFLGS   --  The special value flags for the packets in a character
+C                digitization.  This array is dimensioned for the maximum
+C                number of lines that would appear in tha ASCII 
+C                fontcap for any character description.
+C    CHRPNT  --  Byte pointers into the digitized character descriptions
+C                in the binary fontcap.
+C    IXC     --  Array used to store X values extracted from the fontcap. 
+C    IXC     --  Array used to store Y values extracted from the fontcap. 
+C    XC      --  Array for storing unbiased, recentered, and scaled X
+C                coordinate values.
+C    YC      --  Array for storing unbiased, recentered, and scaled Y
+C                coordinate values.
+C    OUTLIN  --  Flag to indicate an outline font has been requested.
+C    SCALE   --  Scale factor for converting the font coordinate character
+C                height to the requested character height.
+C

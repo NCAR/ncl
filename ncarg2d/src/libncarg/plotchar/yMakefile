@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1992-11-17 21:10:07 kennison Exp $
+#	$Id: yMakefile,v 1.7 1992-11-19 01:34:53 fred Exp $
 #
 NCARG	= ../../../..
 
@@ -37,6 +37,19 @@ pcfopn.F: pcfopn.F.sed Makefile
 	@sed \
 	-e 's+SED_DBDIR+$(DBDIR)+' \
 	<pcfopn.F.sed >pcfopn.F
+
+pcffgp.o : pcffme.h pcffdx.h
+
+pcffgd.o : pcffme.h pcffdx.h pcffsp.h
+
+pcffhl.o : pcffdx.h pcffsp.h
+
+pcbdff.o : pcffme.doc pcffme.h pcffdx.doc pcffdx.h pcffsp.doc pcffsp.h
+
+pccfff.o : pcffme.h pcffdx.h
+
+pcffme.o : pcffme.h pcffdx.h
+
 
 #if defined(sgi) || defined(ardent) || (defined(u370) && defined(unix)) \
 	|| defined(RS6000) || defined(hpux) || defined(cray) || defined(CRAY2)

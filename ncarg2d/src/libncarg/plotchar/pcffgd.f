@@ -1,40 +1,14 @@
 C
-C $Id: pcffgd.f,v 1.1 1992-11-17 18:46:19 kennison Exp $
+C	$Id: pcffgd.f,v 1.2 1992-11-19 01:34:35 fred Exp $
 C
       SUBROUTINE PCFFGD (IPSS,NASC,CHGT,SIZE,RDGU,LDGU,NDGU)
 C
 C Get the digitization of the character whose ASCII decimal equivalent
 C is NASC and store in RGDU.
 C
-C
-      PARAMETER (NUMNTR=29)
-      COMMON /PCMTRC/TYPFLG, CHRSTR, CHREND, FRIGHT, FTOP  , FCAPOV,
-     +               FCAP  , FXHOV , FXH   , FHALF , FBASE , FBOT  ,
-     +               FCHSWD, FCVSWD, FLLX  , FLLY  , FURX  , FURY  ,
-     +               FLLEX , FLLEY , FUREX , FUREY , TABPNT, XBITWD, 
-     +               YBITWD, XBIAS , YBIAS , PKFLWD, LSTPNT
-      INTEGER        TYPFLG, CHRSTR, CHREND, FRIGHT, FTOP  , FCAPOV,
-     +               FCAP  , FXHOV , FXH   , FHALF , FBASE , FBOT  ,
-     +               FCHSWD, FCVSWD, FLLX  , FLLY  , FURX  , FURY  ,
-     +               FLLEX , FLLEY , FUREX , FUREY , TABPNT, XBITWD, 
-     +               YBITWD, XBIAS , YBIAS , PKFLWD, LSTPNT
-      INTEGER FNINFO(NUMNTR)
-      EQUIVALENCE (FNINFO,TYPFLG)
-      SAVE   /PCMTRC/
-C
-      PARAMETER (IFCLEN=3000, ICLEN=150)
-      COMMON /PCINDX/IBFC(IFCLEN)    ,SFLGS(ICLEN)   ,CHRPNT(128),
-     +               IXC(ICLEN)      ,IYC(ICLEN)     ,XC(ICLEN)  ,
-     +               YC(ICLEN)       ,OUTLIN         ,SCALE
-      INTEGER        IBFC            ,SFLGS          ,CHRPNT     , 
-     +               IXC             ,IYC            ,OUTLIN
-      REAL           XC              ,YC             ,SCALE
-      SAVE   /PCINDX/
-C
-      PARAMETER (IBZL = 129)
-      COMMON /PCBZSP/BCNTLX(4), BCNTLY(4), BZXC(IBZL), BZYC(IBZL)
-      REAL           BCNTLX   , BCNTLY   , BZXC      , BZYC
-      SAVE   /PCBZSP/
+      include 'pcffme.h'
+      include 'pcffdx.h'
+      include 'pcffsp.h'
 C
       DIMENSION RDGU(LDGU)
       DIMENSION TWINO(4),TVPTO(4)
@@ -125,6 +99,8 @@ C
            RDGU(JNDX) = 0.
          ENDIF
          NDGU = JNDX
+         IF (NDGU .GT. LDGU) CALL SETER
+     +         ('PCFFGD - INTERNAL LOGIC ERROR - SEE CONSULTANT',1,2)
        ELSE IF (SFLGS(I) .EQ. 7) THEN
 C
 C End a polyline.
@@ -134,6 +110,8 @@ C
          JNDX = JNDX+1
          RDGU(JNDX) = 0.
          NDGU = JNDX
+         IF (NDGU .GT. LDGU) CALL SETER
+     +         ('PCFFGD - INTERNAL LOGIC ERROR - SEE CONSULTANT',1,2)
        ELSE IF (SFLGS(I) .EQ. 2) THEN
 C
 C Add the points for a hole to the path, or draw the hole if an

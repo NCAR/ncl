@@ -1,0 +1,11 @@
+C
+C	$Id: pcffsp.doc,v 1.1 1992-11-19 01:34:47 fred Exp $
+C
+C
+C COMMON PCBZSP -- Array space for calling the Bezier curve generator.
+C
+C   BCNTLX -- X coordinates for Bezier control points.
+C   BCNTLY -- Y coordinates for Bezier control points.
+C   BZXC   -- Interpolated X coordinate values.
+C   BZYC   -- Interpolated Y coordinate values.
+C

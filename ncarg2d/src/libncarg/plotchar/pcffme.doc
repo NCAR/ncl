@@ -1,0 +1,36 @@
+C
+C	$Id: pcffme.doc,v 1.1 1992-11-19 01:34:41 fred Exp $
+C
+C
+C COMMON PCFFME --  Font metric information for filled fonts.
+C
+C  TYPFLG  --  Flag indicating fontcap for filled font or stroked font.
+C  CHRSTR  --  ASCII decimal equivalent for first character in the font.
+C  CHREND  --  ASCII decimal equivalent for last character in the font.
+C  FRIGHT  --  Maximum X value in the font coordinate system.
+C  FTOP    --  Font top in font coordinate system.
+C  FCAPOV  --  Font cap overshoot.
+C  FCAP    --  Font cap.
+C  FXHOV   --  x-height overshoot.
+C  FXH     --  x-height.
+C  FHALF   --  Font half.
+C  FBASE   --  Font base.
+C  FBOT    --  Font bottom.
+C  FCHSWD  --  Font cap horizontal stem width.
+C  FCVSWD  --  Font cap vertical stem width.
+C  FLLX    --  Lower left X value in the font coordinate system.
+C  FLLY    --  Lower left Y value in the font coordinate system.
+C  FURX    --  Upper right X value in the font coordinate system.
+C  FURY    --  Upper right Y value in the font coordinate system.
+C  FLLEX   --  Lower left X value in the extended font coordinate system.
+C  FLLEY   --  Lower left Y value in the extended font coordinate system.
+C  FUREX   --  Upper right X value in the extended font coordinate system.
+C  FUREY   --  Upper right Y value in the extended font coordinate system.
+C  TABPNT  --  Byte pointer to the first byte of in the digitizations.
+C  XBITWD  --  Bit width of X coordinates in the font coordinate system.
+C  YBITWD  --  Bit width of Y coordinates in the font coordinate system.
+C  XBIAS   --  Bias added to the X coordinates.
+C  YBIAS   --  Bias added to the Y coordinates.
+C  PKFLWD  --  Bit width of the special value flags in the packets.
+C  LSTPNT  --  Byte pointer to last byte of last character digitization.
+C
