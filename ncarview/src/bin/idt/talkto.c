@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.17 1992-10-14 17:55:17 clyne Exp $
+ *	$Id: talkto.c,v 1.18 1992-10-22 23:03:25 haley Exp $
  */
 /*
  *	talkto.c
@@ -18,6 +18,12 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/time.h>
+
+#ifdef RS6000
+#define NBBY    8       /* xlc compiler isn't config'ed properly        */
+#include <sys/select.h>
+#endif
+
 
 #ifndef	CRAY
 #include <sys/wait.h>
