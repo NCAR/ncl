@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.10 2004-05-21 14:29:07 haley Exp $
+#       $Id: yMakefile,v 1.11 2004-06-29 19:12:49 kennison Exp $
 #
 
 MYNAME	= areas
@@ -29,6 +29,6 @@ $(SOURCES) : IftranRun
 
 IftranRun : CodeIftran
 	@$(IFTRAN) < CodeIftran > CodeFortran
-	@$(FSPLIT) CodeFortran
+	@$(FSPLIT) -both CodeFortran
 	-@$(RM) CodeFortran
 	touch IftranRun
