@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.156 2004-07-25 18:58:19 haley Exp $
+#   $Id: ncargex.csh,v 1.157 2004-09-27 22:45:50 fred Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -441,7 +441,7 @@ set fitgrid_clist = (c_ftex01  c_ftex02  c_ftex03  c_ftex04  c_ftex05 \
                      c_ftex06  c_ftex07 \
                      c_ftex01d c_ftex02d c_ftex03d c_ftex04d c_ftex05d \
                      c_ftex06d c_ftex07d)
-set natgrid_clist = (c_nnex01 c_nnex01d c_nnex02 c_nnex03 c_nnex06)
+set natgrid_clist = (c_nnex01 c_nnex01d c_nnex02 c_nnex03 c_nnex04 c_nnex06)
 set shgrid_clist  = (c_shex01 c_shex02 c_shex03)
 
 set ngmath_clist  = ($csagrid_clist $cssgrid_clist $dsgrid_clist \
@@ -1827,6 +1827,7 @@ switch ($name)
     case c_nnex01:
     case c_nnex02:
     case c_nnex03:
+    case c_nnex04:
     case c_nnex06:
     case c_nnex01d:
         set extra_src_files = (nnplotc.c)
