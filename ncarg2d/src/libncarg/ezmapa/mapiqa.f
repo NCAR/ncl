@@ -1,5 +1,5 @@
 C
-C $Id: mapiqa.f,v 1.3 1994-03-17 00:04:29 kennison Exp $
+C $Id: mapiqa.f,v 1.4 1994-03-18 23:18:51 kennison Exp $
 C
       SUBROUTINE MAPIQA (IAMP,IGRP,IDLT,IDRT)
 C
@@ -15,18 +15,22 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPIQA - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (.NOT.(ICFELL('MAPIQA - UNCLEARED PRIOR ERROR',1).NE.0))
+     +GO TO 10000
+      IIER=-1
+      RETURN
+10000 CONTINUE
 C
 C Terminate the line, if any.
 C
-      IF (.NOT.(NCRA.GT.1)) GO TO 10000
+      IF (.NOT.(NCRA.GT.1)) GO TO 10001
       CALL AREDAM (IAMP,XCRA,YCRA,NCRA,IGRP,IDLT,IDRT)
-      IF (.NOT.(ICFELL('MAPIQA',2).NE.0)) GO TO 10001
+      IF (.NOT.(ICFELL('MAPIQA',2).NE.0)) GO TO 10002
       IIER=-1
       RETURN
-10001 CONTINUE
+10002 CONTINUE
       NCRA=0
-10000 CONTINUE
+10001 CONTINUE
 C
 C Done.
 C

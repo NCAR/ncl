@@ -1,5 +1,5 @@
 C
-C $Id: mapgrm.f,v 1.3 1994-03-17 00:04:27 kennison Exp $
+C $Id: mapgrm.f,v 1.4 1994-03-18 23:18:49 kennison Exp $
 C
       SUBROUTINE MAPGRM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
@@ -38,7 +38,11 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPGRM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (.NOT.(ICFELL('MAPGRM - UNCLEARED PRIOR ERROR',1).NE.0))
+     +GO TO 10000
+      IIER=-1
+      RETURN
+10000 CONTINUE
 C
 C If EZMAP needs initialization or if an error has occurred since the
 C last initialization, do nothing.
@@ -57,22 +61,22 @@ C least one of the two endpoints of each meridian, or its midpoint, will
 C be visible.  (If two points are invisible, MAPITM draws nothing, even
 C though the line joining them may be visible along part of its length.)
 C
-      IF (.NOT.(IPRJ.GE.1.AND.IPRJ.LE.6)) GO TO 10000
-      IF (.NOT.(ELPF)) GO TO 10001
+      IF (.NOT.(IPRJ.GE.1.AND.IPRJ.LE.6)) GO TO 10001
+      IF (.NOT.(ELPF)) GO TO 10002
       IMF=(UCEN/URNG)**2+(VCEN/VRNG)**2.LT.1.
-      GO TO 10002
-10001 CONTINUE
-      IMF=UMIN*UMAX.LT.0..AND.VMIN*VMAX.LT.0.
+      GO TO 10003
 10002 CONTINUE
-      IF (IPRJ.NE.1) IMF=IMF.AND.ABS(PHIA).GE.89.9999
-      GO TO 10003
-10000 CONTINUE
-      IF (.NOT.((IPRJ.EQ.10.OR.IPRJ.EQ.11).AND.ISSL.NE.0)) GO TO 10004
-      IMF=.TRUE.
-      GO TO 10003
-10004 CONTINUE
-      IMF=.FALSE.
+      IMF=UMIN*UMAX.LT.0..AND.VMIN*VMAX.LT.0.
 10003 CONTINUE
+      IF (IPRJ.NE.1) IMF=IMF.AND.ABS(PHIA).GE.89.9999
+      GO TO 10004
+10001 CONTINUE
+      IF (.NOT.((IPRJ.EQ.10.OR.IPRJ.EQ.11).AND.ISSL.NE.0)) GO TO 10005
+      IMF=.TRUE.
+      GO TO 10004
+10005 CONTINUE
+      IMF=.FALSE.
+10004 CONTINUE
 C
       IPF=(IPRJ.EQ.10.OR.IPRJ.EQ.11.OR.(IPRJ.EQ.12.AND.ILTS.EQ.1)).AND.
      +    ISSL.NE.0
@@ -90,46 +94,46 @@ C limit furthest from the pole needs adjustment to make it projectable
 C and visible.  Otherwise, we have trouble with portions of meridians
 C disappearing.
 C
-      IF (.NOT.(IPRJ.EQ.3.OR.IPRJ.EQ.4.OR.IPRJ.EQ.6)) GO TO 10005
-      IF (.NOT.(PHIA.GT.+89.9999)) GO TO 10006
+      IF (.NOT.(IPRJ.EQ.3.OR.IPRJ.EQ.4.OR.IPRJ.EQ.6)) GO TO 10006
+      IF (.NOT.(PHIA.GT.+89.9999)) GO TO 10007
       SLAT=SLAT+SRCH
       IF (IPRJ.EQ.3) SLAT=SLAT+SRCH
-10006 CONTINUE
-      IF (.NOT.(PHIA.LT.-89.9999)) GO TO 10007
+10007 CONTINUE
+      IF (.NOT.(PHIA.LT.-89.9999)) GO TO 10008
       BLAT=BLAT-SRCH
       IF (IPRJ.EQ.3) BLAT=BLAT-SRCH
-10007 CONTINUE
-10005 CONTINUE
+10008 CONTINUE
+10006 CONTINUE
 C
 C RLON is the smallest longitude for which a meridian is to be drawn,
 C XLON the biggest.  Avoid drawing a given meridian twice.
 C
       RLON=GRID*FLOOR(SLON/GRID)
       XLON=GRID*CLING(BLON/GRID)
-      IF (.NOT.(XLON-RLON.GT.359.9999)) GO TO 10008
-      IF (.NOT.(IPRJ.EQ.1)) GO TO 10009
+      IF (.NOT.(XLON-RLON.GT.359.9999)) GO TO 10009
+      IF (.NOT.(IPRJ.EQ.1)) GO TO 10010
       RLON=GRID*CLING((PHIO-179.9999)/GRID)
       XLON=GRID*FLOOR((PHIO+179.9999)/GRID)
-      GO TO 10010
-10009 CONTINUE
-      IF (.NOT.(IPRJ.GE.2.AND.IPRJ.LE.9)) GO TO 10011
+      GO TO 10011
+10010 CONTINUE
+      IF (.NOT.(IPRJ.GE.2.AND.IPRJ.LE.9)) GO TO 10012
       XLON=XLON-GRID
       IF (XLON-RLON.GT.359.9999) XLON=XLON-GRID
-10010 CONTINUE
 10011 CONTINUE
-10008 CONTINUE
+10012 CONTINUE
+10009 CONTINUE
 C
 C OLAT is the latitude at which meridians which are not multiples of 90
 C are to stop.  (Except on certain fast-path cylindrical projections,
 C only the meridians at longitudes which are multiples of 90 run all
 C the way to the poles.  This avoids a lot of clutter.)
 C
-      IF (.NOT.(IPRJ.EQ.10.OR.IPRJ.EQ.11)) GO TO 10012
+      IF (.NOT.(IPRJ.EQ.10.OR.IPRJ.EQ.11)) GO TO 10013
       OLAT=90.
-      GO TO 10013
-10012 CONTINUE
-      OLAT=GRID*FLOOR(89.9999/GRID)
+      GO TO 10014
 10013 CONTINUE
+      OLAT=GRID*FLOOR(89.9999/GRID)
+10014 CONTINUE
 C
 C Draw the meridians.
 C
@@ -139,12 +143,12 @@ C
       IF (AMOD(RLON,90.).EQ.0.) XLAT=90.
       RLAT=AMAX1(SLAT,-XLAT)
       XLAT=AMIN1(BLAT,XLAT)
-      IF (.NOT.(IMF)) GO TO 10014
+      IF (.NOT.(IMF)) GO TO 10015
       DLAT=.5*(XLAT-RLAT)
-      GO TO 10015
-10014 CONTINUE
-      DLAT=(XLAT-RLAT)/CLING((XLAT-RLAT)/GRDR)
+      GO TO 10016
 10015 CONTINUE
+      DLAT=(XLAT-RLAT)/CLING((XLAT-RLAT)/GRDR)
+10016 CONTINUE
       CALL MAPITM (RLAT,RLON,0,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
       IF (ICFELL('MAPGRM',2).NE.0) RETURN
   102 RLAT=RLAT+DLAT
@@ -166,7 +170,7 @@ C If a fast-path cylindrical equidistant projection is in use and either
 C or both of the poles is within the (rectangular) perimeter, arrange
 C for the parallels at -90 and/or +90 to be drawn.
 C
-      IF (.NOT.(IPRJ.EQ.10)) GO TO 10016
+      IF (.NOT.(IPRJ.EQ.10)) GO TO 10017
       CALL MAPTRN (-90.,PHIO,U,V)
       IF (ICFELL('MAPGRM',5).NE.0) RETURN
       IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
@@ -175,7 +179,7 @@ C
       IF (ICFELL('MAPGRM',6).NE.0) RETURN
       IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                  BLAT=BLAT+GRID
-10016 CONTINUE
+10017 CONTINUE
 C
 C Draw the parallels.
 C
@@ -184,12 +188,12 @@ C
       RLAT=AMAX1(-90.,AMIN1(90.,XLAT))
       RLON=FLOOR(SLON)
       XLON=AMIN1(CLING(BLON),RLON+360.)
-      IF (.NOT.(IPF)) GO TO 10017
+      IF (.NOT.(IPF)) GO TO 10018
       DLON=.5*(XLON-RLON)
-      GO TO 10018
-10017 CONTINUE
-      DLON=(XLON-RLON)/CLING((XLON-RLON)/GRDR)
+      GO TO 10019
 10018 CONTINUE
+      DLON=(XLON-RLON)/CLING((XLON-RLON)/GRDR)
+10019 CONTINUE
       CALL MAPITM (RLAT,RLON,0,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
       IF (ICFELL('MAPGRM',7).NE.0) RETURN
   104 RLON=RLON+DLON
