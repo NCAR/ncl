@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.12 1994-04-14 18:27:53 boote Exp $
+ *      $Id: yMakefile,v 1.13 1996-04-19 16:47:26 haley Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@ OBJS	=	ymake-filter.o
 CONFIG-PROGRAMS	= ymake-filter fcpp callconv mkdirhier ymake-install ldrel
 
 ARCHFILES	=	AIX_RS6000 AlphaOSF1 Cray DECRISC \
-			HPUX_snake SGI4D Sun3 Sun4 \
+			HPUX_snake SGI4D SGIR8 Sun4 \
 			Sun4Solaris SystemV
 YMAKEFILES	=	Project Rules SiteFileName Template
 CONFIGFILES	=	$(ARCHFILES) $(YMAKEFILES)
