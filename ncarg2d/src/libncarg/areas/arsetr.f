@@ -1,5 +1,5 @@
 C
-C $Id: arsetr.f,v 1.6 1994-03-17 17:47:48 kennison Exp $
+C $Id: arsetr.f,v 1.7 1995-04-19 17:20:23 kennison Exp $
 C
       SUBROUTINE ARSETR (IPN,RVL)
 C
@@ -18,7 +18,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
       COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                IDC,IDI,RLA,RWA,RDI,RSI
+     +                IDC,IDI,IRC,RLA,RWA,RDI,RSI
       SAVE   /ARCOMN/
 C
 C Declare the BLOCK DATA routine external, which should force it to
@@ -79,6 +79,10 @@ C
         IAU=0
       GO TO 10003
 10010 CONTINUE
+      IF (.NOT.(IPN(1:2).EQ.'RC'.OR.IPN(1:2).EQ.'rc')) GO TO 10011
+        IRC=MAX(0,MIN(2,INT(RVL)))
+      GO TO 10003
+10011 CONTINUE
         CTM(1:36)='ARSETR - PARAMETER NAME NOT KNOWN - '
         CTM(37:38)=IPN(1:2)
         CALL SETER (CTM(1:38),3,1)

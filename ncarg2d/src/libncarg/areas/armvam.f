@@ -1,5 +1,5 @@
 C
-C $Id: armvam.f,v 1.5 1994-03-17 17:47:36 kennison Exp $
+C $Id: armvam.f,v 1.6 1995-04-19 17:20:15 kennison Exp $
 C
       SUBROUTINE ARMVAM (IAM,IAN,LAN)
 C
@@ -15,7 +15,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
       COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                IDC,IDI,RLA,RWA,RDI,RSI
+     +                IDC,IDI,IRC,RLA,RWA,RDI,RSI
       SAVE   /ARCOMN/
 C
 C Declare the BLOCK DATA routine external, which should force it to

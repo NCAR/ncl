@@ -1,5 +1,5 @@
 C
-C $Id: armpia.f,v 1.7 1994-03-17 17:47:34 kennison Exp $
+C $Id: armpia.f,v 1.8 1995-04-19 17:20:14 kennison Exp $
 C
       SUBROUTINE ARMPIA (IOP,DPV,IER)
 C
@@ -63,7 +63,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
       COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                IDC,IDI,RLA,RWA,RDI,RSI
+     +                IDC,IDI,IRC,RLA,RWA,RDI,RSI
       SAVE   /ARCOMN/
 C
       NOP=1

@@ -1,5 +1,5 @@
 C
-C $Id: arblda.f,v 1.10 1994-03-17 17:47:12 kennison Exp $
+C $Id: arblda.f,v 1.11 1995-04-19 17:20:01 kennison Exp $
 C
       BLOCK DATA ARBLDA
 C
@@ -9,7 +9,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
       COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                IDC,IDI,RLA,RWA,RDI,RSI
+     +                IDC,IDI,IRC,RLA,RWA,RDI,RSI
       SAVE   /ARCOMN/
 C
 C Below are descriptions of all the common variables and default values
@@ -64,6 +64,16 @@ C be processed is traced counter-clockwise (interior to the left), or a
 C 2 if the polygon is traced clockwise (interior to the right).
 C
       DATA IDI / 0 /
+C
+C IRC is the internal parameter 'RC', which says how to reconcile
+C contradictory area-identifier information.  The default value, 0,
+C says to do it the original way, using the most recently-provided
+C piece of information for a given area.  The value 1 says to do it
+C a new way, using that area identifier seen most frequently for the
+C area, but ignoring zeroes.  The value 2 says to do it the new way,
+C but not ignore zeroes.
+C
+      DATA IRC / 0 /
 C
 C RLA is the internal parameter 'AL', which specifies the length of the
 C arrowheads to be used on debug plots, stated as a fraction of the

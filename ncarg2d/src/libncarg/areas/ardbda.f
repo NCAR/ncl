@@ -1,14 +1,15 @@
 C
-C $Id: ardbda.f,v 1.8 1994-06-14 18:50:33 kennison Exp $
+C $Id: ardbda.f,v 1.9 1995-04-19 17:20:03 kennison Exp $
 C
-      SUBROUTINE ARDBDA (X1,Y1,X2,Y2,IL,IR)
+      SUBROUTINE ARDBDA (X1,Y1,X2,Y2,IL,IR,IF,IG)
 C
 C The routine ARDBDA is called by ARDBPA, below, to draw an arrow from
 C the point (X1,Y1) to the point (X2,Y2), in the fractional coordinate
 C system.  The left and right area identifiers IL and IR are written
-C in the proper positions relative to the arrow.  In order to prevent
-C too many arrowheads from appearing, we keep track of the cumulative
-C distance along edges being drawn (in DT).
+C in the proper positions relative to the arrow.  If IF is less than
+C or equal to zero, the group identifier IG is written on the arrow.
+C In order to prevent too many arrowheads from appearing, we keep track
+C of the cumulative distance along edges being drawn (in DT).
 C
 C Declare the AREAS common block.
 C
@@ -16,7 +17,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
       COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                IDC,IDI,RLA,RWA,RDI,RSI
+     +                IDC,IDI,IRC,RLA,RWA,RDI,RSI
       SAVE   /ARCOMN/
 C
 C Declare a local common block used to communicate with ARDBPA.
@@ -51,8 +52,8 @@ C If area identifiers are to be written and they are in a reasonable
 C range (less than 1,000,000 in absolute value), write them on either
 C side of the arrow.
 C
-      IF (.NOT.(RDI.GT.0..AND.RSI.GT.0.AND.ABS(IL).LT.1000000.AND.ABS(IR
-     +).LT.1000000)) GO TO 10001
+      IF (.NOT.(RDI.GT.0..AND.RSI.GT.0..AND.ABS(IL).LT.1000000.AND.ABS(I
+     +R).LT.1000000)) GO TO 10001
 C
         XC=.5*(X1+X2)
         YC=.5*(Y1+Y2)
@@ -86,10 +87,29 @@ C
 C
 10001 CONTINUE
 C
+C If all groups of edges are being put on the same plot, write the
+C group identifier on the arrow.
+C
+      IF (.NOT.(RSI.GT.0..AND.IF.LE.0.AND.IG.LT.1000000)) GO TO 10004
+        XC=.5*(X1+X2)
+        YC=.5*(Y1+Y2)
+        WRITE (CS,'(I6)') IG
+        NC=0
+        DO 103 I=1,6
+        IC=CS(I:I)
+        IF (.NOT.(IC.NE.' ')) GO TO 10005
+          NC=NC+1
+          CS(NC:NC)=IC
+10005   CONTINUE
+  103   CONTINUE
+        CALL PLCHLQ (XC,YC,CS(1:NC),RSI,0.,0.)
+        IF (ICFELL('ARDBDA',6).NE.0) RETURN
+10004 CONTINUE
+C
 C If an arrowhead is to be drawn, do that now, making sure that the
 C cumulative length of the edge being drawn is great enough.
 C
-      IF (.NOT.(RLA.GT.0..AND.RWA.GT.0.)) GO TO 10004
+      IF (.NOT.(RLA.GT.0..AND.RWA.GT.0.)) GO TO 10006
         DT=DT+DP
         IF(DT.LE.RLA) RETURN
         DT=0.
@@ -102,12 +122,12 @@ C
         X4=XT+RWA*DY/DP
         Y4=YT-RWA*DX/DP
         CALL PLOTIF (X3,Y3,0)
-        IF (ICFELL('ARDBDA',6).NE.0) RETURN
-        CALL PLOTIF (X2,Y2,1)
         IF (ICFELL('ARDBDA',7).NE.0) RETURN
-        CALL PLOTIF (X4,Y4,1)
+        CALL PLOTIF (X2,Y2,1)
         IF (ICFELL('ARDBDA',8).NE.0) RETURN
-10004 CONTINUE
+        CALL PLOTIF (X4,Y4,1)
+        IF (ICFELL('ARDBDA',9).NE.0) RETURN
+10006 CONTINUE
 C
 C Done.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: ardbpa.f,v 1.10 1994-03-17 17:47:17 kennison Exp $
+C $Id: ardbpa.f,v 1.11 1995-04-19 17:20:04 kennison Exp $
 C
       SUBROUTINE ARDBPA (IAMA,IGIP,LABL)
 C
@@ -8,8 +8,9 @@ C
       CHARACTER*(*) LABL
 C
 C The routine ARDBPA produces a picture of that part of the contents of
-C the area map IAMA which belongs to the group IGIP.  The character
-C string LABL will be used as a label for the picture.
+C the area map IAMA which belongs to the group IGIP; if IGIP is zero or
+C negative, all groups of edges are shown.  The character string LABL
+C will be used as a label for the picture.
 C
 C Declare the AREAS common block.
 C
@@ -17,7 +18,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
       COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                IDC,IDI,RLA,RWA,RDI,RSI
+     +                IDC,IDI,IRC,RLA,RWA,RDI,RSI
       SAVE   /ARCOMN/
 C
 C The common block ARCOM1 is used to communicate with the arrow-drawing
@@ -117,7 +118,7 @@ C
 10006   CONTINUE
           IGID=IAMA(IGID)/2
 10007   CONTINUE
-        IF (.NOT.(IGID.EQ.IGIP)) GO TO 10008
+        IF (.NOT.(IGIP.LE.0.OR.IGID.EQ.IGIP)) GO TO 10008
           IAIL=IAMA(INDX+8)
           IF (IAIL.GT.0) IAIL=IAMA(IAIL)/2
           IAIR=IAMA(INDX+9)
@@ -138,7 +139,7 @@ C
             CALL GSTXCI (ICLN)
             ICLO=ICLN
 10011     CONTINUE
-          CALL ARDBDA (RXCO,RYCO,RXCN,RYCN,IAIL,IAIR)
+          CALL ARDBDA (RXCO,RYCO,RXCN,RYCN,IAIL,IAIR,IGIP,IGID)
           IF (ICFELL('ARDBPA',11).NE.0) RETURN
 10008   CONTINUE
       GO TO 10012

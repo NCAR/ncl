@@ -1,5 +1,5 @@
 C
-C $Id: aredam.f,v 1.7 1994-03-17 17:47:22 kennison Exp $
+C $Id: aredam.f,v 1.8 1995-04-19 17:20:07 kennison Exp $
 C
       SUBROUTINE AREDAM (IAM,XCA,YCA,LCA,IGI,IDL,IDR)
 C
@@ -37,7 +37,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
       COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                IDC,IDI,RLA,RWA,RDI,RSI
+     +                IDC,IDI,IRC,RLA,RWA,RDI,RSI
       SAVE   /ARCOMN/
 C
 C Declare the BLOCK DATA routine external, which should force it to

@@ -1,5 +1,5 @@
 C
-C $Id: argeti.f,v 1.10 1994-03-17 17:47:23 kennison Exp $
+C $Id: argeti.f,v 1.11 1995-04-19 17:20:08 kennison Exp $
 C
       SUBROUTINE ARGETI (IPN,IVL)
 C
@@ -19,7 +19,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
       COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                IDC,IDI,RLA,RWA,RDI,RSI
+     +                IDC,IDI,IRC,RLA,RWA,RDI,RSI
       SAVE   /ARCOMN/
 C
 C Declare the BLOCK DATA routine external, which should force it to
@@ -91,6 +91,10 @@ C
         IVL=ILC
       GO TO 10003
 10013 CONTINUE
+      IF (.NOT.(IPN(1:2).EQ.'RC'.OR.IPN(1:2).EQ.'rc')) GO TO 10014
+        IVL=IRC
+      GO TO 10003
+10014 CONTINUE
         CTM(1:36)='ARGETI - PARAMETER NAME NOT KNOWN - '
         CTM(37:38)=IPN(1:2)
         CALL SETER (CTM(1:38),4,1)
