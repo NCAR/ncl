@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.8 1997-08-20 20:49:00 dbrown Exp $
+ *      $Id: browse.c,v 1.9 1997-08-27 20:39:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -672,6 +672,7 @@ InitPane
         pane->managed = False;
         pane->topform = XtVaCreateWidget
                 ("topform", xmFormWidgetClass,parent,
+		 XmNallowResize,	True,
                  NULL);
         pane->scroller = XtVaCreateManagedWidget
                 ("scroller", xmScrolledWindowWidgetClass,pane->topform,
@@ -681,6 +682,7 @@ InitPane
         pane->form = XtVaCreateManagedWidget
                 ("form", xmFormWidgetClass,pane->scroller,
                  NULL);
+
         pane->has_folder = False;
 
         pane->tabcount = 0;
@@ -694,6 +696,27 @@ InitPane
         pane->active_pos = 0;
 
         return;
+}
+
+static void
+MapFirstPaneEH
+(
+	Widget		w,
+	XtPointer	udata,
+	XEvent		*event,
+	Boolean		*cont
+)
+{
+	Widget		form = (Widget)udata;
+	Dimension	height;
+
+	if(event->type != MapNotify)
+		return;
+
+	XtRemoveEventHandler(w,StructureNotifyMask,False,MapFirstPaneEH,NULL);
+	XtManageChild(form);
+
+	return;
 }
 
 static brPane *
@@ -726,7 +749,7 @@ AddPane
                               NULL);
                 theight += height;
         }
-        
+
         if (pcp->current_count < pcp->alloc_count) {
                 pane = pcp->panes[pcp->current_count];
         }
@@ -742,8 +765,16 @@ AddPane
         }
         pcp->current_count++;
         
+        if(XtIsRealized(np->paned_window))
+        	XtManageChild(pane->topform);
+	else{
+		XtAddEventHandler(np->paned_window,StructureNotifyMask,
+			False,MapFirstPaneEH,pane->topform);
+	}
+        pane->managed = True;
+
         height = theight / pcp->current_count;
-        if (height > 0) {
+	if(height > 0){
                 for (i=0; i < pcp->current_count; i++) {
                         XtVaSetValues(pcp->panes[i]->topform,
                                       XmNpaneMaximum,height,
@@ -753,8 +784,6 @@ AddPane
                 }
         }
         
-        XtManageChild(pane->topform);
-        pane->managed = True;
         pcp->current_ix = pcp->current_count - 1;
 
         for (i=0; i < pcp->current_count; i++) {
