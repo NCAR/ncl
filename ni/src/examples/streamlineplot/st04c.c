@@ -1,5 +1,5 @@
 /*
- *      $Id: st04c.c,v 1.3 1996-10-09 19:23:20 haley Exp $
+ *      $Id: st04c.c,v 1.4 1997-01-27 17:40:32 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -345,7 +345,8 @@ main(int argc, char *argv[])
 /*
  * Set the new title string
  */
-            sprintf(mainstring, "%8s%2s %2s:00",rftime, day, hour);
+			strcpy(mainstring, rftime);
+            sprintf(&mainstring[8], "%2s %2s:00", day, hour);
             printf("%s\n",mainstring);
             NhlRLClear(rlist);
             NhlRLSetString(rlist,NhlNtiMainString,mainstring);
