@@ -823,12 +823,12 @@ NhlErrorTypes ftest_W( void )
       output_contains_msg = 1;
     }
     if(*tmp_s1 < 2. || *tmp_s2 < 2.) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"ftest: s1 and/or s2 is less than 2; setting output to missing");
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"ftest: sample size too small; setting output to missing.\n");
       ier = 1;
       output_contains_msg = 1;
     }
     if(*tmp_var1 <= 0. || *tmp_var2 <= 0.) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"ftest: var1 and/or var2 is less than or equal to 0; setting output to missing");
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"ftest: var1 and/or var2 is less than or equal to 0; setting output to missing.\nPossibly, all values of a series are constant.");
       ier = 1;
       output_contains_msg = 1;
     }

@@ -1402,7 +1402,7 @@ NhlErrorTypes esacr_W( void )
     NhlPError(NhlWARNING,NhlEUNKNOWN,"esacr: %d rightmost sections of the input array contained all missing values",ier_count2);
   }
   if (ier_count5) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacr: the sample variance was zero for %d input array(s)",ier_count5);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacr: the sample variance was zero for %d input array(s).\nAll values of a series are constant.",ier_count5);
   }
 /*
  * free memory.
@@ -1576,7 +1576,7 @@ NhlErrorTypes esacv_W( void )
     NhlPError(NhlWARNING,NhlEUNKNOWN,"esacv: %d rightmost sections of the input array contained all missing values",ier_count2);
   }
   if (ier_count5) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacv: the sample variance was zero for %d input array(s)",ier_count5);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacv: the sample variance was zero for %d input array(s).\nAll values of a series are constant.",ier_count5);
   }
 /*
  * free memory.

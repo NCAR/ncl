@@ -109,7 +109,7 @@ NhlErrorTypes inverse_matrix_W( void )
     }
   }
   else {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"inverse_matrix: info = %d, missing values returned\n", info );
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"inverse_matrix: info = %d; missing values not allowed\n", info );
   }
 
 /*
