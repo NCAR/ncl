@@ -1,5 +1,5 @@
 C
-C	$Id: wmex13.f,v 1.2 1995-06-14 13:57:31 haley Exp $
+C	$Id: wmex13.f,v 1.3 1998-06-30 14:13:13 haley Exp $
 C
       PROGRAM WMEX13
 C
@@ -48,7 +48,7 @@ C   RGNSUX  - X user coordinates for regions.
 C   RGNSUY  - Y user coordinates for regions.
 C
       PARAMETER(NUMR=13,NUMRP=35)
-      CHARACTER*6 IRTYPE(NUMRP)
+      CHARACTER*13 IRTYPE(NUMRP)
       DIMENSION LIMITS(NUMRP),RGNSUX(NUMRP,NUMR),RGNSUY(NUMRP,NUMR),
      +          RGNSWX(NUMRP),RGNSWY(NUMRP)
 C
