@@ -1,5 +1,5 @@
 C
-C	$Id: gqtxx.f,v 1.2 1993-01-09 02:01:53 fred Exp $
+C	$Id: gqtxx.f,v 1.3 1993-02-19 18:09:40 fred Exp $
 C
       SUBROUTINE GQTXX(WKID,PX,PY,STRX,ERRIND,CPX,CPY,
      +           TXEXPX,TXEXPY)
@@ -496,6 +496,11 @@ C
           JNDX = ICHAR(STRX(I:I))
           IF (JNDX.LT.32 .OR. JNDX.GT.126) JNDX = 32
           JNDX = JNDX-26
+C
+C  Set width of undefined characters to the width of a blank.
+C
+          IF (FMETRX(JNDX,INDX) .EQ. 0) 
+     +                 FMETRX(JNDX,INDX) = FMETRX(6,INDX)
           CWDTH = FMETRX(JNDX,INDX)*HSCALE*ASCALE*CCHXP
           XMX = MAX(XMX,XP+CWDTH)
           XP = XP+CWDTH
