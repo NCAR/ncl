@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.118 2000-02-04 18:21:35 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.119 2000-02-09 22:48:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -11777,7 +11777,7 @@ NhlErrorTypes _NclIListSetType(void)
 	thelist = _NclGetObj(*list_id);
 	tmp = NrmQuarkToString(*option);
 	if(tmp == NULL) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"ListSetType: unknow list type. Only \"join\" or \"cat\" supported");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ListSetType: unknown list type. Only \"join\", \"cat\", \"fifo\", and \"lifo\" supported");
 		return(NhlFATAL);
 	}
 	buffer[3] = '\0';
@@ -11787,8 +11787,18 @@ NhlErrorTypes _NclIListSetType(void)
 		if(i == 3) 
 			break;
 	}
-
-	_NclListSetType(thelist, (strcmp("join",buffer) == 0 ? (NCL_JOIN | NCL_FIFO):(NCL_CONCAT|NCL_FIFO)));
+	if(strcmp(buffer,"join") ==0) {
+		_NclListSetType(thelist, NCL_JOIN);
+	} else if(strcmp(buffer,"cat") == 0) {
+		_NclListSetType(thelist, NCL_CONCAT);
+	} else if(strcmp(buffer,"fifo") == 0) {
+		_NclListSetType(thelist, NCL_FIFO);
+	} else if(strcmp(buffer,"lifo") == 0) {
+		_NclListSetType(thelist, NCL_LIFO);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ListSetType: unknown list type. Only \"join\", \"cat\", \"fifo\", and \"lifo\" supported");
+		return(NhlFATAL);
+	}
 	return(NhlNOERROR);
 }
 

@@ -177,7 +177,7 @@ NclObj theobj;
 		}
 		tmp->obj_id = tmp_obj->obj.id;
 
-		if(thelist->list.list_type & NCL_FIFO) {
+		/*if(thelist->list.list_type & NCL_FIFO) {*/
 			tmp->next = thelist->list.first;
 			if(thelist->list.first == NULL) {
 				thelist->list.first = tmp;
@@ -188,18 +188,20 @@ NclObj theobj;
 				thelist->list.first = tmp;
 				tmp->prev = NULL;
 			}
-		} else {
+		/*} else {
 			if(thelist->list.last == NULL) {
 				thelist->list.first = tmp;
 				thelist->list.first->prev = NULL;	
 				thelist->list.last = tmp;
 				tmp->next = NULL;
 			} else {
+				if(thelist->list.last == thelist->list.first) 
+					thelist->list.first->next = tmp;
 				tmp->prev = thelist->list.last;
 				thelist->list.last = tmp;
 				tmp->next = NULL;
 			}
-		}
+		}*/
 		thelist->list.nelem++;
 		return(NhlNOERROR);
 	} else {
