@@ -1,5 +1,5 @@
 /*
- *      $Id: vcrcontrol.h,v 1.2 1997-06-04 18:08:37 dbrown Exp $
+ *      $Id: vcrcontrol.h,v 1.3 1998-08-21 01:14:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -55,6 +55,7 @@ typedef struct _NgVcrControlRec
 NgVcrControl NgCreateVcrControl
 (
         NgGO			go,
+        NhlString		name,
         Widget			parent,
         Dimension		size,
         NhlBoolean		horizontal,

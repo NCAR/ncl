@@ -1,5 +1,5 @@
 /*
- *      $Id: vcrcontrol.c,v 1.4 1997-10-03 20:08:36 dbrown Exp $
+ *      $Id: vcrcontrol.c,v 1.5 1998-08-21 01:14:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -99,6 +99,7 @@ static Widget CreateDrawnButton
 NgVcrControl NgCreateVcrControl
 (
         NgGO			go,
+        NhlString		name,
         Widget			parent,
         Dimension		size,
         NhlBoolean		horizontal,
@@ -134,7 +135,7 @@ NgVcrControl NgCreateVcrControl
                 vcrp->start_stop =
                 vcrp->forward = vcrp->fast_forward = vcrp->end = NULL;
         
-        vcrp->form = XtVaCreateManagedWidget("form",xmFormWidgetClass,parent,
+        vcrp->form = XtVaCreateManagedWidget(name,xmFormWidgetClass,parent,
                                              XmNfractionBase,count,
                                              NULL);
 
