@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.35 1995-05-04 01:09:54 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.36 1995-05-10 02:31:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3004,6 +3004,7 @@ static NhlErrorTypes    SetLabels
 				 lb_p->label_const_spacing,
 				 NhlNtxFontColor,lb_p->label_color,
 				 NhlNtxFontThicknessF,lb_p->label_thickness,
+				 NhlNtxFuncCode,lb_p->label_func_code,    
 				 NULL);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error creating MultiText object";
@@ -3012,7 +3013,7 @@ static NhlErrorTypes    SetLabels
 		}
 	} 
 	else {
-		NhlSArg	sargs[16];
+		NhlSArg	sargs[24];
 		int	nargs = 0;
 
 		NhlSetSArg(&sargs[nargs++],NhlNtxFontHeightF,label_height);
@@ -3061,6 +3062,9 @@ static NhlErrorTypes    SetLabels
 		if (lb_p->label_const_spacing != olb_p->label_const_spacing)
 			NhlSetSArg(&sargs[nargs++],NhlNtxConstantSpacingF,
 					lb_p->label_const_spacing);
+		if (lb_p->label_func_code != olb_p->label_func_code)
+			NhlSetSArg(&sargs[nargs++],NhlNtxFuncCode,
+					lb_p->label_func_code);
 		subret = NhlALSetValues(lb_p->labels_id,sargs,nargs);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error setting MultiText object values";

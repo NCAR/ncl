@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.25 1995-05-09 22:17:55 boote Exp $
+ *      $Id: Resources.c,v 1.26 1995-05-10 02:31:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -142,22 +142,28 @@ _NhlCopyFromArg
 #endif
 {
 
-	if(_NhlIsSubtypeQ(floatQ,name)) *(float *)dst = *(float*)&src.lngval;
+	if(_NhlIsSubtypeQ(floatQ,name)) 
+		*(float *)dst = *(float*)&src.lngval;
 	else if(_NhlIsSubtypeQ(doubleQ,name))
-					*(double *)dst = *(float*)&src.lngval;
-	else if(_NhlIsSubtypeQ(charQ,name)) *(char *)dst = (char)src.lngval;
-	else if(_NhlIsSubtypeQ(byteQ,name)) *(char *)dst = (char)src.lngval;
-	else if(_NhlIsSubtypeQ(shortQ,name)) *(short *)dst = (short)src.lngval;
-	else if(_NhlIsSubtypeQ(intQ,name)) *(int *)dst = (int)src.lngval;
+		*(double *)dst = *(float*)&src.lngval;
+	else if(_NhlIsSubtypeQ(shortQ,name)) 
+		*(short *)dst = (short)src.lngval;
+	else if(_NhlIsSubtypeQ(intQ,name)) 
+		*(int *)dst = (int)src.lngval;
 	else if(_NhlIsSubtypeQ(stringQ,name))
-				*(NhlString *)dst = (NhlString)src.lngval;
+		*(NhlString *)dst = (NhlString)src.lngval;
 	else if(_NhlIsSubtypeQ(genQ,name))
-				*(NhlPointer *)dst = (NhlPointer)src.lngval;
+		*(NhlPointer *)dst = (NhlPointer)src.lngval;
 	else if(_NhlIsSubtypeQ(pointerQ,name))
-				*(NhlPointer *)dst = (NhlPointer)src.lngval;
-	else if(size == sizeof(long))	*(long *)dst = src.lngval;
-	else if (size == sizeof(_NhlArgVal))	*(_NhlArgVal *)dst = src;
-	else memcpy((void*)dst,(void*)&src,size);
+		*(NhlPointer *)dst = (NhlPointer)src.lngval;
+	else if (size == sizeof(char)) 
+		*(char *)dst = (char)src.lngval;
+	else if (size == sizeof(long))	
+		*(long *)dst = src.lngval;
+	else if (size == sizeof(_NhlArgVal))	
+		*(_NhlArgVal *)dst = src;
+	else 
+		memcpy((void*)dst,(void*)&src,size);
 
 	return;
 }
