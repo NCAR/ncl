@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.27 1994-03-22 16:23:07 clyne Exp $
+ *	$Id: commondev.c,v 1.28 1994-04-06 00:10:51 clyne Exp $
  */
 #include <math.h>
 #include <stdio.h>
@@ -804,6 +804,11 @@ int	ComLineSim (x1,y1,x2,y2)
 
 	/* calculate length of line	*/
 	len = sqrt((double)(((x2-x1)*(x2-x1)) + ((y2-y1)*(y2-y1))));
+
+	/*
+	 * make sure line length is reasonable.
+	 */
+	len = ((len < (0.01 * seglen)) ? (0.01 * seglen) : len);
 
 	/*
 	 * hack to *attempt* to guarantee that a dashed, and not a solid, 
