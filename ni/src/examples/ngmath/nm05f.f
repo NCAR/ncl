@@ -1,5 +1,5 @@
 
-C      $Id: nm05f.f,v 1.2 1998-06-23 22:53:07 fred Exp $
+C      $Id: nm05f.f,v 1.3 1998-11-13 22:46:56 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -98,10 +98,10 @@ C
       yinc = 1./real(ny-1)
       do 30 i=1,nx
          xo(i) = real((i-1)*xinc)
-         do 40 j=1,ny
-            yo(j) = real((j-1)*yinc)
- 40      continue
  30   continue
+      do 40 j=1,ny
+         yo(j) = real((j-1)*yinc)
+ 40   continue
 C
 C  Exponent equals 0.5
 C
