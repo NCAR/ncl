@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.11 1994-08-05 16:30:44 fred Exp $
+C	$Id: gksbd.f,v 1.12 1994-09-15 00:24:27 fred Exp $
 C
       BLOCKDATA GKSBD
 C
@@ -153,6 +153,7 @@ C       GNAM   -- ARRAY OF GKS FUNCTION NAMES IS AS PER THE BINDING
 C       SEGNAM -- FILE NAMES ASSOCIATED WITH THE SEGMENT NUMBERS IN
 C                 VARIABLE SEGS
 C       GFNAME -- FILENAME FOR MO WORKSTATIONS
+C       GSEGRT -- ROOT NAME FOR SEGMENT FILE NAMES
 C
 C-----------------------------------------------------------------------
 C
@@ -198,6 +199,7 @@ C-----------------------------------------------------------------------
       DATA NOPWK,NACWK,NUMSEG,CURSEG,SEGDEL,GKSCLP/0,0,0,-1,1,1/
       DATA NOPICT/-1/
       DATA GFNAME/'DEFAULT'/
+      DATA GSEGRT/'GSEG'/
       DATA CLLX,CLLY,CURX,CURY,CPSCL/-9999,-9999,-9999,-9999,-1/
 C
       DATA IERNMS/    1,    2,    3,    4,    5,    6,    7,    8,

@@ -1,5 +1,5 @@
 C
-C	$Id: gcrsg.f,v 1.2 1993-01-09 01:58:06 fred Exp $
+C	$Id: gcrsg.f,v 1.3 1994-09-15 00:24:23 fred Exp $
 C
       SUBROUTINE GCRSG(SGNA)
 C
@@ -73,9 +73,48 @@ C
       SEGS(NUMSEG) = SGNA
       CURSEG = SGNA
       SEGNAM(NUMSEG) = ' '
-      WRITE(SEGNAM(NUMSEG)(1:6),500) SGNA
-      IF(SGNA .LT. 10) SEGNAM(NUMSEG)(5:5) = '0'
-  500 FORMAT('GNFB',I2)
+      IF (GSEGRT(1:4) .EQ. 'GSEG') THEN
+C
+C  Construct a temporary file name from the user id and process id.
+C
+        CALL GZGIDS(IPID,IUID)
+        IPID = MOD(IPID,9999)
+        IUID = MOD(IUID,9999)
+        WRITE(SEGNAM(NUMSEG)(1:4),500)
+        WRITE(SEGNAM(NUMSEG)(5:8),501) IUID
+        WRITE(SEGNAM(NUMSEG)(9:12),501) IPID
+        WRITE(SEGNAM(NUMSEG)(13:15),502) SGNA
+  500   FORMAT('GSEG')
+  501   FORMAT(I4)
+  502   FORMAT('_',I2)
+        DO 50 I=1,14
+          IF(SEGNAM(NUMSEG)(I:I) .EQ. ' ') SEGNAM(NUMSEG)(I:I) = '0'
+   50   CONTINUE
+      ELSE
+C
+C  Construct the user-requested file name.
+C
+        LLEN = LEN(GSEGRT)
+        DO 60 I=1,LLEN
+        IF (GSEGRT(I:I).EQ.' ' .OR. GSEGRT(I:I).EQ.CHAR(0)) THEN
+          ILEN = I-1
+          GO TO 65
+        ELSE
+          SEGNAM(NUMSEG)(I:I) = GSEGRT(I:I)
+        ENDIF
+   60   CONTINUE
+        ILEN = LLEN
+   65   CONTINUE
+        WRITE(SEGNAM(NUMSEG)(ILEN+1:ILEN+2),503) SGNA
+        SEGNAM(NUMSEG)(ILEN+3:ILEN+3) = CHAR(0)
+  503   FORMAT(I2)
+        IF (SEGNAM(NUMSEG)(ILEN+1:ILEN+1) .EQ. ' ') THEN
+          SEGNAM(NUMSEG)(ILEN+1:ILEN+1) = '0'
+        ENDIF
+      ENDIF
+C
+C  Initialize the segment transformation.
+C
       DO 30 I=1,2
         DO 40 J=1,3
           SEGT(NUMSEG,I,J) = 0.

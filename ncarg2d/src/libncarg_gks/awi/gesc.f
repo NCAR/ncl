@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.16 1994-07-01 01:20:03 fred Exp $
+C	$Id: gesc.f,v 1.17 1994-09-15 00:24:25 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -44,8 +44,9 @@ C                 to see if the NCAR GKS package is being used.
 C      -1391  --  Metafile name
 C      -1392  --  FLASH4 support
 C      -1393  --  Picture name
-C      -1394  --  Flags whether segments should be deleted when WISS
-C                 is closed (0 = no; 1 = yes)
+C      -1394  --  A root for forming segment file names.  For example,
+C                 if the root is 'fseg', then the segment names will
+C                 be of the form 'fsegnn' where 'nn' is the segment number.
 C      -1395  --  Cause a pause in ctrans processing.
 C      -1396  --  Flag a pause in the X driver.
 C      -1398  --  Maximum number of error messages before abort.
@@ -149,10 +150,10 @@ C
         ENDIF
       ELSE IF (FCTID .EQ. -1394) THEN
 C
-C  Value to flag deletion of all created segments at CLOSE GKS time 
-C  (0 = no; 1 = yes).
+C  Root for segment file names.
 C
-        READ(IDR(1), 501) SEGDEL
+        GSEGRT = ' '
+        GSEGRT = IDR(1)
       ELSE IF (FCTID.EQ.-1393) THEN
 C
 C  Picture name.
@@ -180,7 +181,7 @@ C
       ELSE IF (FCTID .EQ. -1392) THEN
 C
 C  FLASH4 support (segment number is in columns 11-20; segment
-C  name is in columns 24-80.
+C  name is in columns 24-80).
 C
 C
 C  Check if the input data record is dimensioned properly.

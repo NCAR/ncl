@@ -1,5 +1,5 @@
 C
-C	$Id: gwiwdr.f,v 1.5 1994-05-17 00:40:01 fred Exp $
+C	$Id: gwiwdr.f,v 1.6 1994-09-15 00:26:55 fred Exp $
 C
       SUBROUTINE GWIWDR(ICNTX,RCNTX)
 C
@@ -168,7 +168,7 @@ C
    10 CONTINUE
    20 CONTINUE
       STR(ILEN+1:ILEN+1) = CHAR(0)
-      CALL G01MIO (1, WSSLUN, STR(1:ILEN), WOUTBF, 1, RERR)
+      CALL G01MIO (10, WSSLUN, STR(1:ILEN), WOUTBF, 1, RERR)
       IF (RERR .NE. 0)  RETURN
 C
 C  Initialize current-buffer-position pointer.
@@ -216,7 +216,7 @@ C
   420 CONTINUE
       CALL GTNLEN(STR,ILEN,IER)
       STR(ILEN+1:ILEN+1) = CHAR(0)
-      CALL G01MIO (9, 0, STR, IDUM, 1, RERR)
+      IF (STR(1:4) .EQ. 'GSEG') CALL G01MIO (9, 0, STR, IDUM, 1, RERR)
       RETURN
 C
 C  Activate workstation.

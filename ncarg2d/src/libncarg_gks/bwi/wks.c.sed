@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.16 1994-06-08 16:21:27 boote Exp $
+ *      $Id: wks.c.sed,v 1.17 1994-09-15 00:26:11 fred Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -129,6 +129,7 @@ static struct
 *                       "openf" is a flag for the open mode:
 *			  = 0  open for reading only
 *			  = 1  truncate and open for reading and writing
+*			  = 2  open a segment for writing and reading.
 *
 *	Called From:	Mostly Fortran routines in the NCAR GKS library.
 *
@@ -211,19 +212,30 @@ int	opnwks_(unit, openf, fname, status)
 	can be read back in.
 	*/
 
-	if (!strncmp(fname, "GNFB", 4)) { /* It's a segment */
+ 
+	if ((*openf == 0) || (*openf == 2)) {
 
-		/* Output is a segment. */
+		/* Is a segment. */
 
 		mftab[*unit].type    = FILE_OUTPUT;
+
+		if (!strncmp(fname, "GSEG", 4)) {
   		
-		/* Put the file in the NGTMPDIR directory */
-		tpath = (char *) GetNCARGPath(NGTMPDIR);
-		tname = malloc(strlen(tpath) + strlen("/") + strlen(fname) + 1);
-		(void) strcpy(tname, tpath);
-		(void) strcat(tname, "/");
-		(void) strcat(tname, fname);	
-		mftab[*unit].name    = tname;
+  			/* The file is in the NGTMPDIR directory */
+			tpath = (char *) GetNCARGPath(NGTMPDIR);
+			tname = malloc(strlen(tpath) + 
+					strlen("/") + strlen(fname) + 1);
+			(void) strcpy(tname, tpath);
+			(void) strcat(tname, "/");
+			(void) strcat(tname, fname);	
+			mftab[*unit].name    = tname;
+		}
+		else {
+
+			/* File is not a temporary */
+			mftab[*unit].name = malloc(strlen(fname)+1);
+			(void) strcpy(mftab[*unit].name, fname);
+		}
 
 		mftab[*unit].segment = TRUE;
 	}
@@ -905,4 +917,20 @@ int	delfil_(fname, status)
 #endif
 	*status = 0;
 	return(0);
+}
+
+/*************************************************************************
+*
+*       Function:       userid_(iuid)
+*
+*       Called From:    Fortran routines in the NCAR GKS library.
+*
+*       Returns:        The unique user id in iuid.
+*
+************************************************************************/
+gzgids_(uid, pid)
+	int	*uid,*pid;
+{
+        *uid = (int) getuid();
+        *pid = (int) getpid();
 }
