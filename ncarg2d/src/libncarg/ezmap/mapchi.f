@@ -1,5 +1,5 @@
 C
-C $Id: mapchi.f,v 1.4 1994-03-18 23:49:50 kennison Exp $
+C $Id: mapchi.f,v 1.5 1995-04-26 23:34:49 kennison Exp $
 C
       SUBROUTINE MAPCHI (IPRT,IDTG,IDPT)
 C
@@ -94,10 +94,10 @@ C
           CALL GSPMCI (ICIN(IPRT))
           CALL GSTXCI (ICIN(IPRT))
         END IF
-        CALL MAPUSR (IPRT)
+        CALL HLUMAPUSR (IPRT)
         IF (ICFELL('MAPCHI',3).NE.0) RETURN
       ELSE
-        CALL MAPUSR (IPRT)
+        CALL HLUMAPUSR (IPRT)
         IF (ICFELL('MAPCHI',4).NE.0) RETURN
         IF (ICIN(-IPRT).GE.0) THEN
           CALL GSPLCI (IPLS)

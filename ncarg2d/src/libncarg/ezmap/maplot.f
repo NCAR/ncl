@@ -1,5 +1,5 @@
 C
-C $Id: maplot.f,v 1.5 1994-04-08 23:00:29 kennison Exp $
+C $Id: maplot.f,v 1.6 1995-04-26 23:34:51 kennison Exp $
 C
       SUBROUTINE MAPLOT
 C
@@ -83,7 +83,8 @@ C
 C
 C See if the user wants to omit this point group.
 C
-      CALL MAPEOD (NOUT,NSEG,IDOS(NOUT)+IDLS,IDOS(NOUT)+IDRS,NPTS,PNTS)
+      CALL HLUMAPEOD (NOUT,NSEG,IDOS(NOUT)+IDLS,
+     +                          IDOS(NOUT)+IDRS,NPTS,PNTS)
       IF (ICFELL('MAPLOT',4).NE.0) RETURN
       IF (NPTS.LE.1) GO TO 101
 C

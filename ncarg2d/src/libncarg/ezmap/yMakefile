@@ -1,10 +1,11 @@
 #
-#	$Id: yMakefile,v 1.6 1993-11-01 17:34:48 boote Exp $
+#	$Id: yMakefile,v 1.7 1995-04-26 23:34:52 kennison Exp $
 #
 
 MYNAME	= ezmap
 
 GENERIC_SRCS = \
+	hlumapeod.f hlumapusr.f \
 	idictl.f mapbd.f mapcem.f mapchi.f mapdrw.f mapeod.f mapfst.f mapgci.f \
 	mapgrd.f mapgtc.f mapgti.f mapgtl.f mapgtr.f mapin2.f mapint.f mapio.f \
 	mapiq.f mapit.f maplbl.f maplmb.f maplot.f mappos.f maproj.f maprs.f \
@@ -14,6 +15,7 @@ GENERIC_SRCS = \
 	supmap.f
 
 GENERIC_OBJS = \
+	hlumapeod.o hlumapusr.o \
 	idictl.o mapbd.o mapcem.o mapchi.o mapdrw.o mapeod.o mapfst.o mapgci.o \
 	mapgrd.o mapgtc.o mapgti.o mapgtl.o mapgtr.o mapin2.o mapint.o mapio.o \
 	mapiq.o mapit.o maplbl.o maplmb.o maplot.o mappos.o maproj.o maprs.o \
