@@ -260,3 +260,102 @@ float	_NhlCmpFAny
 	return((float)a_int-(float)b_int);
 }
 
+double _NhlCmpDAny
+#if	NhlNeedProto
+(double a, double b, int sig_dig)
+#else
+(a,b,sig_dig)
+	double a;
+	double b;
+	int sig_dig;
+#endif
+{
+	double a_final;
+	double b_final;
+	long a_int;
+	long b_int;
+	int exp;
+	int signa;
+	int signb;
+	double tmp;
+/*
+* If sig_dig is > 6, a_int and b_int will overflow and cause problems
+*/
+	if(sig_dig > 7) 
+		sig_dig = 7;
+
+/*
+* Get ride of easy cases:
+* These actually didn't end up being easy since large numbers compared againts
+* zero cause a_int and b_int to overflow. So I added the fabs checks to make
+* sure that the absolute value of non-zero numbers are at least between 
+* 0 and 1.0.
+*/
+	if((a == 0.0)&&(b!=0.0)&&(log10(fabs(b))<=0.0)) {
+		a_int = 0;
+		b_final = b * (double)pow(10.0,(double)sig_dig);
+		b_int = (long)b_final;
+		return((double)(a_int - b_int));
+	} else if((a!=0.0)&&(b==0.0)&&(log10(fabs(a))<=0.0)){
+		b_int = 0;
+		a_final = a * (double)pow(10.0,(double)sig_dig);
+		a_int = (long)a_final;
+		return((double)(a_int - b_int));
+	} else if((a==0.0)&&(b==0.0)){
+		return(0.0);
+	}
+/*
+* If I get here and either a or b is zero then than means one of them is
+* greater that 1 and one is 0.0
+*/
+	if((a==0.0)||(b==0.0)) {
+		return(a - b);
+	}
+
+	
+/*
+* store sign info and make sure both numbers are positive so log10 can be
+* used. 
+*/
+	signa = ((double)fabs(a))/a;
+	signb = ((double)fabs(b))/b;
+	a_final = fabs(a);
+	b_final = fabs(b);
+/*
+* Now compute the exponent needed to shift a to the decimal position immediately
+* right of the decimal point for the value of a
+*/
+	if(a_final>b_final){ 
+		tmp = (double)log10(a_final);
+		exp = (long)ceil(log10(a_final));
+		if((double)exp == tmp)
+			exp++;
+	} else {
+		tmp = (double)log10(b_final);
+		exp = (long)ceil(log10(b_final));
+		if((double)exp == tmp)
+			exp++;
+	}
+
+/*
+* Now divide through by the exponent determined above
+*/
+	a_final = a_final/(double)pow(10.0,(double)exp);
+	b_final = b_final/(double)pow(10.0,(double)exp);
+
+/*
+* Since a and possibly b are now shifted to the immediate left of the decimal,
+* multipling by pow(10.0,sig_dig), rounding , setting appropriate sign  and 
+* truncating the decimal produces two integers that can be compared.
+*/
+	a_final = a_final * pow(10.0,(double)sig_dig);
+	b_final = b_final * pow(10.0,(double)sig_dig);
+	a_final = _NhlRndIt(a_final,sig_dig);
+	b_final = _NhlRndIt(b_final,sig_dig);
+	a_final *= signa;
+	b_final *= signb;
+	a_int = (long)a_final;
+	b_int = (long)b_final;
+	return((double)a_int-(double)b_int);
+}
+

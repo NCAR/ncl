@@ -1,5 +1,5 @@
 /*
- *      $Id: hluutil.h,v 1.3 1995-01-24 01:25:21 boote Exp $
+ *      $Id: hluutil.h,v 1.4 1995-01-28 01:56:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -114,6 +114,14 @@ extern float _NhlCmpF(
 #if	NhlNeedProto
 float /* a */,
 NhlCompareDat * /*b*/
+#endif
+);
+
+extern double _NhlCmpDAny(
+#if	NhlNeedProto
+double /* a */,
+double /*b*/,
+int   sig_dig	
 #endif
 );
 
