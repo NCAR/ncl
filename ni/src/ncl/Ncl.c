@@ -88,6 +88,7 @@ main() {
 	char *libpath;
 	char *scriptpath;
 	char *pt;
+	char *tmp;
 
 #ifdef YYDEBUG
 	extern int yydebug;
@@ -124,8 +125,11 @@ main() {
 		NhlNappDefaultParent,1,
 		NhlNappUsrDir,"./",NULL);
 	errid = NhlErrGetID();
-	NhlVASetValues(errid,
-		NhlNerrFilePtr,stdout,NULL);
+	NhlVAGetValues(errid,NhlNerrFileName,&tmp);
+	if(!strcmp(tmp,"stderr")){
+		NhlVASetValues(errid,
+			NhlNerrFilePtr,stdout,NULL);
+	}
 	_NclInitMachine();
 	_NclInitSymbol();	
 	_NclInitTypeClasses();
