@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.10 1993-01-17 06:51:39 don Exp $
+ *	$Id: devices.h,v 1.11 1993-01-19 19:36:51 clyne Exp $
  */
 typedef struct RasterDeviceStruct {
 	char			*name;
@@ -74,13 +74,13 @@ extern int	ParallaxClose();
 extern int	ParallaxPrintInfo();
 #endif
 
-#ifdef BuildRasterHPLaser
-extern Raster	*HPLJOpen();
-extern Raster	*HPLJOpenWrite();
-extern int	HPLJRead();
-extern int	HPLJWrite();
-extern int	HPLJClose();
-extern int	HPLJPrintInfo();
+#ifdef BuildRasterHPPCL
+extern Raster	*HPPCLOpen();
+extern Raster	*HPPCLOpenWrite();
+extern int	HPPCLRead();
+extern int	HPPCLWrite();
+extern int	HPPCLClose();
+extern int	HPPCLPrintInfo();
 #endif
 
 #ifdef BuildRasterAVS
@@ -167,11 +167,11 @@ static RasterDevice rasdevices[] = {
 	ImageCount_
 },
 #endif
-#ifdef BuildRasterHPLaser
+#ifdef BuildRasterHPPCL
 {
-	"hplj", "HP Laser Jet",
-	HPLJOpen, HPLJOpenWrite, 
-	HPLJRead, HPLJWrite, HPLJClose, HPLJPrintInfo,
+	"hppcl", "HP Laser Jet",
+	HPPCLOpen, HPPCLOpenWrite, 
+	HPPCLRead, HPPCLWrite, HPPCLClose, HPPCLPrintInfo,
 	ImageCount_
 },
 #endif

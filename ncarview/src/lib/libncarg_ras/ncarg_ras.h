@@ -1,5 +1,5 @@
 /*
- *	$Id: ncarg_ras.h,v 1.14 1993-01-17 06:51:46 don Exp $
+ *	$Id: ncarg_ras.h,v 1.15 1993-01-19 19:37:01 clyne Exp $
  */
 #ifndef _RASTER_
 #define _RASTER_
@@ -739,21 +739,21 @@ extern int ParallaxSetFunctions(
 #endif
 	);
 
-/********* Function definitions for HPLJ semi-public interface ***********/
+/********* Function definitions for HPPCL semi-public interface ***********/
 
-extern Raster *HPLJOpen(
+extern Raster *HPPCLOpen(
 #ifdef NeedFuncProto
 	char	*name
 #endif
 	);
 
-extern int HPLJRead(
+extern int HPPCLRead(
 #ifdef NeedFuncProto
 	Raster	*ras
 #endif
 	);
 
-extern Raster *HPLJOpenWrite(
+extern Raster *HPPCLOpenWrite(
 #ifdef NeedFuncProto
 	char		*name,
 	int		nx,
@@ -763,25 +763,25 @@ extern Raster *HPLJOpenWrite(
 #endif
 	);
 
-extern int HPLJWrite(
+extern int HPPCLWrite(
 #ifdef NeedFuncProto
 	Raster	*ras
 #endif
 	);
 
-extern int HPLJPrintInfo(
+extern int HPPCLPrintInfo(
 #ifdef NeedFuncProto
 	Raster		*ras
 #endif
 	);
 
-extern int HPLJClose(
+extern int HPPCLClose(
 #ifdef NeedFuncProto
 	Raster	*ras
 #endif
 	);
 
-extern int HPLJSetFunctions(
+extern int HPPCLSetFunctions(
 #ifdef NeedFuncProto
 	Raster	*ras
 #endif

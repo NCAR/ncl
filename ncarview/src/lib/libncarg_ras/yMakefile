@@ -6,7 +6,7 @@
 
 
 #define	BuildRasterHDF
-#define	BuildRasterHPLaser
+#define	BuildRasterHPPCL
 #define	BuildRasterNrif
 #define	BuildRasterSun
 #define BuildRasterAVS
@@ -51,10 +51,10 @@ HDF_SRCS =	hdf.c
 HDF_DEFS = 	-DBuildRasterHDF $(HDFDEFINES)
 #endif
 
-#ifdef BuildRasterHPLaser
-HPLJ_OBJS =	hplj.o
-HPLJ_SRCS =	hplj.c
-HPLJ_DEFS =	-DBuildRasterHPLaser
+#ifdef BuildRasterHPPCL
+HPPCL_OBJS =	hppcl.o
+HPPCL_SRCS =	hppcl.c
+HPPCL_DEFS =	-DBuildRasterHPPCL
 #endif
 
 #ifdef BuildRasterNrif
@@ -111,15 +111,15 @@ BINARY_SRCS =	binary.c
 BINARY_DEFS =	-DBuildRasterBinary
 #endif
 
-CDEFINES =	$(HDF_DEFS) $(HPLJ_DEFS) $(NRIF_DEFS) $(SUN_DEFS) \
+CDEFINES =	$(HDF_DEFS) $(HPPCL_DEFS) $(NRIF_DEFS) $(SUN_DEFS) \
 		$(XWD_DEFS) $(PARALLAX_DEFS) $(AVS_DEFS) $(SGI_DEFS) \
 		$(ABEKAS_DEFS) $(NETCDF_DEFS) $(BINARY_DEFS)
 
-DEVICE_OBJS =	$(HDF_OBJS) $(HPLJ_OBJS) $(NRIF_OBJS) $(SUN_OBJS) \
+DEVICE_OBJS =	$(HDF_OBJS) $(HPPCL_OBJS) $(NRIF_OBJS) $(SUN_OBJS) \
 		$(XWD_OBJS) $(PARALLAX_OBJS) $(AVS_OBJS) $(SGI_OBJS) \
 		$(ABEKAS_OBJS) $(NETCDF_OBJS) $(BINARY_OBJS)
 
-DEVICE_SRCS =	$(HDF_SRCS) $(HPLJ_SRCS) $(NRIF_SRCS) $(SUN_SRCS) \
+DEVICE_SRCS =	$(HDF_SRCS) $(HPPCL_SRCS) $(NRIF_SRCS) $(SUN_SRCS) \
 		$(XWD_SRCS) $(PARALLAX_SRCS) $(AVS_SRCS) $(SGI_SRCS) \
 		$(ABEKAS_SRCS) $(NETCDF_SRCS) $(BINARY_SRCS)
 
@@ -157,7 +157,7 @@ parallax.o:	ncarg_ras.h parallax.h
 	cc $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) \
                   $(FLOAT_OPT) $(CINC) $(VDEFINE) -c parallax.c
 	
-hplj.o:		ncarg_ras.h hplj.h
+hppcl.o:		ncarg_ras.h hppcl.h
 cleartext.o:	ncarg_ras.h
 avsraster.o:	ncarg_ras.h avsraster.h
 ntsc.o:		ncarg_ras.h ntsc.h
