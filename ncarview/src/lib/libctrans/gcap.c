@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.4 1991-01-30 16:27:20 clyne Exp $
+ *	$Id: gcap.c,v 1.5 1991-02-06 15:28:56 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -502,7 +502,7 @@ static	sim_polygon(p_list, n)
 	 * check and set color. This is complicated since we are using
 	 * lines to fill polygons.
 	 */
-	if (COLOUR_AVAIL && FILL_COLOUR_DAMAGE) {
+	if (FILL_COLOUR_DAMAGE) {
 		(void) setlinecolour(FILL_COLOUR.index);/* set LINE color */
 		LINE_COLOUR_DAMAGE = TRUE;
 		FILL_COLOUR_DAMAGE = FALSE;
@@ -550,25 +550,20 @@ static	sim_polygon(p_list, n)
 Ct_err	setlinecolour(index)
 CItype	index;
 {
-	if (!COLOUR_AVAIL) 
-		return (OK);
-
-	if (index >= MAP_INDEX_MAX) {
-		return(OK);
-	}
 	/*
 	 * some devices require special color setting instruction if we are		 * drawing in the background colour which is designated by index 0
 	 */
-	if (index == 0 && LINE_BACK_COL_START_SIZE)
+	if (index == 0 && LINE_BACK_COL_START_SIZE) {
 		buffer(LINE_BACK_COL_START,LINE_BACK_COL_START_SIZE);
+	}
 	else
 		buffer(LINE_COLOUR_START,LINE_COLOUR_START_SIZE);
 
-
 	(void)formatindex(index,FALSE);
 
-	if (index == 0 && LINE_BACK_COL_TERM_SIZE) 
+	if (index == 0 && LINE_BACK_COL_TERM_SIZE) {
 		buffer(LINE_BACK_COL_TERM,LINE_BACK_COL_TERM_SIZE);
+	}
 	else
 		buffer(LINE_COLOUR_TERM,LINE_COLOUR_TERM_SIZE);
 
@@ -586,24 +581,20 @@ Ct_err	setfillcolour(index)
 CItype	index;
 {
 
-	if (!COLOUR_AVAIL) 
-		return(OK);
-
-	if (index >= MAP_INDEX_MAX) {	/* colour index out of range	*/
-		return(OK);
-	}
 	/*
 	 * some devices require special color setting instruction if we are		 * drawing in the background colour which is designated by index 0
 	 */
-	if (index == 0 && POLY_BACK_COL_START_SIZE)
+	if (index == 0 && POLY_BACK_COL_START_SIZE) {
 		buffer(POLY_BACK_COL_START, POLY_BACK_COL_START_SIZE);
+	}
 	else
 		buffer(POLYGON_COLOUR_START, POLYGON_COLOUR_START_SIZE);
 
 	(void)formatindex(index,TRUE);
 
-	if (index == 0 && POLY_BACK_COL_TERM_SIZE)
+	if (index == 0 && POLY_BACK_COL_TERM_SIZE) {
 		buffer(POLY_BACK_COL_TERM, POLY_BACK_COL_TERM_SIZE);
+	}
 	else
 		buffer(POLYGON_COLOUR_TERM, POLYGON_COLOUR_TERM_SIZE);
 
@@ -748,7 +739,7 @@ CGMC *c;
 			x_extent);
 
 
-#ifdef	DEAD
+#ifdef	BOGUS
 	/*
 	 * overide graphcap DEVICE_BATCH if main driver batch is true
 	 */
@@ -794,7 +785,7 @@ CGMC *c;
 	/*
 	 * 	init the colour map
 	 */
-	if (COLOUR_AVAIL && MAP_AVAIL) {
+	if (MAP_AVAIL) {
 
 		if (!MAP_INDIVIDUAL)
 			for (i=0;i<MAP_START_SIZE;i++) 
@@ -921,7 +912,7 @@ CGMC *c;
 	/*
 	 *	Make sure the line attributes are set
 	 */
-	if (COLOUR_AVAIL && LINE_COLOUR_DAMAGE) {
+	if (LINE_COLOUR_DAMAGE) {
 		(void)setlinecolour(LINE_COLOUR.index);
 		LINE_COLOUR_DAMAGE = FALSE;
 	}
@@ -1334,17 +1325,14 @@ CGMC *c;
 			coordBufNum = 0;
 	}
 	else {
-		if (COLOUR_AVAIL)  {
 			
-			if (FILL_COLOUR_DAMAGE) {
-				(void)setfillcolour(FILL_COLOUR.index);
-				FILL_COLOUR_DAMAGE = FALSE;
-				PointFlush(TRUE,FALSE);
-			} else
-				PointFlush(TRUE,FALSE);
-
+		if (FILL_COLOUR_DAMAGE) {
+			(void)setfillcolour(FILL_COLOUR.index);
+			FILL_COLOUR_DAMAGE = FALSE;
+			PointFlush(TRUE,FALSE);
 		} else
-			PointFlush(TRUE,TRUE);
+			PointFlush(TRUE,FALSE);
+
 	}
 	return (OK);
 }
