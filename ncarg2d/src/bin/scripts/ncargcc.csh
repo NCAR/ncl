@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.30 1994-04-07 20:37:45 haley Exp $
+#	$Id: ncargcc.csh,v 1.31 1994-04-08 19:37:32 haley Exp $
 #
 
 #*********************************************#
@@ -56,7 +56,7 @@ else if ($system == "DECRISC") then
   set f77libs     = "-lots -lfor -lF77 -lI77 -lU77 -lutil -li -lm -lUfor"
 else if ($system == "HPUX_snake") then
   set f77libs     = "-lf -lm"
-  set XLIBPATH    = "-L/usr/lib/X11R4"
+  set XLIBPATH    = "-L/usr/lib/X11R5"
 else if ($system == "SGI4D") then
   set f77libs     = "-lF77 -lI77 -lU77 -lisam -lm -lc"
 else if ($system == "AlphaOSF1") then
