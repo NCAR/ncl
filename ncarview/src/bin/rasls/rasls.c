@@ -13,6 +13,7 @@ static struct {
 	boolean		help;
 	boolean		verbose;
 	boolean		version;
+	char		*format;
 } opt;
 
 /* Options we want parsed. */
@@ -23,6 +24,7 @@ static  OptDescRec      set_options[] = {
 	{"help",	0, NULL, "Print help information"},
 	{"verbose",	0, NULL, "Set verbose mode"},
 	{"Version",	0, NULL, "Print version number"},
+        {"ifmt", 	1, NULL, "Specify format of input file"},
 	{NULL}
 };
 
@@ -32,6 +34,7 @@ static	Option	get_options[] = {
 {"help",    NCARGCvtToBoolean, (Voidptr) &opt.help, sizeof(opt.help)},
 {"verbose", NCARGCvtToBoolean, (Voidptr) &opt.verbose, sizeof(opt.verbose)},
 {"Version", NCARGCvtToBoolean, (Voidptr) &opt.version,sizeof(opt.version)},
+{"ifmt",    NCARGCvtToString,  (Voidptr) &opt.format, sizeof(opt.format)},
 {NULL}
 };
 
@@ -93,7 +96,7 @@ main(argc, argv)
 				(void) Print(argv[i]);
 			}
 			else {
-				status = PrintLs(argv[i]);
+				status = PrintLs(argv[i], opt.format);
 				if (status != RAS_OK) {
 					(void) fprintf(stderr,
 						"%s: %s\n",
@@ -104,8 +107,9 @@ main(argc, argv)
 	}
 }
 
-int PrintLs(name)
+int PrintLs(name, fformat)
 	char	*name;
+	char	*fformat;
 {
 	int		status;
 	Raster		*ras, *RasterOpen();
@@ -131,7 +135,7 @@ int PrintLs(name)
 		return(RAS_ERROR);
 	}
 
-	ras = RasterOpen(name, (char *) NULL);
+	ras = RasterOpen(name, fformat);
 	if (ras == (Raster *) NULL) {
 		error_number = ErrGetNum();
 		if (error_number == RAS_E_UNKNOWN_FORMAT) {
