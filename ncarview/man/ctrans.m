@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.17 1993-03-16 22:01:00 clyne Exp $
+.\"	$Id: ctrans.m,v 1.18 1993-03-23 15:06:16 clyne Exp $
 .\"
 .\" ctrans 3.2 
 .TH CTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -27,6 +27,8 @@ ctrans \- a Computer Graphics Metafile ( \fICGM\fR ) translator
 .BI \-pal " pal_fname" 
 ] [
 .B \-pause
+] [
+.B \-quiet
 ] [
 .BI \-record " record_num ..."
 ] [
@@ -269,6 +271,11 @@ in most instances.
 This option and the
 .B \-movie 
 option are mutually exclusive.
+.TP
+.B \-quiet
+Suppress reporting of non-fatal (warning) error 
+messages; only fatal error messages are
+reported.
 .TP
 .B -record 
 < 
