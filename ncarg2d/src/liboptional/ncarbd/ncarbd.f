@@ -1,5 +1,5 @@
 C
-C	$Id: ncarbd.f,v 1.4 1994-01-18 18:11:10 haley Exp $
+C	$Id: ncarbd.f,v 1.5 1996-08-23 20:37:27 haley Exp $
 C
       SUBROUTINE NCARBD
       CALL AGDFLT
@@ -9,19 +9,20 @@ C
       CALL CONBDN
       CALL CPBLDA
       CALL DASHBD
+      CALL DPBLDA
       CALL G01BKD
-      CALL G01WDR
-      CALL GWIWDR
-      CALL GWIBKD
       CALL GABLDT
       CALL GFLSBD
       CALL GKSBD
       CALL GSEGDT
+      CALL GWIBKD
       CALL HFINIT
       CALL HSTBKD
+      CALL IDBLDA
       CALL ISBLDA
       CALL LBBLDA
       CALL MAPBD
+      CALL NGBLDA
       CALL PCBDFF
       CALL PCBLDA
       CALL PWRXBD
@@ -36,5 +37,6 @@ C
       CALL UTILBD
       CALL VELDAT
       CALL VVDATA
+      CALL WMBLDA
 
       END
