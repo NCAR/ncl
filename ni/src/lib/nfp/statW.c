@@ -1107,7 +1107,7 @@ NhlErrorTypes esacr_W( void )
  * various
  */
   int i, j, index_x, index_acr, total_size_x1, total_size_x, total_size_acr;
-  int ier = 0, npts;
+  int ier = 0, ier_count2 = 0, ier_count5 = 0, npts;
   double xmean, xvar;
 /*
  * Retrieve parameters
@@ -1217,6 +1217,9 @@ NhlErrorTypes esacr_W( void )
     NGCALLF(desauto,DESAUTO)(tmp_x,&npts,&missing_dx.doubleval,&xmean,
                              &xvar,mxlag,tmp_acv,tmp_acr,&ier);
 
+    if (ier == -2) ier_count2++;
+    if (ier == -5) ier_count5++;
+
     if(type_x != NCL_double) {
       for(j = 0; j < mxlag1; j++) {
         ((float*)acr)[index_acr+j] = (float)(tmp_acr[j]);
@@ -1225,14 +1228,15 @@ NhlErrorTypes esacr_W( void )
 
     index_x   += npts;
     index_acr += mxlag1;
-    if (ier == -2) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: The input array contains all missing values");
-      return(NhlFATAL);
-    }
-    else if (ier == -5) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: The sample variance is zero");
-      return(NhlFATAL);
-    }
+  }
+/*
+ * Check errors.
+ */
+  if (ier_count2) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacr: %i input array(s) contained all missing values",ier_count2);
+  }
+  if (ier_count5) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacr: the sample variance was zero for %i input array(s)",ier_count5);
   }
 /*
  * free memory.
@@ -1280,7 +1284,7 @@ NhlErrorTypes esacv_W( void )
  * various
  */
   int i, j, index_x, index_acv, total_size_x1, total_size_x, total_size_acv;
-  int ier = 0, npts;
+  int ier = 0, ier_count2 = 0, ier_count5 = 0, npts;
   double xmean, xvar;
 /*
  * Retrieve parameters
@@ -1389,6 +1393,10 @@ NhlErrorTypes esacv_W( void )
     xvar = xmean = missing_dx.doubleval;
     NGCALLF(desauto,DESAUTO)(tmp_x,&npts,&missing_dx.doubleval,&xmean,
                              &xvar,mxlag,tmp_acv,tmp_acr,&ier);
+
+    if (ier == -2) ier_count2++;
+    if (ier == -5) ier_count5++;
+
     if(type_x != NCL_double) {
       for(j = 0; j < mxlag1; j++) {
         ((float*)acv)[index_acv+j] = (float)(tmp_acv[j]);
@@ -1397,14 +1405,15 @@ NhlErrorTypes esacv_W( void )
 
     index_x   += npts;
     index_acv += mxlag1;
-    if (ier == -2) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: The input array contains all missing values");
-      return(NhlFATAL);
-    }
-    else if (ier == -5) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: The sample variance is zero");
-      return(NhlFATAL);
-    }
+  }
+/*
+ * Check errors.
+ */
+  if (ier_count2) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacv: %i input array(s) contained all missing values",ier_count2);
+  }
+  if (ier_count5) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacv: the sample variance was zero for %i input array(s)",ier_count5);
   }
 /*
  * free memory.

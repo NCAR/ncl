@@ -292,8 +292,7 @@ NhlErrorTypes escorc_W( void )
     }
   }
   if(ier_count > 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: Non-fatal conditions encountered in series or xstd = 0.0");
-    return(NhlFATAL);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"escorc: Non-fatal conditions encountered in series or xstd = 0.0");
   }
 
 /*
