@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.35 1996-03-20 21:38:49 boote Exp $
+ *      $Id: DataComm.c,v 1.36 1996-03-21 14:42:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -798,7 +798,7 @@ CompileDataList
 	_NhlInternDataList	ilist;
 	_NhlDataNodePtr		*dnodes;
 	int			*llist;
-	int			i,j,len;
+	int			i,j,k,len;
 	NhlLayer		dil=NULL;
 	static NrmQuark		Qint=NrmNULLQUARK;
 
