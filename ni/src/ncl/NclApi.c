@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.47 1997-10-13 16:19:48 ethan Exp $
+ *      $Id: NclApi.c,v 1.48 1998-01-28 15:06:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -191,7 +191,6 @@ int NclInitServer
 	_NclInitSymbol();
 	_NclInitTypeClasses();
 	_NclInitDataClasses();
-	_NhlRegSymConv(NULL,NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
 
 /*
 * Now handle default directories
