@@ -1,5 +1,5 @@
 ;
-; $Id: basic09n.ncl,v 1.2 1996-07-10 14:48:26 haley Exp $
+; $Id: basic09n.ncl,v 1.3 1996-07-10 18:37:03 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -120,7 +120,10 @@ if (mod .ne. 0) then
   div = div +1
 end if
 
-txid1 = create "TextItem" textItemClass wid
+;
+; Create header to put on all frames
+;
+txid1 = create "TextItem1" textItemClass wid
   "txFuncCode" : "*"
   "txPosXF" : 0.32
   "txPosYF" : 0.98
@@ -129,8 +132,7 @@ txid1 = create "TextItem" textItemClass wid
   "txString" : "font number : font name"
 end create
 
-txid2 = create "TextItem" textItemClass wid
-  "txFuncCode" : "*"
+txid2 = create "TextItem2" textItemClass wid
   "txPosXF" : 0.72
   "txPosYF" : 0.98
   "txFontHeightF" : 0.02
@@ -140,8 +142,16 @@ end create
 
 do j = 1,div
   k = 0.90
+  draw(txid1)
+  draw(txid2)
+;
+; Loop over each font
+;
   do i=(j-1)*num_lines,min(num_fonts-1,j*num_lines-1)
-    txid3 = create "TextItem1" textItemClass wid
+;
+; Font number and name
+;
+    txid3 = create "TextItem3" textItemClass wid
       "txJust" : 2
       "txFuncCode" : "*"
       "txPosXF" : 0.1
@@ -150,7 +160,10 @@ do j = 1,div
       "txFontColor" : 3
       "txString" : fonts(i,0) + " : " + fonts(i,1)
     end create
-    txid4 = create "TextItem2" textItemClass wid
+;
+; Actual font drawn using the words 'NCAR Graphics'
+;
+    txid4 = create "TextItem4" textItemClass wid
       "txJust" : 2
       "txFont" : fonts(i,1)
       "txString" : "NCAR Graphics"
@@ -159,8 +172,6 @@ do j = 1,div
       "txFontColor" : 5
       "txFontHeightF" : 0.02
     end create
-    draw(txid1)
-    draw(txid2)
     draw(txid3)
     draw(txid4)
     delete(txid3)

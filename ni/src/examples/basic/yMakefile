@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.13 1996-07-09 23:54:34 haley Exp $
+#   $Id: yMakefile,v 1.14 1996-07-10 18:37:03 haley Exp $
 #
 #   Makefile for HLU Basic examples
 #
@@ -11,15 +11,15 @@ EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
 CSRCS    = basic01c.c basic02c.c basic03c.c basic04c.c basic05c.c basic06c.c \
-           basic07c.c basic08c.c
+           basic07c.c basic08c.c basic09c.c
 FSRCS    = basic01f.f basic02f.f basic03f.f basic04f.f basic05f.f basic06f.f \
-           basic07f.f basic08f.f
+           basic07f.f basic08f.f basic09f.f
 NSRCS    = basic01n.ncl basic02n.ncl basic03n.ncl basic04n.ncl basic05n.ncl \
 	   basic06n.ncl basic07n.ncl basic08n.ncl basic09n.ncl
 COBJS    = basic01c.o basic02c.o basic03c.o basic04c.o basic05c.o basic06c.o \
-           basic07c.o basic08c.o
+           basic07c.o basic08c.o basic09c.o
 FOBJS    = basic01f.o basic02f.o basic03f.o basic04f.o basic05f.o basic06c.o \
-           basic07f.o basic08f.o
+           basic07f.o basic08f.o basic09f.o
 SRCS     = $(CSRCS) $(FSRCS)
 OBJS     = $(COBJS) $(FOBJS)
 RESFILES = basic03.res basic07.res
@@ -36,6 +36,7 @@ CExampleTarget(basic05c,basic05c.o)
 CExampleTarget(basic06c,basic06c.o)
 CExampleTarget(basic07c,basic07c.o)
 CExampleTarget(basic08c,basic08c.o)
+CExampleTarget(basic09c,basic09c.o)
 
 FExampleTarget(basic01f,basic01f.o)
 FExampleTarget(basic02f,basic02f.o)
@@ -45,6 +46,7 @@ FExampleTarget(basic05f,basic05f.o)
 FExampleTarget(basic06f,basic06f.o)
 FExampleTarget(basic07f,basic07f.o)
 FExampleTarget(basic08f,basic08f.o)
+FExampleTarget(basic09f,basic09f.o)
 
 CleanFilesTarget($(OBJS))
 DependTarget($(SRCS))
