@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.22 2002-02-23 02:20:48 haley Exp $
+#	$Id: yMakefile,v 1.23 2002-06-20 22:22:51 haley Exp $
 #
 
 MYNAME1		= libictrans.o
@@ -20,6 +20,9 @@ EXTENSION_SRCS	= ictrans_mem.c ictrans_wks.c
 GENERIC_OBJS	= commands.o cmd_tab.o get_cmd.o \
 		glob.o spooler.o ictrans.o lex_stuff.o input.o
 
+#if defined(Linux) || defined(LINUX)
+#define linux
+#endif
 #if defined(linux) || defined(Darwin)
 LEX_OBJS = lex.yy_linux.o
 #else

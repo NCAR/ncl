@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.15 2002-01-29 22:48:45 kennison Exp $
+#	$Id: yMakefile,v 1.16 2002-06-20 22:21:55 haley Exp $
 #
 
 MYNAME	= conpack
@@ -40,7 +40,7 @@ PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
 
 PartialLibraryTarget(libNGcn.a,$(OBJECTS))
 
-#if defined(linux)
+#if defined(linux) || defined(LINUX) || defined(Linux)
 cptres.o: cptres.f
 	$(F77) $(FCOPTIONS) -g -c cptres.f
 #endif

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.14 2002-02-22 00:50:25 haley Exp $
+#	$Id: yMakefile,v 1.15 2002-06-20 22:18:56 haley Exp $
 #
 
 MYNAME	= graphcap
@@ -40,6 +40,10 @@ GRAPHCAPS = \
 
 FortranTarget(graphc,$(OBJECTS))
 InstallTarget($(GRAPHCAPS),$(INSTALL_DB),$(GRAPHCAPPATH))
+
+#if defined(Linux) || defined(LINUX)
+#define linux
+#endif
 
 #if (!defined(i386) || defined(linux)) && !defined(Darwin)
 CleanFilesTarget($(GRAPHCAPS) $(FCPP_OBJS))

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.13 2002-02-22 03:19:21 haley Exp $
+#	$Id: yMakefile,v 1.14 2002-06-20 22:19:11 haley Exp $
 #
 
 MYNAME	= fontcap
@@ -34,7 +34,7 @@ FONTCAPS = \
 FortranProgram(fontc,$(OBJECTS),$(DEPLIBS))
 InstallTarget($(FONTCAPS),$(INSTALL_LIB),$(FONTCAPPATH))
 
-#if (!defined(i386) || defined(linux)) && !defined(Darwin)
+#if (!defined(i386) || defined(linux) || defined(Linux) || defined(LINUX)) && !defined(Darwin)
 CleanFilesTarget($(FONTCAPS) $(FCPP_OBJS))
 #else
 CleanFilesTarget($(FONTCAPS))
