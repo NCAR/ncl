@@ -1,8 +1,8 @@
 #!/bin/csh -f
 #
-#	$Id: ncargf77.csh,v 1.9 1993-02-18 17:45:02 haley Exp $
+#	$Id: ncargf77.csh,v 1.10 1993-03-11 05:39:02 haley Exp $
 #
-
+set XLIBPATH = ""
 set system   = "SED_SYSTEM_INCLUDE"
 set fortran  = "SED_F77"
 set libdir   = `ncargpath SED_LIBDIR`
@@ -39,7 +39,7 @@ set liblocal   = "$libdir/libncarg_loc.a"
 set libncarg_c = "$libdir/libncarg_c.a"
 
 set libmath  = "-lm"
-set libX11     = "-lX11"
+set libX11     = "$XLIBPATH -lX11"
 
 set smooth = "$ro/libdashsmth.o"
 set quick  = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"

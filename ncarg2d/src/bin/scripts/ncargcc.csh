@@ -1,8 +1,8 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.23 1993-03-08 22:02:37 haley Exp $
+#	$Id: ncargcc.csh,v 1.24 1993-03-11 05:39:00 haley Exp $
 #
-
+set XLIBPATH = ""
 set system = "SED_SYSTEM_INCLUDE"
 set cc     = "SED_CC"
 set libdir = `ncargpath SED_LIBDIR`
@@ -52,7 +52,7 @@ set libgks      = "$libdir/libncarg_gksC.a $libdir/libncarg_gks.a"
 set liblocal    = "$libdir/libncarg_loc.a"
 set libncarg_c  = "$libdir/libncarg_c.a"
 set libcbind    = "$libdir/libncargC.a"
-set libX11      = "-lX11"
+set libX11      = "$XLIBPATH -lX11"
 
 if ($system == "Cray2" || $system == "Cray") then
   set f77libs     =       "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
