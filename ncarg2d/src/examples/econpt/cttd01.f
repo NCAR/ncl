@@ -12,14 +12,13 @@ C       PARAMETER (IERF=6,LUNI=2,IWTY=11,IWID=1)  !  PDF, Portrait
 C       PARAMETER (IERF=6,LUNI=2,IWTY=12,IWID=1)  !  PDF, Landscape
 C
 C The object of this program is to produce a set of plots illustrating
-C the use of a simple, closed, grid wrapped around an arbitrary blob
-C having a convex hull as viewed from the outside.  The triangular mesh
-C is created from a rectangular grid by calling the CONPACKT routine
-C CTTMRG, which returns a triangular mesh on the surface of the unit
-C sphere, and then putting the triangular mesh through a couple of
-C steps that deform it.  Dummy data are supplied for its vertices, and
-C the data are contoured using a mapping supplied by the 3D package
-C TDPACK.
+C the use of a simple, closed, grid wrapped around an arbitrary blob.
+C The triangular mesh is created from a rectangular grid by calling
+C the CONPACKT routine CTTMRG, which returns a triangular mesh on the
+C surface of the unit sphere, and then putting the triangular mesh
+C through a couple of steps that deform it.  Dummy data are supplied
+C for its vertices, and the data are contoured using a mapping supplied
+C by the 3D package TDPACK.
 C
 C Various frames can be drawn or not drawn:
 C
@@ -102,7 +101,9 @@ C      the left of the edge (-1 if there is no triangle to the left);
 C   4. the index, in ITRI, of the pointer to the edge in the triangle to
 C      the right of the edge (-1 if there is no triangle to the right);
 C   5. a utility flag for use by algorithms that scan the structure.
-C   6. a flag that I'm using to distinguish certain edges from others.
+C   6. a flag used to distinguish certain edges from others (allowing
+C      one to suppress the drawing of edges that were diagonals of the
+C      rectangular grid).
 C
 C The "left" and "right" sides of an edge are defined as they would be
 C by an observer standing on the globe at point 1 of the edge, looking
@@ -118,7 +119,9 @@ C   1. the base index, in IEDG, of edge 1 of the triangle;
 C   2. the base index, in IEDG, of edge 2 of the triangle;
 C   3. the base index, in IEDG, of edge 3 of the triangle;
 C   4. a flag set non-zero to block use of the triangle, effectively
-C      removing it from the mesh.
+C      removing it from the mesh.  Different bits of this flag are
+C      used for different purposes, as discussed below just prior to
+C      the call to the routine CTTDBF.
 C
 C The "base index" of a point node, an edge node, or a triangle node is
 C always a multiple of the length of the node, to which can be added an
@@ -150,10 +153,11 @@ C mesh is created from a rectangular one by splitting each rectangular
 C cell in half, we can declare the largest values we expect to use for
 C the dimensions of that mesh:
 C
-C       PARAMETER (IDIM=181,JDIM=91,IDM1=IDIM-1,JDM1=JDIM-1)
-C       PARAMETER (IDIM=121,JDIM=61,IDM1=IDIM-1,JDM1=JDIM-1)
-        PARAMETER (IDIM= 81,JDIM=41,IDM1=IDIM-1,JDM1=JDIM-1)
-C       PARAMETER (IDIM= 41,JDIM=21,IDM1=IDIM-1,JDM1=JDIM-1)
+C       PARAMETER (IDIM=361,JDIM=181,IDM1=IDIM-1,JDM1=JDIM-1)
+C       PARAMETER (IDIM=181,JDIM= 91,IDM1=IDIM-1,JDM1=JDIM-1)
+C       PARAMETER (IDIM=121,JDIM= 61,IDM1=IDIM-1,JDM1=JDIM-1)
+        PARAMETER (IDIM= 81,JDIM= 41,IDM1=IDIM-1,JDM1=JDIM-1)
+C       PARAMETER (IDIM= 41,JDIM= 21,IDM1=IDIM-1,JDM1=JDIM-1)
 C
 C and then compute from those values the maximum number of points,
 C edges, and triangles that the triangular mesh arrays will need to
@@ -380,7 +384,7 @@ C
 C
 C Deform the triangular mesh to fit on the surface of the ellipsoid,
 C further deform it to create a sort of distorted "dumbbell", and
-C and supply dummy data values.
+C then supply dummy data values.
 C
         CALL TDGDIN (-1.,1.,-1.,1.,-1.,1.,21,21)
 C
@@ -462,14 +466,14 @@ C special version of CTMXYZ).
 C
         CALL CTSETI ('MAP - MAPPING FLAG',2)
 C
-C Turn on the drawing of the mesh edge and set the area identifier for
-C areas outside the mesh.
+C Set the area identifier for cells associated with triangles that are
+C seen from "the back".
 C
 c       CALL CTSETI ('PAI - PARAMETER ARRAY INDEX',-1)
-c       CALL CTSETI ('CLU - CONTOUR LEVEL USE FLAG',1)
-c       CALL CTSETI ('AIA - AREA IDENTIFIER FOR AREA',-1)
+c       CALL CTSETI ('AIA - AREA IDENTIFIER FOR AREA',1001)
 C
-C Set the area identifier for areas in "out-of-range" areas.
+C Set the area identifier for cells associated with no triangles of the
+C mesh.
 C
 c       CALL CTSETI ('PAI',-2)
 c       CALL CTSETI ('AIA - AREA IDENTIFIER FOR AREA',1002)
@@ -600,7 +604,42 @@ C
      +                 RWRK,LRWK,       !  real workspace
      +                 IWRK,LIWK)       !  integer workspace
 C
-C Set blocking flags for all triangles according to various criteria.
+C CTTDBF is called to set blocking flag bits for triangles according to
+C various criteria.  Its next-to-last argument may take on the following
+C values:
+C
+C   0 => just clear the blocking flags for all triangles.
+C   1 => set blocking flags for triangles that are nearly edge-on to
+C        the line of sight or that are seen from the "wrong" side (so
+C        that they appear to be defined by points given in clockwise
+C        order, rather than in counter-clockwise order).
+C   2 => set blocking flags for triangles that are hidden by other
+C        triangles of the mesh.
+C   3 => do both 1 and 2.
+C
+C Its final argument is a tolerance value, in degrees, defining what
+C it means for a triangle to be nearly edge-on to the line of sight.
+C Using the value zero turns off the setting of nearly-edge-on bits.
+C
+C The bits used in the blocking flags are as follows.  Assume that the
+C seven rightmost (lowest-order) bits of the blocking flags are numbered
+C as follows:
+C
+C   . . . B6 B5 B4 B3 B2 B1 B0
+C
+C Bit B0 of the blocking flag for a triangle is untouched by a call to
+C CTTDBF; a user may set it to block the triangle.
+C
+C Bits B3, B2, and B1 are used for the view from the right eye (when
+C stereo views are being drawn) or the only eye (when a simple view is
+C being drawn).  If B3 is set, it indicates that the triangle is hidden
+C by another triangle of the mesh; if B2 is set, it indicates that the
+C triangle is nearly edge-on to the line of sight; if B1 is set, it
+C indicates that the triangle is seen from the wrong side.
+C
+C Bits B6, B5, and B4 are defined similarly, but apply to the view from
+C the left eye, rather than the right eye (when stereo views are being
+C done).
 C
           PRINT * , '  CALLING CTTDBF'
 C
@@ -613,10 +652,27 @@ C
             GO TO 103
           END IF
 C
-C Set masks that will be used to determine what triangles to block.
+C Once bits B6, B5, B4, B3, B2, B1, and B0 are set in all the triangle
+C blocking flags, one may use them to determine what is drawn in a
+C particular view.  This is done by calling the routine CTTDBM, which
+C has eight integer arguments.  The first four arguments are used to
+C toggle bit values from the triangle's blocking flag, while the final
+C four arguments are used to determine which of those bit values are
+C considered to be meaningful.  For example, using the values "0, 0,
+C 0, 0, 1, 1, 0, 1" says that none of the four values is to be toggled
+C and that all will be allowed to block the triangle except the third;
+C the net effect is to block triangles that are hidden, nearly edge-on,
+C or blocked by the user, but none that are viewed from the wrong side.
+C The four bits used from the blocking flag of each triangle are either
+C bits B3, B2, B1, and B0, if the right (or only) eye is in use or bits
+C B6, B5, B4, and B0, if the left eye is in use.
 C
 C Set masks for 3-D| t t t t u u u u | toggle/use
 C triangle blocking| h e w u h e w u | hidden/edge-on/wrongside/user
+C
+C       CALL CTTDBM (0,0,0,0,1,1,0,1)
+C
+C In this example, there is a single call to CTTDBM, as just described:
 C
         CALL CTTDBM (0,0,0,0,1,1,0,1)
 C
