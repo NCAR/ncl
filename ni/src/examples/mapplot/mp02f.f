@@ -1,5 +1,5 @@
 C
-C     $Id: mp02f.f,v 1.3 1995-02-28 23:13:03 haley Exp $
+C     $Id: mp02f.f,v 1.4 1995-03-01 15:09:20 haley Exp $
 C
 C************************************************************************
 C                                                                       *
@@ -79,13 +79,8 @@ C
       call nhlfrlsetfloat(rlist,'mpMinLonF',-135.0,ierr)
       call nhlfrlsetfloat(rlist,'mpMaxLonF',-45.0,ierr)
 C
-C Color selected countries individually
-C Set the area group priority to resolve ambiguous cases in favor of the
-C National coloring. (Ambiguous cases are islands such as Cuba where the
-C geophysical border and the national border are identical.)
+C Highlight selected countries using their "political" color.
 C
-      call nhlfrlsetstring(rlist,'mpAreaGroupPriority',
-     1      'politicalPriority',ierr)
       call nhlfrlsetstringarray(rlist,'mpFillAreaSpecifiers',
      1      fill_specs,7,ierr)
       
