@@ -283,6 +283,9 @@ NclQuark *dimnames;
 						dimnames,
 						dim_sizes
 					);
+					if(ret == NhlFATAL) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddVar: an error occured while adding a variable to a file, check to make sure data type is supported by the output format");
+					}
 				} else {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddVar Incorrect type specified, can't add variable (%s)",NrmQuarkToString(varname));
 					ret = NhlFATAL;
