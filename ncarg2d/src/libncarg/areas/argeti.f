@@ -1,5 +1,5 @@
 C
-C $Id: argeti.f,v 1.5 1993-09-23 17:24:57 kennison Exp $
+C $Id: argeti.f,v 1.6 1993-09-27 17:13:55 kennison Exp $
 C
       SUBROUTINE ARGETI (IPN,IVL)
 C
@@ -42,28 +42,44 @@ C
 C
 C Get the appropriate parameter value.
 C
-      IF (.NOT.(IPN(1:2).EQ.'AT'.OR.IPN(1:2).EQ.'at')) GO TO 10002
+      IF (.NOT.(IPN(1:2).EQ.'AL'.OR.IPN(1:2).EQ.'al')) GO TO 10002
+        IVL=INT(RLA)
+      GO TO 10003
+10002 CONTINUE
+      IF (.NOT.(IPN(1:2).EQ.'AT'.OR.IPN(1:2).EQ.'at')) GO TO 10004
         IF (IAU.EQ.0) CALL ARINIT
         IVL=IAU
         IF (IVL.GE.3) IVL=IBS
       GO TO 10003
-10002 CONTINUE
-      IF (.NOT.(IPN(1:2).EQ.'DB'.OR.IPN(1:2).EQ.'db')) GO TO 10004
-        IVL=IDB
-      GO TO 10003
 10004 CONTINUE
-      IF (.NOT.(IPN(1:2).EQ.'DC'.OR.IPN(1:2).EQ.'dc')) GO TO 10005
-        IVL=IDC
+      IF (.NOT.(IPN(1:2).EQ.'AW'.OR.IPN(1:2).EQ.'aw')) GO TO 10005
+        IVL=INT(RWA)
       GO TO 10003
 10005 CONTINUE
-      IF (.NOT.(IPN(1:2).EQ.'DI'.OR.IPN(1:2).EQ.'di')) GO TO 10006
-        IVL=IDI
+      IF (.NOT.(IPN(1:2).EQ.'DB'.OR.IPN(1:2).EQ.'db')) GO TO 10006
+        IVL=IDB
       GO TO 10003
 10006 CONTINUE
-      IF (.NOT.(IPN(1:2).EQ.'LC'.OR.IPN(1:2).EQ.'lc')) GO TO 10007
-        IVL=ILC
+      IF (.NOT.(IPN(1:2).EQ.'DC'.OR.IPN(1:2).EQ.'dc')) GO TO 10007
+        IVL=IDC
       GO TO 10003
 10007 CONTINUE
+      IF (.NOT.(IPN(1:2).EQ.'DI'.OR.IPN(1:2).EQ.'di')) GO TO 10008
+        IVL=IDI
+      GO TO 10003
+10008 CONTINUE
+      IF (.NOT.(IPN(1:2).EQ.'ID'.OR.IPN(1:2).EQ.'id')) GO TO 10009
+        IVL=INT(RDI)
+      GO TO 10003
+10009 CONTINUE
+      IF (.NOT.(IPN(1:2).EQ.'IS'.OR.IPN(1:2).EQ.'is')) GO TO 10010
+        IVL=INT(RSI)
+      GO TO 10003
+10010 CONTINUE
+      IF (.NOT.(IPN(1:2).EQ.'LC'.OR.IPN(1:2).EQ.'lc')) GO TO 10011
+        IVL=ILC
+      GO TO 10003
+10011 CONTINUE
         CTM(1:36)='ARGETI - PARAMETER NAME NOT KNOWN - '
         CTM(37:38)=IPN(1:2)
         CALL SETER (CTM(1:38),2,1)
