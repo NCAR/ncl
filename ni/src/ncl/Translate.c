@@ -526,9 +526,9 @@ if(groot != NULL) {
 			} else {
 				off1 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
 				if(dofromto->file == NULL) {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) is being ingnored",(cmd_line ? dofromto->line - 1 : dofromto->line));
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) is being ignored",(cmd_line ? dofromto->line - 1 : dofromto->line));
 				} else {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) in file (%s) is being ingnored",dofromto->line, dofromto->file);
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) in file (%s) is being ignored",dofromto->line, dofromto->file);
 				}
 			}
                         break;
@@ -601,12 +601,12 @@ if(groot != NULL) {
                                 _NclPutInstrAt(off4, _NclGetCurrentOffset(),dofromtostride->line,dofromtostride->file);
 				_NclEndLoop(off3,_NclGetCurrentOffset());
 			} else {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) being ingnored",dofromtostride->line);
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) being ignored",dofromtostride->line);
 				off1 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
 				if(dofromtostride->file == NULL) {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) is being ingnored",(cmd_line ? dofromtostride->line - 1 : dofromtostride->line));
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) is being ignored",(cmd_line ? dofromtostride->line - 1 : dofromtostride->line));
 				} else {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) in file (%s) is being ingnored",dofromtostride->line ,dofromtostride->file);
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) in file (%s) is being ignored",dofromtostride->line ,dofromtostride->file);
 				}
 
 			}
@@ -1324,9 +1324,9 @@ Unneeded translations
 			} else {
 				off1 = _NclPutInstr(NOOP,dowhilel->line,dowhilel->file);
 				if(dowhilel->file== NULL) {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) is being ingnored",(cmd_line ? dowhilel->line - 1 : dowhilel->line));
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) is being ignored",(cmd_line ? dowhilel->line - 1 : dowhilel->line));
 				} else {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) in file (%s) is being ingnored",dowhilel->line, dowhilel->file);
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty loop body, statement ending at line (%d) in file (%s) is being ignored",dowhilel->line, dowhilel->file);
 				}
 			}
 			break;

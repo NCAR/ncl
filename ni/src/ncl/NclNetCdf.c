@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.27 2000-06-20 00:37:35 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.28 2002-09-26 22:14:40 haley Exp $
  */
 /************************************************************************
 *									*
@@ -858,7 +858,7 @@ void* storage;
 	
 			ncclose(cdfid);
 			if(ret == -1) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occured while attempting to read variable (%s) from file (%s)",NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to read variable (%s) from file (%s)",NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
 				return(NULL);
 			} else {
 				return(storage);
@@ -1077,7 +1077,7 @@ long *stride;
 	
 				ncclose(cdfid);
 				if(ret == -1) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occured while attempting to write variable (%s) from file (%s)",NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to write variable (%s) from file (%s)",NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
 					return(NhlFATAL);
 				} else {
 					return(NhlNOERROR);
@@ -1158,7 +1158,7 @@ void *data;
 	
 				ncclose(cdfid);
 				if(ret == -1) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occured while attempting to write the attribute (%s) to file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q));
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to write the attribute (%s) to file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q));
 					return(NhlFATAL);
 				}
 				return(NhlNOERROR);
@@ -1207,7 +1207,7 @@ NclQuark theatt;
 			NclFree(tmpal);
 			ncclose(cdfid);
 			if(ret == -1) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occured while attempting to delete the attribute (%s) from file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q));
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to delete the attribute (%s) from file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q));
 				return(NhlFATAL);
 			}
 			return(NhlNOERROR);
@@ -1231,7 +1231,7 @@ NclQuark theatt;
 					NclFree(tmpal);
 					ncclose(cdfid);
 					if(ret == -1) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occured while attempting to delete the attribute (%s) from file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q));
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to delete the attribute (%s) from file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q));
 						return(NhlFATAL);
 					}
 					return(NhlNOERROR);
@@ -1285,7 +1285,7 @@ NclQuark theatt;
 					NclFree(tmpal);
 					ncclose(cdfid);
 					if(ret == -1) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occured while attempting to delete the attribute (%s) from variable (%s) in file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to delete the attribute (%s) from variable (%s) in file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
 						return(NhlFATAL);
 					}
 					return(NhlNOERROR);
@@ -1309,7 +1309,7 @@ NclQuark theatt;
 							NclFree(tmpal);
 							ncclose(cdfid);
 							if(ret == -1) {
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occured while attempting to delete the attribute (%s) from variable (%s) in file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to delete the attribute (%s) from variable (%s) in file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
 								return(NhlFATAL);
 							}
 							return(NhlNOERROR);
@@ -1381,7 +1381,7 @@ void* data;
 		
 						ncclose(cdfid);
 						if(ret == -1) {
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occured while attempting to write the attribute (%s) to variable (%s) in file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to write the attribute (%s) to variable (%s) in file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
 							return(NhlFATAL);
 						}
 						return(NhlNOERROR);

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.116 2000-09-29 17:57:16 ethan Exp $
+ *      $Id: Execute.c,v 1.117 2002-09-26 22:14:36 haley Exp $
  */
 /************************************************************************
 *									*
@@ -119,7 +119,7 @@ void CallLIST_ASSIGN_VERIFY_SUB (void) {
 		case COORD_SINGLE:
 		case INT_VECT:
 		case INT_RANGE:
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Only single elements from lists can be used on the left-hand-side of and assignment statment");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Only single elements from lists can be used on the left-hand-side of and assignment statement");
 			estatus = NhlFATAL;
 			break;
 		case INT_SINGLE:
@@ -1081,7 +1081,7 @@ void CallFUNC_CALL_OP(void) {
 
 				caller_level = _NclFinishFrame();
 			/*
-			* Doesn't leave anything on the stack if an error has occured
+			* Doesn't leave anything on the stack if an error has occurred
 			*/	
 				_NclPushExecute();
 				estatus = _NclFuncCallOp(func,caller_level);
@@ -1227,7 +1227,7 @@ void CallJMPFALSE(void) {
 				} else {
 					if(val->obj.status != PERMANENT) 
 						_NclDestroyObj((NclObj)val);
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Conditional statments (if and do while) require SCALAR logical values, see all and any functions");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Conditional statements (if and do while) require SCALAR logical values, see all and any functions");
 					estatus = NhlFATAL;
 				}
 			}
@@ -1479,7 +1479,7 @@ void CallLOOP_VALIDATE_OP(void) {
 							tmp2_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
 							_Nclle(tmp2_md->multidval.type,&result,tmp2_md->multidval.val,&zero,NULL,NULL,1,1);
 							if(result) {
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop strides must be possitive, can't execute loop");
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop strides must be positive, can't execute loop");
 								estatus = NhlFATAL;
 							}
 							if(tmp2_md->obj.status != PERMANENT) {
@@ -1915,7 +1915,7 @@ void CallISDEFINED_OP(void) {
 				var_sym = (NclSymbol*)*ptr;
 				var = _NclRetrieveRec(var_sym,DONT_CARE);
 				if((var== NULL) || (var->kind == NclStk_NOVAL)|| (var->u.data_var == NULL)) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Undefined indentifier: (%s) is undefined, can't continue",var_sym->name);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Undefined identifier: (%s) is undefined, can't continue",var_sym->name);
 					estatus = NhlFATAL;
 				}
 			}
@@ -2855,7 +2855,7 @@ void CallPARAM_FILEVAR_DIM_OP(void) {
 						tmp_md = dim_expr.u.data_obj;
 						break;
 					default:
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"Internal errror: An incorrect type of object was placed on the stack");
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Internal error: An incorrect type of object was placed on the stack");
 						estatus = NhlFATAL;
 						break;
 					}
@@ -2863,7 +2863,7 @@ void CallPARAM_FILEVAR_DIM_OP(void) {
 						if(!(tmp_md->multidval.type->type_class.type & Ncl_Typelong)) {
 							tmp1_md = _NclCoerceData(tmp_md,Ncl_Typelong,NULL);
 							if(tmp1_md == NULL) {
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not corece dimension ref into long");
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce dimension ref into long");
 								estatus = NhlFATAL;
 							} else if(tmp_md->obj.status != PERMANENT) {
 								_NclDestroyObj((NclObj)tmp_md);
@@ -3339,7 +3339,7 @@ void CallASSIGN_VAR_COORD_OP(void) {
 							estatus = NhlFATAL;
 
 					} else {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate variables have only one dimension, %d subscripts on left hand side of assignement",nsubs);
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate variables have only one dimension, %d subscripts on left hand side of assignment",nsubs);
 						_NclCleanUpStack(nsubs);
 						estatus = NhlFATAL;
 					}
@@ -4429,7 +4429,7 @@ void CallASSIGN_FILEVAR_COORD_ATT_OP(void) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Undefined file reference");
 							estatus = NhlFATAL;
 						} else if(_NclFileVarIsCoord(file,coord_name) == -1) {
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a coordiante variable, can not assign attribute",NrmQuarkToString(coord_name));
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a coordinate variable, can not assign attribute",NrmQuarkToString(coord_name));
 							estatus = NhlFATAL;
 						} else if((_NclFileVarIsAtt(file,coord_name,att_name != -1))||(nsubs == 0)) {
 							if(nsubs == 1) {
@@ -4927,7 +4927,7 @@ void CallPARAM_FILEVAR_COORD_ATT_OP(void) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Undefined file reference");
 							estatus = NhlFATAL;
 						} else if(_NclFileVarIsCoord(file,coord_name) == -1) {
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a coordiante variable, can not read attribute",NrmQuarkToString(coord_name));
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a coordinate variable, can not read attribute",NrmQuarkToString(coord_name));
 
 							estatus = NhlFATAL;
 						} else if(_NclFileVarIsAtt(file,coord_name,att_name) == -1) {

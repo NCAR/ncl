@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.62 2000-09-29 17:53:17 ethan Exp $
+ *      $Id: Symbol.c,v 1.63 2002-09-26 22:14:42 haley Exp $
  */
 /************************************************************************
 *									*
@@ -492,7 +492,7 @@ int *dimsizes;
 	NclArgTemplate* the_args = (NclArgTemplate*) &(((NclArgTemplate*)args)[arg_num]);
 	int i;
 	if(the_args == NULL) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Error adding argument template for intrinisic function NULL arg record passed");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Error adding argument template for intrinsic function NULL arg record passed");
 		return;
 	}
 	the_args->n_dims = n_dims;
@@ -509,7 +509,7 @@ int *dimsizes;
 	if(type_name != NULL) {	
 		the_args->arg_data_type = _NclLookUp(type_name);
 		if(the_args->arg_data_type == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error adding argument template for intrinisic function");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error adding argument template for intrinsic function");
 		}
 	} else {
 		the_args->arg_data_type = NULL;
@@ -703,7 +703,7 @@ NclSymbol *_NclAddUniqueSym
  * Description:	Adds a symbol to the top symbol table
  *
  * In Args:	name	name of symbol.
- *		type    integer type indentifier which corresponds to token
+ *		type    integer type identifier which corresponds to token
  *			list in ncl.y
  *
  * Out Args:	NONE
@@ -854,7 +854,7 @@ void _NclDeleteSym
 	if((sym->sympre == NULL) &&(sym->symnext == NULL)) {
 		step->sr->this_scope[sym->ind].thelist = NULL;
 		if(step->sr->this_scope[sym->ind].nelem != 0) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NhlDeleteSym: Ack!! a big problem has just occured in the symbol table");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NhlDeleteSym: Ack!! a big problem has just occurred in the symbol table");
 		}
 	} else if(sym->sympre == NULL) {
 /*

@@ -1,6 +1,5 @@
-
 /*
- *      $Id: BuiltInFuncs.c,v 1.147 2002-08-02 21:06:35 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.148 2002-09-26 22:14:36 haley Exp $
  */
 /************************************************************************
 *									*
@@ -5862,7 +5861,7 @@ NhlErrorTypes _NclIstringtolong
 				out_val[i] = missing2.longval;
 			} else {
 				if(!sscanf(NrmQuarkToString(value[i]),"%ld",&(out_val[i]))) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtolong, input strings must contains numeric digits, replacing with missing value");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtolong, input strings must contain numeric digits, replacing with missing value");
 					out_val[i] = missing2.longval;
 
 				}
@@ -5871,7 +5870,7 @@ NhlErrorTypes _NclIstringtolong
 	}  else {
 		for(i = 0; i < total; i++) {
 			if(!sscanf(NrmQuarkToString(value[i]),"%ld",&(out_val[i]))) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtolong, input strings must contains numeric digits, replacing with missing value");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtolong, input strings must contain numeric digits, replacing with missing value");
 				has_missing = 1;
 				out_val[i] = missing2.longval;
 		
@@ -5922,7 +5921,7 @@ NhlErrorTypes _NclIstringtoshort
 				out_val[i] = missing2.shortval;
 			} else {
 				if(!sscanf(NrmQuarkToString(value[i]),"%hd",&(out_val[i]))) {
-                                        NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtoshort, input strings must contains numeric digits, replacing with missing value");
+                                        NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtoshort, input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.shortval;
 
 				}
@@ -5931,7 +5930,7 @@ NhlErrorTypes _NclIstringtoshort
 	}  else {
 		for(i = 0; i < total; i++) {
 			if(!sscanf(NrmQuarkToString(value[i]),"%hd",&(out_val[i]))) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtoshort, input strings must contains numeric digits, replacing with missing value");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtoshort, input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
                                 out_val[i] = missing2.shortval;
  
@@ -5983,7 +5982,7 @@ NhlErrorTypes _NclIstringtointeger
 				out_val[i] = missing2.intval;
 			} else {
 				if(!sscanf(NrmQuarkToString(value[i]),"%d",&(out_val[i]))) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtointeger, input strings must contains numeric digits, replacing with missing value");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
 					out_val[i] = missing2.intval;
 				}
 			}
@@ -5991,7 +5990,7 @@ NhlErrorTypes _NclIstringtointeger
 	}  else {
 		for(i = 0; i < total; i++) {
 			if(!sscanf(NrmQuarkToString(value[i]),"%d",&(out_val[i]))) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtointeger, input strings must contains numeric digits, replacing with missing value");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
 				has_missing = 1;
 				out_val[i] = missing2.intval;
 			}
@@ -6041,7 +6040,7 @@ NhlErrorTypes _NclIstringtodouble
 				out_val[i] = missing2.doubleval;
 			} else {
 				if(!sscanf(NrmQuarkToString(value[i]),"%lf",&(out_val[i]))) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtodouble, input strings must contains numeric digits, replacing with missing value");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtodouble, input strings must contain numeric digits, replacing with missing value");
 					out_val[i] = missing2.doubleval;
 
 				}
@@ -6050,7 +6049,7 @@ NhlErrorTypes _NclIstringtodouble
 	}  else {
 		for(i = 0; i < total; i++) {
 			if(!sscanf(NrmQuarkToString(value[i]),"%lf",&(out_val[i]))) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtodouble, input strings must contains numeric digits, replacing with missing value");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtodouble, input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
                                 out_val[i] = missing2.doubleval;
 
@@ -6102,7 +6101,7 @@ NhlErrorTypes _NclIstringtofloat
 				out_val[i] = missing2.floatval;
 			} else {
 				if(!sscanf(NrmQuarkToString(value[i]),"%f",&(out_val[i]))) {
-					 NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtofloat, input strings must contains numeric digits, replacing with missing value");
+					 NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtofloat, input strings must contain numeric digits, replacing with missing value");
 					out_val[i] = missing2.floatval;
 
 				}
@@ -6111,7 +6110,7 @@ NhlErrorTypes _NclIstringtofloat
 	}  else {
 		for(i = 0; i < total; i++) {
 			if(!sscanf(NrmQuarkToString(value[i]),"%f",&(out_val[i]))) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtolong, input strings must contains numeric digits, replacing with missing value");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtolong, input strings must contain numeric digits, replacing with missing value");
 				has_missing = 1;
 				out_val[i] = missing2.floatval;
 			}
@@ -7231,7 +7230,7 @@ NhlErrorTypes _Ncl1dtond
 
 	if((sz == tmp_md->multidval.totalelements)||(sz < tmp_md->multidval.totalelements)) {
 		if(sz < tmp_md->multidval.totalelements) {
-			NhlPError(NhlWARNING, NhlEUNKNOWN,"1dtond : output dimension sizes have fewer elements than input, some data not copied");
+			NhlPError(NhlWARNING, NhlEUNKNOWN,"onedtond : output dimension sizes have fewer elements than input, some data not copied");
 		}
 		out_val = (void*)NclMalloc(sz*tmp_md->multidval.type->type_class.size);
 		memcpy(out_val,tmp_md->multidval.val,sz*tmp_md->multidval.type->type_class.size);
@@ -7244,7 +7243,7 @@ NhlErrorTypes _Ncl1dtond
 			0
 		));
 	} else if((sz > tmp_md->multidval.totalelements)&&(sz%tmp_md->multidval.totalelements)){
-		NhlPError(NhlWARNING, NhlEUNKNOWN,"1dtond : output dimension sizes not even multiples of input, check output");
+		NhlPError(NhlWARNING, NhlEUNKNOWN,"onedtond : output dimension sizes not even multiples of input, check output");
 		out_val = (void*)NclMalloc(sz*tmp_md->multidval.type->type_class.size);
 		for(i = 0; i < (int)sz/tmp_md->multidval.totalelements; i++) {
 			memcpy(&(((char*)out_val)[i*tmp_md->multidval.totalsize]),
@@ -8582,7 +8581,7 @@ NhlErrorTypes _Nclavg
 		out_val = (void*)NclMalloc(sizeof(float));
 		tmp_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
                 if(tmp_md == NULL) {
-                	NhlPError(NhlFATAL,NhlEUNKNOWN,"avg: Could not coerce input data to float,can't continue");
+                	NhlPError(NhlFATAL,NhlEUNKNOWN,"avg: Could not coerce input data to float, can't continue");
                 	return(NhlFATAL);
                	} else if(tmp_md->multidval.missing_value.has_missing){
               		missing = tmp_md->multidval.missing_value.value;
@@ -8898,7 +8897,7 @@ NhlErrorTypes _Nclispan
 		_NclIsMissing(tmp_md0,tmp_md0->multidval.val)||
 		_NclIsMissing(tmp_md0,tmp_md0->multidval.val)) {
 
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: Missing value detected in input, can't conitue");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: Missing value detected in input, can't continue");
 		return(NhlFATAL);
 	}
 
@@ -8999,14 +8998,14 @@ NhlErrorTypes _Nclfspan
 		_NclIsMissing(tmp_md0,tmp_md0->multidval.val)||
 		_NclIsMissing(tmp_md0,tmp_md0->multidval.val)) {
 
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"fspan: Missing value detected in input, can't conitue");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fspan: Missing value detected in input, can't continue");
 		return(NhlFATAL);
 	}
 
 	
 	dimsizes = *(int*)tmp_md2->multidval.val;
 	if(dimsizes <= 0) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"fspan: number of elements parameter is less-than-or-equal-to zero, can't conitue");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fspan: number of elements parameter is less-than-or-equal-to zero, can't continue");
 		return(NhlFATAL);
 	} else if(dimsizes > 1) {
 		fnsh = *(float*)tmp_md1->multidval.val;
@@ -11492,7 +11491,7 @@ NhlErrorTypes _NclIAttSetValues( void )
 		}
 		break;
 	default:
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"attsetvalues: Parameter 1 must be a variable,can't continue");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"attsetvalues: Parameter 1 must be a variable, can't continue");
 		return(NhlFATAL);
 		break;
 	}
@@ -11752,7 +11751,7 @@ NhlErrorTypes _NclIAddFiles( void )
 			*id = file->obj.id;
 			out_md = _NclMultiDValnclfileDataCreate(NULL,NULL,Ncl_MultiDValnclfileData,0,id,NULL,1,&dim_size,TEMPORARY,NULL);
 			if((out_md == NULL)|| (_NclListPush((NclObj)tmp_list,(NclObj)out_md) == NhlFATAL)) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occured opening %s, can't continue",NrmQuarkToString(((NclQuark*)p_md->multidval.val)[i]));	
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred opening %s, can't continue",NrmQuarkToString(((NclQuark*)p_md->multidval.val)[i]));	
 				return(NhlFATAL);	
 			}
 		} else {
@@ -11770,7 +11769,7 @@ NhlErrorTypes _NclIAddFiles( void )
 					TEMPORARY,
 					NULL);
 			if((out_md == NULL)|| (_NclListPush((NclObj)tmp_list,(NclObj)out_md) == NhlFATAL)) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occured opening %s, can't continue",NrmQuarkToString(((NclQuark*)p_md->multidval.val)[i]));	
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred opening %s, can't continue",NrmQuarkToString(((NclQuark*)p_md->multidval.val)[i]));	
 				return(NhlFATAL);	
 			}
 		}
@@ -12157,7 +12156,7 @@ NhlErrorTypes _NclICreateFile(void)
 			}
 		}
 	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"fileatts parameter must be a variable, which optionaly contains globus file attributes, a value was passed in"); 
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"fileatts parameter must be a variable, which optionally contains global file attributes, a value was passed in"); 
 	}
 	ncendef(cdfid);
 	ncclose(cdfid);

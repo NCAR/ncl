@@ -796,7 +796,7 @@ int** valid_lv_vals1;
 				}
 			} else if((strt->rec_inq->level0 != -1)&&(strt->rec_inq->level1 != -1)){
 /*
-* Handle multiple value coordiante levels
+* Handle multiple value coordinate levels
 */
 				if(tmp_lvs == NULL) {
 					tmp_lvs = (int*)NclMalloc((unsigned)sizeof(int)*the_end->n_lv);
@@ -841,7 +841,7 @@ int** valid_lv_vals1;
 		}
 	} else if((strt->rec_inq->level0 != -1)&&(strt->rec_inq->level1 != -1)){
 /*
-* Handle multiple value coordiante levels
+* Handle multiple value coordinate levels
 */
 		if(tmp_lvs == NULL) {
 			tmp_lvs = (int*)NclMalloc((unsigned)sizeof(int)*the_end->n_lv);
@@ -2875,7 +2875,7 @@ int *version;
 					*totalsize = size;
 					return(GRIBEOF);
 				} else if(!strncmp(test,"GRIB",4)){
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Unknown version number (%d),can't read this data",*version);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Unknown version number (%d), can't read this data",*version);
 					return(GRIBEOF);
 				}
 			}
@@ -3401,7 +3401,7 @@ int wr_status;
 	NhlErrorTypes retvalue;
 
 	if(wr_status <= 0) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Grib files are read only continueing but opening file as read only");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Grib files are read only continuing but opening file as read only");
 	}
 	fd = fopen(NrmQuarkToString(path),"r");
 	vbuf = (void*)NclMalloc(4*getpagesize());

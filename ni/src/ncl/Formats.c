@@ -41,7 +41,7 @@ char* file_extension;
 				(unsigned)sizeof(NclFormatList) 
 				*format_list_size * 2);
 		if(tmp == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"A memory allocation error occured could not register new format");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"A memory allocation error occurred could not register new format");
 			return;
 		} else {
 			formats = tmp;

@@ -607,7 +607,7 @@ NhlErrorTypes _NclIChangeWorkstation
 				ret = NhlWARNING;
 			}
 		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIChangeWorkstation: one of the elements of the plot parameter is not a View object, ingnoring it");
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIChangeWorkstation: one of the elements of the plot parameter is not a View object, ignoring it");
 			ret = NhlWARNING;
 		}
 	}
@@ -770,7 +770,7 @@ NhlErrorTypes _NclISetColor
 				}
 			}
 		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclISetColor: one of the elements of the workstation parameter does not exist as an HLU workstation, ingnoring it");
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclISetColor: one of the elements of the workstation parameter does not exist as an HLU workstation, ignoring it");
 			ret = NhlWARNING;
 		}
 	}
@@ -914,7 +914,7 @@ NhlErrorTypes _NclINewColor
 					}
 			}
 		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclINewColor: one of the elements of the workstation parameter does not exist as an HLU workstation, ingnoring");
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclINewColor: one of the elements of the workstation parameter does not exist as an HLU workstation, ignoring");
 			for(k = 0; k < total_c; k++) {
 				colori_out[i*j+k] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 			}
@@ -1021,7 +1021,7 @@ NhlErrorTypes _NclIFreeColor
 				}
 			}
 		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIFreeColor: one of the elements of the workstation parameter does not exist as an HLU workstation, ingnoring it");
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIFreeColor: one of the elements of the workstation parameter does not exist as an HLU workstation, ignoring it");
 			ret = NhlWARNING;
 		}
 	}
@@ -1113,7 +1113,7 @@ NhlErrorTypes _NclIIsAllocatedColor
 				}
 			} 
 		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsAllocatedColor: one of the elements of the workstation parameter does not exist as an HLU workstation, ingnoring");
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsAllocatedColor: one of the elements of the workstation parameter does not exist as an HLU workstation, ignoring");
 			for(k = 0; k < total_c; k++) {
 				log_out[i*j+k] = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 			} 

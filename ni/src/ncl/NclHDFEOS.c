@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS.c,v 1.2 2002-08-21 22:52:29 dbrown Exp $
+ *      $Id: NclHDFEOS.c,v 1.3 2002-09-26 22:14:39 haley Exp $
  */
 /************************************************************************
 *									*
@@ -539,7 +539,7 @@ int wr_status;
 						}
 					}
 				} else {
-					NhlPError(NhlFATAL,NhlEUNKNOWN, "NclHDFEOS: An internal HDF error occured while reading (%s) can't continue",NrmQuarkToString(path));
+					NhlPError(NhlFATAL,NhlEUNKNOWN, "NclHDFEOS: An internal HDF error occurred while reading (%s) can't continue",NrmQuarkToString(path));
 					return(NULL);
 				}
 			}
@@ -687,7 +687,7 @@ int wr_status;
 						}
 					}
 				} else {
-					NhlPError(NhlFATAL,NhlEUNKNOWN, "NclHDFEOS: An internal HDF error occured while reading (%s) can't continue",NrmQuarkToString(path));
+					NhlPError(NhlFATAL,NhlEUNKNOWN, "NclHDFEOS: An internal HDF error occurred while reading (%s) can't continue",NrmQuarkToString(path));
 					return(NULL);
 				}
 			}
@@ -780,7 +780,7 @@ int wr_status;
 */
 /*
 				} else {
-					NhlPError(NhlFATAL,NhlEUNKNOWN, "NclHDFEOS: An internal HDF error occured while reading (%s) can't continue",NrmQuarkToString(path));
+					NhlPError(NhlFATAL,NhlEUNKNOWN, "NclHDFEOS: An internal HDF error occurred while reading (%s) can't continue",NrmQuarkToString(path));
 					return(NULL);
 				}
 */

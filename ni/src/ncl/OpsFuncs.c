@@ -488,7 +488,7 @@ NhlErrorTypes _NclBuildArray
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occurred that should not have happened");
 			} else if(coerce_res->multidval.missing_value.has_missing) {
 				still_no_missing = 0;
 /*
@@ -519,7 +519,7 @@ NhlErrorTypes _NclBuildArray
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occurred that should not have happened");
 				_NclCleanUpStack(items_left);
 				return(NhlFATAL);
 			} else if(theobj->multidval.missing_value.has_missing){
@@ -549,7 +549,7 @@ NhlErrorTypes _NclBuildArray
 			}
 */
 			if(theobj == NULL) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occurred that should not have happened");
 				_NclCleanUpStack(items_left);
 				return(NhlFATAL);
 			} else if(theobj->multidval.missing_value.has_missing){
@@ -636,7 +636,7 @@ NhlErrorTypes _NclBuildArray
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occurred that should not have happened");
 					_NclCleanUpStack(items_left);
 					NclFree(value);
 					return(NhlFATAL);
@@ -698,7 +698,7 @@ NhlErrorTypes _NclBuildArray
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occurred that should not have happened");
 					_NclCleanUpStack(items_left);
 					NclFree(value);
 					return(NhlFATAL);
@@ -720,7 +720,7 @@ NhlErrorTypes _NclBuildArray
 				}
 */
 				if(theobj == NULL) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occurred that should not have happened");
 					_NclCleanUpStack(items_left);
 					NclFree(value);
 					return(NhlFATAL);
@@ -964,7 +964,7 @@ NhlErrorTypes _NclBuildConcatArray
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occurred that should not have happened");
 			} else if(coerce_res->multidval.missing_value.has_missing) {
 				still_no_missing = 0;
 /*
@@ -995,7 +995,7 @@ NhlErrorTypes _NclBuildConcatArray
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occurred that should not have happened");
 				_NclCleanUpStack(items_left);
 				return(NhlFATAL);
 			} else if(theobj->multidval.missing_value.has_missing){
@@ -1025,7 +1025,7 @@ NhlErrorTypes _NclBuildConcatArray
 			}
 */
 			if(theobj == NULL) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occurred that should not have happened");
 				_NclCleanUpStack(items_left);
 				return(NhlFATAL);
 			} else if(theobj->multidval.missing_value.has_missing){
@@ -1102,7 +1102,7 @@ NhlErrorTypes _NclBuildConcatArray
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occurred that should not have happened");
 					_NclCleanUpStack(items_left);
 					NclFree(value);
 					return(NhlFATAL);
@@ -1164,7 +1164,7 @@ NhlErrorTypes _NclBuildConcatArray
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occurred that should not have happened");
 					_NclCleanUpStack(items_left);
 					NclFree(value);
 					return(NhlFATAL);
@@ -1186,7 +1186,7 @@ NhlErrorTypes _NclBuildConcatArray
 				}
 */
 				if(theobj == NULL) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occurred that should not have happened");
 					_NclCleanUpStack(items_left);
 					NclFree(value);
 					return(NhlFATAL);
@@ -1357,7 +1357,7 @@ NhlErrorTypes _NclFuncCallOp
 		_NclClearToStackBase(caller_level);
 	}
 /*
-* Doesn't leave return value on stack if an error has occured. Probably
+* Doesn't leave return value on stack if an error has occurred. Probably
 * should check it to see if it needs to be freed
 	if(ret < NhlWARNING) {
 		(void)_NclPop();
@@ -2039,7 +2039,7 @@ NclStackEntry missing_expr;
 					return(NhlFATAL);
 /*
 				} else if(dim_size_list[i] == 1) {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"New: NCL values can not have dimension sizes of 1 unless they are scalar, ignoring dimension and continueing");
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"New: NCL values can not have dimension sizes of 1 unless they are scalar, ignoring dimension and continuing");
 */
 				} else {
 					total *= dim_size_list[i];

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclOneDValCoordData.c,v 1.7 1998-09-16 22:55:04 ethan Exp $
+ *      $Id: NclOneDValCoordData.c,v 1.8 2002-09-26 22:14:40 haley Exp $
  */
 /************************************************************************
 *									*
@@ -490,7 +490,7 @@ static NhlErrorTypes OneDValCoordWrite_s
 
 		return(ret);
 	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"OneDValCoordWrite_s: an error occured while trying to write to a coordinate value");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"OneDValCoordWrite_s: an error occurred while trying to write to a coordinate value");
 		return(NhlFATAL);
 	}
 }
@@ -520,7 +520,7 @@ static NhlErrorTypes OneDValCoordWrite_md
 
 		return(ret);
 	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"OneDValCoordWrite_md: an error occured while trying to write to a coordinate value");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"OneDValCoordWrite_md: an error occurred while trying to write to a coordinate value");
 		return(NhlFATAL);
 	}
 }
@@ -551,7 +551,7 @@ NclSelectionRecord *from_selection;
 
 		return(ret);
 	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"OneDValCoordReadWrite: an error occured while trying to write to a coordinate value");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"OneDValCoordReadWrite: an error occurred while trying to write to a coordinate value");
 		return(NhlFATAL);
 	}
 }

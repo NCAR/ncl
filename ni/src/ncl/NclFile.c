@@ -284,7 +284,7 @@ NclQuark *dimnames;
 						dim_sizes
 					);
 					if(ret == NhlFATAL) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddVar: an error occured while adding a variable to a file, check to make sure data type is supported by the output format");
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddVar: an error occurred while adding a variable to a file, check to make sure data type is supported by the output format");
 					}
 				} else {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddVar Incorrect type specified, can't add variable (%s)",NrmQuarkToString(varname));
@@ -1120,7 +1120,7 @@ int vtype;
 				if(stride[sel->dim_num] != 0)  {
 					tmpf = (float)fabs(((float)sel->u.sub.stride));
 				} else {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be positive non-zero integer");
 
 					stride[sel->dim_num] = 1;
 					tmpf = 1;
@@ -2628,7 +2628,7 @@ int rw_status;
 				}
 			}
 		} else  {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"An internal error in the extension code for the requested file format has occured, could not open (%s)",NrmQuarkToString(the_real_path));
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"An internal error in the extension code for the requested file format has occurred, could not open (%s)",NrmQuarkToString(the_real_path));
 		if(file_out_free) 
 			NclFree((void*)file_out);
 			return(NULL);
@@ -2835,7 +2835,7 @@ int type;
 						if(stride[sel->dim_num] != 0)  {
 							tmpf = (float)fabs(((float)sel->u.sub.stride));
 						} else {
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be positive non-zero integer");
 							stride[sel->dim_num] = 1;
 							tmpf = 1;
 						}
@@ -3709,7 +3709,7 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 
 						} 
 /*
-* Now dimension names are equal, proceed to write coordiante variable
+* Now dimension names are equal, proceed to write coordinate variable
 */
 						if(tmp_var->var.coord_vars[j] != -1) {
 							cindex = FileIsCoord(thefile,tmp_var->var.dim_info[j].dim_quark);

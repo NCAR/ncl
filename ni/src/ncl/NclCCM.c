@@ -1432,7 +1432,7 @@ int	wr_status;
 			tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
 			index = (int)FloatIt(buffer);
 			if((index < 1)||(index > initial_iheader.NOREC)) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a valid CCM history file");
 				NclFree(therec);
 				fclose(fd);
 			NclFree(vbuf);
@@ -1494,7 +1494,7 @@ int	wr_status;
 					tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
 					index = (int)FloatIt((buffer));
 					if((index < 1)||(index > tmp_iheader.NOREC)) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a valid CCM history file");
 						NclFree(therec);
 						fclose(fd);
 			NclFree(vbuf);
@@ -1553,7 +1553,7 @@ int	wr_status;
 				}
 				if(!CompareHeaders(&initial_iheader,&initial_cheader,&initial_rheader,
 						    &tmp_iheader,&tmp_cheader,&tmp_rheader)) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Comparision of headers failed, headers for timestep number (%d) vary unacceptably from initial header, NCL doesn't handle this",i+1);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Comparison of headers failed, headers for timestep number (%d) vary unacceptably from initial header, NCL doesn't handle this",i+1);
 					NclFree(therec);
 					fclose(fd);
 					NclFree(vbuf);
@@ -1615,7 +1615,7 @@ int	wr_status;
 				}
 				if(!CompareHeaders(&initial_iheader,&initial_cheader,&initial_rheader,
 						    &tmp_iheader,&tmp_cheader,&tmp_rheader)) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Comparision of headers failed, headers for timestep number (%d) vary unacceptably from initial header, NCL doesn't handle this",i+1);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Comparison of headers failed, headers for timestep number (%d) vary unacceptably from initial header, NCL doesn't handle this",i+1);
 					NclFree(therec);
 					fclose(fd);
 			NclFree(vbuf);

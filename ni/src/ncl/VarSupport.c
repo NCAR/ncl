@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.23 2002-06-21 21:47:19 ethan Exp $
+ *      $Id: VarSupport.c,v 1.24 2002-09-26 22:14:43 haley Exp $
  */
 /************************************************************************
 *									*
@@ -282,7 +282,7 @@ NhlErrorTypes  _NclBuildCoordVSelection
                                         return(NhlFATAL);
                                 }
                         } else {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%d) of (%s) is not named and therfore doesn't have an associated coordinate variable",dim_num,v_name);
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%d) of (%s) is not named and therefore doesn't have an associated coordinate variable",dim_num,v_name);
                                 return(NhlFATAL);
                         }
 			sel->dim_num = dim_num;
@@ -407,7 +407,7 @@ NhlErrorTypes _NclBuildCoordRSelection
 					return(NhlFATAL);
 				}	
 			} else {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%d) of (%s) is not named and therfore doesn't have an associated coordinate variable",dim_num,v_name);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%d) of (%s) is not named and therefore doesn't have an associated coordinate variable",dim_num,v_name);
 				return(NhlFATAL);
 			}
 			sel->dim_num = dim_num;
@@ -439,7 +439,7 @@ NhlErrorTypes _NclBuildCoordRSelection
 			if(!(the_type & range->finish->multidval.type->type_class.type)){
 				tmp_md = _NclCoerceData(range->finish,the_type,NULL);
 				if(tmp_md == NULL) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coorced to type of coordinate variable",dim_num);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable",dim_num);
 					if(coord_md->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)coord_md);
 					}
@@ -483,7 +483,7 @@ NhlErrorTypes _NclBuildCoordRSelection
 			if(!(the_type & range->start->multidval.type->type_class.type)){
 				tmp_md = _NclCoerceData(range->start,the_type,NULL);
 				if(tmp_md == NULL) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coorced to type of coordinate variable",dim_num);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable",dim_num);
 					if(coord_md->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)coord_md);
 					}
@@ -522,7 +522,7 @@ NhlErrorTypes _NclBuildCoordRSelection
 			if(!(the_type & range->start->multidval.type->type_class.type)){
 				tmp_md = _NclCoerceData(range->start,the_type,NULL);
 				if(tmp_md == NULL) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coorced to type of coordinate variable",dim_num);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable",dim_num);
 					if(coord_md->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)coord_md);
 					}
@@ -544,7 +544,7 @@ NhlErrorTypes _NclBuildCoordRSelection
 			if(!(the_type & range->finish->multidval.type->type_class.type)){
 				tmp_md = _NclCoerceData(range->finish,the_type,NULL);
 				if(tmp_md == NULL) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coorced to type of coordinate variable",dim_num);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable",dim_num);
 					if(coord_md->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)coord_md);
 					}

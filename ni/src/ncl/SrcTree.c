@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.38 2000-09-29 17:53:16 ethan Exp $
+ *      $Id: SrcTree.c,v 1.39 2002-09-26 22:14:41 haley Exp $
  */
 /************************************************************************
 *									*
@@ -970,7 +970,7 @@ NclScopeRec* thescope;
 		_NclAddProcFuncInfoToSym(func,dec_list);
 */
 		if(func->u.procfunc ==NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not create procedure or function paremeter info");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not create procedure or function parameter info");
 			return(NULL);
 		} else {
 			func->u.procfunc->thescope = thescope;
@@ -1213,7 +1213,7 @@ NclScopeRec *thescope;
 		_NclAddProcFuncInfoToSym(func,dec_list);
 */
 		if(var->u.procfunc ==NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not create procedure or function paremeter info");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not create procedure or function parameter info");
 			return(NULL);
 		} else {
 			var->u.procfunc->thescope = thescope;

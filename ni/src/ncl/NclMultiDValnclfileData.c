@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValnclfileData.c,v 1.10 2001-07-16 19:48:22 ethan Exp $
+ *      $Id: NclMultiDValnclfileData.c,v 1.11 2002-09-26 22:14:40 haley Exp $
  */
 /************************************************************************
 *									*
@@ -108,7 +108,7 @@ static struct _NclDataRec *MultiDVal_nclfile_ReadSection
 			if(sel_ptr->u.sub.finish < sel_ptr->u.sub.start) {
 
 				if(sel_ptr->u.sub.stride == 0 ) {
-                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be positive non-zero integer");
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
@@ -137,7 +137,7 @@ static struct _NclDataRec *MultiDVal_nclfile_ReadSection
 
 			} else {
 				if(sel_ptr->u.sub.stride == 0 ) {
-                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be positive non-zero integer");
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
@@ -437,7 +437,7 @@ static NhlErrorTypes MultiDVal_nclfile_md_WriteSection
 			if(sel_ptr->u.sub.finish < sel_ptr->u.sub.start) {
 
 				if(sel_ptr->u.sub.stride == 0 ) {
-                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be positive non-zero integer");
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
@@ -463,7 +463,7 @@ static NhlErrorTypes MultiDVal_nclfile_md_WriteSection
                                 }
 			} else {
 				if(sel_ptr->u.sub.stride == 0 ) {
-                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be positive non-zero integer");
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
@@ -737,7 +737,7 @@ static NhlErrorTypes MultiDVal_nclfile_s_WriteSection
 			if(sel_ptr->u.sub.finish < sel_ptr->u.sub.start) {
 
 				if(sel_ptr->u.sub.stride == 0 ) {
-                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be positive non-zero integer");
                                         sel_ptr->u.sub.stride = 1;
 
                                 }
@@ -764,7 +764,7 @@ static NhlErrorTypes MultiDVal_nclfile_s_WriteSection
                                 }
 			} else {
 				if(sel_ptr->u.sub.stride == 0 ) {
-                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be positive non-zero integer");
                                         sel_ptr->u.sub.stride = 1;
 
                                 }
@@ -1107,7 +1107,7 @@ NclSelectionRecord *from_selection;
 			if(to_sel_ptr->u.sub.finish < to_sel_ptr->u.sub.start) {
 
 				if(to_sel_ptr->u.sub.stride == 0 ) {
-                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be positive non-zero integer");
                                         to_sel_ptr->u.sub.stride = 1;
 
                                 }
@@ -1134,7 +1134,7 @@ NclSelectionRecord *from_selection;
                                 }
 			} else {
 				if(to_sel_ptr->u.sub.stride == 0 ) {
-                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be positive non-zero integer");
                                         to_sel_ptr->u.sub.stride = 1;
                                 }
 
@@ -1220,7 +1220,7 @@ NclSelectionRecord *from_selection;
 			if(from_sel_ptr->u.sub.finish < from_sel_ptr->u.sub.start) {
 
 				if(from_sel_ptr->u.sub.stride == 0 ) {
-                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be positive non-zero integer");
                                         from_sel_ptr->u.sub.stride = 1;
 
                                 }

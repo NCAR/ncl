@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.18 2002-06-21 21:47:19 ethan Exp $
+ *      $Id: FileSupport.c,v 1.19 2002-09-26 22:14:37 haley Exp $
  */
 /************************************************************************
 *									*
@@ -87,7 +87,7 @@ NhlErrorTypes _NclBuildFileCoordRSelection
 					return(NhlFATAL);
 				}
 			} else {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%d) of file (%s) is not named and therfore doesn't have an associated coordinate variable",dim_num,f_name);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%d) of file (%s) is not named and therefore doesn't have an associated coordinate variable",dim_num,f_name);
                                 return(NhlFATAL);
 
 			}
@@ -334,7 +334,7 @@ NhlErrorTypes  _NclBuildFileCoordVSelection
 					return(NhlFATAL);
 				}
 			} else {
-				NhlPError(NhlFATAL,NhlEUNKNOWN, "Dimension (%d) of file (%s) is not named and therfore doesn't have an associated coordinate variable",dim_num,f_name);
+				NhlPError(NhlFATAL,NhlEUNKNOWN, "Dimension (%d) of file (%s) is not named and therefore doesn't have an associated coordinate variable",dim_num,f_name);
 				return(NhlFATAL);
 			}
 			sel->dim_num = dim_num;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.83 2002-07-08 18:39:53 ethan Exp $
+ *      $Id: Machine.c,v 1.84 2002-09-26 22:14:38 haley Exp $
  */
 /************************************************************************
 *									*
@@ -384,7 +384,7 @@ void _NclResetMachine
 {
 	fp = 0;
 	if((NclStackEntry*)(thestack + (fp + sb_off)) != thestack) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"ResetMachine: reseting non-empty stack, memory may leak!");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"ResetMachine: resetting non-empty stack, memory may leak!");
 	}
 /*
 	sb = thestack;
