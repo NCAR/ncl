@@ -1,5 +1,5 @@
 C
-C $Id: ERROR.f,v 1.5 1995-02-22 22:40:48 haley Exp $
+C $Id: ERROR.f,v 1.6 1995-02-22 22:47:28 haley Exp $
 C
 C****************************************************************
 C								*
@@ -138,7 +138,7 @@ C
 C
       subroutine nhlferrfprintmsg(iunit,imsg)
 	integer iunit,imsg
-	character*(10240) smsg
+	character smsg(10240)
 
 	call nhlferrsprintmsg(smsg,imsg)
 	call nhl_fprnmes(iunit,smsg,len(smsg))
