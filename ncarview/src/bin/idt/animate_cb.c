@@ -1,6 +1,6 @@
 
 /*
- *      $Id: animate_cb.c,v 1.1 1992-08-24 23:01:00 clyne Exp $
+ *      $Id: animate_cb.c,v 1.2 1992-08-25 20:24:01 clyne Exp $
  */
 /************************************************************************
 *									*
@@ -65,6 +65,9 @@ static	int	animate_on(wd)
 	char		buf[80];
 	XWindowAttributes	xwa;
 	Arg			args[5];
+
+	sprintf(buf, "Loading %d images for animation\n", num);
+	Message(wd->id, buf);
 
 	wd->a = (AnimateType *) NULL;
 
@@ -190,6 +193,8 @@ static	int	animate_off(wd)
 {
 	int	i;
 	Arg			args[5];
+
+	Message(wd->id, "Terminating animation mode\n");
 
 	if (wd->a) AnimateClose(wd->a);
 

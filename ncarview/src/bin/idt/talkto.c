@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.14 1992-08-24 23:01:15 clyne Exp $
+ *	$Id: talkto.c,v 1.15 1992-08-25 20:24:04 clyne Exp $
  */
 /*
  *	talkto.c
@@ -519,7 +519,7 @@ void	ErrorMessage(id, s)
 {
 	char	buf[132];
 	char	msg[132];
-	char	*format = "Display(%1d) Error: %s\n";
+	char	*format = "Display(%1d): Error - %s\n";
 	int	max_len = sizeof(buf) - strlen(format) - 1;
 	char	*t;
 

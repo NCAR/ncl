@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.21 1992-08-11 17:11:39 clyne Exp $
+ *	$Id: w_idt.c,v 1.22 1992-08-25 20:24:06 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -289,42 +289,23 @@ create_main_panel(parent, select_action)
 		ascent, descent; 	/* retrieve bounds of font	*/
 	XCharStruct	overall;
 
-	extern	void	InitText(), AppendText();
+	extern	void	AppendText();
+	extern	Widget	InitText();
 
 	char *line1 = " Copyright (C) 1991 - All Rights Reserved    \n";
 	char *line2 = " University Corporation for Atmospheric Research   \n";
 	char *line3 = " NCAR View - UNIX Version 3.01   \n";
-	char *header;
 
 	int	message_height	= App_Data.message_height;
 
-	/*
-	 * create the initial header to be displayed in the main control
-	 * panel text widget
-	 */
-	header = icMalloc((unsigned) 
-			(strlen(line1) + strlen(line2) + strlen(line3) + 1));
-
-	(void) strcpy(header, line1);
-	(void) strcat(header, line2);
-	(void) strcat(header, line3);
-	
 	paned = XtCreateManagedWidget( "paned", panedWidgetClass, parent,
 				 (ArgList) NULL, ZERO );
 
-	/*
-	 * create a text widget to display header initialy and to display
-	 * messages from the translator
-	 */
-	n = 0;	
-	XtSetArg(args[n], XtNeditType, XawtextRead); n++;
-	XtSetArg(args[n], XtNscrollVertical, XawtextScrollAlways); n++;
-	XtSetArg(args[n], XtNtype, XawAsciiString); n++;
-	text = XtCreateManagedWidget("text",asciiTextWidgetClass,paned,args,n);
+	text = InitText(paned);
 
-	InitText(text, MAX(MAX_TEXT_LINES,message_height));
-	AppendText(header);
-	cfree(header);
+	AppendText(line1);
+	AppendText(line2);
+	AppendText(line3);
 
 	/*
 	 * resize the text widget so it can hold the complete text header and

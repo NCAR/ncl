@@ -1,5 +1,5 @@
 /*
- *	$Id: w_text.c,v 1.5 1992-08-10 22:05:06 clyne Exp $
+ *	$Id: w_text.c,v 1.6 1992-08-25 20:24:09 clyne Exp $
  */
 /*
  *	w_text.c
@@ -13,15 +13,18 @@
 #include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
-
 #include <X11/Xaw/AsciiText.h>
-
-#include <ncarv.h>
+#include "ncarv.h"
 #include "idt.h";
 
 static	Widget	textWidget;
-static	int	maxLines;
-static	int	numLines;
+
+#define	MSGBUFSIZE	4096
+
+/*
+ * message buffer used internally by text widget
+ */
+static	char	msgBuf[MSGBUFSIZE];
 
 
 /*
@@ -53,67 +56,42 @@ static	char	*strccpy(s, t, c)
  *	Append a single line of text to the text widget. The line must be
  *	terminated with a new line.
  * on entry
- *	*line		: line to be appended
+ *	*s		: line to be appended
  */
-static	void	append_line(line)
-	char	*line;
+static	void	append_line(s)
+	char	*s;
 {
-	String		text;
-	int		len_text,
-			len_line;
+	static long ptr = 0;	/* # of chars currently used in msg buf */
 
-	Arg		args[5];
-	Cardinal	n;
+	XawTextBlock text_block;
+
+	int slength = strlen(s);
 
 
-	String		buf, bufptr;
-
-	/*
-	 * see if there is already text in the text widget
+	/* 
+	 * Will this message fit in the message buff?
 	 */
-	if (numLines != 0) {
-		n = 0;
-		XtSetArg(args[n], XtNstring, &text);	n++;
-		XtGetValues(textWidget, args, n);
-	}
-	else 
-		text = "";
-
-	/*
-	 * delete the first line if append will overflow max lines
-	 */
-	if (numLines == maxLines) {
-		while (*text != '\n')
-			text++;
-		text++;
-		numLines--;
+	if((slength + ptr) > sizeof(msgBuf)) {
+		/* reset message buffer */
+		int i;
+		ptr = 0;
+		for(i=0; i<sizeof(msgBuf); i++) msgBuf[i] = ' ';
+		for(i=0; i<sizeof(msgBuf); i+=10) msgBuf[i] = '\n';
+		msgBuf[sizeof(msgBuf)-1] = '\0';
 	}
 
-	/*
-	 * concat new line to origial text
-	 */
-	len_text = strlen((char * ) text);
-	len_line = strlen((char * ) line);
+	strncpy((msgBuf+ptr),s,slength); /* copy mesg except for null */
 
-	buf = icMalloc((unsigned) (len_text + len_line + 1));
-	bufptr = buf;
+	text_block.ptr = s;
+	text_block.firstPos = 0;
+	text_block.length = slength;
+	text_block.format = FMT8BIT;
+	(void) XawTextReplace(textWidget,ptr,strlen(s)+ptr,&text_block);
 
-	bcopy((char *) text, (char *) bufptr, len_text);
-	bufptr += len_text;
-	bcopy((char *) line, (char *) bufptr, len_line);
-	bufptr += len_line;
-	*bufptr = '\0';
+	XawTextDisplay(textWidget);
+	XawTextSetInsertionPoint(textWidget,ptr+slength);
+	ptr = ptr + slength;
 
-	/*
-	 * display the nex text in the text widget
-	 */
-	n = 0;
-	XtSetArg(args[n], XtNstring, buf);	n++;
-	XtSetValues(textWidget, args, n);
-
-	numLines++;
-
-	cfree(buf);
 }
 
 /*
@@ -122,22 +100,28 @@ static	void	append_line(line)
  *
  *	init the module
  * on entry
- *	text		: text widget to manage text of
+ *	parent		: text widget to manage text of
  *	maxlines	: maximum lines to be displayed in the widget
  */
-void	InitText(text, maxlines) 
-	Widget	text;
-	int	maxlines;
+Widget	InitText(parent) 
+	Widget	parent;
 {
-	if (maxlines < 1) {
-		(void) fprintf(stderr, 
-			"Text widget requires at least one line\n");
+	Arg	args[10];
+	Cardinal	n = 0;
 
-		exit(1);
-	}
-	textWidget = text;
-	maxLines = maxlines;
-	numLines = 0;
+	n = 0;
+	XtSetArg(args[n], XtNscrollVertical, XawtextScrollAlways); n++;
+	XtSetArg(args[n], XtNsensitive, TRUE);		n++;
+	XtSetArg(args[n], XtNlength, sizeof(msgBuf));	n++;
+	XtSetArg(args[n], XtNstring, msgBuf);		n++;
+	XtSetArg(args[n], XtNeditType, XawtextEdit);	n++;
+	XtSetArg(args[n], XtNuseStringInPlace, True);	n++;
+
+	textWidget = XtCreateManagedWidget(
+		"text", asciiTextWidgetClass, parent, args, n
+	);
+
+	return(textWidget);
 }
 
 /*
@@ -176,31 +160,6 @@ void	AppendText(t)
 
 		if (!(t = strchr(t, '\n'))) break;
 		t++;
-	}
-
-
-	/*
-	 * if we have more then x lines of text when we append make sure 
-	 * the last few lines in the text widget are the ones displayed. By
-	 * default the text widget will display the first character in the
-	 * top left corner of the display
-	 */
-	if (numLines >= App_Data.message_height) {
-		n = 0;
-		XtSetArg(args[n], XtNstring, &text);	n++;
-		XtGetValues(textWidget, args, n);
-
-		s = strrchr(text, '\n');
-		for (i = 0; i < App_Data.message_height - 1; i++) {
-			s--;
-			while(*s != '\n') s--;	
-		}
-		s++;
-		position = s - text;
-
-		n = 0;
-		XtSetArg(args[n], XtNdisplayPosition, position);	n++;
-		XtSetValues(textWidget, args, n);
 	}
 
 	cfree(buf);
