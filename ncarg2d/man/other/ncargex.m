@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.51 2003-08-18 20:55:20 kennison Exp $
+.\"	$Id: ncargex.m,v 1.52 2003-09-18 18:34:35 kennison Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "June 1998" NCAR "NCAR GRAPHICS"
@@ -346,7 +346,8 @@ cpex14 cpex15 cpex16 tconpa c_cbex01 c_colcon
 .sp
 .I "CONPACKT Examples:"
 .sp
-ctex01 ctex02
+ctex01 ctex02 ctfite ctgaus ctgeo1 ctgeo2 ctiscp ctllg1 ctllg2 ctllg3 ctorca
+ctpopg ctswth ctwng1 ctwng2
 .sp
 .I "CONRAN FAMILY Examples:"
 .sp
