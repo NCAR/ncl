@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.23 1993-03-12 04:05:10 haley Exp $
+#   $Id: ncargex.csh,v 1.24 1993-03-24 23:04:28 haley Exp $
 #
 
 #********************#
@@ -15,10 +15,10 @@ if ($#argv < 1) then
   echo "               [-conran_family] [-conrec_family] [-dashline]     "
   echo "               [-ezmap] [-gflash] [-gridall] [-halftone]         "
   echo "               [-histogram] [-isosrfhr] [-isosurface] [-labelbar]"
-  echo "               [-plotchar] [-pwritx] [-pwrity] [-scrolled_title] "
-  echo "               [-softfill] [-spps] [-streamlines] [-surface]     "
-  echo "               [-threed] [-vectors] [-gks] [-misc] [-clean] [-n] "
-  echo "               [-onebyone] names                                 "
+  echo "               [-ngmisc] [-plotchar] [-pwritx] [-pwrity]         "
+  echo "               [-scrolled_title] [-softfill] [-spps]             "
+  echo "               [-streamlines] [-surface] [-threed] [-vectors]    "
+  echo "               [-gks] [-misc] [-clean] [-n] [-onebyone] names    "
   echo "                                                                 "
   echo "See <man ncargex>                                                "
   exit
@@ -158,7 +158,7 @@ set cnrc_family_list = (${ex_cnrc_family} ${tst_cnrc_family} \
 set ex_dashline 
 set tst_dashline  = (tdashc tdashl tdashp tdashs)
 set ttr_dashline
-set fnd_dashline
+set fnd_dashline = (fdlcurvd fdldashc fdldashd fdlsmth)
 set dashline_list = ($ex_dashline $tst_dashline $ttr_dashline $fnd_dashline)
 
 #**********************#
@@ -240,7 +240,7 @@ set isosrfhr_list = ($ex_isosrfhr $tst_isosrfhr $ttr_isosrfhr $fnd_isosrfhr)
 set ex_isosurface 
 set tst_isosurface  = (tisosr tpwrzi)
 set ttr_isosurface
-set fnd_isosurface
+set fnd_isosurface = (fiseziso fisissrf fispwrzi)
 set isosurface_list = ($ex_isosurface $tst_isosurface $ttr_isosurface \
                        $fnd_isosurface)
 
@@ -255,6 +255,17 @@ set ttr_labelbar
 set fnd_labelbar
 set labelbar_list = ($ex_labelbar $tst_labelbar $ttr_labelbar $fnd_labelbar)
 
+#*********************#
+#                     #
+# set ngmisc examples #
+#                     #
+#*********************#
+set ex_ngmisc
+set tst_ngmisc
+set ttr_ngmisc
+set fnd_ngmisc = (fnmngdts fnmwsym)
+set ngmisc_list = ($ex_ngmisc $tst_ngmisc $ttr_ngmisc $fnd_ngmisc)
+
 #***********************#
 #                       #
 # set plotchar examples #
@@ -263,7 +274,7 @@ set labelbar_list = ($ex_labelbar $tst_labelbar $ttr_labelbar $fnd_labelbar)
 set ex_plotchar   = (epltch)
 set tst_plotchar  = (tpltch)
 set ttr_plotchar
-set fnd_plotchar
+set fnd_plotchar = (fpchiqu fpcloqu)
 set plotchar_list = ($ex_plotchar $tst_plotchar $ttr_plotchar $fnd_plotchar)
 
 #*********************#
@@ -320,7 +331,7 @@ set softfill_list = ($ex_softfill $tst_softfill $ttr_softfill \
 set ex_spps   = (splogy sprevx spset1 spset2)
 set tst_spps
 set ttr_spps
-set fnd_spps
+set fnd_spps = (fspcurve fspline fsppoint fspponts)
 set spps_list = ($ex_spps $tst_spps $ttr_spps $fnd_spps)
 
 #**************************#
@@ -343,7 +354,7 @@ set streamlines_list = ($ex_streamlines $tst_streamlines \
 set ex_surface   = (srex01)
 set tst_surface  = (tsrfac tpwrzs)
 set ttr_surface
-set fnd_surface
+set fnd_surface = (fsrezsrf fsrpwrzs fsrsrfac)
 set surface_list = ($ex_surface $tst_surface $ttr_surface $fnd_surface)
 
 #*********************#
@@ -376,7 +387,7 @@ set vectors_list = ($ex_vectors $tst_vectors $ttr_vectors $fnd_vectors)
 set ex_gks
 set tst_gks
 set ttr_gks
-set fnd_gks
+set fnd_gks = (fgkgpl fgkgpm fgkgtx fgklnclr fgklnwth)
 set gks_list
 
 #****************************#
@@ -405,40 +416,37 @@ set ttr_overlap = (mpex03 mpex05 arex01 sfex01 tsoftf)
 set ex_list = ($ex_areas $ex_autograph $ex_cbivar $ex_colconv $ex_conpack \
                ${ex_cnrn_family} ${ex_cnrc_family} $ex_dashline $ex_ezmap \
                $ex_gflash $ex_gridall $ex_halftone $ex_histogram $ex_isosrfhr \
-               $ex_isosurface $ex_labelbar $ex_plotchar $ex_pwritx $ex_pwrity \
-               ${ex_scrlld_title} $ex_softfill $ex_spps $ex_streamlines \
-               $ex_surface $ex_threed $ex_vectors $ex_gks $ex_misc)
+               $ex_isosurface $ex_labelbar $ex_ngmisc $ex_plotchar $ex_pwritx \
+               $ex_pwrity ${ex_scrlld_title} $ex_softfill $ex_spps \
+               $ex_streamlines $ex_surface $ex_threed $ex_vectors $ex_gks \
+               $ex_misc)
 
 set tst_list = ($tst_areas $tst_autograph $tst_cbivar $tst_colconv \
                 $tst_conpack ${tst_cnrn_family} ${tst_cnrc_family} \
                 $tst_dashline $tst_ezmap $tst_gflash $tst_gridall \
                 $tst_halftone $tst_histogram $tst_isosrfhr $tst_isosurface \
-                $tst_labelbar $tst_plotchar $tst_pwritx $tst_pwrity \
-                ${tst_scrlld_title} $tst_softfill $tst_spps $tst_streamlines \
-                $tst_surface $tst_threed $tst_vectors $tst_gks $tst_misc)
+                $tst_labelbar $tst_ngmisc $tst_plotchar $tst_pwritx \
+                $tst_pwrity ${tst_scrlld_title} $tst_softfill $tst_spps \
+                $tst_streamlines $tst_surface $tst_threed $tst_vectors \
+                $tst_gks $tst_misc)
 
 set ttr_list = ($ttr_areas $ttr_autograph $ttr_cbivar $ttr_colconv \
                 $ttr_conpack ${ttr_cnrn_family} ${ttr_cnrc_family} \
                 $ttr_dashline $ttr_ezmap $ttr_gflash $ttr_gridall \
                 $ttr_halftone $ttr_histogram $ttr_isosrfhr $ttr_isosurface \
-                $ttr_labelbar $ttr_plotchar $ttr_pwritx $ttr_pwrity \
-                ${ttr_scrlld_title} $ttr_softfill $ttr_spps $ttr_streamlines \
-                $ttr_surface $ttr_threed $ttr_vectors $ttr_gks $ttr_misc)
+                $ttr_labelbar $ttr_ngmisc $ttr_plotchar $ttr_pwritx \
+                $ttr_pwrity ${ttr_scrlld_title} $ttr_softfill $ttr_spps \
+                $ttr_streamlines $ttr_surface $ttr_threed $ttr_vectors \
+                $ttr_gks $ttr_misc)
 
 set fnd_list = ($fnd_areas $fnd_autograph $fnd_cbivar $fnd_colconv \
                 $fnd_conpack ${fnd_cnrn_family} ${fnd_cnrc_family} \
                 $fnd_dashline $fnd_ezmap $fnd_gflash $fnd_gridall \
                 $fnd_halftone $fnd_histogram $fnd_isosrfhr \
-                $fnd_isosurface $fnd_labelbar $fnd_plotchar $fnd_pwritx \
-                $fnd_pwrity ${fnd_scrlld_title} $fnd_softfill \
+                $fnd_isosurface $fnd_labelbar $fnd_ngmsic $fnd_plotchar \
+                $fnd_pwritx $fnd_pwrity ${fnd_scrlld_title} $fnd_softfill \
                 $fnd_spps $fnd_streamlines $fnd_surface $fnd_threed \
                 $fnd_vectors $fnd_gks $fnd_misc)
-
-set alias_list=(agupwrtx areas autograph conrecq conrecs conrecsup colconv \
-                conran conranq conransup conpack conrec dashchar dashline \
-                dashsmth dashsupr ezmap ezmapa gflash gridal hafton histgr \
-                isosrf isosrfhr labelbar plotchar pwritx pwrity pwrzi pwrtz \
-                pwrzs pwrzt softfill srface stitle strmln threed velvct)
 
 #*********************************#
 #                                 #
@@ -566,6 +574,11 @@ while ($#argv > 0)
         case "-labelbar":
             shift
             set names=($labelbar_list)
+            breaksw
+
+        case "-ngmisc":
+            shift
+            set names=($ngmisc_list)
             breaksw
 
         case "-plotchar":
@@ -708,12 +721,6 @@ end
 foreach known ($fnd_list)
     if ("$name" == "$known") then
         set type="Fundamentals"
-    endif
-end
-
-foreach known ($alias_list)
-    if ("$name" == "$known") then
-        set type="TestAlias"
     endif
 end
 
@@ -890,6 +897,7 @@ switch ($name)
     case tdashp:
     case tcnsup:
     case tconas:
+    case fdlsmth:
         set ncargf77flags = "-super"
     breaksw
 
