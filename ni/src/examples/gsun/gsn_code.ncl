@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.47 2000-10-11 13:43:28 haley Exp $
+;      $Id: gsn_code.ncl,v 1.48 2000-10-19 15:30:15 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1506,10 +1506,17 @@ local i, lbid, res, lb_res_index, lbres
     "amResizeNotify" : True
     "amTrackData"    : True
     "amJust"         : just
+  end setvalues
+
+  amres = get_res_eq(res2,"am")  ; Get annomanager resources.
+  attsetvalues_check(am_ids(0),amres)            ; Set text resources.
+
+  return(am_ids(0))
 end
 
 ;***********************************************************************;
 ; Procedure : gsn_panel                                                 ;
+;                 wks: workstation object                               ;
 ;               plot : array of plots to put on one page.               ;
 ;               dims : a 2-D array indicating number of rows and columns;
 ;             resources: optional resources                             ;
@@ -1550,7 +1557,7 @@ begin
   ddims = dimsizes(dims)
 ;
 ; First check if paneling is to be specified by (#rows x #columns) or
-      print("Error: gsn_panel: you must either specify # rows by # columns or set gsnPanelRowSpec to True and set the number of plots per row.")
+; by #columns per row.  The default is rows x columns, unless 
 ; resource gsnPanelRowSpec is set to True
 ; 
   is_row_spec = get_res_value(res,"gsnPanelRowSpec",False)
@@ -3153,7 +3160,7 @@ begin
     attsetvalues(am_ids(0),amres)            ; Set text resources.
   end if
 
-  return(plotid)
+  return(am_ids(0))
 end
 
 ;***********************************************************************;
