@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.133 2004-02-09 00:02:34 haley Exp $
+;      $Id: gsn_code.ncl,v 1.134 2004-02-09 16:47:24 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2867,9 +2867,9 @@ end
 ;                     y: Y NDC position of legend                       ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
-; This procedure draws a legend on the workstation "wks" (the           ;
-; variable returned from a previous call to "gsn_open_wks").            ;
-; "resources" is an optional list of resources.                         ;
+; This function draws a legend on the workstation "wks" (the variable   ;
+; returned from a previous call to "gsn_open_wks"). "resources" is an   ;
+; optional list of resources.                                           ;
 ;***********************************************************************;
 function gsn_legend_ndc_return(wks:graphic, nitems:integer, labels:string, \
                                x,y,resources:logical )
@@ -2905,9 +2905,9 @@ end
 ;                     y: Y NDC position of legend                       ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
-; This procedure draws a legend on the workstation "wks" (the           ;
-; variable returned from a previous call to "gsn_open_wks").            ;
-; "resources" is an optional list of resources.                         ;
+; This procedure draws a legend on the workstation "wks" (the variable  ;
+; returned from a previous call to "gsn_open_wks"). "resources" is an   ;
+; optional list of resources.                                           ;
 ;***********************************************************************;
 procedure gsn_legend_ndc(wks:graphic, nitems:integer, labels:string, \
                          x,y,resources:logical )
