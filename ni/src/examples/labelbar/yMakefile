@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.4 1995-02-08 17:58:01 haley Exp $
+#   $Id: yMakefile,v 1.5 1995-02-08 18:10:49 haley Exp $
 #
 #   Makefile for HLU LabeBar examples
 #
@@ -9,7 +9,7 @@ EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
 SRCS        = lb01c.c lb02c.c lb01f.f lb02f.f lb01n.ncl lb02n.ncl
-SRCS        = lb01c.o lb02c.o lb01f.o lb02f.o
+OBJS        = lb01c.o lb02c.o lb01f.o lb02f.o
 RES         = lb01.res lb02.res
 EXFILES     = $(SRCS) $(RES)
 
