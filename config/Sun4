@@ -1,5 +1,5 @@
 /*
- *      $Id: Sun4,v 1.25 1995-04-11 15:07:09 haley Exp $
+ *      $Id: Sun4,v 1.26 1995-04-27 14:25:13 haley Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,7 @@
 #define	Cstatic		-Bstatic
 
 #define	HdfDefines	-DSUN
-#define CtoFLibraries	Cstatic -lF77 Cdynamic
+#define CtoFLibraries	Cstatic -lF77 -lM77 Cdynamic
 #define	LintCommand	alint
 
 #define	ArchRecLibSearch	-L/usr/local/lib
