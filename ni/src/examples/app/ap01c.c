@@ -47,7 +47,7 @@ main()
 		 */
 		NhlRLClear(rlist);
 		NhlRLSetString(rlist,NhlNwkMetaName,"./ap01c.ncgm");
-		NhlCreate(&workid,"x",NhlncgmWorkstationClass,NhlDEFAULT_APP,0);
+		NhlCreate(&workid,"x",NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
 	}
         else {
 		/*
@@ -55,7 +55,7 @@ main()
 		 */
 		NhlRLClear(rlist);
 		NhlRLSetInteger(rlist,NhlNwkPause,True);
-		NhlCreate(&workid,"x",NhlxWorkstationClass,NhlDEFAULT_APP,0);
+		NhlCreate(&workid,"x",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
         }
 
 	/*
