@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.24 1995-01-11 00:46:32 boote Exp $
+ *      $Id: LabelBar.c,v 1.25 1995-01-12 22:50:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1341,8 +1341,6 @@ static NhlErrorTypes    ManageDynamicArrays
 				ret = MIN(ret, NhlWARNING);
 				i_p[i] = NhlLB_DEF_COLOR;
 			}
-			lb_p->gks_colors[i] =
-				_NhlGetGksCi(tnew->base.wkptr, i_p[i]);
 		}
 	}
 
@@ -1362,6 +1360,10 @@ static NhlErrorTypes    ManageDynamicArrays
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlbFillColors);
 			return NhlFATAL;
+		}
+		for (i=0;i<lb_p->fill_colors->num_elements; i++) {
+			lb_p->gks_colors[i] =
+				_NhlGetGksCi(tnew->base.wkptr, i_p[i]);
 		}
 		for (i=lb_p->fill_colors->num_elements; i<count; i++) {
 			i_p[i] = i < len ? i : NhlLB_DEF_COLOR;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.46 1995-01-11 00:46:24 boote Exp $
+ *      $Id: Contour.c,v 1.47 1995-01-12 22:50:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -6054,6 +6054,7 @@ static NhlErrorTypes ReplaceSubstitutionChars
 	switch (atype) {
 	case _cnINFO:
 		if (! cnp->data_changed && ! init && 
+		    (cnp->levels == ocnp->levels) &&
 		    (cnp->info_string == ocnp->info_string) &&
 		    (cnp->max_data_format.fstring == 
 		    ocnp->max_data_format.fstring) &&
