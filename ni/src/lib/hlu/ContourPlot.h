@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.2 1995-04-04 06:47:57 boote Exp $
+ *      $Id: ContourPlot.h,v 1.3 1995-04-07 00:39:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,16 +33,16 @@
 /* Level selection modes */
 
 typedef enum _NhlcnLevelSelectionMode { 
-	NhlcnAUTOMATIC, NhlcnMANUAL, 
-	NhlcnEXPLICIT, NhlcnEQUALSPACING } NhlcnLevelSelectionMode;
+	NhlAUTOMATICLEVELS, NhlMANUALLEVELS, 
+	NhlEXPLICITLEVELS, NhlEQUALSPACEDLEVELS } NhlcnLevelSelectionMode;
 
 #define NhlTcnLevelSelectionMode "cnlevelselectionmode"
 
 /* Level usage modes */
 
 typedef enum _NhlcnLevelUseMode {
-	NhlcnNOLINE, NhlcnLINEONLY, 
-	NhlcnLABELONLY, NhlcnLINEANDLABEL
+	NhlNOLINE, NhlLINEONLY, 
+	NhlLABELONLY, NhlLINEANDLABEL
 } NhlcnLevelUseMode;
 
 #define NhlTcnLevelUseMode	"cnlevelusemode"
@@ -51,9 +51,9 @@ typedef enum _NhlcnLevelUseMode {
 /* Line label spacing */
 
 typedef enum _NhlcnLineLabelPlacementMode {
-	NhlcnCONSTANT, 
-	NhlcnRANDOMIZED,
-	NhlcnCOMPUTED
+	NhlCONSTANT, 
+	NhlRANDOMIZED,
+	NhlCOMPUTED
 } NhlcnLineLabelPlacementMode;
 
 #define NhlTcnLineLabelPlacementMode	"cnLineLabelPlacementmode"
@@ -61,9 +61,9 @@ typedef enum _NhlcnLineLabelPlacementMode {
 /* Label scaling mode */
 
 typedef enum _NhlcnLabelScalingMode {
-	NhlcnSCALEFACTOR, NhlcnCONFINETORANGE,
-	NhlcnTRIMZEROS,NhlcnMAXSIGDIGITSLEFT,
-        NhlcnINTEGERLINELABELS
+	NhlSCALEFACTOR, NhlCONFINETORANGE,
+	NhlTRIMZEROS,NhlMAXSIGDIGITSLEFT,
+        NhlINTEGERLINELABELS
 } NhlcnLabelScalingMode;
 
 #define NhlTcnLabelScalingMode	"cnlabelscalinggmode"
@@ -71,18 +71,18 @@ typedef enum _NhlcnLabelScalingMode {
 /* label overlap flag */
 
 typedef enum _NhlcnHighLowLabelOverlapMode {
-	NhlcnIGNOREOVERLAP = 0,
-	NhlcnOMITOVERINFO,
-	NhlcnOMITOVERHL,
-	NhlcnOMITOVERHLANDINFO,
-	NhlcnOMITOVERVP,
-	NhlcnOMITOVERVPANDINFO,
-	NhlcnOMITOVERVPANDHL,
-	NhlcnOMITOVERVPANDHLANDINFO,
-	NhlcnADJUSTVP,
-	NhlcnADJUSTVPOMITOVERINFO,
-	NhlcnADJUSTVPOMITOVERHL,
-	NhlcnADJUSTVPOMITOVERHLANDINFO
+	NhlIGNOREOVERLAP = 0,
+	NhlOMITOVERINFO,
+	NhlOMITOVERHL,
+	NhlOMITOVERHLANDINFO,
+	NhlOMITOVERVP,
+	NhlOMITOVERVPANDINFO,
+	NhlOMITOVERVPANDHL,
+	NhlOMITOVERVPANDHLANDINFO,
+	NhlADJUSTVP,
+	NhlADJUSTVPOMITOVERINFO,
+	NhlADJUSTVPOMITOVERHL,
+	NhlADJUSTVPOMITOVERHLANDINFO
 } NhlcnHighLowLabelOverlapMode;
 
 #define NhlTcnHighLowLabelOverlapMode	"cnhighlowlabeloverlapmode"

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.22 1995-04-04 06:48:01 boote Exp $
+ *      $Id: Workspace.c,v 1.23 1995-04-07 00:40:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1696,7 +1696,10 @@ static NhlErrorTypes	EnlargeWorkspace
 		c_cpmviw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
 	}
 
+#if 0
+	printf("Workspace: total size: %d\n", WSp->total_size);
 
+#endif
 	return NhlNOERROR;
 }
 

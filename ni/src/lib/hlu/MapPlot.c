@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.29 1995-04-01 00:04:07 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.30 1995-04-07 00:40:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -96,7 +96,7 @@ static NhlResource resources[] = {
 
 	{NhlNmpShapeMode, NhlCmpShapeMode, NhlTMapShapeMode,
 		 sizeof(NhlBoolean),Oset(shape_mode),NhlTImmediate,
-		 _NhlUSET((NhlPointer) NhlmpFIXEDASPECTFITBB),0,NULL},
+		 _NhlUSET((NhlPointer) NhlFIXEDASPECTFITBB),0,NULL},
 	{NhlNmpAreaNames,NhlCmpAreaNames,
 		 NhlTStringGenArray,sizeof(NhlPointer),
 		 Oset(area_names),NhlTImmediate,
@@ -128,7 +128,7 @@ static NhlResource resources[] = {
 	{NhlNmpOutlineBoundarySets,NhlCmpOutlineBoundarySets,
                  NhlTMapBoundarySets,sizeof(NhlMapBoundarySets),
                  Oset(outline_boundaries),NhlTImmediate,
-		 _NhlUSET((NhlPointer)NhlmpGEOPHYSICAL),0,NULL},
+		 _NhlUSET((NhlPointer)NhlGEOPHYSICAL),0,NULL},
 	{NhlNmpOutlineSpecifiers,NhlCmpOutlineSpecifiers,NhlTStringGenArray,
 		 sizeof(NhlPointer),Oset(outline_specs),NhlTImmediate,
 		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
@@ -156,7 +156,7 @@ static NhlResource resources[] = {
 	{NhlNmpFillBoundarySets,NhlCmpFillBoundarySets,
                  NhlTMapBoundarySets,sizeof(NhlMapBoundarySets),
                  Oset(fill_boundaries),NhlTImmediate,
-		 _NhlUSET((NhlPointer)NhlmpGEOPHYSICAL),0,NULL},
+		 _NhlUSET((NhlPointer)NhlGEOPHYSICAL),0,NULL},
 
 	{NhlNmpFillAreaSpecifiers,NhlCmpFillAreaSpecifiers, 
 		 NhlTStringGenArray,sizeof(NhlPointer),Oset(fill_area_specs),
@@ -166,7 +166,7 @@ static NhlResource resources[] = {
 		 NhlTSpecifiedFillPriority,
 		 sizeof(NhlSpecifiedFillPriority),Oset(spec_fill_priority),
 		 NhlTImmediate,
-		 _NhlUSET((NhlPointer)NhlmpPOLITICALPRIORITY),0,NULL},
+		 _NhlUSET((NhlPointer)NhlPOLITICALPRIORITY),0,NULL},
 	{NhlNmpSpecifiedFillDirectIndexing, NhlCmpSpecifiedFillDirectIndexing, 
 		 NhlTBoolean,sizeof(NhlBoolean),Oset(spec_fill_direct),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
@@ -375,7 +375,7 @@ static NhlResource resources[] = {
 		 NhlTString, _NhlUSET("15.0"),0,NULL},
 	{NhlNmpGridMaskMode,NhlCmpGridMaskMode,NhlTMapGridMaskMode,
 		 sizeof(NhlMapGridMaskMode),Oset(grid_mask_mode),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlmpMASKNONE),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlMASKNONE),0,NULL},
 	{NhlNmpGridLineColor,NhlCmpGridLineColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(grid.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
@@ -1090,33 +1090,33 @@ MapPlotClassInitialize
 #endif
 {
         _NhlEnumVals   mapboundarysetslist[] = {
-        {NhlmpNOBOUNDARIES,		"noboundaries"},
-        {NhlmpGEOPHYSICAL, 		"geophysical"},
-        {NhlmpNATIONAL,			"national"},
-        {NhlmpUSSTATES,      		"usstates"},
-	{NhlmpGEOPHYSICALANDUSSTATES,	"geophysicalandusstates"},
-        {NhlmpALLBOUNDARIES,    	"allboundaries"},
+        {NhlNOBOUNDARIES,		"noboundaries"},
+        {NhlGEOPHYSICAL, 		"geophysical"},
+        {NhlNATIONAL,			"national"},
+        {NhlUSSTATES,      		"usstates"},
+	{NhlGEOPHYSICALANDUSSTATES,	"geophysicalandusstates"},
+        {NhlALLBOUNDARIES,    	"allboundaries"},
         };
 
 	_NhlEnumVals specifiedfillprioritylist[] =  {
-	{NhlmpGEOPHYSICALPRIORITY,		"geophysicalpriority"},
-	{NhlmpPOLITICALPRIORITY,		"politicalpriority"}
+	{NhlGEOPHYSICALPRIORITY,		"geophysicalpriority"},
+	{NhlPOLITICALPRIORITY,		"politicalpriority"}
 	};
 
 	_NhlEnumVals mapgridmaskmodelist[] =  {
-	{NhlmpMASKNONE,		"masknone"},
-	{NhlmpMASKOCEAN,	"maskocean"},
-	{NhlmpMASKNOTOCEAN,	"masknotocean"},
-	{NhlmpMASKLAND,		"maskland"},
-	{NhlmpMASKNOTLAND,	"masknotland"},
-	{NhlmpMASKFILLAREA,	"maskfillarea"},
-	{NhlmpMASKMASKAREA,	"maskmaskarea"}
+	{NhlMASKNONE,		"masknone"},
+	{NhlMASKOCEAN,	"maskocean"},
+	{NhlMASKNOTOCEAN,	"masknotocean"},
+	{NhlMASKLAND,		"maskland"},
+	{NhlMASKNOTLAND,	"masknotland"},
+	{NhlMASKFILLAREA,	"maskfillarea"},
+	{NhlMASKMASKAREA,	"maskmaskarea"}
 	};
 
 	_NhlEnumVals mapshapemodelist[] =  {
-	{NhlmpFREEASPECT,		"freeaspect"},
-	{NhlmpFIXEDASPECTFITBB,		"fixedaspectfitbb"},
-	{NhlmpFIXEDASPECTNOFITBB,	"fixedaspectnofitbb"}
+	{NhlFREEASPECT,		"freeaspect"},
+	{NhlFIXEDASPECTFITBB,		"fixedaspectfitbb"},
+	{NhlFIXEDASPECTNOFITBB,	"fixedaspectnofitbb"}
 	};
 
         _NhlRegisterEnumType(NhlTMapBoundarySets,mapboundarysetslist,
@@ -2580,7 +2580,7 @@ static NhlErrorTypes mpGrid
 	}
 	c_mpsetr("GR",spacing);
 
-	if (mpp->grid_mask_mode == NhlmpMASKNONE) {
+	if (mpp->grid_mask_mode == NhlMASKNONE) {
 		c_mapgrd();
 		return ret;
 	}
@@ -4366,7 +4366,7 @@ static NhlErrorTypes mpSetFlags
 				nrec->u.f.s_scl =  1;
 		}
 	}
-	if (mpp->spec_fill_priority == NhlmpGEOPHYSICALPRIORITY) {
+	if (mpp->spec_fill_priority == NhlGEOPHYSICALPRIORITY) {
 		if (! invert)
 			nrec->ix = OutRecs[nrec->name_ix].cix[0];
 		else if (mpp->dynamic_groups != NULL) {
@@ -4650,28 +4650,28 @@ static NhlErrorTypes    mpBuildFillDrawList
  * the include and exclude lists.
  */
 	switch (mpp->fill_boundaries) {
-	case NhlmpNOBOUNDARIES:
+	case NhlNOBOUNDARIES:
 	default:
 		break;
-	case NhlmpGEOPHYSICAL:
+	case NhlGEOPHYSICAL:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
 					    mpNOINDEX,
 					    mpALLGEOPHYSICAL,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
-	case NhlmpNATIONAL:
+	case NhlNATIONAL:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
 					    mpNOINDEX,
 					    mpALLNATIONAL,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
-	case NhlmpUSSTATES:
+	case NhlUSSTATES:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
 					    mpNOINDEX,
 					    mpALLUSSTATES,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
-	case NhlmpGEOPHYSICALANDUSSTATES:
+	case NhlGEOPHYSICALANDUSSTATES:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
 					    mpNOINDEX,
 					    mpALLGEOPHYSICAL,entry_name);
@@ -4681,7 +4681,7 @@ static NhlErrorTypes    mpBuildFillDrawList
 					    mpALLUSSTATES,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
-	case NhlmpALLBOUNDARIES:
+	case NhlALLBOUNDARIES:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
 					    mpNOINDEX,
 					    mpALLNATIONAL,entry_name);
@@ -4820,28 +4820,28 @@ static NhlErrorTypes    mpBuildOutlineDrawList
  * the include and exclude lists.
  */
 	switch (mpp->outline_boundaries) {
-	case NhlmpNOBOUNDARIES:
+	case NhlNOBOUNDARIES:
 	default:
 		break;
-	case NhlmpGEOPHYSICAL:
+	case NhlGEOPHYSICAL:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
 					    mpNOINDEX,
 					    mpALLGEOPHYSICAL,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
-	case NhlmpNATIONAL:
+	case NhlNATIONAL:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
 					    mpNOINDEX,
 					    mpALLNATIONAL,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
-	case NhlmpUSSTATES:
+	case NhlUSSTATES:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
 					    mpNOINDEX,
 					    mpALLUSSTATES,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
-	case NhlmpGEOPHYSICALANDUSSTATES:
+	case NhlGEOPHYSICALANDUSSTATES:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
 					    mpNOINDEX,
 					    mpALLGEOPHYSICAL,entry_name);
@@ -4851,7 +4851,7 @@ static NhlErrorTypes    mpBuildOutlineDrawList
 					    mpALLUSSTATES,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		break;
-	case NhlmpALLBOUNDARIES:
+	case NhlALLBOUNDARIES:
 		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
 					    mpNOINDEX,
 					    mpALLNATIONAL,entry_name);
@@ -5163,7 +5163,7 @@ static NhlErrorTypes mpSetUpTransObj
 		sprintf(buffer,"%s",mpnew->base.name);
 		strcat(buffer,".Trans");
 
-		if (mpnew->mapplot.shape_mode == NhlmpFREEASPECT)
+		if (mpnew->mapplot.shape_mode == NhlFREEASPECT)
 			preserve_aspect = False;
 
 		subret = _NhlVACreateChild(&tmpid,buffer,
@@ -5186,7 +5186,7 @@ static NhlErrorTypes mpSetUpTransObj
 	}
 	else {
 		if (mpnew->mapplot.shape_mode != mpold->mapplot.shape_mode) {
-			if (mpnew->mapplot.shape_mode == NhlmpFREEASPECT)
+			if (mpnew->mapplot.shape_mode == NhlFREEASPECT)
 				preserve_aspect = False;
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNmpPreserveAspectRatio,preserve_aspect);
@@ -5210,7 +5210,7 @@ static NhlErrorTypes mpSetUpTransObj
 		       NhlNmpTransChanged,&trans_changed,
 		       NULL);
 
-	if ((mpnew->mapplot.shape_mode == NhlmpFIXEDASPECTFITBB) && 
+	if ((mpnew->mapplot.shape_mode == NhlFIXEDASPECTFITBB) && 
 	    (_NhlCmpFAny(mpnew->view.x,map_left,6) != 0.0 ||
 	     _NhlCmpFAny(mpnew->view.y,map_top,6) != 0.0 ||
 	     _NhlCmpFAny(mpnew->view.width,map_right - map_left,6) != 0.0 ||
@@ -5468,21 +5468,21 @@ int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))
 	if (id < 0)
 		return 0;
 	switch (Mpp->grid_mask_mode) {
-	case NhlmpMASKNONE:
+	case NhlMASKNONE:
 	default:
 		draw_line = True;
 		break;
-	case NhlmpMASKOCEAN:
+	case NhlMASKOCEAN:
 		if (id != 1)
 			draw_line = True;
 		break;
-	case NhlmpMASKNOTOCEAN:
+	case NhlMASKNOTOCEAN:
 		if (id == 1 ||
 		    DrawIds[id].u.f.draw_mode == mpBACKGROUND) {
 			draw_line = True;
 		}
 		break;
-	case NhlmpMASKLAND:
+	case NhlMASKLAND:
 		switch (Outline_Set) {
 		case mpEMPTY:
 			draw_line = True;
@@ -5519,7 +5519,7 @@ int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))
 			}
 		}
 		break;
-	case NhlmpMASKNOTLAND:
+	case NhlMASKNOTLAND:
 		draw_line = True;
 		switch (Outline_Set) {
 		case mpEMPTY:
@@ -5557,12 +5557,12 @@ int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))
 			}
 		}
 		break;
-	case NhlmpMASKFILLAREA:
+	case NhlMASKFILLAREA:
 		if (DrawIds[id].u.f.draw_mode == mpBACKGROUND) {
 			draw_line = True;
 		}
 		break;
-	case NhlmpMASKMASKAREA:
+	case NhlMASKMASKAREA:
 		if (DrawIds[id].u.f.draw_mode < mpMASK) {
 			draw_line = True;
 		}

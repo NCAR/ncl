@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.30 1995-03-31 13:03:31 boote Exp $
+ *      $Id: Legend.c,v 1.31 1995-04-07 00:39:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -140,7 +140,7 @@ static NhlResource resources[] = {
 {NhlNlgItemPlacement, NhlClgItemPlacement, NhlTlgItemPlacementMode,
 	 sizeof(NhllgItemPlacementMode), 
 	 NhlOffset(NhlLegendLayerRec,legend.item_placement),
-	 NhlTImmediate, _NhlUSET((NhlPointer) NhllgUNIFORMPLACEMENT),0,NULL},
+	 NhlTImmediate, _NhlUSET((NhlPointer) NhlUNIFORMPLACEMENT),0,NULL},
 {NhlNlgBoxBackground, NhlClgBoxBackground, NhlTColorIndex,
 	 sizeof(NhlColorIndex),
 	 NhlOffset(NhlLegendLayerRec,legend.box_background),
@@ -327,7 +327,7 @@ static NhlResource resources[] = {
 {NhlNlgLabelAlignment, NhlClgLabelAlignment, NhlTlgLabelAlignmentMode, 
 	 sizeof(NhllgLabelAlignmentMode), 
 	 NhlOffset(NhlLegendLayerRec,legend.label_alignment),
-	 NhlTImmediate, _NhlUSET((NhlPointer) NhllgITEMCENTERS),0,NULL},
+	 NhlTImmediate, _NhlUSET((NhlPointer) NhlITEMCENTERS),0,NULL},
 {NhlNlgLabelDirection,NhlClgLabelDirection,NhlTTextDirection,
 	 sizeof(NhlTextDirection),
 	 NhlOffset(NhlLegendLayerRec,legend.label_direction),
@@ -3283,7 +3283,7 @@ static NhlErrorTypes    SetBoxLocations
 	int i;
 	float *item_positions = (float *)lg_p->item_positions->data;
 
-	if (lg_p->item_placement == NhllgEXPLICITPLACEMENT) {
+	if (lg_p->item_placement == NhlEXPLICITPLACEMENT) {
 		ret1 = ManageItemPositionsArray(item_positions,
 						lg_p->item_count);
 	}
@@ -3297,7 +3297,7 @@ static NhlErrorTypes    SetBoxLocations
 	       sizeof(NhlBoundingBox));
 	memcpy((void *)&lg_p->adj_box_size, (Const void *)&lg_p->box_size,
 	       sizeof(NhlCoord));
-	if (lg_p->label_alignment == NhllgABOVEITEMS) {
+	if (lg_p->label_alignment == NhlABOVEITEMS) {
 		if (lg_p->orient == NhlHORIZONTAL) {
 			lg_p->adj_box_size.x = lg_p->box_size.x * 
 				lg_p->item_count / (lg_p->item_count + 0.5);
@@ -3315,7 +3315,7 @@ static NhlErrorTypes    SetBoxLocations
 				lg_p->bar.b + lg_p->adj_box_size.y / 2.0;
 		}
 	}
-	else if (lg_p->label_alignment == NhllgBELOWITEMS) {
+	else if (lg_p->label_alignment == NhlBELOWITEMS) {
 		if (lg_p->orient == NhlHORIZONTAL) {
 			lg_p->adj_box_size.x = lg_p->box_size.x * 
 				lg_p->item_count / (lg_p->item_count + 0.5);
@@ -3341,7 +3341,7 @@ static NhlErrorTypes    SetBoxLocations
  */
 		
 	if (lg_p->orient == NhlHORIZONTAL &&
-	    lg_p->item_placement == NhllgUNIFORMPLACEMENT) {
+	    lg_p->item_placement == NhlUNIFORMPLACEMENT) {
 		bar_len = lg_p->adj_bar.r - lg_p->adj_bar.l;
 		box_len = bar_len / (lg_p->item_count);
 		lg_p->item_locs[0] = lg_p->adj_bar.l + 0.5 * box_len;
@@ -3351,7 +3351,7 @@ static NhlErrorTypes    SetBoxLocations
 		lg_p->item_locs[lg_p->item_count] = lg_p->adj_bar.r;
 	}
 	if (lg_p->orient == NhlVERTICAL &&
-	    lg_p->item_placement == NhllgUNIFORMPLACEMENT) {
+	    lg_p->item_placement == NhlUNIFORMPLACEMENT) {
 		bar_len = lg_p->adj_bar.t - lg_p->adj_bar.b;
 		box_len = bar_len / (lg_p->item_count);
 		lg_p->item_locs[0] = lg_p->adj_bar.b + 0.5 * box_len;
@@ -3361,7 +3361,7 @@ static NhlErrorTypes    SetBoxLocations
 		lg_p->item_locs[lg_p->item_count] = lg_p->adj_bar.t;
 	}
 	if (lg_p->orient == NhlHORIZONTAL &&
-	    lg_p->item_placement == NhllgEXPLICITPLACEMENT) {
+	    lg_p->item_placement == NhlEXPLICITPLACEMENT) {
 		bar_len = lg_p->adj_bar.r - lg_p->adj_bar.l;
 		for (i=0; i < lg_p->item_count; i++) {
 			lg_p->item_locs[i] = lg_p->adj_bar.l + 
@@ -3370,7 +3370,7 @@ static NhlErrorTypes    SetBoxLocations
 		lg_p->item_locs[lg_p->item_count] = lg_p->adj_bar.r;
 	}
 	if (lg_p->orient == NhlVERTICAL &&
-	    lg_p->item_placement == NhllgEXPLICITPLACEMENT) {
+	    lg_p->item_placement == NhlEXPLICITPLACEMENT) {
 		bar_len = lg_p->adj_bar.t - lg_p->adj_bar.b;
 		for (i=0; i < lg_p->item_count; i++) {
 			lg_p->item_locs[i] = lg_p->adj_bar.b + 
@@ -3738,7 +3738,7 @@ static NhlErrorTypes    SetLabels
  * offset is negative
  */
 	if (lg_p->label_pos == NhlCENTER || label_offset < 0.0) {
-		if (lg_p->label_alignment == NhllgITEMCENTERS) {
+		if (lg_p->label_alignment == NhlITEMCENTERS) {
 			c_frac = lg_p->box_major_ext;
 		}
 		else {
@@ -3894,9 +3894,9 @@ static NhlErrorTypes    SetLabels
 		base_pos = lg_p->adj_bar.l;
 		
 		/* determine offset */
-		if (lg_p->label_alignment == NhllgITEMCENTERS)
+		if (lg_p->label_alignment == NhlITEMCENTERS)
 			offset = lg_p->adj_box_size.x / 2.0;
-		else if (lg_p->label_alignment == NhllgABOVEITEMS)
+		else if (lg_p->label_alignment == NhlABOVEITEMS)
 			offset = lg_p->adj_box_size.x;
 		else
 			offset = 0;
@@ -3910,16 +3910,16 @@ static NhlErrorTypes    SetLabels
 		base_pos = lg_p->adj_bar.b;
 		
 		/* determine offset */
-		if (lg_p->label_alignment == NhllgITEMCENTERS)
+		if (lg_p->label_alignment == NhlITEMCENTERS)
 			offset = lg_p->adj_box_size.y / 2.0;
-		else if (lg_p->label_alignment == NhllgABOVEITEMS)
+		else if (lg_p->label_alignment == NhlABOVEITEMS)
 			offset = lg_p->adj_box_size.y;
 		else
 			offset = 0;
 		
 		increment = lg_p->adj_box_size.y * lg_p->label_stride;
 	}
-	if (lg_p->item_placement == NhllgUNIFORMPLACEMENT) {
+	if (lg_p->item_placement == NhlUNIFORMPLACEMENT) {
 		for (i=0; i<lg_p->label_draw_count; i++) 
 			lg_p->label_locs[i] = base_pos + offset + 
 				(float) i * increment;
@@ -3932,9 +3932,9 @@ static NhlErrorTypes    SetLabels
 		for (i=0; i < lg_p->label_draw_count; i++) {
 
 			ix = i * lg_p->label_stride;
-			if (lg_p->label_alignment == NhllgITEMCENTERS)
+			if (lg_p->label_alignment == NhlITEMCENTERS)
 				lg_p->label_locs[i] = lg_p->item_locs[ix];
-			else if (lg_p->label_alignment == NhllgABOVEITEMS) {
+			else if (lg_p->label_alignment == NhlABOVEITEMS) {
 				float t;
 				if (i == lg_p->label_draw_count - 1)
 					t = lg_p->item_locs[ix+1] - 
@@ -5409,14 +5409,14 @@ static NhlErrorTypes    LegendClassInitialize
 #endif
 {
         _NhlEnumVals   labelalignmentlist[] = {
-        {NhllgITEMCENTERS,	"itemcenters"},
-        {NhllgABOVEITEMS,	"aboveitems"},
-        {NhllgBELOWITEMS,	"belowitems"},
+        {NhlITEMCENTERS,	"itemcenters"},
+        {NhlABOVEITEMS,	"aboveitems"},
+        {NhlBELOWITEMS,	"belowitems"},
         };
 
         _NhlEnumVals   itemplacementlist[] = {
-        {NhllgUNIFORMPLACEMENT,		"uniformplacement"},
-        {NhllgEXPLICITPLACEMENT,	"explicitplacement"},
+        {NhlUNIFORMPLACEMENT,		"uniformplacement"},
+        {NhlEXPLICITPLACEMENT,	"explicitplacement"},
         };
 
 	_NhlRegisterEnumType(NhlTlgLabelAlignmentMode,labelalignmentlist,

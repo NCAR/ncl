@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.3 1995-04-04 06:47:55 boote Exp $
+ *      $Id: ContourPlot.c,v 1.4 1995-04-07 00:39:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -110,7 +110,7 @@ static NhlResource resources[] = {
 	{ NhlNcnLevelSelectionMode,NhlCcnLevelSelectionMode,
 		  NhlTcnLevelSelectionMode,sizeof(NhlcnLevelSelectionMode),
 		  Oset(level_selection_mode),
-		  NhlTImmediate,_NhlUSET((NhlPointer) NhlcnAUTOMATIC),0,NULL},
+		  NhlTImmediate,_NhlUSET((NhlPointer) NhlAUTOMATICLEVELS),0,NULL},
 	{ NhlNcnLevelCount,NhlCcnLevelCount,NhlTInteger,sizeof(int),
 		  Oset(level_count),NhlTImmediate,
 		  _NhlUSET((NhlPointer) 16),_NhlRES_GONLY,NULL},
@@ -144,7 +144,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 	{NhlNcnLevelFlag, NhlCcnLevelFlag, NhlTcnLevelUseMode,
 		 sizeof(NhlcnLevelUseMode),Oset(level_flag),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlcnLINEONLY),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlLINEONLY),0,NULL},
 	{NhlNcnLevelFlags, NhlCcnLevelFlags,NhlTcnLevelUseModeGenArray,
 		 sizeof(NhlPointer),Oset(level_flags),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
@@ -276,14 +276,14 @@ static NhlResource resources[] = {
 		 NhlTcnHighLowLabelOverlapMode,
 		 sizeof(NhlcnHighLowLabelOverlapMode),
 		  Oset(high_low_overlap),NhlTImmediate,
-		 _NhlUSET((NhlPointer)NhlcnIGNOREOVERLAP),0,NULL},
+		 _NhlUSET((NhlPointer)NhlIGNOREOVERLAP),0,NULL},
 
 /* General label string format option */
 
 	{NhlNcnLabelScalingMode,NhlCcnLabelScalingMode,
                  NhlTcnLabelScalingMode,sizeof(NhlcnLabelScalingMode),
                  Oset(label_scaling_mode),NhlTImmediate,
-                 _NhlUSET((NhlPointer) NhlcnSCALEFACTOR),0,NULL},
+                 _NhlUSET((NhlPointer) NhlSCALEFACTOR),0,NULL},
         {NhlNcnLabelScaleValueF,NhlCcnLabelScaleValueF,
                  NhlTFloat,sizeof(float),Oset(label_scale_value),
                  NhlTString,_NhlUSET("1.0"),0,NULL},
@@ -311,7 +311,7 @@ static NhlResource resources[] = {
 		 NhlTcnLineLabelPlacementMode,
 		 sizeof(NhlcnLineLabelPlacementMode),
 		 Oset(llabel_placement),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlcnRANDOMIZED),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlRANDOMIZED),0,NULL},
 	{NhlNcnLineLabelStrings, NhlCcnLineLabelStrings, NhlTStringGenArray,
 		 sizeof(NhlPointer),Oset(llabel_strings),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
@@ -1689,46 +1689,46 @@ ContourPlotClassInitialize
 {
 
         _NhlEnumVals   levelselectionlist[] = {
-        {NhlcnAUTOMATIC,	"automatic"},
-        {NhlcnMANUAL, 		"manual"},
-        {NhlcnEXPLICIT, 	"explicit"},
-        {NhlcnEQUALSPACING,      "equalspacing"}
+        {NhlAUTOMATICLEVELS,	"automaticlevels"},
+        {NhlMANUALLEVELS, 	"manuallevels"},
+        {NhlEXPLICITLEVELS, 	"explicitlevels"},
+        {NhlEQUALSPACEDLEVELS,  "equalspacedlevels"}
         };
 
         _NhlEnumVals   leveluselist[] = {
-        {NhlcnNOLINE,		"noline"},
-        {NhlcnLINEONLY, 	"lineonly"},
-        {NhlcnLABELONLY, 	"labelonly"},
-        {NhlcnLINEANDLABEL,      "lineandlabel"}
+        {NhlNOLINE,		"noline"},
+        {NhlLINEONLY, 		"lineonly"},
+        {NhlLABELONLY, 		"labelonly"},
+        {NhlLINEANDLABEL,      "lineandlabel"}
         };
 
         _NhlEnumVals   linelabelplacementlist[] = {
-        {NhlcnCONSTANT, 	"constant"},
-        {NhlcnRANDOMIZED, 	"randomized"},
-        {NhlcnCOMPUTED,      	"computed"}
+        {NhlCONSTANT, 		"constant"},
+        {NhlRANDOMIZED, 	"randomized"},
+        {NhlCOMPUTED,      	"computed"}
         };
 
         _NhlEnumVals   labelscalingmodelist[] = {
-        {NhlcnSCALEFACTOR,	"scalefactor"},
-        {NhlcnCONFINETORANGE, 	"confinetorange"},
-        {NhlcnTRIMZEROS, 	"trimzeros"},
-        {NhlcnMAXSIGDIGITSLEFT,	"maxsigdigitsleft"},
-	{NhlcnINTEGERLINELABELS,"integerlinelabels"}
+        {NhlSCALEFACTOR,	"scalefactor"},
+        {NhlCONFINETORANGE, 	"confinetorange"},
+        {NhlTRIMZEROS, 		"trimzeros"},
+        {NhlMAXSIGDIGITSLEFT,	"maxsigdigitsleft"},
+	{NhlINTEGERLINELABELS,	"integerlinelabels"}
         };
 
         _NhlEnumVals   highlowlabeloverlaplist[] = {
-	{NhlcnIGNOREOVERLAP,		"ignoreoverlap"},
-	{NhlcnOMITOVERINFO,		"omitoverinfo"},
-	{NhlcnOMITOVERHL,		"omitoverhl"},
-	{NhlcnOMITOVERHLANDINFO,	"omitoverhlandinfo"},
-	{NhlcnOMITOVERVP,		"omitovervp"},
-	{NhlcnOMITOVERVPANDINFO,	"omitovervpandinfo"},
-	{NhlcnOMITOVERVPANDHL,		"omitovervpandhl"},
-	{NhlcnOMITOVERVPANDHLANDINFO,	"omitovervpandhlandinfo"},
-	{NhlcnADJUSTVP,			"adjustvp"},
-	{NhlcnADJUSTVPOMITOVERINFO,	"adjustvpomitoverinfo"},
-	{NhlcnADJUSTVPOMITOVERHL,	"adjustvpomitoverhl"},
-	{NhlcnADJUSTVPOMITOVERHLANDINFO,"adjustvpomitoverhlandinfo"}
+	{NhlIGNOREOVERLAP,		"ignoreoverlap"},
+	{NhlOMITOVERINFO,		"omitoverinfo"},
+	{NhlOMITOVERHL,			"omitoverhl"},
+	{NhlOMITOVERHLANDINFO,		"omitoverhlandinfo"},
+	{NhlOMITOVERVP,			"omitovervp"},
+	{NhlOMITOVERVPANDINFO,		"omitovervpandinfo"},
+	{NhlOMITOVERVPANDHL,		"omitovervpandhl"},
+	{NhlOMITOVERVPANDHLANDINFO,	"omitovervpandhlandinfo"},
+	{NhlADJUSTVP,			"adjustvp"},
+	{NhlADJUSTVPOMITOVERINFO,	"adjustvpomitoverinfo"},
+	{NhlADJUSTVPOMITOVERHL,		"adjustvpomitoverhl"},
+	{NhlADJUSTVPOMITOVERHLANDINFO,	"adjustvpomitoverhlandinfo"}
         };
 
 	_NhlRegisterEnumType(NhlTcnLevelSelectionMode,levelselectionlist,
@@ -3839,14 +3839,14 @@ static NhlErrorTypes UpdateLineAndLabelParams
 		}
 		else {
 			switch (flag) {
-			case NhlcnNOLINE:
-			case NhlcnLINEONLY:
+			case NhlNOLINE:
+			case NhlLINEONLY:
 			default:
-				c_cpseti("CLU",NhlcnNOLINE);
+				c_cpseti("CLU",NhlNOLINE);
 				break;
-			case NhlcnLABELONLY:
-			case NhlcnLINEANDLABEL:
-				c_cpseti("CLU",NhlcnLABELONLY);
+			case NhlLABELONLY:
+			case NhlLINEANDLABEL:
+				c_cpseti("CLU",NhlLABELONLY);
 				break;
 			}
 		}
@@ -3857,7 +3857,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 #endif
 		c_cpsetc("LLT",((NhlString*)cnp->line_lbls.text)[i]);
 	}
-	if (cnp->level_selection_mode != NhlcnEXPLICIT)
+	if (cnp->level_selection_mode != NhlEXPLICITLEVELS)
 		c_cpsetr("CIU",cnp->level_spacing);
  
 /* Set up for labels */
@@ -3869,7 +3869,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	if (! cnp->line_lbls.on) {
 		c_cpseti("LLP",0); 
 	}
-	else if (cnp->llabel_placement == NhlcnCONSTANT) {
+	else if (cnp->llabel_placement == NhlCONSTANT) {
 		*do_labels = True;
 		c_cpseti("LLP",1);
 		c_cpsetr("DPS",cnp->line_lbls.real_height / cl->view.width);
@@ -3886,7 +3886,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 		}
 
 	}
-	else if (cnp->llabel_placement == NhlcnRANDOMIZED) {
+	else if (cnp->llabel_placement == NhlRANDOMIZED) {
 		*do_labels = True;
 		c_cpseti("LLP",2);
 		if (cnp->line_lbls.angle < 0.0) 
@@ -4816,7 +4816,7 @@ static NhlErrorTypes SetLabelScale
 	int power, i, count;
 	int divpwr,sig_digits;
 	float *fp;
-	NhlcnLevelUseMode *lusep, luse = NhlcnLABELONLY;
+	NhlcnLevelUseMode *lusep, luse = NhlLABELONLY;
 	float test_high, test_low, max_fac = 1.0;
 	int max_digit = 0;
 
@@ -4829,7 +4829,7 @@ static NhlErrorTypes SetLabelScale
 	entry_name =  init ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
 	switch (cnp->label_scaling_mode) {
-	case NhlcnSCALEFACTOR:
+	case NhlSCALEFACTOR:
 		if (cnp->label_scale_value <= 0.0) {
 			e_text = 
 			     "%s: invalid value for scale value: defaulting";
@@ -4839,7 +4839,7 @@ static NhlErrorTypes SetLabelScale
 		}
 		cnp->label_scale_factor = cnp->label_scale_value;
 		break;
-	case NhlcnCONFINETORANGE:
+	case NhlCONFINETORANGE:
 		if (cnp->label_scale_value <= 0.0) {
 			e_text = 
 			     "%s: invalid value for scale value: defaulting";
@@ -4865,7 +4865,7 @@ static NhlErrorTypes SetLabelScale
 			cnp->label_scale_factor = pow(10.0,-(double)power);
 		}
 		break;
-	case NhlcnTRIMZEROS:
+	case NhlTRIMZEROS:
 		sigval = MAX(fabs(cnp->zmin),fabs(cnp->zmax));
 		subret = _NhlGetScaleInfo(sigval,
 					  &divpwr,&sig_digits,entry_name);
@@ -4877,7 +4877,7 @@ static NhlErrorTypes SetLabelScale
 			power = MAX(0,divpwr - sig_digits);
 		cnp->label_scale_factor = pow(10.0,(double)power);
 		break;
-	case NhlcnMAXSIGDIGITSLEFT:
+	case NhlMAXSIGDIGITSLEFT:
 		sigval = MAX(fabs(cnp->zmin),fabs(cnp->zmax));
 		subret = _NhlGetScaleInfo(sigval,
 					  &divpwr,&sig_digits,entry_name);
@@ -4886,7 +4886,7 @@ static NhlErrorTypes SetLabelScale
 		power = divpwr - sig_digits;
 		cnp->label_scale_factor = pow(10.0,(double)power);
 		break;
-	case NhlcnINTEGERLINELABELS:
+	case NhlINTEGERLINELABELS:
 		if (cnp->const_field) {
 			fp = &cnp->zmax;
 			count = 1;
@@ -4906,7 +4906,7 @@ static NhlErrorTypes SetLabelScale
 			float	test_fac = 1.0, test_val;
 			char	buf[32];
 
-			if (lusep[i] < NhlcnLABELONLY)
+			if (lusep[i] < NhlLABELONLY)
 				continue;
 			test_val = fabs(fp[i]);
 			if (fabs(fp[i]) < test_low) {
@@ -5458,7 +5458,7 @@ static NhlErrorTypes ManageLabelBar
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbBoxCount,cnp->fill_count);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbLabelAlignment,NhllbINTERIOREDGES);
+			   NhlNlbLabelAlignment,NhlINTERIOREDGES);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbLabelStrings,cnp->llabel_strings);
 		NhlSetSArg(&sargs[(*nargs)++],
@@ -7121,36 +7121,36 @@ static NhlErrorTypes    ManageDynamicArrays
 		flags_modified = True;
 		if (cnp->llabel_interval <= 0) {
 			for (i = 0; i < count; i++) 
-				ip[i] = NhlcnLINEONLY;
+				ip[i] = NhlLINEONLY;
 		}
 		else {
 			for (i = 0; i < count; i++)
 				ip[i] = (i - cnp->ref_level) % 
 					cnp->llabel_interval == 0 ?
-					NhlcnLINEANDLABEL : NhlcnLINEONLY;
+					NhlLINEANDLABEL : NhlLINEONLY;
 		}
 	}
 	else if (need_check) {
 		flags_modified = True;
 		if (cnp->llabel_interval <= 0) {
 			for (i = init_count; i < count; i++) 
-				ip[i] = NhlcnLINEONLY;
+				ip[i] = NhlLINEONLY;
 		}
 		else {
 			for (i = init_count; i < count; i++)
 				ip[i] = (i - cnp->ref_level) % 
 					cnp->llabel_interval == 0 ?
-					NhlcnLINEANDLABEL : NhlcnLINEONLY;
+					NhlLINEANDLABEL : NhlLINEONLY;
 		}
 		for (i=0; i<init_count; i++) {
-			if (ip[i] < NhlcnNOLINE || 
-			    ip[i] > NhlcnLINEANDLABEL) {
+			if (ip[i] < NhlNOLINE || 
+			    ip[i] > NhlLINEANDLABEL) {
 				e_text =
 	      "%s: %s index %d contains an invalid level flag, %d: defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 					  entry_name,NhlNcnLevelFlags,i,ip[i]);
 				ret = MIN(ret, NhlWARNING);
-				ip[i] = NhlcnLINEONLY;
+				ip[i] = NhlLINEONLY;
 			}
 		}
 	}
@@ -7476,7 +7476,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		ip = (int *) cnp->level_flags->data;
 		for (i = 0; i < count; i++) {
-			if (ip[i] < NhlcnLABELONLY) {
+			if (ip[i] < NhlLABELONLY) {
 				sp[i] = NULL;
 			}
 			else {
@@ -8016,7 +8016,7 @@ static NhlErrorTypes    SetupLevels
 		ret = MIN(ret,NhlWARNING);
 		cnp->min_level_val = cnp->zmin;
 		cnp->max_level_val = cnp->zmax;
-		cnp->level_selection_mode = NhlcnAUTOMATIC;
+		cnp->level_selection_mode = NhlAUTOMATICLEVELS;
 	}
 			
 	if (cnp->zmax <= cnp->min_level_val || 
@@ -8027,12 +8027,12 @@ static NhlErrorTypes    SetupLevels
 		ret = MIN(ret,NhlWARNING);
 		cnp->min_level_val = cnp->zmin;
 		cnp->max_level_val = cnp->zmax;
-		cnp->level_selection_mode = NhlcnAUTOMATIC;
+		cnp->level_selection_mode = NhlAUTOMATICLEVELS;
 	}
 	
 	switch (cnp->level_selection_mode) {
 
-	case NhlcnMANUAL:
+	case NhlMANUALLEVELS:
 
 		if (! cnp->min_level_set) {
 			subret = SetupLevelsAutomatic(cnew,cold,
@@ -8048,7 +8048,7 @@ static NhlErrorTypes    SetupLevels
 		*modified = True;
 		break;
 
-	case NhlcnEQUALSPACING:
+	case NhlEQUALSPACEDLEVELS:
 
 		subret = SetupLevelsEqual(cnew,cold,levels,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -8057,7 +8057,7 @@ static NhlErrorTypes    SetupLevels
 		*modified = True;
 		break;
 
-	case NhlcnAUTOMATIC:
+	case NhlAUTOMATICLEVELS:
 
 		subret = SetupLevelsAutomatic(cnew,cold,levels,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -8066,7 +8066,7 @@ static NhlErrorTypes    SetupLevels
 		*modified = True;
 		break;
 			
-	case NhlcnEXPLICIT:
+	case NhlEXPLICITLEVELS:
 
 		if (init && cnp->levels == NULL) {
 			subret = SetupLevelsAutomatic(cnew,cold,
@@ -8763,7 +8763,7 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
 
-	if (pai > 0 && Cnp->llabel_placement == NhlcnCONSTANT) {
+	if (pai > 0 && Cnp->llabel_placement == NhlCONSTANT) {
 		int buff_size = sizeof(buffer) - strlen(buffer) - 1;
 		char *tchar = &buffer[strlen(buffer)];
 		char *ts = ((NhlString *) Cnp->line_lbls.text)[pai-1];
@@ -8776,7 +8776,7 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 				Cnp->line_lbls.colors[pai-1];
 		
 
-		if (llcol == NhlTRANSPARENT && lup[pai-1] > NhlcnLINEONLY) {
+		if (llcol == NhlTRANSPARENT && lup[pai-1] > NhlLINEONLY) {
 			/*
 			 * Put spaces in for label.
 			 */
@@ -8786,7 +8786,7 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 				tchar[i+1] = '|';
 			}
 		}
-		else if (lup[pai-1] > NhlcnLINEONLY) {
+		else if (lup[pai-1] > NhlLINEONLY) {
 			/*
 			 * Add breaks in at each space of the label.
 			 */

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.h,v 1.7 1994-12-16 19:22:09 boote Exp $
+ *      $Id: CoordArrays.h,v 1.8 1995-04-07 00:39:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -52,9 +52,9 @@
 #define	NhlTcaCastMode	"caCastMode"
 
 typedef enum _NhlcaCastMode {
-	NhlcaSingleVector = 1,
-	NhlcaMultipleVectors = 2,
-	NhlcaSplitVectors = 3
+	NhlSINGLEVECTOR = 1,
+	NhlMULTIPLEVECTORS = 2,
+	NhlSPLITVECTORS = 3
 } NhlcaCastMode;
 
 extern NhlLayerClass NhlcoordArraysLayerClass;

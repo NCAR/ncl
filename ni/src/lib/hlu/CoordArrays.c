@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.25 1995-03-20 19:58:40 boote Exp $
+ *      $Id: CoordArrays.c,v 1.26 1995-04-07 00:39:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -76,7 +76,7 @@ XCastSet
 	NhlCoordArraysLayer	carrl = (NhlCoordArraysLayer)base;
 
 	carrl->carr.xcast_set = False;
-	carrl->carr.xcast = NhlcaMultipleVectors;
+	carrl->carr.xcast = NhlMULTIPLEVECTORS;
 
 	return NhlNOERROR;
 }
@@ -101,7 +101,7 @@ YCastSet
 	NhlCoordArraysLayer	carrl = (NhlCoordArraysLayer)base;
 
 	carrl->carr.ycast_set = False;
-	carrl->carr.ycast = NhlcaMultipleVectors;
+	carrl->carr.ycast = NhlMULTIPLEVECTORS;
 
 	return NhlNOERROR;
 }
@@ -336,15 +336,15 @@ CreateFloatTable
 	}
 
 	switch(cast){
-		case NhlcaSingleVector:
+		case NhlSINGLEVECTOR:
 			switch(other_cast){
-				case NhlcaSingleVector:
+				case NhlSINGLEVECTOR:
 					vectors = 1;
 					break;
-				case NhlcaMultipleVectors:
+				case NhlMULTIPLEVECTORS:
 					vectors = other_gen->len_dimensions[0];
 					break;
-				case NhlcaSplitVectors:
+				case NhlSPLITVECTORS:
 					vectors = other_gen->len_dimensions[1];
 					break;
 				default:
@@ -356,7 +356,7 @@ CreateFloatTable
 
 			elements = gen->len_dimensions[0];
 			break;
-		case NhlcaMultipleVectors:
+		case NhlMULTIPLEVECTORS:
 			if(gen->num_dimensions == 1){
 				vectors = 1;
 				elements = gen->len_dimensions[0];
@@ -366,7 +366,7 @@ CreateFloatTable
 				elements = gen->len_dimensions[1];
 			}
 			break;
-		case NhlcaSplitVectors:
+		case NhlSPLITVECTORS:
 			if(gen->num_dimensions == 1){
 				vectors = gen->len_dimensions[0];
 				elements = 1;
@@ -398,13 +398,13 @@ CreateFloatTable
 		intvect[i] = elements;
 
 		switch(cast){
-		case NhlcaSingleVector:
+		case NhlSINGLEVECTOR:
 			flttable[i] = fltvect;
 			break;
-		case NhlcaMultipleVectors:
+		case NhlMULTIPLEVECTORS:
 			flttable[i] = fltvect + (i * elements);
 			break;
-		case NhlcaSplitVectors:
+		case NhlSPLITVECTORS:
 			flttable[i] = NhlConvertMalloc(sizeof(float)*elements);
 			if(flttable[i] == NULL){
 				NhlPError(NhlFATAL,ENOMEM,NULL);
@@ -538,7 +538,7 @@ GetMinMax
 		 * array is *implied* - use indexes of other dim
 		 */
 		mn = 1.0;
-		if((ocast == NhlcaMultipleVectors) &&
+		if((ocast == NhlMULTIPLEVECTORS) &&
 						(oarray->num_dimensions == 2))
 			mx = oarray->len_dimensions[1];
 		else
@@ -552,7 +552,7 @@ GetMinMax
 
 		farr = array->data;
 
-		if(cast == NhlcaSingleVector)
+		if(cast == NhlSINGLEVECTOR)
 			len = array->len_dimensions[0];
 		else
 			len = array->num_elements;
@@ -936,9 +936,9 @@ CoordArraysClassInitialize
 {
 	NhlErrorTypes	ret,lret;
 	_NhlEnumVals	cast_mode[] = {
-		{NhlcaSingleVector,	"casinglevector"},
-		{NhlcaMultipleVectors,	"camultiplevectors"},
-		{NhlcaSplitVectors,	"casplitvectors"}
+		{NhlSINGLEVECTOR,	"casinglevector"},
+		{NhlMULTIPLEVECTORS,	"camultiplevectors"},
+		{NhlSPLITVECTORS,	"casplitvectors"}
 	};
 
 
@@ -1007,26 +1007,26 @@ CheckArray
 		*imp = True;
 
 	if(*cast_set){
-		if((*imp) && (*cast != NhlcaSingleVector)){
+		if((*imp) && (*cast != NhlSINGLEVECTOR)){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 				"%s:%s must be %d if %s is implied",func,
-				cast_res,NhlcaSingleVector,arr_res);
+				cast_res,NhlSINGLEVECTOR,arr_res);
 			ret = MIN(ret,NhlWARNING);
-			*cast = NhlcaSingleVector;
+			*cast = NhlSINGLEVECTOR;
 		}
 	}
 	else{
 		*cast_set = True;
 		if((*imp) || (arr->num_dimensions == 1))
-			*cast = NhlcaSingleVector;
+			*cast = NhlSINGLEVECTOR;
 		else
-			*cast = NhlcaMultipleVectors;
+			*cast = NhlMULTIPLEVECTORS;
 	}
 
 
 	if(!*imp){
 		if((arr->num_dimensions == 2) &&
-				(*cast == NhlcaMultipleVectors)){
+				(*cast == NhlMULTIPLEVECTORS)){
 			num_elements = arr->len_dimensions[1];
 		}
 		else{

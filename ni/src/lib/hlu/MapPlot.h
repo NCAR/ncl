@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.10 1995-04-01 00:04:08 dbrown Exp $
+ *      $Id: MapPlot.h,v 1.11 1995-04-07 00:40:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,36 +28,36 @@
 
 #define NhlTMapBoundarySets	"mapboundarysets"
 typedef enum _NhlMapBoundarySets {
-	NhlmpNOBOUNDARIES = 0,
-        NhlmpGEOPHYSICAL,
-	NhlmpNATIONAL,
-        NhlmpUSSTATES,
-	NhlmpGEOPHYSICALANDUSSTATES,
-        NhlmpALLBOUNDARIES
+	NhlNOBOUNDARIES = 0,
+        NhlGEOPHYSICAL,
+	NhlNATIONAL,
+        NhlUSSTATES,
+	NhlGEOPHYSICALANDUSSTATES,
+        NhlALLBOUNDARIES
 } NhlMapBoundarySets;
 
 #define NhlTSpecifiedFillPriority	"specifiedfillpriority"
 typedef enum _NhlSpecifiedFillPriority {
-	NhlmpGEOPHYSICALPRIORITY = 0,
-        NhlmpPOLITICALPRIORITY
+	NhlGEOPHYSICALPRIORITY = 0,
+        NhlPOLITICALPRIORITY
 } NhlSpecifiedFillPriority;
 
 #define NhlTMapGridMaskMode	"mapgridmaskmode"
 typedef enum _NhlMapGridMaskMode {
-	NhlmpMASKNONE = 0,
-        NhlmpMASKOCEAN,
-	NhlmpMASKNOTOCEAN,
-	NhlmpMASKLAND,
-	NhlmpMASKNOTLAND,
-	NhlmpMASKFILLAREA,
-	NhlmpMASKMASKAREA
+	NhlMASKNONE = 0,
+        NhlMASKOCEAN,
+	NhlMASKNOTOCEAN,
+	NhlMASKLAND,
+	NhlMASKNOTLAND,
+	NhlMASKFILLAREA,
+	NhlMASKMASKAREA
 } NhlMapGridMaskMode;
 
 #define NhlTMapShapeMode	"mapshapemode"
 typedef enum _NhlMapShapeMode {
-	NhlmpFREEASPECT = 0,
-	NhlmpFIXEDASPECTFITBB,
-	NhlmpFIXEDASPECTNOFITBB
+	NhlFREEASPECT = 0,
+	NhlFIXEDASPECTFITBB,
+	NhlFIXEDASPECTNOFITBB
 } NhlMapShapeMode;
 
 #define NhlmpNULLAREA		"nullarea"
