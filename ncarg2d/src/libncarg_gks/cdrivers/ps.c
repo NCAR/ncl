@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.17 1998-06-28 18:52:41 fred Exp $
+ *	$Id: ps.c,v 1.18 1999-03-25 00:23:39 fred Exp $
  */
 /*
  *
@@ -39,6 +39,7 @@ char    *PSFontNames[] = {
 		};
 
 extern int	orig_wks_id;
+int             c_model;
 
 void PSprint_points(PSddp *psa, PSPoint *points, unsigned num, 
 			terminator_type terminator)
@@ -495,6 +496,7 @@ void PSpreamble (PSddp *psa, preamble_type type)
 		 *  Ls --  locally-defined save of graphics state on the 
 		 *         operand stack
 		 *  Lr --  restore used with Ls
+		 *  M3 --  find the mimimum of three numbers
 		 *  Ml --  setmiterlimit
 		 *  Mx --  matrix
 		 *  Ng --  neg
@@ -504,6 +506,7 @@ void PSpreamble (PSddp *psa, preamble_type type)
 		 *  Ov --  vertical outline text (usage: char_space string Ov)
 		 *  Rh --  readhexstring
 		 *  Rm --  rmoveto
+		 *  Sc --  invoke setcmykcolor instead of setrgbcolor
 		 *  Sm --  setmatrix
 		 *  Tr --  translate
 		 */
@@ -535,6 +538,24 @@ void PSpreamble (PSddp *psa, preamble_type type)
 			(void) fprintf(fp, "/GrayVal 0 def\n");
 			(void) fprintf(fp, "/ispc 0 def\n\n");
 		}
+
+                (void) fprintf(fp, "/M3\n");
+                (void) fprintf(fp, "{\n");
+                (void) fprintf(fp, "  2 copy lt {pop} {exch pop} ifelse\n");
+                (void) fprintf(fp, "  2 copy lt {pop} {exch pop} ifelse\n");
+                (void) fprintf(fp, "} bind def\n");
+
+                (void) fprintf(fp, "/Sc\n");
+                (void) fprintf(fp, "{\n");
+                (void) fprintf(fp, "  1. exch sub /ylo exch def\n");
+                (void) fprintf(fp, "  1. exch sub /mag exch def\n");
+                (void) fprintf(fp, "  1. exch sub /cyn exch def\n");
+                (void) fprintf(fp, "  ylo mag cyn M3 /b_cmy exch def\n");
+                (void) fprintf(fp, "  cyn b_cmy sub /c_cmy exch def\n");
+                (void) fprintf(fp, "  mag b_cmy sub /m_cmy exch def\n");
+                (void) fprintf(fp, "  ylo b_cmy sub /y_cmy exch def\n");
+                (void) fprintf(fp, "  c_cmy m_cmy y_cmy b_cmy setcmykcolor\n");
+                (void) fprintf(fp, "} bind def\n");
 
 		(void) fprintf(fp, "/P\n");
 		(void) fprintf(fp, "{/n exch def\n");
@@ -610,7 +631,12 @@ void PSpreamble (PSddp *psa, preamble_type type)
 
                 (void) fprintf(fp, "/Ls\n");
                 (void) fprintf(fp, "{matrix currentmatrix\n");
-                (void) fprintf(fp, " currentrgbcolor\n");
+                if (c_model != 0) {
+                  (void) fprintf(fp, " currentrgbcolor\n");
+                }
+                else {
+                  (void) fprintf(fp, " currentcmykcolor\n");
+                }
                 (void) fprintf(fp, " currentlinewidth\n");
                 (void) fprintf(fp, " currentlinecap\n");
                 (void) fprintf(fp, " currentlinejoin\n");
@@ -622,7 +648,12 @@ void PSpreamble (PSddp *psa, preamble_type type)
                 (void) fprintf(fp, " setlinejoin\n");
                 (void) fprintf(fp, " setlinecap\n");
                 (void) fprintf(fp, " setlinewidth\n");
-                (void) fprintf(fp, " setrgbcolor\n");
+                if (c_model != 0) {
+                  (void) fprintf(fp, " setrgbcolor\n");
+                }
+                else {
+                  (void) fprintf(fp, " setcmykcolor\n");
+                }
                 (void) fprintf(fp, " setmatrix\n");
                 (void) fprintf(fp, "} bind def\n\n");
 
@@ -638,8 +669,12 @@ void PSpreamble (PSddp *psa, preamble_type type)
 		(void) fprintf(fp, "/D {setdash} def\n");
 		(void) fprintf(fp, "/I {currentdash} def\n");
 		(void) fprintf(fp, "/H {currentlinewidth} def\n");
-		(void) fprintf(fp, "/G {currentrgbcolor} def\n");
-		(void) fprintf(fp, "/R {setrgbcolor} def\n");
+                if (c_model != 0) {
+		  (void) fprintf(fp, "/R {setrgbcolor} def\n");
+                }
+                else {
+		  (void) fprintf(fp, "/R {Sc} def\n");
+                }
 		(void) fprintf(fp, "/N {closepath} def\n");
 		(void) fprintf(fp, "/K {stroke} def\n");
 		(void) fprintf(fp, "/Z {rotate} def\n");
@@ -704,7 +739,12 @@ void PSpreamble (PSddp *psa, preamble_type type)
 		(void) fprintf(fp, "  get\n");
 		(void) fprintf(fp, "  aload\n");
 		(void) fprintf(fp, "  pop\n");
-		(void) fprintf(fp, "  setrgbcolor\n");
+                if (c_model != 0) {
+		  (void) fprintf(fp, "  setrgbcolor\n");
+                }
+                else {
+		  (void) fprintf(fp, "  Sc\n");
+                }
         	(void) fprintf(fp, "} bind def\n\n");
 
 		(void) fprintf(fp, "/Y\n");
@@ -968,6 +1008,12 @@ static void PSinit(PSddp *psa, int *coords)
 	psa->full_background = FALSE;
 	psa->miter_limit = MITER_LIMIT_DEFAULT;
 	psa->sfill_spacing = PS_FILL_SPACING;
+
+        /*
+         *  Color model flag is in *(coords+5); set the global
+         *  variable c_model to its value.
+         */
+        c_model = *(coords+5);
 
 	/*
 	 *  Coordinate initializations (the scale factor is in *(coords+4)).
