@@ -1,8 +1,8 @@
 .\"
-.\"	$Id: fcaps.m,v 1.4 1992-06-25 21:46:57 clyne Exp $
+.\"	$Id: fcaps.m,v 1.5 1992-08-12 23:07:50 clyne Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
-.TH FCAPS 1NCARV "JUNE 1990" NCAR "NCAR View 3.01"
+.TH FCAPS 1NCAR "JUNE 1990"
 .SH NAME
 fcaps \- 
 report available fontcaps

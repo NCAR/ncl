@@ -1,9 +1,9 @@
 .\"
-.\"	$Id: med.m,v 1.7 1992-06-25 21:47:09 clyne Exp $
+.\"	$Id: med.m,v 1.8 1992-08-12 23:08:02 clyne Exp $
 .\"
 .\" @(#)med.l 1.0 90/02/15 NCAR; from UCB 4.3 and S5R4
 .tr ##
-.TH MED 1NCARV  "February 1990" NCAR "NCAR View 3.01"
+.TH MED 1NCAR  "February 1990"
 .SH NAME
 med \- NCAR CGM metafile frame editor
 .SH SYNOPSIS

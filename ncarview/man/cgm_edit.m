@@ -1,8 +1,8 @@
 .\"
-.\"	$Id: cgm_edit.m,v 1.3 1992-06-25 21:46:44 clyne Exp $
+.\"	$Id: cgm_edit.m,v 1.4 1992-08-12 23:07:45 clyne Exp $
 .\"
 .\" NCAR View: cgm_edit.man,v 1.0 89/09/10 clyne 
-.TH CGM_EDIT 1NCARV "7 September 1989" NCAR "NCAR View 3.01"
+.TH CGM_EDIT 1NCAR "7 September 1989"
 .SH NAME
 cgm_edit \- X window interface to the \fINCAR View\fR \fBcgm\fR library.
 .SH SYNOPSIS

@@ -1,8 +1,8 @@
 .\"
-.\"	$Id: cgm.m,v 1.3 1992-06-25 21:46:39 clyne Exp $
+.\"	$Id: cgm.m,v 1.4 1992-08-12 23:07:40 clyne Exp $
 .\"
 .\" NCAR View cgm.man 3.00 9/13/89 Clyne
-.TH CGM_TOOLS 1NCARV "September 1989" NCAR "NCAR View 3.01"
+.TH CGM_TOOLS 1NCAR "September 1989"
 .SH NAME
 CGM_open,
 CGM_close,

@@ -1,8 +1,8 @@
 .\"
-.\"	$Id: ctrans.m,v 1.10 1992-06-25 21:46:54 clyne Exp $
+.\"	$Id: ctrans.m,v 1.11 1992-08-12 23:07:47 clyne Exp $
 .\"
 .\" ctrans 3.01 90/06/22
-.TH CTRANS 1NCARV "22 June 1990" NCAR "NCAR View 3.01"
+.TH CTRANS 1NCAR "22 June 1990"
 .SH NAME
 ctrans \- a Computer Graphics Metafile ( \fICGM\fR ) translator
 .SH SYNOPSIS
@@ -254,6 +254,16 @@ Print the version number and then exit.
 Operate in verbose mode.
 .PP
 .SH DEVICE-SPECIFIC OPTIONS:
+.PP
+The following options are available when the device is graphcap-driven (See
+the 
+.BR gcaps(1NCARG)
+command for a list of graphcap-driven devices):
+.TP
+.B -simulatebg
+Simulate CGM background color requests by drawing a large filled rectangle 
+of the appropriate color. This option is useful for devices such as
+color PostScript printers which have no concept of background color.
 .PP
 The following options are available when 
 .I device

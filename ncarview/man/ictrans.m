@@ -1,8 +1,8 @@
 .\"
-.\"	$Id: ictrans.m,v 1.10 1992-06-25 21:47:02 clyne Exp $
+.\"	$Id: ictrans.m,v 1.11 1992-08-12 23:07:55 clyne Exp $
 .\"
 .\" ictrans 3.01 90/06/22 
-.TH ICTRANS 1NCARG "22 June 1990" NCAR "NCAR View 3.01"
+.TH ICTRANS 1NCAR "22 June 1990"
 .SH NAME
 ictrans \- user interface to the CGM translator 
 .B ctrans

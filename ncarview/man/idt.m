@@ -1,9 +1,9 @@
 .\"
-.\"	$Id: idt.m,v 1.8 1992-06-25 21:47:05 clyne Exp $
+.\"	$Id: idt.m,v 1.9 1992-08-12 23:07:58 clyne Exp $
 .\"
 .\" NCAR View: idt.man,v 1.0 89/09/10 clyne 
 .\" Revision 3.01 90/11/15 clyne
-.TH IDT 1NCARV "15 November 1990" NCAR "NCAR View 3.01"
+.TH IDT 1NCAR "15 November 1990"
 .SH NAME
 idt \- X window interactive image display tool
 .SH SYNOPSIS
@@ -23,7 +23,7 @@ idt \- X window interactive image display tool
 ] [
 .BI \-lscale " scale"
 ] [
-.BI \-lscale " scale"
+.B \-oldidt
 ] [
 .BI \-pal " pal_fname"
 ] [
@@ -99,6 +99,8 @@ text during metafile translation. The default font is
 .IP \fB\-history\fP
 Write a record of all commands sent to the translator to the file
 .BR ./.idthist .
+.IP \fB\-oldidt\fP
+Present the old, pre-version-3.2, graphical user interface.
 .IP \fB\-Version\fP
 Print the version number and then exit.
 .PP
@@ -237,6 +239,10 @@ to that device.
 Save a frame to a file. This command allows you to write the metacode
 for the current frame to a file. The result is a complete NCAR 
 Computer Graphics Metafile (CGM) containing a single frame.
+.IP unzoom
+Reset windowing transformatations previously set by the
+.B zoom
+command back to their default. 
 .IP zoom
 Zoom in on an area of a plot. This command only works when translation
 output is to an X window. 
@@ -263,6 +269,8 @@ with the file selection box. Currently the only value this resource
 understands is "display". 
 .IP "messageHeight (Class MessageHeight)"
 Set the height in lines of text of the message display panel.
+.IP "oldIdt (Class OldIdt)"
+Specifies the "-oldidt" option.
 .IP "translatorDevice (Class TranslatorDevice)"
 Specify the output device for metafile translation. The default for this
 resource is "X11".
@@ -398,6 +406,7 @@ The hierarchy of the display panel popup
 							Command  ok
 							Command  cancel
 				Command  zoom
+				Command  unzoom
 .fi
 .sp
 Paned
@@ -462,8 +471,8 @@ translator.
 does not understand standard X Toolkit options. Hence, the DISPLAY environment 
 variable must be set when translating a metafile to be displayed in a window.
 .PP
-You cannot send "zoomed" frames to a printer. More accurately, you can send 
-them but the result will not be zoomed.
+You can not save "zoomed" plots to a file. More precisely, you may save a
+"zoomed" plot, however, the resultant plot will not be "zoomed".
 .PP
 The "Scrolled to Frame" label is not continuously updated.
 .PP

@@ -1,8 +1,8 @@
 .\"
-.\"	$Id: ncarv_spool.m,v 1.4 1992-06-25 21:47:13 clyne Exp $
+.\"	$Id: ncarv_spool.m,v 1.5 1992-08-12 23:08:05 clyne Exp $
 .\"
 .\" ncarv_spool 3.01 90/06/22 
-.TH ncarv_spool 1NCARV "26 June 1990" NCAR "NCAR View 3.01"
+.TH ncarv_spool 5NCAR "26 June 1990"
 .SH NAME
 ncarv_spool \- spooled device configuration table for interactive 
 metafile translator
