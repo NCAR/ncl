@@ -157,7 +157,7 @@ TBLE2 ecmwf_200_params[] = {
 {229, "Instantaneous X surface stress", "N m**-2", "IEWS"},
 {230, "Instantaneous Y surface stress", "N m**-2", "INSS"},
 {231, "Instantaneous surface heat flux", "W m**-2", "ISHF"},
-{232, "Instantaneous moisture flux", "kg m**-2 s", "IE"},
+{232, "Instantaneous moisture flux", "kg m**-2 s**-1", "IE"},
 {233, "Apparent surface humidity", "kg kg**-1", "ASQ"},
 {234, "Logarithm of surface roughness length for heat", "-", "LSRH"},
 {235, "Skin temperature", "K", "SKT"},
