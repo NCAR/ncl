@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.8 1996-09-14 17:07:35 boote Exp $
+ *      $Id: VectorField.c,v 1.9 1996-10-09 04:00:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1320,7 +1320,7 @@ ValidCoordArray
 		name = NhlNvfXArray;
 	}
 	else {
-		len_dim = vfp->len_dims[1];
+		len_dim = vfp->len_dims[0];
 		name = NhlNvfYArray;
 	}
 
