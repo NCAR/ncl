@@ -1,5 +1,5 @@
 C
-C      $Id: xy17f.f,v 1.3 1997-04-11 15:56:53 haley Exp $
+C      $Id: xy17f.f,v 1.4 1997-04-16 16:40:34 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -53,8 +53,6 @@ C
       data y1lab /'-90.', '-80.', '-70.', '-60.', '-50.'/
       data y2lab /'10.', '20.', '30.', '40.', '50.', '60.'/
       data y3lab /'-20.', '-10.', '0.', '10.', '20.'/
-
-      character*256 filename
 
       NCGM=0
       X11=1
@@ -340,5 +338,5 @@ C
       call NhlFClose
 
       stop
- 105  write  (6,*) 'error in opening file: ',filename
+ 105  write  (6,*) 'error in opening file xy.asc'
       end
