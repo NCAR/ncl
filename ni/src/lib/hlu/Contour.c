@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.7 1994-03-02 01:43:47 dbrown Exp $
+ *      $Id: Contour.c,v 1.8 1994-03-03 22:34:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1561,7 +1561,7 @@ static NhlErrorTypes ManageLegend
 	int		*nargs
 )
 #else 
-(cnnew,cnold,init)
+(cnnew, cnold, init, sargs, nargs)
 	NhlContourLayer	cnnew;
 	NhlContourLayer	cnold;
 	NhlBoolean	init;
@@ -1701,7 +1701,7 @@ static NhlErrorTypes ManageLabelBar
 	int		*nargs
 )
 #else 
-(cnnew,cnold,init)
+(cnnew,cnold, init, sargs, nargs)
 	NhlContourLayer	cnnew;
 	NhlContourLayer	cnold;
 	NhlBoolean	init;
@@ -2340,15 +2340,15 @@ static NhlErrorTypes    ManageGenArray
 	 NhlString	resource_name,
 	 NhlString	entry_name)
 #else
-(ga,count,copy_ga,type,init_val,resource_name,entry_name)
+(ga,count,copy_ga,type,init_val,old_count,init_count,need_check,resource_name,entry_name)
 	NhlGenArray	*ga;
 	int		count;
 	NhlGenArray	copy_ga;
 	NrmQuark	type;
 	NhlPointer	init_val;
-	int		*old_count,
-	int		*init_count,
-	NhlBoolean	*need_check,
+	int		*old_count;
+	int		*init_count;
+	NhlBoolean	*need_check;
 	NhlString	resource_name;
 	NhlString	entry_name;
 #endif
@@ -2615,7 +2615,7 @@ static NhlErrorTypes    SetupLevels
 	 float		**levels,
 	 NhlBoolean	*modified)
 #else
-(new,old,init,args,num_args)
+(new,old,init,levels,modified)
 	NhlLayer		new;
 	NhlLayer		old;
 	NhlBoolean	init;
@@ -2759,7 +2759,7 @@ static NhlErrorTypes    SetupLevelsManual
 	 float		**levels,
 	 char		*entry_name)
 #else
-(cnew,levels,entry_name)
+(cnew,cold,levels,entry_name)
 	NhlContourLayer	cnew;
 	NhlContourLayer	cold;
 	float		**levels;
@@ -2833,7 +2833,7 @@ static NhlErrorTypes    SetupLevelsEqual
 	 float		**levels,
 	 char		*entry_name)
 #else
-(cnew,levels,entry_name)
+(cnew,cold,levels,entry_name)
 	NhlContourLayer	cnew;
 	NhlContourLayer	cold;
 	float		**levels;
@@ -2892,7 +2892,7 @@ static NhlErrorTypes    SetupLevelsAutomatic
 	 float		**levels,
 	 char		*entry_name)
 #else
-(cnew,levels,entry_name)
+(cnew,cold,levels,entry_name)
 	NhlContourLayer	cnew;
 	NhlContourLayer	cold;
 	float		**levels;
@@ -2958,7 +2958,7 @@ static NhlErrorTypes    SetupLevelsExplicit
 	 float		**levels,
 	 char		*entry_name)
 #else
-(cnew,levels,entry_name)
+(cnew,cold,levels,entry_name)
 	NhlContourLayer	cnew;
 	NhlContourLayer	cold;
 	float		**levels;

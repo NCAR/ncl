@@ -1,5 +1,5 @@
 /*
- *      $Id: VarArg.c,v 1.3 1994-02-18 02:54:58 boote Exp $
+ *      $Id: VarArg.c,v 1.4 1994-03-03 22:34:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -47,7 +47,7 @@ _NhlVarToSetArgList
 	_NhlArgList	args		/* pointer to return arglist in */ 
 ) 
 #else 
-(ap,args) 
+(list,args) 
 	va_list		list;		/* vararg list  */ 
 	_NhlArgList	args;		/* pointer to return arglist in */ 
 #endif 
