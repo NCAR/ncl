@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.21 1995-10-02 21:55:22 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.22 1995-11-14 02:23:57 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -879,7 +879,7 @@ static NhlErrorTypes MapNDCToWin
 			||(x[i] < mtp->map_pos_l)
 			||(x[i] > mtp->map_pos_r)
 			||(y[i] < mtp->map_pos_b)
-			||(y[i] < mtp->map_pos_t)) {
+			||(y[i] > mtp->map_pos_t)) {
 	
 			*status = 1;
 			xout[i]=yout[i]=minstance->trobj.out_of_range;
