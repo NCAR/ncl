@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlcc.csh,v 1.2 1995-03-27 14:17:16 haley Exp $
+#	$Id: nhlcc.csh,v 1.3 1995-04-06 17:25:52 haley Exp $
 #
 
 #*********************************************#
@@ -38,12 +38,25 @@ set libncarg_c  = "-lncarg_c"
 set libcbind    = "-lncargC"
 set libhlu      = "-lhlu"
 set ncarg_libs = "$libhlu $libcbind $libncarg $libgks $libncarg_c"
+set extra_libs
 
 foreach arg ($argv)
-  set newargv = "$newargv $arg"
+  switch ($arg)
+
+  case "-libnetcdf":
+    set extra_libs = "$extra_libs -lnetcdf"
+    breaksw
+
+  case "-libhdf":
+    set extra_libs = "$extra_libs -ldf"
+    breaksw
+
+  default:
+    set newargv = "$newargv $arg"
+  endsw
 end
 
-set newargv = "$newargv $libpath $incpath $ncarg_libs $xlibs $f77libs"
+set newargv = "$newargv $libpath $incpath $extra_libs $ncarg_libs $xlibs $f77libs"
 
 echo $newargv
 eval $newargv
