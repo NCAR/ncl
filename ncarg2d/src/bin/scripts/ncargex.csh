@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.152 2004-06-23 16:24:01 fred Exp $
+#   $Id: ncargex.csh,v 1.153 2004-07-22 22:10:07 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -1073,9 +1073,8 @@ while ($#argv > 0)
     case "-W":
     case "-w":
       shift
-      set ws_type = $1
-      set WS_type = $1
-      if ( !(`expr "$ws_type" : '[0-9]'`)) then
+      set new_ws_type = $1
+      if ( !(`expr "$new_ws_type" : '[0-9]'`)) then
 #***********************************************#
 #                                               #
 # The workstation type has been specified as a  #
@@ -1090,7 +1089,7 @@ while ($#argv > 0)
         set file_type
         set orient_type
         set color_type
-        set str = ("$ws_type" "" "")
+        set str = ("$new_ws_type" "" "")
         set num = 1
 #************************#
 #                        #
@@ -1101,25 +1100,25 @@ while ($#argv > 0)
 # "xxx.yyy.zzz"          #
 #                        #
 #************************#
-        if ( `expr "$ws_type" : '.*\..*\..*'` ) then
+        if ( `expr "$new_ws_type" : '.*\..*\..*'` ) then
 #***********************#
 #                       #
 # String is xxx.yyy.zzz #
 #                       #
 #***********************#
-          set str[1] = `expr "$ws_type" : '\(.*\)\..*\..*'`
-          set str[2] = `expr "$ws_type" : '.*\.\(.*\)\..*'`
-          set str[3] = `expr "$ws_type" : '.*\..*\.\(.*\)'`
+          set str[1] = `expr "$new_ws_type" : '\(.*\)\..*\..*'`
+          set str[2] = `expr "$new_ws_type" : '.*\.\(.*\)\..*'`
+          set str[3] = `expr "$new_ws_type" : '.*\..*\.\(.*\)'`
           set num = 3
         else
-          if ( `expr "$ws_type" : '.*\..*'` ) then
+          if ( `expr "$new_ws_type" : '.*\..*'` ) then
 #*******************#
 #                   #
 # String is xxx.yyy #
 #                   #
 #*******************#
-            set str[1] = `expr "$ws_type" : '\(.*\)\..*'`
-            set str[2] = `expr "$ws_type" : '.*\.\(.*\)'`
+            set str[1] = `expr "$new_ws_type" : '\(.*\)\..*'`
+            set str[2] = `expr "$new_ws_type" : '.*\.\(.*\)'`
             set num = 2
           endif
         endif
@@ -1172,7 +1171,7 @@ while ($#argv > 0)
         unset found
         while ($i <= $#ws_types)
           if ("$str" == "$ws_types[$i]" ) then
-            set ws_type = "$i"
+            set new_ws_type = "$i"
             set found
             break
           endif
@@ -1183,11 +1182,11 @@ while ($#argv > 0)
           goto invalid
         endif        
       else
-        if ("$ws_type" < 1 || "$ws_type" > $#ws_types ) then
+        if ("$new_ws_type" < 1 || "$new_ws_type" > $#ws_types ) then
           set not_valid
           goto invalid
         else
-          if ("$ws_types[$ws_type]" == "" ) then
+          if ("$ws_types[$new_ws_type]" == "" ) then
             set not_valid
             goto invalid
           endif
@@ -1238,21 +1237,6 @@ if ($?List) then
    exit
 endif
 
-#********************************************#
-#                                            #
-# Cannot have both interactive and noX11 set #
-#                                            #
-#********************************************#
-
-if ("$X11_option" == "-noX11" && "$ws_type" == "8") then
-    echo ""
-    echo "Warning:  You cannot use the '-noX11' option if you are"
-    echo "          running an interactive example.  I will turn"
-    echo "          the '-noX11' option off."
-    echo ""
-    set X11_option
-endif
-
 #***************************#
 #                           #
 # Loop through each example #
@@ -1260,7 +1244,6 @@ endif
 #***************************#
 foreach name ($names)
 
-unset no_file
 unset tmp_msg
 set input
 set output
@@ -1354,34 +1337,97 @@ else
   echo ""
 endif
 
-#**************************************#
-#                                      #
-# Check this particular example to see #
-# if there's anything special about it #
-#                                      #
-# orig_ps_type is the original         #
-# workstation as it is set in the      #
-# example. Most examples are ws_type=1,#
-# so let orig_ws_type default to 1,    #
-# and change if necessary.             #
-#                                      #
-# If there's no workstation type       #
-# associated with an example, or if an #
-# example's workstation type shouldn't #
-# be messed with, then just unset      #
-# orig_ws_type.                        # 
-#                                      #
-#**************************************#
+# 
+# There are four types of examples:
+# 
+#   1. One that creates an NCGM by default, but can be changed
+#      via the "-W" option. This is how most examples are currently.
+#      They must have an IWTYPE parameter in order for this to work.
+# 
+#   2. One that creates something other than an NCGM, but can
+#      be changed via the "-W" option. Again, IWTYPE must be present.
+# 
+# Set the "changeable" for types of both #1 and #2.
+#
+#   3. One that creates an output file that cannot be changed
+#      via the "-W" option.
+# 
+# Set std_file for types of #1-#3. This just means a "standard"
+# file of the form "example_name.xxxx" is created.
+#
+#   4. One that doesn't create a file of the form example_name.xxx,
+#      or creates no file at all.
+# 
+# Unset "changeable" for types of both #3 and #4.
+# Unset std_file for types of #4.
+#
+# The variable "orig_ws_type" represents the workstation type.  In most
+# cases, this value will be equal to 1 (case #1). If a Fortran example
+# has the IWTYPE parameter, and it is set to 1, then leave orig_ws_type
+# alone. Otherwise, if IWTYPE exists and is set to something other than
+# 1, then set orig_ws_type to this value.
+# 
+# If the example does not have an IWTYPE parameter, but it supposed to
+# create a file of the style example_name.xxx, then unset changeable,
+# but leave std_file set.
+# 
+# If the example is either not meant to create an output file, or else
+# it doesn't create one of the form example_ncgm.xxxx, then unset 
+# changeable AND std_file.
+# 
+
 set orig_ws_type = "1"
+set changeable
+set std_file
 
 switch($name)
+#
+# None of the CONPACKT examples can have their workstation type
+# changed with the "-W" option, so that's why they are listed here.
+#
+    case ctcbay:
+    case ctex01:
+    case ctex02:
+    case ctfite:
+    case ctgaus:
+    case ctgc23:
+    case ctgeo1:
+    case ctgeo2:
+    case ctgeo3:
+    case ctiscp:
+    case ctisc2:
+    case ctllg1:
+    case ctllg2:
+    case ctllg3:
+    case ctnccl:
+    case ctorca:
+    case ctpopg:
+    case ctswth:
+    case ctwng1:
+    case ctwng2:
+    case cttd01:
+    case cttd02:
+    case ctterr:
+    case c_ctllg3:
+      unset changeable
+      if ($?change_ws_type) then
+          echo ""
+          echo "  In order to change the workstation type of this example,"
+          echo "  you need to modify the Fortran code directly.           "
+          echo ""
+      endif
+    breaksw
+
     case pgkex19:
     case pgkex20:
     case pgkex21:
     case pgkex22:
     case pgkex23:
     case c_pgkex21:
-      unset orig_ws_type
+      set orig_ws_type = "20"
+      if ("$name" == "pgkex20") then
+        set orig_ws_type = "26"
+      endif
       echo ""
       echo "  This example was set up to demonstrate how to use"
       echo "  the Ngmisc routines to define the Postscript output."
@@ -1403,8 +1449,8 @@ switch($name)
 
     case pgkex26:
     case fgke03:
-      unset orig_ws_type
-      set no_file
+      unset changeable
+      unset std_file
       echo ""
       echo "  This example was set up to demonstrate how to change"
       echo "  the name of the metafile from within the program."
@@ -1413,18 +1459,20 @@ switch($name)
     breaksw
 
     case pgkex27:
-      unset orig_ws_type
+      unset changeable
+      unset std_file
       echo ""
       echo "  This example was set up to demonstrate how to write"
       echo "  to more than one metafile at a time."
       echo ""
       set tmp_msg = "Metafiles gmeta1 and gmeta2 produced."
-      set no_file
     breaksw
 
     case fgke01:
     case fgke04:
-      unset orig_ws_type
+      set orig_ws_type = 8
+      unset changeable
+      unset std_file
       echo ""
       echo "  This example was set up to demonstrate the X11"
       echo "  driver.  It also generates a graphic file."
@@ -1436,12 +1484,12 @@ switch($name)
     case nnex09:
     case nnex10:
     case mpex12:
-      unset orig_ws_type
+      unset changeable
+      unset std_file
       set tmp_msg = "   "
       echo ""
       echo "  This example does not produce a metafile."
       echo ""
-      set no_file
     breaksw
 
     case ccpcff:
@@ -1461,8 +1509,8 @@ switch($name)
     case c_ftex05d:
     case c_ftex06d:
     case c_ftex07d:
-      unset orig_ws_type
-      set no_file
+      unset changeable
+      unset std_file
       set tmp_msg = "   "
       echo ""
       echo "  No graphics file will be produced by this example."
@@ -1470,9 +1518,32 @@ switch($name)
     breaksw
 endsw
 
-if (! $?change_ws_type && $?orig_ws_type) then
+#
+# If the user changed the workstation type with the -W option,
+# then only use it if this particular example is a changeable one.
+#
+if ($?change_ws_type && $?changeable) then
+  set ws_type = $new_ws_type
+else
   set ws_type = $orig_ws_type
 endif
+
+#********************************************#
+#                                            #
+# Cannot have both interactive and noX11 set #
+#                                            #
+#********************************************#
+if ("$X11_option" == "-noX11" && "$ws_type" != "1") then
+    echo ""
+    echo "Warning:  You can only use the '-noX11' option if you are"
+    echo "          sending your output to an NCGM file. The '-noX11'"
+    echo "          option will be turned off for this example."
+    echo ""
+    set xoption = ""
+else
+    set xoption = $X11_option
+endif
+
 
 #***************************************#
 #                                       #
@@ -1481,7 +1552,7 @@ endif
 # created when the example is executed. #
 #                                       #
 #***************************************#
-if ("$ws_type" == "8" || "$ws_type" == "10" ) set no_file
+if ("$ws_type" == "8" || "$ws_type" == "10" ) unset std_file
 
 #**************************************#
 #                                      #
@@ -1512,7 +1583,7 @@ if ("$ws_type" == "8") then
   echo "      create an X11 window that you must click on with your"
   echo "      mouse to advance the frame(s)."
   echo ""
-  set X11_option = ""
+  set xoption = ""
 endif
 
 #**********************************#
@@ -1538,7 +1609,7 @@ if ($?Unique && -f $graphic_file) goto theend
 # Set initial compiler flags #
 #                            #
 #****************************#
-set comp_flags = ($X11_option)
+set comp_flags = ($xoption)
 
 #**********************************#
 #                                  #
@@ -1862,7 +1933,7 @@ endif
 echo "  Copying $main"
 echo ""
 cp $temp_dir/$main ./$main
-if ($?fprog && $?orig_ws_type && $?change_ws_type) then
+if ($?fprog && $?change_ws_type && $?changeable) then
 if($orig_ws_type != $ws_type) then
 ed << EOF - ./$main >& /dev/null
 g/IWTYPE=$orig_ws_type/s//IWTYPE=$ws_type/g
@@ -1872,7 +1943,7 @@ EOF
 endif
 endif
 
-if ($?cprog && $?is_ws_type && $?change_ws_type) then
+if ($?cprog && $?change_ws_type && $?changeable) then
 if($orig_ws_type != $ws_type) then
 ed << EOF - ./$main >& /dev/null
 g/define IWTYPE $orig_ws_type/s//define IWTYPE $ws_type/g
@@ -1919,7 +1990,7 @@ if (! $?NoRunOption) then
 #                 #
 #*****************#
     set rename_option = "-o $graphic_file"
-    if ($?no_file) set rename_option
+    if (! $?std_file) set rename_option
     echo ""
     echo "Executing <$name>..."
     if ("$input" != "" ) then
