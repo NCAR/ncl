@@ -1,5 +1,5 @@
 C
-C $Id: ctabgc.f,v 1.1 2004-01-14 23:56:32 kennison Exp $
+C $Id: ctabgc.f,v 1.2 2004-03-19 22:51:52 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

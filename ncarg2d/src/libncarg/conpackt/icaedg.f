@@ -1,5 +1,5 @@
 C
-C $Id: icaedg.f,v 1.2 2003-05-28 20:04:45 kennison Exp $
+C $Id: icaedg.f,v 1.3 2004-03-19 22:52:00 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -76,9 +76,8 @@ C index, reset the search index to look at lesser elements (if any),
 C and loop back to continue the search.  If the pointer is null, reset
 C it to point to a new element that we will create.
 C
-        IF (XNEW.LT.XTMP.OR.
-     +     (XNEW.EQ.XTMP.AND.YNEW.LT.YTMP).OR.
-     +     (XNEW.EQ.XTMP.AND.YNEW.EQ.YTMP.AND.ZNEW.LT.ZTMP)) THEN
+        IF (XNEW.LT.XTMP.OR.(XNEW.EQ.XTMP.AND.YNEW.LT.YTMP).OR.(XNEW.EQ.
+     +XTMP.AND.YNEW.EQ.YTMP.AND.ZNEW.LT.ZTMP)) THEN
 C
           IF (IPPE(1,ITMP).NE.0) THEN
             ITMP=IPPE(1,ITMP)
@@ -92,9 +91,8 @@ C index, reset the search index to look at greater elements (if any),
 C and loop back to continue the search.  If the pointer is null, reset
 C it to point to a new element that we will create.
 C
-        ELSE IF (XNEW.GT.XTMP.OR.
-     +          (XNEW.EQ.XTMP.AND.YNEW.GT.YTMP).OR.
-     +          (XNEW.EQ.XTMP.AND.YNEW.EQ.YTMP.AND.ZNEW.GT.ZTMP)) THEN
+        ELSE IF (XNEW.GT.XTMP.OR.(XNEW.EQ.XTMP.AND.YNEW.GT.YTMP).OR.(XNE
+     +W.EQ.XTMP.AND.YNEW.EQ.YTMP.AND.ZNEW.GT.ZTMP)) THEN
 C
           IF (IPPE(2,ITMP).NE.0) THEN
             ITMP=IPPE(2,ITMP)

@@ -1,5 +1,5 @@
 C
-C $Id: cttmrg.f,v 1.4 2004-02-13 18:36:08 kennison Exp $
+C $Id: cttmrg.f,v 1.5 2004-03-19 22:51:58 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

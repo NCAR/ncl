@@ -1,5 +1,5 @@
 C
-C $Id: cttreg.f,v 1.1 2003-05-28 15:44:35 kennison Exp $
+C $Id: cttreg.f,v 1.2 2004-03-19 22:51:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -74,10 +74,10 @@ C
       COMMON /CTCOM1/ IGRN,IGVS,IHCF,IHLE,IIWS(2),IIWU,ILBC
       COMMON /CTCOM1/ IMPF,INCX(8),INCY(8),INHL,INIL,INIT,INLL
       COMMON /CTCOM1/ IOCF,IOHL,IOLL,IPAI,IPCF,IPIC,IPIE,IPIL,IPLL
-      COMMON /CTCOM1/ IRWS(4),IRWU,ISET,IWSO,JODP,JOMA,JOTZ
-      COMMON /CTCOM1/ LCTM,LEA1,LEA2,LEA3,LEE1,LEE2,LEE3,LINS
-      COMMON /CTCOM1/ LINT(10),LINU,LIWK,LIWM,LIWS(2),LNLG,LOEN
-      COMMON /CTCOM1/ LOPN,LOTN,LRWC,LRWG,LRWK,LRWM,LRWS(4)
+      COMMON /CTCOM1/ IRWS(4),IRWU,ISET,ITBM,IWSO,JODP,JOMA
+      COMMON /CTCOM1/ JOTZ,LCTM,LEA1,LEA2,LEA3,LEE1,LEE2,LEE3,LINS
+      COMMON /CTCOM1/ LINT(10),LINU,LIWB,LIWK,LIWM,LIWS(2),LNLG
+      COMMON /CTCOM1/ LOEN,LOPN,LOTN,LRWC,LRWG,LRWK,LRWM,LRWS(4)
       COMMON /CTCOM1/ LSDD,LSDL,LSDM,LTCF,LTHI,LTIL,LTLO,MIRO
       COMMON /CTCOM1/ NCLB(256),NCLV,NDGL,NEDG,NEXL,NEXT,NEXU
       COMMON /CTCOM1/ NLBS,NLSD,NLZF,NOMF,NOVS,NPNT,NR04,NSDL
@@ -172,7 +172,8 @@ C
           IFLL=0
 C
           IF (.NOT.(IEDG(IIII+3).GE.0)) GO TO 10009
-            IF (ITRI(LOTN*((IEDG(IIII+3)-1)/LOTN)+4).EQ.0) IFLL=1
+            IF (IAND(ITRI(LOTN*((IEDG(IIII+3)-1)/LOTN)+4),ITBM)
+     +                                                   .EQ.0) IFLL=1
 10009     CONTINUE
 C
 C Set a flag saying whether or not there is a non-blocked triangle to
@@ -181,7 +182,8 @@ C
           IFLR=0
 C
           IF (.NOT.(IEDG(IIII+4).GE.0)) GO TO 10010
-            IF (ITRI(LOTN*((IEDG(IIII+4)-1)/LOTN)+4).EQ.0) IFLR=1
+            IF (IAND(ITRI(LOTN*((IEDG(IIII+4)-1)/LOTN)+4),ITBM)
+     +                                                   .EQ.0) IFLR=1
 10010     CONTINUE
 C
 C Use the edge only if it has a non-blocked triangle on one side of
@@ -264,8 +266,8 @@ C
                 IFLL=0
 C
                 IF (.NOT.(IEDG(IPTE+IP12+2).GE.0)) GO TO 10020
-                  IF (ITRI(LOTN*((IEDG(IPTE+IP12+2)-1)/LOTN)+4).EQ.0)
-     +                                                          IFLL=1
+                  IF (IAND(ITRI(LOTN*((IEDG(IPTE+IP12+2)-1)/LOTN)+4),
+     +                                              ITBM).EQ.0) IFLL=1
 10020           CONTINUE
 C
               IF (.NOT.(IFLL.EQ.0)) GO TO 10019

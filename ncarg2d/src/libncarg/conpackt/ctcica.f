@@ -1,5 +1,5 @@
 C
-C $Id: ctcica.f,v 1.2 2004-01-27 20:48:31 kennison Exp $
+C $Id: ctcica.f,v 1.3 2004-03-19 22:51:53 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -21,7 +21,7 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       SUBROUTINE CTCICA (RPNT,IEDG,ITRI,RWRK,IWRK,ICRA,ICA1,ICAM,ICAN,
-     +                                            XCFP,YCFP,XCFQ,YCFQ)
+     +                                            XFCP,YFCP,XFCQ,YFCQ)
 C
       DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*),ICRA(ICA1,*)
 C
@@ -45,13 +45,13 @@ C ICAM is the first dimension of the cell array.
 C
 C ICAN is the second dimension of the cell array.
 C
-C (XCFP,YCFP) is the point at that corner of the rectangular area
+C (XFCP,YFCP) is the point at that corner of the rectangular area
 C into which the cell array maps that corresponds to the cell (1,1).
 C The coordinates are given in the fractional coordinate system (unlike
 C what is required in a call to GCA, in which the coordinates of the
 C point P are in the world coordinate system).
 C
-C (XCFQ,YCFQ) is the point at that corner of the rectangular area into
+C (XFCQ,YFCQ) is the point at that corner of the rectangular area into
 C which the cell array maps that corresponds to the cell (ICAM,ICAN).
 C The coordinates are given in the fractional coordinate system (unlike
 C what is required in a call to GCA, in which the coordinates of the
@@ -74,10 +74,10 @@ C
       COMMON /CTCOM1/ IGRN,IGVS,IHCF,IHLE,IIWS(2),IIWU,ILBC
       COMMON /CTCOM1/ IMPF,INCX(8),INCY(8),INHL,INIL,INIT,INLL
       COMMON /CTCOM1/ IOCF,IOHL,IOLL,IPAI,IPCF,IPIC,IPIE,IPIL,IPLL
-      COMMON /CTCOM1/ IRWS(4),IRWU,ISET,IWSO,JODP,JOMA,JOTZ
-      COMMON /CTCOM1/ LCTM,LEA1,LEA2,LEA3,LEE1,LEE2,LEE3,LINS
-      COMMON /CTCOM1/ LINT(10),LINU,LIWK,LIWM,LIWS(2),LNLG,LOEN
-      COMMON /CTCOM1/ LOPN,LOTN,LRWC,LRWG,LRWK,LRWM,LRWS(4)
+      COMMON /CTCOM1/ IRWS(4),IRWU,ISET,ITBM,IWSO,JODP,JOMA
+      COMMON /CTCOM1/ JOTZ,LCTM,LEA1,LEA2,LEA3,LEE1,LEE2,LEE3,LINS
+      COMMON /CTCOM1/ LINT(10),LINU,LIWB,LIWK,LIWM,LIWS(2),LNLG
+      COMMON /CTCOM1/ LOEN,LOPN,LOTN,LRWC,LRWG,LRWK,LRWM,LRWS(4)
       COMMON /CTCOM1/ LSDD,LSDL,LSDM,LTCF,LTHI,LTIL,LTLO,MIRO
       COMMON /CTCOM1/ NCLB(256),NCLV,NDGL,NEDG,NEXL,NEXT,NEXU
       COMMON /CTCOM1/ NLBS,NLSD,NLZF,NOMF,NOVS,NPNT,NR04,NSDL
@@ -136,8 +136,8 @@ C
         RETURN
       END IF
 C
-      IF (XCFP.LT.0..OR.XCFP.GT.1..OR.YCFP.LT.0..OR.YCFP.GT.1..OR.XCFQ.L
-     +T.0..OR.XCFQ.GT.1..OR.YCFQ.LT.0..OR.YCFQ.GT.1.) THEN
+      IF (XFCP.LT.0..OR.XFCP.GT.1..OR.YFCP.LT.0..OR.YFCP.GT.1..OR.XFCQ.L
+     +T.0..OR.XFCQ.GT.1..OR.YFCQ.LT.0..OR.YFCQ.GT.1.) THEN
         CALL SETER ('CTCICA - CORNER POINTS ARE INCORRECT',4,1)
         RETURN
       END IF
@@ -183,17 +183,17 @@ C
 C
         DO 10003 I=1,ICAM
 C
-          XCCF=XCFP+(REAL(I)-.5)*((XCFQ-XCFP)/REAL(ICAM))
-          XCCU=CFUX(XCCF)
+          XFCC=XFCP+(REAL(I)-.5)*((XFCQ-XFCP)/REAL(ICAM))
+          XUCC=CFUX(XFCC)
           IF (ICFELL('CTCICA',7).NE.0) RETURN
 C
           DO 10004 J=1,ICAN
 C
-            YCCF=YCFP+(REAL(J)-.5)*((YCFQ-YCFP)/REAL(ICAN))
-            YCCU=CFUY(YCCF)
+            YFCC=YFCP+(REAL(J)-.5)*((YFCQ-YFCP)/REAL(ICAN))
+            YUCC=CFUY(YFCC)
             IF (ICFELL('CTCICA',8).NE.0) RETURN
 C
-            CALL HLUCTMXYZ (-IMPF,XCCU,YCCU,0.,XTMP,YTMP)
+            CALL HLUCTMXYZ (-IMPF,XUCC,YUCC,0.,XTMP,YTMP)
             IF (ICFELL('CTCICA',9).NE.0) RETURN
 C
             IF (XTMP.EQ.OORV) THEN
@@ -212,7 +212,7 @@ C
 C
 C Use only unblocked triangles.
 C
-      IF (ITRI(IIII+4).NE.0) GO TO 101
+      IF (IAND(ITRI(IIII+4),ITBM).NE.0) GO TO 101
 C
 C Find the base index of point 1 (that edges 1 and 2 have in common).
 C
@@ -333,18 +333,18 @@ C
 C Set loop limits so as to examine the center points of all cells of
 C the cell array that overlap the bounding box of the triangle.
 C
-      ITM1=MAX(1,MIN(ICAM,INT((MIN(XCF1,XCF2,XCF3)-XCFP)/
-     +                        (XCFQ-XCFP)*REAL(ICAM))+1))
-      ITM2=MAX(1,MIN(ICAM,INT((MAX(XCF1,XCF2,XCF3)-XCFP)/
-     +                        (XCFQ-XCFP)*REAL(ICAM))+1))
+      ITM1=MAX(1,MIN(ICAM,INT((MIN(XCF1,XCF2,XCF3)-XFCP)/
+     +                        (XFCQ-XFCP)*REAL(ICAM))+1))
+      ITM2=MAX(1,MIN(ICAM,INT((MAX(XCF1,XCF2,XCF3)-XFCP)/
+     +                        (XFCQ-XFCP)*REAL(ICAM))+1))
 C
       IBEG=MIN(ITM1,ITM2)
       IEND=MAX(ITM1,ITM2)
 C
-      JTM1=MAX(1,MIN(ICAN,INT((MIN(YCF1,YCF2,YCF3)-YCFP)/
-     +                        (YCFQ-YCFP)*REAL(ICAN))+1))
-      JTM2=MAX(1,MIN(ICAN,INT((MAX(YCF1,YCF2,YCF3)-YCFP)/
-     +                        (YCFQ-YCFP)*REAL(ICAN))+1))
+      JTM1=MAX(1,MIN(ICAN,INT((MIN(YCF1,YCF2,YCF3)-YFCP)/
+     +                        (YFCQ-YFCP)*REAL(ICAN))+1))
+      JTM2=MAX(1,MIN(ICAN,INT((MAX(YCF1,YCF2,YCF3)-YFCP)/
+     +                        (YFCQ-YFCP)*REAL(ICAN))+1))
 C
       JBEG=MIN(JTM1,JTM2)
       JEND=MAX(JTM1,JTM2)
@@ -353,17 +353,17 @@ C Find each cell of the cell array whose center point lies within
 C the triangle and set its color index appropriately.
 C
       DO 10005 I=IBEG,IEND
-        XCFC=XCFP+((REAL(I)-.5)/REAL(ICAM))*(XCFQ-XCFP)
+        XFCC=XFCP+((REAL(I)-.5)/REAL(ICAM))*(XFCQ-XFCP)
         DO 10006 J=JBEG,JEND
-          YCFC=YCFP+((REAL(J)-.5)/REAL(ICAN))*(YCFQ-YCFP)
-          TS12=(YD12*XCFC-XD12*YCFC-YD12*XCF1+XD12*YCF1)/DN12
-          TS23=(YD23*XCFC-XD23*YCFC-YD23*XCF2+XD23*YCF2)/DN23
-          TS31=(YD31*XCFC-XD31*YCFC-YD31*XCF3+XD31*YCF3)/DN31
+          YFCC=YFCP+((REAL(J)-.5)/REAL(ICAN))*(YFCQ-YFCP)
+          TS12=(YD12*XFCC-XD12*YFCC-YD12*XCF1+XD12*YCF1)/DN12
+          TS23=(YD23*XFCC-XD23*YFCC-YD23*XCF2+XD23*YCF2)/DN23
+          TS31=(YD31*XFCC-XD31*YFCC-YD31*XCF3+XD31*YCF3)/DN31
           IF ((TS12.LT.+.00001.AND.TS23.LT.+.00001.AND.TS31.LT.+.00001).
      +OR.(TS12.GT.-.00001.AND.TS23.GT.-.00001.AND.TS31.GT.-.00001)) THEN
-            DNC1=SQRT((XCFC-XCF1)**2+(YCFC-YCF1)**2)
-            DNC2=SQRT((XCFC-XCF2)**2+(YCFC-YCF2)**2)
-            DNC3=SQRT((XCFC-XCF3)**2+(YCFC-YCF3)**2)
+            DNC1=SQRT((XFCC-XCF1)**2+(YFCC-YCF1)**2)
+            DNC2=SQRT((XFCC-XCF2)**2+(YFCC-YCF2)**2)
+            DNC3=SQRT((XFCC-XCF3)**2+(YFCC-YCF3)**2)
             ATR1=HERO(DN23,DNC2,DNC3)
             ATR2=HERO(DN31,DNC3,DNC1)
             ATR3=HERO(DN12,DNC1,DNC2)
@@ -390,7 +390,7 @@ C
         DO 10009 I=1,ICAM
           DO 10010 J=1,ICAN
             CALL HLUCTSCAE (ICRA,ICA1,ICAM,ICAN,
-     +                      XCFP,YCFP,XCFQ,YCFQ,I,J,ICAF,ICRA(I,J))
+     +                      XFCP,YFCP,XFCQ,YFCQ,I,J,ICAF,ICRA(I,J))
             IF (ICFELL('CTCICA',19).NE.0) RETURN
 10010     CONTINUE
 10009   CONTINUE

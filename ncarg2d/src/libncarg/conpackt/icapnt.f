@@ -1,5 +1,5 @@
 C
-C $Id: icapnt.f,v 1.3 2003-07-08 22:10:55 kennison Exp $
+C $Id: icapnt.f,v 1.4 2004-03-19 22:52:00 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -42,9 +42,8 @@ C
 C
 C If the search index is of the point we want, return its index.
 C
-  101   IF (ABS(XCRD-RPNT(1,ITMP)).LE.EPST.AND.
-     +      ABS(YCRD-RPNT(2,ITMP)).LE.EPST.AND.
-     +      ABS(ZCRD-RPNT(3,ITMP)).LE.EPST) THEN
+  101   IF (ABS(XCRD-RPNT(1,ITMP)).LE.EPST.AND.ABS(YCRD-RPNT(2,ITMP)).LE
+     +.EPST.AND.ABS(ZCRD-RPNT(3,ITMP)).LE.EPST) THEN
 C
           ICAPNT=ITMP
 C
@@ -55,12 +54,9 @@ C index, reset the search index to look at lesser elements (if any),
 C and loop back to continue the search.  If the pointer is null, reset
 C it to point to a new element that we will create.
 C
-        ELSE IF ((XCRD.LT.RPNT(1,ITMP)).OR.
-     +           (XCRD.EQ.RPNT(1,ITMP).AND.
-     +            YCRD.LT.RPNT(2,ITMP)).OR.
-     +           (XCRD.EQ.RPNT(1,ITMP).AND.
-     +            YCRD.EQ.RPNT(2,ITMP).AND.
-     +            ZCRD.LT.RPNT(3,ITMP))) THEN
+        ELSE IF ((XCRD.LT.RPNT(1,ITMP)).OR.(XCRD.EQ.RPNT(1,ITMP).AND.YCR
+     +D.LT.RPNT(2,ITMP)).OR.(XCRD.EQ.RPNT(1,ITMP).AND.YCRD.EQ.RPNT(2,ITM
+     +P).AND.ZCRD.LT.RPNT(3,ITMP))) THEN
 C
           IF (IPPP(1,ITMP).NE.0) THEN
             ITMP=IPPP(1,ITMP)
@@ -74,12 +70,9 @@ C index, reset the search index to look at greater elements (if any),
 C and loop back to continue the search.  If the pointer is null, reset
 C it to point to a new element that we will create.
 C
-        ELSE IF ((XCRD.GT.RPNT(1,ITMP)).OR.
-     +           (XCRD.EQ.RPNT(1,ITMP).AND.
-     +            YCRD.GT.RPNT(2,ITMP)).OR.
-     +           (XCRD.EQ.RPNT(1,ITMP).AND.
-     +            YCRD.EQ.RPNT(2,ITMP).AND.
-     +            ZCRD.GT.RPNT(3,ITMP))) THEN
+        ELSE IF ((XCRD.GT.RPNT(1,ITMP)).OR.(XCRD.EQ.RPNT(1,ITMP).AND.YCR
+     +D.GT.RPNT(2,ITMP)).OR.(XCRD.EQ.RPNT(1,ITMP).AND.YCRD.EQ.RPNT(2,ITM
+     +P).AND.ZCRD.GT.RPNT(3,ITMP))) THEN
 C
           IF (IPPP(2,ITMP).NE.0) THEN
             ITMP=IPPP(2,ITMP)

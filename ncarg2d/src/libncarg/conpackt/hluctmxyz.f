@@ -1,5 +1,5 @@
 C
-C $Id: hluctmxyz.f,v 1.1 2003-05-28 15:44:36 kennison Exp $
+C $Id: hluctmxyz.f,v 1.2 2004-03-19 22:52:00 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

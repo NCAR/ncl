@@ -1,5 +1,5 @@
 C
-C $Id: ctsort.f,v 1.1 2003-05-28 15:44:34 kennison Exp $
+C $Id: ctsort.f,v 1.2 2004-03-19 22:51:58 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

@@ -1,5 +1,5 @@
 C
-C $Id: cthllb.f,v 1.1 2003-05-28 15:44:30 kennison Exp $
+C $Id: cthllb.f,v 1.2 2004-03-19 22:51:55 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -46,10 +46,10 @@ C
       COMMON /CTCOM1/ IGRN,IGVS,IHCF,IHLE,IIWS(2),IIWU,ILBC
       COMMON /CTCOM1/ IMPF,INCX(8),INCY(8),INHL,INIL,INIT,INLL
       COMMON /CTCOM1/ IOCF,IOHL,IOLL,IPAI,IPCF,IPIC,IPIE,IPIL,IPLL
-      COMMON /CTCOM1/ IRWS(4),IRWU,ISET,IWSO,JODP,JOMA,JOTZ
-      COMMON /CTCOM1/ LCTM,LEA1,LEA2,LEA3,LEE1,LEE2,LEE3,LINS
-      COMMON /CTCOM1/ LINT(10),LINU,LIWK,LIWM,LIWS(2),LNLG,LOEN
-      COMMON /CTCOM1/ LOPN,LOTN,LRWC,LRWG,LRWK,LRWM,LRWS(4)
+      COMMON /CTCOM1/ IRWS(4),IRWU,ISET,ITBM,IWSO,JODP,JOMA
+      COMMON /CTCOM1/ JOTZ,LCTM,LEA1,LEA2,LEA3,LEE1,LEE2,LEE3,LINS
+      COMMON /CTCOM1/ LINT(10),LINU,LIWB,LIWK,LIWM,LIWS(2),LNLG
+      COMMON /CTCOM1/ LOEN,LOPN,LOTN,LRWC,LRWG,LRWK,LRWM,LRWS(4)
       COMMON /CTCOM1/ LSDD,LSDL,LSDM,LTCF,LTHI,LTIL,LTLO,MIRO
       COMMON /CTCOM1/ NCLB(256),NCLV,NDGL,NEDG,NEXL,NEXT,NEXU
       COMMON /CTCOM1/ NLBS,NLSD,NLZF,NOMF,NOVS,NPNT,NR04,NSDL
@@ -172,13 +172,15 @@ C
           IFLL=0
 C
           IF (.NOT.(IEDG(IPTA+3).GE.0)) GO TO 10009
-            IF (ITRI(LOTN*((IEDG(IPTA+3)-1)/LOTN)+4).EQ.0) IFLL=1
+            IF (IAND(ITRI(LOTN*((IEDG(IPTA+3)-1)/LOTN)+4),ITBM).EQ.0)
+     +                                                         IFLL=1
 10009     CONTINUE
 C
           IFLR=0
 C
           IF (.NOT.(IEDG(IPTA+4).GE.0)) GO TO 10010
-            IF (ITRI(LOTN*((IEDG(IPTA+4)-1)/LOTN)+4).EQ.0) IFLR=1
+            IF (IAND(ITRI(LOTN*((IEDG(IPTA+4)-1)/LOTN)+4),ITBM).EQ.0)
+     +                                                         IFLR=1
 10010     CONTINUE
 C
           IF (IFLL.EQ.0.AND.IFLR.EQ.0) GO TO 104
@@ -209,7 +211,8 @@ C
             IFLL=0
 C
             IF (.NOT.(IEDG(IPTA+3).GE.0)) GO TO 10012
-              IF (ITRI(LOTN*((IEDG(IPTA+3)-1)/LOTN)+4).EQ.0) IFLL=1
+              IF (IAND(ITRI(LOTN*((IEDG(IPTA+3)-1)/LOTN)+4),ITBM)
+     +                                                   .EQ.0) IFLL=1
 10012       CONTINUE
 C
             IF (.NOT.(IFLL.NE.0)) GO TO 10013
@@ -252,7 +255,8 @@ C
             IFLR=0
 C
             IF (.NOT.(IEDG(IPTA+4).GE.0)) GO TO 10016
-              IF (ITRI(LOTN*((IEDG(IPTA+4)-1)/LOTN)+4).EQ.0) IFLR=1
+              IF (IAND(ITRI(LOTN*((IEDG(IPTA+4)-1)/LOTN)+4),ITBM)
+     +                                                   .EQ.0) IFLR=1
 10016       CONTINUE
 C
             IF (.NOT.(IFLR.NE.0)) GO TO 10017
@@ -289,7 +293,8 @@ C
               IFLR=0
 C
               IF (.NOT.(IEDG(IPTA+4).GE.0)) GO TO 10021
-                IF (ITRI(LOTN*((IEDG(IPTA+4)-1)/LOTN)+4).EQ.0) IFLR=1
+                IF (IAND(ITRI(LOTN*((IEDG(IPTA+4)-1)/LOTN)+4),ITBM)
+     +                                                   .EQ.0) IFLR=1
 10021         CONTINUE
 C
               IF (.NOT.(IFLR.NE.0)) GO TO 10022
@@ -323,7 +328,8 @@ C
               IFLL=0
 C
               IF (.NOT.(IEDG(IPTA+3).GE.0)) GO TO 10024
-                IF (ITRI(LOTN*((IEDG(IPTA+3)-1)/LOTN)+4).EQ.0) IFLL=1
+                IF (IAND(ITRI(LOTN*((IEDG(IPTA+3)-1)/LOTN)+4),ITBM)
+     +                                                   .EQ.0) IFLL=1
 10024         CONTINUE
 C
               IF (.NOT.(IFLL.NE.0)) GO TO 10025
@@ -447,13 +453,15 @@ C
           IFLL=0
 C
           IF (.NOT.(IEDG(IPTA+3).GE.0)) GO TO 10041
-            IF (ITRI(LOTN*((IEDG(IPTA+3)-1)/LOTN)+4).EQ.0) IFLL=1
+            IF (IAND(ITRI(LOTN*((IEDG(IPTA+3)-1)/LOTN)+4),ITBM)
+     +                                                   .EQ.0) IFLL=1
 10041     CONTINUE
 C
           IFLR=0
 C
           IF (.NOT.(IEDG(IPTA+4).GE.0)) GO TO 10042
-            IF (ITRI(LOTN*((IEDG(IPTA+4)-1)/LOTN)+4).EQ.0) IFLR=1
+            IF (IAND(ITRI(LOTN*((IEDG(IPTA+4)-1)/LOTN)+4),ITBM)
+     +                                                   .EQ.0) IFLR=1
 10042     CONTINUE
 C
           IF (IFLL.EQ.0.AND.IFLR.EQ.0) GO TO 108
@@ -484,7 +492,8 @@ C
             IFLR=0
 C
             IF (.NOT.(IEDG(IPTA+4).GE.0)) GO TO 10044
-              IF (ITRI(LOTN*((IEDG(IPTA+4)-1)/LOTN)+4).EQ.0) IFLR=1
+              IF (IAND(ITRI(LOTN*((IEDG(IPTA+4)-1)/LOTN)+4),ITBM)
+     +                                                   .EQ.0) IFLR=1
 10044       CONTINUE
 C
             IF (.NOT.(IFLR.NE.0)) GO TO 10045
@@ -527,7 +536,8 @@ C
             IFLL=0
 C
             IF (.NOT.(IEDG(IPTA+3).GE.0)) GO TO 10048
-              IF (ITRI(LOTN*((IEDG(IPTA+3)-1)/LOTN)+4).EQ.0) IFLL=1
+              IF (IAND(ITRI(LOTN*((IEDG(IPTA+3)-1)/LOTN)+4),ITBM)
+     +                                                   .EQ.0) IFLL=1
 10048       CONTINUE
 C
             IF (.NOT.(IFLL.NE.0)) GO TO 10049
@@ -564,7 +574,8 @@ C
               IFLL=0
 C
               IF (.NOT.(IEDG(IPTA+3).GE.0)) GO TO 10053
-                IF (ITRI(LOTN*((IEDG(IPTA+3)-1)/LOTN)+4).EQ.0) IFLL=1
+                IF (IAND(ITRI(LOTN*((IEDG(IPTA+3)-1)/LOTN)+4),ITBM)
+     +                                                   .EQ.0) IFLL=1
 10053         CONTINUE
 C
               IF (.NOT.(IFLL.NE.0)) GO TO 10054
@@ -598,7 +609,8 @@ C
               IFLR=0
 C
               IF (.NOT.(IEDG(IPTA+4).GE.0)) GO TO 10056
-                IF (ITRI(LOTN*((IEDG(IPTA+4)-1)/LOTN)+4).EQ.0) IFLR=1
+                IF (IAND(ITRI(LOTN*((IEDG(IPTA+4)-1)/LOTN)+4),ITBM)
+     +                                                   .EQ.0) IFLR=1
 10056         CONTINUE
 C
               IF (.NOT.(IFLR.NE.0)) GO TO 10057

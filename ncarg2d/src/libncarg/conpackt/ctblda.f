@@ -1,5 +1,5 @@
 C
-C $Id: ctblda.f,v 1.2 2003-08-19 21:07:01 kennison Exp $
+C $Id: ctblda.f,v 1.3 2004-03-19 22:51:53 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -39,10 +39,10 @@ C
       COMMON /CTCOM1/ IGRN,IGVS,IHCF,IHLE,IIWS(2),IIWU,ILBC
       COMMON /CTCOM1/ IMPF,INCX(8),INCY(8),INHL,INIL,INIT,INLL
       COMMON /CTCOM1/ IOCF,IOHL,IOLL,IPAI,IPCF,IPIC,IPIE,IPIL,IPLL
-      COMMON /CTCOM1/ IRWS(4),IRWU,ISET,IWSO,JODP,JOMA,JOTZ
-      COMMON /CTCOM1/ LCTM,LEA1,LEA2,LEA3,LEE1,LEE2,LEE3,LINS
-      COMMON /CTCOM1/ LINT(10),LINU,LIWK,LIWM,LIWS(2),LNLG,LOEN
-      COMMON /CTCOM1/ LOPN,LOTN,LRWC,LRWG,LRWK,LRWM,LRWS(4)
+      COMMON /CTCOM1/ IRWS(4),IRWU,ISET,ITBM,IWSO,JODP,JOMA
+      COMMON /CTCOM1/ JOTZ,LCTM,LEA1,LEA2,LEA3,LEE1,LEE2,LEE3,LINS
+      COMMON /CTCOM1/ LINT(10),LINU,LIWB,LIWK,LIWM,LIWS(2),LNLG
+      COMMON /CTCOM1/ LOEN,LOPN,LOTN,LRWC,LRWG,LRWK,LRWM,LRWS(4)
       COMMON /CTCOM1/ LSDD,LSDL,LSDM,LTCF,LTHI,LTIL,LTLO,MIRO
       COMMON /CTCOM1/ NCLB(256),NCLV,NDGL,NEDG,NEXL,NEXT,NEXU
       COMMON /CTCOM1/ NLBS,NLSD,NLZF,NOMF,NOVS,NPNT,NR04,NSDL
@@ -512,6 +512,11 @@ C call SET.
 C
       DATA ISET / 1 /
 C
+C ITBM is the parameter 'TBM', which is used as a mask for triangle
+C blocking flags.
+C
+      DATA ITBM / 1 /
+C
 C IWSO is the parameter 'WSO', which says what to do when workspace
 C overflow occurs.
 C
@@ -547,6 +552,12 @@ C LINU is the parameter 'LIU', which is the label interval actually
 C used.
 C
       DATA LINU / 0 /
+C
+C LIWB is the length of the integer workspace to be made available to
+C the routine CTTDBI, which is called to block triangles invisible
+C under mapping by TDPACK.
+C
+      DATA LIWB / 2500 /
 C
 C LIWK is the length of the user's integer workspace array, as declared
 C in the last call to CTMESH.
