@@ -1207,8 +1207,7 @@ NhlErrorTypes regline_W( void )
  */
   void *x, *y;
   double *dx, *dy;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
+  int dsizes_x[1], dsizes_y[1];
   NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_ry;
   NclBasicDataTypes type_x, type_y;
   int has_missing_x, has_missing_y, npts;
@@ -1235,7 +1234,7 @@ NhlErrorTypes regline_W( void )
   x = (void*)NclGetArgValue(
            0,
            2,
-           &ndims_x, 
+           NULL,
            dsizes_x,
            &missing_x,
            &has_missing_x,
@@ -1244,18 +1243,17 @@ NhlErrorTypes regline_W( void )
   y = (void*)NclGetArgValue(
            1,
            2,
-           &ndims_y, 
+           NULL,
            dsizes_y,
            &missing_y,
            &has_missing_y,
            &type_y,
            2);
 /*
- * The x and y arrays coming in must be one-dimensional and have
- * the same length.
+ * The x and y arrays coming in must have the same length.
  */
-  if( ndims_x != 1 || ndims_y != 1 || dsizes_x[0] != dsizes_y[0] ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: The input arrays must be 1-dimensional and be of the same length");
+  if( dsizes_x[0] != dsizes_y[0] ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: The input arrays must be the same length");
     return(NhlFATAL);
   }
 /*

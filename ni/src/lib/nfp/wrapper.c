@@ -4207,8 +4207,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+
+    SetArgTemplate(args,nargs,"numeric",(int) 1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",(int) 1,NclANY);nargs++;
 
     NclRegisterFunc(regline_W,args,"regline",nargs);
 /*
