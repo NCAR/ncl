@@ -8,7 +8,7 @@ LNGTH = ICLOEM(MESSG)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-int c_icloem(char *messg)  ???
+int c_icloem(char *messg)
 .SH DESCRIPTION 
 The value of the expression "ICLOEM(MESSG)" is the actual length of the
 non-blank portion of the input character variable MESSG.  Thus,

@@ -9,7 +9,7 @@ NERR = ICFELL(MESSG,NERRF)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-int c_icfell(char *messg, int *nerrf)  ???
+int c_icfell(char *messg, int nerrf)
 .SH DESCRIPTION 
 ICFELL (which stands for "I Check For Errors on Lower Level") is used to
 check for the occurrence of a recoverable error in a lower-level routine and

@@ -9,7 +9,7 @@ MESSG = SEMESS(ITRIM)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-char *c_semess(int itrim)  ???
+char *c_semess(int itrim)
 .SH DESCRIPTION 
 In any routine that references
 SEMESS, it must be declared to be of type CHARACTER*113.

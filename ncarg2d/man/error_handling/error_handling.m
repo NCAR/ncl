@@ -32,8 +32,6 @@ c_eprin
 .br
 c_errof
 .br
-c_fdum
-.br
 c_icfell
 .br
 c_icloem

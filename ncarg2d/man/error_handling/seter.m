@@ -8,7 +8,7 @@ CALL SETER(MESSG,NERRF,ILEVL)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_seter(char *messg, int nerrf, int ilevl)  ???
+void c_seter(char *messg, int nerrf, int ilevl)
 .SH DESCRIPTION 
 The FORTRAN statement "CALL SETER (MESSG,NERRF,ILEVL) is used to tell the
 error-handling package that an error has occurred. Exactly what happens as
