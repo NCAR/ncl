@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.13 1995-12-11 23:52:32 kennison Exp $
+#	$Id: yMakefile,v 1.14 1995-12-18 18:04:24 kennison Exp $
 #
 
 MYNAME	= econpa
@@ -12,7 +12,7 @@ SRCS = \
 OBJS = \
 	cpexcc.o cpex01.o cpex02.o cpex03.o cpex04.o cpex05.o cpex06.o \
 	cpex07.o cpex08.o cpex09.o cpex10.o cpex11.o cpex12.o cpex13.o \
-	cpex14.o cbex01.o cpex14.dat
+	cpex14.o cbex01.o
 
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
