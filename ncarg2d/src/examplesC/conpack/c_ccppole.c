@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccppole.c,v 1.4 1994-06-21 14:59:30 haley Exp $
+ * $Id: c_ccppole.c,v 1.5 1994-06-24 22:11:22 haley Exp $
  */
 
 #include <stdio.h>
@@ -306,7 +306,6 @@ int colram(
  * over water (so that the contour bands will be minimally visible)
  * and brighter colors over land.
  */
-    fill = ;
     if (iai1 > 0) {
         if (c_mapaci(iai1) == 1) {
             fill = 1;
