@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ctlib,v 1.10 1992-02-14 12:56:06 clyne Exp $
+#	$Id: ctlib,v 1.11 1992-02-25 14:32:54 clyne Exp $
 #
 #
 #	This script simply reports the libraries required by ctrans.
@@ -24,4 +24,4 @@ foreach file (libictrans.o libctrans.o libcgm.a libncarv.a  libncarg_ras.a libhd
   set locals = "$locals $libdir/$file"
 end
 
-echo $locals -lX11   -lm
+echo $locals -lX11  -lsuntool -lsunwindow -lpixrect -lm

@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.1 1992-02-13 17:49:21 clyne Exp $
+#	$Id: yMakefile,v 1.2 1992-02-25 14:32:07 clyne Exp $
 #
 #
 #	Makefile for rascat
@@ -25,7 +25,7 @@ SRCS		= rascat.c
 
 all::	$(MYNAME)
 
-CBinTarget($(MYNAME),$(OBJS),$(LIBS))
+CTarget($(MYNAME),$(OBJS),$(LIBS))
 MakefileTarget
 CleanTarget
 

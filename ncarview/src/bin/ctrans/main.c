@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.14 1992-02-14 16:58:02 clyne Exp $
+ *	$Id: main.c,v 1.15 1992-02-25 14:30:35 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -314,7 +314,7 @@ char	**argv;
 					);
 				}
 				if (batch)
-					sleep(sleep_time);
+					if (sleep_time>0) sleep(sleep_time);
 			}
 		}
 		else {
@@ -332,7 +332,7 @@ char	**argv;
 					);
 				}
 				if (batch)
-					sleep(sleep_time);
+					if (sleep_time>0) sleep(sleep_time);
 			}
 		}
 

@@ -33,7 +33,7 @@
 
 /* default prefix for split files names	*/
 #define	SPLIT_PREFIX	"med"
-#define	SPLIT_POSTFIX	".cgm"
+#define	SPLIT_POSTFIX	".ncgm"
 
 /*
  * Format of command table. (a command object)

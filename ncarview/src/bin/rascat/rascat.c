@@ -1,6 +1,6 @@
 
 /*
- *      $Id: rascat.c,v 1.1 1992-02-13 17:49:19 clyne Exp $
+ *      $Id: rascat.c,v 1.2 1992-02-25 14:32:04 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -18,7 +18,7 @@
  *			the same format but they must have the same resolution
  *			and encoding.
  *
- *	Syntax:		rascat [-v] [-V] [-if format] [-of format] 
+ *	Syntax:		rascat [-v] [-V] [-ifmt format] [-ofmt format] 
  *			[-win nx ny x y] [-o file] [ - | file... ]
  *
  *	Options:
@@ -27,12 +27,12 @@
  *
  *			-V	Print version number to the tty
  *
- *			-if <format>
+ *			-ifmt <format>
  *				'format' specifies the file format of *all*
  *				the input raster files. If ommitted, file
  *				format is determined by the file name extension
  *
- *			-of <format>
+ *			-ofmt <format>
  *				'format' specifies the file format of the raster
  *				file to be written to. If ommitted, the output
  *				file format will be the same as the format 
@@ -65,7 +65,7 @@
 static	void	Usage(msg) 
 	char	*msg;
 {
-	char	*opts = "[-v] [-if format] [-of format] [-win nx ny x y] [-o file] [ - | file... ]";
+	char	*opts = "[-v] [-ifmt format] [-ofmt format] [-win nx ny x y] [-o file] [ - | file... ]";
 
 	if (msg) {
 		fprintf(stderr, "rascat: %s\n", msg);
@@ -129,7 +129,7 @@ main(argc, argv)
 				Usage("ran out of args");
 			}
 		}
-		else if (!strcmp(arg, "-if")) {
+		else if (!strcmp(arg, "-ifmt")) {
 			if (argc >= 1) {
 				argc--;
 				srcformat = *++argv;
@@ -138,7 +138,7 @@ main(argc, argv)
 				Usage("ran out of args");
 			}
 		}
-		else if (!strcmp(arg, "-of")) {
+		else if (!strcmp(arg, "-ofmt")) {
 			if (argc >= 1) {
 				argc--;
 				dstformat = *++argv;
