@@ -1,6 +1,6 @@
 C
-C $Id: setusv.f,v 1.5 2000-08-22 15:06:14 haley Exp $
-C                                                                      
+C $Id: setusv.f,v 1.6 2004-11-19 18:46:08 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -93,7 +93,7 @@ C
 C Check for the variable specifying the size of the pen-move buffer.
 C
       ELSE IF (VN(1:2).EQ.'PB') THEN
-        IF (IV.LT.2.OR.IV.GT.50) THEN
+        IF (IV.LT.2.OR.IV.GT.500) THEN
           CALL SETER ('SETUSV - PEN-MOVE BUFFER SIZE OUT OF RANGE',6,1)
           RETURN
         END IF
