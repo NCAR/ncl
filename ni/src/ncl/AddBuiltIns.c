@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.62 2003-03-19 18:50:35 grubin Exp $
+ *      $Id: AddBuiltIns.c,v 1.63 2003-03-19 23:16:01 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -47,7 +47,7 @@ void
 #endif
 );
 
-extern NhlErrorTypes    _NclIGetFileVarType(
+extern NhlErrorTypes    _NclIGetFileVarTypes(
 # if    NhlNeedProto
 void
 # endif /* NhlNeedProto */
@@ -1522,12 +1522,11 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
 	NclRegisterFunc(_NclIGetFileVarAtts,args,"getfilevaratts",nargs);
 
-    nargs = 0;
-    args = NewArgs(2);
-    dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "file", NclANY, NclANY);    nargs++;
-    SetArgTemplate(args, nargs, "string", dimsizes, NclANY);     nargs++;
-    NclRegisterFunc(_NclIGetFileVarType, args, "getfilevartype", nargs);
+	nargs = 0;
+	args = NewArgs(2);
+	SetArgTemplate(args, nargs, "file", NclANY, NclANY);nargs++;
+	SetArgTemplate(args, nargs, "string", NclANY, NclANY);nargs++;
+	NclRegisterFunc(_NclIGetFileVarTypes, args, "getfilevartypes", nargs);
 
 	nargs = 0;
 	args = NewArgs(2);
