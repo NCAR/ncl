@@ -1,5 +1,5 @@
 /*
-**      $Id: xy01c.c,v 1.4 1995-02-06 18:07:02 haley Exp $
+**      $Id: xy01c.c,v 1.5 1995-02-09 14:57:47 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -43,61 +43,61 @@
 
 main()
 {
-	int     appid,xworkid,plotid,dataid;
-	int     rlist;
-	int     i, j;
-	float   ydra[NPTS], theta;
+    int     appid,xworkid,plotid,dataid;
+    int     rlist;
+    int     i, j;
+    float   ydra[NPTS], theta;
 /*
  * Initialize some data for the XY plot
  */
-	for( i = 0; i < NPTS; i++ ) {
-		theta = PI100*(float)(i);
-		ydra[i] = 500.+.9*(float)(i)*sin(theta);
-	}
+    for( i = 0; i < NPTS; i++ ) {
+        theta = PI100*(float)(i);
+        ydra[i] = 500.+.9*(float)(i)*sin(theta);
+    }
 /*
  * Initialize the HLU library and set up resource template.
  */
-	NhlInitialize();
-	rlist = NhlRLCreate(NhlSETRL);
+    NhlInitialize();
+    rlist = NhlRLCreate(NhlSETRL);
 /*
  * Create application and X workstation object.  The application name
  * is used to determine the name of the resource file, which will be
  * "xy01.res" in this case.
  */
-	NhlCreate(&appid,"xy01",NhlappLayerClass,NhlDEFAULT_APP,0);
-	NhlCreate(&xworkid,"xy01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
+    NhlCreate(&appid,"xy01",NhlappLayerClass,NhlDEFAULT_APP,0);
+    NhlCreate(&xworkid,"xy01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
 /*
  * Define the data object.  Since only the Y values are specified here, each
  * Y values will be paired with its integer array index.  The id for this
  * object will later be used as the value for the XYPlot data resource,
  * "xyCurveData".
  */
-	NhlRLClear(rlist);
-	NhlRLSetFloatArray(rlist,NhlNcaYArray,ydra,NhlNumber(ydra));
-	NhlCreate(&dataid,"xyData",NhlcoordArraysLayerClass,NhlDEFAULT_APP,rlist);
+    NhlRLClear(rlist);
+    NhlRLSetFloatArray(rlist,NhlNcaYArray,ydra,NhlNumber(ydra));
+    NhlCreate(&dataid,"xyData",NhlcoordArraysLayerClass,NhlDEFAULT_APP,rlist);
 /*
  * Create the Plot object which is created as a child of the X workstation
  * object.
  */
-	NhlRLClear(rlist);
-	NhlRLSetInteger(rlist,NhlNxyCurveData,dataid);
-	NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
+    NhlRLClear(rlist);
+    NhlRLSetInteger(rlist,NhlNxyCurveData,dataid);
+    NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
 /*
  * Draw the plot (to its parent X Workstation)
  */
-	NhlDraw(plotid);
-	NhlFrame(xworkid);
+    NhlDraw(plotid);
+    NhlFrame(xworkid);
 /*
  * NhlDestroy destroys the given id and all of its children
  * so destroying "xworkid" will also destroy plotid.
  */
-	NhlRLDestroy(rlist);
-	NhlDestroy(xworkid);
-	NhlDestroy(appid);
+    NhlRLDestroy(rlist);
+    NhlDestroy(xworkid);
+    NhlDestroy(appid);
 /*
  * Restores state.
  */
-	NhlClose();
+    NhlClose();
 
-	exit(0);
+    exit(0);
 }

@@ -1,5 +1,5 @@
 /*
-**      $Id: xy03c.c,v 1.3 1995-02-06 18:07:04 haley Exp $
+**      $Id: xy03c.c,v 1.4 1995-02-09 14:57:53 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -43,7 +43,7 @@
 
 main()
 {
-	int		appid,xworkid,plotid,dataid,datadepid;
+	int		appid,xworkid,plotid,dataid;
 	int		rlist;
 	int		i, j;
 	float	xdra[NPTS],ydra[NPTS], theta;
