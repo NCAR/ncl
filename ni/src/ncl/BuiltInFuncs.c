@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.122 2000-04-03 16:26:22 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.123 2000-04-03 16:27:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -7863,7 +7863,7 @@ NhlErrorTypes _NclIdim_variance
 					}
 					sum_sqrd_val /= (double)(count-1);
 				} else {
-					sum_sqrd_val = 0.0
+					sum_sqrd_val = 0.0;
 				}
 				if(out_data_type == NCL_double) {
                                         ((double*)out_val)[i] = sum_sqrd_val;
