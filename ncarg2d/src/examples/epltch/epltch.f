@@ -1,10 +1,10 @@
 C
-C $Id: epltch.f,v 1.8 1994-11-03 00:04:52 haley Exp $
+C $Id: epltch.f,v 1.9 1995-06-13 17:31:08 kennison Exp $
 C
       PROGRAM EXMPLS
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
+C Define error file, FORTRAN unit number, workstation type, and
+C workstation ID.
 C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
@@ -25,6 +25,13 @@ C Define an array in which to put the numbers of the filled fonts.
 C
       DIMENSION IFFN(23)
 C
+C Define character arrays needed for example 1-10.  These are used
+C to sidestep problems on various machines with backslashes in
+C FORTRAN code.
+C
+      CHARACTER*1  SPCH(32)
+      CHARACTER*32 SOSC
+C
 C Define the column and row labels.  The character string ':c:r', where
 C "c" is the first three characters of a column label and "r" is the
 C first character of a row label, is used to select the character to
@@ -42,13 +49,6 @@ C
      +           '4(37)','5(40)','6(41)','7(42)','8(43)','9(44)',
      +           '+(45)','-(46)','*(47)','/(50)','((51)',')(52)',
      +           '$(53)','=(54)',' (55)',',(56)','.(57)','     '/
-C
-C Define character arrays needed for example 1-10.  These are used
-C to sidestep problems on various machines with backslashes in
-C FORTRAN code.
-C
-      CHARACTER*1  SPCH(32)
-      CHARACTER*32 SOSC
 C
 C Define a flag which says, if 0, that the first eight plots are to
 C occupy eight separate frames and, if 1, that those plots are to be
