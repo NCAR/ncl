@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.49 2000-11-11 02:35:30 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.50 2001-11-12 23:59:53 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -1857,8 +1857,8 @@ static NhlErrorTypes GetWindowLimits
 	if (mtp->rel_center_lon && mtp->map_limit_mode == NhlLATLON)
 		clon = (mtp->max_lon + mtp->min_lon) / 2.0 + clon;
 	
-        latinc = MIN((mtp->max_lat - mtp->min_lat) / 20.0,1.0);
-        loninc = MIN((mtp->max_lon - mtp->min_lon) / 20.0,1.0);
+        latinc = MIN((mtp->max_lat - mtp->min_lat) / 91.0,1.0);
+        loninc = MIN((mtp->max_lon - mtp->min_lon) / 91.0,1.0);
 	lonmin = mtp->min_lon;
 	lonmax = mtp->max_lon;
 
@@ -1879,10 +1879,13 @@ static NhlErrorTypes GetWindowLimits
 		lonmax = clon + 180;
 	}
         
-        for (tlat = mtp->min_lat; tlat <= mtp->max_lat; tlat += latinc) {
-                for (tlon = lonmin; tlon <= lonmax; tlon += loninc) {
+        for (tlat = mtp->min_lat; tlat < mtp->max_lat + latinc; 
+	     tlat += latinc) {
+		tlat = tlat > mtp->max_lat ? mtp->max_lat : tlat;
+                for (tlon = lonmin; tlon < lonmax + loninc; tlon += loninc) {
+			tlon = tlon > lonmax ? lonmax : tlon;
                         c_maptra(tlat,tlon,&uval,&vval);
-                        if (uval >= 1E9 || vval >= 1E9)
+                        if (uval > 1E9)
                                 continue;
                         if (uval < umin) umin = uval;
                         if (uval > umax) umax = uval;
@@ -1891,9 +1894,10 @@ static NhlErrorTypes GetWindowLimits
                 }
 		if (two_step) {
 			for (tlon = clon - 180; 
-			     tlon <= lonmax2; tlon += loninc) {
+			     tlon < lonmax2 + loninc; tlon += loninc) {
+				tlon = tlon > lonmax2 ? lonmax2 : tlon;
 				c_maptra(tlat,tlon,&uval,&vval);
-				if (uval >= 1E9 || vval >= 1E9)
+				if (uval > 1E9)
 					continue;
 				if (uval < umin) umin = uval;
 				if (uval > umax) umax = uval;
