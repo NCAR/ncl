@@ -204,7 +204,7 @@ c create transposed data array
 
 c compute the covariance matrix using the transposed data 
 
-      CALL DVCMSSM(XDATAT,NCOL,NROW,NCSTA,NROW,XMSG,CSSM,LSSM,IER)
+      CALL DVCMSSM(XDATAT,NCSTA,NROW,NCSTA,NROW,XMSG,CSSM,LSSM,IER)
 
       IF (IER.NE.0) THEN
           WRITE (IPR,FMT='(//'' sub drveoft: ier= '',i3
