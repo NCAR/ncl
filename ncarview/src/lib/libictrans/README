@@ -1,0 +1,10 @@
+ictrans has a functional interface defined in the file ictrans.c. For a
+disk resident CGM ictrans may be invoked via the ICTrans() subroutine. A 
+description of the parameters for this routine may be found in the file
+ictrans.c. The third argument should be set to NULL for a disk resident
+CGM. The process of invoking ictrans for a memory resident CGM is a bit more
+complicated. The third argument to ICTrans is the *name* of a metafile 
+resident in memory. Such a file can be created with the utilities in libcgm.
+The file ictrans_mem.c contains an example of how memory files can be
+created, written to, and closed. 
+
