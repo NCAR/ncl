@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.43 1996-02-26 21:45:57 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.44 1996-03-12 00:59:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4180,6 +4180,11 @@ static NhlErrorTypes    LabelBarDraw
                 subret = _NhlDeactivateWorkstation(lbl->base.wkptr);
 		return MIN(subret,ret);
 	}
+
+	NhlVASetValues(lbl->base.wkptr->base.id,
+		       _NhlNwkReset,	True,
+		       NULL);
+
 	lb_p->new_draw_req = False;
 
 	subret = _NhlActivateWorkstation(lbl->base.wkptr);

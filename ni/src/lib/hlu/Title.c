@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.24 1995-12-19 20:39:30 boote Exp $
+ *      $Id: Title.c,v 1.25 1996-03-12 00:59:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1628,6 +1628,11 @@ static NhlErrorTypes TitleDraw
                 subret = _NhlDeactivateWorkstation(tinstance->base.wkptr);
 		return MIN(subret,ret);
 	}
+
+	NhlVASetValues(instance->base.wkptr->base.id,
+		       _NhlNwkReset,	True,
+		       NULL);
+
 	tinstance->title.new_draw_req = False;
 
 	if (tinstance->view.use_segments) {

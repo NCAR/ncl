@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.7 1996-02-26 21:46:15 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.8 1996-03-12 00:59:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2866,6 +2866,10 @@ static NhlErrorTypes vcInitDraw
 	vcp->fws = NULL;
 	vcp->wk_active = False;
 	vcp->seg_open = False;
+
+	NhlVASetValues(vcl->base.wkptr->base.id,
+		       _NhlNwkReset,	True,
+		       NULL);
 
 	if (vcp->min_vec_dist > 0.0) {
 		if (vcp->fws_id == NhlNULLOBJID) {

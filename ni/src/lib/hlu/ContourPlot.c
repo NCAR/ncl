@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.31 1996-02-26 21:45:50 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.32 1996-03-12 00:59:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3173,6 +3173,11 @@ static NhlErrorTypes cnInitDraw
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
+
+	NhlVASetValues(cnl->base.wkptr->base.id,
+		       _NhlNwkReset,	True,
+		       NULL);
+	
 	return ret;
 }
 

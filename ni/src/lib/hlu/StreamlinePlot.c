@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.3 1996-02-26 21:46:03 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.4 1996-03-12 00:59:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2341,6 +2341,10 @@ static NhlErrorTypes stInitDraw
 	stp->fws = NULL;
 	stp->wk_active = False;
 	stp->seg_open = False;
+
+	NhlVASetValues(stl->base.wkptr->base.id,
+		       _NhlNwkReset,	True,
+		       NULL);
 
 	if (stp->fws_id == NhlNULLOBJID) {
 		if ((stp->fws_id = 
