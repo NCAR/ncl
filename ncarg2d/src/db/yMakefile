@@ -1,7 +1,7 @@
 #
-#	$Id: yMakefile,v 1.4 1998-10-16 17:55:11 boote Exp $
+#	$Id: yMakefile,v 1.5 2002-03-29 16:28:03 haley Exp $
 #
 
 #define IHaveSubdirs
 
-SUBDIRS = ezmap plotchar pwritxnt ranfdata rgb
+SUBDIRS = ezmap plotchar pwritxnt ranfdata
