@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.19 1996-07-20 00:40:03 ethan Exp $
+ *      $Id: Symbol.h,v 1.20 1996-07-23 23:03:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -344,6 +344,12 @@ int /*copy_data*/
 );
 
 extern NclQuark *_NclGetFileSymNames(
+#if     NhlNeedProto
+int    *num_names
+#endif
+);
+
+extern NclQuark *_NclGetProcFuncSymNames(
 #if     NhlNeedProto
 int    *num_names
 #endif

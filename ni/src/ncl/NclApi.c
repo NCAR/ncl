@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.29 1996-07-20 00:39:56 ethan Exp $
+ *      $Id: NclApi.c,v 1.30 1996-07-23 23:02:59 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -151,6 +151,7 @@ int NclInitServer
 #else
         start_state = yyparse(1);
 #endif
+	the_input_buffer = NULL;
 
 	return(1);	
 	
@@ -368,6 +369,18 @@ int *num_names;
 {
 	return(_NclGetHLUVarSymNames(num_names));
 }
+
+NclQuark *NclGetProcFuncSymNames
+#if     NhlNeedProto
+(int *num_names)
+#else
+(num_names)
+int *num_names;
+#endif
+{
+        return(_NclGetProcFuncSymNames(num_names));
+}
+
 
 struct _NclApiDataList *NclGetFileInfo
 #if	NhlNeedProto

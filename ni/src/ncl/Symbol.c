@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.32 1996-07-23 21:13:15 ethan Exp $
+ *      $Id: Symbol.c,v 1.33 1996-07-23 23:03:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1218,7 +1218,7 @@ int     *num_names;
 								current_size *= 2;
 								tmp_out[*num_names] = thevar->u.data_var->var.var_quark;
 							}
-							*num_names++;
+							(*num_names)++;
 						}
 					}
 					s = s->symnext;
@@ -1246,7 +1246,6 @@ int     *num_names;
 	int i = 0;
 	NclQuark *tmp_out;
 	NclSymbol *s;
-	NclStackEntry *thevar = NULL;
 	int current_size = NCL_SYM_TAB_SIZE;
 
 	*num_names = 0;
@@ -1268,13 +1267,13 @@ int     *num_names;
 					case IPROC: 
 					case IFUNC: {
 						if(*num_names < current_size) {
-							tmp_out[*num_names] = thevar->u.data_var->var.var_quark;
+							tmp_out[*num_names] = NrmStringToQuark(s->name);
 						} else {
 							tmp_out = NclRealloc(tmp_out,current_size * 2);
 							current_size *= 2;
-							tmp_out[*num_names] = thevar->u.data_var->var.var_quark;
+							tmp_out[*num_names] = NrmStringToQuark(s->name);
 						}
-						*num_names++;
+						(*num_names)++;
 						break;
 					}
 					case EPROC:
@@ -1957,7 +1956,7 @@ int *num_names;
 								current_size *= 2;
 								tmp_out[*num_names] = the_var->u.data_var->var.var_quark;
 							}
-							*num_names++;
+							(*num_names)++;
 						}
 					}
 					s = s->symnext;
@@ -2009,7 +2008,7 @@ int *num_names;
 								current_size *= 2;
 								tmp_out[*num_names] = the_var->u.data_var->var.var_quark;
 							}
-							*num_names++;
+							(*num_names)++;
 						}
 					}
 					s = s->symnext;
@@ -2062,7 +2061,7 @@ NclQuark coordname;
 			tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp_var->var.n_dims);
 			for(j = 0; j < tmp_var->var.n_dims; j++) {
 				tmp->u.var->dim_info[j]= tmp_var->var.dim_info[j];
-					if(tmp_var->var.coord_vars[i] != -1) {
+					if(tmp_var->var.coord_vars[j] != -1) {
 						tmp->u.var->coordnames[j]= tmp_var->var.dim_info[j].dim_quark;
 					} else {
 						tmp->u.var->coordnames[j]= -1;
@@ -2109,7 +2108,7 @@ NclQuark var_sym_name;
 	NclMultiDValData the_value = NULL;
 	NclSymTableListNode *st;
 	NclSymbol *s;
-	int i,j;
+	int j;
 	NclStackEntry *the_var;
 
 	s = _NclLookUp(NrmQuarkToString(var_sym_name));
@@ -2128,7 +2127,7 @@ NclQuark var_sym_name;
 			tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*the_var->u.data_var->var.n_dims);
 			for(j = 0; j < the_var->u.data_var->var.n_dims; j++) {
 				tmp->u.var->dim_info[j]= the_var->u.data_var->var.dim_info[j];
-					if(the_var->u.data_var->var.coord_vars[i] != -1) {
+					if(the_var->u.data_var->var.coord_vars[j] != -1) {
 						tmp->u.var->coordnames[j]= the_var->u.data_var->var.dim_info[j].dim_quark;
 					} else {
 						tmp->u.var->coordnames[j]= -1;
@@ -2200,7 +2199,7 @@ NclApiDataList *_NclGetDefinedVarInfo
 							tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*the_var->u.data_var->var.n_dims);
 							for(j = 0; j < the_var->u.data_var->var.n_dims; j++) {
 								tmp->u.var->dim_info[j]= the_var->u.data_var->var.dim_info[j];
-								if(the_var->u.data_var->var.coord_vars[i] != -1) {
+								if(the_var->u.data_var->var.coord_vars[j] != -1) {
 									tmp->u.var->coordnames[j]= the_var->u.data_var->var.dim_info[j].dim_quark;
 								} else {
 									tmp->u.var->coordnames[j]= -1;
