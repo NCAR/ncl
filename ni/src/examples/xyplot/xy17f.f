@@ -1,5 +1,5 @@
 C
-C      $Id: xy17f.f,v 1.5 1998-10-27 19:05:24 haley Exp $
+C      $Id: xy17f.f,v 1.6 1998-11-24 17:06:27 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -325,7 +325,7 @@ C
       call NhlFGetValues(xy3, grlist, ierr)
 
       call NhlFRLClear (rlist)
-      call NhlFRLSetInteger (rlist, 'xyMonoLineColor', 'True', ierr)
+      call NhlFRLSetString (rlist, 'xyMonoLineColor', 'True', ierr)
       call NhlFRLSetString (rlist, 'xyLineColor', 'blue', ierr)
       call NhlFSetValues (dspec, rlist, ierr)
 

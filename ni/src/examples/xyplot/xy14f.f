@@ -1,5 +1,5 @@
 C
-C     $Id: xy14f.f,v 1.2 1998-08-18 22:56:01 haley Exp $
+C     $Id: xy14f.f,v 1.3 1998-11-24 17:06:26 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -26,6 +26,7 @@ C               array arithmetic that you can't do in C or Fortran 77.
 C
       external NhlFAppClass
       external NhlFXWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFXyPlotClass
       external NhlFCoordArraysClass
@@ -58,7 +59,7 @@ C
       real x_array2(5), y_array2(5)
       real t_mean, std_dev, mm2inch
       data mm2inch/0.03937/
-      integer appid, xworkid, plotid
+      integer appid, xworkid, plotid, dataid
       integer NCGM, X11, PS
 C
 C Default is to an X workstation.

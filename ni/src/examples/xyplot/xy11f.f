@@ -1,5 +1,5 @@
 C
-C     $Id: xy11f.f,v 1.11 1995-05-09 22:39:45 haley Exp $
+C     $Id: xy11f.f,v 1.12 1998-11-24 17:06:24 haley Exp $
 C
 C****************************************************************
 C                                                               *
@@ -30,6 +30,7 @@ C
       external NhlFXyPlotClass
       external NhlFCoordArraysClass
 
+      integer appid
 C
 C Create data arrays to be plotted
 C

@@ -1,5 +1,5 @@
 C
-C      $Id: xy15f.f,v 1.1 1995-10-17 17:50:55 haley Exp $
+C      $Id: xy15f.f,v 1.2 1998-11-24 17:06:26 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -31,6 +31,7 @@ C       Each plot draws a variation of sinusoidal curve.
 C
       external NhlFAppClass
       external NhlFXWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFXyPlotClass
       external NhlFCoordArraysClass
