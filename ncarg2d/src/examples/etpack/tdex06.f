@@ -53,9 +53,11 @@ C
         DATA ZMIN,ZMAX / BMIN , BMAX /
 C
 C Set the values determining the resolution of the grid over which the
-C surface is generated.
+C surface is generated.  Note that, if each of IDIM and JDIM is one more
+C than a multiple of 12, the assignment of rendering styles works out
+C best.
 C
-        DATA IDIM,JDIM / 101 , 101 /
+        DATA IDIM,JDIM / 109 , 109 /
 C
 C Set the desired values of parameters determining the eye position.
 C ANG1 is a bearing angle, ANG2 is an elevation angle, and RMUL is a
@@ -190,12 +192,16 @@ C
         DO 102 I=1,IDIM-1
           UVMI=UMIN+(REAL(I-1)/REAL(IDIM-1))*(UMAX-UMIN)
           UVMA=UMIN+(REAL(I  )/REAL(IDIM-1))*(UMAX-UMIN)
-          ISRS=MAX(1,MIN(7,1+INT(7.*((UVMI+UVMA)/2.-UMIN)/(UMAX-UMIN))))
+          IURS=MAX(1,MIN(12,1+INT(12.*((UVMI+UVMA)/2.-UMIN)/
+     +                                                    (UMAX-UMIN))))
           DO 101 J=1,JDIM-1
             VVMI=VMIN+(REAL(J-1)/REAL(JDIM-1))*(VMAX-VMIN)
             VVMA=VMIN+(REAL(J  )/REAL(JDIM-1))*(VMAX-VMIN)
-C           ISRS=MAX(1,MIN(7,1+INT(7.*((VVMI+VVMA)/2.-VMIN)/
-C    +                                                    (VMAX-VMIN))))
+            IVRS=MAX(1,MIN(12,1+INT(12.*((VVMI+VVMA)/2.-VMIN)/
+     +                                                    (VMAX-VMIN))))
+            ISRS=MOD(IURS-1       ,3)+2
+C           ISRS=MOD(       IVRS-1,3)+2
+C           ISRS=MOD(IURS-1+IVRS-1,3)+2
             RV00=RVAL(UVMI,VVMI)
             PV00=PVAL(UVMI,VVMI)
             HV00=HVAL(UVMI,VVMI)
