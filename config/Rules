@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.10 1993-11-04 18:58:54 boote Exp $
+ *	$Id: Rules,v 1.11 1993-11-12 02:44:16 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -38,7 +38,7 @@ YmakeDependency(local-Makefile)\
 ]\
 local-Makefile::]\
 	@echo "Making Makefile in $(CURRENT_DIR)"]\
-	@$(YMAKE) -DTOPDIR\=$(TOP) -DCURDIR\=$(CURRENT_DIR)]\
+	@$(YMAKE) -Topdir $(TOP) -Curdir $(CURRENT_DIR)]\
 ]\
 me: local-Makefile]
 #endif	/* InternalMakefileTarget */
@@ -178,14 +178,14 @@ $(YMAKEDEP):]\
 Makefiles::]\
 	@for dir in dirs ; do\]\
 	(cd $$dir; echo "Making Makefiles in $(CURRENT_DIR)/$$dir";\]\
-	$(NEWYMAKE) -DTOPDIR\=../$(TOP) -DCURDIR\=$(CURRENT_DIR)/$$dir;\]\
+	$(NEWYMAKE) -Topdir ../$(TOP) -Curdir $(CURRENT_DIR)/$$dir;\]\
 	$(MAKE) $(MFLAGS) Makefiles);\]\
 	done]\
 ]\
 Makefiles-local::]\
 	@for dir in dirs ; do\]\
 	(cd $$dir; echo "Making Makefile in $(CURRENT_DIR)/$$dir";\]\
-	$(NEWYMAKE) -DTOPDIR\=../$(TOP) -DCURDIR\=$(CURRENT_DIR)/$$dir;)\]\
+	$(NEWYMAKE) -Topdir ../$(TOP) -Curdir $(CURRENT_DIR)/$$dir;)\]\
 	done]
 #endif	/* InternalMakefilesSubdirs */
 

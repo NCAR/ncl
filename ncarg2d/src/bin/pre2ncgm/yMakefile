@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1993-11-01 17:31:29 boote Exp $
+#	$Id: yMakefile,v 1.8 1993-11-12 02:45:10 boote Exp $
 #
 
 MYNAME  = pre2ncgm
@@ -19,7 +19,7 @@ GENERIC_OBJS = alover.o clipit.o frm.o garg.o intcnv.o lodctb.o \
 OTHER_OBJS = fndarg.o metred.o mninst.o trans.o trassn.o trlate.o trndat.o
 
 #ifdef	UseInstalled
-ROBJS = $(ROBJPATH)/ggkwdr_stub.o
+ROBJS = $(ROBJROOT)/ggkwdr_stub.o
 #else
 ROBJS = $(NCARGGKSLIBSRC)/awi/ggkwdr_stub.o
 #endif

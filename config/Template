@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.10 1993-11-02 15:53:41 boote Exp $
+ *      $Id: Template,v 1.11 1993-11-12 02:44:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -91,7 +91,25 @@ NGCOMM########################################################################
 
 /*
  * This allows developers to over-ride the values of any of the pre-defined
- * make symbols on a project wide bases - even if they are using the installed
+ * make symbols on a project bases - even if they are using the installed
+ * version of ymake. These values can be over-ridden from the YMAKEDEVFILE
+ */
+#ifdef	_LOCAL_CONF
+NGCOMM########################################################################
+NGCOMM
+NGCOMM Including _LOCAL_CONF
+NGCOMM
+NGCOMM########################################################################
+#include _LOCAL_CONF
+NGCOMM########################################################################
+NGCOMM
+NGCOMM After Including _LOCAL_CONF
+NGCOMM
+NGCOMM########################################################################
+#endif
+/*
+ * This allows developers to over-ride the values of any of the pre-defined
+ * make symbols on a global bases - even if they are using the installed
  * version of ymake.
  */
 #ifdef	YMAKEDEVFILE
@@ -114,28 +132,56 @@ NGCOMM########################################################################
 *									*
 ************************************************************************/
 
-#ifndef	NcargRoot
+/*
+ * DEFINE dirs for default install
+ */
+
+/*
+ * For backwards compatibility - set YmakeRoot to NcargRoot if it is defined.
+ */
+#if	defined(NcargRoot) && !defined(YmakeRoot)
+#define	YmakeRoot	NcargRoot
+#endif
+
+#ifndef	YmakeRoot
 #ifdef	UseInstalled
-#define	NcargRoot	_InstRoot
+#define	YmakeRoot	_InstRoot
+#define	_IgnoreYmakeRoot
 #else
-#define	NcargRoot	/usr/local
+#define	YmakeRoot	/usr/local
 #endif	/* UseInstalled	*/
-#endif	/* NcargRoot */
+#endif	/* YmakeRoot */
 
 #ifndef	BinRoot
-#define	BinRoot	NcargRoot/bin
+#ifndef	_IgnoreYmakeRoot
+#define	BinRoot	YmakeRoot/bin
+#else
+#define	BinRoot	_InstBin
+#endif	/* _IgnoreYmakeRoot */
 #endif	/* BinRoot */
 
 #ifndef	LibRoot
-#define LibRoot NcargRoot/lib
+#ifndef	_IgnoreYmakeRoot
+#define LibRoot YmakeRoot/lib
+#else
+#define	LibRoot	_InstLib
+#endif	/* _IgnoreYmakeRoot */
 #endif	/* LibRoot */
 
 #ifndef	IncRoot
-#define	IncRoot	NcargRoot/include
+#ifndef	_IgnoreYmakeRoot
+#define	IncRoot	YmakeRoot/include
+#else
+#define	IncRoot	_InstInc
+#endif	/* _IgnoreYmakeRoot */
 #endif	/* IncRoot */
 
 #ifndef	ManRoot
-#define	ManRoot	NcargRoot/man
+#ifndef	_IgnoreYmakeRoot
+#define	ManRoot	YmakeRoot/man
+#else
+#define	ManRoot	_InstMan
+#endif	/* _IgnoreYmakeRoot */
 #endif	/* ManRoot */
 
 #ifndef	TmpRoot
@@ -145,6 +191,50 @@ NGCOMM########################################################################
 #define	TmpRoot	/tmp
 #endif
 #endif	/* TmpRoot */
+
+/*
+ * Define Actual Install directories.
+ */
+
+#ifdef	RootPath
+#define	_UseRootPath
+#else
+#define	RootPath	YmakeRoot
+#endif
+
+#ifndef	BinPath
+#ifdef	_UseRootPath
+#define	BinPath		RootPath/bin
+#else
+#define	BinPath		BinRoot
+#endif
+#endif
+
+#ifndef	LibPath
+#ifdef	_UseRootPath
+#define	LibPath		RootPath/lib
+#else
+#define	_LibRootEqualPath
+#define	LibPath		LibRoot
+#endif
+#endif
+
+#ifndef	IncPath
+#ifdef	_UseRootPath
+#define	IncPath		RootPath/include
+#else
+#define	_IncRootEqualPath
+#define	IncPath		IncRoot
+#endif
+#endif
+
+#ifndef	ManPath
+#ifdef	_UseRootPath
+#define	ManPath		RootPath/man
+#else
+#define	ManPath		ManRoot
+#endif
+#endif
 
 #ifndef	XLibrary
 #define	XLibrary -lX11
@@ -239,11 +329,7 @@ NGCOMM########################################################################
 #endif	/* CppCommand */
 
 #ifndef	FCppCommand
-#ifdef	UseInstalled
-#define	FCppCommand	$(CONFIGPATH)/fcpp $(CPP)
-#else
-#define	FCppCommand	$(CONFIGSRC)/fcpp $(CPP)
-#endif	/* UseInstalled */
+#define	FCppCommand	$(CONFIG_DIR)/fcpp $(CPP)
 #endif	/* FCppCommand */
 
 #ifndef	FCompiler
@@ -372,12 +458,18 @@ NGCOMM########################################################################
 #define CURDIR	.
 #endif	/* CURDIR */
 
-NCARGROOT		= NcargRoot
+YMAKEROOT		= YmakeRoot
 BINROOT			= BinRoot
 LIBROOT			= LibRoot
 INCROOT			= IncRoot
 MANROOT			= ManRoot
 TMPROOT			= TmpRoot
+
+ROOTPATH		= RootPath
+BINPATH			= BinPath
+LIBPATH			= LibPath
+INCPATH			= IncPath
+MANPATH			= ManPath
 
 LIB_SEARCH		= LibSearch ExtraLibSearch
 INC_SEARCH		= IncSearch ExtraIncSearch
@@ -385,8 +477,6 @@ INC_SEARCH		= IncSearch ExtraIncSearch
 TOP			= TOPDIR
 CURRENT_DIR		= CURDIR
 
-NCARGDIR		= ncarg
-HLUDIR			= hlu
 BINDIR			= bin
 LIBDIR			= lib
 INCDIR			= include
@@ -394,22 +484,6 @@ MANDIR			= man
 DOCDIR			= doc
 TMPDIR			= tmp
 CONFIGDIR		= config
-DBDIR			= database
-FONTCAPDIR		= fontcaps
-GRAPHCAPDIR		= graphcaps
-EXAMPLESDIR		= examples
-TUTORIALDIR		= tutorial
-TESTSDIR		= tests
-ROBJDIR			= robj
-XAPPDIR			= xapp
-GENERICDIR		= generic
-
-BINPATH			= $(BINROOT)
-LIBPATH			= $(LIBROOT)
-INCPATH			= $(INCROOT)/$(NCARGDIR)
-HLUINCPATH		= $(INCROOT)/$(NCARGDIR)/$(HLUDIR)
-TMPPATH			= $(TMPROOT)
-MANPATH			= $(MANROOT)
 
 #ifdef	InstallManToLocal
 #if	UseCatDirs
@@ -458,21 +532,11 @@ MAN8_SECTION		= 8
 
 #endif	/* InstallManToLocal */
 
-LIBNCARGPATH		= $(LIBPATH)/$(NCARGDIR)
-CONFIGPATH		= $(LIBNCARGPATH)/$(CONFIGDIR)
-DBPATH			= $(LIBNCARGPATH)/$(DBDIR)
-FONTCAPPATH		= $(LIBNCARGPATH)/$(FONTCAPDIR)
-GRAPHCAPPATH		= $(LIBNCARGPATH)/$(GRAPHCAPDIR)
-DOCPATH			= $(LIBNCARGPATH)/$(DOCDIR)
-EXAMPLESPATH		= $(LIBNCARGPATH)/$(EXAMPLESDIR)
-ROBJPATH		= $(LIBNCARGPATH)/$(ROBJDIR)
-TESTSPATH		= $(LIBNCARGPATH)/$(TESTSDIR)
-TUTORIALPATH		= $(LIBNCARGPATH)/$(TUTORIALDIR)
-XAPPPATH		= $(LIBNCARGPATH)/$(XAPPDIR)
-LIBHLUPATH		= $(LIBNCARGPATH)/$(HLUDIR)
-HLUEXPATH		= $(LIBHLUPATH)/$(EXAMPLESDIR)
-HLUDOCPATH		= $(LIBHLUPATH)/$(DOCDIR)
-HLURESPATH		= $(LIBHLUPATH)
+#ifdef	UseInstalled
+CONFIG_DIR		= _InstConfig
+#else
+CONFIG_DIR		= $(CONFIGSRC)
+#endif
 
 XLIB			= XLibrary
 EXTENSIONLIB		= XextLibrary
@@ -506,16 +570,29 @@ BUILDINCTOP	= ./..
  * If not useinstalled then -L(libroot) needs to be after the libraries
  * if use installed then it needs to be before the libraries.
  */
+
+#ifdef	_LibRootEqualPath
+_LIBROOTSEARCH	=	-L$(LIBROOT)
+#else
+_LIBROOTSEARCH	=	-L$(LIBPATH) -L$(LIBROOT)
+#endif
+
+#ifdef	_IncRootEqualPath
+_INCROOTSEARCH	=	-I$(INCROOT)
+#else
+_INCROOTSEARCH	=	-I$(INCPATH) -I$(INCROOT)
+#endif
+
 #ifndef	UseInstalled
 TOP_INCLUDES	= -I$(BUILDINCDIR)
-LDLIBS		= -L$(LIBROOT) $(LIB_SEARCH) $(EXTRA_LIBS)
+LDLIBS		= $(_LIBROOTSEARCH) $(LIB_SEARCH) $(EXTRA_LIBS)
 CC_LDOPTIONS	= $(CCOPTIONS) $(COPT) $(XTRA_CLDFLAGS)
 FC_LDOPTIONS	= $(FCOPTIONS) $(FOPT) $(XTRA_FLDFLAGS)
 #else
-TOP_INCLUDES	= -I$(BUILDINCDIR) $(DEV_INCLUDES) -I$(INCROOT)
+TOP_INCLUDES	= -I$(BUILDINCDIR) $(DEV_INCLUDES) $(_INCROOTSEARCH)
 LDLIBS		= $(LIB_SEARCH) $(EXTRA_LIBS)
-CC_LDOPTIONS	= $(CCOPTIONS) $(COPT) $(XTRA_CLDFLAGS) $(DEV_LIB_SEARCH) -L$(LIBROOT)
-FC_LDOPTIONS	= $(FCOPTIONS) $(FOPT) $(XTRA_FLDFLAGS) $(DEV_LIB_SEARCH) -L$(LIBROOT)
+CC_LDOPTIONS	= $(CCOPTIONS) $(COPT) $(XTRA_CLDFLAGS) $(DEV_LIB_SEARCH) $(_LIBROOTSEARCH)
+FC_LDOPTIONS	= $(FCOPTIONS) $(FOPT) $(XTRA_FLDFLAGS) $(DEV_LIB_SEARCH) $(_LIBROOTSEARCH)
 #endif
 EXTRA_LDLIBS	= $(SYS_LIBS) $(EXTRA_SYS_LIBS)
 
@@ -571,25 +648,39 @@ INSTALL_INC	= 0644
 
 CONFIGSRC	= $(TOP)/$(CONFIGDIR)
 NEWCONFIGSRC	= ../$(CONFIGSRC)
+
+#if	defined(_PROJECT_FILE) || defined(_NO_PROJECT_FILE)
+_YMAKE_EXTRA	= -local
+#endif
+
 #ifdef	UseInstalled
-YMAKE		= ymake
+YMAKE		= ymake $(_YMAKE_EXTRA)
 NEWYMAKE	= $(YMAKE)
 YMAKEDEP	=
 #else
-YMAKE		= $(CONFIGSRC)/ymake -config $(CONFIGSRC)
-NEWYMAKE	= $(NEWCONFIGSRC)/ymake -config $(NEWCONFIGSRC)
+YMAKE		= $(CONFIGSRC)/ymake -config $(CONFIGSRC) $(_YMAKE_EXTRA)
+NEWYMAKE	= $(NEWCONFIGSRC)/ymake -config $(NEWCONFIGSRC) $(_YMAKE_EXTRA)
 YMAKEDEP	= $(CONFIGSRC)/ymake-filter
 #endif
 FSPLIT		= FsplitCommand
 SHELL		= /bin/sh
-#ifdef	UseInstalled
-CALLCONV	= $(CONFIGPATH)/callconv
-MKDIRHIER	= $(CONFIGPATH)/mkdirhier
-#else
-CALLCONV	= $(CONFIGSRC)/callconv
-MKDIRHIER	= $(CONFIGSRC)/mkdirhier
-#endif
+CALLCONV	= $(CONFIG_DIR)/callconv
+MKDIRHIER	= $(CONFIG_DIR)/mkdirhier
 
+#ifndef	_NO_PROJECT_FILE
+#ifdef	_PROJECT_FILE
+NGCOMM########################################################################
+NGCOMM
+NGCOMM Including _PROJECT_FILE file
+NGCOMM
+NGCOMM########################################################################
+#include _PROJECT_FILE
+NGCOMM########################################################################
+NGCOMM
+NGCOMM After Including _PROJECT_FILE file
+NGCOMM
+NGCOMM########################################################################
+#else
 NGCOMM########################################################################
 NGCOMM
 NGCOMM Including Project file
@@ -601,6 +692,8 @@ NGCOMM
 NGCOMM After Including Project file
 NGCOMM
 NGCOMM########################################################################
+#endif
+#endif
 
 NGCOMM########################################################################
 NGCOMM

@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.4 1993-11-02 17:32:49 boote Exp $
+ *      $Id: yMakefile,v 1.5 1993-11-12 02:44:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
  */
 SRCS	=	ymake-filter.c
 OBJS	=	ymake-filter.o
-CONFIG-PROGRAMS	= ymake-filter fcpp callconv mkdirhier ymkmf
+CONFIG-PROGRAMS	= ymake-filter fcpp callconv mkdirhier
 
 ARCHFILES	=	AIX_RS6000 AlphaOSF1 Cray DECRISC \
 			HPUX_snake SGI4D Sun3 Sun4 \
@@ -44,6 +44,6 @@ FormatManPages(ymake,.man,.cat)
 #ifdef	InstallYmake
 InstallTarget($(CONFIGFILES),$(INSTALL_INC),$(CONFIGPATH))
 InstallTarget($(CONFIG-PROGRAMS),$(INSTALL_BIN),$(CONFIGPATH))
-InstallTarget(ymake,$(INSTALL_BIN),$(BINPATH))
+InstallTarget(ymake ymkmf,$(INSTALL_BIN),$(BINPATH))
 InstallManPages(ymake,$(EXTENSION),$(MAN1PATH),$(MAN1_SECTION))
 #endif	/* InstallYmake */

@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.39 1993-11-09 00:14:30 clyne Exp $
+#	$Id: yMakefile,v 1.40 1993-11-12 02:46:34 boote Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -119,7 +119,7 @@ SRCS		= $(GENERIC_SRCS)
 
 LibraryTarget($(MYNAME),$(OBJS))
 BuildIncludes($(INCLUDES),ncarg,..)
-InstallTarget($(INCLUDES),$(INSTALL_INC),$(INCPATH))
+InstallTarget($(INCLUDES),$(INSTALL_INC),$(NCARGINCPATH))
 DependTarget($(SRCS))
 
 dither.o:	ncarg_ras.h

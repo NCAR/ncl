@@ -15,7 +15,7 @@ EXTRA_DEFINES	= -DTMPDIR='"$(TMPDIR)"'
 LibraryTarget($(MYNAME),$(OBJECTS))
 BuildIncludes($(INCLUDES),ncarg,..)
 DependTarget($(SRCS))
-InstallTarget($(INCLUDES), $(INSTALL_INC), $(INCPATH))
+InstallTarget($(INCLUDES), $(INSTALL_INC), $(NCARGINCPATH))
 
 lint:
 	$(LINT) $(CINC) $(SRCS) \

@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.17 1993-11-01 17:27:31 boote Exp $
+ *      $Id: yMakefile,v 1.18 1993-11-12 02:42:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,11 +38,11 @@ Info::
 	echo "	NCAR Graphics - Version $(VERSION) Installation Configuration";\
 	echo;\
 	echo "System File		"$(SYSTEM_INCLUDE);\
-	echo "Binary Directory	"$(BINPATH);\
-	echo "Library Directory	"$(LIBPATH);\
-	echo "Include Directory	"$(INCPATH);\
-	echo "Manpage Directory	"$(MANPATH);\
-	echo "Config Directory	"$(CONFIGPATH);\
+	echo "Binary Install Directory	"$(BINPATH);\
+	echo "Library Install Directory	"$(LIBPATH);\
+	echo "Include Install Directory	"$(INCPATH);\
+	echo "Manpage Install Directory	"$(MANPATH);\
+	echo "Config Install Directory	"$(CONFIGPATH);\
 	echo "Data Base Directory	"$(DBPATH);\
 	echo "Programmer Doc Dir	"$(DOCPATH);\
 	echo "Reloc Obj. Directory	"$(ROBJPATH);\
@@ -94,5 +94,3 @@ Everything:
 
 includes::
 	$(RM) -r include
-
-Makefiles:: local-Makefile

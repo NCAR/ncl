@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1993-10-19 17:20:18 boote Exp $
+#	$Id: yMakefile,v 1.7 1993-11-12 02:45:01 boote Exp $
 #
 
 MYNAME	= ncargworld
@@ -8,7 +8,7 @@ SRCS    = ncargworld.f
 OBJS    = ncargworld.o
 
 #ifdef	UseInstalled
-ROBJS = $(ROBJPATH)/ggkwdr_stub.o
+ROBJS = $(ROBJROOT)/ggkwdr_stub.o
 #else
 ROBJS = $(NCARGGKSLIBSRC)/awi/ggkwdr_stub.o
 #endif
@@ -17,7 +17,7 @@ OBJECTS	= $(OBJS) $(ROBJS) $(OTHER_ROBJS)
 
 #if defined(Ardent) || defined(AIX370)
 #ifdef	UseInstalled
-OTHER_ROBJS =	$(ROBJPATH)/libncarbd.o
+OTHER_ROBJS =	$(ROBJROOT)/libncarbd.o
 #else
 OTHER_ROBJS =	$(NCARGOPTLIBSRC)/ncarbd/ncarbd.o
 #endif	/* UseInstalled */

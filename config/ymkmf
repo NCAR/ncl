@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: ymkmf,v 1.1 1993-11-02 17:32:51 boote Exp $
+#      $Id: ymkmf,v 1.2 1993-11-12 02:44:31 boote Exp $
 #
 #########################################################################
 #									#
@@ -42,14 +42,34 @@
 set	topdir	= .
 set	thisdir = `pwd`
 
-if ($#argv) then
-	if ($#argv != 1) then
-		echo "$0 : Usage `basename $0` [topname]"
-		exit 1
-	endif
-	set	topname = $argv[1]
-	@ useinstalled = 1
-else
+set	defines
+
+while ($#argv)
+
+	switch ("$argv[1]")
+
+	case	-local
+		set defines = ($defines -local)
+
+		breaksw
+
+	default:
+		# make sure "topname" is last arg
+		if ($#argv != 1) then
+			echo "$0 : Usage `basename $0` [-local] topname"
+			exit 1
+		endif
+
+		set	topname = $argv[1]
+		@ useinstalled = 1
+
+		breaksw
+	endsw
+
+	shift
+end
+
+if (! $?topname) then
 	set	topname = ncarg
 	@ useinstalled = 0
 endif
@@ -82,9 +102,13 @@ while ("$base" != "$topname")
 	set ndir = `dirname ${ndir}`
 end
 
-set curdir = ./"$curdir"
+if($?curdir) then
+	set curdir = ./"$curdir"
+else
+	set curdir = .
+endif
 
-set defines = (-DCURDIR="$curdir" -DTOPDIR="$topdir")
+set defines = ($defines -Curdir "$curdir" -Topdir "$topdir")
 
 if ($useinstalled == 1) then
 	exec ymake $defines

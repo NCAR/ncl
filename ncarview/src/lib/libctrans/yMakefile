@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.20 1993-11-02 15:56:12 boote Exp $
+#	$Id: yMakefile,v 1.21 1993-11-12 02:46:23 boote Exp $
 #
 
 
@@ -106,7 +106,7 @@ DCTXTOBJS = clear_text.o
 
 RelocatableTarget($(MYNAME),$(OBJS))
 BuildIncludes($(INCLUDES),ncarg,..)
-InstallTarget($(INCLUDES),$(INSTALL_INC),$(INCPATH))
+InstallTarget($(INCLUDES),$(INSTALL_INC),$(NCARGINCPATH))
 DependTarget($(SRCS))
 
 all-local::

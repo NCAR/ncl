@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.8 1993-11-01 17:31:02 boote Exp $
+#	$Id: yMakefile,v 1.9 1993-11-12 02:44:53 boote Exp $
 #
 
 MYNAME	= impltest
@@ -9,14 +9,14 @@ DEPLIBS		=	$(DEPNCARGLIBS)
 
 #if defined(Ardent) || defined(AIX370)
 #ifdef	UseInstalled
-OTHER_ROBJS =	$(ROBJPATH)/libncarbd.o
+OTHER_ROBJS =	$(ROBJROOT)/libncarbd.o
 #else
 OTHER_ROBJS = $(NCARGOPTLIBSRC)/ncarbd/ncarbd.o
 #endif	/* UseInstalled */
 #endif
 
 #ifdef	UseInstalled
-ROBJS = $(ROBJPATH)/ggkwdr_stub.o
+ROBJS = $(ROBJROOT)/ggkwdr_stub.o
 #else
 ROBJS = $(NCARGGKSLIBSRC)/awi/ggkwdr_stub.o
 #endif	/* UseInstalled */
