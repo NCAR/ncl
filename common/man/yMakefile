@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1993-03-21 08:45:38 haley Exp $
+#	$Id: yMakefile,v 1.7 1993-04-21 20:00:50 haley Exp $
 #
 NCARG	= ../..
 
@@ -19,9 +19,9 @@ FORMAT	= $(MAN)
 all:
 
 preformatted:
-	@for name in $(FORMAT); do\
+	@for name in $(FORMAT); do \
 	echo "Formatting $$name.m"; \
-	nroff -man $$name.m >$$name.p;\
+	nroff -man $$name.m >$$name.p; \
 	done
 
 #if defined(CRAY) || defined(sgi) || defined(ardent)
