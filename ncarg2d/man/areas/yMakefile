@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.4 1993-04-01 23:55:37 haley Exp $
+#	$Id: yMakefile,v 1.5 1993-09-24 22:09:49 kennison Exp $
 #
 NCARG	= ../../..
 
-MAN3 = ardbpa ardrln areas areas_params aredam argeti argtai arinam arpram \
-	arscam arseti
+MAN3 = ardbpa ardrln areas areas_params aredam argeti argtai arinam armvam \
+	arpram arscam arseti
 
 MAN = $(MAN3)
 

@@ -73,7 +73,7 @@ messages and/or informational messages.
 .SH SEE ALSO
 Online:
 areas, areas_params, ardbpa, ardrln, argeti, argetr, argtai, arinam,
-arpram, arscam, arseti, arsetr, ncarg_cbind
+armvam, arpram, arscam, arseti, arsetr, ncarg_cbind
 .sp
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial

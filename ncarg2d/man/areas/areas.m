@@ -9,6 +9,8 @@ ARINAM - Initializes an area map.
 .br
 AREDAM - Adds edges to an area map.
 .br
+ARMVAM - Moves an area map from one integer array to another.
+.br
 ARPRAM - Preprocesses an area map.
 .br
 ARSCAM - Obtains definitions of areas created by edges in an area map.
@@ -19,7 +21,11 @@ ARGTAI - Gets area identifiers associated with a given point.
 .br
 ARGETI - Retrieves the integer value of an Areas parameter.
 .br
+ARGETR - Retrieves the real value of an Areas parameter.
+.br
 ARSETI - Provides a new integer value for an Areas parameter.
+.br
+ARSETR - Provides a new real value for an Areas parameter.
 .br
 ARDBPA - For debugging - produces a picture of that part of
 the area map that belongs to a specified edge group.
@@ -102,7 +108,7 @@ ARSETI - PARAMETER NAME NOT KNOWN - xx
 .SH SEE ALSO
 Online:
 areas_params, ardbpa, ardrln, aredam, argeti, argetr, argtai, arinam,
-arpram, arscam, arseti, arsetr, ncarg_cbind
+armvam, arpram, arscam, arseti, arsetr, ncarg_cbind
 .sp
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial;
