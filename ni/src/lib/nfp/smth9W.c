@@ -55,8 +55,8 @@ NhlErrorTypes smth9_W( void )
     return(NhlFATAL);
   }
   else {
-	nj = dsizes_x[0];
-	ni = dsizes_x[1];
+	nj = dsizes_x[ndims_x-2];
+	ni = dsizes_x[ndims_x-1];
 /*
  * Compute the total number of elements in our array.
  */
