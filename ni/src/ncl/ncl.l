@@ -38,7 +38,7 @@ char *the_input_buffer_ptr = NULL;
 int the_input_buffer_size = 0;
 #define input() (( (int)the_input_buffer_ptr >=the_input_buffer_size + (int)the_input_buffer)? (char)0177 : (((int)*the_input_buffer_ptr == 10) ? yylineno++,*the_input_buffer_ptr++:*the_input_buffer_ptr++))
 
-#define unput(c) { yytchar = (c); if(yytchar=='\n')yylineno--;*(--the_input_buffer_ptr) = yytchar; }
+#define unput(c) { yytchar = (c); if(yytchar=='\n')yylineno--;--the_input_buffer_ptr; }
 #endif /* MAKEAPI */
 
 int rec = 0;

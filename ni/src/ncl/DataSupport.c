@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.19 1995-06-17 01:21:22 ethan Exp $
+ *      $Id: DataSupport.c,v 1.20 1995-07-15 00:33:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -363,7 +363,7 @@ NclMultiDValData char_md;
 		return(_NclCreateMultiDVal(
 			NULL,
 			NULL,
-			NCL_string,
+			Ncl_MultiDValData,
 			0,
 			(void*)value,
 			NULL,
@@ -376,7 +376,7 @@ NclMultiDValData char_md;
 		return(_NclCreateMultiDVal(
 			NULL,
 			NULL,
-			NCL_string,
+			Ncl_MultiDValData,
 			0,
 			(void*)value,
 			NULL,
