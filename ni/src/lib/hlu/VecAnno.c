@@ -1,5 +1,5 @@
 /*
- *      $Id: VecAnno.c,v 1.11 1997-02-24 22:12:40 boote Exp $
+ *      $Id: VecAnno.c,v 1.12 1999-02-23 03:00:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -340,6 +340,7 @@ CalculateGeometry
 		vap->vec.height = ymx - ymn;
 	}
 	else {
+                xmn = xmx = ymn = ymx = 0.0;
 		vap->vec.width = 0;
 		vap->vec.height = 0;
 	}
