@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.19 1995-12-19 20:38:53 boote Exp $
+ *      $Id: App.c,v 1.20 1996-01-15 17:22:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -969,17 +969,9 @@ AppLayerDestroy
 	char			func[] = "AppLayerDestroy";
 	NhlAppLayer		al = (NhlAppLayer)l;
 	NhlAppLayerPart		*alp = &al->app;
-	NhlAppClass	alc = (NhlAppClass)al->base.layer_class;
-	NhlAppClassPart	*alcp = &alc->app_class;
+	NhlAppClass		alc = (NhlAppClass)al->base.layer_class;
+	NhlAppClassPart		*alcp = &alc->app_class;
 	NhlErrorTypes		ret = NhlNOERROR;
-
-	NhlFree(alp->usr_appdir);
-	NhlFree(alp->sys_appdir);
-	NhlFree(alp->file_suffix);
-	NrmDestroyDB(alp->appDB);
-	NhlFreeGenArray(alp->resources);
-	NhlFree(alp->values);
-	NhlFree(alp->res);
 
 	/*
 	 * If this is the "default_app", then destroy *ALL* app objects
@@ -989,8 +981,6 @@ AppLayerDestroy
 	if(al == alcp->default_app){
 		while(alcp->app_objs)
 			NhlDestroy(alcp->app_objs->app->base.id);
-		NrmDestroyDB(alcp->baseDB);
-		alcp->baseDB = NULL;
 		alcp->default_app = NULL;
 		alcp->current_app = NULL;
 		NhlDestroy(alcp->error_id);
@@ -998,6 +988,8 @@ AppLayerDestroy
 		alcp->error_id = 0;
 		alcp->workspace_id = 0;
 		_NhlDestroyRLList();
+		NrmDestroyDB(alcp->baseDB);
+		alcp->baseDB = NULL;
 	}
 	/*
 	 * Otherwise, remove this layer from the app_objs list.
@@ -1028,6 +1020,15 @@ AppLayerDestroy
 
 	if(al == alcp->current_app)
 		alcp->current_app = alcp->default_app;
+
+	NhlFree(alp->usr_appdir);
+	NhlFree(alp->sys_appdir);
+	NhlFree(alp->file_suffix);
+	NrmDestroyDB(alp->appDB);
+	alp->appDB = NULL;
+	NhlFreeGenArray(alp->resources);
+	NhlFree(alp->values);
+	NhlFree(alp->res);
 
 	return ret;
 }

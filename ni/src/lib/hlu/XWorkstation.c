@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.14 1995-12-19 20:39:40 boote Exp $
+ *      $Id: XWorkstation.c,v 1.15 1996-01-15 17:22:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -20,6 +20,7 @@
  *	Description:	Responsible for managing the X workstation element
  */
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/ErrorI.h>
 #include <ncarg/hlu/XWorkstationP.h>
 #include <ncarg/hlu/ConvertersP.h>
 
@@ -33,8 +34,8 @@ static NhlResource resources[] = {
 	{NhlNwkWindowId,NhlCwkWindowId,NhlTInteger,sizeof(int),Oset(window_id),
 		NhlTProcedure,(NhlPointer)_NhlResUnset,_NhlRES_NOSACCESS,NULL},
 	{NhlNwkXColorMode,NhlCwkXColorMode,NhlTXColorMode,sizeof(NhlXColorMode),
-		Oset(xcolor_mode),NhlTImmediate,(NhlPointer)NhlSHARE,
-		_NhlRES_NOSACCESS,NULL},
+		Oset(xcolor_mode),NhlTImmediate,(NhlPointer)-1,
+		0,NULL},
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(pause_set),
 		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
 	{NhlNwkPause,NhlCwkPause,NhlTBoolean,sizeof(NhlBoolean),
@@ -191,7 +192,9 @@ XWorkstationClassInitialize
 {
 	_NhlEnumVals	cmvals[] = {
 		{NhlSHARE,	"share"},
-		{NhlPRIVATE,	"private"}
+		{NhlSHARE,	"shared"},
+		{NhlPRIVATE,	"private"},
+		{NhlMIXED,	"mixed"}
 	};
 
 	(void)_NhlRegisterEnumType(NhlxWorkstationClass,NhlTXColorMode,cmvals,
@@ -244,6 +247,8 @@ static NhlErrorTypes XWorkstationInitialize
 	 */
 		wnew->work.gkswksconid = 2;
 		wnew->work.gkswkstype = 8;
+		if(wnew->xwork.xcolor_mode == -1)
+			wnew->xwork.xcolor_mode = NhlMIXED;
 		
 	} else {
 		wnew->work.gkswksconid = wnew->xwork.window_id;
@@ -261,7 +266,8 @@ static NhlErrorTypes XWorkstationInitialize
 		}
 		wnew->xwork.pause = False;
 
-		if(wnew->xwork.xcolor_mode == NhlPRIVATE)
+		if((wnew->xwork.xcolor_mode == NhlPRIVATE) ||
+					(wnew->xwork.xcolor_mode == NhlMIXED))
 			NhlPError(NhlINFO,NhlEUNKNOWN,
 	"%s:If the %s resource is specified, the %s resource must be SHARE",
 				error_lead,NhlNwkWindowId,NhlNwkXColorMode);
@@ -298,18 +304,57 @@ static NhlErrorTypes XWorkstationSetValues
         int num_args;
 #endif
 {
-	char			func[]="XWorkstationSetValues";
-	NhlXWorkstationLayer	wnew = (NhlXWorkstationLayer)new;
+	char				func[]="XWorkstationSetValues";
+	NhlXWorkstationLayer		wnew = (NhlXWorkstationLayer)new;
+	NhlXWorkstationLayer		wold = (NhlXWorkstationLayer)old;
+	NhlXWorkstationLayerPart	*xp = &wnew->xwork;
+	NhlXWorkstationLayerPart	*op = &wold->xwork;
+	int				wkid;
+	int				err_num;
+	NhlErrorTypes			ret = NhlNOERROR;
 
 	if(wnew->xwork.pause && wnew->xwork.window_id_set){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"%s:%s must be False if NhlNwkWindowId is specified",
 			func,NhlNwkPause,NhlNwkWindowId);
 		wnew->xwork.pause = False;
-		return NhlWARNING;
+		ret = NhlWARNING;
 	}
 
-	return NhlNOERROR;
+	wkid = _NhlWorkstationId(new);
+	if(op->xcolor_mode != xp->xcolor_mode){
+		if(xp->window_id_set){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"%s:%s must be \"share\" if %s is specified",
+				func,NhlNwkXColorMode,NhlNwkWindowId);
+			xp->xcolor_mode = op->xcolor_mode;
+			ret = NhlWARNING;
+		}
+		else{
+			switch (xp->xcolor_mode){
+				case NhlPRIVATE:
+				c_ngseti("pc",wkid);
+				break;
+				case NhlSHARE:
+				c_ngseti("sc",wkid);
+				break;
+				case NhlMIXED:
+				default:
+				c_ngseti("mc",wkid);
+				break;
+			}
+			if(c_nerro(&err_num) && err_num == _NhlGKSERRNUM){
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					"%s:Unable to change %s",func,
+					NhlNwkXColorMode);
+				c_errof();
+				ret = NhlWARNING;
+				xp->xcolor_mode = op->xcolor_mode;
+			}
+		}
+	}
+
+	return ret;
 }
 
 /*
@@ -401,6 +446,19 @@ XWorkstationOpen
 	}
 	xl->work.gkswksid = i;
 
+	switch (xp->xcolor_mode){
+		case NhlPRIVATE:
+		c_ngseti("pc",-1);
+		break;
+		case NhlSHARE:
+		c_ngseti("sc",-1);
+		break;
+		case NhlMIXED:
+		default:
+		c_ngseti("mc",-1);
+		break;
+	}
+
 	_NHLCALLF(gopwk,GOPWK)(&(xl->work.gkswksid),&(xl->work.gkswksconid),
 		&(xl->work.gkswkstype));
 	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
@@ -408,11 +466,6 @@ XWorkstationOpen
 	gset_clip_ind(GIND_NO_CLIP);
 	if(_NhlLLErrCheckPrnt(NhlWARNING,func)){
 		return NhlFATAL;
-	}
-
-	if(xp->xcolor_mode == NhlPRIVATE){
-		c_ngseti("wo",_NhlWorkstationId(l));
-		c_ngseti("pr",True);
 	}
 
 	return _NhlAllocateColors(l);
