@@ -86,6 +86,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"./ti03c.ps");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&wid,"ti03Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }       
@@ -95,6 +96,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPDFFileName,"./ti03c.pdf");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&wid,"ti03Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
