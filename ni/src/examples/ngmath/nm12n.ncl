@@ -23,9 +23,11 @@ begin
 ;
 nxi = 11
 nyi = 17
+
 xi = fspan(0.,1.,nxi)
 yi = fspan(0.,1.,nyi)
 zi = new((/nxi,nyi/),float)
+
 do i=0,nxi-1
   do j=0,nyi-1
     zi(i,j) = 0.5 + 0.25*sin(-7.*xi(i)) + 0.25*cos(5.*yi(j))
