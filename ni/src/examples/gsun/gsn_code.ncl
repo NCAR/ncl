@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.156 2004-11-12 21:50:22 haley Exp $
+;      $Id: gsn_code.ncl,v 1.157 2004-11-12 21:58:44 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6827,9 +6827,10 @@ begin
 ; message about warning:PlotManagerSetValues: TickMark annotation 
 ; cannot be added after NhlCreate.
 ;
-    if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log.and.\
-       isatt(cnres,"pmTickMarkDisplayMode")) then
-      delete(cnres@pmTickMarkDisplayMode)
+    if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log) then
+      if(isatt(cnres,"pmTickMarkDisplayMode")) then
+        delete(cnres@pmTickMarkDisplayMode)
+      end if
       llres = get_res_eq(res2,(/"pm","tr","vp"/))
     end if
 
