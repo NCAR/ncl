@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.h,v 1.5 2003-11-24 19:17:45 fred Exp $
+ *	$Id: ps.h,v 1.6 2004-10-08 16:46:16 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -42,7 +42,7 @@
 #define PS_FILL_SPACING 	.0005   /* default software fill line spacing */
 #define PS_HATCH_SPACING 	.01     /* default spacing of hatch fill lines*/
 #define MAX_STACK               200     /* max number of items on the stack */
-#define MAX_PATH                1300    /* maximum number of points in a path,*/
+#define MAX_PATH            10000000    /* maximum number of points in a path,*/
 
 #define PS_SCALE 		.04     /* coordinate scale factor */
 
