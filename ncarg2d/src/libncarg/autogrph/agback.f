@@ -1,5 +1,5 @@
 C
-C $Id: agback.f,v 1.2 1996-04-18 17:45:59 kennison Exp $
+C $Id: agback.f,v 1.3 1996-08-30 17:56:40 kennison Exp $
 C
       SUBROUTINE AGBACK
 C
@@ -131,6 +131,10 @@ C Do set call for user and return.
 C
   108 CALL SET (XLCW,XRCW,YBCW,YTCW,XLUW,XRUW,YBUW,YTUW,
      +                            1+IABS(IFIX(QLUX))*2+IABS(IFIX(QLUY)))
+C
+C Make sure buffers are flushed.
+C
+      CALL SFLUSH
 C
       RETURN
 C

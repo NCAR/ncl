@@ -1,5 +1,5 @@
 C
-C $Id: agqurv.f,v 1.2 1996-04-18 17:46:15 kennison Exp $
+C $Id: agqurv.f,v 1.3 1996-08-30 17:56:44 kennison Exp $
 C
       SUBROUTINE AGQURV (XVEC,IIEX,YVEC,IIEY,NEXY,SVAL)
 C
@@ -297,6 +297,10 @@ C Restore logarithmic mapping, if appropriate.
 C
       IF (LTYP.NE.1)
      +           CALL SET (XLCW,XRCW,YBCW,YTCW,XLUW,XRUW,YBUW,YTUW,LTYP)
+C
+C Make sure buffers are flushed.
+C
+      CALL SFLUSH
 C
 C Return to caller.
 C
