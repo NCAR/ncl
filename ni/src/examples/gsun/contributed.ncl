@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.51 2004-10-26 23:41:41 shea Exp $
+;      $Id: contributed.ncl,v 1.52 2004-10-26 23:52:08 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5482,6 +5482,8 @@ begin
 
      time@long_name = "time"
      time@units     = "yyyymm"
+     time@initial   = time(0)
+     time@final     = time(ntim-1)
 
      if (isatt(time,"_FillValue")) then
          delete(time@_FillValue)
