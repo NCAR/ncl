@@ -186,7 +186,7 @@ NhlErrorTypes vibeta_W( void )
  * Test for presence of missing values in psfc.
  */
   found_missing = contains_missing(tmp_psfc,total_size_psfc,has_missing_psfc,
-                                   missing_psfc.doubleval);
+                                   missing_dpsfc.doubleval);
   if(found_missing) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: psfc must not contain any missing values" );
     return(NhlFATAL);
@@ -258,6 +258,11 @@ NhlErrorTypes vibeta_W( void )
 
       if(tmp_p[nlev-1] < *tmp_ptop) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: The last element of 'p' must be greater than or equal to ptop" );
+        return(NhlFATAL);
+      }
+
+      if(tmp_p[0] <= tmp_p[nlev-1]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: 'p' must be ordered from bottom to top" );
         return(NhlFATAL);
       }
       plvcrt = tmp_p[nlev-1];

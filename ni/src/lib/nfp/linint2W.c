@@ -28,7 +28,7 @@ NhlErrorTypes linint1_W( void )
  */
   void *xi, *fi, *xo;
   double *tmp_xi, *tmp_xo,*tmp_fi, *tmp_fo;
-  int dsizes_xi[NCL_MAX_DIMENSIONS], dsizes_xo[NCL_MAX_DIMENSIONS];
+  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS], dsizes_xo[NCL_MAX_DIMENSIONS];
   int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
   int *dsizes_fo;
   NclScalar missing_fi, missing_dfi, missing_rfi;
@@ -42,8 +42,8 @@ NhlErrorTypes linint1_W( void )
 /*
  * Other variables
  */
-  int nxi, nxi2, nfi, nxo, nfo, size_leftmost, size_fo;
-  int i, j, index_fi, index_fo, ier;
+  int nxi, nxi2, nxo, nfo, size_leftmost, size_fo;
+  int i, j, index_xi, index_fi, index_fo, ier;
   double *xiw, *fxiw;
 /*
  * Retrieve parameters
@@ -54,7 +54,7 @@ NhlErrorTypes linint1_W( void )
   xi = (void*)NclGetArgValue(
           0,
           5,
-          NULL,
+          &ndims_xi,
           dsizes_xi,
           NULL,
           NULL,
@@ -103,9 +103,8 @@ NhlErrorTypes linint1_W( void )
 /*
  * Compute the total number of elements in our arrays and check them.
  */
-  nxi = dsizes_xi[0];
+  nxi = dsizes_xi[ndims_xi-1];
   nxo = dsizes_xo[0];
-  nfi = nxi;
   nfo = nxo;
 
   if(nxi < 2) {
@@ -114,11 +113,27 @@ NhlErrorTypes linint1_W( void )
   }
 
 /*
- * Check dimensions of fi.
+ * Check dimensions of xi and fi. If xi is not one-dimensional, then it 
+ * must be the same size as fi. Otherwise, the rightmost dimension of
+ * fi must be equal to the length of xi.
  */
-  if(dsizes_fi[ndims_fi-1] != nxi) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: The rightmost dimension of fi must be nxi, where nxi is the length of xi");
-    return(NhlFATAL);
+  if(ndims_xi > 1) {
+    if(ndims_xi != ndims_fi) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: If xi is not one-dimensional, then it must be the same size as fi");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_fi; i++) {
+      if(dsizes_xi[i] != dsizes_fi[i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: If xi is not one-dimensional, then it must be the same size as fi");
+        return(NhlFATAL);
+      }
+    }
+  }
+  else {
+    if(dsizes_fi[ndims_fi-1] != nxi) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: The rightmost dimension of fi must be the same length as xi");
+      return(NhlFATAL);
+    }
   }
 /*
  * Compute the total size of the output array (minus the last dimension).
@@ -169,17 +184,24 @@ NhlErrorTypes linint1_W( void )
   }
 
 /*
- * Coerce input arrays to double if necessary.
+ * Coerce output array to double if necessary.
  */
-  tmp_xi = coerce_input_double(xi,type_xi,nxi,0,NULL,NULL);
   tmp_xo = coerce_input_double(xo,type_xo,nxo,0,NULL,NULL);
-  if(tmp_xi == NULL || tmp_xo == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: Unable to coerce xi and xo to double precision");
+  if(tmp_xo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: Unable to coerce output array to double precision");
     return(NhlFATAL);
   }
 
+  if(type_xi != NCL_double) {
+    tmp_xi = (double*)calloc(nxi,sizeof(double));
+    if(tmp_xi == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: Unable to allocate memory for coercing input array to double precision");
+      return(NhlFATAL);
+    }
+  }
+
   if(type_fi != NCL_double) {
-    tmp_fi = (double*)calloc(nfi,sizeof(double));
+    tmp_fi = (double*)calloc(nxi,sizeof(double));
     if(tmp_fi == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: Unable to allocate memory for coercing input array to double precision");
       return(NhlFATAL);
@@ -189,10 +211,18 @@ NhlErrorTypes linint1_W( void )
 /*
  * Call Fortran function.
  */
-  index_fi = index_fo = 0;
+  index_xi = index_fi = index_fo = 0;
   for( i = 0; i < size_leftmost; i++ ) {
+    if(ndims_xi > 1 || i == 0) {
+      if(type_xi != NCL_double) { 
+        coerce_subset_input_double(xi,tmp_xi,index_xi,type_xi,nxi,0,NULL,NULL);
+      }
+      else {
+        tmp_xi = &((double*)xi)[index_xi];
+      }
+    }
     if(type_fi != NCL_double) { 
-      coerce_subset_input_double(fi,tmp_fi,index_fi,type_fi,nfi,0,NULL,NULL);
+      coerce_subset_input_double(fi,tmp_fi,index_fi,type_fi,nxi,0,NULL,NULL);
     }
     else {
       tmp_fi = &((double*)fi)[index_fi];
@@ -208,14 +238,15 @@ NhlErrorTypes linint1_W( void )
           ((double*)fo)[index_fo+j] = missing_dfi.doubleval;
         }
         else {
-          ((double*)fo)[index_fo+j] = missing_dfi.floatval;
+          ((float*)fo)[index_fo+j] = missing_rfi.floatval;
         }
       }
     }
     else {
       coerce_output_float_or_double(fo,tmp_fo,type_fi,nfo,index_fo);
     }
-    index_fi += nfi;
+    if(ndims_xi > 1) index_xi += nxi;
+    index_fi += nxi;
     index_fo += nfo;
   }
 /*
@@ -249,7 +280,8 @@ NhlErrorTypes linint2_W( void )
  */
   void *xi, *yi, *fi, *xo, *yo;
   double *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo, *tmp_fi, *tmp_fo;
-  int dsizes_xi[NCL_MAX_DIMENSIONS], dsizes_yi[NCL_MAX_DIMENSIONS];
+  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
   int dsizes_xo[NCL_MAX_DIMENSIONS], dsizes_yo[NCL_MAX_DIMENSIONS];
   int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
   int *dsizes_fo;
@@ -265,7 +297,7 @@ NhlErrorTypes linint2_W( void )
  * Other variables
  */
   int nxi, nyi, nxi2, nfi, nxo, nyo, nfo, size_leftmost, size_fo;
-  int i, j, index_fi, index_fo, ier;
+  int i, j, index_xi, index_yi, index_fi, index_fo, ier;
   double *xiw, *fxiw;
 /*
  * Retrieve parameters
@@ -276,7 +308,7 @@ NhlErrorTypes linint2_W( void )
   xi = (void*)NclGetArgValue(
           0,
           7,
-          NULL,
+          &ndims_xi,
           dsizes_xi,
           NULL,
           NULL,
@@ -286,7 +318,7 @@ NhlErrorTypes linint2_W( void )
   yi = (void*)NclGetArgValue(
           1,
           7,
-          NULL,
+          &ndims_yi,
           dsizes_yi,
           NULL,
           NULL,
@@ -345,8 +377,8 @@ NhlErrorTypes linint2_W( void )
 /*
  * Compute the total number of elements in our arrays.
  */
-  nxi  = dsizes_xi[0];
-  nyi  = dsizes_yi[0];
+  nxi  = dsizes_xi[ndims_xi-1];
+  nyi  = dsizes_yi[ndims_yi-1];
   nxo  = dsizes_xo[0];
   nyo  = dsizes_yo[0];
   nfi  = nxi * nyi;
@@ -356,8 +388,34 @@ NhlErrorTypes linint2_W( void )
     return(NhlFATAL);
   }
 /*
- * Check dimensions of fi.
+ * Check dimensions of xi, yi, and fi. If xi/yi are not one-dimensional,
+ * then their leftmost dimensions must be the same size as the leftmost
+ * dimensions of fi. The last two dimensions of fi must be nyi x nxi.
  */
+  if(ndims_xi > 1) { 
+    if(ndims_xi != ndims_fi-1) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: If xi is not one-dimensional, then it must have one less dimension than fi");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_xi-1; i++) {
+      if(dsizes_xi[i] != dsizes_fi[i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: If xi is not one-dimensional, then its leftmost dimensions must be the same as the leftmost dimensions of fi");
+        return(NhlFATAL);
+      }
+    }
+  }
+  if(ndims_yi > 1) { 
+    if(ndims_yi != ndims_fi-1) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: If yi is not one-dimensional, then it must have one less dimension than fi");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_yi-1; i++) {
+      if(dsizes_yi[i] != dsizes_fi[i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: If yi is not one-dimensional, then its leftmost dimensions must be the same as the leftmost dimensions of fi");
+        return(NhlFATAL);
+      }
+    }
+  }
   if(dsizes_fi[ndims_fi-2] != nyi || dsizes_fi[ndims_fi-1] != nxi) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: The rightmost dimensions of fi must be nyi x nxi, where nyi and nxi are the lengths of yi and xi respectively");
     return(NhlFATAL);
@@ -414,12 +472,26 @@ NhlErrorTypes linint2_W( void )
 /*
  * Coerce input arrays to double if necessary.
  */
-  tmp_xi = coerce_input_double(xi,type_xi,nxi,0,NULL,NULL);
-  tmp_yi = coerce_input_double(yi,type_yi,nyi,0,NULL,NULL);
+  if(type_xi != NCL_double) {
+    tmp_xi = (double*)calloc(nxi,sizeof(double));
+    if(tmp_xi == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: Unable to allocate memory for coercing xi to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+  if(type_yi != NCL_double) {
+    tmp_yi = (double*)calloc(nyi,sizeof(double));
+    if(tmp_yi == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: Unable to allocate memory for coercing yi to double precision");
+      return(NhlFATAL);
+    }
+  }
+
   tmp_xo = coerce_input_double(xo,type_xo,nxo,0,NULL,NULL);
   tmp_yo = coerce_input_double(yo,type_yo,nyo,0,NULL,NULL);
-  if(tmp_xi == NULL || tmp_yi == NULL || tmp_xo == NULL || tmp_yo == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: Unable to coerce input to double precision");
+  if(tmp_xo == NULL || tmp_yo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: Unable to coerce output arrays to double precision");
     return(NhlFATAL);
   }
 
@@ -434,8 +506,24 @@ NhlErrorTypes linint2_W( void )
 /*
  * Call Fortran function.
  */
-  index_fi = index_fo = 0;
+  index_xi = index_yi = index_fi = index_fo = 0;
   for( i = 0; i < size_leftmost; i++ ) {
+    if(ndims_xi > 1 || i == 0) {
+      if(type_xi != NCL_double) { 
+        coerce_subset_input_double(xi,tmp_xi,index_xi,type_xi,nxi,0,NULL,NULL);
+      }
+      else {
+        tmp_xi = &((double*)xi)[index_xi];
+      }
+    }
+    if(ndims_yi > 1 || i == 0) {
+      if(type_yi != NCL_double) { 
+        coerce_subset_input_double(yi,tmp_yi,index_yi,type_yi,nyi,0,NULL,NULL);
+      }
+      else {
+        tmp_yi = &((double*)yi)[index_yi];
+      }
+    }
     if(type_fi != NCL_double) { 
       coerce_subset_input_double(fi,tmp_fi,index_fi,type_fi,nfi,0,NULL,NULL);
     }
@@ -454,13 +542,15 @@ NhlErrorTypes linint2_W( void )
           ((double*)fo)[index_fo+j] = missing_dfi.doubleval;
         }
         else {
-          ((double*)fo)[index_fo+j] = missing_dfi.floatval;
+          ((float*)fo)[index_fo+j] = missing_rfi.floatval;
         }
       }
     }
     else {
       coerce_output_float_or_double(fo,tmp_fo,type_fi,nfo,index_fo);
     }
+    if(ndims_xi > 1) index_xi += nxi;
+    if(ndims_yi > 1) index_yi += nyi;
     index_fi += nfi;
     index_fo += nfo;
   }
@@ -497,7 +587,8 @@ NhlErrorTypes linint2_points_W( void )
  */
   void *xi, *yi, *fi, *xo, *yo;
   double *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo, *tmp_fi, *tmp_fo;
-  int dsizes_xi[NCL_MAX_DIMENSIONS], dsizes_yi[NCL_MAX_DIMENSIONS];
+  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
   int dsizes_xo[NCL_MAX_DIMENSIONS], dsizes_yo[NCL_MAX_DIMENSIONS];
   int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
   int *dsizes_fo;
@@ -514,7 +605,7 @@ NhlErrorTypes linint2_points_W( void )
  */
   double *xiw, *fxiw;
   int nxi, nxi2, nyi, nfi, nxyo, size_leftmost, size_fo;
-  int i, j, index_fi, index_fo, ier;
+  int i, j, index_xi, index_yi, index_fi, index_fo, ier;
 /*
  * Retrieve parameters
  *
@@ -524,7 +615,7 @@ NhlErrorTypes linint2_points_W( void )
   xi = (void*)NclGetArgValue(
           0,
           7,
-          NULL,
+          &ndims_xi,
           dsizes_xi,
           NULL,
           NULL,
@@ -534,7 +625,7 @@ NhlErrorTypes linint2_points_W( void )
   yi = (void*)NclGetArgValue(
           1,
           7,
-          NULL,
+          &ndims_yi,
           dsizes_yi,
           NULL,
           NULL,
@@ -593,8 +684,8 @@ NhlErrorTypes linint2_points_W( void )
 /*
  * Compute the total number of elements in our arrays.
  */
-  nxi  = dsizes_xi[0];
-  nyi  = dsizes_yi[0];
+  nxi  = dsizes_xi[ndims_xi-1];
+  nyi  = dsizes_yi[ndims_yi-1];
   nxyo = dsizes_xo[0];
   nxi2 = nxi+2;
   if(dsizes_yo[0] != nxyo) {
@@ -607,14 +698,40 @@ NhlErrorTypes linint2_points_W( void )
   }
   nfi = nxi * nyi;
 /*
- * Check dimensions of fi.
+ * Check dimensions of xi, yi, and fi. If xi/yi are not one-dimensional,
+ * then their leftmost dimensions must be the same size as the leftmost
+ * dimensions of fi. The last two dimensions of fi must be nyi x nxi.
  */
+  if(ndims_xi > 1) { 
+    if(ndims_xi != ndims_fi-1) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: If xi is not one-dimensional, then it must have one less dimension than fi");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_xi-1; i++) {
+      if(dsizes_xi[i] != dsizes_fi[i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: If xi is not one-dimensional, then its leftmost dimensions must be the same as the leftmost dimensions of fi");
+        return(NhlFATAL);
+      }
+    }
+  }
+  if(ndims_yi > 1) { 
+    if(ndims_yi != ndims_fi-1) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: If yi is not one-dimensional, then it must have one less dimension than fi");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_yi-1; i++) {
+      if(dsizes_yi[i] != dsizes_fi[i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: If yi is not one-dimensional, then its leftmost dimensions must be the same as the leftmost dimensions of fi");
+        return(NhlFATAL);
+      }
+    }
+  }
   if(dsizes_fi[ndims_fi-2] != nyi || dsizes_fi[ndims_fi-1] != nxi) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: The rightmost dimensions of fi must be nyi x nxi, where nyi and nxi are the lengths of yi and xi respectively");
     return(NhlFATAL);
   }
 /*
- * Compute the total size of the output array (minus the last dimension).
+ * Compute the total size of the output array (minus the last two dimensions).
  */
   size_leftmost = 1;
   for( i = 0; i < ndims_fi-2; i++ ) size_leftmost *= dsizes_fi[i];
@@ -663,12 +780,26 @@ NhlErrorTypes linint2_points_W( void )
 /*
  * Coerce input arrays to double if necessary.
  */
-  tmp_xi = coerce_input_double(xi,type_xi,nxi,0,NULL,NULL);
-  tmp_yi = coerce_input_double(yi,type_yi,nyi,0,NULL,NULL);
+  if(type_xi != NCL_double) {
+    tmp_xi = (double*)calloc(nxi,sizeof(double));
+    if(tmp_xi == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: Unable to allocate memory for coercing xi to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+  if(type_yi != NCL_double) {
+    tmp_yi = (double*)calloc(nyi,sizeof(double));
+    if(tmp_yi == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: Unable to allocate memory for coercing yi to double precision");
+      return(NhlFATAL);
+    }
+  }
+
   tmp_xo = coerce_input_double(xo,type_xo,nxyo,0,NULL,NULL);
   tmp_yo = coerce_input_double(yo,type_yo,nxyo,0,NULL,NULL);
 
-  if(tmp_xi == NULL || tmp_yi == NULL || tmp_xo == NULL || tmp_yo == NULL) {
+  if(tmp_xo == NULL || tmp_yo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: Unable to coerce input to double precision");
     return(NhlFATAL);
   }
@@ -684,8 +815,24 @@ NhlErrorTypes linint2_points_W( void )
 /*
  * Call Fortran function.
  */
-  index_fi = index_fo = 0;
+  index_xi = index_yi = index_fi = index_fo = 0;
   for( i = 0; i < size_leftmost; i++ ) {
+    if(ndims_xi > 1 || i == 0) {
+      if(type_xi != NCL_double) { 
+        coerce_subset_input_double(xi,tmp_xi,index_xi,type_xi,nxi,0,NULL,NULL);
+      }
+      else {
+        tmp_xi = &((double*)xi)[index_xi];
+      }
+    }
+    if(ndims_yi > 1 || i == 0) {
+      if(type_yi != NCL_double) { 
+        coerce_subset_input_double(yi,tmp_yi,index_yi,type_yi,nyi,0,NULL,NULL);
+      }
+      else {
+        tmp_yi = &((double*)yi)[index_yi];
+      }
+    }
     if(type_fi != NCL_double) { 
       coerce_subset_input_double(fi,tmp_fi,index_fi,type_fi,nfi,0,NULL,NULL);
     }
@@ -704,13 +851,15 @@ NhlErrorTypes linint2_points_W( void )
           ((double*)fo)[index_fo+j] = missing_dfi.doubleval;
         }
         else {
-          ((double*)fo)[index_fo+j] = missing_dfi.floatval;
+          ((float*)fo)[index_fo+j] = missing_rfi.floatval;
         }
       }
     }
     else {
       coerce_output_float_or_double(fo,tmp_fo,type_fi,nxyo,index_fo);
     }
+    if(ndims_xi > 1) index_xi += nxi;
+    if(ndims_yi > 1) index_yi += nyi;
     index_fi += nfi;
     index_fo += nxyo;
   }

@@ -1934,6 +1934,256 @@ NhlErrorTypes esccr_W( void )
 }
 
 
+NhlErrorTypes esccr_shields_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x, *y;
+  double *tmp_x, *tmp_y;
+  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  NclScalar missing_x, missing_y;
+  NclScalar missing_rx, missing_dx, missing_dy;
+  NclBasicDataTypes type_x, type_y;
+  int *mxlag, mxlag1;
+/*
+ * Output array variables
+ */
+  void *ccr;
+  double *tmp_ccr, *tmp_ccv;
+  int ndims_ccr, *dsizes_ccr;
+  NclBasicDataTypes type_ccr;
+/*
+ * various
+ */
+  int i, j, k, nc, index_x, index_y, index_ccr;
+  int total_size_x1, total_size_y1;
+  int total_size_ccr;
+  int ier = 0, ier_count, npts, ncases, dimsizes_same;
+  double xmean, xsd, ymean, ysd;
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  x = (void*)NclGetArgValue(
+           0,
+           3,
+           &ndims_x, 
+           dsizes_x,
+           &missing_x,
+           &has_missing_x,
+           &type_x,
+           2);
+  y = (void*)NclGetArgValue(
+           1,
+           3,
+           &ndims_y, 
+           dsizes_y,
+           &missing_y,
+           &has_missing_y,
+           &type_y,
+           2);
+  mxlag = (int*)NclGetArgValue(
+           2,
+           3,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+/*
+ * The last dimension of x and y must be the same.
+ */
+  npts   = dsizes_x[ndims_x-1];
+  ncases = dsizes_x[0];
+  if( dsizes_y[ndims_y-1] != npts ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr_shields: the rightmost dimension of x and y must be the same");
+      return(NhlFATAL);
+  }
+
+  if( dsizes_y[0] != ncases ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr_shields: the leftmost dimension of x and y must be the same");
+      return(NhlFATAL);
+  }
+
+/*      
+ * Calculate size of input/output values.
+ */
+  if(npts < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr_shields: npts must be >= 2");
+    return(NhlFATAL);
+  }
+/*
+ * Check mxlag
+ */
+  if( *mxlag < 0 || *mxlag > npts ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr_shields: mxlag must be between 0 and npts");
+    return(NhlFATAL);
+  }
+  mxlag1 = *mxlag + 1;
+/*
+ * Compute the total number of elements in our x and y arrays.
+ * Don't count the first dimension (ncases), because this is
+ * a special dimension.
+ */
+  total_size_x1 = 1;
+  for(i = 1; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
+
+  total_size_y1 = 1;
+  for(i = 1; i < ndims_y-1; i++) total_size_y1 *= dsizes_y[i];
+/* 
+ * Get size of output variables.
+ */
+  ndims_ccr = ndims_x + ndims_y - 2;
+  total_size_ccr = ncases * total_size_x1 * total_size_y1 * mxlag1;
+
+  dsizes_ccr = (int*)calloc(ndims_ccr,sizeof(int));
+  if (dsizes_ccr == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr_shields: Unable to allocate space for output arrays" );
+    return(NhlFATAL);
+  }
+
+/*
+ * Calculate dimensions for ccr. If dimension sizes are *not* the
+ * same, and input is:
+ *
+ *    x(nc,npts)     and y(nc,npts)   ==> ccr(nc,mxlag+1)
+ *    x(nc,m,n,npts) and y(nc,k,npts) ==> ccr(nc,m,n,k,mxlag+1)
+ *    x(nc,npts)     and y(nc,k,npts) ==> ccr(nc,k,mxlag+1)
+ *
+ *  etc.
+ * 
+ */
+  dsizes_ccr[0] = ncases;
+  for( i = 1; i <= ndims_x-2; i++ ) dsizes_ccr[i] = dsizes_x[i];
+  for( i = 1; i <= ndims_y-2; i++ ) dsizes_ccr[ndims_x-2+i] = dsizes_y[i];
+
+  dsizes_ccr[ndims_ccr-1] = mxlag1;
+/*
+ * Coerce missing values, if any.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
+/*
+ * Coerce x to double if necessary.
+ */
+  if(type_x != NCL_double) {
+    tmp_x   = (double*)calloc(npts,sizeof(double));
+    if(tmp_x == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr_shields: Unable to allocate memory for inputput array");
+      return(NhlFATAL);
+    }
+  }
+  if(type_y != NCL_double) {
+    tmp_y   = (double*)calloc(npts,sizeof(double));
+    if(tmp_y == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr_shields: Unable to allocate memory for inputput array");
+      return(NhlFATAL);
+    }
+  }
+  if(type_x != NCL_double && type_y != NCL_double) {
+    type_ccr = NCL_float;
+    ccr     = (void*)calloc(total_size_ccr,sizeof(float));
+    tmp_ccr = (double*)calloc(mxlag1,sizeof(double));
+    tmp_ccv = (double*)calloc(mxlag1,sizeof(double));
+    if(ccr == NULL || tmp_ccr == NULL || tmp_ccv == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr_shields: Unable to allocate memory for output arrays");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_ccr = NCL_double;
+    ccr     = (void*)calloc(total_size_ccr,sizeof(double));
+    tmp_ccv = (double*)calloc(mxlag1,sizeof(double));
+    if(ccr == NULL || tmp_ccv == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr_shields: Unable to allocate memory for output arrays");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Call the f77 version of 'descros' with the full argument list.
+ */
+  index_x = index_y = index_ccr = 0;
+  ier_count = 0;
+  for(nc = 0; nc <= ncases-1; nc++) {
+    index_x = nc * total_size_x1 * npts;
+    for(i = 1; i <= total_size_x1; i++) {
+      index_y = nc * total_size_y1 * npts;
+      if(type_x != NCL_double) {
+/*
+ * Coerce subsection of x (tmp_x) to double.
+ */
+        coerce_subset_input_double(x,tmp_x,index_x,type_x,npts,0,NULL,NULL);
+      }
+      else {
+        tmp_x   = &((double*)x)[index_x];
+      }
+      for(j = 1; j <= total_size_y1; j++) {
+        if(type_y != NCL_double) {
+/*
+ * Coerce subsection of y (tmp_y) to double.
+ */
+          coerce_subset_input_double(y,tmp_y,index_y,type_y,npts,0,NULL,NULL);
+        }
+        else {
+          tmp_y   = &((double*)y)[index_y];
+        }
+
+        if(type_ccr == NCL_double) {
+          tmp_ccr = &((double*)ccr)[index_ccr];
+        }
+        xmean = xsd = missing_dx.doubleval;
+        ymean = ysd = missing_dy.doubleval;
+        NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
+                                 &missing_dy.doubleval,&xmean,&ymean,&xsd,
+                                 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+        if(type_ccr != NCL_double) {
+          for(k = 0; k < mxlag1; k++) {
+            ((float*)ccr)[index_ccr+k] = (float)(tmp_ccr[k]);
+          }
+        }
+        index_y   += npts;
+        index_ccr += mxlag1;
+        if(ier < 0) ier_count++;
+      }
+      index_x += npts;
+    }
+  }
+  if(ier_count > 0) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"esccr_shields: Non-fatal conditions encountered: all missing or constant values");
+  }
+/*
+ * free memory.
+ */
+  NclFree(tmp_ccv);
+  if(type_x   != NCL_double) NclFree(tmp_x);
+  if(type_y   != NCL_double) NclFree(tmp_y);
+  if(type_ccr != NCL_double) NclFree(tmp_ccr);
+
+/*
+ * Return values. 
+ */
+  if(type_ccr != NCL_double) {
+/*
+ * Return float values with missing value set.
+ */
+    return(NclReturnValue(ccr,ndims_ccr,dsizes_ccr,&missing_rx,
+                          NCL_float,0));
+  }
+  else {
+/*
+ * Return double values with missing value set.
+ */
+    return(NclReturnValue(ccr,ndims_ccr,dsizes_ccr,&missing_dx,
+                          NCL_double,0));
+  }
+}
+
+
 NhlErrorTypes esccv_W( void )
 {
 /*

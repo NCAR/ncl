@@ -307,6 +307,7 @@ extern NhlErrorTypes ngezlogo_W(void);
 
 extern NhlErrorTypes regcoef_W(void);
 extern NhlErrorTypes regCoef_W(void);
+extern NhlErrorTypes regCoef_shields_W(void);
 extern NhlErrorTypes regline_W(void);
 extern NhlErrorTypes stat2_W(void);
 extern NhlErrorTypes stat_trim_W(void);
@@ -322,6 +323,7 @@ extern NhlErrorTypes dim_pqsort_W(void);
 extern NhlErrorTypes esacr_W(void);
 extern NhlErrorTypes esacv_W(void);
 extern NhlErrorTypes esccr_W(void);
+extern NhlErrorTypes esccr_shields_W(void);
 extern NhlErrorTypes esccv_W(void);
 extern NhlErrorTypes escorc_W(void);
 extern NhlErrorTypes ezfftf_W(void);
@@ -3016,9 +3018,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
     NclRegisterFunc(ftcurv_W, args, "ftcurv", nargs);
 
 /*
@@ -3026,9 +3028,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
     NclRegisterFunc(ftcurvd_W, args, "ftcurvd", nargs);
 
 /*
@@ -3037,10 +3039,10 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(4);
     dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
-    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
     NclRegisterFunc(ftcurvi_W, args, "ftcurvi", nargs);
 
 /*
@@ -3048,11 +3050,11 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
     dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
     NclRegisterFunc(ftcurvp_W, args, "ftcurvp", nargs);
 
 /*
@@ -3061,11 +3063,11 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(5);
     dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
-    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
     NclRegisterFunc(ftcurvpi_W, args, "ftcurvpi", nargs);
 
 /*
@@ -3073,10 +3075,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
     NclRegisterFunc(ftcurvs_W, args, "ftcurvs", nargs);
 
 /*
@@ -3084,12 +3086,12 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(5);
-    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
     dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
     NclRegisterFunc(ftcurvps_W, args, "ftcurvps", nargs);
 
 /*
@@ -3097,11 +3099,11 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(5);
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
     NclRegisterProc(ftkurv_W, args, "ftkurv", nargs);
 
 /*
@@ -3109,11 +3111,11 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(5);
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
     NclRegisterProc(ftkurvp_W, args, "ftkurvp", nargs);
 
 /*
@@ -3121,15 +3123,15 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(9);
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
     NclRegisterProc(ftkurvd_W, args, "ftkurvd", nargs);
 
 /*
@@ -3137,15 +3139,15 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(9);
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
     NclRegisterProc(ftkurvpd_W, args, "ftkurvpd", nargs);
 
 /*
@@ -3153,11 +3155,11 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(5);
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
     NclRegisterFunc(ftsurf_W, args, "ftsurf", nargs);
 
 /*
@@ -4002,6 +4004,17 @@ void NclAddUserFuncs(void)
 
     NclRegisterFunc(regCoef_W,args,"regCoef",nargs);
 /*
+ * Register "regCoef_shields".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(regCoef_shields_W,args,"regCoef_shields",nargs);
+/*
  * Register "regline".
  *
  * Create private argument array.
@@ -4178,6 +4191,18 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(esccr_W,args,"esccr",nargs);
+/*
+ * Register "esccr_shields".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(esccr_shields_W,args,"esccr_shields",nargs);
 /*
  * Register "esccv".
  *
@@ -4363,7 +4388,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(5);
-    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     dimsizes[0] = 1;
@@ -4379,8 +4404,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(7);
-    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     dimsizes[0] = 1;
@@ -5772,3 +5797,99 @@ int    index_x
 }
 
 
+
+/*
+ * Coerce data to float, or just return a pointer to it if
+ * it is already float.
+ */
+float *coerce_input_float(
+void              *x,
+NclBasicDataTypes type_x,
+int               size_x,
+int               has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_fx)
+{
+  float *fx;
+/*
+ * Coerce x to float if necessary.
+ */
+  if(type_x != NCL_float) {
+    fx = (float*)calloc(size_x,sizeof(float));
+    if( fx == NULL ) return(NULL);
+    if(has_missing_x) {
+      _Nclcoerce((NclTypeClass)nclTypefloatClass,
+                 (void*)fx,
+                 x,
+                 size_x,
+                 missing_x,
+                 missing_fx,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+    else {
+      _Nclcoerce((NclTypeClass)nclTypefloatClass,
+                 (void*)fx,
+                 x,
+                 size_x,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+  }
+  else {
+/*
+ * x is already float.
+ */
+    fx = (float*)x;
+  }
+  return(fx);
+}
+
+/*
+ * Coerce a subset of the data to float.
+ */
+void coerce_subset_input_float(
+void              *x,
+float             *tmp_x,
+int               index_x,
+NclBasicDataTypes type_x,
+int               size_x,
+int               has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_fx
+)
+{
+  NclTypeClass typeclass_x;
+  
+/*
+ * typeclass_x is what allows us to get the size of the type of x.
+ */
+  typeclass_x = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_x)));
+/*
+ * Coerce x to float.
+ */
+  if(has_missing_x) {
+/*
+ * Coerce subset to float, with missing values.
+ */
+    _Nclcoerce((NclTypeClass)nclTypefloatClass,
+               tmp_x,
+               (void*)((char*)x+index_x*(typeclass_x->type_class.size)),
+               size_x,
+               missing_x,
+               missing_fx,
+               typeclass_x);
+  }
+  else {
+/*
+ * Coerce subset to float, with no missing values.
+ */
+    _Nclcoerce((NclTypeClass)nclTypefloatClass,
+               tmp_x,
+               (void*)((char*)x+index_x*(typeclass_x->type_class.size)),
+               size_x,
+               NULL,
+               NULL,
+               typeclass_x);
+  }
+}

@@ -29,6 +29,12 @@ extern void *coerce_output_float_only(void *,double *,int, int);
 extern void *coerce_output_float_or_double(void *,double *,
 					   NclBasicDataTypes,int,int);
 
+extern float *coerce_input_float(void*,NclBasicDataTypes,int,int,
+                                   NclScalar*,NclScalar*);
+
+extern void coerce_subset_input_float(void *,float *,int,NclBasicDataTypes,
+                                       int,int,NclScalar*,NclScalar*);
+
 extern double *coerce_output_double(void*,NclBasicDataTypes,int);
 
 extern float *set_output_float_missing(double*,int,double);
