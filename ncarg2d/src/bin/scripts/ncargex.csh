@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.155 2004-07-25 13:18:02 haley Exp $
+#   $Id: ncargex.csh,v 1.156 2004-07-25 18:58:19 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -1389,6 +1389,7 @@ switch($name)
     case pgkex22:
     case pgkex23:
     case c_pgkex21:
+      unset modifiable
       set orig_ws_type = "20"
       if ("$name" == "pgkex20") then
         set orig_ws_type = "26"
