@@ -3,10 +3,11 @@
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/ncl/defs.h>
 #include <ncarg/ncl/NclBuiltIns.h>
-#include "NclDataDefs.h"
+#include <ncarg/ncl/NclDataDefs.h>
+#include <ncarg/ncl/NclBuiltInSupport.h>
 #include "Symbol.h"
 #include "Machine.h"
-#include "NclVar.h"
+#include <ncarg/ncl/NclVar.h>
 #include "NclCoordVar.h"
 #include "VarSupport.h"
 #include "DataSupport.h"
@@ -42,14 +43,14 @@ NhlErrorTypes vinth2p_W
 
 
 	double *hbcofa = NULL;
-	char *hbcofa_ptr = NULL;
+	void *hbcofa_ptr = NULL;
 	int hbcofa_n_dims,hbcofa_has_missing;
 	NclBasicDataTypes hbcofa_type;
 	int hbcofa_dimsizes;
 	NclScalar hbcofa_missing;
 
 	double *hbcofb = NULL;
-	char *hbcofb_ptr = NULL;
+	void *hbcofb_ptr = NULL;
 	int hbcofb_n_dims,hbcofb_has_missing;
 	NclBasicDataTypes hbcofb_type;
 	int hbcofb_dimsizes;
@@ -68,14 +69,14 @@ NhlErrorTypes vinth2p_W
 	int intyp_has_missing;
 	NclScalar intyp_missing;
 
-	char *psfc = NULL;
+	void *psfc = NULL;
 	double *psfc_d = NULL;
 	int psfc_n_dims,psfc_has_missing;
 	NclBasicDataTypes psfc_type;
 	int psfc_dimsizes[3];
 	NclScalar psfc_missing;
 
-	char *p0_ptr = NULL;
+	void *p0_ptr = NULL;
 	double *p0 = NULL;
 	int p0_has_missing;
 	NclScalar p0_missing;
@@ -163,7 +164,7 @@ NhlErrorTypes vinth2p_W
 			break;
 		}
 	}
-        hbcofa_ptr = (char*)NclGetArgValue(
+        hbcofa_ptr = (void*)NclGetArgValue(
                         1,
                         9,
                         &hbcofa_n_dims,
@@ -178,8 +179,7 @@ NhlErrorTypes vinth2p_W
 	} else {
 		hbcofa = (double*) hbcofa_ptr;
 	}
-        hbcofb_ptr = (char*)NclGetArgValue(
-
+        hbcofb_ptr = (void*)NclGetArgValue(
                         2,
                         9,
                         &hbcofb_n_dims,
@@ -245,7 +245,7 @@ NhlErrorTypes vinth2p_W
 	
 
 	
-        psfc = (char*)NclGetArgValue(
+        psfc = (void*)NclGetArgValue(
                         4,
                         9,
                         &psfc_n_dims,
@@ -303,7 +303,7 @@ NhlErrorTypes vinth2p_W
                         &intyp_has_missing,
                         NULL,
                         0);
-        p0_ptr = (char*)NclGetArgValue(
+        p0_ptr = (void*)NclGetArgValue(
                         6,
                         9,
                         NULL,
@@ -369,7 +369,7 @@ NhlErrorTypes vinth2p_W
 		for(i = 0; i < total; i++) {
 			NGCALLF(vinth2p,VINTH2P)((datai+sizeof(double)*i*nblk),(((char*)datao)+sizeof(double)*nblk_out*i),hbcofa,hbcofb,p0,plevi,plevo,intyp,ilev,(((char*)psfc_d)+sizeof(double)*psf_blk*i),&missing,kxtrp,&(datai_dimsizes[2]),&(datai_dimsizes[1]),&(datai_dimsizes[0]),&(datai_dimsizes[0]),&(plevo_dimsizes));
 		}
-		if((char*)psfc_d != psfc) {
+		if((void*)psfc_d != psfc) {
 			NclFree(psfc_d);
 		}
 	}
@@ -382,13 +382,13 @@ NhlErrorTypes vinth2p_W
 	if(tmp_md->multidval.val != plevo) {
 		NclFree(plevo);
 	}
-	if((char*)hbcofa != hbcofa_ptr) {
+	if((void*)hbcofa != hbcofa_ptr) {
 		NclFree(hbcofa);
 	}
-	if((char*)hbcofb != hbcofb_ptr) {
+	if((void*)hbcofb != hbcofb_ptr) {
 		NclFree(hbcofb);
 	}
-	if((char*)p0 != p0_ptr) {
+	if((void*)p0 != p0_ptr) {
 		NclFree(p0);
 	}
 	if(was_val) {
