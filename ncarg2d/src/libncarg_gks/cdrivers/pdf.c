@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.8 2003-02-27 23:58:56 fred Exp $
+ *      $Id: pdf.c,v 1.9 2003-02-28 17:33:12 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3830,7 +3830,7 @@ int bump_object_number() {
 }
 int bump_page_lines() {
   if (num_page_lines > MAX_PAGE_SIZE) {
-    fprintf(stderr,"PDF - maximum object size exceed.\n");
+    fprintf(stderr,"PDF - maximum object size exceeded.\n");
     return (object_number);
   }
   num_page_lines++;
