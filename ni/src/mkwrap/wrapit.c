@@ -91,6 +91,8 @@ void WNewWrap()
 	current->wrec = WNewWScope();
 	current->crec = WNewWScope();
 	current->c_defstring = NULL;
+	current->c_argval= NULL;
+	current->c_tmpval= NULL;
 	current->c_vdefs = NULL;
 	current->c_callrec = NULL;
 	current->rtrn = NULL;
@@ -131,7 +133,9 @@ WCentry *WNewVDef(char* name,int datatype,int isptr,char* array_spec,int order)
 		tmp->next->def = (WCentry*)malloc(sizeof(WCentry));
 		tmp->next->def->string = (char*)malloc(strlen(name)+1);
 		tmp->next->def->datatype = datatype;
+		tmp->next->def->array_spec = NULL;
 		tmp->next->def->order = order;
+		tmp->next->def->additional_src = NULL;
 		strcpy(tmp->next->def->string,name);
 		if(array_spec != NULL) {
 			tmp->next->def->array_spec= malloc(strlen(array_spec)+1);
@@ -149,6 +153,9 @@ WCentry *WNewVDef(char* name,int datatype,int isptr,char* array_spec,int order)
 		current->c_vdefs->def = (WCentry*)malloc(sizeof(WCentry));
 		current->c_vdefs->def->string = (char*)malloc(strlen(name)+1);
 		current->c_vdefs->def->datatype = datatype;
+		current->c_vdefs->def->array_spec = NULL;
+		current->c_vdefs->def->order = order;
+		current->c_vdefs->def->additional_src = NULL;
 		strcpy(current->c_vdefs->def->string,name);
 		if(array_spec != NULL) {
 			current->c_vdefs->def->array_spec= malloc(strlen(array_spec)+1);

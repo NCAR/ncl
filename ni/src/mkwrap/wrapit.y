@@ -265,7 +265,7 @@ interface_list : interface ENDOFIF
 			}
 			c_vdefs = c_vdefs->next;
 		}
-		fprintf(stdout,"\t%s",current->rtrn);
+		fprintf(stdout,"\t%s\n",current->rtrn);
 		fprintf(stdout,"}\n");
 		
 		nargs = 0;
@@ -384,7 +384,7 @@ interface_list : interface ENDOFIF
 			}
 			c_vdefs = c_vdefs->next;
 		}
-		fprintf(stdout,"\t%s",current->rtrn);
+		fprintf(stdout,"\t%s\n",current->rtrn);
 		fprintf(stdout,"}\n");
 		
 		nargs = 0;
@@ -520,7 +520,7 @@ interface : function_def odata_defs
 			}
 		}
 		thecall->nstrs = nstrs;
-		sprintf(buffer,"%s_ret_dimsizes[0] = 1;\n\treturn(NclReturnValue(&%s_ret,1,%s_ret_dimsizes,NULL,%s,1));\n",$1->name,$1->name,$1->name,NType($1->u.func->datatype));
+		sprintf(buffer,"%s_ret_dimsizes[0] = 1;\n\treturn(NclReturnValue(&%s_ret,1,%s_ret_dimsizes,NULL,%s,1));",$1->name,$1->name,$1->name,NType($1->u.func->datatype));
 		current->rtrn = malloc(strlen(buffer)+1);
 		strcpy(current->rtrn,buffer);
 		
@@ -642,8 +642,8 @@ interface : function_def odata_defs
 			}
 		}
 		thecall->nstrs = nstrs;
-		current->rtrn = malloc(strlen("return(NhlNOERROR);\n"+1));
-		strcpy(current->rtrn,"return(NhlNOERROR);\n");
+		current->rtrn = malloc(strlen("return(NhlNOERROR);")+1);
+		strcpy(current->rtrn,"return(NhlNOERROR);");
 		
 		
 	}
