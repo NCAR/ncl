@@ -1,10 +1,10 @@
 C
-C $Id: pcfcls.f,v 1.3 1994-03-17 22:05:00 kennison Exp $
+C $Id: pcfcls.f,v 1.4 1995-07-07 20:09:37 kennison Exp $
 C
       SUBROUTINE PCFCLS (IBNU,NFNT)
         CHARACTER*32 CTMP
         IF (NFNT.EQ.0) THEN
-          CLOSE (UNIT=IBNU,STATUS='KEEP',ERR=101)
+          CALL NGCLFI (IBNU)
         ELSE
           CALL BCLRED (IBNU,IOST,ISTA)
           IF (ISTA.NE.0) THEN
@@ -13,7 +13,5 @@ C
             RETURN
           END IF
         END IF
-        RETURN
-  101   CALL SETER ('PCFCLS - ERROR CLOSING PWRITX DATABASE',2,1)
         RETURN
       END

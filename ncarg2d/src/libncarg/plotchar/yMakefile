@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.12 1995-05-01 22:21:24 kennison Exp $
+#	$Id: yMakefile,v 1.13 1995-07-07 20:09:40 kennison Exp $
 #
 
 MYNAME	= plotchar
@@ -30,16 +30,14 @@ SOURCES = $(GENERIC_SRCS) $(OTHER_SRCS)
 
 OBJECTS = $(GENERIC_OBJS) $(OTHER_OBJS)
 
-FCPP_OBJS       = pcfopn.f
-
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
-CleanFilesTarget(pcfopn.F $(FCPP_OBJS))
+CleanFilesTarget(pcfopn.f)
 
-pcfopn.F: pcfopn.F.sed Makefile
+pcfopn.f: pcfopn.f.sed Makefile
 	@sed \
 	-e 's+SED_DBDIR+$(DBDIR)+' \
-	<pcfopn.F.sed >pcfopn.F
+	<pcfopn.f.sed >pcfopn.f
 
 /* Probably obsolete - but we'll leave it here anyway */
 #if defined(apollo)

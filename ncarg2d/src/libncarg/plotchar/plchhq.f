@@ -1,5 +1,5 @@
 C
-C $Id: plchhq.f,v 1.18 1995-05-01 22:21:22 kennison Exp $
+C $Id: plchhq.f,v 1.19 1995-07-07 20:09:39 kennison Exp $
 C
       SUBROUTINE PLCHHQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -50,10 +50,6 @@ C
 C Declare some BLOCK DATA routines external to force them to load.
 C
       EXTERNAL PCBLDA,PCBDFF
-C
-C Define a dummy array for use in skipping records on IBNU.
-C
-      DIMENSION IDUM(1)
 C
 C Define X and Y coordinate arrays to be used in calls to GPL and GFA.
 C
@@ -314,9 +310,9 @@ C
           IF (ICFELL('PLCHHQ',5).NE.0) RETURN
 C
           IF (JCOD.NE.0) THEN
-            CALL PCFRED (IBNU,0,IDUM,1)
+            CALL PCFRED (IBNU,0,INDA,INDL)
             IF (ICFELL('PLCHHQ',6).NE.0) RETURN
-            CALL PCFRED (IBNU,0,IDUM,1)
+            CALL PCFRED (IBNU,0,IDDA,IDDL)
             IF (ICFELL('PLCHHQ',7).NE.0) RETURN
           END IF
 C
