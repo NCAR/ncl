@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlcc.csh,v 1.3 1995-04-06 17:25:52 haley Exp $
+#	$Id: nhlcc.csh,v 1.4 1995-04-12 15:19:12 haley Exp $
 #
 
 #*********************************************#
@@ -14,7 +14,7 @@ if ($status != 0) then
 	exit 1
 endif
 
-set xlibs = "SED_XTOOLLIB SED_XLIB"
+set xlibs = "SED_XLIB"
 set system   = "SED_SYSTEM_INCLUDE"
 set cc       = "SED_CC"
 set defines  = "SED_STDDEF SED_PROJDEF"
@@ -43,12 +43,16 @@ set extra_libs
 foreach arg ($argv)
   switch ($arg)
 
+  case "-libXmXt":
+    set extra_libs = "$extra_libs SED_XMOTIFLIB SED_XTOOLLIB"
+    breaksw
+
   case "-libnetcdf":
-    set extra_libs = "$extra_libs -lnetcdf"
+    set extra_libs = "$extra_libs SED_NCDFLIBS"
     breaksw
 
   case "-libhdf":
-    set extra_libs = "$extra_libs -ldf"
+    set extra_libs = "$extra_libs SED_HDFLIB"
     breaksw
 
   default:
