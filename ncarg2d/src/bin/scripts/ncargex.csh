@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.147 2004-03-19 23:24:41 kennison Exp $
+#   $Id: ncargex.csh,v 1.148 2004-03-26 23:46:09 kennison Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -223,7 +223,7 @@ set c_list = ($c_list $conpack_clist)
 #*************************#
 set conpackt_fex   = (ctcbay ctex01 ctex02 ctfite ctgaus ctgeo1 ctgeo2 ctiscp \
 		      ctllg1 ctllg2 ctllg3 ctnccl ctorca ctpopg ctswth ctwng1 \
-		      ctwng2 cttd01)
+		      ctwng2 cttd01 cttd02)
 set conpackt_flist = ($conpackt_fex)
 
 set conpackt_cex   = (c_ctllg3)
