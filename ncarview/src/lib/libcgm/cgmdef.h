@@ -81,6 +81,7 @@
  */
 #define	DEL_ELEMENT	0	
 
+#define	NOOP		0	/* no operation		*/
 #define BEG_MF		1	/* begin metafile	*/
 #define END_MF		2	/* end metafile		*/
 #define BEG_PIC		3	/* begin picture	*/
