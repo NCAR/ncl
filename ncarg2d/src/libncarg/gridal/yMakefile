@@ -1,13 +1,9 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:31:17 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-07-21 19:42:30 ncargd Exp $
 #
 NCARG	= ../../../..
 
 MYNAME	= gridal
-
-#if defined(ultrix) && defined(mips) 
-FOPT = -O0
-#endif
 
 GENERIC_SRCS = \
 	 gabldt.f gacolr.f galbex.f grid.f gridal.f gridl.f halfax.f\
