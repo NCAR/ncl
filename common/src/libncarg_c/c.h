@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.19 1994-08-05 23:03:35 boote Exp $
+ *	$Id: c.h,v 1.20 1994-08-19 22:03:50 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -40,6 +40,25 @@
 #endif	/* __STDC__ */
 #endif	/* UNICOS else ... */
 #endif	/* NGCALLF */
+
+typedef char    *NcargString;
+
+#ifdef  UNICOS
+#include <fortran.h>
+#define NGstring            _fcd
+#define NGCstrToFstr(cstr,len) ((cstr)?_cptofcd((char *)cstr,len):_cptofcd("",0))
+#define NGFstrToCstr(fstr) (_fcdtocp(fstr))
+#define NGFlgclToClgcl(flog)  (_ltob(&flog))
+#define NGClgclToFlgcl(clog)  (_btol(clog))
+#else
+#define NGstring            char *
+#define NGCstrToFstr(cstr,len) (char *)cstr
+#define NGFstrToCstr(fstr) fstr
+#define NGFlgclToClgcl(flog)  flog
+#define NGClgclToFlgcl(clog)  clog
+#endif
+
+#define NGSTRLEN(cstr)      ((cstr)?strlen(cstr):0)
 
 #ifdef	__STDC__
 #include <stdarg.h>
