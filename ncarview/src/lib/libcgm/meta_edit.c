@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.7 1991-10-01 15:59:57 clyne Exp $
+ *	$Id: meta_edit.c,v 1.8 1992-03-11 20:50:35 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -796,7 +796,7 @@ int	CGM_writeFrames(ncar_cgm, start_frame, num_frames)
 	 *	open the temp file where some frames may be
 	 *	stored
 	 */
-	if ((tmp_fd = CGM_open(tempFile, r, "w")) < 0)
+	if ((tmp_fd = CGM_open(tempFile, r, "r")) < 0)
 		return(-1);
 	
 	/*
@@ -920,7 +920,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	 *	open the temp file where some frames may be
 	 *	stored
 	 */
-	if ((tmp_fd = CGM_open(tempFile, r, "w")) < 0)
+	if ((tmp_fd = CGM_open(tempFile, r, "r")) < 0)
 		return(-1);
 	
 
@@ -934,7 +934,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	/*
 	 * open the file for appending
 	 */
-	if ((fd = CGM_open(ncar_cgm, r, "a+" )) < 0) {
+	if ((fd = CGM_open(ncar_cgm, r, "r" )) < 0) {
 		(void) CGM_close(tmp_fd);
 		return(-1);
 	}
@@ -1051,7 +1051,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 	 * open file with bottom frame for reading. set file ptr to frame
 	 */
 	if (workingList.list[bottom].utype == ACTUAL) {
-		if ((b_fd = CGM_open(ncarCgm, recordSize, "w")) < 0) {
+		if ((b_fd = CGM_open(ncarCgm, recordSize, "r")) < 0) {
 			return (ERR);
 		}
 		if (CGM_lseek(b_fd, saveDir->d[workingList.list[bottom]
@@ -1061,7 +1061,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 
 	}
 	else {	/* open tmp file for *reading*	*/
-		if ((b_fd = CGM_open(tempFile, r, "w")) < 0) {
+		if ((b_fd = CGM_open(tempFile, r, "r")) < 0) {
 			return (ERR);
 		}
 		if (CGM_lseek(b_fd,workingList.list[bottom].
@@ -1076,7 +1076,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 	 * open file with top frame for reading. set file ptr to frame
 	 */
 	if (workingList.list[top].utype == ACTUAL) {
-		if ((t_fd = CGM_open(ncarCgm, recordSize, "w")) < 0) {
+		if ((t_fd = CGM_open(ncarCgm, recordSize, "r")) < 0) {
 			(void) CGM_close(b_fd);
 			return (ERR);
 		}
@@ -1090,7 +1090,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 
 	}
 	else {	/* open tmp file for *reading*	*/
-		if ((t_fd = CGM_open(tempFile, r, "w")) < 0) {
+		if ((t_fd = CGM_open(tempFile, r, "r")) < 0) {
 			(void) CGM_close(b_fd);
 			return (ERR);
 		}
@@ -1527,7 +1527,7 @@ Directory	*CGM_editFrame(frame, edit_instr, num_occur)
 	 * open file containing frame for reading
 	 */
 	if (workingList.list[frame].utype == ACTUAL) {
-		if ((fd = CGM_open(ncarCgm, recordSize, "w")) < 0) {
+		if ((fd = CGM_open(ncarCgm, recordSize, "r")) < 0) {
 			return (ERR);
 		}
 		if (CGM_lseek(fd, saveDir->d[workingList.list[frame]
@@ -1538,7 +1538,7 @@ Directory	*CGM_editFrame(frame, edit_instr, num_occur)
 
 	}
 	else {	/* open tmp file for *reading*	*/
-		if ((fd = CGM_open(tempFile, r, "w")) < 0) {
+		if ((fd = CGM_open(tempFile, r, "r")) < 0) {
 			return (ERR);
 		}
 		if (CGM_lseek(fd, workingList.list[frame]
