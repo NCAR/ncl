@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.20 1999-04-01 20:27:22 ethan Exp $
+ *      $Id: NclAtt.c,v 1.21 2004-09-22 22:16:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -224,6 +224,7 @@ NclSelectionRecord * sel_ptr;
 	NhlArgVal cbdata;
 	NhlArgVal selector;
 	NclScalar tmp_scalar;
+	int i;
 	
 	NhlINITVAR(cbdata);
 	NhlINITVAR(selector);
@@ -290,13 +291,24 @@ NclSelectionRecord * sel_ptr;
                 theattobj->att.n_atts++;
                 return(NhlNOERROR);
         } else {
+#if 0
+ test remove restriction concerning multid atts -- dib
+
                 if(tmp_md->multidval.n_dims > 1) {
                         NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to assign value with more than one dimension to attribute, attributes are restricted to having only one dimension");
                         return(NhlFATAL);
-                } else if(sel_ptr == NULL) {
-                        if(tmp_md->multidval.dim_sizes[0] != targetdat->multidval.dim_sizes[0]) {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension size of attribute and right-hand side of assignment do not match");
-                                return(NhlFATAL);
+                } else 
+#endif
+                if(sel_ptr == NULL) {
+			if(tmp_md->multidval.n_dims != targetdat->multidval.n_dims) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimensions of attribute and right-hand side of assignment do not match");
+				return(NhlFATAL);
+			}
+			for (i = 0; i < tmp_md->multidval.n_dims; i++) {
+				if(tmp_md->multidval.dim_sizes[i] != targetdat->multidval.dim_sizes[i]) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension size of attribute and right-hand side of assignment do not match");
+					return(NhlFATAL);
+				}
                         }
                         if(_NclSetStatus((NclObj)tmp_md,PERMANENT)) {
                                 thelist->attvalue = tmp_md;
