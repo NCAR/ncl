@@ -16,7 +16,7 @@
  *
  *      Description:    Demonstrates the TextItem Object
  *                      Writes "NCAR Graphics" in a series of
- *                      114 different colors. (The default colormap.)
+ *                      different colors (using the default colormap.)
  */
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
@@ -29,9 +29,8 @@
 main()
 {
     int appid, wid, pid;
-    int rlist;
-    int M = 114;
-    int i;
+    int srlist, grlist;
+    int i, num_colors;
     int NCGM=1;
 /*
  * Initialize the high level utility library
@@ -43,38 +42,45 @@ main()
  * working directory. In this example the resource file supplies the
  * plot title only.
  */
-    rlist = NhlRLCreate(NhlSETRL);
-    NhlRLClear(rlist);
-    NhlRLSetString(rlist,NhlNappDefaultParent,"True");
-    NhlRLSetString(rlist,NhlNappUsrDir,"./");
-    NhlCreate(&appid,"tx03",NhlappClass,NhlDEFAULT_APP,rlist);
+    srlist = NhlRLCreate(NhlSETRL);
+    NhlRLClear(srlist);
+    NhlRLSetString(srlist,NhlNappDefaultParent,"True");
+    NhlRLSetString(srlist,NhlNappUsrDir,"./");
+    NhlCreate(&appid,"tx03",NhlappClass,NhlDEFAULT_APP,srlist);
 
     if (NCGM) {
 /*
  * Create a meta file workstation.
  */
-        NhlRLClear(rlist);
-        NhlRLSetString(rlist,NhlNwkMetaName,"./tx03c.ncgm");
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkMetaName,"./tx03c.ncgm");
         NhlCreate(&wid,"tx03Work",NhlncgmWorkstationClass,
-                  NhlDEFAULT_APP,rlist);
+                  NhlDEFAULT_APP,srlist);
     }
     else {
 /*
  * Create an XWorkstation object.
  */
-        NhlRLClear(rlist);
-        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlRLClear(srlist);
+        NhlRLSetInteger(srlist,NhlNwkPause,True);
         NhlCreate(&wid,"tx03Work",NhlxWorkstationClass,
-                  NhlDEFAULT_APP,rlist);
+                  NhlDEFAULT_APP,srlist);
     }
 /*
- * Create 114 plots varying the fill color of the text bounding box
+ * Get the number of colors in the default color table.
+ */
+    grlist = NhlRLCreate(NhlGETRL);
+    NhlRLClear(grlist);
+    NhlRLGetInteger(grlist,NhlNwkColorMapLen,&num_colors);
+    NhlGetValues(wid,grlist);
+/*
+ * Create multiple plots varying the fill color of the text bounding box
  * to all entries of the default workstation color map.
  */
-    for( i = 1; i <= M; i++ ) {
-        NhlRLClear(rlist);
-        NhlRLSetInteger(rlist,NhlNtxBackgroundFillColor,i);
-        NhlCreate(&pid,"TextItems",NhltextItemClass,wid,rlist);
+    for( i = 1; i <= num_colors; i++ ) {
+        NhlRLClear(srlist);
+        NhlRLSetInteger(srlist,NhlNtxBackgroundFillColor,i);
+        NhlCreate(&pid,"TextItems",NhltextItemClass,wid,srlist);
         NhlDraw(pid);
         NhlFrame(wid);
     }

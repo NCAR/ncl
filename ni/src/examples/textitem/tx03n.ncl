@@ -1,5 +1,5 @@
 ;
-;    $Id: tx03n.ncl,v 1.6 1995-04-07 10:54:36 boote Exp $
+;    $Id: tx03n.ncl,v 1.7 1995-05-01 16:41:49 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -19,7 +19,7 @@
 ;
 ;      Description:    Demonstrates the TextItem Object
 ;                      Writes "NCAR Graphics" in a series of
-;                      114 different colors. (The default colormap.)
+;                      different colors (using the default colormap.)
 ;
 
 ;
@@ -59,11 +59,18 @@ else
 end if
 
 ;
-; Create 114 plots varying the fill color of the text bounding box
+; Get the number of colors in the default color table.
+;
+getvalues wid
+	"wkColorMapLen":  num_colors
+end getvalues
+
+;
+; Create multiple plots varying the fill color of the text bounding box
 ; to all entries of the default workstation color map.
 ;
 
-do i=1,114
+do i=1,num_colors
     pid = create "TextItems" textItemClass wid
         "txBackgroundFillColor" : i
     end create
