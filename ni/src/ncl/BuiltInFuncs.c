@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.74 1997-07-01 00:02:03 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.75 1997-07-01 14:56:59 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -10209,7 +10209,7 @@ NhlErrorTypes _NclIgaus
 	wts = (double*)NclMalloc(sizeof(double)*nl);
 	lwork = 4 * nl*(nl+1)+2;
 	work = (double*)NclMalloc(sizeof(double)*lwork);
-	NGCALLF(gaqd,GAQD)(&nl,theta,wts,work,&lwork,&ierror);
+	NGCALLF(gaqdncl,GAQDNCL)(&nl,theta,wts,work,&lwork,&ierror);
 	NclFree(work);
 	output = (double*)NclMalloc(sizeof(double)*nl*2);
 

@@ -3414,7 +3414,7 @@ int** dimsizes_lon;
 /*
 * These come out south to north
 */
-			NGCALLF(gaqd,GAQD)(&nlat,theta,wts,work,&lwork,&ierror);
+			NGCALLF(gaqdncl,GAQDNCL)(&nlat,theta,wts,work,&lwork,&ierror);
 			NclFree(work);
 			NclFree(wts);
 
