@@ -1,6 +1,6 @@
 
 /*
- *      $Id: rascat.c,v 1.7 1992-03-31 00:18:53 clyne Exp $
+ *      $Id: rascat.c,v 1.8 1992-03-31 00:37:54 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -317,6 +317,9 @@ main(argc, argv)
 			{
 
 				opt.dstformat = src->format;
+				fprintf(stderr, 
+					"%s: Warning: output format not specified, using input format (%s)\n", progName, src->format
+					);
 			}
 
 			nx = src->nx;
