@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.27 2004-10-21 22:54:44 haley Exp $
+ *      $Id: yMakefile,v 1.28 2004-11-18 22:24:48 haley Exp $
  */
 /************************************************************************
 *									*
@@ -187,6 +187,14 @@ V5DSTUFF:
 	@echo "y"
 #else
 V5DSTUFF:
+	@echo "n"
+#endif
+
+#ifdef	BuildDODS
+DODSSTUFF:
+	@echo "y"
+#else
+DODSSTUFF:
 	@echo "n"
 #endif
 
