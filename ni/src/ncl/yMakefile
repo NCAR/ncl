@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.46 1996-12-12 22:58:21 ethan Exp $
+#      $Id: yMakefile,v 1.47 1996-12-12 23:08:01 ethan Exp $
 #
 #########################################################################
 #									#
@@ -147,7 +147,6 @@ CProgram($(MYBIN),$(EXEOBJS),$(DEPLIBS))
 BuildIncludes($(INSTALL_HDRS),ncarg/ncl,../..)
 InstallTarget($(INSTALL_HDRS),$(INSTALL_INC),$(NCLINCPATH))
 
-all-local:: makesubdirs
 depend-local:: $(GEN_HDRS) $(GEN_SRCS)
 DependTarget($(ALLSRCS))
 
