@@ -348,8 +348,8 @@ NhlErrorTypes eof_W( void )
 /*
  * If user didn't set pcrit, then set it here.
  */
-    if(pcrit == NULL) {
-      pcrit  = (double *)calloc(1,sizeof(double));
+    if(!return_pcrit) {
+      pcrit = (double *)calloc(1,sizeof(double));
       if( pcrit == NULL ) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"eof: Unable to allocate memory for pcrit");
         return(NhlFATAL);
@@ -2147,7 +2147,7 @@ NhlErrorTypes eofcov_tr_W( void )
 /*
  * If user didn't set pcrit, then set it here.
  */
-  if(pcrit == NULL) {
+  if(!return_pcrit) {
     pcrit = (double *)calloc(1,sizeof(double));
     if( pcrit == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for pcrit");
