@@ -6,7 +6,7 @@
 ;                                                                       ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-;   File:       xy_x1_y3n.ncl
+;   File:       xy16n.ncl
 ;
 ;   Author:     Bob Lackman
 ;           National Center for Atmospheric Research
@@ -28,7 +28,7 @@ npts = 129
 
 ;
 ; Create Application object.  The Application object name is used to
-; determine the name of the resource file, which is "x1_y3.res" in this
+; determine the name of the resource file, which is "xy16.res" in this
 ; case.
 ; 
 appid = create "xy16" appClass defaultapp

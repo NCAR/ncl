@@ -1,5 +1,5 @@
 /*
- *      $Id: xy17c.c,v 1.2 1997-04-02 16:47:53 haley Exp $
+ *      $Id: xy17c.c,v 1.3 1997-04-08 20:11:03 haley Exp $
  */
 /***********************************************************************
  *                                                                     *
@@ -103,7 +103,7 @@ void main ()
 
 /*
  *  Create Application object.  The Application object name is used to
- *  determine the name of the resource file, which is "x1_y3.res" in this
+ *  determine the name of the resource file, which is "xy17.res" in this
  *  case. 
  */
  

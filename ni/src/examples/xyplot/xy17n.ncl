@@ -39,7 +39,7 @@ dataid = new(ncurve,graphic)
 
 ;
 ; Create Application object.  The Application object name is used to
-; determine the name of the resource file, which is "x1_y3.res" in this
+; determine the name of the resource file, which is "xy17.res" in this
 ; case.
 ; 
 appid = create "xy17" appClass defaultapp
