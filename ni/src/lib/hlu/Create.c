@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.8 1994-05-12 23:50:50 boote Exp $
+ *      $Id: Create.c,v 1.9 1994-06-03 16:37:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -703,7 +703,7 @@ _NHLCALLF(nhl_fcreate,NHL_FCREATE)
 	int		*err_ret	/* error return			*/
 )
 #else
-(pid,fname,lc,parentid,rlid,fname_len,err_ret)
+(pid,fname,lc_func,parentid,rlid,fname_len,err_ret)
 	int		*pid;		/* plot id <return>		*/
 	_NhlFString	fname;		/* name of instance		*/
 	_NhlClassFunc	lc_func;	/* NhlLayerClass to create	*/

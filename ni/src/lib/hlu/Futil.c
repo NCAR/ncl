@@ -1,5 +1,5 @@
 /*
- *      $Id: Futil.c,v 1.1 1994-05-12 23:51:20 boote Exp $
+ *      $Id: Futil.c,v 1.2 1994-06-03 16:37:59 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -195,7 +195,7 @@ _NhlCstrToFptr
 	Const char	*cstr
 )
 #else
-(fstr,fstr_len,cstr)
+(fptr,fstr_len,cstr)
 	NhlString	fptr;
 	unsigned int	fstr_len;
 	Const char	*cstr;
@@ -349,7 +349,7 @@ _NhlCreateFGenArray
 #else
 (data,type,size,num_dimensions,len_dimensions,copy_data)
 	NhlPointer	data;
-	NhlString	ftype;
+	NhlString	type;
 	unsigned int	size;
 	int		num_dimensions;
 	int		*len_dimensions;

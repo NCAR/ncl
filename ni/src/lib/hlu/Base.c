@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.4 1994-01-27 21:21:20 boote Exp $
+ *      $Id: Base.c,v 1.5 1994-06-03 16:37:54 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -338,4 +338,27 @@ _NhlGetWorkstationLayer
 #endif
 {
 	return(layer->base.wkptr);
+}
+
+int NhlGetParentWorkstation
+#if	__STDC__
+(int plotid)
+#else
+(plotid)
+	int plotid;
+#endif
+{
+	NhlLayer plot_ptr = _NhlGetLayer(plotid);
+
+	if(plot_ptr == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NhlGetParentWorkstation: invalid plotid can't get workstation id");
+		return(-1);
+	}
+
+	if(plot_ptr->base.wkptr !=NULL) {
+		return(plot_ptr->base.wkptr->base.id);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NhlGetParentWorkstation: plot does not have parent workstation");
+		return(-1);
+	}
 }

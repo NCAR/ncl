@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.16 1994-06-02 18:03:51 boote Exp $
+ *      $Id: hlu.c,v 1.17 1994-06-03 16:38:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -518,7 +518,6 @@ _NHLCALLF(nhl_fname,NHL_FNAME)
 	Const char	*cstr;
 
 	cstr = NhlName(*id);
-
 	*err = _NhlCstrToFstr(name,*name_len,(NhlString)cstr);
 
 	return;
@@ -586,9 +585,7 @@ _NHLCALLF(nhl_fclassname,NHL_FCLASSNAME)
 	Const char	*cstr;
 
 	cstr = NhlClassName(*id);
-
 	*err = _NhlCstrToFstr(name,*name_len,(NhlString)cstr);
-
 	return;
 }
 
