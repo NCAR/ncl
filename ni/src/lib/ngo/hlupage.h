@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.h,v 1.6 1999-01-11 19:36:26 dbrown Exp $
+ *      $Id: hlupage.h,v 1.7 1999-02-23 03:56:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,15 +34,60 @@
 #define _NCL_H_
 #endif
 
-#include <ncarg/ngo/datasourcegrid.h>
 #include <ncarg/ngo/dataprofile.h>
+
+typedef enum __hluState
+{
+        _hluNOTCREATED, _hluPREVIEW, _hluCREATED
+} _hluState;
+
+/* 
+ * NgPageMessageType:  _NgHLUOBJCREATE 
+ * this message is sent when a page associated with a newly-created or
+ * a potential HLU object needs information about plot styles and/or
+ * data profiles.
+ */
+
+typedef struct _brHluObjCreateRec    /* message type _NgHLUOBJCREATE */
+{
+	int		obj_id;
+	NhlString	class_name;
+	NhlString	plot_style;
+	NhlString	plot_style_dir;
+	NhlBoolean	has_input_data;
+	_hluState	state;
+	NgDataProfile	dprof;
+} brHluObjCreateRec, *brHluObjCreate;
 
 typedef struct _NgHluPage
 {
-        NhlString class_name;
-	NgDataProfile data_profile;
-	NhlString plot_style;
-	NhlString plot_style_dir;
+        NhlString	class_name;
+	NgDataProfile	data_profile;
+	NhlString	plot_style;
+	NhlString	plot_style_dir;
 } NgHluPage;
-        
+
+extern brHluObjCreate NgNewHluObjCreateRec
+(
+        NhlString	class_name,
+	NgDataProfile	data_profile,
+	NhlString	plot_style,
+	NhlString	plot_style_dir,
+	int		obj_id,
+	NhlBoolean	has_input_data,
+	_hluState	state
+);
+
+extern void NgFreeHluObjCreateRec
+(
+	brHluObjCreate	obj_create
+);
+
+      
+extern void NgHluObjCreateUpdate
+(
+	int go_id,
+	int page_id
+);
+
 #endif	/* _NG_HLUPAGE_H */

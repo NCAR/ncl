@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.17 1998-11-18 19:45:12 dbrown Exp $
+ *      $Id: app.c,v 1.18 1999-02-23 03:56:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -429,12 +429,14 @@ DeleteWksCB
 				NgAppSetSelectedWork
 					(app->base.id,
 					 NrmQuarkToString(qvars[i]));
+                        NclFree(qvars);
                         return;
                 }
         }
 	app->app.selected_work_id = NhlNULLOBJID;
         sprintf(line,"delete(%s)\n",Ng_SELECTED_WORK);
         (void)NgNclSubmitBlock(app->app.nclstate,line);
+        NclFree(qvars);
         
         return;
 }
@@ -647,7 +649,7 @@ NgAddPriorityWorkProc
 	char		func[] = "NgAddPriorityWorkProc";
 	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
 	NgAppMgrClass	ac;
-	_NgWorkProc	wp;
+	_NgWorkProc	wp,*twp;
 	NhlBoolean	pending;
 
 	if(!app || !_NhlIsClass((NhlLayer)app,NgappMgrClass)){
@@ -672,8 +674,11 @@ NgAddPriorityWorkProc
 
 	wp->proc = work_proc;
 	wp->cdata = cdata;
-	wp->next = app->app.wp;
-	app->app.wp = wp;
+	wp->next = NULL;
+	twp = &app->app.wp;
+	while (*twp) 
+		twp = &((*twp)->next);
+	*twp = wp;
 
 	/*
 	 * Only install a work proc at the device level, if there
@@ -836,7 +841,7 @@ _NgCBWPCallback
 
 	NhlINITVAR(lcbdata);
 	if(cbwp->copy_func){
-		if(!(*cbwp->copy_func)(cbdata,&lcbdata))
+		if(!(*cbwp->copy_func)(cbdata,cbwp->udata,&lcbdata))
 			return;
 	}
 	else
@@ -913,6 +918,7 @@ _NgCBWPDeleteCB
 		cbwp->co_id = l->base.id;
 
 	_NgCBWPCleanout(cbwp);
+
 
 	return;
 }

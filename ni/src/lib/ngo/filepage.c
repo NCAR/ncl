@@ -1,5 +1,5 @@
 /*
- *      $Id: filepage.c,v 1.5 1998-01-08 01:19:24 dbrown Exp $
+ *      $Id: filepage.c,v 1.6 1999-02-23 03:56:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -103,11 +103,10 @@ NewFileRefPage
 	pdp->destroy_page = DestroyFileRefPage;
 	pdp->adjust_page_geo = AdjustFileRefPageGeometry;
 	pdp->deactivate_page = NULL;
-	pdp->page_output_notify = NULL;
-        pdp->page_input_notify = NULL;
         pdp->public_page_data = NULL;
         pdp->update_page = NULL;
         pdp->page_focus_notify = NULL;
+        pdp->page_message_notify = NULL;
         
         return pdp;
 }
@@ -119,7 +118,8 @@ NgGetFileRefPage
 	NgGO		go,
         brPane		*pane,
 	brPage		*page,
-        brPage		*copy_page
+        brPage		*copy_page,
+	NgPageSaveState save_state
 )
 {
 	NgBrowse		browse = (NgBrowse)go;

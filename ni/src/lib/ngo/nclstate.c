@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.19 1998-11-18 19:45:21 dbrown Exp $
+ *      $Id: nclstate.c,v 1.20 1999-02-23 03:56:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1308,7 +1308,9 @@ NgNclSubmitBlock
 			if(!cmd) break;
 			cmd++;
 		}
+#if 0
 		if(!ncl->nclstate.err)
+#endif
 			SubmitNclLine(ncl,"end\n");
 	}
 
@@ -1812,5 +1814,58 @@ NgNclVisBlockAddResList
                         sprintf(&ns->buffer[buflen],"\"%s\" : %s\n",
                                 res_names[i],values[i]);
         }
+        return NhlNOERROR;
+}
+
+extern NhlErrorTypes
+NgNclCopyShapedVar
+(
+        int		nclstate,
+        NhlString       to_varname,
+	NrmQuark	qfile,
+	NrmQuark	qvar,
+	int		ndims,
+	long		*start,
+	long		*finish,
+	long		*stride
+)
+
+{
+	NgNclState	ncl = (NgNclState)_NhlGetLayer(nclstate);
+	NgNclStatePart	*ns;
+	int		i;
+
+        if (! ncl) {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Invalid nclstate id"));
+                return NhlFATAL;
+        }
+        ns = &ncl->nclstate;
+        if (! ns->buffer) {
+                ns->buffer = NhlMalloc(512);
+                if (!ns->buffer) {
+                        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+                        return NhlFATAL;
+                }
+                ns->bufsize = 512;
+        }
+
+        if (qfile)
+                sprintf(ns->buffer,"%s = %s->%s(",
+                        NgNclGetSymName(nclstate,to_varname,False),
+                        NrmQuarkToString(qfile),
+                        NrmQuarkToString(qvar));
+        else
+                sprintf(ns->buffer,"%s = %s(",
+                        NgNclGetSymName(nclstate,to_varname,False),
+                        NrmQuarkToString(qvar));
+        for (i = 0; i < ndims; i++) 
+		sprintf(&ns->buffer[strlen(ns->buffer)],"%d:%d:%d,",start[i],
+			finish[i],stride[i]);
+        
+        	/* backup 1 to remove last comma */
+	sprintf(&ns->buffer[strlen(ns->buffer)-1],")\n");
+
+	(void)NgNclSubmitBlock(nclstate,ns->buffer);
+
         return NhlNOERROR;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: vcrcontrolP.h,v 1.1 1997-03-04 00:04:43 dbrown Exp $
+ *      $Id: vcrcontrolP.h,v 1.2 1999-02-23 03:56:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 #include <ncarg/ngo/vcrcontrol.h>
 
  
-#define DEBUG_VCR_CONTROL 1
+#define DEBUG_VCR_CONTROL 0
 
 
 #endif	/* _NG_VCRCONTROLP_H_ */

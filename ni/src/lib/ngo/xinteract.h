@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.h,v 1.3 1999-01-11 19:36:30 dbrown Exp $
+ *      $Id: xinteract.h,v 1.4 1999-02-23 03:56:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #define	_XINTERACT_H
 
 #include <ncarg/ngo/goP.h>
+#include <ncarg/ngo/graphic.h>
 #include <ncarg/ngo/xwk.h>
 
 typedef struct _NgXBBox{

@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.h,v 1.3 1998-01-08 01:19:29 dbrown Exp $
+ *      $Id: restree.h,v 1.4 1999-02-23 03:56:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -97,6 +97,7 @@ extern NgResTree *NgDupResTree
         NgResTree		*from_res_tree
         );
 
+
 extern void NgDestroyResTree
 (
         NgResTree		*res_tree
@@ -107,5 +108,10 @@ extern void NgRestoreResTreeOverlays
         NgResTree		*res_tree
         );
 
+NhlString NgResTreeGetSetValue
+(
+        NgResTree	*res_tree,
+	NrmQuark	resq
+        );
 
 #endif	/* _NG_RESTREE_H */

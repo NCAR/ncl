@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegrid.h,v 1.2 1999-01-11 19:36:24 dbrown Exp $
+ *      $Id: datasourcegrid.h,v 1.3 1999-02-23 03:56:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,24 +38,6 @@
 /*
  * Public api
  */
-#if 0
-typedef struct _NgOLDDataProfileRec
-{
-	NgClassType	type;
-        NhlString	def_name;
-        NhlString	class_name;
-	NhlClass	class;
-        int		n_dataitems;
-	int		master_data_ix;
-        int		n_datadims[8];
-        NhlString	data_names[8];
-        NrmQuark	data_resnames[8];
-	NrmQuark	qfiles[8];
-	NrmQuark	qvars[8];
-	int		n_coords;
-        int		coord_ix[8];
-} NgOLDDataProfileRec, *NgOLDDataProfile;
-#endif
 
 typedef struct _NgDataSourceGrid
 {

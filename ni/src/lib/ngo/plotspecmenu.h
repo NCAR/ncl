@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenu.h,v 1.3 1999-01-11 19:36:28 dbrown Exp $
+ *      $Id: plotspecmenu.h,v 1.4 1999-02-23 03:56:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -44,6 +44,10 @@ typedef struct _NgPlotSpecMenu
         Widget		plot_mbutton;
         Widget		var_mbutton;
         Widget		data_mbutton;
+	int		page_id;
+	NgVarData	vdata;
+	
+#if 0
         NrmQuark		qsymbol;
         NclApiVarInfoRec	*vinfo;
 	long			*start;
@@ -51,6 +55,7 @@ typedef struct _NgPlotSpecMenu
 	long			*stride;
         PageOutputNotify	output_notify;
         NhlPointer		pdata;
+#endif
 } NgPlotSpecMenu;
 
 NgPlotSpecMenu *

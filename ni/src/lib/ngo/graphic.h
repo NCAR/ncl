@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.h,v 1.3 1999-01-11 19:36:25 dbrown Exp $
+ *      $Id: graphic.h,v 1.4 1999-02-23 03:56:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,30 @@
 #ifndef	_NG_GRAPHIC_H
 #define	_NG_GRAPHIC_H
 
-#include <ncarg/ngo/go.h>
+#include <ncarg/ngo/app.h>
+#include <ncarg/hlu/NresDB.h>
+
+typedef struct _NgHluDataRec {
+	int		page_id;
+	NrmQuark	q_sym;
+	NhlPointer	ddata;        /* data profile */
+	NhlPointer	gdata;	      /* graphic info */
+	NrmQuark	qplotstyle;
+	NhlBoolean	preview;
+	int		go_id;
+	NgCBWP		destroy_cb;
+} NgHluDataRec, *NgHluData;
+
+extern NgHluData NgGetHluData
+(
+	void
+);
+
+void NgFreeHluData
+(
+	NgHluData hlu_data
+);
+	
 
 typedef void (*NgSetResProc)
 (

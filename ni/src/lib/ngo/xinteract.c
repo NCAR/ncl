@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.c,v 1.3 1999-01-11 19:36:30 dbrown Exp $
+ *      $Id: xinteract.c,v 1.4 1999-02-23 03:56:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -228,6 +228,7 @@ static void XorDrawViewPort(
 {
 	NhlLayer l = _NhlGetLayer(view_id);
 	NgViewObj vobj = NULL;
+	NgHluData hdata;
 	XPoint xbox[5];
 
 #if DEBUG_XINTERACT
@@ -240,8 +241,10 @@ static void XorDrawViewPort(
 	if (! erase && xwk->xwk.select_rect_vis)
 		return;
 
-	if ( l)
-		vobj = (NgViewObj) l->base.gui_data2;	
+	if ( l) {
+		hdata = (NgHluData) l->base.gui_data2;
+		vobj = hdata ? (NgViewObj) hdata->gdata : NULL;
+	}
 
 	if (! vobj) {
 		NgWksState 	wks_state;
@@ -325,12 +328,10 @@ static NhlBoolean ClearViewBB
 	NgViewObj	vobj = NULL;
 	NhlBoolean	do_clear = True;
 	
-/*
- * If condtional is true, then the BB is only cleared if it is different
- * from the previous BB.
- */
-	if (l) 
-		vobj = (NgViewObj) l->base.gui_data2;
+	if (l) {
+		NgHluData hdata = (NgHluData) l->base.gui_data2;
+		vobj = hdata ? (NgViewObj) hdata->gdata : NULL;
+	}
 
 	if (! vobj) {
 		NgWksState 	wks_state = NULL;
@@ -389,12 +390,15 @@ static int GetIntersectingViews
 	NgViewObj	vobj;
 	NgWksState 	wks_state;
 	int		count = 0;
+	NgHluData	hdata;
 
 	if (! l)
 		return 0;
-	vobj = (NgViewObj) l->base.gui_data2;
+	hdata = (NgHluData) l->base.gui_data2;
+	vobj  = hdata ? (NgViewObj) hdata->gdata : NULL;
+
 	if (! vobj)
-		return count;
+		return 0;
 
 	NhlVAGetValues(xwk->go.appmgr,
 		       NgNappWksState,&wks_state,
@@ -432,6 +436,7 @@ static void Manipulate
 	Window			win = XtWindow(xwk->xwk.graphics);
 	NgWksObj		wks;
 	NhlBoolean		save_auto_refresh;
+	NgHluData		hdata;
 
 	if (! l)
 		return;
@@ -448,8 +453,8 @@ static void Manipulate
 		BsideCursor = XCreateFontCursor(dpy, XC_bottom_side);
 		MoveCursor = XCreateFontCursor(dpy, XC_fleur);
 	}
-	vobj = (NgViewObj) l->base.gui_data2;
-
+	hdata = (NgHluData) l->base.gui_data2;
+	vobj = hdata ? (NgViewObj) hdata->gdata : NULL;
 
 	XGRABSERVER(dpy);
 	if(XGrabPointer(dpy,win,False,
@@ -626,7 +631,8 @@ static void Manipulate
 	 * (because we're already doing it)
 	 */
 
-	wks = (NgWksObj) xwk->xwk.xwork->base.gui_data2;
+	hdata = (NgHluData) xwk->xwk.xwork->base.gui_data2;
+	wks = hdata ? (NgWksObj) hdata->gdata : NULL;
 	if (wks) {
 		save_auto_refresh = wks->auto_refresh;
 		wks->auto_refresh = False;
@@ -715,12 +721,15 @@ fprintf(stderr,"In ManipulateEH()\n");
 		l = _NhlGetLayer(xwk->xwk.selected_view_id);
 	}
 	else {
-		vobj = (NgViewObj) l->base.gui_data2;
-		if(	! vobj->visible ||
-			(event->x < (vobj->xvp.p0.x - FUZZFACTOR))	||
-			(event->x > (vobj->xvp.p1.x + FUZZFACTOR))	||
-			(event->y < (vobj->xvp.p0.y - FUZZFACTOR))	||
-			(event->y > (vobj->xvp.p1.y + FUZZFACTOR))	) {
+		NgHluData hdata = (NgHluData) l->base.gui_data2;
+		vobj = hdata ? (NgViewObj) hdata->gdata : NULL;
+
+		if(vobj && 
+		   ( ! vobj->visible ||
+		     (event->x < (vobj->xvp.p0.x - FUZZFACTOR))	||
+		     (event->x > (vobj->xvp.p1.x + FUZZFACTOR))	||
+		     (event->y < (vobj->xvp.p0.y - FUZZFACTOR))	||
+		     (event->y > (vobj->xvp.p1.y + FUZZFACTOR))	) ) {
 			/* 
 			 * go ahead and see if another view can be selected
 			 *
@@ -1147,8 +1156,7 @@ extern void NgDrawXwkView
 	if (!xwk)
 		return;
 
-	if (!xwk->go.up) 
-		NgXWorkPopup(xwk->go.appmgr,xwk->base.id);
+	NgXWorkPopup(xwk->go.appmgr,xwk->base.id);
 
 	NhlVAGetValues(xwk->go.appmgr,
 		       NgNappWksState,&wks_state,
@@ -1341,6 +1349,7 @@ extern void NgClearXwkView
 		if (xwk->xwk.selected_view_id != view_id) {
 			XorDrawViewPort(xwk,xwk->xwk.selected_view_id,False);
 		}
+		NhlFree(draw_table);
 		return;
 	}
 	for (i = 0,j = 0; i < vcount; i++) {
@@ -1382,6 +1391,7 @@ extern void NgClearXwkView
 	if (xwk->xwk.selected_view_id != view_id) {
 		XorDrawViewPort(xwk,xwk->xwk.selected_view_id,False);
 	}
+	NhlFree(draw_table);
 	return;
 }
 
@@ -1398,11 +1408,13 @@ extern void NgSetSelectedXwkView
 	Position   x,y;
 	RubberRec  rubber = {MODPT,0,};
 	int view_count,i;
+	NgHluData	hdata;
 
 	if (!(xwk && l))
 		return;
 
-	vobj = (NgViewObj)l->base.gui_data2;
+	hdata = (NgHluData) l->base.gui_data2;
+	vobj = hdata ? (NgViewObj) hdata->gdata : NULL;
 
 	if (!vobj)
 		return;

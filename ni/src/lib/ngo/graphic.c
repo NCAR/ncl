@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.9 1999-01-11 19:36:25 dbrown Exp $
+ *      $Id: graphic.c,v 1.10 1999-02-23 03:56:48 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -63,6 +63,7 @@ NhlErrorTypes NgCreatePreviewGraphic
         NhlPointer	*pres_proc_data
         )
 {
+	NhlErrorTypes ret;
         static int srlist;
         int i,parent_id;
         int count,*id_array;
@@ -70,6 +71,7 @@ NhlErrorTypes NgCreatePreviewGraphic
         NhlClass class;
         NgGO go = (NgGO)_NhlGetLayer(goid);
 	char namebuf[128];
+	NhlLayer l;
 
         if (!go) {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid graphic object"));
@@ -128,7 +130,16 @@ NhlErrorTypes NgCreatePreviewGraphic
                         return NhlFATAL;
                 }
         }
-        return NhlCreate(hlu_id,namebuf,class,parent_id,srlist);
+        ret = NhlCreate(hlu_id,namebuf,class,parent_id,srlist);
+	
+	if (ret < NhlWARNING || *hlu_id <= NhlNULLOBJID 
+	    || ! (l = _NhlGetLayer(*hlu_id))) {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                           "unable to create graphic object %s",ncl_graphic));
+                return NhlFATAL;
+        }
+
+	return ret;
 }
 
 /*
@@ -234,6 +245,7 @@ NhlErrorTypes NgCreateGraphic
         int block_id;
         NhlString hlu_parent = "defaultapp";
         NgGO go = (NgGO)_NhlGetLayer(goid);
+	NhlLayer l;
 
         if (!go) {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid graphic object"));
@@ -275,7 +287,7 @@ NhlErrorTypes NgCreateGraphic
                            ncl_graphic));
                 NhlFree(id_array);
         }
-        if (*hlu_id <= NhlNULLOBJID) {
+        if (*hlu_id <= NhlNULLOBJID || ! (l = _NhlGetLayer(*hlu_id))) {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
                            "unable to create graphic object %s",ncl_graphic));
                 return NhlFATAL;
@@ -326,6 +338,12 @@ NhlErrorTypes NgDestroyGraphic
                 return (NhlErrorTypes) NhlFATAL;
         }
 
+	if (! NclSymbolDefined(ncl_graphic)) {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+        "undefined symbol,probably a preview object,no way to find hlu id\n"));
+		return NhlWARNING;
+	}
+		
         hlu_id = NgNclGetHluObjId
                 (go->go.nclstate,ncl_graphic,&count,&id_array);
         for (i = 0; i < count; i++) {
@@ -334,7 +352,9 @@ NhlErrorTypes NgDestroyGraphic
                         hlu_id = id_array[i];
 		l = _NhlGetLayer(hlu_id);
 		if (l && _NhlIsXWorkstation(l)) {
-			NgWksObj wkobj = (NgWksObj) l->base.gui_data2;
+			NgWksObj wkobj;
+			NgHluData hdata = (NgHluData) l->base.gui_data2;
+			wkobj = hdata ? (NgWksObj) hdata->gdata : NULL;
 			if (wkobj)
 				wkobj->auto_refresh = False;
 		}
@@ -365,7 +385,7 @@ NhlErrorTypes NgDrawGraphic
 	NgWksState wks_state;
 
         if (!go) {
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid graphic object"));
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"invalid graphic object"));
                 return (NhlErrorTypes) NhlFATAL;
         }
 	NhlVAGetValues(go->go.appmgr,
@@ -393,7 +413,7 @@ NhlErrorTypes NgDrawGraphic
         if (! has_drawable) {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
                            "graphic not drawable %s",ncl_graphic));
-                return NhlWARNING;
+                return NhlFATAL;
         }
 
 	base_id = _NhlBasePlot(hlu_id);
@@ -401,10 +421,15 @@ NhlErrorTypes NgDrawGraphic
 
 	if (NhlIsClass(wk_id,NhlxWorkstationClass)) {
 		NhlLayer wkl = _NhlGetLayer(wk_id);
-		NgWksObj wko = (NgWksObj) wkl->base.gui_data2;
-		int appmgr = (int) wkl->base.gui_data;
-		NgGO go = (NgGO) _NhlGetLayer(wko->wks_wrap_id);
+		NgWksObj wko;
+		NgHluData hdata = (NgHluData) wkl->base.gui_data2;
 
+		wko = hdata ? (NgWksObj) hdata->gdata : NULL;
+		if (! wko) {
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				   "graphic not drawable %s",ncl_graphic));
+			return NhlFATAL;
+		}
 		NgDrawXwkView(wko->wks_wrap_id,base_id,clear);
 	}
 	else {
@@ -449,7 +474,41 @@ NhlErrorTypes NgDrawView
 }
 
 
-                        
+extern NgHluData NgGetHluData
+(
+	void
+)
+{
+	NgHluData hlu_data = NhlMalloc(sizeof(NgHluDataRec));
+
+	if (! hlu_data) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NULL;
+	}
+
+	hlu_data->page_id = 0;
+	hlu_data->q_sym = NrmNULLQUARK;
+	hlu_data->ddata = NULL;
+	hlu_data->gdata = NULL;
+	hlu_data->go_id = NhlNULLOBJID;
+	hlu_data->preview = False;
+	hlu_data->qplotstyle = NrmNULLQUARK;
+	hlu_data->destroy_cb = NULL;
+
+	return hlu_data;
+}
+	
+
+
+void NgFreeHluData
+(
+	NgHluData hlu_data
+)
+
+{
+	NhlFree(hlu_data);
+	return;
+}
 
 
 

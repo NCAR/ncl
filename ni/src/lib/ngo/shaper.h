@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.h,v 1.4 1997-06-27 07:20:22 dbrown Exp $
+ *      $Id: shaper.h,v 1.5 1999-02-23 03:56:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,7 @@
 #include <ncarg/ngo/browse.h>
 #include <ncarg/ngo/datagrid.h>
 #include <ncarg/ngo/shapeinfogrid.h>
+#include <ncarg/ngo/varpage.h>
 
 typedef void (*NgShapeApply)(
 #if     NhlNeedProto
@@ -62,7 +63,6 @@ typedef struct _NgShaper {           /* shaper interface struct */
 	NhlBoolean	restore;
 	NgShapeApply	apply;
         AdjustPageGeoFunc geo_notify;
-        PageOutputNotify output_notify;
         NhlPointer	pdata;
         Dimension	sub_width;
 } NgShaper;

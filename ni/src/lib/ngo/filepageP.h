@@ -1,5 +1,5 @@
 /*
- *      $Id: filepageP.h,v 1.2 1997-06-06 03:14:51 dbrown Exp $
+ *      $Id: filepageP.h,v 1.3 1999-02-23 03:56:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -37,7 +37,8 @@ NgGetFileRefPage(
 	NgGO		go,
         brPane		*pane,
 	brPage		*page,
-        brPage		*copy_page
+        brPage		*copy_page,
+	NgPageSaveState save_state
         );
 
 

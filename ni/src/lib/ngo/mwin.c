@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.21 1999-01-11 19:36:26 dbrown Exp $
+ *      $Id: mwin.c,v 1.22 1999-02-23 03:56:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -70,6 +70,26 @@ static NhlBoolean MWCreateWin(
 static NhlBoolean MWCreateWinHook(
 	NgGO	go
 );
+
+static void RowMoveAction(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+);
+
+static void RowSetPosAction(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+);
+
+static XtActionsRec mwinactions[] = {
+	{ "RowMoveAction", RowMoveAction },
+	{ "RowSetPosAction", RowSetPosAction },
+	
+};
 
 NgMWinClassRec NgmWinClassRec = {
 	{
@@ -186,6 +206,7 @@ typedef struct 	_NgMissingBaseNodeRec {
 struct _NgObjTreeRec{
 	int			nsid;
 	int			appmgr;
+	NgGO			go;
 
 	Widget			wtree;
 
@@ -306,6 +327,28 @@ FindNode
 	return FindNode(node->next,id);
 }
 
+
+static NgObjTreeNode
+FindRowNode
+(
+	NgObjTreeNode	node,
+	int		row
+)
+{
+	NgObjTreeNode fnode;
+
+	if (! node)
+		return NULL;
+	if (node->pos == row)
+		return node;
+
+	fnode = FindRowNode(node->cnodes,row);
+	if (fnode)
+		return fnode;
+
+	return FindRowNode(node->next,row);
+}
+
 static void
 GetWkObjs
 (
@@ -317,33 +360,56 @@ GetWkObjs
 	NgNclHluObj	hlu = (NgNclHluObj)obj;
 	NgObjTree	otree = (NgObjTree)udata;
 	NgObjTreeNode	new;
-	NgWksObj 	wko;
+	NgWksObj 	wko = NULL;
+	NhlLayer	l;
+	NgHluData 	hdata;
 
 	if(!NhlClassIsSubclass(hlu->class_ptr,NhlworkstationClass))
 		return;
-	if(!_NhlGetLayer(hlu->id)){
+	l = _NhlGetLayer(hlu->id);
+	if (! l) {
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid obj id %d",
 			   func,hlu->id));
 		return;
 	}	
-
 	new = AllocNode(otree,NULL,_ngWksNode);
 	if(!new){
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return;
 	}
-	wko = NhlMalloc(sizeof(NgWksObjRec));
-	if(!wko){
-		NHLPERROR((NhlFATAL,ENOMEM,NULL));
-		FreeNode(new);
-		return;
-	}	
-	new->id = hlu->id;
+
+	if (l->base.gui_data2) {
+		hdata = (NgHluData) l->base.gui_data2;
+
+		/* the NgWksObj data has been allocated already (by xwk) */
+		wko = hdata ? (NgWksObj) hdata->gdata : NULL;
+	}
+	else {
+		hdata = NgGetHluData();
+		if (! hdata)
+			return;
+		l->base.gui_data2 = (NhlPointer) hdata;
+	}
+	if (! wko) {
+		wko = NhlMalloc(sizeof(NgWksObjRec));
+		if(!wko){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			FreeNode(new);
+			return;
+		}
+		hdata->gdata = wko;
+		wko->wks_wrap_id = NhlNULLOBJID;
+		wko->cccb = NULL;
+		wko->auto_refresh = False;
+	}
+
 	wko->name = hlu->name;
 	wko->parent_id = hlu->parent_id;
-	new->ndata = (ObjNodeData) wko;
 
+	new->id = hlu->id;
+	new->ndata = (ObjNodeData) wko;
 	new->next = otree->wklist;
+
 	otree->wklist = new;
 
 	return;
@@ -361,26 +427,55 @@ GetVwObjs
 	NgObjTree	otree = (NgObjTree)udata;
 	NgObjTreeNode	work,new,*tmp;
 	int		i;
-	NhlLayer	l;
-	NgViewObj	vwo;
+	NhlLayer	l,wl;
+	NgViewObj	vwo = NULL;
+	NgHluData	hdata;
 
 	/*
 	 * Only interested in view class objects.
 	 */
 	if(NhlClassIsSubclass(hlu->class_ptr,NhlviewClass))
 		return;
-	if(!_NhlGetLayer(hlu->id)){
+	if(!(l = _NhlGetLayer(hlu->id))){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid obj id %d",
 			   func,hlu->id));
 		return;
 	}	
+	if (l->base.gui_data2) {
+		hdata = (NgHluData) l->base.gui_data2;
+		vwo = hdata ? (NgViewObj) hdata->gdata : NULL;
+	}
+	else {
+		hdata = NgGetHluData();
+		if (! hdata)
+			return;
+		l->base.gui_data2 = (NhlPointer) hdata;
+	}
+	if (! vwo) {
+		vwo = NhlMalloc(sizeof(NgViewObjRec));
+		if(!vwo){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return;
+		}
+		hdata->gdata = (NhlPointer) vwo;
+		vwo->ovcb = NULL;
+		vwo->ancb = NULL;
+		vwo->svcb = NULL;
+		vwo->vstatus = _ngBASIC_VIEW;
+		vwo->xvp.p0.x = vwo->xvp.p0.y = 
+			vwo->xvp.p1.x = vwo->xvp.p1.y = 15000;
+		vwo->xbbox = vwo->xvp;
+		vwo->visible = False;
+	}
+	vwo->name = hlu->name;
+	vwo->parent_id = hlu->parent_id;
 
 	/*
 	 * In fact, only interested in view class objects that are
 	 * immediate children of a workstation class object.
 	 */
-	l = _NhlGetLayer(hlu->parent_id);
-	if(!l || !_NhlIsClass(l,NhlworkstationClass))
+	wl = _NhlGetLayer(hlu->parent_id);
+	if(!wl || !_NhlIsClass(wl,NhlworkstationClass))
 		return;
 
 	work = otree->wklist;
@@ -398,15 +493,7 @@ GetVwObjs
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return;
 	}
-	vwo = NhlMalloc(sizeof(NgViewObjRec));
-	if(!vwo){
-		NHLPERROR((NhlFATAL,ENOMEM,NULL));
-		FreeNode(new);
-		return;
-	}	
 	new->id = hlu->id;
-	vwo->name = hlu->name;
-	vwo->parent_id = hlu->parent_id;
 	new->ndata = (ObjNodeData) vwo;
 
 	work->n_cnodes++;
@@ -526,6 +613,7 @@ static NhlBoolean
 CopyCC
 (
 	NhlArgVal	cbdata,
+	NhlArgVal	udata,
 	NhlArgVal	*ret
 )
 {
@@ -748,31 +836,43 @@ AddWorkNode
 	char		func[]="AddWorkNode";
 	NhlArgVal	sel,udata;
 	NgObjTreeNode	tmp,last;
-	NgWksObj 	wko;
+	NgWksObj 	wko = NULL;
 	NhlLayer	l;
 	char		*name;
+	NgHluData 	hdata;
 
 	l = _NhlGetLayer(hlu->id);
 	if (l->base.gui_data2) {
+		hdata = (NgHluData) l->base.gui_data2;
+
 		/* the NgWksObj data has been allocated already (by xwk) */
-		wko = (NgWksObj) l->base.gui_data2;
+		wko = hdata ? (NgWksObj) hdata->gdata : NULL;
 	}
 	else {
-		wko = NhlMalloc(sizeof(NgWksObjRec));
-		wko->wks_wrap_id = NhlNULLOBJID;
+		hdata = NgGetHluData();
+		if (! hdata)
+			return False;
+		l->base.gui_data2 = (NhlPointer) hdata;
 	}
+
 	if(!wko){
-		NHLPERROR((NhlFATAL,ENOMEM,NULL));
-		return False;
+		wko = NhlMalloc(sizeof(NgWksObjRec));
+		if (! wko) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return False;
+		}
+		hdata->gdata = (NhlPointer) wko;
+		wko->wks_wrap_id = NhlNULLOBJID;
+		wko->cccb = NULL;
+		wko->auto_refresh = False;
 	}	
+	
 	wknode->id = hlu->id;
 
 	wko->name = hlu->name;
 	wko->parent_id = hlu->parent_id;
-        wko->cccb = NULL;
 
 	wknode->ndata = (ObjNodeData) wko;
-	l->base.gui_data2 = (NhlPointer) wko;
 
 	if(! otree->wklist) {
 		otree->wklist = wknode;
@@ -1822,6 +1922,7 @@ SetValuesCB
 	NgViewObj	vobj;
 	NgWksObj	wks;
 	int		base_id;
+	NgHluData	hdata;
 
 #if DEBUG_MWIN
 	fprintf(stderr,"in set values cb\n");
@@ -1838,33 +1939,14 @@ SetValuesCB
 	if (vl->base.being_destroyed || vl->base.wkptr->base.being_destroyed)
 		return;
 
-	vobj = (NgViewObj)vl->base.gui_data2;
-	NhlVAGetValues(svstat->id,
-		       NhlNvpOn,&vobj->visible,
-		       NULL);
-#if 0
-	if (vobj->suppress_svcb) {
-		vobj->suppress_svcb = False;
-		return;
-	}
 
-	for (wp = otree->wklist; wp; wp = wp->next)
-		if (wp->id == vl->base.wkptr->base.id)
-			break;
+	hdata = (NgHluData) vl->base.gui_data2;
+	vobj = hdata ? (NgViewObj) hdata->gdata : NULL;
 
-	if (! wp) {
-		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-			   "%s:Invalid view id!",func));
-		return;
-	}
-
-	wks = (NgWksObj) wp->ndata;
-	if (! (wks && wks->auto_refresh))
-		return;
-	
-	base_id = _NhlTopLevelView(svstat->id);
-	NgDrawXwkView(wks->wks_wrap_id,base_id);
-#endif
+	if (vobj) 
+		NhlVAGetValues(svstat->id,
+			       NhlNvpOn,&vobj->visible,
+			       NULL);
 
 	return;
 }
@@ -1885,22 +1967,44 @@ AddViewNode
 	NgObjTreeNode	bnode;
 	int		i,base_id;
 	Boolean		is_base_plot;
-	NgViewObj	vwo;
 	int		last_node_pos;
 	NhlBoolean	base_node_not_found = False;
 	NhlLayer	l;
-	char *name;
+	char		*name;
+	NgHluData	hdata;
+	NgViewObj	vwo = NULL;
 
 	l = _NhlGetLayer(hlu->id);
-	vwo = NhlMalloc(sizeof(NgViewObjRec));
-	if(!vwo){
-		NHLPERROR((NhlFATAL,ENOMEM,NULL));
-		return False;
+	if (l->base.gui_data2) {
+		hdata = (NgHluData) l->base.gui_data2;
+		vwo = hdata ? (NgViewObj) hdata->gdata : NULL;
 	}
-	l->base.gui_data2 = (NhlPointer) vwo;
+	else {
+		hdata = NgGetHluData();
+		if (! hdata)
+			return False;
+		l->base.gui_data2 = (NhlPointer) hdata;
+	}
+	if (! vwo) {
+		vwo = NhlMalloc(sizeof(NgViewObjRec));
+		if(!vwo){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return False;
+		}
+		vwo->ovcb = NULL;
+		vwo->ancb = NULL;
+		vwo->svcb = NULL;
+		vwo->vstatus = _ngBASIC_VIEW;
+		vwo->xvp.p0.x = vwo->xvp.p0.y = 
+			vwo->xvp.p1.x = vwo->xvp.p1.y = 15000;
+		vwo->xbbox = vwo->xvp;
+		vwo->visible = False;
+		hdata->gdata = (NhlPointer) vwo;
+	}
+	vwo->name = hlu->name;
+	vwo->parent_id = hlu->parent_id;
 
 	vwnode->ndata = (ObjNodeData) vwo;
-
 	vwnode->id = hlu->id;
 	name = NgNclGetHLURef(otree->nsid,vwnode->id);
 	if (name) {
@@ -2040,11 +2144,16 @@ AddViewNode
 	NgUpdateViewBB((NgWksState)otree,vwnode->id);
 	if (! base_node_not_found) {
 		if (_NhlIsClass(l->base.wkptr,NhlxWorkstationClass)) {
+			NgHluData	hdata;
 			NgWksObj	wks;
-			wks = (NgWksObj)l->base.wkptr->base.gui_data2;
+
+			hdata = (NgHluData) l->base.wkptr->base.gui_data2;
+			wks = hdata ? (NgWksObj) hdata->gdata : NULL;
 			if (wks && wks->auto_refresh)
 				NgDrawXwkView
 					(wks->wks_wrap_id,vwnode->id,False);
+				NgSetSelectedXwkView
+					(wks->wks_wrap_id,vwnode->id);
 		}
 	}
 
@@ -2246,6 +2355,7 @@ CleanUpXCB
 static NgWksState
 ManageObjTree
 (
+	NgGO	go,
 	Widget	tree,
 	int	nsid
 )
@@ -2268,6 +2378,7 @@ ManageObjTree
 		return NULL;
 	}
 
+	otree->go = go;
 	otree->nsid = nsid;
 	NhlVAGetValues(nsid,
 		_NhlNguiData,	&guiData,
@@ -2381,6 +2492,9 @@ MWCreateWin
 	int		nsid;
 	NgWksState	wks_state;
 
+	XtAppAddActions(go->go.x->app,
+                        mwinactions,NhlNumber(mwinactions));
+
 	_NgGOCreateMenubar(go);
 	_NgGOSetTitle(go,"Plot Manager",NULL);
 
@@ -2397,20 +2511,24 @@ MWCreateWin
 		XmNbottomAttachment,	XmATTACH_NONE,
 		NULL);
 
-	objtree = XtVaCreateManagedWidget("otree",xmlTreeWidgetClass,pform,
-		XmNtopAttachment,	XmATTACH_WIDGET,
-		XmNtopWidget,		ptbform,
-		NULL);
+	objtree = XtVaCreateManagedWidget
+		("otree",xmlTreeWidgetClass,pform,
+		 XmNtopAttachment,	XmATTACH_WIDGET,
+		 XmNtopWidget,		ptbform,
+		 NULL);
 
 	NhlVAGetValues(go->go.appmgr,
 		NgNappNclState,	&nsid,
 		NULL);
 
-	wks_state = ManageObjTree(objtree,nsid);
+	wks_state = ManageObjTree(go,objtree,nsid);
 
 	NhlVASetValues(go->go.appmgr,
 		       NgNappWksState,wks_state,
 		       NULL);
+	XtVaSetValues(objtree,
+		      XmNuserData,wks_state,
+		      NULL);
 
 	mp->cwki=cwki = XtVaCreateManagedWidget
 		("cwki",xmPushButtonWidgetClass,ptbform,
@@ -2445,7 +2563,7 @@ MWCreateWinHook
 	XpmAttributes	xpmat;
 	XpmColorSymbol	colsym;
 	Pixel		back;
-
+#if 0
 	XtRealizeWidget(go->go.shell);
 
 	/*
@@ -2478,7 +2596,7 @@ MWCreateWinHook
 
 	XtAddCallback(mp->cwki,XmNdestroyCallback,XcbFreePixmapCB,
 							(XtPointer)pmap);
-
+#endif
 	return True;
 }
 /*
@@ -2757,5 +2875,107 @@ extern NgViewObj NgGetView
 
 	return (NgViewObj) vwnode->ndata;
 }
-	
 
+static void RowMoveAction
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+)
+
+{
+        int		x,y;
+        unsigned char	rowtype, coltype;
+        int		row,col;
+        XmLGridRow	rowptr;
+        XmLGridColumn	colptr;
+	NgObjTree	otree;
+	NgObjTreeNode	node; 
+	Pixmap		pixmap,pixmap_mask;
+	NgGO		go;
+
+#if DEBUG_MWIN
+	fprintf(stderr,"in row move action\n");
+#endif
+        x = xev->xbutton.x;
+        y = xev->xbutton.y;
+        
+        if (XmLGridXYToRowColumn(w,x,y,&rowtype,&row,&coltype,&col) < 0)
+                return;
+
+        rowptr = XmLGridGetRow(w,XmCONTENT,row);
+        colptr = XmLGridGetColumn(w,XmCONTENT,col);
+
+        XtVaGetValues(w,
+                      XmNrowPtr,rowptr,
+                      XmNuserData,&otree,
+                      NULL);
+
+#if DEBUG_MWIN
+	fprintf(stderr,"top row is %d\n",otree->wklist->pos);
+#endif
+	node = FindRowNode(otree->wklist,row);
+
+	if (! node)
+		return;
+#if DEBUG_MWIN
+	fprintf(stderr,"found row %d with id %d\n",node->pos,node->id);
+#endif
+	
+	if (node->type != _ngViewNode)
+		return;
+
+	XtVaGetValues(w,
+		      XmNrowPtr,rowptr,
+		      XmNcolumnPtr,colptr,
+		      XmNcellPixmap,&pixmap,
+		      XmNcellPixmapMask,&pixmap_mask,
+		      NULL);
+#if 0		
+        XDefineCursor(otree->go->go.x->dpy,quantize_pixmaps
+                      XtWindow(otree->go->go.manager),pixmap);
+#endif
+	return;
+}	
+
+
+static void RowSetPosAction
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+)
+{
+        int		x,y;
+        unsigned char	rowtype, coltype;
+        int		row,col;
+        XmLGridRow	rowptr;
+        XmLGridColumn	colptr;
+	NgObjTree	otree;
+	NgObjTreeNode	node; 
+	Pixmap		pixmap,pixmap_mask;
+	NgGO		go;
+
+#if DEBUG_MWIN
+	fprintf(stderr,"in row set pos action\n");
+#endif
+        x = xev->xbutton.x;
+        y = xev->xbutton.y;
+        
+        if (XmLGridXYToRowColumn(w,x,y,&rowtype,&row,&coltype,&col) < 0)
+                return;
+
+        rowptr = XmLGridGetRow(w,XmCONTENT,row);
+        colptr = XmLGridGetColumn(w,XmCONTENT,col);
+
+        XtVaGetValues(w,
+                      XmNrowPtr,rowptr,
+                      XmNuserData,&otree,
+                      NULL);
+
+        XUndefineCursor(otree->go->go.x->dpy,XtWindow(otree->go->go.manager));
+
+	return;
+}
