@@ -1,5 +1,5 @@
 ;
-;   $Id: tx06n.ncl,v 1.4 1995-04-07 10:54:43 boote Exp $
+;   $Id: tx06n.ncl,v 1.5 1995-04-27 19:42:46 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -28,10 +28,11 @@ begin
 ;
 ; Create a workstation, defining the desired colors.
 ;
-cmap = new( (/3, 3/), float)
-cmap(0,:) = (/0.0, 0.0, 1.0/)
-cmap(1,:) = (/1.0, 0.0, 0.4/)
-cmap(2,:) = (/0.4, 0.0, 0.4/)
+cmap = new( (/4, 3/), float)
+cmap(0,:) = (/1.0, 1.0, 1.0/)
+cmap(1,:) = (/0.0, 0.0, 1.0/)
+cmap(2,:) = (/1.0, 0.0, 0.4/)
+cmap(3,:) = (/0.4, 0.0, 0.4/)
 ;
 ; Default is to display output to an X workstation
 ;
@@ -44,7 +45,6 @@ if (NCGM .eq. 1) then
   workstation_id = create "tx06Work" ncgmWorkstationClass defaultapp
       "wkMetaName"         : "tx06n.ncgm"
       "wkColorMap"         : cmap
-      "wkBackgroundColor"  : (/ 1., 1., 1. /)
   end create
 else
 ;
@@ -53,7 +53,6 @@ else
   workstation_id = create "tx06Work"  xWorkstationClass defaultapp
     "wkPause"            : True
     "wkColorMap"         : cmap
-    "wkBackgroundColor"  : (/ 1., 1., 1. /)
   end create
 end if
 
