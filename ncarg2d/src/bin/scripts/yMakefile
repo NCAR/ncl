@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.44 2002-03-26 22:15:08 haley Exp $
+#	$Id: yMakefile,v 1.45 2002-05-23 23:03:50 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
@@ -37,6 +37,7 @@ $(NGF_SCRIPT): ncargf77.csh Makefile
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
+	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
 	<ncargf77.csh > $(NGF_SCRIPT)
@@ -53,6 +54,7 @@ ncargcc: ncargcc.csh Makefile
 	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
+	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
 	<ncargcc.csh >ncargcc
