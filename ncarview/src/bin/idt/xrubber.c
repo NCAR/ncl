@@ -1,5 +1,5 @@
 /*
- *	$Id: xrubber.c,v 1.12 1993-01-06 22:40:03 clyne Exp $
+ *	$Id: xrubber.c,v 1.13 1993-02-03 01:03:24 clyne Exp $
  */
 /*
  *	xrubber.c
@@ -428,8 +428,24 @@ void	get_largest_rect(ar, x, y, width, height)
  *			  selection for lower left and upper right coords 
  *			  for the ictrans "zoom" command
  */	
-char	*ZoomCoords(Display *dpy, Window root, float ar, float *llx, 
+
+char	*ZoomCoords(
+#ifdef	__STDC__
+		Display *dpy, Window root, float ar, float *llx, 
 			float *lly, float *urx, float *ury)
+#else
+		dpy, root, ar, llx, lly, urx, ury)
+
+		Display *dpy;
+		Window root;
+		float ar;
+		float *llx;
+		float *lly;
+		float *urx;
+		float *ury;
+
+		
+#endif
 {
 
 	int		wx, wy;		/* window origin	*/
