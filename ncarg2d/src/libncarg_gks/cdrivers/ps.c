@@ -1,5 +1,5 @@
 /*
- *      $Id: ps.c,v 1.34 2003-04-11 00:14:00 fred Exp $
+ *      $Id: ps.c,v 1.35 2003-11-19 01:46:57 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -449,15 +449,8 @@ void PSpreamble (PSddp *psa, preamble_type type)
                 (void) fprintf(fp, "%%%%CreationDate: %s %s\n",
                                         __DATE__,__TIME__);
                 if (psa->type != RPS) {
-                  (void) fprintf(psa->file_pointer, "%%%%BoundingBox: ");
-                  (void) fprintf(psa->file_pointer, "%d ",
-                          (int) ((psa->scaling) * ((float)(psa->dspace.llx))));
-                  (void) fprintf(psa->file_pointer, "%d ",
-                          (int) ((psa->scaling) * ((float)(psa->dspace.lly))));
-                  (void) fprintf(psa->file_pointer, "%d ",
-                         (int) ((psa->scaling) * ((float)(psa->dspace.urx))+1));
-                  (void) fprintf(psa->file_pointer, "%d\n",
-                         (int) ((psa->scaling) * ((float)(psa->dspace.ury))+1));
+                  (void) fprintf(psa->file_pointer, 
+                              "%%%%BoundingBox: (atend)\n");
                 }
                 (void) fprintf(fp, "%%%%DocumentFonts: (atend)\n");
                 (void) fprintf(fp, "%%%%EndComments\n");
@@ -2166,6 +2159,18 @@ ps_CloseWorkstation(gksc)
         pages--;
         if (psa->type == RPS) {
                 (void) fprintf(psa->file_pointer, "%%%%Pages: %d\n", pages);
+        }
+
+        if (psa->type != RPS) {
+           (void) fprintf(psa->file_pointer, "%%%%BoundingBox: ");
+           (void) fprintf(psa->file_pointer, "%d ",
+                  (int) ((psa->scaling) * ((float)(psa->dspace.llx))));
+           (void) fprintf(psa->file_pointer, "%d ",
+                  (int) ((psa->scaling) * ((float)(psa->dspace.lly))));
+           (void) fprintf(psa->file_pointer, "%d ",
+                  (int) ((psa->scaling) * ((float)(psa->dspace.urx))+1));
+           (void) fprintf(psa->file_pointer, "%d\n",
+                  (int) ((psa->scaling) * ((float)(psa->dspace.ury))+1));
         }
 
         (void) fprintf(psa->file_pointer, "%%%%EOF\n");
