@@ -1,0 +1,25 @@
+/*
+ *	$Id: s_gqchb.c,v 1.1 1997-03-05 19:12:53 haley Exp $
+ */
+/*
+ *  Inquire character base vector
+ */
+
+#include <ncarg/gks.h>
+
+void ginq_char_base_vec
+#ifdef NeedFuncProto
+(
+    Gint *err_ind,       /* OUT error indicator                */
+    Gvec *char_base_vec  /* OUT current character base vector  */
+)
+#else
+( err_ind, char_base_vec )
+    Gint *err_ind;
+    Gvec *char_base_vec;
+#endif
+{
+    NGCALLF(gqchb,GQCHB)(err_ind,
+                         &char_base_vec->delta_x,
+                         &char_base_vec->delta_y );
+}

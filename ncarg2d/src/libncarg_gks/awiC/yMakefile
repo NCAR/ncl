@@ -1,0 +1,57 @@
+#
+#	$Id: yMakefile,v 1.1 1997-03-05 19:13:36 haley Exp $
+#
+
+MYNAME	= awiC
+
+SRCS = \
+	s_gactm.c s_gacwk.c s_gca.c s_gclks.c s_gclrwk.c s_gclwk.c \
+	s_gdawk.c s_geclks.c s_gerhnd.c s_gerlog.c s_gesc.c s_gevtm.c \
+	s_gfa.c s_ggdp.c s_ggtitm.c s_giitm.c s_gopks.c s_gopwk.c s_gpl.c s_gpm.c \
+	s_gqacwk.c s_gqasf.c s_gqcf.c s_gqchb.c s_gqchh.c s_gqchsp.c s_gqchup.c \
+	s_gqchw.c s_gqchxp.c s_gqclip.c s_gqcntn.c s_gqcr.c s_gqdsp.c s_gqeci.c \
+	s_gqegdp.c s_gqentn.c s_gqewk.c s_gqfaci.c s_gqfaf.c s_gqfai.c s_gqfais.c \
+	s_gqfasi.c s_gqgdp.c s_gqina.c s_gqln.c s_gqlvks.c s_gqlwk.c s_gqlwsc.c \
+	s_gqmk.c s_gqmksc.c s_gqmntn.c s_gqnt.c s_gqops.c s_gqopwk.c \
+	s_gqpaf.c s_gqpahv.c s_gqparf.c s_gqpawv.c s_gqpcr.c s_gqpfar.c \
+	s_gqplci.c s_gqplf.c s_gqpli.c s_gqpmci.c s_gqpmf.c s_gqpmi.c s_gqppar.c \
+	s_gqpplr.c s_gqppmr.c s_gqpra.c s_gqptxr.c s_gqpx.c s_gqpxa.c s_gqpxad.c \
+	s_gqtxal.c s_gqtxci.c s_gqtxf.c s_gqtxfp.c s_gqtxi.c s_gqtxx.c s_gqtxp.c \
+	s_gqwkc.c s_gqwkca.c s_gqwkcl.c s_gqwkdu.c s_gqwks.c s_gqwkt.c \
+	s_grditm.c s_gsasf.c s_gschh.c s_gschsp.c s_gschup.c s_gschxp.c \
+	s_gsclip.c s_gscr.c s_gselnt.c s_gsfaci.c s_gsfai.c s_gsfais.c \
+	s_gsfasi.c s_gsln.c s_gslwsc.c s_gsmk.c s_gsmksc.c s_gspa.c s_gsparf.c \
+	s_gsplci.c s_gspli.c s_gspmci.c s_gspmi.c s_gstxal.c s_gstxci.c \
+	s_gstxfp.c s_gstxi.c s_gstxp.c s_gsvp.c s_gswkvp.c s_gswkwn.c s_gswn.c \
+	s_gtx.c s_guwk.c s_gwitm.c s_gcrsg.c s_gclsg.c s_gdsg.c s_gcsgwk.c \
+	s_gssgt.c s_ginst.c s_gqopsg.c s_gqsgus.c s_grqst.c s_gsstm.c \
+	getcid.c rmcid.c addcid.c setcid.c gstore.c
+
+OBJS = \
+	s_gactm.o s_gacwk.o s_gca.o s_gclks.o s_gclrwk.o s_gclwk.o \
+	s_gdawk.o s_geclks.o s_gerhnd.o s_gerlog.o s_gesc.o s_gevtm.o \
+	s_gfa.o s_ggdp.o s_ggtitm.o s_giitm.o s_gopks.o s_gopwk.o s_gpl.o s_gpm.o \
+	s_gqacwk.o s_gqasf.o s_gqcf.o s_gqchb.o s_gqchh.o s_gqchsp.o s_gqchup.o \
+	s_gqchw.o s_gqchxp.o s_gqclip.o s_gqcntn.o s_gqcr.o s_gqdsp.o s_gqeci.o \
+	s_gqegdp.o s_gqentn.o s_gqewk.o s_gqfaci.o s_gqfaf.o s_gqfai.o s_gqfais.o \
+	s_gqfasi.o s_gqgdp.o s_gqina.o s_gqln.o s_gqlvks.o s_gqlwk.o s_gqlwsc.o \
+	s_gqmk.o s_gqmksc.o s_gqmntn.o s_gqnt.o s_gqops.o s_gqopwk.o \
+	s_gqpaf.o s_gqpahv.o s_gqparf.o s_gqpawv.o s_gqpcr.o s_gqpfar.o \
+	s_gqplci.o s_gqplf.o s_gqpli.o s_gqpmci.o s_gqpmf.o s_gqpmi.o s_gqppar.o \
+	s_gqpplr.o s_gqppmr.o s_gqpra.o s_gqptxr.o s_gqpx.o s_gqpxa.o s_gqpxad.o \
+	s_gqtxal.o s_gqtxci.o s_gqtxf.o s_gqtxfp.o s_gqtxi.o s_gqtxx.o s_gqtxp.o \
+	s_gqwkc.o s_gqwkca.o s_gqwkcl.o s_gqwkdu.o s_gqwks.o s_gqwkt.o \
+	s_grditm.o s_gsasf.o s_gschh.o s_gschsp.o s_gschup.o s_gschxp.o \
+	s_gsclip.o s_gscr.o s_gselnt.o s_gsfaci.o s_gsfai.o s_gsfais.o \
+	s_gsfasi.o s_gsln.o s_gslwsc.o s_gsmk.o s_gsmksc.o s_gspa.o s_gsparf.o \
+	s_gsplci.o s_gspli.o s_gspmci.o s_gspmi.o s_gstxal.o s_gstxci.o \
+	s_gstxfp.o s_gstxi.o s_gstxp.o s_gsvp.o s_gswkvp.o s_gswkwn.o s_gswn.o \
+	s_gtx.o s_guwk.o s_gwitm.o s_gcrsg.o s_gclsg.o s_gdsg.o s_gcsgwk.o \
+	s_gssgt.o s_ginst.o s_gqopsg.o s_gqsgus.o s_grqst.o s_gsstm.o \
+	getcid.o rmcid.o addcid.o setcid.o gstore.o
+
+EXTRA_CDEFINES = $(OS_DEF) $(MAJOR_DEF)
+
+PartialLibraryTarget(libncarg_gks.a,$(OBJS))
+PartialLibraryTarget(libbasegks.a,$(OBJS))
+DependTarget($(SRCS))
