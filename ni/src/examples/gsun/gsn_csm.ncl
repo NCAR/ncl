@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.23 1999-11-17 14:53:44 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.24 1999-11-23 17:45:25 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1118,7 +1118,7 @@ local dims, newdata, ny, mx, mx1
        "vpWidthF"        : vpwf       ; the map.
        "vpHeightF"       : vphf
 
-    if((.not.ismissing(newdata!1)) .and. iscoord(data,newdata!1)) then 
+       "tmYLDataBottomF" : min_lat    ; Use the lat/lon limits
         newdata&$newdata!1$(mx) = newdata&$newdata!1$(0) + 360.0
        "tmYLMinorValues"  : latvalues@minor
  
@@ -3671,13 +3671,13 @@ end
 ;                     wks: workstation object                           ;
 ;                    data: data to contour                              ;
 ;               resources: optional resources                           ;
-    if(.not.ismissing(datanew!1).and.iscoord(data,datanew!1))
+    if(.not.ismissing(datanew!1).and.iscoord(datanew,datanew!1))
       if(.not.(isatt(res2,"sfXCStartV").and.isatt(res2,"sfXCEndV")))
         set_attr(res2,"sfXArray",datanew&$datanew!1$)
       end if
     end if
 
-    if(.not.ismissing(datanew!0).and.iscoord(data,datanew!0))
+    if(.not.ismissing(datanew!0).and.iscoord(datanew,datanew!0))
       if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
         set_attr(res2,"sfYArray",datanew&$datanew!0$)
       end if
@@ -3689,7 +3689,8 @@ end
                                    res2@tmXBMode.eq."EXPLICIT"))
       set_attr(res2,"tiXAxisString","")
     else
-      if(isatt(datanew&$datanew!1$,"long_name"))
+      if(.not.ismissing(datanew!1).and.iscoord(datanew,datanew!1).and.\
+              isatt(datanew&$datanew!1$,"long_name"))
         set_attr(res2,"tiXAxisString",datanew&$datanew!1$@long_name)
       end if
     end if
@@ -3698,7 +3699,8 @@ end
                                    res2@tmYLMode.eq."EXPLICIT"))
       set_attr(res2,"tiYAxisString","")
     else
-      if(isatt(datanew&$datanew!0$,"long_name"))
+      if(.not.ismissing(datanew!0).and.iscoord(datanew,datanew!0).and.\
+              isatt(datanew&$datanew!0$,"long_name"))
         set_attr(res2,"tiYAxisString",datanew&$datanew!0$@long_name)
       end if
     end if
@@ -4132,7 +4134,8 @@ left_string, center_string, right_string, add_hgt
       mlat_spacing = 0
     end if
 ;                                                                       ;
-    if(isatt(data&$data!0$,"long_name"))
+    if(.not.ismissing(data!0).and.iscoord(data,data!0).and.\
+            isatt(data&$data!0$,"long_name"))
 
 function gsn_csm_time_lat(wks:graphic,data[*][*]:numeric,resources:logical)
     if(.not.ismissing(data!0).and.iscoord(data,data!0).and.data!0.eq."lev")
