@@ -1,5 +1,5 @@
 C
-C      $Id: cn06f.f,v 1.6 1997-05-22 16:14:07 haley Exp $
+C      $Id: cn06f.f,v 1.7 1997-06-19 15:40:26 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -149,12 +149,12 @@ C
       lat_id = ncvid(ncid,'lat',ierr)
       count(1) = latlen
       call ncvgt(ncid,lat_id,start,count,lat,ierr)
-      call ncagt(ncid,lat_id,'long_name',lat_name,ierr)
+      call ncagtc(ncid,lat_id,'long_name',lat_name,128,ierr)
 
       lon_id = ncvid(ncid,'lon',ierr)
       count(1) = lonlen
       call ncvgt(ncid,lon_id,start,count,lon,ierr)
-      call ncagt(ncid,lon_id,'long_name',lon_name,ierr)
+      call ncagtc(ncid,lon_id,'long_name',lon_name,128,ierr)
 
       frtime_id = ncvid(ncid,'frtime',ierr)
       count(1) = frtimelen
