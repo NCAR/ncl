@@ -1,5 +1,5 @@
 C
-C	$Id: mapint.f,v 1.2 1992-09-09 17:20:22 ncargd Exp $
+C $Id: mapint.f,v 1.3 1993-02-12 17:44:34 kennison Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -679,7 +679,7 @@ C
       RETURN
 C
   904 IIER=8
-      CALL SETER (' MAPINT - MAP LIMITS INAPPROPIATE',IIER,1)
+      CALL SETER (' MAPINT - MAP LIMITS INAPPROPRIATE',IIER,1)
       RETURN
 C
       END
