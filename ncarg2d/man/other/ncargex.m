@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.22 1994-12-16 18:31:36 haley Exp $
+.\"	$Id: ncargex.m,v 1.23 1995-02-22 22:17:38 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "October 1994" NCAR "NCAR GRAPHICS"
@@ -473,7 +473,7 @@ wmex08 wmex09 wmex10 wmex11 wmex12 wmex13 wmex14
 .sp
 .I "Miscellaneous Examples:"
 .sp
-bnchmk example
+bnchmk example ncargworld
 .sp
 .fi
 .SH SEE ALSO
