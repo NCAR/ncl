@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.25 1999-03-05 01:02:33 dbrown Exp $
+ *      $Id: browse.c,v 1.26 1999-03-05 16:53:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -758,8 +758,9 @@ vsbCB
 )
 {
         brPane	 	*pane = (brPane *) udata;
-
-	printf("in vsb CB\n");
+#if DEBUG_DATABROWSER
+	fprintf(stderr,"in vsb CB\n");
+#endif
 
 	if (! pane)
 		return;
