@@ -1,5 +1,5 @@
 C
-C $Id: mapgti.f,v 1.10 1999-04-02 22:59:29 kennison Exp $
+C $Id: mapgti.f,v 1.11 1999-08-19 21:49:10 kennison Exp $
 C
       SUBROUTINE MAPGTI (WHCH,IVAL)
 C
@@ -21,7 +21,7 @@ C
       COMMON /MAPCMC/ IGI1,IGI2,NOVS,XCRA(100),YCRA(100),NCRA
       SAVE   /MAPCMC/
 C
-      COMMON /MAPCMQ/ ICIN(7)
+      COMMON /MAPCMQ/ ICIN(8)
       SAVE   /MAPCMQ/
 C
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
@@ -47,6 +47,8 @@ C
         IVAL=ICIN(6)
       ELSE IF (WHCH(1:2).EQ.'C7'.OR.WHCH(1:2).EQ.'c7') THEN
         IVAL=ICIN(7)
+      ELSE IF (WHCH(1:2).EQ.'C8'.OR.WHCH(1:2).EQ.'c8') THEN
+        IVAL=ICIN(8)
       ELSE IF (WHCH(1:2).EQ.'DA'.OR.WHCH(1:2).EQ.'da') THEN
         IVAL=IDSH
       ELSE IF (WHCH(1:2).EQ.'DD'.OR.WHCH(1:2).EQ.'dd') THEN

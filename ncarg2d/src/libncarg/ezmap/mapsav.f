@@ -1,5 +1,5 @@
 C
-C $Id: mapsav.f,v 1.7 1999-04-02 22:59:37 kennison Exp $
+C $Id: mapsav.f,v 1.8 1999-08-19 21:49:11 kennison Exp $
 C
       SUBROUTINE MAPSAV (IFNO)
 C
@@ -23,7 +23,7 @@ C
       COMMON /MAPCMC/ IGI1,IGI2,NOVS,XCRA(100),YCRA(100),NCRA
       SAVE   /MAPCMC/
 C
-      COMMON /MAPCMQ/ ICIN(7)
+      COMMON /MAPCMQ/ ICIN(8)
       SAVE   /MAPCMQ/
 C
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB

@@ -1,5 +1,5 @@
 C
-C $Id: mapchi.f,v 1.8 1999-04-02 22:59:27 kennison Exp $
+C $Id: mapchi.f,v 1.9 1999-08-19 21:49:10 kennison Exp $
 C
       SUBROUTINE MAPCHI (IPRT,IDTG,IDPT)
 C
@@ -39,7 +39,7 @@ C
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE   /MAPCM4/
 C
-      COMMON /MAPCMQ/ ICIN(7)
+      COMMON /MAPCMQ/ ICIN(8)
       SAVE   /MAPCMQ/
 C
 C Declare one of the dash-package common blocks, too.

@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.11 1999-07-29 22:49:40 kennison Exp $
+C $Id: mapbd.f,v 1.12 1999-08-19 21:49:09 kennison Exp $
 C
       BLOCK DATA MAPBD
 C
@@ -85,7 +85,7 @@ C
 C The common block MAPCMQ contains quantities specifying the color
 C indices to be used for various portions of the plot.
 C
-      COMMON /MAPCMQ/ ICIN(7)
+      COMMON /MAPCMQ/ ICIN(8)
       SAVE   /MAPCMQ/
 C
 C The common blocks MAPCMX and MAPCMY contain variables used by the new
@@ -378,7 +378,7 @@ C for the U.S. state outlines, and for international political outlines.
 C See the routine MAPCHI.  The default values are all negative, to say
 C that color should not be set.
 C
-      DATA ICIN / -1,-1,-1,-1,-1,-1,-1 /
+      DATA ICIN / -1,-1,-1,-1,-1,-1,-1,-1 /
 C
 C
 C Variables in MAPCMX and MAPCMY:

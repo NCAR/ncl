@@ -1,5 +1,5 @@
 C
-C $Id: mprset.f,v 1.5 1999-04-07 21:11:56 kennison Exp $
+C $Id: mprset.f,v 1.6 1999-08-19 21:49:12 kennison Exp $
 C
       SUBROUTINE MPRSET
 C
@@ -51,7 +51,7 @@ C
       COMMON /MAPCMP/ NPTB,XPTB(50),YPTB(50)
       SAVE   /MAPCMP/
 C
-      COMMON /MAPCMQ/ ICIN(7)
+      COMMON /MAPCMQ/ ICIN(8)
       SAVE   /MAPCMQ/
 C
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
@@ -112,7 +112,7 @@ C
       NOVS=1
       NCRA=0
       NPTB=0
-      DO 101 I=1,7
+      DO 101 I=1,8
         ICIN(I)=-1
   101 CONTINUE
       SALT=0.
