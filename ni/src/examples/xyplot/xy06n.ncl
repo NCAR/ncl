@@ -1,0 +1,222 @@
+;
+;      $Id: xy06n.ncl,v 1.1 1995-04-07 17:06:23 haley Exp $
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                      ;
+;                Copyright (C)  1995                                   ;
+;        University Corporation for Atmospheric Research               ;
+;                All Rights Reserved                                   ;
+;                                                                      ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;;  File:       xy06n.ncl
+;;
+;;  Author:     Mary Haley
+;;          National Center for Atmospheric Research
+;;          PO 3000, Boulder, Colorado
+;;
+;;  Date:       Mon Feb 13 09:24:47 MST 1995
+;;
+;; Description:   This example shows how to do several things:
+;;
+;;                1) How to create an XyPlot object with multiple
+;;                   lines using the CoordArrays and Data objects.
+;;                2) How to change the data to create a different
+;;                   plot, without having to create a new data object
+;;                   (using the NhlSetValues call).
+;;                3) How to overlay a Legend object and to tweak
+;;                   several kinds of resources (see "xy06.res").
+;;                4) How to use netCDF interface routines to open
+;;                   and access a netCDF file.
+;;                5) How to use a kludgy method for using the resource
+;;                   file to specify which stations you want to observe.
+;;
+
+;
+; Begin NCL script
+;
+begin
+
+;
+; Define procedure for getting the daily data values from a particular
+; station.
+;
+procedure StationValues(tdata:float,pdata:float,vdata:float,stations:string,nstations:integer,day:string,spv:float)
+local tmpid,tmpfile,filename
+begin
+  tdata@_FillValue = spv
+  pdata@_FillValue = spv
+  vdata@_FillValue = spv
+  do j = 0,2
+    do k = 0,9
+      if((j.lt.2).or.(k.lt.4))
+        filename = "/cyclone/ncargd/dev/IRIS_IRIX_5_2_/lib/ncarg/data/cdf/" + day + j + k + "_sao.cdf"
+; 
+; Open data file containing grid of global data values.
+;
+        tmpfile = addfile(filename,"r");
+        do l = 0, nstations-1
+          do i = 0, (dimsizes(tmpfile->id(:,0)) -1)
+            if(tmpfile->id(i,:) .eq. stations(l)) 
+              break
+            end if
+          end do
+          print("station " + stations(l))
+          if(i .lt. dimsizes(tmpfile->id(:,0))) 
+            print("loaded hour " + (j*10+k))
+            tdata(l,j*10+k) = tmpfile->T(i)
+            pdata(l,j*10+k) = tmpfile->PSL(i)
+            vdata(l,j*10+k) = tmpfile->SPD(i)
+          else
+            print("missing hour " + (j*10+k))
+            tdata(l,j*10+k) = spv
+            pdata(l,j*10+k) = spv
+            vdata(l,j*10+k) = spv
+          end if
+        end do
+      end if
+    end do
+  end do
+end
+
+;
+; Create variables for stations information. "nstations" is the number
+; of stations we want data vales for, and "spv" is the special value
+; for missing values.  If you want to plot data values for
+; other cities, change the "stations" variable accordingly, and
+; also change "nstation" if you change the number of stations.
+;
+; DEN = Denver, FTW = Fort Worth, HNL = Honolulu
+;
+nhours = 24
+nstations = 3
+stations = new(nstations,string)
+stations = (/"DEN","FTW","HNL"/)
+spv = -9999.0
+
+;
+; Create variable for holding data values.
+;
+temp = new((/nstations,nhours/),float,spv)
+pressure = new((/nstations,nhours/),float,spv)
+wind_speed = new((/nstations,nhours/),float,spv)
+
+;
+; Create application object.  The application name is used to 
+; determine the name of the resource file which will be "xy06.res"
+; in this case.
+; 
+appid = create "xy06" appClass defaultapp
+   "appDefaultParent" : "True"
+   "appUsrDir" : "./"
+end create
+
+;
+; Default is to display output to an X workstation
+;
+NCGM=0
+
+if (NCGM .eq. 1) then
+;
+; Create an ncgmWorkstation object.
+;
+  xworkid = create "xy06Work" ncgmWorkstationClass defaultapp
+      "wkMetaName" : "xy06n.ncgm"
+  end create
+else
+;
+; Create an X workstation
+;
+  xworkid = create "xy06Work" xWorkstationClass defaultapp
+      "wkPause" : "True"
+  end create
+end if
+
+;
+; Call procedure to get data values.
+;
+date = "950318"
+
+StationValues(temp,pressure,wind_speed,stations,nstations,date,spv)
+
+;
+; Define the Data object.  Since only the Y values are specified here,
+; each Y value will be paired with its integer array index.  The data
+; id from this object will become the value for the XyPlot resource
+; "xyCoordData".
+;
+dataid = create "xyData" coordArraysClass noparent
+    "caYArray" : temp
+    "caYMissingV" : spv
+end create
+
+;
+; The id for this Data object is now the resource value for
+; xyCoordData.  Tweak some XyPlot resources in the resource file
+; ("xy06.res").
+; 
+plotid = create "xyPlot1" xyPlotClass xworkid
+    "xyCoordData": dataid
+end create
+
+;
+; Draw the plot.
+; 
+draw(plotid)
+frame(xworkid)
+
+;
+; Change the data in our Data object.  Notice we use setvalues
+; instead of create, so our data object will have the same
+; name as when we originally created it, "xyData".
+;
+setvalues dataid
+    "caYArray" : pressure
+end setvalues
+
+;
+; Create another XyPlot object with this new Data object.  We have to
+; create another object instead of just changing the current one,
+; because we want to change some resource values to title our axes
+; differently.
+;
+plotid = create "xyPlot2" xyPlotClass xworkid
+    "xyCoordData": dataid
+end create
+
+;
+; Draw the plot.
+; 
+draw(plotid)
+frame(xworkid)
+
+;
+; Change the data in our Data object.  Notice we use setvalues
+; instead of create, so our data object will have the same
+; name as when we originally created it, "xyData".
+;
+setvalues dataid
+    "caYArray" : wind_speed
+end setvalues
+
+;
+; Create another XyPlot object with this new Data object.  We have to
+; create another object instead of just changing the current one,
+; because we want to change some resource values to title our axes
+; differently.
+;
+plotid = create "xyPlot3" xyPlotClass xworkid
+    "xyCoordData": dataid
+end create
+
+;
+; Draw the plot.
+; 
+draw(plotid)
+frame(xworkid)
+
+;
+; End NCL script
+;
+end
+

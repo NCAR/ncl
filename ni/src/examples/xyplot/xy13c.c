@@ -1,5 +1,5 @@
 /*
- *      $Id: xy13c.c,v 1.9 1995-04-07 10:55:20 boote Exp $
+ *      $Id: xy13c.c,v 1.10 1995-04-07 17:06:25 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -524,7 +524,11 @@ main
     float *xdata[31];
     float *ydata[31];
     int lengths[31];
+    char *line_labels[31];
     int dataid;
+    int datadepid[1];
+    int *dspec = datadepid;
+    int num_dspec;
 
     /*
      * Initialize data values
@@ -532,96 +536,127 @@ main
     xdata[0] = dry_minusfiftyT;
     ydata[0] = dry_minusfiftyP;
     lengths[0] = sizeof(dry_minusfiftyT)/sizeof(float);
+    line_labels[0] = "-50";
     xdata[1] = dry_minusfourtyT;
     ydata[1] = dry_minusfourtyP;
     lengths[1] = sizeof(dry_minusfourtyT)/sizeof(float);
+    line_labels[0] = "-40";
     xdata[2] = dry_minusthirtyT;
     ydata[2] = dry_minusthirtyP;
     lengths[2] = sizeof(dry_minusthirtyT)/sizeof(float);
+    line_labels[2] = "-30";
     xdata[3] = dry_minustwentyT;
     ydata[3] = dry_minustwentyP;
     lengths[3] = sizeof(dry_minustwentyT)/sizeof(float);
+    line_labels[3] = "-20";
     xdata[4] = dry_minustenT;
     ydata[4] = dry_minustenP;
     lengths[4] = sizeof(dry_minustenT)/sizeof(float);
+    line_labels[4] = "-10";
     xdata[5] = dry_zeroT;
     ydata[5] = dry_zeroP;
     lengths[5] = sizeof(dry_zeroT)/sizeof(float);
+    line_labels[5] = "0";
     xdata[6] = dry_tenT;
     ydata[6] = dry_tenP;
     lengths[6] = sizeof(dry_tenT)/sizeof(float);
+    line_labels[6] = "10";
     xdata[7] = dry_twentyT;
     ydata[7] = dry_twentyP;
     lengths[7] = sizeof(dry_twentyT)/sizeof(float);
+    line_labels[7] = "20";
     xdata[8] = dry_thirtyT;
     ydata[8] = dry_thirtyP;
     lengths[8] = sizeof(dry_thirtyT)/sizeof(float);
+    line_labels[8] = "30";
     xdata[9] = dry_fourtyT;
     ydata[9] = dry_fourtyP;
     lengths[9] = sizeof(dry_fourtyT)/sizeof(float);
+    line_labels[9] = "40";
     xdata[10] = dry_fiftyT;
     ydata[10] = dry_fiftyP;
     lengths[10] = sizeof(dry_fiftyT)/sizeof(float);
+    line_labels[10] = "50";
     xdata[11] = dry_sixtyT;
     ydata[11] = dry_sixtyP;
     lengths[11] = sizeof(dry_sixtyT)/sizeof(float);
+    line_labels[11] = "60";
     xdata[12] = dry_seventyT;
     ydata[12] = dry_seventyP;
     lengths[12] = sizeof(dry_seventyT)/sizeof(float);
+    line_labels[12] = "70";
     xdata[13] = dry_eightyT;
     ydata[13] = dry_eightyP;
     lengths[13] = sizeof(dry_eightyT)/sizeof(float);
+    line_labels[13] = "80";
     xdata[14] = dry_ninetyT;
     ydata[14] = dry_ninetyP;
     lengths[14] = sizeof(dry_ninetyT)/sizeof(float);
+    line_labels[14] = "90";
     xdata[15] = iso_160T;
     ydata[15] = iso_160P;
     lengths[15] = sizeof(iso_160T)/sizeof(float);
+    line_labels[15] = "160g";
     xdata[16] = iso_80T;
     ydata[16] = iso_80P;
     lengths[16] = sizeof(iso_80T)/sizeof(float);
+    line_labels[16] = "80g";
     xdata[17] = iso_40T;
     ydata[17] = iso_40P;
     lengths[17] = sizeof(iso_40T)/sizeof(float);
+    line_labels[17] = "40g";
     xdata[18] = iso_20T;
     ydata[18] = iso_20P;
     lengths[18] = sizeof(iso_20T)/sizeof(float);
+    line_labels[18] = "20g";
     xdata[19] = iso_10T;
     ydata[19] = iso_10P;
     lengths[19] = sizeof(iso_10T)/sizeof(float);
+    line_labels[19] = "10g";
     xdata[20] = iso_5T;
     ydata[20] = iso_5P;
     lengths[20] = sizeof(iso_5T)/sizeof(float);
+    line_labels[20] = "5g";
     xdata[21] = iso_2_5T;
     ydata[21] = iso_2_5P;
     lengths[21] = sizeof(iso_2_5T)/sizeof(float);
+    line_labels[21] = "2.5g";
     xdata[22] = iso_1_25T;
     ydata[22] = iso_1_25P;
     lengths[22] = sizeof(iso_1_25T)/sizeof(float);
+    line_labels[22] = "1.25g";
     xdata[23] = iso_0_625T;
     ydata[23] = iso_0_625P;
     lengths[23] = sizeof(iso_0_625T)/sizeof(float);
+    line_labels[23] = "0.625g";
     xdata[24] = wet_40gT;
     ydata[24] = wet_40gP;
     lengths[24] = sizeof(wet_40gT)/sizeof(float);
+    line_labels[24] = NULL;
     xdata[25] = wet_20gT;
     ydata[25] = wet_20gP;
     lengths[25] = sizeof(wet_20gT)/sizeof(float);
+    line_labels[25] = NULL;
     xdata[26] = wet_10gT;
     ydata[26] = wet_10gP;
     lengths[26] = sizeof(wet_10gT)/sizeof(float);
+    line_labels[26] = NULL;
     xdata[27] = wet_5gT;
     ydata[27] = wet_5gP;
     lengths[27] = sizeof(wet_5gT)/sizeof(float);
+    line_labels[27] = NULL;
     xdata[28] = wet_5gT;
     ydata[28] = wet_5gP;
     lengths[28] = sizeof(wet_5gT)/sizeof(float);
+    line_labels[28] = NULL;
     xdata[29] = wet_2_5gT;
     ydata[29] = wet_2_5gP;
     lengths[29] = sizeof(wet_2_5gT)/sizeof(float);
+    line_labels[29] = NULL;
     xdata[30] = wet_1_25gT;
     ydata[30] = wet_1_25gP;
     lengths[30] = sizeof(wet_1_25gT)/sizeof(float);
+    line_labels[30] = NULL;
 
     /*
      * Call this before X calls so I can use NhlPError stuff
@@ -666,6 +701,14 @@ main
                     (sizeof(dry_zeroP)/sizeof(float)));
 
     NhlCreate(&xyplotid,"xy_plot",NhlxyPlotClass,xworkid,srlist);
+
+    NhlRLClear(grlist);
+    NhlRLGetIntegerArray(grlist,NhlNxyCoordDataSpec,&dspec,&num_dspec);
+    NhlGetValues(xyplotid,grlist);
+
+    NhlRLClear(srlist);
+    NhlRLSetStringArray(srlist,NhlNxyExplicitLabels,line_labels,31);
+    NhlSetValues(dspec[0],srlist);
 
     XtAddEventHandler(graphics,ButtonPressMask,False,
                 (XtEventHandler)SelectionEH,(XtPointer)NULL);

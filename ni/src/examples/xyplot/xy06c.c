@@ -1,5 +1,5 @@
 /*
-**      $Id: xy06c.c,v 1.6 1995-04-07 10:55:16 boote Exp $
+**      $Id: xy06c.c,v 1.7 1995-04-07 17:06:21 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -50,8 +50,8 @@
 
 /*
  * Define the maximum number of weather stations and hours in a day.
- * The actual stations you want to get temperature values for should
- * be defined in the "xy06.res" resource file using the
+ * The actual stations you want to get data values for should be
+ * defined in the "xy06.res" resource file using the
  * "xyExplicitLegendLabels" resource.
  *
  * You cannot request more than NSTATIONS station ids in the resource
@@ -67,8 +67,8 @@ NhlString station_arr[NSTATIONS];
 NhlString *station_abrev = station_arr;
 
 /*
- * Define the day for which we are getting temperature
- * values (March 18, 1995).
+ * Define the day for which we are getting data values
+ * (March 18, 1995).
  */
 char *date = "950318";
 
@@ -87,19 +87,20 @@ main()
 /*
  * Declare variables for getting information from netCDF file.
  */
-    int     ncid, stid, stdmid, tempid, recid;
+    int     ncid, stid, stdmid, tempid, presid, windid, recid;
     int     ndims, nvars, ngatts, nhour, numids = NSTATIONS;
-    int     num_temps, have_temp[NSTATIONS];
+    int     num_values, have_value[NSTATIONS];
     long    stid_len, rec_len;
-    long    ststart[2], stcount[2], tempindex[1];
+    long    ststart[2], stcount[2], var_index[1];
     char    filename[256], station_name[20], recname[50];
     const char *dir = _NGGetNCARGEnv("data");
 
     int NCGM=0;
 /*
- * Declare 2-d array to hold temperature values.
+ * Declare 2-d arrays to hold data values.
  */
-    float   temp[NSTATIONS][NHOURS];
+    float temp[NSTATIONS][NHOURS], pressure[NSTATIONS][NHOURS];
+    float wind_speed[NSTATIONS][NHOURS];
 /*
  * Initialize the HLU library and set up resource template.
  */
@@ -137,21 +138,18 @@ main()
  * We need to initialize a non-constant dummy array for our Data
  * object, otherwise we'll get error messages.
  */
-    for( i = 0; i < NSTATIONS; i++ ) {
-        for( j = 0; j < NHOURS; j++ ) {
-            temp[i][j] = (float)j;
-        }
+    for( j = 0; j < NHOURS; j++ ) {
+        temp[0][j] = (float)j;
     }
 /*
  * Define a dummy Data object.  We do this so a DataSpec object is
  * created automatically and then we can use an NhlGetValues call to
- * get the names of the stations we want temperature values for.
+ * get the names of the stations we want data values for.
  */
-    length[0] = NSTATIONS;  length[1] = NHOURS;
     NhlRLClear(rlist);
-    NhlRLSetMDFloatArray(rlist,NhlNcaYArray,&temp[0][0],2,length);
+    NhlRLSetFloatArray(rlist,NhlNcaYArray,(float *)temp,NHOURS);
     NhlCreate(&dataid,"xyData",NhlcoordArraysClass,
-                  NhlDEFAULT_APP,rlist);
+              NhlDEFAULT_APP,rlist);
 /*
  * The id from this dummy Data object will now become the resource
  * value for "xyCoordData".
@@ -187,19 +185,18 @@ main()
                "Can only request 1-%d stations.",NSTATIONS);
         exit(3);
     }
-    length[0] = numids;
 /* 
  * Loop through all NHOURS hours.
  */
     for( nhour = 0; nhour < NHOURS; nhour++ ) {
 /*
- * Initialize the temperature data array to our special value that we
- * have set above.
+ * Initialize the data arrays to our special value that we have set
+ * above.
  */
-        num_temps = 0;
+        num_values = 0;
         for( i = 0; i < numids; i++ ) {
-            have_temp[i] = 0;
-            temp[i][nhour] = special_value;
+            have_value[i] = 0;
+            temp[i][nhour] = pressure[i][nhour] = wind_speed[i][nhour] = special_value;
         }
 /*
  * Open the netCDF file for a particular hour.
@@ -217,12 +214,15 @@ main()
         ncinquire(ncid, &ndims, &nvars, &ngatts, &recid);
         ncdiminq(ncid, recid, recname, &rec_len);
 /*
- * Get the id of the station ids and the temperature variables.
+ * Get the id of the station ids, temperature, pressure, and 
+ * wind speed variables.
  */
         stid = ncvarid(ncid,"id");
         tempid = ncvarid(ncid,"T");
+        presid = ncvarid(ncid,"PSL");
+        windid = ncvarid(ncid,"SPD");
 /*
- * Get temperature values for the stations we have selected.
+ * Get data values for the stations we have selected.
  */
         ststart[1] = 0; stcount[0] = 1; stcount[1] = stid_len;
         for( i = 0; i < rec_len; i++ ) {
@@ -232,34 +232,47 @@ main()
             for( j = 0; j < numids; j++ ) {
 /* 
  * Check if this is one of the stations we've requested and that we
- * don't already have a temperature value for this station.
+ * don't already have a data value for this station.
  */
-                if( !have_temp[j] &&
+                if( !have_value[j] &&
                     !strcmp(station_abrev[j],station_name) ) {
 
-                    tempindex[0] = i;
+                    var_index[0] = i;
 /*
  * Get the temperature value.
  */
-                    ncvarget1(ncid,tempid,(long const *)tempindex,
+                    ncvarget1(ncid,tempid,(long const *)var_index,
                               &temp[j][nhour]);
-                    have_temp[j] = 1;
-                    num_temps++;
+/*
+ * Get the pressure value.
+ */
+                    ncvarget1(ncid,presid,(long const *)var_index,
+                              &pressure[j][nhour]);
+/*
+ * Get the wind speed.
+ */
+                    ncvarget1(ncid,windid,(long const *)var_index,
+                              &wind_speed[j][nhour]);
+/*
+ * Keep track of how many values we've received.
+ */
+                    have_value[j] = 1;
+                    num_values++;
                     break;
                 }
             }
 /*
- * Check if we have received temperature values for each station.  If
+ * Check if we have received data values for each station.  If
  * so, then we don't need to loop through the rest of the stations.
  */
-            if( num_temps == numids ) break;
+            if( num_values == numids ) break;
         }
 /*
  * Let the user know if there are some stations missing.  Special
  * values will be used in this case.
  */
         for( j = 0; j < numids; j++ ) {
-            if( !have_temp[j]  ) {
+            if( !have_value[j]  ) {
                 NhlPError(NhlWARNING,NhlEUNKNOWN,
                 "Station %s not in netCDF file for hour %d",station_abrev[j],nhour);
                 NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -277,6 +290,7 @@ main()
  * id from this object will become the value for the XyPlot resource
  * "xyCoordData".
  */
+    length[0] = numids;  length[1] = NHOURS;
     NhlRLClear(rlist);
     NhlRLSetMDFloatArray(rlist,NhlNcaYArray,&temp[0][0],2,length);
     NhlRLSetFloat(rlist,NhlNcaYMissingV,special_value);
@@ -296,32 +310,46 @@ main()
     NhlDraw(plotid);
     NhlFrame(xworkid);
 /*
- * Convert temperatures from Celsius to Fahrenheit.
+ * Change the data in our Data object.  Notice we use NhlSetValues
+ * instead of NhlCreate, so our data object will have the same
+ * name as when we originally created it, "xyData".
  */
-    for( i = 0; i < numids; i++ ) {
-        for( j = 0; j < NHOURS; j++ ) {
-            if(temp[i][j] != special_value) {
-                temp[i][j] = 9./5.*temp[i][j]+32.;
-            }
-        }
-    }
+    NhlRLClear(rlist);
+    NhlRLSetMDFloatArray(rlist,NhlNcaYArray,&pressure[0][0],2,length);
+    NhlRLSetFloat(rlist,NhlNcaYMissingV,special_value);
+    NhlCreate(&dataid,"xyData",NhlcoordArraysClass,
+                  NhlDEFAULT_APP,rlist);
+/*
+ * The id for this Data object is now the resource value for
+ * "xyCoordData".  Tweak some XyPlot resources in the resource file
+ * ("xy06.res").
+ */
+    NhlRLClear(rlist);
+    NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);
+    NhlCreate(&plotid,"xyPlot2",NhlxyPlotClass,xworkid,rlist);
+/*
+ * Draw the plot.
+ */
+    NhlDraw(plotid);
+    NhlFrame(xworkid);
 /*
  * Change the data in our Data object.  Notice we use NhlSetValues
  * instead of NhlCreate, so our data object will have the same
  * name as when we originally created it, "xyData".
  */
     NhlRLClear(rlist);
-    NhlRLSetMDFloatArray(rlist,NhlNcaYArray,&temp[0][0],2,length);
-    NhlSetValues(dataid,rlist);
+    NhlRLSetMDFloatArray(rlist,NhlNcaYArray,&wind_speed[0][0],2,length);
+    NhlRLSetFloat(rlist,NhlNcaYMissingV,special_value);
+    NhlCreate(&dataid,"xyData",NhlcoordArraysClass,
+                  NhlDEFAULT_APP,rlist);
 /*
- * Create another XyPlot object with this new Data object.  We have to
- * create another object instead of just changing the current one,
- * because we want to change some resource values to title our axes
- * differently.
+ * The id for this Data object is now the resource value for
+ * "xyCoordData".  Tweak some XyPlot resources in the resource file
+ * ("xy06.res").
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);
-    NhlCreate(&plotid,"xyPlot2",NhlxyPlotClass,xworkid,rlist);
+    NhlCreate(&plotid,"xyPlot3",NhlxyPlotClass,xworkid,rlist);
 /*
  * Draw the plot.
  */
