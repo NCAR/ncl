@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.3 1993-10-19 17:53:48 boote Exp $
+#      $Id: yMakefile,v 1.4 1993-11-20 01:06:37 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -35,7 +35,9 @@ HDRS		= Base.h BaseP.h Convert.h ConvertP.h Converters.h\
 		DataMgrP.h Legend.h LegendP.h LabelBar.h LabelBarP.h \
 		CoordArrTable.h CoordArrTableP.h CoordArrTableIntP.h \
 		CoordArrTableFloatP.h CoordArrays.h CoordArraysP.h \
-		CoordArraysFloatP.h CoordArraysIntP.h
+		CoordArraysFloatP.h CoordArraysIntP.h Contour.h ContourP.h \
+		Overlay.h OverlayP.h LogLinPlot.h LogLinPlotP.h \
+		IrregularPlot.h IrregularPlotP.h MapPlot.h MapPlotP.h 
 
 SRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
@@ -44,8 +46,9 @@ SRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Quarks.c Reparent.c Resources.c Segments.c SetValues.c \
 		SplineCoord.c TextItem.c TickMark.c Title.c Trans.c \
 		TransObj.c Transform.c VarArg.c View.c Workstation.c \
-		XWorkstation.c XyPlot.c hlu.c DataComm.c DataItem.c DataMgr.c \
-		Legend.c LabelBar.c CoordArrTable.c CoordArrays.c
+		XWorkstation.c hlu.c DataComm.c DataItem.c DataMgr.c \
+		Legend.c LabelBar.c CoordArrTable.c CoordArrays.c \
+		Contour.c Overlay.c LogLinPlot.c IrregularPlot.c MapPlot.c 
 
 OBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
@@ -54,8 +57,9 @@ OBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Quarks.o Reparent.o Resources.o Segments.o SetValues.o \
 		SplineCoord.o TextItem.o TickMark.o Title.o Trans.o \
 		TransObj.o Transform.o VarArg.o View.o Workstation.o \
-		XWorkstation.o XyPlot.o hlu.o DataComm.o DataItem.o DataMgr.o \
-		Legend.o LabelBar.o CoordArrTable.o CoordArrays.o
+		XWorkstation.o hlu.o DataComm.o DataItem.o DataMgr.o \
+		Legend.o LabelBar.o CoordArrTable.o CoordArrays.o \
+		Contour.o Overlay.o LogLinPlot.o IrregularPlot.o MapPlot.o
 
 LibraryTarget($(MYNAME),$(OBJS))
 BuildIncludes($(HDRS),ncarg/hlu,../..)

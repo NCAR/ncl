@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.3 1993-11-20 01:06:25 dbrown Exp $
+ *      $Id: IrregularPlot.c,v 1.1 1993-11-20 01:05:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,37 +9,34 @@
 *									*
 ************************************************************************/
 /*
- *	File:		Transform.c
+ *	File:		IrregularPlot.c
  *
- *	Author:		Ethan Alpert
+ *	Author:		David Brown
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	Date:		Fri Oct 2 16:40:50 MDT 1992
+ *	Date:		Tue Nov 16 15:18:58 MST 1993
  *
- *	Description:	Provides all subclasses of this class a generic hook
- *			into which are placed functions for the forward and
- *			reverse transformations to support point-n-click.
- *			
- *			LevelOne implies a linear transformation NDC<==>WINDOW
- *			LevelTwo implies a transformation  from  WINDOW<==>DATA
- *			
- *			Level two is used when maps or odd transformations are
- *			used.
+ *	Description:	Creates and manages a generic Irregular plot that
+ *			can serve as the base of an overlay plot or be used 
+ *			for Irregular plots that do not use hlu plot objects.
+ *			In this context irregular means a plot where 
+ *			the distance along either or both coordinate axes
+ *			is not uniformly scaled.
  */
 
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
-#include <ncarg/hlu/TransformP.h>
+#include <ncarg/hlu/IrregularPlotP.h>
 
 
-TransformLayerClassRec transformLayerClassRec = {
+IrregularPlotLayerClassRec irregularPlotLayerClassRec = {
         {
-/* class_name			*/      "Transform",
+/* class_name			*/      "IrregularPlot",
 /* nrm_class			*/      NrmNULLQUARK,
-/* layer_size			*/      sizeof(TransformLayerRec),
+/* layer_size			*/      sizeof(IrregularPlotLayerRec),
 /* class_inited			*/      False,
-/* superclass			*/      (LayerClass)&viewLayerClassRec,
+/* superclass			*/      (LayerClass)&transformLayerClassRec,
 
 /* layer_resources		*/	NULL,
 /* num_resources		*/	0,
@@ -69,13 +66,16 @@ TransformLayerClassRec transformLayerClassRec = {
 /* get_bb			*/	NULL
 	},
 	{
-/* handles_overlays 		*/	False,
+/* handles_overlays 		*/	True,
 /* data_to_ndc			*/	NULL,
 /* ndc_to_data			*/	NULL,
 /* data_polyline		*/	NULL,
 /* ndc_polyline			*/	NULL
+	},
+	{
+/* foo				*/	NULL
 	}
 };
 	
-LayerClass transformLayerClass = (LayerClass)&transformLayerClassRec;
+LayerClass irregularPlotLayerClass = (LayerClass)&irregularPlotLayerClassRec;
 

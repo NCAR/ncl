@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.2 1993-10-19 17:53:01 boote Exp $
+ *      $Id: TransformP.h,v 1.3 1993-11-20 01:06:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,9 +30,15 @@
 #include <ncarg/hlu/Transform.h>
 
 typedef struct TransformLayerPart {
-	/* User setable resource fields */
-	int foo;
+	/* User settable resource fields */
+	/* none */
 	/* Private Fields */
+	Layer overlay_trans;
+	Layer plot_trans;
+	Layer title;
+	Layer tic_marks;
+	Layer legend;
+	Layer labelbar;
 } TransformLayerPart;
 
 typedef struct _TransformLayerRec {
@@ -42,8 +48,11 @@ typedef struct _TransformLayerRec {
 } TransformLayerRec;
 
 typedef struct TransformLayerClassPart{
+	NhlBoolean	handles_overlays;
 	NhlErrorTypes	(*data_to_ndc)();
 	NhlErrorTypes	(*ndc_to_data)();
+	NhlErrorTypes	(*data_polyline)();
+	NhlErrorTypes	(*ndc_polyline)();
 } TransformLayerClassPart;
 
 typedef struct _TransformLayerClassRec{

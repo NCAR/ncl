@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.2 1993-10-19 17:50:13 boote Exp $
+ *      $Id: DataComm.c,v 1.3 1993-11-20 01:05:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -140,8 +140,11 @@ DataCommLayerClassRec dataCommLayerClassRec = {
 	},
 	/* TransformLayerClassPart */
 	{
+/* handles_overlays 		*/	False,
 /* data_to_ndc			*/	NULL,
-/* ndc_to_data			*/	NULL
+/* ndc_to_data			*/	NULL,
+/* data_polyline		*/	NULL,
+/* ndc_polyline			*/	NULL
 	},
 	/* DataCommLayerClassPart */
 	{
