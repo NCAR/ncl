@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.20 1994-08-11 21:37:12 boote Exp $
+#      $Id: yMakefile,v 1.21 1994-08-11 23:17:40 boote Exp $
 #
 #########################################################################
 #									#
@@ -32,10 +32,10 @@ HDRS		= Base.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		Title.h TitleP.h TransObj.h TransObjI.h TransObjP.h \
 		Transform.h TransformP.h VarArg.h View.h ViewI.h ViewP.h \
 		Workstation.h WorkstationI.h WorkstationP.h XWorkstation.h \
-		XWorkstationP.h XyPlot.h XyPlotP.h defs.h hlu.h hluP.h \
-		DataComm.h DataCommP.h DataCommF.h DataItem.h DataItemP.h \
-		DataMgr.h DataMgrF.h DataMgrP.h Legend.h LegendP.h LabelBar.h \
-		LabelBarP.h  CoordArrTable.h CoordArrTableP.h \
+		XWorkstationP.h XyPlot.h XyPlotP.h defs.h hluutil.h hlu.h \
+		hluP.h DataComm.h DataCommP.h DataCommF.h DataItem.h \
+		DataItemP.h DataMgr.h DataMgrF.h DataMgrP.h Legend.h LegendP.h \
+		LabelBar.h LabelBarP.h  CoordArrTable.h CoordArrTableP.h \
 		CoordArrTableFloatP.h CoordArrays.h CoordArraysP.h \
 		Contour.h ContourP.h Overlay.h OverlayI.h OverlayP.h \
 		LogLinPlot.h LogLinPlotP.h IrregularPlot.h IrregularPlotP.h \
@@ -55,7 +55,8 @@ CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Legend.c LabelBar.c CoordArrTable.c CoordArrays.c \
 		Contour.c Overlay.c LogLinPlot.c IrregularPlot.c MapPlot.c  \
 		XyPlot.c ResList.c Workspace.c Fortran.c Futil.c \
-		ScalarField.c Annotation.c Format.c App.c
+		ScalarField.c Annotation.c Format.c App.c \
+		bsearch.c linaprox.c wksisact.c simpletrans.c wksisopn.c cmpf.c
 
 COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
@@ -68,13 +69,18 @@ COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Legend.o LabelBar.o CoordArrTable.o CoordArrays.o \
 		Contour.o Overlay.o LogLinPlot.o IrregularPlot.o MapPlot.o \
 		XyPlot.o ResList.o Workspace.o Fortran.o Futil.o \
-		ScalarField.o Annotation.o Format.o App.o
+		ScalarField.o Annotation.o Format.o App.o \
+		bsearch.o linaprox.o wksisact.o simpletrans.o wksisopn.o cmpf.o
 
 FSRCS		= DATACOMM.f ERROR.f HLU.f OVERLAY.f RLGEN.f RLSET.f \
-		RLGET.f TRANSFORM.f VIEW.f WORKSPACE.f WORKSTATION.f
+		RLGET.f TRANSFORM.f VIEW.f WORKSPACE.f WORKSTATION.f \
+		coeff1.f interp.f sdot.f sgesl.f trip.f fitpack.f isamax.f \
+		search.f sscal.f saxpy.f sgefa.f terp1.f
 
 FOBJS		= DATACOMM.o ERROR.o HLU.o OVERLAY.o RLGEN.o RLSET.o \
-		RLGET.o TRANSFORM.o VIEW.o WORKSPACE.o WORKSTATION.o
+		RLGET.o TRANSFORM.o VIEW.o WORKSPACE.o WORKSTATION.o \
+		coeff1.o interp.o sdot.o sgesl.o trip.o fitpack.o isamax.o \
+		search.o sscal.o saxpy.o sgefa.o terp1.o
 
 OBJS		= $(COBJS) $(FOBJS)
 
