@@ -30,7 +30,7 @@ NhlErrorTypes eof_varimax_W( void )
 /*
  * Output array variable
  */
-  void  *evec_out, *a_out, *b_out;
+  void  *evec_out;
   NclBasicDataTypes type_evec_out;
   NclTypeClass type_evec_out_class;
 
@@ -167,15 +167,13 @@ NhlErrorTypes eof_varimax_W( void )
   }
 
 /*
- * Allocate space for output array.
+ * Allocate space for output arrays.
  */
   if(type_evec != NCL_double) {
     type_evec_out = NCL_float;
     evec_out      = (void*)calloc(total_size_evec,sizeof(float));
-    a_out         = (void*)calloc(nvar,sizeof(float));
-    b_out         = (void*)calloc(nvar,sizeof(float));
-    if(evec_out == NULL || a_out == NULL || b_out == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: Unable to allocate memory for work arrays");
+    if(evec_out == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: Unable to allocate memory for work array");
       return(NhlFATAL);
     }
   }
@@ -186,8 +184,6 @@ NhlErrorTypes eof_varimax_W( void )
  */ 
     type_evec_out = NCL_double;
     evec_out      = (void*)devec;
-    a_out         = (void*)a;
-    b_out         = (void*)b;
   }
 /*
  * Allocate memory for work array.
@@ -207,15 +203,17 @@ NhlErrorTypes eof_varimax_W( void )
  * Free unneeded memory.
  */
   NclFree(w);
-
-  if(type_evec_out == NCL_float) {
-    coerce_output_float_only(evec_out,devec,total_size_evec,0);
-    coerce_output_float_only(a_out,a,nvar,0);
-    coerce_output_float_only(b_out,b,nvar,0);
-    NclFree(devec);
     NclFree(a);
     NclFree(b);
+
+  if(type_evec_out == NCL_float) {
+/*
+ * Need to coerce output array back to float before we return it.
+ */
+    coerce_output_float_only(evec_out,devec,total_size_evec,0);
+    NclFree(devec);
   }
+
 /*
  * Set up return value.
  */
@@ -264,49 +262,6 @@ NhlErrorTypes eof_varimax_W( void )
                );
 
   }
-
-/*
- * Return "a" and "b" as "percent rotation" and "communalities".
- */
-  dsizes[0] = nvar;
-  att_md = _NclCreateVal(
-                         NULL,
-                         NULL,
-                         Ncl_MultiDValData,
-                         0,
-                         a_out,
-                         NULL,
-                         1,
-                         dsizes,
-                         TEMPORARY,
-                         NULL,
-                         (NclObjClass)type_evec_out_class
-                         );
-  _NclAddAtt(
-             att_id,
-             "percent_rotation",
-             att_md,
-             NULL
-             );
-  att_md = _NclCreateVal(
-                         NULL,
-                         NULL,
-                         Ncl_MultiDValData,
-                         0,
-                         b_out,
-                         NULL,
-                         1,
-                         dsizes,
-                         TEMPORARY,
-                         NULL,
-                         (NclObjClass)type_evec_out_class
-                         );
-  _NclAddAtt(
-             att_id,
-             "communalities",
-             att_md,
-             NULL
-             );
 
   tmp_var = _NclVarCreate(
                           NULL,
@@ -361,7 +316,7 @@ NhlErrorTypes eof_varimax2_W( void )
 /*
  * Output array variables
  */
-  void  *evec_out, *a_out, *b_out;
+  void  *evec_out;
   NclBasicDataTypes type_evec_out;
   NclTypeClass type_evec_out_class;
 
@@ -507,10 +462,8 @@ NhlErrorTypes eof_varimax2_W( void )
   if(type_evec != NCL_double) {
     type_evec_out = NCL_float;
     evec_out      = (void*)calloc(total_size_evec,sizeof(float));
-    a_out         = (void*)calloc(nvar,sizeof(float));
-    b_out         = (void*)calloc(nvar,sizeof(float));
-    if(evec_out == NULL || a_out == NULL || b_out == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: Unable to allocate memory for work arrays");
+    if(evec_out == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: Unable to allocate memory for work array");
       return(NhlFATAL);
     }
   }
@@ -521,8 +474,6 @@ NhlErrorTypes eof_varimax2_W( void )
  */ 
     type_evec_out = NCL_double;
     evec_out      = (void*)devec;
-    a_out         = (void*)a;
-    b_out         = (void*)b;
   }
 /*
  * Allocate memory for work array.
@@ -542,14 +493,15 @@ NhlErrorTypes eof_varimax2_W( void )
  * Free unneeded memory.
  */
   NclFree(w);
+  NclFree(a);
+  NclFree(b);
 
   if(type_evec_out == NCL_float) {
+/*
+ * Need to coerce output array back to float before we return it.
+ */
     coerce_output_float_only(evec_out,devec,total_size_evec,0);
-    coerce_output_float_only(a_out,a,nvar,0);
-    coerce_output_float_only(b_out,b,nvar,0);
     NclFree(devec);
-    NclFree(a);
-    NclFree(b);
   }
 /*
  * Set up return value.
@@ -599,49 +551,6 @@ NhlErrorTypes eof_varimax2_W( void )
                );
 
   }
-
-/*
- * Return "a" and "b" as "percent rotation" and "communalities".
- */
-  dsizes[0] = nvar;
-  att_md = _NclCreateVal(
-                         NULL,
-                         NULL,
-                         Ncl_MultiDValData,
-                         0,
-                         a_out,
-                         NULL,
-                         1,
-                         dsizes,
-                         TEMPORARY,
-                         NULL,
-                         (NclObjClass)type_evec_out_class
-                         );
-  _NclAddAtt(
-             att_id,
-             "percent_rotation",
-             att_md,
-             NULL
-             );
-  att_md = _NclCreateVal(
-                         NULL,
-                         NULL,
-                         Ncl_MultiDValData,
-                         0,
-                         b_out,
-                         NULL,
-                         1,
-                         dsizes,
-                         TEMPORARY,
-                         NULL,
-                         (NclObjClass)type_evec_out_class
-                         );
-  _NclAddAtt(
-             att_id,
-             "communalities",
-             att_md,
-             NULL
-             );
 
   tmp_var = _NclVarCreate(
                           NULL,
