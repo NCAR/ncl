@@ -1,19 +1,21 @@
 C
-C       $Id: coex01.f,v 1.5 1996-03-15 21:38:17 kennison Exp $
-C
-C
 C  This program produces five 9 x 9 color charts.  Blue and green
 C  intensities are varied on each chart, and the red intensity is
 C  varied between charts.  To produce the charts, color indices
 C  1-84 are used.  If plotting on a device with fewer than 84 colors
 C  available, unsatisfactory results will obtain.
 C
-      PROGRAM CCHART
+      PROGRAM COEX01
 C
-C  Define error file, Fortran unit number, and workstation type,
-C  and workstation ID.
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
       DIMENSION RGB(3,405)
 C

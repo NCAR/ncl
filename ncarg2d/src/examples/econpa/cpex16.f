@@ -21,11 +21,14 @@ C
 C       include 'netcdf.inc'
 C
 C Define the error file, the Fortran unit number, the workstation type,
-C and the workstation ID.
+C and the workstation ID to be used in calls to GKS routines.
 C
-        PARAMETER (IERR=6,LUNI=2,IWTYPE=1, IWID=1)  !  NCGM
-C       PARAMETER (IERR=6,LUNI=2,IWTYPE=20,IWID=1)  !  PostScript
-C       PARAMETER (IERR=6,LUNI=2,IWTYPE=11,IWID=1)  !  PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C The parameters MCRA and NCRA declare the dimensions of the cell array,
 C ICRA, to be used.  Using larger values of MCRA and NCRA gives a better
@@ -443,9 +446,9 @@ C - - - - - - - - - -   - - -
 C
 C Open GKS.
 C
-        CALL GOPKS (IERR,0)
-        CALL GOPWK (IWID,LUNI,IWTYPE)
-        CALL GACWK (IWID)
+        CALL GOPKS (IERRF,0)
+        CALL GOPWK (IWKID,LUNIT,IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Turn GKS clipping off.
 C
@@ -453,14 +456,14 @@ C
 C
 C Define some basic colors to use.
 C
-        CALL GSCR   (IWID,2,.7,.7,.7)
-        CALL GSCR   (IWID,3,0.,1.,0.)
-        CALL GSCR   (IWID,4,1.,0.,0.)
-        CALL GSCR   (IWID,5,1.,1.,0.)
-        CALL GSCR   (IWID,6,0.,.7,.7)
-        CALL GSCR   (IWID,7,0.,0.,1.)
-        CALL GSCR   (IWID,8,.8,.5,.5)
-        CALL GSCR   (IWID,9,.5,.8,.5)
+        CALL GSCR   (IWKID,2,.7,.7,.7)
+        CALL GSCR   (IWKID,3,0.,1.,0.)
+        CALL GSCR   (IWKID,4,1.,0.,0.)
+        CALL GSCR   (IWKID,5,1.,1.,0.)
+        CALL GSCR   (IWKID,6,0.,.7,.7)
+        CALL GSCR   (IWKID,7,0.,0.,1.)
+        CALL GSCR   (IWKID,8,.8,.5,.5)
+        CALL GSCR   (IWKID,9,.5,.8,.5)
 C
 C I N I T I A L I Z E   V A R I O U S   U T I L I T I E S
 C - - - - - - - - - -   - - - - - - -   - - - - - - - - -
@@ -831,18 +834,18 @@ C Define the color indices.
 C
           DO 130 ICIN=101,101+NOCL+4
             IF      (ICIN.EQ.101) THEN
-              CALL GSCR (IWID,ICIN,0.,1.,1.)  ! ambiguously-specified
+              CALL GSCR (IWKID,ICIN,0.,1.,1.)  ! ambiguously-specified
             ELSE IF (ICIN.LE.101+NOCL+1) THEN
               RR=REAL(ICIN-102)/REAL(NOCL)
               GG=0.
               BB=1.-RR
-              CALL GSCR (IWID,ICIN,RR,GG,BB)  ! bands 1 to NOCL+1
+              CALL GSCR (IWKID,ICIN,RR,GG,BB)  ! bands 1 to NOCL+1
             ELSE IF (ICIN.EQ.101+NOCL+2) THEN
-              CALL GSCR (IWID,ICIN,.2,.5,.2)  ! outside the grid
+              CALL GSCR (IWKID,ICIN,.2,.5,.2)  ! outside the grid
             ELSE IF (ICIN.EQ.101+NOCL+3) THEN
-              CALL GSCR (IWID,ICIN,.5,.5,.5)  ! special-value area
+              CALL GSCR (IWKID,ICIN,.5,.5,.5)  ! special-value area
             ELSE IF (ICIN.EQ.101+NOCL+4) THEN
-              CALL GSCR (IWID,ICIN,.2,.2,.2)  ! out-of-range area
+              CALL GSCR (IWKID,ICIN,.2,.2,.2)  ! out-of-range area
             END IF
   130     CONTINUE
 C
@@ -1065,8 +1068,8 @@ C - - - - -   - - -   - - -   - - - -
 C
 C Close GKS.
 C
-        CALL GDAWK (IWID)
-        CALL GCLWK (IWID)
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
         CALL GCLKS
 C
 C Done.

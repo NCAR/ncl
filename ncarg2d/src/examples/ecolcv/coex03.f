@@ -1,7 +1,5 @@
-C
-C	$Id: coex03.f,v 1.3 1995-06-14 13:56:16 haley Exp $
-C
-      PROGRAM CWHEEL
+
+      PROGRAM COEX03
 C
 C Create color wheels in HSV space.  Each wheel is produced with
 C a different value of V (the value parameter in HSV space).  Each
@@ -13,10 +11,15 @@ C at pure red, and returning to pure red.
 C
 C This program requires PLOTCHAR for drawing its characters.
 C
-C  Define error file, Fortran unit number, and workstation type,
-C  and workstation ID.
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C  Define the number of values, the number of hues, the number
 C  of saturations, and the number of points bounding a color box.

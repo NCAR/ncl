@@ -1,12 +1,15 @@
-C
-C $Id: cpex15.f,v 1.4 2003-03-03 21:11:53 kennison Exp $
-C
+
       PROGRAM CPEX15
 C
 C Define the error file, the Fortran unit number, the workstation type,
-C and the workstation ID.
+C and the workstation ID to be used in calls to GKS routines.
 C
-        PARAMETER (IERRF=6,LUNIT=2,IWTYPE=1,IWKID=1)
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C This program demonstrates how user-supplied versions of the "user
 C callback" routines CPCHHL and CPCHLL may be used to change various
@@ -51,9 +54,9 @@ C
 C
 C Open GKS.
 C
-        CALL GOPKS (IERRF,ISZDM)
-        CALL GOPWK (IWKID,LUNIT,IWTYPE)
-        CALL GACWK (IWKID)
+        CALL GOPKS (IERF,ISZDM)
+        CALL GOPWK (IWID,LUNI,IWTY)
+        CALL GACWK (IWID)
 C
 C Turn off the clipping indicator.
 C
@@ -61,13 +64,13 @@ C
 C
 C Define colors to use for various purposes.
 C
-        CALL GSCR   (IWKID,0,0.,0.,0.)  !  black for the background
-        CALL GSCR   (IWKID,1,1.,1.,1.)  !  white for the foreground
-        CALL GSCR   (IWKID,2,.5,.5,1.)  !  light blue (for labels)
-        CALL GSCR   (IWKID,3,1.,1.,.5)  !  light yellow (for labels)
-        CALL GSCR   (IWKID,4,1.,.5,.5)  !  light red (for labels)
-        CALL GSCR   (IWKID,5,1.,1.,1.)  !  white (for land areas)
-        CALL GSCR   (IWKID,6,.6,.6,.6)  !  gray (for ocean areas)
+        CALL GSCR   (IWID,0,0.,0.,0.)  !  black for the background
+        CALL GSCR   (IWID,1,1.,1.,1.)  !  white for the foreground
+        CALL GSCR   (IWID,2,.5,.5,1.)  !  light blue (for labels)
+        CALL GSCR   (IWID,3,1.,1.,.5)  !  light yellow (for labels)
+        CALL GSCR   (IWID,4,1.,.5,.5)  !  light red (for labels)
+        CALL GSCR   (IWID,5,1.,1.,1.)  !  white (for land areas)
+        CALL GSCR   (IWID,6,.6,.6,.6)  !  gray (for ocean areas)
 C
 C Generate an array of test data.
 C
@@ -255,8 +258,8 @@ C
 C
 C Close GKS.
 C
-        CALL GDAWK (IWKID)
-        CALL GCLWK (IWKID)
+        CALL GDAWK (IWID)
+        CALL GCLWK (IWID)
         CALL GCLKS
 C
 C Done.

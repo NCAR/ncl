@@ -1,7 +1,5 @@
-C
-C $Id: cpex13.f,v 1.4 1996-02-29 17:59:49 kennison Exp $
-C
-      PROGRAM XMPL13
+
+        PROGRAM CPEX13
 C
 C This program produces a detailed picture of the contents of a typical
 C CONPACK-produced area map.  It then shows three different situations
@@ -9,10 +7,15 @@ C that tend to cause problems.  This example is intended to be viewed
 C while reading the text from the programmer document for CONPACK that
 C describes each of the four frames.
 C
-C Define error file, Fortran unit number, workstation type, and
-C workstation ID.
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-        PARAMETER (IERRF=6,LUNIT=2,IWTYPE=1,IWKID=1)
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C Define various local parameters.
 C

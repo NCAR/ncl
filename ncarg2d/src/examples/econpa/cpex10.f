@@ -1,7 +1,5 @@
-C
-C $Id: cpex10.f,v 1.6 1999-09-09 22:37:26 kennison Exp $
-C
-      PROGRAM TESTIT
+
+        PROGRAM CPEX10
 C
 C This program shows a view of the area around Boulder, Colorado, as
 C seen from a satellite directly above Washington, D.C.  Within a
@@ -12,11 +10,15 @@ C in white, and lines of latitude and longitude are drawn in a light
 C gray.  Two-letter mnemonics are used to identify the states; each
 C is written using new mapping capabilities of the package PLOTCHAR.
 C
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-C Define error file, Fortran unit number, workstation type, and
-C workstation ID.
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
 C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C Define parameters specifying the lengths of the two area maps and
 C the real and integer workspaces that are used.

@@ -1,15 +1,18 @@
-C
-C $Id: cpex11.f,v 1.4 1996-02-29 17:59:48 kennison Exp $
-C
-      PROGRAM CPEX11
+
+        PROGRAM CPEX11
 C
 C This program demonstrates the use of the new internal parameter 'PIT',
 C which was installed in May of 1994.
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C Declare the data array and the real and integer workspace arrays.
 C

@@ -1,12 +1,15 @@
-C
-C $Id: cpex14.f,v 1.6 2003-03-03 21:11:52 kennison Exp $
-C
-      PROGRAM CPEX14
+
+        PROGRAM CPEX14
 C
 C Define the error file, the Fortran unit number, the workstation type,
-C and the workstation ID.
+C and the workstation ID to be used in calls to GKS routines.
 C
-        PARAMETER (IERRF=6,LUNIT=2,IWTYPE=1,IWKID=1)
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C This program attempts to present a solution to a problem sent to us
 C by a user: Imagine that we have three arrays, ICLR, XP, and YP, each

@@ -1,7 +1,5 @@
-C
-C	$Id: cbex01.f,v 1.3 1995-06-14 13:56:19 haley Exp $
-C
-      PROGRAM CPBIVR
+
+        PROGRAM CBEX01
 C
 C LATEST REVISION        September, 1989
 C
@@ -42,10 +40,15 @@ C
 C PORTABILITY            ANSI standard.
 C
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C Define arrays to be used below.  XRAN, YRAN, and ZRAN are used for
 C the "random data".  XCNV and YCNV are used to define the convex hull

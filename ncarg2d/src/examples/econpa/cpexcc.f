@@ -1,6 +1,4 @@
-C
-C $Id: cpexcc.f,v 1.3 2002-03-29 17:36:29 kennison Exp $
-C
+
       SUBROUTINE GENDAT (DATA,IDIM,M,N,MLOW,MHGH,DLOW,DHGH)
 C
 C This is a routine to generate test data for two-dimensional graphics
