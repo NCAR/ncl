@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.5 1992-10-05 15:59:49 ncargd Exp $
+#   $Id: ncargex.csh,v 1.6 1992-10-05 19:18:50 ncargd Exp $
 #
 
 set example_dir=`ncargpath SED_EXAMPLESDIR`
@@ -49,7 +49,7 @@ tvelvc)
 
 set tutor_list=(\
 cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel cmpfil cmpgci \
-cmpgrd cmpita cmpitm cmplab cmplbl cmplot cmpmsk cmpou cmppos \
+cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl cmplot cmpmsk cmpou cmppos \
 cmpsat cmpsup cmptit cmptra cmpusr)
 
 set alias_list=(\
