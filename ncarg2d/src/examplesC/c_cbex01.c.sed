@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cbex01.c.sed,v 1.2 1992-11-04 15:49:53 haley Exp $
+ *	$Id: c_cbex01.c.sed,v 1.3 1992-11-06 21:54:21 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -55,7 +55,7 @@ main()
  * calls to CONPACK.
  */
     float xran[9],yran[9],zran[9],xcnv[7],ycnv[7];
-    float xdat[11],ydat[12],zdat[11][12],rwrk[1000];
+    float xdat[11],ydat[12],zdat[12][11],rwrk[1000];
     float dumi[1][1], xval1, yval1, xval2, yval2;
     int iwrk[1000];
     int i,j;
@@ -119,7 +119,7 @@ main()
 /*
  * Call IDSFFT to obtain a regular grid of values on the fitted surface.
  */
-    c_idsfft(1,9,xran,yran,zran,11,12,11,xdat,ydat,(float *)zdat,iwrk,rwrk);
+    c_idsfft(1,9,xran,yran,zran,11,12,11,xdat,ydat,zdat,iwrk,rwrk);
 /*
  * Open GKS.
  */
@@ -168,7 +168,7 @@ main()
 /*
  * Initialize the drawing of the first contour plot.
  */
-    c_cprect ((float *)zdat,12,11,11,12,rwrk,1000,iwrk,1000);
+    c_cprect (zdat,11,11,12,rwrk,1000,iwrk,1000);
 /*
  * Initialize the area map which will be used to keep contour lines from
  * passing through labels.
@@ -177,15 +177,15 @@ main()
 /*
  * Put label boxes in the area map.
  */
-    c_cplbam ((float *)zdat,11,12,rwrk,iwrk,iama);
+    c_cplbam (zdat,rwrk,iwrk,iama);
 /*
  * Draw the contour lines, masked by the area map.
  */
-    c_cpcldm ((float *)zdat,11,12,rwrk,iwrk,iama,cpdrpl_);
+    c_cpcldm (zdat,rwrk,iwrk,iama,cpdrpl_);
 /*
  * Draw all the labels.
  */
-    c_cplbdr ((float *)zdat,11,12,rwrk,iwrk);
+    c_cplbdr (zdat,rwrk,iwrk);
 /*
  * Dump the polyline buffer and change the polyline color to orange.
  * Change the text color to orange, too, so that the AUTOGRAPH background
@@ -199,7 +199,7 @@ main()
  * it to pick up appropriate values from CONPACK"s SET call.
  */
     c_agseti ("SET.",4);
-    c_agstup ((float *)dumi,1,1,1,1,1,1,(float *)dumi,1,1,1,1,1,1);
+    c_agstup (dumi,1,1,1,1,dumi,1,1,1,1);
     c_agback();
 /*
  * Dump the polyline buffer and change the polyline color to green.
@@ -288,7 +288,7 @@ main()
 /*
  * Initialize the drawing of the second contour plot.
  */
-    c_cprect ((float *)zdat,12,11,11,12,rwrk,1000,iwrk,1000);
+    c_cprect (zdat,11,11,12,rwrk,1000,iwrk,1000);
 /*
  * Initialize the area map.
  */
@@ -302,15 +302,15 @@ main()
 /*
  * Put label boxes in the area map.
  */
-    c_cplbam ((float *)zdat,11,12,rwrk,iwrk,iama);
+    c_cplbam (zdat,rwrk,iwrk,iama);
 /*
  * Draw contour lines, masked by the area map.
  */
-    c_cpcldm ((float *)zdat,11,12,rwrk,iwrk,iama,cpdrpl_);
+    c_cpcldm (zdat,rwrk,iwrk,iama,cpdrpl_);
 /*
  * Draw labels.
  */
-    c_cplbdr ((float *)zdat,11,12,rwrk,iwrk);
+    c_cplbdr (zdat,rwrk,iwrk);
 /*
  * Dump the polyline buffer and switch the polyline color to orange.
  */
@@ -320,7 +320,7 @@ main()
  * Use AUTOGRAPH to draw a background.
  */
     c_agseti ("SET.",4);
-    c_agstup ((float *)dumi,1,1,1,1,1,1,(float *)dumi,1,1,1,1,1,1);
+    c_agstup (dumi,1,1,1,1,dumi,1,1,1,1);
     c_agback();
 /*
  * Dump the polyline buffer and switch the polyline color to yellow.
@@ -346,62 +346,7 @@ c_idsfft (md,ndp,xd,yd,zd,nxi,nyi,nzi,xi,yi,zi,iwk,wk)
 float *xd, *yd, *zd, *xi, *yi, *zi, *wk;
 int *iwk, md, ndp, nxi, nyi, nzi;
 {
-    float *xd2, *yd2, *zd2, *xi2, *yi2, *zi2, *wk2;
-    int *iwk2, i, j, k, k2;
-
-    xd2 = (float *)C_malloc(ndp*sizeof(float));
-    yd2 = (float *)C_malloc(ndp*sizeof(float));
-    zd2 = (float *)C_malloc(ndp*sizeof(float));
-    xi2 = (float *)C_malloc(nxi*sizeof(float));
-    yi2 = (float *)C_malloc(nyi*sizeof(float));
-    zi2 = (float *)C_malloc(nzi*nyi*sizeof(float));
-    wk2 = (float *)C_malloc(6*ndp*sizeof(float));
-    iwk2 = (int *)C_malloc((31*ndp+nxi*nyi)*sizeof(float));
-    for( i = 0; i < ndp; i++ ) {
-        xd2[i] = xd[i];
-        yd2[i] = yd[i];
-        zd2[i] = zd[i];
-    }
-    for( i = 0; i < nxi; i++ ) xi2[i] = xi[i];
-    for( i = 0; i < nyi; i++ ) yi2[i] = yi[i];
-    for( i = 1; i <= nzi; i++ ) {
-        k = (i-1) * nyi;
-        k2 = i - 1;
-        for( j = 1; j <= nyi; j++ ) {
-            zi2[k2] = zi[k++];
-            k2 += nzi;
-        }
-    }
-    for( i = 0; i < 6*ndp; i++ ) wk2[i] = wk[i];
-    for( i = 0; i < (31*ndp+nxi*nyi); i++ ) iwk2[i] = iwk[i];
-
-    idsfft_(&md,&ndp,xd2,yd2,zd2,&nxi,&nyi,&nzi,xi2,yi2,zi2,iwk2,wk2);
-
-    for( i = 0; i < ndp; i++ ) {
-        xd[i] = xd2[i];
-        yd[i] = yd2[i];
-        zd[i] = zd2[i];
-    }
-    for( i = 0; i < nxi; i++ ) xi[i] = xi2[i];
-    for( i = 0; i < nyi; i++ ) yi[i] = yi2[i];
-    for( i = 1; i <= nzi; i++ ) {
-        k = (i-1) * nyi;
-        k2 = i - 1;
-        for( j = 1; j <= nyi; j++ ) {
-            zi[k++] = zi2[k2];
-            k2 += nzi;
-        }
-    }
-    for( i = 0; i < 6*ndp; i++ ) wk[i] = wk2[i];
-    for( i = 0; i < (31*ndp+nxi*nyi); i++ ) iwk[i] = iwk2[i];
-    free(xd2);
-    free(yd2);
-    free(zd2);
-    free(xi2);
-    free(yi2);
-    free(zi2);
-    free(wk2);
-    free(iwk2);
+    idsfft_(&md,&ndp,xd,yd,zd,&nxi,&nyi,&nzi,xi,yi,zi,iwk,wk);
     return(1);
 }
 

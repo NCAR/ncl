@@ -1,5 +1,5 @@
 /*
- *	$Id: c_agex07.c.sed,v 1.2 1992-11-04 15:49:37 haley Exp $
+ *	$Id: c_agex07.c.sed,v 1.3 1992-11-06 21:54:15 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -11,7 +11,7 @@ main()
 /*
  * Define the data arrays and the dash-pattern array.
  */
-    float xdra[101],ydra[101][9];
+    float xdra[101],ydra[9][101];
     char dshp[9][29], stmp[17];
     int i, j, fj;
     extern char *agdshn();
@@ -29,7 +29,7 @@ main()
         sprintf( dshp[j], "$$$$$$$$$$$$$$$$$$$$$'j'='%d'", j+1 );
         fj=j+1;
         for( i = 0; i < 101; i++ ) {
-            ydra[i][j]=3.*fj-(fj/2700.)*pow(xdra[i],2.);
+            ydra[j][i]=3.*fj-(fj/2700.)*pow(xdra[i],2.);
         }
     }
 /*
@@ -139,7 +139,7 @@ main()
 /*
  * draw the graph, using c_ezmxy.
  */
-    c_ezmxy (xdra,1,&ydra[0][0],9,101,9,101,"");
+    c_ezmxy (xdra,&ydra[0][0],101,9,101,"");
 /*
  * close gks.
  */
