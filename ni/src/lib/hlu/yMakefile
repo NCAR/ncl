@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.48 1997-07-16 18:22:18 dbrown Exp $
+#      $Id: yMakefile,v 1.49 1998-05-22 01:59:14 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -48,7 +48,9 @@ HDRS		= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		VectorFieldFloatP.h VectorFieldP.h VectorPlot.h VectorPlotP.h \
 		VecAnno.h VecAnnoP.h StreamlinePlot.h StreamlinePlotP.h \
 		Style.h StyleP.h GraphicStyle.h GraphicStyleP.h SubStylesP.h \
-		Callbacks.h CallbacksP.h ContourPlotI.h
+		Callbacks.h CallbacksP.h ContourPlotI.h MapDataHandler.h \
+		MapDataHandlerP.h MapV40DataHandler.h MapV40DataHandlerP.h \
+		MapV41DataHandler.h MapV41DataHandlerP.h
 
 CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
@@ -64,7 +66,8 @@ CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		ScalarField.c AnnoManager.c Format.c App.c PSWorkstation.c \
 		Palette.c VectorField.c VectorPlot.c VecAnno.c \
 		StreamlinePlot.c Style.c GraphicStyle.c SubStyles.c \
-		Callbacks.c \
+		Callbacks.c MapDataHandler.c MapV40DataHandler.c \
+		MapV41DataHandler.c \
 		bsearch.c linaprox.c wksisact.c simpletrans.c wksisopn.c cmpf.c
 
 COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
@@ -81,7 +84,8 @@ COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		ScalarField.o AnnoManager.o Format.o App.o PSWorkstation.o \
 		Palette.o VectorField.o VectorPlot.o VecAnno.o \
 		StreamlinePlot.o Style.o GraphicStyle.o SubStyles.o \
-		Callbacks.o \
+		Callbacks.o MapDataHandler.o MapV40DataHandler.o \
+		MapV41DataHandler.o \
 		bsearch.o linaprox.o wksisact.o simpletrans.o wksisopn.o cmpf.o
 
 FSRCS		= DATACOMM.f ERROR.f HLU.f PLOTMANAGER.f RLGEN.f RLSET.f \

@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceP.h,v 1.6 1996-05-11 03:32:30 dbrown Exp $
+ *      $Id: WorkspaceP.h,v 1.7 1998-05-22 01:59:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,14 +31,16 @@
 #define NhlwsMIN_THRESHOLD	8096
 #define NhlwsMIN_MAXIMUM	262144
 #define NhlwsIDLE_REC_ALLOC	64
-#define NhlwsMAX_GKS_POINTS	20000
+#define NhlwsMAX_GKS_POINTS	200000
 #define NhlwsMAX_AREA_GROUPS	64
+#define DEBUG_WS		0
 
 typedef struct _NhlWorkspaceRec {
 	int			ws_id;     	/* Workspace identifier */
 	NrmQuark		type;   	/* Workspace type */
 	NhlPersistence		persistence;	/* Need for preservation */
 	NhlPointer		ws_data;	/* Workspace information */
+        int			req_size;
 	NhlPointer		ws_ptr;		/* Workspace address */
 	int			cur_size;  	/* Current size in bytes */
 	NhlBoolean		in_use;		/* Workspace in use? */

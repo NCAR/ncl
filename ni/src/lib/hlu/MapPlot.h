@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.14 1997-08-14 16:30:15 dbrown Exp $
+ *      $Id: MapPlot.h,v 1.15 1998-05-22 01:59:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -59,6 +59,12 @@ typedef enum _NhlMapShapeMode {
 	NhlFIXEDASPECTFITBB,
 	NhlFIXEDASPECTNOFITBB
 } NhlMapShapeMode;
+
+#define NhlTMapDataBaseVersion	"MapDataBaseVersion"
+typedef enum _NhlMapDataBaseVersion {
+	NhlNCARG4_0 = 0,
+	NhlNCARG4_1
+} NhlMapDataBaseVersion;
 
 #define NhlmpNULLAREA		"nullarea"
 #define NhlmpALLNATIONAL	"allnational"

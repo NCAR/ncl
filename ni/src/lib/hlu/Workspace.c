@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.38 1998-02-18 01:26:06 dbrown Exp $
+ *      $Id: Workspace.c,v 1.39 1998-05-22 01:59:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -516,7 +516,7 @@ static NhlErrorTypes    WorkspaceGetValues
 			*((long *)(args[i].value.lngval)) = 
 				wsp->current_size = wsp->total_size;
 	}
-#if 0 /* for debugging: */
+#if DEBUG_WS /* for debugging: */
 	{
 		NhlWorkspaceRec *wsrp;
 		int		count = 0;
@@ -714,7 +714,7 @@ int _NhlNewWorkspace
 	wsrp->persistence = persistence;
 	wsrp->ws_data = NULL;
 	wsrp->ws_ptr = NULL;
-	wsrp->cur_size = req_size;
+	wsrp->cur_size = wsrp->req_size = req_size;
 	wsrp->in_use = False;
 	wsrp->data_intact = False;
 	wsrp->tmp_fp = NULL;
@@ -1726,7 +1726,7 @@ static NhlErrorTypes	ChangeWorkspaceSize
 		c_cpmviw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
 	}
 
-#if 0
+#if DEBUG_WS
 	printf("Workspace: total size: %d\n", WSp->total_size);
 
 #endif
@@ -1808,7 +1808,7 @@ static NhlErrorTypes	EnlargeWorkspace
 		c_cpmviw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
 	}
 
-#if 0
+#if DEBUG_WS
 	printf("Workspace: total size: %d\n", WSp->total_size);
 
 #endif
@@ -1908,6 +1908,11 @@ NhlErrorTypes _NhlArpram
 	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
 	int		err_num;
 
+	if (wsrp && wsrp->cur_size < wsrp->req_size) {
+		int amount = wsrp->req_size - wsrp->cur_size;
+		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
 	c_entsr(&save_mode,1);
 
 	do {
@@ -1921,12 +1926,12 @@ NhlErrorTypes _NhlArpram
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing ws old %d", wsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", wsrp->cur_size);
 #endif
 			}
@@ -1990,6 +1995,11 @@ NhlErrorTypes _NhlAredam
 	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
 	int		err_num;
 
+	if (wsrp && wsrp->cur_size < wsrp->req_size) {
+		int amount = wsrp->req_size - wsrp->cur_size;
+		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
 	c_entsr(&save_mode,1);
 
 	do {
@@ -2002,12 +2012,12 @@ NhlErrorTypes _NhlAredam
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing ws old %d", wsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", wsrp->cur_size);
 #endif
 			}
@@ -2069,6 +2079,11 @@ NhlErrorTypes _NhlArscam
 	int		area_ids[NhlwsMAX_AREA_GROUPS];
 	float		flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
 
+	if (wsrp && wsrp->cur_size < wsrp->req_size) {
+		int amount = wsrp->req_size - wsrp->cur_size;
+		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
 	c_entsr(&save_mode,1);
 
 	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
@@ -2077,6 +2092,12 @@ NhlErrorTypes _NhlArscam
 		c_arscam(wsrp->ws_ptr,x,y,NhlwsMAX_GKS_POINTS,
 			 group_ids,area_ids,NhlwsMAX_AREA_GROUPS,apr);
 
+#if DEBUG_WS
+                printf("areamap size %d, size used %d\n",
+                       ((int*)wsrp->ws_ptr)[0],((int*)wsrp->ws_ptr)[0] -
+                       (((int*)wsrp->ws_ptr)[5] - ((int*)wsrp->ws_ptr)[4]));
+#endif
+                
 		if (c_nerro(&err_num) == 0) {
 			done = True;
 		}
@@ -2084,12 +2105,12 @@ NhlErrorTypes _NhlArscam
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing ws old %d", wsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", wsrp->cur_size);
 #endif
 			}
@@ -2147,6 +2168,11 @@ NhlErrorTypes _NhlArdbpa
 	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
 	int		err_num;
 
+	if (wsrp && wsrp->cur_size < wsrp->req_size) {
+		int amount = wsrp->req_size - wsrp->cur_size;
+		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
 	c_entsr(&save_mode,1);
 
 	do {
@@ -2159,12 +2185,12 @@ NhlErrorTypes _NhlArdbpa
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing ws old %d", wsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", wsrp->cur_size);
 #endif
 			}
@@ -2343,6 +2369,11 @@ NhlErrorTypes _NhlCpclam
 	char		*cmp_msg3 = "INTEGER WORKSPACE OVERFLOW";
 	int		err_num;
 
+	if (awsrp && awsrp->cur_size < awsrp->req_size) {
+		int amount = awsrp->req_size - awsrp->cur_size;
+		ret = ChangeWorkspaceSize(awsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
 	c_entsr(&save_mode,1);
 
 	do {
@@ -2355,34 +2386,34 @@ NhlErrorTypes _NhlCpclam
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing amap old %d",awsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(awsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", awsrp->cur_size);
 #endif
 			}
 			else if (strstr(e_msg,cmp_msg2)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing flt_ws old %d",
 				       fwsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", fwsrp->cur_size);
 #endif
 			}
 			else if (strstr(e_msg,cmp_msg3)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing int_ws old %d",
 				       iwsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", iwsrp->cur_size);
 #endif
 			}
@@ -2452,6 +2483,11 @@ NhlErrorTypes _NhlCpcldm
 	char		*cmp_msg3 = "INTEGER WORKSPACE OVERFLOW";
 	int		err_num;
 
+	if (awsrp && awsrp->cur_size < awsrp->req_size) {
+		int amount = awsrp->req_size - awsrp->cur_size;
+		ret = ChangeWorkspaceSize(awsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
 	c_entsr(&save_mode,1);
 
 	do {
@@ -2464,34 +2500,34 @@ NhlErrorTypes _NhlCpcldm
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing amap old %d",awsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(awsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", awsrp->cur_size);
 #endif
 			}
 			else if (strstr(e_msg,cmp_msg2)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing flt_ws old %d",
 				       fwsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", fwsrp->cur_size);
 #endif
 			}
 			else if (strstr(e_msg,cmp_msg3)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing int_ws old %d",
 				       iwsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", iwsrp->cur_size);
 #endif
 			}
@@ -2562,24 +2598,24 @@ NhlErrorTypes _NhlCpcldr
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing flt_ws old %d",
 				       fwsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", fwsrp->cur_size);
 #endif
 			}
 			else if (strstr(e_msg,cmp_msg2)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing int_ws old %d",
 				       iwsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", iwsrp->cur_size);
 #endif
 			}
@@ -2642,6 +2678,11 @@ NhlErrorTypes _NhlCplbam
 	char		*cmp_msg3 = "INTEGER WORKSPACE OVERFLOW";
 	int		err_num;
 
+	if (awsrp && awsrp->cur_size < awsrp->req_size) {
+		int amount = awsrp->req_size - awsrp->cur_size;
+		ret = ChangeWorkspaceSize(awsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
 	c_entsr(&save_mode,1);
 
 	do {
@@ -2654,34 +2695,34 @@ NhlErrorTypes _NhlCplbam
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1) != NULL) {
-#if 0
+#if DEBUG_WS
 				printf("resizing amap old %d",awsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(awsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", awsrp->cur_size);
 #endif
 			}
 			else if (strstr(e_msg,cmp_msg2) != NULL) {
-#if 0
+#if DEBUG_WS
 				printf("resizing flt_ws old %d",
 				       fwsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", fwsrp->cur_size);
 #endif
 			}
 			else if (strstr(e_msg,cmp_msg3) != NULL) {
-#if 0
+#if DEBUG_WS
 				printf("resizing int_ws old %d",
 				       iwsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", iwsrp->cur_size);
 #endif
 			}
@@ -2752,24 +2793,24 @@ NhlErrorTypes _NhlCplbdr
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing flt_ws old %d",
 				       fwsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", fwsrp->cur_size);
 #endif
 			}
 			else if (strstr(e_msg,cmp_msg2)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing int_ws old %d",
 				       iwsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", iwsrp->cur_size);
 #endif
 			}
@@ -2887,24 +2928,24 @@ NhlErrorTypes _NhlCpcica
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing flt_ws old %d",
 				       fwsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", fwsrp->cur_size);
 #endif
 			}
 			else if (strstr(e_msg,cmp_msg2)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing int_ws old %d",
 				       iwsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", iwsrp->cur_size);
 #endif
 			}
@@ -3004,24 +3045,24 @@ NhlErrorTypes _NhlCprect
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing flt_ws old %d",
 				       fwsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", fwsrp->cur_size);
 #endif
 			}
 			else if (strstr(e_msg,cmp_msg2)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing int_ws old %d",
 				       iwsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(iwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", iwsrp->cur_size);
 #endif
 			}
@@ -3074,6 +3115,12 @@ NhlErrorTypes _NhlMapbla
 	float 		flx,frx,fby,fuy,wlx,wrx,wby,wuy; 
 	int 		ll;
 
+	if (wsrp && wsrp->cur_size < wsrp->req_size) {
+		int amount = wsrp->req_size - wsrp->cur_size;
+		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
+        
 	c_entsr(&save_mode,1);
 	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
 
@@ -3087,12 +3134,12 @@ NhlErrorTypes _NhlMapbla
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing ws old %d", wsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", wsrp->cur_size);
 #endif
 			}
@@ -3166,6 +3213,11 @@ NhlErrorTypes _NhlMapita
 	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
 	int		err_num;
 
+	if (wsrp && wsrp->cur_size < wsrp->req_size) {
+		int amount = wsrp->req_size - wsrp->cur_size;
+		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
 	c_entsr(&save_mode,1);
 
 	do {
@@ -3179,12 +3231,12 @@ NhlErrorTypes _NhlMapita
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing ws old %d", wsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", wsrp->cur_size);
 #endif
 			}
@@ -3241,6 +3293,11 @@ NhlErrorTypes _NhlMapiqa
 	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
 	int		err_num;
 
+	if (wsrp && wsrp->cur_size < wsrp->req_size) {
+		int amount = wsrp->req_size - wsrp->cur_size;
+		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
 	c_entsr(&save_mode,1);
 
 	do {
@@ -3253,12 +3310,12 @@ NhlErrorTypes _NhlMapiqa
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing ws old %d", wsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", wsrp->cur_size);
 #endif
 			}
@@ -3319,6 +3376,11 @@ NhlErrorTypes _NhlMapblm
 	int		group_ids[NhlwsMAX_AREA_GROUPS];
 	int		area_ids[NhlwsMAX_AREA_GROUPS];
 
+	if (wsrp && wsrp->cur_size < wsrp->req_size) {
+		int amount = wsrp->req_size - wsrp->cur_size;
+		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
 	c_entsr(&save_mode,1);
 
 	do {
@@ -3332,12 +3394,12 @@ NhlErrorTypes _NhlMapblm
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing ws old %d", wsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", wsrp->cur_size);
 #endif
 			}
@@ -3398,6 +3460,11 @@ NhlErrorTypes _NhlMapgrm
 	int		group_ids[NhlwsMAX_AREA_GROUPS];
 	int		area_ids[NhlwsMAX_AREA_GROUPS];
 
+	if (wsrp && wsrp->cur_size < wsrp->req_size) {
+		int amount = wsrp->req_size - wsrp->cur_size;
+		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
 	c_entsr(&save_mode,1);
 
 	do {
@@ -3411,12 +3478,216 @@ NhlErrorTypes _NhlMapgrm
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing ws old %d", wsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
+				printf(" new %d\n", wsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+
+/*
+ * Function:	_NhlMplnam
+ *
+ * Description: Ezmapb routine MPLNAM
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlMplnam
+#if	NhlNeedProto
+(
+ 	NhlWorkspace	*amap_ws,
+        NhlString	map_data_filename,
+        int		level,
+	char		*entry_name
+)
+#else
+(amap_ws,map_data_filename,level,entry_name)
+ 	NhlWorkspace	*amap_ws;
+        NhlString	map_data_filename;
+        int		level;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec	*wsrp = (NhlWorkspaceRec *) amap_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
+	int		err_num;
+	float 		flx,frx,fby,fuy,wlx,wrx,wby,wuy; 
+	int 		ll;
+        int		len;
+        NGstring 	map_data_filename_f;
+
+	if (wsrp && wsrp->cur_size != wsrp->req_size) {
+		int amount = wsrp->req_size - wsrp->cur_size;
+		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
+        
+        len = NGSTRLEN(map_data_filename);
+        map_data_filename_f = NGCstrToFstr(map_data_filename,len);
+
+	c_entsr(&save_mode,1);
+	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
+
+	do {
+                NGCALLF(mplnam,MPLNAM)
+                        (map_data_filename_f,&level,wsrp->ws_ptr,len);
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg)) {
+#if DEBUG_WS
+				printf("resizing ws old %d", wsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(wsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", wsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+			c_mapint();
+			if (c_nerro(&err_num) != 0) {
+				e_msg = c_semess(0);
+				c_errof();
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+			c_set(flx,frx,fby,fuy,wlx,wrx,wby,wuy,ll);
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	_NhlMplndm
+ *
+ * Description: Ezmapb routine MPLNDM
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlMplndm
+#if	NhlNeedProto
+(
+	NhlWorkspace	*amap_ws,
+        NhlString	map_data_filename,
+        int		level,
+	int		(*ulpr)(float *xcra, 
+			       float *ycra, 
+			       int *mcra, 
+			       int *iaai, 
+			       int *iagi, 
+			       int *nogi),
+	char		*entry_name
+)
+#else
+(amap_ws,map_data_filename,level,ulpr,entry_name)
+	NhlWorkspace	*amap_ws;
+        NhlString	map_data_filename;
+        int		level;
+	int		(*ulpr)();
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec	*wsrp = (NhlWorkspaceRec *) amap_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
+	int		err_num;
+	float		x[NhlwsMAX_GKS_POINTS], y[NhlwsMAX_GKS_POINTS];
+	int		group_ids[NhlwsMAX_AREA_GROUPS];
+	int		area_ids[NhlwsMAX_AREA_GROUPS];
+        int		len,npoints,ngroups;
+        NGstring 	map_data_filename_f;
+
+            /* this req size is large enough for all boundaries in the
+               4.1 base database. if other points are going to be added,
+               there should be another parameter that specifies the size
+               of the additional database in points. My calculations
+               suggest that 1.25 * (10 * npoints) should always be a
+               sufficient size. For performance reasons it is definitely
+               a big win if memory sizing error recovery doesn't happen.
+               */
+        
+	if (wsrp && wsrp->cur_size < wsrp->req_size) {
+		int amount = wsrp->req_size - wsrp->cur_size;
+		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
+        npoints = NhlwsMAX_GKS_POINTS;
+        ngroups = NhlwsMAX_AREA_GROUPS;
+        len = NGSTRLEN(map_data_filename);
+        map_data_filename_f = NGCstrToFstr(map_data_filename,len);
+        
+	c_entsr(&save_mode,1);
+
+	do {
+                NGCALLF(mplndm,MPLNDM)
+                        (map_data_filename_f,&level,
+                         wsrp->ws_ptr,x,y,&npoints,
+			 group_ids,area_ids,&ngroups,ulpr,len);
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg)) {
+#if DEBUG_WS
+				printf("resizing ws old %d", wsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(wsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
 				printf(" new %d\n", wsrp->cur_size);
 #endif
 			}
@@ -3509,13 +3780,13 @@ NhlErrorTypes _NhlVvinit
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing flt_ws old %d",
 				       fwsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", fwsrp->cur_size);
 #endif
 			}
@@ -3680,13 +3951,13 @@ NhlErrorTypes _NhlStinit
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg1)) {
-#if 0
+#if DEBUG_WS
 				printf("resizing flt_ws old %d",
 				       fwsrp->cur_size);
 #endif
 				ret = EnlargeWorkspace(fwsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
+#if DEBUG_WS
 				printf(" new %d\n", fwsrp->cur_size);
 #endif
 			}

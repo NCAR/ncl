@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceI.h,v 1.11 1997-07-14 18:36:31 dbrown Exp $
+ *      $Id: WorkspaceI.h,v 1.12 1998-05-22 01:59:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,6 +47,7 @@ typedef struct _NhlWorkspace {
 	NrmQuark		type;   	/* Workspace type */
 	NhlPersistence		persistence;	/* Need for preservation */
 	NhlPointer		ws_data;	/* Workspace information */
+        int			req_size;
 } NhlWorkspace;
 
 extern int _NhlNewWorkspace(
@@ -232,7 +233,7 @@ extern NhlErrorTypes _NhlCprect(
 #endif
 );
 
-/* Dyanamic Ezmap interface functions */
+/* Dynamic Ezmap interface functions */
 
 extern NhlErrorTypes _NhlMapbla(
 #if	NhlNeedProto
@@ -282,6 +283,34 @@ extern NhlErrorTypes _NhlMapblm(
 extern NhlErrorTypes _NhlMapgrm(
 #if	NhlNeedProto
 	NhlWorkspace	*amap_ws,
+	int		(*ulpr)(float *xcra, 
+			       float *ycra, 
+			       int *mcra, 
+			       int *iaai, 
+			       int *iagi, 
+			       int *nogi),
+	char		*entry_name
+#endif
+);
+
+
+/* Dynamic Ezmapb interface functions */
+
+
+extern NhlErrorTypes _NhlMplnam(
+#if	NhlNeedProto
+ 	NhlWorkspace	*amap_ws,
+        NhlString	map_data_filename,
+        int		level,
+	char		*entry_name
+#endif
+);
+
+extern NhlErrorTypes _NhlMplndm(
+#if	NhlNeedProto
+ 	NhlWorkspace	*amap_ws,
+        NhlString	map_data_filename,
+        int		level,
 	int		(*ulpr)(float *xcra, 
 			       float *ycra, 
 			       int *mcra, 

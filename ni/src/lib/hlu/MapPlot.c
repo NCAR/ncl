@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.64 1998-04-21 18:32:37 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.65 1998-05-22 01:59:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,12 +27,19 @@
 #include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/MapPlotP.h>
 #include <ncarg/hlu/LogLinTransObj.h>
+#include <ncarg/hlu/MapV40DataHandler.h>
+#include <ncarg/hlu/MapV41DataHandler.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <limits.h>
 #include <ncarg/c.h>
+
+#ifndef FLT_MAX
+#define FLT_MAX			10.0e37
+#endif
 
 #define Oset(field)	NhlOffset(NhlMapPlotLayerRec,mapplot.field)
 static NhlResource resources[] = {
@@ -49,20 +56,21 @@ static NhlResource resources[] = {
 		 Oset(area_names),NhlTImmediate,
 		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNmpAreaTypes,NhlCmpAreaTypes,
-		 NhlTIntegerGenArray,sizeof(NhlPointer),
-		 Oset(area_types),NhlTImmediate,
-		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+         	NhlTIntegerGenArray,sizeof(NhlPointer),Oset(area_types),
+         	NhlTImmediate,_NhlUSET((NhlPointer) NULL),
+         	_NhlRES_GONLY,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNmpDynamicAreaGroups,NhlCmpDynamicAreaGroups,
-		 NhlTIntegerGenArray,sizeof(NhlPointer),
-		 Oset(dynamic_groups),NhlTImmediate,
-		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+		NhlTIntegerGenArray,sizeof(NhlPointer),
+		Oset(dynamic_groups),NhlTImmediate,
+		_NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNmpFixedAreaGroups,NhlCmpFixedAreaGroups,
-		 NhlTIntegerGenArray,sizeof(NhlPointer),
-		 Oset(fixed_groups),NhlTImmediate,
-		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+         	NhlTIntegerGenArray,sizeof(NhlPointer),Oset(fixed_groups),
+         	NhlTImmediate,_NhlUSET((NhlPointer) NULL),
+         	_NhlRES_GONLY,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNmpDataBaseVersion,NhlCmpDataBaseVersion,
-		 NhlTString,sizeof(NhlString),Oset(database_version),
-		 NhlTString, _NhlUSET("NCARG_4.0"),0,NULL},
+		NhlTMapDataBaseVersion,sizeof(NhlMapDataBaseVersion),
+	 	Oset(database_version),NhlTImmediate, 
+	 	_NhlUSET((NhlPointer)NhlNCARG4_0),0,NULL},
 
 /* Outline resources */
 
@@ -146,8 +154,8 @@ static NhlResource resources[] = {
  	{NhlNmpMonoFillPattern, NhlCmpMonoFillPattern, NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(mono_fill_pattern),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
- 	{NhlNmpFillPattern, NhlCmpFillPattern, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(fill_pattern),
+ 	{NhlNmpFillPattern, NhlCmpFillPattern, NhlTFillIndex,
+		 sizeof(NhlFillIndex),Oset(fill_pattern),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlSOLIDFILL),0,NULL},
 	{NhlNmpFillPatterns,NhlCmpFillPatterns,NhlTFillIndexGenArray,
 		 sizeof(NhlPointer),Oset(fill_patterns),
@@ -580,12 +588,6 @@ static NhlErrorTypes MapPlotPostDraw(
 #endif
 );
 
-static NhlGenArray mpGetNewGenArray(
-#if	NhlNeedProto
-	NhlMapPlotLayerPart	*mpp,
-	NrmQuark		quark
-#endif
-);
 
 static NhlGenArray mpGenArraySubsetCopy(
 #if	NhlNeedProto
@@ -599,63 +601,6 @@ static NhlErrorTypes mpDraw(
         NhlMapPlotLayer	mpl,
 	NhlDrawOrder	order,
 	NhlString	entry_name
-#endif
-);
-
-static NhlErrorTypes mpFill(
-#if	NhlNeedProto
-	NhlMapPlotLayer	mp,
-	NhlString	entry_name
-#endif
-);
-
-static NhlErrorTypes mpGrid(
-#if	NhlNeedProto
-	NhlMapPlotLayer	mp,
-	NhlString	entry_name
-#endif
-);
-
-static NhlErrorTypes mpOutline(
-#if	NhlNeedProto
-	NhlMapPlotLayer	mp,
-	NhlString	entry_name
-#endif
-);
-
-static NhlErrorTypes mpSetUpAreamap(
-#if	NhlNeedProto
-	NhlMapPlotLayer	mp,
-	NhlWorkspace	**aws,
-	int 		amap_type,
-	NhlString	entry_name
-#endif
-);
-
-static NhlErrorTypes mpSetUpDrawIds(
-#if	NhlNeedProto
-	NhlMapPlotLayerPart	*mpp,
-	mpDrawOp		draw_op,
-	NhlString		entry_name
-#endif
-);
-
-static NhlErrorTypes mpSetUpStateDrawIds(
-#if	NhlNeedProto
-	NhlMapPlotLayerPart	*mpp,
-	mpDrawOp		draw_op,
-	NhlString		entry_name
-#endif
-);
-
-static NhlErrorTypes mpExpandId(
-#if	NhlNeedProto
-	NhlMapPlotLayerPart	*mpp,
-	int			id,
-	mpFlags			uflags,
-	int			index,
-	unsigned char		s_index,
- 	NhlString		entry_name
 #endif
 );
 
@@ -682,48 +627,6 @@ static NhlErrorTypes    mpManageDynamicArrays(
 	NhlBoolean	init,
 	_NhlArgList	args,
 	int		num_args
-#endif
-);
-
-static NhlErrorTypes    mpBuildFillDrawList(
-#if	NhlNeedProto
-	NhlMapPlotLayer	mpnew, 
-	NhlMapPlotLayer	mpold,
-	NhlBoolean	init,
-	_NhlArgList	args,
-	int		num_args
-#endif
-);
-
-static NhlErrorTypes    mpBuildOutlineDrawList(
-#if	NhlNeedProto
-	NhlMapPlotLayer	mpnew, 
-	NhlMapPlotLayer	mpold,
-	NhlBoolean	init,
-	_NhlArgList	args,
-	int		num_args
-#endif
-);
-
-static NhlErrorTypes    mpUpdateDrawGroups(
-#if	NhlNeedProto
-	NhlMapPlotLayerPart	*mpp,
-	mpDrawOp		draw_op,
-	int			draw_mode,
-	int			color,
-	int			index,
-	char			*entry_name
-#endif
-);
-
-static NhlErrorTypes mpUpdateNameRecs(
-#if	NhlNeedProto
-	NhlMapPlotLayerPart	*mpp,
-	mpDrawOp		draw_op,
-	NhlString		name,
-	int			draw_mode,
-	int			color,
-	NhlString		entry_name
 #endif
 );
 
@@ -769,6 +672,14 @@ static NhlErrorTypes mpSetUpTransObj(
 #endif
 );
 
+static NhlErrorTypes mpSetUpDataHandler(
+#if	NhlNeedProto
+	NhlMapPlotLayer	mpnew,
+	NhlMapPlotLayer	mpold,
+	NhlBoolean	init
+#endif
+);
+
 
 static void   load_hlumap_routines(
 #if	NhlNeedProto
@@ -779,39 +690,6 @@ static void   load_hlumap_routines(
 extern void   (_NHLCALLF(hlumapusr,HLUMAPUSR))(
 #if	NhlNeedProto
 	int	*iprt
-#endif
-);
-
-void   (_NHLCALLF(hlumapeod,HLUMAPEOD))(
-#if	NhlNeedProto
-	int *nout,
-	int *nseg,
-	int *idls,
-	int *idrs,
-	int *npts,
-	float *pnts
-#endif
-);
-
-extern int (_NHLCALLF(hlumapfill,HLUMAPFILL))(
-#if	NhlNeedProto
-	float *xcs, 
-	float *ycs, 
-	int *ncs, 
-	int *iai, 
-	int *iag, 
-	int *nai
-#endif
-);
-
-extern int (_NHLCALLF(hlumaskgrid,HLUMASKGRID))(
-#if	NhlNeedProto
-	float *xcra, 
-	float *ycra, 
-	int *ncra, 
-	int *iaai, 
-	int *iagi, 
-	int *nogi
 #endif
 );
 
@@ -873,22 +751,6 @@ NhlMapPlotClassRec NhlmapPlotClassRec = {
 
 NhlClass NhlmapPlotClass = (NhlClass)&NhlmapPlotClassRec;
 
-static char *BGroup_Names[] = { 
-	NhlmpNULLAREA,
-	NhlmpALLNATIONAL,
-	NhlmpALLGEOPHYSICAL,
-	NhlmpLAND,
-	NhlmpWATER,
-	NhlmpINLANDWATER,
-	NhlmpOCEANS,
-	NhlmpCONTINENTS,
-	NhlmpISLANDS,
-	NhlmpLARGEISLANDS,
-	NhlmpSMALLISLANDS,
-	NhlmpALLUSSTATES,
-	NhlmpUSSTATESLAND,
-	NhlmpUSSTATESWATER };
-
 static NrmQuark	Qfloat = NrmNULLQUARK;
 static NrmQuark Qint = NrmNULLQUARK;
 static NrmQuark Qstring = NrmNULLQUARK;
@@ -909,149 +771,8 @@ static NrmQuark Qfill_scales = NrmNULLQUARK;
 
 static NhlMapPlotLayerPart *Mpp = NULL, *Ompp;
 static NhlMapPlotLayer Mpl, Ompl;
-static NhlBoolean Global_Amap_Inited;
-static NhlBoolean US_Amap_Inited;
-static NhlBoolean Grid_Setup;
 
 static int Init_Colors[] ={16,10, 8,10,26,22,11,23,13,19,24,25,21,20,18};
-
-
-static mpOutlineRec *OutRecs = NULL;
-static int OutRec_Count = 0;
-static int Otype_Start[NhlmpOUTLINE_TYPE_COUNT + 1];
-static mpDrawOp Draw_Op;
-static mpOutlineSet Outline_Set;
-
-static mpDrawIdRec DrawIds[600];
-
-static short Id_Offset[4] = { 1,1004,223,440};
-static short Id_End_Reg[4] = { 222,1361,439,1003 };
-static short Draw_Special_Check[] = { 2,1005,223,441 };
-static short Draw_Check;
-static short US_Border;
-static short US_Index;
-
-#define mpUS_PO_IX	1031
-#define mpUS_PS_IX	1015
-
-/*
- * The following areas representing the US and the Great Lakes must
- * be excluded from the national and USState set when the USState set is used
- * with the National set.
- */
-
-#if 0
-static short National_Excludes[] = { 1031,1058,1065,1071,1072,1081 };
-#endif
-static short USState_Excludes[] = { 223 };
-
-/*
- * The following area groupngs allow areas from the Geophysical map set
- * (the Ezmap 'CO' set) to be simulated using the National set (Ezmap 'PO').
- */
-
-static short NSAmerica[] = { /* 1362 */
-	1014,1026,1031,1037,1057,1061,1063,1064,1066,1068,1072,1074,1076,
-	1077,1082,1090,1094,1097,1098,1101,1109,1113,1119,1120,1122 };
-
-static short Tierra_Del_Fuego[] = { /* 1363 */
-	1091,1103};
-
-static short Dominican_Republic_and_Haiti[] = {  /* 1364 */
-	1092,1100 };
-
-static short Africa_Eurasia[] = { /* 1365 */
-	1006,1127,1128,1129,1131,1132,1134,1137,1138,1139,1140,1142,1143,
-	1144,1145,1151,1153,1154,1155,1156,1157,1158,1160,1161,1162,1163,
-	1164,1165,1166,1167,1168,1169,1171,1174,1175,1176,1177,1178,1180,
-	1184,1185,1186,1187,1188,1189,1190,1193,1194,1195,1196,1197,1198,
-	1200,1201,1202,1203,1204,1205,1208,1209,1211,1213,1214,1215,1216,
-	1219,1221,1222,1223,1225,1226,1229,1230,1231,1233,1236,1237,1238,
-	1239,1240,1241,1242,1243,1245,1246,1248,1251,1252,1254,1260,1264,
-	1265,1267,1270,1272,1274,1275,1276,1277,1279,1282,1285,1286,1287,
-	1314,1317,1361 };
-
-static short England_Scotland_Wales[] = { /* 1366 */
-	1149,1150,1152 };
-
-static short Ireland[] = { /* 1367 */
-	1141,1146 };
-
-static short Borneo[] = { /* 1368 */
-	1293,1294,1298 };
-
-static short New_Guinea[] = { /* 1369 */
-	1324,1324,1336 };
-
-static short PS_NSAmerica[] = { /* 1004 */
-	450,462,1015,491,549,567,572,582,588,596,617,630,632,647,
-	693,705,710,713,734,751,755,761,762,764};
-
-static short PS_Tierra_Del_Fuego[] = {  /* 1005 */
-	699,739};
-
-static short PS_Dominican_Republic_and_Haiti[] = {  /* 1006 */
-	700,724};
-
-static short PS_Africa_Eurasia[] = { /* 1007 */
-	442,769,770,771,773,774,776,779,780,781,782,784,785,786,787,793,
-	795,796,797,798,799,800,802,803,804,805,806,807,808,809,810,811,
-	813,816,817,818,819,820,822,826,827,828,829,830,831,832,835,836,
-	837,838,839,840,842,843,848,845,846,847,850,851,853,855,856,857,
-	858,861,863,864,865,867,868,871,872,873,875,878,879,880,881,882,
-	883,884,885,887,888,890,893,894,896,902,906,907,909,912,914,916,
-	917,918,919,921,924,927,928,929,956,959,1003};
-
-static short PS_England_Scotland_Wales[] = { /* 1008 */
-	791,792,794};
-
-static short PS_Ireland[] = {  /* 1009 */
-	783,788};
-
-static short PS_Borneo[] = { /* 1010 */
-	935,936,940};
-
-static short PS_New_Guinea[] = {  /* 1011 */
-	966,966,978};
-
-static short PS_Bahamas_1[] = { /* 1012 */
-	649,652,653,655,658 };
-
-static short PS_Bahamas_2[] = { /* 1013 */
-	687,663,664,665 };
-
-static short PS_Bahamas_3[] = {  /* 1014 */
-	648,656,657,654,659,660 };
-
-static short *Exp_Ids[][2] = { 
-	{NSAmerica,PS_NSAmerica},
-	{Tierra_Del_Fuego,PS_Tierra_Del_Fuego},
-	{Dominican_Republic_and_Haiti,PS_Dominican_Republic_and_Haiti},
-	{Africa_Eurasia,PS_Africa_Eurasia},
-	{England_Scotland_Wales,PS_England_Scotland_Wales},
-	{Ireland,PS_Ireland},
-	{Borneo,PS_Borneo},
-	{New_Guinea,PS_New_Guinea},
-	{NULL,PS_Bahamas_1},
-	{NULL,PS_Bahamas_2},
-	{NULL,PS_Bahamas_3},
-	{NULL,NULL} };
-
-static short Exp_Ids_Count[][2] = { 
-	{NhlNumber(NSAmerica),NhlNumber(PS_NSAmerica)},
-	{NhlNumber(Tierra_Del_Fuego),NhlNumber(PS_Tierra_Del_Fuego)},
-	{NhlNumber(Dominican_Republic_and_Haiti),
-		 NhlNumber(PS_Dominican_Republic_and_Haiti)},
-	{NhlNumber(Africa_Eurasia),NhlNumber(PS_Africa_Eurasia)},
-	{NhlNumber(England_Scotland_Wales),
-		 NhlNumber(PS_England_Scotland_Wales)},
-	{NhlNumber(Ireland),NhlNumber(PS_Ireland)},
-	{NhlNumber(Borneo),NhlNumber(PS_Borneo)},
-	{NhlNumber(New_Guinea),NhlNumber(PS_New_Guinea)},
-	{0,NhlNumber(PS_Bahamas_1)},
-	{0,NhlNumber(PS_Bahamas_2)},
-	{0,NhlNumber(PS_Bahamas_3)},
-	{0,0} };
 
 /*
  * Function:	nhlfmapplotclass
@@ -1132,19 +853,31 @@ MapPlotClassInitialize
 	{NhlFIXEDASPECTNOFITBB,	"FixedAspectNoFitBB"}
 	};
 
+	_NhlEnumVals mapdatabaseversionlist[] =  {
+	{NhlNCARG4_0,		"NDV40"},
+	{NhlNCARG4_0,		"Ncarg4_0"},
+	{NhlNCARG4_1,		"NDV41"},
+	{NhlNCARG4_1,		"Ncarg4_1"}
+	};
+
 	load_hlumap_routines(False);
 
         _NhlRegisterEnumType(NhlmapPlotClass,NhlTMapBoundarySets,
 		mapboundarysetslist,NhlNumber(mapboundarysetslist));
 
         _NhlRegisterEnumType(NhlmapPlotClass,NhlTSpecifiedFillPriority,
-		specifiedfillprioritylist,NhlNumber(specifiedfillprioritylist));
+		specifiedfillprioritylist,
+                             NhlNumber(specifiedfillprioritylist));
 
         _NhlRegisterEnumType(NhlmapPlotClass,NhlTMapGridMaskMode,
 		mapgridmaskmodelist,NhlNumber(mapgridmaskmodelist));
 
         _NhlRegisterEnumType(NhlmapPlotClass,NhlTMapShapeMode,mapshapemodelist,
 		NhlNumber(mapshapemodelist));
+
+        _NhlRegisterEnumType(NhlmapPlotClass,NhlTMapDataBaseVersion,
+			     mapdatabaseversionlist,
+			     NhlNumber(mapdatabaseversionlist));
 
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);
@@ -1229,165 +962,6 @@ MapPlotClassPartInitialize
 	return ret;
 }
 
-
-void mpLowerCase(char *string)
-{
-	char *cp = string;
-
-	while (*cp != '\0') {
-		*cp = tolower(*cp);
-		cp++;
-	}
-}
-#if 0
-void mpGetOutRecsByName(mpOutlineRec *orp, int nrecs, NhlString name)
-{
-	mpOutlineRec *lorp = orp;
-	int i;
-	int len = strlen(name) - 1;
-	char tname[128];
-
-	strcpy(tname,name);
-	mpLowerCase(tname);
-	if (name[len] == '*') {
-		for (i = 0; i < nrecs; i++) {
-			if (! strncmp(lorp->name,tname,len)) {
-				printf("%s -- %d, %d\n",
-				       lorp->name,lorp->id[0],lorp->id[1]);
-			}
-			lorp++;
-		}
-	}
-	else {
-		for (i = 0; i < nrecs; i++) {
-			if (! strcmp(lorp->name,tname)) {
-				printf("%s -- %d, %d\n",
-				       lorp->name,lorp->id[0],lorp->id[1]);
-			}
-			lorp++;
-		}
-	}
-}
-
-void mpGetOutRecsByType(mpOutlineRec *orp, int nrecs, mpOutlineType type)
-{
-	mpOutlineRec *lorp = orp;
-	int i;
-
-	for (i = 0; i < nrecs; i++) {
-		if (lorp->type == type)
-			printf("%s -- %d, %d\n",
-			       lorp->name,lorp->id[0],lorp->id[1]);
-		lorp++;
-	}
-}
-
-void mpprintids(FILE *fp,short *idlist, int count)
-{
-	int i, j;
-	for (i = 0; i < count; i++) 
-		for (j = 0; j < OutRec_Count; j++)
-			if (OutRecs[j].id[1] == idlist[i]) {
-				fprintf(fp,"%d,",OutRecs[j].id[2]);
-				break;
-			}
-}
-#endif
-	
-NhlErrorTypes Init_Outline_Recs(NhlString entry_name)
-{
-	char *e_text;
-	FILE *fp;
-	char buf[256],name[128];
-	int id0,id1,id2,cix0,cix1,type;
-	mpOutlineRec *orp;
-	int nalloced = 0;
-	int bytes = 0, count;
-	mpOutlineType last_type;
-	Const char *db_path;
-	char *full_name;
-
-	if ((db_path = GetNCARGPath("database")) == NULL) {
-		e_text = "%s: cannot find path to NCARG database";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-	if ((full_name = NhlMalloc(strlen(db_path) + 
-				   strlen(Nhl_mpMAPDATAFILE) + 2)) == NULL) {
-		e_text = "%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-	strcpy(full_name,db_path);
-	strcat(full_name,"/");
-	strcat(full_name,Nhl_mpMAPDATAFILE);
-		      
-	if ((fp = fopen(full_name,"r")) == NULL) {
-		e_text = "%s: cannot open map data file: %s";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			  e_text,entry_name,Nhl_mpMAPDATAFILE);
-		return NhlFATAL;
-	}
-
-	if ((OutRecs = (mpOutlineRec *) 
-		NhlMalloc(mpALLOC_UNIT * sizeof(mpOutlineRec))) == NULL) {
-		e_text = "%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-
-	nalloced = mpALLOC_UNIT;
-
-	last_type = mpOcean;
-	Otype_Start[mpOcean] = 0;
-	while (fgets(buf,128,fp) != NULL) {
-		sscanf(buf,"%d:%d:%d:%d:%d:%d%s",&type,
-		       &id0,&cix0,&id1,&cix1,&id2,name);
-
-		if (OutRec_Count == nalloced) {
-			if ((OutRecs = (mpOutlineRec *)
-			     NhlRealloc(OutRecs,(nalloced + mpALLOC_UNIT) 
-					* sizeof(mpOutlineRec))) == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return NhlFATAL;
-			}
-			nalloced += mpALLOC_UNIT;
-		}
-
-		orp = &OutRecs[OutRec_Count];
-
-		orp->id[0] = id0;
-		orp->cix[0] = cix0;
-		orp->id[1] = id1;
-		orp->cix[1] = cix1;
-		orp->id[2] = id2;
-		orp->type = (mpOutlineType) type;
-		mpLowerCase(name);
-		count = strlen(name) + 1;
-		orp->name = (char *) malloc(count);
-		bytes += count;
-		strcpy(orp->name,name);
-		if (orp->type != last_type) {
-			Otype_Start[orp->type] = OutRec_Count;
-			last_type = orp->type;
-		}
-		OutRec_Count++;
-	}
-	Otype_Start[last_type + 1] = OutRec_Count; 
-	fclose(fp);
-	NhlFree(full_name);
-#if 0
-	printf("records read %d, bytes %d + record size %d\n", OutRec_Count, 
-	       bytes,OutRec_Count * sizeof(mpOutlineRec));
-
-	mpGetOutRecsByType(OutRecs,OutRec_Count,mpInlandWater);
-	mpGetOutRecsByName(OutRecs,OutRec_Count,"CANAD*");
-#endif
-	return NhlNOERROR;
-}    
-
 /*
  * Function:	MapPlotInitialize
  *
@@ -1428,6 +1002,7 @@ MapPlotInitialize
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name = "MapPlotInitialize";
 	char			*e_text;
+        
 
 	Mpl = (NhlMapPlotLayer) new;
 	Mpp = &(Mpl->mapplot);
@@ -1438,27 +1013,20 @@ MapPlotInitialize
 /* Initialize private fields */
 
 	Mpp->overlay_object = NULL;
+        Mpp->map_data_handler = NULL;
 	Mpp->dash_table = NULL;
-	Mpp->co_aws_id = -1;
-	Mpp->po_aws_id = -1;
-	Mpp->us_aws_id = -1;
 	Mpp->predraw_dat = NULL;
 	Mpp->draw_dat = NULL;
 	Mpp->postdraw_dat = NULL;
 	Mpp->new_draw_req = True;
 	Mpp->update_req = False;
-	Mpp->fill_rec_alloc = 0;
-	Mpp->fill_rec_count = 0;
-	Mpp->fill_recs = NULL;
-	Mpp->outline_rec_alloc = 0;
-	Mpp->outline_rec_count = 0;
-	Mpp->outline_recs = NULL;
 	Mpp->limb.on = Mpp->grid.on;
 	Mpp->limb.order = Mpp->grid.order;
 	Mpp->spec_fill_color_count = 0;
 	Mpp->spec_fill_pattern_count = 0;
 	Mpp->spec_fill_scale_count = 0;
 	Mpp->trans_change_count = 0;
+        Mpp->view_changed = True;
 /*
  * Necessary to initialize these for NDCToData to work correctly.
  */
@@ -1466,20 +1034,13 @@ MapPlotInitialize
 	Mpl->trans.data_xend = 180.0;
 	Mpl->trans.data_ystart = -90.0;
 	Mpl->trans.data_yend = 90.0;
-		
-/*
- * If the Outline Records are not yet initialized, do it now.
- */
-	if (OutRecs == NULL) {
-		subret = Init_Outline_Recs(entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: error initializing map outline records";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return(ret);
-		}
-	}
+        
+/* Set up the Map data handler */
 
-
+        subret = mpSetUpDataHandler(Mpl, (NhlMapPlotLayer) req, True);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) 
+		return ret;
+                                    
 /* Set up the Map transformation */
 
 	subret = mpSetUpTransObj(Mpl, (NhlMapPlotLayer) req, True);
@@ -1512,34 +1073,29 @@ MapPlotInitialize
 		return(ret);
 	}
 
-/* Build the fill draw list */
-
-	subret = mpBuildFillDrawList(Mpl,(NhlMapPlotLayer)req,
-				     True,args,num_args);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error building map draw list";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
-
-/* Build the outline draw list */
-
-	subret = mpBuildOutlineDrawList(Mpl,(NhlMapPlotLayer)req,
-				     True,args,num_args);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error building map draw list";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
+        _NhlUpdateDrawList(Mpp->map_data_handler,True,
+                           Mpl,(NhlMapPlotLayer)req,args,num_args);
+        
+                
 /* Manage the overlay */
 
 	subret = _NhlManageOverlay(&Mpp->overlay_object,new,req,
 				   _NhlCREATE,NULL,0,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
+        
+        Mpp->view_changed = False;
 
+/*
+ * MapPlot simply passes these resources to the DataHandler, because they
+ * are dependent on the contents of the Map DataBase in use. Therefore,
+ * once they are set, change their value to NULL in order ensure that the
+ * the next SetValues call will be able notice they have changed. (Otherwise
+ * they could be assigned to the same memory as the last time.
+ */
+        Mpp->area_names = NULL;
+        Mpp->dynamic_groups = NULL;
+        
 	Mpp = NULL;
 	return ret;
 }
@@ -1620,8 +1176,16 @@ static NhlErrorTypes MapPlotSetValues
 	Mpl = (NhlMapPlotLayer) new;
 	Mpp = &(Mpl->mapplot);
 	Ompl = (NhlMapPlotLayer) old;
+
 	Ompp = &(Ompl->mapplot);
 
+        if (Mpl->view.x != Ompl->view.x ||
+            Mpl->view.y != Ompl->view.y ||
+            Mpl->view.width != Ompl->view.width ||
+            Mpl->view.height != Ompl->view.height) {
+                Mpp->view_changed = True;
+        }
+                
 	if (Mpl->view.use_segments != Ompl->view.use_segments) {
 		Mpp->new_draw_req = True;
 	}
@@ -1630,20 +1194,21 @@ static NhlErrorTypes MapPlotSetValues
                 
 		if (NewDrawArgs(args,num_args))
 			Mpp->new_draw_req = True;
-                
-                if (Mpp->draw_dat)
-                        trans_dat = Mpp->draw_dat;
-                else if (Mpp->postdraw_dat)
-                        trans_dat = Mpp->postdraw_dat;
-                else if (Mpp->predraw_dat)
-                        trans_dat = Mpp->predraw_dat;
-                if (! _NhlSegmentSpansArea(trans_dat,
-                                           Mpl->view.x,
-                                           Mpl->view.x + Mpl->view.width,
-                                           Mpl->view.y - Mpl->view.height,
-                                           Mpl->view.y))
-                        Mpp->new_draw_req = True;
-
+                else {
+                        if (Mpp->draw_dat)
+                                trans_dat = Mpp->draw_dat;
+                        else if (Mpp->postdraw_dat)
+                                trans_dat = Mpp->postdraw_dat;
+                        else if (Mpp->predraw_dat)
+                                trans_dat = Mpp->predraw_dat;
+                        if (! _NhlSegmentSpansArea
+                            (trans_dat,
+                             Mpl->view.x,
+                             Mpl->view.x + Mpl->view.width,
+                             Mpl->view.y - Mpl->view.height,
+                             Mpl->view.y))
+                                Mpp->new_draw_req = True;
+                }
 	}
 
 	Mpp->limb.on = Mpp->grid.on;
@@ -1688,6 +1253,13 @@ static NhlErrorTypes MapPlotSetValues
 	if (_NhlArgIsSet(args,num_args,NhlNmpLabelFontHeightF))
 		Mpp->labels.height_set = True;
 
+        
+/* Set up the Map data handler */
+
+        subret = mpSetUpDataHandler(Mpl,Ompl,False);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) 
+		return ret;
+        
 /* Set up the Map transformation */
 
 	subret = mpSetUpTransObj(Mpl,Ompl,False);
@@ -1720,24 +1292,8 @@ static NhlErrorTypes MapPlotSetValues
 	}
 
 
-/* Build the map draw list */
-
-	subret = mpBuildFillDrawList(Mpl,Ompl,False,args,num_args);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error building map draw list";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
-
-/* Build the map draw list */
-
-	subret = mpBuildOutlineDrawList(Mpl,Ompl,False,args,num_args);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error building map draw list";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
+        _NhlUpdateDrawList(Mpp->map_data_handler,False,
+                           Mpl,Ompl,args,num_args);
 
 /* Manage the overlay */
 
@@ -1751,8 +1307,20 @@ static NhlErrorTypes MapPlotSetValues
 	ret = MIN(ret,subret);
 
 	Mpp->update_req = False;
+	Mpp->view_changed = False;
 
+/*
+ * MapPlot simply passes these resources to the DataHandler, because they
+ * are dependent on the contents of the Map DataBase in use. Therefore,
+ * once they are set, change their value to NULL in order ensure that the
+ * the next SetValues call will be able notice they have changed. (Otherwise
+ * they could be assigned to the same memory as the last time.
+ */
+        Mpp->area_names = NULL;
+        Mpp->dynamic_groups = NULL;
+        
 	Mpp = NULL;
+        
 	return ret;
 }
 
@@ -1801,29 +1369,16 @@ static NhlErrorTypes    MapPlotGetValues
 {
         NhlMapPlotLayer mp = (NhlMapPlotLayer) l;
         NhlMapPlotLayerPart *mpp = &(mp->mapplot);
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
         NhlGenArray ga;
         char *e_text;
         int i, count = 0;
-	NhlBoolean create_it;
+        int data_handler_args[4];
+        int data_handler_arg_count = 0;
 
         for (i = 0; i < num_args; i++ ) {
 
-		create_it = False;
                 ga = NULL;
-                if(args[i].quark == Qdatabase_version) {
-			if ((mpp->database_version == NULL) || 
-			    ! (*((NhlString*)(args[i].value.ptrval)) =
-			       NhlMalloc(strlen(mpp->database_version)+1))) {
-                                e_text = 
-				 "%s: error copying NhlNmpDataBaseVersion";
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-					  "MapPlotGetValues");
-				
-				return NhlFATAL;
-			}
-			strcpy(*((NhlString*)(args[i].value.ptrval)),
-			       mpp->database_version);
-                }
                 if(args[i].quark == Qfill_area_specs) {
                         ga = mpp->fill_area_specs;
                         count = ga ? ga->num_elements : 0;
@@ -1837,24 +1392,16 @@ static NhlErrorTypes    MapPlotGetValues
                         count = ga ? ga->num_elements : 0;
                 }
                 else if (args[i].quark == Qarea_names) {
-			create_it = True;
-                        ga = mpp->area_names;
-                        count = ga ? ga->num_elements : 0;
+                        data_handler_args[data_handler_arg_count++] = i;
                 }
                 else if (args[i].quark == Qarea_types) {
-			create_it = True;
-                        ga = mpp->area_types;
-                        count = ga ? ga->num_elements : 0;
+                        data_handler_args[data_handler_arg_count++] = i;
                 }
                 else if (args[i].quark == Qdynamic_groups) {
-			create_it = True;
-                        ga = mpp->dynamic_groups;
-                        count = ga ? ga->num_elements : 0;
+                        data_handler_args[data_handler_arg_count++] = i;
                 }
                 else if (args[i].quark == Qfixed_groups) {
-			create_it = True;
-                        ga = mpp->fixed_groups;
-                        count = ga ? ga->num_elements : 0;
+                        data_handler_args[data_handler_arg_count++] = i;
                 }
                 else if (args[i].quark == Qspec_fill_colors) {
                         ga = mpp->spec_fill_colors;
@@ -1890,128 +1437,29 @@ static NhlErrorTypes    MapPlotGetValues
                         }
                         *((NhlGenArray *)(args[i].value.ptrval)) = ga;
                 }
-		else if (create_it) {
-			if ((ga = mpGetNewGenArray(mpp,args[i].quark)) 
-			    == NULL) {
-				e_text = "%s: error getting %s GenArray";
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-                                          "MapPlotGetValues",
-					  NrmQuarkToString(args[i].quark));
-                                return NhlFATAL;
-                        }
-                        *((NhlGenArray *)(args[i].value.ptrval)) = ga;
-
-		}
         }
 
-        return(NhlNOERROR);
-
-}
-
-/*
- * Function:	mpGetNewGenArray
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlGenArray mpGetNewGenArray
-#if	NhlNeedProto
-(
-	NhlMapPlotLayerPart	*mpp,
-	NrmQuark		quark
-)
-#else
-(mpp,quark)
-	NhlMapPlotLayerPart	*mpp;
-	NrmQuark		quark;
-#endif
-{
-	char *e_text;
-	int i, len;
-	NhlGenArray ga;
-
-	if (quark == Qarea_names) {
-		NhlString	*sp;
-		len = OutRec_Count;
-		if ((sp = NhlMalloc(sizeof(NhlString)*len)) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,
-				  NhlEUNKNOWN,e_text,"MapPlotGetValues");
-			return NULL;
-		}
-		for (i = 0; i < len; i++) {
-			if ((sp[i] = 
-			     NhlMalloc(strlen(OutRecs[i].name) + 1)) == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,"MapPlotGetValues");
-				return NULL;
-			}
-			strcpy(sp[i],OutRecs[i].name);
-		}
-		if ((ga = NhlCreateGenArray(sp,NhlTString,sizeof(NhlString),
-					    1,&len)) == NULL) {
-			e_text = "%s: error creating gen array";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  e_text,"MapPlotGetValues");
-			return NULL;
-		}
-		return ga;
-	}
-	else if (quark == Qarea_types) {
-		int	*ip;
-		len = OutRec_Count;
-		if ((ip = NhlMalloc(sizeof(int)*len)) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,
-				  NhlEUNKNOWN,e_text,"MapPlotGetValues");
-			return NULL;
-		}
-		for (i = 0; i < len; i++) {
-			ip[i] = (int) OutRecs[i].type;
-		}
-		if ((ga = NhlCreateGenArray(ip,NhlTInteger,sizeof(int),
-					    1,&len)) == NULL) {
-			e_text = "%s: error creating gen array";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  e_text,"MapPlotGetValues");
-			return NULL;
-		}
-		return ga;
-
-	}
-	else if (quark == Qdynamic_groups || quark == Qfixed_groups) {
-		int	*ip;
-		int	index = quark == Qdynamic_groups ? 1 : 0;
-
-		len = OutRec_Count;
-		if ((ip = NhlMalloc(sizeof(int)*len)) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,
-				  NhlEUNKNOWN,e_text,"MapPlotGetValues");
-			return NULL;
-		}
-		for (i = 0; i < len; i++) {
-			ip[i] = (int) OutRecs[i].cix[index];
-		}
-		if ((ga = NhlCreateGenArray(ip,NhlTInteger,sizeof(int),
-					    1,&len)) == NULL) {
-			e_text = "%s: error creating gen array";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  e_text,"MapPlotGetValues");
-			return NULL;
-		}
-		return ga;
-	}
-	return NULL;
+        if (data_handler_arg_count) {
+                NhlGArg		gargs[4];
+                int             nargs = 0;
+                NhlGenArray 	dhga[4];
+                NhlString	dhstr[4];
+                
+                for (i = 0; i < data_handler_arg_count; i++) {
+                        dhstr[i] = NrmQuarkToString
+                                (args[data_handler_args[i]].quark);
+                        NhlSetGArg(&gargs[nargs++],dhstr[i],&dhga[i]);
+                }
+                subret = NhlALGetValues
+                        (mpp->map_data_handler->base.id,gargs,nargs);
+                if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+                
+                for (i = 0; i < data_handler_arg_count; i++) {
+                        *((NhlGenArray *)
+                          (args[data_handler_args[i]].value.ptrval)) = dhga[i];
+                }
+        }
+        return(ret);
 }
 
 /*
@@ -2111,6 +1559,10 @@ NhlLayer inst;
 		(void) _NhlDestroyChild(mptp->trans_obj->base.id,inst);
 		mptp->trans_obj = NULL;
 	}
+        if (mpp->map_data_handler) {
+                NhlDestroy(mpp->map_data_handler->base.id);
+                mpp->map_data_handler = NULL;
+        }
 	NhlFreeGenArray(mpp->dash_table);
 	NhlFreeGenArray(mpp->fill_area_specs);
 	NhlFreeGenArray(mpp->mask_area_specs);
@@ -2122,10 +1574,6 @@ NhlLayer inst;
 	NhlFreeGenArray(mpp->spec_fill_patterns);
 	NhlFreeGenArray(mpp->spec_fill_scales);
 
-	if (mpp->fill_recs != NULL)
-		NhlFree(mpp->fill_recs);
-	if (mpp->outline_recs != NULL)
-		NhlFree(mpp->outline_recs);
 	if (mpp->predraw_dat != NULL)
 		_NhlDeleteViewSegment(inst,mpp->predraw_dat);
 	if (mpp->draw_dat != NULL)
@@ -2232,9 +1680,8 @@ static NhlErrorTypes MapPlotPreDraw
 	NhlMapPlotLayerPart	*mpp = &mpl->mapplot;
 	NhlTransformLayerPart	*tfp = &(mpl->trans);
 
-	Global_Amap_Inited = False;
-	US_Amap_Inited = False;
-
+        mpp->init_draw = True;
+        
 	if (tfp->overlay_status == _tfNotInOverlay) {
 		subret = _NhlSetTrans((NhlLayer)tfp->trans_obj,(NhlLayer)mpl);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -2477,23 +1924,24 @@ static NhlErrorTypes mpDraw
 /* Do the fill first */
 
 	if (mpp->fill_on && mpp->fill_order == order) {
-		Draw_Op = mpDRAWFILL;
-		subret = mpFill(mp,entry_name);
+                subret = _NhlDrawMapList
+                        (mpp->map_data_handler,mp,mpDRAWFILL,order);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
         }
 
 /* Draw the grid and the limb line */
 
 	if (mpp->grid.on && mpp->grid.order == order) {
-		subret = mpGrid(mp,entry_name);
+                subret = _NhlDrawMapList
+                        (mpp->map_data_handler,mp,mpDRAWGRID,order);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 	}
 
 /* Set up the map outlines */
 
 	if (mpp->outline_on && mpp->outline_order == order) {
-		Draw_Op = mpDRAWOUTLINE;
-		subret = mpOutline(mp,entry_name);
+                subret = _NhlDrawMapList
+                        (mpp->map_data_handler,mp,mpDRAWOUTLINE,order);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
         }
 
@@ -2541,847 +1989,6 @@ static NhlErrorTypes mpDraw
 	}
 
 	return ret;
-}
-
-
-
-/*
- * Function:	mpOutline
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes mpOutline
-#if	NhlNeedProto
-(
-	NhlMapPlotLayer	mp,
-	NhlString	entry_name
-)
-#else
-(mp,entry_name)
-        NhlMapPlotLayer mp;
-	NhlString	entry_name;
-#endif
-{
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlMapPlotLayerPart	*mpp = &(mp->mapplot);
-
-	c_mpseti("C5",mpp->geophysical.gks_color);
-	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-	c_mpseti("C6",mpp->us_state.gks_color);
-	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-	c_mpseti("C7",mpp->national.gks_color);
-	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-
-	if (mpp->global_outline_mode != mpNONE) {
-		subret = mpSetUpDrawIds(mpp,mpDRAWOUTLINE,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-#if 0
-		switch (Outline_Set) {
-		case mpCO:
-			printf("using CO for outlines\n");
-			break;
-		case mpPO:
-			printf("using PO for outlines\n");
-			break;
-		case mpPS:
-			printf("using PS for outlines\n");
-			break;
-		default:
-			printf("outline set not correct\n");
-		}
-#endif
-		c_maplot();
-		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-	}
-
-        if (mpp->usstates_outline_mode != mpNOSET) {
-		subret = mpSetUpStateDrawIds(mpp,mpDRAWOUTLINE,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-#if 0
-		printf("using US for outlines\n");
-#endif
-		c_maplot();
-		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-	}
-
-	return ret;
-}
-
-
-/*
- * Function:	mpFill
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes mpFill
-#if	NhlNeedProto
-(
-	NhlMapPlotLayer	mp,
-	NhlString	entry_name
-)
-#else
-(mp,entry_name)
-        NhlMapPlotLayer mp;
-	NhlString	entry_name;
-#endif
-{
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlMapPlotLayerPart	*mpp = &(mp->mapplot);
-        NhlWorkspace		*aws = NULL;
-
-/*
- * for efficiency if the ustates are drawn they go into a separate 
- * area map. Eventually there may be a number of sub-area maps.
- */
-#if 0
-        float flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
-        c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
-        printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
-               flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
-#endif
-
-#if 0
-	if (1) {
-#endif
-
-	if (mpp->global_fill_mode != mpNONE) {
-		
-		subret = mpSetUpAreamap(mp,&aws,mpGLOBAL_AMAP,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-#if 0
-		switch (Outline_Set) {
-		case mpCO:
-			printf("using CO for fill\n");
-			break;
-		case mpPO:
-			printf("using PO for fill\n");
-			break;
-		case mpPS:
-			printf("using PS for fill\n");
-			break;
-		default:
-			printf("outline set not correct\n");
-		}
-#endif
-		subret = _NhlArpram(aws,0,0,0,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-		subret = _NhlArscam(aws,(_NHLCALLF(hlumapfill,HLUMAPFILL)),
-				    entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-		subret = _NhlIdleWorkspace(aws);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-	}
-        if (mpp->usstates_fill_mode != mpNOSET) {
-
-		subret = mpSetUpAreamap(mp,&aws,mpUSSTATES_AMAP,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-#if 0
-		printf("using US for fill\n");
-#endif
-		subret = _NhlArpram(aws,0,0,0,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-		subret = _NhlArscam(aws,(_NHLCALLF(hlumapfill,HLUMAPFILL)),
-				    entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-		subret = _NhlIdleWorkspace(aws);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-        }
-	return ret;
-}
-
-/*
- * Function:	mpGrid
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes mpGrid
-#if	NhlNeedProto
-(
-	NhlMapPlotLayer	mp,
-	NhlString	entry_name
-)
-#else
-(mp,entry_name)
-        NhlMapPlotLayer mp;
-	NhlString	entry_name;
-#endif
-{
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlMapPlotLayerPart	*mpp = &(mp->mapplot);
-	NhlWorkspace		*aws;
-        float flx,frx,fby,fuy,wlx,wrx,wby,wuy,lon1,lon2,lat1,lat2,spacing;
-	float avlat,avlon;
-	int ll,status;
-
-	Grid_Setup = False;
-	c_mpseti("C2",mpp->grid.gks_color);
-	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-	c_mpseti("C4", mpp->limb.gks_color);
-	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-
-	mpp->relative_grid_spacing = False;
-
-	if (! mpp->relative_grid_spacing) {
-		spacing = mpp->grid_spacing;
-	}
-	else {
-		c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
-		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-		avlat = (wby + wuy) / 2.0;
-		avlon = (wrx + wlx) / 2.0;
-		_NhlWinToData(mp->trans.trans_obj,&avlon,&avlat,
-			      1,&lon1,&lat1,&status,NULL,NULL);
-		_NhlWinToData(mp->trans.trans_obj,&wrx,&avlat,
-			      1,&lon2,&lat2,&status,NULL,NULL);
-		
-		spacing = 2.0 * (lon2 - lon1) * mpp->grid_spacing;
-		spacing = spacing < 0 ? -spacing : spacing;
-	}
-	c_mpsetr("GR",spacing);
-	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-
-	if (mpp->grid_mask_mode == NhlMASKNONE) {
-		c_mapgrd();
-		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-		return ret;
-	}
-	if (mpp->global_fill_mode > mpNONE ||
-            mpp->usstates_fill_mode == mpNOSET) {
-		
-		subret = mpSetUpAreamap(mp,&aws,mpGLOBAL_AMAP,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-#if 0
-		switch (Outline_Set) {
-		case mpCO:
-			printf("using CO for grid\n");
-			break;
-		case mpPO:
-			printf("using PO for grid\n");
-			break;
-		case mpPS:
-			printf("using PS for grid\n");
-			break;
-		default:
-			printf("outline set not correct\n");
-		}
-#endif
-		subret = _NhlMapgrm(aws,
-				    (_NHLCALLF(hlumaskgrid,HLUMASKGRID)),
-				    entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-		subret = _NhlIdleWorkspace(aws);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-	}
-	if (mpp->usstates_fill_mode != mpNOSET) {
-
-		subret = mpSetUpAreamap(mp,&aws,mpUSSTATES_AMAP,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-#if 0
-		printf("using US for grid\n");
-#endif
-		subret = _NhlMapgrm(aws,
-				    (_NHLCALLF(hlumaskgrid,HLUMASKGRID)),
-				    entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-		subret = _NhlIdleWorkspace(aws);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-	}
-	return ret;
-}
-
-
-/*
- * Function:	mpSetUpAreamap
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes mpSetUpAreamap
-#if	NhlNeedProto
-(
-	NhlMapPlotLayer	mp,
-	NhlWorkspace	**aws,
-	int 		amap_type,
-	NhlString	entry_name
-)
-#else
-(mp,aws,amap_type,entry_name)
-        NhlMapPlotLayer mp;
-	NhlWorkspace	**aws;
-	int		amap_type;
-	NhlString	entry_name;
-#endif
-{
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
-	NhlMapPlotLayerPart	*mpp = &(mp->mapplot);
-	int			aws_id = -1;
-	NhlBoolean		inited = False;
-
-	c_arseti("RC",1);
-	switch (amap_type) {
-	case mpGLOBAL_AMAP:
-		aws_id = mpp->co_aws_id;
-		inited = Global_Amap_Inited;
-		break;
-	case mpUSSTATES_AMAP:
-		aws_id = mpp->us_aws_id;
-		inited = US_Amap_Inited;
-		break;
-	}
-
-	if (aws_id < 0) {
-		aws_id = _NhlNewWorkspace(NhlwsAREAMAP,NhlwsDISK,
-					  200000*sizeof(int));
-		if (aws_id < 0) 
-			return MIN(ret,(NhlErrorTypes)aws_id);
-	}
-	if ((*aws = _NhlUseWorkspace(aws_id)) == NULL) {
-		e_text = "%s: error reserving area map workspace";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
-	switch (amap_type) {
-	case mpGLOBAL_AMAP:
-		subret = mpSetUpDrawIds(mpp,mpDRAWFILL,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-		break;
-	case mpUSSTATES_AMAP:
-		subret = mpSetUpStateDrawIds(mpp,mpDRAWFILL,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-		break;
-	}
-	if (! inited) {
-		c_mpseti("VS",0);
-		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-		subret = _NhlArinam(*aws,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-		subret = _NhlMapbla(*aws,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-		if (mpp->dump_area_map)
-			_NhlDumpAreaMap(*aws,entry_name);
-	}
-	switch (amap_type) {
-	case mpGLOBAL_AMAP:
-		mpp->co_aws_id = aws_id;
-		Global_Amap_Inited = True;
-		break;
-	case mpUSSTATES_AMAP:
-		mpp->us_aws_id = aws_id;
-		US_Amap_Inited = True;
-		break;
-	}
-	return ret;
-}
-
-/*
- * Function:	mpSetUpDrawIds
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes mpSetUpDrawIds
-#if	NhlNeedProto
-(
-	NhlMapPlotLayerPart	*mpp,
-	mpDrawOp		draw_op,
-	NhlString		entry_name
-)
-#else
-(mpp,draw_op,entry_name)
-	NhlMapPlotLayerPart	*mpp;
-	mpDrawOp		draw_op;
-	NhlString		entry_name;
-#endif
-{
-	NhlErrorTypes	ret = NhlNOERROR, subret = NhlNOERROR;
-	char		*e_text;
-	int		id_ix,cix_ix,start_ix,end_ix,ix,i,j;
-	mpNameRec	*groups;
-	mpNameRec	*nrecs;
-	int		count;
-	mpFlags		uflags;
-	mpGlobalSetMode gmode;
-	mpStateSetMode	smode;
-	int		index;
-	unsigned char	s_index;
-	int		*dyn_grps = NULL;
-	NhlBoolean	use_dyn_grps = False;
-	int		us_ix = -999;
-
-	US_Border = 0;
-	US_Index = -999;
-
-	switch (draw_op) {
-	case mpDRAWFILL:
-		groups = mpp->fill_groups;
-		nrecs = mpp->fill_recs;
-		count = mpp->fill_rec_count;
-		gmode = mpp->global_fill_mode;
-		smode = mpp->usstates_fill_mode;
-		break;
-	case mpDRAWOUTLINE:
-		groups = mpp->outline_groups;
-		nrecs = mpp->outline_recs;
-		count = mpp->outline_rec_count;
-		gmode = mpp->global_outline_mode;
-		smode = mpp->usstates_outline_mode;
-		break;
-	default:
-		e_text = "%s: internal enumeration error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
-
-	switch (gmode) {
-	case mpGEO:
-		c_mpsetc("OU","CO");
-		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-		Outline_Set = mpCO;
-		id_ix = 0;
-		cix_ix = 0;
-		break;
-	case mpNAT:
-		if (smode > mpNOSET) {
-			c_mpsetc("OU","PS");
-			_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-			Outline_Set = mpPS;
-			id_ix = 2;
-		}
-		else {
-			c_mpsetc("OU","PO");
-			_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-			Outline_Set = mpPO;
-			id_ix = 1;
-		}
-		cix_ix = 1;
-		if (mpp->dynamic_groups != NULL) {
-			dyn_grps = (int *) mpp->dynamic_groups->data;
-			use_dyn_grps = True;
-		}
-		break;
-	case mpIMPLIED_NAT:
-		if (smode > mpNOSET) {
-			c_mpsetc("OU","PS");
-			_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-			Outline_Set = mpPS;
-			id_ix = 2;
-		}
-		else {
-			c_mpsetc("OU","PO");
-			_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-			Outline_Set = mpPO;
-			id_ix = 1;
-		}
-		cix_ix = 0;
-		break;
-	default:
-		return ret;
-	}
-	start_ix = Id_Offset[Outline_Set];
-	end_ix = Id_End_Reg[Outline_Set];
-	Draw_Check = Draw_Special_Check[Outline_Set];
-
-	uflags.flags = 0;
-	for (i = 0; i < NhlNumber(DrawIds); i++) {
-		DrawIds[i].u.flags = 0;
-		DrawIds[i].s_ix = (unsigned char) -1;
-		DrawIds[i].ix = NhlmpDEFAULTGROUPINDEX;
-	}
-
-/*
- * Set Up the Draw List for the map boundary catagories. The specification
- * lists are parsed later and thus overrride the general catagories.
-	for (i = 0; i < NhlmpOUTLINE_TYPE_COUNT - 2; i++) {
- */
-	for (i = 0; i < NhlmpOUTLINE_TYPE_COUNT; i++) {
-		if (groups[i].u.f.draw_mode > mpBACKGROUND) {
-			uflags.flags = groups[i].u.flags;
-			s_index = groups[i].s_ix;
-			for (j = Otype_Start[i]; j < Otype_Start[i+1]; j++) {
-				ix = OutRecs[j].id[id_ix];
-				if (use_dyn_grps)
-					index = dyn_grps[j];
-				else {
-					index = OutRecs[j].cix[cix_ix];
-				}
-				if (ix > end_ix) {
-					if (draw_op == mpDRAWOUTLINE &&
-					    uflags.f.draw_mode == mpDRAW)
-					    uflags.f.draw_mode = mpDRAWSPECIAL;
-					subret = mpExpandId(mpp,ix-end_ix-1,
-					      uflags,index,s_index,entry_name);
-					if ((ret = MIN(ret,subret))
-					     < NhlWARNING) return ret;
-				}
-				else {
-					ix -= start_ix;
-					DrawIds[ix].u.flags = uflags.flags;
-					DrawIds[ix].ix = index;
-					DrawIds[ix].s_ix = s_index;
-				}
-			}
-		}
-	}
-/*
- * Parse the spec lists twice. The first time only set the composite ids.
- * Thus in the second parse the specific ids will override the composites.
- * The US outline needs special treatment, since its border is drawn using
- * the PS outline while the interior state borders are drawn using the US
- * outline set. Also its setting must override the N+S-America setting, but
- * in turn individual state settings must override it. Therefore set it
- * in between the two loops if it appears.
- */
-	for (i = 0; i < count; i++) {
-		j = nrecs[i].name_ix;
-		ix = OutRecs[j].id[id_ix];
-
-		if (ix <= end_ix)
-			continue;
-		else if (ix == mpUS_PS_IX && Outline_Set == mpPS) {
-			us_ix = i;
-			continue;
-		}
-		uflags.flags = nrecs[i].u.flags;
-		index = nrecs[i].ix;
-		s_index = nrecs[i].s_ix;
-		if (draw_op == mpDRAWOUTLINE && uflags.f.draw_mode == mpDRAW)
-			uflags.f.draw_mode = mpDRAWSPECIAL;
-		subret = mpExpandId(mpp,ix-end_ix-1,
-				    uflags,index,s_index,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-	}
-	if (us_ix >= 0) {
-		j = nrecs[us_ix].name_ix;
-		ix = OutRecs[j].id[id_ix];
-		uflags.flags = nrecs[us_ix].u.flags;
-		index = nrecs[us_ix].ix;
-		s_index = nrecs[us_ix].s_ix;
-		if (uflags.f.draw_mode == mpMASK) {
-			subret = mpExpandId(mpp,ix-end_ix-1,uflags,
-					    index,s_index,entry_name);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-			groups[mpUSStateLand].u.flags = uflags.flags;
-		}
-		else {
-			US_Border = 2;
-			US_Index = index;
-		}
-	}
-
-	for (i = 0; i < count; i++) {
-		j = nrecs[i].name_ix;
-		ix = OutRecs[j].id[id_ix];
-		if (OutRecs[j].type > mpNational && 
-		    nrecs[i].u.f.draw_mode != mpMASK)
-			continue;
-		ix -= start_ix;
-		DrawIds[ix].s_ix = nrecs[i].s_ix;
-		DrawIds[ix].u.flags = nrecs[i].u.flags;
-		DrawIds[ix].ix = nrecs[i].ix;
-	}
-/*
- * If the US set is in implied set mode, set the draw mode for the groups
- * to the color that has been set up for the US border. Is the DrawId for
- * this index always set????
- */
-	if (smode == mpIMPLIED_SET) {
-		us_ix = (Outline_Set == mpPO ?
-			 mpUS_PO_IX : mpUS_PS_IX) - start_ix;
-		uflags = DrawIds[us_ix].u;
-		if (draw_op == mpDRAWOUTLINE && uflags.f.draw_mode == mpDRAW)
-			uflags.f.draw_mode = mpDRAWSPECIAL;
-		groups[mpUSStateLand].u.flags = uflags.flags;
-	}
-
-	return ret;
-}
-
-/*
- * Function:	mpSetUpStateDrawIds
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes mpSetUpStateDrawIds
-#if	NhlNeedProto
-(
-	NhlMapPlotLayerPart	*mpp,
-	mpDrawOp		draw_op,
-	NhlString		entry_name
-)
-#else
-(mpp,draw_op,entry_name)
-	NhlMapPlotLayerPart	*mpp;
-	mpDrawOp		draw_op;
-	NhlString		entry_name;
-#endif
-{
-	NhlErrorTypes	ret = NhlNOERROR;
-	char		*e_text;
-	int		offset,ix,i,j;
-	mpNameRec	*land_group,*water_group;
-	mpNameRec	*nrecs;
-	int		count;
-	mpFlags		uflags;
-	mpGlobalSetMode gmode;
-	mpStateSetMode	smode;
-	int		*dyn_grps = NULL;
-	NhlBoolean	use_dyn_grps = False;
-
-	switch (draw_op) {
-	case mpDRAWFILL:
-		land_group = &mpp->fill_groups[mpUSStateLand];
-		water_group = &mpp->fill_groups[mpUSStateWater];
-		nrecs = mpp->fill_recs;
-		count = mpp->fill_rec_count;
-		gmode = mpp->global_fill_mode;
-		smode = mpp->usstates_fill_mode;
-		break;
-	case mpDRAWOUTLINE:
-		land_group = &mpp->outline_groups[mpUSStateLand];
-		water_group = &mpp->outline_groups[mpUSStateWater];
-		nrecs = mpp->outline_recs;
-		count = mpp->outline_rec_count;
-		gmode = mpp->global_outline_mode;
-		smode = mpp->usstates_outline_mode;
-		break;
-	default:
-		e_text = "%s: internal enumeration error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
-
-	c_mpsetc("OU","US");
-	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-	Outline_Set = mpUS;
-	offset = Id_Offset[2];
-	if (gmode == mpNONE || US_Border == 2)
-		Draw_Check = Draw_Special_Check[Outline_Set];
-	else
-		Draw_Check = -999;
-
-	uflags.flags = 0;
-	for (i = 0; i < NhlNumber(DrawIds); i++) {
-		DrawIds[i].u.flags = 0;
-		DrawIds[i].s_ix = (unsigned char) -1;
-		DrawIds[i].ix = NhlmpDEFAULTGROUPINDEX;
-	}
-	if (mpp->dynamic_groups != NULL) {
-		dyn_grps = (int *) mpp->dynamic_groups->data;
-		use_dyn_grps = True;
-	}
-	
-	if (land_group->u.f.draw_mode > mpBACKGROUND) {
-		uflags.flags = land_group->u.flags;
-		for (j = Otype_Start[mpUSStateLand]; 
-		     j < Otype_Start[mpUSStateLand + 1]; j++) {
-			ix = OutRecs[j].id[1] - offset;
-			DrawIds[ix].s_ix = land_group->s_ix;
-			if (smode == mpIMPLIED_SET && US_Index > 0) {
-				DrawIds[ix].u.flags = 0;
-				DrawIds[ix].ix = (unsigned char) US_Index;
-			}
-			else {
-				DrawIds[ix].u.flags = uflags.flags;
-				DrawIds[ix].ix = (unsigned char)use_dyn_grps ?
-					dyn_grps[j] : OutRecs[j].cix[1];
-			}
-			DrawIds[ix].u.f.draw_mode = uflags.f.draw_mode;
-		}
-	}
-
-	if (water_group->u.f.draw_mode > mpBACKGROUND) {
-		for (j = Otype_Start[mpUSStateWater]; 
-		     j < Otype_Start[mpUSStateWater + 1]; j++) {
-			ix = OutRecs[j].id[1] - offset;
-			DrawIds[ix].s_ix = water_group->s_ix;
-			DrawIds[ix].u.flags = water_group->u.flags;
-			DrawIds[ix].ix = (unsigned char)use_dyn_grps ?
-				dyn_grps[j] : OutRecs[j].cix[1];
-		}
-	}
-
-	for (i = 0; i < count; i++) {
-		j = nrecs[i].name_ix;
-		if (OutRecs[j].type < mpUSStateLand)
-			continue;
-		ix = OutRecs[j].id[1] - offset;
-		DrawIds[ix].s_ix = nrecs[i].s_ix;
-		DrawIds[ix].u.flags = nrecs[i].u.flags;
-		DrawIds[ix].ix = nrecs[i].ix;
-	}
-
-	if (draw_op != mpDRAWOUTLINE) {
-                unsigned char draw_mode = gmode == mpNONE ?
-                        mpBACKGROUND : mpSYSEXCLUDE;
-                
-		for (i = 0; i < NhlNumber(USState_Excludes); i++) {
-			DrawIds[USState_Excludes[i]-offset].u.f.draw_mode = 
-				draw_mode;
-		}
-	}
-
-	return ret;
-}
-
-/*
- * Function:	mpExpandId
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes mpExpandId
-#if	NhlNeedProto
-(
-	NhlMapPlotLayerPart	*mpp,
-	int			id,
-	mpFlags			uflags,
-	int			index,
-	unsigned char		s_index,
- 	NhlString		entry_name
-)
-#else
-(mpp,id,uflags,index,s_index,entry_name)
-	NhlMapPlotLayerPart	*mpp;
-	int			id;
-	mpFlags			uflags;
-	int			index;
-	unsigned char		s_index;
-	NhlString		entry_name;
-#endif
-{
-	char 	*e_text;
-	short	*idp;
-	int	count,ix,i,set;
-	NhlBoolean do_us = False;
-	int		*dyn_grps = NULL;
-	NhlBoolean	use_dyn_grps = False;
-
-	count = NhlNumber(Exp_Ids);
-	if (id >= count) {
-		e_text = "%s: invalid expansion id";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
-
-	set = Outline_Set == mpPO ? 0 : 1;
-	idp = Exp_Ids[id][set];
-	count = Exp_Ids_Count[id][set];
-
-	if (id == 11 && set == 1) {	/* US outline */
-		US_Border = 2;
-		if (mpp->dynamic_groups != NULL) {
-			dyn_grps = (int *) mpp->dynamic_groups->data;
-			use_dyn_grps = True;
-		}
-		US_Index = index;
-		do_us = True;
-	}
-	else if (id == 0 && set == 1)  { /* North-and-South-America */
-		US_Border = 1;
-		US_Index = index;
-		do_us = True;
-	}
-	else if (idp == NULL) {
-		e_text = "%s: invalid expansion id";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
-
-	if (idp != NULL) {
-		for (i = 0; i < count; i++) {
-			ix = idp[i] - Id_Offset[Outline_Set];
-			DrawIds[ix].u.flags = uflags.flags;
-			DrawIds[ix].ix = index;
-			DrawIds[ix].s_ix = s_index;
-		}
-	}
-	if (do_us) {
-		for (i = Otype_Start[mpUSStateLand]; 
-		     i < Otype_Start[mpUSStateLand + 1]; i++) {
-			ix = OutRecs[i].id[2] - Id_Offset[Outline_Set];
-			DrawIds[ix].u.flags = uflags.flags;
-			DrawIds[ix].ix = index;
-			DrawIds[ix].s_ix = s_index;
-		}
-		for (i = Otype_Start[mpUSStateWater]; 
-		     i < Otype_Start[mpUSStateWater + 1]; i++) {
-			ix = OutRecs[i].id[2] - Id_Offset[Outline_Set];
-			DrawIds[ix].u.flags = uflags.flags;
-			DrawIds[ix].s_ix = s_index;
-			DrawIds[ix].ix = use_dyn_grps ?
-				dyn_grps[i] : OutRecs[i].cix[US_Border-1];
-		}
-	}
-	return NhlNOERROR;
 }
 
 /*
@@ -3799,7 +2406,7 @@ static NhlErrorTypes    mpManageDynamicArrays
 		       NhlNwkColorMapLen,&cmap_len,NULL);
 	if (need_check) {
 		for (i=init_count; i < count; i++) {
-			ip[i] = i < NhlNumber(Init_Colors) ? Init_Colors[i] : i;
+			ip[i] = i<NhlNumber(Init_Colors) ? Init_Colors[i] : i;
 		}
 	}
 	
@@ -3992,8 +2599,11 @@ static NhlErrorTypes    mpManageDynamicArrays
  */
 
 	ga = init ? NULL : ompp->fill_area_specs;
-
-	if (ga != mpp->fill_area_specs) {
+        if (! mpp->fill_area_specs && ga) {
+               NhlFreeGenArray(ga);
+               ompp->fill_area_specs = (NhlGenArray)0xdeadbeef;
+        }
+	else if (ga != mpp->fill_area_specs) {
 		NhlFreeGenArray(ga);
 		if ((ga = _NhlCopyGenArray(mpp->fill_area_specs,
 					   True)) == NULL) {
@@ -4033,7 +2643,11 @@ static NhlErrorTypes    mpManageDynamicArrays
  */
 	ga = init ? NULL : ompp->mask_area_specs;
 
-	if (ga != mpp->mask_area_specs) {
+        if (! mpp->mask_area_specs && ga) {
+               NhlFreeGenArray(ga);
+               ompp->mask_area_specs = (NhlGenArray)0xdeadbeef;
+        }
+	else if (ga != mpp->mask_area_specs) {
 		NhlFreeGenArray(ga);
 		if ((ga = _NhlCopyGenArray(mpp->mask_area_specs,
 					   True)) == NULL) {
@@ -4074,7 +2688,11 @@ static NhlErrorTypes    mpManageDynamicArrays
  */
 	ga = init ? NULL : ompp->outline_specs;
 
-	if (ga != mpp->outline_specs) {
+        if (! mpp->outline_specs && ga) {
+               NhlFreeGenArray(ga);
+               ompp->outline_specs = (NhlGenArray)0xdeadbeef;
+        }
+	else if (ga != mpp->outline_specs) {
 		NhlFreeGenArray(ga);
 		if ((ga = _NhlCopyGenArray(mpp->outline_specs,
 					   True)) == NULL) {
@@ -4108,136 +2726,6 @@ static NhlErrorTypes    mpManageDynamicArrays
 			}
 		}
 	}
-		
-/*
- * Area Name specifiers
- */
-	ga = init ? NULL : ompp->area_names;
-
-	if (ga != mpp->area_names) {
-		if (mpp->area_names->num_elements != OutRec_Count) {
-			e_text = 
-			  "%s: %s GenArray must contain %d elements: ignoring";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNmpAreaNames,OutRec_Count);
-			ret = MIN(NhlWARNING,ret);
-			mpp->area_names = ga;
-		}
-		else {
-			NhlFreeGenArray(ga);
-			if ((ga = _NhlCopyGenArray(mpp->area_names,
-						   True)) == NULL) {
-				e_text = "%s: error copying %s GenArray";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name,
-					  NhlNmpAreaNames);
-				return NhlFATAL;
-			}
-			ompp->area_names = NULL;
-			mpp->area_names = ga;
-			/* Check elements for null strings */
-			sp = (NhlString *) mpp->area_names->data;
-			for (i = 0; i < mpp->area_names->num_elements; i++) {
-				if (sp[i] == NULL || strlen(sp[i]) == 0) {
-					e_text = 
-		 "%s: Null or zero length %s string for index %d: defaulting";
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
-						  e_text,entry_name,
-						  NhlNmpAreaNames,i);
-					ret = MIN(ret,NhlWARNING);
-					if (sp[i] != NULL) NhlFree(sp[i]);
-					sp[i] = NhlMalloc(
-						strlen(OutRecs[i].name) + 1);
-					if (sp[i] == NULL) {
-						e_text = 
-				       "%s: dynamic memory allocation error";
-						NhlPError(NhlFATAL,NhlEUNKNOWN,
-							  e_text,entry_name);
-						return NhlFATAL;
-					}
-					strcpy(sp[i],OutRecs[i].name);
-				}
-			}
-		}
-	}
-
-/*
- * The dynamic area Groups
- */
-	ga = init ? NULL : ompp->dynamic_groups;
-
-	need_check = False;
-	if (ga != mpp->dynamic_groups) {
-		if (mpp->dynamic_groups->num_elements != OutRec_Count) {
-			e_text = 
-			  "%s: %s GenArray must contain %d elements: ignoring";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNmpDynamicAreaGroups,OutRec_Count);
-			ret = MIN(NhlWARNING,ret);
-		}
-		else {
-			NhlFreeGenArray(ga);
-			if ((ga = _NhlCopyGenArray(mpp->dynamic_groups,
-						   True)) == NULL) {
-				e_text = "%s: error copying %s GenArray";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name,
-					  NhlNmpAreaNames);
-				return NhlFATAL;
-			}
-			need_check = True;
-			ompp->dynamic_groups = NULL;
-		}
-		mpp->dynamic_groups = ga;
-
-	}
-	if (need_check || mpp->area_group_count < ompp->area_group_count) {
-		ip = (int *) ga->data;
-		for (i=0; i < ga->num_elements; i++) {
-			use_default = False;
-			if (ip[i] < NhlmpOCEANGROUPINDEX)
-				use_default = True;
-			else if (ip[i] > mpp->area_group_count - 1) {
-				e_text =
-	         "%s: %s index %d holds an invalid fill group id: defaulting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-					  entry_name,
-					  NhlNmpDynamicAreaGroups,i);
-				ret = MIN(ret, NhlWARNING);
-				use_default = True;
-			}
-			if (use_default)
-				ip[i] = OutRecs[i].cix[1];
-		}
-	}
-
-
-/*
- * The fixed area groups are read only
- */
-	ga = init ? NULL : ompp->fixed_groups;
-
-	if (ga != mpp->fixed_groups) {
-		e_text = "%s: attempt to set read-only resource %s ignored";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-			  NhlNmpFixedAreaGroups);
-		ret = MIN(ret, NhlWARNING);
-		mpp->fixed_groups = ga;
-	}
-
-
-/*
- * Area types are read only
- */
-	ga = init ? NULL : ompp->area_types;
-
-	if (ga != mpp->area_types) {
-		e_text = "%s: attempt to set read-only resource %s ignored";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-			  NhlNmpAreaTypes);
-		ret = MIN(ret, NhlWARNING);
-		mpp->area_types = ga;
-	}
 
 /*
  * The specified fill colors may be indexed either to the fill groups
@@ -4248,28 +2736,43 @@ static NhlErrorTypes    mpManageDynamicArrays
 
 	ga = init ? NULL : ompp->spec_fill_colors;
 
-	if (ga != mpp->spec_fill_colors) {
-		if (mpp->spec_fill_colors == NULL) {
-			NhlFreeGenArray(ga);
-			mpp->spec_fill_color_count = 0;
-		}
-		else {
-			NhlFreeGenArray(ga);
-			ga = _NhlCopyGenArray(mpp->spec_fill_colors,True);
-			if (ga == NULL) {
-				e_text = "%s: error copying %s GenArray";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-					  entry_name,
-					  NhlNmpSpecifiedFillColors);
-				return NhlFATAL;
+        if (! mpp->spec_fill_colors && ga) {
+                mpp->spec_fill_color_count = 0;
+                NhlFreeGenArray(ga);
+                ompp->spec_fill_colors = (NhlGenArray)0xdeadbeef;
+        }
+	else if (ga != mpp->spec_fill_colors) {
+		int max_val;
+                NhlFreeGenArray(ga);
+                ga = _NhlCopyGenArray(mpp->spec_fill_colors,True);
+                if (ga == NULL) {
+                        e_text = "%s: error copying %s GenArray";
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+                                  entry_name,
+                                  NhlNmpSpecifiedFillColors);
+                        return NhlFATAL;
+                }
+                ompp->spec_fill_colors = NULL;
+                mpp->spec_fill_colors = ga;
+                mpp->spec_fill_color_count
+                        = mpp->spec_fill_colors->num_elements;
+		if (mpp->spec_fill_direct)
+                        max_val = INT_MAX;
+		else
+			max_val = mpp->area_group_count - 1;
+                ip = (int *) mpp->spec_fill_colors->data; 
+		for (i = 0; i < mpp->spec_fill_color_count; i++) {
+			if (ip[i] > INT_MAX || ip[i] < NhlmpUNSETCOLOR) {
+				e_text = 
+	         "%s: %s index %d holds an invalid color index: defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  e_text,entry_name,
+					  NhlNmpSpecifiedFillColors,i);
+				ret = MIN(ret, NhlWARNING);
+				ip[i] = NhlmpUNSETCOLOR;
 			}
-			ompp->spec_fill_colors = NULL;
-			mpp->spec_fill_colors = ga;
-			mpp->spec_fill_color_count 
-				= mpp->spec_fill_colors->num_elements;
 		}
-		ip = (int *) mpp->spec_fill_colors->data; 
-	}
+        }
 
 /*
  * The specified fill patterns may be indexed either to the fill groups
@@ -4279,27 +2782,25 @@ static NhlErrorTypes    mpManageDynamicArrays
  */		
 
 	ga = init ? NULL : ompp->spec_fill_patterns;
-	if (ga != mpp->spec_fill_patterns) {
+        if (! mpp->spec_fill_patterns && ga) {
+                mpp->spec_fill_pattern_count = 0;
+                NhlFreeGenArray(ga);
+                ompp->spec_fill_patterns = (NhlGenArray)0xdeadbeef;
+        }
+	else if (ga != mpp->spec_fill_patterns) {
 		int max_val;
-		if (mpp->spec_fill_patterns == NULL) {
-			NhlFreeGenArray(ga);
-			mpp->spec_fill_pattern_count = 0;
-		}
-		else {
-			NhlFreeGenArray(ga);
-			ga = _NhlCopyGenArray(mpp->spec_fill_patterns,True);
-			if (ga == NULL) {
-				e_text = "%s: error copying %s GenArray";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-					  entry_name,
-					  NhlNmpSpecifiedFillPatterns);
-				return NhlFATAL;
-			}
-			ompp->spec_fill_patterns = NULL;
-			mpp->spec_fill_patterns = ga;
-			mpp->spec_fill_pattern_count = 
-				mpp->spec_fill_patterns->num_elements;
-		}
+                NhlFreeGenArray(ga);
+                ga = _NhlCopyGenArray(mpp->spec_fill_patterns,True);
+                if (ga == NULL) {
+                        e_text = "%s: error copying %s GenArray";
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+                                  NhlNmpSpecifiedFillPatterns);
+                        return NhlFATAL;
+                }
+                ompp->spec_fill_patterns = NULL;
+                mpp->spec_fill_patterns = ga;
+                mpp->spec_fill_pattern_count = 
+                        mpp->spec_fill_patterns->num_elements;
 		if (mpp->spec_fill_direct)
 			NhlVAGetValues(mpnew->base.wkptr->base.id,
 				       NhlNwkFillTableLength, &max_val, NULL);
@@ -4308,7 +2809,7 @@ static NhlErrorTypes    mpManageDynamicArrays
 
 		ip = (int *) mpp->spec_fill_patterns->data; 
 		for (i = 0; i < mpp->spec_fill_pattern_count; i++) {
-			if (ip[i] > max_val) {
+			if (ip[i] > max_val || ip[i] < NhlmpUNSETFILLPATTERN) {
 				e_text = 
 	         "%s: %s index %d holds an invalid pattern index: defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -4330,27 +2831,25 @@ static NhlErrorTypes    mpManageDynamicArrays
 
 	ga = init ? NULL : ompp->spec_fill_scales;
 
-	if (ga != mpp->spec_fill_scales) {
+        if (! mpp->spec_fill_scales && ga) {
+                mpp->spec_fill_scale_count = 0;
+                NhlFreeGenArray(ga);
+                ompp->spec_fill_scales = (NhlGenArray)0xdeadbeef;
+        }
+	else if (ga != mpp->spec_fill_scales) {
 		float max_val;
-		if (mpp->spec_fill_scales == NULL) {
-			NhlFreeGenArray(ga);
-			mpp->spec_fill_scale_count = 0;
-		}
-		else {
-			NhlFreeGenArray(ga);
-			ga = _NhlCopyGenArray(mpp->spec_fill_scales,True);
-			if (ga == NULL) {
-				e_text = "%s: error copying %s GenArray";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-					  entry_name,
-					  NhlNmpSpecifiedFillScales);
-				return NhlFATAL;
-			}
-			ompp->spec_fill_scales = NULL;
-			mpp->spec_fill_scales = ga;
-			mpp->spec_fill_scale_count = 
-				mpp->spec_fill_scales->num_elements;
-		}
+                NhlFreeGenArray(ga);
+                ga = _NhlCopyGenArray(mpp->spec_fill_scales,True);
+                if (ga == NULL) {
+                        e_text = "%s: error copying %s GenArray";
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+                                  NhlNmpSpecifiedFillScales);
+                        return NhlFATAL;
+                }
+                ompp->spec_fill_scales = NULL;
+                mpp->spec_fill_scales = ga;
+                mpp->spec_fill_scale_count = 
+                        mpp->spec_fill_scales->num_elements;
 		fp = (float *) mpp->spec_fill_scales->data; 
 		if (! mpp->spec_fill_direct)
 			max_val = mpp->area_group_count - 1;
@@ -4372,778 +2871,6 @@ static NhlErrorTypes    mpManageDynamicArrays
 
 	return ret;
 }
-
-/*
- * Function:  mpUpdateDrawGroups
- *
- * Description: 
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-
-/*ARGSUSED*/
-static NhlErrorTypes    mpUpdateDrawGroups
-#if	NhlNeedProto
-(
-	NhlMapPlotLayerPart	*mpp,
-	mpDrawOp		draw_op,
-	int			draw_mode,
-	int			index,
-	int			group_ix,
-	char			*entry_name
-)
-#else
-(mpp,draw_op,draw_mode,index,group_ix,entry_name)
-	NhlMapPlotLayerPart	*mpp;
-	mpDrawOp		draw_op;
-	int			draw_mode;
-	int			index;
-	int			group_ix;
-	char			*entry_name;
-
-#endif
-{
-	char		*e_text;
-	mpNameRec	*groups;
-	mpNameRec	tmpl;
-	mpGlobalSetMode *gmode;
-	mpStateSetMode	*smode;
-	int		list[NhlmpOUTLINE_TYPE_COUNT];
-	int		i,count = 0;
-
-	switch (draw_op) {
-	case mpDRAWFILL:
-		groups = mpp->fill_groups;
-		gmode = &mpp->global_fill_mode;
-		smode = &mpp->usstates_fill_mode;
-		break;
-	case mpDRAWOUTLINE:
-		groups = mpp->outline_groups;
-		gmode = &mpp->global_outline_mode;
-		smode = &mpp->usstates_outline_mode;
-		break;
-	default:
-		e_text = "%s: internal enumeration error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
-
-	switch ((mpBGroups) group_ix) {
-	case mpNULLAREA:
-		break;
-	case mpALLNATIONAL:
-		list[0] = mpNational;
-		list[1] = mpOcean;
-		list[2] = mpContinent;
-		list[3] = mpLargeIsland;
-		list[4] = mpSmallIsland;
-		list[5] = mpInlandWater;
-		count = 6;
-		*gmode = mpNAT;
-		break;
-	case mpALLGEOPHYSICAL:
-		list[0] = mpOcean;
-		list[1] = mpContinent;
-		list[2] = mpLargeIsland;
-		list[3] = mpSmallIsland;
-		list[4] = mpInlandWater;
-		count = 5;
-		*gmode = MAX(*gmode,mpGEO);
-		break;
-	case mpLAND:
-		list[0] = mpContinent;
-		list[1] = mpLargeIsland;
-		list[2] = mpSmallIsland;
-		count = 3;
-		*gmode = MAX(*gmode,mpGEO);
-		break;
-	case mpWATER:
-		list[0] = mpOcean;
-		list[1] = mpInlandWater;
-		count = 2;
-		*gmode = MAX(*gmode,mpGEO);
-		break;
-	case mpINLANDWATER:
-		list[0] = mpInlandWater;
-		count = 1;
-		*gmode = MAX(*gmode,mpGEO);
-		break;
-	case mpOCEANS:
-		list[0] = mpOcean;
-		count = 1;
-		*gmode = MAX(*gmode,mpGEO);
-		break;
-	case mpCONTINENTS:
-		list[0] = mpContinent;
-		count = 1;
-		*gmode = MAX(*gmode,mpGEO);
-		break;
-	case mpISLANDS:
-		list[0] = mpLargeIsland;
-		list[1] = mpSmallIsland;
-		count = 2;
-		*gmode = MAX(*gmode,mpGEO);
-		break;
-	case mpLARGEISLANDS:
-		list[0] = mpLargeIsland;
-		count = 1;
-		*gmode = MAX(*gmode,mpGEO);
-		break;
-	case mpSMALLISLANDS:
-		list[0] = mpSmallIsland;
-		count = 1;
-		*gmode = MAX(*gmode,mpGEO);
-		break;
-	case mpALLUSSTATES:
-		list[0] = mpUSStateLand;
-		list[1] = mpUSStateWater;
-		count = 2;
-		*smode = mpSET;
-		break;
-	case mpUSSTATESLAND:
-		list[0] = mpUSStateLand;
-		count = 1;
-		*smode = mpSET;
-		break;
-	case mpUSSTATESWATER:
-		list[0] = mpUSStateWater;
-		count = 1;
-		*smode = MAX(*smode,mpIMPLIED_SET);
-		break;
-	default:
-		e_text = "%s: internal enumeration error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
-
-	tmpl.u.f.s_col = 0;
-	tmpl.u.f.s_pat = 0;
-	tmpl.u.f.s_scl = 0;
-	tmpl.u.f.draw_mode = draw_mode;
-	if (index != mpNOINDEX) {
-		if (mpp->spec_fill_color_count > index) {
-			int *ip = (int *) mpp->spec_fill_colors->data;
-			if (ip[index] != NhlmpUNSETCOLOR)
-				tmpl.u.f.s_col =  1;
-		}
-		if (mpp->spec_fill_pattern_count > index) {
-			int *ip = (int *) mpp->spec_fill_patterns->data;
-			if (ip[index] != NhlmpUNSETFILLPATTERN)
-				tmpl.u.f.s_pat =  1;
-		}
-		if (mpp->spec_fill_scale_count > index) {
-			float *fp = (float *) mpp->spec_fill_scales->data;
-			if (fp[index] > NhlmpUNSETFILLSCALE)
-				tmpl.u.f.s_scl =  1;
-		}
-	}
-	for (i = 0; i < count; i++) {
-		groups[list[i]].s_ix = index;
-		groups[list[i]].u.flags = tmpl.u.flags;
-	}
-
-	return NhlNOERROR;
-}
-
-/*
- * Function:	mpSetFlags
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes mpSetFlags
-#if	NhlNeedProto
-(
-	NhlMapPlotLayerPart	*mpp,
-	mpNameRec		*nrec,
-	NhlBoolean		invert,
-	int			index
-)
-#else
-(mpp,nrec,orec,invert,index)
-	NhlMapPlotLayerPart	*mpp;
-	mpNameRec		*nrec;
-	NhlBoolean		invert;
-	int			index;
-#endif
-{
-
-	nrec->s_ix = index;
-	nrec->u.f.s_col = 0;
-	nrec->u.f.s_pat = 0;
-	nrec->u.f.s_scl = 0;
-	
-	if (index != mpNOINDEX) {
-		if (mpp->spec_fill_color_count > index) {
-			int *ip = (int *) mpp->spec_fill_colors->data;
-			if (ip[index] != NhlmpUNSETCOLOR)
-				nrec->u.f.s_col =  1;
-		}
-		if (mpp->spec_fill_pattern_count > index) {
-			int *ip = (int *) mpp->spec_fill_patterns->data;
-			if (ip[index] != NhlmpUNSETFILLPATTERN)
-				nrec->u.f.s_pat =  1;
-		}
-		if (mpp->spec_fill_scale_count > index) {
-			float *fp = (float *) mpp->spec_fill_scales->data;
-			if (fp[index] > NhlmpUNSETFILLSCALE)
-				nrec->u.f.s_scl =  1;
-		}
-	}
-	if (mpp->spec_fill_priority == NhlGEOPHYSICALPRIORITY) {
-		if (! invert)
-			nrec->ix = OutRecs[nrec->name_ix].cix[0];
-		else if (mpp->dynamic_groups != NULL) {
-			int *dyn_grps = (int *) mpp->dynamic_groups->data;
-			nrec->ix = dyn_grps[nrec->name_ix];
-		}
-		else 
-			nrec->ix = OutRecs[nrec->name_ix].cix[1];
-	}
-	else {
-		if (invert)
-			nrec->ix = OutRecs[nrec->name_ix].cix[0];
-		else if (mpp->dynamic_groups != NULL) {
-			int *dyn_grps = (int *) mpp->dynamic_groups->data;
-			nrec->ix = dyn_grps[nrec->name_ix];
-		}
-		else 
-			nrec->ix = OutRecs[nrec->name_ix].cix[1];
-	}
-	return NhlNOERROR;
-}
-/*
- * Function:	mpUpdateNameRecs
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes mpUpdateNameRecs
-#if	NhlNeedProto
-(
-	NhlMapPlotLayerPart	*mpp,
-	mpDrawOp		draw_op,
-	NhlString		name,
-	int			draw_mode,
-	int			index,
-	NhlString		entry_name
-)
-#else
-(mpp,draw_op,name,draw_mode,index,entry_name)
-	NhlMapPlotLayerPart	*mpp;
-	mpDrawOp		draw_op;
-	NhlString		name;
-	int			draw_mode;
-	int			index;
-	NhlString		entry_name;
-#endif
-{
-	char		*e_text;
-	int		i;
-	int		len = strlen(name);
-	NhlBoolean	found = False, found_all = False, found_one = False;
-	NhlString	*names = NULL;
-	char		*cp;
-	NhlBoolean	invert = False;
-	NhlString	comp_name;
-	typedef enum _mpCompType {
-		mpSTRCMP,mpSTRNCMP,mpSTRSTR,mpSTRSTREND
-	} mpCompType;
-	mpCompType comp_type = mpSTRCMP;
-	mpNameRec	**nrecs;
-	int		*alloc;
-	int		*count;
-	mpGlobalSetMode *gmode;
-	mpStateSetMode	*smode;
-	char		buf[256];
-	char		*np = buf;
-
-	strcpy(buf,name);
-
-	switch (draw_op) {
-	case mpDRAWFILL:
-		nrecs = &mpp->fill_recs;
-		alloc = &mpp->fill_rec_alloc;
-		count = &mpp->fill_rec_count;
-		gmode = &mpp->global_fill_mode;
-		smode = &mpp->usstates_fill_mode;
-		break;
-	case mpDRAWOUTLINE:
-		nrecs = &mpp->outline_recs;
-		alloc = &mpp->outline_rec_alloc;
-		count = &mpp->outline_rec_count;
-		gmode = &mpp->global_outline_mode;
-		smode = &mpp->usstates_outline_mode;
-		break;
-	default:
-		e_text = "%s: internal enumeration error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
-
-	if (mpp->area_names != NULL)
-		names = (NhlString *) mpp->area_names->data;
-
-	if (*nrecs == NULL) {
-		if ((*nrecs = (mpNameRec *) 
-		     NhlMalloc(sizeof(mpNameRec) * mpALLOC_UNIT)) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-		mpp->fill_rec_alloc = mpALLOC_UNIT;
-	}
-
-	if (np[len - 1] == '*') {
-		comp_type = mpSTRNCMP;
-		np[len - 1] = '\0';
-		len --;
-	}
-
-	if (np[0] == '!') {
-		invert = True;
-		len --;
-		np++;
-	}
-	if (np[0] == '*') {
-		if (comp_type == mpSTRNCMP)
-			comp_type = mpSTRSTR;
-		else
-			comp_type = mpSTRSTREND;
-		len--;
-		np++;
-	}
-	
-	for (i = 0; i < OutRec_Count; i++) {
-		comp_name = names ? names[i] : OutRecs[i].name; 
-		if (*count == *alloc) {
-			if ((*nrecs = (mpNameRec *) 
-			     NhlRealloc(*nrecs,sizeof(mpNameRec)
-					* (*alloc + mpALLOC_UNIT))) == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return NhlFATAL;
-			}
-			*alloc += mpALLOC_UNIT;
-		}
-		switch (comp_type) {
-		case mpSTRCMP:
-			if (! strcmp(comp_name,np)) {
-				found = True;
-				found_one = True;
-				found_all = True;
-			}
-			break;
-		case mpSTRNCMP:
-			if (! strncmp(comp_name,np,len)) {
-				found_one = True;
-				found = True;
-			}
-			break;
-		case mpSTRSTR:
-			if (strstr(comp_name,np) != NULL) {
-				found_one = True;
-				found = True;
-			}
-			break;
-		case mpSTRSTREND:
-			if ((cp = strstr(comp_name,np)) != NULL &&
-			    (comp_name + strlen(comp_name) - cp == len)) {
-				found_one = True;
-				found = True;
-			}
-			break;
-		}
-		if (found) {
-			(*nrecs)[*count].name_ix = i;
-			(*nrecs)[*count].u.f.draw_mode = draw_mode;
-			mpSetFlags(mpp,&((*nrecs)[*count]),invert,index);
-
-			if (OutRecs[i].type == mpNational) {
-				*gmode = MAX(*gmode,mpIMPLIED_NAT);
-			}
-			else if (OutRecs[i].type == mpUSStateLand ||
-					OutRecs[i].type == mpUSStateWater) {
-				*smode = MAX(*smode,mpIMPLIED_SET);
-			}
-			else {
-				*gmode = MAX(*gmode,mpGEO);
-			}
-
-			found = False;
-			(*count)++;
-		}
-		if (found_all)
-			break;
-	}
-
-	if (! found_one) {
-		e_text = "%s: invalid boundary specification string: \"%s\"";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,name);
-		return NhlWARNING;
-	}
-	return NhlNOERROR;
-}
-
-/*
- * Function:  mpBuildFillDrawList
- *
- * Description: 
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-
-/*ARGSUSED*/
-static NhlErrorTypes    mpBuildFillDrawList
-#if	NhlNeedProto
-(
-	NhlMapPlotLayer	mpnew, 
-	NhlMapPlotLayer	mpold,
-	NhlBoolean	init,
-	_NhlArgList	args,
-	int		num_args)
-#else
-(mpnew,mpold,init,args,num_args)
-	NhlMapPlotLayer	mpnew;
-	NhlMapPlotLayer	mpold;
-	NhlBoolean	init;
-	_NhlArgList	args;
-	int		num_args;
-#endif
-{
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name;
-	NhlMapPlotLayerPart	*mpp = &(mpnew->mapplot);
-	NhlMapPlotLayerPart	*ompp = &(mpold->mapplot);
-	int			i,j;
-	NhlString		*sp;
-	NhlBoolean		found;
-	int			*clrs;
-
-	entry_name = (init) ? "MapPlotInitialize" : "MapPlotSetValues";
-/*
- * If the National set is specified all countries are drawn using the 
- * national color scheme. If however, the geophysical set is specified along
- * with one or more explicitly specified national areas, the national set
- * must be used, but areas not explicitly specified are drawn using the
- * geophysical set generic land color. In this case the National set is
- * specified implicitly.
- */
-
-/*
- * don't go through all this if nothing has changed
- */
-	if (! init && 
-	    mpp->fill_boundaries == ompp->fill_boundaries &&
-	    mpp->fill_area_specs == ompp->fill_area_specs &&
-	    mpp->mask_area_specs == ompp->mask_area_specs &&
-	    mpp->spec_fill_colors == ompp->spec_fill_colors &&
-	    mpp->spec_fill_patterns == ompp->spec_fill_patterns &&
-	    mpp->spec_fill_scales == ompp->spec_fill_scales &&
-	    mpp->spec_fill_direct == ompp->spec_fill_direct &&
-	    mpp->area_names == ompp->area_names &&
-	    mpp->dynamic_groups == ompp->dynamic_groups &&
-	    mpp->area_masking_on == ompp->area_masking_on &&
-	    mpp->spec_fill_priority == ompp->spec_fill_priority)
-		return ret;
-
-	clrs = (int *) mpp->fill_colors->data;
-	for (i = 0; i < NhlNumber(mpp->fill_groups); i++) {
-		mpp->fill_groups[i].u.flags = 0;
-		mpp->fill_groups[i].ix = 0;
-		mpp->fill_groups[i].s_ix = (unsigned char) -1;
-	}
-	mpp->global_fill_mode = mpNONE;
-	mpp->usstates_fill_mode = mpNOSET;
-	mpp->fill_rec_count = 0;
-
-/* 
- * Determine which map element types are required and consequently which
- * outline sets to use; first examine the boundary sets enumerative, then
- * the include and exclude lists.
- */
-	switch (mpp->fill_boundaries) {
-	case NhlNOBOUNDARIES:
-	default:
-		break;
-	case NhlGEOPHYSICAL:
-		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
-					    mpNOINDEX,
-					    mpALLGEOPHYSICAL,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		break;
-	case NhlNATIONAL:
-		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
-					    mpNOINDEX,
-					    mpALLNATIONAL,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		break;
-	case NhlUSSTATES:
-		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
-					    mpNOINDEX,
-					    mpALLUSSTATES,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		break;
-	case NhlGEOPHYSICALANDUSSTATES:
-		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
-					    mpNOINDEX,
-					    mpALLGEOPHYSICAL,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
-					    mpNOINDEX,
-					    mpALLUSSTATES,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		break;
-	case NhlALLBOUNDARIES:
-		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
-					    mpNOINDEX,
-					    mpALLNATIONAL,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		subret = mpUpdateDrawGroups(mpp,mpDRAWFILL,mpDRAW,
-					    mpNOINDEX,
-					    mpALLUSSTATES,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		break;
-	}
-
-	if (mpp->fill_area_specs != NULL) {
-		sp = (NhlString *) mpp->fill_area_specs->data;
-		for (i = 0; i < mpp->fill_area_specs->num_elements; i++) {
-			found = False;
-			mpLowerCase(sp[i]);
-			for (j = 0; j < NhlNumber(BGroup_Names); j++) {
-				if (! strcmp(sp[i],BGroup_Names[j])) {
-					subret = mpUpdateDrawGroups(mpp,
-					       mpDRAWFILL,mpDRAW,
-					       i,j,entry_name);
-					if ((ret = MIN(ret,subret)) < 
-					    NhlWARNING)
-						return ret;
-					found = True;
-					break;
-				}
-			}   
-			if (! found) 
-				subret = mpUpdateNameRecs(mpp,mpDRAWFILL,sp[i],
-						     mpDRAW,i,entry_name);
-			if ((ret = MIN(ret,subret)) < NhlWARNING)
-				return ret;
-
-		}
-	}
-
-	if (mpp->area_masking_on && mpp->mask_area_specs != NULL) {
-		sp = (NhlString *) mpp->mask_area_specs->data;
-		for (i = 0; i < mpp->mask_area_specs->num_elements; i++) {
-			found = False;
-			mpLowerCase(sp[i]);
-			for (j = 0; j < NhlNumber(BGroup_Names); j++) {
-				if (! strcmp(sp[i],BGroup_Names[j])) {
-					subret = mpUpdateDrawGroups(mpp,
-					       mpDRAWFILL,mpMASK,
-					       mpNOINDEX,j,entry_name);
-					if ((ret = MIN(ret,subret)) < 
-					    NhlWARNING)
-						return ret;
-					found = True;
-					break;
-				}
-			}   
-			if (! found) 
-				subret = mpUpdateNameRecs(mpp,mpDRAWFILL,sp[i],
-					     mpMASK,mpNOINDEX,entry_name);
-			if ((ret = MIN(ret,subret)) < NhlWARNING)
-				return ret;
-		}
-	}
-/*
- * If usstates are to be used promote to the global set if necessary
- */
-	if (mpp->usstates_fill_mode > mpNOSET && 
-	    mpp->global_fill_mode == mpGEO) {
-		mpp->global_fill_mode = mpIMPLIED_NAT;
-	}
-
-	return ret;
-}
-
-/*
- * Function:  mpBuildOutlineDrawList
- *
- * Description: 
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-
-/*ARGSUSED*/
-static NhlErrorTypes    mpBuildOutlineDrawList
-#if	NhlNeedProto
-(
-	NhlMapPlotLayer	mpnew, 
-	NhlMapPlotLayer	mpold,
-	NhlBoolean	init,
-	_NhlArgList	args,
-	int		num_args)
-#else
-(mpnew,mpold,init,args,num_args)
-	NhlMapPlotLayer	mpnew;
-	NhlMapPlotLayer	mpold;
-	NhlBoolean	init;
-	_NhlArgList	args;
-	int		num_args;
-#endif
-{
-	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
-	char *entry_name;
-	NhlMapPlotLayerPart *mpp = &(mpnew->mapplot);
-	NhlMapPlotLayerPart *ompp = &(mpold->mapplot);
-	int i,j;
-	NhlString	*sp;
-	NhlBoolean	found;
-
-	entry_name = (init) ? "MapPlotInitialize" : "MapPlotSetValues";
-
-/*
- * don't go through all this if nothing has changed
- */
-	if (! init && 
-	    mpp->outline_boundaries == ompp->outline_boundaries &&
-	    mpp->outline_specs == ompp->outline_specs)
-		return ret;
-
-	for (i = 0; i < NhlNumber(mpp->outline_groups); i++) {
-		mpp->outline_groups[i].u.flags = 0;
-		mpp->outline_groups[i].ix = mpNOINDEX;
-		mpp->outline_groups[i].s_ix = (unsigned char) -1;
-	}
-	mpp->global_outline_mode = mpNONE;
-	mpp->usstates_outline_mode = mpNOSET;
-	mpp->outline_rec_count = 0;
-
-/* 
- * Determine which map element types are required and consequently which
- * outline sets to use; first examine the boundary sets enumerative, then
- * the include and exclude lists.
- */
-	switch (mpp->outline_boundaries) {
-	case NhlNOBOUNDARIES:
-	default:
-		break;
-	case NhlGEOPHYSICAL:
-		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
-					    mpNOINDEX,
-					    mpALLGEOPHYSICAL,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		break;
-	case NhlNATIONAL:
-		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
-					    mpNOINDEX,
-					    mpALLNATIONAL,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		break;
-	case NhlUSSTATES:
-		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
-					    mpNOINDEX,
-					    mpALLUSSTATES,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		break;
-	case NhlGEOPHYSICALANDUSSTATES:
-		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
-					    mpNOINDEX,
-					    mpALLGEOPHYSICAL,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
-					    mpNOINDEX,
-					    mpALLUSSTATES,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		break;
-	case NhlALLBOUNDARIES:
-		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
-					    mpNOINDEX,
-					    mpALLNATIONAL,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		subret = mpUpdateDrawGroups(mpp,mpDRAWOUTLINE,mpDRAW,
-					    mpNOINDEX,
-					    mpALLUSSTATES,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		break;
-	}
-
-	if (mpp->outline_specs != NULL) {
-		sp = (NhlString *) mpp->outline_specs->data;
-		for (i = 0; i < mpp->outline_specs->num_elements; i++) {
-			found = False;
-			mpLowerCase(sp[i]);
-			for (j = 0; j < NhlNumber(BGroup_Names); j++) {
-				if (! strcmp(sp[i],BGroup_Names[j])) {
-					subret = mpUpdateDrawGroups(mpp,
-						    mpDRAWOUTLINE,mpDRAW,
-						 mpNOINDEX,j,entry_name);
-					if ((ret = MIN(ret,subret)) < 
-					    NhlWARNING)
-						return ret;
-					found = True;
-					break;
-				}
-			}   
-			if (! found) 
-				subret = mpUpdateNameRecs(mpp,mpDRAWOUTLINE,
-						      sp[i],mpDRAW,
-						   mpNOINDEX,entry_name);
-			if ((ret = MIN(ret,subret)) < NhlWARNING)
-				return ret;
-
-		}
-	}
-/*
- * If usstates are to be used promote the global set if necessary
- */
-	if (mpp->usstates_outline_mode > mpNOSET && 
-	    mpp->global_outline_mode == mpGEO) {
-		mpp->global_outline_mode = mpIMPLIED_NAT;
-	}
-
-	return ret;
-}
-
 
 /*
  * Function:    mpManageGenArray
@@ -5349,6 +3076,92 @@ static NhlErrorTypes    mpManageGenArray
 	return ret;
 }
 
+
+/*
+ * Function:	mpSetUpDataHandler
+ *
+ * Description: Sets up the Map data handler object. The data handler
+ *              used depends on the mpDataBaseVersion (and the resolution ??)
+ *
+ * In Args:	mpnew	new instance record
+ *		mpold	old instance record if not initializing
+ *		init	true if initialization
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	Objects created and destroyed.
+ */
+/*ARGSUSED*/
+static NhlErrorTypes mpSetUpDataHandler
+#if	NhlNeedProto
+(
+	NhlMapPlotLayer	mpnew,
+	NhlMapPlotLayer	mpold,
+	NhlBoolean	init
+)
+#else 
+(mpnew,mpold,init)
+	NhlMapPlotLayer	mpnew;
+	NhlMapPlotLayer	mpold;
+	NhlBoolean	init;
+#endif
+{
+	NhlMapPlotLayerPart 	*mpp = &(mpnew->mapplot);
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	char			*entry_name;
+	NhlTransformLayerPart	*tfp = &(mpnew->trans);
+	char			buffer[_NhlMAXRESNAMLEN];
+        int			tmpid;
+        NhlSArg			sargs[32];
+        int			nargs = 0;
+        NhlClass		mapdh_class;
+
+	entry_name = (init) ? "MapPlotInitialize" : "MapPlotSetValues";
+        
+        if (mpp->area_names)
+                NhlSetSArg(&sargs[nargs++],NhlNmpAreaNames,mpp->area_names);
+        if (mpp->dynamic_groups)
+                NhlSetSArg(&sargs[nargs++],
+                           NhlNmpDynamicAreaGroups,mpp->dynamic_groups);
+        
+	if (! init && Mpp->database_version != Ompp->database_version) {
+                NhlDestroy(Mpp->map_data_handler->base.id);
+                Mpp->map_data_handler = NULL;
+        }
+	if (! Mpp->map_data_handler) {
+
+                if (Mpp->database_version == NhlNCARG4_0) {
+                        mapdh_class = NhlmapV40DataHandlerClass;
+                }
+		else if (Mpp->database_version == NhlNCARG4_1) {
+			mapdh_class = NhlmapV41DataHandlerClass;
+                }		
+                
+                sprintf(buffer,"%s",mpnew->base.name);
+                strcat(buffer,".DataHandler");
+                subret = NhlALCreate(&tmpid,buffer,mapdh_class,
+                                     mpnew->base.id,sargs,nargs);
+                if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+
+                mpp->map_data_handler = _NhlGetLayer(tmpid);
+
+                if (! mpp->map_data_handler) {
+                        e_text = "%s: Error creating map data handler object";
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+                        return NhlFATAL;
+                }
+	}
+        else {
+		subret = NhlALSetValues(mpp->map_data_handler->base.id,
+                                        sargs,nargs);
+
+	}
+        
+	return MIN(ret,subret);
+}
 
 /*
  * Function:	mpSetUpTransObj
@@ -5592,442 +3405,6 @@ void   (_NHLCALLF(hlumapusr,HLUMAPUSR))
 }
 
 /*
- * Function:  hlumapeod
- *
- * Description: 
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-/*ARGSUSED*/
-void   (_NHLCALLF(hlumapeod,HLUMAPEOD))
-#if	NhlNeedProto
-(
-	int *nout,
-	int *nseg,
-	int *idls,
-	int *idrs,
-	int *npts,
-	float *pnts
-)
-#else
-(nout,nseg,idls,idrs,npts,pnts)
-	int *nout;
-	int *nseg;
-	int *idls;
-	int *idrs;
-	int *npts;
-	float *pnts;
-#endif
-{
-	int ir,il;
-	NhlBoolean keep = False;
-	int i;
-
-	if (Mpp == NULL) {
-		_NHLCALLF(mapeod,MAPEOD)(nout,nseg,idls,idrs,npts,pnts);
-		return;
-	}
-
-#if 0
-	printf("nseg %d idls %d, idrs %d, npts %d\n", 
-	       *nseg,*idls,*idrs,*npts);
-	for (i = 0; i < *npts; i++) {
-		printf("x %f y %f",pnts[2*i],pnts[2*i+1]);
-		if (*npts % 3 == 0)
-			printf("\n");
-	}
-#endif
-
-	switch (Draw_Op) {
-	case mpDRAWOUTLINE:
-		il = *idls - Id_Offset[Outline_Set];
-		ir = *idrs - Id_Offset[Outline_Set];
-		if (il >= 0) {
-			switch (DrawIds[il].u.f.draw_mode) {
-			case mpDRAW:
-				keep = True;
-				break;
-			case mpDRAWSPECIAL:
-				if (*idrs == Draw_Check)
-					keep = True;
-				break;
-			default:
-				break;
-			}
-		}
-		if (ir >= 0) {
-			switch (DrawIds[ir].u.f.draw_mode) {
-			case mpDRAW:
-				keep = True;
-				break;
-			case mpDRAWSPECIAL:
-				if (*idls == Draw_Check)
-					keep = True;
-				break;
-			default:
-				break;
-			}
-		}
-		if (! keep)
-			*npts = 0;
-		break;
-	case mpDRAWFILL:
-		il = *idls - Id_Offset[Outline_Set];
-		ir = *idrs - Id_Offset[Outline_Set];
-		if (il >= 0 && DrawIds[il].u.f.draw_mode != mpBACKGROUND)
-			keep = True;
-		else if (ir >= 0 && DrawIds[ir].u.f.draw_mode != mpBACKGROUND)
-			keep = True;
-
-		if (! keep)
-			*npts = 0;
-		else if ((DrawIds[ir].u.flags == DrawIds[il].u.flags) &&
-			 (DrawIds[ir].ix == DrawIds[il].ix)) {
-			*npts = 0;
-		}
-
-		break;
-	default:
-		return;
-	}
-	return;
-}
-
-/*
- * Function:  hlumaskgrid
- *
- * Description: C version of ULPR user routine called from within MAPGRM 
- *		to mask a grid based on an areamap.
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-/*ARGSUSED*/
-
-int (_NHLCALLF(hlumaskgrid,HLUMASKGRID))
-#if	NhlNeedProto
-(
-	float *xcra, 
-	float *ycra, 
-	int *ncra, 
-	int *iai, 
-	int *iag, 
-	int *nai
-)
-#else
-(xcra,ycra,ncra,iai,iag,nai)
-	float *xcra; 
-	float *ycra; 
-	int *ncra; 
-	int *iai; 
-	int *iag; 
-	int *nai;
-#endif
-{
-	NhlBoolean draw_line = False;
-	int i,id,ix = 0;
-	int type;
-
-	if (Mpp == NULL) return 0;
-
-	id = *iai - Id_Offset[Outline_Set];
-	if (id < 0)
-		return 0;
-        
-        if (DrawIds[id].u.f.draw_mode == mpBACKGROUND)
-                draw_line = True;
-        else {
-                switch (Mpp->grid_mask_mode) {
-                    case NhlMASKNONE:
-                    default:
-                            draw_line = True;
-                            break;
-                    case NhlMASKOCEAN:
-                            switch (Outline_Set) {
-                                case mpEMPTY:
-                                        draw_line = True;
-                                        break;
-                                case mpCO:
-                                case mpPO:
-                                case mpPS:
-                                        if (id != 1)
-                                                draw_line = True;
-                                        break;
-                                case mpUS:
-                                        if (id > 0)
-                                                draw_line = True;
-                                        break;
-                            }
-                            break;
-                    case NhlMASKNOTOCEAN:
-                            switch (Outline_Set) {
-                                case mpEMPTY:
-                                        draw_line = True;
-                                        break;
-                                case mpCO:
-                                case mpPO:
-                                case mpPS:
-                                        if (id == 1)
-                                                draw_line = True;
-                                        break;
-                                case mpUS:
-                                        break;
-                            }
-                            break;
-                    case NhlMASKLAND:
-                            switch (Outline_Set) {
-                                case mpEMPTY:
-                                        draw_line = True;
-                                        break;
-                                case mpCO:
-                                        ix = 0;
-                                        type = mpInlandWater;
-                                        if (id == 1)
-                                                draw_line = True;
-                                        break;
-                                case mpPO:
-                                        ix = 1;
-                                        if (id == 1)
-                                                draw_line = True;
-                                        type = mpInlandWater;
-                                        break;
-                                case mpUS:
-                                        ix = 1;
-                                        type = mpUSStateWater;
-                                        break;
-                                case mpPS:
-                                        ix = 2;
-                                        if (id == 1)
-                                                draw_line = True;
-                                        type = mpInlandWater;
-                                        break;
-                            }
-                            if (! draw_line) {
-                                    for (i = Otype_Start[type]; 
-                                         i < Otype_Start[type + 1]; i++) {
-                                            if (id == OutRecs[i].id[ix] - 
-                                                Id_Offset[Outline_Set]) {
-                                                    draw_line = True;
-                                                    break;
-                                            }
-                                    }
-                            }
-                            break;
-                    case NhlMASKNOTLAND:
-                            draw_line = True;
-                            switch (Outline_Set) {
-                                case mpEMPTY:
-                                        draw_line = True;
-                                        break;
-                                case mpCO:
-                                        ix = 0;
-                                        if (id == 1)
-                                                draw_line = False;
-                                        type = mpInlandWater;
-                                        break;
-                                case mpPO:
-                                        ix = 1;
-                                        if (id == 1)
-                                                draw_line = False;
-                                        type = mpInlandWater;
-                                        break;
-                                case mpUS:
-                                        ix = 0;
-                                        if (id <= 0)
-                                                draw_line = False;
-                                        type = mpUSStateWater;
-                                        break;
-                                case mpPS:
-                                        ix = 2;
-                                        if (id == 1)
-                                                draw_line = False;
-                                        type = mpInlandWater;
-                                        break;
-                            }
-
-                            if (draw_line) {
-                                    for (i = Otype_Start[type]; 
-                                         i < Otype_Start[type + 1]; i++) {
-                                            if (id == OutRecs[i].id[ix] - 
-                                                Id_Offset[Outline_Set]) {
-                                                    draw_line = False;
-                                                    break;
-                                            }
-                                    }
-                            }
-                            break;
-                    case NhlMASKFILLAREA:
-                            break;
-                    case NhlMASKMASKAREA:
-                            if (DrawIds[id].u.f.draw_mode < mpMASK) {
-                                    draw_line = True;
-                            }
-                            break;
-                }
-        }
-	if (! draw_line)
-		return 0;
-		
-	if (! Grid_Setup) {
-		NhlVASetValues(Mpl->base.wkptr->base.id,
-			       _NhlNwkLineLabel,"",
-			       _NhlNwkDashPattern,Mpp->grid.dash_pat,
-			       _NhlNwkLineDashSegLenF,Mpp->grid.dash_seglen,
-			       _NhlNwkLineThicknessF,Mpp->grid.thickness,
-			       _NhlNwkLineColor,Mpp->grid.color, 
-			       NULL);
-
-		_NhlSetLineInfo(Mpl->base.wkptr,(NhlLayer) Mpl);
-		Grid_Setup = True;
-	}
-	_NhlWorkstationLineTo(Mpl->base.wkptr, 
-			      xcra[0],ycra[0],1);
-	for (i = 1; i < *ncra; i++)
-		_NhlWorkstationLineTo(Mpl->base.wkptr, 
-				      xcra[i],ycra[i],0);
-	_NhlWorkstationLineTo(Mpl->base.wkptr,0.0,0.0,1);
-
-	return 0;
-}
-
-
-/*
- * Function:  hlumapfill
- *
- * Description: C version of APR user routine called from within ARSCAM 
- *		to fill areas based on the area ID.
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-/*ARGSUSED*/
-int (_NHLCALLF(hlumapfill,HLUMAPFILL))
-#if	NhlNeedProto
-(
-	float *xcs, 
-	float *ycs, 
-	int *ncs, 
-	int *iai, 
-	int *iag, 
-	int *nai
-)
-#else
-(xcs,ycs,ncs,iai,iag,nai)
-	float *xcs; 
-	float *ycs; 
-	int *ncs; 
-	int *iai; 
-	int *iag; 
-	int *nai;
-#endif
-{
-	int ix, pat_ix, col_ix, id;
-	float fscale;
-	unsigned char s_ix;
-	int *fcp;
-	int *fpp;
-	float *fsp;
-
-	if (Mpp == NULL) return 0;
-
-	fcp = (int *) Mpp->fill_colors->data;
-	fpp = (int *) Mpp->fill_patterns->data;
-	fsp = (float *) Mpp->fill_scales->data;
-
-	if (*iai < 1) return 0;
-	id = *iai - Id_Offset[Outline_Set];
-#if 0
-	printf("iai %d id %d use %d color %d\n", *iai,id,
-	       DrawIds[id].u.f.draw_mode,DrawIds[id].cix);
-#endif
-	if (id < 0 || DrawIds[id].u.f.draw_mode > mpDRAW)
-		return 0;
-
-	ix = DrawIds[id].ix;
-	s_ix = DrawIds[id].s_ix;
-
-	if (! DrawIds[id].u.f.s_col) {
-		if (Mpp->mono_fill_color)
-			col_ix = Mpp->fill_color;
-		else
-			col_ix = fcp[ix];
-	}
-	else if (Mpp->spec_fill_direct) {
-		int *sfcp = (int *) Mpp->spec_fill_colors->data;
-		col_ix = sfcp[s_ix];
-	}
-	else {
-		int *sfcp = (int *) Mpp->spec_fill_colors->data;
-		if (sfcp[s_ix] < Mpp->area_group_count)
-			col_ix = fcp[sfcp[s_ix]];
-	} 
-
-	if (! DrawIds[id].u.f.s_pat) {
-		if (Mpp->mono_fill_pattern)
-			pat_ix = Mpp->fill_pattern;
-		else
-			pat_ix = fpp[ix];
-	}
-	else if (Mpp->spec_fill_direct) {
-		int *sfpp = (int *) Mpp->spec_fill_patterns->data;
-		pat_ix = sfpp[s_ix];
-	}
-	else {
-		int *sfpp = (int *) Mpp->spec_fill_patterns->data;
-		if (sfpp[s_ix] < Mpp->area_group_count)
-			pat_ix = fpp[sfpp[s_ix]];
-	}
-
-	if (! DrawIds[id].u.f.s_scl) {
-		if (Mpp->mono_fill_scale)
-			fscale = Mpp->fill_scale;
-		else
-			fscale = fsp[ix];
-	}
-	else if (Mpp->spec_fill_direct) {
-		float *sfsp = (float *) Mpp->spec_fill_scales->data;
-		fscale = sfsp[s_ix];
-	}
-	else {
-		float *sfsp = (float *) Mpp->spec_fill_scales->data;
-		if ((int)sfsp[s_ix] < Mpp->area_group_count)
-			fscale = fsp[(int)sfsp[s_ix]];
-	}
-
-	NhlVASetValues(Mpl->base.wkptr->base.id,
-		       _NhlNwkFillBackground, Mpp->fill_pattern_background,
-		       _NhlNwkFillIndex, pat_ix,
-		       _NhlNwkFillColor, col_ix,
-		       _NhlNwkFillScaleFactorF,fscale,
-		       _NhlNwkEdgesOn,0,
-		       NULL);
-	
-	_NhlSetFillInfo(Mpl->base.wkptr, (NhlLayer) Mpl);
-	_NhlWorkstationFill(Mpl->base.wkptr,xcs,ycs,*ncs);
-
-	return 0;
-}
-
-/*
  * Function:  load_hlumap_routines
  *
  * Description: Forces the hlumap... routines to load from the HLU library
@@ -6058,8 +3435,6 @@ static void   load_hlumap_routines
 
 
 	if (flag) {
-		_NHLCALLF(hlumapeod,HLUMAPEOD)
-			(&idum,&idum,&idum,&idum,&idum,&fdum);
 		_NHLCALLF(hlumapusr,HLUMAPUSR)(&idum);
 	}
 	return;

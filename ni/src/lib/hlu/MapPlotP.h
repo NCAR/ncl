@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.17 1998-04-21 18:32:38 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.18 1998-05-22 01:59:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -37,11 +37,7 @@
 #define Nhl_mpDEF_LABEL_HEIGHT  0.008
 #define Nhl_mpMAX_AREA_GROUPS	256
 #define Nhl_mpMIN_AREA_GROUPS	10
-#define Nhl_mpMAPDATAFILE	"NhlMapData"
 #define mpALLOC_UNIT		128
-#ifndef FLT_MAX
-#define FLT_MAX			10.0e37
-#endif
 
 typedef struct _NhlmpLineAttrs {
 	NhlBoolean	on;
@@ -100,104 +96,6 @@ typedef enum _mpDrawOp {
 	mpDRAWGRID
 } mpDrawOp;
 
-typedef enum _mpOutlineSet { 
-	mpEMPTY = -1,
-	mpCO,
-	mpPO, 
-	mpUS,
-	mpPS
-} mpOutlineSet;
-
-typedef enum _mpGlobalSetMode {
-	mpNONE = 0,
-	mpGEO,
-	mpIMPLIED_NAT,
-	mpNAT
-} mpGlobalSetMode;
-
-typedef enum _mpStateSetMode {
-	mpNOSET,
-	mpIMPLIED_SET,
-	mpSET
-} mpStateSetMode;
-
-
-/* Areamap types - not to be confused with area set list types */
-
-#define mpGLOBAL_AMAP	0
-#define mpUSSTATES_AMAP	1
-
-typedef enum _mpOutlineType { 
-	mpOcean = 0,
-	mpContinent,
-	mpLargeIsland,
-	mpSmallIsland,
-	mpInlandWater,
-	mpNational,
-	mpUSStateLand,
-	mpUSStateWater 
-} mpOutlineType;
-
-#define NhlmpOUTLINE_TYPE_COUNT 8
-
-typedef struct _mpOutlineRec {
-	mpOutlineType type;
-	short id[3];
-	short cix[2];
-	char *name;
-} mpOutlineRec;
-
-/* draw Modes */
-
-#define mpBACKGROUND	0
-#define mpDRAW		1
-#define mpMASK		2
-#define mpSYSEXCLUDE	3
-#define mpDRAWSPECIAL	4
-
-#define mpNOINDEX	-1
-
-typedef union _mpFlags {
-	unsigned long flags;
-	struct {
-		unsigned char	s_col;
-		unsigned char	s_pat;
-		unsigned char	s_scl;
-		unsigned char	draw_mode;
-	} f;
-} mpFlags;
-
-typedef struct _mpNameRec {
-	short	name_ix;
-	mpFlags u;
-	unsigned char s_ix;
-	short	ix;
-} mpNameRec;
-
-typedef struct _mpDrawIdRec {
-	mpFlags 	u;
-	unsigned char	s_ix;
-	short		ix;
-} mpDrawIdRec;
-
-
-typedef enum _mpBGroups {
-	mpNULLAREA,
-	mpALLNATIONAL,
-	mpALLGEOPHYSICAL,
-	mpLAND,
-	mpWATER,
-	mpINLANDWATER,
-	mpOCEANS,
-	mpCONTINENTS,
-	mpISLANDS,
-	mpLARGEISLANDS,
-	mpSMALLISLANDS,
-	mpALLUSSTATES,
-	mpUSSTATESLAND,
-	mpUSSTATESWATER 
-} mpBGroups;
-
 typedef struct NhlMapPlotLayerPart {
 
 	/* Public resources */
@@ -207,7 +105,7 @@ typedef struct NhlMapPlotLayerPart {
 	NhlGenArray	area_types;
 	NhlGenArray	fixed_groups;
 	NhlGenArray	dynamic_groups;
-	NhlString	database_version;
+	NhlMapDataBaseVersion database_version;
 
 	NhlBoolean	outline_on;
 	NhlDrawOrder	outline_order;
@@ -256,6 +154,8 @@ typedef struct NhlMapPlotLayerPart {
 	NhlmpLineAttrs	perim;
 	NhlmpLabelAttrs labels;
 
+        /* Private resources */
+        
 	NhlBoolean	dump_area_map;
 
 	/* Private Fields */
@@ -268,25 +168,14 @@ typedef struct NhlMapPlotLayerPart {
 
 	NhlLayer	overlay_object;
 	NhlGenArray	dash_table;
-	int		co_aws_id;
-	int		po_aws_id;
-        int		us_aws_id;
-	mpNameRec	*fill_recs;
-	int		fill_rec_alloc;
-	int		fill_rec_count;
-	mpNameRec	fill_groups[NhlmpOUTLINE_TYPE_COUNT];
-	mpGlobalSetMode	global_fill_mode;
-	mpStateSetMode	usstates_fill_mode;
-	mpNameRec	*outline_recs;
-	int		outline_rec_alloc;
-	int		outline_rec_count;
-	mpNameRec	outline_groups[NhlmpOUTLINE_TYPE_COUNT];
-	mpGlobalSetMode	global_outline_mode;
-	mpStateSetMode	usstates_outline_mode;
 	int		spec_fill_color_count;
 	int		spec_fill_pattern_count;
 	int		spec_fill_scale_count;
 	int		trans_change_count;
+        NhlLayer	map_data_handler;
+        NhlBoolean	init_draw;
+        NhlBoolean	view_changed;
+
 } NhlMapPlotLayerPart;
 
 typedef struct _NhlMapPlotLayerRec {
