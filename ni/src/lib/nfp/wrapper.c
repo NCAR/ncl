@@ -2161,9 +2161,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(5);
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
     NclRegisterProc(nggcog_W, args, "nggcog", nargs);
