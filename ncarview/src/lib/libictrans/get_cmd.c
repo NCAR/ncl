@@ -1,5 +1,5 @@
 /*
- *	$Id: get_cmd.c,v 1.5 1992-06-24 21:06:25 clyne Exp $
+ *	$Id: get_cmd.c,v 1.6 1992-07-14 23:09:32 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -94,7 +94,7 @@ get_command(ic)
 	ic->cmd.src_frames.num = 0;
 	ic->cmd.dst_frames.num = 0;
 
-	(void) write (ic->fd, prompt, strlen(prompt));
+	(void) fprintf (ic->fp, prompt);
 	type = my_yylex();	/* get a token from data stream	*/
 	while(loop) {	/* parse source address	*/
 		switch (type) {

@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans_mem.c,v 1.4 1992-06-24 21:06:40 clyne Exp $
+ *	$Id: ictrans_mem.c,v 1.5 1992-07-14 23:09:39 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,16 +32,13 @@
 
  
 #include <ctype.h>
+#include <string.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <cgm_tools.h>
 #include <ncarv.h>
 #include "ictrans_mem.h"
 
-
-extern	char	*strcpy();
-extern	char	*strncpy();
-extern	char	*strcat();
 
 /*
  * structure for keeping track of all the memory files

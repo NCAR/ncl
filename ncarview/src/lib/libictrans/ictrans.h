@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.h,v 1.3 1992-06-24 21:06:36 clyne Exp $
+ *	$Id: ictrans.h,v 1.4 1992-07-14 23:09:36 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -78,7 +78,7 @@ typedef	struct	{
  * a complete command object
  */
 typedef	struct {
-	int	fd;		/* file desciptor for user prompts	*/
+	FILE	*fp;		/* file pointer for user prompts	*/
 	int	current_frame,	/* current frame in the file		*/
 		last_frame;	/* last frame in the file		*/
 	Cmd	cmd;		/* name of command to execute and its data*/

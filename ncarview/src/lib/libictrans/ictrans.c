@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.12 1992-06-24 21:06:32 clyne Exp $
+ *	$Id: ictrans.c,v 1.13 1992-07-14 23:09:34 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -34,7 +34,7 @@
 #include <ncarv.h>
 #include <stdio.h>
 #include <ncarv.h>
-#include <cterror.h>
+#include <ctrans.h>
 #include "ictrans.h"
 #include "lex.h"
 #include "get_cmd.h"
@@ -42,9 +42,6 @@
 extern	char	yytext[];
 extern	char	*getFcapname();
 extern	char	*getGcapname();
-extern	Ct_err	init_ctrans();
-extern	Ct_err	init_metafile();
-extern	Ct_err	ctrans();
 extern	char	*strrchr();
 
 extern	IcState	icState;
@@ -101,9 +98,47 @@ static	Option	get_options[] = {
 extern	boolean	*softFill;
 extern	boolean	*doBell;
 
-char	*programName;
+char	*progName;
 
 
+usage(od, msg)
+	int	od;
+	char	*msg;
+{
+	char	*usage = "-d device [-f font] [-e cmd]+ [options] [device options]";
+
+	if (msg) fprintf(stderr, "%s: %s\n", progName, msg);
+
+	fprintf(stderr, "Usage: %s %s\n", progName, usage);
+	PrintOptionHelp(od, stderr);
+
+}
+
+
+/*
+ *	report errors from ctrans
+ */
+void	log_ct(err)
+	CtransRC	err;
+{
+	char	*s;
+
+	while (s = ReadCtransMsg()) {
+		fprintf(
+			stderr, "%s: %s - %s\n", progName, 
+			(err == FATAL ? "FATAL" : "WARNING"), s
+		);
+	}
+}
+
+
+/*
+ *	ICTrans
+ *	PUBLIC
+ *
+ *	This function represents the complete programmatic interface
+ *	to ictrans. 
+ */
 ICTrans(argc, argv, mem_cgm) 
 	int	argc;
 	char	**argv;
@@ -116,27 +151,23 @@ ICTrans(argc, argv, mem_cgm)
 
 	char	*fcap,			/* path to font			*/
 		*gcap;			/* path to device		*/
-	boolean	batch = FALSE;
+	boolean	batch = FALSE;		/* operate in batch mode?	*/
 	int	od;
+	FILE	*fp;			/* status messages/user interaction */
+	char	*dev_null	= "/dev/null";	/* bit bucket		*/
 
-					/*
-					 * list of metafiles to process
-					 */
+	/*
+	 * list of metafiles to process
+	 */
 	char	**meta_files = (char **) icMalloc ((argc * sizeof(char *)) + 1);
 	int	i,j;
 
-	void	ex_command();
 	extern	char	*GetCurrentAlias();
 	char	buf[80];
 
-	/* put the program name in a global variable */
 
-	programName = (programName = strrchr(argv[0], '/')) ?
-						++programName : *argv;
-	/*
-	 * 	init ctrans' error module so we can use it
-	 */
-	init_ct_error(programName, TRUE);
+	progName = (progName = strrchr(argv[0], '/')) ?
+						++progName : *argv;
 
 	/*
 	 *	parse command line argument. Separate ctrans specific
@@ -148,9 +179,9 @@ ICTrans(argc, argv, mem_cgm)
 	if (ParseOptionTable(od, &argc, argv, set_options) < 0) {
 		fprintf(
 			stderr, "%s : Error loading options - %s\n",
-			programName, ErrGetMsg()
+			progName, ErrGetMsg()
 		);
-		exit(1);
+		return(-1);
 	}
 
 	/*
@@ -159,16 +190,16 @@ ICTrans(argc, argv, mem_cgm)
 	if (GetOptions(od, get_options) < 0) {
 		fprintf(
 			stderr, "%s : Error getting options - %s\n",
-			programName, ErrGetMsg()
+			progName, ErrGetMsg()
 		);
 		PrintOptionHelp(od, stderr);
-		exit(1);
+		return(-1);
 	}
 
 
 	if (opt.version) {
-		PrintVersion(programName);
-		exit(0);
+		PrintVersion(progName);
+		return(0);
 	}
 	/*
 	 * set line scaling options
@@ -187,8 +218,10 @@ ICTrans(argc, argv, mem_cgm)
 	 *	not a graphcap then a path will still be built to it but
 	 *	it will have no meaning.
          */
-        if ((gcap = getGcapname( opt.device )) == NULL )
-		ct_error(T_MD,"");
+        if ((gcap = getGcapname( opt.device )) == NULL ) {
+		usage(od, "Graphics device not specified");
+		return(-1);
+	}
 
 	icState.device = (icState.device = strrchr(gcap, '/')) ?
 						++icState.device : gcap;
@@ -204,7 +237,7 @@ ICTrans(argc, argv, mem_cgm)
 		*	use default font
 		*/
 		if ((fcap = getFcapname( DEFAULTFONT )) == NULL) {
-			ct_error(T_MF,"");
+			fprintf(stderr,"%s: Warning - no known font",progName);
 		}
         }
 
@@ -223,31 +256,30 @@ ICTrans(argc, argv, mem_cgm)
 	/*
 	 *	init ctrans
 	 */
-	if (init_ctrans(&argc,argv,programName,gcap,fcap,TRUE,TRUE) != OK) {
-		(void) close_ctrans();
-		exit(1);
+	if (init_ctrans(&argc,argv,gcap,fcap,TRUE,TRUE) != OK) {
+		log_ct(FATAL);
+		return(-1);
 	}
-
-#ifdef	DEAD
-	(void) set_action_err(NO_ACT);
-#endif
 
 	/*
 	 * assume everthing left in the command line is a metafile. check
-	 * and make sure
+	 * and make sure.
 	 */
 	meta_files[0] = NULL;
 	for (i = 1, j=0; i < argc; i++) {
 		if (*argv[i] == '-') {
 			if (! strcmp(argv[i], "-e")) {
 				i++;
-				if (i >= argc) ct_error(T_NSO, "");
+				if (i >= argc) {
+					usage(od, "No such option");
+					return(-1);
+				}
 				(void) AppendString(argv[i]);
 				batch = TRUE;
 			}
 			else {
-				ct_error(T_NSO, "");
-				break;
+				usage(od, "No such option");
+				return(-1);
 			}
 		} 
 		else {
@@ -261,8 +293,8 @@ ICTrans(argc, argv, mem_cgm)
 	 *	if a metafile was not given exit
 	 */
 	if (meta_files[0] == NULL && !mem_cgm) {
-		ct_error(T_NULL, "Metafile not specified");
-		exit(1);
+		usage(od, "Metafile not specified");
+		return(-1);
 	}
 
 	icState.file = meta_files;	/* record the file name	*/
@@ -274,7 +306,31 @@ ICTrans(argc, argv, mem_cgm)
 	icState.spool_alias = GetCurrentAlias();
 
 	init_icommand(&icommand);
-	icommand.fd = opt.fd == -1 ? fileno(stdout) : opt.fd;
+
+	/*
+	 * establish communication path (one way) with invokee
+	 */
+	if (opt.fd != -1) {
+		if ((fp = fdopen(opt.fd, "w")) == NULL) {
+			fprintf(stderr, "fdopen(%d, w)\n", opt.fd);
+			return(-1);
+		}
+	}
+	else if (! isatty(fileno(stdout))) {
+
+		/*
+		 * graphics go to stdout, everything else goes to
+		 * bit bucket
+		 */
+		if ((fp = fopen(dev_null, "w")) == NULL) {
+			fprintf(stderr, "fdopen(%s, w)\n", dev_null);
+			return(-1);
+		}
+	}
+	else {
+		fp = stdout;
+	}
+	icommand.fp = fp;
 
 	/*
 	 * prime the system by executing a file() command
@@ -285,7 +341,7 @@ ICTrans(argc, argv, mem_cgm)
 	else {		/* CGM on disk		*/
 		icommand.cmd.name = "file";
 		icommand.cmd.data = meta_files[0];
-		ex_command(&icommand);
+		(void) ex_command(&icommand);
 	}
 
 	/*
@@ -294,7 +350,7 @@ ICTrans(argc, argv, mem_cgm)
 	if (batch) {
 		icommand.cmd.name = "movie";
 		icommand.cmd.data = NULL;
-		ex_command(&icommand);
+		(void) ex_command(&icommand);
 	}
 
 	/*
@@ -311,8 +367,7 @@ ICTrans(argc, argv, mem_cgm)
 			WNOHANG, (struct rusage *) NULL)) != 0) {
 
 			if (status > 0) {
-				(void) sprintf(buf, "Done	%d\n", status);
-				(void) write(icommand.fd, buf, strlen(buf));
+				(void) fprintf(fp, "Done	%d\n", status);
 				spoolerJobs--;
 			}
 			else {
@@ -332,7 +387,10 @@ ICTrans(argc, argv, mem_cgm)
 		switch (status) {
 
 		case GET_EOLN:  /* normal termination   */
-			ex_command(&icommand);
+			if (ex_command(&icommand) == 0) {	/* quit	*/
+				(void) close_ctrans();
+				return(0);
+			}
 			break;
 		case GET_OUTOFRANGE:
 			(void) fprintf(stderr,
@@ -350,13 +408,13 @@ ICTrans(argc, argv, mem_cgm)
 			 *	terminate ctrans
 			 */
 			(void) close_ctrans();
-			exit(0);
+			return(0);
 			break;
 		}
 	}
 }
 
-void	ex_command(ic)
+int	ex_command(ic)
 	ICommand	*ic;
 {
 
@@ -370,10 +428,10 @@ void	ex_command(ic)
 	c = getcmdOp(ic->cmd.name);
 
 	if (c == (CmdOp *) -1) {
-		(void) fprintf(stderr, "%s: Ambiguous command?\n",programName);
+		(void) fprintf(stderr, "%s: Ambiguous command?\n",progName);
 	}
 	else if (c == (CmdOp *) NULL) {
-		(void) fprintf(stderr, "%s: Invalid command?\n",programName);
+		(void) fprintf(stderr, "%s: Invalid command?\n",progName);
 	}
 	else {
 
@@ -381,8 +439,6 @@ void	ex_command(ic)
 		 * execute the command
 		 */
 		ic->c = c;
-		(*c->c_handler) (ic);
+		return((*c->c_handler) (ic));
 	}
 }
-
-

@@ -1,5 +1,5 @@
 /*
- *	$Id: spooler.c,v 1.7 1992-06-24 21:07:00 clyne Exp $
+ *	$Id: spooler.c,v 1.8 1992-07-14 23:09:44 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -695,14 +695,14 @@ char	**GetSpoolers(alias)
  * on entry:
  *	**argv		: null terminate command and option list
  *	argc		: num args in argv
- *	log_fd		: file descriptor for logging normal status messages
+ *	log_fp		: file descriptor for logging normal status messages
  * on exit:
  *	return		: < 0 => failure
  */
-PipeLine(argc, argv, log_fd)
+PipeLine(argc, argv, log_fp)
 	int	argc;
 	char	**argv;
-	int	log_fd;
+	FILE	log_fp;
 
 {
 	int	i,j;
@@ -767,10 +767,10 @@ PipeLine(argc, argv, log_fd)
 	 * the last filter in the chain
 	 */
 	if (num_filt) {	/* if no filters than translator is last process*/
-		last(filter[num_filt-1].argv, out_pipe, fd, log_fd);
+		last(filter[num_filt-1].argv, out_pipe, fd, log_fp);
 	}
 	else {		/* the translator is first and last process	*/
-		last(t_argv, out_pipe, fd, log_fd);
+		last(t_argv, out_pipe, fd, log_fp);
 	}
 	if (fd > 0) (void) close (fd);
 
@@ -783,7 +783,7 @@ PipeLine(argc, argv, log_fd)
 			perror("pipe");	
 			return (-1);
 		}
-		middle(filter[i].argv, out_pipe,in_pipe, log_fd);
+		middle(filter[i].argv, out_pipe,in_pipe, log_fp);
 
 		(void) close(out_pipe[0]);
 		(void) close(out_pipe[1]);
@@ -796,7 +796,7 @@ PipeLine(argc, argv, log_fd)
 	 * fork translator if haven't alread done so as Last process
 	 */
 	if (num_filt) {
-		first(t_argv, out_pipe, log_fd);
+		first(t_argv, out_pipe, log_fp);
 
 		(void) close(out_pipe[0]); 
 		(void) close(out_pipe[1]); 
@@ -820,9 +820,9 @@ PipeLine(argc, argv, log_fd)
  *	**argv		: arg list for process to be spawned
  *	*tpipe		: a pipe for communicating with other processes
  *	fd		: if fd > 0 it is a file descriptor for sending stdout
- *	log_fd		: message log file descriptor
+ *	log_fp		: message log file descriptor
  */
-static	last(argv, tpipe, fd, log_fd)
+static	last(argv, tpipe, fd, log_fp)
 	char	**argv;
 	int *tpipe; 
 	int	fd;
@@ -854,8 +854,7 @@ static	last(argv, tpipe, fd, log_fd)
 
 	default:
 		spoolerJobs++;
-		(void) sprintf(buf, "[%d] %d\n", spoolerJobs, pid);
-		(void) write(log_fd, buf, strlen(buf));
+		(void) fprintf(log_fp, "[%d] %d\n", spoolerJobs, pid);
 		break;
 	}
 
@@ -866,10 +865,10 @@ static	last(argv, tpipe, fd, log_fd)
  *
  */
 
-static	first(argv, tpipe, log_fd)
+static	first(argv, tpipe, log_fp)
 	char	**argv;
 	int *tpipe; 
-	int	log_fd;
+	int	log_fp;
 {
 
 	int pid;
@@ -892,8 +891,7 @@ static	first(argv, tpipe, log_fd)
 		_exit(127);
 	default:
 		spoolerJobs++;
-		(void) sprintf(buf, "[%d] %d\n", spoolerJobs, pid);
-		(void) write(log_fd, buf, strlen(buf));
+		(void) fprintf(log_fp, "[%d] %d\n", spoolerJobs, pid);
 	}
 }
 
@@ -902,10 +900,10 @@ static	first(argv, tpipe, log_fd)
  *
  */
 
-static	middle(argv, out_pipe,in_pipe, log_fd)
+static	middle(argv, out_pipe,in_pipe, log_fp)
 	char	**argv;
 	int *out_pipe,*in_pipe;
-	int	log_fd;
+	int	log_fp;
 {
 	
 	int  pid;
@@ -934,8 +932,7 @@ static	middle(argv, out_pipe,in_pipe, log_fd)
 		_exit(127);
 	default:
 		spoolerJobs++;
-		(void) sprintf(buf, "[%d] %d\n", spoolerJobs, pid);
-		(void) write(log_fd, buf, strlen(buf));
+		(void) fprintf(log_fp, "[%d] %d\n", spoolerJobs, pid);
 		break;
 	}
 }
