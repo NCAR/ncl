@@ -393,6 +393,10 @@ NhlErrorTypes _NclICrayBinRecRead
 		return(NhlFATAL);
 	}
 
+	if(!IsCOSBlocked(fd)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"craybinrecread: could not open (%s) it is not a COS blocked file",NrmQuarkToString(*fpath));
+		return(NhlFATAL);
+	}
 	cur_off = 0;
 	i = 0;
 	lseek(fd,cur_off,SEEK_SET);
@@ -506,15 +510,19 @@ NhlErrorTypes _NclICrayBinRecRead
 			switch(thetype->type_class.data_type) {
 			case NCL_int:
 				value = IntEm(cbin_buf,ind);
+				dimsize = ind;
 				break;
 			case NCL_float:
 				value = FloatEm(cbin_buf,ind);
+				dimsize = ind;
 				break;
 			case NCL_double:
 				value = DoubleEm(cbin_buf,ind);
+				dimsize = ind;
 				break;
 			case NCL_char:
 				value = cbin_buf;
+				dimsize = ind*WORD_SIZE;
 				break;
 			default:
 				value = cbin_buf;
@@ -522,7 +530,6 @@ NhlErrorTypes _NclICrayBinRecRead
 				break;
 			}
 
-			dimsize = ind;
 			tmp_md = _NclCreateMultiDVal(
 				NULL,
 				NULL,
