@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.57 1997-01-16 19:44:05 ethan Exp $
+ *      $Id: Machine.c,v 1.58 1997-01-28 00:38:54 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2465,7 +2465,7 @@ void _NclCleanUpStack
 				} 
 				break;
 			case NclStk_SUBREC:
-					_NclFreeSubRec(data.u.sub_rec);
+					_NclFreeSubRec(&data.u.sub_rec);
 				break;
 			default:
 				break;

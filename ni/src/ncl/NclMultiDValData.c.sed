@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.23 1996-11-23 00:55:30 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.24 1997-01-28 00:38:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1338,15 +1338,17 @@ NclSelectionRecord *from_selection;
 		n_dims_target = 1;
 		to_output_dim_sizes[0] = 1;
 	}
-	
-	if(n_dims_target != n_dims_value) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Right hand side of assignment has (%d) dimensions and left hand side has (%d), dimension mismatch",n_dims_value,n_dims_target);
-		return(NhlFATAL);
-	}
-	for(i = 0; i< n_dims_target; i++) {
-		if(from_output_dim_sizes[i] != to_output_dim_sizes[i]) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension size mismatch, dimension (%d) of left hand side reference does not have the same size as the right hand side reference after subscripting.",i);
+
+	if((n_dims_value != 1)||(from_output_dim_sizes[0] !=1)) {	
+		if(n_dims_target != n_dims_value) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Right hand side of assignment has (%d) dimensions and left hand side has (%d), dimension mismatch",n_dims_value,n_dims_target);
 			return(NhlFATAL);
+		}
+		for(i = 0; i< n_dims_target; i++) {
+			if(from_output_dim_sizes[i] != to_output_dim_sizes[i]) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension size mismatch, dimension (%d) of left hand side reference does not have the same size as the right hand side reference after subscripting.",i);
+				return(NhlFATAL);
+			}
 		}
 	}
 
@@ -1369,10 +1371,12 @@ NclSelectionRecord *from_selection;
 		} else {
 			to_compare_sel[n_dims_target_orig-1]++;
 		}
-		if(from_compare_sel[n_dims_value_orig -1] <0) {
-			from_current_index[n_dims_value_orig -1 ] += from_strider[n_dims_value_orig-1];
-		} else {
-			from_compare_sel[n_dims_value_orig-1]++;
+		if((n_dims_value != 1)||(from_output_dim_sizes[0] !=1)) {
+			if(from_compare_sel[n_dims_value_orig -1] <0) {
+				from_current_index[n_dims_value_orig -1 ] += from_strider[n_dims_value_orig-1];
+			} else {
+				from_compare_sel[n_dims_value_orig-1]++;
+			}
 		}
 		for(k = n_dims_target_orig-1; k >0; k--) {
 			switch(to_compare_sel[k]) {
@@ -1439,70 +1443,72 @@ NclSelectionRecord *from_selection;
 			}
 			break;
 		}
-		for(k = n_dims_value_orig -1; k >0; k--) {
-			switch(from_compare_sel[k]) {
-			case -2: 
-				if(from_current_index[k] > from_sel_ptr[k].u.sub.finish) {
-					from_current_index[k] = from_sel_ptr[k].u.sub.start;
-					if(from_compare_sel[k-1] < 0) {
-						from_current_index[k-1] += from_strider[k-1];
+		if((n_dims_value != 1)||(from_output_dim_sizes[0] !=1)) {
+			for(k = n_dims_value_orig -1; k >0; k--) {
+				switch(from_compare_sel[k]) {
+				case -2: 
+					if(from_current_index[k] > from_sel_ptr[k].u.sub.finish) {
+						from_current_index[k] = from_sel_ptr[k].u.sub.start;
+						if(from_compare_sel[k-1] < 0) {
+							from_current_index[k-1] += from_strider[k-1];
+						} else {
+							from_compare_sel[k-1]++;
+						}
 					} else {
-						from_compare_sel[k-1]++;
+						inc_done = 1;
 					}
-				} else {
-					inc_done = 1;
+					break;
+				case -1:
+					if(from_current_index[k] < from_sel_ptr[k].u.sub.finish) {
+						from_current_index[k] = from_sel_ptr[k].u.sub.start;
+						if(from_compare_sel[k-1] < 0) {
+							from_current_index[k-1] += from_strider[k-1];
+						} else {
+							from_compare_sel[k-1]++;
+						}
+					} else {
+						inc_done = 1;
+					}
+					break;
+				default:
+					if(from_compare_sel[k] >= from_sel_ptr[k].u.vec.n_ind) {
+						from_compare_sel[k] = 0;
+						from_current_index[k] = from_sel_ptr[k].u.vec.ind[from_compare_sel[k]];
+						if(from_compare_sel[k-1] < 0) {
+							from_current_index[k-1] += from_strider[k-1];
+						} else {
+							from_compare_sel[k-1]++;
+						}
+	
+					} else {
+						from_current_index[k] = from_sel_ptr[k].u.vec.ind[from_compare_sel[k]];
+						inc_done = 1;
+					}
+					break;
 				}
+	
+				if(inc_done) {
+					inc_done = 0;
+					break;
+				}
+			}
+			switch(from_compare_sel[0]) {
+			case -2:
+				if(from_current_index[0] > from_sel_ptr[0].u.sub.finish)
+						done = 1;
 				break;
 			case -1:
-				if(from_current_index[k] < from_sel_ptr[k].u.sub.finish) {
-					from_current_index[k] = from_sel_ptr[k].u.sub.start;
-					if(from_compare_sel[k-1] < 0) {
-						from_current_index[k-1] += from_strider[k-1];
-					} else {
-						from_compare_sel[k-1]++;
-					}
-				} else {
-					inc_done = 1;
-				}
+				if(from_current_index[0] < from_sel_ptr[0].u.sub.finish)
+						done = 1;
 				break;
 			default:
-				if(from_compare_sel[k] >= from_sel_ptr[k].u.vec.n_ind) {
-					from_compare_sel[k] = 0;
-					from_current_index[k] = from_sel_ptr[k].u.vec.ind[from_compare_sel[k]];
-					if(from_compare_sel[k-1] < 0) {
-						from_current_index[k-1] += from_strider[k-1];
-					} else {
-						from_compare_sel[k-1]++;
-					}
-
+				if(from_compare_sel[0] >= from_sel_ptr[0].u.vec.n_ind) {
+						done = 1;
 				} else {
-					from_current_index[k] = from_sel_ptr[k].u.vec.ind[from_compare_sel[k]];
-					inc_done = 1;
+					from_current_index[0] = from_sel_ptr[0].u.vec.ind[from_compare_sel[0]];
 				}
 				break;
 			}
-
-			if(inc_done) {
-				inc_done = 0;
-				break;
-			}
-		}
-		switch(from_compare_sel[0]) {
-		case -2:
-			if(from_current_index[0] > from_sel_ptr[0].u.sub.finish)
-					done = 1;
-			break;
-		case -1:
-			if(from_current_index[0] < from_sel_ptr[0].u.sub.finish)
-					done = 1;
-			break;
-		default:
-			if(from_compare_sel[0] >= from_sel_ptr[0].u.vec.n_ind) {
-					done = 1;
-			} else {
-				from_current_index[0] = from_sel_ptr[0].u.vec.ind[from_compare_sel[0]];
-			}
-			break;
 		}
 	}
 	if(chckmiss) {

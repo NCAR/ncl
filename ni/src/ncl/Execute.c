@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.82 1997-01-16 19:48:33 ethan Exp $
+ *      $Id: Execute.c,v 1.83 1997-01-28 00:38:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1906,8 +1906,8 @@ NclExecuteReturnStatus _NclExecute
 							}
 						}
 					}
-					rhs = _NclPop();	
 					if(estatus != NhlFATAL) {
+					rhs = _NclPop();	
 						if(rhs.kind == NclStk_VAL) {
 							rhs_md = rhs.u.data_obj;
 							if(rhs_md != NULL) {
