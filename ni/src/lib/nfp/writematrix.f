@@ -103,7 +103,6 @@ c write to a file
 
           newfmt = "(" // fmtx // ")" 
 
-          write(31, titfmt) " "
           if (iopt.eq.0) then
               newfmt = "(" // fmtx // ")" 
               do nr=1,nrow
