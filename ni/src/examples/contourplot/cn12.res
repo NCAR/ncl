@@ -45,6 +45,7 @@
 !
 *lbBoxCount:                   14
 *lbLabelAlignment:             BoxCenters
+*pmLabelBarWidthF:             0.24
 *lbPerimOn:                    False
 *lbLabelFont:                  times-bold
 *lbLabelFontHeightF:           0.015
