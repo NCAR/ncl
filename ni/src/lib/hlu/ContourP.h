@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.14 1994-09-12 21:01:04 dbrown Exp $
+ *      $Id: ContourP.h,v 1.15 1994-09-16 19:12:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -93,7 +93,14 @@ typedef struct _NhlcnRegionAttrs {
 	int		fill_pat;
 	float		fill_scale;
 } NhlcnRegionAttrs;
-	
+
+typedef struct _NhlcnFillAttrs {
+	NhlBoolean	on;
+	int		color;
+	int		pattern;
+	float		scale;
+} NhlcnFillAttrs;
+
 typedef struct _NhlContourDataDepLayerPart{
 	/* Public resources	*/
 
@@ -124,6 +131,8 @@ typedef struct _NhlContourLayerPart {
 	float		min_level_val;
 	NhlBoolean	max_level_set;
 	float		max_level_val;
+	NhlcnFillAttrs	below_min;
+	NhlcnFillAttrs  above_max;
 	NhlBoolean	llabel_interval_set;
 	int		llabel_interval;
 	NhlDrawOrder	label_order;
@@ -226,7 +235,10 @@ typedef struct _NhlContourLayerPart {
 	NhlBoolean	data_init;
 	NhlBoolean	cprect_call_req;
 	float		*real_levels;
-	int		*gks_fill_colors;
+	int		real_fill_count;
+	int		*real_fill_colors;
+	int		*real_fill_patterns;
+	float		*real_fill_scales;
 	int		*gks_line_colors;
 	int		*gks_llabel_colors;
 	NhlGenArray	dash_table;

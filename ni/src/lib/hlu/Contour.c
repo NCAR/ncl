@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.24 1994-09-12 21:01:02 dbrown Exp $
+ *      $Id: Contour.c,v 1.25 1994-09-16 19:12:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -130,6 +130,24 @@ static NhlResource resources[] = {
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(llabel_interval_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	{ NhlNcnBelowMinLevelColor,NhlCcnBelowMinLevelColor,
+		  NhlTInteger,sizeof(int),Oset(below_min.color),
+		  NhlTImmediate,_NhlUSET((NhlPointer) 58),0,NULL},
+	{ NhlNcnBelowMinLevelFillPattern,NhlCcnBelowMinLevelFillPattern,
+		  NhlTInteger,sizeof(int),Oset(below_min.pattern),
+		  NhlTImmediate,_NhlUSET((NhlPointer) NhlSOLIDFILL),0,NULL},
+	{ NhlNcnBelowMinLevelFillScale,NhlCcnBelowMinLevelFillScale,
+		  NhlTFloat,sizeof(float),Oset(below_min.scale),
+		  NhlTString,_NhlUSET("0.5"),0,NULL},
+	{ NhlNcnAboveMaxLevelColor,NhlCcnAboveMaxLevelColor,
+		  NhlTInteger,sizeof(int),Oset(above_max.color),
+		  NhlTImmediate,_NhlUSET((NhlPointer) 58),0,NULL},
+	{ NhlNcnAboveMaxLevelFillPattern,NhlCcnAboveMaxLevelFillPattern,
+		  NhlTInteger,sizeof(int),Oset(above_max.pattern),
+		  NhlTImmediate,_NhlUSET((NhlPointer) NhlSOLIDFILL),0,NULL},
+	{ NhlNcnAboveMaxLevelFillScale,NhlCcnAboveMaxLevelFillScale,
+		  NhlTFloat,sizeof(float),Oset(above_max.scale),
+		  NhlTString,_NhlUSET("0.5"),0,NULL},
 	{ NhlNcnLineLabelInterval,NhlCcnLineLabelInterval,
 		  NhlTFloat,sizeof(float),
 		  Oset(llabel_interval),
@@ -208,7 +226,7 @@ static NhlResource resources[] = {
 		 sizeof(NhlPointer),Oset(levels),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnLevelFlags, NhlCcnLevelFlags,NhlTcnLevelUseModeGenArray,
+	{NhlNcnLevelFlags, NhlCcnLevelFlags,NhlTIntegerGenArray,
 		 sizeof(NhlPointer),Oset(level_flags),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
@@ -258,10 +276,10 @@ static NhlResource resources[] = {
 
 	{NhlNcnLowUseHighLabelRes,NhlCcnLowUseHighLabelRes,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(low_use_high_attrs),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 	{NhlNcnHighUseLineLabelRes,NhlCcnHighUseLineLabelRes,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(high_use_line_attrs),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 	{NhlNcnConstFUseInfoLabelRes,NhlCcnConstFUseInfoLabelRes,
 		 NhlTBoolean,sizeof(NhlBoolean),Oset(constf_use_info_attrs),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
@@ -1863,6 +1881,9 @@ ContourInitialize
 	cnp->ll_strings = NULL;
 	cnp->use_irr_trans = False;
 	cnp->const_field = False;
+	cnp->real_fill_colors = NULL;
+	cnp->real_fill_patterns = NULL;
+	cnp->real_fill_scales = NULL;
 /*
  * Set up the data
  */
@@ -2520,7 +2541,9 @@ NhlLayer inst;
 		NhlFree(cnp->ll_strings->data);
 		NhlFreeGenArray(cnp->ll_strings);
 	}
-	NhlFree(cnp->gks_fill_colors);
+	NhlFree(cnp->real_fill_colors);
+	NhlFree(cnp->real_fill_patterns);
+	NhlFree(cnp->real_fill_scales);
 	NhlFree(cnp->gks_line_colors);
 	NhlFree(cnp->gks_llabel_colors);
 	if (cnp->label_amap != NULL) NhlFree(cnp->label_amap);
@@ -2733,7 +2756,9 @@ static NhlErrorTypes cnInitAreamap
 
 	subret = _NhlCpclam(cnp->data,cnp->fws,cnp->iws,cnp->aws,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
+#if 0
+	_NhlDumpAreaMap(cnp->aws,entry_name);
+#endif	
 	cnp->area_ws_inited = True;
 
 	return ret;
@@ -3041,6 +3066,7 @@ static NhlErrorTypes cnDraw
 	c_cpsetr("YC1",cnp->yc1);
 	c_cpsetr("YCN",cnp->ycn);
 	c_cpseti("WSO", 3);
+	c_cpseti("NVS",0);
         c_cpseti("SET",0);
         c_cpseti("MAP",NhlcnMAPVAL);
         if (cnp->check_point_distance)
@@ -3101,10 +3127,6 @@ static NhlErrorTypes cnDraw
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 	}
 
-#if 0	
-	_NhlDumpAreaMap(cnp->aws,entry_name);
-#endif
-	
 	if (cnp->do_lines && cnp->line_order == order) {
 		if (cnp->do_labels && cnp->label_masking) {
 			subret = _NhlCpcldm(cnp->data,
@@ -3178,10 +3200,10 @@ static NhlErrorTypes AddDataBoundToAreamap
 		   "MapTransObj")) {
 		ezmap = True;
 	}
-
+#if 0
 	gset_linewidth(4.0);
 	gset_line_colr_ind(30);
-
+#endif
 	if (! ezmap) {
 		float wlx,wby,wrx,wuy;
 
@@ -3389,6 +3411,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	int			*clup;
 	int			i;
 	float			height;
+	int			aid_offset;
 
 	cnp->line_lbls.text = (NhlString *) cnp->llabel_strings->data;
 	cnp->line_lbls.colors = (int *) cnp->gks_llabel_colors;
@@ -3433,16 +3456,24 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	if (! cnp->lines_on)
 		*do_lines = False;
 
+	aid_offset = cnp->below_min.on ? 100 : 99;
 	for (i=0; i<cnp->level_count; i++) {
+		int pai, aia,aib;
 
-		c_cpseti("PAI",i+1);
+		pai = i+1;
+		aib = aid_offset+i;
+		aia = aid_offset+i+1;
+		c_cpseti("PAI",pai);
 		c_cpsetr("CLV",clvp[i]);
 		if (cnp->mono_level_flag)
 			c_cpseti("CLU",clup[0]);
 		else
 			c_cpseti("CLU",clup[i]);
-		c_cpseti("AIA",100+i+1);
-		c_cpseti("AIB",100+i);
+		c_cpseti("AIB",aib);
+		c_cpseti("AIA",aia);
+#if 0
+		printf("pai %d,clv %f,aib %d,aia %d\n",pai,clvp[i],aib,aia);
+#endif
 		c_cpsetc("LLT",((NhlString*)cnp->line_lbls.text)[i]);
 	}
 	if (cnp->level_selection_mode != NhlcnEXPLICIT)
@@ -3585,7 +3616,7 @@ static NhlErrorTypes UpdateFillInfo
  	NhlBoolean	color_fill, pattern_fill;
 
 	color_fill = (cnp->mono_fill_color && 
-		      cnp->gks_fill_colors[0] == NhlTRANSPARENT) ?
+		      cnp->real_fill_colors[0] == NhlTRANSPARENT) ?
 			      False : True;
 	pattern_fill = (cnp->mono_fill_pattern && 
 			fpp[0] == NhlHOLLOWFILL) ? False : True;
@@ -4923,7 +4954,7 @@ static NhlErrorTypes ManageLabelBar
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbBoxCount,cnp->fill_count);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbLabelAlignment,NhlLB_INTERIOREDGES);
+			   NhlNlbLabelAlignment,NhlLB_EXTERNALEDGES);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbLabelStrings,cnp->llabel_strings);
 		NhlSetSArg(&sargs[(*nargs)++],
@@ -6486,7 +6517,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	float fval;
 	int	init_count;
 	NhlBoolean need_check,changed;
-	int old_count;
+	int old_count,add;
 	float *levels = NULL;
 	NhlBoolean levels_modified = False, flags_modified = False;
 
@@ -6540,6 +6571,11 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		NhlFree(cnp->levels->data);
 		cnp->levels->data = (NhlPointer) levels;
+#if 0
+		printf("no of levels: %d\n", cnp->level_count);
+		for (i= 0; i < cnp->level_count; i++)
+			printf("level %d: %f\n", i, levels[i]);
+#endif
 	}
 
 /* Set up label scaling - the levels array must have been created */
@@ -6624,14 +6660,8 @@ static NhlErrorTypes    ManageDynamicArrays
  * Fill colors
  */
 
-	if (init) {
-		ga = NULL;
-		count = cnp->fill_count;
-	}
-	else {
-		ga = ocnp->fill_colors;
-		count = cnp->mono_fill_color ? 1 : cnp->fill_count;
-	}
+	ga = init ? NULL : ocnp->fill_colors;
+	count = cnp->fill_count;
 	subret = ManageGenArray(&ga,count,cnp->fill_colors,Qint,NULL,
 				&old_count,&init_count,&need_check,&changed,
 				NhlNcnFillColors,entry_name);
@@ -6641,27 +6671,75 @@ static NhlErrorTypes    ManageDynamicArrays
 	ocnp->fill_colors = changed ? NULL : cnp->fill_colors;
 	cnp->fill_colors = ga;
 
-	if (need_check) {
-		subret = CheckColorArray(cnew,ga,count,init_count,old_count,
-					 &cnp->gks_fill_colors,
-					 NhlNcnFillColors, entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING)
-			return ret;
+	if (init || need_check || 
+	    cnp->below_min.on != ocnp->below_min.on ||
+	    cnp->above_max.on != ocnp->above_max.on) {
+		int len, spacing;
+
+		ip = (int *) ga->data;
+		NhlVAGetValues(cnew->base.wkptr->base.id,
+			       NhlNwkColorMapLen, &len, NULL);
+	
+		spacing = MAX(len / count, 1); 
+		for (i=init_count; i < count; i++) 
+			ip[i] = 1 + i * spacing;
+
+/*
+ * Always allocate 2 extra slots in the "real" array to accommodate 
+ * the possibility of the out of range colors.
+ */
+		if (cnp->real_fill_colors == NULL) {
+			if ((cnp->real_fill_colors = (int *) 
+			     NhlMalloc((count + 2) * sizeof(int))) == NULL) {
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
+			}
+		}
+		else if (count > old_count) {
+			if ((cnp->real_fill_colors = (int *) 
+			     NhlRealloc(cnp->real_fill_colors, 
+					(count + 2) * sizeof(int))) == NULL) {
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
+			}
+		}
+		add = 0;
+		if (cnp->below_min.on) {
+			cnp->real_fill_colors[0] = cnp->below_min.color;
+			add = 1;
+		}
+		if (cnp->mono_fill_color) {
+			for (i=add; i < cnp->fill_count + add; i++)
+				cnp->real_fill_colors[i] = ip[0];
+		}
+		else {
+			for (i=add; i < cnp->fill_count + add; i++)
+				cnp->real_fill_colors[i] = ip[i - add];
+		}
+		if (cnp->above_max.on) {
+			cnp->real_fill_colors[cnp->fill_count + add] = 
+				cnp->above_max.color;
+			add += 1;
+		}
+		cnp->real_fill_count = cnp->fill_count + add;
 	}
+#if 0
+	printf("no of fill colors: %d\n", cnp->real_fill_count);
+	for (i=0;i< cnp->real_fill_count; i++)
+		printf("fill color %d: %d\n",i,cnp->real_fill_colors[i]);
+#endif		       
 /*=======================================================================*/
 	
 /*
  * Fill patterns
  */
 
-	if (init) {
-		ga = NULL;
-		count = cnp->fill_count;
-	}
-	else {
-		ga = ocnp->fill_patterns;
-		count = cnp->mono_fill_pattern ? 1 : cnp->fill_count;
-	}
+	ga = init ? NULL : ocnp->fill_patterns;
+	count = cnp->fill_count;
 	if (ga != cnp->fill_patterns) cnp->new_draw_req = True;
 	subret = ManageGenArray(&ga,count,cnp->fill_patterns,Qint,NULL,
 				&old_count,&init_count,&need_check,&changed,
@@ -6671,8 +6749,14 @@ static NhlErrorTypes    ManageDynamicArrays
 	ocnp->fill_patterns = changed ? NULL : cnp->fill_patterns;
 	cnp->fill_patterns = ga;
 
-	if (need_check) {
+	if (init || need_check || 
+	    cnp->below_min.on != ocnp->below_min.on ||
+	    cnp->above_max.on != ocnp->above_max.on) {
 		ip = (int *) ga->data;
+		if (cnp->mono_fill_pattern && init_count == 0) {
+			ip[0] = NhlSOLIDFILL;
+			init_count++;
+		}
 		for (i=init_count; i < count; i++) {
 			ip[i] = i + 1;
 		}
@@ -6687,22 +6771,61 @@ static NhlErrorTypes    ManageDynamicArrays
 				ip[i] = NhlHOLLOWFILL;
 			}
 		}
+/*
+ * Always allocate 2 extra slots in the "real" array to accommodate 
+ * the possibility of the out of range patterns.
+ */
+		if (cnp->real_fill_patterns == NULL) {
+			if ((cnp->real_fill_patterns = (int *) 
+			     NhlMalloc((count + 2) * sizeof(int))) == NULL) {
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
+			}
+		}
+		else if (count > old_count) {
+			if ((cnp->real_fill_patterns = (int *) 
+			     NhlRealloc(cnp->real_fill_patterns, 
+					(count + 2) * sizeof(int))) == NULL) {
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
+			}
+		}
+		add = 0;
+		if (cnp->below_min.on) {
+			cnp->real_fill_patterns[0] = cnp->below_min.pattern;
+			add = 1;
+		}
+		if (cnp->mono_fill_pattern) {
+			for (i=add; i < cnp->fill_count + add; i++)
+				cnp->real_fill_patterns[i] = ip[0];
+		}
+		else {
+			for (i=add; i < cnp->fill_count + add; i++)
+				cnp->real_fill_patterns[i] = ip[i - add];
+		}
+		if (cnp->above_max.on) {
+			cnp->real_fill_patterns[cnp->fill_count + add] = 
+				cnp->above_max.pattern;
+			add += 1;
+		}
 	}
-	
+#if 0
+	printf("no of fill patterns: %d\n", cnp->real_fill_count);
+	for (i=0;i< cnp->real_fill_count; i++)
+		printf("fill pattern %d: %d\n",i,cnp->real_fill_patterns[i]);
+#endif
 /*=======================================================================*/
 	
 /*
  * Fill scales
  */
 
-	if (init) {
-		ga = NULL;
-		count = cnp->level_count;
-	}
-	else {
-		ga = ocnp->fill_scales;
-		count = cnp->mono_fill_scale ? 1 : cnp->level_count;
-	}
+	ga = init ? NULL : ocnp->fill_scales;
+	count = cnp->fill_count;
 	fval = 1.0;
 	subret = ManageGenArray(&ga,count,cnp->fill_scales,Qfloat,&fval,
 				&old_count,&init_count,&need_check,&changed,
@@ -6714,7 +6837,9 @@ static NhlErrorTypes    ManageDynamicArrays
 	ocnp->fill_scales = changed ? NULL : cnp->fill_scales;
 	cnp->fill_scales = ga;
 	
-	if (need_check) {
+	if (init || need_check || 
+	    cnp->below_min.on != ocnp->below_min.on ||
+	    cnp->above_max.on != ocnp->above_max.on) {
 		fp = (float *) ga->data;
 		for (i=0; i<count; i++) {
 			if (fp[i] <= 0.0) {
@@ -6726,8 +6851,54 @@ static NhlErrorTypes    ManageDynamicArrays
 				fp[i] = 1.0;
 			}
 		}
+/*
+ * Always allocate 2 extra slots in the "real" array to accommodate 
+ * the possibility of the out of range scales.
+ */
+		if (cnp->real_fill_scales == NULL) {
+			if ((cnp->real_fill_scales = (float *) 
+			     NhlMalloc((count + 2) * sizeof(float))) == NULL) {
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
+			}
+		}
+		else if (count > old_count) {
+			if ((cnp->real_fill_scales = (float *) 
+			     NhlRealloc(cnp->real_fill_scales, 
+					(count+2) * sizeof(float))) == NULL) {
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
+			}
+		}
+		add = 0;
+		if (cnp->below_min.on) {
+			cnp->real_fill_scales[0] = cnp->below_min.scale;
+			add = 1;
+		}
+		if (cnp->mono_fill_scale) {
+			for (i=add; i < cnp->fill_count + add; i++)
+				cnp->real_fill_scales[i] = fp[0];
+		}
+		else {
+			for (i=add; i < cnp->fill_count + add; i++)
+				cnp->real_fill_scales[i] = fp[0 - add];
+		}
+		if (cnp->above_max.on) {
+			cnp->real_fill_scales[cnp->fill_count + add] = 
+				cnp->above_max.scale;
+			add += 1;
+		}
+		cnp->real_fill_count = cnp->fill_count + add;
 	}
-
+#if 0
+	printf("no of fill scales: %d\n", cnp->real_fill_count);
+	for (i=0;i< cnp->real_fill_count; i++)
+		printf("fill scale %d: %f\n",i,cnp->real_fill_scales[i]);
+#endif
 /*=======================================================================*/
 	
 /*
@@ -7364,6 +7535,8 @@ static NhlErrorTypes    SetupLevels
 
 	if (! cnp->min_level_set) cnp->min_level_val = cnp->zmin; 
 	if (! cnp->max_level_set) cnp->max_level_val = cnp->zmax; 
+	cnp->below_min.on = False;
+	cnp->above_max.on = False;
 		
 	if (init || cnp->data_changed ||
 	    cnp->levels != ocnp->levels ||
@@ -7485,13 +7658,18 @@ static NhlErrorTypes    SetupLevelsManual
 	char			*e_text;
 	NhlContourLayerPart	*cnp = &(cnew->contour);
 	int			i, count;
-	float			zmin,zmax;
+	float			zmin,zmax,ftmp,ftest;
 	float			*fp;
 
 	zmax = cnp->max_level_val;
 	zmin = cnp->min_level_val;
-	count = (zmax - zmin) / cnp->level_spacing + 1.001;
-
+	count = 0;
+	ftmp = zmin;
+	ftest = zmax + cnp->level_spacing;
+	while (_NhlCmpFAny(ftmp,ftest,6) < 0.0) {
+		count++;
+		ftmp = zmin + count * cnp->level_spacing;
+	}
 	if (count > Nhl_cnMAX_LEVELS) {
 		ret = MIN(NhlWARNING,ret);
 		e_text =
@@ -7504,7 +7682,13 @@ static NhlErrorTypes    SetupLevelsManual
 			NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
 			return ret;
 		}
-		count = (zmax - zmin) / cnp->level_spacing + 1.001;
+		count = 0;
+		ftmp = zmin;
+		ftest = zmax + cnp->level_spacing;
+		while (_NhlCmpFAny(ftmp,ftest,6) < 0.0) {
+			count++;
+			ftmp = zmin + count * cnp->level_spacing;
+		}
 	}
 
 	if ((*levels = (float *) 
@@ -7513,12 +7697,15 @@ static NhlErrorTypes    SetupLevelsManual
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-	for (i=0, fp = *levels; i<count; i++) {
+	for (i=0, fp = *levels; i < count - 1; i++) {
 		*(fp++) = zmin + i * cnp->level_spacing;
 	}
+	*fp = zmax;
 
 	cnp->level_count = count;
-	cnp->fill_count = (*levels)[count-1] < zmin ? count + 1 : count;
+	cnp->fill_count = count - 1;
+	cnp->below_min.on = (zmin > cnp->zmin) ? True : False;
+	cnp->above_max.on = (zmax < cnp->zmax) ? True : False;
 
 	return ret;
 }
@@ -7561,26 +7748,26 @@ static NhlErrorTypes    SetupLevelsEqual
 	int			i;
 	float			zmin,zmax,size;
 
-	zmin = MAX(cnp->min_level_val, cnp->zmin);
-	zmax = MIN(cnp->max_level_val, cnp->zmax);
-	size = (zmax - zmin) / cnp->max_level_count;
+	zmin = cnp->zmin;
+	zmax = cnp->zmax;
+	size = (zmax - zmin) / (cnp->max_level_count - 1);
 
-	cnp->level_count = cnp->max_level_count - 1;
+	cnp->level_count = cnp->max_level_count;
 	if ((*levels = (float *) 
 	     NhlMalloc(cnp->level_count * sizeof(float))) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-	for (i=0; i<cnp->level_count; i++) {
-		(*levels)[i] = cnp->zmin + (i+1) * size;
+	for (i=0; i < cnp->level_count - 1; i++) {
+		(*levels)[i] = cnp->zmin + i * size;
 	}
-
-	cnp->fill_count = cnp->max_level_count;
+	(*levels)[cnp->level_count - 1] = cnp->zmax;
+	
+	cnp->fill_count = cnp->level_count - 1;
 
 	return ret;
 }
-
 
 /*
  * Function:  SetupLevelsAutomatic
@@ -7618,10 +7805,11 @@ static NhlErrorTypes    SetupLevelsAutomatic
 	char			*e_text;
 	NhlContourLayerPart	*cnp = &(cnew->contour);
 	int			i, count;
-	float			zmin,zmax,spacing;
+	float			zmin,zmax,spacing,ftmp,ftest;
+	NhlBoolean		add_min = False, add_max = False;
 
-	zmin = MAX(cnp->min_level_val, cnp->zmin);
-	zmax = MIN(cnp->max_level_val, cnp->zmax);
+	zmin = cnp->zmin;
+	zmax = cnp->zmax;
 
 	subret = ChooseSpacingLin(&zmin,&zmax,&spacing,7,
 				  cnp->max_level_count,entry_name);
@@ -7630,24 +7818,56 @@ static NhlErrorTypes    SetupLevelsAutomatic
 		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
 		return ret;
 	}
+	count = 0;
+	ftmp = zmin;
+	ftest = zmax + spacing;
+	while (_NhlCmpFAny(ftmp,ftest,6) < 0.0) {
+		count++;
+		ftmp = zmin + count * spacing;
+	}
+	if (_NhlCmpFAny(zmin,cnp->zmin,6) > 0.0) {
+		count++;
+		add_min = True;
+	}
+	if (_NhlCmpFAny(zmax,cnp->zmax,6) < 0.0) {
+		count++;
+		add_max = True;
+	}
 
-	count = (int)((zmax - zmin) / spacing + 1.001);
 	if ((*levels = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-	for (i=0; i<count; i++) {
-		(*levels)[i] = zmin + i * spacing;
+	if (add_min && add_max) {
+		(*levels)[0] = cnp->zmin;
+		for (i =  1; i <  count - 2; i++)
+			(*levels)[i] = zmin + (i-1) * spacing;
+		(*levels)[count - 2] = zmax;
+		(*levels)[count - 1] = cnp->zmax;
 	}
-
+	else if (add_min) {
+		(*levels)[0] = cnp->zmin;
+		for (i =  1; i <  count - 1; i++)
+			(*levels)[i] = zmin + (i-1) * spacing;
+		(*levels)[count - 1] = zmax;
+	}
+	else if (add_max) {
+ 		for (i =  0; i <  count - 2; i++)
+			(*levels)[i] = zmin + i * spacing;
+		(*levels)[count - 2] = zmax;
+		(*levels)[count - 1] = cnp->zmax;
+	}
+	else {
+ 		for (i =  0; i <  count - 1; i++)
+			(*levels)[i] = zmin + i * spacing;
+		(*levels)[count - 1] = zmax;
+	}
 	cnp->level_count = count;
-	cnp->level_spacing = spacing;
-	cnp->fill_count = (*levels)[count-1] < zmax ? count + 1 : count;
+	cnp->fill_count = count - 1;
 
 	return ret;
 }
-
 
 /*
  * Function:  SetupLevelsExplicit
@@ -7669,8 +7889,8 @@ static NhlErrorTypes    SetupLevelsExplicit
 #if __STDC__
 	(NhlContourLayer	cnew, 
 	 NhlContourLayer	cold,
-	 float		**levels,
-	 char		*entry_name)
+	 float			**levels,
+	 char			*entry_name)
 #else
 (cnew,cold,levels,entry_name)
 	NhlContourLayer	cnew;
@@ -7684,91 +7904,60 @@ static NhlErrorTypes    SetupLevelsExplicit
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	NhlContourLayerPart	*cnp = &(cnew->contour);
-	int			i, count, ixmin, ixmax;
+	int			i,j,count;
 	float			*fp;
-	float			zmin, zmax, spacing;
-	NhlBoolean		do_auto = False;
+	float			spacing,ftmp;
 
-	zmin = MAX(cnp->min_level_val, cnp->zmin);
-	zmax = MIN(cnp->max_level_val, cnp->zmax);
 	count = cnp->levels->num_elements;
 
 	if ((count = cnp->levels->num_elements) > Nhl_cnMAX_LEVELS) {
-		count = cnp->max_level_count;
-		do_auto = True;
 		ret = MIN(NhlWARNING,ret);
 		e_text = 
   "%s: Explicit level array count exceeds max level count: defaulting to Automatic level selection mode";
 		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
+		return SetupLevelsAutomatic(cnew,cold,levels,entry_name);
 	}
-
-	fp = (float *)cnp->levels->data;
-
-	ixmin = 0;
-	if (fp[0] >= zmax) {
-		do_auto = True;
-		ret = MIN(NhlWARNING,ret);
-		e_text = "%s: Out of range explicit level array: defaulting";
-		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-	}
-	if (fp[0] < zmin) ixmin = 1;
-		
-	ixmax = count;
-	for (i=1; i < count; i++) {
-		if (fp[i] < fp[i-1]) {
-			do_auto = True;
-			ret = MIN(NhlWARNING,ret);
-			e_text =
-		"%s: Invalid non-monotonic explicit level array: defaulting";
-			NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-			break;
-		}
-		if (fp[i] < zmin) ixmin = i + 1;
-		if (fp[i] > zmax && ixmax == count) ixmax = i;
-	}
-	if (! (ixmin < ixmax)) {
-		do_auto = True;
-		ret = MIN(NhlWARNING,ret);
-		e_text = "%s: Out of range explicit level array: defaulting";
-		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-	}
-	count = ixmax - ixmin;
-
-	if (do_auto) {
-		subret = ChooseSpacingLin(&zmin,&zmax,&spacing,
-					  7,cnp->max_level_count,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			e_text = "%s: error choosing spacing";
-			NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-			return ret;
-		}
-		count = (zmax - zmin) / spacing + 1.001;
-	}
-
+/*
+ * Allocate space for the levels
+ */
+	fp = (float *) cnp->levels->data;
 	if ((*levels = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-	
-	if (do_auto) {
-		for (i=0; i<count; i++) {
-			(*levels)[i] = zmin + i * spacing;
+	for (i = 0; i < count; i++)
+		(*levels)[i] = fp[i];
+
+	fp = *levels;
+		
+/*
+ * Sort the array into ascending order
+ */
+	for (i = 0; i < count; i++) {
+		int min = i;
+		for (j = i + 1; j < count; j++)
+			if (fp[j] < fp[min])
+				min = j;
+		if (min != i) {
+			ftmp = fp[min];
+			fp[min] = fp[i];
+			fp[i] = ftmp;
 		}
-		cnp->level_spacing = spacing;
 	}
-	else {
-		int total = 0;
-		for (i = ixmin; i < ixmax; i++) {
-			if (i > ixmin)
-				total += fp[i] - fp[i-1];
-			(*levels)[i-ixmin] = fp[i];
-		}
-		cnp->level_spacing = total / (float) count;
+/*
+ * Find the average spacing
+ */
+	ftmp = 0;
+	for (i = 1; i < count; i++) {
+		ftmp += fp[i] - fp[i-1];
+		cnp->level_spacing = ftmp / (count - 1);
 	}
 
 	cnp->level_count = count;
-	cnp->fill_count = (*levels)[count-1] < zmax ? count + 1 : count;
+	cnp->fill_count = count - 1;
+	cnp->below_min.on = (fp[0] > cnp->zmin) ? True : False;
+	cnp->above_max.on = (fp[count - 1] < cnp->zmax) ? True : False;
 
 	return ret;
 }
@@ -7897,8 +8086,6 @@ int (_NHLCALLF(nhlfll,NHLFLL))
 	int i;
 	int pat_ix, col_ix;
 	float fscale;
-	int *fpp = (int *) Cnp->fill_patterns->data;
-	float *fsp = (float *) Cnp->fill_scales->data;
 
 	for (i = 0; i < *nai; i++) {
 		if (iag[i] == 10 && iai[i] == -1) {
@@ -7908,15 +8095,12 @@ int (_NHLCALLF(nhlfll,NHLFLL))
 
 	for (i = 0; i < *nai; i++) {
 		if (iag[i] == 3) {
-			if (iai[i] > 99 && iai[i] < 100 + Cnp->fill_count) {
+			if (iai[i] > 99 && 
+			    iai[i] < 100 + Cnp->real_fill_count) {
 				int ix = iai[i] - 100;
-				col_ix = Cnp->mono_fill_color ? 
-					Cnp->gks_fill_colors[0] : 
-						Cnp->gks_fill_colors[ix];
-				pat_ix = Cnp->mono_fill_pattern ?
-					fpp[0] : fpp[ix];
-				fscale = Cnp->mono_fill_scale ?
-					fsp[0] : fsp[ix];
+				col_ix = Cnp->real_fill_colors[ix];
+				pat_ix = Cnp->real_fill_patterns[ix];
+				fscale = Cnp->real_fill_scales[ix];
 			}
 			else {
 				NhlcnRegionAttrs *reg_attrs;
@@ -8026,7 +8210,8 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
  	c_pcseti("CC",-1);
 	c_pcseti("OC",-1);
 	gset_linewidth(thickness);
-	gset_line_colr_ind(lcol);
+	if (lcol > NhlTRANSPARENT)
+		gset_line_colr_ind(lcol);
 
 	dpix %= Cnp->dtable_len;
 	slen = strlen(Cnp->dtable[dpix]);
@@ -8047,7 +8232,8 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 
 		llcol = Cnp->line_lbls.mono_color ?
 			Cnp->line_lbls.colors[0] : Cnp->line_lbls.colors[pai];
-		gset_text_colr_ind(llcol);
+		if (llcol > NhlTRANSPARENT)
+			gset_text_colr_ind(llcol);
 		tstart = slen - 
 			strlen(((NhlString *)Cnp->line_lbls.text)[pai]);
 		strcpy(&buffer[tstart],
@@ -8058,7 +8244,6 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 	
 	return;
 }
-
 
 /*
  * Function:  cpchhl_
@@ -8086,29 +8271,20 @@ void   (_NHLCALLF(cpchhl,CPCHHL))
 #endif
 
 {
-	static char lowbuf[128],highbuf[128];
-	static NhlBoolean do_lowsub, do_highsub;
+	char buf[128];
 	char *fstr,*sub;
 	float zdv;
 
-	if (*iflg == 1) {
-		strcpy(highbuf,(char *)Cnp->high_lbls.text);
-		if ((sub = strstr(highbuf,"$ZDV$")) == NULL) {
-			do_highsub = False;
+	switch (*iflg) {
+	case 1:
+		if (! Cnp->high_lbls.on) {
+			c_cpsetc("CTM"," ");
 			return;
 		}
-		do_highsub = True;
-		c_cpgetr("zdv",&zdv);
-		zdv /= Cnp->label_scale_factor;
-		fstr = _NhlFormatFloat(&Cnp->high_lbls.format,zdv,
-                                       NULL,
-				       &Cnp->max_data_format.sig_digits,
-				       &Cnp->max_data_format.left_sig_digit,
-                                       NULL,NULL,NULL,"ContourDraw");
-		Substitute(sub,5,fstr);
-		c_cpsetc("CTM",highbuf);
-		c_pcseti("CC",(int) Cnp->high_lbls.colors);
-		c_pcseti("OC",(int) Cnp->high_lbls.colors);
+		if ((int) Cnp->high_lbls.colors > NhlTRANSPARENT) {
+			c_pcseti("CC",(int) Cnp->high_lbls.colors);
+			c_pcseti("OC",(int) Cnp->high_lbls.colors);
+		}
 		c_pcsetr("PH",Cnp->high_lbls.pheight);
 		c_pcsetr("PW",Cnp->high_lbls.pwidth);
 		c_pcseti("CS",Cnp->high_lbls.cspacing);
@@ -8116,40 +8292,72 @@ void   (_NHLCALLF(cpchhl,CPCHHL))
 		c_pcseti("QU",Cnp->high_lbls.quality);
 		c_pcsetc("FC",Cnp->high_lbls.fcode);
 		gset_linewidth(Cnp->high_lbls.thickness);
-	}
-	else if (*iflg == 2) {
-		gset_fill_colr_ind(Cnp->high_lbls.gks_bcolor);
-	}
-	else if (*iflg == 3) {
+
+		strcpy(buf,(char *)Cnp->high_lbls.text);
+		if ((sub = strstr(buf,"$ZDV$")) == NULL) {
+			return;
+		}
+		c_cpgetr("zdv",&zdv);
+		zdv /= Cnp->label_scale_factor;
+		fstr = _NhlFormatFloat(&Cnp->high_lbls.format,zdv,NULL,
+				       &Cnp->max_data_format.sig_digits,
+				       &Cnp->max_data_format.left_sig_digit,
+                                       NULL,NULL,NULL,"ContourDraw");
+		Substitute(sub,5,fstr);
+		c_cpsetc("CTM",buf);
+		break;
+	case 2:
 		if (! Cnp->high_lbls.on) return;
-		if (do_highsub)
-			c_cpsetc("CTM",highbuf);
-	}
-	else if (*iflg == 4 && Cnp->high_lbls.perim_on) {
+		gset_fill_colr_ind(Cnp->high_lbls.gks_bcolor);
+		break;
+	case 3:
+		if (! Cnp->high_lbls.on) {
+			c_cpsetc("CTM"," ");
+			return;
+		}
+		if ((int) Cnp->high_lbls.colors > NhlTRANSPARENT) {
+			c_pcseti("CC",(int) Cnp->high_lbls.colors);
+			c_pcseti("OC",(int) Cnp->high_lbls.colors);
+		}
+		c_pcsetr("PH",Cnp->high_lbls.pheight);
+		c_pcsetr("PW",Cnp->high_lbls.pwidth);
+		c_pcseti("CS",Cnp->high_lbls.cspacing);
+		c_pcseti("FN",Cnp->high_lbls.font);
+		c_pcseti("QU",Cnp->high_lbls.quality);
+		c_pcsetc("FC",Cnp->high_lbls.fcode);
+		gset_linewidth(Cnp->high_lbls.thickness);
+
+		strcpy(buf,(char *)Cnp->high_lbls.text);
+		if ((sub = strstr(buf,"$ZDV$")) == NULL) {
+			return;
+		}
+		c_cpgetr("zdv",&zdv);
+		zdv /= Cnp->label_scale_factor;
+		fstr = _NhlFormatFloat(&Cnp->high_lbls.format,zdv,NULL,
+				       &Cnp->max_data_format.sig_digits,
+				       &Cnp->max_data_format.left_sig_digit,
+                                       NULL,NULL,NULL,"ContourDraw");
+		Substitute(sub,5,fstr);
+		c_cpsetc("CTM",buf);
+		break;
+	case 4:
+		if (! Cnp->high_lbls.on || ! Cnp->high_lbls.perim_on) 
+			return;
 		if (Cnp->high_lbls.perim_lcolor == NhlTRANSPARENT)
 			gset_line_colr_ind((int) Cnp->high_lbls.colors);
 		else
 			gset_line_colr_ind(Cnp->high_lbls.gks_plcolor);
 		gset_linewidth(Cnp->high_lbls.perim_lthick);
-	}
-	else if (*iflg == 5) {
-		strcpy(lowbuf,(char *)Cnp->low_lbls.text);
-		if ((sub = strstr(lowbuf,"$ZDV$")) == NULL) {
-			do_lowsub = False;
+		break;
+	case 5:
+		if (! Cnp->low_lbls.on) {
+			c_cpsetc("CTM"," ");
 			return;
 		}
-		do_lowsub = True;
-		c_cpgetr("zdv",&zdv);
-		zdv /= Cnp->label_scale_factor;
-		fstr = _NhlFormatFloat(&Cnp->low_lbls.format,zdv,
-                                       NULL,
-				       &Cnp->max_data_format.sig_digits,
-				       &Cnp->max_data_format.left_sig_digit,
-                                       NULL,NULL,NULL,"ContourDraw");
-		Substitute(sub,5,fstr);
-		c_cpsetc("CTM",lowbuf);
-		c_pcseti("CC",(int) Cnp->low_lbls.colors);
-		c_pcseti("OC",(int) Cnp->low_lbls.colors);
+		if ((int)Cnp->low_lbls.colors > NhlTRANSPARENT) {
+			c_pcseti("CC",(int) Cnp->low_lbls.colors);
+			c_pcseti("OC",(int) Cnp->low_lbls.colors);
+		}
 		c_pcsetr("PH",Cnp->low_lbls.pheight);
 		c_pcsetr("PW",Cnp->low_lbls.pwidth);
 		c_pcseti("CS",Cnp->low_lbls.cspacing);
@@ -8157,21 +8365,63 @@ void   (_NHLCALLF(cpchhl,CPCHHL))
 		c_pcseti("QU",Cnp->low_lbls.quality);
 		c_pcsetc("FC",Cnp->low_lbls.fcode);
 		gset_linewidth(Cnp->low_lbls.thickness);
-	}
-	else if (*iflg == 6) {
-		gset_fill_colr_ind(Cnp->low_lbls.gks_bcolor);
-	}
-	else if (*iflg == 7) {
+		strcpy(buf,(char *)Cnp->low_lbls.text);
+		if ((sub = strstr(buf,"$ZDV$")) == NULL) {
+			return;
+		}
+		c_cpgetr("zdv",&zdv);
+		zdv /= Cnp->label_scale_factor;
+		fstr = _NhlFormatFloat(&Cnp->low_lbls.format,zdv,NULL,
+				       &Cnp->max_data_format.sig_digits,
+				       &Cnp->max_data_format.left_sig_digit,
+                                       NULL,NULL,NULL,"ContourDraw");
+		Substitute(sub,5,fstr);
+		c_cpsetc("CTM",buf);
+		break;
+	case 6:
 		if (! Cnp->low_lbls.on) return;
-		if (do_lowsub)
-			c_cpsetc("CTM",lowbuf);
-	}
-	else if (*iflg == 8 && Cnp->low_lbls.perim_on) {
+		gset_fill_colr_ind(Cnp->low_lbls.gks_bcolor);
+		break;
+	case 7:
+		if (! Cnp->low_lbls.on) {
+			c_cpsetc("CTM"," ");
+			return;
+		}
+		if ((int)Cnp->low_lbls.colors > NhlTRANSPARENT) {
+			c_pcseti("CC",(int) Cnp->low_lbls.colors);
+			c_pcseti("OC",(int) Cnp->low_lbls.colors);
+		}
+		c_pcsetr("PH",Cnp->low_lbls.pheight);
+		c_pcsetr("PW",Cnp->low_lbls.pwidth);
+		c_pcseti("CS",Cnp->low_lbls.cspacing);
+		c_pcseti("FN",Cnp->low_lbls.font);
+		c_pcseti("QU",Cnp->low_lbls.quality);
+		c_pcsetc("FC",Cnp->low_lbls.fcode);
+		gset_linewidth(Cnp->low_lbls.thickness);
+		strcpy(buf,(char *)Cnp->low_lbls.text);
+		if ((sub = strstr(buf,"$ZDV$")) == NULL) {
+			return;
+		}
+		c_cpgetr("zdv",&zdv);
+		zdv /= Cnp->label_scale_factor;
+		fstr = _NhlFormatFloat(&Cnp->low_lbls.format,zdv,NULL,
+				       &Cnp->max_data_format.sig_digits,
+				       &Cnp->max_data_format.left_sig_digit,
+                                       NULL,NULL,NULL,"ContourDraw");
+		Substitute(sub,5,fstr);
+		c_cpsetc("CTM",buf);
+		break;
+	case 8:
+		if (! Cnp->low_lbls.on || ! Cnp->low_lbls.perim_on) 
+			return;
 		if (Cnp->low_lbls.perim_lcolor == NhlTRANSPARENT)
 			gset_line_colr_ind((int) Cnp->low_lbls.colors);
 		else
 			gset_line_colr_ind(Cnp->low_lbls.gks_plcolor);
 		gset_linewidth(Cnp->low_lbls.perim_lthick);
+		break;
+	default:
+		break;
 	}
 
 	return;
@@ -8208,7 +8458,8 @@ void   (_NHLCALLF(cpchll,CPCHLL))
 	static int llcol;
 
 	if (*iflg == 2) {
-		gset_fill_colr_ind(Cnp->line_lbls.gks_bcolor);
+		if (Cnp->line_lbls.gks_bcolor > NhlTRANSPARENT)
+			gset_fill_colr_ind(Cnp->line_lbls.gks_bcolor);
 	}
 	else if (*iflg == 3) {
 		c_cpgeti("PAI", &pai);
@@ -8218,8 +8469,10 @@ void   (_NHLCALLF(cpchll,CPCHLL))
 			llcol = Cnp->line_lbls.mono_color ?
 				Cnp->line_lbls.colors[0] : 
 					Cnp->line_lbls.colors[pai];
-			c_pcseti("CC",llcol);
-			c_pcseti("OC",llcol);
+			if (llcol > NhlTRANSPARENT) {
+				c_pcseti("CC",llcol);
+				c_pcseti("OC",llcol);
+			}
 			c_pcsetr("PH",Cnp->line_lbls.pheight);
 			c_pcsetr("PW",Cnp->line_lbls.pwidth);
 			c_pcseti("CS",Cnp->line_lbls.cspacing);

@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.h,v 1.13 1994-09-12 21:01:04 dbrown Exp $
+ *      $Id: Contour.h,v 1.14 1994-09-16 19:12:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,7 +43,7 @@ typedef enum _NhlcnLevelUseMode {
 } NhlcnLevelUseMode;
 
 #define NhlTcnLevelUseMode	"cnlevelusemode"
-#define NhlTcnLevelUseModeGenArray	"cnlevelusemodegenarray"
+#define NhlTcnLevelUseModeGenArray    NhlTcnLevelUseMode NhlTGenArray
 
 /* Line label spacing */
 
@@ -104,6 +104,12 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnLabelMasking		"cnLabelMasking"
 #define NhlNcnMinLevelValF		"cnMinLevelValF"
 #define NhlNcnMaxLevelValF		"cnMaxLevelValF"
+#define NhlNcnBelowMinLevelColor	"cnBelowMinLevelColor"
+#define NhlNcnAboveMaxLevelColor	"cnAboveMaxLevelColor"
+#define NhlNcnBelowMinLevelFillPattern	"cnBelowMinLevelFillPattern"
+#define NhlNcnAboveMaxLevelFillPattern	"cnAboveMaxLevelFillPattern"
+#define NhlNcnBelowMinLevelFillScale	"cnBelowMinLevelFillScale"
+#define NhlNcnAboveMaxLevelFillScale	"cnAboveMaxLevelFillScale"
 #define NhlNcnLineLabelInterval		"cnLineLabelInterval"
 #define NhlNcnLabelDrawOrder		"cnLabelDrawOrder"
 #define NhlNcnLineDrawOrder		"cnLineDrawOrder"
@@ -289,6 +295,12 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnLabelMasking		"CnLabelMasking"
 #define NhlCcnMinLevelValF		"CnMinLevelValF"
 #define NhlCcnMaxLevelValF		"CnMaxLevelValF"
+#define NhlCcnBelowMinLevelColor	"CnBelowMinLevelColor"
+#define NhlCcnBelowMinLevelFillPattern	"CnBelowMinLevelFillPattern"
+#define NhlCcnBelowMinLevelFillScale	"CnBelowMinLevelFillScale"
+#define NhlCcnAboveMaxLevelColor	"CnAboveMaxLevelColor"
+#define NhlCcnAboveMaxLevelFillPattern	"CnAboveMaxLevelFillPattern"
+#define NhlCcnAboveMaxLevelFillScale	"CnAboveMaxLevelFillScale"
 #define NhlCcnLineLabelInterval		"CnLineLabelInterval"
 #define NhlCcnLabelDrawOrder		"CnLabelDrawOrder"
 #define NhlCcnLineDrawOrder		"CnLineDrawOrder"
