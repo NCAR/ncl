@@ -1,7 +1,6 @@
 C
-C	$Id: galbex.f,v 1.3 1992-09-04 20:40:42 ncargd Exp $
+C $Id: galbex.f,v 1.4 1994-03-17 17:27:39 kennison Exp $
 C
-
       SUBROUTINE GALBEX (LABL,MLBL,NLBL)
 C
         CHARACTER*(*) LABL

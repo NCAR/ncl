@@ -1,7 +1,6 @@
 C
-C	$Id: gasetc.f,v 1.2 1992-09-04 20:40:44 ncargd Exp $
+C $Id: gasetc.f,v 1.3 1994-03-17 17:27:41 kennison Exp $
 C
-
       SUBROUTINE GASETC (PNAM,CVAL)
 C
         CHARACTER*(*) PNAM,CVAL
@@ -15,6 +14,10 @@ C
         CHARACTER*10    FNLX,FNLY
         SAVE   /GACHAR/
 C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('GASETC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Set the specified parameter.
 C
         IF      (PNAM(1:3).EQ.'XLF'.OR.PNAM(1:3).EQ.'xlf') THEN
@@ -22,7 +25,7 @@ C
         ELSE IF (PNAM(1:3).EQ.'YLF'.OR.PNAM(1:3).EQ.'ylf') THEN
           FNLY=CVAL
         ELSE
-          CALL SETER ('GASETC - UNRECOGNIZED PARAMETER NAME',1,2)
+          CALL SETER ('GASETC - UNRECOGNIZED PARAMETER NAME',2,1)
         END IF
 C
 C Done.

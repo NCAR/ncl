@@ -1,8 +1,9 @@
 C
-C	$Id: ticks.f,v 1.3 1992-09-04 20:41:04 ncargd Exp $
+C $Id: ticks.f,v 1.4 1994-03-17 17:28:01 kennison Exp $
 C
-
       SUBROUTINE TICKS (LMJR,LMNR)
+        IF (ICFELL('TICKS - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
         CALL TICK4 (LMJR,LMNR,LMJR,LMNR)
+        IF (ICFELL('TICKS',2).NE.0) RETURN
         RETURN
       END

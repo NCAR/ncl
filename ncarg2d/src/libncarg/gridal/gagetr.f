@@ -1,7 +1,6 @@
 C
-C	$Id: gagetr.f,v 1.2 1992-09-04 20:40:41 ncargd Exp $
+C $Id: gagetr.f,v 1.3 1994-03-17 17:27:37 kennison Exp $
 C
-
       SUBROUTINE GAGETR (PNAM,RVAL)
 C
       CHARACTER*(*) PNAM
@@ -20,6 +19,10 @@ C Declare the block data "routine" external.  This should force it to
 C be loaded.
 C
         EXTERNAL GABLDT
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('GAGETR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Get the selected parameter.
 C
@@ -64,8 +67,7 @@ C
         ELSE IF (PNAM(1:3).EQ.'YMN'.OR.PNAM(1:3).EQ.'ymn') THEN
           RVAL=RMNY
         ELSE
-          CALL SETER ('GAGETI OR GAGETR - UNRECOGNIZED PARAMETER NAME',
-     +                                                             1,2)
+          CALL SETER ('GAGETR - UNRECOGNIZED PARAMETER NAME',2,1)
         END IF
 C
 C Done.

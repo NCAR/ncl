@@ -1,7 +1,6 @@
 C
-C	$Id: gridal.f,v 1.3 1992-09-04 20:40:51 ncargd Exp $
+C $Id: gridal.f,v 1.4 1994-03-17 17:27:48 kennison Exp $
 C
-
       SUBROUTINE GRIDAL (MJRX,MNRX,MJRY,MNRY,IXLB,IYLB,IGPH,XINT,YINT)
 C
 C Declare the common block containing real and integer parameters.
@@ -31,6 +30,10 @@ C
         CHARACTER*10 FNLB
         CHARACTER*24 LABL
 C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('GRIDAL - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Compute constants "epsilon" and "1+epsilon", the latter to be used
 C multiplicatively in rounding to get rid of strings of nines in labels.
 C
@@ -41,6 +44,7 @@ C Pick up the current definition of the window and the viewport and
 C the current x/y linear/log flag.
 C
         CALL GETSET (VPLX,VPRX,VPBY,VPTY,WDLX,WDRX,WDBY,WDTY,LILO)
+        IF (ICFELL('GRIDAL',2).NE.0) RETURN
 C
 C Set minimum and maximum values of X and Y.
 C
@@ -71,6 +75,7 @@ C
 C Compute the width and height of the plotter window, in plotter units.
 C
         CALL GETSI (IP2X,IP2Y)
+        IF (ICFELL('GRIDAL',3).NE.0) RETURN
         WPLO=2.**IP2X-1.
         HPLO=2.**IP2Y-1.
 C
@@ -107,7 +112,11 @@ C
 C
 C Save the current state of the clipping indicator and then turn it off.
 C
-        CALL GQCLIP (IERR,ICLP,CLPR)
+        CALL GQCLIP (IGER,ICLP,CLPR)
+        IF (IGER.NE.0) THEN
+          CALL SETER ('GRIDAL - ERROR EXIT FROM GQCLIP',4,1)
+          RETURN
+        END IF
         CALL GSCLIP (0)
 C
 C The following loop runs through the types of items to be drawn.  ITEM
@@ -121,57 +130,63 @@ C
           IF (ITEM.EQ.1) THEN
             IF (ICMN.GE.0) THEN
               CALL PLOTIF (0.,0.,2)
+              IF (ICFELL('GRIDAL',5).NE.0) RETURN
               CALL GQPLCI (IGER,ICS1)
               IF (IGER.NE.0) THEN
-                CALL SETER ('GRIDAL - ERROR EXIT FROM GQPLCI',1,2)
-                STOP
+                CALL SETER ('GRIDAL - ERROR EXIT FROM GQPLCI',6,1)
+                RETURN
               END IF
               CALL GSPLCI (ICMN)
             END IF
             IF (RWMN.GT.0.) THEN
               CALL PLOTIF (0.,0.,2)
+              IF (ICFELL('GRIDAL',7).NE.0) RETURN
               CALL GQLWSC (IGER,SLWS)
               IF (IGER.NE.0) THEN
-                CALL SETER ('GRIDAL - ERROR EXIT FROM GQLWSC',2,2)
-                STOP
+                CALL SETER ('GRIDAL - ERROR EXIT FROM GQLWSC',8,1)
+                RETURN
               END IF
               CALL GSLWSC (RWMN)
             END IF
           ELSE IF (ITEM.EQ.2) THEN
             IF (ICMJ.GE.0) THEN
               CALL PLOTIF (0.,0.,2)
+              IF (ICFELL('GRIDAL',9).NE.0) RETURN
               CALL GQPLCI (IGER,ICS1)
               IF (IGER.NE.0) THEN
-                CALL SETER ('GRIDAL - ERROR EXIT FROM GQPLCI',3,2)
-                STOP
+                CALL SETER ('GRIDAL - ERROR EXIT FROM GQPLCI',10,1)
+                RETURN
               END IF
               CALL GSPLCI (ICMJ)
             END IF
             IF (RWMJ.GT.0.) THEN
               CALL PLOTIF (0.,0.,2)
+              IF (ICFELL('GRIDAL',11).NE.0) RETURN
               CALL GQLWSC (IGER,SLWS)
               IF (IGER.NE.0) THEN
-                CALL SETER ('GRIDAL - ERROR EXIT FROM GQLWSC',4,2)
-                STOP
+                CALL SETER ('GRIDAL - ERROR EXIT FROM GQLWSC',12,1)
+                RETURN
               END IF
               CALL GSLWSC (RWMJ)
             END IF
           ELSE IF (ITEM.EQ.3) THEN
             IF (ICAX.GE.0) THEN
               CALL PLOTIF (0.,0.,2)
+              IF (ICFELL('GRIDAL',13).NE.0) RETURN
               CALL GQPLCI (IGER,ICS1)
               IF (IGER.NE.0) THEN
-                CALL SETER ('GRIDAL - ERROR EXIT FROM GQPLCI',5,2)
-                STOP
+                CALL SETER ('GRIDAL - ERROR EXIT FROM GQPLCI',14,1)
+                RETURN
               END IF
               CALL GSPLCI (ICAX)
             END IF
             IF (RWAX.GT.0.) THEN
               CALL PLOTIF (0.,0.,2)
+              IF (ICFELL('GRIDAL',15).NE.0) RETURN
               CALL GQLWSC (IGER,SLWS)
               IF (IGER.NE.0) THEN
-                CALL SETER ('GRIDAL - ERROR EXIT FROM GQLWSC',6,2)
-                STOP
+                CALL SETER ('GRIDAL - ERROR EXIT FROM GQLWSC',16,1)
+                RETURN
               END IF
               CALL GSLWSC (RWAX)
             END IF
@@ -179,23 +194,24 @@ C
             IF (ICLB.GE.0) THEN
               CALL GQPLCI (IGER,ICS1)
               IF (IGER.NE.0) THEN
-                CALL SETER ('GRIDAL - ERROR EXIT FROM GQPLCI',7,2)
-                STOP
+                CALL SETER ('GRIDAL - ERROR EXIT FROM GQPLCI',17,1)
+                RETURN
               END IF
               CALL GSPLCI (ICLB)
               CALL GQTXCI (IGER,ICS2)
               IF (IGER.NE.0) THEN
-                CALL SETER ('GRIDAL - ERROR EXIT FROM GQTXCI',8,2)
-                STOP
+                CALL SETER ('GRIDAL - ERROR EXIT FROM GQTXCI',18,1)
+                RETURN
               END IF
               CALL GSTXCI (ICLB)
             END IF
             IF (RWLB.GT.0.) THEN
               CALL PLOTIF (0.,0.,2)
+              IF (ICFELL('GRIDAL',19).NE.0) RETURN
               CALL GQLWSC (IGER,SLWS)
               IF (IGER.NE.0) THEN
-                CALL SETER ('GRIDAL - ERROR EXIT FROM GQLWSC',9,2)
-                STOP
+                CALL SETER ('GRIDAL - ERROR EXIT FROM GQLWSC',20,1)
+                RETURN
               END IF
               CALL GSLWSC (RWLB)
             END IF
@@ -243,6 +259,7 @@ C
                 QMJX=VPLX
               ELSE
                 QMJX=CUFX(MAX(XMIN,MIN(XMAX,XINT)))
+                IF (ICFELL('GRIDAL',21).NE.0) RETURN
               END IF
               DMJX=0.
               QMJY=VPTY
@@ -270,6 +287,7 @@ C
                   BMJY=VPBY
                 ELSE
                   AMJY=CUFY(MAX(YMIN,MIN(YMAX,YINT)))
+                  IF (ICFELL('GRIDAL',22).NE.0) RETURN
                 END IF
               END IF
 C
@@ -374,6 +392,7 @@ C
                 QMJY=VPBY
               ELSE
                 QMJY=CUFY(MAX(YMIN,MIN(YMAX,YINT)))
+                IF (ICFELL('GRIDAL',23).NE.0) RETURN
               END IF
               DMJY=0.
 C
@@ -387,6 +406,7 @@ C
                   BMJX=VPRX
                 ELSE
                   AMJX=CUFX(MAX(XMIN,MIN(XMAX,XINT)))
+                  IF (ICFELL('GRIDAL',24).NE.0) RETURN
                 END IF
               END IF
 C
@@ -482,6 +502,7 @@ C
                 QMJX=VPRX
               ELSE
                 QMJX=CUFX(MAX(XMIN,MIN(XMAX,XINT)))
+                IF (ICFELL('GRIDAL',25).NE.0) RETURN
               END IF
               DMJX=0.
               QMJY=VPBY
@@ -506,6 +527,7 @@ C
                   BMJY=VPTY
                 ELSE
                   AMJY=CUFY(MAX(YMIN,MIN(YMAX,YINT)))
+                  IF (ICFELL('GRIDAL',26).NE.0) RETURN
                 END IF
               END IF
 C
@@ -555,6 +577,7 @@ C
                 QMJY=VPTY
               ELSE
                 QMJY=CUFY(MAX(YMIN,MIN(YMAX,YINT)))
+                IF (ICFELL('GRIDAL',27).NE.0) RETURN
               END IF
               DMJY=0.
 C
@@ -568,6 +591,7 @@ C
                   BMJX=VPLX
                 ELSE
                   AMJX=CUFX(MAX(XMIN,MIN(XMAX,XINT)))
+                  IF (ICFELL('GRIDAL',28).NE.0) RETURN
                 END IF
               END IF
 C
@@ -613,10 +637,14 @@ C
                       IFLP=1-IFLP
                       IF (IFLP.EQ.0) THEN
                         CALL PLOTIF (PMJX,     PMJY     ,0)
+                        IF (ICFELL('GRIDAL',29).NE.0) RETURN
                         CALL PLOTIF (PMJX+TMJX,PMJY+TMJY,1)
+                        IF (ICFELL('GRIDAL',30).NE.0) RETURN
                       ELSE
                         CALL PLOTIF (PMJX+TMJX,PMJY+TMJY,0)
+                        IF (ICFELL('GRIDAL',31).NE.0) RETURN
                         CALL PLOTIF (PMJX,     PMJY     ,1)
+                        IF (ICFELL('GRIDAL',32).NE.0) RETURN
                       END IF
                     END IF
                   END IF
@@ -631,12 +659,21 @@ C
                     END IF
                     IF (NCFR.EQ.0) CALL GALBEX (LABL,MLBL,NLBL)
                     IF (ILTY.EQ.0) THEN
-                      CALL WTSTR  (CFUX(PMJX+DLBX),CFUY(PMJY+DLBY),
-     +                             LABL(MLBL:NLBL),ICHW,IORI,ICEN)
+                      XDUM=CFUX(PMJX+DLBX)
+                      IF (ICFELL('GRIDAL',33).NE.0) RETURN
+                      YDUM=CFUY(PMJY+DLBY)
+                      IF (ICFELL('GRIDAL',34).NE.0) RETURN
+                      CALL WTSTR  (XDUM,YDUM,LABL(MLBL:NLBL),
+     +                             ICHW,IORI,ICEN)
+                      IF (ICFELL('GRIDAL',35).NE.0) RETURN
                     ELSE
-                      CALL PLCHHQ (CFUX(PMJX+DLBX),CFUY(PMJY+DLBY),
-     +                             LABL(MLBL:NLBL),RCHW,REAL(IORI),
-     +                                                  REAL(ICEN))
+                      XDUM=CFUX(PMJX+DLBX)
+                      IF (ICFELL('GRIDAL',36).NE.0) RETURN
+                      YDUM=CFUY(PMJY+DLBY)
+                      IF (ICFELL('GRIDAL',37).NE.0) RETURN
+                      CALL PLCHHQ (XDUM,YDUM,LABL(MLBL:NLBL),
+     +                             RCHW,REAL(IORI),REAL(ICEN))
+                      IF (ICFELL('GRIDAL',38).NE.0) RETURN
                     END IF
                     IF (ILGF.EQ.0) THEN
                       VLBL=VLBL+DLBL
@@ -662,10 +699,14 @@ C
                   IFLP=1-IFLP
                   IF (IFLP.EQ.0) THEN
                     CALL PLOTIF (PMNX,     PMNY     ,0)
+                    IF (ICFELL('GRIDAL',39).NE.0) RETURN
                     CALL PLOTIF (PMNX+TMNX,PMNY+TMNY,1)
+                    IF (ICFELL('GRIDAL',40).NE.0) RETURN
                   ELSE
                     CALL PLOTIF (PMNX+TMNX,PMNY+TMNY,0)
+                    IF (ICFELL('GRIDAL',41).NE.0) RETURN
                     CALL PLOTIF (PMNX,     PMNY     ,1)
+                    IF (ICFELL('GRIDAL',42).NE.0) RETURN
                   END IF
                 END IF
                 IMND=MOD(IMND+1,NMND)
@@ -675,7 +716,9 @@ C
 C Draw the axis.
 C
               CALL PLOTIF (QMJX,QMJY,0)
+              IF (ICFELL('GRIDAL',43).NE.0) RETURN
               CALL PLOTIF (QMJX+DMJX,QMJY+DMJY,1)
+              IF (ICFELL('GRIDAL',44).NE.0) RETURN
 C
             END IF
 C
@@ -688,6 +731,7 @@ C
      +        (ITEM.EQ.3.AND.ICAX.GE.0).OR.
      +        (ITEM.EQ.4.AND.ICLB.GE.0)) THEN
             CALL PLOTIF (0.,0.,2)
+            IF (ICFELL('GRIDAL',45).NE.0) RETURN
             CALL GSPLCI (ICS1)
           END IF
 C
@@ -702,6 +746,7 @@ C
      +        (ITEM.EQ.3.AND.RWAX.GT.0.).OR.
      +        (ITEM.EQ.4.AND.RWLB.GT.0.)) THEN
             CALL PLOTIF (0.,0.,2)
+            IF (ICFELL('GRIDAL',46).NE.0) RETURN
             CALL GSLWSC (SLWS)
           END IF
 C
@@ -710,6 +755,7 @@ C
 C Flush the SPPS pen-move buffer.
 C
         CALL PLOTIF (0.,0.,2)
+        IF (ICFELL('GRIDAL',47).NE.0) RETURN
 C
 C Restore the original state of the clipping indicator.
 C

@@ -1,8 +1,9 @@
 C
-C	$Id: grid.f,v 1.3 1992-09-04 20:40:49 ncargd Exp $
+C $Id: grid.f,v 1.4 1994-03-17 17:27:46 kennison Exp $
 C
-
       SUBROUTINE GRID (MJRX,MNRX,MJRY,MNRY)
+        IF (ICFELL('GRID - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
         CALL GRIDAL (MJRX,MNRX,MJRY,MNRY,0,0,0,0.,0.)
+        IF (ICFELL('GRID',2).NE.0) RETURN
         RETURN
       END

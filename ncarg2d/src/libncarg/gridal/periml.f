@@ -1,8 +1,9 @@
 C
-C	$Id: periml.f,v 1.3 1992-09-04 20:41:01 ncargd Exp $
+C $Id: periml.f,v 1.4 1994-03-17 17:27:57 kennison Exp $
 C
-
       SUBROUTINE PERIML (MJRX,MNRX,MJRY,MNRY)
+        IF (ICFELL('PERIML - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
         CALL GRIDAL (MJRX,MNRX,MJRY,MNRY,1,1,5,0.,0.)
+        IF (ICFELL('PERIML',2).NE.0) RETURN
         RETURN
       END

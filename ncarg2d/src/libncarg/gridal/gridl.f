@@ -1,8 +1,9 @@
 C
-C	$Id: gridl.f,v 1.3 1992-09-04 20:40:53 ncargd Exp $
+C $Id: gridl.f,v 1.4 1994-03-17 17:27:50 kennison Exp $
 C
-
       SUBROUTINE GRIDL (MJRX,MNRX,MJRY,MNRY)
+        IF (ICFELL('GRIDL - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
         CALL GRIDAL (MJRX,MNRX,MJRY,MNRY,1,1,0,0.,0.)
+        IF (ICFELL('GRIDL',2).NE.0) RETURN
         RETURN
       END

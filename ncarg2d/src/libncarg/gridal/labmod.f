@@ -1,7 +1,6 @@
 C
-C	$Id: labmod.f,v 1.3 1992-09-04 20:40:56 ncargd Exp $
+C $Id: labmod.f,v 1.4 1994-03-17 17:27:54 kennison Exp $
 C
-
       SUBROUTINE LABMOD (FMTX,FMTY,NUMX,NUMY,ISZX,ISZY,IXDC,IYDC,IXOR)
 C
         CHARACTER*(*) FMTX,FMTY
@@ -23,6 +22,10 @@ C Declare the block data "routine" external.  This should force it to
 C be loaded.
 C
         EXTERNAL GABLDT
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('LABMOD - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Transfer arguments to GRIDAL's common blocks.
 C

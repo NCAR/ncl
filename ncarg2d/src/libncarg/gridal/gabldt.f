@@ -1,8 +1,6 @@
 C
-C	$Id: gabldt.f,v 1.3 1992-09-04 20:40:34 ncargd Exp $
+C $Id: gabldt.f,v 1.4 1994-03-17 17:27:30 kennison Exp $
 C
-
-
       BLOCK DATA GABLDT
 C
 C This "routine" declares default values for all of the GRIDAL
