@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.81 2002-02-22 05:33:28 haley Exp $
+;      $Id: gsn_code.ncl,v 1.82 2002-03-22 00:02:35 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -45,6 +45,7 @@ undef("tofloat")
 undef("tointeger")
 undef("lower_case")
 undef("cat_strings")
+undef("get_resources")
 undef("set_attr")
 undef("check_attr")
 undef("get_res_eq")
@@ -52,6 +53,7 @@ undef("get_res_ne")
 undef("get_res_value")
 undef("get_res_value_keep")
 undef("get_non_missing_pairs")
+undef("get_display_mode")
 undef("attsetvalues_check")
 undef("spread_colors")
 undef("check_for_irreg2loglin")
@@ -385,6 +387,29 @@ begin
 end
 
 ;***********************************************************************;
+; Function : get_resources                                              ;
+;                res:logical                                            ;
+;                                                                       ;
+; This function takes a logical value and a list of resources, and      ;
+; assigns them to another variable.  If res is False, however, then no  ;
+; resources are carried over, but res is set to True for future use.    ;
+;                                                                       ;
+;***********************************************************************;
+function get_resources(res:logical)
+begin
+  if(res) then
+    res2 = res
+  else
+;
+; Set res2 to True, but don't carry over any resources.
+;
+    res2 = True
+  end if
+
+  return(res2)
+end
+
+;***********************************************************************;
 ; Procedure : set_attr                                                  ;
 ;                res:logical                                            ;
 ;           att_name: string                                            ;
@@ -528,6 +553,9 @@ end
 function get_res_value(res:logical,resname:string,default_val)
 local return_val
 begin
+if (resname.eq."pmTickMarkDisplayMode")
+  print(default_val)
+end if
   if(res.and..not.any(ismissing(getvaratts(res)))) then
     if(isatt(res,resname)) then
       return_val = res@$resname$
@@ -610,6 +638,44 @@ begin
     end if
   end do
   return(indices)
+end
+
+;***********************************************************************;
+; Function : get_display_mode                                           ;
+;               res:logical                                             ;
+;               name:string                                             ;
+;               value                                                   ;
+;                                                                       ;
+; This procedure checks if a DisplayMode resource is set, and returns   ;
+; an integer value if it's set as a string.                             ;
+;***********************************************************************;
+function get_display_mode(res:logical,name:string,value)
+local display_mode, new_display_mode 
+begin
+  display_mode = get_res_value_keep(res,name,value)
+
+  if(typeof(display_mode).ne."string") then
+    return(display_mode)
+  else
+    new_display_mode = -1      ; Default is 0 ("nocreate")
+
+    if(lower_case(display_mode).eq."nocreate") then
+      new_display_mode = -1
+    end if
+    if(lower_case(display_mode).eq."never") then
+      new_display_mode = 0
+    end if
+    if(lower_case(display_mode).eq."always") then
+      new_display_mode = 1
+    end if
+    if(lower_case(display_mode).eq."conditional") then
+      new_display_mode = 2
+    end if
+    delete(display_mode)
+    display_mode = new_display_mode
+  end if
+
+  return(new_display_mode)
 end
 
 ;***********************************************************************;
@@ -1421,7 +1487,7 @@ end
 ;***********************************************************************;
 function get_bb_res(res:logical)
 begin
-  maxbb = get_res_value(res,"gsnMaximize", False)
+  maxbb                = get_res_value(res,"gsnMaximize", False)
   maxbb@gsnPaperMargin = get_res_value(res,"gsnPaperMargin",0.5)
   maxbb@gsnPaperHeight = get_res_value(res,"gsnPaperHeight",11.0)
   maxbb@gsnPaperWidth  = get_res_value(res,"gsnPaperWidth",8.5)
@@ -1698,13 +1764,15 @@ local i, gsid, plot_object, res, gs_res_index, res2, \
 xf, yf, x2, y2
 begin
 
+  res2 = get_resources(resources)
+
 ; Retrieve graphic style object.
 
     getvalues wks 
         "wkDefGraphicStyleId":  gsid
     end getvalues
 
-    gsres = get_res_eq(resources,"gs")
+    gsres = get_res_eq(res2,"gs")
     attsetvalues_check(gsid,gsres)
 
 ; Draw a polygon.
@@ -1744,6 +1812,7 @@ function gsn_add_primitive(wks:graphic,plotid:graphic,x[*]:numeric,\
                            y[*]:numeric,polytype:string,resources:logical)
 local gsid, gsres, prim_object, dummy
 begin
+  res2 = get_resources(resources)
 
   if(.not.any(polytype.eq.(/"polymarker","polygon","polyline"/)))
     print("Warning: gsn_add_primitive: Do not recognize primitive type '"+ polytype + "'.")
@@ -1759,7 +1828,7 @@ begin
 ;
 ; Set graphic style resources, if any.
 ;
-    gsres = get_res_eq(resources,"gs")
+    gsres = get_res_eq(res2,"gs")
     gmres = False
     attsetvalues_check(gsid,gsres)
     if(isatt(gsres,"gsLineColor"))
@@ -1882,7 +1951,8 @@ end
 function gsn_add_polygon(wks:graphic,plotid:graphic,x[*]:numeric,\
                          y[*]:numeric,resources:logical)
 begin
-  return(gsn_add_primitive(wks,plotid,x,y,"polygon",resources))
+  res2 = get_resources(resources)
+  return(gsn_add_primitive(wks,plotid,x,y,"polygon",res2))
 end
 
 
@@ -1903,6 +1973,8 @@ procedure gsn_polygon_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
 local i, gsid, plot_object, res, gs_res_index, xf, yf, x2, y2
 begin
 
+    res2 = get_resources(resources)
+
 ; Retrieve graphic style object.
 
     getvalues wks 
@@ -1920,7 +1992,7 @@ begin
       "vpHeightF" : 1.0
     end create
 
-    gsres = get_res_eq(resources,"gs")
+    gsres = get_res_eq(res2,"gs")
     attsetvalues_check(gsid,gsres)
 
 ; Draw a polygon.
@@ -1957,13 +2029,15 @@ procedure gsn_polyline(wks:graphic,plotid:graphic,x[*]:numeric,\
 local i, gsid, plot_object, res, gs_res_index
 begin
 
+    res2 = get_resources(resources)
+
 ; Retrieve graphic style object.
 
     getvalues wks 
         "wkDefGraphicStyleId":  gsid
     end getvalues
 
-    gsres = get_res_eq(resources,"gs")
+    gsres = get_res_eq(res2,"gs")
     attsetvalues_check(gsid,gsres)
 
     gmres = False
@@ -2032,7 +2106,8 @@ end
 function gsn_add_polyline(wks:graphic,plotid:graphic,x[*]:numeric,\
                            y[*]:numeric,resources:logical)
 begin
-  return(gsn_add_primitive(wks,plotid,x,y,"polyline",resources))
+  res2 = get_resources(resources)
+  return(gsn_add_primitive(wks,plotid,x,y,"polyline",res2))
 end
 
 
@@ -2053,6 +2128,8 @@ procedure gsn_polyline_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
 local gsid, plot_object
 begin
 
+    res2 = get_resources(resources)
+
 ; Retrieve graphic style object.
 
     getvalues wks 
@@ -2069,7 +2146,7 @@ begin
       "vpHeightF" : 1.0
     end create
 
-    gsres = get_res_eq(resources,"gs")
+    gsres = get_res_eq(res2,"gs")
     attsetvalues_check(gsid,gsres)
 ;
 ; Convert data to float, since NhlDataPolyline only takes floats.
@@ -2123,13 +2200,15 @@ procedure gsn_polymarker(wks:graphic,plotid:graphic,x[*]:numeric,\
 local i, gsid, plot_object, res, xf, yf, x2, y2
 begin
 
+    res2 = get_resources(resources)
+
 ; Retrieve graphic style object.
 
     getvalues wks 
         "wkDefGraphicStyleId":  gsid
     end getvalues
 
-    gsres = get_res_eq(resources,"gs")
+    gsres = get_res_eq(res2,"gs")
     attsetvalues_check(gsid,gsres)
 ;
 ; Make sure data is float, since NhlDataPolymarker only takes floats.
@@ -2171,7 +2250,8 @@ end
 function gsn_add_polymarker(wks:graphic,plotid:graphic,x[*]:numeric,\
                             y[*]:numeric,resources:logical)
 begin
-  return(gsn_add_primitive(wks,plotid,x,y,"polymarker",resources))
+  res2 = get_resources(resources)
+  return(gsn_add_primitive(wks,plotid,x,y,"polymarker",res2))
 end
 
 
@@ -2192,6 +2272,8 @@ procedure gsn_polymarker_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
 local i, gsid, plot_object, res, xf, yf, x2, y2
 begin
 
+    res2 = get_resources(resources)
+
 ; Retrieve graphic style object.
 
     getvalues wks 
@@ -2209,7 +2291,7 @@ begin
       "vpHeightF" : 1.0
     end create
 
-    gsres = get_res_eq(resources,"gs")
+    gsres = get_res_eq(res2,"gs")
     attsetvalues_check(gsid,gsres)
 
 ; Make sure data is float.
@@ -2243,6 +2325,8 @@ procedure gsn_labelbar_ndc(wks:graphic, nbox:integer, labels:string, \
                            x,y,resources:logical )
 local i, lbid, res, lb_res_index, lbres
 begin
+    res2 = get_resources(resources)
+
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
     lbid = create wksname + "_labelbar" labelBarClass wks
@@ -2252,7 +2336,7 @@ begin
       "lbLabelStrings" : labels
     end create
 
-    lbres = get_res_eq(resources,(/"lb","vp"/))
+    lbres = get_res_eq(res2,(/"lb","vp"/))
     if(lbres.and..not.any(ismissing(getvaratts(lbres))))
 
 ; A special test is needed for the resource lbLabelFontHeightF.
@@ -2292,6 +2376,8 @@ procedure gsn_legend_ndc(wks:graphic, nitems:integer, labels:string, \
                          x,y,resources:logical )
 local i, lgid, res, lg_res_index, lgres
 begin
+    res2 = get_resources(resources)
+
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
     lgid = create wksname + "_legend" legendClass wks
@@ -2301,7 +2387,7 @@ begin
       "lgLabelStrings" : labels
     end create
 
-    lgres = get_res_eq(resources,(/"lg","vp"/))
+    lgres = get_res_eq(res2,(/"lg","vp"/))
     if(lgres.and..not.any(ismissing(getvaratts(lgres))))
       attsetvalues_check(lgid,lgres)
     end if
@@ -2331,7 +2417,7 @@ local i, txid, plot_object, res, tx_res_index, x2, y2, res2, \
 calldraw, callframe
 begin
 
-    res2 = resources
+    res2 = get_resources(resources)
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
@@ -2371,7 +2457,8 @@ procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
                        y:numeric, resources:logical )
 local txid
 begin
-    txid = gsn_text_ndc_return(wks,text,x,y,resources)
+  res2 = get_resources(resources)
+  txid = gsn_text_ndc_return(wks,text,x,y,res2)
 end
 
 ;***********************************************************************;
@@ -2394,7 +2481,7 @@ procedure gsn_text(wks:graphic,plotid:graphic,text:string,x:numeric, \
 local i, txid, plot_object, res, tx_res_index, x2, y2, xf, yf, \
 funccode, res2, calldraw, callframe
 begin
-    res2 = resources
+    res2 = get_resources(resources)
 
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",False)
@@ -2462,7 +2549,7 @@ function gsn_add_text(wks:graphic,plotid:graphic,text:string,x:numeric, \
                       y:numeric, resources:logical )
 local txid, txres, amres, just, res2, wksname, am_ids
 begin
-  res2 = resources
+  res2 = get_resources(resources)
 ;
 ; The "txFuncCode" can't be set during a setvalues  call. It must be
 ; set during the creation of the object.  
@@ -2609,7 +2696,7 @@ function gsn_panel_return(wks:graphic,plot[*]:graphic,dims[*]:integer,\
                           resources:logical)
 local res, nrows, ncols, ddims, is_row_spec, row_spec, npanels, nplots
 begin
-  res = resources              ; Make copy of resources
+  res = get_resources(resources)           ; Make copy of resources
 ;
 ; First check if paneling is to be specified by (#rows x #columns) or
 ; by #columns per row.  The default is rows x columns, unless 
@@ -3391,7 +3478,7 @@ procedure gsn_panel(wks:graphic,plot[*]:graphic,dims[*]:integer,\
                     resources:logical)
 local res2
 begin
-  res2 = resources
+  res2 = get_resources(resources)
   set_attr(res2,"gsnPanelSave",False )
   plots = gsn_panel_return(wks,plot,dims,res2)
 end
@@ -3468,8 +3555,8 @@ local anno, width1, width2, height1, height2, font_height1, font_height2, \
 mj_length1, mj_length2, mjo_length1, mjo_length2, mno_length1, mno_length2, \
 mno_length1, mno_length2, total_width1, total_width2, scale1, scale2, scale
 begin
-  res1  = plotres1
-  res2  = plotres2
+  res1  = get_resources(plotres1)
+  res2  = get_resources(plotres2)
   base  = oldbaseplot
   plots = oldplots
 
@@ -3932,9 +4019,18 @@ begin
     end setvalues
     end if
   end do
+;
+; Check for maximization. The plot does not get drawn in this
+; function!
+;
+  wks   = NhlGetParentWorkstation(base)
+  maxbb = get_bb_res(res1)
+  if(.not.maxbb) then
+    maxbb = get_bb_res(res2)
+  end if
+  draw_and_frame(wks,base,False,False,maxbb)
 
   return(annos)
-  
 end
 
 ;***********************************************************************;
@@ -4515,13 +4611,13 @@ end
 ; called "NumMissing" (or "NumMissing1" and "NumMissing2" if comparing  ;
 ; two fields.)                                                          ;
 ;***********************************************************************;
-function gsn_histogram(wks[1]:graphic,xdata:numeric, res:logical)
+function gsn_histogram(wks[1]:graphic,xdata:numeric, resources:logical)
 local res2, calldraw, callframe, maxbb, ispercent, setmidpts, setendpts, \
       bins, nbucks, nsprd, xmin, top, botton, left, right, lenc, tmp, \
       colors, locs, lbs
 begin
   dummy = new(1,graphic)      ; Dummy graphic to return if things go wrong.
-  res2  = res
+  res2  = get_resources(resources)
 
   calldraw   = get_res_value(res2,"gsnDraw", True)
   callframe  = get_res_value(res2,"gsnFrame",True)
@@ -4905,7 +5001,7 @@ trxmin, trxmax, trymin, trymax, res2, scale, shape, sprdcols
 begin
     cnres     = False
     llres     = False
-    res2      = resources
+    res2      = get_resources(resources)
 
     force_x_linear = False
     force_y_linear = False
@@ -5058,7 +5154,7 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
 local i, data_object, contour_object, res, sf_res_index, \
 cn_res_index, mp_res_index, map_object, res2, scale, shape, sprdcols
 begin
-    res2      = resources
+    res2 = get_resources(resources)
 
 ; Create the data object.
 
@@ -5113,7 +5209,7 @@ begin
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
-    mpres = get_res_eq(res2,(/"mp","vp"/))
+    mpres = get_res_eq(res2,(/"mp","vp","pm"/))
     cnres = get_res_ne(res2,(/"mp","sf","vp"/))
 
     attsetvalues_check(map_object,mpres)
@@ -5165,7 +5261,7 @@ end
 function gsn_map(wks:graphic, projection:string, resources:logical )
 local i, plot_object, res2
 begin
-    res2      = resources
+    res2 = get_resources(resources)
 
 ; Create plot object.
 
@@ -5217,8 +5313,8 @@ local i, data_object,plot_object,res,vf_res_index,st_res_index, \
 force_x_linear, force_y_linear, force_x_log, force_y_log, \
 trxmin, trxmax, trymin, trymax, ll_res_index, llres, res2, scale, shape
 begin
-    llres     = False
-    res2      = resources
+    llres = False
+    res2  = get_resources(resources)
 
     force_x_linear = False
     force_y_linear = False
@@ -5350,7 +5446,7 @@ function gsn_streamline_map(wks:graphic,u[*][*]:numeric,\
 local i, data_object, contour_object, res, vf_res_index, \
 st_res_index, mp_res_index, map_object, res2
 begin
-    res2      = resources
+    res2 = get_resources(resources)
 
 ; Create the data object.
 
@@ -5392,7 +5488,7 @@ begin
     scale     = get_res_value(res2,"gsnScale",shape)
 
     vfres = get_res_eq(res2,"vf")
-    mpres = get_res_ne(res2,(/"vf","mp","vp"/))
+    mpres = get_res_eq(res2,(/"mp","vp","pm"/))
     stres = get_res_ne(res2,(/"vf","mp","vp"/))
 
     attsetvalues_check(data_object,vfres)
@@ -5586,8 +5682,8 @@ local i,data_object,plot_object,res,vf_res_index,vc_res_index, \
 force_x_linear, force_y_linear, force_x_log, force_y_log, sprdcols, \
 trxmin, trxmax, trymin, trymax, ll_res_index, llres, res2
 begin
-    llres     = False
-    res2      = resources
+    llres = False
+    res2  = get_resources(resources)
 
     force_x_linear = False
     force_y_linear = False
@@ -5733,7 +5829,7 @@ function gsn_vector_contour(wks:graphic,u[*][*]:numeric,\
 local i, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, vc_res_index, sf_res_index, res2
 begin
-    res2      = resources
+    res2 = get_resources(resources)
 
 ;
 ; Create the vector field object.
@@ -5869,7 +5965,7 @@ function gsn_streamline_contour(wks:graphic,u[*][*]:numeric,\
 local i, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, st_res_index, sf_res_index, res2
 begin
-    res2      = resources
+    res2 = get_resources(resources)
 
 ;
 ; Create the streamline field object.
@@ -6001,8 +6097,7 @@ function gsn_vector_contour_map(wks:graphic,u[*][*]:numeric,\
 local i, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, vc_res_index, sf_res_index, mp_res_index, map_object, res2
 begin
-    res2      = resources
-
+    res2 = get_resources(resources)
 ;
 ; Create the vector field object.
 ;
@@ -6069,7 +6164,7 @@ begin
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
     cnres = get_res_eq(res2,(/"cn","tf"/))
-    mpres = get_res_eq(res2,(/"mp","vp"/))
+    mpres = get_res_eq(res2,(/"mp","vp","pm"/))
     vcres = get_res_ne(res2,(/"cn","mp","sf","vf","vp"/))
 
     attsetvalues_check(vfdata_object,vfres)
@@ -6142,7 +6237,7 @@ function gsn_vector_map(wks:graphic, u[*][*]:numeric, v[*][*]:numeric, \
 local i, data_object, contour_object, res, vf_res_index, \
 vc_res_index, mp_res_index, map_object, res2, sprdcols
 begin
-    res2      = resources
+    res2 = get_resources(resources)
 
 ; Create the data object.
 
@@ -6187,7 +6282,7 @@ begin
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
     vfres = get_res_eq(res2,"vf")
-    mpres = get_res_eq(res2,(/"mp","vp"/))
+    mpres = get_res_eq(res2,(/"mp","vp","pm"/))
     vcres = get_res_ne(res2,(/"mp","vf","vp"/))
 
     attsetvalues_check(data_object,vfres)
@@ -6251,8 +6346,8 @@ force_x_linear, force_y_linear, force_x_log, force_y_log, \
 trxmin, trxmax, trymin, trymax, ll_res_index, llres, vf_res_index, \
 vc_res_index, sf_res_index, res2, sprdcols
 begin
-    llres     = False
-    res2      = resources
+    llres = False
+    res2  = get_resources(resources)
 
     force_x_linear = False
     force_y_linear = False
@@ -6420,7 +6515,7 @@ local i, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, vc_res_index, sf_res_index, mp_res_index, map_object, res2, \
 sprdcols
 begin
-    res2      = resources
+    res2 = get_resources(resources)
 ;
 ; Create the vector field object.
 ;
@@ -6483,7 +6578,7 @@ begin
 
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
-    mpres = get_res_eq(res2,(/"mp","vp"/))
+    mpres = get_res_eq(res2,(/"mp","vp","pm"/))
     vcres = get_res_ne(res2,(/"mp","sf","vf","vp"/))
 
     attsetvalues_check(vfdata_object,vfres)
@@ -6544,7 +6639,7 @@ local i, attnames, data_object, plot_object, res, ca_res_index, \
 xy_res_index, xydp_res_index, dspec, res2, set_dash
 begin
     set_dash = True       ; Default is to set some dash patterns.
-    res2     = resources
+    res2     = get_resources(resources)
 
 ; Determine if we have multiple lines or just one line.
 
@@ -6743,6 +6838,8 @@ end
 function gsn_y(wks:graphic, y:numeric, resources:logical )
 local dsizes_y, npts, x, rank_y, xy
 begin
+  res2 = get_resources(resources)
+
 ;
 ; Get dimension sizes of Y array.
 ;
@@ -6767,7 +6864,7 @@ begin
 ;
 ; Call gsn_xy.
 ;
-  xy = gsn_xy(wks,x,y,resources)
+  xy = gsn_xy(wks,x,y,res2)
   return(xy)
 end
 
