@@ -1,18 +1,18 @@
 #
-#       $Id: yMakefile,v 1.7 2004-03-26 23:07:17 kennison Exp $
+#       $Id: yMakefile,v 1.8 2004-04-07 21:30:36 kennison Exp $
 #
 
 MYNAME  = econpt
 
-SRCS =  ctcbay.f ctex01.f ctex02.f ctfite.f ctgaus.f ctgeo1.f ctgeo2.f \
-	ctiscp.f ctllg1.f ctllg2.f ctllg3.f ctnccl.f ctorca.f ctpopg.f \
-	ctswth.f cttd01.f cttd02.f ctwng1.f ctwng2.f \
-	ctcbay.dat ctfite.dat ctgaus.dat ctiscp.dat ctnccl.dat ctorca.dat \
-	ctpopg.dat ctswth.dat ctwng1.dat ctwng2.dat
+SRCS =  ctcbay.f ctex01.f ctex02.f ctfite.f ctgaus.f ctgc23.f ctgeo1.f \
+	ctgeo2.f ctgeo3.f ctiscp.f ctllg1.f ctllg2.f ctllg3.f ctnccl.f \
+	ctorca.f ctpopg.f ctswth.f cttd01.f cttd02.f ctwng1.f ctwng2.f \
+	ctcbay.dat ctfite.dat ctgaus.dat ctgeo3.dat ctiscp.dat ctnccl.dat \
+	ctorca.dat ctpopg.dat ctswth.dat ctwng1.dat ctwng2.dat
 
-OBJS =  ctcbay.o ctex01.o ctex02.o ctfite.o ctgaus.o ctgeo1.o ctgeo2.o \
-	ctiscp.o ctllg1.o ctllg2.o ctllg3.o ctnccl.o ctorca.o ctpopg.o \
-	ctswth.o cttd01.o cttd02.o ctwng1.o ctwng2.o
+OBJS =  ctcbay.o ctex01.o ctex02.o ctfite.o ctgaus.o ctgc23.o ctgeo1.o \
+	ctgeo2.o ctgeo3.o ctiscp.o ctllg1.o ctllg2.o ctllg3.o ctnccl.o \
+	ctorca.o ctpopg.o ctswth.o cttd01.o cttd02.o ctwng1.o ctwng2.o
 
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
@@ -25,8 +25,10 @@ FExampleTarget(ctex01,ctex01.o)
 FExampleTarget(ctex02,ctex02.o)
 FExampleTarget(ctfite,ctfite.o)
 FExampleTarget(ctgaus,ctgaus.o)
+FExampleTarget(ctgc23,ctgc23.o)
 FExampleTarget(ctgeo1,ctgeo1.o)
 FExampleTarget(ctgeo2,ctgeo2.o)
+FExampleTarget(ctgeo3,ctgeo3.o)
 FExampleTarget(ctiscp,ctiscp.o)
 FExampleTarget(ctllg1,ctllg1.o)
 FExampleTarget(ctllg2,ctllg2.o)
