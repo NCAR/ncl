@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.8 1995-04-06 21:13:40 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.9 1995-04-12 00:04:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,7 @@ extern "C" {
 #include <ncarg/hlu/PlotManager.h>
 #include <ncarg/hlu/Workstation.h>
 #include <ncarg/ncargC.h>
+#include <ncarg/c.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -52,6 +53,7 @@ extern "C" {
 #include "ApiRecords.h"
 #include "TypeSupport.h"
 #include "NclBuiltInSupport.h"
+
 
 NhlErrorTypes _NclIListHLUObjs
 #if	NhlNeedProto
@@ -2204,6 +2206,47 @@ NhlErrorTypes _NclIabs
 	}
 	NhlPError(NhlFATAL,NhlEUNKNOWN,"Function or procedure not implemented");
 	return(NhlFATAL);
+}
+NhlErrorTypes _NclIncargpath
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry args;
+	NclMultiDValData tmp_md= NULL;
+	char *str;
+	string outval;
+	int dimsize = 1;
+
+
+	args  = _NclGetArg(0,1,DONT_CARE);
+	switch(args.kind) {
+	case NclStk_VAL:
+		tmp_md = args.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(args.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	str = NrmQuarkToString(*(string*)tmp_md->multidval.val);
+	if(str != NULL) {
+		outval = NrmStringToQuark(GetNCARGPath(str));
+	} else {
+		outval = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+	}
+	return(NclReturnValue(
+		&outval,
+		1,
+		&dimsize,
+		&((NclTypeClass)nclTypestringClass)->type_class.default_mis,
+		NCL_string,
+		1
+	));
+	
 }
 NhlErrorTypes _NclIgetenv
 #if	NhlNeedProto

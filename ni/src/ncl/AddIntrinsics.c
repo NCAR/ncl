@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.13 1995-04-05 22:16:59 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.14 1995-04-12 00:04:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -228,6 +228,11 @@ void
 #endif
 );
 NhlErrorTypes _NclIgetenv(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIncargpath(
 #if     NhlNeedProto
 void
 #endif
@@ -518,6 +523,13 @@ void _NclAddIntrinsics
 	args[0].is_dimsizes = 1;
 	args[0].n_dims = 1;
 	_NclRegisterFunc(_NclIprompt,args,"prompt",1,IFUNC);
+
+	args = NclCalloc(1,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("string");
+	args[0].dim_sizes[0] = 1;
+	args[0].is_dimsizes = 1;
+	args[0].n_dims = 1;
+	_NclRegisterFunc(_NclIncargpath,args,"ncargpath",1,IFUNC);
 
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("string");
