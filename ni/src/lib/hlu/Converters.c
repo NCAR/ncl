@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.42 1995-12-19 20:38:59 boote Exp $
+ *      $Id: Converters.c,v 1.43 1996-04-19 17:14:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -115,7 +115,8 @@ _NhlStringToStringGenArray
 	int dimsizes[MAX_DIMENSIONS];
 	int level = -1;
 	
-	
+
+	if(strng == NULL) return(NULL);	
 	while(!done) {
 		token = NextToken(strng,&index);
 		switch(state) {
@@ -1823,7 +1824,7 @@ CvtArgs
 		return NhlFATAL;
 	}
 
-	tstring = NrmQuarkToString(from->data.intval);
+	tstring = NrmQuarkToString(from->data.lngval);
 	if(tstring == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"%s:Unable to get a valid string from Quark",func);
