@@ -1,12 +1,8 @@
 #
-#	$Id: yMakefile,v 1.7 1994-04-14 14:27:21 haley Exp $
+#	$Id: yMakefile,v 1.8 1994-04-18 20:23:55 haley Exp $
 #
 
 MYNAME	= autogrph
-
-#if defined(IRIX)
-#define FOptimizeFlag
-#endif
 
 GENERIC_SRCS = \
 	 agaxis.f agback.f agbnch.f agchax.f agchcu.f agchil.f agchnl.f\
