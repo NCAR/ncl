@@ -1,5 +1,5 @@
 /*
- *      $Id: Cray,v 1.18 1993-10-19 17:13:18 boote Exp $
+ *      $Id: Cray,v 1.19 1994-02-18 22:18:59 haley Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 #define	ExtraSysLibraries	-lnet
 #define	HdfDefines	-DUNICOS
 #define	StdDefines	-DSYSV -DUNICOS -DUSG
-#define	COptimizeFlag	-h noopt
+#define	COptimizeFlag	/**/
 #define FCompiler	cf77
 #define FOptimizeFlag	/**/
 #define LdRelCommand	$(TOP)/utils/ldrel
