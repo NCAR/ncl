@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.sed,v 1.7 1995-12-19 20:42:41 boote Exp $
+ *      $Id: NclTypestring.c.sed,v 1.8 1996-01-24 19:59:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -453,6 +453,115 @@ string rs;
 	}
 }
 
+static NclMonoTypes Ncl_Type_string_is_mono
+#if	NhlNeedProto
+(void *val,NclScalar* val_m,int nval)
+#else
+(val, val_m, nval)
+void *val;
+NclScalar* val_m;
+int nval;
+#endif
+{
+	string *value = (string*)val;
+	int i = 0,j = 1;
+
+	if(nval == 1) 
+		return(1);
+	if(val_m != NULL) {
+		i = 0;
+		j = 0;
+		while((i<nval)&&(value[i] == val_m->stringval))i++;
+		if(i >= nval-1) return(NclNONMONO);
+		j = i + 1;
+		while((j<nval)&&(value[j] == val_m->stringval)) j++;
+		if(j == nval) return(NclNONMONO);
+/*
+* i is first non-missing value and j is second guarenteed
+*/
+		if(cmp_string_gt(value[i],value[j])) {
+			while(cmp_string_gt(value[i],value[j])) {
+				i = j;
+				j++;
+				while((j<nval)&&(value[j] == val_m->stringval)) {
+					j++;
+				}
+				if(j >= nval)
+					break;
+			}
+			if(j >= nval) {
+				return(NclDECREASING);
+			} else {
+				return(NclNONMONO);
+			}
+		} else if(cmp_string_lt(value[i], value[j])) {
+			while(cmp_string_lt(value[i],value[j])) {
+				i = j;
+				j++;
+				while((j<nval)&&(value[j] == val_m->stringval)) {
+					j++;
+				}
+				if(j >= nval)
+					break;
+			}
+			if(j >= nval) {
+				return(NclINCREASING);
+			} else {
+				return(NclNONMONO);
+			}
+		}
+	} else {
+		i = 0;
+		if(cmp_string_gt(value[0], value[1])) {
+			while((i<nval-1)&&(cmp_string_gt(value[i],value[i+1]))) i++;
+			if(i == nval-1) {
+				return(NclDECREASING);
+			} else {
+				return(NclNONMONO);
+			}
+		} else if(cmp_string_lt(value[0],value[1])) {
+			while((i<nval-1)&&(cmp_string_lt(value[i],value[i+1]))) i++;
+			if(i == nval-1) {
+				return(NclINCREASING);
+			} else {
+				return(NclNONMONO);
+			}
+		} 
+	}
+	return(NclNONMONO);
+}
+
+static NhlErrorTypes Ncl_Type_string_cmpf
+#if NhlNeedProto
+(void *lhs, void* rhs, NclScalar* lhs_m, NclScalar *rhs_m,int digits, double* result)
+#else
+(lhs, rhs, lhs_m, rhs_m, digits, result)
+void *lhs;
+void* rhs;
+NclScalar* lhs_m;
+NclScalar *rhs_m;
+int digits;
+double * result;
+#endif
+{
+        if((lhs_m != NULL)&&(lhs_m->intval == *(int*)lhs)) {
+                return(NhlFATAL);
+        } else if((rhs_m != NULL)&&(rhs_m->intval == *(int*)rhs)) {
+                return(NhlFATAL);
+        } else {
+		if(cmp_string_gt(*(NclQuark*)lhs,*(NclQuark*)rhs)) {
+			*result = 1;
+		} else if(cmp_string_lt(*(NclQuark*)lhs,*(NclQuark*)rhs)) {
+			*result = -1;
+		} else {
+			*result = 0;
+		}
+                return(NhlNOERROR);
+        }
+}
+
+
+
 INSERTTMPSTRING
 
 
@@ -723,7 +832,7 @@ NclTypestringClassRec nclTypestringClassRec = {
 /* NclTypeOutSize or_type;              */ NULL,
 /* NclTypeOp xor; 			*/ NULL,
 /* NclTypeOp xor;                       */ NULL,
-/* NclNumScalarCompareFunc cmpf; 	*/ NULL /*Ncl_Type_string_cmpf*/,
+/* NclNumScalarCompareFunc cmpf; 	*/ Ncl_Type_string_cmpf,
 /* NclMonotonicTestFunction is_mono; 	*/ Ncl_Type_string_is_mono
 	},
 	{

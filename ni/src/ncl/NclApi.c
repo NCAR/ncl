@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.26 1995-12-19 20:42:39 boote Exp $
+ *      $Id: NclApi.c,v 1.27 1996-01-24 19:59:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -182,7 +182,9 @@ int NclSubmitBlock1
         the_input_buffer_size = script_size+1;
 	if(force_reset) {
 		_NclDeleteNewSymStack();
+/*
 		(void)_NclPopScope();
+*/
 
 	}
 #if     defined(SunOS) && (MAJOR == 4)
@@ -231,7 +233,9 @@ int NclSubmitBlock2
 	the_input_buffer_ptr = the_input_buffer;
 	if(force_reset) {
                 _NclDeleteNewSymStack();
+/*
 		(void)_NclPopScope();
+*/
 
         }
 
@@ -260,7 +264,9 @@ int NclSubmitCommand
 
 	if(force_reset) {
                 _NclDeleteNewSymStack();
+/*
 		(void)_NclPopScope();
+*/
 
         }
 

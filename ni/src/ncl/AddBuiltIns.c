@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.13 1995-11-04 00:49:16 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.14 1996-01-24 19:59:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -313,8 +313,8 @@ void _NclAddBuiltIns
 
 	nargs = 0;
 	args = NewArgs(2);
-	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
 	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
 	SetArgTemplate(args,1,"graphic",1,dimsizes);nargs++;
 	NclRegisterProc(_NclIChangeWorkstation,args,"NhlChangeWorkstation",nargs);
 	nargs = 0;

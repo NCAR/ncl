@@ -19,8 +19,6 @@ sed \
 -e '/INSERTTMPSTRING/d' \
 -e 's/HLUTYPEREP/NhlTQuark/g' \
 -e 's/HLUGENTYPEREP/NhlTQuarkGenArray/g' \
--e 's/Ncl_Type_string_is_mono/NULL/g' \
--e 's/Ncl_Type_string_cmpf/NULL/g' \
 NclTypestring.c.sed > NclTypestring.c
 
 if [ ! $? ]
