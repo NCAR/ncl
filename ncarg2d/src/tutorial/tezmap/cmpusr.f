@@ -1,10 +1,17 @@
 C
-C	$Id: cmpusr.f,v 1.1 1993-01-13 18:00:27 haley Exp $
+C	$Id: cmpusr.f,v 1.2 1994-07-08 21:39:51 stautler Exp $
 C
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Open GKS, and turn off clipping.
 C
-	CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 	CALL GSCLIP (0)
 C
 C Call the mapping routine CMPUSR
@@ -14,7 +21,9 @@ C
 C
 C Close GKS and quit.
 C
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	STOP
 	END

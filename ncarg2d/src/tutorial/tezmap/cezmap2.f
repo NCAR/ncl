@@ -1,21 +1,30 @@
 C
-C	$Id: cezmap2.f,v 1.1 1993-01-13 17:59:25 haley Exp $
+C	$Id: cezmap2.f,v 1.2 1994-07-08 21:39:36 stautler Exp $
 C
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Open GKS, Turn Clipping off
 C
-      CALL OPNGKS 
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C INVOKE DEMO DRIVER
 C
       CALL CEZMAP('SV',40.,-50.,0.,'PO')
 C
-C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
+C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 
-	STOP
-	END
+      STOP
+      END
 
       SUBROUTINE CEZMAP(PROJ,PLAT,PLON,ROTA,OUTLN)
 

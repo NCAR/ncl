@@ -1,31 +1,40 @@
 C
-C	$Id: cmpdd.f,v 1.3 1993-04-12 18:01:50 adrianne Exp $
+C	$Id: cmpdd.f,v 1.4 1994-07-08 21:39:38 stautler Exp $
 C
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Open GKS, and turn off clipping.
 C
-	CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 	CALL GSCLIP (0)
 C
 C Call the mapping routine CMPDD
 C
-	CALL CMPDD
+	CALL CMPDD(IWKID)
 
 C
 C Close GKS and quit.
 C
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	STOP
 	END
 
-	SUBROUTINE CMPDD
+	SUBROUTINE CMPDD(IWKID)
 C
 C CMPDD demonstrates setting the dash pattern for grid lines in Maps.
 C
 C Set up color table.
 C
-	CALL COLOR
+	CALL COLOR(IWKID)
 C
 C Draw Continental, political outlines in magenta
 C
@@ -76,20 +85,20 @@ C Done.
 C
         RETURN
 	END
-      SUBROUTINE COLOR
+      SUBROUTINE COLOR(IWKID)
 C
 C     BACKGROUND COLOR
 C     White
-      CALL GSCR(1,0,1.,1.,1.)
+      CALL GSCR(IWKID,0,1.,1.,1.)
 C
 C     FORGROUND COLORS
-	CALL GSCR(1,1,0.,0.,0.)
-	CALL GSCR(1,2,0.,.7,0.)
-	CALL GSCR(1,3,1.,1.,0.)
-	CALL GSCR(1,4,.3,.3,1.)
-	CALL GSCR(1,5,1.,0.,1.)
-	CALL GSCR(1,6,0.,1.,1.)
-	CALL GSCR(1,7,1.,0.,0.)
+	CALL GSCR(IWKID,1,0.,0.,0.)
+	CALL GSCR(IWKID,2,0.,.7,0.)
+	CALL GSCR(IWKID,3,1.,1.,0.)
+	CALL GSCR(IWKID,4,.3,.3,1.)
+	CALL GSCR(IWKID,5,1.,0.,1.)
+	CALL GSCR(IWKID,6,0.,1.,1.)
+	CALL GSCR(IWKID,7,1.,0.,0.)
 
 	RETURN
 	END

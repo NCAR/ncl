@@ -1,5 +1,5 @@
 C
-C $Id: cmpita.f,v 1.3 1994-06-14 22:58:24 kennison Exp $
+C $Id: cmpita.f,v 1.4 1994-07-08 21:39:43 stautler Exp $
 C
 C Declare fill routine external so compiler will know that it's a
 C subroutine instead of a real variable.
@@ -15,6 +15,11 @@ C of IMAP will be required and the program will run a lot longer.  For
 C IGRD=10, try IMAP=160000; for IGRD=5, try IMAP=220000; for IGRD=3,
 C try IMAP=390000; for IGRD=2, try IMAP=520000; for IGRD=1, IMAP=1500000
 C was not enough (and the program may have been stuck in a loop).
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C NWRK specifies the sizes of the work arrays XWRK and YWRK, which are
 C passed to ARSCAM.
@@ -58,11 +63,13 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Define the color table.
 C
-        CALL COLOR
+        CALL COLOR(IWKID)
 C
 C Set the projection-type parameters.
 C
@@ -149,13 +156,15 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C
         STOP
 C
-      END
+      	END
 
 
 
@@ -305,7 +314,7 @@ C
 
 
 
-      SUBROUTINE COLOR
+      SUBROUTINE COLOR(IWKID)
 C
 C Background color (black):
 C
@@ -314,39 +323,39 @@ C
 C Foreground colors:
 C
 C White
-      CALL GSCR (1,  1, 1.00, 1.00, 1.00)
+      CALL GSCR (IWKID,  1, 1.00, 1.00, 1.00)
 C Red
-      CALL GSCR (1,  2, 0.90, 0.25, 0.00)
+      CALL GSCR (IWKID,  2, 0.90, 0.25, 0.00)
 C OrangeRed
-      CALL GSCR (1,  3, 1.00, 0.00, 0.20)
+      CALL GSCR (IWKID,  3, 1.00, 0.00, 0.20)
 C Orange
-      CALL GSCR (1,  4, 1.00, 0.65, 0.00)
+      CALL GSCR (IWKID,  4, 1.00, 0.65, 0.00)
 C Yellow
-      CALL GSCR (1,  5, 1.00, 1.00, 0.00)
+      CALL GSCR (IWKID,  5, 1.00, 1.00, 0.00)
 C GreenYellow
-      CALL GSCR (1,  6, 0.70, 1.00, 0.20)
+      CALL GSCR (IWKID,  6, 0.70, 1.00, 0.20)
 C Chartreuse
-      CALL GSCR (1,  7, 0.50, 1.00, 0.00)
+      CALL GSCR (IWKID,  7, 0.50, 1.00, 0.00)
 C Celeste
-      CALL GSCR (1,  8, 0.20, 1.00, 0.50)
+      CALL GSCR (IWKID,  8, 0.20, 1.00, 0.50)
 C Green
-      CALL GSCR (1,  9, 0.20, 0.80, 0.20)
+      CALL GSCR (IWKID,  9, 0.20, 0.80, 0.20)
 C Aqua
-      CALL GSCR (1, 10, 0.00, 0.90, 1.00)
+      CALL GSCR (IWKID, 10, 0.00, 0.90, 1.00)
 C DeepSkyBlue
-      CALL GSCR (1, 11, 0.00, 0.75, 1.00)
+      CALL GSCR (IWKID, 11, 0.00, 0.75, 1.00)
 C RoyalBlue
-      CALL GSCR (1, 12, 0.25, 0.45, 0.95)
+      CALL GSCR (IWKID, 12, 0.25, 0.45, 0.95)
 C SlateBlue
-      CALL GSCR (1, 13, 0.40, 0.35, 0.80)
+      CALL GSCR (IWKID, 13, 0.40, 0.35, 0.80)
 C DarkViolet
-      CALL GSCR (1, 14, 0.60, 0.00, 0.80)
+      CALL GSCR (IWKID, 14, 0.60, 0.00, 0.80)
 C Orchid
-      CALL GSCR (1, 15, 0.85, 0.45, 0.80)
+      CALL GSCR (IWKID, 15, 0.85, 0.45, 0.80)
 C Lavender
-      CALL GSCR (1, 16, 0.80, 0.80, 1.00)
+      CALL GSCR (IWKID, 16, 0.80, 0.80, 1.00)
 C Gray
-      CALL GSCR (1, 17, 0.70, 0.70, 0.70)
+      CALL GSCR (IWKID, 17, 0.70, 0.70, 0.70)
 C
 C Done.
 C

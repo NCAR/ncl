@@ -1,10 +1,15 @@
 C
-C	$Id: cmptit.f,v 1.3 1994-02-17 21:21:51 haley Exp $
+C	$Id: cmptit.f,v 1.4 1994-07-08 21:39:50 stautler Exp $
 C
 	PROGRAM MAPTIT
 C
 C The program EXMPL5 produces a single frame with maximal-area
 C views of all the EZMAP projections of the globe.
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Define area map array and size for area fill applications
 C
@@ -21,7 +26,9 @@ C
 C
 C Open GKS.
 C
-	CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Turn off the clipping indicator.
 C
@@ -29,7 +36,7 @@ C
 C
 C Set up color table and dash pattern
 C 
-	CALL COLOR
+	CALL COLOR(IWKID)
 	CALL DASHDB(65535)
 C
 C Set the outline-dataset parameter.
@@ -213,7 +220,9 @@ C
 C
 C Close GKS.
 C
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C
@@ -243,7 +252,7 @@ C Otherwise, don't draw the line - mask it.
 C
 C Fill area map
 C
-    INTEGER IDSIZE, NPTS
+        INTEGER IDSIZE, NPTS
 	INTEGER AREAID(IDSIZE),GRPID(IDSIZE),IWRK(5000)
 	REAL XC(NPTS), YC(NPTS), RWRK(5000)
 
@@ -270,7 +279,7 @@ C
 C
 C Fill area map
 C
-    INTEGER IDSIZE, NPTS
+        INTEGER IDSIZE, NPTS
 	INTEGER AREAID(IDSIZE),GRPID(IDSIZE),IWRK(10000)
 	REAL XC(NPTS), YC(NPTS), RWRK(10000)
 
@@ -303,7 +312,7 @@ C
 C
 C Fill area map
 C
-    INTEGER IDSIZE, NPTS
+        INTEGER IDSIZE, NPTS
 	INTEGER AREAID(IDSIZE), GRPID(IDSIZE), ICOL
 	REAL XC(NPTS), YC(NPTS)
 
@@ -328,47 +337,47 @@ C If the area is over land, fill it using the country color id.
 	RETURN
 	END
 
-      SUBROUTINE COLOR
+      SUBROUTINE COLOR(IWKID)
 C
 C     BACKGROUND COLOR
 C     BLACK
-      CALL GSCR(1,0,0.,0.,0.)
+      CALL GSCR(IWKID,0,0.,0.,0.)
 C
 C     FORGROUND COLORS
 C White
-      CALL GSCR(1,  1, 1.0, 1.0, 1.0)
+      CALL GSCR(IWKID,  1, 1.0, 1.0, 1.0)
 C Aqua
-      CALL GSCR(1,  2, 0.0, 0.9, 1.0)
+      CALL GSCR(IWKID,  2, 0.0, 0.9, 1.0)
 C Red
-      CALL GSCR(1,  3, 0.9, 0.25, 0.0)
+      CALL GSCR(IWKID,  3, 0.9, 0.25, 0.0)
 C OrangeRed
-      CALL GSCR(1,  4, 1.0, 0.0, 0.2)
+      CALL GSCR(IWKID,  4, 1.0, 0.0, 0.2)
 C Orange
-      CALL GSCR(1,  5, 1.0, 0.65, 0.0)
+      CALL GSCR(IWKID,  5, 1.0, 0.65, 0.0)
 C Yellow
-      CALL GSCR(1,  6, 1.0, 1.0, 0.0)
+      CALL GSCR(IWKID,  6, 1.0, 1.0, 0.0)
 C GreenYellow
-      CALL GSCR(1,  7, 0.7, 1.0, 0.2)
+      CALL GSCR(IWKID,  7, 0.7, 1.0, 0.2)
 C Chartreuse
-      CALL GSCR(1,  8, 0.5, 1.0, 0.0)
+      CALL GSCR(IWKID,  8, 0.5, 1.0, 0.0)
 C Celeste
-      CALL GSCR(1,  9, 0.2, 1.0, 0.5)
+      CALL GSCR(IWKID,  9, 0.2, 1.0, 0.5)
 C Green
-      CALL GSCR(1, 10, 0.2, 0.8, 0.2)
+      CALL GSCR(IWKID, 10, 0.2, 0.8, 0.2)
 C DeepSkyBlue
-      CALL GSCR(1, 11, 0.0, 0.75, 1.0)
+      CALL GSCR(IWKID, 11, 0.0, 0.75, 1.0)
 C RoyalBlue
-      CALL GSCR(1, 12, 0.25, 0.45, 0.95)
+      CALL GSCR(IWKID, 12, 0.25, 0.45, 0.95)
 C SlateBlue
-      CALL GSCR(1, 13, 0.4, 0.35, 0.8)
+      CALL GSCR(IWKID, 13, 0.4, 0.35, 0.8)
 C DarkViolet
-      CALL GSCR(1, 14, 0.6, 0.0, 0.8)
+      CALL GSCR(IWKID, 14, 0.6, 0.0, 0.8)
 C Orchid
-      CALL GSCR(1, 15, 0.85, 0.45, 0.8)
+      CALL GSCR(IWKID, 15, 0.85, 0.45, 0.8)
 C Lavender
-      CALL GSCR(1, 16, 0.8, 0.8, 1.0)
+      CALL GSCR(IWKID, 16, 0.8, 0.8, 1.0)
 C Gray
-      CALL GSCR(1, 17, 0.7, 0.7, 0.7)
+      CALL GSCR(IWKID, 17, 0.7, 0.7, 0.7)
 C Done.
 C
         RETURN

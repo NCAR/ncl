@@ -1,6 +1,12 @@
 C
-C	$Id: cmpgrp.f,v 1.1 1993-01-13 17:59:51 haley Exp $
+C	$Id: cmpgrp.f,v 1.2 1994-07-08 21:39:42 stautler Exp $
 C
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
 	REAL PLIM1(2), PLIM2(2), PLIM3(2), PLIM4(2)
 
 	DATA PLIM1 /0.,0./
@@ -10,26 +16,30 @@ C
 C
 C Open GKS, Turn Clipping off
 C
-	CALL OPNGKS 
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C INVOKE DEMO DRIVER
 C
 	CALL CMPFIL('SV',40.,-50.,0.,'PO',
-     +		'MA',PLIM1,PLIM2,PLIM3,PLIM4,10.)
+     +		'MA',PLIM1,PLIM2,PLIM3,PLIM4,10.,IWKID)
 C
 C Advance the frame.
 C
 	CALL FRAME
 C
-C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
+C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
-	CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	STOP
 	END
 
 	SUBROUTINE CMPFIL(PROJ, PLAT, PLON, ROTA, OUTLN,
-     +		JLIM, PLIM1, PLIM2, PLIM3, PLIM4, GRD)
+     +		JLIM, PLIM1, PLIM2, PLIM3, PLIM4, GRD, IWKID)
 
 	EXTERNAL MASK
 	EXTERNAL FILL
@@ -44,7 +54,7 @@ C CMPLOT demonstrates MAPLOT drawing continental and political outlines
 C
 C Set up Maps.
 C
-	CALL COLOR
+	CALL COLOR(IWKID)
 	CALL DASHDB(65535)
 C
 C Set up 9 vertical strips
@@ -131,47 +141,47 @@ C Otherwise, do nothing
 
 	RETURN
 	END
-      SUBROUTINE COLOR
+      SUBROUTINE COLOR(IWKID)
 C
 C     BACKGROUND COLOR
 C     BLACK
-      CALL GSCR(1,0,0.,0.,0.)
+      CALL GSCR(IWKID,0,0.,0.,0.)
 C
 C     FORGROUND COLORS
 C White
-      CALL GSCR(1,  1, 1.0, 1.0, 1.0)
+      CALL GSCR(IWKID,  1, 1.0, 1.0, 1.0)
 C Aqua
-      CALL GSCR(1,  2, 0.0, 0.9, 1.0)
+      CALL GSCR(IWKID,  2, 0.0, 0.9, 1.0)
 C Red
-      CALL GSCR(1,  3, 0.9, 0.25, 0.0)
+      CALL GSCR(IWKID,  3, 0.9, 0.25, 0.0)
 C OrangeRed
-      CALL GSCR(1,  4, 1.0, 0.0, 0.2)
+      CALL GSCR(IWKID,  4, 1.0, 0.0, 0.2)
 C Orange
-      CALL GSCR(1,  5, 1.0, 0.65, 0.0)
+      CALL GSCR(IWKID,  5, 1.0, 0.65, 0.0)
 C Yellow
-      CALL GSCR(1,  6, 1.0, 1.0, 0.0)
+      CALL GSCR(IWKID,  6, 1.0, 1.0, 0.0)
 C GreenYellow
-      CALL GSCR(1,  7, 0.7, 1.0, 0.2)
+      CALL GSCR(IWKID,  7, 0.7, 1.0, 0.2)
 C Chartreuse
-      CALL GSCR(1,  8, 0.5, 1.0, 0.0)
+      CALL GSCR(IWKID,  8, 0.5, 1.0, 0.0)
 C Celeste
-      CALL GSCR(1,  9, 0.2, 1.0, 0.5)
+      CALL GSCR(IWKID,  9, 0.2, 1.0, 0.5)
 C Green
-      CALL GSCR(1, 10, 0.2, 0.8, 0.2)
+      CALL GSCR(IWKID, 10, 0.2, 0.8, 0.2)
 C DeepSkyBlue
-      CALL GSCR(1, 11, 0.0, 0.75, 1.0)
+      CALL GSCR(IWKID, 11, 0.0, 0.75, 1.0)
 C RoyalBlue
-      CALL GSCR(1, 12, 0.25, 0.45, 0.95)
+      CALL GSCR(IWKID, 12, 0.25, 0.45, 0.95)
 C SlateBlue
-      CALL GSCR(1, 13, 0.4, 0.35, 0.8)
+      CALL GSCR(IWKID, 13, 0.4, 0.35, 0.8)
 C DarkViolet
-      CALL GSCR(1, 14, 0.6, 0.0, 0.8)
+      CALL GSCR(IWKID, 14, 0.6, 0.0, 0.8)
 C Orchid
-      CALL GSCR(1, 15, 0.85, 0.45, 0.8)
+      CALL GSCR(IWKID, 15, 0.85, 0.45, 0.8)
 C Lavender
-      CALL GSCR(1, 16, 0.8, 0.8, 1.0)
+      CALL GSCR(IWKID, 16, 0.8, 0.8, 1.0)
 C Gray
-      CALL GSCR(1, 17, 0.7, 0.7, 0.7)
+      CALL GSCR(IWKID, 17, 0.7, 0.7, 0.7)
 C Done.
 C
         RETURN

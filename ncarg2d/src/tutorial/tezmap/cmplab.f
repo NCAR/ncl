@@ -1,6 +1,12 @@
 C
-C	$Id: cmplab.f,v 1.1 1993-01-13 18:00:01 haley Exp $
+C	$Id: cmplab.f,v 1.2 1994-07-08 21:39:44 stautler Exp $
 C
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
 	REAL PLIM1(2), PLIM2(2), PLIM3(2), PLIM4(2)
 
 	DATA PLIM1 /0.,0./
@@ -10,19 +16,23 @@ C
 C
 C Open GKS, Turn Clipping off
 C
-      CALL OPNGKS 
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C INVOKE DEMO DRIVER
 C
-      CALL CMPLAB('SV',40.,-50.,0.,'PO','MA',0., 0.,0.,0.,10.)
+        CALL CMPLAB('SV',40.,-50.,0.,'PO','MA',0., 0.,0.,0.,10.)
 C
 C Advance the frame.
 C
         CALL FRAME
 C
-C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
+C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
-      CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 
 	STOP
 	END

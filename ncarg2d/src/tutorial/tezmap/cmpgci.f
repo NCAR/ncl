@@ -1,17 +1,25 @@
 C
-C	$Id: cmpgci.f,v 1.1 1993-01-13 17:59:45 haley Exp $
+C	$Id: cmpgci.f,v 1.2 1994-07-08 21:39:40 stautler Exp $
 C
-      PARAMETER(IGRD=2)
-      PARAMETER(M=180/IGRD,N=360/IGRD)
-      REAL RLAT(100),RLON(100)
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      	PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
+      	PARAMETER(IGRD=2)
+      	PARAMETER(M=180/IGRD,N=360/IGRD)
+      	REAL RLAT(100),RLON(100)
 C
 C Open GKS.
 C
-      CALL OPNGKS
+      	CALL GOPKS (IERRF, ISZDM)
+      	CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      	CALL GACWK (IWKID)
 C
 C Draw a map
 C
-      CALL SUPMAP(8,0.,-50.,0.,0.,-80.,90.,10.,2,0.,0,0,IERR)
+      	CALL SUPMAP(8,0.,-50.,0.,0.,-80.,90.,10.,2,0.,0,0,IERR)
 
 C
 C Get data values defining a great circle between Washinton DC and
@@ -31,15 +39,17 @@ C
 C
 C Advance the frame.
 C
-      CALL FRAME
+      	CALL FRAME
 C
 C Close GKS.
 C
-      CALL CLSGKS
+      	CALL GDAWK (IWKID)
+      	CALL GCLWK (IWKID)
+      	CALL GCLKS
 C
 C Done.
 C
-      STOP
+      	STOP
 C
-      END
+      	END
 

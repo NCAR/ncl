@@ -1,23 +1,32 @@
 C
-C	$Id: cmpgrd.f,v 1.3 1993-04-12 18:01:55 adrianne Exp $
+C	$Id: cmpgrd.f,v 1.4 1994-07-08 21:39:41 stautler Exp $
 C
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Open GKS, Turn Clipping off
 C
-      CALL OPNGKS 
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C INVOKE DEMO DRIVER
 C
-      CALL CMPGRD
+      CALL CMPGRD(IWKID)
 C
 C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 
       STOP
       END
 
-      SUBROUTINE CMPGRD 
+      SUBROUTINE CMPGRD(IWKID) 
 C
 C CMPGRD demonstrates drawing grid lines, and use of MAPINT
 C
@@ -30,7 +39,7 @@ C
 C
 C Set up color table
 C
-	CALL COLOR
+	CALL COLOR(IWKID)
 C
 C Draw Continental, political outlines in magenta
 C
@@ -76,20 +85,20 @@ C Done.
 C
         RETURN
 	END
-      SUBROUTINE COLOR
+      SUBROUTINE COLOR(IWKID)
 C
 C     BACKGROUND COLOR
 C The background is white here for better visibility on paper
-      CALL GSCR(1,0,1.,1.,1.)
+      CALL GSCR(IWKID,0,1.,1.,1.)
 C
 C     FORGROUND COLORS
-	CALL GSCR(1,1,.7,0.,0.)
-	CALL GSCR(1,2,0.,.7,0.)
-	CALL GSCR(1,3,.7,.4,0.)
-	CALL GSCR(1,4,.3,.3,.7)
-	CALL GSCR(1,5,.7,0.,.7)
-	CALL GSCR(1,6,0.,.7,.7)
-	CALL GSCR(1,7,0.,0.,0.)
+	CALL GSCR(IWKID,1,.7,0.,0.)
+	CALL GSCR(IWKID,2,0.,.7,0.)
+	CALL GSCR(IWKID,3,.7,.4,0.)
+	CALL GSCR(IWKID,4,.3,.3,.7)
+	CALL GSCR(IWKID,5,.7,0.,.7)
+	CALL GSCR(IWKID,6,0.,.7,.7)
+	CALL GSCR(IWKID,7,0.,0.,0.)
 
 	RETURN
 	END

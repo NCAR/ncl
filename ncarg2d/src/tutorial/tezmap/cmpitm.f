@@ -1,9 +1,14 @@
 C
-C	$Id: cmpitm.f,v 1.2 1993-05-06 15:20:32 haley Exp $
+C	$Id: cmpitm.f,v 1.3 1994-07-08 21:39:43 stautler Exp $
 C
 C
 C This program draws a map, then it draws the projection of a circle, 
 C which is masked over land.
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C The arrays CLAT and CLON will be used to hold lat/lon pairs defining
 C the desired circle.
@@ -22,11 +27,13 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Draw the map, and set up area map.
 C
-      CALL CMPMSK('ME',0.,-75.,0.,'PS','CO',
+      	CALL CMPMSK('ME',0.,-75.,0.,'PS','CO',
      +		PLIM1,PLIM2,PLIM3,PLIM4,2.,MAP,LMAP)
 C
 C Define a circle centered at RLAT,RLON
@@ -49,13 +56,15 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C
         STOP
 C
-      END
+      	END
 
 
         SUBROUTINE CIRCLE (RLAT,RLON,RADIUS,CLAT,CLON,NPTS)
