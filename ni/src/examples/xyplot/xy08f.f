@@ -1,5 +1,5 @@
 C
-C      $Id: xy08f.f,v 1.1 1995-04-28 23:45:14 haley Exp $
+C      $Id: xy08f.f,v 1.2 1995-05-11 16:16:09 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -76,12 +76,12 @@ C
  10   continue
       open(unit=10,file=filenm,status='old',form='formatted',err=104)
       do 30 i = 1,NCURVE
-         read(10,*)(xcoord(j,i),j=1,len(i)*2)
+         read(10,1001)(xcoord(j,i),j=1,len(i)*2)
          do 20 j = 1,len(i)*2
             xcoord(j,i) = 2.**((xcoord(j,i)-15.)/2.5)
  20      continue
  30   continue
-
+ 1001 format(1X,24F5.1)
       do 50 i = 1,NCURVE
          do 40 j = 2,len(i)*2,2
             xdra(j/2,i) = xcoord(j-1,i)
