@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.53 1998-05-27 21:39:54 ethan Exp $
+ *      $Id: NclVar.c,v 1.54 1998-11-24 18:06:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1218,7 +1218,6 @@ char* coordname;
 
 
 
-
 static NhlErrorTypes VarWrite
 #if	NhlNeedProto
 (NclVar self,struct _NclMultiDValDataRec *value, NclSelectionRecord *sel_ptr)
@@ -1273,7 +1272,7 @@ NclSelectionRecord *sel_ptr;
 						thevalue->multidval.dim_sizes[i]) {
 						
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension sizes of left hand side and right hand side of assignment do not match");
-						if(tmp_md->obj.status == TEMPORARY) {
+						if((tmp_md!=value) &&(tmp_md->obj.status == TEMPORARY)) {
 							_NclDestroyObj((NclObj)tmp_md);
 						}
 						return(NhlFATAL);
