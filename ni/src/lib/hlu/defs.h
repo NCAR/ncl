@@ -1,5 +1,5 @@
 /*
- *      $Id: defs.h,v 1.6 1994-04-19 00:04:43 boote Exp $
+ *      $Id: defs.h,v 1.7 1994-08-11 21:37:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,23 +33,6 @@
 #define NhlDOCREF(url,anchortext)
 #define NhlSRCREF(srcfileurl)
 
-/* environment variable names for resource file locations */
-/* The sysresfile is kept in $NCARG_LIB/ncarg/hluresfile for now */
-#ifndef NhlSYSRESENVNAME
-#define NhlSYSRESENVNAME	"NCARG_SYSRESFILE"
-#endif
-
-#ifndef NhlDEFSYSRESFNAME
-#define NhlDEFSYSRESFNAME	"hluresfile"
-#endif
-
-#ifndef NhlUSRRESENVNAME
-#define NhlUSRRESENVNAME	"NCARG_USRRESFILE"
-#endif
-#ifndef NhlDEFUSRRESFNAME
-#define NhlDEFUSRRESFNAME	"~/.hluresfile"
-#endif
-
 /* max characters in a "line" */
 #define _NhlMAXLINELEN (256)
 
@@ -76,10 +59,11 @@
 /* how many layer pointers to alloc at a time when more are needed */
 #define _NhlLAYERLISTINC	(128)
 
-/* usefull defines for specifying a layer has no parent */
+/* usefull defines for specifying a layer has no parent or default app parent */
 #define NhlNULL_LAYER	((int)(NULL))
 #define NhlNULL_PARENT	NhlNULL_LAYER
 #define NhlNOPARENT	NhlNULL_LAYER
+#define	NhlDEFAULT_APP	NhlNULL_LAYER
 
 
 /* defines for the converter hash table */

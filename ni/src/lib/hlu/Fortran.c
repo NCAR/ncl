@@ -1,5 +1,5 @@
 /*
- *      $Id: Fortran.c,v 1.2 1994-07-12 20:52:00 boote Exp $
+ *      $Id: Fortran.c,v 1.3 1994-08-11 21:37:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,12 @@ static NrmQuark	FExpStrQ;
 static NrmQuark	FExpStrArrQ;
 static NrmQuark	FExpArrQ;
 
+static void FortranInit(
+#if	NhlNeedProto
+	void
+#endif
+);
+
 /*
  * Function:	nhl_frlcreate
  *
@@ -68,9 +74,15 @@ _NHLCALLF(nhl_frlcreate,NHL_FRLCREATE)
 	int			*ltype_len;
 #endif
 {
-	char		tstring[_NhlMAXRESNAMLEN];
-	NhlRLType	rltype;
-	NrmValue	from, to;
+	static NhlBoolean	initialized = False;
+	char			tstring[_NhlMAXRESNAMLEN];
+	NhlRLType		rltype;
+	NrmValue		from, to;
+
+	if(!initialized){
+		FortranInit();
+		initialized = True;
+	}
 
 	if(!_NhlFstrToCstr(tstring,NhlNumber(tstring),ltype,*ltype_len)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1573,8 +1585,8 @@ _NHLCALLF(nhl_frlgetstringarray,NHL_FRLGETSTRINGARRAY)
  * Returns:	void
  * Side Effect:	
  */
-void
-_NhlFortranInit
+static void
+FortranInit
 #if	NhlNeedProto
 (
 	void

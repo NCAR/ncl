@@ -1,5 +1,5 @@
 /*
- *      $Id: Close.c,v 1.6 1994-05-12 23:50:27 boote Exp $
+ *      $Id: Close.c,v 1.7 1994-08-11 21:36:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -53,15 +53,14 @@ static void _NhlClose
 	_NhlC_OR_F	close_type;
 #endif
 {
-	/* destroy the workspace manager */
-
-	_NhlCloseWorkspace();
-
-	/* free error handling	*/
-	_NhlCloseError();
-	_NhlDestroyResDatabase();
-	_NhlDestroyLayerTable();
+	/*
+	 * Destroy all remaining RL lists.
+	 */
 	_NhlDestroyRLList();
+	/*
+	 * Destroy all remaining layer objects.
+	 */
+	_NhlDestroyLayerTable();
 
 	return;
 }

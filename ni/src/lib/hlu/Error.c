@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.10 1994-07-12 20:51:57 boote Exp $
+ *      $Id: Error.c,v 1.11 1994-08-11 21:36:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -42,7 +42,8 @@
 #define	TABLELISTINC	10
 #define	ERRLISTINC	32
 
-static char	def_file[] = "stderr";
+static char		def_file[] = "stderr";
+static NhlErrorLayer	errorLayer = NULL;
 #define	DEF_FILE	def_file
 #define	DEF_UNIT	(74)
 
@@ -65,7 +66,7 @@ static NhlResource resources[] = {
 		Oset(error_file),NhlTImmediate,(NhlPointer)DEF_FILE,0,
 							(_NhlFreeFunc)NhlFree},
 	{_NhlNerrMode,_NhlCerrMode,NhlTInteger,sizeof(_NhlC_OR_F),
-		Oset(error_mode),NhlTImmediate,(NhlPointer)_NhlFNONE,0,NULL}
+		Oset(error_mode),NhlTImmediate,(NhlPointer)_NhlNONE,0,NULL}
 };
 #undef Oset
 
@@ -340,6 +341,8 @@ ErrorInitialize
 	int		nargs;	/* nargs	*/
 #endif
 {
+	extern int	sys_nerr;
+	extern char	*sys_errlist[];
 	NhlErrorLayerClass	elc = (NhlErrorLayerClass)lc;
 	NhlErrorLayer		enew = (NhlErrorLayer)new;
 	NhlLayerClass		childclass;
@@ -385,7 +388,7 @@ ErrorInitialize
 		else if(strcmp(tfname,"stdout") == 0)
 			cchild->cerror.fp = stdout;
 		else{
-			tfname = _NhlResolvePath(enew->error.error_file);
+			tfname = _NGResolvePath(enew->error.error_file);
 			cchild->cerror.fp = fopen(tfname,"w");
 			if(cchild->cerror.fp == NULL){
 				NHLPERROR((NhlWARNING,errno,
@@ -435,7 +438,7 @@ ErrorInitialize
 					int		ffname_len;
 
 					tfname =
-					_NhlResolvePath(enew->error.error_file);
+					_NGResolvePath(enew->error.error_file);
 
 					if(tfname){
 
@@ -489,7 +492,7 @@ ErrorInitialize
 					fchild->ferror.eunit = DEF_UNIT;
 
 					tfname =
-					_NhlResolvePath(enew->error.error_file);
+					_NGResolvePath(enew->error.error_file);
 
 					if(tfname){
 						ffname_len = strlen(tfname);
@@ -535,6 +538,13 @@ ErrorInitialize
 	enew->error.len_etables = 0;
 
 	elc->error_class.num_error_instances = 1;
+
+	errorLayer = enew;
+
+	ret = NhlErrAddTable(0,sys_nerr,(Const char **)sys_errlist);
+	if (ret != NhlNOERROR){
+		NHLPERROR((ret,NhlEUNKNOWN,"Error loading System Error Table"));
+	}
 
 	return(ret);
 }
@@ -632,7 +642,7 @@ ErrorSetValues
 					tfptr = stdout;
 				else{
 					tfname =
-					_NhlResolvePath(enew->error.error_file);
+					_NGResolvePath(enew->error.error_file);
 					if(tfname)
 						tfptr = fopen(tfname,"w");
 					if(!tfname || !tfptr){
@@ -686,7 +696,7 @@ ErrorSetValues
 				_NhlFString	ffname;
 				int		ffname_len;
 
-				tfname =_NhlResolvePath(enew->error.error_file);
+				tfname =_NGResolvePath(enew->error.error_file);
 
 				if(tfname){
 					ffname_len = strlen(tfname);
@@ -884,6 +894,8 @@ ErrorDestroy
 	(void)NhlFree(el->error.emsgs);
 	(void)NhlFree(el->error.etables);
 
+	errorLayer = NULL;
+
 	return ret;
 }
 
@@ -892,93 +904,6 @@ ErrorDestroy
 *	Private API for Error handling					*
 *									*
 ************************************************************************/
-
-static NhlBoolean Error_inited = False;
-static NhlErrorLayer errorLayer = NULL;
-
-/*
- * Function:	_NhlInitError
- *
- * Description:	This function initializes the error handler for the hlu
- *		library.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	Global Private
- * Returns:	
- * Side Effect:	
- */
-void
-_NhlInitError
-#if	NhlNeedProto
-(
-	_NhlC_OR_F	init_mode
-)
-#else
-(init_mode)
-	_NhlC_OR_F	init_mode;
-#endif
-{
-	extern int	sys_nerr;
-	extern char	*sys_errlist[];
-
-	if(!Error_inited){
-		int tmp;
-		NhlErrorTypes ret = NhlNOERROR;
-
-		ret = NhlVACreate(&tmp,"error",NhlerrorLayerClass,NhlNOPARENT,
-				_NhlNerrMode,	init_mode,
-				NULL);
-		if(ret < NhlWARNING){
-			NHLPERROR((ret,NhlEUNKNOWN,
-					"Error Creating ErrorClass object"));
-			return;
-		}
-
-		errorLayer = (NhlErrorLayer)_NhlGetLayer(tmp);
-
-		Error_inited = True;
-
-
-		ret = NhlErrAddTable(0,sys_nerr,(Const char **)sys_errlist);
-		if (ret != NhlNOERROR){
-			NHLPERROR((ret,NhlEUNKNOWN,
-					"Error loading System Error Table"));
-		}
-	}
-
-	return;
-}
-
-/*
- * Function:	_NhlCloseError
- *
- * Description:	This function is used to destroy and free any memory associated
- *		with the error reporting module of the hlu library.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	Global Private
- * Returns:	void
- * Side Effect:	
- */
-void
-_NhlCloseError
-#if	NhlNeedProto
-(
-	void
-)
-#else
-()
-#endif
-{
-	NhlDestroy(errorLayer->base.id);
-	errorLayer = NULL;
-}
 
 /*
  * Function:	RetrieveSysError
@@ -1009,13 +934,13 @@ RetrieveSysError
 {
 	int i, error;
 
-	if(Error_inited && (errorLayer != NULL)){
-		for(i=0;i < errorLayer->error.num_etables;i++){
-			error = errnum - errorLayer->error.etables[i].start;
-			if((error >= 0) &&
-				(error < errorLayer->error.etables[i].len)){
-				return errorLayer->error.etables[i].errs[error];
-			}
+	if(errorLayer == NULL)
+		return NULL;
+
+	for(i=0;i < errorLayer->error.num_etables;i++){
+		error = errnum - errorLayer->error.etables[i].start;
+		if((error >= 0) && (error < errorLayer->error.etables[i].len)){
+			return errorLayer->error.etables[i].errs[error];
 		}
 	}
 
@@ -1152,7 +1077,7 @@ AddErrMsg
 	static char buffer[MAXERRMSGLEN];
 
 	/* if error instance not init'ed - print to sterr */
-	if(!Error_inited || (errorLayer == NULL))
+	if(errorLayer == NULL)
 		return NhlErrFPrintMsg(stderr,msg);
 
 	/* if msg severity > level requested return NULL */
@@ -1422,7 +1347,7 @@ NhlErrGetID
 ()
 #endif
 {
-	if(Error_inited && (errorLayer != NULL))
+	if(errorLayer != NULL)
 		return errorLayer->base.id;
 
 	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can't find Error Object"));
@@ -1482,7 +1407,7 @@ NhlErrNumMsgs
 ()
 #endif
 {
-	if(Error_inited && (errorLayer != NULL))
+	if(errorLayer != NULL)
 		return errorLayer->error.num_emsgs;
 
 	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can't find Error Object"));
@@ -1547,18 +1472,18 @@ NhlErrGetMsg
 	Const NhlErrMsg	**msg;	/* return msg		*/
 #endif
 {
-	if(Error_inited && (errorLayer != NULL)){
-		if(((msgnum-1) < errorLayer->error.num_emsgs) && (msgnum > 0)){
-			*msg = &errorLayer->error.emsgs[msgnum-1];
-			return NhlNOERROR;
-		}
-
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"message number %d doesn't exist",
-								msgnum));
+	if(errorLayer == NULL){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can't find Error Object"));
 		return NhlFATAL;
 	}
 
-	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can't find Error Object"));
+	if(((msgnum-1) < errorLayer->error.num_emsgs) && (msgnum > 0)){
+		*msg = &errorLayer->error.emsgs[msgnum-1];
+		return NhlNOERROR;
+	}
+
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"message number %d doesn't exist",
+								msgnum));
 	return NhlFATAL;
 }
 
@@ -1662,21 +1587,21 @@ NhlErrClearMsgs
 {
 	int	i;
 
-	if(Error_inited && (errorLayer != NULL)){
-		for(i=0;i < errorLayer->error.num_emsgs;i++){
-			(void)NhlFree(errorLayer->error.emsgs[i].msg);
-			(void)NhlFree(errorLayer->error.emsgs[i].fname);
-		}
-		(void)NhlFree(errorLayer->error.emsgs);
-		errorLayer->error.emsgs = NULL;
-		errorLayer->error.num_emsgs = 0;
-		errorLayer->error.len_emsgs = 0;
-
-		return NhlNOERROR;
+	if(errorLayer == NULL){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can't find Error Object"));
+		return NhlFATAL;
 	}
 
-	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can't find Error Object"));
-	return NhlFATAL;
+	for(i=0;i < errorLayer->error.num_emsgs;i++){
+		(void)NhlFree(errorLayer->error.emsgs[i].msg);
+		(void)NhlFree(errorLayer->error.emsgs[i].fname);
+	}
+	(void)NhlFree(errorLayer->error.emsgs);
+	errorLayer->error.emsgs = NULL;
+	errorLayer->error.num_emsgs = 0;
+	errorLayer->error.len_emsgs = 0;
+
+	return NhlNOERROR;
 }
 
 /*
@@ -1745,62 +1670,57 @@ NhlErrAddTable
 	unsigned end;
 	unsigned tstart, tend;
 
-	if(Error_inited && (errorLayer != NULL)){
-
-		/*
-		 * make sure new table has a valid range
-		 */
-		for(i=0;i < errorLayer->error.num_etables;i++){
-			end = start + tlen;
-			tstart = errorLayer->error.etables[i].start;
-			tend = tstart + errorLayer->error.etables[i].len;
-
-			if(((start > tstart) && (start < tend)) ||
-			   ((end > tstart) && (end < tend))){
-
-				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-				"Table being added overlaps a previous table"));
-				return NhlFATAL;
-			}
-		}
-
-		/*
-		 * Increase size of table if needed
-		 */
-		if(errorLayer->error.len_etables <
-					errorLayer->error.num_etables + 1){
-			errorLayer->error.etables =
-				(NhlETable *)NhlRealloc(errorLayer->error.etables,
-				(unsigned)((errorLayer->error.len_etables +
-					TABLELISTINC) * sizeof(NhlETable)));
-			if(errorLayer->error.etables == NULL){
-				errorLayer->error.len_etables = 0;
-				errorLayer->error.num_etables = 0;
-
-				NHLPERROR((NhlFATAL,errno,
-				"Unable to allocate memory for error table"));
-				return NhlFATAL;
-			}
-			else
-				errorLayer->error.len_etables += TABLELISTINC;
-		}
-
-		/*
-		 * Add table into list
-		 */
-		errorLayer->error.etables[errorLayer->error.num_etables].start =
-									start;
-		errorLayer->error.etables[errorLayer->error.num_etables].len =
-									tlen;
-		errorLayer->error.etables[errorLayer->error.num_etables].errs =
-									etable;
-		errorLayer->error.num_etables++;
-
-		return NhlNOERROR;
+	if(errorLayer == NULL){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can't find Error Object"));
+		return NhlFATAL;
 	}
 
-	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can't find Error Object"));
-	return NhlFATAL;
+	/*
+	 * make sure new table has a valid range
+	 */
+	for(i=0;i < errorLayer->error.num_etables;i++){
+		end = start + tlen;
+		tstart = errorLayer->error.etables[i].start;
+		tend = tstart + errorLayer->error.etables[i].len;
+
+		if(((start > tstart) && (start < tend)) ||
+			   ((end > tstart) && (end < tend))){
+
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"Table being added overlaps a previous table"));
+			return NhlFATAL;
+		}
+	}
+
+	/*
+	 * Increase size of table if needed
+	 */
+	if(errorLayer->error.len_etables < errorLayer->error.num_etables + 1){
+		errorLayer->error.etables = (NhlETable *)
+					NhlRealloc(errorLayer->error.etables,
+				(unsigned)((errorLayer->error.len_etables +
+					TABLELISTINC) * sizeof(NhlETable)));
+		if(errorLayer->error.etables == NULL){
+			errorLayer->error.len_etables = 0;
+			errorLayer->error.num_etables = 0;
+
+			NHLPERROR((NhlFATAL,errno,
+				"Unable to allocate memory for error table"));
+			return NhlFATAL;
+		}
+		else
+			errorLayer->error.len_etables += TABLELISTINC;
+	}
+
+	/*
+	 * Add table into list
+	 */
+	errorLayer->error.etables[errorLayer->error.num_etables].start = start;
+	errorLayer->error.etables[errorLayer->error.num_etables].len = tlen;
+	errorLayer->error.etables[errorLayer->error.num_etables].errs = etable;
+	errorLayer->error.num_etables++;
+
+	return NhlNOERROR;
 }
 
 /*

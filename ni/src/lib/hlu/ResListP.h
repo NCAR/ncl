@@ -1,5 +1,5 @@
 /*
- *      $Id: ResListP.h,v 1.2 1994-03-23 15:27:33 boote Exp $
+ *      $Id: ResListP.h,v 1.3 1994-08-11 21:37:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -74,12 +74,6 @@ extern NhlBoolean _NhlRLToArgList(
 	NhlRLType	action,	/* type of RL action		*/
 	_NhlArgList	args,	/* args <return>		*/
 	int		*nargs	/* number of args <return>	*/
-#endif
-);
-
-extern void _NhlInitRLList(
-#if	NhlNeedProto
-	void
 #endif
 );
 

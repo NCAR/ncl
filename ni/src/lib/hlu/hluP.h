@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.17 1994-07-12 20:53:45 boote Exp $
+ *      $Id: hluP.h,v 1.18 1994-08-11 21:37:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -104,6 +104,11 @@ typedef struct _NhlLayerRec *NhlLayer;
 	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
 							_NhlDataSpecLayerClassFlag)
 
+#define	_NhlAppLayerClassFlag	0x1000
+#define	_NhlIsApp(instance) \
+	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
+							_NhlAppLayerClassFlag)
+
 #define MIN(a,b)	(((a)<(b))?(a):(b))
 #define MAX(a,b)	(((a)>(b))?(a):(b))
 
@@ -120,7 +125,7 @@ typedef NhlPointer (*_NhlAllocFunc)(
 typedef enum _NhlC_OR_F_{
 	_NhlCLIB,
 	_NhlFLIB,
-	_NhlFNONE
+	_NhlNONE
 } _NhlC_OR_F;
 
 /*
@@ -172,12 +177,6 @@ struct NhlGenArrayRec_{
  * This function is used as an inheritance constant.
  */
 extern void _NhlInherit(
-#if	NhlNeedProto
-	void
-#endif
-);
-
-extern void _NhlInitGetValues(
 #if	NhlNeedProto
 	void
 #endif
@@ -392,18 +391,6 @@ extern NhlErrorTypes _NhlSegDraw(
  * End of Draw.c functions
  */
 
-extern void _NhlConvertersInitialize(
-#if	NhlNeedProto
-	_NhlC_OR_F	init_type
-#endif
-);
-
-extern void _NhlInitResDatabase(
-#if	NhlNeedProto
-	void
-#endif
-);
-
 extern Const char *_NhlGetSysResFile(
 #if	NhlNeedProto
 	void
@@ -413,12 +400,6 @@ extern Const char *_NhlGetSysResFile(
 extern Const char *_NhlGetUsrResFile(
 #if	NhlNeedProto
 	void
-#endif
-);
-
-extern Const char *_NhlResolvePath(
-#if	NhlNeedProto
-	Const char *	/* raw path name	*/
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.13 1994-07-13 17:27:41 dbrown Exp $
+ *      $Id: Workspace.c,v 1.14 1994-08-11 21:37:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -239,7 +239,6 @@ NhlLayerClass NhlworkspaceLayerClass = (NhlLayerClass)
 
 /* private static data */
 
-static int			WSInited = False;
 static NhlWorkspaceLayer	WSLayer = NULL;
 static NhlWorkspaceLayerPart	*WSp = NULL;
 
@@ -282,6 +281,8 @@ WorkspaceClassInitialize
 #endif
 {
 	Qcurrent_size = NrmStringToQuark(NhlNwsCurrentSize);
+	Qfloat = NrmStringToQuark(NhlTFloat);
+	Qint = NrmStringToQuark(NhlTInteger);
 	return NhlNOERROR;
 }
 
@@ -372,6 +373,9 @@ WorkspaceInitialize
 	wsp->total_size = 0;
 	wsp->last_ws_id = 0;
 	wsp->ws_list = NULL;
+
+	WSLayer = wsnew;
+	WSp = (NhlWorkspaceLayerPart *) &(WSLayer->workspace);
 
 	return(ret);
 }
@@ -533,96 +537,8 @@ WorkspaceDestroy
 	NhlWorkspaceLayer	wsl = (NhlWorkspaceLayer) l;
 	NhlWorkspaceLayerPart	*wsp = &(wsl->workspace);
 	NhlWorkspaceRec		*wsrp, *twsrp;
-	
-
-	for (wsrp = wsp->ws_list; wsrp != NULL; wsrp = twsrp) {
-		twsrp = wsrp->next;
-		NhlFree(wsrp);
-	}
-	wsp->ws_list = NULL;
-	return ret;
-}
-
-
-/*
- *	Private API for Workspace management
- */
-
-/*
- * Function:	_NhlInitWorkspace
- *
- * Description:	This function initializes the Workspace object for the hlu
- *		library.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	Global Private
- * Returns:	
- * Side Effect:	
- */
-void _NhlInitWorkspace
-#if	__STDC__
-(
-	void
-)
-#else
-()
-#endif
-{
-	NhlErrorTypes	ret = NhlNOERROR;
-        char            *e_text;
-        char            *entry_name = "_NhlInitWorkspace";
-	int		pid;
-
-	if (WSInited)
-		return;
-
-	ret = NhlVACreate(&pid,"workspace",
-			  NhlworkspaceLayerClass,NhlNOPARENT,NULL);
-	if (ret < NhlWARNING){
-		e_text = "%s: error creating Workspace object";
-		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-		return;
-	}
-
-	WSLayer = (NhlWorkspaceLayer)_NhlGetLayer(pid);
-	WSp = (NhlWorkspaceLayerPart *) &(WSLayer->workspace);
-	WSInited = True;
-	Qfloat = NrmStringToQuark(NhlTFloat);
-	Qint = NrmStringToQuark(NhlTInteger);
-
-	return;
-}
-
-/*
- * Function:	_NhlCloseWorkspace
- *
- * Description:	Destroys the Workspace layer. The static IdleRec list data
- *		is cleaned up, then freed and the Destroy method for the
- *		Workspace called
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	Global Private
- * Returns:	void
- * Side Effect:	
- */
-void
-_NhlCloseWorkspace
-#if	__STDC__
-(
-	void
-)
-#else
-()
-#endif
-{
-	NhlwsIdleRec	*idlep;
-	int		i;
+	NhlwsIdleRec		*idlep;
+	int			i;
 /*
  * Put all idle records back into the idle rec pool, then free it.
  */
@@ -637,10 +553,16 @@ _NhlCloseWorkspace
 	}
 	NhlFree(IdleRecPool);
 
-	NhlDestroy(WSLayer->base.id);
+	for (wsrp = wsp->ws_list; wsrp != NULL; wsrp = twsrp) {
+		twsrp = wsrp->next;
+		NhlFree(wsrp);
+	}
+	wsp->ws_list = NULL;
+
 	WSLayer = NULL;
 	WSp = NULL;
-	WSInited = False;
+
+	return ret;
 }
 
 /*
@@ -676,7 +598,7 @@ NhlGetWorkspaceObjectID
         char            *e_text;
         char            *entry_name = "NhlWorkspaceGetID";
 
-	if (WSInited && WSLayer != NULL)
+	if (WSLayer != NULL)
 		return WSLayer->base.id;
 
 	e_text = "%s: Workspace object not found";
@@ -750,7 +672,7 @@ int _NhlNewWorkspace
         char            *entry_name = "_NhlNewWorkspace";
 	NhlWorkspaceRec	*wsrp;
 
-	if (! WSInited || WSp == NULL) {
+	if (WSp == NULL) {
 		e_text = "%s: Workspace object in invalid state";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return (int) NhlFATAL;
@@ -804,7 +726,7 @@ void _NhlFreeWorkspace
         char            *entry_name = "_NhlFreeWorkspace";
 	NhlWorkspaceRec	*wsrp;
 
-	if (! WSInited || WSp == NULL) {
+	if (WSp == NULL) {
 		e_text = "%s: Workspace object in invalid state";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return;
@@ -964,7 +886,7 @@ NhlWorkspace *_NhlUseWorkspace
 	NhlWorkspaceRec	*wsrp;
 	int		over_threshold;
 
-	if (! WSInited || WSp == NULL) {
+	if (WSp == NULL) {
 		e_text = "%s: Workspace object in invalid state";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NULL;

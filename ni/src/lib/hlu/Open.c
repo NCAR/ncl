@@ -1,5 +1,5 @@
 /*
- *      $Id: Open.c,v 1.7 1994-05-12 23:51:57 boote Exp $
+ *      $Id: Open.c,v 1.8 1994-08-11 21:37:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,12 +21,7 @@
  *			initialize the hlu library.
  */
 #include <ncarg/hlu/hluP.h>
-#include <ncarg/hlu/ResListP.h>
-#include <ncarg/hlu/FortranP.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/hlu/ResourcesP.h>
-#include <ncarg/hlu/ErrorP.h>
-#include <ncarg/hlu/WorkspaceP.h>
+#include <ncarg/hlu/AppI.h>
 
 /*
  * Function:	_NhlOpen
@@ -53,17 +48,13 @@ static void _NhlOpen
 	_NhlC_OR_F	init_type;
 #endif
 {
-	/* Initialize Resource Mngmt stuff */
-	_NrmInitialize();
-	_NhlConvertersInitialize(init_type);
-	_NhlResourceListInitialize();
-	_NhlInitResDatabase();
+	int	tint;
 
-	/* Initialize Error handling */
-	_NhlInitError(init_type);
-	_NhlInitRLList();
-	_NhlInitGetValues();
-	_NhlInitWorkspace();
+	(void)NhlVACreate(&tint,"hlu",NhlappLayerClass,NhlNOPARENT,
+			_NhlNappMode,	init_type,
+			_NhlNnoAppDB,	True,
+			_NhlNdefApp,	True,
+			NULL);
 
 	return;
 }
@@ -119,7 +110,91 @@ _NHLCALLF(nhl_fopen,NHL_FOPEN)
 #endif
 {
 	_NhlOpen(_NhlFLIB);
-	_NhlFortranInit();
+
+	return;
+}
+
+/*
+ * Function:	_NhlInitialize
+ *
+ * Description:	internal init function - called for "C" and  "Fortran"
+ *		interface.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	void
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static void _NhlInitialize
+#if	__STDC__
+(
+	_NhlC_OR_F	init_type
+)
+#else
+(init_type)
+	_NhlC_OR_F	init_type;
+#endif
+{
+	_NhlSetLang(init_type);
+
+	return;
+}
+
+/*
+ * Function:	NhlInitialize
+ *
+ * Description:	Init function for "C" interface.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void NhlInitialize
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	_NhlInitialize(_NhlCLIB);
+
+	return;
+}
+
+/*
+ * Function:	nhlfinitialize
+ *
+ * Description:	init hlu library for use from the "Fortran" bindings.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_finitialize,NHL_FINITIALIZE)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	_NhlInitialize(_NhlFLIB);
 
 	return;
 }

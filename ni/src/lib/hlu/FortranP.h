@@ -1,5 +1,5 @@
 /*
- *      $Id: FortranP.h,v 1.2 1994-05-12 23:51:18 boote Exp $
+ *      $Id: FortranP.h,v 1.3 1994-08-11 21:37:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -116,13 +116,6 @@ _NhlCstrToFstr(
 	_NhlFString	fstr,
 	unsigned int	fstr_len,
 	Const char	*cstr
-#endif
-);
-
-extern void
-_NhlFortranInit(
-#if	NhlNeedProto
-	void
 #endif
 );
 

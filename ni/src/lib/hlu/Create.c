@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.9 1994-06-03 16:37:57 ethan Exp $
+ *      $Id: Create.c,v 1.10 1994-08-11 21:36:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,7 @@
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/BaseP.h>
+#include <ncarg/hlu/AppI.h>
 #include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/View.h>
 #include <ncarg/hlu/Transform.h>
@@ -141,6 +142,8 @@ InitializeLayerClass
 			inited |= (_NhlDataItemLayerClassFlag);
 		else if(step == NhldataSpecLayerClass)
 			inited |= (_NhlDataSpecLayerClassFlag);
+		else if(step == NhlappLayerClass)
+			inited |= (_NhlAppLayerClassFlag);
 		step = step->base_class.superclass;
 	}
 
@@ -303,7 +306,8 @@ _NhlCreate
 	NrmQuarkList	child;		/* used to create managed child	*/
 #endif
 {
-	NhlLayer		parent = _NhlGetLayer(parentid);
+	char			func[] = "_NhlCreate";
+	NhlLayer		parent;
 	NhlLayer		layer;
 	NhlLayer		request;
 	NhlErrorTypes		ret=NhlNOERROR, lret=NhlNOERROR;
@@ -314,16 +318,31 @@ _NhlCreate
 	NhlBoolean		chld_args_used[_NhlMAXARGLIST];
 	_NhlConvertContext	context=NULL;
 
-	if((parent != NULL) && _NhlIsObj(parent)){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"NhlObjLayer sub-classes cannot have children");
-		return NhlFATAL;
-	}
 
 	if(!(lc->base_class.class_inited)){
 		ret = InitializeLayerClass(lc);
 		if(ret < NhlWARNING)
 			return(ret);
+	}
+
+	if(parentid == NhlNOPARENT){
+		if(lc->base_class.class_inited & _NhlAppLayerClassFlag)
+			parent = NULL;
+		else
+			parent = _NhlGetCurrentApp();
+	}
+	else{
+		parent = _NhlGetLayer(parentid);
+		if(parent == NULL){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Invalid Parent id #%d",func,parentid);
+			return NhlFATAL;
+		}
+		if(_NhlIsObj(parent)){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:NhlObjLayer sub-classes cannot have children",func);
+			return NhlFATAL;
+		}
 	}
 
 	layer = (NhlLayer)NhlMalloc((unsigned)(lc->base_class.layer_size));
@@ -342,6 +361,10 @@ _NhlCreate
 	layer->base.nrm_name = NrmStringToName((name != NULL) ? name : "");
 	layer->base.name = (Const NhlString)
 					NrmNameToString(layer->base.nrm_name);
+	if(parent == NULL)
+		layer->base.appobj = layer;
+	else
+		layer->base.appobj = parent->base.appobj;
 
 /*
  * context is a structure that remembers the memory that is allocated
@@ -361,13 +384,13 @@ _NhlCreate
  * Check for valid parent for Obj sub-classes
  */
 	if(_NhlIsObj(layer)){
-		if(_NhlIsDataMgr(layer)){
-			if((parent == NULL) || !_NhlIsDataItem(parent)){
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"DataMgr objects can only be created as a child of a DataItem Class");
-				(void)NhlFree(layer);
-				return(NhlFATAL);
-			}
+		if(_NhlIsDataMgr(layer) && !_NhlIsDataItem(parent)){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+"%s:DataMgr objects can only be created as a child of a DataItem Class",func);
+			(void)NhlFree(layer);
+			return NhlFATAL;
 		}
+
 	/*
 	 * Resource forwarding is not supported by Obj sub-classes
 	 * so need to set largs to args.
@@ -392,37 +415,41 @@ _NhlCreate
  * by case bases first, and then the default case of getting the workstation
  * from the parent should be done.
  */
+		layer->base.wkptr = NULL;
 		if( _NhlIsWorkstation(layer)){
 			layer->base.wkptr = layer;
-			if(parent != NULL){
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
-"Workstation objects should not have a parent - Resetting parent to NOPARENT");
-				layer->base.parent = NULL;
+			if(!_NhlIsApp(parent)){
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+"%s:Workstation objects must have an App class object for their parent",func);
+				NhlFree(layer);
+				return NhlFATAL;
 			}
 		}
 		else if(_NhlIsError(layer)){
-			if(parent != NULL){
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
-"The Error object should not have a parent - Resetting parent to NOPARENT");
-				layer->base.parent = NULL;
+			if(!_NhlIsApp(parent)){
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+	"%s:The Error object must have an App class object as a parent",func);
+				NhlFree(layer);
+				return NhlFATAL;
 			}
 		}
 		else if(_NhlIsDataItem(layer)){
-			if(parent != NULL){
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"Data objects should not have a parent - Resetting parent to NOPARENT");
-				layer->base.parent = NULL;
+			if(!_NhlIsApp(parent)){
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+"%s:DataItem objects must have an App class object for their parent",func);
+				NhlFree(layer);
+				return NhlFATAL;
 			}
 		}
 		else if(parent != NULL) {
 			layer->base.wkptr = _NhlGetWorkstationLayer(parent);
+			if(layer->base.wkptr == NULL){
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:This object must have a Workstation Ancestor",func);
+				NhlFree(layer);
+				return NhlFATAL;
+			}
 		}
-		else{
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-					"This NhlLayer must have a Parent");
-			(void)NhlFree(layer);
-			return(NhlFATAL);
-		}
-
 /*
  * _NhlSortChildArgs sorts the args into seperate arg lists for the parent
  * and for the children.  The children args are returned as a linked list

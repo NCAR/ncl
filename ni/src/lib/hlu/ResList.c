@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.7 1994-07-12 20:52:48 boote Exp $
+ *      $Id: ResList.c,v 1.8 1994-08-11 21:37:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,12 @@ static NrmQuark	charQ;
 static NrmQuark	byteQ;
 static NrmQuark	shortQ;
 static NrmQuark	doubleQ;
+
+static void InitRLList(
+#if	NhlNeedProto
+	void
+#endif
+);
 
 /*
  * Function:	GetHead
@@ -291,8 +297,14 @@ NhlRLCreate
 	NhlRLType	list_type;
 #endif
 {
-	register int	i;
-	_NhlRLHead	new = NULL;
+	static NhlBoolean	initialized = False;
+	register int		i;
+	_NhlRLHead		new = NULL;
+
+	if(!initialized){
+		InitRLList();
+		initialized = True;
+	}
 
 	/*
 	 * Increase size of table if needed
@@ -2220,7 +2232,47 @@ _NhlRLToArgList
 }
 
 /*
- * Function:	_NhlInitRLList
+ * Function:	_NhlDestroyRLList
+ *
+ * Description:	This function is used to free the ListTable.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NhlDestroyRLList
+#if	NhlNeedProto
+(
+	void
+)
+#else
+()
+#endif
+{
+	int i;
+
+	for(i=0;i < table_len && num_lists > 0;i++)
+		if(ListTable[i] != NULL)
+			NhlRLDestroy(i+1);
+
+	if(num_lists > 0)
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"Not all RL lists destroyed?");
+
+	table_len = 0;
+	num_lists = 0;
+	(void)NhlFree(ListTable);
+	ListTable = NULL;
+
+	return;
+}
+
+/*
+ * Function:	InitRLList
  *
  * Description:	This function is used to initialize the RL interface.
  *
@@ -2232,8 +2284,8 @@ _NhlRLToArgList
  * Returns:	void
  * Side Effect:	
  */
-void
-_NhlInitRLList
+static void
+InitRLList
 #if	NhlNeedProto
 (
 	void
@@ -2271,45 +2323,5 @@ _NhlInitRLList
 
 	(void)NhlRegisterConverter(NhlTGenArray,_NhlTExpTypeArray,
 					CvtGenToExpTypeArray,NULL,0,False,NULL);
-	return;
-}
-
-/*
- * Function:	_NhlDestroyRLList
- *
- * Description:	This function is used to free the ListTable.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	global
- * Returns:	void
- * Side Effect:	
- */
-void
-_NhlDestroyRLList
-#if	NhlNeedProto
-(
-	void
-)
-#else
-()
-#endif
-{
-	int i;
-
-	for(i=0;i < table_len && num_lists > 0;i++)
-		if(ListTable[i] != NULL)
-			NhlRLDestroy(i+1);
-
-	if(num_lists > 0)
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"Not all RL lists destroyed?");
-
-	table_len = 0;
-	num_lists = 0;
-	(void)NhlFree(ListTable);
-	ListTable = NULL;
-
 	return;
 }

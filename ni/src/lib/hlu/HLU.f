@@ -1,5 +1,5 @@
 C
-C $Id: HLU.f,v 1.1 1994-05-12 23:51:24 boote Exp $
+C $Id: HLU.f,v 1.2 1994-08-11 21:37:03 boote Exp $
 C
 C****************************************************************
 C								*
@@ -26,6 +26,10 @@ C	In Open.c
 C
       subroutine nhlfopen
       	call nhl_fopen
+      end
+C
+      subroutine nhlfinitialize
+	call nhl_finitialize
       end
 C
 C	In Close.c

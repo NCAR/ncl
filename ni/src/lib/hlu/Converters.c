@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.19 1994-07-28 22:11:39 boote Exp $
+ *      $Id: Converters.c,v 1.20 1994-08-11 21:36:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1964,11 +1964,10 @@ void
 _NhlConvertersInitialize
 #if	__STDC__
 (
-	_NhlC_OR_F	init_type
+	void
 )
 #else
-(init_type)
-	_NhlC_OR_F	init_type;
+()
 #endif
 {
 	_NhlEnumVals	BoolEnumList[] = {

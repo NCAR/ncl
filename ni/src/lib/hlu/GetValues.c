@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.10 1994-07-12 20:52:03 boote Exp $
+ *      $Id: GetValues.c,v 1.11 1994-08-11 21:37:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -345,6 +345,35 @@ CopyArgToArgptr
 }
 
 /*
+ * Function:	InitGetValues
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static void
+InitGetValues
+#if	NhlNeedProto
+(
+	void
+)
+#else
+()
+#endif
+{
+	stringQ = NrmStringToQuark(NhlTString);
+	genQ = NrmStringToQuark(NhlTGenArray);
+
+	return;
+}
+
+/*
  * Function:	NhlGetValues
  *
  * Description:	This function retrieves the resources specified by the
@@ -376,6 +405,7 @@ NhlGetValues
 	int		rlid;		/* RL id			*/
 #endif
 {
+	static NhlBoolean	Initialized = False;
 	_NhlArg			args[_NhlMAXARGLIST];
 	_NhlArg			gargs[_NhlMAXARGLIST];
 	_NhlGArgExtra		gextra[_NhlMAXARGLIST];
@@ -383,6 +413,11 @@ NhlGetValues
 	NhlLayer		l = _NhlGetLayer(pid);
 	NhlErrorTypes		ret = NhlNOERROR;
 	_NhlConvertContext	context=NULL;
+
+	if(!Initialized){
+		InitGetValues();
+		Initialized = True;
+	}
 
 	if(l == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -685,33 +720,4 @@ NhlALGetValues
 
 
 	return _NhlGetValues(l,args,nargs);
-}
-
-/*
- * Function:	_NhlInitGetValues
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-void
-_NhlInitGetValues
-#if	NhlNeedProto
-(
-	void
-)
-#else
-()
-#endif
-{
-	stringQ = NrmStringToQuark(NhlTString);
-	genQ = NrmStringToQuark(NhlTGenArray);
-
-	return;
 }

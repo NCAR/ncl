@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.19 1994-07-12 20:53:42 boote Exp $
+ *      $Id: hlu.h,v 1.20 1994-08-11 21:37:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -46,6 +46,7 @@
 #endif
 #endif
 
+#include <ncarg/c.h>
 /*
  * Macro:	_NHLCALLF
  *
@@ -55,21 +56,7 @@
  *		called from Fortran.
  */
 #ifndef	_NHLCALLF
-#ifdef	UNICOS
-/* Brain dead cray's */
-#define	_NHLCALLF(reg,caps)	caps
-
-#elif	defined(AIX) || defined(HPUX)
-/* No munging of names - wow how unique */
-#define	_NHLCALLF(reg,caps)	reg
-
-#else	/* Regular old BSD */
-#ifdef	__STDC__
-#define	_NHLCALLF(reg,caps)	reg##_
-#else
-#define	_NHLCALLF(reg,caps)	reg/**/_
-#endif	/* __STDC__ */
-#endif	/* defined... */
+#define	_NHLCALLF(reg,caps)	NGCALLF(reg,caps)
 #endif	/* _NHLCALLF	*/
 
 #define True 1
@@ -336,6 +323,12 @@ extern NhlErrorTypes NhlDraw(
 
 NhlDOCTAG(NhlOpen)
 extern void NhlOpen(
+#ifdef	NhlNeedProto
+	void
+#endif
+);
+
+extern void NhlInitialize(
 #ifdef	NhlNeedProto
 	void
 #endif

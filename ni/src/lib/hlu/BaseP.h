@@ -1,5 +1,5 @@
 /*
- *      $Id: BaseP.h,v 1.4 1994-01-27 21:21:26 boote Exp $
+ *      $Id: BaseP.h,v 1.5 1994-08-11 21:36:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,12 @@
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/ConvertP.h>
 #include <ncarg/hlu/Base.h>
+
+/*
+ * Class name for resources that are used to determine which programming lang.
+ * mode to use.
+ */
+#define	_NhlClangMode	"Lang.Mode"
 
 typedef struct _NhlObjLayerRec *NhlObjLayer;
 typedef struct _NhlObjLayerClassRec *NhlObjLayerClass;
@@ -62,6 +68,7 @@ typedef struct _NhlObjLayerPart {
 	NhlLayer	parent;		/* parent Layer			*/
 	NrmName		nrm_name;	/* Layer resource name quarkified*/
 	Const char	*name;		/* Layer resource name		*/
+	NhlLayer	appobj;		/* App Class Object		*/
 } NhlObjLayerPart;
 
 
@@ -74,6 +81,7 @@ typedef struct _NhlBaseLayerPart {
 	NhlLayer	parent;		/* parent Layer			*/
 	NrmName		nrm_name;	/* Layer resource name quarkified*/
 	Const char	*name;		/* Layer resource name		*/
+	NhlLayer	appobj;		/* App Class Object		*/
 
 /* NOTHING CAN BE ADDED BEFORE HERE UNLESS IT IS ALSO ADDED IN ObjLayerPart */
 

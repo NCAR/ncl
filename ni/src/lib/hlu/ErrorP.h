@@ -1,5 +1,5 @@
 /*
- *      $Id: ErrorP.h,v 1.5 1994-05-12 23:51:14 boote Exp $
+ *      $Id: ErrorP.h,v 1.6 1994-08-11 21:37:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,13 +24,8 @@
 
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/FortranP.h>
-#include <ncarg/hlu/Error.h>
+#include <ncarg/hlu/ErrorI.h>
 
-/*
- * Private resource - defines mode of Error Object (C or Fortran)
- */
-#define	_NhlNerrMode	"err.Mode"
-#define	_NhlCerrMode	"Err.Mode"
 
 typedef struct _NhlErrorLayerRec *NhlErrorLayer;
 typedef struct _NhlErrorLayerClassRec *NhlErrorLayerClass;
@@ -42,19 +37,10 @@ typedef struct _NhlErrorLayerFRec *_NhlErrorLayerF;
 typedef struct _NhlErrorLayerFClassRec *_NhlErrorLayerFClass;
 
 /*
- * Private Global functions
+ * Private resource - defines mode of Error Object (C or Fortran)
  */
-extern void _NhlInitError(
-#if	NhlNeedProto
-	_NhlC_OR_F	init_type
-#endif
-);
-
-extern void _NhlCloseError(
-#if	NhlNeedProto
-	void
-#endif
-);
+#define	_NhlNerrMode	"err.Mode"
+#define	_NhlCerrMode	_NhlClangMode
 
 /*
  * Private structures & definitions

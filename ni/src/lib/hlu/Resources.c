@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.10 1994-07-13 23:14:34 boote Exp $
+ *      $Id: Resources.c,v 1.11 1994-08-11 21:37:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -41,6 +41,7 @@
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/AppI.h>
 
 /*
  * Static vars used to determine resoureces hard-coded defaults
@@ -49,11 +50,6 @@
 static NrmQuark QImmediate = NrmNULLQUARK;
 static NrmQuark QProcedure = NrmNULLQUARK;
 static NrmQuark QString = NrmNULLQUARK;
-
-/*
- * Resource Database
- */
-static NrmDatabase NhlResDB = NULL;
 
 /*
  * Function:	_NhlCopyFromArgVal
@@ -293,6 +289,8 @@ GetResources
 #if	__STDC__
 (
 	_NhlConvertContext	context,/* context for converter allocs	*/
+	NrmDatabase		basedb,	/* ncarg wide db		*/
+	NrmDatabase		appdb,	/* app specific db		*/
 	char			*base,	/* addr to write res-values to	*/
 	NrmQuarkList		nameQ,	/* Qlist of names in instance	*/
 	NrmQuarkList		classQ,	/* Qlist of classes in instance	*/
@@ -303,8 +301,10 @@ GetResources
 	NrmQuarkList		child	/* look at parent's DB level too*/
 )
 #else
-(context,base,nameQ,classQ,resources,num_res,args,num_args,child)
+(context,basedb,appdb,base,nameQ,classQ,resources,num_res,args,num_args,child)
 	_NhlConvertContext	context;/* context for converter allocs	*/
+	NrmDatabase		basedb;	/* ncarg wide db		*/
+	NrmDatabase		appdb;	/* app specific db		*/
 	char			*base;	/* addr to write res-values to	*/
 	NrmQuarkList		nameQ;	/* Qlist of names in instance	*/
 	NrmQuarkList		classQ;	/* Qlist of classes in instance	*/
@@ -320,6 +320,12 @@ GetResources
 	NhlBoolean	argfound[_NhlMAXARGLIST];
 	NhlErrorTypes	ret = NhlNOERROR;
 	NhlErrorTypes	lret = NhlNOERROR;
+	NrmHashTable	astackslist[_NhlMAXRESLIST];
+	NrmHashTable	*aslist = astackslist;
+	int		aslistlen = _NhlMAXRESLIST;
+	NrmHashTable	aPstackslist[_NhlMAXRESLIST];
+	NrmHashTable	*aPslist = aPstackslist;
+	int		aPslistlen = _NhlMAXRESLIST;
 	NrmHashTable	stackslist[_NhlMAXRESLIST];
 	NrmHashTable	*slist = stackslist;
 	int		slistlen = _NhlMAXRESLIST;
@@ -393,7 +399,22 @@ GetResources
  * Retrieve the levels of the ResDB that we actually need
  */
 
-	while(!NrmQGetSearchList(NhlResDB,nameQ,classQ,slist,slistlen)){
+	if(appdb){
+		while(!NrmQGetSearchList(appdb,nameQ,classQ,aslist,aslistlen)){
+
+			if(aslist == astackslist)
+				aslist = NULL;
+		
+			aslistlen *= 2;
+			aslist = (NrmHashTable *)NhlRealloc(aslist,
+					sizeof(NrmHashTable) * aslistlen);
+			if(aslist == NULL)
+				return NhlFATAL;
+		}
+	}
+	else
+		aslist = NULL;
+	while(!NrmQGetSearchList(basedb,nameQ,classQ,slist,slistlen)){
 
 		if(slist == stackslist)
 			slist = NULL;
@@ -401,6 +422,8 @@ GetResources
 		slistlen *= 2;
 		slist = (NrmHashTable *)NhlRealloc(slist,
 					sizeof(NrmHashTable) * slistlen);
+		if(slist == NULL)
+			return NhlFATAL;
 	}
 	if(child != NULL){
 		NrmQuark *tquark;
@@ -416,7 +439,23 @@ GetResources
 		/* SUPPRESS 570 */
 		for(tquark = classQ;*(tquark+1) != NrmNULLQUARK;tquark++);
 		*tquark = NrmNULLQUARK;
-		while(!NrmQGetSearchList(NhlResDB,nameQ,classQ,Pslist,
+		if(appdb){
+			while(!NrmQGetSearchList(appdb,nameQ,classQ,aPslist,
+								aPslistlen)){
+
+				if(aPslist == aPstackslist)
+					aPslist = NULL;
+		
+				aPslistlen *= 2;
+				aPslist = (NrmHashTable *)NhlRealloc(aPslist,
+					sizeof(NrmHashTable) * aPslistlen);
+				if(aPslist == NULL)
+					return NhlFATAL;
+			}
+		}
+		else
+			aPslist = NULL;
+		while(!NrmQGetSearchList(basedb,nameQ,classQ,Pslist,
 								Pslistlen)){
 			if(Pslist == Pstackslist)
 				Pslist = NULL;
@@ -424,6 +463,8 @@ GetResources
 			Pslistlen *= 2;
 			Pslist = (NrmHashTable *)NhlRealloc(Pslist,
 					sizeof(NrmHashTable) * Pslistlen);
+			if(Pslist == NULL)
+				return NhlFATAL;
 		}
 	}
 
@@ -439,9 +480,15 @@ GetResources
 			NrmValue	from, to;
 			NrmQuark	rdbtype;
 
-			if(NrmGetQResFromList(slist,
-					resources[i].nrm_name,
-					resources[i].nrm_class,&rdbtype,&from)){
+			/*
+			 * if app resdb is being used, try from that db first.
+			 */
+			if((aslist && (NrmGetQResFromList(aslist,
+				resources[i].nrm_name,
+				resources[i].nrm_class,&rdbtype,&from)))
+				||
+			(NrmGetQResFromList(slist,resources[i].nrm_name,
+				resources[i].nrm_class,&rdbtype,&from))){
 
 				if(rdbtype != resources[i].nrm_type){
 
@@ -498,9 +545,15 @@ GetResources
 			NrmValue	from, to;
 			NrmQuark	rdbtype;
 
-			if(NrmGetQResFromList(Pslist,
-					resources[i].nrm_name,
-					resources[i].nrm_class,&rdbtype,&from)){
+			/*
+			 * if appdb is being used try there first.
+			 */
+			if((aPslist && (NrmGetQResFromList(aPslist,
+				resources[i].nrm_name,
+				resources[i].nrm_class,&rdbtype,&from)))
+					||
+			(NrmGetQResFromList(Pslist,resources[i].nrm_name,
+				resources[i].nrm_class,&rdbtype,&from))	){
 
 				if(rdbtype != resources[i].nrm_type){
 
@@ -743,8 +796,8 @@ _NhlGetResources
 		return(NhlFATAL);
 	}
 
-	return(GetResources(context,(char*)l, nameQ, classQ,
-				     (NrmResourceList)lc->base_class.resources,
+	return(GetResources(context,_NhlGetBaseDB(l),_NhlGetAppDB(l),(char*)l,
+			nameQ, classQ,(NrmResourceList)lc->base_class.resources,
 			     lc->base_class.num_resources,args,num_args,child));
 }
 
@@ -909,8 +962,7 @@ _NhlGroupResources
  * Function:	_NhlResourceListInitialize
  *
  * Description:	This function initializes static variables needed to compute
- *		resource values later. It uses the static variable ResInit
- *		to determine if it has been called more than once.
+ *		resource values later.
  *
  * In Args:	
  *
@@ -920,8 +972,6 @@ _NhlGroupResources
  * Returns:	
  * Side Effect:	
  */
-static int ResInit = False;
-
 void
 _NhlResourceListInitialize
 #if	__STDC__
@@ -932,109 +982,11 @@ _NhlResourceListInitialize
 () 
 #endif
 { 
-	if(ResInit)
-		return;
-
-	ResInit = True;
-
 	QImmediate = NrmStringToName(NhlTImmediate);
 	QProcedure = NrmStringToName(NhlTProcedure);
 	QString = NrmStringToName(NhlTString);
 
 	return; 
-}
-
-/*
- * Function:	_NhlInitResDatabase
- *
- * Description:	This function is used to initialize the default resource
- *		database that is made up from a system-resource file and
- *		a user-resource file.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	Global Private
- * Returns:	
- * Side Effect:	
- */
-void
-_NhlInitResDatabase
-#if	__STDC__
-(
-	void
-)
-#else
-()
-#endif
-{
-	Const char *sysfile=NULL;
-	Const char *usrfile=NULL;
-
-	sysfile = _NhlGetSysResFile();
-	usrfile = _NhlGetUsrResFile();
-
-	if((void *)sysfile == (void *)NULL){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-				"Unable to Get System Resource File Name?");
-	}
-	else
-		NhlResDB = NrmGetFileDB(sysfile);
-	
-	if((void *)NhlResDB == (void *)NULL){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			"Unable to load System Resource File %s",sysfile);
-	}
-
-	if((void *)usrfile == (void *)NULL){
-		NhlPError(NhlINFO,NhlEUNKNOWN,
-				"Unable to Get User Resource File Name?");
-	}
-	else
-		NrmCombineFileDB(usrfile,&NhlResDB,True);
-
-	if((void *)NhlResDB == (void *)NULL){
-		NrmPutStringRes(&NhlResDB,"DBLoaded","False");
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-	"Unable to Create a Resource DB - Hard coded defaults will be used");
-
-	}
-	else
-		NrmPutStringRes(&NhlResDB,"DBLoaded","True");
-
-	return;
-}
-
-/*
- * Function:	_NhlDestroyResDatabase
- *
- * Description:	This function is used to destroy the default resource
- *		database that is made up from a system-resource file and
- *		a user-resource file.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	Global Private
- * Returns:	
- * Side Effect:	
- */
-void
-_NhlDestroyResDatabase
-#if	__STDC__
-(
-	void
-)
-#else
-()
-#endif
-{
-	NrmDestroyDB(NhlResDB);
-	NhlResDB = NULL;
-
-	return;
 }
 
 /*
