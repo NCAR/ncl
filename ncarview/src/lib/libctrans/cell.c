@@ -1,5 +1,5 @@
 /*
- *	$Id: cell.c,v 1.2 1991-01-09 11:08:35 clyne Exp $
+ *	$Id: cell.c,v 1.3 1991-03-12 14:47:40 clyne Exp $
  */
 /*
  *	cell.c
@@ -41,7 +41,7 @@ cell_prep(P, Q, R, rows, cols, nx, ny)
 	int	left, right;
 	double	inc, tmp;
 
-#if defined(CRAY) || (defined(u370) && defined(unix))
+#if defined(CRAY) || (defined(u370) && defined(unix)) || defined(hpux)
 #define	rint(X)	((int) X)
 #else
 	extern	double	rint();

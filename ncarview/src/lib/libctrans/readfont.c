@@ -1,5 +1,5 @@
 /*
- *	$Id: readfont.c,v 1.2 1991-01-09 11:11:13 clyne Exp $
+ *	$Id: readfont.c,v 1.3 1991-03-12 14:51:10 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,8 +43,6 @@
  *	fontcap is now represented as a single struct an may be read
  *	in with one read
  */ 
-
-extern	char	*malloc();
 
 
 /*	Init_Readfont:
@@ -176,24 +174,17 @@ Ct_err decodefont()
 			fcap_template.char_des[i].p_c = NULL;
 		}
 
-		if ((fcap_template.char_des[i].p_c = (Pen_coord *) 
-			malloc (size * sizeof(Pen_coord))) == NULL) {
+		fcap_template.char_des[i].p_c = (Pen_coord *) 
+			icMalloc (size * sizeof(Pen_coord));
 
-			ct_error(T_MALLOC, "");
-			return(DIE);
-		} 
 
 		if (fcap_current.char_des[i].p_c) {
 			cfree((char *) fcap_current.char_des[i].p_c);
 			fcap_current.char_des[i].p_c = NULL;
 		}
 
-		if ((fcap_current.char_des[i].p_c = (Pen_coord *) 
-			malloc (size * sizeof(Pen_coord))) == NULL) {
-
-			ct_error(T_MALLOC, "");
-			return(DIE);
-		} 
+		fcap_current.char_des[i].p_c = (Pen_coord *) 
+			icMalloc (size * sizeof(Pen_coord));
 
 		F_NUMSTROKE(fcap_template, i) = 
 		F_NUMSTROKE(fcap_current, i) = size;

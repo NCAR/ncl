@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.2 1991-01-09 11:11:47 clyne Exp $
+ *	$Id: text.c,v 1.3 1991-03-12 14:49:09 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -754,7 +754,10 @@ Ct_err	Text(cgmc)
 		/* index into Fontable*/
 		index = string[char_ind] - F_CHAR_START(fcap_template);	
 
-		if (index >= 0 && index < F_NUMCHAR(fcap_template) ) {
+		/* number of strokes making up a character.	*/
+		numstroke = F_NUMSTROKE(fcap_current, index);
+
+		if (index >=0 && index < F_NUMCHAR(fcap_template) && numstroke){
 
 
 			/* calculate possistion of THIS character for
@@ -779,8 +782,6 @@ Ct_err	Text(cgmc)
 			}
 
 
-			/* number of strokes making up a character.	*/
-			numstroke = F_NUMSTROKE(fcap_current, index);
 
 			/* make sure there is room in cgmc for strokes	*/
 			if (cgmc->Pspace <= numstroke) {

@@ -17,7 +17,16 @@ TRANSLATOR	= ictrans
 #ifdef  sgi
 CDEFINES	= -I$(LOCINCDIR) -I/usr/include/bsd
 #else
+#ifdef	sun
+CDEFINES	= -I$(LOCINCDIR) -Bstatic
+#else
+#ifdef	RS6000
+CDEFINES	= -I/R4/usr/include -I$(LOCINCDIR)
+LD_CFLAGS	= $(CFLAGS) -L/R4/usr/lib
+#else
 CDEFINES	= -I$(LOCINCDIR)
+#endif
+#endif
 #endif
 
 #if defined(CRAY)

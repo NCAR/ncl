@@ -4,4 +4,4 @@
 #
 #!/bin/csh
 
-echo /usr/local/lib/libictrans.o /usr/local/lib/libctrans.o  /usr/local/lib/libcgm.a /usr/local/lib/libncarv.a -lX11  -lsuntool -lsunwindow -lpixrect -lm
+echo /u2/ncargfx/test/lib/libictrans.o /u2/ncargfx/test/lib/libctrans.o  /u2/ncargfx/test/lib/libcgm.a /u2/ncargfx/test/lib/libncarv.a -lX11  -lsuntool -lsunwindow -lpixrect -lm

@@ -32,7 +32,6 @@
 #define L_INCR 1
 #endif
 
-#define	DEBUG
 
 #ifdef ardent
 typedef struct
