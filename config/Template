@@ -1,6 +1,6 @@
-#if defined(HP_UX) && defined(HP9000_7xx)
-#define SystemIncludes		"HPUX"
-#define SystemIncludesName	HPUX
+#if defined(HPUX) && defined(HP9000_7xx)
+#define SystemIncludes		"HPUX_snake"
+#define SystemIncludesName	HPUX_snake
 #endif
 
 #if defined(AIX) && defined(RS6000)
