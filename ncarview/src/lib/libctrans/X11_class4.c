@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.22 1993-01-07 00:32:41 clyne Exp $
+ *	$Id: X11_class4.c,v 1.23 1993-01-12 22:05:43 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -42,8 +42,6 @@
 #include	"Xcrm.h"
 #include	"soft_fill.h"
 #include	"translate.h"
-
-extern	Colormap	Cmap;
 
 extern	boolean	Colordef[];
 extern	boolean	*softFill;

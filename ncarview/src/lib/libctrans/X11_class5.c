@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class5.c,v 1.11 1992-09-01 23:41:22 clyne Exp $
+ *	$Id: X11_class5.c,v 1.12 1993-01-12 22:05:46 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,8 +43,6 @@
 #include	"Xcrm.h"
 
 
-Colormap	Cmap;		/* current color map on screen	*/
-
 Pixeltype	Colortab[MAX_COLOR_SIZE]; 	/* index into color map	*/
 boolean		Colordef[MAX_COLOR_SIZE];	/* true if an index in Colortab
 						 * has been allocated
@@ -82,17 +80,22 @@ int	X11_ASF(c)
 /*	init_color: 	
  *
  *		intialize the color table and allocate default colours
+ * on entry
+ *	*foreground	: Default foreground color name
+ *	*background	: Default background color name
+ *	do_pcmap	: If true create private colormap else use default.
  *
- *	on exit
- *		Cmap	: contains the color map
- *		Color_ava	: true if have a color display
- *		fg, bg, bd	: set to default colours as described in name
+ * on exit
+ *	Cmap		: contains the color map
+ *	Color_ava	: true if have a color display
+ *	fg, bg, bd	: set to default colours as described in name
  */
 
 
-int	init_color(foreground, background, reverse, fg, bg, bd)
+int	init_color(foreground, background, do_pcmap, reverse, fg, bg, bd)
 	char		*foreground,
 			*background;
+	boolean		do_pcmap;
 	boolean		reverse;
 	Pixeltype	*fg, *bg, *bd;
 {
@@ -157,9 +160,22 @@ int	init_color(foreground, background, reverse, fg, bg, bd)
 	 */
 	Color_ava = TRUE;
 
-
-	Cmap = DefaultColormap(dpy, DefaultScreen(dpy));
-
+	if (do_pcmap) {
+		Cmap = XCreateColormap(
+			dpy, RootWindow(dpy, DefaultScreen(dpy)), 
+			visual, AllocAll
+		);
+		/*
+		 * change default colormap. Window Manager is responsible
+		 * for swapping it in when sprite is in our window
+		 */
+		XSetWindowColormap(dpy, drawable, Cmap);
+		privateCmap = TRUE;
+	}
+	else {
+		Cmap = DefaultColormap(dpy, DefaultScreen(dpy));
+		privateCmap = FALSE;
+	}
 
 	/* 
 	 * find max direct colour, DCP is direct colour precision in the CGM
@@ -180,16 +196,11 @@ int	init_color(foreground, background, reverse, fg, bg, bd)
 	 */
 	if (col_2_alloc) {
 		CGMC	cgmc;
-		cgmc.ci = (CItype *) malloc(sizeof(CItype));
-		if (! cgmc.ci) {
-			ESprintf(errno, "malloc(%d)", sizeof(CItype));
-			return(-1);
-		}
-		cgmc.cd = (CDtype *) malloc(col_2_alloc * sizeof(CDtype));
-		if (! cgmc.cd) {
-			ESprintf(errno, "malloc(%d)", col_2_alloc * sizeof(CDtype));
-			return(-1);
-		}
+		CItype	ci_array[1];
+		CDtype	cd_array[2];
+
+		cgmc.ci = &ci_array[0];
+		cgmc.cd = &cd_array[0];
 
 		for (i=0; i < col_2_alloc; i++) {
 
@@ -210,11 +221,9 @@ int	init_color(foreground, background, reverse, fg, bg, bd)
 		else {
 			cgmc.ci[0] = 1;
 		}
-		cgmc.CInum = 1;;
+		cgmc.CInum = 1;
 
 		(void) ColrTable(&cgmc);
-		free ((Voidptr) cgmc.ci);
-		free ((Voidptr) cgmc.cd);
 	}
 
 	/*

@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.15 1993-01-12 20:10:46 clyne Exp $
+ *	$Id: Xcrm.c,v 1.16 1993-01-12 22:05:48 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,21 +36,36 @@
 #include	"default.h"
 
 extern	Pixeltype 	max_colour;
-extern	Display		*dpy;
-extern	Colormap	Cmap;
 extern	boolean		Colordef[];
 extern	Pixeltype	Colortab[];
 extern	boolean		Color_ava;
+
+static	int	alloc_cell(index, pixel)
+	int		index;
+	Pixeltype	*pixel;
+{
+	Pixeltype	planedummy[1];
+
+	if (privateCmap) {
+		*pixel = index;
+		return(0);
+	}
+
+	if (XAllocColorCells(dpy,Cmap,FALSE, planedummy, 0, pixel, 1) == 0) {
+		/* error allocating color cell	*/
+		ESprintf(E_UNKNOWN,"XAllocColorCells(,,,,) failed");
+		return(-1);
+	}
+	return(0);
+}
+
 
 static	int	back_color(color)
 	XColor	color;
 	
 {
 	Pixeltype	pixel;
-	Pixeltype	planedummy[1];
-	Pixeltype	pixel_return[1];
 	extern	boolean	startedDrawing;
-	extern	boolean	ignoreBGChanges;
 
 	extern	struct	device	devices[];
 	extern	int	currdev;
@@ -82,18 +97,14 @@ static	int	back_color(color)
 			/*
 			 * try and alloc a new cell in the color map
 			 */
-			if (XAllocColorCells(dpy,Cmap,FALSE, planedummy,
-					0, pixel_return, 1) == 0) {
-
-				/* error allocating color cell	*/
-				ESprintf(E_UNKNOWN,"XAllocColorCells(,,,,) failed");
+			if (alloc_cell(0, &pixel) < 0) {
 				return(-1);
 			}
 
 			/* 
 			 *	record pixel in the colortable
 			 */
-			Colortab[0] = pixel_return[0];
+			Colortab[0] = pixel;
 			Colordef[0] = TRUE;
 		}
 
@@ -127,8 +138,6 @@ static	int	back_color(color)
 	if (strcmp("X11", devices[currdev].name) == 0) {
 		XSetWindowBackground(dpy, win, pixel);
 		XClearWindow(dpy, win);
-#ifdef	DEAD
-#endif
 	}
 
 	return(0);
@@ -141,6 +150,8 @@ void	free_colors()
 	int	count = 0;
 
 	if (! Color_ava) return;
+
+	if (privateCmap) return;
 
 	free_list = (Pixeltype *) malloc 
 			((unsigned) (MAX_COLOR_SIZE * sizeof(Pixeltype)));
@@ -187,8 +198,7 @@ static	rgb_2_Xrgb(red, green, blue, Xcolor)
 int	X11_UpdateColorTable_()
 {
 
-	Pixeltype	planedummy[1];		/* not used	*/
-	Pixeltype	pixel_return[1];	/* device index	*/
+	Pixeltype	pixel;
 	int		i;
 	int		status = 0;
 
@@ -285,17 +295,14 @@ int	X11_UpdateColorTable_()
 				/*
 				 * try and alloc a new cell in the color map
 				 */
-				if (XAllocColorCells(dpy,Cmap,FALSE, planedummy,
-					0, pixel_return, 1) == 0) {
-
-					ESprintf(E_UNKNOWN,"XAllocColor(,,) failed");
-					return (-1);
+				if (alloc_cell(i, &pixel) < 0) {
+					status = -1;
 				}
 
 				/* 
 				 *	record pixel in the colortable
 				 */
-				Colortab[i] = pixel_return[0];
+				Colortab[i] = pixel;
 				Colordef[i] = TRUE;
 			}
 

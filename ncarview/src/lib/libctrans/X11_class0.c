@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.23 1993-01-12 20:10:43 clyne Exp $
+ *	$Id: X11_class0.c,v 1.24 1993-01-12 22:05:40 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -45,12 +45,6 @@
 #define	LOGO	"NCAR Graphics"
 
 #define	FONT	"8x13bold"
-
-/*
- *	If true the driver will not attempt to set the background
- *	color or clear the window.
- */
-boolean	ignoreBGChanges = FALSE;
 
 extern	boolean	deviceIsInit;
 extern	boolean	Batch;
@@ -101,6 +95,7 @@ static	struct	{
 	boolean	reverse;
 	int	wid;
 	boolean	ignorebg;
+	boolean	pcmap;
 	} x11_opts;
 
 static	Option	options[] =  {
@@ -135,6 +130,10 @@ static	Option	options[] =  {
 	{
 	"ignorebg", NCARGCvtToBoolean, 
 		(Voidptr) &x11_opts.ignorebg, sizeof (x11_opts.ignorebg )
+	},
+	{
+	"pcmap", NCARGCvtToBoolean, 
+		(Voidptr) &x11_opts.pcmap, sizeof (x11_opts.pcmap )
 	},
 	{
 	NULL
@@ -352,8 +351,10 @@ CGMC *c;
 	 *	supply his own colour table through the CGM.
 	 */
 	startedDrawing = FALSE;
-	(void) init_color(x11_opts.foreground, x11_opts.background, 
-			(boolean) x11_opts.reverse, &fg, &bg, &bd);
+	(void) init_color(
+		x11_opts.foreground, x11_opts.background, 
+		x11_opts.pcmap, (boolean) x11_opts.reverse, &fg, &bg, &bd
+	);
 
 	/*
 	 * make sure we have a contrasting window background by default.
@@ -368,7 +369,12 @@ CGMC *c;
 	 * colormap to use for the window.  See Section 3.2.9. Also,  
 	 * set the window's Bit Gravity to reduce Expose events.
 	 */
+#ifdef	DEAD
 	xswa.colormap = DefaultColormap(dpy, DefaultScreen(dpy));
+#else
+	xswa.colormap = Cmap;
+
+#endif
 	xswa.bit_gravity = CenterGravity;
 	xswa.backing_store = WhenMapped;
 	XChangeWindowAttributes(dpy, win, (CWColormap 

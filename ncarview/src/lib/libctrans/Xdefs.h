@@ -27,7 +27,15 @@ Display		*dpy;		/* X server connection		*/
 Drawable	win;		/* Window ID 			*/
 Drawable	drawable;	/* the drawable			*/
 Visual		*visual;
-int	DspDepth;		/* depth in pixels of display	*/
+int		DspDepth;	/* depth in pixels of display	*/
+Colormap	Cmap;		/* current colormap for $win	*/
+boolean		privateCmap;	/* true if have private colormap*/
+/*
+ *      If true the driver will not attempt to set the background
+ *      color or clear the window.
+ */
+boolean ignoreBGChanges = FALSE;
+
 
 GC	lineGC;			/* line GC 	See section 5.3	*/
 GC	markerGC;		/* polymarker GC		*/
@@ -45,6 +53,9 @@ extern	Drawable	win;
 extern	Drawable	drawable;	
 extern	Visual		*visual;
 extern	int		DspDepth;
+extern	Colormap	Cmap;
+extern	boolean		privateCmap;
+extern	boolean 	ignoreBGChanges;
 
 extern	GC	lineGC;	
 extern	GC	markerGC;
