@@ -1,3 +1,6 @@
+#
+# another cvs  test
+#
 NCARG	= ..
 
 SUBDIRS = src man bin app
