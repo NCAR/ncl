@@ -2462,6 +2462,9 @@ NhlErrorTypes ftsurf_W(void)
   int ndims_zo, dsizes_zo[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_xo, type_yo, type_zo;
 
+  int i,ji,jo,k,nxi,nyi,nxo,nyo,nt;
+  float *ztmp;
+
 /*
  * Retrieve argument #1
  */
@@ -2530,22 +2533,25 @@ NhlErrorTypes ftsurf_W(void)
           2);
 
 /*
- * Check number of dimensions for argument #3.
+ * Check number of dimensions for argument #3.  This argument must
+ * have at least two dimensions, but can have more.
+ *
  */
-  if(ndims_zi != 2) {
+  if(ndims_zi < 2) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftsurf: Argument #3 has the wrong number of dimensions.");
+              "ftsurf: Argument #3 has less than two dimensions.");
     return(NhlFATAL);
   }
 
 /*
  * Check the argument type for argument #3.
  */
-      if (type_zi != NCL_float) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, 
-                "ftsurf: Argument #3 has an incorrect type.");
-        return(NhlFATAL);
-      }
+  if (type_zi != NCL_float) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, 
+            "ftsurf: Argument #3 has an incorrect type.");
+    return(NhlFATAL);
+  }
+
 
 /*
  * Retrieve argument #4
@@ -2610,21 +2616,46 @@ NhlErrorTypes ftsurf_W(void)
       }
 
 /*
- *  Invoke the C function.
+ * Save the sizes of the last two dimensions of the output array.
  */
-  fterr = 0;
-  zo = c_ftsurf(dsizes_xi[0], dsizes_yi[0], xi, yi, zi,
-              dsizes_xo[0], dsizes_yo[0], xo, yo, &fterr);
-  if (fterr != 0) {
-    sprintf(ftmsg, "ftsurf: Error number %d.", fterr);
-    NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
-    return(NhlFATAL);
+  nxi = dsizes_xi[0];
+  nyi = dsizes_yi[0];
+  nxo = dsizes_xo[0];
+  nyo = dsizes_yo[0];
+/*
+ * Compute the total number of interpolations in the input array.
+ */
+  nt = 1;
+  for(i = 0; i < ndims_zi-2; i++) {
+    nt *= dsizes_zi[i];
   }
+
 /*
  * Returns value to NCL
  */
-  ndims_zo = 2;
-  dsizes_zo[0] = dsizes_xo[0];
-  dsizes_zo[1] = dsizes_yo[0];
-  return(NclReturnValue((void*)zo,ndims_zo,dsizes_zo,NULL,NCL_float,0));
+    ndims_zo = ndims_zi;
+    for(i = 0; i < ndims_zi-2; i++) {
+      dsizes_zo[i] = dsizes_zi[i];
+    }
+    zo =  (float *) calloc(nt*nxo*nyo,sizeof(float));
+    dsizes_zo[ndims_zi-2] = dsizes_xo[0];
+    dsizes_zo[ndims_zi-1] = dsizes_yo[0];
+    ji = 0;
+    jo = 0;
+    for (i = 0; i < nt; i++) {
+      fterr = 0;
+      ztmp = c_ftsurf(nxi,nyi,xi,yi,&(zi[ji]),nxo,nyo,xo,yo,&fterr);
+      if (fterr != 0) {
+        sprintf(ftmsg, "ftsurf: Error number %d.", fterr);
+        NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
+        return(NhlFATAL);
+      }
+      for (k = 0; k < nxo*nyo; k++) {
+        zo[jo+k] = ztmp[k];
+      }
+      free(ztmp);
+      ji += nxi*nyi;
+      jo += nxo*nyo;
+    }
+    return(NclReturnValue((void*)zo,ndims_zo,dsizes_zo,NULL,NCL_float,0));
 }

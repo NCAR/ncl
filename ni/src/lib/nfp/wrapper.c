@@ -1830,7 +1830,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(5);
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 2, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
     NclRegisterFunc(ftsurf_W, args, "ftsurf", nargs);
