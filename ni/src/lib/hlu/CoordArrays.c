@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.33 1996-06-13 02:05:54 dbrown Exp $
+ *      $Id: CoordArrays.c,v 1.34 1996-06-13 23:32:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -628,7 +628,7 @@ FlushObj
 				return ret;
 			}
 		}
-		if(cap->missing_x){
+		if(!cap->my_missing_x && cap->missing_x){
 			if(cap->missing_x->typeQ == floatQ)
 				cap->my_missing_x = cap->missing_x;
 			else{
@@ -688,7 +688,7 @@ FlushObj
 			ret = MIN(ret,lret);
 		}
 
-		if(cap->missing_y){
+		if(!cap->my_missing_y && cap->missing_y){
 			if(cap->missing_y->typeQ == floatQ)
 				cap->my_missing_y = cap->missing_y;
 			else{
@@ -1364,11 +1364,6 @@ CoordArraysSetValues
 		status = True;
 
 	if(ncap->missing_x != ocap->missing_x){
-		if (ncap->my_missing_x) { 
-			if (ncap->my_missing_x != ocap->missing_x)
-				NhlFreeGenArray(ncap->my_missing_x);
-			ncap->my_missing_x = NULL;
-		}
 		ncap->missing_x = _NhlCopyGenArray(ncap->missing_x,True);
 		if(!ncap->missing_x){
 			NhlPError(NhlWARNING,ENOMEM,"%s:resetting %s",func,
@@ -1378,15 +1373,14 @@ CoordArraysSetValues
 		}
 		else{
 			status = True;
+			ncap->my_missing_x = NULL;
+			if(ocap->missing_x == ocap->my_missing_x)
+				ocap->my_missing_x = NULL;
 			NhlFreeGenArray(ocap->missing_x);
+			NhlFreeGenArray(ocap->my_missing_x);
 		}
 	}
 	if(ncap->missing_y != ocap->missing_y){
-		if (ncap->my_missing_y) { 
-			if (ncap->my_missing_y != ocap->missing_y)
-				NhlFreeGenArray(ncap->my_missing_y);
-			ncap->my_missing_y = NULL;
-		}
 		ncap->missing_y = _NhlCopyGenArray(ncap->missing_y,True);
 		if(!ncap->missing_y){
 			NhlPError(NhlWARNING,ENOMEM,"%s:resetting %s",func,
@@ -1396,7 +1390,11 @@ CoordArraysSetValues
 		}
 		else{
 			status = True;
+			ncap->my_missing_y = NULL;
+			if(ocap->missing_y == ocap->my_missing_y)
+				ocap->my_missing_y = NULL;
 			NhlFreeGenArray(ocap->missing_y);
+			NhlFreeGenArray(ocap->my_missing_y);
 		}
 	}
 
