@@ -1,5 +1,5 @@
 /*
- * $Id: nncrunch.c,v 1.8 2002-04-01 18:11:54 haley Exp $
+ * $Id: nncrunch.c,v 1.9 2002-08-02 16:48:04 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -27,6 +27,7 @@
  *  to Dr. Watson's code are copyrighted (C) by UCAR, 1997.
  */
 #include <stdlib.h>
+#include <math.h>
 #include "nncheads.h"
 #include "nnchead.h"
 #include "nntypes.h"
