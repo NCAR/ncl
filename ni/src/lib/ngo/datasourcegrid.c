@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegrid.c,v 1.4 1999-03-12 19:13:47 dbrown Exp $
+ *      $Id: datasourcegrid.c,v 1.5 1999-03-12 23:33:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -959,8 +959,7 @@ EditCB
                                   XmNtextWidget,&text,
                                   NULL);
                     XtVaSetValues(text,
-                                  XtVaTypedArg,XmNbackground,
-                                  XmRString,"lightsalmon",12,
+				  XmNbackground,dsp->go->go.select_pixel,
                                   NULL);
 		    dsp->in_edit = True;
                     return;
@@ -986,8 +985,7 @@ EditCB
                                   XmNcursorPosition,0,
                                   XmNborderWidth,2,
                                   XmNcursorPositionVisible,True,
-                                  XtVaTypedArg,XmNbackground,
-                                  XmRString,"lightsalmon",12,
+				  XmNbackground,dsp->go->go.select_pixel,
                                   NULL);
 		    dsp->in_edit = True;
                     return;
@@ -1003,8 +1001,7 @@ EditCB
                                   XmNtextWidget,&text,
                                   NULL);
                     XtVaSetValues(text,
-                                  XtVaTypedArg,XmNbackground,
-                                  XmRString,"#d0d0d0",8,
+				  XmNbackground,dsp->go->go.edit_field_pixel,
                                   NULL);
 		    dsp->in_edit = False;
                     return;
@@ -1017,8 +1014,7 @@ EditCB
                                   XmNtextWidget,&text,
                                   NULL);
                     XtVaSetValues(text,
-                                  XtVaTypedArg,XmNbackground,
-                                  XmRString,"#d0d0d0",8,
+				  XmNbackground,dsp->go->go.edit_field_pixel,
                                   NULL);
 
 		    dsp->in_edit = False;
@@ -1265,8 +1261,7 @@ NhlErrorTypes NgUpdateDataSourceGrid
 			      XmNcellString,xmstr,
 			      XmNcellAlignment, XmALIGNMENT_LEFT,
 			      XmNcellEditable,True,
-			      XtVaTypedArg,XmNcellBackground,
-			      XmRString,"#d0d0d0",8,
+			      XmNcellBackground,dsp->go->go.edit_field_pixel,
 			      NULL);
 		NgXAppFreeXmString(dsp->go->go.appmgr,xmstr);
 		row++;
@@ -1407,8 +1402,7 @@ void NgDeactivateDataSourceGrid
 		XtVaSetValues(pub->grid,
 			      XmNcolumn,1,
 			      XmNrow,dsp->selected_row,
-			      XtVaTypedArg,XmNcellBackground,
-			      XmRString,"#d0d0d0",8,
+			      XmNcellBackground,dsp->go->go.edit_field_pixel,
 			      NULL);
 		XmLGridEditCancel(pub->grid);
 	}
