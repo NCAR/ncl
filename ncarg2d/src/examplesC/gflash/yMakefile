@@ -1,0 +1,9 @@
+#
+#	$Id: yMakefile,v 1.1 1994-05-13 14:26:57 haley Exp $
+#
+
+CSRCS = c_tgfla2.c c_tgflas.c
+
+GENERIC_SRCS = $(CSRCS)
+
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))

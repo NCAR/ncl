@@ -1,0 +1,22 @@
+#
+#	$Id: yMakefile,v 1.1 1994-05-13 14:25:20 haley Exp $
+#
+
+CSRCS = c_cardb2.c c_tareas.c
+
+SED_SRCS = c_arex01.c
+
+GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
+
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+CleanFilesTarget($(SED_SRCS))
+
+#
+# Files containing C functions that are called from FORTRAN or that have to
+# be modified to include a macro from the configuration file.
+#
+
+c_arex01.c: c_arex01.c.sed Makefile
+	@-$(RM) $@
+	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ ardbpa arcomn arcom1
+

@@ -1,0 +1,21 @@
+#
+#	$Id: yMakefile,v 1.1 1994-05-13 14:28:58 haley Exp $
+#
+
+SED_SRCS = c_spps.c
+
+GENERIC_SRCS = $(SED_SRCS)
+
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+CleanFilesTarget($(SED_SRCS))
+
+#
+# Files containing C functions that are called from FORTRAN or that have to
+# be modified to include a macro from the configuration file.
+#
+
+c_spps.c: c_spps.c.sed Makefile
+	@-$(RM) $@
+	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ cmfx cmfy cmux cmuy cpfx cpfy cpux cpuy \
+		kfmx kfmy kumx kumy kfpx kfpy kupx kupy kmpx kmpy kpmx kpmy cfux cfuy \
+		cufx cufy

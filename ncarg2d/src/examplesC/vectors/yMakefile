@@ -1,0 +1,9 @@
+#
+#	$Id: yMakefile,v 1.1 1994-05-13 14:29:39 haley Exp $
+#
+
+CSRCS = c_tvelvc.c c_vvex02.c
+
+GENERIC_SRCS = $(CSRCS)
+
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
