@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.66 2001-04-06 15:48:53 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.67 2001-04-16 13:34:08 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -642,12 +642,19 @@ end
 ; Get list of names allowed for the units attribute of a latitude       ;
 ; coordinate array.                                                     ; 
 ;                                                                       ;
-    if((any(data!1.eq.get_allowed_latnames()).and.\
-      (isatt(data&$data!1$,"units").and. \
-      (data&$data!1$@units.eq."degrees_north".or.\
-       data&$data!1$@units.eq."degrees north"))).or.\
-       any(data!1.eq.get_allowed_latnames_without_units()))
-      return(True)
+;***********************************************************************;
+      if(isatt(data&$data!1$,"units").and. \
+        (data&$data!1$@units.eq."degrees_north".or.\
+         data&$data!1$@units.eq."degrees north"))
+        return(True)
+;                                                                       ;
+; Get list of names allowed for the units attribute of a longitude      ;
+; coordinate array.                                                     ; 
+;                                                                       ;
+;***********************************************************************;
+	  if(any(data!1.eq.get_allowed_latnames_without_units()))
+begin
+  return((/"degrees_east","degree_east","degrees east","degrees_E"/))
 end
 
 ;***********************************************************************;
@@ -664,12 +671,19 @@ begin
     if(any(data!1.eq.get_allowed_latnames()))
       if(isatt(data&$data!1$,"units"))
         if(any(data&$data!1$@units.eq.get_allowed_lat_units))
-    if((any(data!1.eq.get_allowed_lonnames()).and.\
-      (isatt(data&$data!1$,"units").and. \
-      (data&$data!1$@units.eq."degrees_east".or.\
-       data&$data!1$@units.eq."degrees east"))).or.\
-      any(data!1.eq.get_allowed_lonnames_without_units()))
-      return(True)
+          return(True)
+      if(isatt(data&$data!1$,"units").and. \
+        (data&$data!1$@units.eq."degrees_east".or.\
+         data&$data!1$@units.eq."degrees east"))
+        return(True)
+      end if
+    else
+      if(any(data!1.eq.get_allowed_latnames_without_units()))
+        return(True)
+      end if
+    end if
+  end if
+  return(False)
 end
 
 ;***********************************************************************;
@@ -686,12 +700,19 @@ begin
     if(any(data!1.eq.get_allowed_lonnames()))
       if(isatt(data&$data!1$,"units"))
         if(any(data&$data!1$@units.eq.get_allowed_lon_units))
-    if((any(data!0.eq.get_allowed_latnames()).and.\
-       (isatt(data&$data!0$,"units").and. \
-       (data&$data!0$@units.eq."degrees_north".or.\
-        data&$data!0$@units.eq."degrees north"))).or.\
-        any(data!0.eq.get_allowed_latnames_without_units()))
-      return(True)
+          return(True)
+      if(isatt(data&$data!0$,"units").and. \
+        (data&$data!0$@units.eq."degrees_north".or.\
+         data&$data!0$@units.eq."degrees north"))
+        return(True)
+      end if
+    else
+      if(any(data!1.eq.get_allowed_lonnames_without_units()))
+        return(True)
+      end if
+    end if
+  end if
+  return(False)
 end
 
 ;***********************************************************************;
