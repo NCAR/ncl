@@ -1,5 +1,5 @@
 C
-C	$Id: gputmd.f,v 1.2 1993-01-09 02:07:31 fred Exp $
+C	$Id: gputmd.f,v 1.3 1994-06-02 21:55:15 fred Exp $
 C
       SUBROUTINE GPUTMD (ERROR)
 C
@@ -31,7 +31,7 @@ C  Put out METAFILE DESCRIPTION.
 C
       NBYTES = G01PBL(24,0)
       CALL GPUTNI (CLDSCR, IDDSCR, NBYTES, ERROR)
-      CALL GPUTPS ('NCAR_GKS0A--VERSION_3.2 ', 24, 24, 0, ERROR)
+      CALL GPUTPS ('NCAR_GKS0A--VERSION_4.0 ', 24, 24, 0, ERROR)
       IF (ERROR.NE.0)  RETURN
 C
 C  Put out METAFIlE ELEMENTS LIST, drawing-set pseudo op.
