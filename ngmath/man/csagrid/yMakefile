@@ -1,0 +1,22 @@
+#
+#       $Id: yMakefile,v 1.1 1999-01-07 17:59:31 fred Exp $
+#
+
+MAN = csagrid csa1s csa2ls csa2s csa3ls csa3s                 \
+	csa1xs csa2lxs csa2xs csa3lxs csa3xs                  \
+	c_csa1s c_csa2ls c_csa2s c_csa3ls c_csa3s             \
+	c_csa1xs c_csa2lxs c_csa2xs c_csa3lxs c_csa3xs        \
+	csagrid_errors
+
+# Install preformatted troff documents on systems without troff
+#if UseCatDirs
+FORMAT_EXT      = .p
+#else
+FORMAT_EXT      = .m
+#endif
+
+MPATH   = $(MAN3PATH)
+MSECT   = $(MAN3_SECTION)
+
+InstallManPages($(MAN),$(FORMAT_EXT),$(MPATH),$(MSECT))
+FormatManPages($(MAN),.m,.p)
