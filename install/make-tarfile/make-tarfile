@@ -1,0 +1,124 @@
+#!/usr/local/bin/perl 
+#
+#      $Id: make-tarfile,v 1.1 1993-02-20 00:14:02 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Reseplatform		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		make-tarfile
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Reseplatform
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Wed Dec 9 15:46:42 MST 1992
+#
+#	Description:	Write an NCAR G binary distribution tarfile.
+#
+#	Usage:		make-tarfile -<platform> directory
+#
+#	Environment:
+#
+#	Files:		
+#		$build_root		: root of ncarg build directory 
+#					(currently /ncargbin)
+#
+#		$build_root/INSTALL/install.tar	: install script
+#
+#		$build_root/$platform/{bin,inc,lib,man}.tar	: distribution tar files
+#
+#
+#	Options:	
+
+
+
+#
+#	execute a command via system(). If $doDebug is set just print the 
+#	command
+#
+#$doDebug = 1;
+sub	my_system {
+	local ($cmd) = @_;
+
+	if ($doDebug) {
+		print STDERR "$cmd\n";
+	}
+	else {
+		system ($cmd);
+		if ($? != 0) {
+			print "\"$cmd\" exited with error\n";
+			exit 1;
+		}
+	}
+}
+
+
+##
+##
+##	M A I N
+##
+##
+
+
+
+$do_inter = 0;			# do interactive mode?
+$build_root = "/ncargbin";	
+$install_dir = "INSTALL";
+$toc_file = "$build_root/INSTALL/var/TOC";
+@platforms;				# platformitectures to write binaries for
+$usage = "-<platform> directory";
+$version;			# ncarg version
+$tarfile;			# path to tarfile we'll create.
+
+
+#
+# Tar files we write for each requested platform
+# N.B. order is important
+#
+@tars = ("bin.tar", "include.tar", "lib.tar", "man.tar");	
+
+
+if (@ARGV != 2) {
+        print STDERR "Usage: make-tarfile $usage\nn";
+	exit 1;
+}
+
+$platform = $ARGV[0];
+$platform =~ s/^-//;
+$directory = $ARGV[1];
+
+
+$cmd = "cat $build_root/$platform/version";
+$version = `$cmd`;
+if ($? != 0) {
+	print STDERR "\"$cmd\" exited with error : $!\n";
+	exit 1;
+}
+chop $version;
+$tarfile = "$directory/ncarg$version.$platform.tar";
+
+print "platform=$platform, build_root=$build_root, tarfile=$tarfile\n";
+
+#
+#	generate the tar file with the install script
+#
+#$cmd = "cd $build_root/$install_dir; tar -cf ../install.tar .";
+#do my_system("$cmd");
+
+
+	
+chdir $build_root;
+#$tars = "";
+$tars = "$install_dir";
+foreach $tar (@tars) {
+	$tars = "$tars $platform/$tar";
+}
+$cmd = "tar -cf $tarfile $tars";
+do my_system("$cmd");
+
+exit 0;
