@@ -1,5 +1,5 @@
 /*
- *      $Id: c_cssex03.c,v 1.2 1999-09-23 17:38:51 fred Exp $
+ *      $Id: c_cssex03.c,v 1.3 2000-01-12 22:58:02 fred Exp $
  */
 
 #include <stdlib.h>
@@ -7,7 +7,12 @@
 #include <math.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+
+/*
+ * Function prototypes for ngmath functions.
+ */
 #include <ncarg/ngmath.h>
+
 
 /*********************************************************************
  *  Do a comparison of c_cssgrid with c_natgrids for interpolation on
@@ -90,7 +95,7 @@ main()
  */
 #define NI      71
 #define NJ     145
-  float plat[NI], plon[NJ], ff_ana[NI][NJ];
+  float plat[NI], plon[NJ], qlat[NI], qlon[NJ], ff_ana[NI][NJ];
 
 /*
  *  Work arrays.
@@ -167,23 +172,25 @@ main()
  *  Set up the latitudes and longitudes for the interpolated grid.
  */
   for (i = 0; i < NI; i++) {
-    plat[i] = D2R*(-87.5+i*2.5);
+    plat[i] = -87.5+i*2.5;
+    qlat[i] = D2R*plat[i];
   }
   for (j = 0; j < NJ; j++) {
-    plon[j] = D2R*(-180.+j*2.5);
+    plon[j] = -180.+j*2.5;
+    qlon[j] = D2R*plon[j];
   }
 
 /*
  *  Do the interpolation to the specified uniform grid.
  */
-  ff = c_cssgrid(NUMORG, x, y, z, fval, NI, NJ, plat, plon, &ier);
+  ff = c_cssgrid(NUMORG, rlat, rlon, fval, NI, NJ, plat, plon, &ier);
 
 /*
  *  Generate analytic function values on the output grid.
  */
   for (i = 0; i < NI; i++) {
     for (j = 0; j < NJ; j++) {
-      ff_ana[i][j] = c_gencpnt(plat[i], plon[j]);
+      ff_ana[i][j] = c_gencpnt(qlat[i], qlon[j]);
     }
   }
 
@@ -191,7 +198,7 @@ main()
  *  Do interpolation with Natgrid with no periodic points in
  *  longitude; rarrange the array for use with Conpack.
  */
-  ffn = c_natgrids(NUMORG, xlat, xlon, fval, NI, NJ, plat, plon, &ier);
+  ffn = c_natgrids(NUMORG, xlat, xlon, fval, NI, NJ, qlat, qlon, &ier);
 
 /*
  *  Add periodic points in the longitudes and interpolate again.
@@ -211,7 +218,7 @@ main()
       fval[ij] = fval[i];
     }
   }
-  ffs = c_natgrids(NMAX, xlat, xlon, fval, NI, NJ, plat, plon, &ier);
+  ffs = c_natgrids(NMAX, xlat, xlon, fval, NI, NJ, qlat, qlon, &ier);
 
 /*
  *  Note:  ff and ff_ana are stored as a 2-dimensional array 

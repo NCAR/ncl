@@ -1,5 +1,5 @@
 /*
- *      $Id: c_cssex02.c,v 1.7 1999-09-23 17:38:51 fred Exp $
+ *      $Id: c_cssex02.c,v 1.8 2000-01-12 22:58:01 fred Exp $
  */
 
 #include <stdlib.h>
@@ -64,7 +64,7 @@ main()
   Gtext_prec prec;
   Gtext_font_prec fandp;
 
-  float xc[2*N], yc[2*N], zc[2*N], rc[2*N];
+  float vlat[2*N], vlon[2*N], rc[2*N];
   float rlat1, rlon1, rlat2, rlon2, pnm, rcd, *ff;
   int   numv=0, nca, nv[2*N];
 
@@ -88,11 +88,6 @@ main()
  *  circular arcs.
  */
   float arclat[NARC], arclon[NARC];
-
-/*
- *  Arrays for Cartesian coordinates of input data.
- */
-  float x[N], y[N], z[N];
 
 /*
  *  Arrays for defining the interpolation grid.
@@ -132,27 +127,11 @@ main()
   }
 
 /*
- *  Set x and y to the values of rlon and rlat, respectively,
- *  in radians.
- */
-  for (k = 0; k < N; k++) {
-    x[k] = D2R*rlon[k];
-    y[k] = D2R*rlat[k];
-  }
-
-/*
- *  Transform the spherical coordinates X and Y to Cartesian
- *  coordinates (X,Y,Z) on the unit sphere (X**2 +  Y**2 + Z**2 = 1).
- */
-  c_cstrans(N, y, x, x, y, z);
-
-/*
  *  Create the triangulation.  This step is not necessary if all
  *  you want to do is obtain interpolated values.  It is here since
  *  a plot of the triangulation is to be drawn as an independent picture.
  */
-  ltri = c_csstri(N, x, y, z, &nt, &ier);
-
+  ltri = c_csstri(N, rlat, rlon, &nt, &ier);
 
 /*
  *  Plot the Delaunay triangulation and
@@ -233,19 +212,15 @@ main()
 /*
  *  Draw the Voronoi polygons.
  */
-  c_csvoro(N, x, y, z, 0, 1, xc, yc, zc, rc, &nca, &numv, nv, &ier);
+  c_csvoro(N, rlat, rlon, 0, 1, vlat, vlon, rc, &nca, &numv, nv, &ier);
   gset_line_colr_ind(3);
   for (i = 0; i < N; i++) {
-    c_csvoro(N, x, y, z, i, 0, xc, yc, zc, rc, &nca, &numv, nv, &ier);
+    c_csvoro(N, rlat, rlon, i, 0, vlat, vlon, rc, &nca, &numv, nv, &ier);
     for (j = 1; j < numv; j++) {
-      c_csscoord(xc[nv[j-1]], yc[nv[j-1]], zc[nv[j-1]],
-                 &rlat1, &rlon1, &pnm);
-      c_csscoord(xc[nv[j]], yc[nv[j]], zc[nv[j]],
-                 &rlat2, &rlon2, &pnm);
-      rlat1 = R2D*rlat1;
-      rlon1 = R2D*rlon1;
-      rlat2 = R2D*rlat2;
-      rlon2 = R2D*rlon2;
+      rlat1 = vlat[nv[j-1]];
+      rlon1 = vlon[nv[j-1]];
+      rlat2 = vlat[nv[j]];
+      rlon2 = vlon[nv[j]];
 
       c_mapgci(rlat1, rlon1, rlat2, rlon2, NARC, arclat, arclon); 
       c_mapit (rlat1, rlon1, 0);
@@ -263,16 +238,16 @@ main()
  *  Set up the latitudes and longitudes for the interpolated grid.
  */
   for (i = 0; i < NI; i++) {
-    plat[i] = D2R*(-90.+i*2.5);
+    plat[i] = -90.+i*2.5;
   }
   for (j = 0; j < NJ; j++) {
-    plon[j] = D2R*(-180.+j*2.5);
+    plon[j] = -180.+j*2.5;
   }
 
 /*
  *  Do the interpolation to the specified uniform grid.
  */
-  ff = c_cssgrid(N, x, y, z, fval, NI, NJ, plat, plon, &ier);
+  ff = c_cssgrid(N, rlat, rlon, fval, NI, NJ, plat, plon, &ier);
 
 
 /*

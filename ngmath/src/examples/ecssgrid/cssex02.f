@@ -1,5 +1,5 @@
 C
-C       $Id: cssex02.f,v 1.7 1999-12-13 20:26:53 fred Exp $
+C       $Id: cssex02.f,v 1.8 2000-01-12 22:58:02 fred Exp $
 C
        PROGRAM CSSEX02
 C 
@@ -15,10 +15,6 @@ C
 C  Specify GKS output data.
 C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
-C  
-C  Scale factors for converting between degrees and radians.
-C
-      PARAMETER(D2R=0.017453293, R2D=57.29578)
 C
 C  Dimension the arrays for holding the points for drawing 
 C  circular arcs.
@@ -35,11 +31,11 @@ C
       PARAMETER (NMAX=500, NTMX=2*NMAX, NT6=6*NMAX, LWK=27*NMAX)
 C
 C  Array storage for the triangulation, work space, and nodal
-C  coordinates.
+C  coordinates.  Note that the real workspace must be double
+C  precision.
 C
-      REAL    RWK(4*NMAX)
+      DOUBLE PRECISION    RWK(13*NMAX)
       REAL    RLAT(NMAX), RLON(NMAX),  FVAL(NMAX),
-     +        X(NMAX),    Y(NMAX),     Z(NMAX), 
      +        PLAT(NI),   PLON(NJ)
       REAL    FF(NI,NJ),  ZDAT(NJ,NI)
 C
@@ -49,7 +45,7 @@ C
 C
 C  Storage for circumcenters and circumcircle radii.
 C
-      REAL    XC(NTMX),    YC(NTMX),   ZC(NTMX),    RC(NTMX)
+      REAL    RLATO(NTMX),    RLONO(NTMX),    RC(NTMX)
 C
 C  Sizes of work arrays for Conpack and Ezmap.
 C
@@ -58,33 +54,19 @@ C
 C
 C  Generate a default set of nodes as latitudinal and longitudinal
 C  coordinates (latitudes in the range -90. to 90. and longitudes
-C  in the range -180. to 180).
+C  in the range -180. to 180).  The input function is generated
+C  using the local subroutines CSGENRS, CSGENI, and CSGENPNT.
 C
       N = NMAX
-      CALL GENRS(N,RLAT,RLON)
-C
-C  Generate functional values at the input nodes.
-C
+      CALL CSGENRS(N,RLAT,RLON)
       CALL CSGENI(5,10,-200.,500.)
       DO 10 I=1,N
-        FVAL(I) = CSGENPNT(D2R*RLAT(I),D2R*RLON(I))
+        FVAL(I) = CSGENPNT(RLAT(I),RLON(I))
    10 CONTINUE
-C
-C  Convert to radians.
-C
-      DO 2 K = 1,N
-        X(K) = D2R*RLAT(K)
-        Y(K) = D2R*RLON(K)
-    2   CONTINUE
-C
-C  Transform spherical coordinates X and Y to Cartesian
-C  coordinates (X,Y,Z) on the unit sphere (X**2 + Y**2 + Z**2 = 1).
-C
-      CALL CSTRANS (N,X,Y, X,Y,Z)
 C
 C  Create the triangulation.
 C
-      CALL CSSTRI(N,X,Y,Z, NT,LTRI, IWK,RWK,IER)
+      CALL CSSTRI(N,RLAT,RLON, NT,LTRI, IWK,RWK,IER)
 C
 C  Draw the triangular spherical patches using Ezmap with a
 C  satellite view projection.
@@ -158,13 +140,13 @@ C
       DO 150 I=1,N
 C
 C  Get the Voronoi polygon containing the original data point
-C  (X(I),Y(I),Z(I)).  
+C  (RLAT(I),RLON(I)).
 C
         IF (I .EQ. 1) THEN
-          CALL CSVORO(N,X,Y,Z,I,1,IWK,RWK,NTMX,XC,YC,ZC,RC,
+          CALL CSVORO(N,RLAT,RLON,I,1,IWK,RWK,NTMX,RLATO,RLONO,RC,
      +                NCA,NUMV,NV,IER)
         ELSE
-          CALL CSVORO(N,X,Y,Z,I,0,IWK,RWK,NTMX,XC,YC,ZC,RC,
+          CALL CSVORO(N,RLAT,RLON,I,0,IWK,RWK,NTMX,RLATO,RLONO,RC,
      +                NCA,NUMV,NV,IER)
         ENDIF
 C
@@ -172,20 +154,12 @@ C  Draw the polygons.
 C
         DO 855 NN=2,NUMV
 C
-C  Convert the Cartesian coordinates of the Voronoi polygonal
-C  edges to degrees latitiude and longitude.
-C
-          CALL CSSCOORD(XC(NV(NN-1)),YC(NV(NN-1)),ZC(NV(NN-1)),
-     +                  RLAT1,RLON1,PNM)
-          CALL CSSCOORD(XC(NV(NN)),YC(NV(NN)),ZC(NV(NN)),
-     +                  RLAT2,RLON2,PNM)
-C
 C  Convert latitudes and longitudes to radians.
 C
-          RLAT1 = R2D*RLAT1
-          RLAT2 = R2D*RLAT2
-          RLON1 = R2D*RLON1
-          RLON2 = R2D*RLON2
+          RLAT1 = RLATO(NV(NN-1))
+          RLON1 = RLONO(NV(NN-1))
+          RLAT2 = RLATO(NV(NN))
+          RLON2 = RLONO(NV(NN))
 C
           CALL GSPLCI(3)
           CALL MAPGCI(RLAT1,RLON1,RLAT2,RLON2,NPARC,ARCLAT,ARCLON)
@@ -206,15 +180,20 @@ C
 C  Grid the data using NI longitudes and NJ latitudes.
 C
       DO 200 I=1,NI
-        PLAT(I) = D2R*(-90.+(I-1)*2.5)
+        PLAT(I) = -90.+(I-1)*2.5
   200 CONTINUE
       DO 210 J=1,NJ
-        PLON(J) = D2R*(-180.+(J-1)*2.5)
+        PLON(J) = -180.+(J-1)*2.5
   210 CONTINUE
 C
-C  Do the interpolation to the above uniform grid.
+C  Do the interpolation to the above uniform grid.  The call
+C  to the triangulation routine CSSTRI above is not necessary
+C  before calling CSSGRID - it was done in order to illustrate
+C  its usage.
 C
-      CALL CSSGRID(N,X,Y,Z,FVAL,NI,NJ,PLAT,PLON,FF,IWK,RWK,IER)
+C     CALL CSSETR('SIG',2.)
+C     CALL CSSETI('IGR',0)
+      CALL CSSGRID(N,RLAT,RLON,FVAL,NI,NJ,PLAT,PLON,FF,IWK,RWK,IER)
 C
 C  Draw a contour map of the gridded data on the globe.
 C
@@ -270,7 +249,7 @@ C
 C
       STOP
       END
-      SUBROUTINE GENRS(N,RLAT,RLON)
+      SUBROUTINE CSGENRS(N,RLAT,RLON)
 C
 C  Generate random positions on a sphere in latitudes and longitudes
 C  (latitude values between -90. and 90. and longitude values
@@ -345,7 +324,7 @@ C  The function used is a sum of exponentials.
 C  
 C  This code was originally written by David Kennison at NCAR.
 C
-      EXTERNAL CSSCCBD
+      EXTERNAL BD
       COMMON /CSSBD1/R0,R1,R2
       COMMON /CSSCMN/ CMUL(160),NCNT,NLOW,NHGH,RLOW,RHGH,RMIN,RMAX,
      +                XCOC(160),YCOC(160),ZCOC(160)
@@ -450,10 +429,12 @@ C
       DATA DTOR / .017453292519943 /
       DATA RTOD / 57.2957795130823 /
 C
-      CRLT=COS(RLAT)
-      CRLN=COS(RLON)
-      SRLT=SIN(RLAT)
-      SRLN=SIN(RLON)
+      TLAT = DTOR*RLAT
+      TLON = DTOR*RLON
+      CRLT=COS(TLAT)
+      CRLN=COS(TLON)
+      SRLT=SIN(TLAT)
+      SRLN=SIN(TLON)
       RVAL=.5*(RLOW+RHGH)
       DO 100 K=1,NCNT
         DIST = SQRT((CRLT*CRLN-XCOC(K))**2

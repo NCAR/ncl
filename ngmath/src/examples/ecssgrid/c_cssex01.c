@@ -1,5 +1,5 @@
 /*
- *      $Id: c_cssex01.c,v 1.5 1999-06-11 21:52:26 fred Exp $
+ *      $Id: c_cssex01.c,v 1.6 2000-01-12 22:58:01 fred Exp $
  */
 
 #include <stdio.h>
@@ -34,18 +34,12 @@ void c_draw_box(float, float, float, float, int);
  */
 #define NARC  50
 
-/*
- *  Constants for converting between radians and degrees.
- */
-#define  D2R   0.017453293
-#define  R2D  57.295780000
-
 main()
 {
   int i, j, k, np, ns, indx;
   Gcolr_rep rgb;
 
-  float xc[2*N], yc[2*N], zc[2*N], rc[2*N];
+  float plat[2*N], plon[2*N], rc[2*N];
   float rlat1, rlon1, rlat2, rlon2, pnm, rcd;
   int   numv=0, nca, nv[2*N];
 
@@ -69,11 +63,6 @@ main()
   float arclat[NARC], arclon[NARC];
 
 /*
- *  Arrays for Cartesian coordinates of input data.
- */
-  float x[N], y[N], z[N];
-
-/*
  *  Pointer to array of triangle indices; number of triangles; error value.
  */
   int *ltri, nt, ier;
@@ -87,29 +76,14 @@ main()
   float plm4[2] = {0., 0.};
 
 /*
- *  Set x and y to the values of rlon and rlat, respectively,
- *  in radians.
- */
-  for (k = 0; k < N; k++) {
-    x[k] = D2R*rlon[k];
-    y[k] = D2R*rlat[k];
-  }
-
-/*
- *  Transform the spherical coordinates X and Y to Cartesian
- *  coordinates (X,Y,Z) on the unit sphere (X**2 +  Y**2 + Z**2 = 1).
- */
-  c_cstrans(N, y, x, x, y, z);
-
-/*
  *  Create the triangulation.
  */
-  ltri = c_csstri(N, x, y, z, &nt, &ier);
+  ltri = c_csstri(N, rlat, rlon, &nt, &ier);
 
 /*
  *  Get the circumcenters of the Delaunay triangles.
  */
-  c_csvoro(N, x, y, z, 0, 1, xc, yc, zc, rc, &nca, &numv, nv, &ier);
+  c_csvoro(N, rlat, rlon, 0, 1, plat, plon, rc, &nca, &numv, nv, &ier);
 
 /*
  *  Plot the Delaunay triangulation, the circumcircles, and
@@ -160,10 +134,9 @@ main()
   gset_linewidth(2.0);
   gset_line_colr_ind(4);
   for (i = 4; i < nca; i++) {
-    c_csscoord(xc[i], yc[i], zc[i], &rlat1, &rlon1, &pnm);
-    rlat2 = R2D*rlat1;
-    rlon2 = R2D*rlon1;
-    rcd   = R2D*rc[i];
+    rlat2 = plat[i];
+    rlon2 = plon[i];
+    rcd   = rc[i];
 
     c_nggcog(rlat2, rlon2, rcd, arclat, arclon, NARC);
     c_mapit (arclat[0], arclon[0], 0);
@@ -180,16 +153,13 @@ main()
  *  change the work arrays).
  */
   for (i = 0; i < N; i++) {
-    c_csvoro(N, x, y, z, i, 0, xc, yc, zc, rc, &nca, &numv, nv, &ier);
+    c_csvoro(N, rlat, rlon, i, 0, plat, plon, rc, &nca, &numv, nv, &ier);
     for (j = 1; j < numv; j++) {
-      c_csscoord(xc[nv[j-1]], yc[nv[j-1]], zc[nv[j-1]],
-                 &rlat1, &rlon1, &pnm);
-      c_csscoord(xc[nv[j]], yc[nv[j]], zc[nv[j]],
-                 &rlat2, &rlon2, &pnm);
-      rlat1 = R2D*rlat1;
-      rlon1 = R2D*rlon1;
-      rlat2 = R2D*rlat2;
-      rlon2 = R2D*rlon2;
+
+      rlat1 = plat[nv[j-1]];
+      rlon1 = plon[nv[j-1]];
+      rlat2 = plat[nv[j]];
+      rlon2 = plon[nv[j]];
 
       gset_line_colr_ind(3);
       c_mapgci(rlat1, rlon1, rlat2, rlon2, NARC, arclat, arclon); 
@@ -245,9 +215,8 @@ main()
   gset_line_colr_ind(5);
   for (k = 0; k < 5; k++) {
     for (i = 4; i < 10; i++) {
-      c_csscoord(xc[i], yc[i], zc[i], &rlat2, &rlon2, &pnm);
-      rlat1 = R2D*rlat2;
-      rlon1 = R2D*rlon2;
+      rlat1 = plat[i];
+      rlon1 = plon[i];
       c_nggcog (rlat1, rlon1, 0.1 * (float) k, arclat, arclon, NARC);
       c_mapit (arclat[0], arclon[0], 0);
       for (j = 1; j < NARC-1; j++) {

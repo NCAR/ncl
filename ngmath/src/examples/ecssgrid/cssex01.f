@@ -1,7 +1,6 @@
 C
-C       $Id: cssex01.f,v 1.4 1999-10-22 16:46:04 fred Exp $
+C       $Id: cssex01.f,v 1.5 2000-01-12 22:58:02 fred Exp $
 C
-
       PROGRAM CSEX01
 C
 C  Example of Delaunay triangulation and Voronoi diagram
@@ -33,40 +32,19 @@ C
       PARAMETER (NTMX=2*NMAX, NT6=6*NMAX, LWK=27*NMAX)
       INTEGER LTRI(3,NTMX), IWK(LWK), NV(NMAX)
 C
-C  Storage for Cartesian coordinates for original data.
-C
-      REAL    X(NMAX),    Y(NMAX),   Z(NMAX)
-C
 C  Real workspace.
 C
-      REAL    RWK(4*NMAX)
+      DOUBLE PRECISION    RWK(13*NMAX)
 C
 C  Storage for circumcenters and circum radii.
 C
-      REAL    XC(NTMX),    YC(NTMX),   ZC(NTMX),    RC(NTMX)
-C
-C  Constants for converting between radians and degrees.
-C
-      PARAMETER(D2R=0.017453293, R2D=57.29578)
+      REAL    PLAT(NTMX),    PLON(NTMX),   RC(NTMX)
 C
       N = NMAX
 C
-C  Set X and Y to the values of RLON and RLAT, respectively,
-C  in radians.
-C
-      DO 2 K = 1,N
-        X(K) = D2R*RLON(K)
-        Y(K) = D2R*RLAT(K)
-    2   CONTINUE
-C
-C  Transform the spherical coordinates X and Y to Cartesian
-C  coordinates (X,Y,Z) on the unit sphere (X**2 +  Y**2 + Z**2 = 1).
-C
-      CALL CSTRANS (N,Y,X, X,Y,Z)
-C
 C  Create the triangulation, storing the vertices in LTRI.
 C
-      CALL CSSTRI (N,X,Y,Z, NT,LTRI, IWK,RWK,IER)
+      CALL CSSTRI (N,RLAT,RLON, NT,LTRI, IWK,RWK,IER)
 C
 C  Plot the Delaunay triangulation, the circumcircles, and
 C  the Voronoi polygons on a sphere.
@@ -96,7 +74,7 @@ C
 C
 C  Get the circumcenters of the Delaunay triangles.
 C
-      CALL CSVORO(N,X,Y,Z,1,1,IWK,RWK,NTMX,XC,YC,ZC,RC,
+      CALL CSVORO(N,RLAT,RLON,1,1,IWK,RWK,NTMX,PLAT,PLON,RC,
      +            NCA,NUMV,NV,IER)
 C
 C  Plot the circumcircles whose circumcenters lie in one of
@@ -108,18 +86,7 @@ C
       CALL GSPLCI(4)
       DO 940 I=5,10
 C
-C  CSSCOORD returns TLAT and TLON in radians.  TLAT is between
-C  -PI/2. and PI/2. and TLON is between -PI and PI.
-C
-        CALL CSSCOORD(XC(I),YC(I),ZC(I),TLAT,TLON,PNM)
-C
-C  Convert TLAT, TLON and the circumradius to degrees and plot.
-C
-        TLATD = R2D*TLAT
-        TLOND = R2D*TLON
-        RCD   = R2D*RC(I)
-C
-        CALL NGGCOG(TLATD,TLOND,RCD,ARCLAT,ARCLON,NARC)
+        CALL NGGCOG(PLAT(I),PLON(I),RC(I),ARCLAT,ARCLON,NARC)
         CALL MAPIT(ARCLAT(1),ARCLON(1),0)
         DO 930 J=2,NARC-1
           CALL MAPIT(ARCLAT(J),ARCLON(J),1)
@@ -135,24 +102,16 @@ C
 C  Get the polygon containing the original data point
 C  (X(I),Y(I),Z(I)).  
 C
-        CALL CSVORO(N,X,Y,Z,I,0,IWK,RWK,NTMX,XC,YC,ZC,RC,
+        CALL CSVORO(N,RLAT,RLON,I,0,IWK,RWK,NTMX,PLAT,PLON,RC,
      +              NCA,NUMV,NV,IER)
         DO 855 NN=2,NUMV
 C
-C  Convert the Cartesian coordinates of the Voronoi polygonal
-C  edges to degrees latitiude and longitude.
-C
-          CALL CSSCOORD(XC(NV(NN-1)),YC(NV(NN-1)),ZC(NV(NN-1)),
-     +                  RLAT1,RLON1,PNM)
-          CALL CSSCOORD(XC(NV(NN)),YC(NV(NN)),ZC(NV(NN)),
-     +                  RLAT2,RLON2,PNM)
-C
 C  Convert latitudes and longitudes to radians.
 C
-          RLAT1 = R2D*RLAT1
-          RLAT2 = R2D*RLAT2
-          RLON1 = R2D*RLON1
-          RLON2 = R2D*RLON2
+          RLAT1 = PLAT(NV(NN-1))
+          RLON1 = PLON(NV(NN-1))
+          RLAT2 = PLAT(NV(NN))
+          RLON2 = PLON(NV(NN))
 C
 C  Plot.
 C
@@ -201,10 +160,7 @@ C  Mark the circumcenters.
 C
       CALL GSFACI(5)
       DO 440 I=5,10
-        CALL CSSCOORD(XC(I),YC(I),ZC(I),RLAT2,RLON2,PNM)
-        RLATD = R2D*RLAT2
-        RLOND = R2D*RLON2
-        CALL NGGCOG(RLATD,RLOND,0.6,ARCLAT,ARCLON,NARC)
+        CALL NGGCOG(PLAT(I),PLON(I),0.6,ARCLAT,ARCLON,NARC)
         DO 420 L=1,NARC
           CALL MAPTRN(ARCLAT(L),ARCLON(L),ARCUAR(L),ARCVAR(L))
   420   CONTINUE

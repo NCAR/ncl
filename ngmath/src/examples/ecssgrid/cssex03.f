@@ -1,5 +1,5 @@
 C
-C       $Id: cssex03.f,v 1.1 1999-07-23 22:54:07 fred Exp $
+C       $Id: cssex03.f,v 1.2 2000-01-12 22:58:02 fred Exp $
 C
       PROGRAM CSSEX03
 C
@@ -35,7 +35,7 @@ C  Specify GKS output data.
 C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=2)
 C
-C  Sizes of work arrays.
+C  Sizes of work arrays for plotting.
 C
       PARAMETER (IRWRK=5200, IIWRK=11250, IAMASZ=20000)
       DIMENSION RWRK(IRWRK), IWRK(IIWRK), IAMA(IAMASZ)
@@ -43,14 +43,20 @@ C
 C  Arrays for original data.
 C
       REAL X(NMAX), Y(NMAX), FVAL(NMAX)
-      REAL XS(NUMORG), YS(NUMORG), ZS(NUMORG)
 C
 C  Arrays for output data.
 C
       REAL RLAT(NMAX), RLON(NMAX)
       REAL XI(NUMXOUT), YI(NUMYOUT), ZDAT(NUMYOUT,NUMXOUT)
+      REAL XR(NUMXOUT), YR(NUMYOUT)
       REAL FF(NUMXOUT,NUMYOUT), FFN(NUMXOUT,NUMYOUT)
       REAL FFS(NUMXOUT,NUMYOUT)
+C
+C  Work arrays for CSSGRID interpolation.
+C
+      PARAMETER (NIWKC=27*NMAX, NRWKC=13*NMAX)
+      INTEGER IWKC(NIWKC)    
+      DOUBLE PRECISION RWKC(NRWKC)    
 C
 C  Array to store the values of the analytic function.
 C
@@ -65,27 +71,25 @@ C  Generate functional values at the input nodes.
 C
       CALL CRGENI(5,10,-200.,500.)
       DO 10 I=1,N
-        FVAL(I) = CRGENPNT(D2R*RLAT(I),D2R*RLON(I))
+        FVAL(I) = CRGENPNT(RLAT(I),RLON(I))
    10 CONTINUE
 C
-C  Convert to radians.
+C  Convert to radians for NATGRIDS calls.
 C
       DO 2 K = 1,N
         X(K) = D2R*RLAT(K)
         Y(K) = D2R*RLON(K)
     2 CONTINUE
 C
-C  Create Cartesian coordinates for CSSGRID call.
-C
-      CALL CSTRANS (N,X,Y, XS,YS,ZS)
-C
 C  Create the output grid.
 C
       DO 20 I=1,NUMXOUT
-        XI(I) = D2R*(-87.5+(I-1)*2.5)
+        XI(I) = -87.5+(I-1)*2.5
+        XR(I) = D2R*XI(I)
    20 CONTINUE
       DO 30 J=1,NUMYOUT
-        YI(J) = D2R*(-180.+(J-1)*2.5)
+        YI(J) = -180.+(J-1)*2.5
+        YR(J) = D2R*YI(J)
    30 CONTINUE
 C
 C  Store analytic function values.
@@ -100,7 +104,7 @@ C  Use Natgrid to interpolate, without using any periodic points
 C  in longitude.  There are significant problems along the zero 
 C  longitude.
 C
-      CALL NATGRIDS(N,X,Y,FVAL,NUMXOUT,NUMYOUT,XI,YI,FFN,IER)
+      CALL NATGRIDS(N,X,Y,FVAL,NUMXOUT,NUMYOUT,XR,YR,FFN,IER)
 C
 C  Add in periodic points in longitude for the Natgrid call.
 C
@@ -122,13 +126,13 @@ C
 C  Use Natgrid to interpolate, using the additional periodic points.
 C  
       N = NMAX
-      CALL NATGRIDS(N,X,Y,FVAL,NUMXOUT,NUMYOUT,XI,YI,FF,IER)
+      CALL NATGRIDS(N,X,Y,FVAL,NUMXOUT,NUMYOUT,XR,YR,FF,IER)
 C
 C  Use Cssgrid to interpolate on the sphere.
 C
       N = NUMORG
-      CALL CSSGRID(N,XS,YS,ZS,FVAL,NUMXOUT,NUMYOUT,XI,YI,FFS,
-     +             IWRK,RWRK,IER)
+      CALL CSSGRID(N,RLAT,RLON,FVAL,NUMXOUT,NUMYOUT,XI,YI,FFS,
+     +             IWKC,RWKC,IER)
 C
 C  Plot the results.
 C
@@ -470,10 +474,12 @@ C
       DATA RTOD / 57.2957795130823 /
       DATA PI   /  3.1415926/
 C
-      CRLT=COS(RLAT)
-      CRLN=COS(RLON)
-      SRLT=SIN(RLAT)
-      SRLN=SIN(RLON)
+      TLAT = DTOR*RLAT
+      TLON = DTOR*RLON
+      CRLT=COS(TLAT)
+      CRLN=COS(TLON)
+      SRLT=SIN(TLAT)
+      SRLN=SIN(TLON)
       RVAL=.5*(RLOW+RHGH)
       DO 100 K=1,NCNT
         DIST = SQRT((CRLT*CRLN-XCOC(K))**2
