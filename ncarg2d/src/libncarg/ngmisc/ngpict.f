@@ -66,8 +66,9 @@ C  Get the workstation category (0=OUTPUT; 2=OUTIN; 4=MO).
 C
       CALL GQWKCA (ITYPE,IER,ICAT)
 C
-C  Update the workstation.
+C  Flush the SPPS pen move buffer and update the workstation.
 C
+      CALL PLOTIF(0.,0.,2)
       CALL GUWK(WKID,0)      
 C
       IF (ICAT .EQ. 4) THEN
