@@ -1,4 +1,5 @@
 C
+C       $Id: hluvvmpxy.f,v 1.2 1996-02-07 18:11:46 dbrown Exp $
 C
       SUBROUTINE HLUVVMPXY (X,Y,U,V,UVM,XB,YB,XE,YE,IST)
 C
