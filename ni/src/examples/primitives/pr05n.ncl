@@ -1,0 +1,273 @@
+;
+;      $Id: pr05n.ncl,v 1.1 1996-07-01 17:28:54 haley Exp $
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                      ;
+;                Copyright (C)  1996                                   ;
+;        University Corporation for Atmospheric Research               ;
+;                All Rights Reserved                                   ;
+;                                                                      ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;  File:       pr05n.ncl
+;
+;  Author:     Dave Brown (converted by Mary Haley)
+;          National Center for Atmospheric Research
+;          PO 3000, Boulder, Colorado
+;
+;  Date:       Mon Jul  1 09:41:40 MDT 1996
+;
+;  Description:    Demonstrates graphics primitives drawn in data
+;                  space over a MapPlot. Data polygons are used to
+;                  color global zones and data polylines mark the
+;                  zonal boundaries. Line labels name the boundary
+;                  lines (e.g. arctic circle). Markers are drawn at
+;                  the poles. The three frames present three 
+;                  different map projections, showing how the 
+;                  primitives adapt to various levels of distortion.
+;
+
+;
+; Begin NCL script.
+;
+begin
+
+;
+; Initialize variables
+;
+projection = (/"orthographic","mollweide","stereographic"/)
+
+;
+; Create Application object.  The Application object name is used to
+; determine the name of the resource file, which is "pr05.res" in this
+; case.
+; 
+appid = create "pr05" appClass defaultapp 
+    "appDefaultParent" : "True"
+    "appUsrDir" : "./"
+end create
+
+;
+; Default is to display output to an X workstation
+;
+NCGM=0
+X11=1
+PS=0
+
+if (NCGM .eq. 1) then
+;
+; Create an ncgmWorkstation object.
+;
+  wid = create "pr05Work" ncgmWorkstationClass defaultapp
+      "wkMetaName" : "pr05n.ncgm"
+  end create
+else
+  if (X11 .eq. 1) then
+;
+; Create an XWorkstation object.
+;
+  wid = create "pr05Work" xWorkstationClass defaultapp
+      "wkPause" : "True"
+  end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PSWorkstation object.
+;
+      wid = create "pr05Work" psWorkstationClass defaultapp
+        "wkPSFileName" : "pr05n.ps"
+      end create
+    end if
+  end if
+end if
+
+;
+; Create a MapPlot that covers the entire NDC space 
+; to use as a drawing canvas
+;
+canvas = create "canvas" mapPlotClass wid
+  "vpXF" : 0.0
+  "vpYF" : 1.0
+  "vpWidthF" : 1.0
+  "vpHeightF" : 1.0
+end create
+
+;
+; Create a GraphicStyle to control the primitive attributes.
+;
+gsid = create "style" graphicStyleClass wid end create
+
+do i = 0,2
+
+;
+; Set the map projection
+;
+  setvalues canvas
+    "mpProjection" : projection(i)
+  end setvalues
+;
+; Draw polygons representing the 5 major zones of the globe, beginning
+; with the tropical zone.
+; Turn edges off and set the marker color.
+;
+  setvalues gsid
+    "gsMarkerColor" : 0
+    "gsEdgesOn" : "false"
+    "gsFillColor" : 2
+  end setvalues
+
+  px = (/360.,360.,0.,0.,360./)
+  py = (/-23.5,23.5,23.5,-23.5,-23.5/)
+  NhlDataPolygon(canvas,gsid,px,py)
+
+;
+; Next draw the north and south temperate zones
+;
+  setvalues gsid
+    "gsFillColor" : 3
+  end setvalues
+
+  py(0) = 23.5
+  py(1) = 66.5
+  py(2) = 66.5
+  py(3) = 23.5
+  py(4) = 23.5
+  px(0) = 360.
+  px(1) = 360.
+  px(2) =  0.
+  px(3) = 0.
+  px(4) = 360.
+  NhlDataPolygon(canvas,gsid,px,py)
+
+  py(0) = -23.5
+  py(1) = -66.5
+  py(2) = -66.5
+  py(3) = -23.5
+  py(4) = -23.5
+  px(0) = 360.
+  px(1) = 360.
+  px(2) =  0.
+  px(3) = 0.
+  px(4) = 360.
+  NhlDataPolygon(canvas,gsid,px,py)
+;
+; Draw the frigid zones
+;
+  setvalues gsid
+    "gsFillColor" : 4
+  end setvalues
+
+  py(0) = 90.
+  py(1) = 66.5
+  py(2) = 66.5
+  py(3) = 90.
+  py(4) = 90.
+  px(0) = 360.
+  px(1) = 360.
+  px(2) =  0.
+  px(3) = 0.
+  px(4) = 360.
+  NhlDataPolygon(canvas,gsid,px,py)
+
+  py(0) = -90.
+  py(1) = -66.5
+  py(2) = -66.5
+  py(3) = -90.
+  py(4) = -90.
+  px(0) = 360.
+  px(1) = 360.
+  px(2) =  0.
+  px(3) = 0.
+  px(4) = 360.
+  NhlDataPolygon(canvas,gsid,px,py)
+
+;
+; Draw the map outlines and grid
+;
+  draw(canvas)
+;
+; Draw markers at each pole
+;
+  px(0) = 0.
+  px(1) = 0.
+  py(0) = 90.
+  py(1) = -90.
+  NhlDataPolymarker(canvas,gsid,px(:1),py(:1))
+
+;
+; Draw polylines at each of the major latitudinal boundary lines,
+; beginning with the equator. Use the line label to name each of the
+; lines. The '|' character is inserted between each label character 
+; to allow the labels to track the curve of each line more precisely.
+;
+  setvalues gsid
+    "gsLineLabelString" : "e|q|u|a|t|o|r"
+  end setvalues
+
+  px(0) = 360.
+  px(1) = 0.
+  py(0) = 0.
+  py(1) = 0.
+  NhlDataPolyline(canvas,gsid,px(:1),py(:1))
+
+;
+; Tropic of cancer
+;
+  setvalues gsid
+    "gsLineLabelString" : "t|r|o|p|i|c o|f c|a|n|c|e|r"
+  end setvalues
+
+  px(0) = 360.
+  px(1) = 0.
+  py(0) = 23.5
+  py(1) = 23.5
+  NhlDataPolyline(canvas,gsid,px(:1),py(:1))
+
+;
+; Tropic of capricorn (Note: currently there is a limit on the 
+; number of characters in a line label that prevents the '|'
+; character from being used between each letter in a label 
+; of this length).
+;
+  setvalues gsid
+    "gsLineLabelString" : "tr|o|p|ic of c|a|p|r|i|c|o|rn"
+  end setvalues
+
+  px(0) = 360.
+  px(1) = 0.
+  py(0) = -23.5
+  py(1) = -23.5
+  NhlDataPolyline(canvas,gsid,px(:1),py(:1))
+;
+; Arctic circle
+;
+  setvalues gsid
+    "gsLineLabelString" : "a|r|c|t|i|c c|i|r|c|l|e"
+  end setvalues
+
+  px(0) = 360.
+  px(1) = 0.
+  py(0) = 66.5
+  py(1) = 66.5
+  NhlDataPolyline(canvas,gsid,px(:1),py(:1))
+
+;
+; Antarctic circle
+;
+  setvalues gsid
+    "gsLineLabelString" : "|a|n|t|a|r|c|t|i|c c|i|r|c|l|e"
+  end setvalues
+
+  px(0) = 360.
+  px(1) = 0.
+  py(0) = -66.5
+  py(1) = -66.5
+  NhlDataPolyline(canvas,gsid,px(:1),py(:1))
+  frame(wid)
+
+end do
+
+;
+; End NCL script.
+;
+end
