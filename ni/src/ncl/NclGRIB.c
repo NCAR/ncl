@@ -780,7 +780,15 @@ GribFileRecord *therec;
 	}
 }
 
-
+int GdsCompare(char *a,char *b,int n) {
+	int i;
+	for( i = 0; i < n ; i++) {
+		if(*(a++)!=*(b++)) {	
+			return(0);
+		}
+	}
+	return(1);
+}
 static void _SetFileDimsAndCoordVars
 #if 	NhlNeedProto
 (GribFileRecord *therec)
@@ -1137,91 +1145,19 @@ GribFileRecord *therec;
 * For gds grid it must be decoded every time since several different grid could be defined
 * by the smae grid_type number.
 */
+/*
 				(*grid_gds[step->grid_gds_tbl_index].get_grid)(step,&tmp_lat,&n_dims_lat,&dimsizes_lat,&tmp_lon,&n_dims_lon,&dimsizes_lon);
+*/
 				dstep = therec->grid_dims;
-				if((n_dims_lon ==1)&&(n_dims_lat == 1)) {
-
-					while(dstep != NULL) {
-						if((dstep->dim_inq->is_gds == step->gds_type)&&(dstep->dim_inq->size == dimsizes_lat[0])){
-							if((dstep->next != NULL)&&(dstep->next->dim_inq->size == dimsizes_lon[0])){
-/*
-* Now compare values necessary
-*/
-
-								tmp_md = _GribGetInternalVar(therec,dstep->dim_inq->dim_name,&test);
-								lhs_f = (float*)tmp_md->multidval.val;
-								for(i = 0; i < tmp_md->multidval.totalelements; i++) {
-									if(tmp_lat[i] != lhs_f[i]) {
-										dstep = dstep->next;
-										break;
-									}
-								}
-								if(i== tmp_md->multidval.totalelements) {	
-									tmp_md = _GribGetInternalVar(therec,dstep->next->dim_inq->dim_name,&test);
-									lhs_f = (float*)tmp_md->multidval.val;
-									for(i = 0; i < tmp_md->multidval.totalelements; i++) {
-										if(tmp_lon[i] != lhs_f[i]) {
-											dstep = dstep->next;
-											break;
-										}
-									}
-									if(i == dimsizes_lon[0]) {
-										break;
-									}
-								}
-								
-							} else {
-								dstep = dstep->next;
-							}
-						} else {
-							dstep = dstep->next;
-						}
+				while(dstep != NULL) {
+					if((dstep->dim_inq->is_gds == step->gds_type)&&
+						(dstep->dim_inq->gds_size == step->thelist->rec_inq->gds_size)&&
+						(GdsCompare(dstep->dim_inq->gds,step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size))) {
+						break;
+					} else {
+						dstep = dstep->next;
 					}
-				} else if((n_dims_lon ==2)&&(n_dims_lat ==2)&&(dimsizes_lat[0] == dimsizes_lon[0])&&(dimsizes_lat[1] == dimsizes_lon[1])) {
-
-/*
-						sprintf(buffer,"g%d_lat_%d",step->gds_type,therec->total_dims);
-						sprintf(buffer,"g%d_lon_%d",step->gds_type,therec->total_dims+1);
-						sprintf(buffer,"g%d_x_%d",step->gds_type,therec->total_dims);
-						sprintf(buffer,"g%d_y_%d",step->gds_type,therec->total_dims + 1);
-*/
-					while(dstep != NULL) {
-						if((dstep->dim_inq->is_gds == step->gds_type)
-							&&(dstep->dim_inq->size == dimsizes_lat[0])
-							&&(dstep->next != NULL) 
-							&&(dstep->next->dim_inq->size == dimsizes_lat[1])) {
-								sprintf(buffer,"g%d_lat_%d",dstep->dim_inq->is_gds,dstep->dim_inq->dim_number);
-								tmp_md = _GribGetInternalVar(therec,NrmStringToQuark(buffer),&test);
-								lhs_f = (float*)tmp_md->multidval.val;
-
-								for(i =0 ; i < tmp_md->multidval.totalelements; i++) {
-									if(lhs_f[i] != tmp_lat[i]) {
-										step = step->next;
-										break;
-									}
-								}
-								if(i == tmp_md->multidval.totalelements) {
-									sprintf(buffer,"g%d_lon_%d",dstep->next->dim_inq->is_gds,dstep->next->dim_inq->dim_number);
-									tmp_md = _GribGetInternalVar(therec,NrmStringToQuark(buffer),&test);
-									lhs_f = (float*)tmp_md->multidval.val;
-
-									for(i =0 ; i < tmp_md->multidval.totalelements; i++) {
-										if(lhs_f[i] != tmp_lon[i]) {
-											step = step->next;
-											break;
-										}
-									}
-								}
-						
-						} else {
-							dstep = dstep->next;
-						}
-					}
-			
-				} else {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Couldn't handle dimension information returned by grid decoding");
-					is_err = NhlFATAL;
-				} 
+				}
 			}  else {
 				dstep = therec->grid_dims;
 				while(dstep != NULL) {
@@ -1246,6 +1182,13 @@ GribFileRecord *therec;
 							lon_att_list_ptr = NULL;
 							(*grid[step->grid_tbl_index].get_grid_atts)(step,&lat_att_list_ptr,&nlatatts,&lon_att_list_ptr,&nlonatts);
 						}
+					} else if(step->grid_gds_tbl_index != -1) {
+
+						(*grid_gds[step->grid_gds_tbl_index].get_grid)(step,&tmp_lat,&n_dims_lat,&dimsizes_lat,&tmp_lon,&n_dims_lon,&dimsizes_lon);
+						nlonatts = 0;
+						nlatatts = 0;
+						lat_att_list_ptr = NULL;
+						lon_att_list_ptr = NULL;
 					}
 
 	/*
@@ -1272,16 +1215,21 @@ GribFileRecord *therec;
 						tmp->size = dimsizes_lon[0];
 						tmp->dim_name = NrmStringToQuark(buffer);
 						tmp->is_gds = step->gds_type;
+						tmp->gds_size = step->thelist->rec_inq->gds_size;
+						tmp->gds = (char*)NclMalloc(step->thelist->rec_inq->gds_size);
+						memcpy(tmp->gds,step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size);
 						ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
 						ptr->dim_inq= tmp;
 						ptr->next = therec->grid_dims;
 						therec->grid_dims = ptr;
 						therec->n_grid_dims++;
-		
+	/*	
+	   not valid for single dimensioned coords
 						tmp_float = NclMalloc((unsigned)sizeof(float)*2);
 						tmp_float[0] = tmp_lon[0];
 						tmp_float[1] = tmp_lon[dimsizes_lon[0]-1];
 						GribPushAtt(&lon_att_list_ptr,"corners",tmp_float,2,nclTypefloatClass); nlonatts++;
+	*/
 
 						
 						_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)_NclCreateVal(
@@ -1307,16 +1255,22 @@ GribFileRecord *therec;
 						tmp->size = dimsizes_lat[0];
 						tmp->dim_name = NrmStringToQuark(buffer);
 						tmp->is_gds = step->gds_type;
+						tmp->gds_size = step->thelist->rec_inq->gds_size;
+						tmp->gds = (char*)NclMalloc(step->thelist->rec_inq->gds_size);
+						memcpy(tmp->gds,step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size);
 						ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
 						ptr->dim_inq= tmp;
 						ptr->next = therec->grid_dims;
 						therec->grid_dims = ptr;
 						therec->n_grid_dims++;
 
+	/*	
+	   not valid for single dimensioned coords
 						tmp_float = NclMalloc((unsigned)sizeof(float)*2);
 						tmp_float[0] = tmp_lat[0];
 						tmp_float[1] = tmp_lat[dimsizes_lat[0]-1];
 						GribPushAtt(&lat_att_list_ptr,"corners",tmp_float,2,nclTypefloatClass); nlatatts++;
+	*/
 
 						_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)_NclCreateVal(
 														NULL,
@@ -1350,6 +1304,10 @@ GribFileRecord *therec;
 						tmp->dim_number = therec->total_dims + 1;
 						tmp->size = dimsizes_lon[1];
 						tmp->dim_name = NrmStringToQuark(buffer);
+						tmp->is_gds = step->gds_type;
+						tmp->gds_size = step->thelist->rec_inq->gds_size;
+						tmp->gds = (char*)NclMalloc(step->thelist->rec_inq->gds_size);
+						memcpy(tmp->gds,step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size);
 						ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
 						ptr->dim_inq= tmp;
 						ptr->next = therec->grid_dims;
@@ -1392,6 +1350,10 @@ GribFileRecord *therec;
 						tmp->dim_number = therec->total_dims;
 						tmp->size = dimsizes_lat[0];
 						tmp->dim_name = NrmStringToQuark(buffer);
+						tmp->is_gds = step->gds_type;
+						tmp->gds_size = step->thelist->rec_inq->gds_size;
+						tmp->gds = (char*)NclMalloc(step->thelist->rec_inq->gds_size);
+						memcpy(tmp->gds,step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size);
 						ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
 						ptr->dim_inq= tmp;
 						ptr->next = therec->grid_dims;
@@ -3139,6 +3101,9 @@ void *therec;
 		while(dim != NULL) {
 			dim1 = dim->next;
 			if(dim->dim_inq != NULL) {
+				if(dim->dim_inq->is_gds) {
+					NclFree(dim->dim_inq->gds);
+				}
 				NclFree(dim->dim_inq);
 			}
 			NclFree(dim);

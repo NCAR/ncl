@@ -158,6 +158,8 @@ struct _GribRecordInqRec {
 struct _GribDimInqRec {
 	int dim_number; /* assigned in order of occurance in grib record */
 	int is_gds;
+	int gds_size;
+	unsigned char *gds;
 	NclQuark dim_name;
 	long size;
 };

@@ -3170,6 +3170,7 @@ int** dimsizes_lon;
 			*n_dims_lon= 0;
 			*dimsizes_lon= NULL;
 }
+
 void GdsGAGrid
 #if NhlNeedProto
 (GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
@@ -3184,21 +3185,119 @@ int* n_dims_lon;
 int** dimsizes_lon;
 #endif
 {
-	int i;
-			*lat = malloc(sizeof(float)*94);
+		int nlat;
+		char tmpc[4];
+		double *theta;
+		double *wts;
+		int lwork= 0;
+		double *work = NULL;
+		int i,ierror,tmp,k;
+		double la1;
+		double la2;
+		int ila1;
+		int ila2;
+		int ilo1;
+		int ilo2;
+		int loinc;
+
+		if((thevarrec->thelist != NULL)&&(thevarrec->thelist->rec_inq != NULL)) {
 			*n_dims_lat = 1;
 			*dimsizes_lat = malloc(sizeof(int));
-			(*dimsizes_lat)[0] = 94;
-			*lon = malloc(sizeof(float)*192);
-			*n_dims_lon= 1;
-			*dimsizes_lon= malloc(sizeof(int));
-			(*dimsizes_lon)[0] = 192;
-			for(i=0; i < 94;i++) {
-				(*lat)[i] = i + 1;
+			(*dimsizes_lat)[0] = (int)UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[8]));
+
+			nlat = 2 * UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[25]));
+			theta = (double*)NclMalloc(sizeof(double)*nlat);
+			wts = (double*)NclMalloc(sizeof(double)*nlat);
+			lwork = 4 * nlat*(nlat+1)+2;
+			work = (double*)NclMalloc(sizeof(double)*lwork);
+			*lat = (float*)NclMalloc(sizeof(float)*nlat);
+/*
+* These come out south to north
+*/
+			NGCALLF(gaqd,GAQD)(&nlat,theta,wts,work,&lwork,&ierror);
+			NclFree(work);
+			NclFree(wts);
+
+			tmpc[0] = thevarrec->thelist->rec_inq->gds[13] & (char)0177;
+			tmpc[1] = thevarrec->thelist->rec_inq->gds[14];
+			tmpc[2] = thevarrec->thelist->rec_inq->gds[15];
+			ilo1 = ((thevarrec->thelist->rec_inq->gds[13] & (char)0200) ? -1:1)*(int)UnsignedCnvtToDecimal(3,tmpc);
+			tmpc[0] = thevarrec->thelist->rec_inq->gds[20] & (char)0177;
+			tmpc[1] = thevarrec->thelist->rec_inq->gds[21];
+			tmpc[2] = thevarrec->thelist->rec_inq->gds[22];
+			ilo2 = ((thevarrec->thelist->rec_inq->gds[20] & (char)0200) ? -1:1)*(int)UnsignedCnvtToDecimal(3,tmpc);
+
+			tmpc[0] = thevarrec->thelist->rec_inq->gds[23];
+			tmpc[1] = thevarrec->thelist->rec_inq->gds[24];
+			loinc = (int)UnsignedCnvtToDecimal(2,tmpc);
+
+
+			tmpc[0] = thevarrec->thelist->rec_inq->gds[10] & (char)0177;
+			tmpc[1] = thevarrec->thelist->rec_inq->gds[11];
+			tmpc[2] = thevarrec->thelist->rec_inq->gds[12];
+			ila1 = ((thevarrec->thelist->rec_inq->gds[10] & (char)0200) ? -1:1)*(int)UnsignedCnvtToDecimal(3,tmpc);
+			tmpc[0] = thevarrec->thelist->rec_inq->gds[17] & (char)0177;
+			tmpc[1] = thevarrec->thelist->rec_inq->gds[18];
+			tmpc[2] = thevarrec->thelist->rec_inq->gds[19];
+			ila2 = ((thevarrec->thelist->rec_inq->gds[17] & (char)0200) ? -1:1)*(int)UnsignedCnvtToDecimal(3,tmpc);
+
+			if(!(thevarrec->thelist->rec_inq->gds[27] & (char)0100)) {
+/* -j direction implies north to south*/
+				i = nlat -1;
+				while((i >= 0)&&(ila1 != (int)(RADDEG*theta[i] * 1000.0 + .5) - 90000)) {
+					i--;	
+				}
+				k = 0;
+				while((k<(*dimsizes_lat)[0])&&(i>=0)&&(ila2 != (int)(RADDEG*theta[i] * 1000.0 + .5) - 90000)) {
+					(*lat)[k++] = RADDEG*theta[i] - 90.0;
+					i--;	
+				}
+				if((i >=0)&&(k<(*dimsizes_lat)[0])) {
+					(*lat)[k] = RADDEG*theta[i] - 90.0;
+				}
+	
+			} else {
+/* +j direction implies south to north*/
+				i = 0;
+				while((i<nlat)&&(ila1 != (int)(RADDEG*theta[i] * 1000.0 + .5) - 90000)) {
+					i++;	
+				}
+				k = 0;
+				while((i<nlat)&&(k<(*dimsizes_lat)[0])&&(ila2 != (int)(RADDEG*theta[i] * 1000.0 + .5) - 90000)) {
+					(*lat)[k++] = RADDEG*theta[i] - 90.0;
+					i++;	
+				}
+				if((i < nlat)&&(k<(*dimsizes_lat)[0])) {
+					(*lat)[i] = RADDEG*theta[i] - 90.0;
+				}
+
 			}
-			for(i=0; i < 192;i++) {
-				(*lon)[i] = i + 1;
+			*n_dims_lon = 1;
+			*dimsizes_lon = malloc(sizeof(int));
+			(*dimsizes_lon)[0] = UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[6]));
+			*lon = malloc(sizeof(float)*UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[6])));
+			if(!(thevarrec->thelist->rec_inq->gds[27] & (char)0200)) {
+/* +i direction  west to east */
+				for(i = 0; i < (*dimsizes_lon)[0]; i++) {
+					(*lon)[i] = (ilo1 + i*loinc)/1000.0;
+				}
+				
+			} else {
+/* -i direction  east to west*/
+				for(i = 0; i < (*dimsizes_lon)[0]; i++) {
+					(*lon)[i] = (ilo1 - i*loinc)/1000.0;
+				}
+				
 			}
+			NclFree(theta);
+		} else {
+			*lat = NULL;
+			*n_dims_lat = 0;
+			*dimsizes_lat = NULL;
+			*lon = NULL;
+			*n_dims_lon= 0;
+			*dimsizes_lon= NULL;
+		}
 }
 void GdsSTGrid
 #if NhlNeedProto
