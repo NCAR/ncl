@@ -18,7 +18,7 @@ viewport width. Normally the arrow head size is scaled
 proportionally to the length of the vector. This parameter
 allows you to ensure that the arrow head will remain
 recognizable even for very short vectors. The default value
-is 0.01.
+is 0.005.
 .IP "AMX - Arrow Head Maximum Size - Real"
 Specifies a maximum length for the two lines representing
 the point of the vector arrow head, as a fraction of the
@@ -26,7 +26,7 @@ viewport width. Normally the arrow head is scaled
 proportionally to the length of the vector. This parameter
 allows you to ensure that the arrow heads do not
 become excessively large for high magnitude vectors. The
-default value is 0.2.
+default value is 0.05.
 .IP "CLR - Array of GKS Color Indices - Integer Array"
 This parameter represents an array containing the GKS color
 index to use for coloring the vector when the scalar
@@ -223,7 +223,7 @@ linewidth that is dependent on the output device, you may need to
 adjust the linewidth value depending on the output conditions to
 obtain a pleasing plot. Currently linewidth applies equally to the
 body of the vector and the arrowhead. Overly thick lines may cause the
-arrow heads to appear smudged. The default is 0.0, specifying a
+arrow heads to appear smudged. The default is 1.0, specifying a
 device-dependent minimum linewidth.
 .IP "MAP - Map Transformation Code - Integer"
 MAP defines the transformation between the data and user
@@ -1129,7 +1129,7 @@ The parameter XC1 specifies the X coordinate value that corresponds to
 a value of 1 for the first subscript of the U, V, vector component
 arrays as well as for the P scalar data array, if used. Together with
 XCM, YC1, and YCN it establishes the mapping from grid coordinate
-space to data coordinate space. If XC1 is equal to XCM, 1 will be
+space to data coordinate space. If XC1 is equal to XCM, 1.0 will be
 used. You must initialize Vectors with a call to VVINIT after
 modifying this parameter. The default value of XC1 is 0.0.
 .IP "XCM - X Coordinate at Index M - Real"
@@ -1157,7 +1157,7 @@ The parameter YC1 specifies the Y coordinate value that corresponds to
 a value of 1 for the first subscript of the U, V, vector component
 arrays as well as for the P scalar data array, if used. Together with
 YCN, XC1, and XCM it establishes the mapping from grid coordinate
-space to data coordinate space. If YC1 is equal to YCN, 1 will be
+space to data coordinate space. If YC1 is equal to YCN, 1.0 will be
 used. You must initialize Vectors with a call to VVINIT after
 modifying this parameter. The default value of YC1 is 0.0.
 .IP "YCN - Y Coordinate at Index N - Real"
@@ -1165,8 +1165,8 @@ The parameter YCN specifies the Y coordinate value that corresponds to
 the value of the VVINIT input parameter, N, for the second subscript
 of the U and V vector component arrays as well as the P scalar data
 array, if used.  Together with YC1, XC1, and XCM it establishes the
-mapping from grid coordinate space to data coordinate space. If XC1 is
-equal to XCM, the value of N, converted to a real, will be used. You
+mapping from grid coordinate space to data coordinate space. If YC1 is
+equal to YCN, the value of N, converted to a real, will be used. You
 must initialize Vectors with a call to VVINIT after modifying this
 parameter. The default value of YCN is 0.0.
 .IP "YIN - Y Axis Array Increment (Grid) - Integer"
