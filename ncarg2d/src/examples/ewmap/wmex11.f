@@ -1,5 +1,5 @@
 C
-C       $Id: wmex11.f,v 1.2 1994-12-16 01:53:53 fred Exp $
+C       $Id: wmex11.f,v 1.3 1995-02-02 20:02:02 fred Exp $
 C
       PROGRAM WMEX11
 C
@@ -10,7 +10,7 @@ C  and workstation ID.
 C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
       PARAMETER (X1=0.22, X2=0.67)
-      CHARACTER*5 IMDAT(9)
+      CHARACTER*5 IMDAT(10)
 C
       CALL GOPKS (IERRF, ISZDM)
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
