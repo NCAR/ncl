@@ -1,5 +1,5 @@
 
-;      $Id: xy06n.ncl,v 1.8 1996-10-08 20:32:01 haley Exp $
+;      $Id: xy06n.ncl,v 1.9 1997-06-10 19:16:43 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -205,6 +205,7 @@ do j = 0,NHOURS-1
   delete(tdata)
   delete(pdata)
   delete(vdata)
+  delete(tmpfile)
 end do
 
 ;
