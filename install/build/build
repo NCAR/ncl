@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.6 1993-03-25 00:49:44 clyne Exp $
+#      $Id: build,v 1.7 1993-03-30 22:03:57 clyne Exp $
 #
 #########################################################################
 #									#
@@ -76,14 +76,28 @@ sub	path_leaf {
 sub	rename_files {
 	local($version, $root_dir, @dirs) = @_;
 
-	local($dir, $file, $path, $cmd);
+	local($dir, $file, $path, $cmd, @mdirs, $mdir);
 
 	#
 	# rename the files to file.$version
 	#
 	foreach $dir (@dirs) {
 		if ($dir eq "man") {	# man is a special case
-			@files = <$root_dir/$dir/{cat,man}?/*>;
+			#
+			# ugh!. HPUX perl can't handle globbing this
+			# many directories
+			#
+			#@files = <$root_dir/$dir/{cat,man}?/*>;
+
+			@files = ();
+			@mdirs = <$root_dir/$dir/man?>;
+			foreach $mdir (@mdirs) {
+				opendir(DIR, $mdir);
+				@list = grep(!/^\.\.?$/, readdir(DIR));
+				grep ($_ = "$mdir/$_", @list);
+				@files = (@files, @list);
+				closedir(DIR);
+			}
 		}
 		else {
 			@files = <$root_dir/$dir/*>;
@@ -435,7 +449,8 @@ else {
 #	whatever.$Version and generate an file which can be sourced to
 #	create symbolic links from whatever to whatever.$version.
 #
-@dirs = ("bin", "include", "lib", "man");	# all the installed dirs
+#@dirs = ("bin", "include", "lib", "man");	# all the installed dirs
+@dirs = ("bin", "include", "lib");		# all the installed dirs
 do rename_files($Version, $build_dir, @dirs);
 
 #
