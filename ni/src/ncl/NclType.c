@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclType.c,v 1.5 1998-01-23 00:46:12 ethan Exp $
+ *      $Id: NclType.c,v 1.6 1998-02-04 00:18:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -115,9 +115,15 @@ static NhlErrorTypes NhlCvtGenArrayToGenArray
          * We need a more specific name for the from GenArray so the
          * specific converters can be called.
          */
-        strcpy(buff,"Float");
-        strcat(buff,NhlTGenArray);
-        newfromQ = NrmStringToQuark(buff);
+	if(gen == NULL) {
+        	strcpy(buff,"Float");
+        	strcat(buff,NhlTGenArray);
+        	newfromQ = NrmStringToQuark(buff);
+	} else {
+	        strcpy(buff,NrmQuarkToString(gen->typeQ));
+        	strcat(buff,NhlTGenArray);
+        	newfromQ = NrmStringToQuark(buff);
+	}
         /*
          * If they are now equal, then just set.
          */
