@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.13 1996-04-17 18:29:51 boote Exp $
+ *      $Id: WorkstationP.h,v 1.14 1996-12-12 02:51:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -143,6 +143,7 @@ typedef struct _NhlWorkstationLayerPart{
 	/* Private internal fields */
 
 	NhlPrivateColor	private_color_map[_NhlMAX_COLOR_MAP];
+	NhlBoolean	cmap_changed;
 
 	int edge_char_size;
 	int edge_dash_dollar_size;

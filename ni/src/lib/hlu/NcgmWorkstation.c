@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.23 1996-11-18 22:21:35 dbrown Exp $
+ *      $Id: NcgmWorkstation.c,v 1.24 1996-12-12 02:51:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NcgmWorkstationP.h>
 
+#define DEBUG_NCGM 0
 #define DEFAULT_META_NAME	"gmeta"
 
 static NhlResource resources[] = {
@@ -113,6 +114,26 @@ static NhlErrorTypes NcgmWorkstationDeactivate(
 #endif
 );
 
+
+static NhlErrorTypes NcgmWorkstationAllocateColors(
+#if	NhlNeedProto
+	NhlLayer	l
+#endif
+);
+
+static NhlErrorTypes NcgmWorkstationUpdate(
+#if	NhlNeedProto
+	NhlLayer	l	/* instance	*/
+#endif
+);
+
+static NhlErrorTypes NcgmWorkstationClear(
+#if	NhlNeedProto
+	NhlLayer	l	/* instance	*/
+#endif
+);
+
+
 NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
         {
 /* class_name			*/	"ncgmWorkstationClass",
@@ -153,9 +174,9 @@ NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
 /* close_work		*/	NcgmWorkstationClose,
 /* activate_work	*/	NcgmWorkstationActivate,
 /* deactivate_work	*/	NcgmWorkstationDeactivate,
-/* alloc_colors		*/	NhlInheritAllocateColors,
-/* update_work		*/	NhlInheritUpdate,
-/* clear_work		*/	NhlInheritClear,
+/* alloc_colors		*/	NcgmWorkstationAllocateColors,
+/* update_work		*/	NcgmWorkstationUpdate,
+/* clear_work		*/	NcgmWorkstationClear,
 /* lineto_work		*/	NhlInheritLineTo,
 /* fill_work		*/	NhlInheritFill,
 /* marker_work		*/	NhlInheritMarker
@@ -259,7 +280,6 @@ static NhlErrorTypes NcgmWorkstationInitialize
 	wnew->work.gkswksconid = default_conid;
 
 	np->opened = False;
-	np->started = False;
 
 	return ret;
 }
@@ -362,81 +382,6 @@ static NhlErrorTypes NcgmWorkstationSetValues
 	return(NhlNOERROR);
 }
 
-
-static NhlErrorTypes
-TempClose
-#if NhlNeedProto
-(
-	NhlLayer	l,
-	NhlString	func
-)
-#else
-(l,func)
-	NhlLayer	l;
-	NhlString	func;
-#endif
-{
-	NhlNcgmWorkstationLayer		wl = (NhlNcgmWorkstationLayer)l;
-
-	c_ngmftc(wl->work.gkswksid);
-	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
-		return NhlFATAL;
-
-	return NhlNOERROR;
-}
-
-/*
- * Function:	NcgmWorkstationOpen
- *
- * Description:
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-static NhlErrorTypes
-NcgmWorkstationOpen
-#if	NhlNeedProto
-(
-	NhlLayer	instance
-)
-#else
-(instance)
-	NhlLayer	instance;
-#endif
-{
-	Gescape_in_data indat;
-	Gescape_out_data *outdat;
-	char			func[] = "NcgmWorkstationOpen";
-	NhlNcgmWorkstationLayer winstance = (NhlNcgmWorkstationLayer) instance;
-	NhlNcgmWorkstationClass wlc = 
-		(NhlNcgmWorkstationClass)instance->base.layer_class;
-	NhlErrorTypes subret = NhlNOERROR,retcode= NhlNOERROR;
-
-	indat.escape_r1.size = strlen(winstance->ncgm.meta_name) + 1;
-	indat.escape_r1.data = (void*)winstance->ncgm.meta_name;
-	
-	gescape(-1391,&indat,NULL,&outdat);
-
-	if (wlc->ncgm_class.current_ncgm_wkid != instance->base.id &&
-	    wlc->ncgm_class.current_ncgm_wkid != NhlNULLOBJID) {
-	        subret = TempClose(
-			      _NhlGetLayer(wlc->ncgm_class.current_ncgm_wkid),
-				   func);
-		if ((retcode = MIN(retcode,subret)) < NhlWARNING)
-			return retcode;
-	}
-	wlc->ncgm_class.current_ncgm_wkid = instance->base.id;
-	winstance->ncgm.opened = True;
-
-	subret = (*NhlworkstationClassRec.work_class.open_work)(instance);
-	return MIN(subret,retcode);
-	
-}
 static NhlErrorTypes NcgmWorkstationGetValues
 #if	NhlNeedProto
 (NhlLayer l, _NhlArgList args, int nargs)
@@ -470,6 +415,155 @@ int nargs;
 		}
 	}
 	return(NhlNOERROR); 
+}
+
+static NhlErrorTypes
+TempClose
+#if NhlNeedProto
+(
+	NhlLayer	l,
+	NhlString	func
+)
+#else
+(l,func)
+	NhlLayer	l;
+	NhlString	func;
+#endif
+{
+	NhlNcgmWorkstationLayer		wl = (NhlNcgmWorkstationLayer)l;
+
+#if DEBUG_NCGM
+	fprintf(stderr,"calling ngmftc for %s\n",wl->ncgm.meta_name);
+#endif
+	c_ngmftc(wl->work.gkswksid);
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
+
+	return NhlNOERROR;
+}
+
+static NhlErrorTypes
+UpdateGKSState
+#if NhlNeedProto
+(
+	NhlLayer	l,
+	NhlString	func
+)
+#else
+(l,func)
+	NhlLayer	l;
+	NhlString	func;
+#endif
+{
+	NhlNcgmWorkstationLayer	wl = (NhlNcgmWorkstationLayer)l;
+	NhlNcgmWorkstationClass wlc = 
+		(NhlNcgmWorkstationClass)l->base.layer_class;
+	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
+	NhlErrorTypes subret = NhlNOERROR,retcode= NhlNOERROR;
+	NhlBoolean new = False;
+	int i = 3;
+
+	if (wlc->ncgm_class.current_ncgm_wkid == NhlNULLOBJID) {
+		new = True;
+	}
+	else if (wlc->ncgm_class.current_ncgm_wkid != l->base.id) {
+	        subret = TempClose(
+			      _NhlGetLayer(wlc->ncgm_class.current_ncgm_wkid),
+				   func);
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING)
+			return retcode;
+		new = True;
+	}
+	if (new) {
+		int action = 1;
+		while(wksisopn(i)) {
+			i++;
+		}
+		wl->work.gkswksid = i;
+		if (np->new_frame) {
+			action = 2;
+			np->new_frame = False;
+		}
+#if DEBUG_NCGM
+	fprintf(stderr,"calling ngreop iop %d for %s\n",action,np->meta_name);
+#endif
+		c_ngreop(wl->work.gkswksid,wl->work.gkswksconid,1,
+			 np->meta_name,2,
+			 np->gks_iat,np->gks_rat,0,0,NULL);
+		if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+			return NhlFATAL;
+
+		wlc->ncgm_class.current_ncgm_wkid = l->base.id;
+	}
+
+	return retcode;
+}
+
+/*
+ * Function:	NcgmWorkstationOpen
+ *
+ * Description:
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlErrorTypes
+NcgmWorkstationOpen
+#if	NhlNeedProto
+(
+	NhlLayer	instance
+)
+#else
+(instance)
+	NhlLayer	instance;
+#endif
+{
+	Gescape_in_data indat;
+	Gescape_out_data *outdat;
+	char			func[] = "NcgmWorkstationOpen";
+	NhlNcgmWorkstationLayer winstance = (NhlNcgmWorkstationLayer) instance;
+	NhlNcgmWorkstationClass wlc = 
+		(NhlNcgmWorkstationClass)instance->base.layer_class;
+	NhlErrorTypes subret = NhlNOERROR,retcode= NhlNOERROR;
+	static first = True;
+
+	indat.escape_r1.size = strlen(winstance->ncgm.meta_name) + 1;
+	indat.escape_r1.data = (void*)winstance->ncgm.meta_name;
+	
+	gescape(-1391,&indat,NULL,&outdat);
+
+	if (wlc->ncgm_class.current_ncgm_wkid != instance->base.id &&
+	    wlc->ncgm_class.current_ncgm_wkid != NhlNULLOBJID) {
+	        subret = TempClose(
+			      _NhlGetLayer(wlc->ncgm_class.current_ncgm_wkid),
+				   func);
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING)
+			return retcode;
+	}
+	wlc->ncgm_class.current_ncgm_wkid = instance->base.id;
+	winstance->ncgm.opened = True;
+	winstance->ncgm.started = False;
+	winstance->ncgm.new_frame = True;
+	winstance->ncgm.update_colors = False;
+
+	subret = (*NhlworkstationClassRec.work_class.open_work)(instance);
+#if DEBUG_NCGM
+	fprintf(stderr,"opened metafile %s\n",winstance->ncgm.meta_name);
+#endif
+
+
+/*
+ * initialize the GKS state variables
+ */
+	c_ngsrat(2,winstance->ncgm.gks_iat,winstance->ncgm.gks_rat);
+
+	return MIN(subret,retcode);
+	
 }
 /*
  * Function:	NcgmWorkstationActivate
@@ -505,8 +599,6 @@ NcgmWorkstationActivate
 		(NhlNcgmWorkstationClass)l->base.layer_class;
 	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
 	NhlErrorTypes subret = NhlNOERROR,retcode= NhlNOERROR;
-	NhlBoolean new = False;
-	int i = 3;
 
 	if (! np->opened) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -514,40 +606,17 @@ NcgmWorkstationActivate
 		return NhlFATAL;
 	}
 
-	if (wlc->ncgm_class.current_ncgm_wkid == NhlNULLOBJID) {
-		new = True;
-	}
-	else if (wlc->ncgm_class.current_ncgm_wkid != l->base.id) {
-	        subret = TempClose(
-			      _NhlGetLayer(wlc->ncgm_class.current_ncgm_wkid),
-				   func);
-		if ((retcode = MIN(retcode,subret)) < NhlWARNING)
-			return retcode;
-		new = True;
-	}
-	if (new) {
-		int action = np->started ? 1 : 0;
-		while(wksisopn(i)) {
-			i++;
-		}
-		wl->work.gkswksid = i;
+	subret = UpdateGKSState(l,func);
+	if ((retcode = MIN(retcode,subret)) < NhlWARNING)
+		return retcode;
 
-		c_ngreop(wl->work.gkswksid,wl->work.gkswksconid,1,
-			 np->meta_name,action,np->gks_iat,np->gks_rat,
-			 0,0,NULL);
-		if(_NhlLLErrCheckPrnt(NhlFATAL,func))
-			return NhlFATAL;
-		subret = _NhlAllocateColors(l);
-		if ((retcode = MIN(retcode,subret)) < NhlWARNING)
-			return retcode;
-	}
-		
 	subret = (*NhlworkstationClassRec.work_class.activate_work)(l);
 	if ((retcode = MIN(retcode,subret)) < NhlWARNING)
 		return retcode;
 
-	wlc->ncgm_class.current_ncgm_wkid = l->base.id;
-	np->started = True;
+	if (np->update_colors) {
+		_NhlAllocateColors(l);
+	}
 
 	return retcode;
 }
@@ -588,6 +657,9 @@ NcgmWorkstationDeactivate
 		return NhlFATAL;
 	}
 
+#if DEBUG_NCGM
+	fprintf(stderr,"calling ngsrat for %s\n",np->meta_name);
+#endif
 	c_ngsrat(2,np->gks_iat,np->gks_rat);
 	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
 		retcode = NhlWARNING;
@@ -596,45 +668,6 @@ NcgmWorkstationDeactivate
 	return MIN(subret,retcode);
 }
 
-/*
- * Function:	ReOpen
- *
- * Description:
- * Reopens the workstation belonging to another ncgm instance. Since this
- * is only used by the close routine there should be no need to flush the
- * gks state to the metafile, since nothing would have been drawn since
- * this workstation was last open
- */
-static NhlErrorTypes
-ReOpen
-#if NhlNeedProto
-(
-	NhlLayer	l,
-	NhlString	func
-)
-#else
-(l,func)
-	NhlLayer	l;
-	NhlString	func;
-#endif
-{
-	NhlNcgmWorkstationLayer	wl = (NhlNcgmWorkstationLayer)l;
-	NhlNcgmWorkstationClass wlc = 
-		(NhlNcgmWorkstationClass)l->base.layer_class;
-	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
-	int i = 3;
-
-	while(wksisopn(i)) {
-		i++;
-	}
-	wl->work.gkswksid = i;
-
-	c_ngreop(wl->work.gkswksid,wl->work.gkswksconid,1,
-		 np->meta_name,1,np->gks_iat,np->gks_rat,0,0,NULL);
-	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
-		return NhlFATAL;
-	return NhlNOERROR;
-}
 /*
  * Function:	NcgmWorkstationClose
  *
@@ -668,54 +701,216 @@ NcgmWorkstationClose
 		(NhlNcgmWorkstationClass)l->base.layer_class;
 	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
 	NhlErrorTypes subret = NhlNOERROR,retcode = NhlNOERROR;
-	NhlBoolean new = False;
-	int i = 3;
 
  	if (! np->opened) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 		       "%s: attempt to close unopened workstation",func);
 		return NhlFATAL;
 	}
+
+	subret = UpdateGKSState(l,func);
+	if ((retcode = MIN(retcode,subret)) < NhlWARNING)
+		return retcode;
 		
-	if (wlc->ncgm_class.current_ncgm_wkid == NhlNULLOBJID) {
-		new = True;
-	}
-	else if (wlc->ncgm_class.current_ncgm_wkid != l->base.id) {
-	        subret = TempClose(
-			     _NhlGetLayer(wlc->ncgm_class.current_ncgm_wkid),
-				   func);
-		if ((retcode = MIN(retcode,subret)) < NhlWARNING)
-			return retcode;
-		new = True;
-	}
-	if (new) {
-		int action = np->started ? 1 : 0;
-		while(wksisopn(i)) {
-			i++;
-		}
-		wl->work.gkswksid = i;
-		c_ngreop(wl->work.gkswksid,wl->work.gkswksconid,1,
-			 np->meta_name,action,
-			 np->gks_iat,np->gks_rat,0,0,NULL);
-		if(_NhlLLErrCheckPrnt(NhlFATAL,func))
-			return NhlFATAL;
-	}
-		
+#if DEBUG_NCGM
+	fprintf(stderr,"closing metafile %s\n",np->meta_name);
+#endif
 	subret = (*NhlworkstationClassRec.work_class.close_work)(l);
 	if ((retcode = MIN(retcode,subret)) < NhlWARNING)
 		return retcode;
 	np->opened = False;
+	wlc->ncgm_class.current_ncgm_wkid = NhlNULLOBJID;
 
-	if (new && wlc->ncgm_class.current_ncgm_wkid != NhlNULLOBJID) {
-	        subret = ReOpen(
-			     _NhlGetLayer(wlc->ncgm_class.current_ncgm_wkid),
-				func);
-		if ((retcode = MIN(retcode,subret)) < NhlWARNING)
-			return retcode;
+	return retcode;
+}
+
+
+/*
+ * Function:	NcgmWorkstationAllocateColors
+ *
+ * Description:	This function is used to clear the workstation
+ *
+ * In Args:	
+ *		NhlLayer	l	workstation layer to update
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+NcgmWorkstationAllocateColors
+#if	NhlNeedProto
+(
+	NhlLayer	l	/* workstation layer to update	*/
+)
+#else
+(l)
+	NhlLayer	l;	/* workstation layer to update	*/
+#endif
+{
+	NhlNcgmWorkstationLayer	wl = (NhlNcgmWorkstationLayer)l;
+	char			func[] = "NcgmWorkstationAllocateColors";
+	NhlNcgmWorkstationClass wlc = 
+		(NhlNcgmWorkstationClass)l->base.layer_class;
+	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
+	NhlErrorTypes subret = NhlNOERROR,retcode = NhlNOERROR;
+
+ 	if (! np->opened) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		    "%s: attempt to allocate colors for unopened workstation",
+			  func);
+		return NhlFATAL;
 	}
-	else {
-		wlc->ncgm_class.current_ncgm_wkid = NhlNULLOBJID;
+
+	subret = UpdateGKSState(l,func);
+	if ((retcode = MIN(retcode,subret)) < NhlWARNING)
+		return retcode;
+
+#if DEBUG_NCGM
+	fprintf(stderr,"calling allocate colors\n");
+#endif
+
+/*
+ * force a color map to be written at the beginning of each 
+ * frame
+ */
+	if (np->update_colors) {
+		NhlPrivateColor	*pcmap;
+		int		i;
+
+		pcmap = wl->work.private_color_map;
+		for (i = 0; i < _NhlMAX_COLOR_MAP; i++) {
+			if (pcmap[i].cstat == _NhlCOLSET)
+				pcmap[i].cstat = _NhlCOLCHANGE;
+		}
+		np->update_colors = False;
+		wl->work.cmap_changed = True;
 	}
+	subret = (*NhlworkstationClassRec.work_class.alloc_colors)(l);
+	retcode = MIN(retcode,subret);
+
+	return retcode;
+}
+
+/*
+ * Function:	NcgmWorkstationUpdate
+ *
+ * Description:	This function is used to clear the workstation
+ *
+ * In Args:	
+ *		NhlLayer	l	workstation layer to update
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+NcgmWorkstationUpdate
+#if	NhlNeedProto
+(
+	NhlLayer	l	/* workstation layer to update	*/
+)
+#else
+(l)
+	NhlLayer	l;	/* workstation layer to update	*/
+#endif
+{
+	NhlNcgmWorkstationLayer	wl = (NhlNcgmWorkstationLayer)l;
+	char			func[] = "NcgmWorkstationUpdate";
+	NhlNcgmWorkstationClass wlc = 
+		(NhlNcgmWorkstationClass)l->base.layer_class;
+	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
+	NhlErrorTypes subret = NhlNOERROR,retcode = NhlNOERROR;
+	NhlBoolean new = False;
+	int i = 3;
+
+ 	if (! np->opened) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		       "%s: attempt to update unopened workstation",func);
+		return NhlFATAL;
+	}
+
+
+	subret = UpdateGKSState(l,func);
+	if ((retcode = MIN(retcode,subret)) < NhlWARNING)
+		return retcode;
+
+#if DEBUG_NCGM
+	fprintf(stderr,"calling update workstation\n");
+#endif
+
+	subret = (*NhlworkstationClassRec.work_class.update_work)(l);
+	retcode = MIN(retcode,subret);
+
+	return retcode;
+}
+
+/*
+ * Function:	NcgmWorkstationClear
+ *
+ * Description:	This function is used to clear the workstation
+ *
+ * In Args:	
+ *		NhlLayer	l	workstation layer to update
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+NcgmWorkstationClear
+#if	NhlNeedProto
+(
+	NhlLayer	l	/* workstation layer to update	*/
+)
+#else
+(l)
+	NhlLayer	l;	/* workstation layer to update	*/
+#endif
+{
+	NhlNcgmWorkstationLayer	wl = (NhlNcgmWorkstationLayer)l;
+	char			func[] = "NcgmWorkstationClear";
+	NhlNcgmWorkstationClass wlc = 
+		(NhlNcgmWorkstationClass)l->base.layer_class;
+	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
+	NhlErrorTypes subret = NhlNOERROR,retcode = NhlNOERROR;
+	NhlBoolean new = False;
+	int i = 3;
+
+ 	if (! np->opened) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		       "%s: attempt to clear unopened workstation",func);
+		return NhlFATAL;
+	}
+
+	subret = UpdateGKSState(l,func);
+	if ((retcode = MIN(retcode,subret)) < NhlWARNING)
+		return retcode;
+
+#if DEBUG_NCGM
+	fprintf(stderr,"calling gclrwk\n");
+#endif
+
+	subret = (*NhlworkstationClassRec.work_class.clear_work)(l);
+	if ((retcode = MIN(retcode,subret)) < NhlWARNING)
+		return retcode;
+
+/*
+ * always closs the ncgm on a clear to avoid empty frames
+ */
+	subret = TempClose(_NhlGetLayer(wlc->ncgm_class.current_ncgm_wkid),
+			   func);
+	retcode = MIN(retcode,subret);
+	wlc->ncgm_class.current_ncgm_wkid = NhlNULLOBJID;
+	np->new_frame = True;
+	np->update_colors = True;
+
 	return retcode;
 }
 

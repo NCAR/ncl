@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstationP.h,v 1.6 1996-11-12 19:12:55 dbrown Exp $
+ *      $Id: NcgmWorkstationP.h,v 1.7 1996-12-12 02:51:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -37,6 +37,8 @@ typedef struct _NhlNcgmWorkstationLayerPart {
 
 	NhlBoolean opened;
 	NhlBoolean started;
+	NhlBoolean new_frame;
+	NhlBoolean update_colors;
 	int	gks_iat[14];
 	float	gks_rat[7];
 	

@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.18 1996-09-14 17:07:49 boote Exp $
+ *      $Id: XWorkstation.c,v 1.19 1996-12-12 02:51:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -518,6 +518,9 @@ XWorkstationAllocateColors
 	Gescape_in_data			gesc_in_getxpix;
 	Gescape_in_data			gesc_in_freeci;
 
+	if (! wl->work.cmap_changed)
+		return ret;
+
 	gesc_in_getxpix.escape_r1.data = &getxpix;
 	gesc_in_getxpix.escape_r1.size = 0;
 	gesc_in_freeci.escape_r1.data = &freeci;
@@ -627,7 +630,8 @@ XWorkstationAllocateColors
 
 	max_col = MAX(max_col,1);
 	wl->work.color_map_len = max_col + 1;
-	
+	wl->work.cmap_changed = False;
+
 	return ret;
 }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.57 1996-11-18 22:21:51 dbrown Exp $
+ *      $Id: Workstation.c,v 1.58 1996-12-12 02:51:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -48,6 +48,7 @@
 #include <ncarg/hlu/ErrorI.h>
 #include <ncarg/hlu/TransformI.h>
 
+#define DEBUG_NCGM 0
 /* 
  * There are currently 16 pre-defined dash patterns provided plus solid
  * (index 0, or NhlSOLIDLINE). The solid line is element 0 of the dash
@@ -848,6 +849,7 @@ DoCmap
 		tcp = wp->color_map->data;
 		wp->color_map_len = wp->color_map->len_dimensions[0];
 		wp->color_map = NULL;
+		wp->cmap_changed = True;
 
 		for(i=0;i < wp->color_map_len;i++){
 			if (tcp[i][0] < 0.0)
@@ -904,6 +906,7 @@ DoCmap
 		tcp = &wcp->def_background;
 	}
 	if(tcp){
+		wp->cmap_changed = True;
 		pcmap[NhlBACKGROUND].cstat =
 			(pcmap[NhlBACKGROUND].cstat == _NhlCOLUNSET)?
 			_NhlCOLNEW:_NhlCOLCHANGE;
@@ -961,6 +964,7 @@ DoCmap
 		tcp = &tc;
 	}
 	if(tcp){
+		wp->cmap_changed = True;
 		pcmap[NhlFOREGROUND].cstat =
 			(pcmap[NhlFOREGROUND].cstat == _NhlCOLUNSET)?
 			_NhlCOLNEW:_NhlCOLCHANGE;
@@ -1031,6 +1035,7 @@ static NhlErrorTypes WorkstationInitialize
 	for(i=0;i < _NhlMAX_COLOR_MAP;i++)
 		wp->private_color_map[i].cstat = _NhlCOLUNSET;
 
+	wp->cmap_changed = True;
 	retcode = DoCmap(newl,entry_name);
 
 	newl->work.fill_table_len = fill_table_len - 1;
@@ -2103,6 +2108,9 @@ WorkstationActivate
 		return NhlINFO; 
 	}
 
+#if DEBUG_NCGM
+	fprintf(stderr,"calling gacwk\n");
+#endif
 	c_ngseti("cl",1);
 	gactivate_ws(wl->work.gkswksid);
 	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
@@ -2141,6 +2149,9 @@ WorkstationDeactivate
 	NhlErrorTypes		retcode = NhlNOERROR;
 
 	if(wksisopn(wl->work.gkswksid)&&wksisact(wl->work.gkswksid)){
+#if DEBUG_NCGM
+	fprintf(stderr,"calling gdawk\n");
+#endif
 		gdeactivate_ws(wl->work.gkswksid);
 		if(_NhlLLErrCheckPrnt(NhlWARNING,func))
 			retcode = NhlWARNING;
@@ -2190,6 +2201,8 @@ WorkstationAllocateColors
 	NhlErrorTypes		ret = NhlNOERROR;
 
 	pcmap = wl->work.private_color_map;
+	if (! wl->work.cmap_changed)
+		return NhlNOERROR;
 
 	for ( i = 0; i < _NhlMAX_COLOR_MAP; i++) {
 		switch(pcmap[i].cstat){
@@ -2270,6 +2283,7 @@ WorkstationAllocateColors
 
 	max_col = MAX(max_col,1);
 	wl->work.color_map_len = max_col + 1;
+	wl->work.cmap_changed = False;
 	
 	return ret;
 }
@@ -2301,6 +2315,9 @@ WorkstationUpdate
 {
 	char	func[] = "WorkstationUpdate";
 
+#if DEBUG_NCGM
+	fprintf(stderr,"calling guwk\n");
+#endif
 	gupd_ws(_NhlWorkstationId(l),GFLAG_PERFORM);
 	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
 		return NhlWARNING;
@@ -2334,6 +2351,10 @@ WorkstationClear
 #endif
 {
 	char	func[] = "WorkstationClear";
+
+#if DEBUG_NCGM
+	fprintf(stderr,"calling gclrwk\n");
+#endif
 
 	gclear_ws(_NhlWorkstationId(l),GFLAG_ALWAYS);
 	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
@@ -2636,6 +2657,7 @@ _NhlSetColor
 	else
 		wl->work.private_color_map[ci].cstat = _NhlCOLCHANGE;
 
+	wl->work.cmap_changed = True;
 	return _NhlAllocateColors(l);
 }
 
@@ -2731,6 +2753,7 @@ _NhlFreeColor
 
 	wl->work.private_color_map[ci].cstat = _NhlCOLREMOVE;
 
+	wl->work.cmap_changed = True;
 	return _NhlAllocateColors(l);
 }
 
@@ -2910,6 +2933,7 @@ int _NhlNewColor
 			wl->work.private_color_map[i].red = red;
 			wl->work.private_color_map[i].green = green;
 			wl->work.private_color_map[i].blue = blue;
+			wl->work.cmap_changed = True;
 			ret = _NhlAllocateColors(l);
 
 			if(ret < NhlINFO){
@@ -3608,7 +3632,10 @@ _NhlSetLineInfo
 /*
  * Flush plotif buffer...
  */
+#if 0
 	c_sflush();
+#endif
+	c_plotif(0.0,0.0,2);
 
 /*
  * Since Ezmap does not currently use dashpack, map data polylines and 
@@ -3845,7 +3872,10 @@ _NhlSetFillInfo
 	else if (wkfp->edges_on && wkfp->edge_dash_pattern > 0) {
 		memset((void *) buffer, (char) 0, 80 * sizeof(char));
 
+#if 0
 		c_sflush();
+#endif
+		c_plotif(0.0,0.0,2);
 
 		c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
 		if(_NhlLLErrCheckPrnt(NhlFATAL,func))
