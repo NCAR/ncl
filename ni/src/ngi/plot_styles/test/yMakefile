@@ -1,8 +1,8 @@
 #
-#       $Id: yMakefile,v 1.3 2000-01-31 21:35:11 haley Exp $
+#       $Id: yMakefile,v 1.4 2000-03-08 00:15:30 dbrown Exp $
 #
  
-FILES		= DIRECTORY.res ZonalAverage.res test_style.ncl
+FILES		= DIRECTORY.res ZonalAverage.res DiffPlot.res test_style.ncl
 
 PSPATH	= $(LIBNCARGPATH)/plot_styles/test
 INSTALL_PS = $(INSTALL_DB)
