@@ -101,7 +101,7 @@ NhlErrorTypes eof_W( void )
 /*
  * Output array variables
  */
-  double *evec;
+  double *evec, *wevec;
   float *revec;
   int total_size_evec, dsizes_evec[NCL_MAX_DIMENSIONS];
 
@@ -442,31 +442,27 @@ NhlErrorTypes eof_W( void )
  */
   dsizes_evec[0] = *neval;
   for( i = 0; i <= ndims_x-2; i++ ) dsizes_evec[i+1] = dsizes_x[i];
-
   total_size_evec = *neval * ncol;
 
-  evec = (double *)calloc(total_size_evec,sizeof(double));
-  if( evec == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
-    return(NhlFATAL);
-  }
 /*
  * Allocate memory for attributes.
  */
   if(transpose) {
+    evec  = (double *)calloc(total_size_evec,sizeof(double));
     trace = (double *)calloc(1,sizeof(double));
     eval  = (double *)calloc(*neval,sizeof(double));
     pcvar = (double *)calloc(*neval,sizeof(double));
-    if( trace == NULL || pcvar == NULL || eval == NULL) {
+    if(evec == NULL || trace == NULL || pcvar == NULL || eval == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for attribute arrays");
       return(NhlFATAL);
     }
   }
   else {
+    wevec  = (double *)calloc(total_size_evec,sizeof(double));
     trace  = (double *)calloc(1,sizeof(double));
     eval   = (double *)calloc(*neval,sizeof(double));
     rpcvar = (float *)calloc(*neval,sizeof(float));
-    if( trace == NULL || rpcvar == NULL || eval == NULL) {
+    if(wevec == NULL || trace == NULL || rpcvar == NULL || eval == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for attribute arrays");
       return(NhlFATAL);
     }
@@ -478,16 +474,20 @@ NhlErrorTypes eof_W( void )
   *trace = missing_dx.doubleval;
   i = 0;
   for( ne = 0; ne < *neval; ne++ ) {
-    eval[ne]  = missing_dx.doubleval;
+    eval[ne] = missing_dx.doubleval;
     if(transpose) {
       pcvar[ne] = missing_dx.doubleval;
+      for( nc = 0; nc < ncol; nc++) {
+        evec[i] = missing_dx.doubleval;
+        i++;
+      }
     }
     else {
       rpcvar[ne] = (float)missing_dx.doubleval;
-    }
-    for( nc = 0; nc < ncol; nc++) {
-      evec[i] = missing_dx.doubleval;
-      i++;
+      for( nc = 0; nc < ncol; nc++) {
+        wevec[i] = missing_dx.doubleval;
+        i++;
+      }
     }
   }
   
@@ -522,14 +522,105 @@ NhlErrorTypes eof_W( void )
  */
   if(transpose) {
     NGCALLF(xrveoft,XRVEOFT)(dx_strip,&nrow,&ncol,&nobs,&mcsta,
-							 &missing_dx.doubleval,neval,eval,evec,
-							 pcvar,trace,xdvar,xave,&jopt,&ier);
+                             &missing_dx.doubleval,neval,eval,evec,
+                             pcvar,trace,xdvar,xave,&jopt,&ier);
+/*
+ * Convert to float if necessary.
+ */
+    if(type_x != NCL_double) {
+      revec = (float*)calloc(total_size_evec,sizeof(float));
+      if( revec == NULL ) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
+        return(NhlFATAL);
+      }
+      for( i = 0; i < total_size_evec; i++ ) revec[i] = (float)evec[i];
+/*
+ * Free up double precision array.
+ */
+      NclFree(evec);
+    }
   }
   else {
     NGCALLF(ddrveof,DDRVEOF)(dx_strip,&nrow,&ncol,&nobs,&mcsta,
-                             &missing_dx.doubleval,neval,eval,evec,rpcvar,
+                             &missing_dx.doubleval,neval,eval,wevec,rpcvar,
                              trace,&iopt,&jopt,cssm,&llcssm,work,&lwork,
                              weval,iwork,&liwork,ifail,&lifail,&ier);
+/*
+ * Allocate space for return float array, if necessary.
+ */
+    if(type_x != NCL_double) {
+      revec = (float*)calloc(total_size_evec,sizeof(float));
+      if( revec == NULL ) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
+        return(NhlFATAL);
+      }
+    }
+
+/*
+ * If mcsta < msta, then we need to "fix" the evec array.
+ */
+    if(mcsta < msta) {
+/*
+ * First, make sure init to missing because not all values will be 
+ * filled in.
+ */
+      if(type_x != NCL_double) {
+        for(i = 0; i < total_size_evec; i++) {
+          revec[i] = (float)missing_dx.doubleval;
+        }
+/*
+ * Now copy over the appropriate values in the wevec array.
+ */
+        mcsta = 0;
+        for( nc = 0; nc < ncol; nc++) {
+          if (xave[nc] != missing_dx.doubleval) {
+            for( ne = 0; ne < *neval; ne++ ) {
+              revec[ne*ncol+nc] = (float)wevec[ne*ncol+mcsta];
+            }
+            mcsta++;
+          }
+        }
+      }
+      else {
+        evec = (double*)calloc(total_size_evec,sizeof(double));
+        if( evec == NULL ) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
+          return(NhlFATAL);
+        }
+/*
+ * First, make sure init to missing because not all values will be 
+ * filled in.
+ */
+        for(i = 0; i < total_size_evec; i++) {
+          evec[i] = missing_dx.doubleval;
+        }
+/*
+ * Now copy over the appropriate values in the wevec array.
+ */
+        mcsta = 0;
+        for( nc = 0; nc < ncol; nc++) {
+          if (xave[nc] != missing_dx.doubleval) {
+            for( ne = 0; ne < *neval; ne++ ) {
+              evec[ne*ncol+nc] = wevec[ne*ncol+mcsta];
+            }
+            mcsta++;
+          }
+        }
+      }
+      NclFree(wevec);
+    }
+    else {
+/*
+ * mcsta = msta, so we just need to copy stuff over.
+ */
+      if(type_x != NCL_double) {
+        for( i = 0; i < total_size_evec; i++ ) revec[i] = (float)wevec[i];
+        NclFree(wevec);
+      }
+      else {
+        evec = wevec;
+      }
+    }
   }
 /*
  * Check various possible error messages.
@@ -564,25 +655,7 @@ NhlErrorTypes eof_W( void )
     NclFree(iwork);
     NclFree(ifail);
   }
-
-/*
- * Return values. 
- */
   if(type_x != NCL_double) {
-/*
- * Copy double values to float values.
- */
-    revec = (float*)calloc(total_size_evec,sizeof(float));
-    if( revec == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_evec; i++ ) revec[i] = (float)evec[i];
-
-/*
- * Free up double precision array.
- */
-    NclFree(evec);
 /*
  * Set up return value.
  */
@@ -1670,8 +1743,8 @@ NhlErrorTypes eofcov_tr_W( void )
   }
 
   NGCALLF(xrveoft,XRVEOFT)(dx_strip,&nrow,&ncol,&nobs,&mcsta,
-						   &missing_dx.doubleval,neval,eval,evec,
-						   pcvar,trace,xdvar,xave,&jopt,&ier);
+                                                   &missing_dx.doubleval,neval,eval,evec,
+                                                   pcvar,trace,xdvar,xave,&jopt,&ier);
 
 /*
  * Check various possible error messages.
@@ -2373,8 +2446,8 @@ NhlErrorTypes eofcor_tr_W( void )
   }
 
   NGCALLF(xrveoft,XRVEOFT)(dx_strip,&nrow,&ncol,&nobs,&mcsta,
-						   &missing_dx.doubleval,neval,eval,evec,
-						   pcvar,trace,xdvar,xave,&jopt,&ier);
+                                                   &missing_dx.doubleval,neval,eval,evec,
+                                                   pcvar,trace,xdvar,xave,&jopt,&ier);
 
 /*
  * Check various possible error messages.
