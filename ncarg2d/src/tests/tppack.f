@@ -1,0 +1,243 @@
+C
+C $Id: tppack.f,v 1.1 1994-06-20 21:52:58 kennison Exp $
+C
+C Open GKS, open a workstation of type 1, activate the workstation.
+C
+        CALL GOPKS (6,IDUM)
+        CALL GOPWK (1, 2, 1)
+        CALL GACWK (1)
+C
+C Invoke the demo driver.
+C
+        CALL TPPACK(IERR)
+C
+C Deactivate and close the workstation and close GKS.
+C
+        CALL GDAWK (1)
+        CALL GCLWK (1)
+        CALL GCLKS
+C
+C Done.
+C
+        STOP
+C
+      END
+
+
+
+      SUBROUTINE TPPACK (IERR)
+C
+C PURPOSE                To provide a simple demonstration of the use
+C                        of a couple of the POLYPACK routines.
+C
+C USAGE                  CALL TPPACK (IERR)
+C
+C ARGUMENTS
+C
+C ON OUTPUT              IERR
+C
+C                          an error parameter
+C                          = 0, if the test is successful.
+C
+C I/O                    If the test is successful, the message
+C
+C                          POLYPACK TEST EXECUTED--SEE PLOTS TO CERTIFY
+C
+C                        is written on unit 6.
+C
+C PRECISION              Single.
+C
+C REQUIRED LIBRARY       POLYPACK, SPPS
+C FILES
+C
+C REQUIRED GKS LEVEL     0A
+C
+C LANGUAGE               FORTRAN
+C
+C HISTORY                Written in June, 1994.
+C
+C ALGORITHM              TPPACK defines a simple clip polygon and a
+C                        simple subject polygon, displays them both,
+C                        and uses the POLYPACK routines PPINPO and
+C                        PPINTR to fill the intersection.
+C
+C PORTABILITY            FORTRAN 77
+C
+C Declare arrays in which to define the clip polygon and the subject
+C polygon.
+C
+        DIMENSION XCCP(5),YCCP(5),XCSP(11),YCSP(11)
+C
+C Declare the required work arrays.
+C
+        PARAMETER (NWRK=999)
+C
+        DIMENSION RWRK(NWRK),IWRK(NWRK)
+        EQUIVALENCE (RWRK(1),IWRK(1))
+C
+C Tell the compiler that the fill and merge routines for polygons and
+C the fill routine for trapezoids are EXTERNALs, not REALs.
+C
+        EXTERNAL FILLPO,FILLTR
+C
+C Define the clip polygon to be a small square.
+C
+        DATA NCCP / 5 /
+C
+        DATA XCCP( 1),YCCP( 1) / -5. , -5. /
+        DATA XCCP( 2),YCCP( 2) /  5. , -5. /
+        DATA XCCP( 3),YCCP( 3) /  5. ,  5. /
+        DATA XCCP( 4),YCCP( 4) / -5. ,  5. /
+        DATA XCCP( 5),YCCP( 5) / -5. , -5. /
+C
+C Define the subject polygon to be a diamond with a hole in it.
+C
+        DATA NCSP / 11 /
+C
+        DATA XCSP( 1),YCSP( 1) /  0. ,  9. /
+        DATA XCSP( 2),YCSP( 2) /  0. ,  6. /
+        DATA XCSP( 3),YCSP( 3) /  6. ,  0. /
+        DATA XCSP( 4),YCSP( 4) /  0. , -6. /
+        DATA XCSP( 5),YCSP( 5) / -6. ,  0. /
+        DATA XCSP( 6),YCSP( 6) /  0. ,  6. /
+        DATA XCSP( 7),YCSP( 7) /  0. ,  9. /
+        DATA XCSP( 8),YCSP( 8) / -9. ,  0. /
+        DATA XCSP( 9),YCSP( 9) /  0. , -9. /
+        DATA XCSP(10),YCSP(10) /  9. ,  0. /
+        DATA XCSP(11),YCSP(11) /  0. ,  9. /
+C
+C Initialize the error flag to zero.
+C
+        IERR=0
+C
+C Enable solid fill instead of the default hollow fill.
+C
+        CALL GSFAIS (1)
+C
+C Turn off clipping by GKS.
+C
+        CALL GSCLIP (0)
+C
+C Put a label on the whole plot.
+C
+        CALL SET    (0.,1.,0.,1.,0.,1.,0.,1.,1)
+        CALL PLCHHQ (.5,.975,'DEMONSTRATING THE USE OF POLYPACK',
+     +                                                .015,0.,0.)
+C
+C In the upper left-hand corner, draw just the clip polygon and the
+C subject polygon.
+C
+        CALL SET (.05,.475,.525,.95,-10.,10.,-10.,10.,1)
+        CALL PLCHHQ (0.,-9.5,'The subject polygon (hollow diamond) and c
+     +lip polygon (square).',.008,0.,0.)
+        CALL GPL (NCCP,XCCP,YCCP)
+        CALL GPL (NCSP,XCSP,YCSP)
+C
+C In the upper right-hand corner, fill the difference polygon, using
+C PPDIPO.
+C
+        CALL SET (.525,.95,.525,.95,-10.,10.,-10.,10.,1)
+        CALL PLCHHQ (0.,-9.5,'The difference (subject polygon minus clip
+     + polygon).',.008,0.,0.)
+        CALL GPL (NCCP,XCCP,YCCP)
+        CALL GPL (NCSP,XCSP,YCSP)
+        CALL PPDIPO (XCCP,YCCP,NCCP,XCSP,YCSP,NCSP,
+     +                  RWRK,IWRK,NWRK,FILLPO,IERR)
+        IF (IERR.NE.0) THEN
+          WRITE (6,*) 'POLYPACK ROUTINE PPDIPO RETURNS IERR = ',IERR
+          RETURN
+        END IF
+C
+C In the lower left-hand corner, fill the intersection polygon, using
+C PPINPO.
+C
+        CALL SET (.05,.475,.05,.475,-10.,10.,-10.,10.,1)
+        CALL PLCHHQ (0.,-9.5,'The intersection of the subject and clip p
+     +olygons.',.008,0.,0.)
+        CALL GPL (NCCP,XCCP,YCCP)
+        CALL GPL (NCSP,XCSP,YCSP)
+        CALL PPINPO (XCCP,YCCP,NCCP,XCSP,YCSP,NCSP,
+     +                  RWRK,IWRK,NWRK,FILLPO,IERR)
+        IF (IERR.NE.0) THEN
+          WRITE (6,*) 'POLYPACK ROUTINE PPINPO RETURNS IERR = ',IERR
+          RETURN
+        END IF
+C
+C In the lower right-hand corner, fill the union polygon, using PPUNTR.
+C
+        CALL SET (.525,.95,.05,.475,-10.,10.,-10.,10.,1)
+        CALL PLCHHQ (0.,-9.5,'The union of the subject and clip polygons
+     +.',.008,0.,0.)
+        CALL GPL (NCCP,XCCP,YCCP)
+        CALL GPL (NCSP,XCSP,YCSP)
+        CALL PPUNTR (XCCP,YCCP,NCCP,XCSP,YCSP,NCSP,
+     +                  RWRK,IWRK,NWRK,FILLTR,IERR)
+        IF (IERR.NE.0) THEN
+          WRITE (6,*) 'POLYPACK ROUTINE PPUNTR RETURNS IERR = ',IERR
+          RETURN
+        END IF
+C
+C Advance the frame.
+C
+        CALL FRAME
+C
+C Write the appropriate message.
+C
+        WRITE (6,*) 'POLYPACK TEST EXECUTED--SEE PLOTS TO CERTIFY'
+C
+C Done.
+C
+        RETURN
+C
+      END
+
+
+
+      SUBROUTINE FILLPO (XCRA,YCRA,NCRA)
+C
+        DIMENSION XCRA(NCRA),YCRA(NCRA)
+C
+C This routine processes polygons generated by the routines PPDIPO,
+C PPINPO, and PPUNPO.
+C
+C Fill the polygon.
+C
+        CALL GFA (NCRA-1,XCRA,YCRA)
+C
+C Done.
+C
+        RETURN
+C
+      END
+
+
+
+      SUBROUTINE FILLTR (XCBL,XCBR,YCOB,DXLE,DXRE,YCOT)
+C
+        DIMENSION XCRA(5),YCRA(5)
+C
+C This routine fills trapezoids generated by the routines PPDITR,
+C PPINTR, and PPUNTR.
+C
+C If the trapezoid is not degenerate, fill it and outline it.
+C
+        IF (YCOT.GT.YCOB) THEN
+          XCRA(1)=XCBL
+          YCRA(1)=YCOB
+          XCRA(2)=XCBR
+          YCRA(2)=YCOB
+          XCRA(3)=XCBR+DXRE*(YCOT-YCOB)
+          YCRA(3)=YCOT
+          XCRA(4)=XCBL+DXLE*(YCOT-YCOB)
+          YCRA(4)=YCOT
+          XCRA(5)=XCBL
+          YCRA(5)=YCOB
+          CALL GFA (4,XCRA,YCRA)
+          CALL GPL (5,XCRA,YCRA)
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
