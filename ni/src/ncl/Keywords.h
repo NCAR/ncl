@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Keywords.h,v 1.12 1997-01-31 22:24:55 ethan Exp $
+ *      $Id: Keywords.h,v 1.13 1999-11-05 23:12:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -72,6 +72,7 @@ static struct {
 "new",		NEW,
 "True",		NCLTRUE,
 "False",	NCLFALSE,
+"nclexternal",	NCLEXTERNAL,
 "null",	NCLNULL,
 /*
 "objdata",	RKEY,
