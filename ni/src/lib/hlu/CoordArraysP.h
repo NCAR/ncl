@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArraysP.h,v 1.4 1994-07-12 20:51:46 boote Exp $
+ *      $Id: CoordArraysP.h,v 1.5 1994-07-28 22:11:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -31,26 +31,40 @@
 typedef struct _NhlCoordArraysLayerPart{
 	/* User setable resource fields */
 
-	NhlGenArray	xarray;
-	NhlGenArray	yarray;
+	NhlGenArray		xarray;
+	NhlGenArray		yarray;
 
-	int		x_cast;
-	int		y_cast;
+	NhlcaCastMode		xcast;
+	NhlcaCastMode		ycast;
 
-	NhlBoolean	copy_arrays;
+	NhlBoolean		copy_arrays;
 
-	NhlGenArray	missing_x;
-	NhlGenArray	missing_y;
+	NhlGenArray		missing_x;
+	NhlGenArray		missing_y;
 
-	NhlGenArray	max_x;
-	NhlGenArray	max_y;
-	NhlGenArray	min_x;
-	NhlGenArray	min_y;
+	NhlGenArray		max_x;
+	NhlGenArray		max_y;
+	NhlGenArray		min_x;
+	NhlGenArray		min_y;
 
 	/* Private Fields */
 
-	NhlBoolean	x_cast_set;
-	NhlBoolean	y_cast_set;
+	NhlBoolean		xcast_set;
+	NhlBoolean		ycast_set;
+
+	NhlGenArray		my_xarray;
+	NhlGenArray		my_yarray;
+
+	_NhlConvertContext	xctxt;
+	_NhlConvertContext	yctxt;
+
+	NhlGenArray		my_missing_x;
+	NhlGenArray		my_missing_y;
+
+	NhlBoolean		sticky_max_x;
+	NhlBoolean		sticky_max_y;
+	NhlBoolean		sticky_min_x;
+	NhlBoolean		sticky_min_y;
 } NhlCoordArraysLayerPart;
 
 typedef struct _NhlCoordArraysLayerRec{

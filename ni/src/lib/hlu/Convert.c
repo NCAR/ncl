@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.9 1994-07-25 23:33:21 ethan Exp $
+ *      $Id: Convert.c,v 1.10 1994-07-28 22:11:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2025,6 +2025,55 @@ NhlReConvertData
 }
 
 /*
+ * Function:	_NhlCvtCtxtMalloc
+ *
+ * Description:	This is a malloc function that actually takes the Context
+ *		as an arguement.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	private global
+ * Returns:	NhlPointer
+ * Side Effect:	
+ */
+NhlPointer
+_NhlCvtCtxtMalloc
+#if	NhlNeedProto
+(
+	unsigned int		size,
+	_NhlConvertContext	ctxt
+)
+#else
+(size,ctxt)
+	unsigned int		size;
+	_NhlConvertContext	ctxt;
+#endif
+{
+	NhlPointer	ptr;
+
+	while(ctxt->num_alloced >= NHLCONVALLOCLISTLEN){
+		if(ctxt->next == NULL){
+			ctxt->next = _NhlCreateConvertContext();
+			if(ctxt->next == NULL){
+				NhlPError(NhlFATAL, NhlEUNKNOWN,
+				"NhlConvertMalloc:Unable to Grow Context");
+				return NULL;
+			}
+		}
+		ctxt = ctxt->next;
+	}
+
+	ptr = NhlMalloc(size);
+
+	if(ptr != NULL)
+		ctxt->alloc_list[ctxt->num_alloced++] = ptr;
+
+	return ptr;
+}
+
+/*
  * Function:	NhlConvertMalloc
  *
  * Description:	This function should be used by converters that need to
@@ -2052,7 +2101,6 @@ NhlConvertMalloc
 	unsigned int	size;	/* size of memory requested	*/
 #endif
 {
-	void			*ptr;
 	_NhlConvertContext	context;
 	
 	if((ctxt_stack == NULL) || (ctxt_stack->context == NULL)){
@@ -2063,24 +2111,7 @@ NhlConvertMalloc
 
 	context = ctxt_stack->context;
 
-	while(context->num_alloced >= NHLCONVALLOCLISTLEN){
-		if(context->next == NULL){
-			context->next = _NhlCreateConvertContext();
-			if(context->next == NULL){
-				NhlPError(NhlFATAL, NhlEUNKNOWN,
-				"NhlConvertMalloc:Unable to Grow Context");
-				return NULL;
-			}
-		}
-		context = context->next;
-	}
-
-	ptr = NhlMalloc(size);
-
-	if(ptr != NULL)
-		context->alloc_list[context->num_alloced++] = ptr;
-
-	return ptr;
+	return _NhlCvtCtxtMalloc(size,context);
 }
 
 

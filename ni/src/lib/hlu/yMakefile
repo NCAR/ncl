@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.18 1994-07-13 23:14:32 boote Exp $
+#      $Id: yMakefile,v 1.19 1994-07-28 22:11:58 boote Exp $
 #
 #########################################################################
 #									#
@@ -84,13 +84,10 @@ InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
 InstallTarget(hluresfile,$(INSTALL_INC),$(LIBNCARGPATH))
 DependTarget($(CSRCS))
 
-/*
- * This isn't used anymore, but I don't want to get ride of it yet.
- * jeff
- */
-#if	defined(DEBUG) && defined(SunOS)  && defined(ExpandMacros)
 
 /* This is used to expand the huge macros in this file	*/
+
+#if	defined(DEBUG) && defined(SunOS)  && defined(ExpandMacros)
 
 CleanFilesTarget(Converters.tmp.o Converters.tmp.c Converters.sed.c)
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.18 1994-07-25 23:33:24 ethan Exp $
+ *      $Id: Converters.c,v 1.19 1994-07-28 22:11:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -181,7 +181,6 @@ comparestring
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
-/*ARGSUSED*/
 static NhlErrorTypes
 NhlCvtStringToEnum
 #if	__STDC__
@@ -449,6 +448,7 @@ _NhlRegisterEnumType
 								func,enum_name);
 		return NhlFATAL;
 	}
+
 	if(_NhlRegSymConv(NhlTQuark,enum_name,NhlTQuark,NhlTScalar) !=
 								NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.12 1994-07-12 20:51:40 boote Exp $
+ *      $Id: CoordArrays.c,v 1.13 1994-07-28 22:11:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,27 @@
 #include <string.h>
 #include <ncarg/hlu/CoordArraysP.h>
 #include <ncarg/hlu/CoordArrTableP.h>
+#include <ncarg/hlu/ConvertersP.h>
+
+static	NrmQuark	genQ = NrmNULLQUARK;
+static	NrmQuark	floatQ = NrmNULLQUARK;
+static	NrmQuark	floatgenQ = NrmNULLQUARK;
+
+static	NrmQuark	xarrQ = NrmNULLQUARK;
+static	NrmQuark	yarrQ = NrmNULLQUARK;
+
+static	NrmQuark	xmissQ = NrmNULLQUARK;
+static	NrmQuark	ymissQ = NrmNULLQUARK;
+
+static	NrmQuark	xmaxQ = NrmNULLQUARK;
+static	NrmQuark	ymaxQ = NrmNULLQUARK;
+static	NrmQuark	xminQ = NrmNULLQUARK;
+static	NrmQuark	yminQ = NrmNULLQUARK;
+
+typedef enum _NhlcaDType_{
+	XDIM,
+	YDIM
+} _NhlcaDType;
 
 /************************************************************************
 *									*
@@ -54,8 +75,8 @@ XCastSet
 {
 	NhlCoordArraysLayer	carrl = (NhlCoordArraysLayer)base;
 
-	carrl->carr.x_cast_set = False;
-	carrl->carr.x_cast = 2;
+	carrl->carr.xcast_set = False;
+	carrl->carr.xcast = NhlcaMultipleVectors;
 
 	return NhlNOERROR;
 }
@@ -79,8 +100,8 @@ YCastSet
 {
 	NhlCoordArraysLayer	carrl = (NhlCoordArraysLayer)base;
 
-	carrl->carr.y_cast_set = False;
-	carrl->carr.y_cast = 2;
+	carrl->carr.ycast_set = False;
+	carrl->carr.ycast = NhlcaMultipleVectors;
 
 	return NhlNOERROR;
 }
@@ -94,13 +115,13 @@ static NhlResource resources[] = {
 		Oset(yarray),NhlTImmediate,(NhlPointer)NULL,0,
 						(NhlFreeFunc)NhlFreeGenArray},
 	{"no.res","No.Res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_cast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
+		Oset(xcast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{"no.res","No.Res",NhlTBoolean,sizeof(int),
-		Oset(y_cast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaXCast,NhlCcaXCast,NhlTInteger,sizeof(int),
-		Oset(x_cast),NhlTProcedure,(NhlPointer)XCastSet,0,NULL},
-	{NhlNcaYCast,NhlCcaYCast,NhlTInteger,sizeof(int),
-		Oset(y_cast),NhlTProcedure,(NhlPointer)YCastSet,0,NULL},
+		Oset(ycast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
+	{NhlNcaXCast,NhlCcaXCast,NhlTcaCastMode,sizeof(int),
+		Oset(xcast),NhlTProcedure,(NhlPointer)XCastSet,0,NULL},
+	{NhlNcaYCast,NhlCcaYCast,NhlTcaCastMode,sizeof(int),
+		Oset(ycast),NhlTProcedure,(NhlPointer)YCastSet,0,NULL},
 	{NhlNcaCopyArrays,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(copy_arrays),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaXMissingV,NhlCdiMissingValue,NhlTGenArray,sizeof(NhlGenArray),
@@ -114,7 +135,22 @@ static NhlResource resources[] = {
 	{NhlNcaXMinV,NhlCcaXMinV,NhlTGenArray,sizeof(NhlGenArray),
 		Oset(min_x),NhlTImmediate,(NhlPointer)NULL,0,NULL},
 	{NhlNcaYMinV,NhlCcaYMinV,NhlTGenArray,sizeof(NhlGenArray),
-		Oset(min_y),NhlTImmediate,(NhlPointer)NULL,0,NULL}
+		Oset(min_y),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+	/*
+	 * init private fields
+	 */
+	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
+		Oset(my_xarray),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
+		Oset(my_yarray),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
+		Oset(xctxt),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
+		Oset(yctxt),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
+		Oset(my_missing_x),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
+		Oset(my_missing_y),NhlTImmediate,(NhlPointer)NULL,0,NULL},
 };
 #undef Oset
 
@@ -230,16 +266,13 @@ _NHLCALLF(nhlfcoordarraysclass,NHLFCOORDARRAYSCLASS)
 	return NhlcoordArraysLayerClass;
 }
 
-static	NrmQuark	floatQ = NrmNULLQUARK;
-static	NrmQuark	intQ = NrmNULLQUARK;
-
 /************************************************************************
 *	New type converters - added to converter table by		*
 *	ClassInitialize							*
 ************************************************************************/
 
 /*
- * Function:	CreateTableFlt
+ * Function:	CreateFloatTable
  *
  * Description:	
  *
@@ -251,8 +284,8 @@ static	NrmQuark	intQ = NrmNULLQUARK;
  * Returns:	NhlGenArray
  * Side Effect:	
  */
-static void
-CreateTableFlt
+static NhlErrorTypes
+CreateFloatTable
 #if	__STDC__
 (
 	NhlString	cast_res,
@@ -260,8 +293,8 @@ CreateTableFlt
 	NhlString	error_lead,
 	NhlGenArray	gen,
 	NhlGenArray	other_gen,
-	int		cast,
-	int		other_cast,
+	NhlcaCastMode	cast,
+	NhlcaCastMode	other_cast,
 	NhlGenArray	*tbl,
 	NhlGenArray	*tbl_lens
 )
@@ -272,8 +305,8 @@ CreateTableFlt
 	NhlString	error_lead;
 	NhlGenArray	gen;
 	NhlGenArray	other_gen;
-	int		cast;
-	int		other_cast;
+	NhlcaCastMode	cast;
+	NhlcaCastMode	other_cast;
 	NhlGenArray	*tbl;
 	NhlGenArray	*tbl_lens;
 #endif
@@ -283,28 +316,35 @@ CreateTableFlt
 	float	**flttable, *fltvect;
 	int	*intvect;
 
+	if(!gen){
+		*tbl = NULL;
+		*tbl_lens = NULL;
+
+		return NhlNOERROR;
+	}
+
 	switch(cast){
-		case 1:
+		case NhlcaSingleVector:
 			switch(other_cast){
-				case 1:
+				case NhlcaSingleVector:
 					vectors = 1;
 					break;
-				case 2:
+				case NhlcaMultipleVectors:
 					vectors = other_gen->len_dimensions[0];
 					break;
-				case 3:
+				case NhlcaSplitVectors:
 					vectors = other_gen->len_dimensions[1];
 					break;
 				default:
 					NhlPError(NhlFATAL,NhlEUNKNOWN,
 							"%s:Invalid %s value",
 						error_lead,other_cast_res);
-					return;
+					return NhlFATAL;
 			}
 
 			elements = gen->len_dimensions[0];
 			break;
-		case 2:
+		case NhlcaMultipleVectors:
 			if(gen->num_dimensions == 1){
 				vectors = 1;
 				elements = gen->len_dimensions[0];
@@ -314,38 +354,49 @@ CreateTableFlt
 				elements = gen->len_dimensions[1];
 			}
 			break;
-		case 3:
-			vectors = gen->len_dimensions[1];
-			elements = gen->len_dimensions[0];
+		case NhlcaSplitVectors:
+			if(gen->num_dimensions == 1){
+				vectors = gen->len_dimensions[0];
+				elements = 1;
+			}
+			else{
+				vectors = gen->len_dimensions[1];
+				elements = gen->len_dimensions[0];
+			}
 			break;
 		default:
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid %s value",
 							error_lead,cast_res);
-			return;
+			return NhlFATAL;
 	}
 
 	flttable = NhlConvertMalloc(sizeof(float*)*vectors);
 	intvect = NhlConvertMalloc(sizeof(int)*vectors);
 	if((flttable == NULL) || (intvect == NULL)){
 		NhlPError(NhlFATAL,ENOMEM,NULL);
-		return;
+		return NhlFATAL;
 	}
+
+	/*
+	 * gen is a float GenArray since it is from my_{n}array.
+	 */
 	fltvect = gen->data;
+
 	for(i=0;i < vectors; i++){
 		intvect[i] = elements;
 
 		switch(cast){
-		case 1:
+		case NhlcaSingleVector:
 			flttable[i] = fltvect;
 			break;
-		case 2:
+		case NhlcaMultipleVectors:
 			flttable[i] = fltvect + (i * elements);
 			break;
-		case 3:
+		case NhlcaSplitVectors:
 			flttable[i] = NhlConvertMalloc(sizeof(float)*elements);
 			if(flttable[i] == NULL){
 				NhlPError(NhlFATAL,ENOMEM,NULL);
-				return;
+				return NhlFATAL;
 			}
 			for(j=0;j<elements;j++)
 				*(flttable[i]+j) = *(fltvect+i+(j*elements));
@@ -353,15 +404,19 @@ CreateTableFlt
 		}
 	}
 
-	*tbl = NhlCreateGenArray(flttable,NhlTPointer,sizeof(NhlPointer),1,
-								&vectors);
-	*tbl_lens = NhlCreateGenArray(intvect,NhlTInteger,sizeof(int),1,
-								&vectors);
-	return;
+	*tbl = _NhlConvertCreateGenArray(flttable,NhlTPointer,
+					sizeof(NhlPointer),vectors,NULL);
+	*tbl_lens = _NhlConvertCreateGenArray(intvect,NhlTInteger,sizeof(int),
+								vectors,NULL);
+
+	if((*tbl == NULL) || (*tbl_lens == NULL))
+		return NhlFATAL;
+
+	return NhlNOERROR;
 }
 
 /*
- * Function:	CreateTableInt
+ * Function:	MyArray
  *
  * Description:	
  *
@@ -369,128 +424,309 @@ CreateTableFlt
  *
  * Out Args:	
  *
- * Scope:	static
- * Returns:	NhlGenArray
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+MyArray
+#if	NhlNeedProto
+(
+	NhlGenArray		*my_array,
+	NhlGenArray		array,
+	_NhlConvertContext	*context
+)
+#else
+(my_array,array,context)
+	NhlGenArray		*my_array;
+	NhlGenArray		array;
+	_NhlConvertContext	*context;
+#endif
+{
+	char			func[]="MyArray";
+	_NhlConvertContext	tctxt = NULL;
+	NhlGenArray		tgen = NULL;
+	NrmValue		from,to;
+	NhlErrorTypes		ret;
+
+	if(!array)
+		*my_array = NULL;
+	else if(array->typeQ == floatQ)
+		*my_array = array;
+	else{
+		tctxt = _NhlCreateConvertContext();
+		if(tctxt == NULL){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+
+		from.size = sizeof(NhlGenArray);
+		from.data.ptrval = array;
+		to.size = sizeof(NhlGenArray);
+		to.data.ptrval = &tgen;
+
+		ret = _NhlConvertData(tctxt,genQ,floatgenQ,&from,&to);
+
+		if((ret < NhlWARNING) || !tgen){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to convert from %s to %s",func,
+					NhlTGenArray,NhlTFloatGenArray));
+			return NhlFATAL;
+		}
+		*my_array = tgen;
+	}
+
+	_NhlFreeConvertContext(*context);
+	*context = tctxt;
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	GetMinMax
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
  * Side Effect:	
  */
 static void
-CreateTableInt
-#if	__STDC__
+GetMinMax
+#if	NhlNeedProto
 (
-	NhlString	cast_res,
-	NhlString	other_cast_res,
-	NhlString	error_lead,
-	NhlGenArray	gen,
-	NhlGenArray	other_gen,
-	int		cast,
-	int		other_cast,
-	NhlGenArray	*tbl,
-	NhlGenArray	*tbl_lens
+	NhlGenArray	array,
+	NhlGenArray	oarray,
+	NhlcaCastMode	cast,
+	NhlcaCastMode	ocast,
+	NhlGenArray	miss,
+	float		*min,
+	float		*max
 )
 #else
-(cast_res,other_cast_res,error_lead,gen,other_gen,cast,other_cast,tbl,tbl_lens)
-	NhlString	cast_res;
-	NhlString	other_cast_res;
-	NhlString	error_lead;
-	NhlGenArray	gen;
-	NhlGenArray	other_gen;
-	int		cast;
-	int		other_cast;
-	NhlGenArray	*tbl;
-	NhlGenArray	*tbl_lens;
+(array,oarray,cast,ocast,miss,min,max)
+	NhlGenArray	array;
+	NhlGenArray	oarray;
+	NhlcaCastMode	cast,
+	NhlcaCastMode	ocast,
+	NhlGenArray	miss;
+	float		*min;
+	float		*max;
 #endif
 {
-	int	vectors, elements;
-	int	i,j;
-	float	**flttable;
-	int	*intarr;
-	int	*intvect;
+	float	mx,mn;
+	float	*farr;
 
-	switch(cast){
-		case 1:
-			switch(other_cast){
-				case 1:
-					vectors = 1;
-					break;
-				case 2:
-					vectors = other_gen->len_dimensions[0];
-					break;
-				case 3:
-					vectors = other_gen->len_dimensions[1];
-					break;
-				default:
-					NhlPError(NhlFATAL,NhlEUNKNOWN,
-							"%s:Invalid %s value",
-						error_lead,other_cast_res);
-					return;
-			}
+	if(array == NULL){
+		/*
+		 * array is *implied* - use indexes of other dim
+		 */
+		mn = 1.0;
+		if((ocast == NhlcaMultipleVectors) &&
+						(oarray->num_dimensions == 2))
+			mx = oarray->len_dimensions[1];
+		else
+			mx = oarray->len_dimensions[0];
+	}
+	else{
+		NhlBoolean	init = False;
+		int		i,len;
 
-			elements = gen->len_dimensions[0];
-			break;
-		case 2:
-			if(gen->num_dimensions == 1){
-				vectors = 1;
-				elements = gen->len_dimensions[0];
+		mx = mn = 0.0;
+
+		farr = array->data;
+
+		if(cast == NhlcaSingleVector)
+			len = array->len_dimensions[0];
+		else
+			len = array->num_elements;
+
+		for(i=0;i < len;i++){
+
+			if(miss && (farr[i]==*(float*)miss->data))
+				continue;
+
+			if(init){
+				mx = MAX(farr[i],mx);
+				mn = MIN(farr[i],mn);
 			}
 			else{
-				vectors = gen->len_dimensions[0];
-				elements = gen->len_dimensions[1];
+				mx = farr[i];
+				mn = farr[i];
+				init = True;
 			}
-			break;
-		case 3:
-			vectors = gen->len_dimensions[1];
-			elements = gen->len_dimensions[0];
-			break;
-		default:
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid %s value",
-							error_lead,cast_res);
-			return;
-	}
-
-	flttable = NhlConvertMalloc(sizeof(float*)*vectors);
-	intvect = NhlConvertMalloc(sizeof(int)*vectors);
-	if((flttable == NULL) || (intvect == NULL)){
-		NhlPError(NhlFATAL,ENOMEM,NULL);
-		return;
-	}
-	intarr = gen->data;
-	for(i=0;i < vectors; i++){
-		flttable[i] = NhlConvertMalloc(sizeof(float)*elements);
-		if(flttable[i] == NULL){
-			NhlPError(NhlFATAL,ENOMEM,NULL);
-			return;
 		}
-		intvect[i] = elements;
-		switch(cast){
-			case 1:
-				for(j=0;j<elements;j++)
-					*(flttable[i]+j) = (float)*(intarr+j);
-				break;
-			case 2:
-				for(j=0;j<elements;j++)
-					*(flttable[i]+j) =
-						(float)*(intarr+(i*elements)+j);
-				break;
-			case 3:
-				for(j=0;j<elements;j++)
-					*(flttable[i]+j) =
-						(float)*(intarr+i+(j*elements));
-				break;
-			default:
-				return;
+
+		if(!init){
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+		"No Valid values in Array, unable to complute Min or Max"));
 		}
 	}
 
-	*tbl = NhlCreateGenArray(flttable,NhlTPointer,sizeof(NhlPointer),1,
-								&vectors);
-	*tbl_lens = NhlCreateGenArray(intvect,NhlTInteger,sizeof(int),1,
-								&vectors);
+	*min = mn;
+	*max = mx;
 	return;
 }
 
+/*
+ * Function:	FlushObj
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+FlushObj
+#if	NhlNeedProto
+(
+	_NhlcaDType			dim,
+	NhlCoordArraysLayerPart		*cap
+)
+#else
+(dim,cap)
+	_NhlcaDType			dim;
+	NhlCoordArraysLayerPart		*cap
+#endif
+{
+	char		func[] = "FlushObj";
+	float		max,min;
+	NrmValue	from,to;
+	NhlErrorTypes	ret=NhlNOERROR,lret;
+
+	if(dim == XDIM){
+
+		if(!cap->my_xarray){
+			ret = MyArray(&cap->my_xarray,cap->xarray,&cap->xctxt);
+
+			if(ret < NhlWARNING){
+				NhlPError(ret,NhlEUNKNOWN,
+					"%s:Unable to convert %s to floats",
+							func,NhlNcaXArray);
+				return ret;
+			}
+		}
+
+		if(!cap->my_missing_x && cap->missing_x){
+			if(cap->missing_x->typeQ == floatQ)
+				cap->my_missing_x = cap->missing_x;
+			else{
+				float	tfloat;
+
+				from.size = sizeof(NhlGenArray);
+				from.data.ptrval = cap->missing_x;
+				to.size = sizeof(float);
+				to.data.ptrval = &tfloat;
+
+				lret = NhlConvertData(NhlTGenArray,NhlTFloat,
+								&from,&to);
+				if(ret < NhlWARNING)
+					return NhlFATAL;
+				ret = MIN(ret,lret);
+
+				cap->my_missing_x = _NhlCreateGenArray(&tfloat,
+					NhlTFloat,sizeof(float),1,NULL,True);
+
+				if(!cap->my_missing_x)
+					return NhlFATAL;
+			}
+		}
+
+		if(!cap->max_x || !cap->min_x){
+			GetMinMax(cap->my_xarray,cap->my_yarray,cap->xcast,
+				cap->ycast,cap->my_missing_x,&min,&max);
+
+			if(!cap->max_x)
+				cap->max_x =_NhlCreateGenArray(&max,NhlTFloat,
+						sizeof(float),1,NULL,True);
+			if(!cap->min_x)
+				cap->min_x =_NhlCreateGenArray(&min,NhlTFloat,
+						sizeof(float),1,NULL,True);
+
+			if(!cap->max_x || !cap->min_x){
+				NHLPERROR((NhlFATAL,ENOMEM,NULL));
+				return NhlFATAL;
+			}
+
+		}
+
+		return ret;
+	}
+
+	if(dim == YDIM){
+
+		if(!cap->my_yarray){
+			lret = MyArray(&cap->my_yarray,cap->yarray,&cap->yctxt);
+
+			if(lret < NhlWARNING){
+				NhlPError(ret,NhlEUNKNOWN,
+					"%s:Unable to convert %s to floats",
+							func,NhlNcaYArray);
+				return lret;
+			}
+			ret = MIN(ret,lret);
+		}
+
+		if(!cap->my_missing_y && cap->missing_y){
+			if(cap->missing_y->typeQ == floatQ)
+				cap->my_missing_y = cap->missing_y;
+			else{
+				float	tfloat;
+
+				from.size = sizeof(NhlGenArray);
+				from.data.ptrval = cap->missing_y;
+				to.size = sizeof(float);
+				to.data.ptrval = &tfloat;
+
+				lret = NhlConvertData(NhlTGenArray,NhlTFloat,
+								&from,&to);
+				if(lret < NhlWARNING)
+					return NhlFATAL;
+				ret = MIN(lret,ret);
+
+				cap->my_missing_y = _NhlCreateGenArray(&tfloat,
+					NhlTFloat,sizeof(float),1,NULL,True);
+
+				if(!cap->my_missing_y)
+					return NhlFATAL;
+			}
+		}
+
+		if(!cap->max_y || !cap->min_y){
+			GetMinMax(cap->my_yarray,cap->my_xarray,cap->ycast,
+				cap->xcast,cap->my_missing_y,&min,&max);
+
+			if(!cap->max_y)
+				cap->max_y =_NhlCreateGenArray(&max,NhlTFloat,
+						sizeof(float),1,NULL,True);
+			if(!cap->min_y)
+				cap->min_y =_NhlCreateGenArray(&min,NhlTFloat,
+						sizeof(float),1,NULL,True);
+
+			if(!cap->max_y || !cap->min_y){
+				NHLPERROR((NhlFATAL,ENOMEM,NULL));
+				return NhlFATAL;
+			}
+
+		}
+
+		return ret;
+	}
+
+	return NhlFATAL;
+}
 
 /*
- * Function:	CvtCArraysObjToFloatObj
+ * Function:	CvtCArrToCArrTabFlt
  *
  * Description:	This function is used to convert a Generic CoordArrays
  *		to a CoordArraysFloat object.
@@ -505,7 +741,7 @@ CreateTableInt
  */
 /*ARGSUSED*/
 static NhlErrorTypes
-CvtCArraysObjToFloatObj
+CvtCArrToCArrTabFlt
 #if	__STDC__
 (
 	NrmValue		*from,
@@ -521,18 +757,17 @@ CvtCArraysObjToFloatObj
 	int			num_args;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR;
-#ifdef	NOTYET
-	char			*error_lead="CvtCArraysObjToFloatObj";
-	NhlCoordArraysLayer	carrl = NULL;
-	NhlSArg			sargs[30];
-	int			nargs=0;
-	NhlGenArray		xtbl = NULL, ytbl = NULL;
-	NhlGenArray		xtbl_lens = NULL, ytbl_lens = NULL;
+	char				func[]="CvtCArrToCArrTabFlt";
+	NhlErrorTypes			ret = NhlNOERROR;
+	NhlCoordArraysLayer		carrl;
+	NhlCoordArraysLayerPart		*cap;
+	int				fltid;
+	NhlCoordArrTableFloatLayer	fltl;
+	NhlCoordArrTableFloatLayerPart	*fltlp;
+	NrmValue			fval,tval;
 
 	if(num_args != 0){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Called w/wrong args",
-								error_lead);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Called w/wrong args",func);
 		return NhlFATAL;
 	}
 
@@ -540,108 +775,119 @@ CvtCArraysObjToFloatObj
 	if((carrl == NULL)||
 			(carrl->base.layer_class != NhlcoordArraysLayerClass)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"%s:Called w/ improper \"from\" object",error_lead);
+			"%s:Called w/ improper \"from\" object",func);
 		return NhlFATAL;
 	}
 
-	if(carrl->carr.type == floatQ){
-		NhlCoordArraysFloatLayer	l =
-				(NhlCoordArraysFloatLayer)carrl->carr.child;
-		NhlCoordArraysFloatLayerPart	*child =
-				(NhlCoordArraysFloatLayerPart*)&l->carrfloat;
+	cap = &carrl->carr;
 
-		NhlSetSArg(&sargs[nargs++],NhlNctXMaxF,child->max_x);
-		NhlSetSArg(&sargs[nargs++],NhlNctYMaxF,child->max_y);
-		NhlSetSArg(&sargs[nargs++],NhlNctXMinF,child->min_x);
-		NhlSetSArg(&sargs[nargs++],NhlNctYMinF,child->min_y);
+	ret = NhlALCreate(&fltid,"no.name",NhlcoordArrTableFloatLayerClass,
+							carrl->base.id,NULL,0);
+	*(int*)to->data.ptrval = fltid;
 
-		if(child->missing_x_set)
-			NhlSetSArg(&sargs[nargs++],NhlNctXMissingF,
-							child->missing_x);
-		if(child->missing_y_set)
-			NhlSetSArg(&sargs[nargs++],NhlNctYMissingF,
-							child->missing_y);
+	fltl = (NhlCoordArrTableFloatLayer)_NhlGetLayer(fltid);
 
-		if(child->xarray != NULL){
-			CreateTableFlt(NhlNcaXCast,NhlNcaYCast,error_lead,
-				child->xarray,child->yarray,child->x_cast,
-						child->y_cast,&xtbl,&xtbl_lens);
-			if((xtbl == NULL) || (xtbl_lens == NULL)){
-				return NhlFATAL;
-			}
-			NhlSetSArg(&sargs[nargs++],NhlNctXTable,xtbl);
-			NhlSetSArg(&sargs[nargs++],NhlNctXTableLengths,
-								xtbl_lens);
-		}
-		if(child->yarray != NULL){
-			CreateTableFlt(NhlNcaYCast,NhlNcaXCast,error_lead,
-				child->yarray,child->xarray,child->y_cast,
-						child->x_cast,&ytbl,&ytbl_lens);
-			if((ytbl == NULL) || (ytbl_lens == NULL)){
-				return NhlFATAL;
-			}
-			NhlSetSArg(&sargs[nargs++],NhlNctYTable,ytbl);
-			NhlSetSArg(&sargs[nargs++],NhlNctYTableLengths,
-								ytbl_lens);
-		}
+	if((ret < NhlWARNING) || (fltl == NULL)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to convert Data",
+									func);
+		return NhlFATAL;
 	}
-	else if(carrl->carr.type == intQ){
-		NhlCoordArraysIntLayer	l =
-				(NhlCoordArraysIntLayer)carrl->carr.child;
-		NhlCoordArraysIntLayerPart	*child =
-				(NhlCoordArraysIntLayerPart*)&l->carrint;
 
-		NhlSetSArg(&sargs[nargs++],NhlNctXMaxF,child->max_x);
-		NhlSetSArg(&sargs[nargs++],NhlNctYMaxF,child->max_y);
-		NhlSetSArg(&sargs[nargs++],NhlNctXMinF,child->min_x);
-		NhlSetSArg(&sargs[nargs++],NhlNctYMinF,child->min_y);
+	fltlp = &fltl->flt;
 
-		if(child->missing_x_set)
-			NhlSetSArg(&sargs[nargs++],NhlNctXMissingF,
-							child->missing_x);
-		if(child->missing_y_set)
-			NhlSetSArg(&sargs[nargs++],NhlNctYMissingF,
-							child->missing_y);
+	ret = FlushObj(XDIM,cap);
+	if(ret < NhlWARNING)
+		return ret;
 
-		if(child->xarray != NULL){
-			CreateTableInt(NhlNcaXCast,NhlNcaYCast,error_lead,
-				child->xarray,child->yarray,child->x_cast,
-						child->y_cast,&xtbl,&xtbl_lens);
-			if((xtbl == NULL) || (xtbl_lens == NULL)){
-				return NhlFATAL;
-			}
-			NhlSetSArg(&sargs[nargs++],NhlNctXTable,xtbl);
-			NhlSetSArg(&sargs[nargs++],NhlNctXTableLengths,
-								xtbl_lens);
-		}
-		if(child->yarray != NULL){
-			CreateTableInt(NhlNcaYCast,NhlNcaXCast,error_lead,
-				child->yarray,child->xarray,child->y_cast,
-						child->x_cast,&ytbl,&ytbl_lens);
-			if((ytbl == NULL) || (ytbl_lens == NULL)){
-				return NhlFATAL;
-			}
-			NhlSetSArg(&sargs[nargs++],NhlNctYTable,ytbl);
-			NhlSetSArg(&sargs[nargs++],NhlNctYTableLengths,
-								ytbl_lens);
-		}
+	ret = FlushObj(YDIM,cap);
+	if(ret < NhlWARNING)
+		return ret;
+
+	ret = CreateFloatTable(NhlNcaXCast,NhlNcaYCast,func,cap->my_xarray,
+		cap->my_yarray,cap->xcast,cap->ycast,&fltlp->xtable,
+							&fltlp->xtable_lens);
+	if(ret < NhlWARNING)
+		return ret;
+
+	ret = CreateFloatTable(NhlNcaYCast,NhlNcaXCast,func,cap->my_yarray,
+		cap->my_xarray,cap->ycast,cap->xcast,&fltlp->ytable,
+							&fltlp->ytable_lens);
+	if(ret < NhlWARNING)
+		return ret;
+
+	if(cap->my_missing_x){
+		fltlp->missing_x = *(float*)cap->my_missing_x->data;
+		fltlp->missing_x_set = True;
 	}
+	else
+		fltlp->missing_x_set = False;
+
+	if(cap->my_missing_y){
+		fltlp->missing_y = *(float*)cap->my_missing_y->data;
+		fltlp->missing_y_set = True;
+	}
+	else
+		fltlp->missing_y_set = False;
+
+	if(cap->max_x->typeQ == floatQ)
+		fltlp->max_x = *(float *)cap->max_x->data;
 	else{
-		return NhlFATAL;
+		fval.size = sizeof(NhlGenArray);
+		fval.data.ptrval = cap->max_x;
+		tval.size = sizeof(float);
+		tval.data.ptrval = &fltlp->max_x;
+		ret = _NhlReConvertData(genQ,floatQ,&fval,&tval);
+		if(ret < NhlNOERROR){
+		NhlPError(ret,NhlEUNKNOWN,"%s:Unable to convert %s to float",
+							func,NhlNctXMaxV);
+			return ret;
+		}
 	}
 
+	if(cap->min_x->typeQ == floatQ)
+		fltlp->min_x = *(float *)cap->min_x->data;
+	else{
+		fval.size = sizeof(NhlGenArray);
+		fval.data.ptrval = cap->min_x;
+		tval.size = sizeof(float);
+		tval.data.ptrval = &fltlp->min_x;
+		ret = _NhlReConvertData(genQ,floatQ,&fval,&tval);
+		if(ret < NhlNOERROR){
+		NhlPError(ret,NhlEUNKNOWN,"%s:Unable to convert %s to float",
+							func,NhlNctXMinV);
+			return ret;
+		}
+	}
 
-	NhlSetSArg(&sargs[nargs++],NhlNctCopyTables,False);
+	if(cap->max_y->typeQ == floatQ)
+		fltlp->max_y = *(float *)cap->max_y->data;
+	else{
+		fval.size = sizeof(NhlGenArray);
+		fval.data.ptrval = cap->max_y;
+		tval.size = sizeof(float);
+		tval.data.ptrval = &fltlp->max_y;
+		ret = _NhlReConvertData(genQ,floatQ,&fval,&tval);
+		if(ret < NhlNOERROR){
+		NhlPError(ret,NhlEUNKNOWN,"%s:Unable to convert %s to float",
+							func,NhlNctYMaxV);
+			return ret;
+		}
+	}
 
-	ret = NhlALCreate(to->data.ptrval,"no.name",
-		NhlcoordArrTableFloatLayerClass,carrl->base.id,sargs,nargs);
-
-	NhlFreeGenArray(xtbl);
-	NhlFreeGenArray(xtbl_lens);
-	NhlFreeGenArray(ytbl);
-	NhlFreeGenArray(ytbl_lens);
-
-#endif	/* NOTYET */
+	if(cap->min_y->typeQ == floatQ)
+		fltlp->min_y = *(float *)cap->min_y->data;
+	else{
+		fval.size = sizeof(NhlGenArray);
+		fval.data.ptrval = cap->min_y;
+		tval.size = sizeof(float);
+		tval.data.ptrval = &fltlp->min_y;
+		ret = _NhlReConvertData(genQ,floatQ,&fval,&tval);
+		if(ret < NhlNOERROR){
+		NhlPError(ret,NhlEUNKNOWN,"%s:Unable to convert %s to float",
+							func,NhlNctYMinV);
+			return ret;
+		 }
+	 }
 	return ret;
 }
 
@@ -676,200 +922,164 @@ CoordArraysClassInitialize
 ()
 #endif
 {
-	NhlErrorTypes	ret = NhlNOERROR;
+	NhlErrorTypes	ret,lret;
+	_NhlEnumVals	cast_mode[] = {
+		{NhlcaSingleVector,	"casinglevector"},
+		{NhlcaMultipleVectors,	"camultiplevectors"},
+		{NhlcaSplitVectors,	"casplitvectors"}
+	};
+
 
 	floatQ = NrmStringToQuark(NhlTFloat);
-	intQ = NrmStringToQuark(NhlTInteger);
+	genQ = NrmStringToQuark(NhlTGenArray);
+	floatgenQ = NrmStringToQuark(NhlTFloatGenArray);
+
+	xarrQ = NrmStringToQuark(NhlNcaXArray);
+	yarrQ = NrmStringToQuark(NhlNcaYArray);
+
+	xmissQ = NrmStringToQuark(NhlNcaXMissingV);
+	ymissQ = NrmStringToQuark(NhlNcaYMissingV);
+
+	xmaxQ = NrmStringToQuark(NhlNcaXMaxV);
+	ymaxQ = NrmStringToQuark(NhlNcaYMaxV);
+	xminQ = NrmStringToQuark(NhlNcaXMinV);
+	yminQ = NrmStringToQuark(NhlNcaYMinV);
+
+	lret = _NhlRegisterEnumType(NhlTcaCastMode,cast_mode,
+							NhlNumber(cast_mode));
 
 	ret = NhlRegisterConverter(
 			NhlcoordArraysLayerClass->base_class.class_name,
 			NhlcoordArrTableFloatLayerClass->base_class.class_name,
-			CvtCArraysObjToFloatObj,NULL,0,False,NULL);
+			CvtCArrToCArrTabFlt,NULL,0,False,NULL);
+
+	return MIN(ret,lret);
+}
+
+static NhlErrorTypes
+CheckArray
+#if	NhlNeedProto
+(
+	NhlGenArray	arr,
+	NhlcaCastMode	*cast,
+	NhlBoolean	*cast_set,
+	NhlString	arr_res,
+	NhlString	cast_res,
+	NhlBoolean	*imp
+)
+#else
+(arr,cast,cast_set,arr_res,cast_res,imp)
+	NhlGenArray	arr;
+	NhlcaCastMode	*cast;
+	NhlBoolean	*cast_set;
+	NhlString	arr_res;
+	NhlString	cast_res;
+	NhlBoolean	*imp;
+#endif
+{
+	char		func[]="CheckArray";
+	NhlErrorTypes	ret = NhlNOERROR;
+	int		num_elements;
+
+	if(arr != NULL){
+		if((arr->num_dimensions > 2) ||
+					(arr->num_dimensions < 1)){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:%s must be a one or two dimensional array:ignoring",
+							func,arr_res);
+			
+			return NhlFATAL;
+		}
+	}
+	else
+		*imp = True;
+
+	if(*cast_set){
+		if((imp) && (*cast != NhlcaSingleVector)){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"%s:%s must be %d if %s is implied",func,
+				cast_res,NhlcaSingleVector,arr_res);
+			ret = MIN(ret,NhlWARNING);
+			*cast = NhlcaSingleVector;
+		}
+	}
+	else{
+		*cast_set = True;
+		if((*imp) || (arr->num_dimensions == 1))
+			*cast = NhlcaSingleVector;
+		else
+			*cast = NhlcaMultipleVectors;
+	}
+
+
+	if(!*imp){
+		if((arr->num_dimensions == 2) &&
+				(*cast == NhlcaMultipleVectors)){
+			num_elements = arr->len_dimensions[1];
+		}
+		else{
+			num_elements = arr->len_dimensions[0];
+		}
+
+		if(num_elements < 2){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+	"%s:Each vector in the %s array must have at least 2 elements",
+							func,arr_res);
+			return NhlFATAL;
+		}
+
+	}
 
 	return ret;
 }
 
-#define	COPY_ARRAY(type,dim)\
-{									\
-	if(ncarr->carr##type.dim##array != NULL){			\
-		ncarr->carr##type.dim##array =				\
-			_NhlCopyGenArray(ncarr->carr##type.dim##array,	\
-					ncarr->carr##type.copy_arrays);	\
-									\
-		if(ncarr->carr##type.dim##array == NULL){		\
-			NhlPError(NhlFATAL,ENOMEM,NULL);		\
-			return NhlFATAL;				\
-		}							\
-	}								\
-}
+/*
+ * Function:	CopyArray
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+CopyArray
+#if	NhlNeedProto
+(
+	NhlGenArray		*arr,
+	NhlGenArray		*my_arr,
+	NhlBoolean		copy,
+	_NhlConvertContext	*ctxt
+)
+#else
+(arr,my_arr,copy,ctxt)
+	NhlGenArray		*arr;
+	NhlGenArray		*my_arr;
+	NhlBoolean		copy;
+	_NhlConvertContext	*ctxt;
+#endif
+{
+	NhlErrorTypes	ret;
 
-#define CHECK_ARRAY(TYPE,dim,DIM)\
-{									\
-	NhlGenArray		gen;					\
-	NhlCoordArraysLayer	cal = (NhlCoordArraysLayer)ncarr->base.parent;\
-									\
-	if(ncarr->carr##TYPE.dim##array != NULL){			\
-		gen = ncarr->carr##TYPE.dim##array;			\
-		if((gen->num_dimensions > 2) ||				\
-				(gen->num_dimensions < 1) ||		\
-				(cal->carr.type != gen->typeQ)){	\
-			NhlPError(NhlWARNING,NhlEUNKNOWN,			\
-		"%s:%s must be a one or two dimensional %s array:ignoring",\
-				error_lead,NhlNca##DIM##Array,#TYPE);	\
-			inv##dim = True;				\
-		}							\
-	}								\
-	else								\
-		imp##dim = True;					\
-}
+	if(((*arr)->typeQ != floatQ) && copy){
+		ret = MyArray(my_arr,*arr,ctxt);
+		if(ret < NhlWARNING)
+			return ret;
+		*arr = *my_arr;
 
-#define FREE_ARRAY(type,dim,pre)\
-{									\
-	NhlFreeGenArray(pre##carr->carr##type.dim##array);		\
-}
+		return ret;
+	}
 
-#define	CHECK_MINMAX(type,dim,otherdim)\
-{									\
-	if(!ncarr->carr##type.max_##dim##_set ||			\
-				!ncarr->carr##type.min_##dim##_set){	\
-		NhlBoolean	initminmax = False;			\
-		type		*vals,max=(type)0,min=(type)0;		\
-									\
-		if(ncarr->carr##type.dim##array != NULL){		\
-			int i, num;					\
-									\
-			vals=(type*)ncarr->carr##type.dim##array->data;	\
-									\
-			if(ncarr->carr##type.dim##_cast == 1)		\
-				num =					\
-			ncarr->carr##type.dim##array->len_dimensions[0];\
-			else						\
-				num =					\
-			ncarr->carr##type.dim##array->num_elements;	\
-									\
-			for(i=0;i < num;i++,vals++){			\
-			if((ncarr->carr##type.missing_##dim##_set) &&	\
-			(*vals == ncarr->carr##type.missing_##dim))	\
-							continue;	\
-									\
-						if(initminmax){		\
-						max = MAX(*vals,max);	\
-						min = MIN(*vals,min);	\
-						}			\
-						else{			\
-						max = *vals;		\
-						min = *vals;		\
-						initminmax=True;	\
-						}			\
-			}						\
-		}							\
-		else{							\
-			min = (type)1.0;				\
-			if((ncarr->carr##type.otherdim##_cast == 2) &&	\
-		(ncarr->carr##type.otherdim##array->num_dimensions == 2))\
-max = (type)ncarr->carr##type.otherdim##array->len_dimensions[1];	\
-			else						\
-max = (type)ncarr->carr##type.otherdim##array->len_dimensions[0];	\
-		}							\
-									\
-		if(!ncarr->carr##type.max_##dim##_set)			\
-			ncarr->carr##type.max_##dim = max;		\
-		if(!ncarr->carr##type.min_##dim##_set)			\
-			ncarr->carr##type.min_##dim = min;		\
-	}								\
-}
+	*arr = _NhlCopyGenArray(*arr,copy);
 
-#define	CHECK_CAST(type,dim,DIM)\
-{									\
-	if(ncarr->carr##type.dim##_cast_set){				\
-		if((imp##dim) && (ncarr->carr##type.dim##_cast != 1)){	\
-			NhlPError(NhlWARNING,NhlEUNKNOWN,		\
-				"%s:%s must be one if %s is implied",	\
-					error_lead,NhlNca##DIM##Cast,	\
-						NhlNca##DIM##Array);	\
-			ret = MIN(ret,NhlWARNING);			\
-			ncarr->carr##type.dim##_cast = 1;		\
-		}							\
-	}								\
-	else{								\
-		ncarr->carr##type.dim##_cast_set = True;		\
-		if((imp##dim) ||					\
-		(ncarr->carr##type.dim##array->num_dimensions == 1))	\
-			ncarr->carr##type.dim##_cast = 1;		\
-		else							\
-			ncarr->carr##type.dim##_cast = 2;		\
-	}								\
-}
+	if(*arr == NULL)
+		return NhlFATAL;
 
-#define	INIT_ARRAY(type,dim,DIM)\
-{									\
-	NhlBoolean	inv##dim = False;				\
-	int		num_elements;					\
-									\
-	CHECK_ARRAY(type,dim,DIM)					\
-									\
-	if(inv##dim){							\
-		NhlPError(NhlFATAL,NhlEUNKNOWN,				\
-		"%s:Resources specifying %s dimension are invalid",	\
-						error_lead,#DIM);	\
-		return NhlFATAL;					\
-	}								\
-									\
-	CHECK_CAST(type,dim,DIM)					\
-									\
-									\
-	if(!imp##dim){							\
-		if((ncarr->carr##type.dim##array->num_dimensions == 2) &&\
-				(ncarr->carr##type.dim##_cast == 2)){	\
-			num_elements =					\
-			ncarr->carr##type.dim##array->len_dimensions[1];\
-		}							\
-		else{							\
-			num_elements =					\
-			ncarr->carr##type.dim##array->len_dimensions[0];\
-		}							\
-									\
-		if(num_elements < 2){					\
-			NhlPError(NhlFATAL,NhlEUNKNOWN,			\
-	"%s:Each vector in the %s array must have at least 2 elements",	\
-					error_lead,NhlNca##DIM##Array);	\
-			return NhlFATAL;				\
-		}							\
-		COPY_ARRAY(type,dim)					\
-	}								\
-	else{								\
-		ncarr->carr##type.dim##array = NULL;			\
-	}								\
-}
-
-
-
-#define INIT_FUNC(name,type)\
-{									\
-	char			*error_lead = #name "Initialize";	\
-	Nhl##name##Layer	ncarr = (Nhl##name##Layer)new;		\
-	NhlBoolean		impy = False, impx = False;		\
-	NhlErrorTypes		ret = NhlNOERROR;			\
-									\
-	/*								\
-	 * insure accuracy, and copy Array				\
-	 */								\
-	INIT_ARRAY(type,y,Y)						\
-	INIT_ARRAY(type,x,X)						\
-									\
-	if(impx && impy){						\
-		NhlPError(NhlFATAL,NhlEUNKNOWN,				\
-		"%s:Cannot have Implied X and Y values",error_lead);	\
-		return NhlFATAL;					\
-	}								\
-									\
-	/*								\
-	 * Set Max's and Min's						\
-	 */								\
-	CHECK_MINMAX(type,x,y)						\
-	CHECK_MINMAX(type,y,x)						\
-									\
-	return ret;							\
+	return NhlNOERROR;
 }
 
 /*
@@ -913,41 +1123,105 @@ CoordArraysInitialize
 {
 	char			*func = "CoordArraysInitialize";
 	NhlCoordArraysLayer	ncarr = (NhlCoordArraysLayer)new;
-	NhlErrorTypes		ret=NhlNOERROR;
+	NhlCoordArraysLayerPart	*ncap = &ncarr->carr;
+	NhlErrorTypes		ret=NhlNOERROR,lret=NhlNOERROR;
+	NhlBoolean		impy = False, impx = False;
 
-#ifdef	NOTYET
-	if(ncarr->carr.type_string == NULL){
+	ret = CheckArray(ncap->xarray,&ncap->xcast,&ncap->xcast_set,
+						NhlNcaXArray,NhlNcaXCast,&impx);
+	if(ret < NhlWARNING){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:%s resource is invalid",func,
+								NhlNcaXArray);
+		return ret;
+	}
+
+	lret = CheckArray(ncap->yarray,&ncap->ycast,&ncap->ycast_set,
+						NhlNcaYArray,NhlNcaYCast,&impy);
+	if(lret < NhlWARNING){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:%s resource is invalid",func,
+								NhlNcaYArray);
+		return lret;
+	}
+	ret = MIN(ret,lret);
+
+	if(impx && impy){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-		"%s:The %s resource must be specified to create a %s object",
-				error_lead,"no.type",_NhlClassName(lc));
-
+		"%s:Cannot have Implied X and Y values",func);
 		return NhlFATAL;
 	}
 
-	ncarr->carr.type = NrmStringToQuark(ncarr->carr.type_string);
-	/*
-	 * Point to perminate memory in Quarks.c
-	 */
-	ncarr->carr.type_string = NrmQuarkToString(ncarr->carr.type);
-
-	/*
-	 * Create the correct child...
-	 */
-	strcpy(name,ncarr->base.name);
-	if(ncarr->carr.type == floatQ){
-		child_class = NhlcoordArraysFloatLayerClass;
-		strcat(name,".FLT");
+	lret = CopyArray(&ncap->xarray,&ncap->my_xarray,ncap->copy_arrays,
+								&ncap->xctxt);
+	if(lret < NhlWARNING){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:memory???",func);
+		return lret;
 	}
-	else if(ncarr->carr.type == intQ){
-		child_class = NhlcoordArraysIntLayerClass;
-		strcat(name,".INT");
+	ret = MIN(ret,lret);
+
+	lret = CopyArray(&ncap->yarray,&ncap->my_yarray,ncap->copy_arrays,
+								&ncap->yctxt);
+	if(lret < NhlWARNING){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:memory???",func);
+		return lret;
+	}
+	ret = MIN(ret,lret);
+
+	if(ncap->missing_x){
+		ncap->missing_x = _NhlCopyGenArray(ncap->missing_x,True);
+		if(!ncap->missing_x){
+			NhlPError(NhlFATAL,ENOMEM,"%s",func);
+			return NhlFATAL;
+		}
+	}
+	if(ncap->missing_y){
+		ncap->missing_y = _NhlCopyGenArray(ncap->missing_y,True);
+		if(!ncap->missing_y){
+			NhlPError(NhlFATAL,ENOMEM,"%s",func);
+			return NhlFATAL;
+		}
 	}
 
-	ret = _NhlVACreateChild(&tchild,name,child_class,new,NULL);
+	if(ncap->max_x){
+		ncap->max_x = _NhlCopyGenArray(ncap->max_x,True);
+		if(!ncap->max_x){
+			NhlPError(NhlFATAL,ENOMEM,"%s",func);
+			return NhlFATAL;
+		}
+		ncap->sticky_max_x = True;
+	}
+	else
+		ncap->sticky_max_x = False;
+	if(ncap->max_y){
+		ncap->max_y = _NhlCopyGenArray(ncap->max_y,True);
+		if(!ncap->max_y){
+			NhlPError(NhlFATAL,ENOMEM,"%s",func);
+			return NhlFATAL;
+		}
+		ncap->sticky_max_y = True;
+	}
+	else
+		ncap->sticky_max_y = False;
+	if(ncap->min_x){
+		ncap->min_x = _NhlCopyGenArray(ncap->min_x,True);
+		if(!ncap->min_x){
+			NhlPError(NhlFATAL,ENOMEM,"%s",func);
+			return NhlFATAL;
+		}
+		ncap->sticky_min_x = True;
+	}
+	else
+		ncap->sticky_min_x = False;
+	if(ncap->min_y){
+		ncap->min_y = _NhlCopyGenArray(ncap->min_y,True);
+		if(!ncap->min_y){
+			NhlPError(NhlFATAL,ENOMEM,"%s",func);
+			return NhlFATAL;
+		}
+		ncap->sticky_min_y = True;
+	}
+	else
+		ncap->sticky_min_y = False;
 
-	ncarr->carr.child = _NhlGetLayer(tchild);
-
-#endif
 	return ret;
 }
 
@@ -984,128 +1258,160 @@ CoordArraysSetValues
 	int		nargs;		/* nargs	*/
 #endif
 {
-	char			*error_lead = "CoordArraysSetValues";
-	NhlErrorTypes		ret = NhlNOERROR;
+	char			func[] = "CoordArraysSetValues";
+	NhlErrorTypes		ret = NhlNOERROR,lret = NhlNOERROR;
 	NhlCoordArraysLayer	ncarr = (NhlCoordArraysLayer)new;
 	NhlCoordArraysLayer	ocarr = (NhlCoordArraysLayer)old;
+	NhlCoordArraysLayerPart	*ncap = &ncarr->carr;
+	NhlCoordArraysLayerPart	*ocap = &ocarr->carr;
+	NhlBoolean		impx = False, impy = False;
+	NhlBoolean		status = False;
+
+
+	if(ncap->xarray != ocap->xarray){
+
+		ret = CheckArray(ncap->xarray,&ncap->xcast,&ncap->xcast_set,
+						NhlNcaXArray,NhlNcaXCast,&impx);
+
+		if(ret < NhlWARNING){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"%s:invalid %s resource: resetting",func,
+								NhlNcaXArray);
+			ncap->xarray = ocap->xarray;
+			ret = NhlWARNING;
+		}
+	}
+	if(ncap->xarray == NULL)
+		impx = True;
+
+	if(ncap->yarray != ocap->yarray){
+
+		lret = CheckArray(ncap->yarray,&ncap->ycast,&ncap->ycast_set,
+						NhlNcaYArray,NhlNcaYCast,&impy);
+
+		if(lret < NhlWARNING){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"%s:invalid %s resource: resetting",func,
+								NhlNcaYArray);
+			ncap->yarray = ocap->yarray;
+			lret = NhlWARNING;
+		}
+	}
+	ret = MIN(ret,lret);
+	if(ncap->yarray == NULL)
+		impy = True;
+
+	if(impx && impy){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s:Cannot have Implied X and Y values:resetting",func);
+		ret = MIN(ret,NhlWARNING);
+		ncap->xarray = ocap->xarray;
+		ncap->yarray = ocap->yarray;
+	}
+
+	if((ncap->xarray != ocap->xarray) ||
+				(ncap->copy_arrays && !ncap->xarray->my_data)){
+		lret = CopyArray(&ncap->xarray,&ncap->my_xarray,
+						ncap->copy_arrays,&ncap->xctxt);
+		if(lret < NhlWARNING){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:memory??? - resetting %s",func,NhlNcaXArray);
+			ncap->xarray = ocap->xarray;
+			ret = MIN(ret,lret);
+		}
+		else{
+			status = True;
+			NhlFreeGenArray(ocap->xarray);
+		}
+	}
+	if((ncap->yarray != ocap->yarray) ||
+				(ncap->copy_arrays && !ncap->yarray->my_data)){
+		lret = CopyArray(&ncap->yarray,&ncap->my_yarray,
+						ncap->copy_arrays,&ncap->yctxt);
+		if(lret < NhlWARNING){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:memory??? - resetting %s",func,NhlNcaYArray);
+			ncap->yarray = ocap->yarray;
+			ret = MIN(ret,lret);
+		}
+		else{
+			status = True;
+			NhlFreeGenArray(ocap->yarray);
+		}
+	}
+
+	if(ncap->xcast != ocap->xcast)
+		status = True;
+	if(ncap->ycast != ocap->ycast)
+		status = True;
+
+	if(ncap->missing_x != ocap->missing_x){
+		ncap->missing_x = _NhlCopyGenArray(ncap->missing_x,True);
+		if(!ncap->missing_x){
+			NhlPError(NhlWARNING,ENOMEM,"%s:resetting %s",func,
+							NhlNcaXMissingV);
+			ncap->missing_x = ocap->missing_x;
+			ret = MIN(ret,NhlWARNING);
+		}
+	}
+	if(ncap->missing_y != ocap->missing_y){
+		ncap->missing_y = _NhlCopyGenArray(ncap->missing_y,True);
+		if(!ncap->missing_y){
+			NhlPError(NhlWARNING,ENOMEM,"%s:resetting %s",func,
+							NhlNcaYMissingV);
+			ncap->missing_y = ocap->missing_y;
+			ret = MIN(ret,NhlWARNING);
+		}
+	}
+
+	if(ncap->max_x != ocap->max_x){
+		ncap->max_x = _NhlCopyGenArray(ncap->max_x,True);
+		if(!ncap->max_x){
+			NhlPError(NhlWARNING,ENOMEM,"%s:resetting %s",func,
+								NhlNcaXMaxV);
+			ncap->max_x = ocap->max_x;
+			ret = MIN(ret,NhlWARNING);
+		}
+		else
+			ncap->sticky_max_x = True;
+	}
+	if(ncap->max_y != ocap->max_y){
+		ncap->max_y = _NhlCopyGenArray(ncap->max_y,True);
+		if(!ncap->max_y){
+			NhlPError(NhlWARNING,ENOMEM,"%s:resetting %s",func,
+								NhlNcaYMaxV);
+			ncap->max_y = ocap->max_y;
+			ret = MIN(ret,NhlWARNING);
+		}
+		else
+			ncap->sticky_max_y = True;
+	}
+	if(ncap->min_x != ocap->min_x){
+		ncap->min_x = _NhlCopyGenArray(ncap->min_x,True);
+		if(!ncap->min_x){
+			NhlPError(NhlWARNING,ENOMEM,"%s:resetting %s",func,
+								NhlNcaXMinV);
+			ncap->min_x = ocap->min_x;
+			ret = MIN(ret,NhlWARNING);
+		}
+		else
+			ncap->sticky_min_x = True;
+	}
+	if(ncap->min_y != ocap->min_y){
+		ncap->min_y = _NhlCopyGenArray(ncap->min_y,True);
+		if(!ncap->min_y){
+			NhlPError(NhlWARNING,ENOMEM,"%s:resetting %s",func,
+								NhlNcaYMinV);
+			ncap->min_y = ocap->min_y;
+			ret = MIN(ret,NhlWARNING);
+		}
+		else
+			ncap->sticky_min_y = True;
+	}
+
+	_NhlDataChanged((NhlDataItemLayer)new->base.parent,status);
 
 	return	ret;
-}
-
-#define	SET_ARRAY(type,dim,DIM)\
-{									\
-	/* only do stuff if one of the fields changed */		\
-	if(ncarr->carr##type.dim##array !=				\
-					ocarr->carr##type.dim##array){	\
-									\
-		NhlBoolean	inv##dim = False;			\
-									\
-		CHECK_ARRAY(type,dim,DIM)				\
-									\
-		if(inv##dim){						\
-			NhlPError(NhlWARNING,NhlEUNKNOWN,		\
-				"%s:invalid %s dimension: resetting %s",\
-				error_lead,#DIM,NhlNca##DIM##Array);	\
-									\
-			ncarr->carr##type.dim##array =			\
-					ocarr->carr##type.dim##array;	\
-									\
-			if(ncarr->carr##type.dim##array == NULL)	\
-				imp##dim = True;			\
-		}							\
-	}								\
-}
-
-#define	FINISH_ARRAY(type,dim,DIM)\
-{									\
-	if(ncarr->carr##type.dim##array!=ocarr->carr##type.dim##array){	\
-		status = True;						\
-		COPY_ARRAY(type,dim)					\
-		FREE_ARRAY(type,dim,o)					\
-	}								\
-									\
-	/*								\
-	 * if copy_arrays is True, but my_data is False -		\
-	 * need to copy the array.					\
-	 */								\
-	if((ncarr->carr##type.copy_arrays) &&				\
-			!ncarr->carr##type.dim##array->my_data){	\
-		NhlGenArray	tgen = ncarr->carr##type.dim##array;	\
-									\
-		status = True;						\
-		COPY_ARRAY(type,dim)					\
-		NhlFreeGenArray(tgen);					\
-	}								\
-}
-
-#define	SETVAL_FUNC(name,type)\
-{									\
-	char			*error_lead = #name "SetValues";	\
-	Nhl##name##Layer	ncarr = (Nhl##name##Layer)new;		\
-	Nhl##name##Layer	ocarr = (Nhl##name##Layer)old;		\
-	NhlBoolean		impx = False, impy = False;		\
-	NhlBoolean		status = False;				\
-	NhlErrorTypes		ret = NhlNOERROR;			\
-									\
-	SET_ARRAY(type,x,X)						\
-	SET_ARRAY(type,x,X)						\
-									\
-	if(impx && impy){						\
-		NhlPError(NhlWARNING,NhlEUNKNOWN,			\
-		"%s:Cannot have Implied X and Y values:resetting",	\
-							error_lead);	\
-		ret = MIN(ret,NhlWARNING);				\
-		ncarr->carr##type.xarray = ocarr->carr##type.xarray;	\
-		ncarr->carr##type.yarray = ocarr->carr##type.yarray;	\
-	}								\
-									\
-	FINISH_ARRAY(type,y,Y)						\
-	FINISH_ARRAY(type,x,X)						\
-									\
-	CHECK_CAST(type,y,Y)						\
-	CHECK_CAST(type,x,X)						\
-									\
-	if(ncarr->carr##type.x_cast != ocarr->carr##type.x_cast)	\
-		status = True;						\
-	if(ncarr->carr##type.y_cast != ocarr->carr##type.y_cast)	\
-		status = True;						\
-									\
-	if(ncarr->carr##type.missing_x != ocarr->carr##type.missing_x){	\
-		ncarr->carr##type.missing_x_set = True;			\
-		status = True;						\
-	}								\
-	if(ncarr->carr##type.missing_y != ocarr->carr##type.missing_y){	\
-		ncarr->carr##type.missing_y_set = True;			\
-		status = True;						\
-	}								\
-									\
-	if(ncarr->carr##type.max_x != ocarr->carr##type.max_x)		\
-		ncarr->carr##type.max_x_set = True;			\
-	if(ncarr->carr##type.min_x != ocarr->carr##type.min_x)		\
-		ncarr->carr##type.min_x_set = True;			\
-	if(ncarr->carr##type.max_y != ocarr->carr##type.max_y)		\
-		ncarr->carr##type.max_y_set = True;			\
-	if(ncarr->carr##type.min_y != ocarr->carr##type.min_y)		\
-		ncarr->carr##type.min_y_set = True;			\
-									\
-	/*								\
-	 * Set Max's and Min's						\
-	 */								\
-	CHECK_MINMAX(type,x,y)						\
-	CHECK_MINMAX(type,y,x)						\
-									\
-	if(ncarr->carr##type.max_x != ocarr->carr##type.max_x)		\
-		status = True;						\
-	if(ncarr->carr##type.min_x != ocarr->carr##type.min_x)		\
-		status = True;						\
-	if(ncarr->carr##type.max_y != ocarr->carr##type.max_y)		\
-		status = True;						\
-	if(ncarr->carr##type.min_y != ocarr->carr##type.min_y)		\
-		status = True;						\
-									\
-	_NhlDataChanged((NhlDataItemLayer)new->base.parent,status);	\
-									\
-	return	ret;							\
 }
 
 /*
@@ -1121,7 +1427,6 @@ CoordArraysSetValues
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
-/*ARGSUSED*/
 static NhlErrorTypes
 CoordArraysGetValues
 #if	__STDC__
@@ -1137,9 +1442,148 @@ CoordArraysGetValues
 	int		nargs;		/* nargs	*/
 #endif
 {
-	char			*error_lead = "CoordArraysGetValues";
+	char			func[] = "CoordArraysGetValues";
+	NhlErrorTypes		ret = NhlNOERROR;
+	int			i;
+	NhlCoordArraysLayer	ca = (NhlCoordArraysLayer)l;
+	NhlCoordArraysLayerPart	*cap = &ca->carr;
 
-	return NhlNOERROR;
+	for(i=0;i < nargs;i++){
+
+		if((args[i].quark == xarrQ) && cap->xarray){
+			*(NhlGenArray*)args[i].value.ptrval =
+				_NhlCopyGenArray(cap->xarray,cap->copy_arrays);
+			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
+				NhlPError(NhlWARNING,ENOMEM,
+				"%s:Unable to allocate memory to retrieve %s",
+							func,NhlNcaXArray);
+				ret = MIN(ret,NhlWARNING);
+			}
+		}
+
+		else if((args[i].quark == yarrQ) && cap->yarray){
+			*(NhlGenArray*)args[i].value.ptrval =
+				_NhlCopyGenArray(cap->yarray,cap->copy_arrays);
+			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
+				NhlPError(NhlWARNING,ENOMEM,
+				"%s:Unable to allocate memory to retrieve %s",
+							func,NhlNcaYArray);
+				ret = MIN(ret,NhlWARNING);
+			}
+		}
+
+		else if((args[i].quark == xmissQ) && cap->missing_x){
+			*(NhlGenArray*)args[i].value.ptrval =
+				_NhlCopyGenArray(cap->missing_x,True);
+			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
+				NhlPError(NhlWARNING,ENOMEM,
+				"%s:Unable to allocate memory to retrieve %s",
+							func,NhlNcaXMissingV);
+				ret = MIN(ret,NhlWARNING);
+			}
+		}
+
+		else if((args[i].quark == ymissQ) && cap->missing_y){
+			*(NhlGenArray*)args[i].value.ptrval =
+				_NhlCopyGenArray(cap->missing_y,True);
+			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
+				NhlPError(NhlWARNING,ENOMEM,
+				"%s:Unable to allocate memory to retrieve %s",
+							func,NhlNcaYMissingV);
+				ret = MIN(ret,NhlWARNING);
+			}
+		}
+
+		else if(args[i].quark == xmaxQ){
+
+			if(!cap->max_x){
+				if(FlushObj(XDIM,cap) < NhlWARNING){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+						"%s:Unable to determine %s",
+							func,NhlNcaXMaxV);
+					ret = MIN(ret,NhlWARNING);
+					continue;
+				}
+			}
+
+			*(NhlGenArray*)args[i].value.ptrval =
+				_NhlCopyGenArray(cap->max_x,True);
+			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
+				NhlPError(NhlWARNING,ENOMEM,
+				"%s:Unable to allocate memory to retrieve %s",
+							func,NhlNcaXMaxV);
+				ret = MIN(ret,NhlWARNING);
+			}
+		}
+
+		else if(args[i].quark == ymaxQ){
+
+			if(!cap->max_y){
+				if(FlushObj(XDIM,cap) < NhlWARNING){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+						"%s:Unable to determine %s",
+							func,NhlNcaYMaxV);
+					ret = MIN(ret,NhlWARNING);
+					continue;
+				}
+			}
+
+			*(NhlGenArray*)args[i].value.ptrval =
+				_NhlCopyGenArray(cap->max_y,True);
+			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
+				NhlPError(NhlWARNING,ENOMEM,
+				"%s:Unable to allocate memory to retrieve %s",
+							func,NhlNcaYMaxV);
+				ret = MIN(ret,NhlWARNING);
+			}
+		}
+
+		else if(args[i].quark == xminQ){
+
+			if(!cap->min_x){
+				if(FlushObj(XDIM,cap) < NhlWARNING){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+						"%s:Unable to determine %s",
+							func,NhlNcaXMinV);
+					ret = MIN(ret,NhlWARNING);
+					continue;
+				}
+			}
+
+			*(NhlGenArray*)args[i].value.ptrval =
+				_NhlCopyGenArray(cap->min_x,True);
+			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
+				NhlPError(NhlWARNING,ENOMEM,
+				"%s:Unable to allocate memory to retrieve %s",
+							func,NhlNcaXMinV);
+				ret = MIN(ret,NhlWARNING);
+			}
+		}
+
+		else if(args[i].quark == yminQ){
+
+			if(!cap->min_y){
+				if(FlushObj(XDIM,cap) < NhlWARNING){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+						"%s:Unable to determine %s",
+							func,NhlNcaYMinV);
+					ret = MIN(ret,NhlWARNING);
+					continue;
+				}
+			}
+
+			*(NhlGenArray*)args[i].value.ptrval =
+				_NhlCopyGenArray(cap->min_y,True);
+			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
+				NhlPError(NhlWARNING,ENOMEM,
+				"%s:Unable to allocate memory to retrieve %s",
+							func,NhlNcaYMinV);
+				ret = MIN(ret,NhlWARNING);
+			}
+		}
+	}
+
+	return ret;
 }
 
 /*
@@ -1156,6 +1600,7 @@ CoordArraysGetValues
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
+/*ARGSUSED*/
 static NhlErrorTypes
 CoordArraysDestroy
 #if	__STDC__
@@ -1167,22 +1612,33 @@ CoordArraysDestroy
 	NhlLayer	l;	/* layer to destroy	*/
 #endif
 {
-	NhlCoordArraysLayer	carrl = (NhlCoordArraysLayer)l;
+	NhlCoordArraysLayer	cl = (NhlCoordArraysLayer)l;
+	NhlCoordArraysLayerPart	*cap = &cl->carr;
+
+	if(cap->my_xarray != cap->xarray)
+		NhlFreeGenArray(cap->my_xarray);
+	if(cap->my_yarray != cap->yarray)
+		NhlFreeGenArray(cap->my_yarray);
+
+	_NhlFreeConvertContext(cap->xctxt);
+	_NhlFreeConvertContext(cap->yctxt);
+
+	NhlFreeGenArray(cap->my_missing_x);
+	NhlFreeGenArray(cap->my_missing_y);
+
+	NhlFreeGenArray(cap->xarray);
+	NhlFreeGenArray(cap->yarray);
+
+	NhlFreeGenArray(cap->missing_x);
+	NhlFreeGenArray(cap->missing_y);
+
+	NhlFreeGenArray(cap->max_x);
+	NhlFreeGenArray(cap->max_y);
+	NhlFreeGenArray(cap->min_x);
+	NhlFreeGenArray(cap->min_y);
 
 	return NhlNOERROR;
 }
-
-#define DESTROY_FUNC(name,type)\
-{									\
-	Nhl##name##Layer	ncarr = (Nhl##name##Layer)l;		\
-									\
-	FREE_ARRAY(type,x,n)						\
-	FREE_ARRAY(type,y,n)						\
-									\
-	return NhlNOERROR;						\
-}		
-
-#undef	DESTROY_FUNC
 
 /************************************************************************
 *									*

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.h,v 1.5 1994-07-12 20:51:43 boote Exp $
+ *      $Id: CoordArrays.h,v 1.6 1994-07-28 22:11:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -49,6 +49,16 @@
 #define	NhlCcaXMinV	"CaXMinV"
 #define	NhlNcaYMinV	"caYMinV"
 #define	NhlCcaYMinV	"CaYMinV"
+
+#define	NhlTcaCastMode	"caCastMode"
+
+enum _NhlcaCastMode {
+	NhlcaSingleVector,
+	NhlcaMultipleVectors,
+	NhlcaSplitVectors
+};
+
+typedef enum _NhlcaCastMode NhlcaCastMode;
 
 extern NhlLayerClass NhlcoordArraysLayerClass;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: ConvertP.h,v 1.5 1994-07-12 20:51:15 boote Exp $
+ *      $Id: ConvertP.h,v 1.6 1994-07-28 22:11:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -57,6 +57,13 @@ extern _NhlConvertContext _NhlCreateConvertContext(
 
 extern void	_NhlFreeConvertContext(
 #if	NhlNeedProto
+	_NhlConvertContext	context
+#endif
+);
+
+extern NhlPointer _NhlCvtCtxtMalloc(
+#if	NhlNeedProto
+	unsigned int		size,
 	_NhlConvertContext	context
 #endif
 );

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.16 1994-07-13 17:27:34 dbrown Exp $
+ *      $Id: CoordArrTable.c,v 1.17 1994-07-28 22:11:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -289,7 +289,7 @@ CvtToFltPtrs
 	int			from_size,
 	NhlGenArray		from_table,
 	NhlGenArray		from_table_lens,
-	_NhlConvertContext	context
+	_NhlConvertContext	*context
 )
 #else
 (to_table,from_type,from_size,from_table,from_table_lens,context)
@@ -298,19 +298,20 @@ CvtToFltPtrs
 	int			from_size;
 	NhlGenArray		from_table;
 	NhlGenArray		from_table_lens;
-	_NhlConvertContext	context;
+	_NhlConvertContext	*context;
 #endif
 {
-	char		func[] = "CvtToFltPtrs";
-	NrmValue	from,to;
-	NhlGenArrayRec	tgen;
-	NhlGenArray	new;
-	NhlPointer	*from_ptrarr,*to_ptrarr;
-	int		*intarr;
-	int		i;
-	char		from_name[_NhlMAXRESNAMLEN];
-	NrmQuark	fromQ;
-	NhlErrorTypes	ret;
+	char			func[] = "CvtToFltPtrs";
+	NrmValue		from,to;
+	NhlGenArrayRec		tgen;
+	NhlGenArray		new;
+	NhlPointer		*from_ptrarr,*to_ptrarr;
+	int			*intarr;
+	int			i;
+	char			from_name[_NhlMAXRESNAMLEN];
+	NrmQuark		fromQ;
+	NhlErrorTypes		ret;
+	_NhlConvertContext	tcontext;
 
 	if(!from_table){
 		*to_table = NULL;
@@ -342,22 +343,43 @@ CvtToFltPtrs
 	to.size = sizeof(NhlGenArray);
 	to.data.ptrval = &new;
 
+	tcontext = _NhlCreateConvertContext();
+	if(tcontext == NULL){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
+	}
+
 	for(i=0;i < from_table_lens->num_elements;i++){
 		tgen.num_elements = intarr[i];
 		tgen.data = from_ptrarr[i];
 
-		ret =_NhlConvertData(context,fromQ,floatgenQ,&from,&to);
+		if(fromQ == floatgenQ){
+			to_ptrarr[i] =
+				_NhlCvtCtxtMalloc(tgen.num_elements*tgen.size,
+								tcontext);
+			if(to_ptrarr[i] == NULL)
+				NhlPError(NhlFATAL,ENOMEM,"%s",func);
 
-		if(ret != NhlNOERROR){
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
+			memcpy(to_ptrarr[i],tgen.data,
+						tgen.num_elements*tgen.size);
+		}
+		else{
+			ret=_NhlConvertData(tcontext,fromQ,floatgenQ,&from,&to);
+
+			if(ret < NhlWARNING){
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"%s:Unable to convert from %s to %s",
 						func,NrmQuarkToString(fromQ),
 						NrmQuarkToString(floatgenQ));
-			return NhlFATAL;
-		}
+				return NhlFATAL;
+			}
 
-		to_ptrarr[i] = new->data;
+			to_ptrarr[i] = new->data;
+		}
 	}
+
+	_NhlFreeConvertContext(*context);
+	*context = tcontext;
 
 	return NhlNOERROR;
 }
@@ -522,8 +544,7 @@ FlushObject
 
 		if(!clp->own_x){
 			ret = CvtToFltPtrs(&clp->own_x,clp->xtypeQ,clp->xsize,
-				clp->xtable,clp->xtable_lens,clp->conv_x);
-
+				clp->xtable,clp->xtable_lens,&clp->conv_x);
 			if(ret < NhlWARNING){
 				NhlPError(ret,NhlEUNKNOWN,
 					"%s:Unable to convert %s to floats",
@@ -567,7 +588,7 @@ FlushObject
 
 		if(!clp->own_y){
 			ret = CvtToFltPtrs(&clp->own_y,clp->ytypeQ,clp->ysize,
-				clp->ytable,clp->ytable_lens,clp->conv_y);
+				clp->ytable,clp->ytable_lens,&clp->conv_y);
 
 			if(ret < NhlWARNING){
 				NhlPError(ret,NhlEUNKNOWN,
@@ -933,22 +954,12 @@ CopyTables
 		}
 
 		if(copy){
-			_NhlConvertContext	tcontext;
-
-			tcontext = _NhlCreateConvertContext();
-			if(tcontext == NULL){
-				NHLPERROR((NhlFATAL,ENOMEM,NULL));
-				return NhlFATAL;
-			}
-
 			ret = CvtToFltPtrs(own,typeQ,size,*table,*table_lens,
-								tcontext);
+								context);
 			if(ret < NhlWARNING){
 				NHLPERROR((ret,NhlEUNKNOWN,"%s",func));
 				return ret;
 			}
-			_NhlFreeConvertContext(*context);
-			*context = tcontext;
 		}
 		else if(typeQ == floatQ)
 			*own = *table;
@@ -1219,6 +1230,7 @@ CoordArrTableSetValues
 	NhlErrorTypes			ret=NhlNOERROR,lret=NhlNOERROR;
 	NhlBoolean			impx,impy;
 	NhlBoolean			invx,invy;
+	NhlBoolean			status=False;
 
 	if(ncatp->xtype == NULL){
 		if(ncatp->xtable != NULL){
@@ -1394,6 +1406,7 @@ CoordArrTableSetValues
 
 		ret = MIN(ret,lret);
 
+		status = True;
 		if(ocatp->own_x != ocatp->xtable)
 			NhlFreeGenArray(ocatp->own_x);
 		NhlFreeGenArray(ocatp->xtable);
@@ -1431,6 +1444,7 @@ CoordArrTableSetValues
 
 		ret = MIN(ret,lret);
 
+		status = True;
 		if(ocatp->own_y != ocatp->ytable)
 			NhlFreeGenArray(ocatp->own_y);
 		NhlFreeGenArray(ocatp->ytable);
@@ -1451,6 +1465,7 @@ CoordArrTableSetValues
 		if(ncatp->missing_x)
 			ncatp->missing_x = _NhlCopyGenArray(ncatp->missing_x,
 									True);
+		status = True;
 		ncatp->own_miss_x = NULL;
 		if(ocatp->own_miss_x != ocatp->missing_x)
 			NhlFreeGenArray(ocatp->own_miss_x);
@@ -1461,6 +1476,7 @@ CoordArrTableSetValues
 		if(ncatp->missing_y)
 			ncatp->missing_y = _NhlCopyGenArray(ncatp->missing_y,
 									True);
+		status = True;
 		ncatp->own_miss_y = NULL;
 		if(ocatp->own_miss_y != ocatp->missing_y)
 			NhlFreeGenArray(ocatp->own_miss_y);
@@ -1469,21 +1485,27 @@ CoordArrTableSetValues
 
 	if(ncatp->max_x != ocatp->max_x){
 		ncatp->max_x = _NhlCopyGenArray(ncatp->max_x,True);
+		status = True;
 		NhlFreeGenArray(ocatp->max_x);
 	}
 	if(ncatp->min_x != ocatp->min_x){
 		ncatp->min_x = _NhlCopyGenArray(ncatp->min_x,True);
+		status = True;
 		NhlFreeGenArray(ocatp->min_x);
 	}
 
 	if(ncatp->max_y != ocatp->max_y){
 		ncatp->max_y = _NhlCopyGenArray(ncatp->max_y,True);
+		status = True;
 		NhlFreeGenArray(ocatp->max_y);
 	}
 	if(ncatp->min_y != ocatp->min_y){
 		ncatp->min_y = _NhlCopyGenArray(ncatp->min_y,True);
+		status = True;
 		NhlFreeGenArray(ocatp->min_y);
 	}
+
+	_NhlDataChanged((NhlDataItemLayer)ncat,status);
 
 	return ret;
 }
@@ -1530,7 +1552,7 @@ CoordArrTableGetValues
 					NhlMalloc(strlen(clp->xtype) + 1);
 			if(*(NhlString*)args[i].value.ptrval == NULL){
 				NhlPError(NhlWARNING,ENOMEM,
-				"%s:Unable to allocat memory to retrieve %s",
+				"%s:Unable to allocate memory to retrieve %s",
 							func,NhlNctXTableType);
 				ret = MIN(NhlWARNING,ret);
 				continue;
@@ -1543,7 +1565,7 @@ CoordArrTableGetValues
 					NhlMalloc(strlen(clp->ytype) + 1);
 			if(*(NhlString*)args[i].value.ptrval == NULL){
 				NhlPError(NhlWARNING,ENOMEM,
-				"%s:Unable to allocat memory to retrieve %s",
+				"%s:Unable to allocate memory to retrieve %s",
 							func,NhlNctXTableType);
 				ret = MIN(NhlWARNING,ret);
 				continue;
@@ -1560,7 +1582,7 @@ CoordArrTableGetValues
 
 			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
 				NhlPError(NhlWARNING,ENOMEM,
-				"%s:Unable to allocat memory to retrieve %s",
+				"%s:Unable to allocate memory to retrieve %s",
 							func,NhlNctXTable);
 				ret = MIN(NhlWARNING,ret);
 				continue;
@@ -1577,7 +1599,7 @@ CoordArrTableGetValues
 					ttbl[j] = NhlMalloc(clp->xsize*lens[j]);
 					if(!ttbl[j]){
 						NhlPError(NhlWARNING,ENOMEM,
-				"%s:Unable to allocat memory to retrieve %s",
+				"%s:Unable to allocate memory to retrieve %s",
 							func,NhlNctXTable);
 				*(NhlGenArray*)args[i].value.ptrval = NULL;
 						ret = MIN(NhlWARNING,ret);
@@ -1598,7 +1620,7 @@ CoordArrTableGetValues
 
 			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
 				NhlPError(NhlWARNING,ENOMEM,
-				"%s:Unable to allocat memory to retrieve %s",
+				"%s:Unable to allocate memory to retrieve %s",
 							func,NhlNctYTable);
 				ret = MIN(NhlWARNING,ret);
 				continue;
@@ -1615,7 +1637,7 @@ CoordArrTableGetValues
 					ttbl[j] = NhlMalloc(clp->ysize*lens[j]);
 					if(!ttbl[j]){
 						NhlPError(NhlWARNING,ENOMEM,
-				"%s:Unable to allocat memory to retrieve %s",
+				"%s:Unable to allocate memory to retrieve %s",
 							func,NhlNctXTable);
 				*(NhlGenArray*)args[i].value.ptrval = NULL;
 						ret = MIN(NhlWARNING,ret);
@@ -1634,7 +1656,7 @@ CoordArrTableGetValues
 
 			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
 				NhlPError(NhlWARNING,ENOMEM,
-				"%s:Unable to allocat memory to retrieve %s",
+				"%s:Unable to allocate memory to retrieve %s",
 						func,NhlNctXTableLengths);
 				ret = MIN(NhlWARNING,ret);
 				continue;
@@ -1648,7 +1670,7 @@ CoordArrTableGetValues
 
 			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
 				NhlPError(NhlWARNING,ENOMEM,
-				"%s:Unable to allocat memory to retrieve %s",
+				"%s:Unable to allocate memory to retrieve %s",
 						func,NhlNctYTableLengths);
 				ret = MIN(NhlWARNING,ret);
 				continue;
@@ -1662,7 +1684,7 @@ CoordArrTableGetValues
 
 			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
 				NhlPError(NhlWARNING,ENOMEM,
-				"%s:Unable to allocat memory to retrieve %s",
+				"%s:Unable to allocate memory to retrieve %s",
 							func,NhlNctXMissingV);
 				ret = MIN(NhlWARNING,ret);
 				continue;
@@ -1676,7 +1698,7 @@ CoordArrTableGetValues
 
 			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
 				NhlPError(NhlWARNING,ENOMEM,
-				"%s:Unable to allocat memory to retrieve %s",
+				"%s:Unable to allocate memory to retrieve %s",
 							func,NhlNctYMissingV);
 				ret = MIN(NhlWARNING,ret);
 				continue;
@@ -1701,7 +1723,7 @@ CoordArrTableGetValues
 
 			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
 				NhlPError(NhlWARNING,ENOMEM,
-				"%s:Unable to allocat memory to retrieve %s",
+				"%s:Unable to allocate memory to retrieve %s",
 							func,NhlNctXMaxV);
 				ret = MIN(NhlWARNING,ret);
 				continue;
@@ -1726,7 +1748,7 @@ CoordArrTableGetValues
 
 			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
 				NhlPError(NhlWARNING,ENOMEM,
-				"%s:Unable to allocat memory to retrieve %s",
+				"%s:Unable to allocate memory to retrieve %s",
 							func,NhlNctXMinV);
 				ret = MIN(NhlWARNING,ret);
 				continue;
@@ -1751,7 +1773,7 @@ CoordArrTableGetValues
 
 			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
 				NhlPError(NhlWARNING,ENOMEM,
-				"%s:Unable to allocat memory to retrieve %s",
+				"%s:Unable to allocate memory to retrieve %s",
 							func,NhlNctYMaxV);
 				ret = MIN(NhlWARNING,ret);
 				continue;
@@ -1776,7 +1798,7 @@ CoordArrTableGetValues
 
 			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
 				NhlPError(NhlWARNING,ENOMEM,
-				"%s:Unable to allocat memory to retrieve %s",
+				"%s:Unable to allocate memory to retrieve %s",
 							func,NhlNctYMinV);
 				ret = MIN(NhlWARNING,ret);
 				continue;
