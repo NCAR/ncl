@@ -2,7 +2,7 @@
 
 
 /*
- *      $Id: AddHLUObjs.c,v 1.13 1995-06-29 21:56:09 ethan Exp $
+ *      $Id: AddHLUObjs.c,v 1.14 1995-11-29 00:26:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -55,6 +55,8 @@ extern NhlClass NhlmapPlotClass;
 extern NhlClass NhlappClass;
 extern NhlClass NhlannoManagerClass;
 extern NhlClass NhlpsWorkstationClass;
+extern NhlClass NhlvectorPlotClass;
+extern NhlClass NhlvectorFieldClass;
 
 
 
@@ -83,6 +85,8 @@ void _NclAddHLUObjs
 	_NclAddSingleObj(NhlpsWorkstationClass->base_class.class_name,NhlpsWorkstationClass);
 	_NclAddSingleObj(NhllogLinPlotClass->base_class.class_name,NhllogLinPlotClass);
 	_NclAddSingleObj(NhlirregularPlotClass->base_class.class_name,NhlirregularPlotClass);
+	_NclAddSingleObj(NhlvectorPlotClass->base_class.class_name,NhlvectorPlotClass);
+	_NclAddSingleObj(NhlvectorFieldClass->base_class.class_name,NhlvectorFieldClass);
 	return;
 	
 }
