@@ -1,8 +1,8 @@
 .\"
-.\"	$Id: ncgm2cgm.m,v 1.7 1992-12-01 23:21:34 clyne Exp $
+.\"	$Id: ncgm2cgm.m,v 1.8 1993-01-16 00:02:35 clyne Exp $
 .\"
 .\"	ncgm2cgm.l 3.00 10/5/89 NCAR View
-.TH NCGM2CGM 1NCARG "July 1988" NCARG "NCARG GRAPHICS"
+.TH NCGM2CGM 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
 cgm2ncgm ncgm2cgm \- filter \fBNCAR CGM\fR to/from vanilla \fBCGM\fR
 .SH SYNOPSIS

@@ -1,10 +1,10 @@
 .\"
-.\"	$Id: ictrans.m,v 1.12 1992-12-01 23:21:25 clyne Exp $
+.\"	$Id: ictrans.m,v 1.13 1993-01-16 00:02:24 clyne Exp $
 .\"
 .\" ictrans 3.01 90/06/22 
-.TH ICTRANS 1NCARG "June 1990" NCARG "NCARG GRAPHICS"
+.TH ICTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
-ictrans \- user interface to the CGM translator 
+ictrans \- interactive NCAR CGM translator
 .B ctrans
 .SH SYNOPSIS
 .B ictrans
@@ -14,7 +14,7 @@ ictrans \- user interface to the CGM translator
 .BI \-f " font"
 ] [
 .BI \-e " script"
-] [
+]* [
 .B \-soft
 ] [
 .B \-bell
@@ -29,6 +29,8 @@ ictrans \- user interface to the CGM translator
 ] [
 .B \-Version
 ] [
+.BI \-wid " window_id"
+] [
 .I device\-specific options
 ] 
 .IR metafile .\|.\|.
@@ -38,8 +40,8 @@ is the user interface to the Computer Graphics Metafile (\s-1CGM\s0)
 translator
 .B ctrans.
 .B ictrans 
-will enter command interpreter mode upon invocation and awaits instructions
-from the user. When awaiting commands
+will enter command interpreter mode upon invocation and await instructions
+from the user. When waiting for commands
 from the user,
 .B ictrans
 displays the prompt
@@ -52,7 +54,7 @@ by processing several sources.
 .B ictrans 
 first searches for the file
 .B ncarv_spool
-in the installation site of local NCAR View libraries (usually /usr/local/lib).
+in the $NCARG_ROOT/lib/ncarg directory.
 If the file exists 
 .B ictrans
 will load it into the spooled device table. Next, ictrans searches for the
@@ -67,87 +69,103 @@ entry encountered takes precedence. i.e. the previous entry of the same name is
 overridden.
 .SH OPTIONS
 .TP
+.B \-bell
+Ring the bell at the end of each frame. The default is to run in silent mode.
+This option is not supported by all devices.
+.TP
 .BI \-d " device"
-Designate the target device for metafile translation where device is one
-of: 
-.I valid_graphcap_name, 
-.B "CTXT , sunview , X11, sun , nrif , hdf"
-or 
-.B xwd.
+Device name.
+.B ctrans
+will use the 
+.I Graphcap
+(if it exists) or the appropriate graphics library indicated by 
+.I device;
+.IP
+If 
+.I device
+is preceded by a UNIX directory path then 
+.B ctrans
+will look in that directory for the specified graphcap. Otherwise 
+.B ctrans
+searches the directory $NCARG_ROOT/lib/ncarg/graphcaps for the graphcap.
+.IP
 For all device specifications
 except
-.B X11 
-and 
+.B X11
+and
 .BR sunview ,
-output is directed to standard out. In the case of 
-.B X11 
-and 
-.B sunview,
+output is directed to standard out. In the case of
+.B X11
+and
+.B sunview
 translation results in appropriate calls to the X11 and Sunview
-libraries, respectively. The environment variable 
-GRAPHCAP
-may be used to specify a default device should 
-the device option be omitted.
-Not all devices may be supported by your version
-of 
-.B ictrans.
-See
-.BR graphcap(1NCARG)
-for a description of supported devices.
+libraries respectively.
+See 
+.BR graphcap(5NCARG)
+for a description of supported devices. 
 See
 .BR gcaps(1NCARG)
-for a list of devices supported by
-.I your
-configuration of
+for a list of devices supported by 
+.I your 
+particular configuration of 
 .BR ctrans .
+.IP
+This option overrides the 
+.B GRAPHCAP
+environment variable.
 .TP
 .BI \-e " script"
 .I script
-is a command for 
-.BR ictrans .
+is a single 
+.B ictrans
+command. The valid 
+.B ictrans
+commands are discussed in the 
+.B COMMANDS
+section below.
 Multiple 
 .B -e
 options may appear on a single command line. Be careful to use quotes if
 your command contains spaces or metacharacters that might be interpreted
-by the shell.
+by the shell. When this option is used
+.B ictrans
+does not enter interactive mode. It simply performs the given commands
+and then exits.
 .TP
 .BI \-f " fontcap"
-When interpreting CGM 
-.B TEXT 
+Fontcap file to be used for stroking text.
+When interpreting CGM
+.B TEXT
 command elements use
-.I fontcap 
-as the default font for textual translation. Note: CGMs may contain textual 
+.I fontcap
+as the default font for textual translation. Note: CGMs may contain textual
 descriptions which are not embedded in CGM
 .B TEXT
-elements. Hence they are not influenced by 
+elements. Hence they are not influenced by
 .I fontcap
-specifications. 
-Note that a CGM may explicitly specify a named font which may override a 
-font provided on the command line. The environment variable FONTCAP 
-may be used to specify a default fontcap.
-.TP 
-.B \-soft
-Unconditionally perform software filling of all filled polygons. This 
-option may be useful for devices which have limits on the number of
-vertices describing a polygon. On some devices this number is known and
-software filling is performed, as appropriate, without user specification.
-.TP
-.BI \-Version
-Print the version number and then exit.
-.SH DEVICE SPECIFIC OPTIONS
-Some ictrans options are only available for a subset of the supported 
-devices. The following is a list of such options.
-.TP 
-.BI \-background " color"
-Specifies the default color to use for the background of an X11 window. 
-If the metafile explicitly sets color index 0 this option is overridden.
-.TP 
-.B \-bell
-Ring the bell at the end of each frame. The default is to run in silent mode.
-.TP 
-.BI \-foreground " color"
-Specifies the default foreground color of an X11 window. 
-If the metafile explicitly sets color index 1 this option is overridden.
+specifications.
+Note also that a CGM may explicitly specify a named font which may override a
+font provided on the command line. The environment variable FONTCAP
+may also be used to specify a default fontcap.
+.IP
+If 
+.I fontcap
+is preceded by a UNIX directory path then 
+.B ctrans
+will look in that directory for the specified fontcap. Otherwise 
+.B ctrans
+searches the directory $NCARG_ROOT/lib/ncarg/fontcaps for the fontcap.
+.IP
+See 
+.BR fontcap(5NCARG)
+for a description of the available fontcaps. See
+.BR fcap(1NCARG)
+for a list of the fontcaps installed on your
+system.
+.IP
+This option overrides the 
+.B FONTCAP
+environment variable.
 .TP
 .BI \-lmin " min"
 On devices which support line width scaling all lines are guaranteed to be
@@ -171,103 +189,51 @@ less then
 are undefined.
 .TP
 .BI \-lscale " scale"
-On devices which support line width scaling all lines will be scaled
+On devices which support line width scaling all line width specifications
+within the metafile will be scaled by 
+.BR scale .
+will be scaled
 .I scale
-times the default line width for that device. This option is subject to 
-modification by the 
+This option is subject to modification by the 
 .BR -lmin " and " -lmax 
 options.
 .TP
 .BI \-pal " pal_fname"
 Use the color palette defined in the file
 .I pal_fname
-for subsequent translation of the metafile. This palette will override any
-color map defined by the CGM being translated. For a description of
-the format of
+for subsequent translation of the metafile. This palette will override any 
+color map defined by the CGM being translated. For a description of 
+the format of 
 .I pal_fname
-see ncarg_ras(1NCARG).
-.TP
-.BI \-geom " geom"
-.I geom 
-is a string in the standard X11 format for describing the initial
-size and location of a window. This options is only available with the
-.B X11
-and 
-.B xbfr
-device specifications. 
-For example:
-.sp
-.in +0.5i
-% 
-.BI "ictrans -d X11 -geom 800x800+0-0 " metafile
-.sp
-or
-.sp
-%
-.BI "ictrans -d xbfr -geom 800x800" " metafile" " >" " xwdfile"
-.sp
-.in -0.5i
-The first example would open a window 800 by 800 pixels in dimension 
-in the lower left
-corner of the screen where 
-.I metafile 
-would be displayed. The second example would generate a X11 raster file
-at a resolution of 800 by 800 pixels and store it in the file 
-.IR xwdfile .
-.TP
-.BI \-resolution " width" " x" " height"
-.I width
-and
-.I height
-specify the resolution of the raster file to be created. Only works with
-raster file device specifiers
-.B hdf, nrif, sun
-and
-.B xwd.
+see ras_palette(5NCARG).
 .TP 
-.B \-reverse
-On monochrome devices reverse  video  is  simulated  by
-swapping the foreground and background colors.
-Only works under X11.
+.B \-soft
+Unconditionally perform software filling of all filled polygons. This 
+option may be useful for devices which have limits on the number of
+vertices describing a polygon. On some devices this number is known and
+software filling is performed, as appropriate, without user specification.
 .TP
-.BI \-Ws " width height"
-.br
-.I width 
-and 
-.I height 
-are the dimension in pixels of a window created with
-the 
-.B sunview
-device or the resolution of a raster file created with the 
-.B sunraster 
-device.
+.BI \-Version
+Print the version number and then exit.
+.SH DEVICE SPECIFIC OPTIONS
+.B ictrans
+accepts an identical set of device-specific options to that of
+.BR ctrans(1NCARG).
+For a description of the device-specific options see the
 .TP
-.BI \-Wp " x y"
-.B x
-and 
-.B y
-specify the x and y coordinates of the window created with the 
-.B sunview
-device.
-.TP
-.B \-Data
-Suppress display of  CGM  output  primitive  data when performing a 
-clear text translation using the 
-.B CTXT
-device.  All
-other  CGM element data is displayed. This may substantially reduce 
-the verbosity of the clear text driver.
-.TP
-.B \-Para
-Suppress display of CGM element data when performing a clear text
-translation using the 
-.B CTXT 
-device except for  output
-primitives.  The  
-.B -Data  
-combined with the 
-.B -Para 
-option permit the display of only the CGM element names.
+.BI \-wid " window_id"
+Render into the previously created X window specified by
+.IR window_id .
+Normally 
+.B ctrans
+creates its own window for plotting. The window specified by 
+.I window_id
+must be of type 
+.BR InputOutput .
+The window must also have inherited its color map, depth and visual class from
+the root window. 
+.B DEVICE SPECIFIC OPTIONS section in 
+.BR ctrans(1NCARG).
 .SH COMMANDS
 .SS Command Structure
 .LP 
@@ -294,10 +260,10 @@ If a frame list is omitted and a command requires a frame then the current
 frame is used as the default. If no argument list is specified and one is 
 required then a default argument is used whenever possible.
 .LP
-For example,
+For example, the command
 .B 1,5 8 save
 .I /tmp/foo
-means write the first through fifth and the eighth frame of the metafile
+would write the first through fifth and the eighth frame of the metafile
 to the file 
 .IR /tmp/foo .
 .LP
@@ -393,7 +359,7 @@ For example:
 .sp
 .in +0.5i
 .ft B
-ictrans> alias \fIname1\fP : -d xbfr : | cat > \fIoutfile\fR
+ictrans> alias \fIname1\fP : -d xwd : | cat > \fIoutfile\fR
 .ft R
 .sp
 .in -0.5i
@@ -427,7 +393,10 @@ Reports the current frame.
 .br
 Set the translation device to 
 .IR "device name" .
-With out an argument 
+This function is identical to that of the 
+.B -d
+command line option.
+Without an argument 
 .B device
 reports the name of the current device for metafile translation.
 .HP
@@ -451,7 +420,9 @@ reported.
 .br
 Set the fontcap to 
 .I font
-for future translation. If 
+for future translation. This function is identical to that of the
+.B -f
+option.  If 
 .I font
 is omitted the current fontcap name is reported.
 .HP
@@ -477,10 +448,6 @@ is omitted and the current frame is not
 the last frame then the current frame is incremented to the next frame 
 in the metafile.
 .HP
-.B loop
-.br
-Toggle loop mode on or off. When loop mode is set a
-.HP
 .BI < " frame1 " >  
 .BI < " frame2 " >  
 .B merge
@@ -495,8 +462,11 @@ the two plots. The current frame is not changed. There are no defaults for
 The resulting plot might not be what was expected. Attributes from the first
 frame, such as color,  may override attributes in the second frame.
 .HP
+.B loop
+.br
+Toggle loop mode on or off. When loop mode is on subsequent
 .B plot
-command will cause the requested frames to be plotted and then ictrans 
+commands will cause the requested frames to be plotted and then ictrans 
 will proceed to 
 either the first frame in the defined segment or the last and repeatedly
 display the first through last (last through first) frames. Looping continues
@@ -515,7 +485,7 @@ is a single frame.
 .br
 Display each frame for  
 .I time
-seconds during subsequent plots. If
+seconds before proceding to the next frame during subsequent plots. If
 .I time
 is omitted then movie mode is toggled off or on. In the case the movie mode
 is toggled on the default time is zero seconds. If movie mode is toggled to 
@@ -561,6 +531,8 @@ The addressed frames are translated and sent to the current spooling device.
 Translation is performed by a spawned translator. The 
 .B spooler
 command may be used to select a spooling device.
+See 
+.BR ncarv_spool(5NCARG).
 .HP 
 .B quit
 .br
@@ -581,6 +553,19 @@ If
 is omitted than the last file saved to is used. If 
 .I frames
 is omitted than the current frame is used.
+.HP 
+.BI [ " frames " ] 
+.B Save
+.BI [ " metafile " ]
+.br
+Same as the 
+.B save 
+command
+except
+.B Save
+does not confirm its actions with the user in the case that the file
+exists. If the file exists  but is not a valid NCGM it is overwritten.
+If the file exists and is a valid NCGM it is appended to.
 .HP
 .B skip
 .BI [ " number " ]
@@ -605,6 +590,7 @@ configuration file, or by the NCARV_SPOOL environment variable, then
 becomes the current spooler. Subsequent 
 .B Print
 commands will use the spooler definition defined by the current spooler. 
+.BR See ncarv_spool(5NCARG).
 .HP 
 .BI [ " start frame " ] 
 .B start
@@ -652,10 +638,13 @@ ictrans> zoom 0.0 0.0 0.5 0.5
 would result in the lower left quarter of subsequent plots being blown up
 to fill the entire display. Specification of such a window may be used 
 for zooming and panning.
+.IP
+The range with which one may zoom in on a plot may be limited by the
+integer addressing precision of the device.
 .SH EXAMPLES
 The following example shows how 
 .B ictrans 
-might be used in a batch environment to translate a metafile called
+might be used in a batch mode to translate a metafile called
 .B gmeta
 and send the translated results of the entire file
 to a spooled device called "imagen" which might be defined in the system
@@ -665,10 +654,34 @@ file:
 .IP
 .B "% ictrans -e 'spooler imagen' -e '1,$Print' gmeta
 .sp
+.SH ENVIRONMENT
+.TP
+.B FONTCAP
+Default fontcap specifier.
+.TP
+.B GRAPHCAP
+Default output device specifier.
+.TP
+.B NCARG_ROOT
+Path to root of NCAR Graphics installation.
+.TP
+.B NCARG_LIB
+If set this variable contains the path to the installed NCAR Graphics 
+libraries. 
+.B NCARG_LIB
+overrides 
+.BR NCARG_ROOT .
+.TP
+.B NCARG_TMP
+If set, this environment variable contains a directory path to be used for
+temporary files. On most systems the default is 
+.BR /tmp .
+On some systems the default is 
+.BR /usr/tmp .
 .SH FILES
 .PD 0
 .TP 28
-.B /usr/local/lib/ncarv_spool
+.B $NCARG_ROOT/lib/ncarg/ncarv_spool
 local
 .B ictrans
 spooler config file
@@ -690,5 +703,3 @@ Metafile frames written to an existing file via the
 .B save
 command will be subject to the effects of any global "attribute elements"
 contained within the file.
-.PP
-The HP Laser Jet series of devices is not available in ctrans at this time.

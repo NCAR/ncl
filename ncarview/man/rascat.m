@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: rascat.m,v 1.4 1992-12-14 23:49:07 don Exp $
+.\"	$Id: rascat.m,v 1.5 1993-01-16 00:02:42 clyne Exp $
 .\"
-.TH RASCAT 1NCARG "November 1992" NCARG "NCARG GRAPHICS"
+.TH RASCAT 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
 Rascat \- concatenate, convert raster files
 .SH SYNOPSIS
@@ -39,8 +39,8 @@ Rascat \- concatenate, convert raster files
 reads each 
 .I file
 in sequence and copies its contents to the standard output performing
-format conversion and 
-any data massaging necessary as specified by the command line options.
+any format conversion and 
+data massaging necessary as specified by the command line options.
 By default, 
 .B rascat
 determines the format of a file by looking at the file name extension.
@@ -52,6 +52,7 @@ the resulting concatenated file will be in the format
 of the first file processed. 
 .B rascat 
 understands the following file name extensions: 
+.BR .abekas , 
 .BR .avs , 
 .BR .hdf ,
 .BR .nrif ,
@@ -182,7 +183,7 @@ specify the rectangle's width and height, respectively.
 .BI \-pal " palette_file"
 Set the palette for the output rasterfile from \fIpalettefile\fP, which
 can be either an HDF-type palette with an extension of ".pal", or
-a textual palette with an extension of ".txt". See "man ncarg_palette"
+a textual palette with an extension of ".txt". See ras_palette(5NCARG)
 for documentation on the formats. This option applies to indexed-color
 imagery only.
 .SH ENVIRONMENT
@@ -200,7 +201,7 @@ XWD file are concatenated and converted into a single NRIF file:
 .IP
 % rascat file1.nrif file2.sun file3.xwd > file123.nrif
 .LP
-In this example the same files are concatenated into a sun file:
+In this example the same files are converted and concatenated into a sun file:
 .sp
 .IP
 % rascat -ofmt sun file1.nrif file2.sun file3.xwd > file123.sun
@@ -221,7 +222,7 @@ is extracted and written to the file
 .IP
 % rascat -window 512 512 0 0 foo.sun > foo.512x512.sun
 .SH "SEE ALSO"
-.BR ras_palette(5)
+.BR ras_palette(5NCARG)
 .br
 .ne 5
 .SH CAVEATS

@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: xwdtohdf.m,v 1.6 1992-12-01 23:21:43 clyne Exp $
+.\"	$Id: xwdtohdf.m,v 1.7 1993-01-16 00:02:46 clyne Exp $
 .\"
-.TH XWDTOHDF 1NCARG "February 1990" NCARG "NCARG GRAPHICS"
+.TH XWDTOHDF 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
 xwdtohdf \- Filter to convert from X11 raster file to hdf format.
 .SH SYNOPSIS
@@ -38,8 +38,9 @@ Use run length encoding for data.
 .B \-V
 Print the version number and then exit.
 .SH "SEE ALSO"
-.BR xwd (1),
-.BR xwud (1)
+.BR xwd(1),
+.BR xwud(1)
+.BR rascat(1NCARG)
 .br
 .ne 5
 .SH BUGS/CAVEATS
@@ -47,3 +48,7 @@ Print the version number and then exit.
 .B xwdtohdf 
 does not support direct or true color encodings of X11 raster files. Nor 
 does it accept color tables with greater than 256 entries.
+.LP
+.B xwdtohdf 
+is an obsolete utility which simply calls 
+.BR rascat(1NCARG).

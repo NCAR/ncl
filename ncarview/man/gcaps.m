@@ -1,8 +1,8 @@
 .\"
-.\"	$Id: gcaps.m,v 1.8 1992-12-01 23:21:23 clyne Exp $
+.\"	$Id: gcaps.m,v 1.9 1993-01-16 00:02:22 clyne Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
-.TH GCAPS 1NCARG "June 1990" NCARG "NCARG GRAPHICS"
+.TH GCAPS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
 gcaps \- 
 report available graphcaps
@@ -42,6 +42,3 @@ The graphcaps.
 .BR ctrans(1NCARG),
 .BR ictrans(1NCARG),
 .BR graphcap(5NCARG)
-.SH BUGS
-The HP Laser Jet series of devices is not available in ctrans at this time.
-

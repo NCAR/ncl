@@ -1,9 +1,9 @@
 .\"
-.\"	$Id: idt.m,v 1.11 1992-12-01 23:21:28 clyne Exp $
+.\"	$Id: idt.m,v 1.12 1993-01-16 00:02:27 clyne Exp $
 .\"
 .\" NCAR View: idt.man,v 1.0 89/09/10 clyne 
 .\" Revision 3.01 90/11/15 clyne
-.TH IDT 1NCARG "November 1990" NCARG "NCARG GRAPHICS"
+.TH IDT 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
 idt \- X window interactive image display tool
 .SH SYNOPSIS
@@ -11,9 +11,11 @@ idt \- X window interactive image display tool
 [ 
 .BI \-toolkitoption " ..."
 ] [
-.BI \-d " device"
+.BI \-background " color"
 ] [
 .BI \-f " font"
+] [
+.BI \-foreground " color"
 ] [
 .BI \-history
 ] [
@@ -26,6 +28,8 @@ idt \- X window interactive image display tool
 .B \-oldidt
 ] [
 .BI \-pal " pal_fname"
+] [
+.B \-reverse
 ] [
 .B \-soft
 ] [
@@ -58,92 +62,75 @@ display panels in existence at the same time but only one control panel.
 accepts all of the standard X Toolkit command line options (see X(1)). 
 .B idt
 also accepts the following options:
-.IP \fB\-d\fP\fI\ device \fP
-Device name.
-.B idt
-will translate the metafile for the specified device. If 
-.I device 
-is 
-.B X11
-then the translated metafile will be displayed in an X window on the 
-display pointed to by the DISPLAY environment variable. The DISPLAY 
-environment variable MUST be set if 
-.I device 
-is 
-.BR X11 .
-For all other valid devices 
-.B idt
-will use the
-.I Graphcap
-file indicated by
-.IR device . 
-If the NCAR View graphcaps are not installed to their standard locations
-for your system the name of the device must be preceded with a path
-specification. For example, /usr/local/lib/graphcaps/t4010.
-The translated metafile
-in the case of a graphcap supported device is written to standard out. 
+.TP 
+.BI \-f " fontcap"
+Fontcap file to be used for stroking text.
+When interpreting CGM
+.B TEXT
+command elements use
+.I fontcap
+as the default font for textual translation. Note: CGMs may contain textual
+descriptions which are not embedded in CGM
+.B TEXT
+elements. Hence they are not influenced by
+.I fontcap
+specifications.
+Note also that a CGM may explicitly specify a named font which may override a
+font provided on the command line. The environment variable FONTCAP
+may also be used to specify a default fontcap.
 .IP
-For compatibility with previous
-translators, if a device is not specified
-on the command line 
+If 
+.I fontcap
+is preceded by a UNIX directory path then 
+.B ctrans
+will look in that directory for the specified fontcap. Otherwise 
 .B idt
-will default to the device specified by
-the GRAPHCAP environment variable. If the GRAPHCAP environment variable
-does not exist a default device of 
-.B X11
-is assumed.
-.IP \fB\-f\fP\fI\ fontcap \fP
-Specify the file containing the font description to be used for stroking
-text during metafile translation. The default font is 
-.BR font1 .
-.IP \fB\-history\fP
+searches the directory $NCARG_ROOT/lib/ncarg/fontcaps for the fontcap.
+.IP
+See 
+.BR fontcap(5NCARG)
+for a description of the available fontcaps. See
+.BR fcap(1NCARG)
+for a list of the fontcaps installed on your
+system.
+.IP
+This option overrides the 
+.B FONTCAP
+environment variable.
+.TP 
+.B \-history
 Write a record of all commands sent to the translator to the file
 .BR ./.idthist .
-.IP \fB\-oldidt\fP
-Present the old, pre-version-3.2, graphical user interface.
-.IP \fB\-Version\fP
+.TP 
+.B \-Version
 Print the version number and then exit.
 .PP
 The following options are ignored by \fBidt\fR and are passed on to the
-metafile translator \fBictrans\fR. See the man page for \fBictrans\fR for
-a description of their use.
-.IP \fB\-soft\fP
-.IP \fB\-lmin\fP\fI\ linewidth \fP
-.IP \fB\-lmax\fP\fI\ linewidth \fP
-.IP \fB\-lscale\fP\fI\ linewidth \fP
-.IP \fB\-pal\fP\fI\ pal_fname \fP
-.IP \fB\-foreground\fP\fI\ color \fP
-.IP \fB\-background\fP\fI\ color \fP
-.IP \fB\-reverse\fP
-.SH ENVIRONMENT
-.IP GRAPHCAP
-The GRAPHCAP environment variable is an alternative to the
-.B -d
-option for specifying the output device for translation. The command line 
-option takes precedence over the environment variable.
-.IP FONTCAP
-The FONTCAP environment variable is an alternative to the
-.B -f
-option for specifying the name of the fontcap for text stroking. The 
-command line 
-option takes precedence over the environment variable.
-.IP DISPLAY
-This is the standard X environment variable for specifying display
-name. If the translation output device is
-.B X11
-this variable MUST be set. 
-.IP SHELL
-Specifies the UNIX shell that the file selector is to use for 
-expanding metacharacters. /bin/sh is used by default.
-.IP XENVIRONMENT
-Specifies the name of a resource file that overrides the global resources
-stored in the RESOURCE_MANAGER property.
+metafile translator \fBictrans\fR. See 
+.BR ictrans(1NCARG)
+for a description of their use.
+.TP
+.B \-soft\fP
+.TP
+.BI \-lmin " linewidth"
+.TP
+.BI \-lmax " linewidth"
+.TP
+.BI \-scale " linewidth"
+.TP
+.BI \-pal " pal_fname"
+.TP
+.BI \-foreground " color"
+.TP
+.BI \-background " color"
+.TP
+.B \-reverse
 .SH "CONTROL PANEL COMMANDS"
 The control panel provides a text widget for displaying messages from 
 the translators and a row of command buttons. Messages are preceded with
-the string "Translator[X]", where "X" is an integer id associated with the
+the string "Display[X]", where "X" is an integer id associated with the
 translator sending the message. The first translator spawned 
-is "Translator[0]", the second is "Translator[1]", etc.
+is "Display[0]", the second is "Display[1]", etc.
 .IP "select file"
 Selects a file for translation. This button brings up a popup menu containing
 a file selection box. The uppermost dialog box of the file selection box is
@@ -183,7 +170,7 @@ Sets duplication variable. If dup is set to
 each frame is displayed once,
 if dup is set to 
 .B 2
- each frame is displayed twice, etc. The default
+each frame is displayed twice, etc. The default
 value of dup is
 .BR 1 .
 .IP goto
@@ -203,7 +190,7 @@ displayed, etc. The default value for skip is
 Set the between-frame animation delay-time. When 
 .B idt
 is in animation mode you may request that
-.idt 
+.B idt 
 pause for a period of time between the display of each image.
 The effect of setting a delay time is 
 to govern the speed at which 
@@ -228,9 +215,11 @@ Specify the workstation window (in the GKS sense). Four
 coordinates are specified
 which define a rectangular window which is a subset of normalized VDC
 rectangle with corner points (0,0) and (1.0,1.0). The specified window
-is then mapped onto the entire display window. For example, if the workstation
+is then mapped onto the entire viewport. For example, if the workstation
 window is defined by the corner points (0,0) and (0.5 0.5) then the lower
-left quarter of a plot would be blown up to fill the entire window. 
+left quarter of a plot would be blown up to fill the largest rectangle
+which fits in the drawing window while retaining the aspect ratio 
+described by the normalized coordinates.
 Specification of such a window can be used for zooming and panning.
 .IP done
 Terminate processing of current metafile.
@@ -242,7 +231,7 @@ Send the current frame to the printer. The
 .B print
 command brings up a menu of all devices configured for accepting 
 translator output. This list is created dynamically in response to 
-changes in the spooler configuration file (see ncarv_spool(l)). 
+changes in the spooler configuration file (see ncarv_spool(5NCARG)). 
 Selecting an item from the menu causes the current frame to be sent
 to that device.
 .IP save
@@ -254,13 +243,13 @@ Reset windowing transformations previously set by the
 .B zoom
 command back to their default. 
 .IP zoom
-Zoom in on an area of a plot. This command only works when translation
-output is to an X window. 
+Zoom in on an area of a plot. The function of this command is identical
+to that of the
+.B window 
+command. The
 .B zoom
-provides you with a cursor with which you can rubberband an area of your X 
-window. The area enclosed will be re-rendered to fit the dimensions of 
-the window while preserving the aspect ratio of the viewport described by
-the rubberband.
+command, however, allows you to select the area of interest interactively
+with the mouse.
 .IP animate
 Toggle 
 animation mode on or off. When 
@@ -335,117 +324,70 @@ widget class name is given first, followed by the widget instance name.
 .sp
 .nf
 Idt  idt
-	Paned  paned
-		Text  text
-		Form  form
-			Command  "select file"
-			Command  display
-			Command  quit
-
-The hierarchy of the file selection box popup
-
-	TransientShell  file
-		Paned  pane
-			Dialog "file finder"
-				Label  label
-				Command  finder
-			AsciiText  textDisplay
-			Dialog  selection
-				Label  label
-				Command  ok
-				Command  cancel
-
-The hierarchy of the display panel popup
-
-	TopLevelShell  <??> (The toplevel is named after the metafile displayed)
-		Paned  paned
-			Form  form
-				Scrollbar  scrollbar
-				Label  "Scrolled to Frame ->"
-			Form  form
-				Command playback
-				Command jogback
-				Command stop
-				Command jog
-				Command play
-			Form  form
-				Toggle loop
-				Command dup
-					TransientShell  simpleDialog
-						Dialog  dialog
-							Label  label
-							Command  ok
-							Command  cancel
-				Command goto
-					TransientShell  simpleDialog
-						Dialog  dialog
-							Label  label
-							Command  ok
-							Command  cancel
-				Command skip
-					TransientShell  simpleDialog
-						Dialog  dialog
-							Label  label
-							Command  ok
-							Command  cancel
-				Command delay
-					TransientShell  simpleDialog
-						Dialog  dialog
-							Label  label
-							Command  ok
-							Command  cancel
-				Command "start segment"
-					TransientShell  simpleDialog
-						Dialog  dialog
-							Label  label
-							Command  ok
-							Command  cancel
-				Command "stop segment"
-					TransientShell  simpleDialog
-						Dialog  dialog
-							Label  label
-							Command  ok
-							Command  cancel
-				Command "set window"
-					TransientShell  simpleDialog
-						Dialog  dialog
-							Label  label
-							Command  ok
-							Command  cancel
-			Form  form
-				Command done
-				Command "current frame"
-				MenuButton  print
-					SimpleMenu  menu
-						SmeBSBObject  <???>
-						SmeBSBObject  <???>
-						SmeBSBObject  <???>
-							|
-							|
-						  dynamically configured
-							|
-							|
-						SmeBSBObject  <???>
-				Command  save
-					TransientShell  simpleDialog
-						Dialog  dialog
-							Label  label
-							Command  ok
-							Command  cancel
-				Command  zoom
-				Command  unzoom
-				Toggle animate
+    Paned  paned
+        Text  text
+        Form  form
+            Command  select file
+            Command  display
+                TopLevelShell  <???>
+                    Paned  paned
+                        Core  canvas	/* This is the drawing canvas
+                        Form  form
+                            Scrollbar  scrollbar
+                            Label  Scrolled to Frame -> 
+                        Form  form
+                            Command  playback
+                            Command  jogback
+                            Command  stop
+                            Command  jog
+                            Command  play
+                        Form  form
+                            Toggle  loop
+                            Command  dup
+                            Command  goto
+                            Command  skip
+                            Command  delay
+                            Command  start segment
+                            Command  stop segment
+                            Command  set window
+                        Form  form
+                            Command  done
+                            Command  current frame
+                            MenuButton  print
+                                SimpleMenu  menu
+                                    SmeBSB  <???> 
+                                    SmeBSB  <???> 
+                                    SmeBSB  <???>
+                                              |
+                                              |
+                                    dynamically configured
+                                              |
+                                              |
+                                    SmeBSB  <???> 
+                                    SmeBSB  <???>
+                            Command  save
+                            Command  zoom
+                            Command  unzoom
+                            Toggle  animate
+                        Grip  grip
+                        Grip  grip
+                        Grip  grip
+                        Grip  grip
+                        Grip  grip
+            Command  quit
+        Grip  grip
+        Grip  grip
 .fi
 .sp
 Paned
 .SH EXAMPLES
 .PP
 The following resource specification can be used to set the default size 
-of the graphics display window to 512 by 512 pixels and place it in the 
-top left corner of your screen:
+of the graphics display window to 200 by 200 pixels:
 .sp
 .ti +0.5i
-	ctrans*geometry:	512x512+0+0
+	Idt*canvas.width:	200
+	Idt*canvas.height:	200
 .ti -0.5i
 .br
 .PP
@@ -457,29 +399,54 @@ following into your .Xdefaults file:
 .ti -0.5i
 .br
 .PP
-Finally, if you want the display panel to appear slightly below the graphics
-display window try setting its geometry resource as follows:
-.sp
-.ti +0.5i
-	idt.TopLevelShell*geometry:        +0+536
-.ti -0.5i
-.br
-.PP
-Depending on how your window manager adorns its windows you may have to 
-slightly adjust the 'y' parameter of this geometry request.
+.SH ENVIRONMENT
+.TP
+.B DISPLAY
+This is the standard X environment variable for specifying display
+name. If the translation output device is
+.TP
+.B FONTCAP
+Default fontcap specifier.
+.TP
+.B NCARG_ROOT
+Path to root of NCAR Graphics installation.
+.TP
+.B NCARG_LIB
+If set this variable contains the path to the installed NCAR Graphics 
+libraries. 
+.B NCARG_LIB
+overrides 
+.BR NCARG_ROOT .
+.TP
+.B NCARG_TMP
+If set, this environment variable contains a directory path to be used for
+temporary files. On most systems the default is 
+.BR /tmp .
+On some systems the default is 
+.BR /usr/tmp .
+.B X11
+this variable MUST be set. 
+.TP
+SHELL
+Specifies the UNIX shell that the file selector is to use for 
+expanding metacharacters. /bin/sh is used by default.
+.TP
+XENVIRONMENT
+Specifies the name of a resource file that overrides the global resources
+stored in the RESOURCE_MANAGER property.
 .SH FILES
 .TP 40
 \\.idthist
 - Translator command history file
 .TP 40
-/usr/lib/X11/app-defaults/Idt
+$NCARG_ROOT/lib/ncarg/xapp/Idt
 - Default resource file for 
 .B idt
 .TP 40
 $HOME/.ncarv_spool
 - User spooler configuration file
 .TP 40
-/usr/local/lib/ncarv_spool
+$NCARG_ROOT/lib/ncarg/ncarv_spool
 - System spooler configuration file
 .SH "SEE ALSO"
 .BR ctrans(1NCARG),
@@ -507,4 +474,13 @@ The "Scrolled to Frame" label is not continuously updated.
 The current version of 
 .B ictrans
 must be on your search path.
-
+.PP
+The range with which one may zoom in on a plot with either the 
+.B zoom
+or 
+.B window 
+command is severely limited by Xlibs use of 'short' integers
+for containing screen coordinate data.
+.PP
+SGI users should not set use the shared memory connection to their
+X server. i.e don't use the display shm:0.

@@ -1,14 +1,14 @@
 .\"
-.\"	$Id: ncarv_spool.m,v 1.6 1992-12-01 23:21:32 clyne Exp $
+.\"	$Id: ncarv_spool.m,v 1.7 1993-01-16 00:02:33 clyne Exp $
 .\"
 .\" ncarv_spool 3.01 90/06/22 
-.TH NCARV_SPOOL 5NCARG "June 1990" NCARG "NCARG GRAPHICS"
+.TH NCARV_SPOOL 5NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
 ncarv_spool \- spooled device configuration table for interactive 
 metafile translator
 .B ictrans
 .SH SYNOPSIS
-.B /usr/local/lib/ncarv_spool
+.B $NCARG_ROOT/lib/ncarg/ncarv_spool
 .br
 .B ~/.ncarv_spool
 .SH DESCRIPTION
@@ -40,10 +40,10 @@ and the output of this translation is made available for further processing
 as specified by the remaining spooler definition. 
 .TP
 .I "filter_chain"
-is a set of simple commands separated by 
+is a set of simple commands separated by the UNIX pipe symbol
 .BR | .
 .I "filter_chain"
-may be terminated by 
+may be terminated by the UNIX file redirection symbols
 .B > 
 or 
 .B >>
@@ -102,9 +102,20 @@ sunraster : -d xwd -geom 1152x900 : | x11tosun > sunfile
 .ft R
 .fi
 .RE
+.SH ENVIRONMENT
+.TP
+.B NCARG_ROOT
+Path to root of NCAR Graphics installation.
+.TP
+.B NCARG_LIB
+If set this variable contains the path to the installed NCAR Graphics 
+libraries. 
+.B NCARG_LIB
+overrides 
+.BR NCARG_ROOT .
 .SH FILES
 .TP 40
-/usr/local/lib/ncarv_spool
+$NCARG_ROOT/lib/ncarv_spool
 - System spooler configuration file
 .TP 40
 $HOME/.ncarv_spool

@@ -1,24 +1,18 @@
 .\"
-.\"	$Id: ctrans.m,v 1.12 1992-12-01 23:21:18 clyne Exp $
+.\"	$Id: ctrans.m,v 1.13 1993-01-16 00:02:16 clyne Exp $
 .\"
-.\" ctrans 3.01 90/06/22
-.TH CTRANS 1NCARG "June 1990" NCARG "NCARG GRAPHICS"
+.\" ctrans 3.2 
+.TH CTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
 ctrans \- a Computer Graphics Metafile ( \fICGM\fR ) translator
 .SH SYNOPSIS
 .B ctrans
 [
+.B \-bell
+] [
 .BI \-d " device"
 ] [
 .BI \-f " font"
-] [
-.BI \-movie " time" 
-] [
-.BI \-record " record_num ..."
-] [
-.B \-soft
-] [
-.B \-bell
 ] [
 .BI \-lmin " min" 
 ] [
@@ -26,11 +20,27 @@ ctrans \- a Computer Graphics Metafile ( \fICGM\fR ) translator
 ] [
 .BI \-lscale " scale" 
 ] [
+.BI \-movie " time" 
+] [
+.BI \-outfile " file" 
+] [
 .BI \-pal " pal_fname" 
+] [
+.B \-pause
+] [
+.BI \-record " record_num ..."
+] [
+.B \-soft
+] [
+.B \-verbose
 ] [
 .B \-Version
 ] [
-.B \-verbose
+.BI \-viewport " llx lly urx ury"
+] [
+.BI \-wid " window_id"
+] [
+.BI \-window " llx lly urx ury"
 ] [
 .I device\-specific options
 ] 
@@ -52,7 +62,10 @@ file defined by the FONTCAP environment variable.
 .B ctrans
 utilizes 
 .I Graphcaps
-by default, while providing optional processing
+by default, 
+see
+.BR graphcap(5NCARG),
+while providing optional processing
 by user
 provided libraries, if that is required by the device or desired by
 the user.
@@ -74,49 +87,48 @@ under Sun's
 .I Sunview; 
 and
 .B X11, 
-under release 3 and 4, version 11 of 
+under release 4 and 5, version 11 of 
 .I X.
+.LP
 .B ctrans
 can also translate metacode into the following raster formats: 
-.B xwd, hdf, sun
+.B abekas, avs, hdf, nrif, sun
 and
-.B nrif.
-The device specifier for these formats is the name of the format. For example
-"-d xwd" specifies translation to and xwd formatted raster file. For 
-backwards compatibility the device specifiers
-.B xbfr
-and 
-.B sunraster
-may also be used for specifying xwd and sun raster file formats respectively.
-Additionally, a clear text driver,
-[\ \fB\-d\ CTXT\fR\ ],
+.BR xwd .
+The device specifier for these raster
+formats is the name of the format. For example
+"-d xwd" specifies translation to an xwd formatted raster file.
+Additionally, a clear text driver, "-d CTXT",
 is available on any terminal. 
-Not all of the aforementioned devices, 
-.B (sunview, sunraster, X11, xbfr, 
-and 
-.BR CTXT) ,
+Not all of the aforementioned devices
 may be supported by your version of 
 .BR ctrans .
 For a list of supported devices see the
 .BR gcaps(1NCARG)
 command.
-.LP
-Consult the
-.I Ctrans Reference Manual
-(May 1988)
-for details regarding customizing your own driver.
 .PP
 .SH OPTIONS
+.TP
+.B \-bell
+Ring the bell at the end of each frame. The default is to run in silent mode.
+This option is not supported by all devices.
 .TP
 .BI \-d " device"
 Device name.
 .B ctrans
 will use the 
 .I Graphcap
-(if it exists) or appropriate graphics library indicated by 
+(if it exists) or the appropriate graphics library indicated by 
 .I device;
-else, it
-will default to the device defined by the GRAPHCAP environment variable.
+.IP
+If 
+.I device
+is preceded by a UNIX directory path then 
+.B ctrans
+will look in that directory for the specified graphcap. Otherwise 
+.B ctrans
+searches the directory $NCARG_ROOT/lib/ncarg/graphcaps for the graphcap.
+.IP
 For all device specifications
 except
 .B X11
@@ -128,20 +140,19 @@ and
 .B sunview
 translation results in appropriate calls to the X11 and Sunview
 libraries respectively.
-If no GRAPHCAP environment variable is defined, and the 
-.I device
-option is not used,
-.B ctrans
-will terminate processing with a report of the supported devices.
 See 
-.BR graphcap(1NCARG)
+.BR graphcap(5NCARG)
 for a description of supported devices. 
 See
 .BR gcaps(1NCARG)
 for a list of devices supported by 
 .I your 
-configuration of 
+particular configuration of 
 .BR ctrans .
+.IP
+This option overrides the 
+.B GRAPHCAP
+environment variable.
 .TP
 .BI \-f " fontcap"
 Fontcap file to be used for stroking text.
@@ -157,10 +168,57 @@ elements. Hence they are not influenced by
 specifications.
 Note also that a CGM may explicitly specify a named font which may override a
 font provided on the command line. The environment variable FONTCAP
-may be used to specify a default fontcap.
+may also be used to specify a default fontcap.
+.IP
+If 
+.I fontcap
+is preceded by a UNIX directory path then 
+.B ctrans
+will look in that directory for the specified fontcap. Otherwise 
+.B ctrans
+searches the directory $NCARG_ROOT/lib/ncarg/fontcaps for the fontcap.
+.IP
 See 
-.BR fontcap(1NCARG)
-for a description of the available fontcaps. 
+.BR fontcap(5NCARG)
+for a description of the available fontcaps. See
+.BR fcap(1NCARG)
+for a list of the fontcaps installed on your
+system.
+.IP
+This option overrides the 
+.B FONTCAP
+environment variable.
+.TP
+.BI \-lmin " min"
+On devices which support line width scaling all lines are guaranteed to be
+scaled at least
+.I min
+times the default line width for that device. This option effectively 
+insures that the minimum value for the CGM element "LINE WIDTH" is 
+.IR min . 
+.TP
+.BI \-lmax " max"
+On devices which support line width scaling all lines are guaranteed to be
+scaled at most
+.I max
+times the default line width for that device. This option effectively 
+insures that the maximum value for the CGM element "LINE WIDTH" is 
+.IR max . 
+The results of setting 
+.I max
+less then 
+.I min
+are undefined.
+.TP
+.BI \-lscale " scale"
+On devices which support line width scaling all line width specifications
+within the metafile will be scaled by 
+.BR scale .
+will be scaled
+.I scale
+This option is subject to modification by the 
+.BR -lmin " and " -lmax 
+options.
 .TP
 .BI \-movie " time"
 Set pause to 
@@ -175,6 +233,41 @@ mode is set
 will wait
 .I time
 seconds after the display of each frame and then proceed automatically.
+This option and the
+.B \-pause 
+option are mutually exclusive.
+.TP
+.BI \-outfile " file"
+Direct translator output to 
+.IR file .
+By default translator output is written to the standard output. This option
+has no effect for devices of which 
+.B ctrans
+has a function-callable interface. e.g. 
+.B X11
+and
+.BR sunview .
+.TP
+.BI \-pal " pal_fname"
+Use the color palette defined in the file
+.I pal_fname
+for subsequent translation of the metafile. This palette will override any 
+color map defined by the CGM being translated. For a description of 
+the format of 
+.I pal_fname
+see ras_palette(5NCARG).
+.TP
+.B \-pause
+Pause after each frame in the metafile is displayed and wait for the
+user to type a newline before proceding. This option is probably only
+useful when used in conjunction with the 
+.B \-wid 
+option as this is the normal behaviour for 
+.B ctrans
+in most instances.
+This option and the
+.B \-movie 
+option are mutually exclusive.
 .TP
 .B -record 
 < 
@@ -202,56 +295,56 @@ processes the entire metafile.
 .TP 
 .B \-soft
 Unconditionally perform software filling of all filled polygons. This
-option may be useful for devices which have limits on the number of
+option may be useful for devices which do not support the filled 
+polygon drawing 
+primitive or have limits on the number of
 vertices describing a polygon. On some devices this number is known and
 software filling is performed, as appropriate, without user specification.
 .TP
-.B \-bell
-Ring the bell at the end of each frame. The default is to run in silent mode.
-.TP
-.BI \-lmin " min"
-On devices which support line width scaling all lines are guaranteed to be
-scaled at least
-.I min
-times the default line width for that device. This option effectively 
-insures that the minimum value for the CGM element "LINE WIDTH" is 
-.IR min . 
-.TP
-.BI \-lmax " max"
-On devices which support line width scaling all lines are guaranteed to be
-scaled at most
-.I max
-times the default line width for that device. This option effectively 
-insures that the maximum value for the CGM element "LINE WIDTH" is 
-.IR max . 
-The results of setting 
-.I max
-less then 
-.I min
-are undefined.
-.TP
-.BI \-lscale " scale"
-On devices which support line width scaling all lines will be scaled
-.I scale
-times the default line width for that device. This option is subject to 
-modification by the 
-.BR -lmin " and " -lmax 
-options.
-.TP
-.BI \-pal " pal_fname"
-Use the color palette defined in the file
-.I pal_fname
-for subsequent translation of the metafile. This palette will override any 
-color map defined by the CGM being translated. For a description of 
-the format of 
-.I pal_fname
-see ncarg_ras(1NCARG).
+.BI \-verbose
+Operate in verbose mode.
 .TP
 .BI \-Version
 Print the version number and then exit.
 .TP
-.BI \-verbose
-Operate in verbose mode.
+.BI \-viewport " llx lly urx ury"
+Set the viewport of the output device. The viewport is the rectangular
+region of the output device of which the virtual device coordinate
+system of the metafile is mapped onto. Normally this region is the largest
+device-addressable square which fits in the center of the device address
+space. The 
+.B \-viewport 
+option may be used to change the default mapping. 
+.IR llx " and " lly
+specify the lower left corner of the device in normalized coordinates.
+.IR urx " and " ury
+specify the upper right corner of the device in normalized coordinates.
+For example, \fB-viewport 0.0 0.0 0.5 0.5\fR, specifies the lower left 
+corner of the device. 
+.TP
+.BI \-window " llx lly urx ury"
+Specify the workstation window (in the GKS sense). Four
+coordinates are specified
+which define a rectangular window which is a subset of the normalized VDC
+rectangle with corner points (0,0) and (1.0,1.0). 
+.I llx
+and
+.I lly
+specify the lower left corner.
+.I urx
+and
+.I .ury 
+specify the upper right corner.
+The specified window
+is mapped onto the entire display viewport. For example, 
+if the workstation
+window is defined by the corner points (0,0) and (0.5 0.5) then the lower
+left quarter of a plot would be blown up to fill the entire viewport.
+Specification of such a window can be used for zooming and panning.
+.IP
+The range with which one may zoom in on a plot may be limited by the
+integer addressing precision of the device.
+.IP
 .PP
 .SH DEVICE-SPECIFIC OPTIONS:
 .PP
@@ -293,15 +386,7 @@ display of only the CGM element names.
 The following options are available when 
 .I device
 is 
-.B X11 
-or
-.BR xbfr :
-.TP 
-.BI \-geometry " geometry"
-Specify the size and/or position of the graphics window in the format
-of an 
-.I X11 Window System 
-geometry string.
+.BR X11 :
 .TP 
 .BI \-background " color"
 Specifies the default window background color for color devices. If the 
@@ -310,17 +395,65 @@ metafile explicitly sets color index 0 then this option is overridden.
 .BI \-foreground " color"
 Specifies the default foreground color for color devices. If the metafile 
 explicitly sets color index 1 then this option is overridden.
+.TP 
+.BI \-geometry " geometry"
+Specify the size and/or position of the graphics window in the format
+of an 
+.I X11 Window System 
+geometry string.
+.TP 
+.B \-ignorebg
+Ignore requests to change the background color. This option may be useful
+when 
+.B ctrans
+renders into a X window created by an application other than 
+.BR ctrans .
+As a side effect of this option the rendering window 
+is not cleared between frames.
+.TP 
+.B \-pcmap
+Ask ctrans to create its own X color map. If this option is not used
+.B ctrans
+will use the default color map provided by the X server. When this
+option is used color table indeces specified by the metafile are mapped
+directly one-to-one into X pixels.
+.IP
+This option is ignored if the 
+.B \-wid 
+option is present.
 .TP
 .B \-reverse
 On monochrome devices reverse video is simulated by swapping the foreground
 and background colors.
+.TP
+.BI \-wid " window_id"
+Render into the previously created X window specified by
+.IR window_id .
+Normally 
+.B ctrans
+creates its own window for plotting. The window specified by 
+.I window_id
+must be of type 
+.BR InputOutput .
+The window must also have inherited its color map, depth and visual class from
+the root window. 
+.IP
+Note also that when this option is used 
+.B ctrans
+cannot receive X events from the drawing window. Hence, ctrans cannot use
+"mouse clicks" as a signal to advance frames. For this reason the
+.B -pause
+option is useful to prevent 
+.B ctrans
+from processing the entire metafile without pausing between frames.
+.IP
+.I window_id 
+may be specified as a decimal or hexidecimal integer.
 .PP
 The following options are available when 
 .I device 
 is 
-.B sunview 
-or 
-.BR sunraster :
+.BR sunview : 
 .TP
 .BI \-Ws " width height"
 .br
@@ -330,8 +463,6 @@ and
 are the dimension in pixels of a window created with
 the
 .B sunview
-device or the resolution of a raster file created with the
-.B sunraster
 device.
 .TP
 .BI \-Wp " x y"
@@ -340,38 +471,27 @@ and
 .B y
 specify the x and y coordinates of the window created with the
 .B sunview
-device. This option is meaningless with the
-.B sunraster
-device.
+device. 
 .PP
 The following options are available when 
 .I device 
 is 
-.B hdf, nrif, sun 
+.B abekas, avs, hdf, nrif, sun, 
 or 
 .BR xwd :
+.TP
+.B \-direct
+By default
+.B ctrans
+outputs raster imagery with 8-bit-indexed encoding. When this option
+is used, if the raster file format supports it, raster imagery is output
+in a 24-bit-direct encoding scheme.
 .TP
 .BI \-resolution " width" " x" " height"
 .I width
 and
 .I height
 specify the resolution of the raster file to be created.
-.PP
-Unknown options are ignored.
-.PP
-At
-.B ctrans'
-current level of implementation, the subset
-of CGM elements 
-supported is identical to that listed in
-.B NCAR's
-.I Graphics Installer's Guide,
-Version 2.00 (August 1987).
-Consult this publication also for a discussion of Graphcaps and Fontcaps.
-.B ctrans
-is written in C; a Fortran
-.I Graphcap
-version also exists.
 .SH EXAMPLES
 .PP
 To process a metafile named
@@ -430,19 +550,43 @@ at a resolution of 1024x1024 pixels, call:
 .br
 The raster output is in X11 "xwd" format and is sent to the file
 .BR raster.xwd .
+.SH ENVIRONMENT
+.TP
+.B FONTCAP
+Default fontcap specifier.
+.TP
+.B GRAPHCAP
+Default output device specifier.
+.TP
+.B NCARG_ROOT
+Path to root of NCAR Graphics installation.
+.TP
+.B NCARG_LIB
+If set this variable contains the path to the installed NCAR Graphics 
+libraries. 
+.B NCARG_LIB
+overrides 
+.BR NCARG_ROOT .
+.TP
+.B NCARG_TMP
+If set, this environment variable contains a directory path to be used for
+temporary files. On most systems the default is 
+.BR /tmp .
+On some systems the default is 
+.BR /usr/tmp .
 .SH FILES
-.IP /usr/local/lib/graphcaps/* 30
+.IP $NCARG_ROOT/lib/ncarg/graphcaps/* 30
 The binary NCAR Graphcap files
-.IP /usr/local/lib/fontcaps/* 30
+.IP $NCARG_ROOT/lib/ncarg/fontcaps/* 30
 The binary NCAR Fontcap files
 .SH SEE ALSO
 .BR cgmtrans(1NCARG), 
 .BR fcaps(1NCARG), 
-.BR fontcap(1NCARG), 
+.BR fontcap(5NCARG), 
 .BR gcaps(1NCARG), 
-.BR graphcap(1NCARG), 
+.BR graphcap(5NCARG), 
 .BR idt(1NCARG), 
-.BR ncarg_ras(1NCARG), 
+.BR ras_palette(5NCARG), 
 .BR med(1NCARG), 
 .BR ictrans(1NCARG)
 .SH CAVEATS
@@ -454,4 +598,24 @@ in no pause between frames.
 Metafiles which reference color table indices that were not previously 
 defined may have varying results from one device to the next.
 .PP
-The HP Laser Jet series of devices is not available in ctrans at this time.
+Using the 
+.B \-wid 
+option to have 
+.B ctrans 
+display its output in a window created by another X application may
+produce unexpected results, particularly with regard to color.
+.PP
+At
+.B ctrans'
+current level of implementation, the subset
+of CGM elements 
+supported is closely approximated by the list provided in
+.B NCAR's
+.I Graphics Installer's Guide,
+Version 2.00 (August 1987).
+However, the best way to determine whether a particular CGM element
+is supported by the translator is feed a metafile containing the element
+in question to 
+.BR ctrans .
+Consult the aforementioned publication for a discussion of 
+Graphcaps and Fontcaps as well.

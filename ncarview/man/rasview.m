@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: rasview.m,v 1.5 1992-12-16 15:46:16 clyne Exp $
+.\"	$Id: rasview.m,v 1.6 1993-01-16 00:02:44 clyne Exp $
 .\"
-.TH RASVIEW 1NCARG "March 1991" NCARG "NCARG GRAPHICS"
+.TH RASVIEW 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
 rasview \- Raster file previewer for the X Window System.
 .SH SYNOPSIS

@@ -1,9 +1,9 @@
 .\"
-.\"	$Id: med.m,v 1.9 1992-12-01 23:21:30 clyne Exp $
+.\"	$Id: med.m,v 1.10 1993-01-16 00:02:30 clyne Exp $
 .\"
 .\" @(#)med.l 1.0 90/02/15 NCAR; from UCB 4.3 and S5R4
 .tr ##
-.TH MED 1NCARG "February 1990" NCARG "NCARG GRAPHICS"
+.TH MED 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
 med \- NCAR CGM metafile frame editor
 .SH SYNOPSIS
@@ -11,7 +11,7 @@ med \- NCAR CGM metafile frame editor
 .B med
 [
 .BI \-e " script"
-] [
+]* [
 .BI \-f " sfilename"
 ] [
 .BI \-l " local_dir"
@@ -22,7 +22,7 @@ med \- NCAR CGM metafile frame editor
 .SH DESCRIPTION
 .LP
 .B med 
-is a metafile frame level editor designed to resemble 
+is a metafile frame-level editor designed to resemble 
 syntactically 
 .SM UNIX's 
 .BR sed (1) 
@@ -45,19 +45,36 @@ reads in commands from standard input.
 .TP
 .BI \-e " script"
 .I script
-is a list of editing commands command for
-.BR med .
-Each command must be separated by a newline.
+is a single
+.B med
+command. The valid
+.B med
+commands are discussed in the
+.B Commands
+section below.
+Multiple
+.B -e
+options may appear on a single command line. Be careful to use quotes if
+your command contains spaces or metacharacters that might be interpreted
+by the shell. When this option is used
+.B med
+does not enter interactive mode. It simply performs the given commands
+and then exits.
 .TP
 .BI \-f " sfilename"
-Take the script from
+Execute the 
+.B med
+line-separated list of commands in the file
 .IR sfilename .
+After the commands are exhausted
+.B med
+will exit.
 .TP
 .BI \-l " local_dir"
 Use 
 .I local_dir 
-as the tmp directory for scratch disk space instead of the default
-.IR /tmp .
+as the tmp directory for scratch disk space instead of the default,
+.IR $NCARG_TMP .
 .TP
 .B \-V
 Print the version number and then exit.
@@ -95,7 +112,7 @@ is specified, operations are performed on that frame.  If two
 are specified,
 .B med
 performs the operation on the inclusive range of frames.
-If no address is specified than the
+If no address is specified then the
 .I current
 frame is used as a default. The exception to this is the
 .B w
@@ -366,6 +383,12 @@ Escape to the shell and execute
 .I command.
 .I command 
 is a valid UNIX command.
+.SH ENVIRONMENT
+.TP
+.B NCARG_TMP
+If set, this environment variable contains a directory path to be used for
+temporary files. On most systems the default is 
+.BR /tmp .
 .SH FILES
 .PD 0
 .TP 20

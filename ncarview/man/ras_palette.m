@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: ras_palette.m,v 1.2 1992-12-15 17:24:16 don Exp $
+.\"	$Id: ras_palette.m,v 1.3 1993-01-16 00:02:39 clyne Exp $
 .\"
-.TH RAS_PALETTE 5NCARG "November 1992" NCARG "NCAR GRAPHICS"
+.TH RAS_PALETTE 5NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
 ras_palette \- format descriptions for palette files for NCAR View
 .SH SYNOPSIS

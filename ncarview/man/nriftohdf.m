@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: nriftohdf.m,v 1.6 1992-12-01 23:21:36 clyne Exp $
+.\"	$Id: nriftohdf.m,v 1.7 1993-01-16 00:02:37 clyne Exp $
 .\"
-.TH NRIFTOHDF 1NCARG "February 1990" NCARG "NCARG GRAPHICS"
+.TH NRIFTOHDF 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
 nriftohdf \- Filter to convert from nrif raster file to hdf format.
 .SH SYNOPSIS
@@ -38,6 +38,7 @@ Use run length encoding for data.
 .B \-V
 Print the version number and then exit.
 .SH "SEE ALSO"
+.BR rascat(1NCARG)
 .SH BUGS/CAVEATS
 .LP
 .B nriftohdf 
@@ -47,3 +48,7 @@ will not accept \fI Bi-level, Bi-level run length,
 indexed color run length, Direct color integrated,
 Direct color integrated run length, Direct color segregated,
 \fRor \fIDirect color segregated run length\fR at any precision.
+.LP
+.B nriftohdf
+is an obsolete utility which simply calls
+.BR rascat(1NCARG).
