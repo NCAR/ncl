@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: natgrid.m,v 1.2 1997-05-06 23:37:44 fred Exp $
+.\"     $Id: natgrid.m,v 1.3 1997-09-30 18:36:18 fred Exp $
 .\"
 .TH Natgrid 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
 .na
@@ -130,6 +130,8 @@ Individual entries, natgrid_params, natgrid_errors.
 Complete documentation for Natgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/natgrid/nnhome.html
+.sp
+An NCL (NCAR Command Language) interface also exists for Natgrid procedures.
 .SH COPYRIGHT
 Copyright (C) 1997
 .br

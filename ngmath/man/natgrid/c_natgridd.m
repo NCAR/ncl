@@ -1,14 +1,14 @@
 .\"
-.\"     $Id: c_natgridd.m,v 1.3 1997-05-06 23:37:20 fred Exp $
+.\"     $Id: c_natgridd.m,v 1.4 1997-09-30 18:36:14 fred Exp $
 .\"
 .TH c_natgridd 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
 .SH NAME
 c_natgrids - primary double precision C entry for natural neighbor gridding
 .SH FUNCTION PROTOTYPE
-float **c_natgridd(int, double [], double [], double [],
-                     int, int, double [], double [], int *);
+double  *c_natgridd(int, double [], double [], double [],
+                    int, int, double [], double [], int *);
 .SH SYNOPSIS
-double **c_natgridd (npnts, x, y, z, numxout, numyout, xi, yi, ier);
+double *c_natgridd (npnts, x, y, z, numxout, numyout, xi, yi, ier);
 .SH DESCRIPTION
 .IP npnts 12
 The number of input data points. (npnts > 3).
@@ -19,7 +19,7 @@ An array containing the y coordinates of the input data points.
 .IP z 12
 An array containing the functional values of the 
 input data points. That is, z[m] is the value of the input function at 
-coordinate (x[m],y[m]), for m=1,npnts. 
+coordinate (x[m],y[m]), for 0 <= m < npnts. 
 .IP numxout 12
 The number of x values in the output grid.
 .IP numyout 12

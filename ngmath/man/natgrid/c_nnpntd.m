@@ -1,3 +1,6 @@
+.\"
+.\"     $Id: c_nnpntd.m,v 1.3 1997-09-30 18:36:17 fred Exp $
+.\"
 .TH c_nnpntd 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
 .na
 .nh

@@ -1,14 +1,14 @@
 .\"
-.\"     $Id: c_natgrids.m,v 1.3 1997-05-06 23:37:21 fred Exp $
+.\"     $Id: c_natgrids.m,v 1.4 1997-09-30 18:36:16 fred Exp $
 .\"
 .TH c_natgrids 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
 .SH NAME
 c_natgrids - primary C entry for natural neighbor gridding
 .SH FUNCTION PROTOTYPE
-float **c_natgrids(int, float [], float [], float [],
-                     int, int, float [], float [], int *);
+float *c_natgrids(int, float [], float [], float [],
+                  int, int, float [], float [], int *);
 .SH SYNOPSIS
-float **c_natgrids (npnts, x, y, z, numxout, numyout, xi, yi, ier);
+float *c_natgrids (npnts, x, y, z, numxout, numyout, xi, yi, ier);
 .SH DESCRIPTION
 .IP npnts 12
 The number of input data points. (npnts > 3).
@@ -21,7 +21,7 @@ points.
 .IP z 12
 An array containing the functional values of the 
 input data points. That is, z[m] is the value of the input function at 
-coordinate (x[m],y[m]), for m=1,npnts. 
+coordinate (x[m],y[m]), for 0 <= m < npnts. 
 .IP numxout 12
 The number of x values in the output grid.
 .IP numyout 12
@@ -39,7 +39,7 @@ An error value. If *ier is returned as 0, then
 no errors were detected. If *ier is non-zero, then refer to the man
 page for natgrid_errors for details.
 .SH USAGE
-c_natgrids returns a pointer to a linear array of data that is is the
+c_natgrids returns a pointer to a linear array of data that is the
 interpolated grid stored in row-major order. That is, if out is declared as 
 .sp
 float *out;
