@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tgrida.c,v 1.3 1994-08-08 22:27:44 haley Exp $
+ *	$Id: c_tgrida.c,v 1.4 1994-11-03 20:37:01 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -74,12 +74,11 @@ int *ier;
  *                        c_frame.
  */
     int igph,i;
-    int knt, ival;
+    int knt;
     float x1,x2,y1,y2;
     float h1,h2,v1,v2;
-    float xg, yg, rval;
-    char buff[3], cval[20];
-    Gcolr_rep rgb;
+    float xg, yg;
+    char buff[3];
     Glimit win, vp;
 /*
  * Define normalization transformation 1.
@@ -173,18 +172,6 @@ int *ier;
 /* c_gridal  -  All 9 legal grids on a single c_frame. */
     
     gsel_norm_tran(0);
-    rgb.rgb.red = rgb.rgb.green = 0.;
-    rgb.rgb.blue = 1.;
-    gset_colr_rep(WKID,2,&rgb);
-    rgb.rgb.red = 1.;
-    gset_colr_rep(WKID,3,&rgb);
-    rgb.rgb.red = 0.;
-    rgb.rgb.green = 1.;
-    gset_colr_rep(WKID,4,&rgb);
-    rgb.rgb.red = 1.;
-    rgb.rgb.blue = 0.;
-    gset_colr_rep(WKID,5,&rgb);
-    c_gacolr(2,3,4,5);
     c_plchlq(.5,.98,"TEST IGPH OPTIONS OF GRIDAL",16.,0.,0.);
     knt= 0;
     for(i=0;i<=10;i++){
@@ -229,30 +216,6 @@ int *ier;
  */
     c_frame();
     printf(" GRIDAL TEST EXECUTED--SEE PLOTS TO CERTIFY \n ");
-/*    
- *  Test c_gageti and c_gaseti
- */
-    c_gaseti( "CAX", 10 );
-    c_gageti( "CAX", &ival );
-	if( ival != 10 ) {
-		printf( "\nc_gaseti, c_gageti: ival should be 10, ival is really %d\n", ival );
-	}
-/*    
- *  Test c_gagetr and c_gasetr
- */
-    c_gasetr( "XLS", 15.0 );
-    c_gagetr( "XLS", &rval );
-	if( rval != 15. ) {
-		printf( "c_gasetr, c_gagetr: rval should be 15.0, rval is really %g\n", rval );
-	}
-/*    
- *  Test c_gagetc and c_gasetc
- */
-    c_gasetc( "XLF", "hello" );
-    c_gagetc( "XLF", cval, 19 );
-	if( strcmp( cval, "hello" ) ) {
-		printf( "c_gasetc, c_gagetc: cval should be 'hello', cval is really '%s'\n", cval );
-	}
     *ier = 1;
     return(1);
 }
