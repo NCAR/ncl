@@ -1,10 +1,6 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.7 1992-02-27 21:47:12 clyne Exp $
-#
-
-#
-# another cvs test
+#	$Id: yMakefile,v 1.8 1992-02-27 21:49:05 clyne Exp $
 #
 
 LOCINCDIR	= ../../include
