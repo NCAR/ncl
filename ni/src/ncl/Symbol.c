@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.52 1997-09-10 21:19:27 ethan Exp $
+ *      $Id: Symbol.c,v 1.53 1997-10-24 20:48:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1805,6 +1805,9 @@ NclQuark file_sym_name;
 						for(j = 0; j < thefile->file.n_vars; j++) {
 							tmp->u.file->var_names[j] = thefile->file.var_info[j]->var_name_quark;
 						}
+					} else {
+						tmp->u.file->n_vars = 0;
+						tmp->u.file->var_names = NULL;
 					}
 					if(thefile->file.n_file_atts > 0) {
 						tmp->u.file->n_atts = thefile->file.n_file_atts;
@@ -1873,6 +1876,9 @@ NclApiDataList *_NclGetDefinedFileInfo
 									for(j = 0; j < thefile->file.n_vars; j++) {
 										tmp->u.file->var_names[j] = thefile->file.var_info[j]->var_name_quark;
 									}
+								} else {
+									tmp->u.file->n_vars = 0;
+									tmp->u.file->var_names = NULL;
 								}
 								if(thefile->file.n_file_atts > 0) {
 									tmp->u.file->n_atts = thefile->file.n_file_atts;
