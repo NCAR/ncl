@@ -1,5 +1,5 @@
 ;
-;      $Id: popRemap.ncl,v 1.7 2004-09-23 22:32:28 shea Exp $
+;      $Id: popRemap.ncl,v 1.8 2004-09-25 00:17:04 shea Exp $
 ;
 ;===========================================================
 ; D. Shea
@@ -276,6 +276,15 @@ begin
       if (isatt(x,"coordinate_caution")) then
           delete (x@coordinate_caution)
       end if
+  end if
+
+; get rid of 2D graphical "coordinate attributes"
+; these should not be associated with the return variable
+  if (isatt(x,"lat2d")) then
+      delete(x@lat2d)
+  end if
+  if (isatt(x,"lon2d")) then
+      delete(x@lon2d)
   end if
 
  ;x@coordinate_caution = "Coordinates are educated guesses. "+ \
