@@ -277,7 +277,7 @@ C
      .           XP,YP,ZP)
         B2 = DET(X(N3),Y(N3),Z(N3),X(N1),Y(N1),Z(N1),
      .           XP,YP,ZP)
-        IF (B1 .LT. -4.E0*EPS  .OR.  B2 .LT. -4.E0*EPS) THEN
+        IF (B1 .LT. -15.E0*EPS  .OR.  B2 .LT. -15.E0*EPS) THEN
 C
 C   Restart with N0 randomly selected.
 C
@@ -295,7 +295,7 @@ C
         PTN2 = XP*X(N2) + YP*Y(N2) + ZP*Z(N2)
         B1 = PTN1 - S12*PTN2
         B2 = PTN2 - S12*PTN1
-        IF (B1 .LT. -4.E0*EPS  .OR.  B2 .LT. -4.E0*EPS) THEN
+        IF (B1 .LT. -15.E0*EPS  .OR.  B2 .LT. -15.E0*EPS) THEN
 C
 C   Restart with N0 randomly selected.
 C
