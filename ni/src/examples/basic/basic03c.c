@@ -1,5 +1,5 @@
 /*
- * $Id: basic03c.c,v 1.7 1995-06-19 16:20:14 stautler Exp $
+ * $Id: basic03c.c,v 1.8 1995-06-20 15:19:51 stautler Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -45,8 +45,6 @@ main()
 
 	int dims[2] = { 5, 5 };
 
-	int NCGM=0;
-
 /*
  * Initialize the graphics libraries and create a resource list that
  * is normally used to assign name/value pairs within objects.  Then
@@ -65,25 +63,11 @@ main()
  * ###########
  * This frame demonstrates how to create and assign data to a contour plot.
  *
- * Choose the type of output you want to create. 
+ * Create an X workstation.
  */
-        if (NCGM) {
-        /*
-         * Create a meta file workstation.
-         */
-                NhlRLClear(rlist);
-                NhlRLSetString(rlist,NhlNwkMetaName,"./basic03c.ncgm");
-                NhlCreate(&wks,"wks",NhlncgmWorkstationClass,NhlDEFAULT_APP,
-                          rlist);
-        }
-        else {
-        /*
-         * Create an X workstation.
-         */
-                NhlRLClear(rlist);
-                NhlRLSetInteger(rlist,NhlNwkPause,True);
-		NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
-        }
+	NhlRLClear(rlist);
+	NhlRLSetInteger(rlist,NhlNwkPause,True);
+	NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
 
 /*
  * Create a scalar field object that will be used as a data set for a 

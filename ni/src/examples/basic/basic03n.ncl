@@ -1,4 +1,4 @@
-; $Id: basic03n.ncl,v 1.6 1995-06-14 17:16:53 stautler Exp $
+; $Id: basic03n.ncl,v 1.7 1995-06-20 15:19:53 stautler Exp $
 ;
 ; This example demonstrates how to:
 ;   1. Create a scalar field data object and assign it to a plot.
@@ -15,28 +15,11 @@ begin
 ; ###########
 ; This frame demonstrates how to create and assign data to a contour plot.
 
-; Choose the type of output you want to create. 
-;
-
-; Default is to display output to an X workstation
-;
-NCGM=0
-
-if (NCGM.eq.1) then
-;
-; Create an NCGM workstation.
-;
-  wks = create "wks" ncgmWorkstationClass defaultapp
-        "wkMetaName" : "./basic03n.ncgm"
-  end create
-else
-;
 ; Create an X workstation.
-;
-  wks = create "wks" xWorkstationClass defaultapp
-        "wkPause" : "True"
-  end create
-end if
+ 
+wks = create "wks" xWorkstationClass defaultapp
+	"wkPause" : "True"
+end create
 
 ; Create a 5x5 integer variable. 
 

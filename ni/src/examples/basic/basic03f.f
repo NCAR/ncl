@@ -1,5 +1,5 @@
 C
-C $Id: basic03f.f,v 1.9 1995-06-19 16:20:15 stautler Exp $
+C $Id: basic03f.f,v 1.10 1995-06-20 15:19:52 stautler Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -34,7 +34,6 @@ C
       external NhlFScalarFieldClass
 
       integer appid1,appid2,wks,wks2,con1,con2,con3,field1,rlist,ierr
-      integer NCGM
 
       integer data1(5,5) 
       data data1 / 3,4,4,5,5,
@@ -63,32 +62,14 @@ C # FRAME 1 #
 C ###########
 C This frame demonstrates how to create and assign data to a contour
 C plot.
-C Choose the type of output you want to create. 
 C
 
-C
-C Default is to display output to an X workstation
-C
-      NCGM=0
-
-      if (NCGM.eq.1) then
-C
-C Create an NCGM workstation.
-C
-         call NhlFRLClear(rlist)
-         call NhlFRLSetstring(rlist,'wkMetaName','./basic03f.ncgm',ierr)
-         call NhlFCreate(wks,"wks",NhlFNcgmWorkstationClass,0,
-     1        rlist,ierr)
-      else
 C
 C Create an X workstation.
 C
-         call NhlFRLClear(rlist)
-         call NhlFRLSetstring(rlist,'wkPause','True',ierr)
-         call NhlFCreate(wks,"wks",NhlFXWorkstationClass,0,
-     1        rlist,ierr)
-      endif
-
+      call NhlFRLClear(rlist)
+      call NhlFRLSetstring(rlist,'wkPause','True',ierr)
+      call NhlFCreate(wks,"wks",NhlFXWorkstationClass,0,rlist,ierr)
 C
 C Create a scalar field object that will be used as a data set for a 
 C contour object.  The sfDataArray resource is used to assign a data
