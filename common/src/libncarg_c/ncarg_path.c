@@ -1,5 +1,5 @@
 /*
- *      $Id: ncarg_path.c,v 1.20 1995-03-16 14:43:57 haley Exp $
+ *      $Id: ncarg_path.c,v 1.21 1995-06-14 15:32:26 haley Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -186,6 +186,11 @@ const char
  *			$NCARG_ROOT/lib/ncarg if they are not specified
  *			directly.
  *
+ *			The URL var is a special case, where instead of returning
+ *			the path to a directory or a filename, it actually opens
+ *			the file, reads the first line, and returns this (which 
+ *			should be the URL for the NG documentation).
+ *
  *			This function memorizes the return values that it
  *			reports so that if they are requested again it can
  *			just return the value instead of having to recalc.
@@ -212,11 +217,14 @@ const	char	*_NGGetNCARGEnv(name)
 
 	static	char	buf[PATH_MAX];
 	int		found = 0;
+	int     slen;
 	char		*env_name=NULL;
 	char		*direct_val=NULL;
 	char		localname[PATH_MAX];
 	char		*s = localname;
+	char		stmp[PATH_MAX];
 	const char	*cs = NULL;
+	FILE *fp;
 
 	strcpy(localname,name);
 	while (*s) {
@@ -319,13 +327,43 @@ const	char	*_NGGetNCARGEnv(name)
 	}
 
 	cs = _NGResolvePath(direct_val);
-	env_vals[i] = malloc(strlen(cs)+1);
-	if(!env_vals[i]){
-		ESprintf(errno, "malloc(%s)",strlen(cs)+1);
-		return NULL;
+/*
+ * Check to see if we are prompting for URL path.  If so, then
+ * later we will need to open a file to get the URL.
+ */
+	if( strcmp(localname,NCARGURL) ) {
+		env_vals[i] = malloc(strlen(cs)+1);
+		if(!env_vals[i]) {
+			ESprintf(errno, "malloc(%s)",strlen(cs)+1);
+			return NULL;
+		}
+		strcpy(env_vals[i],cs);
 	}
-
-	strcpy(env_vals[i],cs);
+/*
+ * If the user wants the URL, then we need to open the file
+ * to get it.
+ */
+	else {
+		stmp[0] = '\0';
+		fp = fopen(cs,"r");
+		if( fp == (FILE *) NULL) {
+			(void) ESprintf(errno, "fopen(%s)", cs);
+			  return NULL;
+		}
+		(void)fgets(stmp,PATH_MAX-1,fp);
+		if( !(slen = strlen(stmp)) ) {
+			ESprintf(errno, "No URL found in file (%s)",cs);
+			return NULL;
+		}
+		if( stmp[slen-1] == '\n' ) 
+		  stmp[slen-1] = '\0';
+		env_vals[i] = malloc(strlen(stmp)+1);
+		if(!env_vals[i]) {
+			ESprintf(errno, "malloc(%s)",strlen(stmp)+1);
+			return NULL;
+		}
+		strcpy(env_vals[i],stmp);
+	}
 
 	return env_vals[i];
 }

@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.21 1995-04-11 18:24:28 haley Exp $
+#	$Id: yMakefile,v 1.22 1995-06-14 15:32:27 haley Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common utilities
@@ -51,7 +51,7 @@ OBJS		= $(EXOBJS) $(FCPP_OBJS) options.o misc.o ncarg_path.o version.o \
 MY_DEFINES = -D_BSD_TYPES
 #endif
 
-EXTRA_CDEFINES =	$(OS_DEF) $(VDEFINE) $(NGENVDEF) $(MY_DEFINES)
+EXTRA_CDEFINES =	$(OS_DEF) $(VDEFINE) $(NGENVDEF) $(MY_DEFINES) -DNCARGURL='$(NCARGURL)'
 
 LibraryTarget($(MYNAME),$(OBJS))
 InstallTarget($(HDRS),$(INSTALL_INC),$(NCARGINCPATH))
