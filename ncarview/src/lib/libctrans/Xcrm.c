@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.21 1996-05-13 21:24:20 boote Exp $
+ *	$Id: Xcrm.c,v 1.22 1997-03-09 01:52:40 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -165,6 +165,7 @@ AllocColor(color,sindx)
 				color->pixel = i;
 				XStoreColor(dpy,Cmap,color);
 				colordone = True;
+				break;
 			}
 		}
 		/*
