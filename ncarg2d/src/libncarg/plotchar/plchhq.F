@@ -1,5 +1,5 @@
 C
-C	$Id: plchhq.F,v 1.5 1992-10-13 18:45:21 haley Exp $
+C	$Id: plchhq.F,v 1.6 1992-10-20 22:53:39 haley Exp $
 C
 C***********************************************************************
 C P A C K A G E   P L O T C H A R   -   I N T R O D U C T I O N
@@ -58,40 +58,44 @@ C     may be used (BOFRED, BINRED, and BCLRED are support routines for
 C     the FORTRAN version of the metafile translator "cgmtrans"):
 C
 C     SUBROUTINE PCFOPN (IBNU,NFNT)
-C     CHARACTER*128 PARANM,FILENM
-C     DATA PARANM / 'dbdir' /
-C       IF (NFNT.EQ.0) THEN
-C   	  CALL GNGPAT (PARANM,FILENM,ISTATUS)
-C   	  IF (ISTATUS .NE. -1) THEN
-C         DO 101 I=1,119
-C           IF (FILENM(I:I).EQ.' ') THEN
-C             FILENM(I:I+9)='/pwritdata'
-C             GO TO 102
-C           END IF
-C 101     CONTINUE
-C         GO TO 104
-C         ELSE
-C           GO TO 103       
-C         ENDIF
-C 102     OPEN (UNIT=IBNU,FILE=FILENM,STATUS='OLD',
-C    +                  FORM='UNFORMATTED',ERR=104)
-C         REWIND IBNU
-C       ELSE IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
-C         CALL BOFRED (IBNU,NFNT,IOST,ISTA)
-C         IF (ISTA.NE.0) THEN
+C     CHARACTER*128 FILENM
+C     DATA FILENM / ' ' /
+C     IF (NFNT.EQ.0) THEN
+C        CALL GNGPAT (FILENM,'database',ISTAT)
+C        IF (ISTAT .NE. -1) THEN
+C            DO 101 I=1,119
+C               IF (FILENM(I:I).EQ.CHAR(0)) THEN
+C                 FILENM(I:I+9)='/pwritdata'
+C                 GO TO 104
+C               ENDIF
+C101          CONTINUE
+C            GO TO 105
+C        ELSE
+C            DO 102 I=2,128
+C                LENEM=I
+C                IF (FILENM(I:I).EQ.CHAR(0)) GO TO 103
+C102         CONTINUE
+C103         PRINT * , 'PCFOPN - ',FILENM(1:LENEM-1)
+C            STOP
+C        ENDIF
+C104     OPEN (UNIT=IBNU,FILE=FILENM,STATUS='OLD',FORM='UNFORMATTED',
+C    +        ERR=105)
+C        REWIND IBNU
+C     ELSE IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
+C        CALL BOFRED (IBNU,NFNT,IOST,ISTA)
+C        IF (ISTA.NE.0) THEN
 C           PRINT * , 'PCFOPN - ERROR OPENING FONT ',NFNT
 C           STOP
-C         END IF
-C       ELSE
-C         PRINT * , 'PCFOPN - REQUEST FOR UNAVAILBLE FONT ',NFNT
-C         STOP
-C       END IF
-C       RETURN
-C 103   PRINT FILENM
-C       GO TO 105
-C 104   PRINT * , 'PCFOPN - ERROR OPENING PWRITX DATA FILE ',FILENM
-C 105   CONTINUE 
-C       STOP
+C        END IF
+C     ELSE
+C        PRINT * , 'PCFOPN - REQUEST FOR UNAVAILBLE FONT ',NFNT
+C        STOP
+C     END IF
+C     RETURN
+C105  PRINT * , 'PCFOPN - ERROR OPENING PWRITX DATA FILE ',FILENM
+C     STOP
+C     END
+C
 C     END
 C
 C     SUBROUTINE PCFRED (IBNU,NFNT,IBUF,LBUF)
