@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.64 2003-05-01 20:48:08 grubin Exp $
+ *      $Id: AddBuiltIns.c,v 1.65 2003-05-01 21:55:28 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1567,6 +1567,12 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,0,"file",1,dimsizes);nargs++;
 	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
 	NclRegisterFunc(_NclIFileVarDimsizes,args,"filevardimsizes",nargs);
+	nargs = 0;
+	args = NewArgs(2);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"file",1,dimsizes);nargs++;
+	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
+	NclRegisterFunc(_NclIFileVarDimsizes,args,"getfilevardimsizes",nargs);
 
 	nargs = 0;
 	args = NewArgs(4);
