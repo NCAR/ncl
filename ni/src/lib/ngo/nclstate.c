@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.5 1997-03-04 02:53:51 dbrown Exp $
+ *      $Id: nclstate.c,v 1.6 1997-03-04 03:05:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1286,14 +1286,11 @@ NgNclGetSymName
 )
 {
 	static char	buff[512];
-	int		i=1;
+	int		i=0;
 
-        strcpy(buff,basename);
-        if (NclSymbolDefined(buff)) {
-                for(sprintf(buff,"%s%i",basename,i);
-                    NclSymbolDefined(buff);
-                    i++,sprintf(buff,"%s%i",basename,i));
-        }
+        for(sprintf(buff,"%s",basename);
+            NclSymbolDefined(buff);
+            i++,sprintf(buff,"%s%i",basename,i));
         
 	return buff;
 }
