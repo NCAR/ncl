@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.23 1998-01-07 23:12:22 haley Exp $
+ *      $Id: yMakefile,v 1.24 2003-05-02 21:18:37 haley Exp $
  */
 /************************************************************************
 *									*
@@ -152,6 +152,22 @@ HDFSTUFF:
 	@echo "y"
 #else
 HDFSTUFF:
+	@echo "n"
+#endif
+
+#ifdef	BuildUdunits
+UDUNITSSTUFF:
+	@echo "y"
+#else
+UDUNITSSTUFF:
+	@echo "n"
+#endif
+
+#ifdef	BuildHDFEOS
+HDFEOSSTUFF:
+	@echo "y"
+#else
+HDFEOSSTUFF:
 	@echo "n"
 #endif
 

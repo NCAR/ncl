@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.17 2002-06-20 22:15:03 haley Exp $
+#      $Id: Configure,v 1.18 2003-05-02 21:18:37 haley Exp $
 #
 #########################################################################
 #									#
@@ -140,6 +140,10 @@ echo -n "..."
 set buildxlibstuff=`$makecmd XSTUFF`
 echo -n "..."
 set buildhdf=`$makecmd HDFSTUFF`
+echo -n "..."
+set buildudunits=`$makecmd UDUNITSSTUFF`
+echo -n "..."
+set buildhdfeos=`$makecmd HDFEOSSTUFF`
 echo -n "..."
 set buildf90=`$makecmd F90STUFF`
 set f90comp="f90"
@@ -588,6 +592,58 @@ if (("$answer" != "") && ("$answer" != "$buildhdf")) then
 endif
 
 #
+# Udunits
+#
+if ($?verbose_option) then
+  cat <<"EOF"
+
+	The udunits library supports many different time formats,
+	and some of its functionality is available as built-in
+	functions in NCL. In order to have this functionality, you must
+        have the libudunits.a library installed on your system.
+
+"EOF"
+endif
+
+echo ""
+echo "Build Udunits support (optional) into NCL ($buildudunits)"
+echo "(requires the external Udunits library available from http://www.unidata.ucar.edu/packages/udunits/) "
+echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+set answer="$<"
+if ("$answer" == "q") goto cleanup
+if (("$answer" != "") && ("$answer" != "$buildudunits")) then
+	set buildudunits = $answer
+	set newbuildudunits
+        set altered
+endif
+
+#
+# HDFEOS
+#
+if ($?verbose_option) then
+  cat <<"EOF"
+
+	The hdfeos library supports the HDF-EOS data format, and
+	NCL has some capability to read these files in. In order
+        to have this functionality, you must have the HDFEOS libraries
+        installed on your system.
+
+"EOF"
+endif
+
+echo ""
+echo "Build HDFEOS support (optional) into NCL ($buildhdfeos)"
+echo "(requires the external HDFEOS libraries available from http://hdfeos.gsfc.nasa.gov/hdfeos/index.cfm) "
+echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+set answer="$<"
+if ("$answer" == "q") goto cleanup
+if (("$answer" != "") && ("$answer" != "$buildhdfeos")) then
+	set buildhdfeos = $answer
+	set newbuildhdfeos
+        set altered
+endif
+
+#
 #  Library Search Path
 #
 
@@ -794,6 +850,23 @@ if ($?newbuildhdf) then
 		echo "#define HDFlib" >> Site.local
 	endif
 endif
+if ($?newbuildudunits) then
+	if ("$buildudunits" == "y") then
+		echo "#define BuildUdunits TRUE" >> Site.local
+	else
+		echo "#define BuildUdunits FALSE" >> Site.local
+		echo "#define UdUnitslib" >> Site.local
+	endif
+endif
+if ($?newbuildhdfeos) then
+	if ("$buildhdfeos" == "y") then
+		echo "#define BuildHDFEOS TRUE" >> Site.local
+	else
+		echo "#define BuildHDFEOS FALSE" >> Site.local
+		echo "#define HDFEOSlib" >> Site.local
+	endif
+endif
+
 echo "" >> Site.local
 if ($?nomakedepend) echo "#define NoMakeDepend" >> Site.local
 echo "" >> Site.local
