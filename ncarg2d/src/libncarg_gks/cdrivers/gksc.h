@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.h,v 1.10 2000-08-22 03:23:31 haley Exp $
+ *	$Id: gksc.h,v 1.11 2001-02-08 21:58:40 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -114,7 +114,7 @@ typedef	struct	GKSC_	{
  *	complex type. WARNING! WriteToGKSC() assumes that this number
  *	is at least 5
  */
-#define	INITIAL_MAL	10
+#define	INITIAL_MAL	15
 
 
 #define	ClearGKSC(gksc) \
