@@ -1,0 +1,22 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:33:32 ncargd Exp $
+#
+#
+#	Makefile for the NCAR GKS library
+#
+
+NCARG	= ../../..
+
+SUBDIRS = awi bwi
+
+#ifdef  BuildNCARGSourceLibrary
+all::
+	@-$(RM) $(LIBDIR)/srcncarg_gks.a
+#endif
+
+PartialLibraryRoot(libncarg_gks.a,$(SUBDIRS))
+
+#ifdef  BuildNCARGSourceLibrary
+all::
+	$(RANLIB) $(LIBDIR)/srcncarg_gks.a
+#endif

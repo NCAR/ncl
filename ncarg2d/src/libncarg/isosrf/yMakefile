@@ -1,0 +1,36 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:31:23 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= isosrf
+
+GENERIC_SRCS = \
+	isosrf.f ezisos.f isgeti.f isgetr.f isseti.f issetr.f ispltf.f \
+	istr32.f isfill.f isgfxy.f isinit.f issmth.f isst3d.f istrcl.f \
+	iszero.f isblda.f drawi.f frstc.f trn32i.f
+
+
+GENERIC_OBJS = \
+	isosrf.o ezisos.o isgeti.o isgetr.o isseti.o issetr.o ispltf.o \
+	istr32.o isfill.o isgfxy.o isinit.o issmth.o isst3d.o istrcl.o \
+	iszero.o isblda.o drawi.o frstc.o trn32i.o
+
+SOURCES = $(GENERIC_SRCS)
+
+OBJECTS	= $(GENERIC_OBJS)
+
+PartialLibrary(libncarg.a,$(OBJECTS))
+
+#ifdef  BuildNCARGSourceLibrary
+all:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_QUICK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	@-$(RM) $(MYNAME)
+
+install:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcncarg.a
+	@-$(RM) $(MYNAME)
+#endif

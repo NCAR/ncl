@@ -1,0 +1,35 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:31:15 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= conterp
+
+GENERIC_SRCS = \
+	condet.f conint.f concal.f conloc.f contng.f conxch.f \
+	concls.f constp.f contlk.f conpdv.f conop1.f conop2.f \
+	conop3.f conop4.f conbdn.f conout.f conot2.f
+
+GENERIC_OBJS = \
+	condet.o conint.o concal.o conloc.o contng.o conxch.o \
+	concls.o constp.o contlk.o conpdv.o conop1.o conop2.o \
+	conop3.o conop4.o conbdn.o conout.o conot2.o
+
+SOURCES = $(GENERIC_SRCS)
+
+OBJECTS	= $(GENERIC_OBJS)
+
+PartialLibrary(libncarg.a,$(OBJECTS))
+
+#ifdef  BuildNCARGSourceLibrary
+all:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_QUICK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	@-$(RM) $(MYNAME)
+
+install:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcncarg.a
+	@-$(RM) $(MYNAME)
+#endif

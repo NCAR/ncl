@@ -1,0 +1,178 @@
+/*
+/*	$Id: hp7510a.gc,v 1.1.1.1 1992-04-17 22:29:39 ncargd Exp $
+/*
+/*  hp7510a
+/*
+/*  This graphcap is for the HP7510a color film recorder.
+/*
+
+DEVICE_GRAPHIC_INIT
+ESC . Y ESC . M ; ; 1 0 : I N 1 ; CR LF
+S C 0 , 1 6 0 0 0 , 0 , 1 6 0 0 0 ; CR LF
+S P 1 ;
+DEVICE_TEXT_INIT
+ESC . Z CR LF
+
+DEVICE_ERASE
+A F ;
+DEVICE_COORD_LOWER_LEFT_X
+0
+DEVICE_COORD_LOWER_LEFT_Y
+0
+DEVICE_COORD_UPPER_RIGHT_X
+16000
+DEVICE_COORD_UPPER_RIGHT_Y
+16000
+
+DEVICE_COORD_XOFFSET
+2000
+DEVICE_COORD_YOFFSET
+
+DEVICE_COORD_XSCALE
+.6760
+DEVICE_COORD_YSCALE
+
+DEVICE_COORD_FORMAT
+/* bit_start  bit_count  data_type  data_value
+      0         16           1          15
+      0          8           -1         44
+      0         16           2          15
+      0          8           -1         44
+DEVICE_COORD_ENCODING
+/* 0 binary, 1 ascii decimal, 2 ascii hex, 3 ascii octal, 4 ascii tek
+1
+
+DEVICE_BATCH
+TRUE
+
+DEVICE_COLOR_AVAILABLE
+TRUE
+DEVICE_COLOR_INDEX_ENCODING
+/* 0 binary, 1 ascii decimal, 2 ascii hex, 3 ascii octal, 4 ascii tek
+1
+DEVICE_COLOR_INDEX_FORMAT
+/* bit_start  bit_count  data_type  data_value
+      0          8          1           7
+
+DEVICE_MAP_AVAILABLE
+TRUE
+DEVICE_MAP_INDIVIDUAL
+TRUE
+DEVICE_MAP_INDEX_RANGE_MAX
+256
+DEVICE_MAP_INDEX_RANGE_DEFINED
+8
+
+DEVICE_MAP_INSTRUCTION_START
+P C
+DEVICE_MAP_INSTRUCTION_TERMINATOR
+, 1 6 , MAD ;
+DEVICE_MAP_INTENSITY_ENCODING
+/*0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek 5 ascii real
+5
+DEVICE_MAP_INTENSITY_FLOATING_INFO
+/* min input, max input, min output, max output
+0.0 255.0 0.0 1.0
+DEVICE_MAP_INTENSITY_FORMAT
+/* bit_start  bit_count  data_type  data_value
+      0         16            1         15
+      0          8           -1         44
+      0         16            2         15
+      0          8           -1         44
+      0         16            3         15
+
+DEVICE_MAP_INIT
+   0   0   0
+ 255 255 255
+   0 255 255
+ 255   0 255
+   0   0 255
+ 255 255   0
+   0 255   0
+ 255   0   0
+
+DEVICE_MAP_MODEL
+/* mono 0  rgb 1  bgr 2 hls 3
+1
+
+DASH_BIT_LENGTH
+
+LINE_DRAW_POLY_FLAG
+TRUE
+LINE_DRAW_INSTRUCTION_START
+P U XYC ; CR P D
+LINE_DRAW_INSTRUCTION_TERMINATOR
+;
+
+LINE_COLOR_INSTRUCTION_START
+S P
+LINE_COLOR_INSTRUCTION_TERMINATOR
+;
+
+LINE_WIDTH_INSTRUCTION_START
+LINE_WIDTH_INSTRUCTION_TERMINATOR
+LINE_WIDTH_ENCODING
+/* 0 binary, 1 ascii decimal, 2 ascii hex, 3 ascii octal, 4 ascii tek
+LINE_WIDTH_FORMAT
+/* bit_start  bit_count  data_type  data_value
+LINE_WIDTH_RANGE
+/* two values giving low and high DC width values
+LINE_WIDTH_SCALE
+
+MARKER_COLOR_INSTRUCTION_START
+S P
+MARKER_COLOR_INSTRUCTION_TERMINATOR
+;
+POLYGON_INSTRUCTION_START
+P U XYC ; P M 0 ; P D
+POLYGON_INSTRUCTION_TERMINATOR
+P U ; P M 2 ; F P ;
+
+POLYGON_COLOR_INSTRUCTION_START
+S P
+POLYGON_COLOR_INSTRUCTION_TERMINATOR
+;
+
+RASTER_SIMULATE
+TRUE
+/* these bundles are defined for the current NCAR metafile translator
+/* they may be redifined but not all of them have any effect as of yet
+BUNDLE_LINE_INDEX
+1 2 3 4 5
+BUNDLE_LINE_TYPE
+1 2 3 4 5
+BUNDLE_LINE_WIDTH
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_LINE_COLOR
+1 2 3 4 5
+
+BUNDLE_MARKER_INDEX
+1 2 3 4 5
+BUNDLE_MARKER_TYPE
+1 2 3 4 5
+BUNDLE_MARKER_SIZE
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_MARKER_COLOR
+1 2 3 4 5
+
+BUNDLE_POLYGON_INDEX
+1 2 3 4 5
+BUNDLE_POLYGON_INTERIOR
+0 0 0 0 0
+BUNDLE_POLYGON_STYLE
+0 0 0 0 0
+BUNDLE_POLYGON_COLOR
+1 2 3 4 5
+
+BUNDLE_TEXT_INDEX
+1 2 3 4 5
+BUNDLE_TEXT_FONT
+1 1 1 1 1
+BUNDLE_TEXT_PRECISION
+1 1 1 1 1
+BUNDLE_TEXT_CEXPN
+1.0 0.60 0.80 1.20 1.40
+BUNDLE_TEXT_CSPACE
+0.0 0.0 0.0 0.0 0.0
+BUNDLE_TEXT_COLOR
+1 2 3 4 5

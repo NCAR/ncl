@@ -1,0 +1,33 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:32:53 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= softfill
+
+GENERIC_SRCS = \
+	 sfsgfa.f sfwrld.f sfnorm.f sfgetc.f sfgeti.f sfgetp.f sfgetr.f\
+	 sfsetc.f sfseti.f sfsetp.f sfsetr.f sfsort.f sfblda.f
+
+GENERIC_OBJS = \
+	 sfsgfa.o sfwrld.o sfnorm.o sfgetc.o sfgeti.o sfgetp.o sfgetr.o\
+	 sfsetc.o sfseti.o sfsetp.o sfsetr.o sfsort.o sfblda.o
+
+SOURCES = $(GENERIC_SRCS)
+
+OBJECTS = $(GENERIC_OBJS)
+
+PartialLibrary(libncarg.a,$(OBJECTS))
+
+#ifdef  BuildNCARGSourceLibrary
+all:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_QUICK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	@-$(RM) $(MYNAME)
+
+install:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcncarg.a
+	@-$(RM) $(MYNAME)
+#endif

@@ -1,0 +1,56 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:34:44 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= scripts
+
+#if ! defined BuildNCARGSourceLibrary
+SCRIPTS = cgmtrans ncargf77 ncargcc ncargversion sunplot \
+	ncargrun ftrans ncargex pre2ncgm
+#else
+SCRIPTS = cgmtrans ncargf77 ncargcc ncargversion sunplot \
+	ncargrun ftrans ncargex pre2ncgm ncargsrc ncargsrcy
+#endif
+
+all:: $(SCRIPTS)
+
+#if defined(cray) || defined(CRAY2)
+ncargf77: ncargf77.cry Makefile
+	@sed \
+	-e 's+SED_F77+$(F77)+' \
+	-e 's+SED_LD_FFLAGS+$(LD_FFLAGS)+' \
+	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	<ncargf77.cry >ncargf77
+#else
+ncargf77: ncargf77.csh Makefile
+	@sed \
+	-e 's+SED_F77+$(F77)+' \
+	-e 's+SED_LD_FFLAGS+$(LD_FFLAGS)+' \
+	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	<ncargf77.csh >ncargf77
+#endif
+
+#if defined(cray) || defined(CRAY2)
+ncargcc: ncargcc.cry Makefile
+	@sed \
+	-e 's+SED_CC+$(CC)+' \
+	-e 's+SED_LD_CFLAGS+$(LD_CFLAGS)+' \
+	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	<ncargcc.cry >ncargcc
+#else
+ncargcc: ncargcc.csh Makefile
+	@sed \
+	-e 's+SED_CC+$(CC)+' \
+	-e 's+SED_LD_CFLAGS+$(LD_CFLAGS)+' \
+	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	<ncargcc.csh >ncargcc
+#endif
+
+InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINDIR))
+
+MakefileTarget
+CleanTarget
+
+clean::
+	@-$(RM) ncargf77 ncargcc

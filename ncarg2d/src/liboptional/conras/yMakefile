@@ -1,0 +1,25 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:35:03 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= conras
+
+GENERIC_SRCS = conras.f conpms.f
+
+GENERIC_OBJS = conras.o conpms.o
+
+SOURCES = $(GENERIC_SRCS)
+
+OBJECTS = $(GENERIC_OBJS)
+
+RelocatableObject(libconras.o,$(OBJECTS))
+
+#ifdef  BuildNCARGSourceLibrary
+install:: $(SOURCES)
+	@-$(RM) $(LIBDIR)/srcconras.a
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBDIR)/srcconras.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcconras.a
+	@-$(RM) $(MYNAME)
+#endif

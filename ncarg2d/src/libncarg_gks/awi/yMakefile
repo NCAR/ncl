@@ -1,0 +1,98 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:33:40 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= awi
+
+#if defined(sun) || (defined(u370) && (unix))
+# The Sun f77 optimizer appears to have troubles with the GKS system.
+
+FOPT =
+
+#endif
+
+GENERIC_SRCS = \
+	 gacwk.f gca.f gclks.f gclrwk.f gclsg.f gclwk.f gcrsg.f gcsgwk.f\
+	 gdawk.f gdsg.f geclks.f gerhnd.f gerlog.f gesc.f gfa.f ggdp.f\
+	 ggtitm.f giitm.f gopks.f gopwk.f gpl.f gpm.f gprec.f gqacwk.f\
+	 gqasf.f gqcf.f gqchb.f gqchh.f gqchsp.f gqchup.f gqchw.f gqchxp.f\
+	 gqclip.f gqcntn.f gqcr.f gqdsp.f gqeci.f gqegdp.f gqentn.f gqewk.f\
+	 gqfaci.f gqfaf.f gqfai.f gqfais.f gqfasi.f gqgdp.f gqln.f gqlvks.f\
+	 gqlwk.f gqlwsc.f gqmk.f gqmksc.f gqmntn.f gqnt.f gqops.f gqopsg.f\
+	 gqopwk.f gqpa.f gqpaf.f gqparf.f gqpcr.f gqpfar.f gqplci.f gqplf.f\
+	 gqpli.f gqpmci.f gqpmf.f gqpmi.f gqppar.f gqpplr.f gqppmr.f\
+	 gqptxr.f gqpx.f gqpxa.f gqpxad.f gqsgus.f gqtxal.f gqtxci.f\
+	 gqtxf.f gqtxfp.f gqtxi.f gqtxp.f gqtxx.f gqwkc.f gqwkca.f gqwkcl.f\
+	 gqwkdu.f gqwks.f gqwkt.f grditm.f gsasf.f gschh.f gschsp.f gschup.f\
+	 gschxp.f gsclip.f gscr.f gselnt.f gsfaci.f gsfai.f gsfais.f\
+	 gsfasi.f gsln.f gslwsc.f gsmk.f gsmksc.f gspa.f gsparf.f gsplci.f\
+	 gspli.f gspmci.f gspmi.f gstxal.f gstxci.f gstxfp.f gstxi.f\
+	 gstxp.f gsvp.f gswkvp.f gswkwn.f gswn.f gtx.f gurec.f guwk.f\
+	 gwitm.f gzckst.f gzckwk.f gzfmwk.f gzines.f gzinsl.f gzn2wx.f\
+	 gzn2wy.f gzputr.f gzputs.f gztowk.f gzw2nx.f gzw2ny.f gksbd.f
+
+GENERIC_OBJS = \
+	 gacwk.o gca.o gclks.o gclrwk.o gclsg.o gclwk.o gcrsg.o gcsgwk.o\
+	 gdawk.o gdsg.o geclks.o gerhnd.o gerlog.o gesc.o gfa.o ggdp.o\
+	 ggtitm.o giitm.o gopks.o gopwk.o gpl.o gpm.o gprec.o gqacwk.o\
+	 gqasf.o gqcf.o gqchb.o gqchh.o gqchsp.o gqchup.o gqchw.o gqchxp.o\
+	 gqclip.o gqcntn.o gqcr.o gqdsp.o gqeci.o gqegdp.o gqentn.o gqewk.o\
+	 gqfaci.o gqfaf.o gqfai.o gqfais.o gqfasi.o gqgdp.o gqln.o gqlvks.o\
+	 gqlwk.o gqlwsc.o gqmk.o gqmksc.o gqmntn.o gqnt.o gqops.o gqopsg.o\
+	 gqopwk.o gqpa.o gqpaf.o gqparf.o gqpcr.o gqpfar.o gqplci.o gqplf.o\
+	 gqpli.o gqpmci.o gqpmf.o gqpmi.o gqppar.o gqpplr.o gqppmr.o\
+	 gqptxr.o gqpx.o gqpxa.o gqpxad.o gqsgus.o gqtxal.o gqtxci.o\
+	 gqtxf.o gqtxfp.o gqtxi.o gqtxp.o gqtxx.o gqwkc.o gqwkca.o gqwkcl.o\
+	 gqwkdu.o gqwks.o gqwkt.o grditm.o gsasf.o gschh.o gschsp.o gschup.o\
+	 gschxp.o gsclip.o gscr.o gselnt.o gsfaci.o gsfai.o gsfais.o\
+	 gsfasi.o gsln.o gslwsc.o gsmk.o gsmksc.o gspa.o gsparf.o gsplci.o\
+	 gspli.o gspmci.o gspmi.o gstxal.o gstxci.o gstxfp.o gstxi.o\
+	 gstxp.o gsvp.o gswkvp.o gswkwn.o gswn.o gtx.o gurec.o guwk.o\
+	 gwitm.o gzckst.o gzckwk.o gzfmwk.o gzines.o gzinsl.o gzn2wx.o\
+	 gzn2wy.o gzputr.o gzputs.o gztowk.o gzw2nx.o gzw2ny.o gksbd.o
+
+SOURCES = $(GENERIC_SRCS)
+
+OBJECTS = $(GENERIC_OBJS)
+
+FCPP_OBJS	= gopwk.f
+
+PartialLibrary(libncarg_gks.a,$(OBJECTS))
+
+clean::
+	@-$(RM) gopwk.f
+
+#ifdef  BuildNCARGSourceLibrary
+all:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_QUICK) $(LIBDIR)/srcncarg_gks.a $(MYNAME) $(SOURCES)
+	@-$(RM) $(MYNAME)
+
+install:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBDIR)/srcncarg_gks.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcncarg_gks.a
+	@-$(RM) $(MYNAME)
+
+FRule
+#endif
+
+#if defined(sgi) || defined(ardent) || (defined(u370) && defined(unix)) \
+	|| defined(RS6000) || defined(hpux) || defined(cray) || defined(CRAY2)
+
+.SUFFIXES: .F
+
+.F.o:
+	@$(FCPP) $< $*.f
+	$(F77) $(FFLAGS) -c $*.f
+	@$(RM) $*.f
+#endif
+
+#if defined(cray)
+gztowk.o: gztowk.f
+	$(CFT) $(FFLAGS) -o off gztowk.f
+#endif
+
+clean::
+	@-$(RM) $(FCPP_OBJS)

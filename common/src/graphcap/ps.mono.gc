@@ -1,0 +1,197 @@
+/*
+/*	$Id: ps.mono.gc,v 1.1.1.1 1992-04-17 22:29:41 ncargd Exp $
+/*
+/*  ps.mono
+/*
+/*  This file defines a PostScript graphcap in graphics portrait
+/*  mode.
+/*
+/*   ------------------------------------------------------------
+/*   ------->  This GRAPHCAP is compatible with          <-------
+/*   ------->  Version 3.00 of the GRAPHCAP preprocessor <-------
+/*   ------->  GRAPHC dated 29-OCT-89, or later.  It     <-------
+/*   ------->  will not produce correct results when     <-------
+/*   ------->  used with previous versions.              <-------
+/*   ------------------------------------------------------------
+/*
+/*  This graphcap is designed to accommodate 256 monochrome
+/*  intensities, that is to say there are 256 pre-defined
+/*  color indices available.  Color index 0 represents black
+/*  and color index 255 represents white.  Thus, the default
+/*  color index 1 essentially represents black.
+/*
+/*  Raster images (via the CGM CELL ARRAY element) are simulated
+/*  using filled areas and can produce very large PostScript files
+/*  and require much processing time.
+/*
+
+DEVICE_GRAPHIC_INIT
+% ! P S LF
+s a v e LF
+/ w SPC { s e t l i n e w i d t h } SPC d e f LF
+/ l SPC { l i n e t o } SPC d e f LF
+/ n SPC { n e w p a t h } SPC d e f LF
+/ m SPC { m o v e t o } SPC d e f LF
+/ s SPC { s c a l e } SPC d e f LF
+/ c SPC { s e t l i n e c a p } SPC d e f LF
+/ j SPC { s e t l i n e j o i n } SPC d e f LF
+/ r SPC { r e s t o r e } SPC d e f LF
+/ h SPC { s h o w p a g e } SPC d e f LF
+/ t SPC { s t r o k e } SPC d e f LF
+/ g SPC { s e t g r a y } SPC d e f LF
+/ f SPC { e o f i l l } SPC d e f LF
+. 1 2 5 SPC . 1 2 5 SPC s LF
+1 SPC c LF
+1 SPC j LF
+n LF
+
+DEVICE_TEXT_INIT
+SPC r LF
+DEVICE_COORD_LOWER_LEFT_X
+0
+DEVICE_COORD_LOWER_LEFT_Y
+0
+DEVICE_COORD_UPPER_RIGHT_X
+4078
+DEVICE_COORD_UPPER_RIGHT_Y
+4078
+DEVICE_COORD_FORMAT
+/* bit_start  bit_count  data_type  data_value
+      0         16           1          15
+     16          8          -1          32
+      0         16           2          15
+     16          8          -1          32
+DEVICE_COORD_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+1
+DEVICE_COORD_XOFFSET
+404
+DEVICE_COORD_YOFFSET
+1124
+DEVICE_COLOR_AVAILABLE
+TRUE
+DEVICE_COLOR_INDEX_FORMAT
+/* bit_start  bit_count  data_type  data_value
+      0          8          -1          32
+      0         16           1          15
+DEVICE_COLOR_INDEX_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+5
+DEVICE_COLOR_INDEX_FLOATING_INFO
+/* min input, max input, min output, max output
+0. 255. 0. 1.
+DEVICE_BATCH
+TRUE
+DEVICE_MAP_AVAILABLE
+FALSE
+DEVICE_MAP_INDEX_RANGE_DEFINED
+256
+DEVICE_MAP_MODEL
+/* mono 0  rgb 1  bgr 2 hls 3
+0
+DEVICE_ERASE
+SPC t LF SPC h LF n LF
+. 1 2 5 SPC . 1 2 5 SPC s LF
+1 SPC c LF
+1 SPC j LF
+
+LINE_DRAW_POLY_FLAG
+TRUE
+LINE_DRAW_INSTRUCTION_START
+n LF XYC m LF
+LINE_DRAW_INSTRUCTION_TERMINATOR
+t LF
+LINE_POINT_START
+LINE_POINT_TERMINATOR
+l LF
+LINE_COLOR_INSTRUCTION_START
+LINE_COLOR_INSTRUCTION_TERMINATOR
+SPC g LF
+
+LINE_WIDTH_INSTRUCTION_START
+SPC
+LINE_WIDTH_INSTRUCTION_TERMINATOR
+w LF
+LINE_WIDTH_FORMAT
+/* bit_start  bit_count  data_type  data_value
+    0   16    1   15
+    0    8   -1   32
+LINE_WIDTH_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+1
+LINE_WIDTH_RANGE
+/* two values giving low and high DC width values
+1 72
+LINE_WIDTH_SCALE
+.251
+
+MARKER_COLOR_INSTRUCTION_START
+MARKER_COLOR_INSTRUCTION_TERMINATOR
+SPC g LF
+
+/* Define bundle tables.
+/*
+/* The bundles are defined for the current NCAR metafile translator.
+/* They may be redifined, but not all of them have any effect as of yet.
+/* The bundle tables are associated with the indices in the obvious
+/* manner--the nth element of the index array will be the bundle
+/* index for the bundle containing the nth elements of the applicable
+/* aspects.
+BUNDLE_LINE_INDEX
+1 2 3 4 5
+BUNDLE_LINE_TYPE
+1 2 3 4 5
+BUNDLE_LINE_WIDTH
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_LINE_COLOR
+1 2 3 4 5
+
+BUNDLE_MARKER_INDEX
+1 2 3 4 5
+BUNDLE_MARKER_TYPE
+1 2 3 4 5
+BUNDLE_MARKER_SIZE
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_MARKER_COLOR
+1 2 3 4 5
+
+BUNDLE_POLYGON_INDEX
+1 2 3 4 5
+BUNDLE_POLYGON_INTERIOR
+0 0 0 0 0
+BUNDLE_POLYGON_STYLE
+0 0 0 0 0
+BUNDLE_POLYGON_COLOR
+1 2 3 4 5
+
+BUNDLE_TEXT_INDEX
+1 2 3 4 5
+BUNDLE_TEXT_FONT
+1 1 1 1 1
+BUNDLE_TEXT_PRECISION
+1 1 1 1 1
+BUNDLE_TEXT_CEXPN
+1.0 0.60 0.80 1.20 1.40
+BUNDLE_TEXT_CSPACE
+0.0 0.0 0.0 0.0 0.0
+BUNDLE_TEXT_COLOR
+1 2 3 4 5
+
+POLYGON_COLOR_INSTRUCTION_START
+POLYGON_COLOR_INSTRUCTION_TERMINATOR
+SPC g LF
+POLYGON_POINT_START
+POLYGON_POINT_TERMINATOR
+l LF
+POLYGON_INSTRUCTION_START
+n LF XYC m LF
+POLYGON_INSTRUCTION_TERMINATOR
+f LF
+POLYGON_MAXIMUM_POINTS
+1500
+POLYGON_SIMULATION_SPACING
+10
+
+
+RASTER_SIMULATE
+TRUE

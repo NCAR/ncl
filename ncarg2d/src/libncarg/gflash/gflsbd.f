@@ -1,0 +1,8 @@
+C
+C	$Id: gflsbd.f,v 1.1.1.1 1992-04-17 22:32:59 ncargd Exp $
+C
+      BLOCKDATA GFLSBD
+      COMMON /GFLASH/MODEF,IOPWKS(100),IOACT(100),NUMOP,IWISSI
+C
+      DATA MODEF/0/
+      END

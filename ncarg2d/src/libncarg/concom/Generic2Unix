@@ -1,0 +1,25 @@
+#!/bin/csh -f
+
+set utility = concom
+
+set source = congen.f
+
+echo ""
+echo "Generic to UNIX modifications for $utility/$source :"
+echo "  Commenting out functions FX and FY."
+
+if (! -e $source ) then
+	echo "Error: Cannot locate $source"
+	exit 1
+endif
+
+ed <<'EOF' - $source >/dev/null
+/FX(XXX,YYY) = XXX/
+.,.+1d
+i
+C     FX(XXX,YYY) = XXX
+C     FY(XXX,YYY) = YYY
+.
+w
+q
+'EOF'

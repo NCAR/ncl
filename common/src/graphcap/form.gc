@@ -1,0 +1,195 @@
+/*
+/*	$Id: form.gc,v 1.1.1.1 1992-04-17 22:29:38 ncargd Exp $
+/*
+/*  form
+/*
+/*  This file is a blank form for user-defined graphcap definitions.
+/*
+/*  Comments may be placed anywhere in the file except embedded
+/*  within a keyword.
+/*
+/*  Keywords must be contained on a single line.
+/*
+
+DEVICE_GRAPHIC_INIT
+DEVICE_TEXT_INIT
+DEVICE_COORD_LOWER_LEFT_X
+DEVICE_COORD_LOWER_LEFT_Y
+DEVICE_COORD_UPPER_RIGHT_X
+DEVICE_COORD_UPPER_RIGHT_Y
+DEVICE_COORD_FORMAT
+/* bit_start  bit_count  data_type  data_value
+DEVICE_COORD_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+DEVICE_COORD_XOFFSET
+DEVICE_COORD_YOFFSET
+DEVICE_COORD_XSCALE
+DEVICE_COORD_YSCALE
+DEVICE_COORD_FLOATING_INFO
+/* min input, max input, min output, max output
+DEVICE_COLOR_AVAILABLE
+DEVICE_COLOR_INDEX_FORMAT
+/* bit_start  bit_count  data_type  data_value
+DEVICE_COLOR_INDEX_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+DEVICE_COLOR_INDEX_FLOATING_INFO
+/* min input, max input, min output, max output
+DEVICE_BATCH
+DEVICE_CURSOR_HOME
+DEVICE_MAP_AVAILABLE
+DEVICE_MAP_INDEX_RANGE_MAX
+DEVICE_MAP_INDEX_RANGE_DEFINED
+DEVICE_MAP_INTENSITY_FORMAT
+/* bit_start  bit_count  data_type  data_value
+DEVICE_MAP_INTENSITY_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+DEVICE_MAP_INTENSITY_FLOATING_INFO
+/* min input, max input, min output, max output
+DEVICE_MAP_INDIVIDUAL
+DEVICE_MAP_INSTRUCTION_START
+DEVICE_MAP_INSTRUCTION_TERMINATOR
+DEVICE_MAP_INIT
+DEVICE_MAP_MODEL
+/* mono 0  rgb 1  bgr 2 hls 3
+DEVICE_ERASE
+DEVICE_VECTOR_COUNT_FORMAT
+/* bit_start  bit_count  data_type  data_value
+DEVICE_VECTOR_COUNT_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+DEVICE_VECTOR_COUNT_FLOATING_INFO
+/* min input, max input, min output, max output
+DEVICE_WINDOW_LOWER_LEFT_X
+DEVICE_WINDOW_LOWER_LEFT_Y
+DEVICE_WINDOW_UPPER_RIGHT_X
+DEVICE_WINDOW_UPPER_RIGHT_Y
+
+LINE_DRAW_POLY_FLAG
+LINE_DRAW_INSTRUCTION_START
+LINE_DRAW_INSTRUCTION_TERMINATOR
+LINE_BACKGROUND_COLOR_INSTRUCTION_START
+LINE_BACKGROUND_COLOR_INSTRUCTION_TERMINATOR
+LINE_MOVE_INSTRUCTION_START
+LINE_MOVE_INSTRUCTION_TERMINATOR
+LINE_POINT_START
+LINE_POINT_TERMINATOR
+LINE_COLOR_INSTRUCTION_START
+LINE_COLOR_INSTRUCTION_TERMINATOR
+LINE_WIDTH_INSTRUCTION_START
+LINE_WIDTH_INSTRUCTION_TERMINATOR
+LINE_WIDTH_FORMAT
+/* bit_start  bit_count  data_type  data_value
+LINE_WIDTH_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+LINE_WIDTH_RANGE
+/* two values giving low and high DC width values
+LINE_WIDTH_SCALE
+LINE_WIDTH_FLOATING_INFO
+/* min input, max input, min output, max output
+
+USER_PROMPT
+
+/* Define bundle tables.
+/*
+/* The bundles are defined for the current NCAR metafile translator.
+/* They may be redifined, but not all of them have any effect as of yet.
+/* The bundle tables are associated with the indices in the obvious
+/* manner--the nth element of the index array will be the bundle
+/* index for the bundle containing the nth elements of the applicable
+/* aspects.
+BUNDLE_LINE_INDEX
+1 2 3 4 5
+BUNDLE_LINE_TYPE
+1 2 3 4 5
+BUNDLE_LINE_WIDTH
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_LINE_COLOR
+1 2 3 4 5
+
+BUNDLE_MARKER_INDEX
+1 2 3 4 5
+BUNDLE_MARKER_TYPE
+1 2 3 4 5
+BUNDLE_MARKER_SIZE
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_MARKER_COLOR
+1 2 3 4 5
+
+BUNDLE_POLYGON_INDEX
+1 2 3 4 5
+BUNDLE_POLYGON_INTERIOR
+0 0 0 0 0
+BUNDLE_POLYGON_STYLE
+0 0 0 0 0
+BUNDLE_POLYGON_COLOR
+1 2 3 4 5
+
+BUNDLE_TEXT_INDEX
+1 2 3 4 5
+BUNDLE_TEXT_FONT
+1 1 1 1 1
+BUNDLE_TEXT_PRECISION
+1 1 1 1 1
+BUNDLE_TEXT_CEXPN
+1.0 0.60 0.80 1.20 1.40
+BUNDLE_TEXT_CSPACE
+0.0 0.0 0.0 0.0 0.0
+BUNDLE_TEXT_COLOR
+1 2 3 4 5
+
+TEXT_COLOR_INSTRUCTION_START
+TEXT_COLOR_INSTRUCTION_TERMINATOR
+TEXT_VECTOR_COUNT_FORMAT
+/* bit_start  bit_count  data_type  data_value
+TEXT_VECTOR_COUNT_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+TEXT_INSTRUCTION_START
+TEXT_INSTRUCTION_TERMINATOR
+
+MARKER_COLOR_INSTRUCTION_START
+MARKER_COLOR_INSTRUCTION_TERMINATOR
+MARKER_VECTOR_COUNT_FORMAT
+/* bit_start  bit_count  data_type  data_value
+MARKER_VECTOR_COUNT_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+MARKER_INSTRUCTION_START
+MARKER_INSTRUCTION_TERMINATOR
+MARKER_DOT_SIZE
+
+POLYGON_COLOR_INSTRUCTION_START
+POLYGON_COLOR_INSTRUCTION_TERMINATOR
+POLYGON_INSTRUCTION_START
+POLYGON_INSTRUCTION_TERMINATOR
+POLYGON_BACKGROUND_COLOR_INSTRUCTION_START
+POLYGON_BACKGROUND_COLOR_INSTRUCTION_TERMINATOR
+POLYGON_SIMULATE
+POLYGON_SIMULATION_SPACING
+POLYGON_SIMULATION_TRUNCATION
+POLYGON_HATCH_SPACING
+POLYGON_MAXIMUM_POINTS
+
+DASH_BIT_LENGTH
+
+RASTER_COORD_LOWER_LEFT_X
+RASTER_COORD_LOWER_LEFT_Y
+RASTER_COORD_UPPER_RIGHT_X
+RASTER_COORD_UPPER_RIGHT_Y
+RASTER_COORD_XOFFSET
+RASTER_COORD_YOFFSET
+RASTER_COORD_XSCALE
+RASTER_COORD_YSCALE
+RASTER_DATA_FORMAT
+/* bit_start  bit_count  data_type  data_value
+RASTER_DATA_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+RASTER_DATA_FLOATING_INFO
+/* min input, max input, min output, max output
+RASTER_VECTOR_COUNT_FORMAT
+/* bit_start  bit_count  data_type  data_value
+RASTER_VECTOR_COUNT_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+RASTER_VECTOR_COUNT_FLOATING_INFO
+/* min input, max input, min output, max output
+RASTER_HORIZONTAL_INSTRUCTION_START
+RASTER_HORIZONTAL_INSTRUCTION_TERMINATOR
+RASTER_SIMULATE
+

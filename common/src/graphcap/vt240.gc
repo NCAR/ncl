@@ -1,0 +1,152 @@
+/*
+/*	$Id: vt240.gc,v 1.1.1.1 1992-04-17 22:29:44 ncargd Exp $
+/*
+/*  vt240
+/*
+/*  This graphcap is for the VT240 graphics terminal with color monitor.
+/*
+
+USER_PROMPT
+P [ 0 , 4 6 0 ] T ' < R E A D Y > '
+
+DEVICE_GRAPHIC_INIT
+ESC P 1 p S ( C 0 )
+
+DEVICE_ERASE
+S ( E )
+
+DEVICE_TEXT_INIT
+S ( M 0 ( A D ) 1 ( A B ) 2 ( A R ) 3 ( A G ) ) W ( I 3 ) ESC \
+
+DEVICE_BATCH
+FALSE
+
+DEVICE_COORD_LOWER_LEFT_X
+0
+DEVICE_COORD_LOWER_LEFT_Y
+459
+DEVICE_COORD_UPPER_RIGHT_X
+799
+DEVICE_COORD_UPPER_RIGHT_Y
+20
+DEVICE_COORD_YOFFSET
+DEVICE_COORD_XOFFSET
+0
+DEVICE_COORD_FORMAT
+/* bit_start  bit_count  data_type  data_value
+      0          16           1         15
+      0           8           -1        44
+      0          16           2         15
+DEVICE_COORD_ENCODING
+/* 0 binary, 1 ascii decimal, 2 ascii hex, 3 ascii octal, 4 ascii tek
+1
+
+DEVICE_COLOR_AVAILABLE
+TRUE
+
+DEVICE_COLOR_INDEX_ENCODING
+/* 0 binary, 1 ascii decimal, 2 ascii hex, 3 ascii octal, 4 ascii tek
+1
+DEVICE_COLOR_INDEX_FORMAT
+/* bit_start  bit_count  data_type  data_value
+      0          W           1          W1
+
+DEVICE_MAP_AVAILABLE
+TRUE
+DEVICE_MAP_INDIVIDUAL
+TRUE
+DEVICE_MAP_INDEX_RANGE_MAX
+4
+DEVICE_MAP_INDEX_RANGE_DEFINED
+4
+DEVICE_MAP_INSTRUCTION_START
+S ( M MAD ( A
+DEVICE_MAP_INSTRUCTION_TERMINATOR
+) )
+DEVICE_MAP_INTENSITY_ENCODING
+1
+DEVICE_MAP_INTENSITY_FORMAT
+      0           8           -1        72
+      0          16            1        15
+      0           8           -1        76
+      0          16            2        15
+      0           8           -1        83
+      0          16            3        15
+
+DEVICE_MAP_INIT
+  0   0   0
+240  50 100
+  0  50 100
+120  50 100
+
+DEVICE_MAP_MODEL
+3
+
+LINE_DRAW_POLY_FLAG
+    FALSE
+LINE_DRAW_INSTRUCTION_START
+ V [
+LINE_DRAW_INSTRUCTION_TERMINATOR
+ ]
+LINE_MOVE_INSTRUCTION_START
+ P [
+LINE_MOVE_INSTRUCTION_TERMINATOR
+ ]
+
+LINE_COLOR_INSTRUCTION_START
+W ( I
+LINE_COLOR_INSTRUCTION_TERMINATOR
+)
+
+TEXT_COLOR_INSTRUCTION_START
+TEXT_COLOR_INSTRUCTION_TERMINATOR
+
+MARKER_COLOR_INSTRUCTION_START
+W ( I
+MARKER_COLOR_INSTRUCTION_TERMINATOR
+)
+
+POLYGON_COLOR_INSTRUCTION_START
+POLYGON_COLOR_INSTRUCTION_TERMINATOR
+
+/* these bundles are defined for the current NCAR metafile translator
+/* they may be redifined but not all of them have any effect as of yet
+BUNDLE_LINE_INDEX
+1 2 3 4 5
+BUNDLE_LINE_TYPE
+1 2 3 4 5
+BUNDLE_LINE_WIDTH
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_LINE_COLOR
+1 2 3 4 5
+
+BUNDLE_MARKER_INDEX
+1 2 3 4 5
+BUNDLE_MARKER_TYPE
+1 2 3 4 5
+BUNDLE_MARKER_SIZE
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_MARKER_COLOR
+1 2 3 4 5
+
+BUNDLE_POLYGON_INDEX
+1 2 3 4 5
+BUNDLE_POLYGON_INTERIOR
+0 0 0 0 0
+BUNDLE_POLYGON_STYLE
+0 0 0 0 0
+BUNDLE_POLYGON_COLOR
+1 2 3 4 5
+
+BUNDLE_TEXT_INDEX
+1 2 3 4 5
+BUNDLE_TEXT_FONT
+1 1 1 1 1
+BUNDLE_TEXT_PRECISION
+1 1 1 1 1
+BUNDLE_TEXT_CEXPN
+1.0 0.60 0.80 1.20 1.40
+BUNDLE_TEXT_CSPACE
+0.0 0.0 0.0 0.0 0.0
+BUNDLE_TEXT_COLOR
+1 2 3 4 5

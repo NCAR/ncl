@@ -1,0 +1,25 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:33:07 ncargd Exp $
+#
+NCARG	= ../../../..
+
+FSPLIT	= ncarguncat
+
+MYNAME	= eautog
+
+GENERIC_SRCS = \
+	 agex01.f agex02.f agex03.f agex04.f agex05.f agex06.f agex07.f\
+	 agex08.f agex09.f agex10.f agex11.f agex12.f agex13.f agda13.dat
+
+GENERIC_OBJS = \
+	 agex01.o agex02.o agex03.o agex04.o agex05.o agex06.o agex07.o\
+	 agex08.o agex09.o agex10.o agex11.o agex12.o agex13.o agda13.dat
+
+install::
+	@for file in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLEDIR));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateTarget

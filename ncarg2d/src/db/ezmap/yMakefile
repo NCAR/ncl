@@ -1,0 +1,27 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:35:25 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= ezmapdata
+
+TARGETS = mapconvrt ezmapdata
+
+all:: $(TARGETS)
+
+mapconvrt: mapconvrt.o
+	$(F77_LD) $(LD_FFLAGS) -o mapconvrt mapconvrt.o
+
+ezmapdata: ezmapdat mapconvrt
+	-@$(RM) ezmapdata
+	@echo "Building the EZMAP database"
+	@./mapconvrt
+
+install::
+	@$(INSTALL) -m $(INSTALL_DB) ezmapdata $(DBDIR)
+
+clean::
+	-@$(RM) $(TARGETS)
+
+MakefileTarget
+CleanTarget

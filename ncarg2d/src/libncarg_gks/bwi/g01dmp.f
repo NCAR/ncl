@@ -1,0 +1,447 @@
+C
+C	$Id: g01dmp.f,v 1.1.1.1 1992-04-17 22:33:57 ncargd Exp $
+C
+      SUBROUTINE G01DMP
+C
+C  This subroutine dumps the current state of all attributes.
+C  It also dumps out the clipping indicator, the clipping rectangle,
+C  and the color table.
+C
+C
+      COMMON  /G01WDT/  LWTYPE, LWKCAT, MVERSN
+        INTEGER         LWTYPE, LWKCAT, MVERSN
+      COMMON  /G01WSL/  MWKID   ,MCONID ,MWTYPE ,MSTATE ,MOPEN  ,
+     +                  MDEFMO  ,MREGMO ,MDEMPT ,MNFRAM ,MTUS   ,
+     +                  RWINDO(4)       ,CWINDO(4)      ,
+     +                  RWKVP (4)       ,CWKVP (4)      ,
+     +                  MOLMAX  ,MOL    ,MCOVFL ,MCSORT ,MCOLI(256),
+     +                  SRED(256)       ,SGREEN(256)    ,SBLUE(256),
+     +                  MRCREC(4)       ,MRCLIP
+        INTEGER         MWKID   ,MCONID ,MWTYPE ,MSTATE ,MOPEN
+        INTEGER         MDEFMO  ,MREGMO ,MDEMPT ,MNFRAM ,MTUS
+        INTEGER         MOLMAX  ,MOL    ,MCOVFL ,MCSORT ,MCOLI
+        REAL            RWINDO          ,CWINDO
+        REAL            RWKVP           ,CWKVP
+        REAL            SRED            ,SGREEN         ,SBLUE
+        INTEGER         MRCREC  ,MRCLIP
+      COMMON  /G01ADC/  VALCHG(37)      ,ANYASF ,AGPEND(4)      ,
+     +                  IVPLIX  ,IVLTYP ,IVLWSC ,IVPLCI ,IVPMIX ,
+     +                  IVMTYP  ,IVMSZS ,IVPMCI ,IVTXIX ,IVTXP  ,
+     +                  IVTXAL  ,IVCHH  ,IVCHOV ,IVTXFO ,IVTXPR ,
+     +                  IVCHXP  ,IVCHSP ,IVTXCI ,IVFAIX ,IVPASZ ,
+     +                  IVPARF  ,IVFAIS ,IVFASI ,IVFACI ,IVASF  ,
+     +                  IP2AEA(26)      ,IL2AEA(26)     ,
+     +                  IALTYP  ,IALWSC ,IAPLCI ,IAMTYP ,IAMSZS ,
+     +                  IAPMCI  ,IATXFP ,IACHXP ,IACHSP ,IATXCI ,
+     +                  IAFAIS  ,IAFASI ,IAFACI ,
+     +                  NCGASF  ,NGKASF ,MASMAP(18)
+        LOGICAL         VALCHG  ,ANYASF ,AGPEND
+        INTEGER         IVPLIX  ,IVLTYP ,IVLWSC ,IVPLCI ,IVPMIX
+        INTEGER         IVMTYP  ,IVMSZS ,IVPMCI ,IVTXIX ,IVTXP
+        INTEGER         IVTXAL  ,IVCHH  ,IVCHOV ,IVTXFO ,IVTXPR
+        INTEGER         IVCHXP  ,IVCHSP ,IVTXCI ,IVFAIX ,IVPASZ
+        INTEGER         IVPARF  ,IVFAIS ,IVFASI ,IVFACI ,IVASF
+        INTEGER         IP2AEA  ,IL2AEA
+        INTEGER         IALTYP  ,IALWSC ,IAPLCI ,IAMTYP ,IAMSZS
+        INTEGER         IAPMCI  ,IATXFP ,IACHXP ,IACHSP ,IATXCI
+        INTEGER         IAFAIS  ,IAFASI ,IAFACI
+        INTEGER         NCGASF  ,NGKASF ,MASMAP
+C
+        LOGICAL         ASFCHG(13)
+        EQUIVALENCE     (VALCHG(25),ASFCHG(1))
+C
+      COMMON  /G01ARQ/  MRPLIX  ,MRLTYP ,ARLWSC ,MRPLCI ,
+     +                  MRPMIX  ,MRMTYP ,ARMSZS ,MRPMCI ,
+     +                  MRTXIX  ,MRTXP  ,MRTXAL(2)      ,MRCHH  ,
+     +                  MRCHOV(4)       ,MRTXFO ,MRTXPR ,ARCHXP ,
+     +                  ARCHSP  ,MRTXCI ,
+     +                  MRFAIX  ,MRPASZ(4)      ,MRPARF(2)      ,
+     +                  MRFAIS  ,MRFASI ,MRFACI ,
+     +                  MRASF(13)
+        INTEGER         MRPLIX  ,MRLTYP ,MRPLCI
+        REAL            ARLWSC
+        INTEGER         MRPMIX  ,MRMTYP ,MRPMCI
+        REAL            ARMSZS
+        INTEGER         MRTXIX  ,MRTXP  ,MRTXAL ,MRTXFO
+        INTEGER         MRTXPR  ,MRTXCI ,MRCHH  ,MRCHOV
+        REAL            ARCHXP  ,ARCHSP
+        INTEGER         MRFAIX  ,MRPASZ ,MRPARF ,MRFAIS ,MRFASI
+        INTEGER         MRFACI  ,MRASF
+        INTEGER         MRAEQV(45)
+        REAL            ARAEQV(45)
+        EQUIVALENCE     (MRPLIX, MRAEQV, ARAEQV)
+      COMMON  /G01AST/  MSPLIX  ,MSLTYP ,ASLWSC ,MSPLCI ,
+     +                  MSPMIX  ,MSMTYP ,ASMSZS ,MSPMCI ,
+     +                  MSTXIX  ,MSTXP  ,MSTXAL(2)      ,MSCHH  ,
+     +                  MSCHOV(4)       ,MSTXFO ,MSTXPR ,ASCHXP ,
+     +                  ASCHSP  ,MSTXCI ,
+     +                  MSFAIX  ,MSPASZ(4)      ,MSPARF(2)      ,
+     +                  MSFAIS  ,MSFASI ,MSFACI ,
+     +                  MSASF(13)
+        INTEGER         MSPLIX  ,MSLTYP ,MSPLCI
+        REAL            ASLWSC
+        INTEGER         MSPMIX  ,MSMTYP ,MSPMCI
+        REAL            ASMSZS
+        INTEGER         MSTXIX  ,MSTXP  ,MSTXAL ,MSTXFO
+        INTEGER         MSTXPR  ,MSTXCI ,MSCHH  ,MSCHOV
+        REAL            ASCHXP  ,ASCHSP
+        INTEGER         MSFAIX  ,MSPASZ ,MSPARF ,MSFAIS ,MSFASI
+        INTEGER         MSFACI  ,MSASF
+        INTEGER         MSAEQV(45)
+        REAL            ASAEQV(45)
+        EQUIVALENCE     (MSPLIX, MSAEQV, ASAEQV)
+      COMMON  /G01ADF/  MDPLIX  ,MDLTYP ,ADLWSC ,MDPLCI ,
+     +                  MDPMIX  ,MDMTYP ,ADMSZS ,MDPMCI ,
+     +                  MDTXIX  ,MDTXP  ,MDTXAL(2)      ,MDCHH  ,
+     +                  MDCHOV(4)       ,MDTXFO ,MDTXPR ,ADCHXP ,
+     +                  ADCHSP  ,MDTXCI ,
+     +                  MDFAIX  ,MDPASZ(4)       ,MDPARF(2)     ,
+     +                  MDFAIS  ,MDFASI  ,MDFACI  ,
+     +                  MDASF(13)
+        INTEGER         MDPLIX  ,MDLTYP ,MDPLCI
+        REAL            ADLWSC
+        INTEGER         MDPMIX  ,MDMTYP ,MDPMCI
+        REAL            ADMSZS
+        INTEGER         MDTXIX  ,MDTXP  ,MDTXAL ,MDTXFO
+        INTEGER         MDTXPR  ,MDTXCI ,MDCHH  ,MDCHOV
+        REAL            ADCHXP  ,ADCHSP
+        INTEGER         MDFAIX  ,MDPASZ ,MDPARF ,MDFAIS ,MDFASI
+        INTEGER         MDFACI  ,MDASF
+      COMMON  /G01IO/   MIOFLG  ,MRECNM ,MPXYSZ ,MPXPY(256)     ,
+     +                  MOBFSZ  ,MOUTBF(720)    ,MBFPOS ,
+     +                  MFGLUN  ,MXBITS         ,MDTYPE ,
+     +                  MNFFLG  ,MBMFLG ,MEMFLG
+        INTEGER         MIOFLG  ,MRECNM ,MPXYSZ ,MPXPY  ,MOBFSZ ,
+     +                  MBFPOS  ,MFGLUN ,MOUTBF ,MXBITS ,MDTYPE ,
+     +                  MNFFLG  ,MBMFLG ,MEMFLG
+      COMMON  /G01CHA/  MFNAME  ,MPNAME
+      CHARACTER*80      MFNAME  ,MPNAME
+      COMMON  /G01INS/  MCODES  ,MCONTS ,
+     +                  MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW ,
+     +                  MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL ,
+     +                  MINXVD  ,MAXXVD ,MINYVD ,MAXYVD ,
+     +                  MCFRM   ,MCOPCL ,MCOPID ,MCNBYT ,
+     +                  MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG ,
+     +                  MBCCHG
+        INTEGER         MCODES  ,MCONTS
+        INTEGER         MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW
+        INTEGER         MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL
+        INTEGER         MINXVD  ,MAXXVD ,MINYVD ,MAXYVD
+        INTEGER         MCFRM   ,MCOPCL ,MCOPID ,MCNBYT
+        INTEGER         MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG
+        INTEGER         MBCCHG
+C
+C  Id code parameters for every element, and class codes for each class.
+C
+      COMMON /G01OPC/ IDNOOP, IDBEGM, IDENDM, IDBEGP, IDBGPB, IDENDP
+      COMMON /G01OPC/ IDMVER, IDMELT, IDDREP, IDCSEL, IDVEXT, IDVINT
+      COMMON /G01OPC/ IDCREC, IDCLIN, IDPLIN, IDPMRK, IDTEXT, IDPGON
+      COMMON /G01OPC/ IDCARY, IDGDP,  IDLBIX, IDLTYP, IDLWID, IDLCLR
+      COMMON /G01OPC/ IDMBIX, IDMTYP, IDMSIZ, IDMCLR, IDTBIX, IDTFON
+      COMMON /G01OPC/ IDTPRE, IDCHEX, IDCHSP, IDTCLR, IDCHHT, IDCHOR
+      COMMON /G01OPC/ IDTXPA, IDTXAL, IDFBIX, IDINTS, IDFCLR, IDHAIX
+      COMMON /G01OPC/ IDPTIX, IDFRPT, IDPTBL, IDPTSZ, IDCTBL, IDASFS
+      COMMON /G01OPC/ IDESC,  IDMESS, IDAPLD, IDBKGC, IDDSCR, IDFLST
+      COMMON /G01OPC/ CLDELM, CLMDES, CLPDES, CLCNTL, CLPRIM, CLPRAT
+      COMMON /G01OPC/ CLESCE, CLEXTE
+C
+C  Parameter data types.
+C
+      INTEGER         IDNOOP, IDBEGM, IDENDM, IDBEGP, IDBGPB, IDENDP
+      INTEGER         IDMVER, IDMELT, IDDREP, IDCSEL, IDVEXT, IDVINT
+      INTEGER         IDCREC, IDCLIN, IDPLIN, IDPMRK, IDTEXT, IDPGON
+      INTEGER         IDCARY, IDGDP,  IDLBIX, IDLTYP, IDLWID, IDLCLR
+      INTEGER         IDMBIX, IDMTYP, IDMSIZ, IDMCLR, IDTBIX, IDTFON
+      INTEGER         IDTPRE, IDCHEX, IDCHSP, IDTCLR, IDCHHT, IDCHOR
+      INTEGER         IDTXPA, IDTXAL, IDFBIX, IDINTS, IDFCLR, IDHAIX
+      INTEGER         IDPTIX, IDFRPT, IDPTBL, IDPTSZ, IDCTBL, IDASFS
+      INTEGER         IDESC,  IDMESS, IDAPLD, IDBKGC, IDDSCR, IDFLST
+      INTEGER         CLDELM, CLMDES, CLPDES, CLCNTL, CLPRIM, CLPRAT
+      INTEGER         CLESCE, CLEXTE
+C
+C Class code parameters for every element.
+C
+      INTEGER         CLNOOP, CLBEGM, CLENDM, CLBEGP, CLBGPB, CLENDP
+      INTEGER         CLMVER, CLMELT, CLDREP, CLCSEL, CLVEXT, CLVINT
+      INTEGER         CLCREC, CLCLIN, CLPLIN, CLPMRK, CLTEXT, CLPGON
+      INTEGER         CLCARY, CLGDP,  CLLBIX, CLLTYP, CLLWID, CLLCLR
+      INTEGER         CLMBIX, CLMTYP, CLMSIZ, CLMCLR, CLTBIX, CLTFON
+      INTEGER         CLTPRE, CLCHEX, CLCHSP, CLTCLR, CLCHHT, CLCHOR
+      INTEGER         CLTXPA, CLTXAL, CLFBIX, CLINTS, CLFCLR, CLHAIX
+      INTEGER         CLPTIX, CLFRPT, CLPTBL, CLPTSZ, CLCTBL, CLASFS
+      INTEGER         CLESC,  CLMESS, CLAPLD, CLBKGC, CLDSCR, CLFLST
+C
+C  Equivalence all individual class code parameters to the single
+C  code for the class in which the element(s) belong.
+C
+      EQUIVALENCE (CLDELM, CLNOOP,CLBEGM,CLENDM,CLBEGP,CLBGPB,CLENDP)
+      EQUIVALENCE (CLMDES, CLMVER,CLMELT,CLDREP,CLDSCR,CLFLST)
+      EQUIVALENCE (CLPDES, CLCSEL,CLVEXT,CLBKGC)
+      EQUIVALENCE (CLCNTL, CLVINT,CLCREC,CLCLIN)
+      EQUIVALENCE (CLPRIM, CLPLIN,CLPMRK,CLTEXT,CLPGON,CLCARY,CLGDP)
+      EQUIVALENCE (CLPRAT, CLLBIX,CLLTYP,CLLWID,CLLCLR,CLMBIX,CLMTYP)
+      EQUIVALENCE (CLPRAT, CLMSIZ,CLMCLR,CLTBIX,CLTFON,CLTPRE,CLCHEX)
+      EQUIVALENCE (CLPRAT, CLCHSP,CLTCLR,CLCHHT,CLCHOR,CLTXPA,CLTXAL)
+      EQUIVALENCE (CLPRAT, CLFBIX,CLINTS,CLFCLR,CLHAIX,CLPTIX,CLFRPT)
+      EQUIVALENCE (CLPRAT, CLPTBL,CLPTSZ,CLCTBL,CLASFS)
+      EQUIVALENCE (CLESCE, CLESC), (CLEXTE, CLMESS,CLAPLD)
+      COMMON /GKSENU/ GYES,  GNO,   GCONDI, GALWAY, GACTIV, GINACT
+      COMMON /GKSENU/ GEMPTY,GNEMPT,GPEND,  GNPEND, GCLIP , GNCLIP
+C
+      INTEGER         GYES,  GNO,   GCONDI, GALWAY, GACTIV, GINACT
+      INTEGER         GEMPTY,GNEMPT,GPEND,  GNPEND, GCLIP , GNCLIP
+C
+      INTEGER NUMO(2),RERR
+      INTEGER ICTMP(3)
+C
+C  Clipping indicator, and clip rectangle.
+C
+      NBYTES = 1+(MEFW-1)/8
+      CALL GPUTNI (CLCLIN, IDCLIN, NBYTES, RERR)
+      CALL GPUTPR (MRCLIP, MEFW,     1, RERR)
+      NBYTES = 1 + (4*MVDCFW-1)/8
+      CALL GPUTNI (CLCREC, IDCREC, NBYTES, RERR)
+      CALL GPUTPR (MRCREC, MVDCFW,     4, RERR)
+C
+C  Color table.
+C
+      DO 10 I=1,MOL
+      ICTMP(1) = REAL(MDCCRG)*SRED(I)
+      ICTMP(2) = REAL(MDCCRG)*SGREEN(I)
+      ICTMP(3) = REAL(MDCCRG)*SBLUE(I)
+      NCIX = MCOLI(I)
+      IF (NCIX .EQ. 0) GO TO 10
+      NBYTES = 1 + (3*MDCCFW + MCIXFW - 1)/8
+      CALL GPUTNI (CLCTBL, IDCTBL, NBYTES, RERR)
+      IF (RERR .NE. 0)  RETURN
+      CALL GPUTPR (NCIX, MCIXFW, 1, RERR)
+      IF (RERR .NE. 0)  RETURN
+      CALL GPUTPR (ICTMP, MDCCFW, 3, RERR)
+   10 CONTINUE
+C
+C  Line bundle index.
+C
+      NBYTES = 1+(MIXFW-1)/8
+      CALL GPUTNI (CLLBIX,  IDLBIX,  NBYTES,  RERR)
+      CALL GPUTPR (MRPLIX, MIXFW,  1, RERR)
+      MSPLIX         = MRPLIX
+      VALCHG(IVPLIX) = .FALSE.
+C
+C  Line type.
+C
+      NBYTES = 1+(MIXFW-1)/8
+      CALL GPUTNI (CLLTYP,  IDLTYP,  NBYTES,  RERR)
+      CALL GPUTPR (MRLTYP, MIXFW,  1, RERR)
+      MSLTYP = MRLTYP
+      VALCHG(IVLTYP) = .FALSE.
+C
+C  Linewidth scale factor.
+C
+      NBYTES = 1+(2*MCFPP-1)/8
+      CALL GPUTNI (CLLWID,  IDLWID,  NBYTES,  RERR)
+      CALL GFLCNV (ARLWSC,NUMO)
+      CALL GPUTPR (NUMO, MCFPP,  2, RERR)
+      ASLWSC         = ARLWSC
+      VALCHG(IVLWSC) = .FALSE.
+C
+C  Line color index.
+C
+      NBYTES = 1+(MCIXFW-1)/8
+      CALL GPUTNI (CLLCLR, IDLCLR, NBYTES,  RERR)
+      CALL GPUTPR (MRPLCI, MCIXFW,  1, RERR)
+      MSPLCI         = MRPLCI
+      VALCHG(IVPLCI) = .FALSE.
+C
+C  Marker bundle index.
+C
+      NBYTES = 1+(MIXFW-1)/8
+      CALL GPUTNI (CLMBIX, IDMBIX, NBYTES,  RERR)
+      CALL GPUTPR (MRPMIX, MIXFW,  1, RERR)
+      MSPMIX = MRPMIX
+      VALCHG(IVPMIX) = .FALSE.
+C
+C  Marker type.
+C
+      NBYTES = 1+(MIXFW-1)/8
+      CALL GPUTNI (CLMTYP, IDMTYP,  NBYTES,  RERR)
+      CALL GPUTPR (MRMTYP, MIXFW,  1, RERR)
+      MSMTYP = MRMTYP
+      VALCHG(IVMTYP) = .FALSE.
+C
+C  Marker size.
+C
+      NBYTES = 1+(2*MCFPP-1)/8
+      CALL GPUTNI (CLMSIZ, IDMSIZ, NBYTES,  RERR)
+      CALL GFLCNV (ARMSZS,NUMO)
+      CALL GPUTPR (NUMO, MCFPP,  2, RERR)
+      ASMSZS = ARMSZS
+      VALCHG(IVMSZS) = .FALSE.
+C
+C  Marker color.
+C
+      NBYTES = 1+(MCIXFW-1)/8
+      CALL GPUTNI (CLMCLR, IDMCLR, NBYTES,  RERR)
+      CALL GPUTPR (MRPMCI, MCIXFW,  1, RERR)
+      MSPMCI = MRPMCI
+      VALCHG(IVPMCI) = .FALSE.
+C
+C  Text bundle index.
+C
+      NBYTES = 1+(MIXFW-1)/8
+      CALL GPUTNI (CLTBIX, IDTBIX, NBYTES, RERR)
+      CALL GPUTPR (MRTXIX, MIXFW, 1, RERR)
+      MSTXIX         = MRTXIX
+      VALCHG(IVTXIX) = .FALSE.
+C
+C  Text font.
+C
+      NBYTES = 1+(MEFW-1)/8
+      CALL GPUTNI (CLTFON, IDTFON, NBYTES, RERR)
+      CALL GPUTPR (MRTXFO, MEFW, 1, RERR)
+      MSTXFO         = MRTXFO
+      VALCHG(IVTXFO) = .FALSE.
+C
+C  Text precision.
+C
+      NBYTES         = 1+(MIXFW-1)/8
+      CALL GPUTNI (CLTPRE, IDTPRE, NBYTES, RERR)
+      CALL GPUTPR (MRTXPR, MIXFW, 1, RERR)
+      MSTXPR         = MRTXPR
+      VALCHG(IVTXPR) = .FALSE.
+C
+C  Character expansion factor.
+C
+      NBYTES = 1+(2*MCFPP-1)/8
+      CALL GPUTNI (CLCHEX, IDCHEX, NBYTES, RERR)
+      CALL GFLCNV (ARCHXP, NUMO)
+      CALL GPUTPR (NUMO, MCFPP, 2, RERR)
+      ASCHXP         = ARCHXP
+      VALCHG(IVCHXP) = .FALSE.
+C
+C  Character spacing.
+C
+      NBYTES = 1+(2*MCFPP-1)/8
+      CALL GPUTNI (CLCHSP, IDCHSP, NBYTES, RERR)
+      CALL GFLCNV (ARCHSP, NUMO)
+      CALL GPUTPR (NUMO, MCFPP, 2, RERR)
+      ASCHSP         = ARCHSP
+      VALCHG(IVCHSP) = .FALSE.
+C
+C  Text color index.
+C
+      NBYTES = 1+(MCIXFW-1)/8
+      CALL GPUTNI (CLTCLR, IDTCLR, NBYTES, RERR)
+      CALL GPUTPR (MRTXCI, MCIXFW, 1, RERR)
+      MSTXCI         = MRTXCI
+      VALCHG(IVTXCI) = .FALSE.
+C
+C  Text path.
+C
+      NBYTES = 1+(MEFW-1)/8
+      CALL GPUTNI (CLTXPA, IDTXPA, NBYTES, RERR)
+      CALL GPUTPR (MRTXP , MEFW,  1, RERR)
+      MSTXP         = MRTXP
+      VALCHG(IVTXP) = .FALSE.
+C
+C  Text alignment.
+C
+      NBYTES = 1+(2*MEFW + 4*MCFPP - 1)/8
+      CALL GPUTNI (CLTXAL, IDTXAL, NBYTES, RERR)
+      CALL GPUTPR (MRTXAL, MEFW, 2, RERR)
+      NUMO(1) = 0
+      NUMO(2) = 0
+      CALL GPUTPR (NUMO, MCFPP, 2, RERR)
+      CALL GPUTPR (NUMO, MCFPP, 2, RERR)
+      MSTXAL(1)      = MRTXAL(1)
+      MSTXAL(2)      = MRTXAL(2)
+      VALCHG(IVTXAL) = .FALSE.
+C
+C  Character height.
+C
+      NBYTES = 1+(MVDCFW-1)/8
+      CALL GPUTNI (CLCHHT, IDCHHT, NBYTES, RERR)
+      CALL GPUTPR (MRCHH, MVDCFW,  1, RERR)
+      MSCHH         = MRCHH
+      VALCHG(IVCHH) = .FALSE.
+C
+C  Character up vector.
+C
+      NBYTES = 1+(4*MVDCFW-1)/8
+      CALL GPUTNI (CLCHOR, IDCHOR, NBYTES, RERR)
+      CALL GPUTPR (MRCHOV(1) , MVDCFW,  4, RERR)
+      MSCHOV(1)      = MRCHOV(1)
+      MSCHOV(2)      = MRCHOV(2)
+      MSCHOV(3)      = MRCHOV(3)
+      MSCHOV(4)      = MRCHOV(4)
+      VALCHG(IVCHOV) = .FALSE.
+C
+C  Fill bundle index.
+C
+       NBYTES = 1+(MIXFW-1)/8
+       CALL GPUTNI (CLFBIX, IDFBIX,  NBYTES,  RERR)
+       CALL GPUTPR (MRFAIX, MIXFW,  1, RERR)
+       MSFAIX = MRFAIX
+       VALCHG(IVFAIX) = .FALSE.
+C
+C  Fill area interior style.
+C
+       NBYTES = 1+(MEFW-1)/8
+       CALL GPUTNI (CLINTS, IDINTS, NBYTES,  RERR)
+       CALL GPUTPR (MRFAIS, MEFW,  1, RERR)
+       MSFAIS = MRFAIS
+       VALCHG(IVFAIS) = .FALSE.
+C
+C  Fill area style index--send pattern index and hatch index.
+C
+       NBYTES = 1+(MIXFW-1)/8
+       CALL GPUTNI (CLHAIX, IDHAIX, NBYTES,  RERR)
+       CALL GPUTPR (MRFASI, MIXFW, 1, RERR)
+       CALL GPUTNI (CLPTIX, IDPTIX, NBYTES,  RERR)
+       CALL GPUTPR (MRFASI, MIXFW, 1, RERR)
+       MSFASI = MRFASI
+       VALCHG(IVFASI) = .FALSE.
+C
+C  Fill area color index.
+C
+       NBYTES = 1+(MCIXFW-1)/8
+       CALL GPUTNI (CLFCLR, IDFCLR, NBYTES, RERR)
+       CALL GPUTPR (MRFACI, MCIXFW,  1, RERR)
+       MSFACI = MRFACI
+       VALCHG(IVFACI) = .FALSE.
+C
+C  Pattern size.
+C
+       NBYTES = 1+(4*MVDCFW-1)/8
+       CALL GPUTNI (CLPTSZ, IDPTSZ, NBYTES, RERR)
+       CALL GPUTPR (MRPASZ(1) , MVDCFW,  4, RERR)
+       MSPASZ(1) = MRPASZ(1)
+       MSPASZ(2) = MRPASZ(2)
+       MSPASZ(3) = MRPASZ(3)
+       MSPASZ(4) = MRPASZ(4)
+       VALCHG(IVPASZ) = .FALSE.
+C
+C  Pattern reference point.
+C
+       NBYTES = 1+(2*MVDCFW-1)/8
+       CALL GPUTNI (CLFRPT, IDFRPT, NBYTES, RERR)
+       CALL GPUTPR (MRPARF(1), MVDCFW, 2, RERR)
+       MSPARF(1) = MRPARF(1)
+       MSPARF(2) = MRPARF(2)
+       VALCHG(IVPARF) = .FALSE.
+C
+C  Aspect source flags.
+C
+      CALL G01SAS (1, RERR)
+      CALL G01SAS (2, RERR)
+      CALL G01SAS (3, RERR)
+      CALL G01SAS (4, RERR)
+C
+C  Clear aggregate change variable.
+C
+      AGPEND(1) = .FALSE.
+      AGPEND(2) = .FALSE.
+      AGPEND(3) = .FALSE.
+      AGPEND(4) = .FALSE.
+C
+      RETURN
+      END

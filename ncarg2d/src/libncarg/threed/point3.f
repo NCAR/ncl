@@ -1,0 +1,40 @@
+C
+C	$Id: point3.f,v 1.1.1.1 1992-04-17 22:31:47 ncargd Exp $
+C
+      SUBROUTINE POINT3 (U,V,W)
+      SAVE
+      DIMENSION VIEW(4),WIND(4)
+C
+C THE FOLLOWING CALL IS FOR GATHERING STATISTICS ON LIBRARY USE AT NCAR
+C
+      CALL Q8QST4 ('GRAPHX','THREED','POINT3','VERSION  1')
+C
+C Save the current SET parameters.
+C
+      CALL GETSET (VIEW(1),VIEW(2),VIEW(3),VIEW(4),
+     +             WIND(1),WIND(2),WIND(3),WIND(4),IOLLS)
+C
+C
+C
+C
+C
+C DEFINE NORMALIZATION TRANS TO BE USED WITH POLYMARKER
+C
+      CALL SET(0.0, 1.0, 0.0, 1.0, 1.0, 1024.0, 1.0, 1024.0, 1)
+C
+C SET MARKER TYPE TO 1
+C
+      CALL GSMK (1)
+      CALL TRN32T (U,V,W,X,Y,ZDUM,2)
+      PX = X
+      PY = Y
+      CALL GPM (1,PX,PY)
+C
+C
+C Restore original SET call.
+C
+      CALL SET(VIEW(1),VIEW(2),VIEW(3),VIEW(4),
+     -         WIND(1),WIND(2),WIND(3),WIND(4),IOLLS)
+C
+      RETURN
+      END

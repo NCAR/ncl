@@ -1,0 +1,27 @@
+#!/bin/csh -f
+
+set utility = ezmap
+
+set source = mapio.f
+
+echo ""
+echo "Generic to UNIX modifications for $utility/$source :"
+echo "	Adding call to OPENMP"
+
+if (! -e $source ) then
+	echo "Error: Cannot locate $source"
+	exit 1
+endif
+
+
+ed <<'EOF' - $source >/dev/null
+/IF (IACT.EQ.1) THEN/
+i
+C Generic-to-UNIX Modification.
+C
+      CALL OPENMP (ITPN)
+C
+.
+w
+q
+'EOF'

@@ -1,0 +1,45 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:32:30 ncargd Exp $
+#
+NCARG	= ../../../..
+
+#if defined(sgi) && defined(mips)
+FOPT =
+#endif
+
+MYNAME	= spps
+
+GENERIC_SRCS = \
+	cfux.f cfuy.f cmfx.f cmfy.f cmux.f cmuy.f cpfx.f cpfy.f cpux.f\
+	cpuy.f cufx.f cufy.f kfmx.f kfmy.f kfpx.f kfpy.f kmpx.f kmpy.f\
+	kpmx.f kpmy.f kumx.f kumy.f kupx.f kupy.f clsgks.f curve.f fl2int.f\
+	sflush.f frame.f frstpt.f getset.f getsi.f getusv.f line.f mxmy.f\
+	opngks.f plotif.f plotit.f point.f points.f pwrit.f set.f seti.f\
+	setusv.f vector.f wtstr.f utilbd.f
+
+GENERIC_OBJS = \
+	cfux.o cfuy.o cmfx.o cmfy.o cmux.o cmuy.o cpfx.o cpfy.o cpux.o\
+	cpuy.o cufx.o cufy.o kfmx.o kfmy.o kfpx.o kfpy.o kmpx.o kmpy.o\
+	kpmx.o kpmy.o kumx.o kumy.o kupx.o kupy.o clsgks.o curve.o fl2int.o\
+	sflush.o frame.o frstpt.o getset.o getsi.o getusv.o line.o mxmy.o\
+	opngks.o plotif.o plotit.o point.o points.o pwrit.o set.o seti.o\
+	setusv.o vector.o wtstr.o utilbd.o
+
+SOURCES = $(GENERIC_SRCS)
+
+OBJECTS = $(GENERIC_OBJS)
+
+PartialLibrary(libncarg.a,$(OBJECTS))
+
+#ifdef  BuildNCARGSourceLibrary
+all:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_QUICK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	@-$(RM) $(MYNAME)
+
+install:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcncarg.a
+	@-$(RM) $(MYNAME)
+#endif

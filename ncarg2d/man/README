@@ -1,0 +1,8 @@
+Notes on "man" files:
+---------------------
+Files with the ".m" suffix are man document source. 
+
+Files with the ".p" suffix are preformatted man documents that
+are built on the distribution system for the purpose of installing
+on systems that don't have troff (Cray, SGI, IBM, most SV
+environments).

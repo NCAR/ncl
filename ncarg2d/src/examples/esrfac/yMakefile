@@ -1,0 +1,23 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:33:25 ncargd Exp $
+#
+NCARG	= ../../../..
+
+FSPLIT	= ncarguncat
+
+MYNAME	= esrfac
+
+GENERIC_SRCS = \
+	srex01.f srex01.dat
+
+GENERIC_OBJS = \
+	srex01.o srex01.dat
+
+install::
+	@for file in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLEDIR));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateTarget

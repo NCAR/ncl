@@ -1,0 +1,84 @@
+#if defined(hpux)
+#define SystemIncludes		"HPUX"
+#define SystemIncludesName	HPUX
+#endif
+
+#if defined(_IBMR2) && defined(_AIX)
+#define SystemIncludes		"RS6000"
+#define SystemIncludesName	RS6000
+#endif
+
+#if defined(u370) && defined(unix)
+#define SystemIncludes		"AIX370"
+#define SystemIncludesName	AIX370
+#endif
+
+#if defined(sun) && defined(i386)
+#define SystemIncludes		"Sun386i"
+#define SystemIncludesName	Sun386i
+#endif
+
+#if defined(sun) && defined(sparc)
+#define SystemIncludes		"Sun4"
+#define SystemIncludesName	Sun4
+#endif
+
+#if defined(sun) && defined(mc68000)
+#define SystemIncludes		"Sun3"
+#define SystemIncludesName	Sun3
+#endif
+
+#if defined(pyr) || defined(pyramid)
+#define SystemIncludes		"Pyramid"
+#define SystemIncludesName	Pyramid
+#endif
+
+#if defined(ultrix) && defined(mips)
+#define SystemIncludes		"DECRISC"
+#define SystemIncludesName	DECRISC
+#endif
+
+#if defined(vax)
+
+#if defined(ultrix)
+#define SystemIncludes		"DECVAX"
+#define SystemIncludesName	DECVAX
+#else
+#define SystemIncludes		"DECBSD"
+#define SystemIncludesName	DECBSD
+#endif
+
+#endif vax
+
+#if defined(mc300) || defined(mc500) || defined(mc700) || defined(mc6000)
+#define SystemIncludes		"Masscomp"
+#define SystemIncludesName	Masscomp
+#endif
+
+#if defined(sgi) && defined(mips)
+#define SystemIncludes		"SGI4D"
+#define SystemIncludesName	SGI4D
+#endif
+
+#if defined(CRAY2)
+#define SystemIncludes		"Cray2"
+#define SystemIncludesName	Cray2
+#endif
+
+#if defined(cray)
+#define SystemIncludes          "Cray"
+#define SystemIncludesName      Cray
+#endif
+
+#if defined(ardent)
+#define SystemIncludes		"Ardent"
+#define SystemIncludesName	Ardent
+#endif
+
+#ifndef SystemIncludesName
+#define SystemIncludes		"SystemV"
+#define SystemIncludesName	SystemV
+#endif
+
+SYSTEM_INCLUDE		= SystemIncludesName
+

@@ -1,0 +1,33 @@
+#!/bin/csh -f
+#
+#	$Id: ncargrun,v 1.1.1.1 1992-04-17 22:34:45 ncargd Exp $
+#
+
+foreach arg ($argv)
+
+	switch ($arg)
+
+	case "-o":
+		set get_output
+		breaksw
+
+	case "-t":
+		setenv NCARG_GKS_OUTPUT "| ftrans"
+		breaksw
+
+	default:
+		if ( $?get_output ) then
+			setenv NCARG_GKS_OUTPUT $arg
+			unset get_output
+		else
+			if ( ! $?program ) then
+				set program=$arg
+			else
+				echo "$0: too many program names"
+				exit 1;
+			endif
+		endif
+	endsw
+end
+
+$program

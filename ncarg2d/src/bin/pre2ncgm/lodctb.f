@@ -1,0 +1,38 @@
+C
+C	$Id: lodctb.f,v 1.1.1.1 1992-04-17 22:34:49 ncargd Exp $
+C
+      SUBROUTINE LODCTB(IOS,STATUS)
+C
+C  Send out the color table to the device.
+C
+C  OUTPUT
+C    IOS    -  The I/O status, valid only if STATUS is non-zero.
+C    STATUS -  The status of the request, defined by COMMON TREROR.
+C
+      COMMON/TREROR/ ALLOK, MFRCHK, MTOPER, METRDC, REDERR, TYPCHG
+     1             ,INVTYP, MINVLD, TYPERR, FRMEND, ENCINT, IVDCDT
+     2             ,GCOERR, GCRERR, GCCERR, FCOERR, FCRERR, FCCERR
+     3             ,PLIDXG, PMIDXG, TXIDXG, PGIDXG, INVLMT, CELERR
+     4             ,COIERR, COLNRM, UNKNOW, UNKOPC, ENDMTF, VNEROR
+     5             ,BADRSZ, DEVOUT, NOVERS, BADFNT, PGMERR, FASERR
+     6             ,HINERR, VDWERR, RDWERR, RIXLIM
+      INTEGER        ALLOK, MFRCHK, MTOPER, METRDC, REDERR, TYPCHG
+     1             ,INVTYP, MINVLD, TYPERR, FRMEND, ENCINT, IVDCDT
+     2             ,GCOERR, GCRERR, GCCERR, FCOERR, FCRERR, FCCERR
+     3             ,PLIDXG, PMIDXG, TXIDXG, PGIDXG, INVLMT, CELERR
+     4             ,COIERR, COLNRM, UNKNOW, UNKOPC, ENDMTF, VNEROR
+     5             ,BADRSZ, DEVOUT, NOVERS, BADFNT, PGMERR, FASERR
+     6             ,HINERR, VDWERR, RDWERR, RIXLIM
+      COMMON /CINFO/COLVLS,INTS,NUMI
+      DIMENSION COLVLS(3,256),INTS(256)
+C
+      INTEGER IOS, STATUS
+C
+      STATUS = ALLOK
+      CALL GSCR(1,0,0.,0.,0.)
+      DO 10 I=1,NUMI
+      CALL GSCR(1,I,COLVLS(1,I),COLVLS(2,I),COLVLS(3,I))
+   10 CONTINUE
+C
+      RETURN
+      END

@@ -1,0 +1,258 @@
+/*
+/*	$Id: ps.color.gc,v 1.1.1.1 1992-04-17 22:29:41 ncargd Exp $
+/*
+/*  ps.color
+/*
+/*  This file defines a PostScript graphcap in graphics portrait
+/*  mode.  This graphcap supports color -- it will accommodate
+/*  256 user-defined rgb color values and it sets 240 rgb color
+/*  values in its default color table.
+/*
+/*   ------------------------------------------------------------
+/*   ------->  This GRAPHCAP is compatible with          <-------
+/*   ------->  Version 3.00 of the GRAPHCAP preprocessor <-------
+/*   ------->  GRAPHC dated 29-OCT-89, or later.  It     <-------
+/*   ------->  will not produce correct results when     <-------
+/*   ------->  used with previous versions.              <-------
+/*   ------------------------------------------------------------
+/*
+/*  Raster images (via the CGM CELL ARRAY element) are simulated
+/*  using filled areas and can produce very large PostScript files
+/*  and require much processing time.
+/*
+
+DEVICE_GRAPHIC_INIT
+% ! P S LF
+s a v e LF
+/ w SPC { s e t l i n e w i d t h } SPC d e f LF
+/ l SPC { l i n e t o } SPC d e f LF
+/ n SPC { n e w p a t h } SPC d e f LF
+/ m SPC { m o v e t o } SPC d e f LF
+/ s SPC { s c a l e } SPC d e f LF
+/ c SPC { s e t l i n e c a p } SPC d e f LF
+/ j SPC { s e t l i n e j o i n } SPC d e f LF
+/ r SPC { r e s t o r e } SPC d e f LF
+/ h SPC { s h o w p a g e } SPC d e f LF
+/ t SPC { s t r o k e } SPC d e f LF
+/ f SPC { e o f i l l } SPC d e f LF
+/ c t SPC 2 5 6 SPC a r r a y SPC d e f LF
+/ o SPC { c t SPC e x c h SPC g e t SPC a l o a d SPC
+p o p SPC s e t r g b c o l o r } SPC d e f LF
+. 1 2 5 SPC . 1 2 5 SPC s LF
+1 SPC c LF
+1 SPC j LF
+n LF
+
+DEVICE_TEXT_INIT
+SPC r LF
+DEVICE_COORD_LOWER_LEFT_X
+0
+DEVICE_COORD_LOWER_LEFT_Y
+0
+DEVICE_COORD_UPPER_RIGHT_X
+4078
+DEVICE_COORD_UPPER_RIGHT_Y
+4078
+DEVICE_COORD_FORMAT
+/* bit_start  bit_count  data_type  data_value
+      0         16           1          15
+     16          8          -1          32
+      0         16           2          15
+     16          8          -1          32
+DEVICE_COORD_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+1
+DEVICE_COORD_XOFFSET
+404
+DEVICE_COORD_YOFFSET
+1124
+DEVICE_COLOR_AVAILABLE
+TRUE
+DEVICE_COLOR_INDEX_FORMAT
+/* bit_start  bit_count  data_type  data_value
+      0          8          -1          32
+      0         16           1          15
+DEVICE_COLOR_INDEX_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+1
+DEVICE_COLOR_INDEX_FLOATING_INFO
+/* min input, max input, min output, max output
+/* 0. 255. 0. 1.
+DEVICE_BATCH
+TRUE
+
+DEVICE_MAP_AVAILABLE
+TRUE
+DEVICE_MAP_INDIVIDUAL
+TRUE
+DEVICE_MAP_INSTRUCTION_START
+SPC c t  MAD SPC [
+DEVICE_MAP_INSTRUCTION_TERMINATOR
+] SPC p u t LF
+DEVICE_MAP_INDEX_RANGE_MAX
+256
+DEVICE_MAP_INDEX_RANGE_DEFINED
+240
+DEVICE_MAP_MODEL
+/* mono 0  rgb 1  bgr 2 hls 3
+1
+DEVICE_MAP_INTENSITY_ENCODING
+5
+DEVICE_MAP_INTENSITY_FLOATING_INFO
+/* min input, max input, min output, max output
+0. 255. 0. 1.
+DEVICE_MAP_INTENSITY_FORMAT
+/* bit_start  bit_count  data_type  data_value
+      0         16           1          15
+     16          8          -1          32
+      0         16           2          15
+     16          8          -1          32
+      0         16           3          15
+DEVICE_MAP_INIT
+ 255 255 255    0   0   0  255   0   0    0 255   0    0   0 255    0 255 255
+ 255   0 211  255 255   0  255 127   0  153 211   0    0 255 153    0 127 255
+ 140   0 211  255   0 140   84  84  84  170 170 170  255 255  84  191 255 114
+ 114 255 153   43 255 191   63 211 211  127 170 211  191 140 211  255  84 229
+ 170 229 114  102 229 140   43 229 170   43 170 229   43 127 255  114  84 255
+ 191  43 255  229  22 255  211 255  43  170 255  63  114 255  84   43 255 127
+  43 211 153   43 170 191   43 140 211   63 114 229  102  84 229  170  43 229
+ 211  43 211  229  84 170  211 114 153  211 153 127  229 170 102  229 170  63
+ 255 229  22  211 255  22  153 255  43  114 255  63   43 229 114   43 211 140
+  43 170 170   43 140 191   43 102 229  102  63 229  140  43 229  211  43 191
+ 255  43 170  255  63 153  255 102 127  255 127 102  255 211  22  191 255   0
+ 153 255  33  102 255  43   33 255  84   33 211 114   43 191 127   33 153 170
+  33 127 191   33 102 211   43  63 229   43  43 255   84  22 255  140  22 229
+ 191   0 211  229   0 191  229 191  22  170 229  22  140 229  33   63 229  63
+  33 229  84   43 191 102   33 170 127   33 140 153   33 114 170   43  84 191
+  43  63 211   84  43 211  140  33 191  191  33 170  229  43 140  211  63 127
+ 211 191   0  153 211  22  114 229  22   84 229  33   33 229  63   43 211  63
+  43 191  84   43 153 114   33 127 140   33 114 153   43  84 170   84  63 170
+ 114  63 153  170  63 127  211  63 102  255  63  84  191 170   0  140 191  22
+ 102 211  22   63 229  22   43 229  33   43 211  43   33 191  63   33 170  84
+  33 153 102   33 114 127   33 102 140   63  84 140  114  84 114  140  84 102
+ 170  84  84  211  84  63  170 153   0  127 170  22  102 170  33   63 170  43
+  33 170  63   22 153  84   22 127 102   33 102 114   33  84 127   22  43 170
+  43  33 170  102  33 140  127  33 127  153  33 114  191  33 102  229  33  84
+ 140 127  22  114 153  22   84 153  33   43 153  43   22 140  63   33 114  84
+  22 102 102   43  84 102   43  63 114   63  43 127   63  33 140   84  33 127
+ 114  33 114  140  33 102  170  33  84  211  33  63  127 114  22  102 127  22
+  84 153   0   43 153  22   33 170  22   33 153  33   33 127  43   22 114  63
+  33 102  63   33  84  84   22  63 102   22  43 127   22  33 140   33   0 153
+  84   0 127  127   0 102  191  84   0  170 102   0  140 102  22   84 102  43
+  63  84  63   63  63  84   63  43 102   84  33 102  127  33  84  153  33  63
+ 191  22  63  211   0  63  255   0  43  255  33  33  229  43  22  211  63  22
+ 153  63   0  114 102   0   63 102  33   63  84  43   43  63  63   43  43  84
+  63  33  84   84  22  84  127  22  63  170  22  43  211   0  43  229   0  33
+ 255   0  22  255  33  22  211  43   0  191  63   0  127  43   0  102  84   0
+  33 114  22   22 102  33   22  84  43   22  63  63   33  43  84   43  22 102
+  63   0  84  114   0  63  153   0  43  191   0  33  211   0  22  191  22  22
+ 170  33  22  153  43   0  102  43   0   43  84   0   22  84   0   22  63  22
+  22  43  33   22  33  63   22  33  84   22   0  84   33   0  63   43   0  43
+  84   0  43   84   0  33  102   0  22  114  22  22  114  33   0   43  22   0
+
+DEVICE_ERASE
+SPC t LF SPC h LF n LF
+. 1 2 5 SPC . 1 2 5 SPC s LF
+1 SPC c LF
+1 SPC j LF
+
+LINE_DRAW_POLY_FLAG
+TRUE
+LINE_DRAW_INSTRUCTION_START
+n LF XYC m LF
+LINE_DRAW_INSTRUCTION_TERMINATOR
+t LF
+LINE_POINT_START
+LINE_POINT_TERMINATOR
+l LF
+LINE_COLOR_INSTRUCTION_START
+LINE_COLOR_INSTRUCTION_TERMINATOR
+SPC o LF
+
+LINE_WIDTH_INSTRUCTION_START
+SPC
+LINE_WIDTH_INSTRUCTION_TERMINATOR
+w LF
+LINE_WIDTH_FORMAT
+/* bit_start  bit_count  data_type  data_value
+    0   16    1   15
+    0    8   -1   32
+LINE_WIDTH_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+1
+LINE_WIDTH_RANGE
+/* two values giving low and high DC width values
+1 72
+LINE_WIDTH_SCALE
+.251
+
+MARKER_COLOR_INSTRUCTION_START
+MARKER_COLOR_INSTRUCTION_TERMINATOR
+SPC o LF
+
+POLYGON_COLOR_INSTRUCTION_START
+POLYGON_COLOR_INSTRUCTION_TERMINATOR
+SPC o LF
+POLYGON_POINT_START
+POLYGON_POINT_TERMINATOR
+l LF
+POLYGON_INSTRUCTION_START
+n LF XYC m LF
+POLYGON_INSTRUCTION_TERMINATOR
+f LF
+POLYGON_MAXIMUM_POINTS
+1500
+POLYGON_SIMULATION_SPACING
+10
+
+
+RASTER_SIMULATE
+TRUE
+
+/* Define bundle tables.
+/*
+/* The bundles are defined for the current NCAR metafile translator.
+/* They may be redefined, but not all of them have any effect as of yet.
+/* The bundle tables are associated with the indices in the obvious
+/* manner--the nth element of the index array will be the bundle
+/* index for the bundle containing the nth elements of the applicable
+/* aspects.
+BUNDLE_LINE_INDEX
+1 2 3 4 5
+BUNDLE_LINE_TYPE
+1 2 3 4 5
+BUNDLE_LINE_WIDTH
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_LINE_COLOR
+1 2 3 4 5
+
+BUNDLE_MARKER_INDEX
+1 2 3 4 5
+BUNDLE_MARKER_TYPE
+1 2 3 4 5
+BUNDLE_MARKER_SIZE
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_MARKER_COLOR
+1 2 3 4 5
+
+BUNDLE_POLYGON_INDEX
+1 2 3 4 5
+BUNDLE_POLYGON_INTERIOR
+0 0 0 0 0
+BUNDLE_POLYGON_STYLE
+0 0 0 0 0
+BUNDLE_POLYGON_COLOR
+1 2 3 4 5
+
+BUNDLE_TEXT_INDEX
+1 2 3 4 5
+BUNDLE_TEXT_FONT
+1 1 1 1 1
+BUNDLE_TEXT_PRECISION
+1 1 1 1 1
+BUNDLE_TEXT_CEXPN
+1.0 0.60 0.80 1.20 1.40
+BUNDLE_TEXT_CSPACE
+0.0 0.0 0.0 0.0 0.0
+BUNDLE_TEXT_COLOR
+1 2 3 4 5

@@ -1,0 +1,38 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:35:18 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= pwritxnt
+
+OBJECTS	= \
+	 ccheck.o creb15.o crebin.o dcheck.o dport.o mkmsk.o pcrbin.o\
+	 xtch.o
+
+FSOURCES = \
+	 ccheck.f creb15.f crebin.f dcheck.f dport.f mkmsk.f pcrbin.f\
+	 xtch.f
+
+LIBS	= $(LIBDIR)/libncarg.a $(LIBDIR)/libncarg_loc.a
+
+TARGETS = pwritxnt pwritdata
+
+all::	$(TARGETS)
+
+pwritxnt: $(OBJECTS)
+	$(F77_LD) $(LD_FFLAGS) -o pwritxnt $(OBJECTS) $(LIBS)
+
+pwritdata: pwritxnt pwritxc1 pwritxd1 pwritxc2 pwritxd2
+	-@$(RM) pwritdata
+	@echo "Building the PWRITX database"
+	@./pwritxnt
+	
+install:: pwritdata
+	@$(INSTALL) -m $(INSTALL_DB) pwritdata $(DBDIR)
+	-@$(RM) pwritdata
+
+clean::
+	-@$(RM) $(TARGETS)
+
+MakefileTarget
+CleanTarget

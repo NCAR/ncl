@@ -1,0 +1,62 @@
+#!/bin/csh -f
+
+set utility = pre2ncgm
+
+foreach file (fndarg metred mninst trans trassn trlate trndat)
+
+set source = $file.f
+set target = $file.F
+
+echo ""
+echo "Generic to UNIX modifications for $utility/$source :"
+echo "  Making parameter MNWRDS large enough for any machine."
+echo "  Creating $target from $source"
+
+if (! -e $source ) then
+  echo "Error: Cannot locate $source"
+  exit 1
+endif
+
+rm -f $target
+mv $source $target
+
+ed <<'EOF' - $target >/dev/null
+/MNWRDS=360/
+c
+#if defined(cray)
+      PARAMETER (MNWRDS=180, RECLOC=0, RECSIZ=16, DTLOC=16, DTSIZ=4
+#else
+      PARAMETER (MNWRDS=360, RECLOC=0, RECSIZ=16, DTLOC=16, DTSIZ=4
+#endif
+.
+w
+q
+'EOF'
+
+end
+
+set target = metred.F
+
+echo ""
+echo "Generic to UNIX modifications for $utility/$target :"
+echo "  Providing system conditionals to effect byte-reversal on"
+echo "  Decstations."
+
+if (! -e $target ) then
+        echo "Error: Cannot locate $target"
+        exit 1
+endif
+
+ed <<'EOF' - $target >/dev/null
+/CALL BINRED/
+a
+#if defined(ultrix) && defined(mips)
+.
+/220 CONTINUE/
+a
+#endif
+.
+1,$s/C_DEC//g
+w
+q
+'EOF'

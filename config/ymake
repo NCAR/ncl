@@ -1,0 +1,147 @@
+#!/bin/csh -f
+######################################################################
+#
+# Program:	ymake
+#
+# Purpose:	"ymake" processes a "yMakefile" or "ymakefile"
+#		that may have imbedded "cpp" commands. In producing
+#		the output file, "Makefile" or "makefile", "ymake"
+#		first reads in a "configuration file", based on
+#		what the host system is, and then runs the
+#		yMakefile/ymakefile through "cpp", thus producing
+#		"Makefile" or "makefile". The result is a standard,
+#		portable Makefile.
+#
+#		This mechanism is used for generating a machine-dependent 
+#		hierarchy of Makefiles at installation time.
+#
+#		Warning: this script WILL overwrite the existing
+#		Makefile IF a yMakefile exists!
+#
+# Author:	Don Middleton-Link
+#
+# Revision History:
+#		Created June 1988
+#		Revised October 1988 - extensions added for IBM/AIX
+#		Moved to Bourne shell version for UNICOS 5.0 beta
+#		Revised November 1989
+#
+# Warning:	This script WILL overwrite the existing
+#		Makefile IF a yMakefile exists!
+#
+######################################################################
+
+set ibm_names = (aiws aix unix ibm)
+set ibm_name_file = /etc/cc.cfg
+
+#
+# hack for identifying an IBM RS6000
+#
+set rios_names = (_IBMR2 _AIX)
+set rios_name_file = /etc/xlc.cfg
+
+set defines
+
+if ("$NCARG" == "") then
+	echo "NCARG environment variable must be set"
+	exit 1
+endif
+
+set ymakefile
+set outfile
+
+set tmp1="ymake.tmp1"
+rm -f $tmp1
+
+if (-e "ymakefile") then
+	set ymakefile="ymakefile"
+	set outfile = "makefile"
+else if (-e "yMakefile") then
+	set ymakefile="yMakefile"
+	set outfile = "Makefile"
+else
+	echo "no y(mM)akefile found"
+	exit 1
+endif
+
+if (-e $outfile) then
+	if (-e $outfile.bak) then
+		rm -f $outfile.bak
+	endif
+	cp $outfile $outfile.bak
+endif
+
+onintr error_cleanup
+
+# Determine if this is an IBM system. If it is, extract the
+# defined symbols and pass them to "cpp".
+
+if (-e $ibm_name_file) then
+	foreach ibm_name ($ibm_names)
+		fgrep $ibm_name $ibm_name_file >&/dev/null
+		if ("$status" == "0") then
+			set defines=($defines -D$ibm_name)
+		endif
+	end
+endif
+
+# Determine if this is an IBM RS6000. If it is, extract the
+# defined symbols and pass them to "cpp".
+
+if (-e $rios_name_file) then
+	foreach rios_name ($rios_names)
+		fgrep $rios_name $rios_name_file >&/dev/null
+		if ("$status" == "0") then
+			set defines=($defines -D$rios_name)
+		endif
+	end
+endif
+
+# Leave the cpp commands unmolested but insert a C null comment
+# in front of Makefile comment lines.  cpp will later remove these
+# restoring the original form (plus a few blank lines).
+
+# Last sed edit command added for Saber-C constructs 3-92
+
+sed <$ymakefile >$tmp1 \
+	-e '/^#[ 	]*if/b' \
+	-e '/^#[ 	]*ifdef/b' \
+	-e '/^#[ 	]*ifndef/b' \
+	-e '/^#[ 	]*else/b' \
+	-e '/^#[ 	]*elif/b' \
+	-e '/^#[ 	]*endif/b' \
+	-e '/^#[ 	]*define/b' \
+	-e '/^#[ 	]*undef/b' \
+	-e '/^#[ 	]*line/b' \
+	-e '/^#[ 	]*include/b' \
+	-e '/^#/s$$/**/_COMMENT_&$' \
+	-e '/^	#/s$$/**/_COMMENT_&$'
+
+cat <<'EOF' >$outfile
+#######################################################################
+#
+#	This Makefile was created by the "ymake" utility.
+#	If you wish to make changes in the "Makefile" or "makefile", 
+#	do so by making changes to "yMakefile" or "ymakefile" 
+#       and executing "make local-Makefile".
+#
+#######################################################################
+
+'EOF'
+
+echo '#include "Template"' | \
+/lib/cpp $argv[1-] -I. -D_COMMENT_="" -I$NCARG/config $defines \
+-DYMAKEFILE=\"$tmp1\" | $NCARG/config/ymake-filter >>$outfile
+
+rm -f $outfile.bak $tmp1
+onintr
+exit 0
+
+error_cleanup:
+echo ""
+echo "Error in <ymake>: Interrupted in" `pwd` "- restoring $outfile"
+rm -f $outfile $tmp1
+cp $outfile.bak $outfile
+rm -f $outfile.bak
+exit 1
+onintr

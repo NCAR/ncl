@@ -1,0 +1,18 @@
+C
+C	$Id: tline.f,v 1.1.1.1 1992-04-17 22:34:36 ncargd Exp $
+C
+      SUBROUTINE TLINE
+      COMMON /BLOCK1/ MESG,IDUMMY(500)
+      CALL SET(0.,1.,0.,1.,0.,1.,0.,1.,1)
+      CALL WTSTR(0.5,0.91,'DEMONSTRATION PLOT FOR LINE',20,0,0)
+      CALL LINE(0.,0.,1.,0.)
+      CALL LINE(1.,0.,1.,1.)
+      CALL LINE(1.,1.,0.,1.)
+      CALL LINE(0.,1.,0.,0.)
+      CALL LINE(0.,1.,1.,0.)
+      CALL LINE(0.,0.,1.,1.)
+      CALL FRAME
+      WRITE(MESG,700)
+  700 FORMAT(' TLINE  EXITED--SEE PLOT TO VERIFY PERFORMANCE')
+      RETURN
+      END

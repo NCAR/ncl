@@ -1,0 +1,6 @@
+Mon Apr 4 16:56:57 MDT 1988 don middleton - ncar scd
+flush is multiply defined with I77.
+for compatability, flush will be renamed as sppsflush().  none of the
+gks routines or utilities appear to use flush(), so its not a critical
+issue.
+

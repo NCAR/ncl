@@ -1,0 +1,9 @@
+C
+C	$Id: frstd.f,v 1.1.1.1 1992-04-17 22:34:58 ncargd Exp $
+C
+      SUBROUTINE FRSTD (X,Y)
+C USER ENTRY PPINT.
+      CALL FL2INT (X,Y,IIX,IIY)
+      CALL FDVDLD (1,IIX,IIY)
+      RETURN
+      END

@@ -1,0 +1,86 @@
+C
+C	$Id: pcsetr.f,v 1.1.1.1 1992-04-17 22:32:19 ncargd Exp $
+C
+C
+C ---------------------------------------------------------------------
+C
+      SUBROUTINE PCSETR (WHCH,RVAL)
+C
+      CHARACTER*(*) WHCH
+C
+C The subroutine PCSETR may be used to set PLCHHQ parameters which have
+C values of type REAL.
+C
+C COMMON block declarations.
+C
+      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IQUF,
+     +                ISCR,ITEF,JCOD,NFCC,SSIC,SSPR,SUBS,VPIC(3),
+     +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
+     +                YMUL(3)
+      SAVE   /PCPRMS/
+C
+      COMMON /PCPFMQ/ RHTW
+      SAVE   /PCPFMQ/
+C
+      COMMON /PCPFFC/ NFNT
+      SAVE   /PCPFFC/
+C
+C Set the selected parameter.
+C
+      IF (WHCH(1:2).EQ.'AS') THEN
+        ADDS=RVAL
+      ELSE IF (WHCH(1:2).EQ.'CD') THEN
+        JCOD=MAX(0,MIN(1,INT(RVAL)))
+      ELSE IF (WHCH(1:2).EQ.'CE') THEN
+        ICEN=MAX(0,MIN(1,INT(RVAL)))
+      ELSE IF (WHCH(1:2).EQ.'CH') THEN
+        HPIC(3)=MAX(0.,RVAL)
+        YMUL(3)=HPIC(3)/9.
+      ELSE IF (WHCH(1:2).EQ.'CS') THEN
+        CONS=RVAL/2.
+      ELSE IF (WHCH(1:2).EQ.'CV') THEN
+        VPIC(3)=MAX(0.,RVAL)
+      ELSE IF (WHCH(1:2).EQ.'CW') THEN
+        WPIC(3)=MAX(0.,RVAL)
+        XMUL(3)=WPIC(3)/8.
+      ELSE IF (WHCH(1:2).EQ.'FN') THEN
+        NFNT=INT(RVAL)
+      ELSE IF (WHCH(1:2).EQ.'HW') THEN
+        RHTW=RVAL
+      ELSE IF (WHCH(1:2).EQ.'IH') THEN
+        HPIC(2)=MAX(0.,RVAL)
+        YMUL(2)=HPIC(2)/13.
+      ELSE IF (WHCH(1:2).EQ.'IS') THEN
+        SSIC=MAX(0.,RVAL)
+      ELSE IF (WHCH(1:2).EQ.'IV') THEN
+        VPIC(2)=MAX(0.,RVAL)
+      ELSE IF (WHCH(1:2).EQ.'IW') THEN
+        WPIC(2)=MAX(0.,RVAL)
+        XMUL(2)=WPIC(2)/12.
+      ELSE IF (WHCH(1:2).EQ.'PH') THEN
+        HPIC(1)=MAX(0.,RVAL)
+        YMUL(1)=HPIC(1)/21.
+      ELSE IF (WHCH(1:2).EQ.'PS') THEN
+        SSPR=MAX(0.,RVAL)
+      ELSE IF (WHCH(1:2).EQ.'PV') THEN
+        VPIC(1)=MAX(0.,RVAL)
+      ELSE IF (WHCH(1:2).EQ.'PW') THEN
+        WPIC(1)=MAX(0.,RVAL)
+        XMUL(1)=WPIC(1)/16.
+      ELSE IF (WHCH(1:2).EQ.'QU') THEN
+        IQUF=MAX(0,MIN(2,INT(RVAL)))
+      ELSE IF (WHCH(1:2).EQ.'SC') THEN
+        ISCR=MAX(0,MIN(1,INT(RVAL)))
+      ELSE IF (WHCH(1:2).EQ.'SS') THEN
+        SUBS=RVAL
+      ELSE IF (WHCH(1:2).EQ.'TE') THEN
+        ITEF=MAX(0,MIN(1,INT(RVAL)))
+      ELSE
+        CALL SETER ('PCSETR - UNRECOGNIZED PARAMETER NAME',1,2)
+      END IF
+C
+C Done.
+C
+      RETURN
+C
+      END

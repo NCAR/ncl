@@ -1,0 +1,19 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:33:21 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= epltch
+
+GENERIC_SRCS = epltch.f
+
+GENERIC_OBJS = epltch.o
+
+install::
+	@for file in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLEDIR));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateNoSplitTarget

@@ -1,0 +1,12 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:34:03 ncargd Exp $
+#
+NCARG		= ../../..
+
+SUBDIRS = scripts bnchmk cgmtrans impltest plt ncargsrcx findg psfltrs \
+	  pre2ncgm
+
+MakeSubdirs($(SUBDIRS))
+MakefilesSubdirs($(SUBDIRS))
+InstallSubdirs($(SUBDIRS))
+CleanSubdirs($(SUBDIRS))

@@ -1,0 +1,92 @@
+/*
+/*	$Id: t4010.gc,v 1.1.1.1 1992-04-17 22:29:42 ncargd Exp $
+/*
+/*  t4010
+/*
+/*  This graphcap is for the Tektronix 4010 and 4012 graphics terminals.
+/*
+
+USER_PROMPT
+US < R E A D Y >
+DEVICE_GRAPHIC_INIT
+  GS
+DEVICE_TEXT_INIT
+  US
+DEVICE_CURSOR_HOME
+GS 8 k SPC @ US
+DEVICE_ERASE
+ ESC FF
+DEVICE_BATCH
+ FALSE
+DEVICE_COORD_LOWER_LEFT_X
+ 0
+DEVICE_COORD_LOWER_LEFT_Y
+ 0
+DEVICE_COORD_UPPER_RIGHT_X
+ 1024
+DEVICE_COORD_UPPER_RIGHT_Y
+ 779
+DEVICE_COORD_XOFFSET
+ 0
+DEVICE_COORD_YOFFSET
+ 0
+DEVICE_COORD_FORMAT
+/* bit_start  bit_count  data_type  data_value
+       1          2           0          1
+       3          5           2          9
+       9          2           0          3
+      11          5           2          4
+      17          2           0          1
+      19          5           1          9
+      25          2           0          2
+      27          5           1          4
+
+DEVICE_COORD_ENCODING
+/* 0 binary, 1 ascii decimal, 2 ascii hex, 3 ascii octal, 4 ascii tek
+   0
+LINE_DRAW_POLY_FLAG
+ TRUE
+LINE_DRAW_INSTRUCTION_START
+ GS
+
+/* these bundles are defined for the current NCAR metafile translator
+/* they may be redifined but not all of them have any effect as of yet
+BUNDLE_LINE_INDEX
+1 2 3 4 5
+BUNDLE_LINE_TYPE
+1 2 3 4 5
+BUNDLE_LINE_WIDTH
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_LINE_COLOR
+1 2 3 4 5
+
+BUNDLE_MARKER_INDEX
+1 2 3 4 5
+BUNDLE_MARKER_TYPE
+1 2 3 4 5
+BUNDLE_MARKER_SIZE
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_MARKER_COLOR
+1 2 3 4 5
+
+BUNDLE_POLYGON_INDEX
+1 2 3 4 5
+BUNDLE_POLYGON_INTERIOR
+0 0 0 0 0
+BUNDLE_POLYGON_STYLE
+0 0 0 0 0
+BUNDLE_POLYGON_COLOR
+1 2 3 4 5
+
+BUNDLE_TEXT_INDEX
+1 2 3 4 5
+BUNDLE_TEXT_FONT
+1 1 1 1 1
+BUNDLE_TEXT_PRECISION
+1 1 1 1 1
+BUNDLE_TEXT_CEXPN
+1.0 0.60 0.80 1.20 1.40
+BUNDLE_TEXT_CSPACE
+0.0 0.0 0.0 0.0 0.0
+BUNDLE_TEXT_COLOR
+1 2 3 4 5

@@ -1,0 +1,16 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:35:26 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= ranfdata
+
+GENERICS = ranfdata
+
+all::
+
+install:: ranfdata
+	@$(INSTALL) -m $(INSTALL_DB) ranfdata $(DBDIR)
+
+MakefileTarget
+CleanTarget

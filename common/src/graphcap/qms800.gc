@@ -1,0 +1,232 @@
+/*
+/*	$Id: qms800.gc,v 1.1.1.1 1992-04-17 22:29:41 ncargd Exp $
+/*
+/*  qms800
+/*  This graphcap is for the QMS800 laser printer.
+/*
+/* first, turn on QUIC
+/* make sure to exit vector graphics mode
+/* free format,landscape mode, right justified numeric values for QUIC
+/* establish the vertical and horizontal page margins
+/* enter graphics mode.
+/* set the pen width to 3
+/* pen down vector; specifies that dots are printed when the current pen
+/*     position is moved.
+/*
+
+DEVICE_GRAPHIC_INIT
+^ P Y ^ - CR
+^ I O L
+^ I M V 0 0 0 0 0 0 8 5 0 0
+^ I M H 0 0 0 0 0 1 1 0 0 0
+^ I G V
+
+/* exit graphics; select default font size; portrait page orientation;
+/* character spacing; line spacing;
+/* turn off free format; QUIC carriage return; exit QUIC command mode;
+DEVICE_TEXT_INIT
+^ I G E ^ O ^ - CR ^ P N ^ - CR
+
+DEVICE_ERASE
+^ ,
+
+DEVICE_BATCH
+TRUE
+
+DEVICE_COORD_LOWER_LEFT_X
+0
+/* used to be 7000
+DEVICE_COORD_LOWER_LEFT_Y
+08350
+/* used to be 10990
+DEVICE_COORD_UPPER_RIGHT_X
+11000
+DEVICE_COORD_UPPER_RIGHT_Y
+0
+
+DEVICE_COORD_XOFFSET
+
+DEVICE_COORD_YOFFSET
+
+DEVICE_COORD_XSCALE
+DEVICE_COORD_YSCALE
+
+DEVICE_COORD_FORMAT
+/* bit_start  bit_count  data_type  data_value
+      0          16          1          15
+      0           8         -1          58
+      0          16          2          15
+DEVICE_COORD_FLOATING_INFO
+/* min input, max input, min output, max output
+DEVICE_COORD_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+1
+
+DEVICE_VECTOR_COUNT_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+DEVICE_VECTOR_COUNT_FORMAT
+/* bit_start  bit_count  data_type  data_value
+DEVICE_VECTOR_COUNT_FLOATING_INFO
+/* min input, max input, min output, max output
+
+DEVICE_COLOR_AVAILABLE
+FALSE
+DEVICE_COLOR_INDEX_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+DEVICE_COLOR_INDEX_FORMAT
+/* bit_start  bit_count  data_type  data_value
+DEVICE_COLOR_INDEX_FLOATING_INFO
+/* min input, max input, min output, max output
+
+DEVICE_MAP_AVAILABLE
+DEVICE_MAP_INDIVIDUAL
+DEVICE_MAP_INDEX_RANGE_MAX
+DEVICE_MAP_INDEX_RANGE_DEFINED
+DEVICE_MAP_INSTRUCTION_START
+DEVICE_MAP_INSTRUCTION_TERMINATOR
+DEVICE_MAP_INTENSITY_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+DEVICE_MAP_INTENSITY_FORMAT
+/* bit_start  bit_count  data_type  data_value
+DEVICE_MAP_INTENSITY_FLOATING_INFO
+/* min input, max input, min output, max output
+DEVICE_MAP_INIT
+DEVICE_MAP_MODEL
+/* mono 0  rgb 1  bgr 2 hls 3
+
+DASH_BIT_LENGTH
+
+LINE_DRAW_POLY_FLAG
+FALSE
+
+LINE_DRAW_INSTRUCTION_START
+ ^ D
+
+LINE_DRAW_INSTRUCTION_TERMINATOR
+ ^ U
+LINE_MOVE_INSTRUCTION_START
+ ^ U
+
+LINE_MOVE_INSTRUCTION_TERMINATOR
+LINE_COLOR_INSTRUCTION_START
+LINE_COLOR_INSTRUCTION_TERMINATOR
+LINE_WIDTH_INSTRUCTION_START
+ ^ P W
+LINE_WIDTH_INSTRUCTION_TERMINATOR
+LINE_WIDTH_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+1
+
+LINE_WIDTH_FORMAT
+/* bit_start  bit_count  data_type  data_value
+      0          16          1          15
+
+LINE_WIDTH_FLOATING_INFO
+/* min input, max input, min output, max output
+
+LINE_WIDTH_RANGE
+/* two values giving low and high DC width values
+3 31
+
+LINE_WIDTH_SCALE
+/* scale factor to reduce the default value of 8 to something less for the
+/* qms. 8 is a little too thick for this device. This will send out a default
+/* of 3 instead of 8.
+0.275
+
+TEXT_INSTRUCTION_START
+TEXT_INSTRUCTION_TERMINATOR
+
+TEXT_SIZE_MAPPING
+TEXT_SIZE_INSTRUCTION_START
+TEXT_SIZE_INSTURCTION_TERMINATOR
+TEXT_SIZE_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+TEXT_SIZE_FORMAT
+/* bit_start  bit_count  data_type  data_value
+TEXT_SIZE_FLOATING_INFO
+/* min input, max input, min output, max output
+
+TEXT_COLOR_INSTRUCTION_START
+TEXT_COLOR_INSTRUCTION_TERMINATOR
+
+MARKER_COLOR_INSTRUCTION_START
+MARKER_COLOR_INSTRUCTION_TERMINATOR
+MARKER_DOT_SIZE
+1
+
+POLYGON_INSTRUCTION_START
+POLYGON_INSTRUCTION_TERMINATOR
+POLYGON_COLOR_INSTRUCTION_START
+POLYGON_COLOR_INSTRUCTION_
+
+RASTER_SIMULATE
+RASTER_COORD_LOWER_LEFT_X
+RASTER_COORD_LOWER_LEFT_Y
+RASTER_COORD_UPPER_RIGHT_X
+RASTER_COORD_UPPER_RIGHT_Y
+
+RASTER_COORD_XOFFSET
+RASTER_COORD_YOFFSET
+
+RASTER_COORD_XSCALE
+RASTER_COORD_YSCALE
+
+RASTER_DATA_FORMAT
+/* bit_start  bit_count  data_type  data_value
+RASTER_DATA_FLOATING_INFO
+/* min input, max input, min output, max output
+RASTER_DATA_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+
+RASTER_VECTOR_COUNT_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+RASTER_VECTOR_COUNT_FORMAT
+/* bit_start  bit_count  data_type  data_value
+RASTER_VECTOR_COUNT_FLOATING_INFO
+/* min input, max input, min output, max output
+
+RASTER_HORIZONTAL_INSTRUCTION_START
+RASTER_HORIZONTAL_INSTRUCTION_TERMINATOR
+
+/* these bundles are defined for the current NCAR metafile translator
+/* they may be redifined but not all of them have any effect as of yet
+BUNDLE_LINE_INDEX
+1 2 3 4 5
+BUNDLE_LINE_TYPE
+1 2 3 4 5
+BUNDLE_LINE_WIDTH
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_LINE_COLOR
+1 2 3 4 5
+
+BUNDLE_MARKER_INDEX
+1 2 3 4 5
+BUNDLE_MARKER_TYPE
+1 2 3 4 5
+BUNDLE_MARKER_SIZE
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_MARKER_COLOR
+1 2 3 4 5
+
+BUNDLE_POLYGON_INDEX
+1 2 3 4 5
+BUNDLE_POLYGON_INTERIOR
+0 0 0 0 0
+BUNDLE_POLYGON_STYLE
+0 0 0 0 0
+BUNDLE_POLYGON_COLOR
+1 2 3 4 5
+
+BUNDLE_TEXT_INDEX
+1 2 3 4 5
+BUNDLE_TEXT_FONT
+1 1 1 1 1
+BUNDLE_TEXT_PRECISION
+1 1 1 1 1
+BUNDLE_TEXT_CEXPN
+1.0 0.60 0.80 1.20 1.40
+BUNDLE_TEXT_CSPACE
+0.0 0.0 0.0 0.0 0.0
+BUNDLE_TEXT_COLOR
+1 2 3 4 5

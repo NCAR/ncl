@@ -1,0 +1,272 @@
+C
+C	$Id: cpcflb.f,v 1.1.1.1 1992-04-17 22:32:47 ncargd Exp $
+C
+C
+C***********************************************************************
+C C O N P A C K   -   I N T E R N A L   S U B R O U T I N E S
+C***********************************************************************
+C
+      SUBROUTINE CPCFLB (IACT,RWRK,IAMA)
+C
+      DIMENSION RWRK(*),IAMA(*)
+C
+C CPCFLB generates the constant-field label.  If IACT = 1, the label is
+C plotted.  If IACT = 2, the label box is added to the area map in IAMA.
+C
+C
+C Declare all of the CONPACK common blocks.
+C
+C
+C CPCOM1 contains integer and real variables.
+C
+      COMMON /CPCOM1/ ANCF,ANHL,ANIL,ANLL,CDMX,CHWM,CINS,CINT(10)
+      COMMON /CPCOM1/ CINU,CLDB(256),CLDL(256),CLDR(256)
+      COMMON /CPCOM1/ CLDT(256),CLEV(256),CLWA(259),CXCF
+      COMMON /CPCOM1/ CXIL,CYCF,CYIL,DBLF,DBLM,DBLN,DBLV,DFLD,DOPT
+      COMMON /CPCOM1/ EPSI,FNCM,GRAV,GRSD,GSDM,HCHL,HCHS,IAIA(259)
+      COMMON /CPCOM1/ IAIB(256),IBCF,IBHL,IBIL,IBLL,ICAF,ICCF
+      COMMON /CPCOM1/ ICCL(259),ICFF,ICHI,ICHL,ICIL,ICLL(256)
+      COMMON /CPCOM1/ ICLO,ICLP(256),ICLS,ICLU(259),ICLV,ICLW
+      COMMON /CPCOM1/ IDUF,IGCL,IGLB,IGRM,IGRN,IGVS,IHCF,IHLX,IHLY
+      COMMON /CPCOM1/ IIWS(2),IIWU,ILBC,IMPF,INCX(8),INCY(8)
+      COMMON /CPCOM1/ INHL,INIL,INIT,INLL,IOCF,IOHL,IOLL,IPAI,IPCF
+      COMMON /CPCOM1/ IPIC,IPIE,IPIL,IPLL,IRWS(4),IRWU,ISET,IWSO
+      COMMON /CPCOM1/ IZD1,IZDM,IZDN,IZDS,JODP,JOMA,JOTZ,LCTM,LEA1
+      COMMON /CPCOM1/ LEA2,LEA3,LEE1,LEE2,LEE3,LINS,LINT(10),LINU
+      COMMON /CPCOM1/ LIWK,LIWM,LIWS(2),LNLG,LRWC,LRWG,LRWK
+      COMMON /CPCOM1/ LRWM,LRWS(4),LSDD,LSDL,LSDM,LTCF,LTHI
+      COMMON /CPCOM1/ LTIL,LTLO,MIRO,NCLB(256),NCLV,NDGL,NEXL
+      COMMON /CPCOM1/ NEXT,NEXU,NLBS,NLSD,NLZF,NOMF,NOVS,NR04,NSDL
+      COMMON /CPCOM1/ NSDR,OORV,SCFS,SCFU,SEGL,SVAL,T2DS,T3DS,UCMN
+      COMMON /CPCOM1/ UCMX,UVPB,UVPL,UVPR,UVPS,UVPT,UWDB,UWDL,UWDR
+      COMMON /CPCOM1/ UWDT,UXA1,UXAM,UYA1,UYAN,WCCF,WCHL,WCIL,WCLL
+      COMMON /CPCOM1/ WLCF,WLHL,WLIL,WLLL,WOCH,WODA,WTCD,WTGR,WTNC
+      COMMON /CPCOM1/ WTOD,WWCF,WWHL,WWIL,WWLL,XAT1,XATM,XLBC,XVPL
+      COMMON /CPCOM1/ XVPR,XWDL,XWDR,YAT1,YATN,YLBC,YVPB,YVPT,YWDB
+      COMMON /CPCOM1/ YWDT,ZDVL,ZMAX,ZMIN
+      EQUIVALENCE (IIWS(1),II01),(LIWS(1),LI01)
+      EQUIVALENCE (IIWS(2),II02),(LIWS(2),LI02)
+      EQUIVALENCE (IRWS(1),IR01),(LRWS(1),LR01)
+      EQUIVALENCE (IRWS(2),IR02),(LRWS(2),LR02)
+      EQUIVALENCE (IRWS(3),IR03),(LRWS(3),LR03)
+      EQUIVALENCE (IRWS(4),IR04),(LRWS(4),LR04)
+      SAVE   /CPCOM1/
+C
+C CPCOM2 holds character parameters.
+C
+      COMMON /CPCOM2/ CHEX,CLBL(256),CLDP(259),CTMA,CTMB,FRMT
+      COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
+      CHARACTER*13 CHEX
+      CHARACTER*40 CLBL
+      CHARACTER*32 CLDP
+      CHARACTER*500 CTMA,CTMB
+      CHARACTER*8 FRMT
+      CHARACTER*40 TXCF
+      CHARACTER*20 TXHI
+      CHARACTER*100 TXIL
+      CHARACTER*20 TXLO
+      SAVE   /CPCOM2/
+C
+C Declare local arrays to hold coordinates for area fill of boxes.
+C
+      DIMENSION BFXC(4),BFYC(4)
+C
+C Define a local array to receive some information we don't care about
+C from the GKS routine GQCLIP.
+C
+      DIMENSION DUMI(4)
+C
+C If the text string for the informational label is blank, do nothing.
+C
+      IF (TXCF(1:LTCF).EQ.' ') RETURN
+C
+C Otherwise, form the constant-field label ...
+C
+      ZDVL=ZMIN
+      CALL CPSBST (TXCF(1:LTCF),CTMA,LCTM)
+C
+C ... get sizing information for the label ...
+C
+      XPFS=XVPL+CXCF*(XVPR-XVPL)
+      YPFS=YVPB+CYCF*(YVPT-YVPB)
+      XLBC=CFUX(XPFS)
+      YLBC=CFUY(YPFS)
+      WCFS=CHWM*WCCF*(XVPR-XVPL)
+      WWFS=CHWM*WWCF*(XVPR-XVPL)
+C
+      CALL PCGETI ('TE',ITMP)
+      CALL PCSETI ('TE',1)
+      CALL CPCHCF (+1)
+      CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,360.,0.)
+      CALL CPCHCF (-1)
+      CALL PCGETR ('DL',DSTL)
+      CALL PCGETR ('DR',DSTR)
+      CALL PCGETR ('DB',DSTB)
+      CALL PCGETR ('DT',DSTT)
+      CALL PCSETI ('TE',ITMP)
+      DSTL=DSTL+WWFS
+      DSTR=DSTR+WWFS
+      DSTB=DSTB+WWFS
+      DSTT=DSTT+WWFS
+C
+C ... and then take the desired action, either plotting the label or
+C putting a box around it into the area map.
+C
+      SINA=SIN(.017453292519943*ANCF)
+      COSA=COS(.017453292519943*ANCF)
+C
+      IXPO=MOD(IPCF+4,3)-1
+C
+      IF (IXPO.LT.0) THEN
+        XPFS=XPFS+DSTL*COSA
+        YPFS=YPFS+DSTL*SINA
+      ELSE IF (IXPO.GT.0) THEN
+        XPFS=XPFS-DSTR*COSA
+        YPFS=YPFS-DSTR*SINA
+      END IF
+C
+      IYPO=(IPCF+4)/3-1
+C
+      IF (IYPO.LT.0) THEN
+        XPFS=XPFS-DSTB*SINA
+        YPFS=YPFS+DSTB*COSA
+      ELSE IF (IYPO.GT.0) THEN
+        XPFS=XPFS+DSTT*SINA
+        YPFS=YPFS-DSTT*COSA
+      END IF
+C
+      XLBC=CFUX(XPFS)
+      YLBC=CFUY(YPFS)
+C
+      IF (IACT.EQ.1) THEN
+        IF (MOD(IBCF/2,2).NE.0) THEN
+          JLBC=ILBC
+          IF (JLBC.GE.0) THEN
+            CALL GQFACI (IGER,ISFC)
+            IF (IGER.NE.0) THEN
+              CALL SETER ('CPCFLB - ERROR EXIT FROM GQFACI',1,2)
+              STOP
+            END IF
+            IF (ISFC.NE.JLBC) CALL GSFACI (JLBC)
+          END IF
+          CALL CPCHCF (+2)
+          BFXC(1)=CFUX(XPFS-DSTL*COSA+DSTB*SINA)
+          BFYC(1)=CFUY(YPFS-DSTL*SINA-DSTB*COSA)
+          BFXC(2)=CFUX(XPFS+DSTR*COSA+DSTB*SINA)
+          BFYC(2)=CFUY(YPFS+DSTR*SINA-DSTB*COSA)
+          BFXC(3)=CFUX(XPFS+DSTR*COSA-DSTT*SINA)
+          BFYC(3)=CFUY(YPFS+DSTR*SINA+DSTT*COSA)
+          BFXC(4)=CFUX(XPFS-DSTL*COSA-DSTT*SINA)
+          BFYC(4)=CFUY(YPFS-DSTL*SINA+DSTT*COSA)
+          CALL GFA (4,BFXC,BFYC)
+          CALL CPCHCF (-2)
+          IF (JLBC.GE.0) THEN
+            IF (ISFC.NE.JLBC) CALL GSFACI (ISFC)
+          END IF
+        END IF
+        CALL GQPLCI (IGER,ISLC)
+        IF (IGER.NE.0) THEN
+          CALL SETER ('CPCFLB - ERROR EXIT FROM GQPLCI',2,2)
+          STOP
+        END IF
+        CALL GQTXCI (IGER,ISTC)
+        IF (IGER.NE.0) THEN
+          CALL SETER ('CPCFLB - ERROR EXIT FROM GQTXCI',3,2)
+          STOP
+        END IF
+        IF (ICCF.GE.0) THEN
+          JCCF=ICCF
+        ELSE
+          JCCF=ISTC
+        END IF
+        JSLC=ISLC
+        JSTC=ISTC
+        IF (JSLC.NE.JCCF) THEN
+          CALL PLOTIF (0.,0.,2)
+          CALL GSPLCI (JCCF)
+          JSLC=JCCF
+        END IF
+        IF (JSTC.NE.JCCF) THEN
+          CALL GSTXCI (JCCF)
+          JSTC=JCCF
+        END IF
+        CALL GQCLIP (IGER,IGCF,DUMI)
+        IF (IGER.NE.0) THEN
+          CALL SETER ('CPCFLB - ERROR EXIT FROM GQCLIP',4,2)
+          STOP
+        END IF
+        IF (IGCF.NE.0) THEN
+          CALL PLOTIF (0.,0.,2)
+          CALL GSCLIP (0)
+        END IF
+        CALL CPCHCF (+3)
+        CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,ANCF,0.)
+        CALL CPCHCF (-3)
+        IF (IGCF.NE.0) THEN
+          CALL PLOTIF (0.,0.,2)
+          CALL GSCLIP (IGCF)
+        END IF
+        IF (MOD(IBCF,2).NE.0) THEN
+          WDTH=WLCF
+          IF (WDTH.GT.0.) THEN
+            CALL GQLWSC (IGER,SFLW)
+            IF (IGER.NE.0) THEN
+              CALL SETER ('CPCFLB - ERROR EXIT FROM GQLWSC',5,2)
+              STOP
+            END IF
+            CALL PLOTIF (0.,0.,2)
+            CALL GSLWSC (WDTH)
+          END IF
+          CALL CPCHCF (+4)
+          CALL PLOTIF (XPFS-DSTL*COSA+DSTB*SINA,
+     +                 YPFS-DSTL*SINA-DSTB*COSA,0)
+          CALL PLOTIF (XPFS+DSTR*COSA+DSTB*SINA,
+     +                 YPFS+DSTR*SINA-DSTB*COSA,1)
+          CALL PLOTIF (XPFS+DSTR*COSA-DSTT*SINA,
+     +                 YPFS+DSTR*SINA+DSTT*COSA,1)
+          CALL PLOTIF (XPFS-DSTL*COSA-DSTT*SINA,
+     +                 YPFS-DSTL*SINA+DSTT*COSA,1)
+          CALL PLOTIF (XPFS-DSTL*COSA+DSTB*SINA,
+     +                 YPFS-DSTL*SINA-DSTB*COSA,1)
+          CALL PLOTIF (0.,0.,2)
+          CALL CPCHCF (-4)
+          IF (WDTH.GT.0.) THEN
+            CALL PLOTIF (0.,0.,2)
+            CALL GSLWSC (SFLW)
+          END IF
+        END IF
+        IF (ISLC.NE.JSLC) THEN
+          CALL PLOTIF (0.,0.,2)
+          CALL GSPLCI (ISLC)
+        END IF
+        IF (ISTC.NE.JSTC) CALL GSTXCI (ISTC)
+      ELSE
+        CALL CPGRWS (RWRK,1,10,IWSE)
+        IF (IWSE.NE.0) RETURN
+        ANLB=.017453292519943*ANCF
+        SALB=SIN(ANLB)
+        CALB=COS(ANLB)
+        RWRK(IR01+ 1)=CFUX(XPFS-DSTL*CALB+DSTB*SALB)
+        RWRK(IR01+ 2)=CFUX(XPFS+DSTR*CALB+DSTB*SALB)
+        RWRK(IR01+ 3)=CFUX(XPFS+DSTR*CALB-DSTT*SALB)
+        RWRK(IR01+ 4)=CFUX(XPFS-DSTL*CALB-DSTT*SALB)
+        RWRK(IR01+ 5)=RWRK(IR01+1)
+        RWRK(IR01+ 6)=CFUY(YPFS-DSTL*SALB-DSTB*CALB)
+        RWRK(IR01+ 7)=CFUY(YPFS+DSTR*SALB-DSTB*CALB)
+        RWRK(IR01+ 8)=CFUY(YPFS+DSTR*SALB+DSTT*CALB)
+        RWRK(IR01+ 9)=CFUY(YPFS-DSTL*SALB+DSTT*CALB)
+        RWRK(IR01+10)=RWRK(IR01+6)
+        IF ((XWDL.LT.XWDR.AND.YWDB.LT.YWDT).OR.(XWDL.GT.XWDR.AND.YWDB.GT
+     +.YWDT)) THEN
+          CALL AREDAM (IAMA,RWRK(IR01+1),RWRK(IR01+6),5,IGLB,-1,0)
+        ELSE
+          CALL AREDAM (IAMA,RWRK(IR01+1),RWRK(IR01+6),5,IGLB,0,-1)
+        END IF
+        LR01=0
+      END IF
+C
+C Done.
+C
+      RETURN
+C
+      END

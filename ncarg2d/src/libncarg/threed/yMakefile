@@ -1,0 +1,35 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:31:47 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= threed
+
+GENERIC_SRCS = \
+	 set3.f trn32t.f frst3.f vect3.f line3.f point3.f curve3.f psym3.f\
+	 perim3.f line3w.f drawt.f tick43.f tick3.f fence3.f threbd.f\
+	 pwrz.f
+
+GENERIC_OBJS = \
+	 set3.o trn32t.o frst3.o vect3.o line3.o point3.o curve3.o psym3.o\
+	 perim3.o line3w.o drawt.o tick43.o tick3.o fence3.o threbd.o\
+	 pwrz.o
+
+SOURCES = $(GENERIC_SRCS)
+
+OBJECTS = $(GENERIC_OBJS)
+
+PartialLibrary(libncarg.a,$(OBJECTS))
+
+#ifdef  BuildNCARGSourceLibrary
+all:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_QUICK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	@-$(RM) $(MYNAME)
+
+install:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcncarg.a
+	@-$(RM) $(MYNAME)
+#endif

@@ -1,0 +1,48 @@
+#!/bin/csh -f
+
+if (! -e dashbd.f) then
+	echo "Error: Cannot locate dashbd.f"
+	exit 1
+endif
+
+echo "Setting the ISKIP constant to 32 in dashbd.f"
+
+cp dashbd.f dashbd1024.f
+ed <<'EOF' - dashbd1024.f >/dev/null
+g,^      DATA ISKIP /0/,s, ,C,
+g,^C     DATA ISKIP /32/,s,C, ,
+w
+q
+'EOF'
+
+if (! -e remove.f) then
+	echo "Error: Cannot locate remove.f"
+	exit 1
+endif
+
+echo "Setting the constants in remove32.f for 32 bit system"
+
+cp remove.f remove32.f
+ed <<'EOF' - remove32.f >/dev/null
+g%^      DIMENSION ISCREN(1,1)%s%1,1%33,1024%
+g%^      DATA NX,NY,LX /0,0,0/%s%0,0,0%1024,1024,33%
+g%^      DATA NXSIZE,NYSIZE /1,1/%s%1,1%10,10%
+w
+q
+'EOF'
+
+if (! -e remove.f) then
+	echo "Error: Cannot locate remove.f"
+	exit 1
+endif
+
+echo "Setting the constants in removecray.f for Cray system"
+
+cp remove.f removecray.f
+ed <<'EOF' - removecray.f >/dev/null
+g%^      DIMENSION ISCREN(1,1)%s%1,1%17,1024%
+g%^      DATA NX,NY,LX /0,0,0/%s%0,0,0%1024,1024,17%
+g%^      DATA NXSIZE,NYSIZE /1,1/%s%1,1%10,10%
+w
+q
+'EOF'

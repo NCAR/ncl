@@ -1,0 +1,2 @@
+isosrfhr uses a scratch file, which is allocated in "isoscr.f".
+The user's program needs to call isoscr().

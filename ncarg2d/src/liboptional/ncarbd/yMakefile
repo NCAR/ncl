@@ -1,0 +1,22 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:35:15 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= ncarbd
+
+OBJECTS = ncarbd.o
+
+FSOURCES = ncarbd.f
+
+all::	libncarbd.o
+
+libncarbd.o:	$(OBJECTS)
+	@$(LD_REL) -r -o $(LIBDIR)/libncarbd.o $(OBJECTS)
+
+install::
+
+
+MakefileTarget
+CleanTarget
+UpdateTarget

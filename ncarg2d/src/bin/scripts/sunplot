@@ -1,0 +1,11 @@
+#!/bin/csh -f
+#
+#	$Id: sunplot,v 1.1.1.1 1992-04-17 22:34:44 ncargd Exp $
+#
+
+if ($#argv != 1) then
+	echo "usage: sunplot filename"
+	exit -1
+endif
+
+gfxtool -Wl sunplot -Ws 880 880 -Wp 100 8 ctrans -d cgi $1 &

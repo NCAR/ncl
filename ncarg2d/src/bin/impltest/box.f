@@ -1,0 +1,11 @@
+C
+C	$Id: box.f,v 1.1.1.1 1992-04-17 22:34:35 ncargd Exp $
+C
+      SUBROUTINE BOX
+      CALL PLOTIT (0,0,0)
+      CALL PLOTIT (32767,0,1)
+      CALL PLOTIT (32767,32767,1)
+      CALL PLOTIT (0,32767,1)
+      CALL PLOTIT (0,0,1)
+      RETURN
+      END

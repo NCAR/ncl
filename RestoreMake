@@ -1,0 +1,5 @@
+#!/bin/csh -f
+
+echo "Restoring Makefiles in the NCAR Graphics source tree."
+
+find . -type d -exec $NCARG/utils/restoremake {} \;

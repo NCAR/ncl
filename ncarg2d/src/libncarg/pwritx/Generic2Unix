@@ -1,0 +1,25 @@
+#!/bin/csh -f
+
+set utility = pwritx
+
+set target = pwritx.f
+
+echo ""
+echo "Generic to UNIX modifications for $utility/$target :"
+echo "	Adding call to OPENPW"
+
+if (! -e $target ) then
+	echo "Error: Cannot locate $target"
+	exit 1
+endif
+
+ed <<'EOF' - $target >/dev/null
+/IF (FINIT) GOTO 100/
+a
+C Modification for UNIX Version.
+      CALL OPENPW(3)
+C End of modification for UNIX Version.
+.
+w
+q
+'EOF'

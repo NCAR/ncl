@@ -1,0 +1,29 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:35:10 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= dashsmth
+
+GENERIC_SRCS = \
+	fdvdld.f reset.f dashdc.f dashdb.f drawpv.f \
+	dashbd.f cfvld.f frstd.f vectd.f lastd.f curved.f lined.f
+
+GENERIC_OBJS = \
+	fdvdld.o reset.o dashdc.o dashdb.o drawpv.o \
+	dashbd.o cfvld.o frstd.o vectd.o lastd.o curved.o lined.o
+
+SOURCES = $(GENERIC_SRCS)
+
+OBJECTS = $(GENERIC_OBJS)
+
+RelocatableObject(libdashsmth.o,$(OBJECTS))
+
+#ifdef  BuildNCARGSourceLibrary
+install:: $(SOURCES)
+	@-$(RM) $(LIBDIR)/srcdashsmth.a
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBDIR)/srcdashsmth.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcdashsmth.a
+	@-$(RM) $(MYNAME)
+#endif

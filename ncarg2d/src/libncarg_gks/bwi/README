@@ -1,0 +1,9 @@
+
+The I/O package in the files "wks.c" and "wks.h" uses buffered I/O.  There
+is an environment variable that allows the user to override the system
+default buffer size.  For example:
+
+    setenv NCARG_GKS_BUFSIZE 64
+
+This produces a 64K buffer - the number specifies 1024-byte blocks.
+

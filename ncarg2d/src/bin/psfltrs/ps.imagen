@@ -1,0 +1,9 @@
+#
+#
+#	$Id: ps.imagen,v 1.1.1.1 1992-04-17 22:34:47 ncargd Exp $
+#
+# Dispose PostScript files to the Imagen laser printers.
+echo "@document(language ultrascript, jobheader on)" > /tmp/ncargfx$$
+cat $1 >> /tmp/ncargfx$$
+lpr -Pscdimagen /tmp/ncargfx$$
+/bin/rm -f /tmp/ncargfx$$

@@ -1,0 +1,65 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:34:58 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= dashsupr
+
+GENERIC_SRCS = \
+	fdvdld.f cutup.f drawpv.f markl.f remove.f \
+	intmsk.f reset.f dashdc.f dashdb.f dashbd.f cfvld.f frstd.f \
+	vectd.f lastd.f curved.f lined.f pwrtm.f
+
+GENERIC_OBJS = \
+	fdvdld.o cutup.o drawpv.o markl.o remove.o \
+	intmsk.o reset.o dashdc.o dashdb.o dashbd.o cfvld.o frstd.o \
+	vectd.o lastd.o curved.o lined.o pwrtm.o
+
+#ifdef cray
+
+FSOURCES = \
+	fdvdld.f cutup.f drawpv.f markl.f \
+	intmsk.f reset.f dashdc.f dashdb.f cfvld.f frstd.f \
+	vectd.f lastd.f curved.f lined.f pwrtm.f
+
+FOBJECTS = \
+	fdvdld.o cutup.o drawpv.o markl.o \
+	intmsk.o reset.o dashdc.o dashdb.o cfvld.o frstd.o \
+	vectd.o lastd.o curved.o lined.o pwrtm.o
+
+OTHER_SRCS = removecray.f dashbd1024.f
+
+OTHER_OBJS = removecray.o dashbd1024.o
+
+#else
+
+FSOURCES = \
+	fdvdld.f cutup.f drawpv.f markl.f \
+	intmsk.f reset.f dashdc.f dashdb.f cfvld.f frstd.f \
+	vectd.f lastd.f curved.f lined.f pwrtm.f
+
+FOBJECTS = \
+	fdvdld.o cutup.o drawpv.o markl.o \
+	intmsk.o reset.o dashdc.o dashdb.o cfvld.o frstd.o \
+	vectd.o lastd.o curved.o lined.o pwrtm.o
+
+OTHER_SRCS = remove32.f dashbd1024.f
+
+OTHER_OBJS = remove32.o dashbd1024.o
+
+#endif
+
+SOURCES = $(FSOURCES) $(OTHER_SRCS)
+
+OBJECTS = $(FOBJECTS) $(OTHER_OBJS)
+
+RelocatableObject(libdashsupr.o,$(OBJECTS))
+
+#ifdef  BuildNCARGSourceLibrary
+install:: $(SOURCES)
+	@-$(RM) $(LIBDIR)/srcdashsupr.a
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBDIR)/srcdashsupr.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcdashsupr.a
+	@-$(RM) $(MYNAME)
+#endif

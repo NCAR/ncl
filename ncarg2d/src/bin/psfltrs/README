@@ -1,0 +1,22 @@
+This filters created in this directory may be tested (at NCAR) as follows:
+
+  ftrans -d ps.color ps.input.file > ps.output.file
+  psblack < ps.output.file > ps.output.file.black
+  pswhite < ps.output.file > ps.output.file.white
+  ps.imagen ps.output.file
+  ps.imagen ps.output.file.black
+  ps.imagen ps.output.file.white
+  rm ps.output.file*
+
+It is questionable how valuable this test is, since these filters are only
+intended for use with 3.00 and older metafiles.  It does verify that they
+compile and execute.
+
+The expected appearance of the plots is as follows:
+
+  ps.output.file       - a zig-zag line, some plus signs arranged in a
+			 zig-zag pattern, a nonagon, a rectangular
+			 checkerboard, and the words "Example string,
+			 centered in the center".
+  ps.output.file.black - a rectangular checkerboard in white on black
+  ps.output.file.white - a rectangular checkerboard in black on white

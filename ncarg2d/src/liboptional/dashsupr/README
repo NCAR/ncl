@@ -1,0 +1,6 @@
+This directory, dashsupr, has implementation dependent constants in
+dashbd.f and remove.f.  There are various versions of remove.f, all of which
+have the variables NXSIZE and NYSIZE set to 10.  dashbd.f has ISKIP
+set assuming these values.  If you change NXSIZE and NYSIZE in remove*.f,
+you must also make proper changes in dashbd.f.
+Thu Jun 2 09:54:38 MDT 1988 don middleton - ncar scd

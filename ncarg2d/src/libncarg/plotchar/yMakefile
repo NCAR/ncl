@@ -1,0 +1,69 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:32:17 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= plotchar
+
+GENERIC_SRCS = \
+	plchhq.f plchmq.f plchlq.f pcgetc.f pcgeti.f pcgetr.f pcsetc.f \
+	pcseti.f pcsetr.f pccchk.f pccffc.f pcdchk.f pcexcd.f pcgptr.f \
+	pcgtdi.f pcgtpi.f pcmqlq.f pcsort.f pcbdmq.f pcblda.f
+
+GENERIC_OBJS = \
+	plchhq.o plchmq.o plchlq.o pcgetc.o pcgeti.o pcgetr.o pcsetc.o \
+	pcseti.o pcsetr.o pccchk.o pccffc.o pcdchk.o pcexcd.o pcgptr.o \
+	pcgtdi.o pcgtpi.o pcmqlq.o pcsort.o pcbdmq.o pcblda.o
+
+OTHER_SRCS = pcfcls.f pcfopn.f pcfred.f bofred.c
+
+OTHER_OBJS = pcfcls.o pcfopn.o pcfred.o bofred.o
+
+SOURCES = $(GENERIC_SRCS) $(OTHER_SRCS)
+
+OBJECTS = $(GENERIC_OBJS) $(OTHER_OBJS)
+
+FCPP_OBJS	= pcfopn.f plchhq.f plchmq.f
+
+#if defined(sgi) || defined(ardent) || (defined(u370) && defined(unix)) \
+	|| defined(RS6000) || defined(hpux) || defined(cray) || defined(CRAY2)
+
+.SUFFIXES: .F
+
+.F.o:
+	@$(FCPP) $< $*.f
+	$(F77) $(FFLAGS) -c $*.f
+	@$(RM) $*.f
+#endif
+
+#if defined(apollo)
+# plchmq.f suffers from highest level of optimization. So use -opt 2.
+plchmq.o:  plchmq.F
+	$(F77) $(FFLAGS) -W0,-opt,2 -c plchmq.F
+#endif
+
+PartialLibrary(libncarg.a,$(OBJECTS))
+
+clean::
+	@-$(RM) plchhq.f plchmq.f pcfopn.f
+
+#ifdef  BuildNCARGSourceLibrary
+all:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_QUICK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	@-$(RM) $(MYNAME)
+
+install:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcncarg.a
+	@-$(RM) $(MYNAME)
+
+FRule
+#endif
+
+bofred.c:  bofred.c.sed Makefile
+	@$(CALLCONV) $(SYSTEM_INCLUDE) bofred.c bofred
+
+clean::
+	@-$(RM) $(FCPP_OBJS) bofred.c

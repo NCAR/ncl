@@ -1,0 +1,25 @@
+#!/bin/csh -f
+
+set utility = velvct
+
+set source = velvct.f
+
+echo ""
+echo "Generic to UNIX modifications for $utility/$source :"
+echo "  Commenting out functions FX and FY."
+
+if (! -e $source ) then
+	echo "Error: Cannot locate $source"
+	exit 1
+endif
+
+ed <<'EOF' - $source >/dev/null
+/FX(XX,YY) = XX/
+.,.+1d
+i
+C     FX(XX,YY) = XX
+C     FY(XX,YY) = YY
+.
+w
+q
+'EOF'

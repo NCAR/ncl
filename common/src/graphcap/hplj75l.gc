@@ -1,0 +1,47 @@
+/*
+/*	$Id: hplj75l.gc,v 1.1.1.1 1992-04-17 22:29:40 ncargd Exp $
+/*
+/*  hplj75l
+/***********************************************************************
+/*
+/* hplj75l
+/*
+/* This graphcap supports the HP LaserJet family of printers (LaserJet,
+/* LaserJet Plus, LaserJet Series II, LaserJet 500 Plus, etc.).
+/* The various versions of the HP LaserJet family have different
+/* memory sizes.  This limits the resolution and format size of the
+/* graphic area.  Consult your HP manual for details on any limitations.
+/*
+/* This file provides a low resolution (75 dots/in.) in landscape mode.
+/*
+/* If the printer is slaved off an ANSII terminal, add the following:
+/*   DEVICE_GRAPHIC_INIT: add to the start "ESC [ 5 i"
+/*   DEVICE_TEXT_INIT:    add to the end   "ESC [ 4 i"
+/*   DEVICE_CURSOR_HOME:  add to the end   "ESC [ 4 i"
+/*
+/***********************************************************************
+
+DEVICE_GRAPHIC_INIT
+  ESC E
+  ESC * t 7 5 R
+DEVICE_TEXT_INIT
+  ESC E
+DEVICE_CURSOR_HOME
+  FF
+DEVICE_BATCH
+  TRUE
+
+DEVICE_COORD_LOWER_LEFT_X
+  749
+DEVICE_COORD_LOWER_LEFT_Y
+  599
+DEVICE_COORD_UPPER_RIGHT_X
+  0
+DEVICE_COORD_UPPER_RIGHT_Y
+  0
+
+DEVICE_COORD_XOFFSET
+  -10
+
+DEVICE_COORD_ENCODING
+  101

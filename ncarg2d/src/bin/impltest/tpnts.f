@@ -1,0 +1,19 @@
+C
+C	$Id: tpnts.f,v 1.1.1.1 1992-04-17 22:34:37 ncargd Exp $
+C
+      SUBROUTINE TPNTS
+      COMMON /BLOCK1/ MESG,X(11),Y(11),IDUMMY(478)
+      CALL SET(0.,1.,0.,1.,0.,1.,0.,1.,1)
+      CALL WTSTR(0.5,0.91,'DEMONSTRATION PLOT FOR POINTS',20,0,0)
+      CALL BOX
+      DO 130 I=1,9
+      X(I) = .1*I
+      Y(I) = .50
+  130 CONTINUE
+      ICH = ICHAR('X')
+      CALL POINTS(X,Y,9,ICH,1)
+      CALL FRAME
+      WRITE(MESG,730)
+  730 FORMAT(' TPNTS  EXITED--SEE PLOT TO VERIFY PERFORMANCE')
+      RETURN
+      END

@@ -1,0 +1,11 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:29:31 ncargd Exp $
+#
+NCARG	= ..
+
+SUBDIRS = src man
+
+MakeSubdirs($(SUBDIRS))
+InstallSubdirs($(SUBDIRS))
+MakefilesSubdirs($(SUBDIRS))
+CleanSubdirs($(SUBDIRS))

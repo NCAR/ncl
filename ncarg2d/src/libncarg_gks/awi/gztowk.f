@@ -1,0 +1,112 @@
+C
+C	$Id: gztowk.f,v 1.1.1.1 1992-04-17 22:33:54 ncargd Exp $
+C
+      SUBROUTINE GZTOWK
+C
+C     THIS SUBROUTINE INVOKES THE WORKSTATION DRIVER
+C     DEPENDING ON THE CURRENT GKS OPERATING STATE.
+C     THE DRIVER IS ALWAYS CALLED FOR INQUIRY FUNCTIONS,
+C     AND IS NEVER CALLED FOR OTHER FUNCTIONS UNLESS
+C     THERE IS AT LEAST ONE OPEN WORKSTATION (EXCEPT FOR
+C     AN OPEN WORKSTATION CALL.)
+C
+C
+C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
+      COMMON/GKINTR/ NOPWK , NACWK , WCONID, NUMSEG,
+     +               SEGS(100)     , CURSEG
+      INTEGER        NOPWK , NACWK , WCONID, NUMSEG, SEGS  , CURSEG
+      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(2)       ,
+     +               MOPWK , MACWK , MNT
+      INTEGER        OPS   , WK
+      COMMON/GKSTAT/ SOPWK(2)      , SACWK(1)      , CPLI  , CLN   ,
+     +               CLWSC , CPLCI , CLNA  , CLWSCA, CPLCIA, CPMI  ,
+     +               CMK   , CMKS  , CPMCI , CMKA  , CMKSA , CPMCIA,
+     +               CTXI  , CTXFP(2)      , CCHXP , CCHSP , CTXCI ,
+     +               CTXFPA, CCHXPA, CCHSPA, CTXCIA, CCHH  , CCHUP(2),
+     +               CTXP  , CTXAL(2)      , CFAI  , CFAIS , CFASI ,
+     +               CFACI , CFAISA, CFASIA, CFACIA, CPA(2), CPARF(2),
+     +               CNT   , LSNT(2)       , NTWN(2,4)     , NTVP(2,4),
+     +               CCLIP , SWKTP(2)      , NOPICT, NWKTP , MODEF
+      INTEGER        SOPWK , SACWK , CPLI  , CLN   , CPLCI , CLNA  ,
+     +               CLWSCA, CPLCIA, CPMI  , CMK   , CPMCI , CMKA  ,
+     +               CMKSA , CPMCIA, CTXI  , CTXFP , CTXCI , CTXFPA,
+     +               CCHXPA, CCHSPA, CTXCIA, CTXP  , CTXAL , CFAI  ,
+     +               CFAIS , CFASI , CFACI , CFAISA, CFASIA, CFACIA,
+     +               CNT   , LSNT  , CCLIP , SWKTP , NOPICT, NWKTP ,
+     +               MODEF
+      REAL           NTWN  , NTVP
+      COMMON/GKEROR/ ERS   , ERF
+      COMMON/GKENUM/ GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
+     +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
+     +               GMI
+      INTEGER        GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
+     +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
+     +               GMI   , ERS   , ERF
+      COMMON/GKSNAM/ GNAM(109)
+      CHARACTER*6    GNAM
+      COMMON/GKSIN1/ FCODE , CONT  , IL1   , IL2   , ID(128)       ,
+     +               RL1   , RL2   , RX(128)       , RY(128)       ,
+     +               STRL1 , STRL2 , RERR
+      COMMON/GKSIN2/ STR
+      INTEGER        FCODE , CONT  , RL1   , RL2   , STRL1 , STRL2 ,
+     +               RERR
+      CHARACTER*80   STR
+C
+      INTEGER FCODEO,CONTO
+      SAVE
+C
+      CALL GQOPS(IST)
+C
+C     INVOKE WORKSTATION DRIVER FOR ALL INQUIRY FUNCTIONS
+C
+      IF (FCODE.LE.-110) THEN
+      CALL G01WDR
+      RETURN
+      ENDIF
+C
+C     INVOKE WORKSTATION DRIVER FOR GKOP FUNCTIONS
+C
+      IF (IST.GE.1.AND.(FCODE.EQ.-3.OR.FCODE.EQ.90)) THEN
+      CALL G01WDR
+      RETURN
+      ENDIF
+C
+C     INVOKE WORKSTATION DRIVER FOR GWSOP FUNCTIONS
+C
+      NOPCTO = NOPICT
+C
+C     PUT OUT NEW PICTURE INITIALIZATION IF THE PICTURE IS EMPTY.
+C
+      IF (IST.GE.2.AND.NOPICT.LE.0.AND.MODEF.EQ.0 .AND.
+     -    (FCODE.EQ.-2.OR.FCODE.EQ.56.OR.
+     -    (FCODE.GE.11.AND.FCODE.LE.16) .OR.
+     -    (FCODE.EQ.61.OR.FCODE.EQ.82) .OR.
+     -    (FCODE.GE.21.AND.FCODE.LE.43))) THEN
+        FCODEO = FCODE
+        CONTO  = CONT
+        FCODE = 91
+        CONT  =  0
+        CALL G01WDR
+        FCODE  = FCODEO
+        CONT   = CONTO
+        NOPICT = 1
+      ENDIF
+C
+      IF (IST.GE.2.AND.(FCODE.EQ.-2.OR.FCODE.EQ.0.OR.FCODE.EQ.1.OR.FCODE
+     +.EQ.3.OR.FCODE.EQ.6.OR.FCODE.EQ.61.OR.FCODE.EQ.56.OR.FCODE.EQ.71.O
+     +R.FCODE.EQ.72.OR.FCODE.EQ.84.OR.FCODE.EQ.102.OR.FCODE.EQ.103.OR.FC
+     +ODE.EQ.104.OR.FCODE.EQ.92.OR.FCODE.EQ.82.OR.(FCODE.GE.21.AND.FCODE
+     +.LE.43))) THEN
+      CALL G01WDR
+      RETURN
+      ENDIF
+C
+C     INVOKE WORKSTATION DRIVER FOR GWSAC FUNCTIONS
+C
+      IF (IST.GE.3.AND.(FCODE.EQ.-1.OR.FCODE.EQ.101.OR.(FCODE.GE.11.AND.
+     +FCODE.LE.16).OR.(FCODE.GE.80.AND.FCODE.LE.83))) THEN
+      CALL G01WDR
+      RETURN
+      ENDIF
+      RETURN
+      END

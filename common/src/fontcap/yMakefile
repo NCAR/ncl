@@ -1,0 +1,128 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:29:45 ncargd Exp $
+#
+NCARG	= ../../..
+
+MYNAME	= fontcap
+
+#
+# the "all" target is a dummy because it depends upon
+# the "fontc" program, which is not installed until the
+# "install" cycle.
+#
+GENERIC_SRCS = \
+	font1.fc font2.fc font3.fc font4.fc font5.fc \
+	font6.fc font7.fc font8.fc .fc font9.fc font10.fc \
+	font11.fc font12.fc font13.fc font14.fc font15.fc \
+	font16.fc font17.fc font18.fc font19.fc font20.fc
+
+FONTCAPS = \
+	font1 font2 font3 font4 font5 \
+	font6 font7 font8  font9 font10 \
+	font11 font12 font13 font14 font15 \
+	font16 font17 font18 font19 font20
+
+all::
+
+install:: $(FONTCAPS)
+
+install::
+	@$(MV) $(FONTCAPS) $(FONTCAPDIR)
+
+MakefileTarget
+CleanTarget
+
+Update:
+	@echo "Updating <$(MYNAME)> from Generic NCAR Graphics"
+	@-$(RM) $(GENERIC_SRCS) $(GENERIC_OBJS)
+	@echo "	File listing after removing old generics"
+	@ls
+	@echo "	Copying Generic source"
+	@for name in $(FONTCAPS); do\
+	($(CP) $(NCARG)/generic/$$name/src $$name.fc);\
+	done
+	@if (test -x Generic2Unix) then \
+	echo "	Applying local modifications"; Generic2Unix; fi
+
+clean::
+	@-$(RM) $(FONTCAPS)
+
+font1: font1.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font2: font2.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font3: font3.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font4: font4.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font5: font5.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font6: font6.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font7: font7.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font8: font8.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font9: font9.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font10: font10.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font11: font11.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font12: font12.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font13: font13.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font14: font14.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font15: font15.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font16: font16.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font17: font17.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font18: font18.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font19: font19.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font20: font20.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@

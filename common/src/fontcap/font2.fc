@@ -1,0 +1,988 @@
+/*
+/* Character fontcap for: HERSHEY:CARTOGRAPHIC_ROMAN
+/*
+
+CHARACTER_START
+32
+CHARACTER_END
+124
+CHARACTER_WIDTH
+12
+
+FONT_RIGHT
+254
+FONT_TOP
+137
+FONT_CAP
+131
+FONT_HALF
+127
+FONT_BASE
+123
+FONT_BOTTOM
+120
+FONT_TYPE
+1
+
+COORD_X_START
+15
+COORD_X_LEN
+8
+COORD_Y_START
+7
+COORD_Y_LEN
+8
+COORD_PEN_START
+16
+COORD_PEN_LEN
+1
+PAINT_BEGIN_START
+17
+PAINT_BEGIN_LEN
+1
+PAINT_END_START
+18
+PAINT_END_LEN
+1
+
+/* Font Stroke Statistics:
+/*    Total number of characters in set:     128
+/*    Total number of non-zero stroke chars:  57
+/*    Total number of strokes:               441
+/*    Character containing the max strokes:   38
+/*                     and its max strokes:   20
+/*
+/*    Max horizontal displacement (131) at character  65
+/*    Min horizontal displacement (123) at character  65
+/*    Max vertical   displacement (133) at character  36
+/*    Min vertical   displacement (120) at character  44
+/*    Max width inc. white space  ( 12) at character  77
+
+
+
+CHAR
+/* ASCII-32('Space') 0-strokes, 123-131(x), 0-0(y)
+/*  Character left and character right values
+  123  131
+
+CHAR
+/* ASCII-33('!') 9-strokes, 127-128(x), 123-132(y)
+/*  Character left and character right values
+  125  130
+/*  Strokes
+  127  132 0 0 0 
+  127  127 1 1 1 
+  128  132 0 0 0 
+  128  127 1 1 1 
+  127  124 0 0 0 
+  127  123 1 1 1 
+  128  123 1 1 1 
+  128  124 1 1 1 
+  127  124 1 1 1 
+
+CHAR
+/* ASCII-34('"') 4-strokes, 125-129(x), 128-132(y)
+/*  Character left and character right values
+  123  131
+/*  Strokes
+  125  132 0 0 0 
+  125  128 1 1 1 
+  129  132 0 0 0 
+  129  128 1 1 1 
+
+CHAR
+/* ASCII-35('#') 8-strokes, 124-131(x), 122-133(y)
+/*  Character left and character right values
+  122  133
+/*  Strokes
+  127  133 0 0 0 
+  125  122 1 1 1 
+  130  133 0 0 0 
+  128  122 1 1 1 
+  124  129 0 0 0 
+  131  129 1 1 1 
+  124  126 0 0 0 
+  131  126 1 1 1 
+
+CHAR
+/* ASCII-36('$') 14-strokes, 124-130(x), 122-133(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  130  131 0 0 0 
+  128  132 1 1 1 
+  126  132 1 1 1 
+  124  131 1 1 1 
+  124  129 1 1 1 
+  126  128 1 1 1 
+  129  127 1 1 1 
+  130  126 1 1 1 
+  130  124 1 1 1 
+  128  123 1 1 1 
+  126  123 1 1 1 
+  124  124 1 1 1 
+  127  133 0 0 0 
+  127  122 1 1 1 
+
+CHAR
+/* ASCII-37('%') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-38('&') 20-strokes, 123-131(x), 123-132(y)
+/*  Character left and character right values
+  121  133
+/*  Strokes
+  131  127 0 0 0 
+  130  127 1 1 1 
+  129  126 1 1 1 
+  128  124 1 1 1 
+  127  123 1 1 1 
+  124  123 1 1 1 
+  123  124 1 1 1 
+  123  126 1 1 1 
+  124  127 1 1 1 
+  127  128 1 1 1 
+  128  129 1 1 1 
+  128  131 1 1 1 
+  127  132 1 1 1 
+  125  132 1 1 1 
+  124  131 1 1 1 
+  124  129 1 1 1 
+  126  126 1 1 1 
+  128  124 1 1 1 
+  130  123 1 1 1 
+  131  123 1 1 1 
+
+CHAR
+/* ASCII-39(''') 2-strokes, 127-127(x), 128-132(y)
+/*  Character left and character right values
+  125  129
+/*  Strokes
+  127  132 0 0 0 
+  127  128 1 1 1 
+
+CHAR
+/* ASCII-40('(') 6-strokes, 126-129(x), 122-133(y)
+/*  Character left and character right values
+  124  131
+/*  Strokes
+  129  133 0 0 0 
+  127  131 1 1 1 
+  126  129 1 1 1 
+  126  126 1 1 1 
+  127  124 1 1 1 
+  129  122 1 1 1 
+
+CHAR
+/* ASCII-41(')') 6-strokes, 125-128(x), 122-133(y)
+/*  Character left and character right values
+  123  130
+/*  Strokes
+  125  133 0 0 0 
+  127  131 1 1 1 
+  128  129 1 1 1 
+  128  126 1 1 1 
+  127  124 1 1 1 
+  125  122 1 1 1 
+
+CHAR
+/* ASCII-42('*') 6-strokes, 124-130(x), 124-130(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  127  130 0 0 0 
+  127  124 1 1 1 
+  124  129 0 0 0 
+  130  125 1 1 1 
+  130  129 0 0 0 
+  124  125 1 1 1 
+
+CHAR
+/* ASCII-43('+') 4-strokes, 123-131(x), 123-131(y)
+/*  Character left and character right values
+  121  133
+/*  Strokes
+  127  131 0 0 0 
+  127  123 1 1 1 
+  123  127 0 0 0 
+  131  127 1 1 1 
+
+CHAR
+/* ASCII-44(',') 6-strokes, 127-128(x), 120-124(y)
+/*  Character left and character right values
+  125  130
+/*  Strokes
+  128  123 0 0 0 
+  127  123 1 1 1 
+  127  124 1 1 1 
+  128  124 1 1 1 
+  128  122 1 1 1 
+  127  120 1 1 1 
+
+CHAR
+/* ASCII-45('-') 2-strokes, 123-131(x), 127-127(y)
+/*  Character left and character right values
+  121  133
+/*  Strokes
+  123  127 0 0 0 
+  131  127 1 1 1 
+
+CHAR
+/* ASCII-46('.') 5-strokes, 127-128(x), 123-124(y)
+/*  Character left and character right values
+  125  130
+/*  Strokes
+  127  124 0 0 0 
+  127  123 1 1 1 
+  128  123 1 1 1 
+  128  124 1 1 1 
+  127  124 1 1 1 
+
+CHAR
+/* ASCII-47('/') 2-strokes, 123-131(x), 122-133(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  131  133 0 0 0 
+  123  122 1 1 1 
+
+CHAR
+/* ASCII-48('0') 11-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  127  132 0 0 0 
+  125  131 1 1 1 
+  124  129 1 1 1 
+  124  126 1 1 1 
+  125  124 1 1 1 
+  127  123 1 1 1 
+  129  124 1 1 1 
+  130  126 1 1 1 
+  130  129 1 1 1 
+  129  131 1 1 1 
+  127  132 1 1 1 
+
+CHAR
+/* ASCII-49('1') 3-strokes, 125-127(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  125  130 0 0 0 
+  127  132 1 1 1 
+  127  123 1 1 1 
+
+CHAR
+/* ASCII-50('2') 8-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  124  131 0 0 0 
+  126  132 1 1 1 
+  128  132 1 1 1 
+  130  131 1 1 1 
+  130  129 1 1 1 
+  129  127 1 1 1 
+  124  123 1 1 1 
+  130  123 1 1 1 
+
+CHAR
+/* ASCII-51('3') 13-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  124  131 0 0 0 
+  126  132 1 1 1 
+  128  132 1 1 1 
+  130  131 1 1 1 
+  130  129 1 1 1 
+  128  128 1 1 1 
+  127  128 0 0 0 
+  128  128 1 1 1 
+  130  127 1 1 1 
+  130  124 1 1 1 
+  128  123 1 1 1 
+  126  123 1 1 1 
+  124  124 1 1 1 
+
+CHAR
+/* ASCII-52('4') 5-strokes, 123-131(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  128  132 0 0 0 
+  128  123 1 1 1 
+  128  132 0 0 0 
+  123  126 1 1 1 
+  131  126 1 1 1 
+
+CHAR
+/* ASCII-53('5') 12-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  125  132 0 0 0 
+  124  128 1 1 1 
+  126  129 1 1 1 
+  127  129 1 1 1 
+  129  128 1 1 1 
+  130  126 1 1 1 
+  129  124 1 1 1 
+  127  123 1 1 1 
+  126  123 1 1 1 
+  124  124 1 1 1 
+  125  132 0 0 0 
+  129  132 1 1 1 
+
+CHAR
+/* ASCII-54('6') 13-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  129  132 0 0 0 
+  127  132 1 1 1 
+  125  131 1 1 1 
+  124  129 1 1 1 
+  124  126 1 1 1 
+  125  124 1 1 1 
+  127  123 1 1 1 
+  129  124 1 1 1 
+  130  126 1 1 1 
+  129  128 1 1 1 
+  127  129 1 1 1 
+  125  128 1 1 1 
+  124  126 1 1 1 
+
+CHAR
+/* ASCII-55('7') 4-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  130  132 0 0 0 
+  126  123 1 1 1 
+  124  132 0 0 0 
+  130  132 1 1 1 
+
+CHAR
+/* ASCII-56('8') 17-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  126  132 0 0 0 
+  124  131 1 1 1 
+  124  129 1 1 1 
+  126  128 1 1 1 
+  128  128 1 1 1 
+  130  129 1 1 1 
+  130  131 1 1 1 
+  128  132 1 1 1 
+  126  132 1 1 1 
+  126  128 0 0 0 
+  124  127 1 1 1 
+  124  124 1 1 1 
+  126  123 1 1 1 
+  128  123 1 1 1 
+  130  124 1 1 1 
+  130  127 1 1 1 
+  128  128 1 1 1 
+
+CHAR
+/* ASCII-57('9') 13-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  130  129 0 0 0 
+  129  127 1 1 1 
+  127  126 1 1 1 
+  125  127 1 1 1 
+  124  129 1 1 1 
+  125  131 1 1 1 
+  127  132 1 1 1 
+  129  131 1 1 1 
+  130  129 1 1 1 
+  130  126 1 1 1 
+  129  124 1 1 1 
+  127  123 1 1 1 
+  125  123 1 1 1 
+
+CHAR
+/* ASCII-58(':') 10-strokes, 127-128(x), 123-129(y)
+/*  Character left and character right values
+  125  130
+/*  Strokes
+  127  129 0 0 0 
+  127  128 1 1 1 
+  128  128 1 1 1 
+  128  129 1 1 1 
+  127  129 1 1 1 
+  127  124 0 0 0 
+  127  123 1 1 1 
+  128  123 1 1 1 
+  128  124 1 1 1 
+  127  124 1 1 1 
+
+CHAR
+/* ASCII-59(';') 11-strokes, 127-128(x), 120-129(y)
+/*  Character left and character right values
+  125  130
+/*  Strokes
+  127  129 0 0 0 
+  127  128 1 1 1 
+  128  128 1 1 1 
+  128  129 1 1 1 
+  127  129 1 1 1 
+  128  123 0 0 0 
+  127  123 1 1 1 
+  127  124 1 1 1 
+  128  124 1 1 1 
+  128  122 1 1 1 
+  127  120 1 1 1 
+
+CHAR
+/* ASCII-60('<') 5-strokes, 127-128(x), 127-128(y)
+/*  Character left and character right values
+  125  130
+/*  Strokes
+  127  128 0 0 0 
+  127  127 1 1 1 
+  128  127 1 1 1 
+  128  128 1 1 1 
+  127  128 1 1 1 
+
+CHAR
+/* ASCII-61('=') 4-strokes, 123-131(x), 125-129(y)
+/*  Character left and character right values
+  121  133
+/*  Strokes
+  123  129 0 0 0 
+  131  129 1 1 1 
+  123  125 0 0 0 
+  131  125 1 1 1 
+
+CHAR
+/* ASCII-62('>') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-63('?') 15-strokes, 125-130(x), 123-132(y)
+/*  Character left and character right values
+  123  132
+/*  Strokes
+  125  131 0 0 0 
+  127  132 1 1 1 
+  128  132 1 1 1 
+  130  131 1 1 1 
+  130  129 1 1 1 
+  127  128 1 1 1 
+  127  127 1 1 1 
+  128  127 1 1 1 
+  128  128 1 1 1 
+  130  129 1 1 1 
+  127  124 0 0 0 
+  127  123 1 1 1 
+  128  123 1 1 1 
+  128  124 1 1 1 
+  127  124 1 1 1 
+
+CHAR
+/* ASCII-64('@') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-65('A') 6-strokes, 123-131(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  127  132 0 0 0 
+  123  123 1 1 1 
+  127  132 0 0 0 
+  131  123 1 1 1 
+  125  126 0 0 0 
+  129  126 1 1 1 
+
+CHAR
+/* ASCII-66('B') 13-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  124  132 0 0 0 
+  124  123 1 1 1 
+  124  132 0 0 0 
+  128  132 1 1 1 
+  130  131 1 1 1 
+  130  129 1 1 1 
+  128  128 1 1 1 
+  124  128 0 0 0 
+  128  128 1 1 1 
+  130  127 1 1 1 
+  130  124 1 1 1 
+  128  123 1 1 1 
+  124  123 1 1 1 
+
+CHAR
+/* ASCII-67('C') 10-strokes, 124-131(x), 123-132(y)
+/*  Character left and character right values
+  122  133
+/*  Strokes
+  131  131 0 0 0 
+  129  132 1 1 1 
+  127  132 1 1 1 
+  125  131 1 1 1 
+  124  129 1 1 1 
+  124  126 1 1 1 
+  125  124 1 1 1 
+  127  123 1 1 1 
+  129  123 1 1 1 
+  131  124 1 1 1 
+
+CHAR
+/* ASCII-68('D') 10-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  124  132 0 0 0 
+  124  123 1 1 1 
+  124  132 0 0 0 
+  127  132 1 1 1 
+  129  131 1 1 1 
+  130  129 1 1 1 
+  130  126 1 1 1 
+  129  124 1 1 1 
+  127  123 1 1 1 
+  124  123 1 1 1 
+
+CHAR
+/* ASCII-69('E') 8-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  124  132 0 0 0 
+  124  123 1 1 1 
+  124  132 0 0 0 
+  130  132 1 1 1 
+  124  128 0 0 0 
+  128  128 1 1 1 
+  124  123 0 0 0 
+  130  123 1 1 1 
+
+CHAR
+/* ASCII-70('F') 6-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  131
+/*  Strokes
+  124  132 0 0 0 
+  124  123 1 1 1 
+  124  132 0 0 0 
+  130  132 1 1 1 
+  124  128 0 0 0 
+  128  128 1 1 1 
+
+CHAR
+/* ASCII-71('G') 13-strokes, 124-131(x), 123-132(y)
+/*  Character left and character right values
+  122  133
+/*  Strokes
+  131  131 0 0 0 
+  129  132 1 1 1 
+  127  132 1 1 1 
+  125  131 1 1 1 
+  124  129 1 1 1 
+  124  126 1 1 1 
+  125  124 1 1 1 
+  127  123 1 1 1 
+  129  123 1 1 1 
+  131  124 1 1 1 
+  131  127 1 1 1 
+  128  127 0 0 0 
+  131  127 1 1 1 
+
+CHAR
+/* ASCII-72('H') 6-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  124  132 0 0 0 
+  124  123 1 1 1 
+  130  132 0 0 0 
+  130  123 1 1 1 
+  124  128 0 0 0 
+  130  128 1 1 1 
+
+CHAR
+/* ASCII-73('I') 2-strokes, 127-127(x), 123-132(y)
+/*  Character left and character right values
+  125  129
+/*  Strokes
+  127  132 0 0 0 
+  127  123 1 1 1 
+
+CHAR
+/* ASCII-74('J') 6-strokes, 124-128(x), 123-132(y)
+/*  Character left and character right values
+  123  130
+/*  Strokes
+  128  132 0 0 0 
+  128  125 1 1 1 
+  127  123 1 1 1 
+  125  123 1 1 1 
+  124  125 1 1 1 
+  124  126 1 1 1 
+
+CHAR
+/* ASCII-75('K') 6-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  124  132 0 0 0 
+  124  123 1 1 1 
+  130  132 0 0 0 
+  124  126 1 1 1 
+  126  128 0 0 0 
+  130  123 1 1 1 
+
+CHAR
+/* ASCII-76('L') 4-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  131
+/*  Strokes
+  124  132 0 0 0 
+  124  123 1 1 1 
+  124  123 0 0 0 
+  130  123 1 1 1 
+
+CHAR
+/* ASCII-77('M') 8-strokes, 123-131(x), 123-132(y)
+/*  Character left and character right values
+  121  133
+/*  Strokes
+  123  132 0 0 0 
+  123  123 1 1 1 
+  123  132 0 0 0 
+  127  123 1 1 1 
+  131  132 0 0 0 
+  127  123 1 1 1 
+  131  132 0 0 0 
+  131  123 1 1 1 
+
+CHAR
+/* ASCII-78('N') 6-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  124  132 0 0 0 
+  124  123 1 1 1 
+  124  132 0 0 0 
+  130  123 1 1 1 
+  130  132 0 0 0 
+  130  123 1 1 1 
+
+CHAR
+/* ASCII-79('O') 13-strokes, 124-131(x), 123-132(y)
+/*  Character left and character right values
+  122  133
+/*  Strokes
+  127  132 0 0 0 
+  125  131 1 1 1 
+  124  129 1 1 1 
+  124  126 1 1 1 
+  125  124 1 1 1 
+  127  123 1 1 1 
+  128  123 1 1 1 
+  130  124 1 1 1 
+  131  126 1 1 1 
+  131  129 1 1 1 
+  130  131 1 1 1 
+  128  132 1 1 1 
+  127  132 1 1 1 
+
+CHAR
+/* ASCII-80('P') 8-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  124  132 0 0 0 
+  124  123 1 1 1 
+  124  132 0 0 0 
+  128  132 1 1 1 
+  130  131 1 1 1 
+  130  128 1 1 1 
+  128  127 1 1 1 
+  124  127 1 1 1 
+
+CHAR
+/* ASCII-81('Q') 15-strokes, 124-131(x), 122-132(y)
+/*  Character left and character right values
+  122  133
+/*  Strokes
+  127  132 0 0 0 
+  125  131 1 1 1 
+  124  129 1 1 1 
+  124  126 1 1 1 
+  125  124 1 1 1 
+  127  123 1 1 1 
+  128  123 1 1 1 
+  130  124 1 1 1 
+  131  126 1 1 1 
+  131  129 1 1 1 
+  130  131 1 1 1 
+  128  132 1 1 1 
+  127  132 1 1 1 
+  128  125 0 0 0 
+  131  122 1 1 1 
+
+CHAR
+/* ASCII-82('R') 10-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  124  132 0 0 0 
+  124  123 1 1 1 
+  124  132 0 0 0 
+  128  132 1 1 1 
+  130  131 1 1 1 
+  130  128 1 1 1 
+  128  127 1 1 1 
+  124  127 1 1 1 
+  127  127 0 0 0 
+  130  123 1 1 1 
+
+CHAR
+/* ASCII-83('S') 12-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  130  131 0 0 0 
+  128  132 1 1 1 
+  126  132 1 1 1 
+  124  131 1 1 1 
+  124  130 1 1 1 
+  125  129 1 1 1 
+  129  127 1 1 1 
+  130  126 1 1 1 
+  130  124 1 1 1 
+  128  123 1 1 1 
+  126  123 1 1 1 
+  124  124 1 1 1 
+
+CHAR
+/* ASCII-84('T') 4-strokes, 123-131(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  127  132 0 0 0 
+  127  123 1 1 1 
+  123  132 0 0 0 
+  131  132 1 1 1 
+
+CHAR
+/* ASCII-85('U') 8-strokes, 124-131(x), 123-132(y)
+/*  Character left and character right values
+  122  133
+/*  Strokes
+  124  132 0 0 0 
+  124  126 1 1 1 
+  125  124 1 1 1 
+  127  123 1 1 1 
+  128  123 1 1 1 
+  130  124 1 1 1 
+  131  126 1 1 1 
+  131  132 1 1 1 
+
+CHAR
+/* ASCII-86('V') 4-strokes, 123-131(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  123  132 0 0 0 
+  127  123 1 1 1 
+  131  132 0 0 0 
+  127  123 1 1 1 
+
+CHAR
+/* ASCII-87('W') 8-strokes, 123-131(x), 123-132(y)
+/*  Character left and character right values
+  121  133
+/*  Strokes
+  123  132 0 0 0 
+  125  123 1 1 1 
+  127  132 0 0 0 
+  125  123 1 1 1 
+  127  132 0 0 0 
+  129  123 1 1 1 
+  131  132 0 0 0 
+  129  123 1 1 1 
+
+CHAR
+/* ASCII-88('X') 4-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  124  132 0 0 0 
+  130  123 1 1 1 
+  130  132 0 0 0 
+  124  123 1 1 1 
+
+CHAR
+/* ASCII-89('Y') 5-strokes, 123-131(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  123  132 0 0 0 
+  127  128 1 1 1 
+  127  123 1 1 1 
+  131  132 0 0 0 
+  127  128 1 1 1 
+
+CHAR
+/* ASCII-90('Z') 6-strokes, 124-130(x), 123-132(y)
+/*  Character left and character right values
+  122  132
+/*  Strokes
+  130  132 0 0 0 
+  124  123 1 1 1 
+  124  132 0 0 0 
+  130  132 1 1 1 
+  124  123 0 0 0 
+  130  123 1 1 1 
+
+CHAR
+/* ASCII-91('[') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-92('\') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-93(']') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-94('^') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-95('_') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-96('`') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-97('a') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-98('b') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-99('c') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-100('d') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-101('e') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-102('f') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-103('g') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-104('h') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-105('i') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-106('j') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-107('k') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-108('l') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-109('m') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-110('n') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-111('o') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-112('p') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-113('q') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-114('r') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-115('s') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-116('t') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-117('u') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-118('v') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-119('w') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-120('x') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-121('y') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-122('z') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-123('{') 0-strokes, 0-0(x), 0-0(y)
+    0    0 0 0 0 
+
+CHAR
+/* ASCII-124('|') 2-strokes, 127-127(x), 122-133(y)
+/*  Character left and character right values
+  125  129
+/*  Strokes
+  127  133 0 0 0 
+  127  122 1 1 1 
+

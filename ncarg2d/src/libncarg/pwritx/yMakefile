@@ -1,0 +1,58 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:31:32 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= pwritx
+
+GENERIC_SRCS = \
+	 ccheck.f dcheck.f gethol.f gtdgts.f gtnum.f gtnumb.f gtsign.f\
+	 htable.f mkmsk.f pwritx.f pwrx.f pwrxbd.f xtch.f
+
+GENERIC_OBJS = \
+	 ccheck.o dcheck.o gethol.o gtdgts.o gtnum.o gtnumb.o gtsign.o\
+	 htable.o mkmsk.o pwritx.o pwrx.o pwrxbd.o xtch.o
+
+NEW_SRCS = openpw.f
+
+NEW_OBJS = openpw.o
+
+SOURCES = $(GENERIC_SRCS) $(NEW_SRCS)
+
+OBJECTS = $(GENERIC_OBJS) $(NEW_OBJS)
+
+FCPP_OPJS	= openpw.f
+
+PartialLibrary(libncarg.a,$(OBJECTS))
+
+#if defined(sgi) || defined(ardent) || (defined(u370) && defined(unix)) \
+	|| defined(RS6000) || defined(hpux) || defined(cray) || defined(CRAY2)
+
+.SUFFIXES: .F
+
+.F.o:
+	@$(FCPP) $< $*.f
+	$(F77) $(FFLAGS) -c $*.f
+	@$(RM) $*.f
+#endif
+
+clean::
+	@-$(RM) openpw.f
+
+#ifdef  BuildNCARGSourceLibrary
+all:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_QUICK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	@-$(RM) $(MYNAME)
+
+install:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcncarg.a
+	@-$(RM) $(MYNAME)
+
+FRule
+#endif
+
+clean::
+	@-$(RM) $(FCPP_OBJS)

@@ -1,0 +1,128 @@
+/*
+/*	$Id: imagen.gc,v 1.1.1.1 1992-04-17 22:29:40 ncargd Exp $
+/*
+/*  imagen
+/*
+/*  This graphcap is for the IMAGEN 8/300 laser printer in
+/*  graphics landscape mode.
+/*
+
+DEVICE_GRAPHIC_INIT
+/* INT205 INT25 INT205 INT0
+INT225 INT0
+
+DEVICE_ERASE
+INT219
+
+DEVICE_BATCH
+TRUE
+
+DEVICE_COORD_LOWER_LEFT_X
+/* 2200
+2640
+DEVICE_COORD_LOWER_LEFT_Y
+/* 2640
+2200
+DEVICE_COORD_UPPER_RIGHT_X
+0
+DEVICE_COORD_UPPER_RIGHT_Y
+0
+
+DEVICE_COORD_XOFFSET
+/* 0 139
+300
+DEVICE_COORD_YOFFSET
+/* 0 300
+139
+
+DEVICE_COORD_FORMAT
+/* bit_start  bit_count  data_type  data_value
+       0         16           2         15
+       16        16           1         15
+
+DEVICE_COORD_ENCODING
+/* 0 binary, 1 ascii decimal, 2 ascii hex, 3 ascii octal, 4 ascii tek
+0
+
+DEVICE_VECTOR_COUNT_ENCODING
+/* 0 binary, 1 ascii decimal, 2 ascii hex, 3 ascii octal, 4 ascii tek
+0
+DEVICE_VECTOR_COUNT_FORMAT
+/* bit_start  bit_count  data_type  data_value
+       0         16           1         15
+
+LINE_DRAW_POLY_FLAG
+TRUE
+LINE_DRAW_INSTRUCTION_START
+INT230 VC
+LINE_DRAW_INSTRUCTION_TERMINATOR
+INT234 INT15
+LINE_BACKGROUND_COLOR_INSTRUCTION_TERMINATOR
+INT234 INT0
+LINE_WIDTH_INSTRUCTION_START
+INT232
+LINE_WIDTH_ENCODING
+/* 0 binary, 1 ascii decimal, 2 ascii hex, 3 ascii octal, 4 ascii tek
+0
+DASH_BIT_LENGTH
+135
+LINE_WIDTH_FORMAT
+/* bit_start  bit_count  data_type  data_value
+       0         8            1         7
+LINE_WIDTH_RANGE
+/* two values giving low and high DC width values
+1 20
+LINE_WIDTH_SCALE
+0.2
+
+MARKER_DOT_SIZE
+1
+
+POLYGON_INSTRUCTION_START
+INT230 VC
+POLYGON_INSTRUCTION_TERMINATOR
+INT233 INT3
+POLYGON_BACKGROUND_COLOR_INSTRUCTION_TERMINATOR
+INT233 INT0
+
+/* these bundles are defined for the current NCAR metafile translator
+/* they may be redifined but not all of them have any effect as of yet
+BUNDLE_LINE_INDEX
+1 2 3 4 5
+BUNDLE_LINE_TYPE
+1 2 3 4 5
+BUNDLE_LINE_WIDTH
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_LINE_COLOR
+1 2 3 4 5
+
+BUNDLE_MARKER_INDEX
+1 2 3 4 5
+BUNDLE_MARKER_TYPE
+1 2 3 4 5
+BUNDLE_MARKER_SIZE
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_MARKER_COLOR
+1 2 3 4 5
+
+BUNDLE_POLYGON_INDEX
+1 2 3 4 5
+BUNDLE_POLYGON_INTERIOR
+0 0 0 0 0
+BUNDLE_POLYGON_STYLE
+0 0 0 0 0
+BUNDLE_POLYGON_COLOR
+1 2 3 4 5
+
+BUNDLE_TEXT_INDEX
+1 2 3 4 5
+BUNDLE_TEXT_FONT
+1 1 1 1 1
+BUNDLE_TEXT_PRECISION
+1 1 1 1 1
+BUNDLE_TEXT_CEXPN
+1.0 0.60 0.80 1.20 1.40
+BUNDLE_TEXT_CSPACE
+0.0 0.0 0.0 0.0 0.0
+BUNDLE_TEXT_COLOR
+1 2 3 4 5

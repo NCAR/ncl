@@ -1,0 +1,147 @@
+#######################################################################
+#
+#	This Makefile was created by the "ymake" utility.
+#	If you wish to make changes in the "Makefile" or "makefile", 
+#	do so by making changes to "yMakefile" or "ymakefile" 
+#       and executing "make local-Makefile".
+#
+#######################################################################
+
+SYSTEM_INCLUDE		= Sun3
+
+VERSION         = 3.1.3
+PARFIL_INIT     = /usr/local/lib/ncargparams
+PARFIL_PERM     = /usr/local/lib/ncargparams
+
+BINDIR          = /usr/local/bin
+LIBDIR          = /usr/local/lib
+MANDIR          = /usr/man/manl
+MAN_SECTION     = l
+TMPDIR          = /tmp
+
+XLIBDIR         = /usr/lib
+XINCDIR         = /usr/include
+XAPPDIR         = /usr/lib/X11/app-defaults
+
+INCLUDEDIR      = $(NCARG)/include
+DBDIR           = $(LIBDIR)
+FONTCAPDIR      = $(LIBDIR)/fontcaps
+GRAPHCAPDIR     = $(LIBDIR)/graphcaps
+EXAMPLEDIR      = $(LIBDIR)/ncargexamples
+TESTDIR         = $(LIBDIR)/ncargtests
+
+GENERICDIR      = $(NCARG)/generic
+
+CONFIGDIR       = $(NCARG)/config
+YMAKE           = $(CONFIGDIR)/ymake -I$(CONFIGDIR)
+
+MAKE            = make
+FLOAT_OPT       = -fswitch
+OS              =
+ARCH            =
+XPATH           =
+VDEFINE         = -DVERSION='"$(VERSION)"'
+CC              = cc
+CC_LD           = $(CC)
+CDEBUG          =
+COPT            = -O
+CMISC           =
+CFLAGS          = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
+	$(FLOAT_OPT) $(XPATH) $(VDEFINE)
+LD_CFLAGS       = $(CFLAGS)
+CPP             = /lib/cpp
+FCPP            = /lib/cpp
+F77             = f77
+F77_LD          = $(F77)
+FDEBUG          =
+FOPT            = -O
+FMISC           = -Bstatic
+FFLAGS          = $(OS) $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
+	$(FLOAT_OPT)
+LD_FFLAGS       = $(FFLAGS)
+LD              = ld
+LD_REL          = $(LD)
+AR              = ar
+AR_QUICK        = $(AR) q
+AR_CHECK        = $(AR) vru
+AR_SRC          = ar
+AR_SRC_QUICK    = $(AR_SRC) q
+AR_SRC_CHECK    = $(AR_SRC) vru
+RM              = rm -f
+CAT             = cat
+CP              = cp
+MV              = mv -f
+RANLIB          = ranlib
+NO_OP           = touch -c
+INSTALL         = install -c
+INSTALL_RM      = $(RM)
+INSTALL_BIN     = 0755
+INSTALL_MAN     = 0644
+INSTALL_APP     = 0644
+INSTALL_LIB     = 0644
+INSTALL_DB      = 0644
+
+GRAPHC          = $(BINDIR)/graphc
+FONTC           = $(BINDIR)/fontc
+
+FSPLIT          = fsplit
+CALLCONV        = $(NCARG)/utils/callconv
+SHELL           = /bin/sh
+
+GKS_BUFFER_SIZE = 0
+
+NCARG	= ../..
+
+MANS = \
+	areas autograph colconv conran conraq conras \
+	conrcq conrcspr conrec dashchar dashline \
+	dashsmth dashsupr ezmap.exam ezmap ezmapa \
+	gridal hafton histgr isosrf isosrfhr plotchar pre2ncgm \
+	psblack pswhite \
+	pwritx pwrity pwrzi pwrzs pwrzt srface \
+	strmln threed velvct ncargf77 plt \
+	ncargintro ncargcc ncargmac ncargmac3 \
+	cgmtrans ftrans \
+	ncargex ncargrun findg colconv conpack gflash labelbar \
+	plotchar softfill stitle
+
+all:
+
+preformatted:
+	@for name in $(MANS); do\
+	(sed <$$name.m \
+	-e 's@MACRO_SOURCE3@ncargmac3.m@' \
+	-e 's@MACRO_SOURCE@ncargmac.m@' \
+	| nroff -man >$$name.p);\
+	done
+
+install::
+	@for name in $(MANS); do\
+	(sed \
+	-e 's@MACRO_SOURCE3@$(MANDIR)/ncargmac3.$(MAN_SECTION)@' \
+	-e 's@MACRO_SOURCE@$(MANDIR)/ncargmac.$(MAN_SECTION)@' \
+	<$$name.m >$$name.$(MAN_SECTION));\
+	done
+
+install::
+	@for name in $(MANS); do\
+	($(INSTALL) -m $(INSTALL_MAN) $$name.$(MAN_SECTION) $(MANDIR));\
+	done
+
+install::
+	@-for name in $(MANS); do\
+	($(RM) $$name.$(MAN_SECTION));\
+	done
+
+Makefiles:: local-Makefile
+
+local-Makefile:
+	@$(YMAKE)
+
+clean::
+	@-$(RM) *.o core
+
+cleanbin:: clean
+
+generic::
+

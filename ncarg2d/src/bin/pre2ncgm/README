@@ -1,0 +1,10 @@
+The filter created in this directory may be tested (at NCAR) as follows:
+
+  pre2ncgm.prog < conrec.pre
+  ctrans -d ... gmeta
+
+or (after the script "pre2ncgm" has been created, which happens in a
+different directory)
+
+  pre2ncgm < conrec.pre > conrec.cgm
+  ctrans -d ... conrec.cgm

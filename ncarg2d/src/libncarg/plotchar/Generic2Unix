@@ -1,0 +1,80 @@
+#!/bin/csh -f
+
+set utility = plotchar
+
+set source = plchhq.f
+set target = plchhq.F
+
+echo ""
+echo "Generic to UNIX modifications for $utility/$source :"
+echo "	Providing system conditionals for FORTRAN data statements"
+echo "	Creating $target from $source"
+
+if (! -e $source ) then
+	echo "Error: Cannot locate $source"
+	exit 1
+endif
+
+rm -f $target
+mv $source $target
+
+ed <<'EOF' - $target >/dev/null
+/DATA CDPC/
+/'<','>'/
+c
+#if defined(u370) && defined(unix)
+     +            '<','>','?','@','[','\',']','{','|','}',
+#else
+     +            '<','>','?','@','[','\\',']','{','|','}',
+#endif
+.
+/'~',''''/
+c
+#if defined(mips) && defined(ultrix)
+     +            '~','\'','^','_','`'                   /
+#else
+     +            '~','''','^','_','`'                   /
+#endif
+.
+w
+q
+'EOF'
+
+set source = plchmq.f
+set target = plchmq.F
+
+echo ""
+echo "Generic to UNIX modifications for $utility/$source :"
+echo "	Providing system conditionals for FORTRAN data statements"
+echo "	Creating $target from $source"
+
+if (! -e $source ) then
+	echo "Error: Cannot locate $source"
+	exit 1
+endif
+
+rm -f $target
+mv $source $target
+
+ed <<'EOF' - $target >/dev/null
+/DATA (LCHR(I),I=  1, 94)/
+.+1c
+#if defined(mips) && defined(ultrix)
+     O                         '!','"','#','$','%','&','\'','(',')','*',
+#else
+     O                         '!','"','#','$','%','&','''','(',')','*',
+#endif
+.
+/'S','T','U','V','W','X','Y','Z'/
+c
+#if defined(u370) && defined(unix)
+     5                         'S','T','U','V','W','X','Y','Z','[','\',
+#else
+     5                         'S','T','U','V','W','X','Y','Z','[','\\',
+#endif
+.
+w
+q
+'EOF'
+
+exit

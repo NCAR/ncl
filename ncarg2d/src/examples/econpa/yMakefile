@@ -1,0 +1,25 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:33:10 ncargd Exp $
+#
+NCARG	= ../../../..
+
+FSPLIT	= ncarguncat
+
+MYNAME	= econpa
+
+GENERIC_SRCS = \
+	 cpexcc.f cpex01.f cpex02.f cpex03.f cpex04.f cpex05.f cpex06.f\
+	 cpex07.f cpex08.f cpex09.f
+
+GENERIC_OBJS = \
+	 cpexcc.o cpex01.o cpex02.o cpex03.o cpex04.o cpex05.o cpex06.o\
+	 cpex07.o cpex08.o cpex09.o
+
+install::
+	@for file in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLEDIR));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateTarget

@@ -1,0 +1,4 @@
+This directory, impltest, contains implementation dependent code in 
+file tlocal*.f.  The yMakefile contains the system dependencies. 
+Currently, there is a tlocalcray.f, for the Cray, and a tlocal32.f
+for other 32 bit machines.

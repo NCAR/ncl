@@ -1,0 +1,9 @@
+C
+C	$Id: vectd.f,v 1.1.1.1 1992-04-17 22:34:58 ncargd Exp $
+C
+      SUBROUTINE VECTD (X,Y)
+C USER ENTRY POINT.
+      CALL FL2INT (X,Y,IIX,IIY)
+      CALL FDVDLD (2,IIX,IIY)
+      RETURN
+      END

@@ -1,0 +1,3 @@
+NOTE: This directory is built and installed only on Ardent and 
+IBM AIX370 systems.  It corrects certain problems with the FORTRAN compiler
+and loader combination related to BLOCKDATA subprograms.

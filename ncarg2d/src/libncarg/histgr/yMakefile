@@ -1,0 +1,37 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:31:54 ncargd Exp $
+#
+#ifdef sun
+FOPT =
+#endif
+
+NCARG	= ../../../..
+
+MYNAME	= histgr
+
+GENERIC_SRCS = \
+	 histgr.f hstbkd.f hstexp.f hstlst.f hstmed.f hstopc.f hstopi.f\
+	 hstopl.f hstopr.f hststr.f nwtstr.f
+
+GENERIC_OBJS = \
+	 histgr.o hstbkd.o hstexp.o hstlst.o hstmed.o hstopc.o hstopi.o\
+	 hstopl.o hstopr.o hststr.o nwtstr.o
+
+SOURCES = $(GENERIC_SRCS)
+
+OBJECTS	= $(GENERIC_OBJS)
+
+PartialLibrary(libncarg.a,$(OBJECTS))
+
+#ifdef  BuildNCARGSourceLibrary
+all:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_QUICK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	@-$(RM) $(MYNAME)
+
+install:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcncarg.a
+	@-$(RM) $(MYNAME)
+#endif

@@ -1,0 +1,85 @@
+/*
+/*	$Id: hp2648a.gc,v 1.1.1.1 1992-04-17 22:29:39 ncargd Exp $
+/*
+/*  hp2648a
+/*
+/*  This graphcap is for the HP2648A graphics terminal.
+/*
+
+USER_PROMPT
+< R E A D Y >
+
+DEVICE_ERASE
+ESC H ESC J ESC * d A
+
+DEVICE_CURSOR_HOME
+ESC H
+
+DEVICE_BATCH
+ FALSE
+
+DEVICE_COORD_LOWER_LEFT_X
+0
+DEVICE_COORD_LOWER_LEFT_Y
+0
+DEVICE_COORD_UPPER_RIGHT_X
+719
+DEVICE_COORD_UPPER_RIGHT_Y
+359
+DEVICE_COORD_FORMAT
+/* bit_start  bit_count  data_type  data_value
+        1       2           0           1
+        3       5           1           9
+        9       2           0           1
+        11      5           1           4
+        17      2           0           1
+        19      5           2           9
+        25      2           0           1
+        27      5           2           4
+DEVICE_COORD_ENCODING
+0
+
+LINE_DRAW_POLY_FLAG
+ TRUE
+LINE_DRAW_INSTRUCTION_START
+ESC * p i a
+
+BUNDLE_LINE_INDEX
+1 2 3 4 5
+BUNDLE_LINE_TYPE
+1 2 3 4 5
+BUNDLE_LINE_WIDTH
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_LINE_COLOR
+1 2 3 4 5
+
+BUNDLE_MARKER_INDEX
+1 2 3 4 5
+BUNDLE_MARKER_TYPE
+1 2 3 4 5
+BUNDLE_MARKER_SIZE
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_MARKER_COLOR
+1 2 3 4 5
+
+BUNDLE_POLYGON_INDEX
+1 2 3 4 5
+BUNDLE_POLYGON_INTERIOR
+0 0 0 0 0
+BUNDLE_POLYGON_STYLE
+0 0 0 0 0
+BUNDLE_POLYGON_COLOR
+1 2 3 4 5
+
+BUNDLE_TEXT_INDEX
+1 2 3 4 5
+BUNDLE_TEXT_FONT
+1 1 1 1 1
+BUNDLE_TEXT_PRECISION
+1 1 1 1 1
+BUNDLE_TEXT_CEXPN
+1.0 0.60 0.80 1.20 1.40
+BUNDLE_TEXT_CSPACE
+0.0 0.0 0.0 0.0 0.0
+BUNDLE_TEXT_COLOR
+1 2 3 4 5

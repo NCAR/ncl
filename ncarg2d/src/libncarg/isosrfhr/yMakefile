@@ -1,0 +1,33 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:32:09 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= isosrfhr
+
+GENERIC_SRCS = dandr.f init3d.f
+
+GENERIC_OBJS = dandr.o init3d.o
+
+NEW_SRCS = isoscr.f
+
+NEW_OBJS = isoscr.o
+
+SOURCES = $(GENERIC_SRCS) $(NEW_SRCS)
+
+OBJECTS = $(GENERIC_OBJS) $(NEW_OBJS)
+
+PartialLibrary(libncarg.a,$(OBJECTS))
+
+#ifdef  BuildNCARGSourceLibrary
+all:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_QUICK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	@-$(RM) $(MYNAME)
+
+install:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcncarg.a
+	@-$(RM) $(MYNAME)
+#endif

@@ -1,0 +1,44 @@
+#!/bin/csh -f
+
+set utility = awi
+
+set source = gopwk.f
+set target = gopwk.F
+
+echo ""
+echo "Generic to UNIX modifications for $utility/$source :"
+echo "  Providing system conditionals to comment out problem code under AIX."
+echo "  Creating $target from $source."
+
+if (! -e $source ) then
+	echo "Error: Cannot locate $source"
+	exit 1
+endif
+
+rm -f $target
+mv $source $target
+
+ed <<'EOF' - $target >/dev/null
+/INQUIRE (CONID,OPENED=IOPEN)/
+.,.+6c
+#if defined(u370) && defined(unix)
+C     INQUIRE (CONID,OPENED=IOPEN)
+C     IF (IOPEN) THEN
+C     ERS = 1
+C     CALL GERHND(26,EOPWK,ERF)
+C     ERS = 0
+C     RETURN
+C     ENDIF
+#else
+      INQUIRE (CONID,OPENED=IOPEN)
+      IF (IOPEN) THEN
+      ERS = 1
+      CALL GERHND(26,EOPWK,ERF)
+      ERS = 0
+      RETURN
+      ENDIF
+#endif
+.
+w
+q
+'EOF'

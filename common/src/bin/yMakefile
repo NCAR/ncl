@@ -1,0 +1,11 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:29:57 ncargd Exp $
+#
+NCARG		= ../../..
+
+SUBDIRS = fontc graphc ncargpar scripts
+
+MakeSubdirs($(SUBDIRS))
+MakefilesSubdirs($(SUBDIRS))
+InstallSubdirs($(SUBDIRS))
+CleanSubdirs($(SUBDIRS))

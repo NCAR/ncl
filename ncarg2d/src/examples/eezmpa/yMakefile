@@ -1,0 +1,19 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:33:16 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= eezmpa
+
+GENERIC_SRCS = eezmpa.f
+
+GENERIC_OBJS = eezmpa.o
+
+install::
+	@for file in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLEDIR));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateNoSplitTarget

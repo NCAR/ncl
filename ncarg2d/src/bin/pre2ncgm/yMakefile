@@ -1,0 +1,49 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:34:52 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME  = pre2ncgm
+
+GENERIC_SRCS = alover.f clipit.f frm.f garg.f intcnv.f lodctb.f \
+	mmdef.f multi.f patdrw.f patset.f pltclp.f pltit.f pnt.f \
+	posit.f pwt.f setop.f setrng.f trndt2.f trnmch.f twobyt.f \
+	xmdef.f xmopdf.f
+
+OTHER_SRCS = fndarg.f metred.f mninst.f trans.f trassn.f trlate.f trndat.f
+
+GENERIC_OBJS = alover.o clipit.o frm.o garg.o intcnv.o lodctb.o \
+	mmdef.o multi.o patdrw.o patset.o pltclp.o pltit.o pnt.o \
+	posit.o pwt.o setop.o setrng.o trndt2.o trnmch.o twobyt.o \
+	xmdef.o xmopdf.o
+
+OTHER_OBJS = fndarg.o metred.o mninst.o trans.o trassn.o trlate.o trndat.o
+
+SOURCES = $(GENERIC_SRCS) $(OTHER_SRCS)
+
+OBJECTS = $(GENERIC_OBJS) $(OTHER_OBJS)
+
+FCPP_OBJS	= fndarg.f metred.f mninst.f trans.f trassn.f \
+		trlate.f trndat.f
+
+LIBS = $(LIBDIR)/libncarg.a $(LIBDIR)/libncarg_gks.a $(LIBDIR)/libncarg_loc.a
+
+all:: pre2ncgm.prog
+
+FortranProgramLeaf(pre2ncgm.prog,$(OBJECTS),$(LIBS))
+
+UpdateTarget
+
+#if defined(sgi) || defined(ardent) || (defined(u370) && defined(unix)) \
+	|| defined(RS6000) || defined(hpux) || defined(cray) || defined(CRAY2)
+
+.SUFFIXES: .F
+
+.F.o:
+	@$(FCPP) $< $*.f
+	$(F77) $(FFLAGS) -c $*.f
+	@$(RM) $*.f
+#endif
+
+clean::
+	@-$(RM) $(FCPP_OBJS)

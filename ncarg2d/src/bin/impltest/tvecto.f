@@ -1,0 +1,26 @@
+C
+C	$Id: tvecto.f,v 1.1.1.1 1992-04-17 22:34:37 ncargd Exp $
+C
+      SUBROUTINE TVECTO
+      COMMON /BLOCK1/ MESG,X(51),Y(51),IDUMMY(398)
+      CALL BOX
+      CALL SET(0.,1.,0.,1.,0.,1.,0.,.3,1)
+      XINC = 1./50.
+      DO 30 I=1,26
+      X(I) = (I-1)*XINC
+      Y(I) = X(I)*X(I)
+   30 CONTINUE
+      DO 40 I=1,25
+      X(52-I) = 1.-(I-1)*XINC
+      Y(52-I) = Y(I)
+   40 CONTINUE
+      CALL FRSTPT(X(1),Y(1))
+      DO 50 I=2,51
+      CALL VECTOR(X(I),Y(I))
+   50 CONTINUE
+      CALL WTSTR(0.5,0.274,'DEMONSTRATION PLOT FOR VECTOR',20,0,0)
+      CALL FRAME
+      WRITE(MESG,630)
+  630 FORMAT(' TVECTO EXITED--SEE PLOT TO VERIFY PERFORMANCE')
+      RETURN
+      END

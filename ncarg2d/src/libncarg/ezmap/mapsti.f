@@ -1,0 +1,117 @@
+C
+C	$Id: mapsti.f,v 1.1.1.1 1992-04-17 22:32:06 ncargd Exp $
+C
+C
+C-----------------------------------------------------------------------
+C
+      SUBROUTINE MAPSTI (WHCH,IVAL)
+C
+      CHARACTER*(*) WHCH
+C
+C Declare required common blocks.  See MAPBD for descriptions of these
+C common blocks and the variables in them.
+C
+      COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UEPS,VEPS,UCEN,VCEN,URNG,VRNG,
+     +                BLAM,SLAM,BLOM,SLOM,ISSL
+      SAVE /MAPCM2/
+      COMMON /MAPCM4/ INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,
+     +                PLB1,PLB2,PLB3,PLB4,PLTR,GRID,IDSH,IDOT,LBLF,PRMF,
+     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
+      LOGICAL         INTF,LBLF,PRMF,ELPF
+      SAVE /MAPCM4/
+      COMMON /MAPCM7/ ULOW,UROW,VBOW,VTOW
+      SAVE /MAPCM7/
+      COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
+      SAVE /MAPCMA/
+      COMMON /MAPCMB/ IIER
+      SAVE /MAPCMB/
+      COMMON /MAPCMC/ IGI1,IGI2,NOVS,XCRA(100),YCRA(100),NCRA
+      SAVE /MAPCMC/
+      COMMON /MAPCMQ/ ICIN(7)
+      SAVE /MAPCMQ/
+      COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
+      SAVE /MAPSAT/
+      COMMON /MAPDPS/ DSNA,DCSA,DSNB,DCSB
+      DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
+      SAVE /MAPDPS/
+C
+      IF (WHCH(1:2).EQ.'C1') THEN
+        ICIN(1)=IVAL
+      ELSE IF (WHCH(1:2).EQ.'C2') THEN
+        ICIN(2)=IVAL
+      ELSE IF (WHCH(1:2).EQ.'C3') THEN
+        ICIN(3)=IVAL
+      ELSE IF (WHCH(1:2).EQ.'C4') THEN
+        ICIN(4)=IVAL
+      ELSE IF (WHCH(1:2).EQ.'C5') THEN
+        ICIN(5)=IVAL
+      ELSE IF (WHCH(1:2).EQ.'C6') THEN
+        ICIN(6)=IVAL
+      ELSE IF (WHCH(1:2).EQ.'C7') THEN
+        ICIN(7)=IVAL
+      ELSE IF (WHCH(1:2).EQ.'DA') THEN
+        IDSH=IVAL
+      ELSE IF (WHCH(1:2).EQ.'DD') THEN
+        DDTS=IVAL
+        DBTD=DDTS/DSCA
+      ELSE IF (WHCH(1:2).EQ.'DL') THEN
+        IDTL=IVAL
+      ELSE IF (WHCH(1:2).EQ.'DO') THEN
+        IDOT=IVAL
+      ELSE IF (WHCH(1:2).EQ.'EL') THEN
+        ELPF=IVAL.NE.0
+      ELSE IF (WHCH(1:2).EQ.'GR') THEN
+        GRID=IVAL
+      ELSE IF (WHCH(1:2).EQ.'G1') THEN
+        IGI1=IVAL
+      ELSE IF (WHCH(1:2).EQ.'G2') THEN
+        IGI2=IVAL
+      ELSE IF (WHCH(1:2).EQ.'LA') THEN
+        LBLF=IVAL.NE.0
+      ELSE IF (WHCH(1:2).EQ.'LS') THEN
+        ILCW=IVAL
+      ELSE IF (WHCH(1:2).EQ.'MV') THEN
+        DPLT=IVAL
+        DPSQ=DPLT*DPLT
+      ELSE IF (WHCH(1:2).EQ.'PE') THEN
+        PRMF=IVAL.NE.0
+      ELSE IF (WHCH(1:2).EQ.'RE') THEN
+        PLTR=IVAL
+        DSCA=(UROW-ULOW)*PLTR/(UMAX-UMIN)
+        DSSQ=DSCA*DSCA
+        DBTD=DDTS/DSCA
+      ELSE IF (WHCH(1:2).EQ.'SA') THEN
+        SALT=IVAL
+        IF (ABS(SALT).GT.1.) THEN
+          SSMO=SALT*SALT-1.
+          SRSS=SQRT(SSMO)
+        END IF
+      ELSE IF (WHCH(1:2).EQ.'S1') THEN
+        ALFA=ABS(IVAL)
+        DSNA=SIN(DBLE(.017453292519943*ALFA))
+        RSNA=REAL(DSNA)
+        DCSA=COS(DBLE(.017453292519943*ALFA))
+        RCSA=REAL(DCSA)
+      ELSE IF (WHCH(1:2).EQ.'S2') THEN
+        BETA=IVAL
+        DSNB=SIN(DBLE(.017453292519943*BETA))
+        RSNB=REAL(DSNB)
+        DCSB=COS(DBLE(.017453292519943*BETA))
+        RCSB=REAL(DCSB)
+      ELSE IF (WHCH(1:2).EQ.'VS') THEN
+        NOVS=IVAL
+      ELSE
+        GO TO 901
+      END IF
+C
+C Done.
+C
+      RETURN
+C
+C Error exits.
+C
+  901 IIER=13
+      CALL MAPCEM (' MAPSTI - UNKNOWN PARAMETER NAME ',WHCH,IIER,1)
+      RETURN
+C
+      END

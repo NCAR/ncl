@@ -1,0 +1,147 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:29:30 ncargd Exp $
+#
+NCARG	= .
+
+SUBDIRS	= common ncarg2d ncarview
+
+NEWDIRS	= $(BINDIR) $(LIBDIR) $(MANDIR) $(FONTCAPDIR) $(GRAPHCAPDIR) \
+	$(DBDIR) $(EXAMPLEDIR) $(TESTDIR)
+
+all::	dirs
+
+MakeSubdirs($(SUBDIRS))
+
+Info:
+	@echo " "
+	@$(CAT) Version
+	@echo " "
+	@echo "NCAR Graphics - Current Installation Configuration"; \
+	echo "	System                  " $(SYSTEM_INCLUDE);
+#ifdef NCARLocal
+	@echo "	NCAR Graphics will include local NCAR additions"
+#endif
+#ifdef BuildCGIctrans
+	@echo "	NCAR View / ctrans will include support for SunView"
+#endif
+#ifdef BuildX11ctrans
+	@echo "	NCAR View / ctrans will include support for the X Window System"
+#endif
+#ifdef BuildUnsupportedAthenaApplications
+	@echo "	NCAR View will include unsupported X applications
+#endif
+	@echo "	Binary Directory        " $(BINDIR); \
+	echo "	Library Directory       " $(LIBDIR); \
+	echo "	Data Base Directory     " $(DBDIR); \
+	echo "	Manpage Directory       " $(MANDIR); \
+	echo "	Examples Directory      " $(EXAMPLEDIR); \
+	echo "	Test Directory          " $(TESTDIR); \
+	echo "	f77 Flags               " $(FFLAGS); \
+	echo "	cc Flags                " $(CFLAGS);
+
+Config:
+	@cd $(CONFIGDIR); $(MAKE) clean all
+
+# The "All" target rebuilds the Makefile hierarchy, rebuilds
+# all libraries, rebuilds all out-of-date executables, and
+# finally installs everything.  It *does not* clean out the
+# object code.  Its intended use is for rebuilding the system
+# once you have made changes to your configuration file.
+
+All:
+	@echo ""
+	@echo "Making <All>."
+	@$(YMAKE)
+	@$(MAKE) Info
+	@$(MAKE) Makefiles
+	@$(MAKE) all install
+	@echo "Finished making <All>."
+
+# The Everything target is a *complete* installation.  Makefiles
+# are completely rebuilt for the current installation, object
+# code is removed (clean target), and all binaries and libraries
+# are rebuilt from the ground up.  Finally, things are installed.
+
+Everything: Config
+	@echo ""
+	@echo "Making <Everything>."
+	@$(YMAKE)
+	@$(MAKE) Info
+	@$(MAKE) Makefiles
+	@$(MAKE) clean all install
+	@echo "Finished making <Everything>."
+
+# The Binaries target does the same thing as the Everything target plus it 
+# builds new binaries for the current system. Only execute "make Binaries"
+# when you need to rebuild the binaries located in the binary distribution
+# directory (currently ncarview/bin/$ARCH
+
+Binaries: Config
+	@echo ""
+	@echo "Making <Binaries>."
+	@$(YMAKE)
+	@$(MAKE) Info
+	@$(MAKE) Makefiles
+	@$(MAKE) cleanbin all install
+	@echo "Finished making <Binaries>."
+
+
+dirs::
+	@-if (test ! -d $(BINDIR)) then mkdir $(BINDIR); else continue; fi
+	@-if (test ! -d $(BINDIR) || test ! -w $(BINDIR)) then \
+	echo "Installation Error - $(BINDIR) is not writeable"; exit 1; \
+	else continue; fi
+	@-if (test ! -d $(LIBDIR)) then mkdir $(LIBDIR); else continue; fi
+	@-if (test ! -d $(LIBDIR) || test ! -w $(LIBDIR)) then \
+	echo "Installation Error - $(LIBDIR) is not writeable"; exit 1; \
+	else continue; fi
+	@-if (test ! -d $(MANDIR)) then mkdir $(MANDIR); else continue; fi
+	@-if (test ! -d $(MANDIR) || test ! -w $(MANDIR)) then \
+	echo "Installation Error - $(MANDIR) is not writeable"; exit 1; \
+	else continue; fi
+	@-if (test ! -d $(FONTCAPDIR)) then mkdir $(FONTCAPDIR); \
+	else continue; fi
+	@-if (test ! -d $(FONTCAPDIR) || test ! -w $(FONTCAPDIR)) then \
+	echo "Installation Error - $(FONTCAPDIR) is not writeable"; exit 1; \
+	else continue; fi
+	@-if (test ! -d $(GRAPHCAPDIR)) then mkdir $(GRAPHCAPDIR); \
+	else continue; fi
+	@-if (test ! -d $(GRAPHCAPDIR) || test ! -w $(GRAPHCAPDIR)) then \
+	echo "Installation Error - $(GRAPHCAPDIR) is not writeable"; exit 1; \
+	else continue; fi
+	@-if (test ! -d $(DBDIR)) then mkdir $(DBDIR); else continue; fi
+	@-if (test ! -d $(DBDIR) || test ! -w $(DBDIR)) then \
+	echo "Installation Error - $(DBDIR) is not writeable"; exit 1; \
+	else continue; fi
+	@-if (test ! -d $(EXAMPLEDIR)) then mkdir $(EXAMPLEDIR); \
+	else continue; fi
+	@-if (test ! -d $(EXAMPLEDIR) || test ! -w $(EXAMPLEDIR)) then \
+	echo "Installation Error - $(EXAMPLEDIR) is not writeable"; exit 1; \
+	else continue; fi
+	@-if (test ! -d $(TESTDIR)) then mkdir $(TESTDIR); else continue; fi
+	@-if (test ! -d $(TESTDIR) || test ! -w $(TESTDIR)) then \
+	echo "Installation Error - $(TESTDIR) is not writeable"; exit 1; \
+	else continue; fi
+#ifdef	BuildUnsupportedAthenaApplications
+dirs::
+	@-if (test ! -d $(XAPPDIR)) then mkdir $(XAPPDIR); else continue; fi
+	@-if (test ! -d $(XAPPDIR) || test ! -w $(XAPPDIR)) then \
+	echo "Installation Error - $(XAPPDIR) is not writeable"; exit 1; \
+	else continue; fi
+#endif
+
+MakefilesSubdirs($(SUBDIRS))
+InstallSubdirs($(SUBDIRS))
+CleanSubdirs($(SUBDIRS))
+
+#ifdef BuildCFTBinaries
+install::
+	@$(NCARG)/utils/makecftbin $(LIBDIR)
+#endif
+
+#ifdef BuildNCARGSourceLibrary
+install::
+	@chmod 600 $(LIBDIR)/src*.a
+	@chmod u+s $(BINDIR)/ncargsrcx
+	touch $(LIBDIR)/ncargsrc.stats
+#endif

@@ -1,0 +1,289 @@
+/* 
+   This file contains Makefile macros.  Proper spacing is achieved
+   through the use of the right square brackets, which are later expanded
+   into appropriate newlines and tabs by "ymake-filter".
+*/
+
+#define FRule\
+]\
+.F.f:]\
+	@$(FCPP) $< $*.f]
+
+#define UpdateTarget\
+]\
+Update:]\
+	@echo "Updating <$(MYNAME)> from Generic NCAR Graphics"]\
+	@-$(RM) $(GENERIC_SRCS) $(GENERIC_OBJS)]\
+	@echo "	File listing after removing old generics"]\
+	@ls]\
+	@echo "	Splitting Fortran source"]\
+	@$(FSPLIT) $(NCARG)/generic/$(MYNAME)/src \]\
+	| makemacro >FileList; $(RM) generic.f]\
+	@if (test -x Generic2Unix) then \]\
+	echo "	Applying local modifications"; Generic2Unix; fi]
+
+#define UpdateNoSplitTarget\
+]\
+Update:]\
+	@echo "Updating <$(MYNAME)> from Generic NCAR Graphics"]\
+	@-$(RM) $(GENERIC_SRCS) $(GENERIC_OBJS)]\
+	@echo "	File listing after removing old generics"]\
+	@ls]\
+	@echo " Copying Generic source"]\
+	@$(CP) $(NCARG)/generic/$(MYNAME)/src $(MYNAME).f]\
+	@chmod 644 $(MYNAME).f]\
+	@if (test -x Generic2Unix) then \]\
+	echo "	Applying local modifications"; Generic2Unix; fi]
+
+#define MakefileTarget\
+]\
+Makefiles:: local-Makefile]\
+]\
+local-Makefile:]\
+	@$(YMAKE)]
+
+#define InstallTarget(names, mode, dest)\
+]\
+install:: names]\
+	@for name in names; do\]\
+	($(INSTALL) -m mode $$name dest);\]\
+	done]
+
+
+/* Macros for directory managers. */
+
+#define MakeSubdirs(dirs)\
+]\
+all::]\
+	@for dir in dirs ; do\]\
+	(cd $$dir; echo "Making $$dir";\]\
+	$(MAKE) $(MFLAGS));\]\
+	done]
+
+#define CleanSubdirs(dirs)\
+]\
+clean::]\
+	@for dir in dirs ; do\]\
+	(cd $$dir; echo "Cleaning in $$dir";\]\
+	$(MAKE) clean $(MFLAGS));\]\
+	done]\
+]\
+cleanbin::]\
+	@for dir in dirs ; do\]\
+	(cd $$dir; echo "Cleaning in $$dir";\]\
+	$(MAKE) cleanbin $(MFLAGS));\]\
+	done]
+
+
+#define RebuildSubdirs(library,dirs)\
+]\
+rebuild::]\
+	@-$(RM) $(LIBDIR)/library]\
+	@for dir in dirs ; do\]\
+	(cd $$dir; echo "Rebuilding $$dir"; $(MAKE) $(MFLAGS));\]\
+	done]\
+	@$(RANLIB) $(LIBDIR)/library]
+
+#define InstallSubdirs(dirs)\
+]\
+install::]\
+	@for dir in dirs ; do\]\
+	(cd $$dir; echo "Installing $$dir";\]\
+	$(MAKE) install $(MFLAGS));\]\
+	done]
+
+#define LibraryMakeSubdirs(library,dirs)\
+]\
+all::]\
+	@-$(RM) $(LIBDIR)/library]\
+	@for dir in dirs ; do\]\
+	(cd $$dir; echo "Making $$dir"; $(MAKE) $(MFLAGS));\]\
+	done]\
+	$(RANLIB) $(LIBDIR)/library]
+
+
+#define MakefilesSubdirs(dirs)\
+]\
+MakefileTarget]\
+]\
+Makefiles::]\
+	@for dir in dirs ; do\]\
+	(cd $$dir; echo "Making Makefiles in $$dir";\]\
+	$(MAKE) Makefiles $(MFLAGS));\]\
+	done]
+
+
+/*
+ * macros for binary distribution
+ */
+#define MakeBinSubdirs(dirs)\
+]\
+all::]\
+	@for dir in dirs ; do \]\
+	if (test -f $(BINDIR_LOCAL)/$(SYSTEM_INCLUDE)/$$dir) then \]\
+	echo "$(BINDIR_LOCAL)/$(SYSTEM_INCLUDE)/$$dir exists, not built";\]\
+	else \]\
+	(cd $$dir; echo "Making $$dir"; \]\
+	$(MAKE) $(MFLAGS));\]\
+	fi; \]\
+	done]
+
+#define InstallBinSubdirs(dirs)\
+]\
+install::]\
+	@for dir in dirs ; do \]\
+	if (test -f $(BINDIR_LOCAL)/$(SYSTEM_INCLUDE)/$$dir) then \]\
+	echo "$(BINDIR_LOCAL)/$(SYSTEM_INCLUDE)/$$dir already exists";\]\
+	echo "$$dir will be installed from binary distribution directory";\]\
+	else \]\
+	(cd $$dir; echo	Installing $$dir to distribution bin directory; \]\
+	$(MAKE) install $(MFLAGS));\]\
+	fi; \]\
+	done]
+
+#define CBinTarget(prog,objects,libs)\
+]\
+prog: objects]\
+	$(CC_LD) $(LD_CFLAGS) -o prog objects libs]\
+]\
+install:: prog]\
+	-$(INSTALL) -m $(INSTALL_BIN) prog $(BINDIR_LOCAL)/$(SYSTEM_INCLUDE)]\
+	@-$(RM) prog]\
+]\
+clean::]\
+	@-$(RM) prog]\
+]\
+cleanbin::	clean]
+
+#define InstallBin(arch)\
+]\
+all::]\
+]\
+install::]\
+	@-cd arch; \]\
+	for prog in * ; do \]\
+	if (test $$prog != CVS.adm && test $$prog != Copyright) then \]\
+	echo "Installing $$prog in $(BINDIR)" ; \]\
+	$$NCARG/../utils/install -c -m $(INSTALL_BIN) $$prog $(BINDIR) ;\]\
+	fi; \]\
+	done]\
+]\
+clean::]\
+]\
+cleanbin::]\
+	@-cd arch; $(RM) *]
+/*
+ * tree leaf macros
+ */
+#define RelocatableTarget(name,objects)\
+]\
+all::	name]\
+]\
+name:	objects]\
+	@$(LD_REL) -r -o name objects]\
+]\
+install::]\
+	-$(INSTALL) -m $(INSTALL_LIB) name $(LIBDIR)]\
+	@-$(RM) name]
+
+#define FortranTarget(program,objects,libs)\
+]\
+program: objects]\
+	$(F77_LD) $(LD_FFLAGS) -o program objects libs]\
+]\
+install:: program]\
+	-$(INSTALL) -m $(INSTALL_BIN) program $(BINDIR)]\
+	@-$(RM) program]\
+]\
+clean::]\
+	@$(RM) program]\
+]\
+cleanbin::	clean]
+
+
+#define CTarget(program,objects,libs)\
+]\
+program: objects]\
+	$(CC_LD) $(LD_CFLAGS) -o program objects libs]\
+]\
+install:: program]\
+	-$(INSTALL) -m $(INSTALL_BIN) program $(BINDIR)]\
+	@-$(RM) program]\
+]\
+clean::]\
+	@-$(RM) program]\
+]\
+cleanbin::	clean]
+
+
+#define LibraryTarget(library,objects)\
+]\
+all:: objects]\
+	@-$(RM) $(LIBDIR)/library]\
+	@$(AR_QUICK) $(LIBDIR)/library objects]\
+	$(RANLIB) $(LIBDIR)/library]\
+]\
+install::]
+
+#define PartialLibraryTarget(library,objects)\
+]\
+all:: objects]\
+	@$(AR_QUICK) $(LIBDIR)/library objects]\
+]\
+install:: objects]\
+	@$(AR_CHECK) $(LIBDIR)/library objects]\
+	$(RANLIB) $(LIBDIR)/library]
+
+#define CleanTarget\
+]\
+clean::]\
+	@-$(RM) *.o core]\
+]\
+cleanbin::	clean]
+
+#define FortranProgramLeaf(program,objects,libs)\
+FortranTarget(program,objects,libs)		\
+MakefileTarget					\
+CleanTarget
+
+
+/* Manage a directory that contributes part of a library */
+
+#define PartialLibrary(library,objects)		\
+PartialLibraryTarget(library,objects)		\
+MakefileTarget					\
+CleanTarget					\
+UpdateTarget
+
+/* Manage a directory that builds a library */
+
+#define Library(library,objects)		\
+LibraryTarget(library,objects)			\
+MakefileTarget					\
+CleanTarget
+
+/* Root directory above 2 or more partial library directories */
+
+#define PartialLibraryRoot(library,dirs)	\
+LibraryMakeSubdirs(library,dirs)		\
+MakefilesSubdirs(dirs)				\
+CleanSubdirs(dirs)				\
+]\
+install::]
+
+
+/* A directory that contains a bunch of object files that need
+   to be combined for ld inclusion before a library with
+   duplicate names. (sigh). */
+
+#define RelocatableObject(name,objects)		\
+RelocatableTarget(name,objects)			\
+MakefileTarget					\
+CleanTarget					\
+UpdateTarget
+
+#define RelocatableObjectRoot(dirs)		\
+MakeSubdirs(dirs)				\
+MakefilesSubdirs(dirs)				\
+InstallSubdirs(dirs)				\
+CleanSubdirs(dirs)

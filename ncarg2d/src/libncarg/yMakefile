@@ -1,0 +1,29 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:30:54 ncargd Exp $
+#
+#
+#	Makefile for libncarg.a
+#	Includes utilities and their corresponding test programs,
+#	and SPPS.
+#
+
+NCARG	= ../../..
+
+SUBDIRS = \
+	areas autogrph colconv common concom conpack conran \
+	conrec conterp dashchar ezmap ezmapa gflash gridal \
+	hafton histgr isosrf isosrfhr labelbar plotchar pwritx  \
+	pwrity pwrzi pwrzs pwrzt softfill spps srface stitle \
+	strmln support threed velvct
+
+#ifdef  BuildNCARGSourceLibrary
+all::
+	@-$(RM) $(LIBDIR)/srcncarg.a
+#endif
+
+PartialLibraryRoot(libncarg.a,$(SUBDIRS))
+
+#ifdef  BuildNCARGSourceLibrary
+all::
+	$(RANLIB) $(LIBDIR)/srcncarg.a
+#endif

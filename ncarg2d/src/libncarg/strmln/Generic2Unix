@@ -1,0 +1,25 @@
+#!/bin/csh -f
+
+set utility = strmln
+
+set source = drwstr.f
+
+echo ""
+echo "Generic to UNIX modifications for $utility/$source :"
+echo "  Commenting out functions FX and FY."
+
+if (! -e $source ) then
+	echo "Error: Cannot locate $source"
+	exit 1
+endif
+
+ed <<'EOF' - $source >/dev/null
+/FX(X,Y) = X/
+.,.+1d
+i
+C     FX(X,Y) = X
+C     FY(X,Y) = Y
+.
+w
+q
+'EOF'

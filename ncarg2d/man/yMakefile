@@ -1,0 +1,77 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:30:19 ncargd Exp $
+#
+NCARG	= ../..
+
+#if ! defined BuildNCARGSourceLibrary
+MANS = \
+	areas autograph colconv conran conraq conras \
+	conrcq conrcspr conrec dashchar dashline \
+	dashsmth dashsupr ezmap.exam ezmap ezmapa \
+	gridal hafton histgr isosrf isosrfhr plotchar pre2ncgm \
+	psblack pswhite \
+	pwritx pwrity pwrzi pwrzs pwrzt srface \
+	strmln threed velvct ncargf77 plt \
+	ncargintro ncargcc ncargmac ncargmac3 \
+	cgmtrans ftrans \
+	ncargex ncargrun findg colconv conpack gflash labelbar \
+	plotchar softfill stitle
+#else
+MANS = \
+	areas autograph colconv conran conraq conras \
+	conrcq conrcspr conrec dashchar dashline \
+	dashsmth dashsupr ezmap.exam ezmap ezmapa \
+	gridal hafton histgr isosrf isosrfhr plotchar pre2ncgm \
+	psblack pswhite \
+	pwritx pwrity pwrzi pwrzs pwrzt srface \
+	strmln threed velvct ncargf77 plt \
+	ncargintro ncargcc ncargmac ncargmac3 \
+	ncargsrc cgmtrans ftrans \
+	ncargex ncargrun findg colconv conpack gflash labelbar \
+	plotchar softfill stitle
+#endif
+
+all:
+
+preformatted:
+	@for name in $(MANS); do\
+	(sed <$$name.m \
+	-e 's@MACRO_SOURCE3@ncargmac3.m@' \
+	-e 's@MACRO_SOURCE@ncargmac.m@' \
+	| nroff -man >$$name.p);\
+	done
+
+#if defined(CRAY) || defined(sgi) || defined(ardent)
+# Install preformatted troff documents on systems without troff
+
+install::
+	@for name in $(MANS); do\
+	($(INSTALL) -m $(INSTALL_MAN) $$name.p \
+	$(MANDIR)/$$name.$(MAN_SECTION) );\
+	done
+
+#else
+
+install::
+	@for name in $(MANS); do\
+	(sed \
+	-e 's@MACRO_SOURCE3@$(MANDIR)/ncargmac3.$(MAN_SECTION)@' \
+	-e 's@MACRO_SOURCE@$(MANDIR)/ncargmac.$(MAN_SECTION)@' \
+	<$$name.m >$$name.$(MAN_SECTION));\
+	done
+
+install::
+	@for name in $(MANS); do\
+	($(INSTALL) -m $(INSTALL_MAN) $$name.$(MAN_SECTION) $(MANDIR));\
+	done
+
+install::
+	@-for name in $(MANS); do\
+	($(RM) $$name.$(MAN_SECTION));\
+	done
+#endif
+
+MakefileTarget
+CleanTarget
+
+generic::

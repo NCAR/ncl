@@ -1,0 +1,1084 @@
+#!/bin/csh -f
+
+#
+# Establish defaults
+#
+
+onintr cleanup
+
+set unknown_system="GenericSV"
+set cpp="/lib/cpp"
+set installprompt="NCAR Graphics Configuration"
+set configfile="GenericBSD"
+set ncargversion=`fgrep Version Version`
+set ncarvversion=`fgrep Version ncarview/Copyright`
+set pwd=`pwd`
+
+if (! $?NCARG) then
+  echo "NCARG environment variable is not set."
+  exit 1
+endif
+
+if ("$NCARG" != "$pwd") then
+  echo "NCARG environment must be set to <$pwd>."
+  exit 1
+endif
+
+set shell = $SHELL
+
+if ($shell:t != "csh") then
+  echo "Current shell must be csh."
+  exit 1
+endif
+
+if ($#argv > 0) then
+  while ($#argv)
+    switch($argv[1])
+    case "-v":
+      set verbose_option
+      breaksw
+    case "-ncar":
+      set ncarg_option
+      set ncarlocal
+      breaksw
+    default:
+      echo "Error: Unknown command-line argument."
+      exit 1
+      breaksw
+    endsw
+    shift
+  end
+endif
+
+
+cd config
+set system_line = ""
+set system_line=`$cpp <GetSystem | sed -e '/^#/d' -e '/^$/d'`
+
+#
+# Hack for brain dead RS6000 whose c preprocessor does not define any unique
+# symbols.
+#
+
+if ($system_line[3] == "SystemV" && -e /etc/xlc.cfg) then
+  cp GetSystem foo.c
+  set system_line=`/bin/cc -E foo.c | sed -e '/^#/d' -e '/^$/d'`
+  /bin/rm foo.c
+endif
+
+set system=$system_line[3]
+cd ..
+
+set configpath="config/$system"
+if (! -e $configpath) then
+  echo "Error: Could not locate <$configpath>."
+  exit 1
+endif
+
+set parfil_init_line=`fgrep PARFIL_INIT $configpath`
+set parfil_perm_line=`fgrep PARFIL_PERM $configpath`
+set bindir_line=`fgrep BINDIR $configpath`
+set libdir_line=`fgrep LIBDIR $configpath`
+set mandir_line=`fgrep MANDIR $configpath`
+set tmpdir_line=`fgrep TMPDIR $configpath`
+set xappdir_line=`fgrep XAPPDIR $configpath`
+set xlibdir_line=`fgrep XLIBDIR $configpath`
+set xincdir_line=`fgrep XINCDIR $configpath`
+set xlib_stuff_line=`fgrep BuildXlibDependentCode $configpath`
+set sunctrans_line=`fgrep BuildSunViewctrans $configpath`
+set ncarlocal_line=`fgrep NCARLocal $configpath`
+set localconfig_line=`fgrep LocalConfig $configpath`
+
+set parfil_init=$parfil_init_line[3]
+set parfil_perm=$parfil_perm_line[3]
+set bindir=$bindir_line[3]
+set libdir=$libdir_line[3]
+set mandir=$mandir_line[3]
+set tmpdir=$tmpdir_line[3]
+set xappdir=$xappdir_line[3]
+set xlibdir=$xlibdir_line[3]
+set xincdir=$xincdir_line[3]
+
+if ("$xlib_stuff_line" != "") set buildxlibstuff
+if ("$sunctrans_line" != "") set buildsunctrans
+if ("$ncarlocal_line" != "") set ncarlocal
+if ("$localconfig_line" != "") set localconfig
+
+
+####################################################################
+#
+# Configuration procedure via question and answer
+#
+####################################################################
+
+QuestionAndAnswer:
+echo ""
+echo "*** Configuration Procedure for $ncargversion ***"
+echo ""
+
+if ($?verbose_option) then
+  cat <<'EOF'
+
+	This question and answer session will allow you to configure
+	NCAR Graphics for installation. Each supported system (e.g. DEC, 
+	Sun) has a unique configuration file and this procedure provides
+	you with a simple means of editing those parts that may require 
+	change. This procedure will also check that the directories
+	specified are accessible and that the required system support
+	is available.
+
+'EOF'
+
+  echo -n "Enter Return to continue, or q(quit) > "
+  set answer=$<
+  if ("$answer" == "q") goto cleanup
+
+  cat <<'EOF'
+
+	Informational text (like the paragraph you are reading) is indented
+	by one tab stop.  Questions are left justified; usually, the default
+	answer is in parentheses at the end of the question.  At the prompt,
+	you may select the default by entering a Return (carriage return) or
+	you may enter any of the other valid responses.
+
+'EOF'
+
+  echo -n "Enter Return to continue, or q(quit) > "
+  set answer=$<
+  if ("$answer" == "q") goto cleanup
+
+endif
+
+echo ""
+echo -n "        Your system configuration file is '$system'"
+if ($?localconfig) then
+  echo " (previously edited)."
+  else
+  echo "."
+endif
+
+if ($?verbose_option) then
+  echo ""
+  echo -n "Enter Return to continue, or q(quit) > "
+  set answer=$<
+  if ("$answer" == "q") goto cleanup
+endif
+
+if ("$system" == "SystemV") then
+  cat <<EOF
+
+	This configuration procedure is not familiar with your system, so it
+	has selected the default configuration file called "$system". It is
+	unlikely that you will get through the installation procedure without
+	having to make some changes; you should refer to the Release Notice
+	shipped with this package.
+
+EOF
+
+  echo -n "Enter Return to continue, or q(quit) > "
+  set answer=$<
+  if ("$answer" == "q") goto cleanup
+
+endif
+
+if ($?verbose_option) then
+  cat <<"EOF"
+
+	The NCAR Graphics installation scheme will install a "parameter
+	file", executables, libraries, online documentation, and possibly
+	some X application resource files.
+
+"EOF"
+
+  echo -n "Enter Return to continue, or q(quit) > "
+  set answer=$<
+  if ("$answer" == "q") goto cleanup
+
+endif
+
+
+#
+# Parameter file.
+#
+
+proc_param:
+
+if (! $?verbose_option) then
+
+  cat <<"EOF"
+
+	NOTE: The concept of a "parameter file" was introduced in version
+	3.1.2.  A complete description of the concept follows.  It is 
+	probably a good idea to read through this description at least once.
+
+"EOF"
+
+  echo 'Do you want to read about the "parameter file" (n)?'
+  echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+  set answer = $<
+  if ("$answer" == "q") goto cleanup
+
+else
+
+  cat <<"EOF"
+
+	NOTE: The concept of a "parameter file" is new in version 3.1.2.
+	A complete description of the concept follows.
+
+"EOF"
+
+  echo -n "Enter Return to continue, or q(quit) > "
+  set answer=$<
+  if ("$answer" == "q") goto cleanup
+
+endif
+
+if ($?verbose_option || "$answer" == "y") then
+  cat <<"EOF"
+
+	All execution-time references to installation paths (as, for example,
+	when the mapping routine needs to read the installed map database or
+	when the translator needs to read one of the installed graphcaps) are
+	done indirectly; the desired path names are retrieved from a single
+	"NCAR Graphics parameter file".  All retrieval of path names from the
+	parameter file is done by calling a single parameter access routine,
+	in which the full path name of the parameter file is embedded at
+	installation time.  The parameter-file scheme allows NCAR Graphics to
+	be installed in various ways:  It can simply be installed to a given
+	position and used from there, or it can be installed temporarily to
+	one position, tested there, and then moved to a permanent position.
+	The move may be done using a new command called "ncargmv"; this
+	command is interactive and has no arguments.
+
+"EOF"
+
+  echo "More about the parameter file (y)?"
+  echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+  set answer = $<
+  if ("$answer" == "q") goto cleanup
+
+  if ("$answer" != "n") then
+    cat <<"EOF"
+
+	You will be asked to specify two different path names for the NCAR
+	Graphics parameter file; the two names may be the same or different.
+	The first path name says where the parameter file is to be installed
+	initially.  The second path name says where the parameter access
+	routine will, by default, look for the parameter file; this ought
+	to be where it eventually gets moved, after testing has been done.
+	The environment variable NCARG_PARAMETER_FILE may be set equal to
+	a parameter-file name that overrides the built-in default; this
+	provides a way to test an installation which has been done to
+	temporary locations.
+
+"EOF"
+
+    echo "Do you want to see some examples (y)?"
+    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+    set answer = $<
+    if ("$answer" == "q") goto cleanup
+
+    if ("$answer" != "n") then
+      cat <<"EOF"
+
+	Example 1:  If no version of NCAR Graphics exists on the target
+	machine, you can just set both parameter-file path names to point
+	to the same file.  The parameter file will be installed there and
+	will be found there, by default, by the parameter access routine.
+	The directories you specify for the executables, the libraries,
+	and the man pages may be permanent ones, since no current user is
+	likely to be affected.
+
+"EOF"
+
+      echo "Another example (y)?"
+      echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+      set answer = $<
+      if ("$answer" == "q") goto cleanup
+
+      if ("$answer" != "n") then
+        cat <<"EOF"
+
+	Example 2:  If you have an older version of NCAR Graphics on your
+	system, you can still set both parameter-file path names the same
+	(picking a name which does not conflict with any existing name),
+	but you may want to install the executables, the libraries, and the
+	man pages to temporary directories, so that the current ones will
+	not be overwritten.  After testing the new version, use the command
+	"ncargmv" to move the new version of NCAR Graphics to the directories
+	where your users xpect to find it.
+
+"EOF"
+
+    echo "More (y)?"
+    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+    set answer = $<
+    if ("$answer" == "q") goto cleanup
+
+    if ("$answer" != "n") then
+      cat <<"EOF"
+
+	Example 3:  If you have an older version of NCAR Graphics on your
+	system and you want to install the new version completely on top
+	of it (including the existing parameter file), but you want to
+	test the new version first, you must set the first parameter-file
+	name to point to a temporary position and the second one to point
+	to the desired permanent position.  Specify temporary directories
+	for the executables, the libraries, and the man pages.  To test
+	the result, you will have to provide a path name for the installed
+	parameter file as the value of NCARG_PARAMETER_FILE.  Once you are
+	satisfied that the new version works, you can move it to its
+	permanent position using the command "ncargmv".
+
+"EOF"
+    endif
+      endif
+    endif
+  endif
+endif
+
+cat <<"EOF"
+
+	NOTE:  The next couple of questions ask for a FILE name, NOT a
+	directory name.  It was deemed useful to provide this level of
+	flexibility in specifying the position of the parameter file.
+
+"EOF"
+
+echo "Initial position of parameter file: $parfil_init"
+echo -n "Enter Return (default), new file name, or q(quit) > "
+set answer=$<
+if ("$answer" == "q") goto cleanup
+if ("$answer" != "") then
+  set parfil_init = "$answer"
+  set altered
+endif
+
+echo ""
+echo "Planned permanent position of parameter file: $parfil_perm"
+echo -n "Enter Return (default), s(same as initial), new file name, or q(quit) > "
+set answer=$<
+if ("$answer" == "q") goto cleanup
+if ("$answer" == "s") then
+  if ("$parfil_perm" != "$parfil_init") set altered
+  set parfil_perm = "$parfil_init"
+else
+  if ("$answer" != "") then
+    set parfil_perm = "$answer"
+    set altered
+  endif
+endif
+
+unset trouble
+
+if (-e $parfil_init) then
+  echo ""
+  echo "<$parfil_init> already exists."
+  set trouble
+  if (-d $parfil_init) then
+    echo "In addition, it is a directory."
+  else
+    if (! -w $parfil_init) then
+      echo "In addition, it is not writable."
+    endif
+  endif
+else
+  if ("$parfil_init:h" == "") then
+    set parent="/"
+  else
+    set parent="$parfil_init:h"
+  endif
+  if (! -w $parent) then
+    echo ""
+    echo "<$parent> either does not exist or is not writable."
+    set trouble
+  endif
+endif
+
+if ("$parfil_perm" != "$parfil_init") then
+  if (-e $parfil_perm) then
+    echo ""
+    echo "<$parfil_perm> already exists."
+    set trouble
+    if (-d $parfil_perm) then
+      echo "In addition, it is a directory."
+    else
+      if (! -w $parfil_perm) then
+    echo "In addition, it is not writable."
+      endif
+    endif
+  else
+    if ("$parfil_perm:h" == "") then
+      set parent="/"
+    else
+      set parent="$parfil_perm:h"
+    endif
+    if (! -w $parent) then
+      echo ""
+      echo "<$parent> either does not exist or is not writable."
+      set trouble
+    endif
+  endif
+endif
+
+if ($?trouble) then
+  echo ""
+  echo "Do you want to provide new parameter file names? (y)"
+  echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+  set answer=$<
+  if ("$answer" == "q") goto cleanup
+  if ("$answer" == "y" || "$answer" == "") goto proc_param
+endif
+
+
+#
+# Binary directory.
+#
+
+proc_bin:
+if ($?verbose_option) then
+  cat <<"EOF"
+
+	It is a good idea to install the NCAR Graphics
+	executables to a directory that will be on the "search
+	path" of the NCAR Graphics user. This procedure will
+	check to make sure that the directory specified is
+	writable by the installation process.
+"EOF"
+endif
+
+echo ""
+echo "Executable installation directory : $bindir"
+echo -n "Enter Return (default), new directory, or q(quit) > "
+set answer=$<
+if ("$answer" == "q") goto cleanup
+if ("$answer" != "") then
+  set bindir="$answer"
+  set altered
+endif
+
+if (-d $bindir) then
+  if (! -w "$bindir") then
+    echo "<$bindir> is not writable."
+    echo "New directory name? (y)"
+    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+    set answer=$<
+    if ("$answer" == "q") goto cleanup
+    if ("$answer" == "y" || "$answer" == "") goto proc_bin
+  endif
+else
+  if ("$bindir:h" == "") then
+    set parent="/"
+  else
+    set parent="$bindir:h"
+  endif
+  if (! -w "$parent") then
+    echo "  *** Warning: <$parent> is not writable."
+    echo "New directory name? (y)"
+    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+    set answer=$<
+    if ("$answer" == "q") goto cleanup
+    if ("$answer" == "y" || "$answer" == "") goto proc_bin
+  endif
+endif
+
+
+#
+# Library directory.
+#
+
+proc_lib:
+
+if ($?verbose_option) then
+  cat <<"EOF"
+
+	NCAR Graphics libraries may be installed anywhere, but it is
+	a good idea, if possible, to install them to a directory
+	that is on the default search path for the loader.  This 
+	procedure will check to make sure that the directory specified 
+	is writable by the installation process.
+"EOF"
+endif
+
+echo ""
+echo "Library installation directory    : $libdir"
+echo -n "Enter Return (default), new directory, or q(quit) > "
+set answer=$<
+if ("$answer" == "q") goto cleanup
+if ("$answer" != "") then
+  set libdir="$answer"
+  set altered
+endif
+
+if (-d $libdir) then
+  if (! -w "$libdir") then
+    echo "<$libdir> is not writable"
+    echo "New directory name? (y)"
+    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+    set answer=$<
+    if ("$answer" == "q") goto cleanup
+    if ("$answer" == "y" || "$answer" == "") goto proc_lib
+  endif
+else
+  if ("$libdir:h" == "") then
+    set parent="/"
+  else
+    set parent="$libdir:h"
+  endif
+  if (! -w "$parent") then
+    echo "  *** Warning: <$parent> is not writable"
+    echo "New directory name? (y)"
+    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+    set answer=$<
+    if ("$answer" == "q") goto cleanup
+    if ("$answer" == "y" || "$answer" == "") goto proc_lib
+  endif
+endif
+
+
+#
+# Man page directory.
+#
+
+proc_man:
+
+if ($?verbose_option) then
+  cat <<"EOF"
+
+	NCAR Graphics will install "man" documents and the installation
+	directory should be one that the "man" program automatically searches.
+	This procedure will check to make sure that the directory specified 
+	is writable by the installation process.
+"EOF"
+endif
+
+echo ""
+echo "Man page installation directory   : $mandir"
+echo -n "Enter Return (default), new directory, or q(quit) > "
+set answer=$<
+if ("$answer" == "q") goto cleanup
+if ("$answer" != "") then
+  set mandir="$answer"
+  set altered
+endif
+
+if (-d "$mandir") then
+  if (! -w "$mandir") then
+    echo "<$mandir> is not writable"
+    echo "New directory name? (y)"
+    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+    set answer=$<
+    if ("$answer" == "q") goto cleanup
+    if ("$answer" == "y" || "$answer" == "") goto proc_man
+  endif
+else
+  if ("$mandir:h" == "") then
+    set parent="/"
+  else
+    set parent="$mandir:h"
+  endif
+  if (! -w "$parent") then
+    echo "  *** Warning: <$mandir:h> is not writable"
+    echo "New directory name? (y)"
+    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+    set answer=$<
+    if ("$answer" == "q") goto cleanup
+    if ("$answer" == "y" || "$answer" == "") goto proc_man
+  endif
+endif
+
+
+#
+# Temp space directory.
+#
+
+proc_tmp:
+
+if ($?verbose_option) then
+  cat <<"EOF"
+
+	A couple of the "ncarview" utilities make use of temporary file space.
+	On most systems, the directory "/tmp" is the logical choice.  You may
+	specify a different directory to use for this purpose.  The directory
+	must be writable by users of the installed "ncarview".  This procedure
+	will check only to make sure that the directory specified is writable
+	by the installation process.
+"EOF"
+endif
+
+echo ""
+echo "System temp space directory   : $tmpdir"
+echo -n "Enter Return (default), new directory, or q(quit) > "
+set answer=$<
+if ("$answer" == "q") goto cleanup
+if ("$answer" != "") then
+  set tmpdir="$answer"
+  set altered
+endif
+
+if (-d "$tmpdir") then
+  if (! -w "$tmpdir") then
+    echo "<$tmpdir> is not writable"
+    echo "New directory name? (y)"
+    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+    set answer=$<
+    if ("$answer" == "q") goto cleanup
+    if ("$answer" == "y" || "$answer" == "") goto proc_tmp
+  endif
+else
+  if ("$tmpdir:h" == "") then
+    set parent="/"
+  else
+    set parent="$tmpdir:h"
+  endif
+  if (! -w "$parent") then
+    echo "  *** Warning: <$tmpdir:h> is not writable"
+    echo "New directory name? (y)"
+    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+    set answer=$<
+    if ("$answer" == "q") goto cleanup
+    if ("$answer" == "y" || "$answer" == "") goto proc_tmp
+  endif
+endif
+#
+# NCAR View stuff.
+#
+
+if ($?verbose_option) then
+  cat <<"EOF"
+
+	NCAR View is a collection of programs that allow the NCAR Graphics
+	user to manipulate and view Computer Graphics Metafiles (CGM's).
+	"ctrans" is a CGM translator that can support the X Window System,
+	SunView, PostScript, and many other graphics devices.
+"EOF"
+endif
+
+#
+# ctrans support for SunView
+#
+
+proc_ctranssun:
+
+switch ("$system")
+case "Sun3":
+case "Sun4":
+case "Sun386i":
+  breaksw
+default:
+  goto proc_ctransx11
+  breaksw
+endsw
+
+if ($?verbose_option) then
+  cat <<"EOF"
+
+	If users will be running Sun's proprietary windowing system "SunView"
+	you may want to build the SunView device driver for ctrans. Most
+	Sun workstation users will use the X11 windowing system and will 
+	not require this capability.
+
+"EOF"
+endif
+
+echo ""
+echo -n "Include NCAR View / ctrans support for SunView "
+if ($?buildsunctrans) then
+  echo "(yes)"
+else
+  echo "(no)"
+endif
+
+echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+set answer=$<
+if ("$answer" == "q") goto cleanup
+if ("$answer" == "y") then
+  set altered
+  set buildsunctrans
+endif
+if ("$answer" == "n") then
+  set altered
+  unset buildsunctrans
+endif
+
+proc_ctransx11:
+
+if ($?verbose_option) then
+  cat <<"EOF"
+
+	Not all systems come with the X Window System. If you
+	request that "ctrans" include support for X Windows,
+	this procedure will ask you for the pathnames to the 
+    X11 libraries and include files.
+
+"EOF"
+endif
+
+echo ""
+echo -n "Include NCAR View / ctrans support for the X Window System "
+if ($?buildxlibstuff) then
+  echo "(yes)"
+else
+  echo "(no)"
+endif
+
+echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+set answer=$<
+if ("$answer" == "q") goto cleanup
+if ("$answer" == "y") then
+  set altered
+  set buildxlibstuff
+endif
+if ("$answer" == "n") then
+  set altered
+  unset buildxlibstuff
+endif
+
+#
+# X stuff
+#
+
+if ($?buildxlibstuff) then
+
+#
+# X11 libraries.
+#
+
+proc_xlibdir:
+  echo ""
+  echo "Full pathname of your X11 libraries : $xlibdir"
+  echo -n "Enter Return (default), new directory, or q(quit) > "
+  set answer=$<
+  if ("$answer" == "q") goto cleanup
+  if ("$answer" != "") then
+    set xlibdir = "$answer"
+    set altered
+  endif
+  if (! -d "$xlibdir" ) then
+    echo ""
+    echo "  *** Warning: <$xlibdir> does not exist"
+    echo ""
+    echo "New directory name? (y)"
+    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+    set answer=$<
+    if ("$answer" == "q") goto cleanup
+    if ("$answer" == "y" || "$answer" == "") goto proc_xlibdir
+  endif
+
+#
+# X11 include files.
+#
+
+
+proc_xincdir:
+  unset changed_xincdir
+  echo ""
+  echo "Full pathname of your X11 include files : $xincdir/X11"
+  echo -n "Enter Return (default), new directory, or q(quit) > "
+  set answer=$<
+  if ("$answer" == "q") goto cleanup
+  if ("$answer" != "") then
+    if ( "$answer:t" == "X11" ) then
+      set xincdir = "$answer:h"
+    else
+      set xincdir = "$answer"
+      set changed_xincdir
+    endif
+    set altered
+  endif
+  if ( ! -e "$xincdir/X11/Xlib.h" ) then
+    echo ""
+    echo "  *** Warning: Cannot locate X11 include file 'Xlib.h' in $xincdir/X11."
+    echo ""
+    echo "New directory name? (y)"
+    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+    set answer=$<
+    if ("$answer" == "q") goto cleanup
+    if ("$answer" == "y" || "$answer" == "") goto proc_xincdir
+  else
+    if ($?changed_xincdir) then
+      echo ""
+      echo "  The X11 include files were actually found to be in $xincdir/X11."
+      echo ""
+      echo "Is this pathname okay? (y)"
+      echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+      set answer=$<
+      if ("$answer" == "q") goto cleanup
+      if ("$answer" == "n") goto proc_xincdir
+    endif      
+  endif
+
+#
+# X11 application-defaults directory.
+#
+
+proc_xappdir:
+
+  if ($?verbose_option) then
+    cat <<"EOF"
+
+      The NCAR View portion of NCAR Graphics will install X11
+      application resource default files to a user specified 
+      directory.  It is recommended that you take the default
+      pathname, but you can change it if you like.  This 
+      procedure will check to make sure that the directory 
+      specified is writable by the installation process.
+"EOF"
+  endif
+
+  echo ""
+  echo "X application defaults directory : $xappdir"
+  echo -n "Enter Return (default), new directory, or q(quit) > "
+  set answer=$<
+
+  if ("$answer" == "q") goto cleanup
+  if ("$answer" != "") then
+      set xappdir="$answer"
+      set altered
+  endif
+
+  if (-d $xappdir) then
+    if (! -w "$xappdir") then
+      echo ""
+      echo "  *** Warning: <$xappdir> is not writable."
+      echo ""
+      echo "New directory name? (y)"
+      echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+      set answer=$<
+      if ("$answer" == "q") goto cleanup
+      if ("$answer" == "y" || "$answer" == "") goto proc_xappdir
+    endif
+  else
+    if ("$xappdir:h" == "") then
+      set parent="/"
+    else
+      set parent="$xappdir:h"
+    endif
+    if (! -w "$parent") then
+      echo ""
+      echo "  *** Warning: <$parent> is not writable."
+      echo ""
+       echo "New directory name? (y)"
+      echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+      set answer=$<
+      if ("$answer" == "q") goto cleanup
+      if ("$answer" == "y" || "$answer" == "") goto proc_xappdir
+    endif
+  endif
+
+endif
+
+#
+#	check to see if required libraries and include directories are
+#	about.
+#
+
+
+#
+# NCAR local configuration
+# These are accessed using an undocumented option and
+# are not useful for non-NCAR sites.
+#
+
+proc_ncar:
+
+echo ""
+if ($?ncarlocal) then
+  echo "Include support for local NCAR functions (yes)"
+else
+  if ($?ncarg_option) echo "Include support for local NCAR functions (no)"
+endif
+
+if ($?ncarg_option) then
+  echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+  set answer=$<
+  if ("$answer" == "q") goto cleanup
+  if ("$answer" == "y") then
+    set altered
+    set ncarlocal
+  endif
+  if ("$answer" == "n") then
+    set altered
+    unset ncarlocal
+  endif
+endif
+
+# Summarize configuration
+
+echo ""
+echo "Go back and make more changes or review? (n) "
+echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+set answer=$<
+if ("$answer" == "q") goto cleanup
+if ("$answer" == "y") goto QuestionAndAnswer
+
+#
+# Save the configuration
+#
+
+proc_save:
+echo ""
+echo "Save current configuration ? (y) "
+echo -n "Enter Return(default), y(yes), or q(quit) > "
+set answer=$<
+if ("$answer" == "q") goto cleanup
+
+if ("$answer" == "y" || "$answer" == "") then
+
+  if (! $?altered) then
+    echo ""
+    echo "  The configuration file was unchanged."
+    goto proc_install
+  endif
+
+  cd config
+  if (! -e $system.dist) then
+    if ($?localconfig) then
+      echo "  *** Warning: <$system> has been previously edited, but there is no backup"
+      else
+      echo ""
+      echo "  Making backup copy of original <$system> to <$system.dist>"
+      cp $system $system.dist
+    endif
+  endif
+
+  ed - $system <<EOF >&/dev/null
+/^PARFIL_INIT/
+c
+PARFIL_INIT     = $parfil_init
+.
+/^PARFIL_PERM/
+c
+PARFIL_PERM     = $parfil_perm
+.
+/^BINDIR/
+c
+BINDIR          = $bindir
+.
+/^LIBDIR/
+c
+LIBDIR          = $libdir
+.
+/^MANDIR/
+c
+MANDIR          = $mandir
+.
+/^TMPDIR/
+c
+TMPDIR          = $tmpdir
+.
+/^XAPPDIR/
+c
+XAPPDIR         = $xappdir
+.
+/^XLIBDIR/
+c
+XLIBDIR         = $xlibdir
+.
+/^XINCDIR/
+c
+XINCDIR         = $xincdir
+.
+w
+q
+EOF
+
+  ed - $system <<'EOF' >&/dev/null
+g/#define BuildSunViewctrans/d
+g/#define BuildXlibDependentCode/d
+g/#define LocalConfig/d
+g/#define NCARLocal/d
+/^XPATH/
+c
+XPATH           =
+.
+1i
+#define LocalConfig
+
+.
+w
+q
+'EOF'
+
+  if ($?buildsunctrans) then
+    ed - $system <<'EOF' >&/dev/null
+/^$/
+i
+#define BuildSunViewctrans
+.
+w
+q
+'EOF'
+  endif
+
+  if ($?buildxlibstuff) then
+    ed - $system <<'EOF' >&/dev/null
+/^$/
+i
+#define BuildXlibDependentCode
+.
+/^XPATH/
+c
+XPATH           = -I$(XINCDIR) -L$(XLIBDIR)
+.
+w
+q
+'EOF'
+  endif
+
+  if ($?ncarlocal) then
+    ed - $system <<'EOF' >&/dev/null
+/^$/
+i
+#define NCARLocal
+.
+w
+q
+'EOF'
+  endif
+  cd ..
+
+else
+  echo ""
+  echo "Invalid Response"
+  goto proc_save
+endif
+
+#
+# Installation step
+#
+
+proc_install:
+cat <<"EOF"
+
+	You have completed the configuration process. Once you exit this
+	program you may initiate the installation procedure by typing:
+
+		make Everything >&make-output &
+
+"EOF"
+
+if ($?verbose_option) then
+  cat <<"EOF"
+	If this is not your first installation attempt, and you simply 
+	made some changes in the configuration, restart the process using:
+
+		make All >&make-output &
+	
+	This command does not erase object code that has already
+	been compiled.
+
+	Both of these commands run the installation procedure
+	in the background, and you can track its progress
+	by periodically examining the file "make-output" while 
+	the installation proceeds.
+
+"EOF"
+endif
+
+exit 0
+
+cleanup:
+echo ""
+echo "Terminating configuration procedure"
+exit 0

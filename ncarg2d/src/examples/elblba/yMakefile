@@ -1,0 +1,19 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:33:17 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= elblba
+
+GENERIC_SRCS = elblba.f
+
+GENERIC_OBJS = elblba.o
+
+install::
+	@for file in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLEDIR));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateNoSplitTarget

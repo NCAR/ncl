@@ -1,0 +1,6 @@
+This directory contains functions fx(x,y) and fy(x,y) which are
+used for coordinate transformations for most of the utility programs.
+They used to be Fortran arithmetic statement functions and you just
+grabbed the entire source code and hacked at them if you needed new
+ones.  Now you link in your own fx() and fy() before editing the 
+libncarg library.  (don middleton 88).

@@ -1,0 +1,70 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:31:56 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= ezmap
+
+GENERIC_SRCS = \
+	mapdrw.f mapeod.f mapfst.f mapgrd.f mapgtc.f mapgti.f \
+	mapgtl.f mapgtr.f mapint.f mapit.f mapiq.f maplbl.f \
+	maplot.f mappos.f maproj.f maprs.f maprst.f mapsav.f \
+	mapset.f mapstc.f mapsti.f mapstl.f mapstr.f maptra.f \
+	maptri.f maptrn.f \
+	mapusr.f mapvec.f supcon.f supmap.f mapcem.f mapchi.f \
+	idictl.f mapgci.f mapio.f maplmb.f maptre.f maptrp.f mapvp.f \
+	mapbd.f
+
+GENERIC_OBJS = \
+	mapdrw.o mapeod.o mapfst.o mapgrd.o mapgtc.o mapgti.o \
+	mapgtl.o mapgtr.o mapint.o mapit.o mapiq.o maplbl.o \
+	maplot.o mappos.o maproj.o maprs.o maprst.o mapsav.o \
+	mapset.o mapstc.o mapsti.o mapstl.o mapstr.o maptra.o \
+	maptri.o maptrn.o \
+	mapusr.o mapvec.o supcon.o supmap.o mapcem.o mapchi.o \
+	idictl.o mapgci.o mapio.o maplmb.o maptre.o maptrp.o mapvp.o \
+	mapbd.o
+
+UNIX_SRCS = openmp.f
+
+UNIX_OBJS = openmp.o
+
+SOURCES = $(GENERIC_SRCS) $(UNIX_SRCS)
+
+OBJECTS	= $(GENERIC_OBJS) $(UNIX_OBJS)
+
+FCPP_OBJS	= openmp.f
+
+PartialLibrary(libncarg.a,$(OBJECTS))
+
+#if defined(sgi) || defined(ardent) || (defined(u370) && defined(unix)) \
+	|| defined(RS6000) || defined(hpux) || defined(cray) || defined(CRAY2)
+
+.SUFFIXES: .F
+
+.F.o:
+	@$(FCPP) $< $*.f
+	$(F77) $(FFLAGS) -c $*.f
+	@$(RM) $*.f
+#endif
+
+clean::
+	@-$(RM) openmp.f
+
+#ifdef  BuildNCARGSourceLibrary
+all:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_QUICK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	@-$(RM) $(MYNAME)
+
+install:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcncarg.a
+	@-$(RM) $(MYNAME)
+
+FRule
+#endif
+
+clean::
+	@-$(RM) $(FCPP_OBJS)

@@ -1,0 +1,45 @@
+/*
+/*	$Id: hplj300p.gc,v 1.1.1.1 1992-04-17 22:29:40 ncargd Exp $
+/*
+/*  hplj300p
+/***********************************************************************
+/*
+/* hplj300p
+/*
+/* This graphcap supports the HP LaserJet family of printers (LaserJet,
+/* LaserJet Plus, LaserJet Series II, LaserJet 500 Plus, etc.).
+/* The various versions of the HP LaserJet family have different
+/* memory sizes.  This limits the resolution and format size of the
+/* graphic area.  Consult your HP manual for details on any limitations.
+/*
+/* This file provides a high resolution (300 dots/in.) with a square graphic
+/* area (8 in. x 8 in.).  The orientation is portrait mode.
+/*
+/* If the printer is slaved off an ANSII terminal, add the following:
+/*   DEVICE_GRAPHIC_INIT: add to the start "ESC [ 5 i"
+/*   DEVICE_TEXT_INIT:    add to the end   "ESC [ 4 i"
+/*   DEVICE_CURSOR_HOME:  add to the end   "ESC [ 4 i"
+/*
+/***********************************************************************
+
+DEVICE_GRAPHIC_INIT
+  ESC E
+  ESC * t 3 0 0 R
+DEVICE_TEXT_INIT
+  ESC E
+DEVICE_CURSOR_HOME
+  FF
+DEVICE_BATCH
+  TRUE
+
+DEVICE_COORD_LOWER_LEFT_X
+  0
+DEVICE_COORD_LOWER_LEFT_Y
+  2999
+DEVICE_COORD_UPPER_RIGHT_X
+  2399
+DEVICE_COORD_UPPER_RIGHT_Y
+  0
+
+DEVICE_COORD_ENCODING
+  106

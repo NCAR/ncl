@@ -1,0 +1,33 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:31:41 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= srface
+
+GENERIC_SRCS = \
+	 srface.f srfgk.f ezsrfc.f setr.f draws.f trn32s.f clset.f ctcell.f\
+	 srfabd.f
+
+GENERIC_OBJS = \
+	 srface.o srfgk.o ezsrfc.o setr.o draws.o trn32s.o clset.o ctcell.o\
+	 srfabd.o
+
+SOURCES = $(GENERIC_SRCS)
+
+OBJECTS = $(GENERIC_OBJS)
+
+PartialLibrary(libncarg.a,$(OBJECTS))
+
+#ifdef  BuildNCARGSourceLibrary
+all:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_QUICK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	@-$(RM) $(MYNAME)
+
+install:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcncarg.a
+	@-$(RM) $(MYNAME)
+#endif

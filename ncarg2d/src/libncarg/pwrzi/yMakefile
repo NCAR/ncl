@@ -1,0 +1,31 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:31:36 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= pwrzi
+
+GENERIC_SRCS = \
+	 initzi.f intzi.f pwrzgi.f pwrzi.f pwrzoi.f
+
+GENERIC_OBJS = \
+	 initzi.o intzi.o pwrzgi.o pwrzi.o pwrzoi.o
+
+SOURCES = $(GENERIC_SRCS)
+
+OBJECTS = $(GENERIC_OBJS)
+
+PartialLibrary(libncarg.a,$(OBJECTS))
+
+#ifdef  BuildNCARGSourceLibrary
+all:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_QUICK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	@-$(RM) $(MYNAME)
+
+install:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBDIR)/srcncarg.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcncarg.a
+	@-$(RM) $(MYNAME)
+#endif

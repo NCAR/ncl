@@ -1,0 +1,11 @@
+C
+C	$Id: errof.f,v 1.1.1.1 1992-04-17 22:32:37 ncargd Exp $
+C
+      SUBROUTINE ERROF
+C
+C  TURNS OFF THE ERROR STATE OFF BY SETTING LERROR=0.
+C
+      I=I8SAV(1,0,.TRUE.)
+      RETURN
+C
+      END

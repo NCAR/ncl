@@ -1,0 +1,25 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:35:08 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= agupwrtx
+
+GENERIC_SRCS = agpwrt.f
+
+GENERIC_OBJS = agpwrt.o
+
+OBJECTS = $(GENERIC_OBJS)
+
+SOURCES = $(GENERIC_SRCS)
+
+RelocatableObject(libagupwrtx.o,$(OBJECTS))
+
+#ifdef  BuildNCARGSourceLibrary
+install:: $(SOURCES)
+	@-$(RM) $(LIBDIR)/srcagupwrtx.a
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_QUICK) $(LIBDIR)/srcagupwrtx.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBDIR)/srcagupwrtx.a
+	@-$(RM) $(MYNAME)
+#endif

@@ -1,0 +1,71 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:34:35 ncargd Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= impltest
+
+#if defined(ardent) || (defined(u370) && defined(unix))
+OTHER_LIBS =	$(LIBDIR)/libncarbd.o
+#endif
+
+COMMON_LIBS =	$(LIBDIR)/libncarg.a \
+		$(LIBDIR)/libncarg_gks.a \
+		$(LIBDIR)/libncarg_loc.a
+
+LIBS = $(OTHER_LIBS) $(COMMON_LIBS)
+
+GENERIC_SRCS = \
+	 box.f lcm.f mskout.f implbd.f tcurve.f tgbyte.f tgks0a.f tiand.f\
+	 tior.f tline.f tlocal.f tplot.f tploti.f tpnts.f tpoint.f tsbyte.f\
+	 tset.f tshift.f tspps.f tvecto.f twtstr.f
+
+GENERIC_OBJS = \
+	 box.o lcm.o mskout.o implbd.o tcurve.o tgbyte.o tgks0a.o tiand.o\
+	 tior.o tline.o tlocal.o tplot.o tploti.o tpnts.o tpoint.o tsbyte.o\
+	 tset.o tshift.o tspps.o tvecto.o twtstr.o
+
+TSPPS_OBJS = \
+	tspps.o tpnts.o tset.o tvecto.o tcurve.o tline.o tpoint.o\
+	twtstr.o tploti.o box.o implbd.o
+
+#ifdef cray
+
+TLOCAL_OBJS = \
+	tlocalcray.o tiand.o tior.o lcm.o tgbyte.o tshift.o tsbyte.o\
+	mskout.o
+
+#else
+#ifdef ardent
+
+TLOCAL_OBJS = \
+	tlocalardent.o tiand.o tior.o lcm.o tgbyte.o tshift.o tsbyte.o\
+	mskout.o
+
+#else
+#if defined(u370) && defined(unix) 
+
+TLOCAL_OBJS = \
+	tlocalibm.o tiand.o tior.o lcm.o tgbyte.o tshift.o tsbyte.o\
+	mskout.o
+
+#else
+
+TLOCAL_OBJS = \
+	tlocal32.o tiand.o tior.o lcm.o tgbyte.o tshift.o tsbyte.o\
+	mskout.o
+
+#endif
+#endif
+#endif
+
+
+all:: tspps tlocal tplot tgks0a
+
+FortranTarget(tspps,$(TSPPS_OBJS),$(LIBS))
+FortranTarget(tlocal,$(TLOCAL_OBJS),$(LIBS))
+FortranTarget(tplot,tplot.o,$(LIBS))
+FortranTarget(tgks0a,tgks0a.o,$(LIBS))
+MakefileTarget
+CleanTarget
+UpdateTarget

@@ -1,0 +1,11 @@
+#!/bin/csh -f
+#
+#	$Id: pre2ncgm,v 1.1.1.1 1992-04-17 22:34:45 ncargd Exp $
+#
+
+# Filter to read a pre-GKS metafile and write a GKS metafile.
+
+setenv NCARG_GKS_OUTPUT temp.file.$$
+pre2ncgm.prog
+cat temp.file.$$
+rm -f temp.file.$$

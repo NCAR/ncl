@@ -1,0 +1,23 @@
+C
+C	$Id: tcurve.f,v 1.1.1.1 1992-04-17 22:34:36 ncargd Exp $
+C
+      SUBROUTINE TCURVE
+      COMMON  /BLOCK1/MESG,X(51),Y(51),IDUMMY(398)
+      CALL BOX
+      CALL SET(0.,1.,0.,1.,0.,1.,0.,.3,1)
+      CALL WTSTR(0.5,0.274,'DEMONSTRATION PLOT FOR CURVE',20,0,0)
+      XINC = 1./50.
+      DO 60 I=1,26
+      X(I) = (I-1)*XINC
+      Y(I) = X(I)*X(I)
+   60 CONTINUE
+      DO 70 I=1,25
+      X(52-I) = 1.-(I-1)*XINC
+      Y(52-I) = Y(I)
+   70 CONTINUE
+      CALL CURVE(X,Y,51)
+      CALL FRAME
+      WRITE(MESG,640)
+  640 FORMAT(' TCURVE EXITED--SEE PLOT TO VERIFY PERFORMANCE')
+      RETURN
+      END

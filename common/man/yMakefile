@@ -1,0 +1,47 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:30:06 ncargd Exp $
+#
+NCARG	= ../..
+
+MANS =  fontc graphc fontcap graphcap ncargmv ncargpar ncargtar
+
+all:
+
+preformatted:
+	@for name in $(MANS); do\
+	(sed -e 's@MACRO_SOURCE@ncargmac.m@' <$$name.m | \
+	nroff -man >$$name.p);\
+	done
+
+#if defined(CRAY) || defined(sgi)
+# Install preformatted troff documents on systems without troff
+
+install::
+	@for name in $(MANS); do\
+	($(INSTALL) -m $(INSTALL_MAN) $$name.p \
+	$(MANDIR)/$$name.$(MAN_SECTION) );\
+	done
+
+#else
+
+install::
+	@for name in $(MANS); do\
+	(sed -e 's@MACRO_SOURCE@$(MANDIR)/ncargmac.$(MAN_SECTION)@' \
+	<$$name.m >$$name.$(MAN_SECTION));\
+	done
+
+install::
+	@for name in $(MANS); do\
+	($(INSTALL) -m $(INSTALL_MAN) $$name.$(MAN_SECTION) $(MANDIR));\
+	done
+
+install::
+	@-for name in $(MANS); do\
+	($(RM) $$name.$(MAN_SECTION));\
+	done
+#endif
+
+MakefileTarget
+CleanTarget
+
+generic::

@@ -1,0 +1,3 @@
+EZMAPA opens its database on logical unit 1.
+
+EZMAPA also requires a user routine to be linked into it.

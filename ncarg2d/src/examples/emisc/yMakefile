@@ -1,0 +1,25 @@
+#
+#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:33:18 ncargd Exp $
+#
+NCARG	= ../../../..
+
+FSPLIT	= ncarguncat
+
+MYNAME	= emisc
+
+GENERIC_SRCS = \
+	 arex01.f coex01.f coex02.f coex03.f cbex01.f stex01.f
+
+GENERIC_OBJS = \
+	 arex01.o coex01.o coex02.o coex03.o cbex01.o stex01.o
+
+OTHER_SRCS = example.f
+
+install::
+	@for file in $(GENERIC_SRCS) $(OTHER_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLEDIR));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateTarget

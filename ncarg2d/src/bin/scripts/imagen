@@ -1,0 +1,106 @@
+#!/bin/csh -f
+#
+#	$Id: imagen,v 1.1.1.1 1992-04-17 22:34:44 ncargd Exp $
+#
+########################################################################
+# NAME: imagen, lplot
+# DESC: csh script to send laser plot jobs to a remote system $rhost,
+#	currently a Sun workstation.  Used by plt program under the name
+#	"imagen" and used directly by end-users under the name "lplot".
+# ARGS: "lplot  -arg filename"
+#         arg may be;
+#                    -l   - use landscape mode  (default)
+#                    -p   - use portrait mode
+#                    -C   - complex mode (turns on printeverypage)  will 
+#                           slow down the printer so only use when necessary
+#		     -F record - the record of a specific frame to plot.
+# GLOBALS:
+# RETURN:
+# FILES: remote scratch file named $rdatfil
+# AUTHOR: John Humbrecht
+# MESSAGES:
+# BUGS: this will work ONLY for processing on sw1/sw2 (see rtmpdir)
+# VER/DATE: 0.0 (09-Sep-85)	create lplot 
+# VER/DATE: 0.1 (05-Feb-87)	add load control	-era
+# VER/DATE: 0.2 (23-Apr-87)	change jxh references to gp	-converse
+# VER/DATE: 0.3 (15-Jun-87)	use current userid on $rhost if possible
+# INTERRUPTS: default
+# LINKS TO THIS FILE: imagen, lplot
+# SEE ALSO: sw1:~gp/bin/{lplot,laser_plot}
+# OTHER:
+#########################################################################
+if ($#argv == 0) then
+	echo "usage: $0 [-l] [-p] [-C] [-F record_number] metafile"
+	exit(1)
+endif
+ set arg0	= $0		# to avoid problem with ':' after $0
+ set arg0	= $arg0:t
+ set debug      = 0
+ set rhost	= scdsw1	# enet name of remote host
+ set lcid	= `hostname`	# enet name of local host
+ set lfiles	= ''		# local files to process
+ set name	= `whoami`	# user login name
+ set rname	= txt		# user name for rsh and rcp on remote host
+ set rtmpdir	= /u1/txt/tmp	# remote host scratch dir (/tmp too small)
+ set rdatfil	= $rtmpdir/${name}D$$	# scratch data file on remote host
+ set farg	= "-f $rdatfil"	# laser_plot arg: file spec
+ set mode       = "-l"          # laser_plot arg: default landscape mode
+# fname = user full name from password file
+ set fname	= \
+ `sed -n "/^${name}:/s/[^:]*:[^:]*:[^:]*:[^:]*:\([^,]*\),.*/\1/p" /etc/passwd`
+ set Uarg	= "-U '${fname}'"	# laser_plot arg: user full name
+ set uarg	= "-u '${name}@${lcid}'" # laser_plot arg: user login name/sys
+ set printer	= "-Pscdimagen"	# default laser printer
+#
+# get flags and filename
+#
+ while ($#argv != 0)
+   switch ("$1")
+     case -F:
+	set mode = "$mode $1 $2"
+        shift
+        breaksw
+     case -*:
+        set mode = "$mode $1"
+        breaksw
+     default:
+	set lfiles = ($lfiles $1)
+	breaksw
+   endsw
+   shift
+ end #while
+#
+# this selects one of scdsw[12] to use for processing.
+# if both suns are down, or all up suns are too busy, it sleeps & retries;
+# otherwise, it selects the machine with lowest one-minute load average.
+# output hostname to use is in variable "rhost".
+#
+ while(1)
+   set suns = \
+   `ruptime -l|sed -n -e s/,//g -e 's/\.//g' -e '/^scdsw[12] *up/p'|tail -1`
+   if ($#suns < 7) then		#i.e., if no output (both suns are down)
+     echo "$arg0": remote hosts down, will retry later;  sleep 300
+     else if ($suns[7] > 800) then	#i.e., if load average>8.00
+            echo "$arg0": remote hosts loaded, will retry later;  sleep 300
+            else break
+          endif
+   endif
+ end #while(1)
+ set rhost = $suns[1];  unset suns
+#
+# determine whether it's possible to do the job under the current userid,
+# or whether we need to use the $rname id
+#
+ set rsh = (rsh $rhost)
+ set rfiles = ${rhost}\:$rdatfil
+ set resp = `$rsh cat /dev/null |& cat`
+ if ("$resp" == "Permission denied." || "$resp" == "Login incorrect.") then
+   set rsh = (rsh $rhost -l $rname)
+   set rfiles = ${rhost}.${rname}\:$rdatfil
+ endif
+#
+# send data file and commands to rhost for processing, then clean up
+#
+ rcp $lfiles $rfiles
+ $rsh -n "~gp/bin/laser_plot $mode $uarg $Uarg $farg"
+ $rsh -n "/bin/rm -f $rdatfil"
