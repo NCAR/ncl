@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: paths.AIX_RS6000,v 1.4 1995-06-13 17:07:07 haley Exp $
+#      $Id: paths.AIX_RS6000,v 1.5 1995-10-05 15:11:53 haley Exp $
 #
 #########################################################################
 #									#
@@ -10,7 +10,7 @@
 #									#
 #########################################################################
 #
-#	File:		paths.RS6000
+#	File:		paths.AIX_RS6000
 #
 #	Author:		John Clyne
 #			National Center for Atmospheric Research
@@ -23,7 +23,7 @@
 #			the variables bin_path, inc_path, lib_path, and 
 #			man_path
 #
-#	Usage:		paths.RS6000
+#	Usage:		paths.AIX_RS6000
 #
 #	Environment:
 #
@@ -36,8 +36,6 @@ set bin_path = /usr/local/bin
 set inc_path = /usr/local/include
 set lib_path = /usr/local/lib
 set man_path = /usr/local/man
-set htmldoc_path = /usr/local/lib/ncarg/ngwww/ng4.0
-set psdoc_path = /usr/local/lib/ncarg/doc
 set man1 = man1
 set man3 = man3
 set man5 = man5

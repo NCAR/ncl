@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: paths.UNICOS_YMP,v 1.4 1995-06-13 17:07:12 haley Exp $
+#      $Id: paths.UNICOS_YMP,v 1.5 1995-10-05 15:12:01 haley Exp $
 #
 #########################################################################
 #									#
@@ -10,7 +10,7 @@
 #									#
 #########################################################################
 #
-#	File:		paths.Cray-YMP
+#	File:		paths.UNICOS_YMP
 #
 #	Author:		John Clyne
 #			National Center for Atmospheric Research
@@ -18,12 +18,12 @@
 #
 #	Date:		Tue Sep 29 17:05:36 MDT 1992
 #
-#	Description:	Set default installation paths for a Cray-YMP. This
+#	Description:	Set default installation paths for a Cray YMP. This
 #			script is sourced by the get_paths script to set
 #			the variables bin_path, inc_path, lib_path, and 
 #			man_path
 #
-#	Usage:		paths.Cray-YMP
+#	Usage:		paths.UNICOS_YMP
 #
 #	Environment:
 #
@@ -35,8 +35,9 @@
 set bin_path = /usr/local/bin
 set inc_path = /usr/local/include
 set lib_path = /usr/local/lib
-set htmldoc_path = /usr/local/lib/ncarg/ngwww/ng4.0
-set psdoc_path = /usr/local/lib/ncarg/doc
-set man_path = /usr/man
-set manl = manl
+set man_path = /usr/local/man
+set man1 = cat1
+set man3 = cat3
+set man5 = cat5
+set man8 = cat8
 exit 0
