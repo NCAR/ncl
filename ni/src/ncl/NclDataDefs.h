@@ -40,7 +40,8 @@ Ncl_MultiDVallogicalData =    0100000,
 Ncl_HLUObj = 0200000,
 Ncl_File = 0400000,
 Ncl_FileVar = 01000000,
-Ncl_HLUVar = 02000000
+Ncl_HLUVar = 02000000,
+Ncl_CoordVar = 04000000
 } NclObjTypes;
 
 /*
@@ -51,7 +52,7 @@ Ncl_HLUVar = 02000000
 /*
 * allows for selection of basic variable data value type 
 */
-#define NCL_VAR_TYPE_MASK ((unsigned int) Ncl_Var | Ncl_FileVar) 
+#define NCL_VAR_TYPE_MASK ((unsigned int) Ncl_Var | Ncl_FileVar | Ncl_CoordVar) 
 
 /*
 * allows for selection of numeric value types which represent one 

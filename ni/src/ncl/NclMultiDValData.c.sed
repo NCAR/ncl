@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.4 1994-10-29 00:57:49 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.5 1994-12-22 01:42:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -213,7 +213,10 @@ NclMultiDValDATATYPEDataClassRec nclMultiDValDATATYPEDataClassRec = {
 						MultiDVal_DATATYPE_smd_Xor,
 						MultiDVal_DATATYPE_ss_Xor
 					},
-/* NclIsMissingFunction is_mis */	MultiDVal_DATATYPE_is_mis
+/* NclIsMissingFunction is_mis */	MultiDVal_DATATYPE_is_mis,
+/* NclScalarFindFunction   find */	NULL,
+/* NclMonotonicTestFunction is_mono */  NULL
+
 	},
 	{
 		HLUGENTYPEREP

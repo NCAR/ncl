@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.23 1994-11-17 20:53:33 boote Exp $
+#      $Id: yMakefile,v 1.24 1994-12-22 01:42:46 ethan Exp $
 #
 #########################################################################
 #									#
@@ -69,7 +69,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			NclFile.h NclFileInterfaces.h NclHLUObj.h NclMdInc.h \
 			NclMultiDValData.h NclMultiDValHLUObjData.h \
 			OpsFuncs.h OpsList.h SrcTree.h Symbol.h VarSupport.h \
-			NclFileVar.h NclHLUVar.h HLUSupport.h
+			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h
 
 INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h
 
@@ -95,7 +95,7 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			NclMultiDValData.c NclMultiDValHLUObjData.c \
 			NclNetCdf.c NclVar.c OpsFuncs.c Printtoken.c SrcTree.c \
 			Symbol.c Translate.c VarSupport.c NclFileVar.c \
-			NclHLUVar.c HLUSupport.c
+			NclHLUVar.c HLUSupport.c NclCoordVar.c
 
 API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o
 EXE_OBJS	=	Ncl.o yywrap.o scanner.o parser.o io.o NclHLUObj.o
@@ -118,7 +118,7 @@ STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			NclMultiDValData.o NclMultiDValHLUObjData.o \
 			NclNetCdf.o NclVar.o OpsFuncs.o Printtoken.o SrcTree.o \
 			Symbol.o Translate.o VarSupport.o NclFileVar.o \
-			NclHLUVar.o HLUSupport.o
+			NclHLUVar.o HLUSupport.o NclCoordVar.o
 
 
 LibraryTarget($(MYLIB),$(ALLOBJS))

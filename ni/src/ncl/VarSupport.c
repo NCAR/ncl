@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.4 1994-10-29 00:58:09 ethan Exp $
+ *      $Id: VarSupport.c,v 1.5 1994-12-22 01:42:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,8 @@
 #include "NclMultiDValData.h"
 #include "Machine.h"
 #include "NclVar.h"
+#include "NclHLUVar.h"
+#include "NclCoordVar.h"
 #include "NclFileVar.h"
 #include "VarSupport.h"
 #include "DataSupport.h"
@@ -52,6 +54,10 @@ char *var_name;
 {
 	if(obj_type == Ncl_FileVar) {
 		return(_NclFileVarCreate(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name));
+	} else if(obj_type == Ncl_CoordVar) {
+		return(_NclCoordVarCreate(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name));
+	} else if(obj_type == Ncl_HLUVar) {
+		return(_NclHLUVarCreate(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name));
 	} else {
 		return(_NclVarCreate(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name));
 	}

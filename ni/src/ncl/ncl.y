@@ -1540,10 +1540,10 @@ primary : REAL				{
 * is a parameter to a function or a procedure. The LP expr RP is an
 * exception
 */
-						$$ = _NclMakeIdnExpr(_NclMakeRealExpr($1));
+						$$ = _NclMakeIdnExpr(_NclMakeRealExpr($1,yytext));
 					}
 	| INT				{
-						$$ = _NclMakeIdnExpr(_NclMakeIntExpr($1));
+						$$ = _NclMakeIdnExpr(_NclMakeIntExpr($1,yytext));
 					}
 	| STRING			{
 						$$ = _NclMakeIdnExpr(_NclMakeStringExpr($1));

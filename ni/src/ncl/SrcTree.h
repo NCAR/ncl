@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.11 1994-08-25 18:01:04 ethan Exp $
+ *      $Id: SrcTree.h,v 1.12 1994-12-22 01:42:34 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -148,6 +148,7 @@ typedef struct ncl_int {
 	NclSrcTreeDestroyProc destroy_it;
 	NclReferenceTypes ref_type;
 	int integer;
+	int len;
 } NclInt;
 
 typedef struct ncl_real{
@@ -158,6 +159,8 @@ typedef struct ncl_real{
 	NclSrcTreeDestroyProc destroy_it;
 	NclReferenceTypes ref_type;
 	float real;
+	int total_len;
+	int len_after_dec;
 } NclReal;
 
 typedef struct ncl_filevar {
@@ -777,13 +780,15 @@ extern void * _NclMakeExpr(
 
 extern void * _NclMakeRealExpr(
 #ifdef NhlNeedProto
-	float /*real*/
+	float /*real*/,
+	char * /*string_rep*/
 #endif
 );
 
 extern void * _NclMakeIntExpr(
 #ifdef NhlNeedProto
-	int /* integer */
+	int /* integer */,
+	char * /*string_rep*/
 #endif
 );
 

@@ -660,14 +660,17 @@ if(groot != NULL) {
 		{
 			NclSubscript *subscript = (NclSubscript*)
 					root;
+			int tolerence = -1;
 			if(subscript->dimname_q != -1) {
 				off1 = _NclPutInstr(PUSH_STRING_LIT_OP,subscript->line,subscript->file);
 				_NclPutInstr((NclValue)subscript->dimname_q,subscript->line,subscript->file);
 				_NclTranslate(subscript->subexpr,fp);
 				_NclPutInstr(NAMED_COORD_SUBSCRIPT_OP,subscript->line,subscript->file);
+				_NclPutIntInstr(-1,subscript->line,subscript->file);
 			} else {
 				off1 = _NclTranslate(subscript->subexpr,fp);
 				_NclPutInstr(COORD_SUBSCRIPT_OP,subscript->line,subscript->file);
+				_NclPutIntInstr(-1,subscript->line,subscript->file);
 			}
 			break;
 		}

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.13 1994-12-14 23:16:16 ethan Exp $
+ *      $Id: Machine.h,v 1.14 1994-12-22 01:42:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -105,6 +105,7 @@ typedef struct _NclFrame{
 typedef struct _NclSubRec {
 	NclSubTypes sub_type; 
 	char *name;
+	int tolerence;	/* applies only to coordinate variables */
 	union {
 		struct _NclRangeRec *range;
 		struct _NclVecRec *vec;

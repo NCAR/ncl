@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.28 1994-12-21 01:57:21 ethan Exp $
+ *      $Id: Execute.c,v 1.29 1994-12-22 01:42:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -101,6 +101,7 @@ NclExecuteReturnStatus _NclExecute
 				data1.kind = NclStk_SUBREC;
 				data1.u.sub_rec = (NclSubRec*)NclMalloc(
 					sizeof(NclSubRec));
+				data1.u.sub_rec->tolerence = -1;
 				data = _NclPop();
 				if(data.kind == NclStk_VECREC) {
 					if(data.u.vec_rec->vec->obj.obj_type_mask & mask ) {
@@ -339,6 +340,7 @@ NclExecuteReturnStatus _NclExecute
 * be done since it isn't until here that it is determined that normal integer
 * subscripting is going on
 */
+				ptr++;lptr++;fptr++;
 				data = _NclPop();
 	
 				data1.kind = NclStk_SUBREC;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.19 1994-11-17 20:53:31 boote Exp $
+ *      $Id: SrcTree.c,v 1.20 1994-12-22 01:42:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -341,7 +341,7 @@ void *_NclMakeGetResource
 #else
 (resname , target_idn)
 	char *resname;
-	NclSymbol *target_idn;
+	void *target_idn;
 #endif
 {
 	NclGetResource *tmp = (NclGetResource*)NclMalloc((unsigned)sizeof(NclGetResource));
@@ -1486,13 +1486,15 @@ NclSrcTreeTypes type;
  */
 void * _NclMakeRealExpr
 #if __STDC__
-(float real)
+(float real,char *string_rep)
 #else
-(real)
+(real,string_rep)
 float real;
+char *string_rep;
 #endif
 {	
 	NclReal *tmp = (NclReal*)NclMalloc((unsigned)sizeof(NclReal));
+	char *ts;
 	
 	if(tmp == NULL) {
 		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
@@ -1505,6 +1507,15 @@ float real;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
 	tmp->real = real;
 	tmp->ref_type = Ncl_READIT;
+	tmp->total_len = -1;
+	tmp->len_after_dec = -1;
+	if(string_rep != NULL) {
+		tmp->total_len = strlen(string_rep);
+		ts = strchr(string_rep,'.');
+		if(ts != NULL) {
+			tmp->len_after_dec = strlen(ts);
+		}
+	}
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
@@ -1525,10 +1536,11 @@ float real;
  */
 void * _NclMakeIntExpr
 #if  __STDC__
-(int integer)
+(int integer,char* string_rep)
 #else
-(integer)
+(integer,string_rep)
 int integer;
+char* string_rep;
 #endif
 {
 	NclInt *tmp = (NclInt*)NclMalloc((unsigned)sizeof(NclInt));
@@ -1544,6 +1556,9 @@ int integer;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
 	tmp->integer= integer;
 	tmp->ref_type = Ncl_READIT;
+	tmp->len = -1;
+	if(string_rep != NULL) 
+		tmp->len = strlen(string_rep);
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.h,v 1.3 1994-10-29 00:57:36 ethan Exp $
+ *      $Id: NclData.h,v 1.4 1994-12-22 01:42:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -197,6 +197,19 @@ typedef int (*NclIsMissingFunction) (
 #endif
 );
 
+typedef int (*NclScalarFindFunction)(
+#if 	NhlNeedProto
+	NclData /*self*/,
+	void * /*value*/
+#endif
+);
+
+typedef int (*NclMonotonicTestFunction)(
+#if	NhlNeedProto
+	NclData /*self*/
+#endif
+);
+
 
 typedef struct _NclDataClassPart {
 	NclCopyFunction		dup;
@@ -226,6 +239,8 @@ typedef struct _NclDataClassPart {
 	NclOperatorFunction	or[4];
 	NclOperatorFunction	xor[4];
 	NclIsMissingFunction	is_mis;
+	NclScalarFindFunction   find;
+	NclMonotonicTestFunction is_mono;
 } NclDataClassPart;
  
 typedef struct _NclDataClassRec{
