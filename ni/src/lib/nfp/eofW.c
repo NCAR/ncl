@@ -348,36 +348,6 @@ NhlErrorTypes eof_W( void )
  * Set up attributes to return.
  */
     att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
-/*
- * Coerce eval to float.
- */
-    reval = (float *)calloc(*neval,sizeof(float));
-    for( i = 0; i < *neval; i++ ) reval[i] = (float)eval[i];
-/*
- * Free double precision eval.
- */
-    NclFree(eval);
-
-    dsizes[0] = *neval;
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           (void*)reval,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "eval",
-               att_md,
-               NULL
-               );
 
 /*
  * pcvar is returned as float no matter what. 
@@ -403,30 +373,74 @@ NhlErrorTypes eof_W( void )
                );
 
 /*
+ * Only return the eigenvalues if the appropriate option has been set.
+ * That option hasn't been determined yet, so set the option to something
+ * here that won't get used.
+ */
+    if(*opt == -1) {
+/*
+ * Coerce eval to float.
+ */
+      reval = (float *)calloc(*neval,sizeof(float));
+      for( i = 0; i < *neval; i++ ) reval[i] = (float)eval[i];
+/*
+ * Free double precision eval.
+ */
+      NclFree(eval);
+
+      dsizes[0] = *neval;
+      att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             (void*)reval,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypefloatClass
+                             );
+      _NclAddAtt(
+                 att_id,
+                 "eval",
+                 att_md,
+                 NULL
+                 );
+    }
+/*
+ * Only return the eigenvalues if the appropriate option has been set.
+ * That option hasn't been determined yet, so set the option to something
+ * here that won't get used.
+ */
+    if(*opt == -1) {
+/*
  * Coerce trace to float.
  */
-    rtrace = (float *)calloc(1,sizeof(float));
-    *rtrace = (float)(*trace);
-    dsizes[0] = 1;
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           (void*)rtrace,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                                                   );
-    _NclAddAtt(
-               att_id,
-               "trace",
-               att_md,
-               NULL
-               );
+      rtrace = (float *)calloc(1,sizeof(float));
+      *rtrace = (float)(*trace);
+      dsizes[0] = 1;
+      att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             (void*)rtrace,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypefloatClass
+                             );
+      _NclAddAtt(
+                 att_id,
+                 "trace",
+                 att_md,
+                 NULL
+                 );
+    }
   }
   else {
 /*
