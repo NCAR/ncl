@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.76 1998-07-15 00:40:41 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.77 1998-10-22 17:39:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -6828,7 +6828,8 @@ static NhlErrorTypes ManageInfoLabel
 	if (! ilp->on && (init || ! oilp->on))
 		return NhlNOERROR;
 
-	if (init || cnp->info_string != ocnp->info_string) {
+	if (init || ! cnp->info_string ||
+	    cnp->info_string != ocnp->info_string) {
 		int strsize = cnp->info_string == NULL ? 
 			strlen(NhlcnDEF_INFO_LABEL) + 1 : 
 				strlen(cnp->info_string) + 1;
@@ -7043,7 +7044,8 @@ static NhlErrorTypes ManageConstFLabel
  */
 
 
-	if (init || cnp->constf_string != ocnp->constf_string) {
+	if (init || ! cnp->constf_string ||
+	    cnp->constf_string != ocnp->constf_string) {
 		text_changed = True;
 		tstring = cnp->constf_string == NULL ?
 			NhlcnDEF_CONSTF_LABEL : cnp->constf_string; 
@@ -7055,7 +7057,8 @@ static NhlErrorTypes ManageConstFLabel
 		strcpy(lstring,tstring);
 		cnp->constf_string = lstring;
 	}
-	if (init || cnp->no_data_string != ocnp->no_data_string) {
+	if (init || ! cnp->no_data_string || 
+	    cnp->no_data_string != ocnp->no_data_string) {
 		text_changed = True;
 		tstring = cnp->no_data_string == NULL ?
 			NhlcnDEF_NODATA_LABEL : cnp->no_data_string; 

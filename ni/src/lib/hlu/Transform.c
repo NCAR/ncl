@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.40 1998-05-29 22:52:29 dbrown Exp $
+ *      $Id: Transform.c,v 1.41 1998-10-22 17:39:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1554,10 +1554,8 @@ _NhlIsOverlay
 	NhlLayer		l = _NhlGetLayer(pid);
 	NhlTransformLayer	tl = NULL;
 
-	if(!l)
-		return False;
 
-	if(!_NhlIsTransform(l))
+	if(! (l && _NhlIsTransform(l)))
 		return False;
 
 	tl = (NhlTransformLayer)l;
@@ -1596,7 +1594,7 @@ _NhlIsAnnotation
 	NhlLayer		l = _NhlGetLayer(pid);
 	NhlViewLayer		vl = NULL;
 
-	if (! _NhlIsView(l))
+	if (! (l && _NhlIsView(l)))
 		return False;
 	vl = (NhlViewLayer)l;
 	if (vl->view.annomanager_id) {
@@ -1670,10 +1668,7 @@ _NhlAnnotationBase
 	NhlViewLayer		vl = NULL;
 	NhlTransformLayer	tl = NULL;
 
-	if(!l)
-		return NhlNULLOBJID;
-
-	if (! _NhlIsView(l))
+	if (! (l && _NhlIsView(l)))
 		return NhlNULLOBJID;
 	vl = (NhlViewLayer)l;
 	if (vl->view.annomanager_id && vl->view.overlay_id) {
@@ -1711,10 +1706,7 @@ _NhlOverlayBase
 	NhlLayer		l = _NhlGetLayer(pid);
 	NhlTransformLayer	tl = NULL;
 
-	if(!l)
-		return NhlNULLOBJID;
-
-	if(!_NhlIsTransform(l))
+	if(! (l && _NhlIsTransform(l)))
 		return NhlNULLOBJID;
 	tl = (NhlTransformLayer)l;
 		

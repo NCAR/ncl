@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.52 1998-10-07 22:14:00 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.53 1998-10-22 17:39:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5115,7 +5115,8 @@ static NhlErrorTypes PrepareAnnoString
 		return NhlNOERROR;
 	}
 
-	if (init || *new_string != old_string) {
+	if (init || ! *new_string ||
+	    *new_string != old_string) {
 		int strsize = *new_string == NULL ? 
 			strlen(def_string) + 1 : strlen(*new_string) + 1;
 		if ((lstring = NhlMalloc(strsize)) == NULL) {
@@ -5654,7 +5655,8 @@ static NhlErrorTypes ManageZeroFLabel
  */
 
 
-	if (init || vcp->zerof_lbl.string1 != ovcp->zerof_lbl.string1) {
+	if (init || ! vcp->zerof_lbl.string1 ||
+	    vcp->zerof_lbl.string1 != ovcp->zerof_lbl.string1) {
 		text_changed = True;
 		tstring = vcp->zerof_lbl.string1 == NULL ?
 			NhlvcDEF_ZEROF_LABEL : vcp->zerof_lbl.string1; 
@@ -5666,7 +5668,8 @@ static NhlErrorTypes ManageZeroFLabel
 		strcpy(lstring,tstring);
 		vcp->zerof_lbl.string1 = lstring;
 	}
-	if (init || vcp->zerof_lbl.string2 != ovcp->zerof_lbl.string2) {
+	if (init || ! vcp->zerof_lbl.string2 ||
+	    vcp->zerof_lbl.string2 != ovcp->zerof_lbl.string2) {
 		text_changed = True;
 		tstring = vcp->zerof_lbl.string2 == NULL ?
 			NhlvcDEF_NODATA_LABEL : vcp->zerof_lbl.string2; 

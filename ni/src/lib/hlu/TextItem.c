@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.43 1998-07-07 03:52:36 dbrown Exp $
+ *      $Id: TextItem.c,v 1.44 1998-10-22 17:39:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -464,7 +464,7 @@ static NhlErrorTypes    TextItemInitialize
 							tnew->text.func_code);
 	}
 
-	if(strcmp(tnew->text.string,DEFSTRING)==0)
+	if(! tnew->text.string || strcmp(tnew->text.string,DEFSTRING)==0)
 		tmp = (char*)tnew->base.name;
 	else
 		tmp = tnew->text.string;
