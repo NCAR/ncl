@@ -1,4 +1,4 @@
-How to download and build NCAR Graphics 4.3.2 from source code
+How to download and build NCAR Graphics 4.4.0 from source code
 
     The latest version of this file can be found at:
         http://ngwww.ucar.edu/ng/installsrc.html
@@ -61,27 +61,27 @@ The NCAR Graphics source code that you download will either be a
 single compressed tar file, or multiple compressed tar files.
 
 Let's assume you downloaded the multiple compressed tar files, called
-"ncarg-4.3.2.libs.tar.gz", "ncarg-4.3.2.db.tar.gz", and
-"ncarg-4.3.2.misc.tar.gz". Move these files to a temporary directory
+"ncarg-4.4.0.libs.tar.gz", "ncarg-4.4.0.db.tar.gz", and
+"ncarg-4.4.0.misc.tar.gz". Move these files to a temporary directory
 where you have plenty of disk space (around 100 megabytes to hold all
 of the source code, object files, binaries, and so on). Then,
 uncompress and un-tar the files as follows:
 
-     % gunzip ncarg-4.3.2.libs.tar.gz (or uncompress if the files end
+     % gunzip ncarg-4.4.0.libs.tar.gz (or uncompress if the files end
      in ".Z")
-     % gunzip ncarg-4.3.2.db.tar.gz
-     % gunzip ncarg-4.3.2.misc.tar.gz
-     % tar -xvf ncarg-4.3.2.libs.tar
-     % tar -xvf ncarg-4.3.2.db.tar
-     % tar -xvf ncarg-4.3.2.misc.tar
+     % gunzip ncarg-4.4.0.db.tar.gz
+     % gunzip ncarg-4.4.0.misc.tar.gz
+     % tar -xvf ncarg-4.4.0.libs.tar
+     % tar -xvf ncarg-4.4.0.db.tar
+     % tar -xvf ncarg-4.4.0.misc.tar
 
-The above steps will create a directory called "ncarg-4.3.2". Set the
+The above steps will create a directory called "ncarg-4.4.0". Set the
 environment variable NCARG to the name of this directory. For purposes
 of convenience, we use the notation $NCARG to mean the top level of
 the NCAR Graphics source tree. For example, if you untarred the files
 from the directory /usr/local/src, then you would do the following:
 
-     setenv NCARG /usr/local/src/ncarg-4.3.2
+     setenv NCARG /usr/local/src/ncarg-4.4.0
 
 ------------------------------------------------------------------------
 
