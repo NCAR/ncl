@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.8 1991-08-16 10:50:47 clyne Exp $
+ *	$Id: text.c,v 1.9 1991-10-09 14:37:12 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -751,7 +751,11 @@ Ct_err	Text(cgmc)
 		/* number of strokes making up a character.	*/
 		numstroke = F_NUMSTROKE(fcap_current, index);
 
+#ifdef	DEAD
 		if (index >=0 && index < F_NUMCHAR(fcap_template) && numstroke){
+#else
+		if (index >=0 && index < F_NUMCHAR(fcap_template)){
+#endif
 
 
 			/* calculate possistion of THIS character for
