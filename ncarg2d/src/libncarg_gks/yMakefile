@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.8 1996-11-01 15:39:59 boote Exp $
+#	$Id: yMakefile,v 1.9 1996-11-24 22:21:49 boote Exp $
 #
 #
 #	Makefile for the NCAR GKS library
@@ -12,4 +12,4 @@ SUBDIRS = awi bwi wiss cdrivers
 PartialLibraryRoot(libncarg_gks.a,$(SUBDIRS))
 PartialSourceLibraryRoot(srcncarg_gks.a,$(SUBDIRS))
 
-BuildSharedFromArch(libNGgks,libbasegks.a,1,0,-delay_load -lNGgksCTXT -delay_load -lNGgksX -delay_load -lNGgksPS -delay_load $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
+BuildSharedFromArch(libNGgks,libbasegks.a,1,0,-lNGgksCTXT -lNGgksX -lNGgksPS $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
