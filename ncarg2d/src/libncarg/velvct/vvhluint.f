@@ -158,6 +158,8 @@ C
       RETURN
       END
 C
+C ---------------------------------------------------------------------
+C
       SUBROUTINE VVARROWDRAW (DRS,ARS,XB,YB,XE,YE,VLN)
 C
       REAL ARS(21),DRS(11)
@@ -317,5 +319,53 @@ C
       RETURN
       END
 C
+C ---------------------------------------------------------------------
+C
+      SUBROUTINE VVGETMAPINFO (IMP,ITR,DMX,SXD,SYD,XMN,XMX,YMN,YMX)
+C
+C The sole purpose of this routine is to make information from the
+C mapping common block available to hluvvmpxy
+C
+C
+C The mapping common block: made available to user mapping routines
+C
+      COMMON /VVMAP/
+     +                IMAP       ,
+     +                XVPL       ,XVPR       ,YVPB       ,YVPT       ,
+     +                WXMN       ,WXMX       ,WYMN       ,WYMX       ,
+     +                XLOV       ,XHIV       ,YLOV       ,YHIV       ,
+     +                SXDC       ,SYDC       ,NXCT       ,NYCT       ,
+     +                RLEN       ,LNLG       ,INVX       ,INVY       ,
+     +                ITRT       ,IWCT       ,FW2W       ,FH2H       ,
+     +                DVMN       ,DVMX       ,RBIG       ,IBIG
+C
+      SAVE /VVMAP/
+C
+C Math constants
+C
+      PARAMETER (PDTOR  = 0.017453292519943,
+     +           PRTOD  = 57.2957795130823,
+     +           P1XPI  = 3.14159265358979,
+     +           P2XPI  = 6.28318530717959,
+     +           P1D2PI = 1.57079632679489,
+     +           P5D2PI = 7.85398163397448) 
+C
+C --------------------------------------------------------------------
+C
+      IMP = IMAP
+      DMX = DVMX
+      SXD = SXDC
+      SYD = SYDC
+      ITR = ITRT
+      XMN = WXMN
+      XMX = WXMX
+      YMN = WYMN
+      YMX = WYMX
+C
+C Done.
+C
+      RETURN
+C
+      END
 
 
