@@ -1,16 +1,17 @@
 #
-#	$Id: yMakefile,v 1.7 1996-02-06 21:59:32 haley Exp $
+#	$Id: yMakefile,v 1.8 2004-11-18 00:09:01 kennison Exp $
 #
 
 MYNAME	= eautog
 
 SRCS = \
-	 agex01.f agex02.f agex03.f agex04.f agex05.f agex06.f agex07.f\
-	 agex08.f agex09.f agex10.f agex11.f agex12.f agex13.f agda13.dat
+	 agex01.f agex02.f agex03.f agex04.f agex05.f agex06.f agex07.f \
+	 agex08.f agex09.f agex10.f agex11.f agex12.f agex13.f agdp01.f \
+	 agda13.dat
 
 OBJS = \
-	 agex01.o agex02.o agex03.o agex04.o agex05.o agex06.o agex07.o\
-	 agex08.o agex09.o agex10.o agex11.o agex12.o agex13.o
+	 agex01.o agex02.o agex03.o agex04.o agex05.o agex06.o agex07.o \
+	 agex08.o agex09.o agex10.o agex11.o agex12.o agex13.o agdp01.o
 
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
@@ -31,3 +32,4 @@ FExampleTarget(agex10,agex10.o)
 FExampleTarget(agex11,agex11.o)
 FExampleTarget(agex12,agex12.o)
 FExampleTarget(agex13,agex13.o)
+FExampleTarget(agdp01,agdp01.o)
