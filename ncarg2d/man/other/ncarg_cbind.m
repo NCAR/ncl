@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_cbind.m,v 1.1 1993-03-11 15:22:48 haley Exp $
+.\"	$Id: ncarg_cbind.m,v 1.2 1993-04-05 17:12:54 haley Exp $
 .\"
 .TH NCARG_CBIND 3NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -81,10 +81,11 @@ If you only want to contour 20 x 10 of the array \fIZDAT\fP, then
 respectively.
 .SH CHARACTER STRINGS
 Another exception to the argument lists for the utility C-bindings has
-to do with routines that return character strings.  The NCAR Graphics 
-routines that return strings do not have a string length as part of 
-their argument lists, so you must pass an extra argument to the C-binding
-which specifies the maximum length of the string. 
+to do with routines that return character strings.  The NCAR Graphics
+routines that return strings do not have a string length as part of
+their argument lists, so you must pass an extra argument to the
+C-binding which specifies the maximum length of the string.  Also,
+all input strings passed to the C-bindings must be null-terminated!
 .sp
 For example, in the routine \fBPCGETC\fP, you pass a parameter name
 and it returns the value of that parameter which in this case is a
