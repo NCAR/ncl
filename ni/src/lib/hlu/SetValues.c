@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.29 1997-10-21 01:55:25 dbrown Exp $
+ *      $Id: SetValues.c,v 1.30 1999-05-22 00:43:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -306,6 +306,8 @@ _NhlSetLayerValues
 	_NhlChildList		tchldnode=NULL;
 	_NhlConvertContext	context;
 	NhlArgVal		cbdata;
+	static NhlBoolean	first = True;
+	static NrmQuark		qupdate_req;
 
 	if(l == NULL){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -489,9 +491,20 @@ _NhlSetLayerValues
 		}
 	}
 
-	NhlINITVAR(cbdata);
-	cbdata.ptrval = (NhlPointer)oldl;
-	_NhlIterateObjCallbacks(l,_NhlCBobjValueSet,_NhlcbCALL,cbdata);
+	/*
+	 * This is a hack to eliminate a bad slow-down in the GUI, there's
+	 * got to be a better way. But for now...
+	 */
+
+	if (first) {
+		qupdate_req = NrmStringToQuark(".pmUpdateReq");
+		first = False;
+	}
+	if (nargs > 1 || args[0].quark != qupdate_req) {
+		NhlINITVAR(cbdata);
+		cbdata.ptrval = (NhlPointer)oldl;
+		_NhlIterateObjCallbacks(l,_NhlCBobjValueSet,_NhlcbCALL,cbdata);
+	}
 
 	(void)NhlFree(oldl);
 	(void)NhlFree(reql);

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.87 1999-04-10 00:22:12 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.88 1999-05-22 00:43:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9398,7 +9398,11 @@ static NhlErrorTypes    SetupLevels
         if ((ret = MIN(subret,ret)) < NhlWARNING) {
                 return ret;
         }
-        *modified = True;
+	if (init ||  
+	    cnp->level_count != ocnp->level_count ||
+	    memcmp((*levels),cnp->levels->data,
+		   cnp->levels->size * cnp->level_count))
+		*modified = True;
 
 	subret = cnComputeRefLevel(cnp,*levels,entry_name);
 	ret = MIN(subret,ret);

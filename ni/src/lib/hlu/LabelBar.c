@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.60 1999-03-27 00:44:49 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.61 1999-05-22 00:43:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <ncarg/hlu/LabelBarP.h>
 #include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/ConvertersP.h>
+#include <ncarg/hlu/hluutil.h>
 
 static char lbDefTitle[] = "NOTHING";
 
@@ -865,6 +866,14 @@ static NhlErrorTypes LabelBarSetValues
  * Return now if using segments and only the view has changed
  */
 	if (tnew->view.use_segments && ! lb_p->new_draw_req) {
+		return ret;
+	}
+/*
+ * or even if a new draw is required but the legend is turned off
+ * and only the view has changed.
+ */
+	if (view_args == num_args &&
+	    (! (tnew->view.on && lb_p->labelbar_on))) {
 		return ret;
 	}
 
@@ -2690,8 +2699,9 @@ static NhlErrorTypes    SetLabels
 	NhlCoord larea;
 	float c_frac = 1.0;
 	char	*entry_name;
-	float angle;
+	float angle,label_loc;
 	float x,y,width,height;
+	NhlBoolean label_locs_changed = False;
 		
 	if (! lb_p->labels_on) {
 		lb_p->labels.lxtr = lb_p->labels.l;
@@ -2779,6 +2789,8 @@ static NhlErrorTypes    SetLabels
 				NhlRealloc(lb_p->label_locs,
 					   count * sizeof(float));
 		}
+		for (i = lb_p->max_label_draw_count; i < count; i++)
+			lb_p->label_locs[i] = -999.0;
 		lb_p->max_label_draw_count = count;
 	}
 
@@ -3003,23 +3015,31 @@ static NhlErrorTypes    SetLabels
 
 			increment = lb_p->adj_box_size.y * lb_p->label_stride;
 		}
-		for (i=0; i<lb_p->label_draw_count; i++) 
-			lb_p->label_locs[i] = base_pos + offset + 
-				(float) i * increment;
+		for (i=0; i < lb_p->label_draw_count; i++) {
+			label_loc = base_pos + offset + (float) i * increment;
+			if (! label_locs_changed &&
+			    _NhlCmpFAny(label_loc,lb_p->label_locs[i],6)) 
+				label_locs_changed = True;
+			lb_p->label_locs[i] = label_loc;
+		}
 	}
 	else {
 		for (i=0; i < lb_p->label_draw_count; i++) {
 
 			ix = i * lb_p->label_stride;
 			if (lb_p->label_alignment == NhlBOXCENTERS)
-				lb_p->label_locs[i] = lb_p->box_locs[ix] +
+				label_loc = lb_p->box_locs[ix] +
 					(lb_p->box_locs[ix+1] -
 					  lb_p->box_locs[ix]) / 2.0;
 			else if (lb_p->label_alignment == NhlINTERIOREDGES)
-				lb_p->label_locs[i] = lb_p->box_locs[ix+1];
+				label_loc = lb_p->box_locs[ix+1];
 			else
-				lb_p->label_locs[i] = lb_p->box_locs[ix];
+				label_loc = lb_p->box_locs[ix];
 
+			if (! label_locs_changed &&
+			    _NhlCmpFAny(label_loc,lb_p->label_locs[i],6)) 
+				label_locs_changed = True;
+			lb_p->label_locs[i] = label_loc;
 		}
 	}
 
@@ -3027,7 +3047,7 @@ static NhlErrorTypes    SetLabels
 		lb_p->label_height = NhlLB_DEF_CHAR_HEIGHT;
 	if (! lb_p->auto_manage) 
 		label_height = lb_p->label_height;
-
+	lb_p->actual_label_height = label_height;
 	angle = (lb_p->label_angle < 0.0) ? 
 		lb_p->label_angle + 360.0 : lb_p->label_angle;
 	if (lb_p->labels_id < 0) {
@@ -3043,7 +3063,7 @@ static NhlErrorTypes    SetLabels
 				 NhlNtxAngleF,angle,
 				 NhlNtxFont,lb_p->label_font,
 				 NhlNtxJust,lb_p->label_just,
-				 NhlNtxFontHeightF,label_height,
+				 NhlNtxFontHeightF,lb_p->actual_label_height,
 				 NhlNtxFontAspectF,lb_p->label_aspect,
 				 NhlNtxDirection,lb_p->label_direction,
 				 NhlNtxConstantSpacingF,
@@ -3062,7 +3082,9 @@ static NhlErrorTypes    SetLabels
 		NhlSArg	sargs[24];
 		int	nargs = 0;
 
-		NhlSetSArg(&sargs[nargs++],NhlNtxFontHeightF,label_height);
+		if (lb_p->actual_label_height != olb_p->actual_label_height)
+			NhlSetSArg(&sargs[nargs++],NhlNtxFontHeightF,
+				   lb_p->actual_label_height);
 
 		if (lb_p->label_draw_count != olb_p->label_draw_count ||
 		    lb_p->label_strings != olb_p->label_strings ||
@@ -3073,8 +3095,7 @@ static NhlErrorTypes    SetLabels
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNMtextPosArray,lb_p->label_locs);
 		}
-		else if (! memcmp(lb_p->label_locs,olb_p->label_locs,
-				  sizeof(float) * lb_p->label_draw_count)) {
+		else if (label_locs_changed) {
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNMtextPosArray,lb_p->label_locs);
 		}
@@ -3473,7 +3494,7 @@ static NhlErrorTypes   	AdjustLabels
  * Set the newly determined text height and justification
  */
 	lb_p->label_height = height;
-	if (lb_p->label_height != olb_p->label_height ||
+	if (_NhlCmpFAny(lb_p->label_height,olb_p->label_height,6) ||
 	    lb_p->label_just != olb_p->label_just) {
 		ret = NhlVASetValues(lb_p->labels_id,
 				     NhlNtxFontHeightF,lb_p->label_height,
@@ -3879,16 +3900,24 @@ static NhlErrorTypes    AdjustGeometry
  */
 
 	if (lb_p->labels_on) {
-		for (i=0; i<lb_p->label_draw_count; i++) {
-			lb_p->label_locs[i] -= major_off;
+		NhlSArg	sargs[2];
+		int	nargs = 0;
+
+		if (_NhlCmpFAny(0.0,major_off,6)) {
+			for (i=0; i<lb_p->label_draw_count; i++) {
+				lb_p->label_locs[i] -= major_off;
+			}
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNMtextPosArray,lb_p->label_locs);
 		}
-		
-		if ((ret1 = NhlVASetValues(lb_p->labels_id,
-					 NhlNMtextConstPosF,
-					 lb_p->const_pos + 
-					 pos_offset - minor_off,
-					 NhlNMtextPosArray,lb_p->label_locs,
-					 NULL)) < NhlWARNING)
+		if (_NhlCmpFAny(0.0,pos_offset-minor_off,6)) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNMtextConstPosF,
+				   lb_p->const_pos + pos_offset - minor_off);
+		}
+			
+		if ((ret1 = NhlALSetValues(lb_p->labels_id,sargs,nargs))
+		    < NhlWARNING)
 			return (ret1);
 		ret = MIN(ret1,ret);
 	}

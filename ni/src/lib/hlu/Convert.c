@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.19 1998-05-27 22:50:10 dbrown Exp $
+ *      $Id: Convert.c,v 1.20 1999-05-22 00:43:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2068,9 +2068,13 @@ _NhlConvertData
 		char		buff[_NhlMAXRESNAMLEN];
 		NhlGenArray	gen = fromdata->data.ptrval;
 
-		strcpy(buff,NrmQuarkToString(gen->typeQ));
-		strcat(buff,NhlTGenArray);
-		realfromQ = NrmStringToQuark(buff);
+		if (! gen) 
+			realfromQ = fromQ;
+		else {
+			strcpy(buff,NrmQuarkToString(gen->typeQ));
+			strcat(buff,NhlTGenArray);
+			realfromQ = NrmStringToQuark(buff);
+		}
 	}
 	
 	return ConvertData(context,realfromQ,toQ,fromdata,todata);

@@ -1,5 +1,5 @@
 /*
- *      $Id: LegendP.h,v 1.16 1995-06-05 19:08:58 dbrown Exp $
+ *      $Id: LegendP.h,v 1.17 1999-05-22 00:43:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -205,6 +205,7 @@ typedef struct _NhlLegendLayerPart {
 
 	float		ll_pheight;
 	float		ll_pwidth;
+	float		actual_label_height;
 
 }NhlLegendLayerPart;
 

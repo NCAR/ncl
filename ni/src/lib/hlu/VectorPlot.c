@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.61 1999-04-06 23:46:07 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.62 1999-05-22 00:43:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -7483,7 +7483,11 @@ static NhlErrorTypes    SetupLevels
         if ((ret = MIN(subret,ret)) < NhlWARNING) {
                 return ret;
         }
-        *modified = True;
+	if (init ||
+	    vcp->level_count != ovcp->level_count ||
+	    memcmp((*levels),vcp->levels->data,
+		   vcp->levels->size * vcp->level_count))
+		*modified = True;
 
 	vcp->min_level_set = True;
 	vcp->max_level_set = True;
