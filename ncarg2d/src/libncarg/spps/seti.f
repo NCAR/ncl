@@ -1,5 +1,5 @@
 C
-C $Id: seti.f,v 1.3 1994-03-17 01:44:17 kennison Exp $
+C $Id: seti.f,v 1.4 1994-08-24 16:34:24 kennison Exp $
 C
       SUBROUTINE SETI (IX,IY)
 C
@@ -11,6 +11,10 @@ C Declare the common block containing the scaling information.
 C
       COMMON /IUTLCM/ LL,MI,MX,MY,IU(96)
       SAVE /IUTLCM/
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('SETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Transfer the user's values into the common block.
 C

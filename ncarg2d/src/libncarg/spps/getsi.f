@@ -1,5 +1,5 @@
 C
-C $Id: getsi.f,v 1.3 1994-03-17 01:43:34 kennison Exp $
+C $Id: getsi.f,v 1.4 1994-08-24 16:34:23 kennison Exp $
 C
       SUBROUTINE GETSI (IX,IY)
 C
@@ -12,8 +12,12 @@ C
       COMMON /IUTLCM/ LL,MI,MX,MY,IU(96)
       SAVE /IUTLCM/
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('GETSI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Set the user variables.
-
+C
       IX=MX
       IY=MY
 C
