@@ -250,11 +250,14 @@ NhlErrorTypes vibeta_W( void )
         tmp_p = &((double*)p)[index_x];
       }
 
-      if(tmp_p[nlev-1] < *tmp_ptop) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: The last element of 'p' must be greater than or equal to ptop" );
-        return(NhlFATAL);
-      }
-
+/*
+ * Dennis wanted this test removed. See his email dated November 14, 2003.
+ *
+ *      if(tmp_p[nlev-1] < *tmp_ptop) {
+ *       NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: The last element of 'p' must be greater than or equal to ptop" );
+ *       return(NhlFATAL);
+ *     }
+ */
       if(tmp_p[0] <= tmp_p[nlev-1]) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: 'p' must be ordered from bottom to top" );
         return(NhlFATAL);

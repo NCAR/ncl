@@ -60,7 +60,11 @@ c error checking
 C make klvl larger
       IF (KLVL.LT.2*NLEV) IER = IER + 10
       IF (PSFC.EQ.XMSG) IER = IER + 100
-      IF (PLVCRT.LT.PTOP) IER = IER + 1000
+C
+C Dennis wanted this to be commented out. See email exchange
+C on November 14, 2003.
+C
+C      IF (PLVCRT.LT.PTOP) IER = IER + 1000
       IF (PTOP.GE.PBOT) IER = IER + 10000
 
       IF (IER.NE.0) THEN
