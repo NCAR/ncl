@@ -1,5 +1,5 @@
 C
-C $Id: dpdraw.f,v 1.4 1994-09-09 20:09:48 kennison Exp $
+C $Id: dpdraw.f,v 1.5 1994-09-09 20:56:40 kennison Exp $
 C
       SUBROUTINE DPDRAW (XCPF,YCPF,IFVL)
 C
@@ -345,7 +345,6 @@ C
             YCNF=RSPY(1)
 C
             ISPE=ICPE
-C
             WCPE=0.
 C
             DO 110 I=2,NPSB
@@ -389,9 +388,11 @@ C
   109           ICPE=MOD(ICPE,NDPE)+1
                 IF (ICPE.NE.ISPE.AND.IDPE(ICPE).GT.0) GO TO 109
 C
-                IF (ICPE.NE.ISPE) THEN
+                IF (IDPE(ICPE).LE.0.AND.RDPE(ICPE).GT.0.) THEN
+                  ISPE=0
                   WCPE=RDPE(ICPE)
                 ELSE
+                  ISPE=ICPE
                   WCPE=1.
                 END IF
 C
