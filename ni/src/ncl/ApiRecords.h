@@ -46,11 +46,19 @@ struct _NclApiHLUInfoRec {
 	NclQuark obj_class;
 	int 	obj_id;
 };
+typedef struct _NclApiArgTemplate {
+        int n_dims;
+        int dim_sizes[NCL_MAX_DIMENSIONS];
+	NclQuark arg_data_type;
+        NclQuark arg_sym;
+        int is_dimsizes;
+} NclApiArgTemplate;
+
 struct _NclApiFuncInfoRec {
 	NclQuark name;
 	int 	kind;
 	int	nparams;
-	struct _NclArgTemplate *theargs;
+	struct _NclApiArgTemplate *theargs;
 };
 
 struct _NclApiVarInfoRec {

@@ -213,9 +213,6 @@ int nclfprintf
 	va_list ap;
 	VA_START(ap,fmt);
 	ret = (*pit)(fp,fmt,ap);
-	if(fp != NULL) {
-		fflush(fp);
-	}
 	va_end(ap);
 	return(ret);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.58 1999-11-04 23:39:24 ethan Exp $
+ *      $Id: Symbol.c,v 1.59 1999-11-10 19:51:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1992,7 +1992,7 @@ NclApiDataList *_NclGetDefinedProcFuncInfo
 	NclSymTableListNode *st;
 	NclSymbol *s;
 	NclArgTemplate *tmpargs = NULL;
-	int i,j;
+	int i,j,k;
 
 	st = thetablelist;
 	while(st != NULL) {
@@ -2043,9 +2043,16 @@ NclApiDataList *_NclGetDefinedProcFuncInfo
 					}
 					if(tmp != NULL) {
 						if(tmpargs != NULL) {
-							tmp->u.func->theargs = (NclArgTemplate*)NclMalloc(sizeof(NclArgTemplate)*tmp->u.func->nparams);
+							tmp->u.func->theargs = (NclApiArgTemplate*)NclMalloc(sizeof(NclApiArgTemplate)*tmp->u.func->nparams);
 							for(j = 0; j < tmp->u.func->nparams; j++) {
-								tmp->u.func->theargs[j] = tmpargs[j];
+								tmp->u.func->theargs[j].n_dims = tmpargs[j].n_dims;
+								for(k = 0; k < tmpargs[j].n_dims; k++) {
+		
+									tmp->u.func->theargs[j].dim_sizes[k]= tmpargs[j].dim_sizes[k];
+								}
+								tmp->u.func->theargs[j].arg_data_type = NrmStringToQuark(tmpargs[j].arg_data_type->name);
+								tmp->u.func->theargs[j].arg_sym= NrmStringToQuark(tmpargs[j].arg_sym->name);
+								tmp->u.func->theargs[j].is_dimsizes= tmpargs[j].is_dimsizes;
 							}
 						} else {
 							tmp->u.func->theargs= NULL;

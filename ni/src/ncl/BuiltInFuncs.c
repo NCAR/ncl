@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.110 1999-11-04 23:39:23 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.111 1999-11-10 19:51:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -332,7 +332,7 @@ NhlErrorTypes _NclIListFuncs
 					}
 				}
 				if(step->u.func->theargs[i].arg_data_type != NULL) {
-					ret = nclfprintf(fp,": %s,\n",step->u.func->theargs[i].arg_data_type->name);
+					ret = nclfprintf(fp,": %s,\n",NrmQuarkToString(step->u.func->theargs[i].arg_data_type));
 					if(ret < 0) {
 						_NclFreeApiDataList((void*)tmp);
         					return(NhlWARNING);
@@ -375,7 +375,7 @@ NhlErrorTypes _NclIListFuncs
 				}
 			}
 			if(step->u.func->theargs[step->u.func->nparams-1].arg_data_type != NULL) {
-				ret = nclfprintf(fp,": %s\n",step->u.func->theargs[step->u.func->nparams-1].arg_data_type->name);
+				ret = nclfprintf(fp,": %s\n",NrmQuarkToString(step->u.func->theargs[step->u.func->nparams-1].arg_data_type));
 				if(ret < 0) {
 					_NclFreeApiDataList((void*)tmp);
         				return(NhlWARNING);
@@ -7989,7 +7989,7 @@ NhlErrorTypes _NclIvariance
 					*(float*)out1_val = (float)missing.doubleval;
 					missing.floatval = (float)missing.doubleval;
 				}
-				if(did_coerce)_NclDestroyObj(tmp_md);
+				if(did_coerce)_NclDestroyObj((NclObj)tmp_md);
 				return(NclReturnValue(
 					out1_val,
 					1,
@@ -8051,7 +8051,7 @@ NhlErrorTypes _NclIvariance
 		*((float*)out1_val) = (float)sum_sqrd_val;
 	}
 
-	if(did_coerce)_NclDestroyObj(tmp_md);
+	if(did_coerce)_NclDestroyObj((NclObj)tmp_md);
 	return(NclReturnValue(
 		out1_val,
 		1,
