@@ -541,7 +541,7 @@ C
      +                   '(shown for',
      +                                                       .010,0.,1.)
             CALL PLCHHQ (CFUX(.97),CFUY(.788),
-     +                   'N=36).',
+     +                   'N=16).',
      +                                                       .010,0.,1.)
 C
             CALL PLCHHQ (CFUX(.97),CFUY(.123),
