@@ -1,3 +1,6 @@
+/*
+ *	$Id: commondev.c,v 1.2 1991-03-26 15:06:33 clyne Exp $
+ */
 #include <stdio.h>
 #include <math.h>
 #include "cterror.h"
@@ -146,6 +149,12 @@ ComSimPoly(p_list, n)
 				i * commFillScaleFactor);
 		}
 	}
+}
+
+ComSimHatch(p_list, n)
+	Ptype	*p_list;
+	long	n;
+{
 }
 
 
@@ -419,6 +428,7 @@ CGMC *c;
 
 	extern	Ct_err	Instr_Dec();
 
+	INT_STYLE = HOLLOW_S;
 
 
 	if (CLIP_DAMAGE) {	/* has clipping changed	*/
@@ -550,25 +560,72 @@ CGMC *c;
 	}
 
 	/*
-	 * if device has no hardware support for polgons or device has 
-	 * poly hardware but can't handle that many points and user wants
-	 * simulation done in this case  => simulate polygon
-	 * Or if -softfill option given on command line
+	 * make sure polygon is closed
 	 */
-	if (*softFill || coordBufNum > maxPolyPoints) {
-		ComSimPoly(coordBuf, (int) coordBufNum);
-		coordBufNum = 0;
-	}
-	else {
-			
-		if (FILL_COLOUR_DAMAGE) {
-			dev->setfillcolour(FILL_COLOUR.index);
-			FILL_COLOUR_DAMAGE = FALSE;
-			dev->point_flush(coordBuf, &coordBufNum, TRUE,FALSE);
-		} else
+	if (coordBuf[0].x != coordBuf[coordBufNum - 1].x ||
+		coordBuf[0].y != coordBuf[coordBufNum - 1].y) {
+
+		coordBuf[coordBufNum] = coordBuf[0];
+		coordBufNum++;
+
+	} 
+
+	switch(INT_STYLE) {
+	case	HOLLOW_S:
+		/*
+		 * draw hollow polygon with lines => tweek line color
+		 */
+		dev->setlinecolour(FILL_COLOUR.index);
+		LINE_COLOUR_DAMAGE = TRUE;	/* we tweeked the line color */
+		dev->point_flush(coordBuf, &coordBufNum, FALSE,FALSE);
+
+		break;
+	case	SOLID_S:
+
+		/*
+		 * if device has no hardware support for polgons or device has 
+		 * poly hardware but can't handle that many points and user 
+		 * wants simulation done in this case  => simulate polygon
+		 * Or if -softfill option given on command line
+		 */
+		if (*softFill || coordBufNum > maxPolyPoints) {
+			ComSimPoly(coordBuf, (int) coordBufNum);
+			coordBufNum = 0;
+		}
+		else {
+				
+			if (FILL_COLOUR_DAMAGE) {
+				dev->setfillcolour(FILL_COLOUR.index);
+				FILL_COLOUR_DAMAGE = FALSE;
+			}
 			dev->point_flush(coordBuf, &coordBufNum, TRUE,FALSE);
 
+		}
+
+	case	PATTERN_S:
+		/*
+		 *      code to invoke a pattern routine
+		 */
+		/* fill patterns not supported   */
+		ct_error(NT_UPFS, "pattern");
+		break;
+
+	case	HATCH_S:
+		ComSimHatch(coordBuf, coordBufNum, HATCH_IND);
+		break;
+
+	case    EMPTY_S:
+
+		/*
+		 *      do nothing
+		 */
+		break;
+
+	default:
+		ct_error(NT_UPFS,"");
+		return(SICK);
 	}
+
 	return (OK);
 }
 
