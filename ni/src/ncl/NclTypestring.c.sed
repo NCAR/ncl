@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.sed,v 1.11 1997-06-13 20:39:37 ethan Exp $
+ *      $Id: NclTypestring.c.sed,v 1.12 1998-04-28 21:16:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/Convert.h>
+#include <ncarg/hlu/ConvertP.h>
 #include <ncarg/hlu/NresDB.h>
 #include "defs.h"
 #include "Symbol.h"
@@ -46,41 +47,59 @@ NhlConvertArgList args;
 int nargs;
 #endif
 {
-	NhlGenArray gen;
-	char func[] = "CvtNhlTStringGenArrayToNclData";
-	NclQuark *val;
-	NclMultiDValData tmp_md;
+        NhlGenArray gen;
+        char func[] = "CvtNhlTFloatGenArrayToNclData";
+        NclQuark *val;
+        NclMultiDValData tmp_md;
+        int len_dimensions = 1;
 	char **strar;
 	int i;
-	
+ 
+ 
+        if(nargs != 0) {
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: called with wrong number of args",func);
+                to->size =0;
+                return(NhlFATAL);
+        }
+        gen = (NhlGenArray)from->data.ptrval;
+        if(gen != NULL) {
+                if(!_NhlIsSubtypeQ(NrmStringToQuark(((NclTypestringClass)nclTypestringClass)->type_class.hlu_type_rep[1]),from->typeQ)) {
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: called with wrong input type",func);
+                        to->size =0;
+                        return(NhlFATAL);
+                }
+		val = NclMalloc(sizeof(NclQuark)* gen->num_elements);
+	        strar = (char**)gen->data;
+        	for(i = 0; i < gen->num_elements; i++) {
+                	val[i] = NrmStringToQuark(strar[i]);
+        	}
 
-	if(nargs != 0) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: called with wrong number of args",func);
-		to->size =0;
-		return(NhlFATAL);
-	}
-	gen = (NhlGenArray)from->data.ptrval;
-	if(!_NhlIsSubtypeQ(NrmStringToQuark(NhlTStringGenArray),from->typeQ)) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: called with wrong input type",func);
-		to->size =0;
-		return(NhlFATAL);
-	}
-	val = NclMalloc(sizeof(NclQuark)* gen->num_elements);
-	strar = (char**)gen->data;
-	for(i = 0; i < gen->num_elements; i++) {
-		val[i] = NrmStringToQuark(strar[i]);
-	}
-	tmp_md = _NclCreateMultiDVal(
-		NULL,NULL, Ncl_MultiDValData,
-		0,(void*)val,NULL,gen->num_dimensions,
-		gen->len_dimensions,TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
-	if(to->size < sizeof(NclMultiDValData)) {
-		return(NhlFATAL);
-	} else {
-		*((NclMultiDValData*)(to->data.ptrval)) = (void*)tmp_md;
-        	return(NhlNOERROR);
-	}
+                tmp_md = _NclCreateMultiDVal(
+                        NULL,NULL, Ncl_MultiDValData,
+                        0,val,NULL,gen->num_dimensions,
+                        gen->len_dimensions,TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
+                if(to->size < sizeof(NclMultiDValData)) {
+                        return(NhlFATAL);
+                } else {
+                        *((NclMultiDValData*)(to->data.ptrval)) = (void*)tmp_md;
+                        return(NhlNOERROR);
+                }
+        } else {
+                val = NclMalloc((unsigned)nclTypestringClassRec.type_class.size);
+                *(string*)(val) = nclTypestringClassRec.type_class.default_mis.stringval;
+                tmp_md = _NclCreateMultiDVal(
+                        NULL,NULL, Ncl_MultiDValData,
+                        0,val,&nclTypestringClassRec.type_class.default_mis,1,
+                        &len_dimensions,TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
+                if(to->size < sizeof(NclMultiDValData)) {
+                        return(NhlFATAL);
+                } else {
+                       *((NclMultiDValData*)(to->data.ptrval)) = (void*)tmp_md;
+                       return(NhlNOERROR);
+                }
+        }
 }
+
 /*ARGSUSED*/
 static NhlErrorTypes CvtNhlTStringToNclData
 #if	NhlNeedProto
