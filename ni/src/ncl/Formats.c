@@ -63,6 +63,16 @@ NclFormatFunctionRecPtr _NclGetFormatFuncs
 #endif
 {
 	int i; 
+	char ext[16];
+        char *cp;
+
+        strncpy(ext,NrmQuarkToString(file_extension),sizeof(ext));
+        ext[sizeof(ext)-1] = '\0';
+	for (cp = ext; *cp != '\0'; cp++) {
+		*cp = tolower(*cp);	
+        }
+        file_extension = NrmStringToQuark(ext);
+	
 	for(i = 0; i<num_formats; i++) {
 		if(formats[i].file_extension == file_extension) {
 			return((*formats[i].format_func)());

@@ -1393,6 +1393,154 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 		
 	} 
 }
+
+
+static double  *_DateStringsToDoubles
+#if 	NhlNeedProto
+(
+NrmQuark *vals,
+int dimsize
+	)
+#else
+(vals,dimsize)
+NrmQuark *vals;
+int dimsize;
+#endif
+{
+	int i;
+	char *str;
+	double *ddates;
+
+	ddates = NclMalloc(dimsize * sizeof(double));
+	if (!ddates) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NULL;
+	}
+
+	for (i = 0; i < dimsize; i++) {
+		int y,m,d,h,min;
+		str = NrmQuarkToString(vals[i]);
+		sscanf(str,"%2d/%2d/%4d (%2d:%2d)",&m,&d,&y,&h,&min);
+		ddates[i] = y * 1e6 + m * 1e4 + d * 1e2 + h + min / 60;
+	}
+				       
+	return ddates;
+}
+
+static double  *_DoubleDatesToHours
+#if 	NhlNeedProto
+(
+NrmQuark *vals,
+int dimsize
+	)
+#else
+(vals,dimsize)
+NrmQuark *vals;
+int dimsize;
+#endif
+{
+	int i;
+	char *str;
+	double *dhours;
+
+	dhours = NclMalloc(dimsize * sizeof(double));
+	if (!dhours) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NULL;
+	}
+
+	for (i = 0; i < dimsize; i++) {
+		int y,m,d,h,min;
+		long jddiff;
+		int iyear;
+		str = NrmQuarkToString(vals[i]);
+		sscanf(str,"%2d/%2d/%4d (%2d:%2d)",&m,&d,&y,&h,&min);
+		jddiff = JulianDayDiff(1,1,1800,d,m,y);
+		dhours[i] = jddiff * 24 + h + min / 60.0;
+	}
+				       
+	return dhours;
+}
+
+static void _CreateSupplementaryTimeVariables
+#if 	NhlNeedProto
+(GribFileRecord *therec)
+#else
+(therec)
+GribFileRecord *therec;
+#endif
+{
+	GribDimInqRecList *step,*ptr;
+	GribInternalVarList *vstep;
+	GribDimInqRec *tmp;
+	int i,j;
+
+	step = therec->it_dims;
+	for (i = 0; i < therec->n_it_dims; i++) {
+		int dimsize;
+		NrmQuark *vals;
+		double *dates;
+		double *hours;
+		char buffer[128];
+		NrmQuark  *qstr;
+		GribAttInqRecList *tmp_att_list_ptr= NULL;
+		NclMultiDValData mdval;
+			
+
+		NrmQuark dimq = step->dim_inq->dim_name;
+		vstep = therec->internal_var_list;
+		for (j = 0; j < therec->n_internal_vars; j++) {
+			if (vstep->int_var->var_info.var_name_quark == dimq) {
+				break;
+			}
+			vstep = vstep->next;
+		}
+		if (j == therec->n_internal_vars) {
+			printf("var %s no found\n",NrmQuarkToString(dimq));
+			continue;
+		}
+		dimsize = vstep->int_var->value->multidval.totalelements;
+		vals = (NrmQuark *)vstep->int_var->value->multidval.val;
+		
+		dates = _DateStringsToDoubles(vals,dimsize);
+		hours = _DoubleDatesToHours(vals,dimsize);
+		if (! (dates && hours) )
+			continue;
+		mdval = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,(void*)dates,
+			              NULL,1,&dimsize,TEMPORARY,NULL,nclTypedoubleClass),
+		sprintf(buffer,"%s_encoded",NrmQuarkToString(dimq));
+		qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*qstr = NrmStringToQuark
+			("yyyymmddhh.hh_frac");
+		GribPushAtt(&tmp_att_list_ptr,"units",qstr,1,nclTypestringClass); 
+		qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*qstr =  NrmStringToQuark("initial time encoded as double");
+		GribPushAtt(&tmp_att_list_ptr,"long_name",qstr,1,nclTypestringClass); 
+		_GribAddInternalVar(therec,NrmStringToQuark(buffer),
+				    &step->dim_inq->dim_number,mdval,tmp_att_list_ptr,2);
+		tmp_att_list_ptr = NULL;
+
+		mdval = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,(void*)hours,
+			              NULL,1,&dimsize,TEMPORARY,NULL,nclTypedoubleClass),
+		sprintf(buffer,"%s_hours",NrmQuarkToString(dimq));
+		qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*qstr = NrmStringToQuark
+			("hours since 1800-01-01 00:00");
+		GribPushAtt(&tmp_att_list_ptr,"units",qstr,1,nclTypestringClass); 
+		qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*qstr =  NrmStringToQuark("initial time");
+		GribPushAtt(&tmp_att_list_ptr,"long_name",qstr,1,nclTypestringClass); 
+		_GribAddInternalVar(therec,NrmStringToQuark(buffer),
+				    &step->dim_inq->dim_number,mdval,tmp_att_list_ptr,2);
+		tmp_att_list_ptr = NULL;
+		step = step->next;
+	}
+	return;
+}
+	
+	
+			
+
 static void _SetFileDimsAndCoordVars
 #if 	NhlNeedProto
 (GribFileRecord *therec)
@@ -2200,6 +2348,8 @@ GribFileRecord *therec;
 			therec->n_vars--;
 		}
 	}
+
+	_CreateSupplementaryTimeVariables(therec);
 
 	return;
 }
