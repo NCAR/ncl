@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.40 1997-08-25 20:20:34 boote Exp $
+ *      $Id: TextItem.c,v 1.41 1998-01-26 21:07:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -429,8 +429,8 @@ static NhlErrorTypes    TextItemInitialize
 	float			tmpvx0,tmpvx1,tmpvy0,tmpvy1;
 	NhlBoolean		do_view_trans = False;
 
-	if(!tnew->text.pos_x_set) tnew->text.pos_x = 0.0;
-	if(!tnew->text.pos_y_set) tnew->text.pos_y = 1.0;
+	if(!tnew->text.pos_x_set) tnew->text.pos_x = 0.5;
+	if(!tnew->text.pos_y_set) tnew->text.pos_y = 0.5;
 	if(!tnew->text.angle_set) tnew->text.angle = 0.0;
 	if(!tnew->text.just_set) tnew->text.just = NhlCENTERCENTER;
 	if(!tnew->text.font_height_set) tnew->text.font_height = .05;
@@ -1011,312 +1011,116 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 * four points from which the x,y,width,and height of this text object can
 * be determined. Pre-rotation points for the corners of the text are also 
 * determined at this time. 
-*                                                                               
-*         P1--------------P2                                                    
-*          |               |                                                    
-*          |               |                                                    
-*          |               |                                                    
-*         P0              P3                                                    
+*                                                                              
+*         P1--------------P2                                                   
+*          |               |                                                   
+*          |               |                                                   
+*          |               |                                                   
+*         P0              P3                                                   
 */
 
 	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
+/*
+ * Plotchar Center option is now always set to -1.0. This is required in order
+ * to get justification to work correctly for text that uses the position-
+ * modifying function codes (C,H,or V). A nice side-effect is that the
+ * code can be simplified considerably from the previous version. The
+ * code between here and the switch statement is now the same for all the
+ * justification modes. Notice also that justification now works the same for
+ * either text direction.
+ */
+        tnew->text.cntr = -1.0;
+        c_plchhq(0.5,0.5,tnew->text.real_string,tnew->text.real_size,
+                 360.0,tnew->text.cntr);
+        (void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+        c_pcgetr("DL",&tmpdl);
+        c_pcgetr("DR",&tmpdr);
+        c_pcgetr("DT",&tmpdt);
+        c_pcgetr("DB",&tmpdb);
+        (void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+        if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
+        if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
+        if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
+        if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
+        
 	switch(tnew->text.just) {
 /*
 * Middle justification points
 */
 		case NhlCENTERLEFT:
-/*
-* Just used to determin size so the x and y position parameters can be anything
-* however it is important that the cnt option be correct for the computations
-* following to be correct 
-*
-*/
-			if(tnew->text.direction == NhlACROSS) {
-				tnew->text.cntr = -1.0;
-			} else {
-				tnew->text.cntr = 0.0;
-			}
-			c_plchhq(0.5,0.5,
-				tnew->text.real_string,tnew->text.real_size,
-				360.0,tnew->text.cntr);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			c_pcgetr("DL",&tmpdl);
-			c_pcgetr("DR",&tmpdr);
-			c_pcgetr("DT",&tmpdt);
-			c_pcgetr("DB",&tmpdb);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
-			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
-			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
-			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
-			if(tnew->text.direction == NhlACROSS) {
-				tnew->text.real_x_pos = tnew->text.pos_x;
-				tnew->text.real_y_pos = tnew->text.pos_y;
-			} else {
-				tnew->text.real_x_pos = tnew->text.pos_x + tmpdl;
-				tnew->text.real_y_pos = tnew->text.pos_y;
-			}
+                        tnew->text.real_x_pos = tnew->text.pos_x
+                                + tmpdl; 
+                        tnew->text.real_y_pos = tnew->text.pos_y
+                                - tmpdt + .5 * (tmpdb + tmpdt);
 			break;
 		case NhlCENTERCENTER:
-/*
-* Just used to determin size so the x and y position parameters can be anything
-* however it is important that the cntr option be correct for the computations
-* following to be correct 
-*
-*/
-			tnew->text.real_x_pos = tnew->text.pos_x;
-			tnew->text.real_y_pos = tnew->text.pos_y;
-			tnew->text.cntr = 0.0;
-			c_plchhq(tnew->text.real_x_pos,tnew->text.real_y_pos,
-				tnew->text.real_string,tnew->text.real_size,
-				360.0,tnew->text.cntr);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			c_pcgetr("DL",&tmpdl);
-			c_pcgetr("DR",&tmpdr);
-			c_pcgetr("DT",&tmpdt);
-			c_pcgetr("DB",&tmpdb);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
-			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
-			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
-			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
+			tnew->text.real_x_pos = tnew->text.pos_x
+                                + tmpdl - .5 * (tmpdl + tmpdr);
+			tnew->text.real_y_pos = tnew->text.pos_y
+                                - tmpdt + .5 * (tmpdb + tmpdt);
 			break;
 		case NhlCENTERRIGHT:
-/*
-* Just used to determin size so the x and y position parameters can be anything
-* however it is important that the cnt option be correct for the computations
-* following to be correct 
-*
-*/
-			if(tnew->text.direction == NhlACROSS) {
-				tnew->text.cntr = 1.0;
-			} else {
-				tnew->text.cntr = 0.0;
-			}
-			c_plchhq(0.5,0.5,
-				tnew->text.real_string,tnew->text.real_size,
-				360.0,tnew->text.cntr);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			c_pcgetr("DL",&tmpdl);
-			c_pcgetr("DR",&tmpdr);
-			c_pcgetr("DT",&tmpdt);
-			c_pcgetr("DB",&tmpdb);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
-			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
-			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
-			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
-			if(tnew->text.direction == NhlACROSS) {
-				tnew->text.real_x_pos = tnew->text.pos_x;
-				tnew->text.real_y_pos = tnew->text.pos_y;
-			} else {
-				tnew->text.real_x_pos = tnew->text.pos_x - tmpdr;
-				tnew->text.real_y_pos = tnew->text.pos_y;
-			}
+                        tnew->text.real_x_pos = tnew->text.pos_x
+                                - tmpdr;
+                            /* + tmpdl - (tmpdl + tmpdr) */
+                        tnew->text.real_y_pos = tnew->text.pos_y
+                                - tmpdt + .5 * (tmpdb + tmpdt);
 			break;
 /*
 * Top justification points
 */
 		case NhlTOPLEFT:
-/*
-* Just used to determin size so the x and y position parameters can be anything
-* however it is important that the cnt option be correct for the computations
-* following to be correct 
-*
-*/
-			
-			tnew->text.cntr = -1.0;
-			c_plchhq(.5,.5,
-				tnew->text.real_string,tnew->text.real_size,
-				360.0,tnew->text.cntr);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			c_pcgetr("DL",&tmpdl);
-			c_pcgetr("DR",&tmpdr);
-			c_pcgetr("DT",&tmpdt);
-			c_pcgetr("DB",&tmpdb);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
-			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
-			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
-			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
-			if(tnew->text.direction == NhlACROSS) {
-				tnew->text.real_x_pos = tnew->text.pos_x;
-				tnew->text.real_y_pos = tnew->text.pos_y - tmpdt;
-			} else {
-				tnew->text.real_x_pos = tnew->text.pos_x + tmpdl;
-				tnew->text.real_y_pos = tnew->text.pos_y;
-			}
-/* 
-* when on top real_y is below pos_y
-*/
+                        tnew->text.real_x_pos = tnew->text.pos_x
+                                + tmpdl;
+                        tnew->text.real_y_pos = tnew->text.pos_y
+                                - tmpdt;
 			break;
 		case NhlTOPCENTER:
-/*
-* Just used to determin size so the x and y position parameters can be anything
-* however it is important that the cnt option be correct for the computations
-* following to be correct 
-*
-*/
-			if(tnew->text.direction == NhlACROSS) {
-				tnew->text.cntr = 0.0;
-			} else {
-				tnew->text.cntr = -1.0;
-			}
-			c_plchhq(.5,.5,
-				tnew->text.real_string,tnew->text.real_size,
-				360.0,tnew->text.cntr);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			c_pcgetr("DL",&tmpdl);
-			c_pcgetr("DR",&tmpdr);
-			c_pcgetr("DT",&tmpdt);
-			c_pcgetr("DB",&tmpdb);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
-			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
-			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
-			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
-			if(tnew->text.direction == NhlACROSS) {
-				tnew->text.real_x_pos = tnew->text.pos_x;
-				tnew->text.real_y_pos = tnew->text.pos_y - tmpdt;
-			} else {
-				tnew->text.real_x_pos = tnew->text.pos_x;
-				tnew->text.real_y_pos = tnew->text.pos_y;
-			}
+                        tnew->text.real_x_pos = tnew->text.pos_x
+                                + tmpdl - .5 * (tmpdl + tmpdr);
+                        tnew->text.real_y_pos = tnew->text.pos_y
+                                - tmpdt;
 			break;
 		case NhlTOPRIGHT:
-/*
-* Just used to determin size so the x and y position parameters can be anything
-* however it is important that the cnt option be correct for the computations
-* following to be correct 
-*
-*/
-			if(tnew->text.direction == NhlACROSS) {
-				tnew->text.cntr = 1.0;
-			} else {
-				tnew->text.cntr = -1.0;
-			}
-			c_plchhq(0.5,0.5,
-				tnew->text.real_string,tnew->text.real_size,
-				360.0,tnew->text.cntr);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			c_pcgetr("DL",&tmpdl);
-			c_pcgetr("DR",&tmpdr);
-			c_pcgetr("DT",&tmpdt);
-			c_pcgetr("DB",&tmpdb);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
-			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
-			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
-			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
-			if(tnew->text.direction == NhlACROSS) {
-				tnew->text.real_x_pos = tnew->text.pos_x;
-				tnew->text.real_y_pos = tnew->text.pos_y - tmpdt;
-			} else {
-				tnew->text.real_x_pos = tnew->text.pos_x - tmpdr;
-				tnew->text.real_y_pos = tnew->text.pos_y;
-			}
+                        tnew->text.real_x_pos = tnew->text.pos_x
+                                - tmpdr;
+                            /* + tmpdl - (tmpdl + tmpdr) */
+                        tnew->text.real_y_pos = tnew->text.pos_y
+                                - tmpdt;
 			break;
 /*
 * Bottom justification points
 */
 		case NhlBOTTOMLEFT:
-/*
-* Just used to determin size so the x and y position parameters can be anything
-* however it is important that the cnt option be correct for the computations
-* following to be correct 
-*
-*/
-			if(tnew->text.direction == NhlACROSS) {
-				tnew->text.cntr = -1.0;
-			} else {
-				tnew->text.cntr = 1.0;
-			}
-			c_plchhq(.5,.5,
-				tnew->text.real_string,tnew->text.real_size,
-				360.0,tnew->text.cntr);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			c_pcgetr("DL",&tmpdl);
-			c_pcgetr("DR",&tmpdr);
-			c_pcgetr("DT",&tmpdt);
-			c_pcgetr("DB",&tmpdb);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
-			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
-			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
-			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
-			if(tnew->text.direction == NhlACROSS) {
-				tnew->text.real_x_pos = tnew->text.pos_x;
-				tnew->text.real_y_pos = tnew->text.pos_y + tmpdb;
-			} else {
-				tnew->text.real_x_pos = tnew->text.pos_x + tmpdl;
-				tnew->text.real_y_pos = tnew->text.pos_y;
-			}
+                        tnew->text.real_x_pos = tnew->text.pos_x
+                                + tmpdl;
+                        tnew->text.real_y_pos = tnew->text.pos_y
+                                + tmpdb;
+                            /* - tmpdt + (tmpdt + tmpdb) */
 			break;
 		case NhlBOTTOMCENTER:
-/*
-* Just used to determin size so the x and y position parameters can be anything
-* however it is important that the cnt option be correct for the computations
-* following to be correct 
-*
-*/
-			if(tnew->text.direction == NhlACROSS) {
-				tnew->text.cntr = 0.0;
-			} else {
-				tnew->text.cntr = 1.0;
-			}
-			c_plchhq(.5,.5,
-				tnew->text.real_string,tnew->text.real_size,
-				360.0,tnew->text.cntr);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			c_pcgetr("DL",&tmpdl);
-			c_pcgetr("DR",&tmpdr);
-			c_pcgetr("DT",&tmpdt);
-			c_pcgetr("DB",&tmpdb);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
-			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
-			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
-			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
-			if(tnew->text.direction == NhlACROSS) {
-				tnew->text.real_x_pos = tnew->text.pos_x;
-				tnew->text.real_y_pos = tnew->text.pos_y + tmpdb;
-			} else {
-				tnew->text.real_x_pos = tnew->text.pos_x;
-				tnew->text.real_y_pos = tnew->text.pos_y;
-			}
+                        tnew->text.real_x_pos = tnew->text.pos_x
+                                + tmpdl - .5 * (tmpdl + tmpdr);
+                        tnew->text.real_y_pos = tnew->text.pos_y
+                                + tmpdb;
+                            /* - tmpdt + (tmpdt + tmpdb) */
 			break;
 		case NhlBOTTOMRIGHT:
-/*
-* Just used to determin size so the x and y position parameters can be anything
-* however it is important that the cnt option be correct for the computations
-* following to be correct 
-*
-*/
-			tnew->text.cntr = 1.0;
-			c_plchhq(.5,.5,
-				tnew->text.real_string,tnew->text.real_size,
-				360.0,tnew->text.cntr);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			c_pcgetr("DL",&tmpdl);
-			c_pcgetr("DR",&tmpdr);
-			c_pcgetr("DT",&tmpdt);
-			c_pcgetr("DB",&tmpdb);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
-			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
-			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
-			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
-			if(tnew->text.direction == NhlACROSS) {
-				tnew->text.real_x_pos = tnew->text.pos_x;
-				tnew->text.real_y_pos = tnew->text.pos_y + tmpdb;
-			} else {
-				tnew->text.real_x_pos = tnew->text.pos_x - tmpdr;
-				tnew->text.real_y_pos = tnew->text.pos_y;
-			}
+                        tnew->text.real_x_pos = tnew->text.pos_x
+                                - tmpdr;
+                            /* + tmpdl - (tmpdl + tmpdr) */
+                        tnew->text.real_y_pos = tnew->text.pos_y
+                                + tmpdb;
+                            /* - tmpdt + (tmpdt + tmpdb) */
 			break;
 		default:
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"TextItemInitialize: Incorect justification point, using default");
 			ret = NhlWARNING;
+			tnew->text.real_x_pos = tnew->text.pos_x
+                                + tmpdl - .5 * (tmpdl + tmpdr);
+			tnew->text.real_y_pos = tnew->text.pos_y
+                                - tmpdt + .5 * (tmpdb + tmpdt);
+                        tnew->text.just = NhlCENTERCENTER;
 			break;
 	}
 	xpoints[0] = tnew->text.real_x_pos - tmpdl;
