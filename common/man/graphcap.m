@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: graphcap.m,v 1.8 1994-05-04 15:34:27 haley Exp $
+.\"	$Id: graphcap.m,v 1.9 1994-05-04 15:47:10 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH GRAPHCAP 5NCARG "March 1994" NCAR "NCAR GRAPHICS"
@@ -254,7 +254,7 @@ ctrans(1NCARG), ras_formats(1NCARG), graphc(5NCARG)
 .sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version;
-CGM, Fontcap, and Graphcap Supplement
+CGM, Graphcap, and Fontcap Supplement
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993, 1994 University Corporation
 for Atmospheric Research
