@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.65 1997-05-05 21:45:37 boote Exp $
+ *      $Id: Workstation.c,v 1.66 1997-05-15 16:48:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -105,7 +105,8 @@ static NhlFillSpec fill_specs[] = {
 { 0,   0.0003125, 0, NULL, 0, -3, 2 },
 { 0,   0.0003125, 0, NULL, 0, -3, 3 },
 { 0,   0.0003125, 0, NULL, 0, -4, 3 },
-{ 0,   0.0003125, 0, NULL, 0, -4, 4 }
+{ 0,   0.0003125, 0, NULL, 0, -4, 4 },
+{ 45,  0.0075, 1, NULL, 0, 1, 0 }
 
 };
 
@@ -632,7 +633,7 @@ WorkstationClassInitialize
 	NhlConvertArg	fillargs[] = {
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMINMAX)},
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-1)},
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)16)}
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)17)}
 	};
 	_NhlEnumVals	markervals[] = {
 		{0,	"default"},
@@ -2562,7 +2563,13 @@ WorkstationFill
 		gset_linewidth(wkfp->fill_line_thickness);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		c_sfseti("TY", fill_specs[ix].type);
+		c_sfseti("DO", fill_specs[ix].dots_on);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		if (fill_specs[ix].dots_on) {
+			gset_marker_colr_ind(fill_color);
+			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,-1);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		}
 		if (fill_specs[ix].type > 0) { 
  			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,fill_color);
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
