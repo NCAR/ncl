@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.25 2003-12-08 19:12:48 shea Exp $
+;      $Id: contributed.ncl,v 1.26 2003-12-10 00:43:05 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -5543,9 +5543,13 @@ end
 ;       that terminate a variable number of header rows.
 ;       Currently this just checks character sequences
 ;       starting in col 0. 
+;
+;       if type "float" and positive then it will read  all values as float. 
+;       eg: f_head = readAsciiHead("foo.ascii", 3.) 
+;       all numbers on the 1st three rows will be read as float.
 
 function readAsciiHead( fName:string, opt)
-local xs, xc, nr, nrow, noptc, nxc
+local xs, xc, nr, nrow, noptc, nxc, f_head
 begin
   xs   = asciiread(fName, -1, "string") ; all rows as strings
  
@@ -5559,7 +5563,7 @@ begin
   end if
 
   if (typeof(opt).eq."string") then
-      nrow  = dimsizes(xs)
+      nrow = dimsizes(xs)
       noptc = dimsizes(stringtochar(opt))-1
     ;;print ("nrow="+nrow+"  noptc="+noptc)
       
@@ -5574,6 +5578,15 @@ begin
       end do
       return( "missing" )           ; return just header
   end if
+
+  if (typeof(opt).eq."float") then
+      nrow = floattointeger(opt)    ; # of rows to be read as float
+      asciiwrite ("HeAdBoGuSfile", xs(0:nrow-1))
+      f_head = asciiread("HeAdBoGuSfile", -1, "float")
+      system("/bin/rm HeAdBoGuSfile")
+      return(f_head)
+  end if
+
 end
 
 ;*************************************************************************
