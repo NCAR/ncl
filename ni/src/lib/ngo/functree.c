@@ -1,5 +1,5 @@
 /*
- *      $Id: functree.c,v 1.3 2000-01-10 21:08:13 dbrown Exp $
+ *      $Id: functree.c,v 1.4 2000-01-12 23:38:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -302,7 +302,8 @@ static void ExpandComponentInfo
                 rowdefs[i].isExpanded = False;
                 rowdefs[i].pixmap = XmUNSPECIFIED_PIXMAP;
                 rowdefs[i].pixmask = XmUNSPECIFIED_PIXMAP;
-                rowdefs[i].string = XmStringCreateLocalized(buf);
+                rowdefs[i].string = 
+			NgXAppCreateXmString(ftp->go->go.appmgr,buf);
                 ndata->subdata[i].parent = ndata;
                 ndata->subdata[i].info = (NhlPointer) cdata;
                 ndata->subdata[i].expanded = False;
@@ -321,18 +322,16 @@ static void ExpandComponentInfo
 	user_data.ptrval = ftp;
         for (i = 0; i < rowcount; i++) {
 		NgArgInfo arginfo = &rinfo->args[i];
-                NhlBoolean do_string = True;
 		char *cp;
                         
-                XmStringFree(rowdefs[i].string);
+                NgXAppFreeXmString(ftp->go->go.appmgr,rowdefs[i].string);
 		sprintf(buf,"%s",arginfo->sval);
-		
-                if (do_string) {
-                        XmLGridSetStringsPos(pub->tree,
-                                             XmCONTENT,pos+i,XmCONTENT,1,buf);
-                        ftp->c2_width = MAX(ftp->c2_width,strlen(buf));
-                }
-                XtVaSetValues(ftp->public.tree,
+		rowdefs[i].string = 
+			NgXAppCreateXmString(ftp->go->go.appmgr,buf);
+
+		ftp->c2_width = MAX(ftp->c2_width,strlen(buf));
+
+                XtVaSetValues(pub->tree,
                               XmNrow,pos+i,
                               XmNrowUserData,&ndata->subdata[i],
                               NULL);
@@ -343,6 +342,7 @@ static void ExpandComponentInfo
 				      XmNcellEditable,True,
 				      XmNcellBackground,
 				      ftp->go->go.edit_field_pixel,
+				      XmNcellString,rowdefs[i].string,
 				      NULL);
 		}
 		else {
@@ -350,10 +350,11 @@ static void ExpandComponentInfo
 				      XmNcolumn,1,
 				      XmNrow,pos+i,
 				      XmNcellEditable,False,
-				      XmNcellBackground,
-				      Background,
+				      XmNcellBackground,Background,
+				      XmNcellString,rowdefs[i].string,
 				      NULL);
 		}
+                NgXAppFreeXmString(ftp->go->go.appmgr,rowdefs[i].string);
         }
         XtVaSetValues(pub->tree,
                       XmNcolumn,1,
@@ -783,7 +784,8 @@ static void SetExpressionMode
                 rowdefs[i].isExpanded = False;
                 rowdefs[i].pixmap = XmUNSPECIFIED_PIXMAP;
                 rowdefs[i].pixmask = XmUNSPECIFIED_PIXMAP;
-                rowdefs[i].string = XmStringCreateLocalized(buf);
+                rowdefs[i].string = 
+			NgXAppCreateXmString(ftp->go->go.appmgr,buf);
         }
         XmLTreeAddRows(pub->tree,rowdefs,tcount,0);
 	
@@ -841,7 +843,7 @@ static void SetExpressionMode
                               XmNrowUserData,&ndata->subdata[i],
                               NULL);
                 XmLGridSetStringsPos(pub->tree,XmCONTENT,i,XmCONTENT,1,buf);
-                XmStringFree(rowdefs[i].string);
+                NgXAppFreeXmString(ftp->go->go.appmgr,rowdefs[i].string);
         }
 	
         ftp->c2_width = MAX(width,14);

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.16 2000-01-10 21:08:13 dbrown Exp $
+ *      $Id: plotapp.c,v 1.17 2000-01-12 23:38:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -884,9 +884,12 @@ static NhlBoolean ParseResourceValue
 				}
 				parenlevel++;
 				for (rf = rfuncs; rf; rf = rf->next) {
-					if (parenlevel == rf->paren_level)
-					rf->delim_pos[rf->delim_count++] 
-						 = bufpos;
+					if (parenlevel == rf->paren_level) {
+						rf->delim_pos
+							[rf->delim_count++] 
+							= bufpos;
+						break;
+					}
 				}
 				break;
 
@@ -1046,9 +1049,22 @@ static NhlBoolean ParseResourceValue
 				fprintf(stderr,"symbol found: %s\n",symbuf);
 #endif
 				if (! NclSymbolDefined(symbuf)) {
-					bogus = True;
-					undefined = True;
-					break;
+					char *tch = ch;
+					/*
+					 * it could be a named subscript; 
+					 * if so, there should be a '|' as
+					 * the first non-white space char.
+					 * more checks would be nice. Are 
+					 * there any other non-symbols we
+					 * might be missing?
+					 */
+					while (isspace(*tch))
+						tch++;
+					if (*tch != '|') {
+						bogus = True;
+						undefined = True;
+						break;
+					}
 				}
 				else if (IsFunc(papp,symbuf,&finfo)) {
 					ResFunc rfunc = 
@@ -1082,6 +1098,7 @@ static NhlBoolean ParseResourceValue
 					fprintf(stderr,"var: %s\n",symbuf);
 #endif
 					;
+					qcur_var = NrmStringToQuark(symbuf);
 				}
 				continue; /* look at this char again */
 			}
@@ -4928,6 +4945,7 @@ extern NhlErrorTypes NgPlotAppBackSubstituteValue
 	int		bufsize = 0;
 	int		new_symref_count;
 	EditInfo	einfo;
+	AppData		appdata;
 
 	if (! value) {
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -4957,11 +4975,12 @@ extern NhlErrorTypes NgPlotAppBackSubstituteValue
 	 * for optimization.
 	 */
 	InitializeDataTable(papp->data_count);
-	for (i = 0; i < papp->data_count; i++) {
+	for (i = 0,appdata = papp->data; i < papp->data_count; 
+	     i++,appdata = appdata->next) {
 		DataTable dt = &Data_Table[i];
 		NgPlotData pdata = &dprof->plotdata[i];
 
-		dt->appdata = &papp->data[i];
+		dt->appdata = appdata;
 		GetInfo(dt,pdata->vdata);
 		MatchDimensions(dt->appdata,dt,pdata->vdata);
 		TransferVarData(dt,pdata->vdata);
