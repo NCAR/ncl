@@ -1,9 +1,11 @@
 #
-#       $Id: yMakefile,v 1.1 1994-09-12 17:13:49 fred Exp $
+#       $Id: yMakefile,v 1.2 1994-12-16 18:06:01 fred Exp $
 #
 MYNAME  = ewmap
 
-GENERIC_SRCS = wmex01.f wmex02.f wmex03.f wmex04.f
+GENERIC_SRCS = wmex01.f wmex02.f wmex03.f wmex04.f wmex05.f \
+	wmex06.f wmex07.f wmex08.f wmex09.f wmex10.f wmex11.f \
+	mwex12.f wmex13.f wmex14.f
 
 InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 
