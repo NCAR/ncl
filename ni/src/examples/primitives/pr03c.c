@@ -1,5 +1,5 @@
 /*
- *      $Id: pr03c.c,v 1.3 1996-05-13 20:24:57 haley Exp $
+ *      $Id: pr03c.c,v 1.4 1996-05-23 01:57:38 dbrown Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -12,13 +12,15 @@
  *  File:       pr03c.c
  *
  *  Author:     David Brown
- *          National Center for Atmospheric Research
- *          PO 3000, Boulder, Colorado
+ *          	National Center for Atmospheric Research
+ *          	PO 3000, Boulder, Colorado
  *
  *  Date:       Mon May 13 11:25:15 MDT 1996
  *
- *  Description:    Demonstrates graphics primitives drawn in NDC space
- *                  Many of the primitives are clipped in order to test
+ *  Description:    Demonstrates graphics primitives drawn in NDC and
+ *                  data space into a LogLinPlot (and therefore using
+ *                  the LogLinTransObj).
+ *                  A number of primitives are clipped in order to test
  *                  the way clipping works.
  */
 
