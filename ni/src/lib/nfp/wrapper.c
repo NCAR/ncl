@@ -299,6 +299,7 @@ extern NhlErrorTypes esccr_W(void);
 extern NhlErrorTypes esccr_shields_W(void);
 extern NhlErrorTypes esccv_W(void);
 extern NhlErrorTypes escorc_W(void);
+extern NhlErrorTypes escovc_W(void);
 extern NhlErrorTypes ezfftf_W(void);
 extern NhlErrorTypes ezfftb_W(void);
 extern NhlErrorTypes fourier_info_W(void);
@@ -4245,6 +4246,17 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
 
     NclRegisterFunc(escorc_W,args,"escorc",nargs);
+/*
+ * Register "escovc".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(escovc_W,args,"escovc",nargs);
 /*
  * Register "ezfftf".
  *
