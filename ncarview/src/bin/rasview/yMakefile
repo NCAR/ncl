@@ -1,0 +1,27 @@
+NCARG		= ../../../..
+
+LOCINCDIR	= ../../include
+
+MYNAME		= rasview
+
+EQUALHACK	= =
+
+LOCLIB		= $(LIBDIR)/libncarv.a 
+
+SRCS		= rasdraw.c rasview.c
+
+OBJS		= rasdraw.o rasview.o
+
+
+LIBS	= $(LOCLIB) -lraster -lXt -lX11 -ldf
+
+CDEFINES	= -I$(LOCINCDIR) -I/usr/local/include
+
+all::	$(MYNAME)
+
+CTarget($(MYNAME),$(OBJS),$(LIBS))
+MakefileTarget
+CleanTarget
+
+lint: $(HDR) $(SRCS)
+	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1
