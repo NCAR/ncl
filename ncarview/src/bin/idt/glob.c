@@ -1,5 +1,5 @@
 /*
- *	$Id: glob.c,v 1.9 1992-11-03 23:52:14 clyne Exp $
+ *	$Id: glob.c,v 1.10 1993-04-27 16:55:25 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,14 +26,14 @@
 #include <ctype.h>
 #include <ncarg/c.h>
 
-
 static int	to_child[2],
 		to_parent[2];	/* pipes for talking to spawned process	*/
 
-#define	MAX_LINE_LEN	80
-#define	SMALL_MALLOC_BLOCK	10
+static	char	ackString[80];
+const	char	Magic[] = "NCARG_GRAPHICS_MAGIC_COOKIE";
+const	int	magicLen = (sizeof(Magic) / sizeof(Magic[0]));
 
-#define	ACK	"/bin/echo \001\n"
+#define	SMALL_MALLOC_BLOCK	10
 
 /*
  *	talkto
@@ -82,7 +82,7 @@ static	talkto(argv)
 		/* 
 		 * exec the command to talk to	
 		 */
-		execvp(argv[0], argv);
+		(void) execvp(argv[0], argv);
 
 		perror((char *) NULL);	/* shouldn't get here	*/
 		exit(1);
@@ -94,10 +94,9 @@ static	talkto(argv)
 
 	else {	/* error	*/
 		perror((char *) NULL);
-		exit(1);
+		(void) exit(1);
 	}
 }
-
 /*
  *	glob
  *	[exported]
@@ -125,7 +124,7 @@ glob(s, r_argv, r_argc)
 	static	char	inBuf[4*BUFSIZ];
 
 	int	i;
-	char	outbuf[MAX_LINE_LEN];
+	char	outbuf[1024];
 	char	*cptr;
 	int	nbytes;
 	char	*shell_argv[3];
@@ -168,9 +167,11 @@ glob(s, r_argv, r_argc)
 			return;
 		}
 		args = SMALL_MALLOC_BLOCK;
+
+		sprintf(ackString, "/bin/echo %s\n", Magic);
 	}
 
-	if ((strlen(outbuf) + strlen(s) + 1) >= MAX_LINE_LEN) {
+	if ((strlen(outbuf) + strlen(s) + 1) >= sizeof(outbuf)) {
 		(void) fprintf(stderr, "Line too long: %s\n", s);
 		return;
 	}
@@ -188,7 +189,7 @@ glob(s, r_argv, r_argc)
 	 * generate a responce to stdout. i.e. a shell error
 	 */
 	(void) write(to_child[1], outbuf, strlen(outbuf));
-	(void) write(to_child[1], ACK, strlen(ACK));
+	(void) write(to_child[1], ackString, strlen(ackString));
 
 	/*
 	 * read in output from shell
@@ -196,21 +197,28 @@ glob(s, r_argv, r_argc)
 	nbytes = 0;
 	while (1) {	/* read until receive ack or buffer is full	*/
 		cptr = inBuf + nbytes;
-		nbytes += read(to_parent[0], cptr, 4*BUFSIZ - nbytes);
-		if ((inBuf[nbytes - 2] == '\001') || nbytes == 4*BUFSIZ) break; 
+		nbytes += read(to_parent[0], cptr, sizeof(inBuf) - nbytes);
+		if ((s = strstr(inBuf, Magic)) || nbytes == sizeof(inBuf)) {
+			*s = '\0';
+			break; 
+		}
+	}
+
+	if (nbytes == sizeof(inBuf)) {
+		inBuf[nbytes-1] = '\0';
 	}
 
 
-	if (inBuf[0] == '\001') return;	/* shell syntax error probably	*/
+	if (strlen(inBuf) == 0)  {
+		return;	/* no match	*/
+	}
 
 	/*
 	 * replace terminating newline with a null terminator
 	 */
-	for(i = 0; i<nbytes; i++) {
-		if (inBuf[i] == '\n')
-			inBuf[i] = '\0';
+	if (s = strchr(inBuf, '\n')) {
+		*s = '\0';
 	}
-	inBuf[nbytes] = '\0';
 
 	/*
 	 * null terminate and assigne a poiner to each arg in inBuf 
@@ -223,7 +231,7 @@ glob(s, r_argv, r_argc)
 			if (argc >= args) {	/* enough memory ?	*/
 				args += SMALL_MALLOC_BLOCK;
 				argv = (char **) realloc ((char *) argv,
-					args * sizeof (char **));
+					(unsigned) (args * sizeof (char **)));
 			}
 			argv[argc++] = cptr+1;
 		}

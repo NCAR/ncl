@@ -1,5 +1,5 @@
 /*
- *	$Id: file.c,v 1.9 1992-09-01 23:38:49 clyne Exp $
+ *	$Id: file.c,v 1.10 1993-04-27 16:55:23 clyne Exp $
  */
 /*
  *	file.c
@@ -51,8 +51,14 @@ char	*GetFiles(file_filter, longest)
 	static	char	*pathBuf = NULL;/* storage for path to files	*/
 	
 
-	if (buf) free((Voidptr) buf);
-	if (pathBuf) free((Voidptr) pathBuf);
+	if (buf) {
+		free((Voidptr) buf);
+		buf = NULL;
+	}
+	if (pathBuf) {
+		free((Voidptr) pathBuf);
+		pathBuf = NULL;
+	}
 	*longest = 10;
 
 	/* 

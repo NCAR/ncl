@@ -1,5 +1,5 @@
 /*
- *	$Id: glob.c,v 1.7 1992-11-03 23:52:52 clyne Exp $
+ *	$Id: glob.c,v 1.8 1993-04-27 16:55:32 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -30,7 +30,9 @@
 static int	to_child[2],
 		to_parent[2];	/* pipes for talking to spawned process	*/
 
-#define	ACK	"/bin/echo \001\n"
+static	char	ackString[80];
+const	char	Magic[] = "NCARG_GRAPHICS_MAGIC_COOKIE";
+const	int	magicLen = (sizeof(Magic) / sizeof(Magic[0]));
 
 /*
  *	talkto
@@ -121,7 +123,7 @@ glob(s, r_argv, r_argc)
 	static	char	inBuf[4*BUFSIZ];
 
 	int	i;
-	char	outbuf[MAX_LINE_LEN];
+	char	outbuf[1024];
 	char	*cptr;
 	int	nbytes;
 	char	*shell_argv[3];
@@ -164,9 +166,11 @@ glob(s, r_argv, r_argc)
 			return;
 		}
 		args = SMALL_MALLOC_BLOCK;
+
+		sprintf(ackString, "/bin/echo %s\n", Magic);
 	}
 
-	if ((strlen(outbuf) + strlen(s) + 1) >= MAX_LINE_LEN) {
+	if ((strlen(outbuf) + strlen(s) + 1) >= sizeof(outbuf)) {
 		(void) fprintf(stderr, "Line too long: %s\n", s);
 		return;
 	}
@@ -184,7 +188,7 @@ glob(s, r_argv, r_argc)
 	 * generate a responce to stdout. i.e. a shell error
 	 */
 	(void) write(to_child[1], outbuf, strlen(outbuf));
-	(void) write(to_child[1], ACK, strlen(ACK));
+	(void) write(to_child[1], ackString, strlen(ackString));
 
 	/*
 	 * read in output from shell
@@ -192,21 +196,28 @@ glob(s, r_argv, r_argc)
 	nbytes = 0;
 	while (1) {	/* read until receive ack or buffer is full	*/
 		cptr = inBuf + nbytes;
-		nbytes += read(to_parent[0], cptr, 4*BUFSIZ - nbytes);
-		if ((inBuf[nbytes - 2] == '\001') || nbytes == 4*BUFSIZ) break; 
+		nbytes += read(to_parent[0], cptr, sizeof(inBuf) - nbytes);
+		if ((s = strstr(inBuf, Magic)) || nbytes == sizeof(inBuf)) {
+			*s = '\0';
+			break; 
+		}
+	}
+
+	if (nbytes == sizeof(inBuf)) {
+		inBuf[nbytes-1] = '\0';
 	}
 
 
-	if (inBuf[0] == '\001') return;	/* shell syntax error probably	*/
+	if (strlen(inBuf) == 0)  {
+		return;	/* no match	*/
+	}
 
 	/*
 	 * replace terminating newline with a null terminator
 	 */
-	for(i = 0; i<nbytes; i++) {
-		if (inBuf[i] == '\n')
-			inBuf[i] = '\0';
+	if (s = strchr(inBuf, '\n')) {
+		*s = '\0';
 	}
-	inBuf[nbytes] = '\0';
 
 	/*
 	 * null terminate and assigne a poiner to each arg in inBuf 
