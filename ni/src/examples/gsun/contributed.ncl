@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.31 2004-01-30 00:35:06 shea Exp $
+;      $Id: contributed.ncl,v 1.32 2004-01-31 22:50:51 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -1622,6 +1622,37 @@ begin
  end if
  
  return (xsum)
+end
+; *******************************************************************
+; D. Shea
+; Remove means of each rightmost dimension
+; Copies over all the attribures and coordinate variables
+; x    - multidimensional variable 
+;
+undef ("dim_rmvmean_Wrap")
+function dim_rmvmean_Wrap (x:numeric)     
+local xAnom, dimx, Ndx
+begin
+
+ xAnom = dim_rmvmean(x)     
+ copy_VarAtts(x, xAnom)
+ copy_VarCoords(x, xAnom)
+ 
+ if (isatt(x,"long_name")) then
+     xAnom@long_name = "Anomalies: "+x@long_name
+ else
+     xAnom@long_name = "Deviation from mean"
+ end if
+ 
+ dimx = dimsizes(x)
+ Ndx  = dimsizes(dimx)      ; number of dimensions
+ if (.not.ismissing(x!(Ndx-1))) then   
+      xAnom@rmvmean_op_NCL= "dim_rmvmean over dimension: "+x!(Ndx-1)
+ else
+      xAnom@rmvmean_op_NCL= "dim_rmvmean function was applied"
+ end if
+
+ return (xAnom)
 end
 ; *******************************************************************
 ; D. Shea
