@@ -1,5 +1,5 @@
 /*
- * $Id: c_cpex15.c,v 1.1 1996-10-10 16:19:28 haley Exp $
+ * $Id: c_cpex15.c,v 1.2 1996-10-10 21:50:28 haley Exp $
  */
 
 #include <stdio.h>
@@ -33,33 +33,33 @@
  * can get at it from the routines CPCHHL and CPCHLL.
  */
 struct common {
-	int iama[200000];
+    int iama[200000];
 } NGCALLF(usrama,USRAMA);
 
 main()
 {
-	float zdat[70][70];
+    float zdat[70][70];
 /*
  * Declare the required real and integer workspaces.
  */
-	float rwrk[5000];
-	int iwrk[1000];
+    float rwrk[5000];
+    int iwrk[1000];
 /*
  *  Color table
  */ 
-	Gcolr_rep ctab[5];
+    Gcolr_rep ctab[5];
 
     float p1[2],p2[2],p3[2],p4[2];
-	int i, iclu, iclv, nclv;
+    int i, iclu, iclv, nclv;
 /*
  * Declare the arrays needed by ARSCAM and MAPGRM for x/y coordinates.
  */
-	  float xcra[10000],ycra[10000];
+      float xcra[10000],ycra[10000];
 /*
  * Declare the arrays needed by ARSCAM and MAPGRM for area and group
  * identifiers.
  */
-	int iara[10],igra[10];
+    int iara[10],igra[10];
 /*
  * Declare the routine that draws contour lines, avoiding labels.
  */
@@ -76,7 +76,7 @@ main()
 /*
  * Declare the routine that does the shading of a contour band.
  */
-	extern int shader(
+    extern int shader(
 #ifdef NeedFuncProto
         float *xcs,
         float *ycs,
@@ -89,7 +89,7 @@ main()
 /*
  * Declare the routine that fills the EZMAP background.
  */
-	extern int filleb(
+    extern int filleb(
 #ifdef NeedFuncProto
         float *xcs,
         float *ycs,
@@ -99,17 +99,17 @@ main()
         int *nai
 #endif
     );
-	extern void gendat();
+    extern void gendat();
 /*
  * Open GKS.
  */
-	gopen_gks ("stdout",0);
-	gopen_ws (iwkid, lunit, iwtype);
-	gactivate_ws(iwkid);
+    gopen_gks ("stdout",0);
+    gopen_ws (iwkid, lunit, iwtype);
+    gactivate_ws(iwkid);
 /*
  * Turn off the clipping indicator.
  */
-	gset_clip_ind (GIND_NO_CLIP);
+    gset_clip_ind (GIND_NO_CLIP);
 
 /*
  * Define colors to use for various purposes.
@@ -117,58 +117,58 @@ main()
 /*
  * light blue (for labels)
  */
-	ctab[0].rgb.red = .5; ctab[0].rgb.green = .5; ctab[0].rgb.blue = 1.;
+    ctab[0].rgb.red = .5; ctab[0].rgb.green = .5; ctab[0].rgb.blue = 1.;
 /*
  *  light yellow (for labels)
  */
-	ctab[1].rgb.red = 1.; ctab[1].rgb.green = 1.; ctab[1].rgb.blue = .5;
+    ctab[1].rgb.red = 1.; ctab[1].rgb.green = 1.; ctab[1].rgb.blue = .5;
 /*
  *  light red (for labels)
  */
-	ctab[2].rgb.red = 1.; ctab[2].rgb.green = .5; ctab[2].rgb.blue = .5;
+    ctab[2].rgb.red = 1.; ctab[2].rgb.green = .5; ctab[2].rgb.blue = .5;
 /*
  *  white (for land areas)
  */
-	ctab[3].rgb.red = 1.; ctab[3].rgb.green = 1.; ctab[3].rgb.blue = 1.;
+    ctab[3].rgb.red = 1.; ctab[3].rgb.green = 1.; ctab[3].rgb.blue = 1.;
 /*
  *  gray (for ocean areas)
  */
-	ctab[4].rgb.red = .6; ctab[4].rgb.green = .6; ctab[4].rgb.blue = .6;
+    ctab[4].rgb.red = .6; ctab[4].rgb.green = .6; ctab[4].rgb.blue = .6;
 
-	for( i = 0; i < 5; i++ ) {
-		gset_colr_rep(iwkid,i+2,&ctab[i]);
-	}
+    for( i = 0; i < 5; i++ ) {
+        gset_colr_rep(iwkid,i+2,&ctab[i]);
+    }
 /*
  * Generate an array of test data.
  */
-	gendat (&zdat[0][0],70,70,70,21,21,-1.,1.);
+    gendat (&zdat[0][0],70,70,70,21,21,-1.,1.);
 /*
  * Put some labels at the top of the plot.
  */
-	c_plchhq (.5,.982,"CONPACK EXAMPLE 15",.018,0.,0.);
+    c_plchhq (.5,.982,"CONPACK EXAMPLE 15",.018,0.,0.);
 
-	c_plchhq (.5,.952,"The routines CPCHHL and CPCHLL are used be low to suppress labels over land.",.012,0.,0.);
-	
-	c_plchhq (.5,.928,"They are also used to modify colors and line widths used for the labels.",.012,0.,0.);
+    c_plchhq (.5,.952,"The routines CPCHHL and CPCHLL are used be low to suppress labels over land.",.012,0.,0.);
+    
+    c_plchhq (.5,.928,"They are also used to modify colors and line widths used for the labels.",.012,0.,0.);
 /*
  * Initialize EZMAP.
  */
 /*
  *  no labels
  */
-	c_mapsti ("LA - LABELS",0);
+    c_mapsti ("LA - LABELS",0);
 /*
  *  no perimeter
  */
-	c_mapsti ("PE - PERIMETER",0);
+    c_mapsti ("PE - PERIMETER",0);
 /*
  *  positions the map
  */
-	c_mappos (.05,.95,.01,.91);
+    c_mappos (.05,.95,.01,.91);
 /*
  *  projection
  */
-	c_maproj ("OR - ORTHOGRAPHIC",40.,-135.,0.);
+    c_maproj ("OR - ORTHOGRAPHIC",40.,-135.,0.);
 /*
  *  map portion
  */
@@ -178,119 +178,119 @@ main()
 /*
  * initialize
  */
-	c_mapint();
+    c_mapint();
 /*
  * Tell CONPACK to do no SET call (EZMAP has done it).
  */
-	c_cpseti ("SET - DO-SET-CALL FLAG",0);
+    c_cpseti ("SET - DO-SET-CALL FLAG",0);
 /*
  * Tell CONPACK to use more contour levels.
  */
-	c_cpseti ("CLS - CONTOUR LEVEL SELECTOR",32);
+    c_cpseti ("CLS - CONTOUR LEVEL SELECTOR",32);
 /*
  * Tell CONPACK to position labels using the "regular" scheme.
  */
-	c_cpseti ("LLP - LINE LABEL POSITIONING",2);
+    c_cpseti ("LLP - LINE LABEL POSITIONING",2);
 /*
  * Tweak constants so as to get more labels on each labeled contour.
  */
-	c_cpsetr ("RC1 - REGULAR SCHEME CONSTANT 1",.05);
-	c_cpsetr ("RC2 - REGULAR SCHEME CONSTANT 2",.1);
-	c_cpsetr ("RC3 - REGULAR SCHEME CONSTANT 3",0.);
+    c_cpsetr ("RC1 - REGULAR SCHEME CONSTANT 1",.05);
+    c_cpsetr ("RC2 - REGULAR SCHEME CONSTANT 2",.1);
+    c_cpsetr ("RC3 - REGULAR SCHEME CONSTANT 3",0.);
 /*
  * Provide a little more workspace for X and Y coordinates defining
  * contour lines, so as not to have labels right next to each other
  * on a contour line.
  */
-	c_cpseti ("RWC - REAL WORKSPACE FOR CONTOURS",200);
+    c_cpseti ("RWC - REAL WORKSPACE FOR CONTOURS",200);
 /*
  * Turn on drawing and filling of the high and low label boxes.
  */
-	c_cpseti ("HLB - HIGH/LOW LABEL BOX FLAG",3);
+    c_cpseti ("HLB - HIGH/LOW LABEL BOX FLAG",3);
 /*
  * Tell CONPACK to delete high/low labels which overlap the informational
  * label or another high/low label, but to move those which overlap the
  * edge inward a little.
  */
-	c_cpseti ("HLO - HIGH/LOW LABEL OVERLAP FLAG",11);
+    c_cpseti ("HLO - HIGH/LOW LABEL OVERLAP FLAG",11);
 /*
  * Turn on drawing and filling of the contour line label boxes.
  */
-	c_cpseti ("LLB - LINE LABEL BOX FLAG",3);
+    c_cpseti ("LLB - LINE LABEL BOX FLAG",3);
 /*
  * Make all CONPACK-written characters a little smaller.
  */
-	c_cpsetr ("CWM - CHARACTER WIDTH MULTIPLIER",.8);
+    c_cpsetr ("CWM - CHARACTER WIDTH MULTIPLIER",.8);
 /*
  * Turn on the drawing of the grid edge ("contour line number -1") and
  * thicken it somewhat.
  */
-	c_cpseti ("PAI - PARAMETER ARRAY INDEX",-1);
-	c_cpseti ("CLU - CONTOUR LEVEL USE FLAG",1);
-	c_cpsetr ("CLL - CONTOUR LEVEL LINE WIDTH",2.);
+    c_cpseti ("PAI - PARAMETER ARRAY INDEX",-1);
+    c_cpseti ("CLU - CONTOUR LEVEL USE FLAG",1);
+    c_cpsetr ("CLL - CONTOUR LEVEL LINE WIDTH",2.);
 /*
  * Tell CONPACK to use EZMAP for mapping and what the out-of-range
  * signal is.
  */
-	c_cpseti ("MAP - MAPPING FUNCTION",1);
-	c_cpsetr ("ORV - OUT-OF-RANGE VALUE",1.E12);
+    c_cpseti ("MAP - MAPPING FUNCTION",1);
+    c_cpsetr ("ORV - OUT-OF-RANGE VALUE",1.E12);
 /*
  * Tell CONPACK what range of coordinates to use.
  */
-	c_cpsetr ("XC1 - LONGITUDE AT I = 1",-230.);
-	c_cpsetr ("XCM - LONGITUDE AT I = M",- 40.);
-	c_cpsetr ("YC1 - LATITUDE AT J = 1" ,- 35.);
-	c_cpsetr ("YCN - LATITUDE AT J = N" ,  75.);
+    c_cpsetr ("XC1 - LONGITUDE AT I = 1",-230.);
+    c_cpsetr ("XCM - LONGITUDE AT I = M",- 40.);
+    c_cpsetr ("YC1 - LATITUDE AT J = 1" ,- 35.);
+    c_cpsetr ("YCN - LATITUDE AT J = N" ,  75.);
 /*
  * Initialize the drawing of the contour plot.
  */
-	c_cprect (&zdat[0][0],70,70,70,rwrk,5000,iwrk,1000);
+    c_cprect (&zdat[0][0],70,70,70,rwrk,5000,iwrk,1000);
 /*
  * Force the selection of contour levels so that associated quantities
  * may be tweaked.
  */
-	c_cppkcl (&zdat[0][0],rwrk,iwrk);
+    c_cppkcl (&zdat[0][0],rwrk,iwrk);
 /*
  * Increase the line width for labelled levels and turn off the area
  * identifiers for all levels.
  */
-	c_cpgeti ("NCL - NUMBER OF CONTOUR LEVELS",&nclv);
+    c_cpgeti ("NCL - NUMBER OF CONTOUR LEVELS",&nclv);
 
-	for( iclv = 1; iclv <= nclv; iclv++ ) {
-		c_cpseti ("PAI - PARAMETER ARRAY INDEX",iclv);
-		c_cpgeti ("CLU - CONTOUR LEVEL USE FLAG",&iclu);
-		if (iclu == 3) {
+    for( iclv = 1; iclv <= nclv; iclv++ ) {
+        c_cpseti ("PAI - PARAMETER ARRAY INDEX",iclv);
+        c_cpgeti ("CLU - CONTOUR LEVEL USE FLAG",&iclu);
+        if (iclu == 3) {
             c_cpseti ("CLL - CONTOUR-LINE LINE WIDTH",2);
-		}
-		c_cpseti ("AIA - AREA IDENTIFIER ABOVE LEVEL",0);
-		c_cpseti ("AIB - AREA IDENTIFIER BELOW LEVEL",0);
-	}
+        }
+        c_cpseti ("AIA - AREA IDENTIFIER ABOVE LEVEL",0);
+        c_cpseti ("AIB - AREA IDENTIFIER BELOW LEVEL",0);
+    }
 /*
  * Add two new levels for which no contour lines are to be drawn, but
  * between which shading is to be done.
  */
-	nclv += 2;
-	c_cpseti ("NCL - NUMBER OF CONTOUR LEVELS",nclv);
+    nclv += 2;
+    c_cpseti ("NCL - NUMBER OF CONTOUR LEVELS",nclv);
 
-	c_cpseti ("PAI - PARAMETER ARRAY INDEX",nclv-1);
-	c_cpsetr ("CLV - CONTOUR LEVEL VALUE",-.15);
-	c_cpseti ("CLU - CONTOUR LEVEL USE FLAG",0);
-	c_cpseti ("AIA - AREA IDENTIFIER ABOVE LEVEL",1);
-	c_cpseti ("AIB - AREA IDENTIFIER BELOW LEVEL",2);
+    c_cpseti ("PAI - PARAMETER ARRAY INDEX",nclv-1);
+    c_cpsetr ("CLV - CONTOUR LEVEL VALUE",-.15);
+    c_cpseti ("CLU - CONTOUR LEVEL USE FLAG",0);
+    c_cpseti ("AIA - AREA IDENTIFIER ABOVE LEVEL",1);
+    c_cpseti ("AIB - AREA IDENTIFIER BELOW LEVEL",2);
 
-	c_cpseti ("PAI - PARAMETER ARRAY INDEX",nclv);
-	c_cpsetr ("CLV - CONTOUR LEVEL VALUE",+.15);
-	c_cpseti ("CLU - CONTOUR LEVEL USE FLAG",0);
-	c_cpseti ("AIA - AREA IDENTIFIER ABOVE LEVEL",3);
-	c_cpseti ("AIB - AREA IDENTIFIER BELOW LEVEL",1);
+    c_cpseti ("PAI - PARAMETER ARRAY INDEX",nclv);
+    c_cpsetr ("CLV - CONTOUR LEVEL VALUE",+.15);
+    c_cpseti ("CLU - CONTOUR LEVEL USE FLAG",0);
+    c_cpseti ("AIA - AREA IDENTIFIER ABOVE LEVEL",3);
+    c_cpseti ("AIB - AREA IDENTIFIER BELOW LEVEL",1);
 /*
  * Initialize the area map.
  */
-	c_arinam (NGCALLF(usrama,USRAMA).iama,200000);
+    c_arinam (NGCALLF(usrama,USRAMA).iama,200000);
 /*
  * Put EZMAP boundary lines into the area map (in edge group 1).
  */
-	c_mapbla (NGCALLF(usrama,USRAMA).iama);
+    c_mapbla (NGCALLF(usrama,USRAMA).iama);
 /*
  * Put label boxes into the area map (in edge group 3).  One of the first
  * things this routine does is generate a list of labels (high/low and
@@ -300,51 +300,51 @@ main()
  * later in this file use the contents of the area map array iama to
  * suppress labels that are over land areas.
  */
-	c_cplbam (&zdat[0][0],rwrk,iwrk,NGCALLF(usrama,USRAMA).iama);
+    c_cplbam (&zdat[0][0],rwrk,iwrk,NGCALLF(usrama,USRAMA).iama);
 /*
  * Fill land and ocean areas in different shades, avoiding label boxes.
  */
-	c_arscam (NGCALLF(usrama,USRAMA).iama,xcra,ycra,10000,iara,igra,10,filleb);
+    c_arscam (NGCALLF(usrama,USRAMA).iama,xcra,ycra,10000,iara,igra,10,filleb);
 /*
  * Set the polyline color index to zero, so that lines drawn from this
  * point on will be drawn in black over the filled background.
  */
-	gset_line_colr_ind (0);
+    gset_line_colr_ind (0);
 /*
  * Draw the EZMAP grid lines (lines of constant latitude and longitude)
  * over the oceans.
  */
-	c_mapgrm (NGCALLF(usrama,USRAMA).iama,xcra,ycra,10000,iara,igra,10,drawcl);
+    c_mapgrm (NGCALLF(usrama,USRAMA).iama,xcra,ycra,10000,iara,igra,10,drawcl);
 /*
  * Put the contour lines at contour levels -.15 and +.15 into the area
  * map.
  */
-	c_cpclam (&zdat[0][0],rwrk,iwrk,NGCALLF(usrama,USRAMA).iama);
+    c_cpclam (&zdat[0][0],rwrk,iwrk,NGCALLF(usrama,USRAMA).iama);
 /*
  * Cross-hatch the area between contour levels -.15 and +.15.
  */
-	c_arscam (NGCALLF(usrama,USRAMA).iama,xcra,ycra,10000,iara,igra,10,shader);
+    c_arscam (NGCALLF(usrama,USRAMA).iama,xcra,ycra,10000,iara,igra,10,shader);
 /*
  * Draw contour lines over the oceans.
  */
-	c_cpcldm (&zdat[0][0],rwrk,iwrk,NGCALLF(usrama,USRAMA).iama,drawcl);
+    c_cpcldm (&zdat[0][0],rwrk,iwrk,NGCALLF(usrama,USRAMA).iama,drawcl);
 /*
  * Draw labels.  Because the versions of the routines CPCHHL and CPCHLL
  * supplied later in this file are used instead of the default ones in
  * CONPACK, the appearance of the labels is changed in various ways.
  * See the commenting in those routines for further information.
  */
-	c_cplbdr (&zdat[0][0],rwrk,iwrk);
+    c_cplbdr (&zdat[0][0],rwrk,iwrk);
 /*
  * Advance the frame.
  */
-	c_frame();
+    c_frame();
 /*
  * Close GKS.
  */
-	gdeactivate_ws(iwkid);
-	gclose_ws(iwkid);
-	gclose_gks();
+    gdeactivate_ws(iwkid);
+    gclose_ws(iwkid);
+    gclose_gks();
 }
 
 
@@ -381,24 +381,24 @@ int drawcl (xcs,ycs,ncs,iai,iag,nai)
  * background) and group 3 (CONPACK-supplied edges).
  */
 {
-	int ia1, ia3, i;
+    int ia1, ia3, i;
 
-	ia1 = -1;
-	ia3 = -1;
+    ia1 = -1;
+    ia3 = -1;
 
-	for( i = 0; i < *nai; i++ ) {
-		if (iag[i] == 1) ia1 = iai[i];
-		if (iag[i] == 3) ia3 = iai[i];
-	}
+    for( i = 0; i < *nai; i++ ) {
+        if (iag[i] == 1) ia1 = iai[i];
+        if (iag[i] == 3) ia3 = iai[i];
+    }
 /*
  * Draw the polyline if and only if neither area identifier is negative
  * and it's over the ocean.
  */
-	if (ia1 >= 0 && ia3 >= 0 && c_mapaci(ia1) == 1) c_curved (xcs,ycs,*ncs);
+    if (ia1 >= 0 && ia3 >= 0 && c_mapaci(ia1) == 1) c_curved (xcs,ycs,*ncs);
 /*
  * Done.
  */
-	return(0);
+    return(0);
 
 }
 
@@ -432,52 +432,52 @@ int filleb (xcs,ycs,ncs,iai,iag,nai)
  * Find the area identifiers of the polygon relative to group 1 (EZMAP
  * background) and group 3 (CONPACK-supplied edges).
  */
-	Gpoint_list area;
-	int ia1, ia3, i, dofill = 0;
+    Gpoint_list area;
+    int ia1, ia3, i, dofill = 0;
 
-	ia1 = -1;
-	ia3 = -1;
+    ia1 = -1;
+    ia3 = -1;
 
-	for( i = 0; i < *nai; i++ ) {
-		if (iag[i] == 1) ia1 = iai[i];
-		if (iag[i] == 3) ia3 = iai[i];
-	}
+    for( i = 0; i < *nai; i++ ) {
+        if (iag[i] == 1) ia1 = iai[i];
+        if (iag[i] == 3) ia3 = iai[i];
+    }
 /*
  * Fill land areas in white, using GFA and color index 6.
  */
-	if (ia1 > 0 && c_mapaci(ia1) == 2 && ia3 >= 0) {
-		gset_fill_colr_ind (5);
-		dofill = 1;
-	}
+    if (ia1 > 0 && c_mapaci(ia1) == 2 && ia3 >= 0) {
+        gset_fill_colr_ind (5);
+        dofill = 1;
+    }
 /*
  * Fill ocean areas in gray, using GFA and color index 7.
  */
-	if (ia1 > 0 && c_mapaci(ia1) == 1 && ia3 >= 0) {
-		gset_fill_colr_ind (6);
-		dofill = 1;
-	}
+    if (ia1 > 0 && c_mapaci(ia1) == 1 && ia3 >= 0) {
+        gset_fill_colr_ind (6);
+        dofill = 1;
+    }
 /*
  * Create structure to pass to gfill_area
  */
-	if( dofill ) {
-		area.num_points = *ncs-1;
-		area.points = (Gpoint *) malloc(area.num_points*sizeof(Gpoint));
-		if( !area.points ) {
-			fprintf( stderr, "filleb: Not enough memory to create fill area structure\n" );
-			gemergency_close_gks();
-			exit(1);
-		}
-		for( i = 0; i < *ncs-1; i++ ) {
-			area.points[i].x = xcs[i];
-			area.points[i].y = ycs[i];
-		}
-		gfill_area (&area);
-		free(area.points);
-	}
+    if( dofill ) {
+        area.num_points = *ncs-1;
+        area.points = (Gpoint *) malloc(area.num_points*sizeof(Gpoint));
+        if( !area.points ) {
+            fprintf( stderr, "filleb: Not enough memory to create fill area structure\n" );
+            gemergency_close_gks();
+            exit(1);
+        }
+        for( i = 0; i < *ncs-1; i++ ) {
+            area.points[i].x = xcs[i];
+            area.points[i].y = ycs[i];
+        }
+        gfill_area (&area);
+        free(area.points);
+    }
 /*
  * done.
  */
-	return(0);
+    return(0);
 }
 
 #ifdef NeedFuncProto
@@ -508,35 +508,35 @@ int shader (xcs,ycs,ncs,iai,iag,nai)
  *
  * Define workspaces for the shading routine.
  */
-	float dst[2200];
-	int ind[2400];
+    float dst[2200];
+    int ind[2400];
 /*
  * Find the area identifiers of the polygon relative to group 1 (EZMAP
  * background) and group 3 (CONPACK-supplied edges).
  */
-	int ia1, ia3, i, dofill = 0;
+    int ia1, ia3, i, dofill = 0;
 
-	ia1 = -1;
-	ia3 = -1;
+    ia1 = -1;
+    ia3 = -1;
 
-	for( i = 0; i < *nai; i++ ) {
-		if (iag[i] == 1) ia1 = iai[i];
-		if (iag[i] == 3) ia3 = iai[i];
-	}
+    for( i = 0; i < *nai; i++ ) {
+        if (iag[i] == 1) ia1 = iai[i];
+        if (iag[i] == 3) ia3 = iai[i];
+    }
 /*
  * If appropriate, crosshatch the area.
  */
-	if (ia1 > 0 && c_mapaci(ia1) == 1 && ia3 == 1) {
-		c_sfseti ("angle",45);
-		c_sfsetr ("spacing",.003);
-		c_sfwrld (xcs,ycs,*ncs-1,dst,2200,ind,2400);
-		c_sfseti ("angle",135);
-		c_sfnorm (xcs,ycs,*ncs-1,dst,2200,ind,2400);
-	}
+    if (ia1 > 0 && c_mapaci(ia1) == 1 && ia3 == 1) {
+        c_sfseti ("angle",45);
+        c_sfsetr ("spacing",.003);
+        c_sfwrld (xcs,ycs,*ncs-1,dst,2200,ind,2400);
+        c_sfseti ("angle",135);
+        c_sfnorm (xcs,ycs,*ncs-1,dst,2200,ind,2400);
+    }
 /*
  * Done.
  */
-	return(0);
+    return(0);
 }
 
 
@@ -592,12 +592,12 @@ float dhgh;
         for( i = 1; i <= m; i++ ) {
             data[ii]=.5*(dlow+dhgh);
             for( k = 1; k <= ncnt; k++ ) {
-		fm = fovm*((float)(i)-ccnt[0][k-1]);
-		fn = fovn*((float)(j)-ccnt[1][k-1]);
+        fm = fovm*((float)(i)-ccnt[0][k-1]);
+        fn = fovn*((float)(j)-ccnt[1][k-1]);
                 temp = -( (fm*fm) + (fn*fn) );
                 if (temp >= -20.){ 
                      data[ii]=data[ii]+.5*(dhgh-dlow)*ccnt[2][k-1]*exp(temp);
-		}
+        }
             }
             dmin=min(dmin,data[ii]);
             dmax=max(dmax,data[ii]);
@@ -629,9 +629,9 @@ float fran()
 
 void NGCALLF(cpchhl,CPCHHL)(int *iflg)
 {
-	float flbx, flby;
-	float rlbx, rlby;
-	int i, j, nids, iaid;
+    float flbx, flby;
+    float rlbx, rlby;
+    int i, j, nids, iaid;
 /*
  * This routine is called just before and just after each action
  * involving a high/low label.  A user version may take action to change
@@ -673,15 +673,15 @@ void NGCALLF(cpchhl,CPCHHL)(int *iflg)
  * -4, -6, -7, or -8, such changes should be undone.
  *
  */
-	int iaai[10],iagi[10];
+    int iaai[10],iagi[10];
 /*
  * Define quantities that will be used to generate the coordinates of
  * five points to be tested in making the decision whether a label is
  * over land or water.
  */
-	float xstp[5],ystp[5];
+    float xstp[5],ystp[5];
 
-	xstp[0] = 0.; xstp[1] = -.01; xstp[2] = .01; xstp[3] = 0.; xstp[4] = 0.; 
+    xstp[0] = 0.; xstp[1] = -.01; xstp[2] = .01; xstp[3] = 0.; xstp[4] = 0.; 
     ystp[0] = 0.; ystp[1] =  0.; ystp[2] = 0.; ystp[3] = -.01; ystp[4] = .01;
 /*
  * If *iflg = 1, we have to decide whether we want a label at the point
@@ -692,88 +692,88 @@ void NGCALLF(cpchhl,CPCHHL)(int *iflg)
  * test the point itself and four other points around it; it any of
  * the five is over land, we suppress the label (by setting 'CTM'=' ').
  */
-	if (*iflg == 1 || *iflg == 5) {
-		c_cpgetr ("lbx",&rlbx);
-		c_cpgetr ("lby",&rlby);
-		flbx = c_cufx(rlbx);
-		flby = c_cufy(rlby);
-		for( i=0; i < 5; i++ ) {
+    if (*iflg == 1 || *iflg == 5) {
+        c_cpgetr ("lbx",&rlbx);
+        c_cpgetr ("lby",&rlby);
+        flbx = c_cufx(rlbx);
+        flby = c_cufy(rlby);
+        for( i=0; i < 5; i++ ) {
             c_argtai (NGCALLF(usrama,USRAMA).iama,c_cfux(flbx+xstp[i]),c_cfuy(flby+ystp[i]),iaai,iagi,10,&nids,1);
             iaid = -1;
             for( j = 0; j < nids; j++ ) {
-				if (iagi[j]	== 1) iaid = iaai[j];
-			}
+                if (iagi[j] == 1) iaid = iaai[j];
+            }
             if (c_mapaci(iaid) == 2) {
-				c_cpsetc ("ctm - character temporary"," ");
-				return;
-			}
-		}
-	}
+                c_cpsetc ("ctm - character temporary"," ");
+                return;
+            }
+        }
+    }
 /*
  * now, if the label box is being filled, make the fill color depend
  * on whether the label is for a high or a low.
  */
-	if (abs(*iflg) == 2 || abs(*iflg) == 6) {
-		if (*iflg > 0) {
+    if (abs(*iflg) == 2 || abs(*iflg) == 6) {
+        if (*iflg > 0) {
             if (*iflg == 2) {
-				gset_fill_colr_ind (4);
-			}
-			else {
-				gset_fill_colr_ind (2);
-			}
-		}
-		else {
+                gset_fill_colr_ind (4);
+            }
+            else {
+                gset_fill_colr_ind (2);
+            }
+        }
+        else {
             gset_fill_colr_ind (1);
-		}
-		return;
-	}
+        }
+        return;
+    }
 /*
  * put the text on the filled background in a contrasting color.
  */
-	if (abs(*iflg) == 3 || abs(*iflg) == 7) {
-		if (*iflg > 0) {
+    if (abs(*iflg) == 3 || abs(*iflg) == 7) {
+        if (*iflg > 0) {
             if (*iflg == 3) {
-				c_pcseti ("cc", 0);
-			}
+                c_pcseti ("cc", 0);
+            }
             else {
-				c_pcseti ("cc", 1);
-			}
-		}
-		else {
+                c_pcseti ("cc", 1);
+            }
+        }
+        else {
             c_pcseti ("cc",-1);
-		}
-		return;
-	}
+        }
+        return;
+    }
 /*
  * If the box is being outlined, do it in a contrasting color and widen
  * the lines.
  */
-	if (abs(*iflg) == 4 || abs(*iflg) == 8) {
-		if (*iflg > 0) {
+    if (abs(*iflg) == 4 || abs(*iflg) == 8) {
+        if (*iflg > 0) {
             if (*iflg == 4) {
-				gset_line_colr_ind (0);
-			}
+                gset_line_colr_ind (0);
+            }
             else {
-				gset_line_colr_ind (0);
-			}
+                gset_line_colr_ind (0);
+            }
             gset_linewidth (2.);
-		}
-		else {
+        }
+        else {
             gset_line_colr_ind (1);
             gset_linewidth (1.);
-		}
-		return;
-	}
+        }
+        return;
+    }
 /*
  * in all other cases, just return.
  */
-	return;
+    return;
 }
 
 void NGCALLF(cpchll,CPCHLL) (int *iflg)
 {
-	float clev, rlbx, rlby, flbx, flby;
-	int i, j, nids, iaid;
+    float clev, rlbx, rlby, flbx, flby;
+    int i, j, nids, iaid;
 /*
  * this routine is called just before and just after each action
  * involving a contour line label.  A user version may take action to
@@ -811,15 +811,15 @@ void NGCALLF(cpchll,CPCHLL) (int *iflg)
  * or line width; during the following call with *iflg = -2, -3, or -4,
  * such changes should be undone.
  */
-	int iaai[10],iagi[10];
+    int iaai[10],iagi[10];
 /*
  * Define quantities that will be used to generate the coordinates of
  * five points to be tested in making the decision whether a label is
  * over land or water.
  */
-	float xstp[5],ystp[5];
+    float xstp[5],ystp[5];
 
-	xstp[0] = 0.; xstp[1] = -.01; xstp[2] = .01; xstp[3] = 0.; xstp[4] = 0.; 
+    xstp[0] = 0.; xstp[1] = -.01; xstp[2] = .01; xstp[3] = 0.; xstp[4] = 0.; 
     ystp[0] = 0.; ystp[1] =  0.; ystp[2] = 0.; ystp[3] = -.01; ystp[4] = .01;
 /*
  * If *iflg = 1, we have to decide whether we want a label at the point
@@ -831,82 +831,82 @@ void NGCALLF(cpchll,CPCHLL) (int *iflg)
  * the five is over land, we suppress the label (by setting the value
  * of 'CTM' to ' ').
  */
-	if (*iflg == 1) {
-		c_cpgetr ("LBX",&rlbx);
-		c_cpgetr ("LBY",&rlby);
-		flbx = c_cufx(rlbx);
-		flby = c_cufy(rlby);
-		for( i = 0; i < 5; i++ ) {
+    if (*iflg == 1) {
+        c_cpgetr ("LBX",&rlbx);
+        c_cpgetr ("LBY",&rlby);
+        flbx = c_cufx(rlbx);
+        flby = c_cufy(rlby);
+        for( i = 0; i < 5; i++ ) {
             c_argtai(NGCALLF(usrama,USRAMA).iama,c_cfux(flbx+xstp[i]),c_cfuy(flby+ystp[i]),iaai,iagi,10,&nids,1);
             iaid = -1;
             for( j = 0; j < nids; j++ ) {
-				if (iagi[j]	== 1) iaid = iaai[j];
-			}
-            if (c_mapaci(iaid) == 2) {
-				c_cpsetc ("ctm - character temporary"," ");
-				return;
+                if (iagi[j] == 1) iaid = iaai[j];
             }
-		}
-	}
+            if (c_mapaci(iaid) == 2) {
+                c_cpsetc ("ctm - character temporary"," ");
+                return;
+            }
+        }
+    }
 /*
  * otherwise, see what the contour value is on the line being labelled
  * and, if it's zero, reset the value of 'CTM' to 'Z' so that will be
  * used as the label.
  */
-	c_cpgetr ("ZDV - Z DATA VALUE",&clev);
-	if (clev == 0.) {
-		c_cpsetc ("CTM - CHARACTER TEMPORARY","Z");
-	}
+    c_cpgetr ("ZDV - Z DATA VALUE",&clev);
+    if (clev == 0.) {
+        c_cpsetc ("CTM - CHARACTER TEMPORARY","Z");
+    }
 /*
  * Now, if the label box is being filled, make the fill color depend
  * on the contour level.
  */
-	if (abs(*iflg) == 2) {
-		if (*iflg > 0) {
+    if (abs(*iflg) == 2) {
+        if (*iflg > 0) {
             if (clev < 0.) {
-				gset_fill_colr_ind (2);
-			}
+                gset_fill_colr_ind (2);
+            }
             else if (clev == 0.) {
                 gset_fill_colr_ind (3);
             }
             else {
                 gset_fill_colr_ind (4);
             }
-		}
-		else {
+        }
+        else {
             gset_fill_colr_ind (1);
-		}
-		return;
-	}
+        }
+        return;
+    }
 /*
  * put the text on the filled background in a contrasting color.
  */
-	if (abs(*iflg) == 3) {
-		if (*iflg > 0) {
+    if (abs(*iflg) == 3) {
+        if (*iflg > 0) {
             if (clev < 0.) {
-				c_pcseti ("cc", 1);
+                c_pcseti ("cc", 1);
             }
-			else if (clev == 0.) {
+            else if (clev == 0.) {
                 c_pcseti ("cc", 0);
             }
             else {
                 c_pcseti ("cc", 0);
             }
-		}
-		else {
+        }
+        else {
             c_pcseti ("cc",-1);
-		}
-		return;
-	}
+        }
+        return;
+    }
 /*
  * if the box is being outlined, do it in a contrasting color and widen
  * the lines.
  */
-	if (abs(*iflg) == 4) {
-		if (*iflg > 0) {
+    if (abs(*iflg) == 4) {
+        if (*iflg > 0) {
             if (clev < 0.) {
-				gset_line_colr_ind (0);
-			}
+                gset_line_colr_ind (0);
+            }
             else if (clev == 0.) {
                 gset_line_colr_ind (0);
             }
@@ -914,16 +914,16 @@ void NGCALLF(cpchll,CPCHLL) (int *iflg)
                 gset_line_colr_ind (0);
             }
             gset_linewidth (2.);
-		}
-		else {
+        }
+        else {
             gset_line_colr_ind (1);
             gset_linewidth (1.);
-		}
-		return;
-	}
+        }
+        return;
+    }
 /*
  * in all other cases, just return.
  */
-	return;
+    return;
 }
  
