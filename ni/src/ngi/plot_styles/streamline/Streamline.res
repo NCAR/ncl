@@ -17,9 +17,9 @@
 *vf@vfUDataArray%Profile : (/ Name : U Component /)
 *vf@vfVDataArray : $v$
 *vf@vfVDataArray%Profile : (/ Name : V Component /)
-*vf@vfXArray : $u$!-1
+*vf@vfXArray : $u$&-1
 *vf@vfXArray%Profile : (/ Name : X Coordinate /)
-*vf@vfYArray : $u$!-2
+*vf@vfYArray : $u$&-2
 *vf@vfYArray%Profile : (/ Name : Y Coordinate /)
 
 *st@stVectorFieldData : $vf$

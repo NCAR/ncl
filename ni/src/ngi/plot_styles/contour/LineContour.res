@@ -12,9 +12,9 @@
 
 *sf@sfDataArray : $data$
 *sf@sfDataArray%Profile : (/ Name : Scalar Field Data Var /)
-*sf@sfXArray : $data$!-1
+*sf@sfXArray : $data$&-1
 *sf@sfXArray%Profile : (/ Name : X Coordinate /)
-*sf@sfYArray : $data$!-2
+*sf@sfYArray : $data$&-2
 *sf@sfYArray%Profile : (/ Name : Y Coordinate /)
 
 *cn@cnScalarFieldData : $sf$

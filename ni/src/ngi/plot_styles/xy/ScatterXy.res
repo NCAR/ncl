@@ -11,7 +11,7 @@
 *data@Required : True
 
 *ca@caYArray : $data$
-*ca@caXArray : $data$!-1
+*ca@caXArray : $data$&-1
 
 *xy@xyCoordData: $ca$
 
