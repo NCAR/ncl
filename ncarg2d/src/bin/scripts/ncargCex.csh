@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargCex.csh,v 1.7 1993-01-22 18:08:02 haley Exp $
+#	$Id: ncargCex.csh,v 1.8 1993-01-25 15:37:01 haley Exp $
 #
 
 set example_dir = `ncargpath SED_EXAMPLESDIR`
@@ -116,6 +116,10 @@ if (! $?NoRunOption) then
     ncargrun -o $name.ncgm $name
     set rmfiles = ($rmfiles $name.o $name)
     echo "Metafile is named $name.ncgm"
+endif
+
+if ("$name" == "c_slex01") then
+    set rmfiles = ($rmfiles GNFB09)
 endif
 
 # Code for handling inappropriate requests
