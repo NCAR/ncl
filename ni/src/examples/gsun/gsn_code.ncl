@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.70 2001-07-18 17:16:13 haley Exp $
+;      $Id: gsn_code.ncl,v 1.71 2001-07-18 21:46:15 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -54,6 +54,7 @@ undef("get_non_missing_pairs")
 undef("attsetvalues_check")
 undef("spread_colors")
 undef("check_for_irreg2loglin")
+undef("fix_zero_contour")
 undef("maximize_bb")
 undef("gsnp_turn_off_tickmarks")
 undef("gsnp_point_tickmarks_outward")
@@ -685,6 +686,31 @@ begin
   reverse = False
   if(maxix.lt.minix)
     reverse = True
+    itmp    = maxix
+    maxix   = minix
+    minix   = itmp
+  end if
+
+  fmin = new(1,float)
+  fmax = new(1,float)
+
+  fmin = minix
+  fmax = maxix
+  fcols = fspan(fmin,fmax,lcount+1)
+  if(.not.reverse)
+    icols = tointeger(fcols + 0.5)
+  else
+    icols = tointeger(fcols(::-1) + 0.5)
+  end if
+
+  return(icols)
+end
+
+;***********************************************************************;
+; Procedure : fix_zero_contour                                          ;
+;              levels:numeric                                           ;
+;                                                                       ;
+; Make sure the 0th contour (if it exists) really is "0" and not        ;
 ; something like "1.00001e-08".  But, we also have to make sure we don't;
 ; have values like 1e-10, 1e-9, etc, where we *do* want "1e-10" label   ;
 ; and not a "0". Don't even bother with checking if the minimum         ;
@@ -3023,8 +3049,11 @@ begin
       else
         set_attr(lbres,"vpXF",min ((/1.-(xwsp+labelbar_width),max_rgt+xwsp/)))
         if(nrows.eq.1.and.lbres@vpHeightF.le.scale*max(old_vp(:,3)))
-; Create the labelbar.
+          set_attr(lbres,"vpYF",ypos(0)-(scale*max(old_vp(:,3)) - lbres@vpHeightF)/2.)
+        else
+          tmp_range = y_top - y_bot
           set_attr(lbres,"vpYF",y_top-(tmp_range - lbres@vpHeightF)/2.)
+        end if
       end if
       set_attr(lbres,"lbLabelFontHeightF",labelbar_font_height)
 ;

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.74 2001-07-18 17:16:13 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.75 2001-07-18 21:46:15 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1259,22 +1259,7 @@ begin
   wh_ind    = ind(ratio.le.ratios)
   def_lvpwf = lwscale(wh_ind(0))    ; default width scale for labelbar
 
-;
-; Make sure the 0th contour (if it exists) really is "0" and not something
-; like "1.00001e-08".  But, we also have to make sure we don't have 
-; values like 1e-10, 1e-9, etc, where we *do* want "1e-10" label and not
-; a "0". Don't even bother with checking if the minimum difference between
-; the levels is less than 1e-5.
-;
-  nlevels = dimsizes(levels)-2
-  delta_levels = min( levels(1:nlevels-1) - levels(0:nlevels-2) )
-  if(delta_levels.ge.1e-5)
-    do n=1,dimsizes(levels)-2
-      if(fabs(levels(n)).le.1.e-5.and.levels(n-1).lt.0..and.levels(n+1).gt.0.)
-        levels(n) = 0.0
-      end if
-    end do
-  end if
+  amres = get_res_eq(res,"am")
   if(lbar_orient.eq."vertical") then
     if(type.eq."polar")
       orth = get_res_value(res,"pmLabelBarOrthogonalPosF",0.05)
