@@ -1,5 +1,5 @@
 /*
- *      $Id: Cray,v 1.25 1994-04-06 19:42:55 boote Exp $
+ *      $Id: Cray,v 1.26 1994-04-08 21:22:18 haley Exp $
  */
 /************************************************************************
 *									*
@@ -33,3 +33,4 @@
 
 #define DoesRanlib	NO
 #define GksBufferSize	1024
+#define UseCatDirs	YES
