@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.3 1991-01-30 12:48:15 clyne Exp $
+ *	$Id: talkto.c,v 1.4 1991-02-06 15:10:22 clyne Exp $
  */
 /*
  *	talkto.c
@@ -15,9 +15,12 @@
 #include <signal.h>
 #include <errno.h>
 #include <fcntl.h>
+
+#ifndef	CRAY
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#endif
 
 #ifdef	SYSV
 #include <string.h>
@@ -51,7 +54,8 @@ static	int	hFD;	/* history file file descriptor	*/
 #ifdef	CRAY
 static	void	reaper()
 {
-	int	pid;
+	int	pid, status;
+
 	sighold(SIGCLD);	/* hold signals	*/
 
 	if ((pid = wait(&status)) == -1) {
@@ -126,7 +130,7 @@ OpenTranslator(channel, device, font, metafile, hfd)
 		/*
 		 * no wait3() in unicos, use signals
 		 */
-		if (sigctl(SCTL_REG, SIGCLD, repear) < 0) {
+		if (sigctl(SCTL_REG, SIGCLD, reaper) < 0) {
 			perror("sigctl");
 			exit(1);
 		}
@@ -259,10 +263,12 @@ char	*TalkTo(id, command_string, mode)
 	/*
 	 * see if anybody died
 	 */
+#ifndef	CRAY
 	if ((pid = wait3((union wait *) NULL, 
 				WNOHANG, (struct rusage *) NULL)) > 0) {
 		close_trans_pid(pid);
 	}
+#endif
 
 	if (Translators[id].pid == -1) return (NULL);
 
@@ -324,11 +330,13 @@ char	*TalkTo(id, command_string, mode)
 			/*
 			 * see if anybody died
 			 */
+#ifndef	CRAY
 			if ((pid = wait3((union wait *) NULL, 
 					WNOHANG, (struct rusage *) NULL)) > 0) {
 
 				close_trans_pid(pid);
 			}
+#endif
 			if (Translators[id].pid == -1) return (NULL);
 
 			for(n=0; n < r; n+=l) {

@@ -13,9 +13,9 @@
 
 SYSTEM_INCLUDE		= Sun3
 
-BINDIR		= /u1/clyne/bin
-LIBDIR		= /u1/clyne/lib
-MANDIR		= /u1/clyne/man
+BINDIR		= /u2/ncargfx/test/bin
+LIBDIR		= /u2/ncargfx/test/lib
+MANDIR		= /u2/ncargfx/test/man
 MAN_SECTION	= l
 XAPPDIR		= /usr/lib/X11/app-defaults
 BITSDIR		= /usr/include/X11/bitmaps
@@ -40,7 +40,7 @@ ARCH		=
 CC		= cc
 CC_LD		= $(CC)
 CDEBUG		=
-COPT		= -g
+COPT		= -O
 CMISC           =
 CFLAGS          = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
 	$(FLOAT_OPT)
@@ -51,10 +51,10 @@ F77		= f77
 F77_LD		= $(F77)
 FDEBUG		=
 FOPT		= -O
-FMISC           =
+FMISC           = -Bstatic
 FFLAGS          = $(OS) $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
 	$(FLOAT_OPT)
-LD_FFLAGS	= $(FFLAGS)
+LD_FFLAGS       = $(FFLAGS)
 LD		= ld
 LD_REL		= $(LD)
 AR		= ar

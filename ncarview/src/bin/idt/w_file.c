@@ -1,5 +1,5 @@
 /*
- *	$Id: w_file.c,v 1.2 1991-01-09 10:53:45 clyne Exp $
+ *	$Id: w_file.c,v 1.3 1991-02-06 15:10:42 clyne Exp $
  */
 /*
  *	w_file.c
@@ -71,7 +71,7 @@ void	CreateFileSelectPopup(button)
 		
 
 	int	ascent, descent;
-	char	*files;
+	String	files;
 	int	longest;
 
 	/*
@@ -82,8 +82,8 @@ void	CreateFileSelectPopup(button)
 	*/
 
 	n = 0;
-	XtSetArg(args[0], XtNwidth, &width); n++;
-	XtSetArg(args[1], XtNheight, &height); n++;
+	XtSetArg(args[n], XtNwidth, &width); n++;
+	XtSetArg(args[n], XtNheight, &height); n++;
 	XtGetValues(button, args, n);
 	XtTranslateCoords(button, (Position) (width / 2), 
 		(Position) (height / 2), &x, &y);
@@ -141,9 +141,8 @@ void	CreateFileSelectPopup(button)
 	 * longest file name and is used to size the text widget. Make sure
 	 * longest is at least some "reasonable" size.
 	 */ 
-	files = GetFiles(fileFinder, &longest);
+	files = (String) GetFiles(fileFinder, &longest);
 	longest = longest < 30 ? 30 : longest;
-
 
 	/*
 	 * create the text widget with the initial list of file names. For
@@ -235,7 +234,7 @@ static	void	Finder(widget, client_data, call_data)
 	Widget	dialog = (Widget) client_data;
 	Arg	args[1];
 
-	char	*files;
+	String	files;
 	char	*file_finder;
 	int	longest;
 	Cardinal	n;
@@ -251,7 +250,7 @@ static	void	Finder(widget, client_data, call_data)
 	(void) strcpy(fileFinder, file_finder);
 
 
-	files = GetFiles(fileFinder, &longest);
+	files = (String) GetFiles(fileFinder, &longest);
 
 	n = 0;
 	XtSetArg(args[n], XtNstring, files);	n++;
