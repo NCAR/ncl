@@ -1,5 +1,5 @@
 C
-C       $Id: cssex02.f,v 1.5 1999-06-29 17:40:40 fred Exp $
+C       $Id: cssex02.f,v 1.6 1999-10-22 16:46:04 fred Exp $
 C
        PROGRAM CSSEX02
 C 
@@ -37,7 +37,7 @@ C
 C  Array storage for the triangulation, work space, and nodal
 C  coordinates.
 C
-      REAL    RWK(NMAX)
+      REAL    RWK(4*NMAX)
       REAL    RLAT(NMAX), RLON(NMAX),  FVAL(NMAX),
      +        X(NMAX),    Y(NMAX),     Z(NMAX), 
      +        PLAT(NI),   PLON(NJ)

@@ -1,5 +1,5 @@
 C
-C       $Id: cssex01.f,v 1.3 1999-05-25 18:22:57 fred Exp $
+C       $Id: cssex01.f,v 1.4 1999-10-22 16:46:04 fred Exp $
 C
 
       PROGRAM CSEX01
@@ -39,7 +39,7 @@ C
 C
 C  Real workspace.
 C
-      REAL    RWK(NMAX)
+      REAL    RWK(4*NMAX)
 C
 C  Storage for circumcenters and circum radii.
 C
