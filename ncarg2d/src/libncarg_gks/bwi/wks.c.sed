@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.5 1993-01-11 20:53:55 don Exp $
+ *      $Id: wks.c.sed,v 1.6 1993-02-17 21:40:11 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -81,13 +81,6 @@
 #include <sys/file.h>
 #include "wks.h"
 
-#ifdef  sun
-#include <vfork.h>
-#define FORK    vfork
-#else
-#define FORK    fork
-#endif
-
 static int		wks_init   = FALSE;
 
 /* Environment variables. */
@@ -113,17 +106,6 @@ static struct
 	int	segment;
 } mftab[MAX_UNITS];
 
-#ifdef STANDALONE
-main()
-{
-	int	unit = 1;
-	char	*string = "wooga";
-
-	opnwks_(&unit);
-	wrtwks_(&unit, (int *)string);
-	clswks_(&unit);
-}
-#endif /* STANDALONE	*/
 
 /*************************************************************************
 *
@@ -145,7 +127,7 @@ main()
 #ifdef ardent
 opnwks_(unit, string, status)
 #else
-opnwks_(unit, fname, status)
+int	opnwks_(unit, fname, status)
 #endif
 	int	*unit;
 #ifdef ardent
@@ -305,7 +287,7 @@ opnwks_(unit, fname, status)
 
 		(void) pipe(pipes);
 
-		if ( FORK() == 0 )
+		if ( fork() == 0 )
 		{
 			(void) close(pipes[1]);
 			(void) close(0); 
