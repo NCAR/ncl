@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.14 1994-03-18 02:18:32 dbrown Exp $
+ *      $Id: TickMark.c,v 1.15 1994-04-19 20:18:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -6051,8 +6051,7 @@ static NhlErrorTypes TransformLocations
 	} else if(subret < ret) {
 		ret = subret;
 	}
-	}
-        if(status){
+	if(status){
 /*
 * Contains and out of range value
 */
@@ -6078,6 +6077,7 @@ static NhlErrorTypes TransformLocations
 				tmpi--;	
 			}
 		}
+	}
 	}
 
 
@@ -6268,7 +6268,6 @@ static NhlErrorTypes TransformLocations
 	} else if(subret < ret) {
 		ret = subret;
 	}
-	}
         if(status){
 /*
 * Contains and out of range value
@@ -6295,6 +6294,7 @@ static NhlErrorTypes TransformLocations
 				tmpi--;	
 			}
 		}
+	}
 	}
 	return(ret);
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.10 1994-04-19 00:39:00 boote Exp $
+ *      $Id: Converters.c,v 1.11 1994-04-19 20:18:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -930,13 +930,13 @@ NhlCvtGenToString
 	}
 
 	if(gen->typeQ == stringQ)
-		tstring = *(NhlString*)gen->data;
+		tstring = *(NhlString*)(gen->data);
 	else{
 		NrmValue	fromval,toval;
 		NhlErrorTypes	lret;
 
 
-		toval.data.ptrval = &stringQ;
+		toval.data.ptrval = &tstring;
 		toval.size = sizeof(NhlString);
 		_NhlCopyToVal((NhlPointer)gen->data,&fromval.data,gen->size);
 		fromval.size = gen->size;
@@ -1024,7 +1024,7 @@ NhlCvtGenToInt
 		NhlErrorTypes	lret;
 
 
-		toval.data.ptrval = &intQ;
+		toval.data.ptrval = &tint;
 		toval.size = sizeof(int);
 		_NhlCopyToVal((NhlPointer)gen->data,&fromval.data,gen->size);
 		fromval.size = gen->size;
@@ -1040,7 +1040,7 @@ NhlCvtGenToInt
 		ret = MIN(ret,lret);
 	}
 
-	SetVal(float,sizeof(int),tint);
+	SetVal(int,sizeof(int),tint);
 }
 
 /*
@@ -1598,7 +1598,7 @@ NhlCvtEnumToFStr
 
 	exp = (_NhlFExportString)to->data.ptrval;
 
-	return _NhlCstrToFstr(exp->fstring,exp->strlen,tstring);
+	return /*_NhlCstrToFstr(exp->fstring,exp->strlen,tstring)*/;
 }
 
 /*
