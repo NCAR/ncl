@@ -1,5 +1,5 @@
 /*
- *      $Id: rasstat.c,v 1.3 1992-09-01 23:39:57 clyne Exp $
+ *      $Id: rasstat.c,v 1.4 1992-09-15 23:18:38 clyne Exp $
  */
 /*
  *	File:		rasstat
@@ -152,7 +152,7 @@ main(argc, argv)
 		fprintf(stdout, "%dx%d\n", ras_stat.nx, ras_stat.ny);
 	}
 	else if (opt.do_type) {
-		if (ras_stat.nx == RAS_INDEXED) {
+		if (ras_stat.type == RAS_INDEXED) {
 			fprintf(stdout, "indexed\n");
 		}
 		else {
