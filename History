@@ -825,3 +825,11 @@
 	than single precision
 09/17/92 - In CONPACK, modified CPSP1A and CPSP2A to handle special values
 	on the edge of the sparse grid correctly.
+09/30/92 - In EZMAP MAPGCI was modified to do the right thing in response to 
+	being asked to interpolate points along the great circle joining two
+	points on the globe which are almost, but not quite, on top of one
+	another.
+9/30/92 - In EZMAPA, MAPITA and MAPITM have been modified to be somewhat 
+	more efficient in the binary-halving process that they go through when
+	trying to find exactly where a line being drawn disappears around the
+	edge of the globe, at the limb.
