@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: nhlex.csh,v 1.1 1993-04-30 17:18:37 boote Exp $
+#   $Id: nhlex.csh,v 1.2 1994-10-20 18:08:06 dbrown Exp $
 #
 
 if (SED_VERBOSE) then
@@ -86,8 +86,8 @@ set m_files = Makefile.$name
 
 set copy_files = "$c_files $m_files"
 
-if ( -e "$example_dir/$name.resfile") then
-    set r_file = $name.resfile
+if ( -e "$example_dir/$name.res") then
+    set r_file = $name.res
     set copy_files = "$copy_files $r_file"
 endif
 
@@ -116,16 +116,6 @@ foreach file($copy_files)
 end
 
 if (! $?NoRunOption) then
-    echo ""
-    echo ""
-    if ($?r_file) then
-	echo "*************************************************************************"
-	echo "*									*"
-        echo "* Setting SED_HLUUSRRESENVNAME to ./$r_file to pick up resources	*"
-	echo "*									*"
-	echo "*************************************************************************"
-	setenv SED_HLUUSRRESENVNAME ./$r_file
-    endif
     echo ""
     echo "Executing <$name>..."
     echo ""
