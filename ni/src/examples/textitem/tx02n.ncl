@@ -7,7 +7,7 @@
 ;                                                                      ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-;      File:           tx02c.c
+;      File:           tx02n.ncl
 ;
 ;      Author:         Bob Lackman
 ;                  National Center for Atmospheric Research

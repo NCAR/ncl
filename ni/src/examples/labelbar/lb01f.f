@@ -6,7 +6,7 @@ C                all rights reserved                                   C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C      File:           lb01c.c
+C      File:           lb01f.f
 C
 C      Author:         Bob Lackman
 C          National Center for Atmospheric Research
@@ -29,9 +29,10 @@ C
       call nhlfinitialize
 
 C
-C Create an application context. Set the app dir to the current directory
-C so the application looks for a resource file in the working directory.
-C In this example the resource file supplies the plot title only.
+C Create an application context. Set the app dir to the current
+C directory so the application looks for a resource file in the
+C working directory. In this example the resource file supplies the
+C plot title only.
 C
       call nhlfrlcreate(rlist,'setrl')
       call nhlfrlclear(rlist)

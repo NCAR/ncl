@@ -6,7 +6,7 @@ C                all rights reserved                                   C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C      File:           ti02c.c 
+C      File:           ti02f.f
 C
 C      Author:         Bob Lackman (converted by Ed Stautler)
 C          National Center for Atmospheric Research
