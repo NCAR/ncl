@@ -1,5 +1,5 @@
 /*
- *      $Id: Fortran.c,v 1.5 1995-01-11 00:46:31 boote Exp $
+ *      $Id: Fortran.c,v 1.6 1995-01-12 22:02:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1031,10 +1031,10 @@ CvtGenArrToFArr
 
 	/*
 	 * If converters are not needed, and we have contiguous memory,
-	 * then we can just to a memcpy.  I wish everything were so
+	 * then we can just do a memcpy.  I wish everything were so
 	 * simple.
 	 */
-	if(contig && (exp->typeQ == gen->typeQ)){
+	if(contig && _NhlIsSubtypeQ(exp->typeQ,gen->typeQ)){
 		memcpy(exp->data,gen->data,gen->size * num_elements);
 		StackFree(len_dim)
 
@@ -1062,7 +1062,7 @@ CvtGenArrToFArr
 		 * Prepare "from" array.
 		 */
 		cgen.num_dimensions = 1;
-		cgen.num_elements = gen->size*len_dim[0];
+		cgen.num_elements = len_dim[0];
 		cgen.len_dimensions = &cgen.num_elements;
 		cgen.typeQ = gen->typeQ;
 		cgen.size = gen->size;
@@ -1103,7 +1103,7 @@ CvtGenArrToFArr
 			 * if memory is of same type, can use memcpy because
 			 * 1st dimension is contiguous.
 			 */
-			if(exp->typeQ == gen->typeQ){
+			if(_NhlIsSubtypeQ(exp->typeQ,gen->typeQ)){
 				memcpy(farr,carr,gen->size*len_dim[0]);
 			}
 			else{
@@ -1167,8 +1167,13 @@ CvtGenArrToFArr
 		StackFree(iarr)
 	}
 
-	*exp->num_dim = num_dim;
-	memcpy(exp->len_dim,len_dim,sizeof(int)*num_dim);
+	if(exp->num_dim != NULL){
+		*exp->num_dim = num_dim;
+		memcpy(exp->len_dim,len_dim,sizeof(int)*num_dim);
+	}
+	else{
+		*exp->len_dim = len_dim[0];
+	}
 
 	StackFree(len_dim)
 
