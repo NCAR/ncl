@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MathTemplate.c.sed,v 1.3 1997-04-14 23:57:15 ethan Exp $
+ *      $Id: MathTemplate.c.sed,v 1.4 2001-01-03 17:12:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -114,11 +114,12 @@ NhlErrorTypes _NclFUNCNAME
 		out_val = (void*)NclMalloc(total*sizeof(float));
 		fout_val = (float*)out_val;
 		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
 			for( i = 0 ; i < total; i ++ ) {
 				if(ivalue[i] != missing.intval) {
 					fout_val[i] = (float)FUNCNAME((CAST)ivalue[i]);
 				} else {
-					fout_val[i] = (float)missing.intval;
+					fout_val[i] = missing2.floatval;
 				}
 			}
 		} else {
@@ -130,7 +131,7 @@ NhlErrorTypes _NclFUNCNAME
 			out_val,
 			n_dims,
 			dimsizes,
-			(has_missing ? &missing : NULL),
+			(has_missing ? &missing2 : NULL),
 			NCL_float,
 			0
 		));
@@ -139,11 +140,12 @@ NhlErrorTypes _NclFUNCNAME
 		out_val = (void*)NclMalloc(total*sizeof(float));
 		fout_val = (float*)out_val;
 		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
 			for( i = 0 ; i < total; i ++ ) {
 				if(svalue[i] != missing.shortval) {
 					fout_val[i] = (float)FUNCNAME((CAST)svalue[i]);
 				} else {
-					fout_val[i] = (float)missing.shortval;
+					fout_val[i] = missing2.floatval;
 				}
 			}
 		} else {
@@ -155,7 +157,7 @@ NhlErrorTypes _NclFUNCNAME
 			out_val,
 			n_dims,
 			dimsizes,
-			(has_missing ? &missing : NULL),
+			(has_missing ? &missing2 : NULL),
 			NCL_float,
 			0
 		));
@@ -164,11 +166,12 @@ NhlErrorTypes _NclFUNCNAME
 		out_val = (void*)NclMalloc(total*sizeof(float));
 		fout_val = (float*)out_val;
 		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
 			for( i = 0 ; i < total; i ++ ) {
 				if(lvalue[i] != missing.longval) {
 					fout_val[i] = (float)FUNCNAME((CAST)lvalue[i]);
 				} else {
-					fout_val[i] = (float)missing.longval;
+					fout_val[i] = missing2.floatval;
 				}
 			}
 		} else {
@@ -180,7 +183,7 @@ NhlErrorTypes _NclFUNCNAME
 			out_val,
 			n_dims,
 			dimsizes,
-			(has_missing ? &missing : NULL),
+			(has_missing ? &missing2 : NULL),
 			NCL_float,
 			0
 		));
@@ -189,11 +192,12 @@ NhlErrorTypes _NclFUNCNAME
 		out_val = (void*)NclMalloc(total*sizeof(float));
 		fout_val = (float*)out_val;
 		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
 			for( i = 0 ; i < total; i ++ ) {
 				if(bvalue[i] != missing.byteval) {
 					fout_val[i] = (float)FUNCNAME((CAST)bvalue[i]);
 				} else {
-					fout_val[i] = (float)missing.byteval;
+					fout_val[i] = missing2.floatval;
 				}
 			}
 		} else {
@@ -205,7 +209,7 @@ NhlErrorTypes _NclFUNCNAME
 			out_val,
 			n_dims,
 			dimsizes,
-			(has_missing ? &missing : NULL),
+			(has_missing ? &missing2 : NULL),
 			NCL_float,
 			0
 		));
