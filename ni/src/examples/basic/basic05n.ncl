@@ -1,4 +1,4 @@
-; $Id: basic05n.ncl,v 1.7 1995-04-27 19:15:45 scheitln Exp $
+; $Id: basic05n.ncl,v 1.8 1995-05-01 22:15:08 scheitln Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -28,8 +28,8 @@
 begin
 
 ; Initialize numeric labels for the labelbar annotation.
-colorindices=new(175,integer)
-do i = 1, 175
+colorindices=new(232,integer)
+do i = 1, 232
    colorindices(i-1) = i
 end do
 
@@ -53,6 +53,8 @@ else
 ;
   wks = create "wks" xWorkstationClass defaultapp
       "wkPause" : "True"
+      "wkXColorMode" : "private"      ; Set color mode to private to avoid
+                                      ; contention for colors from other apps.
       "wkColorMap" : "default"	      ; Set Colormap to default. Note,
                                       ; this assignment is redundant.
   end create
@@ -66,7 +68,7 @@ lbar = create "LabelBar" labelBarClass wks
 	"lbMonoFillPattern" : "TRUE"          ; Single pattern used for fill
 	"lbFillPattern" : "SolidFill"         ; Set fill pattern to solid
 	"lbBoxLinesOn" : "FALSE"              ; Turn off lines between colors
-	"lbBoxCount" : 131                    ; Display 131 entries
+	"lbBoxCount" : 31                     ; Display 31 entries
 	"lbPerimOn" : "FALSE"                 ; Turn off labelbar perimeter
 	"lbTitleString" : "Default Colormap"  ; Plot title
 	"lbTitleFont" : "Helvetica-bold"      ; Title font
@@ -174,6 +176,40 @@ setvalues lbar
         "lbBoxCount"    :  112                 ; Number of entries to display
 end setvalues
   
+; Draw the labelbar and textual annotation
+draw(lbar)
+draw(text)
+frame(wks)
+
+; Change the colormap to one of the predefined colormaps
+setvalues wks
+   	"wkColorMap" : "temp1"	      ; temperature (cold to warm)
+end setvalues
+
+; Change the labelbar title, annotation, and number of entries.
+setvalues lbar
+	"lbTitleString" : "Temp1 Colormap"    ; Labelbar title
+	"lbLabelStride" :  5                  ; Label every 5th entry
+        "lbBoxCount"    :  62                 ; Number of entries to display
+end setvalues
+
+; Draw the labelbar and textual annotation
+draw(lbar)
+draw(text)
+frame(wks)
+
+; Change the colormap to one of the predefined colormaps
+setvalues wks
+   	"wkColorMap" : "psgcap"	      ; PostScript graphcap
+end setvalues
+
+; Change the labelbar title, annotation, and number of entries.
+setvalues lbar
+	"lbTitleString" : "Psgcap Colormap"    ; Labelbar title
+	"lbLabelStride" :  15                  ; Label every 15th entry
+        "lbBoxCount"    :  230                 ; Number of entries to display
+end setvalues
+
 ; Draw the labelbar and textual annotation
 draw(lbar)
 draw(text)
