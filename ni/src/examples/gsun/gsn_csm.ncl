@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.150 2003-12-11 20:48:54 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.151 2004-01-02 17:33:50 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -8176,7 +8176,9 @@ begin
           yref_fill_on    = True
           delete(res2@gsnAboveYRefLineColor)
         else
-          if(isatt(res2,"gsnAboveYRefLineBarPatterns")) then
+          if(any(isatt(res2,(/"gsnXYBarChartPatterns", \
+                              "gsnXYBarChartPatterns2", \
+                              "gsnAboveYRefLineBarPatterns"/)))) then
             yref_line_above = 1    ; defaults to foreground.
           else
             yref_line_above = -1    ; defaults to no fill.
@@ -8194,7 +8196,9 @@ begin
           yref_line_below = get_res_value(res2,"gsnBelowYRefLineColor",1)
           yref_fill_on    = True
         else
-          if(isatt(res2,"gsnBelowYRefLineBarPatterns")) then
+          if(any(isatt(res2,(/"gsnXYBarChartPatterns", \
+                              "gsnXYBarChartPatterns2", \
+                              "gsnBelowYRefLineBarPatterns"/)))) then
             yref_line_below = 1    ; defaults to foreground.
           else
             yref_line_below = -1    ; defaults to no fill.
