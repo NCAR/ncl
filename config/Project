@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.13 1994-08-29 19:13:54 boote Exp $
+ *      $Id: Project,v 1.14 1994-08-31 02:34:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -109,8 +109,8 @@
 #else	/* !BuildRasterHDF */
 #ifdef	HDFlib
 #undef	HDFlib
-#define	HDFlib	/**/
 #endif	/* HDFlib */
+#define	HDFlib	/**/
 #endif	/* BuildRasterHDF */
 
 #ifndef	NetCDFlib
