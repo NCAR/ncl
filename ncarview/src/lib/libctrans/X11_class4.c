@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.12 1992-02-07 16:22:21 clyne Exp $
+ *	$Id: X11_class4.c,v 1.13 1992-02-07 17:05:01 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -128,6 +128,7 @@ CGMC *c;
 	static	boolean	MoreData = FALSE;
 	static	XPoint	P;
 	int	x,y;
+
 
 	/*
 	 *	make sure line attributes are set
@@ -553,9 +554,7 @@ CGMC *c;
 				/*	need to turn off clipping to draw
 				 *	in our tile with the polygonGC
 				 */
-				if (CLIPFLAG) {
-					XSetClipMask(dpy, polygonGC, None);
-				}
+				XSetClipMask(dpy, polygonGC, None);
 
 				switch (HATCH_IND) {
 
@@ -584,11 +583,10 @@ CGMC *c;
 
 					case POSSITIVE :
 
-
 						XDrawLine(dpy, tile.tileid, 
 							polygonGC, 
-							tile.width,0,
-							0,tile.height);
+							tile.width-1,0,
+							0,tile.height-1);
 
 					break;
 
@@ -651,9 +649,10 @@ CGMC *c;
 				/* free the tile	*/
 				XFreePixmap(dpy, tile.tileid);
 
-				/* restore clipping if necessary	*/
-				if (CLIPFLAG)
-					GCsetclipping();
+				/* 
+				 * restore clipping 
+				 */
+				GCsetclipping();
 			}
 
 			break;
