@@ -1,5 +1,5 @@
 /*
- *      $Id: cn16c.c,v 1.2 1997-04-09 21:05:29 haley Exp $
+ *      $Id: cn16c.c,v 1.3 1998-02-17 16:27:41 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -129,6 +129,7 @@ main()
  * Read in lat values from netCDF file.
  */
   lat_id = ncvarid(ncid,"lat");
+  start[0] = 0;
   count[0] = latlen;
   ncvarget(ncid,lat_id,(long const *)start,(long const *)count,lat);
 /*
