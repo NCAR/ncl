@@ -1,0 +1,135 @@
+      SUBROUTINE  IDPDRV(NDP,XD,YD,ZD,NT,IPT,PD,WK)
+C THIS SUBROUTINE ESTIMATES PARTIAL DERIVATIVES OF THE FIRST AND
+C SECOND ORDER AT THE DATA POINTS.
+C THE INPUT PARAMETERS ARE
+C     NDP = NUMBER OF DATA POINTS,
+C     XD,YD,ZD = ARRAYS OF DIMENSION NDP CONTAINING THE X,
+C           Y, AND Z COORDINATES OF THE DATA POINTS,
+C     NT  = NUMBER OF TRIANGLES,
+C     IPT = INTEGER ARRAY OF DIMENSION 3*NT CONTAINING THE
+C           POINT NUMBERS OF THE VERTEXES OF THE TRIANGLES.
+C THE OUTPUT PARAMETER IS
+C     PD  = ARRAY OF DIMENSION 5*NDP, WHERE THE ESTIMATED
+C           ZX, ZY, ZXX, ZXY, AND ZYY VALUES AT THE ITH
+C           DATA POINT ARE TO BE STORED AS  THE (5*I-4)TH,
+C           (5*I-3)RD, (5*I-2)ND, (5*I-1)ST AND (5*I)TH
+C           ELEMENTS, RESPECTIVELY, WHERE I = 1, 2, ...,
+C           NDP.
+C THE OTHER PARAMETER IS
+C     WK  = ARRAY OF DIMENSION NDP USED INTERNALLY AS A
+C           WORK AREA.
+C DECLARATION STATEMENTS
+      DIMENSION XD(NDP), YD(NDP), ZD(NDP), IPT(3*NT), PD(5*NDP), WK(NDP)
+      DIMENSION   IPTI(3),XV(3),YV(3),ZV(3),ZXV(3),ZYV(3),
+     1            W1(3),W2(3)
+      DATA  EPSLN/1.0E-6/
+C PRELIMINARY PROCESSING
+   10 NDP0=NDP
+      NT0=NT
+C CLEARS THE PD ARRAY.
+   20 JPDMX=5*NDP0
+      DO 21  JPD=1,JPDMX
+        PD(JPD)=0.0
+   21 CONTINUE
+      DO 22  IDP=1,NDP
+        WK(IDP)=0.0
+   22 CONTINUE
+C ESTIMATES ZX AND ZY.
+   30 DO 34  IT=1,NT0
+        JPT0=3*(IT-1)
+        DO 31  IV=1,3
+          JPT=JPT0+IV
+          IDP=IPT(JPT)
+          IPTI(IV)=IDP
+          XV(IV)=XD(IDP)
+          YV(IV)=YD(IDP)
+          ZV(IV)=ZD(IDP)
+   31   CONTINUE
+        DX1=XV(2)-XV(1)
+        DY1=YV(2)-YV(1)
+        DZ1=ZV(2)-ZV(1)
+        DX2=XV(3)-XV(1)
+        DY2=YV(3)-YV(1)
+        DZ2=ZV(3)-ZV(1)
+        VPX=DY1*DZ2-DZ1*DY2
+        VPY=DZ1*DX2-DX1*DZ2
+        VPZ=DX1*DY2-DY1*DX2
+        VPZMN=ABS(DX1*DX2+DY1*DY2)*EPSLN
+        IF(ABS(VPZ).LE.VPZMN)     GO TO 34
+        D12=SQRT((XV(2)-XV(1))**2+(YV(2)-YV(1))**2)
+        D23=SQRT((XV(3)-XV(2))**2+(YV(3)-YV(2))**2)
+        D31=SQRT((XV(1)-XV(3))**2+(YV(1)-YV(3))**2)
+        W1(1)=1.0/(D31*D12)
+        W1(2)=1.0/(D12*D23)
+        W1(3)=1.0/(D23*D31)
+        W2(1)=VPZ*W1(1)
+        W2(2)=VPZ*W1(2)
+        W2(3)=VPZ*W1(3)
+   32   DO 33  IV=1,3
+          IDP=IPTI(IV)
+          JPD0=5*(IDP-1)
+          WI=(W1(IV)**2)*W2(IV)
+          PD(JPD0+1)=PD(JPD0+1)+VPX*WI
+          PD(JPD0+2)=PD(JPD0+2)+VPY*WI
+          WK(IDP)=WK(IDP)+VPZ*WI
+   33   CONTINUE
+   34 CONTINUE
+      DO 36  IDP=1,NDP0
+        JPD0=5*(IDP-1)
+        PD(JPD0+1)=-PD(JPD0+1)/WK(IDP)
+        PD(JPD0+2)=-PD(JPD0+2)/WK(IDP)
+   36 CONTINUE
+C ESTIMATES ZXX, ZXY, AND ZYY.
+   40 DO 44  IT=1,NT0
+        JPT0=3*(IT-1)
+        DO 41  IV=1,3
+          JPT=JPT0+IV
+          IDP=IPT(JPT)
+          IPTI(IV)=IDP
+          XV(IV)=XD(IDP)
+          YV(IV)=YD(IDP)
+          JPD0=5*(IDP-1)
+          ZXV(IV)=PD(JPD0+1)
+          ZYV(IV)=PD(JPD0+2)
+   41   CONTINUE
+        DX1=XV(2)-XV(1)
+        DY1=YV(2)-YV(1)
+        DZX1=ZXV(2)-ZXV(1)
+        DZY1=ZYV(2)-ZYV(1)
+        DX2=XV(3)-XV(1)
+        DY2=YV(3)-YV(1)
+        DZX2=ZXV(3)-ZXV(1)
+        DZY2=ZYV(3)-ZYV(1)
+        VPXX=DY1*DZX2-DZX1*DY2
+        VPXY=DZX1*DX2-DX1*DZX2
+        VPYX=DY1*DZY2-DZY1*DY2
+        VPYY=DZY1*DX2-DX1*DZY2
+        VPZ=DX1*DY2-DY1*DX2
+        VPZMN=ABS(DX1*DX2+DY1*DY2)*EPSLN
+        IF(ABS(VPZ).LE.VPZMN)     GO TO 44
+        D12=SQRT((XV(2)-XV(1))**2+(YV(2)-YV(1))**2)
+        D23=SQRT((XV(3)-XV(2))**2+(YV(3)-YV(2))**2)
+        D31=SQRT((XV(1)-XV(3))**2+(YV(1)-YV(3))**2)
+        W1(1)=1.0/(D31*D12)
+        W1(2)=1.0/(D12*D23)
+        W1(3)=1.0/(D23*D31)
+        W2(1)=VPZ*W1(1)
+        W2(2)=VPZ*W1(2)
+        W2(3)=VPZ*W1(3)
+   42   DO 43  IV=1,3
+          IDP=IPTI(IV)
+          JPD0=5*(IDP-1)
+          WI=(W1(IV)**2)*W2(IV)
+          PD(JPD0+3)=PD(JPD0+3)+VPXX*WI
+          PD(JPD0+4)=PD(JPD0+4)+(VPXY+VPYX)*WI
+          PD(JPD0+5)=PD(JPD0+5)+VPYY*WI
+   43   CONTINUE
+   44 CONTINUE
+      DO 46  IDP=1,NDP0
+        JPD0=5*(IDP-1)
+        PD(JPD0+3)=-PD(JPD0+3)/WK(IDP)
+        PD(JPD0+4)=-PD(JPD0+4)/(2.0*WK(IDP))
+        PD(JPD0+5)=-PD(JPD0+5)/WK(IDP)
+   46 CONTINUE
+      RETURN
+      END
