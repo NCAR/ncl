@@ -1,5 +1,5 @@
 /*
- *  $Id: c_vvex01.c.sed,v 1.1 1994-08-01 14:22:12 haley Exp $
+ *  $Id: c_vvex01.c.sed,v 1.2 1994-08-17 21:24:39 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -489,21 +489,40 @@ FILE *fp;
 
 void openr()
 {
-    char filenm[128];
+    char *filenm = "                                                                                                                                            ";
+    char *filenm2 = "database";
     static int iopen = 0;
     int i, istat;
+/*
+ * Cray machine dependencies require
+ * extra variables.
+*/
+#if defined (cray)
+    int len;		/* path length */
+    _fcd cftfilenm;		/* full path */
+    _fcd cftfilenm2;	/* append file name */
+#endif
 
     if (!iopen) {
-        gngpat_(filenm,"database",&istat,128,8);
-        if (istat != -1) {
-            for( i = 0; i < 119; i++ ) {
-                if (filenm[i] == '\0') {
-                    strcat(&filenm[i], "/ranfdata" );
-                    break;
-                }
-            }
-        }
-		fp = fopen( filenm, "r" );
+#if !defined (cray)
+        gngpat_(filenm,filenm2,&istat,119,9);
+#else
+      	cftfilenm = _cptofcd(filenm, strlen(filenm));
+       	cftfilenm2 = _cptofcd(filenm2, strlen(filenm2));
+       	gngpat_(cftfilenm,cftfilenm2,&istat);
+       	len = _fcdlen(cftfilenm);
+       	filenm = (char*)malloc(len*sizeof(char));
+       	filenm = _fcdtocp(cftfilenm);
+#endif
+  		if( istat != -1 ) {
+	        for( i = 0; i < 119; i++ ) {
+    	        if (filenm[i] == '\0') {
+        	        strcat(&filenm[i], "/ranfdata" );
+            	    break;
+	            }	
+	        }	
+			fp = fopen( filenm, "r" );
+		}
 	}
 	return;
 }

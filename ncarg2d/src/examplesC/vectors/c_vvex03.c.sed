@@ -1,5 +1,5 @@
 /*
- *  $Id: c_vvex03.c.sed,v 1.1 1994-08-01 14:22:13 haley Exp $
+ *  $Id: c_vvex03.c.sed,v 1.2 1994-08-17 21:24:40 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -574,7 +574,7 @@ int *ist;
  *
  * test for 90 degree latitude.
  */
-        if ((int)(abs(yt)*PRCFAC+0.5)==IPCTST) {
+        if ((int)(fabs(yt)*PRCFAC+0.5)==IPCTST) {
             *ist=-1;
             return(0);
         }
@@ -634,7 +634,7 @@ twenty:
             }
         }
 
-        if (abs(xt) >= PFOVFL || abs(yt) >= PFOVFL) {
+        if (fabs(xt) >= PFOVFL || fabs(yt) >= PFOVFL) {
             *ist = -6;
             return(0);
         }
