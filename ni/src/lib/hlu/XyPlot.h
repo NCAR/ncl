@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.h,v 1.9 1995-03-15 11:49:00 boote Exp $
+ *      $Id: XyPlot.h,v 1.10 1995-03-24 11:27:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -186,7 +186,7 @@ typedef enum _NhlAlternatePlace{
 /*
  * Names for new types.
  */
-#define NhlTLineLabelMode	"lineLabelMode"
+#define NhlTLineLabelMode	"LineLabelMode"
 
 typedef enum _NhlLineLabelMode{
 	NhlNOLABELS,

@@ -1,5 +1,5 @@
 /*
- *      $Id: NresDB.c,v 1.5 1994-12-16 20:04:30 boote Exp $
+ *      $Id: NresDB.c,v 1.6 1995-03-24 11:27:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
  *			hlu's.  I started with the X code and modified it
  *			as I needed to - therefore the following X copyright
  *			notice is here.  The above copyright should be taken
- *			to copyright all changes the the code below.
+ *			to copyright all changes to the code below.
  */
 
 /***********************************************************

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.35 1995-03-15 11:48:58 boote Exp $
+ *      $Id: XyPlot.c,v 1.36 1995-03-24 11:27:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1442,11 +1442,9 @@ XyDataGetValues
 	NhlXyDataSpecLayerPart	*xyp = &((NhlXyDataSpecLayer)l)->xydata;
 	int			i;
 	NhlGenArray		ga;
-	NhlString		res_name;
 
 	for(i=0;i<nargs;i++){
 		ga = NULL;
-		res_name = NULL;
 
 		if(args[i].quark == Qdpatterns){
 			ga = xyp->dashes;
@@ -1526,11 +1524,10 @@ XyPlotGetValues
 	NhlXyPlotLayerPart	*xyp = &((NhlXyPlotLayer)l)->xyplot;
 	int			i;
 	NhlGenArray		ga;
-	NhlString		res_name;
+	NhlErrorTypes		ret = NhlNOERROR;
 
 	for(i=0;i<nargs;i++){
 		ga = NULL;
-		res_name = NULL;
 
 		if(args[i].quark == QXirreg){
 			ga = xyp->x_irregular_points;
@@ -1563,9 +1560,12 @@ XyPlotGetValues
 				NhlPError(NhlWARNING,ENOMEM,
 					"%s:Unable to retrieve %s",func,
 					NrmQuarkToString(args[i].quark));
+				ret = NhlWARNING;
 			}
 		}
 	}
+
+	return NhlWARNING;
 }
 
 /*
