@@ -1,5 +1,5 @@
 ;
-;      $Id: xy05n.ncl,v 1.6 1995-03-23 16:31:28 haley Exp $
+;      $Id: xy05n.ncl,v 1.7 1995-03-28 23:50:45 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -109,7 +109,7 @@ if (NCGM .eq. 1) then
 ;
 ; Create an ncgmWorkstation object.
 ;
-  xworkwid = create "xy05Work" ncgmWorkstationLayerClass defaultapp
+  xworkid = create "xy05Work" ncgmWorkstationLayerClass defaultapp
       "wkMetaName" : "xy05n.ncgm"
   end create
 else
