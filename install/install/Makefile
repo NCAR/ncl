@@ -1,6 +1,8 @@
 ROOT_DIR	= /cyclone/X/ncarg/binaries
 INS_DIR	= $(ROOT_DIR)/INSTALL
 SRC_TAR	= $(ROOT_DIR)/SRC.TAR
+DOC_DIR = /cyclone/ncargd/nidt/http/droot/ngdoc/ng4.0.1
+DOC_TAR = $(ROOT_DIR)/DOC.TAR
 
 TARGETS		=	HPUX_HP9000_7xx AIX_RS6000 SunOS_sun4 \
 			Solaris_sun4 ULTRIX_RISC IRIX_IP IRIX64_IP OSF1_alpha \
@@ -27,8 +29,14 @@ dirs::
 
 install::	all
 	tar -cf - . | (cd $(ROOT_DIR)/INSTALL; tar -xf -)
+
+src:
 	@echo "Generating distribution source from $(NCARG)
 	(cd $(NCARG); tar -cbf 20 $(SRC_TAR) .)
+
+doc:
+	@echo "Generating distribution documentation from $(DOC_DIR)
+	(cd $(DOC_DIR); tar -cbf 20 $(DOC_TAR) .)
 
 clean::
 	/bin/rm -f var/*
