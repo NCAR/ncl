@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.11 1994-05-17 00:38:16 fred Exp $
+C	$Id: gesc.f,v 1.12 1994-05-19 19:26:48 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -48,6 +48,10 @@ C      -1395  --  Cause a pause in ctrans processing.
 C      -1396  --  Flag a pause in the X driver.
 C      -1397  --  Color table identifier for use by NCAR Interactive.
 C      -1398  --  Maximum number of error messages before abort.
+C      -1399  --  Flag for GKS clipping (0 = off; 1 = on).
+C
+C  Reserved for the X drivers:
+C      -1400 through -1410
 C
 C  PostScript specific escapes.
 C
@@ -65,7 +69,12 @@ C      -1520  --  Miter limit.
 C      -1521  --  Coordinate points for picture positioning.
 C      -1522  --  Scale factor for PS coordintaes
 C
-      IF (FCTID .EQ. -1398) THEN
+      IF (FCTID .EQ. -1399) THEN
+C
+C  Value to flag if GKS clipping is on. (0 = no; 1 = yes).
+C
+        READ(IDR(1), 501) GKSCLP
+      ELSE IF (FCTID .EQ. -1398) THEN
 C
 C  Get maximum number of allowable error messages.
 C

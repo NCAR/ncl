@@ -1,3 +1,6 @@
+C
+C	$Id: gzname.f,v 1.2 1994-05-19 19:27:02 fred Exp $
+C
       SUBROUTINE GZNAME(FCTID,FNAME)
 C
 C  This subroutine takes the GKS function id in the integer variable

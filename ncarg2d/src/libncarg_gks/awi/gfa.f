@@ -1,5 +1,5 @@
 C
-C	$Id: gfa.f,v 1.2 1993-01-09 01:58:36 fred Exp $
+C	$Id: gfa.f,v 1.3 1994-05-19 19:26:51 fred Exp $
 C
       SUBROUTINE GFA(N,PX,PY)
 C
@@ -8,9 +8,20 @@ C
       INTEGER EFA
       PARAMETER (EFA=15)
 C
+C  Specify the maximum sized polygon that will be clipped to the NDC
+C  viewport.
+C
+      PARAMETER (MAXCLP=250)
+C
       include 'gkscom.h'
 C
       REAL PX(N),PY(N)
+C
+C  Set up integer workspace for clipping call.
+C
+      DIMENSION IWKSP(IWDIM)
+      EQUIVALENCE(IWKSP(1),RWKSP(1))
+      DIMENSION WCLIPX(4),WCLIPY(4)
 C
 C  Check if GKS is in the proper state.
 C
@@ -31,6 +42,30 @@ C  workstation interface.  Flag conversion to NDC space.
 C
       FCODE = 14
       CALL GZROI(0)
+C
+C  Set up clip rectangle for clipping world coordinates to the
+C  NDC viewport if the polygons are small enough and clipping is on.
+C
+      IF (N .LE. MAXCLP .AND. GKSCLP.NE.0) THEN
+        ICNT = CNT+1
+        WCLIPX(1) = WRLDCP(ICNT,1)
+        WCLIPX(2) = WRLDCP(ICNT,2)
+        WCLIPX(3) = WCLIPX(2)
+        WCLIPX(4) = WCLIPX(1)
+        WCLIPY(1) = WRLDCP(ICNT,3)
+        WCLIPY(2) = WCLIPY(1)
+        WCLIPY(3) = WRLDCP(ICNT,4)
+        WCLIPY(4) = WCLIPY(3)
+        CALL GZCLPO (WCLIPX,WCLIPY,4,PX,PY,N,RWKSP,IWKSP,IWDIM,IERR)
+        IF (IERR .NE. 0) GO TO 10
+        RERR = 0
+        RETURN
+      ENDIF
+C
+C  Polygon is larger than the clip limit, or clip algorithm error
+C  encountered, or clipping is off.
+C
+   10 CONTINUE
       NPTOT = N
       CALL GZPUTR(NPTOT,N,PX,PY,1,IER)
       RERR = IER

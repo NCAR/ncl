@@ -1,5 +1,5 @@
 C
-C	$Id: gzinsl.f,v 1.2 1993-01-09 02:04:15 fred Exp $
+C	$Id: gzinsl.f,v 1.3 1994-05-19 19:27:00 fred Exp $
 C
       SUBROUTINE GZINSL
 C
@@ -45,6 +45,14 @@ C
       NTVP(2,2)  = 1.
       NTVP(2,3)  = 0.
       NTVP(2,4)  = 1.
+      WRLDCP(1,1)  = 0.
+      WRLDCP(1,2)  = 1.
+      WRLDCP(1,3)  = 0.
+      WRLDCP(1,4)  = 1.
+      WRLDCP(2,1)  = 0.
+      WRLDCP(2,2)  = 1.
+      WRLDCP(2,3)  = 0.
+      WRLDCP(2,4)  = 1.
       CPLI       = 1
       CLN        = 1
       CLWSC      = 1.
