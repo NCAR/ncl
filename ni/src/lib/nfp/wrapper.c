@@ -149,7 +149,6 @@ extern NhlErrorTypes shgetnp_W(void);
 extern NhlErrorTypes shgetp_W(void);
 extern NhlErrorTypes shsetp_W(void);
 
-extern NhlErrorTypes cstrans_W(void);
 extern NhlErrorTypes csstri_W(void);
 extern NhlErrorTypes cssgrid_W(void);
 extern NhlErrorTypes css2c_W(void);
@@ -1777,25 +1776,20 @@ void NclAddUserFuncs(void)
  *  Register csc2s.
  */
     nargs = 0;
-    args = NewArgs(5);
+    args = NewArgs(3);
     SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
     SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
     SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
-    NclRegisterProc(csc2s_W, args, "csc2s", nargs);
+    NclRegisterFunc(csc2s_W, args, "csc2s", nargs);
 
 /*
  *  Register css2c.
  */
     nargs = 0;
-    args = NewArgs(5);
+    args = NewArgs(2);
     SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
     SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
-    NclRegisterProc(css2c_W, args, "css2c", nargs);
+    NclRegisterFunc(css2c_W, args, "css2c", nargs);
 
 /*
  *  Register cssetp.

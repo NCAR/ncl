@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include "wrapper.h"
 
 /*
  * The following are required NCAR Graphics include files.
@@ -52,23 +53,38 @@ char csmsg[61];
 NhlErrorTypes css2c_W(void)
 {
 
-  int ndims[5], dsizes[5][NCL_MAX_DIMENSIONS], has_missing[5];
-  NclScalar missing[5];
-  void *datav[5];
+  int ndims[2], dsizes[2][NCL_MAX_DIMENSIONS], has_missing[2],dflag;
+  int return_dsizes[NCL_MAX_DIMENSIONS];
+  NclScalar missing[2],missingd[2],return_missing,*missing_ptr;
+  void *datav[2];
+  double platd, plond, *return_value_d;
+  float  platf, plonf, mvalf, *return_value_f;
 
-  int i,j,nt;
+  int i,j,k,nt;
 
-  NclBasicDataTypes atypes[5];  
+  NclBasicDataTypes atypes[2];  
 
-  for (i = 0; i < 5; i++) {
-    datav[i] = NclGetArgValue(i,5,ndims+i,&(dsizes[i][0]),missing+i,
+  for (i = 0; i < 2; i++) {
+    datav[i] = NclGetArgValue(i,2,ndims+i,&(dsizes[i][0]),missing+i,
                               has_missing+i,atypes+i,0);
+  }
+
+/*
+ *  Check on the argument types.  If either of the lat/lon input
+ *  arrays is double, then the output array will be returned as
+ *  double.  In all other cases the output array will be returned
+ *  as a float.
+ *
+ */
+  dflag = 0;
+  if ( (atypes[0] == NCL_double) || (atypes[1] == NCL_double)) {
+    dflag = 1;
   }
 
 /*
  *  Check that all dimensions are the same.
  */
-  for (i = 1; i < 5; i++) {
+  for (i = 1; i < 2; i++) {
     if (ndims[i] != ndims[0]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"css2c: all arguments "
                 "must have the same number of dimensions\n");
@@ -80,7 +96,7 @@ NhlErrorTypes css2c_W(void)
  *  Check that all dimension sizes are the same.  
  */
   for (j = 0; j < ndims[0]; j++) {
-    for (i = 1; i < 5; i++) {
+    for (i = 1; i < 2; i++) {
       if (dsizes[i][j] != dsizes[0][j]) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"css2c: all arguments "
                   "must have the same dimension sizes\n");
@@ -98,90 +114,155 @@ NhlErrorTypes css2c_W(void)
   }	
 
 /*
- *  Check that all arguments are either all float or all double.
+ *  Coerce the missing values to double.
  */
-  if ((atypes[0] != NCL_float) && (atypes[0] != NCL_double)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"css2c: all arguments "
-                "must be all float or all double\n");
-      return(NhlFATAL);
+  for (i = 0; i < 2; i++) {
+    coerce_missing(atypes[i],has_missing[i],missing+i,missingd+i,NULL);
   }
-  for (i = 1; i < 5; i++) {
-    if (atypes[i] != atypes[0]) {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"css2c: all arguments "
-              "must be all float or all double\n");
-    return(NhlFATAL);
+
+/*
+ *  Determine what to return as the missing value if one is
+ *  required.  This will be the value set for the parameter
+ *  MVL if it is set, otherwise it will be the missing value
+ *  of the first argument, unless the first argument has no
+ *  missing values, but the second argument does, in which
+ *  case the returned missing value is that of the second
+ *  argument.  The default value for the MVL parameter is -8.,
+ *  this is used simply as a flag to see if a value has been
+ *  set for that parameter.
+ */
+  c_csgetr("MVL",&mvalf);
+  if (mvalf == -8.) {
+    if (has_missing[0]) { 
+      if (dflag) {
+        return_missing.doubleval = missingd[0].doubleval;
+      }
+      else {
+        return_missing.floatval = (float) missingd[0].doubleval;
+      }
+      missing_ptr = &return_missing;
     }
+    else if (has_missing[1]) {
+      if (dflag) {
+        return_missing.doubleval = missingd[1].doubleval;
+      }
+      else {
+        return_missing.floatval = (float) missingd[1].doubleval;
+      }	
+      missing_ptr = &return_missing;
+    }
+    else {
+      missing_ptr = (NclScalar *) NULL;
+    }
+  }
+  else {
+    if (dflag) {
+      return_missing.doubleval = (double) mvalf;
+    }
+    else {
+      return_missing.floatval =  mvalf;
+    }
+    missing_ptr = &return_missing;
   }
 
 /*
  *  Calculate the Cartesian coordinates one at a time,
  *  checking for missing values along the way.
  */
+  if (dflag) {
+    return_value_d = (double *) calloc(3*nt,sizeof(double));
+  }
+  else {
+    return_value_f = (float *) calloc(3*nt,sizeof(float));
+  }
+
   for (i = 0; i < nt; i++) {
-    if (atypes[0] == NCL_float) {
-      if ( has_missing[0] && 
-             (*(((float *) (datav[0]))+i) == missing[0].floatval) ) {
-          *(((float *) (datav[2]))+i) = missing[0].floatval;
-          *(((float *) (datav[3]))+i) = missing[0].floatval;
-          *(((float *) (datav[4]))+i) = missing[0].floatval;
-      }
-      else if ( has_missing[1] && 
-             (*(((float *) (datav[1]))+i) == missing[1].floatval) ) {
-          *(((float *) (datav[2]))+i) = missing[1].floatval;
-          *(((float *) (datav[3]))+i) = missing[1].floatval;
-          *(((float *) (datav[4]))+i) = missing[1].floatval;
+    coerce_subset_input_double(datav[0],&platd,i,atypes[0],1,
+                               has_missing[0],missing,missingd);
+    coerce_subset_input_double(datav[1],&plond,i,atypes[1],1,
+                               has_missing[1],missing+1,missingd+1);
+
+    if ( (has_missing[0] && (platd == missingd[0].doubleval)) ||
+         (has_missing[1] && (plond == missingd[1].doubleval))) {
+      if (dflag) {
+        return_value_d[     i] = return_missing.doubleval;
+        return_value_d[  nt+i] = return_missing.doubleval;
+        return_value_d[2*nt+i] = return_missing.doubleval;
       }
       else {
-        c_css2c(1, ((float *) (datav[0]))+i, ((float *) (datav[1]))+i,
-                   ((float *) (datav[2]))+i, ((float *) (datav[3]))+i,
-                   ((float *) (datav[4]))+i );
+        return_value_f[     i] = return_missing.floatval;
+        return_value_f[  nt+i] = return_missing.floatval;
+        return_value_f[2*nt+i] = return_missing.floatval;
       }
     }
-    else if (atypes[0] == NCL_double) {
-      if ( has_missing[0] && 
-             (*(((double *) (datav[0]))+i) == missing[0].doubleval) ) {
-          *(((double *) (datav[2]))+i) = missing[0].doubleval;
-          *(((double *) (datav[3]))+i) = missing[0].doubleval;
-          *(((double *) (datav[4]))+i) = missing[0].doubleval;
-      }
-      else if ( has_missing[1] && 
-             (*(((double *) (datav[1]))+i) == missing[1].doubleval) ) {
-          *(((double *) (datav[2]))+i) = missing[1].doubleval;
-          *(((double *) (datav[3]))+i) = missing[1].doubleval;
-          *(((double *) (datav[4]))+i) = missing[1].doubleval;
+    else {
+      if (dflag) {
+        c_css2cd(1, &platd, &plond, 
+                 return_value_d+i, return_value_d+nt+i, return_value_d+2*nt+i);
       }
       else {
-        c_css2cd(1, ((double *) (datav[0]))+i, ((double *) (datav[1]))+i,
-                    ((double *) (datav[2]))+i, ((double *) (datav[3]))+i,
-                    ((double *) (datav[4]))+i );
+        platf = (float) platd;
+        plonf = (float) plond;
+        c_css2c(1, &platf, &plonf, 
+                 return_value_f+i, return_value_f+nt+i, return_value_f+2*nt+i);
       }
     }
   }
-  return(NhlNOERROR);
+
+/*
+ *  Return.
+ */
+  return_dsizes[0] = 3;
+  for (i = 0; i < ndims[0]; i++) {
+    return_dsizes[i+1] = dsizes[0][i];
+  }
+  
+  if (dflag) {
+    NclReturnValue( (void *) return_value_d, ndims[0]+1, 
+                    return_dsizes, missing_ptr, NCL_double,0);
+  }
+  else {
+    NclReturnValue( (void *) return_value_f, ndims[0]+1, 
+                    return_dsizes, missing_ptr, NCL_float,0);
+  }
 }
 
 NhlErrorTypes csc2s_W(void)
 {
 
-  int ndims[5], dsizes[5][NCL_MAX_DIMENSIONS], has_missing[5];
-  NclScalar missing[5];
-  void *datav[5];
+  int ndims[3], dsizes[3][NCL_MAX_DIMENSIONS], has_missing[3],dflag;
+  int return_dsizes[NCL_MAX_DIMENSIONS];
+  NclScalar missing[3],missingd[3],return_missing,*missing_ptr;
+  void *datav[3];
+  double xid,yid,zid,*return_value_d;
+  float   xi, yi, zi,*return_value_f,mvalf;
 
   int i,j,nt;
-  float fdum;
-  double ddum;
 
-  NclBasicDataTypes atypes[5];  
+  NclBasicDataTypes atypes[3];  
 
-  for (i = 0; i < 5; i++) {
-    datav[i] = NclGetArgValue(i,5,ndims+i,&(dsizes[i][0]),missing+i,
+  for (i = 0; i < 3; i++) {
+    datav[i] = NclGetArgValue(i,3,ndims+i,&(dsizes[i][0]),missing+i,
                               has_missing+i,atypes+i,0);
+  }
+
+/*
+ *  Check on the argument types.  If any of the input
+ *  arrays is double, then the output array will be returned as
+ *  double.  In all other cases the output array will be returned
+ *  as a float.  
+ *
+ */
+  dflag = 0;
+  if ( (atypes[0] == NCL_double) || (atypes[1] == NCL_double) ||
+       (atypes[2] == NCL_double)) {
+    dflag = 1;
   }
 
 /*
  *  Check that all dimensions are the same.
  */
-  for (i = 1; i < 5; i++) {
+  for (i = 1; i < 3; i++) {
     if (ndims[i] != ndims[0]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"csc2s: all arguments "
                 "must have the same number of dimensions\n");
@@ -193,7 +274,7 @@ NhlErrorTypes csc2s_W(void)
  *  Check that all dimension sizes are the same.  
  */
   for (j = 0; j < ndims[0]; j++) {
-    for (i = 1; i < 5; i++) {
+    for (i = 1; i < 3; i++) {
       if (dsizes[i][j] != dsizes[0][j]) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"csc2s: all arguments "
                   "must have the same dimension sizes\n");
@@ -211,72 +292,128 @@ NhlErrorTypes csc2s_W(void)
   }	
 
 /*
- *  Check that all arguments are either all float or all double.
+ *  Coerce the missing values to double.
  */
-  if ((atypes[0] != NCL_float) && (atypes[0] != NCL_double)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"csc2s: all arguments "
-                "must be all float or all double\n");
-      return(NhlFATAL);
+  for (i = 0; i < 3; i++) {
+    coerce_missing(atypes[i],has_missing[i],missing+i,missingd+i,NULL);
   }
-  for (i = 1; i < 5; i++) {
-    if (atypes[i] != atypes[0]) {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"csc2s: all arguments "
-              "must be all float or all double\n");
-    return(NhlFATAL);
+
+/*
+ *  Determine what to return as the missing value if one is
+ *  required.  This will be the value set for the parameter
+ *  MVL if it is set, otherwise it will be the missing value
+ *  of the first argument, unless the first argument has no
+ *  missing values, but the second argument does, in which
+ *  case the returned missing value is that of the second
+ *  argument, and so on for the third argument.  The default 
+ *  value for the MVL parameter is -8., this is used simply 
+ *  as a flag to see if a value has been set for that parameter.
+ */
+  c_csgetr("MVL",&mvalf);
+  if (mvalf == -8.) {
+    if (has_missing[0]) {
+      if (dflag) {
+        return_missing.doubleval = missingd[0].doubleval;
+      }
+      else {
+        return_missing.floatval = (float) missingd[0].doubleval;
+      }
+      missing_ptr = &return_missing;
     }
+    else if (has_missing[1]) {
+      if (dflag) {
+        return_missing.doubleval = missingd[1].doubleval;
+      }
+      else {
+        return_missing.floatval = (float) missingd[1].doubleval;
+      }
+      missing_ptr = &return_missing;
+    }
+    else if (has_missing[2]) {
+      if (dflag) {
+        return_missing.doubleval = missingd[2].doubleval;
+      }
+      else {
+        return_missing.floatval = (float) missingd[2].doubleval;
+      }
+      missing_ptr = &return_missing;
+    }
+    else {
+      missing_ptr = (NclScalar *) NULL;
+    }
+  }
+  else {
+    if (dflag) {
+      return_missing.doubleval = (double) mvalf;
+    }
+    else {
+      return_missing.floatval =  mvalf;
+    }
+    missing_ptr = &return_missing;
   }
 
 /*
  *  Calculate the lat/lon coordinates one at a time,
  *  checking for missing values along the way.
  */
+  if (dflag) {
+    return_value_d = (double *) calloc(2*nt,sizeof(double));
+  }
+  else {
+    return_value_f = (float *) calloc(2*nt,sizeof(float));
+  }
+
   for (i = 0; i < nt; i++) {
-    if (atypes[0] == NCL_float) {
-      if ( has_missing[0] && 
-             (*(((float *) (datav[0]))+i) == missing[0].floatval) ) {
-           *(((float *) (datav[3]))+i) = missing[0].floatval;
-           *(((float *) (datav[4]))+i) = missing[0].floatval;
-      }
-      else if ( has_missing[1] && 
-             (*(((float *) (datav[1]))+i) == missing[1].floatval) ) {
-           *(((float *) (datav[3]))+i) = missing[1].floatval;
-           *(((float *) (datav[4]))+i) = missing[1].floatval;
-      }
-      else if ( has_missing[2] && 
-             (*(((float *) (datav[2]))+i) == missing[2].floatval) ) {
-           *(((float *) (datav[3]))+i) = missing[1].floatval;
-           *(((float *) (datav[4]))+i) = missing[1].floatval;
+    coerce_subset_input_double(datav[0],&xid,i,atypes[0],1,
+                               has_missing[0],missing,missingd);
+    coerce_subset_input_double(datav[1],&yid,i,atypes[1],1,
+                               has_missing[1],missing+1,missingd+1);
+    coerce_subset_input_double(datav[2],&zid,i,atypes[2],1,
+                               has_missing[2],missing+2,missingd+2);
+
+    if ( (has_missing[0] && (xid == missingd[0].doubleval)) ||
+         (has_missing[1] && (xid == missingd[1].doubleval)) ||
+         (has_missing[2] && (xid == missingd[2].doubleval))) {
+      if (dflag) {
+        return_value_d[   i] = return_missing.doubleval;
+        return_value_d[nt+i] = return_missing.doubleval;
       }
       else {
-        c_csc2s(1, ((float *) (datav[0]))+i, ((float *) (datav[1]))+i,
-                   ((float *) (datav[2]))+i, ((float *) (datav[3]))+i,
-                   ((float *) (datav[4]))+i);
+        return_value_f[   i] = return_missing.floatval;
+        return_value_f[nt+i] = return_missing.floatval;
       }
     }
-    else if (atypes[0] == NCL_double) {
-      if ( has_missing[0] && 
-             (*(((double *) (datav[0]))+i) == missing[0].doubleval) ) {
-           *(((double *) (datav[3]))+i) = missing[0].doubleval;
-           *(((double *) (datav[4]))+i) = missing[0].doubleval;
-      }
-      else if ( has_missing[1] && 
-             (*(((double *) (datav[1]))+i) == missing[1].doubleval) ) {
-           *(((double *) (datav[3]))+i) = missing[1].doubleval;
-           *(((double *) (datav[4]))+i) = missing[1].doubleval;
-      }
-      else if ( has_missing[2] && 
-             (*(((double *) (datav[2]))+i) == missing[2].doubleval) ) {
-           *(((double *) (datav[3]))+i) = missing[1].doubleval;
-           *(((double *) (datav[4]))+i) = missing[1].doubleval;
+    else {
+      if (dflag) {
+        c_csc2sd(1, &xid, &yid, &zid,
+                 return_value_d+i, return_value_d+nt+i);
       }
       else {
-        c_csc2sd(1, ((double *) (datav[0]))+i, ((double *) (datav[1]))+i,
-                    ((double *) (datav[2]))+i, ((double *) (datav[3]))+i,
-                    ((double *) (datav[4]))+i);
+        xi = (float) xid;
+        yi = (float) yid;
+        zi = (float) zid;
+        c_csc2s(1, &xi, &yi, &zi,
+                 return_value_f+i, return_value_f+nt+i);
       }
     }
   }
-  return(NhlNOERROR);
+
+/*
+ *  Return.
+ */
+  return_dsizes[0] = 2;
+  for (i = 0; i < ndims[0]; i++) {
+    return_dsizes[i+1] = dsizes[0][i];
+  }
+
+  if (dflag) {
+    NclReturnValue( (void *) return_value_d, ndims[0]+1,
+                    return_dsizes, missing_ptr, NCL_double,0);
+  }
+  else {
+    NclReturnValue( (void *) return_value_f, ndims[0]+1,
+                    return_dsizes, missing_ptr, NCL_float,0);
+  }
 }
 
 NhlErrorTypes cssetp_W(void)
@@ -290,8 +427,8 @@ NhlErrorTypes cssetp_W(void)
  *  all that needs to be done is add the names to this list.
  */
   char *params_i[] = {"nls", "NLS", "nsg", "NSG", "isg", "ISG", "igr", "IGR"};
-  char *params_f[] = {"sig", "SIG", "tol", "TOL"};
-  char *params_d[] = {"dsg", "DSG", "dtl", "DTL"};
+  char *params_f[] = {"sig", "SIG", "tol", "TOL","mvl","TTF"};
+  char *params_d[] = {"dsg", "DSG", "dtl", "DTL","dmv","TTD"};
 
 /*
  * Input array variables
@@ -420,8 +557,8 @@ NhlErrorTypes csgetp_W(void)
  *  all that needs to be done is add the names to this list.
  */
   char *params_i[] = {"nls", "NLS", "nsg", "NSG", "isg", "ISG", "igr", "IGR"};
-  char *params_f[] = {"sig", "SIG", "tol", "TOL"};
-  char *params_d[] = {"dsg", "DSG", "dtl", "DTL"};
+  char *params_f[] = {"sig", "SIG", "tol", "TOL","mvl","TTF"};
+  char *params_d[] = {"dsg", "DSG", "dtl", "DTL","dmv","TTD"};
 
 /*
  * Input array variable
@@ -515,11 +652,12 @@ NhlErrorTypes csstri_W(void)
 {
 
   int ndims[2], dsizes[2][NCL_MAX_DIMENSIONS], has_missing[2];
-  NclScalar missing[2];
+  NclScalar missing[2],missingd[2];
   void *datav[2];
+  double *platd, *plond, platdt, plondt;
 
   int i,j,nt,num_points,num_missing=0;
-  int *trlist,dsizes_trlist[2];
+  int *trlist,dsizes_trlist[2],*indices;
 
   NclBasicDataTypes atypes[2];  
 
@@ -529,12 +667,12 @@ NhlErrorTypes csstri_W(void)
   }
 
 /*
- *  Check that all dimensions are the same.
+ *  Check that all dimensions are linear arrays.
  */
   for (i = 1; i < 2; i++) {
-    if (ndims[i] != ndims[0]) {
+    if (ndims[i] != 1) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"csstri: all arguments "
-                "must have the same number of dimensions\n");
+                "must be linear arrays.\n");
       return(NhlFATAL);
     }
   }
@@ -553,287 +691,268 @@ NhlErrorTypes csstri_W(void)
   }
 
 /*
- *  Check that all arguments are either all float or all double.
+ *  Coerce the missing values to double.
  */
-  if ((atypes[0] != NCL_float) && (atypes[0] != NCL_double)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"csstri: all arguments "
-                "must be all float or all double\n");
-      return(NhlFATAL);
+  for (i = 0; i < 2; i++) {
+    coerce_missing(atypes[i],has_missing[i],missing+i,missingd+i,NULL);
   }
-  for (i = 1; i < 2; i++) {
-    if (atypes[i] != atypes[0]) {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"csstri: all arguments "
-              "must be all float or all double\n");
-    return(NhlFATAL);
-    }
-  }
-
-  num_points = dsizes[0][0];
 
 /*
- *  Check for missing values.  Each of the two arguments must 
- *  be checked separately, since it may be that _FillValue may be
- *  set for just one of them.
- *
- *  If a missing value is found, remove that input point and collapse
- *  both input arrays.
+ *  Create temporary arrays to hold lat/lon values that are
+ *  not missing values.
  */
-  if (has_missing[0]) {
-    i = 0;
-    if (atypes[0] == NCL_float) {
-lab0:
-      if (((*(((float *) (datav[0]))+i)) == missing[0].floatval) &&
-                                (i < num_points)) {
-        for (j = i; j < num_points - 1; j++) {
-          *((float *) (datav[0])+j) = *((float *) (datav[0])+j+1);
-          *((float *) (datav[1])+j) = *((float *) (datav[1])+j+1);
-        }
-        num_points--;
-        if (num_points < 3) {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,
-            "csstri: missing values in the input data have reduced the number "
-            "of valid points to less than 3.\n");
-          return(NhlFATAL);
-        }
-        num_missing++;
-        goto lab0;
-      }
-      i++;
-      if (i < num_points) goto lab0;
-    }
-    else if (atypes[0] == NCL_double) {
-lab1:
-      if (((*(((double *) (datav[0]))+i)) == missing[0].doubleval) &&
-                                (i < num_points)) {
-        for (j = i; j < num_points - 1; j++) {
-          *((double *) (datav[0])+j) = *((double *) (datav[0])+j+1);
-          *((double *) (datav[1])+j) = *((double *) (datav[1])+j+1);
-        }
-        num_points--;
-        if (num_points < 3) {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,
-            "csstri: missing values in the input data have reduced the number "
-            "of valid points to less than 3.\n");
-          return(NhlFATAL);
-        }
-        num_missing++;
-        goto lab1;
-      }
-      i++;
-      if (i < num_points) goto lab1;
-    }
-  }
-  else if (has_missing[1]) {
-    i = 0;
-    if (atypes[1] == NCL_float) {
-      lab2:
-      if (((*(((float *) (datav[1]))+i)) == missing[1].floatval) &&
-                                (i < num_points)) {
-        for (j = i; j < num_points - 1; j++) {
-          *((float *) (datav[0])+j) = *((float *) (datav[0])+j+1);
-          *((float *) (datav[1])+j) = *((float *) (datav[1])+j+1);
-        }
-        num_points--;
-        if (num_points < 3) {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,
-            "csstri: missing values in the input data have reduced the number "
-            "of valid points to less than 3.\n");
-          return(NhlFATAL);
-        }
-        num_missing++;
-        goto lab2;
-      }
-      i++;
-      if (i < num_points) goto lab2;
-    }
-    else if (atypes[1] == NCL_double) {
-      lab3:
-      if (((*(((double *) (datav[1]))+i)) == missing[1].doubleval) &&
-                                (i < num_points)) {
-        for (j = i; j < num_points - 1; j++) {
-          *((double *) (datav[0])+j) = *((double *) (datav[0])+j+1);
-          *((double *) (datav[1])+j) = *((double *) (datav[1])+j+1);
-        }
-        num_points--;
-        if (num_points < 3) {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,
-            "csstri: missing values in the input data have reduced the number "
-            "of valid points to less than 3.\n");
-          return(NhlFATAL);
-        }
-        num_missing++;
-        goto lab3;
-      }
-      i++;
-      if (i < num_points) goto lab3;
+  platd = (double *) calloc(dsizes[0][0],sizeof(double));
+  plond = (double *) calloc(dsizes[1][0],sizeof(double));
+
+/*
+ *  Create an array to store indices of non-missing values
+ *  so that the triangle indices can be returned as indices
+ *  to the original vertices rather than the vertices stored
+ *  in platd and plond.
+ */
+  indices = (int *) calloc(dsizes[0][0],sizeof(int));
+
+/*
+ *  Loop through the input lat/lon values, coerce to double,
+ *  cull out missing values, and store in platd and plond.
+ */
+  num_points = 0;
+  for (i = 0; i < dsizes[0][0]; i++) {
+    coerce_subset_input_double(datav[0],&platdt,i,atypes[0],1,
+                               has_missing[0],missing,missingd);
+    coerce_subset_input_double(datav[1],&plondt,i,atypes[1],1,
+                               has_missing[1],missing+1,missingd+1);
+    if ( (!has_missing[0] || (platdt !=  missingd[0].doubleval)) &&
+         (!has_missing[1] || (plondt !=  missingd[1].doubleval))) {
+      platd[num_points] = platdt;
+      plond[num_points] = plondt;
+      indices[num_points] = i;
+      num_points++;
     }
   }
 
 /*
  *  Issue warning if missing values have been detected.
  */
-  if (num_missing > 0) {
+  if (num_points != dsizes[0][0]) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,
-      "csstri: missing values in %d input points - those points ignored.",
-      num_missing);
+      "csstri: missing values in input points - those points ignored.");
+  }
+
+/*
+ *  Issue an error if too few values left.
+ */
+  if (num_points < 3) {
+    free (platd);
+    free (plond);
+    free (indices);
+    NhlPError(NhlFATAL, NhlEUNKNOWN, 
+      "csstri: number of valid input points less than three.\n");
+    return(NhlFATAL);
   }
 
 /*
  *  Make the call to the C function.
  */
-  if (atypes[0] == NCL_float) {
-    trlist = c_csstri(num_points, (float *) datav[0], (float *) datav[1], 
-                      &nt, &cserr);
-  }
-  else if (atypes[0] == NCL_double) {
-    trlist = c_csstrid(num_points, (double *) datav[0], (double *) datav[1], 
-                      &nt, &cserr);
-  }
+  trlist = c_csstrid(num_points, platd, plond, &nt, &cserr);
   if (cserr != 0) {
+    free (platd);
+    free (plond);
+    free (indices);
     sprintf(csmsg, "csstri: Error number %d.", cserr);
     NhlPError(NhlFATAL, NhlEUNKNOWN, csmsg);
     return(NhlFATAL);
   }
 
+  free (platd);
+  free (plond);
   dsizes_trlist[0] = nt;
   dsizes_trlist[1] = 3;
+
+/*
+ *  Convert the vertex indices from the temporary array to the
+ *  original array.
+ */
+  for (i = 0; i < 3*nt; i++) {
+    trlist[i] = indices[trlist[i]];
+  }
+  free (indices);
   return(NclReturnValue((void *) trlist, 2, dsizes_trlist, NULL, NCL_int, 0));
-	
+
 }
 
 NhlErrorTypes csvoro_W(void)
 {
 
-  int ndims[10], dsizes[10][NCL_MAX_DIMENSIONS], has_missing[10];
-  NclScalar missing[10];
-  void *datav[10];
+  static int ndims[10], dsizes[10][NCL_MAX_DIMENSIONS], has_missing[10];
+  static int dflag;
+  static NclScalar missing[10],missingd[10];
+  static void *callp,*indexp;
+  static void *datav[10];
 
-  int i,j,nt,num_points,num_missing=0;
-  int *trlist,dsizes_trlist[10],np2,nf,nca,numv;
+  static int i,j,nt,num_points,num_missing=0,callv,indexv;
+  static int np2,nf,nca,numv;
 
-  NclBasicDataTypes atypes[10];
+  static double *platd, *plond, platdt, plondt;
+  static double *rlatd,*rlond, *rcd;
 
-  for (i = 0; i < 10; i++) {
-    datav[i] = NclGetArgValue(i,10,ndims+i,&(dsizes[i][0]),missing+i,
-                              has_missing+i,atypes+i,0);
-  }
+  static NclBasicDataTypes atypes[10];
 
 /*
- *  Check that the dimension of the first two arguments are the same.
+ *  See if this is the first call to csvoro for the current
+ *  dataset.  If so, retrieve and save all of the arrays
+ *  except the vertex array.
  */
-  if (dsizes[0][0] != dsizes[1][0]) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"csvoro: first two arguments must"
-              " have the same dimension sizes\n");
-    return(NhlFATAL);
-  }
-  num_points = dsizes[0][0];
+  callp = NclGetArgValue(3,10,ndims+3,&(dsizes[3][0]),missing+3,
+                             has_missing+3,atypes+3,0);
+  callv  = *((int *) callp);
+  indexp = NclGetArgValue(2,10,ndims+2,&(dsizes[2][0]),missing+2,
+                             has_missing+2,atypes+2,0);
+  indexv = *((int *) indexp);
+
+  if (callv == 1) {
+    for (i = 0; i < 10; i++) {
+      datav[i] = NclGetArgValue(i,10,ndims+i,&(dsizes[i][0]),missing+i,
+                                has_missing+i,atypes+i,0);
+    }
+
+/*
+ *  Check that the the lat/lon input are linear arrays.
+ */
+    for (i = 1; i < 2; i++) {
+      if (ndims[i] != 1) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"csvoro: lat/lon input "
+                  "must be linear arrays.\n");
+        return(NhlFATAL);
+      }
+    }
+
+/*
+ *  Check that the dimensions of the first two arguments are the same.
+ */
+    if (dsizes[0][0] != dsizes[1][0]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"csvoro: first two arguments must"
+                " have the same dimension sizes\n");
+      return(NhlFATAL);
+    }
+    num_points = dsizes[0][0];
 
 /*
  *  Check that arguments 4-6 (starting with argument 0) have 
  *  dimension sizes at least twice that of the size of the first 
  *  two arguments.
  */
-  np2 = 2*num_points;
-  if ((dsizes[4][0] < np2) || (dsizes[5][0] < np2) || (dsizes[6][0] < np2)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"csvoro: arguments 4-6 must "
-        "have dimension\n sizes at least twice that of the first argument\n");
-    return(NhlFATAL);
-  }
-
-/*
- *  Check that all arguments are either all float or all double.
- */
-  if ((atypes[0] != NCL_float) && (atypes[0] != NCL_double)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"csvoro: all arguments "
-                "must be all float or all double\n");
+    np2 = 2*num_points;
+    if ((dsizes[4][0] < np2) || (dsizes[5][0] < np2) || (dsizes[6][0] < np2)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"csvoro: arguments 4-6 must "
+          "have dimension\n sizes at least twice that of the first argument\n");
       return(NhlFATAL);
-  }
-  if (atypes[1] != atypes[0]) {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,"csvoro: all arguments "
-            "must be all float or all double\n");
-    return(NhlFATAL);
-  }
-  for (i = 4; i < 7; i++) {
-    if (atypes[i] != atypes[0]) {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"csvoro: all arguments "
-              "must be all float or all double\n");
-    return(NhlFATAL);
     }
-  }
 
 /*
- *  Check for missing values.  Each of the first two arguments must 
- *  be checked separately, since it may be that _FillValue may be
- *  set for just one of them.
+ *  Coerce the missing values to double.
+ */
+    for (i = 0; i < 10; i++) {
+      coerce_missing(atypes[i],has_missing[i],missing+i,missingd+i,NULL);
+    }
+
+/*
+ *  Check on the argument types.  If either of the lat/lon input
+ *  arrays is double, then the output vertices for the Voronoi
+ *  polygons must be double.  In all other cases the output must
+ *  be floats. 
  *
- *  If a missing value is found, remove that input point and collapse
- *  both input arrays.
  */
-  for (i = 0; i < num_points; i++) {
-    if (has_missing[0]) {
-      if (atypes[0] == NCL_float) {
-        if (*((float *) (datav[0])+i) == missing[0].floatval) {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,
-                    "csvoro: missing values not allowed\n");
-          return(NhlFATAL);
-        }
-      }
-      else if (atypes[0] == NCL_double) {
-        if (*((double *) (datav[0])+i) == missing[0].floatval) {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,
-                    "csvoro: missing values not allowed\n");
-          return(NhlFATAL);
-        }
+    dflag = 0;
+    if ( (atypes[0] == NCL_double) || (atypes[1] == NCL_double)) {
+      dflag = 1;
+    }
+    if (dflag) {
+      if ((atypes[4] != NCL_double) || (atypes[5] != NCL_double) ||
+          (atypes[6] != NCL_double)) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"csvoro: arguments 4-6 must "
+          "be double\n if either of arguments 0 or 1 is doulbe.  Otherwise\n"
+          "arguments 4-6 must be float\n");
+      return(NhlFATAL);
       }
     }
-    if (has_missing[1]) {
-      if (atypes[1] == NCL_float) {
-        if (*((float *) (datav[1])+i) == missing[1].floatval) {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,
-                    "csvoro: missing values not allowed\n");
-          return(NhlFATAL);
-        }
-      }
-      else if (atypes[1] == NCL_double) {
-        if (*((double *) (datav[0])+i) == missing[0].floatval) {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,
-                    "csvoro: missing values not allowed\n");
-          return(NhlFATAL);
-        }
-      }
-    }
-  }	
 
 /*
- *  Make the call to c_csvoro.
+ *  Create temporary arrays to hold lat/lon values that are
+ *  not missing values as well as space for the output arrays.
  */
-  if (atypes[0] == NCL_float) {
-    c_csvoro(num_points, (float *) datav[0], (float *) datav[1],
-             *((int *) datav[2]), *((int *) datav[3]), 
-             (float *) datav[4], (float *) datav[5], (float *) datav[6], 
-             (int *) datav[7], (int *) datav[8], (int *) datav[9], &cserr);
-    if (cserr != 0) {
-      sprintf(csmsg, "csvoro: Error number %d.", cserr);
-      NhlPError(NhlFATAL, NhlEUNKNOWN, csmsg);
-      return(NhlFATAL);
-    }
-    else {
-      return(NhlNOERROR);
+    platd = (double *) calloc(dsizes[0][0],sizeof(double));
+    plond = (double *) calloc(dsizes[1][0],sizeof(double));
+    rlatd = (double *) calloc(dsizes[4][0],sizeof(double));
+    rlond = (double *) calloc(dsizes[5][0],sizeof(double));
+    rcd   = (double *) calloc(dsizes[6][0],sizeof(double));
+
+/*
+ *  Loop through the input lat/lon values, coerce to double,
+ *  and check for missing values.
+ */
+    num_points = 0;
+    for (i = 0; i < dsizes[0][0]; i++) {
+      coerce_subset_input_double(datav[0],&platdt,i,atypes[0],1,
+                                 has_missing[0],missing,missingd);
+      coerce_subset_input_double(datav[1],&plondt,i,atypes[1],1,
+                                 has_missing[1],missing+1,missingd+1);
+      if ( (platdt !=  missingd[0].doubleval) &&
+           (plondt !=  missingd[1].doubleval)) {
+        platd[num_points] = platdt;
+        plond[num_points] = plondt;
+        num_points++;
+      }
+      else {
+        free (platd);
+        free (plond);
+        free (rlatd);
+        free (rlond);
+        free (rcd);
+        NhlPError(NhlFATAL, NhlEUNKNOWN,
+          "csvoro: missing values not allowed in input.\n");
+          return(NhlFATAL);
+      }
     }
   }
-  else if (atypes[0] == NCL_double) {
-    c_csvorod(num_points, (double *) datav[0], (double *) datav[1],
-             *((int *) datav[2]), *((int *) datav[3]), 
-             (double *) datav[4], (double *) datav[5], (double *) datav[6], 
-             (int *) datav[7], (int *) datav[8], (int *) datav[9], &cserr);
-    if (cserr != 0) {
-      sprintf(csmsg, "csvoro: Error number %d.", cserr);
-      NhlPError(NhlFATAL, NhlEUNKNOWN, csmsg);
-      return(NhlFATAL);
+
+/*
+ *  Make the call to c_csvorod.
+ */
+  c_csvorod(num_points, platd, plond, indexv,
+            *((int *) datav[3]), rlatd, rlond, rcd,
+            (int *) datav[7], (int *) datav[8], (int *) datav[9], &cserr);
+  if (cserr != 0) {
+    free (platd);
+    free (plond);
+    free (rlatd);
+    free (rlond);
+    free (rcd);
+    sprintf(csmsg, "csvoro: Error number %d.", cserr);
+    NhlPError(NhlFATAL, NhlEUNKNOWN, csmsg);
+    return(NhlFATAL);
+  }
+  
+  if (callv == 1) {
+    if (dflag) {
+      memcpy(datav[4], (void *) rlatd, dsizes[4][0]*sizeof(double));
+      memcpy(datav[5], (void *) rlond, dsizes[5][0]*sizeof(double));
+      memcpy(datav[6], (void *)   rcd, dsizes[6][0]*sizeof(double));
     }
     else {
-      return(NhlNOERROR);
+      for (i = 0; i < dsizes[4][0]; i++) {
+        *( (float *) datav[4]+i)  = rlatd[i];
+        *( (float *) datav[5]+i)  = rlond[i];
+        *( (float *) datav[6]+i)  =   rcd[i];
+      }
     }
+  }
+  if (callv == -1) {
+    free (platd);
+    free (plond);
+    free (rlatd);
+    free (rlond);
+    free (rcd);
   }
   return(NhlNOERROR);
 }
@@ -849,7 +968,7 @@ NhlErrorTypes cssgrid_W(void)
   double    *platd,*plond,*fvald,*rlatd,*rlond,*platdt,*plondt,*fvaldt,
             *zoutd,*ztmp;
   int       nt,psize,zdim,zsize[NCL_MAX_DIMENSIONS];
-  int       i,j,k,jo,ji,nxo,nyo,num_points,num_missing;
+  int       i,j,k,jo,ji,nxo,nyo,num_points,num_missing,test_missing;
 
   NclBasicDataTypes atypes[5],ztype;
 
@@ -883,59 +1002,39 @@ NhlErrorTypes cssgrid_W(void)
   }
 
 /*
- *  Coerce the input arrays to double precision, if they
- *  are not already that.
+ *  Coerce the missing values to double.
  */
-  if (atypes[0] != NCL_double) {
-    platd = (double *) NclMalloc(dsizes[0][0]*sizeof(double));
-    if (platd == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,
-         "cssgrid: unable to allocate memory for platd\n");
-      return(NhlFATAL);
-    }
-    _Nclcoerce( (NclTypeClass)nclTypedoubleClass,
-                platd, datav[0], dsizes[0][0], NULL, NULL,
-                _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(atypes[0])));
-  }
-  else {
-    platd = (double *) datav[0];
-  }
-  if (atypes[1] != NCL_double) {
-    plond = (double *) NclMalloc(dsizes[1][0]*sizeof(double));
-    if (plond == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,
-         "cssgrid: unable to allocate memory for plond\n");
-      return(NhlFATAL);
-    }
-    _Nclcoerce( (NclTypeClass)nclTypedoubleClass,
-                plond, datav[1], dsizes[1][0], NULL, NULL,
-                _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(atypes[1])));
-  }
-  else {
-    plond = (double *) datav[1];
+  for (i = 0; i < 5; i++) {
+    coerce_missing(atypes[i],has_missing[i],missing+i,missingd+i,NULL);
   }
 
 /*
- *  Calculate the total size of argument #3, the functional values and
+ *  Coerce the input arrays to double precision, if they
+ *  are not already that.
+ */
+  platd = coerce_input_double(datav[0],atypes[0],dsizes[0][0],
+                            has_missing[0],missing,missingd);
+  if (platd == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+       "cssgrid: unable to allocate memory for platd\n");
+    return(NhlFATAL);
+  }
+
+  plond = coerce_input_double(datav[1],atypes[1],dsizes[1][0],
+                            has_missing[1],missing,missingd);
+  if (plond == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+       "cssgrid: unable to allocate memory for plond\n");
+    return(NhlFATAL);
+  }
+
+/*
+ *  Calculate the total size of argument #3, the functional values, and
  *  coerce to double if necessary.  
  */
   nt = 1;
   for(j = 0; j < ndims[2]; j++) {
     nt *= dsizes[2][j];
-  }
-  if (atypes[2] != NCL_double) {
-    fvald = (double *) NclMalloc(nt*sizeof(double));
-    if (fvald == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,
-         "cssgrid: unable to allocate memory for fvald\n");
-      return(NhlFATAL);
-    }
-    _Nclcoerce( (NclTypeClass)nclTypedoubleClass,
-                fvald, datav[2], nt, NULL, NULL,
-                _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(atypes[2])));
-  }
-  else {
-    fvald = (double *) datav[2];
   }
 
 /*
@@ -944,65 +1043,42 @@ NhlErrorTypes cssgrid_W(void)
  */
   nxo = dsizes[3][0];
   nyo = dsizes[4][0];
-  if (atypes[3] != NCL_double) {
-    rlatd = (double *) NclMalloc(nxo*sizeof(double));
-    if (rlatd == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,
-         "cssgrid: unable to allocate memory for rlatd\n");
-      return(NhlFATAL);
-    }
-    _Nclcoerce( (NclTypeClass)nclTypedoubleClass,
-                rlatd, datav[3], nxo, NULL, NULL,
-                _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(atypes[3])));
+
+  rlatd = coerce_input_double(datav[3],atypes[3],dsizes[3][0],
+                            has_missing[3],missing,missingd);
+  if (rlatd == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+       "cssgrid: unable to allocate memory for rlatd\n");
+    return(NhlFATAL);
   }
-  else {
-    rlatd = (double *) datav[3];
-  }
-  if (atypes[4] != NCL_double) {
-    rlond = (double *) NclMalloc(dsizes[4][0]*sizeof(double));
-    if (rlond == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,
-         "cssgrid: unable to allocate memory for rlond\n");
-      return(NhlFATAL);
-    }
-    _Nclcoerce( (NclTypeClass)nclTypedoubleClass,
-                rlond, datav[4], nyo, NULL, NULL,
-                _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(atypes[4])));
-  }
-  else {
-    rlond = (double *) datav[4];
+
+  rlond = coerce_input_double(datav[4],atypes[4],dsizes[4][0],
+                            has_missing[4],missing+4,missingd+4);
+  if (rlond == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+       "cssgrid: unable to allocate memory for rlond\n");
+    return(NhlFATAL);
   }
 
 /*
- *  Coerce the missing values to double.
+ *  Check to see if there are missing values in the output lat/lon
+ *  arrays.  These are not allowed.
  */
-  for (i = 0; i < 5; i++) {
-    if (has_missing[i]) {
-      _Nclcoerce( (NclTypeClass)nclTypedoubleClass,
-                  missingd+i, missing+i, 1, NULL, NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(atypes[4])));
-    }
+  test_missing = contains_missing(rlatd,dsizes[3][0],has_missing[3],
+                                  missingd[3].doubleval);
+  if (test_missing) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+          "cssgrid: output latitude array is not "
+          "allowed to contain a missing value.");
+    return(NhlFATAL);
   }
-
-  if (has_missing[3]) {
-    for (i = 0; i < nxo; i++) {
-      if (rlatd[i] == missingd[3].doubleval) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,
-              "cssgrid: output latitude array is not "
-              "allowed to contain a missing value.");
-        return(NhlFATAL);
-      }
-    }
-  }
-  if (has_missing[4]) {
-    for (i = 0; i < nyo; i++) {
-      if (rlond[i] == missingd[4].doubleval) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,
-              "cssgrid: output longitude array is not "
-              "allowed to contain a missing value.");
-        return(NhlFATAL);
-      }
-    }
+  test_missing = contains_missing(rlond,dsizes[4][0],has_missing[4],
+                                  missingd[4].doubleval);
+  if (test_missing) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+          "cssgrid: output latitude array is not "
+          "allowed to contain a missing value.");
+    return(NhlFATAL);
   }
 
 /*
@@ -1017,6 +1093,11 @@ NhlErrorTypes cssgrid_W(void)
   }
   zsize[ndims[2]-1] = nxo;
   zsize[ndims[2]]   = nyo;
+
+/*
+ *  Allocate space for the output array depending on
+ *  whether it will be float or double.
+ */
   if (atypes[2] == NCL_double) {
     ztype = NCL_double;
     zoutd = (double *) NclMalloc(nxo*nyo*(nt/psize)*sizeof(double));
@@ -1035,6 +1116,11 @@ NhlErrorTypes cssgrid_W(void)
       return(NhlFATAL);
     }
   }
+
+/*
+ *  Allocate space for temporary arrays that are just large
+ *  enough to hold input data for a single interpolation.
+ */
   platdt = (double *) NclMalloc(psize*sizeof(double));
   if (platdt == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1053,21 +1139,32 @@ NhlErrorTypes cssgrid_W(void)
        "cssgrid: unable to allocate memory for fvaldt\n");
     return(NhlFATAL);
   }
+  fvald = (double *) NclMalloc(psize*sizeof(double));
+  if (fvald == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+       "cssgrid: unable to allocate memory for fvald\n");
+    return(NhlFATAL);
+  }
 
+/*
+ *  Do the interpolations and fill the output array.
+ */
   jo = 0;
   for (ji = 0; ji < nt; ji += psize) {
     num_points = 0;
+    coerce_subset_input_double(datav[2],fvald,ji,atypes[2],psize,
+                               has_missing[2],missing+2,missingd+2);
     for (i = 0; i < psize; i++) {
 /*
  *  Check for missing values and discard any input point
  *  that has a missing value.
  */
-      if ( (platd[i] !=  missingd[0].doubleval) &&
-           (plond[i] !=  missingd[1].doubleval) &&
-           (fvald[i] !=  missingd[2].doubleval) ) {
+      if ( (!has_missing[0] || (platd[i] !=  missingd[0].doubleval)) &&
+           (!has_missing[1] || (platd[i] !=  missingd[1].doubleval)) &&
+           (!has_missing[2] || (platd[i] !=  missingd[2].doubleval))) {
         platdt[num_points] = platd[i];
         plondt[num_points] = plond[i];
-        fvaldt[num_points] = fvald[ji+i];
+        fvaldt[num_points] = fvald[i];
         num_points++;
       }
     }
@@ -1109,9 +1206,6 @@ NhlErrorTypes cssgrid_W(void)
   if ( (void *) plond != datav[1]) {
     NclFree (plond);
   }
-  if ( (void *) fvald != datav[2]) {
-    NclFree (fvald);
-  }
   if ( (void *) rlatd != datav[3]) {
     NclFree (platd);
   }
@@ -1121,6 +1215,7 @@ NhlErrorTypes cssgrid_W(void)
   NclFree(platdt);
   NclFree(plondt);
   NclFree(fvaldt);
+  NclFree(fvald);
 
 /*
  *  Return the array.
