@@ -302,6 +302,7 @@ extern NhlErrorTypes equiv_sample_size_W(void);
 extern NhlErrorTypes NhlGetNamedColorIndex_W(void);
 extern NhlErrorTypes output_gif_W(void);
 extern NhlErrorTypes nice_mnmxintvl_W(void);
+extern NhlErrorTypes dim_gbits_W(void);
 
 void NclAddUserFuncs(void)
 {
@@ -3645,6 +3646,20 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "logical", 1, dimsizes);  nargs++;
     NclRegisterFunc(nice_mnmxintvl_W, args, "nice_mnmxintvl", nargs);
 
+
+/*
+ *  Register dim_gbits.
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);  nargs++;
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    NclRegisterFunc(dim_gbits_W, args, "dim_gbits", nargs);
     return;
 }
 
