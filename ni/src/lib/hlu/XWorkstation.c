@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.5 1994-05-12 23:53:01 boote Exp $
+ *      $Id: XWorkstation.c,v 1.6 1994-09-23 23:37:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -116,6 +116,9 @@ PauseSet
 
 #define	Oset(field)	NhlOffset(NhlXWorkstationLayerRec,xwork.field)
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{ "no.res", "no.res", NhlTBoolean, sizeof(NhlBoolean),
 		Oset(window_id_set), NhlTImmediate, (NhlPointer)True,0,NULL},
 	{ "no.res", "no.res", NhlTBoolean, sizeof(NhlBoolean),
@@ -128,6 +131,9 @@ static NhlResource resources[] = {
 		Oset(color_map_id), NhlTProcedure, (NhlPointer)CMapSet,0,NULL},
 	{ NhlNwkPause, NhlCwkPause, NhlTBoolean, sizeof(NhlBoolean),
 		Oset(pause), NhlTProcedure, (NhlPointer)PauseSet,0,NULL}
+
+/* End-documented-resources */
+
 };
 #undef	Oset
 

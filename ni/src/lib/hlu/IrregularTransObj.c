@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.8 1994-07-12 20:52:06 boote Exp $
+ *      $Id: IrregularTransObj.c,v 1.9 1994-09-23 23:36:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -48,6 +48,10 @@
 #include <ncarg/hlu/View.h>
 
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
+
 	{ NhlNtrXCoordPoints,NhlCtrXCoordPoints,NhlTPointer,sizeof(float*),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_coord_points),
 		NhlTImmediate,NULL,0,(NhlFreeFunc)NhlFree},
@@ -102,6 +106,9 @@ static NhlResource resources[] = {
 	{ NhlNtrYUseLog, NhlCtrYUseLog, NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_use_log),
 		NhlTImmediate,False,0,NULL}
+
+/* End-documented-resources */
+
 };
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.13 1994-09-14 00:32:56 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.14 1994-09-23 23:36:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -86,43 +86,11 @@ ResourceUnset
 
 #define Oset(field)	NhlOffset(NhlMapPlotLayerRec,mapplot.field)
 static NhlResource resources[] = {
-	{NhlNmpOutlineOn, NhlCmpOutlineOn, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(outline_on),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNmpOutlineBoundarySets,NhlCmpOutlineBoundarySets,
-                 NhlTMapBoundarySets,sizeof(NhlMapBoundarySets),
-                 Oset(outline_boundaries),NhlTImmediate,
-		 _NhlUSET((NhlPointer)NhlmpGEOPHYSICAL),0,NULL},
-	{NhlNmpOutlineDrawOrder,NhlCmpOutlineDrawOrder,NhlTDrawOrder,
-		 sizeof(NhlDrawOrder),Oset(outline_order),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlPOSTDRAW),0,NULL},
-	{NhlNmpFillOn, NhlCmpFillOn, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(fill_on),
-		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-	{NhlNmpFillBoundarySets,NhlCmpFillBoundarySets,
-                 NhlTMapBoundarySets,sizeof(NhlMapBoundarySets),
-                 Oset(fill_boundaries),NhlTImmediate,
-		 _NhlUSET((NhlPointer)NhlmpGEOPHYSICAL),0,NULL},
-	{NhlNmpFillDrawOrder,NhlCmpFillDrawOrder,NhlTDrawOrder,
-		 sizeof(NhlDrawOrder),Oset(fill_order),NhlTImmediate,
-		 _NhlUSET((NhlPointer)NhlDRAW),0,NULL},
-	{NhlNmpFillGroupCount,NhlCmpFillGroupCount,NhlTInteger,
-		 sizeof(int),Oset(fill_group_count),NhlTImmediate,
-		 _NhlUSET((NhlPointer) Nhl_mpMIN_FILL_GROUPS),0,NULL},
-	{NhlNmpFillAreaSpecifiers,NhlCmpFillAreaSpecifiers, 
-		 NhlTStringGenArray,sizeof(NhlPointer),Oset(fill_area_specs),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNmpMaskAreaSpecifiers,NhlCmpMaskAreaSpecifiers,NhlTStringGenArray,
-		 sizeof(NhlPointer),Oset(mask_area_specs),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNmpOutlineSpecifiers,NhlCmpOutlineSpecifiers,NhlTStringGenArray,
-		 sizeof(NhlPointer),Oset(outline_specs),NhlTImmediate,
-		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNmpFillPatternBackground,NhlCmpFillPatternBackground,NhlTInteger,
-		 sizeof(int),Oset(fill_pattern_background),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
+
+/* Begin-documented-resources */
+
+/* Map area database resources */
+
 	{NhlNmpAreaNames,NhlCmpAreaNames,
 		 NhlTStringGenArray,sizeof(NhlPointer),
 		 Oset(area_names),NhlTImmediate,
@@ -135,6 +103,50 @@ static NhlResource resources[] = {
 		 NhlTIntegerGenArray,sizeof(NhlPointer),
 		 Oset(area_groups),NhlTImmediate,
 		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+
+/* Outline resources */
+
+	{NhlNmpOutlineOn, NhlCmpOutlineOn, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(outline_on),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNmpOutlineDrawOrder,NhlCmpOutlineDrawOrder,NhlTDrawOrder,
+		 sizeof(NhlDrawOrder),Oset(outline_order),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlPOSTDRAW),0,NULL},
+	{NhlNmpOutlineBoundarySets,NhlCmpOutlineBoundarySets,
+                 NhlTMapBoundarySets,sizeof(NhlMapBoundarySets),
+                 Oset(outline_boundaries),NhlTImmediate,
+		 _NhlUSET((NhlPointer)NhlmpGEOPHYSICAL),0,NULL},
+	{NhlNmpOutlineSpecifiers,NhlCmpOutlineSpecifiers,NhlTStringGenArray,
+		 sizeof(NhlPointer),Oset(outline_specs),NhlTImmediate,
+		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+
+/* Fill resources */
+
+	{NhlNmpFillOn, NhlCmpFillOn, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(fill_on),
+		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+	{NhlNmpFillDrawOrder,NhlCmpFillDrawOrder,NhlTDrawOrder,
+		 sizeof(NhlDrawOrder),Oset(fill_order),NhlTImmediate,
+		 _NhlUSET((NhlPointer)NhlDRAW),0,NULL},
+	{NhlNmpAreaGroupPriority,NhlCmpAreaGroupPriority,NhlTAreaGroupPriority,
+		 sizeof(NhlAreaGroupPriority),Oset(group_priority),
+		 NhlTImmediate,
+		 _NhlUSET((NhlPointer)NhlmpGEOPHYSICALPRIORITY),0,NULL},
+	{NhlNmpFillBoundarySets,NhlCmpFillBoundarySets,
+                 NhlTMapBoundarySets,sizeof(NhlMapBoundarySets),
+                 Oset(fill_boundaries),NhlTImmediate,
+		 _NhlUSET((NhlPointer)NhlmpGEOPHYSICAL),0,NULL},
+	{NhlNmpFillGroupCount,NhlCmpFillGroupCount,NhlTInteger,
+		 sizeof(int),Oset(fill_group_count),NhlTImmediate,
+		 _NhlUSET((NhlPointer) Nhl_mpMIN_FILL_GROUPS),0,NULL},
+	{NhlNmpFillAreaSpecifiers,NhlCmpFillAreaSpecifiers, 
+		 NhlTStringGenArray,sizeof(NhlPointer),Oset(fill_area_specs),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNmpMaskAreaSpecifiers,NhlCmpMaskAreaSpecifiers,NhlTStringGenArray,
+		 sizeof(NhlPointer),Oset(mask_area_specs),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
 	{NhlNmpFillAreaColors,NhlCmpFillAreaColors,
 		 NhlTIntegerGenArray,sizeof(NhlPointer),
 		 Oset(fill_area_colors),NhlTImmediate,
@@ -142,32 +154,33 @@ static NhlResource resources[] = {
 	{NhlNmpDirectFillAreaColor, NhlCmpDirectFillAreaColor, 
 		 NhlTBoolean,sizeof(NhlBoolean),Oset(direct_fill_area_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-	{NhlNmpAreaGroupPriority,NhlCmpAreaGroupPriority,NhlTAreaGroupPriority,
-		 sizeof(NhlAreaGroupPriority),Oset(group_priority),
-		 NhlTImmediate,
-		 _NhlUSET((NhlPointer)NhlmpGEOPHYSICALPRIORITY),0,NULL},
+	{NhlNmpFillPatternBackground,NhlCmpFillPatternBackground,NhlTInteger,
+		 sizeof(int),Oset(fill_pattern_background),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
 
 	{NhlNmpMonoFillGroupColor, NhlCmpMonoFillGroupColor, NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(mono_fill_group_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-	{NhlNmpMonoFillGroupPattern, NhlCmpMonoFillGroupPattern, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(mono_fill_group_pattern),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNmpMonoFillGroupScale, NhlCmpMonoFillGroupScale, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(mono_fill_group_scale),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNmpFillGroupColors, NhlCmpFillGroupColors, NhlTIntegerGenArray,
 		 sizeof(NhlPointer),Oset(fill_group_colors),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
+ 	{NhlNmpMonoFillGroupPattern, NhlCmpMonoFillGroupPattern, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(mono_fill_group_pattern),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNmpFillGroupPatterns, NhlCmpFillGroupPatterns, NhlTIntegerGenArray,
 		 sizeof(NhlPointer),Oset(fill_group_patterns),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNmpMonoFillGroupScale, NhlCmpMonoFillGroupScale, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(mono_fill_group_scale),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNmpFillGroupScales, NhlCmpFillGroupScales,  NhlTFloatGenArray,
 		 sizeof(NhlPointer),Oset(fill_group_scales),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
+
+/* default area resources */
 
 	{NhlNmpDefaultFillColor,NhlCmpDefaultFillColor,NhlTInteger,
 		 sizeof(int),Oset(fill_default.color),
@@ -178,6 +191,9 @@ static NhlResource resources[] = {
 	{NhlNmpDefaultFillScaleF,NhlCmpDefaultFillScaleF,NhlTFloat,
 		 sizeof(float),Oset(fill_default.scale),
 		 NhlTString,_NhlUSET("NhlmpUNSETFILLSCALE"),0,NULL},
+
+/* ocean area resources */
+
 	{NhlNmpOceanFillColor,NhlCmpOceanFillColor,NhlTInteger,
 		 sizeof(int),Oset(ocean.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlmpUNSETCOLOR),0,NULL},
@@ -187,6 +203,9 @@ static NhlResource resources[] = {
 	{NhlNmpOceanFillScaleF,NhlCmpOceanFillScaleF,NhlTFloat,
 		 sizeof(float),Oset(ocean.scale),
 		 NhlTString,_NhlUSET("NhlmpUNSETFILLSCALE"),0,NULL},
+
+/* land area resources */
+
 	{NhlNmpLandFillColor,NhlCmpLandFillColor,NhlTInteger,
 		 sizeof(int),Oset(land.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlmpUNSETCOLOR),0,NULL},
@@ -196,6 +215,9 @@ static NhlResource resources[] = {
 	{NhlNmpLandFillScaleF,NhlCmpLandFillScaleF,NhlTFloat,
 		 sizeof(float),Oset(land.scale),
 		 NhlTString,_NhlUSET("NhlmpUNSETFILLSCALE"),0,NULL},
+
+/* inland water area resources */
+
 	{NhlNmpInlandWaterFillColor,NhlCmpInlandWaterFillColor,NhlTInteger,
 		 sizeof(int),Oset(inland_water.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlmpUNSETCOLOR),0,NULL},
@@ -205,6 +227,8 @@ static NhlResource resources[] = {
 	{NhlNmpInlandWaterFillScaleF,NhlCmpInlandWaterFillScaleF,NhlTFloat,
 		 sizeof(float),Oset(inland_water.scale),
 		 NhlTString,_NhlUSET("NhlmpUNSETFILLSCALE"),0,NULL},
+
+/* Geophysical line resources */
 
 	{NhlNmpGeophysicalLineColor,NhlCmpGeophysicalLineColor,NhlTInteger,
 		 sizeof(int),Oset(geophysical.color),
@@ -222,6 +246,8 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(geophysical.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
 
+/* USState line resources */
+
 	{NhlNmpUSStateLineColor,NhlCmpUSStateLineColor,NhlTInteger,
 		 sizeof(int),Oset(us_state.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
@@ -237,6 +263,8 @@ static NhlResource resources[] = {
 	{NhlNmpUSStateLineThicknessF,NhlCmpUSStateLineThicknessF,
 		 NhlTFloat,sizeof(float),Oset(us_state.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
+
+/* National line resources */
 
 	{NhlNmpNationalLineColor,NhlCmpNationalLineColor,NhlTInteger,
 		 sizeof(int),Oset(national.color),
@@ -254,6 +282,14 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(national.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
 
+/* grid (and limb) line resources */
+
+	{NhlNmpGridAndLimbOn,NhlCmpGridAndLimbOn,NhlTBoolean,
+		 sizeof(long),Oset(grid.on),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNmpGridAndLimbDrawOrder,NhlCmpGridAndLimbDrawOrder,NhlTDrawOrder,
+		 sizeof(NhlDrawOrder),Oset(grid.order),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlPOSTDRAW),0,NULL},
 	{NhlNmpRelativeGridSpacing,NhlCmpRelativeGridSpacing,
 		 NhlTBoolean,sizeof(NhlBoolean),Oset(relative_grid_spacing),
 		 NhlTImmediate, _NhlUSET((NhlPointer)True),0,NULL},
@@ -263,12 +299,6 @@ static NhlResource resources[] = {
 	{NhlNmpGridMaskMode,NhlCmpGridMaskMode,NhlTMapGridMaskMode,
 		 sizeof(NhlMapGridMaskMode),Oset(grid_mask_mode),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlmpMASKNONE),0,NULL},
-	{NhlNmpGridAndLimbOn,NhlCmpGridAndLimbOn,NhlTBoolean,
-		 sizeof(long),Oset(grid.on),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNmpGridAndLimbDrawOrder,NhlCmpGridAndLimbDrawOrder,NhlTDrawOrder,
-		 sizeof(NhlDrawOrder),Oset(grid.order),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlPOSTDRAW),0,NULL},
 	{NhlNmpGridLineColor,NhlCmpGridLineColor,NhlTInteger,
 		 sizeof(int),Oset(grid.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
@@ -301,6 +331,7 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(limb.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
 
+/* map perimeter resources */
 
 	{NhlNmpPerimOn,NhlCmpPerimOn,NhlTBoolean,
 		 sizeof(long),Oset(perim.on),
@@ -324,6 +355,8 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(perim.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
 
+/* Map label resources */
+
 	{NhlNmpLabelsOn,NhlCmpLabelsOn,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(labels.on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -336,6 +369,12 @@ static NhlResource resources[] = {
         {NhlNmpLabelTextHeightF,NhlCmpLabelTextHeightF,
 		 NhlTFloat,sizeof(float),Oset(labels.height),
 		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{NhlNmpLabelFontColor,NhlCmpLabelFontColor,NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(labels.color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+
+/* End-documented-resources */
+
         {NhlNmpLabelTextDirection,NhlCmpLabelTextDirection,
 		 NhlTTextDirection,sizeof(NhlTextDirection),
 		 Oset(labels.direction),
@@ -343,9 +382,6 @@ static NhlResource resources[] = {
 	{NhlNmpLabelFont,NhlCmpLabelFont,NhlTFont, 
 		 sizeof(int),Oset(labels.font),
 		 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
-	{NhlNmpLabelFontColor,NhlCmpLabelFontColor,NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(labels.color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNmpLabelFontAspectF,NhlCmpLabelFontAspectF,NhlTFloat, 
 		 sizeof(float),Oset(labels.aspect),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
@@ -379,7 +415,8 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 	{NhlNmpLabelPerimThicknessF,NhlCmpLabelFontThicknessF,
 		 NhlTFloat,sizeof(float),Oset(labels.perim_lthick),
-		 NhlTString, _NhlUSET("1.0"),0,NULL},
+		 NhlTString, _NhlUSET("1.0"),0,NULL}
+
 };
 #undef Oset
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.26 1994-09-19 20:51:05 dbrown Exp $
+ *      $Id: Contour.c,v 1.27 1994-09-23 23:36:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -94,25 +94,27 @@ static NhlResource data_resources[] = {
 
 #define Oset(field)     NhlOffset(NhlContourLayerRec,contour.field)
 static NhlResource resources[] = {
-	
+
+/* Begin-documented-resources */
+
+/* Data resources */
+
 	{NhlNcnScalarFieldData,NhlCcnScalarFieldData,_NhlTDataList,
 		 sizeof(NhlGenArray),
 		 Oset(scalar_field_data),NhlTImmediate,_NhlUSET(NULL),0,NULL},
-	{ NhlNcnOutOfRangeValF,NhlCcnOutOfRangeValF,NhlTFloat,sizeof(float),
-		  Oset(out_of_range_val),NhlTString,_NhlUSET("1.0E12"),0,NULL},
-	{ NhlNcnLevelCount,NhlCcnLevelCount,NhlTInteger,sizeof(int),
-		  Oset(level_count),NhlTImmediate,
-		  _NhlUSET((NhlPointer) 16),0,NULL},
+
+/* Level resources */
+
 	{ NhlNcnLevelSelectionMode,NhlCcnLevelSelectionMode,
 		  NhlTcnLevelSelectionMode,sizeof(NhlcnLevelSelectionMode),
 		  Oset(level_selection_mode),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlcnAUTOMATIC),0,NULL},
+	{ NhlNcnLevelCount,NhlCcnLevelCount,NhlTInteger,sizeof(int),
+		  Oset(level_count),NhlTImmediate,
+		  _NhlUSET((NhlPointer) 16),0,NULL},
 	{ NhlNcnMaxLevelCount,NhlCcnMaxLevelCount,NhlTInteger,sizeof(int),
 		  Oset(max_level_count),NhlTImmediate,
 		  _NhlUSET((NhlPointer) 16),0,NULL},
-	{ NhlNcnLabelMasking,NhlCcnLabelMasking,NhlTBoolean,sizeof(NhlBoolean),
-		  Oset(label_masking),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 	{ NhlNcnLevelSpacingF,NhlCcnLevelSpacingF,NhlTFloat,sizeof(float),
 		  Oset(level_spacing),NhlTString,_NhlUSET("5.0"),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
@@ -130,6 +132,101 @@ static NhlResource resources[] = {
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(llabel_interval_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	{NhlNcnLevels, NhlCcnLevels,  NhlTFloatGenArray,
+		 sizeof(NhlPointer),Oset(levels),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNcnMonoLevelFlag, NhlCcnMonoLevelFlag, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(mono_level_flag),
+		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+	{NhlNcnLevelFlags, NhlCcnLevelFlags,NhlTIntegerGenArray,
+		 sizeof(NhlPointer),Oset(level_flags),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
+
+/* Rendering resources */
+
+ 	{NhlNcnSmoothingOn,NhlCcnSmoothingOn,NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(smoothing_on),
+		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+ 	{NhlNcnSmoothingTensionF,NhlCcnSmoothingTensionF,NhlTFloat,
+		 sizeof(float),Oset(smoothing_tension),
+		 NhlTString,_NhlUSET("2.5"),0,NULL},
+ 	{NhlNcnSmoothingDistanceF,NhlCcnSmoothingDistanceF,NhlTFloat,
+		 sizeof(float),Oset(smoothing_distance),
+		 NhlTString,_NhlUSET("0.01"),0,NULL},
+ 	{NhlNcnCheckPointDistance,NhlCcnCheckPointDistance,NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(check_point_distance),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+ 	{NhlNcnMaxPointDistanceF,NhlCcnMaxPointDistanceF,
+                 NhlTFloat,sizeof(float),Oset(max_point_distance),
+		 NhlTString,_NhlUSET("0.05"),0,NULL},
+
+/* Line resources */
+
+	{NhlNcnLinesOn,NhlCcnLinesOn,NhlTBoolean,sizeof(NhlBoolean),
+		  Oset(lines_on),
+		  NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+ 	{NhlNcnLineDrawOrder,NhlCcnLineDrawOrder,NhlTDrawOrder,
+		 sizeof(NhlDrawOrder),Oset(line_order),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlDRAW),0,NULL},
+	{NhlNcnMonoLineColor, NhlCcnMonoLineColor, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(mono_line_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNcnLineColors, NhlCcnLineColors, NhlTIntegerGenArray,
+		 sizeof(NhlPointer),Oset(line_colors),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNcnMonoLineDashPattern, NhlCcnMonoLineDashPattern, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(mono_line_dash_pattern),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNcnLineDashPatterns, NhlCcnLineDashPatterns, NhlTIntegerGenArray,
+		 sizeof(NhlPointer),Oset(line_dash_patterns),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNcnMonoLineThickness, NhlCcnMonoLineThickness, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(mono_line_thickness),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNcnLineThicknesses, NhlCcnLineThicknesses, NhlTFloatGenArray,
+		 sizeof(NhlPointer),Oset(line_thicknesses),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(line_dash_seglen_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+        {NhlNcnLineDashSegLenF, NhlCcnLineDashSegLenF,NhlTFloat,sizeof(float),
+		  Oset(line_dash_seglen),
+		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+
+/* Fill resources */
+
+	{NhlNcnFillOn,NhlCcnFillOn,NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(fill_on),
+		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+ 	{NhlNcnFillDrawOrder,NhlCcnFillDrawOrder,NhlTDrawOrder,
+		 sizeof(NhlDrawOrder),Oset(fill_order),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlDRAW),0,NULL},
+	{NhlNcnMonoFillColor, NhlCcnMonoFillColor, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(mono_fill_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+	{NhlNcnFillColors, NhlCcnFillColors, NhlTIntegerGenArray,
+		 sizeof(NhlPointer),Oset(fill_colors),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNcnMonoFillPattern, NhlCcnMonoFillPattern, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(mono_fill_pattern),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNcnFillPatterns, NhlCcnFillPatterns, NhlTIntegerGenArray,
+		 sizeof(NhlPointer),Oset(fill_patterns),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNcnMonoFillScale, NhlCcnMonoFillScale, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(mono_fill_scale),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNcnFillScales, NhlCcnFillScales,  NhlTFloatGenArray,
+		 sizeof(NhlPointer),Oset(fill_scales),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNcnBelowMinLevelColor,NhlCcnBelowMinLevelColor,
 		  NhlTInteger,sizeof(int),Oset(below_min.color),
 		  NhlTImmediate,_NhlUSET((NhlPointer) 58),0,NULL},
@@ -148,132 +245,15 @@ static NhlResource resources[] = {
 	{ NhlNcnAboveMaxLevelFillScale,NhlCcnAboveMaxLevelFillScale,
 		  NhlTFloat,sizeof(float),Oset(above_max.scale),
 		  NhlTString,_NhlUSET("0.5"),0,NULL},
-	{ NhlNcnLineLabelInterval,NhlCcnLineLabelInterval,
-		  NhlTFloat,sizeof(float),
-		  Oset(llabel_interval),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+
+/* General label resources */
+
  	{NhlNcnLabelDrawOrder,NhlCcnLabelDrawOrder,NhlTDrawOrder,
 		 sizeof(NhlDrawOrder),Oset(label_order),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlDRAW),0,NULL},
- 	{NhlNcnLineDrawOrder,NhlCcnLineDrawOrder,NhlTDrawOrder,
-		 sizeof(NhlDrawOrder),Oset(line_order),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlDRAW),0,NULL},
- 	{NhlNcnFillDrawOrder,NhlCcnFillDrawOrder,NhlTDrawOrder,
-		 sizeof(NhlDrawOrder),Oset(fill_order),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlDRAW),0,NULL},
-	{ NhlNcnLinesOn,NhlCcnLinesOn,NhlTBoolean,sizeof(NhlBoolean),
-		  Oset(lines_on),
-		  NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{ NhlNcnFillOn,NhlCcnFillOn,NhlTBoolean,sizeof(NhlBoolean),
-		  Oset(fill_on),
+	{NhlNcnLabelMasking,NhlCcnLabelMasking,NhlTBoolean,sizeof(NhlBoolean),
+		  Oset(label_masking),
 		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-
-	{NhlNcnLabelScalingMode,NhlCcnLabelScalingMode,
-                 NhlTcnLabelScalingMode,sizeof(NhlcnLabelScalingMode),
-                 Oset(label_scaling_mode),NhlTImmediate,
-                 _NhlUSET((NhlPointer) NhlcnSCALEFACTOR),0,NULL},
-        {NhlNcnLabelScaleValueF,NhlCcnLabelScaleValueF,
-                 NhlTFloat,sizeof(float),Oset(label_scale_value),
-                 NhlTString,_NhlUSET("1.0"),0,NULL},
-        {NhlNcnLabelScaleFactorF,NhlCcnLabelScaleFactorF,
-                 NhlTFloat,sizeof(float),Oset(label_scale_factor),
-                 NhlTString,_NhlUSET("1.0"),0,NULL},
-	{NhlNcnMaxDataValueFormat,NhlCcnMaxDataValueFormat,
-		 NhlTString,sizeof(NhlString),
-		 Oset(max_data_format.fstring),NhlTImmediate,
-		 _NhlUSET(NULL),0,NULL},
- 	{NhlNcnSmoothingOn,NhlCcnSmoothingOn,NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(smoothing_on),
-		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
- 	{NhlNcnSmoothingTensionF,NhlCcnSmoothingTensionF,NhlTFloat,
-		 sizeof(float),Oset(smoothing_tension),
-		 NhlTString,_NhlUSET("2.5"),0,NULL},
- 	{NhlNcnSmoothingDistanceF,NhlCcnSmoothingDistanceF,NhlTFloat,
-		 sizeof(float),Oset(smoothing_distance),
-		 NhlTString,_NhlUSET("0.01"),0,NULL},
- 	{NhlNcnCheckPointDistance,NhlCcnCheckPointDistance,NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(check_point_distance),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
- 	{NhlNcnMaxPointDistanceF,NhlCcnMaxPointDistanceF,
-                 NhlTFloat,sizeof(float),Oset(max_point_distance),
-		 NhlTString,_NhlUSET("0.05"),0,NULL},
-
-	{NhlNcnMonoLevelFlag, NhlCcnMonoLevelFlag, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(mono_level_flag),
-		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-	{NhlNcnMonoFillColor, NhlCcnMonoFillColor, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(mono_fill_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-	{NhlNcnMonoFillPattern, NhlCcnMonoFillPattern, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(mono_fill_pattern),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNcnMonoFillScale, NhlCcnMonoFillScale, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(mono_fill_scale),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNcnMonoLineColor, NhlCcnMonoLineColor, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(mono_line_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNcnMonoLineDashPattern, NhlCcnMonoLineDashPattern, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(mono_line_dash_pattern),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNcnMonoLineThickness, NhlCcnMonoLineThickness, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(mono_line_thickness),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-
-/* Array resources */
-
-	{NhlNcnLevels, NhlCcnLevels,  NhlTFloatGenArray,
-		 sizeof(NhlPointer),Oset(levels),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnLevelFlags, NhlCcnLevelFlags,NhlTIntegerGenArray,
-		 sizeof(NhlPointer),Oset(level_flags),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnFillColors, NhlCcnFillColors, NhlTIntegerGenArray,
-		 sizeof(NhlPointer),Oset(fill_colors),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnFillPatterns, NhlCcnFillPatterns, NhlTIntegerGenArray,
-		 sizeof(NhlPointer),Oset(fill_patterns),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnFillScales, NhlCcnFillScales,  NhlTFloatGenArray,
-		 sizeof(NhlPointer),Oset(fill_scales),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnLineColors, NhlCcnLineColors, NhlTIntegerGenArray,
-		 sizeof(NhlPointer),Oset(line_colors),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnLineDashPatterns, NhlCcnLineDashPatterns, NhlTIntegerGenArray,
-		 sizeof(NhlPointer),Oset(line_dash_patterns),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnLineThicknesses, NhlCcnLineThicknesses, NhlTFloatGenArray,
-		 sizeof(NhlPointer),Oset(line_thicknesses),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnLineLabelStrings, NhlCcnLineLabelStrings, NhlTStringGenArray,
-		 sizeof(NhlPointer),Oset(llabel_strings),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNcnLineLabelColors, NhlCcnLineLabelColors, NhlTIntegerGenArray,
-		 sizeof(NhlPointer),Oset(llabel_colors),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(line_dash_seglen_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
-        { NhlNcnLineDashSegLenF, NhlCcnLineDashSegLenF,NhlTFloat,sizeof(float),
-		  Oset(line_dash_seglen),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{ NhlNcnLineLabelSpacing,NhlCcnLineLabelSpacing,
-		  NhlTcnLineLabelSpacingMode,sizeof(NhlcnLineLabelSpacingMode),
-		  Oset(llabel_spacing),
-		  NhlTImmediate,_NhlUSET((NhlPointer)NhlcnRANDOMIZED),0,NULL},
-
 	{NhlNcnLowUseHighLabelRes,NhlCcnLowUseHighLabelRes,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(low_use_high_attrs),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
@@ -289,9 +269,47 @@ static NhlResource resources[] = {
 		  Oset(high_low_overlap),NhlTImmediate,
 		 _NhlUSET((NhlPointer)NhlcnIGNOREOVERLAP),0,NULL},
 
+/* General label string format option */
+
+	{NhlNcnLabelScalingMode,NhlCcnLabelScalingMode,
+                 NhlTcnLabelScalingMode,sizeof(NhlcnLabelScalingMode),
+                 Oset(label_scaling_mode),NhlTImmediate,
+                 _NhlUSET((NhlPointer) NhlcnSCALEFACTOR),0,NULL},
+        {NhlNcnLabelScaleValueF,NhlCcnLabelScaleValueF,
+                 NhlTFloat,sizeof(float),Oset(label_scale_value),
+                 NhlTString,_NhlUSET("1.0"),0,NULL},
+        {NhlNcnLabelScaleFactorF,NhlCcnLabelScaleFactorF,
+                 NhlTFloat,sizeof(float),Oset(label_scale_factor),
+                 NhlTString,_NhlUSET("1.0"),0,NULL},
+	{NhlNcnMaxDataValueFormat,NhlCcnMaxDataValueFormat,
+		 NhlTString,sizeof(NhlString),
+		 Oset(max_data_format.fstring),NhlTImmediate,
+		 _NhlUSET(NULL),0,NULL},
+
+/* Line label resources */
+
 	{NhlNcnLineLabelsOn,NhlCcnLineLabelsOn,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(line_lbls.on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	{NhlNcnLineLabelInterval,NhlCcnLineLabelInterval,
+		  NhlTFloat,sizeof(float),
+		  Oset(llabel_interval),
+		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{NhlNcnLineLabelSpacing,NhlCcnLineLabelSpacing,
+		  NhlTcnLineLabelSpacingMode,sizeof(NhlcnLineLabelSpacingMode),
+		  Oset(llabel_spacing),
+		  NhlTImmediate,_NhlUSET((NhlPointer)NhlcnRANDOMIZED),0,NULL},
+	{NhlNcnLineLabelStrings, NhlCcnLineLabelStrings, NhlTStringGenArray,
+		 sizeof(NhlPointer),Oset(llabel_strings),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNcnMonoLineLabelColor,NhlCcnMonoLineLabelColor,NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(line_lbls.mono_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNcnLineLabelColors, NhlCcnLineLabelColors, NhlTIntegerGenArray,
+		 sizeof(NhlPointer),Oset(llabel_colors),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcnLineLabelFormat,NhlCcnLineLabelFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(line_lbls.format.fstring),NhlTString,
@@ -305,9 +323,6 @@ static NhlResource resources[] = {
 	{NhlNcnLineLabelFont,NhlCcnLineLabelFont,NhlTFont, 
 		 sizeof(int),Oset(line_lbls.font),
 		 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
-	{NhlNcnMonoLineLabelColor,NhlCcnMonoLineLabelColor,NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(line_lbls.mono_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNcnLineLabelFontAspectF,NhlCcnLineLabelFontAspectF,NhlTFloat, 
 		 sizeof(float),Oset(line_lbls.aspect),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
@@ -342,6 +357,7 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(line_lbls.perim_lthick),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
 
+/* High Label resources */
 
 	{NhlNcnHighLabelsOn,NhlCcnHighLabelsOn,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(high_lbls.on),
@@ -399,6 +415,8 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(high_lbls.perim_lthick),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
 
+/* Low label resources */
+
 	{NhlNcnLowLabelsOn,NhlCcnLowLabelsOn,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(low_lbls.on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -454,6 +472,8 @@ static NhlResource resources[] = {
 	{NhlNcnLowLabelPerimThicknessF,NhlCcnLowLabelFontThicknessF,
 		 NhlTFloat,sizeof(float),Oset(low_lbls.perim_lthick),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
+
+/* Informational label resources */
 
 	{NhlNcnInfoLabelOn,NhlCcnInfoLabelOn,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(info_lbl.on),
@@ -531,6 +551,8 @@ static NhlResource resources[] = {
 	{NhlNcnInfoLabelOrthogonalPosF,NhlCcnInfoLabelOrthogonalPosF,NhlTFloat,
 		 sizeof(float),Oset(info_lbl_rec.ortho_pos),NhlTString,
 		 _NhlUSET("0.02"),0,NULL},
+
+/* Constant field label resources */
 
 	{NhlNcnConstFLabelOn,NhlCcnConstFLabelOn,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(constf_lbl.on),
@@ -610,6 +632,8 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(constf_lbl_rec.ortho_pos),
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
 
+/* Missing value area resources */
+
 	{NhlNcnMissingValPerim,NhlCcnMissingValPerim,NhlTInteger,
 		 sizeof(int),Oset(missing_val.perim_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
@@ -632,6 +656,7 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(missing_val.fill_scale),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
 
+/* Grid boundary resources */
 
 	{NhlNcnGridBoundPerim,NhlCcnGridBoundPerim,NhlTInteger,
 		 sizeof(int),Oset(grid_bound.perim_on),
@@ -655,6 +680,8 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(grid_bound.fill_scale),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
 
+/* Out of range area resources */
+
 	{NhlNcnOutOfRangePerim,NhlCcnOutOfRangePerim,NhlTInteger,
 		 sizeof(int),Oset(out_of_range.perim_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
@@ -677,6 +704,15 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(out_of_range.fill_scale),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
 
+/* End-documented-resources */
+
+/* Private resources */
+
+	{ NhlNcnDataChanged,NhlCcnDataChanged,NhlTBoolean,sizeof(NhlBoolean),
+		  Oset(data_changed),
+		  NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+
+/* Intercepted resources */
 
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(x_min_set),
@@ -746,10 +782,7 @@ static NhlResource resources[] = {
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlCONDITIONAL),0,NULL},
 	{ NhlNovUpdateReq,NhlCovUpdateReq,NhlTInteger,sizeof(int),
 		  Oset(update_req),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-	{ NhlNcnDataChanged,NhlCcnDataChanged,NhlTBoolean,sizeof(NhlBoolean),
-		  Oset(data_changed),
-		  NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL}
+		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL}
 };
 #undef Oset
 
@@ -3252,7 +3285,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 			yinc = (ya[i+1] - ya[i]) / _cnMAPBOUNDINC;
 			if (! started) {
 				_NhlMapita(cnp->aws,ya[i],xa[i],
-					   0,3,-1,0,entry_name);
+					   0,10,-1,0,entry_name);
 #if 0
 				c_mapit(ya[i],xa[i],0);
 #endif
@@ -3260,7 +3293,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 			}
 			for (j = 0; j < _cnMAPBOUNDINC + 1; j++) {
 				_NhlMapita(cnp->aws,ya[i]+j*yinc,xa[i]+j*xinc,
-					   1,3,-1,0,entry_name);
+					   2,10,-1,0,entry_name);
 #if 0
 				c_mapit(ya[i]+j*yinc,xa[i]+j*xinc,1);
 #endif

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.14 1994-08-08 22:51:46 ethan Exp $
+ *      $Id: CoordArrays.c,v 1.15 1994-09-23 23:36:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -108,6 +108,9 @@ YCastSet
 
 #define	Oset(field)	NhlOffset(NhlCoordArraysLayerRec,carr.field)
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{NhlNcaXArray,NhlCcaXArray,NhlTGenArray,sizeof(NhlGenArray),
 		Oset(xarray),NhlTImmediate,(NhlPointer)NULL,0,
 						(NhlFreeFunc)NhlFreeGenArray},
@@ -136,6 +139,9 @@ static NhlResource resources[] = {
 		Oset(min_x),NhlTImmediate,(NhlPointer)NULL,0,NULL},
 	{NhlNcaYMinV,NhlCcaYMinV,NhlTGenArray,sizeof(NhlGenArray),
 		Oset(min_y),NhlTImmediate,(NhlPointer)NULL,0,NULL},
+
+/* End-documented-resources */
+
 	/*
 	 * init private fields
 	 */

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.17 1994-07-28 22:11:44 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.18 1994-09-23 23:36:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,9 @@
  */
 #define	Oset(field)	NhlOffset(NhlCoordArrTableLayerRec,cat.field)
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{NhlNctXTableType,NhlCctXTableType,NhlTString,sizeof(NhlString),
 		Oset(xtype),NhlTImmediate,(NhlPointer)NULL,0,
 							(NhlFreeFunc)NhlFree},
@@ -81,6 +84,9 @@ static NhlResource resources[] = {
 	{NhlNctYMinV,NhlCctYMinV,NhlTGenArray,sizeof(NhlGenArray),
 		Oset(min_y),NhlTImmediate,(NhlPointer)NULL,0,
 						(NhlFreeFunc)NhlFreeGenArray},
+
+/* End-documented-resources */
+
 	/* use reslist to init private fields */
 	{"no.res","No.res",NhlTPointer,sizeof(NhlPointer),Oset(own_x),
 		NhlTImmediate,(NhlPointer)NULL,0,NULL},

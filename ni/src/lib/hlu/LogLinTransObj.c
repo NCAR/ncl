@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.11 1994-08-19 20:36:50 ethan Exp $
+ *      $Id: LogLinTransObj.c,v 1.12 1994-09-23 23:36:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,9 @@
 
 
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{ NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_min),
 		NhlTString,"0.0",0,NULL},
@@ -52,6 +55,9 @@ static NhlResource resources[] = {
 	{ NhlNtrYReverse,NhlCtrYReverse,NhlTInteger,sizeof(int),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_reverse),
 		NhlTString,"0",0,NULL}
+
+/* End-documented-resources */
+
 };
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.6 1994-05-05 18:17:27 ethan Exp $
+ *      $Id: TransObj.c,v 1.7 1994-09-23 23:37:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,9 +25,15 @@
 #include <ncarg/hlu/TransObjP.h>
 
 static NhlResource resources[] =  {
+
+/* Begin-documented-resources */
+
 	{ NhlNtrOutOfRangeF, NhlCtrOutOfRangeF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTransObjLayerRec, trobj.out_of_range),
-		NhlTString, "-9999.0",0,NULL }
+		NhlTString, "1.0e12",0,NULL }
+
+/* End-documented-resources */
+
 };
 
 NhlTransObjLayerClassRec NhltransObjLayerClassRec = {

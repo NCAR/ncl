@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.21 1994-09-12 21:01:10 dbrown Exp $
+ *      $Id: Overlay.c,v 1.22 1994-09-23 23:36:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -85,29 +85,14 @@ ResourceUnset
 #define	Oset(field)	NhlOffset(NhlOverlayLayerRec,overlay.field)
 static NhlResource resources[] = {
 
+/* Begin-documented-resources */
+
 	{NhlNovOverlayIds,NhlCovOverlayIds,NhlTIntegerGenArray,
 		sizeof(NhlPointer),
 		Oset(overlay_ids),
 		NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNovPreDrawOrder,NhlCovPreDrawOrder,NhlTIntegerGenArray,
-		  sizeof(NhlPointer),
-		  Oset(pre_draw_order),
-		  NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNovPostDrawOrder,NhlCovPostDrawOrder,NhlTIntegerGenArray,
-		  sizeof(NhlPointer),
-		  Oset(post_draw_order),
-		  NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNovOverlayRecs,NhlCovOverlayRecs,NhlTGenArray,
-		  sizeof(NhlPointer),
-		  Oset(ov_rec_list),
-		  NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNovUpdateReq,NhlCovUpdateReq,NhlTBoolean,
-		  sizeof(NhlBoolean),
-		  Oset(update_req),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-/*
- * Annotation resources
- */
+
+/* Annotation resources  */
 
 	{ NhlNovDisplayTitles,NhlCovDisplayTitles,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
@@ -123,6 +108,9 @@ static NhlResource resources[] = {
 	{ NhlNovTickMarkZone,NhlCovTickMarkZone,NhlTInteger,sizeof(int),
 		  Oset(tickmark_zone),NhlTImmediate,
 		  _NhlUSET((NhlPointer) NhlOV_DEF_TICKMARK_ZONE),0,NULL},
+
+/* LabelBar resources */
+
 	{ NhlNovDisplayLabelBar,NhlCovDisplayLabelBar,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_labelbar),NhlTImmediate,
@@ -130,6 +118,41 @@ static NhlResource resources[] = {
 	{ NhlNovLabelBarZone,NhlCovLabelBarZone,NhlTInteger,sizeof(int),
 		  Oset(labelbar_zone),NhlTImmediate,
 		  _NhlUSET((NhlPointer) NhlOV_DEF_LABELBAR_ZONE),0,NULL},
+	{ NhlNovLabelBarWidthF, NhlCovLabelBarWidthF,NhlTFloat, sizeof(float),
+		  Oset(lbar_width),
+		  NhlTString,_NhlUSET("0.2" ),0,NULL},
+	{ NhlNovLabelBarHeightF, NhlCovLabelBarHeightF,NhlTFloat, 
+		  sizeof(float),
+		  Oset(lbar_height),
+		  NhlTString,_NhlUSET("0.5" ),0,NULL},
+	{NhlNovLabelBarSide, NhlCovLabelBarSide, NhlTPosition, 
+		 sizeof(NhlJustification),
+		 Oset(lbar_side),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlRIGHT),0,NULL},
+	{NhlNovLabelBarParallelPosF,NhlCovLabelBarParallelPosF,NhlTFloat,
+		 sizeof(float),
+		 Oset(lbar_para_pos),
+		 NhlTString,_NhlUSET("0.5"),0,NULL},
+	{NhlNovLabelBarOrthogonalPosF,NhlCovLabelBarOrthogonalPosF,NhlTFloat,
+		 sizeof(float),
+		 Oset(lbar_ortho_pos),
+		 NhlTString,_NhlUSET("0.02"),0,NULL},
+	{ NhlNovLabelBarXOffsetF, NhlCovLabelBarXOffsetF,NhlTFloat, 
+		  sizeof(float),
+		  Oset(lbar_x_off),
+		  NhlTString,_NhlUSET("0.02" ),0,NULL},
+	{ NhlNovLabelBarYOffsetF, NhlCovLabelBarYOffsetF,NhlTFloat, 
+		  sizeof(float),
+		  Oset(lbar_y_off),
+		  NhlTString,_NhlUSET("0.00" ),0,NULL},
+	{NhlNovLabelBarPosition, NhlCovLabelBarPosition, NhlTPosition, 
+		 sizeof(NhlJustification),
+		 Oset(lbar_pos),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlBOTTOM),0,NULL},
+
+
+/* Legend resources */
+
 	{ NhlNovDisplayLegend,NhlCovDisplayLegend,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_legend),
@@ -137,6 +160,62 @@ static NhlResource resources[] = {
 	{ NhlNovLegendZone,NhlCovLegendZone,NhlTInteger,sizeof(int),
 		  Oset(legend_zone),NhlTImmediate,
 		  _NhlUSET((NhlPointer) NhlOV_DEF_LEGEND_ZONE),0,NULL},
+	{ NhlNovLegendWidthF, NhlCovLegendWidthF,NhlTFloat, sizeof(float),
+		  Oset(lgnd_width),
+		  NhlTString,_NhlUSET("0.45" ),0,NULL},
+	{ NhlNovLegendHeightF, NhlCovLegendHeightF,NhlTFloat, 
+		  sizeof(float),
+		  Oset(lgnd_height),
+		  NhlTString,_NhlUSET("0.175" ),0,NULL},
+	{NhlNovLegendSide, NhlCovLegendSide, NhlTPosition, 
+		 sizeof(NhlPosition),
+		 Oset(lgnd_side),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlBOTTOM),0,NULL},
+	{NhlNovLegendParallelPosF,NhlCovLegendParallelPosF,NhlTFloat,
+		 sizeof(float),
+		 Oset(lgnd_para_pos),NhlTString,
+		 _NhlUSET("0.5"),0,NULL},
+	{NhlNovLegendOrthogonalPosF,NhlCovLegendOrthogonalPosF,NhlTFloat,
+		 sizeof(float),
+		 Oset(lgnd_ortho_pos),NhlTString,
+		 _NhlUSET("0.02"),0,NULL},
+	{NhlNovLegendPosition, NhlCovLegendPosition, NhlTPosition, 
+		 sizeof(NhlPosition),
+		 Oset(lgnd_pos),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTER),0,NULL},
+	{ NhlNovLegendXOffsetF, NhlCovLegendXOffsetF,NhlTFloat, 
+		  sizeof(float),
+		  Oset(lgnd_x_off),
+		  NhlTString,_NhlUSET("0.00" ),0,NULL},
+	{ NhlNovLegendYOffsetF, NhlCovLegendYOffsetF,NhlTFloat, 
+		  sizeof(float),
+		  Oset(lgnd_y_off),
+		  NhlTString,_NhlUSET("0.02" ),0,NULL},
+
+/* End-documented-resources */
+
+/* Unimplemented resources */
+
+	{ NhlNovPreDrawOrder,NhlCovPreDrawOrder,NhlTIntegerGenArray,
+		  sizeof(NhlPointer),
+		  Oset(pre_draw_order),
+		  NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+	{ NhlNovPostDrawOrder,NhlCovPostDrawOrder,NhlTIntegerGenArray,
+		  sizeof(NhlPointer),
+		  Oset(post_draw_order),
+		  NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+
+/* Private resources */
+
+	{ NhlNovOverlayRecs,NhlCovOverlayRecs,NhlTGenArray,
+		  sizeof(NhlPointer),
+		  Oset(ov_rec_list),
+		  NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+	{ NhlNovUpdateReq,NhlCovUpdateReq,NhlTBoolean,
+		  sizeof(NhlBoolean),
+		  Oset(update_req),
+		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+
 /*
  * Intercepted tick mark resources
  */
@@ -231,41 +310,6 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(ti_y_axis_font_height),
 		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 
-/* LabelBar resources */
-
-	{ NhlNovLabelBarWidthF, NhlCovLabelBarWidthF,NhlTFloat, sizeof(float),
-		  Oset(lbar_width),
-		  NhlTString,_NhlUSET("0.2" ),0,NULL},
-	{ NhlNovLabelBarHeightF, NhlCovLabelBarHeightF,NhlTFloat, 
-		  sizeof(float),
-		  Oset(lbar_height),
-		  NhlTString,_NhlUSET("0.5" ),0,NULL},
-	{NhlNovLabelBarSide, NhlCovLabelBarSide, NhlTPosition, 
-		 sizeof(NhlJustification),
-		 Oset(lbar_side),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlRIGHT),0,NULL},
-	{NhlNovLabelBarParallelPosF,NhlCovLabelBarParallelPosF,NhlTFloat,
-		 sizeof(float),
-		 Oset(lbar_para_pos),
-		 NhlTString,_NhlUSET("0.5"),0,NULL},
-	{NhlNovLabelBarOrthogonalPosF,NhlCovLabelBarOrthogonalPosF,NhlTFloat,
-		 sizeof(float),
-		 Oset(lbar_ortho_pos),
-		 NhlTString,_NhlUSET("0.02"),0,NULL},
-
-	{ NhlNovLabelBarXOffsetF, NhlCovLabelBarXOffsetF,NhlTFloat, 
-		  sizeof(float),
-		  Oset(lbar_x_off),
-		  NhlTString,_NhlUSET("0.02" ),0,NULL},
-	{ NhlNovLabelBarYOffsetF, NhlCovLabelBarYOffsetF,NhlTFloat, 
-		  sizeof(float),
-		  Oset(lbar_y_off),
-		  NhlTString,_NhlUSET("0.00" ),0,NULL},
-	{NhlNovLabelBarPosition, NhlCovLabelBarPosition, NhlTPosition, 
-		 sizeof(NhlJustification),
-		 Oset(lbar_pos),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlBOTTOM),0,NULL},
-
 /* intercepted LabelBar resources */
 
 	{NhlNlbLabelBar, NhlClbLabelBar, NhlTBoolean, 
@@ -280,42 +324,6 @@ static NhlResource resources[] = {
 		 sizeof(NhlOrientation),
 		 Oset(lbar_orient),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlVERTICAL),0,NULL},
-
-/* Legend resources */
-
-	{ NhlNovLegendWidthF, NhlCovLegendWidthF,NhlTFloat, sizeof(float),
-		  Oset(lgnd_width),
-		  NhlTString,_NhlUSET("0.45" ),0,NULL},
-	{ NhlNovLegendHeightF, NhlCovLegendHeightF,NhlTFloat, 
-		  sizeof(float),
-		  Oset(lgnd_height),
-		  NhlTString,_NhlUSET("0.175" ),0,NULL},
-	{NhlNovLegendSide, NhlCovLegendSide, NhlTPosition, 
-		 sizeof(NhlPosition),
-		 Oset(lgnd_side),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlBOTTOM),0,NULL},
-	{NhlNovLegendParallelPosF,NhlCovLegendParallelPosF,NhlTFloat,
-		 sizeof(float),
-		 Oset(lgnd_para_pos),NhlTString,
-		 _NhlUSET("0.5"),0,NULL},
-	{NhlNovLegendOrthogonalPosF,NhlCovLegendOrthogonalPosF,NhlTFloat,
-		 sizeof(float),
-		 Oset(lgnd_ortho_pos),NhlTString,
-		 _NhlUSET("0.02"),0,NULL},
-
-
-	{NhlNovLegendPosition, NhlCovLegendPosition, NhlTPosition, 
-		 sizeof(NhlPosition),
-		 Oset(lgnd_pos),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTER),0,NULL},
-	{ NhlNovLegendXOffsetF, NhlCovLegendXOffsetF,NhlTFloat, 
-		  sizeof(float),
-		  Oset(lgnd_x_off),
-		  NhlTString,_NhlUSET("0.00" ),0,NULL},
-	{ NhlNovLegendYOffsetF, NhlCovLegendYOffsetF,NhlTFloat, 
-		  sizeof(float),
-		  Oset(lgnd_y_off),
-		  NhlTString,_NhlUSET("0.02" ),0,NULL},
 
 /* intercepted Legend resources */
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.14 1994-09-12 21:01:07 dbrown Exp $
+ *      $Id: Legend.c,v 1.15 1994-09-23 23:36:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,8 @@ static int def_colors[] = {
 #define DEGTORAD 0.017453293
 
 static NhlResource resources[] = { 
+
+/* Begin-documented-resources */
 
 {NhlNlgLegend, NhlClgLegend, NhlTInteger,
 	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.legend_on),
@@ -91,18 +93,21 @@ static NhlResource resources[] = {
 	
 {NhlNlgItemIndexes, NhlClgItemIndexes, NhlTIntegerGenArray,
 	 sizeof(NhlPointer), NhlOffset(NhlLegendLayerRec,legend.item_indexes),
-	 NhlTImmediate, _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+	 NhlTImmediate, 
+	 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 {NhlNlgItemStrings, NhlClgItemStrings, NhlTStringGenArray,
 	 sizeof(NhlPointer), 
 	 NhlOffset(NhlLegendLayerRec,legend.item_strings),
-	 NhlTImmediate, _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+	 NhlTImmediate,
+	 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 {NhlNlgMonoItemType, NhlClgMonoItemType, NhlTBoolean,
 	 sizeof(NhlBoolean), 
 	 NhlOffset(NhlLegendLayerRec,legend.mono_item_type),
 	 NhlTImmediate, _NhlUSET((NhlPointer) True),0,NULL},
 {NhlNlgItemTypes, NhlClgItemTypes, NhlTIntegerGenArray,
 	 sizeof(NhlPointer), NhlOffset(NhlLegendLayerRec,legend.item_types),
-	 NhlTImmediate, _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+	 NhlTImmediate,
+	 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 {NhlNlgMonoItemColor, NhlClgMonoItemColor, NhlTBoolean,
 	 sizeof(NhlBoolean), 
 	 NhlOffset(NhlLegendLayerRec,legend.mono_item_color),
@@ -125,13 +130,16 @@ static NhlResource resources[] = {
 {NhlNlgItemTextHeights, NhlClgItemTextHeights, NhlTFloatGenArray,
 	 sizeof(NhlPointer), 
 	 NhlOffset(NhlLegendLayerRec,legend.item_text_heights),
-	 NhlTImmediate, _NhlUSET((NhlPointer) NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
+	 NhlTImmediate,
+	 _NhlUSET((NhlPointer) NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
 {NhlNlgLabelStrings, NhlClgLabelStrings, NhlTStringGenArray,
 	 sizeof(NhlPointer), 
 	 NhlOffset(NhlLegendLayerRec,legend.label_strings),
-	 NhlTImmediate, _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+	 NhlTImmediate,
+	 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 {NhlNlgItemPositions, NhlClgItemPositions, NhlTFloatGenArray,
-	 sizeof(NhlGenArray), NhlOffset(NhlLegendLayerRec,legend.item_positions),
+	 sizeof(NhlGenArray),
+	 NhlOffset(NhlLegendLayerRec,legend.item_positions),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NULL ),0,NULL},
 {NhlNlgMonoItemStringColor, NhlClgMonoItemStringColor, NhlTBoolean,
 	 sizeof(NhlBoolean), 
@@ -140,7 +148,8 @@ static NhlResource resources[] = {
 {NhlNlgItemStringColors, NhlClgItemStringColors, NhlTIntegerGenArray,
 	 sizeof(NhlPointer), 
 	 NhlOffset(NhlLegendLayerRec,legend.item_string_colors),
-	 NhlTImmediate, _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+	 NhlTImmediate,
+	 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 
 {NhlNlgDrawLineLabels,NhlClgDrawLineLabels,NhlTBoolean,sizeof(NhlBoolean), 
 	 NhlOffset(NhlLegendLayerRec,legend.line_labels_on),
@@ -314,6 +323,8 @@ static NhlResource resources[] = {
 	 sizeof(float), 
 	 NhlOffset(NhlLegendLayerRec,legend.perim_dash_seglen),
 	 NhlTString, _NhlUSET("0.15"),0,NULL},
+
+/* End-documented-resources */
 
 };
 

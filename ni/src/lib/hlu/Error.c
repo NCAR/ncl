@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.12 1994-09-06 21:51:27 boote Exp $
+ *      $Id: Error.c,v 1.13 1994-09-23 23:36:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -56,6 +56,9 @@ static NhlErrorLayer	errorLayer = NULL;
 /* Resources */
 #define Oset(field)	NhlOffset(NhlErrorLayerRec,error.field)
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{NhlNerrBuffer,NhlCerrBuffer,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(buffer_errors),NhlTImmediate,False,0,NULL},
 	{NhlNerrLevel,NhlCerrLevel,NhlTErrorTypes,sizeof(NhlErrorTypes),
@@ -65,6 +68,8 @@ static NhlResource resources[] = {
 	{NhlNerrFileName,NhlCerrFileName,NhlTString,sizeof(NhlString),
 		Oset(error_file),NhlTImmediate,(NhlPointer)DEF_FILE,0,
 							(_NhlFreeFunc)NhlFree},
+/* End-documented-resources */
+
 	{_NhlNerrMode,_NhlCerrMode,NhlTInteger,sizeof(_NhlC_OR_F),
 		Oset(error_mode),NhlTImmediate,(NhlPointer)_NhlNONE,0,NULL}
 };
@@ -72,15 +77,27 @@ static NhlResource resources[] = {
 
 #define Oset(field)	NhlOffset(_NhlErrorLayerCRec,cerror.field)
 static NhlResource cresources[] = {
+
+/* Begin-documented-resources */
+
 	{NhlNerrFilePtr,NhlCerrFilePtr,NhlTPointer,sizeof(NhlPointer),
 		Oset(fp),NhlTImmediate,(NhlPointer)NULL,0,NULL}
+
+/* End-documented-resources */
+
 };
 #undef Oset
 
 #define Oset(field)	NhlOffset(_NhlErrorLayerFRec,ferror.field)
 static NhlResource fresources[] = {
+
+/* Begin-documented-resources */
+
 	{NhlNerrUnitNumber,NhlCerrUnitNumber,NhlTInteger,sizeof(int),
 		Oset(eunit),NhlTImmediate,(NhlPointer)-1,0,NULL}
+
+/* End-documented-resources */
+
 };
 #undef Oset
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Annotation.c,v 1.4 1994-07-12 20:51:00 boote Exp $
+ *      $Id: Annotation.c,v 1.5 1994-09-23 23:36:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,9 @@
 
 #define Oset(field)     NhlOffset(NhlAnnotationLayerRec,annotation.field)
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{NhlNanOn,NhlCanOn,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(on),NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNanPlotId,NhlCanPlotId,NhlTInteger,sizeof(int),
@@ -58,6 +61,9 @@ static NhlResource resources[] = {
 		 Oset(data_x),NhlTString,_NhlUSET("0.0"),0,NULL },
 	{NhlNanDataYF,NhlCanDataYF,NhlTFloat,sizeof(NhlFont),
 		 Oset(data_y),NhlTString,_NhlUSET("0.0"),0,NULL }
+
+/* End-documented-resources */
+
 };
 
 /*

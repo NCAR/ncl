@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.11 1994-07-12 20:53:15 boote Exp $
+ *      $Id: Title.c,v 1.12 1994-09-23 23:36:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -106,6 +106,9 @@ SetYAxisOn
 
 #define Oset(field) NhlOffset(NhlTitleLayerRec,title.field)
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{NhlNtiDeltaF, NhlCtiDeltaF, NhlTFloat, sizeof(float),
 		 Oset(delta), NhlTString,_NhlUSET( "1.5" ),0,NULL},
 	{NhlNtiMainFontColor,NhlCtiTitleFontColors,NhlTInteger,sizeof(int),
@@ -262,6 +265,9 @@ static NhlResource resources[] = {
 		 sizeof(NhlTitlePositions),
 		 Oset(y_axis_side), NhlTImmediate,
 		 _NhlUSET((NhlPointer)NhlLEFT),0,NULL}
+
+/* End-documented-resources */
+
 	};
 #undef Oset
 

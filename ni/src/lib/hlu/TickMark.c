@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.19 1994-07-12 20:53:08 boote Exp $
+ *      $Id: TickMark.c,v 1.20 1994-09-23 23:36:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,9 @@
 /* resource list definition */
 
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{ NhlNtmSciNoteCutoff, NhlCtmSciNoteCutoff, NhlTInteger,sizeof(int),
 		  NhlOffset(NhlTickMarkLayerRec, tick.sci_note_cutoff),
 		  NhlTImmediate,_NhlUSET((NhlPointer)6),0,NULL},
@@ -620,6 +623,9 @@ static NhlResource resources[] = {
 		sizeof(NhlBoolean),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_auto_precision),
 		NhlTImmediate,_NhlUSET( (NhlPointer)True ),0,NULL}
+
+/* End-documented-resources */
+
 };
 
 static NhlErrorTypes DrawLabels (

@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.6 1994-05-12 23:51:51 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.7 1994-09-23 23:36:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,8 +28,14 @@
 #define DEFAULT_META_NAME "gmeta"
 
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{ NhlNwkMetaName, NhlCwkMetaName, NhlTString, sizeof(char*),
 	NhlOffset(NhlNcgmWorkstationLayerRec,ncgm.meta_name),NhlTString,DEFAULT_META_NAME,0,(NhlFreeFunc)NhlFree }
+
+/* End-documented-resources */
+
 };
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.21 1994-08-19 20:36:55 ethan Exp $
+ *      $Id: XyPlot.c,v 1.22 1994-09-23 23:37:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -263,6 +263,9 @@ SetYMin
 
 #define	Oset(field)	NhlOffset(NhlXyDataDepLayerRec,xydata.field)
 static NhlResource data_resources[] = {
+
+/* Begin-documented-resources */
+
 	{NhlNxyColors,NhlCxyColors,NhlTIntegerGenArray,sizeof(NhlPointer),
 		Oset(colors),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyColor,NhlCxyColor,NhlTInteger,sizeof(int),
@@ -303,11 +306,17 @@ static NhlResource data_resources[] = {
 	{NhlNxyExplicitLabels,NhlCxyExplicitLabels,NhlTStringGenArray,
 		sizeof(NhlPointer),
 		Oset(labels),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray}
+
+/* End-documented-resources */
+
 };
 #undef Oset
 
 #define	Oset(field)	NhlOffset(NhlXyPlotLayerRec,xyplot.field)
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{NhlNxyCurveData,NhlCxyCurveData,_NhlTDataList,sizeof(NhlGenArray),
 		Oset(curve_data),NhlTImmediate,NULL,0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyCurveThicknessF,NhlCxyCurveThicknessF,NhlTFloat,sizeof(float),
@@ -393,6 +402,9 @@ static NhlResource resources[] = {
 	{NhlNxyLineLabelFontHeightF,NhlCxyLineLabelFontHeightF,NhlTFloat,
 		sizeof(float), Oset(line_label_font_height),NhlTString,".01",
 		0,NULL},
+
+/* End-documented-resources */
+
 
 /*
 * Title resources of special importance are intercepted here

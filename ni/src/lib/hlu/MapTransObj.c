@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.10 1994-09-08 01:34:25 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.11 1994-09-23 23:36:51 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -30,6 +30,9 @@
 #include <ncarg/hlu/FortranP.h>
 
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 {NhlNtrOutOfRangeF,NhlCtrOutOfRangeF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,trobj.out_of_range),
 	 NhlTString,_NhlUSET("1.0e12"),0,NULL},
@@ -136,6 +139,9 @@ static NhlResource resources[] = {
 	 sizeof(NhlBoolean),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.elliptical_boundary),
 	 NhlTImmediate,_NhlUSET((NhlPointer)False) ,0,NULL},
+
+
+/* End-documented-resources */
 
 /* not sure these are needed,
 { NhlNmpMapPosRF, NhlCmpMapPosRF, NhlTFloat,sizeof(float),

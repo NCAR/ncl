@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.8 1994-09-08 01:34:37 dbrown Exp $
+ *      $Id: View.c,v 1.9 1994-09-23 23:37:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +38,9 @@
 #include <ncarg/hlu/ConvertersP.h>
 
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{ NhlNvpXF, NhlCvpXF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlViewLayerRec,view.x),
 		NhlTString,_NhlUSET(NHL_DEFAULT_VIEW_X_STR),0,NULL},
@@ -57,6 +60,9 @@ static NhlResource resources[] = {
 		  sizeof(NhlBoolean),
 		  NhlOffset(NhlViewLayerRec,view.use_segments),
 		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL}
+
+/* End-documented-resources */
+
 };
 
 /*

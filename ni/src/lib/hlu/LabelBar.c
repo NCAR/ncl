@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.15 1994-09-12 21:01:05 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.16 1994-09-23 23:36:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,8 @@ static int def_colors[] = {
 #define DEGTORAD 0.017453293
 
 static NhlResource resources[] = { 
+
+/* Begin-documented-resources */
 
 {NhlNlbLabelBar, NhlClbLabelBar, NhlTBoolean,sizeof(NhlBoolean),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.labelbar_on),
@@ -284,6 +286,9 @@ static NhlResource resources[] = {
 	 sizeof(float), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_line_thickness),
 	 NhlTString,_NhlUSET("1.0"),0,NULL}
+
+/* End-documented-resources */
+
 };
 
 /*

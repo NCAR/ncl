@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.15 1994-09-06 21:51:29 boote Exp $
+ *      $Id: Workstation.c,v 1.16 1994-09-23 23:37:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -288,6 +288,9 @@ static NrmQuark dash_table_name;
 
 #define Oset(field) NhlOffset(NhlWorkstationLayerRec,work.field)
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{ NhlNwkColorMap, NhlCwkColorMap, NhlTGenArray , sizeof(NhlPointer),
 		Oset(color_map),NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNwkColorMapLen, NhlCwkColorMapLen, NhlTInteger, sizeof(int),
@@ -299,6 +302,18 @@ static NhlResource resources[] = {
 	{ NhlNwkForegroundColor, NhlCwkForegroundColor, NhlTGenArray, 
 		  sizeof(NhlPointer),
 		  Oset(foregnd_color), NhlTImmediate,_NhlUSET( NULL),0,NULL},
+	{ NhlNwkDashTableLength, NhlCwkDashTableLength, NhlTInteger, 
+		sizeof(int),Oset(dash_table_len),NhlTImmediate,
+					_NhlUSET((NhlPointer)0),0,NULL},
+	{ NhlNwkFillTableLength, NhlCwkFillTableLength, NhlTInteger, 
+		sizeof(int),Oset(fill_table_len),NhlTImmediate,
+					_NhlUSET((NhlPointer)0),0,NULL},
+	{ NhlNwkMarkerTableLength, NhlCwkMarkerTableLength, NhlTInteger, 
+		  sizeof(int),Oset(marker_table_len),NhlTImmediate,
+		  _NhlUSET((NhlPointer)0),0,NULL},
+
+/* End-documented-resources */
+
         { NhlNwkDashPattern, NhlCwkDashPattern, NhlTInteger, sizeof(int),
 		Oset(dash_pattern),NhlTImmediate,_NhlUSET((NhlPointer)0),0,NULL},
         { NhlNwkLineLabel, NhlCwkLineLabel, NhlTString, sizeof(char*),
@@ -315,9 +330,6 @@ static NhlResource resources[] = {
 		  Oset(line_dash_seglen),NhlTString,_NhlUSET(".15"),0,NULL},
         { NhlNwkLineColor, NhlCwkLineColor,NhlTInteger, sizeof(int),
                 Oset(line_color),NhlTImmediate,_NhlUSET((NhlPointer)1),0,NULL},
-	{ NhlNwkDashTableLength, NhlCwkDashTableLength, NhlTInteger, 
-		sizeof(int),Oset(dash_table_len),NhlTImmediate,
-					_NhlUSET((NhlPointer)0),0,NULL},
 	{ NhlNwkDashTable, NhlCwkDashTable, NhlTGenArray,
 		  sizeof(NhlPointer),Oset(dash_table),NhlTImmediate,
 		  _NhlUSET((NhlPointer)NULL),0,(NhlFreeFunc)NhlFreeGenArray},
@@ -335,9 +347,6 @@ static NhlResource resources[] = {
 	{ NhlNwkFillLineThicknessF, NhlCwkFillLineThicknessF, NhlTFloat,
 		sizeof(float),Oset(fill_line_thickness),NhlTString,
 		  _NhlUSET("1.0"),0,NULL},
-	{ NhlNwkFillTableLength, NhlCwkFillTableLength, NhlTInteger, 
-		sizeof(int),Oset(fill_table_len),NhlTImmediate,
-					_NhlUSET((NhlPointer)0),0,NULL},
 	{ NhlNwkDrawEdges, NhlCwkDrawEdges, NhlTInteger, sizeof(int),
 		Oset(edges_on),NhlTString,_NhlUSET("0"),0,NULL},
         { NhlNwkEdgeDashPattern, NhlCwkEdgeDashPattern, 
@@ -350,9 +359,6 @@ static NhlResource resources[] = {
         { NhlNwkEdgeColor, NhlCwkEdgeColor,NhlTInteger, sizeof(int),
 		Oset(edge_color),NhlTString,_NhlUSET("1"),0,NULL},
 
-	{ NhlNwkMarkerTableLength, NhlCwkMarkerTableLength, NhlTInteger, 
-		  sizeof(int),Oset(marker_table_len),NhlTImmediate,
-		  _NhlUSET((NhlPointer)0),0,NULL},
 	{ NhlNwkMarkerTableStrings, NhlCwkMarkerTableStrings, NhlTStringGenArray,
 		  sizeof(NhlPointer),Oset(marker_table_strings),NhlTImmediate,
 		  _NhlUSET((NhlPointer)NULL),0,(NhlFreeFunc)NhlFreeGenArray},

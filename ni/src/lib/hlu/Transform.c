@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.8 1994-05-05 18:17:30 ethan Exp $
+ *      $Id: Transform.c,v 1.9 1994-09-23 23:37:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,10 +33,16 @@
 #include <ncarg/hlu/TransObjP.h>
 
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{ NhlNtfOverlayPlotBase,NhlCtfOverlayPlotBase,
 		  NhlTBoolean,sizeof(NhlBoolean),
 		  NhlOffset(NhlTransformLayerRec,trans.overlay_plot_base),
 		  NhlTImmediate,(NhlPointer)True,0,NULL},
+
+/* End-documented-resources */
+
 	{ NhlNtfOverlayObject,NhlCtfOverlayObject,
 		  NhlTPointer,sizeof(NhlPointer),
 		  NhlOffset(NhlTransformLayerRec,trans.overlay_object),

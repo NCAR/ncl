@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.17 1994-09-12 21:01:13 dbrown Exp $
+ *      $Id: Workspace.c,v 1.18 1994-09-23 23:37:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -189,15 +189,22 @@ static NhlErrorTypes	SaveToFile(
 
 #define Oset(field)	NhlOffset(NhlWorkspaceLayerRec,workspace.field)
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{NhlNwsMaximumSize,NhlCwsMaximumSize,NhlTLong,
 		 sizeof(long),Oset(maximum_size),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlwsDEF_MAXIMUM),0,NULL},
 	{NhlNwsThresholdSize,NhlCwsThresholdSize,NhlTLong,
 		 sizeof(long),Oset(threshold_size),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlwsDEF_THRESHOLD),0,NULL},
+		 NhlTImmediate,
+		 _NhlUSET((NhlPointer) NhlwsDEF_THRESHOLD),0,NULL},
 	{NhlNwsCurrentSize,NhlCwsCurrentSize,NhlTLong,
 		 sizeof(long),Oset(current_size),
 		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL}
+
+/* End-documented-resources */
+
 };
 #undef Oset
 	

@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.2 1994-08-16 13:59:48 boote Exp $
+ *      $Id: App.c,v 1.3 1994-09-23 23:36:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -119,12 +119,18 @@ GetSysAppDir
 /* Resources */
 #define	Oset(field)	NhlOffset(NhlAppLayerRec,app.field)
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{NhlNusrAppDir,NhlCusrAppDir,NhlTString,sizeof(NhlString),
 		Oset(usr_appdir),NhlTImmediate,(NhlPointer)"~",0,
 							(NhlFreeFunc)NhlFree},
 	{NhlNsysAppDir,NhlCsysAppDir,NhlTString,sizeof(NhlString),
 		Oset(sys_appdir),NhlTProcedure,(NhlPointer)GetSysAppDir,0,
 							(NhlFreeFunc)NhlFree},
+
+/* End-documented-resources */
+
 	{_NhlNappMode,_NhlCappMode,NhlTInteger,sizeof(_NhlC_OR_F),
 		Oset(init_mode),NhlTImmediate,(NhlPointer)_NhlNONE,0,NULL},
 	{_NhlNdefApp,_NhlCdefApp,NhlTBoolean,sizeof(NhlBoolean),

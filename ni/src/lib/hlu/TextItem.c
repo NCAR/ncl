@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.11 1994-07-12 20:53:02 boote Exp $
+ *      $Id: TextItem.c,v 1.12 1994-09-23 23:36:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,9 @@
 #define DEFSTRING "NOTHING"
 #define DEGTORAD 0.017453293
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{ NhlNtxString, NhlCtxString, NhlTString, sizeof(char*),
 		NhlOffset(NhlTextItemLayerRec,text.string),
 		NhlTImmediate,_NhlUSET(DEFSTRING),0,(NhlFreeFunc)NhlFree},
@@ -80,20 +83,6 @@ static NhlResource resources[] = {
 		NhlOffset(NhlTextItemLayerRec, text.func_code),
 		NhlTString,_NhlUSET(":"),0,NULL},
 
-#ifdef	OLDSTUFF
-/*
-* These probably are going to cause GetValues Problems
-*/
-	{ NhlNtxXCorners, NhlCtxXCorners, NhlTFloatPtr,sizeof(float*),
-		NhlOffset(NhlTextItemLayerRec, text.x_corners),
-		NhlTImmediate, _NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
-	{ NhlNtxYCorners, NhlNtxYCorners, NhlTFloatPtr,sizeof(float*),
-		NhlOffset(NhlTextItemLayerRec, text.y_corners),
-		NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
-/*
-* end of possible GetValues Problems
-*/
-#endif
 
 	{NhlNtxPerimOn, NhlCtxPerimOn, NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTextItemLayerRec,text.perim_on),
@@ -121,6 +110,23 @@ static NhlResource resources[] = {
 		 sizeof(int),
 		 NhlOffset(NhlTextItemLayerRec,text.bg_fill_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlTRANSPARENT),0,NULL},
+
+/* End-documented-resources */
+
+#ifdef	OLDSTUFF
+/*
+* These probably are going to cause GetValues Problems
+*/
+	{ NhlNtxXCorners, NhlCtxXCorners, NhlTFloatPtr,sizeof(float*),
+		NhlOffset(NhlTextItemLayerRec, text.x_corners),
+		NhlTImmediate, _NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
+	{ NhlNtxYCorners, NhlNtxYCorners, NhlTFloatPtr,sizeof(float*),
+		NhlOffset(NhlTextItemLayerRec, text.y_corners),
+		NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
+/*
+* end of possible GetValues Problems
+*/
+#endif
 
 };
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.8 1994-09-12 21:01:11 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.9 1994-09-23 23:36:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -37,6 +37,9 @@
 
 #define	Oset(field)	NhlOffset(NhlScalarFieldLayerRec,sfield.field)
 static NhlResource resources[] = {
+
+/* Begin-documented-resources */
+
 	{NhlNsfDataArray,NhlCsfDataArray,NhlTGenArray,sizeof(NhlGenArray),
 		 Oset(d_arr),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
 	{NhlNsfXArray,NhlCsfXArray,NhlTGenArray,sizeof(NhlGenArray),
@@ -99,6 +102,9 @@ static NhlResource resources[] = {
 		Oset(x_stride),NhlTImmediate,_NhlUSET((NhlPointer)1),0,NULL},
 	{NhlNsfYCStride,NhlCsfYCStride,NhlTInteger,sizeof(int),
 		Oset(y_stride),NhlTImmediate,_NhlUSET((NhlPointer)1),0,NULL}
+
+/* End-documented-resources */
+
 };
 #undef Oset
 
