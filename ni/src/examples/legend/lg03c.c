@@ -119,8 +119,9 @@ main()
 	NhlRLSetIntegerArray(rlist,NhlNlgItemColors,colors,5);
 	NhlRLSetIntegerArray(rlist,NhlNlgItemStringColors,colors,5);
 	NhlRLSetIntegerArray(rlist,NhlNlgItemIndexes,item_ind,5);
+	NhlRLSetString(rlist,NhlNlgMonoItemThickness,"False");
 	NhlRLSetFloatArray(rlist,NhlNlgItemThicknesses,lnthik,5);
-	NhlRLSetFloat(rlist,NhlNlgItemTextHeights,.03);
+	NhlRLSetFloat(rlist,NhlNlgItemFontHeightF,.03);
 	NhlCreate(&pid,"Legend",
 		  NhllegendLayerClass,wid,rlist);
 
