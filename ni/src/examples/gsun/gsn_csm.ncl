@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.39 2000-04-17 22:48:40 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.40 2000-05-10 17:28:09 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -570,13 +570,16 @@ end
 ;                                                                       ;
 ; lat names
 ;                                                                       ;
+
   if(.not.(isatt(res,start_name).and.isatt(res,end_name)).and.\
     (.not.ismissing(data!0).and.iscoord(data,data!0)).and.\
      any(data!0.eq.allowed_latnames)) 
     set_attr(res,array_name,data&$data!0$)
   else
-    print("check_for_y_lat_coord: Warning: Data either does not contain an")
-    print("known latitude coordinate array or doesn't contain one at all")
+    if(ismissing(data!0).or..not.any(data!0.eq.allowed_latnames))
+      print("check_for_y_lat_coord: Warning: Data either does not contain an")
+      print("known latitude coordinate array or doesn't contain one at all")
+procedure check_for_y_lat_coord(data[*][*]:numeric,res:logical,type:string)
 local latname, char_latname, array_name, start_name, end_name
 begin 
   if(type.eq."vector")
@@ -629,8 +632,10 @@ allowed_latnames
      any(data!1.eq.allowed_latnames)) 
     set_attr(res,array_name,data&$data!1$)
   else
-    print("check_for_x_lat_coord: Warning: Data either does not contain an")
-    print("known latitude coordinate array or doesn't contain one at all")
+    if(ismissing(data!1).or..not.any(data!1.eq.allowed_latnames))
+      print("check_for_x_lat_coord: Warning: Data either does not contain an")
+      print("known latitude coordinate array or doesn't contain one at all")
+;                data: numeric                                          ;
 ;                 res: logical                                          ;
 ;                type: string                                           ;
 ; This procedure checks if the data contains a coordinate variable in   ;
@@ -683,8 +688,10 @@ allowed_lonnames
      any(data!1.eq.allowed_lonnames))
     set_attr(res,array_name,data&$data!1$)
   else
-    print("check_for_lon_coord: Warning: Data either does not contain an")
-    print("known longitude coordinate array or doesn't contain one at all")
+    if(ismissing(data!1).or..not.any(data!1.eq.allowed_lonnames))
+      print("check_for_lon_coord: Warning: Data either does not contain an")
+      print("known longitude coordinate array or doesn't contain one at all")
+       .not.(isatt(res,start_name).and.isatt(res,end_name)))
       set_attr(res,array_name,data@lat2d)
       return
   print("check_for_x_lat_coord: Warning: Data either does not contain an known latitude coordinate array or doesn't contain one at all")
@@ -3796,9 +3803,8 @@ begin
     callframe = get_res_value(res2,"gsnFrame",True)
             exit
 
-          yref_line_below = res2@gsnBelowYRefLineColor
+; Calculate number of Y points.
 
-          delete(res2@gsnBelowYRefLineColor)
     ndimsy = dimsizes(dimsizes(y))
           yref_line_below = "transparent"    ; defaults to no fill.
         end if
@@ -3808,17 +3814,10 @@ begin
       end if
 
 ; Check if gsnYRefLine set.
-        xref_line    = res2@gsnXRefLine
+
       if(isatt(res2,"gsnYRefLine"))
         yref_line_on = True
-        delete(res2@gsnXRefLine)
-
-        if(isatt(res2,"gsnXRefLineColor"))
-          xref_line_color = res2@gsnXRefLineColor
-          delete(res2@gsnXRefLineColor)
-        else
-          xref_line_color = "foreground"
-        end if
+        yref_line    = res2@gsnYRefLine
         nyref        = dimsizes(yref_line)
         delete(res2@gsnYRefLine)
 ;
@@ -4223,24 +4222,10 @@ function gsn_csm_hov(wks:graphic,data:numeric,resources:logical)
   
     res2 = resources
       "tiYAxisFontHeightF"   : yfontf
-    calldraw  = get_res_value(res2,"gsnDraw", True)
-    callframe = get_res_value(res2,"gsnFrame",True)
 
-; Check if gsnMajorLonSpacing or gsnMinorLonSpacing are set.
-
-    if((res2).and.isatt(res2,"gsnMajorLonSpacing"))
-      lon_spacing = res2@gsnMajorLonSpacing
-      delete(res2@gsnMajorLonSpacing)
-    else
-      lon_spacing = 0
-    end if
-
-    if((res2).and.isatt(res2,"gsnMinorLonSpacing"))
-      mlon_spacing = res2@gsnMinorLonSpacing
-      delete(res2@gsnMinorLonSpacing)
-    else
-      mlon_spacing = 0
-    end if
+      "tmYLMajorLengthF"     : ylength
+      "tmYLMinorLengthF"     : ymlength
+      "tmXBMinorLengthF"     : xmlength
     end getvalues
     if((res2).and..not.any(ismissing(getvaratts(res2))))
     font_height = min((/xfontf,yfontf/))  ; Make subtitle label sizes a
@@ -4323,29 +4308,15 @@ function gsn_csm_lat_time(wks:graphic,data:numeric,resources:logical)
 ;                                                                       ;
     res2 = resources
 
-    calldraw  = get_res_value(res2,"gsnDraw", True)
-    callframe = get_res_value(res2,"gsnFrame",True)
+function gsn_csm_hov(wks:graphic,data[*][*]:numeric,resources:logical)
+local res, contour_object, res2, font_height, calldraw, callframe, \
+begin
+
 ; Initialize.
     res2         = get_resources(resources)
 
     calldraw     = get_res_value(res2,"gsnDraw", True)
     callframe    = get_res_value(res2,"gsnFrame",True)
-; Check if gsnMajorLatSpacing or gsnMinorLatSpacing are set.
-
-    if((res2).and.isatt(res2,"gsnMajorLatSpacing"))
-      lat_spacing = res2@gsnMajorLatSpacing
-      delete(res2@gsnMajorLatSpacing)
-    else
-      lat_spacing = 0
-    end if
-
-    if((res2).and.isatt(res2,"gsnMinorLatSpacing"))
-      mlat_spacing = res2@gsnMinorLatSpacing
-      delete(res2@gsnMinorLatSpacing)
-    else
-      mlat_spacing = 0
-    end if
-
     maxbb        = get_bb_res(res2)
     lon_spacing  = get_res_value(res2,"gsnMajorLonSpacing",0)
     mlon_spacing = get_res_value(res2,"gsnMinorLonSpacing",0)
@@ -4407,29 +4378,15 @@ end
 ; Function : gsn_csm_lat_time                                           ;
     res2 = resources
 ;                    data: data to be contoured                         ;
-    calldraw  = get_res_value(res2,"gsnDraw", True)
-    callframe = get_res_value(res2,"gsnFrame",True)
+;               resources: optional resources                           ;
+;                                                                       ;
+; workstation "wks" (the variable returned from a previous call to      ;
+; "gsn_open_wks"). "resources" is an optional list of  resources. The   ;
 ; Id of the contour plot is returned.                                   ;
 ;                                                                       ;
 ; This function behaves differently from gsn_csm_contour in that it     ;
 ; draws a specially-labelled latitude Y axis.                           ;
 ;                                                                       ;
-; Check if gsnMajorLatSpacing or gsnMinorLatSpacing are set.
-
-    if((res2).and.isatt(res2,"gsnMajorLatSpacing"))
-      lat_spacing = res2@gsnMajorLatSpacing
-      delete(res2@gsnMajorLatSpacing)
-    else
-      lat_spacing = 15
-    end if
-
-    if((res2).and.isatt(res2,"gsnMinorLatSpacing"))
-      mlat_spacing = res2@gsnMinorLatSpacing
-      delete(res2@gsnMinorLatSpacing)
-    else
-      mlat_spacing = 5
-    end if
-
 ;                                                                       ;
 ;***********************************************************************;
 
@@ -4496,24 +4453,10 @@ function gsn_csm_pres_hgt(wks:graphic,data:numeric,resources:logical)
                           ; already reversed.
     res2 = resources
 ; workstation "wks" (the variable returned from a previous call to      ;
-    calldraw  = get_res_value(res2,"gsnDraw", True)
-    callframe = get_res_value(res2,"gsnFrame",True)
-
-; Check if gsnMajorLatSpacing or gsnMinorLatSpacing are set.
-
-    if((res2).and.isatt(res2,"gsnMajorLatSpacing"))
-      lat_spacing = res2@gsnMajorLatSpacing
-      delete(res2@gsnMajorLatSpacing)
-    else
-      lat_spacing = 0
-    end if
-
-    if((res2).and.isatt(res2,"gsnMinorLatSpacing"))
-      mlat_spacing = res2@gsnMinorLatSpacing
-      delete(res2@gsnMinorLatSpacing)
-    else
-      mlat_spacing = 0
-    end if
+; "gsn_open_wks"). "resources" is an optional list of  resources. The   ;
+; Id of the contour plot is returned.                                   ;
+; This function behaves differently from gsn_csm_contour in that it     ;
+; draws a specially-labeled latitude X axis.                            ;
 ;                                                                       ;
     if(.not.ismissing(data!0).and.iscoord(data,data!0).and.\
             isatt(data&$data!0$,"long_name"))
