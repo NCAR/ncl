@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.24 1995-03-27 17:38:30 haley Exp $
+.\"	$Id: ncargex.m,v 1.25 1995-05-12 20:11:22 kennison Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1995" NCAR "NCAR GRAPHICS"
@@ -319,7 +319,7 @@ listed according to which utility they belong with.
 .sp
 .I "AREAS Examples:"
 .sp
-arex01 arex02 cardb1 cardb2 caredg carfill carline carmap tareas c_tareas
+arex01 arex02 arex03 cardb1 cardb2 caredg carfill carline carmap tareas c_tareas
 .sp
 .I "AUTOGRAPH Examples:"
 .sp
