@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.30 1998-11-18 19:21:16 dbrown Exp $
+ *      $Id: View.c,v 1.31 1999-04-05 20:48:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -552,6 +552,8 @@ static NhlErrorTypes	ViewInitialize
 
 
 	newl->view.thetrans_children = _NhlInitSegTransDat(x,y);
+	(void)_NhlComputeSegTrans(newl->view.thetrans_children,
+				  newl->view.trans_children,x,y);
 	
 	newl->view.plot_segments_list = NULL;
 	newl->view.segment_wksid = lcl->view_class.segment_workstation;
