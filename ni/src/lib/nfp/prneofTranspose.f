@@ -1,6 +1,9 @@
 C NCLFORTSTART
-      SUBROUTINE TDRVPRC(X,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,EVAL,EVEC,
-     +                   PCVAR,TRACE,IOPT,JOPT,PCRIT,IREVERT,IER)
+      SUBROUTINE DTDRVPRC(X,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,EVAL,EVEC,
+     +                    PCVAR,TRACE,IOPT,JOPT,PCRIT,IREVERT,CSSM,
+     +                    LCSSM,WORK,LWORK,IWORK,LIWORK,IFAIL,TEOF,
+     +                    WEVAL,W2D,WEVEC,XDATA,XAVE,XVAR,XDVAR,CON,
+     +                    PCX,XSD,IER)
       IMPLICIT NONE
 
 c this operates on the TRANSPOSE of the array "x"
@@ -8,7 +11,17 @@ c .   It results in [sometimes, MUCH] faster execution
 
       INTEGER NROW,NCOL,NROBS,NCSTA,NEVAL,IOPT,JOPT,IREVERT,IER
       DOUBLE PRECISION X(NROW,NCOL),EVAL(NEVAL),EVEC(NCOL,NEVAL),
-     +                 PCVAR(NEVAL),TRACE,XMSG,PCRIT
+     +                 TRACE,XMSG,PCRIT
+      REAL PCVAR(NEVAL)
+      INTEGER*8 LCSSM
+      INTEGER LWORK,LIWORK
+      DOUBLE PRECISION CSSM(LCSSM),WORK(LWORK),TEOF(NROBS,NEVAL),
+     +                 WEVAL(NROW),W2D(NROBS,NEVAL),WEVEC(NCOL,NEVAL),
+     +                 CON,PCX,XDATA(NROW,NCOL),XDVAR(NCOL),XAVE(NCOL),
+     +                 XVAR(NCOL),XSD
+
+      INTEGER IWORK(LIWORK),IFAIL(NROBS)
+
 C NCLEND
 
 c======== .so info=====================
@@ -17,24 +30,20 @@ c Sun/CGD: WRAPIT -L /opt/SUNWspro/lib -l sunmath -l fsu -l fui -lsunperf prneof
 c======================================
 
 c temporary arrays (automatic ... ?add to interface?) and variables
-
-      INTEGER LSSM,LWORK,LIWORK
-      DOUBLE PRECISION CSSM(NROBS* (NROBS+1)/2),WORK(8*NROBS),
-     +                 TEOF(NROBS,NEVAL),WEVAL(NROW),W2D(NROBS,NEVAL),
-     +                 WEVEC(NCOL,NEVAL),CON,PCX,XDATA(NROW,NCOL),
-     +                 XDVAR(NCOL),XAVE(NCOL),XVAR(NCOL),XSD
-
-      INTEGER IWORK(5*NROBS),IFAIL(NROBS)
+c
+c      INTEGER LSSM,LWORK,LIWORK
+c      DOUBLE PRECISION CSSM(NROBS* (NROBS+1)/2),WORK(8*NROBS),
+c     +                 TEOF(NROBS,NEVAL),WEVAL(NROW),W2D(NROBS,NEVAL),
+c     +                 WEVEC(NCOL,NEVAL),CON,PCX,XDATA(NROW,NCOL),
+c     +                 XDVAR(NCOL),XAVE(NCOL),XVAR(NCOL),XSD
+c
+c      INTEGER IWORK(5*NROBS),IFAIL(NROBS)
       INTEGER K,KNTX,NE,NR,NC,MCSTA
 
 c initialize
 
-      LSSM   = NROBS* (NROBS+1)/2
-      LWORK  = 8*NROBS
-      LIWORK = 5*NROBS
-
       DO NR = 1,NROW
-          WEVAL(NR) = XMSG
+         WEVAL(NR) = XMSG
       END DO
 
       DO NE = 1,NEVAL
@@ -92,9 +101,9 @@ c work with anomalies: XDAVE=0.0 [or standardized anomalies]
 
       END DO
 
-      CALL XRVEOFT(XDATA,NROW,NCOL,NROBS,MCSTA,XMSG,NEVAL,WEVAL,WEVEC,
-     +             PCVAR,TRACE,IOPT,JOPT,CSSM,LSSM,WORK,LWORK,IWORK,
-     +             LIWORK,IFAIL,TEOF,W2D,XDVAR,IREVERT,IER)
+      CALL DXRVEOFT(XDATA,NROW,NCOL,NROBS,MCSTA,XMSG,NEVAL,WEVAL,WEVEC,
+     +              PCVAR,TRACE,IOPT,JOPT,CSSM,LCSSM,WORK,LWORK,IWORK,
+     +              LIWORK,IFAIL,TEOF,W2D,XDVAR,IREVERT,IER)
 
       DO K = 1,NEVAL
           EVAL(K) = WEVAL(K)
@@ -116,9 +125,9 @@ c work with anomalies: XDAVE=0.0 [or standardized anomalies]
       RETURN
       END
 c ---------------------------------------------------------
-      SUBROUTINE XRVEOFT(X,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,EVAL,EVEC,
-     +                   PCVAR,TRACE,IOPT,JOPT,CSSM,LSSM,WORK,LWORK,
-     +                   IWORK,LIWORK,IFAIL,TEOF,W2D,XVAR,IREVERT,IER)
+      SUBROUTINE DXRVEOFT(X,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,EVAL,EVEC,
+     +                    PCVAR,TRACE,IOPT,JOPT,CSSM,LCSSM,WORK,LWORK,
+     +                    IWORK,LIWORK,IFAIL,TEOF,W2D,XVAR,IREVERT,IER)
       IMPLICIT NONE
 
 c operate on the *TRANSPOSE* OF X: then use matrix stuff to
@@ -170,15 +179,17 @@ c .               0=return_transposed_info
 c .               1=return_original_matrix_info [default]
 c .   ier       - error code
 
-      INTEGER NROW,NCOL,NROBS,NCSTA,NEVAL,IOPT,JOPT,LSSM,LWORK,LIWORK
+      INTEGER NROW,NCOL,NROBS,NCSTA,NEVAL,IOPT,JOPT,LWORK,LIWORK
+      INTEGER*8 LCSSM
       INTEGER IWORK(LIWORK),IFAIL(NROBS),IREVERT,IER
 
       DOUBLE PRECISION X(NROW,NCOL),EVAL(NEVAL),EVEC(NCOL,NEVAL),
-     +                 PCVAR(NEVAL),XMSG,TRACE
+     +                 XMSG,TRACE
+      REAL             PCVAR(NEVAL)
 
 c temporary arrays (automatic or passed in via interface)
 
-      DOUBLE PRECISION CSSM(LSSM),WORK(LWORK),TEOF(NROW,NEVAL),
+      DOUBLE PRECISION CSSM(LCSSM),WORK(LWORK),TEOF(NROW,NEVAL),
      +                 W2D(NROW,NEVAL), XVAR(NCOL),TOTVAR
 
 c local
@@ -196,9 +207,9 @@ c .   JOPT=1 ... already handled in driver ... use covariance routine
 
       IER = 0
 c c c IF (JOPT.EQ.0) THEN
-          CALL DVCMSSMT(X,NROW,NCOL,NROBS,NCSTA,XMSG,CSSM,LSSM,IER)
+          CALL DVCMSSMT(X,NROW,NCOL,NROBS,NCSTA,XMSG,CSSM,LCSSM,IER)
 c c c ELSE
-c c c     CALL DCRMSSMT(X,NROW,NCOL,NROBS,NCSTA,XMSG,CSSM,LSSM,IER)
+c c c     CALL DCRMSSMT(X,NROW,NCOL,NROBS,NCSTA,XMSG,CSSM,LCSSM,IER)
 c c c END IF
 
       IF (IER.NE.0) THEN
@@ -249,7 +260,7 @@ c .   make sure that  neval <= nrobs
       IUP   = NROBS
       MEVOUT = 0
 
-      CALL SSPEVX('V','I','U',NROBS,CSSM,VLOW,VUP,ILOW,IUP,TOL,MEVOUT,
+      CALL DSPEVX('V','I','U',NROBS,CSSM,VLOW,VUP,ILOW,IUP,TOL,MEVOUT,
      +            EVAL,TEOF,NROW,WORK,IWORK,IFAIL,INFO)
 
       IF (INFO.NE.0) THEN
@@ -286,7 +297,7 @@ c .   largest eigenvalues/vectors are first.
 c percent variance explained of *transposed* matrix
 
       DO N = 1,MEVAL
-          PCVAR(N) = (EVAL(N)/TRACER)*100.D0
+          PCVAR(N) = REAL(EVAL(N)/TRACER)*100.
       END DO
 
 c ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -370,8 +381,7 @@ c To avoid confusion, these will be set to the eigenvalues for return
 
               CALL DSTAT2(WORK,NROBS,XMSG,TBAR,TVAR,TSTD,KNT,IER)
               EVAL(N)  = TVAR
-              PCVAR(N) = (TVAR/TRACEO)*100.D0
-
+              PCVAR(N) = REAL(TVAR/TRACEO)*100.
           END DO
       END IF
 
@@ -382,7 +392,8 @@ C NCLFORTSTART
       SUBROUTINE DVCMSSMT(X,NROW,NCOL,NRT,NCS,XMSG,VCM,LVCM,IER)
       IMPLICIT NONE
 
-      INTEGER NROW,NCOL,NRT,NCS,LVCM,IER
+      INTEGER NROW,NCOL,NRT,NCS,IER
+      INTEGER*8 LVCM
       DOUBLE PRECISION X(NROW,NCOL),VCM(LVCM),XMSG
 C NCLEND
 
@@ -453,7 +464,8 @@ C NCLFORTSTART
       SUBROUTINE DCRMSSMT(X,NROW,NCOL,NRT,NCS,XMSG,CRM,LCRM,IER)
       IMPLICIT NONE
 
-      INTEGER NROW,NCOL,NRT,NCS,LCRM,IER
+      INTEGER NROW,NCOL,NRT,NCS,IER
+      INTEGER*8 LCRM
       DOUBLE PRECISION X(NROW,NCOL),CRM(LCRM),XMSG
 C NCLEND
 

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.76 2004-03-15 04:33:43 haley Exp $
+#      $Id: yMakefile,v 1.77 2004-05-02 18:57:36 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2004-03-15 04:33:43 $
+#	$Date: 2004-05-02 18:57:36 $
 #
 #	Description:	
 
@@ -46,7 +46,7 @@ V5D_OBJS = ncl2v5dW.o
 
 CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cdf_dpW.c chiinvW.c \
 	conformW.c csagridW.c cssgridW.c cz2ccmW.c datesW.c drwvctc.c \
-	dsgridW.c dtrendW.c eofW.c eoftrW.c extaperW.c ezfftW.c finitediffW.c \
+	dsgridW.c dtrendW.c eofW.c extaperW.c ezfftW.c finitediffW.c \
 	filterxW.c fitgridW.c fluxEddyW.c fourinfoW.c gausW.c \
 	gtripleW.c hydroW.c indW.c int2pW.c invmatrixW.c julGregW.c \
 	linint2W.c linmsgW.c linroodW.c locminmaxW.c mapgciW.c \
@@ -61,7 +61,7 @@ CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cdf_dpW.c chiinvW.c \
 
 COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cdf_dpW.o chiinvW.o \
 	conformW.o csagridW.o cssgridW.o cz2ccmW.o datesW.o drwvctc.o \
-	dsgridW.o dtrendW.o eofW.o eoftrW.o extaperW.o ezfftW.o finitediffW.o \
+	dsgridW.o dtrendW.o eofW.o extaperW.o ezfftW.o finitediffW.o \
 	filterxW.o fitgridW.o fluxEddyW.o fourinfoW.o gausW.o \
 	gtripleW.o hydroW.o indW.o int2pW.o invmatrixW.o julGregW.o \
 	linint2W.o linmsgW.o linroodW.o locminmaxW.o mapgciW.o \

@@ -23,6 +23,8 @@ extern NhlErrorTypes g2gshv_W(void);
 extern NhlErrorTypes f2gshv_W(void);
 extern NhlErrorTypes g2fshv_W(void);
 extern NhlErrorTypes f2fshv_W(void);
+extern NhlErrorTypes eof_W(void);
+extern NhlErrorTypes eof_ts_W(void);
 extern NhlErrorTypes eofcov_W(void);
 extern NhlErrorTypes eofcor_W(void);
 extern NhlErrorTypes eofcov_pcmsg_W(void);
@@ -31,10 +33,6 @@ extern NhlErrorTypes eofcov_ts_W(void);
 extern NhlErrorTypes eofcor_ts_W(void);
 extern NhlErrorTypes eofcov_ts_pcmsg_W(void);
 extern NhlErrorTypes eofcor_ts_pcmsg_W(void);
-extern NhlErrorTypes eofcov_tr_W(void);
-extern NhlErrorTypes eofcor_tr_W(void);
-extern NhlErrorTypes eofcov_tr_pcmsg_W(void);
-extern NhlErrorTypes eofcor_tr_pcmsg_W(void);
 extern NhlErrorTypes eof2data_W(void);
 extern NhlErrorTypes eof_varimax_W(void);
 extern NhlErrorTypes center_finite_diff_W(void);
@@ -634,6 +632,34 @@ void NclAddUserFuncs(void)
 
     NclRegisterProc(f2fshv_W,args,"f2fshv",nargs);
 /*
+ * Register "eof".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(eof_W,args,"eof",nargs);
+
+/*
+ * Register "eof_ts".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(eof_ts_W,args,"eof_ts",nargs);
+
+/*
  * Register "eofcov".
  *
  * Create private argument array.
@@ -731,56 +757,6 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(eofcor_ts_pcmsg_W,args,"eofcor_ts_pcmsg",nargs);
-/*
- * Register "eofcov_tr".
- *
- * Create private argument array.
- */
-    nargs = 0;
-    args = NewArgs(2);
-    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-
-    NclRegisterFunc(eofcov_tr_W,args,"eofcov_tr",nargs);
-/*
- * Register "eofcor_tr".
- *
- * Create private argument array.
- */
-    nargs = 0;
-    args = NewArgs(2);
-    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-
-    NclRegisterFunc(eofcor_tr_W,args,"eofcor_tr",nargs);
-/*
- * Register "eofcov_tr_pcmsg".
- *
- * Create private argument array.
- */
-    nargs = 0;
-    args = NewArgs(3);
-    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-
-    NclRegisterFunc(eofcov_tr_pcmsg_W,args,"eofcov_tr_pcmsg",nargs);
-/*
- * Register "eofcor_tr_pcmsg".
- *
- * Create private argument array.
- */
-    nargs = 0;
-    args = NewArgs(3);
-    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-
-    NclRegisterFunc(eofcor_tr_pcmsg_W,args,"eofcor_tr_pcmsg",nargs);
 /*
  * Register "eof_varimax".
  *
@@ -6285,5 +6261,3 @@ NclScalar         *missing_fx
                typeclass_x);
   }
 }
-
-
