@@ -1,6 +1,6 @@
 
 /*
- *      $Id: string_ops.c.sed,v 1.1 1994-07-14 20:47:54 ethan Exp $
+ *      $Id: string_ops.c.sed,v 1.2 1994-07-28 23:34:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -878,7 +878,7 @@ NclData result;
                 themissing.has_missing = 0;
         }
 
-	output_md = (NclData)_NclMultiDValintCreate(
+	output_md = (NclData)_NclMultiDVallogicalCreate(
 		(NclObj)result_md,NULL,Ncl_MultiDValintData,0,result_val,
 		(themissing.has_missing? &(themissing.value):NULL),
 		self_md->multidval.n_dims,
@@ -972,7 +972,7 @@ NclData result;
                 themissing.has_missing = 0;
         }
 
-	output_md = (NclData)_NclMultiDValintCreate(
+	output_md = (NclData)_NclMultiDVallogicalCreate(
 		(NclObj)result_md,NULL,Ncl_MultiDValintData,0,result_val,
 		(themissing.has_missing? &(themissing.value):NULL),
 		self_md->multidval.n_dims,
@@ -1073,7 +1073,7 @@ NclData result;
                 themissing.has_missing = 0;
         }
 
-	output_md = (NclData)_NclMultiDValintCreate(
+	output_md = (NclData)_NclMultiDVallogicalCreate(
 		(NclObj)result_md,NULL,Ncl_MultiDValintData,0,result_val,
 		(themissing.has_missing ? &(themissing.value):NULL),
 		other_md->multidval.n_dims,
@@ -1174,7 +1174,7 @@ NclData result;
                 themissing.has_missing = 0;
         }
 
-	output_md = (NclData)_NclMultiDValintCreate(
+	output_md = (NclData)_NclMultiDVallogicalCreate(
 		(NclObj)result_md,NULL,Ncl_MultiDValintData,0,result_val,
 		(themissing.has_missing? &(themissing.value):NULL),
 		other_md->multidval.n_dims,
@@ -1274,7 +1274,7 @@ NclData result;
                 themissing.has_missing = 0;
         }
 
-	output_md = (NclData)_NclMultiDValintCreate(
+	output_md = (NclData)_NclMultiDVallogicalCreate(
 		(NclObj)result_md,NULL,Ncl_MultiDValintData,0,result_val,
 		(themissing.has_missing? &(themissing.value):NULL),
 		self_md->multidval.n_dims,
@@ -1368,7 +1368,7 @@ NclData result;
                 themissing.has_missing = 0;
         }
 
-	output_md = (NclData)_NclMultiDValintCreate(
+	output_md = (NclData)_NclMultiDVallogicalCreate(
 		(NclObj)result_md,NULL,Ncl_MultiDValintData,0,result_val,
 		(themissing.has_missing? &(themissing.value):NULL),
 		self_md->multidval.n_dims,
@@ -1469,7 +1469,7 @@ NclData result;
                 themissing.has_missing = 0;
         }
 
-	output_md = (NclData)_NclMultiDValintCreate(
+	output_md = (NclData)_NclMultiDVallogicalCreate(
 		(NclObj)result_md,NULL,Ncl_MultiDValintData,0,result_val,
 		(themissing.has_missing ? &(themissing.value):NULL),
 		other_md->multidval.n_dims,
@@ -1570,7 +1570,7 @@ NclData result;
                 themissing.has_missing = 0;
         }
 
-	output_md = (NclData)_NclMultiDValintCreate(
+	output_md = (NclData)_NclMultiDVallogicalCreate(
 		(NclObj)result_md,NULL,Ncl_MultiDValintData,0,result_val,
 		(themissing.has_missing? &(themissing.value):NULL),
 		other_md->multidval.n_dims,

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.1 1994-07-14 20:46:21 ethan Exp $
+ *      $Id: NclAtt.c,v 1.2 1994-07-28 23:34:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -173,14 +173,34 @@ NclSelectionRecord * sel_ptr;
                         NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to assign value with more than one dimension to attribute, attributes are restricted to having only one dimension");
                         return(NhlFATAL);
                 } else if(sel_ptr == NULL) {
-                        if(value->multidval.dim_sizes[0] != targetdat->multidval.dim_sizes[0]) {
+                        lhs_type = targetdat->obj.obj_type_mask & NCL_VAL_TYPE_MASK;
+                        rhs_type = value->obj.obj_type_mask & NCL_VAL_TYPE_MASK;
+                        if(lhs_type != rhs_type) {
+                                tmp_md = _NclCoerceData(value,lhs_type,(targetdat->multidval.missing_value.has_missing?&targetdat->multidval.missing_value.value:NULL));
+                                if(tmp_md == NULL) {
+                                        NhlPError(NhlFATAL,NhlEUNKNOWN,"Attribute assignment type mismatch");
+                                        return(NhlFATAL);
+                                } else {
+                                        if((value->obj.status != PERMANENT)&&(value != tmp_md)) {
+/*
+* value_md is either equal to value or had to be coerced. In the event it
+* was coerced it must be freed. Therefore it will faile value != value_md
+* conditional
+*/
+                                                _NclDestroyObj((NclObj)tmp_md);
+                                        }
+                                }
+                        } else {
+                                tmp_md = value;
+                        }
+                        if(tmp_md->multidval.dim_sizes[0] != targetdat->multidval.dim_sizes[0]) {
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension size of attribute and right-hand side of assignment do not match");
                                 return(NhlFATAL);
                         }
-                        if(_NclSetStatus((NclObj)value,PERMANENT)) {
-                                thelist->attvalue = value;
+                        if(_NclSetStatus((NclObj)tmp_md,PERMANENT)) {
+                                thelist->attvalue = tmp_md;
                         } else {
-                                thelist->attvalue = _NclCopyVal(value,NULL);
+                                thelist->attvalue = _NclCopyVal(tmp_md,NULL);
                                 if(thelist->attvalue != NULL) {
                                         _NclSetStatus((NclObj)thelist->attvalue,PERMANENT);
 /*

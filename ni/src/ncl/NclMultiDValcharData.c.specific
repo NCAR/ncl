@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValcharData.c.specific,v 1.1 1994-07-27 18:18:24 ethan Exp $
+ *      $Id: NclMultiDValcharData.c.specific,v 1.2 1994-07-28 23:34:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@ static NclData MultiDVal_char_md_Coerce
 #endif
 {
 	NclMultiDValcharData self_md = (NclMultiDValcharData)self;
-	if(self_md->obj.obj_type == Ncl_MultiDValcharData) {
+	if(coerce_to_obj == Ncl_MultiDValcharData) {
 		if((new_missing == NULL)||(!self_md->multidval.missing_value.has_missing)) {
 			return(self);
 		} else if(self_md->multidval.missing_value.value.charval != new_missing->charval) {
@@ -47,6 +47,8 @@ static NclData MultiDVal_char_md_Coerce
 		} else {
 				return(self);
 		}
+	} else if(coerce_to_obj == Ncl_MultiDValstringData) {
+		return(_NclCharMdToStringMd( (NclData)self));
 	} else {
 		return(NULL);
 	}
@@ -63,7 +65,7 @@ NclScalar *new_missing;
 #endif
 {
 	NclMultiDValcharData self_md = (NclMultiDValcharData)self;
-	if(self_md->obj.obj_type == Ncl_MultiDValcharData) {
+	if(coerce_to_obj == Ncl_MultiDValcharData) {
 		if((new_missing == NULL )||(!self_md->multidval.missing_value.has_missing)) {
 			return(self);
 		}  else if(new_missing->charval != self_md->multidval.missing_value.value.charval){
@@ -79,6 +81,8 @@ NclScalar *new_missing;
 		} else {
 			return(self);
 		}
+	} else if(coerce_to_obj == Ncl_MultiDValstringData) {
+		return(_NclCharMdToStringMd( (NclData)self));
 	} else {
 		return(NULL);
 	}

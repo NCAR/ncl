@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValstringData.c.specific,v 1.1 1994-07-14 20:47:02 ethan Exp $
+ *      $Id: NclMultiDValstringData.c.specific,v 1.2 1994-07-28 23:34:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -32,7 +32,7 @@ static NclData MultiDVal_string_md_Coerce
 #endif
 {
 	NclMultiDValstringData self_md = (NclMultiDValstringData)self;
-	if(self_md->obj.obj_type == Ncl_MultiDValstringData) {
+	if(coerce_to_obj == Ncl_MultiDValstringData) {
 		if((new_missing == NULL)||(!self_md->multidval.missing_value.has_missing)) {
 			return(self);
 		} else if(self_md->multidval.missing_value.value.stringval != new_missing->stringval) {
@@ -65,7 +65,7 @@ NclScalar *new_missing;
 #endif
 {
 	NclMultiDValstringData self_md = (NclMultiDValstringData)self;
-	if(self_md->obj.obj_type == Ncl_MultiDValstringData) {
+	if(coerce_to_obj == Ncl_MultiDValstringData) {
 		if((new_missing == NULL )||(!self_md->multidval.missing_value.has_missing)) {
 			return(self);
 		}  else if(new_missing->stringval != self_md->multidval.missing_value.value.stringval){

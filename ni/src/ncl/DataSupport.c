@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.3 1994-07-27 18:14:00 ethan Exp $
+ *      $Id: DataSupport.c,v 1.4 1994-07-28 23:34:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -95,7 +95,7 @@ NclMultiDValData char_md;
 		n_strings *= char_md->multidval.dim_sizes[i];
 	}
 	buffer = (char*)NclMalloc((unsigned)len + 1);
-	buffer[len+1] = '\0';
+	buffer[len] = '\0';
 	value = (string*) NclMalloc((unsigned)n_strings*sizeof(string));
 	val = (char*)char_md->multidval.val;
 	for(i = 0; i < n_strings ; i++) {
@@ -103,17 +103,31 @@ NclMultiDValData char_md;
 		value[i] = NrmStringToQuark(buffer);
 	}
 	NclFree(buffer);
-	return(_NclMultiDValstringCreate(
-		NULL,
-		NULL,
-		NCL_string,
-		0,
-		(void*)value,
-		NULL,
-		char_md->multidval.n_dims -1,
-		char_md->multidval.dim_sizes,
-		TEMPORARY,
-		NULL));
+	if(char_md->multidval.n_dims != 1) {
+		return(_NclMultiDValstringCreate(
+			NULL,
+			NULL,
+			NCL_string,
+			0,
+			(void*)value,
+			NULL,
+			char_md->multidval.n_dims -1,
+			char_md->multidval.dim_sizes,
+			TEMPORARY,
+			NULL));
+	} else {
+		return(_NclMultiDValstringCreate(
+			NULL,
+			NULL,
+			NCL_string,
+			0,
+			(void*)value,
+			NULL,
+			char_md->multidval.n_dims,
+			&(char_md->multidval.n_dims),
+			TEMPORARY,
+			NULL));
+	}
 }
 
 /*

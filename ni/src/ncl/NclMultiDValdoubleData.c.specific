@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValdoubleData.c.specific,v 1.1 1994-07-14 20:46:50 ethan Exp $
+ *      $Id: NclMultiDValdoubleData.c.specific,v 1.2 1994-07-28 23:34:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@ static NclData MultiDVal_double_md_Coerce
 #endif
 {
 	NclMultiDValdoubleData self_md = (NclMultiDValdoubleData)self;
-	if(self_md->obj.obj_type == Ncl_MultiDValdoubleData) {
+	if(coerce_to_obj == Ncl_MultiDValdoubleData) {
 		if((new_missing == NULL)||(!self_md->multidval.missing_value.has_missing)) {
 			return(self);
 		} else if(self_md->multidval.missing_value.value.doubleval != new_missing->doubleval) {
@@ -63,7 +63,7 @@ NclScalar *new_missing;
 #endif
 {
 	NclMultiDValdoubleData self_md = (NclMultiDValdoubleData)self;
-	if(self_md->obj.obj_type == Ncl_MultiDValdoubleData) {
+	if(coerce_to_obj  == Ncl_MultiDValdoubleData) {
 		if((new_missing == NULL )||(!self_md->multidval.missing_value.has_missing)) {
 			return(self);
 		}  else if(new_missing->doubleval != self_md->multidval.missing_value.value.doubleval){

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.5 1994-07-27 20:30:30 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.6 1994-07-28 23:34:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -889,6 +889,7 @@ void *data;
 	NetCdfAttInqRecList *stepal;
 	int cdfid;
 	int ret = -1;
+	char *buffer=NULL;
 
 	if(!rec->wr_status) {
 		stepal = rec->file_atts;
@@ -899,8 +900,19 @@ void *data;
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 					return(NhlFATAL);
 				}
+				if(stepal->att_inq->data_type == NC_CHAR) {
+					buffer = NrmQuarkToString(*(NclQuark*)data);
+					if(strlen(buffer)+1 > stepal->att_inq->len) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetWriteAtt: length of string exceeds available space for attribute (%s)",NrmQuarkToString(theatt));
+						ncclose(cdfid);
+						return(NhlFATAL);
+					} else {
+						ret = ncattput(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer)+1,(void*)buffer);
+					}
+				} else {
+					ret = ncattput(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),stepal->att_inq->data_type,stepal->att_inq->len,data);
+				}
 	
-				ret = ncattput(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),stepal->att_inq->data_type,stepal->att_inq->len,data);
 	
 				ncclose(cdfid);
 				if(ret == -1) {
@@ -920,12 +932,12 @@ void *data;
 
 static NhlErrorTypes NetWriteVarAtt 
 #if __STDC__
-(void *therec, NclQuark theatt, NclQuark thevar, void* data)
+(void *therec, NclQuark thevar, NclQuark theatt, void* data)
 #else
-(therec, theatt, thevar, data )
+(therec,thevar, theatt,  data )
 void *therec;
-NclQuark theatt;
 NclQuark thevar;
+NclQuark theatt;
 void* data;
 #endif
 {
@@ -934,6 +946,7 @@ void* data;
 	NetCdfVarInqRecList *stepvl;
 	int cdfid;
 	int ret;
+	char * buffer = NULL;
 	
 	
 
@@ -949,8 +962,18 @@ void* data;
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 							return(NhlFATAL);
 						}
-		
-						ret = ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,stepal->att_inq->len,data);
+						if(stepal->att_inq->data_type == NC_CHAR) {	
+							buffer = NrmQuarkToString(*(NclQuark*)data);
+							if(strlen(buffer) +1 > stepal->att_inq->len) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"NetWriteAtt: length of string exceeds available space for attribute (%s)",NrmQuarkToString(theatt));
+								ncclose(cdfid);
+								return(NhlFATAL);
+							} else {
+								ret = ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer)+1,buffer);
+							}
+						} else {
+							ret = ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,stepal->att_inq->len,data);
+						}
 		
 						ncclose(cdfid);
 						if(ret == -1) {
