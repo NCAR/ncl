@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.126 2003-05-09 16:17:44 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.127 2003-05-12 16:26:12 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -795,23 +795,22 @@ end
 ; be passed to another plotting function to be processed.               ;
 ;***********************************************************************;
 procedure set_subtitles_res(res:logical,plotres:logical)
+local valid_string_res
 begin
+  valid_subttl_res = (/"gsnLeftString","gsnCenterString","gsnRightString",\
+                       "gsnStringFont","gsnStringFontHeightF", \
+                       "gsnLeftStringFontHeightF",\
+                       "gsnCenterStringFontHeightF",\
+                       "gsnCenterStringFontHeightF"/)
   if((res).and..not.any(ismissing(getvaratts(res))))
-    if(isatt(res,"gsnLeftString"))
-      plotres = True
-      plotres@gsnLeftString = res@gsnLeftString
-      delete(res@gsnLeftString)
-    end if
-    if(isatt(res,"gsnCenterString"))
-      plotres = True
-      plotres@gsnCenterString = res@gsnCenterString
-      delete(res@gsnCenterString)
-    end if
-    if(isatt(res,"gsnRightString"))
-      plotres = True
-      plotres@gsnRightString = res@gsnRightString
-      delete(res@gsnRightString)
-    end if
+    nstrings = dimsizes(valid_subttl_res)
+    do i=0,nstrings-1,1
+      if(isatt(res,valid_subttl_res(i)))
+        plotres = True
+        plotres@$valid_subttl_res(i)$ = res@$valid_subttl_res(i)$
+        delete(res@$valid_subttl_res(i)$)
+      end if
+    end do
   end if
   return
 end
@@ -4304,7 +4303,6 @@ begin
     end if
 
 ; Check for subtitles at top and add to mpres if exist.
-
     set_subtitles_res(res2,mpres)
 ;
 ; By default, mpOutlineOn is False, unless cnFillOn is set to True
