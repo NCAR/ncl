@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c,v 1.2 1997-01-21 21:25:31 boote Exp $
+ *      $Id: wks.c,v 1.3 1998-09-18 23:02:54 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -194,6 +194,9 @@ int	NGCALLF(opnwks,OPNWKS)(unit, openf, fname, status)
 		"Error in opnwks_(): Max workstations (%d) exceeded\n"
 		,MAX_UNITS);
 		*status = 304;
+#ifdef cray
+		free(fname);
+#endif
 		return(0);
 	}
 
@@ -202,6 +205,9 @@ int	NGCALLF(opnwks,OPNWKS)(unit, openf, fname, status)
 		(void) fprintf(stderr, 
 		"Error in opnwks_(): Attempt to reopen unit %d\n", *unit);
 		*status = 304;
+#ifdef cray
+		free(fname);
+#endif
 		return(0);
 	}
 
@@ -273,14 +279,12 @@ int	NGCALLF(opnwks,OPNWKS)(unit, openf, fname, status)
 			*/
 
 			if (!strncmp(fname, "GMETA", 5) &&
-			(fname[5] == '\0' || fname[5] == ' ') ) {
-				mftab[*unit].name = "gmeta";
-			}
-			else {
-				mftab[*unit].name = calloc(strlen(fname)+1,
-								sizeof(char));
-				(void) strcpy(mftab[*unit].name, fname);
-			}
+					(fname[5] == '\0'||fname[5] == ' ') )
+				tname = "gmeta";
+			else
+				tname = fname;
+			mftab[*unit].name =calloc(strlen(tname)+1,sizeof(char));
+			(void) strcpy(mftab[*unit].name, tname);
 		}
 		else
 		{
@@ -336,7 +340,9 @@ int	NGCALLF(opnwks,OPNWKS)(unit, openf, fname, status)
 	if (mftab[*unit].type == PIPE_OUTPUT) {
 		if (strlen(mftab[*unit].name) == 0)
 		{
-			mftab[*unit].name = DEFAULT_TRANSLATOR;
+			mftab[*unit].name = calloc(strlen(DEFAULT_TRANSLATOR)+1,
+							sizeof(char));
+			(void)strcpy(mftab[*unit].name,DEFAULT_TRANSLATOR);
 		}
 
 		(void) pipe(pipes);
@@ -352,6 +358,9 @@ int	NGCALLF(opnwks,OPNWKS)(unit, openf, fname, status)
 			"wks.c: opngks_() - Could not fork translator \"%s\"\n",
 			mftab[*unit].name);
 			*status = 304;
+#ifdef cray
+			free(fname);
+#endif
 			return(0);
 		}
 		else
@@ -385,6 +394,9 @@ int	NGCALLF(opnwks,OPNWKS)(unit, openf, fname, status)
 			"wks.c: Error in opngks_(): Could not open \"%s\"\n", 
 			mftab[*unit].name);
 			*status = 304;
+#ifdef cray
+			free(fname);
+#endif
 			return(0);
 		}
 
@@ -458,6 +470,9 @@ int	NGCALLF(opnwks,OPNWKS)(unit, openf, fname, status)
 			(void) fprintf(stderr,
 			"wks.c: Error in opngks_(): Memory allocation\n");
 			*status = 304;
+#ifdef cray
+			free(fname);
+#endif
 			return(0);
 		}
 
@@ -470,6 +485,9 @@ int	NGCALLF(opnwks,OPNWKS)(unit, openf, fname, status)
 			(void) fprintf(stderr, 
 				       "Error in opngks_(): setvbuf failed\n");
 			*status = 304;
+#ifdef cray
+			free(fname);
+#endif
 			return(0);
 		}
 			
@@ -481,6 +499,10 @@ int	NGCALLF(opnwks,OPNWKS)(unit, openf, fname, status)
 		mftab[*unit].name, *unit, mftab[*unit].type, mftab[*unit].fp, 
 		fileno(mftab[*unit].fp));
 	}
+
+#ifdef cray
+	free(fname);
+#endif
 
 	return(0);
 }
@@ -552,11 +574,11 @@ NGCALLF(clswks,CLSWKS)(unit, status)
 		}
 
 		/*
-		Close the LU. Dynamically allocated memory is not
-		freed because it causes a problem on Crays. The memory
+		Close the LU.  The memory
 		pointer is left for the next use of the LU.
 		*/
 
+		(void)free(mftab[*unit].name);
 		mftab[*unit].name    = (char *) NULL;
 		mftab[*unit].fp      = MF_CLOSED;
 		mftab[*unit].type    = NO_OUTPUT;
