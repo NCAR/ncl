@@ -1,5 +1,5 @@
 C
-C	$Id: pwt.f,v 1.1.1.1 1992-04-17 22:34:52 ncargd Exp $
+C	$Id: pwt.f,v 1.2 1996-10-24 14:34:55 haley Exp $
 C
       SUBROUTINE PWT(IOS,STATUS)
 C
@@ -23,7 +23,7 @@ C
      4             ,COIERR, COLNRM, UNKNOW, UNKOPC, ENDMTF, VNEROR
      5             ,BADRSZ, DEVOUT, NOVERS, BADFNT, PGMERR, FASERR
      6             ,HINERR, VDWERR, RDWERR, RIXLIM
-      COMMON /GKSCOM/ CLPDAT, CLPFLG, POLIDX, LINTYP, LINWTH, LINCOL,
+      COMMON /PGKSCOM/ CLPDAT, CLPFLG, POLIDX, LINTYP, LINWTH, LINCOL,
      1                LINRGB, MARIDX, MARSIZ, MARCOL, MARRGB, TXTIDX,
      2                INTSTL, PATIDX, FILCOL, FILRGB, MARTYP, HORIZ ,
      3                VERT  , PATH  , CHIGHT, XU    , YU    , XB    ,

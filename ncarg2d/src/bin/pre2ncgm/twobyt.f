@@ -1,5 +1,5 @@
 C
-C	$Id: twobyt.f,v 1.1.1.1 1992-04-17 22:34:50 ncargd Exp $
+C	$Id: twobyt.f,v 1.2 1996-10-24 14:34:59 haley Exp $
 C
       SUBROUTINE TWOBYT(IOS,STATUS)
 C
@@ -66,7 +66,7 @@ C
      3                MCENT, MSIZE, MOR, OLDX, OLDY, MCASE, MINTEN,
      4                MFONT, MDASH, MSPOT, MCOLOR(3), MLIMIT(4), PTSYM,
      5                SAVX, SAVY
-      COMMON /GKSCOM/ CLPDAT, CLPFLG, POLIDX, LINTYP, LINWTH, LINCOL,
+      COMMON /PGKSCOM/ CLPDAT, CLPFLG, POLIDX, LINTYP, LINWTH, LINCOL,
      1                LINRGB, MARIDX, MARSIZ, MARCOL, MARRGB, TXTIDX,
      2                INTSTL, PATIDX, FILCOL, FILRGB, MARTYP, HORIZ ,
      3                VERT  , PATH  , CHIGHT, XU    , YU    , XB    ,

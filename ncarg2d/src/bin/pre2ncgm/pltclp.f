@@ -1,5 +1,5 @@
 C
-C	$Id: pltclp.f,v 1.1.1.1 1992-04-17 22:34:49 ncargd Exp $
+C	$Id: pltclp.f,v 1.2 1996-10-24 14:34:53 haley Exp $
 C
       SUBROUTINE PLTCLP(X, Y, PEN, IOS, STATUS)
 C
@@ -14,7 +14,7 @@ C  OUTPUT
 C    IOS    - The I/O status, valid only if STATUS set to I/O error
 C    STATUS - The error status of the request
 C
-      COMMON /GKSCOM/ CLPDAT, CLPFLG, POLIDX, LINTYP, LINWTH, LINCOL,
+      COMMON /PGKSCOM/ CLPDAT, CLPFLG, POLIDX, LINTYP, LINWTH, LINCOL,
      1                LINRGB, MARIDX, MARSIZ, MARCOL, MARRGB, TXTIDX,
      2                INTSTL, PATIDX, FILCOL, FILRGB, MARTYP, HORIZ ,
      3                VERT  , PATH  , CHIGHT, XU    , YU    , XB    ,
