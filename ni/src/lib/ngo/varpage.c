@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.10 1999-02-23 03:56:54 dbrown Exp $
+ *      $Id: varpage.c,v 1.11 1999-03-12 19:13:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -44,6 +44,39 @@ static void FreeDataLinks(
 	XmLArrayFree(datalinks);
 }
 
+static XmLArray CopyDataLinks
+(
+	XmLArray datalinks
+	)
+{
+	XmLArray 	copy_dl;
+	NgPageReply 	link,copy_link;
+	int 		i,count;
+
+	count = XmLArrayGetCount(datalinks);
+	
+	if (! count)
+		return NULL;
+	copy_dl = XmLArrayNew(0,0);
+
+	for (i = 0; i < count; i++) {
+		copy_link = NhlMalloc(sizeof(NgPageReplyRec));
+		if (! link) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NULL;
+		}
+		link = XmLArrayGet(datalinks,i);
+		copy_link->req = link->req;
+		copy_link->id = link->id;
+		copy_link->qfile = link->qfile;
+		copy_link->qvar = link->qvar;
+		XmLArrayAdd(copy_dl,0,1);
+		XmLArraySet(copy_dl,0,copy_link);
+	}
+	return copy_dl;
+}
+
+	
 static NhlBoolean UpdateDataLink
 (
 	brVarPageRec		*rec,
@@ -376,20 +409,15 @@ static void DataGridToggleCB
         
 }
 
-static void ShaperToggleCB 
+static void
+UpdateShaper
 (
-	Widget		w,
-	XtPointer	udata,
-	XtPointer	cb_data
+	brPage		*page
 )
 {
-        brPage		*page = (brPage *)udata;
 	brPageData	*pdp = page->pdata;
 	brVarPageRec *rec = (brVarPageRec *) pdp->type_rec;
-                
-#if DEBUG_VARPAGE
-        fprintf(stderr,"ShaperToggleCB(IN)\n");
-#endif
+
         if (! rec->shaper) {
                 rec->shaper = NhlMalloc(sizeof(NgShaper));
                 rec->shaper->go = page->go;
@@ -404,10 +432,11 @@ static void ShaperToggleCB
                 rec->shaper->vinfo = pdp->dl->u.var;
                 rec->shaper->qfile = page->qfile;
                 rec->shaper->geo_notify = AdjustVarPageGeometry;
-                rec->shaper->pdata = (NhlPointer) page;
+                rec->shaper->pdata = NULL; /* prevent pointer function calls */
                 rec->shaper->tgl_coord = -1;
                 
                 NgDoShaper(rec->shaper);
+		rec->shaper->pdata = (NhlPointer) page;
                 XtVaSetValues(rec->shaper->frame,
                               XmNbottomAttachment,XmATTACH_NONE,
                               XmNrightAttachment,XmATTACH_NONE,
@@ -429,8 +458,9 @@ static void ShaperToggleCB
                 rec->shaper->restore = False;
                 rec->shaper->vinfo = pdp->dl->u.var;
                 rec->shaper->qfile = page->qfile;
-                rec->shaper->pdata = (NhlPointer) page;
+                rec->shaper->pdata = NULL;/* prevent pointer function calls */
                 NgDoShaper(rec->shaper);
+                rec->shaper->pdata = (NhlPointer) page;
                 rec->new_shape = False;
                 if (! rec->shaper_managed) {
                         XtManageChild(rec->shaper->frame);
@@ -454,6 +484,24 @@ static void ShaperToggleCB
                               XmNtopWidget,rec->shaper->frame,
                               NULL);
         }
+	return;
+}
+
+static void ShaperToggleCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+        brPage		*page = (brPage *)udata;
+	brPageData	*pdp = page->pdata;
+	brVarPageRec *rec = (brVarPageRec *) pdp->type_rec;
+                
+#if DEBUG_VARPAGE
+        fprintf(stderr,"ShaperToggleCB(IN)\n");
+#endif
+	UpdateShaper(page);
         
         (*pdp->adjust_page_geo)(page);
         
@@ -518,6 +566,51 @@ static void DestroyVarPage
 	
 	return;
 }
+static void 
+FreeVarSaveState
+(
+	brVarSaveState vs_state
+)
+{
+	FreeDataLinks(vs_state->datalinks);
+	if (vs_state->start)
+		NhlFree(vs_state->start);
+	if (vs_state->finish)
+		NhlFree(vs_state->finish);
+	if (vs_state->stride)
+		NhlFree(vs_state->stride);
+
+	NhlFree(vs_state);
+
+	return;
+}
+
+static void
+SaveVarState
+(
+	brPage	*page
+)
+{
+	brVarPageRec *rec = (brVarPageRec *)page->pdata->type_rec;
+	brVarSaveState vs_state = NhlMalloc(sizeof(brVarSaveStateRec));
+
+	if (! vs_state) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return;
+	}
+	vs_state->vdata = rec->vdata;
+	vs_state->start = rec->start;
+	vs_state->finish = rec->finish;
+	vs_state->stride = rec->stride;
+	vs_state->datalinks = rec->datalinks;
+	vs_state->shaper_managed = rec->shaper_managed;
+
+	NgSavePageState(rec->go->base.id,page->id,page->qfile,page->qvar,
+			(NhlPointer)vs_state,(NhlFreeFunc) FreeVarSaveState);
+
+	return;
+}
+
 static void
 DeactivateVarPage
 (
@@ -525,7 +618,9 @@ DeactivateVarPage
 )
 {
 	brVarPageRec *rec = (brVarPageRec *)page->pdata->type_rec;
-           
+
+	SaveVarState(page);
+
         if (rec->shaper) {
                 NgDeactivateShaper(rec->shaper);
         }
@@ -557,8 +652,11 @@ DeactivateVarPage
         XtRemoveCallback(rec->datagrid_toggle,
                          XmNvalueChangedCallback,DataGridToggleCB,page);
 
-	FreeDataLinks(rec->datalinks);
+	rec->vdata = NULL;
 	rec->datalinks = NULL;
+	rec->start = NULL;
+	rec->finish = NULL;
+	rec->stride = NULL;
         
         return;
 }
@@ -619,8 +717,8 @@ NhlBoolean InitializeDimInfo
         }
 
 	return NgSetVarData(dl,rec->vdata,page->qfile,dl->u.var->name,
-			    vinfo->n_dims,rec->start,rec->finish,rec->stride,
-			    _NgSHAPED_VAR);
+			    NrmNULLQUARK,vinfo->n_dims,
+			    rec->start,rec->finish,rec->stride,_NgSHAPED_VAR);
 
 }
 
@@ -691,6 +789,30 @@ NewVarPage
         return pdp;
 }
 
+static void 
+RestoreVarState(
+	brPage		*page,
+	NhlBoolean	*do_shaper,
+	NgPageSaveState save_state
+)
+{
+	brPageData	*pdp = page->pdata;
+	brVarPageRec	*rec = (brVarPageRec *)pdp->type_rec;
+	brVarSaveState vs_state = (brVarSaveState) save_state->page_state;
+
+	rec->datalinks = vs_state->datalinks;
+	rec->vdata = vs_state->vdata;
+	rec->start = vs_state->start;
+	rec->finish = vs_state->finish;
+	rec->stride = vs_state->stride;
+
+	*do_shaper = vs_state->shaper_managed ? True : False;
+	NhlFree(vs_state);
+	NhlFree(save_state);
+
+	return;
+}
+
 extern brPageData *
 NgGetVarPage
 (
@@ -710,6 +832,7 @@ NgGetVarPage
         Widget			sep;
 	NgVarTree		*copy_vartree;
         Widget			label,top_widget;
+	NhlBoolean		do_shaper = False;
 
 	if (copy_page) {
 		copy_rec = (brVarPageRec *) copy_page->pdata->type_rec;
@@ -740,10 +863,23 @@ NgGetVarPage
         }
         rec = (brVarPageRec *) pdp->type_rec;
         rec->page_id = page->id;
-        if (!InitializeDimInfo(page,rec,copy_rec,pdp->dl,
-                          copy_page ? copy_page->pdata->dl : NULL))
+	if (save_state) {
+		RestoreVarState(page,&do_shaper,save_state);
+	}
+        else if (!InitializeDimInfo(page,rec,copy_rec,pdp->dl,
+				    copy_page ? copy_page->pdata->dl : NULL)) {
 		return NULL;
+	}
 
+/* Data Links */
+
+	if (copy_rec && copy_rec->datalinks) {
+		if (rec->datalinks) {
+			FreeDataLinks(rec->datalinks);
+		}
+		rec->datalinks = CopyDataLinks(copy_rec->datalinks);
+	}
+	
 /* DimInfoGrid */
         
         if (! rec->diminfogrid) {
@@ -856,6 +992,10 @@ NgGetVarPage
                               XmNset,True,
                               NULL);
         }
+	else if (do_shaper) {
+		UpdateShaper(page);
+	}
+		
 
 /* Data Control and Output */        
         
@@ -968,7 +1108,8 @@ extern void NgVarPageDataUpdate
         brPageType ptype = page->qfile > NrmNULLQUARK ? _brFILEVAR : _brREGVAR;
 	NhlBoolean notify_req = False;
 
-	if (! NgSetVarData(pdp->dl,rec->vdata,page->qfile,pdp->dl->u.var->name,
+	if (! NgSetVarData(pdp->dl,rec->vdata,page->qfile,
+			   pdp->dl->u.var->name,NrmNULLQUARK,
 			   ndims,rec->start,rec->finish,rec->stride,
 			   _NgSHAPED_VAR))
 		return;

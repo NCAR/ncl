@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegrid.c,v 1.3 1999-02-23 03:56:46 dbrown Exp $
+ *      $Id: datasourcegrid.c,v 1.4 1999-03-12 19:13:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -174,10 +174,19 @@ Column1String
 		sprintf(Buffer,"<null>");
 	}
 	else {
-		if (vdata->qfile && vdata->qvar)
+		if (vdata->qfile && vdata->qvar && vdata->qcoord)
+			sprintf(Buffer,"%s->%s&%s(",
+				NrmQuarkToString(vdata->qfile),
+				NrmQuarkToString(vdata->qvar),
+				NrmQuarkToString(vdata->qcoord));
+		else if (vdata->qfile && vdata->qvar)
 			sprintf(Buffer,"%s->%s(",
 				NrmQuarkToString(vdata->qfile),
 				NrmQuarkToString(vdata->qvar));
+		else if (vdata->qvar && vdata->qcoord)
+			sprintf(Buffer,"%s&%s(",
+				NrmQuarkToString(vdata->qvar),
+				NrmQuarkToString(vdata->qcoord));
 		else
 			sprintf(Buffer,"%s(",
 				NrmQuarkToString(vdata->qvar));
@@ -333,6 +342,97 @@ UnshapedFileVar
         return True;
 }
 
+static NhlBoolean
+UnshapedFileCoordVar
+(
+	char *var_string,
+	char **file_start,
+	char **file_end,
+	char **var_start,
+	char **var_end,
+	char **coord_start,
+	char **coord_end
+)
+{
+	char *cp = strstr(var_string,"->");
+	char *cp1 = strstr(var_string,"&");
+	char buf[512];
+        int offset;
+	
+	if (! (cp && cp1))
+		return False;
+
+	strncpy(buf,var_string,MIN(512,cp-var_string));
+	buf[cp-var_string] = '\0';
+
+	if (! QualifiedNclSymbol(buf,file_start,file_end))
+		return False;
+
+        offset = *file_start - buf;
+        *file_start = var_string + offset;
+        offset = *file_end - buf;
+        *file_end = var_string + offset;
+
+        strcpy(buf,cp+2);
+	buf[cp1 - cp - 2] = '\0';
+	if (! QualifiedNclSymbol(buf,var_start,var_end))
+                return False;
+
+        offset = *var_start - buf;
+        *var_start = cp + 2 + offset;
+        offset = *var_end - buf;
+        *var_end = cp + 2 + offset;
+        
+        strcpy(buf,cp1+1);
+	if (! QualifiedNclSymbol(buf,coord_start,coord_end))
+                return False;
+        offset = *coord_start - buf;
+        *coord_start = cp1 + 1 + offset;
+        offset = *coord_end - buf;
+        *coord_end = cp1 + 1 + offset;
+
+        return True;
+}
+static NhlBoolean
+UnshapedCoordVar
+(
+	char *var_string,
+	char **var_start,
+	char **var_end,
+	char **coord_start,
+	char **coord_end
+)
+{
+	char *cp = strstr(var_string,"&");
+	char buf[512];
+        int offset;
+	
+	if (! cp)
+		return False;
+
+	strncpy(buf,var_string,MIN(512,cp-var_string));
+	buf[cp-var_string] = '\0';
+
+	if (! QualifiedNclSymbol(buf,var_start,var_end))
+		return False;
+
+        offset = *var_start - buf;
+        *var_start = var_string + offset;
+        offset = *var_end - buf;
+        *var_end = var_string + offset;
+
+        strcpy(buf,cp+1);
+	if (! QualifiedNclSymbol(buf,coord_start,coord_end))
+                return False;
+
+        offset = *coord_start - buf;
+        *coord_start = cp + 1 + offset;
+        offset = *coord_end - buf;
+        *coord_end = cp + 1 + offset;
+        
+        return True;
+}
+
 static void
 GetUnshapedRegularVar
 (
@@ -399,6 +499,114 @@ GetUnshapedFileVar
 		NhlString tvar = NrmQuarkToString(finfo->u.file->var_names[i]);
 		if (!strcmp(tvar,var)) {
 			*qvar = finfo->u.file->var_names[i];
+			NclFreeDataList(dl);
+			return;
+		}
+	}
+	NclFreeDataList(dl);
+	return;
+}
+
+
+static void
+GetUnshapedFileCoordVar
+(
+	NgDataSourceGridRec *dsp,
+	char                *file,
+	char		    *var,
+	char		    *coord,
+	NrmQuark	    *qfile,
+	NrmQuark	    *qvar,
+	NrmQuark	    *qcoord
+)
+
+{
+	NclApiDataList *dl,*finfo;
+	int i;
+	
+	*qvar = *qfile = *qcoord = NrmNULLQUARK;
+
+	dl = NclGetFileList();
+	if (! dl) {
+		ErrorMessage(dsp,SYSTEM_ERROR);
+		return;
+	}
+	for (finfo = dl; finfo; finfo = finfo->next) {
+		NhlString tfile = NrmQuarkToString(finfo->u.file->name);
+		if (! strcmp(tfile,file)) {
+			*qfile = finfo->u.file->name;
+			break;
+		}
+	}
+	if (! *qfile) {
+		NclFreeDataList(dl);
+		return;
+	}
+
+	for (i = 0; i < finfo->u.file->n_vars; i++) {
+		NhlString tvar = NrmQuarkToString(finfo->u.file->var_names[i]);
+		if (!strcmp(tvar,var)) {
+			*qvar = finfo->u.file->var_names[i];
+			break;
+		}
+	}
+	NclFreeDataList(dl);
+
+	if (! *qvar)
+		return;
+
+	dl = NclGetFileVarInfo(*qfile,*qvar);
+
+	for (i = 0; i < dl->u.var->n_dims; i++) {
+		NhlString tcoord = NrmQuarkToString(dl->u.var->coordnames[i]);
+		if (!strcmp(tcoord,coord)) {
+			*qcoord = dl->u.var->coordnames[i];
+			NclFreeDataList(dl);
+			return;
+		}
+	}
+	NclFreeDataList(dl);
+	
+	return;
+}
+
+
+static void
+GetUnshapedCoordVar
+(
+	NgDataSourceGridRec *dsp,
+	char                *var,
+	char		    *coord,
+	NrmQuark	    *qvar,
+	NrmQuark	    *qcoord
+)
+
+{
+	NclApiDataList *dl,*vinfo;
+	int i;
+	
+	*qvar = *qcoord = NrmNULLQUARK;
+
+	dl = NclGetVarList();
+	if (! dl) {
+		ErrorMessage(dsp,SYSTEM_ERROR);
+		return;
+	}
+	for (vinfo = dl; vinfo; vinfo = vinfo->next) {
+		NhlString tvar = NrmQuarkToString(vinfo->u.var->name);
+		if (! strcmp(tvar,var)) {
+			*qvar = vinfo->u.var->name;
+			break;
+		}
+	}
+	if (! *qvar)
+		return;
+
+	for (i = 0; i < vinfo->u.var->n_dims; i++) {
+		NhlString tcoord = 
+			NrmQuarkToString(vinfo->u.var->coordnames[i]);
+		if (!strcmp(tcoord,coord)) {
+			*qcoord = vinfo->u.var->coordnames[i];
 			NclFreeDataList(dl);
 			return;
 		}
@@ -509,8 +717,9 @@ QualifyAndInsertVariable
 {
         NgDataSourceGrid *pub = &dsp->public;
 	NgDataProfile prof =  dsp->data_profile;
-	NrmQuark qfile = NrmNULLQUARK,qvar = NrmNULLQUARK;
-	char *vsp,*vep,*fsp,*fep;
+	NrmQuark qfile = NrmNULLQUARK,
+		qvar = NrmNULLQUARK,qcoord = NrmNULLQUARK;
+	char *vsp,*vep,*fsp,*fep,*csp,*cep;
 	int mix = prof->master_data_ix;
 	NclApiDataList *dl = NULL;
 	NgVarData vdata;
@@ -527,15 +736,15 @@ QualifyAndInsertVariable
 	if (EmptySymbol(var_string,&explicit)) {
 		if (! explicit) {
 			if (! NgSetVarData
-			    (NULL,vdata,NrmNULLQUARK,NrmNULLQUARK,0,
-			     NULL,NULL,NULL,_NgVAR_UNSET)) {
+			    (NULL,vdata,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,
+			     0,NULL,NULL,NULL,_NgVAR_UNSET)) {
 				goto error_ret;
 			}
 		}
 		else { 
 			if (! NgSetVarData
-			    (NULL,vdata,NrmNULLQUARK,NrmNULLQUARK,0,
-			     NULL,NULL,NULL,_NgSHAPED_VAR)) {
+			    (NULL,vdata,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,
+			     0,NULL,NULL,NULL,_NgSHAPED_VAR)) {
 				goto error_ret;
 			}
 		}
@@ -579,6 +788,36 @@ QualifyAndInsertVariable
 			goto error_ret;
 		}
 	}
+	else if (UnshapedFileCoordVar
+		 (var_string,&fsp,&fep,&vsp,&vep,&csp,&cep)) {
+		char fbuf[512],vbuf[512],cbuf[512];
+		strncpy(fbuf,fsp,fep-fsp);
+		fbuf[fep-fsp] = '\0';
+		strncpy(vbuf,vsp,vep-vsp);
+		vbuf[vep-vsp] = '\0';
+		strncpy(cbuf,csp,cep-csp);
+		cbuf[cep-csp] = '\0';
+
+		GetUnshapedFileCoordVar
+			(dsp,fbuf,vbuf,cbuf,&qfile,&qvar,&qcoord);
+		if (! (qvar && qfile && qcoord)) {
+			message = INVALID_INPUT;
+			goto error_ret;
+		}
+	}
+	else if (UnshapedCoordVar(var_string,&vsp,&vep,&csp,&cep)) {
+		char vbuf[512],cbuf[512];
+		strncpy(vbuf,vsp,vep-vsp);
+		vbuf[vep-vsp] = '\0';
+		strncpy(cbuf,csp,cep-csp);
+		cbuf[cep-csp] = '\0';
+
+		GetUnshapedCoordVar(dsp,vbuf,cbuf,&qvar,&qcoord);
+		if (! (qvar && qcoord)) {
+			message = INVALID_INPUT;
+			goto error_ret;
+		}
+	}
 	else if (PossibleNclExpression(var_string,&vsp)) {
 		if (! SaveExpressionString(dsp,index,vsp)) {
 			message = INVALID_INPUT;
@@ -616,8 +855,12 @@ QualifyAndInsertVariable
 	}
 
 
-	if (qfile && qvar)
+	if (qfile && qvar && qcoord)
+		dl = NclGetFileVarCoordInfo(qfile,qvar,qcoord);
+	else if (qfile && qvar)
 		dl = NclGetFileVarInfo(qfile,qvar);
+	else if (qvar && qcoord)
+		dl = NclGetVarCoordInfo(qvar,qcoord);
 	else if (qvar)
 		dl = NclGetVarInfo(qvar);
 	if (! dl) {
@@ -629,7 +872,7 @@ QualifyAndInsertVariable
 			message = INVALID_SHAPE;
 			goto error_ret;
 		}
-		if (! NgSetVarData(dl,vdata,qfile,qvar,
+		if (! NgSetVarData(dl,vdata,qfile,qvar,qcoord,
 				   MIN(dl->u.var->n_dims,
 				       prof->ditems[index]->maxdims),
 				   NULL,NULL,NULL,_NgDEFAULT_SHAPE)) {
@@ -648,7 +891,7 @@ QualifyAndInsertVariable
 	 * VarData to default values, and then process
 	 * dependencies
 	 */
-	if (! NgSetVarData(dl,vdata,qfile,qvar,
+	if (! NgSetVarData(dl,vdata,qfile,qvar,qcoord,
 			   MIN(dl->u.var->n_dims,
 			       prof->ditems[index]->maxdims),
 			   NULL,NULL,NULL,_NgDEFAULT_SHAPE)) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.20 1999-03-05 01:02:35 dbrown Exp $
+ *      $Id: go.c,v 1.21 1999-03-12 19:13:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1860,6 +1860,10 @@ NgGOSensitive
 	NgGOPart	*gp;
 	NgGOClass	gc;
 
+#if 0
+	fprintf(stderr,"NgGOSensitive %s sensitive %s\n",
+		go->base.name,sensitive ? "True" : "False");
+#endif
 	if(!go || !_NhlIsClass((NhlLayer)go,NggOClass)){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid goid %d",
 								func,goid));
@@ -1883,7 +1887,6 @@ NgGOSensitive
 		gp->sensitive = False;
 		gp->x_sensitive = False;
 	}
-
 	return;
 }
 

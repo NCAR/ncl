@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.18 1999-02-23 03:56:52 dbrown Exp $
+ *      $Id: restree.c,v 1.19 1999-03-12 19:13:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3548,6 +3548,10 @@ NgResTree *NgCreateResTree
         static XrmValue from_black,to_black,from_white,to_white;
  
         if (first) {
+		Window root;
+		int x,y;
+		unsigned int w,h,b,depth;
+		
 		XtAppAddActions(go->go.x->app,myact,NhlNumber(myact));
                 Qlong_name = NrmStringToQuark("long_name");
                 Qgenarray = NrmStringToQuark(NhlTGenArray);
@@ -3584,24 +3588,23 @@ NgResTree *NgCreateResTree
                 to_white.addr = (XPointer)&White;
                 XtConvertAndStore(go->go.shell,
                                   XtRString,&from_white,XtRPixel,&to_white);
+		XGetGeometry(XtDisplay(go->go.shell),XtWindow(go->go.shell),
+			     &root,&x,&y,&w,&h,&b,&depth);
                 Check_Pixmap = XCreatePixmapFromBitmapData
                         (XtDisplay(go->go.shell),
-                         DefaultRootWindow(XtDisplay(go->go.shell)),
+                         XtWindow(go->go.shell),
                          (char*)Check_Bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,
-                         Black,White,
-                         DefaultDepthOfScreen(XtScreen(go->go.shell)));
+                         Black,White,XcbGetDepth(go->go.xcb));
                 No_Check_Pixmap = XCreatePixmapFromBitmapData
                         (XtDisplay(go->go.shell),
                          DefaultRootWindow(XtDisplay(go->go.shell)),
                          (char*)No_Check_Bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,
-                         Black,White,
-                         DefaultDepthOfScreen(XtScreen(go->go.shell)));
+                         Black,White,XcbGetDepth(go->go.xcb));
                 Mask_Pixmap = XCreatePixmapFromBitmapData
                         (XtDisplay(go->go.shell),
-                         DefaultRootWindow(XtDisplay(go->go.shell)),
+                         XtWindow(go->go.shell),
                          (char*)Mask_Bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,
-                         Background,Background,
-                         DefaultDepthOfScreen(XtScreen(go->go.shell)));
+                         Background,Background,XcbGetDepth(go->go.xcb));
                 first = False;
         }
         
