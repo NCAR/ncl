@@ -1053,14 +1053,14 @@ GribFileRecord *therec;
 */
 		switch((int)grib_rec->pds[4]) {
 			case 7:
-				for( i = 0; i < sizeof(model_index)/sizeof(int);i++) {
-					if(model_index[i] == (int)grib_rec->pds[5]) {
+				for( i = 0; i < sizeof(models)/sizeof(GribTable);i++) {
+					if(models[i].index == (int)grib_rec->pds[5]) {
 						att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
 						att_list_ptr->next = step->theatts;
 						att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
 						att_list_ptr->att_inq->name = NrmStringToQuark("model");
 						tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-						*tmp_string = NrmStringToQuark(model[i]);		
+						*tmp_string = NrmStringToQuark(models[i].name);		
 						att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
 						step->theatts = att_list_ptr;
 						step->n_atts++;
@@ -1190,14 +1190,14 @@ GribFileRecord *therec;
 /*
 * center
 */
-		for( i = 0; i < sizeof(centers_index)/sizeof(int);i++) {
-			if(centers_index[i] == (int)grib_rec->pds[4]) {
+		for( i = 0; i < sizeof(centers)/sizeof(GribTable);i++) {
+			if(centers[i].index == (int)grib_rec->pds[4]) {
 				att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
 				att_list_ptr->next = step->theatts;
 				att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
 				att_list_ptr->att_inq->name = NrmStringToQuark("center");
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				*tmp_string = NrmStringToQuark(centers[i]);		
+				*tmp_string = NrmStringToQuark(centers[i].name);		
 				att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
 				step->theatts = att_list_ptr;
 				step->n_atts++;
@@ -1206,14 +1206,14 @@ GribFileRecord *therec;
 /*
 *  sub_center
 */
-		for( i = 0; i < sizeof(sub_centers_index)/sizeof(int);i++) {
-			if(sub_centers_index[i] == (int)grib_rec->pds[25]) {
+		for( i = 0; i < sizeof(sub_centers)/sizeof(GribTable);i++) {
+			if(sub_centers[i].index == (int)grib_rec->pds[25]) {
 				att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
 				att_list_ptr->next = step->theatts;
 				att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
 				att_list_ptr->att_inq->name = NrmStringToQuark("sub_center");
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				*tmp_string = NrmStringToQuark(sub_centers[i]);		
+				*tmp_string = NrmStringToQuark(sub_centers[i].name);		
 				att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
 				step->theatts = att_list_ptr;
 				step->n_atts++;
