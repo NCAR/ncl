@@ -7,4 +7,5 @@
 *pmLabelBarDisplayMode : Conditional
 *vpXF : 0.12
 *vpUseSegments : True
+*MaxLevelCount : 20
 

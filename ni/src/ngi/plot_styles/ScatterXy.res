@@ -2,3 +2,6 @@
 *ndvPlotClass : xyPlotClass
 
 *xyMarkLineMode : markers
+
+*vpUseSegments : True
+
