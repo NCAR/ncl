@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: paths.IRIX_IP,v 1.5 1995-10-05 15:11:54 haley Exp $
+#      $Id: paths.IRIX_IP,v 1.6 1998-01-09 16:35:55 haley Exp $
 #
 #########################################################################
 #									#
@@ -18,7 +18,7 @@
 #
 #	Date:		Tue Sep 29 17:05:36 MDT 1992
 #
-#	Description:	Set default installation paths for a SGI4D. This
+#	Description:	Set default installation paths for an SGI. This
 #			script is sourced by the get_paths script to set
 #			the variables bin_path, inc_path, lib_path, and 
 #			man_path
