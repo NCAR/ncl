@@ -1,26 +1,22 @@
 /*
- *	$Id: nrif.h,v 1.3 1992-03-20 18:43:40 don Exp $
+ *	$Id: nrif.h,v 1.4 1992-09-10 20:53:07 don Exp $
  */
-#ifndef FALSE
-#define FALSE	0
-#endif	/* FALSE */
-
-#ifndef TRUE
-#define TRUE	1
-#endif	/* TRUE */
 
 #define NRIF_MAGIC		"NRIF"
+#define NRIF_CONTROL		0x1000
 
 #define NRIF_HEADER_SIZE	36
 
-#define NRIF_BILEVEL		0
-#define NRIF_BILEVEL_RLE	1
-#define NRIF_INDEXED		2
-#define NRIF_INDEXED_RJE	3
-#define NRIF_DIRECT		4
-#define NRIF_DIRECT_RLE		5
-#define NRIF_DIRECT_SEG		6
-#define NRIF_DIRECT_SEG_RLE	7
+typedef enum {
+	NRIF_BILEVEL,
+	NRIF_BILEVEL_RLE,
+	NRIF_INDEXED,
+	NRIF_INDEXED_RLE,
+	NRIF_DIRECT,
+	NRIF_DIRECT_RLE,
+	NRIF_DIRECT_SEG,
+	NRIF_DIRECT_SEG_RLE
+} NrifEncoding;
 
 static char	*nrif_types[] = {
 	"NRIF_BILEVEL",
@@ -57,7 +53,7 @@ typedef struct NrifInfoStruct {
 	unsigned int	device;
 	unsigned int	devlen;
 	char		*device_info;
-	unsigned int	encoding;
+	NrifEncoding	encoding;
 	unsigned int	enclen;
 
 	/* Encoding information */
