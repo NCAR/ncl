@@ -1,5 +1,5 @@
 /*
- *      $Id: xcbP.h,v 1.1 1997-06-11 20:49:23 boote Exp $
+ *      $Id: xcbP.h,v 1.2 1997-07-02 15:31:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -70,7 +70,6 @@ struct _XcbDMStatRec{
 	unsigned long	index;
 	unsigned short	val;
 	int		ref;
-	NhlBoolean	rw;
 };
 
 struct _XcbRec{

@@ -1,5 +1,5 @@
 /*
- *      $Id: xcb.c,v 1.1 1997-06-11 20:49:22 boote Exp $
+ *      $Id: xcb.c,v 1.2 1997-07-02 15:31:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -41,6 +41,15 @@ Visual
 	int		best_depth;
 	NhlBoolean	best_rw,curr_rw;
 	NhlBoolean	curr_gray,best_gray;
+	Screen		*s = ScreenOfDisplay(dpy,scr);
+
+	/*
+	 * If a display only supports one colormap at a time, then
+	 * the best visual is the "DefaultVisual", because otherwise
+	 * you get flashing before you need to.
+	 */
+	if(MaxCmapsOfScreen(s) <= 1)
+		return DefaultVisual(dpy,scr);
 
 	flags = VisualScreenMask;
 	templ.screen = scr;
@@ -265,11 +274,10 @@ _XcbDMapRefSort(
 	int		i;
 
 	i = s1->ref - s2->ref;
-
 	if(i!=0)
 		return i;
 
-	return (s2->val - s1->val);
+	return (int)((long long)s2->index - (long long)s1->index);
 }
 
 static void
@@ -333,17 +341,11 @@ _XcbDMapValSort(
 	if((s1->ref < 1) && (s2->ref < 1))
 		return 0;
 	if(s1->ref < 1)
-		return 1;
-	if(s2->ref < 1)
 		return -1;
-
-	if(s1->rw == s2->rw)
-		return (s1->val - s2->val);
-
-	if(s1->rw)
+	if(s2->ref < 1)
 		return 1;
 
-	return -1;
+	return (s1->val - s2->val);
 }
 
 static void
@@ -484,6 +486,8 @@ GetNullIndex(
 	if(plist){
 		ref = plist[pix].ref;
 		for(i=1;(i<size)&& sort[i]->ref < 1;i++){
+			if(ref < 1)
+				break;
 			if(plist[sort[i]->index].ref < ref){
 				pix = sort[i]->index;
 				ref = plist[sort[i]->index].ref;
@@ -1198,6 +1202,9 @@ AllocCB
 	else
 		xcol.flags = DoRed|DoGreen|DoBlue;
 
+	if(xcb->vtype == XcbGRAY)
+		xcol.green = xcol.blue = xcol.red;
+
 	XStoreColor(xcb->dpy,xcb->cmap,&xcol);
 
 DONE:
@@ -1599,9 +1606,9 @@ XcbCreate(
 		xcb->rgb_err_sqr *= xcb->rgb_err_sqr;
 
 		c1.red = c1.green = c1.blue = 0;
-		c2.red = 1 * xcb->rinc;
-		c2.green = 1 * xcb->ginc;
-		c2.blue = 1 * xcb->binc;
+		c2.red = xcb->rinc;
+		c2.green = xcb->ginc;
+		c2.blue = xcb->binc;
 
 		/*
 		 * If the error from diagonal nodes in the rgb cube is less
@@ -2054,14 +2061,48 @@ _XcbValidColor(
 	float		*ret
 )
 {
-	float	maxerr,err;
+	NhlBoolean	ival = True;
+	float		maxerr,err;
+	unsigned long	rci,cci;
 
+	/*
+	 * Make sure r/g/b values will get you to the same "node" in the
+	 * cube.
+	 */
+	rci = req->red * (xcb->mycube.red_max + 1) / 0xffff;
+	if(rci > (xcb->mycube.red_max))
+		rci = xcb->mycube.red_max;
+	cci = cmp->red * (xcb->mycube.red_max + 1) / 0xffff;
+	if(cci > (xcb->mycube.red_max))
+		cci = xcb->mycube.red_max;
+	if(rci != cci)
+		ival = False;
+	if(ival){
+		rci = req->green * (xcb->mycube.green_max + 1) / 0xffff;
+		if(rci > (xcb->mycube.green_max))
+			rci = xcb->mycube.green_max;
+		cci = cmp->green * (xcb->mycube.green_max + 1) / 0xffff;
+		if(cci > (xcb->mycube.green_max))
+			cci = xcb->mycube.green_max;
+		if(rci != cci)
+			ival = False;
+	}
+	if(ival){
+		rci = req->blue * (xcb->mycube.blue_max + 1) / 0xffff;
+		if(rci > (xcb->mycube.blue_max))
+			rci = xcb->mycube.blue_max;
+		cci = cmp->blue * (xcb->mycube.blue_max + 1) / 0xffff;
+		if(cci > (xcb->mycube.blue_max))
+			cci = xcb->mycube.blue_max;
+		if(rci != cci)
+			ival = False;
+	}
 	maxerr = (*xcb->cmpfunc)(req,NULL,xcb->cmp_data);
 	err = (*xcb->cmpfunc)(req,cmp,xcb->cmp_data);
 	if(ret)
 		*ret = err;
 
-	return ((maxerr == 0.0) || (err <= maxerr));
+	return (ival && (maxerr == 0.0) || (err <= maxerr));
 }
 
 static NhlBoolean
@@ -2078,10 +2119,9 @@ GetBestIndex(
 	if(size < 1)
 		return False;
 
-	if(list[start]->rw)
-		return False;
-
 	if(size == 1){
+		if(list[start]->ref < 1)
+			return False;
 		*ret = list[start]->index;
 		return True;
 	}
@@ -2089,8 +2129,10 @@ GetBestIndex(
 	if(size==2){
 		long	d1,d2;
 
-		if(list[start+1]->rw){
-			*ret = list[start]->index;
+		if(list[start+1]->ref < 1)
+			return False;
+		if(list[start]->ref < 1){
+			*ret = list[start+1]->index;
 			return True;
 		}
 		d1 = list[start]->val - val;
@@ -2105,9 +2147,7 @@ GetBestIndex(
 	}
 
 	mid = size/2;
-	if(list[start+mid]->rw)
-		return GetBestIndex(list,start,mid,val,ret);
-	if(list[start+mid]->val > val)
+	if((list[start+mid]->ref > 0) && (list[start+mid]->val > val))
 		return GetBestIndex(list,start,mid+1,val,ret);
 	return GetBestIndex(list,start+mid,mid+(size%2),val,ret);
 }
@@ -2313,21 +2353,27 @@ _XcbClosestColor(
 static _XcbCStat
 _XcbXAllocColor(
 	Xcb		xcb,
-	XColor		*col
+	XColor		*col,
+	NhlBoolean	cube
 )
 {
 	_XcbCStat	new=NULL;
 	int		i;
+	XColor		mycol;
 
 	if(!xcb->rw || !xcb->my_cmap){
 		if(!xcb->my_cmap && xcb->max_ncols &&
 						!(xcb->ncols < xcb->max_ncols))
 			return NULL;
-		if(!XAllocColor(xcb->dpy,xcb->cmap,col))
+		if(xcb->vtype == XcbGRAY)
+			mycol.red = mycol.green = mycol.blue = col->red;
+		else
+			mycol = *col;
+		if(!XAllocColor(xcb->dpy,xcb->cmap,&mycol))
 			return NULL;
+		col->pixel = mycol.pixel;
 		if(new = FindDupNode(xcb,col)){
 			XFreeColors(xcb->dpy,xcb->cmap,&col->pixel,1,0);
-			NHLPERROR((NhlWARNING,NhlEUNKNOWN,"Duplicate pix..."));
 			return NULL;
 		}
 		new = _XcbNewNode(xcb,col->pixel);
@@ -2358,19 +2404,22 @@ _XcbXAllocColor(
 		ng = !GetBestIndex(xcb->gsort,0,xcb->gval+1,col->green,&ig);
 		nb = !GetBestIndex(xcb->bsort,0,xcb->bval+1,col->blue,&ib);
 		nc.flags = 0;
-		if(nr){
+		if(nr || (cube && (xcb->rmap[ir].val != col->red))){
+			nr = True;
 			nc.red = col->red;
 			nc.flags |= DoRed;
 		}
 		else
 			nc.red = xcb->rmap[ir].val;
-		if(ng){
+		if(ng || (cube && (xcb->gmap[ig].val != col->green))){
+			ng = True;
 			nc.green = col->green;
 			nc.flags |= DoGreen;
 		}
 		else
 			nc.green = xcb->gmap[ig].val;
-		if(nb){
+		if(nb || (cube && (xcb->bmap[ib].val != col->blue))){
+			nb = True;
 			nc.blue = col->blue;
 			nc.flags |= DoBlue;
 		}
@@ -2412,6 +2461,17 @@ _XcbXAllocColor(
 		}
 
 		/*
+		 * Keep gray's gray.
+		 */
+		if(((col->red == col->green)&&(col->green == col->blue)) &&
+			((nc.red != nc.green) || (nc.red != nc.blue) ||
+			(nc.green != nc.blue))){
+			nr = ng = nb = True;
+			nc.red = nc.green = nc.blue = col->red;
+			nc.flags = DoRed|DoGreen|DoBlue;
+		}
+
+		/*
 		 * Find empty color status element for "new" elements
 		 * we have to allocate.
 		 */
@@ -2438,8 +2498,14 @@ _XcbXAllocColor(
 		new = _XcbNewNode(xcb,nc.pixel);
 		if(!new)
 			return NULL;
-		new->xcol = nc;
+		mycol = new->xcol = nc;
 
+		/*
+		 * If we already have the color components we need, we
+		 * can skip the XStoreColor...
+		 */
+		if(!nr && !ng && !nb)
+			goto COLORDONE;
 	}
 	else{
 
@@ -2450,15 +2516,27 @@ _XcbXAllocColor(
 		new->xcol.red = col->red;
 		new->xcol.green = col->green;
 		new->xcol.blue = col->blue;
+		mycol = new->xcol;
+		if(xcb->vtype == XcbGRAY)
+			mycol.green = mycol.blue = col->red;
 	}
 
-	XStoreColor(xcb->dpy,xcb->cmap,&new->xcol);
+	XStoreColor(xcb->dpy,xcb->cmap,&mycol);
+
+COLORDONE:
+	xcb->ncols++;
 	new->alloc = XcbMYCMAP;
 	return new;
 }
 
 static NhlBoolean
-_XcbAllocROColor(
+_XcbAllocROColorTry(
+	Xcb		xcb,
+	XColor		*col
+);
+
+static void
+_XcbAllocROColorDo(
 	Xcb		xcb,
 	XColor		*col
 );
@@ -2469,16 +2547,16 @@ _XcbAllocROColorFromParent(
 	XColor		*col
 )
 {
-	if(_XcbAllocROColor(xcb,col))
+	if(_XcbAllocROColorTry(xcb,col))
 		return True;
 	if(!xcb->min_ncols || (xcb->ncols >= xcb->min_ncols))
 		return False;
-	XcbAllocROColor(xcb,col);
+	_XcbAllocROColorDo(xcb,col);
 	return True;
 }
 
 static NhlBoolean
-_XcbAllocROColor(
+_XcbAllocROColorTry(
 	Xcb		xcb,
 	XColor		*col
 )
@@ -2520,16 +2598,6 @@ _XcbAllocROColor(
 			goto DONE;
 		}
 		return False;
-	}
-
-	/*
-	 * Convert to NTSC before allocating colors or looking in grayscale
-	 * cube.
-	 */
-	if(xcb->vtype == XcbGRAY){
-		mycol.red = mycol.red*.3 + mycol.green*.59 + mycol.blue*.1;
-		mycol.green = 0;
-		mycol.blue = 0;
 	}
 
 	if(xcb->do_stdcmap){
@@ -2588,7 +2656,7 @@ _XcbAllocROColor(
 		tcol.green = xcb->igreen * xcb->ginc;
 		tcol.blue = xcb->iblue * xcb->binc;
 		if(_XcbValidColor(xcb,&mycol,&tcol,NULL) &&
-					(node = _XcbXAllocColor(xcb,&tcol))){
+				(node = _XcbXAllocColor(xcb,&tcol,True))){
 			newcolor = True;
 			node->cube = True;
 			node->next =xcb->cube[xcb->icube];
@@ -2612,7 +2680,7 @@ _XcbAllocROColor(
 	if(node)
 		goto DONE;
 
-	node = _XcbXAllocColor(xcb,&mycol);
+	node = _XcbXAllocColor(xcb,&mycol,False);
 	if(!node)
 		return False;
 
@@ -2635,12 +2703,22 @@ _XcbAllocROColor(
 DONE:
 	node->ref++;
 	if(xcb->rmap){
-		xcb->rmap[(node->xcol.pixel&xcb->masks.red) >>
-						xcb->shifts.red].ref++;
-		xcb->gmap[(node->xcol.pixel&xcb->masks.green) >>
-						xcb->shifts.green].ref++;
-		xcb->bmap[(node->xcol.pixel&xcb->masks.blue) >>
-						xcb->shifts.blue].ref++;
+		unsigned indx;
+
+		indx = (node->xcol.pixel&xcb->masks.red) >> xcb->shifts.red;
+		if(xcb->rmap[indx].ref < 1)
+			xcb->rmap[indx].val = node->xcol.red;
+		xcb->rmap[indx].ref++;
+
+		indx = (node->xcol.pixel&xcb->masks.green) >> xcb->shifts.green;
+		if(xcb->gmap[indx].ref < 1)
+			xcb->gmap[indx].val = node->xcol.green;
+		xcb->gmap[indx].ref++;
+
+		indx = (node->xcol.pixel&xcb->masks.blue) >> xcb->shifts.blue;
+		if(xcb->bmap[indx].ref < 1)
+			xcb->bmap[indx].val = node->xcol.blue;
+		xcb->bmap[indx].ref++;
 	}
 	NhlINITVAR(sel);
 	NhlINITVAR(cbdata);
@@ -2651,8 +2729,8 @@ DONE:
 	return True;
 }
 
-void
-XcbAllocROColor(
+static void
+_XcbAllocROColorDo(
 	Xcb		xcb,
 	XColor		*col
 )
@@ -2678,7 +2756,7 @@ XcbAllocROColor(
 	if(xcb->parent && !xcb->my_cmap){
 	
 		if(xcb->mode == XcbSHAREDCMAP){
-			XcbAllocROColor(xcb->parent,&mycol);
+			_XcbAllocROColorDo(xcb->parent,&mycol);
 			valid = True;
 		}
 		else{
@@ -2689,7 +2767,7 @@ XcbAllocROColor(
 			}
 			if(!valid){
 				(void)_XcbCFault(xcb);
-				XcbAllocROColor(xcb,col);
+				_XcbAllocROColorDo(xcb,col);
 				return;
 			}
 		}
@@ -2711,9 +2789,9 @@ XcbAllocROColor(
 			 * If cube node, add to front of list.
 			 * else add to end.
 			 */
-			if(((xcb->ired*xcb->rinc) == mycol.red) &&
-				(xcb->igreen*xcb->ginc == mycol.green) &&
-				(xcb->iblue*xcb->binc == mycol.blue)){
+			if(((unsigned short)(xcb->ired*xcb->rinc)==mycol.red) &&
+			((unsigned short)(xcb->igreen*xcb->ginc)==mycol.green)&&
+			((unsigned short)(xcb->iblue*xcb->binc)==mycol.blue)){
 				node->cube = True;
 				node->next = *nptr;
 				*nptr = node;
@@ -2730,25 +2808,38 @@ XcbAllocROColor(
 		}
 		node->ref++;
 		if(xcb->rmap){
-			xcb->rmap[(node->xcol.pixel&xcb->masks.red) >>
-						xcb->shifts.red].ref++;
-			xcb->gmap[(node->xcol.pixel&xcb->masks.green) >>
-						xcb->shifts.green].ref++;
-			xcb->bmap[(node->xcol.pixel&xcb->masks.blue) >>
-						xcb->shifts.blue].ref++;
+			unsigned indx;
+	
+			indx = (node->xcol.pixel&xcb->masks.red) >>
+							xcb->shifts.red;
+			if(xcb->rmap[indx].ref < 1)
+				xcb->rmap[indx].val = node->xcol.red;
+			xcb->rmap[indx].ref++;
+	
+			indx = (node->xcol.pixel&xcb->masks.green) >>
+							xcb->shifts.green;
+			if(xcb->gmap[indx].ref < 1)
+				xcb->gmap[indx].val = node->xcol.green;
+			xcb->gmap[indx].ref++;
+	
+			indx = (node->xcol.pixel&xcb->masks.blue) >>
+							xcb->shifts.blue;
+			if(xcb->bmap[indx].ref < 1)
+				xcb->bmap[indx].val = node->xcol.blue;
+			xcb->bmap[indx].ref++;
 		}
 		*col = node->xcol;
 		return;
 	}
 
-	valid = _XcbAllocROColor(xcb,&mycol);
+	valid = _XcbAllocROColorTry(xcb,&mycol);
 	if(valid && !_XcbValidColor(xcb,col,&mycol,NULL)){
 		XcbFreeColor(xcb->parent,mycol.pixel);
 		valid = False;
 	}
 	if(!valid){
 		if(_XcbCFault(xcb)){
-			XcbAllocROColor(xcb,col);
+			_XcbAllocROColorDo(xcb,col);
 			return;
 		}
 		node = _XcbClosestColor(xcb,col);
@@ -2758,18 +2849,54 @@ XcbAllocROColor(
 		}
 		node->ref++;
 		if(xcb->rmap){
-			xcb->rmap[(node->xcol.pixel&xcb->masks.red) >>
-						xcb->shifts.red].ref++;
-			xcb->gmap[(node->xcol.pixel&xcb->masks.green) >>
-						xcb->shifts.green].ref++;
-			xcb->bmap[(node->xcol.pixel&xcb->masks.blue) >>
-						xcb->shifts.blue].ref++;
+			unsigned indx;
+	
+			indx = (node->xcol.pixel&xcb->masks.red) >>
+							xcb->shifts.red;
+			if(xcb->rmap[indx].ref < 1)
+				xcb->rmap[indx].val = node->xcol.red;
+			xcb->rmap[indx].ref++;
+	
+			indx = (node->xcol.pixel&xcb->masks.green) >>
+							xcb->shifts.green;
+			if(xcb->gmap[indx].ref < 1)
+				xcb->gmap[indx].val = node->xcol.green;
+			xcb->gmap[indx].ref++;
+	
+			indx = (node->xcol.pixel&xcb->masks.blue) >>
+							xcb->shifts.blue;
+			if(xcb->bmap[indx].ref < 1)
+				xcb->bmap[indx].val = node->xcol.blue;
+			xcb->bmap[indx].ref++;
 		}
 		*col = node->xcol;
 		return;
 	}
 
 	*col = mycol;
+	if(xcb->vtype == XcbGRAY)
+		col->green =  col->blue = col->red;
+
+	return;
+}
+
+void
+XcbAllocROColor(
+	Xcb		xcb,
+	XColor		*col
+)
+{
+	/*
+	 * Convert to NTSC before allocating colors or looking in grayscale
+	 * cube.
+	 */
+	if(xcb->vtype == XcbGRAY){
+		col->red = col->red*.3 + col->green*.59 + col->blue*.1;
+		col->green = 0;
+		col->blue = 0;
+	}
+
+	_XcbAllocROColorDo(xcb,col);
 
 	return;
 }
@@ -2785,13 +2912,21 @@ XcbAllocCloseROColor(
 	if((xcb->vtype == XcbBW) || (xcb->visinfo->class == TrueColor))
 		nc = *col;
 	else{
+		if(xcb->vtype == XcbGRAY){
+			col->red = col->red*.3 + col->green*.59 + col->blue*.1;
+			col->green = 0;
+			col->blue = 0;
+		}
 		(void)_XcbGetCubeNodeList(xcb,col);
 		nc.red = xcb->ired * xcb->rinc;
 		nc.green = xcb->igreen * xcb->ginc;
 		nc.blue = xcb->iblue * xcb->binc;
 	}
-	XcbAllocROColor(xcb,&nc);
+	_XcbAllocROColorDo(xcb,&nc);
 	*col = nc;
+
+	if(xcb->vtype == XcbGRAY)
+		col->green = col->blue = col->red;
 
 	return;
 }

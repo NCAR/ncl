@@ -1,5 +1,5 @@
 /*
- *      $Id: xcbShells.c,v 1.1 1997-06-11 20:49:23 boote Exp $
+ *      $Id: xcbShells.c,v 1.2 1997-07-02 15:31:12 boote Exp $
  */
 /************************************************************************
 *									*
@@ -246,6 +246,34 @@ XcbShellInitialize(
 		mask |= XcbSCREEN;
 		xcbattr.scr = XScreenNumberOfScreen(cp->screen);
 
+		if(xp->parent_broker){
+			xcbattr.parent = xp->parent_broker;
+		}
+		else if(cp->parent){
+			xcbattr.parent = xp->parent_broker =
+					XcbGetXcbFromWidget(cp->parent);
+		}
+		else
+			xcbattr.parent = NULL;
+
+		/*
+		 * If local visual doesn't match parent visual, resolve
+		 * conflict.  parent_broker resource takes precedence,
+		 * however, if the parent was dynamically determined
+		 * from a parent "widget", then local visual takes
+		 * precedence.
+		 */
+		if(xp->visual && xcbattr.parent &&
+			(XVisualIDFromVisual(xp->visual) !=
+			XVisualIDFromVisual(XcbGetVisual(xcbattr.parent)))){
+				if(xp->parent_broker)
+					xp->visual = NULL;
+				else
+					xcbattr.parent = NULL;
+		}
+		if(xcbattr.parent)
+			mask |= XcbPARENT;
+
 		if(xp->visual){
 			mask |= XcbVIS;
 			xcbattr.vis = xp->visual;
@@ -256,21 +284,6 @@ XcbShellInitialize(
 			}
 
 		}
-
-		if(xp->parent_broker){
-			xcbattr.parent = xp->parent_broker;
-		}
-		else if(cp->parent){
-			xcbattr.parent = xp->parent_broker =
-					XcbGetXcbFromWidget(cp->parent);
-		}
-
-		if(xp->visual && xcbattr.parent &&
-			(XVisualIDFromVisual(xp->visual) !=
-			XVisualIDFromVisual(XcbGetVisual(xcbattr.parent))))
-				xcbattr.parent = NULL;
-		if(xcbattr.parent)
-			mask |= XcbPARENT;
 
 		if(xp->max_color_cells){
 			mask |= XcbMAXNCOLS;
@@ -904,6 +917,10 @@ static Boolean XcbCvtStringToVisual(
 	Screen		*scr;
 	int		depth;
 	Xcb		xcb=NULL;
+	char		dstr[20];
+	String		params[3];
+	Cardinal	num_params = 3;
+
 
 	if(*num_args != 1){
 		XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
@@ -929,16 +946,24 @@ static Boolean XcbCvtStringToVisual(
 
 	def_vis = DefaultVisualOfScreen(scr);
 
+	/*
+	 * If this widget has an xcbApplicationShell Ancestor, then
+	 * ignore the string, and use the same visual.
+	 */
+	if((w->core.widget_class!=xcbApplicationShellWidgetClass) &&
+		(w->core.parent != NULL) &&
+			(xcb = XcbGetXcbFromWidget(w->core.parent))){
+		if(xcb)
+			xcb_vis = XcbGetVisual(xcb);
+		done(Visual*,xcb_vis);
+	}
 	if (strcasecmp(str,"StaticGray") == 0)		vc = StaticGray;
 	else if (strcasecmp(str,"StaticColor") == 0)	vc = StaticColor;
 	else if (strcasecmp(str,"TrueColor") == 0)	vc = TrueColor;
 	else if (strcasecmp(str,"GrayScale") == 0)	vc = GrayScale;
 	else if (strcasecmp(str,"PseudoColor") == 0)	vc = PseudoColor;
 	else if (strcasecmp(str,"DirectColor") == 0)	vc = DirectColor;
-	else if (isdigit((int)*str) &&
-		(vc = (int)strtol(str,&endptr,0)) &&
-		(str != endptr))			;
-	else if (strcasecmp(str,"DefaultVisual") == 0){
+	else if (strcasecmp(str,"Default") == 0){
 		if((DefaultDepth(dpy,XScreenNumberOfScreen(scr)) == depth) ||
 			(w->core.widget_class==xcbApplicationShellWidgetClass)){
 			done(Visual*,def_vis);
@@ -958,22 +983,57 @@ static Boolean XcbCvtStringToVisual(
 		done(Visual*,xcb_vis);
 	}
 	else{
-		XtDisplayStringConversionWarning(dpy,str,"Visual class name");
-		return False;
+		unsigned long	vis_id;
+		char		*ptr;
+		XVisualInfo	*vret;
+		int		nvret;
+		Visual		*vis;
+
+		vis_id = strtoul(str,&ptr,0);
+		if((vis_id == 0) && (str == ptr)){
+			XtDisplayStringConversionWarning(dpy,str,
+							"Visual class name");
+			return False;
+		}
+		vinfo.visualid = vis_id;
+		vret = XGetVisualInfo(dpy,VisualIDMask,&vinfo,&nvret);
+		if(!vret || (nvret != 1)){
+			XFree(vret);
+			XtDisplayStringConversionWarning(dpy,str,
+							"Visual ID");
+			return False;
+		}
+		if((w->core.widget_class!=xcbApplicationShellWidgetClass) &&
+						(vret->depth != depth)){
+			XFree(vret);
+
+			sprintf(dstr,"%d",depth);
+			params[0] = str;
+			params[1] = dstr;
+			params[2] = DisplayString(dpy);
+			XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+			"conversionError","stringToVisual","XcbError",
+			"Visual ID %s doesn't match depth %s for display %s",
+			params,&num_params );
+			return False;
+		}
+		vis = vret->visual;
+		XFree(vret);
+		done(Visual*,vis);
 	}
 
 	if (XMatchVisualInfo(dpy,XScreenNumberOfScreen(scr),depth,vc,&vinfo)){
 		done( Visual*, vinfo.visual );
 	}
 	else {
-		String params[2];
-		Cardinal num_params = 2;
+		sprintf(dstr,"%d",depth);
 		params[0] = str;
-		params[1] = DisplayString(dpy);
+		params[1] = dstr;
+		params[2] = DisplayString(dpy);
 		XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-			"conversionError","stringToVisual","XcbError",
-			"Cannot find Visual of class %s for display %s",
-			params,&num_params );
+		"conversionError","stringToVisual","XcbError",
+		"Cannot find Visual of class %s with depth %s for display %s",
+		params,&num_params );
 		return False;
 	}
 }
