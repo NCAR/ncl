@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.3 1993-03-05 20:20:13 clyne Exp $
+#      $Id: build,v 1.4 1993-03-08 20:53:22 clyne Exp $
 #
 #########################################################################
 #									#
@@ -104,7 +104,7 @@ sub	rename_files {
 				$path =~ s#^$root_dir/##;
 				$file = &path_leaf($path);
 				$file .= ".$version";
-				$cmd = "cd $root_dir; ln -s $file $path";
+				$cmd = "cd $root_dir; /bin/rm -fr $path; ln -s $file $path";
 				system ($cmd);
 				if ($? != 0) {
 					print "\"$cmd\" exited with error\n";
@@ -154,12 +154,19 @@ EOF
 }
 	
 sub	create_tars {
-	local($build_dir, $version, @dirs) = @_;
+	local($system, $build_dir, $version, @dirs) = @_;
 
-	local($cmd, $dir);
+	local($cmd, $dir, $tar);
+
+	if ($system eq "AIX_RS6000") {
+		$tar = "/bin/tar -c -b 20 -f";
+	}
+	else {
+		$tar = "/bin/tar -cbf 20";
+	}
 
 	foreach $dir (@dirs) {
-		$cmd = "cd $build_dir/$dir; tar -cfb ../$dir.tar 20 .";
+		$cmd = "cd $build_dir/$dir; $tar ../$dir.tar .";
 		system($cmd);
 		if ($? != 0) {
 			print "\"$cmd\" exited with error\n";
@@ -439,7 +446,7 @@ do disk_space("$build_dir/$sizesFile", $build_dir, "bin","include","lib","man");
 #
 #	tar up the installables
 #
-do create_tars($build_dir, $Version, "bin","include","lib","man");
+do create_tars($sys_type, $build_dir, $Version, "bin","include","lib","man");
 
 
 #
