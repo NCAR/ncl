@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclOneDValCoordData.c,v 1.8 2002-09-26 22:14:40 haley Exp $
+ *      $Id: NclOneDValCoordData.c,v 1.9 2004-02-10 23:10:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -181,8 +181,8 @@ long *finish;
 			while(i < the_coord->multidval.totalelements) {
 				result = 0;
 				_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),finish_ptr,NULL,NULL,10,&cmp_val);
-				if(cmp_val >= 0 ){
-					*finish = i;
+				if(cmp_val > 0 ){
+					*finish = i - 1;
 					if((cmp_val > 0)&&(i==0)) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclOneDValGetRangeIndex: finish coordinate index out of range, can't continue");
 						return(NhlFATAL);
@@ -201,8 +201,8 @@ long *finish;
 			while(i < the_coord->multidval.totalelements) {
 				result = 0;
 				_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),finish_ptr,NULL,NULL,10,&cmp_val);
-				if(cmp_val <= 0 ){
-					*finish= i;
+				if(cmp_val < 0 ){
+					*finish= i - 1;
 					if((cmp_val < 0)&&(i==0)) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclOneDValGetRangeIndex: finish coordinate index out of range, can't continue");
 						return(NhlFATAL);
