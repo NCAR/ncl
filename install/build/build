@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.23 1997-01-29 15:34:09 haley Exp $
+#      $Id: build,v 1.24 1997-08-22 16:08:31 haley Exp $
 #
 #########################################################################
 #									#
@@ -236,6 +236,7 @@ $do_nomake = 0;             # skip NCAR G compile
 $install_dir = "INSTALL";       # where the INSTALL script lives
 %configFiles = (            # map sys type to config file name
     'HPUX_HP9000_7xx',  'HPUX_snake',
+    'HPUX_HP9000_8xx',  'HPUX_snake',
     'AIX_RS6000',       'AIX_RS6000',
     'SunOS_sun4',       'Sun4',
     'Solaris_sun4',     'Sun4Solaris',
