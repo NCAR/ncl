@@ -1,7 +1,4 @@
 C
-C	$Id: agscan.f,v 1.1.1.1 1992-04-17 22:31:02 ncargd Exp $
-C
-C
 C ---------------------------------------------------------------------
 C
       SUBROUTINE AGSCAN (TPID,LOPA,NIPA,IIPA)
@@ -79,7 +76,9 @@ C
 C Find the first keyword in the parameter identifier.
 C
       CALL AGSRCH (TPID,IPID,IKWL,'PRIMFRAMSET ROW INVEWINDNULLGRAPGRIDX
-     +   Y   AXISLEFTRIGHBOTTTOP DASHLABELINESECOBACK')
+     +   Y   AXISLEFTRIGHBOTTTOP DASHLABELINESECOBACK',
+     +                            'primframset row invewindnullgrapgridx
+     +   y   axisleftrighbotttop dashlabelinesecoback')
 C
       GO TO (101,102,103,104,105,106,107,108,109,110,
      +       111,113,114,114,114,114,132,133,147,155,166,901) , IKWL
@@ -126,7 +125,8 @@ C
       NIPA=2
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'1   2   ')
+      CALL AGSRCH (TPID,IPID,IKWL,'1   2   ',
+     +                            '1   2   ')
 C
       IF (IKWL.EQ.3) GO TO 901
       GO TO 201
@@ -137,7 +137,8 @@ C
       NIPA=4
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'LEFTRIGHBOTTTOP ')
+      CALL AGSRCH (TPID,IPID,IKWL,'LEFTRIGHBOTTTOP ',
+     +                            'leftrighbotttop ')
 C
       IF (IKWL.EQ.5) GO TO 901
       GO TO 201
@@ -148,7 +149,8 @@ C
       NIPA=5
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'LEFTRIGHBOTTTOP SHAP')
+      CALL AGSRCH (TPID,IPID,IKWL,'LEFTRIGHBOTTTOP SHAP',
+     +                            'leftrighbotttop shap')
 C
       IF (IKWL.EQ.6) GO TO 901
       GO TO 201
@@ -167,7 +169,8 @@ C
   112 NIPA=7
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'MINIMAXILOGAORDENICESMALLARG')
+      CALL AGSRCH (TPID,IPID,IKWL,'MINIMAXILOGAORDENICESMALLARG',
+     +                            'minimaxilogaordenicesmallarg')
 C
       IF (IKWL.EQ.8) GO TO 901
       GO TO 201
@@ -178,7 +181,8 @@ C
       NIPA=92
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'LEFTRIGHBOTTTOP ')
+      CALL AGSRCH (TPID,IPID,IKWL,'LEFTRIGHBOTTTOP ',
+     +                            'leftrighbotttop ')
 C
       IF (IKWL.EQ.5) GO TO 901
       IKWL=IKWL+12
@@ -191,7 +195,8 @@ C
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
       CALL AGSRCH (TPID,IPID,IKWL,
-     +       'CONTLINEINTEFUNCTICKMAJOMINONUMETYPEEXPOFRACANGLOFFSWIDT')
+     +       'CONTLINEINTEFUNCTICKMAJOMINONUMETYPEEXPOFRACANGLOFFSWIDT',
+     +       'contlineintefunctickmajominonumetypeexpofracangloffswidt')
 C
       GO TO (202,201,115,167,116,117,123,126,127,127,127,
      +       127,127,127,901) , IKWL
@@ -202,7 +207,8 @@ C
       NIPA=2
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'GRIDUSER')
+      CALL AGSRCH (TPID,IPID,IKWL,'GRIDUSER',
+     +                            'griduser')
 C
       IF (IKWL.EQ.3) GO TO 901
       GO TO 201
@@ -218,7 +224,8 @@ C
       NIPA=10
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'MAJOMINO')
+      CALL AGSRCH (TPID,IPID,IKWL,'MAJOMINO',
+     +                            'majomino')
 C
       LOPA=LOPA-20
       GO TO (117,123,901) , IKWL
@@ -229,7 +236,8 @@ C
       NIPA=6
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'SPACTYPEBASECOUNPATTLENGOUTWINWA')
+      CALL AGSRCH (TPID,IPID,IKWL,'SPACTYPEBASECOUNPATTLENGOUTWINWA',
+     +                            'spactypebasecounpattlengoutwinwa')
 C
       GO TO (118,119,119,119,120,121,122,122,901) , IKWL
 C
@@ -238,7 +246,8 @@ C
   118 NIPA=3
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'TYPEBASECOUN')
+      CALL AGSRCH (TPID,IPID,IKWL,'TYPEBASECOUN',
+     +                            'typebasecoun')
 C
       IF (IKWL.EQ.4) GO TO 901
 C
@@ -258,7 +267,8 @@ C
       NIPA=2
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'OUTWINWA')
+      CALL AGSRCH (TPID,IPID,IKWL,'OUTWINWA',
+     +                            'outwinwa')
 C
       IF (IKWL.EQ.3) GO TO 901
       GO TO 201
@@ -273,7 +283,8 @@ C
       NIPA=4
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'SPACPATTLENGOUTWINWA')
+      CALL AGSRCH (TPID,IPID,IKWL,'SPACPATTLENGOUTWINWA',
+     +                            'spacpattlengoutwinwa')
 C
       GO TO (202,201,124,125,125,901) , IKWL
 C
@@ -283,7 +294,8 @@ C
       NIPA=2
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'OUTWINWA')
+      CALL AGSRCH (TPID,IPID,IKWL,'OUTWINWA',
+     +                            'outwinwa')
 C
       IF (IKWL.EQ.3) GO TO 901
       GO TO 201
@@ -298,7 +310,8 @@ C
       NIPA=8
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'TYPEEXPOFRACANGLOFFSWIDT')
+      CALL AGSRCH (TPID,IPID,IKWL,'TYPEEXPOFRACANGLOFFSWIDT',
+     +                            'typeexpofracangloffswidt')
 C
       GO TO 128
 C
@@ -313,7 +326,8 @@ C
       NIPA=2
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'1ST 2ND ')
+      CALL AGSRCH (TPID,IPID,IKWL,'1ST 2ND ',
+     +                            '1st 2nd ')
 C
       IF (IKWL.EQ.3) GO TO 901
       GO TO 201
@@ -329,7 +343,8 @@ C
       NIPA=2
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'MANTEXPO')
+      CALL AGSRCH (TPID,IPID,IKWL,'MANTEXPO',
+     +                            'mantexpo')
 C
       IF (IKWL.EQ.3) GO TO 901
       GO TO 201
@@ -340,7 +355,8 @@ C
       NIPA=30
       IF (TPID(IPID:IPID).EQ.'.') RETURN
       JPID=IPID
-      CALL AGSRCH (TPID,IPID,IKWL,'SELELENGCHARDOLLPATT')
+      CALL AGSRCH (TPID,IPID,IKWL,'SELELENGCHARDOLLPATT',
+     +                            'selelengchardollpatt')
       IF (IKWL.EQ.6) THEN
         IPID=JPID
         GO TO 168
@@ -350,6 +366,8 @@ C
       NIPA=26
       IF (TPID(IPID:IPID).EQ.'.') RETURN
       CALL AGSRCH (TPID,IPID,IKWL,
+     +'1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  1
+     +7  18  19  20  21  22  23  24  25  26  ',
      +'1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  1
      +7  18  19  20  21  22  23  24  25  26  ')
       IF (IKWL.EQ.27) GO TO 901
@@ -364,7 +382,8 @@ C
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
       CALL AGSRCH (TPID,IPID,IKWL,
-     +                   'CONTBUFFNAMEDEFISUPPBASEOFFSANGLCENTLINEINDE')
+     +                   'CONTBUFFNAMEDEFISUPPBASEOFFSANGLCENTLINEINDE',
+     +                   'contbuffnamedefisuppbaseoffsanglcentlineinde')
 C
       GO TO (202,136,139,140,141,141,141,141,141,141,141,901) , IKWL
 C
@@ -374,7 +393,8 @@ C
       NIPA=1+LBIM*10
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'LENGCONTNAME')
+      CALL AGSRCH (TPID,IPID,IKWL,'LENGCONTNAME',
+     +                            'lengcontname')
 C
       GO TO (202,137,138,901) , IKWL
 C
@@ -404,7 +424,8 @@ C
       NIPA=9
       IF (TPID(IPID:IPID).EQ.'.') GO TO 203
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'SUPPBASEOFFSANGLCENTLINEINDE')
+      CALL AGSRCH (TPID,IPID,IKWL,'SUPPBASEOFFSANGLCENTLINEINDE',
+     +                            'suppbaseoffsanglcentlineinde')
 C
       GO TO 142
 C
@@ -429,7 +450,8 @@ C
   145 NIPA=2
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'X   Y   ')
+      CALL AGSRCH (TPID,IPID,IKWL,'X   Y   ',
+     +                            'x   y   ')
 C
       IF (IKWL.EQ.3) GO TO 901
       GO TO 201
@@ -449,7 +471,8 @@ C
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
       CALL AGSRCH (TPID,IPID,IKWL,
-     +                       'MAXIEND BUFFNUMBDEFISUPPCHARTEXTLENGINDE')
+     +                       'MAXIEND BUFFNUMBDEFISUPPCHARTEXTLENGINDE',
+     +                       'maxiend buffnumbdefisuppchartextlenginde')
 C
       GO TO (202,201,150,152,153,154,154,154,154,154,901) , IKWL
 C
@@ -459,7 +482,8 @@ C
       NIPA=1+LNIM*6
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'LENGCONT')
+      CALL AGSRCH (TPID,IPID,IKWL,'LENGCONT',
+     +                            'lengcont')
 C
       GO TO (202,151,901) , IKWL
 C
@@ -482,7 +506,8 @@ C
       NIPA=5
       IF (TPID(IPID:IPID).EQ.'.') GO TO 203
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'SUPPCHARTEXTLENGINDE')
+      CALL AGSRCH (TPID,IPID,IKWL,'SUPPCHARTEXTLENGINDE',
+     +                            'suppchartextlenginde')
 C
       IF (IKWL.EQ.6) GO TO 901
       GO TO 201
@@ -499,7 +524,8 @@ C
       IF (TPID(IPID:IPID).EQ.'.') GO TO 203
 C
       CALL AGSRCH (TPID,IPID,IKWL,
-     +                       'GRAPUSERCURVDIMEAXISLEFTRIGHBOTTTOP LABE')
+     +                       'GRAPUSERCURVDIMEAXISLEFTRIGHBOTTTOP LABE',
+     +                       'grapusercurvdimeaxisleftrighbotttop labe')
 C
       GO TO (156,157,158,159,160,161,161,161,161,165,901) , IKWL
 C
@@ -533,7 +559,8 @@ C
       NIPA=80
       IF (TPID(IPID:IPID).EQ.'.') GO TO 203
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'LEFTRIGHBOTTTOP ')
+      CALL AGSRCH (TPID,IPID,IKWL,'LEFTRIGHBOTTTOP ',
+     +                            'leftrighbotttop ')
 C
       IF (IKWL.EQ.5) GO TO 901
 C
@@ -546,7 +573,8 @@ C
       IIPA=4
       IF (TPID(IPID:IPID).EQ.'.') RETURN
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'POSITICKNUME')
+      CALL AGSRCH (TPID,IPID,IKWL,'POSITICKNUME',
+     +                            'positicknume')
 C
       GO TO (162,163,164,901) , IKWL
 C
@@ -573,7 +601,8 @@ C
       NIPA=54
       IF (TPID(IPID:IPID).EQ.'.') GO TO 203
 C
-      CALL AGSRCH (TPID,IPID,IKWL,'LEFTRIGHBOTTTOP CENTGRAP')
+      CALL AGSRCH (TPID,IPID,IKWL,'LEFTRIGHBOTTTOP CENTGRAP',
+     +                            'leftrighbotttop centgrap')
 C
       IF (IKWL.EQ.7) GO TO 901
 C

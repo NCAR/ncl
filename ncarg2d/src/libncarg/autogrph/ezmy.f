@@ -1,7 +1,4 @@
 C
-C	$Id: ezmy.f,v 1.1.1.1 1992-04-17 22:31:04 ncargd Exp $
-C
-C
 C ---------------------------------------------------------------------
 C
       SUBROUTINE EZMY (YDRA,IDXY,MANY,NPTS,LABG)
@@ -13,16 +10,6 @@ C
 C The routine EZMY draws many curves, each of them defined by points of
 C the form (I,YDRA(I,J)) or (I,YDRA(J,I)), for I = 1, 2, ... NPTS and
 C for J = 1, 2, ... MANY.  (YDRA is actually dimensioned IDXY by * .)
-C
-C Do statistics-gathering call.
-C
-      LOGICAL Q8Q4
-      SAVE Q8Q4
-      DATA Q8Q4 /.TRUE./
-      IF (Q8Q4) THEN
-        CALL Q8QST4('GRAPHX','AUTOGRAPH','EZMY','VERSION 07')
-        Q8Q4 = .FALSE.
-      ENDIF
 C
       CALL AGGETI ('SET .',ISET)
       CALL AGGETI ('FRAM.',IFRA)

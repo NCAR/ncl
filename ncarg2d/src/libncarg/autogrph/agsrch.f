@@ -1,12 +1,9 @@
 C
-C	$Id: agsrch.f,v 1.1.1.1 1992-04-17 22:31:03 ncargd Exp $
-C
-C
 C ---------------------------------------------------------------------
 C
-      SUBROUTINE AGSRCH (TPID,IPID,IKWL,TKWL)
+      SUBROUTINE AGSRCH (TPID,IPID,IKWL,UKWL,LKWL)
 C
-      CHARACTER*(*) TPID,TKWL
+      CHARACTER*(*) TPID,UKWL,LKWL
 C
 C The routine AGSRCH is used by AGSCAN to search a parameter identifier
 C for the next keyword and return the index of that keyword in a list of
@@ -22,7 +19,9 @@ C -- IKWL is returned containing the index (in the keyword list) of the
 C    next keyword in the parameter identifier (list length, plus one,
 C    if the keyword is not found in the list).
 C
-C -- TKWL is the keyword list - 4*LKWL characters in all.
+C -- UKWL is the keyword list - 4*NOKW characters in all.
+C
+C -- LKWL is identical to UKWL, but in lower case.
 C
 C ICHR is used to hold up to four characters of a keyword.
 C
@@ -34,7 +33,7 @@ C
 C
 C Compute the number of 4-character keywords in the keyword list.
 C
-      LKWL=LEN(TKWL)/4
+      NOKW=LEN(UKWL)/4
 C
 C Find the next non-blank in the parameter identifier.
 C
@@ -72,16 +71,17 @@ C
 C
 C Search the keyword list for the keyword found.
 C
-  105 DO 106 I=1,LKWL
+  105 DO 106 I=1,NOKW
         IKWL=I
         ISTR=(I-1)*4+1
         IEND=(I-1)*4+NCHR
-        IF (ICHR(1:NCHR).EQ.TKWL(ISTR:IEND)) RETURN
+        IF (ICHR(1:NCHR).EQ.UKWL(ISTR:IEND).OR.
+     +      ICHR(1:NCHR).EQ.LKWL(ISTR:IEND)) RETURN
   106 CONTINUE
 C
 C Keyword not found - set IKWL to impossible value and return.
 C
-  107 IKWL=LKWL+1
+  107 IKWL=NOKW+1
       RETURN
 C
       END

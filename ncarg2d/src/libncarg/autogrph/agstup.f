@@ -1,7 +1,4 @@
 C
-C	$Id: agstup.f,v 1.1.1.1 1992-04-17 22:31:04 ncargd Exp $
-C
-C
 C ---------------------------------------------------------------------
 C
       SUBROUTINE AGSTUP (XDRA,NVIX,IIVX,NEVX,IIEX,
@@ -50,16 +47,6 @@ C
 C Declare the block data routine external to force it to load.
 C
       EXTERNAL AGDFLT
-C
-C Do statistics-gathering call.
-C
-      LOGICAL Q8Q4
-      SAVE Q8Q4
-      DATA Q8Q4 /.TRUE./
-      IF (Q8Q4) THEN
-        CALL Q8QST4('GRAPHX','AUTOGRAPH','AGSTUP','VERSION 07')
-        Q8Q4 = .FALSE.
-      ENDIF
 C
 C If initialization has not yet been done, do it.
 C

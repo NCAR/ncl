@@ -1,33 +1,27 @@
 C
-C	$Id: agaxis.f,v 1.1.1.1 1992-04-17 22:30:55 ncargd Exp $
-C
-C
 C ---------------------------------------------------------------------
 C A   B R I E F   D E S C R I P T I O N   O F   A U T O G R A P H
 C ---------------------------------------------------------------------
 C
 C Following is a brief description of the AUTOGRAPH package.  For a
-C complete write-up, see the document "AUTOGRAPH - THE UNABRIDGED
-C WRITE-UP".
+C complete write-up, see the programmer document.
 C
 C
 C PACKAGE AUTOGRAPH
 C
-C LATEST REVISION        May, 1990
+C LATEST REVISION        July, 1992.
 C
 C PURPOSE                To draw graphs, each with a labelled background
 C                        and each displaying one or more curves.
 C
-C ACCESS (ON THE CRAY)   To use AUTOGRAPH routines on the Cray, simply
-C                        call them; they are in the binary library
-C                        $NCARLB, which is automatically searched.
+C ACCESS (UNDER UNIX)    On a Unix system on which NCAR Graphics has
+C                        been installed, the command "ncargf77" will
+C                        supply the necessary references to the NCAR
+C                        Graphics libraries containing AUTOGRAPH.
 C
 C                        To get smoother curves, drawn using spline
-C                        interpolation, compile DASHSMTH, from ULIB,
-C                        to replace DASHCHAR, from $NCARLB:
-C
-C                          GETSRC,LIB=ULIB,FILE=DASHSMTH,L=DSMTH.
-C                          CFT,I=DSMTH,L=0.
+C                        interpolation, use the ncargf77 option
+C                        "-dashsmooth".
 C
 C                        AUTOGRAPH contains a routine AGPWRT, which it
 C                        calls to draw labels.  This routine just passes
@@ -42,20 +36,13 @@ C                        desired character-drawer.  The AUTOGRAPH
 C                        specialist has some "standard" versions of
 C                        AGPWRT and should be consulted for help in
 C                        avoiding pitfalls.  One standard version,
-C                        which calls PWRITX, may be obtained using the
-C                        following JCL:
-C
-C                          GETSRC,LIB=XLIB,FILE=AGUPWRITX,L=UPWRTX.
-C                          CFT,I=UPWRTX,L=0.
+C                        may be obtained by using the ncargf77 option
+C                        "-agupwrtx".
 C
 C USAGE                  Following this indented preamble are given two
 C                        lists:  one describing the AUTOGRAPH routines
 C                        and another describing the arguments of those
 C                        routines.
-C
-C                        "AUTOGRAPH - THE UNABRIDGED WRITE-UP" gives
-C                        a complete write-up of AUTOGRAPH, in great
-C                        detail and with a set of helpful examples.
 C
 C ENTRY POINTS           Except for seven routines which are included
 C                        in the package for historical reasons (EZY,
@@ -147,15 +134,6 @@ C                        which had proved to cause difficulties on
 C                        certain machines.  The user interface was
 C                        changed somewhat and some new features were
 C                        added.  A GKS-compatible version was written.
-C
-C SPACE REQUIRED         AUTOGRAPH is big; one pays a price for its
-C                        capabilities.  On the Cray, it occupies a
-C                        little under 30000 (octal) locations.  The
-C                        required plot package routines take about
-C                        another 7000 (octal), the (modified) PORT
-C                        support routines about another 1000 (octal),
-C                        and system routines (math, I/O, miscellany)
-C                        another 30000 (octal).
 C
 C PORTABILITY            AUTOGRAPH may be ported with few modifications
 C                        to most systems having a FORTRAN-77 compiler.
