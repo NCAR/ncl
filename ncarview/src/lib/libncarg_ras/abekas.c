@@ -1,5 +1,5 @@
 /*
- *	$Id: abekas.c,v 1.3 1993-01-17 06:51:34 don Exp $
+ *	$Id: abekas.c,v 1.4 1993-02-10 19:19:03 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -186,14 +186,37 @@ AbekasOpenWrite(name, nx, ny, comment, encoding)
 		ras->text = (char *) NULL;
 	}
 
-	ras->file_nx     = RAS_ABEKAS_NX;
-	ras->file_ny     = RAS_ABEKAS_NY;
-	ras->file_type   = RAS_DIRECT;
+	ras->file_nx     = nx;
+	ras->file_ny     = ny;
+	ras->file_type   = encoding;
 
-	ras->nx     = RAS_ABEKAS_NX;
-	ras->ny     = RAS_ABEKAS_NY;
-	ras->type   = RAS_DIRECT;
-	ras->length = RAS_ABEKAS_NX * RAS_ABEKAS_NY * 3;
+	ras->nx     = nx;
+	ras->ny     = ny;
+	ras->type   = encoding;
+
+	if (encoding == RAS_INDEXED) {
+		ras->length = ras->nx * ras->ny;
+		ras->ncolor = 256;
+		ras->red  =(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		if (ras->red == (unsigned char *) NULL) {
+			(void) ESprintf(errno, errmsg, ras->name);
+			return((Raster *) NULL);
+		}
+		ras->green=(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		if (ras->green == (unsigned char *) NULL) {
+			(void) ESprintf(errno, errmsg, ras->name);
+			return((Raster *) NULL);
+		}
+		ras->blue =(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		if (ras->blue == (unsigned char *) NULL) {
+			(void) ESprintf(errno, errmsg, ras->name);
+			return((Raster *) NULL);
+		}
+	}
+	else if (encoding == RAS_DIRECT) {
+		ras->length = ras->nx * ras->ny * 3;
+		ras->ncolor = 256 * 256 * 256;
+	}
 
 	ras->data   = (unsigned char *) ras_calloc((unsigned) ras->length, 1);
 	if (ras->data == (unsigned char *) NULL) {
@@ -210,28 +233,33 @@ int
 AbekasWrite(ras)
 	Raster	*ras;
 {
-	return(AbekasWriteRaster(ras, ras));
-}
-
-int
-AbekasWriteRaster(ras, rasfile)
-	Raster	*ras;
-	Raster	*rasfile;
-{
-	char		*errmsg = "AbekasWriteRaster(\"%s\")";
 	int		status;
+	char		*errmsg = "AbekasWrite(\"%s\")";
+	static Raster	*outraster = (Raster *) NULL;
 
-	if (ras != rasfile) {
-		status = RasterCenterCrop(ras, rasfile);
-		if (status != RAS_OK) return(status);
+	/*
+	** Allocate an Abekas raster object, which is always
+	** a fixed size. Then take whatever raster is passed
+	** in and format it into the new object for writing.
+	*/
+	if (outraster == (Raster *) NULL) {
+		outraster = RasterCreate(RAS_ABEKAS_NX,
+					 RAS_ABEKAS_NY,
+					 RAS_DIRECT);
+		if (outraster == (Raster *) NULL) {
+			return(RAS_ERROR);
+		}
 	}
 
-	status=write(rasfile->fd,(char*)rasfile->data, rasfile->length);
-	if (status != rasfile->length) {
-		(void) ESprintf(errno, errmsg, rasfile->name);
+	status = RasterCenterCrop(ras, outraster);
+	if (status != RAS_OK) return(status);
+
+	status=write(ras->fd,(char*)outraster->data, outraster->length);
+	if (status != outraster->length) {
+		(void) ESprintf(errno, errmsg, ras->name);
 		return(RAS_ERROR);
 	}
-	rasfile->written = True;
+	ras->written = True;
 	return(RAS_OK);
 }
 

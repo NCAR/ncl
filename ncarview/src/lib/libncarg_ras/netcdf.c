@@ -1,5 +1,5 @@
 /*
- *	$Id: netcdf.c,v 1.2 1993-01-17 06:51:47 don Exp $
+ *	$Id: netcdf.c,v 1.3 1993-02-10 19:19:08 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -212,9 +212,9 @@ NetcdfRead(ras)
 			(void) ncclose(dep->cdfid);
 			return(RAS_ERROR);
 		}
-		ras->red   = (unsigned char *)ras_calloc((unsigned) ras->ncolor,1);
-		ras->green = (unsigned char *)ras_calloc((unsigned) ras->ncolor,1);
-		ras->blue  = (unsigned char *)ras_calloc((unsigned) ras->ncolor,1);
+		ras->red  =(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		ras->green=(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		ras->blue =(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
 	}
 
 	for(i=0; i<RAS_DEFAULT_NCOLORS; i++) {
@@ -276,7 +276,7 @@ NetcdfRead(ras)
 	ras->length = RAS_ABEKAS_NX * RAS_ABEKAS_NY * 3;
 
 	if (ras->data == (unsigned char *) NULL) {
-		ras->data = (unsigned char *) ras_calloc((unsigned)ras->length, 1);
+		ras->data=(unsigned char *)ras_calloc((unsigned)ras->length,1);
 		if (ras->data == (unsigned char *) NULL) {
 			(void) ESprintf(errno, errmsg, ras->name);
 			return(RAS_ERROR);

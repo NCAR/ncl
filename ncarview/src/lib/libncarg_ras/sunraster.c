@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.17 1993-01-17 06:52:00 don Exp $
+ *	$Id: sunraster.c,v 1.18 1993-02-10 19:19:15 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -41,6 +41,11 @@
 
 static char	*FormatName = "sun";
 
+/* Private function declarations. */
+static int	SunReadRGB();
+static int	SunReadRGBFOP();
+static int	SunReadRGBRLE();
+
 Raster *
 SunOpen(name)
 	char	*name;
@@ -74,7 +79,7 @@ SunOpen(name)
 	ras->name = (char *) ras_calloc((unsigned) (strlen(name)+1), 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) ras_calloc((unsigned) (strlen(FormatName) + 1), 1);
+	ras->format = (char *)ras_calloc((unsigned)(strlen(FormatName) + 1), 1);
 	(void) strcpy(ras->format, FormatName);
 
 	SunSetFunctions(ras);
@@ -258,22 +263,17 @@ SunRead(ras)
 	Raster	*ras;
 {
 	char			*errmsg = "SunRead(\"%s\")";
-	unsigned int		image_size;
 	SunInfo			*dep;
 	int			i;
-	int			count, value; 
 	int			length;
 	int			status;
 	int			x, y;
 	unsigned long		swaptest = 1;
-	static unsigned char	*datap, *rlep;
 	static unsigned char	*ptmp  = (unsigned char *) NULL;
 	static unsigned char	*tmpbuf = (unsigned char *) NULL;
-	static int		tmpbuf_size = 0;
 	unsigned char		rgb_buf[256];
 	unsigned char		*p;
 	unsigned char		dummy;
-	int			do_pad;
 
 	/* Allocate the raster format dependent (header) structure. */
 
@@ -362,7 +362,7 @@ SunRead(ras)
 
 		ras->nx		= dep->ras_width;
 		ras->ny		= dep->ras_height;
-		ras->ncolor	= 0;
+		ras->ncolor	= 256 * 256 * 256;
 		ras->type	= RAS_DIRECT;
 		ras->length	= ras->nx * ras->ny * 3;
 	}
@@ -403,7 +403,7 @@ SunRead(ras)
 	already loaded a color map then just discard the information.
 	*/
 
-	if (!ras->map_forced) {
+	if (ras->type == RAS_INDEXED && !ras->map_forced) {
 		status=fread((char *)ras->red,1,ras->ncolor,ras->fp);
 		if (status != ras->ncolor) {
 			(void)ESprintf(RAS_E_PREMATURE_EOF, errmsg, ras->name);
@@ -422,7 +422,7 @@ SunRead(ras)
 			return(RAS_ERROR);
 		}
 	}
-	else {
+	else if (ras->type == RAS_INDEXED) {
 		for(i=0; i<3; i++) {
 		  status=fread((char *)rgb_buf,1,ras->ncolor,ras->fp);
 		  if (status != ras->ncolor) {
@@ -442,7 +442,7 @@ SunRead(ras)
 
 		/* Indexed color encoding - handle 16bit padding. */
 
-		if (ras->nx % 2 == 0) {
+		if (ras->nx % 2 == 0) { /* No padding required. */
 			status = fread( (char *) ras->data, 1,
 					ras->length, ras->fp);
 			if (status != ras->length) {
@@ -511,48 +511,234 @@ SunRead(ras)
 			ptmp += 4;
 		}}
 	}
-	else {
-		/* RLE Encoding */
-		image_size = dep->ras_length;
-		if (image_size > tmpbuf_size) {
-			if (tmpbuf == (unsigned char *) NULL) {
-			  tmpbuf=(unsigned char *) ras_malloc(image_size);
-			  tmpbuf_size = image_size;
-			}
-			else {
-			  tmpbuf = (unsigned char *)
-				realloc( (char *) tmpbuf,image_size);
-			  tmpbuf_size = image_size;
-			} 
-			if (tmpbuf == (unsigned char *) NULL) {
-				(void) ESprintf(errno, "");
-				return(RAS_ERROR);
-			}
-		}
+	else if (dep->ras_type == RT_STANDARD && dep->ras_depth == 24) {
 
-		status=fread((char *)tmpbuf,1,(int)image_size,ras->fp);
-#ifdef DEAD
-		if (status != image_size) return(RAS_EOF);
-#endif
-		if (status != image_size) image_size = status;
+		/* FOP CAI Rasterfiles can often be detected as shown below. */
 
-		if (ras->nx % 2) {
-			do_pad = True;
+		if (ras->length != dep->ras_length) {
+			status = SunReadRGBFOP(ras);
 		}
 		else {
-			do_pad = False;
+			status = SunReadRGB(ras);
 		}
-		x = 0; y = 0;
 
-		for(datap = ras->data, rlep = tmpbuf;
-		rlep < (tmpbuf+image_size) ; ) {
-			if (*rlep == RAS_SUN_ESC) {
+		return(status);
+	}
+	else if (dep->ras_type == RT_BYTE_ENCODED) {
+		/* Run-length encoded. */
+
+		status = SunReadRGBRLE(ras);
+		return(status);
+	}
+	else {
+		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING, errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
+	return(RAS_OK);
+}
+
+/*
+ * Function:		SunReadRGB(ras)
+ *
+ * Description:		This function reads in a standard Sun
+ *			24-bit RGB rasterfile.
+ *
+ * In Args:		ras
+ *
+ * Out Args:		ras
+ *
+ * Return Values:	RAS_OK, RAS_ERROR, RAS_EOF.
+ *
+ * Side Effects:	ras->data is loaded with the image.
+ */
+static int
+SunReadRGB(ras)
+	Raster		*ras;
+{
+	int		status;
+	char		*errmsg = "SunReadRGB(\"%s\")";
+
+	status = fread( (char *) ras->data, 1,
+		(int) ras->length, ras->fp);
+	if (status != ras->length) {
+		(void) ESprintf(RAS_E_PREMATURE_EOF,
+				errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
+	return(RAS_OK);
+}
+
+/*
+ * Function:		SunReadRGBFOP(ras)
+ *
+ * Description:		This function reads in a CAI Freedom of
+ *			the Press "CAIRGB Rasterfile", which is
+ *			almost identical to a regular Sun rasterfile.
+ *			Why this is necessary is a complete mystery
+ *			to the author.
+ *
+ * In Args:		ras
+ *
+ * Out Args:		ras
+ *
+ * Return Values:	RAS_OK, RAS_ERROR, RAS_EOF.
+ *
+ * Side Effects:	ras->data is loaded with the image.
+ */
+static int
+SunReadRGBFOP(ras)
+	Raster		*ras;
+{
+	int		status;
+	int		y;
+	int		length;
+	unsigned char	*datap;
+	char		*errmsg = "SunReadRGBFOP(\"%s\")";
+	SunInfo		*dep;
+
+	dep = (SunInfo *) ras->dep;
+
+	/*
+	** The FOP row length is incorrect and
+	** we calculate it here as follows.
+	*/
+
+	length = dep->ras_length / ras->ny;
+	
+	datap = ras->data;
+	for(y=0; y<ras->ny-1; y++) {
+		status = fread( (char *) datap, 1,
+			(int) length, ras->fp);
+		if (status != length) {
+			(void) ESprintf(RAS_E_PREMATURE_EOF,
+					errmsg, ras->name);
+			return(RAS_ERROR);
+		}
+		datap += ras->nx * 3; /* Increment by the real row length. */
+	}
+
+	/*
+	** On the last record, only read the required
+	** amount. 
+	*/
+	status = fread( (char *) datap, 1,
+		(int) ras->nx * 3, ras->fp);
+	if (status != ras->nx * 3) {
+		(void) ESprintf(RAS_E_PREMATURE_EOF,
+				errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
+	/* Calculate how much remains and read it. */
+
+	length = (dep->ras_length / ras->ny) - (ras->nx * 3);
+
+	status = fread( (char *) datap, 1,
+		(int) length, ras->fp);
+	if (status != length) {
+		(void) ESprintf(RAS_E_PREMATURE_EOF,
+				errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
+	return(RAS_OK);
+}
+
+/*
+ * Function:		SunReadRGBRLE(ras)
+ *
+ * Description:		This function reads in a 24-bit RGB raster
+ *			that is run-length encoded.
+ *
+ * In Args:		ras
+ *
+ * Out Args:		ras
+ *
+ * Return Values:	RAS_OK, RAS_ERROR, RAS_EOF.
+ *
+ * Side Effects:	ras->data is loaded with the image.
+ */
+static int
+SunReadRGBRLE(ras)
+	Raster		*ras;
+{
+	int		status;
+	char		*errmsg = "SunReadRGBRLE(\"%s\")";
+	unsigned int	image_size;
+	unsigned char	*rlebuf, *rlep, *datap, tmp;
+	int		i, rowlength, count, value, do_pad, x, y;
+	SunInfo		*dep;
+
+	dep = (SunInfo *) ras->dep;
+
+	/* Allocate a buffer to read the compressed image into. */
+
+	rlebuf = (unsigned char *) ras_malloc(dep->ras_length);
+	if (rlebuf == (unsigned char *) NULL) {
+		(void) ESprintf(errno, errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
+	status=fread((char *)rlebuf,1,(int)dep->ras_length,ras->fp);
+
+	if (status != dep->ras_length) {
+		image_size = status;
+	}
+	else {
+		image_size = dep->ras_length;
+	}
+
+	if (ras->type == RAS_INDEXED) {
+		rowlength = ras->nx;
+	}
+	else {
+		rowlength = ras->nx * 3;
+	}
+
+	if (rowlength % 2) {
+		do_pad = True;
+	}
+	else {
+		do_pad = False;
+	}
+
+	x = 0; y = 0;
+
+	for(datap=ras->data, rlep=rlebuf; rlep < (rlebuf+image_size) ; ) {
+		if (*rlep == RAS_SUN_ESC) {
+			rlep++;
+			if (*rlep == 0) {
+				*datap++ = RAS_SUN_ESC;
 				rlep++;
-				if (*rlep == 0) {
-					*datap++ = RAS_SUN_ESC;
-					rlep++;
+				if (do_pad) {
+					if (x == ras->nx) {
+						datap--;
+						x = 0;
+						y++;
+					}
+					else {
+						x++;
+					}
+				}
+				else {
+					if (x == ras->nx-1) {
+						x = 0;
+						y++;
+					}
+					else {
+						x++;
+					}
+				}
+			}
+			else {
+				count = *rlep++ + 1;
+				value = *rlep++;
+				for(i=0; i<count; i++) {
+					*datap++=value;
 					if (do_pad) {
-						if (x == ras->nx) {
+						if (x == rowlength) {
 							datap--;
 							x = 0;
 							y++;
@@ -562,7 +748,7 @@ SunRead(ras)
 						}
 					}
 					else {
-						if (x == ras->nx-1) {
+						if (x == rowlength-1) {
 							x = 0;
 							y++;
 						}
@@ -571,83 +757,55 @@ SunRead(ras)
 						}
 					}
 				}
-				else {
-					count = *rlep++ + 1;
-					value = *rlep++;
-					for(i=0; i<count; i++) {
-						*datap++=value;
-						if (do_pad) {
-							if (x == ras->nx) {
-								datap--;
-								x = 0;
-								y++;
-							}
-							else {
-								x++;
-							}
-						}
-						else {
-							if (x == ras->nx-1) {
-								x = 0;
-								y++;
-							}
-							else {
-								x++;
-							}
-						}
-					}
-				}
-			}
-			else {
-				*datap++ = *rlep++;
-				if (do_pad && x == ras->nx) {
-					datap--;
-					x = 0; y++;
-				}
-				else if (!do_pad && x == ras->nx-1) {
-					x = 0; y++;
-				}
-				else {
-					x++;
-				}
 			}
 		}
-#ifdef DEBUG
-		(void) fprintf(stderr, "x = %d   y = %d\n", x, y);
-		(void) fprintf(stderr, "sizeof(rle) = %d\n", dep->ras_length);
-		(void) fprintf(stderr, "sizeof(ras) = %d\n", ras->length);
-		(void) fprintf(stderr, "datap start = %x\n", ras->data);
-		(void) fprintf(stderr, "datap end   = %x\n", datap-1);
-		(void) fprintf(stderr, "diff        = %d\n", datap-ras->data);
-		(void) fprintf(stderr, "datap = %x\n", datap);
-#endif
+		else {
+			*datap++ = *rlep++;
+			if (do_pad && x == rowlength) {
+				datap--;
+				x = 0; y++;
+			}
+			else if (!do_pad && x == rowlength-1) {
+				x = 0; y++;
+			}
+			else {
+				x++;
+			}
+		}
 	}
+
+	/* Flip the red and blue pixels over so they're in RGB order.  */
+
+	if (ras->type == RAS_DIRECT) {
+		for(y=0; y<ras->ny; y++) {
+		for(x=0; x<ras->nx; x++) {
+			datap = &DIRECT_RED(ras, x, y);
+			tmp = *datap;
+			*datap = *(datap+2);
+			*(datap+2) = tmp;
+		}}
+	}
+
+#ifdef DEBUG
+	(void) fprintf(stderr, "x = %d   y = %d\n", x, y);
+	(void) fprintf(stderr, "sizeof(rle) = %d\n", image_size);
+	(void) fprintf(stderr, "sizeof(ras) = %d\n", ras->length);
+	(void) fprintf(stderr, "datap start = %x\n", ras->data);
+	(void) fprintf(stderr, "datap end   = %x\n", datap-1);
+	(void) fprintf(stderr, "diff        = %d\n", datap-ras->data);
+	(void) fprintf(stderr, "datap = %x\n", datap);
+#endif /* DEBUG */
 
 	return(RAS_OK);
 }
-
-#ifdef DEAD
-int
-_SunSetRLEPixel(do_pad, data, nx, ny, x, y)
-	int		do_pad;
-	unsigned char	*data;
-	int		*x;
-	int		*y;
-{
-	if (do_pad) {
-	}
-	else {
-	}
-}
-#endif
 
 int
 SunClose(ras)
 	Raster	*ras;
 {
 	int		status;
-	status = GenericClose(ras);
 
+	status = GenericClose(ras);
 	return(status);
 }
 

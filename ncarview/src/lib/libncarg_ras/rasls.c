@@ -5,12 +5,11 @@
 #include <ncarg/ncarg_ras.h>
 
 static char	*ProgramName		= (char *) NULL;
-int		OptionDebug		= False;
-char		*OptionColorfile	= (char *) NULL;
-int		OptionVerbose		= False;
 
 static struct {
-	char		*colorfile;	
+	boolean		type;
+	boolean		count;
+	boolean		help;
 	boolean		verbose;
 	boolean		version;
 } opt;
@@ -18,34 +17,29 @@ static struct {
 /* Options we want parsed. */
 
 static  OptDescRec      set_options[] = {
-	{"colorfile",	1, NULL, "Specify a file to save the colortable in"},
-	{"verbose",	0, NULL, "Set verbose mode (ls mode is default)"},
-	{"Version",	0, NULL, "Print version number end exit"},
+	{"type",	0, NULL, "Print rasterfile encoding type"},
+	{"count",	0, NULL, "Print number of frames in rasterfile"},
+	{"help",	0, NULL, "Print help information"},
+	{"verbose",	0, NULL, "Set verbose mode"},
+	{"Version",	0, NULL, "Print version number"},
 	{NULL}
 };
 
 static	Option	get_options[] = {
-{"colorfile", NCARGCvtToString, (Voidptr)&opt.colorfile,sizeof(opt.colorfile)},
+{"type",    NCARGCvtToBoolean, (Voidptr) &opt.type, sizeof(opt.type)},
+{"count",   NCARGCvtToBoolean, (Voidptr) &opt.count, sizeof(opt.count)},
+{"help",    NCARGCvtToBoolean, (Voidptr) &opt.help, sizeof(opt.help)},
 {"verbose", NCARGCvtToBoolean, (Voidptr) &opt.verbose, sizeof(opt.verbose)},
-{"Version", NCARGCvtToBoolean, (Voidptr)&opt.version,sizeof(opt.version)},
+{"Version", NCARGCvtToBoolean, (Voidptr) &opt.version,sizeof(opt.version)},
 {NULL}
 };
-
-static int	Print();
-static void	Usage();
 
 main(argc, argv)
 	int	argc;
 	char	*argv[];
 {
 	int	i;
-	char	*arg;
 	int	opt_id;
-
-	if (argc == 1) {
-		fprintf(stderr, "Wrong number of arguments\n");
-		Usage();
-	}
 
 	ProgramName = argv[0];
 
@@ -72,11 +66,16 @@ main(argc, argv)
 		exit(1);
 	}
 
+	if (opt.version) {
+		(void) PrintVersion(ProgramName);
+	}
+
 	/* Make sure nothing left on command line execpt file names. */
 
 	if (argc < 2) {
-		(void) fprintf(stderr,
-			"%s: No filenames on command line\n", ProgramName);
+		if (!opt.version) {
+			Usage(ProgramName, (char *) NULL, opt_id);
+		}
 		exit(1);
 	}
 
@@ -88,20 +87,23 @@ main(argc, argv)
 			Usage(ProgramName, (char *) NULL, opt_id);
 		}
 		else {
-			(void) Print(argv[i]);
+			if (opt.type || opt.count) {
+				(void) Print(argv[i]);
+			}
+			else {
+				(void) PrintLs(argv[i]);
+			}
 		}
 	}
 }
 
-static int Print(name)
+int PrintLs(name)
 	char	*name;
 {
-	int		i, status;
+	int		status;
 	Raster		*ras, *RasterOpen();
 	int		errno = 0;
 	char		*format, *desc;
-	int		nx, ny;
-	RasterEncoding	type;
 	struct stat	statb;
 
 	status = stat(name, &statb);
@@ -184,6 +186,36 @@ static int Print(name)
 }
 
 int
+Print(name)
+	char	*name;
+{
+	int		status;
+	RasStat		ras_stat;
+	int		frame_count;
+
+	status = RasterStat(name, (char *) NULL, &ras_stat, &frame_count);
+	if (status == RAS_ERROR) {
+		(void) RasterPrintError(name);
+		return(RAS_ERROR);
+	}
+
+	if (opt.type) {
+		if (ras_stat.type == RAS_INDEXED) {
+			(void) fprintf(stdout, "indexed\n");
+		}
+		else if (ras_stat.type == RAS_DIRECT) {
+			(void) fprintf(stdout, "direct\n");
+		}
+	}
+
+	if (opt.count) {
+		(void) fprintf(stdout, "%d\n", frame_count);
+	}
+
+	return(RAS_OK);
+}
+
+int
 PrintLine(name, nx, ny, type, desc)
 	char		*name;
 	int		nx, ny;
@@ -209,11 +241,11 @@ PrintLine(name, nx, ny, type, desc)
 		}
 	}
 	msgbuf[lastchar+1] = '\0';
-	(void) fprintf(stderr, "%s\n", msgbuf);
+	(void) fprintf(stdout, "%s\n", msgbuf);
 	return(RAS_OK);
 }
 
-static	void	Usage(progName, message, opt_id)
+Usage(progName, message, opt_id)
 	char	*progName;
 	char	*message;
 	int	opt_id;
@@ -224,9 +256,8 @@ static	void	Usage(progName, message, opt_id)
 	}
 
 	(void) fprintf(stderr, 
-"%s: Usage: %s [-Version] [-pal palette_file] [-quiet] [raster_file...]\n",
+		"%s: Usage: %s [-help] [-verbose] [-Version] files\n",
 		progName, progName);
 	PrintOptionHelp(opt_id, stderr);
-
 	exit(1);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: nrif.c,v 1.13 1993-01-17 06:51:49 don Exp $
+ *	$Id: nrif.c,v 1.14 1993-02-10 19:19:10 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -107,7 +107,7 @@ NrifOpen(name)
 	ras->name = (char *) ras_calloc( (unsigned) (strlen(name) + 1), 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) ras_calloc((unsigned) (strlen(FormatName) + 1), 1);
+	ras->format = (char *) ras_calloc((unsigned) (strlen(FormatName)+1),1);
 	(void) strcpy(ras->format, FormatName);
 
 	NrifSetFunctions(ras);
@@ -192,6 +192,10 @@ NrifRead(ras)
 		dep->device_info = (char *) NULL;
 	}
 
+	/* Check the VPLOT flag. */
+
+	dep->vplot = (dep->flags & 0x02 ) >> 1;
+
 	/* Initialize per-file information on first read. */
 
 	if (ras->read == False) {
@@ -267,6 +271,13 @@ NrifRead(ras)
 			"NrifRead(\"%s\") - %s",
 			ras->name, nrif_types[dep->encoding]);
 		  return(RAS_ERROR);
+	}
+
+	if (status != RAS_OK) return(status);
+
+	if (dep->vplot) {
+		/* Perform an in-place image inversion. */
+		status = RasterInvert(ras, ras);
 	}
 
 	return(status);

@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.22 1993-01-17 06:51:54 don Exp $
+ *	$Id: raster.c,v 1.23 1993-02-10 19:19:13 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -591,7 +591,7 @@ RasterCreate(nx, ny, encoding)
 
 	if (encoding == RAS_INDEXED) {
 		ras->written = False;
-		ras->text = (char *) ras_calloc((unsigned) (strlen(comment) + 1),1);
+		ras->text = (char *)ras_calloc((unsigned)(strlen(comment)+1),1);
 		(void) strcpy(ras->text, comment);
 		ras->nx      = nx;
 		ras->ny      = ny;
@@ -599,9 +599,9 @@ RasterCreate(nx, ny, encoding)
 		ras->ncolor  = RAS_DEFAULT_NCOLORS;
 		ras->type    = RAS_INDEXED;
 
-		ras->red     = (unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
-		ras->green   = (unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
-		ras->blue    = (unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		ras->red  =(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		ras->green=(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		ras->blue =(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
 
 		if (ras->red == (unsigned char *) NULL ||
 		    ras->green == (unsigned char *) NULL ||
@@ -610,7 +610,7 @@ RasterCreate(nx, ny, encoding)
 			return( (Raster *) NULL );
 		}
 
-		ras->data = (unsigned char *) ras_calloc((unsigned) ras->length, 1);
+		ras->data=(unsigned char *)ras_calloc((unsigned)ras->length, 1);
 		if (ras->data == (unsigned char *) NULL) {
 			(void) ESprintf(errno, "RasterCreate()");
 			return( (Raster *) NULL );
@@ -618,7 +618,7 @@ RasterCreate(nx, ny, encoding)
 	}
 	else if (encoding == RAS_DIRECT) {
 		ras->written = False;
-		ras->text = (char *) ras_calloc((unsigned) (strlen(comment) + 1),1);
+		ras->text = (char *)ras_calloc((unsigned)(strlen(comment)+1),1);
 		(void) strcpy(ras->text, comment);
 		ras->nx      = nx;
 		ras->ny      = ny;

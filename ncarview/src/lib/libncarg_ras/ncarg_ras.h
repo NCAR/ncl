@@ -1,5 +1,5 @@
 /*
- *	$Id: ncarg_ras.h,v 1.15 1993-01-19 19:37:01 clyne Exp $
+ *	$Id: ncarg_ras.h,v 1.16 1993-02-10 19:19:06 don Exp $
  */
 #ifndef _RASTER_
 #define _RASTER_
@@ -389,6 +389,13 @@ extern	void	RasterOp(
 );
 
 extern	int RasterCenterCrop(
+#ifdef	NeedFuncProto
+	Raster		*src,
+	Raster		*dst
+#endif
+);
+
+extern	int RasterInvert(
 #ifdef	NeedFuncProto
 	Raster		*src,
 	Raster		*dst

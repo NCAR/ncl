@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <memory.h>
+#include <errno.h>
 #include "ncarg_ras.h"
 
 static int	OptionCenter = True;
@@ -47,12 +50,6 @@ void	RasterOp(src, dst, src_x, src_y, src_nx, src_ny, dst_x, dst_y, op)
 	int	r, g, b;
 	int	sx, sy, dx, dy;
 	int	sx1, sx2, sy1, sy2;
-
-#ifdef DEAD
-	if (src->type == RAS_INDEXED) {
-		RasterCopyColormap(src, dst);
-	}
-#endif /* DEAD */
 
 	sx1 = src_x;
 	sx2 = src_x + src_nx - 1;
@@ -188,5 +185,89 @@ RasterCenterCrop(src, dst)
 		}
 	}
 
+	return(RAS_OK);
+}
+
+/*
+ * Function:		RasterInvert(src, dst)
+ *
+ * Description:		Performs an source-to-destination or
+ *			in-place vertical image inversion. If
+ *			"src" and "dst" are the same, then
+ *			an in-place conversion is done. Otherwise,
+ *			The "src" raster is copied to the "dst"
+ *			raster with inversion taking place in
+ *			the process. If "src" and "dst" are not
+ *			the same size or encoding, "src" is
+ *			cropped, centered, and re-encoded as
+ *			appropriate.
+ *
+ * In Args:		Raster	*src;
+ *			Raster	*dst;
+ *
+ * Out Args:		Raster	*src;
+ *			Raster	*dst;
+ *
+ * Return Values:	RAS_OK or RAS_ERROR
+ *
+ * SideEffect:		If "src" and "dst" are the same, "src->data"
+ *			is modified. Otherwise, "dst->data" is
+ *			modified.
+ */
+int
+RasterInvert(src, dst)
+	Raster		*src;
+	Raster		*dst;
+{
+	int		status;
+	static char	*errmsg = "RasterInvert(\"%s\")";
+	unsigned char	*linebuf, *top_ptr, *bot_ptr;
+	unsigned int	length;
+	unsigned int	y;
+	Raster		*ras;
+
+	/* If "src" and "dst" are different, copy over the image. */
+
+	if (src != dst) {
+		status = RasterCenterCrop(src, dst);
+		if (status != RAS_OK) return(status);
+	}
+
+	/* Now invert "dst". */
+
+	ras = dst;
+
+	/* Calculate length of row. */
+	if (ras->type == RAS_INDEXED) {
+		length = ras->nx;
+	}
+	else if (ras->type == RAS_DIRECT) {
+		length = ras->nx * 3;
+	}
+
+	/* Allocate a temporary line buffer. */
+
+	linebuf = (unsigned char *) calloc(length, 1);
+	if (linebuf == (unsigned char *) NULL) {
+		(void) ESprintf(errno, errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
+	for(y=0; y<ras->ny/2; y++) {
+		if (ras->type == RAS_INDEXED) {
+			top_ptr = &INDEXED_PIXEL(ras, 0, y);
+			bot_ptr = &INDEXED_PIXEL(ras, 0, ras->ny-y-1);
+		}
+		else if (ras->type == RAS_DIRECT) {
+			top_ptr = &DIRECT_RED(ras, 0, y);
+			bot_ptr = &DIRECT_RED(ras, 0, ras->ny-y-1);
+		}
+
+		(void) memcpy(linebuf, top_ptr, length);
+		(void) memcpy(top_ptr, bot_ptr, length);
+		(void) memcpy(bot_ptr, linebuf, length);
+	}
+
+	(void) free(linebuf);
 	return(RAS_OK);
 }

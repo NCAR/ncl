@@ -1,5 +1,5 @@
 /*
- *	$Id: hppcl.c,v 1.1 1993-01-19 19:36:55 clyne Exp $
+ *	$Id: hppcl.c,v 1.2 1993-02-10 19:19:04 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -33,6 +33,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -59,8 +60,6 @@ static	void	start_position(nx, ny, dpi, orientation, start_x, start_y)
 		*start_y;	/* starting y coord in dpi	*/
 
 {
-	char	buf[80];
-	char	*cptr;
 	int	total_width;	/* width of page in dpi		*/
 	int	total_height;	/* height of page in dpi	*/
 	int	image_width;	/* actual width of image after pixel rep.  */
@@ -167,7 +166,6 @@ static	int	write_compressed_port(ras)
 	int		step = HPPCL_MAX_RES / hppcl->dpi;
 	int		ry, rx;
 	int		hx, hy;
-	int		run;	/* num contiguous "on" bits in a run	*/
 	int		hx_;	/* first x coord set in a scan line	*/
 
 	unsigned char	data[BUFSIZ];
@@ -241,7 +239,6 @@ static	int	write_compressed_land(ras)
 	int		step = HPPCL_MAX_RES / hppcl->dpi;
 	int		rx, ry;
 	int		hy, hx;
-	int		run;	/* num contiguous "on" bits in a run	*/
 	int		hy_;	/* first y coord set in a scan line	*/
 
 	unsigned char	data[BUFSIZ];
@@ -379,7 +376,7 @@ HPPCLOpenWrite(name, nx, ny, comment, encoding)
 
 	if (ras->dep == (char *) NULL) {
 		(void) ESprintf(errno, "HPPCLOpenWrite()");
-		ras_free(ras);
+		ras_free((char *) ras);
 		return( (Raster *) NULL );
 	}
 
@@ -413,7 +410,7 @@ HPPCLOpenWrite(name, nx, ny, comment, encoding)
 	ras->name = (char *) ras_calloc((unsigned) strlen(name) + 1, 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) ras_calloc((unsigned) strlen(FormatName) + 1, 1);
+	ras->format = (char *) ras_calloc((unsigned) strlen(FormatName) + 1,1);
 	(void) strcpy(ras->format, FormatName);
 
 	ras->text = Comment;
@@ -423,10 +420,10 @@ HPPCLOpenWrite(name, nx, ny, comment, encoding)
 	ras->length	= ras->nx * ras->ny;
 	ras->ncolor	= 256;
 	ras->type	= RAS_INDEXED;
-	ras->red	= (unsigned char *)ras_calloc((unsigned)ras->ncolor, 1);
-	ras->green	= (unsigned char *)ras_calloc((unsigned)ras->ncolor, 1);
-	ras->blue	= (unsigned char *)ras_calloc((unsigned)ras->ncolor, 1);
-	ras->data	= (unsigned char *)ras_calloc((unsigned)ras->length, 1);
+	ras->red	= (unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+	ras->green	= (unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+	ras->blue	= (unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+	ras->data	= (unsigned char *)ras_calloc((unsigned)ras->length,1);
 	ras->type 	= encoding;
 
 
@@ -440,8 +437,6 @@ HPPCLWrite(ras)
 	Raster	*ras;
 {
 	char		*errmsg = "HPPCLWrite(\"%s\")";
-	int		nb;
-	int		i,j;
 
 	HPPCL_Info	*hppcl = (HPPCL_Info *) ras->dep;	
 
@@ -524,7 +519,7 @@ HPPCLClose(ras)
 	HPPCL_Info	*hppcl = (HPPCL_Info *) ras->dep;
 
 	if (hppcl) {
-		ras_free(hppcl);
+		ras_free( (char *) hppcl);
 	}
 
 	status = GenericClose(ras);

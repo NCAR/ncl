@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_ras.l,v 1.2 1992-03-31 00:08:38 don Exp $
+.\"	$Id: ncarg_ras.l,v 1.3 1993-02-10 19:19:07 don Exp $
 .\"
 .\" NCAR View ncarg_ras.l 3.00 9/13/89 Clyne
 .TH NCAR Raster Libraries 1NCARV "March 1992" NCAR "NCAR View 3.01"
@@ -72,6 +72,12 @@ ParallaxWrite,
 .B RasterRGBScale(src, scale)
 .B Raster *src;
 .B float scale;
+.PP
+.B int
+.B RasterInvert(src, dst)
+.B Raster	*src;
+.B Raster	*dst;
+.PP
 .fi
 .SH DESCRIPTION
 .PP
@@ -120,8 +126,16 @@ to scale the RGB space. R' = R * scale; G' = G * scale;
 B' = B * scale.
 .IP
 Gives nice results but is damn slow.
+.IP RasterInvert(src, dst)
+Performs an source-to-destination or in-place vertical image inversion. If
+\fIsrc\fP and \fIdst\fP are the same, then an in-place conversion is
+done. Otherwise, The \fIsrc\fP raster is copied to the \fIdst\fP
+raster with inversion taking place in the process. If \fIsrc\fP and
+\fIdst\fP are not the same size or encoding, \fIsrc\fP is cropped,
+centered, and re-encoded as appropriate.
 .SH "SEE ALSO"
-rasview(1l), rascat(1l)
+rasview(1NCARG), rascat(1NCARG), rasls(1NCARG), rassplit(1NCARG),
+rasgetpal(1NCARG)
 .SH BUGS
 Man page is about two percent complete ;-). Interface is facing
 a major redesign and documentation will change a lot.
