@@ -1,5 +1,5 @@
 C
-C	$Id: strmln.f,v 1.2 1993-01-15 23:53:39 dbrown Exp $
+C	$Id: strmln.f,v 1.3 1993-01-21 01:14:50 dbrown Exp $
 C
       SUBROUTINE STRMLN (U,V,WORK,IMAX,IPTSX,JPTSY,NSET,IER)
 C
@@ -145,7 +145,7 @@ C
       COMMON / STPAR /
      +                IUD1       ,IVD1       ,IPD1       ,
      +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
-     +                IXM1       ,IYM1       ,IXM2       ,IYM2
+     +                IXM1       ,IYM1       ,IXM2       ,IYM2       ,
      +                IWKD       ,IWKU       ,ISET       ,IERR       ,
      +	              IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
@@ -157,7 +157,7 @@ C
      +                UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM 
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN 
 C
 C Stream algorithm parameters
 C
@@ -169,13 +169,15 @@ C
      +                RDFM
 C
 C Text related parameters
+C Note: graphical text output is not yet implemented for the
+C       Streamline utility.
 C
       COMMON / STTXP /
      +                FCWM    ,ICSZ    ,
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC 
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC 
 C
 C Character variable declartions
 C
@@ -277,7 +279,6 @@ C VXL,VXR,VYB,VYT - saved viewport boundary
 C WXL,WXR,WYB,WYT - saved window boundary
 C X1,X2,Y1,Y2     - temporary viewport boundary
 C X3,Y3,X4,Y4     - temporary window boundary
-C SVM             - Size of Viewport, Metacode coords
 C LEN             - maximum vector size in Metacode coords
 C IDM             - integer dummy variable
 C
@@ -296,7 +297,6 @@ C
       END IF
       LU=IMAX
       LV=IMAX
-      LP=IMAX
       M=IPTSX
       N=JPTSY
       LW=2*LU*N
@@ -313,7 +313,6 @@ C
       X2=VXR
       Y1=VYB
       Y2=VYT
-      SVM = FLOAT(KFMX(X2) - KFMX(X1))
 C
 C Set the parameter and common block use flags
 C Note that the value of ICPM is temporarily modified if it
@@ -347,11 +346,11 @@ C
             X4 = FLOAT(IEND)
             Y3 = FLOAT(JS)
             Y4 = FLOAT(JEND)
-            IF (AMIN1(XNX,XNY)/AMAX1(XNX,XNY).GE.EXT) THEN
-               IF (XNX .GT. XNY)  THEN
-                  Y2 = (SIDE*(XNY/XNX) + YBT)
-               ELSE IF (XNY .GT. XNX) THEN
-                  X2 = (SIDE*(XNX/XNY) + XLT)
+            IF (AMIN1(X4,Y4)/AMAX1(X4,Y4).GE.EXT) THEN
+               IF (X4.GT.Y4)  THEN
+                  Y2=SIDE*(Y4/X4)+YBT
+               ELSE IF (Y4.GT.X4) THEN
+                  X2=SIDE*(X4/Y4)+XLT
                END IF
             END IF
 C
@@ -367,7 +366,6 @@ C
             CALL SET(X1,X2,Y1,Y2,X3,X4,Y3,Y4,ITYPE)
 C     
             CALL PERIM (1,0,1,0)
-            SVM = FLOAT(KFMX(X2) - KFMX(X1))
 C     
          END IF
 C

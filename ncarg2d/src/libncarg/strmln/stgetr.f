@@ -1,5 +1,5 @@
 C
-C	$Id: stgetr.f,v 1.1 1993-01-15 23:53:29 dbrown Exp $
+C	$Id: stgetr.f,v 1.2 1993-01-21 01:14:44 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -37,7 +37,7 @@ C
       COMMON / STPAR /
      +                IUD1       ,IVD1       ,IPD1       ,
      +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
-     +                IXM1       ,IYM1       ,IXM2       ,IYM2
+     +                IXM1       ,IYM1       ,IXM2       ,IYM2       ,
      +                IWKD       ,IWKU       ,ISET       ,IERR       ,
      +	              IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
@@ -49,7 +49,7 @@ C
      +                UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM 
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN 
 C
 C Stream algorithm parameters
 C
@@ -61,13 +61,15 @@ C
      +                RDFM
 C
 C Text related parameters
+C Note: graphical text output is not yet implemented for the
+C       Streamline utility.
 C
       COMMON / STTXP /
      +                FCWM    ,ICSZ    ,
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC 
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC 
 C
 C Character variable declartions
 C
@@ -202,7 +204,7 @@ C
 C Values in STTRAN
 C
       ELSE IF (WHCH(1:3).EQ.'VPS'.OR. WHCH(1:3).EQ.'vps') THEN
-         RVAL=REAL(IVPS)
+         RVAL=REAL(UVPS)
       ELSE IF (WHCH(1:3).EQ.'VPL'.OR.WHCH(1:3).EQ.'vpl') THEN
          RVAL=UVPL
       ELSE IF (WHCH(1:3).EQ.'VPR'.OR.WHCH(1:3).EQ.'vpr') THEN
@@ -225,8 +227,8 @@ C
          RVAL=UXCM
       ELSE IF (WHCH(1:3).EQ.'YC1'.OR.WHCH(1:3).EQ.'yc1') THEN
          RVAL=UYC1
-      ELSE IF (WHCH(1:3).EQ.'YCM'.OR.WHCH(1:3).EQ.'ycm') THEN
-         RVAL=UYCM
+      ELSE IF (WHCH(1:3).EQ.'YCN'.OR.WHCH(1:3).EQ.'ycn') THEN
+         RVAL=UYCN
 C
 C ---------------------------------------------------------------------
 C
@@ -310,11 +312,6 @@ C
       ELSE IF (WHCH(1:3).EQ.'ZFC'.OR. WHCH(1:3).EQ.'zfc') THEN
          RVAL=REAL(IZFC)
 C
-      ELSE IF (WHCH(1:3).EQ.'LBS'.OR.WHCH(1:3).EQ.'lbs') THEN
-         RVAL=FLBS
-      ELSE IF (WHCH(1:3).EQ.'LBC'.OR. WHCH(1:3).EQ.'lbc') THEN
-         RVAL=REAL(ILBC)
-C
       ELSE IF (WHCH(1:3).EQ.'ILS'.OR.WHCH(1:3).EQ.'ils') THEN
          RVAL=FILS
       ELSE IF (WHCH(1:3).EQ.'ILX'.OR.WHCH(1:3).EQ.'ilx') THEN
@@ -332,14 +329,8 @@ C Values in STMAP
 C
       ELSE IF (WHCH(1:3).EQ.'MAP'.OR. WHCH(1:3).EQ.'map') THEN
          RVAL=REAL(IMAP)
-      ELSE IF (WHCH(1:3).EQ.'RML'.OR. WHCH(1:3).EQ.'rml') THEN
-         RVAL=RLEN
       ELSE IF (WHCH(1:3).EQ.'TRT'.OR. WHCH(1:3).EQ.'trt') THEN
          RVAL=REAL(ITRT)
-      ELSE IF (WHCH(1:3).EQ.'DMN'.OR. WHCH(1:3).EQ.'dmn') THEN
-         RVAL=DVMN
-      ELSE IF (WHCH(1:3).EQ.'DMX'.OR. WHCH(1:3).EQ.'dmx') THEN
-         RVAL=DVMX
       ELSE IF (WHCH(1:3).EQ.'VPL'.OR.WHCH(1:3).EQ.'vpl') THEN
          RVAL=XVPL
       ELSE IF (WHCH(1:3).EQ.'VPR'.OR.WHCH(1:3).EQ.'vpr') THEN
@@ -364,10 +355,6 @@ C
          RVAL=YLOV
       ELSE IF (WHCH(1:3).EQ.'YHV'.OR.WHCH(1:3).EQ.'yhv') THEN
          RVAL=YHIV
-      ELSE IF (WHCH(1:3).EQ.'SCX'.OR.WHCH(1:3).EQ.'scx') THEN
-         RVAL=SXDC
-      ELSE IF (WHCH(1:3).EQ.'SCY'.OR.WHCH(1:3).EQ.'scy') THEN
-         RVAL=SYDC
       ELSE IF (WHCH(1:3).EQ.'NXC'.OR. WHCH(1:3).EQ.'nxc') THEN
          RVAL=REAL(NXCT)
       ELSE IF (WHCH(1:3).EQ.'NYC'.OR. WHCH(1:3).EQ.'nyc') THEN
@@ -391,8 +378,6 @@ C
          CALL SETER (CSTR(1:49),3,2)
          STOP
       END IF
-C
- 9900 CONTINUE
 C
 C Done.
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: strset.f,v 1.1 1993-01-15 23:53:42 dbrown Exp $
+C	$Id: strset.f,v 1.2 1993-01-21 01:14:53 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -30,7 +30,7 @@ C
       COMMON / STPAR /
      +                IUD1       ,IVD1       ,IPD1       ,
      +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
-     +                IXM1       ,IYM1       ,IXM2       ,IYM2
+     +                IXM1       ,IYM1       ,IXM2       ,IYM2       ,
      +                IWKD       ,IWKU       ,ISET       ,IERR       ,
      +	              IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
@@ -42,7 +42,7 @@ C
      +                UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM 
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN 
 C
 C Stream algorithm parameters
 C
@@ -54,13 +54,15 @@ C
      +                RDFM
 C
 C Text related parameters
+C Note: graphical text output is not yet implemented for the
+C       Streamline utility.
 C
       COMMON / STTXP /
      +                FCWM    ,ICSZ    ,
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC 
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC 
 C
 C Character variable declartions
 C
@@ -162,7 +164,7 @@ C
       UXC1 = 0.0
       UXCM = 0.0
       UYC1 = 0.0
-      UYCM = 0.0
+      UYCN = 0.0
 C
 C ---------------------------------------------------------------------
 C
@@ -210,8 +212,6 @@ C
       FILY = 0.0
       IILP = -1
       IILC = -1
-      FLBS = 0.007
-      ILBC = -1
 C
 C ---------------------------------------------------------------------
 C
@@ -227,12 +227,7 @@ C
 C STMAP values
 C
       IMAP = 0
-      RLEN = 0.0
       ITRT = 1
-      SXDC = 1.0
-      SYDC = 1.0
-      DVMN = 0.0
-      DVMX = 0.0
       IBIG = I1MACH(9)
       RBIG = R1MACH(2)
 C

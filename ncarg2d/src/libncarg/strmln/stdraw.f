@@ -1,5 +1,5 @@
 C
-C	$Id: stdraw.f,v 1.1 1993-01-15 23:53:22 dbrown Exp $
+C	$Id: stdraw.f,v 1.2 1993-01-21 01:14:39 dbrown Exp $
 C
       SUBROUTINE STDRAW  (U,V,UX,VY,IAM,STUMSL)
 C
@@ -44,7 +44,7 @@ C
       COMMON / STPAR /
      +                IUD1       ,IVD1       ,IPD1       ,
      +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
-     +                IXM1       ,IYM1       ,IXM2       ,IYM2
+     +                IXM1       ,IYM1       ,IXM2       ,IYM2       ,
      +                IWKD       ,IWKU       ,ISET       ,IERR       ,
      +	              IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
@@ -56,7 +56,7 @@ C
      +                UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM 
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN 
 C
 C Stream algorithm parameters
 C
@@ -68,13 +68,15 @@ C
      +                RDFM
 C
 C Text related parameters
+C Note: graphical text output is not yet implemented for the
+C       Streamline utility.
 C
       COMMON / STTXP /
      +                FCWM    ,ICSZ    ,
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC 
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC 
 C
 C Character variable declartions
 C
@@ -162,6 +164,7 @@ C LCK      - Current list index
 C IDR      - drawing direction 0 + direction 1 - direction
 C SGN      - multiplier to change sign based on drawing direction
 C IPC      - number of points currently in the point buffer
+C ICT      - count of iterations in current streamline
 C I,J      - Grid indices
 C UIJ,VIJ  - individual vector components
 C CVF      - component-wise vector normalizing factor
@@ -170,9 +173,7 @@ C IUX      - integer storage for retrieved bits
 C ISV, JSV - saved grid indices where stream starts in + direction
 C NBX      - count of grid boxes for current streamline
 C LBC      - box checking variable
-C ICT      - count of iterations in current streamline
 C X, Y     - current X,Y coordinates (grid coordinates
-C XST, YST - Starting X,Y values for the streamline, grid coordinates
 C DU, DV   - Current normalized interpolated vector components
 C XWO, YWO - Current position in world coordinates
 C XUS, YUS - Current position in user coordinates
@@ -214,6 +215,7 @@ C
       IDR = 0
       SGN = 1.
       IPC = 0
+      ICT = 0
 C
 C
 C Compute the X and Y normalized (and possibly transformed)
@@ -331,8 +333,6 @@ C
       IF (LBC.GT.IPLSTL) LBC = 1
       X = FLOAT(I)+0.5
       Y = FLOAT(J)+0.5
-      XST = X
-      YST = Y
       CALL  STDUDV(UX,VY,I,J,X,Y,DU,DV)
       XWO=XLOV+(X-1.0)*XGDS
       YWO=YLOV+(Y-1.0)*YGDS
@@ -615,8 +615,12 @@ C
          WRITE(*,*) 'STREAM Statistics'
          WRITE(*,*) '                Streamlines plotted:',LCT
          WRITE(*,*) '      Total differential step count:',ITO
-         WRITE(*,*) ''
+         WRITE(*,*) ' '
       END IF
+C
+C Set the workspace used parameter
+C
+      IWKU = 2*IXDM*IYDN
 C
       RETURN
       END
@@ -669,7 +673,7 @@ C
       COMMON / STPAR /
      +                IUD1       ,IVD1       ,IPD1       ,
      +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
-     +                IXM1       ,IYM1       ,IXM2       ,IYM2
+     +                IXM1       ,IYM1       ,IXM2       ,IYM2       ,
      +                IWKD       ,IWKU       ,ISET       ,IERR       ,
      +	              IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
@@ -681,7 +685,7 @@ C
      +                UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM 
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN 
 C
 C Stream algorithm parameters
 C
@@ -693,13 +697,15 @@ C
      +                RDFM
 C
 C Text related parameters
+C Note: graphical text output is not yet implemented for the
+C       Streamline utility.
 C
       COMMON / STTXP /
      +                FCWM    ,ICSZ    ,
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC 
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC 
 C
 C Character variable declartions
 C
@@ -777,7 +783,7 @@ C
 C
       AX(2) = XUS
       AY(2) = YUS
-      FLW = 1.0 + PLWFCT*MAX(0,WDLV-1.0)
+      FLW = 1.0 + PLWFCT*MAX(0.0,WDLV-1.0)
 C
       DO 10 K = -1,1,2
 C
@@ -835,7 +841,7 @@ C
       COMMON / STPAR /
      +                IUD1       ,IVD1       ,IPD1       ,
      +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
-     +                IXM1       ,IYM1       ,IXM2       ,IYM2
+     +                IXM1       ,IYM1       ,IXM2       ,IYM2       ,
      +                IWKD       ,IWKU       ,ISET       ,IERR       ,
      +	              IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
@@ -847,7 +853,7 @@ C
      +                UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM 
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN 
 C
 C Stream algorithm parameters
 C
@@ -859,13 +865,15 @@ C
      +                RDFM
 C
 C Text related parameters
+C Note: graphical text output is not yet implemented for the
+C       Streamline utility.
 C
       COMMON / STTXP /
      +                FCWM    ,ICSZ    ,
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC 
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC 
 C
 C Character variable declartions
 C
@@ -944,7 +952,7 @@ C
       COMMON / STPAR /
      +                IUD1       ,IVD1       ,IPD1       ,
      +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
-     +                IXM1       ,IYM1       ,IXM2       ,IYM2
+     +                IXM1       ,IYM1       ,IXM2       ,IYM2       ,
      +                IWKD       ,IWKU       ,ISET       ,IERR       ,
      +	              IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
@@ -956,7 +964,7 @@ C
      +                UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM 
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN 
 C
 C Stream algorithm parameters
 C
@@ -968,13 +976,15 @@ C
      +                RDFM
 C
 C Text related parameters
+C Note: graphical text output is not yet implemented for the
+C       Streamline utility.
 C
       COMMON / STTXP /
      +                FCWM    ,ICSZ    ,
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC 
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC 
 C
 C Character variable declartions
 C
@@ -1057,7 +1067,7 @@ C
       COMMON / STPAR /
      +                IUD1       ,IVD1       ,IPD1       ,
      +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
-     +                IXM1       ,IYM1       ,IXM2       ,IYM2
+     +                IXM1       ,IYM1       ,IXM2       ,IYM2       ,
      +                IWKD       ,IWKU       ,ISET       ,IERR       ,
      +	              IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
@@ -1069,7 +1079,7 @@ C
      +                UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM 
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN 
 C
 C Stream algorithm parameters
 C
@@ -1081,13 +1091,15 @@ C
      +                RDFM
 C
 C Text related parameters
+C Note: graphical text output is not yet implemented for the
+C       Streamline utility.
 C
       COMMON / STTXP /
      +                FCWM    ,ICSZ    ,
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC 
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC 
 C
 C Character variable declartions
 C

@@ -1,5 +1,4 @@
 C
-C	$Id: ezstrm.f,v 1.2 1993-01-15 23:53:14 dbrown Exp $
 C
       SUBROUTINE EZSTRM(U,V,WORK,IMAX,JMAX)
 C

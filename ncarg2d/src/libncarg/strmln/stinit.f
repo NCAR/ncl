@@ -1,5 +1,5 @@
 C
-C	$Id: stinit.f,v 1.1 1993-01-15 23:53:31 dbrown Exp $
+C	$Id: stinit.f,v 1.2 1993-01-21 01:14:46 dbrown Exp $
 C
 C-----------------------------------------------------------------------
 C
@@ -52,7 +52,7 @@ C
       COMMON / STPAR /
      +                IUD1       ,IVD1       ,IPD1       ,
      +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
-     +                IXM1       ,IYM1       ,IXM2       ,IYM2
+     +                IXM1       ,IYM1       ,IXM2       ,IYM2       ,
      +                IWKD       ,IWKU       ,ISET       ,IERR       ,
      +	              IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
@@ -64,7 +64,7 @@ C
      +                UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM 
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN 
 C
 C Stream algorithm parameters
 C
@@ -76,13 +76,15 @@ C
      +                RDFM
 C
 C Text related parameters
+C Note: graphical text output is not yet implemented for the
+C       Streamline utility.
 C
       COMMON / STTXP /
      +                FCWM    ,ICSZ    ,
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC 
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC 
 C
 C Character variable declartions
 C
@@ -139,6 +141,7 @@ C
       IUD1=LU
       IVD1=LV
       IPD1=LP
+      IWKD=LW
 C
 C Error if M > LU or M > LV?
 C
@@ -174,12 +177,12 @@ C
         XHIV=UXCM
       END IF
 C
-      IF (UYC1.EQ.UYCM) THEN
+      IF (UYC1.EQ.UYCN) THEN
         YLOV=1.
         YHIV=REAL(IYDN)
       ELSE
         YLOV=UYC1
-        YHIV=UYCM
+        YHIV=UYCN
       END IF
 C
       IXIN = MAX(IXIN,1)
@@ -273,8 +276,9 @@ C
       END IF
 C
 C If cyclic data specified check to ensure the cyclic condition exists.
+C The error flag is set if necessary within STCYCL
 C
-      IF (ICYK.NE.0) CALL STCYCL(U,V,IERR)
+      IF (ICYK.NE.0) CALL STCYCL(U,V)
 C
 C Calculate the grid size and a the NDC arrow length
 C from the fraction of viewport arrow size parameter

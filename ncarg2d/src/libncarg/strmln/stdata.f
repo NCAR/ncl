@@ -1,5 +1,5 @@
 C
-C	$Id: stdata.f,v 1.1 1993-01-15 23:53:19 dbrown Exp $
+C	$Id: stdata.f,v 1.2 1993-01-21 01:14:36 dbrown Exp $
 C
       BLOCK DATA STDATA
 C
@@ -26,7 +26,7 @@ C
       COMMON / STPAR /
      +                IUD1       ,IVD1       ,IPD1       ,
      +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
-     +                IXM1       ,IYM1       ,IXM2       ,IYM2
+     +                IXM1       ,IYM1       ,IXM2       ,IYM2       ,
      +                IWKD       ,IWKU       ,ISET       ,IERR       ,
      +	              IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
@@ -38,7 +38,7 @@ C
      +                UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM 
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN 
 C
 C Stream algorithm parameters
 C
@@ -50,13 +50,15 @@ C
      +                RDFM
 C
 C Text related parameters
+C Note: graphical text output is not yet implemented for the
+C       Streamline utility.
 C
       COMMON / STTXP /
      +                FCWM    ,ICSZ    ,
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC 
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC 
 C
 C Character variable declartions
 C
@@ -131,7 +133,7 @@ C
 C   
 C IYDN -- 'YDN' -- Array index for end of data, second dimension
 C
-      DATA     IYDM / -1 /
+      DATA     IYDN / -1 /
 C
 C IWKD -- 'WKD' -- Dimension of work array
 C
@@ -159,8 +161,8 @@ C
 C
 C IXM1 -- (IXDM - 1) (not user accessible)
 C IXM2 -- (IXDM - 2) (not user accessible)
-C IYM1 -- (IYDM - 1) (not user accessible)
-C IYM2 -- (IYDM - 2) (not user accessible)
+C IYM1 -- (IYDN - 1) (not user accessible)
+C IYM2 -- (IYDN - 2) (not user accessible)
 C
 C IMSK -- 'MSK' -- Mask streamlines to an area map: <1 -- no mapping,
 C                  >=1 - mapping;
@@ -297,7 +299,7 @@ C UXC1 -- 'XC1' -- minimum X coord
 C
       DATA UXC1 / 0.0 /
 C
-C UYCM -- 'XCM' -- maximum Y coord
+C UXCM -- 'XCM' -- maximum Y coord
 C
       DATA UXCM / 0.0 /
 C
@@ -305,9 +307,9 @@ C UYC1 -- 'YC1' -- minimum Y coord
 C
       DATA UYC1 / 0.0 /
 C
-C UYCM -- 'YCM' -- maximum Y coord
+C UYCN -- 'YCN' -- maximum Y coord
 C
-      DATA UYCM / 0.0 /
+      DATA UYCN / 0.0 /
 C
 C End of STTRAN
 C ----------------------------------------------------------------------
@@ -433,7 +435,7 @@ C FMXS -- 'MXS' -- size of text for maximum vector string as FVPW
 C FMXX -- 'MXX' -- X position of maximum vector string as FVPW
 C FMXY -- 'MXY' -- Y position of maximum vector string as FVPW
 C IMXP -- 'MXP' -- maximum vector string position flag
-C IMNC -- 'MXC' -- color of text for maximum vector label
+C IMXC -- 'MXC' -- color of text for maximum vector label
 C 
       DATA FMXS / 0.0075 /
       DATA FMXX / 0.525 /
@@ -445,19 +447,13 @@ C FZFS -- 'ZFS' -- size of text for zero field string as FVPW
 C FZFX -- 'ZFX' -- X position of zero field string as FVPW
 C FZFY -- 'ZFY' -- Y position of zero field string as FVPW
 C IZFP -- 'ZFP' -- zero field string position flag
-C IMNC -- 'ZFC' -- color of text for zero field label
+C IZFC -- 'ZFC' -- color of text for zero field label
 C 
       DATA FZFS / 0.033 /
       DATA FZFX / 0.5 /
       DATA FZFY / 0.5 /
       DATA IZFP / 0 /
       DATA IZFC / -1 /
-C
-C FLBS -- 'LBS' -- vector label text size as FVPW
-C IMNC -- 'LBC' -- color of text for vector labels
-C 
-      DATA FLBS / 0.007 /
-      DATA ILBC / -1 /
 C
 C The informational label has not yet been implemented
 C FILS -- 'ILS' -- size of text for informational label string as FVPW
