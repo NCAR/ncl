@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.4 1991-11-15 16:44:40 don Exp $
+ *	$Id: sunraster.c,v 1.5 1992-02-12 11:24:58 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -39,35 +39,6 @@
 
 static char	*FormatName = "sun";
 extern char	*ProgramName;
-
-int
-SunProbe(name)
-	char	*name;
-{
-	int		status;
-	SunInfo		dep;
-	FILE		*fp;
-
-	if (name == (char *) NULL) return(False);
-
-	if (!strcmp(name, "stdin")) return(False);
-
-	fp = fopen(name, "r");
-	if (fp == (FILE *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return(RAS_ERROR);
-	}
-
-	/* Read the Sun raster file header. */
-
-	status = fread((char *) &dep, 1, SUN_HEADER_SIZE, fp);
-	if (status != sizeof(SunInfo)) return(RAS_EOF);
-
-	if (dep.ras_magic != RAS_MAGIC) 
-		return(False);
-	else
-		return(True);
-}
 
 Raster *
 SunOpen(name)
@@ -157,6 +128,9 @@ SunOpenWrite(name, nx, ny, comment, encoding)
 
 	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
 	(void) strcpy(ras->format, FormatName);
+
+	ras->text = (char *) calloc((unsigned) (strlen(comment) + 1), 1);
+	(void) strcpy(ras->text, comment);
 
 	ras->nx	= nx;
 	ras->ny	= ny;

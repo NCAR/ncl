@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.9 1991-11-15 17:07:42 don Exp $
+#	$Id: yMakefile,v 1.10 1992-02-12 11:25:03 don Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -72,10 +72,12 @@ DEVICE_OBJS =	$(HDF_OBJS) $(HPLJ_OBJS) $(NRIF_OBJS) $(SUN_OBJS) \
 DEVICE_SRCS =	$(HDF_SRCS) $(HPLJ_SRCS) $(NRIF_SRCS) $(SUN_SRCS) \
 		$(XWD_SRCS) $(PARALLAX_SRCS) $(AVS_SRCS)
 
-GENERIC_OBJS =	raster.o cleartext.o error.o misc.o palette.o dither.o \
+GENERIC_OBJS =	raster.o cleartext.o error.o misc.o palette.o \
+		dither.o resample.o composite.o ntsc.o \
 		$(DEVICE_OBJS)
 
-GENERIC_SRCS =	raster.c cleartext.c error.c misc.c palette.c dither.c \
+GENERIC_SRCS =	raster.c cleartext.c error.c misc.c palette.c \
+		dither.c resample.c composite.c ntsc.c \
 		$(DEVICE_SRCS)
 			
 #ifdef CRAY
@@ -106,11 +108,14 @@ parallax.o:	ncarg_ras.h parallax.h
 hplj.o:		ncarg_ras.h hplj.h
 cleartext.o:	ncarg_ras.h
 avsraster.o:	ncarg_ras.h avsraster.h
+ntsc.o:		ncarg_ras.h ntsc.h
 
 saber_src: $(SRCS)
+	#setopt load_flags $(CFLAGS)
 	#load $(SRCS) -ldf
 
 saber_obj: $(OBJS)
+	#setopt load_flags $(CFLAGS)
 	#load $(OBJS) -ldf
 
 rasinfo: rasinfo.o

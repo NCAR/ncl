@@ -1,5 +1,5 @@
 /*
- *	$Id: nrif.c,v 1.4 1991-11-15 16:56:52 don Exp $
+ *	$Id: nrif.c,v 1.5 1992-02-12 11:24:51 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -45,29 +45,6 @@ static char	*FormatName = "nrif";
 extern char	*ProgramName;
 
 char		*calloc(), *strcpy(), *strncpy();
-
-/*ARGSUSED*/
-int
-NrifProbe(name)
-	char	*name;
-{
-#ifdef DEAD
-	int		status;
-	FILE		*fp;
-
-	if (name == (char *) NULL) return(False);
-
-	if (!strcmp(name, "stdin")) return(False);
-
-	fp = fopen(name, "r");
-	if (fp == (FILE *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return(RAS_ERROR);
-	}
-	
-	(void) fclose(fp);
-#endif DEAD
-}
 
 Raster *
 NrifOpen(name)
@@ -122,6 +99,7 @@ NrifRead(ras)
 {
 	NrifInfo		*dep;
 	unsigned char		buf[1024];
+	unsigned char		dummy[256];
 	int			length;
 	int			x, y;
 	int			status;
@@ -225,19 +203,37 @@ NrifRead(ras)
 		  ras->ncolor = dep->ncolor;
 		  ras->length = ras->nx * ras->ny;
 
+		  /* Allocate space for color tables and image. */
+
+		  if (ras->data == (unsigned char *) NULL) {
 		  ras->red = (unsigned char *)calloc((unsigned) ras->ncolor,1);
 		  ras->green =(unsigned char *)calloc((unsigned) ras->ncolor,1);
 		  ras->blue = (unsigned char *)calloc((unsigned) ras->ncolor,1);
 		  ras->data = (unsigned char *)calloc((unsigned) ras->length,1);
+		  }
 
-		  status=fread((char *)ras->red,1,ras->ncolor,ras->fp);
-		  if (status != ras->ncolor) return(RAS_EOF);
+		  /* Read color table and image frame. */
 
-		  status=fread((char *)ras->green,1,ras->ncolor,ras->fp);
-		  if (status != ras->ncolor) return(RAS_EOF);
+		  if (ras->map_loaded == False) {
+		    status=fread((char *)ras->red,1,ras->ncolor,ras->fp);
+		    if (status != ras->ncolor) return(RAS_EOF);
 
-		  status=fread((char *)ras->blue,1,ras->ncolor,ras->fp);
-		  if (status != ras->ncolor) return(RAS_EOF);
+		    status=fread((char *)ras->green,1,ras->ncolor,ras->fp);
+		    if (status != ras->ncolor) return(RAS_EOF);
+
+		    status=fread((char *)ras->blue,1,ras->ncolor,ras->fp);
+		    if (status != ras->ncolor) return(RAS_EOF);
+		  }
+		  else {
+		    status=fread((char *)dummy,1,ras->ncolor,ras->fp);
+		    if (status != ras->ncolor) return(RAS_EOF);
+
+		    status=fread((char *)dummy,1,ras->ncolor,ras->fp);
+		    if (status != ras->ncolor) return(RAS_EOF);
+
+		    status=fread((char *)dummy,1,ras->ncolor,ras->fp);
+		    if (status != ras->ncolor) return(RAS_EOF);
+		  }
 
 		  status = fread((char *)ras->data, 1, ras->length, ras->fp);
 		  if (status != ras->length) return(RAS_EOF);
@@ -259,7 +255,9 @@ NrifRead(ras)
 		  ras->ncolor = dep->ncolor;
 		  ras->length = ras->nx * ras->ny * 3;
 
+		  if (ras->data == (unsigned char *) NULL) {
 		  ras->data = (unsigned char *) calloc((unsigned)ras->length,1);
+		  }
 		
 		  status = fread((char *)ras->data, 1, ras->length, ras->fp);
 		  if (status != ras->length) return(RAS_EOF);
@@ -287,8 +285,11 @@ NrifRead(ras)
 		  ras->type	= RAS_DIRECT;
 		  ras->ncolor	= 0;
 		  ras->length	= ras->nx * ras->ny * 3;
+
+		  if (ras->data == (unsigned char *) NULL) {
 		  ras->data	= (unsigned char *) 
 					calloc ((unsigned) ras->length, 1);
+		  }
 
 		  for(length=0, y=0; y<ras->ny; y++)
 		  for(x=0; x<ras->nx; x++) {

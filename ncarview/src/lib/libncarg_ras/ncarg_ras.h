@@ -1,5 +1,5 @@
 /*
- *	$Id: ncarg_ras.h,v 1.4 1991-11-15 16:59:08 don Exp $
+ *	$Id: ncarg_ras.h,v 1.5 1992-02-12 11:24:49 don Exp $
  */
 #ifndef _RASTER_
 #define _RASTER_
@@ -79,7 +79,7 @@ struct RasterStruct {
 	int			ny;		/* Vertical dimension */
 	int			depth;		/* Bits deep */
 	int			length;		/* Image length in bytes */
-	int			type;		/* Encoding type */
+	RasterEncoding		type;		/* Encoding type */
 	int			ncolor;		/* Number of colors */
 	char			*text;		/* Comments and such */
 	char			*dep;		/* Format dependent */
@@ -100,6 +100,9 @@ typedef struct RasterStruct Raster;
 
 #define INDEXED_PIXEL(ras, x, y) \
 	ras->data[((y) * ras->nx) + (x)]
+
+#define INDEXED_PIXEL_PTR(ras, x, y) \
+	&ras->data[((y) * ras->nx) + (x)]
 
 #define INDEXED_RED(ras, pixel) \
 	ras->red[(pixel)]
@@ -128,6 +131,15 @@ typedef struct RasterStruct Raster;
 
 #define DIRECT_BLUE(ras, x, y) \
 	(ras)->data[(y) * 3 * (ras)->nx + (x) * 3 + 2]
+
+#define DIRECT_RED_PTR(ras, x, y) \
+	&(ras)->data[(y) * 3 * (ras)->nx + (x) * 3 + 0]
+
+#define DIRECT_GREEN_PTR(ras, x, y) \
+	&(ras)->data[(y) * 3 * (ras)->nx + (x) * 3 + 1]
+
+#define DIRECT_BLUE_PTR(ras, x, y) \
+	&(ras)->data[(y) * 3 * (ras)->nx + (x) * 3 + 2]
 
 #define DIRECT_Y(ras, x, y) \
 	(ras)->data[(y) * 2 * (ras)->nx + (x) * 2 + 0]

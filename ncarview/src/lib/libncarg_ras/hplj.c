@@ -1,5 +1,5 @@
 /*
- *	$Id: hplj.c,v 1.3 1991-08-20 16:48:42 clyne Exp $
+ *	$Id: hplj.c,v 1.4 1992-02-12 11:24:46 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -189,6 +189,8 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
 
+	ras->text = Comment;
+
 	ras->nx	= nx;
 	ras->ny	= ny;
 	ras->length	= ras->nx * ras->ny;
@@ -366,42 +368,6 @@ HPLJClose(ras)
 	return(RAS_OK);
 }
 
-static	_swapshort (bp, n)
-    register char *bp;
-    register unsigned n;
-{
-    register char c;
-    register char *ep = bp + n;
-
-    while (bp < ep) {
-	c = *bp;
-	*bp = *(bp + 1);
-	bp++;
-	*bp++ = c;
-    }
-}
-
-static	_swaplong (bp, n)
-    register char *bp;
-    register unsigned n;
-{
-    register char c;
-    register char *ep = bp + n;
-    register char *sp;
-
-    while (bp < ep) {
-	sp = bp + 3;
-	c = *sp;
-	*sp = *bp;
-	*bp++ = c;
-	sp = bp + 1;
-	c = *sp;
-	*sp = *bp;
-	*bp++ = c;
-	bp += 2;
-    }
-}
-
 int	HPLJRead()
 {
 	(void) RasterSetError(RAS_E_UNSUPPORTED_FUNCTIONS);
@@ -513,10 +479,4 @@ static	create_data_space(hplj, nx, ny)
 	hplj->ras.data = data;
 
 	return(1);
-}
-
-int	HPLJProbe(name)
-	char	*name;
-{
-	return(False);
 }

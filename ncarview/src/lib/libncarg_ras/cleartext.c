@@ -1,5 +1,5 @@
 /*
- *	$Id: cleartext.c,v 1.2 1991-08-16 11:14:46 clyne Exp $
+ *	$Id: cleartext.c,v 1.3 1992-02-12 11:24:34 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -35,13 +35,6 @@
 
 static char	*FormatName = "cleartext";
 extern char	*ProgramName;
-
-int
-ClearTextProbe(name)
-	char	*name;
-{
-	(void) fprintf(stderr, "ClearTextProbe(%s)\n", name);
-}
 
 Raster *
 ClearTextOpen(name)

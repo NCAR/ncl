@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.3 1991-09-18 17:33:20 clyne Exp $
+ *	$Id: xwd.c,v 1.4 1992-02-12 11:25:00 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -46,29 +46,6 @@
 static char	*FormatName = "xwd";
 extern char	*ProgramName;
 static char	*Comment = "XWD file from NCAR raster utilities";
-
-/*ARGSUSED*/
-int
-XWDProbe(name)
-	char	*name;
-{
-#ifdef DEAD
-	int		status;
-	FILE		*fp;
-
-	if (name == (char *) NULL) return(False);
-
-	if (!strcmp(name, "stdin")) return(False);
-
-	fp = fopen(name, "r");
-	if (fp == (FILE *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return(RAS_ERROR);
-	}
-	
-	(void) fclose(fp);
-#endif DEAD
-}
 
 Raster *
 XWDOpen(name)

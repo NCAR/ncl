@@ -1,4 +1,4 @@
-/* $Id: avsraster.c,v 1.1 1991-11-15 17:04:47 don Exp $ */
+/* $Id: avsraster.c,v 1.2 1992-02-12 11:24:32 don Exp $ */
 
 /***********************************************************************
 *                                                                      *
@@ -39,13 +39,6 @@
 
 static char	*FormatName = "avs";
 extern char	*ProgramName;
-
-int
-AVSProbe(name)
-	char	*name;
-{
-	return(True);
-}
 
 Raster *
 AVSOpen(name)
@@ -226,6 +219,9 @@ AVSOpenWrite(name, nx, ny, comment, encoding)
 	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
 	(void) strcpy(ras->format, FormatName);
 
+	ras->text = (char *) calloc((unsigned) (strlen(comment) + 1), 1);
+	(void) strcpy(ras->text, comment);
+
 	ras->nx		= nx;
 	ras->ny		= ny;
 	ras->length	= ras->nx * ras->ny * 3;
@@ -299,6 +295,11 @@ int
 AVSPrintInfo(ras)
 	Raster		*ras;
 {
+	if (ras->text != (char *) NULL) {
+		(void) fprintf(stderr, "AVS Rasterfile Information\n");
+		(void) fprintf(stderr, "--------------------------\n");
+		(void) fprintf(stderr, "text: %s\n", ras->text);
+	}
 	return(RAS_OK);
 }
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: hdf.c,v 1.3 1991-08-19 13:47:04 clyne Exp $
+ *	$Id: hdf.c,v 1.4 1992-02-12 11:24:44 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,6 +36,8 @@
  */
 #include <stdio.h>
 #include <fcntl.h>
+#include <string.h>
+#include <malloc.h>
 #include "dfgr.h"
 #include "ncarg_ras.h"
 #include "options.h"
@@ -53,28 +55,6 @@ extern char	*ProgramName;
 extern int	OptionCompression;
 
 extern	char	*calloc();
-
-/*ARGSUSED*/
-int
-HDFProbe(name)
-	char	*name;
-{
-	FILE		*fp;
-
-	if (name == (char *) NULL) return(False);
-
-	if (!strcmp(name, "stdin")) return(False);
-
-	fp = fopen(name, "r");
-	if (fp == (FILE *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return(RAS_ERROR);
-	}
-	
-	(void) fclose(fp);
-
-	return(True);
-}
 
 /**********************************************************************
  *	Function: HDFOpen(name)

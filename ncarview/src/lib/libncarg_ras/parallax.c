@@ -1,5 +1,5 @@
 /*
- *	$Id: parallax.c,v 1.5 1991-11-15 16:46:20 don Exp $
+ *	$Id: parallax.c,v 1.6 1992-02-12 11:24:54 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -58,13 +58,6 @@ static int	parallax_fd	= -1;
 static int	parallax_vmefd	= -1;
 static Parallax	*parallax;
 
-int
-ParallaxProbe(name)
-	char	*name;
-{
-	return(RAS_OK);
-}
-
 /**********************************************************************
  *	Function: ParallaxOpen(name)
  *
@@ -86,34 +79,6 @@ ParallaxOpen(name)
 {
 	(void) RasterSetError(RAS_E_UNSUPPORTED_FUNCTIONS);
 	return( (Raster *) NULL );
-
-	/*
-	The code below will be used once video digitizing (read)
-	is supported.
-	*/
-
-#ifdef DEAD
-	Raster	*ras;
-	char	*calloc();
-
-	/* Allocate the Raster structure. */
-
-	ras = (Raster *) calloc(sizeof(Raster), 1);
-	if (ras == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return( (Raster *) NULL );
-	}
-
-	ras->name = (char *) calloc((unsigned) (strlen(name)+1), 1);
-	(void) strcpy(ras->name, FormatName);
-
-	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
-	(void) strcpy(ras->format, FormatName);
-
-	ParallaxSetFunctions(ras);
-
-	return(ras);
-#endif DEAD
 }
 
 
@@ -154,6 +119,9 @@ ParallaxOpenWrite(name, nx, ny, comment, encoding)
 	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
 	(void) strcpy(ras->format, FormatName);
 
+	ras->text = (char *) calloc((unsigned) (strlen(comment) + 1), 1);
+	(void) strcpy(ras->text, comment);
+
 	/* Initialize the Parallax frame buffer board. */
 	status = ParallaxInit();
 	if (status != RAS_OK) {
@@ -193,13 +161,16 @@ int
 ParallaxWrite(ras)
 	Raster	*ras;
 {
-	int		sx, sy, dx, dy;		/* source and dest indices */
+	int		sx, sy, dy;		/* source and dest indices */
 	int		src_x, src_y;		/* source upper-left corner */
 	int		src_nx, src_ny;		/* source extent */
 	int		dst_x, dst_y;		/* dest upper-left corner */
 	int		vfb_width, vfb_height;	/* video frame buffer extent */
-	int		i, pixel;
+	int		i;
 	static long	colormap_lwd[256];
+	unsigned char	*fb_ptr;
+	unsigned long	*fb_lptr;
+	unsigned char	*rgb_ptr;
 
 	/* Take into account the vertical interval in the video buffer. */
 
@@ -263,21 +234,34 @@ ParallaxWrite(ras)
 			dst_y = 0;
 	}
 
-	for(sy=src_y, dy=dst_y + VFB_Y_OFFSET; sy<src_y+src_ny-1; sy++, dy++) {
-		for(sx=src_x, dx=dst_x; sx<src_x+src_nx-1; sx++, dx++) {
+	/*
+	In order to avoid repetitive and costly address arithmetic,
+	this loop works with pointers more than would be ideal.
+	*/
+
+	for(sy=src_y, dy=dst_y + VFB_Y_OFFSET; sy<src_y+src_ny; sy++, dy++) {
+		if (ras->type == RAS_INDEXED) {
+			rgb_ptr = &INDEXED_PIXEL(ras, src_x, sy);
+			fb_lptr = &parallax->fb.line[dy].pixel[dst_x].lwd;
+		}
+		else if (ras->type == RAS_DIRECT) {
+			rgb_ptr = &DIRECT_RED(ras, src_x, sy);
+			fb_ptr = (unsigned char *) 
+				 &parallax->fb.line[dy].pixel[dst_x].lwd;
+		}
+		for(sx=src_x; sx<src_x+src_nx; sx++) {
 			if (ras->type  == RAS_INDEXED) {
-			  pixel  = INDEXED_PIXEL(ras, sx, sy);
-			  parallax->fb.line[dy].pixel[dx].lwd = 
-			    colormap_lwd[pixel];
+				*fb_lptr++ = colormap_lwd[*rgb_ptr++];
 			}
 			else if (ras->type == RAS_DIRECT) {
-			  parallax->fb.line[dy].pixel[dx].lwd =
-				DIRECT_RED(ras, sx, sy) | 
-				DIRECT_GREEN(ras, sx, sy) << 8 | 
-				DIRECT_BLUE(ras, sx, sy) << 16;
+				*(fb_ptr+3) = *rgb_ptr++;
+				*(fb_ptr+2) = *rgb_ptr++;
+				*(fb_ptr+1) = *rgb_ptr++;
+				fb_ptr += 4;
 			}
 		}
 	}
+
 	return(RAS_OK);
 }
 
@@ -285,6 +269,12 @@ int
 ParallaxPrintInfo(ras)
 	Raster		*ras;
 {
+
+	if (ras->text != (char *) NULL) {
+		(void) fprintf(stderr, "Parallax Framebuffer Information\n");
+		(void) fprintf(stderr, "--------------------------------\n");
+		(void) fprintf(stderr, "text: %s\n", ras->text);
+	}
 	return(RAS_OK);
 }
 
@@ -292,7 +282,8 @@ int
 ParallaxRead(ras)
 	Raster	*ras;
 {
-	return(RAS_OK);
+	(void) RasterSetError(RAS_E_UNSUPPORTED_FUNCTIONS);
+	return(RAS_ERROR);
 }
 
 int
@@ -301,10 +292,17 @@ ParallaxClose(ras)
 {
 	parallax_fd	= -1;
 	parallax_vmefd	= -1;
-	free( (char *) ras->data);
-	if (ras->red != (unsigned char *) NULL) free( (char *) ras->red);
+
+	if (ras != (Raster *) NULL) {
+		if (ras->data != (unsigned char *) NULL) {
+			free( (char *) ras->data);
+		}
+	}
+
+	if (ras->red   != (unsigned char *) NULL) free( (char *) ras->red);
 	if (ras->green != (unsigned char *) NULL) free( (char *) ras->green);
-	if (ras->blue != (unsigned char *) NULL) free( (char *) ras->blue);
+	if (ras->blue  != (unsigned char *) NULL) free( (char *) ras->blue);
+
 	return(RAS_OK);
 }
 
@@ -462,6 +460,27 @@ ParallaxInit()
 		return( RAS_ERROR );
 	}
 
+	status = ParallaxClear();
+	if (status != RAS_OK) {
+		(void) RasterSetError(RAS_E_PARALLAX);
+		return(RAS_ERROR);
+	}
+
+	return(RAS_OK);
+}
+
+int
+ParallaxClear()
+{
+	int		dx, dy;
+	unsigned long	*fb_lptr;
+
+	for(dy=0; dy<VFB_HEIGHT; dy++) {
+		fb_lptr = &parallax->fb.line[dy].pixel[0].lwd;
+		for(dx=0; dx<VFB_WIDTH; dx++) {
+			*fb_lptr++ = 0l;
+		}
+	}
 	return(RAS_OK);
 }
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: dither.c,v 1.2 1991-08-16 11:08:14 clyne Exp $
+ *	$Id: dither.c,v 1.3 1992-02-12 11:24:41 don Exp $
  */
 #include "ncarg_ras.h"
 
@@ -68,30 +68,32 @@ RasterDitherPopular(src, dst, verbose)
 	int		dist, mini, mindist;
 	int		bins, shift;
 	int		count;
-	int		qbits;
+	int		cmapsize;
 	int		hist[MAXBINS][MAXBINS][MAXBINS];
 	int		chist[256];
+	int		orig_colors;
 
 	if (src == (Raster *) NULL || dst == (Raster *) NULL) {
 		(void) RasterSetError(RAS_E_BOGUS_RASTER_STRUCTURE);
 		return(RAS_ERROR);
 	}
 
-	qbits = OptionDitherBits;
-	bins = 1 << qbits;
-	shift = 8 - qbits;
-
-	if (qbits > MAXBITS) {
+	if (OptionDitherBits > MAXBITS) {
 		(void) RasterSetError(RAS_E_TOO_MANY_DITHERBITS);
 		return(RAS_ERROR);
 	}
 
+	cmapsize = OptionDitherColors;
+	bins = 1 << OptionDitherBits;
+	shift = 8 - OptionDitherBits;
+
 	if (verbose) {
 		(void) fprintf(stderr, 
-			"Popularity Dithering with %d bits\n", qbits);
+			"Popularity Dithering with %d bits\n",OptionDitherBits);
 	}
 
 	/* Initialize the colormap histogram */
+
 	if (verbose) (void) fprintf(stderr, "Initializing...");
 	for(i=0; i<256; i++) {
 		chist[i] = 0;
@@ -99,11 +101,15 @@ RasterDitherPopular(src, dst, verbose)
 		dst->green[i] = 0;
 		dst->blue[i] = 0;
 	}
+
+	/* Zero the rgb histogram. */
 		
 	for(r=0; r<bins; r++) for(g=0; g<bins; g++) for(b=0; b<bins; b++) {
 		hist[r][g][b] = 0;
 	}
 	if (verbose) (void) fprintf(stderr, "Done\n");
+
+	/* Calculate the histogram. */
 
 	if (verbose) (void) fprintf(stderr, "Calculating histogram...");
 	for(y=0; y<src->ny; y++) {
@@ -116,20 +122,28 @@ RasterDitherPopular(src, dst, verbose)
 	}
 	if (verbose) (void) fprintf(stderr, "Done\n");
 
+	/* Pick the most popular colors and place them in the colormap */
+
 	if (verbose) (void) fprintf(stderr, "Building new colormap...");
+	orig_colors = 0;
+
 	for(r=0;r<bins;r++) {
-	if (verbose) (void) fprintf(stderr, "red = %d\n", r);
-	for(g=0;g<bins;g++) for(b=0;b<bins;b++) {
+	for(g=0;g<bins;g++) {
+	for(b=0;b<bins;b++) {
+		if (hist[r][g][b] > 0) {
+			orig_colors++;
+		}
+
 		count = hist[r][g][b];
 		if (count == 0) continue;
 			
-		for(i=0; i<256; i++) {
+		for(i=0; i<cmapsize; i++) {
 			if (count > chist[i]) {
-				for(j=254; j>=i; j--) {
-					chist[j+1] = chist[j];
+				for(j=cmapsize-2; j >= i; j--) {
 					dst->red[j+1]   = dst->red[j];
 					dst->green[j+1] = dst->green[j];
 					dst->blue[j+1]  = dst->blue[j];
+					chist[j+1] = chist[j];
 				}
 				chist[i] = count;
 				dst->red[i] = r;
@@ -138,26 +152,41 @@ RasterDitherPopular(src, dst, verbose)
 				break;
 			}
 		}
+	}}}
+	if (verbose) {
+		(void) fprintf(stderr, "Done\n");
+		(void) fprintf(stderr, 
+			"There were %d unique colors in original image\n", 
+			orig_colors);
 	}
-	}
-	if (verbose) (void) fprintf(stderr, "Done\n");
 
-	/* Reuse the RGB histogram as an associative memory */
+	/*
+	Record in the RGB histogram when a cell *is* one of the color 
+	table entries. Other colors will have to be matched to the "best" cell.
+	*/
 
 	if (verbose) (void) fprintf(stderr, "Encoding color table...");
-	for(i=0; i<256; i++) {
+	for(i=0; i<cmapsize; i++) {
 		hist[dst->red[i]][dst->green[i]][dst->blue[i]] = -1 - i;
 		dst->red[i] = dst->red[i] << shift;
 		dst->green[i] = dst->green[i] << shift;
 		dst->blue[i] = dst->blue[i] << shift;
 	}
 	if (verbose) (void) fprintf(stderr, "Done\n");
+
+	/*
+	Remap the original true color image into the new compressed
+	color space. Input pixels that are exact matches are recognized
+	early; others are matched with a color table entry based on
+	distance in RGB space.
+	*/
 		
 	if (verbose) (void) fprintf(stderr, "Remapping the image...\n");
 	for(y=0; y<src->ny; y++) {
 		if (y%50==0 && verbose) {
 			(void) fprintf(stderr,"Remapping row %d\n",y);
 		}
+
 		for(x=0; x<src->nx; x++) {
 			r = DIRECT_RED(src, x, y);
 			g = DIRECT_GREEN(src, x, y);
@@ -168,7 +197,7 @@ RasterDitherPopular(src, dst, verbose)
 			}
 			else {
 				mindist = 1000; mini = -1;
-				for(i=0; i<256; i++) {
+				for(i=0; i<cmapsize; i++) {
 					dist = abs((int) (r - dst->red[i])) +
 					       abs((int) (g - dst->green[i])) +
 					       abs((int) (b - dst->blue[i]));

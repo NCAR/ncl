@@ -1,9 +1,8 @@
 /*
- *	$Id: devices.h,v 1.4 1991-10-07 18:08:27 clyne Exp $
+ *	$Id: devices.h,v 1.5 1992-02-12 11:24:37 don Exp $
  */
 typedef struct RasterDeviceStruct {
 	char			*name;
-	int			(*Probe)();
 	struct RasterStruct	*(*Open)();
 	struct RasterStruct	*(*OpenWrite)();
 	int			(*Read)();
@@ -19,7 +18,6 @@ to the RasterDevices array, which appears below.
 */
   
 
-extern int	ClearTextProbe();
 extern Raster	*ClearTextOpen();
 extern Raster	*ClearTextOpenWrite();
 extern int	ClearTextRead();
@@ -28,7 +26,6 @@ extern int	ClearTextClose();
 extern int	ClearTextPrintInfo();
 
 #ifdef BuildRasterNrif
-extern int	NrifProbe();
 extern Raster	*NrifOpen();
 extern Raster	*NrifOpenWrite();
 extern int	NrifRead();
@@ -38,7 +35,6 @@ extern int	NrifPrintInfo();
 #endif
 
 #ifdef BuildRasterXWD
-extern int	XWDProbe();
 extern Raster	*XWDOpen();
 extern Raster	*XWDOpenWrite();
 extern int	XWDRead();
@@ -48,7 +44,6 @@ extern int	XWDPrintInfo();
 #endif
 
 #ifdef BuildRasterHDF
-extern int	HDFProbe();
 extern Raster	*HDFOpen();
 extern Raster	*HDFOpenWrite();
 extern int	HDFRead();
@@ -58,7 +53,6 @@ extern int	HDFPrintInfo();
 #endif
 
 #ifdef BuildRasterSun
-extern int	SunProbe();
 extern Raster	*SunOpen();
 extern Raster	*SunOpenWrite();
 extern int	SunRead();
@@ -68,7 +62,6 @@ extern int	SunPrintInfo();
 #endif
 
 #ifdef BuildRasterParallax
-extern int	ParallaxProbe();
 extern Raster	*ParallaxOpen();
 extern Raster	*ParallaxOpenWrite();
 extern int	ParallaxRead();
@@ -78,7 +71,6 @@ extern int	ParallaxPrintInfo();
 #endif
 
 #ifdef BuildRasterHPLaser
-extern int	HPLJProbe();
 extern Raster	*HPLJOpen();
 extern Raster	*HPLJOpenWrite();
 extern int	HPLJRead();
@@ -88,7 +80,6 @@ extern int	HPLJPrintInfo();
 #endif
 
 #ifdef BuildRasterAVS
-extern int	AVSProbe();
 extern Raster	*AVSOpen();
 extern Raster	*AVSOpenWrite();
 extern int	AVSRead();
@@ -99,48 +90,48 @@ extern int	AVSPrintInfo();
 
 static RasterDevice rasdevices[] = {
 {
-	"cleartext", ClearTextProbe, ClearTextOpen, ClearTextOpenWrite,
+	"cleartext", ClearTextOpen, ClearTextOpenWrite,
 	ClearTextRead, ClearTextWrite, ClearTextClose, ClearTextPrintInfo
 },
 #ifdef BuildRasterNrif
 {
-	"nrif", NrifProbe, NrifOpen, NrifOpenWrite, 
+	"nrif", NrifOpen, NrifOpenWrite, 
 	NrifRead, NrifWrite, NrifClose, NrifPrintInfo
 },
 #endif
 #ifdef BuildRasterNrif
 {
-	"xwd", XWDProbe, XWDOpen, XWDOpenWrite, 
+	"xwd", XWDOpen, XWDOpenWrite, 
 	XWDRead, XWDWrite, XWDClose, XWDPrintInfo
 },
 #endif
 #ifdef BuildRasterHDF
 {
-	"hdf", HDFProbe, HDFOpen, HDFOpenWrite, 
+	"hdf", HDFOpen, HDFOpenWrite, 
 	HDFRead, HDFWrite, HDFClose, HDFPrintInfo
 },
 #endif
 #ifdef BuildRasterSun
 {
-	"sun", SunProbe, SunOpen, SunOpenWrite, 
+	"sun", SunOpen, SunOpenWrite, 
 	SunRead, SunWrite, SunClose, SunPrintInfo
 },
 #endif
 #ifdef BuildRasterHPLJ
 {
-	"hplj", HPLJProbe, HPLJOpen, HPLJOpenWrite, 
+	"hplj", HPLJOpen, HPLJOpenWrite, 
 	HPLJRead, HPLJWrite, HPLJClose, HPLJPrintInfo
 },
 #endif
 #ifdef BuildRasterParallax
 {
-	"parallax", ParallaxProbe, ParallaxOpen, ParallaxOpenWrite, 
+	"parallax", ParallaxOpen, ParallaxOpenWrite, 
 	ParallaxRead, ParallaxWrite, ParallaxClose, ParallaxPrintInfo
 },
 #endif
 #ifdef BuildRasterAVS
 {
-	"avs", AVSProbe, AVSOpen, AVSOpenWrite, 
+	"avs", AVSOpen, AVSOpenWrite, 
 	AVSRead, AVSWrite, AVSClose, AVSPrintInfo
 },
 #endif

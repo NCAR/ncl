@@ -39,10 +39,10 @@ ARCH		=
 CC		= cc
 CC_LD		= $(CC)
 CDEBUG		=
-COPT		= -g
+COPT		= -O
 CMISC           = -Bstatic
 CFLAGS          = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
-	$(FLOAT_OPT)
+		  $(FLOAT_OPT)
 LD_CFLAGS	= $(CFLAGS)
 CPP		= /lib/cpp
 FCPP            = /lib/cpp
@@ -52,7 +52,7 @@ FDEBUG		= -g
 FOPT		=
 FMISC           = -Bstatic
 FFLAGS          = $(OS) $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
-	$(FLOAT_OPT)
+		  $(FLOAT_OPT)
 LD_FFLAGS	= $(FFLAGS)
 LD		= ld
 LD_REL		= $(LD)
@@ -84,13 +84,14 @@ FSPLIT		= fsplit
 CALLCONV	= $(NCARG)/utils/callconv
 SHELL		= /bin/sh
 
+#	$Id: Makefile,v 1.5 1992-02-12 11:24:28 don Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
 #
 
 NCARG		= ../../../..
-LOCINCDIR	= /usr/local/include
+LOCINCDIR	= ../../include
 MYNAME		= libncarg_ras.a
 INCLUDES	= ncarg_ras.h
 
@@ -123,23 +124,27 @@ AVS_SRCS =	avsraster.c
 AVS_DEFS =	-DBuildRasterAVS
 
 CDEFINES =	-I$(LOCINCDIR) \
-	$(HDF_DEFS) $(HPLJ_DEFS) $(NRIF_DEFS) $(SUN_DEFS) \
-	$(XWD_DEFS) $(PARALLAX_DEFS) $(AVS_DEFS)
+		$(HDF_DEFS) $(HPLJ_DEFS) $(NRIF_DEFS) $(SUN_DEFS) \
+		$(XWD_DEFS) $(PARALLAX_DEFS) $(AVS_DEFS)
 
 DEVICE_OBJS =	$(HDF_OBJS) $(HPLJ_OBJS) $(NRIF_OBJS) $(SUN_OBJS) \
-	$(XWD_OBJS) $(PARALLAX_OBJS) $(AVS_OBJS)
+		$(XWD_OBJS) $(PARALLAX_OBJS) $(AVS_OBJS)
 
 DEVICE_SRCS =	$(HDF_SRCS) $(HPLJ_SRCS) $(NRIF_SRCS) $(SUN_SRCS) \
-	$(XWD_SRCS) $(PARALLAX_SRCS) $(AVS_SRCS)
+		$(XWD_SRCS) $(PARALLAX_SRCS) $(AVS_SRCS)
 
-GENERIC_OBJS =	raster.o cleartext.o error.o misc.o palette.o dither.o \
-	$(DEVICE_OBJS)
+GENERIC_OBJS =	raster.o cleartext.o error.o misc.o palette.o \
+		dither.o resample.o composite.o ntsc.o \
+		$(DEVICE_OBJS)
 
-GENERIC_SRCS =	raster.c cleartext.c error.c misc.c palette.c dither.c \
-	$(DEVICE_SRCS)
+GENERIC_SRCS =	raster.c cleartext.c error.c misc.c palette.c \
+		dither.c resample.c composite.c ntsc.c \
+		$(DEVICE_SRCS)
 
 OBJS		= $(GENERIC_OBJS) $(OTHER_OBJS)
 SRCS		= $(GENERIC_SRCS) $(OTHER_SRCS)
+
+EQUALHACK	= =
 
 all:: $(OBJS)
 	@-$(RM) $(LIBDIR)/$(MYNAME)
@@ -160,7 +165,9 @@ cleanbin:: clean
 
 dither.o:	ncarg_ras.h
 error.o:	ncarg_ras.h
-hdf.o:		ncarg_ras.h options.h
+hdf.o:          ncarg_ras.h options.h Makefile
+	$(CC) $(CFLAGS) -DTMPDIR$(EQUALHACK)'"$(TMPDIR)"' -c $*.c
+
 misc.o:		ncarg_ras.h
 nrif.o:		ncarg_ras.h nrif.h
 palette.o:	ncarg_ras.h
@@ -172,6 +179,15 @@ parallax.o:	ncarg_ras.h parallax.h
 hplj.o:		ncarg_ras.h hplj.h
 cleartext.o:	ncarg_ras.h
 avsraster.o:	ncarg_ras.h avsraster.h
+ntsc.o:		ncarg_ras.h ntsc.h
+
+saber_src: $(SRCS)
+	#setopt load_flags $(CFLAGS)
+	#load $(SRCS) -ldf
+
+saber_obj: $(OBJS)
+	#setopt load_flags $(CFLAGS)
+	#load $(OBJS) -ldf
 
 rasinfo: rasinfo.o
 	$(CC) $(CFLAGS) -o rasinfo rasinfo.o -lncarg_ras -ldf
