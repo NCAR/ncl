@@ -226,8 +226,9 @@ c                               loop to calculate sums
              XYN  = XYN  + 1.D0
          END IF
       END DO
-c                               all msg values
-      IF (XYN.LT.1.D0) THEN
+c                               all msg values or only one good point
+c                                                    (not enough data)
+      IF (XYN.LT.2.D0) THEN
           IER = 5
           RETURN
       END IF

@@ -225,12 +225,17 @@ extern NhlErrorTypes csa3lxs_W(void);
 extern NhlErrorTypes drwsrfc_W(void);
 extern NhlErrorTypes drwvctc_W(void);
 extern NhlErrorTypes drwconc_W(void);
+
 extern NhlErrorTypes tdinit_W(void);
 extern NhlErrorTypes tdpara_W(void);
-extern NhlErrorTypes tdez1d_W(void);
-extern NhlErrorTypes tdez2d_W(void);
-extern NhlErrorTypes tdez3d_W(void);
-extern NhlErrorTypes tddtri_W(void);
+extern NhlErrorTypes tdclrs_W(void);
+extern NhlErrorTypes tdgetp_W(void);
+extern NhlErrorTypes tdgtrs_W(void);
+extern NhlErrorTypes tdsetp_W(void);
+extern NhlErrorTypes tdstrs_W(void);
+extern NhlErrorTypes tdprpt_W(void);
+extern NhlErrorTypes tdprpa_W(void);
+extern NhlErrorTypes tdprpi_W(void);
 extern NhlErrorTypes tdline_W(void);
 extern NhlErrorTypes tdlnpa_W(void);
 extern NhlErrorTypes tdgrds_W(void);
@@ -238,18 +243,18 @@ extern NhlErrorTypes tdgrid_W(void);
 extern NhlErrorTypes tdlbls_W(void);
 extern NhlErrorTypes tdlbla_W(void);
 extern NhlErrorTypes tdplch_W(void);
-extern NhlErrorTypes tdclrs_W(void);
-extern NhlErrorTypes tdotri_W(void);
-extern NhlErrorTypes tdttri_W(void);
+extern NhlErrorTypes tddtri_W(void);
 extern NhlErrorTypes tdstri_W(void);
 extern NhlErrorTypes tditri_W(void);
-extern NhlErrorTypes tdprpt_W(void);
-extern NhlErrorTypes tdprpa_W(void);
-extern NhlErrorTypes tdprpi_W(void);
-extern NhlErrorTypes tdgtrs_W(void);
-extern NhlErrorTypes tdstrs_W(void);
-extern NhlErrorTypes tdsetp_W(void);
-extern NhlErrorTypes tdgetp_W(void);
+extern NhlErrorTypes tdmtri_W(void);
+extern NhlErrorTypes tdttri_W(void);
+extern NhlErrorTypes tdctri_W(void);
+extern NhlErrorTypes tdotri_W(void);
+extern NhlErrorTypes tdsort_W(void);
+extern NhlErrorTypes tdez1d_W(void);
+extern NhlErrorTypes tdez2d_W(void);
+extern NhlErrorTypes tdez3d_W(void);
+
 extern NhlErrorTypes wmsetp_W(void);
 extern NhlErrorTypes wmgetp_W(void);
 extern NhlErrorTypes wmbarb_W(void);
@@ -1899,85 +1904,116 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
 
         NclRegisterProc(tdpara_W,args,"tdpara",nargs);
+
 /*
- * Register tdez1d.
+ * Register tdclrs.
+ */
+        nargs = 0;
+        args = NewArgs(7);
+
+        dimsizes[0] = 1;
+
+        SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+        NclRegisterProc(tdclrs_W,args,"tdclrs",nargs);
+/*
+ *  Register tdgetp.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);
+    nargs++;
+    NclRegisterFunc(tdgetp_W, args, "tdgetp", nargs);
+
+/*
+ * Register tdgtrs.
  */
         nargs = 0;
         args = NewArgs(11);
+
         dimsizes[0] = 1;
-
-        SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
-
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
 
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        NclRegisterProc(tdgtrs_W,args,"tdgtrs",nargs);
 /*
- * Register wrapper function pointer and argument templates.
+ *  Register tdsetp.
  */
-        NclRegisterProc(tdez1d_W,args,"tdez1d",nargs);
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);
+    nargs++;
+    SetArgTemplate(args, nargs, NclANY, 1, dimsizes);
+    nargs++;
+    NclRegisterProc(tdsetp_W, args, "tdsetp", nargs);
+
 /*
- * Register tdez2d.
+ * Register tdstrs.
  */
         nargs = 0;
-        args = NewArgs(8);
+        args = NewArgs(11);
+
         dimsizes[0] = 1;
-
-        SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
-
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
-
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+
+        NclRegisterProc(tdstrs_W,args,"tdstrs",nargs);
 /*
- * Register wrapper function pointer and argument templates.
- */
-        NclRegisterProc(tdez2d_W,args,"tdez2d",nargs);
-/*
- * Register tdez3d.
+ * Register tdprpt.
  */
         nargs = 0;
-        args = NewArgs(10);
-        dimsizes[0] = 1;
-        SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
+        args = NewArgs(1);
 
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",3,NclANY);nargs++;
+        dimsizes[0] = 3;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
 
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        NclRegisterFunc(tdprpt_W,args,"tdprpt",nargs);
 /*
- * Register tddtri.
+ * Register tdprpa.
  */
         nargs = 0;
-        args = NewArgs(4);
-        dimsizes[0] = 1;
-        SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
-/*
- * Register wrapper function pointer and argument templates.
- */
-        NclRegisterProc(tddtri_W,args,"tddtri",nargs);
+        args = NewArgs(1);
 
+        dimsizes[0] = 2;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+
+        NclRegisterFunc(tdprpa_W,args,"tdprpa",nargs);
+/*
+ * Register tdprpi.
+ */
+        nargs = 0;
+        args = NewArgs(1);
+
+        dimsizes[0] = 2;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+
+        NclRegisterFunc(tdprpi_W,args,"tdprpi",nargs);
 /*
  * Register tdline.
  */
@@ -2085,63 +2121,17 @@ void NclAddUserFuncs(void)
 
         NclRegisterProc(tdplch_W,args,"tdplch",nargs);
 /*
- * Register tdclrs.
+ * Register tddtri.
  */
         nargs = 0;
-        args = NewArgs(7);
-
+        args = NewArgs(4);
         dimsizes[0] = 1;
-
         SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-
-        NclRegisterProc(tdclrs_W,args,"tdclrs",nargs);
-/*
- * Register tdotri.
- */
-        nargs = 0;
-        args = NewArgs(5);
-
         SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
         SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
-        dimsizes[0] = 1;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
-        NclRegisterProc(tdotri_W,args,"tdotri",nargs);
-/*
- * Register tdttri.
- */
-        nargs = 0;
-        args = NewArgs(15);
-
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-
-        dimsizes[0] = 1;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-
-        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-
-        NclRegisterProc(tdttri_W,args,"tdttri",nargs);
+        NclRegisterProc(tddtri_W,args,"tddtri",nargs);
 /*
  * Register tdstri.
  */
@@ -2174,88 +2164,96 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         NclRegisterProc(tditri_W,args,"tditri",nargs);
+
 /*
- * Register tdprpt.
+ * Register tdmtri.
  */
         nargs = 0;
-        args = NewArgs(1);
-
-        dimsizes[0] = 3;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-
-        NclRegisterFunc(tdprpt_W,args,"tdprpt",nargs);
-/*
- * Register tdprpa.
- */
-        nargs = 0;
-        args = NewArgs(1);
-
-        dimsizes[0] = 2;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-
-        NclRegisterFunc(tdprpa_W,args,"tdprpa",nargs);
-/*
- * Register tdprpi.
- */
-        nargs = 0;
-        args = NewArgs(1);
-
-        dimsizes[0] = 2;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-
-        NclRegisterFunc(tdprpi_W,args,"tdprpi",nargs);
-/*
- * Register tdstrs.
- */
-        nargs = 0;
-        args = NewArgs(11);
+        args = NewArgs(14);
 
         dimsizes[0] = 1;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
 
-        NclRegisterProc(tdstrs_W,args,"tdstrs",nargs);
+        NclRegisterProc(tdmtri_W,args,"tdmtri",nargs);
 /*
- * Register tdgtrs.
+ * Register tdttri.
  */
         nargs = 0;
-        args = NewArgs(11);
+        args = NewArgs(15);
+
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
 
         dimsizes[0] = 1;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+
+        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
 
-        NclRegisterProc(tdgtrs_W,args,"tdgtrs",nargs);
+        NclRegisterProc(tdttri_W,args,"tdttri",nargs);
 /*
- *  Register tdsetp.
+ * Register tdctri.
  */
-    nargs = 0;
-    args = NewArgs(2);
-    dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "string", 1, dimsizes);
-    nargs++;
-    SetArgTemplate(args, nargs, NclANY, 1, dimsizes);
-    nargs++;
-    NclRegisterProc(tdsetp_W, args, "tdsetp", nargs);
+        nargs = 0;
+        args = NewArgs(4);
 
+        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+
+        NclRegisterProc(tdctri_W,args,"tdctri",nargs);
+/*
+ * Register tdotri.
+ */
+        nargs = 0;
+        args = NewArgs(5);
+
+        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+        NclRegisterProc(tdotri_W,args,"tdotri",nargs);
+/*
+ * Register tdsort.
+ */
+        nargs = 0;
+        args = NewArgs(3);
+
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+
+        NclRegisterProc(tdsort_W,args,"tdsort",nargs);
 /*
  *  Register wmsetp.
  */
@@ -2267,7 +2265,6 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, NclANY, 1, dimsizes);
     nargs++;
     NclRegisterProc(wmsetp_W, args, "wmsetp", nargs);
-
 /*
  *  Register wmgetp.
  */
@@ -2277,17 +2274,70 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "string", 1, dimsizes);
     nargs++;
     NclRegisterFunc(wmgetp_W, args, "wmgetp", nargs);
-
 /*
- *  Register tdgetp.
+ * Register tdez1d.
  */
-    nargs = 0;
-    args = NewArgs(1);
-    dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "string", 1, dimsizes);
-    nargs++;
-    NclRegisterFunc(tdgetp_W, args, "tdgetp", nargs);
+        nargs = 0;
+        args = NewArgs(11);
+        dimsizes[0] = 1;
 
+        SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
+
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+/*
+ * Register wrapper function pointer and argument templates.
+ */
+        NclRegisterProc(tdez1d_W,args,"tdez1d",nargs);
+/*
+ * Register tdez2d.
+ */
+        nargs = 0;
+        args = NewArgs(8);
+        dimsizes[0] = 1;
+
+        SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
+
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
+
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+/*
+ * Register wrapper function pointer and argument templates.
+ */
+        NclRegisterProc(tdez2d_W,args,"tdez2d",nargs);
+/*
+ * Register tdez3d.
+ */
+        nargs = 0;
+        args = NewArgs(10);
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
+
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",3,NclANY);nargs++;
+
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 /*
  * Register wmbarb
  */
@@ -4717,4 +4767,5 @@ int    index_x
 
   for( i = 0; i < size_x; i++ ) ((float*)x)[index_x+i]  = (float)dx[i];
 }
+
 

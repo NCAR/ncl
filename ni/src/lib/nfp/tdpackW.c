@@ -28,7 +28,7 @@ extern NGCALLF(tdttri,tdttri)(float *,float *,float*,int *,int *, float *,
                               float *,float *,float *,float *,float *);
 
 extern NGCALLF(tdez1d,TDEZ1D)(int *,float *,float *,float*,int *,float *,
-							  float *,float *,float *,float *,int *);
+                              float *,float *,float *,float *,int *);
 
 NhlErrorTypes tdinit_W( void )
 {
@@ -139,20 +139,17 @@ NhlErrorTypes tdpara_W( void )
 }
 
 
-NhlErrorTypes tdez2d_W( void )
+NhlErrorTypes tdclrs_W( void )
 {
-  float *x, *y, *z, *zp;
-  int dsizes_x[NCL_MAX_DIMENSIONS];
-  int dsizes_y[NCL_MAX_DIMENSIONS];
-  int dsizes_z[NCL_MAX_DIMENSIONS];
-  float *rmult, *theta, *phi;
-  int *style, *nwid;
-  int i, j;
 /*
- * Variables for retrieving workstation information.
+ *  Definte a variable to store the HLU object identifier.
  */
-  int grlist, gkswid, nid;
   NclHLUObj tmp_hlu_obj;
+
+  int *nwid, *ibow, *iofc, *iolc, *ilmt;
+  float *shde, *shdr;
+  int gkswid, grlist, nid;
+
 /*
  * Retrieve parameters.
  *
@@ -161,186 +158,19 @@ NhlErrorTypes tdez2d_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-  nwid   = (int*)NclGetArgValue(0,8,NULL,NULL,NULL,NULL,NULL,2);
-  x      = (float*)NclGetArgValue(1,8, NULL, dsizes_x, NULL,NULL,NULL,2);
-  y      = (float*)NclGetArgValue(2,8, NULL, dsizes_y, NULL,NULL,NULL,2);
-  z      = (float*)NclGetArgValue(3,8, NULL, dsizes_z, NULL,NULL,NULL,2);
-  rmult  = (float*)NclGetArgValue(4,8,NULL,NULL,NULL,NULL,NULL,2);
-  theta  = (float*)NclGetArgValue(5,8,NULL,NULL,NULL,NULL,NULL,2);
-  phi    = (float*)NclGetArgValue(6,8,NULL,NULL,NULL,NULL,NULL,2);
-  style  = (int*)NclGetArgValue(7,8,NULL,NULL,NULL,NULL,NULL,2);
+  nwid =    (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,2);
+  ibow =    (int*)NclGetArgValue(1,7,NULL,NULL,NULL,NULL,NULL,2);
+  shde =  (float*)NclGetArgValue(2,7,NULL,NULL,NULL,NULL,NULL,2);
+  shdr =  (float*)NclGetArgValue(3,7,NULL,NULL,NULL,NULL,NULL,2);
+  iofc =    (int*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,2);
+  iolc =    (int*)NclGetArgValue(5,7,NULL,NULL,NULL,NULL,NULL,2);
+  ilmt =    (int*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,2);
 
-/*
- * Check input sizes.
- */
-  if( (dsizes_x[0] == dsizes_z[0]) && (dsizes_y[0] == dsizes_z[1]) ) {
-/*
- * Reverse the order of the dimensions.
- */
-    zp = (float *) calloc(dsizes_x[0] * dsizes_y[0],sizeof(float));
-    for (i = 0; i < dsizes_x[0]; i++) {
-      for (j = 0; j < dsizes_y[0]; j++) { 
-        zp[j*dsizes_x[0] + i] = z[i*dsizes_y[0] + j];
-      }
-    }
-/*
- *  Determine the NCL identifier for the graphic object in nid.
- */
-    tmp_hlu_obj = (NclHLUObj) _NclGetObj(*nwid);
-    nid         = tmp_hlu_obj->hlu.hlu_id;
-/*
- * Retrieve the GKS workstation id from the workstation object.
- */
-    grlist = NhlRLCreate(NhlGETRL);
-    NhlRLClear(grlist);
-    NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
-    NhlGetValues(nid,grlist);
- 
-/*
- * The following section activates the workstation, calls the 
- * c_tdez2d function, and then deactivates the workstation.
- */
-    gactivate_ws (gkswid);
-    c_tdez2d(dsizes_x[0],dsizes_y[0],x,y,zp,*rmult,*theta,*phi,*style);
-    gdeactivate_ws (gkswid);
-    free(zp);
-  }
-  else { 
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdez2d: the dimension sizes of z must be the dimension of x by the dimension of y");
-    return(NhlFATAL);
-  }
-
-  return(NhlNOERROR);
-  
-}
-
-
-NhlErrorTypes tdez3d_W( void )
-{
-  float *x, *y, *z, *u, *value, *up;
-  int dsizes_x[NCL_MAX_DIMENSIONS];
-  int dsizes_y[NCL_MAX_DIMENSIONS];
-  int dsizes_z[NCL_MAX_DIMENSIONS];
-  int dsizes_u[NCL_MAX_DIMENSIONS];
-  float *rmult, *theta, *phi;
-  int *nwid, *style;
-/*
- * Variables for retrieving workstation information.
- */
-  int grlist, gkswid, nid;
-  NclHLUObj tmp_hlu_obj;
-
-  int i, j, k;
-/*
- * Retrieve parameters.
- *
- * Note any of the pointer parameters can be set to NULL, which
- * implies you don't care about its value. In this example
- * the type parameter is set to NULL because the function
- * is later registered to only accept floating point numbers.
- */
-  nwid  =  (int*)NclGetArgValue(0,10,NULL,NULL,NULL,NULL,NULL,2);
-  x     =  (float*)NclGetArgValue(1,10, NULL, dsizes_x, NULL,NULL,NULL,2);
-  y     =  (float*)NclGetArgValue(2,10, NULL, dsizes_y, NULL,NULL,NULL,2);
-  z     =  (float*)NclGetArgValue(3,10, NULL, dsizes_z, NULL,NULL,NULL,2);
-  u     =  (float*)NclGetArgValue(4,10, NULL, dsizes_u, NULL,NULL,NULL,2);
-  value = (float*)NclGetArgValue(5,10,NULL,NULL,NULL,NULL,NULL,2);
-  rmult = (float*)NclGetArgValue(6,10,NULL,NULL,NULL,NULL,NULL,2);
-  theta = (float*)NclGetArgValue(7,10,NULL,NULL,NULL,NULL,NULL,2);
-  phi   = (float*)NclGetArgValue(8,10,NULL,NULL,NULL,NULL,NULL,2);
-  style = (int*)NclGetArgValue(9,10,NULL,NULL,NULL,NULL,NULL,2);
-
-/*
- * Check input sizes.
- */
-  if( (dsizes_x[0] == dsizes_u[0]) && (dsizes_y[0] == dsizes_u[1]) && 
-      (dsizes_z[0] == dsizes_u[2]) ) {
-/*
- * Reverse the order of the dimensions.
- */
-    up = (float *) calloc(dsizes_x[0]*dsizes_y[0]*dsizes_z[0],sizeof(float));
-    for (i = 0; i < dsizes_x[0]; i++) {
-      for (j = 0; j < dsizes_y[0]; j++) { 
-        for (k = 0; k < dsizes_z[0]; k++) { 
-          up[dsizes_x[0]*dsizes_y[0]*k + j*dsizes_x[0] + i] = 
-            u[i*dsizes_z[0]*dsizes_y[0] + dsizes_z[0]*j + k];
-        }
-      }
-    }
-
-/*
- *  Determine the NCL identifier for the graphic object in nid.
- */
-    tmp_hlu_obj = (NclHLUObj) _NclGetObj(*nwid);
-    nid         = tmp_hlu_obj->hlu.hlu_id;
- 
-/*
- * Retrieve the GKS workstation id from the workstation object.
- */
-    grlist = NhlRLCreate(NhlGETRL);
-    NhlRLClear(grlist);
-    NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
-    NhlGetValues(nid,grlist);
-
-/*
- * The following section activates the workstation, calls the 
- * c_tdez3d function, and then deactivates the workstation.
- */
-    gactivate_ws (gkswid);
-    c_tdez3d(dsizes_x[0],dsizes_y[0],dsizes_z[0],x,y,z,up,*value,
-             *rmult,*theta,*phi,*style);
-    gdeactivate_ws (gkswid);
-    free(up);
-  }
-  else {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdez3d: the dimension sizes of u must be the dimension of x by the dimension of y by the dimension of z");
-    return(NhlFATAL);
-  }
-  return(NhlNOERROR);
-  
-}
-
-NhlErrorTypes tdez1d_W( void )
-{
-  int *nwid, *imrk, *style;
-  float *x, *y, *z, *rmrk, *smrk, *rmult, *theta, *phi;
-  int dsizes_x[1], dsizes_y[1], dsizes_z[1];
-/*
- * Variables for retrieving workstation information.
- */
-  int grlist, gkswid, nid;
-  NclHLUObj tmp_hlu_obj;
-/*
- * Retrieve parameters.
- *
- * Note any of the pointer parameters can be set to NULL, which
- * implies you don't care about its value. In this example
- * the type parameter is set to NULL because the function
- * is later registered to only accept floating point numbers.
- */
-  nwid   =   (int*)NclGetArgValue( 0,11,NULL,NULL,NULL,NULL,NULL,2);
-  x      = (float*)NclGetArgValue( 1,11,NULL,dsizes_x,NULL,NULL,NULL,2);
-  y      = (float*)NclGetArgValue( 2,11,NULL,dsizes_y,NULL,NULL,NULL,2);
-  z      = (float*)NclGetArgValue( 3,11,NULL,dsizes_z,NULL,NULL,NULL,2);
-  imrk   =   (int*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,2);
-  rmrk   = (float*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,2);
-  smrk   = (float*)NclGetArgValue( 6,11,NULL,NULL,NULL,NULL,NULL,2);
-  rmult  = (float*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,2);
-  theta  = (float*)NclGetArgValue( 8,11,NULL,NULL,NULL,NULL,NULL,2);
-  phi    = (float*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,2);
-  style  =   (int*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,2);
-/*
- * Check the input sizes.
- */
-  if( dsizes_x[0] != dsizes_y[0] || dsizes_x[0] != dsizes_z[0] ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdez1d: the length of the x, y, and z arrays must be the same");
-    return(NhlFATAL);
-  }
 /*
  *  Determine the NCL identifier for the graphic object in nid.
  */
   tmp_hlu_obj = (NclHLUObj) _NclGetObj(*nwid);
-  nid         = tmp_hlu_obj->hlu.hlu_id;
+  nid = tmp_hlu_obj->hlu.hlu_id;
 /*
  * Retrieve the GKS workstation id from the workstation object.
  */
@@ -348,66 +178,343 @@ NhlErrorTypes tdez1d_W( void )
   NhlRLClear(grlist);
   NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
   NhlGetValues(nid,grlist);
- 
-/*
- * The following section activates the workstation, calls the 
- * tdez1d function, and then deactivates the workstation.
- */
+
   gactivate_ws (gkswid);
-  NGCALLF(tdez1d,TDEZ1D)(&dsizes_x[0],x,y,z,imrk,rmrk,smrk,rmult,theta,phi,
-						 style);
+  c_tdclrs(gkswid, *ibow, *shde, *shdr, *iofc, *iolc, *ilmt);
   gdeactivate_ws (gkswid);
 
   return(NhlNOERROR);
 }
 
 
-NhlErrorTypes tddtri_W( void )
+NhlErrorTypes tdgetp_W(void)
 {
-  int *nwid, *ntri, *itwk, mtri, dsizes_rtri[2];
-  float *rtri;
 /*
- * Variables for retrieving workstation information.
+ *  Get values for tdpack parameters.
  */
-  int grlist, gkswid, nid;
-  NclHLUObj tmp_hlu_obj;
+  char  *arg1;
+  int   numpi, numpf, i;
+  string *pvalue, *qvalue;
+
+/*
+ *  List the integer and float parameter names.  To add new ones,
+ *  all that needs to be done is add the names to this list.
+ */
+  char *params_i[] = {"cs1", "cs2", "fov", "hnd", "ifc1", "ifc2", 
+                      "ifc3", "ifc4", "ilc1", "ilc2", "iltd",
+                      "lsu", "lsv", "lsw", "set", "shd", "ste", 
+                      "CS1", "CS2", "FOV", "HND", "IFC1", "IFC2", 
+                      "IFC3", "IFC4", "ILC1", "ILC2", "ILTD",
+                      "LSU", "LSV", "LSW", "SET", "SHD", "STE", 
+  };
+  char *params_f[] = {"cs1", "cs2", "fov", "lsu", "lsv", "lsw", 
+                      "vpb", "vpl", "vpr", "vpt", "ustp", "vstp", "wstp"
+                      "CS1", "CS2", "FOV", "LSU", "LSV", "LSW", 
+                      "VPB", "VPL", "VPR", "VPT", "USTP", "VSTP", "WSTP"
+  };
+/*
+ * Input array variable
+ */
+  string *pname;
+  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  float *fval;
+  int *ival;
+  int ret_size = 1; 
+
+/*
+ * Retrieve argument #1
+ */
+  pname = (string *) NclGetArgValue(
+          0,
+          1,
+          &ndims_pname,
+          dsizes_pname,
+          NULL,
+          NULL,
+          NULL,
+          2);
+
+  arg1 = NrmQuarkToString(*pname);
+
+/*
+ *  Check to see if the parameter name is valid.
+ */
+  numpi = sizeof(params_i)/sizeof(void *);
+  numpf = sizeof(params_f)/sizeof(void *);
+  for (i = 0; i < numpi; i++) {
+    if (!strncmp(arg1, params_i[i], strlen(params_i[i]))) {
+      goto OK_NAME;
+    }
+  }
+  for (i = 0; i < numpf; i++) {
+    if (!strncmp(arg1, params_f[i], strlen(params_f[i]))) {
+      goto OK_NAME;
+    }
+  }
+  NhlPError(NhlFATAL, NhlEUNKNOWN, "tdgetp: unrecognized parameter name");
+  return(NhlFATAL);
+
+/*
+ *  Process the parameter if it has an integer value.
+ */
+OK_NAME:  for (i = 0; i < numpi; i++) {
+    if (!strncmp(arg1, params_i[i], strlen(params_i[i]))) {
+      ival = (int *) calloc(1,sizeof(int));
+      c_tdgeti(arg1, ival);
+      return(NclReturnValue( (void *) ival, 1, &ret_size, NULL, NCL_int, 0));
+    }
+  }
+
+/*
+ *  Process the parameter if it has a float value.
+ */
+  for (i = 0; i < numpf; i++) {
+    if (!strncmp(arg1, params_f[i], strlen(params_f[i]))) {
+      fval = (float *) calloc(1,sizeof(float));
+      c_tdgetr(arg1, fval);
+      return(NclReturnValue((void *) fval, 1, &ret_size, NULL, NCL_float, 0));
+    }
+  }
+
+  NhlPError(NhlFATAL, NhlEUNKNOWN, "tdgetp: impossible to get this message");
+  return(NhlFATAL);
+}
+
+NhlErrorTypes tdgtrs_W( void )
+{
+/*
+ * Input variables
+ */
+  int *irst, *ifc1, *ifc2, *ifc3, *ifc4, *ilc1, *ilc2, *iltd;
+  float *ustp, *vstp, *wstp;
 
 /*
  * Retrieve parameters.
+ *
+ * Note that any of the pointer parameters can be set to NULL,
+ * which implies you don't care about its value.
  */
-  nwid =   (int*)NclGetArgValue(0,4,NULL,NULL,NULL,NULL,NULL,2);
-  rtri = (float*)NclGetArgValue(1,4,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =   (int*)NclGetArgValue(2,4,NULL,NULL,NULL,NULL,NULL,2);
-  itwk =   (int*)NclGetArgValue(3,4,NULL,NULL,NULL,NULL,NULL,2);
+  irst =   (int*)NclGetArgValue( 0,11,NULL,NULL,NULL,NULL,NULL,2);
+  ifc1 =   (int*)NclGetArgValue( 1,11,NULL,NULL,NULL,NULL,NULL,2);
+  ifc2 =   (int*)NclGetArgValue( 2,11,NULL,NULL,NULL,NULL,NULL,2);
+  ifc3 =   (int*)NclGetArgValue( 3,11,NULL,NULL,NULL,NULL,NULL,2);
+  ifc4 =   (int*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,2);
+  ilc1 =   (int*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,2);
+  ilc2 =   (int*)NclGetArgValue( 6,11,NULL,NULL,NULL,NULL,NULL,2);
+  iltd =   (int*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,2);
+  ustp = (float*)NclGetArgValue( 8,11,NULL,NULL,NULL,NULL,NULL,2);
+  vstp = (float*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,2);
+  wstp = (float*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,2);
 
-  mtri = dsizes_rtri[0];
-  if(dsizes_rtri[1] != 10) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tddtri: the second dimension of ntri must be 10");
-    return(NhlFATAL);
-  }
-/*
- *  Determine the NCL identifier for the graphic object in nid.
- */
-  tmp_hlu_obj = (NclHLUObj) _NclGetObj(*nwid);
-  nid         = tmp_hlu_obj->hlu.hlu_id;
-
-/*
- * Retrieve the GKS workstation id from the workstation object.
- */
-  grlist = NhlRLCreate(NhlGETRL);
-  NhlRLClear(grlist);
-  NhlRLGetInteger(grlist, NhlNwkGksWorkId, &gkswid);
-  NhlGetValues(nid, grlist);
- 
-/*
- * The following section activates the workstation, calls the 
- * c_tddtri function, and then deactivates the workstation.
- */
-  gactivate_ws (gkswid);
-  c_tddtri(rtri, mtri, ntri, itwk);
-  gdeactivate_ws (gkswid);
+  c_tdgtrs(*irst,ifc1,ifc2,ifc3,ifc4,ilc1,ilc2,iltd,ustp,vstp,vstp);
 
   return(NhlNOERROR);
+}
+
+
+/*
+ * The tdsetp_W code is based on Fred Clare's wmsetp_W code.
+ */
+
+NhlErrorTypes tdsetp_W(void)
+{
+  char  *arg1;
+  int   numpi, numpf, i, j;
+
+/*
+ *  List the integer and float parameter names.  To add new ones,
+ *  all that needs to be done is add the names to this list.
+ */
+  char *params_i[] = {"cs1", "cs2", "fov", "hnd", "ifc1", "ifc2", 
+                      "ifc3", "ifc4", "ilc1", "ilc2", "iltd",
+                      "lsu", "lsv", "lsw", "set", "shd", "ste", 
+                      "CS1", "CS2", "FOV", "HND", "IFC1", "IFC2", 
+                      "IFC3", "IFC4", "ILC1", "ILC2", "ILTD",
+                      "LSU", "LSV", "LSW", "SET", "SHD", "STE", 
+  };
+  char *params_f[] = {"cs1", "cs2", "fov", "lsu", "lsv", "lsw", 
+                      "vpb", "vpl", "vpr", "vpt", "ustp", "vstp", "wstp"
+                      "CS1", "CS2", "FOV", "LSU", "LSV", "LSW", 
+                      "VPB", "VPL", "VPR", "VPT", "USTP", "VSTP", "WSTP"
+  };
+/*
+ * Input array variables
+ */
+  string *pname;
+  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  void *pvalue;
+  int ndims_pvalue, dsizes_pvalue[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_pvalue;
+
+/*
+ * Retrieve argument #1
+ */
+  pname = (string *) NclGetArgValue(
+          0,
+          2,
+          &ndims_pname,
+          dsizes_pname,
+          NULL,
+          NULL,
+          NULL,
+          2);
+
+  arg1 = NrmQuarkToString(*pname);
+ 
+/*
+ *  Check to see if the parameter name is valid.
+ */
+  numpi = sizeof(params_i)/sizeof(void *);
+  numpf = sizeof(params_f)/sizeof(void *);
+  for (i = 0; i < numpi; i++) {
+    if (!strncmp(arg1, params_i[i], strlen(params_i[i]))) {
+      goto OK_NAME;
+    }
+  }
+  for (i = 0; i < numpf; i++) {
+    if (!strncmp(arg1, params_f[i], strlen(params_f[i]))) {
+      goto OK_NAME;
+    }
+  }
+  NhlPError(NhlFATAL, NhlEUNKNOWN, "tdsetp: unrecognized parameter name");
+  return(NhlFATAL);
+
+/*
+ * Retrieve argument #2
+ */
+OK_NAME: pvalue = (void *) NclGetArgValue(
+           1,
+           2,
+           &ndims_pvalue,
+           dsizes_pvalue,
+           NULL,
+           NULL,
+           &type_pvalue,
+           2);
+
+/*
+ *  Process the parameter if it has an integer value.
+ */
+  if (type_pvalue == NCL_int) {
+    for (i = 0; i < numpi; i++) {
+      if (!strncmp(arg1, params_i[i], strlen(params_i[i]))) {
+        j = *((int *) pvalue);
+        c_tdseti(arg1, j);
+        return(NhlNOERROR);
+      }
+    }
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdsetp: The specified value for the parameter has an invalid type");
+    return(NhlFATAL);
+  }
+  else if (type_pvalue == NCL_float || type_pvalue == NCL_double) {
+
+/*
+ *  Process the parameter if it has a float value or double value.
+ */
+    for (i = 0; i < numpf; i++) {
+      if (!strncmp(arg1, params_f[i], strlen(params_f[i]))) {
+        if (type_pvalue == NCL_float) {
+          c_tdsetr(arg1, *((float *) pvalue));
+          return(NhlNOERROR);
+        }
+        else if (type_pvalue == NCL_double) {
+          c_tdsetr(arg1, (float) *((double *) pvalue));
+          return(NhlNOERROR);
+        }
+      }
+    }
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdsetp: The specified value for the parameter has an invalid type");
+    return(NhlFATAL);
+  }
+  else {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdsetp: The specified value for the "
+              "parameter has an incorrect type");
+    return(NhlFATAL);
+  }
+}
+
+
+NhlErrorTypes tdstrs_W( void )
+{
+/*
+ * Input variables
+ */
+  int *irst, *ifc1, *ifc2, *ifc3, *ifc4, *ilc1, *ilc2, *iltd;
+  float *ustp, *vstp, *wstp;
+
+/*
+ * Retrieve parameters.
+ *
+ * Note that any of the pointer parameters can be set to NULL,
+ * which implies you don't care about its value.
+ */
+  irst =   (int*)NclGetArgValue( 0,11,NULL,NULL,NULL,NULL,NULL,2);
+  ifc1 =   (int*)NclGetArgValue( 1,11,NULL,NULL,NULL,NULL,NULL,2);
+  ifc2 =   (int*)NclGetArgValue( 2,11,NULL,NULL,NULL,NULL,NULL,2);
+  ifc3 =   (int*)NclGetArgValue( 3,11,NULL,NULL,NULL,NULL,NULL,2);
+  ifc4 =   (int*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,2);
+  ilc1 =   (int*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,2);
+  ilc2 =   (int*)NclGetArgValue( 6,11,NULL,NULL,NULL,NULL,NULL,2);
+  iltd =   (int*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,2);
+  ustp = (float*)NclGetArgValue( 8,11,NULL,NULL,NULL,NULL,NULL,2);
+  vstp = (float*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,2);
+  wstp = (float*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,2);
+
+  c_tdstrs(*irst,*ifc1,*ifc2,*ifc3,*ifc4,*ilc1,*ilc2,*iltd,
+           *ustp,*vstp,*vstp);
+
+  return(NhlNOERROR);
+}
+
+
+NhlErrorTypes tdprpt_W( void )
+{
+  float *uvw, xy[2];
+  int dsizes_xy[1];
+
+/*
+ * Retrieve parameter.
+ */
+  uvw = (float*)NclGetArgValue(0,1,NULL,NULL,NULL,NULL,NULL,2);
+
+  c_tdprpt(uvw[0], uvw[1], uvw[2], &xy[0], &xy[1]);
+  
+  dsizes_xy[0] = 2;
+  return(NclReturnValue( (void *) xy, 1, dsizes_xy, NULL, NCL_float, 0));
+}
+
+
+NhlErrorTypes tdprpa_W( void )
+{
+  float *xy_in, xy_out[2];
+  int dsizes_xy[1];
+
+/*
+ * Retrieve parameter.
+ */
+  xy_in = (float*)NclGetArgValue(0,1,NULL,NULL,NULL,NULL,NULL,2);
+
+  c_tdprpa(xy_in[0], xy_in[1], &xy_out[0], &xy_out[1]);
+  
+  dsizes_xy[0] = 2;
+  return(NclReturnValue( (void *) xy_out, 1, dsizes_xy, NULL, NCL_float, 0));
+}
+
+
+NhlErrorTypes tdprpi_W( void )
+{
+  float *xy_in, xy_out[2];
+  int dsizes_xy[1];
+
+/*
+ * Retrieve parameter.
+ */
+  xy_in = (float*)NclGetArgValue(0,1,NULL,NULL,NULL,NULL,NULL,2);
+
+  c_tdprpi(xy_in[0], xy_in[1], &xy_out[0], &xy_out[1]);
+  
+  dsizes_xy[0] = 2;
+  return(NclReturnValue( (void *) xy_out, 1, dsizes_xy, NULL, NCL_float, 0));
 }
 
 
@@ -750,49 +857,175 @@ NhlErrorTypes tdplch_W( void )
 }
 
 
-NhlErrorTypes tdclrs_W( void )
+NhlErrorTypes tddtri_W( void )
 {
+  int *nwid, *ntri, *itwk, mtri, dsizes_rtri[2];
+  float *rtri;
 /*
- *  Definte a variable to store the HLU object identifier.
+ * Variables for retrieving workstation information.
  */
+  int grlist, gkswid, nid;
   NclHLUObj tmp_hlu_obj;
-
-  int *nwid, *ibow, *iofc, *iolc, *ilmt;
-  float *shde, *shdr;
-  int gkswid, grlist, nid;
 
 /*
  * Retrieve parameters.
- *
- * Note any of the pointer parameters can be set to NULL, which
- * implies you don't care about its value. In this example
- * the type parameter is set to NULL because the function
- * is later registered to only accept floating point numbers.
  */
-  nwid =    (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,2);
-  ibow =    (int*)NclGetArgValue(1,7,NULL,NULL,NULL,NULL,NULL,2);
-  shde =  (float*)NclGetArgValue(2,7,NULL,NULL,NULL,NULL,NULL,2);
-  shdr =  (float*)NclGetArgValue(3,7,NULL,NULL,NULL,NULL,NULL,2);
-  iofc =    (int*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,2);
-  iolc =    (int*)NclGetArgValue(5,7,NULL,NULL,NULL,NULL,NULL,2);
-  ilmt =    (int*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,2);
+  nwid =   (int*)NclGetArgValue(0,4,NULL,NULL,NULL,NULL,NULL,2);
+  rtri = (float*)NclGetArgValue(1,4,NULL,dsizes_rtri,NULL,NULL,NULL,2);
+  ntri =   (int*)NclGetArgValue(2,4,NULL,NULL,NULL,NULL,NULL,2);
+  itwk =   (int*)NclGetArgValue(3,4,NULL,NULL,NULL,NULL,NULL,2);
 
+  mtri = dsizes_rtri[0];
+  if(dsizes_rtri[1] != 10) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tddtri: the second dimension of ntri must be 10");
+    return(NhlFATAL);
+  }
 /*
  *  Determine the NCL identifier for the graphic object in nid.
  */
   tmp_hlu_obj = (NclHLUObj) _NclGetObj(*nwid);
-  nid = tmp_hlu_obj->hlu.hlu_id;
+  nid         = tmp_hlu_obj->hlu.hlu_id;
+
 /*
  * Retrieve the GKS workstation id from the workstation object.
  */
   grlist = NhlRLCreate(NhlGETRL);
   NhlRLClear(grlist);
-  NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
-  NhlGetValues(nid,grlist);
-
+  NhlRLGetInteger(grlist, NhlNwkGksWorkId, &gkswid);
+  NhlGetValues(nid, grlist);
+ 
+/*
+ * The following section activates the workstation, calls the 
+ * c_tddtri function, and then deactivates the workstation.
+ */
   gactivate_ws (gkswid);
-  c_tdclrs(gkswid, *ibow, *shde, *shdr, *iofc, *iolc, *ilmt);
+  c_tddtri(rtri, mtri, ntri, itwk);
   gdeactivate_ws (gkswid);
+
+  return(NhlNOERROR);
+}
+
+
+NhlErrorTypes tdstri_W( void )
+{
+  float *u, *v, *w, *rtri;
+  int *ntri, mtri, *irst;
+  int dsizes_u[1], dsizes_v[1], dsizes_w[2], dsizes_rtri[2];
+  int nu, nv;
+/*
+ * Retrieve parameters.
+ */
+  u    = (float*)NclGetArgValue(0,6,NULL,dsizes_u,NULL,NULL,NULL,2);
+  v    = (float*)NclGetArgValue(1,6,NULL,dsizes_v,NULL,NULL,NULL,2);
+  w    = (float*)NclGetArgValue(2,6,NULL,dsizes_w,NULL,NULL,NULL,2);
+  rtri = (float*)NclGetArgValue(3,6,NULL,dsizes_rtri,NULL,NULL,NULL,2);
+  ntri =   (int*)NclGetArgValue(4,6,NULL,NULL,NULL,NULL,NULL,2);
+  irst =   (int*)NclGetArgValue(5,6,NULL,NULL,NULL,NULL,NULL,2);
+
+  mtri = dsizes_rtri[0];
+  if(dsizes_rtri[1] != 10) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdstri: the second dimension of ntri must be 10");
+    return(NhlFATAL);
+  }
+
+  nu = dsizes_u[0];
+  nv = dsizes_v[0];
+  if(dsizes_w[0] != nv || dsizes_w[1] != nu) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdstri: the dimensions of w must be nv x nu");
+    return(NhlFATAL);
+  }
+
+  c_tdstri(u, nu, v, nv, w, nu, rtri, mtri, ntri, *irst);
+
+  if(*ntri == mtri) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdstri: triangle list overflow");
+    return(NhlFATAL);
+  }
+
+  return(NhlNOERROR);
+}
+
+
+NhlErrorTypes tditri_W( void )
+{
+  float *u, *v, *w, *f, *fiso, *rtri;
+  int *ntri, mtri, *irst;
+  int dsizes_u[1], dsizes_v[1], dsizes_w[1], dsizes_f[3], dsizes_rtri[2];
+  int nu, nv, nw;
+/*
+ * Retrieve parameters.
+ */
+  u    = (float*)NclGetArgValue(0,8,NULL,dsizes_u,NULL,NULL,NULL,2);
+  v    = (float*)NclGetArgValue(1,8,NULL,dsizes_v,NULL,NULL,NULL,2);
+  w    = (float*)NclGetArgValue(2,8,NULL,dsizes_w,NULL,NULL,NULL,2);
+  f    = (float*)NclGetArgValue(3,8,NULL,dsizes_f,NULL,NULL,NULL,2);
+  fiso = (float*)NclGetArgValue(4,8,NULL,NULL,NULL,NULL,NULL,2);
+  rtri = (float*)NclGetArgValue(5,8,NULL,dsizes_rtri,NULL,NULL,NULL,2);
+  ntri =   (int*)NclGetArgValue(6,8,NULL,NULL,NULL,NULL,NULL,2);
+  irst =   (int*)NclGetArgValue(7,8,NULL,NULL,NULL,NULL,NULL,2);
+
+  mtri = dsizes_rtri[0];
+  if(dsizes_rtri[1] != 10) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tditri: the second dimension of ntri must be 10");
+    return(NhlFATAL);
+  }
+
+  nu = dsizes_u[0];
+  nv = dsizes_v[0];
+  nw = dsizes_w[0];
+  if(dsizes_f[0] != nw || dsizes_f[1] != nv || dsizes_f[2] != nu) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tditri: the dimensions of f must be nw x nv x nu");
+    return(NhlFATAL);
+  }
+
+  c_tditri(u, nu, v, nv, w, nw, f, nu, nv, *fiso, rtri, mtri, ntri, *irst);
+
+  if(*ntri == mtri) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tditri: triangle list overflow");
+    return(NhlFATAL);
+  }
+
+  return(NhlNOERROR);
+}
+
+
+NhlErrorTypes tdmtri_W( void )
+{
+  float *u, *v, *w, *s, *rtri;
+  float *umin, *vmin, *wmin, *umax, *vmax, *wmax;
+  int *imrk, *ntri, mtri, *irst;
+  int dsizes_rtri[2];
+/*
+ * Retrieve parameters.
+ */
+  imrk =   (int*)NclGetArgValue( 0,14,NULL,NULL,NULL,NULL,NULL,2);
+  u    = (float*)NclGetArgValue( 1,14,NULL,NULL,NULL,NULL,NULL,2);
+  v    = (float*)NclGetArgValue( 2,14,NULL,NULL,NULL,NULL,NULL,2);
+  w    = (float*)NclGetArgValue( 3,14,NULL,NULL,NULL,NULL,NULL,2);
+  s    = (float*)NclGetArgValue( 4,14,NULL,NULL,NULL,NULL,NULL,2);
+  rtri = (float*)NclGetArgValue( 5,14,NULL,dsizes_rtri,NULL,NULL,NULL,2);
+  ntri =   (int*)NclGetArgValue( 6,14,NULL,NULL,NULL,NULL,NULL,2);
+  irst =   (int*)NclGetArgValue( 7,14,NULL,NULL,NULL,NULL,NULL,2);
+  umin = (float*)NclGetArgValue( 8,14,NULL,NULL,NULL,NULL,NULL,2);
+  vmin = (float*)NclGetArgValue( 9,14,NULL,NULL,NULL,NULL,NULL,2);
+  wmin = (float*)NclGetArgValue(10,14,NULL,NULL,NULL,NULL,NULL,2);
+  umax = (float*)NclGetArgValue(11,14,NULL,NULL,NULL,NULL,NULL,2);
+  vmax = (float*)NclGetArgValue(12,14,NULL,NULL,NULL,NULL,NULL,2);
+  wmax = (float*)NclGetArgValue(13,14,NULL,NULL,NULL,NULL,NULL,2);
+
+  mtri = dsizes_rtri[0];
+  if(dsizes_rtri[1] != 10) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdmtri: the second dimension of ntri must be 10");
+    return(NhlFATAL);
+  }
+
+  c_tdmtri(*imrk, *u, *v, *w, *s, rtri, mtri, ntri, *irst, 
+           *umin, *vmin, *wmin, *umax, *vmax, *wmax);
+
+  if(*ntri == mtri) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdmtri: triangle list overflow");
+    return(NhlFATAL);
+  }
 
   return(NhlNOERROR);
 }
@@ -842,6 +1075,40 @@ NhlErrorTypes tdttri_W( void )
                          &mtri, ntri, irst, 
                          umin, vmin, wmin, umax, vmax, wmax);
 
+  if(*ntri == mtri) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdttri: triangle list overflow");
+    return(NhlFATAL);
+  }
+
+  return(NhlNOERROR);
+}
+
+
+NhlErrorTypes tdctri_W( void )
+{
+  float *rtri, *rcut;
+  int *ntri, *iaxs, mtri, dsizes_rtri[2];
+
+/*
+ * Retrieve parameters.
+ */
+  rtri = (float*)NclGetArgValue(0,4,NULL,dsizes_rtri,NULL,NULL,NULL,2);
+  ntri =   (int*)NclGetArgValue(1,4,NULL,NULL,NULL,NULL,NULL,2);
+  iaxs =   (int*)NclGetArgValue(2,4,NULL,NULL,NULL,NULL,NULL,2);
+  rcut = (float*)NclGetArgValue(3,4,NULL,NULL,NULL,NULL,NULL,2);
+
+  mtri = dsizes_rtri[0];
+  if(dsizes_rtri[1] != 10) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdctri: the second dimension of ntri must be 10");
+    return(NhlFATAL);
+  }
+  c_tdctri(rtri, mtri, ntri, *iaxs, *rcut);
+
+  if(*ntri == mtri) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdctri: triangle list overflow");
+    return(NhlFATAL);
+  }
+
   return(NhlNOERROR);
 }
 
@@ -873,7 +1140,7 @@ NhlErrorTypes tdotri_W( void )
   c_tdotri(rtri, mtri, ntri, rtwk, itwk, *iord);
 
   if(*ntri == mtri) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdotri: triangle list overflow in tdotri");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdotri: triangle list overflow");
     return(NhlFATAL);
   }
 
@@ -881,408 +1148,249 @@ NhlErrorTypes tdotri_W( void )
 }
 
 
-NhlErrorTypes tdstri_W( void )
+NhlErrorTypes tdsort_W( void )
 {
-  float *u, *v, *w, *rtri;
-  int *ntri, mtri, *irst;
-  int dsizes_u[1], dsizes_v[1], dsizes_w[2], dsizes_rtri[2];
-  int nu, nv;
+  float *rwrk;
+  int *iwrk, *iord, nwrk;
+  int dsizes_rwrk[1], dsizes_iwrk[1];
 /*
  * Retrieve parameters.
  */
-  u    = (float*)NclGetArgValue(0,6,NULL,dsizes_u,NULL,NULL,NULL,2);
-  v    = (float*)NclGetArgValue(1,6,NULL,dsizes_v,NULL,NULL,NULL,2);
-  w    = (float*)NclGetArgValue(2,6,NULL,dsizes_w,NULL,NULL,NULL,2);
-  rtri = (float*)NclGetArgValue(3,6,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =   (int*)NclGetArgValue(4,6,NULL,NULL,NULL,NULL,NULL,2);
-  irst =   (int*)NclGetArgValue(5,6,NULL,NULL,NULL,NULL,NULL,2);
+  rwrk = (float*)NclGetArgValue(0,3,NULL,dsizes_rwrk,NULL,NULL,NULL,2);
+  iord =   (int*)NclGetArgValue(1,3,NULL,NULL,NULL,NULL,NULL,2);
+  iwrk =   (int*)NclGetArgValue(2,3,NULL,dsizes_iwrk,NULL,NULL,NULL,2);
+  nwrk = dsizes_rwrk[0];
 
-  mtri = dsizes_rtri[0];
-  if(dsizes_rtri[1] != 10) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdstri: the second dimension of ntri must be 10");
+  if(dsizes_iwrk[0] != nwrk) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdsort: the two work arrays, rwrk and iwrk must be the same length");
     return(NhlFATAL);
   }
 
-  nu = dsizes_u[0];
-  nv = dsizes_v[0];
-  if(dsizes_w[0] != nv || dsizes_w[1] != nu) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdstri: the dimensions of w must be nv x nu");
-    return(NhlFATAL);
-  }
-
-  c_tdstri(u, nu, v, nv, w, nu, rtri, mtri, ntri, *irst);
+  c_tdsort(rwrk, nwrk, *iord, iwrk);
 
   return(NhlNOERROR);
 }
 
 
-NhlErrorTypes tditri_W( void )
+NhlErrorTypes tdez2d_W( void )
 {
-  float *u, *v, *w, *f, *fiso, *rtri;
-  int *ntri, mtri, *irst;
-  int dsizes_u[1], dsizes_v[1], dsizes_w[1], dsizes_f[3], dsizes_rtri[2];
-  int nu, nv, nw;
+  float *x, *y, *z, *zp;
+  int dsizes_x[NCL_MAX_DIMENSIONS];
+  int dsizes_y[NCL_MAX_DIMENSIONS];
+  int dsizes_z[NCL_MAX_DIMENSIONS];
+  float *rmult, *theta, *phi;
+  int *style, *nwid;
+  int i, j;
 /*
- * Retrieve parameters.
+ * Variables for retrieving workstation information.
  */
-  u    = (float*)NclGetArgValue(0,8,NULL,dsizes_u,NULL,NULL,NULL,2);
-  v    = (float*)NclGetArgValue(1,8,NULL,dsizes_v,NULL,NULL,NULL,2);
-  w    = (float*)NclGetArgValue(2,8,NULL,dsizes_w,NULL,NULL,NULL,2);
-  f    = (float*)NclGetArgValue(3,8,NULL,dsizes_f,NULL,NULL,NULL,2);
-  fiso = (float*)NclGetArgValue(4,8,NULL,NULL,NULL,NULL,NULL,2);
-  rtri = (float*)NclGetArgValue(5,8,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =   (int*)NclGetArgValue(6,8,NULL,NULL,NULL,NULL,NULL,2);
-  irst =   (int*)NclGetArgValue(7,8,NULL,NULL,NULL,NULL,NULL,2);
-
-  mtri = dsizes_rtri[0];
-  if(dsizes_rtri[1] != 10) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tditri: the second dimension of ntri must be 10");
-    return(NhlFATAL);
-  }
-
-  nu = dsizes_u[0];
-  nv = dsizes_v[0];
-  nw = dsizes_w[0];
-  if(dsizes_f[0] != nw || dsizes_f[1] != nv || dsizes_f[2] != nu) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tditri: the dimensions of f must be nw x nv x nu");
-    return(NhlFATAL);
-  }
-
-  c_tditri(u, nu, v, nv, w, nw, f, nu, nv, *fiso, rtri, mtri, ntri, *irst);
-
-  return(NhlNOERROR);
-}
-
-
-NhlErrorTypes tdprpt_W( void )
-{
-  float *uvw, xy[2];
-  int dsizes_xy[1];
-
-/*
- * Retrieve parameter.
- */
-  uvw = (float*)NclGetArgValue(0,1,NULL,NULL,NULL,NULL,NULL,2);
-
-  c_tdprpt(uvw[0], uvw[1], uvw[2], &xy[0], &xy[1]);
-  
-  dsizes_xy[0] = 2;
-  return(NclReturnValue( (void *) xy, 1, dsizes_xy, NULL, NCL_float, 0));
-}
-
-
-NhlErrorTypes tdprpa_W( void )
-{
-  float *xy_in, xy_out[2];
-  int dsizes_xy[1];
-
-/*
- * Retrieve parameter.
- */
-  xy_in = (float*)NclGetArgValue(0,1,NULL,NULL,NULL,NULL,NULL,2);
-
-  c_tdprpa(xy_in[0], xy_in[1], &xy_out[0], &xy_out[1]);
-  
-  dsizes_xy[0] = 2;
-  return(NclReturnValue( (void *) xy_out, 1, dsizes_xy, NULL, NCL_float, 0));
-}
-
-
-NhlErrorTypes tdprpi_W( void )
-{
-  float *xy_in, xy_out[2];
-  int dsizes_xy[1];
-
-/*
- * Retrieve parameter.
- */
-  xy_in = (float*)NclGetArgValue(0,1,NULL,NULL,NULL,NULL,NULL,2);
-
-  c_tdprpi(xy_in[0], xy_in[1], &xy_out[0], &xy_out[1]);
-  
-  dsizes_xy[0] = 2;
-  return(NclReturnValue( (void *) xy_out, 1, dsizes_xy, NULL, NCL_float, 0));
-}
-
-
-NhlErrorTypes tdstrs_W( void )
-{
-/*
- * Input variables
- */
-  int *irst, *ifc1, *ifc2, *ifc3, *ifc4, *ilc1, *ilc2, *iltd;
-  float *ustp, *vstp, *wstp;
-
+  int grlist, gkswid, nid;
+  NclHLUObj tmp_hlu_obj;
 /*
  * Retrieve parameters.
  *
- * Note that any of the pointer parameters can be set to NULL,
- * which implies you don't care about its value.
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value. In this example
+ * the type parameter is set to NULL because the function
+ * is later registered to only accept floating point numbers.
  */
-  irst =   (int*)NclGetArgValue( 0,11,NULL,NULL,NULL,NULL,NULL,2);
-  ifc1 =   (int*)NclGetArgValue( 1,11,NULL,NULL,NULL,NULL,NULL,2);
-  ifc2 =   (int*)NclGetArgValue( 2,11,NULL,NULL,NULL,NULL,NULL,2);
-  ifc3 =   (int*)NclGetArgValue( 3,11,NULL,NULL,NULL,NULL,NULL,2);
-  ifc4 =   (int*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,2);
-  ilc1 =   (int*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,2);
-  ilc2 =   (int*)NclGetArgValue( 6,11,NULL,NULL,NULL,NULL,NULL,2);
-  iltd =   (int*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,2);
-  ustp = (float*)NclGetArgValue( 8,11,NULL,NULL,NULL,NULL,NULL,2);
-  vstp = (float*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,2);
-  wstp = (float*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,2);
-
-  c_tdstrs(*irst,*ifc1,*ifc2,*ifc3,*ifc4,*ilc1,*ilc2,*iltd,
-           *ustp,*vstp,*vstp);
-
-  return(NhlNOERROR);
-}
-
-
-NhlErrorTypes tdgtrs_W( void )
-{
-/*
- * Input variables
- */
-  int *irst, *ifc1, *ifc2, *ifc3, *ifc4, *ilc1, *ilc2, *iltd;
-  float *ustp, *vstp, *wstp;
+  nwid   = (int*)NclGetArgValue(0,8,NULL,NULL,NULL,NULL,NULL,2);
+  x      = (float*)NclGetArgValue(1,8, NULL, dsizes_x, NULL,NULL,NULL,2);
+  y      = (float*)NclGetArgValue(2,8, NULL, dsizes_y, NULL,NULL,NULL,2);
+  z      = (float*)NclGetArgValue(3,8, NULL, dsizes_z, NULL,NULL,NULL,2);
+  rmult  = (float*)NclGetArgValue(4,8,NULL,NULL,NULL,NULL,NULL,2);
+  theta  = (float*)NclGetArgValue(5,8,NULL,NULL,NULL,NULL,NULL,2);
+  phi    = (float*)NclGetArgValue(6,8,NULL,NULL,NULL,NULL,NULL,2);
+  style  = (int*)NclGetArgValue(7,8,NULL,NULL,NULL,NULL,NULL,2);
 
 /*
- * Retrieve parameters.
- *
- * Note that any of the pointer parameters can be set to NULL,
- * which implies you don't care about its value.
+ * Check input sizes.
  */
-  irst =   (int*)NclGetArgValue( 0,11,NULL,NULL,NULL,NULL,NULL,2);
-  ifc1 =   (int*)NclGetArgValue( 1,11,NULL,NULL,NULL,NULL,NULL,2);
-  ifc2 =   (int*)NclGetArgValue( 2,11,NULL,NULL,NULL,NULL,NULL,2);
-  ifc3 =   (int*)NclGetArgValue( 3,11,NULL,NULL,NULL,NULL,NULL,2);
-  ifc4 =   (int*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,2);
-  ilc1 =   (int*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,2);
-  ilc2 =   (int*)NclGetArgValue( 6,11,NULL,NULL,NULL,NULL,NULL,2);
-  iltd =   (int*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,2);
-  ustp = (float*)NclGetArgValue( 8,11,NULL,NULL,NULL,NULL,NULL,2);
-  vstp = (float*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,2);
-  wstp = (float*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,2);
-
-  c_tdgtrs(*irst,ifc1,ifc2,ifc3,ifc4,ilc1,ilc2,iltd,ustp,vstp,vstp);
-
-  return(NhlNOERROR);
-}
-
-
-
+  if( (dsizes_x[0] == dsizes_z[0]) && (dsizes_y[0] == dsizes_z[1]) ) {
 /*
- * The tdsetp_W code is based on Fred Clare's wmsetp_W code.
+ * Reverse the order of the dimensions.
  */
-
-NhlErrorTypes tdsetp_W(void)
-{
-  char  *arg1;
-  int   numpi, numpf, i, j;
-
+    zp = (float *) calloc(dsizes_x[0] * dsizes_y[0],sizeof(float));
+    for (i = 0; i < dsizes_x[0]; i++) {
+      for (j = 0; j < dsizes_y[0]; j++) { 
+        zp[j*dsizes_x[0] + i] = z[i*dsizes_y[0] + j];
+      }
+    }
 /*
- *  List the integer and float parameter names.  To add new ones,
- *  all that needs to be done is add the names to this list.
+ *  Determine the NCL identifier for the graphic object in nid.
  */
-  char *params_i[] = {"cs1", "cs2", "fov", "hnd", "ifc1", "ifc2", 
-                      "ifc3", "ifc4", "ilc1", "ilc2", "iltd",
-                      "lsu", "lsv", "lsw", "set", "shd", "ste", 
-                      "CS1", "CS2", "FOV", "HND", "IFC1", "IFC2", 
-                      "IFC3", "IFC4", "ILC1", "ILC2", "ILTD",
-                      "LSU", "LSV", "LSW", "SET", "SHD", "STE", 
-  };
-  char *params_f[] = {"cs1", "cs2", "fov", "lsu", "lsv", "lsw", 
-                      "vpb", "vpl", "vpr", "vpt", "ustp", "vstp", "wstp"
-                      "CS1", "CS2", "FOV", "LSU", "LSV", "LSW", 
-                      "VPB", "VPL", "VPR", "VPT", "USTP", "VSTP", "WSTP"
-  };
+    tmp_hlu_obj = (NclHLUObj) _NclGetObj(*nwid);
+    nid         = tmp_hlu_obj->hlu.hlu_id;
 /*
- * Input array variables
+ * Retrieve the GKS workstation id from the workstation object.
  */
-  string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
-  void *pvalue;
-  int ndims_pvalue, dsizes_pvalue[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_pvalue;
-
-/*
- * Retrieve argument #1
- */
-  pname = (string *) NclGetArgValue(
-          0,
-          2,
-          &ndims_pname,
-          dsizes_pname,
-          NULL,
-          NULL,
-          NULL,
-          2);
-
-  arg1 = NrmQuarkToString(*pname);
+    grlist = NhlRLCreate(NhlGETRL);
+    NhlRLClear(grlist);
+    NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
+    NhlGetValues(nid,grlist);
  
 /*
- *  Check to see if the parameter name is valid.
+ * The following section activates the workstation, calls the 
+ * c_tdez2d function, and then deactivates the workstation.
  */
-  numpi = sizeof(params_i)/sizeof(void *);
-  numpf = sizeof(params_f)/sizeof(void *);
-  for (i = 0; i < numpi; i++) {
-    if (!strncmp(arg1, params_i[i], strlen(params_i[i]))) {
-      goto OK_NAME;
-    }
+    gactivate_ws (gkswid);
+    c_tdez2d(dsizes_x[0],dsizes_y[0],x,y,zp,*rmult,*theta,*phi,*style);
+    gdeactivate_ws (gkswid);
+    free(zp);
   }
-  for (i = 0; i < numpf; i++) {
-    if (!strncmp(arg1, params_f[i], strlen(params_f[i]))) {
-      goto OK_NAME;
-    }
-  }
-  NhlPError(NhlFATAL, NhlEUNKNOWN, "tdsetp: unrecognized parameter name");
-  return(NhlFATAL);
-
-/*
- * Retrieve argument #2
- */
-OK_NAME: pvalue = (void *) NclGetArgValue(
-           1,
-           2,
-           &ndims_pvalue,
-           dsizes_pvalue,
-           NULL,
-           NULL,
-           &type_pvalue,
-           2);
-
-/*
- *  Process the parameter if it has an integer value.
- */
-  if (type_pvalue == NCL_int) {
-    for (i = 0; i < numpi; i++) {
-      if (!strncmp(arg1, params_i[i], strlen(params_i[i]))) {
-        j = *((int *) pvalue);
-        c_tdseti(arg1, j);
-        return(NhlNOERROR);
-      }
-    }
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdsetp: The specified value for the parameter has an invalid type");
+  else { 
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdez2d: the dimension sizes of z must be the dimension of x by the dimension of y");
     return(NhlFATAL);
   }
-  else if (type_pvalue == NCL_float || type_pvalue == NCL_double) {
+
+  return(NhlNOERROR);
+  
+}
+
+
+NhlErrorTypes tdez3d_W( void )
+{
+  float *x, *y, *z, *u, *value, *up;
+  int dsizes_x[NCL_MAX_DIMENSIONS];
+  int dsizes_y[NCL_MAX_DIMENSIONS];
+  int dsizes_z[NCL_MAX_DIMENSIONS];
+  int dsizes_u[NCL_MAX_DIMENSIONS];
+  float *rmult, *theta, *phi;
+  int *nwid, *style;
+/*
+ * Variables for retrieving workstation information.
+ */
+  int grlist, gkswid, nid;
+  NclHLUObj tmp_hlu_obj;
+
+  int i, j, k;
+/*
+ * Retrieve parameters.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value. In this example
+ * the type parameter is set to NULL because the function
+ * is later registered to only accept floating point numbers.
+ */
+  nwid  =  (int*)NclGetArgValue(0,10,NULL,NULL,NULL,NULL,NULL,2);
+  x     =  (float*)NclGetArgValue(1,10, NULL, dsizes_x, NULL,NULL,NULL,2);
+  y     =  (float*)NclGetArgValue(2,10, NULL, dsizes_y, NULL,NULL,NULL,2);
+  z     =  (float*)NclGetArgValue(3,10, NULL, dsizes_z, NULL,NULL,NULL,2);
+  u     =  (float*)NclGetArgValue(4,10, NULL, dsizes_u, NULL,NULL,NULL,2);
+  value = (float*)NclGetArgValue(5,10,NULL,NULL,NULL,NULL,NULL,2);
+  rmult = (float*)NclGetArgValue(6,10,NULL,NULL,NULL,NULL,NULL,2);
+  theta = (float*)NclGetArgValue(7,10,NULL,NULL,NULL,NULL,NULL,2);
+  phi   = (float*)NclGetArgValue(8,10,NULL,NULL,NULL,NULL,NULL,2);
+  style = (int*)NclGetArgValue(9,10,NULL,NULL,NULL,NULL,NULL,2);
 
 /*
- *  Process the parameter if it has a float value or double value.
+ * Check input sizes.
  */
-    for (i = 0; i < numpf; i++) {
-      if (!strncmp(arg1, params_f[i], strlen(params_f[i]))) {
-        if (type_pvalue == NCL_float) {
-          c_tdsetr(arg1, *((float *) pvalue));
-          return(NhlNOERROR);
-        }
-        else if (type_pvalue == NCL_double) {
-          c_tdsetr(arg1, (float) *((double *) pvalue));
-          return(NhlNOERROR);
+  if( (dsizes_x[0] == dsizes_u[0]) && (dsizes_y[0] == dsizes_u[1]) && 
+      (dsizes_z[0] == dsizes_u[2]) ) {
+/*
+ * Reverse the order of the dimensions.
+ */
+    up = (float *) calloc(dsizes_x[0]*dsizes_y[0]*dsizes_z[0],sizeof(float));
+    for (i = 0; i < dsizes_x[0]; i++) {
+      for (j = 0; j < dsizes_y[0]; j++) { 
+        for (k = 0; k < dsizes_z[0]; k++) { 
+          up[dsizes_x[0]*dsizes_y[0]*k + j*dsizes_x[0] + i] = 
+            u[i*dsizes_z[0]*dsizes_y[0] + dsizes_z[0]*j + k];
         }
       }
     }
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdsetp: The specified value for the parameter has an invalid type");
-    return(NhlFATAL);
+
+/*
+ *  Determine the NCL identifier for the graphic object in nid.
+ */
+    tmp_hlu_obj = (NclHLUObj) _NclGetObj(*nwid);
+    nid         = tmp_hlu_obj->hlu.hlu_id;
+ 
+/*
+ * Retrieve the GKS workstation id from the workstation object.
+ */
+    grlist = NhlRLCreate(NhlGETRL);
+    NhlRLClear(grlist);
+    NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
+    NhlGetValues(nid,grlist);
+
+/*
+ * The following section activates the workstation, calls the 
+ * c_tdez3d function, and then deactivates the workstation.
+ */
+    gactivate_ws (gkswid);
+    c_tdez3d(dsizes_x[0],dsizes_y[0],dsizes_z[0],x,y,z,up,*value,
+             *rmult,*theta,*phi,*style);
+    gdeactivate_ws (gkswid);
+    free(up);
   }
   else {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdsetp: The specified value for the "
-              "parameter has an incorrect type");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdez3d: the dimension sizes of u must be the dimension of x by the dimension of y by the dimension of z");
     return(NhlFATAL);
   }
+  return(NhlNOERROR);
+  
 }
 
 
-NhlErrorTypes tdgetp_W(void)
+NhlErrorTypes tdez1d_W( void )
 {
+  int *nwid, *imrk, *style;
+  float *x, *y, *z, *rmrk, *smrk, *rmult, *theta, *phi;
+  int dsizes_x[1], dsizes_y[1], dsizes_z[1];
 /*
- *  Get values for tdpack parameters.
+ * Variables for retrieving workstation information.
  */
-  char  *arg1;
-  int   numpi, numpf, i;
-  string *pvalue, *qvalue;
-
+  int grlist, gkswid, nid;
+  NclHLUObj tmp_hlu_obj;
 /*
- *  List the integer and float parameter names.  To add new ones,
- *  all that needs to be done is add the names to this list.
+ * Retrieve parameters.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value. In this example
+ * the type parameter is set to NULL because the function
+ * is later registered to only accept floating point numbers.
  */
-  char *params_i[] = {"cs1", "cs2", "fov", "hnd", "ifc1", "ifc2", 
-                      "ifc3", "ifc4", "ilc1", "ilc2", "iltd",
-                      "lsu", "lsv", "lsw", "set", "shd", "ste", 
-                      "CS1", "CS2", "FOV", "HND", "IFC1", "IFC2", 
-                      "IFC3", "IFC4", "ILC1", "ILC2", "ILTD",
-                      "LSU", "LSV", "LSW", "SET", "SHD", "STE", 
-  };
-  char *params_f[] = {"cs1", "cs2", "fov", "lsu", "lsv", "lsw", 
-                      "vpb", "vpl", "vpr", "vpt", "ustp", "vstp", "wstp"
-                      "CS1", "CS2", "FOV", "LSU", "LSV", "LSW", 
-                      "VPB", "VPL", "VPR", "VPT", "USTP", "VSTP", "WSTP"
-  };
+  nwid   =   (int*)NclGetArgValue( 0,11,NULL,NULL,NULL,NULL,NULL,2);
+  x      = (float*)NclGetArgValue( 1,11,NULL,dsizes_x,NULL,NULL,NULL,2);
+  y      = (float*)NclGetArgValue( 2,11,NULL,dsizes_y,NULL,NULL,NULL,2);
+  z      = (float*)NclGetArgValue( 3,11,NULL,dsizes_z,NULL,NULL,NULL,2);
+  imrk   =   (int*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,2);
+  rmrk   = (float*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,2);
+  smrk   = (float*)NclGetArgValue( 6,11,NULL,NULL,NULL,NULL,NULL,2);
+  rmult  = (float*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,2);
+  theta  = (float*)NclGetArgValue( 8,11,NULL,NULL,NULL,NULL,NULL,2);
+  phi    = (float*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,2);
+  style  =   (int*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,2);
 /*
- * Input array variable
+ * Check the input sizes.
  */
-  string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
-  float *fval;
-  int *ival;
-  int ret_size = 1; 
-
-/*
- * Retrieve argument #1
- */
-  pname = (string *) NclGetArgValue(
-          0,
-          1,
-          &ndims_pname,
-          dsizes_pname,
-          NULL,
-          NULL,
-          NULL,
-          2);
-
-  arg1 = NrmQuarkToString(*pname);
-
-/*
- *  Check to see if the parameter name is valid.
- */
-  numpi = sizeof(params_i)/sizeof(void *);
-  numpf = sizeof(params_f)/sizeof(void *);
-  for (i = 0; i < numpi; i++) {
-    if (!strncmp(arg1, params_i[i], strlen(params_i[i]))) {
-      goto OK_NAME;
-    }
+  if( dsizes_x[0] != dsizes_y[0] || dsizes_x[0] != dsizes_z[0] ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdez1d: the length of the x, y, and z arrays must be the same");
+    return(NhlFATAL);
   }
-  for (i = 0; i < numpf; i++) {
-    if (!strncmp(arg1, params_f[i], strlen(params_f[i]))) {
-      goto OK_NAME;
-    }
-  }
-  NhlPError(NhlFATAL, NhlEUNKNOWN, "tdgetp: unrecognized parameter name");
-  return(NhlFATAL);
-
 /*
- *  Process the parameter if it has an integer value.
+ *  Determine the NCL identifier for the graphic object in nid.
  */
-OK_NAME:  for (i = 0; i < numpi; i++) {
-    if (!strncmp(arg1, params_i[i], strlen(params_i[i]))) {
-      ival = (int *) calloc(1,sizeof(int));
-      c_tdgeti(arg1, ival);
-      return(NclReturnValue( (void *) ival, 1, &ret_size, NULL, NCL_int, 0));
-    }
-  }
-
+  tmp_hlu_obj = (NclHLUObj) _NclGetObj(*nwid);
+  nid         = tmp_hlu_obj->hlu.hlu_id;
 /*
- *  Process the parameter if it has a float value.
+ * Retrieve the GKS workstation id from the workstation object.
  */
-  for (i = 0; i < numpf; i++) {
-    if (!strncmp(arg1, params_f[i], strlen(params_f[i]))) {
-      fval = (float *) calloc(1,sizeof(float));
-      c_tdgetr(arg1, fval);
-      return(NclReturnValue((void *) fval, 1, &ret_size, NULL, NCL_float, 0));
-    }
-  }
+  grlist = NhlRLCreate(NhlGETRL);
+  NhlRLClear(grlist);
+  NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
+  NhlGetValues(nid,grlist);
+ 
+/*
+ * The following section activates the workstation, calls the 
+ * tdez1d function, and then deactivates the workstation.
+ */
+  gactivate_ws (gkswid);
+  NGCALLF(tdez1d,TDEZ1D)(&dsizes_x[0],x,y,z,imrk,rmrk,smrk,rmult,theta,phi,
+                         style);
+  gdeactivate_ws (gkswid);
 
-  NhlPError(NhlFATAL, NhlEUNKNOWN, "tdgetp: impossible to get this message");
-  return(NhlFATAL);
+  return(NhlNOERROR);
 }
-
