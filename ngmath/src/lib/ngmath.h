@@ -5,6 +5,34 @@
  *  user entry points in the ngmath library.
  */
 
+/*
+ *  Function prototypes for the fitgrid package.
+ */
+int c_ftseti(char *, int);
+int c_ftsetr(char *, float);
+int c_ftsetc(char *, char *);
+int c_ftgeti(char *, int *);
+int c_ftgetr(char *, float *);
+int c_ftgetc(char *, char *);
+int c_ftsetfa(char *, int, float *);
+int c_ftgetfa_size(char *);
+float *c_ftgetfa_data(char *);
+int c_ftcurv (int, float [], float [], int, float [], float []);
+int c_ftcurvd(int, float [], float [], int, float [], float []);
+int c_ftcurvi(float, float, int, float [], float [], float *);
+int c_ftcurvp(int, float [], float [], float, int, float [], float yo[]);
+int c_ftcurvpi(float, float, float, int, float [], float [], float *);
+int c_ftcurvs(int, float [], float [], int, float [], int, float [], float []);
+int c_ftcurvps(int, float [], float [], float, int, float [],
+               int, float [], float []);
+int c_ftkurv(int, float [], float [], int, float [], float [], float []);
+int c_ftkurvp(int, float [], float [], int, float [], float [], float []);
+int c_ftkurvd(int, float [], float [], int, float [], float [], float [],
+              float [], float [], float [], float []);
+int c_ftkurvpd(int, float [], float [], int, float [], float [], float [],
+               float [], float [], float [], float []);
+float *c_ftsurf(int, int, float *, float *, float *,
+              int, int, float *, float *, int *);
 
 /*
  *  Function prototypes for the dsgrid package.
