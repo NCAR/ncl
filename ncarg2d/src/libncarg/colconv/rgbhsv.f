@@ -1,5 +1,5 @@
 C
-C	$Id: rgbhsv.f,v 1.1.1.1 1992-04-17 22:32:24 ncargd Exp $
+C	$Id: rgbhsv.f,v 1.2 1999-04-23 17:42:56 fred Exp $
 C
       SUBROUTINE RGBHSV ( R, G, B, H, S, V )
 C
@@ -133,7 +133,7 @@ C
 C
 C  Compute saturation.
 C
-      IF (MXINTS .EQ. 0) THEN
+      IF (MXINTS .EQ. 0.) THEN
         S = 0.
       ELSE
         S = MAXMIN/MXINTS
@@ -155,15 +155,15 @@ C
         ELSE IF (B .EQ. MXINTS) THEN
           H = 4.+GC-RC
         ENDIF
-      ELSE
-        H = HSAV
-      ENDIF
 C
 C  Convert H to degrees.
 C
-      H = H*60.
-      IF (H .LT. 0.) H = H+360.
-      HSAV = H
+        H = H*60.
+        IF (H .LT. 0.) H = H+360.
+        HSAV = H
+      ELSE
+        H = HSAV
+      ENDIF
 C
 C  Guarantee saturation and value are in range.
 C
