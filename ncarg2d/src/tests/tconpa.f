@@ -1,5 +1,5 @@
 C
-C	$Id: tconpa.f,v 1.2 1993-03-05 00:12:04 haley Exp $
+C       $Id: tconpa.f,v 1.3 1993-03-23 23:08:32 kennison Exp $
 C
 C
 C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
@@ -143,12 +143,6 @@ C
 C
 C Frame 3 - A solid-filled contour plot.
 C
-C Put a label at the top of the frame.
-C
-      CALL SET (0.,1.,0.,1.,0.,1.,0.,1.,1)
-      CALL WTSTR (.5,.9765,
-     +            'DEMONSTRATION PLOT FOR BASIC CONPACK ROUTINES',2,0,0)
-C
 C Set all the GKS aspect source flags to "individual".
 C
         CALL GSASF (IASF)
@@ -164,6 +158,12 @@ C
 C Define a bunch of color indices.
 C
         CALL CPCLRS
+C
+C Put a label at the top of the frame.
+C
+      CALL SET (0.,1.,0.,1.,0.,1.,0.,1.,1)
+      CALL WTSTR (.5,.9765,
+     +            'DEMONSTRATION PLOT FOR BASIC CONPACK ROUTINES',2,0,0)
 C
 C Force the plot into the left side of the frame.
 C
