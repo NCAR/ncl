@@ -1,5 +1,5 @@
 /*
- *	$Id: rastdev.c,v 1.9 1992-05-11 23:23:42 clyne Exp $
+ *	$Id: rastdev.c,v 1.10 1992-06-09 19:42:00 clyne Exp $
  */
 #include <stdio.h>
 #include <ncarg_ras.h>
@@ -63,7 +63,7 @@ void	rast_pointflush(coord_buf, coord_buf_num)
 	else {
 		for (i=1; i<*coord_buf_num; i++) {
 		ComFatLine(coord_buf[i-1].x, coord_buf[i-1].y, 
-			coord_buf[i].x, coord_buf[i].y, ROUND(rasLineWidth));
+			coord_buf[i].x, coord_buf[i].y, ROUND(rasLineWidth), 1);
 		}
 	}
 }

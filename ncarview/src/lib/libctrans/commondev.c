@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.13 1992-05-05 22:41:33 clyne Exp $
+ *	$Id: commondev.c,v 1.14 1992-06-09 19:41:49 clyne Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -841,19 +841,26 @@ Ct_err	ComLineSim (x1,y1,x2,y2)
  *	ComFatLine
  *
  *	Draw a wide line. No attempt is made to join the lines nicely yet
+ *
+ * on entry
+ *	line_width	: number of $pix_width wide lines to draw.
+ *	pix_width	: width of a single pixel line in device coords.
  */
 #define	DISTANCE(X1, Y1, X2, Y2)	(sqrt ((double) \
 	((((X1) - (X2)) * ((X1) - (X2))) + (((Y1) - (Y2)) * ((Y1) - (Y2))))))
 	
-ComFatLine(x1, y1, x2, y2, line_width)
+ComFatLine(x1, y1, x2, y2, line_width, pix_width)
 	VDCtype	x1, y1, x2, y2;
 	int	line_width;
+	int	pix_width;
 {
 	float	slope;
 
 	VDCtype	dx, dy;		/* increment in x or y direction	*/
 
 	void	fat_segment();
+
+	pix_width = (pix_width == 0) ? 1 : pix_width;
 
 	/*
 	 * find the slope of the line. We really on care if its greater or
@@ -872,11 +879,11 @@ ComFatLine(x1, y1, x2, y2, line_width)
 	 * else in the x direction
 	 */
 	if (ABS(slope) < 1.0) {
-		dy = YScale_(1);
+		dy = YScale_(pix_width);
 		dx = 0;
 	}
 	else {
-		dx = XScale_(1);
+		dx = XScale_(pix_width);
 		dy = 0;
 		if (x1 != x2 && slope > 0) dx = -dx;
 	}

@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.13 1992-05-11 23:23:25 clyne Exp $
+ *	$Id: gcapdev.c,v 1.14 1992-06-09 19:41:57 clyne Exp $
  */
 #include <stdio.h>
 #include <cterror.h>
@@ -75,9 +75,11 @@ boolean polysim;	/* True if to simulate polygons with lines */
 	 */
 	if (!polyflag && line_width != 1 && LINE_WIDTH_START_SIZE == 0) {
 		for(i=1;i<*coord_buf_num;i++)
-			(void) ComFatLine(coord_buf[i-1].x,coord_buf[i-1].y,
-					coord_buf[i].x,coord_buf[i].y,
-					line_width);
+			(void) ComFatLine(
+				coord_buf[i-1].x,coord_buf[i-1].y,
+				coord_buf[i].x,coord_buf[i].y,
+				line_width, XScale(POLY_SIM_SPACING)
+			);
 			return;
 	}
 
