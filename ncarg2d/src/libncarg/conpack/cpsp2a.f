@@ -1,5 +1,5 @@
 C
-C	$Id: cpsp2a.f,v 1.1.1.1 1992-04-17 22:32:47 ncargd Exp $
+C	$Id: cpsp2a.f,v 1.2 1992-09-17 13:30:43 ncargd Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -256,18 +256,34 @@ C
           ISPS=IWRK(II01+I)/NSPS+1
           JSPS=MOD(IWRK(II01+I),NSPS)+1
           ZSPS(ISPS,JSPS)=SVAL
-          JBEG=MAX(1,MIN(IZDM,INT(((XSPS(ISPS-1)-XSPS(1))/
-     +                             (XSPS(MSPS  )-XSPS(1)))*
-     +                              REAL(IZDM-1)+1.E-6)+2))
-          JEND=MAX(1,MIN(IZDM,INT(((XSPS(ISPS+1)-XSPS(1))/
-     +                             (XSPS(MSPS  )-XSPS(1)))*
-     +                              REAL(IZDM-1)-1.E-6)+1))
-          KBEG=MAX(1,MIN(IZDN,INT(((YSPS(JSPS-1)-YSPS(1))/
-     +                             (YSPS(NSPS  )-YSPS(1)))*
-     +                              REAL(IZDN-1)+1.E-6)+2))
-          KEND=MAX(1,MIN(IZDN,INT(((YSPS(JSPS+1)-YSPS(1))/
-     +                             (YSPS(NSPS  )-YSPS(1)))*
-     +                              REAL(IZDN-1)-1.E-6)+1))
+          IF (ISPS.EQ.1) THEN
+            JBEG=1
+            JEND=1
+          ELSE IF (ISPS.EQ.MSPS) THEN
+            JBEG=IZDM
+            JEND=IZDM
+          ELSE
+            JBEG=MAX(1,MIN(IZDM,INT(((XSPS(ISPS-1)-XSPS(1))/
+     +                               (XSPS(MSPS  )-XSPS(1)))*
+     +                                REAL(IZDM-1)+1.E-6)+2))
+            JEND=MAX(1,MIN(IZDM,INT(((XSPS(ISPS+1)-XSPS(1))/
+     +                               (XSPS(MSPS  )-XSPS(1)))*
+     +                                REAL(IZDM-1)-1.E-6)+1))
+          END IF
+          IF (JSPS.EQ.1) THEN
+            KBEG=1
+            KEND=1
+          ELSE IF (JSPS.EQ.NSPS) THEN
+            KBEG=IZDN
+            KEND=IZDN
+          ELSE
+            KBEG=MAX(1,MIN(IZDN,INT(((YSPS(JSPS-1)-YSPS(1))/
+     +                               (YSPS(NSPS  )-YSPS(1)))*
+     +                                REAL(IZDN-1)+1.E-6)+2))
+            KEND=MAX(1,MIN(IZDN,INT(((YSPS(JSPS+1)-YSPS(1))/
+     +                               (YSPS(NSPS  )-YSPS(1)))*
+     +                                REAL(IZDN-1)-1.E-6)+1))
+          END IF
           DO 10012 J=JBEG,JEND
             DO 10013 K=KBEG,KEND
               ZDAT(J,K)=SVAL
