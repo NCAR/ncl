@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.177 2005-02-23 01:38:14 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.178 2005-02-28 22:23:10 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3513,7 +3513,10 @@ int asciinumeric
  * There is a system dependency for strtod in its handling of 
  * the '0x' prefix. 
  * For predictable results, force 0x to be read as a '0'. 
+ * Might not be totally predictable if strtod recognizes variations
+ * of inf and nan: GNU libc recognizes "infinity"; what else might there be?
  */
+
 int asciifloat(char *buf, char **end, int type, void *retvalue) {
 	double tmpd;
 	const char *initchars = "0123456789+-.nNiI";
@@ -3534,6 +3537,15 @@ int asciifloat(char *buf, char **end, int type, void *retvalue) {
 			i += strcspn(&(buf[i]),initchars);
 			continue;
 		}
+		else if (buf[i] == 'n' || buf[i] == 'N' 
+			 || buf[i] == 'i' || buf[i] == 'I') {
+			/* inf or nan recognized: but is it an accident ? */
+			if ((i > 0 && isalpha(buf[i-1])) || isalpha(**end)) {
+				i = *end - buf;
+				i += strcspn(*end,initchars);
+				continue;
+			}
+		}
 		switch (type) {
 		case Ncl_Typefloat:
 			*((float*)retvalue) = (float) tmpd;
@@ -3544,6 +3556,13 @@ int asciifloat(char *buf, char **end, int type, void *retvalue) {
 		}
 		i = *end - buf;
 		i += strcspn(*end,initchars);
+		while (buf[i] == 'n' || buf[i] == 'N' 
+		       || buf[i] == 'i' || buf[i] == 'I') {
+			if (isalpha(buf[i-1])) 
+				i++;
+			else
+				break;
+		}
 		*end = &(buf[i]);
 		return 1;
 	}
