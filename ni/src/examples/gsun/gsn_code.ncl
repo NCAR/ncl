@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.52 2000-11-03 16:59:32 haley Exp $
+;      $Id: gsn_code.ncl,v 1.53 2000-11-16 18:02:43 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -38,6 +38,9 @@
 ; procedures with the same name.                                        ;
 ;***********************************************************************;
 
+undef("smooth92d")
+undef("smooth93d")
+undef("hsv2rgb")
 undef("tofloat")
 undef("lower_case")
 undef("set_attr")
@@ -46,6 +49,7 @@ undef("get_res_eq")
 undef("get_res_ne")
 undef("get_res_value")
 undef("get_res_value_keep")
+undef("attsetvalues_check")
 undef("spread_colors")
 undef("check_for_irreg2loglin")
 undef("gsnp_turn_off_tickmarks")
@@ -75,6 +79,10 @@ undef("gsn_polymarker_ndc")
 undef("gsn_labelbar_ndc")
 undef("gsn_panel")
 undef("gsn_attach_plots")
+undef("columns")
+undef("compute_hist_vals")
+undef("compute_hist_from_range_vals")
+undef("gsn_histogram")
 undef("gsn_contour")
 undef("gsn_contour_map")
 undef("gsn_map")
@@ -91,6 +99,183 @@ undef("gsn_vector_map")
 undef("gsn_vector_scalar")
 undef("gsn_vector_scalar_map")
 undef("gsn_xy")
+
+;***********************************************************************;
+; function : smooth92d                                                  ;
+;               var[*][*]:float                                         ;
+;                       p:float                                         ;
+;                       q:float                                         ;
+;                                                                       ;
+; Performs smoothing on a 2-dimensional array.                          ;
+;                                                                       ;
+;***********************************************************************;
+
+function smooth92d(var[*][*]:float,p[1]:float,q[1]:float)
+local dims,output,coef,m,n,p4,q4,i
+begin
+  dims = dimsizes(var)
+	
+  output = new((/dims(0),dims(1)/),float)
+
+  coef = 1 - p - q
+  m = dims(0)
+  n = dims(1)
+  p4 = p/4.0
+  q4 = q/4.0
+
+  do i = 1, m -2
+    output(i,1:n-2) = (p4)*(var( i-1, 1 : n-2 ) + var( i, 2 : n-1) + \
+                            var( i+1, 1 : n-2) + var( i, 0 : n-3)) + \
+                            (q4)*(var(i-1, 0 : n-3 ) + var(i-1, 2 : n-1) + \
+                                  var( i+1, 2 : n-1) + var( i+1, 0 : n-3))
+  end do
+
+  output = output + (coef * var) 
+        
+  if(iscoord(var,var!0))  then
+    output!0 = var!0
+    output&$var!0$ = var&$var!0$
+  end if
+
+  if(iscoord(var,var!1))  then
+    output!1 = var!1
+    output&$var!1$ = var&$var!1$
+  end if
+        
+  return(output)
+end
+
+;***********************************************************************;
+; function : smooth93d                                                  ;
+;               var[*][*][*]:float                                      ;
+;                          p:float                                      ;
+;                          q:float                                      ;
+;                                                                       ;
+; Performs smoothing on a 3-dimensional array.                          ;
+;                                                                       ;
+;***********************************************************************;
+
+function smooth93d(var[*][*][*]:float,p[1]:float,q[1]:float)
+local dims,output,coef,m,n,p4,q4,i
+begin
+  dims = dimsizes(var)
+        
+  output = new((/dims(0),dims(1),dims(2)/),float)
+
+  coef = 1 - p - q
+  m = dims(1)
+  n = dims(2)
+  p4 = p/4.0
+  q4 = q/4.0
+
+  do i = 1, m -2
+    output(:,i,1:n-2) = (p4)*(var( :,i-1, 1 : n-2 ) + var(:, i, 2 : n-1) + \
+                              var( :,i+1, 1 : n-2) + var(:, i, 0 : n-3)) + \
+                        (q4)*(var( :,i-1, 0 : n-3 ) + var( :,i-1, 2 : n-1) + \
+                              var( :,i+1, 2 : n-1) + var(:, i+1, 0 : n-3))
+  end do
+
+  output = output + (coef * var) 
+        
+  if(iscoord(var,var!0))  then
+    output!0 = var!0
+    output&$var!0$ = var&$var!0$
+  end if
+
+  if(iscoord(var,var!1))  then
+    output!1 = var!1
+    output&$var!1$ = var&$var!1$
+  end if
+  if(iscoord(var,var!2))  then
+    output!2 = var!2
+    output&$var!2$ = var&$var!2$
+  end if
+  
+  return(output)
+end
+
+;***********************************************************************;
+; function : hsv2rgb                                                    ;
+;                 h:float                                               ;
+;                 s:float                                               ;
+;                 v:float                                               ;
+; This function maps values from the HSV color model to the RGB color   ;
+; model. HSV is a good model for generating smooth color maps. See      ;
+; (Computer Graphics: Principles and Practice by Foley). The return     ;
+; value is a 2 dimensional array of rgb color triplets. The return      ;
+; value from this function can be directly assigned to the "wkColorMap" ;
+; resource of a workstation object or to the second argument of         ;
+; gsn_define_colormap.                                                  ;
+;***********************************************************************;
+
+function hsv2rgb (h[*]:float,s[*]:float,v[*]:float)
+begin
+;
+; This function converts between HSV and RGB color space
+; Input: h [0.0-360.0], s [0.0-1.0], v [0.0-1.0]
+; Output: r [0.0-1.0], g [0.0-1.0], b [0.0-1.0]
+;
+  r_g_b = new((/3,dimsizes(h)/),float)
+  r_g_b!0 = "rgb"
+  r_g_b!1 = "cmap_len"
+ 
+  if (any((s .eq. 0.0).and.(h.eq.0.0.or.h.eq.360))) then
+    indexs = ind((h.eq.0.0.or.h.eq.360).and.s.eq.0.0)
+    r_g_b(:,indexs) = (/v(indexs),v(indexs),v(indexs)/)
+    delete(indexs)
+  end if
+
+  f = new(dimsizes(h),float)
+  p = new(dimsizes(h),float)
+  q = new(dimsizes(h),float)
+  t = new(dimsizes(h),float)
+  i = new(dimsizes(h),integer)
+  if any(h.eq.360.0)  
+    h(ind(h.eq.360.0)) = 0.0
+  end if
+
+  h = h/60.0
+  i = floattoint(floor(h))
+  f = h - i
+  p = v*(1.0 - s)
+  q = v*(1.0 - (s*f))
+  t = v*(1.0 - (s*(1.0 - f)))
+  if any(i.eq.0) then
+    indexs = ind(i.eq.0)
+    r_g_b(:,indexs) = (/v(indexs),t(indexs),p(indexs)/)
+    delete(indexs)
+  end if
+  if any(i.eq.1) then
+    indexs = ind(i.eq.1)
+    r_g_b(:,indexs) = (/q(indexs),v(indexs),p(indexs)/)
+    delete(indexs)
+  end if
+  if any(i.eq.2) then
+    indexs = ind(i.eq.2)
+    r_g_b(:,indexs) = (/p(indexs),v(indexs),t(indexs)/)
+    delete(indexs)
+  end if
+  if any(i.eq.3) then
+    indexs = ind(i.eq.3)
+    r_g_b(:,indexs) = (/p(indexs),q(indexs),v(indexs)/)
+    delete(indexs)
+  end if
+  if any(i.eq.4) then
+    indexs = ind(i.eq.4)
+    r_g_b(:,indexs) = (/t(indexs),p(indexs),v(indexs)/)
+    delete(indexs)
+  end if
+  if any(i.eq.5) then
+    indexs = ind(i.eq.5)
+    r_g_b(:,indexs) = (/v(indexs),p(indexs),q(indexs)/)
+    delete(indexs)
+  end if
+  if(any(ismissing(r_g_b)))
+    print("Warning: hsv2rgb: Some invalid HSV values were passed to hsv2rgb")
+  end if
+  return(r_g_b(cmap_len|:,rgb|:))
+end
+
 
 ;***********************************************************************;
 ; function : tofloat                                                    ;
@@ -375,6 +560,22 @@ begin
 end
 
 ;***********************************************************************;
+; Procedure : attsetvalues_check                                        ;
+;               plot:graphic                                            ;
+;                res:logical                                            ;
+;                                                                       ;
+; This procedure passes plot and res to attsetvalues only if res        ;
+; resources.                                                            ;
+;***********************************************************************;
+procedure attsetvalues_check(plot:graphic,res:logical)
+begin
+  if(res.and..not.any(ismissing(getvaratts(res))))
+    attsetvalues(plot,res)
+  end if
+  return
+end
+
+;***********************************************************************;
 ; Function : spread_colors                                              ;
 ;                wks:graphic                                            ;
 ;               plot:graphic                                            ;
@@ -595,8 +796,6 @@ begin
     if(y_minor_length.gt.0.)
       y_minor_length = minor_length
     end if
-  if(tmres.and..not.any(ismissing(getvaratts(tmres))))
-    attsetvalues(plot,tmres)
   end if
 
   tmres = res
@@ -637,9 +836,7 @@ procedure gsnp_uniform_tickmark_labels(plot:graphic,res:logical, \
                                        font_height)
 local xbfont, ylfont, tmres
 begin
-  if(tmres.and..not.any(ismissing(getvaratts(tmres))))
-    attsetvalues(plot,tmres)
-  end if
+
 ; Get tickmark labels sizes
 
   if(font_height.le.0)
@@ -887,9 +1084,7 @@ begin
   label_align   = get_res_value(lbres,"lbLabelAlignment","InteriorEdges")
   font_height   = get_res_value(lbres,"lbLabelFontHeightF",0.1)
   orientation   = get_res_value(lbres,"lbOrientation","horizontal")
-  if(lbres.and..not.any(ismissing(getvaratts(lbres))))
-    attsetvalues(labelbar_object,lbres)
-  end if
+  vpxf          = get_res_value(lbres,"vpXF",0.1)
   vpyf          = get_res_value(lbres,"vpYF",0.1)
   vpwidthf      = get_res_value(lbres,"vpWidthF",0.8)
   vpheightf     = get_res_value(lbres,"vpHeightF",0.3)
@@ -1046,9 +1241,7 @@ end
 ;                     y: 1-dimensional array of y points                ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
-    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
-      attsetvalues(gsid,gsres)
-    end if
+; This procedure draws a filled polygon on the workstation "wks" (the   ;
 ; variable returned from a previous call to "gsn_open_wks") in the same ;
 ; data space as the data in "plotid" (returned from a previous call to  ;
 ; one of the gsn_* plotting functions). "x" and "y" are the x and y     ;
@@ -1105,12 +1298,10 @@ end
 ; polygon, or polyline)                                                 ;
 ;                                                                       ;
 ;***********************************************************************;
-    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
-      attsetvalues(gsid,gsres)
-      if(isatt(gsres,"gsLineColor"))
-        gmres = True
-        gmres@gsMarkerColor = gsres@gsLineColor
-      end if
+function gsn_add_primitive(wks:graphic,plotid:graphic,x[*]:numeric,\
+                           y[*]:numeric,polytype:string,resources:logical)
+local gsid, gsres, prim_object, dummy
+begin
 
   if(.not.any(polytype.eq.(/"polymarker","polygon","polyline"/)))
     print("Warning: gsn_add_primitive: Do not recognize primitive type '"+ polytype + "'.")
@@ -1167,9 +1358,7 @@ end
 ; points, and plot them individually.
 ;
         dummy = new(1,graphic)
-                if(gmres.and..not.any(ismissing(getvaratts(gmres))))
-                  attsetvalues(gsid,gmres)
-                end if
+        indices = get_non_missing_pairs(x,y)
         i = 0
 ;
 ; Get the number of non-missing pairs of lines.
@@ -1271,9 +1460,7 @@ end
 ;***********************************************************************;
 procedure gsn_polygon_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
                           resources:logical)
-    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
-      attsetvalues(gsid,gsres)
-    end if
+local i, gsid, plot_object, res, gs_res_index, xf, yf, x2, y2
 begin
 
 ; Retrieve graphic style object.
@@ -1317,18 +1504,17 @@ end
 ;                plotid: plot object                                    ;
 ;                     x: 1-dimensional array of x points                ;
 ;                     y: 1-dimensional array of y points                ;
+;               resources: optional resources                           ;
+;                                                                       ;
 ; This procedure draws a polyline on the workstation "wks" (the variable;
-    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
-      attsetvalues(gsid,gsres)
 ; returned from a previous call to "gsn_open_wks") in the same data     ;
 ; space as the data in "plotid" (returned from a previous call to one of;
 ; the gsn_* plotting functions). "x" and "y" are the x and y locations  ;
 ; of each point in the line, and should be in the same data space as the;
 ; data from "plotid". "resources" is an optional list of resources.     ;
-      if(isatt(gsres,"gsLineColor"))
-        gmres = True
-        gmres@gsMarkerColor = gsres@gsLineColor
-      end if
+;***********************************************************************;
+procedure gsn_polyline(wks:graphic,plotid:graphic,x[*]:numeric,\
+                       y[*]:numeric,resources:logical)
 local i, gsid, plot_object, res, gs_res_index
 begin
 
@@ -1354,9 +1540,7 @@ begin
 
 ;
 ; Convert data to float, since NhlDataPolyline only takes floats.
-             if(gmres.and..not.any(ismissing(getvaratts(gmres))))
-               attsetvalues(gsid,gmres)
-             end if
+;
     xf = tofloat(x)
     yf = tofloat(y)
 ;
@@ -1428,9 +1612,7 @@ end
 ; "resources" is an optional list of resources.                         ;
 ;***********************************************************************;
 procedure gsn_polyline_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
-    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
-      attsetvalues(gsid,gsres)
-    end if
+                           resources:logical)
 local gsid, plot_object
 begin
 
@@ -1491,9 +1673,7 @@ end
 ;                plotid: plot object                                    ;
 ;                     x: 1-dimensional array of x points                ;
 ;                     y: 1-dimensional array of y points                ;
-    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
-      attsetvalues(gsid,gsres)
-    end if
+;               resources: optional resources                           ;
 ;                                                                       ;
 ; This procedure draws polymarkers on the workstation "wks" (the        ;
 ; variable returned from a previous call to "gsn_open_wks") in the same ;
@@ -1575,9 +1755,7 @@ funccode, res2, calldraw, callframe
     end create
     callframe = get_res_value(res2,"gsnFrame",False)
     gsres = get_res_eq(resources,"gs")
-    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
-      attsetvalues(gsid,gsres)
-    end if
+    attsetvalues_check(gsid,gsres)
 
 ; Make sure data is float.
     xf = tofloat(x)
@@ -1634,9 +1812,7 @@ local i, lbid, res, lb_res_index, lbres
         end setvalues
         delete(lbres@lbLabelFontHeightF)
       end if
-      if(lbres.and..not.any(ismissing(getvaratts(lbres))))
-        attsetvalues(lbid,lbres)
-      end if
+      attsetvalues_check(lbid,lbres)
     end if
   setvalues plotid
 ; Draw labelbar.
@@ -2056,9 +2232,7 @@ begin
               "txPerimOn"             : perim
               "txBackgroundFillColor" : bkgrn
           print("    plot #" + nplot)
-            if(txres.and..not.any(ismissing(getvaratts(txres))))
-              attsetvalues(text,txres)
-            end if
+            attsetvalues_check(text,txres)
             anno = NhlAddAnnotation(pplot,text)
           "vpXF"      : xpos(nc)
             setvalues anno
@@ -2068,9 +2242,7 @@ begin
 
         added_anno = False
         if(is_figure_strings) then
-            if(amres.and..not.any(ismissing(getvaratts(amres))))
-              attsetvalues(anno,amres)
-            end if
+            attsetvalues_check(anno,amres)
             panel_strings(nplot).ne."")
             text = create "string" textItemClass wks
               "txString"              : panel_strings(nplot)
@@ -2659,6 +2831,185 @@ begin
         "wkColorMap" : cmap
     end setvalues
   end if
+; columns, compute_hist_vals, compute_hist_from_range_vals are          ;
+; functions written by Ethan Alpert for computing histogram stuff.      ;
+
+
+function columns(wks[1]:graphic,xy[1]:graphic,x[*]:numeric,y[*]:numeric, \
+                 wd[1]:numeric,colors[*]:integer)
+local i, gsres, points
+;                  bins: numeric                                        ;
+; This function creates the columns for a histogram plot. The Y axis    ;
+  if(dimsizes(colors).ne.dimsizes(x).or.dimsizes(x).ne.dimsizes(y))
+    print("Error: columns: Dimension sizes of x (" + dimsizes(x)+ ") ,y(" + dimsizes(y) + ") and colors (" + dimsizes(colors) + ") must be the same")
+function hist_columns(wks[1]:graphic,xy[1]:graphic,bins[*]:numeric, \
+                      binvalues:numeric, width[*]:numeric, \
+                      colors[*]:integer, gsres:logical)
+  dims = dimsizes(y)
+  xpoints = new(5,float)
+  ypoints = new(5,float)
+  else
+  polygons = new(dims(0),graphic)
+    nbinvalues  = dims(0)
+  gsres@gsEdgesOn = True
+  end if
+  do i = 0, dims(0) - 1
+    gsres@gsFillColor = colors(i)
+
+    ypoints((/0,3,4/)) = (/0/)
+    ypoints((/1,2/))   = (/y(i)/)
+    xpoints((/0,1,4/)) = (/x(i) - wd/)
+    xpoints((/2,3/))   = (/x(i) + wd/)
+
+    polygons(i) = gsn_add_polygon(wks,xy,xpoints,ypoints,gsres);
+                                       xpoints(1,i,:), gsres)
+  xy@polygons = polygons
+      gsres@gsFillIndex = fillindex1
+      if(binvalues@horizontal) then
+        polygons(i) = gsn_add_polygon(wks,xy,ypoints(i,:),xpoints(i,:),gsres)
+function compute_hist_vals(x:numeric,n[1]:integer)
+; Function : compute_hist_vals                                          ;
+  min_x = min(x)
+  max_x = max(x)
+  if(isfloat(x).eq.True)then
+    sprd = fspan(min_x,max_x,n+1)
+; set their own bin end points via the bins array. If setmidpts is True,;
+    sprd = ispan(min_x,max_x,1)
+      do i = 0, nbuckets-2
+  nbuckets = dimsizes(sprd)-1
+  buckets  = new(dimsizes(sprd)-1,integer)
+  end if
+  xx = ndtooned(x)
+  do i = 0, nbuckets -1
+    buckets(i) = num(xx.gt.sprd(i).and.xx.le.sprd(i+1))
+      num_missing1 = num(ismissing(xx1))
+  buckets!0 = "sprd" 
+  buckets&sprd  = sprd(1::)
+  buckets@min_x = min_x
+  return(buckets)
+
+;
+function compute_hist_from_range_vals(x:numeric,sprd[*]:numeric)
+begin
+  nbuckets = dimsizes(sprd) - 1
+    
+  if(any((sprd(1:) - sprd(0:nbuckets-1)).le.0.0))
+    print("Error: compute_hist_from_range_vals: Requested spread is not in increasing order")
+    return(-1)
+  end if
+  buckets = new(nbuckets,integer)
+
+  xx = ndtooned(x)
+  do i = 0, nbuckets -1
+    buckets(i) = num(xx.gt.sprd(i).and.xx.le.sprd(i+1))
+  end do
+  buckets!0 = "sprd"
+  buckets&sprd = sprd(1::)
+  buckets@min_x = min(sprd)
+  return(buckets)
+end
+
+;***********************************************************************;
+; determine the width of the histogram bars later.
+;
+;                  data: 4-dimensional data                             ;
+;                 nbins: number of bins                                 ;
+  return(num_in_bins)
+;   gsnDraw                                                             ;
+;   gsnFrame                                                            ;
+;  gsnHistogramClassIntervals - By default, gsn_histogram will pick the ;
+
+function gsn_histogram(wks[1]:graphic,xdata:numeric,nbins[1]:integer, \
+                       res:logical)
+;                                                                       ;
+    res2      = res
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+;
+    buck   = compute_hist_vals(xdata,nbins)
+    top    = max(buck) * 1.1
+    bottom = 0
+    left   = buck@min_x - fabs(buck@min_x * .05)
+    right  = buck&sprd(dimsizes(buck)-1) +  \
+             fabs(buck&sprd(dimsizes(buck)-1) * .05)
+    wd     = (buck&sprd(0) - buck@min_x)/3.0
+      width = buck@dx/4.0
+    getvalues wks
+      "wkColorMapLen" : lenc
+    end getvalues
+    else
+    tmp = (lenc-2)/dimsizes(buck)
+    if(tmp .eq. 0 )
+      print("Warning: gsn_histogram: not enough colors using single color")
+      colors = new(dimsizes(buck),integer)
+      colors = 2
+    else 
+      colors = new(dimsizes(buck),integer)
+      tmpc   = ispan(2,lenc,tmp)
+      if(dimsizes(tmpc).ne.dimsizes(colors))
+        colors = tmpc(0:dimsizes(colors)-1)
+      else
+        colors = tmpc
+      end if
+;
+    locs = new(dimsizes(buck),float)
+    locs(0) = buck@min_x + (buck&sprd(0) - buck@min_x)/2.0
+    do i = 1, dimsizes(buck)-1
+      locs(i) =  buck&sprd(i-1) + (buck&sprd(i) - buck&sprd(i-1))/2.0
+    end do
+
+    lbs     = new(dimsizes(buck&sprd)+1,float)
+    lbs(1:) = buck&sprd
+    lbs(0)  = buck@min_x
+
+    xy = create "xy" xyPlotClass wks
+      "trXMinF" : get_res_value(res2,"trXMinF",left)
+      "trXMaxF" : get_res_value(res2,"trXMaxF",right)
+      "trYMinF" : get_res_value(res2,"trYMinF",bottom)
+      "trYMaxF" : get_res_value(res2,"trYMaxF",top)
+    end create
+      npts = dimsizes(ndtooned(xdata))    ; Total number of points. 
+    end if
+;
+    set_attr(res2,"tiXAxisString","Number of bouys/bin")
+    set_attr(res2,"tiYAxisString","Number of bins")
+    set_attr(res2,"tmXTOn",False)
+    set_attr(res2,"tmYROn",False)
+    set_attr(res2,"tmXBMode","EXPLICIT")
+    set_attr(res2,"tmXBValues",lbs)
+    set_attr(res2,"tmXBLabels",lbs)
+    set_attr(res2,"tmXBLabelAngleF",270 )
+    set_attr(res2,"tmXBLabelJust","CenterLeft")
+    set_attr(res2,"tmXBMajorOutwardLengthF", 0.)
+
+    attsetvalues_check(xy,res2)
+
+    getvalues xy
+      "tmYLMajorLengthF"  : ylength
+      "tmXBMajorLengthF"  : xlength
+      "tmYLMinorLengthF"  : ymlength
+      "tmXBMinorLengthF"  : xmlength
+    end getvalues
+  xyres = get_res_ne(res2,"gs")
+    major_length = min((/ylength,xlength/))
+    minor_length = min((/ymlength,xmlength/))
+      txangle = 90.
+    tmres = get_res_eq(res2,"tm")  ; Get tickmark resources
+
+    gsnp_point_tickmarks_outward(xy,tmres,xlength,ylength,xmlength, \
+                                 ymlength,major_length,minor_length)
+    gsnp_uniform_tickmark_labels(xy,tmres,0.)
+    axis_string = create "axis_string" textItemClass wks
+    histogram = columns(wks,xy,locs,buck,wd,colors)
+    draw_and_frame(wks,histogram,calldraw,callframe)
+    end create
+
+    anno = NhlAddAnnotation(xy,axis_string)
+    return(histogram)
+      "amResizeNotify"  : True     ; Resize if plot resized.
+    end setvalues
+  end if
+
   tmres = get_res_eq(res2,"tm")  ; Get tickmark resources
   gsnp_point_tickmarks_outward(xy,tmres,-1.,-1.,-1.,-1.,-1.,-1.)
   gsnp_uniform_tickmark_labels(xy,tmres,0.)
@@ -2740,12 +3091,8 @@ begin
     sfres = get_res_eq(res2,"sf")
 
 ; it exists.
-    if(sfres.and..not.any(ismissing(getvaratts(sfres))))
-      attsetvalues(data_object,sfres)
-    end if
-    if(cnres.and..not.any(ismissing(getvaratts(cnres))))
-      attsetvalues(plot_object,cnres)
-    end if
+    attsetvalues_check(data_object,sfres)
+    attsetvalues_check(plot_object,cnres)
 
     if(isatt(data,"long_name")) then
       set_attr(res2,"tiMainString",data@long_name)
@@ -2793,9 +3140,7 @@ begin
     end if
 
 ; Check if we need to force the X or Y axis to be linear or log.
-      if(llres.and..not.any(ismissing(getvaratts(llres))))
-        attsetvalues(plot_object,llres)
-      end if
+; If so, then we have to overlay it on a LogLin Plot.
 
     if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
       overlay_plot_object = plot_object
@@ -2886,15 +3231,9 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
 ; Check for existence of data@long_name and use it in a title it
 ; it exists.
 
-    if(sfres.and..not.any(ismissing(getvaratts(sfres))))
-      attsetvalues(data_object,sfres)
-    end if
-    if(mpres.and..not.any(ismissing(getvaratts(mpres))))
-      attsetvalues(map_object,mpres)
-    end if
-    if(cnres.and..not.any(ismissing(getvaratts(cnres))))
-      attsetvalues(contour_object,cnres)
-    end if
+    attsetvalues_check(data_object,sfres)
+    if(isatt(data,"long_name")) then
+      set_attr(res2,"tiMainString",data@long_name)
     end if
 
 ; Create map object.
@@ -2958,9 +3297,7 @@ end
 ; Special resources ("gsn" prefix) allowed:                             ;
 ;                                                                       ;
 ;   gsnFrame                                                            ;
-    if(res2.and..not.any(ismissing(getvaratts(res2))))
-      attsetvalues(plot_object,res2)
-    end if
+;                                                                       ;
 ;***********************************************************************;
     draw_and_frame(wks,plot_object,calldraw,callframe)
 local i, plot_object, res2
@@ -3044,11 +3381,7 @@ begin
     if(isatt(v,"_FillValue")) then
         setvalues data_object
             "vfMissingVValueV" :v@_FillValue
-    if(vfres.and..not.any(ismissing(getvaratts(vfres))))
-      attsetvalues(data_object,vfres)
-    end if
-    if(stres.and..not.any(ismissing(getvaratts(stres))))
-      attsetvalues(plot_object,stres)
+        end setvalues
     end if
 
 ; Create plot object.
@@ -3093,9 +3426,7 @@ begin
     end if
 
 ; Check if we need to force the X or Y axis to be linear or log.
-      if(llres.and..not.any(ismissing(getvaratts(llres))))
-        attsetvalues(plot_object,llres)
-      end if
+; If so, then we have to overlay it on a LogLin Plot.
 
     if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
       overlay_plot_object = plot_object
@@ -3180,15 +3511,9 @@ begin
         end setvalues
     end if
 
-    if(vfres.and..not.any(ismissing(getvaratts(vfres))))
-      attsetvalues(data_object,vfres)
-    end if
-    if(stres.and..not.any(ismissing(getvaratts(stres))))
-      attsetvalues(stream_object,stres)
-    end if
-    if(mpres.and..not.any(ismissing(getvaratts(mpres))))
-      attsetvalues(map_object,mpres)
-    end if
+; Create plot object.
+
+    stream_object = create wksname + "_stream" streamlinePlotClass wks
         "stVectorFieldData" : data_object
     end create
 
@@ -3251,9 +3576,7 @@ begin
   end if
 
   txres = get_res_eq(res2,"tx")  ; Get text resources.
-  if(txres.and..not.any(ismissing(getvaratts(txres))))
-    attsetvalues(txid,txres)            ; Set text resources.
-  end if
+  attsetvalues_check(txid,txres)            ; Set text resources.
 
   getvalues plotid
     "pmAnnoViews" : text_ids
@@ -3289,9 +3612,7 @@ begin
   end setvalues
 
   amres = get_res_eq(res2,"am")  ; Get annomanager resources.
-  if(amres.and..not.any(ismissing(getvaratts(amres))))
-    attsetvalues(am_ids(0),amres)            ; Set text resources.
-  end if
+  attsetvalues_check(am_ids(0),amres)            ; Set text resources.
 
   return(am_ids(0))
 end
@@ -3357,9 +3678,7 @@ begin
     end if
 
     txres = get_res_eq(res2,"tx")  ; Get text resources.
-    if(txres.and..not.any(ismissing(getvaratts(txres))))
-      attsetvalues(txid,txres)            ; Set text resources.
-    end if
+    attsetvalues_check(txid,txres)            ; Set text resources.
 
     draw_and_frame(wks,txid,calldraw,callframe)
 end
@@ -3407,9 +3726,7 @@ begin
     end if
 
     txres = get_res_eq(res2,"tx")  ; Get text resources.
-    if(txres.and..not.any(ismissing(getvaratts(txres))))
-      attsetvalues(txid,txres)            ; Set text resources.
-    end if
+    attsetvalues_check(txid,txres)            ; Set text resources.
 
     draw_and_frame(wks,txid,calldraw,callframe)
 end
@@ -3628,12 +3945,8 @@ begin
 
     plot_object = create wksname + "_vector" vectorPlotClass wks
         "vcVectorFieldData" : data_object
-    if(vfres.and..not.any(ismissing(getvaratts(vfres))))
-      attsetvalues(data_object,vfres)
-    end if
-    if(vcres.and..not.any(ismissing(getvaratts(vcres))))
-      attsetvalues(plot_object,vcres)
-    end if
+    end create
+
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)
@@ -3678,9 +3991,7 @@ begin
     end if
 
 ; Check if we need to force the X or Y axis to be linear or log.
-      if(llres.and..not.any(ismissing(getvaratts(llres))))
-        attsetvalues(plot_object,llres)
-      end if
+; If so, then we have to overlay it on a LogLin Plot.
 
     if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
       overlay_plot_object = plot_object
@@ -3792,18 +4103,10 @@ begin
     vector_object = create wksname + "_vector" vectorPlotClass wks
         "vcVectorFieldData" : vfdata_object
     end create
-    if(vfres.and..not.any(ismissing(getvaratts(vfres))))
-      attsetvalues(vfdata_object,vfres)
-    end if
-    if(sfres.and..not.any(ismissing(getvaratts(sfres))))
-      attsetvalues(sfdata_object,sfres)
-    end if
-    if(cnres.and..not.any(ismissing(getvaratts(cnres))))
-      attsetvalues(contour_object,cnres)
-    end if
-    if(vcres.and..not.any(ismissing(getvaratts(vcres))))
-      attsetvalues(vector_object,vcres)
-    end if
+
+; Create contour plot object.
+
+    contour_object = create wksname + "_contour" contourPlotClass wks
         "cnScalarFieldData" : sfdata_object
     end create
 
@@ -3941,21 +4244,11 @@ begin
 
     contour_object = create wksname + "_contour" contourPlotClass wks
         "cnScalarFieldData" : sfdata_object
-    if(vfres.and..not.any(ismissing(getvaratts(vfres))))
-      attsetvalues(vfdata_object,vfres)
-    end if
-    if(sfres.and..not.any(ismissing(getvaratts(sfres))))
-      attsetvalues(sfdata_object,sfres)
-    end if
-    if(mpres.and..not.any(ismissing(getvaratts(mpres))))
-      attsetvalues(map_object,mpres)
-    end if
-    if(cnres.and..not.any(ismissing(getvaratts(cnres))))
-      attsetvalues(contour_object,cnres)
-    end if
-    if(vcres.and..not.any(ismissing(getvaratts(vcres))))
-      attsetvalues(vector_object,vcres)
-    end if
+    end create
+
+; Create map object.
+
+    map_object = create wksname + "_map" mapPlotClass wks end create
 
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
@@ -4069,15 +4362,9 @@ begin
 ; Create plot object.
 
     vector_object = create wksname + "_vector" vectorPlotClass wks
-    if(vfres.and..not.any(ismissing(getvaratts(vfres))))
-      attsetvalues(data_object,vfres)
-    end if
-    if(mpres.and..not.any(ismissing(getvaratts(mpres))))
-      attsetvalues(map_object,mpres)
-    end if
-    if(vcres.and..not.any(ismissing(getvaratts(vcres))))
-      attsetvalues(vector_object,vcres)
-    end if
+        "vcVectorFieldData" : data_object
+    end create
+
 ; Create map object.
 
     map_object = create wksname + "_map" mapPlotClass wks
@@ -4210,15 +4497,9 @@ begin
         "vcMonoLineArrowColor"  : False
     end create
 
-    if(vfres.and..not.any(ismissing(getvaratts(vfres))))
-      attsetvalues(vfdata_object,vfres)
-    end if
-    if(sfres.and..not.any(ismissing(getvaratts(sfres))))
-      attsetvalues(sfdata_object,sfres)
-    end if
-    if(vcres.and..not.any(ismissing(getvaratts(vcres))))
-      attsetvalues(plot_object,vcres)
-    end if
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+    maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
     sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
@@ -4263,9 +4544,7 @@ begin
     end if
 
 ; Check if we need to force the X or Y axis to be linear or log.
-      if(llres.and..not.any(ismissing(getvaratts(llres))))
-        attsetvalues(plot_object,llres)
-      end if
+; If so, then we have to overlay it on a LogLin Plot.
 
     if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
       overlay_plot_object = plot_object
@@ -4379,18 +4658,10 @@ begin
         "vcVectorFieldData"     : vfdata_object
         "vcScalarFieldData"     : sfdata_object
         "vcUseScalarArray"      : True
-    if(vfres.and..not.any(ismissing(getvaratts(vfres))))
-      attsetvalues(vfdata_object,vfres)
-    end if
-    if(sfres.and..not.any(ismissing(getvaratts(sfres))))
-      attsetvalues(sfdata_object,sfres)
-    end if
-    if(mpres.and..not.any(ismissing(getvaratts(mpres))))
-      attsetvalues(map_object,mpres)
-    end if
-    if(vcres.and..not.any(ismissing(getvaratts(vcres))))
-      attsetvalues(vector_object,vcres)
-    end if
+        "vcMonoLineArrowColor"  : False
+    end create
+
+; Create map object.
 
     map_object = create wksname + "_map" mapPlotClass wks end create
 
@@ -4537,9 +4808,7 @@ begin
 
     if(res2.and..not.any(ismissing(getvaratts(res2))))
       if(isatt(res2,"xyDashPattern").or.isatt(res2,"xyDashPatterns"))
-    if(cares.and..not.any(ismissing(getvaratts(cares))))
-      attsetvalues(data_object,cares)
-    end if
+        set_dash = False
       end if
     end if
 
@@ -4594,9 +4863,7 @@ begin
             if(chartostring(res(0:1)).eq."xy".and.\
               (chartostring(res(0:3)).ne."xyCo".and.\
                chartostring(res(0:2)).ne."xyX".and.\
-              if(xyres.and..not.any(ismissing(getvaratts(xyres))))
-                attsetvalues(plot_object,xyres)
-              end if
+               chartostring(res(0:2)).ne."xyY"))
                 setvalues dspec
                     attnames : res2@$attnames$
                 end setvalues
@@ -4606,9 +4873,7 @@ begin
                                 chartostring(res(:,0:1)).ne."xy").or.\
                                (chartostring(res(:,0:1)).eq."xy".and.\
                                (chartostring(res(:,0:3)).eq."xyCo".or.\
-                if(xydpres.and..not.any(ismissing(getvaratts(xydpres))))
-                  attsetvalues(dspec,xydpres)
-                end if
+                                chartostring(res(:,0:2)).eq."xyX".or.\
                                 chartostring(res(:,0:2)).eq."xyY")))
             xydp_res_index = ind(chartostring(res(:,0:1)).eq."xy".and.\
                                 (chartostring(res(:,0:3)).ne."xyCo".and.\
