@@ -3118,7 +3118,6 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
-    dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(ezfftb_W,args,"ezfftb",nargs);

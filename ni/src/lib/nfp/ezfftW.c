@@ -119,7 +119,7 @@ NhlErrorTypes ezfftf_W( void )
 /*
  * Allocate memory for work array
  */
-  work = (double*)calloc((3*npts+15),sizeof(double));
+  work = (double*)calloc((4*npts+15),sizeof(double));
   if ( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for work array" );
     return(NhlFATAL);
@@ -290,7 +290,7 @@ NhlErrorTypes ezfftb_W( void )
  */
   void *cf;
   double *tmp_cf1, *tmp_cf2;
-  int ndims_cf, dsizes_cf[NCL_MAX_DIMENSIONS];
+  int ndims_cf, dsizes_cf[NCL_MAX_DIMENSIONS], dsizes_xbar[1];
   void *xbar;
   double *tmp_xbar;
   NclBasicDataTypes type_cf, type_xbar;
@@ -306,6 +306,7 @@ NhlErrorTypes ezfftb_W( void )
  */
   double *work;
   int i, j, npts, npts2, lnpts2, index_cf, index_x, size_x, size_leftmost;
+  int scalar_xbar;
 /*
  * Retrieve parameters
  *
@@ -325,7 +326,7 @@ NhlErrorTypes ezfftb_W( void )
            1,
            2,
            NULL,
-           NULL,
+           dsizes_xbar,
            NULL,
            NULL,
            &type_xbar,
@@ -335,6 +336,22 @@ NhlErrorTypes ezfftb_W( void )
  */
   size_leftmost = 1;
   for( i = 1; i < ndims_cf-1; i++ ) size_leftmost *= dsizes_cf[i];
+/*
+ * Check xbar dimension sizes.
+ */
+  scalar_xbar = is_scalar(1,dsizes_xbar);
+
+  if(!scalar_xbar) {
+/*
+ * If xbar is not a scalar, it must be an array of the same dimension
+ * sizes as the leftmost dimensions of cf (except the first dimension
+ * of '2').
+ */ 
+    if(dsizes_xbar[0] != size_leftmost) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: If xbar is not a scalar, then it must be a single vector of the length of the product of the leftmost dimensions of 'cf' (not including the '2' dimension)") ;
+      return(NhlFATAL);
+    }
+  }
 /*
  * Calculate size of output array.
  */
@@ -347,7 +364,7 @@ NhlErrorTypes ezfftb_W( void )
   for(i = 0; i < ndims_x-1; i++ ) dsizes_x[i] = dsizes_cf[i+1];
   dsizes_x[ndims_x-1] = npts;
 /*
- * Coerce input arrays to double if necessary.
+ * Create arrays to coerce input to double if necessary.
  */
   if(type_cf != NCL_double) {
     tmp_cf1 = (double*)calloc(npts2,sizeof(double));
@@ -389,11 +406,23 @@ NhlErrorTypes ezfftb_W( void )
 /*
  * Allocate memory for work array
  */
-  work = (double*)calloc((3*npts+15),sizeof(double));
+  work = (double*)calloc(4*npts+15,sizeof(double));
   if ( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for work array" );
     return(NhlFATAL);
   }
+/*
+ * If xbar is a scalar, coerce it outside the loop.
+ */
+  if(scalar_xbar) {
+    if(type_xbar != NCL_double) { 
+      coerce_subset_input_double(xbar,tmp_xbar,0,type_xbar,1,0,NULL,NULL);
+    }
+    else {
+      tmp_xbar = &((double*)xbar)[0];
+    }
+  }
+
 /*
  * Call the f77 version of 'dezfftb' with the full argument list.
  */
@@ -401,20 +430,25 @@ NhlErrorTypes ezfftb_W( void )
   for(i = 0; i < size_leftmost; i++) {
     if(type_cf != NCL_double) { 
       coerce_subset_input_double(cf,tmp_cf1,index_cf,type_cf,npts2,0,
-				 NULL,NULL);
+                                 NULL,NULL);
       coerce_subset_input_double(cf,tmp_cf2,lnpts2+index_cf,type_cf,npts2,0,
-				 NULL,NULL);
+                                 NULL,NULL);
     }
     else {
       tmp_cf1 = &((double*)cf)[index_cf];
       tmp_cf2 = &((double*)cf)[lnpts2+index_cf];
     }
-
-    if(type_xbar != NCL_double) { 
-      coerce_subset_input_double(xbar,tmp_xbar,i,type_xbar,1,0,NULL,NULL);
-    }
-    else {
-      tmp_xbar = &((double*)xbar)[i];
+/*
+ * If xbar is not a scalar, then we need to coerce each element
+ * to double or else just grab its value.
+ */
+    if(!scalar_xbar) {
+      if(type_xbar != NCL_double) { 
+        coerce_subset_input_double(xbar,tmp_xbar,i,type_xbar,1,0,NULL,NULL);
+      }
+      else {
+        tmp_xbar = &((double*)xbar)[i];
+      }
     }
 
     NGCALLF(dezffti,DEZFFTI)(&npts,work);
