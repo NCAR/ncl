@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.13 1994-11-07 03:10:29 ethan Exp $
+ *      $Id: Title.c,v 1.14 1994-11-07 08:30:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -224,7 +224,7 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)NhlHIGH),0,NULL},
 	{NhlNtiYAxisString, NhlCtiYAxisString,NhlTString,sizeof(char*),
 		 Oset(y_axis_string),NhlTImmediate,
-		 _NhlUSET((NhlPointer)YAxis),0,NULL},
+		 _NhlUSET((NhlPointer)YAxis),0,(NhlFreeFunc)NhlFree},
 	{NhlNtiYAxisJust, NhlCtiTitleJust, NhlTInteger,sizeof(int),
 		 Oset(y_axis_just),NhlTImmediate,_NhlUSET((NhlPointer)4 ),0,NULL},
 	{NhlNtiYAxisFont, NhlCFont, NhlTFont, sizeof(NhlFont),
@@ -275,7 +275,7 @@ static NhlResource resources[] = {
 * Base Methods used
 */
 static NhlErrorTypes    TitleSetValues(
-#ifdef NhlNeedProto
+#if NhlNeedProto
         NhlLayer,          /* old */
         NhlLayer,          /* reference */
         NhlLayer,          /* new */
@@ -283,8 +283,17 @@ static NhlErrorTypes    TitleSetValues(
         int             /* num_args*/
 #endif
 );
+
+static NhlErrorTypes TitleGetValues(
+#if	NhlNeedProto
+	NhlLayer	l,
+	_NhlArgList	args,
+	int		nargs
+#endif
+);
+
 static NhlErrorTypes    TitleInitialize(
-#ifdef NhlNeedProto
+#if NhlNeedProto
         NhlLayerClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
@@ -294,7 +303,7 @@ static NhlErrorTypes    TitleInitialize(
 );
 
 static NhlErrorTypes     TitleDestroy(
-#ifdef NhlNeedProto
+#if NhlNeedProto
         NhlLayer           /* inst */
 #endif
 );
@@ -303,14 +312,14 @@ static NhlErrorTypes    TitleClassInitialize();
 
 
 static NhlErrorTypes TitleGetBB(
-#ifdef NhlNeedProto
+#if NhlNeedProto
         NhlLayer          /* instance */,
         NhlBoundingBox * /*thebox*/
 #endif
 );
 
 static NhlErrorTypes TitleDraw(
-#ifdef NhlNeedProto
+#if NhlNeedProto
         NhlLayer           instance
 #endif
 );
@@ -334,7 +343,7 @@ NhlTitleLayerClassRec NhltitleLayerClassRec = {
 /* layer_initialize             */      TitleInitialize,
 /* layer_set_values             */      TitleSetValues,
 /* layer_set_values_hook	*/	NULL,
-/* layer_get_values             */      NULL,
+/* layer_get_values             */      TitleGetValues,
 /* layer_reparent               */      NULL,
 /* layer_destroy                */      TitleDestroy,
 
@@ -384,8 +393,503 @@ _NHLCALLF(nhlftitleclass,NHLFTITLECLASS)
 	return NhltitleLayerClass;
 }
 
-		
-	
+static NrmQuark	Qmain = NrmNULLQUARK;
+static NrmQuark	Qxaxis = NrmNULLQUARK;
+static NrmQuark	Qyaxis = NrmNULLQUARK;
+
+/*
+ * Function:	TitleClassInitialize
+ *
+ * Description:	
+ *
+ * In Args:	NONE
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	NONE
+ *
+ * Side Effects:	NhlNOERROR
+ */
+static NhlErrorTypes    TitleClassInitialize
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	_NhlEnumVals	titlepos[] = {
+		{NhlTOP,	"top"},
+		{NhlBOTTOM,	"bottom"},
+		{NhlLEFT,	"left"},
+		{NhlRIGHT,	"right"},
+		{NhlCENTER,	"center"}
+	};
+
+	_NhlRegisterEnumType(NhlTTitlePositions,titlepos,NhlNumber(titlepos));
+
+	Qmain = NrmStringToQuark(NhlNtiMainString);
+	Qxaxis = NrmStringToQuark(NhlNtiXAxisString);
+	Qyaxis = NrmStringToQuark(NhlNtiYAxisString);
+
+	return(NhlNOERROR);
+}
+
+/*
+ * Function:	TitleInitialize
+ *
+ * Description: Initializes the title object. This is complicated because 
+ *		titles can be placed centered or at the corners of their 
+ *		respective axis as well as on either side. Furthermore the
+ *		main title has to be positioned so as not to overlap the 
+ *		X axis label which can possibly be on the same side of the
+ *		xywidthheight viewport. 
+ *
+ *		This object places three TextItems arround the x,y,width and
+ *		height specified by the the view resources for this object.
+ *		It is important to note that the view resources don't define
+ *		the viewport for this object.
+ *		
+ *
+ * In Args:	class		objects class pointer
+ *		req		requested instance
+ *		new		new instance record
+ *		args		resource list just in case needed
+ *		num_args	number of resources
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	NONE
+ */
+/*ARGSUSED*/
+static NhlErrorTypes    TitleInitialize
+#if  __STDC__
+(NhlLayerClass class, NhlLayer req,NhlLayer new,_NhlArgList args, int num_args)
+#else
+(class,req,new,args,num_args)
+        NhlLayerClass	class;
+        NhlLayer	req;
+        NhlLayer	new;
+        _NhlArgList	args;
+        int		num_args;
+#endif
+{
+	NhlTitleLayer tnew = (NhlTitleLayer) new;
+	NhlTitleLayer treq = (NhlTitleLayer) req;
+	char buffer[_NhlMAXRESNAMLEN];
+	NhlErrorTypes ret = NhlNOERROR, ret1 = NhlNOERROR;
+	float tmpxy,tmpwh,main_location,tmpxy1,tmpwh1;
+
+	tnew->title.new_draw_req = True;
+	tnew->title.trans_dat = NULL;
+	tnew->title.delta = (float)fabs((double)tnew->title.delta);
+
+	if(tnew->title.main_string != Main){
+                tnew->title.main_string = (char*)NhlMalloc((unsigned)
+                                strlen(tnew->title.main_string)+1);
+                strcpy(tnew->title.main_string,treq->title.main_string);
+
+	}	
+	if(tnew->title.x_axis_string != XAxis){
+                tnew->title.x_axis_string = (char*)NhlMalloc((unsigned)
+                                strlen(tnew->title.x_axis_string)+1);
+                strcpy(tnew->title.x_axis_string,treq->title.x_axis_string);
+        }
+	if(tnew->title.y_axis_string != YAxis){
+                tnew->title.y_axis_string = (char*)NhlMalloc((unsigned)
+                                strlen(tnew->title.y_axis_string)+1);
+                strcpy(tnew->title.y_axis_string,treq->title.y_axis_string);
+        }
+/*
+* use_main_attributes is set then all of the main attributes are copied to the
+* coresponding x and y axis fields. This make the creation and SetValues 
+* easier to implement plus GetValues is simplified
+*/
+	if( tnew->title.use_main_attributes ) {
+		tnew->title.x_axis_font = tnew->title.y_axis_font =
+			tnew->title.main_font;
+		tnew->title.y_axis_just = tnew->title.x_axis_just =
+			tnew->title.main_just;
+		tnew->title.y_axis_font_height =tnew->title.x_axis_font_height =
+			tnew->title.main_font_height;
+		tnew->title.y_axis_font_aspect =tnew->title.x_axis_font_aspect =
+			tnew->title.main_font_aspect;
+		tnew->title.y_axis_font_thickness =
+			tnew->title.x_axis_font_thickness=
+			tnew->title.main_font_thickness;
+		tnew->title.y_axis_angle = tnew->title.x_axis_angle =
+			tnew->title.main_angle;
+		tnew->title.y_axis_angle = tnew->title.x_axis_angle =
+			tnew->title.main_angle;
+		tnew->title.y_axis_constant_spacing = 
+			tnew->title.x_axis_constant_spacing =
+			tnew->title.main_constant_spacing;
+		tnew->title.y_axis_func_code = 
+			tnew->title.x_axis_func_code =
+			tnew->title.main_func_code;
+	}
+/*
+* Compute locations of text items based on x,y,width and height for current
+* title objects and create them, even if they are turned off.
+*/
+	switch(tnew->title.y_axis_side) {
+		case NhlRIGHT:
+			switch(tnew->title.y_axis_position) {
+				case NhlTOP:
+					tnew->title.y_axis_pos_y = 
+						tnew->view.y 
+						+ tnew->title.y_axis_offset_y;
+					break;
+				case NhlBOTTOM:
+					tnew->title.y_axis_pos_y =
+						tnew->view.y 
+						- tnew->view.height
+						+ tnew->title.y_axis_offset_y;
+					break;
+				default:
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: Y Axis title can only be positioned on NhlTOP, NhlBOTTOM, or NhlCENTER, defaulting to NhlCENTER");
+					ret = NhlWARNING;
+				case NhlCENTER:
+					tnew->title.y_axis_pos_y =
+						tnew->view.y
+						- (tnew->view.height/2.0)
+						+tnew->title.y_axis_offset_y;
+					break;
+			}
+			tnew->title.y_axis_pos_x =
+				tnew->view.x + tnew->view.width
+				+(tnew->title.delta 
+				*tnew->title.y_axis_font_height)
+				+tnew->title.y_axis_offset_x;
+			break;
+		default: 
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: Y Axis title can only appear on NhlLEFT or NhlRIGHT side of plot, using NhlLEFT");
+			ret = NhlWARNING;
+		case NhlLEFT:
+			switch(tnew->title.y_axis_position) {
+				case NhlTOP:
+					tnew->title.y_axis_pos_y = 
+						tnew->view.y 
+						+ tnew->title.y_axis_offset_y;
+					break;
+				case NhlBOTTOM:
+					tnew->title.y_axis_pos_y =
+						tnew->view.y 
+						- tnew->view.height
+						+ tnew->title.y_axis_offset_y;
+					break;
+				default:
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: Y Axis title can only be positioned on NhlTOP, NhlBOTTOM, or NhlCENTER, defaulting to NhlCENTER");
+					ret = NhlWARNING;
+				case NhlCENTER:
+					tnew->title.y_axis_pos_y =
+						tnew->view.y
+						- (tnew->view.height/2.0)
+						+tnew->title.y_axis_offset_y;
+					break;
+			}
+			tnew->title.y_axis_pos_x =
+				tnew->view.x
+				-(tnew->title.delta 
+				* tnew->title.y_axis_font_height)
+				+tnew->title.y_axis_offset_x;
+			break;
+	}
+	strcpy(buffer,tnew->base.name);
+	strcat(buffer,".YAxis");
+	ret1 = NhlVACreate(&(tnew->title.y_axis_id),
+		buffer,NhltextItemLayerClass,
+		tnew->base.id,
+		NhlNtxFont,tnew->title.y_axis_font,
+		NhlNtxString,tnew->title.y_axis_string,
+		NhlNtxPosXF,tnew->title.y_axis_pos_x,
+		NhlNtxPosYF,tnew->title.y_axis_pos_y,
+		NhlNtxDirection,tnew->title.y_axis_direction,
+		NhlNtxAngleF,tnew->title.y_axis_angle,
+		NhlNtxJust,tnew->title.y_axis_just,
+		NhlNtxFontColor,tnew->title.y_axis_font_color,
+		NhlNtxFontHeightF,tnew->title.y_axis_font_height,
+		NhlNtxFontAspectF,tnew->title.y_axis_font_aspect,
+		NhlNtxConstantSpacingF,tnew->title.y_axis_constant_spacing,
+		NhlNtxFontQuality,tnew->title.y_axis_font_quality,
+		NhlNtxFuncCode,tnew->title.y_axis_func_code,
+		NhlNtxFontThicknessF,tnew->title.y_axis_font_thickness,
+		NULL);
+/*
+* Need to check to make sure yaxis title doesn't encroach on viewport
+*/
+	NhlVAGetValues(tnew->title.y_axis_id,
+		NhlNvpXF,&tmpxy,
+		NhlNvpWidthF,&tmpwh,NULL);
+
+	if(tnew->title.y_axis_side == NhlLEFT) {
+		if(tmpxy+tmpwh > tnew->view.x){
+			tnew->title.y_axis_pos_x -= (tmpxy+tmpwh) 
+				- tnew->view.x + (tnew->title.delta * tnew->title.y_axis_font_height);
+			NhlVASetValues(tnew->title.y_axis_id,
+				NhlNtxPosXF,tnew->title.y_axis_pos_x,
+				NULL);
+		}
+	} else {
+		if(tmpxy < tnew->view.x + tnew->view.width) {
+			tnew->title.y_axis_pos_x += (tnew->view.x 
+					+ tnew->view.width)
+                                        - tmpxy + (tnew->title.delta * tnew->title.y_axis_font_height);
+
+			NhlVASetValues(tnew->title.y_axis_id,
+				NhlNtxPosXF, tnew->title.y_axis_pos_x ,
+				NULL);
+		}
+	}
+
+	switch(tnew->title.x_axis_side) {
+		case NhlTOP:
+			switch(tnew->title.x_axis_position) {
+				case NhlRIGHT:
+					tnew->title.x_axis_pos_x =
+						tnew->view.x 
+						+tnew->view.width
+						+tnew->title.x_axis_offset_x;
+					break;
+				case NhlLEFT:
+					tnew->title.x_axis_pos_x =
+						tnew->view.x
+						+tnew->title.x_axis_offset_x;
+					break;
+				default:
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: X Axis title can only appear on NhlRIGHT, NhlLEFT, or NhlCENTER side, defaulting to NhlCENTER");
+					ret = NhlWARNING;
+				case NhlCENTER:
+					tnew->title.x_axis_pos_x =
+						tnew->view.x
+						+ (tnew->view.width/2.0)
+						+tnew->title.x_axis_offset_x;
+					break;
+			}
+			tnew->title.x_axis_pos_y = tnew->view.y 
+				+ (tnew->title.delta 	
+				* tnew->title.x_axis_font_height) 
+				+ tnew->title.x_axis_offset_y;
+			break;
+		default: 
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: X Axis title can only appear on NhlTOP or NhlBOTTOM side of plot, using NhlBOTTOM");
+			ret = NhlWARNING;
+		case NhlBOTTOM:
+			switch(tnew->title.x_axis_position) {
+				case NhlRIGHT:
+					tnew->title.x_axis_pos_x =
+						tnew->view.x 
+						+tnew->view.width
+						+tnew->title.x_axis_offset_x;
+					break;
+				case NhlLEFT:
+					tnew->title.x_axis_pos_x =
+						tnew->view.x
+						+tnew->title.x_axis_offset_x;
+					break;
+				default:
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: X Axis title can only appear on NhlRIGHT, NhlLEFT, or NhlCENTER side, defaulting to NhlCENTER");
+					ret = NhlWARNING;
+				case NhlCENTER:
+					tnew->title.x_axis_pos_x =
+						tnew->view.x
+						+ (tnew->view.width/2.0)
+						+tnew->title.x_axis_offset_x;
+					break;
+			}
+			tnew->title.x_axis_pos_y = tnew->view.y 
+				- tnew->view.height
+				- (tnew->title.delta 	
+				* tnew->title.x_axis_font_height) 
+				+ tnew->title.x_axis_offset_y;
+			break;
+	}
+	strcpy(buffer,tnew->base.name);
+/*
+* Dot in name restricts user from specifing resources by name for this object
+* in the resource file.
+*/
+	strcat(buffer,".XAxis");
+	ret1 = NhlVACreate(&(tnew->title.x_axis_id),
+		buffer,NhltextItemLayerClass,
+		tnew->base.id,
+		NhlNtxFont,tnew->title.x_axis_font,
+		NhlNtxString,tnew->title.x_axis_string,
+		NhlNtxPosXF,tnew->title.x_axis_pos_x,
+		NhlNtxPosYF,tnew->title.x_axis_pos_y,
+		NhlNtxDirection,tnew->title.x_axis_direction,
+		NhlNtxAngleF,tnew->title.x_axis_angle,
+		NhlNtxJust,tnew->title.x_axis_just,
+		NhlNtxFontColor,tnew->title.x_axis_font_color,
+		NhlNtxFontHeightF,tnew->title.x_axis_font_height,
+		NhlNtxFontAspectF,tnew->title.x_axis_font_aspect,
+		NhlNtxConstantSpacingF,tnew->title.x_axis_constant_spacing,
+		NhlNtxFontQuality,tnew->title.x_axis_font_quality,
+		NhlNtxFuncCode,tnew->title.x_axis_func_code,
+		NhlNtxFontThicknessF,tnew->title.x_axis_font_thickness,
+		NULL);
+/*
+* Need to check to make sure xaxis title doesn't encroach on viewport
+*/
+	NhlVAGetValues(tnew->title.x_axis_id,
+		NhlNvpYF,&tmpxy,
+		NhlNvpHeightF,&tmpwh,NULL);
+
+	if(tnew->title.x_axis_side == NhlTOP) {
+		if(tmpxy - tmpwh < tnew->view.y ){
+			tnew->title.x_axis_pos_y += tnew->view.y - (tmpxy - tmpwh ) + (tnew->title.delta * tnew->title.x_axis_font_height);
+			NhlVASetValues(tnew->title.x_axis_id,
+				NhlNtxPosYF,tnew->title.x_axis_pos_y,
+				NULL);
+		}
+	} else {
+		if(tmpxy > tnew->view.y - tnew->view.height) {
+			tnew->title.x_axis_pos_y -= tmpxy - (tnew->view.y - tnew->view.height)+ (tnew->title.delta * tnew->title.x_axis_font_height);
+
+			NhlVASetValues(tnew->title.x_axis_id,
+				NhlNtxPosYF, tnew->title.x_axis_pos_y ,
+				NULL);
+		}
+	}
+	switch(tnew->title.main_side) {
+		case NhlBOTTOM:
+			if((tnew->title.x_axis_side == NhlBOTTOM)
+				&&(tnew->title.x_axis_on)) {
+				NhlVAGetValues(tnew->title.x_axis_id,
+					NhlNvpYF,&tmpxy,
+					NhlNvpHeightF,&tmpwh,NULL);
+				main_location = tmpxy - tmpwh;
+			} else {
+				main_location = tnew->view.y 
+					- tnew->view.height;
+			}
+			switch(tnew->title.main_position) {
+				case NhlRIGHT:
+					tnew->title.main_pos_x =
+						tnew->view.x 
+						+tnew->view.width
+						+tnew->title.main_offset_x;
+					break;
+				case NhlLEFT:
+					tnew->title.main_pos_x =
+						tnew->view.x
+						+tnew->title.main_offset_x;
+					break;
+				default:
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: X Axis title can only appear on NhlRIGHT, NhlLEFT, or NhlCENTER side, defaulting to NhlCENTER");
+					ret = NhlWARNING;
+				case NhlCENTER:
+					tnew->title.main_pos_x =
+						tnew->view.x
+						+ (tnew->view.width/2.0)
+						+tnew->title.main_offset_x;
+					break;
+			}
+			tnew->title.main_pos_y = main_location 
+				- (tnew->title.delta 
+				* tnew->title.main_font_height)
+				+ tnew->title.main_offset_y;
+			break;
+		default: 
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: Main title can only appear on NhlTOP or NhlBOTTOM side of plot, defaulting to NhlTOP");
+			ret = NhlWARNING;
+		case NhlTOP:
+			if((tnew->title.x_axis_side == NhlTOP)
+				&&(tnew->title.x_axis_on)) {
+				NhlVAGetValues(tnew->title.x_axis_id,
+					NhlNvpYF,&tmpxy,NULL);
+				main_location = tmpxy;
+			} else {
+				main_location = tnew->view.y;
+			}
+			switch(tnew->title.main_position) {
+				case NhlRIGHT:
+					tnew->title.main_pos_x =
+						tnew->view.x 
+						+tnew->view.width
+						+tnew->title.main_offset_x;
+					break;
+				case NhlLEFT:
+					tnew->title.main_pos_x =
+						tnew->view.x
+						+tnew->title.main_offset_x;
+					break;
+				default:
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: X Axis title can only appear on NhlRIGHT, NhlLEFT, or NhlCENTER side, defaulting to NhlCENTER");
+					ret = NhlWARNING;
+				case NhlCENTER:
+					tnew->title.main_pos_x =
+						tnew->view.x
+						+ (tnew->view.width/2.0)
+						+tnew->title.main_offset_x;
+					break;
+			}
+			tnew->title.main_pos_y = main_location 
+				+ (tnew->title.delta 
+				* tnew->title.main_font_height)
+				+ tnew->title.main_offset_y;
+			break;
+	}
+	strcpy(buffer,tnew->base.name);
+/*
+* Dot in name restricts user from specifing resources by name for this object
+* in the resource file.
+*/
+	strcat(buffer,".Main");
+	ret1 = NhlVACreate(&(tnew->title.main_id),
+		buffer,NhltextItemLayerClass,
+		tnew->base.id,
+		NhlNtxFont,tnew->title.main_font,
+		NhlNtxString,tnew->title.main_string,
+		NhlNtxPosXF,tnew->title.main_pos_x,
+		NhlNtxPosYF,tnew->title.main_pos_y,
+		NhlNtxDirection,tnew->title.main_direction,
+		NhlNtxAngleF,tnew->title.main_angle,
+		NhlNtxJust,tnew->title.main_just,
+		NhlNtxFontColor,tnew->title.main_font_color,
+		NhlNtxFontHeightF,tnew->title.main_font_height,
+		NhlNtxFontAspectF,tnew->title.main_font_aspect,
+		NhlNtxConstantSpacingF,tnew->title.main_constant_spacing,
+		NhlNtxFontQuality,tnew->title.main_font_quality,
+		NhlNtxFuncCode,tnew->title.main_func_code,
+		NhlNtxFontThicknessF,tnew->title.main_font_thickness,
+		NULL);
+
+/*
+* Need to check to make sure main title doesn't encroach on viewport
+*/
+	NhlVAGetValues(tnew->title.main_id,
+		NhlNvpYF,&tmpxy,
+		NhlNvpHeightF,&tmpwh,NULL);
+	if(tnew->title.x_axis_side == tnew->title.main_side) {
+		NhlVAGetValues(tnew->title.x_axis_id,
+			NhlNvpYF,&tmpxy1,
+			NhlNvpHeightF,&tmpwh1,NULL);
+	} else {
+		tmpxy1 = tnew->view.y;
+		tmpwh1 = tnew->view.height;
+	}
+
+	if(tnew->title.main_side == NhlTOP) {
+		if((tmpxy - tmpwh) < tmpxy1) {
+			tnew->title.main_pos_y += tmpxy1 - (tmpxy - tmpwh)+ (tnew->title.delta * tnew->title.main_font_height);	
+			NhlVASetValues(tnew->title.main_id,
+				NhlNtxPosYF,tnew->title.main_pos_y,
+				NULL);
+		} 
+	} else {
+		if(tmpxy > (tmpxy1 - tmpwh1)) {
+			tnew->title.main_pos_y -= tmpxy - (tmpxy1 - tmpwh1)+ (tnew->title.delta * tnew->title.main_font_height);
+			NhlVASetValues(tnew->title.main_id,
+				NhlNtxPosYF,tnew->title.main_pos_y,
+				NULL);
+		}
+	}
+
+
+	return(MIN(ret1,ret));
+}
 		
 /*
  * Function:	TitleSetValues
@@ -907,460 +1411,79 @@ static NhlErrorTypes    TitleSetValues
 }
 
 /*
- * Function:	TitleInitialize
+ * Function:	TitleGetValues
  *
- * Description: Initializes the title object. This is complicated because 
- *		titles can be placed centered or at the corners of their 
- *		respective axis as well as on either side. Furthermore the
- *		main title has to be positioned so as not to overlap the 
- *		X axis label which can possibly be on the same side of the
- *		xywidthheight viewport. 
+ * Description:	
  *
- *		This object places three TextItems arround the x,y,width and
- *		height specified by the the view resources for this object.
- *		It is important to note that the view resources don't define
- *		the viewport for this object.
- *		
+ * In Args:	
  *
- * In Args:	class		objects class pointer
- *		req		requested instance
- *		new		new instance record
- *		args		resource list just in case needed
- *		num_args	number of resources
+ * Out Args:	
  *
- * Out Args:	NONE
- *
- * Return Values:	Error Conditions
- *
- * Side Effects:	NONE
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
  */
-/*ARGSUSED*/
-static NhlErrorTypes    TitleInitialize
-#if  __STDC__
-(NhlLayerClass class, NhlLayer req,NhlLayer new,_NhlArgList args, int num_args)
+static NhlErrorTypes
+TitleGetValues
+#if	NhlNeedProto
+(
+	NhlLayer	l,
+	_NhlArgList	args,
+	int		nargs
+)
 #else
-(class,req,new,args,num_args)
-        NhlLayerClass	class;
-        NhlLayer	req;
-        NhlLayer	new;
-        _NhlArgList	args;
-        int		num_args;
+(l,args,nargs)
+	NhlLayer	l;
+	_NhlArgList	args;
+	int		nargs;
 #endif
 {
-	NhlTitleLayer tnew = (NhlTitleLayer) new;
-	NhlTitleLayer treq = (NhlTitleLayer) req;
-	char buffer[_NhlMAXRESNAMLEN];
-	NhlErrorTypes ret = NhlNOERROR, ret1 = NhlNOERROR;
-	float tmpxy,tmpwh,main_location,tmpxy1,tmpwh1;
+	char			func[] = "TitleGetValues";
+	NhlErrorTypes		ret = NhlNOERROR;
+	NhlTitleLayerPart	*tip = &((NhlTitleLayer)l)->title;
+	int			i;
 
-	tnew->title.new_draw_req = True;
-	tnew->title.trans_dat = NULL;
-	tnew->title.delta = (float)fabs((double)tnew->title.delta);
+	for(i=0;i<nargs;i++){
 
-	if(tnew->title.main_string != Main){
-                tnew->title.main_string = (char*)NhlMalloc((unsigned)
-                                strlen(tnew->title.main_string)+1);
-                strcpy(tnew->title.main_string,treq->title.main_string);
-
-	}	
-	if(tnew->title.x_axis_string != XAxis){
-                tnew->title.x_axis_string = (char*)NhlMalloc((unsigned)
-                                strlen(tnew->title.x_axis_string)+1);
-                strcpy(tnew->title.x_axis_string,treq->title.x_axis_string);
-        }
-	if(tnew->title.y_axis_string != YAxis){
-                tnew->title.y_axis_string = (char*)NhlMalloc((unsigned)
-                                strlen(tnew->title.y_axis_string)+1);
-                strcpy(tnew->title.y_axis_string,treq->title.y_axis_string);
-        }
-/*
-* use_main_attributes is set then all of the main attributes are copied to the
-* coresponding x and y axis fields. This make the creation and SetValues 
-* easier to implement plus GetValues is simplified
-*/
-	if( tnew->title.use_main_attributes ) {
-		tnew->title.x_axis_font = tnew->title.y_axis_font =
-			tnew->title.main_font;
-		tnew->title.y_axis_just = tnew->title.x_axis_just =
-			tnew->title.main_just;
-		tnew->title.y_axis_font_height =tnew->title.x_axis_font_height =
-			tnew->title.main_font_height;
-		tnew->title.y_axis_font_aspect =tnew->title.x_axis_font_aspect =
-			tnew->title.main_font_aspect;
-		tnew->title.y_axis_font_thickness =
-			tnew->title.x_axis_font_thickness=
-			tnew->title.main_font_thickness;
-		tnew->title.y_axis_angle = tnew->title.x_axis_angle =
-			tnew->title.main_angle;
-		tnew->title.y_axis_angle = tnew->title.x_axis_angle =
-			tnew->title.main_angle;
-		tnew->title.y_axis_constant_spacing = 
-			tnew->title.x_axis_constant_spacing =
-			tnew->title.main_constant_spacing;
-		tnew->title.y_axis_func_code = 
-			tnew->title.x_axis_func_code =
-			tnew->title.main_func_code;
-	}
-/*
-* Compute locations of text items based on x,y,width and height for current
-* title objects and create them, even if they are turned off.
-*/
-	switch(tnew->title.y_axis_side) {
-		case NhlRIGHT:
-			switch(tnew->title.y_axis_position) {
-				case NhlTOP:
-					tnew->title.y_axis_pos_y = 
-						tnew->view.y 
-						+ tnew->title.y_axis_offset_y;
-					break;
-				case NhlBOTTOM:
-					tnew->title.y_axis_pos_y =
-						tnew->view.y 
-						- tnew->view.height
-						+ tnew->title.y_axis_offset_y;
-					break;
-				default:
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: Y Axis title can only be positioned on NhlTOP, NhlBOTTOM, or NhlCENTER, defaulting to NhlCENTER");
-					ret = NhlWARNING;
-				case NhlCENTER:
-					tnew->title.y_axis_pos_y =
-						tnew->view.y
-						- (tnew->view.height/2.0)
-						+tnew->title.y_axis_offset_y;
-					break;
+		if((args[i].quark == Qmain) && tip->main_string){
+			*(NhlString*)args[i].value.ptrval =(NhlString)
+					NhlMalloc(strlen(tip->main_string)+1);
+			if(*(NhlString*)args[i].value.ptrval == NULL){
+				NhlPError(NhlWARNING,ENOMEM,
+				"%s:Unable to allocate memory to retrieve %s",
+							func,NhlNtiMainString);
+				ret = MIN(ret,NhlWARNING);
 			}
-			tnew->title.y_axis_pos_x =
-				tnew->view.x + tnew->view.width
-				+(tnew->title.delta 
-				*tnew->title.y_axis_font_height)
-				+tnew->title.y_axis_offset_x;
-			break;
-		default: 
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: Y Axis title can only appear on NhlLEFT or NhlRIGHT side of plot, using NhlLEFT");
-			ret = NhlWARNING;
-		case NhlLEFT:
-			switch(tnew->title.y_axis_position) {
-				case NhlTOP:
-					tnew->title.y_axis_pos_y = 
-						tnew->view.y 
-						+ tnew->title.y_axis_offset_y;
-					break;
-				case NhlBOTTOM:
-					tnew->title.y_axis_pos_y =
-						tnew->view.y 
-						- tnew->view.height
-						+ tnew->title.y_axis_offset_y;
-					break;
-				default:
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: Y Axis title can only be positioned on NhlTOP, NhlBOTTOM, or NhlCENTER, defaulting to NhlCENTER");
-					ret = NhlWARNING;
-				case NhlCENTER:
-					tnew->title.y_axis_pos_y =
-						tnew->view.y
-						- (tnew->view.height/2.0)
-						+tnew->title.y_axis_offset_y;
-					break;
-			}
-			tnew->title.y_axis_pos_x =
-				tnew->view.x
-				-(tnew->title.delta 
-				* tnew->title.y_axis_font_height)
-				+tnew->title.y_axis_offset_x;
-			break;
-	}
-	strcpy(buffer,tnew->base.name);
-	strcat(buffer,".YAxis");
-	ret1 = NhlVACreate(&(tnew->title.y_axis_id),
-		buffer,NhltextItemLayerClass,
-		tnew->base.id,
-		NhlNtxFont,tnew->title.y_axis_font,
-		NhlNtxString,tnew->title.y_axis_string,
-		NhlNtxPosXF,tnew->title.y_axis_pos_x,
-		NhlNtxPosYF,tnew->title.y_axis_pos_y,
-		NhlNtxDirection,tnew->title.y_axis_direction,
-		NhlNtxAngleF,tnew->title.y_axis_angle,
-		NhlNtxJust,tnew->title.y_axis_just,
-		NhlNtxFontColor,tnew->title.y_axis_font_color,
-		NhlNtxFontHeightF,tnew->title.y_axis_font_height,
-		NhlNtxFontAspectF,tnew->title.y_axis_font_aspect,
-		NhlNtxConstantSpacingF,tnew->title.y_axis_constant_spacing,
-		NhlNtxFontQuality,tnew->title.y_axis_font_quality,
-		NhlNtxFuncCode,tnew->title.y_axis_func_code,
-		NhlNtxFontThicknessF,tnew->title.y_axis_font_thickness,
-		NULL);
-/*
-* Need to check to make sure yaxis title doesn't encroach on viewport
-*/
-	NhlVAGetValues(tnew->title.y_axis_id,
-		NhlNvpXF,&tmpxy,
-		NhlNvpWidthF,&tmpwh,NULL);
-
-	if(tnew->title.y_axis_side == NhlLEFT) {
-		if(tmpxy+tmpwh > tnew->view.x){
-			tnew->title.y_axis_pos_x -= (tmpxy+tmpwh) 
-				- tnew->view.x + (tnew->title.delta * tnew->title.y_axis_font_height);
-			NhlVASetValues(tnew->title.y_axis_id,
-				NhlNtxPosXF,tnew->title.y_axis_pos_x,
-				NULL);
+			strcpy(*(NhlString*)args[i].value.ptrval,
+							tip->main_string);
 		}
-	} else {
-		if(tmpxy < tnew->view.x + tnew->view.width) {
-			tnew->title.y_axis_pos_x += (tnew->view.x 
-					+ tnew->view.width)
-                                        - tmpxy + (tnew->title.delta * tnew->title.y_axis_font_height);
-
-			NhlVASetValues(tnew->title.y_axis_id,
-				NhlNtxPosXF, tnew->title.y_axis_pos_x ,
-				NULL);
+		else if((args[i].quark == Qxaxis) && tip->x_axis_string){
+			*(NhlString*)args[i].value.ptrval =(NhlString)
+					NhlMalloc(strlen(tip->x_axis_string)+1);
+			if(*(NhlString*)args[i].value.ptrval == NULL){
+				NhlPError(NhlWARNING,ENOMEM,
+				"%s:Unable to allocate memory to retrieve %s",
+							func,NhlNtiXAxisString);
+				ret = MIN(ret,NhlWARNING);
+			}
+			strcpy(*(NhlString*)args[i].value.ptrval,
+							tip->x_axis_string);
+		}
+		else if((args[i].quark == Qyaxis) && tip->y_axis_string){
+			*(NhlString*)args[i].value.ptrval =(NhlString)
+					NhlMalloc(strlen(tip->y_axis_string)+1);
+			if(*(NhlString*)args[i].value.ptrval == NULL){
+				NhlPError(NhlWARNING,ENOMEM,
+				"%s:Unable to allocate memory to retrieve %s",
+							func,NhlNtiYAxisString);
+				ret = MIN(ret,NhlWARNING);
+			}
+			strcpy(*(NhlString*)args[i].value.ptrval,
+							tip->y_axis_string);
 		}
 	}
 
-	switch(tnew->title.x_axis_side) {
-		case NhlTOP:
-			switch(tnew->title.x_axis_position) {
-				case NhlRIGHT:
-					tnew->title.x_axis_pos_x =
-						tnew->view.x 
-						+tnew->view.width
-						+tnew->title.x_axis_offset_x;
-					break;
-				case NhlLEFT:
-					tnew->title.x_axis_pos_x =
-						tnew->view.x
-						+tnew->title.x_axis_offset_x;
-					break;
-				default:
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: X Axis title can only appear on NhlRIGHT, NhlLEFT, or NhlCENTER side, defaulting to NhlCENTER");
-					ret = NhlWARNING;
-				case NhlCENTER:
-					tnew->title.x_axis_pos_x =
-						tnew->view.x
-						+ (tnew->view.width/2.0)
-						+tnew->title.x_axis_offset_x;
-					break;
-			}
-			tnew->title.x_axis_pos_y = tnew->view.y 
-				+ (tnew->title.delta 	
-				* tnew->title.x_axis_font_height) 
-				+ tnew->title.x_axis_offset_y;
-			break;
-		default: 
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: X Axis title can only appear on NhlTOP or NhlBOTTOM side of plot, using NhlBOTTOM");
-			ret = NhlWARNING;
-		case NhlBOTTOM:
-			switch(tnew->title.x_axis_position) {
-				case NhlRIGHT:
-					tnew->title.x_axis_pos_x =
-						tnew->view.x 
-						+tnew->view.width
-						+tnew->title.x_axis_offset_x;
-					break;
-				case NhlLEFT:
-					tnew->title.x_axis_pos_x =
-						tnew->view.x
-						+tnew->title.x_axis_offset_x;
-					break;
-				default:
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: X Axis title can only appear on NhlRIGHT, NhlLEFT, or NhlCENTER side, defaulting to NhlCENTER");
-					ret = NhlWARNING;
-				case NhlCENTER:
-					tnew->title.x_axis_pos_x =
-						tnew->view.x
-						+ (tnew->view.width/2.0)
-						+tnew->title.x_axis_offset_x;
-					break;
-			}
-			tnew->title.x_axis_pos_y = tnew->view.y 
-				- tnew->view.height
-				- (tnew->title.delta 	
-				* tnew->title.x_axis_font_height) 
-				+ tnew->title.x_axis_offset_y;
-			break;
-	}
-	strcpy(buffer,tnew->base.name);
-/*
-* Dot in name restricts user from specifing resources by name for this object
-* in the resource file.
-*/
-	strcat(buffer,".XAxis");
-	ret1 = NhlVACreate(&(tnew->title.x_axis_id),
-		buffer,NhltextItemLayerClass,
-		tnew->base.id,
-		NhlNtxFont,tnew->title.x_axis_font,
-		NhlNtxString,tnew->title.x_axis_string,
-		NhlNtxPosXF,tnew->title.x_axis_pos_x,
-		NhlNtxPosYF,tnew->title.x_axis_pos_y,
-		NhlNtxDirection,tnew->title.x_axis_direction,
-		NhlNtxAngleF,tnew->title.x_axis_angle,
-		NhlNtxJust,tnew->title.x_axis_just,
-		NhlNtxFontColor,tnew->title.x_axis_font_color,
-		NhlNtxFontHeightF,tnew->title.x_axis_font_height,
-		NhlNtxFontAspectF,tnew->title.x_axis_font_aspect,
-		NhlNtxConstantSpacingF,tnew->title.x_axis_constant_spacing,
-		NhlNtxFontQuality,tnew->title.x_axis_font_quality,
-		NhlNtxFuncCode,tnew->title.x_axis_func_code,
-		NhlNtxFontThicknessF,tnew->title.x_axis_font_thickness,
-		NULL);
-/*
-* Need to check to make sure xaxis title doesn't encroach on viewport
-*/
-	NhlVAGetValues(tnew->title.x_axis_id,
-		NhlNvpYF,&tmpxy,
-		NhlNvpHeightF,&tmpwh,NULL);
-
-	if(tnew->title.x_axis_side == NhlTOP) {
-		if(tmpxy - tmpwh < tnew->view.y ){
-			tnew->title.x_axis_pos_y += tnew->view.y - (tmpxy - tmpwh ) + (tnew->title.delta * tnew->title.x_axis_font_height);
-			NhlVASetValues(tnew->title.x_axis_id,
-				NhlNtxPosYF,tnew->title.x_axis_pos_y,
-				NULL);
-		}
-	} else {
-		if(tmpxy > tnew->view.y - tnew->view.height) {
-			tnew->title.x_axis_pos_y -= tmpxy - (tnew->view.y - tnew->view.height)+ (tnew->title.delta * tnew->title.x_axis_font_height);
-
-			NhlVASetValues(tnew->title.x_axis_id,
-				NhlNtxPosYF, tnew->title.x_axis_pos_y ,
-				NULL);
-		}
-	}
-	switch(tnew->title.main_side) {
-		case NhlBOTTOM:
-			if((tnew->title.x_axis_side == NhlBOTTOM)
-				&&(tnew->title.x_axis_on)) {
-				NhlVAGetValues(tnew->title.x_axis_id,
-					NhlNvpYF,&tmpxy,
-					NhlNvpHeightF,&tmpwh,NULL);
-				main_location = tmpxy - tmpwh;
-			} else {
-				main_location = tnew->view.y 
-					- tnew->view.height;
-			}
-			switch(tnew->title.main_position) {
-				case NhlRIGHT:
-					tnew->title.main_pos_x =
-						tnew->view.x 
-						+tnew->view.width
-						+tnew->title.main_offset_x;
-					break;
-				case NhlLEFT:
-					tnew->title.main_pos_x =
-						tnew->view.x
-						+tnew->title.main_offset_x;
-					break;
-				default:
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: X Axis title can only appear on NhlRIGHT, NhlLEFT, or NhlCENTER side, defaulting to NhlCENTER");
-					ret = NhlWARNING;
-				case NhlCENTER:
-					tnew->title.main_pos_x =
-						tnew->view.x
-						+ (tnew->view.width/2.0)
-						+tnew->title.main_offset_x;
-					break;
-			}
-			tnew->title.main_pos_y = main_location 
-				- (tnew->title.delta 
-				* tnew->title.main_font_height)
-				+ tnew->title.main_offset_y;
-			break;
-		default: 
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: Main title can only appear on NhlTOP or NhlBOTTOM side of plot, defaulting to NhlTOP");
-			ret = NhlWARNING;
-		case NhlTOP:
-			if((tnew->title.x_axis_side == NhlTOP)
-				&&(tnew->title.x_axis_on)) {
-				NhlVAGetValues(tnew->title.x_axis_id,
-					NhlNvpYF,&tmpxy,NULL);
-				main_location = tmpxy;
-			} else {
-				main_location = tnew->view.y;
-			}
-			switch(tnew->title.main_position) {
-				case NhlRIGHT:
-					tnew->title.main_pos_x =
-						tnew->view.x 
-						+tnew->view.width
-						+tnew->title.main_offset_x;
-					break;
-				case NhlLEFT:
-					tnew->title.main_pos_x =
-						tnew->view.x
-						+tnew->title.main_offset_x;
-					break;
-				default:
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: X Axis title can only appear on NhlRIGHT, NhlLEFT, or NhlCENTER side, defaulting to NhlCENTER");
-					ret = NhlWARNING;
-				case NhlCENTER:
-					tnew->title.main_pos_x =
-						tnew->view.x
-						+ (tnew->view.width/2.0)
-						+tnew->title.main_offset_x;
-					break;
-			}
-			tnew->title.main_pos_y = main_location 
-				+ (tnew->title.delta 
-				* tnew->title.main_font_height)
-				+ tnew->title.main_offset_y;
-			break;
-	}
-	strcpy(buffer,tnew->base.name);
-/*
-* Dot in name restricts user from specifing resources by name for this object
-* in the resource file.
-*/
-	strcat(buffer,".Main");
-	ret1 = NhlVACreate(&(tnew->title.main_id),
-		buffer,NhltextItemLayerClass,
-		tnew->base.id,
-		NhlNtxFont,tnew->title.main_font,
-		NhlNtxString,tnew->title.main_string,
-		NhlNtxPosXF,tnew->title.main_pos_x,
-		NhlNtxPosYF,tnew->title.main_pos_y,
-		NhlNtxDirection,tnew->title.main_direction,
-		NhlNtxAngleF,tnew->title.main_angle,
-		NhlNtxJust,tnew->title.main_just,
-		NhlNtxFontColor,tnew->title.main_font_color,
-		NhlNtxFontHeightF,tnew->title.main_font_height,
-		NhlNtxFontAspectF,tnew->title.main_font_aspect,
-		NhlNtxConstantSpacingF,tnew->title.main_constant_spacing,
-		NhlNtxFontQuality,tnew->title.main_font_quality,
-		NhlNtxFuncCode,tnew->title.main_func_code,
-		NhlNtxFontThicknessF,tnew->title.main_font_thickness,
-		NULL);
-
-/*
-* Need to check to make sure main title doesn't encroach on viewport
-*/
-	NhlVAGetValues(tnew->title.main_id,
-		NhlNvpYF,&tmpxy,
-		NhlNvpHeightF,&tmpwh,NULL);
-	if(tnew->title.x_axis_side == tnew->title.main_side) {
-		NhlVAGetValues(tnew->title.x_axis_id,
-			NhlNvpYF,&tmpxy1,
-			NhlNvpHeightF,&tmpwh1,NULL);
-	} else {
-		tmpxy1 = tnew->view.y;
-		tmpwh1 = tnew->view.height;
-	}
-
-	if(tnew->title.main_side == NhlTOP) {
-		if((tmpxy - tmpwh) < tmpxy1) {
-			tnew->title.main_pos_y += tmpxy1 - (tmpxy - tmpwh)+ (tnew->title.delta * tnew->title.main_font_height);	
-			NhlVASetValues(tnew->title.main_id,
-				NhlNtxPosYF,tnew->title.main_pos_y,
-				NULL);
-		} 
-	} else {
-		if(tmpxy > (tmpxy1 - tmpwh1)) {
-			tnew->title.main_pos_y -= tmpxy - (tmpxy1 - tmpwh1)+ (tnew->title.delta * tnew->title.main_font_height);
-			NhlVASetValues(tnew->title.main_id,
-				NhlNtxPosYF,tnew->title.main_pos_y,
-				NULL);
-		}
-	}
-
-
-	return(MIN(ret1,ret));
+	return ret;
 }
 
 /*
@@ -1398,39 +1521,6 @@ static NhlErrorTypes     TitleDestroy
 	NhlDestroy(tinst->title.main_id);
 	NhlDestroy(tinst->title.x_axis_id);
 	NhlDestroy(tinst->title.y_axis_id);
-	return(NhlNOERROR);
-}
-
-/*
- * Function:	TitleClassInitialize
- *
- * Description:	
- *
- * In Args:	NONE
- *
- * Out Args:	NONE
- *
- * Return Values:	NONE
- *
- * Side Effects:	NhlNOERROR
- */
-static NhlErrorTypes    TitleClassInitialize
-#if __STDC__
-(void)
-#else
-()
-#endif
-{
-	_NhlEnumVals	titlepos[] = {
-		{NhlTOP,	"top"},
-		{NhlBOTTOM,	"bottom"},
-		{NhlLEFT,	"left"},
-		{NhlRIGHT,	"right"},
-		{NhlCENTER,	"center"}
-	};
-
-	_NhlRegisterEnumType(NhlTTitlePositions,titlepos,NhlNumber(titlepos));
-
 	return(NhlNOERROR);
 }
 

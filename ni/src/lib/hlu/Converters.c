@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.22 1994-11-07 03:09:07 ethan Exp $
+ *      $Id: Converters.c,v 1.23 1994-11-07 08:29:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -999,6 +999,12 @@ CvtArgs
 
 	gen = from->data.ptrval;
 
+	if(!gen){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:%s to %s with a NULL array",
+						func,NhlTGenArray,NhlTScalar);
+		return NhlFATAL;
+	}
+
 	if(gen->num_elements > 1){
 		NhlPError(NhlINFO,NhlEUNKNOWN,"%s:%s to %s loosing information",
 						func,NhlTGenArray,NhlTScalar);
@@ -1053,6 +1059,11 @@ CvtArgs
 	gen = _NhlConvertCreateGenArray(data,NrmQuarkToString(from->typeQ),
 							from->size,1,NULL);
 
+	if(!gen){
+		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array");
+		return NhlFATAL;
+	}
+
 	if(to->typeQ == genQ){
 		SetVal(NhlGenArray,sizeof(NhlGenArray),gen);
 	}
@@ -1090,6 +1101,14 @@ CvtArgs
 	 * no conversion is really necessary.
 	 */
 	if(to->typeQ == genQ){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),gen);
+	}
+
+	/*
+	 * if the from gen array is null, then it is a valid (NULL) array
+	 * of any of the specific types - so just set it.
+	 */
+	if(!gen){
 		SetVal(NhlGenArray,sizeof(NhlGenArray),gen);
 	}
 
@@ -1139,13 +1158,14 @@ CvtArgs									\
 		return NhlFATAL;					\
 	}								\
 									\
-	if(from->typeQ == to->typeQ){					\
+	fromgen = from->data.ptrval;					\
+	fromval = fromgen->data;					\
+									\
+	if((from->typeQ == to->typeQ) || (fromgen == NULL)){		\
 		togen = from->data.ptrval;				\
 		togen->size = sizeof(totype);				\
 	}								\
 	else{								\
-		fromgen = from->data.ptrval;				\
-		fromval = fromgen->data;				\
 									\
 		toval = (totype *)NhlConvertMalloc(sizeof(totype) *	\
 						fromgen->num_elements);	\
@@ -1223,6 +1243,10 @@ CvtArgs
 	fromgen = from->data.ptrval;
 	fromval = fromgen->data;
 
+	if(!fromgen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+	}
+
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
 							fromgen->num_elements);
 	if(toval == NULL){
@@ -1270,6 +1294,10 @@ CvtArgs
 
 	fromgen = from->data.ptrval;
 	fromval = fromgen->data;
+
+	if(!fromgen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+	}
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
 							fromgen->num_elements);
@@ -1321,6 +1349,10 @@ CvtArgs
 	fromgen = from->data.ptrval;
 	fromval = fromgen->data;
 
+	if(!fromgen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+	}
+
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
 							fromgen->num_elements);
 	if(toval == NULL){
@@ -1369,6 +1401,10 @@ CvtArgs
 
 	fromgen = from->data.ptrval;
 	fromval = fromgen->data;
+
+	if(!fromgen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+	}
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
 							fromgen->num_elements);
@@ -1419,6 +1455,10 @@ CvtArgs
 	fromgen = from->data.ptrval;
 	fromval = fromgen->data;
 
+	if(!fromgen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+	}
+
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
 							fromgen->num_elements);
 	if(toval == NULL){
@@ -1467,6 +1507,10 @@ CvtArgs
 
 	fromgen = from->data.ptrval;
 	fromval = fromgen->data;
+
+	if(!fromgen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+	}
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
 							fromgen->num_elements);
@@ -1517,6 +1561,10 @@ CvtArgs
 	fromgen = from->data.ptrval;
 	fromval = fromgen->data;
 
+	if(!fromgen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+	}
+
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
 							fromgen->num_elements);
 	if(toval == NULL){
@@ -1565,6 +1613,10 @@ CvtArgs
 	fromgen = from->data.ptrval;
 	fromval = fromgen->data;
 
+	if(!fromgen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+	}
+
 	toval = (char *)NhlConvertMalloc(sizeof(char) * fromgen->num_elements);
 	if(toval == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
@@ -1605,6 +1657,10 @@ CvtArgs
 
 	fromgen = from->data.ptrval;
 	fromval = fromgen->data;
+
+	if(!fromgen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+	}
 
 	toval = (char *)NhlConvertMalloc(sizeof(char) * fromgen->num_elements);
 	if(toval == NULL){
@@ -1653,6 +1709,10 @@ CvtArgs
 	fromgen = from->data.ptrval;
 	fromval = fromgen->data;
 
+	if(!fromgen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+	}
+
 	toval = (double *)NhlConvertMalloc(sizeof(double) *
 							fromgen->num_elements);
 	if(toval == NULL){
@@ -1695,6 +1755,10 @@ CvtArgs
 	fromgen = from->data.ptrval;
 	fromval = fromgen->data;
 
+	if(!fromgen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+	}
+
 	toval = (float *)NhlConvertMalloc(sizeof(float)*fromgen->num_elements);
 	if(toval == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
@@ -1735,6 +1799,10 @@ CvtArgs
 
 	fromgen = from->data.ptrval;
 	fromval = fromgen->data;
+
+	if(!fromgen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+	}
 
 	toval = (int *)NhlConvertMalloc(sizeof(int) * fromgen->num_elements);
 	if(toval == NULL){
@@ -1777,6 +1845,10 @@ CvtArgs
 	fromgen = from->data.ptrval;
 	fromval = fromgen->data;
 
+	if(!fromgen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+	}
+
 	toval = (long *)NhlConvertMalloc(sizeof(long) * fromgen->num_elements);
 	if(toval == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
@@ -1817,6 +1889,10 @@ CvtArgs
 
 	fromgen = from->data.ptrval;
 	fromval = fromgen->data;
+
+	if(!fromgen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+	}
 
 	toval = (short *)NhlConvertMalloc(sizeof(short) *fromgen->num_elements);
 	if(toval == NULL){
@@ -1869,6 +1945,7 @@ CvtArgs
 	int		i;
 	char		func[] = "NhlCvtQuarkGenArrayToGenArray";
 	NrmValue	sval;
+	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1879,6 +1956,10 @@ CvtArgs
 
 	fromgen = from->data.ptrval;
 	fromval = fromgen->data;
+
+	if(!fromgen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+	}
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
 							fromgen->num_elements);

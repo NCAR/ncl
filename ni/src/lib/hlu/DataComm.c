@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.17 1994-11-07 03:09:17 ethan Exp $
+ *      $Id: DataComm.c,v 1.18 1994-11-07 08:29:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1108,12 +1108,9 @@ DataCommGetValues
 		if(oset == NULL)
 			continue;
 
+
 		gen = *(NhlGenArray*)((char*)l + oset->offset);
-		if(gen == NULL){
-			len = 0;
-			iarray = NULL;
-		}
-		else{
+		if(gen){
 			ilist = (_NhlInternDataList)gen->data;
 			len = ilist->num_items;
 			iarray = NhlMalloc(sizeof(int)*len);
@@ -1124,15 +1121,15 @@ DataCommGetValues
 
 			for(j=0;j < len;j++)
 				iarray[j] = ilist->list[j]->id;
-		}
 
-		gen = _NhlCreateGenArray(iarray,NhlTInteger,sizeof(int),1,&len,
-									False);
-		if(gen == NULL){
-			NHLPERROR((NhlFATAL,ENOMEM,NULL));
-			return NhlFATAL;
+			gen = _NhlCreateGenArray(iarray,NhlTInteger,sizeof(int),
+								1,&len,False);
+			if(gen == NULL){
+				NHLPERROR((NhlFATAL,ENOMEM,NULL));
+				return NhlFATAL;
+			}
+			gen->my_data = True;
 		}
-		gen->my_data = True;
 
 		*(NhlGenArray *)args[i].value.ptrval = gen;
 		*args[i].type_ret = QGenArray;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.h,v 1.3 1994-01-27 21:21:24 boote Exp $
+ *      $Id: Base.h,v 1.4 1994-11-07 08:29:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,8 @@
  */
 #ifndef _NBase_h
 #define _NBase_h
+
+#include <ncarg/hlu/hlu.h>
 
 extern NhlLayerClass NhlobjLayerClass;
 extern NhlLayerClass NhlbaseLayerClass;
