@@ -1,5 +1,5 @@
 C
-C       $Id: wmex11.f,v 1.4 1995-06-14 13:57:29 haley Exp $
+C       $Id: wmex11.f,v 1.5 1996-01-29 20:13:14 fred Exp $
 C
       PROGRAM WMEX11
 C
@@ -74,7 +74,6 @@ C  Draw a wind barb at 320 degrees and cloud cover symbol.
 C
       CALL WMSETI('WBF',1)
       CALL WMBARB(XNDC,YNDC,-5.,8.66)
-      CALL WMSETI('WBF',IBO)
       CALL WMGETR('WBC',WBC)
       CALL WMGETR('WBS',WBSHFT)
       CALL NGWSYM('N',0,XNDC,YNDC,WBC*WBSHFT,1,0)
