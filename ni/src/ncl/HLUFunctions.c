@@ -3789,6 +3789,48 @@ NhlErrorTypes _NclINewDashPattern
 	return(MIN(ret,subret));
 }
 
+double *coerce_to_double(
+	void              *in,
+	NclBasicDataTypes type_in,
+	int               size_in,
+	int               has_missing_in,
+	NclScalar         *missing_in,
+	NclScalar         *missing_out)
+{
+	double *out;
+
+	if (type_in == NCL_double) {
+		out = (double *)in;
+		if (has_missing_in) {
+			missing_out->doubleval = missing_in->doubleval;
+		}
+		return out;
+	}
+	out = (double *) NclMalloc(size_in * sizeof(double));
+	if (! out) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NULL;
+	}
+	if (has_missing_in) {
+		_Nclcoerce((NclTypeClass)nclTypedoubleClass,
+			   (void*)missing_out,
+			   (void*)missing_in,
+			   1,
+			   NULL,
+			   NULL,
+			   _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_in)));
+		_Nclcoerce((NclTypeClass)nclTypedoubleClass,
+			   (void*)out,in,size_in,missing_in,missing_out,
+			   _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_in)));
+	}
+	else {
+		_Nclcoerce((NclTypeClass)nclTypedoubleClass,
+			   (void*)out,in,size_in,NULL,NULL,
+			   _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_in)));
+	}
+	return out;
+}
+
 NhlErrorTypes _NclISetMarker
 #if	NhlNeedProto
 (void)
@@ -3796,10 +3838,10 @@ NhlErrorTypes _NclISetMarker
 ()
 #endif
 {
-	int nargs = 8;
+	int nargs = 9;
 	int n_dims,dimsizes[NCL_MAX_DIMENSIONS];
 	int has_missing,has_missing0,has_missing1,has_missing2,has_missing3,
-		has_missing4,has_missing5,has_missing6,has_missing7;
+		has_missing4,has_missing5,has_missing6,has_missing7,has_missing8;
 	NclScalar missing0;
 	NclScalar missing1;
 	NclScalar missing2;
@@ -3808,8 +3850,10 @@ NhlErrorTypes _NclISetMarker
 	NclScalar missing5;
 	NclScalar missing6;
 	NclScalar missing7;
-	NclBasicDataTypes type;
-        int size0,size1,size2,size3,size4,size5,size6,size7;
+	NclScalar missing8;
+	NclBasicDataTypes type4,type5,type6,type7,type8;
+	void *val4,*val5,*val6,*val7,*val8;
+        int size0,size1,size2,size3,size4,size5,size6,size7,size8;
 	int nwks;
         int i,j=0;
 	NclHLUObj tmp_wks;
@@ -3817,11 +3861,13 @@ NhlErrorTypes _NclISetMarker
 	obj *wks_obj_ids;
 	int *marker_indexes;
 	string *marker_strings;
-	float *m_x_off;
-	float *m_y_off;
-	float *m_aspect_adj;
-	float *m_size_adj;
-	float *m_angle;
+	int   *m_font;
+	double *m_x_off;
+	double *m_y_off;
+	double *m_aspect_adj;
+	double *m_size_adj;
+	double *m_angle;
+	NclScalar m_x_off_missing, m_y_off_missing, m_aspect_adj_missing, m_size_adj_missing, m_angle_missing;
 	NhlErrorTypes subret,ret = NhlNOERROR;
 	
 	wks_obj_ids = (obj*)NclGetArgValue(
@@ -3857,7 +3903,7 @@ NhlErrorTypes _NclISetMarker
 			0);
 	size2 = dimsizes[0];
 
-	m_x_off = (float*)NclGetArgValue(
+	m_font = (int*)NclGetArgValue(
 			3,
 			nargs,
 			&n_dims,
@@ -3868,49 +3914,66 @@ NhlErrorTypes _NclISetMarker
 			0);
 	size3 = dimsizes[0];
 
-	m_y_off = (float*)NclGetArgValue(
+	val4 = (void*)NclGetArgValue(
 			4,
 			nargs,
 			&n_dims,
 			dimsizes,
 			&missing4,
 			&has_missing4,
-			NULL,
+			&type4,
 			0);
 	size4 = dimsizes[0];
 
-	m_aspect_adj = (float*)NclGetArgValue(
+	val5 = (void*)NclGetArgValue(
 			5,
 			nargs,
 			&n_dims,
 			dimsizes,
 			&missing5,
 			&has_missing5,
-			NULL,
+			&type5,
 			0);
 	size5 = dimsizes[0];
 
-	m_size_adj = (float*)NclGetArgValue(
+	val6 = (void*)NclGetArgValue(
 			6,
 			nargs,
 			&n_dims,
 			dimsizes,
 			&missing6,
 			&has_missing6,
-			NULL,
+			&type6,
 			0);
 	size6 = dimsizes[0];
 
-	m_angle = (float*)NclGetArgValue(
+	val7 = (void*)NclGetArgValue(
 			7,
 			nargs,
 			&n_dims,
 			dimsizes,
 			&missing7,
 			&has_missing7,
-			NULL,
+			&type7,
 			0);
 	size7 = dimsizes[0];
+
+	val8 = (void*)NclGetArgValue(
+			8,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing8,
+			&has_missing8,
+			&type8,
+			0);
+	size8 = dimsizes[0];
+
+	m_x_off = coerce_to_double(val4,type4,size4,has_missing4,&missing4,&m_x_off_missing);
+	m_y_off = coerce_to_double(val5,type5,size5,has_missing5,&missing5,&m_y_off_missing);
+	m_aspect_adj = coerce_to_double(val6,type6,size6,has_missing6,&missing6,&m_aspect_adj_missing);
+	m_size_adj = coerce_to_double(val7,type7,size7,has_missing7,&missing7,&m_size_adj_missing);
+	m_angle = coerce_to_double(val8,type8,size8,has_missing8,&missing8,&m_angle_missing);
 
 	nwks = 0;
 	for (i = 0; i < size0; i++) {
@@ -3921,7 +3984,8 @@ NhlErrorTypes _NclISetMarker
 			continue;
 		nwks++;
 		for( j = 0; j < size1; j++) {
-			float x_off,y_off,aspect_adj,size_adj,angle;
+			double x_off,y_off,aspect_adj,size_adj,angle;
+			int font;
 			string marker_string;
 
 			if (has_missing1 && (marker_indexes[j] == missing1.intval))
@@ -3938,56 +4002,77 @@ NhlErrorTypes _NclISetMarker
 				marker_string = marker_strings[0];
 			}
 			else if (j >= size2 || (has_missing2 && (marker_strings[j] == missing2.stringval))) {
-				subret = NhlSetMarker(tmp_wks->hlu.hlu_id,marker_indexes[j],"",0.0,0.0,0.0,0.0,0.0);
+				subret = NhlSetMarker(tmp_wks->hlu.hlu_id,marker_indexes[j],"",0,0.0,0.0,0.0,0.0,0.0);
 				continue;
 			}
 			else {
 				marker_string = marker_strings[j];
 			}
 
-			if (size3 == 1 && !(has_missing3 && (m_x_off[0] == missing3.floatval))) {
+			if (size3 == 1 && !(has_missing3 && (m_font[0] == missing3.intval))) {
+				font = m_font[0];
+			}
+			else {
+				font = (j >= size3 || (has_missing3 && (m_font[j] == missing3.intval))) ?
+					0 : m_font[j];
+			}
+
+			if (size4 == 1 && !(has_missing4 && (m_x_off[0] == m_x_off_missing.doubleval))) {
 				x_off = m_x_off[0];
 			}
 			else {
-				x_off = (j >= size3 || (has_missing3 && (m_x_off[j] == missing3.floatval))) ?
+				x_off =  (j >= size4 || (has_missing4 && (m_x_off[j] == m_x_off_missing.doubleval))) ?
 					0.0 : m_x_off[j];
 			}
-			if (size4 == 1 && ! (has_missing4 && (m_y_off[0] == missing4.floatval))) {
-				y_off = m_y_off[0];
+			if (size5 == 1 && ! (has_missing5 && (m_y_off[0] == m_y_off_missing.doubleval))) {
+				y_off =  m_y_off[0];
 			}
 			else {
-				y_off = (j >= size4 || (has_missing4 && (m_y_off[j] == missing4.floatval))) ?
+				y_off =  (j >= size5 || (has_missing5 && (m_y_off[j] == m_y_off_missing.doubleval))) ?
 					0.0 : m_y_off[j];
 			}
-			if (size5 == 1 && ! (has_missing5 && (m_aspect_adj[0] == missing5.floatval))) {
+			if (size6 == 1 && ! (has_missing6 && (m_aspect_adj[0] == m_aspect_adj_missing.doubleval))) {
 				aspect_adj = m_aspect_adj[0];
 			}
 			else {
-				aspect_adj = (j >= size5 || (has_missing5 && (m_aspect_adj[j] == missing5.floatval))) ?
+				aspect_adj = (j >= size6 || (has_missing6 && (m_aspect_adj[j] ==m_aspect_adj_missing.doubleval))) ?
 					0.0 : m_aspect_adj[j];
 			}
-			if (size6 == 1 && ! (has_missing6 && (m_size_adj[0] == missing6.floatval))) {
+			if (size7 == 1 && ! (has_missing7 && (m_size_adj[0] == m_size_adj_missing.doubleval))) {
 				size_adj = m_size_adj[0];
 			}
 			else {
-				size_adj = (j >= size6 || (has_missing6 && (m_size_adj[j] == missing6.floatval))) ?
+				size_adj = (j >= size7 || (has_missing7 && (m_size_adj[j] == m_size_adj_missing.doubleval))) ?
 					0.0 : m_size_adj[j];
 			}
-			if (size7 == 1 && ! (has_missing7 && (m_angle[0] == missing7.floatval))) {
+			if (size8 == 1 && ! (has_missing8 && (m_angle[0] == m_angle_missing.doubleval))) {
 				angle = m_angle[0];
 			}
 			else {
-				angle = (j >= size7 || (has_missing7 && (m_angle[j] == missing7.floatval))) ?
+				angle = (j >= size8 || (has_missing8 && (m_angle[j] == m_angle_missing.doubleval))) ?
 					0.0 : m_angle[j];
 			}
 			subret = NhlSetMarker(tmp_wks->hlu.hlu_id,marker_indexes[j],NrmQuarkToString(marker_string),
-					      x_off,y_off,aspect_adj,size_adj,angle);
+					      font,(float)x_off,(float)y_off,(float)aspect_adj,(float)size_adj,(float)angle);
 			ret = MIN(ret,subret);
 			if (ret < NhlWARNING) {
-				return ret;
+				goto RETURN;
 			}
 		}
 	}
+
+ RETURN:
+	if ((void*)m_x_off != val4)
+		NclFree(m_x_off);
+	if ((void*)m_y_off != val5)
+		NclFree(m_y_off);
+	if ((void*)m_aspect_adj != val6)
+		NclFree(m_aspect_adj);
+	if ((void*)m_size_adj != val7)
+		NclFree(m_size_adj);
+	if ((void*)m_angle != val8)
+		NclFree(m_angle);
+	
 	if (nwks == 0) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclISetMarker: No valid workstation");
 		return(NhlWARNING);
@@ -4002,10 +4087,10 @@ NhlErrorTypes _NclINewMarker
 ()
 #endif
 {
-	int nargs = 7;
+	int nargs = 8;
 	int n_dims,dimsizes[NCL_MAX_DIMENSIONS];
 	int has_missing,has_missing0,has_missing1,has_missing2,has_missing3,
-		has_missing4,has_missing5,has_missing6;
+		has_missing4,has_missing5,has_missing6,has_missing7;
 	NclScalar missing0;
 	NclScalar missing1;
 	NclScalar missing2;
@@ -4013,19 +4098,23 @@ NhlErrorTypes _NclINewMarker
 	NclScalar missing4;
 	NclScalar missing5;
 	NclScalar missing6;
-	NclBasicDataTypes type;
-        int size0,size1,size2,size3,size4,size5,size6;
+	NclScalar missing7;
+	NclBasicDataTypes type3,type4,type5,type6,type7;
+	void *val3,*val4,*val5,*val6,*val7;
+        int size0,size1,size2,size3,size4,size5,size6,size7;
 	int nwks;
         int i,j=0;
 	NclHLUObj tmp_wks;
 	NclScalar missing;
 	obj *wks_obj_ids;
 	string *marker_strings;
-	float *m_x_off;
-	float *m_y_off;
-	float *m_aspect_adj;
-	float *m_size_adj;
-	float *m_angle;
+	int *m_font;
+	double *m_x_off;
+	double *m_y_off;
+	double *m_aspect_adj;
+	double *m_size_adj;
+	double *m_angle;
+	NclScalar m_x_off_missing, m_y_off_missing, m_aspect_adj_missing, m_size_adj_missing, m_angle_missing;
 	NhlErrorTypes subret,ret = NhlNOERROR;
 	int *indexes = NULL;
 
@@ -4051,7 +4140,7 @@ NhlErrorTypes _NclINewMarker
 			0);
 	size1 = dimsizes[0];
 
-	m_x_off = (float*)NclGetArgValue(
+	m_font = (int*)NclGetArgValue(
 			2,
 			nargs,
 			&n_dims,
@@ -4062,49 +4151,66 @@ NhlErrorTypes _NclINewMarker
 			0);
 	size2 = dimsizes[0];
 
-	m_y_off = (float*)NclGetArgValue(
+	val3 = (float*)NclGetArgValue(
 			3,
 			nargs,
 			&n_dims,
 			dimsizes,
 			&missing3,
 			&has_missing3,
-			NULL,
+			&type3,
 			0);
 	size3 = dimsizes[0];
 
-	m_aspect_adj = (float*)NclGetArgValue(
+	val4 = (float*)NclGetArgValue(
 			4,
 			nargs,
 			&n_dims,
 			dimsizes,
 			&missing4,
 			&has_missing4,
-			NULL,
+			&type4,
 			0);
 	size4 = dimsizes[0];
 
-	m_size_adj = (float*)NclGetArgValue(
+	val5 = (float*)NclGetArgValue(
 			5,
 			nargs,
 			&n_dims,
 			dimsizes,
 			&missing5,
 			&has_missing5,
-			NULL,
+			&type5,
 			0);
 	size5 = dimsizes[0];
 
-	m_angle = (float*)NclGetArgValue(
+	val6 = (float*)NclGetArgValue(
 			6,
 			nargs,
 			&n_dims,
 			dimsizes,
 			&missing6,
 			&has_missing6,
-			NULL,
+			&type6,
 			0);
 	size6 = dimsizes[0];
+
+	val7 = (float*)NclGetArgValue(
+			7,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing7,
+			&has_missing7,
+			&type7,
+			0);
+	size7 = dimsizes[0];
+
+	m_x_off = coerce_to_double(val3,type3,size3,has_missing3,&missing3,&m_x_off_missing);
+	m_y_off = coerce_to_double(val4,type4,size4,has_missing4,&missing4,&m_y_off_missing);
+	m_aspect_adj = coerce_to_double(val5,type5,size5,has_missing5,&missing5,&m_aspect_adj_missing);
+	m_size_adj = coerce_to_double(val6,type6,size6,has_missing6,&missing6,&m_size_adj_missing);
+	m_angle = coerce_to_double(val7,type7,size7,has_missing7,&missing7,&m_angle_missing);
 
 	indexes = (int *)NclMalloc(size0 * size1 * sizeof(int));
 
@@ -4130,53 +4236,63 @@ NhlErrorTypes _NclINewMarker
 				continue;
 			}
 			if (has_missing1 && (marker_strings[j] == missing1.stringval)) {
-				*index = NhlNewMarker(tmp_wks->hlu.hlu_id,"",0.0,0.0,0.0,0.0,0.0);
+				*index = NhlNewMarker(tmp_wks->hlu.hlu_id,"",0,0.0,0.0,0.0,0.0,0.0);
 			}
 			else {
-				float x_off,y_off,aspect_adj,size_adj,angle;
+				double x_off,y_off,aspect_adj,size_adj,angle;
+				int font;
 
 				/* 
 				 * Parameters that are scalar apply to all markers, otherwise if not available
 				 * default values are used.
 				 */
 
-				if (size2 == 1 && !(has_missing2 && (m_x_off[0] == missing2.floatval))) {
+				if (size2 == 1 && !(has_missing2 && (m_font[0] == missing2.intval))) {
+					font = m_font[0];
+				}
+				else {
+					font = (j >= size2 || (has_missing2 && (m_font[j] == missing2.intval))) ?
+						0 : m_font[j];
+				}
+				if (size3 == 1 && !(has_missing3 && (m_x_off[0] == m_x_off_missing.floatval))) {
 					x_off = m_x_off[0];
 				}
 				else {
-					x_off = (j >= size2 || (has_missing2 && (m_x_off[j] == missing2.floatval))) ?
+					x_off = (j >= size3 || (has_missing3 && (m_x_off[j] == m_x_off_missing.floatval))) ?
 						0.0 : m_x_off[j];
 				}
-				if (size3 == 1 && ! (has_missing3 && (m_y_off[0] == missing3.floatval))) {
+				if (size4 == 1 && ! (has_missing4 && (m_y_off[0] == m_y_off_missing.floatval))) {
 					y_off = m_y_off[0];
 				}
 				else {
-					y_off = (j >= size3 || (has_missing3 && (m_y_off[j] == missing3.floatval))) ?
+					y_off = (j >= size4 || (has_missing4 && (m_y_off[j] == m_y_off_missing.floatval))) ?
 						0.0 : m_y_off[j];
 				}
-				if (size4 == 1 && ! (has_missing4 && (m_aspect_adj[0] == missing4.floatval))) {
+				if (size5 == 1 && ! (has_missing5 && (m_aspect_adj[0] == m_aspect_adj_missing.floatval))) {
 					aspect_adj = m_aspect_adj[0];
 				}
 				else {
-					aspect_adj = (j >= size4 || (has_missing4 && (m_aspect_adj[j] == missing4.floatval))) ?
+					aspect_adj = (j >= size5 || 
+						      (has_missing5 && (m_aspect_adj[j] == m_aspect_adj_missing.floatval))) ?
 						0.0 : m_aspect_adj[j];
 				}
-				if (size5 == 1 && ! (has_missing5 && (m_size_adj[0] == missing5.floatval))) {
+				if (size6 == 1 && ! (has_missing6 && (m_size_adj[0] == m_size_adj_missing.floatval))) {
 					size_adj = m_size_adj[0];
 				}
 				else {
-					size_adj = (j >= size5 || (has_missing5 && (m_size_adj[j] == missing5.floatval))) ?
+					size_adj = (j >= size6 || 
+						    (has_missing6 && (m_size_adj[j] == m_size_adj_missing.floatval))) ?
 						0.0 : m_size_adj[j];
 				}
-				if (size6 == 1 && ! (has_missing6 && (m_angle[0] == missing6.floatval))) {
+				if (size7 == 1 && ! (has_missing7 && (m_angle[0] == m_angle_missing.floatval))) {
 					angle = m_angle[0];
 				}
 				else {
-					angle = (j >= size6 || (has_missing6 && (m_angle[j] == missing6.floatval))) ?
+					angle = (j >= size7 || (has_missing7 && (m_angle[j] == m_angle_missing.floatval))) ?
 						0.0 : m_angle[j];
 				}
-				*index = NhlNewMarker(tmp_wks->hlu.hlu_id,NrmQuarkToString(marker_strings[j]),
-						      x_off,y_off,aspect_adj,size_adj,angle);
+				*index = NhlNewMarker(tmp_wks->hlu.hlu_id,NrmQuarkToString(marker_strings[j]),font,
+						      (float)x_off,(float)y_off,(float)aspect_adj,(float)size_adj,(float)angle);
 			}
 			if (*index < 0) {
 				subret = (NhlErrorTypes) *index;
@@ -4184,10 +4300,23 @@ NhlErrorTypes _NclINewMarker
 			}
 			ret = MIN(ret,subret);
 			if (ret < NhlWARNING) {
-				return ret;
+				goto RETURN;
 			}
 		}
 	}
+
+ RETURN:
+	if ((void*)m_x_off != val3)
+		NclFree(m_x_off);
+	if ((void*)m_y_off != val4)
+		NclFree(m_y_off);
+	if ((void*)m_aspect_adj != val5)
+		NclFree(m_aspect_adj);
+	if ((void*)m_size_adj != val6)
+		NclFree(m_size_adj);
+	if ((void*)m_angle != val7)
+		NclFree(m_angle);
+
 	if (nwks == 0) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclINewMarker: No valid workstation");
 		ret = MIN(ret,NhlWARNING);
@@ -4207,6 +4336,7 @@ NhlErrorTypes _NclINewMarker
 	else {
 		dimsizes[0] = 1;
 	}
+
 	subret = NclReturnValue (
 		(void*)indexes,
                 n_dims,

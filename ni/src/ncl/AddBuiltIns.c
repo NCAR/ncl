@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.69 2003-06-06 20:59:55 grubin Exp $
+ *      $Id: AddBuiltIns.c,v 1.70 2003-06-10 23:26:26 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -982,26 +982,28 @@ void _NclAddBuiltIns
 	NclRegisterFunc(_NclINewDashPattern,args,"NhlNewDashPattern",nargs);
 
 	nargs = 0;
-	args = NewArgs(8);
+	args = NewArgs(9);
 	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
 	SetArgTemplate(args,1,"integer",1,NclANY);nargs++;
 	SetArgTemplate(args,2,"string",1,NclANY);nargs++;
-	SetArgTemplate(args,3,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,4,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,5,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,6,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,7,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"integer",1,NclANY);nargs++;
+	SetArgTemplate(args,4,"numeric",1,NclANY);nargs++;
+	SetArgTemplate(args,5,"numeric",1,NclANY);nargs++;
+	SetArgTemplate(args,6,"numeric",1,NclANY);nargs++;
+	SetArgTemplate(args,7,"numeric",1,NclANY);nargs++;
+	SetArgTemplate(args,8,"numeric",1,NclANY);nargs++;
 	NclRegisterProc(_NclISetMarker,args,"NhlSetMarker",nargs);
 
 	nargs = 0;
-	args = NewArgs(7);
+	args = NewArgs(8);
 	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
 	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
-	SetArgTemplate(args,2,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,3,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,4,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,5,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,6,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"integer",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"numeric",1,NclANY);nargs++;
+	SetArgTemplate(args,4,"numeric",1,NclANY);nargs++;
+	SetArgTemplate(args,5,"numeric",1,NclANY);nargs++;
+	SetArgTemplate(args,6,"numeric",1,NclANY);nargs++;
+	SetArgTemplate(args,7,"numeric",1,NclANY);nargs++;
 	NclRegisterFunc(_NclINewMarker,args,"NhlNewMarker",nargs);
 
 	nargs = 0;
