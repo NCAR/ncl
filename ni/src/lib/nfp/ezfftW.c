@@ -23,6 +23,10 @@
 
 #define max(x,y)  ((x) > (y) ? (x) : (y))
 
+extern void NGCALLF(ezffti,EZFFTI)(int*,float*);
+extern void NGCALLF(ezfftf,EZFFTF)(int*,float*,float*,float*,float*,float*);
+extern void NGCALLF(ezfftb,EZFFTB)(int*,float*,float*,float*,float*,float*);
+
 NhlErrorTypes ezfftf_W( void )
 {
 /*
@@ -71,7 +75,7 @@ NhlErrorTypes ezfftf_W( void )
  * Calculate size of output array.
  */
   npts = dsizes_x[0];
-  npts2 = (npts/2) + 1;
+  npts2 = npts/2;
   dsizes_cf[0] = 2;
   dsizes_cf[1] = npts2;
   cf = (float*)NclMalloc(2*npts2*sizeof(float));
@@ -90,8 +94,9 @@ NhlErrorTypes ezfftf_W( void )
 /*
  * Call the f77 version of 'ezfftf' with the full argument list.
  */
+  xbar = (float *)NclMalloc(sizeof(float));
   NGCALLF(ezffti,EZFFTI)(&npts,work);
-  NGCALLF(ezfftf,EZFFTF)(&npts,x,&xbar,&cf[0],&cf[npts2],work);
+  NGCALLF(ezfftf,EZFFTF)(&npts,x,xbar,&cf[0],&cf[npts2],work);
   free(work);
 /*
  * Set up variable to return.
@@ -112,7 +117,6 @@ NhlErrorTypes ezfftf_W( void )
 /*
  * Attributes
  */
-  xbar = (float *)NclMalloc(sizeof(float));
   att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 
   dsizes[0] = 1;
@@ -189,8 +193,8 @@ NhlErrorTypes ezfftb_W( void )
            2,
            &ndims_cf, 
            dsizes_cf,
-		   NULL,
-		   NULL,
+	   NULL,
+	   NULL,
            NULL,
            2);
   xbar = (float*)NclGetArgValue(
@@ -206,26 +210,26 @@ NhlErrorTypes ezfftb_W( void )
  * Calculate size of output array.
  */
   npts2 = dsizes_cf[1];
-  npts = (npts2-1)*2;
+  npts  = 2*npts2;
   dsizes_x[0] = npts;
   x = (float*)NclMalloc(npts*sizeof(float));
   if ( x == NULL ) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for output array" );
-	  return(NhlFATAL);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for output array" );
+    return(NhlFATAL);
   }
 /*
  * Allocate memory for work array
  */
   work = (float*)NclMalloc((3*npts+15)*sizeof(float));
   if ( work == NULL ) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for work array" );
-	  return(NhlFATAL);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for work array" );
+    return(NhlFATAL);
   }
 /*
  * Call the f77 version of 'ezfftb' with the full argument list.
  */
   NGCALLF(ezffti,EZFFTI)(&npts,work);
-  NGCALLF(ezfftb,EZFFTB)(&npts,x,&xbar,&cf[0],&cf[npts2],work);
+  NGCALLF(ezfftb,EZFFTB)(&npts,x,xbar,&cf[0],&cf[npts2],work);
   free(work);
   return(NclReturnValue((void*)x,1,dsizes_x,NULL,NCL_float,0));
 }
