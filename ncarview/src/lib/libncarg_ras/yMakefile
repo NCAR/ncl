@@ -8,7 +8,11 @@
 #define	BuildRasterHPLaser
 #define	BuildRasterNrif
 #define	BuildRasterSun
+
+#ifdef	BuildSunViewCtrans
 #define BuildRasterAVS
+#define BuildRasterParallax
+#endif
 
 #ifdef	BuildXlibDependentCode
 #define	BuildRasterXWD
