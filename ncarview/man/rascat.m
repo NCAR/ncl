@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rascat.m,v 1.3 1992-12-01 23:21:39 clyne Exp $
+.\"	$Id: rascat.m,v 1.4 1992-12-14 23:49:07 don Exp $
 .\"
 .TH RASCAT 1NCARG "November 1992" NCARG "NCARG GRAPHICS"
 .SH NAME
@@ -28,6 +28,8 @@ Rascat \- concatenate, convert raster files
 .B \-Version
 ] [
 .BI \-window " nx ny x y"
+] [
+.BI \-pal " palette_file"
 ] [
 .BI - | file... 
 ]
@@ -176,6 +178,13 @@ specify the position of the upper-left corner of the rectangle.
 and
 .I ny
 specify the rectangle's width and height, respectively.
+.TP
+.BI \-pal " palette_file"
+Set the palette for the output rasterfile from \fIpalettefile\fP, which
+can be either an HDF-type palette with an extension of ".pal", or
+a textual palette with an extension of ".txt". See "man ncarg_palette"
+for documentation on the formats. This option applies to indexed-color
+imagery only.
 .SH ENVIRONMENT
 .TP
 .B NCARG_TMP
@@ -211,6 +220,10 @@ is extracted and written to the file
 .sp
 .IP
 % rascat -window 512 512 0 0 foo.sun > foo.512x512.sun
+.SH "SEE ALSO"
+.BR ras_palette(5)
+.br
+.ne 5
 .SH CAVEATS
 Aspect ratios are not preserved by the 
 .B \-resolution
