@@ -1,5 +1,5 @@
 C
-C     $Id: ffex01.f,v 1.2 1994-07-08 17:44:18 haley Exp $
+C     $Id: ffex01.f,v 1.3 1994-08-08 23:26:09 haley Exp $
 C
       PROGRAM FFEX01
 C
@@ -16,7 +16,7 @@ C
 C
 C Invoke demo driver
 C
-      CALL FFEX01(IERR)
+      CALL FEX01(IERR)
 C
 C     Deactivate and close workstation, close GKS.
 C
@@ -26,7 +26,7 @@ C
       STOP
       END
 C
-      SUBROUTINE FFEX01 (IERROR)
+      SUBROUTINE FEX01 (IERROR)
 C
       PARAMETER (PI=3.14159) 
       PARAMETER (MSIZE=21, NSIZE=25, IWSIZE = 2*MSIZE*NSIZE)
