@@ -41,10 +41,18 @@ c .               the ratio (nitp/npts)
       DOUBLE PRECISION X(1:NPTS),XMSG
       INTEGER NPTCRT,NN,NBASE
       DOUBLE PRECISION SLOPE
+C
+C This do loop was added later to check for the special
+C case were all values in X are missing.
+C
+      DO 5 N=1,NPTS
+         IF (X(N).NE.XMSG) GO TO 10
+ 5    END DO   
+      RETURN
 
 c c c MPTCRT = NPTS   ! updated version
 
-      NSTRT = 0
+ 10   NSTRT = 0
       NEND = 0
       NCODE = 0
       NITP = 0
