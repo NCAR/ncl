@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.24 1994-03-09 19:25:52 clyne Exp $
+ *	$Id: commondev.c,v 1.25 1994-03-10 01:11:01 clyne Exp $
  */
 #include <math.h>
 #include <stdio.h>
@@ -163,8 +163,8 @@ void	ComSimPoly(p_list, n, skip)
 	int	skip;
 {
 	FillTable       *fill_table;
-	int     j;
-	DCtype	i;
+	int     i;
+	DCtype	yval;
 
 	if (n < 2)
 		return;
@@ -196,15 +196,18 @@ void	ComSimPoly(p_list, n, skip)
 	/*
 	 * fill with horizontal lines between every other point
 	 */
-	for (i = fill_table->y_first; i < (fill_table->y_last + 1); i+=skip) {
+	for (
+		yval = fill_table->y_first; 
+		yval < (fill_table->y_last + 1); 
+		yval+=skip) {
 
-		for (j=0; j<(fill_table->x_count[XC_INDEX(i)] - 1); j+=2) {
+		for (i=0; i<(fill_table->x_count[XC_INDEX(yval)] - 1); i+=2) {
 
 			dev->devline(
-				fill_table->x_coord[XC_INDEX(i)][j], 
-				i,
-				fill_table->x_coord[XC_INDEX(i)][j+1], 
-				i
+				fill_table->x_coord[XC_INDEX(yval)][i], 
+				yval,
+				fill_table->x_coord[XC_INDEX(yval)][i+1], 
+				yval
 			);
 		}
 	}
