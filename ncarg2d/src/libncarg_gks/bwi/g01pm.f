@@ -1,5 +1,5 @@
 C
-C	$Id: g01pm.f,v 1.3 1994-04-28 23:35:47 fred Exp $
+C	$Id: g01pm.f,v 1.4 1998-03-19 06:41:35 fred Exp $
 C
       SUBROUTINE G01PM
 C
@@ -23,10 +23,8 @@ C
       KALL = KALL+1
       IF  (KALL .EQ. 1) THEN
 C
-C  If the picture is empty, send the clip indicator and rectangle;
-C  set the WSL entry "DISPLAY SURFACE EMPTY" to "NOT EMPTY".
+C  Set the WSL entry "DISPLAY SURFACE EMPTY" to "NOT EMPTY".
 C
-        IF (MDEMPT .EQ. GEMPTY) CALL G01CLP(1)
         MDEMPT = GNEMPT
 C
 C  Process pending attributes.

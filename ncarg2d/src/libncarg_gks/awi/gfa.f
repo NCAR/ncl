@@ -1,5 +1,5 @@
 C
-C	$Id: gfa.f,v 1.5 1998-03-18 01:59:58 fred Exp $
+C	$Id: gfa.f,v 1.6 1998-03-19 06:41:19 fred Exp $
 C
       SUBROUTINE GFA(N,PX,PY)
 C
@@ -66,10 +66,6 @@ C  Polygon is larger than the clip limit, or clip algorithm error
 C  encountered, or clipping is off.
 C
    10 CONTINUE
-C
-C  Establish the attributes.
-C
-      IF (NOPICT .EQ. 0) CALL GZATT()
       NPTOT = N
       CALL GZPUTR(NPTOT,N,PX,PY,1,IER)
       RERR = IER

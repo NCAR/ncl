@@ -1,5 +1,5 @@
 C
-C	$Id: g01snp.f,v 1.4 1994-04-28 23:35:49 fred Exp $
+C	$Id: g01snp.f,v 1.5 1998-03-19 06:41:35 fred Exp $
 C
       SUBROUTINE G01SNP (ERROR)
 C
@@ -50,6 +50,10 @@ C
       IF (ERROR.NE.0)  GO TO 77
 C
  77   CONTINUE
+C
+C  Put out the clipping indicator and rectangle.
+C
+       CALL G01CLP(1)
 C
 C  Send the color table.
 C

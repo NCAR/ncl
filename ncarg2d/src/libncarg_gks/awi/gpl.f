@@ -1,5 +1,5 @@
 C
-C	$Id: gpl.f,v 1.6 1998-03-18 01:59:59 fred Exp $
+C	$Id: gpl.f,v 1.7 1998-03-19 06:41:20 fred Exp $
 C
       SUBROUTINE GPL(N,PX,PY)
 C
@@ -57,10 +57,6 @@ C
       ENDIF
 C
    10 CONTINUE
-C
-C  Establish the attributes.
-C
-      IF (NOPICT .EQ. 0) CALL GZATT()
 C
       NPTOT = N
       CALL GZPUTR(NPTOT,N,PX,PY,MIN0(CNT,1),IER)

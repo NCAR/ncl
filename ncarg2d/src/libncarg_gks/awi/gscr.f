@@ -1,5 +1,5 @@
 C
-C	$Id: gscr.f,v 1.2 1993-01-09 02:02:29 fred Exp $
+C	$Id: gscr.f,v 1.3 1998-03-19 06:41:20 fred Exp $
 C
       SUBROUTINE GSCR (WKID,CI,CR,CG,CB)
 C
@@ -75,9 +75,10 @@ C
       FCODE = 56
       CONT  = 0
       CALL GZROI(0)
-      IL1 = 1
-      IL2 = 1
+      IL1 = 2
+      IL2 = 2
       ID(1) = WKID
+      ID(2) = NOPICT
       IC1 = 1
       IC2 = 1
       IC(1) = CI

@@ -1,5 +1,5 @@
 C
-C	$Id: g01ctb.f,v 1.2 1993-01-09 02:05:47 fred Exp $
+C	$Id: g01ctb.f,v 1.3 1998-03-19 06:41:33 fred Exp $
 C
         SUBROUTINE G01CTB
 C
@@ -13,6 +13,12 @@ C
       include 'gksenu.h'
 C
       INTEGER  NCIX, NBYTES, I, IPTR
+C
+C  Store the flag indicatiing if a color table entry should
+C  be written to the metafile.  Do not write a color table
+C  entry if the picture is umpty.
+C
+      IWRITE = ID(2)
 C
 C  Scan the color table to see if the index already exists;
 C  Find its position in the table otherwise (binary search
@@ -73,26 +79,32 @@ C
       ID(2) = RX(2)*MDCCRG
       ID(3) = RX(3)*MDCCRG
 C
+C  Write out a color table entry only if the current picture is
+C  not empty.
+C
+      IF (IWRITE .EQ. 1) THEN
+C
 C  Generate metafile element with new entry.
 C
 C  Compute parameter list length -- number of bytes to hold
 C       START INDEX + RED + GREEN + BLUE
 C
-      NBYTES = 1 + (3*MDCCFW + MCIXFW - 1)/8
+        NBYTES = 1 + (3*MDCCFW + MCIXFW - 1)/8
 C
 C  Put out opcode (class and ID) and length.
 C
-      CALL GPUTNI (CLCTBL, IDCTBL, NBYTES, RERR)
-      IF (RERR .NE. 0)  RETURN
+        CALL GPUTNI (CLCTBL, IDCTBL, NBYTES, RERR)
+        IF (RERR .NE. 0)  RETURN
 C
 C  Put out color index.
 C
-      CALL GPUTPR (NCIX, MCIXFW, 1, RERR)
-      IF (RERR .NE. 0)  RETURN
+        CALL GPUTPR (NCIX, MCIXFW, 1, RERR)
+        IF (RERR .NE. 0)  RETURN
 C
 C  Put out three color components.
 C
-      CALL GPUTPR (ID, MDCCFW, 3, RERR)
+        CALL GPUTPR (ID, MDCCFW, 3, RERR)
+      ENDIF
 C
       RETURN
       END
