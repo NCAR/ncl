@@ -1,5 +1,5 @@
 /*
- *      $Id: AIX_RS6000.64,v 1.3 2003-02-05 21:41:47 haley Exp $
+ *      $Id: AIX_RS6000.64,v 1.4 2003-03-17 21:07:17 haley Exp $
  */
 /************************************************************************
 *									*
@@ -21,7 +21,7 @@
  *			tell ymake how the RS6k is different from a
  *			default setup.
  */
-#define HdfDefines    -DIBM6000
+#define HdfDefines    -DIBM6000 -DAIX5L64
 #define StdDefines    -DSYSV -D_POSIX_SOURCE -DRS6000 -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -DNGLONG2XINT
 #define CCompiler     xlc_r
 #define FCompiler     xlf_r
