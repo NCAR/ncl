@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.21 1998-04-16 03:08:35 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.22 1998-11-06 22:16:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -236,6 +236,7 @@ typedef struct _NhlContourPlotLayerPart {
         NhlTransDat	*predraw_dat;
         NhlTransDat	*draw_dat;
         NhlTransDat	*postdraw_dat;
+	NhlTransDat	*current_trans_dat;
 	NhlBoolean	new_draw_req;
 	float		out_of_range_val;
 
@@ -282,7 +283,6 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlWorkspace	*aws;
 	NhlWorkspace	*cws;
 	NhlBoolean	wk_active;
-	NhlBoolean	seg_open;
 	float		*data;
 	NhlBoolean	do_low_level_log;
 	NhlBoolean	low_level_log_on;

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlotP.h,v 1.11 1998-04-16 03:09:29 dbrown Exp $
+ *      $Id: VectorPlotP.h,v 1.12 1998-11-06 22:16:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -254,6 +254,7 @@ typedef struct _NhlVectorPlotLayerPart {
         NhlTransDat	*predraw_dat;
         NhlTransDat	*draw_dat;
         NhlTransDat	*postdraw_dat;
+	NhlTransDat	*current_trans_dat;
 	NhlBoolean	new_draw_req;
 	float		out_of_range_val;
 
@@ -282,7 +283,6 @@ typedef struct _NhlVectorPlotLayerPart {
 
 	NhlLayer	trans_obj;
 	NhlBoolean	wk_active;
-	NhlBoolean	seg_open;
 	NhlBoolean	do_low_level_log;
 	NhlBoolean	low_level_log_on;
 	NhlString	*level_strings;
