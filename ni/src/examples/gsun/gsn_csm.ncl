@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.3 1999-03-11 23:00:13 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.4 1999-04-02 22:32:44 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -175,6 +175,7 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
       "vpYF"            : map_vpyf
       "vpWidthF"        : map_vpwidthf
       "vpHeightF"       : map_vpheightf
+      "mpLimitMode"     : "latlon"
       "mpGridAndLimbOn" : False    ; Turn off grid lines, limb line,
       "mpOutlineOn"     : False    ; and map outlines.
       "mpFillOn"        : True     ; Fill map boundaries according to
@@ -185,6 +186,24 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
       "pmTitleDisplayMode" : "Always"
       "pmTitleZone"        : main_zone        ; Zone for main title
     end create
+
+;
+; If mpCenterLonF is set, but mpMinLonF and/or minMaxLonF are not,
+; then we need to set them.
+;
+    if(isatt(res2,"mpCenterLonF").and..not.isatt(res2,"mpMinLonF").and.\
+                                      .not.isatt(res2,"mpMaxLonF"))
+      res2@mpMinLonF = res2@mpCenterLonF - 180
+      res2@mpMaxLonF = res2@mpCenterLonF + 180
+    end if
+
+    if(isatt(res2,"mpCenterLonF").and..not.isatt(res2,"mpMinLonF"))
+      res2@mpMinLonF = res2@mpCenterLonF - (res2@mpMaxLonF-res2@mpCenterLonF)
+    end if
+
+    if(isatt(res2,"mpCenterLonF").and..not.isatt(res2,"mpMaxLonF"))
+      res2@mpMaxLonF = res2@mpCenterLonF + (res2@mpCenterLonF-res2@mpMinLonF)
+    end if
 
 ;
 ; By default, mpOutlineOn is False, unless mpFillOn is set to False,
@@ -252,9 +271,12 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
     lon_range = max_lon - min_lon   ; longitude range
     lat_range = max_lat - min_lat   ; latitude range
 
-    if( center_lon.ne.0.and.lon_range.ne.360)
-        print("The resource mpCenterLonF can only be non-zero if")
-        print("the longitude range is 360. Your plot may be wrong.")
+    if(min_lon.ge.max_lon)
+      print("The resource mpMinLonF must be less than the resource mpMaxLonF.")
+    end if
+
+    if(min_lat.ge.max_lat)
+      print("The resource mpMinLatF must be less than the resource mpMaxLatF.")
     end if
 
 ; Create a TickMark object to label the lat/lon grid.
@@ -288,13 +310,13 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
 
     indexy = ind(yvalues.gt.0)
     if(.not.all(ismissing(indexy)))
-        ylabels(indexy) = fabs(yvalues(indexy)) + "N"    ; north
+        ylabels(indexy) = yvalues(indexy) + "N"    ; north
     end if
     delete(indexy)
 
     indexy = ind(yvalues.eq.0)
     if(.not.all(ismissing(indexy)))
-        ylabels(indexy) = fabs(yvalues(indexy))          ; equator
+        ylabels(indexy) = yvalues(indexy)          ; equator
     end if
     delete(indexy)
 
@@ -302,50 +324,47 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
     xvalues = ispan(floattointeger(min_lon),\
                     floattointeger(max_lon),lon_spcng)
 
-; Convert to (-180,180) range if necessary.
-    if(any(xvalues.gt.180))
-        xvalues = xvalues-180
-        xvalues = ispan(floattointeger(min(xvalues)),\
-                        floattointeger(max(xvalues)),lon_spcng)
-        min_lon = min_lon - 180
-        max_lon = max_lon - 180
-    end if
+    xlabels  = new(dimsizes(xvalues),string)
+
 ; Calculate values for longitude minor tickmark locations.
     mxvalues = ispan(floattointeger(min(xvalues)),\
                      floattointeger(max(xvalues)),mlon_spcng)
 
-; If the lon range is 360, then it is possible to have a center longitude
-; that is not equal to 0. If this is the case, then the lon labels need 
-; to change accordingly.
     xlabels  = new(dimsizes(xvalues),string)
 
-    xvalues2 = xvalues + center_lon
-    if(lon_range.eq.360.and.center_lon.gt.0)
-      indexx = ind(xvalues2.gt.180)
-      xvalues2(indexx) = xvalues2(indexx) - 360
-      delete(indexx)
-    end if
-    if(lon_range.eq.360.and.center_lon.lt.0)
-      indexx = ind(xvalues2.lt.-180)
-      xvalues2(indexx) = xvalues2(indexx) + 360
-      delete(indexx)
-    end if
-
-    indexx = ind((xvalues2).lt.0)
+    indexx = ind(xvalues.gt.180.and.xvalues.lt.360)
     if(.not.all(ismissing(indexx)))
-        xlabels(indexx) = fabs(xvalues2(indexx)) + "W"     ; west
+        xlabels(indexx) = 360-xvalues(indexx) + "W" ; west
     end if
     delete(indexx)
 
-    indexx = ind(xvalues2.gt.0.and.xvalues2.lt.180)
+    indexx = ind((xvalues).lt.0)
     if(.not.all(ismissing(indexx)))
-        xlabels(indexx) = fabs(xvalues2(indexx)) + "E"     ; east
+        xlabels(indexx) = fabs(xvalues(indexx)) + "W"     ; west
     end if
     delete(indexx)
 
-    indexx = ind(xvalues2.eq.0.or.fabs(xvalues2).eq.180)
+    indexx = ind(xvalues.gt.0.and.xvalues.lt.180)
     if(.not.all(ismissing(indexx)))
-        xlabels(indexx) = fabs(xvalues2(indexx))           ; 0 or 180
+        xlabels(indexx) = xvalues(indexx) + "E"     ; east
+    end if
+    delete(indexx)
+
+    indexx = ind(xvalues.gt.180)
+    if(.not.all(ismissing(indexx)))
+        xlabels(indexx) = 360-xvalues(indexx) + "W"     ; west
+    end if
+    delete(indexx)
+
+    indexx = ind(xvalues.eq.0.or.fabs(xvalues).eq.180)
+    if(.not.all(ismissing(indexx)))
+        xlabels(indexx) = fabs(xvalues(indexx))           ; 0 or 180
+    end if
+    delete(indexx)
+
+    indexx = ind(xvalues.eq.360)
+    if(.not.all(ismissing(indexx)))
+        xlabels(indexx) = "0"
     end if
     delete(indexx)
 
@@ -963,14 +982,12 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
     shape_mode   = get_res_value(res2,"mpShapeMode","FixedAspectFitBB")
 function gsn_csm_map(wks:graphic,res:logical)
     set_attr(res2,"vpXF",     0.2)
-
-  if(res.and.isatt(res,"gsnPolarNH").and.res@gsnPolarNH.or.\
-             isatt(res,"gsnPolarSH").and.res@gsnPolarSH)
+  if(res.and.(isatt(res,"gsnPolarNH").and.res@gsnPolarNH.or.\
+             isatt(res,"gsnPolarSH").and.res@gsnPolarSH))
     return(gsn_csm_map_polar(wks,res))
     set_attr(res2,"mpPerimOn", True)
     return(gsn_csm_map_ce(wks,res))
 ; then it is set back to True.
-  delete(res)
 ;
     set_attr(res2,"mpOutlineOn",.not.res2@mpFillOn)
     
@@ -1097,15 +1114,19 @@ end
 
 ; Check for whether user wants northern or southern hemisphere.
 
-        if(isatt(res2,"gsnPolarSH").and.res2@gsnPolarSH)
+        if(isatt(res2,"gsnPolarSH"))
+          if(res2@gsnPolarSH)
             mapres@gsnPolarSH = True
             polar_sh = True
-            delete(res2@gsnPolarSH)
+          end if
+          delete(res2@gsnPolarSH)
         end if
-        if(isatt(res2,"gsnPolarNH").and.res2@gsnPolarNH)
+        if(isatt(res2,"gsnPolarNH"))
+          if(res2@gsnPolarNH)
             mapres@gsnPolarNH = True
             polar_nh = True
-            delete(res2@gsnPolarNH)
+          end if
+          delete(res2@gsnPolarNH)
         end if
     end if
 
@@ -1197,8 +1218,10 @@ end
               cnres@$attnames(cn_res_index(i))$ = res2@$attnames(cn_res_index(i))$
             end do
             if(isatt(cnres,"cnFillOn").and.cnres@cnFillOn)
-              cnres@cnLineLabelsOn  = False
-              lbar_on = True   ; Turn on a labelbar
+              if(.not.(isatt(cnres,"cnMonoFillColor").and.cnres@cnMonoFillColor))
+                cnres@cnLineLabelsOn  = False
+                lbar_on = True   ; Turn on a labelbar
+              end if
             end if
           end if
        end if
@@ -1569,10 +1592,12 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
                     cnres@$attnames(cn_res_index(i))$ = res2@$attnames(cn_res_index(i))$
                 end do
                 if(isatt(cnres,"cnFillOn").and.cnres@cnFillOn)
+                  if(.not.(isatt(cnres,"cnMonoFillColor").and.cnres@cnMonoFillColor))
                     lbar_on = True
                     if(.not.isatt(cnres,"cnLineLabelsOn"))
                       cnres@cnLineLabelsOn = False
                     end if
+                  end if
                 end if
             end if
         end if
