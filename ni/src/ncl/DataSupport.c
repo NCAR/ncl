@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.38 1999-11-12 18:36:37 ethan Exp $
+ *      $Id: DataSupport.c,v 1.39 2000-02-11 23:49:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -699,6 +699,8 @@ void *to;
 NclBasicDataTypes totype;
 #endif
 {
+	char buffer[80];
+
 	switch(frtype) {
 	case NCL_short:
 		switch(totype) {
@@ -720,6 +722,10 @@ NclBasicDataTypes totype;
 		case NCL_logical:
 			*(int*)to = *(short*)from;
 			return(1);
+		case NCL_string:
+			sprintf(buffer,"%d",(int)*(short*)from);
+			*(string*)to = NrmStringToQuark(buffer);
+			return(1);
 		default:
 			return(0);
 		}
@@ -740,6 +746,10 @@ NclBasicDataTypes totype;
                 case NCL_logical:
 			*(int*)to = *(int*)from;
 			return(1);
+		case NCL_string:
+			sprintf(buffer,"%d",*(int*)from);
+			*(string*)to = NrmStringToQuark(buffer);
+			return(1);
 		default:
 			return(0);
 		}
@@ -757,6 +767,10 @@ NclBasicDataTypes totype;
 		case NCL_logical:
 			*(int*)to = *(long*)from;
 			return(1);
+		case NCL_string:
+			sprintf(buffer,"%ld",(long)*(long*)from);
+			*(string*)to = NrmStringToQuark(buffer);
+			return(1);
 		default:
 			return(0);
 		}
@@ -768,6 +782,10 @@ NclBasicDataTypes totype;
 		case NCL_double:
 			*(double*)to = *(float*)from;
 			return(1);
+		case NCL_string:
+			sprintf(buffer,"%g",*(float*)from);
+			*(string*)to = NrmStringToQuark(buffer);
+			return(1);
 		default:
 			return(0);
 		}
@@ -775,6 +793,10 @@ NclBasicDataTypes totype;
 		switch(totype) {
 		case NCL_double:
 			*(double*)to = *(double*)from;
+			return(1);
+		case NCL_string:
+			sprintf(buffer,"%lg",*(double*)from);
+			*(string*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -785,6 +807,11 @@ NclBasicDataTypes totype;
 		case NCL_byte:
 		case NCL_char:
 			*(char*) to = *(char*)from;
+			return(1);
+		case NCL_string:
+			buffer[0] = *(char*)from;
+			buffer[1] = '\0';
+			*(string*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);

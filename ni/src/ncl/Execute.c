@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.111 2000-01-28 20:46:14 ethan Exp $
+ *      $Id: Execute.c,v 1.112 2000-02-11 23:49:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3803,13 +3803,6 @@ void CallASSIGN_FILE_VAR_OP(void) {
 							file = (NclFile)_NclGetObj((int)*(obj*)value->multidval.val);
 						if((file != NULL)&&((index = _NclFileIsVar(file,var)) != -1)) {
 							if((nsubs != file->file.var_info[index]->num_dimensions)&&(nsubs != 0)){
-								subs_expected = 0;
-								for(i = 0; i < file->file.var_info[index]->num_dimensions; i++) {
-									if(file->file.file_dim_info[file->file.var_info[index]->file_dim_num[i]]->dim_size != 1) {
-										subs_expected += 1;
-									}
-								}
-								if(subs_expected != nsubs) {
 									NhlPError(NhlFATAL,NhlEUNKNOWN,
 										"Number of subscripts (%d) and number of dimensions (%d) do not match for variable (%s->%s)",
 										nsubs,
@@ -3818,105 +3811,70 @@ void CallASSIGN_FILE_VAR_OP(void) {
 										NrmQuarkToString(var));
 										estatus = NhlFATAL;
 										_NclCleanUpStack(nsubs +1);
-								}
 							} 
-	
-							if((nsubs != 0)&&(nsubs == file->file.var_info[index]->num_dimensions))  {
-								sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
-								sel_ptr->n_entries = nsubs;
-								for(i = 0 ; i < nsubs; i++) {
-									data = _NclPop();
-									switch(data.u.sub_rec.sub_type) {
-									case INT_VECT:
-										estatus = _NclBuildFileVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
-										break;
-									case INT_SINGLE:
-									case INT_RANGE:
-										estatus = _NclBuildFileRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
-										break;
-									case COORD_VECT:
-										estatus = _NclBuildFileCoordVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
-										break;
-									case COORD_SINGLE:
-									case COORD_RANGE:
-										estatus = _NclBuildFileCoordRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
-										break;
-									}
-									_NclFreeSubRec(&data.u.sub_rec);
-								}
-							} else if((nsubs != 0)&&(nsubs == subs_expected)) { 
-								sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
-								sel_ptr->n_entries = file->file.var_info[index]->num_dimensions;
-		
-								for(i = 0 ; i < sel_ptr->n_entries; i++) {
-									if(file->file.file_dim_info[file->file.var_info[index]->file_dim_num[sel_ptr->n_entries - i - 1]]->dim_size != 1){
+							if(estatus != NhlFATAL)  {
+								if((nsubs != 0)&&(nsubs == file->file.var_info[index]->num_dimensions))  {
+									sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+									sel_ptr->n_entries = nsubs;
+									for(i = 0 ; i < nsubs; i++) {
 										data = _NclPop();
 										switch(data.u.sub_rec.sub_type) {
 										case INT_VECT:
-											estatus = _NclBuildFileVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
+											estatus = _NclBuildFileVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 											break;
 										case INT_SINGLE:
 										case INT_RANGE:
-											estatus = _NclBuildFileRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
+											estatus = _NclBuildFileRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 											break;
 										case COORD_VECT:
-											estatus = _NclBuildFileCoordVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
+											estatus = _NclBuildFileCoordVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 											break;
 										case COORD_SINGLE:
 										case COORD_RANGE:
-											estatus = _NclBuildFileCoordRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
+											estatus = _NclBuildFileCoordRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 											break;
 										}
 										_NclFreeSubRec(&data.u.sub_rec);
-									} else {
-			
-										sel_ptr->selection[sel_ptr->n_entries - i - 1].sel_type = Ncl_SUBSCR;
-										sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.start = 0;
-										sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.finish= 0;
-										sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.stride = 1;
-										sel_ptr->selection[sel_ptr->n_entries - i - 1].dim_num = sel_ptr->n_entries - i - 1;
-										
-}
+									}
+								} else {
+									sel_ptr = NULL;
 								}
-							} else {
-								sel_ptr = NULL;
-							}
-/*
-* Coercion must wait until inside of File method
-*/
-							rhs = _NclPop();
-							if(estatus != NhlFATAL) {
-								if(rhs.kind == NclStk_VAL) {
-									rhs_md = rhs.u.data_obj;
-									if(rhs_md != NULL) {
-										estatus = _NclFileWriteVar(file, var, rhs_md, sel_ptr);
+	/*
+	* Coercion must wait until inside of File method
+	*/
+								rhs = _NclPop();
+								if(estatus != NhlFATAL) {
+									if(rhs.kind == NclStk_VAL) {
+										rhs_md = rhs.u.data_obj;
+										if(rhs_md != NULL) {
+											estatus = _NclFileWriteVar(file, var, rhs_md, sel_ptr);
 
-										if(rhs_md->obj.status != PERMANENT) {
-											_NclDestroyObj((NclObj)rhs_md);
+											if(rhs_md->obj.status != PERMANENT) {
+												_NclDestroyObj((NclObj)rhs_md);
+											}
+										} else {
+											estatus = NhlFATAL;
 										}
-									} else {
+					
+									} else if(rhs.kind == NclStk_VAR) {
+										estatus = _NclFileWriteVarVar(file,var,sel_ptr,rhs.u.data_var,NULL);
+										if(rhs.u.data_var->obj.status != PERMANENT) {
+											_NclDestroyObj((NclObj)rhs.u.data_var);
+										}
+									} else {	
+
 										estatus = NhlFATAL;
 									}
-				
-								} else if(rhs.kind == NclStk_VAR) {
-									estatus = _NclFileWriteVarVar(file,var,sel_ptr,rhs.u.data_var,NULL);
-									if(rhs.u.data_var->obj.status != PERMANENT) {
-										_NclDestroyObj((NclObj)rhs.u.data_var);
-									}
-								} else {	
-
-									estatus = NhlFATAL;
-								}
-								if(sel_ptr != NULL) {
-									for(i = 0; i <  sel_ptr->n_entries; i++) { 
-										if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
-											NclFree(sel_ptr->selection[i].u.vec.ind);
+									if(sel_ptr != NULL) {
+										for(i = 0; i <  sel_ptr->n_entries; i++) { 
+											if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
+												NclFree(sel_ptr->selection[i].u.vec.ind);
+											}
 										}
+										NclFree(sel_ptr);
 									}
-									NclFree(sel_ptr);
 								}
 							}
-							
 						} else if(file!=NULL){
 							rhs = _NclPop();
 							if(estatus != NhlFATAL) {
@@ -4018,20 +3976,10 @@ void CallFILE_VARVAL_OP(void) {
 							for(i = 0 ; i < file->file.var_info[index]->num_dimensions; i++) {
 								dim_is_ref[i] = 0;
 							}
-							subs_expected = 0;
-							for(i = 0; i < file->file.var_info[index]->num_dimensions; i++) {
-                                                        	if(file->file.file_dim_info[file->file.var_info[index]->file_dim_num[i]]->dim_size != 1) {
-                                                               		subs_expected += 1;
-                                                                }
-                                                        }
 
 							if((nsubs != 0)&&(nsubs ==  file->file.var_info[index]->num_dimensions)){
 								sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
 								sel_ptr->n_entries = nsubs;
-							} else if(nsubs == subs_expected) {
-								sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
-								sel_ptr->n_entries = file->file.var_info[index]->num_dimensions;
-									
 							} else if(nsubs==0){
 								sel_ptr = NULL;
 							} else {
@@ -4042,38 +3990,29 @@ void CallFILE_VARVAL_OP(void) {
 							if(estatus != NhlFATAL) {
 								if(sel_ptr != NULL) {
 									for(i=0;i<sel_ptr->n_entries;i++) {
-										if((file->file.file_dim_info[file->file.var_info[index]->file_dim_num[sel_ptr->n_entries - i - 1]]->dim_size != 1)||(nsubs == file->file.var_info[index]->num_dimensions)){
-											data =_NclPop();
-											switch(data.u.sub_rec.sub_type) {
-											case INT_VECT:
-												ret = _NclBuildFileVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
-												break;
-											case INT_SINGLE:
-											case INT_RANGE:
-												ret = _NclBuildFileRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
-												break;
-											case COORD_VECT:
-												estatus = _NclBuildFileCoordVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
-												break;
-											case COORD_SINGLE:
-											case COORD_RANGE:
-												estatus = _NclBuildFileCoordRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
-												break;
-											}
-											_NclFreeSubRec(&data.u.sub_rec);
-											if(ret < NhlWARNING) {
-												estatus = NhlFATAL;
-											}
-											if(estatus < NhlWARNING) 
-												break;
-										} else {
-											sel_ptr->selection[sel_ptr->n_entries - i - 1].sel_type = Ncl_SUBSCR;
-											sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.start = 0;
-											sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.finish= 0;
-											sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.stride = 1;
-											sel_ptr->selection[sel_ptr->n_entries - i - 1].dim_num = sel_ptr->n_entries - i - 1;
-
+										data =_NclPop();
+										switch(data.u.sub_rec.sub_type) {
+										case INT_VECT:
+											ret = _NclBuildFileVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
+											break;
+										case INT_SINGLE:
+										case INT_RANGE:
+											ret = _NclBuildFileRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
+											break;
+										case COORD_VECT:
+											estatus = _NclBuildFileCoordVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
+											break;
+										case COORD_SINGLE:
+										case COORD_RANGE:
+											estatus = _NclBuildFileCoordRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
+											break;
 										}
+										_NclFreeSubRec(&data.u.sub_rec);
+										if(ret < NhlWARNING) {
+											estatus = NhlFATAL;
+										}
+										if(estatus < NhlWARNING) 
+											break;
 										if(!dim_is_ref[(sel_ptr->selection[sel_ptr->n_entries - i - 1]).dim_num]) {
 											dim_is_ref[(sel_ptr->selection[sel_ptr->n_entries - i - 1]).dim_num] = 1;
 										} else {
@@ -4183,20 +4122,10 @@ void CallFILE_VAR_OP(void) {
 							for(i = 0 ; i < file->file.var_info[index]->num_dimensions; i++) {
 								dim_is_ref[i] = 0;
 							}
-							subs_expected = 0;
-							for(i = 0; i < file->file.var_info[index]->num_dimensions; i++) {
-                                                        	if(file->file.file_dim_info[file->file.var_info[index]->file_dim_num[i]]->dim_size != 1) {
-                                                               		subs_expected += 1;
-                                                                }
-                                                        }
 
 							if((nsubs != 0)&&(nsubs ==  file->file.var_info[index]->num_dimensions)){
 								sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
 								sel_ptr->n_entries = nsubs;
-							} else if(nsubs == subs_expected) {
-								sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
-								sel_ptr->n_entries = file->file.var_info[index]->num_dimensions;
-									
 							} else if(nsubs==0){
 								sel_ptr = NULL;
 							} else {
@@ -4207,38 +4136,29 @@ void CallFILE_VAR_OP(void) {
 							if(estatus != NhlFATAL) {
 								if(sel_ptr != NULL) {
 									for(i=0;i<sel_ptr->n_entries;i++) {
-										if((file->file.file_dim_info[file->file.var_info[index]->file_dim_num[sel_ptr->n_entries - i - 1]]->dim_size != 1)||(nsubs == file->file.var_info[index]->num_dimensions)){
-											data =_NclPop();
-											switch(data.u.sub_rec.sub_type) {
-											case INT_VECT:
-												ret = _NclBuildFileVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
-												break;
-											case INT_SINGLE:
-											case INT_RANGE:
-												ret = _NclBuildFileRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
-												break;
-											case COORD_VECT:
-												estatus = _NclBuildFileCoordVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
-												break;
-											case COORD_SINGLE:
-											case COORD_RANGE:
-												estatus = _NclBuildFileCoordRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
-												break;
-											}
-											_NclFreeSubRec(&data.u.sub_rec);
-											if(ret < NhlWARNING) {
-												estatus = NhlFATAL;
-											}
-											if(estatus < NhlWARNING) 
-												break;
-										} else {
-											sel_ptr->selection[sel_ptr->n_entries - i - 1].sel_type = Ncl_SUBSCR;
-											sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.start = 0;
-											sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.finish= 0;
-											sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.stride = 1;
-											sel_ptr->selection[sel_ptr->n_entries - i - 1].dim_num = sel_ptr->n_entries - i - 1;
-
+										data =_NclPop();
+										switch(data.u.sub_rec.sub_type) {
+										case INT_VECT:
+											ret = _NclBuildFileVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
+											break;
+										case INT_SINGLE:
+										case INT_RANGE:
+											ret = _NclBuildFileRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
+											break;
+										case COORD_VECT:
+											estatus = _NclBuildFileCoordVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
+											break;
+										case COORD_SINGLE:
+										case COORD_RANGE:
+											estatus = _NclBuildFileCoordRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
+											break;
 										}
+										_NclFreeSubRec(&data.u.sub_rec);
+										if(ret < NhlWARNING) {
+											estatus = NhlFATAL;
+										}
+										if(estatus < NhlWARNING) 
+											break;
 										if(!dim_is_ref[(sel_ptr->selection[sel_ptr->n_entries - i - 1]).dim_num]) {
 											dim_is_ref[(sel_ptr->selection[sel_ptr->n_entries - i - 1]).dim_num] = 1;
 										} else {
