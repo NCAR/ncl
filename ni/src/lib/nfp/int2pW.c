@@ -38,7 +38,7 @@ NhlErrorTypes int2p_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, index_in, index_out, npin, npout, ier = 0;
+  int i, j, index_in, index_out, npin, npout, ier = 0, nmiss = 0, nmono = 0;
 /*
  * Retrieve parameters
  *
@@ -126,10 +126,11 @@ NhlErrorTypes int2p_W( void )
   }
   npin  = dsizes_pin[ndims_pin-1];
   npout = dsizes_pout[ndims_pout-1];
-  if (npout < 1 || npin < 1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: The right-most dimension of 'pin' and 'pout' must be at least one.");
+  if (npin < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: The right-most dimension of 'pin' must be at least two");
     return(NhlFATAL);
   }
+
   size_pout = size_leftmost * npout;
 
 /*
@@ -262,19 +263,30 @@ NhlErrorTypes int2p_W( void )
     NGCALLF(dint2p,DINT2P)(tmp_pin,tmp_xin,&p[0],&x[0],&npin,
                            tmp_pout,tmp_xout,&npout,linlog,
                            &missing_dx.doubleval,&ier);
-    if (ier >= 1000) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"int2p: One of the input arrays contains all missing data");
+    if (ier) {
+      if (ier >= 1000) nmiss++;
+      else             nmono++;
+      set_subset_output_missing(xout,index_out,type_xout,npout,
+				missing_dx.doubleval);
     }
+    else {
 /*
- * Copy output values from temporary tmp_zh to zh.
+ * Copy output values from temporary tmp_xout to xout.
  */
-    if(type_xout != NCL_double) {
-      for(j = 0; j < npout; j++) {
-        ((float*)xout)[index_out+j] = (float)(tmp_xout[j]);
+      if(type_xout != NCL_double) {
+	for(j = 0; j < npout; j++) {
+	  ((float*)xout)[index_out+j] = (float)(tmp_xout[j]);
+	}
       }
     }
     index_in  += npin;
     index_out += npout;
+  }
+  if (nmiss) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"int2p: %d input array(s) contained all missing data. No interpolation performed on these arrays",nmiss);
+  }
+  if (nmono) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"int2p: %d pin array(s) were in a different order than the corresponding pout array(s). No interpolation performed on these arrays",nmono);
   }
 /*
  * Free memory.

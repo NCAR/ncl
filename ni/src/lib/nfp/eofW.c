@@ -1929,7 +1929,7 @@ NhlErrorTypes eofcor_ts_W( void )
                            &missing_dx);
   devec = coerce_input_double(evec,type_evec,total_size_evec,
                               has_missing_evec,&missing_evec,&missing_devec);
-  if(dx == NULL || evec == NULL) {
+  if(dx == NULL || devec == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
   }
