@@ -1,11 +1,11 @@
 .\"
-.\"	$Id: ncarg_error.m,v 1.1 1992-04-22 15:13:03 clyne Exp $
+.\"	$Id: ncarg_error.m,v 1.2 1992-08-12 18:59:39 clyne Exp $
 .\"
 .TH ERROR 1NCAR  "February 1992" 
 .SH NAME
 ESprintf,
-ErrorGetMessage,
-ErrorGetNumber,
+ErrGetMsg,
+ErrGetNum,
 ErrorList \- Formatted error reporting
 .SH SYNOPSIS
 .nf
@@ -24,13 +24,13 @@ char *format;
 .LP
 .nf
 .ft B
-char *ErrorGetMessage()
+char *ErrGetMsg()
 .ft
 .fi
 .LP
 .nf
 .ft B
-char *ErrorGetNumber();
+int ErrGetNum()
 .ft
 .fi
 .LP
@@ -63,7 +63,7 @@ It converts, formats, and stores its
 under the control of 
 .IR format .
 .BR ESprintf(\|)
-excepts an identical set of conversion specifications as its 
+accepts an identical set of conversion specifications as its 
 UNIX cousins.
 .LP
 .I err_code
@@ -98,10 +98,10 @@ and
 respectively. The variable argument list must be enclosed in their own
 set of parentheses or the C preprocessor will complain.
 .LP
-.BR ErrorGetMessage(\|)
+.BR ErrGetMsg(\|)
 returns the address of the current message buffer.
 .LP
-.BR ErrorGetNumber(\|)
+.BR ErrGetNum(\|)
 returns the current error code set by the last call to
 .BR ESprintf(\|) .
 .LP
@@ -128,6 +128,11 @@ equal to
 .B 1001
 the error message referenced will be
 .IB err_list[ 0 ] .
+.BR ErrorList(\|) 
+returns a non-negative number on success. On failure,
+it returns a
+.B -1
+indicating the the error table is full.
 .SH "SEE ALSO"
 .BR errno(3),
 .BR printf(3V)
