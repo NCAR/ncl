@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1995-07-01 01:00:15 kennison Exp $
+#	$Id: yMakefile,v 1.7 1995-07-05 20:40:23 kennison Exp $
 #
 
 DBFILES = EzmapAreaInfo.CO EzmapAreaInfo.PO EzmapAreaInfo.PS EzmapAreaInfo.US \
@@ -8,17 +8,12 @@ DBFILES = EzmapAreaInfo.CO EzmapAreaInfo.PO EzmapAreaInfo.PS EzmapAreaInfo.US \
 
 InstallTarget($(DBFILES),$(INSTALL_DB),$(DBPATH))
 
-CleanFilesTarget(ConvertMapData)
-CleanFilesTarget(ConvertMapData.o)
-CleanFilesTarget(rwchinfl.o)
+OBJECTS = ConvertMapData.o rwchinfl.o
 
-CleanFilesTarget(EzmapOutlines.CO)
-CleanFilesTarget(EzmapOutlines.PO)
-CleanFilesTarget(EzmapOutlines.PS)
-CleanFilesTarget(EzmapOutlines.US)
+CleanFilesTarget(ConvertMapData EzmapOutlines.CO EzmapOutlines.PO \
+		 EzmapOutlines.PS EzmapOutlines.US)
 
-ConvertMapData: ConvertMapData.o rwchinfl.o
-	$(F77) -o ConvertMapData ConvertMapData.o rwchinfl.o
+FortranProgram(ConvertMapData,$(OBJECTS),$(DEPLIBS))
 
 EzmapOutlines.CO: ezmapdat ConvertMapData
 	-@$(RM) EzmapOutlines.CO
