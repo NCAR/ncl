@@ -1,0 +1,83 @@
+#
+#	$Id: yMakefile,v 1.1 2000-04-18 21:22:50 haley Exp $
+#
+
+#ifdef	BuildWithF90
+NHF_SCRIPT	=	nhlf90
+#else
+NHF_SCRIPT	=	nhlf77
+#endif
+
+SCRIPTS = nhlcc $(NHF_SCRIPT) ng4ex 
+MAN1		= ng4ex
+
+$(NHF_SCRIPT): nhlf77.csh Makefile
+	@sed \
+	-e 's+SED_FC+$(F77)+' \
+	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
+	-e 's+SED_INCSEARCH+$(INCSEARCH)+' \
+	-e 's+SED_LDFFLAGS+$(FC_LDOPTIONS)+' \
+	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
+	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	-e 's+SED_XLIB+$(XLIB)+' \
+	-e 's+SED_LIBDIR+$(LIBDIR)+' \
+	-e 's+SED_INCDIR+$(INCDIR)+' \
+	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
+	-e 's+SED_HDFLIB+$(HDFLIB)+' \
+	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
+	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
+	<nhlf77.csh > $(NHF_SCRIPT)
+
+nhlcc: nhlcc.csh Makefile
+	@sed \
+	-e 's+SED_CC+$(CC)+' \
+	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
+	-e 's+SED_INCSEARCH+$(INCSEARCH)+' \
+	-e 's+SED_STDDEF+$(STD_DEFINES)+' \
+	-e 's+SED_PROJDEF+$(PROJECTDEFINES)+' \
+	-e 's+SED_LDCFLAGS+$(CC_LDOPTIONS)+' \
+	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
+	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	-e 's+SED_XTOOLLIB+$(XTOOLLIB)+' \
+	-e 's+SED_XMOTIFLIB+$(XMOTIFLIB)+' \
+	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
+	-e 's+SED_HDFLIB+$(HDFLIB)+' \
+	-e 's+SED_XLIB+$(XLIB)+' \
+	-e 's+SED_LIBDIR+$(LIBDIR)+' \
+	-e 's+SED_INCDIR+$(INCDIR)+' \
+	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
+	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
+	<nhlcc.csh >nhlcc
+
+
+# Install preformatted troff documents on systems without troff
+#if UseCatDirs
+FORMAT_EXT	= .p
+#else
+FORMAT_EXT	= .man
+#endif
+
+InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
+CleanFilesTarget($(SCRIPTS))
+InstallManPages($(MAN1),$(FORMAT_EXT),$(MAN1PATH),$(MAN1_SECTION))
+FormatManPages($(MAN1),.man,.p)
+
+#if !defined(CRAY)
+ng4ex: ng4ex.csh Makefile
+	@sed \
+	-e 's+SED_HLUEXDIR+$(HLUEXDIR)+' \
+	-e 's+SED_NCLEXDIR+$(NCLEXDIR)+' \
+	-e 's+SED_RESDIR+$(RESDIR)+' \
+	-e 's+SED_FCSCRIPT+$(NHF_SCRIPT)+' \
+	-e 's+SED_DATADIR+$(DATADIR)+' \
+	< ng4ex.csh > ng4ex
+#else
+ng4ex: ng4ex.cry.csh Makefile
+	@sed \
+	-e 's+SED_HLUEXDIR+$(HLUEXDIR)+' \
+	-e 's+SED_RESDIR+$(RESDIR)+' \
+	-e 's+SED_FCSCRIPT+$(NHF_SCRIPT)+' \
+	-e 's+SED_DATADIR+$(DATADIR)+' \
+	< ng4ex.cry.csh > ng4ex
+#endif
+
