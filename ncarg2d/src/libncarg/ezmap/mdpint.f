@@ -1,5 +1,5 @@
 C
-C $Id: mdpint.f,v 1.2 2001-11-02 22:37:06 kennison Exp $
+C $Id: mdpint.f,v 1.3 2002-08-21 20:28:19 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -703,10 +703,11 @@ C
           VMAX=VMAX-VOFF
         END IF
 C
-C Do the required SET call.
+C Do the required SET call, being careful to use real numbers which are
+C within the ranges specified by the double-precision numbers involved.
 C
-        CALL SET (REAL(ULOW),REAL(UROW),REAL(VBOW),REAL(VTOW),
-     +            REAL(UMIN),REAL(UMAX),REAL(VMIN),REAL(VMAX),1)
+        CALL SET (RDPNUW(ULOW),RDPNDW(UROW),RDPNUW(VBOW),RDPNDW(VTOW),
+     +            RDPNUW(UMIN),RDPNDW(UMAX),RDPNUW(VMIN),RDPNDW(VMAX),1)
         IF (ICFELL('MDPINT',14).NE.0) GO TO 999
 C
 C Set all the variables in the common block passed to MDPTRA.
