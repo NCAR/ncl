@@ -201,6 +201,9 @@ dashes in the tropical fronts.
 .IP "\'THT\'   -   Real   -   0.0165"
 Height of characters, expressed as a fraction of the maximum 
 screen width, for the regional temperature labels.
+.IP "\'UNT\'   -   Integer   -   0"
+Flags whether imperial units (the default) or metric units
+are used.
 .IP "\'WBA\'   -   Real   -   62."
 Angle (in degrees) that the wind barb ticks make with the 
 wind barb shafts.
