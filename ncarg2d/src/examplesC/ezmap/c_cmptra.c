@@ -1,5 +1,5 @@
 /*
- * $Id: c_cmptra.c,v 1.3 1994-06-21 15:00:03 haley Exp $
+ * $Id: c_cmptra.c,v 1.4 1994-07-20 17:06:04 haley Exp $
  */
 
 #include <stdio.h>
@@ -21,7 +21,7 @@ main()
 	gopen_ws (WKID, NULL, WSTYPE);
 	gactivate_ws(WKID);
 /*
- * INVOKE DEMO DRIVER
+ * Invoke demo driver
  */
     plim1[0] = 22.;
     plim2[0] = -120.;
@@ -29,7 +29,7 @@ main()
     plim4[0] = -65.;
 	cmptra("OR",35.,-105.,0.,"PO","CO",plim1,plim2,plim3,plim4);
 /*
- *     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
+ *  Deactivate and close workstation, close GKS.
  */
 	gdeactivate_ws(WKID);
 	gclose_ws(WKID);
