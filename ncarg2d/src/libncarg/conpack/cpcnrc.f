@@ -1,5 +1,5 @@
 C
-C $Id: cpcnrc.f,v 1.10 1995-04-26 22:44:36 kennison Exp $
+C $Id: cpcnrc.f,v 1.11 1996-05-31 21:01:03 kennison Exp $
 C
       SUBROUTINE CPCNRC (ZDAT,KZDT,MZDT,NZDT,FLOW,FHGH,FINC,KSET,NHGH,
      +                   NDSH)
@@ -27,10 +27,6 @@ C
 C Check for an uncleared prior error.
 C
       IF (ICFELL('CPCNRC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
-C
-C Turn off clipping, so that the informational label won't disappear.
-C
-      CALL GSCLIP (0)
 C
 C Copy the argument KSET to an internal variable NSET, limiting it to
 C the range from -1 to +1.  Note: if the absolute value of KSET is
