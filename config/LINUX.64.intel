@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX.64.intel,v 1.2 2004-07-13 03:10:28 haley Exp $
+ *      $Id: LINUX.64.intel,v 1.3 2004-07-25 19:03:34 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -27,7 +27,7 @@
 #define Cstatic
 #define Cdynamic
 #define CppCommand '/usr/bin/cpp -traditional'
-#define CCompiler   ecc
+#define CCompiler   icc
 #define FCompiler   ifort
 #define CtoFLibraries   -lm	
 /* 

@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX.IA64,v 1.2 2004-02-08 01:24:51 haley Exp $
+ *      $Id: LINUX.IA64,v 1.3 2004-07-25 19:03:34 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -15,8 +15,8 @@
 #define Cstatic
 #define Cdynamic
 #define CppCommand '/usr/bin/cpp -traditional'
-#define CCompiler   ecc
-#define FCompiler   efc
+#define CCompiler   icc
+#define FCompiler   ifort
 #define CtoFLibraries   -lm -lF90 -Bstatic -lCEPCF90  -lintrins -Bdynamic
 #define CcOptions    -ansi 
 #define COptimizeFlag    -O2
