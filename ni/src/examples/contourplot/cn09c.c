@@ -1,5 +1,5 @@
 /*
-**      $Id: cn09c.c,v 1.2 1996-02-13 00:15:58 haley Exp $
+**      $Id: cn09c.c,v 1.3 1996-04-04 15:26:06 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -49,8 +49,8 @@ main()
     int     ncid, lon_id, lat_id, frtime_id, press_id;
     float   press[33][36], special_value;
     float   lon[36], lat[33];
-    nclong  start[3], count[3], lonlen, latlen, frtimelen;
-    nclong  frtime[7];
+    long  start[3], count[3], lonlen, latlen, frtimelen;
+    long  frtime[7];
     char    filename[256], string[20];
     const char *dir = _NGGetNCARGEnv("data");
 /*
@@ -118,7 +118,7 @@ main()
     press_id = ncvarid(ncid,"Psl");
     start[0] = start[1] = start[2] = 0;
     count[0] = 1; count[1] = latlen; count[2] = lonlen;
-    ncvarget(ncid,press_id,(nclong const *)start,(nclong const *)count,press);
+    ncvarget(ncid,press_id,(long const *)start,(long const *)count,press);
     ncattget(ncid,press_id,"_FillValue",&special_value);
     for( j = 0; j < latlen; j++ ) {
         for( k = 0; k < lonlen; k++ ) {
@@ -130,15 +130,15 @@ main()
  */
     lat_id = ncvarid(ncid,"lat");
     count[0] = latlen;
-    ncvarget(ncid,lat_id,(nclong const *)start,(nclong const *)count,lat);
+    ncvarget(ncid,lat_id,(long const *)start,(long const *)count,lat);
 
     lon_id = ncvarid(ncid,"lon");
     count[0] = lonlen;
-    ncvarget(ncid,lon_id,(nclong const *)start,(nclong const *)count,lon);
+    ncvarget(ncid,lon_id,(long const *)start,(long const *)count,lon);
 
     frtime_id = ncvarid(ncid,"frtime");
     count[0] = frtimelen;
-    ncvarget(ncid,frtime_id,(nclong const *)start,(nclong const *)count,frtime);
+    ncvarget(ncid,frtime_id,(long const *)start,(long const *)count,frtime);
 /*
  * Create scalar field configured with first time step
  * of pressure data.
@@ -186,7 +186,7 @@ main()
  */
         start[0] = i; start[1] = start[2] = 0;
         count[0] = 1; count[1] = latlen; count[2] = lonlen;
-        ncvarget(ncid,press_id,(nclong const *)start,(nclong const *)count,press);
+        ncvarget(ncid,press_id,(long const *)start,(long const *)count,press);
         for( j = 0; j < latlen; j++ ) {
             for( k = 0; k < lonlen; k++ ) {
                 press[j][k] /= 100.;

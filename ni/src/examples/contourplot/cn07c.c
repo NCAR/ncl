@@ -1,5 +1,5 @@
 /*
-**      $Id: cn07c.c,v 1.3 1996-02-13 00:15:57 haley Exp $
+**      $Id: cn07c.c,v 1.4 1996-04-04 15:26:05 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -54,8 +54,8 @@ main()
     int     ncid, lon_id, lat_id, frtime_id, Z_id;
     float   Z[33][36], special_value;
     float   lon[36], lat[33];
-    nclong  start[4], count[4], lonlen, latlen, frtimelen;
-    nclong  frtime[7];
+    long  start[4], count[4], lonlen, latlen, frtimelen;
+    long  frtime[7];
     char    filename[256];
     const char *dir = _NGGetNCARGEnv("data");
 /*
@@ -126,22 +126,22 @@ main()
     count[0] = count[1] = 1;
     count[2] = latlen;
     count[3] = lonlen;
-    ncvarget(ncid,Z_id,(nclong const *)start,(nclong const *)count,Z);
+    ncvarget(ncid,Z_id,(long const *)start,(long const *)count,Z);
     ncattget(ncid,Z_id,"_FillValue",&special_value);
 /*
  * Read in lat/lon/frtime values.
  */
     lat_id = ncvarid(ncid,"lat");
     count[0] = latlen;
-    ncvarget(ncid,lat_id,(nclong const *)start,(nclong const *)count,lat);
+    ncvarget(ncid,lat_id,(long const *)start,(long const *)count,lat);
 
     lon_id = ncvarid(ncid,"lon");
     count[0] = lonlen;
-    ncvarget(ncid,lon_id,(nclong const *)start,(nclong const *)count,lon);
+    ncvarget(ncid,lon_id,(long const *)start,(long const *)count,lon);
 
     frtime_id = ncvarid(ncid,"frtime");
     count[0] = frtimelen;
-    ncvarget(ncid,frtime_id,(nclong const *)start,(nclong const *)count,frtime);
+    ncvarget(ncid,frtime_id,(long const *)start,(long const *)count,frtime);
 /*
  * Create a scalar field object and configure the missing values and
  * the start and end information.
@@ -207,7 +207,7 @@ main()
         count[1] = 1;
         count[2] = latlen;
         count[3] = lonlen;
-        ncvarget(ncid,Z_id,(nclong const *)start,(nclong const *)count,Z);
+        ncvarget(ncid,Z_id,(long const *)start,(long const *)count,Z);
 /*
  * Create new scalar field.
  */

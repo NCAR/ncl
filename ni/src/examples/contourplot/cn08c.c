@@ -1,5 +1,5 @@
 /*
-**      $Id: cn08c.c,v 1.2 1996-02-13 00:15:58 haley Exp $
+**      $Id: cn08c.c,v 1.3 1996-04-04 15:26:05 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -50,7 +50,7 @@ main()
     float temp[10][33], special_value;
     float lon[36], lat[33], level[10];
     float min_lat, min_level, max_lat, max_level;
-    nclong  start[4], count[4], lonlen, latlen, levellen;
+    long  start[4], count[4], lonlen, latlen, levellen;
     char  filename[256], string[50];
     const char *dir = _NGGetNCARGEnv("data");
 /*
@@ -118,7 +118,7 @@ main()
     temp_id = ncvarid(ncid,"T");
     start[0] = start[1] = start[2] = start[3] = 0;
     count[0] = 1; count[1] = levellen; count[2] = latlen; count[3] = 1;
-    ncvarget(ncid,temp_id,(nclong const *)start,(nclong const *)count,temp);
+    ncvarget(ncid,temp_id,(long const *)start,(long const *)count,temp);
     ncattget(ncid,temp_id,"_FillValue",&special_value);
     for( j = 0; j < levellen; j++ ) {
         for( k = 0; k < latlen; k++ ) {
@@ -130,15 +130,15 @@ main()
  */
     lat_id = ncvarid(ncid,"lat");
     count[0] = latlen;
-    ncvarget(ncid,lat_id,(nclong const *)start,(nclong const *)count,lat);
+    ncvarget(ncid,lat_id,(long const *)start,(long const *)count,lat);
 
     lon_id = ncvarid(ncid,"lon");
     count[0] = lonlen;
-    ncvarget(ncid,lon_id,(nclong const *)start,(nclong const *)count,lon);
+    ncvarget(ncid,lon_id,(long const *)start,(long const *)count,lon);
 
     level_id = ncvarid(ncid,"level");
     count[0] = levellen;
-    ncvarget(ncid,level_id,(nclong const *)start,(nclong const *)count,level);
+    ncvarget(ncid,level_id,(long const *)start,(long const *)count,level);
 /*
  * Set up initial scalar field with longitude of temperature data.
  */
@@ -211,7 +211,7 @@ main()
         start[3] = i;
         count[0] = 1; count[1] = levellen;
         count[2] = latlen; count[3] = 1;
-        ncvarget(ncid,temp_id,(nclong const *)start,(nclong const *)count,
+        ncvarget(ncid,temp_id,(long const *)start,(long const *)count,
                  temp);
         for( j = 0; j < levellen; j++ ) {
             for( k = 0; k < latlen; k++ ) {

@@ -1,5 +1,5 @@
 /*
-**      $Id: cn05c.c,v 1.3 1996-02-13 00:15:56 haley Exp $
+**      $Id: cn05c.c,v 1.4 1996-04-04 15:26:04 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -73,8 +73,8 @@ main()
  */
     int     ncid, t_id, lon_id, lat_id, time_id;
     float   T[40][49];
-    nclong  lon[49], lat[40];
-    nclong  start[3], count[3], lonlen, latlen, nframes;
+    long  lon[49], lat[40];
+    long  start[3], count[3], lonlen, latlen, nframes;
     char    filename[256], daystr[10];
     const char *dir = _NGGetNCARGEnv("data");
 /*
@@ -152,11 +152,11 @@ main()
  */
     start[0] = start[1] = start[2] = 0;
     count[0] = 1; count[1] = latlen; count[2] = lonlen;
-    ncvarget(ncid,t_id,(nclong const *)start,(nclong const *)count,T);
+    ncvarget(ncid,t_id,(long const *)start,(long const *)count,T);
     count[0] = latlen;
-    ncvarget(ncid,lat_id,(nclong const *)start,(nclong const *)count,lat);
+    ncvarget(ncid,lat_id,(long const *)start,(long const *)count,lat);
     count[0] = lonlen;
-    ncvarget(ncid,lon_id,(nclong const *)start,(nclong const *)count,lon);
+    ncvarget(ncid,lon_id,(long const *)start,(long const *)count,lon);
 /*
  * Create a scalar field object that will be used as the
  * dataset for the contour object.
@@ -329,7 +329,7 @@ main()
  */
         start[0] = i; start[1] = start[2] = 0;
         count[0] = 1; count[1] = latlen; count[2] = lonlen;
-        ncvarget(ncid,t_id,(nclong const *)start,(nclong const *)count,T);
+        ncvarget(ncid,t_id,(long const *)start,(long const *)count,T);
         icount[0] = latlen; icount[1] = lonlen;
         NhlRLClear(srlist);
         NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&T[0][0],2,(int *)icount);

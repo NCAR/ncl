@@ -1,5 +1,5 @@
 /*
-**      $Id: cn10c.c,v 1.5 1996-02-13 00:15:59 haley Exp $
+**      $Id: cn10c.c,v 1.6 1996-04-04 15:26:06 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -68,7 +68,7 @@ main()
  */
     int     ncid, mnd_id, xdim_id, ydim_id;
     float   mound[15][18], mound2[5][5], xdim[20], ydim[20];
-    nclong  start[2], count[2], xlen, ylen;
+    long  start[2], count[2], xlen, ylen;
     char    filename[256];
     const char *dir = _NGGetNCARGEnv("data");
 
@@ -172,11 +172,11 @@ main()
  */
     start[0] = start[1] = 0;
     count[0] = xlen; count[1] = ylen;
-    ncvarget(ncid,mnd_id,(nclong const *)start,(nclong const *)count,mound);
+    ncvarget(ncid,mnd_id,(long const *)start,(long const *)count,mound);
     count[0] = xlen;
-    ncvarget(ncid,xdim_id,(nclong const *)start,(nclong const *)count,xdim);
+    ncvarget(ncid,xdim_id,(long const *)start,(long const *)count,xdim);
     count[0] = ylen;
-    ncvarget(ncid,ydim_id,(nclong const *)start,(nclong const *)count,ydim);
+    ncvarget(ncid,ydim_id,(long const *)start,(long const *)count,ydim);
 /*
  * Create a data field.
  */
@@ -259,7 +259,7 @@ main()
     start[0] = 2;
     start[1] = 4;
     count[0] = count[1] = 5;
-    ncvarget(ncid,mnd_id,(nclong const *)start,(nclong const *)count,mound2);
+    ncvarget(ncid,mnd_id,(long const *)start,(long const *)count,mound2);
 
     icount[0] = icount[1] = 5;
     NhlRLClear(srlist);
