@@ -117,33 +117,7 @@ C
 C
 C Define colors to use.
 C
-        IF (IBOW.EQ.0) THEN
-          CALL GSCR (1,0,0.,0.,0.) ! black
-          CALL GSCR (1,1,1.,1.,1.) ! white
-        ELSE
-          CALL GSCR (1,0,1.,1.,1.) ! white
-          CALL GSCR (1,1,0.,0.,0.) ! black
-        END IF
-C
-        CALL GSCR (1,2,1.,0.,0.) ! red
-        CALL GSCR (1,3,0.,1.,0.) ! green
-        CALL GSCR (1,4,0.,0.,1.) ! blue
-        CALL GSCR (1,5,0.,1.,1.) ! cyan
-        CALL GSCR (1,6,1.,0.,1.) ! magenta
-        CALL GSCR (1,7,1.,1.,0.) ! yellow
-C
-        DO 101 ICOL=11,42
-          P=1.-     REAL(ICOL-11)/31.
-          Q=1.-SHDR*REAL(ICOL-11)/31.
-          CALL GSCR (1,ICOL    ,     P,     P,     P) ! gray scale
-          CALL GSCR (1,ICOL+ 32,     Q,     Q,     Q) ! white
-          CALL GSCR (1,ICOL+ 64,     Q,SHDE*Q,SHDE*Q) ! red
-          CALL GSCR (1,ICOL+ 96,SHDE*Q,     Q,SHDE*Q) ! green
-          CALL GSCR (1,ICOL+128,SHDE*Q,SHDE*Q,     Q) ! blue
-          CALL GSCR (1,ICOL+160,SHDE*Q,     Q,     Q) ! cyan
-          CALL GSCR (1,ICOL+192,     Q,SHDE*Q,     Q) ! magenta
-C         CALL GSCR (1,ICOL+224,     Q,     Q,SHDE*Q) ! yellow
-  101   CONTINUE
+        CALL TDCLRS (1,IBOW,SHDE,SHDR,11,42,7)
 C
 C Select font number 25, turn on the outlining of filled fonts, set the
 C line width to 1, and turn off the setting of the outline color.
