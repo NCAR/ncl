@@ -1,4 +1,4 @@
-.TH Areas 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH Areas 3NCARG "April 1995" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -27,8 +27,7 @@ ARSETI - Provides a new integer value for an Areas parameter.
 .br
 ARSETR - Provides a new real value for an Areas parameter.
 .br
-ARDBPA - For debugging - produces a picture of that part of
-the area map that belongs to a specified edge group.
+ARDBPA - Produces a picture of a specified portion of the area map.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp

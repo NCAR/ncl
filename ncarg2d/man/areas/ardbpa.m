@@ -1,11 +1,12 @@
 '\" t
-.TH ARDBPA 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH ARDBPA 3NCARG "April 1995" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
 ARDBPA - Produces a plot showing all of the edge segments in an
-area map that have a specified group identifier. In complex
-area maps, this allows you to debug a problem, group by group.
+area map that have a specified group identifier IGRP; if IGRP
+is less than or equal to zero, all groups are included.  Such
+plots allow one to debug problems with an area map.
 .SH SYNOPSIS
 CALL ARDBPA (MAP,IGRP,LABEL)
 .SH C-BINDING SYNOPSIS
@@ -23,7 +24,8 @@ MAP in MAP(1); therefore, the dimension does not have to be given as an
 argument in calls to ARDBPA.)
 .IP "IGRP" 12
 (an input expression of type INTEGER) - 
-The group identifier of the group that you want to examine.
+The group identifier of the group that you want to examine.  If IGRP is less
+than or equal to zero, edges from all groups will be shown.
 .IP "LABEL" 12
 (an input constant or variable of type CHARACTER) -
 The label you want put on the plot.
@@ -73,6 +75,8 @@ may be omitted.
 .sp
 The left and right area identifiers for each edge segment are
 written in the appropriate positions relative to the edge segment.
+Also, if IGRP is less than or equal to zero, the group identifier
+for each edge segment is written on the segment itself.
 These identifiers are intentionally written using very small
 characters; the idea is that you can look at the whole plot to
 get some idea of possible problem regions; when such a region

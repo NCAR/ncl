@@ -1,4 +1,4 @@
-.TH Areas_params 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH Areas_params 3NCARG "April 1995" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -110,6 +110,28 @@ that machine.
 .sp
 A call to set the value of LC should precede any other call to an Areas
 routine and should only be done once.
+.IP "\&'RC' - Integer"
+Reconciling Conflicts in area-identifier information.  When the set of
+possible area identifiers for a given area is contradictory, some algorithm
+must be used to choose an identifier for the area.  The value of RC determines
+what algorithm will be used, as follows:
+.RS
+.IP 0 5
+The default scheme: If any of the possible area identifiers is negative,
+use -1 as the identifier for the area.  Otherwise, if none of the possible
+values is non-zero, use a zero identifier.  Otherwise, from among the
+non-zero possibilities, use the one most recently seen by AREAS.
+.IP 1 5
+The set of possible identifiers is examined:  Zeroes are ignored, negatives
+are treated as -1's, and the value that occurs most frequently in the
+resulting set is used as the identifier for the area.  This algorithm is
+recommended for most purposes (in particular, for use with CONPACK), but,
+for historical reasons, it is not the default.
+.IP 2 5
+Using RC = 2 is just like using RC = 1 except that zeroes are not ignored:
+the area identifier used is simply the one that occurs most frequently in
+the set of possibilities (all negatives being treated as -1's).
+.RE
 .SH SEE ALSO
 Online:
 argeti, argetr, arseti, arsetr
