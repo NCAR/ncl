@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.4 1994-06-23 00:39:56 fred Exp $
+C	$Id: ngseti.f,v 1.5 1994-07-13 17:21:15 fred Exp $
 C
       SUBROUTINE NGSETI (CNP,IVP)
 C
@@ -78,7 +78,7 @@ C
      +         CNP(1:2).EQ.'Cl') THEN
         IF (IVP.NE.0 .AND. IVP.NE.1) THEN
           CALL SETER ('NGSETI - value for CL must be zero or one',
-     +                 6, 1)
+     +                 4, 1)
           GO TO 120
         ENDIF
         IGKSCP = IVP
@@ -102,7 +102,7 @@ C
         IF (IWKID .LT. 0) THEN
           CTM =
      +      'NGSETI - you must set a value for WO before setting FU'
-          CALL SETER (CTM(1:60), 4, 1)
+          CALL SETER (CTM(1:60), 5, 1)
           GO TO 120
         ENDIF
         WRITE(IDR, 500) IWKID
@@ -138,11 +138,11 @@ C
         IF (IWKID .LT. 0) THEN
           CTM =
      +      'NGSETI - you must set a value for WO before setting FU'
-          CALL SETER (CTM(1:60), 5, 1)
+          CALL SETER (CTM(1:60), 7, 1)
           GO TO 120
         ENDIF
         IF (IVP .LE. 0) THEN
-          CALL SETER ('NGSETI - value for ST must be positive', 6, 1)
+          CALL SETER ('NGSETI - value for ST must be positive', 8, 1)
           GO TO 120
         ENDIF
         WRITE(IDR(1: 5), 500) IWKID
@@ -159,11 +159,11 @@ C
         IF (IWKID .LT. 0) THEN
           CTM =
      +      'NGSETI - you must set a value for WO before setting FU'
-          CALL SETER (CTM(1:60), 7, 1)
+          CALL SETER (CTM(1:60), 9, 1)
           GO TO 120
         ENDIF
         IF (IVP .LE. 0) THEN
-          CALL SETER ('NGSETI - value for PA must be positive', 8, 1)
+          CALL SETER ('NGSETI - value for PA must be positive', 10, 1)
           GO TO 120
         ENDIF
         WRITE(IDR(1: 5), 500) IWKID
@@ -179,12 +179,12 @@ C
         IF (IWKID .LT. 0) THEN
           CTM =
      +      'NGSETI - you must set a value for WO before setting PE'
-          CALL SETER (CTM(1:60), 7, 1)
+          CALL SETER (CTM(1:60), 11, 1)
           GO TO 120
         ENDIF
         IF (IVP.LT.0 .OR. IVP.GT.100) THEN
           CALL SETER ('NGSETI - value for PE must be between 0 and 100',       
-     +                    8, 1)
+     +                    12, 1)
           GO TO 120
         ENDIF
         WRITE(IDR(1: 5), 500) IWKID
@@ -200,7 +200,7 @@ C
         IF (IWKID .LT. 0) THEN
           CTM =
      +      'NGSETI - you must set a value for WO before setting FU'
-          CALL SETER (CTM(1:60), 7, 1)
+          CALL SETER (CTM(1:60), 13, 1)
           GO TO 120
         ENDIF
         WRITE(IDR(1: 5), 500) IWKID
@@ -217,7 +217,7 @@ C
         IF (IXPS .LT. 0) THEN
           CTM =
      +      'NGSETI - invalid workstation ID for PU parameter.'
-          CALL SETER (CTM(1:60), 9, 1)
+          CALL SETER (CTM(1:60), 14, 1)
           GO TO 120
         ENDIF
         WRITE(IDR, 500) IXPS
@@ -231,7 +231,7 @@ C
         IF (IWKID .LT. 0) THEN
           CTM =
      +      'NGSETI - you must set a value for WO before setting FU'
-          CALL SETER (CTM(1:60), 10, 1)
+          CALL SETER (CTM(1:60), 15, 1)
           GO TO 120
         ENDIF
         WRITE(IDR(1: 5), 500) IWKID
@@ -254,7 +254,7 @@ C
         IF (IWKID .LT. 0) THEN
           CTM =
      +      'NGSETI - you must set a value for WO before setting FU'
-          CALL SETER (CTM(1:60), 11, 1)
+          CALL SETER (CTM(1:60), 16, 1)
           GO TO 120
         ENDIF
         WRITE(IDR(1: 5), 500) IWKID
@@ -273,9 +273,12 @@ C  LX - Lower left X coordinate on PostScript output page.
 C
       ELSE IF (CNP(1:2).EQ.'LX' .OR. CNP(1:2).EQ.'lx' .OR.
      +         CNP(1:2).EQ.'Lx') THEN
+        IF (IVP.LT.-72000 .OR. IVP.GT.72000) THEN
+          CALL SETER('NGSETI - LX value out of range, no action taken',       
+     +                17, 1)
+          GO TO 120
+        ENDIF
         ILLX = IVP
-        IF (ILLX.LT.-72000 .OR. ILLX.GT.72000)
-     +     CALL SETER('NGSETI - LX value out of range', 12, 1)
         WRITE(IDR( 2:10), 530) ILLX
         WRITE(IDR(12:20), 530) ILLY
         WRITE(IDR(22:30), 530) IURX
@@ -288,9 +291,12 @@ C  LY - Lower left Y coordinate on PostScript output page.
 C
       ELSE IF (CNP(1:2).EQ.'LY' .OR. CNP(1:2).EQ.'ly' .OR.
      +         CNP(1:2).EQ.'Ly') THEN
+        IF (IVP.LT.-72000 .OR. IVP.GT.72000) THEN
+          CALL SETER('NGSETI - LY value out of range, no action taken',       
+     +                18, 1)
+          GO TO 120
+        ENDIF
         ILLY = IVP
-        IF (ILLY.LT.-72000 .OR. ILLY.GT.72000)
-     +     CALL SETER('NGSETI - LY value out of range', 13, 1)
         WRITE(IDR( 2:10), 530) ILLX
         WRITE(IDR(12:20), 530) ILLY
         WRITE(IDR(22:30), 530) IURX
@@ -302,9 +308,15 @@ C  UX - Upper right X coordinate on PostScript output page.
 C
       ELSE IF (CNP(1:2).EQ.'UX' .OR. CNP(1:2).EQ.'ux' .OR.
      +         CNP(1:2).EQ.'Ux') THEN
+        IF (IVP.LT.-72000 .OR. IVP.GT.72000) THEN
+          CALL SETER('NGSETI - UX value out of range, no action taken',       
+     +                19, 1)
+          GO TO 120
+        ELSE IF (IVP .LE. ILLX) THEN
+          CALL SETER('NGSETI - LX >= UX, no action taken', 20, 1)
+          GO TO 120
+        ENDIF
         IURX = IVP
-        IF (IURX.LT.-72000 .OR. IURX.GT.72000)
-     +     CALL SETER('NGSETI - UX value out of range', 14, 1)
         WRITE(IDR( 2:10), 530) ILLX
         WRITE(IDR(12:20), 530) ILLY
         WRITE(IDR(22:30), 530) IURX
@@ -316,9 +328,15 @@ C  UY - Upper right X coordinate on PostScript output page.
 C
       ELSE IF (CNP(1:2).EQ.'UY' .OR. CNP(1:2).EQ.'uy' .OR.
      +         CNP(1:2).EQ.'Uy') THEN
+        IF (IVP.LT.-72000 .OR. IVP.GT.72000) THEN
+          CALL SETER('NGSETI - UY value out of range, no action taken',       
+     +                21, 1)
+          GO TO 120
+        ELSE IF (IVP .LE. ILLY) THEN
+          CALL SETER('NGSETI - LY >= UY, no action taken', 22, 1)
+          GO TO 120
+        ENDIF
         IURY = IVP
-        IF (IURY.LT.-72000 .OR. IURY.GT.72000)
-     +     CALL SETER('NGSETI - UY value out of range', 15, 1)
         WRITE(IDR( 2:10), 530) ILLX
         WRITE(IDR(12:20), 530) ILLY
         WRITE(IDR(22:30), 530) IURX
@@ -337,7 +355,7 @@ C
       ELSE
         CTM(1:36) = 'NGSETI - Parameter name not known - '
         CTM(37:38) = CNP(1:2)
-        CALL SETER (CTM(1:38), 16, 1)
+        CALL SETER (CTM(1:38), 23, 1)
         GO TO 120
       ENDIF
 C
