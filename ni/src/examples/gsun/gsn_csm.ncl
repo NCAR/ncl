@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.2 1999-02-19 22:33:51 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.3 1999-03-11 23:00:13 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -620,24 +620,63 @@ min_lat, max_lat, center_lat, polar_nh, polar_sh, yoffset, main_offset
             max_lat    =   0
             center_lat = -90
             delete(res2@gsnPolarSH)
-        else
-          if(isatt(res2,"gsnPolarNH").and.res2@gsnPolarNH)
+        end if
+        if(isatt(res2,"gsnPolarNH").and.res2@gsnPolarNH)
               polar_nh   = True   ; Northern hemisphere
               min_lat    =   0 
               max_lat    =  90
               center_lat =  90
               delete(res2@gsnPolarNH)
-          end if
         end if
+    end if
+
+    if(polar_nh.and.polar_sh) 
+        print("Fatal: You have set both gsnPolarNH and gsnPolarSH to True.")
+        print("Only one of them can be True, so please correct this.")
+        exit        
+    end if
+
+    if(.not.polar_nh.and..not.polar_sh) 
+        print("Warning: Neither gsnPolarNH or gsnPolarSH have been set to True,")
+        print("so will default to plotting the northern hemisphere.")
+        polar_nh = True
+    add_subtitles(wks,map_object,left_string,center_string,right_string, \
+                  subres)
+    if(isatt(res2,"vpHeightF"))
+      height = res2@vpHeightF
+      delete(res2@vpHeightF)
+    else
+      height = 0.62
+    end if
+
+    if(isatt(res2,"vpWidthF"))
+      width = res2@vpWidthF
+      delete(res2@vpWidthF)
+    else
+      width = 0.62
+    end if
+
+    if(isatt(res2,"vpXF"))
+      xpos = res2@vpXF
+      delete(res2@vpXF)
+    else
+      xpos = 0.20
+    end if
+
+    if(isatt(res2,"vpYF"))
+      ypos = res2@vpYF
+      delete(res2@vpYF)
+    else
+      ypos = 0.80
     end if
 
 ;                   wks: workstation object                             ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
-      "vpHeightF"            : 0.62
-      "vpWidthF"             : 0.62
-      "vpXF"                 : 0.20
-      "vpYF"                 : 0.80
+; This function creates and draws a polar stereographic map plot to the ;
+; workstation "wks" (the variable returned from a previous call to      ;
+; "gsn_open_wks"). "resources" is an optional list of resources. The id ;
+; of the map plot is returned.                                          ;
 ;                                                                       ;
 ; This function behaves differently from gsn_map in that it will        ;
 ; create a special kind of plot if certain attributes are set.          ;
@@ -646,23 +685,37 @@ min_lat, max_lat, center_lat, polar_nh, polar_sh, yoffset, main_offset
 ;       "gsnCenterString," and/or "gsnRightString" are set, then they   ;
 ;       are used to title the top of the plot.                          ;
 ;       (in addition, the regular resource "tiMainString" can be set to ;
-      "mpOutlineOn"          : False
-      "mpGridAndLimbOn"      : True
-      "mpGridLineDashPattern": 2
-      "mpGridLonSpacingF"    : 30
-
 ;       create a regular title).                                        ;
 ;    3. If either of the resources "gsnPolarNH" or "gsnPolarSH" are set ;
 ;       to True then only the northern or southern hemisphere is        ;
 ;       displayed.                                                      ;
-; Check if we want northern or southern hemisphere.
+;    4. If gsnPolarLabelSpacing is set, then this spacing will be used  ;
+;       to label the longitude lines.                                   ;
+;    5. If gsnPolarLabelDistance is set, then this will be used to      ;
+    if(.not.isatt(res2,"mpMinLatF"))
+      res2@mpMinLatF    = min_lat
+    end if
+    if(.not.isatt(res2,"mpMaxLatF"))
+      res2@mpMaxLatF    = max_lat
+    end if
+    if(.not.isatt(res2,"mpCenterLatF"))
+      res2@mpCenterLatF = center_lat
+    end if
 
-    if(polar_nh.or.polar_sh)
-        setvalues map_object
-            "mpMinLatF"    : min_lat
-            "mpMaxLatF"    : max_lat
-            "mpCenterLatF" : center_lat
-        end setvalues
+    if(.not.isatt(res2,"mpOutlineOn"))
+      res2@mpOutlineOn          = False
+    end if
+    if(.not.isatt(res2,"mpGridAndLimbOn"))
+      res2@mpGridAndLimbOn      = True
+    end if
+    if(.not.isatt(res2,"mpGridLineDashPattern"))
+      res2@mpGridLineDashPattern= 2
+    end if
+    if(.not.isatt(res2,"mpGridLonSpacingF"))
+      res2@mpGridLonSpacingF    = 30.
+    end if
+    if(.not.isatt(res2,"mpPerimOn"))
+      res2@mpPerimOn = True
     end if
 
 side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
@@ -670,9 +723,7 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
 ; it is set back to True.
     main_zone     = 2         ; Zone for main title (may change later)
     if((isatt(res2,"mpFillOn").and..not.res2@mpFillOn))
-        setvalues map_object
-          "mpOutlineOn" : True
-        end setvalues
+      res2@mpOutlineOn = True
     end if
 
 ; This section tests for special resources: those that start with "gsn."
@@ -720,117 +771,10 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
         "tiMainFontHeightF"    : 2. * font_height     ; main title size
     width  = get_res_value(res2,"vpWidthF",0.62)
     xpos   = get_res_value(res2,"vpXF",0.2)
-; If doing a northern or southern hemisphere map, then create TextItem
-; objects to label the longitude lines.
-
-    if(polar_nh.or.polar_sh)
-
-; Define an array of strings to label the longitude values.
-      labels = (/"0","30E","60E","90E","120E","150E","180","150W",\
-                 "120W","90W","60W","30W"/)
-
-      num_labels = dimsizes(labels)
-      text_ids = new(num_labels,graphic)
-
-; Create an array of TextItem objects that we'll use to label the
-; lat/lon grid.  
-
-      do i=0,num_labels-1
-        text_ids(i) = create labels(i) textItemClass wks
-          "txString"      : labels(i)
-          "txFont"        : "helvetica-bold"
-          "txFontHeightF" : font_height
-        end create
-      end do
-
-; Create the lat/lon coordinates where you want labels to appear.
-; In this case, we want the labels to appear at a fixed latitude value
-; and at longitude values of 0, 30, 60, ..., 330.
-      if(min((/min_lat,max_lat/)).ge.0.or.polar_nh)
-          plat = fspan(min_lat,min_lat,12)
-      else
-          plat = fspan(max_lat,max_lat,12)
-      end if 
-      plon = fspan(0.,330.,12)
-
-; Increase the viewport of the map object; this is where the labels
-; will get drawn.
-
-      setvalues map_object
-          "vpXF"      : vpxf-0.02
-          "vpYF"      : vpyf+0.02
-          "vpWidthF"  : vpwidthf+0.04
-          "vpHeightF" : vpheightf+0.04
-      end setvalues
-
-; Create arrays to hold the NDC values that we're going to convert 
-; the lat/lon values to.
-
-      xndc = new(dimsizes(plon),float)
-      yndc = new(dimsizes(plat),float)
-
-; Convert lat/lon cooridinates to NDC coordinates since we are 
-; drawing the labels in NDC space and NOT in lat/lon space.
-
-      datatondc(map_object,plon,plat,xndc,yndc)
-
-; Set map back to original viewport.
-
-      setvalues map_object
-          "vpXF"            : vpxf
-          "vpYF"            : vpyf
-          "vpWidthF"        : vpwidthf
-          "vpHeightF"       : vpheightf
-          "mpGridAndLimbOn" : True
-      end setvalues
-
-; Retrieve graphic style object.
-
-      getvalues wks 
-          "wkDefGraphicStyleId":  gsid
-      end getvalues
 ;
-; Create a LogLinPlot that covers the entire NDC space
-; to use as a drawing canvas, and add the text items as annotations.
-;
-      canvas = create "canvas" logLinPlotClass wks
-        "vpXF"        : 0.0
-        "vpYF"        : 0.0
-        "vpWidthF"    : 1.0
-        "vpHeightF"   : 1.0
-        "pmAnnoViews" : text_ids
-      end create
-
-; Retrieve the ids of the AnnoManager objects created by the PlotManager
-; and then set their location in data coordinate space. The AnnoManager
-; objects are arranged in the same order as the TextItems in the
-; pmAnnoViews resource.
-
-      getvalues canvas
-        "pmAnnoManagers" : am_ids
-      end getvalues
-      num_am_ids = dimsizes(am_ids)
-      do i=0,num_am_ids-1
-        setvalues am_ids(i)
-          "amTrackData"    : True
-          "amDataXF"       : xndc(i)
-          "amDataYF"       : yndc(i)
-          "amResizeNotify" : True
-        end setvalues
-      end do
-      anno = NhlAddAnnotation(map_object,canvas)  ; Add canvas to map_object.
-      setvalues anno
-        "amJust"           : "centercenter"
-        "amZone"           : 0
-        "amResizeNotify"   : True
-        "amParallelPosF"   : -0.015
-        "amOrthogonalPosF" : -0.010
-      end setvalues
-    end if
-
 ; Set up three titles at top, if they exist.
 ; Leftmost title.
-
+;
     if(left_string)
       setvalues lft_str_object
         "txFont"        : "helvetica-bold"
@@ -882,6 +826,121 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
       end setvalues
     end if
 
+
+;
+; Check for other resources that we need to set at the time the
+; map is created.
+;
+    limit_mode   = get_res_value(res2,"mpLimitMode","LatLon")
+    ngrid = floattoint(360/res2@mpGridLonSpacingF)
+
+    if(min((/min_lat,max_lat/)).ge.0.or.polar_nh)
+        plat = fspan(min_lat,min_lat,ngrid)
+    else
+        plat = fspan(max_lat,max_lat,ngrid)
+    end if 
+    plon = fspan(0.,360.-res2@mpGridLonSpacingF,ngrid)
+      "vpYF"                 : ypos
+; Increase the viewport of the map object; this is where the labels
+; will get drawn.
+
+    setvalues map_object
+        "vpXF"      : vpxf-0.02
+        "vpYF"      : vpyf+0.02
+        "vpWidthF"  : vpwidthf+0.04
+        "vpHeightF" : vpheightf+0.04
+    end setvalues
+
+
+      "mpProjection"         : "Stereographic"
+      "mpEllipticalBoundary" : True
+    xndc = new(dimsizes(plon),float)
+    yndc = new(dimsizes(plat),float)
+
+      "mpFillOn"             : True
+      "mpFillColors"         : (/"background","transparent","LightGray",\
+                                 "transparent"/)
+    datatondc(map_object,plon,plat,xndc,yndc)
+      "pmTitleZone"          : main_zone
+    set_attr(res2,"mpMaxLatF",max_lat)
+    labels = new(dimsizes(plon),string)
+    do i = 0,dimsizes(plon)-1
+      if(plon(i).gt.0.and.plon(i).lt.180)
+        labels(i) = floattoint(plon(i)) + "E"
+      else
+        if(plon(i).gt.180.and.plon(i).lt.360)
+          labels(i) = floattoint(360-plon(i)) + "W"
+        else
+          labels(i) = floattoint(plon(i))
+        end if
+      end if
+    end do
+    num_labels = dimsizes(labels)
+    text_ids = new(num_labels,graphic)
+
+; to put titles.
+
+    getvalues map_object
+    do i=0,num_labels-1
+      text_ids(i) = create labels(i) textItemClass wks
+        "txString"      : labels(i)
+        "txFont"        : "helvetica-bold"
+        "txFontHeightF" : font_height
+      end create
+    end do
+
+; Set map back to original viewport.
+
+    setvalues map_object
+        "vpXF"            : vpxf
+        "vpYF"            : vpyf
+        "vpWidthF"        : vpwidthf
+        "vpHeightF"       : vpheightf
+    end setvalues
+                                  ; of the height of the viewport.
+; Retrieve graphic style object.
+                                          2.*font_height)
+    getvalues wks 
+        "wkDefGraphicStyleId":  gsid
+    end getvalues
+    main_font = get_res_value_keep(res2,"tiMainFont","helvetica-bold")
+; Create a LogLinPlot that covers the entire NDC space
+; to use as a drawing canvas, and add the text items as annotations.
+      end do
+    canvas = create "canvas" logLinPlotClass wks
+      "vpXF"        : 0.0
+      "vpYF"        : 0.0
+      "vpWidthF"    : 1.0
+      "vpHeightF"   : 1.0
+      "pmAnnoViews" : text_ids
+    end create
+
+; Retrieve the ids of the AnnoManager objects created by the PlotManager
+; and then set their location in data coordinate space. The AnnoManager
+; objects are arranged in the same order as the TextItems in the
+; pmAnnoViews resource.
+
+    getvalues canvas
+      "pmAnnoManagers" : am_ids
+    end getvalues
+    num_am_ids = dimsizes(am_ids)
+    do i=0,num_am_ids-1
+      setvalues am_ids(i)
+        "amTrackData"    : True
+        "amDataXF"       : xndc(i)
+        "amDataYF"       : yndc(i)
+        "amResizeNotify" : True
+      end setvalues
+    end do
+    anno = NhlAddAnnotation(map_object,canvas)  ; Add canvas to map_object.
+    setvalues anno
+      "amJust"           : "centercenter"
+      "amZone"           : 0
+      "amResizeNotify"   : True
+      "amParallelPosF"   : -0.015
+      "amOrthogonalPosF" : -0.010
+    end setvalues
+; for justification, side, orthogonal and parallel positions.
     if(calldraw)
         draw(map_object)     ; Draw everything.
     end if
@@ -970,6 +1029,8 @@ infolabel_on, infolabel_zone
                   subres)
     mapres        = True      ; Will hold map resources
     cnres         = True      ; Will hold contour resources
+    polar_nh      = False     ; Northern hemisphere
+    polar_sh      = False     ; Southern hemisphere
 ; Draw all this stuff: map plot, subtitles, and tick marks.
 ; The default is to add a cyclic point.
     if((res2).and.isatt(res2,"gsnAddCyclic"))
@@ -1038,14 +1099,28 @@ end
 
         if(isatt(res2,"gsnPolarSH").and.res2@gsnPolarSH)
             mapres@gsnPolarSH = True
+            polar_sh = True
             delete(res2@gsnPolarSH)
         end if
         if(isatt(res2,"gsnPolarNH").and.res2@gsnPolarNH)
             mapres@gsnPolarNH = True
+            polar_nh = True
             delete(res2@gsnPolarNH)
         end if
     end if
 
+    if(polar_nh.and.polar_sh) 
+        print("Fatal: You have set both gsnPolarNH and gsnPolarSH to True.")
+        print("Only one of them can be True, so please correct this.")
+        exit        
+    end if
+
+    if(.not.polar_nh.and..not.polar_sh) 
+        print("Warning: Neither gsnPolarNH or gsnPolarSH have been set to True,")
+        print("so will default to plotting the northern hemisphere.")
+        mapres@gsnPolarNH = True
+    end if
+    return(gsn_csm_map_polar(wks,res2))
 ; list of resources. The id of the map plot is returned.                ;
 ;                                                                       ;
     if(iscoord(datanew,"lat").and.iscoord(datanew,"lon"))
@@ -1068,25 +1143,6 @@ end
     cnres@cnLineLabelFont            = "helvetica"
     cnres@cnInfoLabelOrthogonalPosF  = 0.06
     cnres@cnInfoLabelZone            = 2
-
-; Set some map plot resources.
-
-    mapres@vpHeightF            = 0.62
-    mapres@vpWidthF             = 0.62
-    mapres@vpXF                 = 0.20
-    mapres@vpYF                 = 0.80
-
-    mapres@mpProjection         = "Stereographic"
-    mapres@mpEllipticalBoundary = True
-    mapres@mpLimitMode          = "LatLon"
-
-    mapres@mpFillOn             = True
-    mapres@mpFillColors         = (/"background","transparent","LightGray",\
-                                    "transparent"/)
-    mapres@mpOutlineOn          = False
-    mapres@mpGridAndLimbOn      = True
-    mapres@mpGridLineDashPattern= 2
-    mapres@mpGridLonSpacingF    = 30
 ;       are used to title the top of the plot.                          ;
 ;       (in addition, the regular resource "tiMainString" can be set to ;
 ;       create a regular title).                                        ;
