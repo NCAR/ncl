@@ -1,190 +1,97 @@
 C
-C	$Id: wmex03.f,v 1.2 1994-10-14 01:28:24 fred Exp $
+C       $Id: wmex03.f,v 1.3 1994-12-15 23:49:32 fred Exp $
 C
-      PROGRAM WMEX03
+      PROGRAM WMEX08
 C
-C  Example of wind barbs at various angles and a chart of wind speeds.
+C  Examples of parameter control of fronts.
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
-C  Example 01 - chart of wind barbs for various speeds.
+      PARAMETER (NS=2)
+      DIMENSION XS(NS),YS(NS)
+      DATA XS/ 0.10, 0.90/ 
 C
-      PARAMETER (T1=0.90, T2=0.84)
+C  Open GKS, open and activate a workstation.
 C
       CALL GOPKS (IERRF, ISZDM)
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
       CALL GACWK (IWKID)
 C
-      CALL GSCR(IWKID,0,1.,1.,1.)
-      CALL GSCR(IWKID,1,0.,0.,0.)
-      CALL GSCR(IWKID,2,1.,0.,0.)
-      CALL GSCR(IWKID,3,0.,0.,1.)
+C  Define a color table.
 C
-      CALL PERIM(1,1,1,1)
-      CALL LINE(0.000, T1+0.005, 1.000, T1+0.005)
-      CALL LINE(0.000, T1-0.005, 1.000, T1-0.005)
-      CALL LINE(0.000, T2, 1.000, T2)
-      CALL LINE(0.495, 0.000, 0.495, T1-0.005)
-      CALL LINE(0.505, 0.000, 0.505, T1-0.005)
+      CALL GSCR(IWKID, 0, 1.0, 1.0, 1.0)
+      CALL GSCR(IWKID, 1, 0.0, 0.0, 0.0)
+      CALL GSCR(IWKID, 2, 1.0, 0.0, 0.0)
+      CALL GSCR(IWKID, 3, 0.0, 0.0, 1.0)
+      CALL GSCR(IWKID, 4, 0.4, 0.0, 0.4)
 C
-      CALL PLCHHQ(0.5,0.955,':F25:Wind Speeds',.03,0.,0.)
-      CALL PCSETI('FN',21)
-      XCL = 0.12
-      XCC = 0.26
-      XCR = 0.40
-      DO 10 I=1,2
-        XL = XCL+(I-1)*0.5
-        XC = XCC+(I-1)*0.5
-        XR = XCR+(I-1)*0.5
-        CALL PLCHHQ(XL,0.87,'Symbol',0.022,0.,0.) 
-        CALL PLCHHQ(XC,0.87,'Knots',0.022,0.,0.) 
-        CALL PLCHHQ(XR,0.87,'Miles/hr.',0.022,0.,0.) 
-   10 CONTINUE
-      FINC = T2/10.
-      SIZE = 0.022
-      XCL = 0.16
-      CALL GSLWSC(3.)
-      CALL NGSETI('WO',1)
-      CALL NGSETI('CA',0)
+C  Plot title.
 C
-      P1 = T2-0.75*FINC
-      CALL WMSETR('WBS',0.1)
-      CALL WMSETI('COL',1)
-      CALL WMGETR('WBS',WSLEN)
-      CALL WMBARB(XCL-0.5*WSLEN,P1-0.5*SIZE,0.,0.)
-      CALL PLCHHQ(XCC,P1,'Calm',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'Calm',SIZE,0.,0.)
+      CALL PLCHHQ(0.50,0.94,
+     + ':F26:Parameter control of front attributes', 0.03,0.,0.)
 C
-      P1 = P1-FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-1.,0.)
-      CALL PLCHHQ(XCC,P1,'1-2',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'1-2',SIZE,0.,0.)
+C  Various fronts with different attributes.
 C
-      P1 = P1-FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-5.,0.)
-      CALL PLCHHQ(XCC,P1,'3-7',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'3-8',SIZE,0.,0.)
+      CALL PCSETI('CC',4)
+      FSIZE = .021
+      YS(1) = .76
+      YS(2) = .76
+      CALL PCSETC('FC','%')
+      CALL PLCHHQ(XS(1),YS(1)+.06,'%F22%Starting with FRO=''STA'', WFC=2
+     + (red), CFC=3 (blue):',FSIZE,0.,-1.)
+      CALL WMSETC('FRO','STA')
+      CALL WMSETI('WFC',2)
+      CALL WMSETI('CFC',3)
+      CALL WMDRFT(NS,XS,YS)
 C
-      P1 = P1-FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-10.,0.)
-      CALL PLCHHQ(XCC,P1,'8-12',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'9-14',SIZE,0.,0.)
+      YS(1) = .60
+      YS(2) = .60
+      CALL PLCHHQ(XS(1),YS(1)+.06,'%F22%then setting BEG=0., END=.05, BE
+     +T=.03 gives:',FSIZE,0.,-1.)
+      CALL WMSETR('BEG',0.00)
+      CALL WMSETR('END',0.05)
+      CALL WMSETR('BET',0.03)
+      CALL WMDRFT(NS,XS,YS)
 C
-      P1 = P1-FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-15.,0.)
-      CALL PLCHHQ(XCC,P1,'13-17',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'15-20',SIZE,0.,0.)
+      YS(1) = .44
+      YS(2) = .44
+      CALL PLCHHQ(XS(1),YS(1)+.06,'%F22%then setting NMS=5 and STY=-1,2,       
+     +1,-2,2 gives:',FSIZE,0.,-1.)
+      CALL WMSETI('NMS',5)
+      CALL WMSETI('PAI',1)
+      CALL WMSETI('STY',-1)
+      CALL WMSETI('PAI',2)
+      CALL WMSETI('STY',2)
+      CALL WMSETI('PAI',3)
+      CALL WMSETI('STY',1)
+      CALL WMSETI('PAI',4)
+      CALL WMSETI('STY',-2)
+      CALL WMSETI('PAI',5)
+      CALL WMSETI('STY',2)
+      CALL WMDRFT(NS,XS,YS)
 C
-      P1 = P1-FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-20.,0.)
-      CALL PLCHHQ(XCC,P1,'18-22',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'21-25',SIZE,0.,0.)
+      YS(1) = .27
+      YS(2) = .27
+      CALL PLCHHQ(XS(1),YS(1)+.07,'%F22%then setting SWI=.05 and LIN=12.
+     + gives:',FSIZE,0.,-1.)
+      CALL WMSETR('SWI',0.05)
+      CALL WMSETR('LIN',12.)
+      CALL WMDRFT(NS,XS,YS)
 C
-      P1 = P1-FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-25.,0.)
-      CALL PLCHHQ(XCC,P1,'23-27',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'26-31',SIZE,0.,0.)
-C
-      P1 = P1-FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-30.,0.)
-      CALL PLCHHQ(XCC,P1,'28-32',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'32-37',SIZE,0.,0.)
-C
-      P1 = P1-FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-35.,0.)
-      CALL PLCHHQ(XCC,P1,'33-37',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'38-43',SIZE,0.,0.)
-C
-      XCL = XCL+0.5
-      XCC = XCC+0.5
-      XCR = XCR+0.5
-      P1 = T2-0.75*FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-40.,0.)
-      CALL PLCHHQ(XCC,P1,'38-42',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'44-49',SIZE,0.,0.)
-C
-      P1 = P1-FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-45.,0.)
-      CALL PLCHHQ(XCC,P1,'43-47',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'50-54',SIZE,0.,0.)
-C
-      P1 = P1-FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-50.,0.)
-      CALL PLCHHQ(XCC,P1,'48-52',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'55-60',SIZE,0.,0.)
-C
-      P1 = P1-FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-55.,0.)
-      CALL PLCHHQ(XCC,P1,'53-57',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'61-66',SIZE,0.,0.)
-C
-      P1 = P1-FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-60.,0.)
-      CALL PLCHHQ(XCC,P1,'58-62',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'67-71',SIZE,0.,0.)
-C
-      P1 = P1-FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-65.,0.)
-      CALL PLCHHQ(XCC,P1,'63-67',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'72-77',SIZE,0.,0.)
-C
-      P1 = P1-FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-70.,0.)
-      CALL PLCHHQ(XCC,P1,'68-72',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'78-83',SIZE,0.,0.)
-C
-      P1 = P1-FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-75.,0.)
-      CALL PLCHHQ(XCC,P1,'73-77',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'84-89',SIZE,0.,0.)
-C
-      P1 = P1-FINC
-      CALL WMBARB(XCL,P1-0.5*SIZE,-105.,0.)
-      CALL PLCHHQ(XCC,P1,'103-107',SIZE,0.,0.)
-      CALL PLCHHQ(XCR,P1,'119-123',SIZE,0.,0.)
-C
+      YS(1) = .10
+      YS(2) = .10
+      CALL PLCHHQ(XS(1),YS(1)+.07,'%F22%then setting REV=1 gives:',
+     +            .022,0.,-1.)
+      CALL WMSETI('REV',1)
+      CALL WMDRFT(NS,XS,YS)
       CALL FRAME
 C
-C  Example 02 - wind barbs at various angles.
-C
-C  Draw direction arrows and lebels.
-C
-      CALL WMSETI('COL',3)
-      CALL WMSETR('ARL',7.8)
-      CALL WMSETR('ARD',0.)
-      CALL WMSETR('ARS',.1)
-      CALL WMLABS(0.9,0.4,'Arrow')
-      CALL WMSETR('ARD',90.)
-      CALL WMLABS(0.5,0.8,'Arrow')
-      CALL PCSETI('CC',3)
-      CALL PLCHHQ(0.5,0.83,':F22:N',.03,0.,0.)
-      CALL PLCHHQ(0.93,0.4,':F22:E',.03,0.,0.)
-C
-C  Draw wind barbs.
-C
-      CALL WMSETI('COL',2)
-      CALL WMSETR('WBS',0.3)
-      CALL GSLWSC(3.)
-      SCL = 65.
-      DO 20 I=1,13
-        ANG = 15.+(I-1)*30.*3.14159/180.
-        U = COS(ANG)
-        V = SIN(ANG)
-        CALL WMBARB(0.5,0.4,SCL*U,SCL*V)
-   20 CONTINUE
-C
-C  Main title.
-C
-      CALL PCSETI('CC',3)
-      CALL PLCHHQ(0.5,0.93,':F25:Wind barbs',.04,0.,0.)
-      CALL FRAME
-C
-      CALL GDAWK (IWKID)
-      CALL GCLWK (IWKID)
+      CALL GDAWK(IWKID)
+      CALL GCLWK(IWKID)
       CALL GCLKS
-C
       STOP
+C
       END
