@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.2 1997-06-30 21:53:56 kennison Exp $
+ *  $Id: ncargC.h,v 1.3 1997-07-02 22:27:55 kennison Exp $
  */
 
 #ifndef _ncargC_h
@@ -3203,7 +3203,7 @@ extern void c_tddtri(
     float *rtri,
     int    mtri,
     int   *ntri,
-    int   *itri
+    int   *itwk
 #endif
 );
 
@@ -3252,30 +3252,30 @@ extern void c_tdgrid(
 extern void c_tdgtrs(
 #ifdef NeedFuncProto
     int    irst,
-    int   *ia01,
-    int   *ia02,
-    int   *ia03,
-    int   *ia04,
-    int   *ia05,
-    int   *ia06,
-    int   *ia07,
-    float *ra08,
-    float *ra09,
-    float *ra10
+    int   *ifc1,
+    int   *ifc2,
+    int   *ifc3,
+    int   *ifc4,
+    int   *ilc1,
+    int   *ilc2,
+    int   *iltd,
+    float *ustp,
+    float *vstp,
+    float *wstp
 #endif
 );
 
 extern void c_tdinit(
 #ifdef NeedFuncProto
-    float xmid,
-    float ymid,
-    float zmid,
-    float xori,
-    float yori,
-    float zori,
-    float xthi,
-    float ythi,
-    float zthi,
+    float umid,
+    float vmid,
+    float wmid,
+    float uori,
+    float vori,
+    float wori,
+    float uthi,
+    float vthi,
+    float wthi,
     float otep
 #endif
 );
@@ -3383,15 +3383,15 @@ extern void c_tdotri(
 
 extern void c_tdpara(
 #ifdef NeedFuncProto
-    float arg1,
-    float arg2,
-    float arg3,
-    float arg4,
-    float arg5,
-    float arg6,
-    float arg7,
-    float arg8,
-    float arg9
+    float ua00,
+    float va00,
+    float wa00,
+    float uv10,
+    float vv10,
+    float wv10,
+    float uv01,
+    float vv01,
+    float wv01
 #endif
 );
 
@@ -3426,9 +3426,9 @@ extern void c_tdprpi(
 
 extern void c_tdprpt(
 #ifdef NeedFuncProto
-    float  xi3d,
-    float  yi3d,
-    float  zi3d,
+    float  ui3d,
+    float  vi3d,
+    float  wi3d,
     float *xi2d,
     float *yi2d
 #endif
@@ -3475,16 +3475,16 @@ extern void c_tdstri(
 extern void c_tdstrs(
 #ifdef NeedFuncProto
     int   irst,
-    int   ia01,
-    int   ia02,
-    int   ia03,
-    int   ia04,
-    int   ia05,
-    int   ia06,
-    int   ia07,
-    float ra08,
-    float ra09,
-    float ra10
+    int   ifc1,
+    int   ifc2,
+    int   ifc3,
+    int   ifc4,
+    int   ilc1,
+    int   ilc2,
+    int   iltd,
+    float ustp,
+    float vstp,
+    float wstp
 #endif
 );
 
