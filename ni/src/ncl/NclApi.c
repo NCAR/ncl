@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.33 1996-08-30 16:04:03 ethan Exp $
+ *      $Id: NclApi.c,v 1.34 1996-09-05 20:29:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -96,13 +96,11 @@ void NclResetServer
 
 int NclInitServer
 #if	NhlNeedProto
-(NhlErrorTypes error_level)
+(void)
 #else
-(error_level)
-	NhlErrorTypes error_level;
+()
 #endif
 {
-	int appid;
 #ifdef YYDEBUG
 #if     defined(SunOS) && (MAJOR == 4)
         extern int ncldebug;
@@ -119,14 +117,11 @@ int NclInitServer
 
 	NhlOpen();
 
-
-	
 	_NclInitMachine();
 	_NclInitSymbol();
 	_NclInitTypeClasses();
 	_NclInitDataClasses();
 	_NhlRegSymConv(NULL,NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
-
 
 	the_input_buffer = "begin\nend\n";
 	the_input_buffer_ptr = the_input_buffer;
@@ -139,7 +134,6 @@ int NclInitServer
 	the_input_buffer = NULL;
 
 	return(1);	
-	
 }
 
 void NclCloseServer

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.15 1996-09-04 22:00:25 ethan Exp $
+ *      $Id: NclApi.h,v 1.16 1996-09-05 20:29:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,7 +39,7 @@ void
 
 extern int NclInitServer(
 #if	NhlNeedProto
-NhlErrorTypes /*error_level*/
+void
 #endif
 );
 
