@@ -12,11 +12,13 @@ mnemonic name of the parameter, the phrase for which the
 mnemonic stands, the intrinsic type of the parameter, and
 an indication of whether or not it is an array.
 .IP "ACM - Arrow Color Mode - Integer"
-ACM controls how color is applied to filled vector arrows. It does not
-apply to line-drawn vector arrows (AST set to 0). Its behavior also
-depends on the setting of the parameter CTV. Assuming that CTV is set
-to a non-zero value, implying that multi-colored vectors are desired,
-ACM has the following settings:
+
+ACM controls how color is applied to filled vector arrows. It applies
+only when AST has the value 1. Its
+behavior also depends on the setting of the parameter CTV. Assuming
+that CTV is set to a non-zero value, implying that multi-colored
+vectors are desired, ACM has the following settings:
+
 .sp
 .TS
 tab(/);
@@ -78,38 +80,43 @@ same size if you set AMN and AMX to the same value. If you set both AMN
 and AMX to 0.0 the arrowheads will not be drawn at all. The
 default value is 0.05.
 .IP "AST - Arrow Style - Integer"
-When AST is set to 1, the vectors are plotted using variable width
-filled arrows. Otherwise, the vector arrows are drawn using lines
-only.  Filled arrows may also have an outline drawn around their
-perimeter. The outline may be drawn either underneath or on top of the
-filled portion of the arrow.  There is a different set of parameters
-for controlling the appearance of filled arrows from those used to
-control line-drawn arrows. However, certain parameters apply to both
-arrow types. Here is a table of parameters whose behavior is
-affected by the setting of AST:
+
+If AST is set to 0, the vector arrows are drawn using lines only. When
+AST is set to 1, the vectors are plotted using variable width filled
+arrows, with an optional outline. If AST is set to 2, wind barb glyphs
+are used to represent the vectors.There are parameters for controlling
+the appearance of each style. These have an effect only for one value
+of AST.  However, certain parameters apply to all arrow styles. Here
+is a table of parameters that affect the appearance of vectors and how
+their behavior is affected by the setting of AST:
 .sp
 .TS
 tab(/);
 l l l l.
-Parameter/Line-Drawn Arrows/Filled Arrows
----------/-----------------/-------------
-ACM//x
-AFO//x
-AIR//x
-AMN/x//
-AMX/x//
-AWF//x
-AWR//x
-AXF//x
-AXR//x
-AYF//x
-AYR//x
-CLR/x/x
-CTV/x/x
-LWD/x/x
-NLV/x/x
-PAI/x/x
-TVL/x/x
+Parameter/Line-Drawn Arrows/Filled Arrows/Wind Barbs/
+---------/-----------------/-------------/----------
+ACM//x//
+AFO//x//
+AIR//x//
+AMN/x///
+AMX/x///
+AWF//x//
+AWR//x//
+AXF//x//
+AXR//x//
+AYF//x//
+AYR//x//
+CLR/x/x/x/
+CTV/x/x/x/
+LWD/x/x/x/
+NLV/x/x/x/
+PAI/x/x/x/
+TVL/x/x/x/
+WBA///x/
+WBC///x/
+WBD///x/
+WBS///x/
+WBT///x/
 .TE
 .sp
 When filled arrows are used, colors associated with the threshold
@@ -365,20 +372,23 @@ This parameter specifies the size of the characters used
 for the vector magnitude labels as a fraction of the
 viewport width. The default value is 0.007.
 .IP "LWD - Vector Linewidth - Real"
-LWD controls the linewidth used to draw the lines that form the vector
-arrows. When the arrows are filled (AST is set to 1) LWD controls the
-width of the arrow's outline. If the fill is drawn over the outline
-(AFO set to 1) then LWD must be set to a value greater than 1.0 in
-order for the outline to appear properly. When AST is set to 0,
-specifying line-drawn vector arrows, the linewidth applies equally to
-the body of the vector and the arrowhead. Overly thick lines may cause
-the arrow heads to appear smudged. This was part of the motivation for
-developing the option of filled vector arrows. Note that since
-linewidth in NCAR Graphics is always calculated relative to a unit
-linewidth that is dependent on the output device, you may need to
-adjust the linewidth value depending on the intended output device to
-obtain a pleasing plot. The default is 1.0, specifying a
-device-dependent minimum linewidth.
+
+LWD controls the linewidth used to draw the lines that form vector
+arrows and wind barbs. When the arrows are filled (AST is set to 1)
+LWD controls the width of the arrow's outline. If the fill is drawn
+over the outline (AFO set to 1) then LWD must be set to a value
+greater than 1.0 in order for the outline to appear properly. When AST
+has the value 2, LWD controls the width of the line elements of wind
+barbs. When AST is set to 0, specifying line-drawn vector arrows, the
+linewidth applies equally to the body of the vector and the
+arrowhead. Overly thick lines may cause the arrow heads to appear
+smudged. This was part of the motivation for developing the option of
+filled vector arrows. Note that since linewidth in NCAR Graphics is
+always calculated relative to a unit linewidth that is dependent on
+the output device, you may need to adjust the linewidth value
+depending on the intended output device to obtain a pleasing plot. The
+default is 1.0, specifying a device-dependent minimum linewidth.
+
 .IP "MAP - Map Transformation Code - Integer"
 MAP defines the transformation between the data and user
 coordinate space. 
@@ -1268,6 +1278,60 @@ valid data for this grid location. When SVF is set to 2 or 3, Vectors
 will not draw a vector whose V component has the special value. You
 must initialize Vectors with a call to VVINIT after modifying this
 parameter. It has a default value of 1.0 E12.
+
+.IP "WBA - Wind Barb Angle - Real"
+
+WBA sets the angle of the wind barb ticks in degrees as
+measured clockwise from the vector direction. It also sets the angle
+between the hypotenuse of the triangle defining the pennant polygon
+and the vector direction. You can render southern hemisphere wind
+barbs, which by convention, have their ticks and pennants on the other
+side of the shaft, by setting WBA to a negative value. WBA
+has an effect only when AST has the value 2.
+
+.IP "WBC - Wind Barb Calm Circle Size - Real"
+
+WBC sets the diameter of the circle used to represent small vector
+magnitudes (less than 2.5) as a fraction of the overall wind barb
+length (the value of the VRL
+parameter). WBC has an effect only when 
+AST has the value 2.
+
+.IP "WBD - Wind Barb Distance Between Ticks - Real"
+
+WBD sets the distance between adjacent wind barbs ticks along the wind
+barb shaft as a fraction of the overall wind barb length (the value of
+the VRL parameter). Half this distance is
+used as the spacing between adjacent wind barb pennants. Note that
+there is nothing to to prevent ticks and/or pennants from continuing
+off the end of the shaft if a vector of high enough magnitude is
+encountered. You are responsible for adjusting the parameters
+appropriately for the range of magnitudes you need to handle. WBD has
+an effect only when AST has the value 2.
+
+.IP "WBS - Wind Barb Scale Factor - Real"
+
+WBS specifies a factor by which magnitudes passed to the wind barb
+drawing routines are to be scaled. It can be used to convert vector
+data given in other units into the conventional units used with wind
+barbs, which is knots. For instance, if the data are in meters per second,
+you could set WBS to 1.8974 to create a plot with conventional knot-based
+wind barbs. Note that setting WBS does not currently have any effect on
+the magnitude values written into the maximum or minimum vector legends.
+WBS has an effect only when AST has the value 2.
+
+.IP "WBT - Wind Barb Tick Size - Real"
+
+WBT the length of the wind barb ticks as a fraction of the overall
+length of a wind barb (the value of the VRL parameter). The wind barb
+length is defined as the length of the wind barb shaft plus the
+projection of a full wind barb tick along the axis of the
+shaft. Therefore, increasing the value of WBT, for a given value of VRL
+has the effect of reducing the length of the shaft itself
+somewhat. You may need to increase VRL itself to compensate. WBT
+also sets the hypotenuse length of the triangle defining the
+pennant polygon. WBT has an effect only when AST has the value 2.
+
 .IP "WDB - Window Bottom - Real"
 When VVINIT does the call to SET, the parameter WDB is used to
 determine argument number 7, the user Y coordinate at the bottom of
