@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.24 1994-03-09 22:46:46 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.25 1994-04-11 15:20:58 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -947,7 +947,9 @@ void	CGM_printDirectory(dir)
 	for (k=0; k < dir->num_meta; k++ ) {
 		(void) fprintf(stdout, 
 			"\nmetafile %d starts record %d descriptor : [%s]\n\n",
-			k, dir->meta[k], dir->MFDescription[k]);
+			k, dir->meta[k], 
+			dir->MFDescription[k] ? dir->MFDescription[k] : "null"
+		);
 
 
 		/*
