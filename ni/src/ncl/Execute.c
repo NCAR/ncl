@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.112 2000-02-11 23:49:06 ethan Exp $
+ *      $Id: Execute.c,v 1.113 2000-02-15 16:46:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -5291,7 +5291,7 @@ void CallASSIGN_VAR_VAR_OP(void) {
 						_NclCleanUpStack(lhs_nsubs);
 					} else if(rhs_nsubs == 0) {
 						lhs_var->kind = NclStk_VAR;
-						lhs_var->u.data_var = _NclCopyVar(rhs_var->u.data_var,lhs_sym->name,NULL);
+						lhs_var->u.data_var = _NclCopyVar(rhs_var->u.data_var,lhs_sym,NULL);
 						_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT);	
 						lhs_var->u.data_var->var.thesym = lhs_sym;
 						(void)_NclChangeSymbolType(lhs_sym,VAR);

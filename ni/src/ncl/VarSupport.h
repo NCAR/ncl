@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.h,v 1.10 2000-01-28 20:46:16 ethan Exp $
+ *      $Id: VarSupport.h,v 1.11 2000-02-15 16:46:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -209,7 +209,7 @@ NclSelectionRecord* /* rhs_sel_ptr*/
 extern struct _NclVarRec * _NclCopyVar(
 #if NhlNeedProto
 struct _NclVarRec * /*var */,
-char * /*new_name*/,
+struct _NclSymbol */*new_name*/,
 struct _NclVarRec * /*storage*/
 #endif
 );
