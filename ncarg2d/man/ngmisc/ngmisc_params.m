@@ -153,11 +153,19 @@ must be named before the ncgm workstation is opened and subsequent
 pictures must be named immediately after creating the previous picture.  
 Not all pictures need be named and any picture that is not assigned a
 specific name is assigned blanks in the PICTURE NAME field of the ncgm.
-.IP "\'SE\'   -   Integer   -   1"
-Specifies whether the segments created in WISS in NCAR GKS will be
-erased when WISS is closed.  A value of "1" will cause the segments
-to be erased and a value of "0" will cause them to be saved for use
-after job termination.
+.IP "\'SE\'   -   Character   -   'GSEG'"
+Specifies a root name for segments created by NCAR GKS.  In the 
+default case, the segment name used will be constructed from GSEG by
+appending an integer constructed from the user id, the process id, and
+the segment number.  By default, the segments are stored in the directory
+specified by the environment variable TMPDIR (usually set internally
+at install time to /tmp).  If SE is changed away from the default setting,
+then the segment name will be cunstructed using the value of SE as a
+root and appending the segment number.
+.IP "\'SS\'   -   Integer   -   1"
+Specifies whether segments should be deleted when WISS is closed.
+The default is to delete segments.  Setting SS to
+a non-default value will cause segments to be saved.
 .IP "\'ST\'   -   Integer   -   200"
 Specifies the maximum size of the operand stack used in
 PostScript output from NCAR GKS.  The primary effect of setting
