@@ -1,5 +1,5 @@
 C
-C       $Id: stdraw.f,v 1.13 1996-03-18 09:14:59 dbrown Exp $
+C       $Id: stdraw.f,v 1.14 1997-01-14 20:45:18 dbrown Exp $
 C
       SUBROUTINE STDRAW  (U,V,UX,VY,IAM,STUMSL)
 C
@@ -1113,6 +1113,15 @@ C ---------------------------------------------------------------------
 C
       IST = 0
 C
+      IF (I.EQ.IXDM .OR. J.EQ.IYDN) THEN
+         IF (U(I,J).EQ.RUSV) THEN
+            IST = -1
+         ELSE IF (V(I,J).EQ.RVSV) THEN
+            IST = -1
+         END IF
+         RETURN
+      END IF
+
       IF (U(I,J).EQ.RUSV) THEN
          IST = -1
       ELSE IF (U(I,J+1).EQ.RUSV) THEN
