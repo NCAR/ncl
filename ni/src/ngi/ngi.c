@@ -1,5 +1,5 @@
 /*
- *      $Id: ngi.c,v 1.5 1997-06-11 20:47:10 boote Exp $
+ *      $Id: ngi.c,v 1.6 1997-07-02 15:27:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -93,10 +93,8 @@ main
 	 * sure one is created immediately, so it records all ncl
 	 * commands that happen.
 	 */
-/*
- * TODO: Ncleditor doesn't install callbacks until it is pop'ed up...
- */
-	(void)NgAppGetNclEditor(nxapp,False);
+	NgGOCreateWindow(NgAppGetNclEditor(nxapp,False));
+
 
 	/*
 	 * Now create the main window object.

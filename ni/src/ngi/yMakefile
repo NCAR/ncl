@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.6 1997-06-11 20:47:11 boote Exp $
+#      $Id: yMakefile,v 1.7 1997-07-02 15:27:44 boote Exp $
 #
 #########################################################################
 #									#
@@ -36,7 +36,7 @@ PROG_LIBS	=	-lXmL $(NGOLIB) -lXcb $(DBLIB) $(NCLAPILIB) $(HLULIBS) \
 DEPLIBS		=	$(DEPNGOLIB) $(DEPNCLAPILIB) $(DEPHLULIBS) \
 			$(DEPNCARGLIBS)
 EXTRA_LIBS	=	$(NCDFLIBS) $(HDFLIB)
-SYS_LIBS	=	$(XMOTIFCLIENTLIBS) $(DEBUGLIBS) $(CTOFLIBS) -lm
+SYS_LIBS	=	$(XMOTIFCLIENTLIBS) $(DEBUGLIBS) $(CTOFLIBS) -lm -ldl
 
 
 GENHDRS		= ngi.res.h

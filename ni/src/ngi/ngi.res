@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.9 1997-06-20 18:23:20 dbrown Exp $
+!      $Id: ngi.res,v 1.10 1997-07-02 15:27:44 boote Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -49,13 +49,14 @@ NgNGO*addfileMGR*directory:	.
 !									!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-! Change the following line to "XcbVisual" to get the best visual
-! for the display (in this programmers humble opinion...).  However,
-! this may cause some colormap flashing on some displays.
-!NgNGO*visual:	XcbVisual
-ngi.NgNGO*visual:	PseudoColor
-NgNGO*visual:	PseudoColor
-NgNGO*depth:	8
+! It is not recommended to set the "visual" resource, however, if you
+! feel you must, then remember to set the "depth" resource with it
+! or it will be ignored. XcbVisual is a special visual name that means
+! to use the best possible visual if the server is capable of installing
+! more then one colormap at a time, or to just use the DefaultVisual
+! if it can't.
+!NgNGO*visual:		XcbVisual
+ngi.minColorCells:	20
 
 NgNGO*colorMode:	mixedcmap
 
