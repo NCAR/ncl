@@ -1,5 +1,5 @@
 /*
- *	$Id: error.c,v 1.4 1992-03-20 18:43:18 don Exp $
+ *	$Id: error.c,v 1.5 1992-09-10 21:26:25 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -21,8 +21,7 @@
  *	Description:
  *		RasterSetError(error_number) is generally
  *		used by the library to set a particular error
- *		state. If the problem was a system error,
- *		ras_errno is set to RAS_E_SYSTEM which is zero.
+ *		state.
  *
  *		RasterPrintError() is generally used by the
  *		application to print an error when a library
@@ -30,7 +29,7 @@
  *		the token RAS_ERROR. If its a system error
  *		RasterPrintError() simply uses perror() to
  *		print the message.
-
+ *
  *		RasterGetError() returns a pointer to the
  *		error message string, which would generally
  *		be used by an application, particularly
@@ -40,138 +39,50 @@
  *		the GUI.
  */
 #include <stdio.h>
-#include <varargs.h>
+#include <errno.h>
+#include <string.h>
 #include "ncarg_ras.h"
+#include "error.h"
 
 /*LINTLIBRARY*/
 
-extern	char	*strcpy(), *strcat();
-extern int	errno;
-extern char	*sys_errlist[];
+static int	ras_nerr = sizeof(ras_errlist)/sizeof(char *);
+static int	hdf_nerr = sizeof(hdf_errlist)/sizeof(char *);
 
-char	*ras_errlist[] = {
-	"System Error",
-	"Internal programming",
-	"Only 8-bit pixels supported",
-	"Only 8-bit intensities supported",
-	"Only 8-bit run lengths supported",
-	"Image not in correct format",
-	"Unsupported image encoding",
-	"Improper colormap load",
-	"Colormap too big",
-	"Image size changed",
-	"No format specified",
-	"Cannot use stdin for HDF format",
-	"NULL name provided",
-	"Unknown format",
-	"Invalid colormap entry",
-	"Bad option",
-	"Unsupported resolution",
-	"Bogus raster structure",
-	"Unsupported function",
-	"Too many dither bits",
-	"Sun RLE encoding not supported",
-	"Parallax frame buffer"
-};
-
-int	ras_nerr = sizeof(ras_errlist)/sizeof(char *);
-int	ras_errno = 0;
-
-static char	msgbuf[256];
-
-#ifdef STANDALONE
-char	*ProgramName;
-
-main(argc, argv)
-	int	argc;
-	char	*argv[];
-{
-	int	status;
-
-	ProgramName = argv[0];
-	
-	status = wooga();
-	if (status == RAS_ERROR) RasterError();
-
-	status = booga();
-	if (status == RAS_ERROR) RasterError();
-
-	status = snooga();
-	if (status == RAS_ERROR) RasterError();
-}
-
-wooga()
-{
-	int	fd;
-	fd = open("snooga", 0);
-	if (fd == -1) (void) RasterSetError(RAS_E_SYSTEM);
-	return(RAS_ERROR);
-}
-
-booga()
-{
-	(void) RasterSetError(RAS_E_8BIT_PIXELS_ONLY);
-	return(RAS_ERROR);
-}
-
-snooga()
-{
-	(void) RasterSetError(RAS_E_8BIT_INTENSITIES_ONLY);
-	return(RAS_ERROR);
-}
-#else
-
-extern char	*ProgramName;
-#endif /* STANDALONE */
+extern char	*NrtProgramName;
 
 int
-RasterSetError(errno)
-	int	errno;
+RasterInitError()
 {
-	if (errno > (ras_nerr-1)) {
-		(void) fprintf(stderr, 
-		"Now you're in trouble! The error routine has an error\n");
-		return(RAS_ERROR);
-	}
-
-	ras_errno = errno;
+	(void) ErrorList(RAS_ERROR_START, ras_nerr, ras_errlist);
+	(void) ErrorList(HDF_ERROR_START, hdf_nerr, hdf_errlist);
 	return(RAS_OK);
 }
 
-char *
+int
+RasterSetError(error_number)
+	int	error_number;
+{
+	(void) ESprintf(error_number, "");
+	return(RAS_OK);
+}
+
+const char *
 RasterGetError()
 {
-	if (ras_errno == RAS_E_SYSTEM) {
-		return(sys_errlist[errno]);
-	}
-
-	return(ras_errlist[ras_errno]);
+	return(ErrorGetMessage());
 }
 
 int
-RasterPrintError(msg)
-	char	*msg;
+RasterEsprintfError()
 {
-	if (ras_errno == RAS_E_SYSTEM) {
-		(void) strcpy(msgbuf, ProgramName);
-		if (msg != (char *) NULL) {
-			(void) strcat(msgbuf, " - ");
-			(void) strcat(msgbuf, msg);
-		}
-		perror(msgbuf);
-	}
-	else {
-		if (msg != (char *) NULL) {
-			(void) fprintf(stderr,"%s - %s: %s\n",
-				ProgramName, msg,
-				ras_errlist[ras_errno]);
-		}
-		else {
-			(void) fprintf(stderr,"%s: %s\n",
-				ProgramName,
-				ras_errlist[ras_errno]);
-		}
-	}
+	(void) fprintf(stderr, "%s: %s\n", NrtProgramName, ErrorGetMessage());
+	return(RAS_OK);
+}
 
+int
+RasterPrintError()
+{
+	(void) fprintf(stderr, "%s: %s\n", NrtProgramName, ErrorGetMessage());
 	return(RAS_OK);
 }
