@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-29 16:59:39 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1993-04-16 17:01:53 haley Exp $
 #
 NCARG	= ../../../..
 
@@ -9,11 +9,11 @@ MYNAME	= econpa
 
 GENERIC_SRCS = \
 	 cpexcc.f cpex01.f cpex02.f cpex03.f cpex04.f cpex05.f cpex06.f\
-	 cpex07.f cpex08.f cpex09.f
+	 cpex07.f cpex08.f cpex09.f cbex01.f
 
 GENERIC_OBJS = \
 	 cpexcc.o cpex01.o cpex02.o cpex03.o cpex04.o cpex05.o cpex06.o\
-	 cpex07.o cpex08.o cpex09.o
+	 cpex07.o cpex08.o cpex09.o cbex01.o
 
 install::
 	@for file in $(GENERIC_SRCS); do\
