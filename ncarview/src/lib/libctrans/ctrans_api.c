@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.7 1992-04-03 20:56:46 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.8 1992-05-05 22:41:39 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -436,6 +436,8 @@ CtransCloseBatch()
 		(void) CGM_close(cgm_fd);
 		cgm_fd = -1;
 	}
+
+	RemoveOptions(devices[currdev].opt);
 
 	if (devices[currdev].use_common) ComClose();
 

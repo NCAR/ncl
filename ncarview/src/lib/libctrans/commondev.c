@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.12 1992-02-28 00:20:02 clyne Exp $
+ *	$Id: commondev.c,v 1.13 1992-05-05 22:41:33 clyne Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -324,7 +324,7 @@ int	fat_dot;
 	int	line_type;
 
 	VDCtype x,y;
-	VDCtype len;
+	VDCtype xlen, ylen;
 
 	if (COLOUR_TABLE_DAMAGE) {
 		dev->update_color_table();
@@ -399,16 +399,22 @@ int	fat_dot;
 
 			else 
 			{	/* fat dot - draw a box not a dot	*/
-				len = 0.2 * offset;
-				x = c->p[i].x - len;
-				y = c->p[i].y - len;
-					
-				len *= 2;	/* dimension of box (dot)*/
 
-				dev->line(x,y,x, y+len);
-				dev->line(x,y+len, x+len, y+len);
-				dev->line(x+len, y+len, x+len, y);
-				dev->line(x+len, y, x, y);
+				/*
+				 * the next two lines of code should be 
+				 * replaced with info about the device which
+				 * tell us how big a box to draw
+				 */
+				xlen = ABS(VDCExtent.urx - VDCExtent.llx) /1000;
+				ylen = ABS(VDCExtent.ury - VDCExtent.lly) /1000;
+
+				x = c->p[i].x - xlen;
+				y = c->p[i].y - ylen;
+
+				dev->line(x,y,x, y+ylen);
+				dev->line(x,y+ylen, x+xlen, y+ylen);
+				dev->line(x+xlen, y+ylen, x+xlen, y);
+				dev->line(x+xlen, y, x, y);
 			}
 		}
 				
