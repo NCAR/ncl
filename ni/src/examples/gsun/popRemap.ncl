@@ -1,15 +1,18 @@
 ;
-;      $Id: popRemap.ncl,v 1.4 2004-05-21 19:22:04 shea Exp $
+;      $Id: popRemap.ncl,v 1.5 2004-06-17 23:29:26 shea Exp $
 ;
 ;===========================================================
 ; D. Shea
 ; NCL function to perform selected grid-to-grid transformations
-; There are several possible directories [historical/security reasons]:
-; outside the fire wall:
-;      CSM convention:    /fs/cgd/csm/mapping/maps/
-;      SCRIP convention:  /fs/cgd/data0/shea/pop/ 
-; behind the firewall:
-;      CSM convention:    /cgd/cas/shea/POP_REMAP/
+; Within NCAR there are several directories where the required
+; remapping files reside.
+; outside the firewall
+;    CSM convention:    /fs/cgd/csm/mapping/maps/validated
+;                       [replaces /fs/cgd/csm/mapping/maps 14 June 2004]
+;    SCRIP convention:  /fs/cgd/data0/shea/pop
+; behind the firewall
+;    one official master copy: /fis/cgd/cseg/csm/mapping/maps
+;    unofficial:        /cgd/cas/shea/POP_REMAP/
 
 ; CCSM uses gx1v2
 
@@ -47,7 +50,7 @@ function create_rmpPopFileName (gridSrc:string, gridDst:string \
 ; where [method] is bilin or aave and 
 ; [type] is da, for destarea, or fa, for fracarea.
 
-local ier, rmpPOP, gridPOP, dirPOP, indP
+local ier, rmpPOP, gridPOP, dirENV, dirPOP, indP
 begin
   ier = 0
   if (.not.(areaType.eq."da" .or. areaType.eq."fa") ) then
@@ -73,13 +76,14 @@ begin
                       +"_"+method+"_"+areaType+"_"+Date+".nc"   
   end if
 
-  OS = systemfunc("uname")
-  if (OS.eq."AIX" .or. OS.eq."IRIX64") then
-      dirPOP  = (/ "/cgd/cas/shea/POP_REMAP/"  \ 
-                 , "/fis/cgd/cseg/csm/mapping/maps/" /)
+  dirENV  = getenv("NCL_POP_REMAP")
+  if (ismissing(dirENV)) then
+      dirPOP  = (/ "." \                            ; local
+                 , "/fs/cgd/csm/mapping/mapping/validated" \  ; CSM convention
+                 , "/fs/cgd/data0/shea/pop"  /)            \  ; SCRIP convention
+                 + "/"
   else
-      dirPOP  = (/ "/fs/cgd/csm/mapping/maps/" \ ; CSM convention
-                 , "/fs/cgd/data0/shea/pop/" /)  ; SCRIP convention
+      dirPOP  = (/ dirENV, "." /) + "/"
   end if
 
   do nd=0,dimsizes(dirPOP)-1
@@ -103,16 +107,22 @@ function create_rotPopFileName (gridSrc:string, gridDst:string)
 ; invoked internally by PopLatLonV
 ; creates the name of the file containing the rotation angles
 
-local dirPOP, rotPOP, indRot
+local dirENV, dirPOP, rotPOP, indRot
 begin
-  OS = systemfunc("uname")
-  if (OS.eq."AIX" .or. OS.eq."IRIX64") then
-      dirPOP  = (/ "/cgd/cas/shea/POP_REMAP/"/)  ; CSM convention
+  dirPOP  = "/fs/cgd/data0/shea/pop/"   ; dir with transform files
+
+  dirENV  = getenv("NCL_POP_REMAP")
+  if (ismissing(dirENV)) then
+      dirPOP  = (/ "." \                         ; local
+                 , "/fs/cgd/data0/shea/pop"  /)  \  
+                 + "/"
   else
-      dirPOP  = (/ "/fs/cgd/data0/shea/pop/" /)  ; dir with transform files
+      dirPOP  = (/ dirENV , "." /) + "/"
   end if
+
                                         ; names with rot angles
-  rotPOP  = (/ "POPX3","POP23", "POP43", "gx1v3", "gx1v2", "gx3", "hx1", "crx3" /)
+  rotPOP  = (/ "POPX3","POP23", "POP43", "gx1v3", "gx1v2" \
+             , "gx3", "gx3p", "hx1", "crx3" /)
 
   indRot  = ind(gridSrc.eq.rotPOP)
   if (ismissing(indRot)) then
@@ -194,10 +204,13 @@ begin
 
   if (gDst.eq."T63" .or. gDst.eq."T62" .or. \
       gDst.eq."T42" .or. gDst.eq."T21" .or. \
-      gDst.eq."TwoD" .or.gDst.eq."OneD".or. gDst.eq."HlfD" .or.gDst.eq."1x1d") then
+      gDst.eq."TwoD" .or.gDst.eq."OneD".or. \
+      gDst.eq."HlfD" .or.gDst.eq."1x1d".or. \
+      gDst.eq."T31") then
 
       if (gDst.eq."T63" .or. gDst.eq."T62" .or. \
-         gDst.eq."T42"  .or. gDst.eq."T21") then
+         gDst.eq."T42"  .or. gDst.eq."T21" .or. \
+	 gDst.eq."T31") then
           if (typeof(x).eq."double") then
               gau_info= gaus(nlat/2)             ; gaussian latitudes and wts
           else
@@ -718,8 +731,7 @@ begin
                                          ; REMAP
                                          ; uvNew will have extra dim
 
-
-  types = (/"POP","gx3","gx1v2","gx1v3", "crx3"/)
+  types = (/"POP","gx3","gx3p","gx1v2","gx1v3", "crx3"/)
  ;print(gridSrcType)
  ;print(types)
   if (nDu.eq.2) then
@@ -920,15 +932,8 @@ begin
 
 ; get two-dimensional lat and lon coordinates from a X1 or X3  file
 
-  OS = systemfunc("uname")
-  if (OS.eq."AIX" .or. OS.eq."IRIX64") then
-      dirP = "/cgd/cas/shea/POP_REMAP/" 
-  else
-      dirP = "/fs/cgd/data0/shea/pop/" 
-  end if
-
   if (dst_type.eq."POPX1") then
-      f = addfile (dirP+"rmp_OneD_to_POPX1_C.nc","r")
+      f = addfile ("/fs/cgd/data0/shea/pop/rmp_OneD_to_POPX1_C.nc","r")
       lon_pop = f->dst_grid_center_lon    ; this is one-dim
       lat_pop = f->dst_grid_center_lat
       ny = 320
@@ -936,7 +941,7 @@ begin
   end if
 
   if (dst_type.eq."POPX3") then
-      f = addfile (dirP+"rmp_OneD_to_POPX3_B_CSM.nc","r")
+      f = addfile ("/fs/cgd/data0/shea/pop/rmp_OneD_to_POPX3_B_CSM.nc","r")
       lon_pop = f->xc_b    ; this is one-dim
       lat_pop = f->yc_b
       ny = 116
