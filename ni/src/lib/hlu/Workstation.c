@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.53 1996-05-08 14:28:57 boote Exp $
+ *      $Id: Workstation.c,v 1.54 1996-06-04 00:01:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4326,7 +4326,7 @@ _NhlSetMarkerInfo
 
 	c_pcseti("FN", 1);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	gset_linewidth(mkp->marker_thickness);
+	c_pcsetr("CL",mkp->marker_thickness);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
 	marker_color = _NhlGetGksCi(tinst->base.wkptr, mkp->marker_color);
