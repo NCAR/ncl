@@ -1,0 +1,86 @@
+; $Id: basic02n.ncl,v 1.1 1995-02-03 20:35:57 scheitln Exp $
+;
+; This first frame in this example demonstrates how to set the view port 
+; for a contour plot.
+; Note: no data is used in this example, so the output appears
+; only as a bounding box with tickmarks.
+;
+; The second frame in this example demonstrates how to produce multiple
+; plots on a single frame.
+; 
+; ###########
+; # FRAME 1 #
+; ###########
+; Choose the type of output you want to create.  You may write your
+; output to an NCGM, file, X workstation window, or a PostScript file. 
+; This example writes to an X Workstation.
+
+wks = create "wks" xWorkstationLayerClass noparent 
+      end create
+
+; Create a plot object.  In this example, we will create a contour plot.
+;
+; Four view class resources, vpXF, vpYF, vpWidthF, and vpHeightF, are
+; assigned values in the following create call.  The combination of
+; these four resources determines where the plot will display in the
+; output window.  The values of these resources are specified in 
+; Normalized Device Coordinates (NDCs).  In this two-dimensional coordinate 
+; system (0,0) specifies the lower-left corner and (1,1) specifies the 
+; uper-right corner of a plot.
+
+con1 = create "con1" contourLayerClass wks 
+	"vpXF"       : 0.05   ;The left edge of the viewport bounding box
+ 	"vpYF"       : 0.95   ;The top edge of the viewport bounding box
+ 	"vpWidthF"   : 0.4    ;The width of the viewport bounding box
+	"vpHeightF"  : 0.4    ;The height of the viewport bounding box
+end create
+
+; Draw the plot. 
+
+draw(con1)
+
+; The frame call updates and then clears the workstation.
+; Anything written to the workstation after a frame call is made will be
+; drawn in a subsequent frame. 
+
+frame(wks)
+
+; ###########
+; # FRAME 2 #
+; ###########
+
+; This example demonstrates drawing multiple plots in a single frame.
+
+; Calling draw again will produce the identical plot that was drawn in the
+; first frame.
+
+draw(con1)
+
+; To add another plot to the same frame, we first need to reset the 
+; viewport resources so that the next plot does not overwrite the first
+; one.  The setvalues expression is used to set resources after an object
+; has already been created.  The first argument, "con1", in the setvalues
+; expression specifes an object id of a plot that was generated earlier
+; with the create call.  This is then followed by a list of resource value
+; pairs that apply to the object.
+
+setvalues con1
+	"vpXF"       : 0.55   ;The left edge of the viewport bounding box
+	"vpYF"       : 0.45   ;The top edge of the viewport bounding box
+ 	"vpWidthF"   : 0.2    ;The width of the viewport bounding box
+	"vpHeightF"  : 0.2    ;The height of the viewport bounding box
+end setvalues
+
+; Because of the new viewport resource settings, calling draw produces 
+; a plot in the lower-right quadrant of the frame.
+
+draw(con1)
+
+; Updates and clear the workstation.
+
+frame(wks)
+
+; Clean up (deleting the parent object recursively deletes all of its 
+; children).
+
+delete(wks)
