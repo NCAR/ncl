@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.15 1994-04-14 18:27:55 boote Exp $
+#	$Id: ymake,v 1.16 1994-04-21 14:23:32 haley Exp $
 #
 ######################################################################
 #
@@ -244,7 +244,7 @@ if ($status != 0) then
 endif
 set mach = `/bin/uname -m`
 if ($status != 0) then
-	echo "$0 : Unkown maching type" > /dev/tty
+	echo "$0 : Unknown machine type" > /dev/tty
 	exit 1
 endif
 
@@ -306,7 +306,7 @@ case	SunOS:
 		set sysincs = Sun3
 		breaksw
 	default:
-		echo "$0 : Unkown machine type" > /dev/tty
+		echo "$0 : Unknown machine type" > /dev/tty
 		exit 1
 	endsw
 
