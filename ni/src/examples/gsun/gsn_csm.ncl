@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.4 1999-04-02 22:32:44 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.5 1999-04-15 18:25:13 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -100,8 +100,8 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
     callframe     = True
     map_vpxf      = 0.1       ; X position of map plot in viewport.
     map_vpyf      = 0.9       ; Y position of map plot in viewport.
-    map_vpwidthf  = 0.8       ; Viewport width and height for
-    map_vpheightf = 0.8       ; map plot.
+    map_vpwf  = 0.8       ; Viewport width and height for
+    map_vphf = 0.8       ; map plot.
 
     left_string   = False     ; Default is no subtitles unless
     center_string = False     ; they are explicitly set with the
@@ -167,15 +167,117 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
             delete(res2@gsnRightString)
         end if
     latlon_res@gsnFrame             = False
+;
+; If mpCenterLonF is set, but mpMinLonF and/or minMaxLonF are not,
+; then we need to set them.
+;
+; This function creates and draws a labeled cylindrical equidistant map ;
+           .not.isatt(res2,"mpMinLonF").and.\
+           .not.isatt(res2,"mpMaxLonF"))
+      res2@mpMinLonF = res2@mpCenterLonF - 180
+      res2@mpMaxLonF = res2@mpCenterLonF + 180
+; This function behaves differently from gsn_map in that it will        ;
+
+    if(res2.and.isatt(res2,"mpCenterLonF").and..not.isatt(res2,"mpMinLonF"))
+      res2@mpMinLonF = res2@mpCenterLonF - (res2@mpMaxLonF-res2@mpCenterLonF)
+;       "gsnCenterString," and/or "gsnRightString" are set, then they   ;
+
+    if(res2.and.isatt(res2,"mpCenterLonF").and..not.isatt(res2,"mpMaxLonF"))
+      res2@mpMaxLonF = res2@mpCenterLonF + (res2@mpCenterLonF-res2@mpMinLonF)
+
+
+    if(res2.and.isatt(res2,"mpMinLonF"))
+      min_lon = res2@mpMinLonF
+    else
+      min_lon = -180
+    end if
+
+    if(res2.and.isatt(res2,"mpMaxLonF"))
+      max_lon = res2@mpMaxLonF
+    else
+      max_lon = 180
+    end if
+
+    if(res2.and.isatt(res2,"mpMinLatF"))
+      min_lat = res2@mpMinLatF
+    else
+      min_lat = -90
+    end if
+
+    if(res2.and.isatt(res2,"mpMaxLatF"))
+      max_lat = res2@mpMaxLatF
+    else
+      max_lat = 90
+    end if
+; Initialize.
+    main_zone     = 2         ; Zone for main title (may change later)
+      print("The resource mpMinLonF must be less than the resource mpMaxLonF.")
+; This section tests for more special resources: those that start
+; with "gsn."
+
+; Check if frame and/or draw are not supposed to be called.
+      print("The resource mpMinLatF must be less than the resource mpMaxLatF.")
+    maxbb     = get_bb_res(res2)
+    
+
+    lat_range = 1.*(max_lat - min_lat)
+    lon_range = 1.*(max_lon - min_lon)
+
+    left_string   = new(1,logical)
+    center_string = new(1,logical)
+    right_string  = new(1,logical)
+
+    end if
+
+;
+; If automatic tick marks are turned on, then turn off gsn_csm generated
+; tickmarks.
+; 
+    display_mode = get_display_mode(res2,"pmTickMarkDisplayMode","nocreate")
+    if(display_mode.eq.1.or.display_mode.eq.2) then
+      ticks_on = get_res_value(res2,"gsnTickMarksOn",False)
+    else
+      ticks_on = get_res_value(res2,"gsnTickMarksOn",True)
+    if(res2.and.isatt(res2,"vpWidthF"))
+      map_vpwf      = res2@vpWidthF
+    else
+      map_vpwf      = min((/lon_range/lat_range,1./)) * def_vpwf
+      res2@vpWidthF = map_vpwf
+    end if
+
+    if(res2.and.isatt(res2,"vpHeightF"))
+      map_vphf      = res2@vpHeightF
+    else
+      map_vphf      = min((/lat_range/lon_range,1./)) * def_vphf
+      res2@vpHeightF = map_vphf
+    end if
+    lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",0.)
+    if(res2.and.isatt(res2,"vpXF"))
+      map_vpxf      = res2@vpXF
+    else
+      map_vpxf      = (1. - map_vpwf)/2.
+      res2@vpXF = map_vpxf
+    end if
+
+    if(res2.and.isatt(res2,"vpYF"))
+      map_vpyf      = res2@vpYF
+    else
+      map_vpyf      = 1. - (1. - map_vphf)/2.
+      res2@vpYF = map_vpyf
+    end if
 
 ; Create the map object.
 
     map_object = create "map" mapPlotClass wks
       "vpXF"            : map_vpxf
       "vpYF"            : map_vpyf
-      "vpWidthF"        : map_vpwidthf
-      "vpHeightF"       : map_vpheightf
-      "mpLimitMode"     : "latlon"
+      "vpWidthF"        : map_vpwf
+      "vpHeightF"       : map_vphf
+      "mpLimitMode"     : "LatLon"
+      "mpMinLonF"       : min_lon
+      "mpMaxLonF"       : max_lon
+      "mpMinLatF"       : min_lat
+      "mpMaxLatF"       : max_lat
       "mpGridAndLimbOn" : False    ; Turn off grid lines, limb line,
       "mpOutlineOn"     : False    ; and map outlines.
       "mpFillOn"        : True     ; Fill map boundaries according to
@@ -186,7 +288,12 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
       "pmTitleDisplayMode" : "Always"
       "pmTitleZone"        : main_zone        ; Zone for main title
     end create
+	delete(min_lon)
+    max_lat = get_res_value(res2,max_lat_str,  90)
 
+    if(min_lon.ge.max_lon)
+      print("gsn_csm_map_ce: Fatal: The resources mpMinLonF/mpLeftCornerLonF must be less than the resources mpMaxLonF/mpRightCornerLonF.")
+      print("Execution halted.")
 ;
 ; If mpCenterLonF is set, but mpMinLonF and/or minMaxLonF are not,
 ; then we need to set them.
@@ -259,8 +366,8 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
     getvalues map_object
       "vpXF"         : vpxf
       "vpYF"         : vpyf
-      "vpWidthF"     : vpwidthf
-      "vpHeightF"    : vpheightf
+      "vpWidthF"     : vpwf
+      "vpHeightF"    : vphf
       "mpMinLonF"    : min_lon
       "mpMaxLonF"    : max_lon
       "mpMinLatF"    : min_lat
@@ -270,14 +377,6 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
 
     lon_range = max_lon - min_lon   ; longitude range
     lat_range = max_lat - min_lat   ; latitude range
-
-    if(min_lon.ge.max_lon)
-      print("The resource mpMinLonF must be less than the resource mpMaxLonF.")
-    end if
-
-    if(min_lat.ge.max_lat)
-      print("The resource mpMinLatF must be less than the resource mpMaxLatF.")
-    end if
 
 ; Create a TickMark object to label the lat/lon grid.
 
@@ -373,8 +472,8 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
     tickmark_object = create "tickmarks" tickMarkClass wks
        "vpXF"            : vpxf       ; Set the viewport location of the
        "vpYF"            : vpyf       ; tick marks to be the same as 
-       "vpWidthF"        : vpwidthf   ; the map.
-       "vpHeightF"       : vpheightf
+       "vpWidthF"        : vpwf       ; the map.
+       "vpHeightF"       : vphf
 
        "tmYLDataBottomF" : min_lat    ; Use the lat/lon limits
        "tmYLDataTopF"    : max_lat    ; from the coordinate variables.
@@ -772,15 +871,15 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
     left_string   = new(1,logical)
     center_string = new(1,logical)
     right_string  = new(1,logical)
-      "vpWidthF"  : vpwidthf
-      "vpHeightF" : vpheightf
+
+    check_for_subtitles(res2,left_string,center_string,right_string)
     if(left_string.or.center_string.or.right_string)
       main_zone   = 4
     end if
 ;
 ; Check for type of polar plot desired.
 ;
-    font_height = 0.02 * vpheightf     ; Make various label sizes a function
+    polar_type = get_polar_type(res2)
                                        ; of the height of the viewport.
       center_lat = -90
         "tiXAxisFontHeightF"   : 1.2*font_height      ; x axis font size
@@ -866,8 +965,8 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
     setvalues map_object
         "vpXF"      : vpxf-0.02
         "vpYF"      : vpyf+0.02
-        "vpWidthF"  : vpwidthf+0.04
-        "vpHeightF" : vpheightf+0.04
+        "vpWidthF"  : vpwf+0.04
+        "vpHeightF" : vphf+0.04
     end setvalues
 
 
@@ -882,18 +981,21 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
     datatondc(map_object,plon,plat,xndc,yndc)
       "pmTitleZone"          : main_zone
     set_attr(res2,"mpMaxLatF",max_lat)
+    set_attr(res2,"mpCenterLatF",center_lat)
     labels = new(dimsizes(plon),string)
-    do i = 0,dimsizes(plon)-1
-      if(plon(i).gt.0.and.plon(i).lt.180)
-        labels(i) = floattoint(plon(i)) + "E"
-      else
-        if(plon(i).gt.180.and.plon(i).lt.360)
-          labels(i) = floattoint(360-plon(i)) + "W"
-        else
-          labels(i) = floattoint(plon(i))
-        end if
-      end if
-    end do
+    set_attr(res2,"mpGridAndLimbOn",True)
+    indexes = ind(plon.gt.0.and.plon.lt.180)
+    labels(indexes) = floattoint(plon(indexes)) + "E"
+    delete(indexes)
+
+    indexes = ind(plon.gt.180.and.plon.lt.360)
+    labels(indexes) = floattoint(360-plon(indexes)) + "W"
+    delete(indexes)
+
+    indexes = ind(plon.eq.0.or.plon.eq.0.or.plon.eq.180)
+    labels(indexes) = floattoint(plon(indexes))
+    delete(indexes)
+; then it is set back to True.
     num_labels = dimsizes(labels)
     text_ids = new(num_labels,graphic)
 
@@ -913,8 +1015,8 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
     setvalues map_object
         "vpXF"            : vpxf
         "vpYF"            : vpyf
-        "vpWidthF"        : vpwidthf
-        "vpHeightF"       : vpheightf
+        "vpWidthF"        : vpwf
+        "vpHeightF"       : vphf
     end setvalues
                                   ; of the height of the viewport.
 ; Retrieve graphic style object.
@@ -927,12 +1029,20 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
 ; to use as a drawing canvas, and add the text items as annotations.
       end do
     canvas = create "canvas" logLinPlotClass wks
-      "vpXF"        : 0.0
-      "vpYF"        : 0.0
-      "vpWidthF"    : 1.0
-      "vpHeightF"   : 1.0
+      "vpXF"      : vpxf-0.03
+      "vpYF"      : vpyf+0.03
+      "vpWidthF"  : vpwf+0.06
+      "vpHeightF" : vphf+0.06
       "pmAnnoViews" : text_ids
     end create
+
+; Compute new locations of labels with regard to canvas we just created.
+
+    correction = 0.01       ; Not sure why we need this, but it seems
+                            ; to adjust the labels to the right positions.
+
+    new_xndc = (xndc-(vpxf-0.03))/(vpwf+0.06)+correction
+    new_yndc = (yndc-(vpyf+0.03-(vphf+0.06)))/(vphf+0.06)-correction
 
 ; Retrieve the ids of the AnnoManager objects created by the PlotManager
 ; and then set their location in data coordinate space. The AnnoManager
@@ -942,12 +1052,12 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
     getvalues canvas
       "pmAnnoManagers" : am_ids
     end getvalues
-    num_am_ids = dimsizes(am_ids)
-    do i=0,num_am_ids-1
+
+    do i=0,num_labels-1
       setvalues am_ids(i)
         "amTrackData"    : True
-        "amDataXF"       : xndc(i)
-        "amDataYF"       : yndc(i)
+        "amDataXF"       : new_xndc(i)
+        "amDataYF"       : new_yndc(i)
         "amResizeNotify" : True
       end setvalues
     end do
@@ -1032,7 +1142,7 @@ function gsn_csm_map(wks:graphic,res:logical)
 local i, attnames, contour_object, map_object, res, cn_res_index, \
 mp_res_index, lbar_pos, lbar_zone, lbar_on, calldraw, callframe, \
 main_offset, addcyclic, datanew, res2, cnres, mapres, \
-vpwidthf, vpheightf, font_height, levels, colors, zonal_zone, lbar_zone, \
+vpwf, vphf, font_height, levels, colors, zonal_zone, lbar_zone, \
 infolabel_on, infolabel_zone
     subres = get_res_eq(res2,(/"tx","am"/))  ; Get textitem resources
     subres                  = True
@@ -1250,13 +1360,13 @@ end
     maxbb     = get_bb_res(res2)
 
 ;
-      "vpWidthF"  : vpwidthf
-      "vpHeightF" : vpheightf
+; Check for type of polar plot desired.
+;
     mpres@gsnPolar = get_polar_type(res2)
 
 ; Check for subtitles at top and add to mpres if exist.
 
-    font_height = 0.02 * vpheightf     ; Make various label sizes a function
+    set_subtitles_res(res2,mpres)
                                        ; of the height of the viewport.
     if(isatt(res2,"gsnPolarLabelSpacing"))
         "tiXAxisFontHeightF"   : 1.2*font_height      ; x axis font size
@@ -1289,8 +1399,8 @@ end
         "lbMonoFillPattern" : True
         "lbOrientation"     : "Horizontal"
         "lbPerimOn"         : False
-        "vpHeightF"         : 0.20 * vpheightf
-        "vpWidthF"          : 0.75 * vpwidthf
+        "vpHeightF"         : 0.20 * vphf
+        "vpWidthF"          : 0.75 * vpwf
       end create
 ; 
 ; Add labelbar as an annotation of the contour plot.
@@ -1364,8 +1474,8 @@ end
 local i, attnames, contour_object, labelbar_object, xy_object, map_object, \
 cn_res_index, mp_res_index, calldraw, callframe, lbar_on, zonal_mean_plot,\
 min_lat, max_lat, addcyclic, datanew, res, res2, \
-tickmark_res, xy_res, mapres, cnres, levels, colors, \
-map_vpwidthf, map_vpheightf, vpwidthf, vpheightf
+labelbar_res, xy_res, mapres, cnres, levels, colors, \
+map_vpwf, map_vphf, vpwf, vphf
     mpres@gsnFrame = False
 
 
@@ -1376,7 +1486,7 @@ map_vpwidthf, map_vpheightf, vpwidthf, vpheightf
     contour_object = gsn_contour(wks,datanew,cnres) ; Create contours.
     addcyclic      = True     ; Default is to add a cyclic point.
     map_object = gsn_csm_map(wks,mpres)             ; Create map.
-    tickmark_res   = False
+    labelbar_res   = False
     cnres          = True
     mapres         = True
                                                     ; on map.
@@ -1427,11 +1537,9 @@ map_vpwidthf, map_vpheightf, vpwidthf, vpheightf
       if(iscoord(datanew,"lat").and.iscoord(datanew,"lon")) then
     map_object@data    = contour_object@data
     map_object@contour = contour_object
-            map_vpheightf = res2@vpHeightF
-            map_vpwidthf = res2@vpWidthF
+    return(map_object)
 end
-            map_vpheightf  = 0.7 ; make sure zonalplot will fit in view port
-            map_vpwidthf   = 0.7
+
             if(.not.isatt(res2,"vpHeightF")) then
               res2@vpHeightF = 0.7
             end if
@@ -1567,13 +1675,24 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
              chartostring(res(0:1)).eq."ti")
             mapres@$attnames$ = res2@$attnames$
           else 
-            cnres@$attnames$ = res2@$attnames$
-            if(attnames.eq."cnFillOn".and.res2@$attnames$)
-              lbar_on = True
-              cnres@cnLineLabelsOn = False
+            if(chartostring(res(0:1)).eq."lb")
+                labelbar_res = True
+                num_labelbar_res = 1   ; Only 1 labelbarresource.
+            else
+              cnres@$attnames$ = res2@$attnames$
+              if(attnames.eq."cnFillOn".and.res2@$attnames$)
+                lbar_on = True
+                cnres@cnLineLabelsOn = False
+              end if
             end if
           end if
         else
+            lb_res_index = ind(chartostring(res(:,0:1)).eq."lb")
+            if(.not.all(ismissing(lb_res_index))) 
+              labelbar_res = True
+              num_labelbar_res = 2   ; Indicates there are two or more 
+                                     ; labelbar resources set.
+            end if
             mp_res_index = ind(chartostring(res(:,0:1)).eq."mp".or.\
                                chartostring(res(:,0:1)).eq."vp".or.\
                                chartostring(res(:,0:1)).eq."tm".or.\
@@ -1640,6 +1759,9 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
     map_object = gsn_csm_map(wks,mapres)            ; Create map.
     set_right_subtitle(datanew,res2,mpres)
     set_left_subtitle(datanew,res2,mpres)
+
+; Check if frame and/or draw are not supposed to be called.
+
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)
@@ -1670,12 +1792,26 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
 ; to make labelbar and where to put zonal means plot (if there is one).
 
     getvalues map_object
-      "vpWidthF"     : vpwidthf
-      "vpHeightF"    : vpheightf
+      "vpWidthF"     : vpwf
+      "vpHeightF"    : vphf
     end getvalues
             set_attr(mpres,     "vpXF",0.08)
 ; Create a labelbar.
             set_attr(mpres,     "vpYF",0.90)
+; 
+; Determine what the default labelbar width and height should be depending
+; on shape of plot.  For example, if the plot is square, then make the
+; labelbar the same width as the plot.  If the plot is 1:2, then make the
+; labelbar .75 * width of the plot.
+;
+      ratio1 = vpwf/vphf
+      ratio2 = vphf/vpwf
+      ratio = min((/ratio1,ratio2/))
+      ratios  = (/0.50, 0.75, 1.00/)  ; viewport ratios
+
+      lwscale   = (/0.75, 0.90, 1.00/)
+      wh_ind    = ind(ratio.le.ratios)
+      def_lvpwf = lwscale(wh_ind(0))    ; default width scale for labelbar
 ;
 ; Find out what levels and what colors were used for contours.
 ;
@@ -1683,7 +1819,7 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
         "cnLevels"     : levels
         "cnFillColors" : colors
       end getvalues
-;
+
 ; Generate a labelbar from the above information.
 ;
       labelbar_object = create "labelbar" labelBarClass  wks
@@ -1697,12 +1833,28 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
         "lbMonoFillPattern" : True
         "lbOrientation"     :"Horizontal"
         "lbPerimOn"         : False
-        "vpHeightF"         : 0.30 * vpheightf
-        "vpWidthF"          : 0.75 * vpwidthf
+        "vpHeightF"         : 0.30 * vphf
+        "vpWidthF"          : def_lvpwf * vpwf
       end create
-; 
+
+; Check to see if any labelbar resources have been set and set them.
+
+      if(labelbar_res) then
+        if(num_labelbar_res.eq.1) then
+          setvalues labelbar_object
+            attnames : res2@$attnames$
+          end setvalues
+        else
+          lbres = True
+          do i = 0,dimsizes(lb_res_index)-1
+            lbres@$attnames(lb_res_index(i))$ = res2@$attnames(lb_res_index(i))$
+          end do
+          attsetvalues(labelbar_object,lbres)
+        end if
+      end if
+
 ; Add labelbar as an annotation of the contour plot.
-;
+
       anno = NhlAddAnnotation(contour_object,labelbar_object)
       if(lbar_zone.eq.2)
         lbar_pos = 0.06
@@ -1743,8 +1895,8 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
 
       xy_object = create "xyplot" xyPlotClass wks
         "xyCoordData"            : data_object
-        "vpHeightF"              : vpheightf
-        "vpWidthF"               : 0.15 * map_vpheightf
+        "vpHeightF"              : vphf
+        "vpWidthF"               : 0.15 * map_vphf
         "trYMaxF"                : max_lat
         "trYMinF"                : min_lat
         "tmXBLabelFontHeightF"   : xbfontf
@@ -1861,7 +2013,6 @@ left_string, center_string, right_string, sub_zone, main_zone
     left_string   = False     ; Default is no subtitles unless
     center_string = False     ; they are explicitly set with the
     right_string  = False     ; special "gsn" resources.
-    tickmark_res  = False
     res2 = resources
 
 ; This function creates and draws a titled XY plot to the workstation   ;
@@ -2026,6 +2177,7 @@ main_zone, datanew, popgrid, contour_plot
     end if
     return(xy_object)
       "tiXAxisFontHeightF"   : xfontf
+
 
                   right_string,subres)
 
