@@ -1,5 +1,5 @@
 /*
- *	$Id: ymake-filter.c,v 1.11 1996-10-25 21:08:52 boote Exp $
+ *	$Id: ymake-filter.c,v 1.12 2003-05-22 15:28:20 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,9 +43,9 @@
 /* These chars indicate no tab at beginning of line, unless escaped */
 static char	tab_chars[] = {':','='};
 
-main()
+int main()
 {
-	char	*line, *getcppline(), *tchar, *tchar2;
+	char	*line, *getcppline();
 	int	len, lastlen;
 	int	isacppcomment();
 
@@ -195,7 +195,7 @@ getcppline()
 	return buf;
 }
 
-isacppcomment(line)
+int isacppcomment(line)
 char	*line;
 {
 	if (line[0] == '#' && (line[1] == ' ' || line[1] == '\t') &&
