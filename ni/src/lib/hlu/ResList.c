@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.16 1997-01-17 18:57:42 boote Exp $
+ *      $Id: ResList.c,v 1.17 1997-08-20 22:55:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -664,8 +664,11 @@ NhlRLSet
 	else if(_NhlIsSubtypeQ(pointerQ,typeQ)){
 		value.ptrval = (NhlPointer)va_arg(ap,NhlPointer);
 		size = sizeof(NhlGenArray);
-	}
-	else{
+	} else if(typeQ == NrmNULLQUARK) {
+		value.ptrval = (NhlPointer)va_arg(ap,NhlPointer);
+		size = sizeof(NhlPointer);
+	} 
+ 	else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unsupported type:%s",
 								func,type);
 		return NhlFATAL;
