@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.8 1996-01-29 17:00:33 haley Exp $
+#	$Id: yMakefile,v 1.9 1996-05-07 20:19:44 haley Exp $
 #
 
 DBFILES = EzmapAreaInfo.CO EzmapAreaInfo.PO EzmapAreaInfo.PS EzmapAreaInfo.US \
 	  EzmapOutlines.CO EzmapOutlines.PO EzmapOutlines.PS EzmapOutlines.US \
-	  ezmap_area_ids
+	  ezmapdata ezmap_area_ids
 
 PROG_LIBS	=	$(NCARGCLIB)
 DEPLIBS		=	$(DEPNCARGCLIB)
@@ -14,9 +14,15 @@ InstallTarget($(DBFILES),$(INSTALL_DB),$(DBPATH))
 OBJECTS = ConvertMapData.o
 
 CleanFilesTarget(ConvertMapData EzmapOutlines.CO EzmapOutlines.PO \
-		 EzmapOutlines.PS EzmapOutlines.US)
+		 EzmapOutlines.PS EzmapOutlines.US ezmapdata)
 
+FNotInstalledTarget(mapconvrt,mapconvrt.o)
 FortranProgram(ConvertMapData,$(OBJECTS),$(DEPLIBS))
+
+ezmapdata: ezmapdat mapconvrt
+	-@$(RM) ezmapdata
+	@echo "Building the EZMAP database"
+	@./mapconvrt
 
 EzmapOutlines.CO: ezmapdat ConvertMapData
 	-@$(RM) EzmapOutlines.CO
