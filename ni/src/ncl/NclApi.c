@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.24 1995-06-08 15:34:57 boote Exp $
+ *      $Id: NclApi.c,v 1.25 1995-12-14 00:07:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -103,8 +103,8 @@ int NclInitServer
         extern int ncldebug;
         ncldebug = 1;
 #else
-        yydebug = 1;
         extern int yydebug;
+        yydebug = 1;
 #endif
 #endif
 	ncopts = NC_VERBOSE;

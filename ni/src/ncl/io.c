@@ -174,16 +174,21 @@ char *_NclPopInputStr
 	
 	NclStrLoadList *tmp;
 
-	tmp = str_stack.next;
-	NclFree(the_input_buffer);
-	the_input_buffer = tmp->buffer;
-	cur_line_number = tmp->cur_line_number;
-	the_input_buffer_ptr = tmp->ptr;
-	cur_load_file = tmp->file_name;
-	str_stack.next = str_stack.next->next;
-	NclFree(tmp);
-	loading--;
-	return(the_input_buffer);
+	if(str_stack.next != NULL) {
+		tmp = str_stack.next;
+		NclFree(the_input_buffer);
+		the_input_buffer = tmp->buffer;
+		the_input_buffer_ptr = tmp->ptr;
+		the_input_buffer_size = tmp->size;
+		cur_line_number = tmp->cur_line_number;
+		cur_load_file = tmp->file_name;
+		str_stack.next = str_stack.next->next;
+		NclFree(tmp);
+		loading--;
+		return(the_input_buffer);
+	} else {
+		return(the_input_buffer);
+	}
 }
 #endif
 
@@ -248,13 +253,17 @@ FILE *_NclPopInputFile
 	NclFileLoadList *tmp;
 	FILE *fp;
 
-	tmp = file_list.next;
-	fp = tmp->fp;
-	cur_load_file = tmp->file_name;
-	cur_line_number = tmp->cur_line_number;
-	file_list.next = file_list.next->next;
-	NclFree(tmp);
-	return(fp);
+	if(file_list.next != NULL) {
+		tmp = file_list.next;
+		fp = tmp->fp;
+		cur_load_file = tmp->file_name;
+		cur_line_number = tmp->cur_line_number;
+		file_list.next = file_list.next->next;
+		NclFree(tmp);
+		return(fp);
+	} else {
+		return(NULL);
+	}
 }
 
 

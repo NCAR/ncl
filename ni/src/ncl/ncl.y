@@ -467,7 +467,11 @@ eoln : EOLN 						{ yyerrok; }
 	| EOFF						{ 
 								yyerrok;
 #ifdef MAKEAPI
-								ret_urn = 1;
+								if(!loading) {
+									ret_urn = 1;
+								} else {
+									_NclPopInputStr();
+								}
 #endif
 							}
 ;
@@ -504,7 +508,12 @@ statement :     					{ $$ = NULL; }
 								$$ = _NclMakeReturn($2); 
 							}
 	| 	QUIT 					{ 
-								return(1);
+#ifndef MAKEAPI
+								return(-1);
+#else
+								$$ = NULL;
+#endif
+
 							}
 	| 	error 					{ 
 								$$ = NULL ; 
