@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstationP.h,v 1.2 1995-04-07 10:43:20 boote Exp $
+ *      $Id: PSWorkstationP.h,v 1.3 1997-01-17 22:35:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -59,7 +59,7 @@ typedef struct _NhlPSWorkstationLayerRec {
 } NhlPSWorkstationLayerRec;
 
 typedef struct _NhlPSWorkstationClassPart {
-	int	*num_current;
+	int	foo;
 } NhlPSWorkstationClassPart;
 
 typedef struct _NhlPSWorkstationClassRec {

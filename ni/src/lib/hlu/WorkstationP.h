@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.14 1996-12-12 02:51:56 dbrown Exp $
+ *      $Id: WorkstationP.h,v 1.15 1997-01-17 22:35:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -86,8 +86,18 @@ typedef NhlErrorTypes (*NhlWorkstationMarker)(
 #define NhlWK_ALLOC_UNIT 16
 
 /*
+ * Number of simultaneous Workstation instances allowed. This is one less
+ * than the number of possible concurrent GKS workstations since the GKS
+ * Segment workstation is opened in the View class initialize method
+ * w/o any interaction with the Workstation class interface.
+ */
+
+#define MAX_OPEN_WKS (14)
+
+/*
  * This is used as the Inheritance constant
  */
+#define NhlInheritCurrentWksCount NULL
 #define NhlInheritPalette ((int)-1)
 #define NhlInheritOpen ((NhlWorkstationProc)_NhlInherit)
 #define NhlInheritClose ((NhlWorkstationProc)_NhlInherit)
@@ -167,6 +177,7 @@ typedef struct _NhlWorkstationLayerRec{
 } NhlWorkstationLayerRec;
 
 typedef struct _NhlWorkstationClassPart{
+        int			*current_wks_count;
 	NhlColor		def_background;
 	int			pal;
 	NhlWorkstationProc	open_work;

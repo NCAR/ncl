@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.20 1997-01-17 18:57:52 boote Exp $
+ *      $Id: XWorkstation.c,v 1.21 1997-01-17 22:35:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -130,6 +130,7 @@ NhlXWorkstationClassRec NhlxWorkstationClassRec = {
 /* layer_clear			*/	NULL
         },
         {
+/* current_wks_count	*/	NhlInheritCurrentWksCount,                
 /* def_background	*/	{0.0,0.0,0.0},
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	XWorkstationOpen,

@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.7 1996-09-14 17:07:03 boote Exp $
+ *      $Id: PSWorkstation.c,v 1.8 1997-01-17 22:35:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -122,8 +122,6 @@ static NhlErrorTypes PSWorkstationOpen(
 #endif
 );
 
-static int	NumCurrentPS = 0;
-
 NhlPSWorkstationClassRec NhlpsWorkstationClassRec = {
         {
 /* class_name			*/	"psWorkstationClass",
@@ -158,6 +156,7 @@ NhlPSWorkstationClassRec NhlpsWorkstationClassRec = {
 /* layer_clear			*/	NULL
         },
         {
+/* current_wks_count	*/	NhlInheritCurrentWksCount,                
 /* def_background	*/	{1.0,1.0,1.0},
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	PSWorkstationOpen,
@@ -172,7 +171,7 @@ NhlPSWorkstationClassRec NhlpsWorkstationClassRec = {
 /* marker_work		*/	NhlInheritMarker
 	},
 	{
-/* num_current	*/		&NumCurrentPS
+/* foo	*/			0
 	}
 };
 
@@ -230,12 +229,6 @@ PSWorkstationClassPartInitialize
 {
 	NhlPSWorkstationClass	psc = (NhlPSWorkstationClass)lc;
 	NhlPSWorkstationClass	pssc;
-
-	if(psc->base_class.superclass==(NhlClass)NhlworkstationClass)
-		return NhlNOERROR;
-
-	pssc = (NhlPSWorkstationClass)psc->base_class.superclass;
-	psc->ps_class.num_current = pssc->ps_class.num_current;
 
 	return NhlNOERROR;
 }
@@ -318,22 +311,11 @@ static NhlErrorTypes PSWorkstationInitialize
 #endif
 {
 	char				func[]="PSWorkstationInitialize";
-	NhlPSWorkstationClassPart	*pscp =
-				&((NhlPSWorkstationClass)lclass)->ps_class;
 	NhlPSWorkstationLayer		wnew = (NhlPSWorkstationLayer)new;
 	NhlPSWorkstationLayerPart	*np = &wnew->ps;
 	char				*tfname = NULL;
 	char				buff[_NhlMAXFNAMELEN];
 	NhlErrorTypes			ret = NhlNOERROR;
-
-	if(*pscp->num_current >= MAX_OPEN_PS){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"%s:Can only have %d %s objects at a time",
-			func,MAX_OPEN_PS,lclass->base_class.class_name);
-		return NhlFATAL;
-	}
-
-	(*pscp->num_current)++;
 
 	wnew->work.gkswkstype = PSBASE+np->format+np->visual+np->orientation;
 	wnew->work.gkswksconid = 0;
@@ -521,11 +503,8 @@ PSWorkstationDestroy
 #endif
 {
 	NhlPSWorkstationLayerPart	*psp = &((NhlPSWorkstationLayer)l)->ps;
-	NhlPSWorkstationClassPart	*pscp =
-		&((NhlPSWorkstationClass)l->base.layer_class)->ps_class;
 
 	NhlFree(psp->filename);
-	*(pscp->num_current)--;
 
 	return NhlNOERROR;
 }

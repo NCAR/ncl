@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.25 1997-01-17 18:57:39 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.26 1997-01-17 22:35:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -168,6 +168,7 @@ NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
 /* layer_clear			*/	NULL
         },
         {
+/* current_wks_count	*/	NhlInheritCurrentWksCount,                
 /* def_background	*/	{0.0,0.0,0.0},
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	NcgmWorkstationOpen,

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.60 1997-01-17 18:57:50 boote Exp $
+ *      $Id: Workstation.c,v 1.61 1997-01-17 22:35:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -510,6 +510,15 @@ static NhlErrorTypes WorkstationMarker(
 #endif
 );
 
+/*
+ * Only MAX_OPEN_WKS Workstation instances are allowed to be open at one time.
+ * The GKS Segment workstation is opened by the View class initialize
+ * without using the Workstation class interface. Therefore, from the
+ * Workstation class's point of view, one GKS workstation is unavailable.
+ */
+ 
+static int	CurrentWksCount = 0;
+
 NhlWorkstationClassRec NhlworkstationClassRec = {
         {
 /* class_name			*/	"workstationClass",
@@ -544,6 +553,7 @@ NhlWorkstationClassRec NhlworkstationClassRec = {
 /* layer_clear			*/	NULL
         },
 	{
+/* current_wks_count	*/	&CurrentWksCount,               
 /* def_background	*/	{0.0,0.0,0.0},
 /* pal			*/	NhlDEFAULT_APP,
 /* open_work		*/	WorkstationOpen,
@@ -770,6 +780,10 @@ WorkstationClassPartInitialize
 					(NhlWorkstationClass)layerclass;
 	NhlWorkstationClass	sc = (NhlWorkstationClass)
 						lc->base_class.superclass;
+
+        if(lc->work_class.current_wks_count == NhlInheritCurrentWksCount)
+		lc->work_class.current_wks_count =
+                        sc->work_class.current_wks_count;
 
 	if(lc->work_class.pal == NhlInheritPalette)
 		lc->work_class.pal = sc->work_class.pal;
@@ -1013,6 +1027,8 @@ static NhlErrorTypes WorkstationInitialize
 {
 	NhlWorkstationLayer	newl = (NhlWorkstationLayer)new;
 	NhlWorkstationLayerPart	*wp = &newl->work;
+	NhlWorkstationClassPart	*wcp =
+				&((NhlWorkstationClass)lc)->work_class;
 	int			i;
 	NhlErrorTypes		retcode=NhlNOERROR,subret=NhlNOERROR;
 	NhlGenArray		ga;
@@ -1023,7 +1039,14 @@ static NhlErrorTypes WorkstationInitialize
 	NhlMarkerTableParams	*mparams;
 	NhlString		*mstrings;
 
-
+	if(*wcp->current_wks_count >= MAX_OPEN_WKS){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Only %d %s objects may exist simultaneously",
+			entry_name,MAX_OPEN_WKS,lc->base_class.class_name);
+		return NhlFATAL;
+	}
+        (*wcp->current_wks_count)++;
+        
 	wp->gkswksid = (int)NhlFATAL;
 	wp->gkswkstype = (int)NhlFATAL;
 	wp->gkswksconid = (int)NhlFATAL;
@@ -1867,7 +1890,11 @@ static NhlErrorTypes WorkstationDestroy
 #endif
 {
 	NhlWorkstationLayerPart	*wp = &((NhlWorkstationLayer)inst)->work;
+	NhlWorkstationClassPart	*wcp =
+                &((NhlWorkstationClass)inst->base.layer_class)->work_class;
 	NhlErrorTypes	retcode = NhlNOERROR;
+
+        (*wcp->current_wks_count)--;
 
 	NhlFreeGenArray(wp->marker_table_strings);
 	NhlFreeGenArray(wp->marker_table_params);
