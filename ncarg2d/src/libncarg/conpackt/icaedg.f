@@ -1,5 +1,5 @@
 C
-C $Id: icaedg.f,v 1.1 2003-05-28 15:44:36 kennison Exp $
+C $Id: icaedg.f,v 1.2 2003-05-28 20:04:45 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -35,18 +35,28 @@ C If there are any edges in the edge list at all, ...
 C
       IF (NPPE.NE.0) THEN
 C
-C initialize a search index to point to the first one ...
+C search it.  First, order the pointers to the points in a consistent
+C manner and then find the X, Y, and Z coordinates of the edge's
+C midpoint, which we use to determine the order of the edges in the
+C list.  (Using the values of ITM1 and ITM2 results in very bad
+C behavior by the quicksort.)
+C
+        ITM1=MIN(IPP1,IPP2)
+        ITM2=MAX(IPP1,IPP2)
+C
+        XNEW=(RPNT(ITM1+1)+RPNT(ITM2+1))/2.
+        YNEW=(RPNT(ITM1+2)+RPNT(ITM2+2))/2.
+        ZNEW=(RPNT(ITM1+3)+RPNT(ITM2+3))/2.
+C
+C Initialize a search index to point to the first element in the sort
+C list.
 C
         ITMP=1
 C
-C and loop.
+C Loop.  If the search index now points at the edge we want, return
+C its index.
 C
-  101   ITM1=MIN(IPP1,IPP2)
-        ITM2=MAX(IPP1,IPP2)
-C
-C If the search index now points at the edge we want, return its index.
-C
-        IF (ITM1.EQ.IEDG(1,ITMP).AND.ITM2.EQ.IEDG(2,ITMP)) THEN
+  101   IF (ITM1.EQ.IEDG(1,ITMP).AND.ITM2.EQ.IEDG(2,ITMP)) THEN
 C
           ICAEDG=ITMP
 C
@@ -54,13 +64,8 @@ C
 C
         END IF
 C
-C Find the X, Y, and Z coordinates of the edge's midpoint, which we use
-C to determine the order of the edges in the list.  (Using the values
-C of ITM1 and ITM2 results in very bad behavior by the quicksort.)
-C
-        XNEW=(RPNT(ITM1+1)+RPNT(ITM2+1))/2.
-        YNEW=(RPNT(ITM1+2)+RPNT(ITM2+2))/2.
-        ZNEW=(RPNT(ITM1+3)+RPNT(ITM2+3))/2.
+C Find the X, Y, and Z coordinates of this edge's midpoint for
+C comparison with the one we seek.
 C
         XTMP=(RPNT(IEDG(1,ITMP)+1)+RPNT(IEDG(2,ITMP)+1))/2.
         YTMP=(RPNT(IEDG(1,ITMP)+2)+RPNT(IEDG(2,ITMP)+2))/2.
@@ -71,9 +76,9 @@ C index, reset the search index to look at lesser elements (if any),
 C and loop back to continue the search.  If the pointer is null, reset
 C it to point to a new element that we will create.
 C
-        IF      (XNEW.LT.XTMP.OR.
-     +          (XNEW.EQ.XTMP.AND.YNEW.LT.YTMP).OR.
-     +          (XNEW.EQ.XTMP.AND.YNEW.EQ.YTMP.AND.ZNEW.LT.ZTMP)) THEN
+        IF (XNEW.LT.XTMP.OR.
+     +     (XNEW.EQ.XTMP.AND.YNEW.LT.YTMP).OR.
+     +     (XNEW.EQ.XTMP.AND.YNEW.EQ.YTMP.AND.ZNEW.LT.ZTMP)) THEN
 C
           IF (IPPE(1,ITMP).NE.0) THEN
             ITMP=IPPE(1,ITMP)
