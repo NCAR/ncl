@@ -105,8 +105,8 @@ NhlErrorTypes linint1_W( void )
   nfi = nxi;
   nfo = nxo;
 
-  if(nxi <= 2 || nxo <= 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: The rightmost dimensions of xi and xo must be greater than 2");
+  if(nxi <= 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: The rightmost dimensions of xi must be greater than 2");
     return(NhlFATAL);
   }
 
@@ -341,8 +341,8 @@ NhlErrorTypes linint2_W( void )
   nyo = dsizes_yo[0];
   nfi = nxi * nyi;
   nfo = nxo * nyo;
-  if(nxi <= 2 || nxo <= 2 || nyi <= 2 || nyo <= 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: The rightmost dimensions of xi, yi, xo, and yo must be greater than 2");
+  if(nxi <= 2 || nyi <= 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: The rightmost dimensions of xi and yi must be greater than 2");
     return(NhlFATAL);
   }
 /*
@@ -585,8 +585,8 @@ NhlErrorTypes linint2_points_W( void )
     return(NhlFATAL);
   }
   nfi = nxi * nyi;
-  if(nxi <= 2 || nyi <= 2 || nxyo <= 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: The rightmost dimensions of xi, yi, xo, and yo must be greater than 2");
+  if(nxi <= 2 || nyi <= 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: The rightmost dimensions of xi and yi must be greater than 2");
     return(NhlFATAL);
   }
 /*

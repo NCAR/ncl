@@ -33,7 +33,7 @@ c .             must be monotonically increasing
 c .   fi      - functional input values [2D]
 c .   icycx   - 0 if fi is cyclic in x (cyclic pt should NOT included)
 c .             .ne.0 if cyclic
-c .   nxo     - lengths of xo and dimensions of fo (must be >= 2)
+c .   nxo     - lengths of xo and dimensions of fo
 c .   xo      - coordinates of fo (eg, lon)
 c .             must be monotonically increasing
 c .   fo      - functional output values [interpolated]
@@ -52,7 +52,7 @@ c                              local
       DOUBLE PRECISION DX
 c                              error checking
       IER = 0
-      IF (NXI.LE.2 .OR. NXO.LE.2) THEN
+      IF (NXI.LE.2 .OR. NXO.LT.1) THEN
           IER = 1
           RETURN
       END IF
@@ -122,7 +122,7 @@ c .             must be monotonically increasing
 c .   fi      - functional input values [2D]
 c .   icycx   - 0 if fi is cyclic in x (cyclic pt should NOT included)
 c .             .ne.0 if cyclic
-c .   nxo,nyo - lengths of xo,yo and dimensions of fo (must be >= 2)
+c .   nxo,nyo - lengths of xo,yo and dimensions of fo
 c .   xo      - coordinates of fo (eg, lon)
 c .             must be monotonically increasing
 c .   yo      - coordinates of fo (eg, lat)
@@ -144,7 +144,7 @@ c                              local
 c      PRINT *," LININT2: NXI,NYI,NXO,NYO=",NXI,NYI,NXO,NYO
 c                              error checking
       IER = 0
-c      IF (NXI.LE.2 .OR. NYI.LE.2 .OR. NXO.LE.2 .OR. NYO.LE.2) THEN
+c      IF (NXI.LE.2 .OR. NYI.LE.2 .OR. NXO.LT.1 .OR. NYO.LT.1) THEN
       IF (NXI.LT.2 .OR. NYI.LT.2) THEN
           IER = 1
           RETURN
@@ -267,6 +267,7 @@ c                          local
       INTEGER N
 
       IER = 0
+      IF (NX.LE.1) RETURN
       DO N = 1,NX - 1
           IF (X(N+1).LE.X(N)) THEN
               IER = NER
