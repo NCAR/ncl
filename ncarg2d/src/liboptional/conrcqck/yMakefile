@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1994-03-01 22:53:34 haley Exp $
+#	$Id: yMakefile,v 1.6 1994-04-19 14:50:56 haley Exp $
 #
 MYNAME	= conrcqck
 
@@ -11,7 +11,7 @@ SOURCES = $(GENERIC_SRCS)
 
 OBJECTS = $(GENERIC_OBJS)
 
-#if defined(alpha)
+#if defined(alpha) && (MAJOR==1)
 InstallTarget($(OBJECTS),$(INSTALL_LIB),$(ROBJPATH)/$(MYNAME))
 #else
 RelocatableTarget(libconrcqck.o,$(OBJECTS))

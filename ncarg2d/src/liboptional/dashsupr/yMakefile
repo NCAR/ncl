@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1994-03-01 22:54:08 haley Exp $
+#	$Id: yMakefile,v 1.6 1994-04-19 14:55:57 haley Exp $
 #
 MYNAME	= dashsupr
 
@@ -24,7 +24,7 @@ OTHER_OBJS = remove32.o dashbd1024.o
 SOURCES = $(FSOURCES) $(OTHER_SRCS)
 OBJECTS = $(FOBJECTS) $(OTHER_OBJS)
 
-#if defined(alpha)
+#if defined(alpha) && (MAJOR==1)
 InstallTarget($(OBJECTS),$(INSTALL_LIB),$(ROBJPATH)/$(MYNAME))
 #else
 RelocatableTarget(libdashsupr.o,$(OBJECTS))
