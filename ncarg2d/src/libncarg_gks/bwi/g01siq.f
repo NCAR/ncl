@@ -1,46 +1,14 @@
 C
-C	$Id: g01siq.f,v 1.1.1.1 1992-04-17 22:33:59 ncargd Exp $
+C	$Id: g01siq.f,v 1.2 1993-01-09 02:06:45 fred Exp $
 C
         SUBROUTINE G01SIQ
 C
 C       WORKSTATION STATE LIST (WSL) INQUIRY.
 C             (OPCODE -200 THRU -299)
 C
-      COMMON /GKSIN1/FCODE,CONT,IL1,IL2,ID(128),RL1,RL2,RX(128),
-     - RY(128),STRL1,STRL2,RERR
-      COMMON /GKSIN2/STR
-      INTEGER FCODE, CONT, IL1, IL2, ID, RL1, RL2
-      INTEGER STRL1, STRL2, RERR
-      REAL  RX, RY
-      CHARACTER*80 STR
-      COMMON  /G01WSL/  MWKID   ,MCONID ,MWTYPE ,MSTATE ,MOPEN  ,
-     +                  MDEFMO  ,MREGMO ,MDEMPT ,MNFRAM ,MTUS   ,
-     +                  RWINDO(4)       ,CWINDO(4)      ,
-     +                  RWKVP (4)       ,CWKVP (4)      ,
-     +                  MOLMAX  ,MOL    ,MCOVFL ,MCSORT ,MCOLI(256),
-     +                  SRED(256)       ,SGREEN(256)    ,SBLUE(256),
-     +                  MRCREC(4)       ,MRCLIP
-        INTEGER         MWKID   ,MCONID ,MWTYPE ,MSTATE ,MOPEN
-        INTEGER         MDEFMO  ,MREGMO ,MDEMPT ,MNFRAM ,MTUS
-        INTEGER         MOLMAX  ,MOL    ,MCOVFL ,MCSORT ,MCOLI
-        REAL            RWINDO          ,CWINDO
-        REAL            RWKVP           ,CWKVP
-        REAL            SRED            ,SGREEN         ,SBLUE
-        INTEGER         MRCREC  ,MRCLIP
-      COMMON  /G01INS/  MCODES  ,MCONTS ,
-     +                  MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW ,
-     +                  MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL ,
-     +                  MINXVD  ,MAXXVD ,MINYVD ,MAXYVD ,
-     +                  MCFRM   ,MCOPCL ,MCOPID ,MCNBYT ,
-     +                  MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG ,
-     +                  MBCCHG
-        INTEGER         MCODES  ,MCONTS
-        INTEGER         MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW
-        INTEGER         MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL
-        INTEGER         MINXVD  ,MAXXVD ,MINYVD ,MAXYVD
-        INTEGER         MCFRM   ,MCOPCL ,MCOPID ,MCNBYT
-        INTEGER         MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG
-        INTEGER         MBCCHG
+      include 'gksin.h'
+      include 'g01wsl.h'
+      include 'g01ins.h'
 C
 C
         INTEGER  INDX, IPTR, I, NCI

@@ -1,248 +1,208 @@
 C
-C	$Id: g01pat.f,v 1.1.1.1 1992-04-17 22:33:58 ncargd Exp $
+C	$Id: g01pat.f,v 1.2 1993-01-09 02:06:27 fred Exp $
 C
-        SUBROUTINE G01PAT
+      SUBROUTINE G01PAT
 C
-C       PROCESS PRIMITIVE ATTRIBUTES.
+C  Process primitive attributes.
 C
-      COMMON /GKSIN1/FCODE,CONT,IL1,IL2,ID(128),RL1,RL2,RX(128),
-     - RY(128),STRL1,STRL2,RERR
-      COMMON /GKSIN2/STR
-      INTEGER FCODE, CONT, IL1, IL2, ID, RL1, RL2
-      INTEGER STRL1, STRL2, RERR
-      REAL  RX, RY
-      CHARACTER*80 STR
-      COMMON  /G01INS/  MCODES  ,MCONTS ,
-     +                  MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW ,
-     +                  MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL ,
-     +                  MINXVD  ,MAXXVD ,MINYVD ,MAXYVD ,
-     +                  MCFRM   ,MCOPCL ,MCOPID ,MCNBYT ,
-     +                  MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG ,
-     +                  MBCCHG
-        INTEGER         MCODES  ,MCONTS
-        INTEGER         MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW
-        INTEGER         MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL
-        INTEGER         MINXVD  ,MAXXVD ,MINYVD ,MAXYVD
-        INTEGER         MCFRM   ,MCOPCL ,MCOPID ,MCNBYT
-        INTEGER         MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG
-        INTEGER         MBCCHG
-      COMMON  /G01ADC/  VALCHG(37)      ,ANYASF ,AGPEND(4)      ,
-     +                  IVPLIX  ,IVLTYP ,IVLWSC ,IVPLCI ,IVPMIX ,
-     +                  IVMTYP  ,IVMSZS ,IVPMCI ,IVTXIX ,IVTXP  ,
-     +                  IVTXAL  ,IVCHH  ,IVCHOV ,IVTXFO ,IVTXPR ,
-     +                  IVCHXP  ,IVCHSP ,IVTXCI ,IVFAIX ,IVPASZ ,
-     +                  IVPARF  ,IVFAIS ,IVFASI ,IVFACI ,IVASF  ,
-     +                  IP2AEA(26)      ,IL2AEA(26)     ,
-     +                  IALTYP  ,IALWSC ,IAPLCI ,IAMTYP ,IAMSZS ,
-     +                  IAPMCI  ,IATXFP ,IACHXP ,IACHSP ,IATXCI ,
-     +                  IAFAIS  ,IAFASI ,IAFACI ,
-     +                  NCGASF  ,NGKASF ,MASMAP(18)
-        LOGICAL         VALCHG  ,ANYASF ,AGPEND
-        INTEGER         IVPLIX  ,IVLTYP ,IVLWSC ,IVPLCI ,IVPMIX
-        INTEGER         IVMTYP  ,IVMSZS ,IVPMCI ,IVTXIX ,IVTXP
-        INTEGER         IVTXAL  ,IVCHH  ,IVCHOV ,IVTXFO ,IVTXPR
-        INTEGER         IVCHXP  ,IVCHSP ,IVTXCI ,IVFAIX ,IVPASZ
-        INTEGER         IVPARF  ,IVFAIS ,IVFASI ,IVFACI ,IVASF
-        INTEGER         IP2AEA  ,IL2AEA
-        INTEGER         IALTYP  ,IALWSC ,IAPLCI ,IAMTYP ,IAMSZS
-        INTEGER         IAPMCI  ,IATXFP ,IACHXP ,IACHSP ,IATXCI
-        INTEGER         IAFAIS  ,IAFASI ,IAFACI
-        INTEGER         NCGASF  ,NGKASF ,MASMAP
+      include 'gksin.h'
+      include 'g01ins.h'
+      include 'g01adc.h'
 C
-        LOGICAL         ASFCHG(13)
-        EQUIVALENCE     (VALCHG(25),ASFCHG(1))
+        REAL   UP, BASE, DMAX, FACTOR
 C
+        GOTO (210, 220, 230, 240, 250, 260, 270, 280,
+     +        290, 300, 310, 320, 330, 340, 350, 360,
+     +        370, 380, 390, 400, 410, 420, 430) MCODES-20
 C
-        REAL UP, BASE, DMAX, FACTOR
+C  POLYLINE INDEX
 C
-        GOTO  (210, 220, 230, 240,
-     +         250, 260, 270, 280,
-     +         290, 300, 310, 320, 330, 340, 350, 360,
-     +         370, 380, 390, 400, 410, 420, 430)       MCODES-20
+  210 CONTINUE
+      CALL GUPDVI (ID(1), IVPLIX, 1)
+      RETURN
 C
+C  LINETYPE
 C
-C     GKS POLYLINE INDEX.
+  220 CONTINUE
+      CALL GUPDVI (ID, IVLTYP, 1)
+      RETURN
 C
-210     CONTINUE
-        CALL GUPDVI (ID(1), IVPLIX, 1)
-        RETURN
+C  LINEWIDTH SCALE FACTOR
 C
-C     GKS LINETYPE.
+  230 CONTINUE
+      CALL GUPDVR (RX, IVLWSC, 1)
+      RETURN
 C
-220     CONTINUE
-        CALL GUPDVI (ID, IVLTYP, 1)
-        RETURN
+C  POLYLINE COLOR INDEX
 C
-C     GKS LINEWIDTH SCALE FACTOR.
+  240 CONTINUE
+      CALL GUPDVI (IC, IVPLCI, 1)
+      RETURN
 C
-230     CONTINUE
-        CALL GUPDVR (RX, IVLWSC, 1)
-        RETURN
+C  POLYMARKER INDEX
 C
-C     GKS POLYLINE COLOR INDEX.
+  250 CONTINUE
+      CALL GUPDVI (ID, IVPMIX, 2)
+      RETURN
 C
-240     CONTINUE
-        CALL GUPDVI (ID, IVPLCI, 1)
-        RETURN
+C  MARKER TYPE
 C
-C     GKS POLYMARKER INDEX.
+  260 CONTINUE
+      CALL GUPDVI (ID, IVMTYP, 2)
+      RETURN
 C
-250     CONTINUE
-        CALL GUPDVI (ID, IVPMIX, 2)
-        RETURN
+C  MARKER SIZE SCALE FACTOR
 C
-C     MARKER TYPE.
+  270 CONTINUE
+      CALL GUPDVR (RX, IVMSZS, 2)
+      RETURN
 C
-260     CONTINUE
-        CALL GUPDVI (ID, IVMTYP, 2)
-        RETURN
+C  POLYMARKER COLOR INDEX
 C
-C     MARKER SIZE SCALE FACTOR.
+  280 CONTINUE
+      CALL GUPDVI (IC, IVPMCI, 2)
+      RETURN
 C
-270     CONTINUE
-        CALL GUPDVR (RX, IVMSZS, 2)
-        RETURN
+C  TEXT INDEX
 C
-C     GKS POLYMARKER COLOR INDEX.
+  290 CONTINUE
+      CALL GUPDVI (ID, IVTXIX, 3)
+      RETURN
 C
-280     CONTINUE
-        CALL GUPDVI (ID, IVPMCI, 2)
-        RETURN
+C  TEXT FONT AND PRECISION
 C
-C     TEXT INDEX.
+  300 CONTINUE
 C
-290     CONTINUE
-        CALL GUPDVI (ID, IVTXIX, 3)
-        RETURN
+C  Font.
+C    Convert GKS font index to CGM pointer to font list.
 C
-C     TEXT FONT AND PRECISION.
+      ID(1) = IABS(ID(1))
+      CALL GUPDVI (ID(1), IVTXFO, 3)
 C
-300     CONTINUE
+C  Precision.
 C
-C       FONT.
-C       CONVERT GKS FONT INDEX TO CGM POINTER TO FONT LIST.
+      CALL GUPDVI (ID(2), IVTXPR, 3)
+      RETURN
 C
-        ID(1) = IABS(ID(1))
-        CALL GUPDVI (ID(1), IVTXFO, 3)
+C  CHARACTER EXPANSION FACTOR
 C
-C       PRECISION.
-        CALL GUPDVI (ID(2), IVTXPR, 3)
-        RETURN
+  310 CONTINUE
+      CALL GUPDVR (RX, IVCHXP, 3)
+      RETURN
 C
-C     CHARACTER EXPANSION FACTOR.
+C  CHARACTER SPACING
 C
-310     CONTINUE
-        CALL GUPDVR (RX, IVCHXP, 3)
-        RETURN
+  320 CONTINUE
+      CALL GUPDVR (RX, IVCHSP, 3)
+      RETURN
 C
-C     CHARACTER SPACING.
+C  TEXT COLOR INDEX
 C
-320     CONTINUE
-        CALL GUPDVR (RX, IVCHSP, 3)
-        RETURN
+  330 CONTINUE
+      CALL GUPDVI (IC, IVTXCI, 3)
+      RETURN
 C
-C     TEXT COLOR INDEX.
+C  CHARACTER ORIENTATION VECTORS
 C
-330     CONTINUE
-        CALL GUPDVI (ID, IVTXCI, 3)
-        RETURN
+  340 CONTINUE
 C
-C     CHARACTER ORIENTATION VECTORS.
+C  Extract and process height.
 C
-340     CONTINUE
+      UP   = SQRT (RX(1)**2+RY(1)**2)
+      BASE = SQRT (RX(2)**2+RY(2)**2)
+      DMAX = AMAX1(UP,BASE)
+      IF (DMAX .GT. 1.0)  THEN
 C
-C       EXTRACT AND PROCESS HEIGHT.
-        UP   = SQRT (RX(1)**2+RY(1)**2)
-        BASE = SQRT (RX(2)**2+RY(2)**2)
-        DMAX = AMAX1(UP,BASE)
-        IF (DMAX .GT. 1.0)  THEN
+C  A vector is longer than 1.0 NDC, scale down both vectors equally.
 C
-C           A VECTOR IS LONGER THAN 1.0 NDC,
-C           SCALE DOWN BOTH VECTORS EQUALLY.
-            FACTOR = 1.0/DMAX
-            RX(1) = FACTOR*RX(1)
-            RY(1) = FACTOR*RY(1)
-            RX(2) = FACTOR*RX(2)
-            RY(2) = FACTOR*RY(2)
-        END IF
+        FACTOR = 1.0/DMAX
+        RX(1) = FACTOR*RX(1)
+        RY(1) = FACTOR*RY(1)
+        RX(2) = FACTOR*RX(2)
+        RY(2) = FACTOR*RY(2)
+      END IF
 C
-C       FIX HEIGHT AND PROCESS IT.
-        RTMP = 0.5+UP*REAL(MYSCAL)
-        ID(1) = MAXYVD
-        IF (RTMP .LT. REAL(MAXYVD)) ID(1) = INT(RTMP)
-        CALL GUPDVI (ID, IVCHH, 3)
+C  Fix height and process it.
 C
-C       CONVERT NDC VECTORS TO VDC AND PROCESS.
-        ID(1) = MIN0 (MAXYVD, IFIX (0.5 + MXSCAL*RX(1)))
-        ID(2) = MIN0 (MAXYVD, IFIX (0.5 + MYSCAL*RY(1)))
-        ID(3) = MIN0 (MAXYVD, IFIX (0.5 + MXSCAL*RX(2)))
-        ID(4) = MIN0 (MAXYVD, IFIX (0.5 + MYSCAL*RY(2)))
-        CALL GUPDVI (ID, IVCHOV, 3)
-        RETURN
+      RTMP = 0.5+UP*REAL(MYSCAL)
+      ID(1) = MAXYVD
+      IF (RTMP .LT. REAL(MAXYVD)) ID(1) = INT(RTMP)
+      CALL GUPDVI (ID, IVCHH, 3)
 C
-C     TEXT PATH.
+C  Convert NDC vectors to VDC and process.
 C
-350     CONTINUE
-        CALL GUPDVI (ID, IVTXP, 3)
-        RETURN
+      ID(1) = MIN0 (MAXYVD, IFIX (0.5 + MXSCAL*RX(1)))
+      ID(2) = MIN0 (MAXYVD, IFIX (0.5 + MYSCAL*RY(1)))
+      ID(3) = MIN0 (MAXYVD, IFIX (0.5 + MXSCAL*RX(2)))
+      ID(4) = MIN0 (MAXYVD, IFIX (0.5 + MYSCAL*RY(2)))
+      CALL GUPDVI (ID, IVCHOV, 3)
+      RETURN
 C
-C     TEXT ALIGNMENT.
+C  TEXT PATH
 C
-360     CONTINUE
-        CALL GUPDVI (ID, IVTXAL, 3)
-        RETURN
+  350 CONTINUE
+      CALL GUPDVI (ID, IVTXP, 3)
+      RETURN
 C
-C     GKS FILL AREA INDEX.
+C  TEXT ALIGNMENT
 C
-370     CONTINUE
-        CALL GUPDVI (ID, IVFAIX, 4)
-        RETURN
+  360 CONTINUE
+      CALL GUPDVI (ID, IVTXAL, 3)
+      RETURN
 C
-C     GKS FILL AREA INTERIOR STYLE.
+C  FILL AREA INDEX
 C
-380     CONTINUE
-        CALL GUPDVI (ID, IVFAIS, 4)
-        RETURN
+  370 CONTINUE
+      CALL GUPDVI (ID, IVFAIX, 4)
+      RETURN
 C
-C     GKS FILL AREA STYLE INDEX.
+C  FILL AREA INTERIOR STYLE
 C
-390     CONTINUE
-        CALL GUPDVI (ID, IVFASI, 4)
-        RETURN
+  380 CONTINUE
+      CALL GUPDVI (ID, IVFAIS, 4)
+      RETURN
 C
-C     GKS FILL AREA COLOR INDEX.
+C  FILL AREA STYLE INDEX
 C
-400     CONTINUE
-        CALL GUPDVI (ID, IVFACI, 4)
-        RETURN
+  390 CONTINUE
+      CALL GUPDVI (ID, IVFASI, 4)
+      RETURN
 C
-C     GKS PATTERN SIZE.
+C  FILL AREA COLOR INDEX
 C
-410     CONTINUE
+  400 CONTINUE
+      CALL GUPDVI (IC, IVFACI, 4)
+      RETURN
 C
-C       TRUNCATE DX,DY TO LIMITS OF NDC UNIT SQUARE,
-C       CONVERT TO VDC, STORE AS HEIGHT AND WIDTH VECTORS.
-        ID(4) = 0
-        ID(3) = IFIX(FLOAT(MXSCAL)*(AMAX1(0.,AMIN1(1.0,RX(1)))))
-        ID(2) = IFIX(FLOAT(MYSCAL)*(AMAX1(0.,AMIN1(1.0,RY(1)))))
-        ID(1) = 0
-        CALL GUPDVI (ID, IVPASZ, 4)
-        RETURN
+C  PATTERN SIZE
 C
-C     GKS PATTERN REFERENCE POINT.
+  410 CONTINUE
 C
-420     CONTINUE
+C  Truncate DX,DY to limits of NDC unit square,
+C  convert to VDC, store as height and width vectors.
 C
-C       TRUNCATE X,Y TO LIMITS OF NDC UNIT SQUARE,
-C       CONVERT TO VDC.
-        ID(1) = IFIX(FLOAT(MXSCAL)*(AMAX1(0.,AMIN1(1.0,RX(1)))))
-        ID(2) = IFIX(FLOAT(MYSCAL)*(AMAX1(0.,AMIN1(1.0,RX(2)))))
-        CALL GUPDVI (ID, IVPARF, 4)
-        RETURN
+      ID(4) = 0
+      ID(3) = IFIX(FLOAT(MXSCAL)*(AMAX1(0.,AMIN1(1.0,RX(1)))))
+      ID(2) = IFIX(FLOAT(MYSCAL)*(AMAX1(0.,AMIN1(1.0,RY(1)))))
+      ID(1) = 0
+      CALL GUPDVI (ID, IVPASZ, 4)
+      RETURN
 C
-C     GKS ASPECT SOURCE FLAGS.
+C  PATTERN REFERENCE POINT
 C
-430     CONTINUE
-        CALL GUPASF
-        RETURN
-        END
+  420 CONTINUE
+C
+C  Truncate X,Y to limits of NDC unit square and convert to VDC.
+C
+      ID(1) = IFIX(FLOAT(MXSCAL)*(AMAX1(0.,AMIN1(1.0,RX(1)))))
+      ID(2) = IFIX(FLOAT(MYSCAL)*(AMAX1(0.,AMIN1(1.0,RX(2)))))
+      CALL GUPDVI (ID, IVPARF, 4)
+      RETURN
+C
+C  ASPECT SOURCE FLAGS
+C
+  430 CONTINUE
+      CALL GUPASF
+C
+      RETURN
+      END

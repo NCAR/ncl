@@ -1,0 +1,113 @@
+C
+C     G01ADC  -- Control variables for attribute deferral scheme.
+C
+C
+C       valchg  - array of logical variables indicating whether
+C                 value changes are pending for each of the
+C                 attributes.  There is a one-to-one relationship
+C                 between the elements of VALCHG and and the
+C                 aspect/bundle variables in G01ARQ, etc.
+C
+C       asfchg  - array of logical variables indicating whether
+C                 changes are pending for each of the ASFs.  There
+C                 is a one-to-one relationship between the elements
+C                 of this array and the ASF array passed by the
+C                 workstation interface.
+C
+C       anyasf  - logical scalar that says whether any ASF has
+C                 changed -- the logical OR of asfchg(*).
+C
+C           [The following set of integer variables are pointers into
+C           'valchg', associating each valchg element with the proper
+C           attribute.  Values of the pointers are the first column of
+C           the numbers in parentheses.]
+C
+C       ivplix  - polyline bundle               ( 1)    (  1)
+C       ivltyp  - linetype                      ( 2)    (  2)
+C       ivlwsc  - linewidth scale factor        ( 3)    (- 3)
+C       ivplci  - polyline color index          ( 4)    (  4)
+C
+C       ivpmix  - polymarker bundle             ( 5)    (  5)
+C       ivmtyp  - marker type                   ( 6)    (  6)
+C       ivmszs  - marker size scale factor      ( 7)    (- 7)
+C       ivpmci  - polymarker color index        ( 8)    (  8)
+C
+C       ivtxix  - text bundle                   ( 9)    (  9)
+C       ivtxp   - text path                     (10)    ( 10)
+C       ivtxal  - text alignment                (11)    ( 11)
+C       ivchh   - character height              (12)    ( 13)
+C       ivchov  - character orientation vectors (13)    ( 14)
+C       ivtxfo  - text font                     (14)    ( 18)
+C       ivtxpr  - text precision                (15)    ( 19)
+C       ivchxp  - character expansion factor    (16)    (-20)
+C       ivchsp  - character spacing             (17)    (-21)
+C       ivtxci  - text color index              (18)    ( 22)
+C
+C       ivfaix  - fill area bundle              (19)    ( 23)
+C       ivpasz  - fill area pattern size        (20)    ( 24)
+C       ivparf  - fill area pattern ref point   (21)    ( 28)
+C       ivfais  - fill area interior style      (22)    ( 30)
+C       ivfasi  - fill area style index         (23)    ( 31)
+C       ivfaci  - fill area color index         (24)    ( 32)
+C
+C       ivasf   - ASFs                          (25)    ( 33)
+C
+C       ip2aea  - array of integer pointers that associated each
+C                 of the above indexes with the start position of
+C                 the attribute in the attribute equivalencing
+C                 arrays.  Second column of values in parentheses
+C                 above are values.  The absolute value of the item
+C                 is the pointer, the sign means that the quantities
+C                 stored in the attribute arrays are real-valued if
+C                 negative, integer-valued if positive.  Note that
+C                 there is one last entry in IP2AEA giving the location
+C                 beyond the last attribute item stored in the
+C                 equivalencing arrays.
+C
+C       il2aea - lengths of the items pointed to by the ip2aea.
+C
+C           [The integer variables in the following set are pointers
+C           into asfchg, associating each asfchg element with the proper
+C           attribute.  Values of the pointers are in parentheses.
+C           Note these indexes correspond exactly with the ASF array
+C           passed by the workstation interface.]
+C
+C           [The following set of integers are pointers into the
+C            aspect source flag arrays].
+C
+C       ialtyp  - linetype                      ( 1)
+C       ialwsc  - linewidth scale factor        ( 2)
+C       iaplci  - polyline color index          ( 3)
+C
+C       iamtyp  - marker type                   ( 4)
+C       iamszs  - marker size scale factor      ( 5)
+C       iapmci  - polymarker color index        ( 6)
+C
+C       iatxfp  - text font and precision       ( 7)
+C       iachxp  - character expansion factor    ( 8)
+C       iachsp  - character spacing             ( 9)
+C       iatxci  - text color index              (10)
+C
+C       iafais  - fill area interior style      (11)
+C       iafasi  - fill area style index         (12)
+C       iafaci  - fill area color index         (13)
+C
+C
+C       agpend  - logical array indicating for each geometric primitive
+C                 whether any changes to the attribute context of any
+C                 sort (bundle, aspect, ASF) are pending (deferred).
+C                 The order of the array elements is:
+C                 polyline, polymarker, text, fill area (note that cell
+C                 array has no attributes).
+C
+C       ncgasf  - number of ASFs defined in CGM standard (18 currently).
+C       ngkasf  - number of ASFs defined in GKS standard (13 currently).
+C       masmap(ncgasf) - mapping array from CGM ASFs to GKS ASFs.  For
+C                 ix=1..ncgasf, masmap(ix) is the index (into ASFCHG,
+C                 MRASF, MSASF) of the functionally corresponding GKS
+C                 ASF.  Note that multiple CGM ASFs may correspond with
+C                 a single GKS ASF (e.g., font and precision -->font/prec).
+C                 Also a CGM ASF may correspond with no GKS ASFs, e.g.,
+C                 the perimeter attributes.  In this case, the pointer
+C                 is set to zero.
+C

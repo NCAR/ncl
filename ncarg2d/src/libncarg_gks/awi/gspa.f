@@ -1,89 +1,65 @@
 C
-C	$Id: gspa.f,v 1.1.1.1 1992-04-17 22:33:50 ncargd Exp $
+C	$Id: gspa.f,v 1.2 1993-01-09 02:02:59 fred Exp $
 C
       SUBROUTINE GSPA (SZX,SZY)
+C
+C  SET PATTERN SIZE
+C
+C  Currently this subroutine does nothing since ctrans does not support
+C  the CGM PATTERN SIZE element.
+C
       INTEGER ESPA
       PARAMETER (ESPA=39)
 C
-C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
-      COMMON/GKINTR/ NOPWK , NACWK , WCONID, NUMSEG,
-     +               SEGS(100)     , CURSEG
-      INTEGER        NOPWK , NACWK , WCONID, NUMSEG, SEGS  , CURSEG
-      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(2)       ,
-     +               MOPWK , MACWK , MNT
-      INTEGER        OPS   , WK
-      COMMON/GKSTAT/ SOPWK(2)      , SACWK(1)      , CPLI  , CLN   ,
-     +               CLWSC , CPLCI , CLNA  , CLWSCA, CPLCIA, CPMI  ,
-     +               CMK   , CMKS  , CPMCI , CMKA  , CMKSA , CPMCIA,
-     +               CTXI  , CTXFP(2)      , CCHXP , CCHSP , CTXCI ,
-     +               CTXFPA, CCHXPA, CCHSPA, CTXCIA, CCHH  , CCHUP(2),
-     +               CTXP  , CTXAL(2)      , CFAI  , CFAIS , CFASI ,
-     +               CFACI , CFAISA, CFASIA, CFACIA, CPA(2), CPARF(2),
-     +               CNT   , LSNT(2)       , NTWN(2,4)     , NTVP(2,4),
-     +               CCLIP , SWKTP(2)      , NOPICT, NWKTP , MODEF
-      INTEGER        SOPWK , SACWK , CPLI  , CLN   , CPLCI , CLNA  ,
-     +               CLWSCA, CPLCIA, CPMI  , CMK   , CPMCI , CMKA  ,
-     +               CMKSA , CPMCIA, CTXI  , CTXFP , CTXCI , CTXFPA,
-     +               CCHXPA, CCHSPA, CTXCIA, CTXP  , CTXAL , CFAI  ,
-     +               CFAIS , CFASI , CFACI , CFAISA, CFASIA, CFACIA,
-     +               CNT   , LSNT  , CCLIP , SWKTP , NOPICT, NWKTP ,
-     +               MODEF
-      REAL           NTWN  , NTVP
-      COMMON/GKEROR/ ERS   , ERF
-      COMMON/GKENUM/ GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
-     +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
-     +               GMI
-      INTEGER        GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
-     +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
-     +               GMI   , ERS   , ERF
-      COMMON/GKSNAM/ GNAM(109)
-      CHARACTER*6    GNAM
-      COMMON/GKSIN1/ FCODE , CONT  , IL1   , IL2   , ID(128)       ,
-     +               RL1   , RL2   , RX(128)       , RY(128)       ,
-     +               STRL1 , STRL2 , RERR
-      COMMON/GKSIN2/ STR
-      INTEGER        FCODE , CONT  , RL1   , RL2   , STRL1 , STRL2 ,
-     +               RERR
-      CHARACTER*80   STR
+      include 'gkscom.h'
 C
       REAL SZX,SZY
-C     CHECK IF GKS IS IN PROPER STATE
-      CALL GZCKST(8,ESPA,IER)
-      IF (IER .NE. 0) RETURN
 C
-C     CHECK THAT SIZE SPECIFICATIONS ARE VALID
-C
-      IF (SZX.LE.0..OR.SZY.LE.0.) THEN
-      ERS = 1
-      CALL GERHND(87,ESPA,ERF)
-      ERS = 0
+C  Remove this RETURN and uncomment appropriate lines to 
+C  activate the subroutine.
+C	
       RETURN
-      ENDIF
 C
-C     SET THE CURRENT PATTERN SIZE VARIABLES
-C     IN THE GKS STATE LIST (THESE REMAIN IN WORLD COORDINATES)
+C  Check if GKS is in the proper state.
 C
-      CPA(1) = SZX
-      CPA(2) = SZY
+C     CALL GZCKST(8,ESPA,IER)
+C     IF (IER .NE. 0) RETURN
 C
-C     TRANSFORM PATTERN SIZES TO NDC SPACE
+C  Check that the size specifications are valid.
 C
-      CALL GZW2NX(1,SZX,SZXN)
-      CALL GZW2NY(1,SZY,SZYN)
+C     IF (SZX.LE.0. .OR. SZY.LE.0.) THEN
+C       ERS = 1
+C       CALL GERHND(87,ESPA,ERF)
+C       ERS = 0
+C       RETURN
+C     ENDIF
 C
-C     INVOKE THE WORKSTATION INTERFACE
+C  Set the current pattern size variables
+C  in the gks state list (these remain in world coordinates).
 C
-      FCODE = 41
-      CONT  = 0
-      RL1   = 1
-      RL2   = 1
-      RX(1) = SZXN
-      RY(1) = SZYN
-      CALL GZTOWK
-      IF (RERR.NE.0) THEN
-      ERS = 1
-      CALL GERHND(RERR,ESPA,ERF)
-      ERS = 0
-      ENDIF
-      RETURN
+C     CPA(1) = SZX
+C     CPA(2) = SZY
+C
+C  Transform pattern sizes to NDC space.
+C
+C     CALL GZW2NX(1,SZX,SZXN)
+C     CALL GZW2NY(1,SZY,SZYN)
+C
+C  Invoke the workstation interface.
+C
+C     FCODE = 41
+C     CONT  = 0
+C     CALL GZROI(0)
+C     RL1   = 1
+C     RL2   = 1
+C     RX(1) = SZXN
+C     RY(1) = SZYN
+C     CALL GZTOWK
+C     IF (RERR .NE. 0) THEN
+C       ERS = 1
+C       CALL GERHND(RERR,ESPA,ERF)
+C       ERS = 0
+C     ENDIF
+C
+C     RETURN
       END

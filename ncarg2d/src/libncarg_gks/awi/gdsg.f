@@ -1,127 +1,112 @@
 C
-C	$Id: gdsg.f,v 1.1.1.1 1992-04-17 22:33:35 ncargd Exp $
+C	$Id: gdsg.f,v 1.2 1993-01-09 01:58:14 fred Exp $
 C
       SUBROUTINE GDSG(SGNA)
+C
+C  DELETE SEGMENT
+C
       INTEGER EDSG
       PARAMETER (EDSG=59)
 C
-C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
-      COMMON/GKINTR/ NOPWK , NACWK , WCONID, NUMSEG,
-     +               SEGS(100)     , CURSEG
-      INTEGER        NOPWK , NACWK , WCONID, NUMSEG, SEGS  , CURSEG
-      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(2)       ,
-     +               MOPWK , MACWK , MNT
-      INTEGER        OPS   , WK
-      COMMON/GKSTAT/ SOPWK(2)      , SACWK(1)      , CPLI  , CLN   ,
-     +               CLWSC , CPLCI , CLNA  , CLWSCA, CPLCIA, CPMI  ,
-     +               CMK   , CMKS  , CPMCI , CMKA  , CMKSA , CPMCIA,
-     +               CTXI  , CTXFP(2)      , CCHXP , CCHSP , CTXCI ,
-     +               CTXFPA, CCHXPA, CCHSPA, CTXCIA, CCHH  , CCHUP(2),
-     +               CTXP  , CTXAL(2)      , CFAI  , CFAIS , CFASI ,
-     +               CFACI , CFAISA, CFASIA, CFACIA, CPA(2), CPARF(2),
-     +               CNT   , LSNT(2)       , NTWN(2,4)     , NTVP(2,4),
-     +               CCLIP , SWKTP(2)      , NOPICT, NWKTP , MODEF
-      INTEGER        SOPWK , SACWK , CPLI  , CLN   , CPLCI , CLNA  ,
-     +               CLWSCA, CPLCIA, CPMI  , CMK   , CPMCI , CMKA  ,
-     +               CMKSA , CPMCIA, CTXI  , CTXFP , CTXCI , CTXFPA,
-     +               CCHXPA, CCHSPA, CTXCIA, CTXP  , CTXAL , CFAI  ,
-     +               CFAIS , CFASI , CFACI , CFAISA, CFASIA, CFACIA,
-     +               CNT   , LSNT  , CCLIP , SWKTP , NOPICT, NWKTP ,
-     +               MODEF
-      REAL           NTWN  , NTVP
-      COMMON/GKEROR/ ERS   , ERF
-      COMMON/GKENUM/ GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
-     +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
-     +               GMI
-      INTEGER        GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
-     +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
-     +               GMI   , ERS   , ERF
-      COMMON/GKSNAM/ GNAM(109)
-      CHARACTER*6    GNAM
-      COMMON/GKSIN1/ FCODE , CONT  , IL1   , IL2   , ID(128)       ,
-     +               RL1   , RL2   , RX(128)       , RY(128)       ,
-     +               STRL1 , STRL2 , RERR
-      COMMON/GKSIN2/ STR
-      INTEGER        FCODE , CONT  , RL1   , RL2   , STRL1 , STRL2 ,
-     +               RERR
-      CHARACTER*80   STR
+      include 'gkscom.h'
 C
       INTEGER SGNA
 C
-C     THIS SUBROUTINE IS HERE SOLELY AS SUPPORT FOR THE SPPS GFLASn
-C     ENTRIES.  FULL SEGMENTATION IS NOT A PART OF THE NCAR GKS
-C     PACKAGE AT THIS TIME.  THE NCAR PACKAGE IS NON-STANDARD TO THE
-C     EXTENT THAT CERTAIN SEGMENTATION FUNCTIONS ARE SUPPORTED, BUT
-C     NOT ALL LEVEL 1 FUNCTIONS ARE SUPPORTED.  THIS SUBROUTINE SHOULD
-C     BE CONSIDERED A USER ENTRY POINT ONLY BY WAY OF THE GFLASn
-C     CALLS--IT SHOULD NEVER BE CALLED DIRECTLY BE THE USER.
+C  This subroutine is here solely as support for the SPPS GFLASn
+C  entries.  Full segmentation is not a part of the NCAR GKS
+C  package at this time.  The NCAR package is non-standard to the
+C  extent that certain segmentation functions are supported, but
+C  not all level 1 functions are supported.  This subroutine should
+C  be considered a user entry point only by way of the GFLASn
+C  calls--it should never be called directly be the user.
 C
-C     CHECK IF GKS IS IN PROPER STATE
+C  Check if GKS is in the proper state.
+C
       CALL GZCKST(7,EDSG,IER)
       IF (IER .NE. 0) RETURN
 C
-C     CHECK THAT THE SEGMENT NAME IS VALID.
+C  Check that the segment name is valid.
 C
-      IF (SGNA.LT.0.OR.SGNA.GT.99) THEN
-      ERS = 1
-      CALL GERHND(120,EDSG,ERF)
-      ERS = 0
-      RETURN
+      IF (SGNA.LT.0 .OR. SGNA.GT.99) THEN
+        ERS = 1
+        CALL GERHND(120,EDSG,ERF)
+        ERS = 0
+        RETURN
       ENDIF
 C
-C     CHECK IF THE SEGMENT EXISTS
+C  Check if the segment exists.
 C
       NXST = 0
-      DO   200 I=1,NUMSEG
-      IF (SEGS(I).EQ.SGNA) THEN
-      NXST = 1
-      ENDIF
+      DO 200 I=1,NUMSEG
+        IF (SEGS(I) .EQ. SGNA) THEN
+          NXST = 1
+        ENDIF
   200 CONTINUE
-      IF (NXST.EQ.0) THEN
-      ERS = 1
-      CALL GERHND(122,EDSG,ERF)
-      ERS = 0
-      RETURN
+      IF (NXST .EQ. 0) THEN
+        ERS = 1
+        CALL GERHND(122,EDSG,ERF)
+        ERS = 0
+        RETURN
       ENDIF
 C
-C     CHECK IF THE SEGMENT IS OPEN.
+C  Check if the segment is open.
 C
-      IF (SGNA.EQ.CURSEG) THEN
-      ERS = 1
-      CALL GERHND(125,EDSG,ERF)
-      ERS = 0
-      RETURN
+      IF (SGNA .EQ. CURSEG) THEN
+        ERS = 1
+        CALL GERHND(125,EDSG,ERF)
+        ERS = 0
+        RETURN
       ENDIF
 C
-C     REMOVE THE SEGMENT NAME FROM THE LIST OF SEGMENT NAMES IN USE.
+C  Remove the segment name from the list of segment names in use 
+C  and readjust the associated segment description arrays.
 C
-      IF (NUMSEG.GT.0) THEN
-      DO   201 I=1,NUMSEG
-      IF (SEGS(I).EQ.SGNA) THEN
-      IP1 = I+1
-      DO   202 J=IP1,NUMSEG
-      SEGS(J-1) = SEGS(J)
-  202 CONTINUE
-      SEGS(NUMSEG) = 0
-      NUMSEG = NUMSEG-1
-      GO TO 10
-      ENDIF
-  201 CONTINUE
+      IF (NUMSEG .GT. 0) THEN
+        DO 201 I=1,NUMSEG
+          IF (SEGS(I) .EQ. SGNA) THEN
+            IP1 = I+1
+            DO 202 J=IP1,NUMSEG
+              SEGS(J-1) = SEGS(J)
+              SEGLEN(J-1) = SEGLEN(J)
+              DO 205 IR=1,2
+                DO 206 JC=1,3
+                  SEGT(J-1,IR,JC) = SEGT(J,IR,JC)
+  206           CONTINUE
+  205         CONTINUE
+  202       CONTINUE
+            SEGS(NUMSEG) = 0
+            SEGNAM(NUMSEG) = ' '
+            SEGLEN(NUMSEG) = 0
+            DO 203 IR=1,2
+              DO 204 JC=1,3
+                SEGT(NUMSEG,IR,JC) = 0.
+  204         CONTINUE
+  203       CONTINUE
+            SEGT(NUMSEG,1,1) = 1.
+            SEGT(NUMSEG,2,2) = 1.
+            NUMSEG = NUMSEG-1
+            GO TO 10
+          ENDIF
+  201   CONTINUE
       ENDIF
    10 CONTINUE
 C
-C     INVOKE WORKSTATION INTERFACE
+C  Invoke workstation interface.
 C
       FCODE = 84
       CONT  = 0
+      CALL GZROI(0)
       IL1 = 1
       IL2 = 1
       ID(1) = SGNA
+      STR = ' '
+      STR = SEGNAM(SGNA)
       CALL GZTOWK
-      IF (RERR.NE.0) THEN
-      ERS = 1
-      CALL GERHND(RERR,EDSG,ERF)
-      ERS = 0
+      IF (RERR .NE. 0) THEN
+        ERS = 1
+        CALL GERHND(RERR,EDSG,ERF)
+        ERS = 0
       ENDIF
+C
       RETURN
       END

@@ -1,154 +1,150 @@
-C
-C	$Id: gopwk.F,v 1.1.1.1 1992-04-17 22:33:34 ncargd Exp $
-C
       SUBROUTINE GOPWK(WKID,CONID,WTYPE)
+C
+C  OPEN WORKSTATION
+C
       INTEGER EOPWK
       PARAMETER (EOPWK=2)
 C
-C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
-      COMMON/GKINTR/ NOPWK , NACWK , WCONID, NUMSEG,
-     +               SEGS(100)     , CURSEG
-      INTEGER        NOPWK , NACWK , WCONID, NUMSEG, SEGS  , CURSEG
-      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(2)       ,
-     +               MOPWK , MACWK , MNT
-      INTEGER        OPS   , WK
-      COMMON/GKSTAT/ SOPWK(2)      , SACWK(1)      , CPLI  , CLN   ,
-     +               CLWSC , CPLCI , CLNA  , CLWSCA, CPLCIA, CPMI  ,
-     +               CMK   , CMKS  , CPMCI , CMKA  , CMKSA , CPMCIA,
-     +               CTXI  , CTXFP(2)      , CCHXP , CCHSP , CTXCI ,
-     +               CTXFPA, CCHXPA, CCHSPA, CTXCIA, CCHH  , CCHUP(2),
-     +               CTXP  , CTXAL(2)      , CFAI  , CFAIS , CFASI ,
-     +               CFACI , CFAISA, CFASIA, CFACIA, CPA(2), CPARF(2),
-     +               CNT   , LSNT(2)       , NTWN(2,4)     , NTVP(2,4),
-     +               CCLIP , SWKTP(2)      , NOPICT, NWKTP , MODEF
-      INTEGER        SOPWK , SACWK , CPLI  , CLN   , CPLCI , CLNA  ,
-     +               CLWSCA, CPLCIA, CPMI  , CMK   , CPMCI , CMKA  ,
-     +               CMKSA , CPMCIA, CTXI  , CTXFP , CTXCI , CTXFPA,
-     +               CCHXPA, CCHSPA, CTXCIA, CTXP  , CTXAL , CFAI  ,
-     +               CFAIS , CFASI , CFACI , CFAISA, CFASIA, CFACIA,
-     +               CNT   , LSNT  , CCLIP , SWKTP , NOPICT, NWKTP ,
-     +               MODEF
-      REAL           NTWN  , NTVP
-      COMMON/GKEROR/ ERS   , ERF
-      COMMON/GKENUM/ GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
-     +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
-     +               GMI
-      INTEGER        GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
-     +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
-     +               GMI   , ERS   , ERF
-      COMMON/GKSNAM/ GNAM(109)
-      CHARACTER*6    GNAM
-      COMMON/GKSIN1/ FCODE , CONT  , IL1   , IL2   , ID(128)       ,
-     +               RL1   , RL2   , RX(128)       , RY(128)       ,
-     +               STRL1 , STRL2 , RERR
-      COMMON/GKSIN2/ STR
-      INTEGER        FCODE , CONT  , RL1   , RL2   , STRL1 , STRL2 ,
-     +               RERR
-      CHARACTER*80   STR
+      include 'gkscom.h'
 C
       INTEGER WKID,CONID,WTYPE
       LOGICAL IOPEN
       INTEGER LASF(13)
-C     CHECK THAT GKS IS IN THE PROPER STATE
+C
+C  Check that GKS is in the proper state.
+C
       CALL GZCKST(8,EOPWK,IER)
       IF (IER .NE. 0) RETURN
-C     CHECK IF WORKSTATION IDENTIFIER IS VALID
+C
+C  Check if the workstation identifier is valid.
+C
       CALL GZCKWK(20,EOPWK,WKID,IDUM,IER)
       IF (IER .NE. 0) RETURN
 C
-C     CHECK THAT THE CONNECTION IDENTIFIER IS VALID
+C  Check that the connection identifier is valid.
 C
-      IF (CONID.EQ.5.OR.CONID.EQ.6) THEN
-      ERS = 1
-      CALL GERHND(21,EOPWK,ERF)
-      ERS = 0
-      RETURN
+      IF (CONID.EQ.5 .OR. CONID.EQ.6) THEN
+        ERS = 1
+        CALL GERHND(21,EOPWK,ERF)
+        ERS = 0
+        RETURN
       ENDIF
-C     CHECK THAT THE WORKSTATION TYPE IS VALID
+C
+C  Check that the workstation type is valid.
+C
       CALL GZCKWK(22,EOPWK,IDUM,WTYPE,IER)
       IF (IER .NE. 0) RETURN
-C     CHECK IF THE WORKSTATION IS CURRENTLY OPEN
+C
+C  Check if the workstation is currently open.
+C
       CALL GZCKWK(24,EOPWK,WKID,WTYPE,IER)
       IF (IER .NE. 0) RETURN
 C
-C     CHECK IF THERE IS ROOM FOR ANOTHER OPEN WORKSTATION
+C  Check if there is room for another open workstation.
 C
-      IF (NOPWK.GE.MOPWK) THEN
-      ERS = 1
-      CALL GERHND(26,EOPWK,ERF)
-      ERS = 0
-      RETURN
+      IF (NOPWK .GE. MOPWK) THEN
+        ERS = 1
+        CALL GERHND(26,EOPWK,ERF)
+        ERS = 0
+        RETURN
       ENDIF
 C
-C     CHECK IF THE SPECIFIED CONNECTION IDENTIFIER IS CURRENTLY
-C     OPEN
+C  Check if the specified connection identifier is currently open
+C  for CGM or WISS workstation types (CONID is not relevant for
+C  other currently supported workstation types).
 C
+      IF (WTYPE.EQ.GCGM .OR. WTYPE.EQ.GWSS) THEN
 #if defined(u370) && defined(unix)
-C     INQUIRE (CONID,OPENED=IOPEN)
-C     IF (IOPEN) THEN
-C     ERS = 1
-C     CALL GERHND(26,EOPWK,ERF)
-C     ERS = 0
-C     RETURN
-C     ENDIF
+C       INQUIRE (CONID,OPENED=IOPEN)
+C       IF (IOPEN) THEN
+C         ERS = 1
+C         CALL GERHND(26,EOPWK,ERF)
+C         ERS = 0
+C         RETURN
+C       ENDIF
 #else
-      INQUIRE (CONID,OPENED=IOPEN)
-      IF (IOPEN) THEN
-      ERS = 1
-      CALL GERHND(26,EOPWK,ERF)
-      ERS = 0
-      RETURN
-      ENDIF
+        INQUIRE (CONID,OPENED=IOPEN)
+        IF (IOPEN) THEN
+          ERS = 1
+          CALL GERHND(26,EOPWK,ERF)
+          ERS = 0
+          RETURN
+        ENDIF
 #endif
+      ENDIF
 C
-C     MAKE SURE THAT THE METAFILE WORKSTATION IS OPEN IF TRYING
-C     TO OPEN WISS (THIS IMPLEMENTATION REQUIRES THAT THE
-C     METAFILE BE OPENED BEFORE WISS)
+C  Only one CGM workstation currently allowed.
 C
-      IF (WTYPE.EQ.3) THEN
+      IF (WTYPE .EQ. GCGM) THEN
+        DO 30 I=1,NOPWK
+          IF (SWKTP(I) .EQ. GCGM) THEN
+            ERS = 1
+            CALL GERHND(-112,EOPWK,ERF)
+            ERS = 0
+            RETURN
+          ENDIF
+   30   CONTINUE
+      ENDIF
+C
+C  Make sure that WISS is not already open if the workstation
+C  type is WISS.
+C
+      IF (WTYPE .EQ. GWSS) THEN
+        DO 40 I=1,NOPWK
+          IF (SWKTP(I) .EQ. GWSS) THEN
+            ERS = 1
+            CALL GERHND(28,EOPWK,ERF)
+            ERS = 0
+            RETURN
+          ENDIF
+   40   CONTINUE
       WCONID = CONID
-      IF (SOPWK(1).EQ.-1.OR.SWKTP(1).NE.1) THEN
-      ERS = 1
-      CALL GERHND(-103,EOPWK,ERF)
-      ERS = 0
-      RETURN
-      ENDIF
       ENDIF
 C
-C     SET OPERATING STATE TO WSOP IF IN STATE GKOP
+C  Set the operating state to WSOP if in state GKOP.
 C
-      IF (OPS.EQ.GGKOP) THEN
-      OPS = GWSOP
+      IF (OPS .EQ. GGKOP) THEN
+        OPS = GWSOP
       ENDIF
 C
-C     ADD THE WORKSTATION IDENTIFIER TO THE SET OF OPEN WORKSTATIONS
+C  Add the workstation identifier to the set of open workstations.
 C
       NOPWK = NOPWK+1
       SOPWK(NOPWK) = WKID
       SWKTP(NOPWK) = WTYPE
 C
-C     PASS INFORMATION ACROSS THE WORKSTATION INTERFACE
+C  Pass information across the workstation interface.
 C
-      IF (WTYPE.EQ.1) THEN
-      FCODE = -3
-      CONT  = 0
-      IL1   = 3
-      IL2   = 3
-      ID(1) = WKID
-      ID(2) = CONID
-      ID(3) = WTYPE
-      CALL GZTOWK
-      IF (RERR.NE.0) THEN
-      ERS = 1
-      CALL GERHND(RERR,EOPWK,ERF)
-      ERS = 0
-      ENDIF
-      ENDIF
+        FCODE = -3
+        CONT  = 0
+        CALL GZROI(0)
+        IL1   = 3
+        IL2   = 3
+        ID(1) = WKID
+        ID(2) = CONID
+        ID(3) = WTYPE
+        CALL GZTOWK
+        IF (RERR.NE.0) THEN
+          ERS = 1
+          CALL GERHND(RERR,EOPWK,ERF)
+          ERS = 0
+        ENDIF
 C
-C  Establish the current attribute settings for non-WISS
-C  workstations.
+C  For an X window that does not currently exist, obtain the local 
+C  window ID for all future calls; for an X window that already exists
+C  the connection ID is the window ID.  In the case of an X window
+C  that does not exist, the window ID is returned from the interface
+C  call in IL2 (non-standard usage of this parameter).
 C
-      IF (WTYPE .NE. 3) THEN
+        IF (WTYPE.EQ.GXWC .OR. WTYPE.EQ.GDMP .OR. WTYPE.EQ.GXWE) THEN       
+          LXWKID(NOPWK) = IL2
+        ENDIF
+C
+C  Establish the current attribute settings (temporerily turn off
+C  processing of error -109 [non-implementation of certain functions
+C  on output only workstations] by setting CUFLAG non-zero).
+C
+        CUFLAG = WKID
         CALL GSCLIP (CCLIP)
         CALL GSPLI  (CPLI )
         CALL GSLN   (CLN  )
@@ -187,7 +183,7 @@ C
         LASF(12) = CFASIA
         LASF(13) = CFACIA
         CALL GSASF (LASF)
-      ENDIF
+        CUFLAG = -1
 C
       RETURN
       END

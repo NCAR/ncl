@@ -1,0 +1,79 @@
+C
+C     G01WSL    -- workstation state list for workstation type 1,
+C                  a vdm subset mo for level 0a GKS.
+C
+C                  Contains all of the items mandated GKS for the
+C                  state list, plus supplementary items such as
+C                  array dimensions, plus some state variables (such
+C                  as clipping control parameters) which are not
+C                  specified as part of the structure by GKS.
+C
+C
+C     mwkid     - workstation identifier.
+C     mconid    - connection identifier (lun for metafile output).
+C     mwtype    - workstation type (should be 1 for this workstation).
+C
+C       (The previous 3 items are initialized by 'OPEN WORKSTATION')
+C
+C     mstate    - workstation state (0=ginact, 1=gactiv).
+C     mopen     - marks workstation open/close (0=closed, 1=open)
+C     mdefmo    - deferral mode (0=gasap,1=gbnil,2=gbnig,3=gasti),
+C                 not settable at level 0, default 3 (gasti).
+C     mregmo    - implicit regeneration mode (0=gssupd,1=gallow),
+C                 not settable at level 0, default 1 (gallow).
+C     mdempt    - display surface empty (0=gnempt,1=gempty),
+C                 default 1 (gempty).
+C     mnfram    - new frame action necessary at update (0=gno,1=gyes),
+C                 should always be 0 (gno), because of 'mregmo', plus
+C                 the fact that level 0 has only the functions SET
+C                 COLOR REPRESENTATION and workstation transformation
+C                 that have potential regeneration implications, and
+C                 the treatment of these as IMM (the WDT for MO does
+C                 not contain IRG/IMM information).
+C     mtus      - workstation transformation update state (0=gnpend,
+C                 1=gpend); default 0 (gnpend).  This item should
+C                 always be 0 in this MO workstation, because of
+C                 assumption discussed in 'mnfram'.  See also the above
+C                 discussion of "Workstation Transformation".
+C     rwindo    - requested workstation window in NDC; in order, the
+C                 entries in 'rwindo' are rwxmin,rwxmax,rwymin,rwymax.
+C                 Default 0,1,0,1.
+C     cwindo    - current workstation window in NDC; in order, the
+C                 entries in 'cwindo' are cwxmin,cwxmax,cwymin,cwymax.
+C                 See above discussion on "Workstation Transformation".
+C                 Default 0,1,0,1.
+C     mrwkvp    - requested workstation viewport (mrvxmn,mrvxmx,mrvymn,
+C                 mrvymx, converted from real DC to integer DC/VDC).
+C                 Default 0,32767,0,32767.
+C     mcwkvp    - current workstation viewport (mrvxmn,mrvxmx,mrvymn,
+C                 mrvymx, converted from real DC to integer DC/VDC).
+C                 See above discussion on "Workstation Window"
+C                 Default 0,32767,0,32767.
+C     molmax    - size of color table arrays (in'zd in block data).
+C     mol       - number of indexes currently defined in color table,
+C                 even for MO GKS mandates that this be at least 2 --
+C                 indexes 0 and 1 are supposed to be defined in the WDT
+C                 for every workstation (default 2).
+C     mcovfl    - overflow flag for color index arrays, indicating
+C                 whether number of simultaneously defined indexes,
+C                 'mol', on MO has exceeded 'molmax' (0=no, 1=yes).
+C                 Default 0.
+C     mcsort    - sort flag for color index arrays, indicating whether
+C                 'mcoli' and the color arrays are known to be in
+C                 sort order or may not be (0=nosort, 1=sort).
+C                 Default value is 1.
+C     mcoli     - array molmax long to hold color indexes which have
+C                 been defined; default (1)=0, (2)=1.
+C     sred      - array molmax long to hold red components of defined
+C                 color indexes; default (1)=0.0, (2)=0.8.
+C     sgreen    - array molmax long to hold green components of defined
+C                 color indexes; default (1)=0.0, (2)=0.8.
+C     sblue     - array molmax long to hold blue components of defined
+C                 color indexes;  default (1)=0.0, (2)=0.8.
+C
+C
+C     mrcrec    - clipping rectangle (mxmin,mymin,mxmax,mymax;
+C                 transformed by MO from real NDC and stored as
+C                 corner pts, integer VDC (default: 0,0,32767,32767)
+C     mrclip    - clipping indicator    (default: 0 [GNCLIP])
+C

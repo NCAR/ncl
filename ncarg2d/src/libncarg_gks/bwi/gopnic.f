@@ -1,5 +1,5 @@
 C
-C	$Id: gopnic.f,v 1.1.1.1 1992-04-17 22:34:01 ncargd Exp $
+C	$Id: gopnic.f,v 1.2 1993-01-09 02:07:29 fred Exp $
 C
       SUBROUTINE GOPNIC(STATUS)
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: gkasci.f,v 1.1.1.1 1992-04-17 22:34:00 ncargd Exp $
+C	$Id: gkasci.f,v 1.2 1993-01-09 02:07:14 fred Exp $
 C
       INTEGER FUNCTION GKASCI (INCODE)
 C

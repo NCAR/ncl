@@ -1,80 +1,60 @@
 C
-C	$Id: gqpcr.f,v 1.1.1.1 1992-04-17 22:33:45 ncargd Exp $
+C	$Id: gqpcr.f,v 1.2 1993-01-09 02:00:58 fred Exp $
 C
       SUBROUTINE GQPCR(WTYPE,PCI,ERRIND,RED,GREEN,BLUE)
 C
-C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
-      COMMON/GKINTR/ NOPWK , NACWK , WCONID, NUMSEG,
-     +               SEGS(100)     , CURSEG
-      INTEGER        NOPWK , NACWK , WCONID, NUMSEG, SEGS  , CURSEG
-      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(2)       ,
-     +               MOPWK , MACWK , MNT
-      INTEGER        OPS   , WK
-      COMMON/GKSTAT/ SOPWK(2)      , SACWK(1)      , CPLI  , CLN   ,
-     +               CLWSC , CPLCI , CLNA  , CLWSCA, CPLCIA, CPMI  ,
-     +               CMK   , CMKS  , CPMCI , CMKA  , CMKSA , CPMCIA,
-     +               CTXI  , CTXFP(2)      , CCHXP , CCHSP , CTXCI ,
-     +               CTXFPA, CCHXPA, CCHSPA, CTXCIA, CCHH  , CCHUP(2),
-     +               CTXP  , CTXAL(2)      , CFAI  , CFAIS , CFASI ,
-     +               CFACI , CFAISA, CFASIA, CFACIA, CPA(2), CPARF(2),
-     +               CNT   , LSNT(2)       , NTWN(2,4)     , NTVP(2,4),
-     +               CCLIP , SWKTP(2)      , NOPICT, NWKTP , MODEF
-      INTEGER        SOPWK , SACWK , CPLI  , CLN   , CPLCI , CLNA  ,
-     +               CLWSCA, CPLCIA, CPMI  , CMK   , CPMCI , CMKA  ,
-     +               CMKSA , CPMCIA, CTXI  , CTXFP , CTXCI , CTXFPA,
-     +               CCHXPA, CCHSPA, CTXCIA, CTXP  , CTXAL , CFAI  ,
-     +               CFAIS , CFASI , CFACI , CFAISA, CFASIA, CFACIA,
-     +               CNT   , LSNT  , CCLIP , SWKTP , NOPICT, NWKTP ,
-     +               MODEF
-      REAL           NTWN  , NTVP
-      COMMON/GKEROR/ ERS   , ERF
-      COMMON/GKENUM/ GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
-     +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
-     +               GMI
-      INTEGER        GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
-     +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
-     +               GMI   , ERS   , ERF
-      COMMON/GKSNAM/ GNAM(109)
-      CHARACTER*6    GNAM
-      COMMON/GKSIN1/ FCODE , CONT  , IL1   , IL2   , ID(128)       ,
-     +               RL1   , RL2   , RX(128)       , RY(128)       ,
-     +               STRL1 , STRL2 , RERR
-      COMMON/GKSIN2/ STR
-      INTEGER        FCODE , CONT  , RL1   , RL2   , STRL1 , STRL2 ,
-     +               RERR
-      CHARACTER*80   STR
+C  INQUIRE PREDEFINED COLOUR REPRESENTATION
+C
+      include 'gkscom.h'
 C
       INTEGER WTYPE,PCI,ERRIND
       REAL    RED,GREEN,BLUE
-C     CHECK IF GKS IS IN PROPER STATE
+C
+C  Check if GKS is in the proper state.
+C
       CALL GZCKST(8,-1,ERRIND)
       IF (ERRIND .NE. 0) GOTO 100
-C     CHECK THAT THE WORKSTATION TYPE IS VALID
+C
+C  Check that the workstation type is valid.
+C
       CALL GZCKWK(22,-1,IDUM,WTYPE,ERRIND)
       IF (ERRIND .NE. 0) GO TO 100
 C
-C     CHECK IF COLOR INDEX IS VALID
+C  Check if the workstation category is OUTPUT or OUTIN.
 C
-      IF (PCI.LT.0) THEN
-      ERRIND = 93
-      GO TO 100
+      CALL GQWKCA(WTYPE,ERRIND,ICAT)
+      IF (ICAT.NE.GOUTPT .AND. ICAT.NE.GOUTIN) THEN
+        ERRIND = 39
+        GO TO 100
       ENDIF
-C     INVOKE INTERFACE
+C
+C  Check if color index is valid.
+C
+      IF (PCI .LT. 0) THEN
+        ERRIND = 93
+        GO TO 100
+      ENDIF
+C
+C  Invoke interface
+C
       FCODE = -116
       CONT  = 0
+      CALL GZROI(0)
       IL1   = 2
       IL2   = 2
       ID(1) = WTYPE
       ID(2) = PCI
-      CALL GZTOWK
-      IF (RERR.NE.0) THEN
-      ERRIND = RERR
-      GOTO 100
+      IWK   = -1
+      CALL GZIQWK(WTYPE,IWK)
+      IF (RERR .NE. 0) THEN
+        ERRIND = RERR
+        GOTO 100
       ENDIF
       RED   = RX(1)
       GREEN = RX(2)
       BLUE  = RX(3)
       RETURN
+C
   100 CONTINUE
       RED   = -1.
       GREEN = -1.

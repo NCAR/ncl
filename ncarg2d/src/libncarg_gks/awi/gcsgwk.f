@@ -1,126 +1,112 @@
 C
-C	$Id: gcsgwk.f,v 1.1.1.1 1992-04-17 22:33:35 ncargd Exp $
+C	$Id: gcsgwk.f,v 1.2 1993-01-09 01:58:09 fred Exp $
 C
       SUBROUTINE GCSGWK(WKID,SGNA)
+C
+C  COPY SEGMENT TO WORKSTATION.
+C
       INTEGER ECSGWK
       PARAMETER (ECSGWK=62)
 C
-C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
-      COMMON/GKINTR/ NOPWK , NACWK , WCONID, NUMSEG,
-     +               SEGS(100)     , CURSEG
-      INTEGER        NOPWK , NACWK , WCONID, NUMSEG, SEGS  , CURSEG
-      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(2)       ,
-     +               MOPWK , MACWK , MNT
-      INTEGER        OPS   , WK
-      COMMON/GKSTAT/ SOPWK(2)      , SACWK(1)      , CPLI  , CLN   ,
-     +               CLWSC , CPLCI , CLNA  , CLWSCA, CPLCIA, CPMI  ,
-     +               CMK   , CMKS  , CPMCI , CMKA  , CMKSA , CPMCIA,
-     +               CTXI  , CTXFP(2)      , CCHXP , CCHSP , CTXCI ,
-     +               CTXFPA, CCHXPA, CCHSPA, CTXCIA, CCHH  , CCHUP(2),
-     +               CTXP  , CTXAL(2)      , CFAI  , CFAIS , CFASI ,
-     +               CFACI , CFAISA, CFASIA, CFACIA, CPA(2), CPARF(2),
-     +               CNT   , LSNT(2)       , NTWN(2,4)     , NTVP(2,4),
-     +               CCLIP , SWKTP(2)      , NOPICT, NWKTP , MODEF
-      INTEGER        SOPWK , SACWK , CPLI  , CLN   , CPLCI , CLNA  ,
-     +               CLWSCA, CPLCIA, CPMI  , CMK   , CPMCI , CMKA  ,
-     +               CMKSA , CPMCIA, CTXI  , CTXFP , CTXCI , CTXFPA,
-     +               CCHXPA, CCHSPA, CTXCIA, CTXP  , CTXAL , CFAI  ,
-     +               CFAIS , CFASI , CFACI , CFAISA, CFASIA, CFACIA,
-     +               CNT   , LSNT  , CCLIP , SWKTP , NOPICT, NWKTP ,
-     +               MODEF
-      REAL           NTWN  , NTVP
-      COMMON/GKEROR/ ERS   , ERF
-      COMMON/GKENUM/ GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
-     +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
-     +               GMI
-      INTEGER        GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
-     +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
-     +               GMI   , ERS   , ERF
-      COMMON/GKSNAM/ GNAM(109)
-      CHARACTER*6    GNAM
-      COMMON/GKSIN1/ FCODE , CONT  , IL1   , IL2   , ID(128)       ,
-     +               RL1   , RL2   , RX(128)       , RY(128)       ,
-     +               STRL1 , STRL2 , RERR
-      COMMON/GKSIN2/ STR
-      INTEGER        FCODE , CONT  , RL1   , RL2   , STRL1 , STRL2 ,
-     +               RERR
-      CHARACTER*80   STR
+      include 'gkscom.h'
+C
+      INTEGER WKID,SGNA,WKTP,WKCT,FCODEO,CONTO
+C
+C  This subroutine is here solely as support for the SPPS GFLASn
+C  entries.  Full segmentation is not a part of the NCAR GKS
+C  package at this time.  The NCAR package is non-standard to the
+C  extent that certain segmentation functions are supported, but
+C  not all level 1 functions are supported.  This subroutine should
+C  be considered a user entry point only by way of the GFLASn
+C  calls--it should never be called directly be the user.
 C
 C
-      INTEGER WKID,SGNA,WKTP,WKCT
+C  Check if GKS is in the proper state.
 C
-C     THIS SUBROUTINE IS HERE SOLELY AS SUPPORT FOR THE SPPS GFLASn
-C     ENTRIES.  FULL SEGMENTATION IS NOT A PART OF THE NCAR GKS
-C     PACKAGE AT THIS TIME.  THE NCAR PACKAGE IS NON-STANDARD TO THE
-C     EXTENT THAT CERTAIN SEGMENTATION FUNCTIONS ARE SUPPORTED, BUT
-C     NOT ALL LEVEL 1 FUNCTIONS ARE SUPPORTED.  THIS SUBROUTINE SHOULD
-C     BE CONSIDERED A USER ENTRY POINT ONLY BY WAY OF THE GFLASn
-C     CALLS--IT SHOULD NEVER BE CALLED DIRECTLY BE THE USER.
-C
-C     CHECK IF GKS IS IN PROPER STATE
       CALL GZCKST(6,ECSGWK,IER)
       IF (IER .NE. 0) RETURN
-C     CHECK IF WORKSTATION IDENTIFIER IS VALID
+C
+C  Check if the workstation identifier is valid.
+C
       CALL GZCKWK(20,ECSGWK,WKID,IDUM,IER)
       IF (IER .NE. 0) RETURN
-C     CHECK IF THE SPECIFIED WORKSTATION IS OPEN
+C
+C  Check if the specified workstation is open.
+C
       CALL GZCKWK(25,ECSGWK,WKID,IDUM,IER)
       IF (IER .NE. 0) RETURN
-C     CHECK IF WISS IS OPEN
-      DO   200 I=1,NOPWK
-      CALL GQWKCA(SWKTP(I),IER,IWCAT)
-      IF (IWCAT .EQ. GWISS) GO TO 10
+C
+C  Check if WISS is open.
+C
+      DO 200 I=1,NOPWK
+        CALL GQWKCA(SWKTP(I),IER,IWCAT)
+        IF (IWCAT .EQ. GWISS) GO TO 10
   200 CONTINUE
       ERS = 1
       CALL GERHND(27,ECSGWK,ERF)
       ERS = 0
       RETURN
+C
    10 CONTINUE
-C     DETERMINE WORKSTATION TYPE
-      DO   201 I=1,NOPWK
-      IF (SOPWK(I).EQ.WKID) THEN
-      WKTP = SWKTP(I)
-      GO TO 20
+C
+C  Determine the workstation type.
+C
+      DO 201 I=1,NOPWK
+        IF (SOPWK(I) .EQ. WKID) THEN
+        WKTP = SWKTP(I)
+        GO TO 20
       ENDIF
   201 CONTINUE
    20 CONTINUE
-C     GET WORKSTATION CATEGORY
+C
+C  Get the workstation category.
+C
       CALL GQWKCA(WKTP,IER,WKCT)
-C     CHECK IF MI WORKSTATION
-      IF (WKCT.EQ.5) THEN
-      ERS = 1
-      CALL GERHND(33,ECSGWK,ERF)
-      ERS = 0
-      RETURN
-      ENDIF
-C     CHECK IF INPUT WORKSTATION
-      IF (WKCT.EQ.1) THEN
-      ERS = 1
-      CALL GERHND(35,ECSGWK,ERF)
-      ERS = 0
-      RETURN
-      ENDIF
-C     CHECK IF WISS WORKSTATION
-      IF (WKCT.EQ.3) THEN
-      ERS = 1
-      CALL GERHND(36,ECSGWK,ERF)
-      ERS = 0
-      RETURN
+C
+C  Check if an MI workstation.
+C
+      IF (WKCT .EQ. GMI) THEN
+        ERS = 1
+        CALL GERHND(33,ECSGWK,ERF)
+        ERS = 0
+        RETURN
       ENDIF
 C
-C     CHECK THAT THE SEGMENT NAME IS VALID.
+C  Check if input workstation.
 C
-      IF (SGNA.LT.0.OR.SGNA.GT.99) THEN
-      ERS = 1
-      CALL GERHND(120,ECSGWK,ERF)
-      ERS = 0
-      RETURN
+      IF (WKCT .EQ. GINPUT) THEN
+        ERS = 1
+        CALL GERHND(35,ECSGWK,ERF)
+        ERS = 0
+        RETURN
       ENDIF
 C
-C     CHECK IF THE SEGMENT NAME IS IN WISS.
+C  Check if WISS workstation.
 C
-      DO   202 I=1,NUMSEG
-      IF (SEGS(I).EQ.SGNA) GO TO 30
+      IF (WKCT .EQ. GWISS) THEN
+        ERS = 1
+        CALL GERHND(36,ECSGWK,ERF)
+        ERS = 0
+        RETURN
+      ENDIF
+C
+C  Check that the segment name is valid.
+C
+      IF (SGNA.LT.0 .OR. SGNA.GT.99) THEN
+        ERS = 1
+        CALL GERHND(120,ECSGWK,ERF)
+        ERS = 0
+        RETURN
+      ENDIF
+C
+C  Check if the segment name is in WISS.
+C
+      DO 202 I=1,NUMSEG
+        IF (SEGS(I) .EQ. SGNA) THEN
+          STR = ' '
+          STR = SEGNAM(I)
+          GO TO 30
+        ENDIF
   202 CONTINUE
       ERS = 1
       CALL GERHND(124,ECSGWK,ERF)
@@ -128,19 +114,85 @@ C
       RETURN
    30 CONTINUE
 C
-C     INVOKE WORKSTATION INTERFACE
+C  If the copy is to a non-metafile or if the segment transformation
+C  is not the identity, do the copy by parsing the segments.
 C
-      FCODE = 82
-      CONT  = 0
-      IL1 = 2
-      IL2 = 2
-      ID(1) = WCONID
-      ID(2) = SGNA
-      CALL GZTOWK
-      IF (RERR.NE.0) THEN
-      ERS = 1
-      CALL GERHND(RERR,ECSGWK,ERF)
-      ERS = 0
+      DO 60 I=1,NUMSEG
+        IF (SEGS(I) .EQ. SGNA) THEN
+          MXSREC = SEGLEN(I)
+C
+C  Retrieve the current segment transformation.
+C
+          CURTM(1,1) = SEGT(I,1,1) 
+          CURTM(1,2) = SEGT(I,1,2) 
+          CURTM(1,3) = SEGT(I,1,3) 
+          CURTM(2,1) = SEGT(I,2,1) 
+          CURTM(2,2) = SEGT(I,2,2) 
+          CURTM(2,3) = SEGT(I,2,3) 
+          GO TO 70
+        ENDIF
+   60 CONTINUE
+   70 CONTINUE
+      IF (WKTP.NE.GCGM .OR. CURTM(1,1).NE.1. .OR.CURTM(1,2).NE.0.
+     +                 .OR. CURTM(1,3).NE.0. .OR.CURTM(2,1).NE.0.
+     +                 .OR. CURTM(2,2).NE.1. .OR.CURTM(2,3).NE.0.
+     +                 ) THEN
+C
+C  Set CUFLAG to inidicate that the interface call should go only
+C  to the designated workstation.
+C
+        CUFLAG = WKID
+        CALL GZCPWK(WKID)
+        CUFLAG = -1
+        RETURN
+      ELSE
+C
+C  Copy to the metafile.
+C
+C
+C  Invoke the workstation interface.
+C
+C  Put out a new picture initialization of the picture is empty.
+C
+        IF (NOPICT .LE. 0) THEN
+          FCODEO = FCODE
+          CONTO  = CONT
+          FCODE  = 91
+          CONT   =  0
+          CALL G01WDR(WKID)
+          FCODE  = FCODEO
+          CONT   = CONTO
+          NOPICT = 1
+        ENDIF
+C
+C  Set the flag CUFLAG to indicate that the interface call should go
+C  only to the specifically designated workstation.
+C
+        CUFLAG = WKID
+        FCODE = 82
+        CONT  = 0
+        CALL GZROI(0)
+        IL1 = 3
+        IL2 = 3
+        ID(1) = WCONID
+        ID(2) = SGNA
+        DO 40 I=1,NUMSEG
+          IF (SEGS(I) .EQ. SGNA) THEN
+            ID(3) = SEGLEN(I)
+            GO TO 50
+          ENDIF
+   40   CONTINUE
+   50   CONTINUE
+        STRL1 = 80
+        STRL2 = 80
+        CALL GZTOWK
+        IF (RERR.NE.0) THEN
+          ERS = 1
+          CALL GERHND(RERR,ECSGWK,ERF)
+          ERS = 0
+        ENDIF
       ENDIF
+      CUFLAG = -1
+C
       RETURN
       END

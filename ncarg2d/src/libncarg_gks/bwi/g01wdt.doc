@@ -1,0 +1,8 @@
+C
+C     G01WDT    -- Workstation Description Table for workstation
+C                  type 1, a CGM-subset MO for level 0a GKS.
+C
+C       lwtype  - workstation type, 1 for this workstation.
+C       lwkcat  - workstation category, 4 (gmo)
+C       mversn  - version number for metafile (METAFILE ELEM LIST)
+C

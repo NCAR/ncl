@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-29 17:20:35 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1993-01-09 02:07:53 fred Exp $
 #
 NCARG	= ../../../..
 
@@ -10,20 +10,20 @@ FOPT	=
 #endif
 
 GENERIC_SRCS = \
-	 g01bkd.f g01ca.f g01clp.f g01clw.f g01ctb.f g01d2r.f g01d2s.f\
-	 g01diq.f g01dmp.f g01esc.f g01fa.f g01flb.f g01iac.f g01iws.f\
-	 g01mio.f g01pat.f g01pbl.f g01pl.f g01pm.f g01sas.f g01seg.f\
-	 g01siq.f g01snp.f g01tx.f g01wdr.f g01wkt.f gflcnv.f giargs.f\
-	 ginlod.f gkasci.f gmflod.f gmpart.f gopnic.f gputmd.f gputni.f\
-	 gputpr.f gputps.f gtnlen.f gupasf.f gupdva.f gupdvi.f gupdvr.f
+g01bkd.f  g01ca.f   g01clp.f  g01clw.f  g01ctb.f  g01d2r.f  g01d2s.f  g01diq.f \
+g01dmp.f  g01esc.f  g01fa.f   g01flb.f  g01iac.f  g01iws.f  g01mio.f  g01msg.f \
+g01pat.f  g01pbl.f  g01pl.f   g01pm.f   g01sas.f  g01seg.f  g01siq.f  g01snp.f \
+g01tx.f   g01wdr.f  g01wkt.f  gflcnv.f  giargs.f  ginlod.f  gkasci.f \
+gmflod.f  gmpart.f  gopnic.f  gputmd.f  gputni.f  gputpr.f  gputps.f  gtnlen.f \
+gupasf.f  gupdva.f  gupdvi.f  gupdvr.f 
 
 GENERIC_OBJS = \
-	 g01bkd.o g01ca.o g01clp.o g01clw.o g01ctb.o g01d2r.o g01d2s.o\
-	 g01diq.o g01dmp.o g01esc.o g01fa.o g01flb.o g01iac.o g01iws.o\
-	 g01mio.o g01pat.o g01pbl.o g01pl.o g01pm.o g01sas.o g01seg.o\
-	 g01siq.o g01snp.o g01tx.o g01wdr.o g01wkt.o gflcnv.o giargs.o\
-	 ginlod.o gkasci.o gmflod.o gmpart.o gopnic.o gputmd.o gputni.o\
-	 gputpr.o gputps.o gtnlen.o gupasf.o gupdva.o gupdvi.o gupdvr.o
+g01bkd.o  g01ca.o   g01clp.o  g01clw.o  g01ctb.o  g01d2r.o  g01d2s.o  g01diq.o \
+g01dmp.o  g01esc.o  g01fa.o   g01flb.o  g01iac.o  g01iws.o  g01mio.o  g01msg.o \
+g01pat.o  g01pbl.o  g01pl.o   g01pm.o   g01sas.o  g01seg.o  g01siq.o  g01snp.o \
+g01tx.o   g01wdr.o  g01wkt.o  gflcnv.o  giargs.o  ginlod.o  gkasci.o \
+gmflod.o  gmpart.o  gopnic.o  gputmd.o  gputni.o  gputpr.o  gputps.o  gtnlen.o \
+gupasf.o  gupdva.o  gupdvi.o  gupdvr.o 
 
 OTHER_SRCS = wks.c wks.h
 
@@ -63,3 +63,280 @@ wks.h: wks.h.sed Makefile
 
 clean::
 	@-$(RM) wks.c wks.h
+
+g01bkd.o : g01bkd.f \
+   g01prm.h \
+   g01wsl.doc \
+   g01wsl.h \
+   g01wdt.doc \
+   g01wdt.h \
+   g01ins.doc \
+   g01ins.h \
+   g01adf.doc \
+   g01adf.h \
+   g01adc.doc \
+   g01adc.h \
+   g01io.doc \
+   g01io.h \
+   gksenu.doc \
+   gksenu.h \
+   g01opc.doc \
+   g01opc.h 
+ 
+g01ca.o : g01ca.f \
+   g01prm.h \
+   gksin.h \
+   g01io.h \
+   g01ins.h \
+   g01wsl.h \
+   gksenu.h \
+   g01opc.h 
+ 
+g01clp.o : g01clp.f \
+   g01prm.h \
+   gksin.h \
+   g01wsl.h \
+   g01ins.h \
+   g01opc.h 
+ 
+g01clw.o : g01clw.f \
+   g01prm.h \
+   g01arq.h \
+   gksin.h \
+   g01wsl.h \
+   g01io.h \
+   g01ins.h \
+   g01ast.h \
+   g01adf.h \
+   g01opc.h \
+   gksenu.h 
+ 
+g01ctb.o : g01ctb.f \
+   g01prm.h \
+   gksin.h \
+   g01wsl.h \
+   g01ins.h \
+   g01opc.h \
+   gksenu.h 
+ 
+g01d2r.o : g01d2r.f \
+   g01prm.h \
+   g01arq.h \
+   g01adf.h 
+ 
+g01d2s.o : g01d2s.f \
+   g01prm.h \
+   g01ast.h \
+   g01adf.h 
+ 
+g01diq.o : g01diq.f \
+   g01prm.h \
+   gksin.h \
+   g01wdt.h \
+   g01ins.h 
+ 
+g01dmp.o : g01dmp.f \
+   g01prm.h \
+   g01wdt.h \
+   g01wsl.h \
+   g01adc.h \
+   g01arq.h \
+   g01ast.h \
+   g01adf.h \
+   g01io.h \
+   g01ins.h \
+   g01opc.h \
+   gksenu.h 
+ 
+g01esc.o : g01esc.f \
+   g01prm.h \
+   gksin.h \
+   g01ins.h 
+ 
+g01fa.o : g01fa.f \
+   g01prm.h \
+   gksin.h \
+   g01io.h \
+   g01ins.h \
+   g01wsl.h \
+   g01arq.h \
+   g01ast.h \
+   g01adc.h \
+   g01opc.h \
+   gksenu.h 
+ 
+g01flb.o : g01flb.f \
+   g01prm.h \
+   g01io.h 
+ 
+g01iac.o : g01iac.f \
+   g01prm.h \
+   g01arq.h \
+   g01ast.h \
+   g01adf.h \
+   g01adc.h 
+ 
+g01iws.o : g01iws.f \
+   g01prm.h \
+   g01wsl.h \
+   g01ins.h \
+   gksenu.h 
+ 
+g01msg.o : g01msg.f \
+   g01prm.h \
+   gksin.h \
+   g01ins.h 
+ 
+g01pat.o : g01pat.f \
+   gksin.h \
+   g01ins.h \
+   g01adc.h 
+ 
+g01pbl.o : g01pbl.f 
+ 
+g01pl.o : g01pl.f \
+   g01prm.h \
+   gksin.h \
+   g01io.h \
+   g01ins.h \
+   g01wsl.h \
+   g01arq.h \
+   g01ast.h \
+   g01adc.h \
+   g01opc.h \
+   gksenu.h 
+ 
+g01pm.o : g01pm.f \
+   gksin.h \
+   g01io.h \
+   g01ins.h \
+   g01wsl.h \
+   g01arq.h \
+   g01ast.h \
+   g01adc.h \
+   g01opc.h \
+   gksenu.h 
+ 
+g01sas.o : g01sas.f \
+   g01prm.h \
+   g01ins.h \
+   g01adc.h \
+   g01arq.h \
+   g01ast.h \
+   g01opc.h 
+ 
+g01seg.o : g01seg.f \
+   g01prm.h \
+   gksin.h \
+   g01io.h 
+ 
+g01siq.o : g01siq.f \
+   gksin.h \
+   g01wsl.h \
+   g01ins.h 
+ 
+g01snp.o : g01snp.f \
+   g01prm.h \
+   g01io.h \
+   g01opc.h \
+   g01ins.h \
+   g01wsl.h \
+   gksenu.h 
+ 
+g01tx.o : g01tx.f \
+   g01prm.h \
+   gksin.h \
+   g01io.h \
+   g01ins.h \
+   g01wsl.h \
+   g01arq.h \
+   g01ast.h \
+   g01adc.h \
+   g01opc.h \
+   gksenu.h 
+ 
+g01wdr.o : g01wdr.f \
+   g01prm.h \
+   gksin.h \
+   g01wdt.h \
+   g01wsl.h \
+   g01adc.h \
+   g01arq.h \
+   g01ast.h \
+   g01adf.h \
+   g01io.h \
+   g01ins.h \
+   g01opc.h \
+   gksenu.h 
+ 
+g01wkt.o : g01wkt.f \
+   g01prm.h \
+   gksin.h \
+   g01wsl.h \
+   g01ins.h 
+ 
+gflcnv.o : gflcnv.f 
+ 
+giargs.o : giargs.f 
+ 
+ginlod.o : ginlod.f \
+   g01ins.h \
+   g01io.h 
+ 
+gkasci.o : gkasci.f 
+ 
+gmflod.o : gmflod.f \
+   g01prm.h \
+   g01io.h 
+ 
+gmpart.o : gmpart.f \
+   g01prm.h \
+   g01ins.h \
+   g01io.h 
+ 
+gopnic.o : gopnic.f 
+ 
+gputmd.o : gputmd.f \
+   g01prm.h \
+   g01wdt.h \
+   g01opc.h \
+   g01ins.h 
+ 
+gputni.o : gputni.f \
+   g01prm.h \
+   g01ins.h 
+ 
+gputpr.o : gputpr.f \
+   g01prm.h \
+   g01ins.h 
+ 
+gputps.o : gputps.f \
+   g01prm.h \
+   g01ins.h 
+ 
+gtnlen.o : gtnlen.f 
+ 
+gupasf.o : gupasf.f \
+   gksin.h \
+   g01arq.h \
+   g01ast.h \
+   g01adc.h 
+ 
+gupdva.o : gupdva.f \
+   g01prm.h \
+   gksin.h \
+   g01arq.h \
+   g01ast.h \
+   g01adc.h 
+ 
+gupdvi.o : gupdvi.f \
+   g01prm.h \
+   g01arq.h \
+   g01ast.h \
+   g01adc.h 
+ 
+gupdvr.o : gupdvr.f \
+   g01prm.h \
+   g01arq.h \
+   g01ast.h \
+   g01adc.h 

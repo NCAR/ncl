@@ -1,0 +1,57 @@
+C
+C     G01ADF  -- Contains the default values of the workstation
+C                independent attributes.  These are the values which
+C                the attributes implicitly assume after BEGIN PICTURE.
+C                BEGIN PICTURE effectively causes these to be the
+C                "sent" variables, even though the send is implicit.
+C
+C                The first part of the structure exactly parallels
+C                the structure G01ARQ.  Following the first part
+C                are defaults for clipping control parameters, ...
+C
+C
+C       mdplix  - polyline index                (default: 1)
+C       mdltyp  - line type                     (default: 1 [GLSOLI])
+C       mdplci  - polyline color index          (default: 1)
+C       adlwsc  - line width scale factor       (default: 1.0)
+C
+C       mdpmix  - polymarker index              (default: 1)
+C       mdmtyp  - marker type                   (default: 3 [GAST])
+C       mdpmci  - polymarker color index        (default: 1)
+C       admszs  - marker size scale factor      (default: 1.0)
+C
+C       mdtxix  - text index                    (default: 1)
+C       mdtxp   - text path                     (default: 0 [GRIGHT])
+C       mdtxal  - text alignment        (default: 1,4 [GLEFT,GBASE])
+C       mdtxfo  - text font                     (default: 1)
+C       mdtxpr  - text precision                (default: 0 [GSTRP])
+C       mdtxci  - text color index              (default: 1)
+C       mdchh   - character height              (default: 328)
+C       mdchov  - character orientation vectors
+C                                   (default: 0,328 and 328,0)
+C       adchxp  - character expansion factor    (default: 1.0)
+C       adchsp  - character spacing             (default: 0.0)
+C
+C       mdfaix  - fill area index               (default: 1)
+C       mdpasz  - pattern size                  (default: 0,32767,
+C                                                         32767,0)
+C       mdparf  - pattern reference point       (default: 0,0)
+C       mdfais  - fill area interior style      (default: 0 [GHOLLO])
+C       mdfasi  - fill area style index         (default: 1)
+C       mdfaci  - fill area color index         (default: 1)
+C
+C       mdasf   - ASFs, in order:
+C                  1 - linetype                    (default: 1 [GINDIV])
+C                  2 - linewidth scale factor      (default: 1 [GINDIV])
+C                  3 - polyline color index        (default: 1 [GINDIV])
+C                  4 - marker type                 (default: 1 [GINDIV])
+C                  5 - marker size scale factor    (default: 1 [GINDIV])
+C                  6 - polymarker color index      (default: 1 [GINDIV])
+C                  7 - text font and precision     (default: 1 [GINDIV])
+C                  8 - character expansion factor  (default: 1 [GINDIV])
+C                  9 - character spacing           (default: 1 [GINDIV])
+C                 10 - text color index            (default: 1 [GINDIV])
+C                 11 - fill area interior style    (default: 1 [GINDIV])
+C                 12 - fill area style index       (default: 1 [GINDIV])
+C                 13 - fill area color index       (default: 1 [GINDIV])
+C

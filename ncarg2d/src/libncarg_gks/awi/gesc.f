@@ -1,54 +1,22 @@
 C
-C	$Id: gesc.f,v 1.1.1.1 1992-04-17 22:33:39 ncargd Exp $
+C	$Id: gesc.f,v 1.2 1993-01-09 01:58:29 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
+C
+C  ESCAPE
+C
       INTEGER EESC
       PARAMETER (EESC=11)
 C
-C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
-      COMMON/GKINTR/ NOPWK , NACWK , WCONID, NUMSEG,
-     +               SEGS(100)     , CURSEG
-      INTEGER        NOPWK , NACWK , WCONID, NUMSEG, SEGS  , CURSEG
-      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(2)       ,
-     +               MOPWK , MACWK , MNT
-      INTEGER        OPS   , WK
-      COMMON/GKSTAT/ SOPWK(2)      , SACWK(1)      , CPLI  , CLN   ,
-     +               CLWSC , CPLCI , CLNA  , CLWSCA, CPLCIA, CPMI  ,
-     +               CMK   , CMKS  , CPMCI , CMKA  , CMKSA , CPMCIA,
-     +               CTXI  , CTXFP(2)      , CCHXP , CCHSP , CTXCI ,
-     +               CTXFPA, CCHXPA, CCHSPA, CTXCIA, CCHH  , CCHUP(2),
-     +               CTXP  , CTXAL(2)      , CFAI  , CFAIS , CFASI ,
-     +               CFACI , CFAISA, CFASIA, CFACIA, CPA(2), CPARF(2),
-     +               CNT   , LSNT(2)       , NTWN(2,4)     , NTVP(2,4),
-     +               CCLIP , SWKTP(2)      , NOPICT, NWKTP , MODEF
-      INTEGER        SOPWK , SACWK , CPLI  , CLN   , CPLCI , CLNA  ,
-     +               CLWSCA, CPLCIA, CPMI  , CMK   , CPMCI , CMKA  ,
-     +               CMKSA , CPMCIA, CTXI  , CTXFP , CTXCI , CTXFPA,
-     +               CCHXPA, CCHSPA, CTXCIA, CTXP  , CTXAL , CFAI  ,
-     +               CFAIS , CFASI , CFACI , CFAISA, CFASIA, CFACIA,
-     +               CNT   , LSNT  , CCLIP , SWKTP , NOPICT, NWKTP ,
-     +               MODEF
-      REAL           NTWN  , NTVP
-      COMMON/GKEROR/ ERS   , ERF
-      COMMON/GKENUM/ GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
-     +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
-     +               GMI
-      INTEGER        GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
-     +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
-     +               GMI   , ERS   , ERF
-      COMMON/GKSNAM/ GNAM(109)
-      CHARACTER*6    GNAM
-      COMMON/GKSIN1/ FCODE , CONT  , IL1   , IL2   , ID(128)       ,
-     +               RL1   , RL2   , RX(128)       , RY(128)       ,
-     +               STRL1 , STRL2 , RERR
-      COMMON/GKSIN2/ STR
-      INTEGER        FCODE , CONT  , RL1   , RL2   , STRL1 , STRL2 ,
-     +               RERR
-      CHARACTER*80   STR
+      include 'gkscom.h'
 C
-      INTEGER FCTID,LIDR,FCODEO,CONTO
+      INTEGER FCTID,LIDR,TBUF(720)
       CHARACTER*(*) IDR(LIDR),ODR(MLODR)
-C     CHECK IF GKS IS IN PROPER STATE
+      CHARACTER*57  NAMET
+      CHARACTER*1   DNAME
+C
+C  Check if GKS is in the proper state.
+C
       CALL GZCKST(8,EESC,IER)
       IF (IER .NE. 0) RETURN
 C
@@ -64,28 +32,56 @@ C
 C
 C  Check if the function ID is supported.
 C
-      IF (FCTID.LT.0.AND.FCTID.NE.-1392.AND.FCTID.NE.-1391.AND.
-     -                   FCTID.NE.-1393.AND.FCTID.NE.-1394.AND.
-     -                   FCTID.NE.-1395) THEN
+      IF (FCTID.LT.0.AND.FCTID.NE.-1391 .AND. FCTID.NE.-1392 .AND.
+     -                   FCTID.NE.-1393 .AND. FCTID.NE.-1394 .AND.
+     -                   FCTID.NE.-1395 .AND. FCTID.NE.-1396 .AND.
+     -                   FCTID.NE.-1397) THEN
         ERS = 1
-        CALL GERHND(180,EESC,ERF)
+C       CALL GERHND(180,EESC,ERF)
         ERS = 0
-        RETURN
       ENDIF
 C
 C  Process legal escape function ID'S:
 C      -1391  --  Metafile name
 C      -1392  --  FLASH4 support
 C      -1393  --  Picture name
-C      -1394  --  FLASH support
+C      -1394  --  Currently undefined.
 C      -1395  --  Cause a pause in ctrans processing.
+C      -1396  --  Flag a pause in the X driver.
+C      -1397  --  Color table identifier for use by NCAR Interactive.
 C
-      IF (FCTID .EQ. -1395) THEN
+      IF (FCTID .EQ. -1396) THEN
+        READ (IDR,501) IWKID
+  501   FORMAT(I5)
+        CUFLAG = IWKID
+        FCODE = 6
+        CALL GZROI(0)
+        IL1 = 1
+        IL2 = 1
+        ID(1) = FCTID
+C
+C  Send over the data record if there is one (recall that the
+C  string length of STR is divisible by 80).
+C
+        CONT = 0
+        STRL1 = 80
+        STRL2 = 80
+        STR(1:80) = IDR(1)
+        CALL GZTOWK
+        IF (RERR .NE. 0) THEN
+          ERS = 1
+          CALL GERHND(RERR,EESC,ERF)
+          ERS = 0
+          RETURN
+        ENDIF
+        CUFLAG = -1
+      ELSE IF (FCTID .EQ. -1395) THEN
 C
 C  Put out a CGM ESCAPE element that will cause ctrans to pause.
 C
         FCODE = 93
         CONT  = 0
+        CALL GZROI(0)
         STRL1 = 80
         STRL2 = 80
         STR(1:80) = IDR(1)
@@ -93,42 +89,39 @@ C
         IL2   = 1
         ID(1) = FCTID
         CALL GZTOWK
-        IF (RERR.NE.0) THEN
+        IF (RERR .NE. 0) THEN
           ERS = 1
           CALL GERHND(RERR,EESC,ERF)
           ERS = 0
           RETURN
         ENDIF
-      ELSE IF (FCTID.EQ.-1394) THEN
+C     ELSE IF (FCTID.EQ.-1394) THEN
 C
 C  This ESCAPE function supports the interaction of issuing
 C  picture initialization and the GFLASH package.
 C
-        IF (IDR(1)(1:1) .EQ. '1') THEN
-          MODEF = 1
-        ELSE IF (IDR(1)(1:1) .EQ. '0') THEN
-          MODEF = 0
-        ELSE IF (IDR(1)(1:1) .EQ. '2') THEN
+C       IF (IDR(1)(1:1) .EQ. '1') THEN
+C         MODEF = 1
+C       ELSE IF (IDR(1)(1:1) .EQ. '0') THEN
+C         MODEF = 0
+C       ELSE IF (IDR(1)(1:1) .EQ. '2') THEN
 C
 C  Put out new picture initialization if the picture is empty.
 C
-          IF (NOPICT .LE. 0) THEN
-            FCODEO = FCODE
-            CONTO  = CONT
-            FCODE = 91
-            CONT  =  0
-            CALL G01WDR
-            FCODE  = FCODEO
-            CONT   = CONTO
-            NOPICT = 1
-          ENDIF
-        ENDIF
+C         READ(IDR(1)(2:9),230) IDWK 
+C 230     FORMAT(I8)
+C         IF (NOPICT .LE. 0) THEN
+C           CALL G01SNP(RERR)
+C           NOPICT = 1
+C         ENDIF
+C       ENDIF
       ELSE IF (FCTID.EQ.-1393) THEN
 C
 C  Picture name.
 C
         FCODE = 92
         CONT = 0
+        CALL GZROI(0)
         STRL1 = 80
         STRL2 = 80
         STR(1:80) = IDR(1)
@@ -140,42 +133,108 @@ C
           RETURN
         ENDIF
         CALL GZTOWK
-        IF (RERR.NE.0) THEN
+        IF (RERR .NE. 0) THEN
           ERS = 1
           CALL GERHND(RERR,EESC,ERF)
           ERS = 0
           RETURN
         ENDIF
-      ELSE IF (FCTID.EQ.-1392) THEN
+      ELSE IF (FCTID .EQ. -1392) THEN
 C
 C  FLASH4 support.
 C
-        FCODE = 83
-        CONT = 0
-        STRL1 = 80
-        STRL2 = 80
-        STR(1:80) = IDR(1)
-        CALL GZTOWK
-        IF (RERR.NE.0) THEN
-          ERS = 1
-          CALL GERHND(RERR,EESC,ERF)
-          ERS = 0
-          RETURN
-        ELSE
-          NUMSEG = NUMSEG+1
-          SEGS(NUMSEG) = ID(1)
+C
+C  Check if the input data record is dimensioned properly.
+C
+        IF (LIDR .LE. 0) THEN
+           ERS = 1
+           CALL GERHND(182,EESC,ERF)
+           ERS = 0
+           RETURN
         ENDIF
-      ELSE IF (FCTID.EQ.-1391) THEN
+C
+C  Check if the segment name is already in use.
+C
+        READ(IDR(1)(11:20),500) ICSEG 
+  500   FORMAT(I10)
+        DO 210 I=1,NUMSEG
+          IF (SEGS(I) .EQ. ICSEG) THEN
+            ERS = 1
+            CALL GERHND(121,EESC,ERF)
+            ERS = 0
+            RETURN
+          ENDIF
+  210   CONTINUE
+        NUMSEG = NUMSEG+1
+        SEGS(NUMSEG) = ICSEG
+        SEGNAM(NUMSEG) = IDR(1)(24:80)
+C
+C  Get the connection ID.
+C
+        READ(IDR(1)(21:23),510) IFUNIT
+  510   FORMAT(I3)
+C
+C  Determine the segment length.
+C
+        CALL GTNLEN(IDR(1)(24:80),ILEN,IER)
+        NAMET = ' '
+        NAMET(1:ILEN) = IDR(1)(24:24+ILEN-1)
+        NAMET(ILEN+1:ILEN+1) = CHAR(0)
+        CALL G01MIO(1, IFUNIT, NAMET(1:ILEN+1), IDUM1, IDUM2, IER)
+        IF (IER .NE. 0) THEN
+          RERR = -105
+          GO TO 110
+        ENDIF
+        CALL G01MIO(5,IFUNIT,DNAME,IDUM1,IDUM2,IER)
+        MRECNM = 1
+        MOBFSZ = 1+(11520-1)/I1MACH(5)
+  100   CONTINUE
+        CALL G01MIO(4, IFUNIT, DNAME, TBUF, MOBFSZ, IER)
+        IF (IER .NE. 0) THEN
+          IF (IER .EQ. -1) THEN
+            IF (NUMSEG .GT. 100) THEN
+              RERR = 120
+              GO TO 110
+            ELSE
+              SEGLEN(NUMSEG) = MRECNM-1
+              CALL G01MIO(2, IFUNIT, DNAME, TBUF, MOBFSZ, IER)
+              GO TO 110
+            ENDIF
+          ELSE
+            RERR = IER
+            GO TO 110
+          ENDIF
+        ENDIF
+        MRECNM = MRECNM+1
+        GO TO 100
+  110   CONTINUE 
+C
+C  Default the segment transformation.
+C
+        DO 30 I=1,2
+          DO 40 J=1,3
+            SEGT(NUMSEG,I,J) = 0.
+   40     CONTINUE
+   30   CONTINUE
+        SEGT(NUMSEG,1,1) = 1.
+        SEGT(NUMSEG,2,2) = 1.
+      ELSE IF (FCTID .EQ. -1391) THEN
 C
 C  File name for output metafile.
 C
         FCODE = 90
         CONT = 0
+        CALL GZROI(0)
+        IL1 = 1
+        IL2 = 1
+        ID(1) = GCGM
         STRL1 = 80
         STRL2 = 80
-        STR(1:80) = IDR(1)
+        IDR(2)(1:5) = '00000'
+        STR(1:75) = IDR(1)(1:75)
+        STR(76:80) = IDR(2)(1:5)
         CALL GZTOWK
-        IF (RERR.NE.0) THEN
+        IF (RERR .NE. 0) THEN
           ERS = 1
           CALL GERHND(RERR,EESC,ERF)
           ERS = 0
@@ -187,25 +246,29 @@ C
         NOPICT = 0
       ELSE
 C
-C  Send ESCAPE element to CGM.
+C  Send ESCAPE element.
 C
         FCODE = 6
-        IL1 = 2
-        IL2 = 2
+        CALL GZROI(0)
+        IL1 = 1
+        IL2 = 1
+        RL1 = 0
+        RL2 = 0
+        IC1 = 0
+        IC2 = 0
         ID(1) = FCTID
-        ID(2) = LIDR
 C
 C  Send over the data record if there is one (recall that the
 C  string length of STR is divisible by 80).
 C
-        IF (LIDR.GE.1) THEN
-          IF (LIDR.EQ.1) THEN
+        IF (LIDR .GE. 1) THEN
+          IF (LIDR .EQ. 1) THEN
             CONT = 0
             STRL1 = 80
             STRL2 = 80
             STR(1:80) = IDR(1)
             CALL GZTOWK
-            IF (RERR.NE.0) THEN
+            IF (RERR .NE. 0) THEN
               ERS = 1
               CALL GERHND(RERR,EESC,ERF)
               ERS = 0
@@ -221,8 +284,9 @@ C
             LDRM1 = LIDR-1
             DO 200 I=1,LDRM1
               STR(1:80) = IDR(I)
+              IF (I .GT. 1) IL2 = 0
               CALL GZTOWK
-              IF (RERR.NE.0) THEN
+              IF (RERR .NE. 0) THEN
                 ERS = 1
                 CALL GERHND(RERR,EESC,ERF)
                 ERS = 0
@@ -232,7 +296,7 @@ C
             CONT = 0
             STR(1:80) = IDR(LIDR)
             CALL GZTOWK
-            IF (RERR.NE.0) THEN
+            IF (RERR .NE. 0) THEN
               ERS = 1
               CALL GERHND(RERR,EESC,ERF)
               ERS = 0
@@ -242,7 +306,7 @@ C
         ELSE
           CONT = 0
           CALL GZTOWK
-          IF (RERR.NE.0) THEN
+          IF (RERR .NE. 0) THEN
             ERS = 1
             CALL GERHND(RERR,EESC,ERF)
             ERS = 0
@@ -250,5 +314,6 @@ C
           ENDIF
         ENDIF
       ENDIF
+C
       RETURN
       END

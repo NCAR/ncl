@@ -1,0 +1,30 @@
+C
+C     G01IO   --      Output buffer(s), pointers, etc.
+C
+C       mpxysz  - size in words of mpxpy.
+C       mpxpy   - holding buffer, for results of coordinate
+C                 conversions.
+C       mobfsz  - size in words of moutbf.
+C       moutbf  - primary output buffer, integer array.
+C       mbfpos  - next available storage location in moutbf,
+C                 offset in bits from beginning of moutbf.
+C       mfglun  - logical unit number for metafile generator output.
+C       mxbits  - number of bits in moutbf
+C       mdtype  - metacode data type id
+C       mnfflg  - new-frame flag set to 1 (GYES) by a 'begin picture',
+C                 cleared (GNO) by the metafile writing routines
+C       mbmflg  - begin-metafile flag, set to 1 (GYES) on 'open
+C                 wkstn', cleared (GNO) by metafile writing routines.
+C       mbmflg  - end-metafile flag, set to 0 (GNO) on 'open
+C                 wkstn', set to 1 (GYES) upon 'close workstation'.
+C       mrecnm  - the current record to be written out
+C       mioflg  - this is a flag value which is set to -9999; it
+C                 is to be used by independent utilities which may
+C                 want to write to the metafile output unit of this
+C                 GKS package if it has been opened.
+C
+C    G01CHR   --     Character data
+C       mfname  - Metafile output file name.
+C
+
+

@@ -1,53 +1,45 @@
 C
-C	$Id: g01flb.f,v 1.1.1.1 1992-04-17 22:33:57 ncargd Exp $
+C	$Id: g01flb.f,v 1.2 1993-01-09 02:06:05 fred Exp $
 C
       SUBROUTINE G01FLB(GKSERR)
 C
-C  WRITE THE METAFILE RECORD OUT TO THE DISK
+C  Write the metafile record out to the disk.
 C
 C  OUTPUT
-C       GKSERR-THE ERROR STATUS FLAG
+C    GKSERR -- An error status flag.
 C
-C  ALL DATA IS TYPE INTEGER UNLESS OTHERWISE INDICATED
+C  All data is type integer unless otherwise indicated.
 C
       IMPLICIT INTEGER (A-Z)
 C
-      COMMON  /G01IO/   MIOFLG  ,MRECNM ,MPXYSZ ,MPXPY(256)     ,
-     +                  MOBFSZ  ,MOUTBF(720)    ,MBFPOS ,
-     +                  MFGLUN  ,MXBITS         ,MDTYPE ,
-     +                  MNFFLG  ,MBMFLG ,MEMFLG
-        INTEGER         MIOFLG  ,MRECNM ,MPXYSZ ,MPXPY  ,MOBFSZ ,
-     +                  MBFPOS  ,MFGLUN ,MOUTBF ,MXBITS ,MDTYPE ,
-     +                  MNFFLG  ,MBMFLG ,MEMFLG
-      COMMON  /G01CHA/  MFNAME  ,MPNAME
-      CHARACTER*80      MFNAME  ,MPNAME
+      include 'g01prm.h'
+      include 'g01io.h'
 C
-      DIMENSION  FLAGS(12)
+      DIMENSION   FLAGS(12)
       CHARACTER*1 DNAME
 C
-C  INITIALIZE FLAGS ARRAY
+C  Initialize flags array.
 C
       DATA FLAGS( 1),FLAGS( 2),FLAGS( 3),FLAGS( 4)/0,0,0,0/
       DATA FLAGS( 5),FLAGS( 6),FLAGS( 7),FLAGS( 8)/0,0,0,0/
       DATA FLAGS( 9),FLAGS(10),FLAGS(11),FLAGS(12)/0,0,0,0/
 C
-C  DEFINE THE ALL OK STATUS, BUFFER RESET POINT, BUFFER WRITE ERROR,
-C  CLEAR THE NEW FRAME FLAG
+C  Define the, buffer reset point and clear the new frame flag.
 C
       DATA BFREST,CLEAR/32,0/
 C
-C  SET THE BIT LENGTH FOR ID ID PART OF A RECORD, THE NUMBER OF BITS PER
-C  BYTE, THE FIELD SIZE FOR THE RECORD BIT START FOR THE RECORD BYTE
-C  LENGTH AND THE FIELD SIZE FOR THE RECORD BYTE LENGTH
+C  Set the bit length for the ID part of a record, the number of bits per
+C  byte, the field size for the record bit start for the record byte
+C  length and the field size for the record byte length.
 C
       DATA IDLEN,BYTSIZ,SIZST,SIZSZ/32,8,0,16/
 C
-C  SET THE DATA TYPE START BIT IN RECORD, THE DATA TYPE LENGTH ,
-C  THE NEW FRAME BIT START BIT, THE NEW FRAME LENGTH
+C  Set the data type start bit in record, the data type length,
+C  the new frame bit start bit, the new frame length.
 C
       DATA MDTST,MDTSZ,MNFST,MNFSZ/16,4,20,1/
 C
-C  ENTER THE BYTE COUNT
+C  Enter the byte count.
 C
       BCOUNT = (MBFPOS - IDLEN) / BYTSIZ
 C
@@ -58,17 +50,17 @@ C
         BCOUNT = BCOUNT+1
       ENDIF
 C
-C  RETURN IF NOTHING IN BUFFER
+C  Return if nothing in buffer.
 C
       IF (BCOUNT .LE. 0) RETURN
       CALL SBYTES(MOUTBF,BCOUNT,SIZST,SIZSZ,0,1)
 C
-C  ENTER THE DATA TYPE ID
+C  Enter the data type id.
 C
       CALL SBYTES(MOUTBF,MDTYPE,MDTST,MDTSZ,0,1)
 C
-C  PUT AWAY NEW FRAME, BEGIN METAFILE, AND END METAFILE BITS,
-C  AND THEN CLEAR THEM.
+C  Put away new frame, begin metafile, and end metafile bits,
+C  and then clear them.
 C
       FLAGS(1) = MNFFLG
       FLAGS(2) = MBMFLG
@@ -78,15 +70,18 @@ C
       MBMFLG = CLEAR
       MEMFLG = CLEAR
 C
-C  WRITE OUT THE RECORD
+C  Write out the record.
 C
       CALL G01MIO (3, MFGLUN, DNAME, MOUTBF, MOBFSZ, GKSERR)
       MRECNM = MRECNM + 1
 C
-C  RESET THE RECORD POINTER
+C  Flush the system-level output buffer.
+C
+      CALL G01MIO (7, MFGLUN, DNAME, MOUTBF, MOBFSZ, GKSERR)
+C
+C  Reset the record pointer.
 C
       MBFPOS = BFREST
 C
       RETURN
-C
       END

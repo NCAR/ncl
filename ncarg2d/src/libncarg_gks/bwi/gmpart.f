@@ -1,65 +1,37 @@
 C
-C	$Id: gmpart.f,v 1.1.1.1 1992-04-17 22:34:00 ncargd Exp $
+C	$Id: gmpart.f,v 1.2 1993-01-09 02:07:26 fred Exp $
 C
       SUBROUTINE GMPART(NBYTES,GKSERR)
 C
-C  THIS INSTRUCTION LOADS THE NEXT PARTITION OF AN ACTIVE INSTRUCTION
+C  This subroutine loads the next partition of an active element.
 C
 C  OUTPUT
-C       GKSERR-THE ERROR STATUS FLAG
+C    GKSERR -- An error status flag.
 C
-C  ALL DATA IS TYPE INTEGER UNLESS OTHERWISE INDICATED
+C  All data is type integer unless otherwise indicated.
 C
       IMPLICIT INTEGER (A-Z)
 C
-C  COMMON FOR COMMUNICATION OF INSTRUCTION AND LENGTH
-C
-      COMMON  /G01INS/  MCODES  ,MCONTS ,
-     +                  MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW ,
-     +                  MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL ,
-     +                  MINXVD  ,MAXXVD ,MINYVD ,MAXYVD ,
-     +                  MCFRM   ,MCOPCL ,MCOPID ,MCNBYT ,
-     +                  MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG ,
-     +                  MBCCHG
-        INTEGER         MCODES  ,MCONTS
-        INTEGER         MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW
-        INTEGER         MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL
-        INTEGER         MINXVD  ,MAXXVD ,MINYVD ,MAXYVD
-        INTEGER         MCFRM   ,MCOPCL ,MCOPID ,MCNBYT
-        INTEGER         MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG
-        INTEGER         MBCCHG
-      COMMON  /G01IO/   MIOFLG  ,MRECNM ,MPXYSZ ,MPXPY(256)     ,
-     +                  MOBFSZ  ,MOUTBF(720)    ,MBFPOS ,
-     +                  MFGLUN  ,MXBITS         ,MDTYPE ,
-     +                  MNFFLG  ,MBMFLG ,MEMFLG
-        INTEGER         MIOFLG  ,MRECNM ,MPXYSZ ,MPXPY  ,MOBFSZ ,
-     +                  MBFPOS  ,MFGLUN ,MOUTBF ,MXBITS ,MDTYPE ,
-     +                  MNFFLG  ,MBMFLG ,MEMFLG
-      COMMON  /G01CHA/  MFNAME  ,MPNAME
-      CHARACTER*80      MFNAME  ,MPNAME
+      include 'g01prm.h'
+      include 'g01ins.h'
+      include 'g01io.h'
 C
 C  Define the CGM data element partition size.  To make the arithmetic
 C  come out right in other parts of the code, this should be a multiple
 C  of 256.
 C
       DATA PARSIZ/32256/
-C
-C  DEFINE THE ALLOK STATUS.
-C
       DATA ALLOK/0/
 C
-C  DEFINE THE SHORT FORMAT LENGTH, SHORT FORMAT COUNT, LONG FORMAT FLAG,
-C    CONTINUE FLAG ON, CONTINUE FLAG OFF, CONTINUE LENGTH, LONG FORMAT
-C    LENGTH
+C  Define the short format length, short format count, long format flag,
+C  continue flag on, continue flag off, continue length, long format
+C  length.
 C
-      DATA CONON,CONOFF,CFMLNG,LFMLNG
-     1          /1,0,1,15/
-C
-C  SET ERROR STATUS TO ALL OK
+      DATA CONON,CONOFF,CFMLNG,LFMLNG /1,0,1,15/
 C
       GKSERR = ALLOK
 C
-C  SET THE CURRENT PARTITION BYTE COUNT AND THE REMAINDER BYTE COUNT
+C  Set the current partition byte count and the remainder byte count.
 C
       IF (NBYTES .GT. PARSIZ) THEN
         MCCBYT = PARSIZ
@@ -69,23 +41,23 @@ C
         MCNBYT = 0
       END IF
 C
-C  SET THE CONTINUE FLAG
+C  Set the continue flag.
 C
       IF (MCNBYT .NE. 0) THEN
 C
-C               THERE IS ANOTHER PARTITION
+C  There is another partition.
 C
-                CALL GMFLOD(CONON,CFMLNG,1,GKSERR)
+        CALL GMFLOD(CONON,CFMLNG,1,GKSERR)
       ELSE
 C
-C               LAST PARTITION
+C  Last partition.
 C
-                CALL GMFLOD(CONOFF,CFMLNG,1,GKSERR)
+        CALL GMFLOD(CONOFF,CFMLNG,1,GKSERR)
       END IF
 C
       IF (GKSERR .NE. ALLOK) RETURN
 C
-C  SET THE LONG FORMAT OPERAND LIST SIZE
+C  Set the long format operand list size.
 C
       CALL GMFLOD(MCCBYT,LFMLNG,1,GKSERR)
 C

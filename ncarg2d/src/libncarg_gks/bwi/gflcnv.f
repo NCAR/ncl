@@ -1,16 +1,16 @@
 C
-C	$Id: gflcnv.f,v 1.1.1.1 1992-04-17 22:34:00 ncargd Exp $
+C	$Id: gflcnv.f,v 1.2 1993-01-09 02:07:07 fred Exp $
 C
       SUBROUTINE GFLCNV (FNUM,INUM)
 C
-C     THIS SUBROUTINE CONVERTS THE FLOATING-POINT NUMBER IN
-C     FNUM INTO TWO 16-BIT INTEGERS IN THE LOW ORDER BITS OF
-C     INUM.  THESE TWO 16-BIT QUANTITIES ARE SUITABLE FOR
-C     INSERTION INTO THE CGM.  THE FIRST 16-BIT INTEGER IS
-C     GIVEN BY THE LOW-ORDER 15 BITS RESULTING FROM INUM(1)=FUNM.
-C     THIS NUMBER IS THEN EXPRESSED IN 2'S COMPLEMENT FORMAT.  THE
-C     SECOND 16-BIT INTEGER IS THE DECIMAL PART OF FNUM
-C     MULTIPLIED BY 2**16 (65536.)
+C     This subroutine converts the floating-point number in
+C     FNUM into two 16-bit integers in the low order bits of
+C     INUM.  These two 16-bit quantities are suitable for
+C     insertion into the CGM.  The first 16-bit integer is
+C     given by the low-order 15 bits resulting from INUM(1)=FUNM.
+C     This number is then expressed in 2's complement format.  The
+C     second 16-bit integer is the decimal part of FNUM
+C     multiplied by 2**16 (65536.)
 C
       REAL     FNUM
       INTEGER  INUM(2)

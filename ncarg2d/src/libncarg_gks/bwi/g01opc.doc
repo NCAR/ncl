@@ -1,0 +1,90 @@
+C     G01OPC --    Common containing all CGM opcodes that are
+C                  used/needed by the metafile generator wkstn.
+C
+C                  Each CGM element has a class and an id that
+C                  together make up the opcode.  The following table
+C                  gives the element name, class parameter name,
+C                  and id parameter name.
+C
+C                  The CGM elements are grouped in classes.  The
+C                  class code is invariant within a class.  For each
+C                  class, a parameter is defined that is equivalent
+C                  to all the individual named class parameters
+C                  within the class, which are defined as locals.
+C
+C
+C        Element name                         Class     Id
+C        ------------                         ------    ------
+C
+C        (Delimiter class)                    (cldelm)
+C        noop                                 clnoop    idnoop
+C        BEGIN METAFILE                       clbegm    idbegm
+C        END METAFILE                         clendm    idendm
+C        BEGIN PICTURE                        clbegp    idendp
+C        BEGIN PICTURE BODY                   clbgpb    idbgpb
+C        END PICTURE                          clendp    idendp
+C
+C        (Metafile Descriptor Class)          (clmdes)
+C        METAFILE VERSION                     clmver    idmver
+C        METAFILE ELEMENTS LIST               clmelt    idmelt
+C        METAFILE DEFAULTS REPLACEMENT        cldrep    iddrep
+C        METAFILE DESCRIPTION                 cldscr    iddscr
+C        FONT LIST                            clflst    idflst
+C
+C        (Picture Delimiter Class)            (clpdes)
+C        COLOUR SELECTION MODE                clcsel    idcsel
+C        VDC EXTENT                           clvext    idvext
+C        BACKGROUND COLOR                     clbkgc    idbkgc
+C
+C        (Control Class)                      (clcntl)
+C        VDC INTEGER PRECISION                clvint    idvint
+C        CLIP RECTANGLE                       clcrec    idcrec
+C        CLIP INDICATOR                       clclin    idclin
+C
+C        (Graphical Primitives Class)         (clprim)
+C        POLYLINE                             clplin    idplin
+C        POLYMARKER                           clpmrk    idpmrk
+C        TEXT                                 cltext    idtext
+C        POLYGON                              clpgon    idpgon
+C        CELL ARRAY                           clcary    idcary
+C        GENERALIZED DRAWING PRIMITIVE        clgdp     idgdp
+C
+C        (Primitive Attributes Class)         (clprat)
+C        LINE BUNDLE INDEX                    cllbix    idlbix
+C        LINE TYPE                            clltyp    idltyp
+C        LINE WIDTH                           cllwid    idlwid
+C        LINE COLOUR                          cllclr    idlclr
+C        MARKER BUNDLE INDEX                  clmbix    idmbix
+C        MARKER TYPE                          clmtyp    idmtyp
+C        MARKER SIZE                          clmsiz    idmsiz
+C        MARKER COLOUR                        clmclr    idmclr
+C        TEXT BUNDLE INDEX                    cltbix    idtbix
+C        TEXT FONT INDEX                      cltfon    idtfon
+C        TEXT PRECISION                       cltpre    idtpre
+C        CHARACTER EXPANSION FACTOR           clchex    idchex
+C        CHARACTER SPACING                    clchsp    idchsp
+C        TEXT COLOUR                          cltclr    idtclr
+C        CHARACTER HEIGHT                     clchht    idchht
+C        CHARACTER ORIENTATION                clchor    idchor
+C        TEXT PATH                            cltxpa    idtxpa
+C        TEXT ALIGNMENT                       cltxal    idtxal
+C        FILL BUNDLE INDEX                    clfbix    idfbix
+C        INTERIOR STYLE                       clints    idints
+C        FILL COLOUR                          clfclr    idfclr
+C        HATCH INDEX                          clhaix    idhaix
+C        PATTERN INDEX                        clptix    idptix
+C        FILL REFERENCE POINT                 clfrpt    idfrpt
+C        PATTERN TABLE                        clptbl    idptbl
+C        PATTERN SIZE                         clptsz    idptsz
+C        COLOUR TABLE                         clctbl    idctbl
+C        ASPECT SOURCE FLAGS                  clasfs    idasfs
+C
+C        (Escape Elements Class)              (clesce)
+C        ESCAPE                               clesc     idesc
+C
+C        (External Elements Class)            (clexte)
+C        MESSAGE                              clmess    idmess
+C        APPLICATION DATA                     clapld    idapld
+C
+C
+C

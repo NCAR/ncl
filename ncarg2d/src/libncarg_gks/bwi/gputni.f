@@ -1,56 +1,42 @@
 C
-C	$Id: gputni.f,v 1.1.1.1 1992-04-17 22:34:01 ncargd Exp $
+C	$Id: gputni.f,v 1.2 1993-01-09 02:07:33 fred Exp $
 C
       SUBROUTINE GPUTNI(OPCL, OPID, NBYTES, GKSERR)
 C
-C  THIS ROUTINE SETS UP THE NEXT INSTRUCTION TO BE PLACED IN
-C  THE METAFILE.
+C  This routine sets up the next instruction to be placed in
+C  the metafile.
 C
-C  AFTER THIS CALL THE GPUTPR OR GPUTPS ROUTINES ARE CALLED TO LOAD THE
-C  OPERAND LIST.
+C  After this call the GPUTPR or GPUTPS routines are called to load
+C  the operand list.
 C
 C
 C  INPUT
-C       OPCL-THE OPCODE CLASS OF THE INSTRUCTION
-C       OPID-THE OPCODE ID OF THE INSTRUCTION
-C       NBYTES-THE NUMBER OF BYTES IN THE OPERAND LIST
-C  OUTPUT
-C       GKSERR-THE ERROR STATUS DEFINED BY COMMON
+C    OPCL   -- The opcode CLASS of the element.
+C    OPID   -- The opcode ID of the element.
+C    NBYTES -- The number of bytes in the operand list.
 C
-C  ALL DATA IS TYPE INTEGE UNLESS OTHERWISE INDICATED
+C  OUTPUT
+C    GKSERR -- An error status return.
+C
+C  All data is type intege unless otherwise indicated.
 C
       IMPLICIT INTEGER (A-Z)
 C
-C  COMMON FOR COMMUNICATION OF INSTRUCTION AND LENGTH
+      include 'g01prm.h'
+      include 'g01ins.h'
 C
-      COMMON  /G01INS/  MCODES  ,MCONTS ,
-     +                  MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW ,
-     +                  MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL ,
-     +                  MINXVD  ,MAXXVD ,MINYVD ,MAXYVD ,
-     +                  MCFRM   ,MCOPCL ,MCOPID ,MCNBYT ,
-     +                  MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG ,
-     +                  MBCCHG
-        INTEGER         MCODES  ,MCONTS
-        INTEGER         MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW
-        INTEGER         MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL
-        INTEGER         MINXVD  ,MAXXVD ,MINYVD ,MAXYVD
-        INTEGER         MCFRM   ,MCOPCL ,MCOPID ,MCNBYT
-        INTEGER         MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG
-        INTEGER         MBCCHG
-C
-C  Set the CGM data element partition size.
-C  The partition size should be a multiple of 256 in order to
-C  make the arithmetic in other parts of the code come out right.
+C  Set the CGM data element partition size.  The partition size 
+C  should be a multiple of 256 in order to  make the arithmetic 
+C  in other parts of the code come out right.
 C
       DATA PARSIZ/32256/
 C
-C
-C  LOAD THE CURRENT OPCODE CLASS AND ID INTO COMMON
+C  Load the current opcode CLASS and ID into common.
 C
       MCOPCL = OPCL
       MCOPID = OPID
 C
-C  SET THE CURRENT PARTITION BYTE COUNT AND THE REMAINDER BYTE COUNT
+C  Set the current partition byte count and the remainder byte count.
 C
       IF (NBYTES .GT. PARSIZ) THEN
         MCCBYT = PARSIZ
@@ -60,11 +46,9 @@ C
         MCNBYT = 0
       END IF
 C
-C  READY THE CURRENT PARTITION FOR THE OPERAND LIST
+C  Ready the current partition for the operand list.
 C
       CALL GINLOD(GKSERR)
-C
-C  RETURN TO CALLER
 C
       RETURN
       END

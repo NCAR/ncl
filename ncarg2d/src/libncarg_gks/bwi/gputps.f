@@ -1,20 +1,24 @@
 C
-C	$Id: gputps.f,v 1.1.1.1 1992-04-17 22:34:01 ncargd Exp $
+C	$Id: gputps.f,v 1.2 1993-01-09 02:07:38 fred Exp $
 C
       SUBROUTINE GPUTPS (BUFFER, COUNT1, COUNT2, CONTIN, GKSERR)
 C
-C  PUT CHARACTER STRING (TYPE CHARACTER) INTO THE METAFILE BUFFER
+C  Put a character string into the metafile buffer.  This subroutine
+C  can be called successively to put out long strings--on the
+C  first call the total count is put out and on subsequent calls
+C  just the characters are put out.
 C
 C  INPUT
-C       BUFFER-CHARACTER STRING TO MOVE, MUST BE TYPE CHARACTER
-C       COUNT1-TOTAL NUMBER OF CHARACTERS TO BE PROCESSED ENTIRE SEQUENCE
-C       COUNT2-NUMBER OF CHARACTERS TO BE PROCESS THIS CALL
-C       CONTIN-IF 0, COUNT1 IS PUT OUT PRIOR TO THE STRING ITSELF;
-C              IF 1, ONLY THE CHARACTER STRING IS PUT OUT.
+C    BUFFER -- The character string to move (must be type CHARACTER).
+C    COUNT1 -- Total number of characters to be processed for the
+C              entire sequence.
+C    COUNT2 -- Number of characters to be processed this call.
+C    CONTIN -- If 0, COUNT1 is put out prior to the string itself;
+C              if 1, only the character string is put out.
 C  OUTPUT
-C       GKSERR-ERROR STATUS
+C    GKSERR -- Error status.
 C
-C  ALL DATA IS TYPE INTEGER UNLESS OTHERWISE INDICATED
+C  All data is type integer unless otherwise indicated.
 C
       IMPLICIT INTEGER (A-Z)
       DIMENSION CHARS(256)
@@ -23,98 +27,89 @@ C
       INTEGER  BITSPC
       INTEGER  GKASCI
 C
-C  OPERAND AND INSTRUCTION COMMUNICATION
-C
-      COMMON  /G01INS/  MCODES  ,MCONTS ,
-     +                  MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW ,
-     +                  MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL ,
-     +                  MINXVD  ,MAXXVD ,MINYVD ,MAXYVD ,
-     +                  MCFRM   ,MCOPCL ,MCOPID ,MCNBYT ,
-     +                  MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG ,
-     +                  MBCCHG
-        INTEGER         MCODES  ,MCONTS
-        INTEGER         MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW
-        INTEGER         MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL
-        INTEGER         MINXVD  ,MAXXVD ,MINYVD ,MAXYVD
-        INTEGER         MCFRM   ,MCOPCL ,MCOPID ,MCNBYT
-        INTEGER         MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG
-        INTEGER         MBCCHG
+      include 'g01prm.h'
+      include 'g01ins.h'
       SAVE
 C
-C  MAX NUMBER OF CHARACTERS TO TEMP BUFFER
+C  Maximum number of characters allowed in the temporary buffer.
 C
       DATA  MXCH/256/
 C
-C  CGM METAFILE USES ASCII, 8 BITS PER CHARACTER CODE.
+C  CGM uses 8-bit ASCII.
 C
       DATA  BITSPC/8/,  LSFLG/255/
 C
-C  FIRST CALL PROCESSING, SET UP COUNT (OR FLAG/COUNT).
+C  First call processing, set up count (or flag/count).
 C
-      IF (CONTIN.EQ.0)  THEN
-C       NUMBER OF BITS FOR PARAMETER, COUNT+STRING, DEPENDS ON
-C       WHETHER STRING IS LONG OR SHORT FORM.
-         IF (COUNT1.LE.254)  THEN
-            NBCCNT = 8
-         ELSE
-            NBCCNT = 16
-            CALL GMFLOD (LSFLG, 8, 1, GKSERR)
-            IF (GKSERR.NE.0)  RETURN
-         END IF
-         CALL GMFLOD (COUNT1, NBCCNT, 1, GKSERR)
-         IF (GKSERR.NE.0)  RETURN
+      IF (CONTIN .EQ. 0)  THEN
+C
+C  The number of bytes for the  COUNT+STRING  depends on
+C  whether the string is encoded in the long or short form.
+C
+        IF (COUNT1 .LE. 254)  THEN
+          NBCCNT = 8
+        ELSE
+          NBCCNT = 16
+          CALL GMFLOD (LSFLG, 8, 1, GKSERR)
+          IF (GKSERR .NE. 0)  RETURN
+        END IF
+        CALL GMFLOD (COUNT1, NBCCNT, 1, GKSERR)
+        IF (GKSERR .NE. 0)  RETURN
       END IF
 C
       CTEMP = COUNT2
       STRT = 1
 C
- 10   CONTINUE
+   10 CONTINUE
 C
-C  DETERMINE THE NUMBER OF CHARACTERS THAT WILL FIT
-C  IN THE CURRENT PARTITION
+C  Determine the number of characters that will fit
+C  in the current partition.
 C
       WCBYT = 1 + (MCCBYT*8-1)/BITSPC
 C
-C  COMPUTE AND MOVE THE ALLOWED NUMBER OF CHARACTERS.
+C  Compute and move the allowed number of characters.
 C
       MOVIT = MIN0(WCBYT,CTEMP,MXCH)
 C
-C  MOVE THE CHARACTER CODES TO THE INTEGER BUFFER
+C  Move the character codes to the integer buffer.
 C
       DO 20 II = 1,MOVIT
         NP = STRT + II - 1
-C       GET ASCII EQUIVALENT OF CHARACTER CODE.
+C
+C  Get the ASCII equivalent of the character code.
+C
         CHARS(II) = GKASCI (ICHAR(BUFFER(NP:NP)))
- 20   CONTINUE
+   20 CONTINUE
+C
       CALL GMFLOD (CHARS, BITSPC, MOVIT, GKSERR)
       IF (GKSERR .NE. 0) RETURN
 C
-C  CHECK IF ANOTHER PARTITION HAS TO BE STARTED
+C  Check if another partition has to be started.
 C
       CTEMP = CTEMP - MOVIT
       MCCBYT = MCCBYT - (MOVIT*BITSPC)/8
       IF (CTEMP .NE. 0) THEN
 C
-C       CHECK IF MORE ROOM IN PARTITION
+C  Check if more room in partition.
 C
         IF (MCCBYT .NE. 0) THEN
 C
-C               MORE ROOM IN THE CURRENT PARTITION
+C  More room in the current partition.
 C
-                STRT = STRT + MOVIT
+          STRT = STRT + MOVIT
         ELSE
 C
-C               NEW PARTITION REQUIRED SO SET UP THE INSTRUCTION
+C  New partition required, so set up the instruction.
 C
-                STRT = STRT + MOVIT
-C               TAKE REMAINDER OF BYTES LEFT IN CURRENT PARTITION
-C               (THEY MUST BE USED)
-                TCBYT = MCNBYT + MCCBYT
-                CALL GMPART (TCBYT, GKSERR)
-                IF (GKSERR .NE. 0) RETURN
+          STRT = STRT + MOVIT
+C  Take the remainder of the bytes left in the current partition
+C  (they must be used).
+          TCBYT = MCNBYT + MCCBYT
+          CALL GMPART (TCBYT, GKSERR)
+          IF (GKSERR .NE. 0) RETURN
         END IF
 C
-C       MOVE MORE OPERANDS INTO NEW PARTITION
+C  Move more operands into new partition.
 C
         GO TO 10
       END IF

@@ -1,82 +1,73 @@
 C
-C	$Id: gmflod.f,v 1.1.1.1 1992-04-17 22:34:00 ncargd Exp $
+C	$Id: gmflod.f,v 1.2 1993-01-09 02:07:24 fred Exp $
 C
       SUBROUTINE GMFLOD(LIST,BITS,COUNT,GKSERR)
 C
-C  LOAD THE BIT STRING CONTIAINED IN THE LOW ORDER PART OF EACH WORD
-C  INTO THE METAFILE
+C  Load the bit string contiained in the low order part of each word
+C  into the metafile.
 C
 C  INPUT
-C       LIST-A LIST OF WORDS WHICH HAVE BIT STRINGS RIGHT JUSTIFIED
-C       BITS-NUMBER OF BITS PER WORD TO MOVE
-C       COUNT-THE REPITITION COUNT (NUMBER OF WORDS IN THE LIST)
+C    LIST  -- A list of words which have bit strings right justified.
+C    BITS  -- The number of bits per word to move.
+C    COUNT -- The repitition count (number of words in the list).
+
 C  OUTPUT
-C       GKSERR-THE ERROR STATUS
+C    GKSERR -- An error status.
 C
-C  ALL DATA IS TYPE INTEGER UNLESS OTHERWISE INDICATED
+C  All data is type integer unless otherwise indicated.
 C
       IMPLICIT INTEGER (A-Z)
-C
       DIMENSION LIST(*)
 C
-C   COMMON FOR METAFILE BUFFER
+C  Common for metafile buffer.
 C
-      COMMON  /G01IO/   MIOFLG  ,MRECNM ,MPXYSZ ,MPXPY(256)     ,
-     +                  MOBFSZ  ,MOUTBF(720)    ,MBFPOS ,
-     +                  MFGLUN  ,MXBITS         ,MDTYPE ,
-     +                  MNFFLG  ,MBMFLG ,MEMFLG
-        INTEGER         MIOFLG  ,MRECNM ,MPXYSZ ,MPXPY  ,MOBFSZ ,
-     +                  MBFPOS  ,MFGLUN ,MOUTBF ,MXBITS ,MDTYPE ,
-     +                  MNFFLG  ,MBMFLG ,MEMFLG
-      COMMON  /G01CHA/  MFNAME  ,MPNAME
-      CHARACTER*80      MFNAME  ,MPNAME
+      include 'g01prm.h'
+      include 'g01io.h'
 C
       DATA  ALLOK/0/
 C
-      IF (COUNT.LE.0)  RETURN
+      IF (COUNT .LE. 0)  RETURN
       CTEMP = COUNT
       STRT = 1
 C
-C  DETERMINE THE NUMBER OF PACKETS OF SIZE BITS LEFT IN BUFFER
+C  Determine the number of packets of size BITS left in buffer.
 C
- 10   CONTINUE
+   10 CONTINUE
       BLEFT = (MXBITS-MBFPOS)
       REPLFT = BLEFT/BITS
 C
-C  COMPUTE HOW MAY PACKETS TO MOVE INTO THE BUFFER
+C  Compute how may packets to move into the buffer.
 C
       IF (CTEMP .LE. REPLFT) THEN
 C
-C       ROOM FOR ALL
+C  Room for all.
 C
         CMOVE = CTEMP
         CTEMP = 0
       ELSE
 C
-C       NOT ENOUGH ROOM FOR ALL BITS
+C  Not enough room for all bits.
 C
         CMOVE = REPLFT
         CTEMP = CTEMP - REPLFT
       END IF
 C
-C  MOVE THE CURRENT BIT PACKETS
+C  Move the current bit packets.
 C
       CALL SBYTES(MOUTBF,LIST(STRT),MBFPOS,BITS,0,CMOVE)
       MBFPOS = MBFPOS + (BITS * CMOVE)
 C
-C  CHECK IF MORE BIT PACKETS REMAINING
+C  Check if more bit packets remain.
 C
-      IF (CTEMP.NE.0) THEN
+      IF (CTEMP .NE. 0) THEN
 C
-C       MORE REMAINING FLUSH THE CURRENT BUFFER
+C  More remaining, flush the current buffer.
 C
         CALL G01FLB(GKSERR)
         IF (GKSERR .NE. ALLOK) RETURN
         STRT = STRT + CMOVE
         GO TO 10
       END IF
-C
-C  ALL DONE RETURN TO CALLER
 C
       RETURN
       END

@@ -1,103 +1,72 @@
 C
-C	$Id: g01esc.f,v 1.1.1.1 1992-04-17 22:33:57 ncargd Exp $
+C	$Id: g01esc.f,v 1.2 1993-01-09 02:06:00 fred Exp $
 C
       SUBROUTINE G01ESC
 C
-C     PROCESS ESCAPE SEQUENCES.
+C  Process ESCAPE elements.
 C
-      COMMON /GKSIN1/FCODE,CONT,IL1,IL2,ID(128),RL1,RL2,RX(128),
-     - RY(128),STRL1,STRL2,RERR
-      COMMON /GKSIN2/STR
-      INTEGER FCODE, CONT, IL1, IL2, ID, RL1, RL2
-      INTEGER STRL1, STRL2, RERR
-      REAL  RX, RY
-      CHARACTER*80 STR
-      COMMON  /G01INS/  MCODES  ,MCONTS ,
-     +                  MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW ,
-     +                  MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL ,
-     +                  MINXVD  ,MAXXVD ,MINYVD ,MAXYVD ,
-     +                  MCFRM   ,MCOPCL ,MCOPID ,MCNBYT ,
-     +                  MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG ,
-     +                  MBCCHG
-        INTEGER         MCODES  ,MCONTS
-        INTEGER         MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW
-        INTEGER         MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL
-        INTEGER         MINXVD  ,MAXXVD ,MINYVD ,MAXYVD
-        INTEGER         MCFRM   ,MCOPCL ,MCOPID ,MCNBYT
-        INTEGER         MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG
-        INTEGER         MBCCHG
+      include 'g01prm.h'
+      include 'gksin.h'
+      include 'g01ins.h'
 C
-C
-      INTEGER  KALL, NBYTES, LNTH
+      INTEGER  KALL, NBYTES, G01PBL
       SAVE KALL
       DATA KALL/0/
       KALL = KALL+1
 C
-C     TREAT FIRST CALL, PUT OUT OPCODE, FCTID, AND FIRST DATA
-C     RECORD IF THERE IS ONE.
+C  Treat the first call -- put out the opcode, FCTID, and first data
+C  record if there is one.
 C
       IF (KALL .EQ. 1) THEN
+        IF (STRL1 .GT. 0) THEN
+          NBYTES = G01PBL(STRL1,1+(MINTFW-1)/8)
+        ELSE
+          NBYTES = 2
+        ENDIF
 C
-C     PUT OUT OPCODE (CLASS AND ID) AND LENGTH.
+C  Put out class, id, length
 C
-      NBYTES = 1+(2*MVDCFW-1)/8+STRL1
-C              CLASS,ID, LENGTH
-      CALL GPUTNI (6, 1, NBYTES, RERR)
-      IF (RERR.NE.0)  RETURN
+        CALL GPUTNI (6, 1, NBYTES, RERR)
+        IF (RERR .NE. 0)  RETURN
 C
-C     PUT OUT FUNCTION IDENTIFIER (2-BYTE INTEGER).
+C  Put out function identifier (2-byte integer).
 C
-C                   DATA,  PRECIS, COUNT
-      CALL GPUTPR (ID(1),  MVDCFW,     1, RERR)
-      IF (RERR.NE.0)  RETURN
+        CALL GPUTPR (ID(1),MINTFW,1,RERR)
+        IF (RERR .NE. 0)  RETURN
 C
-C     PUT OUT LENGTH OF DATA RECORD.
+C  Put out first data record if there is one.
 C
-C                   DATA,  PRECIS, COUNT
-      LNTH = 80*ID(2)
-      CALL GPUTPR (LNTH ,  MVDCFW,     1, RERR)
-      IF (RERR.NE.0)  RETURN
+        IF (STRL2 .GT. 0) THEN
+          CALL GPUTPS (STR, STRL1, 80, 0, RERR)
+          IF (RERR .NE. 0)  RETURN
+        ENDIF
 C
-C     PUT OUT FIRST DATA RECORD IF THERE IS ONE
+C  If there is to be no continuation, check for consistency, and
+C  reset the parameter "KALL".
 C
-      IF (ID(2) .GT. 0) THEN
-C                   DATA,  PRECIS, COUNT
-      CALL GPUTPS (STR, 80, 80, 1, RERR)
-      IF (RERR.NE.0)  RETURN
+        IF (CONT .EQ. 0) THEN
+          IF (MOD(STRL1,80) .EQ. 0) THEN
+            KALL = 0
+            RETURN
+          ELSE
+            RERR = 325
+            RETURN
+          ENDIF
+        ENDIF
       ENDIF
 C
-C     IF THERE IS TO BE NO CONTINUATION, CHECK FOR CONSISTENCY, AND
-C     RESET THE PARAMETER "KALL".
-C
-      IF (CONT .EQ. 0) THEN
-      IF (ID(2) .LE. 1) THEN
-      KALL = 0
-      RETURN
-      ELSE
-      RERR = 325
-      RETURN
-      ENDIF
-      ENDIF
-      ENDIF
-C
-C     TREAT THE CONTINUATION CALLS
+C  Treat the continuation calls.
 C
       IF (KALL .GT. 1) THEN
-      IF (CONT .EQ. 0) THEN
-C                   DATA,  PRECIS, COUNT
-      CALL GPUTPS (STR, 80, 80, 1, RERR)
-      IF (RERR.NE.0)  RETURN
-      IF (KALL .NE. ID(2)) THEN
-      RERR = 325
-      RETURN
+        IF (CONT .EQ. 0) THEN
+          CALL GPUTPS (STR, 80, 80, 1, RERR)
+          IF (RERR .NE. 0)  RETURN
+          KALL = 0
+        ELSE
+          CALL GPUTPS (STR, 80, 80, 1, RERR)
+          IF (RERR .NE. 0)  RETURN
+        ENDIF
       ENDIF
-      KALL = 0
-      ELSE
-C                   DATA,  PRECIS, COUNT
-      CALL GPUTPS (STR, 80, 80, 1, RERR)
-      IF (RERR.NE.0)  RETURN
-      ENDIF
-      ENDIF
-      RETURN
 C
+      RETURN
       END

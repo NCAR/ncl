@@ -1,108 +1,86 @@
 C
-C	$Id: ginlod.f,v 1.1.1.1 1992-04-17 22:34:00 ncargd Exp $
+C	$Id: ginlod.f,v 1.2 1993-01-09 02:07:12 fred Exp $
 C
       SUBROUTINE GINLOD(GKSERR)
 C
-C  THIS ROUTINE LOADS THE CURRENT INSTRUCTION INTO THE METAFILE
-C       THE CURRENT INSTRUCTION INCLUDES THE OPCODE CLASS AND ID,
-C       THE AND THE SIZE FILED WHICH MAY BE SHORT OR LONG.
+C  This routine loads the current CGM element into the metafile.
+C  The current CGM element includes the opcode CLASS and ID,
+C  and the size which may be short or long.
 C
 C  OUTPUT
-C       GKSERR-THE ERROR STATUS FLAG
+C    GKSERR -- An error status flag.
 C
-C  ALL DATA IS TYPE INTEGER UNLESS OTHERWISE INDICATED
+C  All data is type integer unless otherwise indicated.
 C
       IMPLICIT INTEGER (A-Z)
 C
-C  COMMON FOR COMMUNICATION OF INSTRUCTION AND LENGTH
+C  Common for communication of instruction and length.
 C
-      COMMON  /G01INS/  MCODES  ,MCONTS ,
-     +                  MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW ,
-     +                  MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL ,
-     +                  MINXVD  ,MAXXVD ,MINYVD ,MAXYVD ,
-     +                  MCFRM   ,MCOPCL ,MCOPID ,MCNBYT ,
-     +                  MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG ,
-     +                  MBCCHG
-        INTEGER         MCODES  ,MCONTS
-        INTEGER         MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW
-        INTEGER         MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL
-        INTEGER         MINXVD  ,MAXXVD ,MINYVD ,MAXYVD
-        INTEGER         MCFRM   ,MCOPCL ,MCOPID ,MCNBYT
-        INTEGER         MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG
-        INTEGER         MBCCHG
-      COMMON  /G01IO/   MIOFLG  ,MRECNM ,MPXYSZ ,MPXPY(256)     ,
-     +                  MOBFSZ  ,MOUTBF(720)    ,MBFPOS ,
-     +                  MFGLUN  ,MXBITS         ,MDTYPE ,
-     +                  MNFFLG  ,MBMFLG ,MEMFLG
-        INTEGER         MIOFLG  ,MRECNM ,MPXYSZ ,MPXPY  ,MOBFSZ ,
-     +                  MBFPOS  ,MFGLUN ,MOUTBF ,MXBITS ,MDTYPE ,
-     +                  MNFFLG  ,MBMFLG ,MEMFLG
-      COMMON  /G01CHA/  MFNAME  ,MPNAME
-      CHARACTER*80      MFNAME  ,MPNAME
+      include 'g01ins.h'
+      include 'g01io.h'
 C
-C  DEFINE THE ALLOK STATUS AND THE OPCODE CLASS AND ID LENGTHS
+C  Define the ALLOK status and the opcode CLASS and ID lengths.
 C
       DATA ALLOK,OPCLLN,OPIDLN/0,4,7/
 C
-C  DEFINE THE SHORT FORMAT LENGTH, SHORT FORMAT COUNT, LONG FORMAT FLAG,
-C    CONTINUE FLAG ON, CONTINUE FLAG OFF, CONTINUE LENGTH, LONG FORMAT
-C    LENGTH
+C  Define the short format length, short format count, long format flag,
+C  continue flag on, continue flag off, continue length, long format
+C  length.
 C
       DATA SHFMLN,SHTFMT,LFMFLG,CONON,CONOFF,CFMLNG,LFMLNG
-     1          /5,30,31,1,0,1,15/
+     +          /5,30,31,1,0,1,15/
       DATA  SHORT/0/, LONG/1/
 C
-C  SET ERROR STATUS TO ALL OK
+C  Initialize error status.
 C
       GKSERR = ALLOK
 C
-C  MAKE SURE INSTRUCTION STARTS ON A 16 BIT BOUNDRY
+C  Make sure the element starts on a 16 bit boundry.
 C
       TEMP = MOD(MBFPOS,16)
       IF (TEMP .NE. 0) MBFPOS = MBFPOS + (16-TEMP)
 C
-C  LOAD THE OPCODE CLASS AND ID INTO THE METAFILE
+C  Load the opcode CLASS and ID into the metafile.
 C
       CALL GMFLOD(MCOPCL,OPCLLN,1,GKSERR)
       IF (GKSERR .NE. ALLOK) RETURN
       CALL GMFLOD(MCOPID,OPIDLN,1,GKSERR)
       IF (GKSERR .NE. ALLOK) RETURN
 C
-C  DETERMINE IF A LONG FORMAT OR SHORT FORMAT INSTRUCTION
+C  Determine if a long format or short format element.
 C
       IF (MCCBYT .LE. SHTFMT) THEN
 C
-C       SHORT FORMAT INSTRUCTION
+C  Short format.
 C
         MSLFMT = SHORT
         CALL GMFLOD (MCCBYT,SHFMLN,1,GKSERR)
         IF (GKSERR .NE. ALLOK) RETURN
       ELSE
 C
-C       LONG FORMAT INSTRUCTION
-C       SET THE LONG FORMAT FLAG
+C  Long format.
 C
         MSLFMT = LONG
         CALL GMFLOD (LFMFLG,SHFMLN,1,GKSERR)
         IF (GKSERR .NE. ALLOK) RETURN
 C
-C       SET THE CONTINUE FLAG
+C  Set the continue flag.
 C
         IF (MCNBYT .NE. 0) THEN
 C
-C               THERE IS ANOTHER PARTITION
+C  There is another partition.
 C
-                CALL GMFLOD(CONON,CFMLNG,1,GKSERR)
+          CALL GMFLOD(CONON,CFMLNG,1,GKSERR)
         ELSE
 C
-C               LAST PARTITION
+C  Last partition.
 C
-                CALL GMFLOD(CONOFF,CFMLNG,1,GKSERR)
+          CALL GMFLOD(CONOFF,CFMLNG,1,GKSERR)
         END IF
 C
         IF (GKSERR .NE. ALLOK) RETURN
 C
-C       SET THE LONG FORMAT OPERAND LIST SIZE
+C  Set the long format operand list size.
 C
         CALL GMFLOD(MCCBYT,LFMLNG,1,GKSERR)
       END IF

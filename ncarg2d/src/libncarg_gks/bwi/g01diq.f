@@ -1,75 +1,53 @@
 C
-C	$Id: g01diq.f,v 1.1.1.1 1992-04-17 22:33:57 ncargd Exp $
+C	$Id: g01diq.f,v 1.2 1993-01-09 02:05:54 fred Exp $
 C
-        SUBROUTINE G01DIQ
+      SUBROUTINE G01DIQ
 C
-C       WORKSTATION DESCRIPTION TABLE (WDT) INQUIRY.
-C               (OPCODE -100 THRU -199)
+C  Workstation description table (WDT) inquiry.
+C  (OPCODE -100 thru -199)
 C
-      COMMON /GKSIN1/FCODE,CONT,IL1,IL2,ID(128),RL1,RL2,RX(128),
-     - RY(128),STRL1,STRL2,RERR
-      COMMON /GKSIN2/STR
-      INTEGER FCODE, CONT, IL1, IL2, ID, RL1, RL2
-      INTEGER STRL1, STRL2, RERR
-      REAL  RX, RY
-      CHARACTER*80 STR
-      COMMON  /G01WDT/  LWTYPE, LWKCAT, MVERSN
-        INTEGER         LWTYPE, LWKCAT, MVERSN
-      COMMON  /G01INS/  MCODES  ,MCONTS ,
-     +                  MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW ,
-     +                  MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL ,
-     +                  MINXVD  ,MAXXVD ,MINYVD ,MAXYVD ,
-     +                  MCFRM   ,MCOPCL ,MCOPID ,MCNBYT ,
-     +                  MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG ,
-     +                  MBCCHG
-        INTEGER         MCODES  ,MCONTS
-        INTEGER         MVDCFW  ,MCIXFW ,MDCCFW ,MIXFW  ,MINTFW
-        INTEGER         MDCCRG  ,MXOFF  ,MXSCAL ,MYOFF  ,MYSCAL
-        INTEGER         MINXVD  ,MAXXVD ,MINYVD ,MAXYVD
-        INTEGER         MCFRM   ,MCOPCL ,MCOPID ,MCNBYT
-        INTEGER         MCCBYT  ,MCFPP  ,MSLFMT ,MEFW   ,MCTCHG
-        INTEGER         MBCCHG
+      include 'g01prm.h'
+      include 'gksin.h'
+      include 'g01wdt.h'
+      include 'g01ins.h'
+C
+      INTEGER  ICODE
 C
 C
-        INTEGER  ICODE
+C  All defined WDT inquiry codes lie in range -11o thru -128.
+C  Only -127 is legal for MO.  The rest are error 31 or 39,
+C  except -125 and -126, which are undefined.  
 C
+      ICODE = IABS(MCODES) - 109
 C
-C       ALL DEFINED WDT INQUIRY CODES LIE IN RANGE -11O THRU -128.
-C       ONLY -127 IS LEGAL FOR MO.  THE REST ARE ERROR 31 OR 39,
-C       EXCEPT -125 AND -126, WHICH IS ARE UNDEFINED.  SEE DESIGN
-C       SPEC OR INTERFACE SPEC FOR OPCODE DEFINITIONS.
+C      CODE -110 -111 -112 -113 -114 -115 -116 -117 -118 -119
+      GOTO  ( 39,  39,  39,  39,  31,  39,  39,  39,  39,  39,
+     +        39,  39,  39,  39,  39,   5,   5, 127,  31     )  ICODE
+C      CODE -120 -121 -122 -123 -124 -125 -126 -127 -128
 C
+C  Fall through is undefined opcode.
 C
-        ICODE = IABS(MCODES) - 109
+    5 CONTINUE
+      RERR = 320
+      RETURN
 C
-C        CODE -110 -111 -112 -113 -114 -115 -116 -117 -118 -119
-        GOTO  ( 39,  39,  39,  39,  31,  39,  39,  39,  39,  39,
-     +          39,  39,  39,  39,  39,   5,   5, 127,  31     )  ICODE
-C        CODE -120 -121 -122 -123 -124 -125 -126 -127 -128
+C  Error 31, "SPECIFIED WORKSTATION IS OF CATEGORY MO".
 C
-C       FALL THROUGH IS UNDEFINED OPCODE.
+   31 CONTINUE
+      RERR = 31
+      RETURN
 C
-5       CONTINUE
-        RERR = 320
-        RETURN
+C  Error 39, "SPECIFIED WORKSTATION IS NEITHER OF CATEGORY OUTPUT
+C  NOR OF CATEGORY OUTIN".
 C
-C       ERROR 31, "SPECIFIED WORKSTATION IS OF CATEGORY MO".
+   39 CONTINUE
+      RERR = 39
+      RETURN
 C
-31      CONTINUE
-        RERR = 31
-        RETURN
+C  Inquire workstation category.
 C
-C       ERROR 39, "SPECIFIED WORKSTATION IS NEITHER OF CATEGORY OUTPUT
-C       NOR OF CATEGORY OUTIN".
+  127 CONTINUE
+      ID(2) = LWKCAT
 C
-39      CONTINUE
-        RERR = 39
-        RETURN
-C
-C       INQUIRE WORKSTATION CATEGORY.
-C
-127     CONTINUE
-        ID(2) = LWKCAT
-        RETURN
-C
-        END
+      RETURN
+      END

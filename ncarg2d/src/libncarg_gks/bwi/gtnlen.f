@@ -1,5 +1,5 @@
 C
-C	$Id: gtnlen.f,v 1.1.1.1 1992-04-17 22:34:02 ncargd Exp $
+C	$Id: gtnlen.f,v 1.2 1993-01-09 02:07:41 fred Exp $
 C
         SUBROUTINE GTNLEN(FNAME,ILEN,IER)
 C

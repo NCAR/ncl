@@ -1,0 +1,56 @@
+C
+C     G01INS    -- Structure for preservation of miscellaneous
+C                  internal state variables which may be needed
+C                  and should be non-volatile.
+C
+C       mcodes  - set equal to function code of current invocation
+C                 upon entry, after check for continuation error.
+C       mconts  - continuation flag of last interface invocation.
+C       mvdcfw  - field width for metafile coordinates, i.e., the
+C                 number of bits per coordinate component in the
+C                 metafile output stream; default 16 set in blockdata.
+C       mcixfw  - field width for color indices, measured in bits;
+C                 default 8 set in blockdata.
+C       mdccfw  - field width for direct color components, measured
+C                 in bits; default 8 set in blockdata.
+C       mixfw   - field width for CGM parameters of type index,
+C                 measured in bits; default 16 set in blockdata.
+C       mintfw  - field width for CGM parameters of type integer,
+C                 measured in bits; default 16 set in blockdata.
+C       mefw    - field width for CGM parameters of type enumerated,
+C                 measured in bits; fixed at 16, set in blockdata.
+C       mdccrg  - normalized direct color component range, 2**mdccfw-1,
+C                 0.0 to 1.0 real is mapped to 0 to mdccrg integer,
+C                 and recorded thus in the metafile; default 255.
+C                 Default; mxscal=32767.
+C       minxvd  - minimum metafile x address; default 0.
+C       maxxvd  - maximum metafile address; default 32767.
+C       minyvd  - minimum metafile y address; default 0.
+C       maxyvd  - maximuim metafile y address; default 32767.
+C       mxoff   - x offset (additive constant) for transformation which
+C                 converts real [0-1] NDC to integer VDC (dflt 0-32767).
+C                 VDC(x) = mxoff + mxscal*NDC(x).  Default; mxoff=0.
+C       mxscal  - x scaling factor for NDC to VDC transformation.
+C                 Default; mxscal=32767.  Scale and offset would only
+C                 be changeable if the scheme for Workstation Transform-
+C                 tion handling by mapping a subset of NDC into VDC
+C                 were realized.  In this case, offset and scaling
+C                 would be computed based on the NDC window and the
+C                 VDC viewport, for both x and y.
+C       myoff   - y offset (additive constant) for transformation which
+C                 converts real [0-1] NDC to integer VDC (dflt 0-32767).
+C                 VDC(y) = myoff + myscal*NDC(y).  Default; myoff=0.
+C       myscal  - y scaling factor for NDC to VDC transformation.
+C                 Default; myscal=32767.
+C       mcfpp   - the bit precision of each of the two components that
+C                 make up a flaoting point number in the metacode.
+C                 Default; mcfpp=16
+C       mcopcl  - the opcode class for the current CGM instruction
+C       mcopid  - the opcode id for the current CGM instruction
+C       mcnbyt  - the remainder byte count for the continue of a CGM
+C                 instruction
+C       mccbyt  - the current number of bytes being transfered to a
+C                 CGM operand set
+C       mslfmt  - indicator as to whether the current instruction being
+C                 put out is a short format or long format instruction.
+C
