@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.59 2001-02-05 22:16:08 haley Exp $
+;      $Id: gsn_code.ncl,v 1.60 2001-02-06 16:41:22 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3509,10 +3509,10 @@ begin
   return(anno)
   
 end
-  top    = max(bb(:,0))
-  bottom = min(bb(:,1))
-  left   = min(bb(:,2))
-  right  = max(bb(:,3))
+
+;***********************************************************************;
+; Procedure : draw_bb                                                   ;
+;                wks:graphic                                            ;
 ;               plot:graphic                                            ;
 ; This procedure draws a box around the bounding box of the given plot  ;
 ; objects.                                                              ; 
