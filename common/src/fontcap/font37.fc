@@ -1,5 +1,5 @@
 /*
-/*	$Id: font37.fc,v 1.4 1994-09-27 00:54:59 fred Exp $
+/*	$Id: font37.fc,v 1.5 1994-10-27 00:27:17 fred Exp $
 /*
 FONT_NAME
 NCAR:WEATHER2
@@ -1507,11 +1507,51 @@ BEGIN_LINE
 END_LINE
 END_CHAR
 BEGIN_CHAR
-/*  ASCII   NUM(DEC)  WIDTH   LLX   LLY   URX   URY  LLEX  LLEY  UREX  UREY
-/*    q       113      1040   120     0   120     0   120     0   120     0
-BEGIN_REGION
-END_REGION
-END_CHAR
+/*  ASCII   NUM(DEC)  WIDTH   LLX   LLY   URX   URY  LLEX  LLEY  UREX  UREY     
+/*    q        113      920   109     0   801   800   109     0   801   800     
+BEGIN_LINE                                                                      
+455 0                                                                           
+455 800                                                                         
+END_LINE                                                                        
+BEGIN_LINE                                                                      
+109 600                                                                         
+801 200                                                                         
+END_LINE                                                                        
+BEGIN_LINE                                                                      
+109 200                                                                         
+801 600                                                                         
+END_LINE                                                                        
+BEGIN_LINE                                                                      
+340 720                                                                         
+455 640                                                                         
+570 720                                                                         
+END_LINE                                                                        
+BEGIN_LINE                                                                      
+675 660                                                                         
+663 520                                                                         
+790 460                                                                         
+END_LINE                                                                        
+BEGIN_LINE                                                                      
+675 140                                                                         
+663 280                                                                         
+790 340                                                                         
+END_LINE                                                                        
+BEGIN_LINE                                                                      
+340 80                                                                          
+455 160                                                                         
+570 80                                                                          
+END_LINE                                                                        
+BEGIN_LINE                                                                      
+120 340                                                                         
+247 280                                                                         
+235 140                                                                         
+END_LINE                                                                        
+BEGIN_LINE                                                                      
+120 460                                                                         
+247 520                                                                         
+235 660                                                                         
+END_LINE                                                                        
+END_CHAR                                                                        
 BEGIN_CHAR
 /*  ASCII   NUM(DEC)  WIDTH   LLX   LLY   URX   URY  LLEX  LLEY  UREX  UREY
 /*    r       114      1040   120     0   120     0   120     0   120     0
