@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.15 2000-12-22 00:04:14 dbrown Exp $
+ *      $Id: PSWorkstation.c,v 1.16 2001-01-27 01:05:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -45,16 +45,16 @@ static NhlResource resources[] = {
 		(NhlPointer)1800,_NhlRES_NOSACCESS,NULL},
 	{NhlNwkDeviceLowerX,NhlCwkDeviceLowerX,NhlTInteger,
 		sizeof(int),Oset(lower_x),NhlTImmediate,
-		(NhlPointer)36,_NhlRES_NOSACCESS,NULL},
+		(NhlPointer)36,_NhlRES_DEFAULT,NULL},
 	{NhlNwkDeviceLowerY,NhlCwkDeviceLowerY,NhlTInteger,
 		sizeof(int),Oset(lower_y),NhlTImmediate,
-		(NhlPointer)126,_NhlRES_NOSACCESS,NULL},
+		(NhlPointer)126,_NhlRES_DEFAULT,NULL},
 	{NhlNwkDeviceUpperX,NhlCwkDeviceUpperX,NhlTInteger,
 		sizeof(int),Oset(upper_x),NhlTImmediate,
-		(NhlPointer)576,_NhlRES_NOSACCESS,NULL},
+		(NhlPointer)576,_NhlRES_DEFAULT,NULL},
 	{NhlNwkDeviceUpperY,NhlCwkDeviceUpperY,NhlTInteger,
 		sizeof(int),Oset(upper_y),NhlTImmediate,
-		(NhlPointer)666,_NhlRES_NOSACCESS,NULL},
+		(NhlPointer)666,_NhlRES_DEFAULT,NULL},
 	{NhlNwkFullBackground,NhlCwkFullBackground,NhlTBoolean,
 		sizeof(NhlBoolean),Oset(full_background),NhlTImmediate,
 		(NhlPointer)False,_NhlRES_DEFAULT,NULL},
@@ -132,6 +132,12 @@ static NhlErrorTypes PSWorkstationOpen(
 #endif
 );
 
+static NhlErrorTypes PSWorkstationActivate(
+#if	NhlNeedProto
+	NhlLayer	l	/* instance	*/
+#endif
+);
+
 NhlPSWorkstationClassRec NhlpsWorkstationClassRec = {
         {
 /* class_name			*/	"psWorkstationClass",
@@ -176,7 +182,7 @@ NhlPSWorkstationClassRec NhlpsWorkstationClassRec = {
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	PSWorkstationOpen,
 /* close_work		*/	NhlInheritClose,
-/* activate_work	*/	NhlInheritActivate,
+/* activate_work	*/	PSWorkstationActivate,
 /* deactivate_work	*/	NhlInheritDeactivate,
 /* alloc_colors		*/	NhlInheritAllocateColors,
 /* update_work		*/	NhlInheritUpdate,
@@ -395,6 +401,7 @@ static NhlErrorTypes PSWorkstationInitialize
 		np->lower_y = 126;
 		np->upper_y = 666;
 	}
+	np->dev_bounds_updated = False;
 
 	return ret;
 }
@@ -432,15 +439,37 @@ PSWorkstationSetValues
 	int		nargs;
 #endif
 {
-	NhlPSWorkstationLayerPart	*np = &((NhlPSWorkstationLayer)new)->ps;
-	NhlPSWorkstationLayerPart	*op = &((NhlPSWorkstationLayer)old)->ps;
+	char			  func[]="PSWorkstationInitialize";
+	NhlPSWorkstationLayerPart *np = &((NhlPSWorkstationLayer)new)->ps;
+	NhlPSWorkstationLayerPart *op = &((NhlPSWorkstationLayer)old)->ps;
+	NhlErrorTypes ret = NhlNOERROR;
 
 	if(np->full_background != op->full_background){
 		c_ngseti("wo",_NhlWorkstationId(new));
 		c_ngseti("fu",np->full_background);
 	}
+	if (np->lower_x != op->lower_x ||
+	    np->upper_x != op->upper_x ||
+	    np->lower_y != op->lower_y ||
+	    np->upper_y != op->upper_y)
+		np->dev_bounds_updated = True;
 
-	return NhlNOERROR;
+	if(np->lower_x >= np->upper_x){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:Device X Coordinates invalid, defaulting",func);
+		ret = NhlWARNING;
+		np->lower_x = 36;
+		np->upper_x = 576;
+	}
+	if(np->lower_y >= np->upper_y){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:Device Y Coordinates invalid, defaulting",func);
+		ret = NhlWARNING;
+		np->lower_y = 126;
+		np->upper_y = 666;
+	}
+
+	return ret;
 }
 
 /*
@@ -591,4 +620,50 @@ PSWorkstationOpen
 	work->work.vswidth_dev_units = d/72*pp->resolution;
 
 	return ret;
+}
+/*
+ * Function:	PSWorkstationActivate
+ *
+ * Description:	
+ *
+ * In Args:	
+ *		NhlLayer	l
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+PSWorkstationActivate
+#if	NhlNeedProto
+(
+	NhlLayer	l	
+)
+#else
+(l)
+	NhlLayer	l;	
+#endif
+{
+	char	func[] = "PSWorkstationClear";
+	NhlWorkstationClass lc = (NhlWorkstationClass) NhlworkstationClass;
+	NhlWorkstationLayerPart *wp = &((NhlWorkstationLayer)l)->work;
+	NhlPSWorkstationLayerPart *pp = &((NhlPSWorkstationLayer)l)->ps;
+	int w,h,d;
+
+	if (wp->cleared && pp->dev_bounds_updated) {
+		c_ngseti("wo",_NhlWorkstationId(l));
+		c_ngseti("lx",pp->lower_x);
+		c_ngseti("ux",pp->upper_x);
+		c_ngseti("ly",pp->lower_y);
+		c_ngseti("uy",pp->upper_y);
+		pp->dev_bounds_updated = False;
+	}
+	w = pp->upper_x - pp->lower_x;
+	h = pp->upper_y - pp->lower_y;
+	d = MAX(w,h);
+	wp->vswidth_dev_units = d/72*pp->resolution;
+
+	return (*(lc->work_class.activate_work))(l);
 }

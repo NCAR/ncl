@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstationP.h,v 1.5 2000-12-22 00:04:15 dbrown Exp $
+ *      $Id: PSWorkstationP.h,v 1.6 2001-01-27 01:05:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -52,6 +52,8 @@ typedef struct _NhlPSWorkstationLayerPart {
 	NhlBoolean		suppress_bbinfo;
 
 	/* Private internal fields */
+
+	NhlBoolean		dev_bounds_updated;
 	
 } NhlPSWorkstationLayerPart;
 
