@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: pre2ncgm.m,v 1.4 1994-05-27 20:38:04 haley Exp $
+.\"	$Id: pre2ncgm.m,v 1.5 1995-10-13 15:01:22 haley Exp $
 .\"
 .TH PRE2NCGM 1NCARG "OCTOBER 1990" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -41,7 +41,8 @@ Various errors are detected by "pre2ncgm" and  are  written  to
 .SH SEE ALSO
 ctrans(1NCARG)
 .SH COPYRIGHT
-Copyright 1987, 1988, 1989, 1991, 1993 University Corporation 
-for Atmospheric Research
+Copyright (C) 1987-1995
 .br
-All Rights Reserved
+University Corporation for Atmospheric Research
+.br
+The use of this Software is governed by a License Agreement.
