@@ -17,8 +17,6 @@ CALL CLSGKS
 #include <ncarg/ncargC.h>
 .sp
 void c_clsgks()
-Use the ncargex command to see the following relevant examples: 
-agex01.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
 agex01.

@@ -2,10 +2,13 @@
 .na
 .nh
 .SH NAME
-GETSET - returns the values of the parameters used in the previous call
-to routine SET.
+GETSET - returns a set of values which, if used as arguments in a call to
+SET, will cause normalization transformation 1, axis scaling (argument LS),
+and axis mirror imaging (See USAGE) to be defined in such a way as to
+duplicate the combined effects of the current normalization transformation
+and axis scaling and mirror imaging.
 .SH SYNOPSIS
-CALL GETSET (VL,VR,VB,VT,WL,WR,WB,WT,LF)
+CALL GETSET (VL,VR,VB,VT,WL,WR,WB,WT,LS)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
@@ -35,15 +38,15 @@ window in user coordinates.
 .IP WT 12
 (an output parameter of type REAL) that defines the top margin of the
 window in user coordinates.
-.IP LF 12
+.IP LS 12
 (an output parameter of type INTEGER) that defines the linear/log nature of
 the mapping, where:
 .nf
 
-LF = 1, is linear X, linear Y
-LF = 2, is linear X, log Y
-LF = 3, is log X,    linear Y
-LF = 4, is log X,    log Y
+LS = 1, is linear X, linear Y
+LS = 2, is linear X, log Y
+LS = 3, is log X,    linear Y
+LS = 4, is log X,    log Y
 .fi
 .SH C-BINDING DESCRIPTION                               ,,
 The C-binding argument descriptions are the same as the FORTRAN
@@ -52,10 +55,11 @@ argument descriptions.
 Note that in setting the limits of the viewport and the window, the
 left margin can have a coordinate value that is larger than the right
 margin value.  This means the X axis scale will run from a maximum
-value at the left to a minimum value at the right.  Likewise the
+value at the left to a minimum value at the right.  This is referred
+to as "mirror imaging" of the X axis.  Likewise the
 bottom value can exceed the top value meaning that the Y axis can
-run from a maximum at the bottom to a minimum at the top.  This
-is called axis reversal.  It represents a substantial functional
+run from a maximum at the bottom to a minimum at the top.
+These features represents a substantial functional
 enhancement over what is provided in GKS.  That is why NCAR Graphics
 SET calls using fractional and user coordinates are in general preferred
 over GKS calls to GSVP and GSWN using normalized device coordinates

@@ -52,8 +52,11 @@ I = KMPX (IX),  J = KMPY(IY)
 #include <ncarg/ncargC.h>
 .sp
 float c_cfux (float rx)
+.sp
 float c_cfuy (float ry)
+.sp
 float c_cufx (float rx)
+.sp
 float c_cufy (float ry)
 .SH DESCRIPTION 
 .IP RX 12
