@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.13 2004-07-22 17:06:04 shea Exp $
+;      $Id: shea_util.ncl,v 1.14 2004-07-22 22:40:25 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -2315,11 +2315,11 @@ begin
 	if (rdim.eq.1) then
 	   tarr = new((/dimsizes(inlat)/),"byte")
 	   
-	   wcStrt = systemfunc("date")
+	  ;wcStrt = systemfunc("date")
 	   do ss = 0,dimsizes(inlat)-1
 	      tarr(ss) = (/ basemap(inlat(ss),inlon(ss)) /)
 	   end do
-	   wallClockElapseTime(wcStrt, "ss do loop", 0)
+	  ;wallClockElapseTime(wcStrt, "ss do loop", 0)
 	   dimt = dimsizes(tlat)
 	   newarr = onedtond(tarr,(/dimt(0),dimt(1)/))
 	   newarr@lat2d = tlat
