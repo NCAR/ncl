@@ -9,7 +9,7 @@
 ***********************************************************************/
 
 #ifdef	SYSV
-#ifndef	RS6000
+#if !defined (RS6000) && !defined(CRAY)
 	extern	int	sprintf();
 #endif
 #else

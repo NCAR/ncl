@@ -1,5 +1,5 @@
 /*
- *	$Id: xrubber.c,v 1.2 1991-01-09 10:53:59 clyne Exp $
+ *	$Id: xrubber.c,v 1.3 1991-02-06 15:11:06 clyne Exp $
  */
 /*
  *	xrubber.c
@@ -315,7 +315,7 @@ static	rubber_band_window(dpy, root, fg, x, y,
 	while (1) {
 		XQueryPointer(dpy, rubber_win, &dummy_win, &dummy_win,
 			&dummy_int, &dummy_int, &new_x, &new_y,
-			&dummy_int);
+			(unsigned int *) &dummy_int);
 
 		if ((last_x != new_x) || (last_y != new_y)) {
 

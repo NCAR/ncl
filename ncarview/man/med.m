@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: med.m,v 1.2 1991-01-09 10:48:44 clyne Exp $
+.\"	$Id: med.m,v 1.3 1991-02-06 15:08:12 clyne Exp $
 .\"
 .\" @(#)med.l 1.0 90/02/15 NCAR; from UCB 4.3 and S5R4
 .tr ##
@@ -417,6 +417,10 @@ one could execute:
 .BR cgm(local),
 .IR ed(1),
 .BR sed(1V)
+.sp
+.SH BUGS 
+.B med
+doesn't understand filenames that begin with a digit.
 .sp
 .SH CAVEATS 
 The 

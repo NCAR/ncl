@@ -10,7 +10,7 @@
 #			directory.
 # 
 
-set dir = "/u1/clyne/lib"
+set dir = "/usr/local/lib"
 
 set dir = "${dir}/fontcaps"
 

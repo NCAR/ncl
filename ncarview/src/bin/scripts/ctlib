@@ -4,4 +4,4 @@
 #
 #!/bin/csh
 
-echo /u1/clyne/lib/libictrans.o /u1/clyne/lib/libctrans.o  /u1/clyne/lib/libcgm.a /u1/clyne/lib/libncarv.a -lX11  -lsuntool -lsunwindow -lpixrect -lm
+echo /usr/local/lib/libictrans.o /usr/local/lib/libctrans.o  /usr/local/lib/libcgm.a /usr/local/lib/libncarv.a -lX11  -lsuntool -lsunwindow -lpixrect -lm

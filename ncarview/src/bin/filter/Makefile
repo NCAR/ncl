@@ -13,9 +13,9 @@
 
 SYSTEM_INCLUDE		= Sun3
 
-BINDIR		= /u1/clyne/bin
-LIBDIR		= /u1/clyne/lib
-MANDIR		= /u1/clyne/man
+BINDIR		= /usr/local/bin
+LIBDIR		= /usr/local/lib
+MANDIR		= /usr/local/man
 MAN_SECTION	= l
 XAPPDIR		= /usr/lib/X11/app-defaults
 BITSDIR		= /usr/include/X11/bitmaps
