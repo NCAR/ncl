@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include <pfmt.h>
 #include <ncarg/hlu/hluP.h>
 #include <data_objs/NclData.h>
 #include <defs.h>

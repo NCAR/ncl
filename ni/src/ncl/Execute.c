@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.3 1994-01-13 22:14:16 ethan Exp $
+ *      $Id: Execute.c,v 1.4 1994-01-19 19:22:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -667,7 +667,7 @@ NclExecuteReturnStatus _NclExecute
 				NclSymbol *thesym;
 				int dim_num;
 				NclStackEntry data;
-				NclVar var;
+				NclStackEntry *var;
 
 				ptr++;lptr++;fptr++;
 				thesym = (NclSymbol*)*ptr;
@@ -676,9 +676,9 @@ NclExecuteReturnStatus _NclExecute
 		
 				var = _NclRetrieveRec(thesym);
 
-				if(var != NULL) {	
+				if(var->u.data_var != NULL) {	
 					data.u.data_obj = _NclReadDim(
-						var,
+						var->u.data_var,
 						NULL,
 						dim_num);
 					if(data.u.data_obj == NULL) {
