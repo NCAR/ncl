@@ -1,11 +1,13 @@
-.TH RASLS 1NCAR "January 1992" NCAR "NCAR VIEW"
+.\"
+.\"	$Id: rasls.m,v 1.2 1993-01-16 03:55:06 don Exp $
+.\"
+.TH RASLS 1NCARG "January 1993" NCARG "NCAR VIEW"
 .SH NAME
 rasls \- list information on rasterfiles
 .SH SYNOPSIS
 \fBrasls\fP 
 [\fb\-type\fR]
 [\fb\-count\fR]
-[\fb\-debug\fR]
 [\fB\-verbose\fR]
 [\fB\-Version\fR]
 [files]
@@ -40,4 +42,5 @@ Print the version number.
 .sp
 .SH "SEE ALSO"
 .LP
-ras_formats(5), rasview(1), rascat(1)
+ras_formats(5NCARG), rasview(1NCARG), rascat(1NCARG), rasgetpal(1NCARG),
+rassplit(1NCARG)
