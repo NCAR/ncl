@@ -1,5 +1,5 @@
 /*
- *      $Id: Format.c,v 1.14 1997-01-17 18:57:26 boote Exp $
+ *      $Id: Format.c,v 1.15 1997-07-14 18:36:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,8 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/Error.h>
 #include <ncarg/hlu/FormatI.h>
+
+#define MAX(a,b) (((a)>(b))?(a):(b))
 
 #define _ffSIGDIGITCHAR		'.'
 #define _ffLEFTSIGDIGITCHAR	';'
@@ -856,6 +858,8 @@ NhlString _NhlFormatFloat
 	int set_ppos,move_cnt = 0;
 	NhlBoolean has_mantissa,set_point_pos = False;
 	NhlBoolean check_zero = True;
+        char tbuf[20];
+        long actual_leftmost = 0;
 
 	lmsd = format->left_sig_digit;
         if (format->left_sig_digit_flag) {
@@ -869,13 +873,33 @@ NhlString _NhlFormatFloat
 		    sig_digits != NULL)
 			ndgd = *sig_digits;
 	}
+        if (lmsd > -10000) {
+                sprintf(tbuf,"%14.7e",value);
+                for (i = strlen(tbuf)-1; i >=0; i--) {
+                        if (tbuf[i] == '+' || tbuf[i] == '-') {
+                                cp = &tbuf[i];
+                                actual_leftmost = strtol(cp,NULL,10);
+                                break;
+                        }
+                }
+                if (value != 0.0)
+                        ndgd += MAX(0,actual_leftmost-lmsd);
+        }
+#if 0        
+        printf("initial value %f actual leftmost %d\n",value,actual_leftmost);
+        if (lmsd - ndgd +1 >= actual_leftmost) {
+#endif        
+        if (actual_leftmost < lmsd) {
+                float sign = value < 0.0 ? -1.0 : 1.0;
+                value += sign * 5.0 * pow(10.0,(float)(lmsd-ndgd));
+        }
 	field_width = format->field_width;
 	if (format->field_width_flag) {
 		if (format->field_width_flag == NhlffDYNAMIC && 
 		    fwidth != NULL)
 				field_width = *fwidth;
 	}
-
+        
         if (format->field_type == NhlffFLOATFLD)
                 iexp = 256;
         else if (format->field_type == NhlffEXPONENTIALFLD)
@@ -946,6 +970,10 @@ NhlString _NhlFormatFloat
 			strcpy(cbuf,cbuf_c);
 		cbuf[nbuf] = '\0';
 	}
+#if 0
+        printf("value %f ndgd %d lmsd %d ndgs %d ieva %d cbuf %s\n",
+               value,ndgd,lmsd,ndgs,ieva,cbuf);
+#endif        
 
 /*
  * Add a leading zero if appropriate.

@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceI.h,v 1.10 1996-01-19 18:06:42 dbrown Exp $
+ *      $Id: WorkspaceI.h,v 1.11 1997-07-14 18:36:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -204,7 +204,6 @@ extern NhlErrorTypes _NhlCplbdr(
 
 extern NhlErrorTypes _NhlCpcica(
 #if	NhlNeedProto
-	NhlLayer	trans_obj,
 	float		*zdat,
 	NhlWorkspace	*flt_ws,
 	NhlWorkspace	*int_ws,
@@ -216,6 +215,7 @@ extern NhlErrorTypes _NhlCpcica(
 	float		ycpf,
 	float		xcqf,
 	float		ycqf,
+	NhlBoolean	smooth,
 	char		*entry_name
 #endif
 );

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.13 1997-01-17 18:57:21 boote Exp $
+ *      $Id: ContourPlotP.h,v 1.14 1997-07-14 18:36:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -42,6 +42,7 @@
 #define Nhl_cnSTD_VIEW_WIDTH	0.6
 #define Nhl_cnSTD_VIEW_HEIGHT	0.6
 #define NhlcnMAPVAL		99
+#define NhlcnAREAID_OFFSET	100
 #define NhlcnDEF_INFO_LABEL	"CONTOUR FROM $CMN$ TO $CMX$ BY $CIU$"
 #define NhlcnDEF_NODATA_LABEL	"NO CONTOUR DATA"
 #define NhlcnDEF_CONSTF_LABEL	"CONSTANT FIELD - VALUE IS $ZDV$"
@@ -101,7 +102,7 @@ typedef struct _NhlcnRegionAttrs {
 typedef struct _NhlContourPlotDataDepLayerPart{
 	/* Public resources	*/
 
-	NhlBoolean		labels;
+	int		foo;
 
 	/* Private fields	*/
 } NhlContourPlotDataDepLayerPart;
@@ -154,6 +155,8 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlBoolean	raster_mode_on;
 	NhlBoolean	cell_size_set;
 	float		cell_size;
+        NhlBoolean	raster_smoothing_on;
+        float		raster_sample_factor;
 	NhlBoolean	cyclic_mode_on;
 
 	NhlGenArray	levels;
@@ -311,6 +314,7 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlGenArray	lgnd_l_thicknesses;
 	NhlGenArray	lgnd_ll_font_colors;
 	NhlGenArray	lgnd_ll_strings;
+        NhlBoolean	sticky_cell_size_set;
 
 } NhlContourPlotLayerPart;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.22 1997-01-17 18:57:51 boote Exp $
+ *      $Id: Workstation.h,v 1.23 1997-07-14 18:36:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -42,6 +42,8 @@
 #define NhlCwkBackgroundColor	"WkBackgroundColor"
 #define NhlNwkForegroundColor	"wkForegroundColor"
 #define NhlCwkForegroundColor	"WkForegroundColor"
+#define NhlNwkVSWidthDevUnits	"wkVSWidthDevUnits"
+#define NhlCwkVSWidthDevUnits	"WkVSWidthDevUnits"
 
 /*
  * Public resources for setting Line and Marker attributes for

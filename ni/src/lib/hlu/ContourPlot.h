@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.7 1995-11-21 20:18:56 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.8 1997-07-14 18:36:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -84,13 +84,6 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlTcnHighLowLabelOverlapMode	"cnhighlowlabeloverlapmode"
 
 /*
- * DataDep objects resources
- */
-
-#define NhlNcnExplicitLabels		"cnExplicitLabels"
-#define NhlCcnExplicitLabels		"CnExplicitLabels"
-
-/*
  * ContourPlot instance resources
  */
 
@@ -129,6 +122,8 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnLabelBarEndLabelsOn	"cnLabelBarEndLabelsOn"
 #define NhlNcnRasterModeOn		"cnRasterModeOn"
 #define NhlNcnRasterCellSizeF		"cnRasterCellSizeF"
+#define NhlNcnRasterSmoothingOn		"cnRasterSmoothingOn"
+#define NhlNcnRasterSampleFactorF	"cnRasterSampleFactorF"
 #define NhlNcnCyclicModeOn		"cnCyclicModeOn"
 
 #define NhlNcnLevels			"cnLevels"
@@ -337,6 +332,8 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnLegendLevelFlags		"CnLegendLevelFlags"
 #define NhlCcnRasterModeOn		"CnRasterModeOn"
 #define NhlCcnRasterCellSizeF		"CnRasterCellSizeF"
+#define NhlCcnRasterSmoothingOn		"CnRasterSmoothingOn"
+#define NhlCcnRasterSampleFactorF	"CnRasterSampleFactorF"
 #define NhlCcnCyclicModeOn		"CnCyclicModeOn"
 
 #define NhlCcnLevels			"CnLevels"

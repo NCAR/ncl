@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.36 1997-05-05 21:45:32 boote Exp $
+ *      $Id: Workspace.c,v 1.37 1997-07-14 18:36:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -37,6 +37,7 @@
 #include <string.h>
 #include <ncarg/hlu/WorkspaceP.h>
 #include <ncarg/hlu/TransObjI.h>
+#include <ncarg/hlu/ContourPlotI.h>
 
 /* Method declarations	*/
 
@@ -2802,7 +2803,6 @@ NhlErrorTypes _NhlCplbdr
 NhlErrorTypes _NhlCpcica
 #if	NhlNeedProto
 (
-	NhlLayer	trans_obj,
 	float		*zdat,
 	NhlWorkspace	*flt_ws,
 	NhlWorkspace	*int_ws,
@@ -2814,12 +2814,12 @@ NhlErrorTypes _NhlCpcica
 	float		ycpf,
 	float		xcqf,
 	float		ycqf,
+	NhlBoolean	smooth,
 	char		*entry_name
 )
 #else
-(trans_obj,zdat,flt_ws,int_ws,cell_ws,ica1,icam,ican,
- xcpf,ycpf,xcqf,ycqf,entry_name)
-	NhlLayer	trans_obj;
+(zdat,flt_ws,int_ws,cell_ws,ica1,icam,ican,
+ xcpf,ycpf,xcqf,ycqf,smooth,entry_name)
 	float		*zdat;
 	NhlWorkspace	*flt_ws;
 	NhlWorkspace	*int_ws;
@@ -2831,6 +2831,7 @@ NhlErrorTypes _NhlCpcica
 	float		ycpf;
 	float		xcqf;
 	float		ycqf;
+	NhlBoolean	smooth;
 	char		*entry_name;
 #endif
 {
@@ -2848,6 +2849,10 @@ NhlErrorTypes _NhlCpcica
 	float		fl,fr,fb,ft,wl,wr,wb,wt;
 	int		ll;
 	int		start = 1;
+	Gint		err_ind;
+	Gclip		clip_ind_rect;
+	float 		lxcpf,lycpf,lxcqf,lycqf;
+	float		xhalf,yhalf;
 
 	c_entsr(&save_mode,1);
 
@@ -2857,10 +2862,23 @@ NhlErrorTypes _NhlCpcica
 		if (ret < NhlWARNING) return ret;
 	}
 
-	do {
+	xhalf = 0.5 * (xcqf-xcpf) / (icam-1);
+	lxcpf = xcpf - xhalf;
+	lxcqf = xcqf + xhalf;
+	yhalf = 0.5 * (ycqf-ycpf) / (ican-1);
+	lycpf = ycpf - yhalf;
+	lycqf = ycqf + yhalf;
+
+	if (! smooth) {
+		ret = _NhlRasterFill(zdat,cwsrp->ws_ptr,ica1,icam,ican,
+				     lxcpf,lycpf,lxcqf,lycqf,entry_name);
+		if (ret < NhlWARNING) 
+			return NhlFATAL;
+	}
+	else do {
 		NGCALLF(cpcica,CPCICA)
 			(zdat,fwsrp->ws_ptr,iwsrp->ws_ptr,cwsrp->ws_ptr,
-			 &ica1,&icam,&ican,&xcpf,&ycpf,&xcqf,&ycqf);
+			 &ica1,&icam,&ican,&lxcpf,&lycpf,&lxcqf,&lycqf);
 
 		if (c_nerro(&err_num) == 0) {
 			done = True;
@@ -2909,10 +2927,14 @@ NhlErrorTypes _NhlCpcica
 
 	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	
+	ginq_clip(&err_ind,&clip_ind_rect);
+	gset_clip_ind(GIND_CLIP);
 
-	_NHLCALLF(gca,GCA)(&fl,&fb,&fr,&ft,&icam,&ican,
+	_NHLCALLF(gca,GCA)(&lxcpf,&lycpf,&lxcqf,&lycqf,&icam,&ican,
 			   &start,&start,&icam,&ican,cwsrp->ws_ptr);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	gset_clip_ind(clip_ind_rect.clip_ind);
 
 	c_set(fl,fr,fb,ft,wl,wr,wb,wt,ll);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);

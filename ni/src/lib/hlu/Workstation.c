@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.67 1997-07-02 15:24:30 boote Exp $
+ *      $Id: Workstation.c,v 1.68 1997-07-14 18:36:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -191,6 +191,9 @@ static NhlResource resources[] = {
 	{NhlNwkGksWorkId,NhlCwkGksWorkId,NhlTInteger,sizeof(int),
 		 Oset(gkswksid),
 		 NhlTImmediate,_NhlUSET((NhlPointer)0),_NhlRES_GONLY,NULL},
+	{NhlNwkVSWidthDevUnits,NhlCwkVSWidthDevUnits,NhlTInteger,sizeof(int),
+         	Oset(vswidth_dev_units),NhlTImmediate,
+         	_NhlUSET((NhlPointer)1024),_NhlRES_GONLY,NULL},
 	{NhlNwkDashTableLength,NhlCwkDashTableLength,NhlTInteger,sizeof(int),
 		Oset(dash_table_len),NhlTImmediate,_NhlUSET((NhlPointer)0),
 		_NhlRES_GONLY,NULL},

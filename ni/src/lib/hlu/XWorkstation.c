@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.22 1997-02-24 22:12:46 boote Exp $
+ *      $Id: XWorkstation.c,v 1.23 1997-07-14 18:36:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -17,13 +17,14 @@
  *
  *	Date:		Tue Sep 15 10:00:09 MDT 1992
  *
- *	Description:	Responsible for managing the X workstation element
- */
+ *	Description:	Responsible for managing the X workstation element */
 #include <ncarg/gksP.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/ErrorI.h>
 #include <ncarg/hlu/XWorkstationP.h>
 #include <ncarg/hlu/ConvertersP.h>
+
+static NrmQuark Qvswidth_dev_units;
 
 #define	Oset(field)	NhlOffset(NhlXWorkstationLayerRec,xwork.field)
 static NhlResource resources[] = {
@@ -77,6 +78,14 @@ static NhlErrorTypes XWorkstationSetValues(
 #endif
 );
 
+static NhlErrorTypes 	XWorkstationGetValues(
+#if	NhlNeedProto
+	NhlLayer,	/* l */
+	_NhlArgList, 	/* args */
+	int		/* num_args */
+#endif
+);
+
 static NhlErrorTypes XWorkstationOpen(
 #if	NhlNeedProto
 	NhlLayer	l
@@ -118,7 +127,7 @@ NhlXWorkstationClassRec NhlxWorkstationClassRec = {
 /* layer_initialize		*/	XWorkstationInitialize,
 /* layer_set_values		*/	XWorkstationSetValues,
 /* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	NULL,
+/* layer_get_values		*/	XWorkstationGetValues,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NULL,
 
@@ -212,6 +221,7 @@ XWorkstationClassInitialize
 	(void)_NhlRegisterEnumType(NhlxWorkstationClass,NhlTXColorMode,cmvals,
 		NhlNumber(cmvals));
 
+	Qvswidth_dev_units = NrmStringToQuark(NhlNwkVSWidthDevUnits);
 	return NhlNOERROR;
 }
 
@@ -369,6 +379,45 @@ static NhlErrorTypes XWorkstationSetValues
 	return ret;
 }
 
+
+/*
+ * Function:	XWorkstationGetValues
+ *
+ * Description:	
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ */
+static NhlErrorTypes
+XWorkstationGetValues
+#if NhlNeedProto
+(
+	NhlLayer	l,
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(l,args,num_args)
+	NhlLayer	l;
+	_NhlArgList	args;
+	int		num_args;
+#endif
+{
+        int i;
+        
+	for ( i = 0; i< num_args; i++ ) {
+		if (args[i].quark == Qvswidth_dev_units) {
+			
+			*(int*)args[i].value.ptrval = 500;
+		}
+	}
+	return NhlNOERROR;
+        
+}
 /*
  * Function:	XWorkstationClear
  *

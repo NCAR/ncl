@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.54 1997-06-20 22:46:22 ethan Exp $
+ *      $Id: ContourPlot.c,v 1.55 1997-07-14 18:36:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -81,16 +81,6 @@ ResourceUnset
 
 	return NhlNOERROR;
 }
-
-#define	Oset(field)	NhlOffset(NhlContourPlotDataDepLayerRec,cndata.field)
-static NhlResource data_resources[] = {
-
-	{NhlNcnExplicitLabels,NhlCcnExplicitLabels,NhlTStringGenArray,
-		 sizeof(NhlPointer),
-		 Oset(labels),NhlTImmediate,
-		 _NhlUSET((NhlPointer)NULL),0,(NhlFreeFunc)NhlFreeGenArray}
-};
-#undef Oset
 
 #define Oset(field)     NhlOffset(NhlContourPlotLayerRec,contourplot.field)
 static NhlResource resources[] = {
@@ -201,6 +191,12 @@ static NhlResource resources[] = {
 	{NhlNcnRasterCellSizeF,NhlCcnRasterCellSizeF,NhlTFloat,sizeof(float),
 		 Oset(cell_size),
 		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{NhlNcnRasterSmoothingOn,NhlCcnRasterSmoothingOn,
+         	NhlTBoolean,sizeof(NhlBoolean),Oset(raster_smoothing_on),
+         	NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+	{NhlNcnRasterSampleFactorF,NhlCcnRasterSampleFactorF,
+         	NhlTFloat,sizeof(float),Oset(raster_sample_factor),
+         	NhlTString,_NhlUSET("1.0"),0,NULL},
 
 /* Line resources */
 
@@ -1492,8 +1488,8 @@ NhlContourPlotDataDepClassRec NhlcontourPlotDataDepClassRec = {
 						&NhldataSpecClassRec,
 
 /* cvt_table			*/	NULL,
-/* layer_resources		*/	data_resources,
-/* num_resources		*/	NhlNumber(data_resources),
+/* layer_resources		*/	NULL,
+/* num_resources		*/	0,
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
@@ -2097,8 +2093,12 @@ ContourPlotInitialize
 	if (! cnp->llabel_interval_set) cnp->llabel_interval = 2;
 	if (! cnp->line_dash_seglen_set) 
 		cnp->line_dash_seglen = 0.15;
-	if (! cnp->cell_size_set)
-		cnp->cell_size = 0.001;
+	if (! cnp->cell_size_set || cnp->cell_size == 0.0) {
+		cnp->cell_size = 0.0;
+                cnp->sticky_cell_size_set = False;
+        }
+        else
+                cnp->sticky_cell_size_set = True;
 
 	if (! cnp->line_lbls.height_set) 
 		cnp->line_lbls.height = 0.012;
@@ -2420,9 +2420,16 @@ static NhlErrorTypes ContourPlotSetValues
 		cnp->llabel_interval_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNcnLineDashSegLenF))
 		cnp->line_dash_seglen_set = True;
-	if (_NhlArgIsSet(args,num_args,NhlNcnRasterCellSizeF))
-		cnp->cell_size_set = True;
-
+        if (_NhlArgIsSet(args,num_args,NhlNcnRasterCellSizeF)) {
+                if (cnp->cell_size == 0.0) {
+                        cnp->cell_size_set = False;
+                        cnp->sticky_cell_size_set = False;
+                }
+                else {        
+                        cnp->cell_size_set = True;
+                        cnp->sticky_cell_size_set = True;
+                }
+        }
 	if (_NhlArgIsSet(args,num_args,NhlNcnLineLabelFontHeightF))
 		cnp->line_lbls.height_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNcnHighLabelFontHeightF))
@@ -3305,12 +3312,14 @@ static NhlErrorTypes GetDataBound
 (
 	NhlContourPlotLayer	cl,
 	NhlBoundingBox		*bbox,
+        NhlBoolean		*linear,
 	NhlString		entry_name
 )
 #else
-(cl,bbox,entry_name)
+(cl,bbox,linear,entry_name)
 	NhlContourPlotLayer	cl;
 	NhlBoundingBox		*bbox;
+        NhlBoolean		*linear;
 	NhlString		entry_name;
 #endif
 {
@@ -3321,10 +3330,15 @@ static NhlErrorTypes GetDataBound
 	int			status;
 	NhlBoolean		ezmap = False;
 
-
+        *linear = False;
 	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
 	    NhlmapTransObjClass->base_class.class_name) {
 		ezmap = True;
+	}
+	else if (cnp->trans_obj->base.layer_class->base_class.class_name ==
+	    NhllogLinTransObjClass->base_class.class_name) {
+                if (! cnp->x_log && !cnp->y_log)
+                        *linear = True;
 	}
 
 	if (! ezmap) {
@@ -3407,13 +3421,46 @@ static NhlErrorTypes cnInitCellArray
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
+        int dunits,dwidth,dheight;
+        NhlBoolean linear;
 
 	c_cpseti("CAF", -1);
-	subret = GetDataBound(cnl,bbox,entry_name);
+	subret = GetDataBound(cnl,bbox,&linear,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 
-	*msize = (int) ((bbox->r - bbox->l) / cnp->cell_size + 0.5);
-	*nsize = (int) ((bbox->t - bbox->b) / cnp->cell_size + 0.5);
+        subret = NhlVAGetValues(cnl->base.wkptr->base.id,
+                                NhlNwkVSWidthDevUnits,&dunits,
+                                NULL);
+        dwidth = dunits * (bbox->r - bbox->l);
+        dheight = dunits * (bbox->t - bbox->b);
+        
+	if (cnp->sticky_cell_size_set) {
+		*msize = (int) ((bbox->r - bbox->l) / cnp->cell_size + 0.5);
+		*nsize = (int) ((bbox->t - bbox->b) / cnp->cell_size + 0.5);
+	}
+        else if (cnp->raster_smoothing_on) {
+                if (! linear || cnp->raster_sample_factor < 1.0) {
+                        *msize = dwidth * cnp->raster_sample_factor;
+                        *nsize = dheight * cnp->raster_sample_factor;
+                }
+                else {
+                        *msize = dwidth;
+                        *nsize = dheight;
+                }
+        }
+        else if (linear) {
+                *msize = MIN(dwidth,
+                             cnp->sfp->fast_len * cnp->raster_sample_factor);
+                *nsize = MIN(dheight,
+                             cnp->sfp->slow_len * cnp->raster_sample_factor);
+        }
+        else {
+                *msize = cnp->sfp->fast_len * cnp->raster_sample_factor;
+                *nsize = cnp->sfp->slow_len * cnp->raster_sample_factor;
+        }
+        if (!cnp->sticky_cell_size_set) {
+                cnp->cell_size = (bbox->r - bbox->l) / (float) *msize;
+        }
 	
 	if (cnp->cws_id < 0) {
 		cnp->cws_id = 
@@ -4105,10 +4152,11 @@ static NhlErrorTypes cnDraw
 				ContourAbortDraw(cnl);
 				return ret;
 			}
-			subret = _NhlCpcica(cnp->trans_obj,cnp->data,
+			subret = _NhlCpcica(cnp->data,
 					    cnp->fws,cnp->iws,cnp->cws,
 					    msize,msize,nsize,
 					    bbox.l,bbox.b,bbox.r,bbox.t,
+					    cnp->raster_smoothing_on,
 					    entry_name);
  			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
@@ -4556,7 +4604,6 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	int			*clup;
 	int			i;
 	float			height;
-	int			aid_offset;
 
 	cnp->line_lbls.text = (NhlString *) cnp->llabel_strings->data;
 	if (cnp->line_lbls.mono_color) {
@@ -4647,14 +4694,13 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	if (! cnp->lines_on)
 		*do_lines = False;
 
-	aid_offset = 100;
 	for (i=0; i<cnp->level_count; i++) {
 		int pai,aia,aib;
 		NhlcnLevelUseMode flag;
 
 		pai = i+1;
-		aib = aid_offset+i;
-		aia = aid_offset+i+1;
+		aib = NhlcnAREAID_OFFSET+i;
+		aia = NhlcnAREAID_OFFSET+i+1;
 		c_cpseti("PAI",pai);
 		c_cpsetr("CLV",(float)clvp[i]);
 		flag = cnp->mono_level_flag ? cnp->level_flag :(NhlcnLevelUseMode)clup[i];
@@ -4838,7 +4884,8 @@ static NhlErrorTypes UpdateFillInfo
 	pattern_fill = (cnp->mono_fill_pattern && 
 			cnp->fill_pattern == NhlHOLLOWFILL) ? False : True;
 
-	if (color_fill &&  pattern_fill && cnp->fill_on) {
+	if (color_fill &&  pattern_fill &&  
+	    (cnp->fill_on || cnp->raster_mode_on)) {
 		*do_fill = True;
 		return ret;
 	}
@@ -8460,6 +8507,7 @@ static NhlErrorTypes    ManageDynamicArrays
 
 	entry_name =  init ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
+#if 0                
 /* 
  * If constant field don't bother setting up the arrays: they will not
  * be used -- but the label scaling still needs to be set up for the
@@ -8475,6 +8523,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		return NhlNOERROR;
 	}
+#endif                
 
 /* Determine the contour level state */
 
@@ -9457,6 +9506,7 @@ static NhlErrorTypes    SetupLevels
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ret = MIN(ret,NhlWARNING);
 		cnp->level_spacing = 5.0;
+                cnp->level_spacing_set = False;
 	}
 	if (cnp->max_level_count < 1) {
 		e_text = 
@@ -9467,87 +9517,30 @@ static NhlErrorTypes    SetupLevels
 		cnp->max_level_count = 16.0;
 	}
 	
-	if ((cnp->min_level_val > cnp->max_level_val) ||
-            (cnp->level_count > 1 &&
-             cnp->min_level_val == cnp->max_level_val)) {
-		e_text =
-		"%s: Invalid level values set: defaulting to AUTOMATIC mode ";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ret = MIN(ret,NhlWARNING);
-		cnp->min_level_val = cnp->zmin;
-		cnp->max_level_val = cnp->zmax;
-		cnp->level_selection_mode = NhlAUTOMATICLEVELS;
-	}
-			
-	if (cnp->zmax <= cnp->min_level_val || 
-	    cnp->zmin > cnp->max_level_val) {
-		e_text =
-			"%s: Data values and min/max levels are disjoint sets: defaulting to AUTOMATIC mode ";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ret = MIN(ret,NhlWARNING);
-		cnp->min_level_val = cnp->zmin;
-		cnp->max_level_val = cnp->zmax;
-		cnp->level_selection_mode = NhlAUTOMATICLEVELS;
-	}
-	
 	switch (cnp->level_selection_mode) {
 
 	case NhlMANUALLEVELS:
-
-		if (! cnp->min_level_set) {
-			subret = SetupLevelsAutomatic(cnew,cold,
-						      levels,entry_name);
-		}
-		else {
-			subret = SetupLevelsManual(cnew,cold,
-						   levels,entry_name);
-		}
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			return ret;
-		}
-		*modified = True;
+                subret = SetupLevelsManual(cnew,cold,levels,entry_name);
 		break;
-
 	case NhlEQUALSPACEDLEVELS:
-
 		subret = SetupLevelsEqual(cnew,cold,levels,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			return ret;
-		}
-		*modified = True;
 		break;
-
 	case NhlAUTOMATICLEVELS:
-
 		subret = SetupLevelsAutomatic(cnew,cold,levels,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			return ret;
-		}
-		*modified = True;
 		break;
-			
 	case NhlEXPLICITLEVELS:
-
-		if (init && cnp->levels == NULL) {
-			subret = SetupLevelsAutomatic(cnew,cold,
-						      levels,entry_name);
-		}
-		else {
-			subret = SetupLevelsExplicit(cnew,cold,init,
-						     levels,entry_name);
-		}
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			return ret;
-		}
-		*modified = True;
+                subret = SetupLevelsExplicit(cnew,cold,init,levels,entry_name);
 		break;
-
 	default:
 		ret = NhlFATAL;
 		e_text = "%s: Invalid level selection mode";
 		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
+        if ((ret = MIN(subret,ret)) < NhlWARNING) {
+                return ret;
+        }
+        *modified = True;
 
 	subret = cnComputeRefLevel(cnp,*levels,entry_name);
 	ret = MIN(subret,ret);
@@ -9591,29 +9584,54 @@ static NhlErrorTypes    SetupLevelsManual
 #endif
 
 {
-	NhlErrorTypes		ret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
 	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = &(cnew->contourplot);
 	int			i, count;
 	float			lmin,lmax,rem,spacing;
 	float			*fp;
-
-	if (cnp->level_spacing <= 0.0) {
-		e_text = "%s: Invalid level spacing value: defaulting";
+        NhlBoolean		do_automatic = False;
+        
+        
+	if ((cnp->min_level_val > cnp->max_level_val) ||
+            (cnp->level_count > 1 &&
+             cnp->min_level_val == cnp->max_level_val)) {
+		e_text =
+		"%s: Invalid level values set: using AUTOMATICLEVELS mode ";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ret = MIN(ret,NhlWARNING);
-		cnp->level_spacing = 5.0;
+		do_automatic = True;
+	}
+			
+	if (cnp->zmax <= cnp->min_level_val || 
+	    cnp->zmin > cnp->max_level_val) {
+		e_text =
+          "%s: Data values out of range of levels set by MANUALLEVELS mode";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+                ret = MIN(ret,NhlWARNING);
+	}
+	if (! cnp->min_level_set) {
+		do_automatic = True;
+	}
+                
+	if (cnp->level_spacing <= 0.0) {
+	e_text = "%s: Invalid level spacing value: using AUTOMATICLEVELS mode";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ret = MIN(ret,NhlWARNING);
+		do_automatic = True;
+        }
+        if (do_automatic) {
+                subret = SetupLevelsAutomatic(cnew,cold,levels,entry_name);
+                return (MIN(ret,subret));
         }
 	spacing = cnp->level_spacing;
-	if (! cnp->min_level_set) {
-       e_text =  "%s: cnMinLevelValF must be set before Manual mode is called";
-		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
 	lmin = cnp->min_level_val;
 
 	if (cnp->max_level_set) {
 		lmax = cnp->max_level_val;
+	}
+        else if (cnp->const_field) {
+                lmax = cnp->min_level_val;
 	}
 	else {
 		lmax = floor(((cnp->zmax - lmin) / spacing) * spacing + lmin);
@@ -9623,33 +9641,38 @@ static NhlErrorTypes    SetupLevelsManual
 		cnp->max_level_val = lmax;
 	}
 
-	count = (lmax - lmin) / cnp->level_spacing;
-	rem = lmax - lmin - cnp->level_spacing * count; 
-	if (_NhlCmpFAny(rem,0.0,6) != 0.0)
-		count += 2;
-	else
-		count += 1;
+	if (cnp->const_field) {
+		count = 1;
+	}
+	else {
+		count = (lmax - lmin) / cnp->level_spacing;
+		rem = lmax - lmin - cnp->level_spacing * count; 
+		if (_NhlCmpFAny(rem,0.0,6) != 0.0)
+		  count += 2;
+		else
+		  count += 1;
+	}
 
 	if (count <= 1) {
 		e_text = 
-	  "%s: cnLevelSpacingF value exceeds or equals data range: defaulting";
+		  "%s: cnLevelSpacingF value equals or exceeds data range";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ret = SetupLevelsAutomatic(cnew,cold,levels,entry_name);
-		return MIN(NhlWARNING,ret);
+                ret = MIN(ret,NhlWARNING);
 	}
 	if (count >  Nhl_cnMAX_LEVELS) {
 		ret = MIN(NhlWARNING,ret);
 		e_text = 
- "%s: cnLevelSpacingF value causes level count to exceed maximum: defaulting";
-		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-		cnp->level_spacing = (lmax - lmin) / 
-			(cnp->max_level_count - 1);
-		count = cnp->max_level_count;
+ "%s: cnLevelSpacingF value causes level count to exceed maximum: using AUTOMATICLEVELS mode";
+		do_automatic = True;
 	}
 	else {
 		cnp->max_level_count = MAX(cnp->max_level_count, count);
 	}
-
+        if (do_automatic) {
+                subret = SetupLevelsAutomatic(cnew,cold,levels,entry_name);
+                return (MIN(ret,subret));
+        }
+	
 	if ((*levels = (float *) 
 	     NhlMalloc(count * sizeof(float))) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
@@ -9708,9 +9731,15 @@ static NhlErrorTypes    SetupLevelsEqual
 
 	lmin = cnp->zmin;
 	lmax = cnp->zmax;
-	size = (lmax - lmin) / (cnp->max_level_count + 1);
 
-	cnp->level_count = cnp->max_level_count;
+        if (! cnp->const_field) {
+                size = (lmax - lmin) / (cnp->max_level_count + 1);
+                cnp->level_count = cnp->max_level_count;
+        }
+        else {
+                cnp->level_count = 1;
+                size = cnp->level_spacing;
+        }
 	if ((*levels = (float *) 
 	     NhlMalloc(cnp->level_count * sizeof(float))) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
@@ -9774,6 +9803,12 @@ static NhlErrorTypes    SetupLevelsAutomatic
 	lmin = cnp->zmin;
 	lmax = cnp->zmax;
 
+        if (cnp->const_field) {
+                choose_spacing = False;
+                count = 1;
+                spacing = cnp->level_spacing;
+        }
+        
 	if (cnp->level_spacing_set) {
 		spacing = cnp->level_spacing;
 		lmin = ceil(lmin / spacing) * spacing;
@@ -9878,21 +9913,30 @@ static NhlErrorTypes    SetupLevelsExplicit
 #endif
 
 {
-	NhlErrorTypes		ret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
 	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = &(cnew->contourplot);
 	NhlContourPlotLayerPart	*ocnp = &(cold->contourplot);
 	int			i,j,count;
 	float			*fp;
 	float			ftmp;
-
+        NhlBoolean		do_automatic = False;
+        
+        if (init && cnp->levels == NULL) {
+                do_automatic = True;
+        }
 	if (cnp->levels == NULL || cnp->levels->num_elements < 1) {
 		ret = MIN(NhlWARNING,ret);
 		e_text = 
-	      "%s: %s is NULL: defaulting to Automatic level selection mode";
+	      "%s: %s is NULL: using AUTOMATICLEVELS mode";
 		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name,NhlNcnLevels);
-		return SetupLevelsAutomatic(cnew,cold,levels,entry_name);
+                do_automatic = True;
 	}
+        if (do_automatic) {
+                subret = SetupLevelsAutomatic(cnew,cold,levels,entry_name);
+                return MIN(ret,subret);
+        }
+                
 	if (init || cnp->levels != ocnp->levels)
 		count = cnp->levels->num_elements;
 	else 
@@ -9901,9 +9945,10 @@ static NhlErrorTypes    SetupLevelsExplicit
 	if (count > Nhl_cnMAX_LEVELS) {
 		ret = MIN(NhlWARNING,ret);
 		e_text = 
-  "%s: Explicit level array count exceeds max level count: defaulting to Automatic level selection mode";
+"%s: Explicit level array count exceeds max level count: using AUTOMATICLEVELS mode";
 		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-		return SetupLevelsAutomatic(cnew,cold,levels,entry_name);
+		subret = SetupLevelsAutomatic(cnew,cold,levels,entry_name);
+                return MIN(ret,subret);
 	}
 /*
  * Allocate space for the levels
@@ -9954,6 +9999,27 @@ static NhlErrorTypes    SetupLevelsExplicit
 	cnp->line_count = count;
 	cnp->fill_count = count + 1;
 
+	if ((cnp->min_level_val > cnp->max_level_val) ||
+            (cnp->level_count > 1 &&
+             cnp->min_level_val == cnp->max_level_val)) {
+		e_text =
+		"%s: Invalid level values set: using AUTOMATICLEVELS mode ";
+                do_automatic = True;
+	}
+			
+	if (cnp->zmax <= cnp->min_level_val || 
+	    cnp->zmin > cnp->max_level_val) {
+		e_text =
+          "%s: Data values out of range of levels set by EXPLICITLEVELS mode";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+                ret = MIN(ret,NhlWARNING);
+	}
+        if (do_automatic) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+                NhlFree(*levels);
+		subret = SetupLevelsAutomatic(cnew,cold,levels,entry_name);
+                ret = MIN(ret,subret);
+        }
 	return ret;
 }
 
@@ -10782,3 +10848,156 @@ static void   load_hlucp_routines
 	return;
 }
 
+/*
+ * Function:  _NhlRasterFill
+ *
+ * Description: performs a discrete raster fill - 
+ * replaces Conpack routine CPCICA - Conpack must be initialized, etc.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+NhlErrorTypes _NhlRasterFill
+#if	NhlNeedProto
+(
+	float 		*zdat,
+	int		*cell,
+	int		ica1,
+	int		icam,
+	int		ican,
+	float		xcpf,
+	float		ycpf,
+	float		xcqf,
+	float		ycqf,
+	char		*entry_name
+)
+#else
+(zdat,cell,ica1,icam,ican,
+ xcpf,ycpf,xcqf,ycqf,entry_name)
+	float		*zdat;
+	int		*cell;
+	int		ica1;
+	int		icam;
+	int		ican;
+	float		xcpf;
+	float		ycpf;
+	float		xcqf;
+	float		ycqf;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	float		fl,fr,fb,ft,wl,wr,wb,wt;
+	int		ll;
+	int		start = 1;
+	Gint		err_ind;
+	Gclip		clip_ind_rect;
+	float		xc1,xcm,yc1,ycn;
+	float		xmn,xmx,ymn,ymx;
+	int		i,j,k,izd1,izdm,izdn,indx,indy,icaf,map,iaid;
+	float		xccf,xccu,xccd,xcci,yccf,yccu,yccd,ycci;
+	float		zval,orv,spv;
+	NhlBoolean	out_of_range;
+        float		*levels;
+
+        if (Cnp == NULL) {
+		e_text = "%s: invalid call to _NhlRasterFill";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(NhlFATAL);
+        }
+        levels = (float*) Cnp->levels->data;
+        
+/* 
+ * replacement for CPCICA
+ */
+	c_cpgetr("XC1",&xc1);
+	c_cpgetr("XCM",&xcm);
+	c_cpgetr("YC1",&yc1);
+	c_cpgetr("YCN",&ycn);
+	c_cpgetr("ORV",&orv);
+	c_cpgetr("SPV",&spv);
+	c_cpgeti("ZDM",&izdm);
+	c_cpgeti("ZDN",&izdn);
+	c_cpgeti("ZD1",&izd1);
+	c_cpgeti("CAF",&icaf);
+	c_cpgeti("MAP",&map);
+	xmn = MIN(xc1,xcm);
+	xmx = MAX(xc1,xcm);
+	ymn = MIN(yc1,ycn);
+	ymx = MAX(yc1,ycn);
+
+        map = -map;
+	for (i = 0; i < icam; i++) {
+		int iplus = i+1;
+		if (i == 0)
+			xccf = xcpf + .75 * ((xcqf-xcpf)/(float)icam);
+		else if (i == icam - 1)
+			xccf = xcpf + (icam - .75) * 
+					((xcqf-xcpf)/(float)icam);
+		else
+			xccf = xcpf + (i+0.5) * ((xcqf-xcpf)/(float)icam);
+		xccu = c_cfux(xccf);
+
+		for (j = 0; j < ican; j++) {
+			int jplus = j+1;
+			if (j == 0)
+		  		yccf = ycpf + .75 * 
+				  ((ycqf-ycpf)/(float)ican);
+			else if (j == ican - 1)
+		  		yccf = ycpf + (ican - .75) * 
+				  ((ycqf-ycpf)/(float)ican);
+			else
+				yccf = ycpf + (j+0.5) * 
+				  ((ycqf-ycpf)/(float)ican);
+			yccu = c_cfuy(yccf);
+			
+			out_of_range = False;
+			(_NHLCALLF(hlucpmpxy,HLUCPMPXY))
+				(&map,&xccu,&yccu,&xccd,&yccd);
+			if (xccd == orv ||
+			    xccd < xmn || xccd > xmx || 
+			    yccd < ymn || yccd > ymx) {
+				out_of_range = True;
+				iaid = 97;
+			}
+			else {
+				xcci =((xccd-xc1)/(xcm-xc1)) * (float)(izdm-1);
+				ycci =((yccd-yc1)/(ycn-yc1)) * (float)(izdn-1);
+				indx = (int)(xcci + 0.5);
+				indy = (int)(ycci + 0.5);
+				if (indx < 0 || indx > izdm-1 ||
+				    indy < 0 || indy > izdn-1)
+					iaid = 97;
+				else if (spv != 0.0 &&
+					 *(zdat + indy * izd1 + indx) == spv)
+					iaid = 98;
+				else {
+                                        iaid = 0;
+					zval = *(zdat + indy*izd1 + indx);
+                                        for (k=0; k < Cnp->level_count; k++) {
+                                                if (zval <= levels[k]) {
+                                                   iaid = NhlcnAREAID_OFFSET+k;
+                                                   break;
+                                                }
+                                        }
+                                        if (iaid == 0) {
+                                                iaid = NhlcnAREAID_OFFSET +
+                                                        Cnp->level_count;
+                                        }
+				}
+			}
+			(_NHLCALLF(hlucpscae,HLUCPSCAE))
+			  (cell,&ica1,&icam,&ican,&xcpf,&ycpf,&xcqf,&ycqf,
+			   &iplus,&jplus,&icaf,&iaid);
+		}
+	}
+
+	return NhlNOERROR;
+}

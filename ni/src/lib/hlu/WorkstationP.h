@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.16 1997-02-24 22:12:46 boote Exp $
+ *      $Id: WorkstationP.h,v 1.17 1997-07-14 18:36:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -115,6 +115,8 @@ typedef struct _NhlWorkstationLayerPart{
 
 	NhlGenArray	color_map;
 	int		color_map_len;
+	int		vswidth_dev_units;  /* width of the viewspace in
+                                               device units */
 	NhlGenArray	bkgnd_color;
 	NhlGenArray	foregnd_color;
 	int		dash_table_len;
