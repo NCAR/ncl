@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.133 2002-05-30 16:33:45 kennison Exp $
+#   $Id: ncargex.csh,v 1.134 2002-08-03 00:39:00 fred Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -403,7 +403,7 @@ set c_list = ($c_list $labelbar_clist)
 set csagrid_flist = (csex01 csex02 csex03 csex04 csex05 csex06 csex07)
 set cssgrid_flist = (cssex01 cssex02 cssex03)
 set dsgrid_flist  = (dsex01 dsex01d dsex02 dsex03 dsex04 dsex05 dsex06)
-set fitgrid_flist = (ftex01 ftex02 ftex03 ftex04 ftex05 ftex06)
+set fitgrid_flist = (ftex01 ftex02 ftex03 ftex04 ftex05 ftex06 ftex07)
 set natgrid_flist = (nnex01 nnex01d nnex02 nnex03 nnex04 nnex05 nnex06 \
                      nnex07 nnex08 nnex09 nnex10)
 set shgrid_flist  = (shex01 shex02 shex03)
@@ -416,7 +416,8 @@ set csagrid_clist = (c_csex01 c_csex02 c_csex03 c_csex04 c_csex05 \
 set cssgrid_clist = (c_cssex01 c_cssex02 c_cssex03)
 set dsgrid_clist  = (c_dsex01 c_dsex01d c_dsex02 c_dsex03 c_dsex04 \
                      c_dsex05 c_dsex06)
-set fitgrid_clist = (c_ftex01 c_ftex02 c_ftex03 c_ftex04 c_ftex05 c_ftex06)
+set fitgrid_clist = (c_ftex01 c_ftex02 c_ftex03 c_ftex04 c_ftex05 c_ftex06 \
+                     c_ftex07)
 set natgrid_clist = (c_nnex01 c_nnex01d c_nnex02 c_nnex03 c_nnex06)
 set shgrid_clist  = (c_shex01 c_shex02 c_shex03)
 
@@ -1604,6 +1605,7 @@ switch ($name)
     case ftex04:
     case ftex05:
     case ftex06:
+    case ftex07:
     case shex01:
     case shex02:
     case shex03:
@@ -1636,6 +1638,7 @@ switch ($name)
     case c_ftex04:
     case c_ftex05:
     case c_ftex06:
+    case c_ftex07:
     case c_shex01:
     case c_shex02:
     case c_shex03
