@@ -1,0 +1,2 @@
+*ndvPlotStyleName : Streamline
+*ndvPlotClass : streamlinePlotClass

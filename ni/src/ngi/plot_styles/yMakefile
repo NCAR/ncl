@@ -1,0 +1,11 @@
+#
+#       $Id: yMakefile,v 1.1 1999-02-27 03:14:05 dbrown Exp $
+#
+FILES		= DiscreteRasterContour.res FillContour.res FillVector.res \
+		LineContour.res LineVector.res LineXy.res ScatterXy.res \
+		SmoothedRasterContour.res Streamline.res
+
+PSPATH	= $(LIBNCARGPATH)/plot_styles
+INSTALL_PS = $(INSTALL_DB)
+
+InstallTarget($(FILES),$(INSTALL_PS),$(PSPATH))
