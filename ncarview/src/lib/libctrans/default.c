@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.24 1994-03-07 22:08:42 clyne Exp $
+ *	$Id: default.c,v 1.25 1995-01-09 22:18:44 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -197,41 +197,6 @@ boolean		value;
 		}
 		clut = &picColorLUTable;
 
-		COLOUR_TABLE_DAMAGE = COLOUR_TABLE_ACCESS;
-		COLOUR_TABLE_ACCESS =  FALSE;
-
-		/*	
-		 *	mark accessed attributes as damaged by last frame
-		 *	so they will be updated for the current frame
-		 */
-		LINE_TYPE_DAMAGE = LINE_TYPE_ACCESS;
-		LINE_WIDTH_DAMAGE = LINE_WIDTH_ACCESS;
-		LINE_COLOUR_DAMAGE = LINE_COLOUR_ACCESS;
-		MARKER_COLOUR_DAMAGE = MARKER_COLOUR_ACCESS;
-		FILL_COLOUR_DAMAGE = FILL_COLOUR_ACCESS;
-		INT_STYLE_DAMAGE = INT_STYLE_ACCESS;
-		CLIP_DAMAGE = CLIP_ACCESS;
-		MARKER_TYPE_DAMAGE = MARKER_TYPE_ACCESS;
-		MARKER_SIZE_DAMAGE = MARKER_SIZE_ACCESS;
-		BACKCOLR_DAMAGE = BACKCOLR_ACCESS;
-		TEXT_F_IND_DAMAGE = TEXT_F_IND_ACCESS;
-		TEXT_ATT_DAMAGE = TEXT_ATT_ACCESS;
-		VDC_EXTENT_DAMAGE = VDC_EXTENT_ACCESS;
-
-		/*	clear access list for new frame	*/
-		LINE_TYPE_ACCESS	= 
-		LINE_WIDTH_ACCESS	=  
-		LINE_COLOUR_ACCESS	=
-		MARKER_COLOUR_ACCESS	= 
-		FILL_COLOUR_ACCESS	= 
-		INT_STYLE_ACCESS	=
-		CLIP_ACCESS		= 
-		MARKER_TYPE_ACCESS	=
-		MARKER_SIZE_ACCESS	= 
-		BACKCOLR_ACCESS		= 
-		TEXT_F_IND_ACCESS	=
-		TEXT_ATT_ACCESS		= 
-		VDC_EXTENT_ACCESS	= FALSE;
 
 	} else {
 		dt = &defaulttable;
@@ -567,7 +532,7 @@ CGMC *c;
 
 	dt->char_height = (VDCtype) 0.01*(YMAX - YMIN);
 
-	dt->vdc_extent_damage = at->vdc_extent_access = TRUE;
+	dt->vdc_extent_damage = TRUE;
 
 	return (0);
 }
@@ -581,7 +546,7 @@ CGMC *c;
 	dt->backcolr.green = c->cd[0].green;
 	dt->backcolr.blue = c->cd[0].blue;
 
-	dt->backcolr_damage = at->backcolr_access = TRUE;
+	dt->backcolr_damage = TRUE;
 
 	clut->ce[0].rgb.red = (unsigned char) c->cd[0].red;
 	clut->ce[0].rgb.green = (unsigned char) c->cd[0].green;
@@ -593,7 +558,7 @@ CGMC *c;
 		clut->ce[0].damage = TRUE;
 	}
 
-	clut->damage = at->colour_table_access = TRUE;
+	clut->damage = TRUE;
 
 	return (0);
 }
@@ -681,7 +646,7 @@ int ClipRect(c)
 	CLIPXMAX = c->p[1].x;
 	CLIPYMAX = c->p[1].y;
 
-	dt->clip_damage = at->clip_access = TRUE;
+	dt->clip_damage = TRUE;
 	return (0);
 }
 int Clip(c)
@@ -689,7 +654,7 @@ int Clip(c)
 {
 
 	CLIPFLAG = c->e[0];
-	dt->clip_damage = at->clip_access = TRUE;
+	dt->clip_damage = TRUE;
 
 	return (0);
 }
@@ -712,7 +677,7 @@ CGMC *c;
 
 	dt->line_type = c->ix[0];
 
-	dt->line_type_damage = at->line_type_access = TRUE;
+	dt->line_type_damage = TRUE;
 
 	switch (dt->line_type) {
 	case L_SOLID :
@@ -753,7 +718,7 @@ CGMC *c;
 	 */
 	dt->line_width = line_width;
 
-	dt->line_width_damage = at->line_width_access = TRUE;
+	dt->line_width_damage = TRUE;
 	return (0);
 }
 
@@ -773,7 +738,7 @@ CGMC *c;
 		dt->line_colour.direct.blue = c->cd[0].blue;
 	}
 
-	dt->line_colour_damage = at->line_colour_access = TRUE;
+	dt->line_colour_damage = TRUE;
 	return (0);
 }
 
@@ -791,7 +756,7 @@ CGMC *c;
 	int	status = 0;
 
 	dt->markertype = c->ix[0];
-	dt->marker_type_damage = at->marker_type_access = TRUE;
+	dt->marker_type_damage = TRUE;
 
 	switch (dt->markertype) {
 	case MARKER_X :
@@ -821,7 +786,7 @@ CGMC *c;
 	else
 		dt->markersize = c->vdc[0];
 
-	dt->marker_size_damage = at->marker_size_access = TRUE;
+	dt->marker_size_damage = TRUE;
 	return (0);
 }
 
@@ -840,7 +805,7 @@ CGMC *c;
 		dt->marker_colour.direct.blue = c->cd[0].blue;
 	}
 
-	dt->marker_colour_damage = at->marker_colour_access = TRUE; 
+	dt->marker_colour_damage = TRUE; 
 	return (0);
 } 
 
@@ -858,8 +823,8 @@ int TextFontIndex(c)
 CGMC *c;
 {
 	dt->text_f_ind = c->ix[0];
-	dt->text_f_ind_damage = at->text_f_ind_access = TRUE;
-	dt->text_att_damage = at->text_att_access = TRUE;
+	dt->text_f_ind_damage = TRUE;
+	dt->text_att_damage = TRUE;
 
 	return(0);
 }
@@ -891,7 +856,7 @@ int CharExpan(c)
 CGMC *c;
 {
 
-	dt->text_att_damage = at->text_att_access = TRUE;
+	dt->text_att_damage = TRUE;
 	dt->char_expan = c->r[0];
 	return (0);
 }
@@ -900,7 +865,7 @@ int CharSpace(c)
 CGMC *c;
 {
 
-	dt->text_att_damage = at->text_att_access = TRUE;
+	dt->text_att_damage = TRUE;
 	dt->char_space = c->r[0];
 	return (0);
 }
@@ -925,7 +890,7 @@ int CharHeight(c)
 CGMC *c;
 {
 
-	dt->text_att_damage = at->text_att_access = TRUE;
+	dt->text_att_damage = TRUE;
 	dt->char_height = c->vdc[0];
 	return (0);
 }
@@ -933,7 +898,7 @@ int CharOri(c)
 CGMC *c;
 {
 
-	dt->text_att_damage = at->text_att_access = TRUE;
+	dt->text_att_damage = TRUE;
 	dt->char_x_up = c->vdc[0];
 	dt->char_y_up = c->vdc[1];
 	dt->char_x_base = c->vdc[2];
@@ -945,7 +910,7 @@ CGMC *c;
 {
 	int	status = 0;
 
-	dt->text_att_damage = at->text_att_access = TRUE;
+	dt->text_att_damage = TRUE;
 	dt->text_path = c->e[0];
 
 	switch (dt->text_path) {
@@ -970,7 +935,7 @@ CGMC *c;
 {
 	int	status = 0;
 
-	dt->text_att_damage = at->text_att_access = TRUE;
+	dt->text_att_damage = TRUE;
 	dt->text_ali_h = c->e[0];
 	dt->text_ali_v = c->e[1];
 	dt->text_ali_c_h = c->r[0];
@@ -1060,7 +1025,7 @@ CGMC *c;
 	int	status = 0;
 
 	dt->int_style = c->e[0];
-	dt->int_style_damage = at->int_style_access = TRUE;
+	dt->int_style_damage = TRUE;
 
 	switch (dt->int_style) {
 	case HOLLOW_S :
@@ -1097,7 +1062,7 @@ CGMC *c;
 		dt->fill_colour.direct.green = c->cd[0].green;
 		dt->fill_colour.direct.blue = c->cd[0].blue;
 	}
-	dt->fill_colour_damage = at->fill_colour_access = TRUE;
+	dt->fill_colour_damage = TRUE;
 	return (0);
 }
 
@@ -1248,7 +1213,7 @@ CGMC *c;
 
 	color_index = c->ci[0];
 	if (color_index == 0) {
-		dt->backcolr_damage = at->backcolr_access = TRUE;
+		dt->backcolr_damage = TRUE;
 	}
 
 	for (i=0; i <c->CDnum && i<=MAX_C_I; i++,color_index++){
@@ -1276,7 +1241,7 @@ CGMC *c;
 		CEA[color_index] = TRUE;
 	}
 
-	clut->damage = at->colour_table_access = TRUE;
+	clut->damage = TRUE;
 
 	return (0);
 }
@@ -1316,7 +1281,7 @@ SetMinLineWidthDefault(line_width)
 	/*
 	 * signal the change made to the default
 	 */
-	LINE_WIDTH_ACCESS = TRUE;
+	LINE_WIDTH_DAMAGE = TRUE;
 
 	/*
 	 * record the new minimum for future use
@@ -1334,7 +1299,7 @@ SetMaxLineWidthDefault(line_width)
 {
 	defaulttable.line_width = MIN(line_width, defaulttable.line_width);
 
-	LINE_WIDTH_ACCESS = TRUE;
+	LINE_WIDTH_DAMAGE = TRUE;
 
 	oPtion.max_line_width = line_width;
 	oPtion.max_line_width_set = TRUE;;
@@ -1347,7 +1312,7 @@ SetMaxLineWidthDefault(line_width)
 SetAdditionalLineScale(line_scale)
 	float	line_scale;
 {
-	LINE_WIDTH_ACCESS = TRUE;
+	LINE_WIDTH_DAMAGE = TRUE;
 
 	defaulttable.line_width = line_scale;
 

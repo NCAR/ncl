@@ -1,5 +1,5 @@
 /*
- *	$Id: default.h,v 1.14 1994-03-07 22:08:43 clyne Exp $
+ *	$Id: default.h,v 1.15 1995-01-09 22:18:46 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -191,7 +191,7 @@ static DEFAULTTABLE	defaulttable = {
 	1,				/*EDGE WIDTH MODE		*/
 
 	0,0,0,				/* BACKGROUND COLOUR		*/
-	FALSE,				/* BACKGROUND COLOUR damage	*/
+	TRUE,				/* BACKGROUND COLOUR damage	*/
 
 	1,				/*TRANSPARENCY			*/
 
@@ -201,7 +201,7 @@ static DEFAULTTABLE	defaulttable = {
 
 	1,				/*TEXT BUNDLE INDEX		*/
 	1,				/*TEXT FONT INDEX		*/
-	FALSE,				/*TEXT FONT INDEX damage	*/
+	TRUE,				/*TEXT FONT INDEX damage	*/
 	0,				/*TEXT PRECISION		*/
 
 	0,				/*COLOUR SELECTION MODE 	*/
@@ -218,17 +218,17 @@ static DEFAULTTABLE	defaulttable = {
 	0,0,32767,32767,		/* VDC Extent defaults 		*/
 	TRUE,				/* VDC extent damage		*/
 	0,0,32767,32767,		/* Clipping defaults 		*/
-	FALSE,				/* Clip flag default False 	*/
-	FALSE,				/* clip damage 			*/
+	TRUE,				/* Clip flag default False 	*/
+	TRUE,				/* clip damage 			*/
 
 	16,
 
 	3,				/* markertype default */
-	FALSE,				/* marker type damage	*/
+	TRUE,				/* marker type damage	*/
 	0,				/* markerbundleindex default */
 	MODE_SCALED,			/* markersizemode default */
 	1.0,				/* markersize default */
-	FALSE,				/* marker size damage	*/
+	TRUE,				/* marker size damage	*/
 
 	0.0,				/* char spacing */
 	328,				/* char height */
@@ -254,7 +254,7 @@ static DEFAULTTABLE	defaulttable = {
 
 	1,				/*FILL BUNDLE INDEX		*/
 	0,				/*INTERIOR STYLE		*/
-	FALSE,				/* interior style damage	*/
+	TRUE,				/* interior style damage	*/
 
 	1,				/*HATCH INDEX			*/
 	1,				/*PATTERN INDEX			*/
@@ -266,25 +266,25 @@ static DEFAULTTABLE	defaulttable = {
 
 	1,				/* line colour (indexed)	*/
 	1,1,1,				/*			direct	*/
-	FALSE,				/* line colour damage */
+	TRUE,				/* line colour damage */
 
 	1,				/* text colour (indexed)	*/
 	1,1,1,				/*			direct	*/
 
 	1,				/* fill colour (indexed)	*/
 	1,1,1,				/*			direct	*/
-	FALSE,				/* fill colour damage */
+	TRUE,				/* fill colour damage */
 
 	1,				/* marker colour (indexed)	*/
 	1,1,1,				/*			direct	*/
-	FALSE,				/* marker colour damage		*/
+	TRUE,				/* marker colour damage		*/
 
 	1,				/* line type */
-	FALSE,				/* line type damage	*/
+	TRUE,				/* line type damage	*/
 
 	1,				/* line_width_mode	*/
 	1.0,				/* line_width */
-	FALSE,				/* line width damage */
+	TRUE,				/* line width damage */
 	
 };
 
@@ -435,66 +435,3 @@ extern	ColorLUTable		*clut;
 #define	COLOUR_INDEX_RED(I)	(clut->ce[(I)].rgb.red)
 #define	COLOUR_INDEX_GREEN(I)	(clut->ce[(I)].rgb.green)
 #define	COLOUR_INDEX_BLUE(I)	(clut->ce[(I)].rgb.blue)
-
-
-
-
-#ifdef	DEFAULT
-
-	/*
-	 *	the access table used by SetInPic
-	 */
-
-typedef	struct	{
-	boolean		line_type_access;
-	boolean		line_width_access;
-	boolean		line_colour_access;
-	boolean		marker_colour_access;
-	boolean		fill_colour_access;
-	boolean		int_style_access;
-	boolean		clip_access;
-	boolean		marker_type_access;
-	boolean		marker_size_access;
-	boolean		backcolr_access;
-	boolean		text_f_ind_access;
-	boolean		colour_table_access;
-	boolean		text_att_access;
-	boolean		vdc_extent_access;
-} ACCESS_TABLE;
-
-ACCESS_TABLE	access_table = {
-	TRUE,
-	TRUE,
-	TRUE,
-	TRUE,
-	TRUE,
-	TRUE,
-	TRUE,
-	TRUE,
-	TRUE,
-	TRUE,
-	FALSE,
-	TRUE,
-	TRUE,
-	TRUE
-	};
-	
-ACCESS_TABLE	*at = &access_table;
-
-#define	LINE_TYPE_ACCESS	at->line_type_access
-#define	LINE_WIDTH_ACCESS	at->line_width_access
-#define	LINE_COLOUR_ACCESS	at->line_colour_access
-#define	MARKER_COLOUR_ACCESS	at->marker_colour_access
-#define	FILL_COLOUR_ACCESS	at->fill_colour_access
-#define	INT_STYLE_ACCESS	at->int_style_access
-#define	CLIP_ACCESS		at->clip_access
-#define	MARKER_TYPE_ACCESS	at->marker_type_access
-#define	MARKER_SIZE_ACCESS	at->marker_size_access
-#define	BACKCOLR_ACCESS		at->backcolr_access
-#define	TEXT_F_IND_ACCESS	at->text_f_ind_access
-#define	COLOUR_TABLE_ACCESS	at->colour_table_access
-#define	TEXT_ATT_ACCESS		at->text_att_access
-#define	VDC_EXTENT_ACCESS	at->vdc_extent_access
-	
-
-#endif
