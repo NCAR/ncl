@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.23 1996-02-26 21:45:59 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.24 1996-03-26 21:48:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -420,7 +420,8 @@ static NhlErrorTypes LlSetTrans
 		xr = MIN(xr,1.0);
 		tp->y = MIN(tp->y,1.0);
 		yb = MAX(yb,0.0);
-		
+		tp->width = xr - tp->x;
+		tp->height = tp->y - yb;
 	}
 	c_set(tp->x,xr,yb,tp->y,
 	      linstance->lltrans.ul,linstance->lltrans.ur,

@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.6 1996-03-18 09:32:46 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.7 1996-03-26 21:48:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5146,15 +5146,20 @@ static NhlErrorTypes    ManageViewDepResources
 	NhlStreamlinePlotLayerPart	*stp = &(stnew->streamlineplot);
 	NhlStreamlinePlotLayer		stold = (NhlStreamlinePlotLayer) old;
 	NhlStreamlinePlotLayerPart	*ostp = &(stold->streamlineplot);
+	NhlBoolean		view_changed;
 
 	entry_name = (init) ? InitName : SetValuesName;
 
 /* adjust the reference length if it is not set */
 
+	view_changed = init || 
+		(stnew->view.width != stold->view.width) ||
+			(stnew->view.height != stold->view.height);
+
 	if (! stp->data_init) {
 		stp->grid_cell_size = stnew->view.width * 0.05;
 	}
-	else if (init || stp->data_changed) {
+	else if (view_changed || stp->data_changed) {
 		int nx,ny;
 		float sx,sy;
 		nx = stp->vfp->fast_len;

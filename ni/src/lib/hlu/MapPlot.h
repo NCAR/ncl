@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.12 1995-04-07 10:42:55 boote Exp $
+ *      $Id: MapPlot.h,v 1.13 1996-03-26 21:48:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -135,7 +135,7 @@ typedef enum _NhlMapShapeMode {
 #define NhlNmpFillPattern		"mpFillPattern"
 #define NhlNmpFillPatterns		"mpFillPatterns"
 #define NhlNmpMonoFillScale		"mpMonoFillScale"
-#define NhlNmpFillScale			"mpFillScale"
+#define NhlNmpFillScaleF		"mpFillScaleF"
 #define NhlNmpFillScales		"mpFillScales"
 
 #define NhlNmpDefaultFillColor		"mpDefaultFillColor"
@@ -247,7 +247,7 @@ typedef enum _NhlMapShapeMode {
 #define NhlCmpFillPattern		"MpFillPattern"
 #define NhlCmpFillPatterns		"MpFillPatterns"
 #define NhlCmpMonoFillScale		"MpMonoFillScale"
-#define NhlCmpFillScale			"MpFillScale"
+#define NhlCmpFillScaleF		"MpFillScaleF"
 #define NhlCmpFillScales		"MpFillScales"
 
 #define NhlCmpDefaultFillColor		"MpDefaultFillColor"

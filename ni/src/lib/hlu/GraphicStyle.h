@@ -1,5 +1,5 @@
 /*
- *      $Id: GraphicStyle.h,v 1.1 1996-02-26 21:45:54 dbrown Exp $
+ *      $Id: GraphicStyle.h,v 1.2 1996-03-26 21:48:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -46,7 +46,7 @@
 #define NhlNgsFillIndex			"gsFillIndex"
 #define NhlNgsFillColor         	"gsFillColor"
 #define NhlNgsFillBackgroundColor    	"gsFillBackgroundColor"
-#define NhlNgsFillScaleFactorF		"gsFillScaleFactorF"
+#define NhlNgsFillScaleF		"gsFillScaleF"
 #define NhlNgsFillLineThicknessF 	"gsFillLineThicknessF"
 
 /* edge resources */
@@ -68,15 +68,15 @@
 
 #define NhlNgsTextAngleF		"gsTextAngleF"
 #define NhlNgsTextJustification		"gsTextJustication"
-#define NhlNgsDirection			"gsDirection"
+#define NhlNgsTextDirection		"gsTextDirection"
 #define NhlNgsFont			"gsFont"
 #define NhlNgsFontColor			"gsFontColor"
 #define NhlNgsFontHeightF		"gsFontHeightF"
 #define NhlNgsFontAspectF		"gsFontAspectF"
 #define NhlNgsFontThicknessF		"gsFontThicknessF"
 #define NhlNgsFontQuality		"gsFontQuality"
-#define NhlNgsConstantSpacingF		"gsConstantSpacingF"
-#define NhlNgsFuncCode			"gsFuncCode"
+#define NhlNgsTextConstantSpacingF	"gsTextConstantSpacingF"
+#define NhlNgsTextFuncCode		"gsTextFuncCode"
 
 /* class resources */
 
@@ -96,7 +96,7 @@
 #define NhlCFillIndex			"FillIndex"
 #define NhlCFillColor			"FillColor"
 #define NhlCFillBackgroundColor		"FillBackgroundColor"
-#define NhlCFillScaleFactorF		"FillScaleFactorF"
+#define NhlCFillScaleF			"FillScaleF"
 #define NhlCFillLineThicknessF		"FillLineThicknessF"
 #define NhlCEdgesOn			"EdgesOn"
 #define NhlCEdgeDashPattern		"EdgeDashPattern"
@@ -117,8 +117,8 @@
 #define NhlCFontAspectF			"FontAspectF"
 #define NhlCFontThicknessF		"FontThicknessF"
 #define NhlCFontQuality			"FontQuality"
-#define NhlCConstantSpacingF		"ConstantSpacingF"
-#define NhlCFuncCode			"FuncCode"
+#define NhlCTextConstantSpacingF	"TextConstantSpacingF"
+#define NhlCTextFuncCode		"TextFuncCode"
 
 extern NhlClass NhlgraphicStyleClass;
 

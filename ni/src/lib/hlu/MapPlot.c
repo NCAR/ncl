@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.45 1996-03-15 23:03:09 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.46 1996-03-26 21:48:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -209,7 +209,7 @@ static NhlResource resources[] = {
 	{NhlNmpMonoFillScale, NhlCmpMonoFillScale, NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(mono_fill_scale),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNmpFillScale, NhlCmpFillScale, NhlTFloat,
+	{NhlNmpFillScaleF, NhlCmpFillScaleF, NhlTFloat,
 		 sizeof(float),Oset(fill_scale),
 		 NhlTString,_NhlUSET("1.0"),0,NULL},
 	{NhlNmpFillScales, NhlCmpFillScales,  NhlTFloatGenArray,
