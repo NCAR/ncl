@@ -12,12 +12,6 @@ but it can also use characters from any of the fontcap-defined
 databases, it has an improved interface, and it has
 many more capabilities than PWRITX.
 .sp
-WARNING: PCHIQU/PLCHHQ uses the FORTRAN logical unit specified by the value
-of the internal parameter 'UN'; by default, that's unit 3.  If this will
-cause a problem for you, put a "CALL PCSETI ('UN',n)", where "n" is some
-FORTRAN logical unit that it's okay for PCHIQU/PLCHHQ to use, prior to the
-first use of PLHIQU/PLCHHQ in your program.
-.sp
 PCMEQU (or PLCHMQ) -
 Draws characters of "medium quality". It does this
 by drawing lines, just as PCHIQU does, but it does not

@@ -10,12 +10,6 @@ databases, it has an improved interface, and it has
 many more capabilities than PWRITX.
 .sp
 PLCHHQ is an alternate name for the routine PCHIQU.
-.sp
-WARNING: This routine uses the FORTRAN logical unit specified by the value
-of the internal parameter 'UN'; by default, that's unit 3.  If this will
-cause a problem for you, put a "CALL PCSETI ('UN',n)", where "n" is some
-FORTRAN logical unit that it's okay for PCHIQU to use, prior to the first
-use of PLCHHQ or PCHIQU in your program.
 .SH SYNOPSIS
 CALL PCHIQU (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 .SH C-BINDING SYNOPSIS
