@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.149 2004-08-06 23:34:31 haley Exp $
+;      $Id: gsn_code.ncl,v 1.150 2004-08-09 04:01:49 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -65,8 +65,10 @@ undef("overlay_irregular")
 undef("get_plot_not_loglin")
 undef("get_overlay_plot")
 undef("get_contour_levels")
+undef("get_contour_line_thicknesses")
 undef("fix_zero_contour")
 undef("set_zero_line_thickness")
+undef("set_line_thickness_scale")
 undef("set_neg_line_pattern")
 undef("maximize_bb")
 undef("gsnp_turn_off_tickmarks")
@@ -1010,6 +1012,31 @@ begin
 end
 
 ;***********************************************************************;
+; Function : get_contour_line_thicknesses                               ;
+;               plot: graphic                                           ;
+;                                                                       ;
+; Get contour line thicknesses associated with "plot".                  ;
+;                                                                       ;
+;***********************************************************************;
+function get_contour_line_thicknesses(plot:graphic)
+local overlay_plot
+begin
+  overlay_plot = get_overlay_plot (plot, "contourPlotClass", 0)
+
+  if(.not.ismissing(overlay_plot)) then
+    getvalues overlay_plot
+      "cnLineThicknesses" : thicknesses
+    end getvalues
+    return(thicknesses)
+  end if
+;
+; Return missing if no plot was found.
+;
+  dum = new(1,float)
+  return(dum)
+end
+
+;***********************************************************************;
 ; Function : fix_zero_contour                                           ;
 ;              levels:numeric                                           ;
 ;                                                                       ;
@@ -1052,11 +1079,12 @@ begin
   levels  = get_contour_levels (plot)
   nlevels = dimsizes(levels)
 
-  if (ismissing(nlevels) .or. nlevels.le.0) then
+  if (any(ismissing(levels)).or. nlevels.le.0) then
     print ("set_zero_line_thickness: invalid contour levels, returning...")
     return (plot)
   end if
 
+  nlevels = dimsizes(levels)
   levels      = fix_zero_contour (levels)
   thicknesses = new(dimsizes(levels), float)
   thicknesses = 1.
@@ -1066,6 +1094,35 @@ begin
       thicknesses(n) = thickness
     end if
   end do
+  
+  overlay_plot = get_overlay_plot (plot, "contourPlotClass", 0)
+  setvalues overlay_plot
+    "cnMonoLineThickness" : False
+    "cnLineThicknesses"   : thicknesses
+  end setvalues
+
+  return (plot)
+end
+
+;***********************************************************************;
+; Function : set_line_thickness_scale                                   ;
+;                plot : graphic                                         ;
+;               scale : numeric                                         ;
+;                                                                       ;
+; Scale the line thickness by the given numbers.                        ;
+;                                                                       ;
+;***********************************************************************;
+function set_line_thickness_scale(plot:graphic,scale)
+begin
+  thicknesses  = get_contour_line_thicknesses (plot)
+  nthicknesses = dimsizes(thicknesses)
+
+  if (any(ismissing(thicknesses)).or. nthicknesses.le.0) then
+    print ("set_line_thickness_scale: invalid contour line thicknesses, returning...")
+    return (plot)
+  end if
+
+  thicknesses = scale * thicknesses
   
   overlay_plot = get_overlay_plot (plot, "contourPlotClass", 0)
   setvalues overlay_plot
@@ -1093,7 +1150,7 @@ begin
   levels  = get_contour_levels (plot)
   nlevels = dimsizes(levels)
 
-  if (ismissing(nlevels) .or. nlevels.le.0) then
+  if (any(ismissing(levels)) .or. nlevels.le.0) then
     print ("set_neg_line_pattern: invalid contour levels, returning...")
     return (plot)
   end if
@@ -6584,6 +6641,11 @@ begin
       delete(res2@gsnContourZeroLineThicknessF)
     end if
 
+    if(res2.and.isatt(res2,"gsnContourLineThicknessesScale")) then
+      linescale = res2@gsnContourLineThicknessesScale
+      delete(res2@gsnContourLineThicknessesScale)
+    end if
+
     if(res2.and.isatt(res2,"gsnContourNegLineDashPattern")) then
       npattern = res2@gsnContourNegLineDashPattern
       delete(res2@gsnContourNegLineDashPattern)
@@ -6600,6 +6662,11 @@ begin
     if(isvar("zthickness")) then
       plot_object = set_zero_line_thickness(plot_object,zthickness)
       delete(zthickness)
+    end if
+
+    if(isvar("linescale")) then
+      plot_object = set_line_thickness_scale(plot_object,linescale)
+      delete(linescale)
     end if
 
     if(isvar("npattern")) then
