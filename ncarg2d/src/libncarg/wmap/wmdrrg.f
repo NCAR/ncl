@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrrg.f,v 1.8 2001-02-14 01:05:05 fred Exp $
+C	$Id: wmdrrg.f,v 1.9 2002-08-03 01:29:36 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -86,6 +86,9 @@ C
       IF (TNSION .EQ. -1.) THEN
         TNSION = 0.001
       ENDIF
+C
+C  S is a common variable of maximal dimension NPTS.
+C
       CALL MSKRV1(NPO,XO,YO,SLOPE1,SLOPE2,XS,YS,TEMP,S,TNSION,4)
       DO 10 I=1,NPTS
         T = REAL(I-1)/REAL(NPTS-1)

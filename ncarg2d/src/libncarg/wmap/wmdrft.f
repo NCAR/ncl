@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrft.f,v 1.13 2001-02-14 01:05:05 fred Exp $
+C	$Id: wmdrft.f,v 1.14 2002-08-03 01:29:36 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -79,12 +79,15 @@ C  Construct a spline curve having NPTS points in it that represents
 C  the curve in (X,Y).  We use Alan Cline's spline package for this.
 C
       IF (TNSION .EQ. -1.) THEN
-        TNSION = 0.001
+        TNSION = 1.
       ENDIF
 C
 C  Interpolate if ISMOTH=0; use a smoothing spline otherwise.
 C
       IF (ISMOTH .EQ. 0) THEN
+C
+C  S is a common variable of maximal dimension of NPTS.
+C
         CALL MSKRV1(NPO,XO,YO,SLOPE1,SLOPE2,XS,YS,TEMP,S,TNSION,ISLFLG)
         DO 10 I=1,NPTS
           T = REAL(I-1)/REAL(NPTS-1)
@@ -100,30 +103,27 @@ C
           ENDIF
    10   CONTINUE
       ELSE
-        TEPS = SQRT(1./REAL(NPO))
+        TEPS = SQRT(2./REAL(NPO))
         IOBSET = 1
         IF (OBSERR .EQ. -1.) THEN
           IOBSET = 0
-          OBSERR = 0.005*WMCMAX(NPO,YO) 
+          XOMAX = WMCMAX(NPO,XO)
+          YOMAX = WMCMAX(NPO,YO)
+          OBSERR = 0.025*MAX(XOMAX,YOMAX)
           OBSRET = OBSERR
         ENDIF
         IRSSET = 1
         IF (RSMOTH .EQ. -1.) THEN
           IRSSET = 0
-          RSMOTH = 50.*REAL(NPO)
+          RSMOTH = REAL(NPO)
           RSMRET = RSMOTH
         ENDIF 
-        CALL CURVS(NPO,XO,YO,OBSERR,1,RSMOTH,TEPS,XS,YS,TNSION,
-     +             TEMP,IER)
-        XINC = (XO(NPO)-XO(1))/REAL(NPTS-1)
+        CALL CURVS1(NPO,XO,YO,OBSERR,1,RSMOTH,TEPS,TEMP(1,1),
+     +              XS,YS,XSS,YSS,TNSION,TEMP(1,2),IER)
         DO 11 I=1,NPTS
-          XOUT(I) = XO(1)+REAL(I-1)*XINC
-C
-C  The notation is confusing here.  XS contains the smoothed
-C  *ordinates* from CURVS (just saving space here) and YS 
-C  contains the derivative information.
-C
-          YOUT(I) = CURV2(XOUT(I),NPO,X,XS,YS,TNSION,TEMP,IER)   
+          T = REAL(I-1)/REAL(NPTS-1)
+          CALL CURVS2(T,N,TEMP(1,1),XS,YS,XSS,YSS,TNSION,XOUT(I),
+     +                YOUT(I))
    11   CONTINUE
       ENDIF
 C

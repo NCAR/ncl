@@ -1,5 +1,5 @@
 C
-C	$Id: wmcomn.h,v 1.13 2001-08-07 18:37:32 fred Exp $
+C	$Id: wmcomn.h,v 1.14 2002-08-03 01:29:36 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -159,8 +159,9 @@ C
 C
 C  WMARRS contains arrray space.
 C
-      PARAMETER (NPTS=300,NPTS9=9*NPTS,NWRK=50000)
-      COMMON /WMARRS/XO(NPTS),YO(NPTS),TEMP(NPTS9),S(NPTS),
+      PARAMETER (NPTS=300,NWRK=50000)
+      COMMON /WMARRS/XO(NPTS),YO(NPTS),TEMP(NPTS,19),S(NPTS),
      +               XS(NPTS),YS(NPTS),XOUT(NPTS),YOUT(NPTS),
+     +               XSS(NPTS),YSS(NPTS),
      +               ALEN(NPTS),RWORK(NWRK)
       COMMON /IMARRS/IWORK(NWRK)
