@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.20 2004-08-12 22:18:17 haley Exp $
+#       $Id: yMakefile,v 1.21 2004-09-14 21:21:20 haley Exp $
 #
 
 MYNAME	= conpack
@@ -50,6 +50,9 @@ IftranRun : CodeIftran
 #if defined(linux) || defined(LINUX) || defined(Linux)
 cptres.o: cptres.f
 	$(F77) $(FCOPTIONS) -g -c cptres.f
+
+cptroe.o: cptroe.f
+	$(F77) $(FCOPTIONS) -g -c cptroe.f
 #endif
 
 #if defined(Darwin)
