@@ -59,6 +59,14 @@ MAN3_SECTION      = 3
 MAN4_SECTION      = 4
 MAN5_SECTION      = 5
 
+XLIB              = -lX11
+EXTENSIONLIB      = -lXext
+XTOOLLIB          = -lXt
+XMULIB            = -lXmu
+XAWLIB            = -lXaw
+HDFLIB            = -ldf
+NETCDFLIB         = -lnetcdf
+
 GENERICPATH       = $(NCARG)/$(GENERICDIR)
 
 CONFIGPATH        = $(NCARG)/$(CONFIGDIR)

@@ -3,25 +3,17 @@ NCARG		= ../../../..
 MYNAME		= ictrans
 
 #
-#	Sun Cgi libraries
-#
-
-#ifdef BuildCGIctrans
-CGILIBS		= $(DCGILIBS)
-#endif BuildCGIctrans
-
-#
 #	X11 libraries
 #
 #ifdef BuildXlibDependentCode
-X11LIBS		= $(DX11LIBS)
+X11LIBS		= $(XLIB)
 #endif BuildXlibDependentCode
 
 #
 #	Sun SunView libraries
 #
 #ifdef BuildSunViewctrans
-SUNLIBS		= $(DSUNLIBS)
+SUNLIBS		= -lsuntool -lsunwindow -lpixrect
 #endif
 
 #
@@ -31,31 +23,13 @@ LOCLIB		= $(LIBPATH)/libictrans_.o $(LIBPATH)/libctrans.o \
 		$(LIBPATH)/libcgm.a $(LIBPATH)/libncarg_c.a \
 		$(LIBPATH)/libncarg_ras.a 
 
-SRCS		=  main.c 
+GENLIBS		= $(HDFLIB) -lm 
+LIBS		= $(LOCLIB) $(X11LIBS) $(SUNLIBS) $(GENLIBS)
+
+SRCS		= main.c 
 OBJS		= main.o 
 
-LIBS		= $(LOCLIB) $(X11LIBS) $(CGILIBS) $(SUNLIBS) $(GENLIBS)
 
-
-GENLIBS		= -ldf -lm 
-
-DCGILIBS	= -lcgi -lsuntool -lsunwindow -lpixrect
-
-#ifdef BuildCGIctrans
-DSUNLIBS	= 
-#else
-DSUNLIBS	=  -lsuntool -lsunwindow -lpixrect
-#endif
-
-#if defined(CRAY)
-DX11LIBS	= -lX11 -lnet
-#else
-#if defined(sgi)
-DX11LIBS	= -lX11 -lbsd
-#else
-DX11LIBS	= -lX11
-#endif
-#endif
 
 all::
 	@$(CAT) Copyright

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1992-09-16 14:24:32 clyne Exp $
+#	$Id: yMakefile,v 1.6 1992-09-25 16:21:36 clyne Exp $
 #
 
 NCARG		= ../../../..
@@ -15,19 +15,10 @@ CTXT_SPECIFIER = CTXT
 
 
 #
-#	Sun Cgi libraries
-#
-
-#ifdef BuildCGIctrans
-CGILIBS		= $(DCGILIBS)
-CGI_SPECIFIER	= cgi
-#endif BuildCGIctrans
-
-#
 #	X11 libraries
 #
 #ifdef BuildXlibDependentCode
-X11LIBS		= $(DX11LIBS)
+X11LIBS		= $(XLIB)
 X11_SPECIFIER	= X11 
 #endif BuildXlibDependentCode
 
@@ -35,7 +26,7 @@ X11_SPECIFIER	= X11
 #	Sun SunView libraries
 #
 #ifdef BuildSunViewctrans
-SUNLIBS		= $(DSUNLIBS)
+SUNLIBS		= -lsuntool -lsunwindow -lpixrect
 SUN_SPECIFIER	= sunview 
 #endif
 
@@ -45,30 +36,13 @@ SUN_SPECIFIER	= sunview
 CTRANS_LIBS_A   = libictrans.o libctrans.o libcgm.a libncarv.a \
 		  libncarg_ras.a
 
-GENLIBS 	= -ldf -lm
+GENLIBS 	= $(HDFLIB) -lm
 
-DCGILIBS	= -lcgi -lsuntool -lsunwindow -lpixrect
 
-#ifdef BuildCGIctrans
-DSUNLIBS	= 
-#else
-DSUNLIBS	=  -lsuntool -lsunwindow -lpixrect
-#endif
-
-#if defined(CRAY)
-DX11LIBS	= -lX11 -lnet
-#else
-#if defined(sgi)
-DX11LIBS	= -lX11 -lbsd
-#else
-DX11LIBS	= -lX11
-#endif
-#endif
-
-CTRANS_LIBS_B   = $(X11LIBS) $(CGILIBS) $(SUNLIBS) $(GENLIBS)
+CTRANS_LIBS_B   = $(X11LIBS) $(SUNLIBS) $(GENLIBS)
 
 DEVICE_SPECIFIERS = \
-	$(RASTER_SPECIFIERS) $(CTXT_SPECIFIER) $(CGI_SPECIFIER) \
+	$(RASTER_SPECIFIERS) $(CTXT_SPECIFIER) \
 	$(SUN_SPECIFIER) $(X11_SPECIFIER)
 
 all:: $(SCRIPTS)

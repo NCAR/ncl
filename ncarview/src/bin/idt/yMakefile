@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.13 1992-09-09 15:07:09 clyne Exp $
+#	$Id: yMakefile,v 1.14 1992-09-25 16:20:49 clyne Exp $
 #
 #
 #	Makefile for idt -- Interactive Image Display Tool
@@ -13,23 +13,11 @@ MYNAME	= idt
 
 TRANSLATOR	= ictrans
 
-#if defined(CRAY)
-XLIBS	= \
-	-lXaw -lXmu -lXt -lXext -lX11 -lnet
-#else
-#if defined(sgi)
-XLIBS	= \
-	-lXaw -lXmu -lXt -lXext -lX11 -lbsd
-#else
-XLIBS	= \
-	-lXaw -lXmu -lXt -lXext -lX11
-#endif
-#endif
-
 
 LOCLIB	= \
 	$(LIBPATH)/libcgm.a $(LIBPATH)/libncarg_c.a
 
+XLIBS	= $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(EXTENSIONLIB) $(XLIB)
 
 LIBS	= $(LOCLIB) $(XLIBS)
 

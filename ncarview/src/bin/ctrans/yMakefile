@@ -1,31 +1,23 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.19 1992-09-16 14:18:47 clyne Exp $
+#	$Id: yMakefile,v 1.20 1992-09-25 16:20:27 clyne Exp $
 #
 
 
 MYNAME		= ctrans
 
 #
-#	Sun Cgi libraries
-#
-
-#ifdef BuildCGIctrans
-CGILIBS		= $(DCGILIBS)
-#endif BuildCGIctrans
-
-#
 #	X11 libraries
 #
 #ifdef BuildXlibDependentCode
-X11LIBS		= $(DX11LIBS)
+X11LIBS		= $(XLIB)
 #endif BuildXlibDependentCode
 
 #
 #	Sun SunView libraries
 #
 #ifdef BuildSunViewctrans
-SUNLIBS		 = $(DSUNLIBS)
+SUNLIBS		 = -lsuntool -lsunwindow -lpixrect
 #endif
 
 #
@@ -34,33 +26,15 @@ SUNLIBS		 = $(DSUNLIBS)
 LOCLIB		= $(LIBPATH)/libctrans.o $(LIBPATH)/libcgm.a \
 		$(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a
 
+GENLIBS 	= $(HDFLIB) -lm 
+LIBS		= $(LOCLIB) $(X11LIBS) $(SUNLIBS) $(GENLIBS)
+
 
 SRCS		=  main.c 
 OBJS		=  main.o 
 
-LIBS		= $(LOCLIB) $(X11LIBS) $(CGILIBS) $(SUNLIBS) $(GENLIBS)
 
 
-GENLIBS 	= -ldf -lm 
-CDEFINES	= 
-
-DCGILIBS	= -lcgi -lsuntool -lsunwindow -lpixrect
-
-#ifdef BuildCGIctrans
-DSUNLIBS	= 
-#else
-DSUNLIBS	=  -lsuntool -lsunwindow -lpixrect
-#endif
-
-#if defined(CRAY)
-DX11LIBS	= -lX11 -lnet
-#else
-#if defined(sgi)
-DX11LIBS	= -lX11 -lbsd
-#else
-DX11LIBS	= -lX11
-#endif
-#endif
 
 all::
 	@$(CAT) Copyright

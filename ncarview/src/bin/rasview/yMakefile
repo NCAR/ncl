@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.9 1992-09-16 14:24:14 clyne Exp $
+#	$Id: yMakefile,v 1.10 1992-09-25 16:21:22 clyne Exp $
 #
 #	Makefile for rasview
 #
@@ -14,13 +14,9 @@ SRCS		= rasdraw.c rasview.c
 
 OBJS		= rasdraw.o rasview.o
 
-#if defined(CRAY)
-X11LIBS		= -lXt -lX11 -lnet
-#else
-X11LIBS		= -lXt -lX11
-#endif
+XLIBS		= $(XTOOLLIB) $(XLIB)
 
-LIBS		= $(LOCLIB) $(X11LIBS) -ldf -lm
+LIBS		= $(LOCLIB) $(XLIBS) $(HDFLIB) -lm
 
 CDEFINES	= 
 
