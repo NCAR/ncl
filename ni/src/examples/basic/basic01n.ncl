@@ -1,11 +1,9 @@
-; $Id: basic01n.ncl,v 1.9 1995-06-22 21:07:24 haley Exp $
+; $Id: basic01n.ncl,v 1.10 1995-06-28 23:31:21 scheitln Exp $
 ;
 ; This example demonstrates how to draw a contour plot using mostly
 ; defaults.  Note: no data is used in this example, so the output appears
 ; only as a bounding box with tickmarks.
 ; 
-; The minimum set of steps needed for creating any plot involve the following:
-;
 ;   1. Choose the type of output 
 ;   2. Create a plot object
 ;   3. Draw the plot
@@ -23,15 +21,15 @@ begin
 ; output to an NCAR Computer Graphics Metafile (NCGM) and view it later using
 ; the NCAR Graphics utilities ctrans or idt.  You may also write your
 ; output directly into a window of a workstation running the X Window system.
-; Another option, although not demonstrated in this example, is to write your 
-; ouput into a PostScript file.  
+; Another option is to write your ouput into a PostScript file.  
 ;
 ; The first argument, '"wks"', to the create call sets the name of the 
 ; object being created.
 ; The second argument, "xWorkstationClass", identifies the type or class 
 ; of the object to create. In this case an X workstation.
 ; The third argument, "defaultapp", specifies the id of the objects parent.
-; In this case, the object has no parent, so the constant "defaultapp" is used. 
+; In this case, the constant "defaultapp" is used to specify the default 
+; parent. 
 
 ;
 ; Default is to display output to an X workstation

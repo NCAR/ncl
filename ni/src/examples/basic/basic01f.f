@@ -1,5 +1,5 @@
 C
-C $Id: basic01f.f,v 1.10 1995-06-22 21:07:23 haley Exp $
+C $Id: basic01f.f,v 1.11 1995-06-28 23:31:20 scheitln Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -65,9 +65,6 @@ C when creating the object.  In this example, no modifications are made
 C to default values.
 C The sixth argument, "ierr", is used to return an error code.
 C
-C These steps are always required when writing an HLU application
-C program.
-C
       call NhlFInitialize
       call NhlFRLCreate(rlist,'SETRL')
 
@@ -89,8 +86,9 @@ C The second argument, '"wks"', sets the name of the object being
 C created. The third argument, "NhlFXWorkstationClass",
 C identifies the type  or class of the object to create.  In this case
 C an X workstation. The fourth argument, "0", specifies the id of the
-C objects parent. In this case, the object has no parent, so the
-C constant 0 is used.  The fifth argument, "rlist", is the resource
+C objects parent. In this case, specifying "0" indicates that the
+C default parent will be used.
+C The fifth argument, "rlist", is the resource
 C list modifiers to be used when creating the object.  In this
 C example, no modifications are made to default values.
 C The sixth argument, "ierr", is used to return an error code.
@@ -176,10 +174,10 @@ C
 C ##########
 C # STEP 6 #
 C ##########
-C This is the final step used for cleanup.  The delete
-C function deletes variables from the NCL and frees the
-C symbol name from the symbol table.  Deleting a parent object
-C automatically deletes all of its children.  The close function
+C This is the final step used for cleanup.  The NhlFDestroy
+C function Destroys objects and frees memory.
+C Destroying a parent object
+C automatically destroys all of its children.  The NhlFClose function
 C is used to tell the HLU library that the programmer is done 
 C using it, and to free up any memory that it can. 
 C

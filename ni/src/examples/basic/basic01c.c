@@ -1,5 +1,5 @@
 /*
- * $Id: basic01c.c,v 1.8 1995-06-22 21:07:22 haley Exp $
+ * $Id: basic01c.c,v 1.9 1995-06-28 23:31:19 scheitln Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -67,7 +67,6 @@ main()
  * when creating the object.  In this example, no modifications are made to
  * default values.
  *
- * These steps are always required when writing an HLU application program.
  */
 
         NhlInitialize();
@@ -84,16 +83,15 @@ main()
  * output to an NCAR Computer Graphics Metafile (NCGM) and view it later using
  * the NCAR Graphics utilities ctrans or idt.  You may also write your
  * output directly into a window of a workstation running the X Window system.
- * Another option, although not shown in this example, is to write your ouput 
- * into a PostScript file.
+ * Another option is to write your ouput into a PostScript file.
  *
  * The first argument, "&wks", is a variable that identifies the object.
  * The second argument, '"wks"', sets the name of the object being created.
  * The third argument, "xWorkstationClass", identifies the type or class 
  * of the object to create.  In this case an X workstation.
  * The fourth argument, "NhlDEFAULT_APP", specifies the id of the objects 
- * parent.  In this case, the object has no parent, so the constant 
- * "NhlDEFAULT_APP" is used. 
+ * parent.  In this case, "NhlDEFAULT_APP" is used to specify the default,
+ * which is the App object that has just been created in the previous step.
  * The fifth argument, "rlist", is the resource list modifiers to be used
  * when creating the object.  In this example, no modifications are made to
  * default values.
@@ -171,10 +169,10 @@ main()
  * ##########
  * # STEP 6 #
  * ##########
- * This is the final step used for cleanup.  The delete
- * function deletes variables from the NCL and frees the
- * symbol name from the symbol table.  Deleting a parent object
- * automatically deletes all of its children.  The close function
+ * This is the final step used for cleanup.  The NhlDestroy
+ * function detroys objects and frees up memory.
+ * Destroying a parent object
+ * automatically destroys all of its children.  The NhlClose function
  * is used to tell the HLU library that the programmer is done 
  * using it, and to free up any memory that it can. 
  */
