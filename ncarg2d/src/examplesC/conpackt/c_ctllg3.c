@@ -1,5 +1,5 @@
 /*
- *      $Id: c_ctllg3.c,v 1.3 2003-10-07 16:04:26 kennison Exp $
+ *      $Id: c_ctllg3.c,v 1.4 2004-07-23 00:58:24 kennison Exp $
  */
 
 /*
@@ -25,7 +25,7 @@
  * Define the workstation type and identifier.
  */
 
-#define WSTP 1
+#define IWTYPE 1
 #define WSID 1
 
 /*
@@ -171,7 +171,7 @@ main()
  */
 
     gopen_gks("stdout",0);
-    gopen_ws(WSID,NULL,WSTP);
+    gopen_ws(WSID,NULL,IWTYPE);
     gactivate_ws(WSID);
 
 /*
