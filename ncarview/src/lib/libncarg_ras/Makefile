@@ -94,13 +94,15 @@ LOCINCDIR	= ../../include
 MYNAME		= libncarg_ras.a
 INCLUDES	= ncarg_ras.h
 
+EUALHACK	= =
+
 HDF_OBJS =	hdf.o
 HDF_SRCS =	hdf.c
 HDF_DEFS = 	-DBuildRasterHDF
 
 HPLJ_OBJS =	hplj.o
 HPLJ_SRCS =	hplj.c
-HPLJ_DEFS =	-DBuildRasterHPLaser
+HPLJ_DEFS =	-DBuildRasterHPLJ
 
 NRIF_OBJS =	nrif.o
 NRIF_SRCS =	nrif.c
@@ -152,7 +154,10 @@ cleanbin:: clean
 
 dither.o:	ncarg_ras.h
 error.o:	ncarg_ras.h
-hdf.o:		ncarg_ras.h options.h
+
+hdf.o:		ncarg_ras.h options.h Makefile
+	$(CC) $(CFLAGS) -DTMPDIR$(EQUALHACK)'"$(TMPDIR)"' -c $*.c
+
 misc.o:		ncarg_ras.h
 nrif.o:		ncarg_ras.h nrif.h
 palette.o:	ncarg_ras.h

@@ -1,11 +1,11 @@
 .\"
-.\"	$Id: xwdtohdf.m,v 1.2 1991-01-09 10:46:28 clyne Exp $
+.\"	$Id: xwdtohdf.m,v 1.3 1991-08-19 15:19:27 clyne Exp $
 .\"
-.TH XTOHDF 1-local "February 1990" NCAR "NCAR Local Command"
+.TH XWDTOHDF 1-local "February 1990" NCAR "NCAR Local Command"
 .SH NAME
-xtohdf \- Filter to convert from X11 raster file to hdf format.
+xwdtohdf \- Filter to convert from X11 raster file to hdf format.
 .SH SYNOPSIS
-.B xtohdf
+.B xwdtohdf
 .RB [ " \-o"
 .IR "hdf_file " ]
 [ 
@@ -14,10 +14,10 @@ xtohdf \- Filter to convert from X11 raster file to hdf format.
 .RI [ " xdump_file " ".\|.\|." ]
 .SH DESCRIPTION
 .LP
-.B xtohdf
+.B xwdtohdf
 will accept any number of input X11 raster files and convert them to
 hdf format. By default
-.B xtohdf 
+.B xwdtohdf 
 reads from standard input. The default output file is 
 .I ncar.hdf
 .SH OPTIONS
@@ -39,6 +39,6 @@ Use run length encoding for data.
 .ne 5
 .SH BUGS/CAVEATS
 .LP
-.B xtohdf 
+.B xwdtohdf 
 does not support direct or true color encodings of X11 raster files. Nor 
 does it accept color tables with greater than 256 entries.

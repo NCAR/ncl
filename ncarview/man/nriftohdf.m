@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: nriftohdf.m,v 1.2 1991-01-09 10:49:25 clyne Exp $
+.\"	$Id: nriftohdf.m,v 1.3 1991-08-19 15:19:23 clyne Exp $
 .\"
-.TH XTOHDF 1-local "February 1990" NCAR "NCAR Local Command"
+.TH NRIFTOHDF 1-local "February 1990" NCAR "NCAR Local Command"
 .SH NAME
 nriftohdf \- Filter to convert from nrif raster file to hdf format.
 .SH SYNOPSIS
