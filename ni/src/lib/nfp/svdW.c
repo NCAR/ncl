@@ -1738,7 +1738,7 @@ NhlErrorTypes svd_lapack_W( void )
   }
 
   if( dsizes_v[0] != ncol || ldvt < minrc) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svd_lapack: The dimensions of 'v' must be N x min(N,M) where (N,M) are the dimensions of 'a'");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svd_lapack: The dimensions of 'v' must be min(N,M) x N where (N,M) are the dimensions of 'a'");
     return(NhlFATAL);
   }
 

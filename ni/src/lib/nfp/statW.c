@@ -9,6 +9,14 @@
 #include "wrapper.h"
 #include <math.h>
 
+#include <ncarg/ncl/NclBuiltIns.h>
+#include <ncarg/ncl/NclVar.h>
+#include "NclCoordVar.h"
+#include "VarSupport.h"
+#include "DataSupport.h"
+#include "NclMdInc.h"
+#include "TypeSupport.h"
+
 #define max(x,y)  ((x) > (y) ? (x) : (y))
 
 extern void NGCALLF(stat2,STAT2)(float*, int*, float*, float*, float*, 
@@ -1934,6 +1942,77 @@ NhlErrorTypes esccr_W( void )
 }
 
 
+NhlErrorTypes dim_num_W( void)
+{
+  logical *input_var;
+  int ndims_input, dsizes_input[NCL_MAX_DIMENSIONS];
+  void *dim_num;
+  int ndims_num, *dsizes_num, has_missing_input;
+  NclScalar missing_input;
+  int i, j, ii, size_leftmost, size_last;
+/* 
+ * Retrieve input from NCL script.
+ */
+  input_var = (logical*)NclGetArgValue(
+           0,
+           1,
+           &ndims_input, 
+           dsizes_input,
+           &missing_input,
+           &has_missing_input,
+           NULL,
+           2);
+/*
+ * Calculate the product of the dimension sizes for the first n-1 
+ * dimensions (size_leftmost).
+ */
+  ndims_num     = max(ndims_input-1,1);
+  dsizes_num    = (int*)calloc(ndims_num, sizeof(int));
+  dsizes_num[0] = 1;
+  size_leftmost = 1;
+  for(i = 0; i < ndims_input-1; i++ ) {
+    dsizes_num[i]  = dsizes_input[i];
+    size_leftmost *= dsizes_input[i];
+  }
+  size_last = dsizes_input[ndims_input-1];
+
+/*
+ * Allocate space for output (out_val).
+ */
+  dim_num = (void*)calloc(size_leftmost, sizeof(int));
+
+  if(dim_num == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_num: Unable to allocate memory for output");
+    return(NhlFATAL);
+  }
+/*
+ * Loop through leftmost elements, and count the number of rightmost
+ * elements that are True.
+ */
+  if(has_missing_input) {
+    for(i = 0; i < size_leftmost; i++) {
+      ii = i * size_last;
+      ((int*)dim_num)[i] = 0;
+      for(j = 0; j < size_last; j++) {
+        if(input_var[ii+j] && input_var[ii+j] != missing_input.logicalval) {
+          ((int*)dim_num)[i]++;
+        }
+      }
+    }
+  }
+  else {
+    for(i = 0; i < size_leftmost; i++) {
+      ii = i * size_last;
+      ((int*)dim_num)[i] = 0;
+      for(j = 0; j < size_last; j++) {
+        if((input_var[ii+j])) ((int*)dim_num)[i]++;
+      }
+    }
+  }
+  return(NclReturnValue(dim_num, ndims_num, dsizes_num, NULL, NCL_int, 0));
+}
+
+
 NhlErrorTypes esccr_shields_W( void )
 {
 /*
@@ -1960,7 +2039,7 @@ NhlErrorTypes esccr_shields_W( void )
   int i, j, k, nc, index_x, index_y, index_ccr;
   int total_size_x1, total_size_y1;
   int total_size_ccr;
-  int ier = 0, ier_count, npts, ncases, dimsizes_same;
+  int ier = 0, ier_count, npts, ncases;
   double xmean, xsd, ymean, ysd;
 /*
  * Retrieve parameters
