@@ -1,5 +1,5 @@
 /*
- *      $Id: mp03c.c,v 1.2 1995-01-27 23:12:07 haley Exp $
+ *      $Id: mp03c.c,v 1.3 1995-02-11 03:07:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -121,6 +121,7 @@ main(int argc, char *argv[])
 	NhlRLSetString(rlist,NhlNovTitleDisplayMode,"always");
 	NhlRLSetString(rlist,NhlNtiMainString,"mp03c");
 	NhlRLSetString(rlist,NhlNmpFillDrawOrder,"postdraw");
+	NhlRLSetString(rlist,NhlNmpAreaMaskingOn,"true");
 	NhlRLSetStringArray(rlist,NhlNmpMaskAreaSpecifiers,
 			    mask_specs,NhlNumber(mask_specs));
 	NhlCreate(&mapid,"Map1",NhlmapPlotLayerClass,wid,rlist);

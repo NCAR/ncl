@@ -1,6 +1,6 @@
 
 /*
- *      $Id: mp02c.c,v 1.2 1995-01-27 23:12:06 haley Exp $
+ *      $Id: mp02c.c,v 1.3 1995-02-11 03:07:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -89,27 +89,23 @@ main(int argc, char *argv[])
  */
 
 	NhlRLClear(rlist);
-	NhlRLSetString(rlist,NhlNovTitleDisplayMode,"always");
+	NhlRLSetString(rlist,NhlNovTitleDisplayMode,"Always");
 	NhlRLSetString(rlist,NhlNtiMainString,"mp02c - Frame 1");
-	NhlRLSetString(rlist,NhlNmpFillOn,"true");
-	NhlRLSetString(rlist,NhlNmpProjection,"orthographic");
+	NhlRLSetString(rlist,NhlNmpFillOn,"True");
+	NhlRLSetString(rlist,NhlNmpProjection,"Orthographic");
 	NhlRLSetFloat(rlist,NhlNmpCenterLatF,10.0);
 	NhlRLSetFloat(rlist,NhlNmpCenterLonF,-90.0);
 	NhlRLSetFloat(rlist,NhlNmpCenterRotF,45.0);
-	NhlRLSetString(rlist,NhlNmpMapLimitMode,"latlon");
+	NhlRLSetString(rlist,NhlNmpMapLimitMode,"LatLon");
 	NhlRLSetFloat(rlist,NhlNmpMinLatF,-60.0);
 	NhlRLSetFloat(rlist,NhlNmpMaxLatF,60.0);
 	NhlRLSetFloat(rlist,NhlNmpMinLonF,-135.0);
 	NhlRLSetFloat(rlist,NhlNmpMaxLonF,-45.0);
 	
 /*
- * Color selected countries individually;
- * Set the area group priority to resolve ambiguous cases in favor of the
- * National coloring. (Ambiguous cases are islands such as Cuba where the
- * geophysical border and the national border are identical.)
+ * Highlight selected countries using their "political" color.
  */
 
-	NhlRLSetString(rlist,NhlNmpAreaGroupPriority,"politicalPriority");
 	NhlRLSetStringArray(rlist,NhlNmpFillAreaSpecifiers,
 			    fill_specs,NhlNumber(fill_specs));
 
@@ -146,8 +142,8 @@ main(int argc, char *argv[])
 	fill_specs[6] = "canada*";
 	NhlRLClear(rlist);  
 	NhlRLSetString(rlist,NhlNtiMainString,"mp02c - Frame 3");
-	NhlRLSetString(rlist,NhlNmpFillBoundarySets,"noBoundaries");
-	NhlRLSetString(rlist,NhlNmpOutlineBoundarySets,"noBoundaries");
+	NhlRLSetString(rlist,NhlNmpFillBoundarySets,"NoBoundaries");
+	NhlRLSetString(rlist,NhlNmpOutlineBoundarySets,"NoBoundaries");
 	NhlRLSetStringArray(rlist,NhlNmpFillAreaSpecifiers,
 			    fill_specs,NhlNumber(fill_specs));
 	NhlSetValues(mapid,rlist);
@@ -157,12 +153,13 @@ main(int argc, char *argv[])
 /*
  * You can also specify area groupings using certain predefined 
  * string constants: set 'continents' on to demonstrate.
- * Masking an area is different from not explicitly drawing it. In order
- * to mask a region you must explicitly include it on in the Mask
- * specification list. There is an order of precedence for fill and
- * masking. Explicitly named areas take precedence over area groupings, 
- * and small areas take precedence over enclosing larger areas. Otherwise 
- * masking takes precedence over filling.
+ * Masking an area is different from not explicitly drawing it. To enable
+ * masking you must explicitly turn area masking and then create an area
+ * mask specification list containing the name of each area to be masked.
+ * There is an order of precedence for fill and masking. Explicitly 
+ * named areas take precedence over area groupings, and small areas take 
+ * precedence over enclosing larger areas. Otherwise masking takes 
+ * precedence over filling.
  * >>> Masking or filling individual US states causes processing time and
  * >>> memory requirements to increase substantially. Hopefully the 
  * >>> performance can be improved before the release.
@@ -170,11 +167,12 @@ main(int argc, char *argv[])
 
 	fill_specs[0] = "continents";
 	fill_specs[1] = "us";
-	NhlRLClear(rlist);  
+	NhlRLClear(rlist); 
 	NhlRLSetString(rlist,NhlNtiMainString,"mp02c - Frame 4");
-	NhlRLSetString(rlist,NhlNmpFillBoundarySets,"noBoundaries");
+	NhlRLSetString(rlist,NhlNmpFillBoundarySets,"NoBoundaries");
 	NhlRLSetStringArray(rlist,NhlNmpFillAreaSpecifiers,
 			    fill_specs,NhlNumber(fill_specs));
+	NhlRLSetString(rlist,NhlNmpAreaMaskingOn,"True");
 	NhlRLSetStringArray(rlist,NhlNmpMaskAreaSpecifiers,
 			    mask_specs,NhlNumber(mask_specs));
 	NhlSetValues(mapid,rlist);
