@@ -1,0 +1,14 @@
+#
+#       $Id: yMakefile,v 1.1 1997-06-30 22:14:39 kennison Exp $
+#
+
+SRCS = c_tdex01.c
+OBJS = c_tdex01.o
+
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= $(CTOFLIBS) -lm
+EXTRA_LIBS		= $(XLIB)
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(TESTSPATH))
+
+CExampleTarget(c_tdex01,c_tdex01.o)
