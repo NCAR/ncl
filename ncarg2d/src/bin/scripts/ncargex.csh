@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.12 1993-01-17 04:35:53 haley Exp $
+#   $Id: ncargex.csh,v 1.13 1993-01-20 23:17:33 haley Exp $
 #
 
 set example_dir=`ncargpath SED_EXAMPLESDIR`
@@ -293,9 +293,9 @@ endif
 
 if ( "$name" == "ccpils" || "$name" == "ccpilt" || "$name" == "ccplbdr" || \
      "$name" == "ccptitle" ) then
-    set copy_files=($copy_files ccpall.dat)
+    set copy_files=($copy_files ccpex.dat)
     set f_files=($f_files)
-    set rmfiles="ccpall.dat"
+    set rmfiles="ccpex.dat"
 endif
 
 set rmfiles=($rmfiles $copy_files)
