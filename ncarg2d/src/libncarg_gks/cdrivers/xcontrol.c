@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.18 1997-08-25 20:19:27 boote Exp $
+ *	$Id: xcontrol.c,v 1.19 1998-09-18 23:04:26 boote Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -160,9 +160,12 @@ init_color
 	if(xi->x_ref_count){
 		xi->color_def = (void *)malloc(sizeof(int)*xi->max_x_colors);
 		if(xi->color_def)
-			memset((char *)xi->color_def,0,sizeof(int)*xi->max_x_colors);
-		else
+			memset((char *)xi->color_def,0,
+						sizeof(int)*xi->max_x_colors);
+		else{
 			xi->x_ref_count = False;
+			xi->color_def = NULL;
+		}
 	}
 	else
 		xi->color_def = NULL;
@@ -341,6 +344,39 @@ init_color
 	return;
 }
 
+static void
+free_all_colors
+#ifdef	NeedFuncProto
+(
+	Xddp		*xi
+)
+#else
+(xi)
+	Xddp		*xi;
+#endif
+{
+	int				i,n=0;
+	XddpColorStatus	*color_status = xi->color_status;
+	unsigned long	pixels[MAX_COLORS];
+
+	if(!xi->free_colors && !xi->cmap_ro)
+		return;
+
+	for(i=0;i<MAX_COLORS;i++){
+		if(color_status[i].ref_count > 0){
+			pixels[n++] = color_status[i].xpixnum;
+		}
+	}
+	if(n>0){
+		if(xi->free_colors)
+			(*xi->free_colors)(xi->cref,pixels,n);
+		else if(xi->cmap_ro)
+			XFreeColors(xi->dpy,xi->cmap,pixels,n,0);
+	}
+
+	return;
+}
+	
 static	void
 pause
 #ifdef	NeedFuncProto
@@ -623,11 +659,13 @@ X11_Exec
 			break;
 	}
 	if(xi->dead){
+		free_all_colors(xi);
 		XFreeGC(xi->dpy,xi->line_gc);
 		XFreeGC(xi->dpy,xi->fill_gc);
 		XFreeGC(xi->dpy,xi->marker_gc);
 		XFreeGC(xi->dpy,xi->cell_gc);
 		XFreeGC(xi->dpy,xi->text_gc);
+		XFreeGC(xi->dpy,xi->bg_gc);
 		XCloseDisplay(xi->dpy);
 		ESprintf(ERR_WIN_ATTRIB,"Window Destroyed");
 		return(ERR_WIN_ATTRIB);
@@ -888,11 +926,13 @@ X11_CloseWorkstation
 	Display	*dpy = xi->dpy;
 
 	if(!xi->dead){
+		free_all_colors(xi);
 		XFreeGC(dpy,xi->line_gc);
 		XFreeGC(dpy,xi->fill_gc);
 		XFreeGC(dpy,xi->marker_gc);
 		XFreeGC(dpy,xi->cell_gc);
 		XFreeGC(dpy,xi->text_gc);
+		XFreeGC(dpy,xi->bg_gc);
 		XCloseDisplay(dpy);
 	}
 	if(xi->color_def) free(xi->color_def);
