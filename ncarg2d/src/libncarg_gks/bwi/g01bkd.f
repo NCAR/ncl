@@ -1,5 +1,5 @@
 C
-C	$Id: g01bkd.f,v 1.6 2000-08-22 15:09:30 haley Exp $
+C	$Id: g01bkd.f,v 1.7 2003-01-15 18:59:58 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -200,7 +200,12 @@ C
 C
 C  Default picture name.
 C
-       DATA MPNAME/
+      DATA MPNAME/
      +     '                                                              
      +                    '/
-        END
+C
+C  Flag for whether new picture information has been sent out.
+C
+      DATA NPFLG/0/
+C
+      END

@@ -1,5 +1,5 @@
 C
-C	$Id: g01clw.f,v 1.5 2000-08-22 15:09:31 haley Exp $
+C	$Id: g01clw.f,v 1.6 2003-01-15 18:59:59 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -87,5 +87,9 @@ C Clear picture name.
 C
       MPNAME = ' '
 C
+C  Set the flag indicating that no new picture information has
+C  been put out.
+C
+      NPFLG = 0
  77   RETURN
       END

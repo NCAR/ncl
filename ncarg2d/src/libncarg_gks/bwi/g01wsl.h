@@ -1,5 +1,5 @@
 C
-C $Id: g01wsl.h,v 1.3 2000-08-22 03:45:41 haley Exp $
+C $Id: g01wsl.h,v 1.4 2003-01-15 18:59:59 fred Exp $
 C
 C This file is free software; you can redistribute it and/or modify
 C it under the terms of the GNU General Public License as published
@@ -23,11 +23,11 @@ C
      +                  RWKVP (4)       ,CWKVP (4)      ,
      +                  MOLMAX  ,MOL    ,MCOVFL ,MCSORT ,MCOLI(256),
      +                  SRED(256)       ,SGREEN(256)    ,SBLUE(256),
-     +                  MRCREC(4)       ,MRCLIP
+     +                  MRCREC(4)       ,MRCLIP ,NPFLG
         INTEGER         MWKID   ,MCONID ,MWTYPE ,MSTATE ,MOPEN
         INTEGER         MDEFMO  ,MREGMO ,MDEMPT ,MNFRAM ,MTUS
         INTEGER         MOLMAX  ,MOL    ,MCOVFL ,MCSORT ,MCOLI
         REAL            RWINDO          ,CWINDO
         REAL            RWKVP           ,CWKVP
         REAL            SRED            ,SGREEN         ,SBLUE
-        INTEGER         MRCREC  ,MRCLIP
+        INTEGER         MRCREC  ,MRCLIP ,NPFLG

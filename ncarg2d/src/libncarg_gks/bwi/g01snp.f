@@ -1,5 +1,5 @@
 C
-C	$Id: g01snp.f,v 1.8 2002-03-29 18:20:34 fred Exp $
+C	$Id: g01snp.f,v 1.9 2003-01-15 18:59:59 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -96,6 +96,12 @@ C
         ITMP(3) = SBLUE(I)*REAL(MDCCRG)
         CALL GPUTPR (ITMP, MDCCFW, 3, ERROR)
    10 CONTINUE
+C
+C  Set the flag indicating that the new picture information
+C  has been put out.  This is to inform G01CLP to issue its
+C  clipping information if G01SNP has been called.
+C
+      NPFLG = 1
 C
       RETURN
       END

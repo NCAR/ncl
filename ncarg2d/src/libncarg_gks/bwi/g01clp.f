@@ -1,5 +1,5 @@
 C
-C	$Id: g01clp.f,v 1.8 2001-12-11 22:16:35 fred Exp $
+C	$Id: g01clp.f,v 1.9 2003-01-15 18:59:59 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -48,12 +48,12 @@ C
       IF (IFORCE .NE. 0) GO TO 100
 C
 C  If the clipping indicator has changed, store it in the WSL.  If 
-C  the picture is not empty, send the clip indicator.
+C  the picture is not empty, or NPFLG is non-zero, send the clip indicator.
 C
       DCLIP = ID(1).NE.MRCLIP
       IF (DCLIP)  THEN
         MRCLIP = ID(1)
-        IF (MDEMPT .EQ. GNEMPT) THEN
+        IF (MDEMPT.EQ.GNEMPT .OR. NPFLG.NE.0) THEN
 C
 C  Put out opcode (CLASS and ID) and LENGTH
 C
@@ -109,6 +109,7 @@ C
 C  Put out opcode (CLASS and ID) and LENGTH
 C
       NBYTES = 1+(MEFW-1)/8
+       
       CALL GPUTNI (CLCLIN, IDCLIN, NBYTES, RERR)
       IF (RERR.NE.0)  RETURN
 C
