@@ -1,5 +1,5 @@
 C
-C      $Id: cn06f.f,v 1.1 1996-01-09 21:38:47 haley Exp $
+C      $Id: cn06f.f,v 1.2 1996-01-22 21:51:50 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -39,7 +39,7 @@ C
 C Declare variables for the HLU routine calls.
 C
       integer appid, workid, field1, con1
-      integer srlist, i, j, k
+      integer srlist, i
 C
 C Declare variables for getting information from netCDF file.
 C
