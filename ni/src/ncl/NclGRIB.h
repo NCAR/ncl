@@ -227,7 +227,7 @@ NclGribCacheList *grib_grid_cache;
 
 typedef int (*GribUnPackData)(
 #if NhlNeedProto
-int /*fd*/,
+FILE */*fd*/,
 void** /* output */,
 void**  /* missing */,
 GribRecordInqRec* /* therec */,
