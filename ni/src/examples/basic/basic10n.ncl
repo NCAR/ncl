@@ -1,5 +1,5 @@
 ;
-; $Id: basic10n.ncl,v 1.1 1998-10-11 16:51:42 haley Exp $
+; $Id: basic10n.ncl,v 1.2 1998-10-14 23:25:41 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -26,9 +26,9 @@ begin
 ; Open the netCDF file that contains the named colors.
 ;
     color_file = addfile("$NCARG_ROOT/lib/ncarg/data/cdf/color.nc","r")
-    ncolors = color_file@number_of_colors   ; Number of colors
     title = color_file@title                ; Title
-    cmap = color_file->cmap                 ; RGB values for color map
+    cmap = color_file->cmap_x               ; RGB values for color map
+    ncolors = dimsizes(cmap(:,0))
 
 ;
 ; The attributes of cmap are the color names.  There are two names for
@@ -119,6 +119,9 @@ begin
 ; the label in black.
 ;
           if(name.eq."black")
+            setvalues label            
+                "txFontColor" :  cmap@white  ; Draw label in white.
+            end setvalues
           else   
             setvalues label            
                 "txFontColor" :  cmap@black  ; Draw label in white.
