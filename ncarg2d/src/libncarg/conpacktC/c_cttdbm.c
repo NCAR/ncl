@@ -1,5 +1,5 @@
 /*
- *      $Id: c_cttdbi.c,v 1.1 2004-03-19 23:01:01 kennison Exp $
+ *      $Id: c_cttdbm.c,v 1.1 2004-03-26 22:03:38 kennison Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,25 +26,31 @@
 
 #include <ncarg/ncargC.h>
 
-extern void NGCALLF(cttdbi,CTTDBI)(float*,int*,int*,float*,int*);
+extern void NGCALLF(cttdbm,CTTDBM)(int,int,int,int,int,int,int,int);
 
-void c_cttdbi
+void c_cttdbm
 #ifdef NeedFuncProto
 (
-    float *rpnt,
-    int *iedg,
-    int *itri,
-    float *rwrk,
-    int *iwrk
+    int ihbx,
+    int iebx,
+    int iwbx,
+    int iubx,
+    int ihba,
+    int ieba,
+    int iwba,
+    int iuba
 )
 #else
-(rpnt,iedg,itri,rwrk,iwrk)
-    float *rpnt;
-    int *iedg;
-    int *itri;
-    float *rwrk;
-    int *iwrk;
+(ihbx,iebx,iwbx,iubx,ihba,ieba,iwba,iuba)
+    int ihbx;
+    int iebx;
+    int iwbx;
+    int iubx;
+    int ihba;
+    int ieba;
+    int iwba;
+    int iuba;
 #endif
 {
-    NGCALLF(cttdbi,CTTDBI)(rpnt,iedg,itri,rwrk,iwrk);
+    NGCALLF(cttdbm,CTTDBM)(&ihbx,&iebx,&iwbx,&iubx,&ihba,&ieba,&iwba,&iuba);
 }
