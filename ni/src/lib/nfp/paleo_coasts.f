@@ -1,6 +1,6 @@
 c nclfortstart
-      subroutine paleooutline(mask,zdat,lat,lon,nlat,nlon,jm,im,name,
-     +                        mskval)
+      subroutine paleooutline(mask,zdat,lat,lon,nlat,nlon,jm,im,
+     +                        name,mskval)
       integer nlat,nlon
       integer im,jm
       real lat1,latn,lon1,lonn
@@ -11,31 +11,46 @@ c nclend
       integer i,j
       integer iwrk(2000)
 C
-c the subroutine svbled requires that the input mask array be twice as
-c large as the orginal. This is an artificat of the original program written
-c for Pat Behling. 
-c
-c Don't need to initialize here, because it's done in the C interface.
-c
-c      do i=1,im
-c         do j=1,jm
-c            zdat(i,j)=0.
-c         enddo
-c      enddo
-
+C The subroutine SVBLED requires that the input mask array be twice as
+C large(+1) as the orginal. This is an artificat of the original 
+C program written for Pat Behling. 
+C
+C Don't need to initialize here, because it's done in the C interface.
+C
+C      do i=1,im
+C         do j=1,jm
+C            zdat(i,j)=0.
+C         enddo
+C      enddo
       do i=1,nlon
          do j=1,nlat
             ZDAT(2*I,2*J)=REAL(mask(I,J))
          enddo
       enddo
 C
+C The last longitude point is not actually 360, but 360-xx. So 
+C index 2*nlon+2 represents lon=360, and index 2*nlon+2
+C represents lon=360-xx. Index 2 represents lon=0.
+C
+C For latitude, index 2 represents lat(1), and index 2*nlat represents
+C lat(nlat). (Because index 0 should represent lat=-90, and index 
+C 2*nlat+1 represents lat=90.)
+C
+C      lon1 = real(lon(1))
+C      lonn = real(lon(nlon))
+C
+      ibot = 2
       lat1 = real(lat(1))
+      itop = 2 * nlat
       latn = real(lat(nlat))
+
+      ilft = 2
       lon1 = real(lon(1))
-      lonn = real(lon(nlon))
+      irgt = 2 * nlon + 2
+      lonn = 360.
 C     
-      CALL SVBLED (ZDAT,im,jm,IWRK,2000,mskval,1,lon1,im,lonn,
-     +     1,lat1,jm,latn,'Land','Water',name)
+      CALL SVBLED (ZDAT,im,jm,IWRK,2000,mskval,ilft,lon1,irgt,lonn,
+     +     ibot,lat1,itop,latn,'Land','Water',name)
 
 c ZDAT = data (idim,jdim)
 c IWRK = scratch (LIWK) 
@@ -60,9 +75,6 @@ c written.
       return
       end
 
-
-      
-      
       SUBROUTINE SVBLED (ZDAT,IDIM,JDIM,IWRK,LIWK,SVAL,ILFT,XLFT,
      +                   IRGT,XRGT,JBOT,YBOT,JTOP,YTOP,NAML,NAMR,FLNM)
 C
@@ -71,7 +83,18 @@ C the edge of the special-value area in a contour field.  (The mnemonic
 C SVBLED stands for "Special Value Boundary Line to Ezmap Dataset".)
 C The boundary of the special-value area is generated in such a way
 C that special values are to the left and non-special values are to the
-C right.  
+C right.  SVBLED has the following arguments: ZDAT is an array of data,
+C dimensioned IDIM by JDIM.  IWRK is an integer scratch array of length
+C LIWK.  SVAL is the "special value".  The "special value" area of the
+C data array is considered to be the union of all grid boxes having a
+C special value at one or more of their corners.  XLFT is the longitude
+C associated with a first subscript of ILFT and XRGT the longitude
+C associated with a first subscript of IRGT.  YBOT is the latitude
+C associated with a second subscript of JBOT and YTOP the latitude
+C associated with a second subscript of JTOP.  NAML and NAMR are the
+C names of the areas to the left and right, respectively, of the
+C boundary lines.  FLNM is the base name of the two files to which the
+C EZMAP data are to be written.
 C
 C Declare argument dimensions and sizes.
 C
@@ -166,8 +189,26 @@ C
             YCSS=YCES
             XCES=XLFT+(REAL(INDX-ILFT)/REAL(IRGT-ILFT))*(XRGT-XLFT)
             YCES=YBOT+(REAL(JNDY-JBOT)/REAL(JTOP-JBOT))*(YTOP-YBOT)
-            IF ((INDX.EQ.INOX.AND.(INDX.EQ.1.OR.INDX.EQ.IDIM)).OR.
-     +          (JNDY.EQ.JNOY.AND.(JNDY.EQ.1.OR.JNDY.EQ.JDIM))) THEN
+            IDRW=1
+            IF (INDX.EQ.INOX) THEN
+              IF ((REAL(IDIM-1)/REAL(IRGT-ILFT))*(XRGT-XLFT).GT.359.99)
+     +                                                              THEN
+                IF (INDX.EQ.1) THEN
+                  IF (ZDAT(IDIM  ,JNDY).EQ.SVAL.OR.
+     +                ZDAT(IDIM-1,JNDY).EQ.SVAL.OR.
+     +                ZDAT(IDIM  ,JNOY).EQ.SVAL.OR.
+     +                ZDAT(IDIM-1,JNOY).EQ.SVAL) IDRW=0
+                ELSE IF (INDX.EQ.IDIM) THEN
+                  IF (ZDAT(1,JNDY).EQ.SVAL.OR.
+     +                ZDAT(2,JNDY).EQ.SVAL.OR.
+     +                ZDAT(1,JNOY).EQ.SVAL.OR.
+     +                ZDAT(2,JNOY).EQ.SVAL) IDRW=0
+                END IF
+              END IF
+            ELSE IF (JNDY.EQ.JNOY.AND.ABS(ABS(YCES)-90.).LT..01) THEN
+              IDRW=0
+            END IF
+            IF (IDRW.EQ.0) THEN
               IF (INTS(1).NE.0) THEN
                 CALL WTEMLR (IFDE,INTS,FLTS)
                 INTS(1)=0
@@ -292,7 +333,6 @@ C
 C
 C Open the name data file, write the required items to it, and close it.
 C
-
         CALL NGOFWO (FNM2(1:LFNM+7),IFDE,ISTA)
 C
         IF (ISTA.NE.0) THEN
@@ -303,48 +343,36 @@ C
         NCHR=0
 C
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
-C  index of 1st area
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   1)  
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   1)  !  index of 1st area
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
-C  type of 1st area
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   1)  
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   1)  !  type of 1st area
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
-C  color of 1st area
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   2)  
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   2)  !  color of 1st area
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
-C  parent of 1st area
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   0)  
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   0)  !  parent of 1st area
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
         IBEG=IOFNBC(NAML)
         IEND=IOLNBC(NAML)
-C  name length
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,IEND-IBEG+1)  
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,IEND-IBEG+1)  !  name length
         CALL WRCHAR (IFDE,CHRS,1024,NCHR,        ' ')
         DO 108 I=IBEG,IEND
-C  name of area
-          CALL WRCHAR (IFDE,CHRS,1024,NCHR,NAML(I:I))  
+          CALL WRCHAR (IFDE,CHRS,1024,NCHR,NAML(I:I))  !  name of area
   108   CONTINUE
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
-C  index of 2nd area
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   2)  
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   2)  !  index of 2nd area
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
-C  type of 2nd area
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   1)  
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   1)  !  type of 2nd area
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
-C  color of 2nd area
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   1)  
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   1)  !  color of 2nd area
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
-C  parent of 2nd area
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   0)  
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   0)  !  parent of 2nd area
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
         IBEG=IOFNBC(NAMR)
         IEND=IOLNBC(NAMR)
-C  name length
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,IEND-IBEG+1)  
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,IEND-IBEG+1)  !  name length
         CALL WRCHAR (IFDE,CHRS,1024,NCHR,        ' ')
         DO 109 I=IBEG,IEND
-C  name of area
-          CALL WRCHAR (IFDE,CHRS,1024,NCHR,NAMR(I:I))  
+          CALL WRCHAR (IFDE,CHRS,1024,NCHR,NAMR(I:I))  !  name of area
   109   CONTINUE
 C
         IF (NCHR.GT.0) THEN
@@ -362,7 +390,6 @@ C
         RETURN
 C
       END
-
 
 
       SUBROUTINE WTEMLR (IFDE,INTS,FLTS)
