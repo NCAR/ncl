@@ -40,6 +40,10 @@ output from the NCAR Graphics GKS package to a file (use just the file name)
 or to pipe it to a translator (give the name of the translator, preceded by
 a "|").
 .sp
+The environment variable NCARG_GKS_PSOUTPUT may be used to direct the
+PostScript output from the NCAR Graphics GKS package to a file (stdout
+is allowed).
+.sp
 The environment variables GRAPHCAP and FONTCAP may be used to tell the 
 NCGM translators "ctrans", "ictrans" and "idt" what default 
 "graphcap" and "fontcap" to use.  See the man pages for ctrans(1NCARG), 
