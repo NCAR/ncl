@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.25 2004-05-28 22:38:30 fred Exp $
+C	$Id: gksbd.f,v 1.26 2004-07-23 18:11:39 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -251,7 +251,7 @@ C
      +             -218, -219, -220, -221, 2200, 2201, 2202, 2203,
      +             2204,   90, -113, -400, -401, -402, -403, -404,
      +             -405, -406, -350, -351, -352, -353, -450, -451,
-     +             -452, -453/
+     +             -452, -453, -354/
 C  Error 1
       DATA ERMSGS(  1)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
      +E GKCL'/
@@ -600,6 +600,10 @@ C  Error -452
       DATA ERMSGS(137)/' -- Error reading pixmap for PNG output'/
 C  Error -453
       DATA ERMSGS(138)/' -- Unsupported pixmap depth for PNG output'/
+C  Error -354
+      DATA ERMSGS(139)/' -- A dummy version of the interface function gg
+     +kwdr has been called, most likely as a result of requesting output
+     + other than an NCGM while having specified the -noX11 option.'/
 C
       DATA GNAM(001),GNAM(002),GNAM(003)/'GOPKS' ,'GCLKS' ,'GOPWK' /
       DATA GNAM(004),GNAM(005),GNAM(006)/'GCLWK' ,'GACWK' ,'GDAWK' /

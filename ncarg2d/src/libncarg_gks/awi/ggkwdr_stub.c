@@ -54,5 +54,5 @@ NGCALLF(ggkwdr,GGKWDR)(wk_id, gks_opcode, continuation,
         char    *err_msg;
 {
 
-	*status = 23;
+	*status = -354;
 }

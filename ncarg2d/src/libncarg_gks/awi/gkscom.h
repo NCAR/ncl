@@ -1,5 +1,5 @@
 C
-C $Id: gkscom.h,v 1.24 2004-05-28 22:38:30 fred Exp $
+C $Id: gkscom.h,v 1.25 2004-07-23 18:11:39 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -21,7 +21,7 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
 C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
-      PARAMETER(MXNWK=15,NSEG=100,IWDIM=10000,NUMERS=138)
+      PARAMETER(MXNWK=15,NSEG=100,IWDIM=10000,NUMERS=139)
       COMMON/GKINTR/ NOPWK , NACWK , WCONID, NUMSEG,
      +               SEGS(NSEG)    , CURSEG, SEGLEN(NSEG)  , MXSREC,
      +               SEGT(NSEG,2,3), CURTM(2,3)            , SEGDEL,
@@ -54,7 +54,7 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
       COMMON /GKETBI/IERNMS(NUMERS)
       INTEGER IERNMS
       COMMON /GKETBC/ERMSGS(NUMERS)
-      CHARACTER*90 ERMSGS
+      CHARACTER*210 ERMSGS
       COMMON/GKEROR/ ERS   , ERF   , CUFLAG, XERMSG(160)   , MXERMG
       INTEGER        ERS   , ERF   , CUFLAG, XERMSG        , MXERMG
       COMMON/GKENUM/ GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,

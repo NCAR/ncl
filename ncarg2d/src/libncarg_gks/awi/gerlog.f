@@ -1,5 +1,5 @@
 C
-C       $Id: gerlog.f,v 1.7 2000-08-22 15:07:59 haley Exp $
+C       $Id: gerlog.f,v 1.8 2004-07-23 18:11:39 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -27,7 +27,7 @@ C
       include 'gkscom.h'
 C
       INTEGER ERRNR,FCTID,ERRFIL
-      CHARACTER*90 REMSG
+      CHARACTER*210 REMSG
       CHARACTER*6  IFMT
 C
       SAVE
@@ -43,7 +43,7 @@ C
 C
 C  Get the length of the error message.
 C
-      DO 30 J=90,1,-1
+      DO 30 J=210,1,-1
         IF (REMSG(J:J) .NE. ' ') THEN
           LENMSG = J
           GO TO 40
