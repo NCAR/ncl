@@ -12,6 +12,89 @@
 #include "NclCCM.h"
 #include <math.h>
 #include "ccmhdr.h"
+
+static unsigned char cray_missing_value[8] = { 0x40,0x78,0xc0,0x97,0xce,0x7b,0xc9,0x07 };
+
+static int printbinary(FILE *fp,int val,int val2) {
+
+        static int count = 0;
+        int fl= 0;
+
+        if(fp == NULL) {
+                fp = stdout;
+                fl = 1;
+        }
+        (val & 020000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
+        (val & 010000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
+        (val & 004000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
+        (val & 002000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
+        (val & 001000000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000400000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000200000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000100000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000040000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000020000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000010000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000004000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000002000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000001000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000400000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000200000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000100000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000040000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000020000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000010000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000004000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000002000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000001000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000400) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000200) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000100) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000040) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000020) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000010) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000004) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000002) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val & 000000000001) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+
+        (val2 & 020000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
+        (val2 & 010000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
+        (val2 & 004000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
+        (val2 & 002000000000) ? fprintf(fp,"1"),count++ : fprintf(fp,"0");
+        (val2 & 001000000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000400000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000200000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000100000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000040000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000020000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000010000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000004000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000002000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000001000000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000400000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000200000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000100000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000040000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000020000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000010000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000004000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000002000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000001000) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000400) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000200) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000100) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000040) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000020) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000010) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000004) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000002) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+        (val2 & 000000000001) ? fprintf(fp,"1") ,count++: fprintf(fp,"0");
+
+        if(fl)
+                fprintf(fp,"\n");
+        return(count);
+}
+
 long sz(int n)
 {
         return(WORD_SIZE * n);
@@ -1678,9 +1761,9 @@ void *storage;
 				}
 			} else if(NrmStringToQuark("_FillValue") == att_name) {
 				if(thefile->vars[i].var_info.data_type == NCL_float) {
-					*(float*)storage = (float)1e36;
+					*(float*)storage = FloatIt(cray_missing_value);
 				} else if(thefile->vars[i].var_info.data_type == NCL_double){
-					*(double*)storage = (double)1e36;
+					*(double*)storage = DoubleIt(cray_missing_value);
 				}
 			}
 			return(storage);

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.27 1997-01-31 22:24:47 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.28 1997-04-11 17:27:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,12 @@ extern "C" {
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
 
+
+extern NhlErrorTypes _NclIgaus(
+#if NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _Nclmax(
 #if NhlNeedProto
 void
@@ -1132,32 +1138,38 @@ void _NclAddBuiltIns
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_NclINhlIsApp,args,"NhlIsApp",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_NclINhlIsDataComm,args,"NhlIsDataComm",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_NclINhlIsDataItem,args,"NhlIsDataItem",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_NclINhlIsDataSpec,args,"NhlIsDataSpec",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_NclINhlIsTransform,args,"NhlIsTransform",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_NclINhlIsView,args,"NhlIsView",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_NclINhlIsWorkstation,args,"NhlIsWorkstation",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"integer",1,dimsizes);nargs++;
+	NclRegisterFunc(_NclIgaus,args,"gaus",nargs);
 
 	nargs = 0;
 	NclRegisterFunc(_NclINhlGetWorkspaceObjectId,args,"NhlGetWorkspaceObjectId",nargs);

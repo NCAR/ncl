@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.63 1997-04-03 21:49:35 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.64 1997-04-11 17:27:32 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -8756,6 +8756,82 @@ NhlErrorTypes _NclITypeOf
 		0
 	));
 }
+
+NhlErrorTypes _NclIgaus
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int * nlat;
+	int has_missing;
+	NclScalar missing;
+	int dimsizes[2];
+	int nl;
+	double *theta;
+	double *wts;
+	int lwork= 0;
+	double *work = NULL;
+	int i,ierror,k;
+	double *output;
+	double rtod = (double)180.0/(double)3.14159265358979323846;
+
+
+
+	nlat = (int*)NclGetArgValue( 0, 1, NULL, NULL, &missing, &has_missing, NULL,DONT_CARE);
+
+	if(has_missing&&(*nlat==missing.intval)) {
+		dimsizes[0]= 1;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: missing value in input can not computes gaussian vals");
+		NclReturnValue(
+			nlat,
+			1,
+			dimsizes,
+			&missing,
+			NCL_int,
+			1);
+		return(NhlWARNING);
+	}  else if(*nlat <= 0) {
+		dimsizes[0]= 1;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: number of latitudes must be positive");
+		NclReturnValue(
+			nlat,
+			1,
+			dimsizes,
+			&missing,
+			NCL_int,
+			1);
+		return(NhlWARNING);
+	}
+	
+	nl= 2 * (*nlat) ;
+	theta = (double*)NclMalloc(sizeof(double)*nl);
+	wts = (double*)NclMalloc(sizeof(double)*nl);
+	lwork = 4 * nl*(nl+1)+2;
+	work = (double*)NclMalloc(sizeof(double)*lwork);
+	NGCALLF(gaqd,GAQD)(&nl,theta,wts,work,&lwork,&ierror);
+	NclFree(work);
+	output = (double*)NclMalloc(sizeof(double)*nl*2);
+
+	for(i = 0; i < nl; i++) {
+		output[2*i] = rtod*theta[i] - 90.0;
+		output[2*i+1] = wts[i];
+	}
+	NclFree(wts);
+	NclFree(theta);
+	dimsizes[0] = nl;
+	dimsizes[1] = 2;
+	return(NclReturnValue(
+		output,
+		2,
+		dimsizes,
+		NULL,
+		NCL_double,
+		0));
+
+}
+
 #ifdef __cplusplus
 }
 #endif

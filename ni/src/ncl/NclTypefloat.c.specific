@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypefloat.c.specific,v 1.4 1996-11-16 00:45:49 ethan Exp $
+ *      $Id: NclTypefloat.c.specific,v 1.5 1997-04-11 17:27:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -36,7 +36,7 @@ void *val;
         float *fpt = (float*)val;
 	int ret;
 
-        ret = nclfprintf(fp,"%g",*fpt);
+        ret = nclfprintf(fp,"%2.7g",*fpt);
 	if(ret < 0) {
                 return(NhlWARNING);
         } else {
