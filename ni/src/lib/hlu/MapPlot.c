@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.78 2001-11-28 02:47:49 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.79 2001-11-29 20:27:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3832,7 +3832,7 @@ static NhlErrorTypes GetXAxisTicks
 			max_count = end_ix - start_ix;
 			max_seg = seg_count;
 		}
-		size += 2 + MAX(isl[seg_count],iel[seg_count]) -
+		size += 4 + MAX(isl[seg_count],iel[seg_count]) -
 			MIN(isl[seg_count],iel[seg_count]);
 		seg_count++;
 		start_ix = ts[i].status == _OUTOFRANGE ? -1 : ts[i].index;
@@ -3872,7 +3872,7 @@ static NhlErrorTypes GetXAxisTicks
 				max_count = end_ix - start_ix;
 				max_seg = seg_count;
 			}
-			size += 2 + MAX(isl[seg_count],iel[seg_count]) -
+			size += 4 + MAX(isl[seg_count],iel[seg_count]) -
 				MIN(isl[seg_count],iel[seg_count]);
 			seg_count++;
 		}
@@ -4195,7 +4195,7 @@ static NhlErrorTypes GetYAxisTicks
 			max_count = end_ix - start_ix;
 			max_seg = seg_count;
 		}
-		size += 2 + MAX(isl[seg_count],iel[seg_count]) -
+		size += 4 + MAX(isl[seg_count],iel[seg_count]) -
 			MIN(isl[seg_count],iel[seg_count]);
 		seg_count++;
 		start_ix = ts[i].status == _OUTOFRANGE ? -1 : ts[i].index;
@@ -4235,7 +4235,7 @@ static NhlErrorTypes GetYAxisTicks
 				max_count = end_ix - start_ix;
 				max_seg = seg_count;
 			}
-			size += 2 + MAX(isl[seg_count],iel[seg_count]) -
+			size += 4 + MAX(isl[seg_count],iel[seg_count]) -
 				MIN(isl[seg_count],iel[seg_count]);
 			seg_count++;
 		}
@@ -4465,6 +4465,9 @@ static NhlErrorTypes ManageTickMarks
 		if (! mpp->yr_font_height_set)
 			mpp->yr_font_height *= deltay;
 	}
+
+	if (mpp->display_tickmarks <= NhlNEVER)
+		return ret;
 
 	if (mpp->xbvalues)
 		NhlFreeGenArray(mpp->xbvalues);
