@@ -1,16 +1,18 @@
 #
-#	$Id: yMakefile,v 1.1 1994-08-24 17:08:43 kennison Exp $
+#	$Id: yMakefile,v 1.2 1995-02-17 20:59:44 kennison Exp $
 #
 
 MYNAME  = dashpack
 
 GENERIC_SRCS = \
 	dpblda.f dpcurv.f dpdraw.f dpline.f dpfrst.f dpvect.f dplast.f \
-	dpgetc.f dpgeti.f dpgetr.f dpsetc.f dpseti.f dpsetr.f dpsmth.f
+	dpgetc.f dpgeti.f dpgetr.f dprset.f dpsetc.f dpseti.f dpsetr.f \
+	dpsmth.f
 
 GENERIC_OBJS = \
 	dpblda.o dpcurv.o dpdraw.o dpline.o dpfrst.o dpvect.o dplast.o \
-	dpgetc.o dpgeti.o dpgetr.o dpsetc.o dpseti.o dpsetr.o dpsmth.o
+	dpgetc.o dpgeti.o dpgetr.o dprset.o dpsetc.o dpseti.o dpsetr.o \
+	dpsmth.o
 
 SOURCES = $(GENERIC_SRCS)
 
