@@ -150,8 +150,9 @@ C subscript location for ptop
                   GO TO 25
               END IF
           END DO
-          IER = 1000000
-          WRITE (*,FMT='(/,'' sub vibeta: problem: ier='',i9)')
+          IER  = 1000000
+          VINT = XMSG
+C C C     WRITE (*,FMT='(/,'' sub vibeta: problem: ier='',i9)')
           RETURN
 
    25     NL1 = NLTOP
