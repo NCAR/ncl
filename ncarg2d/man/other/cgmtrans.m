@@ -1,65 +1,7 @@
 .\"
-.\"	$Id: cgmtrans.m,v 1.4 1993-05-08 17:00:02 haley Exp $
+.\"	$Id: cgmtrans.m,v 1.5 1995-04-20 20:59:10 haley Exp $
 .\"
-.TH CGMTRANS 1NCARG "MARCH 1988" NCAR "NCAR GRAPHICS"
+.TH CGMTRANS 1NCARG "April 1995" NCAR "NCAR GRAPHICS"
 .SH NAME
-cgmtrans \- NCAR \fICGM\fR translator - will become obsolete in version
-4 of NCAR Graphics, so please try using ctrans instead.
-.SH SYNOPSIS
-.B cgmtrans
-.I metafilename
-[ \fIrecord_number\fR\ ]
-.PP
-.SH DESCRIPTION
-.B cgmtrans
-is NCAR's Fortran-based metafile translator which translates
-.I metafilename
-starting at
-.I record_number.
-If
-.I metafilename
-is "-", stdin is used and
-.I record_number
-is ignored. If
-.I record_number
-is not specified, it defaults to zero.
-.PP
-cgmtrans determines the device type using the value of the 
-.I GRAPHCAP
-environment variable. There are no defaults.
-If the device name starts with a "/" or a ".", it is assumed
-to be an absolute or relative pathname. This allows an
-individual to have a personal graphcap for purposes of
-development or testing.  All other graphcap names
-are assumed to be in the default installed graphcap library.
-.PP
-cgmtrans may determine the font type using the
-.I FONTCAP
-environment variable, but this defaults to
-.I font0.
-If the font name starts with a "/" or a ".", it is assumed
-to be an absolute or relative pathname.  As in the case of
-graphcaps, this allows one to have a personal fontcap for purposes
-of development or testing.  All other fontcap names
-are assumed to be in the default installed fontcap library.
-.PP
-cgmtrans places device-dependent output on stdout, thus allowing
-the use of either a hardcopy spooler or terminal.
-.PP
-cgmtrans supports old NCAR metacode and CGM binary-encoded metacode.
-An NCAR metafile is organized as a series of 1440 byte records
-each of which has a 4 byte preamble. This preamble contains
-the useable length of the record in bytes, along with
-information regarding frame boundaries and metacode type.
-The frame boundary information is used by higher-level 
-interfaces to provide random access to metafile frames.
-.SH SEE ALSO
-.BR ctrans(1NCARG),
-.BR ftrans(1NCARG),
-.BR graphcap(5NCARG),
-.BR ncargintro(5NCARG)
-.SH COPYRIGHT
-Copyright 1987, 1988, 1989, 1991, 1993 University Corporation 
-for Atmospheric Research
-.br
-All Rights Reserved
+cgmtrans - as advertised, this command is now obsolete.  Please use
+\fBctrans\fR or \fBictrans\fR instead.
