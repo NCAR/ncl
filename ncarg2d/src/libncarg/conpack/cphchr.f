@@ -1,5 +1,5 @@
 C
-C	$Id: cphchr.f,v 1.1.1.1 1992-04-17 22:32:51 ncargd Exp $
+C $Id: cphchr.f,v 1.2 1993-04-13 16:55:50 kennison Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -78,12 +78,17 @@ C
 C
         IF (RWRK(IPTX+NXYC).NE.RWRK(IPTX+1).OR.RWRK(IPTY+NXYC).NE.RWRK(I
      +PTY+1)) THEN
-          IF (IOCF.NE.0.OR.ABS(IHCF).EQ.2) GO TO 101
+          IF (IOCF.NE.0) GO TO 101
+          IF (ABS(IHCF).EQ.2) GO TO 101
           IF (ABS(IHCF).EQ.3) RETURN
+          ANGN=RTOD*ARRAT2(RWRK(IPTY+2)-RWRK(IPTY+1),
+     +                     RWRK(IPTX+2)-RWRK(IPTX+1))
+        ELSE
+C
+          ANGN=RTOD*ARRAT2(RWRK(IPTY+NXYC)-RWRK(IPTY+NXYC-1),
+     +                     RWRK(IPTX+NXYC)-RWRK(IPTX+NXYC-1))
         END IF
 C
-        ANGN=RTOD*ARRAT2(RWRK(IPTY+1)-RWRK(IPTY+NXYC),
-     +                   RWRK(IPTX+1)-RWRK(IPTX+NXYC))
         ANGT=0.
 C
         DO 10001 I=1,NXYC-1
@@ -130,7 +135,9 @@ C
 C
 C Draw hachures along the polyline.
 C
-      DBHM=TLEN/REAL(INT(TLEN/(HCHS*(XVPR-XVPL))))
+      TEMP=REAL(INT(TLEN/(HCHS*(XVPR-XVPL))))
+      IF (TEMP.LE.0.) RETURN
+      DBHM=TLEN/TEMP
       PNHM=DBHM/2.
 C
       I=0
