@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.143 2002-06-21 21:47:18 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.144 2002-07-01 19:35:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -11888,6 +11888,7 @@ NhlErrorTypes _NclICreateFile(void)
 	NclVar tmp_var;
 	NclMultiDValData dnames_md,tmp_md,tmp_val;
 	nc_type the_type;
+	nc_type tmp_type;
 	int varids[2048];
 	int dim_ids[2048];
 	int ids[2048];
@@ -12024,13 +12025,16 @@ NhlErrorTypes _NclICreateFile(void)
 		varids[i]= ncvardef(cdfid,NrmQuarkToString(*(string*)tmp_md->multidval.val),the_type,dnames_md->multidval.totalelements,ids);
 		nclattlist = tmp_att->att.att_list;
 		while(nclattlist != NULL){ 
-			if((nclattlist->quark != NrmStringToQuark("type"))&&(nclattlist->quark!=NrmStringToQuark("dims"))){
+			if((nclattlist->quark != NrmStringToQuark("type"))&&(nclattlist->quark!=NrmStringToQuark("dims"))&&(nclattlist->quark != NrmStringToQUark("set_fillvalue"))){
 				if(nclattlist->attvalue->multidval.data_type != NCL_string) {		
 					the_type = _MapType(nclattlist->attvalue->multidval.data_type);
-					ncattput(cdfid,varids[i],nclattlist->attname,the_type,nclattlist->attvalue->multidval.totalelements,nclattlist->attvalue->multidval.val);
+					ncattput(cdfid,varids[i],nclattlist->attname,tmp_type,nclattlist->attvalue->multidval.totalelements,nclattlist->attvalue->multidval.val);
 				} else {
 					ncattput(cdfid,varids[i],nclattlist->attname,NC_CHAR,strlen(NrmQuarkToString(*(string*)nclattlist->attvalue->multidval.val)),NrmQuarkToString(*(string*)nclattlist->attvalue->multidval.val));
 				}
+			} else if(nclattlist->quark == NrmStringToQuark("set_fillvalue")) {
+				the_type = _MapType(nclattlist->attvalue->multidval.data_type);
+				ncattput(cdfid,varids[i],"_FillValue",the_type,nclattlist->attvalue->multidval.totalelements,nclattlist->attvalue->multidval.val);
 			}
 			nclattlist = nclattlist->next;
 		}
