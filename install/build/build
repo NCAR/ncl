@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.30 2002-03-18 04:05:13 haley Exp $
+#      $Id: build,v 1.31 2003-05-16 14:55:06 haley Exp $
 #
 #########################################################################
 #									#
@@ -246,6 +246,7 @@ $install_dir = "INSTALL";       # where the INSTALL script lives
     'IRIX_64_IP',       'SGI_IRIX',
     'OSF1_alpha',       'AlphaOSF1',
     'LINUX_PC',         'LINUX',
+    'LINUX_IA64',       'LINUX',
     'CYGWIN_PC',        'CygwinPC',
     'Solaris_PC',       'Sun4Solaris',
     'DARWIN_MAC',       'Darwin',
