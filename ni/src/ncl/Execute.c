@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.108 1999-11-12 18:36:38 ethan Exp $
+ *      $Id: Execute.c,v 1.109 2000-01-06 21:01:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -196,13 +196,19 @@ void CallLIST_READ_OP(void) {
 	ptr++;lptr++;fptr++;
 	temporary = (NclSymbol*)(*ptr);
 	ptr++;lptr++;fptr++;
-	subs = *ptr;
+	subs = *(int*)ptr;
 
 	list_ptr = _NclRetrieveRec(listsym,DONT_CARE);
 	temporary_list_ptr = _NclRetrieveRec(temporary,DONT_CARE);
 	if(list_ptr != NULL) {
 		tmp_md = (NclMultiDValData)_NclGetObj(list_ptr->u.data_var->var.thevalue_id);
-		list = (NclList)_NclGetObj(*(obj*)tmp_md->multidval.val);
+		if((tmp_md != NULL)&&(tmp_md->multidval.data_type == NCL_list)){
+			list = (NclList)_NclGetObj(*(obj*)tmp_md->multidval.val);
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"List subscripting used on non-list variable, can't continue");
+			estatus = NhlFATAL;
+                	return;
+		}
 	} else {
 		estatus = NhlFATAL;
                 return;
