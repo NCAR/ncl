@@ -22,7 +22,7 @@ XAPPDIR_DEFAULT	= /usr/lib/X11/app-defaults
 #
 #	default path to ictrans (only used if params file not found)
 #
-BINDIR_DEFAULT	= /usr/local/bin
+BINDIR_DEFAULT	= $(BINDIR)
 
 #ifdef  sgi
 CDEFINES	= -I$(LOCINCDIR) -I/usr/include/bsd

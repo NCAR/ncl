@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.16 1991-09-26 16:26:43 clyne Exp $
+ *	$Id: w_idt.c,v 1.17 1991-10-04 15:16:41 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -186,9 +186,9 @@ main(argc, argv)
 	 */
 	if (kludge() < 0) {
 		(void) fprintf(stderr, 
-			"%s: couldn't locate ncarg parameter file. ", argv[0]);
+			"%s: Warning couldn't locate ncarg parameter file. ", 
+			argv[0]);
 		(void) fprintf(stderr,"Is \'ncargpar\' on your search path?\n");
-		exit (1);
 	}
 
 	toplevel = XtAppInitialize(&app_con, "Idt", options, XtNumber(options),
