@@ -38,7 +38,7 @@ C
       external NhlFGraphicStyleClass
 
       integer appid,wid,cid,gsid
-      integer rlist, grlist,ierr
+      integer rlist,ierr
       parameter(N=5)
       parameter(M=4)
       parameter(K=5)
