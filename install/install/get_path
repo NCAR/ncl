@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: get_path,v 1.1 1993-02-20 00:11:08 clyne Exp $
+#      $Id: get_path,v 1.2 1993-09-07 16:02:44 clyne Exp $
 #
 #########################################################################
 #									#
@@ -34,7 +34,7 @@
 #	Options:	comment : A comment used to prompt the user
 #			default : The default path
 
-onintr cleanup:
+onintr cleanup
 
 if ($#argv != 2) then
 	echo "Usage: get_path <comment> <default>" > /dev/tty

@@ -37,7 +37,7 @@
 #
 #	Options:
 
-onintr cleanup:
+onintr cleanup
 
 set do_total = 0
 
