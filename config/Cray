@@ -1,5 +1,5 @@
 /*
- *      $Id: Cray,v 1.21 1994-03-03 15:18:08 haley Exp $
+ *      $Id: Cray,v 1.22 1994-03-03 17:55:43 haley Exp $
  */
 /************************************************************************
 *									*
@@ -20,6 +20,7 @@
  *	Description:	This file contains the directives necessary to
  *			describe the Cray running unicos.
  */
+#define TmpRoot		/usr/tmp
 #define	InstallManToLocal
 #define	UseCatDirs
 #define	ExtraSysLibraries	-lnet
