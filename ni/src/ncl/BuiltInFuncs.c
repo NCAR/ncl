@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.106 1999-04-02 00:08:18 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.107 1999-04-13 21:33:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -7668,9 +7668,11 @@ NhlErrorTypes _Ncldim_avg
                                         ((double*)out_val)[i] = sum_val;
                                 } else {
                                         ((float*)out_val)[i] = (float)sum_val;
-					missing.floatval = (float)missing.doubleval;
                                 }
 			}
+		}
+		if(out_data_type != NCL_double) {
+			missing.floatval = (float)missing.doubleval;
 		}
 		ret = NclReturnValue(
 			out_val,
@@ -7833,9 +7835,11 @@ NhlErrorTypes _NclIdim_variance
                                         ((double*)out_val)[i] = sum_sqrd_val;
                                 } else {
                                         ((float*)out_val)[i] = (float)sum_sqrd_val;
-					missing.floatval = (float)missing.doubleval;
                                 }
 			}
+		}
+		if(out_data_type != NCL_double) {
+			missing.floatval = (float)missing.doubleval;
 		}
 		ret = NclReturnValue(
 			out_val,
@@ -8175,9 +8179,11 @@ NhlErrorTypes _NclIdim_stddev
                                         ((double*)out_val)[i] = sum_sqrd_val;
                                 } else {
                                         ((float*)out_val)[i] = (float)sum_sqrd_val;
-					missing.floatval = (float)missing.doubleval;
                                 }
 			}
+		}
+		if(out_data_type != NCL_double) {
+			missing.floatval = (float)missing.doubleval;
 		}
 		ret = NclReturnValue(
 			out_val,
