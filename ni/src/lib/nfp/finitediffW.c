@@ -10,6 +10,14 @@ extern void NGCALLF(dcfindif,DCFINDIF)(double *,double *,int *,double *,
                                        double *,int *,int *, double *,
                                        double *,int *,double *,int *);
 
+extern void NGCALLF(dvrfidf,DVRFIDF)(double *,double *,double *,double *,
+                                     int *,int *,double *,int *,double *,
+                                     int *);
+
+extern void NGCALLF(ddvfidf,DDVFIDF)(double *,double *,double *,double *,
+                                     int *,int *,double *,int *,double *,
+                                     int *);
+
 NhlErrorTypes center_finite_diff_W( void )
 {
 /*
@@ -64,7 +72,7 @@ NhlErrorTypes center_finite_diff_W( void )
 
   cyclic = (logical*)NclGetArgValue(
           2,
-          3,
+          4,
           NULL,
           NULL,
           NULL,
@@ -105,11 +113,9 @@ NhlErrorTypes center_finite_diff_W( void )
 /*
  * Create arrays to hold temporary r and q values.
  */
-  tmp_q = (double*)calloc(npts,sizeof(double));
-  tmp_r = (double*)calloc(npts,sizeof(double));
   qq    = (double*)calloc(npts+2,sizeof(double));
   rr    = (double*)calloc(npts+2,sizeof(double));
-  if( tmp_q == NULL || tmp_r == NULL || qq == NULL || rr == NULL) {
+  if( qq == NULL || rr == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff: Unable to allocate memory for temporary arrays");
     return(NhlFATAL);
   }
@@ -228,5 +234,531 @@ NhlErrorTypes center_finite_diff_W( void )
   }
   else {
     return(NclReturnValue(dqdr,ndims_q,dsizes_q,NULL,type_dqdr,0));
+  }
+}
+
+
+NhlErrorTypes uv2vr_cfd_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *u, *v, *lat, *lon;
+  int *bound_opt;
+  double *tmp_u, *tmp_v, *tmp_lat, *tmp_lon;
+  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  int dsizes_lat[NCL_MAX_DIMENSIONS];
+  int dsizes_lon[NCL_MAX_DIMENSIONS];
+  int has_missing_u;
+  NclScalar missing_u, missing_du, missing_ru;
+  NclBasicDataTypes type_u, type_v, type_lat, type_lon;
+/*
+ * Output array variables
+ */
+  void *vort;
+  double *tmp_vort;
+  NclBasicDataTypes type_vort;
+/*
+ * Declare various variables for random purposes.
+ */
+  int i, j, nlon, nlat, nlatnlon, size_uv, size_leftmost, index_uv, ier;
+/*
+ * Retrieve parameters
+ *
+ * Note that any of the pointer parameters can be set to NULL,
+ * which implies you don't care about its value.
+ *
+ */
+  u = (void*)NclGetArgValue(
+          0,
+          5,
+          &ndims_u,
+          dsizes_u,
+          &missing_u,
+          &has_missing_u,
+          &type_u,
+          2);
+
+  v = (void*)NclGetArgValue(
+          1,
+          5,
+          &ndims_v,
+          dsizes_v,
+          NULL,
+          NULL,
+          &type_v,
+          2);
+
+  lat = (void*)NclGetArgValue(
+          2,
+          5,
+          NULL,
+          dsizes_lat,
+          NULL,
+          NULL,
+          &type_lat,
+          2);
+
+  lon = (void*)NclGetArgValue(
+          3,
+          5,
+          NULL,
+          dsizes_lon,
+          NULL,
+          NULL,
+          &type_lon,
+          2);
+
+  bound_opt = (int*)NclGetArgValue(
+          4,
+          5,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+
+/*
+ * Get size of input array.
+ */
+  if(ndims_u < 2 || ndims_u != ndims_v) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vr_cfd: u and v must have the same numer of dimensions and have at least 2 dimensions");
+    return(NhlFATAL);
+  }
+  for( i=0; i < ndims_u; i++ ) {
+    if(dsizes_u[i] != dsizes_v[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vr_cfd: u and v must have the same dimensions");
+      return(NhlFATAL);
+    }
+  }
+  nlat = dsizes_u[ndims_u-2];
+  nlon = dsizes_u[ndims_u-1];
+  nlatnlon = nlat * nlon;
+
+  if(dsizes_lat[0] != nlat || dsizes_lon[0] != nlon) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vr_cfd: the lat,lon arrays must be dimensioned nlat and nlon, the last two dimensions of u and v");
+    return(NhlFATAL);
+  }
+/*
+ * Compute the total size of the q array.
+ */
+  size_leftmost = 1;
+  for( i = 0; i < ndims_u-2; i++ ) size_leftmost *= dsizes_u[i];
+  size_uv = size_leftmost * nlatnlon;
+
+/*
+ * Check for missing values.
+ */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,&missing_ru);
+/*
+ * Create temporary arrays to hold double precision data.
+ */
+  if(type_u != NCL_double) {
+    tmp_u = (double*)calloc(nlatnlon,sizeof(double));
+    if( tmp_u == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vr_cfd: Unable to allocate memory for coercing u to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+  if(type_v != NCL_double) {
+    tmp_v = (double*)calloc(nlatnlon,sizeof(double));
+    if( tmp_v == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vr_cfd: Unable to allocate memory for coercing v to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Allocate space for output array.
+ */
+  if(type_u == NCL_double || type_v == NCL_double) {
+    type_vort = NCL_double;
+    vort      = (void*)calloc(size_uv,sizeof(double));
+  }
+  else {
+    tmp_vort  = (double*)calloc(nlatnlon,sizeof(double));
+    if( tmp_vort == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vr_cfd: Unable to allocate memory for temporary output array");
+      return(NhlFATAL);
+    }
+    type_vort = NCL_float;
+    vort      = (void*)calloc(size_uv,sizeof(float));
+  }
+  if(vort == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vr_cfd: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+/*
+ * Coerdce lat/lon arrays to double if necessary.
+ */
+  if(type_lat != NCL_double) {
+    tmp_lat = (double*)calloc(nlat,sizeof(double));
+    if( tmp_lat == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vr_cfd: Unable to allocate memory for lat array");
+      return(NhlFATAL);
+    }
+/*
+ * Coerce lat (tmp_lat) to double.
+ */
+    coerce_subset_input_double(lat,tmp_lat,0,type_lat,nlat,0,NULL,NULL);
+  }
+  else {
+/*
+ * Point tmp_lat to lat.
+ */
+    tmp_lat = &((double*)lat)[0];
+  }
+
+  if(type_lon != NCL_double) {
+    tmp_lon = (double*)calloc(nlon,sizeof(double));
+    if( tmp_lon == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vr_cfd: Unable to allocate memory for lon array");
+      return(NhlFATAL);
+    }
+/*
+ * Coerce lon (tmp_lon) to double.
+ */
+    coerce_subset_input_double(lon,tmp_lon,0,type_lon,nlon,0,NULL,NULL);
+  }
+  else {
+/*
+ * Point tmp_lon to lon.
+ */
+    tmp_lon = &((double*)lon)[0];
+  }
+
+/*
+ * Loop through leftmost dimensions and call Fortran routine.
+ */
+  index_uv = 0;
+  for(i = 0; i < size_leftmost; i++ ) {
+    if(type_u != NCL_double) {
+/*
+ * Coerce u (tmp_u) to double.
+ */
+      coerce_subset_input_double(u,tmp_u,index_uv,type_u,nlatnlon,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_u to u.
+ */
+      tmp_u = &((double*)u)[index_uv];
+    }
+    if(type_v != NCL_double) {
+/*
+ * Coerce v (tmp_v) to double.
+ */
+      coerce_subset_input_double(v,tmp_v,index_uv,type_v,nlatnlon,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_v to v.
+ */
+      tmp_v = &((double*)v)[index_uv];
+    }
+
+    if(type_vort == NCL_double) {
+/*
+ * Point tmp_vort to vort.
+ */
+      tmp_vort = &((double*)vort)[index_uv];
+    }
+
+/*
+ * Call the Fortran routine.
+ */
+    NGCALLF(dvrfidf,DVRFIDF)(tmp_u,tmp_v,tmp_lat,tmp_lon,&nlon,&nlat,
+                             &missing_du.doubleval,bound_opt,tmp_vort,&ier);
+    if(type_vort != NCL_double) {
+      for(j = 0; j < nlatnlon; j++) {
+        ((float*)vort)[index_uv+j] = (float)(tmp_vort[j]);
+      }
+    }
+    index_uv += nlatnlon;
+  }
+/*
+ * Free temp arrays.
+ */
+  if(type_u   != NCL_double) NclFree(tmp_u);
+  if(type_v   != NCL_double) NclFree(tmp_v);
+  if(type_lat != NCL_double) NclFree(tmp_lat);
+  if(type_lon != NCL_double) NclFree(tmp_lon);
+  if(type_vort!= NCL_double) NclFree(tmp_vort);
+
+  if(has_missing_u) {
+    if(type_u == NCL_double) {
+      return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_du,type_vort,0));
+    }
+    else {
+      return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_ru,type_vort,0));
+    }
+  }
+  else {
+    return(NclReturnValue(vort,ndims_u,dsizes_u,NULL,type_vort,0));
+  }
+}
+
+
+NhlErrorTypes uv2dv_cfd_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *u, *v, *lat, *lon;
+  int *bound_opt;
+  double *tmp_u, *tmp_v, *tmp_lat, *tmp_lon;
+  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  int dsizes_lat[NCL_MAX_DIMENSIONS];
+  int dsizes_lon[NCL_MAX_DIMENSIONS];
+  int has_missing_u;
+  NclScalar missing_u, missing_du, missing_ru;
+  NclBasicDataTypes type_u, type_v, type_lat, type_lon;
+/*
+ * Output array variables
+ */
+  void *div;
+  double *tmp_div;
+  NclBasicDataTypes type_div;
+/*
+ * Declare various variables for random purposes.
+ */
+  int i, j, nlon, nlat, nlatnlon, size_uv, size_leftmost, index_uv, ier;
+/*
+ * Retrieve parameters
+ *
+ * Note that any of the pointer parameters can be set to NULL,
+ * which implies you don't care about its value.
+ *
+ */
+  u = (void*)NclGetArgValue(
+          0,
+          5,
+          &ndims_u,
+          dsizes_u,
+          &missing_u,
+          &has_missing_u,
+          &type_u,
+          2);
+
+  v = (void*)NclGetArgValue(
+          1,
+          5,
+          &ndims_v,
+          dsizes_v,
+          NULL,
+          NULL,
+          &type_v,
+          2);
+
+  lat = (void*)NclGetArgValue(
+          2,
+          5,
+          NULL,
+          dsizes_lat,
+          NULL,
+          NULL,
+          &type_lat,
+          2);
+
+  lon = (void*)NclGetArgValue(
+          3,
+          5,
+          NULL,
+          dsizes_lon,
+          NULL,
+          NULL,
+          &type_lon,
+          2);
+
+  bound_opt = (int*)NclGetArgValue(
+          4,
+          5,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+
+/*
+ * Get size of input array.
+ */
+  if(ndims_u < 2 || ndims_u != ndims_v) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dv_cfd: u and v must have the same numer of dimensions and have at least 2 dimensions");
+    return(NhlFATAL);
+  }
+  for( i=0; i < ndims_u; i++ ) {
+    if(dsizes_u[i] != dsizes_v[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dv_cfd: u and v must have the same dimensions");
+      return(NhlFATAL);
+    }
+  }
+  nlat = dsizes_u[ndims_u-2];
+  nlon = dsizes_u[ndims_u-1];
+  nlatnlon = nlat * nlon;
+
+  if(dsizes_lat[0] != nlat || dsizes_lon[0] != nlon) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dv_cfd: the lat,lon arrays must be dimensioned nlat and nlon, the last two dimensions of u and v");
+    return(NhlFATAL);
+  }
+/*
+ * Compute the total size of the q array.
+ */
+  size_leftmost = 1;
+  for( i = 0; i < ndims_u-2; i++ ) size_leftmost *= dsizes_u[i];
+  size_uv = size_leftmost * nlatnlon;
+
+/*
+ * Check for missing values.
+ */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,&missing_ru);
+/*
+ * Create temporary arrays to hold double precision data.
+ */
+  if(type_u != NCL_double) {
+    tmp_u = (double*)calloc(nlatnlon,sizeof(double));
+    if( tmp_u == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dv_cfd: Unable to allocate memory for coercing u to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+  if(type_v != NCL_double) {
+    tmp_v = (double*)calloc(nlatnlon,sizeof(double));
+    if( tmp_v == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dv_cfd: Unable to allocate memory for coercing v to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Allocate space for output array.
+ */
+  if(type_u == NCL_double || type_v == NCL_double) {
+    type_div = NCL_double;
+    div      = (void*)calloc(size_uv,sizeof(double));
+  }
+  else {
+    tmp_div  = (double*)calloc(nlatnlon,sizeof(double));
+    if(tmp_div == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dv_cfd: Unable to allocate memory for temporary output array");
+      return(NhlFATAL);
+    }
+    type_div = NCL_float;
+    div      = (void*)calloc(size_uv,sizeof(float));
+  }
+  if(div == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dv_cfd: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+/*
+ * Coerdce lat/lon arrays to double if necessary.
+ */
+  if(type_lat != NCL_double) {
+    tmp_lat = (double*)calloc(nlat,sizeof(double));
+    if( tmp_lat == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dv_cfd: Unable to allocate memory for lat array");
+      return(NhlFATAL);
+    }
+/*
+ * Coerce lat (tmp_lat) to double.
+ */
+    coerce_subset_input_double(lat,tmp_lat,0,type_lat,nlat,0,NULL,NULL);
+  }
+  else {
+/*
+ * Point tmp_lat to lat.
+ */
+    tmp_lat = &((double*)lat)[0];
+  }
+
+  if(type_lon != NCL_double) {
+    tmp_lon = (double*)calloc(nlon,sizeof(double));
+    if( tmp_lon == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dv_cfd: Unable to allocate memory for lon array");
+      return(NhlFATAL);
+    }
+/*
+ * Coerce lon (tmp_lon) to double.
+ */
+    coerce_subset_input_double(lon,tmp_lon,0,type_lon,nlon,0,NULL,NULL);
+  }
+  else {
+/*
+ * Point tmp_lon to lon.
+ */
+    tmp_lon = &((double*)lon)[0];
+  }
+
+/*
+ * Loop through leftmost dimensions and call Fortran routine.
+ */
+  index_uv = 0;
+  for(i = 0; i < size_leftmost; i++ ) {
+    if(type_u != NCL_double) {
+/*
+ * Coerce u (tmp_u) to double.
+ */
+      coerce_subset_input_double(u,tmp_u,index_uv,type_u,nlatnlon,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_u to u.
+ */
+      tmp_u = &((double*)u)[index_uv];
+    }
+    if(type_v != NCL_double) {
+/*
+ * Coerce v (tmp_v) to double.
+ */
+      coerce_subset_input_double(v,tmp_v,index_uv,type_v,nlatnlon,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_v to v.
+ */
+      tmp_v = &((double*)v)[index_uv];
+    }
+    if(type_div == NCL_double) {
+/*
+ * Point tmp_div to div.
+ */
+      tmp_div = &((double*)div)[index_uv];
+    }
+/*
+ * Call the Fortran routine.
+ */
+    NGCALLF(ddvfidf,DDVFIDF)(tmp_u,tmp_v,tmp_lat,tmp_lon,&nlon,&nlat,
+                             &missing_du.doubleval,bound_opt,tmp_div,&ier);
+    if(type_div != NCL_double) {
+      for(j = 0; j < nlatnlon; j++) {
+        ((float*)div)[index_uv+j] = (float)(tmp_div[j]);
+      }
+    }
+    index_uv += nlatnlon;
+  }
+/*
+ * Free temp arrays.
+ */
+  if(type_u   != NCL_double) NclFree(tmp_u);
+  if(type_v   != NCL_double) NclFree(tmp_v);
+  if(type_lat != NCL_double) NclFree(tmp_lat);
+  if(type_lon != NCL_double) NclFree(tmp_lon);
+  if(type_div != NCL_double) NclFree(tmp_div);
+
+  if(has_missing_u) {
+    if(type_u == NCL_double) {
+      return(NclReturnValue(div,ndims_u,dsizes_u,&missing_du,type_div,0));
+    }
+    else {
+      return(NclReturnValue(div,ndims_u,dsizes_u,&missing_ru,type_div,0));
+    }
+  }
+  else {
+    return(NclReturnValue(div,ndims_u,dsizes_u,NULL,type_div,0));
   }
 }

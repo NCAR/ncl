@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.34 2000-10-09 21:42:37 haley Exp $
+#      $Id: yMakefile,v 1.35 2000-10-18 21:01:36 haley Exp $
 #
 #########################################################################
 #									#
@@ -56,7 +56,7 @@ FSRCS = aam.f areaAve.f areaRmse.f dbetai.f calcorc_dp.f chiin_dp.f \
 	index77_dp.f int2p_dp.f julGreg.f linint2.f linmsg_dp.f \
 	localMinMax.f phybrid_ccm.f preshybrid.f prneof_dp.f prneofts_dp.f \
 	rdsstoi.f regcoef_dp.f relhum_dp.f remap.f rhombtri_dp.f \
-	rmStndx_dp.f runave_dp.f skewT.f smth9_dp.f sp2_util.f \
+	rmStndx_dp.f runave_dp.f rvdv.f skewT.f smth9_dp.f sp2_util.f \
 	sp2_util_dp.f specx_dp.f statx.f statx_dp.f svd_lap_dp.f \
 	svd_util_dp.f ttest.f trcwav_dp.f trvsph77_dp.f upsl_dp.f \
 	varimax_dp.f vibeta_dp.f volAve.f wrunave_dp.f vinth2p_dp.f \
@@ -68,7 +68,7 @@ FOBJS = aam.o areaAve.o areaRmse.o dbetai.o calcorc_dp.o chiin_dp.o \
 	index77_dp.o int2p_dp.o julGreg.o linint2.o linmsg_dp.o \
 	localMinMax.o phybrid_ccm.o preshybrid.o prneof_dp.o prneofts_dp.o \
 	rdsstoi.o regcoef_dp.o relhum_dp.o remap.o rhombtri_dp.o \
-	rmStndx_dp.o runave_dp.o skewT.o smth9_dp.o sp2_util.o \
+	rmStndx_dp.o runave_dp.o rvdv.o skewT.o smth9_dp.o sp2_util.o \
 	sp2_util_dp.o specx_dp.o statx.o statx_dp.o svd_lap_dp.o \
 	svd_util_dp.o ttest.o trcwav_dp.o trvsph77_dp.o upsl_dp.o \
 	varimax_dp.o vibeta_dp.o volAve.o wrunave_dp.o vinth2p_dp.o \

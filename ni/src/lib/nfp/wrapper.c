@@ -52,6 +52,8 @@ extern NhlErrorTypes eofcov_ts_pcmsg_W(void);
 extern NhlErrorTypes eofcor_ts_pcmsg_W(void);
 extern NhlErrorTypes eof_varimax_W(void);
 extern NhlErrorTypes center_finite_diff_W(void);
+extern NhlErrorTypes uv2vr_cfd_W(void);
+extern NhlErrorTypes uv2dv_cfd_W(void);
 extern NhlErrorTypes svdcov_W(void);
 extern NhlErrorTypes svdstd_W(void);
 extern NhlErrorTypes svdcov_sv_W(void);
@@ -608,6 +610,34 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(center_finite_diff_W,args,"center_finite_diff",nargs);
+/*
+ * Register "uv2vr_cfd".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(uv2vr_cfd_W,args,"uv2vr_cfd",nargs);
+/*
+ * Register "uv2dv_cfd".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(uv2dv_cfd_W,args,"uv2dv_cfd",nargs);
 /*
  * Register "svdcov".
  *
