@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.3 1995-04-07 10:43:17 boote Exp $
+ *      $Id: PSWorkstation.c,v 1.4 1995-04-22 01:01:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -155,10 +155,12 @@ NhlPSWorkstationClassRec NhlpsWorkstationClassRec = {
 /* layer_clear			*/	NULL
         },
         {
+/* def_background	*/	{1.0,1.0,1.0},
 /* open_work		*/	PSWorkstationOpen,
 /* close_work		*/	NhlInheritClose,
 /* activate_work	*/	NhlInheritActivate,
 /* deactivate_work	*/	NhlInheritDeactivate,
+/* alloc_colors		*/	NhlInheritAllocateColors,
 /* update_work		*/	NhlInheritUpdate,
 /* clear_work		*/	NhlInheritClear,
 /* lineto_work		*/	NhlInheritLineTo,

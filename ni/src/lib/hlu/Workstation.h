@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.16 1995-04-07 10:44:25 boote Exp $
+ *      $Id: Workstation.h,v 1.17 1995-04-22 01:02:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -107,7 +107,6 @@ typedef	int	NhlDashIndex;
 #define NhlSOLIDLINE	0
 
 /* Colormap stuff */
-
 typedef	int	NhlColorIndex;
 #define	NhlTColorIndex	"ColorIndex"
 #define	NhlTColorIndexGenArray	"ColorIndexGenArray"

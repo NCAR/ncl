@@ -1,5 +1,5 @@
 /*
- *      $Id: App.h,v 1.6 1995-04-07 10:40:47 boote Exp $
+ *      $Id: App.h,v 1.7 1995-04-22 01:01:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,8 +30,11 @@
 #define	NhlCappSysDir		"AppSysDir"
 #define NhlNappFileSuffix	"appFileSuffix"
 #define NhlCappFileSuffix	"AppFileSuffix"
+
 #define NhlNappDefaultParent	"appDefaultParent"
 #define NhlCappDefaultParent	"AppDefaultParent"
+#define NhlNappResources	"appResources"
+#define NhlCappResources	"AppResources"
 
 extern NhlClass NhlappClass;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.30 1995-04-07 10:41:28 boote Exp $
+ *      $Id: DataComm.c,v 1.31 1995-04-22 01:01:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1990,7 +1990,7 @@ NhlAddData
 	larg.value.intval = ditemid;
 	larg.type = NrmStringToQuark(_NhlTAddData);
 
-	ret = _NhlSetValues(dcl,&larg,1);
+	ret = _NhlSetLayerValues(dcl,&larg,1);
 
 	if(ret < NhlWARNING)
 		return ret;
@@ -2089,7 +2089,7 @@ NhlRemoveData
 	larg.value.intval = ditemid;
 	larg.type = NrmStringToQuark(_NhlTRemoveData);
 
-	return _NhlSetValues(dcl,&larg,1);
+	return _NhlSetLayerValues(dcl,&larg,1);
 }
 
 /*

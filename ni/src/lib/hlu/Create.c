@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.18 1995-04-07 10:41:25 boote Exp $
+ *      $Id: Create.c,v 1.19 1995-04-22 01:01:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -317,6 +317,7 @@ _NhlCreate
 	_NhlChildArgList	chld_args=NULL;
 	NhlBoolean		chld_args_used[_NhlMAXARGLIST];
 	_NhlConvertContext	context=NULL;
+	int			i;
 
 
 	if(!(lc->base_class.class_inited)){
@@ -360,7 +361,7 @@ _NhlCreate
 	layer->base.self = layer;
 	layer->base.parent = parent;
 	layer->base.layer_class = lc;
-	layer->base.nrm_name = NrmStringToName((name != NULL) ? name : "");
+	layer->base.nrm_name = NrmStringToName((name)?name:"");
 	layer->base.name = (Const NhlString)
 					NrmNameToString(layer->base.nrm_name);
 	if(parent == NULL)
@@ -454,6 +455,28 @@ _NhlCreate
 				return NhlFATAL;
 			}
 		}
+
+		if(_NhlIsApp(layer)){
+			/*
+			 * This function just assumes that any resource that
+			 * is not in the "App" class, is an Application defined
+			 * one. An error message should be reported when the
+			 * App object tries to apply the arg to it's Application
+			 * defined resources, if it is not actually defined.
+			 */
+			lret = _NhlSortAppArgs(layer,args,nargs,&largs,&nlargs);
+			if(lret < NhlWARNING){
+				NhlPError(lret,NhlEUNKNOWN,
+				"%s:Unable to Create Arg Lists - Can't Create",
+				func);
+				(void)NhlFree(layer);
+				return lret;
+			}
+			layer->base.child_args = NULL;
+			for(i=0;i<nargs;i++)
+				chld_args_used[i] = True;
+		}
+		else{
 /*
  * _NhlSortChildArgs sorts the args into seperate arg lists for the parent
  * and for the children.  The children args are returned as a linked list
@@ -462,23 +485,24 @@ _NhlCreate
  * _NhlVACreateChild calls that happen during initialize.
  * Resource forwarding is not supported for Obj's.
  */
-		lret = _NhlSortChildArgs(layer,args,nargs,&largs,&nlargs,
-					&chld_args,chld_args_used,False);
-		if(lret < NhlWARNING){
-			NhlPError(lret,NhlEUNKNOWN,
+			lret = _NhlSortChildArgs(layer,args,nargs,&largs,
+				&nlargs,&chld_args,chld_args_used,False);
+			if(lret < NhlWARNING){
+				NhlPError(lret,NhlEUNKNOWN,
 				"Unable to Create Arg Lists - Can't Create");
-			(void)NhlFree(layer);
-			return lret;
-		}
-		ret = MIN(lret,ret);
+				(void)NhlFree(layer);
+				return lret;
+			}
+			ret = MIN(lret,ret);
 
-		layer->base.child_args = chld_args;
+			layer->base.child_args = chld_args;
+		}
 	}
 
 /*
  * Gets Resources from args and default files and sets them in layer
  */	
-	lret = _NhlGetResources(context,layer,largs,nlargs,child);
+	lret = _NhlGetLayerResources(context,layer,largs,nlargs,child);
 	if(lret < NhlWARNING){
 		NhlPError(lret,NhlEUNKNOWN,
 				"Unable to retrieve resources-Can't Create");

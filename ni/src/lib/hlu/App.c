@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.15 1995-04-07 10:40:45 boote Exp $
+ *      $Id: App.c,v 1.16 1995-04-22 01:01:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -118,6 +118,20 @@ GetSysAppDir
 
 /* Resources */
 #define	Oset(field)	NhlOffset(NhlAppLayerRec,app.field)
+
+#define appDefResDef	{NhlNappDefaultParent,NhlCappDefaultParent,	\
+	NhlTBoolean,sizeof(NhlBoolean),Oset(default_parent),		\
+	NhlTImmediate,(NhlPointer)False,_NhlRES_DEFAULT,NULL}
+#define appResResDef {NhlNappResources,NhlCappResources,		\
+	NhlTStringGenArray,sizeof(NhlGenArray),Oset(resources),		\
+	NhlTImmediate,(NhlPointer)NULL,_NhlRES_NOSACCESS,		\
+	(NhlFreeFunc)NhlFreeGenArray}
+
+static NhlResource more_res[] = {
+	appDefResDef,
+	appResResDef
+};
+
 static NhlResource resources[] = {
 /* Begin-documented-resources */
 	{NhlNappUsrDir,NhlCappUsrDir,NhlTString,sizeof(NhlString),
@@ -129,9 +143,8 @@ static NhlResource resources[] = {
 	{NhlNappFileSuffix,NhlCappFileSuffix,NhlTString,sizeof(NhlString),
 		Oset(file_suffix),NhlTImmediate,(NhlPointer)".res",
 		_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
-	{NhlNappDefaultParent,NhlCappDefaultParent,NhlTBoolean,
-		sizeof(NhlBoolean),Oset(default_parent),NhlTImmediate,
-		(NhlPointer)False,_NhlRES_DEFAULT,NULL},
+	appDefResDef,
+	appResResDef,
 /* End-documented-resources */
 	{_NhlNappMode,_NhlCappMode,NhlTInteger,sizeof(_NhlC_OR_F),
 		Oset(init_mode),NhlTImmediate,(NhlPointer)_NhlNONE,
@@ -143,7 +156,10 @@ static NhlResource resources[] = {
 		Oset(no_appDB),NhlTImmediate,(NhlPointer)False,_NhlRES_CONLY,
 		NULL}
 };
-#undef Oset
+
+#undef	appDefResDef
+#undef	appResResDef
+#undef	Oset
 
 NhlAppClassRec NhlappClassRec = {
 	{
@@ -176,6 +192,8 @@ NhlAppClassRec NhlappClassRec = {
 /* layer_clear			*/	NULL
 	},
 	{
+/* resources			*/	more_res,
+/* num_resources		*/	NhlNumber(more_res),
 /* default_app			*/	NULL,
 /* current_app			*/	NULL,
 /* baseDB			*/	NULL,
@@ -274,6 +292,62 @@ InitBaseDB
 	return ret;
 }
 
+static NrmQuark	usrdirQ = NrmNULLQUARK;
+static NrmQuark	sysdirQ = NrmNULLQUARK;
+static NrmQuark	filesuffQ = NrmNULLQUARK;
+static NrmQuark	defparQ = NrmNULLQUARK;
+static NrmQuark	appresQ = NrmNULLQUARK;
+static _NhlC_OR_F lang_type = _NhlNONE;
+static NrmResource def_app_res;
+
+
+/*
+ * Function:	AppClassInitialize
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+AppClassInitialize
+#if	NhlNeedProto
+(
+	void
+)
+#else
+()
+#endif
+{
+	_NrmInitialize();
+	_NhlConvertersInitialize();
+	_NhlResourceListInitialize();
+
+	_NhlCompileResourceList(NhlappClassRec.app_class.resources,
+					NhlappClassRec.app_class.num_resources);
+
+	usrdirQ = NrmStringToQuark(NhlNappUsrDir);
+	sysdirQ = NrmStringToQuark(NhlNappSysDir);
+	filesuffQ = NrmStringToQuark(NhlNappFileSuffix);
+	defparQ = NrmStringToQuark(NhlNappDefaultParent);
+	appresQ = NrmStringToQuark(NhlNappResources);
+
+	def_app_res.nrm_name= def_app_res.nrm_class= NrmStringToQuark("no.res");
+	def_app_res.nrm_type = def_app_res.nrm_default_type =
+						NrmStringToQuark(NhlTString);
+	def_app_res.nrm_size = sizeof(NhlString);
+	def_app_res.nrm_default_val.strval = NULL;
+	def_app_res.res_info = _NhlRES_DEFAULT;
+	def_app_res.free_func = (NhlFreeFunc)NhlFree;
+
+	return NhlNOERROR;
+}
+
 /*
  * Function:	AppClassPartInitialize
  *
@@ -315,47 +389,6 @@ AppClassPartInitialize
 	return NhlNOERROR;
 }
 
-static NrmQuark	usrdirQ = NrmNULLQUARK;
-static NrmQuark	sysdirQ = NrmNULLQUARK;
-static NrmQuark	filesuffQ = NrmNULLQUARK;
-static NrmQuark	defparQ = NrmNULLQUARK;
-static _NhlC_OR_F lang_type = _NhlNONE;
-
-/*
- * Function:	AppClassInitialize
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-static NhlErrorTypes
-AppClassInitialize
-#if	NhlNeedProto
-(
-	void
-)
-#else
-()
-#endif
-{
-	_NrmInitialize();
-	_NhlConvertersInitialize();
-	_NhlResourceListInitialize();
-
-	usrdirQ = NrmStringToQuark(NhlNappUsrDir);
-	sysdirQ = NrmStringToQuark(NhlNappSysDir);
-	filesuffQ = NrmStringToQuark(NhlNappFileSuffix);
-	defparQ = NrmStringToQuark(NhlNappDefaultParent);
-
-	return NhlNOERROR;
-}
-
 /*
  * Function:	AppInitialize
  *
@@ -392,9 +425,16 @@ AppInitialize
 	char			func[] = "AppInitialize";
 	NhlErrorTypes		ret = NhlNOERROR,lret = NhlNOERROR;
 	NhlAppLayer		anew = (NhlAppLayer)new;
-	NhlAppClass	ac = (NhlAppClass)anew->base.layer_class;
+	NhlAppClass		ac = (NhlAppClass)anew->base.layer_class;
 	Const char		*cs = NULL;
 	char			tname[_NhlMAXFNAMELEN];
+	NrmQuark		nameQ[2],classQ[2];
+	_NhlArg			largs[_NhlMAXARGLIST];
+	int			nlargs = 0;
+	int			i;
+	int			indx;
+	NrmResourceList		rlist;
+	_NhlConvertContext	context;
 
 
 	if(anew->app.default_app){
@@ -406,9 +446,8 @@ AppInitialize
 		ac->app_class.default_app = anew;
 	}
 
-	if(anew->app.default_parent || !ac->app_class.current_app){
+	if(!ac->app_class.current_app){
 		ac->app_class.current_app = anew;
-		anew->app.default_parent = False;
 	}
 
 	if(!ac->app_class.default_app){
@@ -538,6 +577,124 @@ AppInitialize
 		ac->app_class.app_objs = at;
 	}
 
+	/*
+	 * Now, re-retrieve resources that depend upon a complete resdb.
+	 */
+
+	nameQ[0] = new->base.nrm_name;
+	nameQ[1] = NrmNULLQUARK;
+	classQ[0] = ac->base_class.nrm_class;
+	classQ[1] = NrmNULLQUARK;
+
+	rlist = (NrmResourceList)ac->app_class.resources;
+	context = _NhlCreateConvertContext();
+
+	if(!context){
+		NhlPError(NhlFATAL,ENOMEM,"%s:No Converter Context.",func);
+		return NhlFATAL;
+	}
+
+	for(i=0;i < ac->app_class.num_resources;i++){
+		indx = _NhlArgIsSet(args,nargs,
+					NrmQuarkToString(rlist[i].nrm_name));
+		if(!indx)
+			continue;
+
+		largs[nlargs++] = args[indx-1];
+	}
+
+	lret = _NhlGetResources(context,_NhlGetResDB(new),(char*)new,
+			nameQ,classQ,(NrmResourceList)ac->app_class.resources,
+			ac->app_class.num_resources,largs,nlargs,NULL);
+	if(lret < NhlWARNING){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Problems retrieving resources...",func);
+		return NhlFATAL;
+	}
+	ret = MIN(lret,ret);
+
+	if(anew->app.default_parent){
+		ac->app_class.current_app = anew;
+		anew->app.default_parent = False;
+	}
+
+	if(anew->app.resources){
+		NhlString	*res_names;
+		
+		anew->app.resources = _NhlCopyGenArray(anew->app.resources,
+									True);
+		if(!anew->app.resources){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+
+		res_names = anew->app.resources->data;
+		anew->app.nres = anew->app.resources->num_elements;
+
+		anew->app.values = (NhlString*)NhlMalloc(sizeof(NhlString) *
+							anew->app.nres);
+		anew->app.res = (NrmResourceList)NhlMalloc(sizeof(NrmResource) *
+							anew->app.nres);
+		if(!anew->app.values || !anew->app.res){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+
+		for(i=0;i < anew->app.nres;i++){
+			anew->app.res[i] = def_app_res;
+			anew->app.res[i].nrm_name =
+						NrmStringToQuark(res_names[i]);
+			anew->app.res[i].nrm_offset = sizeof(NhlString)*i;
+		}
+
+		lret = _NhlGetResources(context,_NhlGetResDB(new),
+				(char*)anew->app.values,nameQ,classQ,
+				anew->app.res,anew->app.nres,
+				anew->app.args,anew->app.nargs,NULL);
+
+		if(lret < NhlWARNING){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Problems retrieving app defined resources...",func);
+			return NhlFATAL;
+		}
+		ret = MIN(lret,ret);
+
+		for(i=0;i < anew->app.nres;i++){
+			NhlString	tstring;
+
+			tstring = anew->app.values[i];
+
+			if(tstring){
+				anew->app.values[i] =
+						NhlMalloc(strlen(tstring)+1);
+				if(!anew->app.values[i]){
+					NHLPERROR((NhlFATAL,ENOMEM,NULL));
+					return NhlFATAL;
+				}
+				strcpy(anew->app.values[i],tstring);
+			}
+		}
+	}
+	else{
+		anew->app.values = NULL;
+		anew->app.res = NULL;
+		anew->app.nres = 0;
+		if(anew->app.args){
+			for(i=0;i < anew->app.nargs;i++){
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:%s is not a defined resource of App object \"%s\"",
+				func,NrmQuarkToString(anew->app.args[i].quark),
+				anew->base.name);
+			}
+			ret = MIN(NhlWARNING,ret);
+		}
+	}
+
+	_NhlFreeConvertContext(context);
+	NhlFree(anew->app.args);
+	anew->app.args = NULL;
+	anew->app.nargs = 0;
+
 	return ret;
 }
 
@@ -577,45 +734,64 @@ AppSetValues
 	char			func[] = "AppSetValues";
 	NhlAppLayer		newapp = (NhlAppLayer)new;
 	NhlAppLayerPart		*np = &newapp->app;
-	NhlAppLayer		oldapp = (NhlAppLayer)old;
-	NhlAppLayerPart		*op = &oldapp->app;
-	NhlAppClass	ac = (NhlAppClass)new->base.layer_class;
-	NhlErrorTypes		ret = NhlNOERROR;
-
-	if(np->usr_appdir != op->usr_appdir){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-		"%s:%s is only settable at Create time.",func,NhlNappUsrDir);
-		np->usr_appdir = op->usr_appdir;
-		ret = NhlWARNING;
-	}
-	if(np->sys_appdir != op->sys_appdir){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-		"%s:%s is only settable at Create time.",func,NhlNappSysDir);
-		np->sys_appdir = op->sys_appdir;
-		ret = NhlWARNING;
-	}
-	if(np->file_suffix != op->file_suffix){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-		"%s:%s is only settable at Create time.",func,NhlNappFileSuffix);
-		np->file_suffix = op->file_suffix;
-		ret = NhlWARNING;
-	}
-	if(np->init_mode != op->init_mode){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-		"%s:%s is only settable at Create time.",func,_NhlNappMode);
-		np->init_mode = op->init_mode;
-		ret = NhlWARNING;
-	}
-	if(np->default_app != op->default_app){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-		"%s:%s is only settable at Create time.",func,_NhlNdefApp);
-		np->default_app = op->default_app;
-		ret = NhlWARNING;
-	}
+	NhlAppClass		ac = (NhlAppClass)new->base.layer_class;
+	int			i;
+	_NhlConvertContext	context;
+	NhlErrorTypes		ret = NhlNOERROR,lret=NhlNOERROR;
 
 	if(np->default_parent){
 		ac->app_class.current_app = newapp;
 		np->default_parent = False;
+	}
+
+	if(np->args){
+		if(np->res){
+			NhlString	*new_vals;
+
+			context = _NhlCreateConvertContext();
+			if(!context){
+				NhlPError(NhlFATAL,ENOMEM,
+					"%s:No Converter Context.",func);
+				return NhlFATAL;
+			}
+
+			new_vals = NhlMalloc(sizeof(NhlString)*np->nres);
+			if(!new_vals){
+				NHLPERROR((NhlFATAL,ENOMEM,NULL));
+				return NhlFATAL;
+			}
+			memcpy(new_vals,np->values,sizeof(NhlString)*np->nres);
+
+			lret = _NhlSetValues(context,(char*)new_vals,
+					np->res,np->nres,np->args,np->nargs);
+
+			for(i=0;i<np->nres;i++){
+				if(np->values[i] != new_vals[i]){
+					NhlFree(np->values[i]);
+					np->values[i] =
+					NhlMalloc(strlen(new_vals[i])+1);
+					if(!np->values[i]){
+					NHLPERROR((NhlFATAL,ENOMEM,NULL));
+					return NhlFATAL;
+					}
+					strcpy(np->values[i],new_vals[i]);
+				}
+			}
+			NhlFree(new_vals);
+			_NhlFreeConvertContext(context);
+		}
+		else{
+			for(i=0;i<np->nargs;i++)
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:%s is not a defined resource of App object \"%s\"",
+				func,NrmQuarkToString(np->args[i].quark),
+				new->base.name);
+			ret = MIN(NhlWARNING,ret);
+		}
+
+		NhlFree(np->args);
+		np->args = NULL;
+		np->nargs = 0;
 	}
 
 	return ret;
@@ -654,13 +830,16 @@ AppGetValues
 	NhlAppLayer		al = (NhlAppLayer)l;
 	NhlAppLayerPart		*alp = &al->app;
 	NhlAppClass	alc = (NhlAppClass)al->base.layer_class;
-	int			i;
-	NhlErrorTypes		ret = NhlNOERROR;
+	int			i,j;
+	NhlErrorTypes		ret = NhlNOERROR,lret=NhlNOERROR;
 	NhlString		tstring;
+	NhlGenArray		tgen;
 
 	for(i=0;i<nargs;i++){
 
 		tstring = NULL;
+		tgen = NULL;
+
 		if(args[i].quark == usrdirQ)
 			tstring = alp->usr_appdir;
 		else if(args[i].quark == sysdirQ)
@@ -670,6 +849,9 @@ AppGetValues
 		else if(args[i].quark == defparQ){
 			*(NhlBoolean*)args[i].value.ptrval =
 			(al->base.id == alc->app_class.current_app->base.id);
+		}
+		else if(args[i].quark == appresQ){
+			tgen = alp->resources;
 		}
 
 		if(tstring){
@@ -683,6 +865,68 @@ AppGetValues
 			}
 			strcpy(*(NhlString*)args[i].value.ptrval,tstring);
 		}
+		if(tgen){
+			*(NhlGenArray*)args[i].value.ptrval =
+						_NhlCopyGenArray(tgen,True);
+			if(!*(NhlGenArray*)args[i].value.ptrval){
+				NhlPError(NhlWARNING,ENOMEM,"%s:Retrieving %s",
+					func,NrmQuarkToString(args[i].quark));
+				ret = MIN(ret,NhlWARNING);
+				continue;
+			}
+		}
+	}
+
+	if(alp->args){
+		if(alp->res){
+			lret = _NhlGetValues((char*)alp->values,
+				alp->res,alp->nres,alp->args,alp->nargs);
+			ret=MIN(lret,ret);
+
+			for(i=0;i<alp->nargs;i++){
+
+				tstring = NULL;
+
+				for(j=0;j<alp->nres;j++){
+					if(alp->args[i].quark ==
+							alp->res[j].nrm_name){
+						tstring=alp->values[j];
+						break;
+					}
+				}
+						
+				if(tstring){
+					*(NhlString*)alp->args[i].value.ptrval =
+						NhlMalloc((strlen(tstring)+1)*
+								sizeof(char));
+					if(!*(NhlString*)
+						alp->args[i].value.ptrval){
+						NhlPError(NhlWARNING,ENOMEM,
+							"%s:Retrieving %s",
+							func,
+							NrmQuarkToString(
+							alp->args[i].quark));
+						ret = MIN(ret,NhlWARNING);
+						continue;
+					}
+					strcpy(*(NhlString*)
+						alp->args[i].value.ptrval,
+								tstring);
+				}
+			}
+		}
+		else{
+			for(i=0;i<alp->nargs;i++)
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:%s is not a defined resource of App object \"%s\"",
+				func,NrmQuarkToString(alp->args[i].quark),
+				al->base.name);
+			ret = MIN(NhlWARNING,ret);
+		}
+
+		NhlFree(alp->args);
+		alp->args = NULL;
+		alp->nargs = 0;
 	}
 
 	return ret;
@@ -727,6 +971,9 @@ AppLayerDestroy
 	NhlFree(alp->sys_appdir);
 	NhlFree(alp->file_suffix);
 	NrmDestroyDB(alp->appDB);
+	NhlFreeGenArray(alp->resources);
+	NhlFree(alp->values);
+	NhlFree(alp->res);
 
 	/*
 	 * If this is the "default_app", then destroy *ALL* app objects
@@ -869,6 +1116,79 @@ _NhlSetLang
 	lang_type = ltype;
 
 	return;
+}
+
+/*
+ * Function:	_NhlSortAppArgs
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlErrorTypes
+_NhlSortAppArgs
+#if	NhlNeedProto
+(
+	NhlLayer	l,
+	_NhlArgList	args_in,
+	int		nargs_in,
+	_NhlArgList	*args_out,
+	int		*nargs_out
+)
+#else
+(l,args_in,nargs_in,args_out,nargs_out)
+	NhlLayer	l;
+	_NhlArgList	args_in;
+	int		nargs_in;
+	_NhlArgList	*args_out;
+	int		*nargs_out;
+#endif
+{
+	NhlClass		lc = _NhlClass(l);
+	NhlAppLayerPart		*alp = &((NhlAppLayer)l)->app;
+	int			i;
+
+	*nargs_out = 0;
+
+	/*
+	 * Deal with easy case.
+	 */
+	if(nargs_in == 0){
+		alp->args = NULL;
+		alp->nargs = 0;
+		return NhlNOERROR;
+	}
+
+	/*
+	 * Now we actually have to do some work...
+	 */
+	alp->args = NhlMalloc(sizeof(_NhlArg)*nargs_in);
+	alp->nargs = 0;
+
+	if(!alp->args){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
+	}
+
+	for(i=0;i < nargs_in;i++){
+		/*
+		 * if arg is in App class, then arg is added to that list
+		 * otherwise it is added to the alp->args, so it can be
+		 * treated as an arg to the "app defined" resources.
+		 */
+		if(_NhlResInClass(lc,args_in[i].quark))
+			(*args_out)[(*nargs_out)++] = args_in[i];
+		else
+			alp->args[alp->nargs++] = args_in[i];
+	}
+
+	return NhlNOERROR;
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.7 1995-04-08 01:52:46 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.8 1995-04-22 01:01:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -7209,7 +7209,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	cnp->fill_colors = ga;
 
 	if (init || changed) {
-		int len, spacing, ix;
+		int len, spacing;
 
 		ip = (int *) ga->data;
 		NhlVAGetValues(cnew->base.wkptr->base.id,
@@ -7217,9 +7217,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	
 		spacing = MAX(len / count, 1); 
 		for (i=init_count; i < count; i++) {
-			ix = 1 + i * spacing;
-			ip[i] =  _NhlIsAllocatedColor(cnew->base.wkptr,ix) ?
-				ix : NhlFOREGROUND;
+			ip[i] = 1 + i * spacing;
 		}
 	}
 
@@ -7852,7 +7850,7 @@ static NhlErrorTypes	CheckColorArray
 	NhlErrorTypes ret = NhlNOERROR;
 	char *e_text;
 	int *ip;
-	int i, len, spacing, ix;
+	int i, len, spacing;
 	
 
 	ip = (int *) ga->data;
@@ -7861,9 +7859,7 @@ static NhlErrorTypes	CheckColorArray
 	
 	spacing = MAX(len / count, 1); 
 	for (i=init_count; i < count; i++) {
-		ix = 1 + i * spacing;
-		ip[i] =  _NhlIsAllocatedColor(cl->base.wkptr,ix) ?
-				ix : NhlFOREGROUND;
+		ip[i] = 1 + i * spacing;
 	}
 
 	if (last_count == 0) {

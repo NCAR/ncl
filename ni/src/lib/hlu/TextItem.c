@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.28 1995-04-07 10:43:47 boote Exp $
+ *      $Id: TextItem.c,v 1.29 1995-04-22 01:02:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,45 +32,6 @@
 #define DEFSTRING "NOTHING"
 #define DEGTORAD 0.017453293
 
-/*
- * Function:	ResUnset
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-ResUnset
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	cname,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,cname,base,offset)
-	NrmName		name;
-	NrmClass	cname;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	char *cl = (char *)base;
-	NhlBoolean *set = (NhlBoolean *)(cl + offset - sizeof(NhlBoolean));
-
-	*set = False;
-
-	return NhlNOERROR;
-}
-
 static NhlResource resources[] = {
 
 /* Begin-documented-resources */
@@ -80,31 +41,31 @@ static NhlResource resources[] = {
 		NhlTImmediate,_NhlUSET(DEFSTRING),0,(NhlFreeFunc)NhlFree},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.pos_x_set),
-			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxPosXF, NhlCtxPosXF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.pos_x),
-			NhlTProcedure,_NhlUSET((NhlPointer)ResUnset) ,0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.pos_y_set),
-			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxPosYF, NhlCtxPosYF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.pos_y),
-			NhlTProcedure,_NhlUSET((NhlPointer)ResUnset),0,NULL },
+		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL },
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.angle_set),
-			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxAngleF, NhlCtxAngleF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.angle),
-		NhlTProcedure,_NhlUSET((NhlPointer)ResUnset),0,NULL },
+		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL },
 	{ NhlNtxFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		NhlOffset(NhlTextItemLayerRec, text.font),
 		NhlTImmediate,_NhlUSET(0),0,NULL },
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.just_set),
-			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxJust, NhlCtxJust, NhlTJustification, sizeof(int),
 		NhlOffset(NhlTextItemLayerRec, text.just),
-		NhlTProcedure,_NhlUSET((NhlPointer)ResUnset),0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ NhlNtxFontQuality, NhlCtxFontQuality, NhlTFontQuality, 
 		sizeof(NhlFontQuality),
 		NhlOffset(NhlTextItemLayerRec, text.font_quality),
@@ -114,36 +75,35 @@ static NhlResource resources[] = {
 		NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.font_height_set),
-			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxFontHeightF, NhlCtxFontHeightF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.font_height),
-		NhlTProcedure,_NhlUSET((NhlPointer)ResUnset) ,0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset) ,0,NULL},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.font_aspect_set),
-			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxFontAspectF, NhlCtxFontAspectF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.font_aspect),
-		NhlTProcedure, _NhlUSET((NhlPointer)ResUnset),0,NULL },
+		NhlTProcedure, _NhlUSET((NhlPointer)_NhlResUnset),0,NULL },
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.font_thickness_set),
-			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxFontThicknessF, NhlCtxFontThicknessF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.font_thickness),
-		NhlTProcedure,_NhlUSET((NhlPointer)ResUnset) ,0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset) ,0,NULL},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.constant_spacing_set),
-			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
-	{ NhlNtxConstantSpacingF, NhlCtxConstantSpacingF, NhlTFloat, 
-		sizeof(float),
+		NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	{NhlNtxConstantSpacingF,NhlCtxConstantSpacingF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.constant_spacing),
-		NhlTProcedure,_NhlUSET((NhlPointer)ResUnset) ,0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.direction_set),
-			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
-	{ NhlNtxDirection, NhlCtxDirection, NhlTTextDirection, 
+		NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	{NhlNtxDirection,NhlCtxDirection,NhlTTextDirection,
 		sizeof(NhlTextDirection),
-		NhlOffset(NhlTextItemLayerRec, text.direction),
-		NhlTProcedure,_NhlUSET((NhlPointer)ResUnset),0,NULL},
+		NhlOffset(NhlTextItemLayerRec,text.direction),
+		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ NhlNtxFuncCode, NhlCtxFuncCode, NhlTCharacter, 
 		sizeof(char),
 		NhlOffset(NhlTextItemLayerRec, text.func_code),

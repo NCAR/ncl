@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.11 1995-04-07 10:40:50 boote Exp $
+ *      $Id: Base.c,v 1.12 1995-04-22 01:01:27 boote Exp $
  */
 /************************************************************************
 *									*
@@ -148,8 +148,8 @@ BaseClassInitialize
 		{NhlNULLOBJID,	"nullobjid"}
 	};
 	NhlConvertArg	objidargs[] = {
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlNULLOBJID)},
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)INT_MAX)}
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMIN)},
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlNULLOBJID)}
 	};
 
 	(void)_NhlRegisterEnumType(NhlTObjId,objidvals,NhlNumber(objidvals));

@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.9 1995-04-07 10:44:26 boote Exp $
+ *      $Id: WorkstationP.h,v 1.10 1995-04-22 01:02:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -19,8 +19,6 @@
  *
  *	Description:	Private header file for workstation class.
  */
-
-
 #ifndef _NWorkstationP_h
 #define	_NWorkstationP_h
 
@@ -28,20 +26,15 @@
 #include	<ncarg/hlu/TextItem.h>
 #include 	<ncarg/hlu/WorkstationI.h>
 
-#define MAX_COLOR_MAP	256
-/*
-* Background is a special index in the color map and should either be
-* first or last and should only be set ONCE per workstation at create
-* time
-*/
-#define BACKGROUND	0
-/*
-* All ci fields in the private_color_map field get set to this originally
-*/
+#define _NhlMAX_COLOR_MAP	256
 
-#define REMOVE		-4
-#define UNSET		-3
-#define SETALMOST	-2
+typedef enum _NhlCStatType{
+	_NhlCOLUNSET,
+	_NhlCOLSET,
+	_NhlCOLREMOVE,
+	_NhlCOLNEW,
+	_NhlCOLCHANGE
+} _NhlCStat;
 
 /*
  * this is currently only used to set the char buffer length for the FortranI
@@ -49,42 +42,43 @@
 #define	_NhlMAXMARKERLEN	(80)
 
 typedef struct _NhlPrivateColor {
-	int ci;
-	float red;
-	float green;
-	float blue;
+	_NhlCStat	cstat;
+	int		ci;
+	float		red;
+	float		green;
+	float		blue;
 } NhlPrivateColor;
 
 typedef NhlErrorTypes (*NhlWorkstationProc)(
 #if	NhlNeedProto
-	NhlLayer	l	/* layer to operate on	*/
+	NhlLayer	wl
 #endif
 );
 
 typedef NhlErrorTypes (*NhlWorkstationLineTo)(
 #if	NhlNeedProto
-	NhlLayer	l	/* layer to operate on	*/,
-	float   x,
-	float   y,	
-	int     upordown
+	NhlLayer	wl,
+	float  		x,
+	float  		y,	
+	int    		upordown
 #endif
 );
 
 typedef NhlErrorTypes (*NhlWorkstationFill)(
 #if	NhlNeedProto
-	NhlLayer	l	/* layer to operate on	*/,
-	float   *x,
-	float   *y,	
-	int     num_points
+	NhlLayer	wl,
+	float  		*x,
+	float  		*y,	
+	int    		num_points
 #endif
 );
 
 typedef NhlErrorTypes (*NhlWorkstationMarker)(
 #if	NhlNeedProto
-	NhlLayer	l	/* layer to operate on	*/,
-	float   *x,
-	float   *y,	
-	int     num_points
+	NhlLayer	wl,
+	float  		*x,
+	float   	*y,	
+	int     	num_points
 #endif
 );
 
@@ -97,6 +91,7 @@ typedef NhlErrorTypes (*NhlWorkstationMarker)(
 #define NhlInheritClose ((NhlWorkstationProc)_NhlInherit)
 #define NhlInheritActivate ((NhlWorkstationProc)_NhlInherit)
 #define NhlInheritDeactivate ((NhlWorkstationProc)_NhlInherit)
+#define NhlInheritAllocateColors ((NhlWorkstationProc)_NhlInherit)
 #define NhlInheritUpdate ((NhlWorkstationProc)_NhlInherit)
 #define NhlInheritClear ((NhlWorkstationProc)_NhlInherit)
 #define NhlInheritLineTo ((NhlWorkstationLineTo)_NhlInherit)
@@ -128,7 +123,7 @@ typedef struct _NhlMarkerInfo{
 	float		marker_thickness;
 } _NhlMarkerInfo;
 
-typedef struct _NhlWorkstationLayerPart {
+typedef struct _NhlWorkstationLayerPart{
 	/* User setable resource fields */
 
 	NhlGenArray	color_map;
@@ -152,15 +147,6 @@ typedef struct _NhlWorkstationLayerPart {
 	_NhlMarkerInfo		public_markinfo;
 	_NhlMarkerInfo		private_markinfo;
 
-/*
- * The Marker Lines are disabled for now...
- */
-	int	marker_lines_on;
-	int	marker_line_dash_pattern;
-	float	marker_line_thickness;
-	float	marker_line_dash_seglen;
-	int	marker_line_color;
-
 	NhlGenArray	dash_table;
 
 	int	fill_index;
@@ -182,8 +168,7 @@ typedef struct _NhlWorkstationLayerPart {
 
 	/* Private internal fields */
 
-	NhlPrivateColor	private_color_map[MAX_COLOR_MAP];
-	int		num_private_colors;
+	NhlPrivateColor	private_color_map[_NhlMAX_COLOR_MAP];
 
 	int edge_char_size;
 	int edge_dash_dollar_size;
@@ -201,16 +186,18 @@ typedef struct _NhlWorkstationLayerPart {
 	int		gkswksconid;
 } NhlWorkstationLayerPart;
 
-typedef struct _NhlWorkstationLayerRec {
+typedef struct _NhlWorkstationLayerRec{
 	NhlBaseLayerPart	base;
 	NhlWorkstationLayerPart	work;
 } NhlWorkstationLayerRec;
 
-typedef struct _NhlWorkstationClassPart {
+typedef struct _NhlWorkstationClassPart{
+	NhlColor		def_background;
 	NhlWorkstationProc	open_work;
 	NhlWorkstationProc	close_work;
 	NhlWorkstationProc	activate_work;
 	NhlWorkstationProc	deactivate_work;
+	NhlWorkstationProc	alloc_colors;
 	NhlWorkstationProc	update_work;
 	NhlWorkstationProc	clear_work;
 	NhlWorkstationLineTo	lineto_work;
@@ -218,15 +205,23 @@ typedef struct _NhlWorkstationClassPart {
 	NhlWorkstationMarker    marker_work;
 } NhlWorkstationClassPart;
 
-typedef struct _NhlWorkstationClassRec {
+typedef struct _NhlWorkstationClassRec{
 	NhlBaseClassPart		base_class;
-	NhlWorkstationClassPart	work_class;
+	NhlWorkstationClassPart		work_class;
 } NhlWorkstationClassRec;
 	
-
-typedef struct _NhlWorkstationLayerRec *NhlWorkstationLayer;
-typedef struct _NhlWorkstationClassRec *NhlWorkstationClass;
-
 extern NhlWorkstationClassRec NhlworkstationClassRec;	
+
+/*
+ * Private API functions for sub-classes.  (In reality these functions
+ * probably won't be called by sub-classes, although sub-classes will
+ * re-define the actual method function that gets called by these.)
+ */
+
+extern	NhlErrorTypes _NhlAllocateColors(
+#if	NhlNeedProto
+	NhlLayer	wl
+#endif
+);
 
 #endif	/* _NWorkstationP_h */

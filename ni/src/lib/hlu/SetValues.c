@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.18 1995-04-13 00:43:26 boote Exp $
+ *      $Id: SetValues.c,v 1.19 1995-04-22 01:02:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -140,7 +140,7 @@ CallSetValuesHook
 }
 
 /*
- * Function:	SetValues
+ * Function:	_NhlSetValues
  *
  * Description:	This function sets resource values addressed by base + resource
  *		offset.  It sets the resources specified by the arg names
@@ -154,12 +154,12 @@ CallSetValuesHook
  *
  * Out Args:	base + resource offsets are set to values stored in args
  *
- * Scope:	static
+ * Scope:	
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
-static NhlErrorTypes 
-SetValues
+NhlErrorTypes 
+_NhlSetValues
 #if	NhlNeedProto
 (
 	_NhlConvertContext	context,/* convert context for mem	*/
@@ -179,7 +179,7 @@ SetValues
 	int			nargs;	/* number of args		*/
 #endif
 {
-	char		func[] = "SetValues";
+	char		func[] = "_NhlSetValues";
 	register int	i,j;
 	NhlBoolean	argfound[_NhlMAXARGLIST];
 	NhlErrorTypes	ret = NhlNOERROR;
@@ -254,7 +254,7 @@ SetValues
 }
 
 /*
- * Function:	_NhlSetValues
+ * Function:	_NhlSetLayerValues
  *
  * Description:	This function sets the resources specified by the args passed
  *		in the layer passed.
@@ -268,9 +268,9 @@ SetValues
  * Returns:	NhlErrorTypes
  * Side Effect:	The layer is modified to set the requested values
  */
-NhlDOCTAG(_NhlSetValues)
+NhlDOCTAG(_NhlSetLayerValues)
 NhlErrorTypes
-_NhlSetValues
+_NhlSetLayerValues
 #if	NhlNeedProto
 (
 	NhlLayer	l,		/* layer instance	*/
@@ -284,6 +284,7 @@ _NhlSetValues
 	int		nargs;		/* number of args	*/
 #endif
 {
+	char			func[]="_NhlSetLayerValues";
 	int			i;
 	NhlLayer		oldl, reql;
 	NhlClass		lc = _NhlClass(l);
@@ -299,7 +300,7 @@ _NhlSetValues
 
 	if(l == NULL){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-				"_NhlSetValues was passed a NULL layer"));
+				"%s:passed a NULL object",func));
 		return NhlFATAL;
 	}
 
@@ -316,19 +317,33 @@ _NhlSetValues
 
 	else{
 
-		/*
-		 * Sort the args into args for instance and for it's children
-		 * If there are no children it just copies the args to largs
-		 */
-		lret =_NhlSortChildArgs(l,args,nargs,&largs,&nlargs,&child_args,
-							child_args_used,False);
-		if(lret < NhlWARNING){
-			NhlPError(lret,NhlEUNKNOWN,
-				"Unable to Create Arg Lists - Can't SetValues");
-			return lret;
+		if(_NhlIsApp(l)){
+			lret = _NhlSortAppArgs(l,args,nargs,&largs,&nlargs);
+			if(lret < NhlWARNING){
+				NhlPError(lret,NhlEUNKNOWN,
+					"%s:Unable to sort Arg List",func);
+				return lret;
+			}
+			l->base.child_args = NULL;
+			for(i=0;i<nargs;i++)
+				child_args_used[i] = True;
 		}
-		ret = MIN(ret,lret);
-		l->base.child_args = child_args;
+		else{
+			/*
+			 * Sort the args into args for instance and for it's
+			 * children. If there are no children it just copies
+			 * the args to largs
+			 */
+			lret =_NhlSortChildArgs(l,args,nargs,&largs,&nlargs,
+					&child_args,child_args_used,False);
+			if(lret < NhlWARNING){
+				NhlPError(lret,NhlEUNKNOWN,
+				"Unable to Create Arg Lists - Can't SetValues");
+				return lret;
+			}
+			ret = MIN(ret,lret);
+			l->base.child_args = child_args;
+		}
 
 		/*
 		 * If this layer has children forward args to them if
@@ -354,7 +369,7 @@ _NhlSetValues
 				}
 
 				if(targnode->autosetval){
-					lret = _NhlSetValues(
+					lret = _NhlSetLayerValues(
 						_NhlGetLayer(tchldnode->pid),
 						targnode->args,targnode->nargs);
 					if(lret < NhlWARNING){
@@ -399,7 +414,7 @@ _NhlSetValues
 
 	memcpy((char*)oldl,(char*)l,(int)lc->base_class.layer_size);
 
-	lret = SetValues(context,(char*)l,
+	lret = _NhlSetValues(context,(char*)l,
 				(NrmResourceList)(lc->base_class.resources),
 				lc->base_class.num_resources, largs,nlargs);
 
@@ -476,7 +491,7 @@ _NhlSetValues
  *
  * Description:	This function sets the resources specified by the name/value
  *		pairs passed in threw the varargs.
- *		Internal SetValues function is NhlDOCREF(#_NhlSetValues,here).
+ *		Internal SetValues function is NhlDOCREF(#_NhlSetLayerValues,here).
  *
  * In Args:	int		id;	Index into list of layers
  *		...			resource name/value pairs
@@ -519,7 +534,7 @@ NhlVASetValues
 				"PID #%d can't be found in NhlVASetValues",id);
 		return(NhlFATAL);
 	}
-	ret = _NhlSetValues(l,args,num_args);
+	ret = _NhlSetLayerValues(l,args,num_args);
 
 	return(ret);
 }
@@ -529,7 +544,7 @@ NhlVASetValues
  *
  * Description:	This function sets the resources specified by the SArgList
  *		passed to it.
- *		Internal SetValues function is NhlDOCREF(#_NhlSetValues,here).
+ *		Internal SetValues function is NhlDOCREF(#_NhlSetLayerValues,here).
  *
  * In Args:	int		id;	Index into list of layers
  *
@@ -569,7 +584,7 @@ NhlALSetValues
 				"PID #%d can't be found in NhlALSetValues",id);
 		return(NhlFATAL);
 	}
-	ret = _NhlSetValues(l, args, nargs);
+	ret = _NhlSetLayerValues(l, args, nargs);
 
 	return(ret);
 }
@@ -579,7 +594,7 @@ NhlALSetValues
  *
  * Description:	This function sets the resources specified by the RL List
  *		passed to it.
- *		Internal SetValues function is NhlDOCREF(#_NhlSetValues,here).
+ *		Internal SetValues function is NhlDOCREF(#_NhlSetLayerValues,here).
  *
  * In Args:
  *
@@ -620,7 +635,7 @@ NhlSetValues
 		return NhlFATAL;
 	}
 
-	return _NhlSetValues(l, args, nargs);
+	return _NhlSetLayerValues(l, args, nargs);
 }
 
 /*
@@ -759,14 +774,14 @@ SetValuesChild
 	}
 
 	/*
-	 * merge the pargs and sargs into a single args list for _NhlSetValues
+	 * merge the pargs and sargs into a single args list for _NhlSetLayerValues
 	 */
 	_NhlMergeArgLists(args,&num_args,sargs,num_sargs,pargs,num_pargs);
 
 	/*
 	 * SetValues of the child
 	 */
-	ret = _NhlSetValues(child,args,num_args);
+	ret = _NhlSetLayerValues(child,args,num_args);
 
 	/*
 	 * fill in the child node infomation and add it into the children

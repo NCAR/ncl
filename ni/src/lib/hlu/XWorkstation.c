@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.11 1995-04-07 10:44:27 boote Exp $
+ *      $Id: XWorkstation.c,v 1.12 1995-04-22 01:02:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,116 +21,24 @@
  */
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/XWorkstationP.h>
-
-/*
- * Function:	IsSetFuncs
- *
- * Description:	These functions are used to determine if the user set the
- *		resources described.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-WindowSet
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlXWorkstationLayer	xwork = (NhlXWorkstationLayer)base;
-
-	xwork->xwork.window_id_set = False;
-	xwork->xwork.window_id = 0;
-
-	return	NhlNOERROR;
-}
-
-/*ARGSUSED*/
-static NhlErrorTypes
-CMapSet
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlXWorkstationLayer	xwork = (NhlXWorkstationLayer)base;
-
-	xwork->xwork.color_map_id_set = False;
-	xwork->xwork.color_map_id = 0;
-
-	return	NhlNOERROR;
-}
-
-/*ARGSUSED*/
-static NhlErrorTypes
-PauseSet
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlXWorkstationLayer	xwork = (NhlXWorkstationLayer)base;
-
-	xwork->xwork.pause_set = False;
-	xwork->xwork.pause = True;
-
-	return	NhlNOERROR;
-}
+#include <ncarg/hlu/ConvertersP.h>
 
 #define	Oset(field)	NhlOffset(NhlXWorkstationLayerRec,xwork.field)
 static NhlResource resources[] = {
 
 /* Begin-documented-resources */
 
-	{ "no.res", "no.res", NhlTBoolean, sizeof(NhlBoolean),
-		Oset(window_id_set), NhlTImmediate, (NhlPointer)True,0,NULL},
-	{ "no.res", "no.res", NhlTBoolean, sizeof(NhlBoolean),
-		Oset(color_map_id_set), NhlTImmediate, (NhlPointer)True,0,NULL},
-	{ "no.res", "no.res", NhlTBoolean, sizeof(NhlBoolean),
-		Oset(pause_set), NhlTImmediate, (NhlPointer)True,0,NULL},
-	{ NhlNwkWindowId, NhlCwkWindowId, NhlTInteger, sizeof(int),
-		Oset(window_id), NhlTProcedure, (NhlPointer)WindowSet,0,NULL},
-	{ NhlNwkColorMapId, NhlCwkColorMapId, NhlTInteger, sizeof(int),
-		Oset(color_map_id), NhlTProcedure, (NhlPointer)CMapSet,0,NULL},
-	{ NhlNwkPause, NhlCwkPause, NhlTBoolean, sizeof(NhlBoolean),
-		Oset(pause), NhlTProcedure, (NhlPointer)PauseSet,0,NULL}
+	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(window_id_set),
+		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+	{NhlNwkWindowId,NhlCwkWindowId,NhlTInteger,sizeof(int),Oset(window_id),
+		NhlTProcedure,(NhlPointer)_NhlResUnset,_NhlRES_NOSACCESS,NULL},
+	{NhlNwkXColorMode,NhlCwkXColorMode,NhlTXColorMode,sizeof(NhlXColorMode),
+		Oset(xcolor_mode),NhlTImmediate,(NhlPointer)NhlSHARE,
+		_NhlRES_NOSACCESS,NULL},
+	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(pause_set),
+		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+	{NhlNwkPause,NhlCwkPause,NhlTBoolean,sizeof(NhlBoolean),
+		Oset(pause),NhlTProcedure,(NhlPointer)_NhlResUnset,0,NULL}
 
 /* End-documented-resources */
 
@@ -140,6 +48,12 @@ static NhlResource resources[] = {
 /*
 * XWorkstation base_class method declarations
 */
+
+static NhlErrorTypes XWorkstationClassInitialize(
+#if	NhlNeedProto
+	void
+#endif
+);
 
 static NhlErrorTypes XWorkstationInitialize(
 #if	NhlNeedProto
@@ -161,9 +75,12 @@ static NhlErrorTypes XWorkstationSetValues(
 #endif
 );
 
-/*
- * XWorkstation xwork_class method declarations
- */
+static NhlErrorTypes XWorkstationOpen(
+#if	NhlNeedProto
+	NhlLayer	l
+#endif
+);
+
 static NhlErrorTypes XWorkstationClear(
 #if	NhlNeedProto
 	NhlLayer	l	/* workstation layer to clear	*/
@@ -185,7 +102,7 @@ NhlXWorkstationClassRec NhlxWorkstationClassRec = {
 /* all_resources		*/	NULL,
 
 /* class_part_initialize	*/	NULL,
-/* class_initialize		*/	NULL,
+/* class_initialize		*/	XWorkstationClassInitialize,
 /* layer_initialize		*/	XWorkstationInitialize,
 /* layer_set_values		*/	XWorkstationSetValues,
 /* layer_set_values_hook	*/	NULL,
@@ -203,10 +120,12 @@ NhlXWorkstationClassRec NhlxWorkstationClassRec = {
 /* layer_clear			*/	NULL
         },
         {
-/* open_work		*/	NhlInheritOpen,
+/* def_background	*/	{0.0,0.0,0.0},
+/* open_work		*/	XWorkstationOpen,
 /* close_work		*/	NhlInheritClose,
 /* activate_work	*/	NhlInheritActivate,
 /* deactivate_work	*/	NhlInheritDeactivate,
+/* alloc_colors		*/	NhlInheritAllocateColors,
 /* update_work		*/	NhlInheritUpdate,
 /* clear_work		*/	XWorkstationClear,
 /* lineto_work 		*/	NhlInheritLineTo,
@@ -218,8 +137,7 @@ NhlXWorkstationClassRec NhlxWorkstationClassRec = {
 	}
 };
 
-NhlClass NhlxWorkstationClass = (NhlClass)
-						&NhlxWorkstationClassRec;
+NhlClass NhlxWorkstationClass = (NhlClass)&NhlxWorkstationClassRec;
 
 /*
  * Function:	nhlfxworkstationclass
@@ -245,6 +163,39 @@ _NHLCALLF(nhlfxworkstationclass,NHLFXWORKSTATIONCLASS)
 #endif
 {
 	return NhlxWorkstationClass;
+}
+
+/*
+ * Function:	XWorkstationClassInitialize
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+XWorkstationClassInitialize
+#if	NhlNeedProto
+(
+	void
+)
+#else
+()
+#endif
+{
+	_NhlEnumVals	cmvals[] = {
+		{NhlSHARE,	"share"},
+		{NhlPRIVATE,	"private"}
+	};
+
+	(void)_NhlRegisterEnumType(NhlTXColorMode,cmvals,NhlNumber(cmvals));
+
+	return NhlNOERROR;
 }
 
 /*
@@ -283,10 +234,10 @@ static NhlErrorTypes XWorkstationInitialize
 	NhlXWorkstationLayer	wnew = (NhlXWorkstationLayer) new;
 	NhlErrorTypes		ret = NhlNOERROR;
 
-	if(wnew->xwork.window_id_set == False) {
-/*
-* Not sure if this is ignored or not
-*/
+	if(!wnew->xwork.window_id_set) {
+	/*
+	 * Not sure if this is ignored or not
+	 */
 		wnew->work.gkswksconid = 2;
 		wnew->work.gkswkstype = 8;
 		
@@ -305,6 +256,12 @@ static NhlErrorTypes XWorkstationInitialize
 			ret = NhlINFO;
 		}
 		wnew->xwork.pause = False;
+
+		if(wnew->xwork.xcolor_mode == NhlPRIVATE)
+			NhlPError(NhlINFO,NhlEUNKNOWN,
+	"%s:If the %s resource is specified, the %s resource must be SHARE",
+				error_lead,NhlNwkWindowId,NhlNwkXColorMode);
+		wnew->xwork.xcolor_mode = NhlSHARE;
 	}
 
 	return ret;
@@ -337,25 +294,18 @@ static NhlErrorTypes XWorkstationSetValues
         int num_args;
 #endif
 {
-	NhlXWorkstationLayer	wold = (NhlXWorkstationLayer) old;
-	NhlXWorkstationLayer	wnew = (NhlXWorkstationLayer) new;
-	NhlErrorTypes		ret = NhlNOERROR, lret = NhlNOERROR;
+	char			func[]="XWorkstationSetValues";
+	NhlXWorkstationLayer	wnew = (NhlXWorkstationLayer)new;
 
-	if(wnew->xwork.window_id != wold->xwork.window_id){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"XWorkstation: Window Id cannot be changed after workstation is created");
-		wnew->xwork.window_id = wold->xwork.window_id;
-		lret = NhlWARNING;
+	if(wnew->xwork.pause && wnew->xwork.window_id_set){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:%s must be False if NhlNwkWindowId is specified",
+			func,NhlNwkPause,NhlNwkWindowId);
+		wnew->xwork.pause = False;
+		return NhlWARNING;
 	}
 
-	if(wnew->xwork.pause){
-		if(wnew->xwork.window_id_set == True){
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"XWorkstation: NhlNwkPause must be false if NhlNwkWindowId is provided");
-			wnew->xwork.pause = False;
-			ret = NhlWARNING;
-		}
-	}
-
-	return MIN(ret,lret);
+	return NhlNOERROR;
 }
 
 /*
@@ -393,13 +343,73 @@ XWorkstationClear
 	Gescape_out_data		*outdat;
 	char				wkid[15];
 
-	sprintf(wkid,"%d",_NhlWorkstationId(l));
-
-	indat.escape_r1.size = strlen(wkid);
-	indat.escape_r1.data = wkid;
-
-	if(xl->xwork.pause)
+	if(xl->xwork.pause){
+		sprintf(wkid,"%d",_NhlWorkstationId(l));
+		indat.escape_r1.size = strlen(wkid);
+		indat.escape_r1.data = wkid;
 		gescape(-1396,&indat,NULL,&outdat);
+	}
 
 	return (*(lc->work_class.clear_work))(l);
+}
+
+/*
+ * Function:	XWorkstationOpen
+ *
+ * Description:
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlErrorTypes
+XWorkstationOpen
+#if	NhlNeedProto
+(
+	NhlLayer	l
+)
+#else
+(l)
+	NhlLayer	l;
+#endif
+{
+	char				func[]="XWorkstationOpen";
+	NhlXWorkstationLayer		xl = (NhlXWorkstationLayer)l;
+	NhlXWorkstationLayerPart	*xp = &xl->xwork;
+	int				i=2;
+
+	if(xl->work.gkswkstype == NhlFATAL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unknown workstation type");
+		return(NhlFATAL);
+		
+	} 
+	if(xl->work.gkswksconid == NhlFATAL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"Unknown workstation connection id");
+		return(NhlFATAL);
+	}
+	while(wksisopn(i)) {
+		i++;
+	}
+	xl->work.gkswksid = i;
+
+	_NHLCALLF(gopwk,GOPWK)(&(xl->work.gkswksid),&(xl->work.gkswksconid),
+		&(xl->work.gkswkstype));
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
+	gset_clip_ind(GIND_NO_CLIP);
+	if(_NhlLLErrCheckPrnt(NhlWARNING,func)){
+		return NhlFATAL;
+	}
+
+	if(xp->xcolor_mode == NhlPRIVATE){
+		c_ngseti("wo",_NhlWorkstationId(l));
+		c_ngseti("pr",True);
+	}
+
+	return _NhlAllocateColors(l);
 }

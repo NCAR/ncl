@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.28 1995-04-07 10:44:40 boote Exp $
+ *      $Id: hluP.h,v 1.29 1995-04-22 01:02:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -368,14 +368,6 @@ extern void _NhlDestroyLayerTable(
 #endif
 );
 
-extern NhlErrorTypes _NhlSetValues(
-#if	NhlNeedProto
-	NhlLayer	l,		/* layer instance	*/
-	_NhlArgList	args,		/* args to change	*/
-	int		nargs		/* number of args	*/
-#endif
-);
-
 extern NhlErrorTypes _NhlReparent(
 #if	NhlNeedProto
 	NhlLayer	l,
@@ -433,7 +425,7 @@ NhlClass /* lc */
 #endif
 );
 
-extern NhlBoolean _NhlArgIsSet(
+extern int _NhlArgIsSet(
 #if	NhlNeedProto
         _NhlArgList 	/* args */,
         int    		/* num_args */,
@@ -453,6 +445,15 @@ extern NhlBoolean _NhlLLErrCheckPrnt(
 #if	NhlNeedProto
 	NhlErrorTypes	level,
 	NhlString	calling_func
+#endif
+);
+
+extern NhlErrorTypes _NhlResUnset(
+#if	NhlNeedProto
+	NrmName		name,
+	NrmClass	cname,
+	NhlPointer	base,
+	unsigned int	offset
 #endif
 );
 

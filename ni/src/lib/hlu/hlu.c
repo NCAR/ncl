@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.28 1995-04-07 10:44:37 boote Exp $
+ *      $Id: hlu.c,v 1.29 1995-04-22 01:02:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,7 +21,7 @@
  *			are needed by layer programmers as well as app
  *			writers.
  */
-
+#include <stdio.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <sys/types.h>
@@ -31,7 +31,6 @@
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/ErrorI.h>
 #include <ncarg/c.h>
-#include <stdio.h>
 /************************************************************************
  *									*
  * These functions are used for memory management			*
@@ -817,8 +816,10 @@ _NhlInherit
 /*
  * Function:	_NhlArgIsSet
  *
- * Description:	returns true if the given resource name is set in the given
- *		arg list.  otherwise returns false.
+ * Description:	
+ *		Returns the relative placement of the arg in the list if it
+ *		is there. (1 + the index)  Returns False (0) if arg is not
+ *		in the list.
  *
  * In Args:	
  *
@@ -828,7 +829,7 @@ _NhlInherit
  * Returns:	NhlBoolean
  * Side Effect:	
  */
-NhlBoolean _NhlArgIsSet
+int _NhlArgIsSet
 #if     NhlNeedProto
 (
         _NhlArgList args,
@@ -847,7 +848,7 @@ NhlBoolean _NhlArgIsSet
 
 	for(i = 0; i<num_args; i++) {
 		if(step[i].quark == quark) 
-			return(True);
+			return(i+1);
 	}
 	return(False);
 }
@@ -1401,31 +1402,48 @@ _NhlTmpFile
 ()
 #endif
 {
-	char *e_text;
 	char *entry_name = "_NhlTmpName";
-	char *fname;
+	struct stat sbuf;
+	char *e_text;
+	char buffer[_NhlMAXFNAMELEN+20];
+	char *ptr;
 	FILE *fp;
+	static int	a = 0;
+	int tint;
 
-	if ((fname = tempnam((char *)GetNCARGPath("tmp"),NULL)) == NULL) {
-		e_text = "%s, error getting temporary file name";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+	strcpy(buffer,(char *)GetNCARGPath("tmp"));
+	if(stat(buffer,&sbuf) != 0){
+		NhlPError(NhlFATAL,errno,"Unable to stat \"%s\" tmp dir",
+									buffer);
 		return NULL;
 	}
 
-	if ((fp = fopen(fname,"w+")) == NULL) {
+	strcat(buffer,_NhlPATHDELIMITER);
+	strcat(buffer,"HLU");
+
+	ptr = buffer + strlen(buffer);
+	sprintf(ptr,"%d",getpid());
+	ptr = buffer + strlen(buffer) + 3;
+	*ptr-- = '\0';
+	tint = a;
+	*ptr-- = (tint % 10) + '0';
+	tint /= 10;
+	*ptr-- = (tint % 10) + '0';
+	tint /= 10;
+	*ptr = (tint % 10) + '0';
+
+	if ((fp = fopen(buffer,"w+")) == NULL) {
 		e_text = "%s, error opening temporary file";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NULL;
 	}
 
-	if (unlink(fname) < 0) {
+	if (unlink(buffer) < 0) {
 		e_text = "%s, error unlinking temporary file";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NULL;
 	}
 
-	free(fname);
-	
 	return fp;
 }
 
@@ -1509,4 +1527,46 @@ _NhlLLErrCheckPrnt
 	}
 
 	return False;
+}
+
+/*
+ * Function:	_NhlResUnset
+ *
+ * Description:	This function is used to indicate that a particular resource
+ *		was not set.  It is used as the NhlTProcedure function
+ *		in the resource list for the resource in question.  It
+ *		relies on the the NhlBoolean "is_set" resource to be
+ *		directly before it in the Layer structure.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlErrorTypes
+_NhlResUnset
+#if	NhlNeedProto
+(
+	NrmName		name,
+	NrmClass	cname,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,cname,base,offset)
+	NrmName		name;
+	NrmClass	cname;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	char *cl = (char *)base;
+	NhlBoolean *set = (NhlBoolean *)(cl + offset - sizeof(NhlBoolean));
+
+	*set = False;
+
+	return NhlNOERROR;
 }

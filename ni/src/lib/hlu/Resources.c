@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.23 1995-04-13 00:43:23 boote Exp $
+ *      $Id: Resources.c,v 1.24 1995-04-22 01:01:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -273,7 +273,7 @@ GetNamesAndClasses
 }
 
 /*
- * Function:	GetResources
+ * Function:	_NhlGetResources
  *
  * Description: This function takes a list of resources a base addr and sets
  *		the addrs off of base using the given args and the Nrm. child
@@ -296,8 +296,8 @@ GetNamesAndClasses
  * Returns:	none
  * Side Effect:	none
  */
-static NhlErrorTypes
-GetResources
+NhlErrorTypes
+_NhlGetResources
 #if	NhlNeedProto
 (
 	_NhlConvertContext	context,/* context for converter allocs	*/
@@ -325,7 +325,7 @@ GetResources
 	NrmQuarkList		*child;	/* look at parent's DB level too*/
 #endif
 {
-	char		func[] = "GetResources";
+	char		func[] = "_NhlGetResources";
 	register int	i,j;
 	NhlBoolean	resfound[_NhlMAXRESLIST];
 	NhlBoolean	argfound[_NhlMAXARGLIST];
@@ -725,7 +725,7 @@ GetResources
 }
 
 /*
- * Function:	_NhlGetResources
+ * Function:	_NhlGetLayerResources
  *
  * Description:	Initializes the given layer's resources using the Nrm and Args
  *
@@ -739,7 +739,7 @@ GetResources
  * Side Effect:	none
  */
 NhlErrorTypes
-_NhlGetResources
+_NhlGetLayerResources
 #if	NhlNeedProto
 (
 	_NhlConvertContext	context,
@@ -749,7 +749,7 @@ _NhlGetResources
 	NrmQuarkList		*child	/* layer is auto-managed chld	*/
 )
 #else
-(context,l,args,num_args,child)
+(context,l,args,num_args,res_list,num_res,child)
 	_NhlConvertContext	context;
 	NhlLayer		l;	/* layer to set resources of	*/
 	_NhlArgList		args;	/* args to override res defaults*/
@@ -768,11 +768,11 @@ _NhlGetResources
 		/* ERROR- DON'T DO ANY RESOURCES */
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"Instance Tree depth exceeds _NhlMAXTREEDEPTH of %d",
-								_NhlMAXTREEDEPTH);
+							_NhlMAXTREEDEPTH);
 		return(NhlFATAL);
 	}
 
-	return(GetResources(context,_NhlGetResDB(l),(char*)l,nameQ,classQ,
+	return(_NhlGetResources(context,_NhlGetResDB(l),(char*)l,nameQ,classQ,
 			(NrmResourceList)lc->base_class.resources,
 			lc->base_class.num_resources,args,num_args,child));
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: AppP.h,v 1.4 1995-04-07 10:40:48 boote Exp $
+ *      $Id: AppP.h,v 1.5 1995-04-22 01:01:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/AppI.h>
+#include <ncarg/hlu/ResourcesP.h>
 
 typedef struct _NhlAppLayerRec *NhlAppLayer;
 typedef struct _NhlAppClassRec *NhlAppClass;
@@ -33,13 +34,23 @@ typedef struct _NhlAppLayerPart {
 	NhlString	usr_appdir;
 	NhlString	sys_appdir;
 	NhlString	file_suffix;
+
+	/* post-resdb resources */
 	NhlBoolean	default_parent;
+	NhlGenArray	resources;
 
 	/* private fields */
 	_NhlC_OR_F	init_mode;
 	NhlBoolean	default_app;
 	NhlBoolean	no_appDB;
 	NrmDatabase	appDB;
+
+	NhlString	*values;
+	NrmResourceList	res;
+	int		nres;
+
+	_NhlArgList	args;
+	int		nargs;
 } NhlAppLayerPart;
 
 typedef struct _NhlAppLayerRec {
@@ -54,6 +65,8 @@ struct _NhlAppTableRec{
 };
 
 typedef struct _NhlAppClassPart {
+	NhlResourceList		resources;
+	int			num_resources;
 	NhlAppLayer		default_app;
 	NhlAppLayer		current_app;
 	NrmDatabase		baseDB;
@@ -64,7 +77,7 @@ typedef struct _NhlAppClassPart {
 
 typedef struct _NhlAppClassRec {
 	NhlBaseClassPart	base_class;
-	NhlAppClassPart	app_class;
+	NhlAppClassPart		app_class;
 } NhlAppClassRec;
 
 extern NhlAppClassRec NhlappClassRec;

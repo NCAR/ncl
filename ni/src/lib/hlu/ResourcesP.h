@@ -1,5 +1,5 @@
 /*
- *      $Id: ResourcesP.h,v 1.11 1995-04-13 00:43:25 boote Exp $
+ *      $Id: ResourcesP.h,v 1.12 1995-04-22 01:02:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -49,6 +49,50 @@ typedef NhlErrorTypes (*NrmResourceDefaultProc)(
 );
 
 extern NhlErrorTypes _NhlGetResources(
+#if	NhlNeedProto
+	_NhlConvertContext	ctxt,
+	NrmDatabase		resdb,
+	char			*base,
+	NrmQuarkList		nameQ,
+	NrmQuarkList		classQ,
+	NrmResourceList		res,
+	int			num_res,
+	_NhlArgList		args,
+	int			num_args,
+	NrmQuarkList		*child
+#endif
+);
+
+extern NhlErrorTypes _NhlSetValues(
+#if	NhlNeedProto
+	_NhlConvertContext	ctxt,
+	char			*base,
+	NrmResourceList		res,
+	int			nres,
+	_NhlArgList		args,
+	int			nargs
+#endif
+);
+
+extern NhlErrorTypes _NhlSetLayerValues(
+#if	NhlNeedProto
+	NhlLayer	l,		/* layer instance	*/
+	_NhlArgList	args,		/* args to change	*/
+	int		nargs		/* number of args	*/
+#endif
+);
+
+extern NhlErrorTypes _NhlGetValues(
+#if	NhlNeedProto
+	char		*base,
+	NrmResourceList	res,
+	int		nres,
+	_NhlArgList	args,
+	int		nargs
+#endif
+);
+
+extern NhlErrorTypes _NhlGetLayerResources(
 #if	NhlNeedProto
 	_NhlConvertContext	ctxt,	/* convert context		*/
 	NhlLayer		l,	/* layer to set resources of	*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.17 1995-04-07 10:43:09 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.18 1995-04-22 01:01:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -90,7 +90,7 @@ static NhlErrorTypes NcgmWorkstationGetValues(
 
 static NhlErrorTypes NcgmWorkstationOpen(
 #if	NhlNeedProto
-	NhlLayer /* instance */
+	NhlLayer
 #endif
 );
 
@@ -132,10 +132,12 @@ NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
 /* layer_clear			*/	NULL
         },
         {
+/* def_background	*/	{0.0,0.0,0.0},
 /* open_work		*/	NcgmWorkstationOpen,
 /* close_work		*/	NhlInheritClose,
 /* activate_work	*/	NhlInheritActivate,
 /* deactivate_work	*/	NhlInheritDeactivate,
+/* alloc_colors		*/	NhlInheritAllocateColors,
 /* update_work		*/	NhlInheritUpdate,
 /* clear_work		*/	NhlInheritClear,
 /* lineto_work		*/	NhlInheritLineTo,
@@ -363,12 +365,15 @@ static NhlErrorTypes NcgmWorkstationSetValues
  *
  * Side Effects:
  */
-static NhlErrorTypes NcgmWorkstationOpen
+static NhlErrorTypes
+NcgmWorkstationOpen
 #if	NhlNeedProto
-(NhlLayer instance)
+(
+	NhlLayer	instance
+)
 #else
 (instance)
-	NhlLayer instance;
+	NhlLayer	instance;
 #endif
 {
 	Gescape_in_data indat;

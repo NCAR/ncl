@@ -1,5 +1,5 @@
 /*
- *      $Id: ConvertersP.h,v 1.3 1995-03-13 21:47:23 dbrown Exp $
+ *      $Id: ConvertersP.h,v 1.4 1995-04-22 01:01:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -48,6 +48,12 @@ extern void _NhlConvertersInitialize(
 #endif
 );
 
+typedef enum _NhlIndxRng {
+	_NhlRngMIN,
+	_NhlRngMAX,
+	_NhlRngMINMAX
+} _NhlIndxRng;
+
 extern NhlErrorTypes
 _NhlCvtScalarToIndex(
 #if	NhlNeedProto
@@ -67,5 +73,54 @@ _NhlCvtGenArrayToIndexGenArray(
 	int			nargs
 #endif
 );
+
+extern int _NhlCmpString(
+#if	NhlNeedProto
+	char	*s1,
+	char	*s2
+#endif
+);
+
+extern NhlGenArray _NhlStringToStringGenArray(
+#if	NhlNeedProto
+	Const char*	s
+#endif
+);
+
+/*
+ * This macro is used because most of the converters end the same way.
+ */
+#define	_NhlSetVal(type,sz,value)				\
+{								\
+	if((to->size > 0) && (to->data.ptrval != NULL)){	\
+								\
+		/* caller provided space */			\
+								\
+		if(to->size < sz){				\
+			/* Not large enough */			\
+			to->size = (unsigned int)sz;		\
+			return(NhlFATAL);			\
+		}						\
+								\
+		/* give caller copy */				\
+								\
+		to->size = (unsigned int)sz;			\
+		*((type *)(to->data.ptrval)) = value;		\
+		return(ret);					\
+	}							\
+	else{							\
+								\
+	/* caller didn't provide space - give pointer	*/	\
+	/* into static data - if they modify it they	*/	\
+	/* may die.					*/	\
+								\
+		static type val;				\
+								\
+		to->size = sz;					\
+		val = value;					\
+		to->data.ptrval = &val;				\
+		return(ret);					\
+	}							\
+}
 
 #endif	/* _CNVTRS_P_H */

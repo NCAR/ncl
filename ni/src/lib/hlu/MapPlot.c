@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.33 1995-04-08 01:52:48 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.34 1995-04-22 01:01:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -3527,10 +3527,7 @@ static NhlErrorTypes    mpManageDynamicArrays
 		       NhlNwkColorMapLen,&cmap_len,NULL);
 	if (need_check) {
 		for (i=init_count; i < count; i++) {
-			int ix;
-			ix =  i < NhlNumber(Init_Colors) ? Init_Colors[i] : i;
-			ip[i] = _NhlIsAllocatedColor(mpnew->base.wkptr, ix) ?
-				ix : NhlFOREGROUND; 
+			ip[i] = i < NhlNumber(Init_Colors) ? Init_Colors[i] : i;
 		}
 	}
 	
@@ -3539,9 +3536,7 @@ static NhlErrorTypes    mpManageDynamicArrays
  * override the corresponding array resource.
  */
 	if (mpp->fill_default.color_set) {
-		if (_NhlIsAllocatedColor(mpnew->base.wkptr,
-					 mpp->fill_default.color))
-			ip[NhlmpDEFAULTGROUPINDEX] = mpp->fill_default.color;
+		ip[NhlmpDEFAULTGROUPINDEX] = mpp->fill_default.color;
 	}
 	else {
 		mpp->fill_default.color = ip[NhlmpDEFAULTGROUPINDEX];
@@ -3549,9 +3544,7 @@ static NhlErrorTypes    mpManageDynamicArrays
 	mpp->fill_default.color_set = False;
 	
 	if (mpp->ocean.color_set) {
-		if (_NhlIsAllocatedColor(mpnew->base.wkptr,
-					 mpp->ocean.color))
-			ip[NhlmpOCEANGROUPINDEX] = mpp->ocean.color;
+		ip[NhlmpOCEANGROUPINDEX] = mpp->ocean.color;
 	}
 	else {
 		mpp->ocean.color = ip[NhlmpOCEANGROUPINDEX];
@@ -3559,9 +3552,7 @@ static NhlErrorTypes    mpManageDynamicArrays
 	mpp->ocean.color_set = False;
 
 	if (mpp->land.color_set) {
-		if (_NhlIsAllocatedColor(mpnew->base.wkptr,
-					 mpp->land.color))
-			ip[NhlmpLANDGROUPINDEX] = mpp->land.color;
+		ip[NhlmpLANDGROUPINDEX] = mpp->land.color;
 	}
 	else {
 		mpp->land.color = ip[NhlmpLANDGROUPINDEX];
@@ -3569,10 +3560,7 @@ static NhlErrorTypes    mpManageDynamicArrays
 	mpp->land.color_set = False;
 
 	if (mpp->inland_water.color_set) {
-		if (_NhlIsAllocatedColor(mpnew->base.wkptr,
-					 mpp->inland_water.color))
-			ip[NhlmpINLANDWATERGROUPINDEX] =
-				mpp->inland_water.color;
+		ip[NhlmpINLANDWATERGROUPINDEX] = mpp->inland_water.color;
 	}
 	else {
 		mpp->inland_water.color = ip[NhlmpINLANDWATERGROUPINDEX];
@@ -4010,35 +3998,6 @@ static NhlErrorTypes    mpManageDynamicArrays
 				= mpp->spec_fill_colors->num_elements;
 		}
 		ip = (int *) mpp->spec_fill_colors->data; 
-		if (mpp->spec_fill_direct) {
-			for (i = 0; i < mpp->spec_fill_color_count; i++) {
-				if (! _NhlIsAllocatedColor(mpnew->base.wkptr,
-							   ip[i])) {
-
-					e_text = 
-	           "%s: %s index %d holds an invalid color index: defaulting";
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
-						  e_text,entry_name,
-						  NhlNmpSpecifiedFillColors,i);
-					ret = MIN(ret, NhlWARNING);
-					ip[i] = NhlmpUNSETCOLOR;
-				}
-			}
-		}
-		else {
-			for (i = 0; i < mpp->spec_fill_color_count; i++) {
-				max_val = mpp->area_group_count - 1;
-				if (ip[i] > max_val) {
-					e_text = 
-			  "%s: %s index %d holds an invalid index: defaulting";
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
-						  e_text,entry_name,
-						  NhlNmpSpecifiedFillColors,i);
-					ret = MIN(ret, NhlWARNING);
-					ip[i] = NhlmpUNSETCOLOR;
-				}
-			}
-		}
 	}
 
 /*

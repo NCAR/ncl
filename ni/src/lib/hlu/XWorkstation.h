@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.h,v 1.3 1995-04-07 10:44:28 boote Exp $
+ *      $Id: XWorkstation.h,v 1.4 1995-04-22 01:02:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,12 +24,18 @@
 
 #include <ncarg/hlu/Workstation.h>
 
-#define NhlNwkWindowId	"wkWindowId"
-#define NhlCwkWindowId	"WkWindowId"
-#define NhlNwkColorMapId	"wkColorMapId"
-#define NhlCwkColorMapId	"WkColorMapId"
-#define NhlNwkPause	"wkPause"
-#define NhlCwkPause	"WkPause"
+#define NhlNwkWindowId		"wkWindowId"
+#define NhlCwkWindowId		"WkWindowId"
+#define NhlNwkXColorMode	"wkXColorMode"
+#define NhlCwkXColorMode	"WkXColorMode"
+#define NhlNwkPause		"wkPause"
+#define NhlCwkPause		"WkPause"
+
+#define	NhlTXColorMode		"XColorMode"
+typedef enum _NhlXColorMode{
+	NhlSHARE,
+	NhlPRIVATE
+} NhlXColorMode;
 
 extern NhlClass NhlxWorkstationClass;
 

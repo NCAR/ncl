@@ -1,5 +1,5 @@
 /*
- *      $Id: AppI.h,v 1.2 1994-08-16 13:59:49 boote Exp $
+ *      $Id: AppI.h,v 1.3 1995-04-22 01:01:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -49,6 +49,16 @@ extern	NrmDatabase _NhlGetResDB(
 extern void _NhlSetLang(
 #if	NhlNeedProto
 	_NhlC_OR_F	ltype
+#endif
+);
+
+extern NhlErrorTypes _NhlSortAppArgs(
+#if	NhlNeedProto
+	NhlLayer	l,
+	_NhlArgList	args_in,
+	int		nargs_in,
+	_NhlArgList	*args_out,
+	int		*nargs_out
 #endif
 );
 

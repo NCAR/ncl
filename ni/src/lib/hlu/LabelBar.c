@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.32 1995-04-07 10:42:20 boote Exp $
+ *      $Id: LabelBar.c,v 1.33 1995-04-22 01:01:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1032,16 +1032,6 @@ static NhlErrorTypes    InitializeDynamicArrays
 	lb_p->fill_colors = ga;
 
 	i_p = (int *) lb_p->fill_colors->data;
-	for (i=0; i<count; i++) {
-		if (! _NhlIsAllocatedColor(tnew->base.wkptr, i_p[i])) {
-			e_text =
-	       "%s: %s index %d holds an invalid color value, %d: defaulting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNlbFillColors, i, i_p[i]);
-		        ret = MIN(ret, NhlWARNING);
-			i_p[i] = NhlLB_DEF_COLOR;
-		}
-	}
 
 /*=======================================================================*/
 /* The fill patterns array
@@ -1346,17 +1336,6 @@ static NhlErrorTypes    ManageDynamicArrays
 		olb_p->fill_colors = NULL;
 		i_p = (int *) lb_p->fill_colors->data;
 
-		for (i=0;i<MIN(count,lb_p->fill_colors->num_elements); i++) {
-			if (! _NhlIsAllocatedColor(tnew->base.wkptr, i_p[i])) {
-				e_text =
-		"%s: %s index %d holds an invalid color value, %d: defaulting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-					  entry_name,
-					  NhlNlbFillColors, i, i_p[i]);
-				ret = MIN(ret, NhlWARNING);
-				i_p[i] = NhlLB_DEF_COLOR;
-			}
-		}
 	}
 
 	if (lb_p->fill_colors->num_elements < count) {

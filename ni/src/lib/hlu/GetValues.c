@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.15 1995-04-07 10:41:51 boote Exp $
+ *      $Id: GetValues.c,v 1.16 1995-04-22 01:01:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,7 @@ static	NrmQuark	stringQ;
 static	NrmQuark	genQ;
 
 /*
- * Function:	GetValues
+ * Function:	_NhlGetValues
  *
  * Description:	This function retrieves values addressed by base + resource
  *		offset.  It retrieves the resources specifed by the arg names
@@ -51,8 +51,8 @@ static	NrmQuark	genQ;
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
-static NhlErrorTypes 
-GetValues
+NhlErrorTypes 
+_NhlGetValues
 #if	NhlNeedProto
 (
  	char*		base,		/* base address to copy vals from */
@@ -70,7 +70,7 @@ GetValues
 	int		nargs;		/* number of args		*/
 #endif
 {
-	char		func[] = "GetValues";
+	char		func[] = "_NhlGetValues";
 	register int	i,j;
 	NhlBoolean	argfound[_NhlMAXARGLIST];
 	NhlErrorTypes	ret = NhlNOERROR;
@@ -174,7 +174,7 @@ CallGetValues
 }
 
 /*
- * Function:	_NhlGetValues
+ * Function:	_NhlGetLayerValues
  *
  * Description:	This function retrieves the resources specified by the
  *		args parameter from the layer instance into the value
@@ -189,9 +189,9 @@ CallGetValues
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
-NhlDOCTAG(_NhlGetValues)
+NhlDOCTAG(_NhlGetLayerValues)
 static NhlErrorTypes
-_NhlGetValues
+_NhlGetLayerValues
 #if	NhlNeedProto
 (
 	NhlLayer	l,		/* layer instance	*/
@@ -205,6 +205,7 @@ _NhlGetValues
 	int		nargs;		/* number of args	*/
 #endif
 {
+	char			func[]="_NhlGetLayerValues";
 	int			i;
 	NhlClass		lc = _NhlClass(l);
 	_NhlArg		stackargs[_NhlMAXARGLIST];
@@ -217,8 +218,8 @@ _NhlGetValues
 	NhlErrorTypes		ret= NhlNOERROR, lret = NhlNOERROR;
 
 	if(l == NULL){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-				"_NhlGetValues was passed a NULL layer"));
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:passed a NULL object",
+								func));
 		return NhlFATAL;
 	}
 
@@ -236,18 +237,32 @@ _NhlGetValues
 	}
 
 	else{
-		/*
-		 * Sort the args into args for this layer and it's children
-		 * If there are no children it just copies the args to largs
-		 */
-		lret = _NhlSortChildArgs(l,args,nargs,&largs,&nlargs,&chld_args,
-							chld_args_used,True);
-		if(lret < NhlWARNING){
-			NhlPError(lret,NhlEUNKNOWN,
-				"Unable to Sort Arg Lists - Can't GetValues");
-			return lret;
+		if(_NhlIsApp(l)){
+			lret = _NhlSortAppArgs(l,args,nargs,&largs,&nlargs);
+			if(lret < NhlWARNING){
+				NhlPError(lret,NhlEUNKNOWN,
+					"%s:Unable to sort Arg List",func);
+				return lret;
+			}
+			l->base.child_args = NULL;
+			for(i=0;i<nargs;i++)
+				chld_args_used[i] = True;
 		}
-		ret = MIN(ret,lret);
+		else{
+			/*
+			 * Sort the args into args for this layer and it's
+			 * children. If there are no children it just copies
+			 * the args to largs
+			 */
+			lret = _NhlSortChildArgs(l,args,nargs,&largs,&nlargs,
+					&chld_args,chld_args_used,True);
+			if(lret < NhlWARNING){
+				NhlPError(lret,NhlEUNKNOWN,
+				"Unable to Sort Arg Lists - Can't GetValues");
+				return lret;
+			}
+			ret = MIN(ret,lret);
+		}
 
 		/*
 		 * If this layer has children forward args to them
@@ -270,7 +285,7 @@ _NhlGetValues
 					return NhlFATAL;
 				}
 
-				lret = _NhlGetValues(
+				lret = _NhlGetLayerValues(
 						_NhlGetLayer(tchldnode->pid),
 						targnode->args,targnode->nargs);
 				if(lret < NhlWARNING){
@@ -299,12 +314,13 @@ _NhlGetValues
 		}
 	}
 
-	lret = GetValues((char*)l,(NrmResourceList)(lc->base_class.resources),
+	lret = _NhlGetValues((char*)l,
+				(NrmResourceList)(lc->base_class.resources),
 				lc->base_class.num_resources, largs, nlargs);
 
 	if(lret != NhlFATAL) {
 		ret = MIN(ret,lret);
-		lret = CallGetValues(lc,l,args,nargs);
+		lret = CallGetValues(lc,l,largs,nlargs);
 	}
 
 	return MIN(ret,lret);
@@ -456,7 +472,7 @@ NhlGetValues
 		gargs[i].free_func = &gextra[i].free_func;
 	}
 
-	ret = _NhlGetValues(l,gargs,nargs);
+	ret = _NhlGetLayerValues(l,gargs,nargs);
 
 	if(ret < NhlWARNING)
 		return ret;
@@ -611,7 +627,7 @@ _NHLCALLF(nhl_fgetvalues,NHL_FGETVALUES)
  *		resource name/addr pairs given in the varargs.  It retrieves
  *		the given resource from the layer specified and puts the
  *		value in the space pointed to by the addr
- *		Internal GetValues function is NhlDOCREF(#_NhlGetValues,here).
+ *		Internal GetValues function is NhlDOCREF(#_NhlGetLayerValues,here).
  *
  * In Args:	int		pid;	id for layer to get values from
  *		...			name part of resource name/addr pairs
@@ -673,7 +689,7 @@ NhlVAGetValues
 	}
 	va_end(ap); 
 
-	return _NhlGetValues(l,args,i);
+	return _NhlGetLayerValues(l,args,i);
 }
 
 /*
@@ -734,5 +750,5 @@ NhlALGetValues
 	}
 
 
-	return _NhlGetValues(l,args,nargs);
+	return _NhlGetLayerValues(l,args,nargs);
 }

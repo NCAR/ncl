@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstationP.h,v 1.3 1995-04-07 10:44:29 boote Exp $
+ *      $Id: XWorkstationP.h,v 1.4 1995-04-22 01:02:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -28,24 +28,18 @@
 #define NCGM_WORKSTATION_TYPE 1
 
 typedef struct _NhlXWorkstationLayerPart {
-	/* User setable resource fields */
-
-	int	window_id;
-	int	color_map_id;
-
-	/*
-	 * This resource is forced to FALSE if the user provides a window id.
-	 */
-	NhlBoolean	pause;
-
-	/* Private internal fields */
 
 	NhlBoolean	window_id_set;
-	NhlBoolean	color_map_id_set;
+	int		window_id;
+
+	NhlXColorMode	xcolor_mode;
+
+	/*
+	 * Pause is forced to FALSE if the user provides a window id.
+	 */
 	NhlBoolean	pause_set;
-	
-	/* Export Values */
-	/* Import Values */
+	NhlBoolean	pause;
+
 } NhlXWorkstationLayerPart;
 
 typedef struct _NhlXWorkstationLayerRec {

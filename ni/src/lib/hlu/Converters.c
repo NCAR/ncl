@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.35 1995-04-07 09:35:37 boote Exp $
+ *      $Id: Converters.c,v 1.36 1995-04-22 01:01:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -86,7 +86,7 @@ NextToken
 }
 
 
-static NhlGenArray
+NhlGenArray
 _NhlStringToStringGenArray
 #if	NhlNeedProto
 (
@@ -308,7 +308,7 @@ _NhlStringToStringGenArray
 /*
  * This macro is used because most of the converters end the same way.
  */
-#define	SetVal(type,sz,value)					\
+#define	_NhlSetVal(type,sz,value)				\
 {								\
 	if((to->size > 0) && (to->data.ptrval != NULL)){	\
 								\
@@ -342,7 +342,7 @@ _NhlStringToStringGenArray
 }
 
 /*
- * Function:	comparestring
+ * Function:	_NhlCmpString
  *
  * Description:	This function compares two strings - It treats uppercase and
  *		lower case the same.  If the first string is lexically greater
@@ -364,8 +364,8 @@ _NhlStringToStringGenArray
  * Returns:	int
  * Side Effect:	
  */
-static int
-comparestring
+int
+_NhlCmpString
 #if	NhlNeedProto
 (
 	char	*s1,	/* string one	*/
@@ -484,7 +484,7 @@ NhlCvtStringToEnum
 	if(isdigit((int)*s1) || (*s1 == '-')){
 		tmp = (int)strtol(s1,&t2,10);
 		if(!tmp && (s1 == t2)){
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
+			NhlPError(NhlINFO,NhlEUNKNOWN,
 				"%s:Can't Convert \"%s\"",func,s1);
 			to->size = 0;
 			return NhlFATAL;
@@ -504,7 +504,7 @@ NhlCvtStringToEnum
 	}
 
 	for(i=0;i<nargs;i++){
-		if(comparestring(args[i].data.strval,s1) == 0){
+		if(_NhlCmpString(args[i].data.strval,s1) == 0){
 			tmp = args[i].size;
 			set = True;
 			break;
@@ -519,7 +519,7 @@ NhlCvtStringToEnum
 		return NhlFATAL;
 	}
 
-	SetVal(int,sizeof(int),tmp);
+	_NhlSetVal(int,sizeof(int),tmp);
 }
 
 /*
@@ -582,7 +582,7 @@ NhlCvtEnumToString
 		return NhlFATAL;
 	}
 
-	SetVal(NhlString,sizeof(NhlString),tstring);
+	_NhlSetVal(NhlString,sizeof(NhlString),tstring);
 }
 
 /*
@@ -659,7 +659,7 @@ NhlCvtScalarToEnum
 		return NhlFATAL;
 	}
 
-	SetVal(int,sizeof(int),tint);
+	_NhlSetVal(int,sizeof(int),tint);
 }
 
 /*
@@ -721,7 +721,7 @@ NhlCvtStringGenArrayToEnumGenArray
 	}
 
 	if(!sgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),sgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),sgen);
 	}
 	sdata = sgen->data;
 
@@ -772,7 +772,7 @@ NhlCvtStringGenArrayToEnumGenArray
 		}
 		else{
 			for(j=0;j<nargs;j++){
-				if(comparestring(args[j].data.strval,s1) == 0){
+				if(_NhlCmpString(args[j].data.strval,s1) == 0){
 					tint[i] = args[j].size;
 					set = True;
 					break;
@@ -789,7 +789,7 @@ NhlCvtStringGenArrayToEnumGenArray
 		}
 	}
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
 }
 
 /*
@@ -845,7 +845,7 @@ NhlCvtGenArrayToEnumGenArray
 
 	tgen = from->data.ptrval;
 	if(!tgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
 	}
 
 	if(tgen->typeQ == stringQ){
@@ -893,7 +893,7 @@ NhlCvtGenArrayToEnumGenArray
 	*enumgen_name = '\0';
 	tgen->typeQ = NrmStringToQuark(buff);
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
 }
 
 /*
@@ -1039,10 +1039,17 @@ _NhlCvtScalarToIndex
 	char		func[] = "_NhlCvtScalarToIndex";
 	int		tint;
 	NrmValue	ival;
+	NhlErrorTypes	ret = NhlNOERROR;
 
-	if(nargs != 2){
+	if((nargs < 2) ||
+		((args[0].data.intval != _NhlRngMIN) &&
+			(args[0].data.intval != _NhlRngMAX) &&
+			(args[0].data.intval != _NhlRngMINMAX)) ||
+		((args[0].data.intval == _NhlRngMIN) && (nargs != 2)) ||
+		((args[0].data.intval == _NhlRngMAX) && (nargs != 2)) ||
+		((args[0].data.intval == _NhlRngMINMAX) && (nargs != 3))){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"%s:Called with improper number of args",func);
+				"%s:Called with improper args",func);
 		to->size = 0;
 		return NhlFATAL;
 	}
@@ -1056,35 +1063,29 @@ _NhlCvtScalarToIndex
 		return NhlFATAL;
 	}
 
-	if(tint < args[0].data.intval || tint > args[1].data.intval){
+	if((args[0].data.intval == _NhlRngMINMAX) &&
+		(tint < args[1].data.intval || tint > args[2].data.intval)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"%s:Value %d is not within index range %d - %d",func,
-			tint,args[0].data.intval,args[1].data.intval);
+			tint,args[1].data.intval,args[2].data.intval);
+		return NhlFATAL;
+	}
+	else if((args[0].data.intval == _NhlRngMIN) &&
+		(tint < args[1].data.intval)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Value %d is less than index min %d",func,tint,
+			args[1].data.intval);
+		return NhlFATAL;
+	}
+	else if((args[0].data.intval == _NhlRngMAX) &&
+		(tint > args[1].data.intval)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Value %d is more than index max %d",func,tint,
+			args[1].data.intval);
 		return NhlFATAL;
 	}
 
-	if((to->size > 0) && (to->data.ptrval != NULL)){
-		/* caller provided space */
-
-		if(to->size < sizeof(int)){
-			/* not large enough */
-			to->size = sizeof(int);
-			return NhlFATAL;
-		}
-
-		to->size = sizeof(int);
-		*((int *)(to->data.ptrval)) = tint;
-
-		return NhlNOERROR;
-	}
-	else{
-		static int val;
-
-		to->size = sizeof(int);
-		val = tint;
-		to->data.ptrval = &val;
-		return NhlNOERROR;
-	}
+	_NhlSetVal(int,sizeof(int),tint);
 }
 
 NhlErrorTypes
@@ -1110,10 +1111,17 @@ _NhlCvtGenArrayToIndexGenArray
 	NhlGenArray	tgen;
 	int		*tint,i;
 	NrmValue	ival;
+	NhlErrorTypes	ret = NhlNOERROR;
 
-	if(nargs != 2){
+	if((nargs < 2) ||
+		((args[0].data.intval != _NhlRngMIN) &&
+			(args[0].data.intval != _NhlRngMAX) &&
+			(args[0].data.intval != _NhlRngMINMAX)) ||
+		((args[0].data.intval == _NhlRngMIN) && (nargs != 2)) ||
+		((args[0].data.intval == _NhlRngMAX) && (nargs != 2)) ||
+		((args[0].data.intval == _NhlRngMINMAX) && (nargs != 3))){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"%s:Called with improper number of args",func);
+				"%s:Called with improper args",func);
 		to->size = 0;
 		return NhlFATAL;
 	}
@@ -1130,13 +1138,34 @@ _NhlCvtGenArrayToIndexGenArray
 
 	tint = (int*)tgen->data;
 
-	for(i=0;i < tgen->num_elements;i++){
-		if(tint[i] < args[0].data.intval ||
-						tint[i] > args[1].data.intval){
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"%s:Value %d is not within index range %d - %d",func,
-			tint[i],args[0].data.intval,args[1].data.intval);
-			return NhlFATAL;
+	if(args[0].data.intval == _NhlRngMINMAX){
+		for(i=0;i < tgen->num_elements;i++){
+			if(tint[i] < args[1].data.intval ||
+					tint[i] > args[2].data.intval){
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Value %d is not within index range %d - %d",
+				func,tint[i],args[1].data.intval,
+				args[2].data.intval);
+				return NhlFATAL;
+			}
+		}
+	}
+	else if(args[0].data.intval == _NhlRngMIN){
+		for(i=0;i < tgen->num_elements;i++){
+			if(tint[i] < args[1].data.intval){
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"%s:Value %d is less than index min %d",					func,tint[i],args[1].data.intval);
+				return NhlFATAL;
+			}
+		}
+	}
+	else{
+		for(i=0;i < tgen->num_elements;i++){
+			if(tint[i] > args[1].data.intval){
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"%s:Value %d is more than index max %d",					func,tint[i],args[1].data.intval);
+				return NhlFATAL;
+			}
 		}
 	}
 
@@ -1151,28 +1180,7 @@ _NhlCvtGenArrayToIndexGenArray
 	*indxgen_name = '\0';
 	tgen->typeQ = NrmStringToQuark(buff);
 
-	if((to->size > 0) && (to->data.ptrval != NULL)){
-		/* caller provided space */
-
-		if(to->size < sizeof(NhlGenArray)){
-			/* not large enough */
-			to->size = sizeof(NhlGenArray);
-			return NhlFATAL;
-		}
-
-		to->size = sizeof(NhlGenArray);
-		*((NhlGenArray *)(to->data.ptrval)) = tgen;
-
-		return NhlNOERROR;
-	}
-	else{
-		static NhlGenArray val;
-
-		to->size = sizeof(NhlGenArray);
-		val = tgen;
-		to->data.ptrval = &val;
-		return NhlNOERROR;
-	}
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
 }
 
 /************************************************************************
@@ -1236,7 +1244,7 @@ CvtArgs									\
 			" conversion loosing information",func);	\
 		ret = NhlWARNING;					\
 	}								\
-	SetVal(totype,sizeof(totype),tempval);				\
+	_NhlSetVal(totype,sizeof(totype),tempval);			\
 }
 
 #define	_FromType(ftype,FTYPE,fext)\
@@ -1289,7 +1297,7 @@ CvtArgs
 	}
 	strcpy(tstring,buff);
 
-	SetVal(NhlString,sizeof(NhlString),tstring);
+	_NhlSetVal(NhlString,sizeof(NhlString),tstring);
 }
 
 /*ARGSUSED*/
@@ -1312,7 +1320,7 @@ CvtArgs
 	tstr[0] = from->data.charval;
 	tstr[1] = '\0';
 
-	SetVal(NhlString,sizeof(NhlString),tstr);
+	_NhlSetVal(NhlString,sizeof(NhlString),tstr);
 }
 
 /*ARGSUSED*/
@@ -1342,7 +1350,7 @@ CvtArgs
 	}
 	strcpy(tstring,buff);
 
-	SetVal(NhlString,sizeof(NhlString),tstring);
+	_NhlSetVal(NhlString,sizeof(NhlString),tstring);
 }
 
 /*ARGSUSED*/
@@ -1372,7 +1380,7 @@ CvtArgs
 	}
 	strcpy(tstring,buff);
 
-	SetVal(NhlString,sizeof(NhlString),tstring);
+	_NhlSetVal(NhlString,sizeof(NhlString),tstring);
 }
 
 /*ARGSUSED*/
@@ -1400,7 +1408,7 @@ CvtArgs
 	}
 	strcpy(tstring,buff);
 
-	SetVal(NhlString,sizeof(NhlString),tstring);
+	_NhlSetVal(NhlString,sizeof(NhlString),tstring);
 }
 
 /*ARGSUSED*/
@@ -1428,7 +1436,7 @@ CvtArgs
 	}
 	strcpy(tstring,buff);
 
-	SetVal(NhlString,sizeof(NhlString),tstring);
+	_NhlSetVal(NhlString,sizeof(NhlString),tstring);
 }
 
 /*ARGSUSED*/
@@ -1456,7 +1464,7 @@ CvtArgs
 	}
 	strcpy(tstring,buff);
 
-	SetVal(NhlString,sizeof(NhlString),tstring);
+	_NhlSetVal(NhlString,sizeof(NhlString),tstring);
 }
 
 /*ARGSUSED*/
@@ -1493,7 +1501,7 @@ CvtArgs
 		return NhlFATAL;
 	}
 
-	SetVal(char,sizeof(char),tmp);
+	_NhlSetVal(char,sizeof(char),tmp);
 }
 
 /*ARGSUSED*/
@@ -1537,7 +1545,7 @@ CvtArgs
 
 	tmp = *s1;
 
-	SetVal(char,sizeof(char),tmp);
+	_NhlSetVal(char,sizeof(char),tmp);
 }
 
 /*ARGSUSED*/
@@ -1573,7 +1581,7 @@ CvtArgs
 		return NhlFATAL;
 	}
 
-	SetVal(double,sizeof(double),tmp);
+	_NhlSetVal(double,sizeof(double),tmp);
 }
 
 /*ARGSUSED*/
@@ -1609,7 +1617,7 @@ CvtArgs
 		return NhlFATAL;
 	}
 
-	SetVal(float,sizeof(float),tmp);
+	_NhlSetVal(float,sizeof(float),tmp);
 }
 
 /*ARGSUSED*/
@@ -1646,7 +1654,7 @@ CvtArgs
 		return NhlFATAL;
 	}
 
-	SetVal(int,sizeof(int),tmp);
+	_NhlSetVal(int,sizeof(int),tmp);
 }
 
 /*ARGSUSED*/
@@ -1683,7 +1691,7 @@ CvtArgs
 		return NhlFATAL;
 	}
 
-	SetVal(long,sizeof(long),tmp);
+	_NhlSetVal(long,sizeof(long),tmp);
 }
 
 /*ARGSUSED*/
@@ -1720,7 +1728,7 @@ CvtArgs
 		return NhlFATAL;
 	}
 
-	SetVal(short,sizeof(short),tmp);
+	_NhlSetVal(short,sizeof(short),tmp);
 }
 
 /*ARGSUSED*/
@@ -1755,7 +1763,7 @@ CvtArgs
 	}
 	strcpy(tstring,from->data.strval);
 
-	SetVal(NhlString,sizeof(NhlString),tstring);
+	_NhlSetVal(NhlString,sizeof(NhlString),tstring);
 }
 
 /*ARGSUSED*/
@@ -1784,7 +1792,7 @@ CvtArgs
 
 	tq = NrmStringToQuark(from->data.strval);
 
-	SetVal(NrmQuark,sizeof(NrmQuark),tq);
+	_NhlSetVal(NrmQuark,sizeof(NrmQuark),tq);
 }
 
 /*ARGSUSED*/
@@ -1935,7 +1943,7 @@ CvtArgs
 	 * If they are now equal, then just set.
 	 */
 	if((newfromQ == to->typeQ) || (genQ == to->typeQ)){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),sgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),sgen);
 	}
 
 	val.size = sizeof(NhlGenArray);
@@ -1972,7 +1980,7 @@ CvtArgs
 	 * no conversion is really necessary.
 	 */
 	if(to->typeQ == genQ){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),gen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
 	}
 
 	/*
@@ -1980,7 +1988,7 @@ CvtArgs
 	 * of any of the specific types - so just set it.
 	 */
 	if(!gen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),gen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
 	}
 
 	/*
@@ -2006,7 +2014,7 @@ CvtArgs
 	 * If they are now equal, then just set.
 	 */
 	if(newfromQ == to->typeQ){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),gen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
 	}
 	return _NhlReConvertData(newfromQ,to->typeQ,from,to);
 }
@@ -2038,7 +2046,7 @@ CvtArgs
 	 * if the from gen array is null, then it is valid as is.
 	 */
 	if(!gen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),gen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
 	}
 
 	if(gen->num_elements > 1){
@@ -2061,7 +2069,7 @@ CvtArgs
 		}
 	}
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),gen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
 }
 
 /*
@@ -2122,7 +2130,7 @@ CvtArgs									\
 			}						\
 		}							\
 	}								\
-	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);			\
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);		\
 }
 
 #define	_FromArrType(ftype,FTYPE,fext)\
@@ -2173,7 +2181,7 @@ CvtArgs
 	fromval = fromgen->data;
 
 	if(!fromgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
@@ -2200,7 +2208,7 @@ CvtArgs
 		strcpy(toval[i],buff);
 	}
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
 }
 
 /*ARGSUSED*/
@@ -2225,7 +2233,7 @@ CvtArgs
 	fromval = fromgen->data;
 
 	if(!fromgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
@@ -2253,7 +2261,7 @@ CvtArgs
 		tchar[1] = '\0';
 		toval[i] = tchar;
 	}
-	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
 }
 
 /*ARGSUSED*/
@@ -2279,7 +2287,7 @@ CvtArgs
 	fromval = fromgen->data;
 
 	if(!fromgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
@@ -2306,7 +2314,7 @@ CvtArgs
 		strcpy(toval[i],buff);
 	}
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
 }
 
 /*ARGSUSED*/
@@ -2332,7 +2340,7 @@ CvtArgs
 	fromval = fromgen->data;
 
 	if(!fromgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
@@ -2359,7 +2367,7 @@ CvtArgs
 		strcpy(toval[i],buff);
 	}
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
 }
 
 /*ARGSUSED*/
@@ -2385,7 +2393,7 @@ CvtArgs
 	fromval = fromgen->data;
 
 	if(!fromgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
@@ -2412,7 +2420,7 @@ CvtArgs
 		strcpy(toval[i],buff);
 	}
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
 }
 
 /*ARGSUSED*/
@@ -2438,7 +2446,7 @@ CvtArgs
 	fromval = fromgen->data;
 
 	if(!fromgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
@@ -2465,7 +2473,7 @@ CvtArgs
 		strcpy(toval[i],buff);
 	}
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
 }
 
 /*ARGSUSED*/
@@ -2491,7 +2499,7 @@ CvtArgs
 	fromval = fromgen->data;
 
 	if(!fromgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
@@ -2518,7 +2526,7 @@ CvtArgs
 		strcpy(toval[i],buff);
 	}
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
 }
 
 /*ARGSUSED*/
@@ -2543,7 +2551,7 @@ CvtArgs
 	fromval = fromgen->data;
 
 	if(!fromgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
 
 	toval = (char *)NhlConvertMalloc(sizeof(char) * fromgen->num_elements);
@@ -2572,7 +2580,7 @@ CvtArgs
 		}
 	}
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
 }
 
 /*ARGSUSED*/
@@ -2597,7 +2605,7 @@ CvtArgs
 	fromval = fromgen->data;
 
 	if(!fromgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
 
 	toval = (char *)NhlConvertMalloc(sizeof(char) * fromgen->num_elements);
@@ -2623,7 +2631,7 @@ CvtArgs
 			toval[i] = *tstring;
 	}
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
 }
 
 /*ARGSUSED*/
@@ -2648,7 +2656,7 @@ CvtArgs
 	fromval = fromgen->data;
 
 	if(!fromgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
 
 	toval = (double *)NhlConvertMalloc(sizeof(double) *
@@ -2678,7 +2686,7 @@ CvtArgs
 		}
 	}
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
 }
 
 /*ARGSUSED*/
@@ -2703,7 +2711,7 @@ CvtArgs
 	fromval = fromgen->data;
 
 	if(!fromgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
 
 	toval = (float *)NhlConvertMalloc(sizeof(float)*fromgen->num_elements);
@@ -2732,7 +2740,7 @@ CvtArgs
 		}
 	}
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
 }
 
 /*ARGSUSED*/
@@ -2757,7 +2765,7 @@ CvtArgs
 	fromval = fromgen->data;
 
 	if(!fromgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
 
 	toval = (int *)NhlConvertMalloc(sizeof(int) * fromgen->num_elements);
@@ -2786,7 +2794,7 @@ CvtArgs
 		}
 	}
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
 }
 
 /*ARGSUSED*/
@@ -2811,7 +2819,7 @@ CvtArgs
 	fromval = fromgen->data;
 
 	if(!fromgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
 
 	toval = (long *)NhlConvertMalloc(sizeof(long) * fromgen->num_elements);
@@ -2841,7 +2849,7 @@ CvtArgs
 		}
 	}
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
 }
 
 /*ARGSUSED*/
@@ -2866,7 +2874,7 @@ CvtArgs
 	fromval = fromgen->data;
 
 	if(!fromgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
 
 	toval = (short *)NhlConvertMalloc(sizeof(short) *fromgen->num_elements);
@@ -2895,7 +2903,7 @@ CvtArgs
 		}
 	}
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
 }
 
 /*ARGSUSED*/
@@ -2915,7 +2923,7 @@ CvtArgs
 
 	togen = from->data.ptrval;
 
-	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
 }
 
 /*ARGSUSED*/
@@ -2942,7 +2950,7 @@ CvtArgs
 	fromval = fromgen->data;
 
 	if(!fromgen){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
@@ -2993,7 +3001,7 @@ CvtArgs
 	else
 		tstring = false;
 
-	SetVal(NhlString,sizeof(NhlString),tstring);
+	_NhlSetVal(NhlString,sizeof(NhlString),tstring);
 }
 
 /*ARGSUSED*/
@@ -3027,7 +3035,7 @@ CvtArgs
 	else
 		tint = False;
 
-	SetVal(int,sizeof(int),tint);
+	_NhlSetVal(int,sizeof(int),tint);
 }
 
 /*

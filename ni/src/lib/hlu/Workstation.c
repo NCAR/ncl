@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.35 1995-04-07 10:44:24 boote Exp $
+ *      $Id: Workstation.c,v 1.36 1995-04-22 01:02:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -41,132 +41,12 @@
 #include <limits.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/ConvertersP.h>
+#include <ncarg/hlu/PalletsP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/WorkstationP.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/ErrorI.h>
 #include <ncarg/hlu/TransformI.h>
-
-/*
-* ------------> NEED TO set up default colormap to place in default resource 
-*		field <-------------------
-*/
-static NhlColor def_color[] = {
-{1.000000, 1.000000, 1.000000},
-{1.000000, 1.000000, 0.968627},
-{1.000000, 1.000000, 0.905882},
-{1.000000, 1.000000, 0.843137},
-{1.000000, 1.000000, 0.780392},
-{1.000000, 1.000000, 0.717647},
-{1.000000, 1.000000, 0.654902},
-{1.000000, 1.000000, 0.592157},
-{1.000000, 1.000000, 0.529412},
-{1.000000, 1.000000, 0.470588},
-{1.000000, 1.000000, 0.407843},
-{1.000000, 1.000000, 0.345098},
-{1.000000, 1.000000, 0.282353},
-{1.000000, 1.000000, 0.219608},
-{1.000000, 1.000000, 0.156863},
-{1.000000, 1.000000, 0.094118},
-{1.000000, 1.000000, 0.031373},
-{1.000000, 0.968627, 0.031373},
-{1.000000, 0.905882, 0.094118},
-{1.000000, 0.843137, 0.156863},
-{1.000000, 0.780392, 0.219608},
-{1.000000, 0.717647, 0.282353},
-{1.000000, 0.654902, 0.345098},
-{1.000000, 0.592157, 0.407843},
-{1.000000, 0.529412, 0.470588},
-{1.000000, 0.470588, 0.529412},
-{1.000000, 0.407843, 0.592157},
-{1.000000, 0.345098, 0.654902},
-{1.000000, 0.282353, 0.717647},
-{1.000000, 0.219608, 0.780392},
-{1.000000, 0.156863, 0.843137},
-{1.000000, 0.094118, 0.905882},
-{1.000000, 0.031373, 0.968627},
-{1.000000, 0.000000, 0.968627},
-{1.000000, 0.000000, 0.905882},
-{1.000000, 0.000000, 0.843137},
-{1.000000, 0.000000, 0.780392},
-{1.000000, 0.000000, 0.717647},
-{1.000000, 0.000000, 0.654902},
-{1.000000, 0.000000, 0.592157},
-{1.000000, 0.000000, 0.529412},
-{1.000000, 0.000000, 0.470588},
-{1.000000, 0.000000, 0.407843},
-{1.000000, 0.000000, 0.345098},
-{1.000000, 0.000000, 0.282353},
-{1.000000, 0.000000, 0.219608},
-{1.000000, 0.000000, 0.156863},
-{1.000000, 0.000000, 0.094118},
-{1.000000, 0.000000, 0.031373},
-{0.968627, 0.031373, 0.031373},
-{0.905882, 0.094118, 0.094118},
-{0.843137, 0.156863, 0.156863},
-{0.780392, 0.219608, 0.219608},
-{0.717647, 0.282353, 0.282353},
-{0.654902, 0.345098, 0.345098},
-{0.592157, 0.407843, 0.407843},
-{0.529412, 0.470588, 0.470588},
-{0.470588, 0.529412, 0.529412},
-{0.407843, 0.592157, 0.592157},
-{0.345098, 0.654902, 0.654902},
-{0.282353, 0.717647, 0.717647},
-{0.219608, 0.780392, 0.780392},
-{0.156863, 0.843137, 0.843137},
-{0.094118, 0.905882, 0.905882},
-{0.031373, 0.968627, 0.968627},
-{0.000000, 1.000000, 0.968627},
-{0.000000, 1.000000, 0.937255},
-{0.000000, 1.000000, 0.874510},
-{0.000000, 1.000000, 0.811765},
-{0.000000, 1.000000, 0.780392},
-{0.000000, 1.000000, 0.717647},
-{0.000000, 1.000000, 0.654902},
-{0.000000, 1.000000, 0.592157},
-{0.000000, 1.000000, 0.529412},
-{0.000000, 1.000000, 0.470588},
-{0.000000, 1.000000, 0.407843},
-{0.000000, 1.000000, 0.345098},
-{0.000000, 1.000000, 0.282353},
-{0.000000, 1.000000, 0.219608},
-{0.000000, 1.000000, 0.156863},
-{0.000000, 1.000000, 0.094118},
-{0.000000, 1.000000, 0.031373},
-{0.000000, 0.968627, 0.031373},
-{0.000000, 0.905882, 0.094118},
-{0.000000, 0.843137, 0.156863},
-{0.000000, 0.780392, 0.219608},
-{0.000000, 0.717647, 0.282353},
-{0.000000, 0.654902, 0.345098},
-{0.000000, 0.592157, 0.407843},
-{0.000000, 0.529412, 0.470588},
-{0.000000, 0.470588, 0.529412},
-{0.000000, 0.407843, 0.592157},
-{0.000000, 0.345098, 0.654902},
-{0.000000, 0.282353, 0.717647},
-{0.000000, 0.219608, 0.780392},
-{0.000000, 0.156863, 0.843137},
-{0.000000, 0.094118, 0.905882},
-{0.000000, 0.031373, 0.968627},
-{0.000000, 0.000000, 0.968627},
-{0.000000, 0.000000, 0.905882},
-{0.000000, 0.000000, 0.843137},
-{0.000000, 0.000000, 0.780392},
-{0.000000, 0.000000, 0.717647},
-{0.000000, 0.000000, 0.654902},
-{0.000000, 0.000000, 0.592157},
-{0.000000, 0.000000, 0.529412},
-{0.000000, 0.000000, 0.470588},
-{0.000000, 0.000000, 0.407843},
-{0.000000, 0.000000, 0.345098},
-{0.000000, 0.000000, 0.282353},
-{0.000000, 0.000000, 0.219608},
-{0.000000, 0.000000, 0.156863},
-{0.000000, 0.000000, 0.094118},
-{0.000000, 0.000000, 0.031373}
-};
 
 /* 
  * There are currently 16 pre-defined dash patterns provided plus solid
@@ -283,7 +163,6 @@ static int dash_table_len;
 static NrmQuark intQ;
 static NrmQuark intgenQ;
 static NrmQuark colormap_name;
-static NrmQuark colormaplen_name;
 static NrmQuark bkgnd_name;
 static NrmQuark foregnd_name;
 static NrmQuark	marker_tbl_strings_name;
@@ -295,89 +174,92 @@ static NhlResource resources[] = {
 
 /* Begin-documented-resources */
 
-	{NhlNwkColorMap,NhlCwkColorMap,NhlTFloatGenArray,sizeof(NhlGenArray),
-		Oset(color_map),NhlTImmediate,_NhlUSET(NULL),0,
+	{NhlNwkColorMap,NhlCwkColorMap,NhlTColorMap,sizeof(NhlGenArray),
+		Oset(color_map),NhlTString,_NhlUSET("default"),_NhlRES_DEFAULT,
 		(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNwkColorMapLen, NhlCwkColorMapLen, NhlTInteger, sizeof(int),
-		Oset(color_map_len),NhlTImmediate, 
-		_NhlUSET((NhlPointer)NhlNumber(def_color)),_NhlRES_GONLY,NULL},
-	{NhlNwkBackgroundColor, NhlCwkBackgroundColor, NhlTFloatGenArray, 
-		sizeof(NhlPointer),
-		Oset(bkgnd_color), NhlTImmediate,_NhlUSET( NULL),0,
-		(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNwkForegroundColor, NhlCwkForegroundColor, NhlTFloatGenArray, 
-		sizeof(NhlPointer),
-		Oset(foregnd_color), NhlTImmediate,_NhlUSET( NULL),0,
-						(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNwkGksWorkId,NhlCwkGksWorkId,NhlTInteger,sizeof(int),
-		Oset(gkswksid),NhlTImmediate,_NhlUSET((NhlPointer)0),
-							_NhlRES_GONLY,NULL},
-	{NhlNwkDashTableLength, NhlCwkDashTableLength, NhlTInteger, 
-		sizeof(int),Oset(dash_table_len),NhlTImmediate,
-		_NhlUSET((NhlPointer)0),_NhlRES_GONLY,NULL},
-	{NhlNwkFillTableLength, NhlCwkFillTableLength, NhlTInteger, 
+	{NhlNwkColorMapLen,NhlCwkColorMapLen,NhlTInteger,sizeof(int),
+		Oset(color_map_len),NhlTImmediate,
+		_NhlUSET(0),_NhlRES_GONLY,NULL},
+	{NhlNwkBackgroundColor,NhlCwkBackgroundColor,NhlTFloatGenArray,
+		sizeof(NhlPointer),Oset(bkgnd_color),NhlTImmediate,
+		_NhlUSET(NULL),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNwkForegroundColor,NhlCwkForegroundColor,NhlTFloatGenArray,
+		sizeof(NhlPointer),Oset(foregnd_color),NhlTImmediate,
+		_NhlUSET(NULL),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNwkGksWorkId,NhlCwkGksWorkId,NhlTInteger,sizeof(int),Oset(gkswksid),
+		NhlTImmediate,_NhlUSET((NhlPointer)0),_NhlRES_GONLY,NULL},
+	{NhlNwkDashTableLength,NhlCwkDashTableLength,NhlTInteger,sizeof(int),
+		Oset(dash_table_len),NhlTImmediate,_NhlUSET((NhlPointer)0),
+		_NhlRES_GONLY,NULL},
+	{NhlNwkFillTableLength,NhlCwkFillTableLength,NhlTInteger,
 		sizeof(int),Oset(fill_table_len),NhlTImmediate,
 		_NhlUSET((NhlPointer)0),_NhlRES_GONLY,NULL},
-	{ NhlNwkMarkerTableLength, NhlCwkMarkerTableLength, NhlTInteger, 
+	{NhlNwkMarkerTableLength,NhlCwkMarkerTableLength,NhlTInteger,
 		sizeof(int),Oset(marker_table_len),NhlTImmediate,
 		_NhlUSET((NhlPointer)0),_NhlRES_GONLY,NULL},
 
 #define POset(field) Oset(public_lineinfo.field)
-	{NhlNwkDashPattern,NhlCwkDashPattern,NhlTDashIndex,
-		sizeof(NhlDashIndex),POset(dash_pattern),NhlTImmediate,
-		_NhlUSET((NhlPointer)0),0,NULL},
-        {NhlNwkLineDashSegLenF, NhlCwkLineDashSegLenF,NhlTFloat,sizeof(float),
-		POset(line_dash_seglen),NhlTString,_NhlUSET(".15"),0,NULL},
-        {NhlNwkLineColor,NhlCwkLineColor,NhlTColorIndex,sizeof(NhlColorIndex),
-                POset(line_color),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
-        {NhlNwkLineThicknessF, NhlCwkLineThicknessF, NhlTFloat, sizeof(float),
-                POset(line_thickness), NhlTString,_NhlUSET("1.0"),0,NULL},
-        {NhlNwkLineLabel,NhlCwkLineLabel,NhlTString,sizeof(NhlString),
-                POset(line_label),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,
-		(NhlFreeFunc)NhlFree},
-        {NhlNwkLineLabelFont,NhlCwkLineLabelFont,NhlTFont,sizeof(NhlFont),
-                POset(line_label_font),NhlTImmediate,
-		_NhlUSET((NhlPointer)NULL),0,(NhlFreeFunc)NhlFree},
+	{NhlNwkDashPattern,NhlCwkDashPattern,NhlTDashIndex,sizeof(NhlDashIndex),
+		POset(dash_pattern),NhlTImmediate,_NhlUSET((NhlPointer)0),
+		_NhlRES_DEFAULT,NULL},
+	{NhlNwkLineDashSegLenF,NhlCwkLineDashSegLenF,NhlTFloat,sizeof(float),
+		POset(line_dash_seglen),NhlTString,_NhlUSET(".15"),
+		_NhlRES_DEFAULT,NULL},
+	{NhlNwkLineColor,NhlCwkLineColor,NhlTColorIndex,sizeof(NhlColorIndex),
+		POset(line_color),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_DEFAULT,NULL},
+	{NhlNwkLineThicknessF,NhlCwkLineThicknessF,NhlTFloat,sizeof(float),
+		POset(line_thickness),NhlTString,_NhlUSET("1.0"),
+		_NhlRES_DEFAULT,NULL},
+	{NhlNwkLineLabel,NhlCwkLineLabel,NhlTString,sizeof(NhlString),
+		POset(line_label),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+		_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
+	{NhlNwkLineLabelFont,NhlCwkLineLabelFont,NhlTFont,sizeof(NhlFont),
+		POset(line_label_font),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+		_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
 	{NhlNwkLineLabelFontColor,NhlCwkLineLabelFontColor,NhlTColorIndex,
-		sizeof(NhlColorIndex),POset(line_label_font_color),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
-        {NhlNwkLineLabelFontHeightF,NhlCwkLineLabelFontHeightF,NhlTFloat,
-                sizeof(float),POset(line_label_font_height),NhlTString,
-		_NhlUSET("0.0125"),0,NULL},
-	{NhlNwkLineLabelFontAspectF,NhlCwkLineLabelFontAspectF,NhlTFloat, 
-		 sizeof(float),POset(line_label_font_aspect),
-		 NhlTString, _NhlUSET("1.3125"),0,NULL},
-	{NhlNwkLineLabelFontThicknessF,NhlCwkLineLabelFontThicknessF,
-		 NhlTFloat,sizeof(float),POset(line_label_font_thickness),
-		 NhlTString, _NhlUSET("1.0"),0,NULL},
-	{NhlNwkLineLabelFontQuality,NhlCwkLineLabelFontQuality,
-		 NhlTFontQuality,sizeof(NhlFontQuality), 
-		 POset(line_label_font_quality),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlHIGH),0,NULL},
+		sizeof(NhlColorIndex),POset(line_label_font_color),
+		NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),
+		_NhlRES_DEFAULT,NULL},
+	{NhlNwkLineLabelFontHeightF,NhlCwkLineLabelFontHeightF,NhlTFloat,
+		sizeof(float),POset(line_label_font_height),NhlTString,
+		_NhlUSET("0.0125"),_NhlRES_DEFAULT,NULL},
+	{NhlNwkLineLabelFontAspectF,NhlCwkLineLabelFontAspectF,NhlTFloat,
+		sizeof(float),POset(line_label_font_aspect),NhlTString,
+		_NhlUSET("1.3125"),_NhlRES_DEFAULT,NULL},
+	{NhlNwkLineLabelFontThicknessF,NhlCwkLineLabelFontThicknessF,NhlTFloat,
+		sizeof(float),POset(line_label_font_thickness),NhlTString,
+		_NhlUSET("1.0"),_NhlRES_DEFAULT,NULL},
+	{NhlNwkLineLabelFontQuality,NhlCwkLineLabelFontQuality,NhlTFontQuality,
+		sizeof(NhlFontQuality),POset(line_label_font_quality),
+		NhlTImmediate,_NhlUSET((NhlPointer)NhlHIGH),_NhlRES_DEFAULT,
+		NULL},
 	{NhlNwkLineLabelConstantSpacingF,NhlCwkLineLabelConstantSpacingF,
-		 NhlTFloat,sizeof(float),POset(line_label_const_spacing),
-		 NhlTString,_NhlUSET("0.0"),0,NULL},
-	{NhlNwkLineLabelFuncCode,NhlCwkLineLabelFuncCode,NhlTCharacter, 
-		 sizeof(char),POset(line_label_func_code),
-		 NhlTString, _NhlUSET(":"),0,NULL},
+		NhlTFloat,sizeof(float),POset(line_label_const_spacing),
+		NhlTString,_NhlUSET("0.0"),_NhlRES_DEFAULT,NULL},
+	{NhlNwkLineLabelFuncCode,NhlCwkLineLabelFuncCode,NhlTCharacter,
+		sizeof(char),POset(line_label_func_code),NhlTString,
+		_NhlUSET(":"),_NhlRES_DEFAULT,NULL},
 #undef POset
 #define POset(field) Oset(public_markinfo.field)
 	{NhlNwkMarkerIndex,NhlCwkMarkerIndex,NhlTMarkerIndex,
 		sizeof(NhlMarkerIndex),POset(marker_index),NhlTImmediate,
-		_NhlUSET((NhlPointer)3),0,NULL},
+		_NhlUSET((NhlPointer)3),_NhlRES_DEFAULT,NULL},
 	{NhlNwkMarkerColor,NhlCwkMarkerColor,NhlTColorIndex,
 		sizeof(NhlColorIndex),POset(marker_color),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_DEFAULT,NULL},
 	{NhlNwkMarkerSizeF,NhlCwkMarkerSizeF,NhlTFloat,sizeof(float),
-		  POset(marker_size),NhlTString,_NhlUSET("0.007"),0,NULL},
+		POset(marker_size),NhlTString,_NhlUSET("0.007"),_NhlRES_DEFAULT,
+		NULL},
 	{NhlNwkMarkerXOffsetF,NhlCwkMarkerXOffsetF,NhlTFloat,sizeof(float),
-		  POset(marker_x_off),NhlTString,_NhlUSET("0.0"),0,NULL},
+		POset(marker_x_off),NhlTString,_NhlUSET("0.0"),_NhlRES_DEFAULT,
+		NULL},
 	{NhlNwkMarkerYOffsetF,NhlCwkMarkerYOffsetF,NhlTFloat,sizeof(float),
-		  POset(marker_y_off),NhlTString,_NhlUSET("0.0"),0,NULL},
-	{NhlNwkMarkerThicknessF, NhlCwkMarkerThicknessF, NhlTFloat,
-		  sizeof(float),POset(marker_thickness),NhlTString,
-		  _NhlUSET("1.0"),0,NULL},
+		POset(marker_y_off),NhlTString,_NhlUSET("0.0"),_NhlRES_DEFAULT,
+		NULL},
+	{NhlNwkMarkerThicknessF,NhlCwkMarkerThicknessF,NhlTFloat,sizeof(float),
+		POset(marker_thickness),NhlTString,_NhlUSET("1.0"),
+		_NhlRES_DEFAULT,NULL},
 #undef POset
 
 /* End-documented-resources */
@@ -392,45 +274,44 @@ static NhlResource resources[] = {
 	{_NhlNwkDashPattern,_NhlCwkDashPattern,NhlTDashIndex,
 		sizeof(NhlDashIndex),POset(dash_pattern),NhlTImmediate,
 		_NhlUSET((NhlPointer)0),_NhlRES_SGONLY,NULL},
-        {_NhlNwkLineDashSegLenF, _NhlCwkLineDashSegLenF,NhlTFloat,sizeof(float),
+	{_NhlNwkLineDashSegLenF,_NhlCwkLineDashSegLenF,NhlTFloat,sizeof(float),
 		POset(line_dash_seglen),NhlTString,_NhlUSET(".15"),
 		_NhlRES_SGONLY,NULL},
-        {_NhlNwkLineColor,_NhlCwkLineColor,NhlTColorIndex,sizeof(NhlColorIndex),
-                POset(line_color),NhlTImmediate,
+	{_NhlNwkLineColor,_NhlCwkLineColor,NhlTColorIndex,sizeof(NhlColorIndex),
+		POset(line_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_SGONLY,NULL},
-        {_NhlNwkLineThicknessF, _NhlCwkLineThicknessF, NhlTFloat, sizeof(float),
-                POset(line_thickness), NhlTString,_NhlUSET("1.0"),
-		_NhlRES_SGONLY,NULL},
-        {_NhlNwkLineLabel,_NhlCwkLineLabel,NhlTString,sizeof(NhlString),
-                POset(line_label), NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+	{_NhlNwkLineThicknessF,_NhlCwkLineThicknessF,NhlTFloat,sizeof(float),
+		POset(line_thickness),NhlTString,_NhlUSET("1.0"),_NhlRES_SGONLY,
+		NULL},
+	{_NhlNwkLineLabel,_NhlCwkLineLabel,NhlTString,sizeof(NhlString),
+		POset(line_label),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
 		_NhlRES_SGONLY,(NhlFreeFunc)NhlFree},
-        {_NhlNwkLineLabelFont, _NhlCwkLineLabelFont, NhlTFont, sizeof(NhlFont),
-                POset(line_label_font), NhlTImmediate,
-		_NhlUSET((NhlPointer)NULL),_NhlRES_SGONLY,(NhlFreeFunc)NhlFree},
+	{_NhlNwkLineLabelFont,_NhlCwkLineLabelFont,NhlTFont,sizeof(NhlFont),
+		POset(line_label_font),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+		_NhlRES_SGONLY,(NhlFreeFunc)NhlFree},
 	{_NhlNwkLineLabelFontColor,_NhlCwkLineLabelFontColor,NhlTColorIndex,
 		sizeof(NhlColorIndex),POset(line_label_font_color),
-		NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_SGONLY,NULL},
-        {_NhlNwkLineLabelFontHeightF,_NhlCwkLineLabelFontHeightF,NhlTFloat,
-                sizeof(float),POset(line_label_font_height),NhlTString,
+		NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),
+		_NhlRES_SGONLY,NULL},
+	{_NhlNwkLineLabelFontHeightF,_NhlCwkLineLabelFontHeightF,NhlTFloat,
+		sizeof(float),POset(line_label_font_height),NhlTString,
 		_NhlUSET("0.0125"),_NhlRES_SGONLY,NULL},
-	{_NhlNwkLineLabelFontAspectF,_NhlCwkLineLabelFontAspectF,NhlTFloat, 
-		 sizeof(float),POset(line_label_font_aspect),
-		 NhlTString, _NhlUSET("1.3125"),_NhlRES_SGONLY,NULL},
+	{_NhlNwkLineLabelFontAspectF,_NhlCwkLineLabelFontAspectF,NhlTFloat,
+		sizeof(float),POset(line_label_font_aspect),NhlTString,
+		_NhlUSET("1.3125"),_NhlRES_SGONLY,NULL},
 	{_NhlNwkLineLabelFontThicknessF,_NhlCwkLineLabelFontThicknessF,
-		 NhlTFloat,sizeof(float),POset(line_label_font_thickness),
-		 NhlTString, _NhlUSET("1.0"),_NhlRES_SGONLY,NULL},
+		NhlTFloat,sizeof(float),POset(line_label_font_thickness),
+		NhlTString,_NhlUSET("1.0"),_NhlRES_SGONLY,NULL},
 	{_NhlNwkLineLabelFontQuality,_NhlCwkLineLabelFontQuality,
-		 NhlTFontQuality,sizeof(NhlFontQuality), 
-		 POset(line_label_font_quality),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlHIGH),
-		 _NhlRES_SGONLY,NULL},
+		NhlTFontQuality,sizeof(NhlFontQuality),
+		POset(line_label_font_quality),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlHIGH),_NhlRES_SGONLY,NULL},
 	{_NhlNwkLineLabelConstantSpacingF,_NhlCwkLineLabelConstantSpacingF,
-		 NhlTFloat,sizeof(float),POset(line_label_const_spacing),
-		 NhlTString,_NhlUSET("0.0"),_NhlRES_SGONLY,NULL},
-	{_NhlNwkLineLabelFuncCode,_NhlCwkLineLabelFuncCode,NhlTCharacter, 
-		 sizeof(char),POset(line_label_func_code),
-		 NhlTString, _NhlUSET(":"),_NhlRES_SGONLY,NULL},
+		NhlTFloat,sizeof(float),POset(line_label_const_spacing),
+		NhlTString,_NhlUSET("0.0"),_NhlRES_SGONLY,NULL},
+	{_NhlNwkLineLabelFuncCode,_NhlCwkLineLabelFuncCode,NhlTCharacter,
+		sizeof(char),POset(line_label_func_code),NhlTString,
+		_NhlUSET(":"),_NhlRES_SGONLY,NULL},
 #undef POset
 
 #define POset(field) Oset(private_markinfo.field)
@@ -441,19 +322,18 @@ static NhlResource resources[] = {
 		sizeof(NhlColorIndex),POset(marker_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_SGONLY,NULL},
 	{_NhlNwkMarkerSizeF,_NhlCwkMarkerSizeF,NhlTFloat,sizeof(float),
-		  POset(marker_size),NhlTString,_NhlUSET("0.007"),
-		  _NhlRES_SGONLY,NULL},
+		POset(marker_size),NhlTString,_NhlUSET("0.007"),_NhlRES_SGONLY,
+		NULL},
 	{_NhlNwkMarkerXOffsetF,_NhlCwkMarkerXOffsetF,NhlTFloat,sizeof(float),
-		  POset(marker_x_off),NhlTString,_NhlUSET("0.0"),_NhlRES_SGONLY,
-		  NULL},
+		POset(marker_x_off),NhlTString,_NhlUSET("0.0"),_NhlRES_SGONLY,
+		NULL},
 	{_NhlNwkMarkerYOffsetF,_NhlCwkMarkerYOffsetF,NhlTFloat,sizeof(float),
-		  POset(marker_y_off),NhlTString,_NhlUSET("0.0"),_NhlRES_SGONLY,
-		  NULL},
-	{_NhlNwkMarkerThicknessF, _NhlCwkMarkerThicknessF, NhlTFloat,
-		  sizeof(float),POset(marker_thickness),NhlTString,
-		  _NhlUSET("1.0"),_NhlRES_SGONLY,NULL},
+		POset(marker_y_off),NhlTString,_NhlUSET("0.0"),_NhlRES_SGONLY,
+		NULL},
+	{_NhlNwkMarkerThicknessF,_NhlCwkMarkerThicknessF,NhlTFloat,
+		sizeof(float),POset(marker_thickness),NhlTString,
+		_NhlUSET("1.0"),_NhlRES_SGONLY,NULL},
 #undef POset
-
 	{_NhlNwkDashTable,_NhlCwkDashTable,NhlTStringGenArray,
 		sizeof(NhlGenArray),Oset(dash_table),NhlTImmediate,
 		_NhlUSET((NhlPointer)NULL),_NhlRES_SGONLY,
@@ -476,7 +356,7 @@ static NhlResource resources[] = {
 	{_NhlNwkDrawEdges,_NhlCwkDrawEdges,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(edges_on),NhlTImmediate,_NhlUSET(False),_NhlRES_SGONLY,
 		NULL},
-        {_NhlNwkEdgeDashPattern,_NhlCwkEdgeDashPattern,NhlTDashIndex,
+	{_NhlNwkEdgeDashPattern,_NhlCwkEdgeDashPattern,NhlTDashIndex,
 		sizeof(NhlDashIndex),Oset(edge_dash_pattern),NhlTImmediate,
 		_NhlUSET(0),_NhlRES_SGONLY,NULL},
 	{_NhlNwkEdgeThicknessF,_NhlCwkEdgeThicknessF,NhlTFloat,sizeof(float),
@@ -488,40 +368,20 @@ static NhlResource resources[] = {
 	{_NhlNwkEdgeColor,_NhlCwkEdgeColor,NhlTColorIndex,sizeof(NhlColorIndex),
 		Oset(edge_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_SGONLY,NULL},
-
 	{_NhlNwkMarkerTableStrings,_NhlCwkMarkerTableStrings,NhlTStringGenArray,
-		  sizeof(NhlGenArray),Oset(marker_table_strings),NhlTImmediate,
-		  _NhlUSET((NhlPointer)NULL),_NhlRES_SGONLY,
-		  (NhlFreeFunc)NhlFreeGenArray},
+		sizeof(NhlGenArray),Oset(marker_table_strings),NhlTImmediate,
+		_NhlUSET((NhlPointer)NULL),_NhlRES_SGONLY,
+		(NhlFreeFunc)NhlFreeGenArray},
 	{_NhlNwkMarkerTableParams,_NhlCwkMarkerTableParams,NhlTGenArray,
 		sizeof(NhlGenArray),Oset(marker_table_params),NhlTImmediate,
 		_NhlUSET((NhlPointer)NULL),_NhlRES_SGONLY,NULL},
-/*
- * Marker Lines are being disabled for 4.0.
- * "no.res" makes it impossible to change the marker_lines_on variable.
- *
- */
- 	{_NhlNwkDrawMarkerLines,_NhlCwkDrawMarkerLines,NhlTBoolean,
-		sizeof(NhlBoolean),Oset(marker_lines_on),NhlTImmediate,
-		_NhlUSET(False),_NhlRES_NOACCESS,NULL},
-        {_NhlNwkMarkerLineDashPattern,_NhlCwkMarkerLineDashPattern, 
-		  NhlTDashIndex,sizeof(NhlDashIndex),
-		  Oset(marker_line_dash_pattern),NhlTImmediate,_NhlUSET(0),
-		  _NhlRES_NOACCESS,NULL},
-	{_NhlNwkMarkerLineThicknessF,_NhlCwkMarkerLineThicknessF,NhlTFloat,
-		sizeof(float),Oset(marker_line_thickness),NhlTString,
-		_NhlUSET("1.0"),_NhlRES_NOACCESS,NULL},
-	{_NhlNwkMarkerLineDashSegLenF,_NhlCwkMarkerLineDashSegLenF,NhlTFloat,
-		sizeof(float),Oset(marker_line_dash_seglen),NhlTString,
-		_NhlUSET(".15"),_NhlRES_NOACCESS,NULL},
-	{_NhlNwkMarkerLineColor,_NhlCwkMarkerLineColor,NhlTColorIndex,
-		sizeof(NhlColorIndex),Oset(marker_line_color),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_NOACCESS,NULL},
 };
 
 /*
 * Base class method declarations
 */
+
+static NhlErrorTypes WorkstationClassInitialize();
 
 static NhlErrorTypes WorkstationClassPartInitialize(
 #if	NhlNeedProto
@@ -536,21 +396,6 @@ static NhlErrorTypes WorkstationInitialize(
         NhlLayer,	/* new */
         _NhlArgList,	/* args */
         int		/* num_args */
-#endif
-);
-
-static NhlErrorTypes WorkstationClassInitialize();
-
-
-static NhlErrorTypes WorkstationDestroy(
-#if	NhlNeedProto
-        NhlLayer           /* inst */
-#endif
-);
-
-static NhlErrorTypes WorkstationDraw(
-#if	NhlNeedProto
-	NhlLayer
 #endif
 );
 
@@ -569,6 +414,18 @@ static NhlErrorTypes 	WorkstationGetValues(
 	NhlLayer,	/* l */
 	_NhlArgList, 	/* args */
 	int		/* num_args */
+#endif
+);
+
+static NhlErrorTypes WorkstationDestroy(
+#if	NhlNeedProto
+        NhlLayer           /* inst */
+#endif
+);
+
+static NhlErrorTypes WorkstationDraw(
+#if	NhlNeedProto
+	NhlLayer
 #endif
 );
 
@@ -601,6 +458,12 @@ static NhlErrorTypes WorkstationDeactivate(
 #endif
 );
 
+static NhlErrorTypes WorkstationAllocateColors(
+#if	NhlNeedProto
+	NhlLayer	wl
+#endif
+);
+
 static NhlErrorTypes WorkstationUpdate(
 #if	NhlNeedProto
 	NhlLayer	l	/* instance	*/
@@ -616,9 +479,9 @@ static NhlErrorTypes WorkstationClear(
 static NhlErrorTypes WorkstationLineTo(
 #if 	NhlNeedProto
 	NhlLayer	l,
-	float	x,
-	float 	y,
-	int	upordown
+	float		x,
+	float 		y,
+	int		upordown
 #endif
 );
 
@@ -639,28 +502,6 @@ static NhlErrorTypes WorkstationMarker(
 	int		num_points
 #endif
 );
-
-/*
-* Private functions
-*/
-static NhlErrorTypes AllocateColors(
-#if	NhlNeedProto
-NhlLayer	/* instance */
-#endif
-); 
-
-static NhlErrorTypes DeallocateColors(
-#if	NhlNeedProto
-NhlLayer	/* instance */
-#endif
-); 
-
-
-
-/*
-* Default color map
-*/
-
 
 NhlWorkstationClassRec NhlworkstationClassRec = {
         {
@@ -693,10 +534,12 @@ NhlWorkstationClassRec NhlworkstationClassRec = {
 /* layer_clear			*/	NULL
         },
 	{
+/* def_background	*/	{0.0,0.0,0.0},
 /* open_work		*/	WorkstationOpen,
 /* close_work		*/	WorkstationClose,
 /* activate_work	*/	WorkstationActivate,
 /* deactivate_work	*/	WorkstationDeactivate,
+/* alloc_colors		*/	WorkstationAllocateColors,
 /* update_work		*/	WorkstationUpdate,
 /* clear_work		*/	WorkstationClear,
 /* lineto_work 		*/	WorkstationLineTo,
@@ -739,6 +582,7 @@ WorkstationClassInitialize
 		{NhlSOLIDLINE,	"solidline"}
 	};
 	NhlConvertArg	dashargs[] = {
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMINMAX)},
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)0)},
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)16)}
 	};
@@ -749,9 +593,8 @@ WorkstationClassInitialize
 		{NhlFOREGROUND,		"foreground"}
 	};
 	NhlConvertArg	colorargs[] = {
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-1)},
-		{NhlIMMEDIATE,sizeof(int),
-					_NhlUSET((NhlPointer)(MAX_COLOR_MAP-1))}
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMIN)},
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-1)}
 	};
 	_NhlEnumVals	fillvals[] = {
 		{NhlSOLIDFILL,	"solidfill"},
@@ -759,6 +602,7 @@ WorkstationClassInitialize
 		{NhlNULLFILL,	"nullfill"}
 	};
 	NhlConvertArg	fillargs[] = {
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMINMAX)},
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-1)},
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)16)}
 	};
@@ -817,10 +661,11 @@ WorkstationClassInitialize
 		_NhlCvtGenArrayToIndexGenArray,fillargs,NhlNumber(fillargs),
 		False,NULL);
 
+	(void)_NhlInitPallets();
+
 	intQ = NrmStringToQuark(NhlTInteger);
 	intgenQ = NrmStringToQuark(NhlTIntegerGenArray);
 	colormap_name = NrmStringToQuark(NhlNwkColorMap);
-	colormaplen_name = NrmStringToQuark(NhlNwkColorMapLen);
 	bkgnd_name = NrmStringToQuark(NhlNwkBackgroundColor);
 	foregnd_name = NrmStringToQuark(NhlNwkForegroundColor);
 	marker_tbl_strings_name = NrmStringToQuark(_NhlNwkMarkerTableStrings);
@@ -921,6 +766,9 @@ WorkstationClassPartInitialize
 	if(lc->work_class.deactivate_work == NhlInheritDeactivate)
 		lc->work_class.deactivate_work = sc->work_class.deactivate_work;
 
+	if(lc->work_class.alloc_colors == NhlInheritAllocateColors)
+		lc->work_class.alloc_colors = sc->work_class.alloc_colors;
+
 	if(lc->work_class.update_work == NhlInheritUpdate)
 		lc->work_class.update_work = sc->work_class.update_work;
 
@@ -935,6 +783,122 @@ WorkstationClassPartInitialize
 
 	if(lc->work_class.marker_work == NhlInheritMarker)
 		lc->work_class.marker_work = sc->work_class.marker_work;
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	DoCmap
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlErrorTypes
+DoCmap
+#if	NhlNeedProto
+(
+	NhlWorkstationLayer	wl
+)
+#else
+(wl)
+	NhlWorkstationLayer	wl;
+#endif
+{
+	NhlWorkstationClass	wc = (NhlWorkstationClass)wl->base.layer_class;
+	NhlWorkstationClassPart	*wcp = &wc->work_class;
+	NhlWorkstationLayerPart	*wp = &wl->work;
+	int			i;
+	NhlColor		tc;
+	NhlColor		*tcp = NULL;
+	NhlPrivateColor		*pcmap = wp->private_color_map;
+
+	/*
+	 * If cmap is set, use it.
+	 */
+	if(wp->color_map){
+		tcp = wp->color_map->data;
+		wp->color_map_len = wp->color_map->len_dimensions[0];
+		wp->color_map = NULL;
+
+		for(i=0;i < wp->color_map_len;i++){
+			if (tcp[i][0] < 0.0)
+				continue;
+			pcmap[i].red = tcp[i][0];
+			pcmap[i].green = tcp[i][1];
+			pcmap[i].blue = tcp[i][2];
+			if(pcmap[i].cstat == _NhlCOLUNSET)
+				pcmap[i].cstat = _NhlCOLNEW;
+			else
+				pcmap[i].cstat = _NhlCOLCHANGE;
+		}
+	}
+
+	/*
+	 * Do background - If the user sets the background resource it is
+	 * used.  If they didn't, but they set the cmap resource, it is set
+	 * from the cmap.  If they didn't set either one, it defaults to
+	 * the value of the def_background class field(This is done in
+	 * "WorkstationAllocateColors").
+	 */
+	tcp = NULL;
+	if(wp->bkgnd_color){
+		tcp = wp->bkgnd_color->data;
+		if((*tcp)[0] < 0.0)
+			pcmap[NhlBACKGROUND].cstat = _NhlCOLUNSET;
+		wp->bkgnd_color = NULL;
+	}
+	if(pcmap[NhlBACKGROUND].cstat == _NhlCOLUNSET){
+		tcp = &wcp->def_background;
+	}
+	if(tcp){
+		pcmap[NhlBACKGROUND].cstat = _NhlCOLNEW;
+		pcmap[NhlBACKGROUND].red = (*tcp)[0];
+		pcmap[NhlBACKGROUND].green = (*tcp)[1];
+		pcmap[NhlBACKGROUND].blue = (*tcp)[2];
+	}
+
+	/*
+	 * Do foreground - If the user sets the foreground resource it is
+	 * used.  If they didn't, but they set the cmap resource, it is set
+	 * from the cmap.  If they didn't set either one, it is set to
+	 * either white or black, depending upon which is further in
+	 * geometric space.
+	 */
+	tcp = NULL;
+	if(wp->foregnd_color){
+		tcp = wp->foregnd_color->data;
+		if((*tcp)[0] < 0.0)
+			pcmap[NhlBACKGROUND].cstat = _NhlCOLUNSET;
+		wp->foregnd_color = NULL;
+	}
+	if(pcmap[NhlFOREGROUND].cstat == _NhlCOLUNSET){
+		if(pcmap[NhlBACKGROUND].red * pcmap[NhlBACKGROUND].red +
+		pcmap[NhlBACKGROUND].green * pcmap[NhlBACKGROUND].green +
+		pcmap[NhlBACKGROUND].blue * pcmap[NhlBACKGROUND].blue < .75){
+			tc[0] = 1.0;
+			tc[1] = 1.0;
+			tc[2] = 1.0;
+		}
+		else {
+			tc[0] = 0.0;
+			tc[1] = 0.0;
+			tc[2] = 0.0;
+		}
+		tcp = &tc;
+	}
+	if(tcp){
+		pcmap[NhlFOREGROUND].cstat = _NhlCOLNEW;
+		pcmap[NhlFOREGROUND].red = (*tcp)[0];
+		pcmap[NhlFOREGROUND].green = (*tcp)[1];
+		pcmap[NhlFOREGROUND].blue = (*tcp)[2];
+	}
 
 	return NhlNOERROR;
 }
@@ -958,51 +922,49 @@ WorkstationClassPartInitialize
 /*ARGSUSED*/
 static NhlErrorTypes WorkstationInitialize
 #if  NhlNeedProto
-( NhlClass class,  NhlLayer req, NhlLayer new, _NhlArgList args , int num_args  )
+(
+	NhlClass	lc,
+	NhlLayer	req,
+	NhlLayer	new,
+	_NhlArgList	args,
+	int		num_args
+)
 #else
-( class,  req, new, args , num_args  )
-	NhlClass 	class;
-	NhlLayer		req;
-	NhlLayer		new;
-	_NhlArgList		args;
+(lc,req,new,args,num_args)
+	NhlClass 	lc;
+	NhlLayer	req;
+	NhlLayer	new;
+	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	NhlWorkstationLayer newl = (NhlWorkstationLayer) new;
-	NhlColor* tcolor = NULL;
-	int i;
-	NhlErrorTypes retcode = NhlNOERROR, subret;
-	NhlGenArray ga;
-	char *e_text;
-	char *entry_name = "WorkstationInitialize";
-	int count[2];
-	int len1, len2;
-	NhlMarkerTableParams *mparams;
-	NhlString *mstrings;
-	NhlBoolean	explicit_cmap = False;
+	NhlWorkstationLayer	newl = (NhlWorkstationLayer)new;
+	NhlWorkstationLayerPart	*wp = &newl->work;
+	int			i;
+	NhlErrorTypes		retcode=NhlNOERROR,subret=NhlNOERROR;
+	NhlGenArray		ga;
+	char			*e_text;
+	char			*entry_name = "WorkstationInitialize";
+	int			count[2];
+	int			len1, len2;
+	NhlMarkerTableParams	*mparams;
+	NhlString		*mstrings;
 
-/* 
- * In case someone tries to set the value of the read-only fill table size
- * the actual size is maintained in a private variable. If the resource
- * has been set, issue a warning, then replace with the real value.
- */
-	if (_NhlArgIsSet(args,num_args,NhlNwkFillTableLength)) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "Attempt to set read-only resource ignored");
-		retcode = MIN(NhlWARNING, retcode);
-	}
+
+	wp->gkswksid = (int)NhlFATAL;
+	wp->gkswkstype = (int)NhlFATAL;
+	wp->gkswksconid = (int)NhlFATAL;
+
+	/*
+	 * Initialize colormap with _NhlCOLUNSET, then call DoCmap to fill cmap
+	 * with appropriate values.
+	 */
+	for(i=0;i < _NhlMAX_COLOR_MAP;i++)
+		wp->private_color_map[i].cstat = _NhlCOLUNSET;
+
+	retcode = DoCmap(newl);
+
 	newl->work.fill_table_len = fill_table_len - 1;
-
-/*
- * Same for marker table (note marker table element 0 is not reported
- * to the user)
- */
-
-	if (_NhlArgIsSet(args,num_args,NhlNwkMarkerTableLength)) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "Attempt to set read-only resource ignored");
-		retcode = MIN(NhlWARNING, retcode);
-	}
 	newl->work.marker_table_len = marker_table_len - 1;
 /*
  * Since the marker specs are stored privately it is only necessary to
@@ -1103,241 +1065,7 @@ static NhlErrorTypes WorkstationInitialize
 		}
 	}
 	
-/*
- * The dash pattern table is read-only
- */
-	if (_NhlArgIsSet(args,num_args,NhlNwkDashTableLength)) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "Attempt to set read-only resource ignored");
-		retcode = MIN(NhlWARNING, retcode);
-	}
-	if (_NhlArgIsSet(args,num_args,_NhlNwkDashTable)) {
-		newl->work.dash_table  = NULL;
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "Attempt to set read-only resource ignored");
-		retcode = MIN(NhlWARNING, retcode);
-	}
-
 	newl->work.dash_table_len = dash_table_len - 1;
-
-	newl->work.gkswksid = (int)NhlFATAL;
-	newl->work.gkswkstype = (int)NhlFATAL;
-	newl->work.gkswksconid = (int)NhlFATAL;
-
-	for(i = 0; i < MAX_COLOR_MAP; i++) {
-		newl->work.private_color_map[i].ci = UNSET;
-		newl->work.private_color_map[i].red= 0.0;
-		newl->work.private_color_map[i].green= 0.0;
-		newl->work.private_color_map[i].blue= 0.0;
-	}
-
-/*
- * Process the background resource: default to black. 
- * The background color can only be set at create time.
- */
-	if ((tcolor = (NhlColor*)NhlMalloc(sizeof(NhlColor))) == NULL) {
-		e_text = "%s: error creating %s array";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  NhlNwkBackgroundColor);
-		return NhlFATAL;
-	}
-	for (i=0; i<3; i++)
-		(*tcolor)[i] = 0.0;
-	count[0] = 3;
-	if ((ga = NhlCreateGenArray((NhlPointer)tcolor,NhlTFloat,
-				    sizeof(float),1,count)) == NULL) {
-		e_text = "%s: error creating %s GenArray";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  NhlNwkBackgroundColor);
-		return NhlFATAL;
-	}
-	ga->my_data = True;
-
-	if (newl->work.bkgnd_color != NULL) {
-		subret = _NhlValidatedGenArrayCopy(&ga,newl->work.bkgnd_color,
-						   3,True,False,
-						   NhlNwkBackgroundColor, 
-						   entry_name);
-		
-		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
-				return retcode;
-
-	}
-	newl->work.bkgnd_color = ga;
-
-	tcolor = (NhlColor *) newl->work.bkgnd_color->data;
-	for (i=0; i<3; i++) {
-		if ((*tcolor)[i] < 0.0 || (*tcolor)[i] > 1.0) {
-			int j;
-			e_text =
-			   "%s: %s holds an invalid color value: defaulting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNwkBackgroundColor);
-			retcode = MIN(retcode, NhlWARNING);
-			for (j=0; j<3; j++)
-				(*tcolor)[i] = 0.0;
-			break;
-		}
-	}
-	newl->work.private_color_map[NhlBACKGROUND].ci = SETALMOST;
-	newl->work.private_color_map[NhlBACKGROUND].red =  (*tcolor)[0];
-	newl->work.private_color_map[NhlBACKGROUND].green = (*tcolor)[1];
-	newl->work.private_color_map[NhlBACKGROUND].blue = (*tcolor)[2];
-
-/* 
- * If the colormap generic array resource is not set, create one using
- * the static color entries defined in this module. Note that since the
- * values are stored in a private map, it is not necessary to keep a
- * copy of the actual colormap resource data. The color map length is
- * a read-only parameter. When the user supplies a colormap, the length
- * of the map is determined from the size of the supplied GenArray. Note
- * that the user color map length is one less than the private color map
- * length since the user map length does not include the background color.
- */
-	newl->work.num_private_colors = NhlNumber(def_color) + 1;
-
-	if (_NhlArgIsSet(args,num_args,NhlNwkColorMapLen)) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "Attempt to set read-only resource ignored");
-		retcode = MIN(NhlWARNING, retcode);
-	}
-	newl->work.color_map_len = newl->work.num_private_colors - 1;
-
-/*
- * Create the gen_array initially using the static default color map data.
- * Note the my_data field is set False. (it's the default, but just to
- * be certain...)
- */
-	count[0] = newl->work.color_map_len;
-	count[1] = 3;
-	if ((ga = NhlCreateGenArray((NhlPointer)def_color,NhlTFloat,
-			       sizeof(float),2,count)) == NULL) {
-		e_text = "%s: error creating %s GenArray";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  NhlNwkColorMap);
-		return NhlFATAL;
-	}
-	ga->my_data = False;
-
-	if (newl->work.color_map != NULL) {		
-		subret = _NhlValidatedGenArrayCopy(&ga,newl->work.color_map,
-						   3*MAX_COLOR_MAP,False,False,
-						   NhlNwkColorMap, entry_name);
-		
-		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
-				return retcode;
-		if (subret > NhlWARNING) {
-			newl->work.color_map_len = 
-				newl->work.color_map->len_dimensions[0];
-		}
-		newl->work.num_private_colors = newl->work.color_map_len + 1;
-		explicit_cmap = True;
-	}
-	newl->work.color_map = ga;
-
-/*
- * SETALMOST is changed to a GKS color index when the workstation is opened
- * for now the ci will be the same as the array index but this may change
- * and hence the need for the ci field. Should values be checked? Yes.
- * Values less than 0.0 are considered "missing values" indicating that
- * the color should be considered unset. Checking for values greater than
- * 1.0 takes place in AllocateColors.
- * Start at index 1 since the background color has already been set.
- */
-	tcolor = newl->work.color_map->data;
-	for (i=1; i<newl->work.num_private_colors; i++)  {
-		newl->work.private_color_map[i].ci = SETALMOST;
-		newl->work.private_color_map[i].red = tcolor[i-1][0];
-		newl->work.private_color_map[i].green = tcolor[i-1][1];
-		newl->work.private_color_map[i].blue =  tcolor[i-1][2];
-		if (tcolor[i-1][0] < 0.0 || tcolor[i-1][1] < 0.0 ||
-		    tcolor[i-1][2] < 0.0) {
-			newl->work.private_color_map[i].ci = UNSET;
-		}
-	}
-
-/*
- * Process the foreground color resource: the foreground color is always
- * color index #1 (NhlFOREGROUND). It is set automatically when the 
- * colormap is loaded but an explicitly set foreground color overrides 
- * the colormap resource.
- */
-
-	if (newl->work.foregnd_color != NULL) {
-		tcolor = NULL;
-		count[0] = 0;
-		if ((ga = NhlCreateGenArray((NhlPointer)tcolor,NhlTFloat,
-				    sizeof(float),1,count)) == NULL) {
-			e_text = "%s: error creating %s GenArray";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNwkForegroundColor);
-			return NhlFATAL;
-		}
-		ga->my_data = False;
-
-		subret = _NhlValidatedGenArrayCopy(&ga,
-						   newl->work.foregnd_color,
-						   3,True,False,
-						   NhlNwkForegroundColor, 
-						   entry_name);
-		
-		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
-				return retcode;
-		
-		tcolor = (NhlColor *) ga->data;
-		for (i=0; i<3; i++) {
-			if ((*tcolor)[i] < 0.0 || (*tcolor)[i] > 1.0) {
-				e_text =
-		    "%s: %s holds an invalid color value: not set";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
-					  e_text,entry_name,
-					  NhlNwkForegroundColor);
-				subret = NhlWARNING;
-				retcode = MIN(retcode, subret);
-				break;
-			}
-		}
-		if (subret > NhlWARNING) {
-			newl->work.private_color_map[NhlFOREGROUND].ci = 
-				SETALMOST;
-			newl->work.private_color_map[NhlFOREGROUND].red = 
-				(*tcolor)[0];
-			newl->work.private_color_map[NhlFOREGROUND].green =
-				(*tcolor)[1];
-			newl->work.private_color_map[NhlFOREGROUND].blue =
-				(*tcolor)[2];
-		}
-		/*
-		 * Foreground resource is created on the fly in GetValues
-		 * if it is retrieved.
-		 */
-		(void)NhlFreeGenArray(ga);
-		newl->work.foregnd_color = NULL;
-	}
-	else if(!explicit_cmap){
-		/*
-		 * If the cmap is defaulted - then the foreground depends upon
-		 * the background.  It is black or white - which ever is better.
-		 */
-		newl->work.private_color_map[NhlFOREGROUND].ci = SETALMOST;
-		if (newl->work.private_color_map[NhlBACKGROUND].red *
-			newl->work.private_color_map[NhlBACKGROUND].red +
-		    newl->work.private_color_map[NhlBACKGROUND].green *
-			newl->work.private_color_map[NhlBACKGROUND].green +
-		    newl->work.private_color_map[NhlBACKGROUND].blue *
-			newl->work.private_color_map[NhlBACKGROUND].blue
-		    < .75) {
-			newl->work.private_color_map[NhlFOREGROUND].red = 1.0;
-			newl->work.private_color_map[NhlFOREGROUND].green = 1.0;
-			newl->work.private_color_map[NhlFOREGROUND].blue = 1.0;
-		}
-		else {
-			newl->work.private_color_map[NhlFOREGROUND].red = 0.0;
-			newl->work.private_color_map[NhlFOREGROUND].green = 0.0;
-			newl->work.private_color_map[NhlFOREGROUND].blue = 0.0;
-		}
-	}
-
 /*
  * Initialize the "default" graphics primatives.
  */
@@ -1358,114 +1086,6 @@ static NhlErrorTypes WorkstationInitialize
 	return(retcode);
 }
 
-
-/*
- * Function:	WorkstationDestroy
- *
- * Description:	DOES NOT CLOSE WORKSTATION! Simply frees dynamically allocated
- *		storage. The workstation has been closed by the destroy 
- *		function closes the workstation before calling this destroy 
- *		method.
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-static NhlErrorTypes WorkstationDestroy
-#if	NhlNeedProto
-( NhlLayer inst )
-#else
-(inst)
-	NhlLayer inst;
-#endif
-{
-	NhlWorkstationLayerPart	*wp = &((NhlWorkstationLayer)inst)->work;
-	NhlErrorTypes	retcode = NhlNOERROR;
-
-	NhlFreeGenArray(wp->bkgnd_color);
-	NhlFreeGenArray(wp->foregnd_color);
-	NhlFreeGenArray(wp->color_map);
-	NhlFreeGenArray(wp->marker_table_strings);
-	NhlFreeGenArray(wp->marker_table_params);
-
-	if(wp->public_lineinfo.line_label != wp->private_lineinfo.line_label)
-		NhlFree(wp->private_lineinfo.line_label);
-	NhlFree(wp->public_lineinfo.line_label);
-
-	return(retcode);
-}
-
-/*
- * Function:	DrawChildren
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-static NhlErrorTypes
-DrawChildren
-#if	NhlErrorTypes
-(
-	_NhlAllChildList	children
-)
-#else
-(children)
-	_NhlAllChildList	children;
-#endif
-{
-	NhlErrorTypes	ret,ret1;
-
-	if(!children)
-		return NhlNOERROR;
-
-	if(!_NhlIsOverlayMember(children->pid))
-		ret = NhlDraw(children->pid);
-
-	ret1 = DrawChildren(children->next);
-
-	return MIN(ret,ret1);
-}
-
-/*
- * Function:	WorkstationDraw
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-static NhlErrorTypes
-WorkstationDraw
-#if	NhlNeedProto
-(
-	NhlLayer	layer
-)
-#else
-(layer)
-	NhlLayer	layer;
-#endif
-{
-	/*
-	 * Call draw on all children...
-	 */
-	return DrawChildren(layer->base.all_children);
-}
-
 /*
  * Function:	WorkstationSetValues
  *
@@ -1480,16 +1100,23 @@ WorkstationDraw
  * Side Effects:
  */
 /*ARGSUSED*/
-static NhlErrorTypes    WorkstationSetValues
+static NhlErrorTypes
+WorkstationSetValues
 #if  NhlNeedProto
-( NhlLayer old, NhlLayer reference, NhlLayer new, _NhlArgList args, int num_args)
+(
+	NhlLayer	old,
+	NhlLayer	reference,
+	NhlLayer	new,
+	_NhlArgList	args,
+	int		num_args
+)
 #else
 (old,reference,new,args,num_args)
-        NhlLayer  old; 
-        NhlLayer  reference; 
-        NhlLayer  new;
-        _NhlArgList args;
-        int num_args;
+	NhlLayer	old;
+	NhlLayer	reference;
+	NhlLayer	new;
+	_NhlArgList	args;
+	int		num_args;
 #endif
 {
 	NhlWorkstationLayer	newl = (NhlWorkstationLayer) new;
@@ -1552,28 +1179,19 @@ static NhlErrorTypes    WorkstationSetValues
 		return NhlNOERROR;
 	}
 
-/*
- * Check to ensure that no one has messed with the read only fill table
- * size.
- */
-	if (newl->work.fill_table_len != fill_table_len - 1) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "Attempt to set read-only resource ignored");
-		retcode = MIN(NhlWARNING, retcode);
-		newl->work.fill_table_len = fill_table_len - 1;
-	}
+	/*
+	 * This function sets the private colormap based on the public
+	 * resources.
+	 */
+	subret = DoCmap(newl);
+	retcode = MIN(retcode,subret);
 
-/*
- * Check to ensure that no one has messed with the read only marker table
- * size.
- */
-	if (newl->work.marker_table_len != marker_table_len - 1) { 
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "Attempt to set read-only resource ignored");
-		retcode = MIN(NhlWARNING, retcode);
-		newl->work.marker_table_len = 
-			marker_table_len - 1;
-	}
+	/*
+	 * This function actually allocates the colors contained in the
+	 * private colormap.
+	 */
+	subret = _NhlAllocateColors(new);
+	retcode = MIN(retcode,subret);
 
 	len1 = 0;
 	if (newl->work.marker_table_params != oldl->work.marker_table_params) {
@@ -1646,140 +1264,6 @@ static NhlErrorTypes    WorkstationSetValues
 	}
 	
 /*
- * The dash table is read-only
- */
-
-	if (newl->work.dash_table_len != dash_table_len - 1) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "Attempt to set read-only resource ignored");
-		retcode = MIN(NhlWARNING, retcode);
-		newl->work.dash_table_len = dash_table_len - 1;
-	}
-	if (newl->work.dash_table != oldl->work.dash_table) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "Attempt to set read-only resource ignored");
-		retcode = MIN(NhlWARNING, retcode);
-		newl->work.dash_table = oldl->work.dash_table;
-	}
-
-/*
- * The background color cannot change once the workstation is initialized
- */
-	if(newl->work.bkgnd_color != oldl->work.bkgnd_color ) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "Illegal Background color change");
-		retcode = MIN(NhlWARNING, retcode);
-		newl->work.bkgnd_color = oldl->work.bkgnd_color;
-	}
-
-/*
- * The color map len resource is read only also. 
- */
-	if (newl->work.color_map_len != newl->work.num_private_colors - 1) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "Attempt to set read-only resource ignored");
-		retcode = MIN(NhlWARNING, retcode);
-		newl->work.color_map_len = newl->work.num_private_colors - 1;
-	}
-
-	if (newl->work.color_map != oldl->work.color_map) {
-		count = MIN(MAX_COLOR_MAP,
-			    newl->work.color_map->len_dimensions[0]);
-		subret = _NhlValidatedGenArrayCopy(&(oldl->work.color_map),
-					       newl->work.color_map,
-					       3*MAX_COLOR_MAP,False,False,
-					       NhlNwkColorMap, entry_name);
-		
-		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
-				return retcode;
-		newl->work.color_map = oldl->work.color_map;
-
-		if (subret > NhlWARNING) {
-			newl->work.color_map_len = count;
-			newl->work.num_private_colors = 
-				newl->work.color_map_len + 1;
-			tcolor = newl->work.color_map->data;
-			for (i=1; i<newl->work.num_private_colors; i++)  {
-				newl->work.private_color_map[i].ci = SETALMOST;
-				newl->work.private_color_map[i].red = 
-					tcolor[i-1][0];
-				newl->work.private_color_map[i].green = 
-					tcolor[i-1][1];
-				newl->work.private_color_map[i].blue =  
-					tcolor[i-1][2];
-				if (tcolor[i-1][0] < 0.0 || 
-				    tcolor[i-1][1] < 0.0 ||
-				    tcolor[i-1][2] < 0.0) {
-					newl->work.private_color_map[i].ci 
-						= UNSET;
-				}
-			}
-
-			/* since passing in a colormap is a total reset of
-			 * of the colormap; it is necessary to 'UNSET' any
-			 * colors that were previously allocated */
-			   
-			for (i=newl->work.num_private_colors; 
-			     i < MAX_COLOR_MAP; i++)  {
-				newl->work.private_color_map[i].ci = UNSET;
-			}
-		}
-	}
-	
-
-/*
- * Process the foreground color resource: the foreground color is always
- * color index #1. It is set automatically when the colormap is loaded
- * but an explicitly set foreground color overrides the value loaded using
- * the colormap resource.
- */
-	if (newl->work.foregnd_color != oldl->work.foregnd_color) {
-		subret = _NhlValidatedGenArrayCopy(&(oldl->work.foregnd_color),
-					       newl->work.foregnd_color,
-					       3,True,False,
-					       NhlNwkForegroundColor, 
-					       entry_name);
-		
-		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
-				return retcode;
-		newl->work.foregnd_color = oldl->work.foregnd_color;
-		tcolor = (NhlColor *) newl->work.foregnd_color->data;
-
-		if (subret > NhlWARNING) {
-			for (i=0; i<3; i++) {
-				if ((*tcolor)[i] < 0.0 || (*tcolor)[i] > 1.0) {
-					e_text =
-			    "%s: %s holds an invalid color value: not set";
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
-						  e_text,entry_name,
-						  NhlNwkForegroundColor);
-					subret = NhlWARNING;
-					retcode = MIN(retcode, subret);
-					break;
-				}
-			}
-		}
-		if (subret > NhlWARNING) {
-			newl->work.private_color_map[NhlFOREGROUND].ci = 
-				SETALMOST;
-			newl->work.private_color_map[NhlFOREGROUND].red = 
-				(*tcolor)[0];
-			newl->work.private_color_map[NhlFOREGROUND].green =
-				(*tcolor)[1];
-			newl->work.private_color_map[NhlFOREGROUND].blue =
-				(*tcolor)[2];
-		}
-
-	}
-		
-/*
- * Allocate the colors now that both the color table and the foreground have
- * been set.
- */
-	subret = AllocateColors((NhlLayer)newl);
-	retcode = MIN(retcode,subret);
-
-/*
  * Set the line label
  */
 
@@ -1813,706 +1297,6 @@ static NhlErrorTypes    WorkstationSetValues
 }
 
 /*
- * Function:	WorkstationActivate
- *
- * Description:	WorkstationActivate activates the workdstation associated with
- *		this instance. If the workstation hasn't been initialize, which
- *		is next to impossible since NhlOpenWork is called from create,
- *		an error status is returned. Other wise the workstation is
- *		activated.
- *
- * In Args:	Takes just the instance
- *
- * Out Args:	Changes fields of the instance
- *
- * Return Values:
- *
- * Side Effects:
- */
-static NhlErrorTypes WorkstationActivate
-#if NhlNeedProto
-(NhlLayer	instance )
-#else
-(instance)
-	NhlLayer	instance;
-#endif
-{
-	char			func[] = "WorkstationActivate";
-	NhlWorkstationLayer	thework = (NhlWorkstationLayer) instance;
-	NhlErrorTypes		retcode = NhlNOERROR;	
-
-	if(wksisopn(thework->work.gkswksid)) {
-		if(!wksisact(thework->work.gkswksid)) {
-			gactivate_ws(thework->work.gkswksid);
-			if(_NhlLLErrCheckPrnt(NhlWARNING,func))
-				retcode = NhlWARNING;
-		} else {
-/*
-* WORKSTATION IS ALREADY ACTIVE
-*/
-			NhlPError(NhlINFO,NhlEUNKNOWN,"WorkstationActivate called on already active workstation");
-			retcode = NhlINFO; 
-		}
-	} else {
-/*
-* ERROR WORKSTATION IS NOT OPEN INITILIZATION FAILED
-*/
-		NhlPError(NhlFATAL,NhlEUNKNOWN, "WorkstationActivate can't activate an unopened workstation");
-		retcode = NhlFATAL;
-	}
-	return(retcode);
-}
-
-/*
- * Function:	WorkstationDeactivate
- *
- * Description:	Deactivates workstation. if not open NhlFATAL error if not active
- *		informational message.
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-static NhlErrorTypes WorkstationDeactivate
-#if NhlNeedProto
-(NhlLayer	instance )
-#else
-(instance)
-	NhlLayer	instance;
-#endif
-{
-	char			func[] = "WorkstationDeactivate";
-	NhlWorkstationLayer	thework = (NhlWorkstationLayer) instance;
-	NhlErrorTypes		retcode = NhlNOERROR;
-
-	if(wksisopn(thework->work.gkswksid)&&wksisact(thework->work.gkswksid)){
-		gdeactivate_ws(thework->work.gkswksid);
-		if(_NhlLLErrCheckPrnt(NhlWARNING,func))
-			retcode = NhlWARNING;
-	}
-	else{
-/*
-* ERROR WORKSTATION NOT ACTIVE OR NOT INITIALIZED
-*/
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"WorkstationDeactivate: workstation not active or not opened");
-		retcode = NhlWARNING;
-	}
-
-	return retcode;
-}
-
-/*
- * Function:	WorkstationOpen
- *
- * Description: Checks and makes sure GKS is open and then procedes to try
- *		to find an available workstation id. Also WorkstationOpen checks
- *		the workstation type and conection id to see if they are valid
- *		if they are then it procedes to open the workstation. 
- *		Workstation open is part of an "up-chained" method so these
- *		values are set by the subclasses' WorkstationOpen before getting
- *		to this. This is done so escape elements that need to be called,
- *		by different workstation types, before the GOPWK call can be
- *		called.
- *
- * In Args:	Just take the workstation instance.
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-static NhlErrorTypes WorkstationOpen
-#if NhlNeedProto
-(NhlLayer	instance )
-#else
-(instance)
-	NhlLayer	instance;
-#endif
-{	
-	char			func[] = "OpenWorkstation";
-	NhlWorkstationLayer	thework = (NhlWorkstationLayer) instance;
-	NhlErrorTypes		retcode = NhlNOERROR;
-	int			i = 2;
-
-	if(thework->work.gkswkstype == NhlFATAL) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unknown workstation type");
-		return(NhlFATAL);
-		
-	} 
-	if(thework->work.gkswksconid == NhlFATAL) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unknown workstation connection id");
-		return(NhlFATAL);
-	}
-	while(wksisopn(i)) {
-		i++;
-	}
-	thework->work.gkswksid = i;
-
-/* FORTRAN */ _NHLCALLF(gopwk,GOPWK)(&(thework->work.gkswksid),&(thework->work.gkswksconid),&(thework->work.gkswkstype));
-	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
-		return NhlFATAL;
-	gset_clip_ind(GIND_NO_CLIP);
-	if(_NhlLLErrCheckPrnt(NhlWARNING,func)){
-		return NhlFATAL;
-	}
-
-	retcode = AllocateColors((NhlLayer)thework);
-
-	return(retcode);
-	
-		
-}
-
-/*
- * Function:	WorkstationClose
- *
- * Description:	Called before workstation destroy. This like Open is an "up-
- *		chained method it is intended to allow subclasses to do things
- *		before the actual close. If workstation is not open or is 
- *		currently active an error message is provided.
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-static NhlErrorTypes WorkstationClose
-#if NhlNeedProto
-(NhlLayer	instance )
-#else
-(instance)
-	NhlLayer	instance;
-#endif
-{
-	char			func[] = "WorkstationClose";
-	NhlWorkstationLayer	thework = (NhlWorkstationLayer) instance;
-	NhlErrorTypes retcode = NhlNOERROR;
-
-	if(wksisact(thework->work.gkswksid)){
-		NhlPError(NhlINFO,NhlEUNKNOWN,"WorkstationClose: workstation must be deactivated before closed, deactivating workstation now");
-		_NhlDeactivateWorkstation(instance);
-	} 
-	if(!wksisopn(thework->work.gkswksid)) {
-		NhlPError(NhlINFO,NhlEUNKNOWN,"WorkstationClose: workstation already closed");
-		retcode = NhlINFO;
-	} else {
-		gclose_ws(thework->work.gkswksid);
-		if(_NhlLLErrCheckPrnt(NhlINFO,func))
-			retcode = NhlINFO;
-	}
-	return(retcode);
-}
-
-/*
- * Function:	WorkstationUpdate
- *
- * Description:	This function is used to update the workstation
- *
- * In Args:	
- *		NhlLayer	l	workstation layer to update
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-static NhlErrorTypes
-WorkstationUpdate
-#if	NhlNeedProto
-(
-	NhlLayer	l	/* workstation layer to update	*/
-)
-#else
-(l)
-	NhlLayer	l;	/* workstation layer to update	*/
-#endif
-{
-	char	func[] = "WorkstationUpdate";
-
-	gupd_ws(_NhlWorkstationId(l),GFLAG_PERFORM);
-	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
-		return NhlWARNING;
-
-	return NhlNOERROR;
-}
-
-/*
- * Function:	WorkstationClear
- *
- * Description:	This function is used to clear the workstation
- *
- * In Args:	
- *		NhlLayer	l	workstation layer to update
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-static NhlErrorTypes
-WorkstationClear
-#if	NhlNeedProto
-(
-	NhlLayer	l	/* workstation layer to update	*/
-)
-#else
-(l)
-	NhlLayer	l;	/* workstation layer to update	*/
-#endif
-{
-	char	func[] = "WorkstationClear";
-
-	gclear_ws(_NhlWorkstationId(l),GFLAG_ALWAYS);
-	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
-		return NhlWARNING;
-
-	return NhlNOERROR;
-}
-
-/*
- * Function:	NhlSetColor
- *
- * Description:	Convienience function for setting one color at a time.
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-NhlErrorTypes	NhlSetColor
-#if	NhlNeedProto
-(int pid, int ci, float red, float green, float blue)
-#else
-(pid,ci,red,green,blue)
-	int     pid;
-	int	ci;
-	float	red;
-	float	green;
-	float	blue;
-#endif
-{
-	return(_NhlSetColor(_NhlGetLayer(pid),ci,red,green,blue));
-}
-
-/*
- * Function:	nhl_fsetcolor
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-void _NHLCALLF(nhl_fsetcolor,NHL_FSETCOLOR)
-#if	NhlNeedProto
-(
-	int	*pid,
-	int	*indx,
-	float	*red,
-	float	*green,
-	float	*blue,
-	int	*err
-)
-#else
-(pid,indx,red,green,blue,err)
-	int	*pid;
-	int	*indx;
-	float	*red;
-	float	*green;
-	float	*blue;
-	int	*err;
-#endif
-{
-	*err = NhlSetColor(*pid,*indx,*red,*green,*blue);
-
-	return;
-}
-
-NhlErrorTypes	_NhlSetColor
-#if	NhlNeedProto
-(NhlLayer inst, int ci, float red, float green, float blue)
-#else
-(inst,ci,red,green,blue)
-	NhlLayer	inst;
-	int	ci;
-	float	red;
-	float	green;
-	float	blue;
-#endif
-{
-	NhlWorkstationLayer	thework = (NhlWorkstationLayer)inst;
-	
-	if (ci == NhlBACKGROUND || ci == NhlTRANSPARENT) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-		     "NhlSetColor: color index cannot be set: no allocation");
-		return(NhlWARNING);
-	}
-	else if (ci >= MAX_COLOR_MAP || ci < NhlTRANSPARENT) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "NhlSetColor: invalid color index: no allocation");
-		return(NhlWARNING);
-	}
-	else if (red < 0.0 || red > 1.0 || green < 0.0 || green > 1.0 ||
-		 blue < 0.0 || blue > 1.0) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-	         "NhlSetColor: a color component was invalid: no allocation");
-		return(NhlWARNING);
-	}
-
-	thework->work.private_color_map[ci].ci = SETALMOST;
-	thework->work.private_color_map[ci].red = red;
-	thework->work.private_color_map[ci].green = green;
-	thework->work.private_color_map[ci].blue = blue;
-
-	return(AllocateColors((NhlLayer)thework));
-}
-
-/*
- * Function:	NhlFreeColor
- *
- * Description:	removes a color index from the workstation color map
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-NhlErrorTypes	NhlFreeColor
-#if	NhlNeedProto
-(int pid, int ci)
-#else
-(pid ,ci)
-	int 	pid;
-	int	ci;
-#endif
-{
-	return(_NhlFreeColor(_NhlGetLayer(pid),ci));
-}
-NhlErrorTypes	_NhlFreeColor
-#if	NhlNeedProto
-(NhlLayer inst, int ci)
-#else
-(inst,ci)
-	NhlLayer inst;
-	int	ci;
-#endif
-{
-	NhlWorkstationLayer	thework = (NhlWorkstationLayer)inst;
-
-	if (ci == NhlBACKGROUND || ci == NhlTRANSPARENT) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "NhlSetColor: color index cannot be freed");
-		return(NhlWARNING);
-	}
-	else if (ci >= MAX_COLOR_MAP || ci < NhlTRANSPARENT) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "NhlSetColor: invalid color index: cannot be freed");
-		return(NhlWARNING);
-	}
-
-	thework->work.private_color_map[ci].ci = REMOVE;
-
-	return(DeallocateColors((NhlLayer)thework));
-}
-
-/*
- * Function:	nhl_ffreecolor
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-void _NHLCALLF(nhl_ffreecolor,NHL_FFREECOLOR)
-#if	NhlNeedProto
-(
-	int	*wid,
-	int	*indx,
-	int	*err
-)
-#else
-(wid,indx,err)
-	int	*wid;
-	int	*indx;
-	int	*err;
-#endif
-{
-	*err = NhlFreeColor(*wid,*indx);
-
-	return;
-}
-
-/*
- * Function:	AllocateColors
- *
- * Description: Used to allocate colors.
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-
-static NhlErrorTypes AllocateColors
-#if  NhlNeedProto
-(NhlLayer inst )
-#else
-(inst)
-	NhlLayer inst;
-#endif
-{
-	char			func[] = "AllocateColors";
-	NhlWorkstationLayer	thework = (NhlWorkstationLayer) inst;
-	Gcolr_rep		tmpcolrrep;
-	int			i, max_col = 0;
-	NhlPrivateColor		*pcmap;
-	NhlErrorTypes		ret = NhlNOERROR;
-/*
-* Temporary allocation routine until some color management scheme is put in 
-* place. In fact this may turn in to a method
-*/
-	pcmap = thework->work.private_color_map;
-
-	for ( i = 0; i < MAX_COLOR_MAP; i++) {
-		if(pcmap[i].ci == SETALMOST) {
-			tmpcolrrep.rgb.red = pcmap[i].red;
-			tmpcolrrep.rgb.green = pcmap[i].green;
-			tmpcolrrep.rgb.blue= pcmap[i].blue;
-			gset_colr_rep(thework->work.gkswksid,i,&tmpcolrrep);
-			if(_NhlLLErrCheckPrnt(NhlWARNING,func)) {
-				ret = NhlWARNING;
-				pcmap[i].ci = UNSET;
-			}
-			else {
-				pcmap[i].ci = i;
-				max_col = i;
-			}
-		}
-		else if (pcmap[i].ci > NhlTRANSPARENT) {
-			max_col = i;
-		}
-		else {
-			pcmap[i].red = -1.0;
-			pcmap[i].green = -1.0;
-			pcmap[i].blue = -1.0;
-		}
-	}
-	thework->work.color_map_len = max_col;
-	thework->work.num_private_colors = max_col + 1;
-	
-	return ret;
-}
-
-/*
- * Function:	DeallocateColors
- *
- * Description: Used to deallocate colors.
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-
-static NhlErrorTypes DeallocateColors
-#if  NhlNeedProto
-(NhlLayer inst )
-#else
-(inst)
-	NhlLayer inst;
-#endif
-{
-	char			func[] = "DeallocateColors";
-	NhlWorkstationLayer	thework = (NhlWorkstationLayer) inst;
-	NhlPrivateColor		*pcmap = thework->work.private_color_map;
-	Gcolr_rep		tmpcolrrep;
-	int			i, max_col = 0;
-	NhlErrorTypes		ret = NhlNOERROR;
-
-/*
- * If the Foreground is removed set a new foreground of white or black 
- * depending on whether the Background color is closer to white or black.
- */
-
-	if (pcmap[NhlFOREGROUND].ci == REMOVE) {
-		pcmap[NhlFOREGROUND].ci = NhlFOREGROUND;
-		if (pcmap[NhlBACKGROUND].red * pcmap[NhlBACKGROUND].red +
-		    pcmap[NhlBACKGROUND].green * pcmap[NhlBACKGROUND].green +
-		    pcmap[NhlBACKGROUND].blue * pcmap[NhlBACKGROUND].blue 
-		    < .75) {
-			pcmap[NhlFOREGROUND].red = 1.0;
-			pcmap[NhlFOREGROUND].green = 1.0;
-			pcmap[NhlFOREGROUND].blue = 1.0;
-		}
-		else {
-			pcmap[NhlFOREGROUND].red = 0.0;
-			pcmap[NhlFOREGROUND].green = 0.0;
-			pcmap[NhlFOREGROUND].blue = 0.0;
-		}
-		tmpcolrrep.rgb.red = pcmap[NhlFOREGROUND].red;
-		tmpcolrrep.rgb.green = pcmap[NhlFOREGROUND].green;
-		tmpcolrrep.rgb.blue= pcmap[NhlFOREGROUND].blue;
-		gset_colr_rep(thework->work.gkswksid,
-			      NhlFOREGROUND,&tmpcolrrep);
-		if(_NhlLLErrCheckPrnt(NhlWARNING,func))
-			ret = NhlWARNING;
-	}
-		
-	for( i = 1; i < MAX_COLOR_MAP; i++) {
-		if (pcmap[i].ci == REMOVE) {
-			pcmap[i].ci = UNSET;
-			pcmap[i].red = -1.0;
-			pcmap[i].green = -1.0;
-			pcmap[i].blue = -1.0;
-		}
-		else if (pcmap[i].ci > NhlTRANSPARENT) max_col = i;
-	}
-	thework->work.color_map_len = max_col;
-	thework->work.num_private_colors = max_col + 1;
-	return ret;
-}
-
-/*
- * Function:	NhlNewColor
- *
- * Description: Does not require the user to provide a color index and returns
- *		either an error status or a color index(not a GKS color index
- *		though, just an index into the workstatoins color map .
- * 
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-int NhlNewColor
-#if  NhlNeedProto
-(int pid, float red, float green, float blue)
-#else
-(pid,red,green,blue)
-	int pid;
-	float red;
-	float green;
-	float blue;
-#endif
-{
-
-
-	return(_NhlNewColor(_NhlGetLayer(pid),red,green,blue));
-}
-
-/*
- * Function:	nhl_fnewcolor
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-void _NHLCALLF(nhl_fnewcolor,NHL_FNEWCOLOR)
-#if	NhlNeedProto
-(
-	int	*wid,
-	float	*red,
-	float	*green,
-	float	*blue,
-	int	*indx
-)
-#else
-(wid,red,green,blue,indx)
-	int	*wid;
-	float	*red;
-	float	*green;
-	float	*blue;
-	int	*indx;
-#endif
-{
-	*indx = NhlNewColor(*wid,*red,*green,*blue);
-
-	return;
-}
-
-int _NhlNewColor
-#if   NhlNeedProto
-(NhlLayer inst,float red,float green,float blue)
-#else
-(inst,red,green,blue)
-        NhlLayer   inst;
-        float   red;
-        float   green;
-        float   blue;
-#endif
-{
-	NhlWorkstationLayer  thework = (NhlWorkstationLayer) inst;
-	int i = 2;
-	NhlErrorTypes retcode = NhlNOERROR;
-
-	if (red < 0.0 || red > 1.0 || green < 0.0 || green > 1.0 ||
-		 blue < 0.0 || blue > 1.0) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-		 "NhlNewColor: a color component was invalid; no allocation");
-		return(NhlWARNING);
-	}
-	while( thework->work.private_color_map[i].ci != UNSET ) {
-		i++;
-		if(i == MAX_COLOR_MAP) {
-/*
-* ERROR : no available colors
-*/		
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  "NhlNewColor: no available colors");
-			return(NhlFATAL);
-		}
-	}
-	thework->work.private_color_map[i].ci = SETALMOST;
-	thework->work.private_color_map[i].red = red;
-	thework->work.private_color_map[i].green = green;
-	thework->work.private_color_map[i].blue = blue;
-	retcode = AllocateColors((NhlLayer)thework);
-
-	return((retcode <= NhlINFO)? (int)retcode : i);
-	 
-}
-
-/*
  * Function:	WorkstationGetValues
  *
  * Description:	
@@ -2527,20 +1311,25 @@ int _NhlNewColor
  *	Memory is allocated when the following resources are retrieved:
  *		NhlNwkColorMap
  *		NhlNwkBackgroundColor
+ *		NhlNwkForegroundColor
  *		_NhlNwkMarkerTableStrings
  *		_NhlNwkMarkerTableParams
  *		_NhlNwkDashTable
  *	The user is responsible for freeing this memory.
  */
-
-static NhlErrorTypes	WorkstationGetValues
+static NhlErrorTypes
+WorkstationGetValues
 #if NhlNeedProto
-(NhlLayer l, _NhlArgList args, int num_args)
+(
+	NhlLayer	l,
+	_NhlArgList	args,
+	int		num_args
+)
 #else
 (l,args,num_args)
 	NhlLayer	l;
 	_NhlArgList	args;
-	int	num_args;
+	int		num_args;
 #endif
 {
 	NhlWorkstationLayer wl = (NhlWorkstationLayer)l;
@@ -2562,9 +1351,9 @@ static NhlErrorTypes	WorkstationGetValues
 				NhlMalloc(wl->work.color_map_len
 					  *sizeof(NhlColor));
 			for(j = 0; j< wl->work.color_map_len; j++) {
-				tmp[j][0] = private[j + 1].red;
-				tmp[j][1] = private[j + 1].green;
-				tmp[j][2] = private[j + 1].blue;
+				tmp[j][0] = private[j].red;
+				tmp[j][1] = private[j].green;
+				tmp[j][2] = private[j].blue;
 			}
 			count[0] = wl->work.color_map_len;
 			count[1] = 3;
@@ -2721,6 +1510,726 @@ static NhlErrorTypes	WorkstationGetValues
 }
 
 /*
+ * Function:	WorkstationDestroy
+ *
+ * Description:	DOES NOT CLOSE WORKSTATION! Simply frees dynamically allocated
+ *		storage. The workstation has been closed by the destroy 
+ *		function closes the workstation before calling this destroy 
+ *		method.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlErrorTypes WorkstationDestroy
+#if	NhlNeedProto
+(
+	NhlLayer	inst
+)
+#else
+(inst)
+	NhlLayer	inst;
+#endif
+{
+	NhlWorkstationLayerPart	*wp = &((NhlWorkstationLayer)inst)->work;
+	NhlErrorTypes	retcode = NhlNOERROR;
+
+	NhlFreeGenArray(wp->marker_table_strings);
+	NhlFreeGenArray(wp->marker_table_params);
+
+	if(wp->public_lineinfo.line_label != wp->private_lineinfo.line_label)
+		NhlFree(wp->private_lineinfo.line_label);
+	NhlFree(wp->public_lineinfo.line_label);
+
+	return(retcode);
+}
+
+/*
+ * Function:	DrawChildren
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+DrawChildren
+#if	NhlErrorTypes
+(
+	_NhlAllChildList	children
+)
+#else
+(children)
+	_NhlAllChildList	children;
+#endif
+{
+	NhlErrorTypes	ret,ret1;
+
+	if(!children)
+		return NhlNOERROR;
+
+	if(!_NhlIsOverlayMember(children->pid))
+		ret = NhlDraw(children->pid);
+
+	ret1 = DrawChildren(children->next);
+
+	return MIN(ret,ret1);
+}
+
+/*
+ * Function:	WorkstationDraw
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+WorkstationDraw
+#if	NhlNeedProto
+(
+	NhlLayer	layer
+)
+#else
+(layer)
+	NhlLayer	layer;
+#endif
+{
+	/*
+	 * Call draw on all children...
+	 */
+	return DrawChildren(layer->base.all_children);
+}
+
+/*
+ * Function:	WorkstationOpen
+ *
+ * Description: Checks and makes sure GKS is open and then procedes to try
+ *		to find an available workstation id. Also WorkstationOpen checks
+ *		the workstation type and conection id to see if they are valid
+ *		if they are then it procedes to open the workstation. 
+ *		Workstation open is part of an "up-chained" method so these
+ *		values are set by the subclasses' WorkstationOpen before getting
+ *		to this. This is done so escape elements that need to be called,
+ *		by different workstation types, before the GOPWK call can be
+ *		called.
+ *
+ * In Args:	Just take the workstation instance.
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlErrorTypes
+WorkstationOpen
+#if NhlNeedProto
+(
+	NhlLayer	l
+)
+#else
+(l)
+	NhlLayer	l;
+#endif
+{	
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
+	char			func[] = "OpenWorkstation";
+	int			i = 2;
+
+	if(wl->work.gkswkstype == NhlFATAL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unknown workstation type");
+		return(NhlFATAL);
+		
+	} 
+	if(wl->work.gkswksconid == NhlFATAL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"Unknown workstation connection id");
+		return(NhlFATAL);
+	}
+	while(wksisopn(i)) {
+		i++;
+	}
+	wl->work.gkswksid = i;
+
+	_NHLCALLF(gopwk,GOPWK)(&(wl->work.gkswksid),&(wl->work.gkswksconid),
+		&(wl->work.gkswkstype));
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
+	gset_clip_ind(GIND_NO_CLIP);
+	if(_NhlLLErrCheckPrnt(NhlWARNING,func)){
+		return NhlFATAL;
+	}
+
+	return _NhlAllocateColors(l);
+}
+
+/*
+ * Function:	WorkstationClose
+ *
+ * Description:	Called before workstation destroy. This like Open is an "up-
+ *		chained method it is intended to allow subclasses to do things
+ *		before the actual close. If workstation is not open or is 
+ *		currently active an error message is provided.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlErrorTypes
+WorkstationClose
+#if NhlNeedProto
+(
+	NhlLayer	l
+)
+#else
+(l)
+	NhlLayer	l;
+#endif
+{
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
+	char			func[] = "WorkstationClose";
+	NhlErrorTypes retcode = NhlNOERROR;
+
+	if(wksisact(wl->work.gkswksid)){
+		NhlPError(NhlINFO,NhlEUNKNOWN,
+"%s:workstation should be deactivated, deactivating workstation now",func);
+		_NhlDeactivateWorkstation(l);
+	} 
+	if(!wksisopn(wl->work.gkswksid)) {
+		NhlPError(NhlINFO,NhlEUNKNOWN,
+			"%s workstation already closed",func);
+		retcode = NhlINFO;
+	} else {
+		gclose_ws(wl->work.gkswksid);
+		if(_NhlLLErrCheckPrnt(NhlINFO,func))
+			retcode = NhlINFO;
+	}
+
+	return	retcode;
+}
+
+/*
+ * Function:	WorkstationActivate
+ *
+ * Description:	WorkstationActivate activates the workdstation associated with
+ *		this instance. If the workstation hasn't been initialize, which
+ *		is next to impossible since NhlOpenWork is called from create,
+ *		an error status is returned. Other wise the workstation is
+ *		activated.
+ *
+ * In Args:	Takes just the instance
+ *
+ * Out Args:	Changes fields of the instance
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlErrorTypes
+WorkstationActivate
+#if NhlNeedProto
+(
+	NhlLayer	l
+)
+#else
+(l)
+	NhlLayer	l;
+#endif
+{
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
+	char			func[] = "WorkstationActivate";
+
+	if(!wksisopn(wl->work.gkswksid)){
+		/*
+		 * ERROR WORKSTATION IS NOT OPEN INITILIZATION FAILED
+		 */
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:can't activate an unopened workstation",func);
+		return NhlFATAL;
+	}
+
+	if(wksisact(wl->work.gkswksid)){
+		/*
+		 * WORKSTATION IS ALREADY ACTIVE
+		 */
+		NhlPError(NhlINFO,NhlEUNKNOWN,
+				"%s:called on already active workstation",func);
+		return NhlINFO; 
+	}
+
+	gactivate_ws(wl->work.gkswksid);
+	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
+		return NhlWARNING;
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	WorkstationDeactivate
+ *
+ * Description:	Deactivates workstation. if not open NhlFATAL error if not
+ *		active informational message.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlErrorTypes
+WorkstationDeactivate
+#if NhlNeedProto
+(
+	NhlLayer	l
+)
+#else
+(l)
+	NhlLayer	l;
+#endif
+{
+	char			func[] = "WorkstationDeactivate";
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
+	NhlErrorTypes		retcode = NhlNOERROR;
+
+	if(wksisopn(wl->work.gkswksid)&&wksisact(wl->work.gkswksid)){
+		gdeactivate_ws(wl->work.gkswksid);
+		if(_NhlLLErrCheckPrnt(NhlWARNING,func))
+			retcode = NhlWARNING;
+	}
+	else{
+/*
+* ERROR WORKSTATION NOT ACTIVE OR NOT INITIALIZED
+*/
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"WorkstationDeactivate: workstation not active or not opened");
+		retcode = NhlWARNING;
+	}
+
+	return retcode;
+}
+
+/*
+ * Function:	WorkstationAllocateColors
+ *
+ * Description: Used to allocate colors.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlErrorTypes
+WorkstationAllocateColors
+#if  NhlNeedProto
+(
+	NhlLayer l
+)
+#else
+(l)
+	NhlLayer l;
+#endif
+{
+	char			func[] = "WorkstationAllocateColors";
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
+	NhlWorkstationClassPart	*wcp =
+		&((NhlWorkstationClass)wl->base.layer_class)->work_class;
+	Gcolr_rep		tcrep;
+	int			i, max_col = 0;
+	NhlPrivateColor		*pcmap;
+	NhlErrorTypes		ret = NhlNOERROR;
+
+	pcmap = wl->work.private_color_map;
+
+	for ( i = 0; i < _NhlMAX_COLOR_MAP; i++) {
+		switch(pcmap[i].cstat){
+			case _NhlCOLNEW:
+			case _NhlCOLCHANGE:
+				tcrep.rgb.red = pcmap[i].red;
+				tcrep.rgb.green = pcmap[i].green;
+				tcrep.rgb.blue= pcmap[i].blue;
+				gset_colr_rep(wl->work.gkswksid,i,&tcrep);
+				if(_NhlLLErrCheckPrnt(NhlWARNING,func)) {
+					ret = NhlWARNING;
+					pcmap[i].cstat = _NhlCOLUNSET;
+				}
+				else {
+					pcmap[i].cstat = _NhlCOLSET;
+					pcmap[i].ci = i;
+					max_col = i;
+				}
+				break;
+
+			case _NhlCOLREMOVE:
+				pcmap[i].cstat = _NhlCOLUNSET;
+			case _NhlCOLUNSET:
+				pcmap[i].red = -1.0;
+				pcmap[i].green = -1.0;
+				pcmap[i].blue = -1.0;
+				break;
+
+			case _NhlCOLSET:
+				max_col = i;
+				break;
+		}
+	}
+
+	/*
+	 * The background and the foreground MUST be defined.
+	 */
+	if(pcmap[NhlBACKGROUND].cstat == _NhlCOLUNSET){
+		tcrep.rgb.red = pcmap[NhlBACKGROUND].red =
+							wcp->def_background[0];
+		tcrep.rgb.green = pcmap[NhlBACKGROUND].green =
+							wcp->def_background[1];
+		tcrep.rgb.blue = pcmap[NhlBACKGROUND].blue =
+							wcp->def_background[2];
+		gset_colr_rep(wl->work.gkswksid,NhlBACKGROUND,&tcrep);
+		if(_NhlLLErrCheckPrnt(NhlWARNING,func)) {
+			ret = NhlWARNING;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:Problems setting Background:Undefined results",
+				func);
+		}
+		pcmap[NhlBACKGROUND].cstat = _NhlCOLSET;
+	}
+
+	if(pcmap[NhlFOREGROUND].cstat == _NhlCOLUNSET){
+		if (pcmap[NhlBACKGROUND].red * pcmap[NhlBACKGROUND].red +
+		    pcmap[NhlBACKGROUND].green * pcmap[NhlBACKGROUND].green +
+		    pcmap[NhlBACKGROUND].blue * pcmap[NhlBACKGROUND].blue
+		    < .75) {
+			tcrep.rgb.red = pcmap[NhlFOREGROUND].red =
+			tcrep.rgb.green = pcmap[NhlFOREGROUND].green =
+			tcrep.rgb.blue = pcmap[NhlFOREGROUND].blue = 1.0;
+		}
+		else {
+			tcrep.rgb.red = pcmap[NhlFOREGROUND].red =
+			tcrep.rgb.green = pcmap[NhlFOREGROUND].green =
+			tcrep.rgb.blue = pcmap[NhlFOREGROUND].blue = 0.0;
+		}
+		gset_colr_rep(wl->work.gkswksid,NhlFOREGROUND,&tcrep);
+		if(_NhlLLErrCheckPrnt(NhlWARNING,func)) {
+			ret = NhlWARNING;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:Problems setting Foreground:Undefined results",
+				func);
+		}
+		pcmap[NhlFOREGROUND].cstat = _NhlCOLSET;
+	}
+
+	max_col = MAX(max_col,1);
+	wl->work.color_map_len = max_col + 1;
+	
+	return ret;
+}
+
+/*
+ * Function:	WorkstationUpdate
+ *
+ * Description:	This function is used to update the workstation
+ *
+ * In Args:	
+ *		NhlLayer	l	workstation layer to update
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+WorkstationUpdate
+#if	NhlNeedProto
+(
+	NhlLayer	l
+)
+#else
+(l)
+	NhlLayer	l;
+#endif
+{
+	char	func[] = "WorkstationUpdate";
+
+	gupd_ws(_NhlWorkstationId(l),GFLAG_PERFORM);
+	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
+		return NhlWARNING;
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	WorkstationClear
+ *
+ * Description:	This function is used to clear the workstation
+ *
+ * In Args:	
+ *		NhlLayer	l	workstation layer to update
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+WorkstationClear
+#if	NhlNeedProto
+(
+	NhlLayer	l	/* workstation layer to update	*/
+)
+#else
+(l)
+	NhlLayer	l;	/* workstation layer to update	*/
+#endif
+{
+	char	func[] = "WorkstationClear";
+
+	gclear_ws(_NhlWorkstationId(l),GFLAG_ALWAYS);
+	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
+		return NhlWARNING;
+
+	return NhlNOERROR;
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes
+WorkstationLineTo
+#if  NhlNeedProto
+(
+	NhlLayer	wl,
+	float		x,
+	float		y,
+	int		upordown
+)
+#else
+(l,x,y,upordown)
+	NhlLayer	wl;
+	float		x;
+	float		y;
+	int		upordown;
+#endif
+{
+	char		func[] = "WorkstationLineTo";
+	static float	lastx,lasty;
+	static int	first = 0;
+
+	if(upordown == 1) {
+		lastx = x;
+		lasty = y;
+		c_dpdraw(0.0,0.0,2);
+		first = 1;
+	} else {
+		if(first) {
+			c_dpdraw(lastx,lasty,0);
+			first = 0;
+		}
+		c_dpdraw(x,y,1);
+		lastx = x;
+		lasty = y;
+	}
+	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
+		return NhlWARNING;
+	return NhlNOERROR;
+}
+
+
+static NhlErrorTypes
+WorkstationFill
+#if  NhlNeedProto
+(
+	NhlLayer	l,
+	float		*x,
+	float		*y,
+	int		num_points
+)
+#else
+(l,x,y,num_points)
+	NhlLayer	l;
+	float		*x;
+	float		*y;
+	int		num_points;
+#endif
+{
+	char			func[] = "WorkstationFill";
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
+	NhlWorkstationLayerPart	*wk_p = &wl->work;
+	static int		first = 1;
+	static float		*dst;
+	static int		*ind;
+	static int		msize;
+	static int		nst, nnd;
+        float			fl,fr,fb,ft,ul,ur,ub,ut;
+	int			ll, ix;
+	Gfill_int_style		save_fillstyle;
+	Gint			save_linecolor;
+	Gint			save_linetype;
+	Gdouble			save_linewidth;
+	Gint			err_ind;
+	Gint			fill_color;
+	Gint			fill_background;
+	
+	/* 
+ * Create or enlarge the workspace arrays as required
+ */
+
+	if (first) {
+		msize = MAX(num_points,NhlWK_INITIAL_FILL_BUFSIZE);
+		nst = 2 * msize;
+		nnd = 3 * msize;
+		dst = (float *)NhlMalloc(nst * sizeof(float));
+		ind = (int *)NhlMalloc(nnd * sizeof(int));
+		first = 0;
+		if (dst == NULL || ind == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+			   "WorkstationFill: workspace allocation failed");
+			return(NhlFATAL);
+		}
+	}
+	else if (msize < num_points) {
+		msize = num_points;
+		nst = 2 * msize;
+		nnd = 3 * msize;
+		dst = (float *)NhlRealloc(dst, nst * sizeof(float));
+		ind = (int *)NhlRealloc(ind, nnd * sizeof(int));
+		if (dst == NULL || ind == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+			    "WorkstationFill: workspace allocation failed");
+			return(NhlFATAL);
+		}
+	}
+
+/*
+ * Make the user space coincide with the NDC space for the
+ * duration of the routine
+ */
+	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
+	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
+/*
+ * Save attributes that may be modified
+ */
+	ginq_line_colr_ind(&err_ind, &save_linecolor);
+	ginq_linewidth(&err_ind, &save_linewidth);
+	ginq_fill_int_style(&err_ind, &save_fillstyle);
+	ginq_linetype(&err_ind, &save_linetype);
+	fill_color = (wk_p->fill_color == NhlTRANSPARENT) ? NhlTRANSPARENT : 
+		_NhlGetGksCi(l,wk_p->fill_color);
+	fill_background = (wk_p->fill_background < 0) ?
+		wk_p->fill_background : _NhlGetGksCi(l,wk_p->fill_background);
+
+/*
+ * Draw the fill, unless a negative fill index or Transparent fill color
+ * is specified (implying no fill)
+ */
+	if (fill_color == NhlTRANSPARENT)
+	/*SUPPRESS570*/
+		;
+	else if ((ix = wk_p->fill_index) == NhlSOLIDFILL) {
+		/* fill_specs[ix].type  must be 0 */
+		gset_fill_int_style(1);
+		gset_linewidth(wk_p->fill_line_thickness);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		c_sfseti("type of fill", 0);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,fill_color);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+	}
+	else if (ix > 0) {
+		/* fill_specs[ix].type must not be 0 */
+		ix = 1 + (ix - 1) % wk_p->fill_table_len;
+		if (fill_background >= 0) {
+			gset_linewidth(1.0);
+			gset_fill_int_style(1);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+			c_sfseti("type of fill", 0);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,
+							fill_background);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		}
+		gset_linewidth(wk_p->fill_line_thickness);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		c_sfseti("TY", fill_specs[ix].type);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		if (fill_specs[ix].type > 0) { 
+ 			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,fill_color);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		}
+		else {
+			gset_line_colr_ind(fill_color);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+ 			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,
+				 fill_specs[ix].ici);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		}
+	}
+
+/*
+ * Draw the edges
+ */
+	if (wk_p->edges_on) {
+		gset_line_colr_ind((Gint)_NhlGetGksCi(l,wk_p->edge_color));
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		gset_linewidth(wk_p->edge_thickness);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		if (wk_p->edge_dash_pattern > 0) {
+			c_curved(x,y,num_points);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		}
+		else {
+			c_curve(x,y,num_points);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		}
+	}
+
+/*
+ * Restore state
+ */
+
+	gset_line_colr_ind(save_linecolor);
+	gset_linewidth(save_linewidth);
+	gset_fill_int_style(save_fillstyle);
+	gset_linetype(save_linetype);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+
+	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+
+	return(NhlNOERROR);
+
+}
+
+/********************************
+* Workstation Defined Functions	*
+********************************/
+
+/*
  * Function:	_NhlWorkstationId
  *
  * Description:
@@ -2733,17 +2242,399 @@ static NhlErrorTypes	WorkstationGetValues
  *
  * Side Effects:
  */
-int	_NhlWorkstationId
+int
+_NhlWorkstationId
 #if NhlNeedProto
-(NhlLayer instance)
+(
+	NhlLayer	l
+)
 #else
-(instance)
-	NhlLayer instance;
+(l)
+	NhlLayer	l;
 #endif
 {
-	NhlWorkstationLayer wl = (NhlWorkstationLayer) instance;
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
 
-	return(wl->work.gkswksid);
+	return wl->work.gkswksid;
+}
+
+NhlErrorTypes
+_NhlSetColor
+#if	NhlNeedProto
+(
+	NhlLayer	l,
+	int		ci,
+	float		red,
+	float		green,
+	float		blue
+)
+#else
+(l,ci,red,green,blue)
+	NhlLayer	l;
+	int		ci;
+	float		red;
+	float		green;
+	float		blue;
+#endif
+{
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
+	char			func[] = "_NhlSetColor";
+
+	if(ci == NhlTRANSPARENT){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:color index cannot be set: no allocation",func);
+		return(NhlWARNING);
+	}
+
+	if (ci >= _NhlMAX_COLOR_MAP || ci < NhlBACKGROUND) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:invalid color index: no allocation",func);
+		return(NhlWARNING);
+	}
+
+	if (red < 0.0 || red > 1.0 || green < 0.0 || green > 1.0 ||
+		 blue < 0.0 || blue > 1.0) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:a color component was invalid: no allocation",func);
+		return(NhlWARNING);
+	}
+
+	wl->work.private_color_map[ci].red = red;
+	wl->work.private_color_map[ci].green = green;
+	wl->work.private_color_map[ci].blue = blue;
+	if(wl->work.private_color_map[ci].ci == _NhlCOLUNSET)
+		wl->work.private_color_map[ci].ci = _NhlCOLNEW;
+	else
+		wl->work.private_color_map[ci].ci = _NhlCOLCHANGE;
+
+	return _NhlAllocateColors(l);
+}
+
+NhlErrorTypes
+NhlSetColor
+#if	NhlNeedProto
+(
+	int	pid,
+	int	ci,
+	float	red,
+	float	green,
+	float	blue
+)
+#else
+(pid,ci,red,green,blue)
+	int     pid;
+	int	ci;
+	float	red;
+	float	green;
+	float	blue;
+#endif
+{
+	char		func[]="NhlSetColor";
+	NhlLayer	wl = _NhlGetLayer(pid);
+
+	if(wl && _NhlIsWorkstation(wl))
+		return _NhlSetColor(wl,ci,red,green,blue);
+
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid Workstation id=%d",func,pid);
+	return NhlFATAL;
+}
+
+/*
+ * Function:	nhl_fsetcolor
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fsetcolor,NHL_FSETCOLOR)
+#if	NhlNeedProto
+(
+	int	*pid,
+	int	*indx,
+	float	*red,
+	float	*green,
+	float	*blue,
+	int	*err
+)
+#else
+(pid,indx,red,green,blue,err)
+	int	*pid;
+	int	*indx;
+	float	*red;
+	float	*green;
+	float	*blue;
+	int	*err;
+#endif
+{
+	*err = NhlSetColor(*pid,*indx,*red,*green,*blue);
+
+	return;
+}
+
+NhlErrorTypes
+_NhlFreeColor
+#if	NhlNeedProto
+(
+	NhlLayer	l,
+	int		ci
+)
+#else
+(l,ci)
+	NhlLayer	l;
+	int		ci;
+#endif
+{
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
+	char	func[] = "_NhlFreeColor";
+
+	if((ci == NhlTRANSPARENT) || (ci >= _NhlMAX_COLOR_MAP) ||
+		(ci < NhlBACKGROUND)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "%s:color index can not be freed",func);
+		return NhlFATAL;
+	}
+
+	wl->work.private_color_map[ci].ci = _NhlCOLREMOVE;
+
+	return _NhlAllocateColors(l);
+}
+
+/*
+ * Function:	NhlFreeColor
+ *
+ * Description:	removes a color index from the workstation color map
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+NhlErrorTypes	NhlFreeColor
+#if	NhlNeedProto
+(
+	int	pid,
+	int	ci
+)
+#else
+(pid ,ci)
+	int 	pid;
+	int	ci;
+#endif
+{
+	NhlLayer	wl = _NhlGetLayer(pid);
+
+	if(wl && _NhlIsWorkstation(wl))
+		return _NhlFreeColor(wl,ci);
+
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"NhlFreeColor:Called with invalid Workstation id");
+	return NhlFATAL;
+}
+
+
+/*
+ * Function:	nhl_ffreecolor
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_ffreecolor,NHL_FFREECOLOR)
+#if	NhlNeedProto
+(
+	int	*wid,
+	int	*indx,
+	int	*err
+)
+#else
+(wid,indx,err)
+	int	*wid;
+	int	*indx;
+	int	*err;
+#endif
+{
+	*err = NhlFreeColor(*wid,*indx);
+
+	return;
+}
+
+int _NhlNewColor
+#if   NhlNeedProto
+(
+	NhlLayer	l,
+	float		red,
+	float		green,
+	float		blue
+)
+#else
+(l,red,green,blue)
+	NhlLayer	l,
+	float		red,
+	float		green,
+	float		blue
+#endif
+{
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
+	char		func[]="_NhlNewColor";
+	int		i;
+	NhlErrorTypes	ret;
+
+	if (red < 0.0 || red > 1.0 || green < 0.0 || green > 1.0 ||
+		 blue < 0.0 || blue > 1.0) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:A color component was invalid; no allocation",func);
+		return NhlFATAL;
+	}
+
+	for(i=2;i < _NhlMAX_COLOR_MAP;i++){
+		if(wl->work.private_color_map[i].cstat == _NhlCOLUNSET){
+			wl->work.private_color_map[i].ci = _NhlCOLNEW;
+			wl->work.private_color_map[i].red = red;
+			wl->work.private_color_map[i].green = green;
+			wl->work.private_color_map[i].blue = blue;
+			ret = _NhlAllocateColors(l);
+
+			if(ret < NhlINFO){
+				NhlPError(ret,NhlEUNKNOWN,
+					"%s:Problem allocating color",func);
+				return ret;
+			}
+			return i;
+		}
+	}
+
+	/*
+	 * ERROR : no available colors
+	 */
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:no available colors",func);
+	return NhlFATAL ;
+}
+
+/*
+ * Function:	NhlNewColor
+ *
+ * Description: Does not require the user to provide a color index and returns
+ *		either an error status or a color index(not a GKS color index
+ *		though, just an index into the workstatoins color map .
+ * 
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+int NhlNewColor
+#if  NhlNeedProto
+(
+	int	pid,
+	float	red,
+	float	green,
+	float	blue
+)
+#else
+(pid,red,green,blue)
+	int	pid,
+	float	red,
+	float	green,
+	float	blue
+#endif
+{
+	char		func[]="NhlNewColor";
+	NhlLayer	wl = _NhlGetLayer(pid);
+
+	if(wl && _NhlIsWorkstation(wl))
+		return _NhlNewColor(wl,red,green,blue);
+
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid Workstation id=%d",func,pid);
+	return NhlFATAL;
+}
+
+/*
+ * Function:	nhl_fnewcolor
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fnewcolor,NHL_FNEWCOLOR)
+#if	NhlNeedProto
+(
+	int	*wid,
+	float	*red,
+	float	*green,
+	float	*blue,
+	int	*indx
+)
+#else
+(wid,red,green,blue,indx)
+	int	*wid;
+	float	*red;
+	float	*green;
+	float	*blue;
+	int	*indx;
+#endif
+{
+	*indx = NhlNewColor(*wid,*red,*green,*blue);
+
+	return;
+}
+
+int _NhlGetGksCi
+#if NhlNeedProto
+(
+	NhlLayer	l,
+	int		ci
+)
+#else
+(l, ci)
+	NhlLayer	l;
+	int		ci;
+#endif
+{
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
+	char			func[] = "_NhlGetGksCi";
+	NhlPrivateColor		*pcmap = wl->work.private_color_map;
+	int			maxi = wl->work.color_map_len - 1;
+
+	if(ci < 0){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"%s:Invalid Color index=%d",
+			func,ci);
+		return pcmap[NhlFOREGROUND].ci;
+	}
+
+	if(ci > maxi){
+		ci = ci % maxi;
+		if(!ci)
+			ci = maxi;
+	}
+
+	if(pcmap[ci].cstat == _NhlCOLUNSET)
+		return pcmap[NhlFOREGROUND].ci;
+
+	return pcmap[ci].ci;
 }
 
 /*
@@ -2759,16 +2650,27 @@ int	_NhlWorkstationId
  *
  * Side Effects:
  */
-int NhlGetGksCi
+int
+NhlGetGksCi
 #if NhlNeedProto
-(int pid, int ci)
+(
+	int	pid,
+	int	ci
+)
 #else
 (pid,ci)
-	int pid;
-	int ci;
+	int	pid;
+	int	ci;
 #endif
 {
- 	return(_NhlGetGksCi(_NhlGetLayer(pid),ci));	
+	char		func[]="NhlGetGksCi";
+	NhlLayer	wl = _NhlGetLayer(pid);
+
+	if(wl && _NhlIsWorkstation(wl))
+	 	return _NhlGetGksCi(wl,ci);	
+
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid Workstation id=%d",func,pid);
+	return NhlFATAL;
 }
 
 /*
@@ -2803,36 +2705,41 @@ void _NHLCALLF(nhl_fgetgksci,NHL_FGETGKSCI)
 	return;
 }
 
-int _NhlGetGksCi
+/*
+ * Function:	_NhlIsAllocatedColor
+ *
+ * Description: returns a Boolean value depending on whether a color is 
+ *		currently allocated
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+int _NhlIsAllocatedColor
 #if NhlNeedProto
-(
-	NhlLayer	workstation,
+( 
+	NhlLayer	l,
 	int		ci
 )
 #else
-(workstation, ci)
-	NhlLayer	workstation;
+(l,ci)
+	NhlLayer	l;
 	int		ci;
 #endif
 {
-	char			func[] = "_NhlGetGksCi";
-	NhlWorkstationLayer	wk = (NhlWorkstationLayer)workstation;
-	if(wk && _NhlIsWorkstation(workstation)){
-		if((ci < 0) || (ci >= MAX_COLOR_MAP)){
-			return 1;
-		}
-		if(wk->work.private_color_map[ci].ci >= 0) {
-			return(wk->work.private_color_map[ci].ci);
-		} else {
-			return(1);
-		}
-	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-		"%s: attempt to return color from non-workstation",func);
-		return((int)1);
-	}
-}
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
+	char			func[]="NhlIsAllocatedColor";
 
+	if((ci < NhlTRANSPARENT) || (ci >= wl->work.color_map_len))
+		return False;
+	if (ci == NhlTRANSPARENT)
+		return True;
+	return (wl->work.private_color_map[ci].cstat == _NhlCOLSET);
+}
 
 /*
  * Function:	NhlIsAllocatedColor
@@ -2848,19 +2755,26 @@ int _NhlGetGksCi
  *
  * Side Effects:
  */
-NhlBoolean NhlIsAllocatedColor
+NhlBoolean
+NhlIsAllocatedColor
 #if NhlNeedProto
-(int pid, int ci)
+(
+	int	pid,
+	int	ci
+)
 #else
 (pid,ci)
-	int pid;
-	int ci;
+	int	pid;
+	int	ci;
 #endif
 {
-	NhlLayer	l = _NhlGetLayer(pid);
+	char		func[]="NhlIsAllocatedColor";
+	NhlLayer	wl = _NhlGetLayer(pid);
 
-	if(l && _NhlIsAllocatedColor(l,ci))
-		return True;
+	if(wl && _NhlIsWorkstation(wl))
+		return _NhlIsAllocatedColor(wl,ci);
+	
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid Workstation id=%d",func,pid);
 	return False;
 }
 
@@ -2897,90 +2811,52 @@ void _NHLCALLF(nhl_fisallocatedcolor,NHL_FISALLOCATEDCOLOR)
 }
 
 /*
- * Function:	_NhlIsAllocatedColor
- *
- * Description: returns a Boolean value depending on whether a color is 
- *		currently allocated
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
+ * Workstation Method Access Functions
  */
-int _NhlIsAllocatedColor
+NhlErrorTypes
+_NhlOpenWorkstation
 #if NhlNeedProto
-( 
-	NhlLayer workstation, 
-	int  ci
+(
+	NhlLayer	wks
 )
 #else
-(workstation, ci)
-	NhlLayer	workstation;
-	int		ci;
-#endif
-{
-	
-	NhlWorkstationLayer  wk = (NhlWorkstationLayer) workstation;
-	char *entry_name = "NhlIsAllocatedColor";
-	char *e_text;
-
-	if (_NhlIsWorkstation(wk)) {
-		if (ci < NhlTRANSPARENT || ci >= MAX_COLOR_MAP) return False;
-		if (ci == NhlTRANSPARENT) return True;
-		return wk->work.private_color_map[ci].ci >= 0 ? True : False;
-	}
-
-	e_text = "%s: invalid workstation identifier";
-	NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-	return((int)NhlWARNING);
-}
-
-/*
- * Workstation Methods
- */
-NhlErrorTypes _NhlOpenWorkstation
-#if NhlNeedProto
-(NhlLayer wks)
-#else
 (wks)
-	NhlLayer wks;
+	NhlLayer	wks;
 #endif
 {
 	char				func[] = "_NhlOpenWorkstation";
 	NhlWorkstationClassPart	*wc =
 		&((NhlWorkstationClass)wks->base.layer_class)->work_class;
 
-	if(_NhlIsWorkstation(wks)) {
+	if(_NhlIsWorkstation(wks))
 		return (*(wc->open_work))(wks);
-	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
+	
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"%s: attempt to perform open on nonworkstation",func);
-		return NhlFATAL;
-	}
+	return NhlFATAL;
 }
 
-NhlErrorTypes _NhlCloseWorkstation
+NhlErrorTypes
+_NhlCloseWorkstation
 #if NhlNeedProto
-(NhlLayer wks)
+(
+	NhlLayer	wks
+)
 #else
 (wks)
-	NhlLayer wks;
+	NhlLayer	wks;
 #endif
 {
 	char				func[] = "_NhlCloseWorkstation";
 	NhlWorkstationClassPart	*wc =
 		&((NhlWorkstationClass)wks->base.layer_class)->work_class;
 
-	if(_NhlIsWorkstation(wks)) {
+	if(_NhlIsWorkstation(wks))
 		return (*(wc->close_work))(wks);
-	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
+
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"%s: attempt to perform close on nonworkstation",func);
-		return NhlFATAL;
-	}
+	return NhlFATAL;
 }
 
 /*
@@ -2996,25 +2872,27 @@ NhlErrorTypes _NhlCloseWorkstation
  *
  * Side Effects:
  */
-NhlErrorTypes _NhlActivateWorkstation
+NhlErrorTypes
+_NhlActivateWorkstation
 #if NhlNeedProto
-(NhlLayer wks)
+(
+	NhlLayer	wks
+)
 #else
 (wks)
-	NhlLayer wks;
+	NhlLayer	wks;
 #endif
 {
 	char				func[] = "_NhlActivateWorkstation";
 	NhlWorkstationClassPart	*wc =
 		&((NhlWorkstationClass)wks->base.layer_class)->work_class;
 
-	if(_NhlIsWorkstation(wks)) {
+	if(_NhlIsWorkstation(wks))
 		return (*(wc->activate_work))(wks);
-	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
+
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"%s: attempt to perform activate on nonworkstation",func);
-		return NhlFATAL;
-	}
+	return NhlFATAL;
 }
 
 /*
@@ -3031,27 +2909,58 @@ NhlErrorTypes _NhlActivateWorkstation
  *
  * Side Effects:
  */
-NhlErrorTypes _NhlDeactivateWorkstation
+NhlErrorTypes
+_NhlDeactivateWorkstation
 #if NhlNeedProto
-(NhlLayer wks)
+(
+	NhlLayer	wks
+)
 #else
 (wks)
-	NhlLayer wks;
+	NhlLayer	wks;
 #endif
 {
 	char				func[] = "_NhlDeactivateWorkstation";
 	NhlWorkstationClassPart	*wc =
 		&((NhlWorkstationClass)wks->base.layer_class)->work_class;
 
-	if(_NhlIsWorkstation(wks)) {
+	if(_NhlIsWorkstation(wks))
 		return (*(wc->deactivate_work))(wks);
-	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
+
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"%s: attempt to perform deactivate on nonworkstation",func);
-		return NhlFATAL;
-	}
+	return NhlFATAL;
 }
 
+/*
+ * Function:	_NhlAllocateColors
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlErrorTypes
+_NhlAllocateColors
+#if	NhlNeedProto
+(
+	NhlLayer	wl
+)
+#else
+(wl)
+	NhlLayer	wl;
+#endif
+{
+	NhlWorkstationClassPart	*wc =
+		&((NhlWorkstationClass)wl->base.layer_class)->work_class;
+
+	return (*(wc->alloc_colors))(wl);
+}
 
 /*
  * Function:	NhlUpdateWorkstation
@@ -3078,7 +2987,7 @@ NhlUpdateWorkstation
 	int	workid;	/* id of workstation class object	*/
 #endif
 {
-	NhlLayer			l = _NhlGetLayer(workid);
+	NhlLayer		l = _NhlGetLayer(workid);
 	NhlWorkstationClass	lc;
 
 	if(l == (NhlLayer)NULL){
@@ -3154,7 +3063,7 @@ NhlClearWorkstation
 	int	workid;	/* id of workstation class object	*/
 #endif
 {
-	NhlLayer			l = _NhlGetLayer(workid);
+	NhlLayer		l = _NhlGetLayer(workid);
 	NhlWorkstationClass	lc;
 
 	if(l == (NhlLayer)NULL){
@@ -3268,18 +3177,23 @@ _NHLCALLF(nhl_fframe,NHL_FFRAME)
 }
 
 /*ARGSUSED*/
-void _NhlSetLineInfo
+void
+_NhlSetLineInfo
 #if  NhlNeedProto
-(NhlLayer instance,NhlLayer plot)
+(
+	NhlLayer	l,
+	NhlLayer	plot
+)
 #else
-(instance,plot)
-        NhlLayer instance;
-        NhlLayer plot;
+(l,plot)
+	NhlLayer	l;
+	NhlLayer	plot;
 #endif
 {
 	char			func[] = "_NhlSetLineInfo";
 	char			*e_text;
-        NhlWorkstationLayerPart	*wkp = &((NhlWorkstationLayer)instance)->work;
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
+        NhlWorkstationLayerPart	*wkp = &(wl)->work;
 	_NhlWorkLineInfo	*wklp = &wkp->private_lineinfo;
 	float			tf;
         char			buffer[80];
@@ -3426,73 +3340,47 @@ void _NhlSetLineInfo
         return;
 }
 
-
-/*ARGSUSED*/
-static NhlErrorTypes WorkstationLineTo
-#if  NhlNeedProto
-(NhlLayer l,float x,float y,int upordown)
+NhlErrorTypes
+_NhlWorkstationLineTo
+#if NhlNeedProto
+(
+	NhlLayer	l,
+	float		x,
+	float		y,
+	int		upordown
+)
 #else
 (l,x,y,upordown)
-	NhlLayer l;
-	float x;
-	float y;
-	int upordown;
-#endif
-{
-	char		func[] = "WorkstationLineTo";
-	static float	lastx,lasty;
-	static int	first = 0;
-
-	if(upordown == 1) {
-		lastx = x;
-		lasty = y;
-		c_dpdraw(0.0,0.0,2);
-		first = 1;
-	} else {
-		if(first) {
-			c_dpdraw(lastx,lasty,0);
-			first = 0;
-		}
-		c_dpdraw(x,y,1);
-		lastx = x;
-		lasty = y;
-	}
-	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
-		return NhlWARNING;
-	return NhlNOERROR;
-}
-
-NhlErrorTypes _NhlWorkstationLineTo
-#if NhlNeedProto
-(NhlLayer instance, float x, float y, int upordown)
-#else
-(instance,x,y,upordown)
-NhlLayer instance;
-float   x;
-float y;
-int upordown;
+	NhlLayer	l;
+	float		x;
+	float		y;
+	int		upordown;
 #endif
 {
 	NhlWorkstationClassPart *wcp =
-	&((NhlWorkstationClass)instance->base.layer_class)->work_class;
+			&((NhlWorkstationClass)l->base.layer_class)->work_class;
 
-	return (*wcp->lineto_work)(instance,x,y,upordown);
+	return (*wcp->lineto_work)(l,x,y,upordown);
 }
 
 
 /*ARGSUSED*/
-void _NhlSetFillInfo
+void
+_NhlSetFillInfo
 #if  NhlNeedProto
-(NhlLayer instance,NhlLayer plot)
+(
+	NhlLayer	l,
+	NhlLayer	plot
+)
 #else
-(instance,plot)
-        NhlLayer instance;
-        NhlLayer plot;
+(l,plot)
+	NhlLayer	l;
+	NhlLayer	plot;
 #endif
 {
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
 	char			func[] = "_NhlSetFillInfo";
-        NhlWorkstationLayer	tinst = (NhlWorkstationLayer)instance;
-	NhlWorkstationLayerPart	*wk_p = &tinst->work;
+	NhlWorkstationLayerPart	*wk_p = &wl->work;
         float			fl,fr,fb,ft,ul,ur,ub,ut;
         float			x0,x1;
         int			ll,ix;
@@ -3579,173 +3467,8 @@ void _NhlSetFillInfo
         return;
 }
 
-
-static NhlErrorTypes WorkstationFill
-#if  NhlNeedProto
-(NhlLayer l,float *x,float *y,int num_points)
-#else
-(l,x,y,num_points)
-	NhlLayer l;
-	float *x;
-	float *y;
-	int num_points;
-#endif
-{
-	char			func[] = "WorkstationFill";
-        NhlWorkstationLayer	inst = (NhlWorkstationLayer)l;
-	NhlWorkstationLayerPart	*wk_p = &inst->work;
-	static int		first = 1;
-	static float		*dst;
-	static int		*ind;
-	static int		msize;
-	static int		nst, nnd;
-        float			fl,fr,fb,ft,ul,ur,ub,ut;
-	int			ll, ix;
-	Gfill_int_style		save_fillstyle;
-	Gint			save_linecolor;
-	Gint			save_linetype;
-	Gdouble			save_linewidth;
-	Gint			err_ind;
-	Gint			fill_color;
-	Gint			fill_background;
-	
-	/* 
- * Create or enlarge the workspace arrays as required
- */
-
-	if (first) {
-		msize = MAX(num_points,NhlWK_INITIAL_FILL_BUFSIZE);
-		nst = 2 * msize;
-		nnd = 3 * msize;
-		dst = (float *)NhlMalloc(nst * sizeof(float));
-		ind = (int *)NhlMalloc(nnd * sizeof(int));
-		first = 0;
-		if (dst == NULL || ind == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-			   "WorkstationFill: workspace allocation failed");
-			return(NhlFATAL);
-		}
-	}
-	else if (msize < num_points) {
-		msize = num_points;
-		nst = 2 * msize;
-		nnd = 3 * msize;
-		dst = (float *)NhlRealloc(dst, nst * sizeof(float));
-		ind = (int *)NhlRealloc(ind, nnd * sizeof(int));
-		if (dst == NULL || ind == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-			    "WorkstationFill: workspace allocation failed");
-			return(NhlFATAL);
-		}
-	}
-
-/*
- * Make the user space coincide with the NDC space for the
- * duration of the routine
- */
-	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
-	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
-		return NhlFATAL;
-	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
-	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
-		return NhlFATAL;
-/*
- * Save attributes that may be modified
- */
-	ginq_line_colr_ind(&err_ind, &save_linecolor);
-	ginq_linewidth(&err_ind, &save_linewidth);
-	ginq_fill_int_style(&err_ind, &save_fillstyle);
-	ginq_linetype(&err_ind, &save_linetype);
-	fill_color = (wk_p->fill_color == NhlTRANSPARENT) ? NhlTRANSPARENT : 
-		_NhlGetGksCi(inst->base.wkptr, wk_p->fill_color);
-	fill_background = (wk_p->fill_background < 0) ?
-		wk_p->fill_background :
-			_NhlGetGksCi(inst->base.wkptr, wk_p->fill_background);
-
-/*
- * Draw the fill, unless a negative fill index or Transparent fill color
- * is specified (implying no fill)
- */
-	if (fill_color == NhlTRANSPARENT)
-	/*SUPPRESS570*/
-		;
-	else if ((ix = wk_p->fill_index) == NhlSOLIDFILL) {
-		/* fill_specs[ix].type  must be 0 */
-		gset_fill_int_style(1);
-		gset_linewidth(wk_p->fill_line_thickness);
-		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		c_sfseti("type of fill", 0);
-		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,fill_color);
-		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	}
-	else if (ix > 0) {
-		/* fill_specs[ix].type must not be 0 */
-		ix = 1 + (ix - 1) % wk_p->fill_table_len;
-		if (fill_background >= 0) {
-			gset_linewidth(1.0);
-			gset_fill_int_style(1);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			c_sfseti("type of fill", 0);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,
-							fill_background);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		}
-		gset_linewidth(wk_p->fill_line_thickness);
-		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		c_sfseti("TY", fill_specs[ix].type);
-		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		if (fill_specs[ix].type > 0) { 
- 			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,fill_color);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		}
-		else {
-			gset_line_colr_ind(fill_color);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
- 			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,
-				 fill_specs[ix].ici);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		}
-	}
-
-/*
- * Draw the edges
- */
-	if (wk_p->edges_on) {
-		gset_line_colr_ind((Gint)_NhlGetGksCi(inst->base.wkptr,
-						      wk_p->edge_color));
-		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		gset_linewidth(wk_p->edge_thickness);
-		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		if (wk_p->edge_dash_pattern > 0) {
-			c_curved(x,y,num_points);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		}
-		else {
-			c_curve(x,y,num_points);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		}
-	}
-
-/*
- * Restore state
- */
-
-	gset_line_colr_ind(save_linecolor);
-	gset_linewidth(save_linewidth);
-	gset_fill_int_style(save_fillstyle);
-	gset_linetype(save_linetype);
-	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-
-	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
-	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-
-	return(NhlNOERROR);
-
-}
-
-NhlErrorTypes _NhlWorkstationFill
+NhlErrorTypes
+_NhlWorkstationFill
 #if NhlNeedProto
 (
 	NhlLayer	instance,
@@ -3767,7 +3490,6 @@ NhlErrorTypes _NhlWorkstationFill
 	return (*wcp->fill_work)(instance,x,y,num_points);
 }
 
-
 /*
  * Adds a marker definition to the marker table and returns an index to
  * this marker. 
@@ -3775,31 +3497,32 @@ NhlErrorTypes _NhlWorkstationFill
 /*ARGSUSED*/
 int NhlNewMarker
 #if  NhlNeedProto
-(int instance, 
- char *mark_string, 
- float x_off, 
- float y_off,
- float aspect_adj,
- float size_adj)
+(
+	int	wid, 
+	char	*mark_string, 
+	float	x_off, 
+	float	y_off,
+	float	aspect_adj,
+	float	size_adj
+)
 #else
-(instance,mark_string,x_off,y_off,aspect_adj,size_adj)
-        int instance;
-	char *mark_string; 
-	float x_off; 
-	float y_off;
-	float aspect_adj;
-	float size_adj;
+(wid,mark_string,x_off,y_off,aspect_adj,size_adj)
+	int	wid;
+	char	*mark_string;
+	float	x_off;
+	float	y_off;
+	float	aspect_adj;
+	float	size_adj;
 #endif
 {
-        NhlWorkstationLayer tinst = 
-		(NhlWorkstationLayer)_NhlGetLayer(instance);
+        NhlWorkstationLayer tinst = (NhlWorkstationLayer)_NhlGetLayer(wid);
 	NhlWorkstationLayerPart *wk_p;
 	NhlMarkerSpec *m_p;
 	int i;
 
 	if((tinst == NULL) || !_NhlIsWorkstation(tinst)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"NhlNewMarker:Invalid workstation id = %d",instance);
+			"NhlNewMarker:Invalid workstation id = %d",wid);
 		return ((int)NhlFATAL);
 	}
 	
@@ -3928,7 +3651,8 @@ void _NHLCALLF(nhl_fnewmarker,NHL_FNEWMARKER)
  * whether pre-defined or added using NhlNewMarker.
  */
 /*ARGSUSED*/
-NhlErrorTypes NhlSetMarker
+NhlErrorTypes
+NhlSetMarker
 #if  NhlNeedProto
 (int instance, 
  int	index,
@@ -4076,7 +3800,8 @@ static struct{
 } minfo;
 
 /*ARGSUSED*/
-void _NhlSetMarkerInfo
+void
+_NhlSetMarkerInfo
 #if  NhlNeedProto
 (
 	NhlLayer	instance,
@@ -4172,15 +3897,21 @@ void _NhlSetMarkerInfo
 }
 
 
-static NhlErrorTypes WorkstationMarker
+static NhlErrorTypes
+WorkstationMarker
 #if  NhlNeedProto
-(NhlLayer l,float *x,float *y,int num_points)
+(
+	NhlLayer	l,
+	float		*x,
+	float		*y,
+	int		num_points
+)
 #else
 (l,x,y,num_points)
-	NhlLayer l;
-	float *x;
-	float *y;
-	int num_points;
+	NhlLayer	l;
+	float		*x;
+	float		*y;
+	int		num_points;
 #endif
 {
 	char			func[] = "WorkstationMarker";
@@ -4217,26 +3948,27 @@ static NhlErrorTypes WorkstationMarker
 	return ret;
 }
 
-NhlErrorTypes _NhlWorkstationMarker
+NhlErrorTypes
+_NhlWorkstationMarker
 #if NhlNeedProto
 (
-	NhlLayer	instance,
+	NhlLayer	l,
 	float		*x,
 	float		*y,
 	int		num_points
 )
 #else
-(instance,x,y,num_points)
-	NhlLayer	instance;
+(l,x,y,num_points)
+	NhlLayer	l;
 	float		*x;
 	float		*y;
 	int		num_points;
 #endif
 {
 	NhlWorkstationClassPart *wcp =
-	&((NhlWorkstationClass)instance->base.layer_class)->work_class;
+	&((NhlWorkstationClass)l->base.layer_class)->work_class;
 
-	return (*wcp->marker_work)(instance,x,y,num_points);
+	return (*wcp->marker_work)(l,x,y,num_points);
 }
 
 /*

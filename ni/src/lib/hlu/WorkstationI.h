@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationI.h,v 1.5 1995-03-29 20:58:41 dbrown Exp $
+ *      $Id: WorkstationI.h,v 1.6 1995-04-22 01:02:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -141,6 +141,8 @@
 #define _NhlNwkMarkerLineColor     	".wkMarkerLineColor"
 #define _NhlCwkMarkerLineColor     	".WkMarkerLineColor"
 
+typedef struct _NhlWorkstationLayerRec *NhlWorkstationLayer;
+typedef struct _NhlWorkstationClassRec *NhlWorkstationClass;
 
 /*
  * Private Functions to support Workstation Class Objects

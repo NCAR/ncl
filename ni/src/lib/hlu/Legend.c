@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.33 1995-04-07 10:42:32 boote Exp $
+ *      $Id: Legend.c,v 1.34 1995-04-22 01:01:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1686,13 +1686,6 @@ static NhlErrorTypes    InitializeDynamicArrays
 			  NhlNlgLineLabelFontColors);
 		return NhlFATAL;
 	}
-	for (i=0; i < NhlLG_DEF_ITEM_COUNT; i++) 
-		i_p[i] = 
-			_NhlIsAllocatedColor(tnew->base.wkptr, def_colors[i]) ?
-				def_colors[i] : NhlLG_DEF_COLOR;
-	for (i = NhlLG_DEF_ITEM_COUNT; i < count; i++)
-		i_p[i] = _NhlIsAllocatedColor(tnew->base.wkptr, i) ?
-			i : NhlLG_DEF_COLOR;
 			
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTColorIndex,
 				    sizeof(int),1,&count)) == NULL) {
@@ -2029,18 +2022,6 @@ static NhlErrorTypes    ManageDynamicArrays
 		olg_p->line_colors = NULL;
 		
 		i_p = (int *) lg_p->line_colors->data;
-
-		for (i=0; i<MIN(count,lg_p->line_colors->num_elements); i++) {
-			if (! _NhlIsAllocatedColor(tnew->base.wkptr, i_p[i])) {
-				e_text =
-		"%s: %s index %d holds an invalid color value, %d: defaulting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-					  entry_name,
-					  NhlNlgLineColors,i,i_p[i]);
-				ret = MIN(ret, NhlWARNING);
-				i_p[i] = NhlLG_DEF_COLOR;
-			}
-		}
 	}
 
 	if (lg_p->line_colors->num_elements < count) {
@@ -2051,10 +2032,6 @@ static NhlErrorTypes    ManageDynamicArrays
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgLineColors);
 			return NhlFATAL;
-		}
-		for (i=lg_p->line_colors->num_elements; i<count; i++) {
-			i_p[i] = _NhlIsAllocatedColor(tnew->base.wkptr,i) ? 
-				i : NhlLG_DEF_COLOR;
 		}
 
 		lg_p->line_colors->data = (NhlPointer) i_p;
@@ -2077,19 +2054,6 @@ static NhlErrorTypes    ManageDynamicArrays
 		olg_p->marker_colors = NULL;
 		
 		i_p = (int *) lg_p->marker_colors->data;
-
-		for (i=0; 
-		     i<MIN(count,lg_p->marker_colors->num_elements); i++) {
-			if (! _NhlIsAllocatedColor(tnew->base.wkptr, i_p[i])) {
-				e_text =
-		"%s: %s index %d holds an invalid color value, %d: defaulting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-					  entry_name,
-					  NhlNlgMarkerColors,i,i_p[i]);
-				ret = MIN(ret, NhlWARNING);
-				i_p[i] = NhlLG_DEF_COLOR;
-			}
-		}
 	}
 
 	if (lg_p->marker_colors->num_elements < count) {
@@ -2100,10 +2064,6 @@ static NhlErrorTypes    ManageDynamicArrays
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgMarkerColors);
 			return NhlFATAL;
-		}
-		for (i=lg_p->marker_colors->num_elements; i<count; i++) {
-			i_p[i] = _NhlIsAllocatedColor(tnew->base.wkptr,i) ? 
-				i : NhlLG_DEF_COLOR;
 		}
 
 		lg_p->marker_colors->data = (NhlPointer) i_p;
@@ -2440,19 +2400,6 @@ static NhlErrorTypes    ManageDynamicArrays
 		lg_p->line_label_colors = olg_p->line_label_colors;
 		olg_p->line_label_colors = NULL;
 		i_p = (int *) lg_p->line_label_colors->data;
-
-		for (i=0;i<MIN(count,
-			       lg_p->line_label_colors->num_elements); i++) {
-			if (! _NhlIsAllocatedColor(tnew->base.wkptr, i_p[i])) {
-				e_text =
-		"%s: %s index %d holds an invalid color value, %d: defaulting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-					  entry_name,
-					  NhlNlgLineLabelFontColors,i,i_p[i]);
-				ret = MIN(ret, NhlWARNING);
-				i_p[i] = NhlLG_DEF_COLOR;
-			}
-		}
 	}
 
 	if (lg_p->line_label_colors->num_elements < count) {
@@ -2463,10 +2410,6 @@ static NhlErrorTypes    ManageDynamicArrays
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgLineLabelFontColors);
 			return NhlFATAL;
-		}
-		for (i=lg_p->line_label_colors->num_elements; i<count; i++) {
-			i_p[i] = _NhlIsAllocatedColor(tnew->base.wkptr, i) ? 
-				i : NhlLG_DEF_COLOR;
 		}
 
 		lg_p->line_label_colors->data = (NhlPointer) i_p;
