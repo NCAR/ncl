@@ -1,5 +1,5 @@
 C
-C       $Id: stinit.f,v 1.11 2001-06-13 23:10:43 dbrown Exp $
+C       $Id: stinit.f,v 1.12 2003-03-03 17:16:18 dbrown Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -218,10 +218,6 @@ C
 C
       NXCT = MAX(IXDM/IXIN,1)
       NYCT = MAX(IYDN/IYIN,1)
-      TX=(XVPR-XVPL)/FLOAT(NXCT)
-      TY=(YVPT-YVPB)/FLOAT(NYCT)
-      RDMX=SQRT((TX*TX+TY*TY))
-      RDMN = 0.0
 C
 C If the user has done a SET call, retrieve the arguments; if he hasn't
 C done a SET call, do it for him.
@@ -287,6 +283,10 @@ C These are for convenience.
 C
       FW2W = XVPR - XVPL
       FH2H = YVPT - YVPB
+      TX=(XVPR-XVPL)/FLOAT(NXCT)
+      TY=(YVPT-YVPB)/FLOAT(NYCT)
+      RDMX=SQRT((TX*TX+TY*TY))
+      RDMN = 0.0
 C
 C Swap window rectangle if it is inverted, but keep track
 C This makes it easier to exclude out-of-bounds points in the
