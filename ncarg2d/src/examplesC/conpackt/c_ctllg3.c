@@ -1,5 +1,5 @@
 /*
- *      $Id: c_ctllg3.c,v 1.2 2003-10-07 04:06:46 haley Exp $
+ *      $Id: c_ctllg3.c,v 1.3 2003-10-07 16:04:26 kennison Exp $
  */
 
 /*
@@ -10,14 +10,13 @@
 #include <math.h>
 
 /*
- * Include GKS definitions and prototypes.  (On "keplinger", look in
- * "/fs/scd/home1/ncargd/dev/sun4_SunOS_5_7_/include/ncarg/gks.h".)
+ * Include GKS definitions and prototypes.
  */
 
 #include <ncarg/gks.h>
 
 /*
- * Include NCAR Graphics function prototypes (local modified version).
+ * Include NCAR Graphics function prototypes.
  */
 
 #include <ncarg/ncargC.h>
@@ -324,6 +323,8 @@ int millg3(int *idim,int *jdim,int *iini,int *jini,int *iino,int *jino) {
 
 }
 
+
+
 /*
  * The routine DCFOCB fills the area defined by the points (XCRA(I),YCRA(I)),
  * for I = 1 to NCRA, if and only if none of the area identifiers for the area
@@ -373,8 +374,6 @@ int dcfocb(float *xcra,float *ycra,int *ncra,int *iaai,int *iagi,int *ngps) {
     return 0;
 
 }
-
-
 
 
 
