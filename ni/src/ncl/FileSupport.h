@@ -1,5 +1,5 @@
 /*
- *      $Id: FileSupport.h,v 1.7 1997-10-01 18:19:09 ethan Exp $
+ *      $Id: FileSupport.h,v 1.8 2000-01-28 20:46:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -274,6 +274,12 @@ NclQuark /* varname */,
 NclQuark /* type */,
 int	/* n_dims */,
 NclQuark * /* dimnames */
+#endif
+);
+extern NhlErrorTypes _NclPrintFileVarSummary(
+#if NhlNeedProto
+NclFile /* thefile */,
+NclQuark /* varname */
 #endif
 );
 

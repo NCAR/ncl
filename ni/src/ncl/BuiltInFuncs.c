@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.113 2000-01-24 17:05:37 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.114 2000-01-28 20:46:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1639,7 +1639,7 @@ NhlErrorTypes _NclIFrame
 		}
 	} else if(data.kind == NclStk_VAL) {
 		tmp_md = data.u.data_obj;
-		if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
+		if(data.u.data_obj->obj.obj_type_mask & NCL_HLU_MASK) {
 			obj_ids = (int*)tmp_md->multidval.val;
 			for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
 				hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
@@ -1683,7 +1683,7 @@ NhlErrorTypes _NclIClear
 		}
 	} else if(data.kind == NclStk_VAL) {
 		tmp_md = data.u.data_obj;
-		if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
+		if(data.u.data_obj->obj.obj_type_mask & NCL_HLU_MASK) {
 			obj_ids = (int*)tmp_md->multidval.val;
 			for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
 				hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
@@ -1716,7 +1716,7 @@ NhlErrorTypes _NclIDestroy
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar)) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to update, ignoring request");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to destroy, ignoring request");
 	
 			return(NhlFATAL);
 		} else {
@@ -1727,7 +1727,7 @@ NhlErrorTypes _NclIDestroy
 	} else {
 		return(NhlFATAL);
 	}
-	if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
+	if(data.u.data_obj->obj.obj_type_mask & NCL_HLU_MASK) {
 		obj_ids = (obj*)tmp_md->multidval.val;
 		for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
 			if((!tmp_md->multidval.missing_value.has_missing)||(obj_ids[i] != tmp_md->multidval.missing_value.value.objval)){
@@ -1770,7 +1770,7 @@ NhlErrorTypes _NclIUpdate
 		}
 	} else if(data.kind == NclStk_VAL) {
 		tmp_md = data.u.data_obj;
-		if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
+		if(data.u.data_obj->obj.obj_type_mask & NCL_HLU_MASK) {
 			obj_ids = (int*)tmp_md->multidval.val;
 			for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
 				hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
@@ -1818,7 +1818,7 @@ NhlErrorTypes _NclIDraw
 		}
 	} else if(data.kind == NclStk_VAL) {
 		tmp_md = data.u.data_obj;
-		if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
+		if(data.u.data_obj->obj.obj_type_mask & NCL_HLU_MASK) {
 			obj_ids = (int*)tmp_md->multidval.val;
 			for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
 				hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
@@ -10092,7 +10092,88 @@ NhlErrorTypes _NclIIsLogical
 		0
 	));
 }
+NhlErrorTypes _NclIFileVarTypeOf
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclFile thefile;
+	obj *thefile_id;
+	NclQuark *out_val;
+	int dimsizes = 1;
+	NclObjTypes ot;
+	string* var_string;
 
+        thefile_id = (obj*)NclGetArgValue(
+                        0,
+                        2,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+	thefile = (NclFile)_NclGetObj((int)*thefile_id);
+        var_string = (string*)NclGetArgValue(
+                        1,
+                        2,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+
+	out_val = (NclQuark*)NclMalloc(sizeof(NclQuark));
+
+	ot = _NclFileVarRepValue(thefile,*var_string);
+	switch(ot) {
+		case Ncl_Typedouble :                
+			*out_val = NrmStringToQuark("double");
+			break;
+		case Ncl_Typefloat : 
+			*out_val = NrmStringToQuark("float");
+			break;
+		case Ncl_Typelong :
+			*out_val = NrmStringToQuark("long");
+			break;
+		case Ncl_Typeint :
+			*out_val = NrmStringToQuark("integer");
+			break;
+		case Ncl_Typeshort :
+			*out_val = NrmStringToQuark("short");
+			break;
+		case Ncl_Typebyte :
+			*out_val = NrmStringToQuark("byte");
+			break;
+		case Ncl_Typestring :
+			*out_val = NrmStringToQuark("string");
+			break;
+		case Ncl_Typechar: 
+			*out_val = NrmStringToQuark("character");
+			break;
+		case Ncl_Typeobj: 
+			*out_val = NrmStringToQuark("obj");
+			break;
+		case Ncl_Typelogical:
+			*out_val = NrmStringToQuark("logical");
+			break;
+		case Ncl_Typelist:
+			*out_val = NrmStringToQuark("list");
+			break;
+	}
+
+	return(NclReturnValue(
+		out_val,
+		1,
+		&dimsizes,
+		NULL,
+		((NclTypeClass)nclTypestringClass)->type_class.data_type,
+		0
+	));
+}
 NhlErrorTypes _NclITypeOf
 #if	NhlNeedProto
 (void)
@@ -11500,6 +11581,51 @@ NhlErrorTypes _NclINewList( void )
 	_NclPlaceReturn(data);
 	return(NhlNOERROR);
 	
+}
+NhlErrorTypes _NclIprintVarSummary( void )
+{
+	NclStackEntry data;
+
+	data = _NclGetArg(0,1,DONT_CARE);
+	if(data.kind == NclStk_VAR ) {
+		_NclPrintVarSummary(data.u.data_var);
+		return(NhlNOERROR);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-Variable passed to printVarSummary, can't continue");
+		return(NhlFATAL);
+	}
+}
+NhlErrorTypes _NclIprintFileVarSummary( void )
+{
+	NclFile thefile;
+	obj *thefile_id;
+	NclQuark *out_val;
+	int dimsizes = 1;
+	NclObjTypes ot;
+	string* var_string;
+
+        thefile_id = (obj*)NclGetArgValue(
+                        0,
+                        2,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+	thefile = (NclFile)_NclGetObj((int)*thefile_id);
+        var_string = (string*)NclGetArgValue(
+                        1,
+                        2,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+
+	_NclPrintFileVarSummary(thefile,*var_string);
+
 }
 #ifdef __cplusplus
 }

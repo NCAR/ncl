@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.110 2000-01-08 00:00:19 ethan Exp $
+ *      $Id: Execute.c,v 1.111 2000-01-28 20:46:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1831,6 +1831,8 @@ void CallNEW_OP(void) {
 				NclStackEntry size_expr;
 				NclStackEntry missing_expr;
 				NclSymbol *data_type;
+				NclStackEntry data_type_expr;
+				NclMultiDValData tmp_md;
 
 				if(*ptr == NEW_WM_OP) {
 					missing_expr = _NclPop();
@@ -1840,39 +1842,58 @@ void CallNEW_OP(void) {
 				}
 				size_expr = _NclPop();
 				ptr++; lptr++; fptr++;
-				data_type = (NclSymbol*)*ptr;
-				estatus = _NclNewOp(data_type,size_expr,missing_expr);
-				switch(missing_expr.kind) {
-				case NclStk_VAL:
-					if(missing_expr.u.data_obj->obj.status != PERMANENT) {	
-						_NclDestroyObj((NclObj)missing_expr.u.data_obj);
+				if((NclSymbol*)*ptr ==NULL) {
+					data_type_expr = _NclPop();
+					switch(data_type_expr.kind) {
+					case NclStk_VAL:
+						tmp_md = (NclMultiDValData)data_type_expr.u.data_obj;
+						break;
+					case NclStk_VAR:
+						tmp_md = (NclMultiDValData)_NclGetObj(data_type_expr.u.data_var->var.thevalue_id);
+						break;
 					}
-					break;
-				case NclStk_VAR:
-					if(missing_expr.u.data_var->obj.status != PERMANENT) {	
-						_NclDestroyObj((NclObj)missing_expr.u.data_var);
-					}
-					break;
-				default:
-					break;
+					if(tmp_md->multidval.data_type != NCL_string) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"new: data type must either be a keyword or string");
+						estatus = NhlFATAL;
+					} else {
+						data_type = _NclLookUp(NrmQuarkToString(*(string*)tmp_md->multidval.val));
+					}	
+				} else {
+					data_type = (NclSymbol*)*ptr;
 				}
-				switch(size_expr.kind) {
-				case NclStk_VAL:
-					if(size_expr.u.data_obj->obj.status != PERMANENT) {	
-						_NclDestroyObj((NclObj)size_expr.u.data_obj);
+				if(estatus != NhlFATAL) {
+					estatus = _NclNewOp(data_type,size_expr,missing_expr);
+					switch(missing_expr.kind) {
+					case NclStk_VAL:
+						if(missing_expr.u.data_obj->obj.status != PERMANENT) {	
+							_NclDestroyObj((NclObj)missing_expr.u.data_obj);
+						}
+						break;
+					case NclStk_VAR:
+						if(missing_expr.u.data_var->obj.status != PERMANENT) {	
+							_NclDestroyObj((NclObj)missing_expr.u.data_var);
+						}
+						break;
+					default:
+						break;
 					}
-					break;
-				case NclStk_VAR:
-					if(size_expr.u.data_var->obj.status != PERMANENT) {	
-						_NclDestroyObj((NclObj)size_expr.u.data_var);
+					switch(size_expr.kind) {
+					case NclStk_VAL:
+						if(size_expr.u.data_obj->obj.status != PERMANENT) {	
+							_NclDestroyObj((NclObj)size_expr.u.data_obj);
+						}
+						break;
+					case NclStk_VAR:
+						if(size_expr.u.data_var->obj.status != PERMANENT) {	
+							_NclDestroyObj((NclObj)size_expr.u.data_var);
+						}
+						break;
+					default:
+						break;
 					}
-					break;
-				default:
-					break;
 				}
 				
 			}
-
 void CallISDEFINED_OP(void) {
 				NclStackEntry* var;
 				NclSymbol *var_sym;

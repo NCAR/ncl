@@ -115,7 +115,7 @@ char *cur_load_file = NULL;
 %type <src_node> statement assignment 
 %type <src_node> procedure function_def procedure_def fp_block block do conditional
 %type <src_node> visblk statement_list
-%type <src_node> declaration identifier expr v_parent 
+%type <src_node> declaration identifier expr v_parent the_datatype
 %type <src_node> subscript0 subscript2 break_cont vcreate list_subscript 
 %type <src_node> subscript3 subscript1 subexpr primary function array error filevarselector coordvarselector attributeselector 
 %type <list> the_list arg_dec_list subscript_list opt_arg_list named_subscript_list normal_subscript_list
@@ -1744,9 +1744,11 @@ vname : OBJVAR		{
 	| DFILE		{
 				$$ = $1;
 			}
+/*
 	| LIST 		{
 				$$ = $1;
 			}
+*/
 	| UNDEF 	{
 				$$ = $1;
 			}
@@ -2244,10 +2246,23 @@ primary : REAL				{
 						_NclValOnly($3);
 						$$ = _NclMakeNewOp($3,$5,NULL);
 					}
+	| NEW LP expr ',' expr ',' expr RP	{
+						_NclValOnly($3);
+						_NclValOnly($5);
+						_NclValOnly($7);
+						$$ = _NclMakeExprNewOp($3,$5,$7);
+					}
+	| NEW LP expr ',' expr RP	{
+						_NclValOnly($3);
+						_NclValOnly($5);
+						$$ = _NclMakeExprNewOp($3,$5,NULL);
+					}
 	| NCLNULL			{
 						$$ = _NclMakeNULLNode();
 					}
 ;
+
+	
 
 
 function:  IFUNC opt_arg_list		{

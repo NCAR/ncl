@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.19 2000-01-08 00:00:20 ethan Exp $
+ *      $Id: VarSupport.c,v 1.20 2000-01-28 20:46:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1238,4 +1238,188 @@ struct _NclVarRec* from;
 		
 	}
 	return(ret);
+}
+NhlErrorTypes _NclPrintVarSummary
+#if	NhlNeedProto
+(struct _NclVarRec *self)
+#else
+(thevar)
+struct _NclVarRec* self;
+#endif
+{
+
+	NclVar cvar= NULL;
+	char *v_name;
+	int i;
+	NclMultiDValData thevalue = NULL;
+	NclMultiDValData tmp_md= NULL;
+	int ret;
+	NhlErrorTypes ret0 = NhlNOERROR;
+	NhlErrorTypes ret1 = NhlNOERROR;
+	FILE *fp = _NclGetOutputStream();
+
+	if((self!= NULL)&&(self->obj.obj_type_mask & Ncl_Var)) {
+		thevalue = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
+		if(self->var.thesym != NULL) {
+			v_name = self->var.thesym->name;
+		} else if(self->var.var_quark != -1) {
+			v_name = NrmQuarkToString(self->var.var_quark);
+		} else {
+			v_name = "unnamed";
+		}
+
+		ret = nclfprintf(fp,"\n\n");
+		if(ret < 0) {
+			return(NhlWARNING);
+		}
+		switch(self->var.var_type) {
+		case NORMAL:
+		case HLUOBJ:
+			ret = nclfprintf(fp,"Variable: %s\n",v_name);
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			break;
+		case VARSUBSEL:
+			ret = nclfprintf(fp,"Variable: %s (subsection)\n",v_name);
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			break;
+		case COORD:
+			ret = nclfprintf(fp,"Variable: %s (coordinate)\n",v_name);
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			break;
+		case COORDSUBSEL:
+			ret = nclfprintf(fp,"Variable: %s (coordinate subsection)\n",v_name);
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			break;
+		case PARAM:
+			ret = nclfprintf(fp,"Variable: %s (parameter)\n",v_name);
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			break;
+		case RETURNVAR:
+			ret = nclfprintf(fp,"Variable: %s (return)\n",v_name);
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			break;
+		case FILEVAR:
+			ret = nclfprintf(fp,"Variable: %s (file variable)\n",v_name);
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			break;
+		case FILEVARSUBSEL:
+			ret = nclfprintf(fp,"Variable: %s (file variable subsection)\n",v_name);
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			break;
+		default:
+			ret = nclfprintf(fp,"Variable: %s\n","unnamed");
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			break;
+		}
+		if(thevalue->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
+			ret0 = _NclPrint(thevalue,fp);
+		} else {
+			if(thevalue != NULL) 
+				ret = nclfprintf(fp,"Type: %s\n",_NclBasicDataTypeToName(thevalue->multidval.data_type));
+
+
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			ret = nclfprintf(fp,"Total Size: %d bytes\n",thevalue->multidval.totalsize);
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			ret = nclfprintf(fp,"            %d values\n",thevalue->multidval.totalelements);
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			ret = nclfprintf(fp,"Number of Dimensions: %d\n",self->var.n_dims);
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			ret = nclfprintf(fp,"Dimensions and sizes:\t");
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			for(i = 0; i< self->var.n_dims; i++) {
+				ret = nclfprintf(fp,"[");
+				if(ret < 0) {
+					return(NhlWARNING);
+				}
+				if((self->var.dim_info[i].dim_quark != -1)) {
+					ret = nclfprintf(fp,"%s | ",NrmQuarkToString(self->var.dim_info[i].dim_quark));
+					if(ret < 0) {
+						return(NhlWARNING);
+					}
+				}
+				ret = nclfprintf(fp,"%d]",self->var.dim_info[i].dim_size);
+				if(ret < 0) {
+					return(NhlWARNING);
+				}
+				if(i !=  self->var.n_dims - 1) {
+					ret = nclfprintf(fp," x ");
+					if(ret < 0) {
+						return(NhlWARNING);
+					}
+				}
+			}
+			ret = nclfprintf(fp,"\n");
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			ret = nclfprintf(fp,"Coordinates: \n");
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			for(i =0 ; i< self->var.n_dims; i++) {
+				if((self->var.coord_vars[i] != -1)&&(_NclGetObj(self->var.coord_vars[i])!=NULL)) {
+					cvar = (NclVar)_NclGetObj(self->var.coord_vars[i]);
+					tmp_md = _NclVarValueRead(cvar,NULL,NULL);
+					ret = nclfprintf(fp,"            ");
+					if(ret < 0) {
+						return(NhlWARNING);
+					}
+					ret = nclfprintf(fp,"%s: [", NrmQuarkToString(self->var.dim_info[i].dim_quark));
+					if(ret < 0) {
+						return(NhlWARNING);
+					}
+					ret0 =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
+					if(ret0 < NhlWARNING) {
+						return(NhlWARNING);
+					}
+					ret = nclfprintf(fp,"..");
+					if(ret < 0) {
+						return(NhlWARNING);
+					}
+					ret0 = _Nclprint(tmp_md->multidval.type,fp,&(((char*)tmp_md->multidval.val)[(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
+					if(ret0 < NhlWARNING) {
+						return(NhlWARNING);
+					}
+					ret = nclfprintf(fp,"]\n");
+					if(ret < 0) {
+						return(NhlWARNING);
+					}
+				}
+			}
+			ret0 = _NclPrint(_NclGetObj(self->var.att_id),fp);
+		}
+	
+	} else { 
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclPrintVarSummary: Non-Variable passed to printVarSummary, can't print summary");
+		return(NhlFATAL);
+	}
 }

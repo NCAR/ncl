@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.23 1999-11-12 18:36:44 ethan Exp $
+ *      $Id: SrcTree.h,v 1.24 2000-01-28 20:46:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -50,7 +50,7 @@ typedef enum {Ncl_BLOCK, Ncl_RETURN, Ncl_IFTHEN, Ncl_IFTHENELSE,
 			Ncl_RESOURCE, Ncl_GETRESOURCE, Ncl_OBJ,
 			Ncl_BREAK, Ncl_CONTINUE, Ncl_FILEVARATT,
 			Ncl_FILEVARDIM,  Ncl_FILEVARCOORD, Ncl_NEW,
-			Ncl_LOGICAL, Ncl_VARCOORDATT,Ncl_FILEVARCOORDATT,Ncl_WILDCARDINDEX, Ncl_NULLNODE, Ncl_LIST
+			Ncl_LOGICAL, Ncl_VARCOORDATT,Ncl_FILEVARCOORDATT,Ncl_WILDCARDINDEX, Ncl_NULLNODE, Ncl_LIST,Ncl_EXPRNEW
                         } NclSrcTreeTypes;
 
 typedef enum { Ncl_READIT, Ncl_WRITEIT, Ncl_PARAMIT, Ncl_VALONLY } NclReferenceTypes;
@@ -633,6 +633,16 @@ typedef struct ncl_newnode{
 	NclSymbol *data_sym;
 	void *missing_expr;
 }NclNew;
+typedef struct ncl_newexrnode{
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	void *size_expr;
+	void *data_type_expr;
+	void *missing_expr;
+}NclExprNew;
 
 extern void *_NclMakeNULLNode(
 #if	NhlNeedProto
@@ -1047,6 +1057,14 @@ void _NclAddProcFuncInfoToSym(
 #if	NhlNeedProto
 struct _NclSymbol * /*pf_sym*/,
 NclSrcListNode * /*dec_list*/
+#endif
+);
+
+void *_NclMakeExprNewOp(
+#if	NhlNeedProto
+void * /*size_expr*/,
+void * /*datatype*/,
+void * /*size_expr*/
 #endif
 );
 

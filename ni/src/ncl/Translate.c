@@ -2120,6 +2120,21 @@ Unneeded translations
 			off1 = _NclPutInstr(PUSHNULL,groot->line,groot->file);
 			break;
 		}
+		case Ncl_EXPRNEW:
+		{
+			NclExprNew *new_op = (NclExprNew*)groot;
+			off1 =_NclTranslate(new_op->data_type_expr,fp);
+			_NclTranslate(new_op->size_expr,fp);
+			if(new_op->missing_expr != NULL) {
+				_NclTranslate(new_op->missing_expr,fp);
+				_NclPutInstr(NEW_WM_OP,new_op->line,new_op->file);
+				_NclPutInstr((NclValue)NULL,new_op->line,new_op->file);
+			}  else {
+				_NclPutInstr(NEW_OP,new_op->line,new_op->file);
+				_NclPutInstr((NclValue)NULL,new_op->line,new_op->file);
+			}
+			break;
+		}
 		case Ncl_NEW:
 		{
 			NclNew *new_op = (NclNew*)groot;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.45 1999-11-12 18:36:37 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.46 2000-01-28 20:46:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,16 @@ extern "C" {
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
 
+extern NhlErrorTypes _NclIprintFileVarSummary(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIprintVarSummary(
+#if NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _NclINhlGetParentId(
 #if NhlNeedProto
 void
@@ -508,6 +518,11 @@ void
 #endif
 );
 extern NhlErrorTypes _NclIIsLogical(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIFileVarTypeOf(
 #if     NhlNeedProto
 void
 #endif
@@ -1307,6 +1322,13 @@ void _NclAddBuiltIns
 	NclRegisterFunc( _NclITypeOf,args,"typeof",nargs);
 
 	nargs = 0;
+	args = NewArgs(2);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,nargs,"file",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
+	NclRegisterFunc( _NclIFileVarTypeOf,args,"filevartypeof",nargs);
+
+	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
 	NclRegisterProc( _NclIUnDef,args,"undef",nargs);
@@ -1479,6 +1501,20 @@ void _NclAddBuiltIns
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
     NclRegisterFunc(_NclINewList,args,"NewList",nargs);
+
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,NclANY,NclANY,NclANY);nargs++;
+    NclRegisterProc(_NclIprintVarSummary,args,"printVarSummary",nargs);
+
+
+
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"file",NclANY,NclANY); nargs++;
+    SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
+    NclRegisterProc(_NclIprintFileVarSummary,args,"printFileVarSummary",nargs);
     
 
 /*

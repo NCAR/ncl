@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.14 1997-10-01 18:19:10 ethan Exp $
+ *      $Id: FileSupport.c,v 1.15 2000-01-28 20:46:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1260,3 +1260,175 @@ int is_unlimited;
 	}
 	return(NhlFATAL);
 }
+
+NhlErrorTypes _NclPrintFileVarSummary
+#if NhlNeedProto
+(NclFile  thefile , NclQuark  varname )
+#else
+(thefile ,  varname )
+NclFile thefile; 
+NclQuark  varname; 
+#endif
+{
+	FILE *fp = _NclGetOutputStream();
+	NclFileAttInfoList* step;
+	int i,j;
+	int ret;
+	long total;
+	char *dimnames[100];
+	NclMultiDValData tmp_md;
+	NclVar tmp_var;
+
+	if(_NclFileIsVar(thefile,varname)) {
+		for(i = 0;i < thefile->file.n_vars;i++) {
+			if((thefile->file.var_info[i] != NULL)&&(thefile->file.var_info[i]->var_name_quark == varname)) {
+							
+
+				ret = nclfprintf(fp,"\n\n");
+               		 	if(ret < 0) {
+                       			return(NhlWARNING);
+                		}
+				ret = nclfprintf(fp,"Variable: %s\n",NrmQuarkToString(varname));
+               		 	if(ret < 0) {
+                       			return(NhlWARNING);
+                		}
+				total = 1;	
+				for(j = 0; j < thefile->file.var_info[i]->num_dimensions;j++) {
+					total *= thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_size;
+				}
+				ret = nclfprintf(fp,"Type: %s\n",_NclBasicDataTypeToName(thefile->file.var_info[i]->data_type));
+               		 	if(ret < 0) {
+                       			return(NhlWARNING);
+                		}
+				ret = nclfprintf(fp,"Total Size: %d bytes\n",total * _NclSizeOf(thefile->file.var_info[i]->data_type));
+                		if(ret < 0) {
+                        		return(NhlWARNING);
+                		}
+				ret = nclfprintf(fp,"            %d values\n",total);
+                		if(ret < 0) {
+                        		return(NhlWARNING);
+                		}
+				ret = nclfprintf(fp,"Number of Dimensions: %d\n",thefile->file.var_info[i]->num_dimensions);
+                		if(ret < 0) {
+                        		return(NhlWARNING);
+                		}
+				ret = nclfprintf(fp,"Dimensions and sizes:\t");
+				if(ret < 0) {
+                                        return(NhlWARNING);
+                                }
+                                for(j = 0; j < thefile->file.var_info[i]->num_dimensions;j++) {
+					ret = nclfprintf(fp,"[");
+					if(ret < 0) {
+		                                return(NhlWARNING);
+               		        	}
+					ret = nclfprintf(fp,"%s | ",NrmQuarkToString(thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark));
+					if(ret < 0) {
+						return(NhlWARNING);
+					}
+					
+					ret = nclfprintf(fp,"%d]",thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_size);
+					if(ret < 0) {
+                                                return(NhlWARNING);
+                                        }
+					if(j != thefile->file.var_info[i]->num_dimensions-1) {
+						ret = nclfprintf(fp," x ");
+		                                if(ret < 0) {
+							return(NhlWARNING);
+                                		}
+
+					}
+				}
+				ret = nclfprintf(fp,"\nCoordinates: \n");
+				for(j = 0; j < thefile->file.var_info[i]->num_dimensions;j++) {
+					if(_NclFileVarIsCoord(thefile,thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark)!= -1) {
+						ret = nclfprintf(fp,"            ");
+						if(ret < 0) {
+							return(NhlWARNING);
+						}
+						ret = nclfprintf(fp,"%s: [", NrmQuarkToString(thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark));
+						if(ret < 0) {
+							return(NhlWARNING);
+						}
+						tmp_var = _NclFileReadCoord(thefile,thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark,NULL);
+						if(tmp_var != NULL) {
+							tmp_md = (NclMultiDValData)_NclGetObj(tmp_var->var.thevalue_id);
+						}
+						ret =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
+                                		if(ret < NhlWARNING) {
+                                        		return(NhlWARNING);
+                                		}
+						ret = nclfprintf(fp,"..");
+						if(ret < 0) {
+							return(NhlWARNING);
+						}
+						ret = _Nclprint(tmp_md->multidval.type,fp,&(((char*)tmp_md->multidval.val)[(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
+                                		if(ret < NhlWARNING) {
+                                        		return(NhlWARNING);
+                                		}
+                                		ret = nclfprintf(fp,"]\n");
+                                		if(ret < 0) {
+                                        		return(NhlWARNING);
+                                		}
+						if(tmp_var->obj.status != PERMANENT) {
+							_NclDestroyObj((NclObj)tmp_var);
+						}
+					} else {
+						ret = nclfprintf(fp,"            ");
+						if(ret < 0) {
+               		                                 return(NhlWARNING);
+		                                }
+						ret = nclfprintf(fp,"%s: not a coordinate variable\n",NrmQuarkToString(thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark));
+						if(ret < 0) {
+               		                                 return(NhlWARNING);
+		                                }
+					}
+				}	
+				step = thefile->file.var_att_info[i];
+				j = 0;
+				while(step != NULL) {
+					step = step->next;
+					j++;
+				}
+			 	step = thefile->file.var_att_info[i];
+
+				ret = nclfprintf(fp,"Number of Attributes: %d\n",j);
+				if(ret < 0) {
+					return(NhlWARNING);
+				}
+
+				while(step != NULL) {
+					ret = nclfprintf(fp,"  %s :\t", NrmQuarkToString(step->the_att->att_name_quark));
+					if(ret < 0) {
+						return(NhlWARNING);
+					 }
+					if(step->the_att->num_elements == 1) {
+						tmp_md = _NclFileReadVarAtt(thefile,thefile->file.var_info[i]->var_name_quark,step->the_att->att_name_quark,NULL);
+						ret = _Nclprint(tmp_md->multidval.type, fp,tmp_md->multidval.val);
+						if(ret < NhlINFO) {
+							return(NhlWARNING);
+						}
+						ret = nclfprintf(fp,"\n");
+						if(ret < 0) {
+							return(NhlWARNING);
+						}
+					} else {
+						ret = nclfprintf(fp,"<ARRAY>\n");
+						if(ret < 0) {
+							return(NhlWARNING);
+						}
+					}
+					step = step->next;
+				}
+				ret = nclfprintf(fp,"\n");
+				if(ret < 0) {
+					return(NhlWARNING);
+                        	}
+				return(NhlNOERROR);
+			}
+		}
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"printFileVarSummary: (%s) is not a variable in the file (%s)",NrmQuarkToString(varname),NrmQuarkToString(thefile->file.fname));
+		return(NhlFATAL);	
+	}
+}
+

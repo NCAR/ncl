@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.h,v 1.9 2000-01-08 00:00:20 ethan Exp $
+ *      $Id: VarSupport.h,v 1.10 2000-01-28 20:46:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -235,6 +235,12 @@ extern NhlErrorTypes _NclAttCopyWrite(
 #if	NhlNeedProto
 	struct _NclVarRec * /*to*/,
 	struct _NclVarRec* /*from*/
+#endif
+);
+
+extern NhlErrorTypes _NclPrintVarSummary(
+#if	NhlNeedProto
+	struct _NclVarRec * /*thevar*/
 #endif
 );
 #endif /* _VarSupport_h */
