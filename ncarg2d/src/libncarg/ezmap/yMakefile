@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.16 2001-09-19 17:10:36 kennison Exp $
+#       $Id: yMakefile,v 1.17 2001-11-02 22:40:58 kennison Exp $
 #
 
 MYNAME	= ezmap
@@ -21,7 +21,8 @@ GENERIC_SRCS = \
 	mdrset.f mdsetc.f mdsetd.f mdseti.f mdsetl.f mdsetr.f mpgetc.f \
 	mpgetd.f mpgeti.f mpgetl.f mpgetr.f mprset.f mpsetc.f mpsetd.f \
 	mpseti.f mpsetl.f mpsetr.f rbgdfe.f rbglen.f rbidfe.f supcon.f \
-	supmap.f mdrgdl.f mdscal.f
+	supmap.f mdrgdl.f mdscal.f mdrged.f mdrgam.f mdrgdr.f mdrgdp.f \
+	mdrgfp.f mdrgip.f
 
 GENERIC_OBJS = \
 	hlumapeod.o hlumapusr.o idictl.o mapbd.o mapdrw.o mapeod.o mapfst.o \
@@ -40,7 +41,8 @@ GENERIC_OBJS = \
 	mdrset.o mdsetc.o mdsetd.o mdseti.o mdsetl.o mdsetr.o mpgetc.o \
 	mpgetd.o mpgeti.o mpgetl.o mpgetr.o mprset.o mpsetc.o mpsetd.o \
 	mpseti.o mpsetl.o mpsetr.o rbgdfe.o rbglen.o rbidfe.o supcon.o \
-	supmap.o mdrgdl.o mdscal.o
+	supmap.o mdrgdl.o mdscal.o mdrged.o mdrgam.o mdrgdr.o mdrgdp.o \
+	mdrgfp.o mdrgip.o
 
 UNIX_SRCS = mpdbdi.f
 
