@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.5 2003-02-21 01:14:16 fred Exp $
+ *      $Id: pdf.c,v 1.6 2003-02-26 23:20:46 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3273,8 +3273,7 @@ PDFEsc(GKSC *gksc)
     break;
   case -1521:  /* Corner points for positioning plot on the page */
     rscale = 1./psa->scaling;
-    strng = strtok(sptr, " "); /* Skip over the workstation ID */
-    strng = strtok((char *) NULL, " ");
+    strng = strtok(sptr, " ");
     psa->dspace.llx = (int) (rscale * (float) atoi(strng));
     strng = strtok((char *) NULL, " ");
     psa->dspace.lly = (int) (rscale * (float) atoi(strng));
