@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpex11.c,v 1.1 1994-08-01 15:47:47 haley Exp $
+ *	$Id: c_cpex11.c,v 1.2 1994-08-17 22:59:07 haley Exp $
  */
 
 /*
@@ -137,7 +137,7 @@ main()
  * Tell PLOTCHAR not to interpret colons as function-code signal
  * characters.
  */
-	c_pcsetc ("FC",'\0');
+	c_pcsetc ("FC","\0");
 /*
  * Tell PLOTCHAR to use one of the filled fonts.
  */

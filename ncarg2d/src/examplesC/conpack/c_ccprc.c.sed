@@ -43,7 +43,7 @@ int main()
         getdat(x, y, &zreg[0][0]);
 /* Open GKS */
         gopen_gks(IERRF, ISZDM);
-        gopen_ws(IWKID, LUNIT, IWTYPE);
+        gopen_ws(IWKID, NULL, IWTYPE);
         gactivate_ws(IWKID);
 /* Initialize Areas */
         c_arinam(map,LMAP);
