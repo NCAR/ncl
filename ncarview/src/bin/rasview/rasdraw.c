@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.18 1997-02-03 23:05:33 clyne Exp $
+ *	$Id: rasdraw.c,v 1.19 1997-02-28 00:55:31 clyne Exp $
  */
 /*
  *	rasdraw.c
@@ -746,8 +746,26 @@ Context	*RasDrawOpen(argc, argv, batch)
 	context->default_pal.blue = (unsigned char *) NULL;
 	context->app_name = argv[0];
 	context->app_class = app_class;
+	context->ras = (Raster *) NULL;
 
 	return(context);
+}
+
+/*
+**	Expose event handler. Redraw image (if any)
+*/
+/*ARGSUSED*/
+void	exposeEH(
+	Widget		w,
+	XtPointer	client_data,
+	XEvent		*event,
+	Boolean		*dispatch
+) {
+	Context	*context =  (Context *) client_data;
+
+	if (context->ras) {
+		RasDraw(context->ras, context);
+	}
 }
 
 /*
@@ -804,15 +822,25 @@ ras_draw_init(context, nx, ny, encoding_hint)
 
 	context->canvas = create_graphics_canvas(context->toplevel, nx, ny);
 
+
+	XtAddEventHandler(
+		context->canvas, ExposureMask, False, exposeEH, 
+		(XtPointer) context
+	);
+
 	XtRealizeWidget(context->toplevel);
 
 	context->gc = XtGetGC(context->canvas, 0L, &xgcvalues); 
+
+#ifdef	DEAD
 	/*
 	 * turn on backing store
 	 */
 	xswa.backing_store = WhenMapped;
 	XChangeWindowAttributes(context->dpy, XtWindow(context->canvas), 
 						CWBackingStore, &xswa);
+
+#endif
 
 
 	context->ximage = create_ximage(context->dpy, 
@@ -857,6 +885,11 @@ int	RasDraw(ras, context)
 	int	class;
 
 	static	Boolean	first	= True;
+
+	/*
+	**	Save the raster for expose events if needed
+	*/
+	context->ras = ras;
 
 	if (first) {
 		/*

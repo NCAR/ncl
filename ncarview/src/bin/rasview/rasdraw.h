@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.h,v 1.5 1993-11-03 23:57:24 clyne Exp $
+ *	$Id: rasdraw.h,v 1.6 1997-02-28 00:55:32 clyne Exp $
  */
 #ifndef	_rasdraw_
 #define	_rasdraw_
@@ -47,6 +47,8 @@ typedef	struct	{
 	int	dsp_depth;	/* number of bit-planes in visual	*/
 	String	app_name, 
 		app_class;
+
+	Raster	*ras;
 	} Context;
 
 #define	RASDRAW_0BIT	0
