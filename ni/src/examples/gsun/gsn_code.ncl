@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.116 2003-11-27 22:11:42 haley Exp $
+;      $Id: gsn_code.ncl,v 1.117 2003-12-01 14:41:10 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -718,7 +718,7 @@ end
 ;***********************************************************************;
 function get_valid_long_names()
 begin
-  return((/"long_name","description","DataFieldName"/))
+  return((/"long_name","description","DESCRIPTION","DataFieldName"/))
 end
 
 ;***********************************************************************;
