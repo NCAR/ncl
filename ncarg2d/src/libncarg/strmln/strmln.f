@@ -1,5 +1,5 @@
 C
-C	$Id: strmln.f,v 1.6 1993-02-20 00:31:43 dbrown Exp $
+C	$Id: strmln.f,v 1.7 1993-02-25 19:32:14 dbrown Exp $
 C
       SUBROUTINE STRMLN (U,V,WORK,IMAX,IPTSX,JPTSY,NSET,IER)
 C
@@ -283,6 +283,23 @@ C The following call is for gathering statistics on library use at ncar.
 C
       CALL Q8QST4 ('CRAYLIB','STRMLN','STRMLN','VERSION  4')
 C
+C Save the values of all parameters that may get changed
+C
+      CALL STGETI('SET - Do SET Call Flag', ISSET)
+      CALL STGETI('SGD - Stream Start Grid Increment', ISSGD)
+      CALL STGETI('AGD - Arrow Placement Grid Increment', ISAGD)
+      CALL STGETR('ARL - Arrow Length, Fraction Of Grid', SARL)
+      CALL STGETI('CKP - Check Progress at Iteration Mod', ISCKP)
+      CALL STGETI('CKX - Check Streamline Crossover Mod', ISCKX)
+      CALL STGETI('TRP - Interpolation Method', ISTRP)
+      CALL STGETI('CYK - Cyclical Data Flag', ISCYK)
+      CALL STGETR('VNL - Normalized Vector Magnitude', SVNL)
+      CALL STGETI('SVF - Special Value Flag', ISSVF)
+      CALL STGETR('USV - U Array Special Value', SUSV)
+      CALL STGETR('VSV - V Array Special Value', SVSV)
+      CALL STGETR('CDS - Critical Displacement', SCDS)
+      CALL STGETR('SSP - Streamline Spacing', SSSP)
+C
 C Load the communication common block with parameters
 C
 C
@@ -367,7 +384,7 @@ C
 C
 C Since the set call has been handled STINIT should not do a SET
 C
-         CALL STSETI('SET - Do set call flag', 0)
+         CALL STSETI('SET - Do SET Call Flag', 0)
 C
       END IF
 C
@@ -375,30 +392,16 @@ C Common block values (STR03) (Save them first)
 C
       IF (ICB .EQ. 1) THEN
 C
-         CALL STGETI('SGD - Stream start grid increment', ISSGD)
-         CALL STGETI('AGD - Arrow placement grid increment', ISAGD)
-         CALL STGETR('ARL - Arrow length, fraction of grid', SARL)
-         CALL STGETI('CKP - check progress at iteration mod', ISCKP)
-         CALL STGETI('CKX - Check streamline crossover mod', ISCKX)
-         CALL STGETI('TRP - Interpolation method', ISTRP)
-         CALL STGETI('CYK - Cyclical data flag', ISCYK)
-         CALL STGETR('VNL - Normalized vector magnitude', SVNL)
-         CALL STGETI('SVF - Special value flag', ISSVF)
-         CALL STGETR('USV - U array special value', SUSV)
-         CALL STGETR('VSV - V array special value', SVSV)
-         CALL STGETR('CDS - Critical displacement', SCDS)
-         CALL STGETR('SSP - Streamline spacing', SSSP)
-C
-         CALL STSETI('SGD - Stream start grid increment', INITA)
-         CALL STSETI('AGD - Arrow placement grid increment', INITB)
-         CALL STSETI('CKP - check progress at iteration mod', ITERP)
-         CALL STSETI('CKX - Check streamline crossover mod', ITERC)
-         CALL STSETI('TRP - Interpolation method', IGFLG)
-         CALL STSETI('CYK - Cyclical data flag', ICYC)
-         CALL STSETI('SVF - Special value flag', IMSG)
-         CALL STSETR('USV - U array special value', UVMSG)
-         CALL STSETR('VSV - V array special value', UVMSG)
-         CALL STSETR('VNL - Normalized vector magnitude', DISPL)
+         CALL STSETI('SGD - Stream Start Grid Increment', INITA)
+         CALL STSETI('AGD - Arrow Placement Grid Increment', INITB)
+         CALL STSETI('CKP - Check Progress at Iteration Mod', ITERP)
+         CALL STSETI('CKX - Check Streamline Crossover Mod', ITERC)
+         CALL STSETI('TRP - Interpolation Method', IGFLG)
+         CALL STSETI('CYK - Cyclical Data Flag', ICYC)
+         CALL STSETI('SVF - Special Value Flag', IMSG)
+         CALL STSETR('USV - U Array Special Value', UVMSG)
+         CALL STSETR('VSV - V Array Special Value', UVMSG)
+         CALL STSETR('VNL - Normalized Vector Magnitude', DISPL)
 C
 C These parameters are roughly mapped to the new method of
 C using viewport fraction rather than grid fraction.
@@ -430,25 +433,20 @@ C
          CALL SET (VXL,VXR,VYB,VYT,WXL,WXR,WYB,WYT,LL)
       END IF
 C
-C Restore the common block values
-C
-      IF (ICB .EQ. 1) THEN
-C
-         CALL STSETI('SGD - Stream start grid increment', ISSGD)
-         CALL STSETI('AGD - Arrow placement grid increment', ISAGD)
-         CALL STSETR('ARL - Arrow length, fraction of grid', SARL)
-         CALL STSETI('CKP - check progress at iteration mod', ISCKP)
-         CALL STSETI('CKX - Check streamline crossover mod', ISCKX)
-         CALL STSETI('TRP - Interpolation method', ISTRP)
-         CALL STSETI('CYK - Cyclical data flag', ISCYK)
-         CALL STSETR('VNL - Normalized vector magnitude', SVNL)
-         CALL STSETI('SVF - Special value flag', ISSVF)
-         CALL STSETR('USV - U array special value', SUSV)
-         CALL STSETR('VSV - V array special value', SVSV)
-         CALL STSETR('CDS - Critical displacement', SCDS)
-         CALL STSETR('SSP - Streamline spacing', SSSP)
-C
-      END IF
+      CALL STSETI('SET - Do SET Call Flag', ISSET)
+      CALL STSETI('SGD - Stream Start Grid Increment', ISSGD)
+      CALL STSETI('AGD - Arrow Placement Grid Increment', ISAGD)
+      CALL STSETR('ARL - Arrow Length, Fraction Of Grid', SARL)
+      CALL STSETI('CKP - Check Progress at Iteration Mod', ISCKP)
+      CALL STSETI('CKX - Check Streamline Crossover Mod', ISCKX)
+      CALL STSETI('TRP - Interpolation Method', ISTRP)
+      CALL STSETI('CYK - Cyclical Data Flag', ISCYK)
+      CALL STSETR('VNL - Normalized Vector Magnitude', SVNL)
+      CALL STSETI('SVF - Special Value Flag', ISSVF)
+      CALL STSETR('USV - U Array Special Value', SUSV)
+      CALL STSETR('VSV - V Array Special Value', SVSV)
+      CALL STSETR('CDS - Critical Displacement', SCDS)
+      CALL STSETR('SSP - Streamline Spacing', SSSP)
 C
 C
 C Restore the compatibility flag value if necessary

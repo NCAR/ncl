@@ -1,27 +1,27 @@
 C
-C	$Id: stgeti.f,v 1.1 1993-01-15 23:53:27 dbrown Exp $
+C	$Id: stgeti.f,v 1.2 1993-02-25 19:32:04 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
 C
-      SUBROUTINE STGETI (WHCH,IVAL)
+      SUBROUTINE STGETI (CNM,IVL)
 C
-      CHARACTER*(*) WHCH
+      CHARACTER*(*) CNM
 C
 C This subroutine is called to retrieve the integer value of a specified
 C parameter.
 C
-C WHCH is the name of the parameter whose value is to be retrieved.
+C CNM is the name of the parameter whose value is to be retrieved.
 C
-C IVAL is an integer variable in which the desired value is to be
+C IVL is an integer variable in which the desired value is to be
 C returned by STGETI.
 C
 C
 C Use STGETR to retrieve the real value, fix it, and return it to the
 C user.
 C
-      CALL STGETR (WHCH,RVAL)
-      IVAL=INT(RVAL)
+      CALL STGETR (CNM,RVL)
+      IVL=INT(RVL)
 C
 C Done.
 C

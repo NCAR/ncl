@@ -1,5 +1,5 @@
 C
-C	$Id: stream.f,v 1.3 1993-01-21 23:50:48 dbrown Exp $
+C	$Id: stream.f,v 1.4 1993-02-25 19:32:11 dbrown Exp $
 C
       SUBROUTINE STREAM (U,V,WRK,IAM,STUMSL)
 C
@@ -121,6 +121,20 @@ C The following call is for monitoring library use at NCAR
 C
       CALL Q8QST4 ( 'GRAPHX', 'STREAM', 'STREAM', 'VERSION 01')
 C
+C Check for valid area map and area group overflow if masking is enabled
+C
+      IF (IMSK.GT.0) THEN
+         IF (IAM(7).GT.IPAGMX) THEN
+            CSTR(1:29)='STREAM - TOO MANY AREA GROUPS'
+            CALL SETER (CSTR(1:29),1,2)
+            STOP
+         END IF
+         IF (IAM(7).LE.0) THEN
+            CSTR(1:25)='STREAM - INVALID AREA MAP'
+            CALL SETER (CSTR(1:29),2,2)
+            STOP
+         END IF
+      END IF
 C
 C Save the line color, text color and linewidth.
 C Then set up the new linewidth values

@@ -1,15 +1,15 @@
 C
-C	$Id: stmpxy.f,v 1.2 1993-02-02 23:30:48 dbrown Exp $
+C	$Id: stmpxy.f,v 1.3 1993-02-25 19:32:09 dbrown Exp $
 C
 C ---------------------------------------------------------------------
 C
-      SUBROUTINE STMPXY(XWO,YWO,XUS,YUS,IST)
+      SUBROUTINE STMPXY(XDA,YDA,XUS,YUS,IST)
 C
-C Transform a point in world coordinate space to user space
+C Transform a point in data coordinate space to user space
 C
 C Input parameters:
 C
-C XWO,YWO - Point in world coordinate space
+C XDA,YDA - Point in data coordinate space
 C
 C Output parameters:
 C
@@ -45,15 +45,15 @@ C -------------------------------------------------------------
 C
       IST=0
       IF (IMAP .EQ. 0) THEN
-         XUS=XWO
-         YUS=YWO
+         XUS=XDA
+         YUS=YDA
       ELSE IF (IMAP .EQ. 1) THEN
-         CALL MAPTRA(YWO,XWO,XUS,YUS)
+         CALL MAPTRA(YDA,XDA,XUS,YUS)
       ELSE IF (IMAP .EQ. 2) THEN
-         XUS=XWO*COS(PDTOR*YWO)
-         YUS=XWO*SIN(PDTOR*YWO)
+         XUS=XDA*COS(PDTOR*YDA)
+         YUS=XDA*SIN(PDTOR*YDA)
       ELSE
-         CALL STUMXY(XWO,YWO,XUS,YUS,IST)
+         CALL STUMXY(XDA,YDA,XUS,YUS,IST)
       END IF
 C
       IF (XUS.LT.WXMN .OR. XUS.GT.WXMX
@@ -68,9 +68,9 @@ C
 C
 C ---------------------------------------------------------------------
 C
-      SUBROUTINE STIMXY(XUS,YUS,XWO,YWO,IST)
+      SUBROUTINE STIMXY(XUS,YUS,XDA,YDA,IST)
 C
-C Inversely transform a point in user coordinate space to world space
+C Inversely transform a point in user coordinate space to data space
 C
 C Input parameters:
 C
@@ -78,7 +78,7 @@ C XUS,YUS - Point in user coordinate space
 C
 C Output parameters:
 C
-C XWO,YWO - Point in world coordinate space
+C XDA,YDA - Point in data coordinate space
 C IST     - Status code indicating success or failure
 C
 C
@@ -110,27 +110,27 @@ C ---------------------------------------------------------------------
 C
       IST=0
       IF (IMAP .EQ. 0) THEN
-         XWO=XUS
-         YWO=YUS
+         XDA=XUS
+         YDA=YUS
       ELSE IF (IMAP .EQ. 1) THEN
-         CALL MAPTRI(XUS,YUS,YWO,XWO)
+         CALL MAPTRI(XUS,YUS,YDA,XDA)
       ELSE IF (IMAP .EQ. 2) THEN
-         XWO=SQRT(XUS*XUS+YUS*YUS)
-         YWO=PRTOD*ATAN2(YUS,XUS)
+         XDA=SQRT(XUS*XUS+YUS*YUS)
+         YDA=PRTOD*ATAN2(YUS,XUS)
 C
 C Polar mapping has special bounds checking requirements.
-C If YWO is less than YLOV, it is possible the user intends
+C If YDA is less than YLOV, it is possible the user intends
 C to treat some or all of quandrant 3 and 4 as positive angles
 C (unlike ATAN2). Add 360 in this case.
 C
-         IF (YWO.LT.YLOV) YWO=YWO+360.0
+         IF (YDA.LT.YLOV) YDA=YDA+360.0
 C
       ELSE
-         CALL STUIXY(XUS,YUS,XWO,YWO,IST)
+         CALL STUIXY(XUS,YUS,XDA,YDA,IST)
       END IF
 C
-      IF (XWO.LT.XLOV .OR. XWO.GT.XHIV
-     +     .OR. YWO.LT.YLOV .OR. YWO.GT.YHIV) THEN
+      IF (XDA.LT.XLOV .OR. XDA.GT.XHIV
+     +     .OR. YDA.LT.YLOV .OR. YDA.GT.YHIV) THEN
          IST=-1
       END IF
 C
@@ -141,16 +141,16 @@ C
 C
 C ---------------------------------------------------------------------
 C
-      SUBROUTINE STMPTA(XWO,YWO,XUS,YUS,XND,YND,DU,DV,TA,IST)
+      SUBROUTINE STMPTA(XDA,YDA,XUS,YUS,XND,YND,DU,DV,TA,IST)
 C
 C Map tangent angle to normalized device coordinate space.
 C
 C Input parameters:
 C
-C XWO,YWO - Point in world coordinate space
+C XDA,YDA - Point in data coordinate space
 C XUS,YUS - Point in user coordinate space
-C XND,YND - Point in normalized device coordinate space
-C DU,DV   - Differential vector components in world space
+C XND,YND - Point in NDC space
+C DU,DV   - Differential vector components in data space
 C
 C Output parameters:
 C
@@ -297,14 +297,14 @@ C
 C X is longitude, Y is latitude
 C If Y is 90 degrees, can't compute a direction
 C
-         IF (IFIX(ABS(YWO)*PRCFAC+0.5) .GE. IFIX(PCSTST)) THEN
+         IF (IFIX(ABS(YDA)*PRCFAC+0.5) .GE. IFIX(PCSTST)) THEN
             IST=-1
             RETURN
          END IF
 C
          SGN=1.0
          DUV=PVFRAC/VNML
-         CLT=COS(YWO*PDTOR)
+         CLT=COS(YDA*PDTOR)
          DTX=DU/CLT
          DTY=DV
          ICT=0
@@ -325,7 +325,7 @@ C Calculate the incremental end points, then check to see if
 C they take us out of the user coordinate boundaries. If they
 C do, try incrementing in the other direction
 C
-         CALL MAPTRA(YWO+SGN*DNY,XWO+SGN*DNX,XT,YT)
+         CALL MAPTRA(YDA+SGN*DNY,XDA+SGN*DNX,XT,YT)
 C
          IF (XT .LT. WXMN .OR. XT .GT. WXMX .OR.
      +        YT .LT. WYMN .OR. YT .GT. WYMX) THEN
@@ -365,7 +365,7 @@ C
          TA=ATAN2(DV,DU)
 C
          IF (ITRT.GE.1) THEN
-            TH=PDTOR*YWO
+            TH=PDTOR*YDA
             TA=TH+TA
          END IF
 C
@@ -373,7 +373,7 @@ C ... and everything else.
 C
       ELSE
 C
-         CALL STUMTA(XWO,YWO,XUS,YUS,XND,YND,DU,DV,TA,IST)
+         CALL STUMTA(XDA,YDA,XUS,YUS,XND,YND,DU,DV,TA,IST)
 C
       END IF
 C

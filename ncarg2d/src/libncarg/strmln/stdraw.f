@@ -1,5 +1,5 @@
 C
-C	$Id: stdraw.f,v 1.6 1993-02-20 00:31:37 dbrown Exp $
+C	$Id: stdraw.f,v 1.7 1993-02-25 19:32:01 dbrown Exp $
 C
       SUBROUTINE STDRAW  (U,V,UX,VY,IAM,STUMSL)
 C
@@ -132,16 +132,6 @@ C
       DIMENSION PX(IPNPTS), PY(IPNPTS)
       DIMENSION XLS(IPLSTL), YLS(IPLSTL)
 C
-C Statement functions for spatial and velocity transformations.
-C (If the user wishes other transformations  replace these statement
-C functions with the appropriate new ones, or , if the transforma-
-C tions are complicated delete these statement functions
-C and add external routines with the same names to do the trans-
-C forming.)
-C
-C     FX(X,Y) = X
-C     FY(X,Y) = Y
-C
 C Parameters:
 C
 C IPZERO, IPONE, IPTWO - the numbers 0,1,2
@@ -178,16 +168,16 @@ C NBX      - count of grid boxes for current streamline
 C LBC      - box checking variable
 C X, Y     - current X,Y coordinates (grid coordinates
 C DU, DV   - Current normalized interpolated vector components
-C XWO, YWO - Current position in world coordinates
+C XDA, YDA - Current position in data coordinates
 C XUS, YUS - Current position in user coordinates
 C XND, YND - Current position in NDC space
-C XDS, YDS - value of XND and YND saved at the start of the streamline 
+C XNS, YNS - value of XND and YND saved at the start of the streamline 
 C                           and after each progress check
-C XD1, YD1 - Previous position in NDC space
+C XN1, YN1 - Previous position in NDC space
 C TA       - The tangent angle in NDC space
 C DUV      - The differential normalized interpolated vector magnitude
 C CSA,SNA  - Cosine and sine of the tangent angle
-C XD2,YD2  - The previous previous position in NDC space
+C XN2,YN2  - The previous previous position in NDC space
 C TMG      - Temporary magnitude 
 C LI       - Index into circular crossover checking list
 C
@@ -337,8 +327,8 @@ C
       X = FLOAT(I)+0.5
       Y = FLOAT(J)+0.5
       CALL  STDUDV(UX,VY,I,J,X,Y,DU,DV)
-      XWO=XLOV+(X-1.0)*XGDS
-      YWO=YLOV+(Y-1.0)*YGDS
+      XDA=XLOV+(X-1.0)*XGDS
+      YDA=YLOV+(Y-1.0)*YGDS
       DU=DU*SGN
       DV=DV*SGN
 C
@@ -348,17 +338,17 @@ C is positive the FX,FY routines must be used.
 C
       IF (ICPM.LE.0) THEN
 C
-         XWO=XLOV+(X-1.0)*XGDS
-         YWO=YLOV+(Y-1.0)*YGDS
-         CALL STMPXY(XWO,YWO,XUS,YUS,IST)
+         XDA=XLOV+(X-1.0)*XGDS
+         YDA=YLOV+(Y-1.0)*YGDS
+         CALL STMPXY(XDA,YDA,XUS,YUS,IST)
          IF (IST .LT. 0) GO TO 50
          XND=CUFX(XUS)
          YND=CUFY(YUS)
-         XDS=XND
-         YDS=YND
-         XD1=XND
-         YD1=YND
-         CALL STMPTA(XWO,YWO,XUS,YUS,XND,YND,DU,DV,TA,IST)
+         XNS=XND
+         YNS=YND
+         XN1=XND
+         YN1=YND
+         CALL STMPTA(XDA,YDA,XUS,YUS,XND,YND,DU,DV,TA,IST)
          IF (IST .LT. 0) GO TO 50
 C
       ELSE
@@ -418,7 +408,7 @@ C
 C Get the tangent angle of the streamline at the current point
 C in NDC space
 C
-            CALL STMPTA(XWO,YWO,XUS,YUS,XND,YND,DU,DV,TA,IST)
+            CALL STMPTA(XDA,YDA,XUS,YUS,XND,YND,DU,DV,TA,IST)
             IF (IST.NE.0) GO TO 50
 C            
          ELSE
@@ -463,14 +453,14 @@ C the previous point. Empirically, in most cases, this seems to
 C decrease the inaccuracy resulting from the use of a finite valued
 C differential step.
 C
-            XD2=XD1
-            YD2=YD1
-            XD1=XND
-            YD1=YND
-            XD1=XD1+(XD2-XD1)/PTHREE
-            YD1=YD1+(YD2-YD1)/PTHREE
-            XND=XD1+CSA*DFMG*DUV
-            YND=YD1+SNA*DFMG*DUV
+            XN2=XN1
+            YN2=YN1
+            XN1=XND
+            YN1=YND
+            XN1=XN1+(XN2-XN1)/PTHREE
+            YN1=YN1+(YN2-YN1)/PTHREE
+            XND=XN1+CSA*DFMG*DUV
+            YND=YN1+SNA*DFMG*DUV
 C
 C If the increment takes the line outside the viewport, find an
 C interpolated point on the grid edge. Set a flag indicating
@@ -479,44 +469,44 @@ C
             IF (XND .LT. XVPL) THEN
                XND = XVPL
                IF (ABS(CSA).GT.0.1) THEN
-                  TMG = (XND-XD1)/CSA
-                  YND = YD1+SNA*TMG
+                  TMG = (XND-XN1)/CSA
+                  YND = YN1+SNA*TMG
                ENDIF
                LST = 1
             ELSE IF (XND .GT. XVPR) THEN
                XND = XVPR
                IF (ABS(CSA).GT.0.1) THEN
-                  TMG = (XND-XD1)/CSA
-                  YND = YD1+SNA*TMG
+                  TMG = (XND-XN1)/CSA
+                  YND = YN1+SNA*TMG
                ENDIF
                LST = 1
             ELSE IF (YND .LT. YVPB) THEN
                YND = YVPB
                IF (ABS(SNA).GT.0.1) THEN
-                  TMG = (YND-YD1)/SNA
-                  XND = XD1+CSA*TMG
+                  TMG = (YND-YN1)/SNA
+                  XND = XN1+CSA*TMG
                END IF
                LST = 1
             ELSE IF (YND .GT. YVPT) THEN
                YND = YVPT
                IF (ABS(SNA).GT.0.1) THEN
-                  TMG = (YND-YD1)/SNA
-                  XND = XD1+CSA*TMG
+                  TMG = (YND-YN1)/SNA
+                  XND = XN1+CSA*TMG
                END IF
                LST = 1
             END IF
 C
 C Now that the new point has been found in NDC space, find its
-C coordinates in user, world, and grid space.
+C coordinates in user, data, and grid space.
 C
             XUS=CFUX(XND)
             YUS=CFUY(YND)
 C
-            CALL STIMXY(XUS,YUS,XWO,YWO,IST)
+            CALL STIMXY(XUS,YUS,XDA,YDA,IST)
             IF (IST.NE.0) GO TO 50
 C
-            X=(XWO-XLOV)/XGDS+1.0
-            Y=(YWO-YLOV)/YGDS+1.0
+            X=(XDA-XLOV)/XGDS+1.0
+            Y=(YDA-YLOV)/YGDS+1.0
 C
 C If on the top or right edge of the grid space, decrease the X and/or
 C Y value by a small amount so the interpolation routine still works.
@@ -529,12 +519,12 @@ C
 C Check streamline progress every 'ICKP' iterations.
 C
          IF (MOD(ICT,ICKP).EQ.0) THEN
-            IF (ABS(XND-XDS).LT.CDS 
-     +           .AND. ABS(YND-YDS).LT.CDS) THEN
+            IF (ABS(XND-XNS).LT.CDS 
+     +           .AND. ABS(YND-YNS).LT.CDS) THEN
                GO TO 50
             END IF
-            XDS=XND
-            YDS=YND
+            XNS=XND
+            YNS=YND
             GO TO 110
          END IF
 C

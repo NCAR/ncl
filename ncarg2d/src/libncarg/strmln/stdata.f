@@ -1,5 +1,5 @@
 C
-C	$Id: stdata.f,v 1.4 1993-02-20 00:31:35 dbrown Exp $
+C	$Id: stdata.f,v 1.5 1993-02-25 19:31:58 dbrown Exp $
 C
       BLOCK DATA STDATA
 C
@@ -500,9 +500,9 @@ C WXMN,WXMX,WYMN,WYMX -- the window minimum and maximum values
 C                        (User coordinate space)
 C
 C XLOV,XHIV,YLOV,YHIV -- the mapped array endpoint values
-C                        (World coordinate space)
+C                        (Data coordinate space)
 C
-C XGDS,YGDS -- size in world coordinates of a grid box
+C XGDS,YGDS -- size in data coordinates of a grid box
 C
 C NXCT,NYCT -- number of points in X and Y used for the plot
 C

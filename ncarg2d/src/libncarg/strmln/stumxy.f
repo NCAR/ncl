@@ -1,17 +1,17 @@
 C
-C	$Id: stumxy.f,v 1.1 1993-01-15 23:53:52 dbrown Exp $
+C	$Id: stumxy.f,v 1.2 1993-02-25 19:32:21 dbrown Exp $
 C
 C-----------------------------------------------------------------------
 C
-      SUBROUTINE STUMXY(XWO,YWO,XUS,YUS,IST)
+      SUBROUTINE STUMXY(XDA,YDA,XUS,YUS,IST)
 C
-C User modifiable routine for mapping world coordinate space to
+C User modifiable routine for mapping data coordinate space to
 C user space
 C
 C
 C Input parameters:
 C
-C XWO,YWO - Point in world coordinate space
+C XDA,YDA - Point in data coordinate space
 C
 C Output parameters:
 C
@@ -48,8 +48,8 @@ C
 C Identity transformation
 C
       IST=0
-      XUS=XWO
-      YUS=YWO
+      XUS=XDA
+      YUS=YDA
 C
 C Done.
 C
@@ -59,10 +59,10 @@ C
 C
 C ---------------------------------------------------------------------
 C
-      SUBROUTINE STUIXY(XUS,YUS,XWO,YWO,IST)
+      SUBROUTINE STUIXY(XUS,YUS,XDA,YDA,IST)
 C
 C User modifiable routine for inversely transforming
-C a point in user coordinate space to world space
+C a point in user coordinate space to data space
 C
 C Input parameters:
 C
@@ -70,7 +70,7 @@ C XUS,YUS - Point in user coordinate space
 C
 C Output parameters:
 C
-C XWO,YWO - Point in world coordinate space
+C XDA,YDA - Point in data coordinate space
 C IST     - Status code indicating success or failure
 C
 C
@@ -101,8 +101,8 @@ C
 C ---------------------------------------------------------------------
 C
       IST=0
-      XWO=XUS
-      YWO=YUS
+      XDA=XUS
+      YDA=YUS
 C
 C Done
 C
@@ -111,17 +111,17 @@ C
 C
 C ---------------------------------------------------------------------
 C
-      SUBROUTINE STUMTA(XWO,YWO,XUS,YUS,XND,YND,DU,DV,TA,IST)
+      SUBROUTINE STUMTA(XDA,YDA,XUS,YUS,XND,YND,DU,DV,TA,IST)
 C
-C User modifiable routine for mapping a tangent angle in world space to 
+C User modifiable routine for mapping a tangent angle in data space to 
 C normalized device coordinate space.
 C
 C Input parameters:
 C
-C XWO,YWO - Point in world coordinate space
+C XDA,YDA - Point in data coordinate space
 C XUS,YUS - Point in user coordinate space
-C XND,YND - Point in normalized device coordinate space
-C DU,DV   - Differential vector components in world space
+C XND,YND - Point in NDC space
+C DU,DV   - Differential vector components in data space
 C
 C Output parameters:
 C
