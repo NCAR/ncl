@@ -1,5 +1,5 @@
 /*
- *      $Id: HPUX_snake,v 1.6 1994-04-08 18:37:12 boote Exp $
+ *      $Id: HPUX_snake,v 1.7 1995-04-05 16:15:21 haley Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 #define	FCompiler	fort77
 #define	ArQuickOpt	ql
 #define DoesRanlib	NO
-#define	CtoFLibraries	-lf
+#define	CtoFLibraries	-lf -lm
 
 /*
  * Motif is not really needed yet - but will be at Verson 4.0
