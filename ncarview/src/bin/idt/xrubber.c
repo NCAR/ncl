@@ -1,5 +1,5 @@
 /*
- *	$Id: xrubber.c,v 1.13 1993-02-03 01:03:24 clyne Exp $
+ *	$Id: xrubber.c,v 1.14 1995-01-09 23:31:56 clyne Exp $
  */
 /*
  *	xrubber.c
@@ -475,9 +475,6 @@ char	*ZoomCoords(
 	XSync(dpy, True);
 #endif
 
-	if ((band_width == 0) || (band_height == 0)) {
-		return ((char *) NULL);
-	}
 
 
 	/*
@@ -488,7 +485,28 @@ char	*ZoomCoords(
 	 */
 	wx = wy = 0;
 	get_largest_rect(ar, &wx, &wy, &win_width, &win_height); 
+	
+	/*
+	** clip the rubber band to the largest allowable window
+	*/
+	if (bx < wx) {
+		band_width -= (wx - bx);
+		bx = wx;
+	}
+	if (by < wy) {
+		band_height -= (wy - by);
+		by = wy;
+	}
+	if ((bx + band_width) > (wx + win_width)) {
+		band_width -= ((bx + band_width) - (wx + win_width));
+	}
+	if ((by + band_height) > (wy + win_height)) {
+		band_height -= ((by + band_height) - (wy + win_height));
+	}
 
+	if ((band_width <= 0) || (band_height <= 0)) {
+		return ((char *) NULL);
+	}
 
 	/*
 	 * convert the coordinates of the rubber band into normalized coords
