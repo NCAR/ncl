@@ -1,5 +1,5 @@
 /*
- *      $Id: pr04c.c,v 1.3 1998-02-11 18:56:19 dbrown Exp $
+ *      $Id: pr04c.c,v 1.4 2003-03-03 16:15:33 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -30,6 +30,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/IrregularPlot.h>
 
@@ -37,7 +38,7 @@
 main(int argc, char *argv[])
 
 {
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
     int rlist,grlist;
     int appid,wid,canvas;
     int i;
@@ -90,6 +91,14 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"pr04c.ps");
         NhlCreate(&wid,"pr04Work",NhlpsWorkstationClass,appid,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"pr04c.pdf");
+        NhlCreate(&wid,"pr04Work",NhlpdfWorkstationClass,appid,rlist);
     }
 /*
  * Create an IrregularPlot that covers the entire NDC space 

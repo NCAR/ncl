@@ -1,5 +1,5 @@
 /*
- *      $Id: pr03c.c,v 1.5 1998-02-11 18:56:17 dbrown Exp $
+ *      $Id: pr03c.c,v 1.6 2003-03-03 16:15:33 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,13 +32,14 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/LogLinPlot.h>
 
 main(int argc, char *argv[])
 
 {
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
     int rlist,grlist;
     int appid,wid,canvas,gsid,id;
     int i;
@@ -90,6 +91,14 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"pr03c.ps");
         NhlCreate(&wid,"pr03cWork",NhlpsWorkstationClass,appid,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"pr03c.pdf");
+        NhlCreate(&wid,"pr03cWork",NhlpdfWorkstationClass,appid,rlist);
     }
 
 /*

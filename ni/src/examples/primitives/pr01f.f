@@ -31,6 +31,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFMapPlotClass
       external NhlFVectorFieldClass
@@ -45,11 +46,12 @@ C
       real X(N),Y(N)
       real U(M),V(M)
       real PX(K),PY(K)
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C These are the polyline points /*a square*/
 C
@@ -135,6 +137,15 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'wkPSFileName','./pr01.ps',ierr)
       call NhlFCreate(wid,'pr01Work',NhFlpsWorkstationClass,
+     1    appid,rlist,ierr)
+
+      else if (PDF.eq.1) then
+C
+C  Create a PDF workstation.
+C
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkPDFFileName','./pr01.pdf',ierr)
+      call NhlFCreate(wid,'pr01Work',NhFlpdfWorkstationClass,
      1    appid,rlist,ierr)
 
       endif    

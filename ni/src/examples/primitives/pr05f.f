@@ -1,5 +1,5 @@
 C
-C      $Id: pr05f.f,v 1.2 1997-02-05 15:26:02 haley Exp $
+C      $Id: pr05f.f,v 1.3 2003-03-03 16:15:33 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -28,6 +28,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFMapPlotClass
       external NhlFGraphicStyleClass
@@ -38,11 +39,12 @@ C
       real px(5),py(5)
       character*13 projection(3)
       data projection/'orthographic','mollweide','stereographic'/
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the high level utility library
 C
@@ -84,6 +86,15 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPSFileName','./pr05.ps',ierr)
          call NhlFCreate(wid,'pr05Work',NhFlpsWorkstationClass,
+     1        appid,rlist,ierr)
+
+      else if (PDF.eq.1) then
+C
+C  Create a PDF workstation.
+C   
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPDFFileName','./pr05.pdf',ierr)
+         call NhlFCreate(wid,'pr05Work',NhFlpdfWorkstationClass,
      1        appid,rlist,ierr)
 
       endif    

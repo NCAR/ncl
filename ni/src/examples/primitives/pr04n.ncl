@@ -1,5 +1,5 @@
 ;
-;      $Id: pr04n.ncl,v 1.4 1998-05-29 16:33:05 haley Exp $
+;      $Id: pr04n.ncl,v 1.5 2003-03-03 16:15:33 grubin Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -57,6 +57,7 @@ end create
 NCGM=0
 X11=1
 PS=0
+PDF=0
 
 if (NCGM .eq. 1) then
 ;
@@ -81,6 +82,15 @@ else
       wid = create "pr04Work" psWorkstationClass defaultapp
         "wkPSFileName" : "pr04n.ps"
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+        wid = create "pr04Work" pdfWorkstationClass defaultapp
+          "wkPDFFileName" : "pr04n.pdf"
+        end create
+      end if
     end if
   end if
 end if

@@ -1,5 +1,5 @@
 C
-C      $Id: pr04f.f,v 1.2 1998-02-11 18:56:17 dbrown Exp $
+C      $Id: pr04f.f,v 1.3 2003-03-03 16:15:33 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -24,6 +24,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFirregularPlotClass
 
@@ -40,11 +41,12 @@ C
       data pgy/0.25,0.25,0.85,0.25/
       data dpgx/5.0,110.0,110.0,0.0,110.0,5.0,5.0/
       data dpgy/10.,10.,20.0,20.,110.,110.,10.0/
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the high level utility library
 C
@@ -87,6 +89,15 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'wkPSFileName','./pr04.ps',ierr)
       call NhlFCreate(wid,'pr04Work',NhFlpsWorkstationClass,
+     1    appid,rlist,ierr)
+
+      else if (PDF.eq.1) then
+C
+C  Create a PDF workstation.
+C   
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkPDFFileName','./pr04.pdf',ierr)
+      call NhlFCreate(wid,'pr04Work',NhFlpdfWorkstationClass,
      1    appid,rlist,ierr)
 
       endif    

@@ -1,5 +1,5 @@
 /*
- *      $Id: pr05c.c,v 1.2 1997-02-05 15:26:45 haley Exp $
+ *      $Id: pr05c.c,v 1.3 2003-03-03 16:15:33 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -35,13 +35,14 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/MapPlot.h>
 
 main(int argc, char *argv[])
 
 {
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
     int rlist;
     int appid,wid,canvas,gsid;
     int i;
@@ -88,6 +89,14 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"pr05c.ps");
         NhlCreate(&wid,"pr05Work",NhlpsWorkstationClass,appid,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"pr05c.pdf");
+        NhlCreate(&wid,"pr05Work",NhlpdfWorkstationClass,appid,rlist);
     }
 /*
  * Create a MapPlot that covers the entire NDC space 

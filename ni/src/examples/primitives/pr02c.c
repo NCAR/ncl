@@ -35,12 +35,13 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/LogLinPlot.h>
 
 main(int argc, char *argv[])
 {
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
     int rlist,grlist;
     int appid,wid,cid,gsid_pl,gsid_pm, gsid_pg;
 
@@ -100,6 +101,14 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"pr02.ps");
         NhlCreate(&wid,"pr02Work",NhlpsWorkstationClass,appid,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"pr02.pdf");
+        NhlCreate(&wid,"pr02Work",NhlpdfWorkstationClass,appid,rlist);
     }
 
 /*; Create a blank plot object to place the primitives on.*/
