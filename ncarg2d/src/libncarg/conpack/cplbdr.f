@@ -1,5 +1,5 @@
 C
-C $Id: cplbdr.f,v 1.3 1994-05-18 16:16:49 kennison Exp $
+C $Id: cplbdr.f,v 1.4 1994-07-18 19:16:04 kennison Exp $
 C
       SUBROUTINE CPLBDR (ZDAT,RWRK,IWRK)
 C
@@ -261,6 +261,7 @@ C
             IF (ICFELL('CPLBDR',14).NE.0) RETURN
           ELSE
             IPAI=ICLB
+            IF (IPAI.GT.256) IPAI=256-IPAI
             CALL CPCHLL (+2)
             IF (ICFELL('CPLBDR',15).NE.0) RETURN
           END IF
@@ -286,6 +287,7 @@ C
             IF (ICFELL('CPLBDR',18).NE.0) RETURN
           ELSE
             IPAI=ICLB
+            IF (IPAI.GT.256) IPAI=256-IPAI
             CALL CPCHLL (-2)
             IF (ICFELL('CPLBDR',19).NE.0) RETURN
           END IF
@@ -324,6 +326,7 @@ C
           IF (ICFELL('CPLBDR',25).NE.0) RETURN
         ELSE
           IPAI=ICLB
+          IF (IPAI.GT.256) IPAI=256-IPAI
           CALL CPCHLL (+3)
           IF (ICFELL('CPLBDR',26).NE.0) RETURN
         END IF
@@ -347,6 +350,7 @@ C
           IF (ICFELL('CPLBDR',31).NE.0) RETURN
         ELSE
           IPAI=ICLB
+          IF (IPAI.GT.256) IPAI=256-IPAI
           CALL CPCHLL (-3)
           IF (ICFELL('CPLBDR',32).NE.0) RETURN
         END IF
@@ -373,6 +377,7 @@ C
             IF (ICFELL('CPLBDR',37).NE.0) RETURN
           ELSE
             IPAI=ICLB
+            IF (IPAI.GT.256) IPAI=256-IPAI
             CALL CPCHLL (+4)
             IF (ICFELL('CPLBDR',38).NE.0) RETURN
           END IF
@@ -406,6 +411,7 @@ C
             IF (ICFELL('CPLBDR',47).NE.0) RETURN
           ELSE
             IPAI=ICLB
+            IF (IPAI.GT.256) IPAI=256-IPAI
             CALL CPCHLL (-4)
             IF (ICFELL('CPLBDR',48).NE.0) RETURN
           END IF

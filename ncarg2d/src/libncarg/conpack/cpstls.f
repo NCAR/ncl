@@ -1,5 +1,5 @@
 C
-C $Id: cpstls.f,v 1.3 1994-05-18 16:17:31 kennison Exp $
+C $Id: cpstls.f,v 1.4 1994-07-18 19:16:05 kennison Exp $
 C
       SUBROUTINE CPSTLS (ZDAT,RWRK,IWRK)
 C
@@ -85,11 +85,13 @@ C
           LCTM=KCLB
           CTMA(1:LCTM)=CLBL(ICLV)(1:KCLB)
           IPAI=ICLV
+          IF (IPAI.GT.256) IPAI=256-IPAI
           CALL CPCHLL (+1)
           IF (ICFELL('CPSTLS',3).NE.0) RETURN
           CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),SIZE,360.,0.)
           IF (ICFELL('CPSTLS',4).NE.0) RETURN
           IPAI=ICLV
+          IF (IPAI.GT.256) IPAI=256-IPAI
           CALL CPCHLL (-1)
           IF (ICFELL('CPSTLS',5).NE.0) RETURN
           CALL PCGETR ('DB',DSTB)

@@ -1,5 +1,5 @@
 C
-C $Id: cpcldr.f,v 1.3 1994-05-18 16:16:15 kennison Exp $
+C $Id: cpcldr.f,v 1.4 1994-07-18 19:16:02 kennison Exp $
 C
       SUBROUTINE CPCLDR (ZDAT,RWRK,IWRK)
 C
@@ -414,6 +414,7 @@ C
           CALL GSLWSC (CLWS)
         END IF
         IPAI=ICLV
+        IF (IPAI.GT.256) IPAI=256-IPAI
         CALL CPCHCL (+1)
         IF (ICFELL('CPCLDR',33).NE.0) RETURN
       GO TO (10029,10038,10047,10052) , L10030
@@ -422,6 +423,7 @@ C
         CALL PLOTIF (0.,0.,2)
         IF (ICFELL('CPCLDR',34).NE.0) RETURN
         IPAI=ICLV
+        IF (IPAI.GT.256) IPAI=256-IPAI
         CALL CPCHCL (-1)
         IF (ICFELL('CPCLDR',35).NE.0) RETURN
         IF (JCCL.GE.0) THEN

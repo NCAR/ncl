@@ -1,5 +1,5 @@
 C
-C $Id: cpcldm.f,v 1.3 1994-05-18 16:16:14 kennison Exp $
+C $Id: cpcldm.f,v 1.4 1994-07-18 19:16:00 kennison Exp $
 C
       SUBROUTINE CPCLDM (ZDAT,RWRK,IWRK,IAMA,RTPL)
 C
@@ -439,6 +439,7 @@ C
           CALL GSLWSC (CLWS)
         END IF
         IPAI=ICLV
+        IF (IPAI.GT.256) IPAI=256-IPAI
         CALL CPCHCL (+1)
         IF (ICFELL('CPCLDM',35).NE.0) RETURN
       GO TO (10029,10038,10047,10052) , L10030
@@ -447,6 +448,7 @@ C
         CALL PLOTIF (0.,0.,2)
         IF (ICFELL('CPCLDM',36).NE.0) RETURN
         IPAI=ICLV
+        IF (IPAI.GT.256) IPAI=256-IPAI
         CALL CPCHCL (-1)
         IF (ICFELL('CPCLDM',37).NE.0) RETURN
         IF (JCCL.GE.0) THEN
