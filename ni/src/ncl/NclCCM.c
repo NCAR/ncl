@@ -960,6 +960,38 @@ NclQuark att_val;
 	return;
 }
 
+static char *time_units( int date, int sec,char* units)
+{
+  /* construct time units string
+ 
+     Input args:
+ 
+     date    yymmdd
+     sec     seconds relative to date at 0Z
+ 
+     Output arg:
+ 
+     units   string in the form "days since 0000-00-00 00:00:00"
+ 
+     Return values:
+ 
+      0  Successful return.
+  */
+ 
+  int year, month, day, hours, minutes, seconds;
+ 
+  year = date/10000;
+  month = (date%10000)/100;
+  day = date%100;
+  hours = sec/3600;
+  minutes = (sec - 3600*hours)/60;
+  seconds = sec - 3600*hours - 60*minutes;
+ 
+  sprintf( units, "days since %04i-%02i-%02i %02i:%02i:%02i", year, month,
+                   day, hours, minutes, seconds );
+  return(units);
+ 
+}
 
 
 
@@ -993,10 +1025,14 @@ int	wr_status;
 	static int start_quark = 0;
 	static int n_quarks = 0;
 	int fd;
+	char *units[31];
 	float spacing;
 	float *tmp_lon,*tmp_siga,*tmp_sigb;
 	int dimsize = 0;
 	int done = 0;
+	double *time_var;
+	int time_var_size = 0;
+	int n_time;
 
 	if(first) {
 		n_quarks = sizeof(ccm_name_tab)/sizeof(CCMNAMES);
@@ -1389,6 +1425,10 @@ int	wr_status;
 */
 		done = 0;
 		i = 0;
+		n_time = 0;
+		time_var = (double*)NclMalloc(sizeof(double)*initial_iheader.MFILTH);
+		time_var_size = initial_iheader.MFILTH;
+		time_var[n_time++] = (double)initial_iheader.NDCUR + initial_iheader.NSCUR/86400.;
 		while(!done) {
 /*
 * coff NOW POINTING TO BEGINING OF NEXT TIME STEP, have to unpack or skip headers
@@ -1437,6 +1477,7 @@ int	wr_status;
 					done = 1;
 					break;
 				}
+				time_var[n_time++] = (double)tmp_iheader.NDCUR + tmp_iheader.NSCUR/86400.;
 				cb = tmp_off / BLOCK_SIZE;
 				cb_off = (tmp_off % BLOCK_SIZE) / WORD_SIZE;
 				tmp_off= UnPackCharHeader(therec,fd,&tmp_iheader,&tmp_cheader,cb,cb_off);
@@ -1483,6 +1524,11 @@ int	wr_status;
 					}
 					break;
 				}
+				if(i == time_var_size) {
+					time_var_size *=2;
+					time_var = (double*)NclRealloc(time_var,sizeof(double)*time_var_size);
+				}
+				time_var[n_time++] = (double)tmp_iheader.NDCUR + tmp_iheader.NSCUR/86400.;
 				therec->lat_rec_offsets = NclRealloc(therec->lat_rec_offsets,(therec->n_lat_recs+tmp_iheader.NOREC)*sizeof(long));
 				therec->n_lat_recs += tmp_iheader.NOREC;
 				cb = tmp_off / BLOCK_SIZE;
@@ -1519,6 +1565,10 @@ int	wr_status;
 			}
 			i++;
 		}
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("time"),n_time,_NclNameToTypeClass(NrmStringToQuark("double")),time_var,PERMANENT,TIME_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("time"));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("units"),NrmStringToQuark(time_units(initial_iheader.NBDATE,initial_iheader.NBSEC,units)));
+		
 /*
 		for(i = 0; i < initial_iheader.MFILTH * initial_iheader.NOREC; i++) {
 			fprintf(stdout,"%ld\n",therec->lat_rec_offsets[i]);
