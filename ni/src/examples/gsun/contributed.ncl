@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.30 2004-01-29 02:33:40 haley Exp $
+;      $Id: contributed.ncl,v 1.31 2004-01-30 00:35:06 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -1774,7 +1774,7 @@ undef("ilapsF_Wrap")
 function ilapsF_Wrap (zlap:numeric, zlmbda:numeric)
 local answer
 begin
- answer = ilapsF (zlap,zlmda)
+ answer = ilapsF (zlap,zlmbda)
  copy_VarMeta (zlap, answer)
  answer@long_name = "inverse laplacian"
  answer@units     = ""        ; assume u,v are m/s
