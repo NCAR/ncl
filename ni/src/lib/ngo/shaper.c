@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.22 2000-01-21 05:18:55 dbrown Exp $
+ *      $Id: shaper.c,v 1.23 2000-01-24 20:56:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1203,7 +1203,7 @@ NhlErrorTypes NgUpdateShaper(
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"invalid parameters"));
 		return NhlFATAL;
 	}
-	if (si->qfile != qfile || si->qvar != qvar)
+	if (si->qfile != qfile || si->qvar != qvar || ! si->vinfo)
 		new = True;
 
 	si->qfile = qfile;
@@ -1217,8 +1217,9 @@ NhlErrorTypes NgUpdateShaper(
 		else
 			si->dl = NclGetVarInfo(si->qvar);
 		if (si->dl)
-			vinfo = si->vinfo = si->dl->u.var;
+			si->vinfo = si->dl->u.var;
 	}
+	vinfo = si->vinfo;
 	if (! vinfo) {
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return NhlFATAL;

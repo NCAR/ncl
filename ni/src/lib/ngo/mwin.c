@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.29 2000-01-20 03:38:23 dbrown Exp $
+ *      $Id: mwin.c,v 1.30 2000-01-24 20:56:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2102,18 +2102,6 @@ AddViewNode
 		NhlBoolean save_auto_refresh = wks->auto_refresh;
 		wks->auto_refresh = False;
 
-#if 0
-		if (_NhlIsAnnotation(vwnode->id)) {
-			base_id = _NhlAnnotationBase(vwnode->id);
-			/*
-			 * It's possible that this base is itself an
-			 * overlay. In that case we need to find its base.
-			 */
-			if (_NhlIsOverlay(base_id)) {
-				base_id = _NhlOverlayBase(base_id);
-			}
-		}
-#endif
 		bnode = GetBasePlotNode(wknode->cnodes,base_id);
 		if(!bnode) {
 			base_node_not_found = True;
@@ -2207,9 +2195,12 @@ AddViewNode
 			else if (wks->auto_refresh) {
 				NgDrawXwkView
 					(wks->wks_wrap_id,vwnode->id,False);
-				NgSetSelectedXwkView
-					(wks->wks_wrap_id,vwnode->id);
 			}
+			/*
+			 * the last plot created should always be the 
+			 * selected plot, whether or not we draw it here.
+			 */
+			NgSetSelectedXwkView(wks->wks_wrap_id,vwnode->id);
 		}
 	}
 

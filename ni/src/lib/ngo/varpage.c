@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.20 2000-01-21 05:18:55 dbrown Exp $
+ *      $Id: varpage.c,v 1.21 2000-01-24 20:56:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -644,6 +644,17 @@ DeactivateVarPage
                 XtVaSetValues(rec->data_ctrl_form,
                               XmNtopWidget,rec->shaper_toggle,
                               NULL);
+		/* 
+		 * to ensure an update when the shaper is popped up again --
+		 * and also to make sure the shaper doesn't try to reference
+		 * freed memory (start finish and stride are just refs)
+		 */
+
+		rec->shaper->vinfo = NULL;
+		rec->shaper->start = NULL;
+		rec->shaper->finish = NULL;
+		rec->shaper->stride = NULL;
+
         }
         rec->new_shape = True;
         XtRemoveCallback(rec->shaper_toggle,

@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.28 1999-12-11 01:02:37 dbrown Exp $
+ *      $Id: xwk.c,v 1.29 2000-01-24 20:56:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -49,7 +49,7 @@ static NhlResource resources[] = {
 	 _NhlUSET((NhlPointer)NhlNULLOBJID),_NhlRES_GONLY,NULL},
 	{NgNxwkDrawSelectedViewOnly,NgCxwkDrawSelectedViewOnly,NhlTBoolean,
 	 sizeof(NhlBoolean),Oset(draw_single_view),NhlTImmediate,
-	 _NhlUSET((NhlPointer)False),_NhlRES_NOSACCESS,NULL},
+	 _NhlUSET((NhlPointer)True),_NhlRES_NOSACCESS,NULL},
 	{NgNxwkAutoUpdate,NgCxwkAutoUpdate,NhlTBoolean,
 	 sizeof(NhlBoolean),Oset(auto_refresh),NhlTImmediate,
 	 _NhlUSET((NhlPointer)True),_NhlRES_NOSACCESS,NULL},
@@ -1274,8 +1274,11 @@ ChangeSizeEH
 		      XmNheight,&xp->grh,
 		      NULL);
 	NgUpdateTransformation(wks_state);
+
 	if (xp->draw_single_view) {
-		NgDrawXwkView(xwk->base.id,xp->selected_view_id,True);
+		if (xp->selected_view_id > NhlNULLOBJID) {
+			NgDrawXwkView(xwk->base.id,xp->selected_view_id,True);
+		}
 	}
 	else {
 		_NgDrawAllViewsCB(w,(XtPointer)xwk,NULL);

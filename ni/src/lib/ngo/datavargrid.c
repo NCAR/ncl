@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.c,v 1.10 2000-01-21 05:18:51 dbrown Exp $
+ *      $Id: datavargrid.c,v 1.11 2000-01-24 20:56:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1979,8 +1979,18 @@ void NgDeactivateDataVarGrid
         
         dvp = (NgDataVarGridRec *) pub;
 
-	if (dvp->shape_tool_id > NhlNULLOBJID)
+	if (dvp->shape_tool_id > NhlNULLOBJID) {
 		NgGOPopdown(dvp->shape_tool_id);
+		/* 
+		 * to ensure an update when the shaper is popped up again --
+		 * and also to make sure the shaper doesn't try to reference
+		 * freed memory (start finish and stride are just refs)
+		 */
+		dvp->shaper->vinfo = NULL;
+		dvp->shaper->start = NULL;
+		dvp->shaper->finish = NULL;
+		dvp->shaper->stride = NULL;
+	}
 
 	if (dvp->selected_row <= -1) 
 		return;

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.19 2000-01-21 05:18:53 dbrown Exp $
+ *      $Id: plotapp.c,v 1.20 2000-01-24 20:56:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3641,7 +3641,7 @@ static NhlBoolean ReplaceDataSymRef
 			status = True;
 		}
 		else {
-			sprintf(tbuf,"\"\"");
+			sprintf(tbuf,"null");
 			status = True;
 		}
 		break;

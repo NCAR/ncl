@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.15 2000-01-21 05:18:51 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.16 2000-01-24 20:56:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #include <ncarg/ngo/XmL.h>
 #include <ncarg/ngo/nclstate.h>
 
+static NrmQuark QNullValue = NrmNULLQUARK;
 
 typedef struct _TmpVarRec {
 	struct _TmpVarRec	*next;
@@ -1019,7 +1020,16 @@ NclApiDataList	*EvaluateExpression
 	char 		buf[512];
 	NhlString 	tmp_var;
 	NrmQuark	qtmp_var;
+	static 		NhlBoolean first = True;
 
+	if (first) {
+		QNullValue = NrmStringToQuark("null");
+		first = False;
+	}
+	if (! strcmp(expr_val,"null")) {
+		*qexpr_var = QNullValue;
+		return NULL;
+	}
 /*
  * the old variable should be deleted only if evaluation of the expression
  * succeeds; but then the new var should be assigned to the old var name
@@ -1168,11 +1178,14 @@ NhlBoolean NgSetExpressionVarData
 	if (do_eval) {
 		dl = EvaluateExpression(go,expr_val,&vdata->qexpr_var);
 
+
                 if (! (dl && vdata->qexpr_var)) {
-			if (dl)
-				NclFreeDataList(dl);
-			vdata->set_state = _NgBOGUS_EXPRESSION;
-			return False;
+			if (vdata->qexpr_var != QNullValue) {
+				if (dl)
+					NclFreeDataList(dl);
+				vdata->set_state = _NgBOGUS_EXPRESSION;
+				return False;
+			}
                 }
 		vdata->go = go;
 	}
