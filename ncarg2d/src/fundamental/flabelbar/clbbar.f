@@ -1,0 +1,70 @@
+
+	INTEGER INDEX(18)
+	CHARACTER*12 LABELS(18)
+
+	DATA INDEX /1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 
+     +		    15, 16, 17, 18 /
+c23456
+	DATA LABELS /'White', 'Orchid', 'Red', 'OrangeRed', 'Orange',
+     1		'Gold', 'Yellow', 'GreenYellow', 'Chartreuse',       
+     2		'Green', 'Celeste', 'Aqua','DeepSkyBlue','RoyalBlue',
+     3		'SlateBlue', 'DarkViolet', 'Lavender', 'Grey' /
+	
+	CALL OPNGKS
+	CALL COLOR
+	CALL GSFAIS(1)
+	CALL LBLBAR(1,0.,1.,0.,1.,18,.5,1.,INDEX,1,LABELS,18,1)
+	CALL CLSGKS
+
+	STOP
+	END
+
+	SUBROUTINE COLOR
+C
+C   *** BACKGROUND COLOR ***
+C Black
+	CALL GSCR(1,0,0.,0.,0.)
+C
+C   *** FORGROUND COLORS ***
+C White
+	CALL GSCR(1,  1, 1.0, 1.0, 1.0)
+C Orchid
+	CALL GSCR(1,  2, 0.85, 0.45, 0.8)
+C Red
+	CALL GSCR(1,  3, 0.9, 0.25, 0.0)
+C OrangeRed
+	CALL GSCR(1,  4, 1.0, 0.0, 0.2)
+C Orange
+	CALL GSCR(1,  5, 1.0, 0.65, 0.0)
+C Gold
+	CALL GSCR(1,  6, 1.0, 0.85, 0.0)
+C Yellow
+	CALL GSCR(1,  7, 1.0, 1.0, 0.0)
+C GreenYellow
+	CALL GSCR(1,  8, 0.7, 1.0, 0.2)
+C Chartreuse
+	CALL GSCR(1,  9, 0.5, 1.0, 0.0)
+C Green
+	CALL GSCR(1, 10, 0.2, 0.8, 0.2)
+C Celeste
+	CALL GSCR(1, 11, 0.2, 1.0, 0.5)
+C Aqua
+	CALL GSCR(1, 12, 0.0, 0.9, 1.0)
+C DeepSkyBlue
+	CALL GSCR(1, 13, 0.0, 0.75, 1.0)
+C RoyalBlue
+	CALL GSCR(1, 14, 0.25, 0.45, 0.95)
+C SlateBlue
+	CALL GSCR(1, 15, 0.4, 0.35, 0.8)
+C DarkViolet
+	CALL GSCR(1, 16, 0.6, 0.0, 0.8)
+C Lavender
+	CALL GSCR(1, 17, 0.8, 0.8, 1.0)
+C Gray
+	CALL GSCR(1, 18, 0.5, 0.5, 0.5)
+C Done.
+C
+	RETURN
+C
+	END
+
