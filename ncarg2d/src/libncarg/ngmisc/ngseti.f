@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.9 1995-12-08 20:10:36 fred Exp $
+C	$Id: ngseti.f,v 1.10 1996-01-12 21:31:09 boote Exp $
 C
       SUBROUTINE NGSETI (CNP,IVP)
 C
@@ -202,6 +202,36 @@ C
         IPRIVX = IVP
         WRITE(IDR(7:16), 510) IPRIVX
         CALL GESC(-1401,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  SC - Shared Color model in X output.
+C
+      ELSE IF (CNP(1:2).EQ.'SC' .OR. CNP(1:2).EQ.'sc' .OR.
+     +         CNP(1:2).EQ.'Sc') THEN
+        WRITE(IDR(1: 5), 500) IVP
+        ISCX = IVP
+        WRITE(IDR(7:11), 500) 0
+        CALL GESC(-1402,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  PC - Private Color model in X output.
+C
+      ELSE IF (CNP(1:2).EQ.'PC' .OR. CNP(1:2).EQ.'pc' .OR.
+     +         CNP(1:2).EQ.'Pc') THEN
+        WRITE(IDR(1: 5), 500) IVP
+        IPCX = IVP
+        WRITE(IDR(7:11), 500) 1
+        CALL GESC(-1402,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  MC - Mixed Color model in X output.
+C
+      ELSE IF (CNP(1:2).EQ.'MC' .OR. CNP(1:2).EQ.'mc' .OR.
+     +         CNP(1:2).EQ.'Mc') THEN
+        WRITE(IDR(1: 5), 500) IVP
+        IMCX = IVP
+        WRITE(IDR(7:11), 500) 2
+        CALL GESC(-1402,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
 C  PU - Pause in X driver.

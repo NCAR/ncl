@@ -25,6 +25,9 @@ C    IGKSCP  -  Flag for controlling if GKS clipping is on.
 C    IPERCX  -  Percentage error allowed in matching colors in X output.
 C    IPRIVX  -  Flags whether an X window should have a private color
 C               map instead of sharing with other maps.
+C    ISCX    -  Shared color model for X.
+C    IMCX    -  Mixed color model for X.
+C    IPCX    -  Private color model for X.
 C    ICDFLG  -  Flags whether NGDOTS draws circles or dots (0=dots;
 C               1=circles).
 C
@@ -32,6 +35,6 @@ C
      +                ILJOIN,  ILCAP,   ILLX,   ILLY,   IURX,
      +                  IURY, FILSPC, HATSPC, RNLSCL, ICOSCL,
      +                RMITER, IERRMX, IGKSCP, IPERCX,
-     +                IPRIVX, ICDFLG
+     +                IPRIVX, ICDFLG,   ISCX,   IMCX,   IPCX
       COMMON /NGCOMC/ CFILNM, CPICNM, CSEGNM
       CHARACTER CFILNM*256, CPICNM*80, CSEGNM*15

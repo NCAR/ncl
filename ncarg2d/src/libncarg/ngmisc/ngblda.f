@@ -1,5 +1,5 @@
 C
-C	$Id: ngblda.f,v 1.6 1994-09-20 16:49:09 fred Exp $
+C	$Id: ngblda.f,v 1.7 1996-01-12 21:31:07 boote Exp $
 C
       BLOCKDATA NGBLDA
 C
@@ -54,6 +54,10 @@ C
 C  Percentage error allow in matching colors in shared X color maps.
 C
       DATA IPERCX/20/
+C
+C  Color model flags
+C
+      DATA ISCX,IMCX,IPCX/0,0,0/
 C
 C  Flag for whether an X window should have a private color map.
 C  (0 = no; 1 = yes).
