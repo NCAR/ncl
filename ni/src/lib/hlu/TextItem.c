@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.39 1997-08-14 16:30:31 dbrown Exp $
+ *      $Id: TextItem.c,v 1.40 1997-08-25 20:20:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -826,8 +826,8 @@ static NhlErrorTypes    TextItemDraw
 	gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
 	gset_fill_style_ind(GSTYLE_SOLID);
 	gset_marker_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
-	
 
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	c_plchhq(tlayer->text.real_x_pos,tlayer->text.real_y_pos,
 		tlayer->text.real_string,tlayer->text.real_size,
 		tlayer->text.angle,tlayer->text.cntr);

@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.h,v 1.7 1996-03-16 21:37:47 boote Exp $
+ *      $Id: XWorkstation.h,v 1.8 1997-08-25 20:20:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,19 @@
 #define NhlCwkXColorMode	"WkXColorMode"
 #define NhlNwkPause		"wkPause"
 #define NhlCwkPause		"WkPause"
+
+#define NhlNwkX			"wkX"
+#define NhlCwkX			"WkX"
+#define NhlNwkY			"wkY"
+#define NhlCwkY			"WkY"
+#define NhlNwkWidth		"wkWidth"
+#define NhlCwkWidth		"WkWidth"
+#define NhlNwkHeight		"wkHeight"
+#define NhlCwkHeight		"WkHeight"
+#define	NhlNwkTitle		"wkTitle"
+#define	NhlCwkTitle		"WkTitle"
+#define	NhlNwkIconTitle		"wkIconTitle"
+#define	NhlCwkIconTitle		"WkIconTitle"
 
 #define	NhlTXColorMode		"XColorMode"
 typedef enum _NhlXColorMode{

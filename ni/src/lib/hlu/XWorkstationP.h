@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstationP.h,v 1.5 1996-03-16 21:37:48 boote Exp $
+ *      $Id: XWorkstationP.h,v 1.6 1997-08-25 20:20:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,6 +39,8 @@ typedef struct _NhlXWorkstationLayerPart {
 	 */
 	NhlBoolean	pause_set;
 	NhlBoolean	pause;
+
+	_NGCXWinConfig	xwinconfig;
 
 	/*
 	 * Private Fields...

@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.26 1997-08-14 16:30:57 dbrown Exp $
+ *      $Id: XWorkstation.c,v 1.27 1997-08-25 20:20:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -41,8 +41,27 @@ static NhlResource resources[] = {
 		NhlTImmediate,(NhlPointer)True,
          	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{NhlNwkPause,NhlCwkPause,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(pause),NhlTProcedure,(NhlPointer)_NhlResUnset,0,NULL}
+		Oset(pause),NhlTProcedure,(NhlPointer)_NhlResUnset,0,NULL},
 
+	{"no.res","no.res",NhlTInteger,sizeof(int),Oset(xwinconfig.type),
+		NhlTImmediate,(NhlPointer)NGC_XWINCONFIG,_NhlRES_NOACCESS,NULL},
+	{"no.res","no.res",NhlTInteger,sizeof(int),Oset(xwinconfig.work_id),
+		NhlTImmediate,(NhlPointer)-1,_NhlRES_NOACCESS,NULL},
+	{NhlNwkX,NhlCwkX,NhlTInteger,sizeof(int),Oset(xwinconfig.x),
+		NhlTImmediate,(NhlPointer)-1,_NhlRES_NOSACCESS,NULL},
+	{NhlNwkY,NhlCwkY,NhlTInteger,sizeof(int),Oset(xwinconfig.y),
+		NhlTImmediate,(NhlPointer)-1,_NhlRES_NOSACCESS,NULL},
+	{NhlNwkWidth,NhlCwkWidth,NhlTInteger,sizeof(int),Oset(xwinconfig.width),
+		NhlTImmediate,(NhlPointer)-1,_NhlRES_NOSACCESS,NULL},
+	{NhlNwkHeight,NhlCwkHeight,NhlTInteger,sizeof(int),
+		Oset(xwinconfig.height),NhlTImmediate,
+		(NhlPointer)-1,_NhlRES_NOSACCESS,NULL},
+	{NhlNwkTitle,NhlCwkTitle,NhlTString,sizeof(NhlString),
+		Oset(xwinconfig.title),NhlTImmediate,(NhlPointer)NULL,
+		_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
+	{NhlNwkIconTitle,NhlCwkIconTitle,NhlTString,sizeof(NhlString),
+		Oset(xwinconfig.icon_title),NhlTImmediate,(NhlPointer)NULL,
+		_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
 /* End-documented-resources */
 
 };
@@ -251,6 +270,7 @@ static NhlErrorTypes XWorkstationInitialize
 	char			*error_lead="XWorkstationInitialize";
 	NhlXWorkstationLayer	wnew = (NhlXWorkstationLayer) new;
 	NhlErrorTypes		ret = NhlNOERROR;
+	char			*tstr;
 
 	if(!wnew->xwork.pause_set) wnew->xwork.pause = True;
 
@@ -286,6 +306,28 @@ static NhlErrorTypes XWorkstationInitialize
 				error_lead,NhlNwkWindowId,NhlNwkXColorMode);
 		wnew->xwork.xcolor_mode = NhlSHARE;
 	}
+
+	if(!wnew->xwork.xwinconfig.title)
+		wnew->xwork.xwinconfig.title = (char*)wnew->base.name;
+	tstr = wnew->xwork.xwinconfig.title;
+	wnew->xwork.xwinconfig.title =
+				(char*)NhlMalloc((unsigned)strlen(tstr)+1);
+	if(!wnew->xwork.xwinconfig.title){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
+	}
+	strcpy(wnew->xwork.xwinconfig.title,tstr);
+
+	if(!wnew->xwork.xwinconfig.icon_title)
+		wnew->xwork.xwinconfig.icon_title = (char*)wnew->base.name;
+	tstr = wnew->xwork.xwinconfig.icon_title;
+	wnew->xwork.xwinconfig.icon_title =
+				(char*)NhlMalloc((unsigned)strlen(tstr)+1);
+	if(!wnew->xwork.xwinconfig.icon_title){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
+	}
+	strcpy(wnew->xwork.xwinconfig.icon_title,tstr);
 
 	return ret;
 }
@@ -465,6 +507,7 @@ XWorkstationOpen
 	int				i=2;
 	_NGCXGetSizeChg			xgsc;
 	Gescape_in_data			gesc_in_xgsc;
+	Gescape_in_data			gesc_in_xwconf;
 
 	if(xl->work.gkswkstype == NhlFATAL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unknown workstation type");
@@ -493,6 +536,10 @@ XWorkstationOpen
 		c_ngseti("mc",-1);
 		break;
 	}
+
+	gesc_in_xwconf.escape_r1.data = &xl->xwork.xwinconfig;
+	gesc_in_xwconf.escape_r1.size = 0;
+	gescape(NGESC_CNATIVE,&gesc_in_xwconf,NULL,NULL);
 
 	_NHLCALLF(gopwk,GOPWK)(&(xl->work.gkswksid),&(xl->work.gkswksconid),
 		&(xl->work.gkswkstype));
