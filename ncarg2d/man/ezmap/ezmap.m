@@ -433,7 +433,9 @@ c_mpifnb
 .br
 c_mpilnb
 .br
-c_mpioar
+c_mpiola
+.br
+c_mpiosa
 .br
 c_mpipai
 .br
@@ -746,7 +748,8 @@ mpglty,
 mpiaty,
 mpifnb,
 mpilnb,
-mpioar,
+mpiola,
+mpiosa,
 mpipai,
 mpipan,
 mpipar,
