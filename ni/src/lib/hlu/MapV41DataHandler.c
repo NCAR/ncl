@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.1 1998-05-22 01:59:12 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.2 1998-05-25 18:52:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,7 +21,6 @@
  */
 
 #include <ncarg/hlu/MapV41DataHandlerP.h>
-#include <ncarg/hlu/ezmapb.h>
 
 static NhlErrorTypes MapV41DHClassPartInit(
 #if	NhlNeedProto
@@ -184,9 +183,51 @@ static void mpLowerCase(char *string)
 	char *cp = string;
 
 	while (*cp != '\0') {
-		*cp = tolower(*cp);
+                *cp = tolower(*cp);
 		cp++;
 	}
+}
+
+/*
+ * The original string is not modified, but copied into a static output
+ * buffer. Therefore you can only work on one string at a time.
+ * Either ':' or '.' indicate parent-child boundaries in the spec string.
+ * To simplify the search, change '.' to ':'. Also in order to allow
+ * some compatibility with the 4.0 database, '-' used as a word separator is
+ * replaced with a space. However, we must be careful not to replace '-'
+ * when it is part of the 4.1 name. In this case the '-' should always be
+ * preceded and followed by a space (except possibly when a wild card is
+ * involved, but this is not currently handled).
+ */
+
+static char *PrepareSpecString(char *string)
+{
+        static char outbuf[256];
+	char *cp = string;
+        NhlBoolean last_space = False;
+
+        strcpy(outbuf,string);
+        cp = outbuf;
+	while (*cp != '\0') {
+                switch (*cp) {
+                    case '.':
+                            *cp = ':';
+                            break;
+                    case ' ':
+                            last_space = True;
+                            break;
+                    case '-':
+                            if (! last_space)
+                                    *cp = ' ';
+                            break;
+                    default:
+                            last_space = False;
+                            *cp = tolower(*cp);
+                            break;
+                }
+		cp++;
+	}
+        return outbuf;
 }
 
 static NhlErrorTypes
@@ -1149,6 +1190,39 @@ static int fill_sort
         return (frec1.eid - frec2.eid);
 }
 
+static char *UpNameHierarchy
+#if	NhlNeedProto
+(
+        char	*string
+        )
+#else
+(string)
+	char	*string;
+#endif
+{
+        char *cp,*bcp;
+        int i;
+
+        cp = string;
+        
+        cp = strrchr(cp,':');
+        if (cp > string) {
+                *cp = '\0';
+                bcp = cp - 1;
+                while (isspace(*bcp))
+                        *(bcp--) = '\0';
+                cp++;
+        }
+        else
+                cp = string;
+        
+        while (isspace(*cp))
+                cp++;
+
+        return cp;
+}
+
+
 /*
  * Function:  UpdateSpecFillRecords
  *
@@ -1186,15 +1260,35 @@ static NhlErrorTypes    UpdateSpecFillRecords
         NhlMapDataHandlerLayerPart *mdhp = &mv41l->mapdh;
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+        char *comp_string, *parent_string = NULL;
         char *e_text;
         int i;
-
+                
+        comp_string = UpNameHierarchy(spec_string);
         for (i = 0; i < Mv41cp->entity_rec_count; i++) {
                 int count = mv41p->fill_rec_count;
+                NhlBoolean unique;
                 
-                if (strcmp(spec_string,Mv41cp->alpha_recs[i]->name))
+                if (strcmp(comp_string,Mv41cp->alpha_recs[i]->name))
                         continue;
                 
+                unique = Mv41cp->alpha_recs[i]->unique;
+                if (! unique) {
+                            /* see if a parent has been specified to
+                             uniquely qualify the name */
+                        
+                        if (! parent_string)
+                                parent_string = UpNameHierarchy(spec_string);
+                        if (parent_string != comp_string) {
+                                int peid;
+                                peid = c_mpipar(Mv41cp->alpha_recs[i]->eid);
+                                if (strcmp(parent_string,
+                                           Mv41cp->entity_recs[peid-1].name))
+                                        continue;
+                                unique = True;
+                        }
+                }
+
                 if (count == mv41p->fill_rec_alloc) {
                         mv41p->fill_recs = NhlMalloc
                                 (sizeof(v41SpecFillRec) * v41ALLOC_UNIT);
@@ -1228,8 +1322,9 @@ static NhlErrorTypes    UpdateSpecFillRecords
 		}
                 mv41p->fill_rec_count++;
                 
-                if (Mv41cp->alpha_recs[i]->unique)
+                if (unique)
                         break;
+                    /* Otherwise add all matching items */
         }
         return ret;
         
@@ -1276,20 +1371,20 @@ static NhlErrorTypes    mv41BuildFillDrawList
 	if (mpp->fill_area_specs != NULL) {
 		sp = (NhlString *) mpp->fill_area_specs->data;
 		for (i = 0; i < mpp->fill_area_specs->num_elements; i++) {
-			mpLowerCase(sp[i]);
+                        char *spec_string = PrepareSpecString(sp[i]);
                         subret = UpdateSpecFillRecords
-                                (mv41l,mpp,mpDRAW,sp[i],i,entry_name);
+                                (mv41l,mpp,mpDRAW,spec_string,i,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
 				return ret;
 
 		}
 	}
-	if (mpp->mask_area_specs != NULL) {
+	if (mpp->area_masking_on && mpp->mask_area_specs != NULL) {
 		sp = (NhlString *) mpp->mask_area_specs->data;
 		for (i = 0; i < mpp->mask_area_specs->num_elements; i++) {
-			mpLowerCase(sp[i]);
+			char *spec_string = PrepareSpecString(sp[i]);
                         subret = UpdateSpecFillRecords
-                                (mv41l,mpp,mpMASK,sp[i],i,entry_name);
+                                (mv41l,mpp,mpMASK,spec_string,i,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
 				return ret;
 		}
@@ -1391,14 +1486,34 @@ static NhlErrorTypes    UpdateSpecLineRecords
         NhlMapDataHandlerLayerPart *mdhp = &mv41l->mapdh;
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+        char *comp_string, *parent_string = NULL;
         char *e_text;
         int i;
 
+        comp_string = UpNameHierarchy(spec_string);
         for (i = 0; i < Mv41cp->entity_rec_count; i++) {
                 int count = mv41p->outline_rec_count;
+                NhlBoolean unique;
                 
-                if (strcmp(spec_string,Mv41cp->alpha_recs[i]->name))
+                if (strcmp(comp_string,Mv41cp->alpha_recs[i]->name))
                         continue;
+                
+                unique = Mv41cp->alpha_recs[i]->unique;
+                if (! unique) {
+                            /* see if a parent has been specified to
+                             uniquely qualify the name */
+                        
+                        if (! parent_string)
+                                parent_string = UpNameHierarchy(spec_string);
+                        if (parent_string != comp_string) {
+                                int peid;
+                                peid = c_mpipar(Mv41cp->alpha_recs[i]->eid);
+                                if (strcmp(parent_string,
+                                           Mv41cp->entity_recs[peid-1].name))
+                                        continue;
+                                unique = True;
+                        }
+                }
                 
                 if (count == mv41p->outline_rec_alloc) {
                         mv41p->outline_recs = NhlMalloc
@@ -1417,8 +1532,9 @@ static NhlErrorTypes    UpdateSpecLineRecords
                 mv41p->outline_recs[count].spec_thickness = 0;
                 mv41p->outline_rec_count++;
                 
-                if (Mv41cp->alpha_recs[i]->unique)
+                if (unique)
                         break;
+                    /* Otherwise add all matching items */
         }
         return ret;
         
@@ -1465,9 +1581,9 @@ static NhlErrorTypes    mv41BuildOutlineDrawList
 	if (mpp->outline_specs != NULL) {
 		sp = (NhlString *) mpp->outline_specs->data;
 		for (i = 0; i < mpp->outline_specs->num_elements; i++) {
-			mpLowerCase(sp[i]);
+			char *spec_string = PrepareSpecString(sp[i]);
                         subret = UpdateSpecLineRecords
-                                (mv41l,mpp,mpDRAW,sp[i],i,entry_name);
+                                (mv41l,mpp,mpDRAW,spec_string,i,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
 				return ret;
 
@@ -1659,7 +1775,7 @@ static int (_NHLCALLF(hlumapfill,HLUMAPFILL))
                             ! DrawIds[geo_ix-1].spec_rec &&
 			    NGCALLF(mpipai,MPIPAI)(&geo_ix,&LandId))
 				level = 1;
-			ix = NGCALLF(mpioar,MPIOAR)(&geo_ix,&level);
+			ix = NGCALLF(mpiosa,MPIOSA)(&geo_ix,&level);
 			if (level < 2)
 				gid = Mv41cp->entity_recs[ix-1].fixed_gid;
 			else
@@ -1807,7 +1923,7 @@ static NhlErrorTypes mpSetUpFillDrawList
 #endif                        
                 for (j = 1; j <= Mv41cp->entity_rec_count; j++) {
 #if 0
-                        if (c_mpioar(j,spec_level) == eid) {
+                        if (c_mpiosa(j,spec_level) == eid) {
                                 DrawIds[j-1].spec_rec =   
                                         (void *) &mv41p->fill_recs[i];
 			}
@@ -2055,8 +2171,6 @@ static int (_NHLCALLF(hlumaskgrid,HLUMASKGRID))
         printf("grid mask %d\n", geo_ix);
 #endif        
         switch (Mpp->grid_mask_mode) {
-            case NhlMASKFILLAREA:
-            case NhlMASKMASKAREA:
             case NhlMASKNONE:
             default:
                     draw_line = True;
@@ -2077,8 +2191,36 @@ static int (_NHLCALLF(hlumaskgrid,HLUMASKGRID))
                     if (NGCALLF(mpipai,MPIPAI)(&geo_ix,&LandId))
                             draw_line = True;
                     break;
+            case NhlMASKFILLAREA:
+                    if (Mpp->fill_boundaries == NhlNOBOUNDARIES) {
+                            if (! DrawIds[geo_ix-1].spec_rec)
+                                    draw_line = True;
+                    }
+                    else if (Mpp->fill_boundaries == NhlUSSTATES) {
+                            NhlBoolean found = False;
+                            for (i = UsIdCount-1;i>-1;i--) {
+                                    if (NGCALLF(mpipai,MPIPAI)
+                                        (&geo_ix,&UsIds[i])) {
+                                            found = True;
+                                            break;
+                                    }
+                            }
+                            if (!(found || DrawIds[geo_ix-1].spec_rec))
+                                    draw_line = True;
+                    }
+                    break;
+            case NhlMASKMASKAREA:
+                    if (! DrawIds[geo_ix-1].spec_rec) {
+                            draw_line = True;
+                    }
+                    else {
+                            v41SpecFillRec *frec = (v41SpecFillRec *)
+                                    DrawIds[geo_ix-1].spec_rec;
+                            if (frec->draw_mode != mpMASK)
+                                    draw_line = True;
+                    }
+                    break;
         }
-        
         
 	if (! draw_line)
 		return 0;
@@ -2146,26 +2288,8 @@ static NhlErrorTypes mpGrid
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	c_mpseti("C4", mpp->limb.gks_color);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-
-	mpp->relative_grid_spacing = False;
-
-	if (! mpp->relative_grid_spacing) {
-		spacing = mpp->grid_spacing;
-	}
-	else {
-		c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
-		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-		avlat = (wby + wuy) / 2.0;
-		avlon = (wrx + wlx) / 2.0;
-		_NhlWinToData(mpl->trans.trans_obj,&avlon,&avlat,
-			      1,&lon1,&lat1,&status,NULL,NULL);
-		_NhlWinToData(mpl->trans.trans_obj,&wrx,&avlat,
-			      1,&lon2,&lat2,&status,NULL,NULL);
-		
-		spacing = 2.0 * (lon2 - lon1) * mpp->grid_spacing;
-		spacing = spacing < 0 ? -spacing : spacing;
-	}
-	c_mpsetr("GR",spacing);
+        
+	c_mpsetr("GR",mpp->grid_spacing);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 
 	if (mpp->grid_mask_mode == NhlMASKNONE) {
@@ -2269,7 +2393,7 @@ static NhlErrorTypes mpOutline
 		strcpy(eidname,c_mpname(eid));
                 for (j = 1; j <= Mv41cp->entity_rec_count; j++) {
 #if 0
-                        if (c_mpioar(j,spec_level) == eid) {
+                        if (c_mpiosa(j,spec_level) == eid) {
 			        printf("%s contains %s at level %d\n",
 				       eidname,c_mpname(j),spec_level);
                                 DrawIds[j-1].spec_rec =   
