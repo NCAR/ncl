@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpsps2.c,v 1.3 1994-06-21 14:59:33 haley Exp $
+ * $Id: c_ccpsps2.c,v 1.4 1994-08-19 18:44:46 stautler Exp $
  */
 
 #include <stdio.h>
@@ -78,9 +78,9 @@ int m, n;
 	}
 
 	l = 0;
-    for( j = 1; j <= n; j++ ) {
-         for( i = 1; i <= m; i++ ) {
-			z[l++]= 10.e-5*(-16.*(float)(x[i]*x[i]*y[j])+34.*(float)(x[i]*y[j]*y[j]) - (float)(6*x[i]) + 93.);
+        for( j = 0; j < n; j++ ) {
+         	for( i = 0; i < m; i++ ) {
+			z[l++]= 10.e-5*(-16.*(float)(x[i]*x[i]*y[j])+34.*(float)                                (x[i]*y[j]*y[j]) - (float)(6*x[i]) + 93.);
 		}
 	 }
 	return;
