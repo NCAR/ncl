@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.50 1996-09-14 17:07:25 boote Exp $
+ *      $Id: TickMark.c,v 1.51 1996-10-10 21:02:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2171,6 +2171,12 @@ static NhlErrorTypes	TickMarkDraw
 	NhlTickMarkLayer tlayer = (NhlTickMarkLayer) layer;
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlErrorTypes realret = NhlNOERROR;
+
+	if (! tlayer->tick.x_b_on && ! tlayer->tick.x_t_on &&
+	    ! tlayer->tick.y_l_on && ! tlayer->tick.y_r_on  &&
+	    ! tlayer->tick.x_b_border_on && ! tlayer->tick.x_t_border_on &&
+	    ! tlayer->tick.y_l_border_on && ! tlayer->tick.y_r_border_on)
+		return ret;
 
 	if (tlayer->view.use_segments && ! tlayer->tick.new_draw_req) {
                 ret = _NhlActivateWorkstation(tlayer->base.wkptr);

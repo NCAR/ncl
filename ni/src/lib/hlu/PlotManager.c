@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.28 1996-10-04 18:00:46 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.29 1996-10-10 21:02:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1401,17 +1401,24 @@ NhlLayer inst;
  * including each element's annotation list. External annotations 
  * belonging to the base overlay must be informed that they are no 
  * longer part of an overlay.
- * Also the irregular point gen arrays.
+ * Destroy intrinsic child annotations
+ * Free the irregular point gen arrays.
  */
 	for (i=0; i < ovp->overlay_count; i++) {
 		NhlAnnoRec	*anlp = ovp->pm_recs[i]->anno_list;
 		while (anlp != NULL) {
 			NhlAnnoRec *free_anno = anlp;
 			anlp = anlp->next;
-			if (i == 0 && free_anno->type == ovEXTERNAL) {
-				NhlVASetValues(free_anno->anno_id,
-					       NhlNamOverlayId,
-					       NhlNULLOBJID,NULL);
+			if (i == 0) {
+				if (free_anno->type == ovEXTERNAL) {
+					NhlVASetValues(free_anno->anno_id,
+						       NhlNamOverlayId,
+						       NhlNULLOBJID,NULL);
+				}
+				else if (free_anno->status > NhlNOCREATE) {
+					(void) _NhlDestroyChild(
+						  free_anno->plot_id,inst);
+				}
 			}
 			NhlFree(free_anno);
 		}

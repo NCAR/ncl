@@ -1,5 +1,5 @@
 /*
- *      $Id: Segments.c,v 1.5 1996-07-20 00:37:46 dbrown Exp $
+ *      $Id: Segments.c,v 1.6 1996-10-10 21:02:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -99,11 +99,11 @@ void	_NhlDestroySegTransDat
 #endif
 {
 	if(transdat->id != SEG_NOT_SET) {
-/* FORTRAN */ _NHLCALLF(gdsg,GDSG)(&(transdat->id));
+/* FORTRAN */   _NHLCALLF(gdsg,GDSG)(&(transdat->id));
+		Id_Assigned[transdat->id] = 0;
+		if (transdat->id < Id)
+			Id = transdat->id;
 	}
-	Id_Assigned[transdat->id] = 0;
-	if (transdat->id < Id)
-		Id = transdat->id;
 
 	NhlFree(transdat);
 	transdat = NULL;

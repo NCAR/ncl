@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.28 1996-09-14 17:07:29 boote Exp $
+ *      $Id: Title.c,v 1.29 1996-10-10 21:03:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1620,6 +1620,11 @@ static NhlErrorTypes TitleDraw
 	char *e_text;
 	char *entry_name = "TitleDraw";
 	NhlTitleLayer tinstance = (NhlTitleLayer) instance;
+
+	if(! tinstance->title.main_on && 
+	   ! tinstance->title.x_axis_on &&
+	   ! tinstance->title.y_axis_on)
+		return ret;
 
 	if (tinstance->view.use_segments && ! tinstance->title.new_draw_req) {
                 subret = _NhlActivateWorkstation(tinstance->base.wkptr);
