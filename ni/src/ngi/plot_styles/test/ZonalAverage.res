@@ -73,7 +73,7 @@
 *geosf@Pattern : (/  /.*psl.*/i , /.*/ /)
 *geosf!-1@Pattern : /.*lon.*/i
 *geosf!-2@Pattern : /.*lat.*/i
-*geosf@Description : Geographic Scalar Field
+*geosf@Description : Georeferenced Scalar Field
 *geosf@Required : True
 !
 ! if the geosf2 data, along with the Required attribute is uncommented, is
@@ -127,7 +127,7 @@
 *map@pmAnnoViews : (/$xy$,$left_title$,$right_title$ /)
 *map@ndvUpdateFunc1 : plot_title($map$,\
 	$left_title$,$geosf$@long_name,$right_title$,$geosf$@units,0.014,1)
-*map*mpGeophysicalLineColor : Background
+!*map*mpGeophysicalLineColor : Foreground
 *map*vpXF : 0.08
 *map*vpWidthF : 0.57
 !
@@ -148,7 +148,6 @@
 *cnplot@cnFillColors%Profile : (/ Name : Level Colors , \
 				SaveForCompare : True /)
 *cnplot@pmAnnoViews : (/ $timestamp$ /)
-*cnplot*cnInfoLabelZone : 6
 *cnplot*cnRasterModeOn : True
 *cnplot*cnRasterSmoothingOn : True
 *cnplot*cnLinesOn : False
@@ -158,6 +157,8 @@
 *cnplot*pmLabelBarSide : bottom
 *cnplot*lbOrientation : horizontal
 *cnplot*lbPerimOn : False
+*cnplot*cnInfoLabelOn : False
+!*cnplot*cnInfoLabelZone : 6
 !
 ! the Time Stamp annotation
 !
