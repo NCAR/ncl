@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.20 1992-12-11 16:04:01 clyne Exp $
+ *	$Id: X11_class0.c,v 1.21 1992-12-12 00:22:04 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -273,7 +273,6 @@ CGMC *c;
 			RootWindow(dpy,DefaultScreen(dpy)),
 			xsh.x, xsh.y, xsh.width, xsh.height,
 			bw, bd, bg);
-fprintf(stderr, "win=%d\n", drawable);
 
 		/*
 		 *	read in pixmap for icon
