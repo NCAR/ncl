@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.66 2001-04-06 15:48:51 haley Exp $
+;      $Id: gsn_code.ncl,v 1.67 2001-05-16 14:54:20 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -88,6 +88,7 @@ undef("gsn_panel_return")
 undef("gsn_panel")
 undef("gsn_attach_plots")
 undef("draw_bb")
+undef("get_rgb_values")
 undef("gsn_define_colormap")
 undef("gsn_retrieve_colormap")
 undef("gsn_merge_colormaps")
@@ -2377,7 +2378,8 @@ begin
 
   getvalues plotid
     "pmAnnoViews" : text_ids
-  just  = get_res_value(res2,"amJust","CenterLeft")
+  end getvalues
+
   if(.not.any(ismissing(text_ids)))
     new_text_ids = new(dimsizes(text_ids)+1,graphic)
     new_text_ids(0)  = txid
@@ -3547,6 +3549,54 @@ end
 ; objects.                                                              ; 
 ;***********************************************************************;
 procedure draw_bb(wks:graphic,plot:graphic)
+begin
+  dimplot = dimsizes(plot)
+  if(dimsizes(dimplot).eq.1) then
+;
+; Force bb to be 2-dimensional so we don't have to have a
+; bunch of "if" tests later.
+;
+    bb = new((/1,4/),float)
+    bb(0,:) = NhlGetBB(plot)
+  else
+    bb = NhlGetBB(plot)
+  end if
+  top = max(bb(:,0))
+  bot = min(bb(:,1))
+  lft = min(bb(:,2))
+  rgt = max(bb(:,3))
+
+  gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/),(/bot,bot,top,top,bot/),False)
+end
+
+;***********************************************************************;
+; Function : get_rgb_values                                             ;
+;              named_colors: string array of named colors               ;
+;                                                                       ;
+; This function retrieves the RGB of the list of named colors, if they  ;
+; exist.  If any of the named colors don't exist, then a missing value  ;
+; is returned.                                                          ;
+;                                                                       ;
+;***********************************************************************;
+function get_rgb_values(named_colors)
+begin
+;
+; Read in rgb.txt file that has named colors and RGB values.
+;
+  rgb_file = "$NCARG_ROOT/lib/ncarg/database/rgb.txt"
+  rgb_text = asciiread(rgb_file,-1,"string")
+
+  do i=0,dimsizes(rgb_text)-1
+    rgb_text(i) = lower_case(rgb_text(i))  ; convert to lower case
+  end do
+
+  rgb_text_char = stringtochar(rgb_text)    ; convert to character
+;
+; Normalize RGB values.
+;
+  red   = stringtointeger(chartostring(rgb_text_char(:,0:2)))/255.
+  green = stringtointeger(chartostring(rgb_text_char(:,4:6)))/255.
+  blue  = stringtointeger(chartostring(rgb_text_char(:,8:10)))/255.
 ;
 ; Color names start in the 14th column of the rgb.txt file.
 ;
@@ -3650,10 +3700,27 @@ begin
 ;
 ; Get first colormap in RGB values, and include background and
 ; foreground colors.
-    gsn_define_colormap(wks,cmap2)
-    tmp_cmap2 = gsn_retrieve_colormap(wks)
-    new_cmap2 = tmp_cmap2(2:,:)
+; 
+  if(typeof(cmap1).eq."float") then
+    new_cmap1 = cmap1
+  else
+    gsn_define_colormap(wks,cmap1)
+    new_cmap1 = gsn_retrieve_colormap(wks)
+  end if
+  len_cmap1 = dimsizes(new_cmap1(:,0))
+
+;
+; Get second colormap in RGB values, and ignore background and
+; foreground colors.
+; 
+  if(typeof(cmap2).eq."float") then
+    len_cmap2 = dimsizes(cmap2(:,0)) - 2
+    if(len_cmap2.gt.0) then
+      new_cmap2 = cmap2(2:,:)
+    else
       len_cmap2 = 0
+    end if
+  else
 ;
 ; Test if the strings are named colors or a color map.
 ; If it's a color map, then we will drop the foreground/background
@@ -4073,6 +4140,7 @@ end
 ;                                  gsnHistogramDiscreteClassValues.     ;
 ;                                                                       ;
 ;  gsnHistogramCompare - Compare two fields.                            ;
+;                                                                       ;
 ;  gsnHistogramHorizontal - Draw horizontal bars.  Default is False     ;
 ;                                                                       ;
 ; The number of missing values counted is returned as an attribute      ;
@@ -4304,7 +4372,11 @@ begin
     nvals    = floattoint((nicevals(1) - nicevals(0))/nicevals(2) + 1)
 ;
 ; Generate nice values for minor and major tick marks. For the minor
-      set_attr(res2,"tmXTLabels",pnice)
+; tick marks, just add one between each major.
+; 
+    pnice  = fspan(nicevals(0),nicevals(1),nvals)
+    pmnice = fspan(nicevals(0)-nicevals(2)/2,nicevals(1)+nicevals(2)/2, \
+                   2*nvals+1)
 ;
 ; Calculate bins at these percentages. These are the values we'll use
 ; for the tick marks.
@@ -4312,7 +4384,11 @@ begin
     bins_at_pnice  = (npts * pnice) / 100.
     bins_at_pmnice = (npts * pmnice) / 100.
 ;
-      set_attr(res2,"tmYRLabels",pnice)
+; Set some resources to control tickmarks.
+;
+    if(horizontal) then
+      set_attr(res2,"tmXUseBottom", False)
+      set_attr(res2,"tmXTOn",True)
       set_attr(res2,"tmXTLabelsOn",True)
       set_attr(res2,"tmXTMode","Explicit")
       set_attr(res2,"tmXTValues",bins_at_pnice)
@@ -4357,7 +4433,7 @@ begin
   end if
 ;
 ; Set some resources.
-  if(ispercent)
+;
   if(horizontal) then
     set_attr(res2,"tiXAxisString","Frequency")
     set_attr(res2,"tmYROn",False)
@@ -4451,10 +4527,13 @@ end
 ;   gsnSpreadColors                                                     ;
 ;   gsnSpreadColorStart                                                 ;
 ;   gsnSpreadColorEnd                                                   ;
+;                                                                       ;
 ;***********************************************************************;
 function gsn_contour(wks:graphic, data[*][*]:numeric, resources:logical )
 local i, data_object, plot_object, res, sf_res_index, \
 datares, cnres, llres, cn_res_index, ll_res_index, calldraw, callframe, \
+force_x_linear, force_y_linear, force_x_log, force_y_log, \
+trxmin, trxmax, trymin, trymax, res2, scale, shape, sprdcols
 begin
     cnres     = False
     llres     = False
@@ -4463,10 +4542,17 @@ begin
     force_x_linear = False
     force_y_linear = False
     force_x_log    = False
+    force_y_log    = False
 
-; Create plot object.
+; Create the data object.
+
+    wksname = get_res_value_keep(wks,"name","gsnapp")
+
+; Create the data object.
     data_object = create wksname + "_data" scalarFieldClass noparent
         "sfDataArray" : data
+    end create
+
     sfres = get_res_eq(res2,"sf")
     attsetvalues_check(data_object,sfres)
 
@@ -4490,11 +4576,9 @@ begin
         "trYTensionF"       : ytension
         "cnScalarFieldData" : data_object
     end create
-    sfres = get_res_eq(res2,"sf")
 
+; Check for existence of data@long_name and use it in a title it
 ; it exists.
-    attsetvalues_check(data_object,sfres)
-    attsetvalues_check(plot_object,cnres)
 
     if(isatt(data,"long_name")) then
       set_attr(res2,"tiMainString",data@long_name)
@@ -4602,10 +4686,20 @@ end
 ;***********************************************************************;
 function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
                          resources:logical)
-; Create plot object.
+local i, data_object, contour_object, res, sf_res_index, \
+cn_res_index, mp_res_index, map_object, res2, scale, shape, sprdcols
+begin
+    res2      = resources
+
+; Create the data object.
+
+    wksname = get_res_value_keep(wks,"name","gsnapp")
+
     data_object = create wksname + "_data" scalarFieldClass noparent
         "sfDataArray" : data
     end create
+
+; Check for a missing value.
 
     if(isatt(data,"_FillValue")) then
         setvalues data_object
@@ -4629,11 +4723,9 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
         "trXTensionF"       : xtension
     end create
 
-    sfres = get_res_eq(res2,"sf")
 ; Check for existence of data@long_name and use it in a title it
 ; it exists.
 
-    attsetvalues_check(data_object,sfres)
     if(isatt(data,"long_name")) then
       set_attr(res2,"tiMainString",data@long_name)
     end if
