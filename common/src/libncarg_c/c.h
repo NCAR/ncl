@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.12 1992-09-01 23:47:11 clyne Exp $
+ *	$Id: c.h,v 1.13 1992-09-09 17:38:08 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -342,9 +342,9 @@ extern	void	PrintVersion(
 **
 */
 
-extern	char	*GetNCARGPath(
+extern	const char	*GetNCARGPath(
 #ifdef	NeedFuncProto
-	const char	*paname
+	const char	*dir
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: error.c,v 1.3 1992-09-01 23:47:14 clyne Exp $
+ *      $Id: error.c,v 1.4 1992-09-09 17:38:11 clyne Exp $
  */
 /*
  *	File:		error.c
@@ -46,7 +46,7 @@ static	struct	kludge_ {
 	int	line;
 	} kludge;
 	
-static	char	*get_error(error)
+static	const char	*get_error(error)
 	int	error;
 {
 	int	i;
@@ -93,13 +93,13 @@ const char	*ESprintf(err_code, format, va_alist)
 	va_list	ap;
 	extern	int	sys_nerr;
 	extern	char	*sys_errlist[];
-	char		*message;
+	const char	*message;
 
 	if (! isInitialized) {
 		/*
 		 * add the unix system/library error list
 		 */
-		(void) ErrorList(0, sys_nerr, sys_errlist);
+		(void) ErrorList(0, sys_nerr, (const char **) sys_errlist);
 		isInitialized  = 1;
 	}
 
@@ -165,14 +165,14 @@ const char	*LFESprintf(err_code, file, line, format, va_alist)
 	va_list	ap;
 	extern	int	sys_nerr;
 	extern	char	*sys_errlist[];
-	char		*message;
+	const char	*message;
 	char		buf[1024];
 
 	if (! isInitialized) {
 		/*
 		 * add the unix system/library error list
 		 */
-		(void) ErrorList(0, sys_nerr, sys_errlist);
+		(void) ErrorList(0, sys_nerr, (const char **) sys_errlist);
 		isInitialized  = 1;
 	}
 

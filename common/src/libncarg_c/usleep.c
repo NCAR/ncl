@@ -1,6 +1,6 @@
 
 /*
- *      $Id: usleep.c,v 1.1 1992-09-01 23:47:29 clyne Exp $
+ *      $Id: usleep.c,v 1.2 1992-09-09 17:38:23 clyne Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,7 @@
  *	Description:	Suspend execution for interval in microseconds
  */
 
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/time.h>
 
