@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: version.sed,v 1.3 1994-10-05 00:12:09 haley Exp $
+#	$Id: version.sed,v 1.4 1995-08-21 19:28:40 haley Exp $
 #
 
 set year = "19`date +%y`"
@@ -12,8 +12,9 @@ else
 echo ""
 cat <<EOF
 NCAR Graphics - UNIX Version VERSION
-Copyright (C) $year - All Rights Reserved
+Copyright (C) 1987-$year
 University Corporation for Atmospheric Research
+The use of this Software is governed by a License Agreement.
 EOF
 echo ""
 endif
