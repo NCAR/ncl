@@ -1,5 +1,5 @@
 /*
- *      $Id: ncarg_path.c,v 1.25 2000-08-22 04:03:32 haley Exp $
+ *      $Id: ncarg_path.c.sed,v 1.1 2002-11-21 00:17:57 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -233,7 +233,7 @@ const char
 const	char	*_NGGetNCARGEnv(name)
 	const char	*name;
 {
-	static char	*env_vars[] = ENV_DEFS;
+	static char	*env_vars[] = SED_ENV_DEFS;
 	static char	*env_vals[(sizeof(env_vars)/sizeof(env_vars[0]))] =
 					{ NULL };
 

@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.47 2002-06-20 22:18:44 haley Exp $
+#	$Id: yMakefile,v 1.48 2002-11-21 00:17:57 haley Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common utilities
@@ -9,7 +9,7 @@
 
 MYNAME		= libncarg_c
 
-#if defined(Linux) || defined(LINUX)
+#if (defined(Linux) || defined(LINUX)) && !defined(linux)
 #define linux
 #endif
 
@@ -66,7 +66,7 @@ OBJS	= $(EXOBJS) $(FCPP_OBJS) options.o misc.o ncarg_path.o \
 MY_DEFINES = -D_BSD_TYPES
 #endif
 
-EXTRA_CDEFINES =	$(OS_DEF) $(VENDOR_DEF) $(VDEFINE) $(NGENVDEF) $(MY_DEFINES) -DNCARGURL='$(NCARGURL)'
+EXTRA_CDEFINES =	$(OS_DEF) $(VENDOR_DEF) $(VDEFINE) $(MY_DEFINES) -DNCARGURL='$(NCARGURL)'
 
 REQLIBS = $(CTOFLIBS) -lc
 
@@ -86,5 +86,12 @@ sdbm.o: sdbm.c
 #if (!defined(i386) || defined(linux)) && !defined(Darwin)
 CleanFilesTarget($(FCPP_FSRCS))
 #endif
+
+CleanFilesTarget(ncarg_path.c)
+
+ncarg_path.c: ncarg_path.c.sed Makefile
+	@sed \
+	-e 's+SED_ENV_DEFS+$(NGENV_DESCRIPT)+' \
+	<ncarg_path.c.sed >ncarg_path.c
 
 BuildSharedLibTarget(libNGc,$(OBJS) $(SHLIBOBJS),1,0,$(REQLIBS))
