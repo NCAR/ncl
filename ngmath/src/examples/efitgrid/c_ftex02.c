@@ -1,7 +1,8 @@
 /*
- *  $Id: c_ftex02.c,v 1.3 2003-08-06 15:36:16 haley Exp $
+ *  $Id: c_ftex02.c,v 1.4 2003-08-07 20:06:07 haley Exp $
  */
 #include <stdio.h>
+#include <math.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 #include <ncarg/ngmath.h>

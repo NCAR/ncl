@@ -1,8 +1,9 @@
 /*
- *  $Id: c_ftex07d.c,v 1.1 2003-08-06 15:36:18 haley Exp $
+ *  $Id: c_ftex07d.c,v 1.2 2003-08-07 20:06:08 haley Exp $
  */
 #include <stdio.h>
 #include <ncarg/ngmath.h>
+#include <math.h>
 
 /*
  * This example shows how to use the double precision C routines in
