@@ -18,7 +18,7 @@ begin
     newdata(:,0:mx-1) = data             ; pass everything
     newdata(:,mx)     = (/ data(:,0) /)  ; value only
 
-    if((.not.ismissing(newdata!1)) .and. iscoord(data,newdata!1)) then 
+    if(isdimnamed(newdata,1) .and. iscoord(data,newdata!1)) then 
         newdata&$newdata!1$(mx) = newdata&$newdata!1$(0)
     end if
  
