@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.157 2004-02-09 17:03:16 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.158 2004-02-27 03:28:15 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -118,6 +118,7 @@ undef("plot_xy2")
 undef("plot_x2y")
 undef("gsn_csm_xy2")
 undef("gsn_csm_x2y")
+undef("gsn_csm_x2y2")
 undef("gsn_csm_contour")
 undef("gsn_csm_hov")
 undef("gsn_csm_lat_time")
@@ -8879,227 +8880,203 @@ end
 ;***********************************************************************;
 ; Function : plot_x2y2                                                  ;
 ;               wks: workstation object                                 ;
-;                 w: X (or Y) values                                    ;
-;                z1: First set of Y (or X) values                       ;
-;                z2: Second set of Y (or X) values                      ;
-;             resLB: optl resources, to apply to left (or bottom) axis  ;
-;             resRT: optl resources, to apply to right (or top) axis    ;
-;              axis: which axis has the multiple curves                 ;
+;                x1: X values, represented by the bottom axis           ;
+;                x2: second set of X values (optl)                      ;
+;                    represented by the top axis                        ;
+;                y1: Y values, represented by the left axis             ;
+;                y2: second set of Y values (optl)                      ;
+;                    represented by the right axis                      ;
+;              res1: optl resources, to apply to first plot             ;
+;                    axes used are bottom/left.                         ;
+;              res2: optl resources, to apply to second plot            ;
+;                    axes used are top/right.                           ;
+;              axis: which axis has the multiple curves ("x" means      ;
+;                    the X axes has the multiple curves, "y" is for the ;
+;                    Y axies, and "xy" for both axes)                   ;
 ;         plot_type: whether we're doing generic gsn, or gsn_csm        ;
 ;                                                                       ;
 ; Originally created by Dennis Shea to allow two Y curves with two      ;
-; separate Y axes to reside on the same plot and share the same X axes. ;
+; separate Y axes to reside on the same plot and share the same X axis. ;
 ; The Y axes are labeled both on the left and right to indicate the two ;
 ; different axes.                                                       ;
 ;                                                                       ;
 ; Modified by Mary Haley and made more generic so it can handle the X   ;
-; or Y axis having multiple curves.                                     ;
+; or Y axis or both axes having multiple curves.                        ;
 ;***********************************************************************;
-function plot_x2y2 (wks:graphic, w:numeric, z1:numeric, z2:numeric, \
-                    resLB:logical, resRT:logical, axis:string, \
-                    plot_type:string)
-local locResLB, locResRT, AttsLB, AttsRT, xyLB, xyRT, calldraw, callframe, \
-      maxbb 
+function plot_x2y2 (wks:graphic, x1:numeric, x2:numeric, \
+                                 y1:numeric, y2:numeric, \
+                                 res1:logical, res2:logical, \
+                                 axis:string, plot_type:string)
+local locRes1, locRes2, Atts1, Atts2, xy1, xy2, calldraw, callframe, maxbb 
 begin
-    locResLB = True
-    if (resLB) then
-        locResLB = resLB           ; copy input to local resources
+;
+; Make copy of local resources.
+;
+    locRes1 = True
+    locRes2 = True
+    if (res1) then
+      locRes1 = res1
+    end if
+    if (res2) then
+      locRes2 = res2
     end if
 
-    calldraw  = get_res_value(locResLB,"gsnDraw", True)
-    callframe = get_res_value(locResLB,"gsnFrame",True)
-    maxbb     = get_bb_res(locResLB)
+;
+; Retain draw, frame, and maximize settings for later.
+;
+    calldraw  = get_res_value(locRes1,"gsnDraw", True)
+    callframe = get_res_value(locRes1,"gsnFrame",True)
+    maxbb     = get_bb_res(locRes1)
 
+;
+; For first plot, don't auto advance the frame or draw or maximize
+; the plot.
+;
+    locRes1@gsnFrame    = False
+    locRes1@gsnDraw     = False
+    locRes1@gsnMaximize = False
 
-    AttsLB  = getvaratts(locResLB) ; input attributes
-                                   ; The following section is not
-                                   ; needed. it justs prevents
-    if (.not.any(ismissing(AttsLB))) then   ; annoying warning msgs
-        if (any(AttsLB.eq."trXMinF")) then  ; from being printed 
-            locResLB@xyComputeXMin = False 
-        end if                             
-        if (any(AttsLB.eq."trXMaxF")) then
-            locResLB@xyComputeXMax = False  ; same
-        end if
-        if (any(AttsLB.eq."trYMinF")) then
-            locResLB@xyComputeYMin = False  ; same
-        end if                            
-        if (any(AttsLB.eq."trYMaxF")) then
-            locResLB@xyComputeYMax = False  ; same
-        end if
+;
+; If drawing a multiple axis plot, make sure you turn off the
+; tickmarks on the other side, since they will later be defined
+; by the second set of data.
+;
+    if(axis.eq."y".or.axis.eq."xy") then
+        locRes1@tmYROn       = False  ; Turn off right tick marks.
+        locRes1@tmYRMinorOn  = False  ; Turn off right minor tick marks.
+        locRes1@tmYUseLeft   = False  ; Keep independent of right.
+    end if
+    if(axis.eq."x".or.axis.eq."xy") then
+        locRes1@tmXTOn       = False  ; Turn off top tick marks.
+        locRes1@tmXTMinorOn  = False  ; Turn off top minor tick marks.
+        locRes1@tmXUseBottom = False  ; Keep independent of top.
     end if
 
-    locResLB@gsnFrame   = False  ; Don't auto advance the
-    locResLB@gsnDraw    = False  ; frame or draw the plot when
-                                 ; gsn_xy/gsn_csm_xy is called.
-    if(axis.eq."y") then
-        locResLB@tmYROn       = False  ; Turn off right tick marks.
-        locResLB@tmYRMinorOn  = False  ; Turn off right minor tick marks.
-        locResLB@tmYUseLeft   = False  ; Keep independent of right.
+;
+; Create first plot.
+;
+    if(plot_type.eq."csm") then
+      xy1 = gsn_csm_xy (wks,x1,y1,locRes1)
     else
-        locResLB@tmXTOn       = False  ; Turn off top tick marks.
-        locResLB@tmXTMinorOn  = False  ; Turn off top minor tick marks.
-        locResLB@tmXUseBottom = False  ; Keep independent of top.
-    end if
-    if(axis.eq."y") then
-        if(plot_type.eq."csm") then
-            xyLB = gsn_csm_xy (wks,w,z1,locResLB)
-        else
-            xyLB = gsn_xy (wks,w,z1,locResLB)
-        end if
-    else
-        if(plot_type.eq."csm") then
-            xyLB = gsn_csm_xy (wks,z1,w,locResLB)
-        else
-            xyLB = gsn_xy (wks,z1,w,locResLB)
-        end if
-    end if
-    if (.not.any(ismissing(AttsLB))) then   
-        if(axis.eq."y") then
-            if (any(AttsLB.eq."tmYLMode")) then
-                setvalues xyLB
-                  "tmYLMode"   : "Explicit"
-                  "tmYLValues" : locResLB@tmYLValues 
-                  "tmYLLabels" : locResLB@tmYLLabels 
-                end setvalues
-            end if
-        else
-            if (any(AttsLB.eq."tmXBMode")) then
-                setvalues xyLB
-                  "tmXBMode"   : "Explicit"
-                  "tmXBValues" : locResLB@tmXBValues
-                  "tmXBLabels" : locResLB@tmXBLabels 
-                end setvalues
-            end if
-        end if
+      xy1 = gsn_xy (wks,x1,y1,locRes1)
     end if
 
-   ;draw (xyLB)
-
-    locResRT = True
-    if (resRT) then
-        locResRT = resRT           ; copy input to local resources
-    end if
-    AttsRT  = getvaratts(locResRT) ; input attributes
-                                   ; The following section is not
-                                   ; needed. it justs prevents
-    if (.not.any(ismissing(AttsRT))) then   ; annoying warning msgs
-        if (any(AttsRT.eq."trXMinF")) then  ; from being printed 
-            locResRT@xyComputeXMin = False 
-        end if                             
-        if (any(AttsRT.eq."trXMaxF")) then
-            locResRT@xyComputeXMax = False  ; same
-        end if
-        if (any(AttsRT.eq."trYMinF")) then
-            locResRT@xyComputeYMin = False  ; same
-        end if                            
-        if (any(AttsRT.eq."trYMaxF")) then
-            locResRT@xyComputeYMax = False  ; same
-        end if
-    end if
-
-    getvalues xyLB              ; get assorted info from previous
-      "vpHeightF"  : vpHeightF  ; plot (Left/Bottom scale) 
-      "vpWidthF"   : vpWidthF   ; for use Right/Top scale
-      "vpXF"       : vpXF
-      "vpYF"       : vpYF
+;
+; Get viewport coordinates of first plot, to use for second plot.
+;
+    getvalues xy1             ; get assorted info from previous
+      "vpHeightF"  : vph      ; plot (left scale) 
+      "vpWidthF"   : vpw      ; for use on right scale
+      "vpXF"       : vpx
+      "vpYF"       : vpy
     end getvalues
 
-    locResRT@vpHeightF          = vpHeightF       ; set to same size
-    locResRT@vpWidthF           = vpWidthF 
-    locResRT@vpXF               = vpXF     
-    locResRT@vpYF               = vpYF     
+;
+; Set resources that are common for second plot, regardless of what
+; kind of axes situation we have.
+;
+    locRes2@gsnFrame    = False
+    locRes2@gsnDraw     = False
+    locRes2@gsnMaximize = False
 
-    locResRT@tmXBLabelsOn       = False  ; Turn off bottom x axis labels
-    locResRT@tmXBMinorOn        = False  ; and tick marks.
-    locResRT@tmXBOn             = False
+    locRes2@vpHeightF   = vph       ; set to same size as first plot
+    locRes2@vpWidthF    = vpw 
+    locRes2@vpXF        = vpx     
+    locRes2@vpYF        = vpy
 
-    locResRT@tmYLLabelsOn       = False  ; Turn off left y axis labels
-    locResRT@tmYLMinorOn        = False  ; and tick marks.
-    locResRT@tmYLOn             = False
+    locRes2@tmXBLabelsOn = False  ; Turn off bottom x axis labels
+    locRes2@tmXBMinorOn  = False  ; and tick marks.
+    locRes2@tmXBOn       = False
+    locRes2@tmYLLabelsOn = False  ; Turn off left y axis labels
+    locRes2@tmYLMinorOn  = False  ; and tick marks.
+    locRes2@tmYLOn       = False
 
+;
+; Set some resources that will apply if you have two Y axes.
+;
+    if(axis.eq."y".or.axis.eq."xy") then
+      locRes2@tmYRLabelsOn  = True   ; Turn on right axis label
+      locRes2@tmYROn        = True   ; Turn on right tick marks
+      locRes2@tmYUseLeft    = False  
+      locRes2@tiYAxisSide   = "Right"; put title on right scale
+    end if
+
+;
+; Set resources specific only to having two Y axes and one X axis.
+;
     if(axis.eq."y") then
-        locResRT@tiXAxisString      = ""     ; already done 
-
-        locResRT@tmXTLabelsOn       = False  ; Turn off top x axis labels
-        locResRT@tmXTMinorOn        = False  ; and tick marks.
-        locResRT@tmXTOn             = False
-
-        locResRT@tmYRLabelsOn       = True   ; Turn on right axis label
-        locResRT@tmYROn             = True   ; Turn on right tick marks
-        locResRT@tmYUseLeft         = False  
-        locResRT@tiYAxisSide        = "Right"; put title on Right scale
-    else
-        locResRT@tiYAxisString      = ""     ; already done 
-
-        locResRT@tmYRLabelsOn       = False  ; Turn off right y axis labels
-        locResRT@tmYRMinorOn        = False  ; and tick marks.
-        locResRT@tmYROn             = False
-
-        locResRT@tmXTLabelsOn       = True   ; Turn on top axis label
-        locResRT@tmXTOn             = True   ; Turn on top tick marks
-        locResRT@tmXUseBottom       = False  
-        locResRT@tiXAxisSide        = "Top"; put title on Top scale
+      locRes2@tiXAxisString = ""     ; already done 
+      locRes2@tmXTLabelsOn  = False  ; Turn off top x axis labels
+      locRes2@tmXTMinorOn   = False  ; and tick marks.
+      locRes2@tmXTOn        = False
+;
+; Create second plot, but only for the case of two Y axes and one X axis.
+;
+      if(plot_type.eq."csm") then
+        xy2 = gsn_csm_xy(wks,x1,y2,locRes2)
+      else
+        xy2 = gsn_xy(wks,x1,y2,locRes2)
+      end if
     end if
 
-    locResRT@gsnFrame           = False
-    locResRT@gsnDraw            = False 
-    locResRT@gsnMaximize        = False 
-
-    if(axis.eq."y") then
-        if(plot_type.eq."csm") then
-            xyRT = gsn_csm_xy(wks,w,z2,locResRT)  
-        else
-            xyRT = gsn_xy(wks,w,z2,locResRT)  
-        end if
-    else
-        if(plot_type.eq."csm") then
-            xyRT = gsn_csm_xy(wks,z2,w,locResRT)  
-        else
-            xyRT = gsn_xy(wks,z2,w,locResRT)  
-        end if
+;
+; Set some resources that will apply if you have two X axes.
+;
+    if(axis.eq."x".or.axis.eq."xy") then
+      locRes2@tmXTLabelsOn       = True   ; Turn on top axis label
+      locRes2@tmXTOn             = True   ; Turn on top tick marks
+      locRes2@tmXUseBottom       = False  
+      locRes2@tiXAxisSide        = "Top"; put title on Top scale
     end if
 
-    if (.not.any(ismissing(AttsRT))) then 
-        if(axis.eq."y") then
-            if (any(AttsRT.eq."tmYRMode")) then
-                setvalues xyRT
-                  "tmYRMode"   : "Explicit"
-                  "tmYRValues" : locResRT@tmYRValues 
-                  "tmYRLabels" : locResRT@tmYRLabels 
-                end setvalues
-            end if
-        else
-            if (any(AttsRT.eq."tmXTMode")) then
-                setvalues xyRT
-                  "tmXTMode"   : "Explicit"
-                  "tmXTValues" : locResRT@tmXTValues 
-                  "tmXTLabels" : locResRT@tmXTLabels 
-                end setvalues
-            end if
-        end if
+;
+; Set resources specific only to having two X axes and one Y axis.
+;
+    if(axis.eq."x") then
+      locRes2@tiYAxisString      = ""     ; already done 
+      locRes2@tmYRLabelsOn       = False  ; Turn off right y axis labels
+      locRes2@tmYRMinorOn        = False  ; and tick marks.
+      locRes2@tmYROn             = False
+
+      if(plot_type.eq."csm") then
+        xy2 = gsn_csm_xy(wks,x2,y1,locRes2)
+      else
+        xy2 = gsn_xy(wks,x2,y1,locRes2)
+      end if
     end if
 
-    anno = NhlAddAnnotation(xyLB,xyRT)
+;
+; Create a second plot for the case of two Y axes and two X axes.
+;
+    if(axis.eq."xy") then 
+      if(plot_type.eq."csm") then
+        xy2 = gsn_csm_xy(wks,x2,y2,locRes2)
+      else
+        xy2 = gsn_xy(wks,x2,y2,locRes2)
+      end if
+    end if
+
+;
+; Add second plot as annotation of 1st plot.
+;
+    anno = NhlAddAnnotation(xy1,xy2)
     setvalues anno
       "amZone"         : 0     ; Zone 0 centers tick marks over map.
       "amResizeNotify" : True  ; Resize tick marks if map resized.
     end setvalues
-;    overlay (xyLB,xyRT)
 
-    draw_and_frame(wks,xyLB,calldraw,callframe,0,maxbb)
-
-    return ( xyLB )
+    draw_and_frame(wks,xy1,calldraw,callframe,0,maxbb)
+    return (xy1)
  end
 
 ;***********************************************************************;
 ; Function : plot_xy2                                                   ;
 ;               wks: workstation object                                 ;
-;                 x: X values                                           ;
+;                x1: X values                                           ;
 ;                y1: First set of Y values                              ;
 ;                y2: Second set of Y values                             ;
-;              resL: optl resources, to apply to left axis              ;
-;              resR: optl resources, to apply to right axis             ;
+;              res1: optl resources, to apply to first plot             ;
+;              res2: optl resources, to apply to second plot            ;
 ;                                                                       ;
 ; This function calls plot_x2y2 with a single set of X values, and two  ;
 ; sets of Y values, each with their own Y axis, and puts them on the    ;
@@ -9116,21 +9093,29 @@ begin
 ;    2. It's not a widely used routine, so I didn't think people would  ;
 ;       miss it.  They can just call "plot_xy2".                        ;
 ;***********************************************************************;
-function plot_xy2 (wks:graphic, x:numeric, yL:numeric, yR:numeric, \
-                   resL:logical, resR:logical)
+function plot_xy2 (wks:graphic, x1:numeric, y1:numeric, y2:numeric, \
+                   res1:logical, res2:logical)
 begin
-    xyL = plot_x2y2 (wks, x, yL, yR, resL, resR, "y", "gsun")
-    return ( xyL )
+;
+; Create some dummy variables.
+;
+    x2 = new(1,typeof(x1))
+;
+; Call plot_x2y2 function.
+;
+    xy = plot_x2y2 (wks, x1, x2, y1, y2, res1, res2, "y", "gsun")
+    delete(x2)
+    return(xy)
 end
 
 ;***********************************************************************;
 ; Function : plot_x2y                                                   ;
 ;               wks: workstation object                                 ;
-;                 y: Y values                                           ;
 ;                x1: First set of X values                              ;
 ;                x2: Second set of X values                             ;
-;              resB: optl resources, to apply to bottom axis            ;
-;              resT: optl resources, to apply to top axis               ;
+;                y1: Y values                                           ;
+;              res1: optl resources, to apply to first plot             ;
+;              res2: optl resources, to apply to second plot            ;
 ;                                                                       ;
 ; This function calls plot_x2y2 with a single set of Y values, and two  ;
 ; sets of X values, each with their own X axis, and puts them on the    ;
@@ -9147,22 +9132,30 @@ end
 ;    2. It's not a widely used routine, so I didn't think people would  ;
 ;       miss it.  They can just call "plot_x2y".                        ;
 ;***********************************************************************;
-function plot_x2y (wks:graphic, xB:numeric, xT:numeric, y:numeric, \
-                   resB:logical, resT:logical)
+function plot_x2y (wks:graphic, x1:numeric, x2:numeric, y1:numeric, \
+                   res1:logical, res2:logical)
 begin
-    xyT = plot_x2y2 (wks, y, xB, xT, resB, resT, "x", "gsun")
-    return ( xyT )
+;
+; Create some dummy variables.
+;
+    y2 = new(1,typeof(y1))
+;
+; Call plot_x2y2 function.
+;
+    xy = plot_x2y2 (wks, x1, x2, y1, y2, res1, res2, "x", "gsun")
+    delete(y2)
+    return(xy)
 end
 
 
 ;***********************************************************************;;
 ; Function : gsn_csm_xy2                                                ;
 ;               wks: workstation object                                 ;
-;                 x: X values                                           ;
+;                x1: X values                                           ;
 ;                y1: First set of Y values                              ;
 ;                y2: Second set of Y values                             ;
-;              resL: optl resources, to apply to left axis              ;
-;              resR: optl resources, to apply to right axis             ;
+;              res1: optl resources, to apply to first plot             ;
+;              res2: optl resources, to apply to second plot            ;
 ;                                                                       ;
 ; This function calls plot_x2y2 with a single set of X values, and two  ;
 ; sets of Y values, each with their own Y axis, and puts them on the    ;
@@ -9172,21 +9165,29 @@ end
 ; "gsn_csm_xy" is the underlying XY plotting routine called to generate ;
 ; the XY plots.                                                         ;
 ;***********************************************************************;
-function gsn_csm_xy2 (wks:graphic, x:numeric, yL:numeric,yR:numeric \
-                                 , resL:logical, resR:logical)
+function gsn_csm_xy2 (wks:graphic, x1:numeric, y1:numeric, y2:numeric, \
+                                  res1:logical, res2:logical)
 begin
-    xyL = plot_x2y2 (wks, x, yL, yR, resL, resR, "y", "csm")
-    return ( xyL )
+;
+; Create some dummy variables.
+;
+    x2 = new(1,typeof(x1))
+;
+; Call plot_x2y2 function.
+;
+    xy = plot_x2y2 (wks, x1, x2, y1, y2, res1, res2, "y", "csm")
+    delete(x2)
+    return(xy)
 end
 
 ;***********************************************************************;
 ; Function : gsn_csm_x2y                                                ;
 ;               wks: workstation object                                 ;
-;                 y: Y values                                           ;
 ;                x1: First set of X values                              ;
 ;                x2: Second set of X values                             ;
-;              resB: optl resources, to apply to bottom axis            ;
-;              resT: optl resources, to apply to top axis               ;
+;                y1: Y values                                           ;
+;              res1: optl resources, to apply to first plot             ;
+;              res2: optl resources, to apply to second plot            ;
 ;                                                                       ;
 ; This function calls plot_x2y2 with a single set of Y values, and two  ;
 ; sets of X values, each with their own X axis, and puts them on the    ;
@@ -9196,11 +9197,46 @@ end
 ; "gsn_csm_xy" is the underlying XY plotting routine called to generate ;
 ; the XY plots.                                                         ;
 ;***********************************************************************;
-function gsn_csm_x2y (wks:graphic, xB:numeric, xT:numeric, y:numeric, \
-                      resB:logical, resT:logical)
+function gsn_csm_x2y (wks:graphic, x1:numeric, x2:numeric, y1:numeric, \
+                      res1:logical, res2:logical)
 begin
-    xyT = plot_x2y2 (wks, y, xB, xT, resB, resT, "x", "csm")
-    return ( xyT )
+;
+; Create some dummy variables.
+;
+    y2 = new(1,typeof(y1))
+;
+; Call plot_x2y2 function.
+;
+    xy = plot_x2y2 (wks, x1, x2, y1, y2, res1, res2, "x", "csm")
+    delete(y2)
+    return(xy)
+end
+
+
+;***********************************************************************;
+; Function : gsn_csm_x2y2                                               ;
+;               wks: workstation object                                 ;
+;                x1: First set of Y values                              ;
+;                x2: First set of Y values                              ;
+;                y1: First set of X values                              ;
+;                y2: Second set of X values                             ;
+;              res1: optl resources, to apply to first plot             ;
+;              res2: optl resources, to apply to second plot            ;
+;                                                                       ;
+; This function calls plot_x2y2 with a two sets of X *and* Y values,    ;
+; and puts them on the same plot.                                       ;
+;                                                                       ;
+; "gsn_csm_xy" is the underlying XY plotting routine called to generate ;
+; the XY plots.                                                         ;
+;***********************************************************************;
+function gsn_csm_x2y2 (wks:graphic, x1:numeric, x2:numeric, \
+                       y1:numeric, y2:numeric, res1:logical, res2:logical)
+begin
+;
+; Call plot_x2y2 function.
+;
+    xy = plot_x2y2 (wks, x1, x2, y1, y2, res1, res2, "xy", "csm")
+    return(xy)
 end
 
 ;***********************************************************************;
