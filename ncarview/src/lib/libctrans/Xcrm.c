@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.19 1996-03-29 18:44:17 boote Exp $
+ *	$Id: Xcrm.c,v 1.20 1996-04-01 04:21:43 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -75,8 +75,13 @@ void X11_initColorTable()
 
 	if(XRefCount){
 		XIndexes = malloc(sizeof(int)*MaxXCol); 
-		for(i=0;i<MaxXCol;i++)
-			XIndexes[i] = 0;
+		if(XIndexes)
+			for(i=0;i<MaxXCol;i++)
+				XIndexes[i] = 0;
+		else{
+			ESprintf(errno, "malloc(%d)", sizeof(int)*MaxXCol);
+			XRefCount = False;
+		}
 	}
 
 	for(i=0;i<MAX_COLOR_SIZE;i++){
