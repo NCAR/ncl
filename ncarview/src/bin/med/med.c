@@ -1,5 +1,5 @@
 /*
- *	$Id: med.c,v 1.4 1992-09-01 23:39:32 clyne Exp $
+ *	$Id: med.c,v 1.5 1993-02-03 22:16:15 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -436,8 +436,10 @@ main (argc, argv)
 			case 'e':	/* med commands on command line	*/
 				medData.command_string = realloc(
 					medData.command_string, (unsigned) (
-					strlen(medData.command_string) 
-					+ strlen(*(++argv)) + 1));
+					strlen(medData.command_string) + 
+					strlen(*(++argv)) + 
+					strlen("\n") + 1)
+				);
 
 				(void) strcat (medData.command_string, *argv);
 				(void) strcat (medData.command_string, "\n");
