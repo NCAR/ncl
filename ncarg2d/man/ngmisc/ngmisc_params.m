@@ -88,6 +88,18 @@ bevel joins are used.
 This value applies to the specific
 workstation specified in a previous call to NGSETI to set a value
 for the \'WO\' parameter (see below).  
+.IP "\'LB\'   -   Integer   -   1" 
+Specifies the secondary logo color (this is
+applicable only for logo type 5, in which case the secondary color
+is used for the text string "UCAR").
+.IP "\'LC\'   -   Integer   -   1"
+Specifies the logo color (except in the
+case of an NCAR logo being plotted to a PostScript workstation,
+in which case you will get the full-color logo).
+.IP "\'LT\'   -   Integer   -   1"
+Specify the logo type.  See the documentation
+for NGLOGO for a list of the logo types, or execute "ncargex miex01"
+for an example plot that lists the logo types.
 .IP "\'LX\'   -   Integer   -   36"
 Specifies the left X coordinate value to be used in
 positioning PostScript output from NCAR GKS on the output page.  This
@@ -127,6 +139,17 @@ result in all line thicknesses being narrower by that amount.
 This value applies to the specific
 workstation specified in a previous call to NGSETI to set a value
 for the \'WO\' parameter (see below).  
+.IP "\'OS\'   -   Real   -  0.07" 
+Specifies the logo size in normalized device
+coordinates (a number between 0. and 1.).  For example, a size
+specification of 0.1 would give a logo size one-tenth the maximum
+plot height.
+.IP "\'OX\'   -   Real   -  0.93" 
+Specify the logo X-coordinate position in
+normalized device coordinates.
+.IP "\'OY\'   -   Real   -  0.05" 
+Specify the logo Y-coordinate position in
+normalized device coordinates.
 .IP "\'PA\'   -   Integer   -   1300"
 Specifies the maximum size of paths used in
 PostScript output from NCAR GKS.  This value controls when 

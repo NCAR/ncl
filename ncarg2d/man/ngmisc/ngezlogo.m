@@ -29,26 +29,26 @@ control parameters and what they do:
 .IP "'LT'" 
 \-  Use with NGSETI to specify the logo type.  See the documentation
 for NGLOGO for a list of the logo types, or execute "ncargex miex01"
-for an example plot that lists the logo types.
+for an example plot that lists the logo types.  Default is 1.
 .IP "'OS'" 
 \-  Use with NGSETR to specify the logo size in normalized device
 coordinates (a number between 0. and 1.).  For example, a size
 specification of 0.1 would give a logo size one-tenth the maximum
-plot height.
+plot height.  Default is 0.07.
 .IP "'OX'" 
 \-  Use with NGSETR to specify the logo X-coordinate position in
-normalized device coordinates.
+normalized device coordinates.  Default is 0.93.
 .IP "'OY'" 
 \-  Use with NGSETR to specify the logo Y-coordinate position in
-normalized device coordinates.
+normalized device coordinates.  Default is 0.05.
 .IP "'LC'" 
 \-  Use with NGSETI to specify the logo color (except in the
 case of an NCAR logo being plotted to a PostScript workstation,
-in which case you will get the full-color logo).
+in which case you will get the full-color logo).  Default is 1.
 .IP "'LB'" 
 \-  Use with NGSETI to specify the secondary logo color (this is
 applicable only for logo type 5, in which case the secondary color
-is used for the text string "UCAR").
+is used for the text string "UCAR").  Default is 1.
 .RE
 .sp
 .SH EXAMPLES
@@ -76,9 +76,9 @@ CALL NGSETR('OY',0.5)
 .br
 CALL NGSETR('OS',0.1)
 .br
-CALL NGSETR('LC',2)
+CALL NGSETI('LC',2)
 .br
-CALL NGSETR('LB',3)
+CALL NGSETI('LB',3)
 .br
 CALL NGEZLOGO()
 .sp
