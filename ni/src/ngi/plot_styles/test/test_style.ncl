@@ -192,6 +192,7 @@ begin
 	return lon
     end if
 
+    maxloninc = new(1,typeof(lon))
     maxloninc = 0.0
     monotonic = True
     nonmono_ix1 = -1
@@ -217,18 +218,18 @@ begin
     end if
 
     tmp = maxloninc + fabs(lon(mx-1) - lon(0))
-    if (floattointeger(tmp+0.5) .lt. 360) then
+    if (tmp+0.5 .lt. 360) then
 	; it's not a global dataset -- cyclical point not needed
 	return lon
     end if
 
-    if (typeof(lon).eq."double") then
-	    newlon = new((/mx+1/),double)
-    else
-	    newlon = new((/mx+1/),float)
-    end if 
+    newlon = new((/mx+1/),typeof(lon))	
     newlon(0:mx-1) = lon
-    newlon(mx) = newlon(0) + 360 * sign
+    if (sign .gt. 0)
+	    newlon(mx) = newlon(0) + 360
+    else
+	    newlon(mx) = newlon(0) - 360
+    end if
 
     return newlon
 
@@ -271,6 +272,7 @@ begin
 	return data
     end if
 
+    maxloninc = new(1,typeof(lon))
     maxloninc = 0.0
     monotonic = True
     nonmono_ix1 = -1
@@ -296,36 +298,22 @@ begin
     end if
 
     tmp = maxloninc + fabs(lon(mx-1) - lon(0))
-    if (floattointeger(tmp+0.5) .lt. 360) then
+    if (tmp+0.5 .lt. 360) then
 	; it's not a global dataset -- cyclical point not needed
 	print("cyclic point not added, range is: " + tmp)
 	return data
     end if
 
-;    if (typeof(data).eq."float") then
-;	    newdata = new((/ny  ,mx1/),float)
-;	    newdata(:,0:mx-1) = data             ; pass everything
-;	    newdata(:,mx)     = (/ data(:,0) /)  ; value only
-;    else
-
-     if (typeof(data).eq."double") then
-	    newdata = new((/ny  ,mx1/),double)
-     else
-	    newdata = new((/ny  ,mx1/),float)
-     end if
-
+     newdata = new((/ny  ,mx1/),typeof(data))	
      newdata(:,0:mx-1) = data             ; pass everything
      newdata(:,mx)     = (/ data(:,0) /)  ; value only
 
-;    end if
-
     if((.not.ismissing(newdata!1)) .and. iscoord(data,newdata!1)) then 
-	    if (typeof(lon).eq."float".or.typeof(lon).eq."double") then
-               newdata&$newdata!1$(mx) = newdata&$newdata!1$(0) + 360.0 * sign
-	    else
-               newdata&$newdata!1$(mx) = newdata&$newdata!1$(0) + \
-			360.0 * floattointeger(sign)
-	    end if
+	if (sign .gt. 0)
+               newdata&$newdata!1$(mx) = newdata&$newdata!1$(0) + 360
+	else
+               newdata&$newdata!1$(mx) = newdata&$newdata!1$(0) - 360
+        end if
     end if
 
     if (isatt(data,"_FillValue")) then

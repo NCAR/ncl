@@ -106,23 +106,23 @@
 
 *sf1@sfDataArray : fix_longitude($geosf1$)
 *sf1@sfDataArray%Profile : (/ Name : First Data Set /)
-*sf1@sfXArray : fix_longitude_coord($geosf1$!-1)
+*sf1@sfXArray : fix_longitude_coord($geosf1$&-1)
 *sf1@sfXArray%Profile : (/ Name : Longitude /)
-*sf1@sfYArray : $geosf1$!-2
+*sf1@sfYArray : $geosf1$&-2
 *sf1@sfYArray%Profile : (/ Name : Latitude /)
 
 *sf2@sfDataArray : fix_longitude($geosf2$)
 *sf2@sfDataArray%Profile : (/ Name : Second Data Set /)
-*sf2@sfXArray : fix_longitude_coord($geosf2$!-1)
+*sf2@sfXArray : fix_longitude_coord($geosf2$&-1)
 *sf2@sfXArray%Profile : (/ Name : Longitude /)
-*sf2@sfYArray : $geosf2$!-2
+*sf2@sfYArray : $geosf2$&-2
 *sf2@sfYArray%Profile : (/ Name : Latitude /)
 
 *sf3@sfDataArray : fix_longitude(difference($geosf1$,$geosf2$))
 *sf3@sfDataArray%Profile : (/ Name : Difference Data Set /)
-*sf3@sfXArray : fix_longitude_coord($geosf1$!-1)
+*sf3@sfXArray : fix_longitude_coord($geosf1$&-1)
 *sf3@sfXArray%Profile : (/ Name : Longitude /)
-*sf3@sfYArray : $geosf1$!-2
+*sf3@sfYArray : $geosf1$&-2
 *sf3@sfYArray%Profile : (/ Name : Latitude /)
 
 !!!!!!!!!!!!!!!!!!!!
@@ -146,7 +146,7 @@
 !
 !*map1@ndvUpdateFunc2 : plot_titles($map1$,\
 !	$left_title1$,$geosf1$@long_name,\
-!	$center_title1$,"Step: " + $geosf1$!-3,\
+!	$center_title1$,"Step: " + $geosf1$&-3,\
 !	$right_title1$,$geosf1$@units,0.014,1)
 *map1@ndvUpdateFunc2 : plot_titles($map1$,\
 	$left_title1$,$geosf1$@long_name,\
@@ -252,7 +252,7 @@
 !
 !*map2@ndvUpdateFunc2 : plot_titles($map2$,\
 !	$left_title2$,$geosf2$@long_name,\
-!	$center_title2$,"Step: " + $geosf2$!-3,\
+!	$center_title2$,"Step: " + $geosf2$&-3,\
 !	$right_title2$,$geosf2$@units,0.014,1)
 *map2@ndvUpdateFunc2 : plot_titles($map2$,\
 	$left_title2$,$geosf2$@long_name,\
@@ -343,7 +343,7 @@
 !
 !*map3@ndvUpdateFunc2 : plot_titles($map3$,\
 !	$left_title3$,$geosf2$@long_name,\
-!	$center_title3$,"Step: " + $geosf2$!-3,\
+!	$center_title3$,"Step: " + $geosf2$&-3,\
 !	$right_title3$,$geosf2$@units,0.014,1)
 *map3@ndvUpdateFunc2 : plot_titles($map3$,\
 	$left_title3$,"",\
