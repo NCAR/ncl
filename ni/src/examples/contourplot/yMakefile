@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.6 1995-04-17 20:46:11 haley Exp $
+#   $Id: yMakefile,v 1.7 1995-04-28 19:30:16 haley Exp $
 #
 #   Makefile for HLU ContourPlot examples
 #
@@ -12,22 +12,21 @@ SYS_LIBS    = $(CTOFLIBS) -lm
 
 CSRCS       = cn01c.c cn02c.c cn03c.c cn04c.c
 FSRCS       = cn01f.f cn02f.f cn03f.f cn04f.f
-NSRCS       = cn02n.ncl cn04n.ncl cn05n.ncl
+NSRCS       = cn02n.ncl cn04n.ncl cn05n.ncl cn06n.ncl cn07n.ncl cn08n.ncl \
+			cn09n.ncl
 COBJS       = cn01c.o cn02c.o cn03c.o cn04c.o
 FOBJS       = cn01f.o cn02f.o cn03f.o cn04f.o
 SRCS        = $(CSRCS) $(FSRCS)
 OBJS        = $(COBJS) $(FOBJS)
 INCLUDES    = cn01c.h cn03c.h
 RESFILES    = cn01.res cn02.res cn03.res cn04.res
-ASCDATA     = cn01f.asc cn03f.asc
-BINDATA     = cn04n1.bin cn04n2.bin cn04n3.bin cn04n4.bin	
+ASCDATA     = cn01f.asc cn03f.asc cn04n.asc
 EXFILES     = $(SRCS) $(INCLUDES)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 InstallTarget($(ASCDATA),$(INSTALL_LIB),$(DATAROOT)/asc)
-InstallTarget($(BINDATA),$(INSTALL_LIB),$(DATAROOT)/bin)
 
 HLUCExampleTarget(cn01c,cn01c.o)
 HLUCExampleTarget(cn02c,cn02c.o)
