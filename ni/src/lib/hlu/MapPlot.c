@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.55 1997-01-17 18:57:36 boote Exp $
+ *      $Id: MapPlot.c,v 1.56 1997-01-21 21:27:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -362,7 +362,7 @@ static NhlResource resources[] = {
 /* grid (and limb) line resources */
 
 	{NhlNmpGridAndLimbOn,NhlCmpGridAndLimbOn,NhlTBoolean,
-		 sizeof(long),Oset(grid.on),
+		 sizeof(NhlBoolean),Oset(grid.on),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNmpGridAndLimbDrawOrder,NhlCmpGridAndLimbDrawOrder,NhlTDrawOrder,
 		 sizeof(NhlDrawOrder),Oset(grid.order),
@@ -411,7 +411,7 @@ static NhlResource resources[] = {
 /* map perimeter resources */
 
 	{NhlNmpPerimOn,NhlCmpPerimOn,NhlTBoolean,
-		 sizeof(long),Oset(perim.on),
+		 sizeof(NhlBoolean),Oset(perim.on),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNmpPerimDrawOrder,NhlCmpPerimDrawOrder,NhlTDrawOrder,
 		 sizeof(NhlDrawOrder),Oset(perim.order),
