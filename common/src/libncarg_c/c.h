@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.29 2004-07-31 12:17:41 haley Exp $
+ *	$Id: c.h,v 1.30 2004-08-01 17:11:12 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -38,10 +38,11 @@
  * to a function that is written in fortran or is written in "C" to be
  * Fortran callable.
  */
+
 #ifndef	NGCALLF
 #if defined(UNICOS) || defined(NGCAPS)
 /*
- * Brain dead crays (and most recently, Absoft ProFortran
+ * Brain dead crays (and most recently, the Absoft ProFortran
  * compiler) have to be different from everything else!
  */
 #define	NGCALLF(reg,caps)	caps
@@ -59,6 +60,14 @@
 #endif	/* __STDC__ */
 #endif	/* UNICOS else ... */
 #endif	/* NGCALLF */
+
+#ifndef NGCALLC
+#if defined(AbsoftProFortran)
+#define	NGCALLC(reg,caps)	_C##caps
+#else
+#define NGCALLC NGCALLF
+#endif /* AbsoftProFortran else ... */
+#endif /* NGCALLC */
 
 typedef char    *NcargString;
 
