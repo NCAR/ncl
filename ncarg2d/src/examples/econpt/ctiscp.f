@@ -24,8 +24,8 @@ C triangles.
 C
 C Selected frames are drawn for each of four different viewpoints.  If
 C (CLAT,CLON) is the approximate position of the "center point" of the
-C mesh (which is defined somewhat arbitrarily for certain meshes), the
-C four viewpoints used are as follows: (CLAT+45,CLON), (CLAT-45,CLON),
+C mesh (which is defined somewhat arbitrarily for this mesh), the four
+C viewpoints used are as follows: (CLAT+45,CLON), (CLAT-45,CLON),
 C (CLAT+45,CLON+180), and (CLAT-45,CLON+180).
 C
 C At each of the four viewpoints, up to five different frames are drawn:
@@ -113,9 +113,9 @@ C   1. the base index, in IEDG, of edge 1 of the triangle;
 C   2. the base index, in IEDG, of edge 2 of the triangle;
 C   3. the base index, in IEDG, of edge 3 of the triangle;
 C   4. a flag set non-zero to block use of the triangle, effectively
-C      removing it from the mesh.  Use the ISSCP grid and play with
-C      the setting of the parameter ISCP (which see, below) to get
-C      examples of the use of this feature.
+C      removing it from the mesh.  Play with the setting of the
+C      parameter ISCP (which see, below) to get examples of the use
+C      of this feature.
 C
 C The "base index" of a point node, an edge node, or a triangle node is
 C always a multiple of the length of the node, to which can be added an
@@ -205,11 +205,6 @@ C       PARAMETER (ICAM=1024,ICAN=1024)
 C
         DIMENSION ICRA(ICAM,ICAN)
 C
-C Declare arrays to hold color components for colors to be used at the
-C four corners of an illustrative drawing of the rectangular grid.
-C
-        DIMENSION CCLL(3),CCLR(3),CCUL(3),CCUR(3)
-C
 C Declare external the routine that draws masked contour lines.
 C
         EXTERNAL DRWMCL
@@ -259,16 +254,6 @@ C Define the hachuring flag, hachure length, and hachure spacing.
 C
         DATA IHCF,HCHL,HCHS /  0 , +.004 , .010 /  !  off
 C       DATA IHCF,HCHL,HCHS / +1 , -.004 , .020 /  !  on, all, uphill
-C
-C Define the colors to be used in the lower left, lower right, upper
-C left, and upper right corners of the rectangular grid when a drawing
-C of it is made for the purpose of illustrating how it is wrapped around
-C the globe.
-C
-        DATA CCLL / 0.2 , 0.2 , 0.2 /
-        DATA CCLR / 1.0 , 0.0 , 1.0 /
-        DATA CCUL / 0.0 , 1.0 , 1.0 /
-        DATA CCUR / 1.0 , 1.0 , 0.0 /
 C
 C Define a constant to convert from radians to degrees.
 C
@@ -1081,18 +1066,6 @@ C
         COMMON /CISSCP/ ILAT(6596),CLAT(6596),CLON(6596),ZDAT(6596),
      +                  ITOP(6596),IIPL(6596),IIOR(72),NBIR(72)
 C
-C Declare an array to use in timing calls.
-C
-C Initialize the array that keeps track of the initial index of each
-C row of the ISSCP data.
-C
-        DATA IIOR / 72*0 /
-C
-C Initialize the array that keeps track of the number of boxes in each
-C row of the ISSCP data.
-C
-        DATA NBIR / 72*0 /
-C
 C Set a tolerance value used in the code that generates the mesh.
 C
         DATA EPSI / 1.E-2 /
@@ -1101,6 +1074,14 @@ C DTOR is a constant used to convert angles from degrees to radians.
 C
         DATA DTOR / .017453292519943 /
 C
+C Initialize the arrays that keep track of the initial index of each
+C row of the ISSCP data and the number of boxes in each row.
+C
+        DO 101 I=1,72
+          IIOR(I)=0
+          NBIR(I)=0
+  101   CONTINUE
+C
 C Read the data from the ASCII file "ctiscp.dat", adding field data
 C values to be associated with the center points of the rectangles.
 C
@@ -1108,7 +1089,7 @@ C
 C
 C Initialize the dummy-data generator.
 C
-        IF (MOD(JDAT,10).NE.1) CALL GGDINI (-1.,1.,1234,.4)
+        IF (MOD(IDAT,10).NE.1) CALL GGDINI (-1.,1.,1234,.4)
 C
 C Skip the first two lines of the file.
 C
@@ -1133,7 +1114,7 @@ C 6594  72   1   1  48   178.75    60.00   80949     0      0   0
 C 6595  72   2  49  96   178.75   180.00   80949     0      0   0
 C 6596  72   3  97 144   178.75   300.00   80949     0      0   0
 C
-        DO 101 I=1,6596
+        DO 102 I=1,6596
           READ (11,'(A64)') LINE
           READ (LINE,'(2I4,12X,2E9.0,14X,I7)')
      +                                 J,ILAT(I),CLAT(I),CLON(I),ITOP(I)
@@ -1149,7 +1130,7 @@ C
           END IF
           IF (IIOR(ILAT(I)).EQ.0) IIOR(ILAT(I))=I
           NBIR(ILAT(I))=NBIR(ILAT(I))+1
-  101   CONTINUE
+  102   CONTINUE
 C
         CLOSE (11)
 C
@@ -1163,7 +1144,7 @@ C
 C Loop through the 72 rows of the rectangular mesh, dealing with each
 C row in turn.
 C
-        DO 107 IROW=1,72
+        DO 108 IROW=1,72
 C
 C First, add to the point list the center points of all the boxes in
 C the row.  We remember the first base index used in the point list
@@ -1172,7 +1153,7 @@ C the edges of a triangle.
 C
           IIFP=NPNT
 C
-          DO 102 IBOX=IIOR(IROW),IIOR(IROW)+NBIR(IROW)-1
+          DO 103 IBOX=IIOR(IROW),IIOR(IROW)+NBIR(IROW)-1
             IF (NPNT+LOPN.GT.MPNT) THEN
               PRINT * , ' '
               PRINT * , 'GTISCP - STOP - POINT ARRAY TOO SMALL'
@@ -1185,13 +1166,13 @@ C
               RPNT(NPNT+5)=    REAL(ITOP(IBOX))
               NPNT=NPNT+LOPN
             END IF
-  102     CONTINUE
+  103     CONTINUE
 C
 C Next, add to the edge list the edges defined by joining all adjacent
 C pairs of those center points.  Negate the pointers to the triangles
 C to the left and right of the edge.
 C
-          DO 103 I=1,NBIR(IROW)
+          DO 104 I=1,NBIR(IROW)
             IF (NEDG+LOEN.GT.MEDG) THEN
               PRINT * , ' '
               PRINT * , 'GTISCP - STOP - EDGE ARRAY TOO SMALL'
@@ -1204,7 +1185,7 @@ C
               IEDG(NEDG+5)=0
               NEDG=NEDG+LOEN
             END IF
-  103     CONTINUE
+  104     CONTINUE
 C
 C Next, add to the edge list the edges defined by joining points of the
 C current row to points of the last row, making sure to add them in the
@@ -1213,12 +1194,12 @@ C triangle list; we remember the index of the first edge so defined.)
 C
           IF (IROW.NE.1) THEN
             IIFE=NEDG
-            DO 105 IBOX=IIOR(IROW),IIOR(IROW)+NBIR(IROW)-1
+            DO 106 IBOX=IIOR(IROW),IIOR(IROW)+NBIR(IROW)-1
               SLCR=CLON(IBOX)-180./REAL(NBIR(IROW))
               ELCR=CLON(IBOX)+180./REAL(NBIR(IROW))
               JBOX=IIOR(IROW-1)
               JDIR=-1
-  104         SLLR=CLON(JBOX)-180./REAL(NBIR(IROW-1))
+  105         SLLR=CLON(JBOX)-180./REAL(NBIR(IROW-1))
               ELLR=CLON(JBOX)+180./REAL(NBIR(IROW-1))
               IF (ABS(SLCR-SLLR).GT.180.) THEN
                 DLTA=SIGN(360.,SLCR-SLLR)
@@ -1229,7 +1210,7 @@ C
                 IF (JDIR.LT.0) THEN
                   IF (JBOX.EQ.IIOR(IROW-1)) JBOX=JBOX+NBIR(IROW-1)
                   JBOX=JBOX-1
-                  GO TO 104
+                  GO TO 105
                 ELSE
                   JDIR=1
                   IF (NEDG+LOEN.GT.MEDG) THEN
@@ -1246,13 +1227,13 @@ C
                   END IF
                 END IF
               ELSE
-                IF (JDIR.GT.0) GO TO 105
+                IF (JDIR.GT.0) GO TO 106
                 JDIR=0
               END IF
               JBOX=JBOX+1
               IF (JBOX.EQ.IIOR(IROW-1)+NBIR(IROW-1)) JBOX=IIOR(IROW-1)
-              GO TO 104
-  105       CONTINUE
+              GO TO 105
+  106       CONTINUE
           END IF
 C
 C Finally, add to the triangle list the triangles created by the edges
@@ -1264,7 +1245,7 @@ C
      +                                    NEDG-LOEN,NEDG-LOEN*2,IDAT/10)
           ELSE
             IIE2=NEDG-LOEN
-            DO 106 IIOE=IIFE,NEDG-LOEN,LOEN
+            DO 107 IIOE=IIFE,NEDG-LOEN,LOEN
               IIE1=IIE2
               IIE2=IIOE
               IF      (IEDG(IIE1+1).EQ.IEDG(IIE2+1).OR.
@@ -1284,12 +1265,12 @@ C
                 CALL ADDTRI (RPNT,IEDG,LOEN,ITRI,LOTN,MTRI,NTRI,
      +                                                IIE2,IIE1,IDAT/10)
               END IF
-  106       CONTINUE
+  107       CONTINUE
             IF (IROW.EQ.72) CALL ADDTRI (RPNT,IEDG,LOEN,ITRI,LOTN,MTRI,
      +                               NTRI,IIFE-LOEN*2,IIFE-LOEN,IDAT/10)
           END IF
 C
-  107   CONTINUE
+  108   CONTINUE
 C
 C Return the latitude and longitude of the approximate center point of
 C the mesh on the globe.
