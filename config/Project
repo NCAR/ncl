@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.62 2005-02-07 17:50:20 haley Exp $
+ *      $Id: Project,v 1.63 2005-03-02 20:03:47 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2005-02-07 17:50:20 $
+ *	$Date: 2005-03-02 20:03:47 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -443,3 +443,4 @@ VDEFINE		= -DVERSION='"$(VERSION)"'
 PROJECTDEFINES	= ProjectDefines
 GKS_BUFFER_SIZE	= GksBufferSize
 PERL = /usr/local/bin/perl
+NCLWEBROOT      = /web/ncl
