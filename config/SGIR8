@@ -1,5 +1,5 @@
 /*
- *      $Id: SGIR8,v 1.1 1996-04-19 16:47:28 haley Exp $
+ *      $Id: SGIR8,v 1.2 1997-01-17 05:47:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -19,14 +19,27 @@
  *
  *	Description:	
  */
+
+#if	((MAJOR == 6) && (MINOR == 2))
+/*
+ * 1048 - cast between pointer-to-object and pointer-to-function
+ */
+#define	SgiWarnSuppress	-woff 1048
+#endif
+
+#ifdef	SgiWarnSuppress
+SGIWARNSUPPRESS = SgiWarnSuppress
+#endif
+
 #define UseCatDirs	YES
 #define	XdrLibrary	-lsun
-#define	HdfDefines	-DIRIS4
-#define	StdDefines	-DSYSV
-#define CcOptions	-ansiposix -xgot -G 0 -TENV:no_page_offset
-#define FcOptions	-xgot -G 0 -TENV:no_page_offset
+#define	HdfDefines	-DIRIX
+#define	StdDefines	-DSYSV -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1
+#define CcOptions	-64 -mips4 -xansi -avoid_gp_overflow $(SGIWARNSUPPRESS)
+#define FcOptions	-64 -mips4
+#define	LdCommand	ld -64
 #define	RanLib		$(AR) m
-#define CtoFLibraries	-lftn -lm -lc
+#define CtoFLibraries	-lftn -lm
 
 #define	ArchRecLibSearch	-L/usr/local/lib
 #define	ArchRecIncSearch	-I/usr/local/include
