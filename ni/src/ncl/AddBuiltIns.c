@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.22 1996-11-20 23:02:23 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.23 1996-11-21 00:42:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,11 @@ extern "C" {
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
 
+extern NhlErrorTypes _Nclmask(
+#if NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _Nclispan(
 #if NhlNeedProto
 void
@@ -769,6 +774,14 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
 	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
 	NclRegisterFunc( _Nclispan,args,"ispan",nargs);
+
+	nargs = 0;
+	args = NewArgs(3);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,1,dimsizes); nargs++;
+	NclRegisterFunc( _Nclmask,args,"mask",nargs);
 /*
 	nargs = 0;
 	args = NewArgs(1);

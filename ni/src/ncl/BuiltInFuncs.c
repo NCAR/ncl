@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.52 1996-11-21 00:00:54 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.53 1996-11-21 00:42:30 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -6500,6 +6500,137 @@ NhlErrorTypes _Nclfspan
 	));
 }
 
+NhlErrorTypes _Nclmask
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data0;
+	NclStackEntry data1;
+	NclStackEntry data2;
+	NclMultiDValData tmp_md0 = NULL;
+	NclMultiDValData tmp_md1 = NULL;
+	NclMultiDValData tmp_md2 = NULL;
+	void **out_val;
+	int i;
+	void *tmp = NULL;
+	logical *tmp0 = NULL;
+	void *mask_grid = NULL;
+	void *mask_val = NULL;
+	NclTypeClass mask_type = NULL;
+
+	data0 = _NclGetArg(0,3,DONT_CARE);
+	switch(data0.kind) {
+		case NclStk_VAR:
+			tmp_md0 = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md0 = (NclMultiDValData)data0.u.data_obj;
+			break;
+	}
+	if(tmp_md0 == NULL)
+		return(NhlFATAL);
+
+	data1 = _NclGetArg(1,3,DONT_CARE);
+	switch(data1.kind) {
+		case NclStk_VAR:
+			tmp_md1 = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md1 = (NclMultiDValData)data1.u.data_obj;
+			break;
+	}
+	if(tmp_md1 == NULL)
+		return(NhlFATAL);
+	data2 = _NclGetArg(2,3,DONT_CARE);
+	switch(data2.kind) {
+		case NclStk_VAR:
+			tmp_md2 = _NclVarValueRead(data2.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md2 = (NclMultiDValData)data2.u.data_obj;
+			break;
+	}
+	if(tmp_md2 == NULL)
+		return(NhlFATAL);
+
+	if(tmp_md0->multidval.n_dims != tmp_md1->multidval.n_dims) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"mask: number of dimensions of parameter 0 and parameter 1 do not match");
+		return(NhlFATAL);
+	} else {
+		for(i = 0; i < tmp_md0->multidval.n_dims; i++) {
+			if(tmp_md0->multidval.dim_sizes[i] != tmp_md1->multidval.dim_sizes[i]) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"mask: dimension sizes  of parameter 0 and parameter 1 do not match");
+				return(NhlFATAL);
+			}
+		}
+	}
+
+	if(tmp_md1->multidval.data_type != tmp_md2->multidval.data_type) {
+		tmp = (void*)NclMalloc(tmp_md1->multidval.type->type_class.size);
+		if(_Nclcoerce((NclTypeClass)tmp_md1->multidval.data_type,tmp,tmp_md2->multidval.val,1,NULL,NULL,(NclTypeClass)tmp_md2->multidval.type) == NhlFATAL)  {
+			NclFree(tmp);
+			tmp = (void*)NclMalloc(tmp_md2->multidval.type->type_class.size * tmp_md1->multidval.totalelements);
+			if(_Nclcoerce((NclTypeClass)tmp_md2->multidval.data_type,tmp,tmp_md1->multidval.val,tmp_md1->multidval.totalelements,NULL,NULL,(NclTypeClass)tmp_md1->multidval.type) == NhlFATAL)  {
+				NclFree(tmp);
+
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"mask: parameter 1 and parameter must be the same types or coercible to each other");
+				return(NhlFATAL);
+			} else {
+				mask_val = tmp_md2->multidval.val;
+				mask_grid = tmp;
+				mask_type = tmp_md2->multidval.type;
+			}
+		} else {
+			mask_grid = tmp_md1->multidval.val;
+			mask_val = tmp;
+			mask_type = tmp_md1->multidval.type;
+		}
+	} else {
+		mask_grid = tmp_md1->multidval.val;
+		mask_val = tmp_md2->multidval.val;
+		mask_type = tmp_md1->multidval.type;
+	}
+	tmp0 = (logical*)NclMalloc(sizeof(logical)*tmp_md1->multidval.totalelements);
+	_Nclne(mask_type,tmp0,mask_grid,mask_val,NULL,NULL,tmp_md1->multidval.totalelements,1);
+	out_val = (void*)NclMalloc(tmp_md0->multidval.totalsize);
+	memcpy(out_val,tmp_md0->multidval.val,tmp_md0->multidval.totalsize);
+	if(tmp_md0->multidval.missing_value.has_missing) {
+		for(i = 0; i < tmp_md1->multidval.totalelements; i++) {
+			if(tmp0[i]) {
+				memcpy(&(((char*)out_val)[i*tmp_md0->multidval.type->type_class.size]),&tmp_md0->multidval.missing_value.value,tmp_md0->multidval.type->type_class.size);
+			} 
+		}
+		return(NclReturnValue(
+			out_val,
+			tmp_md0->multidval.n_dims,
+			tmp_md0->multidval.dim_sizes,
+			&tmp_md0->multidval.missing_value.value,
+			tmp_md0->multidval.data_type,
+			0
+		));
+	} else {
+		for(i = 0; i < tmp_md1->multidval.totalelements; i++) {
+			if(tmp0[i]) {
+				memcpy(&(((char*)out_val)[i*tmp_md0->multidval.type->type_class.size]),&tmp_md0->multidval.type->type_class.default_mis,tmp_md0->multidval.type->type_class.size);
+			} 
+		}
+	
+		if(tmp != NULL) 	
+			NclFree(tmp);
+		NclFree(tmp0);
+		return(NclReturnValue(
+			out_val,
+			tmp_md0->multidval.n_dims,
+			tmp_md0->multidval.dim_sizes,
+			&tmp_md0->multidval.type->type_class.default_mis,
+			tmp_md0->multidval.data_type,
+			0
+		));
+	}
+}
 
 
 #ifdef __cplusplus
