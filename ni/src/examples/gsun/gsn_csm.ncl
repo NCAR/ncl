@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.9 1999-06-03 19:50:53 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.10 1999-06-10 17:29:48 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -32,6 +32,11 @@
 ; procedures with the same name.                                        ;
 ;***********************************************************************;
 
+undef("xy_interp")
+undef("ref_line_interp")
+undef("check_for_subtitles")
+undef("add_subtitles")
+undef("fill_xy")
 undef("gsn_add_cyclic_point")
 undef("gsn_csm_map_ce")
 undef("gsn_csm_map_polar")
@@ -40,7 +45,362 @@ undef("gsn_csm_contour_map_polar")
 undef("gsn_csm_contour_map_ce")
 undef("gsn_csm_contour_map")
 undef("gsn_csm_xy")
+undef("gsn_csm_contour")
 undef("gsn_csm_hov")
+
+
+function xy_interp(x1:float, x2:float, y1:float, y2:float, ref:float)
+begin
+ return(x2-((y2-ref)*(x2-x1))/(y2-y1))
+end
+
+function ref_line_interp(x,y,xinterp,yinterp,ref_line)
+local nlines, i, j, location, xnew, ynew, npts
+begin
+
+; Check for missing values.
+
+  if(isatt(x,"_FillValue"))
+    xmsg = x@_FillValue
+  else
+    xmsg = -999
+  end if
+  if(isatt(y,"_FillValue"))
+    ymsg = y@_FillValue
+  else
+    ymsg = -999
+  end if
+
+; Convert x and y into two dimensional arrays so we don't have to
+; test for whether we have one line or multiple lines.  Convert ref_line
+; to a 1-d array.
+
+  ndimsy = dimsizes(dimsizes(y))
+  ndimsx = dimsizes(dimsizes(x))
+  ndimsref = dimsizes(ref_line)
+
+  if(ndimsy.eq.1)
+    nlines     = 1
+    nptsy      = dimsizes(y)
+
+    ynew       = new((/1,nptsy/),float,ymsg)
+    ynew(0,:)  = y
+  else
+    nlines     = dimsizes(y(:,0))
+    nptsy      = dimsizes(y(0,:))
+
+    ynew       = y
+  end if
+  if(ndimsx.eq.1)
+    xnew       = new((/nlines,nptsy/),float,xmsg)
+    do i = 0,nlines-1
+      xnew(i,:)  = x
+    end do
+  else
+    xnew       = x
+  end if
+
+  if(ndimsref.eq.1)
+    refnew  = new((/nlines/),float)
+    refnew  = ref_line
+  else
+    refnew  = ref_line
+  end if
+
+  xinterp(:,0) = xnew(:,0)
+  yinterp(:,0) = ynew(:,0)
+  npts         = new((/nlines/),integer)
+
+; Loop through the rest of the points and find out where the curve crosses
+; the reference line.  If it does, then do an interpolation.
+; Store the location of the previous point (-1 if it is below the reference
+; line, 0 if it is on the reference line, and 1 if it is above).
+
+  do j=0, nlines-1
+    num_crosses = 0
+    do i=1, nptsy-1
+      xinterp(j,i+num_crosses) = xnew(j,i)
+      yinterp(j,i+num_crosses) = ynew(j,i)
+
+      if(.not.ismissing(ynew(j,i)).and..not.ismissing(xnew(j,i)).and.\
+         .not.ismissing(ynew(j,i-1)).and..not.ismissing(xnew(j,i-1)))
+        if((ynew(j,i-1).lt.refnew(j).and.ynew(j,i).gt.refnew(j)).or.\
+           (ynew(j,i-1).gt.refnew(j).and.ynew(j,i).lt.refnew(j)))
+          xinterp(j,i+num_crosses)   = xy_interp(xnew(j,i-1),xnew(j,i),\
+                                                 ynew(j,i-1),ynew(j,i),\
+                                                 refnew(j))
+          xinterp(j,i+num_crosses+1) = xnew(j,i)
+          yinterp(j,i+num_crosses)   = refnew(j)
+          yinterp(j,i+num_crosses+1) = ynew(j,i)
+          num_crosses = num_crosses + 1
+        end if
+      end if
+    end do
+    npts(j) = nptsy + num_crosses
+  end do
+  delete(xnew)
+  delete(ynew)
+  delete(refnew)
+  return(npts)
+end
+
+procedure check_for_subtitles(res2:logical,left:logical,center:logical,\
+                              right:logical)
+begin
+  if(isatt(res2,"gsnLeftString"))
+    left            = True
+    left@sub_string = res2@gsnLeftString
+    delete(res2@gsnLeftString)
+  else
+    left = False
+  end if
+  if(isatt(res2,"gsnCenterString"))
+    center            = True
+    center@sub_string = res2@gsnCenterString
+    delete(res2@gsnCenterString)
+  else
+    center = False
+  end if
+  if(isatt(res2,"gsnRightString"))
+    right            = True
+    right@sub_string = res2@gsnRightString
+    delete(res2@gsnRightString)
+  else
+    right = False
+  end if
+  return
+end
+
+;***********************************************************************;
+; Function : get_polar_type                                             ;
+;                 res: logical                                          ;
+local text_object, parallel_pos, anno, just, strings, txres, amres, num_res
+; gsnPolarSH to and returns what kind of polar plot is desired.         ;
+;                                                                       ;
+; The default will be northern ("NH") if none is set.                   ;
+;***********************************************************************;
+local polar_nh, polar_sh
+begin
+  polar_type = get_res_value(res,"gsnPolar","")
+  polar_nh   = get_res_value(res,"gsnPolarNH",False)
+  polar_sh   = get_res_value(res,"gsnPolarSH",False)
+
+  if(polar_type.eq."NH".or.polar_type.eq."nh")
+    return("NH")
+  end if
+  if(polar_type.eq."SH".or.polar_type.eq."sh")
+    return("SH")
+  end if
+  if(polar_type.ne."")
+    print("get_polar_type: Warning: Invalid option for gsnPolar. Defaulting to northern hemisphere.")
+    return("NH")
+  end if    
+  if((res).and..not.any(ismissing(getvaratts(res))))
+
+; Get list of resources.
+
+    attnames = getvaratts(res)
+    res2    = stringtochar(attnames(ind(attnames.ne."_FillValue")))
+    num_res = dimsizes(dimsizes(res2))   ; Number of resources
+
+    if(num_res.eq.1)
+      if(chartostring(res2(0:1)).eq."tx")
+        txres = True
+        txres@$attnames$  = res@$attnames$
+      else
+        amres = True
+        amres@$attnames$  = res@$attnames$
+      end if
+    else
+      tx_res_index = ind(chartostring(res2(:,0:1)).eq."tx")
+      am_res_index = ind(chartostring(res2(:,0:1)).ne."am")
+
+      if(.not.all(ismissing(tx_res_index)))
+        txres = True
+        do i = 0,dimsizes(tx_res_index)-1
+          txres@$attnames(tx_res_index(i))$ = res@$attnames(tx_res_index(i))$
+        end do
+      end if
+      if(.not.all(ismissing(am_res_index)))
+        amres = True
+        do i = 0,dimsizes(am_res_index)-1
+          amres@$attnames(am_res_index(i))$ = res@$attnames(am_res_index(i))$
+        end do
+      end if
+    end if
+  end if
+
+
+  if(.not.polar_nh.and..not.polar_sh) 
+      text_object = create just(i)+"string" textItemClass wks
+        "txString" : strings(i)
+      end create
+
+      if(num_res.and.txres)
+        attsetvalues(text_object,txres)   ; Set some text resources.
+      end if
+; Procedure : add_subtitles                                             ;
+      anno = NhlAddAnnotation(plot,text_object)  ; Add annotation to plot.
+;               plot: graphic                                           ;
+      setvalues anno
+        "amZone"          : 2             ; Just outside plot area
+        "amSide"          : "top"         ; Subtitle at top.
+        "amParallelPosF"  : parallel_pos(i)
+        "amJust"          : "bottom"+just(i)
+        "amOrthogonalPosF": 0.05          ; Move away from top edge
+        "amResizeNotify"  : True          ; Resize subtitle if map resized.
+      end setvalues
+;***********************************************************************;
+      if(num_res.and.amres)
+        attsetvalues(anno,amres)   ; Set some annotation resources.
+procedure add_subtitles(wks:graphic,plot:graphic,left_string:logical,\
+                        res:logical)
+local text_object, parallel_pos, anno, just, strings, txres, amres, \
+num_res, ablank, chararray, string_len
+begin
+  amres = False   ; Annotation resources
+;
+; Take a set of X and Y points, and draw the Y points in one color if
+; they are above the ref line, and in another color if they are below
+; the ref line.
+;
+procedure fill_xy(wks:graphic,xy:graphic,xin[*]:float,yin[*]:float,ref:float, \
+                  ref_line_above_color,ref_line_below_color)
+    res@tmYLValues = (/1000.,  850., 700., 500., 400., 300., 250.,\
+                         200., 150., 100.,  70., 50., 30., 10./)
+    res@tmYLLabels = (/"1000","850","700","500","400","300","250",\
+                         "200","150","100", "70", "50", "30", "10"/)
+    res@tmYLMinorOn= False        ; No minor tick marks.
+    set_attr(res,"tiYAxisString","Pressure (mb)")
+;
+; Calculate "nice" height values for which to label the right axis
+;
+    if(hrange.le.35) then
+      step = 4
+end
+          create_gon = True
+        end if
+      else
+        create_gon = True
+            xabove_line = new(npts+2,float)
+            yabove_line = new(npts+2,float)
+        if(igon.gt.1)
+          anumgons = anumgons + 1 
+        end if
+        igon       = 0
+        create_gon = False
+      end if
+    end do
+  end if
+
+  if(ref_line_below_color.ne.-1)
+    gsresb             = True
+    gsresb@gsFillColor = ref_line_below_color
+;
+; First count the number of the above-the-y-reference-line polygons we
+; need to create.
+;
+    igon       = 0
+    create_gon = False
+    do i=0,npts-1
+          yabove_gon = new((/igon+3/),float)
+          xabove_gon = new((/igon+3/),float)
+          if(igon.eq.0)
+            igon = 1
+          else
+            igon = igon + 1
+          end if
+          if(i.eq.npts-1)      ; On the last point.
+            create_gon = True
+          end if
+        else
+          create_gon = True
+        end if
+      else
+        create_gon = True
+      end if   ; not ismissing
+      if(create_gon)
+        if(igon.gt.1)
+          bnumgons = bnumgons + 1 
+          gsn_polygon(wks,xy,xabove_gon(0:newgon-1),yabove_gon(0:newgon-1),\
+                      gsresa)
+; Initialize everything back to 0
+  end if
+  if(anumgons.gt.0.or.bnumgons.gt.0) then
+    polygons = new(anumgons+bnumgons,graphic) 
+  else
+    polygons = new(1,graphic) 
+  end if
+;
+; Loop through and add above-ref-line polygons.
+;
+  if(ref_line_above_color.ne.-1.and.anumgons.gt.0)
+    ngons      = 0
+  if(ref_line_below_color.ne.-1)
+    gsresb             = True
+    gsresb@gsFillColor = ref_line_below_color
+    igon      = 0
+            xabove_line = new(npts+2,typeof(xin))
+            yabove_line = new(npts+2,typeof(yin))
+            yabove_line(0) = yin(i)
+            xabove_line(0) = xin(i)
+            igon = 1
+            xbelow_line = new(npts+2,float)
+            ybelow_line = new(npts+2,float)
+            yabove_line(igon) = yin(i) 
+            igon = igon + 1
+          end if
+          if(i.eq.npts-1)      ; On the last point.
+            create_gon = True
+          end if
+        else
+          create_gon = True
+        end if
+      else
+        create_gon = True
+      end if   ; not ismissing
+      if(create_gon)
+        if(igon.gt.1)
+          yabove_gon = new((/igon+3/),typeof(yin))
+          xabove_gon = new((/igon+3/),typeof(xin))
+; Close up and draw polygon
+          if(yabove_line(0).ne.ref)
+            xabove_gon(0) = xabove_line(0)
+          ybelow_gon = new((/igon+3/),float)
+          xbelow_gon = new((/igon+3/),float)
+            yabove_gon(1:igon) = yabove_line(0:igon-1)
+            newgon = igon + 1
+          else
+            xabove_gon(0:igon-1) = xabove_line(0:igon-1)
+            yabove_gon(0:igon-1) = yabove_line(0:igon-1)
+            newgon = igon
+          end if
+          if(yabove_line(igon-1).ne.ref)
+            xabove_gon(newgon) = xabove_line(igon-1)
+            yabove_gon(newgon) = ref
+            newgon = newgon + 1
+          end if
+
+          polygons(ngons) = gsn_add_polygon(wks,xy,xabove_gon(0:newgon-1),\
+                                            yabove_gon(0:newgon-1),gsresa)
+          ngons = ngons + 1 
+; Delete temporary arrays so we can recreate them.
+          gsn_polygon(wks,xy,xbelow_gon(0:newgon-1),ybelow_gon(0:newgon-1),\
+                      gsresb)
+; Initialize everything back to 0
+        igon       = 0
+        create_gon = False
+      end if
+    end do
+  end if
+
+;
+; Loop through and add below-ref-line polygons.
+;
+  if(ref_line_below_color.ne.-1.and.bnumgons.gt.0) then
+
+  return
+    create_gon = False
 
 function gsn_add_cyclic_point(data[*][*]:float)
 ;
@@ -104,9 +464,6 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
     map_vpwf  = 0.8       ; Viewport width and height for
     map_vphf = 0.8       ; map plot.
 
-    left_string   = False     ; Default is no subtitles unless
-    center_string = False     ; they are explicitly set with the
-    right_string  = False     ; special "gsn" resources.
     tickmark_res  = False
     sub_zone      = 2         ; Zone for subtitles
       print("                 No grid will be overlaid.")
@@ -132,40 +489,11 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
             delete(res2@gsnFrame)
         end if
 
-; Check for left subtitle at top. If it exists, create a TextItem
-; object for it.
+; Check for existence of the left, center, and right subtitles.
 
-        if(isatt(res2,"gsnLeftString"))
-            lft_str_object = create "left_string" textItemClass wks
-              "txString" : res2@gsnLeftString
-            end create
-            left_string = True
-            main_zone   = 3
-            delete(res2@gsnLeftString)
-        end if
-
-; Check for center subtitle at top. If it exists, create a TextItem
-; object for it.
-
-        if(isatt(res2,"gsnCenterString"))
-            ctr_str_object = create "center_string" textItemClass wks
-              "txString" : res2@gsnCenterString
-            end create
-            center_string = True
-            main_zone     = 3
-            delete(res2@gsnCenterString)
-        end if
-
-; Check for right subtitle at top. If it exists, create a TextItem
-; object for it.
-
-        if(isatt(res2,"gsnRightString"))
-            rgt_str_object = create "right_string" textItemClass wks
-              "txString" : res2@gsnRightString
-            end create
-            right_string = True
-            main_zone    = 3
-            delete(res2@gsnRightString)
+        check_for_subtitles(res2,left_string,center_string,right_string)
+        if(left_string.or.center_string.or.right_string)
+          main_zone   = 3
         end if
     latlon_res@gsnFrame             = False
 ;
@@ -589,57 +917,13 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
     end setvalues
 ; then it is set back to True.
 ;
-; Leftmost subtitle.
-    if(left_string)
-      setvalues lft_str_object
-        "txFontHeightF" : font_height
-      end setvalues
+    subres = True
+    subres@txFontHeightF = font_height
+; map later with setvalues, as gsn_map would do, then the size wouldn't
+; be correct.
 ;
-      anno = NhlAddAnnotation(map_object,lft_str_object)
-      setvalues anno
-        "amZone"          : sub_zone     ; Just outside plot area
-        "amSide"          : "top"        ; Subtitle at top.
-        "amParallelPosF"  : 0.0          ; 0.0 is right edge of plot
-        "amJust"          : "bottomleft" ; Left justify
-        "amOrthogonalPosF": 0.05         ; Move away from top edge
-        "amResizeNotify"  : True         ; Resize subtitle if map resized.
-      end setvalues
-    end if
-
-; Center subtitle.
-    if(center_string)
-      setvalues ctr_str_object
-        "txFontHeightF" : font_height
-      end setvalues
-      anno = NhlAddAnnotation(map_object,ctr_str_object)
-      setvalues anno
-        "amZone"          : sub_zone       ; Just outside plot area
-        "amSide"          : "top"          ; Subtitle at top.
-        "amParallelPosF"  : 0.5            ; 0.5 is center of plot
-        "amJust"          : "bottomcenter" ; Center it about the center
-        "amOrthogonalPosF": 0.05           ; Move away from top edge
-        "amResizeNotify"  : True           ; Resize subtitle if map resized.
-      end setvalues
-    end if
-
-; Rightmost subtitle.
-    if(right_string)
-      setvalues rgt_str_object
-        "txFontHeightF" : font_height
-      end setvalues
-
-      anno = NhlAddAnnotation(map_object,rgt_str_object)
-      setvalues anno
-        "amZone"          : sub_zone      ; Just outside plot area
-        "amSide"          : "top"         ; Subtitle at top.
-        "amParallelPosF"  : 1.0           ; 1.0 is right edge of plot
-        "amJust"          : "bottomright" ; Right justify
-        "amOrthogonalPosF": 0.05          ; Move away from top edge
-        "amResizeNotify"  : True          ; Resize subtitle if map resized.
-      end setvalues
-    end if
+    if(lower_case(limit_mode).eq."latlon")
       map_object = create "map" mapPlotClass wks
-; Draw all this stuff: map plot, subtitles, and tick marks.
     if(calldraw)
         draw(map_object) 
     end if
@@ -689,9 +973,6 @@ min_lat, max_lat, center_lat, polar_nh, polar_sh, yoffset, main_offset
 
     calldraw      = True
     callframe     = True
-    left_string   = False
-    center_string = False
-    right_string  = False
     yoffset       = 0.08
     mpres = get_res_ne(res2,(/"tm","tx","am"/))  ; Get rest of resources
     polar_sh      = False
@@ -722,41 +1003,11 @@ min_lat, max_lat, center_lat, polar_nh, polar_sh, yoffset, main_offset
             delete(res2@gsnFrame)
         end if
 
-; Check for left title at top. If it exists, create a TextItem object
-; for it. 
+; Check for existence of the left, center, and right subtitles.
 
-        if(isatt(res2,"gsnLeftString"))
-            lft_str_object = create "ezplot1p_left_string" textItemClass wks
-              "txString" : res2@gsnLeftString
-            end create
-            left_string = True
-            main_zone   = 3
-            delete(res2@gsnLeftString)
-        end if
-
-; Check for center title at top. If it exists, create a TextItem
-; object for it.
-
-        if(isatt(res2,"gsnCenterString"))
-            ctr_str_object = create "ezplot1p_center_string" textItemClass wks
-              "txString" : res2@gsnCenterString
-            end create
-            center_string = True
-            main_zone     = 3
-            delete(res2@gsnCenterString)
-        end if
-
-; Check for right title at top. If it exists, create a TextItem
-; object for it.  If the data has an attribute called "units", then use
-; this string for the right title.
-
-        if(isatt(res2,"gsnRightString"))
-            rgt_str_object = create "ezplot1p_right_string" textItemClass wks
-              "txString" : res2@gsnRightString
-            end create
-            right_string = True
-            main_zone    = 3
-            delete(res2@gsnRightString)
+        check_for_subtitles(res2,left_string,center_string,right_string)
+        if(left_string.or.center_string.or.right_string)
+          main_zone   = 3
         end if
 
 ; Check for whether user wants northern or southern hemisphere.
@@ -936,61 +1187,13 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
         "tiMainFontHeightF"    : main_font_height   ; main title size
     width  = get_res_value(res2,"vpWidthF",0.62)
     xpos   = get_res_value(res2,"vpXF",0.2)
-;
-; Set up three titles at top, if they exist.
-; Leftmost title.
-;
-    if(left_string)
-      setvalues lft_str_object
-        "txFont"        : "helvetica-bold"
-        "txFontHeightF" : 1.2 * font_height
-      end setvalues
-
-      anno = NhlAddAnnotation(map_object,lft_str_object)
-      setvalues anno
-        "amZone"          : sub_zone     ; Just outside plot area
-        "amSide"          : "top"        ; Title at top.
-        "amParallelPosF"  : 0.0          ; 0.0 is right edge of plot
-        "amJust"          : "bottomleft" ; Left justify
-        "amOrthogonalPosF": 0.06         ; Move away from top edge
-        "amResizeNotify"  : True         ; Resize title if map resized.
-      end setvalues
-    end if
-
-; Center title.
-    if(center_string)
-      setvalues ctr_str_object
-        "txFont"        : "helvetica-bold"
-        "txFontHeightF" : 1.2 * font_height
-      end setvalues
-      anno = NhlAddAnnotation(map_object,ctr_str_object)
-      setvalues anno
-        "amZone"          : sub_zone       ; Just outside plot area
-        "amSide"          : "top"          ; Title at top.
-        "amParallelPosF"  : 0.5            ; 0.5 is center of plot
-        "amJust"          : "bottomcenter" ; Center it about the center
-        "amOrthogonalPosF": 0.06           ; Move away from top edge
-        "amResizeNotify"  : True           ; Resize title if map resized.
-      end setvalues
-    end if
-
-; Rightmost title.
-    if(right_string)
-      setvalues rgt_str_object
-        "txFont"        : "helvetica-bold"
-        "txFontHeightF" : 1.2 * font_height
-      end setvalues
-      anno = NhlAddAnnotation(map_object,rgt_str_object)
-      setvalues anno
-        "amZone"          : sub_zone      ; Just outside plot area
-        "amSide"          : "top"         ; Title at top.
-        "amParallelPosF"  : 1.0           ; 1.0 is right edge of plot
-        "amJust"          : "bottomright" ; Right justify
-        "amOrthogonalPosF": 0.06          ; Move away from top edge
-        "amResizeNotify"  : True          ; Resize title if map resized.
-      end setvalues
-    end if
-
+; Set up three subtitles at top, if they exist.
+    subres                  = True
+    subres@txFontHeightF    = 1.2*font_height
+    subres@txFont           = "helvetica-bold"
+    subres@amOrthogonalPosF = 0.06 
+    add_subtitles(wks,map_object,left_string,center_string,right_string, \
+                  subres)
 
 ;
 ; Check for other resources that we need to set at the time the
@@ -2173,6 +2376,14 @@ local calldraw, callframe, res1_tmp, res2_tmp
 begin
   res1_tmp  = get_resources(res1)   ; Transfer attributes
   res2_tmp  = get_resources(res2)   ; Transfer attributes
+; If gsnYRefLine is set to some value, then a reference line will be    ;
+; drawn at this value. In addition, if gsnAboveYRefLineColor and/or     ;
+  
+  calldraw  = get_res_value(res1_tmp,"gsnDraw", True)
+  callframe = get_res_value(res1_tmp,"gsnFrame",True)
+  maxbb     = get_bb_res(res1_tmp)
+
+  res1_tmp@gsnDraw  = False
     set_attr(res1_tmp,"cnInfoLabelOn",False)
   end if 
 
@@ -2193,6 +2404,11 @@ left_string, center_string, right_string, sub_zone, main_zone
     left_string   = False     ; Default is no subtitles unless
     center_string = False     ; they are explicitly set with the
     right_string  = False     ; special "gsn" resources.
+  end if
+
+  check_for_y_lat_coord(datanew,res2_tmp,"contour")
+    yref_line_above= -1       ; Fill color above Y ref line
+    yref_line_below= -1       ; Fill color below Y ref line
     res2 = resources
 
 ; This function creates and draws a titled XY plot to the workstation   ;
@@ -2202,62 +2418,62 @@ left_string, center_string, right_string, sub_zone, main_zone
 
 ; Check if frame and/or draw are not supposed to be called.
 
-        if(isatt(res2,"gsnDraw"))
-            if(.not.res2@gsnDraw)
-                calldraw = False
-            end if
-            delete(res2@gsnDraw)
-        end if
-        if(isatt(res2,"gsnFrame"))
-            if(.not.res2@gsnFrame)
-                callframe = False
-            end if
-            delete(res2@gsnFrame)
-        end if
-
+      if(isatt(res2,"gsnDraw"))
+          if(.not.res2@gsnDraw)
+              calldraw = False
+          end if
+          delete(res2@gsnDraw)
+      end if
+      if(isatt(res2,"gsnFrame"))
+          if(.not.res2@gsnFrame)
+              callframe = False
+          end if
+          delete(res2@gsnFrame)
+      end if
 ;                                                                       ;
 ; This function behaves differently from gsn_xy in that it will         ;
 ; add additional titles to the top of the plot if any of the special    ;
-        if(isatt(res2,"gsnShape").and.res2@gsnShape)
-            sub_zone      = sub_zone+1  ; Zone for subtitles
-            main_zone     = main_zone+1 ; Zone for main title
-        end if
+; GSUN resources "gsnLeftString," "gsnCenterString," and/or             ;
+          sub_zone      = sub_zone+1  ; Zone for subtitles
+          main_zone     = main_zone+1 ; Zone for main title
+; and right of the plot (in addition, the regular resource              ;
 ; "tiMainString" can be set to create a regular title).                 ;
-; Check for left subtitle at top. If it exists, create a TextItem
-; object for it.
+;                                                                       ;
 ; If gsnYRefLine is set to some value(s), then reference line(s) will be;
-        if(isatt(res2,"gsnLeftString"))
-            lft_str_object = create "left_string" textItemClass wks
-              "txString" : res2@gsnLeftString
-            end create
-            left_string = True
-            main_zone   = main_zone+1
-            delete(res2@gsnLeftString)
-        end if
-      if(isatt(res2,"gsnShape").and.res2@gsnShape)
-; Check for center subtitle at top. If it exists, create a TextItem
-; object for it.
-      end if
-        if(isatt(res2,"gsnCenterString"))
-            ctr_str_object = create "center_string" textItemClass wks
-              "txString" : res2@gsnCenterString
-            end create
-            center_string = True
-            main_zone     = main_zone+1
-            delete(res2@gsnCenterString)
-        end if
-        delete(res2@gsnYRefLine)
-; Check for right subtitle at top. If it exists, create a TextItem
-; object for it.
+; drawn at this value(s). In addition, if gsnAboveYRefLineColor and/or  ;
+; gsnBelowYRefLineColor is set, the polygons above and below the        ;
+        yref_line     = res2@gsnYRefLine
 
-        if(isatt(res2,"gsnRightString"))
-            rgt_str_object = create "right_string" textItemClass wks
-              "txString" : res2@gsnRightString
-            end create
-            right_string = True
-            main_zone    = main_zone+1
-            delete(res2@gsnRightString)
+; If gsnXRefLine is set to some value, then a reference line will be    ;
+callframe, left_string, center_string, right_string, main_zone, ncurves, \
+          delete(yref_line_above)
+    xref_line_on  = False     ; X reference line flag
+          yref_fill_on = True
+    yref_fill_on  = False     ; Whether to fill above/below Y ref line.
+    center_string = False
+; Check if frame and/or draw are not supposed to be called.
+          delete(yref_line_below)
+          yref_line_below = res2@gsnBelowYRefLineColor
+          yref_fill_on = True
+          delete(res2@gsnBelowYRefLineColor)
         end if
+      end if
+      if(isatt(res2,"gsnShape").and.res2@gsnShape)
+; Check if gsnYRefLine set.
+      end if
+
+; Check if gsnYRefLine set.
+        xref_line    = res2@gsnXRefLine
+        yref_line_on = True
+        delete(res2@gsnXRefLine)
+        nyref        = dimsizes(yref_line)
+        delete(res2@gsnYRefLine)
+;
+
+;
+        if(isatt(res2,"gsnYRefLineColor"))
+          yref_line_color = res2@gsnYRefLineColor
+          if(.not.(dimsizes(yref_line_color).eq.nyref.or.\
     end if
             print("gsn_csm_xy: Fatal: you must specify either one Y reference line color")
             return
@@ -2278,40 +2494,147 @@ left_string, center_string, right_string, sub_zone, main_zone
       end if
             print("gsn_csm_xy: Fatal: there must either be an above-line fill color for every reference line, or one global above-line fill color specified")
             return
-    xy_object = gsn_xy(wks,x,y,res2)   ; Create an XY plot.
+; Calculate number of X and Y points.
 
-; Get title label sizes and tickmark lengths.
-    getvalues xy_object
-      "vpWidthF"             : width
-      "vpHeightF"            : height
-      "tiXAxisFontHeightF"   : xfontf
-      "tiYAxisFontHeightF"   : yfontf
+    ndimsy = dimsizes(dimsizes(y))
+    ndimsx = dimsizes(dimsizes(x))
 
-      "tmYLMajorLengthF"     : ylength
-      "tmXBMajorLengthF"     : xlength
-      "tmYLMinorLengthF"     : ymlength
-      "tmXBMinorLengthF"     : xmlength
-    end getvalues
-          yref_fill_on    = True
-    font_height = min((/xfontf,yfontf/))  ; Make label sizes a function of
-                                          ; the size of the X/Y axis labels.
-    major_length = min((/ylength,xlength/))
-    minor_length = min((/ymlength,xmlength/))
-
-; If the plot is close to square in size, then make the 
-; three top titles and the tick marks smaller.
-
-    ratio = height/width
-    if(ratio.gt.1) 
-      ratio = 1./ratio
+    if(ndimsy.eq.1)
+      nlines = 1
+      nptsy  = dimsizes(y)
+    else
+      nlines = dimsizes(y(:,0))
+      nptsy  = dimsizes(y(0,:))
     end if
-    if(ratio.gt.0.5)
+
+; Check if we want fill above or below Y reference value.
+          yref_fill_on    = True
+    if(yref_fill_on)
+
+          yref_line_above = -1  ; defaults to no fill.
+        end if
+;
+
+      npts         = new((/nlines/),integer)
+                   dimsizes(res2@gsnBelowYRefLineColor).eq.1))
+        xmsg = x@_FillValue
+      else
+        xmsg = -999
+            return
+          yref_line_below = get_res_value(res2,"gsnBelowYRefLineColor",1)
+        ymsg = y@_FillValue
+      else
+        ymsg = -999
+        else
+      xinterp      = new((/nlines,2*nptsy/),float,xmsg)
+      yinterp      = new((/nlines,2*nptsy/),float,ymsg)
+      npts = ref_line_interp(x,y,xinterp,yinterp,yref_line)
+;
+      xinterp = x
+      yinterp = y
+; For each old y point, we need two new y points to represent
+; the horizontal line.
+;
+      if(.not.isatt(res2,"trYMinF"))
+        res2@trYMinF = min(yinterp)
+      end if
+      if(.not.isatt(res2,"trYMaxF"))
+        res2@trYMaxF = max(yinterp)
+      end if
+
+      if(dimsizes(xref_line).eq.1)
+        xref = new((/nlines/),float)
+        xref = fspan(xref_line,xref_line,nlines)
+      else
+        xref = xref_line
+      end if
+          yinterp = new((/ncurves,nyb/),double,1e36)
+          xinterp = new((/ncurves,nyb/),double,1e36)
+
+      if(.not.isatt(res2,"trXMinF"))
+        res2@trXMinF = min(xinterp)
+      end if
+      if(.not.isatt(res2,"trXMaxF"))
+        res2@trXMaxF = max(xinterp)
+      end if
+
+      if(dimsizes(yref_line).eq.1)
+        yref = new((/nlines/),float)
+        yref = fspan(yref_line,yref_line,nlines)
+      else
+        yref = yref_line
+      end if
+;
+; Get bar widths.  They are either set by user via a resource, or 
+; from the smallest dx.
+
+    xy_object = gsn_xy(wks,xinterp,yinterp,res2)
+          xbelow = new((/ncurves,5*npts/),double,1e36)
+          ybelow = new((/ncurves,5*npts/),double,1e36)
+;
+    if(yref_fill_on)
+      do i=0,nlines-1
+        fill_xy(wks,xy_object,xinterp(i,0:npts(i)-1),yinterp(i,0:npts(i)-1),\
+                yref(i),yref_line_above,yref_line_below)
+
+            if(na_max.gt.0)
+              xinterp(0:2*ncurves-1:2,0:na_max-1) = xabove(:,0:na_max-1)
+    res2@gsnXYPlot = True
+    res2@gsnXAxis = True
+
+    delete(res2@gsnXYPlot)
+      gsres@gsLineColor = "black"
+
+      do i=0,nlines-1
+        gsn_polyline(wks,xy_object,fspan(xref(i),xref(i),2),\
+                     (/min(yinterp),max(yinterp)/),gsres)
+
+
+      do i=0,max((/ncurves,nyref/))-1
+        if(dimsizes(yref_line_above).gt.1)
+          fill_above = yref_line_above(i)
+        end if
+                                     xinterp(i,0:new_npts(i)-1), \
+      gsres@gsLineColor = "black"
+
+      do i=0,nlines-1
+        gsn_polyline(wks,xy_object,(/min(xinterp),max(xinterp)/), \
+                     fspan(yref(i),yref(i),2),gsres)
+
+          end if
+          var_string = systemfunc("echo polygons$$")
+          xy_object@$var_string$ = gsn_add_polygon(wks,xy_object, \
+                                                   xabove(i,:), \
+                                                   yabove(i,:),gsres)
+        end if
+;
+; Fill below reference line.
+;
+        gsres@gsFillColor = yref_line_below(0)
+
+        if(dimsizes(yref_line_below).gt.1)
+          gsres@gsFillColor = yref_line_below(i)
+        end if
+
+        if(nbelow(i).gt.0)
+          var_string = systemfunc("echo polygons$$")
+          xy_object@$var_string$ = gsn_add_polygon(wks,xy_object, \
+                                                   xbelow(i,:), \
+                                                   ybelow(i,:), gsres)
+        end if
+      end do
+;
+; Make sure polygons get drawn first, so that XY lines are drawn on top.
+;
+      setvalues xy_object
+        "tfPolyDrawOrder" : "Predraw"
+      end setvalues
 	  font_height = 0.75 * font_height
 	  major_length = 0.75 * major_length
 	  minor_length = 0.75 * minor_length
-; For each old y point, we need two new y points to represent
-; the horizontal line.
-; Make tick marks same length and point outward.
+
+; Draw X reference line.
+
     if(xref_line_on)
     setvalues xy_object
       "tmXBMajorLengthF"     : major_length
@@ -2333,57 +2656,12 @@ left_string, center_string, right_string, sub_zone, main_zone
     end setvalues
       end getvalues
 
-; Leftmost subtitle.
-    if(left_string)
-      setvalues lft_str_object
-        "txFontHeightF" : font_height
-      end setvalues
 
-      anno = NhlAddAnnotation(xy_object,lft_str_object)
-      setvalues anno
-        "amZone"          : sub_zone     ; Just outside plot area
-        "amSide"          : "top"        ; Subtitle at top.
-        "amParallelPosF"  : 0.0          ; 0.0 is right edge of plot
-        "amJust"          : "bottomleft" ; Left justify
-        "amOrthogonalPosF": 0.05         ; Move away from top edge
-        "amResizeNotify"  : True         ; Resize subtitle if plot resized.
-      end setvalues
-    end if
+    subres@txFontHeightF = font_height
 
-; Center subtitle.
-    if(center_string)
-      setvalues ctr_str_object
-        "txFontHeightF" : font_height
-      end setvalues
-      anno = NhlAddAnnotation(xy_object,ctr_str_object)
-      setvalues anno
-        "amZone"          : sub_zone       ; Just outside plot area
-        "amSide"          : "top"          ; Subtitle at top.
-        "amParallelPosF"  : 0.5            ; 0.5 is center of plot
-        "amJust"          : "bottomcenter" ; Center it about the center
-        "amOrthogonalPosF": 0.05           ; Move away from top edge
-        "amResizeNotify"  : True           ; Resize subtitle if plot resized.
-      end setvalues
-    end if
-main_zone, datanew, popgrid, contour_plot
-; Rightmost subtitle.
-    if(right_string)
-      setvalues rgt_str_object
-        "txFontHeightF" : font_height
-      end setvalues
-;
-      anno = NhlAddAnnotation(xy_object,rgt_str_object)
-      setvalues anno
-        "amZone"          : sub_zone      ; Just outside plot area
-        "amSide"          : "top"         ; Subtitle at top.
-        "amParallelPosF"  : 1.0           ; 1.0 is right edge of plot
-        "amJust"          : "bottomright" ; Right justify
-        "amOrthogonalPosF": 0.05          ; Move away from top edge
-        "amResizeNotify"  : True          ; Resize subtitle if plot resized.
-      end setvalues
-    end if
-    set_right_subtitle(datanew,res2,res2)
-; Draw all this stuff: XY plot and subtitles.
+      gsres@gsLineColor = xref_line_color(0)
+
+      do i=0,nxref-1
     if(calldraw)
         draw(xy_object) 
     end if
@@ -2391,13 +2669,256 @@ main_zone, datanew, popgrid, contour_plot
     if(callframe)
         frame(wks)           ; advance the frame
     end if
-      set_attr(res2,"cnLineLabelsOn",False)
+          gsres@gsLineColor = xref_line_color(i)
+        end if
+        xline = fspan(xref_line(i),xref_line(i),2)
+        var_string = systemfunc("echo xpolyline$$") + i
+        xy_object@$var_string$ = gsn_add_polyline(wks,xy_object,xline,yline, \
+      "tmXBMajorLengthF"     : xlength
+
+;***********************************************************************;
+      "tmXBMinorLengthF"     : xmlength
+    end getvalues
+
+    font_height = min((/xfontf,yfontf/))  ; Make label sizes a function of
+                                          ; the size of the X/Y axis labels.
+    major_length = min((/ylength,xlength/))
+    minor_length = min((/ymlength,xmlength/))
+
+; Id of the map plot is returned.                                       ;
+; three top titles and the tick marks smaller.
+
+    ratio = height/width
+    if(ratio.gt.1) 
+      ratio = 1./ratio
+    end if
+    if(ratio.gt.0.5)
+      font_height = 0.75 * font_height
+
+; Make tick marks same length and point outward.
+
+    tmres = get_res_eq(res2,"tm")  ; Get tickmark resources
+    gsnp_point_tickmarks_outward(xy_object,tmres,xlength,ylength,xmlength, \
+local res, contour_object, res2, xfontf, yfontf, font_height, \
+lft_str_object, ctr_str_object, rgt_str_object, calldraw, callframe, \
+left_string, center_string, right_string, sub_zone, main_zone, datanew
+    subres = get_res_eq(res2,(/"tx","am"/))  ; Get textitem resources
+    subres               = True
+    set_attr(subres,"txFontHeightF",font_height)
+
+    calldraw      = True
+    callframe     = True
+    left_string   = False     ; Default is no subtitles unless
+    center_string = False     ; they are explicitly set with the
+    right_string  = False     ; special "gsn" resources.
+    sub_zone      = 2         ; Zone for subtitles
+                  subres)
+    addcyclic     = False     ; Don't add a cyclic point.
+    res2 = resources
+; Draw all this stuff: XY plot and subtitles.
+    draw_and_frame(wks,xy_object,calldraw,callframe,maxbb)
+
 ; Return XY plot object.
+
+    if((res2).and.isatt(res2,"gsnAddCyclic"))
+        if(res2@gsnAddCyclic)
+            addcyclic = True
+        end if
+        delete(res2@gsnAddCyclic)
     end if
     return(xy_object)
+    if(addcyclic)
+
+;***********************************************************************;
+; Function : gsn_csm_y                                                  ;
+;                   wks: workstation object                             ;
+
+    if((res2).and..not.any(ismissing(getvaratts(res2))))
+
+;             resources: optional resources                             ;
+
+        if(isatt(res2,"gsnDraw"))
+            if(.not.res2@gsnDraw)
+                calldraw = False
+            end if
+            delete(res2@gsnDraw)
+        end if
+        if(isatt(res2,"gsnFrame"))
+            if(.not.res2@gsnFrame)
+                callframe = False
+            end if
+            delete(res2@gsnFrame)
+        end if
+  else
+; Check for left title. If the data has an attribute called "long_name",
+; then use this string for the left title.
+
+        if(isatt(datanew,"long_name").and..not.isatt(res2,"gsnLeftString"))
+            res2@gsnLeftString = datanew@long_name
+            delete(datanew@long_name)
+        end if
+      exit
+; Check for right title at top. If the data has an attribute called "units",
+; then use this string for the right title.
+  end if
+        if(isatt(datanew,"units").and..not.isatt(res2,"gsnRightString"))
+            res2@gsnRightString = datanew@units
+        end if
+  x@long_name = ""
+; Check if gsnShape set.
+  return(xy)
+        if(isatt(res2,"gsnShape").and.res2@gsnShape)
+            sub_zone      = sub_zone+1  ; Zone for subtitles
+            main_zone     = main_zone+1 ; Zone for main title
+        end if
+
+; Check for existence of the left, center, and right subtitles.
+
+      check_for_subtitles(res2,left_string,center_string,right_string)
+      if(left_string.or.center_string.or.right_string)
+        main_zone   = main_zone+1
+      end if
+; Function : gsn_csm_contour                                            ;
+;                     wks: workstation object                           ;
+;                    data: data to contour                              ;
+;               resources: optional resources                           ;
+    if(.not.ismissing(datanew!1).and.iscoord(data,datanew!1).and.\
+        .not.isatt(res2,"sfXArray")) then 
+      res2@sfXArray  = datanew&$datanew!1$
+    end if
+
+    if(.not.ismissing(datanew!0).and.iscoord(data,datanew!0).and.\
+        .not.isatt(res2,"sfYArray")) then 
+      res2@sfYArray  = datanew&$datanew!0$
+    end if
+
+
+; Check to see if X and/or Y axis labels should be set.
+
+    if(.not.isatt(res2,"tiXAxisString"))
+      if(isatt(res2,"tmXBMode").and.(res2@tmXBMode.eq."Explicit".or.\
+                                     res2@tmXBMode.eq."EXPLICIT"))
+        res2@tiXAxisString = ""
+      else
+        if(isatt(datanew&$datanew!1$,"long_name"))
+          res2@tiXAxisString = datanew&$datanew!1$@long_name
+        end if
+      end if
+    end if
+
+    if(.not.isatt(res2,"tiYAxisString"))
+      if(isatt(res2,"tmYLMode").and.(res2@tmYLMode.eq."Explicit".or.\
+                                     res2@tmYLMode.eq."EXPLICIT"))
+        res2@tiYAxisString = ""
+      else
+        if(isatt(datanew&$datanew!0$,"long_name"))
+          res2@tiYAxisString = datanew&$datanew!0$@long_name
+        end if
+      end if
+    end if
+
+; Check for a missing value.
+
+    if(isatt(datanew,"_FillValue")) then
+      res2@sfMissingValueV = datanew@_FillValue
+    end if
+
+; Set some more contour plot resources.
+
+    res2@cnInfoLabelFont            = "helvetica"
+    res2@cnLineLabelFont            = "helvetica"
+
+;                                                                       ;
+;***********************************************************************;
+function gsn_csm_contour(wks:graphic,data[*][*]:numeric,resources:logical)
+; If user explicitly sets X or Y tick marks, then don't label the X 
+; or Y axis automatically.
+
+    if(isatt(res2,"tmXBMode").and..not.isatt(res2,"tiXAxisString"))
+      if(res2@tmXBMode.eq."Explicit".or.res2@tmXBMode.eq."EXPLICIT")
+        res2@tiXAxisString = ""
+      end if
+    end if
+
+    if(isatt(res2,"tmYLMode").and..not.isatt(res2,"tiYAxisString"))
+      if(res2@tmYLMode.eq."Explicit".or.res2@tmYLMode.eq."EXPLICIT")
+        res2@tiYAxisString = ""
+      end if
+    end if
+main_zone, datanew, popgrid, contour_plot
+    contour_object = gsn_contour(wks,datanew,res2)
+
+; Get title label sizes and tickmark lengths.
+    getvalues contour_object
+      "vpWidthF"             : width
+      "vpHeightF"            : height
+      "tiXAxisFontHeightF"   : xfontf
+      "tiYAxisFontHeightF"   : yfontf
+
+      "tmYLMajorLengthF"     : ylength
+      "tmXBMajorLengthF"     : xlength
+      "tmYLMinorLengthF"     : ymlength
+      "tmXBMinorLengthF"     : xmlength
+    end getvalues
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    font_height = min((/xfontf,yfontf/))  ; Make label sizes a function of
+                                          ; the size of the X/Y axis labels.
+    major_length = min((/ylength,xlength/))
+    minor_length = min((/ymlength,xmlength/))
+
+;
+    popgrid = get_res_value(res2,"gsnPopGrid","")
+;
+    if(popgrid.ne."")
+      set_attr(res2,"tiXAxisString","")
+      set_attr(res2,"tiYAxisString","")
+    end if
+    if(ratio.gt.0.5)
+	  font_height = 0.75 * font_height
+	  major_length = 0.75 * major_length
+	  minor_length = 0.75 * minor_length
+    end if
+    set_right_subtitle(datanew,res2,res2)
+    left_string   = new(1,logical)
+    check_for_subtitles(res2,left_string,center_string,right_string)
+    setvalues contour_object
+      "tmXBMajorLengthF"     : major_length
+      "tmXBMinorLengthF"     : minor_length
+      "tmYLMajorLengthF"     : major_length
+      "tmYLMinorLengthF"     : minor_length
+      "tmXBMajorOutwardLengthF" : major_length
+      "tmXBMinorOutwardLengthF" : minor_length
+      "tmYLMajorOutwardLengthF" : major_length
+      "tmYLMinorOutwardLengthF" : minor_length
+      "tmXTMajorLengthF"     : major_length
+      "tmXTMinorLengthF"     : minor_length
+      "tmYRMajorLengthF"     : major_length
+      "tmYRMinorLengthF"     : minor_length
+      "tmXTMajorOutwardLengthF" : major_length
+      "tmXTMinorOutwardLengthF" : minor_length
+      "tmYRMajorOutwardLengthF" : major_length
+      "tmYRMinorOutwardLengthF" : minor_length
+    end setvalues
+; Check if gsnShape set.
+    check_for_coord_arrays(datanew,res2,"contour")
+    subres               = True
+    subres@txFontHeightF = font_height
+    add_subtitles(wks,contour_object,left_string,center_string,right_string, \
+                  subres)
+       (.not.isatt(res2,"lbLabelBarOn").or.\
+        .not.check_attr(res2,"lbLabelBarOn",False,False)))
+    if(calldraw)
+        draw(contour_object) 
+    end if
+
+    if(callframe)
+        frame(wks)           ; advance the frame
+    end if
+      set_attr(res2,"cnLineLabelsOn",False)
+      set_attr(res2,"cnInfoLabelOn",False)
+    end if
+    if(isatt(res2,"lbLabelBarOn"))
       delete(res2@lbLabelBarOn)
-
-
 
 
     end if
@@ -2434,14 +2955,13 @@ left_string, center_string, right_string, sub_zone, main_zone, datanew
 
     calldraw      = True
     callframe     = True
-
+    left_string   = False     ; Default is no subtitles unless
+    center_string = False     ; they are explicitly set with the
+    right_string  = False     ; special "gsn" resources.
     addcyclic     = False     ; Default is to not add a cyclic point.
     sub_zone      = 2         ; Zone for subtitles
     main_zone     = 2         ; Zone for main title (may change later)
     lbar_on       = False     ; Default is no labelbar
-    left_string   = False     ; Default is no subtitles unless
-    center_string = False     ; they are explicitly set with the
-    right_string  = False     ; special "gsn" resources.
     res2 = resources
       "tiYAxisFontHeightF"   : yfontf
 ; The default is to add a cyclic point.
@@ -2501,41 +3021,12 @@ left_string, center_string, right_string, sub_zone, main_zone, datanew
             res2@gsnRightString = datanew@units
         end if
     add_subtitles(wks,contour_object,left_string,center_string,\
-; Check for left subtitle at top. If it exists, create a TextItem
-; object for it.
+; Check for existence of the left, center, and right subtitles.
 ; workstation "wks" (the variable returned from a previous call to      ;
-        if(isatt(res2,"gsnLeftString"))
-            lft_str_object = create "left_string" textItemClass wks
-              "txString" : res2@gsnLeftString
-            end create
-            left_string = True
-            main_zone   = main_zone+1
-            delete(res2@gsnLeftString)
-        end if
-
-; Check for center subtitle at top. If it exists, create a TextItem
-; object for it.
-
-        if(isatt(res2,"gsnCenterString"))
-            ctr_str_object = create "center_string" textItemClass wks
-              "txString" : res2@gsnCenterString
-            end create
-            center_string = True
-            main_zone     = main_zone+1
-            delete(res2@gsnCenterString)
-        end if
-
-; Check for right subtitle at top. If it exists, create a TextItem
-; object for it.
-
-        if(isatt(res2,"gsnRightString"))
-            rgt_str_object = create "right_string" textItemClass wks
-              "txString" : res2@gsnRightString
-            end create
-            right_string = True
-            main_zone    = main_zone+1
-            delete(res2@gsnRightString)
-        end if
+      check_for_subtitles(res2,left_string,center_string,right_string)
+      if(left_string.or.center_string.or.right_string)
+        main_zone   = main_zone+1
+      end if
     end if
 ; draws a specially-labelled longitude X axis.                          ;
 ; Use coordinate variable for X if it exists.
@@ -2760,55 +3251,11 @@ function gsn_csm_time_lat(wks:graphic,data[*][*]:numeric,resources:logical)
 ;
   
 ; Set up three subtitles at top, if they exist.
-; Leftmost subtitle.
-    if(left_string)
-      setvalues lft_str_object
-        "txFontHeightF" : font_height
-      end setvalues
-
-      anno = NhlAddAnnotation(contour_object,lft_str_object)
-      setvalues anno
-        "amZone"          : sub_zone     ; Just outside plot area
-        "amSide"          : "top"        ; Subtitle at top.
-        "amParallelPosF"  : 0.0          ; 0.0 is right edge of plot
-        "amJust"          : "bottomleft" ; Left justify
-        "amOrthogonalPosF": 0.025        ; Move away from top edge
-        "amResizeNotify"  : True         ; Resize subtitle if plot resized.
-      end setvalues
-    end if
-
-; Center subtitle.
-    if(center_string)
-      setvalues ctr_str_object
-        "txFontHeightF" : font_height
-      end setvalues
-      anno = NhlAddAnnotation(contour_object,ctr_str_object)
-      setvalues anno
-        "amZone"          : sub_zone       ; Just outside plot area
-        "amSide"          : "top"          ; Subtitle at top.
-        "amParallelPosF"  : 0.5            ; 0.5 is center of plot
-        "amJust"          : "bottomcenter" ; Center it about the center
-        "amOrthogonalPosF": 0.025          ; Move away from top edge
-        "amResizeNotify"  : True           ; Resize subtitle if plot resized.
-      end setvalues
-    end if
-
-; Rightmost subtitle.
-    if(right_string)
-      setvalues rgt_str_object
-        "txFontHeightF" : font_height
-      end setvalues
-
-      anno = NhlAddAnnotation(contour_object,rgt_str_object)
-      setvalues anno
-        "amZone"          : sub_zone      ; Just outside plot area
-        "amSide"          : "top"         ; Subtitle at top.
-        "amParallelPosF"  : 1.0           ; 1.0 is right edge of plot
-        "amJust"          : "bottomright" ; Right justify
-        "amOrthogonalPosF": 0.025         ; Move away from top edge
-        "amResizeNotify"  : True          ; Resize subtitle if plot resized.
-      end setvalues
-    end if
+    subres                  = True
+    subres@txFontHeightF    = font_height
+    subres@amOrthogonalPosF = 0.025
+    add_subtitles(wks,contour_object,left_string,center_string,right_string, \
+                  subres)
         if(any(data&$data!0$@units.eq.get_allowed_pres_units_pa()))
 ; Draw all this stuff: contour plot and subtitles.
     if(calldraw)
