@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: INSTALL,v 1.1 1993-02-20 00:10:49 clyne Exp $
+#      $Id: INSTALL,v 1.2 1993-03-03 17:02:34 clyne Exp $
 #
 #########################################################################
 #									#
@@ -68,7 +68,7 @@ cat <<EOF
 
 	1.  Ordering information
         2.  Install software
-        3.  Removed installed software
+        3.  Remove installed software
         4.  Help
 
 	0.  Exit
