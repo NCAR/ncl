@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.61 2004-03-11 02:00:34 dbrown Exp $
+#      $Id: yMakefile,v 1.62 2004-03-20 00:16:33 dbrown Exp $
 #
 #########################################################################
 #                                                                       #
@@ -58,7 +58,8 @@ HDRS		= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 	        PDFWorkstation.h PDFWorkstationP.h \
 		CnRenderer.h CnRendererP.h CnStdRenderer.h CnStdRendererP.h \
 		CnTriMeshRenderer.h CnTriMeshRendererP.h \
-		TriMeshTransObj.h TriMeshTransObjP.h
+		TriMeshTransObj.h TriMeshTransObjP.h \
+		ImageWorkstation.h ImageWorkstationP.h
 
 CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
@@ -80,7 +81,7 @@ CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		bsearch.c linaprox.c wksisact.c simpletrans.c wksisopn.c \
 		cmpf.c nicevals.c \
 	        PDFWorkstation.c CnRenderer.c CnStdRenderer.c \
-		CnTriMeshRenderer.c TriMeshTransObj.c 
+		CnTriMeshRenderer.c TriMeshTransObj.c ImageWorkstation.c
 
 COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
@@ -102,7 +103,7 @@ COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		bsearch.o linaprox.o wksisact.o simpletrans.o wksisopn.o \
 		cmpf.o nicevals.o \
 	        PDFWorkstation.o CnRenderer.o CnStdRenderer.o \
-		CnTriMeshRenderer.o TriMeshTransObj.o
+		CnTriMeshRenderer.o TriMeshTransObj.o ImageWorkstation.o
 
 FSRCS		= DATACOMMF.f ERRORF.f HLUF.f PLOTMANAGERF.f RLGEN.f RLSET.f \
 		RLGET.f TRANSFORMF.f VIEWF.f WORKSPACEF.f WORKSTATIONF.f \

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.104 2003-11-25 22:41:20 dbrown Exp $
+ *      $Id: Workstation.c,v 1.105 2004-03-20 00:16:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3595,7 +3595,7 @@ WorkstationGetValues
 					count[0]++;
 				ch = ch->next;
 			}
-			if (! count) {
+			if (! count[0]) {
 				continue;
 			}
 			if (! (views = NhlMalloc(count[0] * sizeof(int)))) {
@@ -3630,7 +3630,7 @@ WorkstationGetValues
 					count[0]++;
 				ch = ch->next;
 			}
-			if (! count) {
+			if (! count[0]) {
 				continue;
 			}
 			if (! (views = NhlMalloc(count[0] * sizeof(int)))) {

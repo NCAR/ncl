@@ -1,5 +1,5 @@
 /*
- *      $Id: CnStdRenderer.c,v 1.1 2004-03-11 02:00:16 dbrown Exp $
+ *      $Id: CnStdRenderer.c,v 1.2 2004-03-20 00:16:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3066,7 +3066,9 @@ NhlErrorTypes _NhlRasterFill
 	float		cxstep,cystep,dxstep,dystep;
 	float           xoff,xsoff,xeoff,yoff,ysoff,yeoff;
 	NhlBoolean      x_isbound,y_isbound;
+#if 0
 	FILE *fp = fopen("tmp.out","w");
+#endif
 
         if (Cnp == NULL) {
 		e_text = "%s: invalid call to _NhlRasterFill";
@@ -3167,7 +3169,7 @@ NhlErrorTypes _NhlRasterFill
                                         }
 				}
 			}
-#if 1
+#if 0
 			fprintf(fp,"[%f][%f] %f\n",xccu,yccu,zval);
 #endif
 			(_NHLCALLF(hlucpscae,HLUCPSCAE))
@@ -3176,6 +3178,8 @@ NhlErrorTypes _NhlRasterFill
 		}
 	}
 
+#if 0
 	fclose(fp);
+#endif
 	return ret;
 }
