@@ -1,4 +1,3 @@
-
 load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsun_scripts.ncl"
 
 function addcyclic(data[*][*]:float)
@@ -53,7 +52,7 @@ begin
 
   nsub = 16   ; subscript location of northern most hlat to be plotted
 
-  wks = ncl_open_wks("x11","gsunex09")
+  wks = ncl_open_wks("x11","gsun09n")
 
   resources = True
   resources@cnFillOn   =      True

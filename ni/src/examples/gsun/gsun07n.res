@@ -29,19 +29,19 @@
 
 
 ; Set some viewport resources. Notice that these four resources have an
-; extra string in them "gsunex07_map". Since the asterick ('*') serves
-; as a wildcard, the "gsunex07_map" string further narrows down which
+; extra string in them "gsun07n_map". Since the asterick ('*') serves
+; as a wildcard, the "gsun07n_map" string further narrows down which
 ; plot these resources are supposed to apply to. Each plot created with
 ; the ez_* calls is named by the second string passed to open_wks, appended
 ; with an underscore ('_') and the type of plot it is (map, contour, vector,
-; or streamline).  So, in this case, we passed "gsunex07" to open_wks, and
+; or streamline).  So, in this case, we passed "gsun07n" to open_wks, and
 ; it's the map plot we want to change the view port of, so we use the string
-; "gsunex07_map to further qualify it.
+; "gsun07n_map to further qualify it.
 
-*gsunex07_map.vpXF:        .04
-*gsunex07_map.vpYF:        .85
-*gsunex07_map.vpWidthF:    .7
-*gsunex07_map.vpHeightF:   .7
+*gsun07n_map.vpXF:        .04
+*gsun07n_map.vpYF:        .85
+*gsun07n_map.vpWidthF:    .7
+*gsun07n_map.vpHeightF:   .7
 
 ; Set some resources for the polyline and polymarkers.
 
@@ -69,9 +69,9 @@
 ; We only want a label bar added to our contour plot, not both the contour
 ; plot *and* the map plot (which is what would happen if we just used
 ; *pmLabelBarDisplayMode), so further qualify this resource with
-; "gsunex07_contour".
+; "gsun07n_contour".
 
-*gsunex07_contour*pmLabelBarDisplayMode : always
+*gsun07n_contour*pmLabelBarDisplayMode : always
 
 ; Set some labelbar resources.
 

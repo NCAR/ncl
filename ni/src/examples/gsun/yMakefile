@@ -1,0 +1,16 @@
+#
+#   $Id: yMakefile,v 1.1 1998-04-06 23:19:32 haley Exp $
+#
+#   Makefile for GSUN examples
+#
+
+MYNAME = gsun
+
+NSRCS      = gsun01n.ncl gsun02n.ncl gsun03n.ncl gsun04n.ncl \
+			gsun05n.ncl gsun06n.ncl gsun07n.ncl gsun08n.ncl gsun09n.ncl \
+			gsun_scripts.ncl
+
+RESFILES   = gsun07.res
+
+InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))

@@ -1,7 +1,7 @@
 load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsun_scripts.ncl"
 
 ;***********************************************************************;
-; gsunex05.ncl : contour and XY plots                                   ;
+; gsun05n.ncl : contour and XY plots                                    ;
 ;                                                                       ;
 ; This example reads an ASCII file of seismic data, interpolates it to  ;
 ; a 3D grid, and creates a contour and an XY plot.                      ;
@@ -61,9 +61,9 @@ begin
 ; create them here.                                                     ;
 ;***********************************************************************;
 
-  xwks   = ncl_open_wks( "x11","gsunex05")
-  cgmwks = ncl_open_wks("ncgm","gsunex05")
-  pswks  = ncl_open_wks(  "ps","gsunex05")
+  xwks   = ncl_open_wks( "x11","gsun05n")
+  cgmwks = ncl_open_wks("ncgm","gsun05n")
+  pswks  = ncl_open_wks(  "ps","gsun05n")
 
 ;***********************************************************************;
 ; Define a color table with 18 entries. For each output device that we  ;

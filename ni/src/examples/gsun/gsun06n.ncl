@@ -1,7 +1,7 @@
 load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsun_scripts.ncl"
 
 ;***********************************************************************;
-; gsunex06.ncl : vector and contour plots                               ;
+; gsun06n.ncl : vector and contour plots                                ;
 ;                                                                       ;
 ; This example opens three netCDF files of storm data and produces      ;
 ; vector and contour plots. It also shows how to put multiple plots on  ;
@@ -49,7 +49,7 @@ begin
   lat@name = "latitude"    ; Name the lat variable.
   lon@name = "longitude"   ; Name the lon variable.
 
-  xwks = ncl_open_wks("ncgm","gsunex06")  ; open an X11 workstation
+  xwks = ncl_open_wks("ncgm","gsun06n")  ; open an X11 workstation
 
 ;***********************************************************************;
 ; Set some resources for our first plot, which is a vector plot over a  ;

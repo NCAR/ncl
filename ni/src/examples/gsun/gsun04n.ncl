@@ -1,7 +1,7 @@
 load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsun_scripts.ncl"
 
 ;***********************************************************************;
-; gsunex04.ncl : streamline and contour plots                           ;
+; gsun04n.ncl : streamline and contour plots                            ;
 ;                                                                       ;
 ; This example opens a GRIB file and creates some streamline and        ;
 ; contour plots from its data. This example also writes some of the     ;
@@ -74,7 +74,7 @@ begin
   vvars_we_want = (/"V_GRD_6_TRO","V_GRD_6_ISBL","V_GRD_6_GPML",\
                    "V_GRD_7_TRO"/)
 
-  wks = ncl_open_wks("ncgm","gsunex04")
+  wks = ncl_open_wks("ncgm","gsun04n")
 
 ;***********************************************************************;
 ; Loop through the variables that we want and generate a streamline plot;

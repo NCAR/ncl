@@ -21,7 +21,7 @@ begin
   "somalia","south-africa","sudan","swaziland","tanzania","togo","tunisia",\
   "uganda","upper-volta","western-sahara","zaire","zambia","zimbabwe"/)
 
-  wks = ncl_open_wks("ncgm","gsunex08")
+  wks = ncl_open_wks("ncgm","gsun08n")
 
   cmap = (/(/1.00,1.00,1.00/),(/0.00,0.00,0.00/),(/0.70,0.70,0.70/),(/0.75,0.50,1.00/),(/0.50,0.00,1.00/),(/0.00,0.00,1.00/),(/0.00,0.50,1.00/),(/0.00,1.00,1.00/),(/0.00,1.00,0.60/),(/0.00,1.00,0.00/),(/0.70,1.00,0.00/),(/1.00,1.00,0.00/),(/1.00,0.75,0.00/),(/1.00,0.38,0.38/),(/1.00,0.00,0.38/),(/1.00,0.00,0.00/)/)
   ncl_define_colormap(wks,cmap)

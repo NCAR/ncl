@@ -13,7 +13,7 @@ begin
   lat  = cdf_file->lat                      ; Get latitude values.
   lon  = cdf_file->lon                      ; Get longitude values.
 
-  xwks = ncl_open_wks("ncgm","gsunex02")    ; Open an X11 workstation.
+  xwks = ncl_open_wks("ncgm","gsun02n")    ; Open an X11 workstation.
 
   plot = ncl_contour(xwks,temp,False)       ; Draw a contour plot.
 

@@ -33,7 +33,7 @@ begin
   umsk = mask(u,(u.gt.0),True)
   vmsk = mask(v,(v.gt.0),True)
 
-  wks = ncl_open_wks("ncgm","gsunex03") ; open an X11 workstation
+  wks = ncl_open_wks("ncgm","gsun03n") ; open an X11 workstation
 
   resources = True
   resources@vpWidthF  = 0.7

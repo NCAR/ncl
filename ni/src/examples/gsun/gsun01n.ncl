@@ -7,7 +7,7 @@ begin
   x = (/10.,20.,30.,40.,50.,60.,70.,80.,90./)
   y = (/0.,0.71,1.,0.7,0.002,-0.71,-1.,-0.71,-0.003/)
 
-  wks = ncl_open_wks("ncgm","gsunex01")  ; Open an X11 workstation.
+  wks = ncl_open_wks("ncgm","gsun01n")  ; Open an X11 workstation.
 
   plot = ncl_xy(wks,x,y,False)           ; Draw an XY plot.
 

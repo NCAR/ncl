@@ -1,7 +1,7 @@
 load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsun_scripts.ncl"
 
 ;***********************************************************************;
-; gsunex06.ncl : contour plot animation                                 ;
+; gsun07n.ncl : contour plot animation                                  ;
 ;                                                                       ;
 ; This example opens a netCDF file of storm data and produces a contour ;
 ; over a map animation. It also shows how to use ncl_polyline,          ;
@@ -11,16 +11,16 @@ load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsun_scripts.ncl"
 ; resources.  In the call to "ncl_open_wks", the second argument will be;
 ; the name of your resource file, with a ".res" appended.  If there is  ;
 ; no file by this name, then NCL will not try to load it in. In this    ;
-; example, the resource file is called "gsunex07.res".  Only resources ;
+; example, the resource file is called "gsun07n.res".  Only resources   ;
 ; that don't depend on programmatic results can be set in a resource    ;
 ; file. The rest of the resources will be set in this script, as you'll ;
 ; see below.                                                            ;
 ;                                                                       ;
 ; Resources in a resource file are set much in the same way that X      ;
 ; resources in a .Xdefaults or .Xresources file are set.  For now, you  ;
-; can just look at the file "gsunex07.res" to get a pretty good idea   ;
+; can just look at the file "gsun07n.res" to get a pretty good idea     ;
 ; of how resource files work.  There are some comments in the           ;
-; "gsunex07.res to help explain some of the concepts. Or, you can get  ;
+; "gsun07n.res to help explain some of the concepts. Or, you can get    ;
 ; more information than you probably need at the URL:                   ;
 ;                                                                       ;
 ;    http://ngwww.ucar.edu/ngdoc/ng/ug/hlu/hluimplmt/howrescwk.html     ;
@@ -48,7 +48,7 @@ begin
           -100.5, -86.5,-100.0,-111.5, -72.5, -78.6,-120.5, -80.8, \
            -89.5,-107.5 /)
 
-  wks = ncl_open_wks("ncgm","gsunex07") ; Open an X11 workstation.
+  wks = ncl_open_wks("ncgm","gsun07n") ; Open an X11 workstation.
 
 ;***********************************************************************;
 ; Define a color table.                                                 ;
@@ -111,7 +111,7 @@ begin
 ;***********************************************************************;
 ; The only resources we are setting here are the ones that depend on    ;
 ; programmatic values.  The others are set in a resource file called    ;
-; "gsunex07.res".                                                      ;
+; "gsun07.res".                                                         ;
 ;***********************************************************************;
 
   resources                 = True
@@ -164,7 +164,7 @@ begin
 ;                                                                       ;
 ;    http://ngwww.ucar.edu/ngdoc/ng/ref/hlu/obj/TextItem.res.html       ;
 ;                                                                       ;
-; The text resources in this example are defined in the "gsunex07.res"  ;
+; The text resources in this example are defined in the "gsun07.res"    ;
 ; file.                                                                 ;
 ;                                                                       ;
 ; Notice the syntax ":S:o:N:".; The ':' character is a special "function;
