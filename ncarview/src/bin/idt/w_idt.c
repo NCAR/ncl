@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.11 1991-06-18 14:50:44 clyne Exp $
+ *	$Id: w_idt.c,v 1.12 1991-07-31 17:18:08 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -119,7 +119,6 @@ static	String fallback_resources[] = {
 		 <Key>Return: okSDTranslation()",
 	"*scrollbar*orientation:	horizontal",
 	"*scrollbar*length:		100",
-	"*iconPixmap:	/usr/include/X11/bitmaps/ncarv_idt.bits",
 	"*fileSelectAction:	display",
 	NULL
 	};
@@ -165,19 +164,24 @@ main(argc, argv)
 	char **argv;
 {
 
-	Widget toplevel;
-	XtAppContext app_con;
-	char	**targv;	/* translator args	*/
-	int	targc;
+	Widget 		toplevel;
+	XtAppContext 	app_con;
+	char		**targv;	/* translator args	*/
+	int		targc;
+	Arg		args[5];
+	Cardinal	n;
 
 	char	**get_trans_commandline();
 	void 	SetFileSelection();
 	void	(*select_action)() = NULL;
 	void	action_display();
 	char	*meta_fname = NULL;
+	void	XAppDirPath();
 
 	toplevel = XtAppInitialize(&app_con, "Idt", options, XtNumber(options),
 			       &argc, argv, fallback_resources, NULL, ZERO);
+
+	SetIconResource(toplevel);
 
 	/*
 	 * get some resource values
@@ -190,8 +194,9 @@ main(argc, argv)
 			select_action = action_display;
 		}
 		else {
-			fprintf(stderr, "Warning - unknown select action:%s\n",
-					App_Data.select_action);
+			(void) fprintf(stderr, 
+				"Warning - unknown select action:%s\n",
+				App_Data.select_action);
 		}
 	}
 	/*
@@ -216,6 +221,11 @@ main(argc, argv)
 	 */
 	XtAppAddActions(app_con, actionTable, XtNumber(actionTable));
 
+	/*
+	 * hack to ensure idt app resource file is found
+	 */
+	XAppDirPath();
+	
 
 	/*
 	 * the main control panel
@@ -374,6 +384,7 @@ static	char	**get_trans_commandline(targc, app_data)
 {
 	char	**targv;
 	int	i;
+	char	*binpath;
 
 	/*
 	 * alloc enough memory for translator name, each option specifier and 
@@ -383,87 +394,97 @@ static	char	**get_trans_commandline(targc, app_data)
 	i = 0;
 
 	/*
+	 * get the path to the translator
+	 */
+	binpath = GetNCARGPath("BINDIR");
+	binpath = binpath ? binpath : BINDIR_DEFAULT;
+
+	/*
 	 * the translator is the first arg
 	 */
-	targv[i] = icMalloc(strlen(TRANSLATOR) + 1);
-	(void) strcpy(targv[i], TRANSLATOR);
+	targv[i] = icMalloc((unsigned) 
+		(strlen(binpath) + strlen("/") + (strlen(TRANSLATOR) + 1)));
+
+	(void) strcpy(targv[i], binpath);
+	(void) strcat(targv[i], "/");
+	(void) strcat(targv[i], TRANSLATOR);
 	i++;
 
 	/*
 	 * now stuff the command line options in
 	 */
 	if (app_data->font) {	/* which fontcap	*/
-		targv[i] = icMalloc (strlen (TR_FONT) + 1);
-		strcpy(targv[i], TR_FONT);
+		targv[i] = icMalloc ((unsigned) (strlen (TR_FONT) + 1));
+		(void) strcpy(targv[i], TR_FONT);
 		i++;
-		targv[i] = icMalloc (strlen(app_data->font) + 1);
-		strcpy(targv[i], app_data->font);
+		targv[i] = icMalloc ((unsigned) (strlen(app_data->font) + 1));
+		(void) strcpy(targv[i], app_data->font);
 		i++;
 	}
 	if (app_data->device) {	/* which graphcap	*/
-		targv[i] = icMalloc (strlen (TR_DEVICE) + 1);
-		strcpy(targv[i], TR_DEVICE);
+		targv[i] = icMalloc ((unsigned) (strlen (TR_DEVICE) + 1));
+		(void) strcpy(targv[i], TR_DEVICE);
 		i++;
-		targv[i] = icMalloc (strlen(app_data->device) + 1);
-		strcpy(targv[i], app_data->device);
+		targv[i] = icMalloc((unsigned ) (strlen(app_data->device) + 1));
+		(void) strcpy(targv[i], app_data->device);
 		i++;
 	}
 	if (app_data->soft) {	/* soft filling of polygons	*/
-		targv[i] = icMalloc (strlen (TR_SOFT) + 1);
-		strcpy(targv[i], TR_SOFT);
+		targv[i] = icMalloc ((unsigned) (strlen (TR_SOFT) + 1));
+		(void) strcpy(targv[i], TR_SOFT);
 		i++;
 	}
 	if (app_data->lmin) {	/* mininum line width		*/
-		targv[i] = icMalloc (strlen (TR_LMIN) + 1);
-		strcpy(targv[i], TR_LMIN);
+		targv[i] = icMalloc ((unsigned) strlen (TR_LMIN) + 1);
+		(void) strcpy(targv[i], TR_LMIN);
 		i++;
-		targv[i] = icMalloc (strlen(app_data->lmin) + 1);
-		strcpy(targv[i], app_data->lmin);
+		targv[i] = icMalloc ((unsigned) strlen(app_data->lmin) + 1);
+		(void) strcpy(targv[i], app_data->lmin);
 		i++;
 	}
 	if (app_data->lmax) {	/* maximum line width		*/
-		targv[i] = icMalloc (strlen (TR_LMAX) + 1);
-		strcpy(targv[i], TR_LMAX);
+		targv[i] = icMalloc ((unsigned) strlen (TR_LMAX) + 1);
+		(void) strcpy(targv[i], TR_LMAX);
 		i++;
-		targv[i] = icMalloc (strlen(app_data->lmax) + 1);
-		strcpy(targv[i], app_data->lmax);
+		targv[i] = icMalloc ((unsigned) strlen(app_data->lmax) + 1);
+		(void) strcpy(targv[i], app_data->lmax);
 		i++;
 	}
 	if (app_data->lscale) {	/* line scaling			*/
-		targv[i] = icMalloc (strlen (TR_LSCALE) + 1);
-		strcpy(targv[i], TR_LSCALE);
+		targv[i] = icMalloc ((unsigned) strlen (TR_LSCALE) + 1);
+		(void) strcpy(targv[i], TR_LSCALE);
 		i++;
-		targv[i] = icMalloc (strlen(app_data->lscale) + 1);
-		strcpy(targv[i], app_data->lscale);
+		targv[i] = icMalloc ((unsigned) strlen(app_data->lscale) + 1);
+		(void) strcpy(targv[i], app_data->lscale);
 		i++;
 	}
 	if (app_data->foreground) {	/* default foreground color	*/
-		targv[i] = icMalloc (strlen (TR_FOREGROUND) + 1);
-		strcpy(targv[i], TR_FOREGROUND);
+		targv[i] = icMalloc ((unsigned) strlen (TR_FOREGROUND) + 1);
+		(void) strcpy(targv[i], TR_FOREGROUND);
 		i++;
-		targv[i] = icMalloc (strlen(app_data->foreground) + 1);
-		strcpy(targv[i], app_data->foreground);
+		targv[i] = icMalloc((unsigned)strlen(app_data->foreground) + 1);
+		(void) strcpy(targv[i], app_data->foreground);
 		i++;
 	}
 	if (app_data->background) {	/* default background color	*/
-		targv[i] = icMalloc (strlen (TR_BACKGROUND) + 1);
-		strcpy(targv[i], TR_BACKGROUND);
+		targv[i] = icMalloc ((unsigned) strlen (TR_BACKGROUND) + 1);
+		(void) strcpy(targv[i], TR_BACKGROUND);
 		i++;
-		targv[i] = icMalloc (strlen(app_data->background) + 1);
-		strcpy(targv[i], app_data->background);
+		targv[i] = icMalloc ((unsigned) strlen(app_data->background)+1);
+		(void) strcpy(targv[i], app_data->background);
 		i++;
 	}
 	if (app_data->reverse) {	/* reverse video		*/
-		targv[i] = icMalloc (strlen (TR_REVERSE) + 1);
-		strcpy(targv[i], TR_REVERSE);
+		targv[i] = icMalloc ((unsigned) strlen (TR_REVERSE) + 1);
+		(void) strcpy(targv[i], TR_REVERSE);
 		i++;
 	}
 	if (app_data->pal) {	/* optional color palette 	*/
-		targv[i] = icMalloc (strlen (TR_PAL) + 1);
-		strcpy(targv[i], TR_PAL);
+		targv[i] = icMalloc ((unsigned) strlen (TR_PAL) + 1);
+		(void) strcpy(targv[i], TR_PAL);
 		i++;
-		targv[i] = icMalloc (strlen(app_data->pal) + 1);
-		strcpy(targv[i], app_data->pal);
+		targv[i] = icMalloc ((unsigned) strlen(app_data->pal) + 1);
+		(void) strcpy(targv[i], app_data->pal);
 		i++;
 	}
 
