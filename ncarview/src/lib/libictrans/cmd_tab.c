@@ -1,5 +1,5 @@
 /*
- *	$Id: cmd_tab.c,v 1.2 1991-01-09 11:12:37 clyne Exp $
+ *	$Id: cmd_tab.c,v 1.3 1991-06-18 15:04:25 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -23,7 +23,8 @@
 int	iCHelp(), iCFile(), iCPlot(), Noop(), iCMovie(), iCDevice(),
 	iCFont(), iCQuit(), iCNextfile(), iCList(), iCAlias(), iCSpooler(),
 	iCPrint(), iCShell(), iCSave(), iCZoom(), iCCount(), iCCurrent(),
-	iCDup(), iCLoop(), iCStartSegment(), iCStopSegment(), iCSkip();
+	iCDup(), iCLoop(), iCStartSegment(), iCStopSegment(), iCSkip(),
+	iCMerge();
 
 char	helphelp[] =	
 	"Provide description of all commands or usage for a single command";
@@ -50,6 +51,7 @@ char	Printhelp[] =	"Send frames to a print spooler";
 char	shellhelp[] =	"Escape to the shell";
 char	savehelp[] =	"Save frames to a file";
 char	zoomhelp[] =	"Change window coordinates to facilitate zooming";
+char	mergehelp[] =	"Overlay one frame on top of another frame";
 
 char	helpusage[]	= "help [ command ]";
 char	fileusage[]	= "file [ filename ]";
@@ -73,6 +75,7 @@ char	Printusage[]	= "[ frame list ] Print";
 char	shellusage[]	= "! shell_command";
 char	saveusage[]	= "[ frame list ] save [ filename ]";
 char	zoomusage[]	= "zoom [ llx [ lly [ urx [ ury ]]] ]";
+char	mergeusage[]	= "< frame1 > < frame2 > merge";
 
 /*
  */
@@ -98,6 +101,7 @@ CmdOp	cmdOptab[] = {
 	{"start",	starthelp,	startusage,	1,0,	iCStartSegment},
 	{"stop",	stophelp,	stopusage,	1,0,	iCStopSegment },
 	{"zoom",	zoomhelp,	zoomusage,	0,1,	iCZoom },
+	{"merge",	mergehelp,	mergeusage,	1,0,	iCMerge },
 	{"!",		shellhelp,	shellusage,	0,1,	iCShell },
 	{"Noop",	noophelp,	"",		0,0,	Noop },
 	{NULL}

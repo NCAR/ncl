@@ -1,8 +1,12 @@
+/*
+ *	$Id: idt.h,v 1.4 1991-06-18 14:50:15 clyne Exp $
+ */
 #ifndef	_idt_
 #define	_idt_
 
 typedef	struct	{
 	XFontStruct	*x_font;
+	char		*select_action;
 	/*
 	 * the rest are translator args
 	 */
@@ -16,9 +20,11 @@ typedef	struct	{
 	char		*foreground,
 			*background;
 	Boolean		reverse;
+	char		*pal;
+	int		message_height;
 	} AppData, *AppDataPtr;
 
-#define	TRANS_ARG_COUNT	10	/* number of translator args	*/
+#define	TRANS_ARG_COUNT	11	/* number of translator args	*/
 
 /*
  * names of options recognized by translator
@@ -32,6 +38,7 @@ typedef	struct	{
 #define	TR_FOREGROUND	"-foreground"
 #define	TR_BACKGROUND	"-background"
 #define	TR_REVERSE	"-reverse"
+#define	TR_PAL		"-pal"
 
 #define	MAX_TEXT_LINES	20
 

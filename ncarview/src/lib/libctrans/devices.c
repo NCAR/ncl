@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.c,v 1.3 1991-03-12 17:35:50 clyne Exp $
+ *	$Id: devices.c,v 1.4 1991-06-18 14:59:58 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -128,6 +128,7 @@ Ct_err X11_MFVersion(), X11_MFDesc(), X11_MFElemList(), X11_MFDefaults(),
     X11_CharSetList(); 
 
 /*	Class 2	*/
+Ct_err	X11_BackColr();
 
 
 /*	Class 3	*/
@@ -534,7 +535,7 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	/* Class 2 */
 	{
 	NULL, ScaleMode, ColrMode, LineWidthMode, MarkerSizeMode,
-	EdgeWidthMode, VDCExt, BackColr, NULL, NULL, 
+	EdgeWidthMode, VDCExt, X11_BackColr, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 

@@ -1,5 +1,5 @@
 /*
- *	$Id: get_cmd.c,v 1.2 1991-01-09 11:13:07 clyne Exp $
+ *	$Id: get_cmd.c,v 1.3 1991-06-18 15:04:36 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,7 +28,7 @@
 #include "icmalloc.h"
 #include "get_cmd.h"
 
-extern	int	yylex();
+extern	int	my_yylex();
 extern	char	yytext[];
 
 
@@ -93,7 +93,7 @@ get_command(ic)
 	ic->cmd.dst_frames.num = 0;
 
 	(void) fprintf(stderr, "ictrans> ");
-	type = yylex();	/* get a token from data stream	*/
+	type = my_yylex();	/* get a token from data stream	*/
 	while(loop) {	/* parse source address	*/
 		switch (type) {
 
@@ -106,7 +106,7 @@ get_command(ic)
 				ic->cmd.src_frames.fc[ic->cmd.src_frames.num-1]
 				.start_frame);
 #endif
-			type = yylex();	/* get next token	*/
+			type = my_yylex();	/* get next token	*/
 			break;
 		case FRAME_LIST_TYPE:
 			status |= conv_frame_list(yytext, &ic->cmd.src_frames,
@@ -118,7 +118,7 @@ get_command(ic)
 				ic->cmd.src_frames.fc[ic->cmd.src_frames.num-1]
 				.num_frames);
 #endif
-			type = yylex();	/* get next token	*/
+			type = my_yylex();	/* get next token	*/
 			break;
 
 		default:
@@ -135,7 +135,7 @@ get_command(ic)
 #ifdef	DEBUG
 			(void) fprintf(stderr, "Command is %s\n", yytext);
 #endif
-			type = yylex();
+			type = my_yylex();
 			break;
 
 		default:
@@ -147,7 +147,7 @@ get_command(ic)
 #ifdef	DEBUG
 		(void) fprintf(stderr, "data: %s\n", yytext);
 #endif
-		type = yylex();
+		type = my_yylex();
 	}
 	else {	/* look for a set of destination frames	*/
 	
@@ -163,7 +163,7 @@ get_command(ic)
 				ic->cmd.dst_frames.fc[ic->cmd.dst_frames.num-1]
 				.start_frame);
 #endif
-			type = yylex();
+			type = my_yylex();
 			break;
 		case FRAME_LIST_TYPE:
 			status |= conv_frame_list(yytext, &ic->cmd.dst_frames,
@@ -175,7 +175,7 @@ get_command(ic)
 				ic->cmd.dst_frames.fc[ic->cmd.dst_frames.num-1]
 				.num_frames);
 #endif
-			type = yylex();
+			type = my_yylex();
 			break;
 
 		default:

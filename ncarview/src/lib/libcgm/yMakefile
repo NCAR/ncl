@@ -15,6 +15,8 @@ INCLUDES	= cgm_tools.h cgmdef.h
 SRCS		= cgm_tools.c meta_edit.c misc.c mem_file.c
 OBJECTS		= cgm_tools.o meta_edit.o misc.o mem_file.o
 
+EQUALHACK	= =
+
 all::
 	@$(CP) $(INCLUDES) $(LOCINCDIR)
 
@@ -22,4 +24,7 @@ Library($(MYNAME),$(OBJECTS))
 
 lint:
 	$(LINT) -I$(LOCINCDIR) $(SRCS) 1> lint.out 2>&1
+
+meta_edit.o:	Makefile
+	$(CC) $(CFLAGS) -DTMPDIR$(EQUALHACK)'"$(TMPDIR)"' -c $*.c
 

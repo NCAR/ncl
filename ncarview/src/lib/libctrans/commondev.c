@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.2 1991-03-26 15:06:33 clyne Exp $
+ *	$Id: commondev.c,v 1.3 1991-06-18 15:02:08 clyne Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -118,7 +118,6 @@ ComSimPoly(p_list, n)
 	if (FILL_COLOUR_DAMAGE) {
 		dev->setlinecolour(FILL_COLOUR.index);/* set LINE color */
 		LINE_COLOUR_DAMAGE = TRUE;
-		FILL_COLOUR_DAMAGE = FALSE;
 	}
 
 	/*
@@ -151,11 +150,6 @@ ComSimPoly(p_list, n)
 	}
 }
 
-ComSimHatch(p_list, n)
-	Ptype	*p_list;
-	long	n;
-{
-}
 
 
 
@@ -191,6 +185,8 @@ CGMC *c;
 	/*
 	 * if no clipping use the quick algorithm
 	 */
+CLIPFLAG = FALSE;
+devWinSet = FALSE;
 
 
 	if (!CLIPFLAG && !devWinSet) {
@@ -428,8 +424,6 @@ CGMC *c;
 
 	extern	Ct_err	Instr_Dec();
 
-	INT_STYLE = HOLLOW_S;
-
 
 	if (CLIP_DAMAGE) {	/* has clipping changed	*/
 		CoordRect	device_win_coord;
@@ -602,6 +596,7 @@ CGMC *c;
 
 		}
 
+		break;
 	case	PATTERN_S:
 		/*
 		 *      code to invoke a pattern routine
@@ -611,7 +606,8 @@ CGMC *c;
 		break;
 
 	case	HATCH_S:
-		ComSimHatch(coordBuf, coordBufNum, HATCH_IND);
+		ComSimHatch(coordBuf, coordBufNum, HATCH_IND,
+					commFillScaleFactor, dev);
 		break;
 
 	case    EMPTY_S:

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ictrans.m,v 1.3 1991-01-09 10:47:50 clyne Exp $
+.\"	$Id: ictrans.m,v 1.4 1991-06-18 14:43:19 clyne Exp $
 .\"
 .\" ictrans 3.01 90/06/22 
 .TH ICTRANS 1NCARG "22 June 1990" NCAR "NCAR View 3.01"
@@ -22,6 +22,8 @@ ictrans \- user interface to the CGM translator
 .BI \-lmax " max"
 ] [
 .BI \-lscale " scale"
+] [
+.BI \-pal " pal_fname"
 ] [
 .I device\-specific options
 ] 
@@ -115,8 +117,16 @@ software filling is performed, as appropriate, without user specification.
 Some ictrans options are only available for a subset of the supported 
 devices. The following is a list of such options.
 .TP 
+.BI \-background " color"
+Specifies the default color to use for the background of an X11 window. 
+If the metafile explicitly sets color index 0 this option is overriden.
+.TP 
 .B \-bell
 Turn off bell. The default is to bell between plotting of frames.
+.TP 
+.BI \-foreground " color"
+Specifies the default foreground color of an X11 window. 
+If the metafile explicitly sets color index 1 this option is overriden.
 .TP
 .BI \-lmin " min"
 On devices which support line width scaling all lines are guaranteed to be
@@ -147,6 +157,15 @@ modification by the
 .BR -lmin " and " -lmax 
 options.
 .TP
+.BI \-pal " pal_fname"
+Use the color palette defined in the file
+.I pal_fname
+for subsequent translation of the metafile. This palette will override any
+color map defined by the CGM being translated. For a description of
+the format of
+.I pal_fname
+see ncar_ras(1NCARG).
+.TP
 .BI \-geom " geom"
 .I geom 
 is a string in the standard X11 format for describing the initial
@@ -174,6 +193,10 @@ corner of the screen where
 would be displayed. The second example would generate a X11 raster file
 at a resolution of 800 by 800 pixels and store it in the file 
 .IR xwdfile .
+.TP 
+.B \-reverse
+Simulate reverse video by swaping background and foreground colors. Only 
+works under X11.
 .TP
 .BI \-Ws " width height"
 .br
@@ -425,6 +448,21 @@ in the metafile.
 .B loop
 .br
 Toggle loop mode on or off. When loop mode is set a
+.HP
+.BI < " frame1 " >  
+.BI < " frame2 " >  
+.B merge
+.br
+Plot frame number
+.I frame1
+and then plot frame number
+.I frame2
+over the first frame without clearing the device. The result is a "merge" of
+the two plots. The current frame is not changed. There are no defaults for
+.IR frame1 " or " frame2 .
+The resulting plot might not be what was expected. Attributes from the first
+frame, such as color,  may override attributes in the second frame.
+.HP
 .B plot
 command will cause the requested frames to be plotted and then ictrans 
 will proceed to 
@@ -599,6 +637,9 @@ spooler config file
 .BR ctrans(l),
 .BR fcaps(l),
 .BR gcaps(l),
+.BR idt(l),
+.BR ncar_ras(l),
+.BR med(l),
 .BR ncarv_spool(l)
 .SH CAVEATS
 Metafile frames written to an existing file via the 

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: idt.m,v 1.3 1991-03-29 09:10:22 clyne Exp $
+.\"	$Id: idt.m,v 1.4 1991-06-18 14:43:42 clyne Exp $
 .\"
 .\" NCAR View: idt.man,v 1.0 89/09/10 clyne 
 .\" Revision 3.01 90/11/15 clyne
@@ -8,8 +8,29 @@
 idt \- X window interactive image display tool
 .SH SYNOPSIS
 .B idt 
-[ \fI-toolkitoption\fP ...] [\fB\-d \fI<device>\fR] 
-[\fB\-f \fI<fontcap>\fR] [\fB\-history\fR]
+[ 
+.BI \-toolkitoption " ..."
+] [
+.BI \-d " device"
+] [
+.BI \-f " font"
+] [
+.BI \-history
+] [
+.BI \-lmin " min"
+] [
+.BI \-lmax " max"
+] [
+.BI \-lscale " scale"
+] [
+.BI \-lscale " scale"
+] [
+.BI \-pal " pal_fname"
+] [
+.B \-soft
+] [
+.BI metafile
+]
 .SH DESCRIPTION
 .B idt
 provides a graphical user interface to the NCAR View interactive metafile
@@ -76,6 +97,18 @@ text during metafile translation. The default font is
 .IP \fB\-history\fP
 Write a record of all commands sent to the translator to the file
 .BR ./.idthist .
+.PP
+The following options are ignored by \fBidt\fR and are passed on to the
+metafile translator \fBictrans\fR. See the man page for \fBictrans\fR for
+a description of their use.
+.IP \fB\-soft\fP
+.IP \fB\-lmin\fP\fI\ linewidth \fP
+.IP \fB\-lmax\fP\fI\ linewidth \fP
+.IP \fB\-lscale\fP\fI\ linewidth \fP
+.IP \fB\-pal\fP\fI\ pal_fname \fP
+.IP \fB\-foreground\fP\fI\ color \fP
+.IP \fB\-background\fP\fI\ color \fP
+.IP \fB\-reverse\fP
 .SH ENVIRONMENT
 .IP GRAPHCAP
 The GRAPHCAP environment variable is an alternative to the
@@ -174,6 +207,15 @@ the first frame in the file.
 Define the last frame in the segment. The default frame is the 
 last frame in the file. Hence, by default the segment is the entire 
 metafile.
+.IP "set window"
+Specify the workstation window (in the GKS sense). Four 
+coordinates are specified
+which define a rectangular window which is a subset of normalized VDC
+rectangle with corner points (0,0) and (1.0,1.0). The specified window
+is then mapped onto the entire display window. For example, if the workstation
+window is defined by the corner points (0,0) and (0.5 0.5) then the lower
+left quarter of a plot would be blown up to fill the entire window. 
+Specification of such a window can be used for zooming and panning.
 .IP done
 Terminate processing of current metafile.
 .IP "current frame"
@@ -211,12 +253,32 @@ These resources supplement the resources provided by the widgets themselves.
 Specify whether a history of commands sent to the metafile translators
 is recorded to the file "./.idthist" or not. The default for this resource
 is "False".
+.IP "fileSelectAction (Class FileSelectAction)"
+Set the default action to be executed after a file has been selected
+with the file selection box. Currently the only value this resource 
+understands is "display". 
+.IP "messageHeight (Class MessageHeight)"
+Set the height in lines of text of the message display panel.
 .IP "translatorDevice (Class TranslatorDevice)"
 Specify the output device for metafile translation. The default for this
 resource is "X11".
 .IP "translatorFont (Class TranslatorFont)"
 Specify the name of the fontcap to use for stroking text during metafile
 translation. The default value for this resource is "font1".
+.IP "translatorSoft (Class TranslatorSoft)"
+Specifies the \fBictrans\fR "-soft" option.
+.IP "translatorLmin (Class TranslatorLmin)"
+Specifies the \fBictrans\fR "-lmin" option.
+.IP "translatorLmax (Class TranslatorLmax)"
+Specifies the \fBictrans\fR "-lmax" option.
+.IP "translatorLscale (Class TranslatorLscale)"
+Specifies the \fBictrans\fR "-lscale" option.
+.IP "translatorForeground (Class TranslatorForeground)"
+Specifies the \fBictrans\fR "-foreground" option.
+.IP "translatorBackground (Class TranslatorBackground)"
+Specifies the \fBictrans\fR "-background" option.
+.IP "translatorReverse (Class TranslatorReverse)"
+Specifies the \fBictrans\fR "-reverse" option.
 .SH ACTIONS
 .B idt 
 provides the following actions for use in event translation:
@@ -300,6 +362,12 @@ The hierarchy of the display panel popup
 							Command  ok
 							Command  cancel
 				Command "stop segment"
+					TransientShell  simpleDialog
+						Dialog  dialog
+							Label  label
+							Command  ok
+							Command  cancel
+				Command "set window"
 					TransientShell  simpleDialog
 						Dialog  dialog
 							Label  label

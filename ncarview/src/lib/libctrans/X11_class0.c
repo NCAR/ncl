@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.4 1991-04-04 16:01:09 clyne Exp $
+ *	$Id: X11_class0.c,v 1.5 1991-06-18 15:04:08 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -83,7 +83,7 @@ static	Option	options[] =  {
 	},
 	{
 	"reverse", BoolType, 
-		(unsigned long) &commLineOpt.Geometry, sizeof (BoolType_ )
+		(unsigned long) &commLineOpt.reverse, sizeof (BoolType_ )
 	},
 	{
 	NULL

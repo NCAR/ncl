@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.3 1991-04-09 17:34:19 clyne Exp $
+ *	$Id: w_display.c,v 1.4 1991-06-18 14:50:34 clyne Exp $
  */
 /*
  *	w_display.c
@@ -47,7 +47,7 @@ static	void	Scroll();
 static	void	Done(), CurrentFrame(), NoPrint(), PrintSelect(), 
 		Save(), Zoom();
 static	void	Loop(), Dup(), Goto_(), Skip(), 
-		Start_Segment(), Stop_Segment();
+		Start_Segment(), Stop_Segment(), Set_Window();
 static	void	Playback(), Jogback(), Stop(), Jog(), Play();
 
 /*
@@ -245,7 +245,7 @@ static	void	create_middle_panel(paned, id)
 	int	id;
 {
 	Widget	form;
-	Widget	loop, goto_, dup, skip, start_segment, stop_segment;
+	Widget	loop, goto_, dup, skip, start_segment, stop_segment, set_window;
 
 	Cardinal	n;
 	Arg		args[10];
@@ -283,6 +283,12 @@ static	void	create_middle_panel(paned, id)
         stop_segment = XtCreateManagedWidget("stop segment",
 		commandWidgetClass,form,args,n);
 	XtAddCallback(stop_segment,XtNcallback,Stop_Segment,(XtPointer) id);
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, stop_segment);	n++;
+        set_window = XtCreateManagedWidget("set window",
+		commandWidgetClass,form,args,n);
+	XtAddCallback(set_window,XtNcallback,Set_Window,(XtPointer) id);
 }
 
 static	void	create_bottom_panel(paned, id) 
@@ -522,6 +528,18 @@ static  void    Stop_Segment(widget, client_data, call_data)
 	create_simple_dialog_popup(widget, id, "stop segment:", STOP_SEGMENT);
 
 }
+/*ARGSUSED*/
+static  void    Set_Window(widget, client_data, call_data)
+	Widget  widget;
+	XtPointer       client_data,	/* display id	*/
+			call_data;	/* not used	*/
+{
+	int	id = (int) client_data;
+	void	create_simple_dialog_popup();
+
+	create_simple_dialog_popup(widget, id, "set device window:",SET_WINDOW);
+
+}
 
 /*
  *	
@@ -606,15 +624,11 @@ static  void    Save(widget, client_data, call_data)
 	XtPointer       client_data,	/* display id	*/
 			call_data;	/* not used	*/
 {
-	int	id = (int) client_data;
+	int		id = (int) client_data;
+	void	create_simple_dialog_popup();
 
-	void	CreateSimpleDialogPopup();
+	create_simple_dialog_popup(widget, id, "Pleas enter file name:", SAVE);
 
-	command_Id.id = id;
-	command_Id.command = SAVE;
-
-	CreateSimpleDialogPopup(widget, "Please enter file name:",
-				Command3, (caddr_t) &command_Id,"");
 }
 
 /*
@@ -643,7 +657,7 @@ static  void    Zoom(widget, client_data, call_data)
 		command_Id.id = id;
 		command_Id.command = ZOOM;
 
-		Command3((caddr_t) &command_Id, s);
+		Command2((caddr_t) &command_Id, s);
         }
 }
 
@@ -665,19 +679,18 @@ static	void	create_simple_dialog_popup(widget, id, command_name, command)
 	DisplayCommands	command;
 
 {
-	int		value;
-	char	buf[80];
+	char	*value;
 
 	void	CreateSimpleDialogPopup();
+	char	*GetValue();
 
 	value = GetValue(id, command);
-	(void) sprintf(buf, "%d", value);
 
 	command_Id.id = id;
 	command_Id.command = command;
 
 	CreateSimpleDialogPopup(widget, command_name,
-				Command2, (caddr_t) &command_Id,buf);
+				Command2, (caddr_t) &command_Id,value);
 }
 
 /*

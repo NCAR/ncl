@@ -1,10 +1,10 @@
-NCARG	= ../../../..
+NCARG		= ../../../..
 
 LOCINCDIR	= ../../include
 LOCLIBDIR	= ../../../lib
 
 MYNAME1		= $(LIBDIR)/libictrans.o
-MYNAME2		= $(LOCLIBDIR)/libictrans.o
+MYNAME2		= $(LIBDIR)/libictrans_.o
 
 #
 # name of the spooler translator
@@ -61,6 +61,8 @@ commands.o:	Makefile
 
 lex.yy.c: lex.l
 	lex lex.l
+	@sed -e 's/yylex/my_yylex/g' lex.yy.c > lex.yy.c.tmp
+	@$(MV) lex.yy.c.tmp lex.yy.c
 
 lint: $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS) \ 

@@ -6,6 +6,7 @@
 #define	SKIP_STRING		"skip"
 #define	START_SEGMENT_STRING	"start"
 #define	STOP_SEGMENT_STRING	"stop"
+#define	SET_WINDOW_STRING	"zoom"
 #define	DONE_STRING		"quit"
 
 #define	LOOP_STRING		"loop"

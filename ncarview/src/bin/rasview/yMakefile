@@ -1,25 +1,33 @@
+#
+#	Makefile for rasview
+#
 NCARG		= ../../../..
+BINDIR_LOCAL	= ../../../bin
+
 
 LOCINCDIR	= ../../include
-
 MYNAME		= rasview
 
-EQUALHACK	= =
-
-LOCLIB		= $(LIBDIR)/libncarv.a 
+LOCLIB		= $(LIBDIR)/libncarv.a  $(LIBDIR)/libncarg_ras.a \
+		$(LIBDIR)/libhdf.a
 
 SRCS		= rasdraw.c rasview.c
 
 OBJS		= rasdraw.o rasview.o
 
+#if defined(CRAY)
+X11LIBS		= -lXt -lX11 -lnet
+#else
+X11LIBS		= -lXt -lX11
+#endif
 
-LIBS	= $(LOCLIB) -lraster -lXt -lX11 -ldf
+LIBS		= $(LOCLIB) $(X11LIBS) -lm
 
-CDEFINES	= -I$(LOCINCDIR) -I/usr/local/include
+CDEFINES	= -I$(LOCINCDIR)
 
 all::	$(MYNAME)
 
-CTarget($(MYNAME),$(OBJS),$(LIBS))
+CBinTarget($(MYNAME),$(OBJS),$(LIBS))
 MakefileTarget
 CleanTarget
 

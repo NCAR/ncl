@@ -8,8 +8,11 @@ all:
 
 
 install::
-	@for name in $(APP); do\
-	($(INSTALL) -m $(INSTALL_APP) $$name.ad $(XAPPDIR)/$$name);\
+	@for name in $(APP); do \
+        if (test -f $(XAPPDIR)/$$name) then \
+		echo "Warning: Replacing $(XAPPDIR)/$$name"; \
+                cp $(XAPPDIR)/$$name $(XAPPDIR)/$$name.bak ; fi; \
+	($(INSTALL) -m $(INSTALL_APP) $$name.ad $(XAPPDIR)/$$name); \
 	done
 
 MakefileTarget

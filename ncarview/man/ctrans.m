@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.3 1991-01-09 10:47:08 clyne Exp $
+.\"	$Id: ctrans.m,v 1.4 1991-06-18 14:41:24 clyne Exp $
 .\"
 .\" ctrans 3.01 90/06/22
 .TH CTRANS 1NCARV "22 June 1990" NCAR "NCAR View 3.01"
@@ -25,6 +25,8 @@ ctrans \- a Computer Graphics Metafile ( \fICGM\fR ) translator
 .BI \-lmax " max" 
 ] [
 .BI \-lscale " scale" 
+] [
+.BI \-pal " pal_fname" 
 ] [
 .I device\-specific options
 ] 
@@ -211,6 +213,15 @@ times the default line width for that device. This option is subject to
 modification by the 
 .BR -lmin " and " -lmax 
 options.
+.TP
+.BI \-pal " pal_fname"
+Use the color palette defined in the file
+.I pal_fname
+for subsequent translation of the metafile. This palette will override any 
+color map defined by the CGM being translated. For a description of 
+the format of 
+.I pal_fname
+see ncar_ras(1NCARG).
 .PP
 .SH DEVICE-SPECIFIC OPTIONS:
 .PP
@@ -251,6 +262,18 @@ Specify the size and/or position of the graphics window in the format
 of an 
 .I X11 Window System 
 geometry string.
+.TP 
+.BI \-background " color"
+Specifies the default window background color for color devices. If the 
+metafile explicitly sets color index 0 then this option is overridden.
+.TP
+.BI \-foreground " color"
+Specifies the default foreground color for color devices. If the metafile 
+explicitly sets color index 1 then this option is overridden.
+.TP
+.B \-reverse
+On monochrome devices reverse video is simulated by swapping the foreground
+and background colors.
 .PP
 The following options are available when 
 .I device 
@@ -364,6 +387,7 @@ The raster output is in X11 "xwd" format and is sent to the file
 .BR fontcap(1NCARG), 
 .BR gcaps(1NCARG), 
 .BR graphcap(1NCARG), 
+.BR ncar_ras(1NCARG), 
 .BR med(1NCARG), 
 .BR ictrans(1NCARG),
 .BR plt(1NCARG)

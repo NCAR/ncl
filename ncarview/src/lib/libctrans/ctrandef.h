@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrandef.h,v 1.4 1991-03-12 17:35:34 clyne Exp $
+ *	$Id: ctrandef.h,v 1.5 1991-06-18 14:59:38 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -24,7 +24,9 @@
  *	There is not a absolute value function for longs in in this C
  *	but there will be in Ansii C.  Therefore this should be removed then.
  */
+#ifndef	RS6000
 #define	labs(x)	abs((int)(x))
+#endif
 
 
 
@@ -48,5 +50,7 @@
 #ifndef	SIGN
 #define	SIGN(X)		(((X) < (0)) ? (-1) : (1))
 #endif
+
+typedef	float	Matrix2d[3][3];
 
 #endif	_ctrandef_

@@ -1,4 +1,7 @@
 /*
+ *	$Id: rasdraw.c,v 1.2 1991-06-18 14:55:18 clyne Exp $
+ */
+/*
  *	rasdraw.c
  *
  *	Author		John Clyne (clyne@ncar.ucar.edu)
@@ -11,8 +14,11 @@
  *	are supported.
  */
 #include <stdio.h>
-#include <raster.h>
 #include <ctype.h>
+#include <X11/Intrinsic.h>
+#include <X11/StringDefs.h>     /* Get standard string definations. */
+#include <X11/Shell.h>
+#include <ncarg_ras.h>
 #include "rasdraw.h"
 
 
@@ -20,13 +26,22 @@
  *	RasDrawOpen
  *	[exported]
  *
- *	Initialize DrawRas for displaying images
+ *	Initialize DrawRas for displaying images. Images are assumed to be
+ *	either 8-bit indexed or 24-bit direct. It is not guaranteed that
+ *	a X visual will exactly match one of these types. If the vis_class
+ *	member of context is set to TrueColor or DirectColor on return then
+ *	support for 24-bit-direct is available and a 24-bit image can be
+ *	displayed. If vis_class is set to PseudoColor, StaticColor, GrayScale 
+ *	or StaticGray then an 8-bit image may be displayed, although not
+ *	necessarily with its exact colors.
  *
  * on entry
  *	argc		: len of argv
  *	**argv		: null terminated argument list passed to XtInitialize
  *			  The application class passed to XtInitialize is 
  *			  obtained from argv[0]
+ *	nx, ny		: dimension of image to be displayed
+ *	encoding_hint	: one of (RAS_INDEXED, RAS_DIRECT) 
  *	batch		: set/unset batch mode
  * on exit
  *	return		: A context pointer to be used with DrawRas and Close
@@ -37,11 +52,15 @@ Context	*RasDrawOpen(argc, argv, batch)
 	char	**argv;
 	Boolean	batch;
 {
-	Context	*context;
-	String	app_class;
-	Arg	args[10];
+	Context		*context;
+	String		app_class;
+	Arg		args[10];
 	Cardinal	n;
 
+	Visual		*visual, *get_best_visual();
+	Colormap	create_colormap();
+	XImage		*create_ximage();
+	Widget		create_graphics_canvas();
 	
 	/*
 	 * use argv[0] as application class after converting argv[0][0]
@@ -60,15 +79,12 @@ Context	*RasDrawOpen(argc, argv, batch)
 		return ((Context *) NULL);
 	}
 
-	n = 0;
-	XtSetArg(args[n], XtNvisual, PseudoColor);	n++;
 	context->toplevel = XtAppInitialize(&(context->app_con), app_class,
 		(XrmOptionDescList) NULL, (Cardinal) 0, argc, argv,
-		NULL, args, (Cardinal) n);
+		NULL, NULL, (Cardinal) 0);
 
 	context->dpy = XtDisplay(context->toplevel);
 	context->batch = batch;
-	context->first = True;
 	context->load_pal = True;
 	context->xcolors = (XColor *) NULL;
 	context->xcolor_size = 0;
@@ -76,9 +92,74 @@ Context	*RasDrawOpen(argc, argv, batch)
 	context->default_pal.green = (unsigned char *) NULL;
 	context->default_pal.blue = (unsigned char *) NULL;
 
+
+	/*
+ 	 * this is a hack to find out what types of visuals are supported.
+	 * we'd like support for 8-bit indexed color and 24-bit direct
+	 * color images.
+	 */
+	context->encoding = RASDRAW_0BIT;
+	visual = get_best_visual(RAS_DIRECT, context->dpy);
+	if (visual->class == DirectColor || visual->class == TrueColor) {
+		context->encoding |= RASDRAW_24BIT;
+	}
+	visual = get_best_visual(RAS_INDEXED, context->dpy);
+	if (visual->class == DirectColor || visual->class == TrueColor) {
+		context->encoding |= RASDRAW_8BIT;
+	}
+
 	cfree(app_class);
 
 	return(context);
+}
+
+/*
+ * finish initialzation of context. We can't do this inside of
+ * RasDrawOpen() because we don't know dimensions of image
+ */
+ras_draw_init(context, nx, ny, encoding_hint)
+	Context	*context;
+	int	nx, ny;
+	int	encoding_hint;
+{
+	XGCValues	xgcvalues;
+	XSetWindowAttributes xswa;
+	XEvent		event;
+
+	context->visual = get_best_visual(encoding_hint, context->dpy);
+	context->vis_class = context->visual->class;
+
+	context->canvas = create_graphics_canvas(context->toplevel, nx, ny, 
+							encoding_hint);
+
+	context->gc = XtGetGC(context->canvas, 0L, &xgcvalues); 
+
+	XtRealizeWidget(context->toplevel);
+
+	/*
+	 * turn on backing store
+	 */
+	xswa.backing_store = WhenMapped;
+	XChangeWindowAttributes(context->dpy, XtWindow(context->canvas), 
+						CWBackingStore, &xswa);
+	context->cmap = create_colormap(context);
+
+	context->ximage = create_ximage(context->dpy, 
+		context->cmap_info.dsp_depth, context->visual, nx, ny, context);
+
+	/*
+	 * loop until window becomes exposed
+	 */
+	for(;;) {
+		XtAppNextEvent(context->app_con, &event);
+		XtDispatchEvent(&event);
+
+		/* 
+		 * window is exposed when we get a map notify
+		 */
+		if (event.type == MapNotify) break;
+	}
+
 }
 
 /*
@@ -99,44 +180,39 @@ RasDraw(ras, context)
 	Arg	args[10];
 	XEvent	event;
 	void	PassGo();
+	int	class = context->vis_class;
 
-	/*
-	 * if this is first time we've been called for this context
-	 * create the graphics window
-	 */
-	if (context->first) {
+	static	Boolean	first	= True;
 
-		create_graphics_canvas(ras, context);
-
-		init_colormap(context);
-
-		create_ximage(ras, context);
-
+	if (first) {
 		/*
-		 * loop until window becomes exposed
+		 * finish initialization of context now that we know
+		 * dimensions of image
 		 */
-		for(;;) {
-			XtAppNextEvent(context->app_con, &event);
-			XtDispatchEvent(&event);
-
-			/* 
-			 * window is exposed when we get a map notify
-			 */
-			if (event.type == MapNotify) break;
-		}
-		context->first = False;
-		
+		ras_draw_init(context, ras->nx, ras->ny, ras->type);
+		first = False;
 	}
 
-	/*
-	 * load colors from image into our own private colormap
-	 */
-	load_colors(ras, context);
+	if (class == DirectColor || class == TrueColor) {
+		if (ras->type != RAS_DIRECT) {
+			return(-1);	/* bad encoding	*/
+		}
 
-	/*
-	 * load the image from ras into a XImage structure
-	 */
-	load_image(ras, context);
+		load_24bit_image(ras, context);
+	}
+	else {
+		/*
+		 * load colors from image into our own private colormap
+		 */
+		load_palette(ras, context);
+
+		/*
+		 * load the image from ras into a XImage structure
+		 */
+		load_8bit_image(ras, context);
+
+	}
+
 
 	/*
 	 * if we're not in batch mode wait for a mouse click between frames
@@ -176,7 +252,8 @@ RasDraw(ras, context)
  *
  *	Set the default color map to be loaded for each RasDraw(). Subsequent
  *	invocations of RasDraw() will ignore color map information in the
- *	Raster* structure.
+ *	Raster* structure. RasDrawSetPalette() may be called any time after
+ *	RasDrawOpen() and before RasDrawClose().
  *
  * on entry
  *	*context	: context returned by RasDrawOpen()
@@ -191,6 +268,11 @@ RasDrawSetPalette(context, red, green, blue, ncolor)
 
 {
 	unsigned char 	*ucptr;
+	int	class = context->vis_class;
+
+	if (class == DirectColor || class == TrueColor) {
+		return(-1);	/* only works for indexed color	*/
+	}
 
 	if (context->default_pal.red) 
 		cfree((char *) context->default_pal.red);
@@ -217,6 +299,8 @@ RasDrawSetPalette(context, red, green, blue, ncolor)
 
 	context->default_pal.ncolor = ncolor;
 	context->load_pal = False;
+
+	return(1);
 }
 
 /*
@@ -262,44 +346,58 @@ RasDrawClose(context)
 	 */
 	if (context->ximage) {
 
+#ifdef	DEAD
 		/*
-		 * we cheeted and used ras's memory if bytes_per_pixel == 8
+		 * we cheeted and used ras's memory if bytes_per_pixel == 1
 		 */
-		if (context->image_info.bytes_per_pixel != 8)
+		if (context->image_info.bytes_per_pixel != 1)
 			context->ximage->data = NULL;
+#endif
 		XDestroyImage(context->ximage);
 	}
 
 	cfree((char *) context);
 }
 
-/*
- *	load an image from ras into an XImage structure
- */
-static	load_image(ras, context)
+static	load_24bit_image(ras, context)
 	Raster	*ras;
 	Context	*context;
 {
+}
+
+/*
+ *	load an image from ras into an XImage structure
+ */
+static	load_8bit_image(ras, context)
+	Raster	*ras;
+	Context	*context;
+{
+	XImage	*create_ximage();
+
+	/*
+	 * see if raster changed size
+	 */
 	if (context->ximage->width != ras->nx || 
 				context->ximage->height != ras->ny) {
 
 		context->ximage->data = NULL;
 		XDestroyImage(context->ximage);
 
-		create_ximage(ras, context);
+		context->ximage = create_ximage(context->dpy, 
+			context->cmap_info.dsp_depth, context->visual, 
+			ras->nx, ras->ny, context);
+
 	}
 
 	if (context->cmap_info.writeable) {
-		load_image_(ras, context);
+		load_8bit_image_(ras, context);
 	}
 	else {
-		load_static_image_(ras, context);
+		load_static_8bit_image_(ras, context);
 	}
-
-
 }
 
-load_image_(ras, context)
+load_8bit_image_(ras, context)
 	Raster	*ras;
 	Context	*context;
 {
@@ -313,10 +411,13 @@ load_image_(ras, context)
 		fprintf(stderr, "Unsupported display depth\n");
 	}
 }
-load_static_image_(ras, context)
+
+load_static_8bit_image_(ras, context)
 	Raster	*ras;
 	Context	*context;
 {
+
+#ifdef	DEAD
 	int	i;
 	long	*static_pal = context->cmap_info.static_pal;
 	int	bytes_per_pixel = context->image_info.bytes_per_pixel;
@@ -346,6 +447,9 @@ load_static_image_(ras, context)
 
 	XPutImage(context->dpy, XtWindow(context->canvas), context->gc,
 		context->ximage, 0,0,0,0, ras->nx, ras->ny);
+#endif
+
+	fprintf(stderr, "Unsupported color model\n");
 }
 
 
@@ -353,25 +457,44 @@ load_static_image_(ras, context)
  *	load our colormap with the appropriate palette. this only works
  *	with pseudo-color displays.
  */
-static	load_colors(ras, context)
+static	load_palette(ras, context)
 	Raster	*ras;
 	Context	*context;
 {
+	static	Boolean	first = True;
+	Display		*dpy = context->dpy;
+	Colormap 	cmap = context->cmap;
 
 	/*
 	 * is colormap writeable
 	 */
 	if (context->cmap_info.writeable) {
+
+		/*
+		 * we wait to last possible moment to load new colormap
+		 * so user doesn't get a black screen while trying to
+		 * place the image window
+		 */
+		if (first) {
+			/*
+			 * change default colormap. Window Manager is 
+			 * responsible  for swapping it in when sprite 
+			 * is in our window
+			 */
+			XSetWindowColormap(dpy, XtWindow(context->toplevel), 
+								cmap);
+			first = False;
+		}
 		/*
 		 * if load_pal is true load palette from ras else try and 
 		 * load default palette.
 		 */
 		if (context->load_pal) {
-			load_colors_(ras->red, ras->green,
+			load_palette_(ras->red, ras->green,
 					ras->blue, ras->ncolor,context);
 		}
 		else {
-			load_colors_(context->default_pal.red, 
+			load_palette_(context->default_pal.red, 
 				context->default_pal.green, 
 				context->default_pal.blue,
 				context->default_pal.ncolor, context);
@@ -399,7 +522,7 @@ static	load_static_pal_(red, green, blue, ncolor, context)
 	Context	*context;
 {
 	Display		*dpy = context->dpy;
-	Colormap 	cmap = context->cmap_info.cmap;
+	Colormap 	cmap = context->cmap;
 	long		*static_pal = context->cmap_info.static_pal;
 	XColor		xcolor;
 	char		flags = (DoRed | DoGreen | DoBlue);
@@ -437,13 +560,14 @@ static	load_static_pal_(red, green, blue, ncolor, context)
 	context->cmap_info.static_pal = static_pal;
 }
 
-static	load_colors_(red, green, blue, ncolor, context)
+static	load_palette_(red, green, blue, ncolor, context)
 	unsigned char	*red, *green, *blue;
 	unsigned int	ncolor;
 	Context	*context;
 {
 	int	i;
 	int	num_cols;
+	Display	*dpy = context->dpy;
 	char	flags = (DoRed | DoGreen | DoBlue);
 
 	num_cols = MIN(context->cmap_info.max_colors, ncolor);
@@ -482,8 +606,7 @@ static	load_colors_(red, green, blue, ncolor, context)
 		context->xcolors[i].pad = '\0';
 	}
 
-	XStoreColors(context->dpy, context->cmap_info.cmap,
-		context->xcolors, num_cols);
+	XStoreColors(dpy, context->cmap, context->xcolors, num_cols);
 
 	return(1);
 }
@@ -491,11 +614,11 @@ static	load_colors_(red, green, blue, ncolor, context)
 /*
  *	create a colormap 
  */
-static	init_colormap(context)
+static	Colormap	create_colormap(context)
 	Context	*context;
 {
 	Display	*dpy = context->dpy;
-	Visual	*visual;
+	Visual	*visual = context->visual;
 	int	dsp_depth;
 	Colormap	cmap;
 	long	max_colors;
@@ -505,10 +628,8 @@ static	init_colormap(context)
 	void	InstallCMap(), UnInstallCMap();
 #endif
 
-	dsp_depth =  DisplayPlanes(dpy,DefaultScreen(dpy));
+	dsp_depth =  visual->bits_per_rgb;
 	max_colors = 1 << dsp_depth;
-
-	visual = DefaultVisual(dpy, DefaultScreen(dpy));
 
 	if ((visual->class == DirectColor)
 		|| (visual->class == PseudoColor)
@@ -517,58 +638,62 @@ static	init_colormap(context)
 		cmap = XCreateColormap(dpy, XtWindow(context->toplevel),
 					visual, AllocAll);
 
+#ifdef	DEAD
 		/*
 		 * change default colormap. Window Manager is responsible
 		 * for swapping it in when sprite is in our window
 		 */
 		XSetWindowColormap(dpy, XtWindow(context->toplevel), cmap);
+#endif
 
 		writeable = True;
 
 	}
 	else {
+		/*
+		 * if cmap is not writeable there is no reason to create
+		 * our own.
+		 */
 		cmap = DefaultColormap(dpy, DefaultScreen(dpy));
 		writeable = False;
 		
 	}
 
-	context->cmap_info.visual = visual;
 	context->cmap_info.dsp_depth = dsp_depth;
-	context->cmap_info.cmap = cmap;
 	context->cmap_info.max_colors = max_colors;
 	context->cmap_info.writeable = writeable;
 	context->cmap_info.static_pal = (long *) NULL;
+
+	return(cmap);
 }
 
 
 /*
  * create and setup the ximage structure
  */
-static	create_ximage(ras, context)
-	Raster	*ras;
+static	XImage	*create_ximage(dpy, depth, visual, nx, ny, context)
+	Display	*dpy;
+	int	depth;
+	Visual	*visual;
+	int	nx, ny;
 	Context	*context;
 {
-	int	dsp_depth;
 	long	image_size;
 	int	bytes_per_pixel;
+	XImage	*ximage;
 	Boolean	use_xputpixel;
 	char	*image_buf = NULL;
 	unsigned long   swaptest = 1;   /* used to test if client byte swaped*/
 
-	dsp_depth = DisplayPlanes(context->dpy, DefaultScreen(context->dpy));
 
-	context->image_info.data = (char *) ras->data;
-
-	if ((context->ximage = XCreateImage(context->dpy, 
-		context->cmap_info.visual,
-		dsp_depth, ZPixmap, 0, NULL, 
-		ras->nx, ras->ny, 8, 0)) == NULL) {
+	if ((ximage = XCreateImage(dpy, visual,
+		depth, ZPixmap, 0, NULL, nx, ny, 8, 0)) == NULL) {
 
 		fprintf(stderr, "Error allocating image memory\n");
-		return(-1);
+		return(NULL);
 	}
 
-	switch (context->ximage->bits_per_pixel)
+	switch (ximage->bits_per_pixel)
 	{
 	case 8:
 	    use_xputpixel = False;
@@ -591,48 +716,47 @@ static	create_ximage(ras, context)
 	    break;
 	}
 
-	image_size = context->ximage->width * 
-		context->ximage->height * bytes_per_pixel;
+	image_size = ximage->width * ximage->height * bytes_per_pixel;
 
-	context->image_info.lsbFirst = context->ximage->byte_order == LSBFirst;
 
 	if ((*(char *) &swaptest))
-		context->ximage->byte_order = LSBFirst;
+		ximage->byte_order = LSBFirst;
 	else
-		context->ximage->byte_order = MSBFirst;
+		ximage->byte_order = MSBFirst;
 
 	/*
 	 * if bytes_per_pixel is eight we cheet and use memory allocated to 
 	 * the Raster* structure, else we have to allocate our own memory
 	 */
 
-	if (bytes_per_pixel != 8) {
+	if (bytes_per_pixel != 1) {
 		image_buf = (char *) malloc (image_size);
 		if (! image_buf) {
 			perror("rasview");
-			return(-1);
+			return(NULL);
 		}
 	}
 
-	context->image_info.image_size = image_size;
 	context->image_info.use_xputpixel = use_xputpixel;
+	context->image_info.lsbFirst = ximage->byte_order == LSBFirst;
 	context->image_info.bytes_per_pixel = bytes_per_pixel;
-	context->ximage->data = image_buf;
+	context->image_info.image_size = image_size;
 
+	ximage->data = NULL;;
+
+	return(ximage);
 }
 
 
 /*
- * create a drawing canvas and realize the toplevel widget
+ * create a drawing canvas 
  */
-static	create_graphics_canvas(ras, context)
-	Raster	*ras;
-	Context	*context;
+static	Widget	create_graphics_canvas(parent, nx, ny, encoding_hint)
+	Widget	parent;
+	int	nx, ny;
+	int	encoding_hint;
 {
-	XEvent	event;
-	XSetWindowAttributes xswa;
-	unsigned long	mask = 0;
-	XGCValues	xgcvalues;
+	Widget		canvas;
 	Cardinal	n;
 	Arg		args[5];
 
@@ -640,23 +764,56 @@ static	create_graphics_canvas(ras, context)
 	 *      create drawing canvas
 	 */
 	n = 0;
-	XtSetArg(args[n], XtNwidth, ras->nx);	n++;
-	XtSetArg(args[n], XtNheight, ras->ny);	n++;
-	XtSetArg(args[n], XtNvisual, PseudoColor);	n++;
-	context->canvas = XtCreateManagedWidget("canvas", widgetClass, 
-				context->toplevel, args, n);
+	XtSetArg(args[n], XtNwidth, nx);	n++;
+	XtSetArg(args[n], XtNheight, ny);	n++;
+	canvas = XtCreateManagedWidget("canvas", widgetClass, 
+				parent, args, n);
 
-	context->gc = XtGetGC(context->canvas, mask, &xgcvalues); 
 
-	XtRealizeWidget(context->toplevel);
+
+	return(canvas);
+}
+
+Visual	*get_best_visual(encoding_hint, dpy)
+	int	encoding_hint;
+	Display	*dpy;
+{
+	XVisualInfo	vinfo;
+	int	screen = DefaultScreen(dpy);
 
 	/*
-	 * turn on backing store
+	 * if want direct color (24-bit encoded) look for a DirectColor
+	 * followed by TrueColor visual with depth of 24 bits
 	 */
-	xswa.backing_store = WhenMapped;
-	XChangeWindowAttributes(context->dpy, XtWindow(context->canvas), 
-						CWBackingStore, &xswa);
+	if (encoding_hint == RAS_DIRECT) {
+		if (XMatchVisualInfo(dpy, screen, 24, DirectColor, &vinfo)) {
+			return(vinfo.visual);
+		}
+		else if (XMatchVisualInfo(dpy, screen, 24, TrueColor, &vinfo)) {
+			return(vinfo.visual);
+		}
+	}
 
+	/*
+	 * find best 8-bit depth visual
+	 */
+	if (XMatchVisualInfo(dpy, screen, 8, PseudoColor, &vinfo)) {
+		return(vinfo.visual);
+	}
+	else if (XMatchVisualInfo(dpy, screen, 8, StaticColor, &vinfo)) {
+		return(vinfo.visual);
+	}
+	else if (XMatchVisualInfo(dpy, screen, 8, GrayScale, &vinfo)) {
+		return(vinfo.visual);
+	}
+	else if (XMatchVisualInfo(dpy, screen, 8, StaticGray, &vinfo)) {
+		return(vinfo.visual);
+	}
+
+	/*
+	 * yuck, can't find anything. return the default
+	 */
+	return (DefaultVisual(dpy, screen));
 }
 
 #ifdef	NOT_ICCCM

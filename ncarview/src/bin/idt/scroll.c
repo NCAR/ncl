@@ -1,5 +1,5 @@
 /*
- *	$Id: scroll.c,v 1.2 1991-01-09 10:53:18 clyne Exp $
+ *	$Id: scroll.c,v 1.3 1991-06-18 14:50:22 clyne Exp $
  */
 /*
  *	scroll.c
@@ -36,7 +36,8 @@ void	ScrollTo(id, percent)
 	int	frame;
 	char	buf[10];
 
-	void Command2();
+	void	Command2();
+	char	*GetValue();
 
 	Command_Id	command_id;
 
@@ -50,8 +51,8 @@ void	ScrollTo(id, percent)
 	 * find out how many frames are covered by the segment defined
 	 * for this translator
 	 */
-	start = GetValue(id, START_SEGMENT);
-	stop = GetValue(id, STOP_SEGMENT);
+	start = atoi(GetValue(id, START_SEGMENT));
+	stop = atoi(GetValue(id, STOP_SEGMENT));
 
 	/*
 	 * map percent into a frame number

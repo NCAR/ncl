@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.2 1991-01-09 10:52:13 clyne Exp $
+ *	$Id: commands.c,v 1.3 1991-06-18 14:48:10 clyne Exp $
  */
 /*
  *	commands.c
@@ -124,10 +124,10 @@ void	Command2(command, command_data)
 	Command_Id	*comm_id = (Command_Id *) command;
 
 	int	id = comm_id->id;/* id of the command recipient		*/
-	int	value;		/* command_data represented as an int	*/
+	char	*value;		/* command_data represented as an int	*/
 	char	buf[80];	/* the ictrans complete command string	*/
 
-	value = atoi (command_data);
+	value = command_data;
 
 	/*
 	 * Build the ictrans command. Some commands are of the form
@@ -175,6 +175,37 @@ void	Command2(command, command_data)
 
 		break;
 
+	case SET_WINDOW: 
+		(void) strcpy(buf, SET_WINDOW_STRING);
+		(void) strcat(buf, " ");
+		(void) strcat(buf, command_data);
+		(void) strcat(buf, "\n");
+
+		break;
+
+	case SAVE: 
+		(void) strcpy(buf, SAVE_STRING);
+		(void) strcat(buf, " ");
+		(void) strcat(buf, command_data);
+		(void) strcat(buf, "\n");
+
+		break;
+
+	case ZOOM: 
+		(void) strcpy(buf, ZOOM_STRING1);
+		(void) strcat(buf, " ");
+		(void) strcat(buf, command_data);
+		(void) strcat(buf, ZOOM_STRING2);
+		(void) strcat(buf, "\n");
+
+		/*
+		 * this is a hack to register the coords selected with
+		 * the zoom command with the set_window command.
+		 */
+		comm_id->command = SET_WINDOW;
+
+		break;
+
 	}
 
 	/*
@@ -218,22 +249,7 @@ void	Command3(command, command_data)
  	 */
 	switch	((int) comm_id->command) {
 
-	case ZOOM: 
-		(void) strcpy(buf, ZOOM_STRING1);
-		(void) strcat(buf, " ");
-		(void) strcat(buf, command_data);
-		(void) strcat(buf, ZOOM_STRING2);
-		(void) strcat(buf, "\n");
 
-		break;
-
-	case SAVE: 
-		(void) strcpy(buf, SAVE_STRING);
-		(void) strcat(buf, " ");
-		(void) strcat(buf, command_data);
-		(void) strcat(buf, "\n");
-
-		break;
 	case LIST: 	/* not used	*/
 		(void) strcpy(buf, command_data);
 		(void) strcat(buf, " ");

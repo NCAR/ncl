@@ -1,4 +1,7 @@
 /*
+ *	$Id: rasview.c,v 1.2 1991-06-18 14:55:35 clyne Exp $
+ */
+/*
  *	rasview.c
  *
  *	Author		John Clyne
@@ -8,8 +11,11 @@
  *	Display a raster file to an X window. 
  */
 #include <stdio.h>
-#include <raster.h>
+#include <X11/Intrinsic.h>
+#include <X11/StringDefs.h>     /* Get standard string definations. */
+#include <X11/Shell.h>
 #include <ncarv.h>
+#include <ncarg_ras.h>
 #include "rasdraw.h"
 
 
@@ -81,42 +87,38 @@ main(argc, argv)
 	 * init libraster
 	 */
 	(void) RasterInit(&argc, argv);
-		
 
-	if ((context = RasDrawOpen(&argc, argv, 0)) == (Context *) NULL) {
+	if ((context = RasDrawOpen(&argc, argv, FALSE)) == (Context *) NULL) {
 		perror(program_name);
 		exit(1);
 	}
 
 	/*
+	 * load default palette if one was requested.
+	 */
+	if (pal_name) {
+		if (PaletteRead(pal_name,NULL,default_colors)== RAS_OK){
+			RasDrawSetPalette(context, default_colors,
+				default_colors + 256,
+				default_colors + 512, 
+				256);
+		}
+		else {
+			RasterPrintError(pal_name);
+			exit_status++;
+		}
+	}
+
+	/*
 	 * anything left on command line is assumed to be a raster file
 	 */
-	while (*(++argv)) {
+	while(*(++argv))
+	{
 
-		if ((ras = RasterOpen(*argv, NULL)) == (Raster *) NULL) {
+		if ((ras = RasterOpen(*argv, NULL)) == (Raster *) NULL){
 			(void) RasterPrintError(*argv);
 			exit_status++;
 			continue;	/* skip this file	*/
-		}
-
-		/*
-		 * load default color palette if one is requested
-		 */
-		if (pal_name) {
-			if (verbose) {
-				(void) fprintf(stderr, 
-					"Loading palette: %s\n", pal_name);
-			}
-			if (PaletteRead(pal_name,NULL,default_colors)== RAS_OK){
-				RasDrawSetPalette(context, default_colors,
-					default_colors + 256,
-					default_colors + 512, 
-					256);
-			}
-			else {
-				RasterPrintError(pal_name);
-				exit_status++;
-			}
 		}
 
 		if (verbose) {
@@ -128,14 +130,17 @@ main(argc, argv)
 		 * display all the images in the file
 		 */
 		count = 0;
-		while((status = RasterRead(ras)) == RAS_OK) {
+		for (;;) {
+			if ((status = RasterRead(ras)) != RAS_OK) {
+				break;
+			}
 			if (verbose) {
 				count++;
 				(void) fprintf(stderr,
 					"	image number: %d\n",count);
 			}
 
-			exit_status += display_image(ras, context);
+			exit_status += display_image(ras, context, verbose);
 		}
 
 		(void) RasterClose(ras);

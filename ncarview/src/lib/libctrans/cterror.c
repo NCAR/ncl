@@ -1,5 +1,5 @@
 /*
- *	$Id: cterror.c,v 1.5 1991-03-12 17:35:21 clyne Exp $
+ *	$Id: cterror.c,v 1.6 1991-06-18 14:59:28 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -51,10 +51,17 @@ extern	int	currdev;
 extern	CGMC	command;
 
 static	FILE	*errfile;
-static	char    *tempfile;
+static	char    tempFile[80];
+
 char	*program_name;
 static	Report	report = ALL;	/* level of error report		*/
 static	Action	action = ACT;	/* terminate ctrans on a fatal error?	*/
+
+#ifndef TMPDIR
+#define TMPDIR "/tmp"
+#endif
+
+#define TMPFILE         "/ctrans.XXXXXX"
 
 /*
  *	Prints the error message and an usage statement 
@@ -240,7 +247,7 @@ char	*message;
 			}
 
 			if (message)
-				(void) fprintf(errfile," %s", message);
+				(void) fprintf(errfile," - %s", message);
 
 			(void) fprintf(errfile, "\n");
 		}
@@ -402,15 +409,17 @@ init_ct_error(prog_name, file_)
 	boolean	file_;
 {
 
-	static char tempfn[] = "/tmp/ctrans.XXXXXX";
 	program_name = prog_name;
+
+	(void) strcpy(tempFile, TMPDIR);
+	(void) strcat(tempFile, TMPFILE);
 
 	/*
 	 *	Open the error file. 
 	 */
 	if (file_) {
-		tempfile = mktemp(tempfn);
-		if ((errfile = fopen(tempfile,"w")) == NULL) {
+		(void) mktemp(tempFile);
+		if ((errfile = fopen(tempFile,"w")) == NULL) {
 			perror(program_name);
 			errfile = stderr;
 		}
@@ -447,7 +456,7 @@ close_ct_error()
 	/*
 	 *	read the errors and print them out to stderr
 	 */
-	fd = open(tempfile,O_RDONLY);
+	fd = open(tempFile,O_RDONLY);
 	while ((i=read(fd,buffer,BUFSIZE)) != 0)
 		(void)write(2,buffer,i);
 	(void)close(fd);
@@ -455,6 +464,6 @@ close_ct_error()
 	/*
 	 *	clean up 
 	 */
-	(void)unlink(tempfile);
+	(void)unlink(tempFile);
 
 }

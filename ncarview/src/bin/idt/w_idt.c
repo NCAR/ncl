@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.10 1991-04-25 11:41:19 clyne Exp $
+ *	$Id: w_idt.c,v 1.11 1991-06-18 14:50:44 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -257,8 +257,8 @@ create_main_panel(parent, select_action)
 
 	extern	void	InitText(), AppendText();
 
-	char *line1 = " Copyright (C) 1990 - All Rights Reserved    \n";
-	char *line2 = " University Corporations for Atmospheric Research   \n";
+	char *line1 = " Copyright (C) 1991 - All Rights Reserved    \n";
+	char *line2 = " University Corporation for Atmospheric Research   \n";
 	char *line3 = " NCAR View - UNIX Version 3.01   \n";
 	char *header;
 
@@ -502,7 +502,7 @@ static	void Select_file(widget, client_data, call_data)
 	XtPointer	client_data;	/* select action	*/
 	XtPointer	call_data;	/* unused		*/
 {
-	void	(*select_action)() = (void *) client_data;
+	void	(*select_action)() = (void (*)()) client_data;
 
 	CreateFileSelectPopup(widget, select_action);
 }

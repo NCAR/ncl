@@ -4,7 +4,7 @@
 
 NCARG	= ../../..
 
-SUBDIRS = libncarv libcgm libctrans libictrans
+SUBDIRS = libncarv libcgm libncarg_ras libctrans libictrans libhdf
 
 MakeSubdirs($(SUBDIRS))
 InstallSubdirs($(SUBDIRS))

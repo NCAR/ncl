@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.3 1991-02-20 15:36:44 clyne Exp $
+ *	$Id: meta_edit.c,v 1.4 1991-06-18 14:57:17 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -61,6 +61,7 @@ extern	char	*strcat();
 extern	char	*mktemp();
 extern	void	CGM_freeDirectory();
 extern	Directory	*ReallocDir();
+extern	Directory	*CGM_copyCreateDir();
 
 extern	int	errno;	/* global C library error number	*/
 /*
@@ -81,8 +82,11 @@ static	Directory *workingDir;	/* dir representing the metafile being edited */
 static	Directory *saveDir;	/* actual dir for the metafile being edited */
 static	Cgm_fd	workingFd;	/* read file descriptor for working file   */
 
-#define	TEMPDIR		"/tmp"
-#define	TEMPFILE	"/libcgm.XXXXXX"
+#ifndef	TMPDIR
+#define	TMPDIR	"/tmp"
+#endif
+
+#define	TMPFILE		"/libcgm.XXXXXX"
 #define	WRITEFILE	"cgm.XXXXXX"
 #define	ABS(X)		((X) < 0 ? (-(X)) : (X))
 
@@ -649,12 +653,21 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp)
 	/*
 	 *	create a archive of metafile directory
 	 */
+#ifdef	DEAD
 	if ((saveDir = CGM_directory(workingFd)) == NULL) {
 		(void) CGM_close(workingFd);
 		CGM_freeDirectory(workingDir);
 		cfree((char *) workingList.list);
 		return(ERR);
 	}
+#else
+	if ((saveDir = CGM_copyCreateDir(workingDir)) == NULL) {
+		(void) CGM_close(workingFd);
+		CGM_freeDirectory(workingDir);
+		cfree((char *) workingList.list);
+		return(ERR);
+	}
+#endif
 	
 
 
@@ -666,15 +679,15 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp)
 	 */
 	if (tempFile) cfree (tempFile);
 	if (local_tmp) {
-		tempFile = icMalloc(strlen(local_tmp) + strlen(TEMPFILE) + 1);
+		tempFile = icMalloc(strlen(local_tmp) + strlen(TMPFILE) + 1);
 		(void) strcpy(tempFile, local_tmp);
 	}
 	else  {
-		tempFile = icMalloc(strlen(TEMPDIR) + strlen(TEMPFILE) + 1);
-		(void) strcpy(tempFile, TEMPDIR);
+		tempFile = icMalloc(strlen(TMPDIR) + strlen(TMPFILE) + 1);
+		(void) strcpy(tempFile, TMPDIR);
 	}
 
-	(void) strcat(tempFile, TEMPFILE);
+	(void) strcat(tempFile, TMPFILE);
 	(void) mktemp(tempFile);
 	(void) mktemp(writeFile);
 	if ((workingList.tmp_fd = 

@@ -1,3 +1,6 @@
+/*
+ *	$Id: rastdev.h,v 1.2 1991-06-18 15:03:57 clyne Exp $
+ */
 #ifndef	_rastdev_
 #define	_rastdev_
 

@@ -1,65 +1,61 @@
-NCARG	= ../../../..
+NCARG		= ../../../..
 
 LOCLIBDIR	= ../../../lib
 
-MYNAME	= ictrans
+MYNAME		= ictrans
 
 #
 #	Sun Cgi libraries
 #
 
 #ifdef BuildCGIctrans
-CGILIBS	= $(DCGILIBS)
+CGILIBS		= $(DCGILIBS)
 #endif BuildCGIctrans
 
 #
 #	X11 libraries
 #
-#ifdef BuildX11ctrans
-X11LIBS	= $(DX11LIBS)
-#ifdef	RS6000
-LD_CFLAGS	= $(CFLAGS)
-#endif
-#endif BuildX11ctrans
+#ifdef BuildXlibDependentCode
+X11LIBS		= $(DX11LIBS)
+#endif BuildXlibDependentCode
 
 #
 #	Sun SunView libraries
 #
 #ifdef BuildSunViewctrans
-SUNLIBS = $(DSUNLIBS)
+SUNLIBS		= $(DSUNLIBS)
 #endif
 
 #
 #	local libraries
 #
-LOCLIB	= $(LOCLIBDIR)/libictrans.o $(LIBDIR)/libctrans.o \
-	$(LIBDIR)/libcgm.a $(LIBDIR)/libncarv.a
+LOCLIB		= $(LIBDIR)/libictrans_.o $(LIBDIR)/libctrans.o \
+		$(LIBDIR)/libcgm.a $(LIBDIR)/libncarv.a \
+		$(LIBDIR)/libncarg_ras.a $(LIBDIR)/libhdf.a
 
-SRCS	= \
-	main.c 
-OBJS	= \
-	main.o 
+SRCS		=  main.c 
+OBJS		= main.o 
 
-LIBS	= $(LOCLIB) $(X11LIBS) $(CGILIBS) $(SUNLIBS) $(GENLIBS)
+LIBS		= $(LOCLIB) $(X11LIBS) $(CGILIBS) $(SUNLIBS) $(GENLIBS)
 
 
-GENLIBS = -lm
+GENLIBS		= -lm 
 
-DCGILIBS = -lcgi -lsuntool -lsunwindow -lpixrect
+DCGILIBS	= -lcgi -lsuntool -lsunwindow -lpixrect
 
 #ifdef BuildCGIctrans
-DSUNLIBS = 
+DSUNLIBS	= 
 #else
-DSUNLIBS =  -lsuntool -lsunwindow -lpixrect
+DSUNLIBS	=  -lsuntool -lsunwindow -lpixrect
 #endif
 
 #if defined(CRAY)
-DX11LIBS = -lX11 -lnet
+DX11LIBS	= -lX11 -lnet
 #else
 #if defined(sgi)
-DX11LIBS = -lX11 -lbsd
+DX11LIBS	= -lX11 -lbsd
 #else
-DX11LIBS = -lX11
+DX11LIBS	= -lX11
 #endif
 #endif
 

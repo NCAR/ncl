@@ -20,12 +20,7 @@ CDEFINES	= -I$(LOCINCDIR) -I/usr/include/bsd
 #ifdef	sun
 CDEFINES	= -I$(LOCINCDIR) -Bstatic
 #else
-#ifdef	RS6000
-CDEFINES	= -I/R4/usr/include -I$(LOCINCDIR)
-LD_CFLAGS	= $(CFLAGS) -L/R4/usr/lib
-#else
 CDEFINES	= -I$(LOCINCDIR)
-#endif
 #endif
 #endif
 
@@ -73,11 +68,9 @@ lint:	$(HDR) $(SRCS)
 		-DBINDIR$(EQUALHACK)'"$(BINDIR)"' \
 		$(LINTLIBS) $(SRCS)  1> lint.out 2>&1
 
-# Files that need to know installation directories
-#talkto.o:     Makefile
-#	$(CC) $(CFLAGS) -DTRANSLATOR$(EQUALHACK)'"$(TRANSLATOR)"' \
-#		-DBINDIR$(EQUALHACK)'"$(BINDIR)"'  -c $*.c
-
-talkto.o:     Makefile
+#
+#	w_idt.c needs to know the name of the translator
+#
+w_idt.o:     Makefile
 	$(CC) $(CFLAGS) -DTRANSLATOR$(EQUALHACK)'"$(TRANSLATOR)"' -c $*.c
 

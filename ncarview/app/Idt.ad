@@ -30,3 +30,5 @@ Idt*simpleDialog*dialog*value.translations: #override \n\
 Idt*scrollbar*orientation:		horizontal
 Idt*scrollbar*length:			100
 Idt*iconPixmap:				/usr/include/X11/bitmaps/ncarv_idt.bits
+!
+Idt*fileSelectAction:			display

@@ -6,7 +6,8 @@ NCARG	= ../../..
 BINDIR_LOCAL = ../../bin
 
 SRCSUBDIRS	= ctrans ictrans filter med scripts
-BINSUBDIRS	= cgm_edit idt xwdtohdf nriftohdf
+
+BINSUBDIRS	= cgm_edit idt xwdtohdf nriftohdf rasview
 SUBDIRS 	= $(SRCSUBDIRS) $(BINSUBDIRS)
 
 MakeSubdirs($(SRCSUBDIRS))

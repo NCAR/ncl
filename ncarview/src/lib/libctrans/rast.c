@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.1 1991-03-12 17:46:35 clyne Exp $
+ *	$Id: rast.c,v 1.2 1991-06-18 15:01:50 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -15,10 +15,10 @@
 #include <math.h>
 #include <sys/types.h>
 #include <ncarv.h>
-#include <raster.h>
+#include <ncarg_ras.h>
+#include <cterror.h>
 #include "cgmc.h"
 #include "rast.h"
-#include "cterror.h"
 #include "translate.h"
 #include "ctrandef.h"
 #include "default.h"
@@ -31,10 +31,25 @@ extern  int  	currdev;
 
 static	struct	RasterCommLineOpt_ {
 	StringType_	resolution;
+	StringType_	dpi;
+	BoolType_	rle;
+	BoolType_	compress;
 	} rasterCommLineOpt;
 
 static	Option	raster_opts[] = {
-	{"resolution",StringType,(unsigned long) &rasterCommLineOpt.resolution,					sizeof (StringType_)
+	{
+	"resolution",StringType,(unsigned long) &rasterCommLineOpt.resolution,
+				sizeof (StringType_)
+	},
+	{
+	"dpi",StringType,(unsigned long) &rasterCommLineOpt.dpi,
+				sizeof(StringType_)
+	},
+	{
+	"rle",BoolType,(unsigned long) &rasterCommLineOpt.rle,sizeof(BoolType_)
+	},
+	{
+	"compress",BoolType,(unsigned long) &rasterCommLineOpt.compress,					sizeof (BoolType_)
 	},
 	{
 	NULL
@@ -57,6 +72,9 @@ CGMC *c;
 	CoordModifier	coord_mod;
 	int	width, height;
 
+	int	ras_argc;
+	char	*ras_argv[10];
+
 	Raster	*RasterOpenWrite();
 
 	/*
@@ -66,9 +84,20 @@ CGMC *c;
 	getOptions((caddr_t) 0, raster_opts);
 
 	/*
+	 * load options for libraster into ras_argv and initialilze
+	 * libraster. We don't have direct access to argc and argv so
+	 * we use this kludge.
+	 */
+	build_ras_arg(&ras_argc, ras_argv, rasterCommLineOpt);
+	if (RasterInit(&ras_argc, ras_argv) != RAS_OK) {
+		ct_error(T_NULL, RasterGetError());
+		return(DIE);
+	}
+
+	/*
 	 * find dimensions of buffer for rasterization
 	 */
-	get_resolution(&dev_extent, rasterCommLineOpt);
+	get_resolution(&dev_extent, rasterCommLineOpt, devices[currdev].name);
 	width = ABS(dev_extent.llx - dev_extent.urx) + 1;
 	height = ABS(dev_extent.lly - dev_extent.ury) + 1;
 
@@ -103,7 +132,7 @@ CGMC *c;
 	if ((rastGrid = (RasterOpenWrite("stdout", width, height,
 		"NCAR View 3.01",RAS_INDEXED,devices[currdev].name))) == NULL) {
 
-		ct_error(T_NULL, "");
+		ct_error(T_NULL, RasterGetError());
 		return (DIE);
 	}
 
@@ -174,7 +203,7 @@ CGMC *c;
 		BACKCOLR_DAMAGE = FALSE;
 	}
 
-	clear_grid(rastGrid, 0);
+	clear_grid(rastGrid);
 	return (OK);
 }
 
@@ -197,9 +226,9 @@ CGMC *c;
 	/*
 	 *	 write the file
 	 */
-	 if( RasterWrite(rastGrid) != 0) {
-		ct_error(NT_NULL, "Error writing raster file");
-		return(SICK);
+	 if( RasterWrite(rastGrid) != RAS_OK) {
+		ct_error(NT_NULL, RasterGetError());
+		return (DIE);
 	}
 
 	
@@ -306,16 +335,20 @@ CGMC *c;
 	return (OK);
 }
 
-clear_grid(grid, index)
+clear_grid(grid)
 	Raster	*grid;
-	int	index;
 {
 	int	x,y;
 
+#ifdef	DEAD
 	for(y = 0; y < grid->ny; y++)
 	for(x=0; x < grid->nx; x++) {
-		INDEXED_PIXEL(grid, x, y) = index;
+		INDEXED_PIXEL(grid, x, y) = 0;
 	}
+#else
+	bzero((char *) grid->data, grid->nx * grid->ny);
+#endif
+	
 }
 
 init_color_tab()
@@ -349,17 +382,32 @@ set_back_color(colr)
 
 #define DEFAULT_WIDTH   512	/* default raster width         */
 #define DEFAULT_HEIGHT  512	/* default raster height        */
-get_resolution(dev_extent, opts)
+get_resolution(dev_extent, opts, name)
 	CoordRect	*dev_extent;
 	struct	RasterCommLineOpt_ opts;
+	char	*name;
 {
 	int	width = DEFAULT_WIDTH;
 	int	height = DEFAULT_HEIGHT;
+	int	dpi;
 
-	char	*cptr = opts.resolution;
+	/*
+	 * this is a hack to figure out the resolution for output to an
+	 * hp laserjet. With the laserjet users specify resolution in terms
+	 * of dots per inch.  We assume a full size picture is 6 by 6 inches
+	 */
+	if (! strcmp(name, "hplj")) {
+		dpi = atoi(opts.resolution);
+		width = 6 * dpi;
+		height = 6 * dpi;
+	}
+	else {
+		char	*cptr = opts.resolution;
 
-	if (sscanf(cptr, "%dx%d", &width, &height) != 2){
-		ct_error(NT_NULL, "Error parsing resolution, using defaults");
+		if (sscanf(cptr, "%dx%d", &width, &height) != 2){
+			ct_error(NT_NULL, 
+			"Error parsing resolution, using defaults");
+		}
 	}
 
 	/*
@@ -430,4 +478,40 @@ Ct_err	cell_array(c, P, rows, cols, nx,  ny, width)
 	if (index_array != (int *) NULL) cfree((char *) index_array);
 
 	return (OK);
+}
+
+build_ras_arg(ras_argc, ras_argv, rasterCommLineOpt)
+	int	*ras_argc;
+	char	**ras_argv;
+	struct	RasterCommLineOpt_ rasterCommLineOpt;
+{
+	int	i;
+
+	i = 0;
+
+	ras_argv[i] = icMalloc(strlen("ctrans") + 1);
+	strcpy(ras_argv[i], "ctrans");
+	i++;
+
+	ras_argv[i] = icMalloc(strlen("-dpi") + 1);
+	strcpy(ras_argv[i], "-dpi");
+	i++;
+
+	ras_argv[i] = icMalloc(strlen(rasterCommLineOpt.dpi) + 1);
+	strcpy(ras_argv[i], rasterCommLineOpt.dpi);
+	i++;
+
+	if (rasterCommLineOpt.compress) {
+		ras_argv[i] = icMalloc(strlen("-compress") + 1);
+		strcpy(ras_argv[i], "-compress");
+		i++;
+	}
+
+	if (rasterCommLineOpt.rle) {
+		ras_argv[i] = icMalloc(strlen("-rle") + 1);
+		strcpy(ras_argv[i], "-rle");
+		i++;
+	}
+
+	*ras_argc = i;
 }

@@ -4,7 +4,7 @@
 #
 #
 
-NCARG	= ../../../..
+NCARG		= ../../../..
 LOCINCDIR	= ../../include
 
 MYNAME		= libncarv.a

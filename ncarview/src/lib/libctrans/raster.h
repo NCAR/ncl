@@ -1,3 +1,6 @@
+/*
+ *	$Id: raster.h,v 1.2 1991-06-18 15:03:31 clyne Exp $
+ */
 #ifndef _RASTER_
 #define _RASTER_
 

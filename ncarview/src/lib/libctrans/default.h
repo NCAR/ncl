@@ -1,5 +1,5 @@
 /*
- *	$Id: default.h,v 1.4 1991-02-06 15:28:03 clyne Exp $
+ *	$Id: default.h,v 1.5 1991-06-18 14:59:50 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -420,17 +420,17 @@ typedef	struct	{
 } ACCESS_TABLE;
 
 ACCESS_TABLE	access_table = {
-	FALSE,
-	FALSE,
-	FALSE,
-	FALSE,
-	FALSE,
-	FALSE,
-	FALSE,
-	FALSE,
-	FALSE,
-	FALSE,
-	FALSE
+	TRUE,
+	TRUE,
+	TRUE,
+	TRUE,
+	TRUE,
+	TRUE,
+	TRUE,
+	TRUE,
+	TRUE,
+	TRUE,
+	TRUE
 	};
 	
 ACCESS_TABLE	*at = &access_table;

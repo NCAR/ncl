@@ -3,7 +3,7 @@ NCARG	= ../..
 
 MAN	= \ 
 	ctrans ictrans cgm ncarv_spool ncgm2cgm cgm2ncgm med gcaps fcaps \
-	xwdtohdf nriftohdf
+	xwdtohdf nriftohdf rasview
 
 UN_MAN	= \
 	idt cgm_edit 

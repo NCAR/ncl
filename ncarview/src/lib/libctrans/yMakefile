@@ -12,11 +12,11 @@ CGIOBJS	= $(DCGIOBJS)
 CGIDEFINES = -DCGI
 #endif BuildCGIctrans
 
-#ifdef BuildX11ctrans
+#ifdef BuildXlibDependentCode
 X11SRCS	= $(DX11SRCS)
 X11OBJS	= $(DX11OBJS)
 X11DEFINES = -DX11
-#endif BuildX11ctrans
+#endif BuildXlibDependentCode
 
 #ifdef BuildClearTextctrans
 CTXTSRCS = $(DCTXTSRCS)
@@ -52,7 +52,7 @@ GENSRCS =  \
 	fill.c fontlist.c format.c gcap.c gcread.c in.c rast.c \
 	readfont.c rgbtohls.c text.c translate.c env.c \
 	soft_fill.c cell.c bsd-sysv.c commondev.c gcapdev.c gcaprast.c \
-	rastdev.c 
+	rastdev.c hatch.c pal.c
 
 
 GENOBJS	= \
@@ -60,7 +60,7 @@ GENOBJS	= \
 	fill.o fontlist.o format.o gcap.o gcread.o in.o rast.o \
 	readfont.o rgbtohls.o text.o translate.o env.o \
 	soft_fill.o cell.o bsd-sysv.o commondev.o gcapdev.o gcaprast.o \
-	rastdev.o
+	rastdev.o hatch.o pal.o
 
 DEVSRCS	= cterror.c devices.c
 DEVOBJS	= cterror.o devices.o
@@ -102,7 +102,7 @@ DCTXTSRCS = clear_text.c
 
 DCTXTOBJS = clear_text.o
 
-CDEFINES	= -I$(LOCINCDIR) -I/usr/local/include -DBROKEN
+CDEFINES	= -I$(LOCINCDIR) -I/usr/local/include 
 
 all::
 	@$(CAT) Copyright
@@ -124,11 +124,11 @@ lint: $(HDR) $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1
 #	lint $(SRCS) $(LIBS) > lint.out
 
-cterror.o:
-	$(CC) $(CFLAGS) $(DDEFINES) -c $*.c
-
 devices.o:
 	$(CC) $(CFLAGS) $(DDEFINES) -c $*.c
 
 env.o:	Makefile
 	$(CC) $(CFLAGS) -DLIBPATH$(EQUALHACK)'"$(LIBDIR)"' -c $*.c
+
+cterror.o:	Makefile
+	$(CC) $(CFLAGS) $(DDEFINES) -DTMPDIR$(EQUALHACK)'"$(TMPDIR)"' -c $*.c

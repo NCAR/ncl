@@ -1,5 +1,5 @@
 /*
- *	$Id: display.c,v 1.3 1991-04-09 17:34:25 clyne Exp $
+ *	$Id: display.c,v 1.4 1991-06-18 14:48:16 clyne Exp $
  */
 /*
  *	Display.c
@@ -93,12 +93,13 @@ int	OpenDisplay(metafile)
 	 * set some default data values for idt commands associated with 
 	 * this connection
 	 */
-	pcvs[id].loop = 0;
-	pcvs[id].dup = 1;
-	pcvs[id].goto_ = 1;
-	pcvs[id].skip = 0;
-	pcvs[id].start_segment = 1;
-	pcvs[id].stop_segment = s ? atoi(s) : 1;
+	strncpy(pcvs[id].loop, "0", MAX_DATA_LEN - 1);
+	strncpy(pcvs[id].dup, "1", MAX_DATA_LEN - 1);
+	strncpy(pcvs[id].goto_, "1", MAX_DATA_LEN - 1);
+	strncpy(pcvs[id].skip ,"0", MAX_DATA_LEN - 1);
+	strncpy(pcvs[id].start_segment, "1", MAX_DATA_LEN - 1);
+	strncpy(pcvs[id].stop_segment,  s ? s : "1", MAX_DATA_LEN - 1);
+	strncpy(pcvs[id].set_window, "0.0 0.0 1.0 1.0", MAX_DATA_LEN - 1);
 
 
 	numUsed++;
@@ -192,9 +193,9 @@ void	CloseDisplayModule()
  *	command		: the command
  *
  * on exit
- *	return		: -1 => error; else the data is returned.
+ *	return		: NULL => error; else the data is returned.
  */
-int	GetValue(id, command)
+char	*GetValue(id, command)
 	int		id;
 	DisplayCommands	command;
 {
@@ -218,9 +219,15 @@ int	GetValue(id, command)
 	case	STOP_SEGMENT:
 		return (pcvs[id].stop_segment);
 
+	case	SET_WINDOW:
+		return (pcvs[id].set_window);
+
+	case	SAVE:
+		return (pcvs[id].save);
+
 	default:
 		(void) fprintf(stderr, "Illegal command\n");
-		return (-1);
+		return (NULL);
 
 	}
 }
@@ -238,32 +245,40 @@ int	GetValue(id, command)
 void	SetValues(id, command, value)
 	int		id;
 	DisplayCommands	command;
-	int		value;
+	char		*value;
 {
 
 	switch ((int) command) {
 	case	LOOP:
-		pcvs[id].loop = value;
+		strncpy(pcvs[id].loop, value, MAX_DATA_LEN - 1);
 		break;
 
 	case	DUP:
-		pcvs[id].dup = value;
+		strncpy(pcvs[id].dup, value, MAX_DATA_LEN - 1);
 		break;
 
 	case	SKIP:
-		pcvs[id].skip = value;
+		strncpy(pcvs[id].skip, value, MAX_DATA_LEN - 1);
 		break;
 
 	case	GOTO:
-		pcvs[id].goto_ = value;
+		strncpy(pcvs[id].goto_, value, MAX_DATA_LEN - 1);
 		break;
 
 	case	START_SEGMENT:
-		pcvs[id].start_segment = value;
+		strncpy(pcvs[id].start_segment, value, MAX_DATA_LEN - 1);
 		break;
 
 	case	STOP_SEGMENT:
-		pcvs[id].stop_segment = value;
+		strncpy(pcvs[id].stop_segment, value, MAX_DATA_LEN - 1);
+		break;
+
+	case	SET_WINDOW:
+		strncpy(pcvs[id].set_window, value, MAX_DATA_LEN - 1);
+		break;
+
+	case	SAVE:
+		strncpy(pcvs[id].save, value, MAX_DATA_LEN - 1);
 		break;
 
 	default:

@@ -1,4 +1,4 @@
-#	$Id: ncarv_spool,v 1.2 1990-12-14 14:53:59 clyne Exp $
+#	$Id: ncarv_spool,v 1.3 1991-06-18 14:47:26 clyne Exp $
 #
 #		ictrans sample spooler configuration file
 #
@@ -12,6 +12,4 @@
 #
 #imagen : -d imagen -f font1 : | ipr -Pscdimagen -Limpress 
 #postscript : -d ps.mono -f font1 : | psimagen | ipr -Pscdimagen 
-#xwd : -d xbfr -geom 1152x900 : > ./xraster
-
-
+#xwd : -d xbfr -geom 1152x900 : > ./raster.xwd

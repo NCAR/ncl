@@ -1,5 +1,5 @@
 /*
- *	$Id: fill.c,v 1.3 1991-03-12 17:37:07 clyne Exp $
+ *	$Id: fill.c,v 1.4 1991-06-18 15:00:17 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -737,8 +737,10 @@ fill_special(cgmc,instr,class,id)
 			instr->data_length = fill_I(cgmc,instr,1);
 			return(fill_IX(cgmc,instr,N));
 			
-		default : return(-1);
-			}
+		default :
+			ct_error(NT_IOUE,"");
+			return (0);
+		}
 	case 4 :
 		switch(id) {
 		case TEXT :	/* text*/
@@ -775,7 +777,8 @@ fill_special(cgmc,instr,class,id)
 			return(fill_S(cgmc,instr));
 
 		default : 
-			return(-1);
+			ct_error(NT_IOUE,"");
+			return (0);
 		}
 
 	case 5 :
@@ -796,13 +799,19 @@ fill_special(cgmc,instr,class,id)
 			instr->data_length = fill_CI(cgmc,instr,1);
 			return(fill_CD(cgmc,instr,N));
 
-		default : return(-1);
+		default :
+			ct_error(NT_IOUE,"");
+			return (0);
 		}
 	case 6 :
 		switch(id) {
 		case ESCAPE :	/* escape*/
 			instr->data_length = fill_I(cgmc,instr,1);
 			return(fill_S(cgmc,instr));
+
+		default:
+			ct_error(NT_IOUE,"");
+			return (0);
 		}
 	default : 
 		ct_error(NT_IOUE,"");
@@ -857,8 +866,8 @@ static	int	count;		/* number of cells processed in a row of data*/
 
 	/* only support one colour precision currently		*/
 	if ((cgmc->i[2] != 8) && (cgmc->i[2] != 0 || c_prec != 8)) {
-		ct_error(NT_CAFE,"(cell array must hafe 8 bit precison)");
-		return(-1);
+		ct_error(NT_CAFE,"(cell array must have 8 bit precison)");
+		return(0);
 	}
 
 

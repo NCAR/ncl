@@ -1,18 +1,21 @@
 
+#define	MAX_DATA_LEN	30
 typedef	struct	{
-	int	loop,
-		dup,
-		goto_,
-		skip,
-		start_segment,
-		stop_segment;
+	char	loop[MAX_DATA_LEN],
+		dup[MAX_DATA_LEN],
+		goto_[MAX_DATA_LEN],
+		skip[MAX_DATA_LEN],
+		start_segment[MAX_DATA_LEN],
+		stop_segment[MAX_DATA_LEN],
+		set_window[MAX_DATA_LEN],
+		save[MAX_DATA_LEN];
 	} PlotCommandValues;
 
 
 typedef	enum	{
 	LOOP, DUP, SKIP, GOTO, START_SEGMENT, STOP_SEGMENT,
 	PLAYBACK, JOGBACK, STOP, JOG, PLAY, LIST, SAVE, ZOOM, DONE, PRINT,
-	REDRAW
+	REDRAW, SET_WINDOW
 	} DisplayCommands;
 
 typedef	struct	{

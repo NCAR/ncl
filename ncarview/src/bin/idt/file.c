@@ -1,5 +1,5 @@
 /*
- *	$Id: file.c,v 1.4 1991-04-10 12:53:51 clyne Exp $
+ *	$Id: file.c,v 1.5 1991-06-18 14:49:10 clyne Exp $
  */
 /*
  *	file.c
@@ -138,7 +138,7 @@ SetFileSelection(file, select_action)
 			|| *file == '/' || *file == '~' || (! currentPath)) {
 
 		currentFileSelection = icMalloc((unsigned) (strlen (file) +1));
-		(void) strcat(currentFileSelection, file);
+		(void) strcpy(currentFileSelection, file);
 		if (select_action) {
 			select_action();
 		}

@@ -36,6 +36,7 @@ typedef	struct	{
 typedef	struct	{
 	int	num_meta;	/* number of metafiles in single file	*/
 	int	*meta;		/* begining record of each metafile	*/
+	int	meta_size;	/* amount of memory allocated to *meta	*/
 	int	num_frames;	/* number of frames in the file		*/
 	Directory_entry	*d;	/* pointer to elements of the directory	*/
 	int	dir_size;	/* amount of memory allocated to *d	*/
@@ -86,6 +87,7 @@ typedef	struct {
 	extern	Directory	*CGM_mergeFrames();
 	extern	Directory	*CGM_moveFrames();
 	extern	Directory	*CGM_readFrames();
+	extern	Directory	*CGM_copyCreateDir();
 #endif
 
 /*

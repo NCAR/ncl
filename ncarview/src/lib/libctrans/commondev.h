@@ -1,3 +1,6 @@
+/*
+ *	$Id: commondev.h,v 1.2 1991-06-18 15:03:14 clyne Exp $
+ */
 #ifndef	_commondev_
 #define	_commondev_
 

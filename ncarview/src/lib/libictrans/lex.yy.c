@@ -1,6 +1,3 @@
-/*
- *	$Id: lex.yy.c,v 1.2 1991-01-09 11:13:45 clyne Exp $
- */
 # include "stdio.h"
 # define U(x) x
 # define NLSTATE yyprevious=YYNEWLINE
@@ -32,7 +29,7 @@ extern struct yysvf yysvec[], *yybgin;
 #include "lex.h"
 static	short	have_command = 0;
 # define YYNEWLINE 10
-yylex(){
+my_yylex(){
 int nstr; extern int yyprevious;
 while((nstr = yylook()) >= 0)
 yyfussy: switch(nstr){
@@ -100,7 +97,7 @@ break;
 default:
 fprintf(yyout,"bad switch yylook %d",nstr);
 } return(0); }
-/* end of yylex */
+/* end of my_yylex */
 
 
 

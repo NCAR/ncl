@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.5 1991-04-22 13:02:54 clyne Exp $
+ *	$Id: text.c,v 1.6 1991-06-18 15:01:37 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -234,9 +234,9 @@ Ct_err	Init_Font(fontcap)
 				(void) fprintf(stderr, 
 				"ctrans: using font %s\n", f);
 			}
-			else 
-				return (SICK);
-			}
+			else return (OK);
+		}
+		else return(OK);
 	}
 
 	/* create space for temp cmgc	*/
@@ -681,6 +681,14 @@ Ct_err	Text(cgmc)
 
 	extern	Ct_err	setFont();
 
+	/*
+	 * make sure font has not changed
+	 */
+	if (TEXT_F_IND_DAMAGE) {
+		(void) setFont(TEXT_F_IND);
+		TEXT_F_IND_DAMAGE = FALSE;
+	}
+
 	if (! FontIsInit)
 		return(OK);	/* no font, nothing to do	*/
 
@@ -707,13 +715,6 @@ Ct_err	Text(cgmc)
 	Process(&tempcgmc);
 	
 
-	/*
-	 * make sure font has not changed
-	 */
-	if (TEXT_F_IND_DAMAGE) {
-		(void) setFont(TEXT_F_IND);
-		TEXT_F_IND_DAMAGE = FALSE;
-	}
 	modified();	/* recalc transformation values if attributes changed*/
 
 

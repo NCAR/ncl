@@ -1,339 +1,332 @@
 /*
- *	$Id: hatch.c,v 1.2 1991-01-09 11:10:37 clyne Exp $
- */
-/***********************************************************************
-*                                                                      *
-*                          Copyright (C)  1990                         *
-*            University Corporation for Atmospheric Research           *
-*                          All Rights Reserved                         *
-*                                                                      *
-*                      NCAR View V3.01 - UNIX Release                  *
-*                                                                      *
-***********************************************************************/
-#include <stdio.h>
-#include	<X11/Xlib.h>
-#include	<X11/Xutil.h>
-#include	<ncarv.h>
-#include	"cgmc.h"
-#include	"default.h"
-#include	"Xdefs.h"
-#include	"ctrandef.h"
-#include	<math.h>
-
-
-
-#define	DEG2RAD(THETA)	((M_PI) * THETA / 180.0)	
-#define	SPACEING	10
-
-
-extern	char	*program_name;
-extern	FILE	*errfile;
-extern	int	VDC2Xcoord();
-extern	double	Xoffs, Yoffs, Yvdc2d, Xvdc2d;
-extern	long	Xvdcsw, Yvdcsw;
-
-extern	Display	*dpy;
-extern	Window	win;
-extern	GC	lineGC, markerGC, polygonGC, cellGC;
-static	XGCValues	gcv;
-
-struct	{			/* struct to hold a polygon	*/
-	XPoint	P[50];
-	int	num_edge;	/* number of edges of polygon	*/
-	} poly;
-
-	/* struct to hold slope and offset in
-	 * line equation of the form y = mx + c
-	 */
-typedef	struct {		
-	float	slope;		/* slope of the line		*/
-	int	C;		/* offset C	C	*/
-	} eq;
-
-typedef	struct	{
-		int	index;
-		float	dist;
-		} distlist;
-
-
-
-	eq	edges[50];	/* list of equations for all lines making
-				 * up the edges in the polygon
-				 */
-	eq	hatch_origin_eq;/* equation of a hatch line at origin	*/
-
-
-
-/*	simple:
+ *	hatch.c
  *
- *		this routine breaks up a complex polygon to simpleones
+ *	Author		John Clyne
+ * 
+ *	Date		Fri Mar 29 12:48:07 MST 1991
+ *
+ *	simulate hatch patterns
  */
-int	simple(c)
-	CGMC	*c;
+#include <stdio.h>
+#include <math.h>
+#include <cterror.h>
+#include "default.h"
+#include "cgmc.h"
+#include "soft_fill.h"
+#include "commondev.h"
+#include "translate.h"
+#include "ctrandef.h"
+
+
+/*
+ *	ComSimHatch
+ *
+ *	simulate the CGM hatch patterns in software. ComSimHatch() uses
+ *	the solid fill software to build a table of horizontal lines which
+ *	completely fill the polygon. To simulate hatch lines only a few of
+ *	the line described by the fill table are used. If the hatch style
+ *	is not horizontal the polygon is rotated before the fill table is
+ *	is built because the fill table expects you to fill with horizontal
+ *	lines.
+ *
+ * on entry
+ *	p_list		: list of points describing the polygon
+ *	n		: num elements in p_list
+ *	hatch_index	: valid CGM hatch indece
+ *	file_scale_factor	: space between two horizontal lines on device
+ *	dev		: describes the device
+ * on exit
+ *	p_list		: is undefined
+ */
+ComSimHatch(p_list, n, hatch_index, fill_scale_factor, dev)
+	Ptype	*p_list;
+	long	n;
+	IXtype	hatch_index;
+	int	fill_scale_factor;
+	ComDev	*dev;
 {
-	static	int	index;	/* index into cgmc		*/
+	FillTable       *fill_table;
+	int     j,k;
+	int	num_hatch;	/* some hatch patterns are cross hatches */
+	DCtype	i;
+	Matrix2d	M[2], 		/* matrix for rotating polygon	*/
+			Minv[2];	/* matrix for restoring polygon	*/
+	float		sin_theta[2],	/* cosine of angle of rotation	*/
+			cos_theta[2];	/* sine of angle of rotation	*/
+	float		sin_theta_inv[2],	/* cos of angle inverse	*/
+			cos_theta_inv[2];	/* sin of angle inverse	*/
+	int	x1, y1, x2, y2;
+	int	x1_, y1_, x2_, y2_;
+	int	x,y;
+	DCtype	xmin, xmax,		/* x,y extent of polygon	*/
+		ymin, ymax;
+	DCtype	x_cen,			/* center of polygon		*/
+		y_cen;
+	DCtype	x_scr_cen,		/* center of screen		*/
+		y_scr_cen;
+	float	scale = 2.0;
 
-	int	i;
+	extern  FillTable       *buildFillTable();
 
-	for (i=0;i<c->Pnum;i++) {
-		poly.P[i].x = XConvert(c->p[i].x);
-		poly.P[i].y = YConvert(c->p[i].y);
+	if (n < 2)
+		return;
+	/*
+	 * we use lines to do the hatch patterns so we need to set
+	 * line colour to the polygon colour. Mark line color as 
+	 * having changed.
+	 */
+	dev->setlinecolour(FILL_COLOUR.index);/* set LINE color */
+	LINE_COLOUR_DAMAGE = TRUE;
+
+
+	/*
+	 * convert VDC coordinates to DC (device) coordinates. Find the 
+	 * x and y extents of polygon so we can determine its center.
+	 * we overwrite the contents of p_list with device coordinates.
+	 * (note this only legal since VDCtype and DCtype are the same type)
+	 */
+	xmin = XConvert(XMAX);	/* initialize extents	*/
+	xmax = XConvert(XMIN);
+	ymin = YConvert(YMAX);
+	ymax = YConvert(YMIN);
+	for (i = 0; i < n; i++) {
+		p_list[i].x = XConvert(p_list[i].x);
+		p_list[i].y = YConvert(p_list[i].y) / fill_scale_factor;
+                if (xmax < p_list[i].x) xmax = (DCtype) p_list[i].x;
+                if (ymax < p_list[i].y) ymax = (DCtype) p_list[i].y;
+                if (xmin > p_list[i].x) xmin = (DCtype) p_list[i].x;
+                if (ymin > p_list[i].y) ymin = (DCtype) p_list[i].y;
+
+	}
+
+	/*
+	 * the center of the polygon
+	 */
+	x_cen = (xmin + xmax) / 2;
+	y_cen = (ymin + ymax) / 2;
+
+	/*
+	 * the center of the screen
+	 */
+	x_scr_cen = (XConvert(XMAX) + XConvert(XMIN)) / 2;
+	y_scr_cen = (YConvert(YMAX) + YConvert(YMIN)) / 2;
+
+	/*
+	 * determine the angle of the hatch pattern(s) and the number of 
+	 * patterns, (1 or 2)
+	 */ 
+	num_hatch = 1;	/* only one pattern by default	*/
+	switch (hatch_index) {
+
+		case HORIZONTAL:	/* 0 degrees rotation	*/
+			cos_theta[0] = 1.0; sin_theta[0] = 0.0;
+			cos_theta_inv[0] = 1.0; sin_theta_inv[0] = 0.0;
+			break;
+
+		case VERTICAL  :	/* rotate 90 degrees	*/
+			cos_theta[0] = 0.0; sin_theta[0] = 1.0;
+			cos_theta_inv[0] = 0.0; sin_theta_inv[0] = -1.0;
+			break;
+
+		case POSSITIVE :	/* rotate 45 degrees	*/
+			cos_theta[0] = -0.707107; sin_theta[0] = 0.707107;
+			cos_theta_inv[0] = sin_theta_inv[0]= -0.707107;
+			break;
+
+		case NEGATIVE  :	/* rotate 135 degrees	*/
+			cos_theta[0] = 0.707107; sin_theta[0] = 0.707107;
+			cos_theta_inv[0]= 0.707107; sin_theta_inv[0]= -0.707107;
+			break;
+
+		case HORIZ_VERT:
+			cos_theta[0] = 1.0; sin_theta[0] = 0.0;
+			cos_theta_inv[0] = 1.0; sin_theta_inv[0] = 0.0;
+
+			cos_theta[1] = 0.0; sin_theta[1] = 1.0;
+			cos_theta_inv[1] = 0.0; sin_theta_inv[1] = -1.0;
+			num_hatch = 2;	/* two cross hatches	*/
+			break;
+
+		case POSS_NEG  :
+			cos_theta[0] = 0.707107; sin_theta[0] = 0.707107;
+			cos_theta_inv[0]= 0.707107; sin_theta_inv[0]= -0.707107;
+			cos_theta[1] = -0.707107; sin_theta[1] = 0.707107;
+			cos_theta_inv[1] = sin_theta_inv[1]= -0.707107;
+			num_hatch = 2;	/* two cross hatches	*/
+			break;
+		default:
+			ct_error(NT_UPFS,"bad hatch style");
+			cos_theta[0] = 1.0; sin_theta[0] = 0.0;
+			cos_theta_inv[0] = 1.0; sin_theta_inv[0] = 0.0;
+			break;
+	}
+
+	/*
+	 *	draw hatch pattern one angle at a time
+	 */
+	for (k = 0; k < num_hatch; k++) { 
+
+		/*
+		 * set up matrices for translating and rotating polygon. We
+		 * rotate the polygon an angle theta because the software
+		 * fill algorithm expects polygons to be filled using 
+		 * horizontal lines. We have to translate to ensure that
+		 * polygon remains inside the screen since software fill
+		 * routine expect the polygon to be clipped to the screen
+		 */
+		set_up_matrix(-x_cen, -y_cen, cos_theta[k], sin_theta[k], 
+				1.0/scale, x_scr_cen, y_scr_cen, M[k]);
+		set_up_matrix(-x_scr_cen,-y_scr_cen, cos_theta_inv[k], 
+				sin_theta_inv[k], scale, x_cen, y_cen, Minv[k]);
+
+	
+		/*
+		 * translate and rotate polygon
+		 */
+		for (i=0; i < n; i++) {
+			x = p_list[i].x; y = p_list[i].y;
+			p_list[i].x = (x * M[k][0][0]) 
+				+ (y * M[k][0][1]) + M[k][0][2]; 
+
+			p_list[i].y = (x * M[k][1][0]) 
+				+ (y * M[k][1][1]) + M[k][1][2]; 
+		}
+
+		/*
+		 * Build the fill table. 
+		 * This only works because p_list is of type Ptype 
+		 * which happens  to be the same as DCpoint. 
+		 */
+		fill_table = buildFillTable(p_list, (unsigned) n);
+
+
+		/*
+		 * draw hatch lines between using even-odd fill rule
+		 */
+		for (i=fill_table->y_first; i < (fill_table->y_last + 1); i+=4)
+		for (j = 0; j < (fill_table->x_count[i] - 1); j+=2) {
+
+			x1_ = fill_table->x_coord[i][j];
+			y1_ = i * fill_scale_factor;
+			x2_ = fill_table->x_coord[i][j+1];
+			y2_ = y1_;
+
+			x1 = (x1_ * Minv[k][0][0])+(y1_ * Minv[k][0][1]) 
+								+ Minv[k][0][2];
+			y1 = (x1_ * Minv[k][1][0])+(y1_ * Minv[k][1][1]) 
+								+ Minv[k][1][2];
+			x2 = (x2_ * Minv[k][0][0])+(y2_ * Minv[k][0][1]) 
+								+ Minv[k][0][2];
+			y2 = (x2_ * Minv[k][1][0])+(y2_ * Minv[k][1][1]) 
+								+ Minv[k][1][2];
+			dev->devline( x1, y1, x2, y2);
+		}
+
+		/*
+		 * if we have to draw more hatch lines at a different theta
+		 * restore point list to original values.
+		 */
+		if (k + 1 < num_hatch) {
+			for (i=0; i < n; i++) {
+				x = p_list[i].x; y = p_list[i].y;
+				p_list[i].x = (x * Minv[k][0][0]) 
+					+ (y * Minv[k][0][1]) + Minv[k][0][2];
+
+				p_list[i].y = (x * Minv[k][1][0]) 
+					+ (y * Minv[k][1][1]) + Minv[k][1][2];
+			}
+		}
+	}
+}
+
+
+/*
+ *	C = A x B, where A,B,C are of type Matrix2d
+ */
+static	void	matrix_matrix_multiply(A, B, C)
+	Matrix2d	A, B, C;
+{
+	int	i,j, k;
+
+	for (i=0; i<3; i++)
+	for (j=0; j<3; j++) {
+		C[i][j] = 0;
+		for (k=0; k<3; k++) {
+			C[i][j] += A[i][k] * B[k][j];
+		}
 	}
 		
-	/* make sure last point and first point are the same. if not fix it */
-	if ((poly.P[i-1].x != poly.P[0].x) 
-			|| (poly.P[i-1].x != poly.P[0].y)) {
-
-		poly.P[i].x = poly.P[0].x;
-		poly.P[i].y = poly.P[0].y;
-		poly.num_edge = i;
-	}
-
-	else
-		poly.num_edge = i-1;
-
-
-	return(1);
 }
 
-/*	edge_eq_calc:
- *
- *		calculate array representing the linear equation for each 
- *		edge
+
+/*
+ *	A = I, where A is of type Matrix2d
  */
-edge_eq_calc()
+static	void	identity_matrix(A)
+	Matrix2d	A;
 {
-
-	int	i;
-
-	for (i=0; i<poly.num_edge;i++) {
-		edges[i].slope = (float) (poly.P[i+1].x - poly.P[i].x) 
-				/ (float) (poly.P[i+1].y - poly.P[i].y);
-
-		edges[i].C = poly.P[i].y 
-				- (edges[i].slope * poly.P[i].x);
-	}
-}
-
-
-float	extreme(near_i, far_i)
-	int	*near_i, 
-		*far_i;		/* index into edge_eg of nearest and furthest
-				 * edge
-				 */	
-{
-
-	float	dist;
-	float	near_dist = 0.0;
-	float	far_dist = 0.0;
-	float	m = hatch_origin_eq.slope;
-	float	base = sqrt ((double) ((m*m) + 1));
-
-	int	i;
-
-
-	*near_i = *far_i = 0.0;
-
-	for (i=0;i<=poly.num_edge;i++) {
-		if ((dist = ((m*poly.P[i].x)+poly.P[i].y) / base) < near_dist) {
-			*near_i = i;
-			near_dist = dist;
-		}
-		else {
-			if (dist > far_dist) {
-				*far_i = i;
-				far_dist = dist;
-			}
-		}
-	}
-
-	return(far_dist - near_dist);
-}
-			
-
-intersect(hatchline, i, point)
-	eq	hatchline;
-	int	i;
-	XPoint	*point;
-{
-	XPoint	P;	/* intersection point of hatchline and line edges[i] */
-
-	/* check to see if lines are parallel	*/
-	if (hatchline.slope == edges[i].slope)
-		return(0);
-
-	P.x = (int) ((edges[i].C - hatchline.C) 
-			/ (hatchline.slope - edges[i].slope)); 
-
-	P.y = (hatchline.slope * P.x) + hatchline.C;
-
-	
-	if (poly.P[i].x > poly.P[i+1].x) {
-		if ((P.x <= poly.P[i].x) && (P.x >= poly.P[i+1].x)) {
-			point->x = P.x;
-			point->y = P.y;
-			return(1);
-		}
-	}
-	else {
-		if ((P.x >= poly.P[i].x) && (P.x <= poly.P[i+1].x)) {
-			point->x = P.x;
-			point->y = P.y;
-			return(1);
-		}
-	}
-
-	return(0);
-}
-
-
-draw (hitlist, hit, start_eq)
-	XPoint	hitlist[];
-	int	hit;
-	eq	start_eq;
-{
-	int	sort[25];
-
-	distlist	dt[10];
-
-	int	x,i;
-
-
-	x = (int) -start_eq.C / start_eq.slope;
-
-	for (i=0;i<hit;i++)  {
-		dt[i].index = i;
-		dt[i].dist = sqrt((double) 
-				(SQR(hitlist->y)+SQR(hitlist->x - x)));
-	}
-
-	d_sort(dt, hit);
-
-	
-	hit = hit/2;
-	for (i=0;i<hit;i+=2) {
-		XDrawPoint(dpy,win,polygonGC,hitlist[i].x, hitlist[i].y, 
-			hitlist[i+1].x, hitlist[i+1].y);
-	}
-}
-
-d_sort(dt, hit)
-	distlist	dt[];
-	int	hit;
-{
-
-	int	gap, i, j;
-	float	temp;
-
-	for(gap = hit/2; gap > 0; gap/= 2)
-		for(i = gap; i<hit; i++)
-			for (j=i-gap; j>=0 && dt[dt[j].index].dist >
-					dt[dt[j+gap].index].dist; j -= gap) {
-
-				temp = dt[j].index;
-				dt[j].index = dt[j+gap].index;
-				dt[j+gap].index = temp;
-			}
-}
-	
-
-
-
-
-
-hatch_sim(c, angle)
-	CGMC	*c;
-	float	angle;
-{
-
-
-	int	num_hatch;
-
-	int	near_i,	
-		far_i;	/* index into poly of nearest and furthest point to
-			 * hatch line at origin
-			 */
-
-	XPoint	hitlist[25];	/* list of indexes of edges intersected
-				 *  by a hatch line
-				 */
-	int	hit;
 	int	i,j;
 
-	float	space;
-
-	eq	start_eq;	/* equation for first hatch line drawn	*/
-
-	float	cosine,
-		sine;		/* sin and cosin of hatch angle		*/
-
-	/* convert from degrees to radians	*/
-	angle = DEG2RAD(angle);
-
-	cosine = (float) cos ((double) angle);
-	sine = (float) sin ((double) angle);
-
-	/*
-	 *	calculate equation for hatch line through the  origin
-	 */
-	hatch_origin_eq.slope = sine/cosine;
-	hatch_origin_eq.C = 0;
-
-	/* directed spacing between hatch lines	*/
-	space = SPACEING / sin((double) (M_PI_2) - angle);
-
-
-	/*
-	 *	break complex polygons into simple ones one at a time
-	 */
-	while(simple(c,  &poly)) {
-		
-		/*
-		 *	calculate equations for line makeing up each edge
-		 *	in a simple polygon
-		 */
-		edge_eq_calc(poly, edges); 
-
-		/*
-		 *	determine the number of hatch lines to be drawn as
-		 *	well as an index into poly[] of nearest and furtherest
-		 *	points in poly to hatch_origin
-		 */
-		num_hatch = extreme(&near_i, &far_i) / SPACEING;
-
-		/* 
-		 *	calculate equation for first hatch line. This line
-		 * 	is determined by the "nearest" point to hatch_origin
-		 */
-		start_eq.slope = hatch_origin_eq.slope;
-		start_eq.C = poly.P[near_i].y - 
-			(start_eq.slope * poly.P[near_i].x); 
-
-		/*
-		 *	draw hatch lines where necessary
-		 */
-		for (i=0;i < num_hatch; i++) {
-
-			hit = 0;
-			for (j=0; j<poly.num_edge; j++) {
-
-				/* see where a hatch line intercects an edge */
-				if (intersect(start_eq, j, &hitlist[hit])) { 
-					hit++;
-				}
-			}
-
-			/* 	draw portions of hatch lines that are bounded
-			 *	by an appropriate polygon edge
-			 */
-			draw(hitlist,hit, start_eq);
-		}
+	for (i=0; i<3; i++)
+	for (j=0; j<3; j++)
+	{
+		if (i == j)
+			A[i][j] = 1.0;
+		else
+			A[i][j] = 0.0;
 	}
 }
 
+/*
+ * set up a composite matrix for performing the desired translation,
+ * rotation and scaling
+ */
+static	set_up_matrix(xo, yo, cos_theta, sin_theta, scale, xprime, yprime, M)
+	int	xo, yo;			/* translation to origin	*/
+	float	cos_theta, 
+		sin_theta;		/* angle of rotation	*/
+	float	scale;
+	int	xprime, yprime;		/* final translation destinatin	*/
+	Matrix2d	M;
+{
+	Matrix2d	To,		/* translation to origin matrix	*/
+			R,		/* rotation about origin	*/
+			S,
+			Tprime;		/* translation to pprime matrix	*/
+	Matrix2d	Tmp;
+	Matrix2d	Tmp1;
+
+	identity_matrix(To);
+	identity_matrix(R);
+	identity_matrix(S);
+	identity_matrix(Tprime);
+
+	/*
+	 * translate to origin
+	 */
+	To[0][2] = xo;
+	To[1][2] = yo;
 
 
+	/*
+	 * rotate theta degrees about origin
+	 */
+	R[0][0] = cos_theta; R[0][1] = -sin_theta;
+	R[1][0] = sin_theta; R[1][1] = cos_theta;
 
+	/*
+	 * scale
+	 */
+	S[0][0] = scale;
+	S[1][1] = scale;
 
+	/*
+	 * translate to a point p'
+	 */
+	Tprime[0][2] = xprime;
+	Tprime[1][2] = yprime;
 
-		
+	matrix_matrix_multiply(S, To, Tmp);
+	matrix_matrix_multiply(R, Tmp, Tmp1);
+	matrix_matrix_multiply(Tprime, Tmp1, M);
+}

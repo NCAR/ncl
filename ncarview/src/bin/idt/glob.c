@@ -1,5 +1,5 @@
 /*
- *	$Id: glob.c,v 1.2 1991-01-09 10:52:36 clyne Exp $
+ *	$Id: glob.c,v 1.3 1991-06-18 14:50:06 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -58,7 +58,7 @@ glob(s, r_argv, r_argc)
 	static	char	**argv;
 	static	int	argc;
 	static	int	args;	/* memory alloced to argv	*/
-	static	char	inBuf[2*BUFSIZ];
+	static	char	inBuf[4*BUFSIZ];
 
 	int	i;
 	char	outbuf[MAX_LINE_LEN];
@@ -117,8 +117,8 @@ glob(s, r_argv, r_argc)
 	nbytes = 0;
 	while (1) {	/* read until receive ack or buffer is full	*/
 		cptr = inBuf + nbytes;
-		nbytes += read(to_parent[0], cptr, 2*BUFSIZ - nbytes);
-		if ((inBuf[nbytes - 2] == '') || nbytes == 2*BUFSIZ) break; 
+		nbytes += read(to_parent[0], cptr, 4*BUFSIZ - nbytes);
+		if ((inBuf[nbytes - 2] == '') || nbytes == 4*BUFSIZ) break; 
 	}
 
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.4 1991-02-20 15:36:51 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.5 1991-06-18 14:56:49 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -435,8 +435,7 @@ CGM_lseek(cgm_fd, offset, whence)
 Directory	*CGM_directory(cgm_fd)
 	Cgm_fd	cgm_fd;
 {
-
-
+	int	frame_count = 0;
 	Directory *init_dir();
 
 	enum {
@@ -447,11 +446,7 @@ Directory	*CGM_directory(cgm_fd)
 	Directory	*dir = NULL;	/* the directory to creat	*/
 	int	error;
 	int	record = 0;		/* current record in CGM	*/
-	unsigned size = DIR_2_ALLOC;	/* initial size of directory	*/
 
-	unsigned size_meta = DIR_2_ALLOC;	/* initial number of metafiles
-						 * allowed
-						 */
 	unsigned data_len;
 	unsigned tmp;
 	unsigned char	*cptr;
@@ -484,6 +479,7 @@ Directory	*CGM_directory(cgm_fd)
 	/*
 	 *	parse until the end of file or an error
 	 */
+	(void) fprintf(stdout, "Building CGM table of contents\n");
 	while ((error = CGM_read(cgm_fd, buf)) > 0) {
 
 		/* 
@@ -500,12 +496,12 @@ Directory	*CGM_directory(cgm_fd)
 			}
 
 			/*	see if we have enough mem	*/
-			if (dir->num_meta >= size_meta)  {
+			if (dir->num_meta >= dir->meta_size)  {
 
-				size_meta += DIR_2_ALLOC;
+				dir->meta_size += DIR_2_ALLOC;
 				dir->meta = (int *) icRealloc 
 					((char *) dir->meta, 
-					size_meta * sizeof (int));
+					dir->meta_size * sizeof (int));
 			}
 				
 
@@ -522,14 +518,19 @@ Directory	*CGM_directory(cgm_fd)
 		 */
 		if (GETBITS(buf[2], FRAME_POS, LEN )) {
 
+			frame_count++;
+			if ((frame_count % 50) == 0) {
+				(void) fprintf(stdout,"	Read %d frames\n", 
+					frame_count);
+			}
+
 			/* see if room in directory	*/
-			if (dir->num_frames >= size) {
+			if (dir->num_frames >= dir->dir_size) {
 
 				/* alloc more space	*/
 
-				size += DIR_2_ALLOC;
-
-				(void) ReallocDir(dir, size);
+				(void) ReallocDir(dir,
+					dir->dir_size + DIR_2_ALLOC);
 
 
 			}
@@ -616,6 +617,7 @@ Directory	*CGM_directory(cgm_fd)
 			
 	record++;
 	}
+	(void) fprintf(stdout,"Read %d frames\n", frame_count);
 
 	/*
 	 *	reset the file pointer to the beginning of the file
@@ -1284,6 +1286,83 @@ Directory	*ReallocDir(dir, num_frames)
 	return(dir);
 }
 
+/*
+ *	CGM_copyCreateDir
+ *
+ *	create a new directory and copy the contents of the input directory
+ *	to the new directory
+ *
+ * on entry
+ *	*d1		: a directory 
+ * on exit
+ *	return		: NULL => failure, else a copy of d1 is returned
+ */
+Directory	*CGM_copyCreateDir(d1)
+	Directory	*d1;
+{
+	Directory	*d2;
+	Directory	*init_dir();
+	int		i;
+
+	int	meta_size = d1->meta_size;
+	int	dir_size = d1->dir_size;
+	int	des_size = d1->MFDes_size;
+
+	if (! (d2 = init_dir())) return (Directory *) NULL;
+
+	/*
+	 * copy over staring record for each metafile within the CGM (usually
+	 * only one) checking for memory allocation while we're at it.
+	 */
+	d2->num_meta = d1->num_meta;
+	if (d2->meta_size < meta_size) {
+		d2->meta = (int *) icRealloc((char *) d2->meta,
+						meta_size * sizeof (int)); }
+	for (i = 0; i < d1->num_meta; i++) {
+		d2->meta[i] = d1->meta[i];
+	}
+	d2->meta_size = meta_size;
+
+	/*
+	 * copy over the directory structure
+	 */
+	d2->num_frames = d1->num_frames;
+	if (d2->dir_size < dir_size) {
+		d2 = ReallocDir(d2, dir_size);
+	}
+	for (i = 0; i < d1->num_frames; i++) {
+		d2->d[i].record = d1->d[i].record;
+		d2->d[i].num_record = d1->d[i].num_record;
+		d2->d[i].type = d1->d[i].type;
+		if (d1->d[i].text) {
+			d2->d[i].text = icMalloc(strlen(d1->d[i].text) + 1);
+			(void) strcpy(d2->d[i].text, d1->d[i].text);
+		}
+		else {
+			d1->d[i].text = NULL;
+		}
+	}
+	d2->dir_size = d2->dir_size;
+
+	/*
+	 * metafile description information
+	 */
+	if (d2->MFDes_size < des_size) {
+		d2->MFDescription = (char **) icRealloc((char *) d2->meta,
+					meta_size * sizeof (char *));
+	}
+	for (i = 0; i < des_size; i++ ) {
+		d2->MFDescription[i] = NULL;	/* no used	*/
+	}
+	d2->MFDes_size = des_size;
+
+	d2->status = d1->status;
+	d2->cgm_fd = d1->cgm_fd;
+
+	return(d2);
+}
+
+
 /*	init_dir():
  *	Private
  *
@@ -1297,6 +1376,7 @@ Directory	*init_dir()
 	dir = (Directory *) icMalloc (sizeof( Directory));
 
 	dir->meta = (int *) icMalloc (DIR_2_ALLOC * sizeof(int));
+	dir->meta_size = DIR_2_ALLOC;
 
 	dir->MFDescription = (char **) 
 		icMalloc (DIR_2_ALLOC * sizeof(char *));
@@ -1307,13 +1387,14 @@ Directory	*init_dir()
 	dir->d = (Directory_entry *) icMalloc
 		(DIR_2_ALLOC * sizeof(Directory_entry));
 
+	dir->dir_size = DIR_2_ALLOC;
+
 	for (i=0; i < DIR_2_ALLOC; i++) {
 		dir->MFDescription[i] = NULL;
 		dir->d[i].text = NULL;
 	}
 
 
-	dir->dir_size = DIR_2_ALLOC;
 
 	dir->status = CGM_ERROR;
 	dir->num_frames = 0;

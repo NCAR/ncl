@@ -1,3 +1,6 @@
+/*
+ *	$Id: rast.h,v 1.2 1991-06-18 15:03:52 clyne Exp $
+ */
 #ifndef	_color_
 #define	_color_
 
