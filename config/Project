@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.6 1994-05-11 21:59:42 haley Exp $
+ *      $Id: Project,v 1.7 1994-08-05 23:05:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -174,6 +174,65 @@ HLUDOCPATH		= $(LIBHLUPATH)/$(DOCDIR)
 HLURESPATH		= $(LIBHLUPATH)
 NCARGINCPATH		= $(INCPATH)/$(NCARGDIR)
 HLUINCPATH		= $(NCARGINCPATH)/$(HLUDIR)
+USRRESFILE		= ~/.hluresfile
+
+ROOTPATHCHECK		= /lib/ncarg/fontcaps/font1
+
+/*
+ * This huge define is used to define all the Environment variables
+ * that NCAR Graphics uses.  Each env var is specified by a single
+ * line, with the list being terminated with a NULL.
+ *
+ * Field 1)	The name that the env var is reference by when ncargpath
+ *		is called from the shell.  Or the name sent in as the
+ *		parameter to the libncarg_c functions GetNCARGPath and
+ *		_NGGetNCARGEnv.
+ *
+ * Field 2)	The actual Environment variable that will contain the value.
+ *		If this field is NULL, then it is assumed that the name
+ *		of the env var is NCARG_{CAPS(Field 1)} - the prefix
+ *		NCARG_ with Field one capitolized and concatinated.
+ *
+ * Field 3)	If the current env var is a subdirectory of one of the other
+ *		env vars, then that name is placed here.  If the current
+ *		env var is not set, then the parent env var is retrieved
+ *		and VAL(Field 3)/(Field 1) is returned.  If field 3 is
+ *		set, then field 4 and 5 are not used.
+ *
+ * Field 4)	This specifies a default value for the env var if it is not
+ *		set, and it is not a subdirectory of another env var.
+ *
+ * Field 5)	If Field 4 is used, then Field 5 is a file/directory that
+ *		can be concatenated to Field 4 and stat'd to determine if
+ *		Field 4 is valid or not.  If (Field 4)/(Field 5) exists
+ *		then a warning message is printed out that (Field 4) is
+ *		being used as a default.  If it doesn't exist, then
+ *		an error message is reported and NULL is returned from the
+ *		functions and ncargpath reports the error.
+ */
+NGENV_DESCRIPT	= '{"tmp","TMPDIR",NULL,"$(TMPROOT)",NULL,	\
+		"foncap","FONTCAP",NULL,NULL,NULL,		\
+		"graphcap","GRAPHCAP",NULL,NULL,NULL,		\
+		"root",NULL,NULL,"$(ROOTPATH)","$(ROOTPATHCHECK)",\
+		"usrresfile",NULL,NULL,"$(USRRESFILE)",NULL,	\
+		"gks_output",NULL,NULL,"gmeta",NULL,		\
+		"bin",NULL,"root",NULL,NULL,			\
+		"lib",NULL,"root",NULL,NULL,			\
+		"include",NULL,"root",NULL,NULL,		\
+		"man",NULL,"root",NULL,NULL,			\
+		"ncarg",NULL,"lib",NULL,NULL,			\
+		"config",NULL,"ncarg",NULL,NULL,		\
+		"database",NULL,"ncarg",NULL,NULL,		\
+		"fontcaps",NULL,"ncarg",NULL,NULL,		\
+		"graphcaps",NULL,"ncarg",NULL,NULL,		\
+		"examples",NULL,"ncarg",NULL,NULL,		\
+		"tests",NULL,"ncarg",NULL,NULL,			\
+		"tutorial",NULL,"ncarg",NULL,NULL,		\
+		"xapp",NULL,"ncarg",NULL,NULL,			\
+		"sysresfile",NULL,"ncarg",NULL,NULL,		\
+		NULL}'
+
+NGENVDEF	=	-DENV_DEFS=$(NGENV_DESCRIPT)
 
 #ifdef	UseInstalled
 #define _UseLib(a,b) b
