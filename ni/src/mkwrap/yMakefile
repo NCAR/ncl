@@ -1,0 +1,83 @@
+#
+#      $Id: yMakefile,v 1.1 1998-03-27 23:37:36 ethan Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1993				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		
+#
+#	Author:		Ethan Alpert
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Fri Sep 24 09:53:33 MDT 1993
+#
+#	Description:	
+#
+#	Usage:
+#
+#	Environment:
+#
+#	Files:
+#
+#
+#	Options:
+
+
+
+MYBIN		=	wrapit77
+LEX 		= 	flex
+YACC		=	yacc
+
+EXTRA_DEFINES = $(OS1_DEF) $(MAJOR_DEF)
+SYS_LIBS	=	-lfl
+
+
+HDRS		=	$(GEN_HDRS) $(STATIC_HDRS) 
+
+GEN_HDRS	=	y.tab.h
+
+STATIC_HDRS	=	Keywords.h WSymbol.h fstrings.h
+
+EXESRCS		=	$(SRCS) 
+ALLSRCS		=	$(EXESRCS)
+SRCS		=	$(GEN_SRCS) $(STATIC_SRCS)
+
+GEN_SRCS	=	y.tab.c lex.yy.c
+
+STATIC_SRCS	=	Symbol.c wrapit.c
+
+GEN_OBJS	=	y.tab.o lex.yy.o
+
+STATIC_OBJS	=	Symbol.o wrapit.o
+
+OBJS		=	$(GEN_OBJS) $(STATIC_OBJS)
+
+ALLOBJS		=	$(OBJS)
+EXEOBJS		=	$(OBJS)
+
+CProgram($(MYBIN),$(EXEOBJS),$(DEPLIBS))
+BuildIncludes($(INSTALL_HDRS),ncarg/ncl,../..)
+InstallTarget($(INSTALL_HDRS),$(INSTALL_INC),$(NCLINCPATH))
+
+depend-local:: $(GEN_HDRS) $(GEN_SRCS)
+DependTarget($(ALLSRCS))
+
+CleanFilesTarget(lex.yy.c y.tab.c y.tab.h)
+CleanFilesTarget($(GEN_HDRS) $(GEN_SRCS))
+
+#
+# yacc and lex dependancies
+#
+
+lex.yy.c: wrapit.l
+	$(LEX) wrapit.l
+
+y.tab.c y.tab.h: wrapit.y 
+	$(YACC) -d wrapit.y
+
