@@ -1,5 +1,5 @@
 C
-C	$Id: strmln.f,v 1.4 1993-01-21 23:50:50 dbrown Exp $
+C	$Id: strmln.f,v 1.5 1993-01-23 01:14:32 dbrown Exp $
 C
       SUBROUTINE STRMLN (U,V,WORK,IMAX,IPTSX,JPTSY,NSET,IER)
 C
@@ -236,38 +236,11 @@ C
 C
       SAVE  /STR02/, /STR03/
 C
-C ---------------------------------------------------------------------
-C
-C Initialization section
-C
-C STR02
-C
-      DATA   EXT    / 0.25 /
-      DATA  SIDE    / 0.90 /
-      DATA   XLT    / 0.05 /
-      DATA   YBT    / 0.05 /
-C
-C STR03
-C
-      DATA INITA    / 2 /
-      DATA INITB    / 2 /
-      DATA AROWL    / 0.33 /
-      DATA ITERP    / 35 /
-      DATA ITERC    / -99 /
-      DATA IGFLG    / 0 /
-      DATA  IMSG    / 0 /
-      DATA UVMSG    / 1.E+36 /
-      DATA  ICYC    / 0 /
-      DATA DISPL    / 0.33 /
-      DATA DISPC    / 0.67 /
-      DATA CSTOP    / 0.50 /
-C
-C End of common block initialization
-C -----------------------------------------------------------------
-C
 C Local variables:
 C
 C Saved values of common block variables:
+C (These violate the general rule of using only 1-3 chars for a
+C  local variable)
 C
 C ISSGD, ISAGD, SARL, ISCKP, 
 C ISCKX, ISTRP, ISCYK, SVNL, 
@@ -284,9 +257,31 @@ C IDM             - integer dummy variable
 C
       DATA IDM / 0 /
 C
+C ---------------------------------------------------------------------
+C
+C Initialization of STR02, STR03 common block members
+C
+      EXT       = 0.25
+      SIDE      = 0.90
+      XLT       = 0.05
+      YBT       = 0.05
+C
+      INITA     = 2
+      INITB     = 2
+      AROWL     = 0.33
+      ITERP     = 35
+      ITERC     = -99
+      IGFLG     = 0
+      ICYC      = 0
+      IMSG      = 0
+      UVMSG     = 1.E+36
+      DISPL     = 0.33
+      DISPC     = 0.67
+      CSTOP     = 0.50
+C
 C The following call is for gathering statistics on library use at ncar.
 C
-      CALL Q8QST4 ('CRAYLIB','STRMLN','VELVEC','VERSION  4')
+      CALL Q8QST4 ('CRAYLIB','STRMLN','STRMLN','VERSION  4')
 C
 C Load the communication common block with parameters
 C
