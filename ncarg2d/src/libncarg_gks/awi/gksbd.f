@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.19 2000-08-22 15:08:01 haley Exp $
+C	$Id: gksbd.f,v 1.20 2000-12-21 22:27:42 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -123,6 +123,8 @@ C       CURX   -- UPPER RIGHT X COORDINATE FOR POSITIONING PICTURE ON PAGE
 C       CURY   -- UPPER RIGHT Y COORDINATE FOR POSITIONING PICTURE ON PAGE
 C       CPSCL  -- SCALE FACTOR FOR POSTSCRIPT WORKSTATIONS
 C       CCMDL  -- Flag for CMYK color model or RGB color model
+C       CSUPR  -- Flag for suppressing background color and/or bounding
+C                 box for PS output.
 C       COLMOD -- Color Model for X color allocation
 C-----------------------------------------------------------------------
 C
@@ -223,6 +225,7 @@ C-----------------------------------------------------------------------
       DATA GSEGRT/'GSEG'/
       DATA CLLX,CLLY,CURX,CURY,CPSCL/-9999,-9999,-9999,-9999,-1/
       DATA CCMDL/1/
+      DATA CSUPR/0/
       DATA COLMOD/-1/
 C
       DATA IERNMS/    1,    2,    3,    4,    5,    6,    7,    8,

@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.h,v 1.3 2000-08-22 03:23:29 haley Exp $
+ *	$Id: ps.h,v 1.4 2000-12-21 22:27:51 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -55,6 +55,7 @@
 #define PS_CLIPPING_RECT	1
 
 #define MITER_LIMIT_DEFAULT		10.
+#define SUPPRESS_FLAG      		0
 
 #define LINETYPE_DEFAULT                1       
 #define LINEWIDTH_DEFAULT               1.

@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.28 2000-08-22 15:07:59 haley Exp $
+C	$Id: gesc.f,v 1.29 2000-12-21 22:27:42 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -121,6 +121,11 @@ C      -1520  --  Miter limit.
 C      -1521  --  Coordinate points for picture positioning.
 C      -1522  --  Scale factor for PS coordintaes.
 C      -1523  --  Select CMYK color model or RGB model.
+C      -1524  --  Flag for suppressing bounding box and background color
+C                   0 = put out background and bounding box;
+C                   1 = neither background or bounding box;
+C                   2 = no background;
+C                   3 = no bounding box
 C
       IF (FCTID .EQ. -1399) THEN
 C
@@ -689,6 +694,13 @@ C  Color model selection (1=RGB, 0=CMYK).
 C
         IF (FCTID .EQ. -1523) THEN
           READ(IDR(1)(1:5),501) CCMDL
+          RETURN
+        ENDIF 
+C
+C  Suppress flag for background color and/or bounding box.
+C
+        IF (FCTID .EQ. -1524) THEN
+          READ(IDR(1)(1:5),501) CSUPR
           RETURN
         ENDIF 
 C

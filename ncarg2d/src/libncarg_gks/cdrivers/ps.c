@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.22 2000-08-22 15:09:50 haley Exp $
+ *	$Id: ps.c,v 1.23 2000-12-21 22:27:51 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -449,15 +449,18 @@ void PSpreamble (PSddp *psa, preamble_type type)
 		(void) fprintf(fp, "%%%%Creator: NCAR GKS\n");
 		(void) fprintf(fp, "%%%%CreationDate: %s %s\n",
 					__DATE__,__TIME__);
-	       	(void) fprintf(psa->file_pointer, "%%%%BoundingBox: ");
-       		(void) fprintf(psa->file_pointer, "%d ",
-			(int) ((psa->scaling) * ((float)(psa->dspace.llx))));
-       		(void) fprintf(psa->file_pointer, "%d ",
-			(int) ((psa->scaling) * ((float)(psa->dspace.lly))));
-       		(void) fprintf(psa->file_pointer, "%d ",
-			(int) ((psa->scaling) * ((float)(psa->dspace.urx))+1));
-       		(void) fprintf(psa->file_pointer, "%d\n",
-			(int) ((psa->scaling) * ((float)(psa->dspace.ury))+1));
+                if ((psa->type != RPS) || (psa->suppress_flag != 1 &&
+                                           psa->suppress_flag != 3)) {
+	       	  (void) fprintf(psa->file_pointer, "%%%%BoundingBox: ");
+       		  (void) fprintf(psa->file_pointer, "%d ",
+			  (int) ((psa->scaling) * ((float)(psa->dspace.llx))));
+       		  (void) fprintf(psa->file_pointer, "%d ",
+			  (int) ((psa->scaling) * ((float)(psa->dspace.lly))));
+       		  (void) fprintf(psa->file_pointer, "%d ",
+			 (int) ((psa->scaling) * ((float)(psa->dspace.urx))+1));
+       		  (void) fprintf(psa->file_pointer, "%d\n",
+		         (int) ((psa->scaling) * ((float)(psa->dspace.ury))+1));
+                }
 		(void) fprintf(fp, "%%%%EndComments\n");
 
 		/*  For an EPSI file, put out a preview bitmap here that 
@@ -891,7 +894,8 @@ void PSpreamble (PSddp *psa, preamble_type type)
 			OutputClipping (psa, PS_CLIPPING_RECT);
 		}
 
-		if (psa->background) {
+		if (psa->background && (psa->suppress_flag != 1) &&
+                                       (psa->suppress_flag != 2)) {
 			PSbackground(psa);
 		}
 		if (psa->color == MONO) {   /* Use foreground color for mono */
@@ -1030,8 +1034,15 @@ static void PSinit(PSddp *psa, int *coords)
 	psa->line_cap = ROUNDED;
 	psa->nominal_width_scale = .5;
 	psa->full_background = FALSE;
+	psa->suppress_flag = SUPPRESS_FLAG;
 	psa->miter_limit = MITER_LIMIT_DEFAULT;
 	psa->sfill_spacing = PS_FILL_SPACING;
+
+        /*
+         *  Flag to suppress putting out background color rectangle 
+         *  and/or the bounding box.
+         */
+        psa->suppress_flag = *(coords+6);
 
         /*
          *  Color model flag is in *(coords+5); set the global
@@ -3154,7 +3165,8 @@ ps_SetColorRepresentation(gksc)
 	psa->color_map[3*index+2] = b;
 	psa->color_map[index+3*MAX_COLORS] = 1;
 
-	if (index == 0) {
+	if ((index == 0)  && (psa->suppress_flag != 1) &&
+                             (psa->suppress_flag != 2)) {
 		psa->background = TRUE;
 	}
 
@@ -3170,7 +3182,8 @@ ps_SetColorRepresentation(gksc)
 	     	  (void) fprintf(psa->file_pointer,"%d O\n",index);
 	  }
 
-	  if (index == 0) {
+	  if ((index == 0) && (psa->suppress_flag != 1) &&
+                              (psa->suppress_flag != 2)) {
 		  PSbackground(psa);
 		  psa->background = TRUE;
 	  }
@@ -3418,6 +3431,12 @@ ps_Esc(gksc)
 		psa->ps_clip.ury = psa->dspace.ury;
 		psa->ps_clip.null = FALSE;
 		break;
+        case -1524:  /* Suppress background and/or bounding box */
+                strng = strtok(sptr, " ");
+                strng = strtok((char *) NULL, " ");
+                psa->suppress_flag = (int) atoi(strng);
+                break;
+                
 	default:
 		return ERR_INV_ESCAPE;
 	}

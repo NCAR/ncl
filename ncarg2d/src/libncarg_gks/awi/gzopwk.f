@@ -1,5 +1,5 @@
 C
-C	$Id: gzopwk.f,v 1.4 2000-08-22 15:08:33 haley Exp $
+C	$Id: gzopwk.f,v 1.5 2000-12-21 22:27:43 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -110,8 +110,8 @@ C
         CONT  = 0
         CALL GZROI(0)
         IF (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) THEN
-          IL1   = 9
-          IL2   = 9
+          IL1   = 10
+          IL2   = 10
           ID(1) = WKID
           ID(2) = CONID
           ID(3) = WTYPE
@@ -130,6 +130,10 @@ C
 C  Color model for PostScript workstations.
 C
           ID(9) = CCMDL
+C
+C  Flage for suppressing bounding box and background color for PS.
+C
+          ID(10) = CSUPR
 	ELSE IF (WTYPE.EQ.GXWE .OR. WTYPE.EQ.GXWC) THEN
 	  IL1   = 4
 	  IL2   = 4
