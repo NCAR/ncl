@@ -1,5 +1,5 @@
 /*
- *	$Id: scroll.c,v 1.3 1991-06-18 14:50:22 clyne Exp $
+ *	$Id: scroll.c,v 1.4 1991-12-19 10:02:07 clyne Exp $
  */
 /*
  *	scroll.c
@@ -77,6 +77,6 @@ void	ScrollTo(id, percent)
 	/*
 	 * update the displayed frame count
 	 */
-	UpdateFrameLabel(buf);
+	UpdateFrameLabel(id, buf);
 }
 	
