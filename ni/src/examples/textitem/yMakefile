@@ -1,17 +1,18 @@
 #
-#   $Id: yMakefile,v 1.3 1995-01-26 17:06:11 haley Exp $
+#   $Id: yMakefile,v 1.4 1995-01-31 16:41:00 stautler Exp $
 #
 #   Makefile for HLU TextItem examples
 #
 
-NCGMS   =   tx01c.ncgm tx02c.ncgm tx03c.ncgm tx04c.ncgm tx01f.ncgm
+NCGMS   =   tx01c.ncgm tx02c.ncgm tx03c.ncgm tx04c.ncgm tx01f.ncgm \
+            tx02f.ncgm tx03f.ncgm tx04f.ncgm
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-SRCS        = tx01c.c tx02c.c tx03c.c tx04c.c tx01f.f
-RES			= tx02.res tx03.res tx04.res
+SRCS        = tx01c.c tx02c.c tx03c.c tx04c.c tx01f.f tx02f.f tx03f.f tx04f.f
+RES	    = tx02.res tx03.res tx04.res
 EXFILES     = $(SRCS) $(RES)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
@@ -20,7 +21,11 @@ HLUCExampleTarget(tx01c,tx01c.o)
 HLUCExampleTarget(tx02c,tx02c.o)
 HLUCExampleTarget(tx03c,tx03c.o)
 HLUCExampleTarget(tx04c,tx04c.o)
+
 HLUFExampleTarget(tx01f,tx01f.o)
+HLUFExampleTarget(tx02f,tx02f.o)
+HLUFExampleTarget(tx03f,tx03f.o)
+HLUFExampleTarget(tx04f,tx04f.o)
 
 CleanFilesTarget($(NCGMS))
 DependTarget($(SRCS))
