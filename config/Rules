@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.23 1994-07-11 15:41:54 haley Exp $
+ *	$Id: Rules,v 1.24 1994-07-20 18:55:39 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -52,6 +52,8 @@ me: local-Makefile]
 #ifndef	SubdirTarget
 #define	SubdirTarget(dirs,target,dependency,margs)\
 ]\
+all::]\
+]\
 target::dependency]\
 	margs/**/tname\=target; \ ]\
 	for dir in dirs ; do \ ]\
@@ -73,6 +75,7 @@ target::dependency]\
  */
 #ifndef	InstallTarget
 #define InstallTarget(names, mode, dest)\
+all::]\
 ]\
 all-local:: names]\
 ]\
@@ -92,6 +95,8 @@ install-local:: names]\
 #ifndef	InstallLibTarget
 #define InstallLibTarget(library)\
 InstallTarget(library,$(INSTALL_LIB),$(LIBPATH))\
+]\
+all::]\
 ]\
 install-local::]\
 	$(RANLIB) $(LIBPATH)/library]
@@ -212,6 +217,8 @@ Makefiles-local::]\
 #ifndef	RelocatableTarget
 #define RelocatableTarget(name,objects)\
 ]\
+all::]\
+]\
 all-local::	name]\
 ]\
 name:	objects]\
@@ -256,6 +263,8 @@ InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
  */
 #ifndef	_FortranLinkProgram
 #define	_FortranLinkProgram(program,objects,deplib)\
+]\
+all::]\
 ]\
 all-local:: program]\
 ]\
@@ -317,6 +326,8 @@ InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
 #ifndef	AIX
 #define	_CLinkProgram(program,objects,deplib)\
 ]\
+all::]\
+]\
 all-local:: program]\
 ]\
 program: objects deplib]\
@@ -325,6 +336,8 @@ program: objects deplib]\
 CleanFilesTarget(program objects)
 #else	/* AIX	*/
 #define	_CLinkProgram(program,objects,deplib)\
+]\
+all::]\
 ]\
 all-local::	program]\
 ]\
@@ -357,6 +370,8 @@ _CLinkProgram(program,objects,NullArgument)
 #ifndef	LibraryTarget
 #define LibraryTarget(library,objects)\
 ]\
+all::]\
+]\
 all-local:: library]\
 ]\
 library:: objects]\
@@ -376,6 +391,9 @@ CleanFilesTarget(library objects)
 #ifndef	SourceLibraryTarget
 #ifdef  BuildNCARGSourceLibrary
 #define	SourceLibraryTarget(name,library,sources)\
+]\
+all::]\
+]\
 all-local:: library]\
 ]\
 library:: sources]\
@@ -421,6 +439,9 @@ PartialLibraryRoot(library,dirs)
 #ifndef	PartialSourceLibraryTarget
 #ifdef  BuildNCARGSourceLibrary
 #define PartialSourceLibraryTarget(name,library,sources)\
+]\
+all::]\
+]\
 all-local:: ../library]\
 ]\
 ../library: sources]\
@@ -449,6 +470,8 @@ install-local:: ../library]\
 #ifndef	CleanFilesTarget
 #define CleanFilesTarget(files)\
 ]\
+all::]\
+]\
 clean-local::]\
 	-@$(RM) files]
 #endif	/* CleanFilesTarget */
@@ -462,6 +485,8 @@ clean-local::]\
  */
 #ifndef	PartialLibraryTarget
 #define PartialLibraryTarget(library,objects)\
+]\
+all::]\
 ]\
 all-local::../library]\
 ]\
@@ -480,6 +505,8 @@ CleanFilesTarget(objects)
  */
 #ifndef	PartialLibraryRoot
 #define PartialLibraryRoot(library,dirs)\
+]\
+all::]\
 ]\
 all-local:: library]\
 ]\
@@ -519,9 +546,12 @@ InstallTarget(sources, $(INSTALL_INC), $(HLUEXPATH))
 #ifndef	DependTarget
 #ifdef	NoMakeDepend
 #define	DependTarget(srcs)\
+all::]\
 depend-local::]
 #else
 #define	DependTarget(srcs)\
+all::]\
+]\
 depend-local:: srcs]\
 	$(DEPEND) -s "# DO NOT DELETE" -- $(ALLDEFINES) -- srcs
 #endif /* NoMakeDepend */
@@ -563,6 +593,8 @@ SubdirTarget(dirs,depend,depend-local,@)
 #ifndef	BuildIncludes
 #define	BuildIncludes(srclist,dstsubdir,dstupdir)\
 ]\
+all::]\
+]\
 includes-local::]\
 	MakeDir($(BUILDINCDIR)/dstsubdir)]\
 	@cd $(BUILDINCDIR)/dstsubdir;\ ]\
@@ -591,6 +623,8 @@ SubdirTarget(dirs,includes,includes-local,@)
 #ifndef InstallManPages
 #define InstallManPages(files,suffix,destdir,section)\
 ]\
+all::]\
+]\
 all-local::]\
 ]\
 install-local::]\
@@ -608,6 +642,8 @@ install-local::]\
  */
 #ifndef InstallManPageAliases
 #define InstallManPageAliases(file,destdir,section,aliases)\
+]\
+all::]\
 ]\
 all-local::]\
 ]\
@@ -627,6 +663,8 @@ install-local:: destdir/file.section]\
  */
 #ifndef	FormatManPages
 #define	FormatManPages(manpages,mansuffix,catsuffix)\
+]\
+all::]\
 ]\
 preformatted-local::]\
 	@for name in manpages; do \ ]\
@@ -658,6 +696,8 @@ SubdirTarget(dirs,preformatted,preformatted-local,@)
  */
 #ifndef	InstallXappFiles
 #define	InstallXappFiles(appfiles)\
+]\
+all::]\
 ]\
 all-local::]\
 ]\

@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.23 1994-05-05 21:43:40 boote Exp $
+ *      $Id: Template,v 1.24 1994-07-20 18:55:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -813,12 +813,6 @@ FOPT	= FOptOrDebugFlag
 #ifdef	IHaveSubdirs
 InternalMakeSubdirs($(SUBDIRS))
 #else
-NGCOMM
-NGCOMM null all rule is here to pick up the all target in case the yMakefile
-NGCOMM is empty - don't want all to default to clean
-NGCOMM
-null_rule::
-
 all:: all-local
 #endif
 
