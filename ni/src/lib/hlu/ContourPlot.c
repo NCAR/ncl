@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.114 2002-10-01 19:29:16 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.115 2002-11-07 22:23:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5118,10 +5118,17 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	clup = (int *) cnp->level_flags->data;
 	c_cpseti("DPU",-1); /* dash pattern use flag */
 
-	cnp->gks_line_colors[0] = cnp->mono_line_color ?
-		_NhlGetGksCi(cl->base.wkptr,cnp->line_color) : 
+	if (cnp->mono_line_color) {
+		cnp->gks_line_colors[0] = cnp->line_color == NhlTRANSPARENT ?
+			NhlTRANSPARENT :
+			_NhlGetGksCi(cl->base.wkptr,cnp->line_color);
+	} else {
+		cnp->gks_line_colors[0] =
+			((int *)cnp->line_colors->data)[0] == NhlTRANSPARENT ?
+			NhlTRANSPARENT :
 			_NhlGetGksCi(cl->base.wkptr,
 				     ((int *)cnp->line_colors->data)[0]);
+	}
 	if (cnp->mono_line_color && cnp->gks_line_colors[0] == NhlTRANSPARENT)
 		*do_lines = False;
 	if (! cnp->lines_on)
