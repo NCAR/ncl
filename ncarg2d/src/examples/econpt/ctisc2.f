@@ -15,7 +15,7 @@ C
         PARAMETER (IERF=6,LUNI=2,IWTYPE=1,IWTY=IWTYPE,IWID=1)
 C
 C The object of this program is to produce a set of plots illustrating
-C the use of a triangular mesh to represent an ISSCP grid on the surface
+C the use of a triangular mesh to represent an ISCCP grid on the surface
 C of the globe.  The original rectangular grid is of a different nature
 C than others: each of 72 latitude bands of equal width is cut into just
 C enough pieces so that each of the pieces will have about the same area
@@ -170,22 +170,22 @@ C edges were put in the structure defining the triangular mesh.
 C
         DIMENSION IPPP(2,MNOP),IPPE(2,MNOE)
 C
-C Define a parameter specifying what data to use on the ISSCP grid.  A
+C Define a parameter specifying what data to use on the ISCCP grid.  A
 C triangle is blocked if and only if more than "n" of its vertices are
 C of the type blocked.  For example, when ISCP is 12, "n" is 0, so that
 C a triangle is blocked if one or more of its vertices are over land.
 C
-C       PARAMETER (ISCP=  1) ! ISSCP, topo data, no blocking
-C       PARAMETER (ISCP= 21) ! ISSCP, topo data, block ocean, n=0
-C       PARAMETER (ISCP=121) ! ISSCP, topo data, block ocean, n=1
-C       PARAMETER (ISCP=221) ! ISSCP, topo data, block ocean, n=2
-C       PARAMETER (ISCP=  2) ! ISSCP, fractal data, no blocking
-        PARAMETER (ISCP= 12) ! ISSCP, fractal data, block land, n=0 *
-C       PARAMETER (ISCP=112) ! ISSCP, fractal data, block land, n=1
-C       PARAMETER (ISCP=212) ! ISSCP, fractal data, block land, n=2
-C       PARAMETER (ISCP= 22) ! ISSCP, fractal data, block ocean, n=0
-C       PARAMETER (ISCP=122) ! ISSCP, fractal data, block ocean, n=1
-C       PARAMETER (ISCP=222) ! ISSCP, fractal data, block ocean, n=2 *
+C       PARAMETER (ISCP=  1) ! ISCCP, topo data, no blocking
+C       PARAMETER (ISCP= 21) ! ISCCP, topo data, block ocean, n=0
+C       PARAMETER (ISCP=121) ! ISCCP, topo data, block ocean, n=1
+C       PARAMETER (ISCP=221) ! ISCCP, topo data, block ocean, n=2
+C       PARAMETER (ISCP=  2) ! ISCCP, fractal data, no blocking
+        PARAMETER (ISCP= 12) ! ISCCP, fractal data, block land, n=0 *
+C       PARAMETER (ISCP=112) ! ISCCP, fractal data, block land, n=1
+C       PARAMETER (ISCP=212) ! ISCCP, fractal data, block land, n=2
+C       PARAMETER (ISCP= 22) ! ISCCP, fractal data, block ocean, n=0
+C       PARAMETER (ISCP=122) ! ISCCP, fractal data, block ocean, n=1
+C       PARAMETER (ISCP=222) ! ISCCP, fractal data, block ocean, n=2 *
 C
 C Declare real and integer workspaces needed by CONPACKT.
 C
@@ -460,7 +460,7 @@ C
 C
 C Label the first frame.
 C
-              CALL PLCHHQ (CFUX(.03),CFUY(.946),'ISSCP GRID',
+              CALL PLCHHQ (CFUX(.03),CFUY(.946),'ISCCP GRID',
      +                                                      .024,0.,-1.)
 C
               IF (     IDIR.EQ.1) THEN
@@ -574,7 +574,7 @@ C
 C
 C Label the second frame.
 C
-              CALL PLCHHQ (CFUX(.03),CFUY(.946),'ISSCP GRID',
+              CALL PLCHHQ (CFUX(.03),CFUY(.946),'ISCCP GRID',
      +                                                      .024,0.,-1.)
 C
               IF (     IDIR.EQ.1) THEN
@@ -702,7 +702,7 @@ C
 C
 C Label the third frame.
 C
-            CALL PLCHHQ (CFUX(.03),CFUY(.946),'ISSCP GRID',.024,0.,-1.)
+            CALL PLCHHQ (CFUX(.03),CFUY(.946),'ISCCP GRID',.024,0.,-1.)
 C
             IF (     IDIR.EQ.1) THEN
               CALL PLCHHQ (CFUX(.03),CFUY(.874),'VIEWPOINT 1',
@@ -788,7 +788,7 @@ C
 C
 C Label the fourth frame.
 C
-            CALL PLCHHQ (CFUX(.03),CFUY(.946),'ISSCP GRID',.024,0.,-1.)
+            CALL PLCHHQ (CFUX(.03),CFUY(.946),'ISCCP GRID',.024,0.,-1.)
 C
             IF (     IDIR.EQ.1) THEN
               CALL PLCHHQ (CFUX(.03),CFUY(.874),'VIEWPOINT 1',
@@ -867,7 +867,7 @@ C
 C
 C Label the fifth frame.
 C
-            CALL PLCHHQ (CFUX(.03),CFUY(.946),'ISSCP GRID',.024,0.,-1.)
+            CALL PLCHHQ (CFUX(.03),CFUY(.946),'ISCCP GRID',.024,0.,-1.)
 C
             IF (     IDIR.EQ.1) THEN
               CALL PLCHHQ (CFUX(.03),CFUY(.874),'VIEWPOINT 1',
@@ -1047,14 +1047,14 @@ C
 C
         DIMENSION RPNT(MPNT),IEDG(MEDG),ITRI(MTRI),IPPP(2,*),IPPE(2,*)
 C
-C The ISSCP grid is an array of rectangles covering the cylindrical
+C The ISCCP grid is an array of rectangles covering the cylindrical
 C equidistant projection of the earth, at each center point of which
 C we have latitude and longitude.  At each of the center points, we
 C have available a topographic elevation, in meters above sea level.
 C We can either use that data or generate dummy data at each of the
 C specified center points.
 C
-C Declare variables to be used to read the ISSCP data.  The variable
+C Declare variables to be used to read the ISCCP data.  The variable
 C LINE just receives each of 6596 lines of data from the input file.
 C
         CHARACTER*64 LINE
@@ -1071,7 +1071,7 @@ C meters.  For each IROW from 1 to 72, IIOR(IROW) is the index (between
 C 1 and 6596) of the first box of the row IROW; NBIR(IROW) is the number
 C of boxes on that row.
 C
-        COMMON /CISSCP/ ILAT(6596),ILON(6596),VLAT(6596),VLON(6596),
+        COMMON /CISCCP/ ILAT(6596),ILON(6596),VLAT(6596),VLON(6596),
      +                  ZDAT(6596),ITOP(6596),IIOR(72),NBIR(72)
 C
 C For each I from 1 to 6596, XCOV(I), YCOV(I), and ZCOV(I) are the
@@ -1123,7 +1123,7 @@ C
         DATA EPSI / 1.E-2 /
 C
 C Initialize the arrays that keep track of the initial index and the
-C number of boxes in each of the rows of the ISSCP data.
+C number of boxes in each of the rows of the ISCCP data.
 C
         DO 101 I=1,72
           IIOR(I)=0
@@ -1522,9 +1522,9 @@ C
 
       SUBROUTINE DSISC2
 C
-C Draw the original ISSCP grid, using data passed in a common block.
+C Draw the original ISCCP grid, using data passed in a common block.
 C
-        COMMON /CISSCP/ ILAT(6596),ILON(6596),VLAT(6596),VLON(6596),
+        COMMON /CISCCP/ ILAT(6596),ILON(6596),VLAT(6596),VLON(6596),
      +                  ZDAT(6596),ITOP(6596),IIOR(72),NBIR(72)
 C
         CALL PLOTIT (0,0,2)

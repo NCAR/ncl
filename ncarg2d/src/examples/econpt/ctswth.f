@@ -17,7 +17,7 @@ C
 C The object of this program is to produce a set of plots illustrating
 C the use of a particular triangular mesh on the surface of the globe.
 C The triangular mesh used here is derived from a rectangular mesh
-C that came from Simone Bordoni and probably represents data sampled
+C that came from Simona Bordoni and probably represents data sampled
 C by a satellite orbiting once around the earth.
 C
 C Selected frames are drawn for each of four different viewpoints.  If
@@ -501,7 +501,7 @@ C Label the first frame.
 C
             CALL PLCHHQ (CFUX(.03),CFUY(.946),'A "SWATH" GRID',
      +                                                      .024,0.,-1.)
-            CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Simone Bordoni)',
+            CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Simona Bordoni)',
      +                                                      .014,0.,-1.)
 C
             IF (     IDIR.EQ.1) THEN
@@ -623,7 +623,7 @@ C Label the second frame.
 C
             CALL PLCHHQ (CFUX(.03),CFUY(.946),'A "SWATH" GRID',
      +                                                      .024,0.,-1.)
-            CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Simone Bordoni)',
+            CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Simona Bordoni)',
      +                                                      .014,0.,-1.)
 C
             IF (     IDIR.EQ.1) THEN
@@ -716,7 +716,7 @@ C Label the third frame.
 C
             CALL PLCHHQ (CFUX(.03),CFUY(.946),'A "SWATH" GRID',
      +                                                      .024,0.,-1.)
-            CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Simone Bordoni)',
+            CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Simona Bordoni)',
      +                                                      .014,0.,-1.)
 C
             IF (     IDIR.EQ.1) THEN
@@ -802,7 +802,7 @@ C Label the fourth frame.
 C
             CALL PLCHHQ (CFUX(.03),CFUY(.946),'A "SWATH" GRID',
      +                                                      .024,0.,-1.)
-            CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Simone Bordoni)',
+            CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Simona Bordoni)',
      +                                                      .014,0.,-1.)
 C
             IF (     IDIR.EQ.1) THEN

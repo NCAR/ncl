@@ -18,7 +18,8 @@ C The object of this program is to produce a set of plots illustrating
 C the use of a triangular mesh created from a POP grid on the surface
 C of the globe.  The triangular mesh is created from the rectangular
 C grid by calling the CONPACKT routine CTTMRG.  The data on the grid
-C were obtained from Fred Clare and represent ice thickness, in meters.
+C were obtained from Marika Holland and represent ice thickness, in
+C meters.
 C
 C Selected frames are drawn for each of four different viewpoints.  If
 C (CLAT,CLON) is the approximate position of the "center point" of the
@@ -480,7 +481,7 @@ C Label the first frame.
 C
               CALL PLCHHQ (CFUX(.03),CFUY(.946),'POP GRID',
      +                                                      .024,0.,-1.)
-              CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Fred Clare)',
+              CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Marika Holland)',
      +                                                      .014,0.,-1.)
               IF      (IDIR.EQ.1) THEN
                 CALL PLCHHQ (CFUX(.45),CFUY(.84),
@@ -588,7 +589,7 @@ C Label the second frame.
 C
               CALL PLCHHQ (CFUX(.03),CFUY(.946),'POP GRID',
      +                                                      .024,0.,-1.)
-              CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Fred Clare)',
+              CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Marika Holland)',
      +                                                      .014,0.,-1.)
 C
               IF (     IDIR.EQ.1) THEN
@@ -695,7 +696,7 @@ C Label the third frame.
 C
               CALL PLCHHQ (CFUX(.03),CFUY(.946),'POP GRID',
      +                                                      .024,0.,-1.)
-              CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Fred Clare)',
+              CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Marika Holland)',
      +                                                      .014,0.,-1.)
 C
               IF (     IDIR.EQ.1) THEN
@@ -812,7 +813,7 @@ C Label the fourth frame.
 C
             CALL PLCHHQ (CFUX(.03),CFUY(.946),'POP GRID',
      +                                                      .024,0.,-1.)
-            CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Fred Clare)',
+            CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Marika Holland)',
      +                                                      .014,0.,-1.)
 C
             IF (     IDIR.EQ.1) THEN
@@ -906,7 +907,7 @@ C Label the fifth frame.
 C
             CALL PLCHHQ (CFUX(.03),CFUY(.946),'POP GRID',
      +                                                      .024,0.,-1.)
-            CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Fred Clare)',
+            CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Marika Holland)',
      +                                                      .014,0.,-1.)
 C
             IF (     IDIR.EQ.1) THEN
@@ -992,7 +993,7 @@ C Label the sixth frame.
 C
             CALL PLCHHQ (CFUX(.03),CFUY(.946),'POP GRID',
      +                                                      .024,0.,-1.)
-            CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Fred Clare)',
+            CALL PLCHHQ (CFUX(.03),CFUY(.908),'(from Marika Holland)',
      +                                                      .014,0.,-1.)
 C
             IF (     IDIR.EQ.1) THEN
