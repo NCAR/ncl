@@ -927,7 +927,14 @@ int vtype;
 				}
 				if(stride[sel->dim_num] > 1) 
 					has_stride = 1;
-				tmpf = (float)fabs(((float)sel->u.sub.stride));
+				if(stride[sel->dim_num] != 0)  {
+					tmpf = (float)fabs(((float)sel->u.sub.stride));
+				} else {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+
+					stride[sel->dim_num] = 1;
+					tmpf = 1;
+				}
 				n_elem =(int)(fabs(((float)(finish[sel->dim_num] - start[sel->dim_num]))) /tmpf) + 1;
 				if((sel->u.sub.start > thefile->file.var_info[index]->dim_sizes[sel->dim_num]-1)||(sel->u.sub.start < 0)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);

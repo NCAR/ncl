@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.14 1996-09-27 19:54:06 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.15 1996-10-11 23:17:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -194,10 +194,10 @@ static struct _NclDataRec *MultiDVal_HluObj_ReadSection
 		case Ncl_SUBSCR:
 			if(sel_ptr->u.sub.finish < sel_ptr->u.sub.start) {
 
-				if(sel_ptr->u.sub.stride >= 0 ) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Invalid stride: start is greater than end and stride is positive, error in subscript #%d",i);
-					return(NULL);
-				}
+				if(sel_ptr->u.sub.stride == 0 ) {
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        sel_ptr->u.sub.stride = 1;
+                                }
 
 				n_elem = (int)(((float)
 					(sel_ptr->u.sub.start 
@@ -208,19 +208,43 @@ static struct _NclDataRec *MultiDVal_HluObj_ReadSection
 * Need to be able to determine which type of comparision < or > is needed to
 * determine whether the finish has been passed up
 */
-				compare_sel[i] = -1;
+				if(sel_ptr->u.sub.stride < 0){
+                                        current_index[i] = sel_ptr->u.sub.finish + (sel_ptr->u.sub.start - sel_ptr->u.sub.finish) % abs(sel_ptr->u.sub.stride);
+                                        sel_ptr->u.sub.finish = sel_ptr->u.sub.start;
+                                        sel_ptr->u.sub.start = current_index[i];
+                                        compare_sel[i] = -2;
+                                        strider[i] = -(sel_ptr->u.sub.stride);
+                                } else {
+                                        compare_sel[i] = -1;
+                                        current_index[i] = sel_ptr->u.sub.start;
+                                        strider[i] = -(sel_ptr->u.sub.stride);
+                                }
+
 
 			} else {
-				if(sel_ptr->u.sub.stride <= 0 ) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Invalid stride: start is less than end and stride is negative, error in subscript #%d",i);
-					return(NULL);
-				}
+				if(sel_ptr->u.sub.stride == 0 ) {
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        sel_ptr->u.sub.stride = 1;
+                                }
 
 				n_elem = (int)(((float)
 					(sel_ptr->u.sub.finish 
 					- sel_ptr->u.sub.start))
 					/((float)sel_ptr->u.sub.stride)) + 1;
-				compare_sel[i] = -2;
+
+				if(sel_ptr->u.sub.stride < 0){
+                                        compare_sel[i] = -1;
+                                        current_index[i] = sel_ptr->u.sub.finish - (sel_ptr->u.sub.finish - sel_ptr->u.sub.start) % abs(sel_ptr->u.sub.stride);
+                                        sel_ptr->u.sub.finish = sel_ptr->u.sub.start;
+                                        sel_ptr->u.sub.start = current_index[i];
+                                        strider[i] = sel_ptr->u.sub.stride;
+
+                                } else {
+                                        compare_sel[i] = -2;
+                                        current_index[i] = sel_ptr->u.sub.start;
+                                        strider[i] = sel_ptr->u.sub.stride;
+                                }
+
 
 			}
 			if((sel_ptr->u.sub.start > self_md->multidval.dim_sizes[sel_ptr->dim_num] - 1)||(sel_ptr->u.sub.start < 0)) {
@@ -232,8 +256,6 @@ static struct _NclDataRec *MultiDVal_HluObj_ReadSection
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
 				return(NULL);
 			}
-			current_index[i] = sel_ptr->u.sub.start;
-			strider[i] = sel_ptr->u.sub.stride;
 			break;
 		case Ncl_VECSUBSCR:
 /*
@@ -548,10 +570,10 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 		case Ncl_SUBSCR:
 			if(sel_ptr->u.sub.finish < sel_ptr->u.sub.start) {
 
-				if(sel_ptr->u.sub.stride >= 0 ) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Invalid stride: start is greater than end and stride is positive, error in subscript #%d",i);
-					return(NhlFATAL);
-				}
+				if(sel_ptr->u.sub.stride == 0 ) {
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        sel_ptr->u.sub.stride = 1;
+                                }
 
 				n_elem = (int)(((float)
 					(sel_ptr->u.sub.start 
@@ -562,19 +584,42 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 * Need to be able to determine which type of comparision < or > is needed to
 * determine whether the finish has been passed up
 */
-				compare_sel[i] = -1;
+				if(sel_ptr->u.sub.stride < 0){
+                                        current_index[i] = sel_ptr->u.sub.finish + (sel_ptr->u.sub.start - sel_ptr->u.sub.finish) % abs(sel_ptr->u.sub.stride);
+                                        sel_ptr->u.sub.finish = sel_ptr->u.sub.start;
+                                        sel_ptr->u.sub.start = current_index[i];
+                                        compare_sel[i] = -2;
+                                        strider[i] = -(sel_ptr->u.sub.stride);
+                                } else {
+                                        compare_sel[i] = -1;
+                                        current_index[i] = sel_ptr->u.sub.start;
+                                        strider[i] = -(sel_ptr->u.sub.stride);
+                                }
+
 
 			} else {
-				if(sel_ptr->u.sub.stride <= 0 ) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Invalid stride: start is less than end and stride is negative, error in subscript #%d",i);
-					return(NhlFATAL);
-				}
+				if(sel_ptr->u.sub.stride == 0 ) {
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        sel_ptr->u.sub.stride = 1;
+                                }
 
 				n_elem = (int)(((float)
 					(sel_ptr->u.sub.finish 
 					- sel_ptr->u.sub.start))
 					/((float)sel_ptr->u.sub.stride)) + 1;
-				compare_sel[i] = -2;
+				if(sel_ptr->u.sub.stride < 0){
+                                        compare_sel[i] = -1;
+                                        current_index[i] = sel_ptr->u.sub.finish - (sel_ptr->u.sub.finish - sel_ptr->u.sub.start) % abs(sel_ptr->u.sub.stride);
+                                        sel_ptr->u.sub.finish = sel_ptr->u.sub.start;
+                                        sel_ptr->u.sub.start = current_index[i];
+                                        strider[i] = sel_ptr->u.sub.stride;
+
+                                } else {
+                                        compare_sel[i] = -2;
+                                        current_index[i] = sel_ptr->u.sub.start;
+                                        strider[i] = sel_ptr->u.sub.stride;
+                                }
+
 
 			}
 			if((sel_ptr->u.sub.start > target_md->multidval.dim_sizes[sel_ptr->dim_num] - 1)||(sel_ptr->u.sub.start < 0)) {
@@ -586,8 +631,6 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
 				return(NhlFATAL);
 			}
-			current_index[i] = sel_ptr->u.sub.start;
-			strider[i] = sel_ptr->u.sub.stride;
 			break;
 		case Ncl_VECSUBSCR:
 /*
@@ -865,10 +908,10 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 		case Ncl_SUBSCR:
 			if(sel_ptr->u.sub.finish < sel_ptr->u.sub.start) {
 
-				if(sel_ptr->u.sub.stride >= 0 ) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Invalid stride: start is greater than end and stride is positive, error in subscript #%d",i);
-					return(NhlFATAL);
-				}
+				if(sel_ptr->u.sub.stride == 0 ) {
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        sel_ptr->u.sub.stride = 1;
+                                }
 
 				n_elem = (int)(((float)
 					(sel_ptr->u.sub.start 
@@ -879,20 +922,43 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 * Need to be able to determine which type of comparision < or > is needed to
 * determine whether the finish has been passed up
 */
-				compare_sel[i] = -1;
+				if(sel_ptr->u.sub.stride < 0){
+                                        current_index[i] = sel_ptr->u.sub.finish + (sel_ptr->u.sub.start - sel_ptr->u.sub.finish) % abs(sel_ptr->u.sub.stride);
+                                        sel_ptr->u.sub.finish = sel_ptr->u.sub.start;
+                                        sel_ptr->u.sub.start = current_index[i];
+                                        compare_sel[i] = -2;
+                                        strider[i] = -(sel_ptr->u.sub.stride);
+                                } else {
+                                        compare_sel[i] = -1;
+                                        current_index[i] = sel_ptr->u.sub.start;
+                                        strider[i] = -(sel_ptr->u.sub.stride);
+                                }
+
 
 			} else {
-				if(sel_ptr->u.sub.stride <= 0 ) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Invalid stride: start is less than end and stride is negative, error in subscript #%d",i);
-					return(NhlFATAL);
-				}
+
+				if(sel_ptr->u.sub.stride == 0 ) {
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        sel_ptr->u.sub.stride = 1;
+                                }
 
 				n_elem = (int)(((float)
 					(sel_ptr->u.sub.finish 
 					- sel_ptr->u.sub.start))
 					/((float)sel_ptr->u.sub.stride)) + 1;
-				compare_sel[i] = -2;
 
+				if(sel_ptr->u.sub.stride < 0){
+                                        compare_sel[i] = -1;
+                                        current_index[i] = sel_ptr->u.sub.finish - (sel_ptr->u.sub.finish - sel_ptr->u.sub.start) % abs(sel_ptr->u.sub.stride);
+                                        sel_ptr->u.sub.finish = sel_ptr->u.sub.start;
+                                        sel_ptr->u.sub.start = current_index[i];
+                                        strider[i] = sel_ptr->u.sub.stride;
+
+                                } else {
+                                        compare_sel[i] = -2;
+                                        current_index[i] = sel_ptr->u.sub.start;
+                                        strider[i] = sel_ptr->u.sub.stride;
+                                }
 			}
 			if((sel_ptr->u.sub.start > target_md->multidval.dim_sizes[sel_ptr->dim_num] - 1)||(sel_ptr->u.sub.start < 0)) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
@@ -903,8 +969,6 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
 				return(NhlFATAL);
 			}
-			current_index[i] = sel_ptr->u.sub.start;
-			strider[i] = sel_ptr->u.sub.stride;
 			break;
 		case Ncl_VECSUBSCR:
 /*
@@ -1214,10 +1278,10 @@ NclSelectionRecord *from_selection;
 		case Ncl_SUBSCR:
 			if(to_sel_ptr->u.sub.finish < to_sel_ptr->u.sub.start) {
 
-				if(to_sel_ptr->u.sub.stride >= 0 ) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Invalid stride: start is greater than end and stride is positive, error in subscript #%d",i);
-					return(NhlFATAL);
-				}
+				if(to_sel_ptr->u.sub.stride == 0 ) {
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        to_sel_ptr->u.sub.stride = 1;
+                                }
 
 				n_elem_target = (int)(((float)
 					(to_sel_ptr->u.sub.start 
@@ -1228,19 +1292,43 @@ NclSelectionRecord *from_selection;
 * Need to be able to determine which type of comparision < or > is needed to
 * determine whether the finish has been passed up
 */
-				to_compare_sel[i] = -1;
+				if(to_sel_ptr->u.sub.stride < 0){
+                                        to_current_index[i] = to_sel_ptr->u.sub.finish + (to_sel_ptr->u.sub.start - to_sel_ptr->u.sub.finish) % abs(to_sel_ptr->u.sub.stride);
+                                        to_sel_ptr->u.sub.finish = to_sel_ptr->u.sub.start;
+                                        to_sel_ptr->u.sub.start = to_current_index[i];
+                                        to_compare_sel[i] = -2;
+                                        to_strider[i] = -(to_sel_ptr->u.sub.stride);
+                                } else {
+                                        to_compare_sel[i] = -1;
+                                        to_current_index[i] = to_sel_ptr->u.sub.start;
+                                        to_strider[i] = -(to_sel_ptr->u.sub.stride);
+                                }
+
 
 			} else {
-				if(to_sel_ptr->u.sub.stride <= 0 ) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Invalid stride: start is less than end and stride is negative, error in subscript #%d",i);
-					return(NhlFATAL);
-				}
+				if(to_sel_ptr->u.sub.stride == 0 ) {
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        to_sel_ptr->u.sub.stride = 1;
+                                }
 
 				n_elem_target = (int)(((float)
 					(to_sel_ptr->u.sub.finish 
 					- to_sel_ptr->u.sub.start))
 					/((float)to_sel_ptr->u.sub.stride)) + 1;
-				to_compare_sel[i] = -2;
+
+				if(to_sel_ptr->u.sub.stride < 0){
+                                        to_compare_sel[i] = -1;
+                                        to_current_index[i] = to_sel_ptr->u.sub.finish - (to_sel_ptr->u.sub.finish - to_sel_ptr->u.sub.start) % abs(to_sel_ptr->u.sub.stride);
+                                        to_sel_ptr->u.sub.finish = to_sel_ptr->u.sub.start;
+                                        to_sel_ptr->u.sub.start = to_current_index[i];
+                                        to_strider[i] = to_sel_ptr->u.sub.stride;
+
+                                } else {
+                                        to_compare_sel[i] = -2;
+                                        to_current_index[i] = to_sel_ptr->u.sub.start;
+                                        to_strider[i] = to_sel_ptr->u.sub.stride;
+                                }
+
 			}
 			if((to_sel_ptr->u.sub.start > target_md->multidval.dim_sizes[to_sel_ptr->dim_num] - 1)||(to_sel_ptr->u.sub.start < 0)) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
@@ -1251,8 +1339,6 @@ NclSelectionRecord *from_selection;
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
 				return(NhlFATAL);
 			}
-			to_current_index[i] = to_sel_ptr->u.sub.start;
-			to_strider[i] = to_sel_ptr->u.sub.stride;
 			break;
 		case Ncl_VECSUBSCR:
 /*
@@ -1306,10 +1392,10 @@ NclSelectionRecord *from_selection;
 		case Ncl_SUBSCR:
 			if(from_sel_ptr->u.sub.finish < from_sel_ptr->u.sub.start) {
 
-				if(from_sel_ptr->u.sub.stride >= 0 ) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Invalid stride: start is greater than end and stride is positive, error in subscript #%d",i);
-					return(NhlFATAL);
-				}
+				if(from_sel_ptr->u.sub.stride == 0 ) {
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+                                        from_sel_ptr->u.sub.stride = 1;
+                                }
 
 				n_elem_value = (int)(((float)
 					(from_sel_ptr->u.sub.start 
@@ -1320,7 +1406,18 @@ NclSelectionRecord *from_selection;
 * Need from be able from determine which type of comparision < or > is needed from
 * determine whether the finish has been passed up
 */
-				from_compare_sel[i] = -1;
+				if(from_sel_ptr->u.sub.stride < 0){
+                                        from_current_index[i] = from_sel_ptr->u.sub.finish + (from_sel_ptr->u.sub.start - from_sel_ptr->u.sub.finish) % abs(from_sel_ptr->u.sub.stride);
+                                        from_sel_ptr->u.sub.finish = from_sel_ptr->u.sub.start;
+                                        from_sel_ptr->u.sub.start = from_current_index[i];
+                                        from_compare_sel[i] = -2;
+                                        from_strider[i] = -(from_sel_ptr->u.sub.stride);
+                                } else {
+                                        from_compare_sel[i] = -1;
+                                        from_current_index[i] = from_sel_ptr->u.sub.start;
+                                        from_strider[i] = -(from_sel_ptr->u.sub.stride);
+                                }
+
 
 			} else {
 				if(from_sel_ptr->u.sub.stride <= 0 ) {
@@ -1343,8 +1440,6 @@ NclSelectionRecord *from_selection;
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
 				return(NhlFATAL);
 			}
-			from_current_index[i] = from_sel_ptr->u.sub.start;
-			from_strider[i] = from_sel_ptr->u.sub.stride;
 			break;
 		case Ncl_VECSUBSCR:
 /*

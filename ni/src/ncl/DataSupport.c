@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.28 1996-07-16 20:58:08 ethan Exp $
+ *      $Id: DataSupport.c,v 1.29 1996-10-11 23:17:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -958,6 +958,8 @@ NclObj *result;
 			default:
 				return(NhlFATAL);
 			}
+			if(*result != NULL) 
+				return(NhlNOERROR);
 			data_part = (NclDataClass)data_part->obj_class.super_class;
 		}
 	} else {
@@ -966,91 +968,109 @@ NclObj *result;
 			case MOD_OP:
 			if(data_part->data_class.mod[f_selection] != NULL) {
 				(void)((*data_part->data_class.mod[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case OR_OP:
 			if(data_part->data_class.or[f_selection] != NULL) {
 				(void)((*data_part->data_class.or[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case AND_OP:
 			if(data_part->data_class.and[f_selection] != NULL) {
 				(void)((*data_part->data_class.and[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case XOR_OP:
 			if(data_part->data_class.xor[f_selection] != NULL) {
 				(void)((*data_part->data_class.xor[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case LTSEL_OP:
 			if(data_part->data_class.sel_lt[f_selection] != NULL) {
 				(void)((*data_part->data_class.sel_lt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case GTSEL_OP:
 			if(data_part->data_class.sel_gt[f_selection] != NULL) {
 				(void)((*data_part->data_class.sel_gt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case PLUS_OP:
 			if(data_part->data_class.plus[f_selection] != NULL) {
 				(void)((*data_part->data_class.plus[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case MINUS_OP:
 			if(data_part->data_class.minus[f_selection] != NULL) {
 				(void)((*data_part->data_class.minus[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case MUL_OP:
 			if(data_part->data_class.multiply[f_selection] != NULL) {
 				(void)((*data_part->data_class.multiply[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case MAT_OP:
 			if(data_part->data_class.mat[f_selection] != NULL) {
 				(void)((*data_part->data_class.mat[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case DIV_OP:
 			if(data_part->data_class.divide[f_selection] != NULL) {
 				(void)((*data_part->data_class.divide[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case EXP_OP:
 			if(data_part->data_class.exponent[f_selection] != NULL) {
 				(void)((*data_part->data_class.exponent[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case LE_OP:
 			if(data_part->data_class.le[f_selection] != NULL) {
 				(void)((*data_part->data_class.le[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case GE_OP:
 			if(data_part->data_class.ge[f_selection] != NULL) {
 				(void)((*data_part->data_class.ge[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case GT_OP:
 			if(data_part->data_class.gt[f_selection] != NULL) {
 				(void) ((*data_part->data_class.gt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case LT_OP:
 			if(data_part->data_class.lt[f_selection] != NULL) {
 				(void)((*data_part->data_class.lt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case EQ_OP:
 			if(data_part->data_class.eq[f_selection] != NULL) {
 				(void)((*data_part->data_class.eq[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			case NE_OP:
 			if(data_part->data_class.ne[f_selection] != NULL) {
 				(void)((*data_part->data_class.ne[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+				return(NhlNOERROR);
 			}
 			break;
 			default:

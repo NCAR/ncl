@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MultiDValOp.c.sed,v 1.3 1996-06-25 22:48:04 ethan Exp $
+ *      $Id: MultiDValOp.c.sed,v 1.4 1996-10-11 23:17:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,7 @@ NclData result;
 	NclMultiDValData result_md = (NclMultiDValData)result;
 	NclMultiDValData output_md = NULL;
 	NclTypeClass the_type = NULL;
+	NclTypeClass operand_type = NULL;
 	NclMissingRec themissing;
 	void *result_val;
 	int i;
@@ -47,9 +48,7 @@ NclData result;
         if((other_md->multidval.n_dims != self_md->multidval.n_dims)){
                 return(NULL);
         }
-	if(result_md != NULL) {
-		result_val = result_md->multidval.val;
-	}
+	operand_type = self_md->multidval.type;
 	for(i = 0; i< self_md->multidval.n_dims; i++) {
                 if(self_md->multidval.dim_sizes[i]
                         != other_md->multidval.dim_sizes[i]) {
@@ -74,7 +73,20 @@ NclData result;
 */
 
 		the_type = _NclTFUNC_type(self_md->multidval.type);
-		if(result_md == NULL) {
+		if((result_md != NULL)&&(result_md->multidval.data_type== the_type->type_class.data_type)) {
+			result_val = result_md->multidval.val;
+		} else if((result_md != NULL)&&(result_md->multidval.type->type_class.size >= the_type->type_class.size)) {
+			result_val = result_md->multidval.val;
+			result_md->multidval.type = the_type;
+			result_md->multidval.data_type = the_type->type_class.data_type;
+			result_md->multidval.hlu_type_rep[0] = the_type->type_class.hlu_type_rep[0];
+			result_md->multidval.hlu_type_rep[1] = the_type->type_class.hlu_type_rep[1];
+			result_md->multidval.totalsize = result_md->multidval.totalelements * the_type->type_class.size;
+		} else {
+			if(result_md != NULL)  {
+				_NclDestroyObj((NclObj)result_md);
+				result_md = NULL;
+			}
 			result_val = (void*)NclMalloc(self_md->multidval.totalelements * the_type->type_class.size);
 			if(result_val == NULL) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNNAME: Could not allocate memory for result type, can't continue\n");
@@ -82,7 +94,7 @@ NclData result;
 			}
 		}
 		if(_NclTFUNC(
-			self_md->multidval.type,
+			operand_type,
 			result_val,
 			self_md->multidval.val,
 			other_md->multidval.val,
