@@ -1,6 +1,6 @@
-#
-#       $Id: c_cssex01.c,v 1.4 1999-05-25 18:22:57 fred Exp $
-#
+/*
+ *      $Id: c_cssex01.c,v 1.5 1999-06-11 21:52:26 fred Exp $
+ */
 
 #include <stdio.h>
 #include <math.h>

@@ -1,5 +1,5 @@
 C
-C       $Id: cssex02.f,v 1.3 1999-05-25 18:22:58 fred Exp $
+C       $Id: cssex02.f,v 1.4 1999-06-11 21:52:27 fred Exp $
 C
        PROGRAM CSSEX02
 C 
@@ -58,7 +58,7 @@ C
 C
 C  Generate a default set of nodes as latitudinal and longitudinal
 C  coordinates (latitudes in the range -90. to 90. and longitudes
-C  in the range -180. to 180.
+C  in the range -180. to 180).
 C
       N = NMAX
       CALL GENRS(N,RLAT,RLON)

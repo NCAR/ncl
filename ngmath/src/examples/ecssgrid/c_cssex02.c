@@ -1,6 +1,6 @@
-#
-#       $Id: c_cssex02.c,v 1.4 1999-05-25 18:22:57 fred Exp $
-#
+/*
+ *      $Id: c_cssex02.c,v 1.5 1999-06-11 21:52:27 fred Exp $
+ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -119,7 +119,7 @@ main()
 /*
  *  Generate a default set of nodes as latitudinal and longitudinal
  *  coordinates (latitudes in the range -90. to 90. and longitudes
- *  in the range -180. to 180.
+ *  in the range -180. to 180).
  */
   c_genrs(N, rlat, rlon);
 
@@ -175,6 +175,8 @@ main()
   gset_colr_rep(WKID,2,&rgb);
   rgb.rgb.red = 0.; rgb.rgb.green = 0.; rgb.rgb.blue = 1.;
   gset_colr_rep(WKID,3,&rgb);
+  rgb.rgb.red = 0.; rgb.rgb.green = .8; rgb.rgb.blue = 0.;
+  gset_colr_rep(WKID,4,&rgb);
 
 /*
  *  Plot title.
@@ -184,7 +186,7 @@ main()
 /*
  *  Draw a map of the North Atlantic, as seen by a satellite.
  */
-  gset_line_colr_ind(6);
+  gset_line_colr_ind(1);
   c_mapstr ("SA", 4.);
   c_mappos (0.06, 0.94, 0.02, 0.90);
   c_supmap (7, 40., -105., 0., plm1, plm2, plm3, plm4, 1,
@@ -230,6 +232,7 @@ main()
  *  Draw the Voronoi polygons.
  */
   c_csvoro(N, x, y, z, 0, 1, xc, yc, zc, rc, &nca, &numv, nv, &ier);
+  gset_line_colr_ind(3);
   for (i = 0; i < N; i++) {
     c_csvoro(N, x, y, z, i, 0, xc, yc, zc, rc, &nca, &numv, nv, &ier);
     for (j = 1; j < numv; j++) {
@@ -242,7 +245,6 @@ main()
       rlat2 = R2D*rlat2;
       rlon2 = R2D*rlon2;
 
-      gset_line_colr_ind(3);
       c_mapgci(rlat1, rlon1, rlat2, rlon2, NARC, arclat, arclon); 
       c_mapit (rlat1, rlon1, 0);
       for (k = 0; k < NARC; k++) {
