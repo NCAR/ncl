@@ -1,5 +1,5 @@
 C
-C $Id: mpex13.f,v 1.3 2001-11-02 22:48:08 kennison Exp $
+C $Id: mpex13.f,v 1.4 2003-03-03 17:42:23 haley Exp $
 C
       PROGRAM TESTIT
 C
@@ -63,6 +63,11 @@ C   http://www.agu.org/eos_elec/99063e.html
 C
 C Hopefully, these files will also be available from the NCAR Graphics
 C Web site.
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C Declare arrays to hold center-point positions, angular half-widths,
 C grid spacings, resolutions, and titles for four different maps to
@@ -134,7 +139,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Turn off clipping by GKS (so labels don't get clipped).
 C
@@ -320,7 +327,9 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C

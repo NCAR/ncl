@@ -1,5 +1,5 @@
 C
-C $Id: mpex11.f,v 1.4 2001-05-24 17:35:30 kennison Exp $
+C $Id: mpex11.f,v 1.5 2003-03-03 17:42:23 haley Exp $
 C
       PROGRAM MPEX11
 C
@@ -9,6 +9,11 @@ C the earth are shown at various "levels"; level 1 includes just land
 C and water, level 2 includes continents, level 3 includes countries,
 C level 4 includes states within the US, and level 5 includes counties
 C within the states.
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C LAMA is the length of an area map A for geographical boundaries;
 C in general, this value needs to be a bit larger than would have been
@@ -69,7 +74,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Turn off clipping by GKS.
 C
@@ -228,7 +235,9 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C
