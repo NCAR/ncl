@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.3 1991-08-16 11:14:21 clyne Exp $
+ *	$Id: devices.h,v 1.4 1991-10-07 18:08:27 clyne Exp $
  */
 typedef struct RasterDeviceStruct {
 	char			*name;
@@ -77,7 +77,7 @@ extern int	ParallaxClose();
 extern int	ParallaxPrintInfo();
 #endif
 
-#ifdef BuildRasterHPLJ
+#ifdef BuildRasterHPLaser
 extern int	HPLJProbe();
 extern Raster	*HPLJOpen();
 extern Raster	*HPLJOpenWrite();
@@ -85,6 +85,16 @@ extern int	HPLJRead();
 extern int	HPLJWrite();
 extern int	HPLJClose();
 extern int	HPLJPrintInfo();
+#endif
+
+#ifdef BuildRasterAVS
+extern int	AVSProbe();
+extern Raster	*AVSOpen();
+extern Raster	*AVSOpenWrite();
+extern int	AVSRead();
+extern int	AVSWrite();
+extern int	AVSClose();
+extern int	AVSPrintInfo();
 #endif
 
 static RasterDevice rasdevices[] = {
@@ -98,7 +108,7 @@ static RasterDevice rasdevices[] = {
 	NrifRead, NrifWrite, NrifClose, NrifPrintInfo
 },
 #endif
-#ifdef BuildRasterXWD
+#ifdef BuildRasterNrif
 {
 	"xwd", XWDProbe, XWDOpen, XWDOpenWrite, 
 	XWDRead, XWDWrite, XWDClose, XWDPrintInfo
@@ -126,6 +136,12 @@ static RasterDevice rasdevices[] = {
 {
 	"parallax", ParallaxProbe, ParallaxOpen, ParallaxOpenWrite, 
 	ParallaxRead, ParallaxWrite, ParallaxClose, ParallaxPrintInfo
+},
+#endif
+#ifdef BuildRasterAVS
+{
+	"avs", AVSProbe, AVSOpen, AVSOpenWrite, 
+	AVSRead, AVSWrite, AVSClose, AVSPrintInfo
 },
 #endif
 };

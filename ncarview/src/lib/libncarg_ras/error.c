@@ -1,5 +1,5 @@
 /*
- *	$Id: error.c,v 1.2 1991-08-16 11:08:37 clyne Exp $
+ *	$Id: error.c,v 1.3 1991-10-07 18:08:29 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -70,7 +70,8 @@ char	*ras_errlist[] = {
 	"Bogus raster structure",
 	"Unsupported function",
 	"Too many dither bits",
-	"Sun RLE encoding not supported"
+	"Sun RLE encoding not supported",
+	"Parallax frame buffer"
 };
 
 int	ras_nerr = sizeof(ras_errlist)/sizeof(char *);

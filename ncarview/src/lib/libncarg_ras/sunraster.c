@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.2 1991-08-16 11:09:56 clyne Exp $
+ *	$Id: sunraster.c,v 1.3 1991-10-07 18:08:42 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -111,7 +111,6 @@ SunOpen(name)
 	return(ras);
 }
 
-/*ARGSUSED*/
 Raster *
 SunOpenWrite(name, nx, ny, comment, encoding)
 	char		*name;
@@ -256,9 +255,12 @@ SunRead(ras)
 	int			i;
 	int			count, value; 
 	int			status;
+	int			x, y;
 	char			*malloc(), *calloc(), *realloc();
 	unsigned long		swaptest = 1;
-	static unsigned char	*datap, *rlep, *tmpbuf = (unsigned char *) NULL;
+	static unsigned char	*datap, *rlep;
+	static unsigned char	*ptmp  = (unsigned char *) NULL;
+	static unsigned char	*tmpbuf = (unsigned char *) NULL;
 	static int		tmpbuf_size = 0;
 	unsigned char		rgb_buf[256];
 
@@ -285,112 +287,169 @@ SunRead(ras)
 		_swaplong((char *) dep, SUN_HEADER_SIZE);
 	}
 
-	if(dep->ras_type == RT_STANDARD || dep->ras_type == RT_BYTE_ENCODED) {
+	/* Weed out the unsupported encoding forms */
 
-		if(dep->ras_maptype != RMT_EQUAL_RGB) {
-			(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
-			return(RAS_ERROR);
-		}
-		else {
-			ras->type = RAS_INDEXED;
-		}
+	if (dep->ras_type == RT_OLD || dep->ras_type == RT_EXPERIMENTAL) {
+		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		return(RAS_ERROR);
+	}
 
-		ras->nx = dep->ras_width;
-		ras->ny = dep->ras_height;
+	/* Weed out unsupported color mapping schemes */
 
+	ras->nx = dep->ras_width;
+	ras->ny = dep->ras_height;
+
+	if (dep->ras_maptype == RMT_EQUAL_RGB) {
 		ras->ncolor = dep->ras_maplength / 3;
-
-		/* If not initialized, allocate image memory */
-
-		if (ras->data == (unsigned char *) NULL) {
-			ras->data = (unsigned char *)
-				calloc( (unsigned) ras->nx*ras->ny, 1);
-			if (ras->data == (unsigned char *) NULL) {
-				(void) RasterSetError(RAS_E_SYSTEM);
-				return(RAS_ERROR);
-			}
-
-			/* Allocate the color tables. */
-
-			ras->red = (unsigned char *) calloc(256, 1);
-			ras->green = (unsigned char *) calloc(256, 1);
-			ras->blue = (unsigned char *) calloc(256, 1);
-		}
-
-
-		if (!ras->map_loaded) {
-			status=fread((char *)ras->red,1,ras->ncolor,ras->fp);
-			if (status != ras->ncolor) return(RAS_EOF);
-
-			status=fread((char *)ras->green,1,ras->ncolor,ras->fp);
-			if (status != ras->ncolor) return(RAS_EOF);
-
-			status=fread((char *)ras->blue,1,ras->ncolor,ras->fp);
-			if (status != ras->ncolor) return(RAS_EOF);
-		}
-		else {
-			for(i=0; i<3; i++) {
-			  status=fread((char *)rgb_buf,1,ras->ncolor,ras->fp);
-			  if (status != ras->ncolor) return(RAS_EOF);
-			}
-		}
-
-
-		if (dep->ras_type == RT_STANDARD) {
-			/* Standard encoding */
-			image_size = (unsigned) dep->ras_length;
-			ras->data = (unsigned char *) calloc(image_size, 1);
-			status = fread( (char *) ras->data, 1,
-				(int) image_size, ras->fp);
-			if (status != image_size) return(RAS_EOF);
-		}
-		else {
-			/* RLE Encoding */
-			image_size = dep->ras_length;
-			if (image_size > tmpbuf_size) {
-				if (tmpbuf == (unsigned char *) NULL) {
-				  tmpbuf=(unsigned char *) malloc(image_size);
-				  tmpbuf_size = image_size;
-				}
-				else {
-				  tmpbuf = (unsigned char *)
-					realloc( (char *) tmpbuf,image_size);
-				  tmpbuf_size = image_size;
-				} 
-				if (tmpbuf == (unsigned char *) NULL) {
-					(void) RasterSetError(RAS_E_SYSTEM);
-					return(RAS_ERROR);
-				}
-			}
-
-			status=fread((char *)tmpbuf,1,(int)image_size,ras->fp);
-			if (status != image_size) return(RAS_EOF);
-
-			for(datap = ras->data, rlep = tmpbuf;
-			rlep < (tmpbuf+image_size) ; ) {
-				if (*rlep == RAS_SUN_ESC) {
-					rlep++;
-					if (*rlep == 0) {
-						*datap++ = RAS_SUN_ESC;
-						rlep++;
-					}
-					else {
-						count = *rlep++ + 1;
-						value = *rlep++;
-						for(i=0; i<count; i++) {
-							*datap++=value;
-						}
-					}
-				}
-				else {
-					*datap++ = *rlep++;
-				}
-			}
-		}
+		ras->type = RAS_INDEXED;
+	}
+	else if (dep->ras_maptype == RMT_NONE) {
+		ras->ncolor = 0;
+		ras->type = RAS_DIRECT;
 	}
 	else {
 		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
 		return(RAS_ERROR);
+	}
+		
+	/* If not initialized, allocate image memory */
+
+	if (ras->data == (unsigned char *) NULL) {
+		if (ras->type == RAS_INDEXED) {
+			image_size = ras->nx * ras->ny;
+		}
+		else if (ras->type == RAS_DIRECT) {
+			image_size = ras->nx * ras->ny * 3;
+		}
+		else {
+		  (void) RasterSetError(RAS_E_INTERNAL_PROGRAMMING);
+		  return(RAS_ERROR);
+		}
+
+		ras->data = (unsigned char *) calloc( image_size, 1);
+
+		if (ras->data == (unsigned char *) NULL) {
+			(void) RasterSetError(RAS_E_SYSTEM);
+			return(RAS_ERROR);
+		}
+
+		/* Allocate memory for indexed colors if necessary */
+
+		if (dep->ras_maptype == RMT_EQUAL_RGB) {
+			ras->red = (unsigned char *) calloc(256, 1);
+			ras->green = (unsigned char *) calloc(256, 1);
+			ras->blue = (unsigned char *) calloc(256, 1);
+			if (ras->red == (unsigned char *) NULL ||
+			    ras->green == (unsigned char *) NULL ||
+			    ras->blue == (unsigned char *) NULL) {
+			    (void) RasterSetError(RAS_E_SYSTEM);
+			    return(RAS_ERROR);
+			}
+		}
+	}
+
+	/*
+	Read in the color table information. If someone else has 
+	already loaded a color map then just discard the information.
+	*/
+
+	if (!ras->map_loaded) {
+		status=fread((char *)ras->red,1,ras->ncolor,ras->fp);
+		if (status != ras->ncolor) return(RAS_EOF);
+
+		status=fread((char *)ras->green,1,ras->ncolor,ras->fp);
+		if (status != ras->ncolor) return(RAS_EOF);
+
+		status=fread((char *)ras->blue,1,ras->ncolor,ras->fp);
+		if (status != ras->ncolor) return(RAS_EOF);
+	}
+	else {
+		for(i=0; i<3; i++) {
+		  status=fread((char *)rgb_buf,1,ras->ncolor,ras->fp);
+		  if (status != ras->ncolor) return(RAS_EOF);
+		}
+	}
+
+	/*
+	The common steps have been taken. Now read the image
+	itself, where a number of formats are possible.
+	*/
+
+	if (dep->ras_type == RT_STANDARD && dep->ras_depth == 8) {
+		/* Standard encoding */
+		status = fread( (char *) ras->data, 1,
+			(int) dep->ras_length, ras->fp);
+		if (status != dep->ras_length) return(RAS_EOF);
+	}
+	else if (dep->ras_type == RT_STANDARD && dep->ras_depth == 32) {
+		/*
+		Direct color encoding. We'll have to discard one of four bytes.
+		*/
+
+		if (tmpbuf == (unsigned char *) NULL) {
+			tmpbuf = (unsigned char *) 
+				calloc( (unsigned) dep->ras_length, 1);
+			if (tmpbuf == (unsigned char *) NULL) {
+				(void) RasterSetError(RAS_E_SYSTEM);
+				return(RAS_ERROR);
+			}
+		}
+		status = fread( (char *) tmpbuf, 1,
+			(int) dep->ras_length, ras->fp);
+		if (status != dep->ras_length) return(RAS_EOF);
+
+		ptmp = tmpbuf;
+
+		for(y=0; y<ras->ny; y++) {
+		for(x=0; x<ras->nx; x++) {
+			DIRECT_RED(ras, x, y) = ptmp[3];
+			DIRECT_GREEN(ras, x, y) = ptmp[2];
+			DIRECT_BLUE(ras, x, y) = ptmp[1];
+			ptmp += 4;
+		}}
+	}
+	else {
+		/* RLE Encoding */
+		image_size = dep->ras_length;
+		if (image_size > tmpbuf_size) {
+			if (tmpbuf == (unsigned char *) NULL) {
+			  tmpbuf=(unsigned char *) malloc(image_size);
+			  tmpbuf_size = image_size;
+			}
+			else {
+			  tmpbuf = (unsigned char *)
+				realloc( (char *) tmpbuf,image_size);
+			  tmpbuf_size = image_size;
+			} 
+			if (tmpbuf == (unsigned char *) NULL) {
+				(void) RasterSetError(RAS_E_SYSTEM);
+				return(RAS_ERROR);
+			}
+		}
+
+		status=fread((char *)tmpbuf,1,(int)image_size,ras->fp);
+		if (status != image_size) return(RAS_EOF);
+
+		for(datap = ras->data, rlep = tmpbuf;
+		rlep < (tmpbuf+image_size) ; ) {
+			if (*rlep == RAS_SUN_ESC) {
+				rlep++;
+				if (*rlep == 0) {
+					*datap++ = RAS_SUN_ESC;
+					rlep++;
+				}
+				else {
+					count = *rlep++ + 1;
+					value = *rlep++;
+					for(i=0; i<count; i++) {
+						*datap++=value;
+					}
+				}
+			}
+			else {
+				*datap++ = *rlep++;
+			}
+		}
 	}
 
 	return(RAS_OK);

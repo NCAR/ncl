@@ -1,5 +1,5 @@
 /*
- *	$Id: nrif.c,v 1.2 1991-08-16 11:10:57 clyne Exp $
+ *	$Id: nrif.c,v 1.3 1991-10-07 18:08:36 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -125,6 +125,7 @@ NrifRead(ras)
 	int			length;
 	int			x, y;
 	int			status;
+	int			char_decode(), read_decode(), char_encode();
 
 	dep = (NrifInfo *) ras->dep;
 
@@ -453,6 +454,26 @@ int
 NrifClose(ras)
 	Raster	*ras;
 {
+	int	status;
+
+	if (ras->fp != (FILE *) NULL) {
+		if(ras->fp != stdin && ras->fp != stdout) {
+			status = fclose(ras->fp);
+			if (status != 0) {
+				RasterSetError(RAS_E_SYSTEM);
+				return(RAS_ERROR);
+			}
+		}
+	}
+	else {
+		if (ras->fd != fileno(stdin) && ras->fd != fileno(stdout)) {
+			status = close(ras->fd);
+			if (status != 0) {
+				RasterSetError(RAS_E_SYSTEM);
+				return(RAS_ERROR);
+			}
+		}
+	}
 	switch(ras->type) {
 		case RAS_INDEXED:
 			free((char *) ras->data);
@@ -465,6 +486,7 @@ NrifClose(ras)
 			free((char *) ras->data);
 			break;
 	}
+
 	return(RAS_OK);
 }
 

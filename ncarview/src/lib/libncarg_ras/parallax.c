@@ -1,5 +1,5 @@
 /*
- *	$Id: parallax.c,v 1.2 1991-08-16 11:13:35 clyne Exp $
+ *	$Id: parallax.c,v 1.3 1991-10-07 18:08:39 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -19,8 +19,8 @@
  *	Date:	1/31/91
  *
  *	Description:
- *		This file contains a collection of functions
- *		which provides access to a raster sequence
+ *		This file is part of a library which provides
+ *		access to a raster files and memory raster objects
  *		using a general abstraction.
  *
  *		This particular set of routines provides
@@ -34,8 +34,8 @@
  *		Encoding schemes:
  *			The Parallax video frame buffer is
  *			a true color device but it may
- *			be fed a raster structure that is
- *			either indexed or true.
+ *			be supplied with a raster structure 
+ *			that is either indexed or true.
  *		
  */
 #include <stdio.h>
@@ -54,9 +54,9 @@
 static char	*FormatName = "parallax";
 static int	OptionCenter = True;
 
-static int	fd;
-static Parallax	*pvp;
-static int	vmefd = -1;
+static int	parallax_fd	= -1;
+static int	parallax_vmefd	= -1;
+static Parallax	*parallax;
 
 int
 ParallaxProbe(name)
@@ -69,8 +69,11 @@ ParallaxProbe(name)
  *	Function: ParallaxOpen(name)
  *
  *	Description:
- *		Opens the Parallax graphics buffer. "name" is
- *		ignored.
+ *		Opens the Parallax graphics buffer for reading
+ *		(real-time video digitizing capability).
+ *
+ *		This library assumes that there is only one
+ *		Parallax video frame buffer in the system.
  *
  *	Returns:
  *		Pointer to Raster structure, to be used
@@ -81,6 +84,15 @@ Raster *
 ParallaxOpen(name)
 	char	*name;
 {
+	(void) RasterSetError(RAS_E_UNSUPPORTED_FUNCTIONS);
+	return( (Raster *) NULL );
+
+	/*
+	The code below will be used once video digitizing (read)
+	is supported.
+	*/
+
+#ifdef DEAD
 	Raster	*ras;
 	char	*calloc();
 
@@ -92,11 +104,6 @@ ParallaxOpen(name)
 		return( (Raster *) NULL );
 	}
 
-	/* 
-	Argument "name" is ignored. This library assumes one
-	Parallax board in the system.
-	*/
-
 	ras->name = (char *) calloc((unsigned) (strlen(name)+1), 1);
 	(void) strcpy(ras->name, FormatName);
 
@@ -106,6 +113,7 @@ ParallaxOpen(name)
 	ParallaxSetFunctions(ras);
 
 	return(ras);
+#endif DEAD
 }
 
 
@@ -114,9 +122,9 @@ ParallaxOpen(name)
  *
  *	Description:
  *		Opens the Parallax graphics buffer for writing.
- *		"name" is ignored, as are "nx", "ny", "comment",
- *		and "encoding". The Parallax board is a fixed size
- *		and is a true color device.
+ *		"name" is recorded but unused, as are "nx", "ny", 
+ *		"comment", and "encoding". The Parallax board is 
+ *		a fixed size and is a true color device.
  *
  *	Returns:
  *		Pointer to Raster structure, to be used
@@ -132,47 +140,13 @@ ParallaxOpenWrite(name, nx, ny, comment, encoding)
 	int		encoding;
 {
 	Raster		*ras;
+	int		status;
+	Raster		*RasterCreate();
+	char		*calloc();
 
-	/* Allocate the Raster structure. */
+	/* Allocate the Raster structure and load some symbols. */
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
-	if (ras == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return( (Raster *) NULL );
-	}
-
-	ras->dep = (char *) NULL;
-
-	/*
-	Open the video frame buffer device. This file
-	descriptor is used for all functions except read
-	and write.
-	*/
-
-	ras->fd = open(VFB_DEVICE, O_RDWR);
-	if (ras->fd == -1) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return( (Raster *) NULL );
-	}
-	
-	/* Open the VME bus for memory mapped I/O. */
-
-	if (vmefd > 0) return(0);
-
-	if ( (vmefd = open(VFB_VME_DEVICE, O_RDWR)) == -1) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return( (Raster *) NULL );
-	}
-
-	/* Map the Parallax structure into virtual memory. */
-
-	pvp = (Parallax *) mmap( (caddr_t) 0, 0x400000, PROT_READ|PROT_WRITE,
-		MAP_SHARED, vmefd, VFB_VME_ADDRESS);
-
-	if (pvp < (Parallax *) 0) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return( (Raster *) NULL );
-	}
+	ras = RasterCreate(nx, ny, encoding);
 
 	ras->name = (char *) calloc((unsigned) (strlen(name) + 1), 1);
 	(void) strcpy(ras->name, FormatName);
@@ -180,87 +154,62 @@ ParallaxOpenWrite(name, nx, ny, comment, encoding)
 	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
 	(void) strcpy(ras->format, FormatName);
 
-	if (encoding == RAS_INDEXED) {
-		ras->type	= RAS_INDEXED;
-		ras->nx		= VFB_WIDTH;
-		ras->ny		= VFB_HEIGHT;
-		ras->length	= ras->nx * ras->ny;
-		ras->ncolor	= 256;
-		ras->red = (unsigned char *) calloc((unsigned) ras->ncolor, 1);
-		ras->green = (unsigned char *) calloc((unsigned)ras->ncolor, 1);
-		ras->blue = (unsigned char *) calloc((unsigned) ras->ncolor, 1);
-		ras->data = (unsigned char *) calloc((unsigned) ras->length, 1);
-	}
-	else if (encoding == RAS_DIRECT) {
-		ras->type	= RAS_DIRECT;
-		ras->nx		= VFB_WIDTH;
-		ras->ny		= VFB_HEIGHT;
-		ras->length	= ras->nx * ras->ny * 3;
-		ras->ncolor	= 0;
-		ras->red	= (unsigned char *) NULL;
-		ras->green	= (unsigned char *) NULL;
-		ras->blue	= (unsigned char *) NULL;
-		ras->data = (unsigned char *) calloc((unsigned) ras->length, 1);
-	}
-	else {
-		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+	/* Initialize the Parallax frame buffer board. */
+	status = ParallaxInit();
+	if (status != RAS_OK) {
 		return( (Raster *) NULL );
 	}
 
+	/* Load friendly functions. */
 	(void) ParallaxSetFunctions(ras);
 
 	return(ras);
 }
 
-#ifdef DEAD
+/**********************************************************************
+ *	Function: ParallaxWrite(ras)
+ *
+ *	Description:
+ *		Copies the image contents of "ras" to the
+ *		Parallax frame buffer. The "ras" object does
+ *		not *have* to be one created by doing a
+ *		ParallaxOpenWrite(). Both indexed color
+ *		and true color objects are acceptable,
+ *		and oversize/undersized imagery is adjusted
+ *		to fit the frame buffer by centering or
+ *		cropping.
+ *
+ *	Returns:
+ *		RAS_OK		If all is well
+ *		RAS_ERROR	Otherwise
+ *
+ *	Notes:
+ *		There's no byte-swapping code 'cause this thing ONLY
+ *		runs on Sun's. hahahahahahahaha
+ *		
+ *		
+ *********************************************************************/
 int
 ParallaxWrite(ras)
 	Raster	*ras;
 {
-	ParallaxInfo	*dep;
-	int		nb;
-	unsigned long	swaptest = 1;
-
-	/* Swap bytes if necessary. */
-
-	if (*(char *) &swaptest)
-		_swaplong((char *) dep, SUN_HEADER_SIZE);
-
-	nb = write(ras->fd, (char *) ras->dep, SUN_HEADER_SIZE);
-	if (nb != SUN_HEADER_SIZE) return(RAS_EOF);
-
-	nb = write(ras->fd, (char *) ras->red, ras->ncolor);
-	if (nb != ras->ncolor) return(RAS_EOF);
-
-	nb = write(ras->fd, (char *) ras->green, ras->ncolor);
-	if (nb != ras->ncolor) return(RAS_EOF);
-
-	nb = write(ras->fd, (char *) ras->blue, ras->ncolor);
-	if (nb != ras->ncolor) return(RAS_EOF);
-
-	nb = write(ras->fd, (char *) ras->data, ras->nx * ras->ny);
-	if (nb != ras->nx * ras->ny) return(RAS_EOF);
-
-	return(RAS_OK);
-}
-#endif DEAD
-
-ParallaxWrite(ras)
-	Raster	*ras;
-{
-	Raster		*temp;
-	int		status;
-	long		word;
 	int		sx, sy, dx, dy;		/* source and dest indices */
 	int		src_x, src_y;		/* source upper-left corner */
 	int		src_nx, src_ny;		/* source extent */
 	int		dst_x, dst_y;		/* dest upper-left corner */
 	int		vfb_width, vfb_height;	/* video frame buffer extent */
-	int		i, r, g, b, pixel;
+	int		i, pixel;
 	static long	colormap_lwd[256];
+
+	/* Take into account the vertical interval in the video buffer. */
 
 	vfb_width = VFB_WIDTH;
 	vfb_height = VFB_HEIGHT - VFB_Y_OFFSET;
+
+	/*
+	For indexed color raster objects, precompute Parallax-compatible
+	frame buffer entries.
+	*/
 
 	if (ras->type  == RAS_INDEXED) {
 		for (i=0; i<256; i++)
@@ -318,11 +267,11 @@ ParallaxWrite(ras)
 		for(sx=src_x, dx=dst_x; sx<src_x+src_nx-1; sx++, dx++) {
 			if (ras->type  == RAS_INDEXED) {
 			  pixel  = INDEXED_PIXEL(ras, sx, sy);
-			  pvp->fb.line[dy].pixel[dx].lwd = 
+			  parallax->fb.line[dy].pixel[dx].lwd = 
 			    colormap_lwd[pixel];
 			}
 			else if (ras->type == RAS_DIRECT) {
-			  pvp->fb.line[dy].pixel[dx].lwd =
+			  parallax->fb.line[dy].pixel[dx].lwd =
 				DIRECT_RED(ras, sx, sy) | 
 				DIRECT_GREEN(ras, sx, sy) <<8 | 
 				DIRECT_BLUE(ras, sx, sy) << 16;
@@ -368,4 +317,174 @@ ParallaxSetFunctions(ras)
 	ras->Close     = ParallaxClose;
 	ras->PrintInfo = ParallaxPrintInfo;
 	return(RAS_OK);
+}
+
+/********************************************************************
+ *
+ * Functions below this line are private to this file.
+ *
+ *******************************************************************/
+
+/********************************************************************
+ *
+ *	Function:	ParallaxInit()
+ *
+ *	Description:	This function initializes the Parallax
+ *			VideoView frame buffer. The steps
+ *			taken prepare the board for general
+ *			ioctl() manipulation, as well as
+ *			reading and writing. Special 
+ *			synchronization steps must be taken
+ *			in order to digitize incoming video
+ *			signals.
+ *
+ *	Returns:	RAS_OK		if all's well
+ *			RAS_ERROR	if not
+ *
+ *	
+ ******************************************************************/
+static int
+ParallaxInit()
+{
+	static int	arg;
+	int		status;
+	caddr_t		mmap();
+
+	/*
+	Open the video frame buffer device. This file
+	descriptor is used in ioctl() call's, but not
+	for reading and writing, which is accomplished
+	through direct memory-mapped I/O.
+	*/
+
+	/* Open the Parallax frame buffer device. */
+
+	parallax_fd = open(VFB_DEVICE, O_RDWR);
+	if (parallax_fd == -1) {
+		(void) RasterSetError(RAS_E_SYSTEM);
+		return( RAS_ERROR );
+	}
+	
+	/* Open the VME bus for memory mapped I/O. */
+
+	if (parallax_vmefd != -1) {
+		(void) RasterSetError(RAS_E_UNSUPPORTED_FUNCTIONS);
+		return(RAS_ERROR);
+	}
+
+	if ( (parallax_vmefd = open(VFB_VME_DEVICE, O_RDWR)) == -1) {
+		(void) RasterSetError(RAS_E_SYSTEM);
+		return( RAS_ERROR );
+	}
+
+	/* Map the Parallax structure into virtual memory. */
+
+	parallax = (Parallax *) mmap( (caddr_t) 0, 0x400000, 
+		PROT_READ | PROT_WRITE, MAP_SHARED, parallax_vmefd, 
+		(off_t) VFB_VME_ADDRESS);
+
+	if ( (int) parallax == -1) {
+		(void) RasterSetError(RAS_E_SYSTEM);
+		return( RAS_ERROR );
+	}
+
+	/* Sync the frame buffer */
+	arg = 0;
+	status = ioctl(parallax_fd, TVIOSYNC, &arg);
+	if ( status == -1) {
+		(void) RasterSetError(RAS_E_PARALLAX);
+		return( RAS_ERROR );
+	}
+
+	/* Input video will be NTSC composite video. */
+	arg = TVIO_NTSC;
+	status = ioctl(parallax_fd, TVIOSFORMAT, &arg);
+	if ( status == -1) {
+		(void) RasterSetError(RAS_E_PARALLAX);
+		return( RAS_ERROR );
+	}
+
+	/* Set compression ratio to be 1:1 */
+	arg = 1;
+	status = ioctl(parallax_fd, TVIOSCOMPRESS, &arg);
+	if ( status == -1) {
+		(void) RasterSetError(RAS_E_PARALLAX);
+		return( RAS_ERROR );
+	}
+
+	/* Direct video to video monitor, rather than to Sun screen. */
+	arg = TVIO_VIDEOOUT;
+	status = ioctl(parallax_fd, TVIOSOUT, &arg);
+	if ( status == -1) {
+		(void) RasterSetError(RAS_E_PARALLAX);
+		return( RAS_ERROR );
+	}
+
+	/* Output is RS-170A (component RGBS), not YUV (Betacam). */
+	arg = TVIO_RGB;
+	status = ioctl(parallax_fd, TVIOSCOMPOUT, &arg);
+	if ( status == -1) {
+		(void) RasterSetError(RAS_E_PARALLAX);
+		return( RAS_ERROR );
+	}
+
+	/* Set Genlock on i.e. sync to incoming blackburst signal. */
+	arg = TRUE;
+	status = ioctl(parallax_fd, TVIOSGENLOCK, &arg);
+	if ( status == -1) {
+		(void) RasterSetError(RAS_E_PARALLAX);
+		return( RAS_ERROR );
+	}
+
+	/* Set Genlock to sync on composite sync input. */
+	arg = TVIO_NTSC;
+	status = ioctl(parallax_fd, TVIOSSYNC, &arg);
+	if ( status == -1) {
+		(void) RasterSetError(RAS_E_PARALLAX);
+		return( RAS_ERROR );
+	}
+
+	/* Set Chroma Demodulation to automatic. */
+	arg = TVIO_AUTO;
+	status = ioctl(parallax_fd, TVIOSSYNC, &arg);
+	if ( status == -1) {
+		(void) RasterSetError(RAS_E_PARALLAX);
+		return( RAS_ERROR );
+	}
+
+	/* Sync the frame buffer */
+	arg = 0;
+	status = ioctl(parallax_fd, TVIOSYNC, &arg);
+	if ( status == -1) {
+		(void) RasterSetError(RAS_E_PARALLAX);
+		return( RAS_ERROR );
+	}
+
+	return(RAS_OK);
+}
+
+ParallaxPrintStatus()
+{
+	static int	arg;
+	static int	format;
+	static int	out;
+	static int	compout;
+	int		status;
+
+	if ( (status = ioctl(parallax_fd, TVIOGFORMAT, &format)) == -1) {
+		perror("TVIO Get Format");
+	}
+
+	if ( (status = ioctl(parallax_fd, TVIOGOUT, &out)) == -1) {
+		perror("TVIO Get Video Destination");
+	}
+
+	status = ioctl(parallax_fd, TVIOGCOMPOUT, &compout);
+	if ( status == -1) {
+		perror("TVIO Get Component Out");
+	}
+
+	(void) fprintf(stderr,"Input Format:      %s\n", format_names[format]);
+	(void) fprintf(stderr,"Video Destination: %s\n", out_names[out]);
+	(void) fprintf(stderr,"Component Out:     %s\n", format_names[compout]);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: ncarg_ras.h,v 1.2 1991-08-16 11:13:45 clyne Exp $
+ *	$Id: ncarg_ras.h,v 1.3 1991-10-07 18:08:33 clyne Exp $
  */
 #ifndef _RASTER_
 #define _RASTER_
@@ -41,6 +41,7 @@
 #define RAS_E_UNSUPPORTED_FUNCTIONS		18
 #define RAS_E_TOO_MANY_DITHERBITS		19
 #define RAS_E_SUN_RLE_UNSUPPORTED		20
+#define RAS_E_PARALLAX				21
 
 /* Definitions common to all machines */
 
@@ -66,11 +67,13 @@
 #define RAS_DIRECT_YUV	3
 
 struct RasterStruct {
+	/* File Related */
 	char			*name;
 	char			*format;
 	int			fd;
 	FILE			*fp;
 	int			written;
+	/* Image Related */
 	int			nx;
 	int			ny;		/* Vertical dimension */
 	int			depth;		/* Bits deep */
