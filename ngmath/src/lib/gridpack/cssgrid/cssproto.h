@@ -21,6 +21,8 @@
 *                                                                       *
 ************************************************************************/
 
+#include <stddef.h>
+#include <string.h>
 #include <stdio.h>
  
 /*
@@ -93,3 +95,38 @@ void   c_csc2sd(int, double *, double *, double *, double *, double *);
 #endif
 
 #define NGSTRLEN(cstr)      ((cstr)?strlen(cstr):0)
+ 
+/*
+ *  Prototypes for Fortran function calls.
+ */
+void NGCALLF(csstri,CSSTRI)(int *, float *, float *, int *, int *, 
+             int *, double *, int *);
+void NGCALLF(cssgrid,CSSGRID)(int *, float *, float *, float *, int *, int *, 
+             float *, float *, float *, int *, double *, int *);
+void NGCALLF(csscoord,CSSCOORD)(float *, float *, float *, float *, 
+             float *, float *);
+void NGCALLF(csvoro,CSVORO)(int *, float *, float *, int *, int *, int *, 
+             double *, int *, float *, float *, float *, int *, int *, 
+             int *, int *);
+void NGCALLF(cssetr,CSSETR)(char *,float *,size_t);
+void NGCALLF(csgetr,CSGETR)(char *,float *,size_t);
+void NGCALLF(csseti,CSSETI)(char *,int *,size_t);
+void NGCALLF(csgeti,CSSETI)(char *,int *,size_t);
+void NGCALLF(csstrid,CSSTRID)(int *, double *, double *, int *, int *, 
+             int *, double *, int *);
+void NGCALLF(cssgridd,CSSGRIDD)(int *, double *, double *, double *, 
+             int *, int *, double *, double *, double *, int *, 
+             double *, int *);
+void NGCALLF(csscoordd,CSSCOORDD)(double *, double *, double *, 
+             double *, double *, double *);
+void NGCALLF(csvorod,CSVOROD)(int *, double *, double *, int *, int *, 
+             int *, double *, int *, double *, double *, double *, int *, 
+             int *, int *, int *);
+void NGCALLF(cssetd,CSSETD)(char *,double *,size_t);
+void NGCALLF(csgetd,CSGETD)(char *,double *,size_t);
+void NGCALLF(css2c,CSS2C)(int *, float *, float *, float *, float *, float *);
+void NGCALLF(css2cd,CSS2CD)(int *, double *, double *, double *, 
+             double *, double *);
+void NGCALLF(csc2s,CSC2S)(int *, float *, float *, float *, float *, float *);
+void NGCALLF(csc2sd,CSC2SD)(int *, double *, double *, double *, 
+             double *, double *);

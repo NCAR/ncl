@@ -1,5 +1,5 @@
 /*
- * $Id: ftproto.h,v 1.3 2000-08-22 03:34:57 haley Exp $
+ * $Id: ftproto.h,v 1.4 2000-09-19 23:54:46 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -76,3 +76,50 @@ float *c_ftsurf(int, int, float *, float *, float *,
 #endif  /* __STDC__ */
 #endif  /* UNICOS else ... */
 #endif  /* NGCALLF */
+
+/*
+ *  Prototypes for Fortran function calls.
+ */
+void NGCALLF(curv1,CURV1)(int *, float *, float *, float *, float *,
+                          int *, float *, float *, float *, int *);
+void NGCALLF(fcurv2,FCURV2)(int *, float *, float *, float *, float *, 
+                            int *, float *, float *);
+void NGCALLF(fcurvd,FCURVD)(int *, float *, float *, float *, float *, 
+                            int *, float *, float *);
+void NGCALLF(fcurvi,FCURVI)(float *, float *, int *, float *, float *, 
+                            float *, float *, float *);
+void NGCALLF(curvp1,CURVP1)(int *, float *, float *, float *, float *, 
+                            float *, float *, int *);
+void NGCALLF(fcurvp2,FCURVP2)(int *, float *, float *, float *, float *, 
+             float *, int *, float *, float *);
+void NGCALLF(fcurvpi,FCURVPI)(float *, float *, float *, int *, float *, 
+                              float *, float *, float *, float *);
+void NGCALLF(curvs,CURVS)(int *, float *, float *, float *, int *, 
+                          float *, float *, float *, float *, float *, 
+                          float *, int *);
+void NGCALLF(curvps,CURVPS)(int *, float *, float *, float *, float *, int *,
+                          float *, float *, float *, float *, float *, 
+                          float *, int *);
+void NGCALLF(kurv1,KURV1)(int *, float *, float *, float *, float *, int *,
+                          float *, float *, float *, float *, float *, 
+                          int *);
+void NGCALLF(fkurv2,FKURV2)(int *, float *, float *, int *, float *, 
+                            float *, float *, float *, float *, 
+                            float *, float *);
+void NGCALLF(kurvp1,KURVP1)(int *, float *, float *, float *, float *, 
+                            float *, float *, float *, int *);
+void NGCALLF(fkurvp2,FKURVP2)(int *, float *, float *, int *, float *, float *, float *, float *, float *, float *, float *);
+void NGCALLF(fkurvd,FKURVD)(int *, float *, float *, int *, float *, 
+                            float *, float *, float *, float *, float *, 
+                            float *, float *, float *, float *, float *);
+void NGCALLF(fkurvpd,FKURVPD)(int *, float *, float *, int *, float *, 
+                              float *, float *, float *, float *, 
+                              float *, float *, float *, float *, 
+                              float *, float *);
+void NGCALLF(surf1,SURF1)(int *, int *, float *, float *, float *, int *, 
+                          float *, float *, float *, float *, float *, 
+                          float *, float *, float *, int *, float *, 
+                          float *, float *, int *);
+void NGCALLF(fsurf2,FSURF2)(float *, float *, float *, int *, int *, 
+                            float *, float *, float *, int *, float *, 
+                            float *);

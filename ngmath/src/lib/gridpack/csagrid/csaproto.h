@@ -70,3 +70,21 @@ float *c_csa3lxs(int, float [], float [], float [], float [],
 #endif  /* UNICOS else ... */
 #endif  /* NGCALLF */
 
+/*
+ *  Prototypes for Fortran function calls.
+ */
+void NGCALLF(csa1s,CSA1S)(int *, float *, float *, int *, int *, float *, 
+             float *, int *, float *, int *);
+void NGCALLF(csa1xs,CSA1XS)(int *, float *, float *, float *, int *, 
+             float *, int *, int *, float *, float *, int *, float *, int *);
+void NGCALLF(csa2xs,CSA2XS)(int *, float *, float *, float *, int *, float *,
+             int *, int *, int *, float *, float *, float *, int *, float *, 
+             int *);
+void NGCALLF(csa2lxs,CSA2LXS)(int *, float *, float *, float *, int *, float *,
+             int *, int *, float *, float *, float *, int *, float *, int *);
+void NGCALLF(csa3xs,CSA3XS)(int *, float *, float *, float *, int *, float *,
+             int *, int *, int *, int *, float *, float *, float *, float *, 
+             int *, float *, int *);
+void NGCALLF(csa3lxs,CSA3LXS)(int *, float *, float *, float *, int *, float *,
+             int *, int *, float *, float *, float *, float *, int *, 
+             float *, int *);
