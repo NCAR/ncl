@@ -46,7 +46,7 @@ float *c_dsgrid3s(int n, float x[], float y[], float z[], float u[],
  */
 {
   int       i, j, k;
-  float     epsilon_test, xc, yc, zc, perror = 1., *retval;
+  float     xc, yc, zc, perror = 1., *retval;
 
   DSpoints3 q;
 
@@ -58,7 +58,7 @@ float *c_dsgrid3s(int n, float x[], float y[], float z[], float u[],
   dsgetmem_s(n, nx, ny, nz, ier);
   if (*ier != 0) return(&perror);
 
-  dsinit_s(n, nx, ny, nz, x, y, z, xo, yo, zo, &epsilon_test, ier);
+  dsinit_s(n, nx, ny, nz, x, y, z, xo, yo, zo, ier);
   if (*ier != 0) return(&perror);
     
 /*
@@ -83,11 +83,11 @@ float *c_dsgrid3s(int n, float x[], float y[], float z[], float u[],
 
         if (ds_shadowing) {
           ds_output_s[nz*ny*i + nz*j + k] = 
-                          svalue_s(n, u, xc, yc, zc, epsilon_test);
+                          svalue_s(n, u, xc, yc, zc);
         } 
         else {
           ds_output_s[nz*ny*i + nz*j + k] = 
-                          ivalue_s(n, u, xc, yc, zc, epsilon_test);
+                          ivalue_s(n, u, xc, yc, zc);
         }
       }
     }
@@ -151,8 +151,7 @@ void dsfreemem_s()
  *  Initialization.
  */
 void dsinit_s(int n, int nx, int ny, int nz, float x[], float y[], float z[], 
-              float xo[], float yo[], float zo[], 
-              float *epsilon_test, int *ier)
+              float xo[], float yo[], float zo[], int *ier)
 {
   int    i;
   float  xmn, ymn, zmn, xmx, ymx, zmx, tlm;
@@ -189,6 +188,14 @@ void dsinit_s(int n, int nx, int ny, int nz, float x[], float y[], float z[],
     zmn = MIN(zo[i], zmn);
     zmx = MAX(zo[i], zmx);
   }
+  for (i = 0; i < n; i++) {
+    xmn = MIN(x[i], xmn);
+    xmx = MAX(x[i], xmx);
+    ymn = MIN(y[i], ymn);
+    ymx = MAX(y[i], ymx);
+    zmn = MIN(z[i], zmn);
+    zmx = MAX(z[i], zmx);
+  }
 
 /*
  *  Find the maximum span of the three coordinates.
@@ -200,7 +207,7 @@ void dsinit_s(int n, int nx, int ny, int nz, float x[], float y[], float z[],
  *  points, if this has not been specifically set by the user.
  */
   if (ds_set_max_dist == 0) ds_max_dist = 
-            (xmx - xmn) + (ymx - ymn) + (zmx - zmn);
+            2.*((xmx - xmn) + (ymx - ymn) + (zmx - zmn));
 
 /*
  *  Scale and store the input values.
@@ -212,7 +219,7 @@ void dsinit_s(int n, int nx, int ny, int nz, float x[], float y[], float z[],
     ds_input_points_s[i].z = z[i] * (float) ds_scale;
   }
 
-  *epsilon_test = 1.E-10 * tlm;
+  ds_epsilon_test = 1.E-5;
 
   for (i = 0; i < nx*ny*nz; i++) {
     ds_output_s[i] = (float) ds_missing_value;
@@ -224,13 +231,13 @@ void dsinit_s(int n, int nx, int ny, int nz, float x[], float y[], float z[],
  *  turned off.
  */
 float ivalue_s(int num_points, float *values, 
-                   float xc, float yc, float zc, float epsilon_test)
+                   float xc, float yc, float zc)
 {
   int       iw, it;
   float     normalization_factor, interpolated_value, weight_sum;
 
   for (iw = 0; iw < num_points; iw++) {
-    if ( (ds_distances_s[iw] < epsilon_test) && (ds_distances_s[iw] >= 0.) ) {
+    if ( (ds_distances_s[iw] < ds_epsilon_test) && (ds_distances_s[iw] >= 0.) ) {
       for (it = 0; it < num_points; it++) {
         ds_weights_s[it] = 0.;
       }
@@ -265,13 +272,13 @@ label_1:
  *  Calculate interpolated value when shadowing option is on.
  */
 float svalue_s(int num_points, float *values, 
-                   float xc, float yc, float zc, float epsilon_test)
+                   float xc, float yc, float zc)
 {
   int       iw, ia, it, lp;
   float     normalization_factor, interpolated_value, weight_sum;
 
   for (iw = 0; iw < num_points; iw++) {
-    if ( (ds_distances_s[iw] < epsilon_test) && (ds_distances_s[iw] >= 0.) ) {
+    if ((ds_distances_s[iw] < ds_epsilon_test) && (ds_distances_s[iw] >= 0.)) {
       for (it = 0; it < num_points; it++) {
         ds_weights_s[it] = 0.;
       }
@@ -393,45 +400,51 @@ float dist_pow_s(float dist)
   float dtmp;
 
   if (ds_exponent == 3.0) {
-    return(dist*dist*dist);
+    dtmp = dist*dist*dist;
   }
   else if (ds_exponent == 1.0) {
-    return(dist);
+    dtmp = dist;
   }
   else if (ds_exponent == 0.5) {
-    return(sqrt(dist));
+    dtmp = sqrt(dist);
   }
   else if (ds_exponent == 2.0) {
-    return(dist*dist);
+    dtmp = dist*dist;
   }
   else if (ds_exponent == 4.0) {
     dtmp = dist*dist;
-    return(dtmp*dtmp);
+    dtmp = dtmp*dtmp;
   }
   else if (ds_exponent == 5.0) {
-    return(dist*dist*dist*dist*dist);
+    dtmp = dist*dist*dist*dist*dist;
   }
   else if (ds_exponent == 6.0) {
     dtmp = dist*dist*dist;
-    return(dtmp*dtmp);
+    dtmp = dtmp*dtmp;
   }
   else if (ds_exponent == 7.0) {
-    return(dist*dist*dist*dist*dist*dist*dist);
+    dtmp = dist*dist*dist*dist*dist*dist*dist;
   }
   else if (ds_exponent == 8.0) {
     dtmp = dist*dist;
     dtmp = dtmp*dtmp;
-    return(dtmp*dtmp);
+    dtmp = dtmp*dtmp;
   }
   else if (ds_exponent == 9.0) {
     dtmp = dist*dist*dist;
-    return(dtmp*dtmp*dtmp);
+    dtmp = dtmp*dtmp*dtmp;
   }
   else if (ds_exponent == 10.0) {
     dtmp = dist*dist*dist*dist*dist;
-    return(dtmp*dtmp);
+    dtmp = dtmp*dtmp;
   }
   else {
-    return( (float) pow( (double) dist, ds_exponent));
+    dtmp = pow(dist, ds_exponent);
+  }
+  if (dtmp < 1.E-30) {
+    return (1.E-30);
+  }
+  else {
+    return (dtmp);
   }
 }

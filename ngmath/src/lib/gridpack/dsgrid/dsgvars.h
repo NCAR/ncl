@@ -3,7 +3,7 @@
  *  characters "ds_").
  */
 double    ds_missing_value = -99999., ds_exponent = 3., ds_scale = 1.,
-          ds_max_dist;
+          ds_max_dist, ds_epsilon_test;
 int       ds_error_status = 0, ds_set_maxpts = 0, ds_maxpoints, 
           ds_first_call = 1, ds_shadowing = 0, ds_set_max_dist = 0;
 

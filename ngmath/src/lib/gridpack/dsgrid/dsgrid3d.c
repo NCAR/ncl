@@ -45,7 +45,7 @@ double *c_dsgrid3d(int n, double x[], double y[], double z[], double u[],
  */
 {
   int       i, j, k;
-  double    epsilon_test, xc, yc, zc, perror = 1., *retval;
+  double    xc, yc, zc, perror = 1., *retval;
 
   DSpointd3 q;
 
@@ -57,7 +57,7 @@ double *c_dsgrid3d(int n, double x[], double y[], double z[], double u[],
   dsgetmem(n, nx, ny, nz, ier);
   if (*ier != 0) return(&perror);
 
-  dsinit(n, nx, ny, nz, x, y, z, xo, yo, zo, &epsilon_test, ier);
+  dsinit(n, nx, ny, nz, x, y, z, xo, yo, zo, ier);
   if (*ier != 0) return(&perror);
     
 /*
@@ -78,13 +78,16 @@ double *c_dsgrid3d(int n, double x[], double y[], double z[], double u[],
         q.z = zc * ds_scale;
         dsdist(n, ds_input_points, q, ds_distances);
   
+/*
+ *  Calculate the interpolated value.
+ */
         if (ds_shadowing) {
           ds_output[nz*ny*i + nz*j + k] = 
-                          svalue(n, u, q.x, q.y, q.z, epsilon_test);
+                          svalue(n, u, q.x, q.y, q.z);
         } 
         else {
           ds_output[nz*ny*i + nz*j + k] = 
-                          ivalue(n, u, q.x, q.y, q.z, epsilon_test);
+                          ivalue(n, u, q.x, q.y, q.z);
         }
       }
     }
@@ -125,7 +128,6 @@ void dsgetmem(int n, int nx, int ny, int nz, int *ier)
     *ier = ds_error_status;
     return;
   }
-  if (ds_first_call != 1) free (ds_output);
   ds_output             = (double *) calloc(nx*ny*nz, sizeof(double));
   if (ds_output == NULL) {
     DSErrorHnd(12, "dsgetmem", ds_filee, "\n");
@@ -149,8 +151,7 @@ void dsfreemem()
  *  Initialization.
  */
 void dsinit(int n, int nx, int ny, int nz, double x[], double y[], double z[], 
-            double xo[], double yo[], double zo[], 
-            double *epsilon_test, int *ier)
+            double xo[], double yo[], double zo[], int *ier)
 {
   int    i;
   double xmn, ymn, zmn, xmx, ymx, zmx, tlm;
@@ -187,6 +188,15 @@ void dsinit(int n, int nx, int ny, int nz, double x[], double y[], double z[],
     zmn = MIN(zo[i], zmn);
     zmx = MAX(zo[i], zmx);
   }
+  for (i = 0; i < n; i++) {
+    xmn = MIN(x[i], xmn);
+    xmx = MAX(x[i], xmx);
+    ymn = MIN(y[i], ymn);
+    ymx = MAX(y[i], ymx);
+    zmn = MIN(z[i], zmn);
+    zmx = MAX(z[i], zmx);
+  }
+  
 /*
  *  Find the maximum span of the three coordinates.
  */
@@ -197,7 +207,7 @@ void dsinit(int n, int nx, int ny, int nz, double x[], double y[], double z[],
  *  points, if this has not been specifically set by the user.
  */
   if (ds_set_max_dist == 0) ds_max_dist = 
-            (xmx - xmn) + (ymx - ymn) + (zmx - zmn);
+            2.*((xmx - xmn) + (ymx - ymn) + (zmx - zmn));
 
 /*
  *  Scale and store the input values.
@@ -209,7 +219,7 @@ void dsinit(int n, int nx, int ny, int nz, double x[], double y[], double z[],
     ds_input_points[i].z = z[i] * ds_scale; 
   }
 
-  *epsilon_test = 1.E-10;
+  ds_epsilon_test = 1.E-5;
 
   for (i = 0; i < nx*ny*nz; i++) {
     ds_output[i] = ds_missing_value;
@@ -221,13 +231,13 @@ void dsinit(int n, int nx, int ny, int nz, double x[], double y[], double z[],
  *  turned off.
  */
 double ivalue(int num_points, double *values, 
-                   double xc, double yc, double zc, double epsilon_test)
+                   double xc, double yc, double zc)
 {
   int       iw, it;
   double    normalization_factor, interpolated_value, weight_sum;
 
   for (iw = 0; iw < num_points; iw++) {
-    if ( (ds_distances[iw] < epsilon_test) && (ds_distances[iw] >= 0.) ) {
+    if ( (ds_distances[iw] < ds_epsilon_test) && (ds_distances[iw] >= 0.) ) {
       for (it = 0; it < num_points; it++) {
         ds_weights[it] = 0.;
       }
@@ -264,13 +274,13 @@ label_1:
  *  Calculate interpolated value when shadowing option is on.
  */
 double svalue(int num_points, double *values, 
-                   double xc, double yc, double zc, double epsilon_test)
+                   double xc, double yc, double zc)
 {
   int       iw, ia, it, lp;
   double    normalization_factor, interpolated_value, weight_sum;
 
   for (iw = 0; iw < num_points; iw++) {
-    if ( (ds_distances[iw] < epsilon_test) && (ds_distances[iw] >= 0.) ) {
+    if ( (ds_distances[iw] < ds_epsilon_test) && (ds_distances[iw] >= 0.) ) {
       for (it = 0; it < num_points; it++) {
         ds_weights[it] = 0.;
       }
@@ -392,45 +402,51 @@ double dist_pow(double dist)
   double dtmp;
 
   if (ds_exponent == 3.0) {
-    return(dist*dist*dist);
+    dtmp = dist*dist*dist;
   }
   else if (ds_exponent == 1.0) {
-    return(dist);
+    dtmp = dist;
   }
   else if (ds_exponent == 0.5) {
-    return(sqrt(dist));
+    dtmp = sqrt(dist);
   }
   else if (ds_exponent == 2.0) {
-    return(dist*dist);
+    dtmp = dist*dist;
   }
   else if (ds_exponent == 4.0) {
     dtmp = dist*dist;
-    return(dtmp*dtmp);
+    dtmp = dtmp*dtmp;
   }
   else if (ds_exponent == 5.0) {
-    return(dist*dist*dist*dist*dist);
+    dtmp = dist*dist*dist*dist*dist;
   }
   else if (ds_exponent == 6.0) {
     dtmp = dist*dist*dist;
-    return(dtmp*dtmp);
+    dtmp = dtmp*dtmp;
   }
   else if (ds_exponent == 7.0) {
-    return(dist*dist*dist*dist*dist*dist*dist);
+    dtmp = dist*dist*dist*dist*dist*dist*dist;
   }
   else if (ds_exponent == 8.0) {
     dtmp = dist*dist;
     dtmp = dtmp*dtmp;
-    return(dtmp*dtmp);
+    dtmp = dtmp*dtmp;
   }
   else if (ds_exponent == 9.0) {
     dtmp = dist*dist*dist;
-    return(dtmp*dtmp*dtmp);
+    dtmp = dtmp*dtmp*dtmp;
   }
   else if (ds_exponent == 10.0) {
     dtmp = dist*dist*dist*dist*dist;
-    return(dtmp*dtmp);
+    dtmp = dtmp*dtmp;
   }
   else {
-    return(pow(dist, ds_exponent));
+    dtmp = pow(dist, ds_exponent);
+  }
+  if (dtmp < (double) 1.E-30) {
+    return ( (double) 1.E-30);
+  }
+  else {
+    return (dtmp);
   }
 }

@@ -28,14 +28,14 @@ void     c_dspnt2s(int, float [], float [], float [],
                    int, float [], float [], float [], int *);
 double   dotd(DSpointd3, DSpointd3);
 float    dot_s(DSpoints3, DSpoints3);
-double   ivalue(int, double *, double, double, double, double);
-float    ivalue_s(int, float *, float, float, float, float);
-double   svalue(int, double *, double, double, double, double);
-float    svalue_s(int, float *, float, float, float, float);
+double   ivalue(int, double *, double, double, double);
+float    ivalue_s(int, float *, float, float, float);
+double   svalue(int, double *, double, double, double);
+float    svalue_s(int, float *, float, float, float);
 void     dsinit(int, int, int, int, double [], double [], double [], 
-                double[], double[], double[], double *, int *);
+                double[], double[], double[], int *);
 void     dsinit_s(int, int, int, int, float [], float [], float [], 
-                float[], float[], float[], float *, int *);
+                float[], float[], float[], int *);
 void     dsgetmem(int, int, int, int, int *);
 void     dsgetmem_s(int, int, int, int, int *);
 void     dsfreemem();

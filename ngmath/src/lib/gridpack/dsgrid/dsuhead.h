@@ -1,6 +1,7 @@
 #include <stdio.h>
 
-extern  double    ds_missing_value, ds_exponent, ds_scale, ds_max_dist;
+extern  double    ds_missing_value, ds_exponent, ds_scale, ds_max_dist,
+                  ds_epsilon_test;
 
 extern  int       ds_error_status, ds_set_maxpts, ds_maxpoints,
                   ds_first_call, ds_shadowing, ds_set_max_dist;
