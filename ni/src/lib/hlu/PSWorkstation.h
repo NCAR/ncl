@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.h,v 1.3 1995-04-07 10:43:18 boote Exp $
+ *      $Id: PSWorkstation.h,v 1.4 1999-04-03 01:04:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -54,6 +54,9 @@
 #define	NhlNwkDeviceUpperY	"wkDeviceUpperY"
 #define	NhlCwkDeviceUpperY	"WkDeviceUpperY"
 
+#define	NhlNwkColorModel	"wkColorModel"
+#define	NhlCwkColorModel	"WkColorModel"
+
 /*
  * New Types.
  */
@@ -76,6 +79,12 @@ typedef enum _NhlWorkOrientation{
 	NhlPORTRAIT = 0,
 	NhlLANDSCAPE = 6
 } NhlWorkOrientation;
+
+#define	NhlTColorModel	"ColorModel"
+typedef enum _NhlColorModel{
+	NhlCMYK = 0,
+	NhlRGB	= 1
+} NhlColorModel;
 
 extern NhlClass NhlpsWorkstationClass;
 

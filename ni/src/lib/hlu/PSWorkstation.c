@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.13 1998-10-22 17:35:47 boote Exp $
+ *      $Id: PSWorkstation.c,v 1.14 1999-04-03 01:04:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -58,6 +58,10 @@ static NhlResource resources[] = {
 	{NhlNwkFullBackground,NhlCwkFullBackground,NhlTBoolean,
 		sizeof(NhlBoolean),Oset(full_background),NhlTImmediate,
 		(NhlPointer)False,_NhlRES_DEFAULT,NULL},
+	{NhlNwkColorModel,NhlCwkColorModel,NhlTColorModel,
+	 	sizeof(NhlColorModel),
+		Oset(color_model),NhlTImmediate,(NhlPointer)NhlRGB,
+		_NhlRES_NOSACCESS,NULL},
 
 /* End-documented-resources */
 };
@@ -277,6 +281,11 @@ PSWorkstationClassInitialize
 		{NhlPORTRAIT,	"Portrait"},
 		{NhlLANDSCAPE,	"Landscape"}
 	};
+	_NhlEnumVals	colmodelvals[] = {
+		{NhlCMYK,	"CMYK"},
+		{NhlRGB,	"RGB"}
+	};
+	
 
 	(void)_NhlRegisterEnumType(NhlpsWorkstationClass,NhlTVisualType,
 		visvals,NhlNumber(visvals));
@@ -284,6 +293,8 @@ PSWorkstationClassInitialize
 		fmtvals,NhlNumber(fmtvals));
 	(void)_NhlRegisterEnumType(NhlpsWorkstationClass,NhlTWorkOrientation,
 		orientvals,NhlNumber(orientvals));
+	(void)_NhlRegisterEnumType(NhlpsWorkstationClass,NhlTColorModel,
+		colmodelvals,NhlNumber(colmodelvals));
 
 	fnameQ = NrmStringToQuark(NhlNwkPSFileName);
 
@@ -550,6 +561,7 @@ PSWorkstationOpen
 	c_ngseti("ux",pp->upper_x);
 	c_ngseti("ly",pp->lower_y);
 	c_ngseti("uy",pp->upper_y);
+	c_ngseti("cm",pp->color_model);
 
 	ret = (*NhlworkstationClassRec.work_class.open_work)(l);
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstationP.h,v 1.3 1997-01-17 22:35:49 dbrown Exp $
+ *      $Id: PSWorkstationP.h,v 1.4 1999-04-03 01:04:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,7 @@ typedef struct _NhlPSWorkstationLayerPart {
 	NhlPSFormat		format;
 	NhlVisualType		visual;
 	NhlWorkOrientation	orientation;
+	NhlColorModel		color_model;
 
 	NhlString		filename;
 
