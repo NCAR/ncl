@@ -1,5 +1,5 @@
 /*
- *      $Id: GraphicStyle.c,v 1.1 1996-02-26 21:45:53 dbrown Exp $
+ *      $Id: GraphicStyle.c,v 1.2 1996-05-08 17:12:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -120,7 +120,7 @@ NhlClass NhlgraphicStyleClass =
  * Side Effect:	
  */
 NhlClass
-_NHLCALLF(nhlfgraphicStyleclass,NHLFGRAPHICSTYLECLASS)
+_NHLCALLF(nhlfgraphicstyleclass,NHLFGRAPHICSTYLECLASS)
 #if	NhlNeedProto
 (
 	void
