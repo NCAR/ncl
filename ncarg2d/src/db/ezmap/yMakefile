@@ -1,14 +1,34 @@
 #
-#	$Id: yMakefile,v 1.4 1993-10-19 17:21:06 boote Exp $
+#	$Id: yMakefile,v 1.5 1995-06-30 23:33:02 kennison Exp $
 #
 
-DBFILES = ezmapdata ezmap_area_ids
+DBFILES = EzmapAreaInfo.CO EzmapAreaInfo.PO EzmapAreaInfo.PS EzmapAreaInfo.US \
+	  EzmapOutlines.CO EzmapOutlines.PO EzmapOutlines.PS EzmapOutlines.US \
+	  ezmap_area_ids
 
 InstallTarget($(DBFILES),$(INSTALL_DB),$(DBPATH))
-FNotInstalledTarget(mapconvrt,mapconvrt.o)
-CleanFilesTarget(ezmapdata)
+FNotInstalledTarget(ConvertMapData,ConvertMapData.o)
+CleanFilesTarget(EzmapOutlines.CO)
+CleanFilesTarget(EzmapOutlines.PO)
+CleanFilesTarget(EzmapOutlines.PS)
+CleanFilesTarget(EzmapOutlines.US)
 
-ezmapdata: ezmapdat mapconvrt
-	-@$(RM) ezmapdata
+EzmapOutlines.CO: ezmapdat ConvertMapData
+	-@$(RM) EzmapOutlines.CO
 	@echo "Building the EZMAP database"
-	@./mapconvrt
+	@./ConvertMapData
+
+EzmapOutlines.PO: ezmapdat ConvertMapData
+	-@$(RM) EzmapOutlines.PO
+	@echo "Building the EZMAP database"
+	@./ConvertMapData
+
+EzmapOutlines.PS: ezmapdat ConvertMapData
+	-@$(RM) EzmapOutlines.PS
+	@echo "Building the EZMAP database"
+	@./ConvertMapData
+
+EzmapOutlines.US: ezmapdat ConvertMapData
+	-@$(RM) EzmapOutlines.US
+	@echo "Building the EZMAP database"
+	@./ConvertMapData
