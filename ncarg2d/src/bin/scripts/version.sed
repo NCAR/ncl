@@ -1,10 +1,9 @@
 #!/bin/csh -f
 #
-#	$Id: version.sed,v 1.1 1992-11-02 14:38:59 haley Exp $
+#	$Id: version.sed,v 1.2 1993-02-18 23:18:31 haley Exp $
 #
 
-set date = `date`
-set year = $date[6]
+set year = "19`date +%y`"
 
 echo ""
 cat <<EOF
