@@ -279,6 +279,35 @@ C
         READ (11,'(5E16.8)') ULON
         READ (11,'(5E16.8)') TEMP
 C
+        CLOSE (11)
+C
+C Set ISWP = 0 to leave the data alone, or = 1 to flip it end-for-end in
+C the second subscript.
+C
+        ISWP=0
+C
+        IF (ISWP.NE.0) THEN
+          DO 902 I=1,100
+            DO 901 J=1,58
+              WORK=TLAT(I,J)
+              TLAT(I,J)=TLAT(I,117-J)
+              TLAT(I,117-J)=WORK
+              WORK=TLON(I,J)
+              TLON(I,J)=TLON(I,117-J)
+              TLON(I,117-J)=WORK
+              WORK=ULAT(I,J)
+              ULAT(I,J)=ULAT(I,117-J)
+              ULAT(I,117-J)=WORK
+              WORK=ULON(I,J)
+              ULON(I,J)=ULON(I,117-J)
+              ULON(I,117-J)=WORK
+              WORK=TEMP(I,J)
+              TEMP(I,J)=TEMP(I,117-J)
+              TEMP(I,117-J)=WORK
+  901       CONTINUE
+  902     CONTINUE
+        END IF
+C
 C Print elapsed time.
 C
 C       IF (ITIM.NE.0) THEN
@@ -1091,19 +1120,15 @@ C
           DOUBLE PRECISION XQDP
         SAVE   /TESTCM/
 C
-C Declare arrays needed to pass information to the routines ACEGSP and
-C ACEGDP.
+C Declare arrays needed to pass information to the routines ICEGSP and
+C ICEGDP.
 C
         DIMENSION        RQSP(4)
         DOUBLE PRECISION RQDP(4)
 C
 C Declare some other double-precision variables needed.
 C
-        DOUBLE PRECISION DRDP,RDDP,DLAT,DLON,XODP,YODP,ACDP,XFDP,YFDP
-C
-C Declare double-precision functions.
-C
-        DOUBLE PRECISION ACEGDP
+        DOUBLE PRECISION DRDP,RDDP,DLAT,DLON,XODP,YODP,XFDP,YFDP
 C
 C Define single-precision and double-precision multiplicative constants
 C to convert from degrees to radians and vice-versa.
@@ -1143,8 +1168,8 @@ C
           JGRD=MAX(1,MIN(115,INT(YINP)))
 C
 C Interpolate in the grid box to find the desired point, get its
-C latitude and longitude, and call the EZMAP inverse-transformation
-C routine to project the point to the U/V plane.
+C latitude and longitude, and call the EZMAP transformation routine
+C to project the point to the U/V plane.
 C
           IF (ISOD.EQ.0) THEN
 C
@@ -1228,55 +1253,53 @@ C Check a little area around the last box used (in hopes of quickly
 C finding the correct box often enough so as to speed the process up).
 C
               IF (IEND-IBEG.EQ.1.AND.JEND-JBEG.EQ.1) THEN
-                ACSP=ACEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ACSP.GE.180.) GO TO 101  !  Same box.
+                ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
+                IF (ICSP.EQ.0) GO TO 101  !  Same box.
                 IBEG=MAX(  1,IBEG-1)
                 IEND=MIN(101,IEND+1)
                 JBEG=MAX(  1,JBEG-1)
                 JEND=MIN(116,JEND+1)
-                ACSP=ACEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ACSP.GE.180.) GO TO 101  !  Adjacent box.
+                ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
+                IF (ICSP.EQ.0) GO TO 101  !  Adjacent box.
                 IBEG=MAX(  1,IBEG-1)
                 IEND=MIN(101,IEND+1)
                 JBEG=MAX(  1,JBEG-1)
                 JEND=MIN(116,JEND+1)
-                ACSP=ACEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ACSP.GE.180.) GO TO 101  !  Near-by box.
+                ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
+                IF (ICSP.EQ.0) GO TO 101  !  Near-by box.
               END IF
 C
 C If that didn't work, look for a "quarter" of the grid containing the
 C point we want.  (Starting with the entire grid is problematical
-C because of the way ACEGSP works: if both the point and its antipodal
-C point are inside or outside the area checked, it won't tell us which
-C of those two situations exists.)
+C because of the way ICEGSP works.)
 C
               IBEG=1
               IEND=51
               JBEG=1
               JEND=58
-              ACSP=ACEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ACSP.GE.180.) GO TO 101  !  Lower left quadrant.
+              ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
+              IF (ICSP.EQ.0) GO TO 101  !  Lower left quadrant.
 C
               IBEG=51
               IEND=101
               JBEG=1
               JEND=58
-              ACSP=ACEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ACSP.GE.180.) GO TO 101  !  Lower right quadrant.
+              ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
+              IF (ICSP.EQ.0) GO TO 101  !  Lower right quadrant.
 C
               IBEG=1
               IEND=51
               JBEG=58
               JEND=116
-              ACSP=ACEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ACSP.GE.180.) GO TO 101  !  Upper left quadrant.
+              ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
+              IF (ICSP.EQ.0) GO TO 101  !  Upper left quadrant.
 C
               IBEG=51
               IEND=101
               JBEG=58
               JEND=116
-              ACSP=ACEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ACSP.GE.180.) GO TO 101  !  Upper right quadrant.
+              ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
+              IF (ICSP.EQ.0) GO TO 101  !  Upper right quadrant.
 C
 C Point was not in any "quarter" of the grid, so treat it as outside
 C the grid.
@@ -1303,16 +1326,16 @@ C
                   GO TO 103
                 END IF
                 IMID=(IBEG+IEND)/2
-                ACSP=ACEGSP(RQSP,XQSP,101,116,IBEG,IMID,JBEG,JEND)
-                IF (ACSP.LT.180.) THEN
+                ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IMID,JBEG,JEND)
+                IF (ICSP.NE.0) THEN
                   IBEG=IMID
                 ELSE
                   IEND=IMID
                 END IF
               ELSE
                 JMID=(JBEG+JEND)/2
-                ACSP=ACEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JMID)
-                IF (ACSP.LT.180.) THEN
+                ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JMID)
+                IF (ICSP.NE.0) THEN
                   JBEG=JMID
                 ELSE
                   JEND=JMID
@@ -1326,11 +1349,11 @@ C (I have not yet seen this happen with this version of the code,
 C that deals with the globe, but I did see it happen with a version
 C in the plane.)
 C
-C*            ACSP=ACEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-C*            IF (ACSP.LT.180.) THEN
+C*            ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
+C*            IF (ICSP.NE.0) THEN
 C*              PRINT * , 'ALGORITHM FAILURE'
-C*              PRINT * , 'IBEG,IEND,JBEG,JEND,ACSP = ',
-C*   +                     IBEG,IEND,JBEG,JEND,ACSP
+C*              PRINT * , 'IBEG,IEND,JBEG,JEND,ICSP = ',
+C*   +                     IBEG,IEND,JBEG,JEND,ICSP
 C*              XOUT=0.
 C*              YOUT=0.
 C*              GO TO 103
@@ -1370,55 +1393,53 @@ C Check a little area around the last box used (in hopes of quickly
 C finding the correct box often enough so as to speed the process up).
 C
               IF (IEND-IBEG.EQ.1.AND.JEND-JBEG.EQ.1) THEN
-                ACDP=ACEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ACDP.GE.180.D0) GO TO 102  !  Same box.
+                ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
+                IF (ICDP.EQ.0) GO TO 102  !  Same box.
                 IBEG=MAX(  1,IBEG-1)
                 IEND=MIN(101,IEND+1)
                 JBEG=MAX(  1,JBEG-1)
                 JEND=MIN(116,JEND+1)
-                ACDP=ACEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ACDP.GE.180.D0) GO TO 102  !  Adjacent box.
+                ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
+                IF (ICDP.EQ.0) GO TO 102  !  Adjacent box.
                 IBEG=MAX(  1,IBEG-1)
                 IEND=MIN(101,IEND+1)
                 JBEG=MAX(  1,JBEG-1)
                 JEND=MIN(116,JEND+1)
-                ACDP=ACEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ACDP.GE.180.D0) GO TO 102  !  Near-by box.
+                ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
+                IF (ICDP.EQ.0) GO TO 102  !  Near-by box.
               END IF
 C
 C If that didn't work, look for a "quarter" of the grid containing the
 C point we want.  (Starting with the entire grid is problematical
-C because of the way ACEGSP works: if both the point and its antipodal
-C point are inside or outside the area checked, it won't tell us which
-C of those two situations obtains.)
+C because of the way ICEGDP works.)
 C
               IBEG=1
               IEND=51
               JBEG=1
               JEND=58
-              ACDP=ACEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ACDP.GE.180.D0) GO TO 102  !  Lower left quadrant.
+              ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
+              IF (ICDP.EQ.0) GO TO 102  !  Lower left quadrant.
 C
               IBEG=51
               IEND=101
               JBEG=1
               JEND=58
-              ACDP=ACEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ACDP.GE.180.D0) GO TO 102  !  Lower right quadrant.
+              ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
+              IF (ICDP.EQ.0) GO TO 102  !  Lower right quadrant.
 C
               IBEG=1
               IEND=51
               JBEG=58
               JEND=116
-              ACDP=ACEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ACDP.GE.180.D0) GO TO 102  !  Upper left quadrant.
+              ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
+              IF (ICDP.EQ.0) GO TO 102  !  Upper left quadrant.
 C
               IBEG=51
               IEND=101
               JBEG=58
               JEND=116
-              ACDP=ACEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ACDP.GE.180.D0) GO TO 102  !  Upper right quadrant.
+              ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
+              IF (ICDP.EQ.0) GO TO 102  !  Upper right quadrant.
 C
 C Point was not in any "quarter" of the grid, so treat it as outside
 C the grid.
@@ -1445,16 +1466,16 @@ C
                   GO TO 103
                 END IF
                 IMID=(IBEG+IEND)/2
-                ACDP=ACEGDP(RQDP,XQDP,101,116,IBEG,IMID,JBEG,JEND)
-                IF (ACDP.LT.180.D0) THEN
+                ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IMID,JBEG,JEND)
+                IF (ICDP.NE.0) THEN
                   IBEG=IMID
                 ELSE
                   IEND=IMID
                 END IF
               ELSE
                 JMID=(JBEG+JEND)/2
-                ACDP=ACEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JMID)
-                IF (ACDP.LT.180.D0) THEN
+                ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JMID)
+                IF (ICDP.NE.0) THEN
                   JBEG=JMID
                 ELSE
                   JEND=JMID
@@ -1468,11 +1489,11 @@ C (I have not yet seen this happen with this version of the code,
 C that deals with the globe, but I did see it happen with a version
 C in the plane.)
 C
-C*            ACDP=ACEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-C*            IF (ACDP.LT.180.D0) THEN
+C*            ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
+C*            IF (ICDP.NE.0) THEN
 C*              PRINT * , 'ALGORITHM FAILURE'
-C*              PRINT * , 'IBEG,IEND,JBEG,JEND,ACDP = ',
-C*   +                     IBEG,IEND,JBEG,JEND,ACDP
+C*              PRINT * , 'IBEG,IEND,JBEG,JEND,ICDP = ',
+C*   +                     IBEG,IEND,JBEG,JEND,ICDP
 C*              XOUT=0.
 C*              YOUT=0.
 C*              GO TO 103
@@ -1578,80 +1599,21 @@ C than if the latitudes and longitudes themselves are used.
 C
         DIMENSION PQSP(4),QQSP(4)
 C
-C The "quadrilateral" is assumed to be "convex", but we do some testing
-C for pathological cases: If the point E is not in the interior of ABDC,
-C both XFRA and YFRA will be returned with negative values.  First, see
-C if either A or B is identical to the point opposite it, in which case
-C ABDC has zero area.
+C We use a fast iterative technique to find XFRA.
 C
-C (05/22/2002) I have commented out the error checks to improve the
-C speed of this routine, but I am leaving the commented-out code in
-C place in case it becomes important in the future.  Each commented-out
-C line has a "C" in column 1 and an "*" in column 2.
-C
-C*      IF (AQSP(1).EQ.DQSP(1).AND.AQSP(2).EQ.DQSP(2).AND.
-C*   +      AQSP(3).EQ.DQSP(3).AND.AQSP(4).EQ.DQSP(4)) GO TO 105
-C
-C*      IF (BQSP(1).EQ.CQSP(1).AND.BQSP(2).EQ.CQSP(2).AND.
-C*   +      BQSP(3).EQ.CQSP(3).AND.BQSP(4).EQ.CQSP(4)) GO TO 105
-C
-C Now, for each edge of the "quadrilateral" of non-zero length, check to
-C see if the point E is on the correct side of the great circle defined
-C by that edge.  If more than one edge of zero length is found, then
-C ABDC has zero area.  Note that an epsilon test is used, so as to allow
-C the point E to be very slightly outside of ABDC.
-C
-C*      NZLE=0
-C
-C*      IF (AQSP(1).EQ.BQSP(1).AND.AQSP(2).EQ.BQSP(2).AND.
-C*   +      AQSP(3).EQ.BQSP(3).AND.AQSP(4).EQ.BQSP(4)) THEN
-C*        NZLE=1
-C*      ELSE
-C*        IF (DPGCSP(AQSP,BQSP,EQSP).LT.-1.E-4) GO TO 105
-C*      END IF
-C
-C*      IF (BQSP(1).EQ.DQSP(1).AND.BQSP(2).EQ.DQSP(2).AND.
-C*   +      BQSP(3).EQ.DQSP(3).AND.BQSP(4).EQ.DQSP(4)) THEN
-C*        IF (NZLE.NE.0) GO TO 105
-C*        NZLE=1
-C*      ELSE
-C*        IF (DPGCSP(BQSP,DQSP,EQSP).LT.-1.E-4) GO TO 105
-C*      END IF
-C
-C*      IF (DQSP(1).EQ.CQSP(1).AND.DQSP(2).EQ.CQSP(2).AND.
-C*   +      DQSP(3).EQ.CQSP(3).AND.DQSP(4).EQ.CQSP(4)) THEN
-C*        IF (NZLE.NE.0) GO TO 105
-C*        NZLE=1
-C*      ELSE
-C*        IF (DPGCSP(DQSP,CQSP,EQSP).LT.-1.E-4) GO TO 105
-C*      END IF
-C
-C*      IF (CQSP(1).EQ.AQSP(1).AND.CQSP(2).EQ.AQSP(2).AND.
-C*   +      CQSP(3).EQ.AQSP(3).AND.CQSP(4).EQ.AQSP(4)) THEN
-C*        IF (NZLE.NE.0) GO TO 105
-C*      ELSE
-C*        IF (DPGCSP(CQSP,AQSP,EQSP).LT.-1.E-4) GO TO 105
-C*      END IF
-C
-C If possible, we use a fast iterative technique to find XFRA.
-C
-C*      IF (NZLE.EQ.0) THEN
-          XFR1=0.
-          DST1=DPGCSP(AQSP,CQSP,EQSP)
-          IF (DST1.GE.0.) THEN
+        XFR1=0.
+        DST1=DPGCSP(AQSP,CQSP,EQSP)
+        XFR2=1.
+        DST2=DPGCSP(BQSP,DQSP,EQSP)
+        IF (DST1*DST2.GE.0.) THEN
+          IF (ABS(DST1).LT.ABS(DST2)) THEN
             XFRA=0.
-            CALL IPGCSP (AQSP,BQSP,XFRA,PQSP)
-            CALL IPGCSP (CQSP,DQSP,XFRA,QQSP)
-            GO TO 104
-          END IF
-          XFR2=1.
-          DST2=DPGCSP(BQSP,DQSP,EQSP)
-          IF (DST2.LE.0.) THEN
+          ELSE
             XFRA=1.
-            CALL IPGCSP (AQSP,BQSP,XFRA,PQSP)
-            CALL IPGCSP (CQSP,DQSP,XFRA,QQSP)
-            GO TO 104
           END IF
+          CALL IPGCSP (AQSP,BQSP,XFRA,PQSP)
+          CALL IPGCSP (CQSP,DQSP,XFRA,QQSP)
+        ELSE
   101     XFRA=(DST2*XFR1-DST1*XFR2)/(DST2-DST1)
           CALL IPGCSP (AQSP,BQSP,XFRA,PQSP)
           CALL IPGCSP (CQSP,DQSP,XFRA,QQSP)
@@ -1666,24 +1628,7 @@ C*      IF (NZLE.EQ.0) THEN
             DST2=DSTA
           END IF
           IF (XFR2-XFR1.GT.1.E-6) GO TO 101
-          GO TO 104
-C*      END IF
-C
-C If that technique is unusable or fails, fall back on a binary-halving
-C technique.
-C
-C*102   XFR1=0.
-C*      XFR2=1.
-C
-C*103   XFRA=.5*(XFR1+XFR2)
-C*      CALL IPGCSP (AQSP,BQSP,XFRA,PQSP)
-C*      CALL IPGCSP (CQSP,DQSP,XFRA,QQSP)
-C*      IF (DPGCSP(PQSP,QQSP,EQSP).LT.0.) THEN
-C*        XFR1=XFRA
-C*      ELSE
-C*        XFR2=XFRA
-C*      END IF
-C*      IF (XFR2-XFR1.GT.1.E-6) GO TO 103
+        END IF
 C
 C Computing YFRA is easier:
 C
@@ -1698,13 +1643,6 @@ C
 C Normal exit.
 C
         RETURN
-C
-C "Error" exit.  The point E is not inside ABDC.
-C
-C*105   XFRA=-1.
-C*      YFRA=-1.
-C
-C*      RETURN
 C
       END
 
@@ -1833,10 +1771,6 @@ C have three possible values: +360, if P is to the left of Q and P' is
 C to the right of Q; -360, if P is to the right of Q and P' is to the
 C left of Q; and zero, if both P and P' are on the same side of Q (left
 C or right, but we don't know which).
-C
-C This function is used to tell us whether the point P is "inside" Q
-C (function value greater than 180) or "outside" Q (function value less
-C than 180).
 C
 C All variables with names of the form XQSP are four-element arrays
 C containing the cosine and sine of the latitude and the cosine and
@@ -2105,6 +2039,85 @@ C
       END
 
 
+      FUNCTION ICEGSP(PQSP,QQSP,IDIM,JDIM,IBEG,IEND,JBEG,JEND)
+C
+C (ICEGSP = Integer Check along Edge of Grid, Single Precision)
+C
+        DIMENSION PQSP(4),QQSP(4,IDIM,JDIM)
+C
+C The value of this function is zero if and only if the point P is
+C inside the smaller of the two portions of the sphere formed by the
+C boundary Q, which is the outer edge of a "grid" defined by the points
+C (QQSP(I,J)), for I from IBEG to IEND and J from JBEG to JEND.  (The
+C edge of the grid is formed of shortest great circle routes from point
+C to point.)
+C
+C All variables with names of the form XQSP are four-element arrays
+C containing the cosine and sine of the latitude and the cosine and
+C sine of the longitude, in that order, of the point X.  Describing
+C the point positions in this way makes this routine execute faster
+C than if the latitudes and longitudes themselves are used.
+C
+C If the total angle swept out by a vector tangent to the sphere at the
+C point P and pointing in the direction of the shortest great circle
+C route to a point tracing Q is near zero, then both the point P and its
+C antipodal point P' are in the same area, which must therefore be the
+C larger of the two areas created by Q.
+C
+        IF (ABS(ACEGSP(PQSP,QQSP,IDIM,JDIM,IBEG,IEND,JBEG,JEND)).LT.
+     +                                                        180.) THEN
+          ICEGSP=1
+          RETURN
+        END IF
+C
+C Otherwise, P is in one of the two areas and P' is in the other, so
+C we perform a somewhat heuristic test to see if P is in the smaller
+C of the two areas: we compute the average distance from P to Q and
+C see if it is less than 90 degrees or more than 90 degrees.
+C
+        ADST=0.
+C
+C "Bottom" edge:
+C
+        DO 101 I=IBEG,IEND-1
+          ADST=ADST+ADGCSP(PQSP,QQSP(1,I,JBEG))
+  101   CONTINUE
+C
+C "Right" edge:
+C
+        DO 102 J=JBEG,JEND-1
+          ADST=ADST+ADGCSP(PQSP,QQSP(1,IEND,J))
+  102   CONTINUE
+C
+C "Top" edge:
+C
+        DO 103 I=IEND,IBEG+1,-1
+          ADST=ADST+ADGCSP(PQSP,QQSP(1,I,JEND))
+  103   CONTINUE
+C
+C "Left" edge:
+C
+        DO 104 J=JEND,JBEG+1,-1
+          ADST=ADST+ADGCSP(PQSP,QQSP(1,IBEG,J))
+  104   CONTINUE
+C
+C Set the function value.
+C
+        ADST=ADST/REAL(IEND-IBEG+JEND-JBEG)/2.
+C
+        IF (ADST.LT.90.) THEN
+          ICEGSP=0
+        ELSE
+          ICEGSP=1
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
+
+
       SUBROUTINE IPIQDP (AQDP,BQDP,CQDP,DQDP,XFRA,YFRA,EQDP)
 C
 C (IPIQDP = Interpolate Point In Quadrilateral, Double Precision)
@@ -2187,80 +2200,21 @@ C
         DOUBLE PRECISION PQDP(4),QQDP(4),XFR1,XFR2,DST1,DST2,DSTA,TMP1,
      +                   TMP2,DPGCDP,ADGCDP
 C
-C The "quadrilateral" is assumed to be "convex", but we do some testing
-C for pathological cases: If the point E is not in the interior of ABDC,
-C both XFRA and YFRA will be returned with negative values.  First, see
-C if either A or B is identical to the point opposite it, in which case
-C ABDC has zero area.
+C We use a fast iterative technique to find XFRA.
 C
-C (05/22/2002) I have commented out the error checks to improve the
-C speed of this routine, but I am leaving the commented-out code in
-C place in case it becomes important in the future.  Each commented-out
-C line has a "C" in column 1 and an "*" in column 2.
-C
-C*      IF (AQDP(1).EQ.DQDP(1).AND.AQDP(2).EQ.DQDP(2).AND.
-C*   +      AQDP(3).EQ.DQDP(3).AND.AQDP(4).EQ.DQDP(4)) GO TO 105
-C
-C*      IF (BQDP(1).EQ.CQDP(1).AND.BQDP(2).EQ.CQDP(2).AND.
-C*   +      BQDP(3).EQ.CQDP(3).AND.BQDP(4).EQ.CQDP(4)) GO TO 105
-C
-C Now, for each edge of the "quadrilateral" of non-zero length, check to
-C see if the point E is on the correct side of the great circle defined
-C by that edge.  If more than one edge of zero length is found, then
-C ABDC has zero area.  Note that an epsilon test is used, so as to allow
-C the point E to be very slightly outside of ABDC.
-C
-C*      NZLE=0
-C
-C*      IF (AQDP(1).EQ.BQDP(1).AND.AQDP(2).EQ.BQDP(2).AND.
-C*   +      AQDP(3).EQ.BQDP(3).AND.AQDP(4).EQ.BQDP(4)) THEN
-C*        NZLE=1
-C*      ELSE
-C*        IF (DPGCDP(AQDP,BQDP,EQDP).LT.-1.D-8) GO TO 105
-C*      END IF
-C
-C*      IF (BQDP(1).EQ.DQDP(1).AND.BQDP(2).EQ.DQDP(2).AND.
-C*   +      BQDP(3).EQ.DQDP(3).AND.BQDP(4).EQ.DQDP(4)) THEN
-C*        IF (NZLE.NE.0) GO TO 105
-C*        NZLE=1
-C*      ELSE
-C*        IF (DPGCDP(BQDP,DQDP,EQDP).LT.-1.D-8) GO TO 105
-C*      END IF
-C
-C*      IF (DQDP(1).EQ.CQDP(1).AND.DQDP(2).EQ.CQDP(2).AND.
-C*   +      DQDP(3).EQ.CQDP(3).AND.DQDP(4).EQ.CQDP(4)) THEN
-C*        IF (NZLE.NE.0) GO TO 105
-C*        NZLE=1
-C*      ELSE
-C*        IF (DPGCDP(DQDP,CQDP,EQDP).LT.-1.D-8) GO TO 105
-C*      END IF
-C
-C*      IF (CQDP(1).EQ.AQDP(1).AND.CQDP(2).EQ.AQDP(2).AND.
-C*   +      CQDP(3).EQ.AQDP(3).AND.CQDP(4).EQ.AQDP(4)) THEN
-C*        IF (NZLE.NE.0) GO TO 105
-C*      ELSE
-C*        IF (DPGCDP(CQDP,AQDP,EQDP).LT.-1.D-8) GO TO 105
-C*      END IF
-C
-C If possible, we use a fast iterative technique to find XFRA.
-C
-C*      IF (NZLE.EQ.0) THEN
-          XFR1=0.D0
-          DST1=DPGCDP(AQDP,CQDP,EQDP)
-          IF (DST1.GE.0.D0) THEN
+        XFR1=0.D0
+        DST1=DPGCDP(AQDP,CQDP,EQDP)
+        XFR2=1.D0
+        DST2=DPGCDP(BQDP,DQDP,EQDP)
+        IF (DST1*DST2.GE.0.D0) THEN
+          IF (ABS(DST1).LT.ABS(DST2)) THEN
             XFRA=0.D0
-            CALL IPGCDP (AQDP,BQDP,XFRA,PQDP)
-            CALL IPGCDP (CQDP,DQDP,XFRA,QQDP)
-            GO TO 104
-          END IF
-          XFR2=1.D0
-          DST2=DPGCDP(BQDP,DQDP,EQDP)
-          IF (DST2.LE.0.D0) THEN
+          ELSE
             XFRA=1.D0
-            CALL IPGCDP (AQDP,BQDP,XFRA,PQDP)
-            CALL IPGCDP (CQDP,DQDP,XFRA,QQDP)
-            GO TO 104
           END IF
+          CALL IPGCDP (AQDP,BQDP,XFRA,PQDP)
+          CALL IPGCDP (CQDP,DQDP,XFRA,QQDP)
+        ELSE
   101     XFRA=(DST2*XFR1-DST1*XFR2)/(DST2-DST1)
           CALL IPGCDP (AQDP,BQDP,XFRA,PQDP)
           CALL IPGCDP (CQDP,DQDP,XFRA,QQDP)
@@ -2275,24 +2229,7 @@ C*      IF (NZLE.EQ.0) THEN
             DST2=DSTA
           END IF
           IF (XFR2-XFR1.GT.1.D-12) GO TO 101
-          GO TO 104
-C*      END IF
-C
-C If that technique is unusable or fails, fall back on a binary-halving
-C technique.
-C
-C*102   XFR1=0.D0
-C*      XFR2=1.D0
-C
-C*103   XFRA=.5D0*(XFR1+XFR2)
-C*      CALL IPGCDP (AQDP,BQDP,XFRA,PQDP)
-C*      CALL IPGCDP (CQDP,DQDP,XFRA,QQDP)
-C*      IF (DPGCDP(PQDP,QQDP,EQDP).LT.0.D0) THEN
-C*        XFR1=XFRA
-C*      ELSE
-C*        XFR2=XFRA
-C*      END IF
-C*      IF (XFR2-XFR1.GT.1.D-12) GO TO 103
+        END IF
 C
 C Computing YFRA is easier:
 C
@@ -2307,13 +2244,6 @@ C
 C Normal exit.
 C
         RETURN
-C
-C "Error" exit.  The point E is not inside ABDC.
-C
-C*105   XFRA=-1.D0
-C*      YFRA=-1.D0
-C
-C*      RETURN
 C
       END
 
@@ -2452,10 +2382,6 @@ C have three possible values: +360, if P is to the left of Q and P' is
 C to the right of Q; -360, if P is to the right of Q and P' is to the
 C left of Q; and zero, if both P and P' are on the same side of Q (left
 C or right, but we don't know which).
-C
-C This function is used to tell us whether the point P is "inside" Q
-C (function value greater than 180) or "outside" Q (function value less
-C than 180).
 C
 C All variables with names of the form XQDP are four-element arrays
 C containing the cosine and sine of the latitude and the cosine and
@@ -2743,6 +2669,87 @@ C
      +         ASIN(SQRT((AQDP(1)*AQDP(3)-BQDP(1)*BQDP(3))**2+
      +                   (AQDP(1)*AQDP(4)-BQDP(1)*BQDP(4))**2+
      +                   (AQDP(2)        -BQDP(2)        )**2)/2.D0)
+C
+        RETURN
+C
+      END
+
+
+      FUNCTION ICEGDP(PQDP,QQDP,IDIM,JDIM,IBEG,IEND,JBEG,JEND)
+C
+C (ICEGDP = Integer Check along Edge of Grid, Double Precision)
+C
+        DOUBLE PRECISION PQDP(4),QQDP(4,IDIM,JDIM)
+C
+C The value of this function is zero if and only if the point P is
+C inside the smaller of the two portions of the sphere formed by the
+C boundary Q, which is the outer edge of a "grid" defined by the points
+C (QQDP(I,J)), for I from IBEG to IEND and J from JBEG to JEND.  (The
+C edge of the grid is formed of shortest great circle routes from point
+C to point.)
+C
+C All variables with names of the form XQDP are four-element arrays
+C containing the cosine and sine of the latitude and the cosine and
+C sine of the longitude, in that order, of the point X.  Describing
+C the point positions in this way makes this routine execute faster
+C than if the latitudes and longitudes themselves are used.
+C
+        DOUBLE PRECISION ACEGDP,ADGCDP,ADST
+C
+C If the total angle swept out by a vector tangent to the sphere at the
+C point P and pointing in the direction of the shortest great circle
+C route to a point tracing Q is near zero, then both the point P and its
+C antipodal point P' are in the same area, which must therefore be the
+C larger of the two areas created by Q.
+C
+        IF (ABS(ACEGDP(PQDP,QQDP,IDIM,JDIM,IBEG,IEND,JBEG,JEND)).LT.
+     +                                                      180.D0) THEN
+          ICEGDP=1
+          RETURN
+        END IF
+C
+C Otherwise, P is in one of the two areas and P' is in the other, so
+C we perform a somewhat heuristic test to see if P is in the smaller
+C of the two areas: we compute the average distance from P to Q and
+C see if it is less than 90 degrees or more than 90 degrees.
+C
+        ADST=0.D0
+C
+C "Bottom" edge:
+C
+        DO 101 I=IBEG,IEND-1
+          ADST=ADST+ADGCDP(PQDP,QQDP(1,I,JBEG))
+  101   CONTINUE
+C
+C "Right" edge:
+C
+        DO 102 J=JBEG,JEND-1
+          ADST=ADST+ADGCDP(PQDP,QQDP(1,IEND,J))
+  102   CONTINUE
+C
+C "Top" edge:
+C
+        DO 103 I=IEND,IBEG+1,-1
+          ADST=ADST+ADGCDP(PQDP,QQDP(1,I,JEND))
+  103   CONTINUE
+C
+C "Left" edge:
+C
+        DO 104 J=JEND,JBEG+1,-1
+          ADST=ADST+ADGCDP(PQDP,QQDP(1,IBEG,J))
+  104   CONTINUE
+C
+C Set the function value.
+C
+        ADST=ADST/DBLE(IEND-IBEG+JEND-JBEG)/2.D0
+C
+        IF (ADST.LT.90.D0) THEN
+          ICEGDP=0
+        ELSE
+          ICEGDP=1
+        END IF
+C
+C Done.
 C
         RETURN
 C
