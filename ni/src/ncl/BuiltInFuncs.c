@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.82 1997-09-05 22:13:02 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.83 1997-09-09 01:13:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3008,6 +3008,8 @@ NhlErrorTypes _NclIasciiread
 	int n;
 	char *step = NULL;
 	NclStackEntry data_out;
+	int has_unlimited = 0;
+
 
 
 	fpath = _NclGetArg(0,3,DONT_CARE);
@@ -3049,8 +3051,25 @@ NhlErrorTypes _NclIasciiread
 		n_dimensions = tmp_md->multidval.totalelements;
 		dimsizes = (int*)tmp_md->multidval.val;
 	}
-	for(i = 0; i < n_dimensions; i++) {
-		size *= dimsizes[i];
+	if(dimsizes[0] == -1) {
+		if(n_dimensions == 1) {
+			size = -1;
+		} else {
+			for(i = 1; i < n_dimensions; i++) {
+				size *= dimsizes[i];
+			}
+		}
+		has_unlimited = 1;
+	} else {
+		has_unlimited = 0;
+		for(i = 0; i < n_dimensions; i++) {
+			if(dimsizes[i] < 1)  {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: Dimension size less than 1 specified and its not the first dimension, can't determine size");
+				return(NhlFATAL);
+			} else {
+				size *= dimsizes[i];
+			}
+		}
 	}
 	tmp_md = NULL;
 	switch(type.kind) {
@@ -3069,114 +3088,215 @@ NhlErrorTypes _NclIasciiread
 			return(NhlFATAL);	
 	}
 
-	totalsize = size;
-	
-	tmp_ptr = NclMalloc(size*thetype->type_class.size);
-	fd = fopen(path_string,"r");
-	if((tmp_ptr != NULL)&&(fd != NULL)) {
+	if((size != -1)&&(!has_unlimited)) {
+		totalsize = size;
 		
-		tmp_md = _NclCreateMultiDVal(
-			NULL,
-			NULL,
-			Ncl_MultiDValData,
-			0,
-			tmp_ptr,
-			&(thetype->type_class.default_mis),
-			n_dimensions,
-			dimsizes,
-			TEMPORARY,
-			NULL,
-			thetype);
-		if(tmp_md == NULL) 
-			return(NhlFATAL);
-
-		if(thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
-			for(i = 0; ((i < totalsize)&&(!feof(fd))); i++) {
-				if(asciinumeric(fd,thetype->type_class.format,tmp_ptr)) {
-					tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-				} else {
-					i--;
-					break;
-				}
-			}
-			if(i < totalsize) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
-				if(feof(fd)) i++;
-				for(;i<totalsize;i++) {
-					memcpy(tmp_ptr,&(thetype->type_class.default_mis),thetype->type_class.size);
-					tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-				}
-			}
+		tmp_ptr = NclMalloc(size*thetype->type_class.size);
+		fd = fopen(path_string,"r");
+		if((tmp_ptr != NULL)&&(fd != NULL)) {
 			
-		} else if(thetype->type_class.type==Ncl_Typechar) {
-			for(i = 0; ((i<totalsize) && !feof(fd)); i++) {
-				*(char*)tmp_ptr = fgetc(fd);
-				tmp_ptr = (void*)((char*)tmp_ptr+1);
-			}
-			if(i < totalsize) {	
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
-				if(feof(fd)) i++;
-				for(;i<totalsize;i++) {
-					*(char*)tmp_ptr = thetype->type_class.default_mis.charval;
-					tmp_ptr = (void*)((char*)tmp_ptr+1);
-				}
-			}
-		} else if(thetype->type_class.type==Ncl_Typestring) {
-			char buffer[NCL_MAX_STRING+1];
-			char *step;
+			tmp_md = _NclCreateMultiDVal(
+				NULL,
+				NULL,
+				Ncl_MultiDValData,
+				0,
+				tmp_ptr,
+				&(thetype->type_class.default_mis),
+				n_dimensions,
+				dimsizes,
+				TEMPORARY,
+				NULL,
+				thetype);
+			if(tmp_md == NULL) 
+				return(NhlFATAL);
 
-			step =buffer;
-			for(i = 0; ((i<totalsize) && !feof(fd)); i++) {
-				for(j = 0; j < NCL_MAX_STRING; j++) {
-					if(!feof(fd)) {
-						*step = fgetc(fd);
-						if(*step == '\n') {
-							*step = '\0';
-							*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
-							step = buffer;
-							tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-
-							break;
-						} else {
-							step++;
-						}
+			if(thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
+				for(i = 0; ((i < totalsize)&&(!feof(fd))); i++) {
+					if(asciinumeric(fd,thetype->type_class.format,tmp_ptr)) {
+						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
 					} else {
+						i--;
 						break;
 					}
 				}
-				if(j >= NCL_MAX_STRING) {
-					buffer[NCL_MAX_STRING] = '\0';
-					while(!feof(fd)&&(fgetc(fd) != '\n'));
-					*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
-					tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-				} 
-			}
-			if( i < totalsize ) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
-				if(feof(fd)) i++;
-				for(;i<totalsize;i++) {
-					*(NclQuark*)tmp_ptr = thetype->type_class.default_mis.stringval; 
-                                        tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+				if(i < totalsize) {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
+					if(feof(fd)) i++;
+					for(;i<totalsize;i++) {
+						memcpy(tmp_ptr,&(thetype->type_class.default_mis),thetype->type_class.size);
+						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+					}
+				}
+				
+			} else if(thetype->type_class.type==Ncl_Typechar) {
+				for(i = 0; ((i<totalsize) && !feof(fd)); i++) {
+					*(char*)tmp_ptr = fgetc(fd);
+					tmp_ptr = (void*)((char*)tmp_ptr+1);
+				}
+				if(i < totalsize) {	
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
+					if(feof(fd)) i++;
+					for(;i<totalsize;i++) {
+						*(char*)tmp_ptr = thetype->type_class.default_mis.charval;
+						tmp_ptr = (void*)((char*)tmp_ptr+1);
+					}
+				}
+			} else if(thetype->type_class.type==Ncl_Typestring) {
+				char buffer[NCL_MAX_STRING+1];
+				char *step;
 
+				step =buffer;
+				for(i = 0; ((i<totalsize) && !feof(fd)); i++) {
+					for(j = 0; j < NCL_MAX_STRING; j++) {
+						if(!feof(fd)) {
+							*step = fgetc(fd);
+							if(*step == '\n') {
+								*step = '\0';
+								*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
+								step = buffer;
+								tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+
+								break;
+							} else {
+								step++;
+							}
+						} else {
+							break;
+						}
+					}
+					if(j >= NCL_MAX_STRING) {
+						buffer[NCL_MAX_STRING] = '\0';
+						while(!feof(fd)&&(fgetc(fd) != '\n'));
+						*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
+						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+					} 
+				}
+				if( i < totalsize ) {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
+					if(feof(fd)) i++;
+					for(;i<totalsize;i++) {
+						*(NclQuark*)tmp_ptr = thetype->type_class.default_mis.stringval; 
+						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+
+					}
+				}
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: Attempt to read unsupported type");
+				return(NhlFATAL);
+			}
+
+
+			data_out.kind = NclStk_VAL;
+			data_out.u.data_obj = tmp_md;
+			_NclPlaceReturn(data_out);
+			fclose(fd);
+			return(ret);
+		} else if (fd == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: could not open file check permissions");
+		}
+	} else if(size == -1) {
+		tmp_ptr = NclMalloc(size*thetype->type_class.size);
+		fd = fopen(path_string,"r");
+		if((tmp_ptr != NULL)&&(fd != NULL)) {
+			tmp_ptr = NclMalloc(thetype->type_class.size);
+
+			
+			totalsize = 0;
+			while(!feof(fd)) {
+				if(asciinumeric(fd,thetype->type_class.format,tmp_ptr)) {
+					totalsize++;
+				} else {
+					break;
 				}
 			}
-		} else {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: Attempt to read unsupported type");
-			return(NhlFATAL);
+			NclFree(tmp_ptr);
+			tmp_ptr = NclMalloc(totalsize*thetype->type_class.size);
+			dimsizes[0] = totalsize;
+			fclose(fd);
+			fd = fopen(path_string,"r");
+
+
+
+			
+			tmp_md = _NclCreateMultiDVal(
+				NULL,
+				NULL,
+				Ncl_MultiDValData,
+				0,
+				tmp_ptr,
+				&(thetype->type_class.default_mis),
+				n_dimensions,
+				dimsizes,
+				TEMPORARY,
+				NULL,
+				thetype);
+			if(tmp_md == NULL) 
+				return(NhlFATAL);
+
+			if(thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
+				for(i = 0; ((i < totalsize)&&(!feof(fd))); i++) {
+					if(asciinumeric(fd,thetype->type_class.format,tmp_ptr)) {
+						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+					} else {
+						i--;
+						break;
+					}
+				}
+			} else if(thetype->type_class.type==Ncl_Typechar) {
+				for(i = 0; ((i<totalsize) && !feof(fd)); i++) {
+					*(char*)tmp_ptr = fgetc(fd);
+					tmp_ptr = (void*)((char*)tmp_ptr+1);
+				}
+			} else if(thetype->type_class.type==Ncl_Typestring) {
+				char buffer[NCL_MAX_STRING+1];
+				char *step;
+
+				step =buffer;
+				for(i = 0; ((i<totalsize) && !feof(fd)); i++) {
+					for(j = 0; j < NCL_MAX_STRING; j++) {
+						if(!feof(fd)) {
+							*step = fgetc(fd);
+							if(*step == '\n') {
+								*step = '\0';
+								*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
+								step = buffer;
+								tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+
+								break;
+							} else {
+								step++;
+							}
+						} else {
+							break;
+						}
+					}
+					if(j >= NCL_MAX_STRING) {
+						buffer[NCL_MAX_STRING] = '\0';
+						while(!feof(fd)&&(fgetc(fd) != '\n'));
+						*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
+						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+					} 
+				}
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: Attempt to read unsupported type");
+				return(NhlFATAL);
+			}
+
+
+			data_out.kind = NclStk_VAL;
+			data_out.u.data_obj = tmp_md;
+			_NclPlaceReturn(data_out);
+			fclose(fd);
+			return(ret);
+		} else if (fd == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: could not open file check permissions");
 		}
-
-
-		data_out.kind = NclStk_VAL;
-		data_out.u.data_obj = tmp_md;
-		_NclPlaceReturn(data_out);
-		fclose(fd);
-		return(ret);
-	} else if (fd == NULL) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: could not open file check permissions");
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: Dimension size less than 1 specified, can't determine size");
+		return(NhlFATAL);
 	}
 	return(NhlFATAL);
 }
-
 
 NhlErrorTypes _NclIchngdir
 #if	NhlNeedProto
