@@ -1,6 +1,9 @@
 C
-C $Id: cpcnrc.f,v 1.2 1993-01-29 17:17:58 kennison Exp $
+C $Id: cpcnrc.f,v 1.3 1993-02-02 16:40:22 clyne Exp $
 C
+C
+C
+C	Added bogus comment to test cvs bug
 C
 C-----------------------------------------------------------------------
 C
