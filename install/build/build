@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.27 1998-07-28 20:29:08 haley Exp $
+#      $Id: build,v 1.28 2000-08-22 19:07:56 haley Exp $
 #
 #########################################################################
 #									#
@@ -227,7 +227,7 @@ require 'config.pl';
 #
 $progName = $& if ($0 =~ /\w+$/);
 $doDebug = 0;               # do operate in debug mode
-$buildDirRoot = "/fs/scd/home1/X/ncarg/binaries";    # default build repository
+$buildDirRoot = "/fs/scd/home1/X/ncarg";    # default build repository
 $configFile;                # NCAR G config file
 $Version;               # NCAR G version number
 $sizesFile;                 # path to size requirements file
@@ -242,6 +242,7 @@ $install_dir = "INSTALL";       # where the INSTALL script lives
     'Solaris_sun4',     'Sun4Solaris',
     'ULTRIX_RISC',      'DECRISC',
     'IRIX_n32_IP',      'SGI_IRIX',
+    'IRIX_32_IP',       'SGI_IRIX',
     'IRIX_64_IP',       'SGI_IRIX',
     'OSF1_alpha',       'AlphaOSF1',
     'LINUX_PC',         'LINUX',
