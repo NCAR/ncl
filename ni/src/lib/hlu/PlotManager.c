@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.7 1995-04-07 10:43:26 boote Exp $
+ *      $Id: PlotManager.c,v 1.8 1995-04-27 16:58:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1024,7 +1024,7 @@ static NhlErrorTypes PlotManagerSetValues
 	    ovp->tickmarks == NULL) {
 		ret = MIN(ret,NhlWARNING);
 		e_text = 
-		 "%s: overlay TickMarks can be created only during NhlCreate";
+		    "%s: TickMark annotation cannot be added after NhlCreate";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 			  entry_name,NhlNpmTickMarkDisplayMode);
 		ovp->display_tickmarks = NhlNOCREATE;
@@ -1034,7 +1034,7 @@ static NhlErrorTypes PlotManagerSetValues
 	    ovp->titles == NULL) {
 		ret = MIN(ret,NhlWARNING);
 		e_text = 
-		 "%s: overlay Titles can be created only during NhlCreate";
+		 "%s: Title annotation cannot be added after NhlCreate";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 			  entry_name,NhlNpmTitleDisplayMode);
 		ovp->display_titles = NhlNOCREATE;
@@ -1044,7 +1044,7 @@ static NhlErrorTypes PlotManagerSetValues
 	    ovp->labelbar == NULL) {
 		ret = MIN(ret,NhlWARNING);
 		e_text =
-		 "%s: overlay LabelBar can be created only during NhlCreate";
+		 "%s: LabelBar annotation cannot be added after NhlCreate";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 			  entry_name,NhlNpmLabelBarDisplayMode);
 		ovp->display_labelbar = NhlNOCREATE;
@@ -1054,7 +1054,7 @@ static NhlErrorTypes PlotManagerSetValues
 	    ovp->legend == NULL) {
 		ret = MIN(ret,NhlWARNING);
 		e_text =
-		    "%s: overlay Legend can be created only during NhlCreate";
+		    "%s: Legend annotation cannot be added after NhlCreate";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 			  entry_name,NhlNpmLegendDisplayMode);
 		ovp->display_legend = NhlNOCREATE;
@@ -1071,7 +1071,7 @@ static NhlErrorTypes PlotManagerSetValues
 		int	new_count = ovp->pm_rec_list->num_elements;
 		
 		if (pm_recs == NULL || ! _NhlIsTransform(pm_recs[0]->plot)) {
-		     e_text = "%s: internally invalid overlay record resource";
+		     e_text = "%s: internally invalid resource";
 		     NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		     return NhlFATAL;
 		}
@@ -1157,19 +1157,20 @@ static NhlErrorTypes PlotManagerSetValues
 		update_req = True;
 	}
 /*
- * Ensure that all the overlays are up to date; don't pass the
- * update req resource if the plot has no overlay of its own.
+ * Ensure that all the base plots are up to date; don't pass the
+ * update req resource if the plot has no PlotManager of its own.
  */
 	for (i = 1; i < ovp->overlay_count; i++) {
 
-		NhlPlotManagerLayer ovl = (NhlPlotManagerLayer)ovp->pm_recs[i]->ov_obj;
+		NhlPlotManagerLayer ovl = 
+			(NhlPlotManagerLayer)ovp->pm_recs[i]->ov_obj;
 
 		int num_args = update_req && ovl == NULL ? nargs - 1 : nargs;
 
 		subret = NhlALSetValues(ovp->pm_recs[i]->plot->base.id,
 					sargs,num_args);
 		if ((ret = MIN(subret, ret)) < NhlWARNING) {
-			e_text = "%s: error setting overlay plot view";
+			e_text = "%s: error setting overlay plot member view";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
 		}
@@ -1570,7 +1571,7 @@ static NhlErrorTypes PlotManagerPreDraw
 	PlotManager_Plot = (NhlLayer) ovp->pm_recs[0]->plot;
 	if (! _NhlIsTransObj(PlotManager_Trans_Obj) || 
 	    ! _NhlIsTransform(PlotManager_Plot)) {
-		e_text = "%s: invalid overlay trans object or plot class";
+		e_text = "%s: invalid trans object or plot class";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
@@ -1637,7 +1638,7 @@ static NhlErrorTypes PlotManagerDraw
 	PlotManager_Plot = (NhlLayer) ovp->pm_recs[0]->plot;
 	if (! _NhlIsTransObj(PlotManager_Trans_Obj) || 
 	    ! _NhlIsTransform(PlotManager_Plot)) {
-		e_text = "%s: invalid overlay trans object or plot class";
+		e_text = "%s: invalid trans object or plot class";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
@@ -1709,7 +1710,7 @@ static NhlErrorTypes PlotManagerPostDraw
 	PlotManager_Plot = (NhlLayer) ovp->pm_recs[0]->plot;
 	if (! _NhlIsTransObj(PlotManager_Trans_Obj) || 
 	    ! _NhlIsTransform(PlotManager_Plot)) {
-		e_text = "%s: invalid overlay trans object or plot class";
+		e_text = "%s: invalid trans object or plot class";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
@@ -2655,11 +2656,12 @@ static NhlErrorTypes InternalGetBB
 		return NhlNOERROR;
 
 /*
- * First find the master overlay object, then search through the annotation
+ * First find the base PlotManager, then search through the annotation
  * record of each member overlay and add the bounding boxes of each annotation
  * inside the requested zone. Exclude any objects not currently displayed.
  */
-	ovl_basep = &((NhlPlotManagerLayer)ovl->trans.overlay_object)->plotmanager;
+	ovl_basep = 
+		&((NhlPlotManagerLayer)ovl->trans.overlay_object)->plotmanager;
 
 	for (i = 0; i < ovl_basep->overlay_count; i++) {
 		NhlAnnoRec *anno_list = ovl_basep->pm_recs[i]->anno_list;
@@ -3419,7 +3421,7 @@ ManageTickMarks
 		}
 	}
 	if ((trobj = tfp->overlay_trans_obj) == NULL) {
-		e_text = "%s: No overlay trans found for TickMark object";
+		e_text = "%s: No trans obj found for TickMark object";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(NhlFATAL);
 	}
@@ -3642,7 +3644,7 @@ ManageTickMarks
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 			return(NhlFATAL);
 		}
-		strcpy(buffer,ovnew->base.name);
+		strcpy(buffer,ovnew->base.parent->base.name);
 		strcat(buffer,".TickMark");
 		subret = _NhlALCreateChild(&tmpid,buffer,NhltickMarkClass,
 					   (NhlLayer)ovnew,sargs,nargs);
@@ -3903,7 +3905,7 @@ ManageTitles
  * resources. 
  */
 	if (ovp->titles == NULL) {	
-		strcpy(buffer,ovnew->base.name);
+		strcpy(buffer,ovnew->base.parent->base.name);
 		strcat(buffer,".Title");
 
 		NhlSetSArg(&sargs[nargs++],NhlNvpXF,ovp->ti_x);
@@ -4224,7 +4226,7 @@ ManageLabelBar
  * resources.
  */
 	if (ovp->labelbar == NULL) {	
-		strcpy(buffer,ovnew->base.name);
+		strcpy(buffer,ovnew->base.parent->base.name);
 		strcat(buffer,".LabelBar");
 		subret = _NhlVACreateChild(&tmpid,buffer,NhllabelBarClass,
 				    (NhlLayer)ovnew,
@@ -4462,7 +4464,7 @@ ManageLegend
  * resources.
  */
 	if (ovp->legend == NULL) {	
-		strcpy(buffer,ovnew->base.name);
+		strcpy(buffer,ovnew->base.parent->base.name);
 		strcat(buffer,".Legend");
 		subret = _NhlVACreateChild(&tmpid,buffer,NhllegendClass,
 				    (NhlLayer)ovnew,
@@ -4603,10 +4605,10 @@ void _NhlovCpInvMapXY
  * Description:	
  *
  * In Args:	base_id		id of overlay base plot
- *		plot_id		id of plot to add to overlay
- *		after_id	id of plot already a member of the overlay
- *				that the new plot should be drawn after --
- *				if < 0 then the new plot is placed at the
+ *		transform_id	id of transform to add as an overlay
+ *		after_id	id of transform already an overlay
+ *				that the new transform should be drawn after --
+ *				if < 0 then the new transform is placed at the
  *				end of the overlay sequence.
  *
  * Out Args:	NONE
@@ -4618,11 +4620,11 @@ void _NhlovCpInvMapXY
 
 NhlErrorTypes NhlAddOverlay
 #if	NhlNeedProto
-(int base_id, int plot_id, int after_id)
+(int base_id, int transform_id, int after_id)
 #else
-(base_id, plot_id, after_id)
+(base_id, transform_id, after_id)
         int base_id;
-	int plot_id;
+	int transform_id;
 	int after_id;
 #endif
 {
@@ -4631,7 +4633,7 @@ NhlErrorTypes NhlAddOverlay
 	char			*entry_name = "NhlAddOverlay";
 
 	NhlLayer			base = _NhlGetLayer(base_id);
-	NhlLayer			plot = _NhlGetLayer(plot_id);
+	NhlLayer			plot = _NhlGetLayer(transform_id);
 	NhlLayer			after = _NhlGetLayer(after_id);
 
 	NhlTransformLayerPart	*base_tfp;
@@ -4655,18 +4657,18 @@ NhlErrorTypes NhlAddOverlay
 		return NhlFATAL;
 	}
 	if (plot == NULL || ! _NhlIsTransform(plot)) {
-		e_text = "%s: invalid overlay plot id";
+		e_text = "%s: invalid transform id";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
 	if (base == plot) {
-		e_text = "%s: overlay member and base plot ids are the same";
+		e_text = "%s: transform is the same as the base plot";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
 	if (base->base.wkptr != plot->base.wkptr) {
 		e_text = 
- 	"%s: Plot and Overlay Base Plot belong to different Workstations";
+ 	"%s: transform and base plot belong to different workstations";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
@@ -4676,7 +4678,7 @@ NhlErrorTypes NhlAddOverlay
 	if (! base_tfp->overlay_on ||
 	    base_tfp->overlay_object == NULL || 
 	    ! _NhlIsTransform(base_tfp->overlay_object)) {
-		e_text = "%s: no overlay initialized for base plot";
+		e_text = "%s: base is not a plot object";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
@@ -4691,7 +4693,7 @@ NhlErrorTypes NhlAddOverlay
 	    					_tfNotOverlayCapable ||
 	    plot_classp->trans_class.overlay_capability ==
 	    					_tfOverlayBaseOnly) {
-		e_text = "%s: plot class %s cannot be overlay member";
+		e_text = "%s: plot class %s cannot be overlay plot member";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  plot_classp->base_class.class_name);
 		return NhlFATAL;
@@ -4699,7 +4701,7 @@ NhlErrorTypes NhlAddOverlay
 
 /*
  * If the plot is already an overlay member (an annotation or an
- * overlay member plot) it cannot be part of another overlay.
+ * overlay member plot) it cannot be added as an overlay again.
  * (even the same overlay).
  * If the plot is an overlay base already, any overlays it has acquired 
  * become part of the overlay it has been added to. Get the record 
@@ -4710,18 +4712,19 @@ NhlErrorTypes NhlAddOverlay
  * allocate and fill in a single overlay record for it.
  */
 
-	if (_NhlIsOverlayMember(plot_id)) {
-		e_text = "%s: plot ID %d is already an overlay member";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,plot_id);
+	if (_NhlIsOverlayMember(transform_id)) {
+		e_text = "%s: tranform is already an overlay plot member: %d";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,transform_id);
 		return NhlFATAL;
 	}
 	else if (plot_tfp->overlay_status == _tfCurrentOverlayBase) {
 
 		if (plot_tfp->overlay_object == NULL || 
 		    ! _NhlIsTransform(plot_tfp->overlay_object)) {
-		      e_text = "%s: plot ID %d has inconsistent overlay info";
+		      e_text = 
+			 "%s: transform state is internally inconsistent: %d";
 		        NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  e_text,entry_name,plot_id);
+				  e_text,entry_name,transform_id);
 			return NhlFATAL;
 		}
 
@@ -4758,7 +4761,8 @@ NhlErrorTypes NhlAddOverlay
 			return NhlFATAL;
 		}
 		plot_count = 1;
-		sub_recs[0]->plot = (NhlTransformLayer) _NhlGetLayer(plot_id);
+		sub_recs[0]->plot = 
+			(NhlTransformLayer) _NhlGetLayer(transform_id);
 		sub_recs[0]->ov_obj = NULL;
 	}
 			
@@ -4793,7 +4797,7 @@ NhlErrorTypes NhlAddOverlay
 	}
 	else if (! _NhlIsTransform(after)) {
 
-		e_text = "%s: invalid after plot id";
+		e_text = "%s: the after transform id is invalid";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ret = MIN(ret,NhlWARNING);
 
@@ -4804,7 +4808,7 @@ NhlErrorTypes NhlAddOverlay
 		for (i = 0; i <= ovp->overlay_count; i++) {
 
 			if (i == ovp->overlay_count) { /* after not found */
-				e_text = "%s: invalid after plot id";
+				e_text = "%s: invalid after transform id";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					  e_text,entry_name);
 				ret = MIN(ret,NhlWARNING);
@@ -4889,19 +4893,19 @@ _NHLCALLF(nhlf_addoverlay,NHLF_ADDOVERLAY)
 #if	NhlNeedProto
 (
 	int	*base,
-	int	*plot,
+	int	*transform,
 	int	*after,
 	int	*err
 )
 #else
 (base,plot,after,err)
 	int	*base;
-	int	*plot;
+	int	*transform;
 	int	*after;
 	int	*err;
 #endif
 {
-	*err = NhlAddOverlay(*base,*plot,*after);
+	*err = NhlAddOverlay(*base,*transform,*after);
 
 	return;
 }
@@ -4911,8 +4915,8 @@ _NHLCALLF(nhlf_addoverlay,NHLF_ADDOVERLAY)
  *
  * Description:	
  *
- * In Args:	base_id		id of overlay base plot
- *		plot_id		id of plot to remove from overlay
+ * In Args:	base_id		id of the base plot
+ *		overlay_id	id of the overlay to remove
  *		restore		if True, restores any
  *				member overlays that belonged initially to
  *				the plot being removed, thus removing them
@@ -4927,19 +4931,19 @@ _NHLCALLF(nhlf_addoverlay,NHLF_ADDOVERLAY)
 
 NhlErrorTypes NhlRemoveOverlay
 #if	NhlNeedProto
-(int base_id, int plot_id, NhlBoolean restore)
+(int base_id, int overlay_id, NhlBoolean restore)
 #else
-(base_id, plot_id,restore)
+(base_id, overlay_id,restore)
         int base_id;
-	int plot_id;
+	int overlay_id;
 	NhlBoolean restore;
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "NhlRemoveOverlay";
-	NhlLayer			base = _NhlGetLayer(base_id);
-	NhlLayer			plot = _NhlGetLayer(plot_id);
+	NhlLayer		base = _NhlGetLayer(base_id);
+	NhlLayer		plot = _NhlGetLayer(overlay_id);
 
 	NhlTransformLayerPart	*base_tfp;
 	NhlPlotManagerLayerPart	*ovp;
@@ -4956,7 +4960,7 @@ NhlErrorTypes NhlRemoveOverlay
 		return NhlFATAL;
 	}
 	if (plot == NULL || ! _NhlIsTransform(plot)) {
-		e_text = "%s: invalid overlay plot id";
+		e_text = "%s: invalid overlay id";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
@@ -4965,14 +4969,14 @@ NhlErrorTypes NhlRemoveOverlay
 	if (! base_tfp->overlay_on ||
 	    base_tfp->overlay_object == NULL || 
 	    ! _NhlIsTransform(base_tfp->overlay_object)) {
-		e_text = "%s: no overlay initialized for base plot";
+		e_text = "%s: base is not a plot object";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
 	ovp = (NhlPlotManagerLayerPart *) 
-		&(((NhlPlotManagerLayer)base_tfp->overlay_object)->plotmanager);
+	       &(((NhlPlotManagerLayer)base_tfp->overlay_object)->plotmanager);
 	if (ovp->pm_recs[0]->plot != (NhlTransformLayer) base) {
-		e_text = "%s: base is not currently an overlay base plot";
+		e_text = "%s: base is not currently a primary base plot";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		return NhlWARNING;
 	}
@@ -4981,7 +4985,7 @@ NhlErrorTypes NhlRemoveOverlay
  * removing the overlay object from a base plot. The restore parameter is
  * ignored in this situation
  */
-	if (plot_id == base_id) {
+	if (overlay_id == base_id) {
 		NhlSArg			sarg;
 
 		NhlSetSArg(&sarg,NhlNtfPlotManagerOn,False);
@@ -4996,7 +5000,7 @@ NhlErrorTypes NhlRemoveOverlay
  */
 	for (i = 0; i <= ovp->overlay_count; i++) {
 		if (i == ovp->overlay_count) {
-			e_text = "%s: plot not found in overlay";
+			e_text = "%s: plot not found in overlay sequence";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			return NhlWARNING;
 		}
@@ -5072,19 +5076,19 @@ _NHLCALLF(nhlf_removeoverlay,NHLF_REMOVEOVERLAY)
 #if	NhlNeedProto
 (
 	int	*base,
-	int	*plot,
+	int	*overlay,
 	int	*restore,
 	int	*err
 )
 #else
 (base,plot,restore,err)
 	int	*base;
-	int	*plot;
+	int	*overlay;
 	int	*restore;
 	int	*err;
 #endif
 {
-	*err = NhlRemoveOverlay(*base,*plot,*restore);
+	*err = NhlRemoveOverlay(*base,*overlay,*restore);
 
 	return;
 }
@@ -5093,7 +5097,7 @@ _NHLCALLF(nhlf_removeoverlay,NHLF_REMOVEOVERLAY)
 /*
  * Function:	GetPlotOverlay
  *
- * Description:	Gets the overlay belonging to the plot itself. 
+ * Description:	Gets the PlotManager belonging to the plot itself. 
  *		For member plots looks through the base plot overlay
  *		data structures.
  *
@@ -5121,23 +5125,23 @@ NhlLayer GetPlotOverlay
 {
 	char			*e_text;
 	NhlTransformLayerPart	*tfp = &transform->trans;
-	NhlPlotManagerLayer		ovl = (NhlPlotManagerLayer)tfp->overlay_object;
+	NhlPlotManagerLayer	ovl = (NhlPlotManagerLayer)tfp->overlay_object;
 
 	if (! tfp->overlay_on  ||
 	    tfp->overlay_status == _tfNotInOverlay ||
 	    ovl == NULL || ! _NhlIsTransform((NhlLayer) ovl) ||
 	    (ovl->base.layer_class)->base_class.class_name !=
 	    NhlplotManagerClass->base_class.class_name) {
-		e_text = "%s: plot not associated with an PlotManager";
+		e_text = "%s: overlay plot id not a plot object";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NULL;
 	}
 	
 /*
- * If the plot is an Overlay Base Plot, then simply return the base
+ * If the plot is an base plot, then simply return the base
  * overlay. Otherwise, if the plot is currently an Overlay Member Plot
- * we must look through the base Overlay's overlay part in order to find 
- * its own Overlay object. (It might not have one; that is an error on
+ * we must look through its base plot's PlotManager data in order to find 
+ * its own PlotManager. (It might not have one; that is an error on
  * the part of the caller.)
  */
 	if (tfp->overlay_status == _tfCurrentOverlayBase) {
@@ -5155,12 +5159,12 @@ NhlLayer GetPlotOverlay
 			}
 		}
 		if (pm_rec == NULL) {
-			e_text = "%s: inconsistent overlay state";
+			e_text = "%s: inconsistent state";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NULL;
 		}
 		if (pm_rec->ov_obj == NULL) {
-			e_text = "%s: Overlay member but not an Overlay plot";
+			e_text = "%s: overlay plot id not a plot object";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NULL;
 		}
@@ -5172,12 +5176,12 @@ NhlLayer GetPlotOverlay
  *
  * Description:	
  *
- * In Args:	overlay_base_id	id of overlay base plot
+ * In Args:	plot_id		id of plot object
  *		anno_view_id	id of View object
  *
  * Out Args:	
  *
- * Return Values: if successful, anno_id id of Annotation object 
+ * Return Values: if successful, anno_manager_id: id of AnnoManager object 
  *		  otherwise: Error Conditions
  *
  * Side Effects: NONE
@@ -5185,21 +5189,21 @@ NhlLayer GetPlotOverlay
 
 int NhlAddAnnotation
 #if	NhlNeedProto
-(int overlay_plot_id, int anno_view_id)
+(int plot_id, int anno_view_id)
 #else
-(overlay_plot_id, anno_view_id)
-        int overlay_plot_id;
+(plot_id, anno_view_id)
+        int plot_id;
 	int anno_view_id;
 #endif
 {
 	char			*e_text;
 	char			*entry_name = "NhlAddAnnotation";
-	NhlLayer		base = _NhlGetLayer(overlay_plot_id);
+	NhlLayer		base = _NhlGetLayer(plot_id);
 	NhlLayer		anno_view = _NhlGetLayer(anno_view_id);
 	NhlLayer		plot_overlay;
 
 	if (base == NULL || ! _NhlIsTransform(base)) {
-		e_text = "%s: invalid base plot id";
+		e_text = "%s: invalid plot id";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
@@ -5211,7 +5215,7 @@ int NhlAddAnnotation
  * Test the anno view layer pointer.
  */
 	if (anno_view == NULL || ! _NhlIsView(anno_view)) {
-		e_text = "%s: invalid View object id";
+		e_text = "%s: invalid view id";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
@@ -5222,7 +5226,7 @@ int NhlAddAnnotation
  */
 	if (anno_view->base.wkptr != base->base.wkptr) {
 		e_text = 
-	   "%s: View object and Overlay Plot belong to different Workstations";
+	   "%s: view object and Overlay Plot belong to different Workstations";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
@@ -5231,7 +5235,7 @@ int NhlAddAnnotation
  */
 
 	if (_NhlIsOverlayMember(anno_view_id)) {
-		e_text = "%s: plot ID %d is already an overlay member";
+		e_text = "%s: view is already an plot member: %d";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,anno_view_id);
 		return NhlFATAL;
 	}
@@ -5258,35 +5262,34 @@ void
 _NHLCALLF(nhlf_addannotation,NHLF_ADDANNOTATION)
 #if	NhlNeedProto
 (
-	int	*overlay_plot,
+	int	*plot,
 	int	*anno_view,
-	int	*anno_id,
+	int	*anno_manager_id,
 	int	*err
 )
 #else
-(overlay_plot,annotation,anno_id,err)
+(plot,anno_view,anno_id,err)
 	int	*overlay_plot;
 	int	*anno_view;
-	int	*anno_id;
+	int	*anno_manager_id;
 	int	*err;
 #endif
 {
-	*anno_id = NhlAddAnnotation(*overlay_plot,*anno_view);
-	*err = (*anno_id < 0) ? *anno_id : NhlNOERROR;
+	*anno_manager_id = NhlAddAnnotation(*plot,*anno_view);
+	*err = (*anno_manager_id < 0) ? *anno_manager_id : NhlNOERROR;
 
 	return;
 }
-
 
 /*
  * Function:	_NhlAddAnnotation
  *
  * Description:	Private interface for adding an annotation.
- *		Assumes that anno_view and the overlay have already
+ *		Assumes that anno_view and the plot have already
  *		been checked for validity
  *
- * In Args:	overlay		Overlay object layer
- *		anno_view	View object layer
+ * In Args:	plot		PlotManager layer
+ *		anno_view	View layer
  *		entry_name	interface name reported to caller in case
  *				of error. If NULL will be set to
  *				_NhlAddAnnotation
@@ -5301,21 +5304,22 @@ _NHLCALLF(nhlf_addannotation,NHLF_ADDANNOTATION)
 int _NhlAddAnnotation
 #if	NhlNeedProto
 (
-	NhlLayer	overlay, 
+	NhlLayer	plotmanager, 
 	NhlLayer	anno_view,
 	NhlString	entry_name
 )
 #else
-(overlay, anno_view, entry_name,anno_id)
-	NhlLayer	overlay; 
+(plotmanager, anno_view, entry_name,anno_id)
+	NhlLayer	plotmanager; 
 	NhlLayer	anno_view;
 	NhlString	entry_name;
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
-	NhlPlotManagerLayerPart	*ovp = &((NhlPlotManagerLayer)overlay)->plotmanager;
-	int			anno_id;
+	NhlPlotManagerLayerPart	*ovp =
+		&((NhlPlotManagerLayer)plotmanager)->plotmanager;
+	int			anno_manager_id;
 
 	if (entry_name == NULL) entry_name = "_NhlAddAnnotation";
 		
@@ -5364,31 +5368,32 @@ int _NhlAddAnnotation
  * increment the annotation count.
  */
 
-	subret = NhlVACreate(&anno_id,anno_view->base.name,
+	subret = NhlVACreate(&anno_manager_id,anno_view->base.name,
 			     NhlannoManagerClass,
-			     overlay->base.parent->base.id,
+			     plotmanager->base.parent->base.id,
 			     NhlNamViewId, anno_view->base.id,
 			     NULL);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return (int) ret;
 
-	ovp->anno_ids[ovp->anno_count] = anno_id;
+	ovp->anno_ids[ovp->anno_count] = anno_manager_id;
 	ovp->anno_count++;
 
 /*
  * Register the annotation
  */
 
-	subret = _NhlRegisterAnnotation(overlay,
-					_NhlGetLayer(anno_id),entry_name);
+	subret = _NhlRegisterAnnotation(plotmanager,
+					_NhlGetLayer(anno_manager_id),
+					entry_name);
 
 	ret =  MIN(subret,ret);
 
 	subret = _NhlSetAnnoView((NhlViewLayer)anno_view,
-				 overlay->base.id,anno_id);
+				 plotmanager->base.id,anno_manager_id);
 
 	ret =  MIN(subret,ret);
 
-	return (ret < NhlNOERROR) ? (int) ret : anno_id;
+	return (ret < NhlNOERROR) ? (int) ret : anno_manager_id;
 
 }
 
@@ -5397,8 +5402,8 @@ int _NhlAddAnnotation
  *
  * Description:	
  *
- * In Args:	overlay_plot_id	id of overlay base plot
- *		anno_id		id of AnnoManager object
+ * In Args:	plot_id		id of plot object
+ *		anno_manager_id		id of AnnoManager object
  *
  * Out Args:	NONE
  *
@@ -5410,23 +5415,23 @@ int _NhlAddAnnotation
 NhlErrorTypes NhlRemoveAnnotation
 #if	NhlNeedProto
 (
-	int overlay_plot_id, 
-	int anno_id
+	int plot_id, 
+	int anno_manager_id
 )
 #else
-(overlay_plot_id, anno_id)
-        int overlay_plot_id;
-	int anno_id;
+(plot_id, anno_manager_id)
+        int plot_id;
+	int anno_manager_id;
 #endif
 {
 	char			*e_text;
 	char			*entry_name = "NhlRemoveAnnotation";
-	NhlLayer		base = _NhlGetLayer(overlay_plot_id);
-	NhlLayer		annomanager = _NhlGetLayer(anno_id);
+	NhlLayer		base = _NhlGetLayer(plot_id);
+	NhlLayer		annomanager = _NhlGetLayer(anno_manager_id);
 	NhlLayer		plot_overlay;
 
 	if (base == NULL || ! _NhlIsTransform(base)) {
-		e_text = "%s: invalid base plot id";
+		e_text = "%s: invalid plot id";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
@@ -5442,7 +5447,7 @@ NhlErrorTypes NhlRemoveAnnotation
 	if (annomanager == NULL || ! _NhlIsObj(annomanager) ||
 	(annomanager->base.layer_class)->base_class.class_name !=
 	    NhlannoManagerClass->base_class.class_name) {
-		e_text = "%s: invalid AnnoManager object id";
+		e_text = "%s: invalid annomanager id";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
@@ -5468,18 +5473,18 @@ void
 _NHLCALLF(nhlf_removeannotation,NHLF_REMOVEANNOTATION)
 #if	NhlNeedProto
 (
-	int	*overlay_plot,
-	int	*anno_view,
+	int	*plot,
+	int	*anno_manager,
 	int	*err
 )
 #else
-(overlay_plot,annotation,err)
+(plot,anno_manager,err)
 	int	*overlay_plot;
-	int	*anno_view;
+	int	*anno_manager;
 	int	*err;
 #endif
 {
-	*err = NhlRemoveAnnotation(*overlay_plot,*anno_view);
+	*err = NhlRemoveAnnotation(*plot,*anno_manager);
 
 	return;
 }
@@ -5489,7 +5494,7 @@ _NHLCALLF(nhlf_removeannotation,NHLF_REMOVEANNOTATION)
  *
  * Description:	
  *
- * In Args:	overlay		Overlay object layer
+ * In Args:	plotmanager		Plotmanager object layer
  *		annomanager	AnnoManager object layer
  *		entry_name	interface name reported to caller in case
  *				of error. If NULL will be set to
@@ -5504,20 +5509,21 @@ _NHLCALLF(nhlf_removeannotation,NHLF_REMOVEANNOTATION)
 NhlErrorTypes _NhlRemoveAnnotation
 #if	NhlNeedProto
 (
-	NhlLayer	overlay, 
+	NhlLayer	plotmanager, 
 	NhlLayer	annomanager,
 	NhlString	entry_name
 )
 #else
-(overlay, annomanager, entry_name)
-	NhlLayer	overlay; 
+(plotmanager, annomanager, entry_name)
+	NhlLayer	plotmanager; 
 	NhlLayer	annomanager;
 	NhlString	entry_name;
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
-	NhlPlotManagerLayerPart	*ovp = &((NhlPlotManagerLayer)overlay)->plotmanager;
+	NhlPlotManagerLayerPart	*ovp = 
+		&((NhlPlotManagerLayer)plotmanager)->plotmanager;
 	int			anno_ix = -1;
 	int			i;
 
@@ -5530,7 +5536,7 @@ NhlErrorTypes _NhlRemoveAnnotation
 		}
 	}
 	if (anno_ix < 0) {
-		e_text = "%s: AnnoManager object not in PlotManager";
+		e_text = "%s: annomanager not associated with plot object";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
@@ -5538,7 +5544,7 @@ NhlErrorTypes _NhlRemoveAnnotation
  * Unregister the AnnoManager
  */
 
-	subret = _NhlUnregisterAnnotation(overlay,annomanager,entry_name);
+	subret = _NhlUnregisterAnnotation(plotmanager,annomanager,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 
 	subret = _NhlSetAnnoView((NhlViewLayer)
@@ -5597,16 +5603,16 @@ NhlErrorTypes _NhlRemoveAnnotation
 
 NhlErrorTypes NhlRegisterAnnotation
 #if	NhlNeedProto
-(int overlay_plot_id, int annomanager_id)
+(int plot_id, int annomanager_id)
 #else
-(overlay_plot_id, annomanager_id)
-        int overlay_plot_id;
+(plot_id, annomanager_id)
+        int plot_id;
 	int annomanager_id;
 #endif
 {
 	char			*e_text;
 	char			*entry_name = "NhlRegisterAnnotation";
-	NhlLayer		base = _NhlGetLayer(overlay_plot_id);
+	NhlLayer		base = _NhlGetLayer(plot_id);
 	NhlLayer		annomanager = _NhlGetLayer(annomanager_id);
 	NhlLayer		plot_overlay;
 
@@ -5739,7 +5745,7 @@ NhlErrorTypes _NhlRegisterAnnotation
  *
  * Description:	
  *
- * In Args:	overlay_plot_id	id of overlay plot
+ * In Args:	plot_id	id of overlay plot
  *		annomanager_id	id of AnnoManager Object
  *
  * Out Args:	NONE
@@ -5751,16 +5757,16 @@ NhlErrorTypes _NhlRegisterAnnotation
 
 NhlErrorTypes NhlUnregisterAnnotation
 #if	NhlNeedProto
-(int overlay_plot_id, int annomanager_id)
+(int plot_id, int annomanager_id)
 #else
-(overlay_plot_id, annomanager_id)
-        int overlay_plot_id;
+(plot_id, annomanager_id)
+        int plot_id;
 	int annomanager_id;
 #endif
 {
 	char			*e_text;
 	char			*entry_name = "NhlUnregisterAnnotation";
-	NhlLayer		base = _NhlGetLayer(overlay_plot_id);
+	NhlLayer		base = _NhlGetLayer(plot_id);
 	NhlLayer		annomanager = _NhlGetLayer(annomanager_id);
 	NhlLayer		plot_overlay;
 
@@ -6270,7 +6276,7 @@ extern NhlErrorTypes _NhlManageOverlay
 	if(method == _NhlCREATE){
 
 		strcpy(buffer,lnew->base.name);
-		strcat(buffer,".Overlay");
+		strcat(buffer,".PlotManager");
 		NhlSetSArg(&lsargs[nargs++],
 			   NhlNvpUseSegments,vwp->use_segments);
 		NhlSetSArg(&lsargs[nargs++],NhlNvpXF,vwp->x);

@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.34 1995-04-22 01:01:47 boote Exp $
+ *      $Id: Legend.c,v 1.35 1995-04-27 16:58:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -109,6 +109,9 @@ ResourceUnset
 
 static int def_colors[] = { 
 	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+static char Init_Name[] = "LegendInitialize";
+static char SetValues_Name[] = "LegendSetValues";
+
 
 /* SUPPRESS 112 */
 
@@ -151,7 +154,7 @@ static NhlResource resources[] = {
 	 NhlTImmediate, _NhlUSET((NhlPointer) True),0,NULL},
 {NhlNlgLabelOffsetF, NhlClgLabelOffsetF, NhlTFloat,
 	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.label_off),
-	 NhlTString, _NhlUSET("0.0"),0,NULL},
+	 NhlTString, _NhlUSET("0.02"),0,NULL},
 {NhlNlgTitleOffsetF, NhlClgTitleOffsetF, NhlTFloat,
 	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.title_off),
 	 NhlTString, _NhlUSET("0.03"),0,NULL},
@@ -568,9 +571,10 @@ static NhlErrorTypes    ManageDynamicArrays(
 
 static NhlErrorTypes    SetLegendGeometry(
 #if	NhlNeedProto
-	NhlLayer,		/* new		*/ 
-	_NhlArgList,	/* args		*/
-	int		/* num_args	*/
+	NhlLayer	new,
+	NhlBoolean	init,
+	_NhlArgList	args,
+	int		num_args
 #endif
 );
 
@@ -598,7 +602,8 @@ static NhlErrorTypes    SetBoxLocations(
 static NhlErrorTypes    ManageItemPositionsArray(
 #if	NhlNeedProto
 	float	*item_positions,
-	int	count
+	int	count,
+	char	*entry_name
 #endif
 );
 
@@ -626,12 +631,13 @@ static NhlErrorTypes    SetLabels(
 
 static NhlErrorTypes   	AdjustLabels(
 #if	NhlNeedProto
-	NhlLegendLayerPart *lg_p,
+	NhlLegendLayerPart	*lg_p,
+	NhlLegendLayerPart	*olg_p,
 	float		height,
 	float		avail_space,
-	int		max_strlen,
 	float		area_x,
-	float		area_y
+	float		area_y,
+	char		*entry_name
 #endif
 );
 
@@ -737,7 +743,7 @@ static NrmQuark	Qmarker_sizes = NrmNULLQUARK;
 static NrmQuark	Qlabel_strings = NrmNULLQUARK;
 static NrmQuark	Qllabel_colors = NrmNULLQUARK;
 static NrmQuark	Qitem_positions = NrmNULLQUARK;
-
+static NrmQuark	Qtitle_string = NrmNULLQUARK;
 /*
  * Function:	LegendInitialize
  *
@@ -785,6 +791,19 @@ static NhlErrorTypes    LegendInitialize
 	lg_p->stride_labels = NULL;
 	lg_p->item_locs = NULL;
 	lg_p->label_locs = NULL;
+	lg_p->title_x = 0.0;
+	lg_p->title_y = 1.0;
+
+/*
+ * check the line label constant spacing
+ */
+	if (lg_p->ll_const_spacing < 0.0) {
+		lg_p->ll_const_spacing = 0.0;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s: Constant spacing cannot be less than zero, defaulting %s",
+			  Init_Name,NhlNlgLineLabelConstantSpacingF);
+		ret = MIN(NhlWARNING,ret);
+	}
 
 /*
  * Ensure that the label and title angles range is between 0 and 360
@@ -793,7 +812,8 @@ static NhlErrorTypes    LegendInitialize
 	lg_p->title_angle = fmod(lg_p->title_angle,360.0);
 
 	if (lg_p->item_count < 1) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"Minimum box count is 1");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "%s: Minimum box count is 1",Init_Name);
 		ret = NhlWARNING;
 		lg_p->item_count = 1;
 	}
@@ -837,7 +857,7 @@ static NhlErrorTypes    LegendInitialize
  * Calculate legend geometry
  */
 
-	ret1 = SetLegendGeometry(new,args,num_args);
+	ret1 = SetLegendGeometry(new,True,args,num_args);
 	ret = MIN(ret1,ret);
 /*
  * Set up the title using a text object
@@ -912,7 +932,7 @@ static NhlErrorTypes LegendSetValues
 	NhlLegendLayerPart	*lg_p = &(tnew->legend);
 	NhlErrorTypes		ret = NhlNOERROR,ret1 = NhlNOERROR;
 	char 			*e_text;
-	char			*entry_name = "LegendSetValues";
+	char			*entry_name = SetValues_Name;
 	int			view_args = 0;
 
 	if (tnew->view.use_segments != told->view.use_segments) {
@@ -930,9 +950,21 @@ static NhlErrorTypes LegendSetValues
 		lg_p->new_draw_req = True;
 
 	if (lg_p->item_count < 1) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"Minimum box count is 1");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "%s: Minimum box count is 1", entry_name);
 		ret = NhlWARNING;
 		lg_p->item_count = 1;
+	}
+
+/*
+ * check the line label constant spacing
+ */
+	if (lg_p->ll_const_spacing < 0.0) {
+		lg_p->ll_const_spacing = 0.0;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s: Constant spacing cannot be less than zero, defaulting %s",
+			  entry_name,NhlNlgLineLabelConstantSpacingF);
+		ret = MIN(NhlWARNING,ret);
 	}
 	
 /*
@@ -1017,7 +1049,7 @@ static NhlErrorTypes LegendSetValues
  * Calculate legend geometry
  */
 
-	ret1 = SetLegendGeometry(new,args,num_args);
+	ret1 = SetLegendGeometry(new,False,args,num_args);
 	ret = MIN(ret1,ret);
 	ret1 = SetTitle(new,old,0,args,num_args);
 	ret = MIN(ret1,ret);
@@ -1075,7 +1107,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 	int len_1, len_2;
 	char number[10];
 	NhlGenArray ga;
-	char *entry_name = "LegendInitialize";
+	char *entry_name = Init_Name;
 	char *e_text;
 	float *f_p;
 	int *i_p;
@@ -1270,10 +1302,6 @@ static NhlErrorTypes    InitializeDynamicArrays
  * Finally, create a private array for GKS color indices, convert each
  * workstation index into a GKS index, and copy into the GKS array.
  */
-
-	NhlVAGetValues(tnew->base.wkptr->base.id,
-		     NhlNwkColorMapLen, &len_1, NULL);
-	count = MAX(lg_p->item_count, NhlLG_DEF_ITEM_COUNT);
 
 	/*
 	 * first do line colors, then marker colors.
@@ -1664,21 +1692,13 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 /*=======================================================================*/
 /* 
- * Initialize the item string color array (this is used to color
- * the labels for line types -- it is not used for markers):  
  * Create an array that contains the larger of the default box
  * count and the supplied box count. Fill it with the default color array 
  * values up to the default box count size, and the single default color value
  * for the rest of the elements. 
  * Then if the user has supplied a generic array copy it over the 
- * created array. Then check each element to ensure that
- * it is a valid color index.
- * Finally, create a private array for GKS color indices, convert each
- * workstation index into a GKS index, and copy into the GKS array.
+ * created array.
  */
-
-	NhlVAGetValues(tnew->base.wkptr->base.id,
-		     NhlNwkColorMapLen, &len_1, NULL);
 	count = MAX(lg_p->item_count, NhlLG_DEF_ITEM_COUNT);
 	if ((i_p = (int *) NhlMalloc(count * sizeof(int))) == NULL) {
 		e_text = "%s: error creating %s array";
@@ -1686,6 +1706,12 @@ static NhlErrorTypes    InitializeDynamicArrays
 			  NhlNlgLineLabelFontColors);
 		return NhlFATAL;
 	}
+
+
+	for (i=0; i < NhlLG_DEF_ITEM_COUNT; i++) 
+		i_p[i] = def_colors[i];
+	for (i=NhlLG_DEF_ITEM_COUNT; i < count; i++)
+		i_p[i] = i;
 			
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTColorIndex,
 				    sizeof(int),1,&count)) == NULL) {
@@ -1803,7 +1829,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	int i;
 	int count, len_1, len_2;
 	char number[10];
-	char *entry_name = "LegendSetValues";
+	char *entry_name = SetValues_Name;
 	char *e_text;
 	float *f_p;
 	int *i_p;
@@ -2001,10 +2027,6 @@ static NhlErrorTypes    ManageDynamicArrays
  * Then if the box count is greater than the current array size, enlarge
  * the array and give initial values to the new elements.
  */
-
-	NhlVAGetValues(tnew->base.wkptr->base.id,
-		     NhlNwkColorMapLen, &len_1, NULL);
-	count = lg_p->item_count;
 
 	/*
 	 * First Line colors, then Marker colors.
@@ -2384,9 +2406,6 @@ static NhlErrorTypes    ManageDynamicArrays
  * the array and give initial values to the new elements.
  */
 
-	NhlVAGetValues(tnew->base.wkptr->base.id,
-		     NhlNwkColorMapLen, &len_1, NULL);
-	count = lg_p->item_count;
 
 	if (lg_p->line_label_colors != olg_p->line_label_colors) {
 		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->line_label_colors),
@@ -2509,48 +2528,32 @@ static NhlErrorTypes    ManageDynamicArrays
 /*ARGSUSED*/
 static NhlErrorTypes    SetLegendGeometry
 #if	NhlNeedProto
-	 (NhlLayer new, 
-	 _NhlArgList args,
-	 int num_args)
+(
+	NhlLayer new,
+	NhlBoolean init,
+	_NhlArgList args,
+	int num_args
+)
 #else
-(new,args,num_args)
-	NhlLayer		new;
+(new,args,init,num_args)
+	NhlLayer	new;
+	NhlBoolean	init;
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
  	NhlErrorTypes		ret = NhlNOERROR;
 	char			*e_text;
-	char			*entry_name = "lgSetLegendGeometry";
+	char			*entry_name;
 	NhlLegendLayer	tnew = (NhlLegendLayer) new;
 	NhlLegendLayerPart *lg_p = &(tnew->legend);
 	enum {NO_TITLE, MINOR_AXIS, MAJOR_AXIS} title_loc;
 	float bar_ext, max_title_ext, adj_perim_width, adj_perim_height;
 	float small_axis;
 	float title_off = 0.0, angle_adj = 0.0;
-	float title_angle, tan_t;
+	float angle,title_angle,tan_t;
 
-#if 0
-/* 
- * Determine the principal width and height for the item string
- * based on aspect ratio. 21.0 is the default principle height. 
- * This code works the way the TextItem handles aspect ratio.
- */
-        if (lg_p->ll_aspect <= 0.0 ) {
-                lg_p->ll_aspect = 1.3125;
-		e_text = "%s: Invalid value for %s";
-                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-			  entry_name,NhlNlgLineLabelFontAspectF);
-                ret = NhlWARNING;
-        }
-        if(lg_p->ll_aspect <= 1.0) {
-                lg_p->ll_pheight = 21.0 * lg_p->ll_aspect;
-                lg_p->ll_pwidth = 21.0;
-        } else {
-                lg_p->ll_pwidth = 21.0 * 1.0/lg_p->ll_aspect;
-                lg_p->ll_pheight = 21.0;
-        }
-#endif
+	entry_name = init ? Init_Name : SetValues_Name;
 
 /* Calculate the ndc margin from the fractional margin */
 
@@ -2564,6 +2567,21 @@ static NhlErrorTypes    SetLegendGeometry
 	adj_perim_height = lg_p->adj_perim.t - lg_p->adj_perim.b;
 		
 /*
+ * Check the box extent values; and issue a warning if required
+ */	
+	if (lg_p->box_major_ext > 1.0 || lg_p->box_major_ext < 0.0) {
+		e_text = "%s: %s out of range, defaulting";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  e_text,entry_name,NhlNlgBoxMajorExtentF);
+		lg_p->box_major_ext = 0.5;
+	}
+	if (lg_p->box_minor_ext > 1.0 || lg_p->box_minor_ext < 0.0) {
+		e_text = "%s: %s out of range, defaulting";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  e_text,entry_name,NhlNlgBoxMinorExtentF);
+		lg_p->box_minor_ext = 0.6;
+	}
+/*
  * Check the title extent to make sure it does not exceed the hard-coded
  * limit; then locate the title
  */
@@ -2573,6 +2591,8 @@ static NhlErrorTypes    SetLegendGeometry
 		lg_p->max_title_ext = NhlLG_DEF_MAX_TITLE_EXT;
 		lg_p->title_off = NhlLG_DEF_TITLE_OFF;
 	}
+	angle = (lg_p->title_angle < 0.0) ?
+		lg_p->title_angle + 360.0 : lg_p->title_angle;
 	title_angle = lg_p->title_angle * DEGTORAD;
 	tan_t = fabs(sin(title_angle)) / 
 		     MAX(0.01, fabs(cos(title_angle)));
@@ -2636,6 +2656,8 @@ static NhlErrorTypes    SetLegendGeometry
 
 	if (lg_p->orient == NhlHORIZONTAL) {
 		switch (lg_p->label_pos) {
+		case NhlCENTER:
+			break;
 		default:
 		case NhlBOTTOM:
 		case NhlRIGHT:
@@ -2649,6 +2671,8 @@ static NhlErrorTypes    SetLegendGeometry
 	}
 	else {
 		switch (lg_p->label_pos) {
+		case NhlCENTER:
+			break;
 		default:
 		case NhlRIGHT:
 		case NhlBOTTOM:
@@ -2703,9 +2727,7 @@ static NhlErrorTypes    SetLegendGeometry
 			
 			max_title_ext = 
 				MIN(lg_p->max_title_ext * adj_perim_width,
-					adj_perim_height / 
-					strlen(lg_p->title_string) + 
-					angle_adj);
+				    2.0 * lg_p->title_height + angle_adj);
 			lg_p->title.b = lg_p->adj_perim.b;
 			lg_p->title.t = lg_p->adj_perim.t;
 				
@@ -2752,9 +2774,7 @@ static NhlErrorTypes    SetLegendGeometry
 
 			max_title_ext = 
 				MIN(lg_p->max_title_ext * adj_perim_height,
-					adj_perim_width / 
-					strlen(lg_p->title_string) + 
-					angle_adj);
+				    2.0 * lg_p->title_height + angle_adj);
 			if (max_title_ext + title_off + bar_ext > 
 			    adj_perim_height) {
 				e_text = 
@@ -2856,9 +2876,7 @@ static NhlErrorTypes    SetLegendGeometry
 		case MAJOR_AXIS:
 			max_title_ext = 
 				MIN(lg_p->max_title_ext * adj_perim_height,
-					adj_perim_width / 
-					strlen(lg_p->title_string) + 
-					angle_adj);
+				    2.0 * lg_p->title_height + angle_adj);
 
 			lg_p->title.l = lg_p->adj_perim.l;
 			lg_p->title.r = lg_p->adj_perim.r;
@@ -2906,9 +2924,7 @@ static NhlErrorTypes    SetLegendGeometry
 
 			max_title_ext = 
 				MIN(lg_p->max_title_ext * adj_perim_width,
-					adj_perim_height / 
-					strlen(lg_p->title_string) + 
-					angle_adj);
+				    2.0 * lg_p->title_height + angle_adj);
 			if (max_title_ext + title_off + bar_ext > 
 			    adj_perim_width) {
 				e_text = 
@@ -3003,15 +3019,17 @@ static NhlErrorTypes    SetLegendGeometry
 /*ARGSUSED*/
 static NhlErrorTypes    SetTitle
 #if	NhlNeedProto
-	(NhlLayer		new, 
-	NhlLayer		old,
+(
+	NhlLayer	new, 
+	NhlLayer	old,
 	int		init,
 	_NhlArgList	args,
-	int		 num_args)
+	int		 num_args
+)
 #else
 (new,old,init,args,num_args)
-	NhlLayer		new;
-	NhlLayer		old;
+	NhlLayer	new;
+	NhlLayer	old;
 	int		init;
 	_NhlArgList	args;
 	int		num_args;
@@ -3019,7 +3037,7 @@ static NhlErrorTypes    SetTitle
 {
  	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
-	char			*entry_name = "lgSetTitle";
+	char			*entry_name;
 	NhlLegendLayer	tnew = (NhlLegendLayer) new;
 	NhlLegendLayer	told = (NhlLegendLayer) old;
 	NhlLegendLayerPart *lg_p = &(tnew->legend);
@@ -3028,6 +3046,7 @@ static NhlErrorTypes    SetTitle
 	char *c_p;
 	NhlBoundingBox titleBB;
 	float w, h, wta, hta, factor, height;
+	float angle;
 
 /*
  * Only initialize a text item for the title if it is turned on
@@ -3035,6 +3054,19 @@ static NhlErrorTypes    SetTitle
  */
 	if (!lg_p->title_on || lg_p->max_title_ext <= 0.0)
 		return ret;
+
+	entry_name = init ? Init_Name : SetValues_Name;
+/*
+ * Check constant spacing value
+ */
+
+	if (lg_p->title_const_spacing < 0.0) {
+		lg_p->title_const_spacing = 0.0;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s: Constant spacing cannot be less than zero, defaulting %s",
+			  entry_name,NhlNlgTitleConstantSpacingF);
+		ret = MIN(NhlWARNING,ret);
+	}
 
 /*
  * If the title string is NULL, create a default string.
@@ -3108,6 +3140,8 @@ static NhlErrorTypes    SetTitle
 	else 
 		height = lg_p->title_height;
 
+	angle = (lg_p->title_angle < 0.0) ?
+		lg_p->title_angle + 360.0 : lg_p->title_angle;
 	if (init || lg_p->title_id < 0) {
 		strcpy(buffer,tnew->base.name);
 		strcat(buffer,".Title");
@@ -3119,7 +3153,7 @@ static NhlErrorTypes    SetTitle
 				 NhlNtxPosXF,lg_p->title_x,
 				 NhlNtxPosYF,lg_p->title_y,
 				 NhlNtxDirection,lg_p->title_direction,
-				 NhlNtxAngleF,lg_p->title_angle,
+				 NhlNtxAngleF,angle,
 				 NhlNtxJust,(int)lg_p->title_just,
 				 NhlNtxFontColor,lg_p->title_color,
 				 NhlNtxFontHeightF,height,
@@ -3139,7 +3173,7 @@ static NhlErrorTypes    SetTitle
 				    NhlNtxPosXF,lg_p->title_x,
 				    NhlNtxPosYF,lg_p->title_y,
 				    NhlNtxDirection,lg_p->title_direction,
-				    NhlNtxAngleF,lg_p->title_angle,
+				    NhlNtxAngleF,angle,
 				    NhlNtxJust,(int)lg_p->title_just,
 				    NhlNtxFontColor,lg_p->title_color,
 				    NhlNtxFontHeightF,height,
@@ -3225,10 +3259,13 @@ static NhlErrorTypes    SetBoxLocations
 	float box_len;
 	int i;
 	float *item_positions = (float *)lg_p->item_positions->data;
+	char *entry_name;
 
+	entry_name = init ? Init_Name : SetValues_Name;
 	if (lg_p->item_placement == NhlEXPLICITPLACEMENT) {
 		ret1 = ManageItemPositionsArray(item_positions,
-						lg_p->item_count);
+						lg_p->item_count,
+						entry_name);
 	}
 	ret = MIN(ret,ret1);
 
@@ -3350,12 +3387,16 @@ static NhlErrorTypes    SetBoxLocations
 /*ARGSUSED*/
 static NhlErrorTypes    ManageItemPositionsArray
 #if	NhlNeedProto
-	(float *item_positions, 
-	 int count) 
+(
+	float	*item_positions, 
+	int	count,
+	char	*entry_name
+) 
 #else
-(item_positions, count)
-	float *item_positions;
-	int count;
+(item_positions, count,entry_name)
+	float	*item_positions;
+	int	count;
+	char	*entry_name;
 #endif
 
 {
@@ -3379,7 +3420,8 @@ static NhlErrorTypes    ManageItemPositionsArray
 		first_neg = 0;
 	else if (item_positions[0] > 1.0) {
 		NhlPError(NhlINFO,NhlEUNKNOWN,
-			  "Modifying invalid box fraction array element: 0");
+		  "%s: Modifying invalid box fraction array element: 0",
+			  entry_name);
 		ret = NhlINFO;
 		item_positions[0] = -1.0;
 		first_neg = 0;
@@ -3396,7 +3438,8 @@ static NhlErrorTypes    ManageItemPositionsArray
 			if (item_positions[i] > 1.0 ||
 			    item_positions[i] < last_good_val) {
 				NhlPError(NhlINFO,NhlEUNKNOWN,
-		    "Modifying out-of-range box fraction array element: %d",i);
+	       "%s: Modifying out-of-range box fraction array element: %d",
+					  entry_name,i);
 				ret = NhlINFO;
 				item_positions[i] = -1.0;
 				last_good_val = last_val;
@@ -3413,7 +3456,8 @@ static NhlErrorTypes    ManageItemPositionsArray
 		else if (item_positions[i] > 1.0 ||
 			 (item_positions[i] < last_val)) {
 			NhlPError(NhlINFO,NhlEUNKNOWN,
-		    "Modifying out-of-range box fraction array element: %d",i);
+		   "%s:Modifying out-of-range box fraction array element: %d",
+				  i,entry_name);
 			ret = NhlINFO;
 			item_positions[i] = -1.0;
 			last_good_val = last_val;
@@ -3550,9 +3594,10 @@ static NhlErrorTypes    SetLabels
 {
  	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
-	char			*entry_name = "lgSetLabels";
+	char			*entry_name;
 	NhlLegendLayer	tnew = (NhlLegendLayer) new;
 	NhlLegendLayerPart *lg_p = &(tnew->legend);
+	NhlLegendLayerPart *olg_p = &((NhlLegendLayer) old)->legend;
 	char buffer[_NhlMAXRESNAMLEN];
 	char **labels_p;
 	int count; 
@@ -3564,9 +3609,22 @@ static NhlErrorTypes    SetLabels
 	float base_pos = 0.0, offset = 0.0, increment = 0.0;
 	NhlCoord larea;
 	float c_frac = 1.0;
+	float angle;
 
 	if (! lg_p->labels_on)
 		return NhlNOERROR;
+
+	entry_name = init ? Init_Name : SetValues_Name;
+/*
+ * check constant spacing
+ */
+	if (lg_p->label_const_spacing < 0.0) {
+		lg_p->label_const_spacing = 0.0;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s: Constant spacing cannot be less than zero, defaulting %s",
+			  entry_name,NhlNlgLabelConstantSpacingF);
+		ret = MIN(NhlWARNING,ret);
+	}
 
 /*
  * Determine the multitext orientation and the NDC label offset
@@ -3582,12 +3640,6 @@ static NhlErrorTypes    SetLabels
 		label_offset = lg_p->label_off *
 			(lg_p->adj_perim.r - lg_p->adj_perim.l);
 	}
-/*
- * If not in auto-manage mode the label offset should cause the 
- * bar to grow. Set it to 0.0 here so that it will take effect in the
- * AdjustGeometry routine.
- */ 
-
 	count = lg_p->item_count;
 		
 /*
@@ -3656,10 +3708,12 @@ static NhlErrorTypes    SetLabels
 	if (lg_p->label_pos == NhlCENTER) {
 		if (lg_p->orient == NhlHORIZONTAL) {
 			larea.x = lg_p->labels.r - lg_p->labels.l;
-			larea.y = lg_p->adj_bar.t - lg_p->adj_bar.b;
+			larea.y = lg_p->adj_bar.t - 
+				lg_p->adj_bar.b - label_offset;
 		}
 		else {
-			larea.x = lg_p->adj_bar.r - lg_p->adj_bar.l;
+			larea.x = lg_p->adj_bar.r - 
+				lg_p->adj_bar.l - label_offset;
 			larea.y = lg_p->labels.t - lg_p->labels.b;
 		}
 	}
@@ -3683,6 +3737,9 @@ static NhlErrorTypes    SetLabels
 	if (lg_p->label_pos == NhlCENTER || label_offset < 0.0) {
 		if (lg_p->label_alignment == NhlITEMCENTERS) {
 			c_frac = lg_p->box_major_ext;
+		}
+		else if (lg_p->box_major_ext > 0.8) {
+			c_frac = 1.0;
 		}
 		else {
 			c_frac = 1.0 - lg_p->box_major_ext;
@@ -3710,16 +3767,14 @@ static NhlErrorTypes    SetLabels
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
 		case NhlBOTTOM:
-			lg_p->const_pos = lg_p->labels.t -
-				label_height - label_offset;
+			lg_p->const_pos = lg_p->labels.t - label_offset;
 			break;
 		case NhlCENTER:
 			lg_p->const_pos = lg_p->adj_bar.b + 
 				lg_p->adj_box_size.y / 2.0;
 			break;
 		case NhlTOP:
-			lg_p->const_pos = lg_p->labels.b + 
-				label_height + label_offset;
+			lg_p->const_pos = lg_p->labels.b + label_offset;
 			break;
 		}
 	}
@@ -3745,16 +3800,14 @@ static NhlErrorTypes    SetLabels
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
 		case NhlBOTTOM:
-			lg_p->const_pos = lg_p->labels.t - 
-				label_height - label_offset;
+			lg_p->const_pos = lg_p->labels.t - label_offset;
 			break;
 		case NhlCENTER:
 			lg_p->const_pos = lg_p->adj_bar.b + 
 				lg_p->adj_box_size.y / 2.0;
 			break;
 		case NhlTOP:
-			lg_p->const_pos = lg_p->labels.b + 
-				label_height + label_offset;
+			lg_p->const_pos = lg_p->labels.b + label_offset;
 			break;
 		}
 	}
@@ -3779,16 +3832,14 @@ static NhlErrorTypes    SetLabels
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
 		case NhlLEFT:
-			lg_p->const_pos = lg_p->labels.r - 
-				label_height - label_offset;
+			lg_p->const_pos = lg_p->labels.r - label_offset;
 			break;
 		case NhlCENTER:
 			lg_p->const_pos = lg_p->adj_bar.l + 
 				lg_p->adj_box_size.x / 2.0;
 			break;
 		case NhlRIGHT:
-			lg_p->const_pos = lg_p->labels.l + 
-				label_height + label_offset;
+			lg_p->const_pos = lg_p->labels.l + label_offset;
 			break;
 		}
 	}
@@ -3812,16 +3863,14 @@ static NhlErrorTypes    SetLabels
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
 		case NhlLEFT:
-			lg_p->const_pos = lg_p->labels.r - 
-				label_height - label_offset;
+			lg_p->const_pos = lg_p->labels.r - label_offset;
 			break;
 		case NhlCENTER:
 			lg_p->const_pos = lg_p->adj_bar.l + 
 				lg_p->adj_box_size.x / 2.0;
 			break;
 		case NhlRIGHT:
-			lg_p->const_pos = lg_p->labels.l + 
-				label_height + label_offset;
+			lg_p->const_pos = lg_p->labels.l + label_offset;
 			break;
 		}
 	}
@@ -3902,9 +3951,13 @@ static NhlErrorTypes    SetLabels
 		}
 	}
 
-	if (! lg_p->auto_manage && lg_p->label_height > 0.0) 
+	if (lg_p->label_height <= 0.0)
+		lg_p->label_height = NhlLG_DEF_CHAR_HEIGHT;
+	if (! lg_p->auto_manage) 
 		label_height = lg_p->label_height;
 
+	angle = (lg_p->label_angle < 0.0) ? 
+		lg_p->label_angle + 360.0 : lg_p->label_angle;
 	if (init) {
 		strcpy(buffer,tnew->base.name);
 		strcat(buffer,".Labels");
@@ -3915,7 +3968,7 @@ static NhlErrorTypes    SetLabels
 				 NhlNMtextOrientation,mtext_orient,
 				 NhlNMtextConstPosF,lg_p->const_pos ,
 				 NhlNMtextPosArray,lg_p->label_locs,
-				 NhlNtxAngleF,lg_p->label_angle,
+				 NhlNtxAngleF,angle,
 				 NhlNtxFont,lg_p->label_font,
 				 NhlNtxJust,lg_p->label_just,
 				 NhlNtxFontHeightF,label_height,
@@ -3933,21 +3986,56 @@ static NhlErrorTypes    SetLabels
 		}
 	} 
 	else {
-		subret = NhlVASetValues(lg_p->labels_id,
-				    NhlNMtextNumStrings,lg_p->label_draw_count,
-				    NhlNMtextStrings,labels_p,
-				    NhlNMtextOrientation,mtext_orient,
-				    NhlNMtextConstPosF,lg_p->const_pos,
-				    NhlNMtextPosArray,lg_p->label_locs,
-				    NhlNtxAngleF,lg_p->label_angle,
-				    NhlNtxFont,lg_p->label_font,
-				    NhlNtxJust,lg_p->label_just,
-				    NhlNtxFontHeightF,label_height,
-				    NhlNtxFontAspectF,lg_p->label_aspect,
-				    NhlNtxDirection,lg_p->label_direction,
-				    NhlNtxFontColor,lg_p->label_color,
-				    NhlNtxFontThicknessF,lg_p->label_thickness,
-				    NULL);
+		NhlSArg	sargs[16];
+		int	nargs = 0;
+
+		NhlSetSArg(&sargs[nargs++],NhlNtxFontHeightF,label_height);
+
+		if (lg_p->label_draw_count != olg_p->label_draw_count ||
+		    lg_p->label_strings != olg_p->label_strings ||
+		    lg_p->label_stride != olg_p->label_stride) {
+			NhlSetSArg(&sargs[nargs++],NhlNMtextNumStrings,
+				   lg_p->label_draw_count);
+			NhlSetSArg(&sargs[nargs++],NhlNMtextStrings,labels_p);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNMtextPosArray,lg_p->label_locs);
+		}
+		else if (! memcmp(lg_p->label_locs,olg_p->label_locs,
+				  sizeof(float) * lg_p->label_draw_count)) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNMtextPosArray,lg_p->label_locs);
+		}
+		if (lg_p->orient != olg_p->orient)
+			NhlSetSArg(&sargs[nargs++],NhlNMtextOrientation,
+				   mtext_orient);
+		if (lg_p->label_angle != olg_p->label_angle)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtxAngleF,angle);
+		if (lg_p->label_direction != olg_p->label_direction)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtxDirection,lg_p->label_direction);
+		if (lg_p->const_pos != olg_p->const_pos)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNMtextConstPosF,lg_p->const_pos);
+		if (lg_p->label_font != olg_p->label_font)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtxFont,lg_p->label_font);
+		if (lg_p->label_just != olg_p->label_just)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtxJust,lg_p->label_just);
+		if (lg_p->label_aspect != olg_p->label_aspect)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtxFontAspectF,lg_p->label_aspect);
+		if (lg_p->label_color != olg_p->label_color)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtxFontColor,lg_p->label_color);
+		if (lg_p->label_thickness != olg_p->label_thickness)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtxFontThicknessF,lg_p->label_thickness);
+		if (lg_p->label_const_spacing != olg_p->label_const_spacing)
+			NhlSetSArg(&sargs[nargs++],NhlNtxConstantSpacingF,
+					lg_p->label_const_spacing);
+		subret = NhlALSetValues(lg_p->labels_id,sargs,nargs);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error setting MultiText object values";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -3958,23 +4046,23 @@ static NhlErrorTypes    SetLabels
 
 	if (lg_p->auto_manage || lg_p->label_height <= 0.0) {
 
-		subret = AdjustLabels(lg_p, label_height, avail_char_space, 
-				   max_strlen, larea.x, larea.y);
-		ret = MIN(ret, subret);
+		olg_p->label_just = lg_p->label_just;
+		olg_p->label_height = label_height;
+		subret = AdjustLabels(lg_p,olg_p,
+				      label_height,avail_char_space,
+				      larea.x,larea.y,entry_name);
 	}
 	return (ret);
 }
-
 
 /*
  * Function: AdjustLabels
  *
  * Description:	Adjusts the label height to fit the size it has available. 
- *	This should probably be replaced by an option
- * 	within Multitext itself. The routine tries to ensure that under 
- * 	any rotation, no piece of multitext overlap another piece of the 
- * 	same text. The text size is adjusted based on some primitive 
- * 	heuristics to accomplish this. Also the label text justification is
+ * 	The routine ensures that under any rotation,  
+ * 	no piece of multitext overlaps another piece of the 
+ * 	multi-text. Adjusts the text size based on the label geometry
+ * 	to accomplish this goal. Also the label text justification is
  * 	managed to ensure that the label always lines up with its correct box.
  *
  * In Args:
@@ -3987,125 +4075,168 @@ static NhlErrorTypes    SetLabels
  *	multi-text object
  */
 
-#define NhlLG_TRANSITIONANGLE 7.5
+#define NhlLB_TRANSITIONANGLE 7.5
 static NhlErrorTypes   	AdjustLabels
 #if	NhlNeedProto
-	(NhlLegendLayerPart *lg_p,
-	 float		height,
-	 float		avail_space,
-	 int		max_strlen,
-	 float		area_x,
-	 float		area_y)
+(
+	NhlLegendLayerPart *lg_p,
+	NhlLegendLayerPart *olg_p,
+ 	float		height,
+	float		avail_space,
+	float		area_x,
+	float		area_y,
+	char		*entry_name
+)
 #else
-(lg_p, height, avail_space, max_strlen, area_x, area_y)
+(lg_p,olg_p,height,avail_space,area_x area_y,entry_name)
 	NhlLegendLayerPart *lg_p;
+	NhlLegendLayerPart *olg_p,
 	float		height;
 	float		avail_space;
-	int		max_strlen;
 	float		area_x;
 	float		area_y;
+	char		*entry_name;
 #endif
 {
  	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
-	char			*entry_name = "lgAdjustLabels";
-	float tmp, theta1, theta2, theta3, theta4;
-	NhlBoundingBox stringBB;
+	float theta1, theta2, theta3, theta4;
 	float w, h;
-	float wb, wt, hb, ht;
-	float c_angle;
-	float t1,t2;
-	float theta, ct, st;
+	float t1;
+	float theta;
+	float max_len;
+	float avail_len;
+	float trans_angle;
+	float test_angle;
+	float box_major, box_minor, text_major, text_minor;
+	float angle;
+
+	angle = (lg_p->label_angle < 0.0) ? 
+		lg_p->label_angle + 360.0 : lg_p->label_angle;
 
 /*
- * Get the multitext bounding box.Then figure out the size of an
- * individual (maximum size) string in the multitext. Also figure out
- * the amount of space the string has available
+ * Get the width and height and the maximum text length of the multitext.
  */
-	subret = NhlGetBB(lg_p->labels_id, &stringBB);
-	w=stringBB.r-stringBB.l; 	    
-	h=stringBB.t-stringBB.b;
+	subret = NhlVAGetValues(lg_p->labels_id,
+				NhlNMtextMaxLenF,&max_len,
+				NhlNvpWidthF,&w,
+				NhlNvpHeightF,&h,
+				NULL);
 	if ((ret = MIN(ret,subret)) < NhlWARNING || w <= 0.0 || h <= 0.0) {
-		e_text = "%s: Error getting bounding box";
+		e_text = "%s: Error getting label information";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
+/*
+ * Set up the variables used to fit the text to the available space
+ */
+
 	if (lg_p->orient == NhlHORIZONTAL) {
-		wb = area_x / lg_p->label_draw_count;
-		wt = wb - area_x + w;
-		hb = area_y;
-		ht = h;
+		box_major = area_x / lg_p->label_draw_count;
+		text_major = box_major - area_x + w;
+		box_minor = area_y;
+		text_minor = max_len;
 	}
 	else {
-		wb = area_x;
-		wt = w;
-		hb = area_y / lg_p->label_draw_count;
-		ht = hb - area_y + h;
+		box_minor = area_x;
+		text_minor = max_len;
+		box_major = area_y / lg_p->label_draw_count;
+		text_major = box_major - area_y + h;
 	}
 
 /*
- * If labels are centered in the boxes just fit the text in the box
- * then get out.
+ * Size is adjusted to the text box based on the 
+ * first quadrant equivalent angle.
  */
 
-	if (lg_p->label_pos == NhlCENTER) {
-		t1 = wb / wt < hb / ht ?  wb / wt  : hb / ht;
-		height *= t1 * 0.8;
-		height = MIN(height,avail_space);
-		lg_p->label_just = NhlCENTERCENTER;
-		lg_p->label_height = height;
-		ret = NhlVASetValues(lg_p->labels_id,
-				   NhlNtxFontHeightF,lg_p->label_height,
-				   NhlNtxJust,lg_p->label_just,
-				   NULL);
-		return (ret);
+	if (angle < 90.0)
+		test_angle = angle;
+	else if (angle < 180.0)
+		test_angle = 180.0 - angle;
+	else if (angle < 270.0)
+		test_angle = angle - 180.0;
+	else 
+		test_angle = 360.0 - angle;
+		
+
+	if (lg_p->label_direction == NhlDOWN)
+		test_angle = 90.0 - test_angle;
+	if (lg_p->orient == NhlHORIZONTAL)
+		test_angle = 90.0 - test_angle;
+
+	theta = DEGTORAD * test_angle;
+
+	trans_angle = atan2(box_major,box_minor);
+	if (theta < trans_angle) {
+		float frac_major;
+		frac_major = box_minor * tan(theta);
+		avail_len = 
+			sqrt(frac_major * frac_major + box_minor * box_minor);
 	}
+	else {
+		float frac_minor;
+		frac_minor = box_major * tan((DEGTORAD * 90) - theta);
+		avail_len = 
+			sqrt(frac_minor * frac_minor + box_major * box_major);
+	}
+
+	t1 = avail_len / max_len * (1.0 - 0.2 * sin(theta)) ;
+	height *= t1;
+
+/*
+ * Now make further adjustments to eliminate text crossover resulting 
+ * from the angle at which the text is placed.
+ * A diagram is really required in order to clarify the role of each 
+ * of the variables used here.
+ */
+
+	if (90 - test_angle > 7.5) {
+		float x1,y1,y2,ly,len,xover;
+
+		y1 = (height / 2.0) * cos(theta);
+		x1 = (height / 2.0) * sin(theta);
+		y2 = x1 * tan(theta) + y1;
+		ly = box_major - y2;
+		len = ly * cos(theta);
+		xover = height / 2.0 - len;
+		
+		if (xover > 0.0) {
+			float text_len;
+			float x2,x3;
+
+			text_len = t1 * max_len;
+			x2 = - x1 + text_len * cos(theta);
+			x3 = len * sin(theta);
+			if (x2 > x3)
+				height -= xover;
+		}
+		height = MIN(height, 0.6 * box_major);
+	}
+
+/*
+ * Manage the text justification.
+ */
 
 /*
  * Get the sin and cos of the label angle - then create some
  * permutations of the angle in order to set the justification properly
  */
-	theta = DEGTORAD * lg_p->label_angle;
-	ct = fabs(cos(theta));
-	st = fabs(sin(theta));
-	
-	if (ct < 0.01) ct = 0.01;
-	if (st < 0.01) st = 0.01;
-	
-	theta1 = lg_p->label_angle < 360.0 - lg_p->label_angle ?
-		lg_p->label_angle : 360.0 - lg_p->label_angle;
-	theta2 = fabs(90.0 - lg_p->label_angle);
-	theta3 = fabs(180.0 - lg_p->label_angle);
-	theta4 = fabs(270.0 - lg_p->label_angle);
+	theta1 = angle < 360.0 - angle ? angle : 360.0 - angle;
+	theta2 = fabs(90.0 - angle);
+	theta3 = fabs(180.0 - angle);
+	theta4 = fabs(270.0 - angle);
 
 /*
- * Modify the text height: the critical angle is the point where text
- * begins to overlap. Outside the critical area the size of the text
- * is adjusted to make it as large as possible with no increase in the
- * size of the legend's minor axis. Inside the critical area, the size
- * of the text is reduced using (at the moment) a rather clumsy algorithm,
- * until it reaches a minimum size at the point where the text line is 
- * parallel to the legend major axis.
- * Then manage the text justification.
+ * If labels are centered then center justification is always used.
+ * Otherwise the justification depends on the angle.
  */
-	if (lg_p->orient == NhlHORIZONTAL && 
+
+	if (lg_p->label_pos == NhlCENTER) {
+		lg_p->label_just = NhlCENTERCENTER;
+	}
+	else if (lg_p->orient == NhlHORIZONTAL && 
 	    lg_p->label_direction == NhlACROSS) {
-
-		height /= st;
-		height = MIN(height, avail_space);
-		tmp = height / lg_p->adj_box_size.x > 1.0 ? 1.0 :
-			height / lg_p->adj_box_size.x;
- 		c_angle = asin(tmp) / DEGTORAD;
-
-		if (theta1 <= c_angle || theta3 <= c_angle) {
-			c_angle = MIN(c_angle,45.0);
-			t1 = 0.8 * wb / (max_strlen +2);
-			t2 = t1 + (st / fabs(sin(DEGTORAD * c_angle))) *
-				fabs(0.8 *avail_space - t1);
-			height = height < t2 ? height : t2;
-		}
-
-		if (theta1 <= NhlLG_TRANSITIONANGLE) {
+		if (theta1 <= NhlLB_TRANSITIONANGLE) {
 			if (lg_p->label_pos == NhlBOTTOM) {
 				lg_p->label_just = NhlTOPCENTER;
 			}
@@ -4113,7 +4244,7 @@ static NhlErrorTypes   	AdjustLabels
 				lg_p->label_just = NhlBOTTOMCENTER;
 			}
 		}
-		else if (theta3 <= NhlLG_TRANSITIONANGLE) {
+		else if (theta3 <= NhlLB_TRANSITIONANGLE) {
 			if (lg_p->label_pos == NhlBOTTOM) {
 				lg_p->label_just = NhlBOTTOMCENTER;
 			}
@@ -4121,56 +4252,25 @@ static NhlErrorTypes   	AdjustLabels
 				lg_p->label_just = NhlTOPCENTER;
 			}
 		}
-		else if (lg_p->label_angle < 90.0) {
+		else if (angle < 180.0) {
 			if (lg_p->label_pos == NhlBOTTOM) {
-				lg_p->label_just = NhlTOPRIGHT;
+				lg_p->label_just = NhlCENTERRIGHT;
 			}
 			else {
-				lg_p->label_just = NhlBOTTOMLEFT;
-			}
-		}
-		else if (lg_p->label_angle < 180.0) {
-			if (lg_p->label_pos == NhlBOTTOM) {
-				lg_p->label_just = NhlBOTTOMRIGHT;
-			}
-			else {
-				lg_p->label_just = NhlTOPLEFT;
-			}
-		}
-		else if (lg_p->label_angle < 270.0) {
-			if (lg_p->label_pos == NhlBOTTOM) {
-				lg_p->label_just = NhlBOTTOMLEFT;
-			}
-			else {
-				lg_p->label_just = NhlTOPRIGHT;
+				lg_p->label_just = NhlCENTERLEFT;
 			}
 		}
 		else {
 			if (lg_p->label_pos == NhlBOTTOM) {
-				lg_p->label_just = NhlTOPLEFT;
+				lg_p->label_just = NhlCENTERLEFT;
 			}
 			else {
-				lg_p->label_just = NhlBOTTOMRIGHT;
+				lg_p->label_just = NhlCENTERRIGHT;
 			}
 		}
 	}
 	else if (lg_p->orient == NhlHORIZONTAL){ /* NhlDOWN or UP */
-
-		height /= ct;
-		height = MIN(height, avail_space);
-		tmp = height / lg_p->adj_box_size.x > 1.0 ? 1.0 :
-			height / lg_p->adj_box_size.x;
- 		c_angle = asin(tmp) / DEGTORAD;
-
-		if (theta2 <= c_angle || theta4 <= c_angle) {
-			c_angle = MIN(c_angle,45.0);
-			t1 = 0.8 * hb / (max_strlen +2);
-			t2 = t1 + (ct / fabs(cos(DEGTORAD * c_angle))) *
-				fabs(0.8 * avail_space - t1);
-			height = MIN(height, t2);
-		}
-
-		if (theta2 <= NhlLG_TRANSITIONANGLE) {
+		if (theta2 <= NhlLB_TRANSITIONANGLE) {
 			if (lg_p->label_pos == NhlBOTTOM) {
 				lg_p->label_just = NhlCENTERRIGHT;
 			}
@@ -4178,7 +4278,7 @@ static NhlErrorTypes   	AdjustLabels
 				lg_p->label_just = NhlCENTERLEFT;
 			}
 		}
-		else if (theta4 <= NhlLG_TRANSITIONANGLE) {
+		else if (theta4 <= NhlLB_TRANSITIONANGLE) {
 			if (lg_p->label_pos == NhlBOTTOM) {
 				lg_p->label_just = NhlCENTERLEFT;
 			}
@@ -4186,8 +4286,7 @@ static NhlErrorTypes   	AdjustLabels
 				lg_p->label_just = NhlCENTERRIGHT;
 			}
 		}
-		else if (lg_p->label_angle > 270.0 ||
-			 lg_p->label_angle < 90.0) {
+		else if (angle > 270.0 || angle < 90.0) {
 			if (lg_p->label_pos == NhlBOTTOM) {
 				lg_p->label_just = NhlTOPCENTER;
 			}
@@ -4207,22 +4306,7 @@ static NhlErrorTypes   	AdjustLabels
 	}
 	else if (lg_p->orient == NhlVERTICAL && 
 		 lg_p->label_direction == NhlACROSS) {
-
-		height /= ct;
-		height = MIN(height, avail_space);
-		tmp = height / lg_p->adj_box_size.y > 1.0 ? 1.0 :
-			height / lg_p->adj_box_size.y;
- 		c_angle = asin(tmp) / DEGTORAD;
-
-		if (theta2 <= c_angle || theta4 <= c_angle) {
-			c_angle = MIN(c_angle,45.0);
-			t1 = 0.8 * hb / (max_strlen +2);
-			t2 = t1 + (ct / fabs(cos(DEGTORAD * c_angle))) *
-				fabs(0.8 * avail_space - t1);
-			height = MIN(height, t2);
-		}
-
-		if (theta2 <= NhlLG_TRANSITIONANGLE) {
+		if (theta2 <= NhlLB_TRANSITIONANGLE) {
 			if (lg_p->label_pos == NhlLEFT) {
 				lg_p->label_just = NhlBOTTOMCENTER;
 			}
@@ -4230,7 +4314,7 @@ static NhlErrorTypes   	AdjustLabels
 				lg_p->label_just = NhlTOPCENTER;
 			}
 		}
-		else if (theta4 <= NhlLG_TRANSITIONANGLE) {
+		else if (theta4 <= NhlLB_TRANSITIONANGLE) {
 			if (lg_p->label_pos == NhlLEFT) {
 				lg_p->label_just = NhlTOPCENTER;
 			}
@@ -4238,8 +4322,7 @@ static NhlErrorTypes   	AdjustLabels
 				lg_p->label_just = NhlBOTTOMCENTER;
 			}
 		}
-		else if (lg_p->label_angle > 270.0  ||
-			 lg_p->label_angle < 90.0) {
+		else if (angle > 270.0  || angle < 90.0) {
 			if (lg_p->label_pos == NhlLEFT) {
 				lg_p->label_just = NhlCENTERRIGHT;
 			}
@@ -4259,20 +4342,7 @@ static NhlErrorTypes   	AdjustLabels
 	}
 	else { /* NhlVERTICAL NhlDOWN or UP */
 
-		height /= st;
-		height = MIN(height, avail_space);
-		tmp = height / lg_p->adj_box_size.y > 1.0 ? 1.0 :
-			height / lg_p->adj_box_size.y;
- 		c_angle = asin(tmp) / DEGTORAD;
-		if (theta1 <= c_angle || theta3 <= c_angle) {
-			c_angle = MIN(c_angle,45.0);
-			t1 = 0.8 * wb / (max_strlen +2);
-			t2 = t1 + (st / fabs(sin(DEGTORAD * c_angle))) *
-				fabs(0.8 * avail_space - t1);
-			height = height < t2 ? height : t2;
-		}
-
-		if (theta1 <=NhlLG_TRANSITIONANGLE) {
+		if (theta1 <=NhlLB_TRANSITIONANGLE) {
 			if (lg_p->label_pos == NhlLEFT) {
 				lg_p->label_just = NhlCENTERRIGHT;
 			}
@@ -4280,7 +4350,7 @@ static NhlErrorTypes   	AdjustLabels
 				lg_p->label_just = NhlCENTERLEFT;
 			}
 		}
-		else if (theta3 <= NhlLG_TRANSITIONANGLE) {
+		else if (theta3 <= NhlLB_TRANSITIONANGLE) {
 			if (lg_p->label_pos == NhlLEFT) {
 				lg_p->label_just = NhlCENTERLEFT;
 			}
@@ -4288,20 +4358,20 @@ static NhlErrorTypes   	AdjustLabels
 				lg_p->label_just = NhlCENTERRIGHT;
 			}
 		}
-		else if (lg_p->label_angle < 180.0) {
+		else if (angle < 180.0) {
 			if (lg_p->label_pos == NhlLEFT) {
-				lg_p->label_just = NhlBOTTOMRIGHT;
+				lg_p->label_just = NhlBOTTOMCENTER;
 			}
 			else {
-				lg_p->label_just = NhlTOPLEFT;
+				lg_p->label_just = NhlTOPCENTER;
 			}
 		}
 		else {
 			if (lg_p->label_pos == NhlLEFT) {
-				lg_p->label_just = NhlTOPLEFT;
+				lg_p->label_just = NhlTOPCENTER;
 			}
 			else {
-				lg_p->label_just = NhlBOTTOMRIGHT;
+				lg_p->label_just = NhlBOTTOMCENTER;
 			}
 		}
 	}
@@ -4310,13 +4380,15 @@ static NhlErrorTypes   	AdjustLabels
  * Set the newly determined text height and justification
  */
 	lg_p->label_height = height;
-	ret = NhlVASetValues(lg_p->labels_id,
-			   NhlNtxFontHeightF,lg_p->label_height,
-			   NhlNtxJust,lg_p->label_just,
-			   NULL);
+	if (lg_p->label_height != olg_p->label_height ||
+	    lg_p->label_just != olg_p->label_just) {
+		ret = NhlVASetValues(lg_p->labels_id,
+				     NhlNtxFontHeightF,lg_p->label_height,
+				     NhlNtxJust,lg_p->label_just,
+				     NULL);
+	}
 	return (ret);
 }
-
 
 /*
  * Function: AdjustGeometry
@@ -4345,15 +4417,17 @@ static NhlErrorTypes   	AdjustLabels
 /*ARGSUSED*/
 static NhlErrorTypes    AdjustGeometry
 #if	NhlNeedProto
-	(NhlLayer		new, 
-	NhlLayer		old,
+(
+	NhlLayer	new, 
+	NhlLayer	old,
 	int		init,
 	_NhlArgList	args,
-	int		num_args)
+	int		num_args
+)
 #else
 (new,old,init,args,num_args)
-	NhlLayer		new;
-	NhlLayer		old;
+	NhlLayer	new;
+	NhlLayer	old;
 	int		init;
 	_NhlArgList	args;
 	int		num_args;
@@ -4363,9 +4437,8 @@ static NhlErrorTypes    AdjustGeometry
 	NhlLegendLayerPart *lg_p = &(tnew->legend);
 	NhlErrorTypes ret = NhlNOERROR, ret1 = NhlNOERROR;
 	NhlBoundingBox titleBB;
-	NhlBoundingBox labelsBB;
 	NhlBoundingBox legendBB;
-	NhlBoundingBox tmpBB;
+	NhlBoundingBox tmpBB,bar_and_labelsBB;
 	float title_x = lg_p->title_x;
 	float title_y = lg_p->title_y;
 	float pos_offset = 0.0;
@@ -4378,6 +4451,29 @@ static NhlErrorTypes    AdjustGeometry
 	int i;
 
 	small_axis = MIN(lg_p->lg_width, lg_p->lg_height);
+
+	bar_and_labelsBB.b = lg_p->adj_perim.b;
+	bar_and_labelsBB.t = lg_p->adj_perim.t;
+	bar_and_labelsBB.l = lg_p->adj_perim.l;
+	bar_and_labelsBB.r = lg_p->adj_perim.r;
+	if (lg_p->title_on) {
+		switch (lg_p->title_pos) {
+		case NhlTOP:
+			bar_and_labelsBB.t = lg_p->title.b;
+			break;
+		case NhlBOTTOM:
+			bar_and_labelsBB.b = lg_p->title.t;
+			break;
+		case NhlLEFT:
+			bar_and_labelsBB.l = lg_p->title.r;
+			break;
+		case NhlRIGHT:
+			bar_and_labelsBB.r = lg_p->title.l;
+			break;
+		default:
+			break;
+		}
+	}
 /*
  * Get the bounding box of the labels, then adjust the box if it
  * overlaps the bar boundary. Next combine the two bounding boxes,
@@ -4390,27 +4486,31 @@ static NhlErrorTypes    AdjustGeometry
 		legendBB.t = lg_p->adj_bar.t;
 	}
 	else {
-		if ((ret1 = NhlGetBB(lg_p->labels_id, &labelsBB)) < NhlWARNING)
-			return ret1;
-		ret = MIN(ret1,ret);
+		NhlBoundingBox labelsBB;
+		float width, height;
+
+		ret1 = NhlVAGetValues(lg_p->labels_id,
+				     NhlNvpXF,&labelsBB.l,
+				     NhlNvpYF,&labelsBB.t,
+				     NhlNvpWidthF,&width,
+				     NhlNvpHeightF,&height,
+				     NhlNMtextConstPosF,&lg_p->const_pos,
+				     NULL);
+		if ((ret = MIN(ret1,ret)) < NhlWARNING) return ret;
+		labelsBB.r = labelsBB.l + width;
+		labelsBB.b = labelsBB.t - height;
 		
 		if (lg_p->orient == NhlHORIZONTAL) {
 			
 			obj_offset = lg_p->label_off * 
 				(lg_p->adj_perim.t - lg_p->adj_perim.b);
 			if (lg_p->label_pos == NhlTOP) {
-				if (labelsBB.b < 
-				    lg_p->adj_bar.t + obj_offset) {
-					pos_offset = lg_p->adj_bar.t + 
-						obj_offset - labelsBB.b;
-				}
+				pos_offset = lg_p->adj_bar.t + 
+					obj_offset - labelsBB.b;
 			}
 			else if (lg_p->label_pos == NhlBOTTOM) {
-				if (labelsBB.t > 
-				    lg_p->adj_bar.b - obj_offset) {
-					pos_offset = lg_p->adj_bar.b - 
-						obj_offset - labelsBB.t;
-				}
+				pos_offset = lg_p->adj_bar.b - 
+					obj_offset - labelsBB.t;
 			}
 			labelsBB.b += pos_offset;
 			labelsBB.t += pos_offset;
@@ -4420,18 +4520,12 @@ static NhlErrorTypes    AdjustGeometry
 			obj_offset = lg_p->label_off * 
 				(lg_p->adj_perim.r - lg_p->adj_perim.l);
 			if (lg_p->label_pos == NhlRIGHT) {
-				if (labelsBB.l < 
-				    lg_p->adj_bar.r + obj_offset) {
-					pos_offset = lg_p->adj_bar.r + 
-						obj_offset - labelsBB.l;
-				}
+				pos_offset = lg_p->adj_bar.r + 
+					obj_offset - labelsBB.l;
 			}
 			else if (lg_p->label_pos == NhlLEFT) {
-				if (labelsBB.r > 
-				    lg_p->adj_bar.l - obj_offset) {
-					pos_offset = lg_p->adj_bar.l - 
-						obj_offset - labelsBB.r;
-				}
+				pos_offset = lg_p->adj_bar.l - 
+					obj_offset - labelsBB.r;
 				
 			}
 			labelsBB.l += pos_offset;
@@ -4446,6 +4540,10 @@ static NhlErrorTypes    AdjustGeometry
 		legendBB.r = MAX(tmpBB.r, lg_p->labels.r);
 		legendBB.b = MIN(tmpBB.b, lg_p->labels.b);
 		legendBB.t = MAX(tmpBB.t, lg_p->labels.t);
+		legendBB.l = MIN(legendBB.l, bar_and_labelsBB.l);
+		legendBB.r = MAX(legendBB.r, bar_and_labelsBB.r);
+		legendBB.b = MIN(legendBB.b, bar_and_labelsBB.b);
+		legendBB.t = MAX(legendBB.t, bar_and_labelsBB.t);
 
 		if (lg_p->orient == NhlHORIZONTAL) {
 
@@ -4727,7 +4825,9 @@ static NhlErrorTypes    AdjustGeometry
  *		NhlNlgMarkerThicknesses
  *		NhlNlgItemFontHeights
  *		NhlNlgLabelStrings
+ *		NhlNlgLabelFontColors
  *		NhlNlgItemPositions
+ *		NhlNlgTitleString
  *	The caller is responsible for freeing this memory.
  */
 
@@ -4820,6 +4920,17 @@ static NhlErrorTypes	LegendGetValues
 			ga = lg_p->item_positions;
 			count = lg_p->item_count;
 			type = NhlNlgItemPositions;
+		}
+		else if (args[i].quark == Qtitle_string) {
+			if (lg_p->title_string != NULL) {
+				(*(NhlString*)args[i].value.ptrval) = 
+					(NhlString)
+				     NhlMalloc(strlen(lg_p->title_string) +1);
+				strcpy((*(NhlString*)args[i].value.ptrval),
+				       lg_p->title_string);
+			} else {
+				(*(NhlString*)args[i].value.ptrval) = NULL;
+			}
 		}
 		if (ga != NULL) {
 			if ((ga = GenArraySubsetCopy(ga, count)) == NULL) {
@@ -4947,7 +5058,6 @@ static NhlErrorTypes    LegendDraw
 	float *marker_sizes;
 	NhlString *line_labels;
 	float back_dist, for_dist;
-	char buffer[20];
 	char *string;
 
 	if (! lg_p->legend_on)
@@ -5375,11 +5485,13 @@ static NhlErrorTypes    LegendClassInitialize
 	Qline_dash_seglens = NrmStringToQuark(NhlNlgMonoLineDashSegLen);
 	Qline_thicknesses = NrmStringToQuark(NhlNlgLineThicknesses);
 	Qmarker_thicknesses = NrmStringToQuark(NhlNlgMarkerThicknesses);
-	Qline_label_font_heights = NrmStringToQuark(NhlNlgLineLabelFontHeights);
+	Qline_label_font_heights = 
+		NrmStringToQuark(NhlNlgLineLabelFontHeights);
 	Qmarker_sizes = NrmStringToQuark(NhlNlgMarkerSizes);
 	Qlabel_strings = NrmStringToQuark(NhlNlgLabelStrings);
 	Qllabel_colors = NrmStringToQuark(NhlNlgLineLabelFontColors);
 	Qitem_positions = NrmStringToQuark(NhlNlgItemPositions);
+	Qtitle_string = NrmStringToQuark(NhlNlgTitleString);
 
 	_NhlInitializeClass(NhltextItemClass);
 	_NhlInitializeClass(NhlmultiTextClass);

@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.29 1995-04-22 01:02:06 boote Exp $
+ *      $Id: TextItem.c,v 1.30 1995-04-27 16:58:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -433,11 +433,18 @@ static NhlErrorTypes    TextItemInitialize
 	if(!tnew->text.font_thickness_set) tnew->text.font_thickness = 1.0;
 	if(!tnew->text.constant_spacing_set) tnew->text.constant_spacing = 0.0;
 
+	if (tnew->text.constant_spacing < 0.0) {
+		tnew->text.constant_spacing = 0.0;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s: Constant spacing cannot be less than zero",func);
+		ret = MIN(NhlWARNING,ret);
+	}
+
 	if( tnew->text.perim_space < 0.0 ) {
 		tnew->text.perim_space = 0.5;
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"%s: Perimeter space cannot be less than zero",func);
-		ret = NhlWARNING;
+		ret = MIN(NhlWARNING,ret);
 	}
 
 	tnew->text.x_corners = (float*)NhlMalloc((unsigned)4*sizeof(float));
@@ -577,11 +584,18 @@ static NhlErrorTypes TextItemSetValues
 	char *tmp;
 	int	rstringchange = 0;
 
+	if (tnew->text.constant_spacing < 0.0) {
+		tnew->text.constant_spacing = 0.0;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+	    "TextItemSetValues: Constant spacing cannot be less than zero");
+		ret = MIN(NhlWARNING,ret);
+	}
+
 	if( tnew->text.perim_space < 0.0 ) {
 		tnew->text.perim_space = 0.5;
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 	     "TextItemSetValues: Perimeter space cannot be less than zero");
-		ret = NhlWARNING;
+		ret = MIN(NhlWARNING,ret);
 	}
 
 	if((tnew->view.x != told->view.x)

@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiTextP.h,v 1.3 1995-04-07 10:43:07 boote Exp $
+ *      $Id: MultiTextP.h,v 1.4 1995-04-27 16:58:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@ typedef struct _NhlMultiTextLayerPart{
 	NhlMTextOrientatonType	orientation;
 	float			const_pos;
 	float			*pos_array;
+	float			max_len;	/* read-only */
 
 	/* textItem resources that need to be managed */
 

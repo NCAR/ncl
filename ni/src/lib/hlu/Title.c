@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.21 1995-04-18 00:45:17 dbrown Exp $
+ *      $Id: Title.c,v 1.22 1995-04-27 16:58:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -486,6 +486,7 @@ static NhlErrorTypes    TitleInitialize
 	char buffer[_NhlMAXRESNAMLEN];
 	NhlErrorTypes ret = NhlNOERROR, ret1 = NhlNOERROR;
 	float tmpxy,tmpwh,main_location,tmpxy1,tmpwh1;
+	char *e_text;
 
 	tnew->title.new_draw_req = True;
 	tnew->title.trans_dat = NULL;
@@ -534,6 +535,30 @@ static NhlErrorTypes    TitleInitialize
 		tnew->title.y_axis_func_code = 
 			tnew->title.x_axis_func_code =
 			tnew->title.main_func_code;
+	}
+/*
+ * check constant spacing values
+ */
+
+	e_text = 
+		"%s: Constant spacing cannot be less than zero, defaulting %s";
+	if (tnew->title.main_constant_spacing < 0.0) {
+		tnew->title.main_constant_spacing = 0.0;
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+			  "TitleInitialize",NhlNtiMainConstantSpacingF);
+	}
+	if (tnew->title.x_axis_constant_spacing < 0.0) {
+		tnew->title.x_axis_constant_spacing = 0.0;
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+			  "TitleInitialize",NhlNtiXAxisConstantSpacingF);
+	}
+	if (tnew->title.y_axis_constant_spacing < 0.0) {
+		tnew->title.y_axis_constant_spacing = 0.0;
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+			  "TitleInitialize",NhlNtiYAxisConstantSpacingF);
 	}
 /*
 * Compute locations of text items based on x,y,width and height for current
@@ -946,6 +971,7 @@ static NhlErrorTypes    TitleSetValues
 	float tmpxy,tmpwh,tmpxy1,tmpwh1,main_location;
 	float deltah;
 	float deltaw;
+	char *e_text;
 	int		view_args = 0;
 
 	if (tnew->view.use_segments != told->view.use_segments) {
@@ -1072,6 +1098,27 @@ static NhlErrorTypes    TitleSetValues
                         tnew->title.x_axis_func_code =
                         tnew->title.main_func_code;
         }
+
+	e_text = 
+		"%s: Constant spacing cannot be less than zero, defaulting %s";
+	if (tnew->title.main_constant_spacing < 0.0) {
+		tnew->title.main_constant_spacing = 0.0;
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+			  "TitleSetValues",NhlNtiMainConstantSpacingF);
+	}
+	if (tnew->title.x_axis_constant_spacing < 0.0) {
+		tnew->title.x_axis_constant_spacing = 0.0;
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+			  "TitleSetValues",NhlNtiXAxisConstantSpacingF);
+	}
+	if (tnew->title.y_axis_constant_spacing < 0.0) {
+		tnew->title.y_axis_constant_spacing = 0.0;
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+			  "TitleSetValues",NhlNtiYAxisConstantSpacingF);
+	}
 /*
 * Just repeating same spacing computations that were performed in the
 * initialize function because its too much of a pain to selectively

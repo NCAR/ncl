@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.8 1995-04-22 01:01:30 boote Exp $
+ *      $Id: ContourPlot.c,v 1.9 1995-04-27 16:58:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -110,7 +110,8 @@ static NhlResource resources[] = {
 	{ NhlNcnLevelSelectionMode,NhlCcnLevelSelectionMode,
 		  NhlTcnLevelSelectionMode,sizeof(NhlcnLevelSelectionMode),
 		  Oset(level_selection_mode),
-		  NhlTImmediate,_NhlUSET((NhlPointer) NhlAUTOMATICLEVELS),0,NULL},
+		  NhlTImmediate,
+		  _NhlUSET((NhlPointer) NhlAUTOMATICLEVELS),0,NULL},
 	{ NhlNcnLevelCount,NhlCcnLevelCount,NhlTInteger,sizeof(int),
 		  Oset(level_count),NhlTImmediate,
 		  _NhlUSET((NhlPointer) 16),_NhlRES_GONLY,NULL},
@@ -311,7 +312,7 @@ static NhlResource resources[] = {
 		 NhlTcnLineLabelPlacementMode,
 		 sizeof(NhlcnLineLabelPlacementMode),
 		 Oset(llabel_placement),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlRANDOMIZED),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCOMPUTED),0,NULL},
 	{NhlNcnLineLabelStrings, NhlCcnLineLabelStrings, NhlTStringGenArray,
 		 sizeof(NhlPointer),Oset(llabel_strings),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
@@ -792,6 +793,7 @@ static NhlResource resources[] = {
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_legend),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlNEVER),0,NULL},
+#if 0
 	{NhlNlgLabelStrings, NhlClgLabelStrings, NhlTStringGenArray,
 		 sizeof(NhlPointer),Oset(legend_labels),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
@@ -799,9 +801,10 @@ static NhlResource resources[] = {
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(draw_lgnd_line_lbls_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+#endif
 	{NhlNlgLineLabelsOn,NhlClgLineLabelsOn,NhlTBoolean,
 		 sizeof(NhlBoolean), Oset(draw_lgnd_line_lbls),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNpmTickMarkDisplayMode,NhlCpmTickMarkDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_tickmarks),
@@ -1521,6 +1524,8 @@ static NrmQuark	Qconst_f_label_string = NrmNULLQUARK;
 static NrmQuark	Qconst_f_label_format = NrmNULLQUARK; 
 static NrmQuark	Qlb_label_strings = NrmNULLQUARK; 
 
+static NhlString cnEmptyString = "";
+
 #define NhlDASHBUFSIZE	128
 #define cnNODATA_STRING "NO CONTOUR DATA"
 
@@ -2190,8 +2195,6 @@ static NhlErrorTypes ContourPlotSetValues
 		cnp->y_min_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNtrYMaxF))
 		cnp->y_max_set = True;
-	if (_NhlArgIsSet(args,num_args,NhlNlgLineLabelsOn))
-		cnp->draw_lgnd_line_lbls_set = True;
 
 /* Manage the data */
 
@@ -2995,8 +2998,8 @@ static NhlErrorTypes cnInitAreamap
 		return(ret);
 	}
 
-	c_arseti("lc",cnp->amap_crange * 
-		 MIN(cnl->view.width,cnl->view.height));
+	c_arseti("lc",(int) (cnp->amap_crange * 
+		 MIN(cnl->view.width,cnl->view.height)));
 	subret = _NhlArinam(cnp->aws,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
@@ -3332,27 +3335,27 @@ static NhlErrorTypes cnDraw
 	if (cnp->sfp->missing_value_set)
 		c_cpsetr("SPV",cnp->sfp->missing_value);
 	else
-		c_cpsetr("SPV",0.0);
+		c_cpsetr("SPV",(float)0.0);
 
-	c_cpsetr("XC1",cnp->xc1);
-	c_cpsetr("XCM",cnp->xcm);
-	c_cpsetr("YC1",cnp->yc1);
-	c_cpsetr("YCN",cnp->ycn);
+	c_cpsetr("XC1",(float)cnp->xc1);
+	c_cpsetr("XCM",(float)cnp->xcm);
+	c_cpsetr("YC1",(float)cnp->yc1);
+	c_cpsetr("YCN",(float)cnp->ycn);
 	c_cpseti("WSO", 3);		/* error recovery on */
-	c_cpseti("NVS",0);		/* no vertical strips */	
+	c_cpseti("NVS",0);		/* no vertical strips */
         c_cpseti("SET",0);
         c_cpseti("MAP",NhlcnMAPVAL);
         if (cnp->check_point_distance)
                 c_cpsetr("PIT",cnp->max_point_distance);
         else
-                c_cpsetr("PIT",0.0);
+                c_cpsetr("PIT",(float)0.0);
 
         if (cnp->smoothing_on) {
                 c_cpsetr("T2D",cnp->smoothing_tension);
                 c_cpsetr("SSL",cnp->smoothing_distance);
         }
         else {
-                c_cpsetr("T2D",0.0);
+                c_cpsetr("T2D",(float)0.0);
         }
 	gset_fill_colr_ind((Gint)_NhlGetGksCi(cnl->base.wkptr,0));
 
@@ -3483,7 +3486,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 	gset_linewidth(4.0);
 	gset_line_colr_ind(30);
 #endif
-
+	c_arseti("RC",1);
 	if (! ezmap) {
 		float twlx,twrx,twby,twuy;
 		float gwlx,gwrx,gwby,gwuy;
@@ -3851,13 +3854,13 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	aid_offset = 100;
 	for (i=0; i<cnp->level_count; i++) {
 		int pai,aia,aib;
-		NhlcnLevelSelectionMode flag;
+		NhlcnLevelUseMode flag;
 
 		pai = i+1;
 		aib = aid_offset+i;
 		aia = aid_offset+i+1;
 		c_cpseti("PAI",pai);
-		c_cpsetr("CLV",clvp[i]);
+		c_cpsetr("CLV",(float)clvp[i]);
 		flag = cnp->mono_level_flag ? cnp->level_flag : clup[i];
 		if (*do_lines) {
 			c_cpseti("CLU",flag);
@@ -3883,7 +3886,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 		c_cpsetc("LLT",((NhlString*)cnp->line_lbls.text)[i]);
 	}
 	if (cnp->level_selection_mode != NhlEXPLICITLEVELS)
-		c_cpsetr("CIU",cnp->level_spacing);
+		c_cpsetr("CIU",(float)cnp->level_spacing);
  
 /* Set up for labels */
 
@@ -3897,17 +3900,18 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	else if (cnp->llabel_placement == NhlCONSTANT) {
 		*do_labels = True;
 		c_cpseti("LLP",1);
-		c_cpsetr("DPS",cnp->line_lbls.real_height / cl->view.width);
-		c_cpsetr("DPV",.015);
+		c_cpsetr("DPS",
+			 (float)(cnp->line_lbls.real_height / cl->view.width));
+		c_cpsetr("DPV",(float).015);
 #if 0
-		c_cpsetr("RC3",0.0);
+		c_cpsetr("RC3",(float)0.0);
 		c_cpseti("LLP",2);
 #endif
 		if (cnp->line_lbls.angle < 0.0) 
 			c_cpseti("LLO",1); /* angle to contour direction */
 		else {
 			c_cpseti("LLO",0); /* fixed angle  */
-			c_cpsetr("LLA",cnp->line_lbls.angle);
+			c_cpsetr("LLA",(float)cnp->line_lbls.angle);
 		}
 
 	}
@@ -3918,7 +3922,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 			c_cpseti("LLO",1); /* angle to contour direction */
 		else {
 			c_cpseti("LLO",0); /* fixed angle  */
-			c_cpsetr("LLA",cnp->line_lbls.angle);
+			c_cpsetr("LLA",(float)cnp->line_lbls.angle);
 		}
 	}
 	else {
@@ -3928,14 +3932,15 @@ static NhlErrorTypes UpdateLineAndLabelParams
 			c_cpseti("LLO",1); /* angle to contour direction */
 		else {
 			c_cpseti("LLO",0); /* fixed angle  */
-			c_cpsetr("LLA",cnp->line_lbls.angle);
+			c_cpsetr("LLA",(float)cnp->line_lbls.angle);
 		}
 	}
 
 	if (*do_labels) {
 		height = cnp->line_lbls.real_height / cl->view.width;
-		c_cpsetr("LLS",height);
-		c_cpsetr("LLW",height * cnp->line_lbls.perim_space);
+		c_cpsetr("LLS",(float)height);
+		c_cpsetr("LLW", 
+			 (float) (height * cnp->line_lbls.perim_space));
 		if (cnp->line_lbls.back_color == NhlTRANSPARENT) {
 			if (! cnp->line_lbls.perim_on) 
 				c_cpseti("LLB",0); 
@@ -3976,9 +3981,9 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	if (cnp->high_lbls.on || cnp->low_lbls.on) {
 		*do_labels = True;
 		height = cnp->high_lbls.real_height / cl->view.width;
-		c_cpsetr("HLS",height);
-		c_cpsetr("HLW",cnp->high_lbls.perim_space  * height);
-		c_cpsetr("HLA",cnp->high_lbls.angle);
+		c_cpsetr("HLS",(float)height);
+		c_cpsetr("HLW",(float)(cnp->high_lbls.perim_space  * height));
+		c_cpsetr("HLA",(float)cnp->high_lbls.angle);
 		c_cpseti("HLO", (int) cnp->high_low_overlap);
 
 		if (cnp->high_lbls.back_color == NhlTRANSPARENT) {
@@ -4403,7 +4408,9 @@ static NhlErrorTypes SetUpIrrTransObj
 
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
-	if (! ocnp->use_irr_trans && tfp->trans_obj != NULL) {
+	if (! init &&
+	    ! ocnp->use_irr_trans && 
+	    tfp->trans_obj != NULL) {
 		subret = NhlDestroy(tfp->trans_obj->base.id);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error destroying irregular trans object";
@@ -4606,11 +4613,48 @@ static NhlErrorTypes SetLabelFormats
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlString e_text;
 	NhlContourPlotLayerPart	*cnp = &(cnnew->contourplot);
 	NhlContourPlotLayerPart	*ocnp = &(cnold->contourplot);
 	NhlString entry_name;
 
 	entry_name =  init ? "ContourPlotInitialize" : "ContourPlotSetValues";
+/*
+ * check the constant spacing value - by the name of the routine this
+ * does not belong here -- but for now, it will do
+ */
+	e_text = 
+		"%s: Constant spacing cannot be less than zero, defaulting %s";
+	if (cnp->line_lbls.cspacing < 0.0) {
+		cnp->line_lbls.cspacing = 0.0;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  e_text,entry_name,NhlNcnLineLabelConstantSpacingF);
+		ret = MIN(NhlWARNING,ret);
+	}
+	if (cnp->high_lbls.cspacing < 0.0) {
+		cnp->high_lbls.cspacing = 0.0;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+			  entry_name,NhlNcnHighLabelConstantSpacingF);
+		ret = MIN(NhlWARNING,ret);
+	}
+	if (cnp->low_lbls.cspacing < 0.0) {
+		cnp->low_lbls.cspacing = 0.0;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  e_text,entry_name,NhlNcnLowLabelConstantSpacingF);
+		ret = MIN(NhlWARNING,ret);
+	}
+	if (cnp->info_lbl.cspacing < 0.0) {
+		cnp->info_lbl.cspacing = 0.0;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  e_text,entry_name,NhlNcnInfoLabelConstantSpacingF);
+		ret = MIN(NhlWARNING,ret);
+	}
+	if (cnp->constf_lbl.cspacing < 0.0) {
+		cnp->constf_lbl.cspacing = 0.0;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  e_text,entry_name,NhlNcnConstFLabelConstantSpacingF);
+		ret = MIN(NhlWARNING,ret);
+	}
 
 	if (init) {
 		subret = SetFormatRec(&cnp->max_data_format,
@@ -5220,7 +5264,7 @@ static NhlErrorTypes ManageLegend
 	NhlContourPlotLayerPart	*cnp = &(cnnew->contourplot);
 	NhlContourPlotLayerPart	*ocnp = &(cnold->contourplot);
 	NhlTransformLayerPart	*tfp = &(cnnew->trans);
-	NhlBoolean		do_it, changed;
+	NhlBoolean		do_it;
 
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
@@ -5231,7 +5275,10 @@ static NhlErrorTypes ManageLegend
 	if (init || 
 	    cnp->display_legend != ocnp->display_legend ||
 	    cnp->display_constf != ocnp->display_constf) {
+		if (0) {
+#if 0
 		if (cnp->display_constf) {
+#endif
 		 e_text = "%s: constant field or no data: turning Legend off";
 			NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlINFO);
@@ -5253,10 +5300,9 @@ static NhlErrorTypes ManageLegend
 			   NhlNlgDashIndex,cnp->line_dash_pattern);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgDashIndexes,cnp->line_dash_patterns);
-		do_it = True;
 		if (! cnp->line_lbls.on)
 			do_it = False;
-		else if (cnp->draw_lgnd_line_lbls_set) 
+		else
 			do_it = cnp->draw_lgnd_line_lbls;
 		NhlSetSArg(&sargs[(*nargs)++],NhlNlgLineLabelsOn,do_it);
 		NhlSetSArg(&sargs[(*nargs)++],
@@ -5316,24 +5362,6 @@ static NhlErrorTypes ManageLegend
 		if (cnp->line_dash_patterns != ocnp->line_dash_patterns)
 			NhlSetSArg(&sargs[(*nargs)++],
 				   NhlNlgDashIndexes,cnp->line_dash_patterns);
-		do_it = True;
-		changed = False;
-		if (cnp->draw_lgnd_line_lbls_set &&
-		    (cnp->draw_lgnd_line_lbls != ocnp->draw_lgnd_line_lbls)) {
-			if (! cnp->line_lbls.on)
-				do_it = False;
-			else
-				do_it = cnp->draw_lgnd_line_lbls;
-			changed = True;
-		}
-		else if (cnp->llabel_placement != ocnp->llabel_placement) {
-			if (! cnp->line_lbls.on)
-				do_it = False;
-			changed = True;
-		}
-		if (changed)
-			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgLineLabelsOn,do_it);
 		if (cnp->llabel_strings != ocnp->llabel_strings)
 			NhlSetSArg(&sargs[(*nargs)++],
 				   NhlNlgLabelStrings,cnp->llabel_strings);
@@ -5370,11 +5398,16 @@ static NhlErrorTypes ManageLegend
 			NhlSetSArg(&sargs[(*nargs)++],
 				   NhlNlgLineLabelFontColors,
 				   cnp->llabel_colors);
-		if (cnp->llabel_strings != ocnp->llabel_strings ||
-		    cnp->level_flags != ocnp->level_flags ||
-		    cnp->mono_level_flag != ocnp->mono_level_flag ||
-		    cnp->level_count != ocnp->level_count ||
-		    cnp->llabel_interval_set) 
+		if (cnp->draw_lgnd_line_lbls != ocnp->draw_lgnd_line_lbls ||
+		    cnp->line_lbls.on != ocnp->line_lbls.on) {
+			if (! cnp->line_lbls.on)
+				do_it = False;
+			else
+				do_it = cnp->draw_lgnd_line_lbls;
+			NhlSetSArg(&sargs[(*nargs)++],
+				   NhlNlgLineLabelsOn,do_it);
+		}
+		if (cnp->llabel_strings != ocnp->llabel_strings)
 			NhlSetSArg(&sargs[(*nargs)++],
 				   NhlNlgLineLabelStrings,cnp->ll_strings);
 		if (cnp->line_lbls.height != ocnp->line_lbls.height)
@@ -5465,7 +5498,11 @@ static NhlErrorTypes ManageLabelBar
 	if (init || 
 	    cnp->display_labelbar != ocnp->display_labelbar ||
 	    cnp->display_constf != ocnp->display_constf) {
+		if (0) {
+#if 0
 		if (cnp->display_constf) {
+#endif
+			
 	       e_text = "%s: constant field or no data: turning Labelbar off";
 			NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlINFO);
@@ -5646,7 +5683,7 @@ static NhlErrorTypes ManageInfoLabel
 	NhlcnLabelAttrs		*oilp = &ocnp->info_lbl;
 	NhlString		lstring;
 	NhlBoolean		text_changed,pos_changed = False;
-	NhlSArg			targs[16];
+	NhlSArg			targs[24];
 	int			targc = 0;
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
@@ -5729,7 +5766,9 @@ static NhlErrorTypes ManageInfoLabel
 	}
 
 	if (tfp->overlay_status == _tfNotInOverlay) {
-		subret = SetTextPosition(cnnew,ocnp,
+		NhlContourPlotLayerPart *op;
+		op = init ? NULL : ocnp;
+		subret = SetTextPosition(cnnew,op,
 					 _cnINFO,&pos_changed,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 	}
@@ -5738,47 +5777,55 @@ static NhlErrorTypes ManageInfoLabel
 		NhlSetSArg(&targs[(targc)++],NhlNtxPosYF,ilp->y_pos);
 		NhlSetSArg(&targs[(targc)++],NhlNtxJust,ilp->just);
 	}
-	if (text_changed)
-		NhlSetSArg(&targs[(targc)++],
-			   NhlNtxString,(NhlString)ilp->text);
-	if (ilp->height != oilp->height)
-		NhlSetSArg(&targs[(targc)++],NhlNtxFontHeightF,ilp->height);
-	if (ilp->direction != oilp->direction)
-		NhlSetSArg(&targs[(targc)++],NhlNtxDirection,ilp->direction);
-	if (ilp->angle != oilp->angle)
-		NhlSetSArg(&targs[(targc)++],NhlNtxAngleF,ilp->angle);
-	if (ilp->font != oilp->font)
-		NhlSetSArg(&targs[(targc)++],NhlNtxFont,ilp->font);
-	if (ilp->color != oilp->color)
-		NhlSetSArg(&targs[(targc)++],NhlNtxFontColor,ilp->color);
-	if (ilp->aspect != oilp->aspect)
-		NhlSetSArg(&targs[(targc)++],NhlNtxFontAspectF,ilp->aspect);
-	if (ilp->thickness != oilp->thickness)
-		NhlSetSArg(&targs[(targc)++],
-			   NhlNtxFontThicknessF,ilp->thickness);
-	if (ilp->cspacing != oilp->cspacing)
-		NhlSetSArg(&targs[(targc)++],
-			   NhlNtxConstantSpacingF,ilp->cspacing);
-	if (ilp->quality != oilp->quality)
-		NhlSetSArg(&targs[(targc)++],NhlNtxFontQuality,ilp->quality);
-	if (ilp->fcode[0] != oilp->fcode[0])
-		NhlSetSArg(&targs[(targc)++],NhlNtxFuncCode,ilp->fcode[0]);
-	
-	if (ilp->perim_on != oilp->perim_on)
-		NhlSetSArg(&targs[(targc)++],NhlNtxPerimOn,ilp->perim_on);
-	if (ilp->perim_lcolor != oilp->perim_lcolor)
-		NhlSetSArg(&targs[(targc)++],
-			   NhlNtxPerimColor,ilp->perim_lcolor);
-	if (ilp->perim_lthick != oilp->perim_lthick)
-		NhlSetSArg(&targs[(targc)++],
-			   NhlNtxPerimThicknessF,ilp->perim_lthick);
-	if (ilp->perim_space != oilp->perim_space)
-		NhlSetSArg(&targs[(targc)++],
-			   NhlNtxPerimSpaceF,ilp->perim_space);
-	if (ilp->back_color != oilp->back_color)
-		NhlSetSArg(&targs[(targc)++],
-			   NhlNtxBackgroundFillColor,ilp->back_color);
-	
+	if (! init) {
+		if (init || text_changed)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxString,(NhlString)ilp->text);
+		if (init || ilp->height != oilp->height)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxFontHeightF,ilp->height);
+		if (init || ilp->direction != oilp->direction)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxDirection,ilp->direction);
+		if (init || ilp->angle != oilp->angle)
+			NhlSetSArg(&targs[(targc)++],NhlNtxAngleF,ilp->angle);
+		if (init || ilp->font != oilp->font)
+			NhlSetSArg(&targs[(targc)++],NhlNtxFont,ilp->font);
+		if (init || ilp->color != oilp->color)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxFontColor,ilp->color);
+		if (init || ilp->aspect != oilp->aspect)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxFontAspectF,ilp->aspect);
+		if (init || ilp->thickness != oilp->thickness)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxFontThicknessF,ilp->thickness);
+		if (init || ilp->cspacing != oilp->cspacing)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxConstantSpacingF,ilp->cspacing);
+		if (init || ilp->quality != oilp->quality)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxFontQuality,ilp->quality);
+		if (init || ilp->fcode[0] != oilp->fcode[0])
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxFuncCode,ilp->fcode[0]);
+		
+		if (init || ilp->perim_on != oilp->perim_on)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxPerimOn,ilp->perim_on);
+		if (init || ilp->perim_lcolor != oilp->perim_lcolor)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxPerimColor,ilp->perim_lcolor);
+		if (init || ilp->perim_lthick != oilp->perim_lthick)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxPerimThicknessF,ilp->perim_lthick);
+		if (init || ilp->perim_space != oilp->perim_space)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxPerimSpaceF,ilp->perim_space);
+		if (init || ilp->back_color != oilp->back_color)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxBackgroundFillColor,ilp->back_color);
+	}
 	subret = NhlALSetValues(cnp->info_lbl_rec.id,targs,targc);
 
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -5842,7 +5889,7 @@ static NhlErrorTypes ManageConstFLabel
 	NhlcnLabelAttrs		*ocflp = &ocnp->constf_lbl;
 	NhlString		lstring;
 	NhlBoolean		text_changed,pos_changed = False;
-	NhlSArg			targs[16];
+	NhlSArg			targs[24];
 	int			targc = 0;
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
@@ -5855,23 +5902,27 @@ static NhlErrorTypes ManageConstFLabel
  * to be displayed.
  */
 
-	if (init || cnp->constf_string != ocnp->constf_string) {
-		int strsize = cnp->constf_string == NULL ? 
-			strlen(NhlcnDEF_CONSTF_LABEL) + 1 : 
-				strlen(cnp->constf_string) + 1;
+	if (init || 
+	    cnp->constf_string != ocnp->constf_string ||
+	    cnp->data_init != ocnp->data_init) {
+		char *tstring;
 
-		if ((lstring = NhlMalloc(strsize)) == NULL) {
+		if (! cnp->data_init)
+			tstring = cnNODATA_STRING;
+		else if (cnp->constf_string == NULL)
+			tstring = NhlcnDEF_CONSTF_LABEL;
+		else 
+			tstring = cnp->constf_string;
+
+		if ((lstring = NhlMalloc(strlen(tstring) + 1)) == NULL) {
 			e_text = "%s: dynamic memory allocation error";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
 		}
-		if (cnp->constf_string == NULL)
-			strcpy(lstring,NhlcnDEF_CONSTF_LABEL);
-		else
-			strcpy(lstring,cnp->constf_string);
+		strcpy(lstring,tstring);
+		if (cnp->constf_string != NULL) 
+			NhlFree(cnp->constf_string);
 		cnp->constf_string = lstring;
-		if (! init && ocnp->constf_string != NULL) 
-			NhlFree(ocnp->constf_string);
 	}
 
 	cnp->display_constf = cflp->on && 
@@ -5880,10 +5931,6 @@ static NhlErrorTypes ManageConstFLabel
 	subret = ReplaceSubstitutionChars(cnp,ocnp,init,_cnCONSTF,
 				  &text_changed,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-
-	if (! cnp->data_init) {
-		cflp->text = (void *) cnNODATA_STRING;
-	}
 
 	if (init || cnp->constf_lbl_rec.id == NhlNULLOBJID) {
 		if (pos_changed) {
@@ -5939,7 +5986,9 @@ static NhlErrorTypes ManageConstFLabel
 	}
 
 	if (tfp->overlay_status == _tfNotInOverlay) {
-		subret = SetTextPosition(cnnew,ocnp,_cnCONSTF,
+		NhlContourPlotLayerPart *op;
+		op = init ? NULL : ocnp;
+		subret = SetTextPosition(cnnew,op,_cnCONSTF,
 					 &pos_changed,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 	}
@@ -5948,46 +5997,55 @@ static NhlErrorTypes ManageConstFLabel
 		NhlSetSArg(&targs[(targc)++],NhlNtxPosYF,cflp->y_pos);
 		NhlSetSArg(&targs[(targc)++],NhlNtxJust,cflp->just);
 	}
-	if (text_changed)
-		NhlSetSArg(&targs[(targc)++],NhlNtxString,
-			   (NhlString)cflp->text);
-	if (cflp->height != ocflp->height)
-		NhlSetSArg(&targs[(targc)++],NhlNtxFontHeightF,cflp->height);
-	if (cflp->direction != ocflp->direction)
-		NhlSetSArg(&targs[(targc)++],NhlNtxDirection,cflp->direction);
-	if (cflp->angle != ocflp->angle)
-		NhlSetSArg(&targs[(targc)++],NhlNtxAngleF,cflp->angle);
-	if (cflp->font != ocflp->font)
-		NhlSetSArg(&targs[(targc)++],NhlNtxFont,cflp->font);
-	if (cflp->color != ocflp->color)
-		NhlSetSArg(&targs[(targc)++],NhlNtxFontColor,cflp->color);
-	if (cflp->aspect != ocflp->aspect)
-		NhlSetSArg(&targs[(targc)++],NhlNtxFontAspectF,cflp->aspect);
-	if (cflp->thickness != ocflp->thickness)
-		NhlSetSArg(&targs[(targc)++],
-			   NhlNtxFontThicknessF,cflp->thickness);
-	if (cflp->cspacing != ocflp->cspacing)
-		NhlSetSArg(&targs[(targc)++],
-			   NhlNtxConstantSpacingF,cflp->cspacing);
-	if (cflp->quality != ocflp->quality)
-		NhlSetSArg(&targs[(targc)++],NhlNtxFontQuality,cflp->quality);
-	if (cflp->fcode[0] != ocflp->fcode[0])
-		NhlSetSArg(&targs[(targc)++],NhlNtxFuncCode,cflp->fcode[0]);
-	
-	if (cflp->perim_on != ocflp->perim_on)
-		NhlSetSArg(&targs[(targc)++],NhlNtxPerimOn,cflp->perim_on);
-	if (cflp->perim_lcolor != ocflp->perim_lcolor)
-		NhlSetSArg(&targs[(targc)++],
-			   NhlNtxPerimColor,cflp->perim_lcolor);
-	if (cflp->perim_lthick != ocflp->perim_lthick)
-		NhlSetSArg(&targs[(targc)++],
-			   NhlNtxPerimThicknessF,cflp->perim_lthick);
-	if (cflp->perim_space != ocflp->perim_space)
-		NhlSetSArg(&targs[(targc)++],
-			   NhlNtxPerimSpaceF,cflp->perim_space);
-	if (cflp->back_color != ocflp->back_color)
-		NhlSetSArg(&targs[(targc)++],
-			   NhlNtxBackgroundFillColor,cflp->back_color);
+	if (! init) {
+		if (text_changed)
+			NhlSetSArg(&targs[(targc)++],NhlNtxString,
+				   (NhlString)cflp->text);
+		if (cflp->height != ocflp->height)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxFontHeightF,cflp->height);
+		if (cflp->direction != ocflp->direction)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxDirection,cflp->direction);
+		if (cflp->angle != ocflp->angle)
+			NhlSetSArg(&targs[(targc)++],NhlNtxAngleF,cflp->angle);
+		if (cflp->font != ocflp->font)
+			NhlSetSArg(&targs[(targc)++],NhlNtxFont,cflp->font);
+		if (cflp->color != ocflp->color)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxFontColor,cflp->color);
+		if (cflp->aspect != ocflp->aspect)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxFontAspectF,cflp->aspect);
+		if (cflp->thickness != ocflp->thickness)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxFontThicknessF,cflp->thickness);
+		if (cflp->cspacing != ocflp->cspacing)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxConstantSpacingF,cflp->cspacing);
+		if (cflp->quality != ocflp->quality)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxFontQuality,cflp->quality);
+		if (cflp->fcode[0] != ocflp->fcode[0])
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxFuncCode,cflp->fcode[0]);
+		
+		if (cflp->perim_on != ocflp->perim_on)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxPerimOn,cflp->perim_on);
+		if (cflp->perim_lcolor != ocflp->perim_lcolor)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxPerimColor,cflp->perim_lcolor);
+		if (cflp->perim_lthick != ocflp->perim_lthick)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxPerimThicknessF,cflp->perim_lthick);
+		if (cflp->perim_space != ocflp->perim_space)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxPerimSpaceF,cflp->perim_space);
+		if (cflp->back_color != ocflp->back_color)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNtxBackgroundFillColor,cflp->back_color);
+	}
 	
 	subret = NhlALSetValues(cnp->constf_lbl_rec.id,targs,targc);
 
@@ -6618,13 +6676,13 @@ static NhlErrorTypes SetTextPosition
 	if (atype == _cnINFO) {
 		anno_rec = &cnp->info_lbl_rec;
 		lap = &cnp->info_lbl;
-		olap = &ocnp->info_lbl;
+		olap = ocnp == NULL ? NULL : &ocnp->info_lbl;
 		res_prefix = "NhlNcnInfoLabel";
 	}
 	else {
 		anno_rec = &cnp->constf_lbl_rec;
 		lap = &cnp->constf_lbl;
-		olap = &ocnp->constf_lbl;
+		olap = ocnp == NULL ? NULL : &ocnp->constf_lbl;
 		res_prefix = "NhlNcnConstFLabel";
 	}
 	subret = NhlVAGetValues(anno_rec->id,
@@ -6683,7 +6741,8 @@ static NhlErrorTypes SetTextPosition
 	else 
 		lap->just = anno_rec->just;
 
-	if (lap->x_pos != olap->x_pos ||
+	if (olap == NULL ||
+	    lap->x_pos != olap->x_pos ||
 	    lap->y_pos != olap->y_pos ||
 	    lap->just != olap->just) {
 		*pos_changed = True;
@@ -7500,7 +7559,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		ip = (int *) cnp->level_flags->data;
 		for (i = 0; i < count; i++) {
 			if (ip[i] < NhlLABELONLY) {
-				sp[i] = NULL;
+				sp[i] = cnEmptyString;
 			}
 			else {
 				sp[i] = llsp[i];
@@ -8330,7 +8389,7 @@ static NhlErrorTypes    SetupLevelsAutomatic
 		spacing = cnp->level_spacing;
 		lmin = ceil(lmin / spacing) * spacing;
 		lmax = MIN(lmax,floor(lmax / spacing) * spacing);
-		count =	(lmax - lmin) / cnp->level_spacing + 1.5;
+		count =	(int)((lmax - lmin) / cnp->level_spacing + 1.5);
 		if (_NhlCmpFAny(lmin,cnp->zmin,6) == 0.0) {
 			lmin += spacing;
 			count--;
@@ -8773,9 +8832,9 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 	strncpy(buffer,Cnp->dtable[dpix],sizeof(buffer) - 1);
 
 	tf = Cnp->line_dash_seglen / (strlen(buffer)+.5);
-	c_dpsetr("WOG",tf);
+	c_dpsetr("WOG",(float)tf);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	c_dpsetr("WOS",tf);
+	c_dpsetr("WOS",(float)tf);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
 	if (lcol == NhlTRANSPARENT) {
@@ -8797,14 +8856,20 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 		char *ts = ((NhlString *) Cnp->line_lbls.text)[pai-1];
 		NhlcnLevelUseMode *lup = 
 			(NhlcnLevelUseMode *) Cnp->level_flags->data;
+		NhlcnLevelUseMode flag;
 		int llcol, j;
+		NhlBoolean do_label;
 
 		llcol = Cnp->line_lbls.mono_color ?
 			(int) Cnp->line_lbls.colors : 
 				Cnp->line_lbls.colors[pai-1];
 		
+		flag = Cnp->mono_level_flag ? 
+			Cnp->level_flag : lup[pai-1];
 
-		if (llcol == NhlTRANSPARENT && lup[pai-1] > NhlLINEONLY) {
+		do_label = Cnp->line_lbls.on && flag > NhlLINEONLY;
+
+		if (llcol == NhlTRANSPARENT && do_label) {
 			/*
 			 * Put spaces in for label.
 			 */
@@ -8814,7 +8879,7 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 				tchar[i+1] = '|';
 			}
 		}
-		else if (lup[pai-1] > NhlLINEONLY) {
+		else if (do_label) {
 			/*
 			 * Add breaks in at each space of the label.
 			 */
@@ -8828,19 +8893,19 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 			c_pcseti("OC",llcol);
 			c_pcseti("CC",llcol);
 		}
-		c_pcsetr("PH",Cnp->line_lbls.pheight);
-		c_pcsetr("PW",Cnp->line_lbls.pwidth);
-		c_pcseti("CS",Cnp->line_lbls.cspacing);
+		c_pcsetr("PH",(float)Cnp->line_lbls.pheight);
+		c_pcsetr("PW",(float)Cnp->line_lbls.pwidth);
+		c_pcsetr("CS",(float)Cnp->line_lbls.cspacing);
 		c_pcseti("FN",Cnp->line_lbls.font);
 		c_pcseti("QU",Cnp->line_lbls.quality);
 		c_pcsetc("FC",Cnp->line_lbls.fcode);
-		c_pcsetr("CL",Cnp->line_lbls.thickness);
+		c_pcsetr("CL",(float)Cnp->line_lbls.thickness);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	}
 
 	c_dpsetc("DPT",buffer);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	c_dpsetr("WOC",Cnp->line_lbls.real_height);
+	c_dpsetr("WOC",(float)Cnp->line_lbls.real_height);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
 	return;
@@ -8888,9 +8953,9 @@ void   (_NHLCALLF(cpchhl,CPCHHL))
 			c_pcseti("CC",(int) Cnp->high_lbls.colors);
 			c_pcseti("OC",(int) Cnp->high_lbls.colors);
 		}
-		c_pcsetr("PH",Cnp->high_lbls.pheight);
-		c_pcsetr("PW",Cnp->high_lbls.pwidth);
-		c_pcseti("CS",Cnp->high_lbls.cspacing);
+		c_pcsetr("PH",(float)Cnp->high_lbls.pheight);
+		c_pcsetr("PW",(float)Cnp->high_lbls.pwidth);
+		c_pcsetr("CS",(float)Cnp->high_lbls.cspacing);
 		c_pcseti("FN",Cnp->high_lbls.font);
 		c_pcseti("QU",Cnp->high_lbls.quality);
 		c_pcsetc("FC",Cnp->high_lbls.fcode);
@@ -8922,13 +8987,13 @@ void   (_NHLCALLF(cpchhl,CPCHHL))
 			c_pcseti("CC",(int) Cnp->high_lbls.colors);
 			c_pcseti("OC",(int) Cnp->high_lbls.colors);
 		}
-		c_pcsetr("PH",Cnp->high_lbls.pheight);
-		c_pcsetr("PW",Cnp->high_lbls.pwidth);
-		c_pcseti("CS",Cnp->high_lbls.cspacing);
+		c_pcsetr("PH",(float)Cnp->high_lbls.pheight);
+		c_pcsetr("PW",(float)Cnp->high_lbls.pwidth);
+		c_pcsetr("CS",(float)Cnp->high_lbls.cspacing);
 		c_pcseti("FN",Cnp->high_lbls.font);
 		c_pcseti("QU",Cnp->high_lbls.quality);
 		c_pcsetc("FC",Cnp->high_lbls.fcode);
-		gset_linewidth(Cnp->high_lbls.thickness);
+		gset_linewidth((float)Cnp->high_lbls.thickness);
 
 		strcpy(buf,(char *)Cnp->high_lbls.text);
 		if ((sub = strstr(buf,"$ZDV$")) == NULL) {
@@ -8961,13 +9026,13 @@ void   (_NHLCALLF(cpchhl,CPCHHL))
 			c_pcseti("CC",(int) Cnp->low_lbls.colors);
 			c_pcseti("OC",(int) Cnp->low_lbls.colors);
 		}
-		c_pcsetr("PH",Cnp->low_lbls.pheight);
-		c_pcsetr("PW",Cnp->low_lbls.pwidth);
-		c_pcseti("CS",Cnp->low_lbls.cspacing);
+		c_pcsetr("PH",(float)Cnp->low_lbls.pheight);
+		c_pcsetr("PW",(float)Cnp->low_lbls.pwidth);
+		c_pcsetr("CS",(float)Cnp->low_lbls.cspacing);
 		c_pcseti("FN",Cnp->low_lbls.font);
 		c_pcseti("QU",Cnp->low_lbls.quality);
 		c_pcsetc("FC",Cnp->low_lbls.fcode);
-		gset_linewidth(Cnp->low_lbls.thickness);
+		gset_linewidth((float)Cnp->low_lbls.thickness);
 		strcpy(buf,(char *)Cnp->low_lbls.text);
 		if ((sub = strstr(buf,"$ZDV$")) == NULL) {
 			return;
@@ -8994,13 +9059,13 @@ void   (_NHLCALLF(cpchhl,CPCHHL))
 			c_pcseti("CC",(int) Cnp->low_lbls.colors);
 			c_pcseti("OC",(int) Cnp->low_lbls.colors);
 		}
-		c_pcsetr("PH",Cnp->low_lbls.pheight);
-		c_pcsetr("PW",Cnp->low_lbls.pwidth);
-		c_pcseti("CS",Cnp->low_lbls.cspacing);
+		c_pcsetr("PH",(float)Cnp->low_lbls.pheight);
+		c_pcsetr("PW",(float)Cnp->low_lbls.pwidth);
+		c_pcsetr("CS",(float)Cnp->low_lbls.cspacing);
 		c_pcseti("FN",Cnp->low_lbls.font);
 		c_pcseti("QU",Cnp->low_lbls.quality);
 		c_pcsetc("FC",Cnp->low_lbls.fcode);
-		gset_linewidth(Cnp->low_lbls.thickness);
+		gset_linewidth((float)Cnp->low_lbls.thickness);
 		strcpy(buf,(char *)Cnp->low_lbls.text);
 		if ((sub = strstr(buf,"$ZDV$")) == NULL) {
 			return;
@@ -9078,13 +9143,13 @@ void   (_NHLCALLF(cpchll,CPCHLL))
 				c_pcseti("CC",llcol);
 				c_pcseti("OC",llcol);
 			}
-			c_pcsetr("PH",Cnp->line_lbls.pheight);
-			c_pcsetr("PW",Cnp->line_lbls.pwidth);
-			c_pcseti("CS",Cnp->line_lbls.cspacing);
+			c_pcsetr("PH",(float)Cnp->line_lbls.pheight);
+			c_pcsetr("PW",(float)Cnp->line_lbls.pwidth);
+			c_pcsetr("CS",(float)Cnp->line_lbls.cspacing);
 			c_pcseti("FN",Cnp->line_lbls.font);
 			c_pcseti("QU",Cnp->line_lbls.quality);
 			c_pcsetc("FC",Cnp->line_lbls.fcode);
-			gset_linewidth(Cnp->line_lbls.thickness);
+			gset_linewidth((float)Cnp->line_lbls.thickness);
 		}
 	}
 	else if (*iflg == 4 && Cnp->line_lbls.perim_on) {

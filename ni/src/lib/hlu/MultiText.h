@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.h,v 1.3 1995-04-07 10:43:06 boote Exp $
+ *      $Id: MultiText.h,v 1.4 1995-04-27 16:58:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,8 @@
 #define NhlCMtextConstPosF	"Mtext.ConstPosF"
 #define NhlNMtextPosArray	"mtext.PosArray"
 #define NhlCMtextPosArray	"Mtext.PosArray"
+#define NhlNMtextMaxLenF	"mtext.MaxLenF"
+#define NhlCMtextMaxLenF	"Mtext.MaxLenF"
 
 /*
  * New type name definitions

@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.13 1995-04-07 10:43:04 boote Exp $
+ *      $Id: MultiText.c,v 1.14 1995-04-27 16:58:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,6 +43,9 @@ static NhlResource resources[] = {
 	{NhlNMtextPosArray, NhlCMtextPosArray, NhlTPointer,
 		sizeof(float*),Oset(pos_array),NhlTImmediate,NULL,0,
 		(NhlFreeFunc)NhlFree},
+	{NhlNMtextMaxLenF, NhlCMtextMaxLenF, NhlTFloat,
+		sizeof(float*),Oset(max_len),NhlTString,"0.0",
+		 _NhlRES_GONLY,NULL},
 	/*
 	 * These resources are actually resources in the TextItem object
 	 * that is used by this object.  If there are changes in the
@@ -256,6 +259,7 @@ CalculateGeometry
 	/*
 	 * Determine MultiText size by determining size of all strings
 	 */
+
 	for(i=0;i < l->multitext.num_strings;i++){
 
 		if(l->multitext.orientation == NhlMTEXT_X_CONST){
@@ -295,6 +299,92 @@ CalculateGeometry
 	*height = box.t - box.b;
 
 	return;
+}
+
+
+/*
+ * Function:	GetMaxTextLength
+ *
+ * Description:	This function finds the maximum NDC text length of the  
+ *		set of multi-text strings.
+ *
+ * In Args:	
+ *		NhlMultiTextLayer	l,		The NhlLayer
+ *
+ * Out Args:	
+ *		float		*maxlen,	max text length
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	none
+ */
+static NhlErrorTypes
+GetMaxTextLength
+#if	NhlNeedProto
+(
+	NhlMultiTextLayer	l,		/* The NhlLayer		*/
+	float			*maxlen		/* max text len		*/
+)
+#else
+(l,maxlen)
+	NhlMultiTextLayer	l;		/* The NhlLayer		*/
+	float			*maxlen;	/* max text len		*/
+#endif
+{
+	int		i;
+	float		twidth;
+	float		angle;
+
+	
+	*maxlen = 0.0;
+	angle = l->multitext.direction == NhlDOWN ? 90.0 : 0.0;
+
+	/*
+	 * Set the angle to a standard value
+	 */
+	NhlVASetValues(l->multitext.text_object,
+		       NhlNtxAngleF,angle,       
+		       NULL);
+
+	for(i=0;i < l->multitext.num_strings;i++){
+
+		if(l->multitext.orientation == NhlMTEXT_X_CONST){
+			NhlVASetValues(l->multitext.text_object,
+				NhlNtxString,l->multitext.text_strings[i],
+				NhlNtxPosXF,l->multitext.const_pos,
+				NhlNtxPosYF,l->multitext.pos_array[i],
+				NhlNtxAngleF,angle,       
+				NULL);
+		}
+		else{
+			NhlVASetValues(l->multitext.text_object,
+				NhlNtxString,l->multitext.text_strings[i],
+				NhlNtxPosXF,l->multitext.pos_array[i],
+				NhlNtxPosYF,l->multitext.const_pos,
+				NhlNtxAngleF,angle,
+				NULL);
+		}
+
+		/*
+		 * retrieve the text object width
+		 */
+		NhlVAGetValues(l->multitext.text_object,
+			       NhlNvpWidthF,	&twidth,
+			       NULL);
+
+		if (twidth > *maxlen)
+			*maxlen = twidth;
+
+	}
+	/*
+	 * Restore the the text angle
+	 */
+
+	NhlVASetValues(l->multitext.text_object,
+		       NhlNtxAngleF,l->multitext.angle,
+		       NULL);
+
+	return NhlNOERROR;
 }
 
 /*
@@ -390,6 +480,13 @@ MultiTextInitialize
 		NULL);
 
 	if(num_strings > 0){
+
+		/*
+		 * Get the maximum text len
+		 */
+
+		ret = GetMaxTextLength(mtnew,&mtnew->multitext.max_len);
+
 		/*
 		 * Determine size based on font characterestics and text_object
 		 */
@@ -399,31 +496,6 @@ MultiTextInitialize
 		 * Set the size
 		 */
 		_NhlInternalSetView((NhlViewLayer)new,x,y,width,height,False);
-
-		/*
-		 * save the geometry of the first string
-		 */
-		if(mtnew->multitext.orientation == NhlMTEXT_X_CONST){
-			NhlVASetValues(mtnew->multitext.text_object,
-				NhlNtxString,mtnew->multitext.text_strings[0],
-				NhlNtxPosXF,mtnew->multitext.const_pos,
-				NhlNtxPosYF,mtnew->multitext.pos_array[0],
-				NULL);
-		}
-		else{
-			NhlVASetValues(mtnew->multitext.text_object,
-				NhlNtxString,mtnew->multitext.text_strings[0],
-				NhlNtxPosXF,mtnew->multitext.pos_array[0],
-				NhlNtxPosYF,mtnew->multitext.const_pos,
-				NULL);
-		}
-
-		NhlVAGetValues(mtnew->multitext.text_object,
-			NhlNvpXF,	&mtnew->multitext.text_x,
-			NhlNvpYF,	&mtnew->multitext.text_y,
-			NhlNvpWidthF,	&mtnew->multitext.text_width,
-			NhlNvpHeightF,	&mtnew->multitext.text_height,
-			NULL);
 	}
 
 	return ret;
@@ -469,6 +541,7 @@ MultiTextSetValues
 {
 	int		i;
 	NhlBoolean	changed = False;
+	NhlBoolean	text_changed = False, attrs_changed = False;
 	NhlMultiTextLayer	mtold = (NhlMultiTextLayer)old;
 	NhlMultiTextLayer	mtreq = (NhlMultiTextLayer)req;
 	NhlMultiTextLayer	mtnew = (NhlMultiTextLayer)new;
@@ -491,6 +564,7 @@ MultiTextSetValues
 	 */
 	if(mtreq->multitext.text_strings != mtold->multitext.text_strings){
 		changed = True;
+		text_changed = True;
 
 		if(mtreq->multitext.num_strings > 0){
 
@@ -583,6 +657,7 @@ MultiTextSetValues
 		(mtreq->multitext.direction != mtold->multitext.direction)){
 
 		changed = True;
+		attrs_changed = True;
 
 		lret = NhlVASetValues(mtnew->multitext.text_object,
 			NhlNtxAngleF,		mtnew->multitext.angle,
@@ -599,6 +674,15 @@ MultiTextSetValues
 		ret = MIN(ret,lret);
 	}
 
+
+	if (text_changed || attrs_changed) {
+
+		/*
+		 * Get the maximum text len
+		 */
+		
+		ret = GetMaxTextLength(mtnew,&mtnew->multitext.max_len);
+	}
 	/*
 	 * If nothing has changed - then a change in view class resources
 	 * can be handled - ie. view class resource changes can not occur
@@ -614,43 +698,10 @@ MultiTextSetValues
 		(mtreq->view.width != mtold->view.width) ||
 		(mtreq->view.height != mtold->view.height))){
 
-		float x[3], y[3];
-
 		/*
 		 * Now this object is changing
 		 */
 		changed = True;
-
-		/*
-		 * translate the bounding box for the first text item
-		 */
-		_NhlEvalTrans(mtnew->view.trans_children,
-			mtnew->multitext.text_x,
-			mtnew->multitext.text_y - mtnew->multitext.text_height,
-			&x[0],&y[0]);
-
-		_NhlEvalTrans(mtnew->view.trans_children,
-			mtnew->multitext.text_x,
-			mtnew->multitext.text_y,
-			&x[1],&y[1]);
-
-		_NhlEvalTrans(mtnew->view.trans_children,
-			mtnew->multitext.text_x + mtnew->multitext.text_width,
-			mtnew->multitext.text_y,
-			&x[2],&y[2]);
-
-		/*
-		 * this setvalues changes the font charactoristics
-		 * using the transformed x,y,width,height from the first
-		 * text string (the first text string should be current)
-		 */
-		lret = NhlVASetValues(mtnew->multitext.text_object,
-			NhlNvpXF,	x[0],
-			NhlNvpYF,	y[2],
-			NhlNvpWidthF,	x[2] - x[0],
-			NhlNvpHeightF,	y[1] - y[0],
-			NULL);
-		ret = MIN(ret,lret);
 
 		/*
 		 * Now translate ConstPos and pos_array
@@ -701,32 +752,6 @@ MultiTextSetValues
 		 * Set the size
 		 */
 		_NhlInternalSetView((NhlViewLayer)new,x,y,width,height,False);
-		/*
-		 * save the geometry of the first string
-		 */
-		if(mtnew->multitext.orientation == NhlMTEXT_X_CONST){
-			lret = NhlVASetValues(mtnew->multitext.text_object,
-				NhlNtxString,mtnew->multitext.text_strings[0],
-				NhlNtxPosXF,mtnew->multitext.const_pos,
-				NhlNtxPosYF,mtnew->multitext.pos_array[0],
-				NULL);
-		}
-		else{
-			lret = NhlVASetValues(mtnew->multitext.text_object,
-				NhlNtxString,mtnew->multitext.text_strings[0],
-				NhlNtxPosXF,mtnew->multitext.pos_array[0],
-				NhlNtxPosYF,mtnew->multitext.const_pos,
-				NULL);
-		}
-		ret = MIN(ret,lret);
-
-		lret = NhlVAGetValues(mtnew->multitext.text_object,
-			NhlNvpXF,	&mtnew->multitext.text_x,
-			NhlNvpYF,	&mtnew->multitext.text_y,
-			NhlNvpWidthF,	&mtnew->multitext.text_width,
-			NhlNvpHeightF,	&mtnew->multitext.text_height,
-			NULL);
-		ret = MIN(ret,lret);
 	}
 
 	return ret;

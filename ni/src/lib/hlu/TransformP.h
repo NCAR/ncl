@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.13 1995-04-07 10:44:12 boote Exp $
+ *      $Id: TransformP.h,v 1.14 1995-04-27 16:58:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -99,7 +99,7 @@ typedef NhlErrorTypes (*NhlTransPolyFunc)(
         NhlLayer           /* plot */,
         float*          /* x */,
         float*          /* y */,
-        int             /* n */,
+        int             /* n */
 #endif
 );
 
