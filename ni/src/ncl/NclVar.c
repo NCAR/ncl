@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.34 1996-11-16 00:45:53 ethan Exp $
+ *      $Id: NclVar.c,v 1.35 1996-12-12 22:58:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1064,7 +1064,6 @@ long dim_num;
                 		  TEMPORARY,NULL,(NclTypeClass)nclTypeintClass)
 			);
 		} else {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension name (%s) is not defined for variable (%s)",dim_name,v_name);
 			return(NULL);
 		}
 	} else if((dim_num < self->var.n_dims)&&(dim_num >= 0)) {
@@ -1085,14 +1084,13 @@ long dim_num;
                		 	  TEMPORARY,NULL,(NclTypeClass)nclTypestringClass)
 			);
 		} else {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension number (%d) does not have a defined name",dim_num);
 			return(NULL);
 		}
 	} else if(dim_num >= self->var.n_dims) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) only has (%d) dimensions , cannot access dimension (%d)",v_name,self->var.n_dims,dim_num);
 		return(NULL);
 	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to access  illegal dimension number of name");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to access  illegal dimension number or name");
 		return(NULL); 
 	}
 }

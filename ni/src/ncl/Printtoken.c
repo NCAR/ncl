@@ -211,7 +211,7 @@ void printtoken
 			fprintf(stdout,"NOT\n");
 			break;
 		default:
-			fprintf(stdout,"No match for (%c)(%d)",(char)type,(int)type);
+			fprintf(stdout,"No match for (%c)(%d)\n",(char)type,(int)type);
 	}
 }
 #endif

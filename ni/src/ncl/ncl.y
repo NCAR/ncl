@@ -17,8 +17,7 @@
 #include <sys/stat.h>
 int scopelevel = 0;
 extern int yydebug;
-extern char yytext[];
-extern int yylineno;
+extern char *yytext;
 extern FILE *thefptr;
 extern FILE *theoptr;
 extern int cmd_line;
@@ -65,14 +64,14 @@ char *cur_load_file = NULL;
 
 %token	<void> EOLN 
 %token  <void> EOFF
-%token	<void> RP LP RBC LBC RBK LBK COLON ',' '*' SEMI MARKER LPSLSH SLSHRP DIM_MARKER FSTRING EFSTRING
+%token	<void> RP LP RBC LBC RBK LBK COLON ',' '*' SEMI MARKER LPSLSH SLSHRP DIM_MARKER FSTRING EFSTRING ASTRING CSTRING
 %token <integer> INT DIMNUM
 %token <real> REAL
 %token <str> STRING DIM DIMNAME ATTNAME COORDV FVAR 
 %token <sym> INTEGER FLOAT LONG DOUBLE BYTE CHARACTER GRAPHIC STRNG NUMERIC FILETYPE SHORT LOGICAL
 %token <sym> UNDEF VAR WHILE DO QUIT PROC EPROC NPROC PIPROC IPROC UNDEFFILEVAR BREAK NOPARENT
 %token <sym> BGIN END FUNC EFUNC NFUNC IFUNC FDIM IF THEN VBLKNAME CONTINUE
-%token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL RETURN VSBLKGET LOAD NEW
+%token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL RETURN VSBLKGET NEW
 %token <sym> OBJVAR OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP NCLTRUE NCLFALSE
 %token '='
 %token OR
@@ -110,7 +109,7 @@ char *cur_load_file = NULL;
 %type <src_node> visblk statement_list
 %type <src_node> declaration identifier expr v_parent 
 %type <src_node> subscript0 break_cont vcreate
-%type <src_node> subscript1 subexpr primary function array error filevarselector
+%type <src_node> subscript1 subexpr primary function array error filevarselector coordvarselector attributeselector
 %type <list> the_list arg_dec_list subscript_list opt_arg_list 
 %type <list> block_statement_list resource_list dim_size_list  
 %type <list> arg_list do_stmnt resource vset vget get_resource get_resource_list
@@ -209,101 +208,7 @@ statement_list :  statement eoln			{
 									_NclCallPromptFunc(cur_line_number);
 								}
 							}
-/*
-* This can not be used through the API because the API has as different way of
-* handling I/O which doesn't support "swapping out" the input stream with
-* a new one.
-*/
-	| LOAD STRING eoln				{
-#ifndef MAKEAPI
-								FILE *tmp_file;
-
-								tmp_file = fopen(_NGResolvePath($2),"r");	
-								if(tmp_file != NULL) {
-									_NclPushNewInputFile(tmp_file,$2,cur_line_number);
-									cur_line_number = 0;
-									loading += 1;
-									cmd_line = isatty(fileno(tmp_file));
-								} else {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$2);
-								}
-								if(cmd_line == 1) {
-									fprintf(stdout,"ncl %d> ",cur_line_number);
-								} else if(cmd_line == 2) {
-									_NclCallPromptFunc(cur_line_number);
-								}
-#else
-								FILE *tmp_file;
-								const char * tmp;
-								char * tmp_input;
-								struct stat buff;
-								tmp = _NGResolvePath($2);
-								if(stat(tmp,&buff) != -1) {
-									tmp_file = fopen(tmp,"r");
-									if(tmp_file != NULL) {
-										tmp_input = (char*)NclMalloc(buff.st_size + 1);
-										if(fread((void*)tmp_input,sizeof(char),buff.st_size/sizeof(char),tmp_file)<0) {
-											NhlPError(NhlWARNING,NhlEUNKNOWN,"Error opening file: %s",$2);
-										}
-										fclose(tmp_file);
-										tmp_input[buff.st_size] = (char)0; 
-										_NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
-										cur_line_number = 0;
-										loading += 1;
-										cmd_line = 0;
-									}	
-								} else {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",tmp);
-								}
-#endif
-							}
-	| statement_list LOAD STRING eoln		{
-#ifndef MAKEAPI
-								FILE *tmp_file;
-	
-
-								tmp_file = fopen(_NGResolvePath($3),"r");	
-								if(tmp_file != NULL) {
-									_NclPushNewInputFile(tmp_file,$3,cur_line_number);
-									cur_line_number = 0;
-									loading += 1;
-									cmd_line = isatty(fileno(tmp_file));
-								} else {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$3);
-								}
-								if(cmd_line == 1) {
-									fprintf(stdout,"ncl %d> ",cur_line_number);
-								} else if(cmd_line == 2) {
-									_NclCallPromptFunc(cur_line_number);
-								}
-#else
-								FILE *tmp_file;
-								const char * tmp;
-								char * tmp_input;
-								struct stat buff;
-								tmp = _NGResolvePath($3);
-								if(stat(tmp,&buff) != -1) {
-									tmp_file = fopen(tmp,"r");
-									if(tmp_file != NULL) {
-										tmp_input = (char*)NclMalloc(buff.st_size +1);
-										if(fread((void*)tmp_input,sizeof(char),buff.st_size/sizeof(char),tmp_file)<0) {
-											NhlPError(NhlWARNING,NhlEUNKNOWN,"Error opening file: %s",$3);
-										}
-										fclose(tmp_file);
-										tmp_input[buff.st_size] = (char)0;
-										_NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
-										cur_line_number = 0;
-										loading += 1;
-										cmd_line = 0;
-									}	
-								} else {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",tmp);
-								}
-#endif
-								$$ = NULL;
-							}
 ;
-
 block_statement_list : statement eoln { 	
 								
 								if(cmd_line) {
@@ -399,101 +304,6 @@ block_statement_list : statement eoln {
 								}
 								$$ = NULL;
 							}
-/*
-* This can not be used through the API because the API has as different way of
-* handling I/O which doesn't support "swapping out" the input stream with
-* a new one.
-*/
-	| LOAD STRING eoln				{
-#ifndef MAKEAPI
-                                                                FILE *tmp_file;
-
-                                                                tmp_file = fopen(_NGResolvePath($2),"r");
-                                                                if(tmp_file != NULL) {
-                                                                        _NclPushNewInputFile(tmp_file,$2,cur_line_number);
-                                                                        cur_line_number = 0;
-                                                                        loading += 1;
-                                                                        cmd_line = isatty(fileno(tmp_file));
-                                                                } else {
-                                                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$2);
-                                                                }
-								if(cmd_line == 1) {
-									fprintf(stdout,"ncl %d> ",cur_line_number);
-								} else if(cmd_line == 2) {
-									_NclCallPromptFunc(cur_line_number);
-								}
-#else
-                                                                FILE *tmp_file;
-                                                                const char * tmp;
-                                                                char * tmp_input;
-                                                                struct stat buff;
-                                                                tmp = _NGResolvePath($2);
-                                                                if(stat(tmp,&buff) != -1) {
-                                                                        tmp_file = fopen(tmp,"r");
-                                                                        if(tmp_file != NULL) {
-                                                                                tmp_input = (char*)NclMalloc(buff.st_size + 1);
-                                                                                if(fread((void*)tmp_input,sizeof(char),buff.st_size/sizeof(char),tmp_file)<0) {
-                                                                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Error opening file: %s",$2);
-                                                                                }
-                                                                                fclose(tmp_file);
-										tmp_input[buff.st_size] = (char)0;
-                                                                                _NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
-                                                                                cur_line_number = 0;
-                                                                                loading += 1;
-										cmd_line = 0;
-                                                                        }
-                                                                } else {
-                                                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",tmp);
-                                                                }
-#endif
-								$$ = NULL;
-							}
-	| block_statement_list LOAD STRING eoln				{
-#ifndef MAKEAPI
-                                                                FILE *tmp_file;
-
-
-                                                                tmp_file = fopen(_NGResolvePath($3),"r");
-                                                                if(tmp_file != NULL) {
-                                                                        _NclPushNewInputFile(tmp_file,$3,cur_line_number);
-                                                                        cur_line_number = 0;
-                                                                        loading += 1;
-                                                                        cmd_line = isatty(fileno(tmp_file));
-                                                                } else {
-                                                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$3);
-                                                                }
-								if(cmd_line == 1) {
-									fprintf(stdout,"ncl %d> ",cur_line_number);
-								} else if(cmd_line == 2) {
-									_NclCallPromptFunc(cur_line_number);
-								}
-#else
-                                                                FILE *tmp_file;
-                                                                const char * tmp;
-                                                                char * tmp_input;
-                                                                struct stat buff;
-                                                                tmp = _NGResolvePath($3);
-                                                                if(stat(tmp,&buff) != -1) {
-                                                                        tmp_file = fopen(tmp,"r");
-                                                                        if(tmp_file != NULL) {
-                                                                                tmp_input = (char*)NclMalloc(buff.st_size+1);
-                                                                                if(fread((void*)tmp_input,sizeof(char),buff.st_size/sizeof(char),tmp_file)<0) {
-                                                                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Error opening file: %s",$3);
-                                                                                }
-                                                                                fclose(tmp_file);
-										tmp_input[buff.st_size] = (char)0;
-                                                                                _NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
-                                                                                cur_line_number = 0;
-                                                                                loading += 1;
-										cmd_line = 0;
-                                                                        }
-                                                                } else {
-                                                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",tmp);
-                                                                }
-
-#endif
-								$$ = $1;
-							}
 ;
 
 opt_eoln : 		{ /* do nothing */ }
@@ -512,11 +322,7 @@ eoln : EOLN 						{ yyerrok; }
 	| EOFF						{ 
 								yyerrok;
 #ifdef MAKEAPI
-								if(!loading) {
-									ret_urn = 1;
-								} else {
-									_NclPopInputStr();
-								}
+								ret_urn = 1;
 #endif
 							}
 ;
@@ -1429,9 +1235,21 @@ assignment :  identifier '=' expr		{
 ;
 
 filevarselector : FVAR {
-			$$ = _NclMakeIdnExpr(_NclMakeStringExpr(&(($1)[2])));
+			$$ = _NclMakeIdnExpr(_NclMakeStringExpr($1));
 		}
 	| FSTRING primary EFSTRING {
+		$$ = $2;
+	}
+coordvarselector : COORDV{
+			$$ = _NclMakeIdnExpr(_NclMakeStringExpr($1));
+	}
+	| CSTRING primary EFSTRING {
+		$$ = $2;
+	}
+attributeselector : ATTNAME{
+			$$ = _NclMakeIdnExpr(_NclMakeStringExpr($1));
+	}
+	| ASTRING primary EFSTRING {
 		$$ = $2;
 	}
 
@@ -1455,31 +1273,31 @@ identifier : vname {
 	| vname filevarselector DIM_MARKER primary	{
 						$$ = _NclMakeFileVarDimRef($1,$2,$4);		
 					}
-        | vname filevarselector ATTNAME			{
+        | vname filevarselector attributeselector {
 						$$ = _NclMakeFileVarAttRef($1,$2,$3,NULL);
 					}
-        | vname filevarselector ATTNAME LP subscript_list RP	{
+        | vname filevarselector attributeselector LP subscript_list RP	{
 						$$ = _NclMakeFileVarAttRef($1,$2,$3,$5);
 					}
-	| vname filevarselector COORDV			{
-						$$ = _NclMakeFileVarCoordRef($1,$2,&(($3)[1]),NULL);
+	| vname filevarselector coordvarselector			{
+						$$ = _NclMakeFileVarCoordRef($1,$2,$3,NULL);
 					}
-	| vname filevarselector COORDV ATTNAME {
-						$$ = _NclMakeFileVarCoordAttRef($1,$2,&(($3)[1]),$4,NULL);
+	| vname filevarselector coordvarselector attributeselector{
+						$$ = _NclMakeFileVarCoordAttRef($1,$2,$3,$4,NULL);
 					}
-	| vname filevarselector COORDV ATTNAME LP subscript_list RP {
-						$$ = _NclMakeFileVarCoordAttRef($1,$2,&(($3)[1]),$4,$6);
+	| vname filevarselector coordvarselector attributeselector LP subscript_list RP {
+						$$ = _NclMakeFileVarCoordAttRef($1,$2,$3,$4,$6);
 					}
-	| vname filevarselector COORDV LP subscript_list RP{
-						$$ = _NclMakeFileVarCoordRef($1,$2,&(($3)[1]),$5);
+	| vname filevarselector coordvarselector LP subscript_list RP{
+						$$ = _NclMakeFileVarCoordRef($1,$2,$3,$5);
 					}
 	| vname DIM_MARKER primary  {
 						$$ = _NclMakeVarDimRef($1,$3);		
 					}
-        | vname ATTNAME			{
+        | vname attributeselector {
 						$$ = _NclMakeVarAttRef($1,$2,NULL);
 					}
-        | vname ATTNAME LP subscript_list RP	{
+        | vname attributeselector LP subscript_list RP	{
 						$$ = _NclMakeVarAttRef($1,$2,$4);
 					}
 	| vname MARKER			{
@@ -1491,17 +1309,17 @@ identifier : vname {
         | vname LP subscript_list RP {
 						$$ = _NclMakeVarRef($1,$3);
 					}
-	| vname COORDV			{
-						$$ = _NclMakeVarCoordRef($1,&(($2)[1]),NULL);
+	| vname coordvarselector{
+						$$ = _NclMakeVarCoordRef($1,$2,NULL);
 					}
-	| vname COORDV LP subscript_list RP{
-						$$ = _NclMakeVarCoordRef($1,&(($2)[1]),$4);
+	| vname coordvarselector LP subscript_list RP{
+						$$ = _NclMakeVarCoordRef($1,$2,$4);
 					}
-	| vname COORDV ATTNAME		{
-						$$ = _NclMakeVarCoordAttRef($1,&(($2)[1]),$3,NULL);
+	| vname coordvarselector attributeselector		{
+						$$ = _NclMakeVarCoordAttRef($1,$2,$3,NULL);
 					}
-	| vname COORDV ATTNAME LP subscript_list RP {
-						$$ = _NclMakeVarCoordAttRef($1,&(($2)[1]),$3,$5);
+	| vname coordvarselector attributeselector LP subscript_list RP {
+						$$ = _NclMakeVarCoordAttRef($1,$2,$3,$5);
 					}
 ;
 
@@ -1891,9 +1709,9 @@ yyerror
 			if(loading) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d in file %s before or near \\n \n%s\n",s,cur_line_number,cur_load_file,error_buffer);
 			} else if(cmd_line){
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number-1,error_buffer);
-			} else {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number,error_buffer);
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number+1,error_buffer);
 			} 
 		} else {
 			sprintf((char*)&(error_buffer[0]),"%s\n",cur_line_text);
@@ -1903,9 +1721,9 @@ yyerror
 			if(loading) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d in file %s before or near %s \n%s\n",s,cur_line_number,cur_load_file,yytext,error_buffer);
 			} else if(cmd_line){
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near %s \n%s\n",s,cur_line_number-1,yytext,error_buffer);
-			} else {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near %s \n%s\n",s,cur_line_number,yytext,error_buffer);
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near %s \n%s\n",s,cur_line_number+1,yytext,error_buffer);
 			}
 		}
 	} else if(is_error == NCL_MAX_ERROR) {

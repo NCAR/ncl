@@ -1037,7 +1037,7 @@ NclStackEntry _NclCreateHLUObjOp
 					(int)(tmp_md->multidval.totalsize/tmp_md->multidval.totalelements),
 					tmp_md->multidval.n_dims,
 					tmp_md->multidval.dim_sizes,
-					0);
+					1);
 			NhlRLSet(rl_list,NrmQuarkToString(
 				*(string*)(tmp2_md->multidval.val)),
 				NhlTGenArray,

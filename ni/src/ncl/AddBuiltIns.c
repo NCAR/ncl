@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.24 1996-11-25 23:24:25 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.25 1996-12-12 22:58:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -294,6 +294,11 @@ void
 #endif
 );
 
+NhlErrorTypes _NclIIsCoord(
+#if     NhlNeedProto
+void
+#endif
+);
 NhlErrorTypes _NclIIsAtt(
 #if     NhlNeedProto
 void
@@ -710,6 +715,11 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsFileVar,args,"isfilevar",nargs);
 
+	nargs = 0;
+	args = NewArgs(2);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsCoord,args,"iscoord",nargs);
 	nargs = 0;
 	args = NewArgs(2);
 	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;

@@ -21,22 +21,33 @@ extern void printtoken(
 char *cur_line_text = NULL;
 char *cur_line_text_pos = NULL;
 int cur_line_length = 0;
-int cur_line_number= 1;
+int cur_line_number= 0;
 int last_line_length = 0;
 int ok_to_start_vsblk = 0;
 int cur_line_maxsize = 0;
 extern int loading;
 #include <ctype.h>
-#ifdef MAKEAPI
-#undef input
-#undef unput
 char *the_input_buffer = NULL;
 char *the_input_buffer_ptr = NULL;
 int the_input_buffer_size = 0;
-#define input() (( (int)the_input_buffer_ptr >=the_input_buffer_size + (int)the_input_buffer)? (char)0177 : (((int)*the_input_buffer_ptr == 10) ? yylineno++,*the_input_buffer_ptr++:*the_input_buffer_ptr++))
+extern int cmd_line;
+extern int cmd_line_is_set;
+extern char *cur_load_file;
 
-#define unput(c) { yytchar = (c); if(yytchar=='\n')yylineno--;--the_input_buffer_ptr; }
-#endif /* MAKEAPI */
+int _NclParseString
+#if NhlNeedProto
+(char *str,int reset)
+#else
+(str,reset)
+char *str;
+int reset;
+#endif
+{
+	yy_scan_string(str);
+	return(yyparse(reset));
+}
+
+
 
 int rec = 0;
 FILE *recfp;
@@ -63,7 +74,39 @@ char* ytxt;
         (*cltp) += ylg;
 	return;
 }
+#define MAX_INCLUDE_DEPTH 20
+YY_BUFFER_STATE include_stack[MAX_INCLUDE_DEPTH];
+int line_numbers[MAX_INCLUDE_DEPTH];
 
+void _NclResetScanner
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	if ( --loading < 0 ) {
+		return;
+	} else {
+		yy_delete_buffer( YY_CURRENT_BUFFER );
+		yy_switch_to_buffer(include_stack[loading] );
+		cur_line_number = line_numbers[loading];
+		if(yyin != NULL) {
+			if(loading) {
+				cmd_line = (isatty(fileno(yyin))?1:0);
+			} else if(cmd_line_is_set) {
+				cmd_line = cmd_line_is_set;
+			} else {
+				cmd_line = (isatty(fileno(yyin))?1:0);
+			}
+		} else if(cmd_line_is_set) {
+			cmd_line = cmd_line_is_set;
+		} else {
+			cmd_line = 0;
+		}
+			
+	}
+}
 %}
 %a 4000
 %o 4000
@@ -71,16 +114,63 @@ let	[_a-zA-Z]
 alnum   [_a-zA-Z0-9]
 white	[\t ]
 digit	[0-9]
-%START AA
+%START AA 
+%x incl
 %%
+"load" 	{ 
+		BEGIN incl;
+	}
+<incl>[ \t]*      {
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+}
+<incl>["][^"\t\n]*["] {
+	char *tmp;
+
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+	tmp = strrchr(yytext,'\"');
+	*tmp = '\0';
+	tmp = (char*)&(yytext[0]) + 1;
+	if ( loading >= MAX_INCLUDE_DEPTH )
+	{
+		fprintf( stderr, "Includes nested too deeply" );
+		exit( 1 );
+	}
+	line_numbers[loading] = cur_line_number ;
+	
+	include_stack[loading++] = YY_CURRENT_BUFFER;
+	yyin = fopen( tmp, "r" );
+	if(yyin != NULL) {
+		yy_switch_to_buffer(yy_create_buffer( yyin, YY_BUF_SIZE ) );
+		cmd_line = isatty(fileno(yyin));
+	} else {
+		loading--;	
+		yy_switch_to_buffer( include_stack[loading] );
+		cur_line_number = line_numbers[loading];
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)\n",tmp);
+/*
+* reset to previous buffer
+*/
+	}
+
+	BEGIN 0;
+}
+<<EOF>> {
+	if ( --loading < 0 ) {
+		yyterminate();
+	} else {
+		yy_delete_buffer( YY_CURRENT_BUFFER );
+		yy_switch_to_buffer(include_stack[loading] );
+		cur_line_number = line_numbers[loading];
+	}
+}
 <AA>[^\n^\177] {
 	cur_line_number++;
 	BEGIN 0;
 	yyless(yyleng-1);
 }
 <AA>[\177] {
-	cur_line_number++;
 	BEGIN 0;
+	return(EOFF);
 }
 <AA>[\n] {
 	cur_line_number++;
@@ -225,13 +315,6 @@ digit	[0-9]
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
-{digit}+(".xor."|".XOR.") {
-	yyless(yyleng - strlen(".xor."));
-	sscanf(yytext,"%d",&(yylval.integer));
-        printtoken(INT,yytext);
-	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
-        return INT;
-}
 ".gt."|".GT." {
 	printtoken(GT,(char*)NULL);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
@@ -283,21 +366,24 @@ digit	[0-9]
 	return XOR;
 }
 "->"{alnum}+ {
+	char *tmp;
 
-	strcpy(yylval.str,yytext);
+	tmp = yytext + 2;
+
+	strcpy(yylval.str,tmp);
 	printtoken(FVAR,yylval.str);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return FVAR;
 }
 "$" {
 	strcpy(yylval.str,yytext);
-	printtoken(FVAR,yylval.str);
+	printtoken(EFSTRING,yylval.str);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return EFSTRING;
 }
 "->$" {
 	strcpy(yylval.str,yytext);
-	printtoken(FVAR,yylval.str);
+	printtoken(FSTRING,yylval.str);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return FSTRING;
 }
@@ -330,6 +416,12 @@ digit	[0-9]
 	return ATTNAME;
 
 }
+"@$" {
+	strcpy(yylval.str,yytext);
+	printtoken(ASTRING,yylval.str);
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+	return ASTRING;
+}
 {let}{alnum}*[ \t]*[\|] {
 	char *tmp;
 
@@ -353,12 +445,19 @@ digit	[0-9]
 	return DIM;
 }
 [&]{let}{alnum}* {
-
-	strcpy(yylval.str,yytext);
+	char *tmp;
+	tmp = (char*)yytext + 1;
+	strcpy(yylval.str,tmp);
 	printtoken(COORDV,yylval.str);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return COORDV;
 /* NOTREACHED */
+}
+"&$" {
+	strcpy(yylval.str,yytext);
+	printtoken(CSTRING,yylval.str);
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+	return CSTRING;
 }
 ["][^"\n]*["] {
 	char *tmp;
@@ -423,6 +522,7 @@ digit	[0-9]
 	return(MARKER);
 }
 [\177] {
+	yytext[0] = (char)'\177';
 	return(EOFF);
 }
 . {  

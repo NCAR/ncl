@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.55 1996-11-25 23:24:23 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.56 1996-12-12 22:58:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -4835,6 +4835,83 @@ NhlErrorTypes _NclIIsVar
 		(void*)outval,
 		tmp_md->multidval.n_dims,
 		tmp_md->multidval.dim_sizes,
+		NULL,
+		NCL_logical,
+		0
+	));
+}
+NhlErrorTypes _NclIIsCoord
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry arg0,arg1,arg2;
+	NclMultiDValData tmp_md,att_md;
+	int i;
+	logical *outval;
+	NclVar tmp_var;
+	NclQuark *vals;
+	NclSymbol* s;
+	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
+	int dims = 1;
+
+	
+	arg1  = _NclGetArg(0,2,DONT_CARE);
+	arg2  = _NclGetArg(1,2,DONT_CARE);
+
+	switch(arg1.kind) {
+	case NclStk_VAR:
+		tmp_var = arg1.u.data_var;
+		break;
+	case NclStk_VAL:
+		tmp_var = NULL;
+		break;
+	}
+	switch(arg2.kind) {
+	case NclStk_VAR:
+		att_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		att_md = arg2.u.data_obj;
+		break;
+	}
+	
+	
+
+	if(tmp_var == NULL) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIsCoord: Non variable passed returning missing");
+		NclReturnValue(
+			&miss,
+			1,
+			&dims,
+			&((NclTypeClass)nclTypelogicalClass)->type_class.default_mis,
+			NCL_logical,
+			1
+		);
+		return(NhlWARNING);
+	}
+	outval = (logical*)NclMalloc((unsigned)sizeof(logical)*att_md->multidval.totalelements);
+	vals = (NclQuark*)att_md->multidval.val;
+	if(att_md->multidval.missing_value.has_missing) {
+		for(i = 0; i < att_md->multidval.totalelements; i++) {
+			if(vals[i] != att_md->multidval.missing_value.value.stringval) {
+				outval[i] = _NclIsCoord(tmp_var,NrmQuarkToString(vals[i]));
+			} else {
+				outval[i] = 0;
+			}
+		}
+	} else {
+		for(i = 0; i < att_md->multidval.totalelements; i++) {
+			outval[i] = _NclIsCoord(tmp_var,NrmQuarkToString(vals[i]));
+		}
+	}
+	
+	return(NclReturnValue(
+		(void*)outval,
+		att_md->multidval.n_dims,
+		att_md->multidval.dim_sizes,
 		NULL,
 		NCL_logical,
 		0

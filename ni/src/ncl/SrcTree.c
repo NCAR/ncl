@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.28 1996-07-03 22:45:41 ethan Exp $
+ *      $Id: SrcTree.c,v 1.29 1996-12-12 22:58:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2853,7 +2853,10 @@ if(groot != NULL) {
 			putspace(i,fp);
 			_NclPrintTree(filevaratt->filevarnode,fp);
 			putspace(i,fp);
+/*
 			fprintf(fp,"attname: %s\n",NrmQuarkToString(filevaratt->attname_q));
+*/
+			_NclPrintTree(filevaratt->attnamenode,fp);
 			step = filevaratt->subscript_list ;
 			while(step != NULL) {
 				_NclPrintTree(step->node,fp);
@@ -2872,7 +2875,10 @@ if(groot != NULL) {
 			fprintf(fp,"%s\t",ref_node_names[varatt->ref_type]);
 			_NclPrintSymbol(varatt->sym,fp);
 			putspace(i,fp);
+/*
 			fprintf(fp,"attname: %s",NrmQuarkToString(varatt->attname_q));
+*/
+			_NclPrintTree(varatt->attnamenode,fp);
 			step = varatt->subscript_list ;
 			while(step != NULL) {
 				_NclPrintTree(step->node,fp);
@@ -2893,9 +2899,15 @@ if(groot != NULL) {
 			putspace(i,fp);
 			_NclPrintTree(filecoordatt->filevarnode,fp);
 			putspace(i,fp);
+/*
 			fprintf(fp,"coordname: %s\n",NrmQuarkToString(filecoordatt->coord_name_q));
+*/
+			_NclPrintTree(filecoordatt->coordnamenode,fp);
 			putspace(i,fp);
+/*
 			fprintf(fp,"attname: %s\n",NrmQuarkToString(filecoordatt->attname_q));
+*/
+			_NclPrintTree(filecoordatt->attnamenode,fp);
 			i--;
 		}
 			break;
@@ -2911,7 +2923,10 @@ if(groot != NULL) {
 			putspace(i,fp);
 			_NclPrintTree(filecoord->filevarnode,fp);
 			putspace(i,fp);
+/*
 			fprintf(fp,"coordname: %s\n",NrmQuarkToString(filecoord->coord_name_q));
+*/
+			_NclPrintTree(filecoord->coordnamenode,fp);
 			step = filecoord->subscript_list;
 			while(step != NULL) {
 				_NclPrintTree(step->node,fp);
@@ -2930,9 +2945,15 @@ if(groot != NULL) {
 			fprintf(fp,"%s\t",ref_node_names[coordatt->ref_type]);
 			_NclPrintSymbol(coordatt->sym,fp);
 			putspace(i,fp);
+/*
 			fprintf(fp,"coordname: %s\n",NrmQuarkToString(coordatt->coord_name_q));
+*/
+			_NclPrintTree(coordatt->coordnamenode,fp);
 			putspace(i,fp);
+/*
 			fprintf(fp,"attname: %s\n",NrmQuarkToString(coordatt->attname_q));
+*/
+			_NclPrintTree(coordatt->attnamenode,fp);
 			i--;
 		}
 			break;
@@ -2946,7 +2967,11 @@ if(groot != NULL) {
 			fprintf(fp,"%s\t",ref_node_names[coord->ref_type]);
 			_NclPrintSymbol(coord->sym,fp);
 			putspace(i,fp);
+/*
 			fprintf(fp,"coordname: %s\n",NrmQuarkToString(coord->coord_name_q));
+*/
+			_NclPrintTree(coord->coordnamenode,fp);
+
 			step = coord->subscript_list;
 			while(step != NULL) {
 				_NclPrintTree(step->node,fp);
@@ -3193,7 +3218,7 @@ void _NclFileVarAttRefDestroy
 }
 void *_NclMakeFileVarAttRef
 #if	NhlNeedProto
-(NclSymbol *file,void* filevar, char *attname,NclSrcListNode *subscript_list)
+(NclSymbol *file,void* filevar, void *attname,NclSrcListNode *subscript_list)
 #else
 (file,filevar,attname,subscript_list)
 NclSymbol *file;
@@ -3213,7 +3238,7 @@ NclSrcListNode *subscript_list;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclFileVarAttRefDestroy;
 	tmp->filesym = file;
-	tmp->attname_q= NrmStringToQuark(attname);
+	tmp->attnamenode = attname;
 	tmp->filevarnode = filevar;
 	tmp->subscript_list = subscript_list;
 
@@ -3242,7 +3267,7 @@ void _NclVarAttRefDestroy
 }
 void *_NclMakeVarAttRef
 #if	NhlNeedProto
-(NclSymbol *var,char *attname,NclSrcListNode *subscript_list)
+(NclSymbol *var,void *attname,NclSrcListNode *subscript_list)
 #else
 (var,attname,subscript_list)
 NclSymbol *var;
@@ -3261,7 +3286,7 @@ NclSrcListNode *subscript_list;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclVarAttRefDestroy;
 	tmp->sym = var;
-	tmp->attname_q = NrmStringToQuark(attname);
+	tmp->attnamenode = attname;
 	tmp->subscript_list = subscript_list;
 
 	tmp->ref_type = Ncl_READIT;	
@@ -3289,7 +3314,7 @@ void _NclFileVarCoordRefDestroy
 }
 void *_NclMakeFileVarCoordRef
 #if	NhlNeedProto
-(NclSymbol *var,void* filevar, char *coord,NclSrcListNode *subscript_list)
+(NclSymbol *var,void* filevar, void *coord,NclSrcListNode *subscript_list)
 #else
 (var,coord,filevar,subscript_list)
 NclSymbol *var;
@@ -3311,7 +3336,7 @@ NclSrcListNode *subscript_list;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclFileVarCoordRefDestroy;
 	tmp->filesym = var;
 	tmp->filevarnode = filevar;
-	tmp->coord_name_q = NrmStringToQuark(coord);
+	tmp->coordnamenode = coord;
 	tmp->subscript_list = subscript_list;
 	tmp->ref_type = Ncl_READIT;
 	_NclRegisterNode((NclGenericNode*)tmp);
@@ -3338,7 +3363,7 @@ void _NclFileVarCoordAttRefDestroy
 }
 void *_NclMakeFileVarCoordAttRef
 #if	NhlNeedProto
-(NclSymbol *var,void* filevar, char *coord,char *attname,NclSrcListNode *subscript_list)
+(NclSymbol *var,void* filevar, void *coord,void *attname,NclSrcListNode *subscript_list)
 #else
 (var,coord,filevar,attname,subscript_list)
 NclSymbol *var;
@@ -3361,8 +3386,8 @@ NclSrcListNode *subscript_list
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclFileVarCoordAttRefDestroy;
 	tmp->filesym = var;
 	tmp->filevarnode = filevar;
-	tmp->coord_name_q = NrmStringToQuark(coord);
-	tmp->attname_q = NrmStringToQuark(attname);
+	tmp->coordnamenode = coord;
+	tmp->attnamenode = attname;
 	tmp->subscript_list = subscript_list;
 	tmp->ref_type = Ncl_READIT;
 	_NclRegisterNode((NclGenericNode*)tmp);
@@ -3390,7 +3415,7 @@ void _NclVarCoordRefDestroy
 }
 void *_NclMakeVarCoordRef
 #if	NhlNeedProto
-(NclSymbol *var,char *coord,NclSrcListNode *subscript_list)
+(NclSymbol *var,void *coord,NclSrcListNode *subscript_list)
 #else
 (var,coord,subscript_list)
 NclSymbol *var;
@@ -3410,7 +3435,7 @@ NclSrcListNode *subscript_list;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclVarCoordRefDestroy;
 	tmp->sym = var;
-	tmp->coord_name_q = NrmStringToQuark(coord);
+	tmp->coordnamenode = coord;
 	tmp->subscript_list= subscript_list;
 	tmp->ref_type = Ncl_READIT;
 	_NclRegisterNode((NclGenericNode*)tmp);
@@ -3438,7 +3463,7 @@ void _NclVarCoordAttRefDestroy
 }
 void *_NclMakeVarCoordAttRef
 #if	NhlNeedProto
-(NclSymbol *var,char *coord,char *attname,NclSrcListNode *subscript_list)
+(NclSymbol *var,void *coord,void *attname,NclSrcListNode *subscript_list)
 #else
 (var,coord,attname,subscript_list)
 NclSymbol *var;
@@ -3459,8 +3484,8 @@ NclSrcListNode *subscript_list;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclVarCoordAttRefDestroy;
 	tmp->sym = var;
-	tmp->coord_name_q = NrmStringToQuark(coord);
-	tmp->attname_q = NrmStringToQuark(attname);
+	tmp->coordnamenode = coord;
+	tmp->attnamenode = attname;
 	tmp->subscript_list= subscript_list; 
 	tmp->ref_type = Ncl_READIT;
 	_NclRegisterNode((NclGenericNode*)tmp);

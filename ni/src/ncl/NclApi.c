@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.38 1996-10-24 17:37:45 ethan Exp $
+ *      $Id: NclApi.c,v 1.39 1996-12-12 22:58:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -48,6 +48,13 @@ extern "C" {
 int force_reset = 0;
 int start_state = 0;
 
+extern int _NclParseString(
+#if NhlNeedProto
+char * /*str*/,
+int  /*reset*/
+#endif
+);
+
 NhlErrorTypes NclApiRegisterCallback
 #if	NhlNeedProto
 (NclApiObjTypes obj_type,unsigned int type, void* callback_function, void* user_data)
@@ -63,13 +70,6 @@ void* user_data;
 }
 
 FILE *the_err_file;
-#if     defined(SunOS) && (MAJOR == 4)
-extern FILE *nclin;
-extern int nclparse(int);
-#else
-extern FILE *yyin;
-extern int yyparse(int);
-#endif
 int fd[2];
 
 extern char *the_input_buffer;
@@ -135,14 +135,10 @@ int NclInitServer
 	_NclInitClass(nclFileClass);
 	_NclInitClass(nclFileVarClass);
 
-	the_input_buffer = "begin\nend\n";
+	the_input_buffer = "begin\nend\n\177";
 	the_input_buffer_ptr = the_input_buffer;
 	the_input_buffer_size = strlen("begin\nend\n");
-#if     defined(SunOS) && (MAJOR == 4)
-        start_state = nclparse(1);
-#else
-        start_state = yyparse(1);
-#endif
+	start_state = _NclParseString(the_input_buffer,1);
 	the_input_buffer = NULL;
 
 	return(1);	
@@ -182,16 +178,8 @@ int NclSubmitBlock1
         the_input_buffer_size = script_size+1;
 	if(force_reset) {
 		_NclDeleteNewSymStack();
-/*
-		(void)_NclPopScope();
-*/
-
 	}
-#if     defined(SunOS) && (MAJOR == 4)
-        state = nclparse((first||force_reset? 1: 0));
-#else
-        state = yyparse((first||force_reset? 1: 0));
-#endif
+	state = _NclParseString(the_input_buffer,(first||force_reset? 1: 0));
 	force_reset = 0;
 	first = 0;
         return(state==start_state);
@@ -233,17 +221,8 @@ int NclSubmitBlock2
 	the_input_buffer_ptr = the_input_buffer;
 	if(force_reset) {
                 _NclDeleteNewSymStack();
-/*
-		(void)_NclPopScope();
-*/
-
         }
-
-#if     defined(SunOS) && (MAJOR == 4)
-        state = nclparse((first||force_reset? 1: 0));
-#else
-        state = yyparse((first||force_reset? 1: 0));
-#endif
+	state = _NclParseString(the_input_buffer,(first||force_reset? 1: 0));
 	first = 0;
 	force_reset = 0;
         return(state==start_state);
@@ -259,8 +238,12 @@ int NclSubmitCommand
 {
 	static int first = 1;
 	int state;
-	the_input_buffer_ptr = the_input_buffer = command;
-	the_input_buffer_size = strlen(command);
+	the_input_buffer = (char*)NclMalloc((unsigned)strlen(command)+2);
+	strcpy(the_input_buffer,command);
+	the_input_buffer[strlen(command)+1] = '\0';
+	the_input_buffer[strlen(command)] = '\177';
+
+	the_input_buffer_size = strlen(command) + 2;
 
 	if(force_reset) {
                 _NclDeleteNewSymStack();
@@ -270,11 +253,7 @@ int NclSubmitCommand
 
         }
 
-#if     defined(SunOS) && (MAJOR == 4)
-        state = nclparse((first||force_reset? 1: 0));
-#else
-        state = yyparse((first||force_reset? 1: 0));
-#endif
+	state = _NclParseString(the_input_buffer,(first||force_reset? 1: 0));
 	first = 0;
 	force_reset = 0;
         return(state==start_state);

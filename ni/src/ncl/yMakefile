@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.45 1996-11-05 20:07:06 boote Exp $
+#      $Id: yMakefile,v 1.46 1996-12-12 22:58:21 ethan Exp $
 #
 #########################################################################
 #									#
@@ -28,15 +28,13 @@
 #
 #	Options:
 
-#define IHaveSubdirs
 
-SUBDIRS = yacc
 
 MYBIN		=	ncl
 MYLIB		=	libncl
 MYLIB_API	=	libnclapi
-YACC		=	./yacc/byacc
-YACCDIR		=	./yacc
+YACC		=	nyacc
+LEX		=	flex
 
 
 #ifdef  HPUX
@@ -201,10 +199,7 @@ parser.c:	y.tab.c
 lex.yy.c: ncl.l
 	$(LEX) ncl.l
 
-$(YACC):
-	@cd $(YACCDIR); $(MAKE) all
-
-y.tab.c y.tab.h: ncl.y $(YACC)
+y.tab.c y.tab.h: ncl.y 
 	$(YACC) -d -t ncl.y
 
 TypeSupport.h: TypeSupport.h.sed

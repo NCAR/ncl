@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Keywords.h,v 1.10 1995-02-27 21:54:14 ethan Exp $
+ *      $Id: Keywords.h,v 1.11 1996-12-12 22:58:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -63,7 +63,6 @@ static struct {
 "create",       VSBLKCREATE,
 "setvalues",       VSBLKSET,
 "getvalues",       VSBLKGET,
-"load",		LOAD,
 "local",	LOCAL,
 "stop",		STOP,
 "break",	BREAK,

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.54 1996-11-23 00:55:26 ethan Exp $
+ *      $Id: Machine.c,v 1.55 1996-12-12 22:58:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1215,10 +1215,12 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
+/*
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
+*/
 				fprintf(fp,"\t%d\n",*ptr);
 				break;
 			case FILEVAR_COORD_OP:
@@ -1245,8 +1247,10 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
+/*
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
+*/
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
 			case FILEVARATT_OP:
@@ -1259,9 +1263,9 @@ void _NclPrintMachine
 /*
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
-*/
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
+*/
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
@@ -1273,8 +1277,10 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
+/*
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
+*/
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
 			case FILE_VAR_OP :
@@ -2205,7 +2211,7 @@ if(the_list != NULL) {
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
 				} else {
-					if((the_list->the_elements[i].var_ptr != NULL)&&(data.u.data_var->obj.id != the_list->the_elements[i].var_ptr->obj.id)) {
+					if((the_list->the_elements[i].var_ptr != NULL)&&(data.u.data_var->obj.id != the_list->the_elements[i].var_ptr->obj.id)&&(((NclVar)the_list->the_elements[i].var_ptr)->obj.status != PERMANENT)) {
 						_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
 					}
 					_NclDestroyObj((NclObj)data.u.data_var);
