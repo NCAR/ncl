@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.16 1995-03-16 23:08:23 haley Exp $
+ *	$Id: rasdraw.c,v 1.17 1997-01-31 22:52:51 clyne Exp $
  */
 /*
  *	rasdraw.c
@@ -430,6 +430,11 @@ static	XImage	*create_ximage(dpy, depth, visual, nx, ny, context)
 		else ximage->byte_order = MSBFirst;
 	}
 	else {
+/*
+**	Wish I new what I was doing here. Seems to fix the problem of
+**	having red & blue swapped on SGI IR systems.
+*/
+#ifdef	DEAD
 		/*
 		 * raw data format is fixed for direct color: red, green, blue
 		 */
@@ -439,6 +444,9 @@ static	XImage	*create_ximage(dpy, depth, visual, nx, ny, context)
 		else {
 			ximage->byte_order = MSBFirst;
 		}
+#else
+		ximage->byte_order = MSBFirst;
+#endif
 	}
 
 	/*

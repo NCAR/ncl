@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.17 1995-05-03 22:39:40 clyne Exp $
+ *	$Id: rasview.c,v 1.18 1997-01-31 22:52:52 clyne Exp $
  */
 /*
  *	rasview.c
@@ -28,6 +28,7 @@ static	struct	{
 	boolean	quiet;		/* quiet or verbose mode	*/
 	boolean	version;	/* print version		*/
 	boolean movie;		/* movie mode			*/
+	boolean	loop;		/* animate forever?		*/
 	char	*ifmt;		/* input format			*/
 	int	scale;		/* image scale factor		*/
 	boolean	not_used;	/* "-" option, we toss it	*/
@@ -41,6 +42,7 @@ static	OptDescRec	set_options[] = {
 	{"quiet", 0, NULL, "Operate in quite mode"},
 	{"Version", 0, NULL, "Print version number end exit"},
 	{"movie", 0, NULL, "Display frames in movie mode"},
+	{"loop", 0, NULL, "Display frames endlessly"},
 	{"ifmt", 1, NULL, "Input format"},
 	{"scale", 1, "1", "Integral, image scaling factor"},
         {"", 0, NULL, "Read rasterfile from the standard input"},
@@ -58,6 +60,8 @@ static	Option	get_options[] = {
 	{"Version", NCARGCvtToBoolean, (Voidptr)&opt.version,sizeof(opt.version)
 	},
 	{"movie", NCARGCvtToBoolean, (Voidptr)&opt.movie,sizeof(opt.movie)
+	},
+	{"loop", NCARGCvtToBoolean, (Voidptr)&opt.loop,sizeof(opt.loop)
 	},
 	{"ifmt", NCARGCvtToString, (Voidptr)&opt.ifmt,sizeof(opt.ifmt)
 	},
@@ -232,17 +236,94 @@ static	void	usage(progName, message)
 
 	exit(1);
 }
+
+
+static int	display(
+	char	**files,
+	int	scale,
+	Context	*context,
+	FILE	*verbose
+) {
+	int	status = 0;
+	int	count = 0;		/* number of images displayed	*/
+	Raster	*ras;
+	/*
+	 * anything left on command line is assumed to be a raster file
+	 */
+	while(*files)
+	{
+
+		if ((ras = RasterOpen(*files, opt.ifmt)) == (Raster *) NULL){
+			(void) fprintf (
+				stderr, "%s: RasterOpen(%s,%s) [ %s ]\n",
+				progName, *files, 
+				opt.ifmt ? opt.ifmt : "NULL", ErrGetMsg()
+			);
+			status = -1;
+			files++;
+			continue;	/* skip this file	*/
+		}
+
+		if (verbose) {
+			(void) fprintf(verbose, 
+				"Displaying images from file: %s\n", *files);
+		}
+
+		/*
+		 * display all the images in the file
+		 */
+		count = 0;
+		for (;;) {
+			Raster	*rasptr;
+
+			if ((status = RasterRead(ras)) != RAS_OK) {
+				break;
+			}
+
+			rasptr = ras;
+
+			if (opt.scale > 1) {
+				rasptr = raster_scale(ras, opt.scale);
+				if (! rasptr) exit(1);
+			}
+
+			if (verbose) {
+				count++;
+				(void) fprintf(verbose,
+					"	image number: %d\n",count);
+			}
+
+
+			if (display_image(rasptr, context, verbose ? 1 : 0) < 0) {
+				status = -1;
+			}
+		}
+
+		(void) RasterClose(ras);
+
+		if (status == RAS_ERROR) {
+			(void) fprintf(
+				stderr, 
+				"%s: Couldn't read rasterfile(%s) [ %s ]\n",
+				progName, *files, ErrGetMsg()
+			);
+			status = -1;
+		}
+		files++;
+	}
+	return(0);
+}
+
+
 main(argc, argv)
 	int	argc;
 	char	**argv;
 {
-	Raster	*ras;
 	Context	*context;
 	int	status;
 	unsigned char	default_colors[768];
 	char	*pal_name;	/* name of a default color palette	*/
-	int	verbose;	/* verbose or quite mode		*/
-	int	count;		/* number of image displayed		*/
+	FILE	*verbose;	/* verbose or quite mode		*/
 	int	i;
 	char	**files;
 
@@ -275,7 +356,8 @@ main(argc, argv)
 		exit(1);
 	}
 	pal_name = opt.palette;
-	verbose = ! opt.quiet;
+	if (opt.quiet) verbose = NULL;
+	else verbose = stderr;
 
 	if (opt.version) {
 		PrintVersion(progName);
@@ -335,68 +417,19 @@ main(argc, argv)
 		}
 	}
 
-	/*
-	 * anything left on command line is assumed to be a raster file
-	 */
-	while(*files)
-	{
-
-		if ((ras = RasterOpen(*files, opt.ifmt)) == (Raster *) NULL){
-			(void) fprintf (
-				stderr, "%s: RasterOpen(%s,%s) [ %s ]\n",
-				progName, *files, 
-				opt.ifmt ? opt.ifmt : "NULL", ErrGetMsg()
-			);
-			exit_status++;
-			files++;
-			continue;	/* skip this file	*/
-		}
-
-		if (verbose) {
-			(void) fprintf(stderr, 
-				"Displaying images from file: %s\n", *files);
-		}
-
-		/*
-		 * display all the images in the file
-		 */
-		count = 0;
-		for (;;) {
-			Raster	*rasptr;
-
-			if ((status = RasterRead(ras)) != RAS_OK) {
-				break;
+	if (opt.loop) {
+		while (1) {
+			if (display(files, opt.scale, context, verbose) < 0) {
+				exit_status++;
 			}
-
-			rasptr = ras;
-
-			if (opt.scale > 1) {
-				rasptr = raster_scale(ras, opt.scale);
-				if (! rasptr) exit(1);
-			}
-
-			if (verbose) {
-				count++;
-				(void) fprintf(stderr,
-					"	image number: %d\n",count);
-			}
-
-
-			exit_status += display_image(rasptr, context, verbose);
 		}
-
-		(void) RasterClose(ras);
-
-		if (status == RAS_ERROR) {
-			(void) fprintf(
-				stderr, 
-				"%s: Couldn't read rasterfile(%s) [ %s ]\n",
-				progName, *files, ErrGetMsg()
-			);
-			exit_status++;
-		}
-		files++;
 	}
+	else {
+		if (display(files, opt.scale, context, verbose) < 0) {
+			exit_status++;
+		}
+	}
+
 	RasDrawClose(context);
 	exit(exit_status);
 }
