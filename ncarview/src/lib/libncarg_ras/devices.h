@@ -1,3 +1,6 @@
+/*
+ *	$Id: devices.h,v 1.2 1991-08-15 16:21:10 clyne Exp $
+ */
 typedef struct RasterDeviceStruct {
 	char			*name;
 	int			(*Probe)();
@@ -34,7 +37,7 @@ extern int	NrifClose();
 extern int	NrifPrintInfo();
 #endif
 
-#ifdef BuildRasterNrif
+#ifdef BuildRasterXWD
 extern int	XWDProbe();
 extern Raster	*XWDOpen();
 extern Raster	*XWDOpenWrite();
@@ -95,7 +98,7 @@ static RasterDevice rasdevices[] = {
 	NrifRead, NrifWrite, NrifClose, NrifPrintInfo
 },
 #endif
-#ifdef BuildRasterNrif
+#ifdef BuildRasterXwd
 {
 	"xwd", XWDProbe, XWDOpen, XWDOpenWrite, 
 	XWDRead, XWDWrite, XWDClose, XWDPrintInfo

@@ -7,7 +7,10 @@
 #define	BuildRasterHPLaser
 #define	BuildRasterNrif
 #define	BuildRasterSun
+
+#ifdef	BuildXlibDependentCode
 #define	BuildRasterXWD
+#endif	BuildXlibDependentCode
 
 NCARG		= ../../../..
 LOCINCDIR	= ../../include
@@ -16,31 +19,37 @@ INCLUDES	= ncarg_ras.h
 
 #ifdef BuildRasterHDF
 HDF_OBJS =	hdf.o
+HDF_SRCS =	hdf.c
 HDF_DEFS = 	-DBuildRasterHDF
 #endif
 
 #ifdef BuildRasterHPLaser
 HPLJ_OBJS =	hplj.o
+HPLJ_SRCS =	hplj.c
 HPLJ_DEFS =	-DBuildRasterHPLaser
 #endif
 
 #ifdef BuildRasterNrif
 NRIF_OBJS =	nrif.o
+NRIF_SRCS =	nrif.c
 NRIF_DEFS = 	-DBuildRasterNrif
 #endif
 
 #ifdef BuildRasterSun
 SUN_OBJS =	sunraster.o
+SUN_SRCS =	sunraster.c
 SUN_DEFS = 	-DBuildRasterSun
 #endif
 
 #ifdef BuildRasterXWD
 XWD_OBJS =	xwd.o
+XWD_SRCS =	xwd.c
 XWD_DEFS = 	-DBuildRasterXWD
 #endif
 
 #ifdef BuildRasterParallax
 PARALLAX_OBJS =	parallax.o
+PARALLAX_SRCS =	parallax.c
 PARALLAX_DEFS =	-DBuildRasterParallax
 #endif
 
@@ -51,8 +60,14 @@ CDEFINES =	-I$(LOCINCDIR) \
 DEVICE_OBJS =	$(HDF_OBJS) $(HPLJ_OBJS) $(NRIF_OBJS) $(SUN_OBJS) \
 		$(XWD_OBJS) $(PARALLAX_OBJS)
 
+DEVICE_SRCS =	$(HDF_SRCS) $(HPLJ_SRCS) $(NRIF_SRCS) $(SUN_SRCS) \
+		$(XWD_SRCS) $(PARALLAX_SRCS)
+
 GENERIC_OBJS =	raster.o cleartext.o error.o misc.o palette.o dither.o \
 		$(DEVICE_OBJS)
+
+GENERIC_SRCS =	raster.c cleartext.c error.c misc.c palette.c dither.c \
+		$(DEVICE_SRCS)
 			
 #ifdef CRAY
 OTHER_OBJS	= bsd-sysv.o
