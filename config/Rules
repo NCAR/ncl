@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.21 1994-04-21 18:46:06 boote Exp $
+ *	$Id: Rules,v 1.22 1994-05-05 21:43:38 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -50,10 +50,10 @@ me: local-Makefile]
  *		dirs passed to it.
  */
 #ifndef	SubdirTarget
-#define	SubdirTarget(dirs,target,dependency)\
+#define	SubdirTarget(dirs,target,dependency,margs)\
 ]\
 target::dependency]\
-	@tname\=target; \ ]\
+	margs/**/tname\=target; \ ]\
 	for dir in dirs ; do \ ]\
 	if (test -d $$dir) then \ ]\
 	(cd $$dir; echo "Making $$tname in $(CURRENT_DIR)/$$dir";\ ]\
@@ -125,7 +125,7 @@ all:: all-local makesubdirs]
  */
 #ifndef	InternalCleanSubdirs
 #define InternalCleanSubdirs(dirs)\
-SubdirTarget(dirs,clean,clean-local)
+SubdirTarget(dirs,clean,clean-local,-@)
 #endif	/* InternalCleanSubdirs */
 
 /*
@@ -136,10 +136,10 @@ SubdirTarget(dirs,clean,clean-local)
  */
 #ifndef	InternalDistCleanSubdirs
 #define	InternalDistCleanSubdirs(dirs)\
-SubdirTarget(dirs,dist-clean,clean-local)\
+SubdirTarget(dirs,dist-clean,clean-local,-@)\
 ]\
 dist-clean::]\
-	@$(RM) Makefile]\
+	-@$(RM) Makefile]\
 	@echo "dist-clean in $(CURRENT_DIR)"]\
 
 #endif	/* InternalDistCleanSubdirs */
@@ -152,7 +152,7 @@ dist-clean::]\
  */
 #ifndef	InternalInstallSubdirs
 #define InternalInstallSubdirs(dirs)\
-SubdirTarget(dirs,install,install-local)
+SubdirTarget(dirs,install,install-local,@)
 #endif	/* InternalInstallSubdirs */
 
 /*
@@ -538,7 +538,7 @@ depend-local:: srcs]\
 depend::]
 #else
 #define InternalDependSubdirs(dirs)\
-SubdirTarget(dirs,depend,depend-local)
+SubdirTarget(dirs,depend,depend-local,@)
 #endif	/* NoMakeDepend */
 #endif	/* InternalDependSubdirs */
 
@@ -580,7 +580,7 @@ includes-local::]\
  */
 #ifndef	InternalIncludesSubdirs
 #define	InternalIncludesSubdirs(dirs)\
-SubdirTarget(dirs,includes,includes-local)
+SubdirTarget(dirs,includes,includes-local,@)
 #endif	/* InternalIncludesSubdirs */
 
 /*
@@ -645,7 +645,7 @@ preformatted-local::]\
 #define	FormatManPagesSubdirs(dirs)\
 preformatted-local::]\
 ]\
-SubdirTarget(dirs,preformatted,preformatted-local)
+SubdirTarget(dirs,preformatted,preformatted-local,@)
 #endif	/* FormatManPagesSubdirs */
 
 /*

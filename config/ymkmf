@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: ymkmf,v 1.5 1994-04-11 22:48:09 boote Exp $
+#      $Id: ymkmf,v 1.6 1994-05-05 21:43:45 boote Exp $
 #
 #########################################################################
 #									#
@@ -39,6 +39,8 @@
 #
 #	Options:	topdirname
 
+onintr	cleanup
+
 set	topdir	= .
 set	thisdir = `pwd`
 
@@ -49,7 +51,7 @@ while ($#argv)
 	switch ("$argv[1]")
 
 	case	-D*
-	case	-local
+	case	-noproject
 		set defines = ($defines "$argv[1]")
 
 		breaksw
@@ -57,12 +59,11 @@ while ($#argv)
 	default:
 		# make sure "topname" is last arg
 		if ($#argv != 1) then
-			echo "$0 : Usage `basename $0` [-local] [-D ...] topname"
+			echo "$0 : Usage `basename $0` [-noproject] [-D ...] topname"
 			exit 1
 		endif
 
 		set	topname = $argv[1]
-		@ useinstalled = 1
 
 		breaksw
 	endsw
@@ -72,7 +73,6 @@ end
 
 if (! $?topname) then
 	set	topname = ncarg
-	@ useinstalled = 0
 endif
 
 if ("$topname" == ".") then
@@ -119,6 +119,12 @@ shortcut:
 
 set defines = ($defines -Curdir "$curdir" -Topdir "$topdir")
 
+if ( -f "$topdir"/config/ymake) then
+	@ useinstalled = 0
+else
+	@ useinstalled = 1
+endif
+
 if ($useinstalled == 1) then
 	exec ymake $defines
 else
@@ -129,3 +135,9 @@ else
 	endif
 	exec "$topdir"/config/ymake -config "$topdir"/config $defines
 endif
+
+cleanup:
+echo ""
+echo "Terminating..."
+echo ""
+exit 0

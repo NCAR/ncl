@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.22 1994-04-21 18:46:10 boote Exp $
+ *      $Id: Template,v 1.23 1994-05-05 21:43:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -466,6 +466,26 @@ NGCOMM########################################################################
 #define CURDIR	.
 #endif	/* CURDIR */
 
+#ifndef	_YmakeArg1
+#define	_YmakeArg1 /**/
+#endif	/* _YmakeArg1 */
+
+#ifndef _YmakeArg2
+#define _YmakeArg2 /**/
+#endif /* _YmakeArg2 */
+
+#ifndef _YmakeArg3
+#define _YmakeArg3 /**/
+#endif /* _YmakeArg3 */
+
+#ifndef _YmakeArg4
+#define _YmakeArg4 /**/
+#endif /* _YmakeArg4 */
+
+#ifndef _YmakeArg5
+#define _YmakeArg5 /**/
+#endif /* _YmakeArg5 */
+
 YMAKEROOT		= YmakeRoot
 BINROOT			= BinRoot
 LIBROOT			= LibRoot
@@ -663,9 +683,7 @@ INSTALL_INC	= 0644
 CONFIGSRC	= $(TOP)/$(CONFIGDIR)
 NEWCONFIGSRC	= ../$(CONFIGSRC)
 
-#if	defined(_PROJECT_FILE) || defined(_NO_PROJECT_FILE)
-_YMAKE_EXTRA	= -local
-#endif
+_YMAKE_EXTRA	= _YmakeArg1 _YmakeArg2 _YmakeArg3 _YmakeArg4 _YmakeArg5
 
 #ifdef	UseInstalled
 YMAKE		= ymake $(_YMAKE_EXTRA)
@@ -681,7 +699,13 @@ SHELL		= /bin/sh
 CALLCONV	= $(CONFIG_DIR)/callconv
 MKDIRHIER	= $(CONFIG_DIR)/mkdirhier
 
-#ifndef	_NO_PROJECT_FILE
+#ifdef	_NO_PROJECT_FILE
+NGCOMM########################################################################
+NGCOMM
+NGCOMM Not Including a Project file : -noproject was specified to ymake.
+NGCOMM
+NGCOMM########################################################################
+#else
 #ifdef	_PROJECT_FILE
 NGCOMM########################################################################
 NGCOMM
@@ -707,7 +731,7 @@ NGCOMM After Including Project file
 NGCOMM
 NGCOMM########################################################################
 #endif
-#endif
+#endif	/* _NO_PROJECT_FILE */
 
 NGCOMM########################################################################
 NGCOMM

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.17 1994-05-03 18:50:15 haley Exp $
+#	$Id: ymake,v 1.18 1994-05-05 21:43:43 boote Exp $
 #
 ######################################################################
 #
@@ -37,6 +37,7 @@
 ######################################################################
 
 set	defines
+set	ymakeargs
 @ useinstalled = 1
 
 while ($#argv)
@@ -59,9 +60,11 @@ while ($#argv)
 		endif
 		breaksw
 
-	case	-local:
+	case	-noproject:
 
-		set UseLocal = "True"
+		@ NoProject = 1
+		set defines = ($defines -D_NO_PROJECT_FILE)
+		set ymakeargs = ($ymakeargs -noproject)
 
 		breaksw
 
@@ -94,26 +97,50 @@ while ($#argv)
 
 	default:
 		set defines = ($defines $argv[1])
+		set ymakeargs = ($ymakeargs $argv[1])
 		breaksw
 	endsw
 
 	shift
 end
 
+@ num_args = 0
+foreach arg ($ymakeargs)
+	@ num_args++
+	switch ("$num_args")
+
+	case 1:
+		set defines = ($defines -D_YmakeArg1=$arg)
+		breaksw
+	case 2:
+		set defines = ($defines -D_YmakeArg2=$arg)
+		breaksw
+	case 3:
+		set defines = ($defines -D_YmakeArg3=$arg)
+		breaksw
+	case 4:
+		set defines = ($defines -D_YmakeArg4=$arg)
+		breaksw
+	case 5:
+		set defines = ($defines -D_YmakeArg5=$arg)
+		breaksw
+	default:
+		echo "$0 :Too Many args - ignoring $arg" > /dev/tty
+		breaksw
+	endsw
+end
+
 if( ! $?top_dir) then
 	set top_dir = .
 endif
 
+if ( -r $top_dir/ymake.conf) then
+	set defines=($defines -D_LOCAL_CONF=\"$top_dir/ymake.conf\")
+endif
 
-if($?UseLocal) then
-	if ( -r $top_dir/ymake.conf) then
-		set defines=($defines -D_LOCAL_CONF=\"$top_dir/ymake.conf\")
-	endif
-
+if(! $?NoProject) then
 	if ( -r $top_dir/ymake.project) then
 		set defines=($defines -D_PROJECT_FILE=\"$top_dir/ymake.project\")
-	else
-		set defines=($defines -D_NO_PROJECT_FILE)
 	endif
 endif
 
