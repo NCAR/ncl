@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.15 1995-06-03 00:45:09 ethan Exp $
+ *      $Id: DataSupport.c,v 1.16 1995-06-07 17:38:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -160,30 +160,33 @@ unsigned int type;
 	NclObjClass oc = NULL;
 	void *call_data;
 	NhlErrorTypes ret = NhlNOERROR,ret1;
-
-	oc = obj->obj.class_ptr;	
-	switch(type) {
-	case CREATED:
-		call_data  = _NclObtainCallData(obj,CREATED);
-		cl = oc->obj_class.create_callback;
-		break;
-	case MODIFIED:
-		call_data  = _NclObtainCallData(obj,MODIFIED);
-		cl = oc->obj_class.modify_callback;
-		break;
-	case DESTROYED:
-		call_data  = _NclObtainCallData(obj,DESTROYED);
-		cl = oc->obj_class.delete_callback;
-		break;
-	}
-	while(cl != NULL) {
-		ret1 = (*(NclCallBack*)cl->func)(call_data,cl->user_data);
-		if(ret1 < ret) {	
-			ret = ret1;
+	if(obj != NULL) {
+		oc = obj->obj.class_ptr;	
+		switch(type) {
+		case CREATED:
+			call_data  = _NclObtainCallData(obj,CREATED);
+			cl = oc->obj_class.create_callback;
+			break;
+		case MODIFIED:
+			call_data  = _NclObtainCallData(obj,MODIFIED);
+			cl = oc->obj_class.modify_callback;
+			break;
+		case DESTROYED:
+			call_data  = _NclObtainCallData(obj,DESTROYED);
+			cl = oc->obj_class.delete_callback;
+			break;
 		}
-		cl = cl->next;
+		while(cl != NULL) {
+			ret1 = (*(NclCallBack*)cl->func)(call_data,cl->user_data);
+			if(ret1 < ret) {	
+				ret = ret1;
+			}
+			cl = cl->next;
+		}
+		return(ret);
+	} else {
+		return(NhlFATAL);
 	}
-	return(ret);
 }
 
 

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.17 1995-06-03 00:45:05 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.18 1995-06-07 17:38:32 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1313,6 +1313,7 @@ NhlErrorTypes _NclIDelete
 	NclStackEntry* var;
 	NclSymbol *thesym;
 	int sub_sel = 0;
+	NclObj tmp;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 
@@ -1344,6 +1345,7 @@ NhlErrorTypes _NclIDelete
 		if((data.u.data_var != NULL)&&(data.u.data_var->var.thesym != NULL)&&(!sub_sel)) {
 			var = _NclRetrieveRec(data.u.data_var->var.thesym,DONT_CARE);
 			thesym = data.u.data_var->var.thesym;
+			tmp = (NclObj)data.u.data_var;
 			if(data.u.data_var->var.var_type == NORMAL) {
 /*
 * Can't destroy symbol since it may be referenced from the instruction
@@ -1357,7 +1359,7 @@ NhlErrorTypes _NclIDelete
 		} else {
 			var = NULL;
 		}
-		_NclDestroyObj((NclObj)data.u.data_var);
+		_NclDestroyObj((NclObj)tmp);
 		if(var != NULL) {
 			var->u.data_var = NULL;
 			var->kind = NclStk_NOVAL;
