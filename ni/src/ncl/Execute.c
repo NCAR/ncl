@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.4 1994-01-19 19:22:16 ethan Exp $
+ *      $Id: Execute.c,v 1.5 1994-01-21 02:48:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -659,28 +659,54 @@ NclExecuteReturnStatus _NclExecute
 			case DO_FROM_TO_STRIDE_OP :
 				ptr++;lptr++;fptr++;
 				break;
-/***************************
-* Two Operand Instructions *
-***************************/			
-			case PARAM_VAR_DIMNUM_OP:
-			case VAR_DIMNUM_OP: {
+			case PARAM_VAR_DIM_OP:
+			case VAR_DIM_OP: {
 				NclSymbol *thesym;
-				int dim_num;
+				long dim_num;
 				NclStackEntry data;
+				NclMultiDValData data_md = NULL;
 				NclStackEntry *var;
+				unsigned int valid_dims = ((int)Ncl_MultiDVallongData 
+					| (int)Ncl_MultiDValintData 
+					| (int)Ncl_MultiDValshortData);
 
 				ptr++;lptr++;fptr++;
 				thesym = (NclSymbol*)*ptr;
-				ptr++;lptr++;fptr++;
-				dim_num = *ptr;
 		
 				var = _NclRetrieveRec(thesym);
 
-				if(var->u.data_var != NULL) {	
+				data = _NclPop();
+				switch(data.kind) {
+				case NclStk_VAL:	
+					data_md = data.u.data_obj;
+					break;
+				case NclStk_VAR:
+					data_md = _NclVarValueRead(data.u.data_var,NULL);
+					break;
+				default:
+					data_md = NULL;
+/* ---------> Error message here < +++++++++ */				
+					status = FATAL;
+					break;
+				}
+				if((data_md != NULL)&&(data_md->obj.obj_type_mask & valid_dims)&&(data_md->multidval.kind == SCALAR)&&(var!= NULL)&&(var->u.data_var != NULL)) {	
+					if(!(data_md->obj.obj_type_mask & Ncl_MultiDVallongData)) {
+						NclScalarCoerce(
+							(void*)data_md->multidval.val,
+							data_md->multidval.data_type,
+							(void*)&dim_num,
+							NCL_long);
+					} else {
+						dim_num = *(long*)
+							data_md->multidval.val;
+					}
+
+
 					data.u.data_obj = _NclReadDim(
 						var->u.data_var,
 						NULL,
-						dim_num);
+						dim_num
+						);
 					if(data.u.data_obj == NULL) {
 						status = FATAL;
 					} else {
@@ -692,17 +718,87 @@ NclExecuteReturnStatus _NclExecute
 				}
 			}
 			break;
-			case ASSIGN_VAR_DIMNUM_OP: {
+			case ASSIGN_VAR_DIM_OP: {
+				NclSymbol *thesym = NULL;
+				int	dim_num;
+				char	*dim_name = NULL;
+				NclStackEntry dim_ref;
+				NclStackEntry dim_expr;
+				NclMultiDValData dim_ref_md = NULL;
+				NclMultiDValData dim_expr_md = NULL;
+				NclStackEntry *data_var = NULL;
+				unsigned int valid_dims = (unsigned int)(Ncl_MultiDVallongData 
+					| Ncl_MultiDValintData 
+					| Ncl_MultiDValshortData);
+				unsigned int valid_expr = (unsigned int)(Ncl_MultiDValstringData 
+					| Ncl_MultiDValcharData);
+
 				ptr++;lptr++;fptr++;
-				ptr++;lptr++;fptr++;
+				thesym = (NclSymbol*)*ptr;
+				data_var =  _NclRetrieveRec(thesym);
+				dim_ref = _NclPop();
+				dim_expr = _NclPop();
+				
+				switch(dim_ref.kind) {
+				case NclStk_VAL: 
+					dim_ref_md = dim_ref.u.data_obj;
+				break;
+				case NclStk_VAR:	
+					dim_ref_md = _NclVarValueRead(dim_ref.u.data_var,NULL);
+					break;
+				default:
+					break;
+				}
+				switch(dim_expr.kind) {
+				case NclStk_VAL:
+					dim_expr_md = dim_expr.u.data_obj;
+					break;
+				case NclStk_VAR:	
+					dim_expr_md = _NclVarValueRead(dim_expr.u.data_var,NULL);
+					break;
+				default:
+					break;
+				}
+				if((data_var != NULL )&&(data_var->u.data_var != NULL)
+					&&(dim_expr_md->obj.obj_type_mask & valid_expr)
+					&&(dim_ref_md->obj.obj_type_mask & valid_dims)
+					&&(dim_expr_md->multidval.kind == SCALAR)
+					&&(dim_ref_md->multidval.kind == SCALAR)) {
+					if(!(dim_expr_md->multidval.data_type != Ncl_MultiDValstringData)) {
+						NclScalarCoerce(
+							(void*)dim_expr_md->multidval.val,
+							dim_expr_md->multidval.data_type,
+							(void*)&dim_name,
+							NCL_long);
+							
+					} else {
+						dim_name = *(char**)dim_expr_md->multidval.val;
+					}
+					if(!(dim_ref_md->multidval.data_type != Ncl_MultiDVallongData)) {
+						NclScalarCoerce(
+							(void*)dim_ref_md->multidval.val,
+							dim_ref_md->multidval.data_type,
+							(void*)&dim_num,
+							NCL_long);
+							
+					} else {
+						dim_num= *(long*)dim_ref_md->multidval.val;
+					}
+
+					if(status != FATAL) {
+					status = _NclWriteDim(
+						data_var->u.data_var,
+						dim_num,
+						dim_name);
+					}
+				} else {
+					status = FATAL;
+				}
 			}
 			break;
-			case VAR_DIMNAME_OP:
-			case ASSIGN_VAR_DIMNAME_OP:
-			case PARAM_VAR_DIMNAME_OP:
-				ptr++;lptr++;fptr++;
-				ptr++;lptr++;fptr++;
-				break;
+/***************************
+* Two Operand Instructions *
+***************************/			
 			case PARAM_VAR_OP:
 			case VAR_OP : {
 				int i;
@@ -755,11 +851,11 @@ NclExecuteReturnStatus _NclExecute
 			case ASSIGN_VAR_OP :{
 				NclStackEntry rhs;
 				NclStackEntry data;
-				NclStackEntry *lhs_var;
-				NclMultiDValData rhs_md;
+				NclStackEntry *lhs_var = NULL;
+				NclMultiDValData rhs_md = NULL;
 				NclSelectionRecord *sel_ptr = NULL;
 				int i,nsubs;	
-				NclSymbol *sym;
+				NclSymbol *sym = NULL;
 				NhlErrorTypes ret = NOERROR;
 			
 			rhs = _NclPop();	
@@ -845,6 +941,9 @@ NclExecuteReturnStatus _NclExecute
 						}
 					}
 					ret = _NclAssignToVar(lhs_var->u.data_var,rhs_md,sel_ptr);
+					if(rhs_md->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)rhs_md);
+					}
 					if(ret <= WARNING) {
 						status = ret;
 					}
@@ -876,15 +975,21 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				ptr++;lptr++;fptr++;
 				break;
+			case FILEVAR_DIM_OP:	
+			case ASSIGN_FILEVAR_DIM_OP:
+			case PARAM_FILEVAR_DIM_OP:
+				ptr++;lptr++;fptr++;
+				ptr++;lptr++;fptr++;
+				break;
 /*****************************
 * Three Operand Instructions *
 *****************************/
 			case PARAM_VARATT_OP:
 			case VARATT_OP: {
-				NclSymbol *thesym;
-				char*	attname;
+				NclSymbol *thesym = NULL;
+				char*	attname = NULL;
 				int	nsubs;
-				NclStackEntry *var;
+				NclStackEntry *var = NULL;
 				NclSelectionRecord *sel_ptr = NULL;
 				NclStackEntry data;
 
@@ -953,24 +1058,18 @@ NclExecuteReturnStatus _NclExecute
 			case ASSIGN_VAR_COORD_OP:
 			case FILE_VAR_OP :
 			case ASSIGN_FILE_VAR_OP :
-			case FILEVAR_DIMNAME_OP:	
-			case ASSIGN_FILEVAR_DIMNAME_OP:
-			case PARAM_FILEVAR_DIMNAME_OP:
-			case FILEVAR_DIMNUM_OP:	
-			case ASSIGN_FILEVAR_DIMNUM_OP:
-			case PARAM_FILEVAR_DIMNUM_OP:
 				ptr++;lptr++;fptr++;
 				ptr++;lptr++;fptr++;
 				ptr++;lptr++;fptr++;
 				break;
 			case ASSIGN_VARATT_OP: {
-				NclSymbol *thesym;
-				char *attname;
+				NclSymbol *thesym = NULL;
+				char *attname = NULL;
 				int nsubs;
 				NhlErrorTypes ret = NOERROR;
-				NclStackEntry *var;
+				NclStackEntry *var = NULL;
 				NclStackEntry value;
-				NclMultiDValData value_md;
+				NclMultiDValData value_md = NULL;
 				NclSelectionRecord *sel_ptr = NULL;
 				NclStackEntry data1;
 				

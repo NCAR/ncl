@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Keywords.h,v 1.3 1993-12-21 19:17:37 ethan Exp $
+ *      $Id: Keywords.h,v 1.4 1994-01-21 02:49:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -43,6 +43,8 @@ static struct {
 "procedure",    KEYPROC,
 "function",     KEYFUNC,
 "quit",         QUIT,
+"Quit",         QUIT,
+"QUIT",         QUIT,
 "integer",      INTEGER,
 "float",        FLOAT,
 "long",         LONG,

@@ -1,6 +1,8 @@
 %{
 #include <stdio.h>
+/*
 #include <pfmt.h>
+*/
 #include <ncarg/hlu/hluP.h>
 #include <data_objs/NclData.h>
 #include <defs.h>
@@ -45,7 +47,7 @@ char *cur_load_file = NULL;
 }
 
 %token	<void> EOLN 
-%token	<void> RP LP RBC LBC RBK LBK COLON ',' '*' SEMI MARKER LPSLSH SLSHRP
+%token	<void> RP LP RBC LBC RBK LBK COLON ',' '*' SEMI MARKER LPSLSH SLSHRP DIM_MARKER
 %token <integer> INT DIMNUM
 %token <real> REAL
 %token <str> STRING DIM DIMNAME ATTNAME COORD FVAR 
@@ -1090,11 +1092,8 @@ identifier : vname {
 				
 						$$ = _NclMakeFileVarRef($1,&(($2)[2]),$4,Ncl_FILEVAR);
 					}
-	| vname FVAR DIMNUM		{
-						$$ = _NclMakeFileVarDimNumRef($1,&(($2)[2]),$3);
-					}
-	| vname FVAR DIMNAME			{
-						$$ = _NclMakeFileVarDimNameRef($1,&(($2)[2]),$3);		
+	| vname FVAR DIM_MARKER primary	{
+						$$ = _NclMakeFileVarDimRef($1,&(($2)[2]),$4);		
 					}
         | vname FVAR ATTNAME			{
 						$$ = _NclMakeFileVarAttRef($1,&(($2)[2]),$3,NULL);
@@ -1108,11 +1107,8 @@ identifier : vname {
 	| vname FVAR COORD LP subscript_list RP{
 						$$ = _NclMakeFileVarCoordRef($1,&(($2)[2]),&(($3)[1]),$5);
 					}
-	| vname DIMNUM			{
-						$$ = _NclMakeVarDimNumRef($1,$2);
-					}
-	| vname DIMNAME			{
-						$$ = _NclMakeVarDimNameRef($1,$2);		
+	| vname DIM_MARKER primary  {
+						$$ = _NclMakeVarDimRef($1,$3);		
 					}
         | vname ATTNAME			{
 						$$ = _NclMakeVarAttRef($1,$2,NULL);

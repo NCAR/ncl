@@ -905,51 +905,47 @@ Unneeded translations
 			}
 			break;
 		}
-		case Ncl_FILEVARDIMNUM:
+		case Ncl_FILEVARDIM:
 		{
 			NclFileVarDim *filevardim = (NclFileVarDim*)root;
 
+			off1 = _NclTranslate(filevardim->dim_expr,fp);
 			switch(filevardim->ref_type) {
 			case Ncl_READIT:
-				off1 = _NclPutInstr(FILEVAR_DIMNUM_OP,filevardim->line,filevardim->file);
+				_NclPutInstr(FILEVAR_DIM_OP,filevardim->line,filevardim->file);
 				_NclPutInstr((NclValue)filevardim->filesym,filevardim->line,filevardim->file);
 				_NclPutInstr((NclValue)filevardim->filevar,filevardim->line,filevardim->file);
-				_NclPutInstr((NclValue)filevardim->u.dimnum,filevardim->line,filevardim->file);
 				break;
 			case Ncl_WRITEIT:
-				off1 = _NclPutInstr(ASSIGN_FILEVAR_DIMNUM_OP,filevardim->line,filevardim->file);
+				_NclPutInstr(ASSIGN_FILEVAR_DIM_OP,filevardim->line,filevardim->file);
 				_NclPutInstr((NclValue)filevardim->filesym,filevardim->line,filevardim->file);
 				_NclPutInstr((NclValue)filevardim->filevar,filevardim->line,filevardim->file);
-				_NclPutInstr((NclValue)filevardim->u.dimnum,filevardim->line,filevardim->file);
 				break;
 			case Ncl_PARAMIT:
-				off1 = _NclPutInstr(PARAM_FILEVAR_DIMNUM_OP,filevardim->line,filevardim->file);
+				_NclPutInstr(PARAM_FILEVAR_DIM_OP,filevardim->line,filevardim->file);
 				_NclPutInstr((NclValue)filevardim->filesym,filevardim->line,filevardim->file);
 				_NclPutInstr((NclValue)filevardim->filevar,filevardim->line,filevardim->file);
-				_NclPutInstr((NclValue)filevardim->u.dimnum,filevardim->line,filevardim->file);
 				break;
 			}
 			break;
 		}
-		case Ncl_VARDIMNUM:
+		case Ncl_VARDIM:
 		{
 			NclVarDim *vardim = (NclVarDim*)root;
 
+			off1 = _NclTranslate(vardim->dim_expr,fp);
 			switch(vardim->ref_type) {
 			case Ncl_READIT:
-				off1 = _NclPutInstr(VAR_DIMNUM_OP,vardim->line,vardim->file);
+				_NclPutInstr(VAR_DIM_OP,vardim->line,vardim->file);
 				_NclPutInstr((NclValue)vardim->sym,vardim->line,vardim->file);
-				_NclPutInstr((NclValue)vardim->u.dimnum,vardim->line,vardim->file);
 				break;
 			case Ncl_WRITEIT:
-				off1 = _NclPutInstr(ASSIGN_VAR_DIMNUM_OP,vardim->line,vardim->file);
+				_NclPutInstr(ASSIGN_VAR_DIM_OP,vardim->line,vardim->file);
 				_NclPutInstr((NclValue)vardim->sym,vardim->line,vardim->file);
-				_NclPutInstr((NclValue)vardim->u.dimnum,vardim->line,vardim->file);
 				break;
 			case Ncl_PARAMIT:
-				off1 = _NclPutInstr(PARAM_VAR_DIMNUM_OP,vardim->line,vardim->file);
+				_NclPutInstr(PARAM_VAR_DIM_OP,vardim->line,vardim->file);
 				_NclPutInstr((NclValue)vardim->sym,vardim->line,vardim->file);
-				_NclPutInstr((NclValue)vardim->u.dimnum,vardim->line,vardim->file);
 				break;
 			}
 			break;
@@ -1084,53 +1080,6 @@ Unneeded translations
 				_NclPutInstr((NclValue)varatt->attname,varatt->line,varatt->file);
 				_NclPutInstr((NclValue)nsubs,varatt->line,varatt->file);
 				break;	
-			}
-			break;
-		}
-		case Ncl_FILEVARDIMNAME:
-		{
-			NclFileVarDim *filevardim = (NclFileVarDim*)root;
-
-			switch(filevardim->ref_type) {
-			case Ncl_READIT:
-				off1 = _NclPutInstr(FILEVAR_DIMNAME_OP,filevardim->line,filevardim->file);
-				_NclPutInstr((NclValue)filevardim->filesym,filevardim->line,filevardim->file);
-				_NclPutInstr((NclValue)filevardim->filevar,filevardim->line,filevardim->file);
-				_NclPutInstr((NclValue)filevardim->u.dimname,filevardim->line,filevardim->file);
-			case Ncl_WRITEIT:
-				off1 = _NclPutInstr(ASSIGN_FILEVAR_DIMNAME_OP,filevardim->line,filevardim->file);
-				_NclPutInstr((NclValue)filevardim->filesym,filevardim->line,filevardim->file);
-				_NclPutInstr((NclValue)filevardim->filevar,filevardim->line,filevardim->file);
-				_NclPutInstr((NclValue)filevardim->u.dimname,filevardim->line,filevardim->file);
-				break;
-			case Ncl_PARAMIT:
-				off1 = _NclPutInstr(PARAM_FILEVAR_DIMNAME_OP,filevardim->line,filevardim->file);
-				_NclPutInstr((NclValue)filevardim->filesym,filevardim->line,filevardim->file);
-				_NclPutInstr((NclValue)filevardim->filevar,filevardim->line,filevardim->file);
-				_NclPutInstr((NclValue)filevardim->u.dimname,filevardim->line,filevardim->file);
-				break;
-			}
-			break;
-		}
-		case Ncl_VARDIMNAME:
-		{
-			NclVarDim *vardim = (NclVarDim*)root;
-
-			switch(vardim->ref_type) {
-			case Ncl_READIT:
-				off1 = _NclPutInstr(VAR_DIMNAME_OP,vardim->line,vardim->file);
-				_NclPutInstr((NclValue)vardim->sym,vardim->line,vardim->file);
-				_NclPutInstr((NclValue)vardim->u.dimname,vardim->line,vardim->file);
-			case Ncl_WRITEIT:
-				off1 = _NclPutInstr(ASSIGN_VAR_DIMNAME_OP,vardim->line,vardim->file);
-				_NclPutInstr((NclValue)vardim->sym,vardim->line,vardim->file);
-				_NclPutInstr((NclValue)vardim->u.dimname,vardim->line,vardim->file);
-				break;
-			case Ncl_PARAMIT:
-				off1 = _NclPutInstr(PARAM_VAR_DIMNAME_OP,vardim->line,vardim->file);
-				_NclPutInstr((NclValue)vardim->sym,vardim->line,vardim->file);
-				_NclPutInstr((NclValue)vardim->u.dimname,vardim->line,vardim->file);
-				break;
 			}
 			break;
 		}

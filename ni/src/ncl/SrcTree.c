@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.6 1993-12-30 00:44:34 ethan Exp $
+ *      $Id: SrcTree.c,v 1.7 1994-01-21 02:49:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -63,12 +63,11 @@ char *src_tree_names[] = {"Ncl_BLOCK", "Ncl_RETURN", "Ncl_IFTHEN",
                         "Ncl_STRING", "Ncl_BUILTINFUNCCALL",
                         "Ncl_EXTERNFUNCCALL", "Ncl_FUNCCALL", "Ncl_ARRAY",
                         "Ncl_ROWLIST","Ncl_ROWCOLUMNNODE","Ncl_DOWHILE",
-			"Ncl_VAR", "Ncl_VARDIMNUM", "Ncl_VARATT",
-                        "Ncl_VARDIMNAME", "Ncl_VARCOORD",
-                        "Ncl_FILEVAR", "Ncl_IDNEXPR",
+			"Ncl_VAR", "Ncl_VARDIM", "Ncl_VARATT",
+                        "Ncl_VARCOORD", "Ncl_FILEVAR", "Ncl_IDNEXPR",
 			"Ncl_RESOURCE","Ncl_GETRESOURCE", "Ncl_OBJ",
 			"Ncl_BREAK", "Ncl_CONTINUE","Ncl_FILEVARATT",
-			"Ncl_FILEVARDIMNAME", "Ncl_FILEVARDIMNUM",
+			"Ncl_FILEVARDIM",
 			"Ncl_FILECOORD"
 			};
 /*
@@ -2473,7 +2472,7 @@ if(groot != NULL) {
 			i--;
 		}
 			break;
-		case Ncl_FILEVARDIMNUM:
+		case Ncl_FILEVARDIM:
 		{
 			NclFileVarDim *filevardim = (NclFileVarDim*)root;
 			putspace(i,fp);
@@ -2484,12 +2483,11 @@ if(groot != NULL) {
 			putspace(i,fp);
 			fprintf(fp,"%s\t",ref_node_names[filevardim->ref_type]);
 			_NclPrintSymbol(filevardim->filesym,fp);
-			putspace(i,fp);
-			fprintf(fp,"dim#: %d\n",filevardim->u.dimnum);
+			_NclPrintTree(filevardim->dim_expr,fp);
 			i--;
 		}
 			break;
-		case Ncl_VARDIMNUM:
+		case Ncl_VARDIM:
 		{
 			NclVarDim *vardim = (NclVarDim*)root;
 			putspace(i,fp);
@@ -2498,8 +2496,7 @@ if(groot != NULL) {
 			putspace(i,fp);
 			fprintf(fp,"%s\t",ref_node_names[vardim->ref_type]);
 			_NclPrintSymbol(vardim->sym,fp);
-			putspace(i,fp);
-			fprintf(fp,"dim#: %d\n",vardim->u.dimnum);
+			_NclPrintTree(vardim->dim_expr,fp);
 			i--;
 		}
 			break;
@@ -2540,36 +2537,6 @@ if(groot != NULL) {
 				_NclPrintTree(step->node,fp);
 				step = step->next;
 			}
-			i--;
-		}
-			break;
-		case Ncl_FILEVARDIMNAME:
-		{
-			NclFileVarDim *filevardim = (NclFileVarDim*)root;
-			putspace(i,fp);
-			fprintf(fp,"%s\n",filevardim->name);
-			i++;
-			putspace(i,fp);
-			fprintf(fp,"%s\t",ref_node_names[filevardim->ref_type]);
-			_NclPrintSymbol(filevardim->filesym,fp);
-			putspace(i,fp);
-			fprintf(fp,"%s\n",filevardim->filevar);
-			putspace(i,fp);
-			fprintf(fp,"dim name: %s\n",filevardim->u.dimname);
-			i--;
-		}
-			break;
-		case Ncl_VARDIMNAME:
-		{
-			NclVarDim *vardim = (NclVarDim*)root;
-			putspace(i,fp);
-			fprintf(fp,"%s\n",vardim->name);
-			i++;
-			putspace(i,fp);
-			fprintf(fp,"%s\t",ref_node_names[vardim->ref_type]);
-			_NclPrintSymbol(vardim->sym,fp);
-			putspace(i,fp);
-			fprintf(fp,"dim name: %s",vardim->u.dimname);
 			i--;
 		}
 			break;
@@ -2730,13 +2697,13 @@ NclSrcListNode *subscript_list;
 	return((void*)tmp);
 }
 
-void *_NclMakeVarDimNumRef
+void *_NclMakeVarDimRef
 #if  __STDC__
-(NclSymbol *var,int dimnum)
+(NclSymbol *var,void*  dim_expr)
 #else
-(var,dimnum)
+(var,dim_expr)
 NclSymbol *var;
-int dimnum;
+void *dim_expr;
 #endif
 {
 	NclVarDim *tmp = (NclVarDim*)NclMalloc((unsigned)sizeof(NclVarDim));
@@ -2744,13 +2711,13 @@ int dimnum;
 		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
-	tmp->kind = Ncl_VARDIMNUM;
-	tmp->name = src_tree_names[Ncl_VARDIMNUM];
+	tmp->kind = Ncl_VARDIM;
+	tmp->name = src_tree_names[Ncl_VARDIM];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
 	tmp->sym = var;
-	tmp->u.dimnum = dimnum;
+	tmp->dim_expr = dim_expr;
 	tmp->ref_type = Ncl_READIT;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
@@ -2768,14 +2735,14 @@ void _NclFileVarDimNumRefDestroy
 	NclFree((void*)tmp->filevar);
 	NclFree((void*)tmp);
 }
-void *_NclMakeFileVarDimNumRef
+void *_NclMakeFileVarDimRef
 #if  __STDC__
-(NclSymbol *var,char *filevar,int dimnum)
+(NclSymbol *var,char *filevar,void *dim_expr)
 #else
-(var,filevar,dimnum)
+(var,filevar,dim_expr)
 NclSymbol *var;
 char *filevar;
-int dimnum;
+void *dim_expr;
 #endif
 {
 	NclFileVarDim *tmp = (NclFileVarDim*)NclMalloc((unsigned)sizeof(NclFileVarDim));
@@ -2783,13 +2750,13 @@ int dimnum;
 		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
-	tmp->kind = Ncl_FILEVARDIMNUM;
-	tmp->name = src_tree_names[Ncl_FILEVARDIMNUM];
+	tmp->kind = Ncl_FILEVARDIM;
+	tmp->name = src_tree_names[Ncl_FILEVARDIM];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclFileVarDimNumRefDestroy;
 	tmp->filesym = var;
-	tmp->u.dimnum = dimnum;
+	tmp->dim_expr = dim_expr;
 	tmp->filevar= (char*)NclMalloc((unsigned)strlen(filevar)+1) ;
 	if(tmp->filevar == NULL) {
 		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
@@ -2801,100 +2768,6 @@ int dimnum;
 	return((void*)tmp);
 }
 
-void _NclVarDimNameRefDestroy
-#if __STDC__
-(struct ncl_genericnode *thenode)
-#else
-(thenode)
-	struct ncl_genericnode *thenode;
-#endif
-{
-	NclVarDim *tmp = (NclVarDim*)thenode;
-	
-	NclFree((void*)tmp->u.dimname);
-	NclFree((void*)tmp);
-}
-void *_NclMakeVarDimNameRef
-#if  __STDC__
-(NclSymbol *var,char *dimname)
-#else
-(var,dimname)
-NclSymbol *var;
-char *dimname;
-#endif
-{
-	NclVarDim *tmp = (NclVarDim*)NclMalloc((unsigned)sizeof(NclVarDim));
-	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
-		return(NULL);
-	}
-	tmp->kind = Ncl_VARDIMNAME;
-	tmp->name = src_tree_names[Ncl_VARDIMNAME];
-	tmp->line = cur_line_number;
-	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclVarDimNameRefDestroy;
-	tmp->sym = var;
-	tmp->u.dimname= (char*)NclMalloc((unsigned)strlen(dimname)+1);
-	if(tmp->u.dimname== NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
-		return(NULL);
-	}
-	strcpy(tmp->u.dimname,dimname);
-	tmp->ref_type = Ncl_READIT;
-	_NclRegisterNode((NclGenericNode*)tmp);
-	return((void*)tmp);
-}
-void _NclFileVarDimNameRefDestroy
-#if __STDC__
-(struct ncl_genericnode *thenode)
-#else
-(thenode)
-	struct ncl_genericnode *thenode;
-#endif
-{
-	NclFileVarDim *tmp = (NclFileVarDim*)thenode;
-	
-	NclFree((void*)tmp->u.dimname);
-	NclFree((void*)tmp->filevar);
-	NclFree((void*)tmp);
-}
-void *_NclMakeFileVarDimNameRef
-#if  __STDC__
-(NclSymbol *filesym,char *filevar,char *dimname)
-#else
-(filesym,filevar,dimname)
-NclSymbol *filesym;
-char *filevar;
-char *dimname;
-#endif
-{
-	NclFileVarDim *tmp = (NclFileVarDim*)NclMalloc((unsigned)sizeof(NclFileVarDim));
-	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
-		return(NULL);
-	}
-	tmp->kind = Ncl_FILEVARDIMNAME;
-	tmp->name = src_tree_names[Ncl_FILEVARDIMNAME];
-	tmp->line = cur_line_number;
-	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclFileVarDimNameRefDestroy;
-	tmp->filesym = filesym;
-	tmp->u.dimname= (char*)NclMalloc((unsigned)strlen(dimname)+1);
-	if(tmp->u.dimname== NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
-		return(NULL);
-	}
-	strcpy(tmp->u.dimname,dimname);
-	tmp->filevar= (char*)NclMalloc((unsigned)strlen(filevar)+1);
-	if(tmp->filevar == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
-		return(NULL);
-	}
-	strcpy(tmp->filevar,filevar);
-	tmp->ref_type = Ncl_READIT;
-	_NclRegisterNode((NclGenericNode*)tmp);
-	return((void*)tmp);
-}
 void _NclFileVarAttRefDestroy
 #if  __STDC__
 (struct ncl_genericnode *thenode)

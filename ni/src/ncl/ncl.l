@@ -305,21 +305,13 @@ digit	[0-9]
 	}
        	return s->type;
 }
-[!]{digit}+ {
-	sscanf(&(yytext[1]),"%d",&(yylval.integer));
-	printtoken(DIMNUM,yytext);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
-	return DIMNUM;
-}
-[!]{let}{alnum}* {
+[!] {
 	strcpy(yylval.str,&(yytext[1]));
-	printtoken(DIMNAME,yylval.str);
+	printtoken(DIM_MARKER,yylval.str);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
 	cur_line_text_pos += yyleng;
-	return DIMNAME;
+	return DIM_MARKER;
 }
 [@]{let}{alnum}* {
 	char *tmp;

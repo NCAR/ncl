@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.7 1994-01-13 22:14:20 ethan Exp $
+ *      $Id: Machine.c,v 1.8 1994-01-21 02:49:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -128,12 +128,9 @@ static void SetUpOpsStrings() {
 	ops_strings[FILE_VAR_OP] = "FILE_VAR_OP";
 	ops_strings[ASSIGN_FILE_VAR_OP] = "ASSIGN_FILE_VAR_OP";
 	ops_strings[PARAM_FILE_VAR_OP] = "PARAM_FILE_VAR_OP";
-	ops_strings[FILEVAR_DIMNAME_OP] = "FILEVAR_DIMNAME_OP";
-	ops_strings[ASSIGN_FILEVAR_DIMNAME_OP] = "ASSIGN_FILEVAR_DIMNAME_OP";
-	ops_strings[PARAM_FILEVAR_DIMNAME_OP] = "PARAM_FILEVAR_DIMNAME_OP";
-	ops_strings[FILEVAR_DIMNUM_OP]= "FILEVAR_DIMNUM_OP";
-	ops_strings[ASSIGN_FILEVAR_DIMNUM_OP]= "ASSIGN_FILEVAR_DIMNUM_OP";
-	ops_strings[PARAM_FILEVAR_DIMNUM_OP]= "PARAM_FILEVAR_DIMNUM_OP";
+	ops_strings[FILEVAR_DIM_OP] = "FILEVAR_DIM_OP";
+	ops_strings[ASSIGN_FILEVAR_DIM_OP] = "ASSIGN_FILEVAR_DIM_OP";
+	ops_strings[PARAM_FILEVAR_DIM_OP] = "PARAM_FILEVAR_DIM_OP";
 	ops_strings[FILEVAR_COORD_OP] = "FILEVAR_COORD_OP";
 	ops_strings[ASSIGN_FILEVAR_COORD_OP] = "ASSIGN_FILEVAR_COORD_OP";
 	ops_strings[PARAM_FILEVAR_COORD_OP] = "PARAM_FILEVAR_COORD_OP";
@@ -149,12 +146,9 @@ static void SetUpOpsStrings() {
 	ops_strings[VAR_COORD_OP] = "VAR_COORD_OP";
 	ops_strings[ASSIGN_VAR_COORD_OP] = "ASSIGN_VAR_COORD_OP";
 	ops_strings[PARAM_VAR_COORD_OP] = "PARAM_VAR_COORD_OP";
-	ops_strings[VAR_DIMNUM_OP]= "VAR_DIMNUM_OP";
-	ops_strings[ASSIGN_VAR_DIMNUM_OP]= "ASSIGN_VAR_DIMNUM_OP";
-	ops_strings[PARAM_VAR_DIMNUM_OP]= "PARAM_VAR_DIMNUM_OP";
-	ops_strings[VAR_DIMNAME_OP] = "VAR_DIMNAME_OP";
-	ops_strings[ASSIGN_VAR_DIMNAME_OP] = "ASSIGN_VAR_DIMNAME_OP";
-	ops_strings[PARAM_VAR_DIMNAME_OP] = "PARAM_VAR_DIMNAME_OP";
+	ops_strings[VAR_DIM_OP]= "VAR_DIM_OP";
+	ops_strings[ASSIGN_VAR_DIM_OP]= "ASSIGN_VAR_DIM_OP";
+	ops_strings[PARAM_VAR_DIM_OP]= "PARAM_VAR_DIM_OP";
 }
 
 NclValue *_NclGetCurrentMachine
@@ -769,7 +763,7 @@ void _NclPrintMachine
 			case ARRAY_LIT_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",*ptr);
+				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
 			case PUSH_STRING_LIT_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
@@ -782,7 +776,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",*ptr);
+				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
 			case PROC_CALL_OP:
 			case BPROC_CALL_OP:
@@ -904,29 +898,17 @@ void _NclPrintMachine
 				fprintf(fp,"\tArg #:");
 				fprintf(fp,"%d\n",(int)*ptr,fp);
 				break;
-			case VAR_DIMNAME_OP:
-			case ASSIGN_VAR_DIMNAME_OP:
-			case PARAM_VAR_DIMNAME_OP:
+			case VAR_DIM_OP:
+			case ASSIGN_VAR_DIM_OP:
+			case PARAM_VAR_DIM_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++,fptr++;
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				ptr++;lptr++,fptr++;
-				fprintf(fp,"\t%s\n",(char*)*ptr,fp);
 				break;
-			case VAR_DIMNUM_OP :
-			case ASSIGN_VAR_DIMNUM_OP :
-			case PARAM_VAR_DIMNUM_OP :
-				fprintf(fp,"%s\n",ops_strings[*ptr]);
-				ptr++;lptr++,fptr++;
-				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				ptr++;lptr++,fptr++;
-				fprintf(fp,"\t%d\n",(int)*ptr,fp);
-				break;
-			case FILEVAR_DIMNUM_OP :
-			case ASSIGN_FILEVAR_DIMNUM_OP :
-			case PARAM_FILEVAR_DIMNUM_OP :
+			case FILEVAR_DIM_OP :
+			case ASSIGN_FILEVAR_DIM_OP :
+			case PARAM_FILEVAR_DIM_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++,fptr++;
 				fprintf(fp,"\t");
@@ -934,21 +916,6 @@ void _NclPrintMachine
 				ptr++;lptr++,fptr++;
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				ptr++;lptr++,fptr++;
-				fprintf(fp,"\t%d\n",(int)*ptr,fp);
-				break;
-			case FILEVAR_DIMNAME_OP:
-			case ASSIGN_FILEVAR_DIMNAME_OP:
-			case PARAM_FILEVAR_DIMNAME_OP:
-				fprintf(fp,"%s\n",ops_strings[*ptr]);
-				ptr++;lptr++,fptr++;
-				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				ptr++;lptr++,fptr++;
-				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				ptr++;lptr++,fptr++;
-				fprintf(fp,"\t%s\n",(char*)*ptr,fp);
 				break;
 			default:
 				break;

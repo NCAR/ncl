@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.7 1994-01-13 22:14:25 ethan Exp $
+ *      $Id: defs.h,v 1.8 1994-01-21 02:49:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -143,15 +143,15 @@ typedef struct _NclFrame{
 
 typedef struct _NclVectorSelection{
         int n_ind;
-        int *ind;
-	int min;
-	int max;
+        long *ind;
+	long min;
+	long max;
 }NclVectorSelection;
 
 typedef struct _NclSubscriptSelection{
-        int start;
-        int finish;
-        int stride;
+        long start;
+        long finish;
+        long stride;
 }NclSubscriptSelection;
 
 typedef enum {	

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.5 1993-12-30 00:44:38 ethan Exp $
+ *      $Id: SrcTree.h,v 1.6 1994-01-21 02:49:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -45,11 +45,11 @@ typedef enum {Ncl_BLOCK, Ncl_RETURN, Ncl_IFTHEN, Ncl_IFTHENELSE,
 			Ncl_INT, Ncl_STRING, Ncl_BUILTINFUNCCALL, 
 			Ncl_EXTERNFUNCCALL, Ncl_FUNCCALL, Ncl_ARRAY,
 			Ncl_ROWLIST,Ncl_ROWCOLUMNNODE, Ncl_DOWHILE,
-			Ncl_VAR, Ncl_VARDIMNUM, Ncl_VARATT,
-			Ncl_VARDIMNAME, Ncl_VARCOORD, Ncl_FILEVAR, Ncl_IDNEXPR, 
+			Ncl_VAR, Ncl_VARDIM, Ncl_VARATT,
+			Ncl_VARCOORD, Ncl_FILEVAR, Ncl_IDNEXPR, 
 			Ncl_RESOURCE, Ncl_GETRESOURCE, Ncl_OBJ,
 			Ncl_BREAK, Ncl_CONTINUE, Ncl_FILEVARATT,
-			Ncl_FILEVARDIMNAME, Ncl_FILEVARDIMNUM, Ncl_FILEVARCOORD
+			Ncl_FILEVARDIM,  Ncl_FILEVARCOORD
                         } NclSrcTreeTypes;
 
 typedef enum { Ncl_READIT, Ncl_WRITEIT, Ncl_PARAMIT } NclReferenceTypes;
@@ -169,10 +169,7 @@ typedef struct ncl_filevardim{
 	NclReferenceTypes ref_type;
 	NclSymbol *filesym;
 	char *filevar;
-	union {
-		int	dimnum;
-		char 	*dimname;
-	}u;
+	void *dim_expr;
 }NclFileVarDim;
 
 typedef struct ncl_vardim{
@@ -183,10 +180,7 @@ typedef struct ncl_vardim{
 	NclSrcTreeDestroyProc destroy_it;
 	NclReferenceTypes ref_type;
 	NclSymbol *sym;
-	union {
-		int	dimnum;
-		char 	*dimname;
-	}u;
+	void *dim_expr;
 }NclVarDim;
 
 typedef struct ncl_filevaratt{
@@ -787,31 +781,17 @@ extern void *_NclMakeVarRef(
 #endif
 );	
 
-extern void *_NclMakeVarDimNumRef(
+extern void *_NclMakeVarDimRef(
 #ifdef NhlNeedProto
 	NclSymbol * /* var */,
-	int	/* dimnum */
+	void*	/* dimnumexpr */
 #endif
 );
-extern void *_NclMakeFileVarDimNumRef(
+extern void *_NclMakeFileVarDimRef(
 #ifdef NhlNeedProto
 	NclSymbol * /* var */,
 	char *	/*filevar*/,
-	int	/* dimnum */
-#endif
-);
-
-extern void *_NclMakeVarDimNameRef(
-#ifdef NhlNeedProto
-	NclSymbol * /* var */,
-	char * 	/* dimname */
-#endif
-);
-extern void *_NclMakeFileVarDimNameRef(
-#ifdef NhlNeedProto
-	NclSymbol * /* var */,
-	char * 	/* filevar*/,
-	char * 	/* dimname */
+	void*	/* dimexpr */
 #endif
 );
 
