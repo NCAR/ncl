@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.58 2001-02-01 16:30:12 haley Exp $
+;      $Id: gsn_code.ncl,v 1.59 2001-02-05 22:16:08 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -49,10 +49,10 @@ undef("get_res_eq")
 undef("get_res_ne")
 undef("get_res_value")
 undef("get_res_value_keep")
+undef("get_non_missing_pairs")
 undef("attsetvalues_check")
 undef("spread_colors")
 undef("check_for_irreg2loglin")
-undef("compute_ps_device_coords")
 undef("maximize_bb")
 undef("gsnp_turn_off_tickmarks")
 undef("gsnp_point_tickmarks_outward")
@@ -60,6 +60,7 @@ undef("gsnp_uniform_tickmark_labels")
 undef("gsnp_shape_plot")
 undef("gsnp_scale_plot")
 undef("check_for_tickmarks_off")
+undef("compute_ps_device_coords")
 undef("draw_and_frame")
 undef("get_bb_res")
 undef("gsn_open_ncgm")
@@ -67,11 +68,6 @@ undef("gsn_open_x11")
 undef("create_labelbar")
 undef("gsn_open_ps")
 undef("gsn_open_wks")
-undef("output_ps_return")
-undef("output_ps")
-undef("append_output_ps")
-undef("gsn_define_colormap")
-undef("gsn_retrieve_colormap")
 undef("gsn_polygon")
 undef("gsn_add_primitive")
 undef("gsn_add_polygon")
@@ -82,11 +78,17 @@ undef("gsn_polyline_ndc")
 undef("gsn_polymarker")
 undef("gsn_add_polymarker")
 undef("gsn_polymarker_ndc")
-undef("draw_bb")
 undef("gsn_labelbar_ndc")
+undef("gsn_text_ndc_return")
+undef("gsn_text_ndc")
+undef("gsn_text")
+undef("gsn_add_text")
 undef("gsn_panel_return")
 undef("gsn_panel")
 undef("gsn_attach_plots")
+undef("draw_bb")
+undef("gsn_define_colormap")
+undef("gsn_retrieve_colormap")
 undef("columns")
 undef("compute_hist_vals")
 undef("compute_hist_from_range_vals")
@@ -96,10 +98,6 @@ undef("gsn_contour_map")
 undef("gsn_map")
 undef("gsn_streamline")
 undef("gsn_streamline_map")
-undef("gsn_add_text")
-undef("gsn_text")
-undef("gsn_text_ndc_return")
-undef("gsn_text_ndc")
 undef("gsn_draw_colormap")
 undef("gsn_vector")
 undef("gsn_vector_contour")
@@ -119,7 +117,6 @@ undef("gsn_xy")
 ; Performs smoothing on a 2-dimensional array.                          ;
 ;                                                                       ;
 ;***********************************************************************;
-
 function smooth92d(var[*][*]:float,p[1]:float,q[1]:float)
 local dims,output,coef,m,n,p4,q4,i
 begin
@@ -163,7 +160,6 @@ end
 ; Performs smoothing on a 3-dimensional array.                          ;
 ;                                                                       ;
 ;***********************************************************************;
-
 function smooth93d(var[*][*][*]:float,p[1]:float,q[1]:float)
 local dims,output,coef,m,n,p4,q4,i
 begin
@@ -216,7 +212,6 @@ end
 ; resource of a workstation object or to the second argument of         ;
 ; gsn_define_colormap.                                                  ;
 ;***********************************************************************;
-
 function hsv2rgb (h[*]:float,s[*]:float,v[*]:float)
 begin
 ;
@@ -345,7 +340,6 @@ end
 ;                                                                       ;
 ; Add resource and its value to a resource list if it isn't already set.;
 ;***********************************************************************;
-
 procedure set_attr(res:logical,att_name:string,att_value)
 begin
   res = True
@@ -393,7 +387,6 @@ end
 ;                                                                       ;
 ; Get a list of resources that start with res_prefix.                   ;
 ;***********************************************************************;
-
 function get_res_eq(res,res_prefix:string)
 local i, j, ret_res, res2, attnames, res_index
 begin
@@ -439,7 +432,6 @@ end
 ;                                                                       ;
 ; Get a list of resources that don't start with res_prefix.             ;
 ;***********************************************************************;
-
 function get_res_ne(res,res_prefix:string)
 local i, ret_res, res2, attnames, res_index
 begin
@@ -680,7 +672,7 @@ begin
     end do
   end if
 
-procedure check_for_irreg2loglin(res:logical,xlinear:logical,ylinear:logical,\
+  return
 end
 
 ;***********************************************************************;
@@ -705,206 +697,6 @@ procedure check_for_irreg2loglin(res:logical,xlinear:logical, \
                                  xlog:logical,ylog:logical)
 begin
 
-; Function : compute_ps_device_coords                                  ;
-;                bb(:,4) : float                                       ;
-;                  res : logical                                       ;
-;                                                                      ;
-; This function computes the PostScript device coordinates needed to   ;
-; make a plot fill up the full page.                                   ;
-;                                                                      ;
-; bb     : bounding box that contains all graphical objects. It should ;
-;          be a n x 4 float array with values between 0 and 1.         ;
-;            (top,bottom,left,right)                                   ;
-;                                                                      ;
-; res : list of optional resources. Ones accepted include:             ;
-;                                                                      ;
-; "gsnPaperOrientation" - orientation of paper. Can be "landscape",    ;
-;                         "portrait", or "auto_orient". Default is     ;
-;                         "auto_orient".                               ;
-;                                                                      ;
-;       "gsnPaperWidth"  - width of paper (in inches, default is 8.5)  ;
-;       "gsnPaperHeight" - height of paper (in inches, default is 11.0);
-;       "gsnPaperMargin" - margin to leave around plots (in inches,    ;
-;                        default is 0.5)                               ;
-;                                                                      ;
-;**********************************************************************;
-
-function compute_ps_device_coords(bb,res)
-local coords, top, bot, lft, rgt, dpi, dpi_pw, dpi_ph, dpi_margin, \
-      paper_width, paper_height, paper_margin
-begin
-;
-; Get resources.
-;
-  paper_height = get_res_value_keep(res,"gsnPaperHeight",11.0)
-  paper_width  = get_res_value_keep(res,"gsnPaperWidth",8.5)
-  paper_margin = get_res_value_keep(res,"gsnPaperMargin",0.5)
-  paper_orient = get_res_value_keep(res,"gsnPaperOrientation","auto_orient")
-  is_debug     = get_res_value_keep(res,"gsnBBDebug",False)
-;
-; Check to see if any panel resources have been set.  No defaults
-; will be assumed for these. They are only used if they have been
-; explicitly set by the user.
-;
-  lft_pnl = isatt(res,"gsnPanelLeft")
-  rgt_pnl = isatt(res,"gsnPanelRight")
-  bot_pnl = isatt(res,"gsnPanelBottom")
-  top_pnl = isatt(res,"gsnPanelTop")
-
-  if(typeof(paper_orient).eq."integer")
-    if(paper_orient.eq.0)
-      lc_orient = "portrait"
-    else
-      lc_orient = "landscape"
-    end if
-  else
-    lc_orient = lower_case(paper_orient)
-  end if
-;
-; Get the bounding box that covers all the plots.  If gsnPanel 
-; resources have been added to add white space around plots, then
-; count this white space in as well.  Note that even though the bounding
-; box coordinates should be positive, it *is* possible for them to be
-; negative, and we need to keep these negative values in our calculations
-; later to preserve the aspect ratio.
-;
-  dimbb = dimsizes(bb)
-  if(dimsizes(dimbb).eq.1) then
-;
-; Force newbb to be 2-dimensional so we don't have to have a
-; bunch of "if" tests later.
-;
-    newbb = new((/1,4/),float)
-    newbb(0,:) = bb
-  else
-    newbb = bb
-  end if
-
-  if(top_pnl)
-    top = max((/1.,max(newbb(:,0))/))
-  else
-    top = max(newbb(:,0))
-  end if
-  if(bot_pnl)
-    bot = min((/0.,min(newbb(:,1))/))
-  else
-    bot = min(newbb(:,1))
-  end if
-  if(lft_pnl)
-    lft = min((/0.,min(newbb(:,2))/))
-  else
-    lft = min(newbb(:,2))
-  end if
-  if(rgt_pnl)
-    rgt = max((/1.,max(newbb(:,3))/))
-  else
-    rgt = max(newbb(:,3))
-  end if
-
-
-  if(bot.lt.0.or.bot.gt.1.or.top.lt.0.or.top.gt.1.or. \
-     lft.lt.0.or.lft.gt.1.or.rgt.lt.0.or.rgt.gt.1)
-    print("compute_ps_device_coords: warning: bounding box values should be between 0 and 1 inclusive. Will continue anyway.")
-  end if
-
-  if(bot.ge.top.or.lft.ge.rgt)
-    print("compute_ps_device_coords: bottom must be < top and left < right")
-    return((/0,0,0,0/))
-  end if
-;
-; Debug prints
-;
-  if(is_debug)
-    print(" top = " + top + " bot = " + bot + \
-          " lft = " + lft + " rgt = " + rgt)
-  end if
-;
-; Initialization
-;
-  dpi        = 72                       ; Dots per inch.
-  dpi_pw     = paper_width  * dpi
-  dpi_ph     = paper_height * dpi
-  dpi_margin = paper_margin * dpi
-
-;
-; Get paper height/width in dpi units
-;
-  pw = rgt - lft
-  ph = top - bot
-
-  lx = dpi_margin
-  ly = dpi_margin
-
-  ux = dpi_pw - dpi_margin
-  uy = dpi_ph - dpi_margin
-
-  dw = ux - lx
-  dh = uy - ly
-
-;
-; Determine orientation, and then calculate device coordinates based
-; on this.
-; 
-  if(lc_orient.eq."portrait".or. \
-     (lc_orient.eq."auto_orient".and.(ph / pw).ge.1.0))
-;
-; If plot is higher than it is wide, then default to portrait if
-; orientation is not specified.
-;
-    lc_orient = "portrait"
-
-    if (ph / pw .gt. dh / dw) then
-                                             ; paper height limits size
-      ndc2du = dh / ph
-    else
-      ndc2du = dw / pw
-    end if
-;
-; Compute device coordinates.
-;
-    lx = dpi_margin + 0.5 * ( dw - pw * ndc2du) - lft * ndc2du
-    ly = dpi_margin + 0.5 * ( dh - ph * ndc2du) - bot * ndc2du
-    ux = lx + ndc2du
-    uy = ly + ndc2du
-  else
-;
-; If plot is wider than it is high, then default to landscape if
-; orientation is not specified.
-;
-    lc_orient = "landscape"
-    if (pw / ph .gt. dh / dw) then
-                                             ; paper height limits size
-      ndc2du = dh / pw
-    else
-      ndc2du = dw / ph
-    end if
-
-;
-; Compute device coordinates.
-;
-    ly = dpi_margin + 0.5 * (dh - pw * ndc2du) - (1.0 - rgt) * ndc2du
-    lx = dpi_margin + 0.5 * (dw - ph * ndc2du) - bot * ndc2du
-    ux = lx + ndc2du
-    uy = ly + ndc2du
-  end if
-
-;
-; Return device coordinates and the orientation.
-;
-  coords = floattointeger((/lx,ly,ux,uy/))
-  coords@gsnPaperOrientation = lc_orient
-;
-; Debug prints.
-;
-  if(is_debug)
-    print(coords)
-  end if
-
-  return(coords)
-end
-
-
-;**********************************************************************;
   xlinear = get_res_value(res,"gsnXAxisIrregular2Linear",xlinear)
   ylinear = get_res_value(res,"gsnYAxisIrregular2Linear",ylinear)
   xlog    = get_res_value(res,"gsnXAxisIrregular2Log",xlog)
@@ -916,18 +708,17 @@ end
     exit
   end if
 
-;       "gsnBBMargin" - margin to leave around plots (in NDC units,    ;
-;                        default is 0.02)                              ;
+;       "gsnMargin" - margin to leave around plots (in NDC units,      ;
+     print("Error: You cannot set both gsnXAxisIrregular2Log")
      print("and gsnXAxisIrregular2Linear to True.")
      exit
-
   end if
 
   return
 end
 
 ;**********************************************************************;
-  margin = get_res_value_keep(res,"gsnBBMargin",0.02)
+  margin = get_res_value_keep(res,"gsnMargin",0.02)
 ;               plot : graphic                                         ;
 ;                res : logical                                         ;
 ;                                                                      ;
@@ -993,7 +784,6 @@ begin
   new_ux =     .5 * (1-new_uw)
   new_uy = 1 - .5 * (1-new_uh)
 
-
   new_vpx = new_ux + dx
   new_vpy = new_uy - dy
   new_vpw = vpw * scale
@@ -1021,7 +811,6 @@ begin
   set_attr(res,"tmXTBorderOn",False)
   set_attr(res,"tmXTOn",      False)
   set_attr(res,"tmYLBorderOn",False)
-
   set_attr(res,"tmYLOn",      False)
   set_attr(res,"tmYRBorderOn",False)
   set_attr(res,"tmYROn",      False)
@@ -1098,7 +887,6 @@ begin
   set_attr(tmres,"tmXTMinorOutwardLengthF" , x_minor_length)
   set_attr(tmres,"tmYLMajorLengthF"        , y_major_length)
   set_attr(tmres,"tmYLMajorOutwardLengthF" , y_major_length)
-
   set_attr(tmres,"tmYLMinorLengthF"        , y_minor_length)
   set_attr(tmres,"tmYLMinorOutwardLengthF" , y_minor_length)
   set_attr(tmres,"tmYRMajorLengthF"        , y_major_length)
@@ -1136,7 +924,6 @@ begin
   end if
 
 ; Make tickmark label sizes the same.
-
 
   tmres = res
   tmres = True
@@ -1184,7 +971,6 @@ begin
   else
     new_height = height * (yrange/xrange)
     new_width  = width
-
     new_yf     = yf - 0.5*(height-new_height)
     new_xf     = xf
   end if
@@ -1232,7 +1018,6 @@ begin
     ymlength = minor_length
   end if
 
-
   setvalues plot
     "tiXAxisFontHeightF"   : (xfont+yfont)/2.
     "tiYAxisFontHeightF"   : (xfont+yfont)/2.
@@ -1244,6 +1029,210 @@ begin
     "tmYLMinorLengthF"     : ymlength
   end setvalues
 end
+
+;***********************************************************************;
+; Procedure : check_for_tickmarks_off                                   ;
+;                res:logical                                            ;
+;                                                                       ;
+; By default, tickmarks are drawn on all plots that aren't overlaid on  ;
+; a map. If gsnTickMarksOn is set to False, then this turns off the     ;
+; drawing of tick marks.  This procedure checks for the setting of this ;
+; resource, and then calls the routine that turns off tickmarks.        ;
+;***********************************************************************;
+procedure check_for_tickmarks_off(res:logical)
+local ticks_ons
+begin
+
+; Check if turning tickmarks off.
+
+;                         "portrait", or "auto_orient". Default is     ;
+;                         "auto_orient".                               ;
+  if(.not.ticks_on)
+    gsnp_turn_off_tickmarks(res)
+  end if
+end
+
+;**********************************************************************;
+; Function : compute_ps_device_coords                                  ;
+;                bb(:,4) : float                                       ;
+;                  res : logical                                       ;
+;                                                                      ;
+; This function computes the PostScript device coordinates needed to   ;
+; make a plot fill up the full page.                                   ;
+;                                                                      ;
+; bb     : bounding box that contains all graphical objects. It should ;
+;          be a n x 4 float array with values between 0 and 1.         ;
+;            (top,bottom,left,right)                                   ;
+;                                                                      ;
+  paper_orient = get_res_value_keep(res,"gsnPaperOrientation","auto_orient")
+;                                                                      ;
+; "gsnPaperOrientation" - orientation of paper. Can be "landscape",    ;
+;                         "portrait", or "auto". Default is "auto".    ;
+;                                                                      ;
+;       "gsnPaperWidth"  - width of paper (in inches, default is 8.5)  ;
+;       "gsnPaperHeight" - height of paper (in inches, default is 11.0);
+;       "gsnPaperMargin" - margin to leave around plots (in inches,    ;
+;                        default is 0.5)                               ;
+;                                                                      ;
+;**********************************************************************;
+function compute_ps_device_coords(bb,res)
+local coords, top, bot, lft, rgt, dpi, dpi_pw, dpi_ph, dpi_margin, \
+      paper_width, paper_height, paper_margin
+begin
+;
+; Get resources.
+;
+  paper_height = get_res_value_keep(res,"gsnPaperHeight",11.0)
+  paper_width  = get_res_value_keep(res,"gsnPaperWidth",8.5)
+  paper_margin = get_res_value_keep(res,"gsnPaperMargin",0.5)
+  paper_orient = get_res_value_keep(res,"gsnPaperOrientation","auto")
+  is_debug     = get_res_value_keep(res,"gsnDebug",False)
+;
+; Check to see if any panel resources have been set.  No defaults
+; will be assumed for these. They are only used if they have been
+; explicitly set by the user.
+;
+  lft_pnl = isatt(res,"gsnPanelLeft")
+  rgt_pnl = isatt(res,"gsnPanelRight")
+  bot_pnl = isatt(res,"gsnPanelBottom")
+  top_pnl = isatt(res,"gsnPanelTop")
+
+  if(typeof(paper_orient).eq."integer")
+    if(paper_orient.eq.0)
+      lc_orient = "portrait"
+    else
+      lc_orient = "landscape"
+    end if
+  else
+    lc_orient = lower_case(paper_orient)
+  end if
+;
+; Get the bounding box that covers all the plots.  If gsnPanel 
+; resources have been added to add white space around plots, then
+; count this white space in as well.  Note that even though the bounding
+; box coordinates should be positive, it *is* possible for them to be
+; negative, and we need to keep these negative values in our calculations
+; later to preserve the aspect ratio.
+;
+  dimbb = dimsizes(bb)
+  if(dimsizes(dimbb).eq.1) then
+;
+; Force newbb to be 2-dimensional so we don't have to have a
+; bunch of "if" tests later.
+;
+    newbb = new((/1,4/),float)
+    newbb(0,:) = bb
+  else
+    newbb = bb
+  end if
+
+
+  if(bot.lt.0.or.bot.gt.1.or.top.lt.0.or.top.gt.1.or. \
+     lft.lt.0.or.lft.gt.1.or.rgt.lt.0.or.rgt.gt.1)
+    print("compute_ps_device_coords: warning: bounding box values should be between 0 and 1 inclusive. Will continue anyway.")
+  end if
+  end if
+  if(bot_pnl)
+    bot = min((/0.,min(newbb(:,1))/))
+  else
+    bot = min(newbb(:,1))
+  end if
+  if(lft_pnl)
+    lft = min((/0.,min(newbb(:,2))/))
+  else
+    lft = min(newbb(:,2))
+  end if
+  if(rgt_pnl)
+    rgt = max((/1.,max(newbb(:,3))/))
+  else
+    rgt = max(newbb(:,3))
+  end if
+
+;  if(bot.lt.0.or.bot.gt.1.or.top.lt.0.or.top.gt.1.or. \
+;     lft.lt.0.or.lft.gt.1.or.rgt.lt.0.or.rgt.gt.1)
+;    print("compute_ps_device_coords: warning: bounding box values should be between 0 and 1 inclusive. Will continue anyway.")
+;  end if
+
+  if(bot.ge.top.or.lft.ge.rgt)
+    print("compute_ps_device_coords: bottom must be < top and left < right")
+    return((/0,0,0,0/))
+  end if
+;
+; Debug prints
+;
+  if(is_debug)
+    print("-------Bounding box values for PostScript-------")
+    print("    top = " + top + " bot = " + bot + \
+          "    lft = " + lft + " rgt = " + rgt)
+  end if
+;
+; Initialization
+;
+  dpi        = 72                       ; Dots per inch.
+  dpi_pw     = paper_width  * dpi
+  dpi_ph     = paper_height * dpi
+  dpi_margin = paper_margin * dpi
+     (lc_orient.eq."auto_orient".and.(ph / pw).ge.1.0))
+;
+; Get paper height/width in dpi units
+;
+  pw = rgt - lft
+  ph = top - bot
+
+  lx = dpi_margin
+  ly = dpi_margin
+
+  ux = dpi_pw - dpi_margin
+  uy = dpi_ph - dpi_margin
+
+  dw = ux - lx
+  dh = uy - ly
+
+;
+; Determine orientation, and then calculate device coordinates based
+; on this.
+; 
+  if(lc_orient.eq."portrait".or. \
+     (lc_orient.eq."auto".and.(ph / pw).ge.1.0))
+;
+; If plot is higher than it is wide, then default to portrait if
+; orientation is not specified.
+;
+    lc_orient = "portrait"
+
+    if (ph / pw .gt. dh / dw) then
+                                             ; paper height limits size
+      ndc2du = dh / ph
+    else
+      ndc2du = dw / pw
+    end if
+;
+; Compute device coordinates.
+;
+    lx = dpi_margin + 0.5 * ( dw - pw * ndc2du) - lft * ndc2du
+    ly = dpi_margin + 0.5 * ( dh - ph * ndc2du) - bot * ndc2du
+    ux = lx + ndc2du
+    uy = ly + ndc2du
+  else
+;
+; If plot is wider than it is high, then default to landscape if
+; orientation is not specified.
+  coords = floattointeger((/lx,ly,ux,uy/))
+    lc_orient = "landscape"
+    if (pw / ph .gt. dh / dw) then
+                                             ; paper height limits size
+      ndc2du = dh / pw
+    else
+      ndc2du = dw / ph
+    end if
+
+;
+; Compute device coordinates.
+    ly = dpi_margin + 0.5 * (dh - pw * ndc2du) - (1.0 - rgt) * ndc2du
+    lx = dpi_margin + 0.5 * (dw - ph * ndc2du) - bot * ndc2du
+    ux = lx + ndc2du
+    uy = ly + ndc2du
+  end if
 
 ;
 ; Return device coordinates and the orientation.
@@ -1260,7 +1249,6 @@ end
    print("    wkDeviceUpperX = " + coords(2))
    print("    wkDeviceUpperY = " + coords(3))
    print("    wkOrientation  = " + coords@gsnPaperOrientation)
-
   end if
 
   return(coords)
@@ -1321,12 +1309,12 @@ begin
         "vpWidthF"  : coords(2)
         "vpHeightF" : coords(3)
       end setvalues
-  maxbb = get_res_value(res,"gsnBBMaximize", False)
+    end if
   end if
 
   if(calldraw)
-  maxbb@gsnBBMargin    = get_res_value(res,"gsnBBMargin",0.02)
-  maxbb@gsnBBDebug     = get_res_value(res,"gsnBBDebug",False)
+  maxbb@gsnMargin      = get_res_value(res,"gsnMargin",0.02)
+  end if
 
   if(callframe)
     frame(wks)           ; advance the frame
@@ -1361,7 +1349,6 @@ begin
   if(isatt(res,"gsnPanelLeft"))
     maxbb@gsnPanelLeft   = get_res_value(res,"gsnPanelLeft",0.)
   end if
-
   if(isatt(res,"gsnPanelRight"))
     maxbb@gsnPanelRight  = get_res_value(res,"gsnPanelRight",1.)
   end if
@@ -1389,7 +1376,6 @@ begin
     res_file=get_res_value_keep(name,"res_file","gsnapp")
 
     if(isatt(name,"wkColorMap"))
-
       ncgm = create res_file ncgmWorkstationClass defaultapp 
         "wkMetaName" : name
         "wkColorMap" : name@wkColorMap
@@ -1420,7 +1406,6 @@ begin
         "wkColorMap" : name@wkColorMap
       end create
     else
- 
       window = create name + "_x11" xWorkstationClass defaultapp
         "wkPause" : True
       end create
@@ -1467,7 +1452,6 @@ begin
     "lbBoxCount"        : nbox
     "lbFillColors"      : colors
     "lbLabelStrings"    : labels
-
     "lbOrientation"     : orientation
     "lbPerimOn"         : perim_on
     "lbLabelAlignment"  : label_align
@@ -1508,7 +1492,6 @@ begin
       "wkPSFileName"   : name
       "wkPSFormat"     : type
       "wkDeviceLowerX" : lower_x
-
       "wkDeviceLowerY" : lower_y
       "wkDeviceUpperX" : upper_x
       "wkDeviceUpperY" : upper_y
@@ -1580,193 +1563,6 @@ begin
         "appUsrDir"        : res_dir
     end create
 
-;**********************************************************************;
-; Function : output_ps_return                                          ;
-;            plots[*] : graphic                                        ;
-;              psname : string                                         ;
-;                 res : logical                                        ;
-;                                                                      ;
-; This procedure computes the smallest bounding box that can contain   ;
-; all of the plots, and then it uses this information to send the      ;
-; output to a PostScript file, using the full page.                    ;
-;                                                                      ;
-;  plots : list of plots  to send to PostScript file                   ;
-;                                                                      ;
-; psname : name of PostScript (minus the suffix which will default to  ;
-;          "ps" unless otherwise specified)                            ;
-;                                                                      ;
-;    res : list of optional resources. Ones accepted include:          ;
-;                                                                      ;
-; "gsnPaperOrientation" - orientation of paper. Can be "landscape",    ;
-;                         "portrait", or "auto_orient". Default is     ;
-;                         "auto_orient".                               ;
-;       "gsnPaperWidth"  - width of paper (in inches, default is 8.5)  ;
-;       "gsnPaperHeight" - height of paper (in inches, default is 11.0);
-;       "gsnPaperMargin" - margin to leave around plots (in inches,    ;
-;                        default is 0.5)                               ;
-;                                                                      ;
-; This function returns the PostScript workstation created.            ;
-;**********************************************************************;
-
-function output_ps_return(wks,plots,psname,res)
-local pstype, orient
-begin
-  res2 = res
-;
-; Get resource values.
-;
-  pstype       = get_res_value(res2,"gsnPSFormat","ps")
-
-;
-; Get max and min of bounding box of all plots.
-; 
-  nplots = dimsizes(plots)  ; number of plots
-
-  bb = NhlGetBB(plots)
-  if(nplots.gt.1) then
-    new_bb    = new(4,float)
-    new_bb(0) = max(bb(:,0))
-    new_bb(1) = min(bb(:,1))
-    new_bb(2) = min(bb(:,2))
-    new_bb(3) = max(bb(:,3))
-  else
-    new_bb = bb
-  end if
-;
-; Compute device coordinates.
-;
-  coords = compute_ps_device_coords(new_bb,res2)
-
-;
-; Retrieve the colormap.
-;
-  getvalues wks
-    "wkColorMap" : cmap
-  end getvalues
-
-;
-; Set PostScript resources.
-;
-  wks_type = pstype
-  wks_type@wkDeviceLowerX = coords(0)
-  wks_type@wkDeviceLowerY = coords(1)
-  wks_type@wkDeviceUpperX = coords(2)
-  wks_type@wkDeviceUpperY = coords(3)
-  wks_type@wkOrientation  = coords@gsnPaperOrientation
-  wks_type@wkColorMap     = cmap
-
-;
-; Don't use gsn_open_wks here, because that function creates an
-; application object, which screws everything up.
-;
-  ps_filename = psname + "." + wks_type
-  pswks = gsn_open_ps(wks_type,ps_filename) ; Open PostScript workstation.
-
-  do i = 0,nplots-1
-    if(.not.ismissing(plots(i))) then
-      NhlChangeWorkstation(plots(i),pswks)  ; Change workstation to new one.
-  
-      draw(plots(i))                       ; Draw plot to new workstation.
-
-      NhlChangeWorkstation(plots(i),wks)  ; Change workstation back to orig.
-    end if
-  end do
-
-  frame(pswks)
-
-  pswks@wkDeviceLowerX = coords(0)
-  pswks@wkDeviceLowerY = coords(1)
-  pswks@wkDeviceUpperX = coords(2)
-  pswks@wkDeviceUpperY = coords(3)
-  pswks@wkOrientation  = coords@gsnPaperOrientation
-
-  return(pswks)
-end
-
-;**********************************************************************;
-; Procedure : output_ps                                                ;
-;                 wks : graphic                                        ;
-;            plots[*] : graphic                                        ;
-;              psname : string                                         ;
-;                 res : logical                                        ;
-;                                                                      ;
-; Procedure version of output_ps_return.                               ; 
-;**********************************************************************;
-procedure output_ps(wks,plots,psname,res)
-begin
-  pswks = output_ps_return(wks,plots,psname,res)
-end
-
-;**********************************************************************;
-; Procedure : append_output_ps                                         ;
-;                 wks : graphic                                        ;
-;               pswks : graphic                                        ;
-;            plots[*] : graphic                                        ;
-;                 res : logical                                        ;
-;                                                                      ;
-; Changes the workstation of the input plots to the PostScript         ;
-; workstation and redraws them. To be used in conjunction with         ;
-; output_ps.                                                           ;
-;                                                                      ;
-;**********************************************************************;
-procedure append_output_ps(wks,pswks,plots,res)
-begin
-  do i = 0,dimsizes(plots)-1
-    if(.not.ismissing(plots(i))) then
-      NhlChangeWorkstation(plots(i),pswks)  ; Change workstation to new one.
-  
-      draw(plots(i))                       ; Draw plot to new workstation.
-
-      NhlChangeWorkstation(plots(i),wks)  ; Change workstation back to orig.
-    end if
-  end do
-
-  frame(pswks)
-end
-
-;***********************************************************************;
-; Procedure : output_;lots_text_pstput_ps                               ;
-;                 wks : graphic                                         ;
-;               pswks : graphic                                         ;
-;            plots[*] : graphic                                         ;
-;             text[*] : graphic                                         ;
-;              psname : string                                          ;
-;                 res : logical                                         ;
-;                                                                       ;
-;***********************************************************************;
-procedure output_plots_text_ps (wks:graphic, pswks:graphic, \
-                                plots[*]:graphic, text[*]:graphic, \
-                                psname:string, res:logical)
-local res2, nplots, ntext, plots_and_text
-begin
-  res2 = res
-  nplots = dimsizes(plots)
-  ntext  = dimsizes(text)
-;
-; Create new variable to hold all graphical objects, then pass this
-; to output_ps to create a PostScript file.
-;
-  plots_and_text             = new(nplots+ntext,graphic)
-  plots_and_text(0:nplots-1) = plots
-  plots_and_text(nplots:)    = text
-
-  if(ismissing(pswks))
-    pswks = output_ps_return(wks,plots_and_text,psname,res2)
-  else
-    append_output_ps(wks,pswks,plots_and_text,res2)
-  end if
-
-  print("====> Suggested values for PS device coordinates:")
-  print("      wkDeviceLowerX = " + pswks@wkDeviceLowerX)
-  print("      wkDeviceLowerY = " + pswks@wkDeviceLowerY)
-  print("      wkDeviceUpperX = " + pswks@wkDeviceUpperX)
-  print("      wkDeviceUpperY = " + pswks@wkDeviceUpperY)
-  print("      wkOrientation  = " + pswks@wkOrientation)
-
-
-end
-
-
     if(type.eq."x11".or.type.eq."X11") then
         wks = gsn_open_x11(x_file)
     else
@@ -1782,7 +1578,6 @@ end
             end if
         end if
     end if
-
     wks@name = res_file
     wks@app = appid 
     return(wks)
@@ -1831,7 +1626,6 @@ begin
       y2 = yf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
       NhlDataPolygon(plotid,gsid,x2,y2)
     end if
-
 end
 
 ;***********************************************************************;
@@ -1972,7 +1766,6 @@ begin
     return(prim_object)
 end
 
-
 ;***********************************************************************;
 ; Function : gsn_add_polygon                                            ;
 ;                   wks: workstation object                             ;
@@ -1991,7 +1784,6 @@ end
 ;                                                                       ;
 ; This function is different from gsn_polygon because it actually       ;
 ; attaches the polygon to the plot. This means that if you resize or    ;
-
 ; move the plot, the polygon will stay with the plot.                   ;
 ;***********************************************************************;
 function gsn_add_polygon(wks:graphic,plotid:graphic,x[*]:numeric,\
@@ -2046,7 +1838,6 @@ begin
     if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
       NhlNDCPolygon(canvas,gsid,xf,yf)
     else
-
       x2 = xf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
       y2 = yf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
       NhlNDCPolygon(canvas,gsid,x2,y2)
@@ -2124,7 +1915,6 @@ begin
         i = i + 1
       end do
     end if
-
 end
 
 ;***********************************************************************;
@@ -2144,7 +1934,6 @@ end
 ;                                                                       ;
 ; This function is different from gsn_polyline because it actually      ;
 ; attaches the line to the plot. This means that if you resize or move  ;
-
 ; the plot, the line will stay with the plot.                           ;
 ;***********************************************************************;
 function gsn_add_polyline(wks:graphic,plotid:graphic,x[*]:numeric,\
@@ -2215,7 +2004,6 @@ begin
           NhlNDCPolyline(canvas,gsid,xf(ibeg:iend),yf(ibeg:iend))
         else    ; iend = ibeg --> only one point
           NhlNDCPolymarker(canvas,gsid,xf(ibeg),yf(ibeg))
-
         end if
         i = i + 1
       end do
@@ -2266,7 +2054,6 @@ begin
       y2 = yf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
       NhlDataPolymarker(plotid,gsid,x2,y2)
     end if
-
 end
 
 ;***********************************************************************;
@@ -2278,6 +2065,27 @@ end
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function adds polymarkers to the plot "plotid", in the same      ;
+; data space as the data in the plot ("plotid" is returned from a       ;
+; previous call to one of the gsn_* plotting functions). "x" and "y" are;
+; the x and y locations of each marker, and should be in the same data  ;
+; space as the data from "plotid". "resources" is an optional list of   ;
+; resources. This function returns the primitive object created.        ;
+;                                                                       ;
+; This function is different from gsn_polymarker because it actually    ;
+; attaches the markers to the plot. This means that if you resize or    ;
+; move the plot, the markers will stay with the plot.                   ;
+;***********************************************************************;
+function gsn_add_polymarker(wks:graphic,plotid:graphic,x[*]:numeric,\
+                            y[*]:numeric,resources:logical)
+begin
+  return(gsn_add_primitive(wks,plotid,x,y,"polymarker",resources))
+end
+
+
+;***********************************************************************;
+; Procedure : gsn_polymarker_ndc                                        ;
+;                   wks: workstation object                             ;
+;                     x: 1-dimensional array of x points                ;
 ;                     y: 1-dimensional array of y points                ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
@@ -2285,30 +2093,29 @@ end
 ; variable returned from a previous call to "gsn_open_wks") in NDC      ;
 ; space. "x" and "y" are the x and y locations of each marker in NDC    ;
 ; coordinates. "resources" is an optional list of resources.            ;
-procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
 ;***********************************************************************;
 procedure gsn_polymarker_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
                              resources:logical)
 local i, gsid, plot_object, res, xf, yf, x2, y2
 begin
-; variable returned from a previous call to "gsn_open_wks").  "x" and   ;
+
 ; Retrieve graphic style object.
-; "resources" is an optional list of resources.                         ;
+
     getvalues wks 
         "wkDefGraphicStyleId":  gsid
     end getvalues
-procedure gsn_text(wks:graphic,plotid:graphic,text:string,x:numeric, \
-funccode, res2, calldraw, callframe
+
+;
 ; Create a LogLinPlot that covers the entire NDC space
 ; to use as a drawing canvas
-
+;
     canvas = create "canvas" logLinPlotClass wks
       "vpXF"      : 0.0
       "vpYF"      : 1.0
       "vpWidthF"  : 1.0
       "vpHeightF" : 1.0
     end create
-    callframe = get_res_value(res2,"gsnFrame",False)
+
     gsres = get_res_eq(resources,"gs")
     attsetvalues_check(gsid,gsres)
 
@@ -2319,63 +2126,45 @@ funccode, res2, calldraw, callframe
 ; Draw some polymarkers.
     if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
       NhlNDCPolymarker(canvas,gsid,xf,yf)
-
+    else
       x2 = xf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
       y2 = yf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
       NhlNDCPolymarker(canvas,gsid,x2,y2)
-    delete(xf)
+    end if
 end
-    delete(yf)
-;***********************************************************************;
-; Procedure : draw_bb                                                   ;
-;                wks:graphic                                            ;
-;               plot:graphic                                            ;
-; This procedure draws a box around the bounding box of the given plot  ;
-; objects.                                                              ; 
-;***********************************************************************;
-procedure draw_bb(wks:graphic,plot:graphic)
-begin
-  bb = NhlGetBB(plot)
-  top = max(bb)
-  bot = min(bb)
-  lft = min(bb)
-  rgt = max(bb)
-  gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/),(/bot,bot,top,top,bot/),False)
-    wksname = get_res_value_keep(wks,"name","gsnapp")
 
-    if(res2.and.isatt(res2,"txFuncCode")) then
+;***********************************************************************;
 ; Procedure : gsn_labelbar_ndc                                          ;
-          "txString"   : text
+;                   wks: workstation object                             ;
 ;                  nbox: number of labelbar boxes                       ;
 ;                labels: labels for boxes                               ;
 ;                     x: X NDC position of labelbar                     ;
 ;                     y: Y NDC position of labelbar                     ;
-    else
-      txid = create wksname + "_text" textItemClass wks
+;               resources: optional resources                           ;
+;                                                                       ;
 ; This procedure draws a labelbar on the workstation "wks" (the         ;
 ; variable returned from a previous call to "gsn_open_wks").            ;
 ; "resources" is an optional list of resources.                         ;
-
-
+;***********************************************************************;
 procedure gsn_labelbar_ndc(wks:graphic, nbox:integer, labels:string, \
                            x,y,resources:logical )
 local i, lbid, res, lb_res_index, lbres
-;***********************************************************************;
+begin
     wksname = get_res_value_keep(wks,"name","gsnapp")
-;               resources: optional resources                           ;
+
     lbid = create wksname + "_labelbar" labelBarClass wks
       "vpXF"           : x
       "vpYF"           : y
       "lbBoxCount"     : nbox
       "lbLabelStrings" : labels
-; the text will stay with the plot.                                     ;
     end create
+
     lbres = get_res_eq(resources,(/"lb","vp"/))
     if(lbres.and..not.any(ismissing(getvaratts(lbres))))
-    "pmAnnoViews" : text_ids
+
 ; A special test is needed for the resource lbLabelFontHeightF.
 ; If it is set, then we need to turn off lbAutoManage.
-  if(.not.any(ismissing(text_ids)))
+
       if(isatt(lbres,"lbLabelFontHeightF"))
         setvalues lbid
           "lbAutoManage"       : False
@@ -2386,11 +2175,201 @@ local i, lbid, res, lb_res_index, lbres
       end if
       attsetvalues_check(lbid,lbres)
     end if
-  setvalues plotid
+
 ; Draw labelbar.
-;
+
     draw(lbid)
     delete(lbid)
+end
+
+;***********************************************************************;
+; Function : gsn_text_ndc_return                                        ;
+;                   wks: workstation object                             ;
+;                  text: array of text strings                          ;
+;                     x: 1-dimensional array of x ndc positions         ;
+;                     y: 1-dimensional array of y ndc positions         ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function draws text strings on the workstation "wks" (the        ;
+; variable returned from a previous call to "gsn_open_wks").  "x" and   ;
+; "y" are the x and y locations of each text string, and should be      ;
+; specified in NDC space. "resources" is an optional list of resources. ;
+; This function returns the text string created.                        ;
+;***********************************************************************;
+function gsn_text_ndc_return(wks:graphic, text:string, x:numeric, \
+                             y:numeric, resources:logical )
+local i, txid, plot_object, res, tx_res_index, x2, y2, res2, \
+calldraw, callframe
+begin
+
+    res2 = resources
+
+    wksname = get_res_value_keep(wks,"name","gsnapp")
+
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",False)
+    maxbb     = get_bb_res(res2)
+
+    if((res2).and.isatt(res2,"txFuncCode")) then
+      txid = create wksname + "_text_ndc" textItemClass wks
+        "txString" : text
+        "txPosXF"  : x
+        "txPosYF"  : y
+        "txFuncCode" : res2@txFuncCode
+      end create
+    else
+      txid = create wksname + "_text_ndc" textItemClass wks
+        "txString" : text
+        "txPosXF"  : x
+        "txPosYF"  : y
+      end create
+    end if
+
+    txres = get_res_eq(res2,"tx")  ; Get text resources.
+    attsetvalues_check(txid,txres)            ; Set text resources.
+
+    draw_and_frame(wks,txid,calldraw,callframe,maxbb)
+    return(txid)
+end
+
+;***********************************************************************;
+; Procedure : gsn_text_ndc                                              ;
+;                                                                       ;
+; This procedure is the same as gsn_text, only it doesn't return        ;
+; anything.                                                             ;
+;***********************************************************************;
+procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
+                       y:numeric, resources:logical )
+local txid
+begin
+    txid = gsn_text_ndc_return(wks,text,x,y,resources)
+end
+
+;***********************************************************************;
+; Procedure : gsn_text                                                  ;
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                  text: array of text strings                          ;
+;                     x: 1-dimensional array of x data positions        ;
+;                     y: 1-dimensional array of y data positions        ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This procedure draws text strings on the workstation "wks" (the       ;
+; variable returned from a previous call to "gsn_open_wks").  "x" and   ;
+; "y" are the x and y locations of each text string, and should be      ;
+; specified in the same data space as the data space of "plotid".       ;
+; "resources" is an optional list of resources.                         ;
+;***********************************************************************;
+procedure gsn_text(wks:graphic,plotid:graphic,text:string,x:numeric, \
+                   y:numeric, resources:logical )
+local i, txid, plot_object, res, tx_res_index, x2, y2, xf, yf, \
+funccode, res2, calldraw, callframe
+begin
+    res2 = resources
+
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",False)
+    maxbb     = get_bb_res(res2)
+;
+; datatondc can't accept doubles, so have to demote doubles if they
+; come in.
+;
+    xf = tofloat(x)
+    yf = tofloat(y)
+
+    x2 = new(dimsizes(x),float)
+    y2 = new(dimsizes(y),float)
+
+    datatondc(plotid,xf,yf,x2,y2)
+
+    delete(xf)
+    delete(yf)
+;
+; The "txFuncCode" can't be set during a setvalues  call. It must be
+; set during the creation of the object.  
+;
+    wksname = get_res_value_keep(wks,"name","gsnapp")
+
+    if(res2.and.isatt(res2,"txFuncCode")) then
+      txid = create wksname + "_text" textItemClass wks
+          "txString"   : text
+          "txPosXF"    : x2
+          "txPosYF"    : y2
+          "txFuncCode" : res2@txFuncCode
+      end create
+    else
+      txid = create wksname + "_text" textItemClass wks
+          "txString"   : text
+          "txPosXF"    : x2
+          "txPosYF"    : y2
+      end create
+    end if
+
+    txres = get_res_eq(res2,"tx")  ; Get text resources.
+    attsetvalues_check(txid,txres)            ; Set text resources.
+
+    draw_and_frame(wks,txid,calldraw,callframe,maxbb)
+end
+
+;***********************************************************************;
+; Function : gsn_add_text                                               ;
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                  text: array of text strings                          ;
+;                     x: 1-dimensional array of x data positions        ;
+;                     y: 1-dimensional array of y data positions        ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function adds text strings to the plot "plotid". "x" and "y" are ;
+; the x and y locations of each text string, and should be specified in ;
+; the same data space as the data space of "plotid". "resources" is an  ;
+; optional list of TextItem and AnnoManager resources.                  ;
+;                                                                       ;
+; This function is different from gsn_text because it actually attaches ;
+; the text to the plot. This means that if you resize or move the plot, ;
+; the text will stay with the plot.                                     ;
+;***********************************************************************;
+function gsn_add_text(wks:graphic,plotid:graphic,text:string,x:numeric, \
+                      y:numeric, resources:logical )
+local txid, txres, amres, just, res2, wksname, am_ids
+begin
+  res2 = resources
+;
+; The "txFuncCode" can't be set during a setvalues  call. It must be
+; set during the creation of the object.  
+;
+  wksname = get_res_value_keep(wks,"name","gsnapp")
+
+  if(res2.and.isatt(res2,"txFuncCode")) then
+    txid = create wksname + "_text" textItemClass wks
+      "txString"   : text
+      "txFuncCode" : res2@txFuncCode
+    end create
+  else
+    txid = create wksname + "_text" textItemClass wks
+      "txString"   : text
+    end create
+  end if
+
+  txres = get_res_eq(res2,"tx")  ; Get text resources.
+  attsetvalues_check(txid,txres)            ; Set text resources.
+
+  getvalues plotid
+    "pmAnnoViews" : text_ids
+  just  = get_res_value(res2,"amJust","CenterLeft")
+  if(.not.any(ismissing(text_ids)))
+    new_text_ids = new(dimsizes(text_ids)+1,graphic)
+    new_text_ids(0)  = txid
+    new_text_ids(1:) = text_ids
+  else
+    new_text_ids = txid
+  end if
+
+  setvalues plotid
+    "pmAnnoViews" : new_text_ids
+  end setvalues
+;
+; Retrieve the id of the AnnoManager object created by the PlotManager and
 ; then set its location in data coordinate space.
 ;
   getvalues plotid
@@ -2480,7 +2459,7 @@ begin
   else
     if(ddims.ne.2)
       print("Error: gsn_panel: for the third argument of gsn_panel, you must either specify # rows by # columns or set gsnPanelRowSpec to True and set the number of plots per row.")
-  panel_debug    = get_res_value_keep(res,"gsnPanelDebug",False)
+      exit
     end if
     nrows = dims(0)
     ncols = dims(1)
@@ -2492,21 +2471,61 @@ begin
   nplots  = dimsizes(plot)      ; Total number of plots.
 
   if(nplots.gt.npanels)
+    print("Warning: gsn_panel: you have more plots than you have panels.")
     print("Only " + npanels + " plots will be drawn.")
+    nplots = npanels
+  end if
+
+;
+; Check for special resources.
+; 
+  panel_save     = get_res_value_keep(res,"gsnPanelSave",True)
+  panel_debug    = get_res_value_keep(res,"gsnDebug",False)
+  panel_center   = get_res_value_keep(res,"gsnPanelCenter",True)
+  panel_labelbar = get_res_value_keep(res,"gsnPanelLabelBar",False)
+  calldraw       = get_res_value_keep(res,"gsnDraw",True)
+  callframe      = get_res_value_keep(res,"gsnFrame",True)
+  xwsp_perc      = get_res_value_keep(res,"gsnPanelXWhiteSpacePercent",1.)
+  ywsp_perc      = get_res_value_keep(res,"gsnPanelYWhiteSpacePercent",1.)
+  draw_boxes     = get_res_value_keep(res,"gsnPanelBoxes",False)
+  x_lft          = get_res_value_keep(res,"gsnPanelLeft",0.)
+  x_rgt          = get_res_value_keep(res,"gsnPanelRight",1.)
+  y_bot          = get_res_value_keep(res,"gsnPanelBottom",0.)
+  y_top          = get_res_value_keep(res,"gsnPanelTop",1.)
+  main_string    = get_res_value_keep(res,"txString","")
+  maxbb          = get_bb_res(res)
+;
+; Check if a main string has been specified. If so, we need to make sure
+; we leave some room for it by computing y_top (if the user hasn't set
+; it). Also, we have to check if the font height has been set, because
+; this could affect the title position.
+; 
+  if(main_string.ne."") then
+    main_string_on = True
+    main_font_hgt  = get_res_value_keep(res,"txFontHeightF",0.02)
+;
+; By default, we want a distance of 0.01 between top of title and the
+; frame, and a distance of 0.03  between the bottom of the title (txPosYF)
+; and the top of the panel box (gsnPanelTop).
+;
     if(y_top.eq.1.) then
-  if(maxbb) then
+      if(isatt(res,"txPosYF"))
+        y_top = min((/1.,res@txPosYF - 0.03/))
       else
         y_top = min((/1.,0.96-main_font_hgt/))
       end if
     end if
   else
+    main_string_on = False
   end if
 ;
 ; Calculate number of plot objects that will actually be drawn.
 ; (Panel plots plus labelbar and main string, if any.)
 ;
   nnewplots = nplots
-    
+  if(panel_labelbar) then
+    nnewplots = nnewplots + 1
+  end if
   if(main_string_on) then
     nnewplots = nnewplots + 1
   end if
@@ -2774,18 +2793,11 @@ begin
 ; the text box.
 ;
   if(is_figure_strings) then
-; Variable to store rightmost location of rightmost plot.
+    fig_index = ind(just.eq.justs.or.just.eq.ljusts.or.just.eq.ujusts)
+    if(ismissing(fig_index))
       fig_index = 0
       just      = justs(fig_index)
-;
-; Create array to save the plots, plus a possible labelbar.
-;
-  if(panel_labelbar) then
-    newplots = new(nplots+1,graphic)
-  else 
-    newplots = new(nplots,graphic)
-  end if
-
+    end if
 
     len_pct = 0.025           ; Percentage of width/height of plot
                                 ; for white space around text box.
@@ -2823,8 +2835,10 @@ begin
   do while(num_plots_left.gt.0)
     new_ncols = min((/num_plots_left,row_spec(nr)/))
 
-          print("plot #" + nplot + " x,y=" + xpos(nc) + "," + ypos(nr) + \
-                " width,height=" + scale*old_vp(nplot,2) + "," + scale*old_vp(nplot,3))
+    if(panel_center)
+      xsp = xrange - new_total_width*new_ncols  ; space before plots. 
+    else
+      xsp = xrange - new_total_width*ncols      ; space before plots. 
     end if
 ;
 ; Calculate new x positions.
@@ -2863,17 +2877,18 @@ begin
               "txBackgroundFillColor" : 0
             end create
 ;
-; Info for possible labelbar.
+; See note above about not checking for tx* resources here.
 ;
-        if(panel_labelbar.or.draw_boxes) then
-          bb = NhlGetBB(pplot) ; Get bounding box of plot
+;            attsetvalues_check(text,txres)
+            anno(nplot) = NhlAddAnnotation(pplot,text)
+            added_anno = True
+            setvalues anno(nplot)
               "amZone"           : 0
               "amJust"           : just
               "amParallelPosF"   : para
+              "amOrthogonalPosF" : orth
               "amResizeNotify"   : True
             end setvalues
-            top = bb(0)
-            lft = bb(2)
             attsetvalues_check(anno(nplot),amres)
             delete(text)
           end if
@@ -2969,19 +2984,65 @@ begin
         if(nrows.eq.1.and.lbres@vpHeightF.le.scale*max(old_vp(:,3)))
 ; Create the labelbar.
           set_attr(lbres,"vpYF",y_top-(tmp_range - lbres@vpHeightF)/2.)
-      newplots(nplots) = create_labelbar(wks,dimsizes(colors),colors, \
+      end if
       set_attr(lbres,"lbLabelFontHeightF",labelbar_font_height)
+;
 ; Check if we want different fill patterns or fill scales.  If so, we
        print("Warning: gsn_panel: unrecognized plot type, thus unable to extract information for creating a labelbar.")
 ;
       set_attr(lbres,"lbMonoFillColor",mono_fill_col)
+      if(.not.mono_fill_pat)
+        set_attr(lbres,"lbMonoFillPattern", False)
+        set_attr(lbres,"lbFillPatterns",    fill_patterns)
+      end if
+      if(.not.mono_fill_scl)
+        set_attr(lbres,"lbMonoFillScale", False)
+        set_attr(lbres,"lbFillScales",    fill_scales)
+      end if
+;
+; Create the labelbar.  First check the levels to make sure that a
+; contour level with a value like 1e-8 is not really supposed to be
+; a value of 0.
+;
+      fix_zero_contour(levels)
+      newplots(nplot) = create_labelbar(wks,dimsizes(colors),colors, \
+                                         levels,lbres)
+      nplot = nplot + 1
+    else
        print("Warning: gsn_panel: unrecognized plot type for getting labelbar information. Ignoring labelbar request.")
+    end if
+  end if
+;
+; Create the main string, if exists.
+;
+  if(main_string_on) then
+    y_top     = min((/y_top,max_top/))
+    main_ypos = get_res_value_keep(res,"txPosYF",y_top + 0.03)
     main_xpos = get_res_value_keep(res,"txPosXF",0.5)
-; Draw plots plus labelbar (if it exists). This is also where the
-; plots will be maximized for PostScript output, if so indicated.
+
+    if(panel_debug) 
+      print("-------Panel title values-------")
       print("    title                = " + main_string)
       print("    top of paneled plots = " + y_top)
+      print("    y location of title  = " + main_ypos)
+    end if
+
+    if((main_ypos+main_font_hgt).gt.1)
+       print("Warning: gsn_panel: font height (" + main_font_hgt + ") of main string is too large to fit in space provided. Either decrease font size or set gsnPanelTop.")
+    end if
+
+    txres               = get_res_eq(res,"tx")
+    txres               = True
+    txres@gsnDraw       = False
+    txres@gsnFrame      = False
+    txres@txFontHeightF = main_font_hgt
+    newplots(nplot) = gsn_text_ndc_return(wks, main_string, main_xpos, \
                       main_ypos, txres)
+  end if
+;
+; Draw plots plus labelbar and main title (if they exists). This is
+; also where the plots will be maximized for PostScript output,
+; if so indicated.
 ;
   draw_and_frame(wks,newplots,calldraw,callframe,maxbb)
 ;
@@ -3083,7 +3144,6 @@ end
 ;    |         |      |         |                                       ;
 ;    |         |      |         |                                       ;
 ;    |         |      -----------                                       ;
-
 ;    |         |                                                        ;
 ;    -----------                                                        ;
 ;                                                                       ;
@@ -3411,11 +3471,32 @@ begin
   if(attach_y) then
     total_width_left  = 1. - (total_width1 + total_width2)
     total_height_left = 1. - max((/total_height1,total_height2/))
+  else
+    total_height_left = 1. - (total_height1 + total_height2)
+    total_width_left  = 1. - max((/total_width1,total_width2/))
+  end if
+
+  new_vpx1 = total_width_left/2. + (vpx1-lft1)
+  new_vpy1 = 1. - (total_height_left/2. + (top1-vpy1))
+
+  setvalues plot1
+    "vpYF" : new_vpy1
+    "vpXF" : new_vpx1
+  end setvalues
+
+  anno = NhlAddAnnotation(plot1,plot2)
+  zone = get_res_value(res2,"amZone",2)
+  para = get_res_value(res2,"amParallelPosF",0.5)
+  orth = get_res_value(res2,"amOrthogonalPosF",0.0)
+  if(attach_y) then
+    setvalues anno
+      "amZone"          : zone
+      "amSide"          : "right"  ; Plot at right.
       "amResizeNotify"  : True     ; Allow resize if plot resized.
       "amParallelPosF"  : para
       "amOrthogonalPosF": orth
     end setvalues
-  return(anno)
+  else
     setvalues anno
       "amZone"          : zone
       "amSide"          : "bottom" ; Plot at bottom
@@ -3423,10 +3504,17 @@ begin
       "amParallelPosF"  : para
       "amOrthogonalPosF": orth
     end setvalues
-end
-;               plot:graphic                                            ;
+  end if
+
   return(anno)
   
+end
+  top    = max(bb(:,0))
+  bottom = min(bb(:,1))
+  left   = min(bb(:,2))
+  right  = max(bb(:,3))
+;               plot:graphic                                            ;
+; This procedure draws a box around the bounding box of the given plot  ;
 ; objects.                                                              ; 
 ;***********************************************************************;
 procedure draw_bb(wks:graphic,plot:graphic)
@@ -3437,7 +3525,6 @@ procedure draw_bb(wks:graphic,plot:graphic)
 
   ncolors = dimsizes(named_colors)
 ; RGB values.                                                           ;
-
 
   do i=0,ncolors-1
     index = ind(named_colors(i).eq.names)
@@ -3462,7 +3549,6 @@ end
 procedure gsn_define_colormap(wks:graphic, cmap)
 begin
   dim_cmap = dimsizes(cmap)
-
   if((typeof(cmap).eq."float".and.(dimsizes(dim_cmap).ne.2.or.\
                                    dim_cmap(1).ne.3)).or.\
      (typeof(cmap).eq."string".and.dimsizes(dim_cmap).ne.1))
@@ -3475,7 +3561,6 @@ begin
   end if
 ; columns, compute_hist_vals, compute_hist_from_range_vals are          ;
 ; functions written by Ethan Alpert for computing histogram stuff.      ;
-
 
 function columns(wks[1]:graphic,xy[1]:graphic,x[*]:numeric,y[*]:numeric, \
                  wd[1]:numeric,colors[*]:integer)
@@ -3509,6 +3594,10 @@ function hist_columns(wks[1]:graphic,xy[1]:graphic,bins[*]:numeric, \
       gsres@gsFillIndex = fillindex1
       if(binvalues@horizontal) then
         polygons(i) = gsn_add_polygon(wks,xy,ypoints(i,:),xpoints(i,:),gsres)
+      else
+; columns, compute_hist_vals, compute_hist_from_range_vals are          ;
+; functions written by Ethan Alpert for computing histogram stuff.      ;
+  end if
 function compute_hist_vals(x:numeric,n[1]:integer)
 ; Function : compute_hist_vals                                          ;
   min_x = min(x)
@@ -3531,6 +3620,10 @@ function compute_hist_vals(x:numeric,n[1]:integer)
   return(buckets)
 
 ;
+; Calculate the deltas between each bin value. These will be used to
+; columns, compute_hist_vals, compute_hist_from_range_vals are          ;
+; functions written by Ethan Alpert for computing histogram stuff.      ;
+;***********************************************************************;
 function compute_hist_from_range_vals(x:numeric,sprd[*]:numeric)
 begin
   nbuckets = dimsizes(sprd) - 1
@@ -3560,7 +3653,6 @@ end
 ;   gsnDraw                                                             ;
 ;   gsnFrame                                                            ;
 ;  gsnHistogramClassIntervals - By default, gsn_histogram will pick the ;
-
 function gsn_histogram(wks[1]:graphic,xdata:numeric,nbins[1]:integer, \
                        res:logical)
 ;                                                                       ;
@@ -3674,7 +3766,6 @@ end
 
 
 ;***********************************************************************;
-
 ; Function : gsn_contour                                                ;
 ;                   wks: workstation object                             ;
 ;                  data: 2-dimensional data                             ;
@@ -3822,7 +3913,6 @@ end
 
 ;***********************************************************************;
 ; Function : gsn_contour_map                                            ;
-
 ;                   wks: workstation object                             ;
 ;                  data: 2-dimensional data                             ;
 ;               resources: optional resources                           ;
@@ -3924,7 +4014,6 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
 
     map_object@data = data_object
     map_object@contour = contour_object
-
     return(map_object)
 end
 
@@ -3973,7 +4062,6 @@ begin
 
     return(plot_object)
 end
-
 
 ;***********************************************************************;
 ; Function : gsn_streamline                                             ;
@@ -4109,7 +4197,6 @@ begin
     return(plot_object)
 end
 
-
 ;***********************************************************************;
 ; Function : gsn_streamline_map                                         ;
 ;                   wks: workstation object                             ;
@@ -4184,228 +4271,12 @@ begin
     attsetvalues_check(data_object,vfres)
     attsetvalues_check(stream_object,stres)
     attsetvalues_check(map_object,mpres)
-; Function : gsn_add_text                                               ;
-;                   wks: workstation object                             ;
-;                plotid: plot object                                    ;
-;                  text: array of text strings                          ;
-;                     x: 1-dimensional array of x data positions        ;
-;                     y: 1-dimensional array of y data positions        ;
-;               resources: optional resources                           ;
-;                                                                       ;
-; This function adds text strings to the plot "plotid". "x" and "y" are ;
-; the x and y locations of each text string, and should be specified in ;
-; the same data space as the data space of "plotid". "resources" is an  ;
-; optional list of TextItem and AnnoManager resources.                  ;
-;                                                                       ;
-; This function is different from gsn_text because it actually attaches ;
-; the text to the plot. This means that if you resize or move the plot, ;
-; the text will stay with the plot.                                     ;
-;***********************************************************************;
-
-function gsn_add_text(wks:graphic,plotid:graphic,text:string,x:numeric, \
-                      y:numeric, resources:logical )
-local txid, txres, amres, just, res2, wksname, am_ids
-begin
-  res2 = resources
-;
-; The "txFuncCode" can't be set during a setvalues  call. It must be
-; set during the creation of the object.  
-;
-  wksname = get_res_value_keep(wks,"name","gsnapp")
-
-  if(res2.and.isatt(res2,"txFuncCode")) then
-    txid = create wksname + "_text" textItemClass wks
-      "txString"   : text
-      "txFuncCode" : res2@txFuncCode
-    end create
-  else
-    txid = create wksname + "_text" textItemClass wks
-      "txString"   : text
-    end create
-  end if
-
-  txres = get_res_eq(res2,"tx")  ; Get text resources.
-  attsetvalues_check(txid,txres)            ; Set text resources.
-
-  getvalues plotid
-    "pmAnnoViews" : text_ids
-  end getvalues
-
-  if(.not.any(ismissing(text_ids)))
-    new_text_ids = new(dimsizes(text_ids)+1,graphic)
-    new_text_ids(0)  = txid
-    new_text_ids(1:) = text_ids
-  else
-    new_text_ids = txid
-  end if
-
-  setvalues plotid
-    "pmAnnoViews" : new_text_ids
-  end setvalues
-;
-; Retrieve the id of the AnnoManager object created by the PlotManager and
-; then set its location in data coordinate space.
-;
-  getvalues plotid
-    "pmAnnoManagers": am_ids
-  end getvalues
-
-  just  = get_res_value(res2,"amJust","CenterLeft")
-
-  setvalues am_ids(0)
-    "amDataXF"       : x
-    "amDataYF"       : y
-    "amResizeNotify" : True
-    "amTrackData"    : True
-    "amJust"         : just
-  end setvalues
-
-  amres = get_res_eq(res2,"am")  ; Get annomanager resources.
-  attsetvalues_check(am_ids(0),amres)            ; Set text resources.
-
-  return(am_ids(0))
-end
-
-;***********************************************************************;
-; Procedure : gsn_text                                                  ;
-;                   wks: workstation object                             ;
-;                plotid: plot object                                    ;
-;                  text: array of text strings                          ;
-;                     x: 1-dimensional array of x data positions        ;
-;                     y: 1-dimensional array of y data positions        ;
-;               resources: optional resources                           ;
-;                                                                       ;
-; This procedure draws text strings on the workstation "wks" (the       ;
-; variable returned from a previous call to "gsn_open_wks").  "x" and   ;
-; "y" are the x and y locations of each text string, and should be      ;
-; specified in the same data space as the data space of "plotid".       ;
-; "resources" is an optional list of resources.                         ;
-;***********************************************************************;
-
-procedure gsn_text(wks:graphic,plotid:graphic,text:string,x:numeric, \
-                   y:numeric, resources:logical )
-local i, txid, plot_object, res, tx_res_index, x2, y2, xf, yf, \
-funccode, res2, calldraw, callframe
-begin
-    res2 = resources
-
-    calldraw  = get_res_value(res2,"gsnDraw", True)
-    callframe = get_res_value(res2,"gsnFrame",False)
-    maxbb     = get_bb_res(res2)
-;
-; datatondc can't accept doubles, so have to demote doubles if they
-; come in.
-;
-    xf = tofloat(x)
-    yf = tofloat(y)
-
-    x2 = new(dimsizes(x),float)
-    y2 = new(dimsizes(y),float)
-
-    datatondc(plotid,xf,yf,x2,y2)
-
-    delete(xf)
-    delete(yf)
-;
-; The "txFuncCode" can't be set during a setvalues  call. It must be
-; set during the creation of the object.  
-;
-    wksname = get_res_value_keep(wks,"name","gsnapp")
-
-    if(res2.and.isatt(res2,"txFuncCode")) then
-      txid = create wksname + "_text" textItemClass wks
-          "txString"   : text
-          "txPosXF"    : x2
-          "txPosYF"    : y2
-          "txFuncCode" : res2@txFuncCode
-      end create
-    else
-      txid = create wksname + "_text" textItemClass wks
-          "txString"   : text
-          "txPosXF"    : x2
-          "txPosYF"    : y2
-      end create
-    end if
-
-    txres = get_res_eq(res2,"tx")  ; Get text resources.
-    attsetvalues_check(txid,txres)            ; Set text resources.
-
-    draw_and_frame(wks,txid,calldraw,callframe,maxbb)
-end
-
-;***********************************************************************;
-; Function : gsn_text_ndc_return                                        ;
-;                   wks: workstation object                             ;
-;                  text: array of text strings                          ;
-;                     x: 1-dimensional array of x ndc positions         ;
-;                     y: 1-dimensional array of y ndc positions         ;
-;               resources: optional resources                           ;
-;                                                                       ;
-; This function draws text strings on the workstation "wks" (the        ;
-; variable returned from a previous call to "gsn_open_wks").  "x" and   ;
-; "y" are the x and y locations of each text string, and should be      ;
-; specified in NDC space. "resources" is an optional list of resources. ;
-; This function returns the text string created.                        ;
-;***********************************************************************;
-
-function gsn_text_ndc_return(wks:graphic, text:string, x:numeric, \
-                             y:numeric, resources:logical )
-local i, txid, plot_object, res, tx_res_index, x2, y2, res2, \
-calldraw, callframe
-begin
-
-    res2 = resources
-
-    wksname = get_res_value_keep(wks,"name","gsnapp")
-
-    calldraw  = get_res_value(res2,"gsnDraw", True)
-    callframe = get_res_value(res2,"gsnFrame",False)
-    maxbb     = get_bb_res(res2)
-
-    if((res2).and.isatt(res2,"txFuncCode")) then
-      txid = create wksname + "_text_ndc" textItemClass wks
-        "txString" : text
-        "txPosXF"  : x
-        "txPosYF"  : y
-        "txFuncCode" : res2@txFuncCode
-      end create
-    else
-      txid = create wksname + "_text_ndc" textItemClass wks
-        "txString" : text
-        "txPosXF"  : x
-        "txPosYF"  : y
-      end create
-    end if
-
-    txres = get_res_eq(res2,"tx")  ; Get text resources.
-    attsetvalues_check(txid,txres)            ; Set text resources.
-
-    draw_and_frame(wks,txid,calldraw,callframe,maxbb)
-    return(txid)
-end
-
-;***********************************************************************;
-; Procedure : gsn_text_ndc                                              ;
-;                                                                       ;
-; This procedure is the same as gsn_text, only it doesn't return        ;
-; anything.                                                             ;
-;***********************************************************************;
-
-procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
-                       y:numeric, resources:logical )
-local txid
-begin
-    txid = gsn_text_ndc_return(wks,text,x,y,resources)
-end
-
-;***********************************************************************;
 
     overlay(map_object,stream_object)
 
 ;
 ; If gsnScale was set to True, then make sure the X and Y axis labels
 ; and tick marks are the same size.
-
 ; 
     if(scale)
       gsnp_scale_plot(stream_object)
@@ -4551,7 +4422,6 @@ end
 ;***********************************************************************;
 ; Function : gsn_vector                                                 ;
 ;                   wks: workstation object                             ;
-
 ;                     u: 2-dimensional U array                          ;
 ;                     v: 2-dimensional V array                          ;
 ;               resources: optional resources                           ;
@@ -4699,7 +4569,6 @@ end
 ;                   wks: workstation object                             ;
 ;                     u: 2-dimensional U data                           ;
 ;                     v: 2-dimensional V data                           ;
-
 ;                  data: 2-dimensional scalar field                     ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
@@ -4836,7 +4705,6 @@ end
 ;                   wks: workstation object                             ;
 ;                     u: 2-dimensional U data                           ;
 ;                     v: 2-dimensional V data                           ;
-
 ;                  data: 2-dimensional scalar field                     ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
@@ -4969,7 +4837,6 @@ end
 ;                   wks: workstation object                             ;
 ;                     u: 2-dimensional U data                           ;
 ;                     v: 2-dimensional V data                           ;
-
 ;                  data: 2-dimensional scalar field                     ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
@@ -5112,7 +4979,6 @@ end
 ;***********************************************************************;
 ; Function : gsn_vector_map                                             ;
 ;                   wks: workstation object                             ;
-
 ;                     : 2-dimensional U data                            ;
 ;                     v: 2-dimensional V data                           ;
 ;               resources: optional resources                           ;
@@ -5220,7 +5086,6 @@ end
 ; Function : gsn_vector_scalar                                          ;
 ;                   wks: workstation object                             ;
 ;                     u: 2-dimensional U array                          ;
-
 ;                     v: 2-dimensional V array                          ;
 ;                  data: 2-dimensional scalar field                     ;
 ;               resources: optional resources                           ;
@@ -5390,7 +5255,6 @@ end
 ;                   wks: workstation object                             ;
 ;                     u: 2-dimensional U data                           ;
 ;                     v: 2-dimensional V data                           ;
-
 ;                  data: 2-dimensional scalar field                     ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
@@ -5517,7 +5381,6 @@ begin
     return(map_object)
 end
 
-
 ;***********************************************************************;
 ; Function : gsn_xy                                                     ;
 ;                   wks: workstation object                             ;
@@ -5634,7 +5497,6 @@ begin
     scale     = get_res_value(res2,"gsnScale",shape)
 
     check_for_tickmarks_off(res2)
-
 
     cares = get_res_eq(res2,"ca")
     attsetvalues_check(data_object,cares)
