@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.c,v 1.6 1998-03-23 22:48:42 dbrown Exp $
+ *      $Id: htmlview.c,v 1.7 1998-04-08 23:17:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,7 @@
 #include <ncarg/ngo/htmlviewP.h>
 #include <ncarg/ngo/nclstate.h>
 
-#if 1
+#if 0
 #define DOCTOP "ngdoc/ng4.0/"
 #else 
 #define DOCTOP "ngdoc/ng4.1alpha/"
