@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.121 2003-12-08 20:22:07 haley Exp $
+;      $Id: gsn_code.ncl,v 1.122 2003-12-08 20:46:26 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3957,8 +3957,7 @@ begin
 ; the topmost plot, or the topmost edge of the labelbar or
 ; text string (if they exist).
 ;
-      itop                    = 0               ; 1st topmost plot.
-      xtop                    = ypos(itop)+dyt
+      xtop                    = ypos(0)+dyt
       maxbb@gsnPanelInvsblTop = max((/xtop,newtop/))
     end if
 
@@ -3967,15 +3966,14 @@ begin
 ; Double check that this little calculation doesn't yield array
 ; indices that are out-of-bounds.
 ;
-      if(((nplots-ncols-1).ge.0.and.(nplots-ncols-1).le.(nplots-1)).and. \
-         all(ismissing(plot(nplots-ncols-1:nplots-1))))
+      if(((nplots-ncols).ge.0.and.(nplots-ncols).le.(nplots-1)).and. \
+         all(ismissing(plot(nplots-ncols:nplots-1))))
 ;
 ; The bottommost graphical object is either the bottommost edge of
 ; the bottommost plot, or the bottommost edge of the labelbar or
 ; text string (if they exist).
 ;
-        ibot                       = nplots-ncols-1   ; 1st bottommost plot.
-        xbot                       = ypos(ibot)-scaled_height-dyb
+        xbot                       = ypos(nrows-1)-scaled_height-dyb
         maxbb@gsnPanelInvsblBottom = min((/xbot,newbot/))
       end if
     end if
