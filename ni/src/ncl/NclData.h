@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.h,v 1.10 1997-05-09 21:37:58 ethan Exp $
+ *      $Id: NclData.h,v 1.11 1999-04-01 20:27:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -57,6 +57,7 @@ typedef struct _NclObjPart {
 	unsigned int obj_type_mask; /* some kind of bit mask to id object*/
 	int	storage; /* tag to determine whether object belongs to a 					symbol or is expression result */
 	int id;
+	int is_constant;
 	NclStatus   status;
 	NclRefList                      *parents;
 	int 	ref_count;

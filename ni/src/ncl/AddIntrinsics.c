@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.30 1998-11-11 23:35:14 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.31 1999-04-01 20:27:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -632,7 +632,7 @@ void _NclAddIntrinsics
 	args[2].is_dimsizes = 0;
 	args[2].n_dims = 1;
 	args[3].arg_data_type = _NclLookUp("string");
-	args[3].is_dimsizes = 0;
+	args[3].is_dimsizes = 1;
 	args[3].dim_sizes[0] = 1;
 	args[3].n_dims = 1;
 	_NclRegisterFunc(_NclICrayBinRecRead,args,"craybinrecread",4,IFUNC);

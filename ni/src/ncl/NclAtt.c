@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.19 1997-10-01 18:19:06 ethan Exp $
+ *      $Id: NclAtt.c,v 1.20 1999-04-01 20:27:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -253,8 +253,8 @@ NclSelectionRecord * sel_ptr;
 * tmp_md is either equal to value or had to be coerced. In the event it
 * was coerced it must be freed. Therefore it will faile value != tmp_md
 * conditional
-*/
 					_NclDestroyObj((NclObj)value);
+*/
 				}
 			}
 		} else {
@@ -334,10 +334,16 @@ NclSelectionRecord * sel_ptr;
 * subscript exists
 */
 			ret = _NclWriteSubSection((NclData)targetdat,sel_ptr,(NclData)tmp_md);
+			if((tmp_md != value)&&(tmp_md->obj.status != PERMANENT)) {
+/*
+* tmp_md might have been created by the Coerce in which case it needs to be destroyed here.
+* All other branches convert the temporary tmp_md to permanent storage
+* input value is always freed by calling environement
+*/
+					_NclDestroyObj((NclObj)tmp_md);
+				
+			}
 
-                        if(tmp_md->obj.status != PERMANENT) {
-                                _NclDestroyObj((NclObj)tmp_md);
-                        }
                 }
                 return(ret);
         }

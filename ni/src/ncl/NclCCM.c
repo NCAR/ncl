@@ -833,6 +833,7 @@ long UnPackIntHeader(CCMFileRec *therec,FILE* fd, CCMI *header,int start_block, 
 	int finish_offset;
 	int len;
 	char cw[WORD_SIZE];
+	static int first = 1;
 
 	if(therec->cos_blocking==0 ) {
 		n = MyRead(therec,fd,cw,1, start_block * BLOCK_SIZE + sz(start_offset));
@@ -841,10 +842,20 @@ long UnPackIntHeader(CCMFileRec *therec,FILE* fd, CCMI *header,int start_block, 
 		n = MyGetRecord(therec,fd, start_block ,start_offset,&buffer,&finish_block,&finish_offset,&len);
 	} else {
 		n = MyGetRecord(therec,fd, start_block ,start_offset,&buffer,&finish_block,&finish_offset,NULL);
+
 	}
 	
 	if(n == -1) {
 		return(n);
+	} else if(first) {
+		first = 0;
+/*
+* This is a kludgy test to avoid a core dump
+*/
+		if((( finish_block * BLOCK_SIZE + finish_offset *WORD_SIZE) - (start_block* BLOCK_SIZE +  start_offset * WORD_SIZE)) != n ) {
+			NhlPError( NhlFATAL,NhlEUNKNOWN,"CCM file is not a CRAY binary. Non CRAY binary files are not currently supported by NCL.\nUse \"ccm2nc\" to convert file to netCDF. (Currently, as of 1999, found at: http://goldhill.cgd.ucar.edu/cms/ccm3/tools/)");
+			return(-1);
+		}
 	}
 
 	
@@ -1079,6 +1090,9 @@ int	wr_status;
 * Obtain first integer header and set up info arrays
 */
 		coff = UnPackIntHeader(therec,fd,&initial_iheader,cb,cb_off);
+		if(coff == -1) {
+			return(NULL);
+		}
 		therec->header.iheader = initial_iheader;
 		switch((initial_iheader.MFTYP%100)/10) {
 		case 0:

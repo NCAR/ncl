@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.20 1997-08-08 19:41:02 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.21 1999-04-01 20:27:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -100,7 +100,7 @@ NhlArgVal udata;
 				tmp_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,(void*)tmp_mis,NULL,1,&dim_size,PERMANENT,NULL,nclTypeobjClass);
 				while(plptr != NULL) {
 					pobj = _NclGetObj(plptr->pid);
-					if(pobj->obj.obj_type_mask & Ncl_Var) {
+					if((pobj!=NULL)&&(pobj->obj.obj_type_mask & Ncl_Var)) {
 						_NclWriteAtt((NclVar)(pobj),NCL_MISSING_VALUE_ATT,tmp_md,NULL);
 					}
 					plptr = plptr->next;

@@ -174,8 +174,11 @@ NclSelectionRecord *sel_rec;
 NclTypeClass type;
 #endif
 {
+	NclObj tmp_obj;
 	number_of_constants++;
-	return(_NclCreateMultiDVal(inst, theclass, obj_type, obj_type_mask, val, missing_value, n_dims, dim_sizes, status, sel_rec, type));
+	tmp_obj = _NclCreateMultiDVal(inst, theclass, obj_type, obj_type_mask, val, missing_value, n_dims, dim_sizes, status, sel_rec, type);
+	tmp_obj->obj.is_constant = tmp_obj->obj.id+1;
+	return((NclObj)tmp_obj);
 
 }
 
@@ -187,12 +190,15 @@ static struct _NclMultiDValDataRec *CreateTrueConst
 #endif
 {
 	static int first = 1;
+	NclObj tmp_obj;
 	
 	if(first) {
 		number_of_constants++;
 		first = 0;
 	}
-	return(_NclCreateTrue());
+	tmp_obj = _NclCreateTrue();
+	tmp_obj->obj.is_constant = tmp_obj->obj.id+1;
+	return(tmp_obj);
 }
 static struct _NclMultiDValDataRec *CreateFalseConst
 #if     NhlNeedProto
@@ -202,12 +208,15 @@ static struct _NclMultiDValDataRec *CreateFalseConst
 #endif
 {
 	static int first = 1;
+	NclObj tmp_obj;
 	
 	if(first) {
 		number_of_constants++;
 		first = 0;
 	}
-	return(_NclCreateFalse());
+	tmp_obj = _NclCreateFalse();
+	tmp_obj->obj.is_constant = tmp_obj->obj.id+1;
+	return(tmp_obj);
 }
 
 

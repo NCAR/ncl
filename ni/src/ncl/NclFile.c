@@ -609,17 +609,15 @@ NclObj self;
 			NclFree(thefile->file.var_att_udata[i]);
 			_NhlCBDelete(thefile->file.var_att_cb[i]);
 		}
-		if(thefile->file.var_att_info[i] != NULL) {
-			step = thefile->file.var_att_info[i];	
-			if(thefile->file.var_att_ids[i]!= -1) {
-				_NclDelParent(_NclGetObj(thefile->file.var_att_ids[i]),self);
-			}
-			while(step != NULL) {
-				NclFree(step->the_att);
-				tmp = step;
-				step = step->next;
-				NclFree(tmp);
-			}
+		if(thefile->file.var_att_ids[i]!= -1) {
+			_NclDelParent(_NclGetObj(thefile->file.var_att_ids[i]),self);
+		}
+		step = thefile->file.var_att_info[i];	
+		while(step != NULL) {
+			NclFree(step->the_att);
+			tmp = step;
+			step = step->next;
+			NclFree(tmp);
 		}
 	}
 	for(i =0 ; i < thefile->file.n_file_dims; i++) {

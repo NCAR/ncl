@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.55 1998-11-24 21:27:39 ethan Exp $
+ *      $Id: NclVar.c,v 1.56 1999-04-01 20:27:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -936,6 +936,7 @@ struct _NclSelectionRecord *sel_ptr;
 	NclMultiDValData value_md,thevalue;
 	NclScalar tmp_mis;
 	char *v_name;
+	NhlErrorTypes ret = NhlNOERROR;
 /*
 * Preconditions:
 *
@@ -1000,7 +1001,12 @@ struct _NclSelectionRecord *sel_ptr;
 		self->var.att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)self);
 		self->var.att_cb = _NclAddCallback((NclObj)_NclGetObj(self->var.att_id),(NclObj)self,_NclVarMissingNotify,MISSINGNOTIFY,NULL);
 	}
-	return(_NclAddAtt(self->var.att_id,attname,value_md,sel_ptr));
+	ret = _NclAddAtt(self->var.att_id,attname,value_md,sel_ptr);
+	if((value_md != value)&&(value_md->obj.status != PERMANENT) ) {
+		_NclDestroyObj((NclObj)value_md);
+	}
+	
+	return(ret);
 }
 
 static struct _NclMultiDValDataRec *VarReadAtt

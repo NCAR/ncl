@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.15 1998-09-16 23:14:33 ethan Exp $
+ *      $Id: NclData.c,v 1.16 1999-04-01 20:27:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -560,6 +560,7 @@ NclStatus status;
 	theinst->obj.obj_type_mask = (Ncl_Obj | obj_type_mask);
 	theinst->obj.status = status;
 	theinst->obj.id = _NclRegisterObj(theinst);
+	theinst->obj.is_constant = -1;
 	theinst->obj.parents = NULL;
 	theinst->obj.ref_count = 0;
 	theinst->obj.cblist =  NULL;
