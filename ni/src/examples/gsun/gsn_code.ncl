@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.4 1998-12-17 21:25:53 haley Exp $
+;      $Id: gsn_code.ncl,v 1.5 1998-12-18 20:24:39 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -637,6 +637,8 @@ begin
 
     check_for_irreg2loglin(res2,force_x_linear,force_y_linear,\
         getvalues plot_object
+          "vpXF"      : xf
+          "vpYF"      : yf
           "vpWidthF"  : width
           "vpHeightF" : height
           "trXMinF"   : trxmin
@@ -649,14 +651,22 @@ begin
         yrange = trymax - trymin
 
         if(xrange.lt.yrange)
-          width = width * (xrange/yrange)
+          new_width  = width * (xrange/yrange)
+          new_height = height
+          new_xf     = xf + 0.5*(width-new_width)
+          new_yf     = yf
         else
-          height = height * (yrange/xrange)
+          new_height = height * (yrange/xrange)
+          new_width  = width
+          new_yf     = yf - 0.5*(height-new_height)
+          new_xf     = xf
         end if
 
         setvalues plot_object
-          "vpWidthF"  : width
-          "vpHeightF" : height
+          "vpXF"      : new_xf
+          "vpYF"      : new_yf
+          "vpWidthF"  : new_width
+          "vpHeightF" : new_height
         end setvalues
     check_for_tickmarks_off(res2)
 
@@ -1613,6 +1623,8 @@ begin
     callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)
         getvalues plot_object
+          "vpXF"      : xf
+          "vpYF"      : yf
           "vpWidthF"  : width
           "vpHeightF" : height
           "trXMinF"   : trxmin
@@ -1625,14 +1637,22 @@ begin
         yrange = trymax - trymin
 
         if(xrange.lt.yrange)
-          width = width * (xrange/yrange)
+          new_width  = width * (xrange/yrange)
+          new_height = height
+          new_xf     = xf + 0.5*(width-new_width)
+          new_yf     = yf
         else
-          height = height * (yrange/xrange)
+          new_height = height * (yrange/xrange)
+          new_width  = width
+          new_yf     = yf - 0.5*(height-new_height)
+          new_xf     = xf
         end if
 
         setvalues plot_object
-          "vpWidthF"  : width
-          "vpHeightF" : height
+          "vpXF"      : new_xf
+          "vpYF"      : new_yf
+          "vpWidthF"  : new_width
+          "vpHeightF" : new_height
         end setvalues
     scale     = get_res_value(res2,"gsnScale",shape)
 
@@ -2137,6 +2157,8 @@ begin
     check_for_irreg2loglin(res2,force_x_linear,force_y_linear,\
                                 force_x_log,force_y_log)
         getvalues plot_object
+          "vpXF"      : xf
+          "vpYF"      : yf
           "vpWidthF"  : width
           "vpHeightF" : height
           "trXMinF"   : trxmin
@@ -2149,14 +2171,22 @@ begin
         yrange = trymax - trymin
 
         if(xrange.lt.yrange)
-          width = width * (xrange/yrange)
+          new_width  = width * (xrange/yrange)
+          new_height = height
+          new_xf     = xf + 0.5*(width-new_width)
+          new_yf     = yf
         else
-          height = height * (yrange/xrange)
+          new_height = height * (yrange/xrange)
+          new_width  = width
+          new_yf     = yf - 0.5*(height-new_height)
+          new_xf     = xf
         end if
 
         setvalues plot_object
-          "vpWidthF"  : width
-          "vpHeightF" : height
+          "vpXF"      : new_xf
+          "vpYF"      : new_yf
+          "vpWidthF"  : new_width
+          "vpHeightF" : new_height
         end setvalues
 
     vfres = get_res_eq(res2,"vf")
@@ -2798,6 +2828,8 @@ begin
 
     vfres = get_res_eq(res2,"vf")
         getvalues plot_object
+          "vpXF"      : xf
+          "vpYF"      : yf
           "vpWidthF"  : width
           "vpHeightF" : height
           "trXMinF"   : trxmin
@@ -2810,14 +2842,22 @@ begin
         yrange = trymax - trymin
 
         if(xrange.lt.yrange)
-          width = width * (xrange/yrange)
+          new_width  = width * (xrange/yrange)
+          new_height = height
+          new_xf     = xf + 0.5*(width-new_width)
+          new_yf     = yf
         else
-          height = height * (yrange/xrange)
+          new_height = height * (yrange/xrange)
+          new_width  = width
+          new_yf     = yf - 0.5*(height-new_height)
+          new_xf     = xf
         end if
 
         setvalues plot_object
-          "vpWidthF"  : width
-          "vpHeightF" : height
+          "vpXF"      : new_xf
+          "vpYF"      : new_yf
+          "vpWidthF"  : new_width
+          "vpHeightF" : new_height
         end setvalues
     vcres = get_res_ne(res2,(/"sf","vf"/))
 
@@ -3294,6 +3334,8 @@ begin
               do i = 0,dimsizes(xy_res_index)-1
                   xyres@$attnames(xy_res_index(i))$ = res2@$attnames(xy_res_index(i))$
         getvalues plot_object
+          "vpXF"      : xf
+          "vpYF"      : yf
           "vpWidthF"  : width
           "vpHeightF" : height
           "trXMinF"   : trxmin
@@ -3306,14 +3348,22 @@ begin
         yrange = trymax - trymin
 
         if(xrange.lt.yrange)
-          width = width * (xrange/yrange)
+          new_width  = width * (xrange/yrange)
+          new_height = height
+          new_xf     = xf + 0.5*(width-new_width)
+          new_yf     = yf
         else
-          height = height * (yrange/xrange)
+          new_height = height * (yrange/xrange)
+          new_width  = width
+          new_yf     = yf - 0.5*(height-new_height)
+          new_xf     = xf
         end if
 
         setvalues plot_object
-          "vpWidthF"  : width
-          "vpHeightF" : height
+          "vpXF"      : new_xf
+          "vpYF"      : new_yf
+          "vpWidthF"  : new_width
+          "vpHeightF" : new_height
         end setvalues
               attsetvalues_check(plot_object,xyres)
             end if
