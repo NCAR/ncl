@@ -1,0 +1,20 @@
+#
+#       $Id: yMakefile,v 1.1 1994-06-20 19:49:09 kennison Exp $
+#
+
+MYNAME  = polypack
+
+GENERIC_SRCS = \
+	ppdipo.f ppditr.f ppinpo.f ppintr.f ppplcl.f ppppap.f \
+	ppunpo.f ppuntr.f ppzbts.f
+
+GENERIC_OBJS = \
+	ppdipo.o ppditr.o ppinpo.o ppintr.o ppplcl.o ppppap.o \
+	ppunpo.o ppuntr.o ppzbts.o
+
+SOURCES = $(GENERIC_SRCS)
+
+OBJECTS = $(GENERIC_OBJS)
+
+PartialLibraryTarget(libncarg.a,$(OBJECTS))
+PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
