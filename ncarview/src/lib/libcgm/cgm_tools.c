@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.26 1995-03-16 21:03:25 haley Exp $
+ *	$Id: cgm_tools.c,v 1.27 1996-11-01 15:42:01 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -41,7 +41,6 @@
 #include	<ncarg/c.h>
 #include	"cgm_tools.h"
 #include	"cgmdef.h"
-#include	"cgmP.h"
 #include	"internals.h"
 #include	"mem_file.h"
 	
