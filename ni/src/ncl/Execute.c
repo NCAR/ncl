@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.68 1996-07-03 22:45:29 ethan Exp $
+ *      $Id: Execute.c,v 1.69 1996-09-20 19:32:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3189,8 +3189,7 @@ NclExecuteReturnStatus _NclExecute
 										sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.stride = 1;
 										sel_ptr->selection[sel_ptr->n_entries - i - 1].dim_num = sel_ptr->n_entries - i - 1;
 										
-
-									}
+}
 								}
 							} else {
 								sel_ptr = NULL;
@@ -3360,7 +3359,7 @@ NclExecuteReturnStatus _NclExecute
 							if(estatus != NhlFATAL) {
 								if(sel_ptr != NULL) {
 									for(i=0;i<sel_ptr->n_entries;i++) {
-										if(file->file.file_dim_info[file->file.var_info[index]->file_dim_num[sel_ptr->n_entries - i - 1]]->dim_size != 1){
+										if((file->file.file_dim_info[file->file.var_info[index]->file_dim_num[sel_ptr->n_entries - i - 1]]->dim_size != 1)||(nsubs == file->file.var_info[index]->num_dimensions)){
 											data =_NclPop();
 											switch(data.u.sub_rec->sub_type) {
 											case INT_VECT:
