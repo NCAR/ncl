@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.17 1999-06-16 00:00:11 haley Exp $
+;      $Id: gsn_code.ncl,v 1.18 1999-06-30 20:53:11 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -571,7 +571,7 @@ begin
 
 ; Function : gsn_contour                                                ;
 local i, attnames, data_object, plot_object, res, sf_res_index, \
-datares, cnres, trres, cn_res_index, tr_res_index, calldraw, callframe, \
+;                  data: 2-dimensional data                             ;
 force_xaxis_linear, force_yaxis_linear, force_xaxis_log, force_yaxis_log, \
 trxmin, trxmax, trymin, trymax, res2
 ; This function creates and draws a contour plot to the workstation     ;
@@ -580,7 +580,7 @@ trxmin, trxmax, trymin, trymax, res2
     scale     = False
     shape     = False
 ; "wks" (the variable returned from a previous call to "gsn_open_wks"). ;
-    trres     = False
+; "data" is the 2-dimensional data to be contoured, and "resources" is  ;
 ; an optional list of resources. The id of the contour plot is returned.;
 ;                                                                       ;
     force_xaxis_linear = False
@@ -738,9 +738,10 @@ begin
             end if
             if(force_xaxis_linear.or.force_xaxis_log.or. \
                force_yaxis_linear.or.force_yaxis_log)
-              if(chartostring(res(0:1)).eq."tr")
-                trres = True
-                trres@$attnames$ = res2@$attnames$
+              if(chartostring(res(0:1)).eq."tr".or. \
+                 chartostring(res(0:1)).eq."vp")
+                llres = True
+                llres@$attnames$ = res2@$attnames$
               end if
             end if
       else
@@ -762,11 +763,12 @@ begin
             end if
             if(force_xaxis_linear.or.force_xaxis_log.or. \
                force_yaxis_linear.or.force_yaxis_log)
-              tr_res_index = ind(chartostring(res(:,0:1)).eq."tr")
-              if(.not.all(ismissing(tr_res_index)))
-                  trres = True
-                  do i = 0,dimsizes(tr_res_index)-1
-                    trres@$attnames(tr_res_index(i))$ = res2@$attnames(tr_res_index(i))$
+              ll_res_index = ind(chartostring(res(:,0:1)).eq."tr".or. \
+                                 chartostring(res(:,0:1)).eq."vp")
+              if(.not.all(ismissing(ll_res_index)))
+                  llres = True
+                  do i = 0,dimsizes(ll_res_index)-1
+                    llres@$attnames(ll_res_index(i))$ = res2@$attnames(ll_res_index(i))$
                   end do
               end if
             end if
@@ -843,18 +845,18 @@ begin
       attsetvalues(plot_object,cnres2)
     end if
 
-     if(force_xaxis_linear.or.force_xaxis_log.or. \
-        force_yaxis_linear.or.force_yaxis_log)
+    if(force_xaxis_linear.or.force_xaxis_log.or. \
+       force_yaxis_linear.or.force_yaxis_log)
 
-       overlay_plot_object = plot_object
-       delete(plot_object)
+        llres = get_res_eq(res2,(/"tr","vp"/))
+    end if
 ;
-       getvalues overlay_plot_object
-         "trXMinF"    : trxmin
-         "trXMaxF"    : trxmax
-         "trYMinF"    : trymin
-         "trYMaxF"    : trymax
-       end getvalues
+; If gsnShape was set to True, then resize the X or Y axis so that
+; the scales are proportionally correct.
+; 
+    if(shape)
+      gsnp_shape_plot(plot_object)
+    end if
 ;
 ; If gsnScale was set to True, then make sure the X and Y axis labels
         "trXLog"  : force_xaxis_log
@@ -864,8 +866,8 @@ begin
     end if
 
 ; Check if we need to force the X or Y axis to be linear or log.
-      if(trres)
-        attsetvalues(plot_object,trres)
+      if(llres)
+        attsetvalues(plot_object,llres)
       end if
 
     if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
@@ -1704,13 +1706,13 @@ local i, plot_object, res2
 ; Function : gsn_streamline                                             ;
 local i,attnames,data_object,plot_object,res,vf_res_index,st_res_index, \
 force_xaxis_linear, force_yaxis_linear, force_xaxis_log, force_yaxis_log, \
-trxmin, trxmax, trymin, trymax, tr_res_index, trres, res2
+trxmin, trxmax, trymin, trymax, ll_res_index, llres, res2
 ;               resources: optional resources                           ;
     calldraw  = True
     callframe = True
     scale     = False
     shape     = False
-    trres     = False
+;                                                                       ;
 ; This function creates and draws a streamline plot to the workstation  ;
 ; "wks" (the variable returned from a previous call to "gsn_open_wks"). ;
     force_xaxis_linear = False
@@ -1861,9 +1863,10 @@ begin
             end if
             if(force_xaxis_linear.or.force_xaxis_log.or. \
                force_yaxis_linear.or.force_yaxis_log)
-              if(chartostring(res(0:1)).eq."tr")
-                trres = True
-                trres@$attnames$ = res2@$attnames$
+              if(chartostring(res(0:1)).eq."tr".or. \
+                 chartostring(res(0:1)).eq."vp")
+                llres = True
+                llres@$attnames$ = res2@$attnames$
               end if
             end if
         else
@@ -1885,11 +1888,12 @@ begin
             end if
             if(force_xaxis_linear.or.force_xaxis_log.or. \
                force_yaxis_linear.or.force_yaxis_log)
-              tr_res_index = ind(chartostring(res(:,0:1)).eq."tr")
-              if(.not.all(ismissing(tr_res_index)))
-                  trres = True
-                  do i = 0,dimsizes(tr_res_index)-1
-                    trres@$attnames(tr_res_index(i))$ = res2@$attnames(tr_res_index(i))$
+              ll_res_index = ind(chartostring(res(:,0:1)).eq."tr".or.\
+                                 chartostring(res(:,0:1)).eq."vp")
+              if(.not.all(ismissing(ll_res_index)))
+                  llres = True
+                  do i = 0,dimsizes(ll_res_index)-1
+                    llres@$attnames(ll_res_index(i))$ = res2@$attnames(ll_res_index(i))$
                   end do
               end if
             end if
@@ -1987,8 +1991,8 @@ begin
     end if
 
 ; Check if we need to force the X or Y axis to be linear or log.
-      if(trres)
-        attsetvalues(plot_object,trres)
+      if(llres)
+        attsetvalues(plot_object,llres)
       end if
 
     if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
@@ -2375,13 +2379,13 @@ begin
 ;                     v: 2-dimensional V array                          ;
 local i,attnames,data_object,plot_object,res,vf_res_index,vc_res_index, \
 force_xaxis_linear, force_yaxis_linear, force_xaxis_log, force_yaxis_log, \
-trxmin, trxmax, trymin, trymax, tr_res_index, trres, res2
+; This function creates and draws a vector plot to the workstation "wks";
 ; (the variable returned from a previous call to "gsn_open_wks").  "u"  ;
     calldraw = True
     callframe = True
     scale     = False
     shape     = False
-    trres     = False
+; and "v" are the 2-dimensional arrays to be vectorized, and "resources";
 ; is an optional list of resources. The id of the vector plot is        ;
 ; returned.                                                             ;
     force_xaxis_linear = False
@@ -2532,9 +2536,10 @@ begin
             end if
             if(force_xaxis_linear.or.force_xaxis_log.or. \
                force_yaxis_linear.or.force_yaxis_log)
-              if(chartostring(res(0:1)).eq."tr")
-                trres = True
-                trres@$attnames$ = res2@$attnames$
+              if(chartostring(res(0:1)).eq."tr".or. \
+                 chartostring(res(0:1)).eq."vp")
+                llres = True
+                llres@$attnames$ = res2@$attnames$
               end if
             end if
         else
@@ -2556,11 +2561,12 @@ begin
             end if
             if(force_xaxis_linear.or.force_xaxis_log.or. \
                force_yaxis_linear.or.force_yaxis_log)
-              tr_res_index = ind(chartostring(res(:,0:1)).eq."tr")
-              if(.not.all(ismissing(tr_res_index)))
-                  trres = True
-                  do i = 0,dimsizes(tr_res_index)-1
-                    trres@$attnames(tr_res_index(i))$ = res2@$attnames(tr_res_index(i))$
+              ll_res_index = ind(chartostring(res(:,0:1)).eq."tr".or. \
+                                 chartostring(res(:,0:1)).eq."vp")
+              if(.not.all(ismissing(ll_res_index)))
+                  llres = True
+                  do i = 0,dimsizes(ll_res_index)-1
+                    llres@$attnames(ll_res_index(i))$ = res2@$attnames(ll_res_index(i))$
                   end do
               end if
             end if
@@ -2658,8 +2664,8 @@ begin
     end if
 
 ; Check if we need to force the X or Y axis to be linear or log.
-      if(trres)
-        attsetvalues(plot_object,trres)
+      if(llres)
+        attsetvalues(plot_object,llres)
       end if
 
     if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
@@ -2895,11 +2901,11 @@ begin
     if(sprdcols)
       cnres2 = True
     if(calldraw)
-        draw(vector_object)
+      draw(vector_object)
     end if
 
     if(callframe)
-        frame(wks)
+      frame(wks)
     end if
 
       set_attr(cnres2,"cnFillColors",\
@@ -3372,14 +3378,14 @@ begin
 ;                  data: 2-dimensional scalar field                     ;
 local i, attnames, vfdata_object, sfdata_object, plot_object, res, \
 force_xaxis_linear, force_yaxis_linear, force_xaxis_log, force_yaxis_log, \
-trxmin, trxmax, trymin, trymax, tr_res_index, trres, vf_res_index, \
+; This function creates and draws a vector plot to the workstation "wks";
 vc_res_index, sf_res_index, res2
 ; and "v" are the 2-dimensional arrays to be vectorized, and "data" is  ;
     calldraw = True
     callframe = True
     scale     = False
     shape     = False
-    trres     = False
+; the scalar field that the vectors are colored by. "resources" is an   ;
 ; optional list of resources. The id of the vector plot is returned.    ;
 ;                                                                       ;
     force_xaxis_linear = False
@@ -3553,9 +3559,10 @@ begin
             end if
             if(force_xaxis_linear.or.force_xaxis_log.or. \
                force_yaxis_linear.or.force_yaxis_log)
-              if(chartostring(res(0:1)).eq."tr")
-                trres = True
-                trres@$attnames$ = res2@$attnames$
+              if(chartostring(res(0:1)).eq."tr".or. \
+                 chartostring(res(0:1)).eq."vp")
+                llres = True
+                llres@$attnames$ = res2@$attnames$
               end if
             end if
         else
@@ -3586,11 +3593,12 @@ begin
             end if
             if(force_xaxis_linear.or.force_xaxis_log.or. \
                force_yaxis_linear.or.force_yaxis_log)
-              tr_res_index = ind(chartostring(res(:,0:1)).eq."tr")
-              if(.not.all(ismissing(tr_res_index)))
-                  trres = True
-                  do i = 0,dimsizes(tr_res_index)-1
-                    trres@$attnames(tr_res_index(i))$ = res2@$attnames(tr_res_index(i))$
+              ll_res_index = ind(chartostring(res(:,0:1)).eq."tr".or. \
+                                 chartostring(res(:,0:1)).eq."vp")
+              if(.not.all(ismissing(ll_res_index)))
+                  llres = True
+                  do i = 0,dimsizes(ll_res_index)-1
+                    llres@$attnames(ll_res_index(i))$ = res2@$attnames(ll_res_index(i))$
                   end do
               end if
             end if
@@ -3688,8 +3696,8 @@ begin
     end if
 
 ; Check if we need to force the X or Y axis to be linear or log.
-      if(trres)
-        attsetvalues(plot_object,trres)
+      if(llres)
+        attsetvalues(plot_object,llres)
       end if
 
     if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
