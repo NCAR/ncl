@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-24 21:24:03 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-29 19:17:59 scheitln Exp $
 #
 NCARG	= ../../../..
 
 MYNAME	= fngmisc
 
-GENERIC_SRCS = fnmngdts.f fnmwsym.f
+GENERIC_SRCS = fngngdts.f fngwsym.f
 
 install::
 	@for file in $(GENERIC_SRCS); do\
