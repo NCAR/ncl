@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.15 1999-07-29 14:45:53 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.16 1999-08-02 19:19:16 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1874,8 +1874,8 @@ begin
 function gsn_csm_contour_map_polar(wks:graphic,data[*][*]:numeric, \
       if(isatt(cnres,"cnFillOn").and.cnres@cnFillOn)
 	set_attr(cnres,"cnInfoLabelOn",False)
-        if(.not.isatt(cnres,"lbLabelBarOn").or.\
-          isatt(cnres,"lbLabelBarOn").and.cnres@lbLabelBarOn)
+        if(.not.lbatt(cnres,"lbLabelBarOn").or.\
+          isatt(lbres,"lbLabelBarOn").and.lbres@lbLabelBarOn)
 infolabel_on, infolabel_zone, lbar_zone, lbar_height, lbar_width
 begin
 
@@ -2198,8 +2198,8 @@ begin
             set_attr(res2,     "vpYF",0.9)
       if(isatt(cnres,"cnFillOn").and.cnres@cnFillOn)
 	set_attr(cnres,"cnInfoLabelOn",False)
-        if(.not.isatt(cnres,"lbLabelBarOn").or.\
-          isatt(cnres,"lbLabelBarOn").and.cnres@lbLabelBarOn)
+        if(.not.isatt(lbres,"lbLabelBarOn").or.\
+          isatt(lbres,"lbLabelBarOn").and.lbres@lbLabelBarOn)
           zmeans2 = dim_avg(datanew(lat | : ,lon | :))
           if(min(zmeans2).lt.0.and.max(zmeans2).gt.0)
           end if
@@ -3374,7 +3374,7 @@ callframe, left_string, center_string, right_string, main_zone, ncurves, \
 
     tmres = get_res_eq(res2,"tm")  ; Get tickmark resources
     gsnp_point_tickmarks_outward(xy_object,tmres,xlength,ylength,xmlength, \
-local res, contour_object, res2, xfontf, yfontf, font_height, \
+                                 ymlength,major_length,minor_length)
 lft_str_object, ctr_str_object, rgt_str_object, calldraw, callframe, \
 left_string, center_string, right_string, main_zone, datanew
     subres = get_res_eq(res2,(/"tx","am"/))  ; Get textitem resources
@@ -3681,7 +3681,7 @@ begin
 ; Add lat/lon labels to X/Y axes if appropriate coordinate arrays exist.
 
 function gsn_csm_hov(wks:graphic,data:numeric,resources:logical)
-local res, contour_object, res2, font_height, lbar_on, \
+local res, contour_object, res2, font_height, \
 lft_str_object, ctr_str_object, rgt_str_object, calldraw, callframe, \
 left_string, center_string, right_string, datanew, lon_spacing
       "vpWidthF"             : width
@@ -3780,7 +3780,7 @@ end
 ; This function creates and draws a titled Hovmueller plot to the       ;
 ; workstation "wks" (the variable returned from a previous call to      ;
 function gsn_csm_lat_time(wks:graphic,data:numeric,resources:logical)
-local res, contour_object, res2, font_height, lbar_on, \
+local res, contour_object, res2, font_height, \
 lft_str_object, ctr_str_object, rgt_str_object, calldraw, callframe, \
 left_string, center_string, right_string, datanew, lat_spacing
 ; This function behaves differently from gsn_csm_contour in that it     ;
@@ -3882,7 +3882,7 @@ left_string, center_string, right_string, datanew, lat_spacing
 
     return(contour_object)
 function gsn_csm_pres_hgt(wks:graphic,data:numeric,resources:logical)
-local res, contour_object, res2, xfontf, yfontf, font_height, lbar_on, \
+
 lft_str_object, ctr_str_object, rgt_str_object, calldraw, callframe, \
 left_string, center_string, right_string, add_hgt
 ;***********************************************************************;
