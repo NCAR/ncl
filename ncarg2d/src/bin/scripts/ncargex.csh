@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.61 1994-05-19 20:10:26 kennison Exp $
+#   $Id: ncargex.csh,v 1.62 1994-06-20 20:31:42 kennison Exp $
 #
 
 #********************#
@@ -15,11 +15,11 @@ if ($#argv < 1) then
   echo "               [-conran_family] [-conrec_family] [-dashline]        "
   echo "               [-ezmap] [-field_flow] [-gflash] [-gridall]          "
   echo "               [-halftone] [-histogram] [-isosrfhr] [-isosurface]   "
-  echo "               [-labelbar] [-ngmisc] [-plotchar] [-pwrite_family]   "
-  echo "               [-scrolled_title] [-seter] [-softfill] [-spps]       "
-  echo "               [-streamlines] [-surface] [-threed] [-vectors]       "
-  echo "               [-gks] [-misc] [-class] [-clean] [-n] [-onebyone]    "
-  echo "                names                                               "
+  echo "               [-labelbar] [-ngmisc] [-plotchar] [-polypack]        "
+  echo "               [-pwrite_family] [-scrolled_title] [-seter]          "
+  echo "               [-softfill] [-spps] [-streamlines] [-surface]        "
+  echo "               [-threed] [-vectors][-gks] [-misc] [-class]          "
+  echo "               [-clean] [-n] [-onebyone] names                      "
   echo ""
   echo "See <man ncargex>                                                   "
   exit
@@ -253,6 +253,15 @@ set tst_plotchar  = (tpltch)
 set fnd_plotchar  = (fpchiqu fpcloqu fpcfonts)
 set plotchar_list = ($ex_plotchar $tst_plotchar $fnd_plotchar)
 
+#***********************#
+#                       #
+# set polypack examples #
+#                       #
+#***********************#
+set ex_polypack   = (ppex01)
+set tst_polypack  = (tppack)
+set polypack_list = ($ex_polypack $tst_polypack)
+
 #****************************#
 #                            #
 # set pwrite_family examples #
@@ -391,15 +400,15 @@ set ttr_overlap = (mpex03 mpex05 arex01 sfex01 tsoftf)
 #                                                                     #
 #*********************************************************************#
 set ex_list  = ($ex_areas $ex_autograph $ex_colconv $ex_conpack $ex_ezmap \
-                $ex_field $ex_labelbar $ex_plotchar \
+		$ex_field $ex_labelbar $ex_plotchar $ex_polypack \
                 ${ex_scrlld_title} $ex_softfill $ex_spps $ex_surface $ex_misc)
 
 set tst_list = ($tst_areas $tst_autograph $tst_colconv $tst_conpack \
                 ${tst_cnrn_family} ${tst_cnrc_family} $tst_dashline \
                 $tst_ezmap $tst_field $tst_gflash $tst_gridall $tst_halftone \
                 $tst_histogram $tst_isosrfhr $tst_isosurface $tst_labelbar \
-                $tst_plotchar $tst_pwrite ${tst_scrlld_title} $tst_seter \
-                $tst_softfill $tst_surface $tst_threed)
+		$tst_plotchar $tst_polypack $tst_pwrite ${tst_scrlld_title} \
+		$tst_seter $tst_softfill $tst_surface $tst_threed)
 
 set ttr_list = ($ttr_areas $ttr_conpack $ttr_ezmap $ttr_class)
 
@@ -557,6 +566,11 @@ while ($#argv > 0)
         case "-plotchar":
             shift
             set names=($names $plotchar_list)
+            breaksw
+
+	case "-polypack":
+            shift
+	    set names=($names $polypack_list)
             breaksw
 
         case "-pwrite_family":
