@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.125 2003-12-31 16:36:22 haley Exp $
+;      $Id: gsn_code.ncl,v 1.126 2004-01-02 05:24:22 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -51,6 +51,7 @@ undef("cat_strings")
 undef("get_resources")
 undef("set_attr")
 undef("check_attr")
+undef("get_res_eq_replace")
 undef("get_res_eq")
 undef("get_res_ne")
 undef("get_res_value")
@@ -538,21 +539,23 @@ begin
 end
 
 ;***********************************************************************;
-; Function : get_res_eq                                                 ;
 ;                res:logical                                            ;
 ;             prefix: string                                            ;
+;         rep_prefix: string                                            ;
 ;                                                                       ;
-; Get a list of resources that start with res_prefix.                   ;
+; Get a list of resources that start with res_prefix, and replace them  ;
+; with rep_prefix.                                                      ;
 ;***********************************************************************;
-function get_res_eq(res,res_prefix:string)
-local i, j, ret_res, res2, attnames, res_index
+function get_res_eq_replace(res,res_prefix:string,rep_prefix:string)
+local i, j, ret_res, res2, attnames, res_index, nres2
 begin
   ret_res = False
 
   if(res.and..not.any(ismissing(getvaratts(res))))
     attnames = getvaratts(res)
     do i = 0, dimsizes(attnames)-1
-      res2 = stringtocharacter(attnames(i))
+      res2  = stringtocharacter(attnames(i))
+      nres2 =  dimsizes(res2)
 ;
 ; Loop through the resource prefixes and determine their length
 ; so that we only check that many characters in the resource name.
@@ -560,10 +563,21 @@ begin
       do j = 0, dimsizes(res_prefix)-1
         res_prefix_c = stringtocharacter(res_prefix(j))
         rpclen       = dimsizes(res_prefix_c)-1   ; Don't count null char
-        if(dimsizes(res2).ge.rpclen.and.\
-           any(charactertostring(res2(0:rpclen-1)).eq.res_prefix(j)))
+        if(nres2.ge.rpclen.and. \
+           charactertostring(res2(0:rpclen-1)).eq.res_prefix(j))
           ret_res = True
-          ret_res@$attnames(i)$ = res@$attnames(i)$
+;
+; Make sure we have enough room in the rest of the resource name to
+; replace the current prefix with the rep_prefix. This code will take
+; something like "gsnPanelFigureStringsFontHeightF" and replace it with
+; "txFontHeightF".
+;
+          if(rep_prefix.ne."".and.nres2.gt.(rpclen+1)) then
+            resnew_attname = rep_prefix + charactertostring(res2(rpclen:nres2-2))
+            ret_res@$resnew_attname$ = res@$attnames(i)$
+          else
+            ret_res@$attnames(i)$ = res@$attnames(i)$
+          end if
         end if
         delete(res_prefix_c)
       end do
@@ -573,6 +587,21 @@ begin
   end if
   return(ret_res)
 end
+
+
+;***********************************************************************;
+; Function : get_res_eq                                                 ;
+;                res:logical                                            ;
+;             prefix: string                                            ;
+;                                                                       ;
+; Get a list of resources that start with res_prefix.                   ;
+;***********************************************************************;
+function get_res_eq(res,res_prefix:string)
+local i, j, ret_res, res2, attnames, res_index
+begin
+  return(get_res_eq_replace(res,res_prefix,""))
+end
+
 
 ;***********************************************************************;
 ; Function : get_res_ne                                                 ;
@@ -3420,13 +3449,13 @@ begin
     amres = get_res_eq(res,"am")
     just  = lower_case(get_res_value(amres,"amJust","bottomright"))
 ;
-; Don't look for tx* resources, because this will conflict with the
-; title string which is also set with tx* resources. We have to figure
-; out how to handle this later.
+; Look for all resources that start with gsnPanelFigureStrings, and replace
+; this with just "tx". This is what allows us to sneak in text resources
+; and have them only apply to the figure strings, and not the main string.
 ;
-;    txres = get_res_eq(res,"tx")
-;    perim = get_res_value(txres,"txPerimOn",True)
-;    bkgrn = get_res_value(txres,"txBackgroundFillColor",0)
+    txres    = get_res_eq_replace(res,"gsnPanelFigureStrings","tx")
+    perim_on = get_res_value(txres,"txPerimOn",True)
+    bkgrn    = get_res_value(txres,"txBackgroundFillColor",0)
   else
     is_figure_strings = False
   end if
@@ -3675,13 +3704,6 @@ begin
 ; the text box.
 ;
   if(is_figure_strings) then
-;
-; First, get some resource values that might have been set by user.
-; 
-    perim_on      = get_res_value(res,"gsnPanelFigureStringsPerimOn",True)
-    bg_fill_color = get_res_value(res, \
-                    "gsnPanelFigureStringsBackgroundFillColor",0)
-
     fig_index = ind(just.eq.justs)
     if(ismissing(fig_index))
       fig_index = 0
@@ -3767,12 +3789,15 @@ begin
               "txString"              : panel_strings(nplot)
               "txFontHeightF"         : pfont_height
               "txPerimOn"             : perim_on
-              "txBackgroundFillColor" : bg_fill_color
+              "txBackgroundFillColor" : bkgrn
             end create
 ;
-; See note above about not checking for tx* resources here.
+; Set some text resources for figure strings, if any.
 ;
-;            attsetvalues_check(text,txres)
+            attsetvalues_check(text,txres)
+;
+; Add annotation to plot.
+;
             anno(nplot) = NhlAddAnnotation(pplot,text)
             added_anno = True
             setvalues anno(nplot)
@@ -3959,13 +3984,13 @@ begin
        print("Warning: gsn_panel: font height (" + main_font_hgt + ") of main string is too large to fit in space provided. Either decrease font size or set gsnPanelTop.")
     end if
 
-    txres               = get_res_eq(res,"tx")
-    txres               = True
-    txres@gsnDraw       = False
-    txres@gsnFrame      = False
-    txres@txFontHeightF = main_font_hgt
+    mntxres               = get_res_eq(res,"tx")
+    mntxres               = True
+    mntxres@gsnDraw       = False
+    mntxres@gsnFrame      = False
+    mntxres@txFontHeightF = main_font_hgt
     newplots(nplot) = gsn_text_ndc_return(wks, main_string, main_xpos, \
-                      main_ypos, txres)
+                      main_ypos, mntxres)
   end if
 ;
 ; If some of the paneled plots are missing, we need to take these into
