@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: ymake.man,v 1.10 1994-03-31 01:05:49 boote Exp $
+.\"	$Id: ymake.man,v 1.11 1994-05-05 22:04:02 boote Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -28,7 +28,7 @@
 ymake \- C preprocessor interface to the \fBmake\fP utility
 .ny
 .SH SYNOPSIS
-\fBymake\fP [\fB\-config\fP \fIconfigpath\fP] [\fB\-local\fP] [\fB\-D\fP\fIdefine\fP] [\fB\-I\fP\fIdir\fP]
+\fBymake\fP [\fB\-config\fP \fIconfigpath\fP] [\fB\-noproject\fP] [\fB\-D\fP\fIdefine\fP] [\fB\-I\fP\fIdir\fP]
 .SH OPTIONS
 The following command line options may be passed to \fBymake\fP:
 .TP 8
@@ -38,12 +38,10 @@ It is used to indicate that the \fBymake\fP program is being used from within
 the \fBNCARG\fP Distribution tree, and to indicate where the \fIconfig\fP
 directory is found.
 .TP 8
-.B \-\fIlocal\fP
-This option is only used if \fBymake\fP is being used to manage software
-other than \fBNCAR Graphics\fP.  It causes \fBymake\fP to not use the
-\fIProject\fP file in the \fIconfig\fP directory, but to use
-$(TOP)/ymake.project instead.  It also causes \fBymake\fP to look for a file
-$(TOP)/ymake.conf and include it directly before the \fI$(YMAKE_DEV_FILE)\fP.
+.B \-\fInoproject\fP
+This option should only be used if \fBymake\fP is being used to manage software
+other than \fBNCAR Graphics\fP.  It causes \fBymake\fP to not use a
+\fIProject\fP file.
 .TP 8
 .B \-D\fIdefine\fP
 This option is passed directly to \fBcpp\fP.  It is typically used to set
@@ -171,26 +169,13 @@ Graphics full source tree, or from the \fBymkmf\fP program.
 \fBymkmf\fP can be used to create a \fIMakefile\fP in the NCAR Graphics full
 source tree. It generates the above \fBymake\fP command.
 .SH "USE OUTSIDE OF NCAR GRAPHICS DISTRIBUTION"
-When building programs outside the full source tree \fBymake\fP can be
-called without any options from the systems NCARG bin directory (Usually
-$(NCARG_ROOT)/bin).
-The typical way it would be used is to go to the top directory of your
+When building programs outside the full source tree \fBymake\fP should not
+be called directly.  Instead the \fBymkmf\fP command should be used.
+The typical way it would be used is to go to a directory in your
 source tree and then execute
-.B ``ymake''.
-This will create a \fIMakefile\fP in your top-level directory.
-This \fIMakefile\fP should be used to create all the other \fIMakefiles\fP
-and to build the source tree.  This would be done by executing
-.B ``make Makefiles''
-(to build Makefiles in the subdirectories),
-.B ``make includes''
-, and
-.B ``make depend''.
-Once you have done this, all the \fIMakefiles\fP in the source tree
-will have been created and have dependencies built into them.
+.B ``ymkmf topname''.
 .PP
-If you only want to create \fIMakefiles\fP in some sub-tree of your source
-then you can use the \fBymkmf\fP script to create your highest level
-\fIMakefile\fP.  You would call it with the name of your top-level directory.
+You would call it with the name of your top-level directory.
 For example if you had the \fIni\fP source tree you could create
 the \fIMakefile\fP in the \fIhlu\fP sub-directory like this:
 .ta .5i
@@ -210,10 +195,15 @@ the \fItopdir\fP that was passed to it.  In this case it would create a
 	\fICURRENT_DIR\fP	=	./src/lib/hlu
 .ta
 .PP
-The \fITOP\fP and \fICURRENT_DIR\fP symbols are set using the \fITOPDIR\fP and
-\fICURDIR\fP symbols.  The reason multiple symbols are used, is because the
-\fImakefile\fP must call \fBymake\fP with the \fITOPDIR\fP and \fICURDIR\fP
-symbols so they can not be actual macros in the \fImakefile\fP.
+The \fITOP\fP and \fICURRENT_DIR\fP symbols are used to keep a common
+\fBinclude\fP tree from the \fITOP\fP directory.
+.PP
+Another feature of \fBymake\fP that is provided to support using it outside
+of the NCARG distribution tree is "local" configuration files.  If there
+is a file \fITOP\fP/ymake.project, then it is included instead of the
+default Project file in the config directory.  Also, if there is a file
+\fITOP\fP/ymake.conf, then it is included directly before the
+\fI$(YMAKE_DEV_FILE)\fP described below.
 .PP
 Additionally,
 you can set the environment variable \fI$(YMAKE_DEV_FILE)\fP to an additional
@@ -258,9 +248,9 @@ Here is a summary of the files read by
 .sp
 .ta .5i 2.5i
 Template		generic variables
-	Site	site-specific, FirstSite defined
+	$Site	site-specific, FirstSite defined
 	$Architecture	machine-specific
-	Site	site-specific, SecondSite defined
+	$Site	site-specific, SecondSite defined
 	$DevelopersFile	developers override file
 	Project	NCARG-specific variables
 	Rules	rules
@@ -272,12 +262,13 @@ The Template file determines which Architecture file needs to be included and
 includes all the other files.  It also provides defaults for the generic
 variables.
 .LP
-The Site file is used to provide Site specific definitions.  For example,
+The Site file is used to provide Site specific definitions.For example,
 this is the place the installer would set the install directories.  That
-way, they use that same directory for all the architectures.  If the installer
-wants different directories they can provide different values for the YmakeRoot
-variable in \fBcpp\fP conditionals.  There is a \fBcpp\fP symbol defined for
-each type of architecture for this type of conditional.
+way, they use that same directory for all the architectures.  Within the
+distribution, the Configure script sets up a Site.local file that will be
+used in place of the default Site file.    If the installer
+wants different directories they can provide different values to the
+Configure script.
 Note that \fISite\fP file gets included twice, once before the
 \fIArchitecture\fP file and once after.  Although most site customizations
 should be specified after the \fIArchitecture\fP file, some, such as the
@@ -285,7 +276,7 @@ choice of compiler, need to be specified before, because
 variable settings in the \fIArchitecture\fP may depend on them.
 (There are currently no cases of this.)
 .LP
-The first time \fISite\fP file is included, the variable \fIFirstSite\fP
+The first time \fI$Site\fP file is included, the variable \fIFirstSite\fP
 is defined, and the second time, the variable \fISecondSite\fP is
 defined.  All code in \fISite\fP should be inside a \fBcpp\fP conditional for
 one of these symbols.
