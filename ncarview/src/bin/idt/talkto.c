@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.24 1996-01-18 14:40:48 boote Exp $
+ *	$Id: talkto.c,v 1.25 1997-03-09 01:52:11 boote Exp $
  */
 /*
  *	talkto.c
@@ -19,6 +19,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/select.h>
 #include "text.h"
 
 #ifdef RS6000
