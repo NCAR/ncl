@@ -472,7 +472,27 @@ static void *GribMapFromNcl
 	}
 	return((void*)tmp);
 }
+static LVNotEqual( GribRecordInqRecList *s_1,GribRecordInqRecList *s_2)
+{
 
+	if((s_1->rec_inq->level0 != -1)&&(s_1->rec_inq->level1 != -1)) {
+		if(s_1->rec_inq->level0 == s_2->rec_inq->level0) {
+			if(s_1->rec_inq->level1 == s_2->rec_inq->level1) {
+				return(0);
+			} else {
+				return(s_1->rec_inq->level1 - s_2->rec_inq->level1);
+			}
+		} else {
+			return(s_1->rec_inq->level0 - s_2->rec_inq->level0);
+		}
+	} else {
+		if(s_1->rec_inq->level0 == s_2->rec_inq->level0) {
+			return(0);
+		} else {
+			return(s_1->rec_inq->level0 - s_2->rec_inq->level0);
+		}
+	} 
+}
 static int GetLVList
 #if 	NhlNeedProto
 (GribParamList *thevar,GribRecordInqRecList *lstep,int** lv_vals, int** lv_vals1) 
@@ -487,7 +507,6 @@ int** lv_vals1;
 	int n_lvs = 1;
 	int i;
 	GribRecordInqRecList *strt,*tmp;
-	
 	strt = lstep;
 /*
 	fprintf(stdout,"%d/%d/%d\t(%d:%d)-%d,%d\t%d,%d\ttoff=%d\t%d,%d,%d\n",
@@ -507,8 +526,9 @@ int** lv_vals1;
 */
 
 	while(strt->next != NULL) {
-		if((strt->rec_inq->level0 == strt->next->rec_inq->level0)&&(strt->rec_inq->level1 == strt->next->rec_inq->level1)) {
+		if(!LVNotEqual(strt,strt->next)) {
 /*
+		if((strt->rec_inq->level0 == strt->next->rec_inq->level0)&&(strt->rec_inq->level1 == strt->next->rec_inq->level1)) {
 			if((strt->rec_inq->bds_flags & (char)0360) != (strt->next->rec_inq->bds_flags&(char)0360)) {
 				fprintf(stdout,"Dup BDSC: Flag error\n");
 			}
@@ -543,8 +563,18 @@ int** lv_vals1;
 			NclFree(tmp->rec_inq);
 			NclFree(tmp);
 */
+/*
 			n_lvs++;
 			strt = strt->next;
+*/
+
+			tmp = strt->next;
+                        strt->next = strt->next->next;
+			thevar->n_entries--;
+                        NclFree(tmp->rec_inq);
+                        NclFree(tmp);
+
+			
 		} else {
 /*
 			fprintf(stdout,"%d/%d/%d\t(%d:%d)-%d,%d\t%d,%d\ttoff=%d\t%d,%d,%d\n",
@@ -780,11 +810,14 @@ int** valid_lv_vals1;
 			current_offset = strt->rec_inq->time_offset;
 			n_fts++;
 		} else {
+			fstep = fstep->next;
+/*
 			if(last != NULL) {
 				last->next = fstep->next;
 				fstep = last->next;
 				thevar->n_entries--;
 			}
+*/
 		}
 	}
 	the_end->next =(FTLIST*)NclMalloc((unsigned)sizeof(FTLIST));
