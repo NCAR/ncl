@@ -29,7 +29,6 @@ TESTDIR         = $(LIBDIR)/ncargtests
 
 GENERICDIR      = $(NCARG)/generic
 
-<<<<<<< Makefile
 CONFIGDIR       = $(NCARG)/config
 YMAKE           = $(CONFIGDIR)/ymake -I$(CONFIGDIR)
 
@@ -42,27 +41,10 @@ CC_LD           = $(CC)
 CDEBUG          =
 COPT            = -g
 CMISC           =
-=======
-MAKE		= make
-FLOAT_OPT	=
-OS		=
-ARCH		=
-CC		= cc
-CC_LD		= $(CC)
-CDEBUG		=
-COPT		= -O
-CMISC           = -Bstatic
->>>>>>> 1.5
 CFLAGS          = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
-<<<<<<< Makefile
 	$(FLOAT_OPT)
 LD_CFLAGS       = $(CFLAGS)
 CPP             = /lib/cpp
-=======
-		  $(FLOAT_OPT)
-LD_CFLAGS	= $(CFLAGS)
-CPP		= /lib/cpp
->>>>>>> 1.5
 FCPP            = /lib/cpp
 F77             = f77
 F77_LD          = $(F77)
@@ -70,7 +52,6 @@ FDEBUG          =
 FOPT            = -O
 FMISC           = -Bstatic
 FFLAGS          = $(OS) $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
-<<<<<<< Makefile
 	$(FLOAT_OPT)
 LD_FFLAGS       = $(FFLAGS)
 LD              = ld
@@ -78,15 +59,6 @@ LD_REL          = $(LD)
 AR              = ar
 AR_QUICK        = $(AR) q
 AR_CHECK        = $(AR) vru
-=======
-		  $(FLOAT_OPT)
-LD_FFLAGS	= $(FFLAGS)
-LD		= ld
-LD_REL		= $(LD)
-AR		= ar
-AR_QUICK	= $(AR) q
-AR_CHECK	= $(AR) vru
->>>>>>> 1.5
 AR_SRC          = ar
 AR_SRC_QUICK    = $(AR_SRC) q
 AR_SRC_CHECK    = $(AR_SRC) vru
@@ -112,7 +84,7 @@ FSPLIT          = fsplit
 CALLCONV        = $(NCARG)/utils/callconv
 SHELL           = /bin/sh
 
-#	$Id: Makefile,v 1.6 1992-02-12 14:23:49 clyne Exp $
+#	$Id: Makefile,v 1.7 1992-02-12 16:11:35 clyne Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -153,23 +125,13 @@ DEVICE_OBJS =	$(HDF_OBJS) $(HPLJ_OBJS) $(NRIF_OBJS) $(SUN_OBJS) \
 DEVICE_SRCS =	$(HDF_SRCS) $(HPLJ_SRCS) $(NRIF_SRCS) $(SUN_SRCS) \
 		$(XWD_SRCS) $(PARALLAX_SRCS) $(AVS_SRCS)
 
-<<<<<<< Makefile
-GENERIC_OBJS =	raster.o cleartext.o error.o misc.o palette.o dither.o \
-		$(DEVICE_OBJS)
-=======
 GENERIC_OBJS =	raster.o cleartext.o error.o misc.o palette.o \
 		dither.o resample.o composite.o ntsc.o \
 		$(DEVICE_OBJS)
->>>>>>> 1.5
 
-<<<<<<< Makefile
-GENERIC_SRCS =	raster.c cleartext.c error.c misc.c palette.c dither.c \
-		$(DEVICE_SRCS)
-=======
 GENERIC_SRCS =	raster.c cleartext.c error.c misc.c palette.c \
 		dither.c resample.c composite.c ntsc.c \
 		$(DEVICE_SRCS)
->>>>>>> 1.5
 
 OBJS		= $(GENERIC_OBJS) $(OTHER_OBJS)
 SRCS		= $(GENERIC_SRCS) $(OTHER_SRCS)

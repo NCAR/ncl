@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.5 1992-02-12 14:24:00 clyne Exp $
+ *	$Id: xwd.c,v 1.6 1992-02-12 16:11:39 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -462,8 +462,14 @@ XWDWrite(ras)
 	int		i;
 	unsigned long	swaptest = 1;
 	XWDFileHeader	*dep = (XWDFileHeader *) ras->dep;
+	XWDFileHeader	tmp;
 
 	if (*(char *) &swaptest) {
+		/*
+		 * need private copy of dep if swapping bytes
+		 */
+		bcopy((char *) dep, (char *) &tmp, sizeof(XWDFileHeader));
+		dep = (XWDFileHeader *) &tmp;
 		_swaplong((char *) dep, sizeof(XWDFileHeader));
 	}
 

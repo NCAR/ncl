@@ -1,7 +1,4 @@
-<<<<<<< yMakefile
-=======
-#	$Id: yMakefile,v 1.11 1992-02-12 14:24:03 clyne Exp $
->>>>>>> 1.10
+#	$Id: yMakefile,v 1.12 1992-02-12 16:11:43 clyne Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -114,8 +111,6 @@ parallax.o:	ncarg_ras.h parallax.h
 hplj.o:		ncarg_ras.h hplj.h
 cleartext.o:	ncarg_ras.h
 avsraster.o:	ncarg_ras.h avsraster.h
-<<<<<<< yMakefile
-=======
 ntsc.o:		ncarg_ras.h ntsc.h
 
 saber_src: $(SRCS)
@@ -125,7 +120,6 @@ saber_src: $(SRCS)
 saber_obj: $(OBJS)
 	#setopt load_flags $(CFLAGS)
 	#load $(OBJS) -ldf
->>>>>>> 1.10
 
 rasinfo: rasinfo.o
 	$(CC) $(CFLAGS) -o rasinfo rasinfo.o -lncarg_ras -ldf
