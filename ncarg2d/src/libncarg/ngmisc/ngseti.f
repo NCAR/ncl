@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.2 1994-05-07 00:54:36 fred Exp $
+C	$Id: ngseti.f,v 1.3 1994-05-19 19:28:07 fred Exp $
 C
       SUBROUTINE NGSETI (CNP,IVP)
 C
@@ -70,6 +70,20 @@ C
           GO TO 120
         ENDIF
         IWKID = IVP
+        GO TO 120
+C
+C  CL - GKS clipping (0 = off; 1 = on).
+C
+      ELSE IF (CNP(1:2).EQ.'CL' .OR. CNP(1:2).EQ.'cl' .OR.
+     +         CNP(1:2).EQ.'Cl') THEN
+        IF (IVP.NE.0 .AND. IVP.NE.1) THEN
+          CALL SETER ('NGSETI - value for CL must be zero or one',
+     +                 6, 1)
+          GO TO 120
+        ENDIF
+        IGKSCP = IVP
+        WRITE(IDR(1:5), 500) IGKSCP
+        CALL GESC(-1399,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
 C  ER - Error number limit for GKS errors issued before abort.

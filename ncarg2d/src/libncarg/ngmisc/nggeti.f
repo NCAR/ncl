@@ -1,5 +1,5 @@
 C
-C	$Id: nggeti.f,v 1.2 1994-05-07 00:54:32 fred Exp $
+C	$Id: nggeti.f,v 1.3 1994-05-19 19:28:05 fred Exp $
 C
       SUBROUTINE NGGETI (CNP,IVP)
 C
@@ -44,6 +44,10 @@ C
       IF (CNP(1:2).EQ.'WO' .OR. CNP(1:2).EQ.'wo' .OR. 
      +    CNP(1:2).EQ.'Wo') THEN
         IVP = IWKID
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'CL' .OR. CNP(1:2).EQ.'cl' .OR. 
+     +    CNP(1:2).EQ.'Cl') THEN
+        IVP = IGKSCP
         GO TO 110
       ELSE IF (CNP(1:2).EQ.'ER' .OR. CNP(1:2).EQ.'er' .OR. 
      +    CNP(1:2).EQ.'Er') THEN

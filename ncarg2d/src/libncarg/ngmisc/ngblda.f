@@ -1,5 +1,5 @@
 C
-C	$Id: ngblda.f,v 1.2 1994-05-07 00:54:29 fred Exp $
+C	$Id: ngblda.f,v 1.3 1994-05-19 19:28:01 fred Exp $
 C
       BLOCKDATA NGBLDA
 C
@@ -51,6 +51,10 @@ C  Flag for whether segments will be erased at close WISS time,
 C  (0 = no; 1 = yes).
 C
       DATA ISGSAV/1/
+C
+C  Flag to control whether GKS clipping is on (0 = no; 1 = yes).
+C
+      DATA IGKSCP/1/
 C
 C  File name and picture name.
 C

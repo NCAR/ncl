@@ -22,6 +22,7 @@ C    RMITER  -  Miter limit for PostScript lines when line join type is
 C               miter.
 C    IERRMX  -  Maximum number of GKS errors allowed before abort.
 C    ISGSAV  -  Flag for saving GKS segments at close WISS time.
+C    IGKSCP  -  Flag for controlling if GKS clipping is on.
 C
       COMMON /NGCOMI/  IWKID, IFULLB,   IXPS, ISTKMX, IPTHMX, 
      +                ILJOIN,  ILCAP,   ILLX,   ILLY,   IURX,
