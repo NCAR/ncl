@@ -3755,7 +3755,7 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 								}
 							}
 						}
-					} else if(thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_name_quark > 0) {
+					} else if(thefile->file.coord_vars[thefile->file.var_info[index]->file_dim_num[i]] != NULL) {
 
 /*
 * right hand side has no dimension name and hence no coordinate variable so give warning and proceed
