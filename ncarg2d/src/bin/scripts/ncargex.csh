@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.77 1994-11-16 15:26:58 haley Exp $
+#   $Id: ncargex.csh,v 1.78 1994-11-23 20:03:06 haley Exp $
 #
 
 #*************************#
@@ -1333,9 +1333,10 @@ endif
    
 echo "  Copying $name.f"
 echo ""
-ed << EOF - $temp_dir/$name.f >& /dev/null
+cp $temp_dir/$name.f ./$name.f
+ed << EOF - ./$name.f >& /dev/null
 g/SED_WSTYPE/s//$the_ws_type/g
-w ./$name.f
+w
 q
 EOF
 
