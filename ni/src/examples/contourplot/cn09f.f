@@ -1,5 +1,5 @@
 C
-C      $Id: cn09f.f,v 1.1 1995-09-28 16:36:37 haley Exp $
+C      $Id: cn09f.f,v 1.2 1995-09-28 16:40:39 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -213,7 +213,7 @@ C Create new scalar field.
 C
          call NhlFSetValues(field1,srlist,ierr)
          call NhlFRLClear(srlist)
-         write(string,55)i
+         write(string,55)frtime(i)
  55      format('Forecast Time ',i2)
          call NhlFRLSetString(srlist,'tiMainString',string,ierr)
          call NhlFSetValues(con1,srlist,ierr)
