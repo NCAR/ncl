@@ -1,0 +1,59 @@
+#
+#       $Id: yMakefile,v 1.1 1999-05-27 02:10:28 dbrown Exp $
+#
+FILES		= \
+		3gauss.ncmap  \
+		3saw.ncmap \
+		BkBlAqGrYeOrReViWh200.gp \
+		BkBlAqGrYeOrReViWh200.rgb \
+		BlAqGrYeOrRe.gp \
+		BlAqGrYeOrRe.rgb \
+		BlAqGrYeOrReVi200.gp \
+		BlAqGrYeOrReVi200.rgb \
+		BlGrYeOrReVi200.gp \
+		BlGrYeOrReVi200.rgb \
+		BlRe.rgb \
+		BlWhRe.gp \
+		BlWhRe.rgb \
+		ViBlGrWhYeOrRe.gp \
+		ViBlGrWhYeOrRe.rgb \
+		WhBlGrYeRe.gp \
+		WhBlGrYeRe.rgb \
+		WhBlReWh.gp \
+		WhViBlGrYeOrRe.gp \
+		WhViBlGrYeOrRe.rgb \
+		WhViBlGrYeOrReWh.gp \
+		WhViBlGrYeOrReWh.rgb \
+		cosam.rgb \
+		cosam12.rgb \
+		default.rgb \
+		detail.ncmap \
+		extrema.ncmap \
+		helix.ncmap \
+		helix1.ncmap \
+		hlu_default.rgb \
+		hotres.ncmap \
+		ncview_default.ncmap \
+		rainbow+white.gp \
+		so4_21.gp \
+		so4_23.gp \
+		tbrAvg1.rgb \
+		tbrStd1.gp \
+		tbrStd1.rgb \
+		tbrVar1.gp \
+		tbrVar1.rgb \
+		tbr_240-300.gp \
+		tbr_240-300.rgb \
+		tbr_stdev_0-30.gp \
+		tbr_stdev_0-30.rgb \
+		tbr_var_0-500.gp \
+		tbr_var_0-500.rgb \
+		testcmap.rgb \
+		thelix.rgb \
+		wh-bl-gr-ye-re.gp \
+		wxpEnIR.rgb
+
+CMPATH	= $(LIBNCARGPATH)/colormaps
+INSTALL_CM = $(INSTALL_DB)
+
+InstallTarget($(FILES),$(INSTALL_CM),$(CMPATH))
