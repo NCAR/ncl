@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:34:58 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-09-29 17:22:45 ncargd Exp $
 #
 NCARG	= ../../../..
 
@@ -57,9 +57,9 @@ RelocatableObject(libdashsupr.o,$(OBJECTS))
 
 #ifdef  BuildNCARGSourceLibrary
 install:: $(SOURCES)
-	@-$(RM) $(LIBDIR)/srcdashsupr.a
+	@-$(RM) $(LIBPATH)/srcdashsupr.a
 	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBDIR)/srcdashsupr.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBDIR)/srcdashsupr.a
+	@$(AR_SRC_CHECK) $(LIBPATH)/srcdashsupr.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBPATH)/srcdashsupr.a
 	@-$(RM) $(MYNAME)
 #endif

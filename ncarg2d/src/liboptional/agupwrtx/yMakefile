@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:35:08 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-09-29 17:21:52 ncargd Exp $
 #
 NCARG	= ../../../..
 
@@ -17,9 +17,9 @@ RelocatableObject(libagupwrtx.o,$(OBJECTS))
 
 #ifdef  BuildNCARGSourceLibrary
 install:: $(SOURCES)
-	@-$(RM) $(LIBDIR)/srcagupwrtx.a
+	@-$(RM) $(LIBPATH)/srcagupwrtx.a
 	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_QUICK) $(LIBDIR)/srcagupwrtx.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBDIR)/srcagupwrtx.a
+	@$(AR_SRC_QUICK) $(LIBPATH)/srcagupwrtx.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBPATH)/srcagupwrtx.a
 	@-$(RM) $(MYNAME)
 #endif

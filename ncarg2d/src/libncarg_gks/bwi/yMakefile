@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:33:59 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-09-29 17:20:35 ncargd Exp $
 #
 NCARG	= ../../../..
 
@@ -38,13 +38,13 @@ PartialLibrary(libncarg_gks.a, $(OBJECTS))
 #ifdef  BuildNCARGSourceLibrary
 all:: $(SOURCES)
 	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_QUICK) $(LIBDIR)/srcncarg_gks.a $(MYNAME) $(SOURCES)
+	@$(AR_SRC_QUICK) $(LIBPATH)/srcncarg_gks.a $(MYNAME) $(SOURCES)
 	@-$(RM) $(MYNAME)
 
 install:: $(SOURCES)
 	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBDIR)/srcncarg_gks.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBDIR)/srcncarg_gks.a
+	@$(AR_SRC_CHECK) $(LIBPATH)/srcncarg_gks.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBPATH)/srcncarg_gks.a
 	@-$(RM) $(MYNAME)
 #endif
 

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:35:03 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-09-29 17:22:18 ncargd Exp $
 #
 NCARG	= ../../../..
 
@@ -17,9 +17,9 @@ RelocatableObject(libconras.o,$(OBJECTS))
 
 #ifdef  BuildNCARGSourceLibrary
 install:: $(SOURCES)
-	@-$(RM) $(LIBDIR)/srcconras.a
+	@-$(RM) $(LIBPATH)/srcconras.a
 	@echo "$(SOURCES)" > $(MYNAME)
-	@$(AR_SRC_CHECK) $(LIBDIR)/srcconras.a $(MYNAME) $(SOURCES)
-	$(RANLIB) $(LIBDIR)/srcconras.a
+	@$(AR_SRC_CHECK) $(LIBPATH)/srcconras.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBPATH)/srcconras.a
 	@-$(RM) $(MYNAME)
 #endif
