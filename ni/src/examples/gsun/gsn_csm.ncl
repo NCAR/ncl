@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.163 2004-05-04 16:54:17 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.164 2004-05-12 15:55:25 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -372,22 +372,27 @@ end
 ;             yabove: numeric                                           ;
 ;             xbelow: numeric                                           ;
 ;             ybelow: numeric                                           ;
+;             xequal: numeric                                           ;
+;             yequal: numeric                                           ;
 ;                nya: integer                                           ;
 ;                nyb: integer                                           ;
+;                nye: integer                                           ;
 ;                iya: integer                                           ;
 ;                iyb: integer                                           ;
+;                iye: integer                                           ;
 ;          yref_line: numeric                                           ;
 ;         bar_widths: numeric                                           ;
 ;                                                                       ;
 ; Given a set of points represented by x and y, and y reference values, ;
-; represent the y values with bars above and below the reference lines. ;
+; represent the y values with bars above, below, and equal to the       ;
+; reference lines.                                                      ;
 ;                                                                       ;
-; Bars aren't filled in this routine. They are returned as two sets of  ;
-; polygons: those above the reference lines, and those below.           ;
+; Bars aren't filled in this routine. They are returned as threes sets  ;
+; of polygons: those above, below, and equal to the reference lines.    ;
 ;***********************************************************************;
 
-procedure filled_bars(x,y,xabove,yabove,xbelow,ybelow,nya,nyb,iya,iyb, \
-                      yref_line,bar_widths)
+procedure filled_bars(x,y,xabove,yabove,xbelow,ybelow,xequal,yequal,\
+                      nya,nyb,nye,iya,iyb,iye,yref_line,bar_widths)
 local ndimsx, ndimsy, ncurves, dims, npts
 begin
 ;
@@ -426,10 +431,11 @@ begin
 ;
   do i=0,ncurves-1
 ;
-; Get the indices where the y curve is above and below the ref line.
+; Get the indices where the y curve is above, below, equal to the ref line.
 ;
     ya_ind = ind(ynew(i,:).gt.yref_lines(i))
     yb_ind = ind(ynew(i,:).lt.yref_lines(i))
+    ye_ind = ind(ynew(i,:).eq.yref_lines(i))
 ;
 ; Create new array to hold bar charts.  For each old y point, we need
 ; five new y points to represent the closed rectangle.
@@ -453,7 +459,7 @@ begin
     end if  
     if(.not.any(ismissing(yb_ind))) 
       nyb(i) = 5*dimsizes(yb_ind)              ; # values below ref line
-      iyb(i,0:dimsizes(yb_ind)-1) = yb_ind               ; indexes below ref line
+      iyb(i,0:dimsizes(yb_ind)-1) = yb_ind     ; indexes below ref line
 
       ybelow(i,0:nyb(i)-5:5) = yref_lines(i)
       ybelow(i,1:nyb(i)-4:5) = ynew(i,yb_ind)
@@ -469,8 +475,23 @@ begin
     else
       nyb(i) = 0
     end if  
+    if(.not.any(ismissing(ye_ind))) 
+      nye(i) = 5*dimsizes(ye_ind)              ; # values equal ref line
+      iye(i,0:dimsizes(ye_ind)-1) = ye_ind     ; indexes equal ref line
+
+      yequal(i,0:nye(i)-1:5) = yref_lines(i)
+
+      xequal(i,0:nye(i)-5:5) = xnew(i,ye_ind) - bar_widths(i)/2.
+      xequal(i,1:nye(i)-4:5) = xnew(i,ye_ind) - bar_widths(i)/2.
+      xequal(i,2:nye(i)-3:5) = xnew(i,ye_ind) + bar_widths(i)/2.
+      xequal(i,3:nye(i)-2:5) = xnew(i,ye_ind) + bar_widths(i)/2.
+      xequal(i,4:nye(i)-1:5) = xnew(i,ye_ind) - bar_widths(i)/2.
+    else
+      nye(i) = 0
+    end if  
     delete(ya_ind)
     delete(yb_ind)
+    delete(ye_ind)
   end do
 
   delete(xnew)
@@ -8490,36 +8511,42 @@ begin
             bar_pttrns_below = bar_pttrns_above
           end if  
 ;
-; Loop across curves and figure out which points are above and
-; below references lines.  First create arrays to hold points
-; above and below reference lines.
+; Loop across curves and figure out which points are above, below,
+; and equal to the references lines.  First create arrays to hold points
+; above, below, and equal to reference lines.
 ;
           xabove = new((/ncurves,5*npts/),double,1e36)
           yabove = new((/ncurves,5*npts/),double,1e36)
           xbelow = new((/ncurves,5*npts/),double,1e36)
           ybelow = new((/ncurves,5*npts/),double,1e36)
+          xequal = new((/ncurves,5*npts/),double,1e36)
+          yequal = new((/ncurves,5*npts/),double,1e36)
 ;
 ; Arrays to hold number of points in each set of above/below points,
-; and the index values where points fall above and below the Y 
-; ref value.
+; and the index values where points fall above, below, and equal
+; to the Y ref value.
 ;
           nabove   = new(ncurves,integer)
           nbelow   = new(ncurves,integer)
+          nequal   = new(ncurves,integer)
           indabove = new((/ncurves,npts/),integer)
           indbelow = new((/ncurves,npts/),integer)
+          indequal = new((/ncurves,npts/),integer)
 ;
 ; Fill in values for filled bars (that will be filled later).
 ;
-          filled_bars(x,y,xabove,yabove,xbelow,ybelow,nabove,nbelow, \
-                      indabove, indbelow, yref_line,bar_widths)
+          filled_bars(x,y,xabove,yabove,xbelow,ybelow,xequal,yequal, \
+                      nabove,nbelow,nequal,indabove,indbelow,indequal, \
+                      yref_line,bar_widths)
 ;
-; Combine the above/below arrays into one X/Y array so that we can pass
-; to gsn_xy routine. Make the 5th point missing, since the 5th point
+; Combine the above/below/equal arrays into one X/Y array so that we can
+; pass to gsn_xy routine. Make the 5th point missing, since the 5th point
 ; closes the polygon, and we only want an outline here.
 ;
-          na_max  = max(nabove)
-          nb_max  = max(nbelow)
-          nab_max = na_max + nb_max
+          na_max   = max(nabove)
+          nb_max   = max(nbelow)
+          ne_max   = max(nequal)
+          nabe_max = na_max + nb_max + ne_max
 
           if(na_max.le.0.and.nb_max.le.0)
             print("gsn_csm_xy: Fatal: There are no values above or below the chosen reference line.")
@@ -8527,21 +8554,27 @@ begin
             xinterp = x
             yinterp = y
           else
-            xinterp = new((/2*ncurves,nab_max/),double,xabove@_FillValue)
-            yinterp = new((/2*ncurves,nab_max/),double,yabove@_FillValue)
+            ncurves3 = 3*ncurves
+            xinterp  = new((/ncurves3,nabe_max/),double,xabove@_FillValue)
+            yinterp  = new((/ncurves3,nabe_max/),double,yabove@_FillValue)
 
             copy_var_atts(x,xinterp,"")
             copy_var_atts(y,yinterp,"")
 
             if(na_max.gt.0)
-              xinterp(0:2*ncurves-1:2,0:na_max-1) = xabove(:,0:na_max-1)
-              yinterp(0:2*ncurves-1:2,0:na_max-1) = yabove(:,0:na_max-1)
-              yinterp(0:2*ncurves-1:2,4:na_max-1:5) = yinterp@_FillValue
+              xinterp(0:ncurves3-1:3,0:na_max-1)   = xabove(:,0:na_max-1)
+              yinterp(0:ncurves3-1:3,0:na_max-1)   = yabove(:,0:na_max-1)
+              yinterp(0:ncurves3-1:3,4:na_max-1:5) = yinterp@_FillValue
             end if
             if(nb_max.gt.0)
-              xinterp(1:2*ncurves-1:2,0:nb_max-1) = xbelow(:,0:nb_max-1)
-              yinterp(1:2*ncurves-1:2,0:nb_max-1) = ybelow(:,0:nb_max-1)
-              yinterp(1:2*ncurves-1:2,4:nb_max-1:5) = yinterp@_FillValue
+              xinterp(1:ncurves3-1:3,0:nb_max-1)   = xbelow(:,0:nb_max-1)
+              yinterp(1:ncurves3-1:3,0:nb_max-1)   = ybelow(:,0:nb_max-1)
+              yinterp(1:ncurves3-1:3,4:nb_max-1:5) = yinterp@_FillValue
+            end if
+            if(ne_max.gt.0)
+              xinterp(2:ncurves3-1:3,0:ne_max-1)   = xequal(:,0:ne_max-1)
+              yinterp(2:ncurves3-1:3,0:ne_max-1)   = yequal(:,0:ne_max-1)
+              yinterp(2:ncurves3-1:3,4:ne_max-1:5) = yinterp@_FillValue
             end if
 ;
 ; Make sure all lines are solid, and not dashed as is the default

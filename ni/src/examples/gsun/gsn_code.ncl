@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.139 2004-04-02 20:29:00 haley Exp $
+;      $Id: gsn_code.ncl,v 1.140 2004-05-12 15:55:24 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2281,7 +2281,7 @@ begin
       end create
     else
       image = create res_file imageWorkstationClass defaultapp 
-        "wkImageFileName" : "testim"
+        "wkImageFileName" : name
         "wkImageFormat"   : type
       end create
     end if
@@ -2374,9 +2374,8 @@ begin
       wks = gsn_open_pdf(type, res_dir+pdf_file)
     end if
 
-    if (lower_case(type).eq."xwd") then
-      image_file = get_res_value_keep(type,"wkImageFileName", \
-                                      res_file + "." + type)
+    if (lower_case(type).eq."xwd".or.lower_case(type).eq."png") then
+      image_file = get_res_value_keep(type,"wkImageFileName", res_file)
       image_file@res_file = res_file
       wks = gsn_open_image(type, res_dir+image_file)
     end if
