@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.49 1996-01-18 23:30:24 ethan Exp $
+ *      $Id: Execute.c,v 1.50 1996-01-22 22:31:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3427,7 +3427,7 @@ NclExecuteReturnStatus _NclExecute
 						lhs_var->u.data_var->var.thesym = lhs_sym;
 						(void)_NclChangeSymbolType(lhs_sym,VAR);
 						lhs_var->u.data_var->var.var_type = NORMAL;
-					} else if((rhs_nsubs != 0)&&(rhs_nsubs != rhs_var->u.data_var->var.n_dims)) {
+					} else if((rhs_nsubs != 0)&&(rhs_nsubs == rhs_var->u.data_var->var.n_dims)) {
 /*
 * This branch is where wholesale assigment of rhs to lhs occurs. including coords,atts and values
 */
