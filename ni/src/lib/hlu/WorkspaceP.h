@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceP.h,v 1.2 1994-04-05 00:51:32 dbrown Exp $
+ *      $Id: WorkspaceP.h,v 1.3 1994-09-08 01:34:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@
 #define NhlwsMIN_THRESHOLD	8096
 #define NhlwsMIN_MAXIMUM	262144
 #define NhlwsIDLE_REC_ALLOC	64
-#define NhlwsMAX_GKS_POINTS	12000
+#define NhlwsMAX_GKS_POINTS	20000
 #define NhlwsMAX_AREA_GROUPS	64
 
 typedef struct _NhlWorkspaceRec {

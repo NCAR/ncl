@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.21 1994-07-25 23:33:14 ethan Exp $
+ *      $Id: Contour.c,v 1.22 1994-09-08 01:34:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -134,12 +134,15 @@ static NhlResource resources[] = {
 		  NhlTFloat,sizeof(float),
 		  Oset(llabel_interval),
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{NhlNcnDelayLabels, NhlCcnDelayLabels, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(delay_labels),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
- 	{NhlNcnDelayLines, NhlCcnDelayLines, NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(delay_lines),
-		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+ 	{NhlNcnLabelDrawOrder,NhlCcnLabelDrawOrder,NhlTDrawOrder,
+		 sizeof(NhlDrawOrder),Oset(label_order),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlDRAW),0,NULL},
+ 	{NhlNcnLineDrawOrder,NhlCcnLineDrawOrder,NhlTDrawOrder,
+		 sizeof(NhlDrawOrder),Oset(line_order),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlDRAW),0,NULL},
+ 	{NhlNcnFillDrawOrder,NhlCcnFillDrawOrder,NhlTDrawOrder,
+		 sizeof(NhlDrawOrder),Oset(fill_order),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlDRAW),0,NULL},
 
 	{NhlNcnLabelScalingMode,NhlCcnLabelScalingMode,
 #if 0
@@ -260,6 +263,11 @@ static NhlResource resources[] = {
 	{NhlNcnConstFUseInfoLabelRes,NhlCcnConstFUseInfoLabelRes,
 		 NhlTBoolean,sizeof(NhlBoolean),Oset(constf_use_info_attrs),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+	{NhlNcnHighLowLabelOverlapMode,NhlCcnHighLowLabelOverlapMode,
+		 NhlTcnHighLowLabelOverlapMode,
+		 sizeof(NhlcnHighLowLabelOverlapMode),
+		  Oset(high_low_overlap),NhlTImmediate,
+		 _NhlUSET((NhlPointer)NhlcnIGNOREOVERLAP),0,NULL},
 
 	{NhlNcnLineLabelsOn,NhlCcnLineLabelsOn,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(line_lbls.on),
@@ -582,6 +590,74 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(constf_lbl_rec.ortho_pos),
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
 
+	{NhlNcnMissingValPerim,NhlCcnMissingValPerim,NhlTInteger,
+		 sizeof(int),Oset(missing_val.perim_on),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNcnMissingValPerimThicknessF,NhlCcnMissingValPerimThicknessF,
+		 NhlTFloat,sizeof(float),Oset(missing_val.perim_thick),
+		 NhlTString, _NhlUSET("1.0"),0,NULL},
+	{NhlNcnMissingValPerimDashPattern,NhlCcnMissingValPerimDashPattern,
+		 NhlTInteger,sizeof(int),Oset(missing_val.perim_dpat),
+		 NhlTImmediate,_NhlUSET(0),0,NULL},
+	{NhlNcnMissingValPerimColor,NhlCcnMissingValPerimColor,NhlTInteger,
+		 sizeof(int),Oset(missing_val.perim_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNcnMissingValFillColor,NhlCcnMissingValFillColor,NhlTInteger,
+		 sizeof(int),Oset(missing_val.fill_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
+	{NhlNcnMissingValFillPattern,NhlCcnMissingValFillPattern,NhlTInteger,
+		 sizeof(int),Oset(missing_val.fill_pat),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHOLLOWFILL),0,NULL},
+	{NhlNcnMissingValFillScaleF,NhlCcnMissingValFillScaleF,
+		 NhlTFloat,sizeof(float),Oset(missing_val.fill_scale),
+		 NhlTString, _NhlUSET("1.0"),0,NULL},
+
+
+	{NhlNcnGridBoundPerim,NhlCcnGridBoundPerim,NhlTInteger,
+		 sizeof(int),Oset(grid_bound.perim_on),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNcnGridBoundPerimThicknessF,NhlCcnGridBoundPerimThicknessF,
+		 NhlTFloat,sizeof(float),Oset(grid_bound.perim_thick),
+		 NhlTString, _NhlUSET("1.0"),0,NULL},
+	{NhlNcnGridBoundPerimDashPattern,NhlCcnGridBoundPerimDashPattern,
+		 NhlTInteger,sizeof(int),Oset(grid_bound.perim_dpat),
+		 NhlTImmediate,_NhlUSET(0),0,NULL},
+	{NhlNcnGridBoundPerimColor,NhlCcnGridBoundPerimColor,NhlTInteger,
+		 sizeof(int),Oset(grid_bound.perim_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNcnGridBoundFillColor,NhlCcnGridBoundFillColor,NhlTInteger,
+		 sizeof(int),Oset(grid_bound.fill_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
+	{NhlNcnGridBoundFillPattern,NhlCcnGridBoundFillPattern,NhlTInteger,
+		 sizeof(int),Oset(grid_bound.fill_pat),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHOLLOWFILL),0,NULL},
+	{NhlNcnGridBoundFillScaleF,NhlCcnGridBoundFillScaleF,
+		 NhlTFloat,sizeof(float),Oset(grid_bound.fill_scale),
+		 NhlTString, _NhlUSET("1.0"),0,NULL},
+
+	{NhlNcnOutOfRangePerim,NhlCcnOutOfRangePerim,NhlTInteger,
+		 sizeof(int),Oset(out_of_range.perim_on),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNcnOutOfRangePerimThicknessF,NhlCcnOutOfRangePerimThicknessF,
+		 NhlTFloat,sizeof(float),Oset(out_of_range.perim_thick),
+		 NhlTString, _NhlUSET("1.0"),0,NULL},
+	{NhlNcnOutOfRangePerimDashPattern,NhlCcnOutOfRangePerimDashPattern,
+		 NhlTInteger,sizeof(int),Oset(out_of_range.perim_dpat),
+		 NhlTImmediate,_NhlUSET(0),0,NULL},
+	{NhlNcnOutOfRangePerimColor,NhlCcnOutOfRangePerimColor,NhlTInteger,
+		 sizeof(int),Oset(out_of_range.perim_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNcnOutOfRangeFillColor,NhlCcnOutOfRangeFillColor,NhlTInteger,
+		 sizeof(int),Oset(out_of_range.fill_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
+	{NhlNcnOutOfRangeFillPattern,NhlCcnOutOfRangeFillPattern,NhlTInteger,
+		 sizeof(int),Oset(out_of_range.fill_pat),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHOLLOWFILL),0,NULL},
+	{NhlNcnOutOfRangeFillScaleF,NhlCcnOutOfRangeFillScaleF,
+		 NhlTFloat,sizeof(float),Oset(out_of_range.fill_scale),
+		 NhlTString, _NhlUSET("1.0"),0,NULL},
+
+
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(x_min_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -665,15 +741,16 @@ typedef enum _cnValueType {
 	cnCONMAXVAL,
 	cnDATAMINVAL,
 	cnDATAMAXVAL,
-	cnSCALEFACTOR,
-	cnHIGHLOWLBLVAL } cnValueType;
+	cnSCALEFACTOR
+} cnValueType;
 
 typedef enum _cnLabelType { 
 	cnLINELBL,
 	cnINFOLBL,
 	cnHIGHLBL,
 	cnLOWLBL,
-	cnCONSTFLBL } cnLabelType;
+	cnCONSTFLBL
+} cnLabelType;
 
 /* base methods */
 
@@ -724,6 +801,12 @@ static NhlErrorTypes ContourDestroy(
 #endif
 );
 
+static NhlErrorTypes ContourPreDraw(
+#ifdef NhlNeedProto
+        NhlLayer	/* layer */
+#endif
+);
+
 static NhlErrorTypes ContourDraw(
 #ifdef NhlNeedProto
         NhlLayer	/* layer */
@@ -736,6 +819,42 @@ static NhlErrorTypes ContourPostDraw(
 #endif
 );
 
+
+static NhlErrorTypes cnDraw(
+#ifdef NhlNeedProto
+        NhlContourLayer	cnl,
+	NhlDrawOrder	order
+#endif
+);
+
+static NhlErrorTypes cnInitSegment(
+#ifdef NhlNeedProto
+	NhlContourLayer	cnl,
+	NhlTransDat	**seg_dat,
+	NhlString	entry_name
+#endif
+);
+
+static NhlErrorTypes cnSegDraw(
+#ifdef NhlNeedProto
+	NhlContourLayer	cnl,
+	NhlDrawOrder	order
+#endif
+);
+
+static NhlErrorTypes cnInitDraw(
+#ifdef NhlNeedProto
+	NhlContourLayer	cnl,
+	NhlString	entry_name
+#endif
+);
+
+static NhlErrorTypes cnInitAreamap(
+#ifdef NhlNeedProto
+	NhlContourLayer	cnl,
+	NhlString	entry_name
+#endif
+);
 
 static NhlErrorTypes ContourUpdateData(
 #ifdef NhlNeedProto
@@ -1122,6 +1241,14 @@ static NhlErrorTypes UpdateLineAndLabelParams(
 #endif
 );
 
+static void SetRegionAttrs(
+#ifdef NhlNeedProto
+	NhlContourLayer cl,
+	NhlcnRegionAttrs *reg_attrs, 
+	int cpix
+#endif
+);
+
 static NhlErrorTypes UpdateFillInfo(
 #ifdef NhlNeedProto
 	NhlContourLayer cl,
@@ -1239,7 +1366,7 @@ NhlContourLayerClassRec NhlcontourLayerClassRec = {
 
 /* layer_draw			*/      ContourDraw,
 
-/* layer_pre_draw		*/      NULL,
+/* layer_pre_draw		*/      ContourPreDraw,
 /* layer_draw_segonly		*/	NULL,
 /* layer_post_draw		*/      ContourPostDraw,
 /* layer_clear			*/      NULL
@@ -1292,9 +1419,10 @@ static NrmQuark	Qllabel_colors = NrmNULLQUARK;
 
 static NhlLayer		Trans_Obj;
 static NhlBoolean	Do_Lines;
+static NhlBoolean	Do_Fill;
 static NhlBoolean	Do_Labels;
 static NhlWorkspace	*Fws,*Iws,*Aws;
-static NhlBoolean	Use_Area_Ws;
+static NhlBoolean	Area_Ws_Inited;
 static float		*Data;
 static int		M,N;
 
@@ -1312,9 +1440,13 @@ static float		*Line_Thicknesses;
 static NhlBoolean	Mono_Line_Thickness;
 static NhlBoolean	Constant_Labels;
 
-static NhlcnLabelAttrs *LLabel_AttrsP;
-static NhlcnLabelAttrs *High_Label_AttrsP;
-static NhlcnLabelAttrs *Low_Label_AttrsP;
+static NhlcnLabelAttrs	*LLabel_AttrsP;
+static NhlcnLabelAttrs	*High_Label_AttrsP;
+static NhlcnLabelAttrs	*Low_Label_AttrsP;
+static NhlcnRegionAttrs *Missing_Val_AttrsP;
+static NhlcnRegionAttrs *Grid_Bound_AttrsP;
+static NhlcnRegionAttrs *Out_Of_Range_AttrsP;
+
 static NhlFormatRec 	*Ref_Format;
 static float		Label_Scale_Factor;
 
@@ -1326,7 +1458,8 @@ static float		*Fill_Scales;
 static int		Fill_Count;
 static NhlLayer		Wkptr;
 static NhlLayer		Clayer;
-
+static NhlContourLayer	Cnl;
+static NhlContourLayerPart	*Cnp;
 /*
  * Function:	nhlfcontourclass
  *
@@ -1513,12 +1646,40 @@ ContourClassInitialize
         {NhlcnCOMPUTED,      	"computed"}
         };
 
+        _NhlEnumVals   labelscalingmodelist[] = {
+        {NhlcnSCALEFACTOR,	"scalefactor"},
+        {NhlcnCONFINETORANGE, 	"confinetorange"},
+        {NhlcnTRIMZEROS, 	"trimzeros"},
+        {NhlcnMAXSIGDIGITSLEFT,	"maxsigdigitsleft"},
+	{NhlcnINTEGERLINELABELS,"integerlinelabels"}
+        };
+
+        _NhlEnumVals   highlowlabeloverlaplist[] = {
+	{NhlcnIGNOREOVERLAP,		"ignoreoverlap"},
+	{NhlcnOMITOVERINFO,		"omitoverinfo"},
+	{NhlcnOMITOVERHL,		"omitoverhl"},
+	{NhlcnOMITOVERHLANDINFO,	"omitoverhlandinfo"},
+	{NhlcnOMITOVERVP,		"omitovervp"},
+	{NhlcnOMITOVERVPANDINFO,	"omitovervpandinfo"},
+	{NhlcnOMITOVERVPANDHL,		"omitovervpandhl"},
+	{NhlcnOMITOVERVPANDHLANDINFO,	"omitovervpandhlandinfo"},
+	{NhlcnADJUSTVP,			"adjustvp"},
+	{NhlcnADJUSTVPOMITOVERINFO,	"adjustvpomitoverinfo"},
+	{NhlcnADJUSTVPOMITOVERHL,	"adjustvpomitoverhl"},
+	{NhlcnADJUSTVPOMITOVERHLANDINFO,"adjustvpomitoverhlandinfo"}
+        };
+
 	_NhlRegisterEnumType(NhlTcnLevelSelectionMode,levelselectionlist,
-						NhlNumber(levelselectionlist));
+			     NhlNumber(levelselectionlist));
 	_NhlRegisterEnumType(NhlTcnLevelUseMode,leveluselist,
-						NhlNumber(leveluselist));
+			     NhlNumber(leveluselist));
 	_NhlRegisterEnumType(NhlTcnLineLabelSpacingMode,linelabelspacinglist,
-					NhlNumber(linelabelspacinglist));
+			     NhlNumber(linelabelspacinglist));
+	_NhlRegisterEnumType(NhlTcnLabelScalingMode,labelscalingmodelist,
+			     NhlNumber(labelscalingmodelist));
+	_NhlRegisterEnumType(NhlTcnHighLowLabelOverlapMode,
+			     highlowlabeloverlaplist,
+			     NhlNumber(highlowlabeloverlaplist));
 
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);
@@ -1731,7 +1892,9 @@ ContourInitialize
 	cnp->line_lbls.text = NULL;
 	cnp->label_amap = NULL;
 	cnp->new_draw_req = True;
-	cnp->trans_dat = NULL;
+	cnp->predraw_dat = NULL;
+	cnp->draw_dat = NULL;
+	cnp->postdraw_dat = NULL;
 	cnp->update_req = False;
 	cnp->overlay_object = NULL;
 	cnp->data_changed = True;
@@ -1833,7 +1996,6 @@ ContourInitialize
 	}
 	cnp->data_changed = False;
 	cnp->line_dash_seglen_set = False;
-	cnp->llabel_interval_set = False;
 	cnp->line_lbls.height_set = False;
 	cnp->high_lbls.height_set = False;
 	cnp->low_lbls.height_set = False;
@@ -2005,7 +2167,6 @@ static NhlErrorTypes ContourSetValues
 
 	cnp->update_req = False;
 	cnp->data_changed = False;
-	cnp->llabel_interval_set = False;
 	cnp->line_dash_seglen_set = False;
 	cnp->high_lbls.height_set = False;
 	cnp->low_lbls.height_set = False;
@@ -2435,11 +2596,11 @@ NhlLayer inst;
 }
 
 /*
- * Function:	ContourDraw
+ * Function:	cnSegDraw
  *
  * Description:	
  *
- * In Args:	layer	Contour instance
+ * In Args:	
  *
  * Out Args:	NONE
  *
@@ -2448,76 +2609,93 @@ NhlLayer inst;
  * Side Effects: NONE
  */	
 
-static NhlErrorTypes ContourDraw
+static NhlErrorTypes cnSegDraw
 #if  __STDC__
-(NhlLayer layer)
+(
+	NhlContourLayer	cnl,
+	NhlDrawOrder	order
+)
 #else
-(layer)
-        NhlLayer layer;
+(layer,order)
+        NhlContourLayer cnl;
+	NhlDrawOrder	order;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*entry_name;
+	char			*e_text;
+	NhlContourLayerPart	*cnp = &(cnl->contour);
+	NhlTransDat		*seg_dat;
+
+	switch (order) {
+	case NhlPREDRAW:
+		entry_name = "ContourPreDraw";
+		seg_dat = cnp->predraw_dat;
+		break;
+	case NhlDRAW:
+		entry_name = "ContourDraw";
+		seg_dat = cnp->draw_dat;
+		break;
+	case NhlPOSTDRAW:
+		entry_name = "ContourPostDraw";
+		seg_dat = cnp->postdraw_dat;
+		break;
+	default:
+		e_text = "%s: internal enumeration error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(NhlFATAL);
+	}
+
+	if (seg_dat == NULL)
+		return NhlNOERROR;
+
+	subret = _NhlActivateWorkstation(cnl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+
+	subret = _NhlDrawSegment(seg_dat,_NhlWorkstationId(cnl->base.wkptr));
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+
+	subret = _NhlDeactivateWorkstation(cnl->base.wkptr);
+	return MIN(subret,ret);
+}
+
+
+/*
+ * Function:	cnInitDraw
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes cnInitDraw
+#if  __STDC__
+(
+	NhlContourLayer	cnl,
+	NhlString	entry_name
+)
+#else
+(layer,entry_name)
+        NhlContourLayer cnl;
+	NhlString	entry_name;
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
-	char			*entry_name = "ContourDraw";
-	NhlContourLayer		cl = (NhlContourLayer) layer;
-	NhlContourLayerPart	*cnp = &(cl->contour);
-	NhlTransformLayerPart	*tfp = &(cl->trans);
-	float			out_of_range_val;
-	NhlBoolean		do_fill;
+	NhlContourLayerPart	*cnp = &(cnl->contour);
 
-	if (cnp->const_field || ! cnp->data_init) return NhlNOERROR;
-
-	if (cl->view.use_segments && ! cnp->new_draw_req) {
-                subret = _NhlActivateWorkstation(cl->base.wkptr);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-                subret = _NhlDrawSegment(cnp->trans_dat,
-				_NhlWorkstationId(cl->base.wkptr));
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-                subret = _NhlDeactivateWorkstation(cl->base.wkptr);
-		return MIN(subret,ret);
-		
-	}
-	cnp->new_draw_req = False;
+	Cnp = cnp;
+	Cnl = cnl;
+	Area_Ws_Inited = False;
 	
-	subret = GetData(cl,&Data,&N,&M);
+	subret = GetData(cnl,&Data,&N,&M);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-	subret = _NhlActivateWorkstation(cl->base.wkptr);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-	if (cl->view.use_segments) {
-		if (cnp->trans_dat != NULL)
-			_NhlDeleteViewSegment(layer, cnp->trans_dat);
-		if ((cnp->trans_dat = _NhlNewViewSegment(layer)) == NULL) {
-			e_text = "%s: error opening segment";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-			return(ret);
-		}
-		_NhlStartSegment(cnp->trans_dat);
-	}
-
-	
-/*
- * If the plot is an overlay member, use the overlay manager's trans object.
- */
-	if (tfp->overlay_status == _tfCurrentOverlayMember && 
-	    tfp->overlay_trans_obj != NULL) {
-		Trans_Obj = tfp->overlay_trans_obj;
-	}
-	else {
-		Trans_Obj = tfp->trans_obj;
-		subret = _NhlSetTrans(tfp->trans_obj, layer);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: error setting transformation";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-			return(ret);
- 		}
-	}
-
-	NhlVAGetValues(Trans_Obj->base.id, 
-		     NhlNtrOutOfRangeF, &out_of_range_val,
-		     NULL);
-        c_cpsetr("ORV",out_of_range_val);
 
 	if (cnp->sfp->missing_value_set)
 		c_cpsetr("SPV",cnp->sfp->missing_value);
@@ -2543,12 +2721,12 @@ static NhlErrorTypes ContourDraw
         else {
                 c_cpsetr("T2D",0.0);
         }
-	gset_fill_colr_ind((Gint)_NhlGetGksCi(cl->base.wkptr,0));
+	gset_fill_colr_ind((Gint)_NhlGetGksCi(cnl->base.wkptr,0));
 
-	subret = UpdateLineAndLabelParams(cl, &Do_Lines,&Do_Labels);
+	subret = UpdateLineAndLabelParams(cnl, &Do_Lines,&Do_Labels);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
-	subret = UpdateFillInfo(cl, &do_fill);
+	subret = UpdateFillInfo(cnl, &Do_Fill);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
 /* Retrieve workspace pointers */
@@ -2564,98 +2742,184 @@ static NhlErrorTypes ContourDraw
 		return(ret);
 	}
 
-/* Draw the contours */
-fprintf(stdout,"Cprect\n");
-	subret = _NhlCprect(Data,cnp->sfp->fast_dim,cnp->sfp->fast_len,
-			    cnp->sfp->slow_len,Fws,Iws,entry_name);
+	return ret;
+}
+
+
+
+/*
+ * Function:	cnInitAreamap
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes cnInitAreamap
+#if  __STDC__
+(
+	NhlContourLayer	cnl,
+	NhlString	entry_name
+)
+#else
+(layer,entry_name)
+        NhlContourLayer cnl;
+	NhlString	entry_name;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	NhlContourLayerPart	*cnp = &(cnl->contour);
+
+	if (cnp->label_aws_id < 0) {
+		cnp->label_aws_id = 
+			_NhlNewWorkspace(NhlwsAREAMAP,
+					 NhlwsDISK,25000*sizeof(int));
+		if (cnp->label_aws_id < 0) 
+			return MIN(ret,cnp->label_aws_id);
+	}
+	if ((Aws = _NhlUseWorkspace(cnp->label_aws_id)) == NULL) {
+		e_text = 
+			"%s: error reserving label area map workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(ret);
+	}
+
+	subret = _NhlArinam(Aws,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
-		{ float flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
-		  c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
-		  printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
-			 flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
-	        }
+	subret = AddDataBoundToAreamap(cnl,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
-	Use_Area_Ws = False;
-	if (do_fill || (Do_Labels && cnp->label_masking)) {
+	subret = _NhlCpclam(Data,Fws,Iws,Aws,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
-		if (cnp->label_aws_id < 0) {
-			cnp->label_aws_id = 
-				_NhlNewWorkspace(NhlwsAREAMAP,
-						 NhlwsDISK,25000*sizeof(int));
-			if (cnp->label_aws_id < 0) 
-				return MIN(ret,cnp->label_aws_id);
-		}
-		if ((Aws = _NhlUseWorkspace(cnp->label_aws_id)) == NULL) {
-			e_text = 
-			      "%s: error reserving label area map workspace";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return(ret);
-		}
-		Use_Area_Ws = True;
+	Area_Ws_Inited = True;
 
-fprintf(stdout,"Arinam\n");
-		subret = _NhlArinam(Aws,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	return ret;
+}
 
-		subret = AddDataBoundToAreamap(cl,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+/*
+ * Function:	cnInitSegment
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
 
-		if (Do_Lines) {
-fprintf(stdout,"Cpclam\n");
-			subret = _NhlCpclam(Data,Fws,Iws,Aws,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-		}
+static NhlErrorTypes cnInitSegment
+#if  __STDC__
+(
+	NhlContourLayer	cnl,
+	NhlTransDat	**seg_dat,
+	NhlString	entry_name
+)
+#else
+(layer,seg_dat,entry_name)
+        NhlContourLayer cnl;
+	NhlTransDat	*seg_dat;
+	NhlString	entry_name;
+#endif
+{
+	char			*e_text;
 
-		if (Do_Labels && cnp->label_masking) {
-fprintf(stdout,"Cplbam\n");
-			subret = _NhlCplbam(Data,Fws,Iws,Aws,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-		}
-		
+	if (*seg_dat != NULL)
+		_NhlDeleteViewSegment((NhlLayer) cnl,*seg_dat);
+	if ((*seg_dat = _NhlNewViewSegment((NhlLayer) cnl)) == NULL) {
+		e_text = "%s: error opening segment";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
+	_NhlStartSegment(*seg_dat);
 
-	if (do_fill) {
-		
-fprintf(stdout,"Arscam\n");
-		subret = _NhlArscam(Aws,(_NHLCALLF(nhlfll,NHLFLL)),
-				    entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-	}
-	
-	
-	if (Do_Lines && ! cnp->delay_lines) {
-		if (Do_Labels && cnp->label_masking) {
-fprintf(stdout,"Cpcldm\n");
-			subret = _NhlCpcldm(Data,Fws,Iws,Aws,
-					    (_NHLCALLF(cpdrpl,CPDRPL)),
-					    entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-		}
-		else {
-fprintf(stdout,"Cpcldr\n");
-			subret = _NhlCpcldr(Data,Fws,Iws,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-		}
-	}
-	
-	if (Do_Labels && ! cnp->delay_labels) {	
-		gset_fill_int_style(GSTYLE_SOLID);
+	return NhlNOERROR;
+}
+/*
+ * Function:	ContourPreDraw
+ *
+ * Description:	
+ *
+ * In Args:	layer	Contour instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
 
-fprintf(stdout,"Cplbdr\n");
-		subret = _NhlCplbdr(Data,Fws,Iws,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-	}
+static NhlErrorTypes ContourPreDraw
+#if  __STDC__
+(NhlLayer layer)
+#else
+(layer)
+        NhlLayer layer;
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlString	entry_name = "ContourPreDraw";
+	NhlContourLayer		cnl = (NhlContourLayer) layer;
+	NhlContourLayerPart	*cnp = &cnl->contour;
 
-	if (cl->view.use_segments) {
-		_NhlEndSegment();
-	}
-        subret = _NhlDeactivateWorkstation(cl->base.wkptr);
-	ret = MIN(subret,ret);
+	if (! cnp->data_init) return NhlNOERROR;
 
+	if (cnl->view.use_segments && ! cnp->new_draw_req)
+		return cnSegDraw(cnl,NhlPREDRAW);
+
+	subret = cnInitDraw(cnl,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+
+	if (cnp->display_constf)
+		return NhlNOERROR;
+
+	subret = cnDraw(cnl,NhlPREDRAW);
 	return MIN(subret,ret);
 }
 
+/*
+ * Function:	ContourDraw
+ *
+ * Description:	
+ *
+ * In Args:	layer	Contour instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes ContourDraw
+#if  __STDC__
+(NhlLayer layer)
+#else
+(layer)
+        NhlLayer layer;
+#endif
+{
+	NhlContourLayer		cnl = (NhlContourLayer) layer;
+	NhlContourLayerPart	*cnp = &cnl->contour;
+
+	if (! cnp->data_init || cnp->display_constf) return NhlNOERROR;
+
+	if (cnl->view.use_segments && ! cnp->new_draw_req)
+		return cnSegDraw(cnl,NhlDRAW);
+
+	return cnDraw((NhlContourLayer) layer,NhlDRAW);
+}
 
 /*
  * Function:	ContourPostDraw
@@ -2680,10 +2944,9 @@ static NhlErrorTypes ContourPostDraw
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name = "ContourPostDraw";
-	NhlContourLayer		cl = (NhlContourLayer) layer;
-	NhlContourLayerPart	*cnp = &(cl->contour);
-	NhlTransformLayerPart	*tfp = &(cl->trans);
+	NhlContourLayer		cnl = (NhlContourLayer) layer;
+	NhlContourLayerPart	*cnp = &cnl->contour;
+	NhlTransformLayerPart	*tfp = &cnl->trans;
 
 	if (! cnp->data_init) return NhlNOERROR;
 
@@ -2695,10 +2958,177 @@ static NhlErrorTypes ContourPostDraw
 		return ret;
 	}
 
-	subret = _NhlActivateWorkstation(cl->base.wkptr);
+	if (cnl->view.use_segments && ! cnp->new_draw_req)
+		return cnSegDraw(cnl,NhlPOSTDRAW);
+
+	ret = cnDraw((NhlContourLayer) layer,NhlPOSTDRAW);
+	cnp->new_draw_req = False;
+
+	if (tfp->overlay_status == _tfNotInOverlay) {
+		if (cnp->info_lbl.on) {
+			subret = NhlDraw(cnp->info_lbl_rec.id);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		}
+	}
+	if (Area_Ws_Inited) {
+		subret = _NhlIdleWorkspace(Aws);
+		ret = MIN(subret,ret);
+	}
+	subret = _NhlIdleWorkspace(Fws);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	subret = _NhlIdleWorkspace(Iws);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+
+	return ret;
+}
+
+
+/*
+ * Function:	cnDraw
+ *
+ * Description:	
+ *
+ * In Args:	layer	Contour instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes cnDraw
+#if  __STDC__
+(
+	NhlContourLayer	cnl,
+	NhlDrawOrder	order
+)
+#else
+(layer,order)
+        NhlContourLayer cnl;
+	NhlDrawOrder	order;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*entry_name;
+	char			*e_text;
+	NhlContourLayerPart	*cnp = &(cnl->contour);
+	NhlTransformLayerPart	*tfp = &(cnl->trans);
+	float			out_of_range_val;
+	NhlTransDat		*seg_dat;
+
+	if (cnp->label_order != order &&
+	    cnp->line_order != order &&
+	    cnp->fill_order != order)
+		return NhlNOERROR;
+
+	switch (order) {
+	case NhlPREDRAW:
+		entry_name = "ContourPreDraw";
+		break;
+	case NhlDRAW:
+		entry_name = "ContourDraw";
+		break;
+	case NhlPOSTDRAW:
+		entry_name = "ContourPostDraw";
+		break;
+	default:
+		e_text = "%s: internal enumeration error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(NhlFATAL);
+	}
+
+	subret = _NhlActivateWorkstation(cnl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		e_text = "%s: Error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	if (cnl->view.use_segments) {
+		switch (order) {
+		case NhlPREDRAW:
+			subret = cnInitSegment(cnl,&cnp->draw_dat,
+					       entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+			break;
+		case NhlDRAW:
+			subret = cnInitSegment(cnl,&cnp->draw_dat,
+					       entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+			break;
+		case NhlPOSTDRAW:
+			subret = cnInitSegment(cnl,&cnp->postdraw_dat,
+					       entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+			break;
+		}
+	}
 	
-	if (Do_Lines && cnp->delay_lines) {
+/*
+ * If the plot is an overlay member, use the overlay manager's trans object.
+ */
+	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    tfp->overlay_trans_obj != NULL) {
+		Trans_Obj = tfp->overlay_trans_obj;
+	}
+	else {
+		Trans_Obj = tfp->trans_obj;
+		subret = _NhlSetTrans(tfp->trans_obj, (NhlLayer)cnl);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error setting transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			return(ret);
+ 		}
+	}
+	
+	NhlVAGetValues(Trans_Obj->base.id, 
+		       NhlNtrOutOfRangeF, &out_of_range_val,
+		       NULL);
+        c_cpsetr("ORV",out_of_range_val);
+
+	/* Draw the contours */
+
+	subret = _NhlCprect(Data,cnp->sfp->fast_dim,cnp->sfp->fast_len,
+			    cnp->sfp->slow_len,Fws,Iws,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+#if 0
+	{ /* for debugging */
+		float flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
+		c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
+		printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
+		       flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
+  	}
+#endif
+
+	if (Do_Fill && cnp->fill_order == order) {
+
+		if (! Area_Ws_Inited) {
+			subret = cnInitAreamap(cnl,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		}
+
+		subret = _NhlArscam(Aws,(_NHLCALLF(nhlfll,NHLFLL)),
+				    entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	}
+
+	if (Do_Labels && cnp->label_masking && cnp->label_order == order) {
+
+		if (! Area_Ws_Inited) {
+			subret = cnInitAreamap(cnl,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		}
+
+		subret = _NhlCplbam(Data,Fws,Iws,Aws,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	}
+
+#if 0	
+	_NhlDumpAreaMap(Aws,entry_name);
+#endif
+	
+	if (Do_Lines && cnp->line_order == order) {
 		if (Do_Labels && cnp->label_masking) {
 			subret = _NhlCpcldm(Data,Fws,Iws,Aws,
 					    (_NHLCALLF(cpdrpl,CPDRPL)),
@@ -2711,37 +3141,22 @@ static NhlErrorTypes ContourPostDraw
 		}
 	}
 	
-	if (Do_Labels && cnp->delay_labels) {	
+	if (Do_Labels && cnp->label_order == order) {	
 		gset_fill_int_style(GSTYLE_SOLID);
 
 		subret = _NhlCplbdr(Data,Fws,Iws,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 	}
 
-        subret = _NhlDeactivateWorkstation(cl->base.wkptr);
+	if (cnl->view.use_segments) {
+		_NhlEndSegment();
+	}
+
+        subret = _NhlDeactivateWorkstation(cnl->base.wkptr);
 	ret = MIN(subret,ret);
-
-
-	if (Use_Area_Ws) {
-		subret = _NhlIdleWorkspace(Aws);
-		ret = MIN(subret,ret);
-	}
-	subret = _NhlIdleWorkspace(Fws);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-	subret = _NhlIdleWorkspace(Iws);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-	if (tfp->overlay_status == _tfNotInOverlay) {
-		if (cnp->info_lbl.on) {
-			subret = NhlDraw(cnp->info_lbl_rec.id);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-		}
-	}
 
 	return MIN(subret,ret);
 }
-
-
 /*
  * Function:	AddDataBoundToAreamap
  *
@@ -2916,6 +3331,50 @@ static NhlErrorTypes GetData
 	return NhlNOERROR;
 }
 /*
+ * Function:	SetRegionAttrs
+ *
+ * Description:	
+ *
+ * In Args:	layer	Contour instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: Updates various internal parameters in Conpack,Plotchar,
+ *		 etc.
+ *		 
+ */	
+
+static void SetRegionAttrs
+#if  __STDC__
+(
+	NhlContourLayer	cl,
+	NhlcnRegionAttrs *reg_attrs, 
+	int cpix
+)
+#else
+(cl,reg_attrs,cpix)
+	NhlContourLayer	cl;
+	NhlcnRegionAttrs *reg_attrs;
+	int		 cpix;
+#endif
+{
+	reg_attrs->gks_pcolor = 
+		_NhlGetGksCi(cl->base.wkptr,reg_attrs->perim_color);
+	reg_attrs->gks_fcolor = 
+		_NhlGetGksCi(cl->base.wkptr,reg_attrs->fill_color);
+	
+	c_cpseti("PAI",cpix);
+	if (reg_attrs->perim_on)
+		c_cpseti("CLU",1);
+	else
+		c_cpseti("CLU",0);
+	c_cpseti("AIA",100 + cpix);
+	return;
+
+}
+/*
  * Function:	UpdateLineAndLabelParams
  *
  * Description:	
@@ -2989,6 +3448,15 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	Low_Label_AttrsP->gks_plcolor = 
 		_NhlGetGksCi(cl->base.wkptr,Low_Label_AttrsP->perim_lcolor);
 
+	SetRegionAttrs(cl,&cnp->grid_bound,-1);
+	Grid_Bound_AttrsP = &cnp->grid_bound;
+
+	SetRegionAttrs(cl,&cnp->missing_val,-2);
+	Missing_Val_AttrsP = &cnp->missing_val;
+
+	SetRegionAttrs(cl,&cnp->out_of_range,-3);
+	Out_Of_Range_AttrsP = &cnp->out_of_range;
+
 	*do_lines = True;
 	*do_labels = False;
 
@@ -3009,7 +3477,10 @@ static NhlErrorTypes UpdateLineAndLabelParams
 
 		c_cpseti("PAI",i+1);
 		c_cpsetr("CLV",clvp[i]);
-		c_cpseti("CLU",clup[i]);
+		if (cnp->mono_level_flag)
+			c_cpseti("CLU",clup[0]);
+		else
+			c_cpseti("CLU",clup[i]);
 		c_cpseti("AIA",100+i+1);
 		c_cpseti("AIB",100+i);
 		c_cpsetc("LLT",((NhlString*)LLabel_AttrsP->text)[i]);
@@ -3070,6 +3541,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 				c_cpseti("LLB",3);
 		}
 	}
+
 /*
  * In order to allow user control of the high and low attributes 
  * individually set the appropriate part of the flag on if either 
@@ -3097,6 +3569,8 @@ static NhlErrorTypes UpdateLineAndLabelParams
 		height = cnp->high_lbls.real_height / cl->view.width;
 		c_cpsetr("HLS",height);
 		c_cpsetr("HLW",cnp->high_lbls.perim_space  * height);
+		c_cpsetr("HLA",cnp->high_lbls.angle);
+		c_cpsetr("HLO",cnp->high_low_overlap);
 
 		if (cnp->high_lbls.back_color == NhlTRANSPARENT) {
 			if (! cnp->high_lbls.perim_on) 
@@ -4367,6 +4841,7 @@ static NhlErrorTypes ManageLegend
 				   cnp->llabel_colors);
 		if (cnp->llabel_strings != ocnp->llabel_strings ||
 		    cnp->level_flags != ocnp->level_flags ||
+		    cnp->mono_level_flag != ocnp->mono_level_flag ||
 		    cnp->level_count != ocnp->level_count ||
 		    cnp->llabel_interval_set) 
 			NhlSetSArg(&sargs[(*nargs)++],
@@ -6129,8 +6604,18 @@ static NhlErrorTypes    ManageDynamicArrays
  * Level flags
  */
 
+
+	if (init) {
+		ga = NULL;
+		count = cnp->level_count;
+	}
+	else {
+		ga = ocnp->level_flags;
+		count = cnp->mono_fill_color ? 1 : cnp->fill_count;
+	}
 	flags_modified = 
-		(ga = init ? NULL : ocnp->level_flags) != cnp->level_flags;
+		(ga != cnp->level_flags) ||
+			(cnp->mono_level_flag != ocnp->mono_level_flag);
 	subret = ManageGenArray(&ga,count,cnp->level_flags,Qint,NULL,
 				&old_count,&init_count,&need_check,&changed,
 				NhlNcnLevelFlags,entry_name);
@@ -6142,7 +6627,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	cnp->level_flags = ga;
 
 	ip = (int *) cnp->level_flags->data;
-	if (! flags_modified && 
+	if (! flags_modified && ! cnp->mono_level_flag &&
 	    (levels_modified || cnp->llabel_interval_set)) {
 		flags_modified = True;
 		if (cnp->llabel_interval <= 0) {
@@ -7466,15 +7951,40 @@ int (_NHLCALLF(nhlfll,NHLFLL))
 	}
 
 	for (i = 0; i < *nai; i++) {
-		if (iag[i] == 3 && iai[i] > 99 && iai[i] < 100 + Fill_Count) {
-			int ix = iai[i] - 100;
-			col_ix = Mono_Fill_Color ? 
-				Fill_Colors[0] : Fill_Colors[ix];
-			pat_ix = Mono_Fill_Pattern ?
-				Fill_Patterns[0] : Fill_Patterns[ix];
-			fscale = Mono_Fill_Scale ?
-				Fill_Scales[0] : Fill_Scales[ix];
+		if (iag[i] == 3) {
+			if (iai[i] > 99 && iai[i] < 100 + Fill_Count) {
+				int ix = iai[i] - 100;
+				col_ix = Mono_Fill_Color ? 
+					Fill_Colors[0] : Fill_Colors[ix];
+				pat_ix = Mono_Fill_Pattern ?
+					Fill_Patterns[0] : Fill_Patterns[ix];
+				fscale = Mono_Fill_Scale ?
+					Fill_Scales[0] : Fill_Scales[ix];
+			}
+			else {
+				NhlcnRegionAttrs *reg_attrs;
 
+				switch (iai[i]) {
+#if 0
+				case 99:
+					reg_attrs = Grid_Bound_AttrsP;
+					break;
+#endif
+				case 98:
+					reg_attrs = Missing_Val_AttrsP;
+					break;
+#if 0
+				case 97:
+					reg_attrs = Out_Of_Range_AttrsP;
+					break;
+#endif
+				default:
+					return 0;
+				}
+				col_ix = reg_attrs->gks_fcolor;
+				pat_ix = reg_attrs->fill_pat;
+				fscale = reg_attrs->fill_scale;
+			}
 			NhlVASetValues(Wkptr->base.id,
 				       NhlNwkFillIndex, pat_ix,
 				       NhlNwkFillColor, col_ix,
@@ -7524,60 +8034,73 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 	float thickness;
 
 	if (*iflg != 1) return;
-	
 
 	c_cpgeti("PAI", &pai);
-
-	if (pai > 0) {
+	if (pai > 0 && pai < 256) {
 		pai -= 1;
-
-		c_pcseti("CC",-1);
-		c_pcseti("OC",-1);
 		thickness = Mono_Line_Thickness ?
 			Line_Thicknesses[0] : Line_Thicknesses[pai];
-		gset_linewidth(thickness);
 		
 		lcol = Mono_Line_Color ?
 			Line_Colors[0] : Line_Colors[pai];
-		gset_line_colr_ind(lcol);
 
 		dpix = Mono_Dash_Pattern ? 
 			Dash_Patterns[0] : Dash_Patterns[pai]; 
-		dpix %= Dash_Table_Len;
-
-		slen = strlen(Dash_Table[dpix]);
-
-                p0 =  (float) c_kfpy(0.0);
-
-                p1 = Dash_Seglen;
-                p1 = (float) c_kfpy(p1);
-                jcrt = (int) ((p1 - p0) / slen + 0.5);
-		jcrt = jcrt > 1 ? jcrt : 1;
-
-		strcpy(buffer,Dash_Table[dpix]);
-
-		if (Constant_Labels) {
-			int tstart;
-
-			p1 = LLabel_AttrsP->height;
-			p1 = c_kfpy(p1);
-			jsize = (int) (p1 - p0);
-			jsize = jsize > 3 ? jsize : 4;
-
-			llcol = LLabel_AttrsP->mono_color ?
-			       LLabel_AttrsP->colors[0] : 
-				       LLabel_AttrsP->colors[pai];
-			gset_text_colr_ind(llcol);
-
-			tstart = slen - 
-			      strlen(((NhlString *)LLabel_AttrsP->text)[pai]);
-			strcpy(&buffer[tstart],
-			       ((NhlString *)LLabel_AttrsP->text)[pai]);
-		}
-			
-                c_dashdc(buffer,jcrt,jsize);
-		
 	}
+	else {
+		NhlcnRegionAttrs *reg_attrs;
+
+		switch (pai) {
+		case 257:
+			reg_attrs = Grid_Bound_AttrsP;
+			break;
+		case 258:
+			reg_attrs = Missing_Val_AttrsP;
+			break;
+		case 259:
+			reg_attrs = Out_Of_Range_AttrsP;
+			break;
+		default:
+			return;
+		}
+		thickness = reg_attrs->perim_thick;
+		lcol = reg_attrs->gks_pcolor;
+		dpix = reg_attrs->perim_dpat;
+	}
+		
+ 	c_pcseti("CC",-1);
+	c_pcseti("OC",-1);
+	gset_linewidth(thickness);
+	gset_line_colr_ind(lcol);
+
+	dpix %= Dash_Table_Len;
+	slen = strlen(Dash_Table[dpix]);
+	p0 =  (float) c_kfpy(0.0);
+	p1 = Dash_Seglen;
+	p1 = (float) c_kfpy(p1);
+	jcrt = (int) ((p1 - p0) / slen + 0.5);
+	jcrt = jcrt > 1 ? jcrt : 1;
+	strcpy(buffer,Dash_Table[dpix]);
+
+	if (pai > 0 && Constant_Labels) {
+		int tstart;
+
+		p1 = LLabel_AttrsP->height;
+		p1 = c_kfpy(p1);
+		jsize = (int) (p1 - p0);
+		jsize = jsize > 3 ? jsize : 4;
+
+		llcol = LLabel_AttrsP->mono_color ?
+			LLabel_AttrsP->colors[0] : LLabel_AttrsP->colors[pai];
+		gset_text_colr_ind(llcol);
+		tstart = slen - 
+			strlen(((NhlString *)LLabel_AttrsP->text)[pai]);
+		strcpy(&buffer[tstart],
+		       ((NhlString *)LLabel_AttrsP->text)[pai]);
+	}
+	
+	c_dashdc(buffer,jcrt,jsize);
+	
 	return;
 }
 

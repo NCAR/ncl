@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.14 1994-08-11 21:37:08 boote Exp $
+ *      $Id: Workspace.c,v 1.15 1994-09-08 01:34:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -897,6 +897,11 @@ NhlWorkspace *_NhlUseWorkspace
 		return NULL;
 	}
 
+	if (wsrp->in_use) {
+		e_text = "%s: Workspace is currently in use";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NULL;
+	}
 	wsrp->in_use = True;
 	over_threshold = WSp->total_size - WSp->threshold_size;
 	if (wsrp->ws_ptr == NULL)
@@ -909,7 +914,8 @@ NhlWorkspace *_NhlUseWorkspace
  * If the required size of the workspace plus the current total allocation
  * is greater than the set maximum size, bail out with a fatal error.
  */
-	if (WSp->total_size + wsrp->cur_size > WSp->maximum_size) {
+	if (wsrp->ws_ptr == NULL && 
+	    WSp->total_size + wsrp->cur_size > WSp->maximum_size) {
 		wsrp->in_use = False;
 		e_text =
 		"%s: Allocation of workspace would exceed maximum total size";
@@ -1656,8 +1662,9 @@ static NhlErrorTypes	EnlargeWorkspace
  */
 	if (WSp->total_size + wsrp->cur_size > WSp->maximum_size) {
 		e_text =
-	       "%s: Reallocation of workspace would exceed maximum total size";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+	       "%s: Workspace reallocation would exceed maximum size %d";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+			  entry_name,WSp->maximum_size);
 		return NhlFATAL;
 	}
 
@@ -2780,8 +2787,11 @@ NhlErrorTypes _NhlMapbla
 	NhlBoolean	done = False;
 	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
 	int		err_num;
+	float 		flx,frx,fby,fuy,wlx,wrx,wby,wuy; 
+	int 		ll;
 
 	c_entsr(&save_mode,1);
+	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
 
 	do {
 		c_mapbla(wsrp->ws_ptr);
@@ -2793,14 +2803,10 @@ NhlErrorTypes _NhlMapbla
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
-#if 0
 				printf("resizing ws old %d", wsrp->cur_size);
-#endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
-#if 0
 				printf(" new %d\n", wsrp->cur_size);
-#endif
 			}
 			else {
 				e_text = "%s: %s";
@@ -2808,6 +2814,16 @@ NhlErrorTypes _NhlMapbla
 					  e_text,entry_name,e_msg);
 				return NhlFATAL;
 			}
+			c_mapint();
+			if (c_nerro(&err_num) != 0) {
+				e_msg = c_semess(0);
+				c_errof();
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+			c_set(flx,frx,fby,fuy,wlx,wrx,wby,wuy,ll);
 		}
 	} while (! done);
 	
@@ -2941,6 +2957,164 @@ NhlErrorTypes _NhlMapiqa
 
 	do {
 		c_mapiqa(wsrp->ws_ptr,group_id,left_id,right_id);
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg)) {
+#if 0
+				printf("resizing ws old %d", wsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(wsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if 0
+				printf(" new %d\n", wsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	_NhlMapblm
+ *
+ * Description: Ezmap routine MAPBLM
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlMapblm
+#if	__STDC__
+(
+	NhlWorkspace	*amap_ws,
+	int		(*ulpr)(float *xcra, 
+			       float *ycra, 
+			       int *mcra, 
+			       int *iaai, 
+			       int *iagi, 
+			       int *nogi),
+	char		*entry_name
+)
+#else
+(amap_ws,apr,entry_name)
+	NhlWorkspace	*amap_ws;
+	int		(*ulpr)();
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec	*wsrp = (NhlWorkspaceRec *) amap_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
+	int		err_num;
+	float		x[NhlwsMAX_GKS_POINTS], y[NhlwsMAX_GKS_POINTS];
+	int		group_ids[NhlwsMAX_AREA_GROUPS];
+	int		area_ids[NhlwsMAX_AREA_GROUPS];
+
+	c_entsr(&save_mode,1);
+
+	do {
+		c_mapblm(wsrp->ws_ptr,x,y,NhlwsMAX_GKS_POINTS,
+			 group_ids,area_ids,NhlwsMAX_AREA_GROUPS,ulpr);
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg)) {
+#if 0
+				printf("resizing ws old %d", wsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(wsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if 0
+				printf(" new %d\n", wsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	_NhlMapgrm
+ *
+ * Description: Ezmap routine MAPGRM
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlMapgrm
+#if	__STDC__
+(
+	NhlWorkspace	*amap_ws,
+	int		(*ulpr)(float *xcra, 
+			       float *ycra, 
+			       int *mcra, 
+			       int *iaai, 
+			       int *iagi, 
+			       int *nogi),
+	char		*entry_name
+)
+#else
+(amap_ws,apr,entry_name)
+	NhlWorkspace	*amap_ws;
+	int		(*ulpr)();
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec	*wsrp = (NhlWorkspaceRec *) amap_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
+	int		err_num;
+	float		x[NhlwsMAX_GKS_POINTS], y[NhlwsMAX_GKS_POINTS];
+	int		group_ids[NhlwsMAX_AREA_GROUPS];
+	int		area_ids[NhlwsMAX_AREA_GROUPS];
+
+	c_entsr(&save_mode,1);
+
+	do {
+		c_mapgrm(wsrp->ws_ptr,x,y,NhlwsMAX_GKS_POINTS,
+			 group_ids,area_ids,NhlwsMAX_AREA_GROUPS,ulpr);
 
 		if (c_nerro(&err_num) == 0) {
 			done = True;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.h,v 1.11 1994-07-13 17:27:30 dbrown Exp $
+ *      $Id: Contour.h,v 1.12 1994-09-08 01:34:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,7 +39,8 @@ typedef enum _NhlcnLevelSelectionMode {
 
 typedef enum _NhlcnLevelUseMode {
 	NhlcnNOLINE, NhlcnLINEONLY, 
-	NhlcnLABELONLY, NhlcnLINEANDLABEL } NhlcnLevelUseMode;
+	NhlcnLABELONLY, NhlcnLINEANDLABEL
+} NhlcnLevelUseMode;
 
 #define NhlTcnLevelUseMode	"cnlevelusemode"
 
@@ -47,7 +48,8 @@ typedef enum _NhlcnLevelUseMode {
 
 typedef enum _NhlcnLineLabelSpacingMode {
 	NhlcnNOLABELS, NhlcnCONSTANT, 
-	NhlcnRANDOMIZED, NhlcnCOMPUTED } NhlcnLineLabelSpacingMode;
+	NhlcnRANDOMIZED, NhlcnCOMPUTED
+} NhlcnLineLabelSpacingMode;
 
 #define NhlTcnLineLabelSpacingMode	"cnlinelabelspacingmode"
 
@@ -56,9 +58,29 @@ typedef enum _NhlcnLineLabelSpacingMode {
 typedef enum _NhlcnLabelScalingMode {
 	NhlcnSCALEFACTOR, NhlcnCONFINETORANGE,
 	NhlcnTRIMZEROS,NhlcnMAXSIGDIGITSLEFT,
-        NhlcnINTEGERLINELABELS } NhlcnLabelScalingMode;
+        NhlcnINTEGERLINELABELS
+} NhlcnLabelScalingMode;
 
 #define NhlTcnLabelScalingMode	"cnlabelscalinggmode"
+
+/* label overlap flag */
+
+typedef enum _NhlcnHighLowLabelOverlapMode {
+	NhlcnIGNOREOVERLAP = 0,
+	NhlcnOMITOVERINFO,
+	NhlcnOMITOVERHL,
+	NhlcnOMITOVERHLANDINFO,
+	NhlcnOMITOVERVP,
+	NhlcnOMITOVERVPANDINFO,
+	NhlcnOMITOVERVPANDHL,
+	NhlcnOMITOVERVPANDHLANDINFO,
+	NhlcnADJUSTVP,
+	NhlcnADJUSTVPOMITOVERINFO,
+	NhlcnADJUSTVPOMITOVERHL,
+	NhlcnADJUSTVPOMITOVERHLANDINFO
+} NhlcnHighLowLabelOverlapMode;
+
+#define NhlTcnHighLowLabelOverlapMode	"cnhighlowlabeloverlapmode"
 
 /*
  * DataDep objects resources
@@ -82,8 +104,9 @@ typedef enum _NhlcnLabelScalingMode {
 #define NhlNcnMinLevelValF		"cnMinLevelValF"
 #define NhlNcnMaxLevelValF		"cnMaxLevelValF"
 #define NhlNcnLineLabelInterval		"cnLineLabelInterval"
-#define NhlNcnDelayLabels		"cnDelayLabels"
-#define NhlNcnDelayLines		"cnDelayLines"
+#define NhlNcnLabelDrawOrder		"cnLabelDrawOrder"
+#define NhlNcnLineDrawOrder		"cnLineDrawOrder"
+#define NhlNcnFillDrawOrder		"cnFillDrawOrder"
 
 #define NhlNcnLabelScalingMode		"cnLabelScalingMode"
 #define NhlNcnLabelScaleValueF		"cnLabelScaleValueF"
@@ -120,8 +143,8 @@ typedef enum _NhlcnLabelScalingMode {
 #define NhlNcnLowUseHighLabelRes	"cnLowUseHighLabelRes"
 #define NhlNcnHighUseLineLabelRes	"cnHighUseLineLabelRes"
 #define NhlNcnConstFUseInfoLabelRes	"cnConstFUseInfoLabelRes"
-
 #define NhlNcnLineLabelSpacing		"cnLineLabelSpacing"
+#define NhlNcnHighLowLabelOverlapMode	"cnHighLowLabelOverlapMode"
 
 #define NhlNcnLineLabelsOn		"cnLineLabelsOn"
 #define NhlNcnLineLabelFormat		"cnLineLabelFormat"
@@ -225,14 +248,36 @@ typedef enum _NhlcnLabelScalingMode {
 #define NhlNcnConstFLabelParallelPosF	"cnConstFLabelParallelPosF"
 #define NhlNcnConstFLabelOrthogonalPosF	"cnConstFLabelOrthogonalPosF"
 
+#define NhlNcnMissingValPerim		"cnMissingValPerim"
+#define NhlNcnMissingValPerimThicknessF	"cnMissingValPerimThicknessF"
+#define NhlNcnMissingValPerimDashPattern "cnMissingValPerimDashPattern"
+#define NhlNcnMissingValPerimColor	"cnMissingValPerimColor"
+#define NhlNcnMissingValFillColor	"cnMissingValFillColor"
+#define NhlNcnMissingValFillPattern	"cnMissingValFillPattern"
+#define NhlNcnMissingValFillScaleF	"cnMissingValFillScaleF"
+
+#define NhlNcnGridBoundPerim		"cnGridBoundPerim"
+#define NhlNcnGridBoundPerimThicknessF	"cnGridBoundPerimThicknessF"
+#define NhlNcnGridBoundPerimDashPattern "cnGridBoundPerimDashPattern"
+#define NhlNcnGridBoundPerimColor	"cnGridBoundPerimColor"
+#define NhlNcnGridBoundFillColor	"cnGridBoundFillColor"
+#define NhlNcnGridBoundFillPattern	"cnGridBoundFillPattern"
+#define NhlNcnGridBoundFillScaleF	"cnGridBoundFillScaleF"
+
+#define NhlNcnOutOfRangePerim		"cnOutOfRangePerim"
+#define NhlNcnOutOfRangePerimThicknessF	"cnOutOfRangePerimThicknessF"
+#define NhlNcnOutOfRangePerimDashPattern "cnOutOfRangePerimDashPattern"
+#define NhlNcnOutOfRangePerimColor	"cnOutOfRangePerimColor"
+#define NhlNcnOutOfRangeFillColor	"cnOutOfRangeFillColor"
+#define NhlNcnOutOfRangeFillPattern	"cnOutOfRangeFillPattern"
+#define NhlNcnOutOfRangeFillScaleF	"cnOutOfRangeFillScaleF"
+
 /*
  * Contour class resources
  */
 
 #define NhlCcnScalarFieldData		"CnScalarFieldData"
-
 #define NhlCcnOutOfRangeValF		"CnOutOfRangeValF"
-#define NhlCcnSpecialValF		"CnSpecialValF"
 
 #define NhlCcnLevelCount		".CnLevelCount"		/* read-only */
 #define NhlCcnLevelSelectionMode	"CnLevelSelectionMode"
@@ -242,8 +287,9 @@ typedef enum _NhlcnLabelScalingMode {
 #define NhlCcnMinLevelValF		"CnMinLevelValF"
 #define NhlCcnMaxLevelValF		"CnMaxLevelValF"
 #define NhlCcnLineLabelInterval		"CnLineLabelInterval"
-#define NhlCcnDelayLabels		"CnDelayLabels"
-#define NhlCcnDelayLines		"CnDelayLines"
+#define NhlCcnLabelDrawOrder		"CnLabelDrawOrder"
+#define NhlCcnLineDrawOrder		"CnLineDrawOrder"
+#define NhlCcnFillDrawOrder		"CnFillDrawOrder"
 
 #define NhlCcnLabelScalingMode		"CnLabelScalingMode"
 #define NhlCcnLabelScaleValueF		"CnLabelScaleValueF"
@@ -282,6 +328,7 @@ typedef enum _NhlcnLabelScalingMode {
 #define NhlCcnLowUseHighLabelRes	"CnLowUseHighLabelRes"
 #define NhlCcnHighUseLineLabelRes	"CnHighUseLineLabelRes"
 #define NhlCcnConstFUseInfoLabelRes	"CnConstFUseInfoLabelRes"
+#define NhlCcnHighLowLabelOverlapMode	"CnHighLowLabelOverlapMode"
 
 #define NhlCcnLineLabelsOn		"CnLineLabelsOn"
 #define NhlCcnLineLabelFormat		"CnLineLabelFormat"
@@ -390,6 +437,30 @@ typedef enum _NhlcnLabelScalingMode {
 #define NhlCcnConstFLabelJust		"CnConstFLabelJust"
 #define NhlCcnConstFLabelParallelPosF	"CnConstFLabelParallelPosF"
 #define NhlCcnConstFLabelOrthogonalPosF	"CnConstFLabelOrthogonalPosF"
+
+#define NhlCcnMissingValPerim		"CnMissingValPerim"
+#define NhlCcnMissingValPerimThicknessF	"CnMissingValPerimThicknessF"
+#define NhlCcnMissingValPerimDashPattern "CnMissingValPerimDashPattern"
+#define NhlCcnMissingValPerimColor	"CnMissingValPerimColor"
+#define NhlCcnMissingValFillColor	"CnMissingValFillColor"
+#define NhlCcnMissingValFillPattern	"CnMissingValFillPattern"
+#define NhlCcnMissingValFillScaleF	"CnMissingValFillScaleF"
+
+#define NhlCcnGridBoundPerim		"CnGridBoundPerim"
+#define NhlCcnGridBoundPerimThicknessF	"CnGridBoundPerimThicknessF"
+#define NhlCcnGridBoundPerimDashPattern "CnGridBoundPerimDashPattern"
+#define NhlCcnGridBoundPerimColor	"CnGridBoundPerimColor"
+#define NhlCcnGridBoundFillColor	"CnGridBoundFillColor"
+#define NhlCcnGridBoundFillPattern	"CnGridBoundFillPattern"
+#define NhlCcnGridBoundFillScaleF	"CnGridBoundFillScaleF"
+
+#define NhlCcnOutOfRangePerim		"CnOutOfRangePerim"
+#define NhlCcnOutOfRangePerimThicknessF	"CnOutOfRangePerimThicknessF"
+#define NhlCcnOutOfRangePerimDashPattern "CnOutOfRangePerimDashPattern"
+#define NhlCcnOutOfRangePerimColor	"CnOutOfRangePerimColor"
+#define NhlCcnOutOfRangeFillColor	"CnOutOfRangeFillColor"
+#define NhlCcnOutOfRangeFillPattern	"CnOutOfRangeFillPattern"
+#define NhlCcnOutOfRangeFillScaleF	"CnOutOfRangeFillScaleF"
 
 extern NhlLayerClass			NhlcontourLayerClass;
 

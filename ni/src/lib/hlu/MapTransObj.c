@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.9 1994-07-12 20:52:30 boote Exp $
+*      $Id: MapTransObj.c,v 1.10 1994-09-08 01:34:25 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -35,7 +35,7 @@ static NhlResource resources[] = {
 	 NhlTString,_NhlUSET("1.0e12"),0,NULL},
 {NhlNmpProjection,NhlCmpProjection,NhlTProjection,sizeof(NhlProjection),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.projection),NhlTImmediate,
-	 _NhlUSET((NhlPointer)NhlCYLINDRICAL_EQUIDISTANT),0,NULL},
+	 _NhlUSET((NhlPointer)NhlCYLINDRICALEQUIDISTANT),0,NULL},
 {NhlNmpCenterLatF,NhlCmpCenterLatF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.center_lat),
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
@@ -132,10 +132,10 @@ static NhlResource resources[] = {
 {NhlNmpSatelliteAngle2F,NhlCmpSatelliteAngle2F,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.satellite_angle_2),
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
-{NhlNmpEllipticalBoundary,NhlCmpEllipticalBoundary,NhlTInteger,
-	 sizeof(int),
+{NhlNmpEllipticalBoundary,NhlCmpEllipticalBoundary,NhlTBoolean,
+	 sizeof(NhlBoolean),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.elliptical_boundary),
-	 NhlTString,_NhlUSET("0") ,0,NULL},
+	 NhlTImmediate,_NhlUSET((NhlPointer)False) ,0,NULL},
 
 /* not sure these are needed,
 { NhlNmpMapPosRF, NhlCmpMapPosRF, NhlTFloat,sizeof(float),
@@ -162,7 +162,11 @@ static NhlResource resources[] = {
 	NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
 { NhlNmpRectLimit4, NhlCmpRectLimit4, NhlTPointer, sizeof(float*),
 	NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_4),
-	NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree}
+	NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
+{NhlNmpTransChanged,NhlNmpTransChanged,NhlTBoolean,sizeof(NhlBoolean),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.trans_changed),
+	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL}
+
 };
 
 /*
@@ -431,7 +435,7 @@ NhlLayer parent;
 		cproj = "ST";
 		h_angle_lim = v_angle_lim = 180;
 		break;
-	case NhlLAMBERT_EQUALAREA:
+	case NhlLAMBERTEQUALAREA:
 		cproj = "LE";
 		h_angle_lim = v_angle_lim = 180;
 		break;
@@ -439,7 +443,7 @@ NhlLayer parent;
 		cproj = "GN";
 		h_angle_lim = v_angle_lim = 85;
 		break;
-	case NhlAZIMUTHAL_EQUIDISTANT:
+	case NhlAZIMUTHALEQUIDISTANT:
 		cproj = "AE";
 		h_angle_lim = v_angle_lim = 180;
 		break;
@@ -452,12 +456,12 @@ NhlLayer parent;
 		h_angle_lim = 180;
 		v_angle_lim = 85;
 		break;
-	case NhlCYLINDRICAL_EQUIDISTANT:
+	case NhlCYLINDRICALEQUIDISTANT:
 		cproj = "CE";
 		h_angle_lim = 90;
 		v_angle_lim = 180;
 		break;
-	case NhlLAMBERT_CONFORMAL:
+	case NhlLAMBERTCONFORMAL:
 		if (mtp->map_limit_mode == NhlANGLES) {
 			e_text = "%s: internal check error";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -479,7 +483,7 @@ NhlLayer parent;
 	}
 
 
-	if (mtp->projection == NhlLAMBERT_CONFORMAL) {
+	if (mtp->projection == NhlLAMBERTCONFORMAL) {
 		c_maproj(cproj,mtp->lambert_parallel_1,mtp->lambert_meridian,
 			 mtp->lambert_parallel_2);
 	}
@@ -494,7 +498,7 @@ NhlLayer parent;
 		climit = "MA";
 		break;
 	case NhlLATLON:
-		if (mtp->updated) {
+		if (! mtp->trans_changed) {
 			rl1[0] = mtp->ul;
 			rl2[0] = mtp->ur;
 			rl3[0] = mtp->ub;
@@ -596,10 +600,14 @@ NhlLayer parent;
 	mtp->map_pos_r = xr;
 	mtp->map_pos_t = yt;
 	mtp->map_pos_b = yb;
+	mtp->left_window = mtp->ul;
+	mtp->right_window = mtp->ur;
+	mtp->bottom_window = mtp->ub;
+	mtp->top_window = mtp->ut;
 
 	c_set (xl,xr,yb,yt,mtp->ul,mtp->ur,mtp->ub,mtp->ut,loglin);
 
-	mtp->updated = True;
+	mtp->trans_changed = False;
 
 	return (ret);
 
@@ -944,7 +952,8 @@ static NhlErrorTypes  MapTransSetValues
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	char *e_text, *entry_name = "MapTransSetValues";
 
-	mtp->updated = False;
+	mtp->trans_changed = True;
+
 	if (_NhlCmpFAny(mnew->trobj.out_of_range,1e12,6) != 0) {
 		e_text = 
 		"%s: %s must always equal 1e12 for map projections: resetting";
@@ -992,7 +1001,6 @@ static NhlErrorTypes MapTransInitialize
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	char *e_text, *entry_name = "MapTransInitialize";
 
-	mtp->updated = False;
 	if (_NhlCmpFAny(mnew->trobj.out_of_range,1e12,6) != 0) {
 		e_text = 
 		"%s: %s must always equal 1e12 for map projections: resetting";
@@ -1122,13 +1130,13 @@ static NhlErrorTypes CheckMapLimits
 	case NhlSTEREOGRAPHIC:
 		h_angle_lim = v_angle_lim = 180;
 		break;
-	case NhlLAMBERT_EQUALAREA:
+	case NhlLAMBERTEQUALAREA:
 		h_angle_lim = v_angle_lim = 180;
 		break;
 	case NhlGNOMONIC:
 		h_angle_lim = v_angle_lim = 85;
 		break;
-	case NhlAZIMUTHAL_EQUIDISTANT:
+	case NhlAZIMUTHALEQUIDISTANT:
 		h_angle_lim = v_angle_lim = 180;
 		break;
 	case NhlMOLLWEIDE:
@@ -1138,11 +1146,11 @@ static NhlErrorTypes CheckMapLimits
 		h_angle_lim = 180;
 		v_angle_lim = 85;
 		break;
-	case NhlCYLINDRICAL_EQUIDISTANT:
+	case NhlCYLINDRICALEQUIDISTANT:
 		h_angle_lim = 90;
 		v_angle_lim = 180;
 		break;
-	case NhlLAMBERT_CONFORMAL:
+	case NhlLAMBERTCONFORMAL:
 		if (mtp->map_limit_mode == NhlANGLES) {
 			e_text = 
 "%s: Angle map limit mode invalid for Lambert Conformal projection: resetting";
@@ -1326,14 +1334,14 @@ static NhlErrorTypes    MapTransClassInitialize
         _NhlEnumVals   projectionlist[] = {
         {NhlORTHOGRAPHIC,		"orthographic"},
         {NhlSTEREOGRAPHIC,		"stereographic"},
-        {NhlLAMBERT_EQUALAREA,		"lambert_equalarea"},
+        {NhlLAMBERTEQUALAREA,		"lambertequalarea"},
         {NhlGNOMONIC,			"gnomonic"},
-        {NhlAZIMUTHAL_EQUIDISTANT,	"azimuthal_equidistant"},
+        {NhlAZIMUTHALEQUIDISTANT,	"azimuthalequidistant"},
         {NhlSATELLITE,      		"satellite"},
         {NhlMOLLWEIDE,			"mollweide"},
         {NhlMERCATOR,			"mercator"},
-        {NhlCYLINDRICAL_EQUIDISTANT,	"cylindrical_equidistant"},
-        {NhlLAMBERT_CONFORMAL,		"lambert_conformal"}
+        {NhlCYLINDRICALEQUIDISTANT,	"cylindricalequidistant"},
+        {NhlLAMBERTCONFORMAL,		"lambertconformal"}
         };
 
         _NhlRegisterEnumType(NhlTMapLimitMode,limitmodelist,

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapTransObj.h,v 1.3 1994-06-24 00:39:43 dbrown Exp $
+ *      $Id: MapTransObj.h,v 1.4 1994-09-08 01:34:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,10 +30,10 @@ typedef enum _NhlMapLimitMode {
 #define NhlTMapLimitMode	"maplimitmode"
 
 typedef enum _NhlProjection {
-	NhlORTHOGRAPHIC, NhlSTEREOGRAPHIC, NhlLAMBERT_EQUALAREA,
-	NhlGNOMONIC, NhlAZIMUTHAL_EQUIDISTANT, NhlSATELLITE,
-	NhlMOLLWEIDE, NhlMERCATOR, NhlCYLINDRICAL_EQUIDISTANT,
-	NhlLAMBERT_CONFORMAL } NhlProjection;
+	NhlORTHOGRAPHIC, NhlSTEREOGRAPHIC, NhlLAMBERTEQUALAREA,
+	NhlGNOMONIC, NhlAZIMUTHALEQUIDISTANT, NhlSATELLITE,
+	NhlMOLLWEIDE, NhlMERCATOR, NhlCYLINDRICALEQUIDISTANT,
+	NhlLAMBERTCONFORMAL } NhlProjection;
 
 #define NhlTProjection	"projection"
 

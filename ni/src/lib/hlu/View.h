@@ -1,5 +1,5 @@
 /*
- *      $Id: View.h,v 1.4 1994-07-12 20:53:19 boote Exp $
+ *      $Id: View.h,v 1.5 1994-09-08 01:34:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -57,6 +57,13 @@ typedef enum _NhlJustification {
 	NhlCENTERRIGHT,
 	NhlBOTTOMRIGHT
 } NhlJustification;
+
+#define NhlTDrawOrder "DrawOrder"
+typedef enum _NhlDrawOrder {
+	NhlPREDRAW,
+	NhlDRAW,
+	NhlPOSTDRAW
+} NhlDrawOrder;
 
 NhlDOCTAG(NhlCoord)
 typedef struct _NhlCoord {

@@ -818,7 +818,7 @@ NhlString _NhlFormatFloat
         char *exp_pos = NULL;
         int field_width,apparent_fwidth;
 	NhlBoolean left_justify = False;
-	int len, move_cnt, set_ppos;
+	int move_cnt, set_ppos;
 
 	lmsd = format->left_sig_digit;
         if (format->left_sig_digit_flag) {
@@ -1018,13 +1018,17 @@ NhlString _NhlFormatFloat
 	}
 		
 /*
- * Adjust to field width, filling with the appropriate fill character.
+ * If the field width is greater than the number of characters in the buffer,
+ * adjust to field width, filling with the appropriate fill character.
  * If there is an exponent, it is necessary to add to the field width the
  * characters used for Plotchar formatting. If filling with zeros on the 
  * right and there is an exponent the zeros must be inserted between the
  * mantissa and the exponent.
  */
-        if (apparent_fwidth > nbuf) {
+	if (nbuf >= apparent_fwidth) {
+		cbuf[nbuf] = '\0';
+	}
+        else {
                 if (left_justify && exp_pos != NULL && format->zero) {
                         int start = exp_pos - cbuf;
                         int len = nbuf - start;
@@ -1082,113 +1086,8 @@ NhlString _NhlFormatFloat
 			for (i = 0; i < apparent_fwidth - nbuf; i++)
 				cbuf[i] = fill_char;
 		}
+		cbuf[apparent_fwidth] = '\0';
         }
-	len = apparent_fwidth > nbuf ? apparent_fwidth : nbuf;
-	cbuf[len] = '\0';
-
-#if 0
-/*
- * Add a leading zero if appropriate.
- */		
-        if (format->at_sign && (cbuf[0] == '.' || 
-                            (cbuf[0] == '-' && cbuf[1] == '.'))) {
-                for (i=nbuf; i > 0; i--) {
-                        cbuf[i] = cbuf[i-1];
-                }
-                if (cbuf[0] == '.')
-                        cbuf[0] = '0';
-                else
-                        cbuf[1] = '0';
-                nbuf++;
-                zero_added = True;
-        }
-/*
- * Add a trailing zero as required
- */
-        if (format->at_sign && cbuf[nbuf-1] == '.') {
-                zero_added = True;
-                cbuf[nbuf++] = '0';
-        }
-/*
- * Leading plus sign
- */
-        if (format->plus && cbuf[0] != '-') {
-                for (i=nbuf; i > 0; i--) {
-                        cbuf[i] = cbuf[i-1];
-                }
-                cbuf[0] = '+';
-                nbuf++;
-        }
-/*
- * Or alternatively a leading space
- */
-        else if (format->space && cbuf[0] != '-') {
-                for (i=nbuf; i > 0; i--) {
-                        cbuf[i] = cbuf[i-1];
-                }
-                cbuf[0] = ' ';
-                nbuf++;
-        }
-/*
- * If replacing the decimal or adding trailing zeros find the position of
- * the decimal point. Note that a trailing zero may need to be inserted
- * after the decimal point and before the exponent.
- */
-        if (format->comma || (format->at_sign && ! zero_added))
-                cp = strchr((const char *)cbuf,(int)'.');
-
-	if (cp != NULL) {
-		if (format->comma)
-			*cp = ',';
-		if (format->at_sign && ! zero_added) {
-			if (exp_pos == cp + 1) {
-				char *tcp;
-				for (tcp=&cbuf[nbuf]; tcp>exp_pos; tcp--)
-					*tcp = *(tcp-1);
-				*(exp_pos++) = '0';
-				nbuf++;
-				zero_added = True;
-			}
-                }
-        }
-
-/*
- * Adjust to field width, filling with the appropriate fill character.
- * If there is an exponent, it is necessary to add to the field width the
- * characters used for Plotchar formatting. If filling with zeros on the 
- * right and there is an exponent the zeros must be inserted between the
- * mantissa and the exponent.
- */
-        cbuf[nbuf] = '\0';
-        fill_char = format->zero ? '0' : ' ';
-	if (exp_pos == NULL)
-		apparent_fwidth = field_width;
-	else 
-		apparent_fwidth = field_width + len_diff[ix];
-
-        if (apparent_fwidth > nbuf) {
-                if (format->minus && exp_pos != NULL && format->zero) {
-                        int start = exp_pos - cbuf;
-                        int len = nbuf - start;
-                        for (i = 1; i <= nbuf - start; i++)
-                                cbuf[apparent_fwidth-i] = cbuf[nbuf-i];
-                        for (i = start; i < apparent_fwidth - len; i++)
-                                cbuf[i] = fill_char;
-                }
-                else if (format->minus) {
-                        for (i = nbuf; i < apparent_fwidth; i++)
-                                cbuf[i] = fill_char;
-                }
-                else {
-                        for (i = 1; i <= nbuf; i++)
-                                cbuf[apparent_fwidth-i] = cbuf[nbuf-i];
-                        for (i = 0; i < apparent_fwidth - nbuf; i++)
-                                cbuf[i] = fill_char;
-                }
-                cbuf[apparent_fwidth] = '\0';
-        }
-
-#endif
 
 	return cbuf;
 }

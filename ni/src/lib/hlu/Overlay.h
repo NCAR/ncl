@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.h,v 1.8 1994-06-24 00:39:51 dbrown Exp $
+ *      $Id: Overlay.h,v 1.9 1994-09-08 01:34:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@
 #include <ncarg/hlu/Annotation.h>
 
 typedef enum _NhlAnnotationDisplayMode {
-	NhlNOCREATE,NhlNEVER,NhlCONDITIONAL,NhlALWAYS
+	NhlNOCREATE = -1,NhlNEVER = 0, NhlALWAYS = 1, NhlCONDITIONAL
 } NhlAnnotationDisplayMode;
 
 #define NhlTAnnotationDisplayMode        "annotationdisplaymode"

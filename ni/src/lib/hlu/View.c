@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.7 1994-05-05 18:17:33 ethan Exp $
+ *      $Id: View.c,v 1.8 1994-09-08 01:34:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,7 @@
 #include <ncarg/hlu/ViewP.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/Workstation.h>
+#include <ncarg/hlu/ConvertersP.h>
 
 static NhlResource resources[] = {
 	{ NhlNvpXF, NhlCvpXF, NhlTFloat, sizeof(float),
@@ -473,6 +474,47 @@ static NhlErrorTypes	ViewClassInitialize()
 	int cid = NhlDEFAULT_CONNECTION_ID;
 	int wtp = NhlDEFAULT_SEG_WKS_TYPE;
 	NhlErrorTypes	ret = NhlNOERROR;
+
+        _NhlEnumVals   orientationlist[] = {
+        {NhlHORIZONTAL,	"horizontal"},
+	{NhlVERTICAL,	"vertical"}
+	};
+
+        _NhlEnumVals   positionlist[] = {
+        {NhlTOP,	"top"},
+        {NhlBOTTOM,	"bottom"},
+        {NhlRIGHT, 	"right"},
+        {NhlLEFT,	"left"},
+        {NhlCENTER,	"center"},
+        {NhlBOTH,	"both"}
+        };
+
+	_NhlEnumVals justificationlist[] =  {
+	{NhlTOPLEFT,		"topleft"},
+	{NhlCENTERLEFT,		"centerleft"},
+	{NhlBOTTOMLEFT,		"bottomleft"},
+	{NhlTOPCENTER,		"topcenter"},
+	{NhlCENTERCENTER,	"centercenter"},
+	{NhlBOTTOMCENTER,	"bottomcenter"},
+	{NhlTOPRIGHT,		"topright"},
+	{NhlCENTERRIGHT,	"centerright"},
+	{NhlBOTTOMRIGHT,	"bottomright"}
+	};
+
+	_NhlEnumVals draworderlist[] = {
+	{NhlPREDRAW,	"predraw"},
+	{NhlDRAW,	"draw"},
+	{NhlPOSTDRAW,	"postdraw"}
+	};
+
+	_NhlRegisterEnumType(NhlTOrientation,orientationlist,
+			     NhlNumber(orientationlist));
+	_NhlRegisterEnumType(NhlTPosition,positionlist,
+			     NhlNumber(positionlist));
+	_NhlRegisterEnumType(NhlTJustification,justificationlist,
+			     NhlNumber(justificationlist));
+	_NhlRegisterEnumType(NhlTDrawOrder,draworderlist,
+			     NhlNumber(draworderlist));
 
 /*
  * GKS BETTER BE OPEN !!!!

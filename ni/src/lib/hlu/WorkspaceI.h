@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceI.h,v 1.5 1994-07-13 17:27:43 dbrown Exp $
+ *      $Id: WorkspaceI.h,v 1.6 1994-09-08 01:34:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -241,6 +241,33 @@ extern NhlErrorTypes _NhlMapiqa(
 	int		group_id,
 	int		left_id,
 	int		right_id,
+	char		*entry_name
+#endif
+);
+
+extern NhlErrorTypes _NhlMapblm(
+#ifdef NhlNeedProto
+	NhlWorkspace	*amap_ws,
+	int		(*ulpr)(float *xcra, 
+			       float *ycra, 
+			       int *mcra, 
+			       int *iaai, 
+			       int *iagi, 
+			       int *nogi),
+	char		*entry_name
+#endif
+);
+
+
+extern NhlErrorTypes _NhlMapgrm(
+#ifdef NhlNeedProto
+	NhlWorkspace	*amap_ws,
+	int		(*ulpr)(float *xcra, 
+			       float *ycra, 
+			       int *mcra, 
+			       int *iaai, 
+			       int *iagi, 
+			       int *nogi),
 	char		*entry_name
 #endif
 );

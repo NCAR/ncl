@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.12 1994-07-13 17:27:32 dbrown Exp $
+ *      $Id: ContourP.h,v 1.13 1994-09-08 01:34:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -80,6 +80,18 @@ typedef struct _NhlcnLabelAttrs {
 	NhlJustification	just;
 } NhlcnLabelAttrs;
 
+typedef struct _NhlcnRegionAttrs {
+	NhlBoolean	perim_on;
+	float		perim_thick;
+	int		perim_dpat;
+	int		perim_color;
+	int		gks_pcolor;
+	int		fill_color;
+	int		gks_fcolor;
+	int		fill_pat;
+	float		fill_scale;
+} NhlcnRegionAttrs;
+	
 typedef struct _NhlContourDataDepLayerPart{
 	/* Public resources	*/
 
@@ -112,8 +124,9 @@ typedef struct _NhlContourLayerPart {
 	float		max_level_val;
 	NhlBoolean	llabel_interval_set;
 	int		llabel_interval;
-	NhlBoolean	delay_labels;
-	NhlBoolean	delay_lines;
+	NhlDrawOrder	label_order;
+	NhlDrawOrder	line_order;
+	NhlDrawOrder	fill_order;
 
         NhlcnLabelScalingMode	label_scaling_mode;
         float		label_scale_value;
@@ -153,6 +166,7 @@ typedef struct _NhlContourLayerPart {
 	NhlBoolean	low_use_high_attrs;
 	NhlBoolean	high_use_line_attrs;
 	NhlBoolean	constf_use_info_attrs;
+	NhlcnHighLowLabelOverlapMode	high_low_overlap;
 
 	NhlcnLabelAttrs 	line_lbls;
 	NhlcnLabelAttrs 	high_lbls;
@@ -163,6 +177,10 @@ typedef struct _NhlContourLayerPart {
 	NhlString		constf_string; /* before substitution */
 	NhlcnLabelAttrs 	constf_lbl;
 	NhlAnnotationRec	constf_lbl_rec;
+
+	NhlcnRegionAttrs	missing_val;
+	NhlcnRegionAttrs	grid_bound;
+	NhlcnRegionAttrs	out_of_range;
 
 	NhlAnnotationDisplayMode	display_labelbar;
 	NhlAnnotationDisplayMode	display_legend;
@@ -195,7 +213,9 @@ typedef struct _NhlContourLayerPart {
 
 	/* Private Fields */
 
-        NhlTransDat	*trans_dat;
+        NhlTransDat	*predraw_dat;
+        NhlTransDat	*draw_dat;
+        NhlTransDat	*postdraw_dat;
 	NhlBoolean	new_draw_req;
 
 	NhlLayer	overlay_object;

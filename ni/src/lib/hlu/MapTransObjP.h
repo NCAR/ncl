@@ -1,5 +1,5 @@
 /*
- *      $Id: MapTransObjP.h,v 1.4 1994-06-24 00:39:45 dbrown Exp $
+ *      $Id: MapTransObjP.h,v 1.5 1994-09-08 01:34:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,12 @@
 #include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/TransObjP.h>
 #include <ncarg/hlu/MapTransObj.h>
+
+/* read-only private resource used by the MapPlot to find out if the
+ * trans obj has changed.
+ */
+
+#define NhlNmpTransChanged	".mpTransChanged"
 
 typedef struct _NhlMapTransObjLayerPart{
 
@@ -61,13 +67,13 @@ typedef struct _NhlMapTransObjLayerPart{
 	float		bottom_window;
 	float		top_window;
 
-	float	lambert_parallel_1;
-	float	lambert_parallel_2;
-	float	lambert_meridian;
-	float	satellite_dist;
-	float	satellite_angle_1;
-	float	satellite_angle_2;
-	int	elliptical_boundary;
+	float		lambert_parallel_1;
+	float		lambert_parallel_2;
+	float		lambert_meridian;
+	float		satellite_dist;
+	float		satellite_angle_1;
+	float		satellite_angle_2;
+	NhlBoolean	elliptical_boundary;
 
 	char	*rect_limit_type;
 	float	*rect_limit_1;
@@ -75,7 +81,12 @@ typedef struct _NhlMapTransObjLayerPart{
 	float	*rect_limit_3;
 	float	*rect_limit_4;
 
+	/* Private resources */
+
+	NhlBoolean trans_changed;
+
 	/* Private Fields */
+
 	float	aspect;
 	float	map_pos_l;
 	float	map_pos_r;
@@ -86,6 +97,7 @@ typedef struct _NhlMapTransObjLayerPart{
 	float 	ut;
 	float	ub;
 	NhlBoolean updated;
+
 }NhlMapTransObjLayerPart;
 
 typedef struct _NhlMapTransObjLayerRec {

@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.19 1994-07-12 20:52:42 boote Exp $
+ *      $Id: Overlay.c,v 1.20 1994-09-08 01:34:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1080,7 +1080,8 @@ static NhlErrorTypes OverlaySetValues
  * If the transformation has changed the annotation objects associated 
  * with member overlay plots need to be updated.
  */
-	if ((ovp->x_log != oovp->x_log) ||
+	if (ovp->update_req ||
+	    (ovp->x_log != oovp->x_log) ||
 	    (ovp->y_log != oovp->y_log) ||
 	    (ovp->x_min != oovp->x_min) ||
 	    (ovp->y_min != oovp->y_min) ||
