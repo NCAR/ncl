@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rasview.m,v 1.9 1993-05-04 22:04:24 haley Exp $
+.\"	$Id: rasview.m,v 1.10 1993-11-02 22:14:37 clyne Exp $
 .\"
 .TH RASVIEW 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
@@ -18,8 +18,11 @@ rasview \- Raster file previewer for the X Window System.
 .B \-quiet
 ] [
 .B \-Version
-]
+] [
 .I file.ext
+|
+.B -
+]
 
 .SH DESCRIPTION
 .LP
@@ -97,6 +100,9 @@ Operate in quiet mode.
 .TP
 .B \-Version
 Print the version number and then exit.
+.TP
+.B \-
+Read rasterfile from standard input (-ifmt option required).
 .SH "SEE ALSO"
 .BR ctrans (1NCARG),
 .BR rascat (1NCARG),
