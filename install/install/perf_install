@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: perf_install,v 1.4 1993-05-25 19:39:20 clyne Exp $
+#      $Id: perf_install,v 1.5 1993-06-23 00:23:42 clyne Exp $
 #
 #########################################################################
 #									#
@@ -68,8 +68,18 @@ else
 	exit 1
 endif
 
-set instbls = ("$bin_path" "$inc_path" "$lib_path" "$man_path");
-set tars = ("BIN.TAR" "INCLUDE.TAR" "LIB.TAR" "MAN.TAR")
+set instbls = ("$bin_path" "$inc_path" "$lib_path" "$man_path")
+
+#
+#	AGGGGGGGH!!!  DEC and HP systems map CD-ROM HSF file names into
+#	caps. Sun, SGI, and IBM systems map names into all lower case.
+#
+set utars = ("BIN.TAR" "INCLUDE.TAR" "LIB.TAR" "MAN.TAR")
+set ltars = ("bin.tar" "include.tar" "lib.tar" "man.tar")
+#
+# upper case by default
+#
+set tars = ($utars)
 
 if ("$bin_path" != "/dev/null") then
 	set bin_line = "	Executables	$bin_path"
@@ -160,19 +170,23 @@ case	"cdrom":
 		breaksw
 
 	case	"AIX_RS6000"
-		set cd_system = "AIX_R6K"
+		set cd_system = "aix_r6k"
+		set tars = ($ltars)
 		breaksw
 
 	case	"SunOS_sun4"
-		set cd_system = "SUNOS_S4"
+		set cd_system = "sunos_s4"
+		set tars = ($ltars)
 		breaksw
 
 	case	"SunOS_sun3"
-		set cd_system = "SUNOS_S3"
+		set cd_system = "sunos_s3"
+		set tars = ($ltars)
 		breaksw
 
 	case	"Solaris_sun4"
-		set cd_system = "SOLARIS"
+		set cd_system = "solaris"
+		set tars = ($ltars)
 		breaksw
 
 	case	"ULRTIX_RISC"
@@ -180,7 +194,8 @@ case	"cdrom":
 		breaksw
 
 	case	"IRIX_IP"
-		set cd_system = "IRIX_IP"
+		set cd_system = "irix_ip"
+		set tars = ($ltars)
 		breaksw
 
 	case	"UNICOS_YMP"
