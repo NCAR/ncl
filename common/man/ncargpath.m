@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargpath.m,v 1.3 1995-02-16 15:15:50 haley Exp $
+.\"	$Id: ncargpath.m,v 1.4 1995-05-23 21:38:42 haley Exp $
 .\"
 .TH NCARGPATH 8NCARG "November 1994" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -52,7 +52,7 @@ Directory where NCAR Graphics libraries are installed.
 .IP "man" 18
 Directory where NCAR Graphics man pages are installed.
 .IP "ncarg" 18
-Root directory where NCAR Graphics examples, databases resource files, etc.
+Root directory where NCAR Graphics examples, databases, resource files, etc.
 are installed.
 .IP "nclex" 18
 Directory where NCAR Graphics NCL examples are installed (only on SGIs
