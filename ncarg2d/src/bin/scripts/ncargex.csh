@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.57 1994-02-23 22:41:41 haley Exp $
+#   $Id: ncargex.csh,v 1.58 1994-03-28 21:24:39 haley Exp $
 #
 
 #********************#
@@ -933,11 +933,11 @@ switch ($name)
 #***************************************************#
     case fgke01:
     case fgke04:
-        echo "    This example is interactive and can only be executed if"
-        echo "    you have X running and have your DISPLAY environment"
-        echo "    variable set properly.  It will create an X11 window"
-        echo "    that you must click on with your mouse to advance the"
-        echo "    frame(s)."
+        echo "NOTE: This example is interactive and can only be executed if"
+        echo "      you have X running and have your DISPLAY environment"
+        echo "      variable set properly.  It will create an X11 window"
+        echo "      that you must click on with your mouse to advance the"
+        echo "      frame(s)."
         echo ""
     breaksw
 endsw
@@ -1013,8 +1013,11 @@ if (! $?NoRunOption) then
         case ccpcff:
         case tcolcv:
         case fcce02:
+            echo ""
+            echo "NOTE: This example is for testing purposes only."
+            echo "      No metafile will produced."
+            echo ""
             ./$name
-            echo "No metafile produced"
         breaksw
         default:
             ncargrun -o $name.ncgm $name
