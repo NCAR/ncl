@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.19 1992-09-17 18:19:38 don Exp $
+ *	$Id: raster.c,v 1.20 1992-10-02 16:29:22 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -769,11 +769,11 @@ int RasterGetValues(ras, va_alist)
 
 		if (!strcmp(resource, NrtNformatName)) {
 			svalue = va_arg(ap, char **);
-			*svalue = strdup(ras->format);
+			*svalue = NmuStrdup(ras->format);
 		}
 		else if (!strcmp(resource, NrtNformatDesc)) {
 			svalue = va_arg(ap, char **);
-			*svalue = strdup(_RasterGetFormatDesc(ras->format));
+			*svalue = NmuStrdup(_RasterGetFormatDesc(ras->format));
 		}
 		else {
 			(void) ESprintf(RAS_E_UNKNOWN_RESOURCE,
