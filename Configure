@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.15 2000-09-13 15:00:28 haley Exp $
+#      $Id: Configure,v 1.16 2002-02-22 05:10:09 haley Exp $
 #
 #########################################################################
 #									#
@@ -560,22 +560,6 @@ if ($?verbose_option) then
 endif
 
 #
-# X stuff - ctrans/ictrans
-#
-echo ""
-echo "Build X support into ctrans/ictrans? ($buildxlibstuff)"
-echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
-set answer="$<"
-if ("$answer" == "q") goto cleanup
-if ("$answer" != "") then
-  if ("$answer" != "$buildxlibstuff") then
-     set buildxlibstuff = $answer
-     set newbuildxlibstuff
-     set altered
-  endif
-endif
-
-#
 # HDF
 #
 if ($?verbose_option) then
@@ -592,8 +576,8 @@ if ($?verbose_option) then
 endif
 
 echo ""
-echo "Build HDF support into raster library? ($buildhdf)"
-echo "(requires the external library 'libdf.a') "
+echo "Build HDF support (optional) into raster library? ($buildhdf)"
+echo "(requires the external HDF libraries available from http://hdf.ncsa.uiuc.edu/) "
 echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
 set answer="$<"
 if ("$answer" == "q") goto cleanup
@@ -802,21 +786,11 @@ endif
 
 echo "" >> Site.local
 
-if ($?newbuildxlibstuff) then
-	if ("$buildxlibstuff" == "y") then
-		echo "#define BuildXlibDependentCode TRUE" >> Site.local
-	else
-		echo "#define BuildXlibDependentCode FALSE" >> Site.local
-	endif
-endif
-
 if ($?newbuildhdf) then
 	if ("$buildhdf" == "y") then
 		echo "#define BuildRasterHDF TRUE" >> Site.local
 	else
 		echo "#define BuildRasterHDF FALSE" >> Site.local
-		echo "#define HDFlib" >> Site.local
-
 	endif
 endif
 echo "" >> Site.local
