@@ -1,5 +1,5 @@
 C
-C $Id: mdrgdi.f,v 1.2 2001-11-02 22:37:16 kennison Exp $
+C $Id: mdrgdi.f,v 1.3 2001-11-16 00:27:01 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -22,26 +22,36 @@ C USA.
 C
       SUBROUTINE MDRGDI (DINM)
 C
-C This is a user-replaceable routine that returns the name of the
-C directory in which the RANGS/GSHHS data files have been placed.
+C This routine is expected to return the name of the directory in which
+C the RANGS/GSHHS data files have been placed.
 C
         CHARACTER*(*) DINM
 C
-C A user version of this routine should have the following statement
-C commented out or removed:
+C The pathname for the directory is obtained from the NCAR Graphics
+C routine GNGPAT, which examines various environment variables and
+C returns a value for DINM, as follows:
 C
-        CALL SETER ('MDRGDI - REPLACE ME - RETURN NAME OF DIRECTORY CONT
-     +AINING DATA',1,1)
+C   Environment variable set:   Value returned in DINM:
+C   -------------------------   ------------------------------------
+C   NCARG_RANGS                 $NCARG_RANGS
+C   NCARG_DATABASE              $NCARG_DATABASE/rangs
+C   NCARG_NCARG                 $NCARG_NCARG/database/rangs
+C   NCARG_LIB                   $NCARG_LIB/ncarg/database/rangs
+C   NCARG_ROOT                  $NCARG_ROOT/lib/ncarg/database/rangs
 C
-C If the data files are in the directory from which you're running,
-C uncomment the following statement:
+C (A user could also elect to supply his or her own version of MDRGDI,
+C in which the value of DINM is set directly.)
 C
-        DINM='.'
+        CALL GNGPAT (DINM,'rangs',ISTA)
 C
-C If the data files are in the directory "/tmp/user-name", uncomment and
-C modify the following statement appropriately:
+C If the status parameter is anything other than -1, we have the value
+C we need; otherwise, log an error and return.
 C
-C       DINM='/tmp/user-name'
+        IF (ISTA.EQ.-1) THEN
+          CALL SETER ('MDRGDI - REPLACE ME - RETURN NAME OF DIRECTORY CO
+     +NTAINING DATA',1,1)
+          DINM='.'
+        END IF
 C
 C Done.
 C
