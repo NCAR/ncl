@@ -1,5 +1,5 @@
 /*
- *	$Id: c_fcover.c.sed,v 1.1 1994-05-26 14:36:14 haley Exp $
+ *	$Id: c_fcover.c.sed,v 1.2 1994-05-26 21:34:11 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -147,7 +147,7 @@ main()
  */
 	for( j=NSIZE; j >= NSIZE-NROWS+1; j-- ) {
 		for( i = 1; i <= MSIZE; i++ ) {
-            if (i % ithin[NSIZE-j+1] != 0) {
+            if (i % ithin[NSIZE-j] != 0) {
 				u[j-1][i-1] = -9999.0;
 			}
 		}
