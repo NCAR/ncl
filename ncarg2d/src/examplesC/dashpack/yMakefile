@@ -1,0 +1,19 @@
+#
+#	$Id: yMakefile,v 1.1 1994-08-29 15:26:14 haley Exp $
+#
+
+SED_SRCS = c_tdshpk.c
+
+GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
+
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+CleanFilesTarget($(SED_SRCS))
+
+#
+# Files containing C functions that are called from FORTRAN or that have to
+# be modified to include a macro from the configuration file.
+#
+
+c_tdshpk.c: c_tdshpk.c.sed Makefile
+	@-$(RM) $@
+	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ iand ior ishift
