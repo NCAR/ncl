@@ -1,5 +1,5 @@
 /*
- *      $Id: filepage.c,v 1.3 1997-06-23 21:06:24 dbrown Exp $
+ *      $Id: filepage.c,v 1.4 1997-06-27 07:20:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -141,6 +141,7 @@ NgGetFileRefPage
                 pdp = NewFileRefPage(go,pane);
         if (! pdp)
                 return NULL;
+        page->pdata = pdp;
         
         if (pdp->dl)
                 NclFreeDataList(pdp->dl);

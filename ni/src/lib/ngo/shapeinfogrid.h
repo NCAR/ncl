@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.h,v 1.2 1997-06-06 03:14:54 dbrown Exp $
+ *      $Id: shapeinfogrid.h,v 1.3 1997-06-27 07:20:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -60,6 +60,7 @@ typedef struct _NgShapeInfoGrid
         Dimension	height;
         int		selected_dim;
         NhlBoolean	synchro_step;
+        int		edit_row;
         NgShapeNotify	shape_notify;
         NgDimSelectNotify dim_select_notify;
         NhlPointer	notify_data;
@@ -118,5 +119,9 @@ NhlErrorTypes NgShapeInfoGridSynchroStepMode
         NhlBoolean		on
         );
 
+void NgSetShapeInfoGridSetFocusCell
+(
+        NgShapeInfoGrid		*shape_info_grid
+        );
 
 #endif	/* _NG_SHAPEINFOGRID_H */

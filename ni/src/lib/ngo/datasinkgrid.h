@@ -1,5 +1,5 @@
 /*
- *      $Id: datasinkgrid.h,v 1.1 1997-06-23 21:08:25 dbrown Exp $
+ *      $Id: datasinkgrid.h,v 1.2 1997-06-27 07:20:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -63,7 +63,7 @@ NhlErrorTypes NgUpdateDataSinkGrid
 
 void NgDestroyDataSinkGrid
 (
-        NgDataSinkGrid		*attr_info_grid
+        NgDataSinkGrid		*data_sink_grid
         );
         
 

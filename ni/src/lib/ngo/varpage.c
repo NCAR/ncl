@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.4 1997-06-23 21:06:29 dbrown Exp $
+ *      $Id: varpage.c,v 1.5 1997-06-27 07:20:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -244,7 +244,6 @@ static void ShaperToggleCB
                 rec->shaper->go = page->go;
                 rec->shaper->parent = pdp->form;
                 rec->shaper->shaper = NULL;
-                rec->shaper->pdata = NULL;
                 rec->shaper->apply = NULL;
                 rec->shaper->start = rec->start;
                 rec->shaper->finish = rec->finish;
@@ -255,6 +254,7 @@ static void ShaperToggleCB
                 rec->shaper->qfile = page->qfile;
                 rec->shaper->geo_notify = AdjustVarPageGeometry;
                 rec->shaper->pdata = (NhlPointer) page;
+                rec->shaper->tgl_coord = -1;
                 rec->shaper->output_notify = VarPageOutputNotify;
                 
                 NgDoShaper(rec->shaper);
@@ -386,12 +386,17 @@ DeactivateVarPage
 void InitializeDimInfo
 (
         brVarPageRec		*rec,
-        NclApiDataList		*dl
+        brVarPageRec		*copy_rec,
+        NclApiDataList		*dl,
+        NclApiDataList		*copy_dl
         )
 {
         NclApiVarInfoRec	*vinfo = dl->u.var;
+        NhlBoolean		do_copy;
         int i;
-        
+
+        do_copy = copy_rec && vinfo->n_dims == copy_dl->u.var->n_dims ?
+                True : False;
         if (rec->start)
                 NhlFree(rec->start);
         rec->start = NhlMalloc(sizeof(long)*vinfo->n_dims);
@@ -402,6 +407,15 @@ void InitializeDimInfo
                 NhlFree(rec->stride);
         rec->stride = NhlMalloc(sizeof(long)*vinfo->n_dims);
 
+        if (do_copy) {
+                memcpy(rec->start,copy_rec->start,
+                       sizeof(long)*vinfo->n_dims);
+                memcpy(rec->finish,copy_rec->finish,
+                       sizeof(long)*vinfo->n_dims);
+                memcpy(rec->stride,copy_rec->stride,
+                       sizeof(long)*vinfo->n_dims);
+                return;
+        }
         for (i = 0; i<vinfo->n_dims; i++) {
                 rec->start[i] = 0;
                 rec->finish[i] = 0;
@@ -413,7 +427,6 @@ void InitializeDimInfo
                 rec->finish[vinfo->n_dims-2] = 
 			vinfo->dim_info[vinfo->n_dims-2].dim_size - 1;
         }
-        
         return;
 }
 
@@ -465,6 +478,7 @@ NewVarPage
         rec->output = NULL;
         
         pdp->type_rec = (NhlPointer) rec;
+        pdp->pane = pane;
         
 	pdp->form = XtVaCreateManagedWidget
 		("form",xmFormWidgetClass,pane->folder,
@@ -500,7 +514,7 @@ NgGetVarPage
         Dimension		h1,h2;
         Widget			sep;
 	NgVarTree		*copy_vartree;
-        Widget			label;
+        Widget			label,top_widget;
 
 	if (copy_page) {
 		copy_rec = (brVarPageRec *) copy_page->pdata->type_rec;
@@ -514,6 +528,7 @@ NgGetVarPage
                 pdp = NewVarPage(go,pane);
         if (! pdp)
                 return NULL;
+        page->pdata = pdp;
 
         if (pdp->dl)
                 NclFreeDataList(pdp->dl);
@@ -529,7 +544,8 @@ NgGetVarPage
                           NrmQuarkToString(page->qvar));
         }
         rec = (brVarPageRec *) pdp->type_rec;
-        InitializeDimInfo(rec,pdp->dl);
+        InitializeDimInfo(rec,copy_rec,pdp->dl,
+                          copy_page ? copy_page->pdata->dl : NULL);
 
 /* DimInfoGrid */
         
@@ -586,17 +602,82 @@ NgGetVarPage
                          XmNtopWidget,rec->vartree->tree,
                          NULL);
         }
+        if (copy_rec && copy_rec->shaper_managed) {
+                Boolean state;
+                if (! rec->shaper) {
+                        rec->shaper = NhlMalloc(sizeof(NgShaper));
+                        rec->shaper->go = page->go;
+                        rec->shaper->parent = pdp->form;
+                        rec->shaper->shaper = NULL;
+                        rec->shaper->apply = NULL;
+                        rec->shaper->geo_notify = AdjustVarPageGeometry;
+                        rec->shaper->output_notify = VarPageOutputNotify;
+                }
+                else {
+                        XtManageChild(rec->shaper->frame);
+                }
+                rec->shaper->start = rec->start;
+                rec->shaper->finish = rec->finish;
+                rec->shaper->stride = rec->stride;
+                rec->shaper->new_data = True;
+                rec->shaper->restore = False;
+                rec->shaper->vinfo = pdp->dl->u.var;
+                rec->shaper->qfile = page->qfile;
+                rec->shaper->tgl_coord = copy_rec->shaper->tgl_coord;
+                rec->shaper->pdata = NULL; /* prevent function pointer calls */
+                
+                NgDoShaper(rec->shaper);
+                XtVaSetValues(rec->shaper->frame,
+                              XmNbottomAttachment,XmATTACH_NONE,
+                              XmNrightAttachment,XmATTACH_NONE,
+                              XmNtopOffset,2,
+                              XmNtopAttachment,XmATTACH_WIDGET,
+                              XmNtopWidget,rec->shaper_toggle,
+                              NULL);
+                rec->shaper_managed = True;
+                rec->shaper->shapeinfogrid->edit_row =
+                        copy_rec->shaper->shapeinfogrid->edit_row;
+                NgSetShapeInfoGridSetFocusCell(rec->shaper->shapeinfogrid);
+                state = XmToggleButtonGetState
+                        (copy_rec->shaper->datagrid_toggle);
+                XmToggleButtonSetState
+                        (rec->shaper->datagrid_toggle,state,True);
+                if (state) {
+                        state = XmToggleButtonGetState
+                                (copy_rec->shaper->all_selected_tgl);
+                        XmToggleButtonSetState
+                                (rec->shaper->all_selected_tgl,state,True);
+                }
+                state = XmToggleButtonGetState(copy_rec->shaper->indexes_tgl);
+                XmToggleButtonSetState(rec->shaper->indexes_tgl,state,True);
+                state = XmToggleButtonGetState
+                        (copy_rec->shaper->synchro_step_tgl);
+                XmToggleButtonSetState
+                        (rec->shaper->synchro_step_tgl,state,True);
+                rec->new_shape = False;
+                rec->shaper->pdata = (NhlPointer) page;
+                XtVaSetValues(rec->shaper_toggle,
+                              XmNset,True,
+                              NULL);
+        }
 
 /* Data Control and Output */        
         
-        if (! rec->data_ctrl_form) {
+        top_widget = rec->shaper_managed ?
+                rec->shaper->frame : rec->shaper_toggle;
+        if (rec->data_ctrl_form) {
+                XtVaSetValues(rec->data_ctrl_form,
+                              XmNtopWidget,top_widget,
+                              NULL);
+        }
+        else {
                 rec->data_ctrl_form = XtVaCreateManagedWidget
                         ("form",xmFormWidgetClass,pdp->form,
                          XmNbottomAttachment,XmATTACH_NONE,
                          XmNrightAttachment,XmATTACH_NONE,
                          XmNtopOffset,4,
                          XmNtopAttachment,XmATTACH_WIDGET,
-                         XmNtopWidget,rec->shaper_toggle,
+                         XmNtopWidget,top_widget,
                          NULL);
 
                 rec->datagrid_toggle = XtVaCreateManagedWidget
@@ -637,6 +718,7 @@ NgGetVarPage
 /* Data Grid */
         
         if (copy_rec && copy_rec->datagrid_managed) {
+                int start_col,start_row;
                 if (! rec->datagrid) {
                         rec->datagrid = NgCreateDataGrid
                                 (page->go,pdp->form,
@@ -653,8 +735,18 @@ NgGetVarPage
                                  page->qfile,pdp->dl->u.var,
                                  rec->start,rec->finish,rec->stride);
                 XtManageChild(rec->datagrid->grid);
+                XtVaGetValues(copy_rec->datagrid->grid,
+                              XmNscrollColumn,&start_col,
+                              XmNscrollRow,&start_row,
+                              NULL);
+                XtVaSetValues(rec->datagrid->grid,
+                              XmNscrollColumn,start_col,
+                              XmNscrollRow,start_row,
+                              NULL);
                 rec->datagrid_managed = True;
                 rec->new_data = False;
+
+                              
                 XtVaSetValues(rec->datagrid_toggle,
                               XmNset,True,
                               NULL);
@@ -673,5 +765,7 @@ NgGetVarPage
                       XmNvalueChangedCallback,ShaperToggleCB,page);
 
         pdp->in_use = True;
+        AdjustVarPageGeometry((NhlPointer)page);
+        
 	return pdp;
 }

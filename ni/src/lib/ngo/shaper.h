@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.h,v 1.3 1997-06-23 21:06:28 dbrown Exp $
+ *      $Id: shaper.h,v 1.4 1997-06-27 07:20:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,7 @@
 
 #include <ncarg/ngo/browse.h>
 #include <ncarg/ngo/datagrid.h>
+#include <ncarg/ngo/shapeinfogrid.h>
 
 typedef void (*NgShapeApply)(
 #if     NhlNeedProto
@@ -42,7 +43,13 @@ typedef struct _NgShaper {           /* shaper interface struct */
 	NgGO		go;
 	Widget		parent;
         Widget		frame;
+        Widget		datagrid_toggle;
+	Widget		all_selected_tgl;
         NgDataGrid	*datagrid;
+        NgShapeInfoGrid	*shapeinfogrid;
+	Widget		indexes_tgl;
+	Widget		synchro_step_tgl;
+        int		tgl_coord;
 	void		*shaper;
 	NrmQuark	qfile;
 	NclApiVarInfoRec  *vinfo;

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.3 1997-06-24 15:00:02 dbrown Exp $
+ *      $Id: hlupage.c,v 1.4 1997-06-27 07:20:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -473,6 +473,91 @@ static void AutoUpdateCB
         
         return;
 }
+static void
+CopyVarData
+(
+        NgVarPageOutput **to_data,
+        NgVarPageOutput *from_data
+        )
+{
+        if (! from_data) {
+                if (*to_data) {
+                        if ((*to_data)->start)
+                                NhlFree((*to_data)->start);
+                        if ((*to_data)->finish)
+                                NhlFree((*to_data)->finish);
+                        if ((*to_data)->stride)
+                                NhlFree((*to_data)->stride);
+                        NhlFree((*to_data));
+                }
+                (*to_data) = NULL;
+                return;
+        }
+        if (! *to_data) {
+                (*to_data) = NhlMalloc(sizeof(NgVarPageOutput));
+                (*to_data)->ndims = 0;
+                (*to_data)->start = NULL;
+                (*to_data)->finish = NULL;
+                (*to_data)->stride = NULL;
+        }
+        if (from_data->ndims > (*to_data)->ndims) {
+                (*to_data)->start = NhlRealloc
+                        ((*to_data)->start,from_data->ndims * sizeof(long));
+                (*to_data)->finish = NhlRealloc
+                        ((*to_data)->finish,from_data->ndims * sizeof(long));
+                (*to_data)->stride = NhlRealloc
+                        ((*to_data)->stride,from_data->ndims * sizeof(long));
+        }
+        (*to_data)->qfile = from_data->qfile;
+        (*to_data)->qvar = from_data->qvar;
+        (*to_data)->ndims = from_data->ndims;
+        (*to_data)->data_ix = from_data->data_ix;
+        memcpy((*to_data)->start,
+               from_data->start,(*to_data)->ndims * sizeof(long));
+        memcpy((*to_data)->finish,
+               from_data->finish,(*to_data)->ndims * sizeof(long));
+        memcpy((*to_data)->stride,
+               from_data->stride,(*to_data)->ndims * sizeof(long));
+
+        return;
+}
+
+static NhlBoolean
+UpdateVarData
+(
+        brHluPageRec	*rec,
+        int 		var_ix,
+        NgVarPageOutput *var_data
+        )
+{
+        NgVarPageOutput *lvar_data;
+        NhlBoolean update = False;
+        int i;
+
+        if (! rec->var_data[var_ix] ||
+            var_data->ndims != rec->var_data[var_ix]->ndims ||
+            var_data->qfile != rec->var_data[var_ix]->qfile ||
+            var_data->qvar != rec->var_data[var_ix]->qvar) {
+                CopyVarData(&rec->var_data[var_ix],var_data);
+                return True;
+        }
+        
+        lvar_data = rec->var_data[var_ix];
+        
+        for (i = 0; i < lvar_data->ndims; i++) {
+                if (lvar_data->start[i] != var_data->start[i] ||
+                    lvar_data->finish[i] != var_data->finish[i] ||
+                    lvar_data->stride[i] != var_data->stride[i]) {
+                        update = True;
+                        break;
+                }
+        }
+        if (update) {
+                CopyVarData(&rec->var_data[var_ix],var_data);
+                return True;
+        }
+        return False;
+}
 
 static void HluPageInputNotify (
         brPage *page,
@@ -491,7 +576,8 @@ static void HluPageInputNotify (
         switch (output_page_type) {
             case _brREGVAR:
             case _brFILEVAR:
-                    rec->var_data[var_data->data_ix] = var_data;
+                    if (! UpdateVarData(rec,var_data->data_ix,var_data))
+                            return;
                     NgUpdateDataSinkGrid
                             (rec->data_sink_grid,page->qvar,pub->data_info);
                     break;
@@ -543,12 +629,31 @@ static void DestroyHluPage
 	NhlPointer data
 )
 {
-	brHluPageRec	*hlu_rec = (brHluPageRec	*)data;
+	brHluPageRec	*hlu_rec = (brHluPageRec *)data;
+        int i,j;
 
         NgDestroyDataSinkGrid(hlu_rec->data_sink_grid);
+
+        if (! hlu_rec->var_data) {
+                NhlFree(data);
+                return;
+        }
         
+        for (i = 0; i < hlu_rec->var_data_count; i++) {
+                if (hlu_rec->var_data[i]) {
+                        NgVarPageOutput *vdata = hlu_rec->var_data[i];
+                        if (vdata->start)
+                                NhlFree(vdata->start);
+                        if (vdata->finish)
+                                NhlFree(vdata->finish);
+                        if (vdata->stride)
+                                NhlFree(vdata->stride);
+                        NhlFree(vdata);
+                }
+        }
+        NhlFree(hlu_rec->var_data);
+                                
         NhlFree(data);
-        
 	return;
 }
 
@@ -611,48 +716,9 @@ static NhlErrorTypes UpdateHluPage
         }
         rec->var_data_count = pub->data_info->n_dataitems;
         
-        if (! rec->data_sink_grid) {
-                rec->data_sink_grid = NgCreateDataSinkGrid
-                        (pdp->form,page->qvar,pub->data_info);
-                XtVaSetValues(rec->data_sink_grid->grid,
-                              XmNbottomAttachment,XmATTACH_NONE,
-                              XmNrightAttachment,XmATTACH_NONE,
-                              NULL);
-        }
         rec->data_sink_grid->dataitems = rec->var_data;
         NgUpdateDataSinkGrid(rec->data_sink_grid,page->qvar,pub->data_info);
 
-        
-        if (! rec->create_update) {
-                rec->create_update = XtVaCreateManagedWidget
-                        ("Create/Update",xmPushButtonGadgetClass,
-                         pdp->form,
-                         XmNtopAttachment,XmATTACH_WIDGET,
-                         XmNtopWidget,rec->data_sink_grid->grid,
-                         XmNrightAttachment,XmATTACH_NONE,
-                         XmNbottomAttachment,XmATTACH_NONE,
-                         NULL);
-        }
-        if (! rec->auto_update) {
-                rec->auto_update = XtVaCreateManagedWidget
-                        ("Auto Update",xmToggleButtonGadgetClass,
-                         pdp->form,
-                         XmNtopAttachment,XmATTACH_WIDGET,
-                         XmNtopWidget,rec->data_sink_grid->grid,
-                         XmNleftAttachment,XmATTACH_WIDGET,
-                         XmNleftWidget,rec->create_update,
-                         XmNrightAttachment,XmATTACH_NONE,
-                         XmNbottomAttachment,XmATTACH_NONE,
-                         NULL);
-        }
-        if (! rec->activated) {
-                rec->activated = True;
-                XtAddCallback(rec->create_update,
-                              XmNactivateCallback,CreateUpdateCB,page);
-                XtAddCallback(rec->auto_update,
-                              XmNvalueChangedCallback,AutoUpdateCB,page);
-        }
-                 
         return NhlNOERROR;
 
 }
@@ -695,6 +761,8 @@ NewHluPage
         rec->var_data = NULL;
         rec->created = False;
         rec->do_auto_update = False;
+        rec->public.data_info = NULL;
+        rec->public.class_name = NULL;
         
         for (i=0; i <  8; i++)
                 rec->data_objects[i] = NrmNULLQUARK;
@@ -715,7 +783,7 @@ NewHluPage
         
         return pdp;
 }
-
+        
 extern brPageData *
 NgGetHluPage
 (
@@ -729,7 +797,7 @@ NgGetHluPage
 	NgBrowsePart		*np = &browse->browse;
         NhlString		e_text;
 	brPageData		*pdp;
-	brHluPageRec		*rec;
+	brHluPageRec		*rec,*copy_rec;
         NrmQuark		*qhlus;
         int			count;
         NhlBoolean		is_hlu = False;
@@ -745,8 +813,7 @@ NgGetHluPage
         NclFree(qhlus);
 
 	if (copy_page) {
-		brHluPageRec *copy_rec = 
-			 (brHluPageRec *) copy_page->pdata->type_rec;
+		copy_rec = (brHluPageRec *) copy_page->pdata->type_rec;
 	}
 	for (pdp = pane->hlu_pages; pdp != NULL; pdp = pdp->next) {
 		if (!pdp->in_use)
@@ -756,10 +823,79 @@ NgGetHluPage
                 pdp = NewHluPage(go,pane,is_hlu);
         if (! pdp)
                 return NULL;
+        page->pdata = pdp;
         
         rec = (brHluPageRec *) pdp->type_rec;
         
+        if (! rec->data_sink_grid) {
+                rec->data_sink_grid = NgCreateDataSinkGrid
+                        (pdp->form,page->qvar,rec->public.data_info);
+                XtVaSetValues(rec->data_sink_grid->grid,
+                              XmNbottomAttachment,XmATTACH_NONE,
+                              XmNrightAttachment,XmATTACH_NONE,
+                              NULL);
+        }
+        if (! rec->create_update) {
+                rec->create_update = XtVaCreateManagedWidget
+                        ("Create/Update",xmPushButtonGadgetClass,
+                         pdp->form,
+                         XmNtopAttachment,XmATTACH_WIDGET,
+                         XmNtopWidget,rec->data_sink_grid->grid,
+                         XmNrightAttachment,XmATTACH_NONE,
+                         XmNbottomAttachment,XmATTACH_NONE,
+                         NULL);
+        }
+        if (! rec->auto_update) {
+                rec->auto_update = XtVaCreateManagedWidget
+                        ("Auto Update",xmToggleButtonGadgetClass,
+                         pdp->form,
+                         XmNtopAttachment,XmATTACH_WIDGET,
+                         XmNtopWidget,rec->data_sink_grid->grid,
+                         XmNleftAttachment,XmATTACH_WIDGET,
+                         XmNleftWidget,rec->create_update,
+                         XmNrightAttachment,XmATTACH_NONE,
+                         XmNbottomAttachment,XmATTACH_NONE,
+                         NULL);
+        }
+        if (! rec->activated) {
+                rec->activated = True;
+                XtAddCallback(rec->create_update,
+                              XmNactivateCallback,CreateUpdateCB,page);
+                XtAddCallback(rec->auto_update,
+                              XmNvalueChangedCallback,AutoUpdateCB,page);
+        }
 	pdp->in_use = True;
+
+        if (! copy_page)
+                return pdp;
+
+        rec->public.class_name = copy_rec->public.class_name;
+        rec->public.data_info = copy_rec->public.data_info;
         
-	return pdp;
+        rec->class = copy_rec->class;
+        rec->created = copy_rec->created;
+        rec->do_auto_update = copy_rec->do_auto_update;
+
+        if (rec->do_auto_update)
+                XtVaSetValues(rec->auto_update,
+                              XmNset,True,
+                              NULL);
+        for (i = 0; i < 8; i++)
+                rec->data_objects[i] = copy_rec->data_objects[i];
+        if (copy_rec->var_data_count > 0) {
+                rec->var_data = NhlRealloc
+                        (rec->var_data,
+                         copy_rec->var_data_count * sizeof(NgVarPageOutput *));
+                for (i = rec->var_data_count; i<copy_rec->var_data_count; i++)
+                        rec->var_data[i] = NULL;
+                rec->var_data_count = copy_rec->var_data_count;
+                for (i = 0; i < rec->var_data_count; i++) {
+                        CopyVarData(&rec->var_data[i],
+                                    copy_rec->var_data[i]);
+                }
+                rec->data_sink_grid->dataitems = rec->var_data;
+                NgUpdateDataSinkGrid
+                        (rec->data_sink_grid,page->qvar,rec->public.data_info);
+        }
+        return pdp;
 }

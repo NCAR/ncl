@@ -1,5 +1,5 @@
 /*
- *      $Id: shaperP.h,v 1.2 1997-06-06 03:14:55 dbrown Exp $
+ *      $Id: shaperP.h,v 1.3 1997-06-27 07:20:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,6 @@
 
 #include <ncarg/ngo/goP.h>
 #include <ncarg/ngo/shaper.h>
-#include <ncarg/ngo/shapeinfogrid.h>
 #include <ncarg/ngo/vcrcontrol.h>
 
 #define DEBUG_SHAPER 0
@@ -35,17 +34,11 @@ typedef struct _NgShaperRec {
         NclApiDataList  *tgl_coord_dlist;
 	NhlBoolean	new_coord;
 	int		coords_alloced;
-	Boolean		*coord_indexes_set;
-        Widget		datagrid_toggle;
-        NgDataGrid	*datagrid;
         NgShapeInfoGrid	*shapeinfogrid;
         NgVcrControl	vcr;
-	Widget		all_selected_tgl;
 	NhlBoolean	selected_only_set;
 	Boolean		*coords_selected_only_set;
-	Widget		indexes_tgl;
 	NhlBoolean	indexes_set;
-	Widget		synchro_step_tgl;
 	NhlBoolean	synchro_step_set;
 	Widget		reverse_tgl;
 	NhlBoolean	new_rev_val;

@@ -1,5 +1,5 @@
 /*
- *      $Id: datasinkgrid.c,v 1.2 1997-06-24 15:00:01 dbrown Exp $
+ *      $Id: datasinkgrid.c,v 1.3 1997-06-27 07:20:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -175,9 +175,6 @@ NhlErrorTypes NgUpdateDataSinkGrid
         
         XmLGridSelectRow(data_sink_grid->grid,0,False);
 
-#if 0        
-        data_sink_grid->height = 6+Row_Height*(nattrs+1)+2*nattrs;
-#endif        
         return NhlNOERROR;
 }
 
@@ -213,16 +210,10 @@ NgDataSinkGrid *NgCreateDataSinkGrid
                  XmNverticalSizePolicy,XmVARIABLE,
                  XmNhorizontalSizePolicy,XmVARIABLE,
                  XmNcolumns,2,
-                 XmNrows,data_sink_rec->n_dataitems,
+                 XmNrows,2,
                  NULL);
         XmLGridAddRows(data_sink_grid->grid,XmHEADING,0,1);
-#if 0        
-        ret = NgUpdateDataSinkGrid(data_sink_grid,qname,data_sink_rec);
-        if (ret < NhlWARNING) {
-                NhlFree(dsp);
-                return NULL;
-        }
-#endif
+        
         return data_sink_grid;
 }
 
