@@ -1,12 +1,12 @@
 C
-C $Id: plchmq.f,v 1.4 1992-11-18 02:14:23 kennison Exp $
+C $Id: plchmq.f,v 1.5 1992-11-19 02:08:54 kennison Exp $
 C
 C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE PLCHMQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
-C This is the medium-quality character-drawing routine.
+C This is the medium-quality character-drawing routine, isn't it?
 C
 C
 C D E C L A R A T I O N S
