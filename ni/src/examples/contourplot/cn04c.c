@@ -1,5 +1,5 @@
 /*
- *      $Id: cn04c.c,v 1.6 2003-02-28 22:19:25 grubin Exp $
+ *      $Id: cn04c.c,v 1.7 2003-04-10 23:39:25 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -296,12 +296,13 @@ void gendat (float *data,int idim,int m,int n,int mlow,int mhgh,float dlow,float
 {
 /*
  * This is a routine to generate test data for two-dimensional graphics
- * routines.  Given an array "DATA", dimensioned "IDIM x 1", it fills
- * the sub-array ((DATA(I,J),I=1,M),J=1,N) with a two-dimensional field
- * of data having approximately "MLOW" lows and "MHGH" highs, a minimum
- * value of exactly "DLOW" and a maximum value of exactly "DHGH".
+ * routines.  Given a linear array "data", of length at least m x n, it fills
+ * the array with a field representing a two-dimensional array stored
+ * in C order of "n" rows and "m" columns.  The array will have
+ * approximately "mlow" lows and "mhgh" highs, a minimum
+ * value of exactly "dlow" and a maximum value of exactly "dhgh".
  *
- * "MLOW" and "MHGH" are each forced to be greater than or equal to 1
+ * "mlow" and "mhgh" are each forced to be greater than or equal to 1
  * and less than or equal to 25.
  *
  * The function used is a sum of exponentials.
