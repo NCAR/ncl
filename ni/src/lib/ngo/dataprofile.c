@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.4 1999-07-30 03:20:48 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.5 1999-08-14 01:32:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -686,6 +686,7 @@ NgVarData NgNewVarData
 	vdata->next = NULL;
 	vdata->rank = vdata->ndims = vdata->dims_alloced = 0;
 	vdata->start = vdata->finish = vdata->stride = NULL;
+	vdata->size = vdata->order_ix = NULL;
 	vdata->dl = NULL;
 	vdata->qfile = vdata->qvar = vdata->qcoord = NrmNULLQUARK;
 	vdata->size_only = False;
@@ -712,6 +713,8 @@ void NgFreeVarData
 		NhlFree(var_data->start);
 		NhlFree(var_data->finish);
 		NhlFree(var_data->stride);
+		NhlFree(var_data->size);
+		NhlFree(var_data->order_ix);
 	}
 	if (var_data->dl)
 		NclFreeDataList(var_data->dl);
@@ -800,8 +803,11 @@ NhlBoolean NgCopyVarData
                 to_var_data->start = NhlRealloc(to_var_data->start,size);
                 to_var_data->finish = NhlRealloc(to_var_data->finish,size);
                 to_var_data->stride = NhlRealloc(to_var_data->stride,size);
+                to_var_data->size = NhlRealloc(to_var_data->size,size);
+                to_var_data->order_ix = NhlRealloc(to_var_data->order_ix,size);
 		if (! (to_var_data->start && 
-		       to_var_data->finish && to_var_data->stride)) {
+		       to_var_data->finish && to_var_data->stride &&
+		       to_var_data->size && to_var_data->order_ix)) {
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return False;
 		}
@@ -811,6 +817,8 @@ NhlBoolean NgCopyVarData
 	memcpy(to_var_data->start,from_var_data->start,size);
 	memcpy(to_var_data->finish,from_var_data->finish,size);
 	memcpy(to_var_data->stride,from_var_data->stride,size);
+	memcpy(to_var_data->size,from_var_data->size,size);
+	memcpy(to_var_data->order_ix,from_var_data->order_ix,size);
 
 	return True;
 }
@@ -880,7 +888,10 @@ extern NhlBoolean NgSetUnknownDataItem
                 vdata->start = NhlRealloc(vdata->start,size);
                 vdata->finish = NhlRealloc(vdata->finish,size);
                 vdata->stride = NhlRealloc(vdata->stride,size);
-		if (! (vdata->start && vdata->finish && vdata->stride)) {
+                vdata->size = NhlRealloc(vdata->size,size);
+                vdata->order_ix = NhlRealloc(vdata->order_ix,size);
+		if (! (vdata->start && vdata->finish && vdata->stride &&
+			vdata->size && vdata->order_ix)) {
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return False;
 		}
@@ -890,6 +901,8 @@ extern NhlBoolean NgSetUnknownDataItem
 		vdata->start[i] = 0;
 		vdata->finish[i] = gen->len_dimensions[i] - 1;
 		vdata->stride[i] = 1;
+		vdata->size[i] = gen->len_dimensions[i];
+		vdata->order_ix[i] = -1;
 	}
 	vdata->size_only = True;
 	vdata->rank = vdata->ndims = gen->num_dimensions;
@@ -1065,8 +1078,12 @@ NhlBoolean NgSetExpressionVarData
 				vdata->start = NhlRealloc(vdata->start,size);
 				vdata->finish = NhlRealloc(vdata->finish,size);
 				vdata->stride = NhlRealloc(vdata->stride,size);
+				vdata->size = NhlRealloc(vdata->size,size);
+				vdata->order_ix = 
+					NhlRealloc(vdata->order_ix,size);
 				if (! (vdata->start && 
-				       vdata->finish && vdata->stride)) {
+				       vdata->finish && vdata->stride &&
+					vdata->size && vdata->order_ix)) {
 					NHLPERROR((NhlFATAL,ENOMEM,NULL));
 					return False;
 				}
@@ -1077,6 +1094,9 @@ NhlBoolean NgSetExpressionVarData
 				vdata->finish[i] = 
 					dl->u.var->dim_info[i].dim_size - 1;
 				vdata->stride[i] = 1;
+				vdata->size[i] = 
+					dl->u.var->dim_info[i].dim_size;
+				vdata->order_ix[i] = -1;
 				if (vdata->rank != dl->u.var->n_dims)
 					vdata->cflags |= _NgRANK_CHANGE;
 				vdata->ndims = vdata->rank = dl->u.var->n_dims;
@@ -1181,14 +1201,18 @@ NhlBoolean NgSetVarData
                 var_data->start = NhlRealloc(var_data->start,size);
                 var_data->finish = NhlRealloc(var_data->finish,size);
                 var_data->stride = NhlRealloc(var_data->stride,size);
+                var_data->size = NhlRealloc(var_data->size,size);
+                var_data->order_ix = NhlRealloc(var_data->order_ix,size);
 		if (! (var_data->start && 
-		       var_data->finish && var_data->stride)) {
+		       var_data->finish && var_data->stride &&
+			var_data->size && var_data->order_ix)) {
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return False;
 		}
 		for (i = var_data->dims_alloced; i < vinfo->n_dims; i++)
 			var_data->start[i] = var_data->finish[i] = 
-				var_data->stride[i] = -1;
+				var_data->stride[i] =  var_data->size[i] =
+				var_data->order_ix[i] = -1;
 
 		var_data->dims_alloced = vinfo->n_dims;
 		var_data->cflags |= _NgSHAPE_CHANGE;
@@ -1203,6 +1227,7 @@ NhlBoolean NgSetVarData
 					vinfo->dim_info[i].dim_size - 1;
 			else
 				var_data->finish[i] = 0;
+			var_data->size[i] = vinfo->dim_info[i].dim_size; 
 			
 		}
 		var_data->cflags |= _NgSHAPE_CHANGE;
@@ -1228,6 +1253,7 @@ NhlBoolean NgSetVarData
 				var_data->finish[i] = finish[ix];
 				var_data->stride[i] = stride[ix];
 			}
+			var_data->size[i] = vinfo->dim_info[i].dim_size;
 		}
 		var_data->cflags |= _NgSHAPE_CHANGE;
 	}
@@ -1241,6 +1267,9 @@ NhlBoolean NgSetVarData
 			memcpy(var_data->start,start,size);
 			memcpy(var_data->finish,finish,size);
 			memcpy(var_data->stride,stride,size);
+		}
+		for (i = 0; i < vinfo->n_dims; i++) {
+			var_data->size[i] = vinfo->dim_info[i].dim_size;
 		}
 
 		if (! var_data->cflags) {

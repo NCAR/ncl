@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.12 1999-07-30 03:20:53 dbrown Exp $
+ *      $Id: graphic.c,v 1.13 1999-08-14 01:32:56 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -390,8 +390,10 @@ static void SetNewSelectedView
 	top_level_count = NgTopLevelViews
 		(wks_state,xwk_id,&top_level_views);
 
-	if (top_level_count <= 1) /* there's only one view */
+	if (top_level_count <= 1) { /* there's only one view */
+		NgSetSelectedXwkView(xwk_wrap_id,NhlNULLOBJID);
 		return;
+	}
 		
 	for (i = 0; i < top_level_count; i++) {
 		if (top_level_views[i] == current_selected_id) {
@@ -458,11 +460,21 @@ NhlErrorTypes DestroyGraphicArray
 			if (! draw_selected_only ||
 			    (draw_selected_only && 
 			     selected_view_id == id_array[i])) {
-				
+				NgViewObj vobj = NULL;
+
 				SetNewSelectedView
 					(wks_state,wkobj->wks_wrap_id,
 					 l->base.wkptr->base.id,id_array[i]);
 				NgClearXwkView(wkobj->wks_wrap_id,id_array[i]);
+				/*
+				 * Turn off the view so that clearing other
+				 * views does not cause this view to be 
+				 * redrawn.
+				 */
+				vobj = NgGetView(wks_state,id_array[i]);
+				if (vobj)
+					vobj->visible = False;
+				
 			}
 		}
 	}

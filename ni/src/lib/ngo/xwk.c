@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.17 1999-07-30 03:21:01 dbrown Exp $
+ *      $Id: xwk.c,v 1.18 1999-08-14 01:32:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -513,6 +513,7 @@ XWkInitialize
 	np->mapped = False;
 	np->xor_gc = NULL;
 	np->graphics = NULL;
+	memset(np->xor_box,0,sizeof(XPoint)*5);
 
 	/*
 	 * Make sure this object is destroyed if the workstation is

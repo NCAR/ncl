@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.c,v 1.6 1999-07-30 03:21:00 dbrown Exp $
+ *      $Id: xinteract.c,v 1.7 1999-08-14 01:32:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -238,7 +238,7 @@ static void XorDrawViewPort(
 		vobj = hdata ? (NgViewObj) hdata->gdata : NULL;
 	}
 
-	if (! vobj) {
+	if (view_id > NhlNULLOBJID && ! vobj) {
 		NgWksState 	wks_state;
 		/*
 		 * The object may already have been deleted so try an
@@ -250,7 +250,24 @@ static void XorDrawViewPort(
 			       NULL);
 	
 		vobj = NgGetView(wks_state,view_id);
-		if (! vobj)
+	}
+	if (! (l && vobj)) {
+		/*
+		 * this object does not exist so the xor viewport must be
+		 * erased
+		 */
+		if (! xwk->xwk.select_rect_vis)
+			return;
+
+		XDrawLines(XtDisplay(xwk->xwk.graphics),
+			   XtWindow(xwk->xwk.graphics),
+			   xwk->xwk.xor_gc,xwk->xwk.xor_box,5,CoordModeOrigin);
+		xwk->xwk.select_rect_vis = False;
+		return;
+	}
+		
+	if (! vobj->visible) {
+		if (! xwk->xwk.select_rect_vis)
 			return;
 	}
 
@@ -260,6 +277,7 @@ static void XorDrawViewPort(
 		   xwk->xwk.xor_gc,xbox,5,CoordModeOrigin);
 
 	xwk->xwk.select_rect_vis = ! erase;
+	memcpy(xwk->xwk.xor_box,xbox,sizeof(XPoint) * 5);
 
 #if DEBUG_XINTERACT
 	fprintf(stderr,
@@ -363,6 +381,10 @@ static NhlBoolean ClearViewBB
 		w = cbbox->p1.x - cbbox->p0.x;
 		h = cbbox->p1.y - cbbox->p0.y;
 		
+#if DEBUG_XINTERACT
+		fprintf(stderr,"clearing %s %d %d %d %d\n",vobj->name,
+			cbbox->p0.x,cbbox->p0.y,w,h);
+#endif
 		XClearArea(dpy,XtWindow(xwk->xwk.graphics),
 			   cbbox->p0.x,cbbox->p0.y,w,h,False);
 		XSync(dpy,False);
@@ -1387,6 +1409,8 @@ extern void NgClearXwkView
 		XorDrawViewPort(xwk,xwk->xwk.selected_view_id,False);
 	}
 	NhlFree(draw_table);
+	XSync(XtDisplay(xwk->xwk.graphics),False);
+
 	return;
 }
 
@@ -1405,14 +1429,18 @@ extern void NgSetSelectedXwkView
 	int view_count,i;
 	NgHluData	hdata;
 
-	if (!(xwk && l))
+	if (!(xwk && l)) {
+		XorDrawViewPort(xwk,NhlNULLOBJID,True);
 		return;
+	}
 
 	hdata = (NgHluData) l->base.gui_data2;
 	vobj = hdata ? (NgViewObj) hdata->gdata : NULL;
 
-	if (!vobj)
+	if (!vobj) {
+		XorDrawViewPort(xwk,NhlNULLOBJID,True);
 		return;
+	}
 
 	if (xwk->xwk.selected_view_id == view_id) {
 		if (vobj->visible && xwk->xwk.select_rect_vis)

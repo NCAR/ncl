@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.1 1999-08-11 23:41:57 dbrown Exp $
+ *      $Id: plotpage.c,v 1.2 1999-08-14 01:32:57 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -758,6 +758,8 @@ static NhlBoolean GetDataObjValue
         NgVarData       vdata;
         NrmQuark qname;
         int i;
+	int id,count;
+	int *id_array;
 
         *value = NULL;
         *type = NrmNULLQUARK;
@@ -775,18 +777,30 @@ static NhlBoolean GetDataObjValue
                 }
                 sprintf(buf,"%s",
                         NrmQuarkToString(vdata->qexpr_var));
+		id = NgNclGetHluObjId(rec->nclstate,buf,&count,&id_array);
+		if (id == NhlNULLOBJID)
+			return False;
                 *value = NhlMalloc(strlen(buf) + 1);
                 strcpy((char *)*value,buf);
                 *type = QString;
+		if (id_array)
+			NhlFree(id_array);
                 return True;
         }
         qname = ditem->vdata->qvar;
         if (! qname)
                 return False;
 
+	id = NgNclGetHluObjId
+		(rec->nclstate,NrmQuarkToString(qname),&count,&id_array);
+	if (id == NhlNULLOBJID)
+			return False;
         *value = NhlMalloc(strlen(NrmQuarkToString(qname)) + 1);
         strcpy((char *)*value,NrmQuarkToString(qname));
         *type = QString;
+
+	if (id_array) 
+		NhlFree(id_array);
 
         return True;
 }

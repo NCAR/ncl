@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.h,v 1.4 1999-07-30 03:20:48 dbrown Exp $
+ *      $Id: dataprofile.h,v 1.5 1999-08-14 01:32:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -83,6 +83,8 @@ typedef struct _NgVarDataRec
         long			*start;
         long			*finish;
         long			*stride;
+	long			*size;
+	long			*order_ix;
         int			data_ix;     /* not sure we need this */
 	NgGO			go;	     /* required for expressions */
 	NhlString		expr_val;    /* sent verbatim to ncl */

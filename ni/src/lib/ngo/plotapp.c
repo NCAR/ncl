@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.1 1999-08-11 23:41:55 dbrown Exp $
+ *      $Id: plotapp.c,v 1.2 1999-08-14 01:32:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -240,7 +240,7 @@ typedef struct _DataTableRec {
 	NhlBoolean	reorder;
 	NclApiDataList	*dl;
 	NhlBoolean	free_dl;
-	NgVarData	vdata;
+	NgVarDataRec	vd_rec;
 } DataTableRec, *DataTable;
 
 static DataTable Data_Table = NULL;
@@ -2060,9 +2060,8 @@ static NhlBoolean MatchDimensions
 	NhlBoolean	matched[5] = { False, False, False, False, False };
 	int		i,j,ix;
 	NclApiVarInfoRec *vinfo;
-	NgVarData	vd;
+
 	vinfo = dt->dl->u.var;
-	vd = dt->vdata;
 
 	for (datares = appdata->datares; datares; datares = datares->next) {
 		if (datares->is_coord && 
@@ -2082,12 +2081,6 @@ static NhlBoolean MatchDimensions
 				if (! matched[j] && 
 				    vinfo->dim_info[j].dim_quark > 
 				    NrmNULLQUARK) {
-#if 0
-					if (abs((vd->finish[j] - 
-						 vd->start[j]) / vd->stride[j])
-					    <= MIN_ELEMENTS)
-						continue;
-#endif
 					if (PerlMatch
 					    (patterns[i],NrmQuarkToString
 					     (vinfo->dim_info[j].dim_quark))) {
@@ -2140,18 +2133,19 @@ static NhlBoolean MatchAttributes
 
 static NhlBoolean GetInfo
 (
-	DataTable dt
+	DataTable dt,
+	NgVarData vdata
 )
 {
-			
+
 	if (dt->dl) {
 		if (dt->free_dl) {
 			NclFreeDataList(dt->dl);
 		}
 		dt->dl = NULL;
 	}
-	if (dt->vdata->dl) {
-		dt->dl = dt->vdata->dl;
+	if (vdata->dl) {
+		dt->dl = vdata->dl;
 		dt->free_dl = False;
 	}
 	else if (dt->qfile && dt->qvar) {
@@ -2168,7 +2162,7 @@ static NhlBoolean GetInfo
 	}
 	return True;
 }
-static NhlBoolean MatchVarData
+static NgVarData MatchVarData
 (
 	PlotApp		papp,
 	AppData		appdata,
@@ -2201,8 +2195,7 @@ static NhlBoolean MatchVarData
 			continue;
 		dt->qfile = vdata[i]->qfile;
 		dt->qvar = vdata[i]->qvar;
-		dt->vdata = vdata[i];
-		if (! GetInfo(dt)) {
+		if (! GetInfo(dt,vdata[i])) {
 			dt->qvar = NrmNULLQUARK;
 			return False;
 		}
@@ -2212,12 +2205,12 @@ static NhlBoolean MatchVarData
 			continue;
 		if (! MatchAttributes(appdata,dcount))
 			continue;
-		return True;
+		return vdata[i];
 	}
-	return False;
+	return NULL;
 }
 
-static NhlBoolean MatchVar
+static NgVarData MatchVar
 (
 	PlotApp		papp,
 	AppData		appdata,
@@ -2225,7 +2218,7 @@ static NhlBoolean MatchVar
 	NrmQuark	*qvars
 )
 {
-	return False;
+	return NULL;
 }
 
 static NgVarData MatchVarFromFile
@@ -2236,7 +2229,7 @@ static NgVarData MatchVarFromFile
 	NrmQuark	*qfiles
 )
 {
-	return False;
+	return NULL;
 }
 
 static NhlBoolean MatchCoordAttr
@@ -2316,8 +2309,8 @@ static void WriteCoords
 		cp = &buf[strlen(buf)];
 		if (i == dt->dim_ix[coord_ix]) {
 			if (vd->start[i] == 0 &&
-			    vd->finish[i] == vinfo->dim_info[i].dim_size - 1 &&
-			    vd->stride[i] == 1) {
+			     vd->finish[i] == vinfo->dim_info[i].dim_size - 1 
+			     && vd->stride[i] == 1) {
 					sprintf(cp,":,");
 			}
 			else {
@@ -2395,14 +2388,12 @@ static void WriteReorderedCoords
 				   NrmQuarkToString(dt->qvar)));
 			return;
 		}
- 		if (vd->set_state == _NgDEFAULT_SHAPE || 
-		    (vd->start[ix] == 0 &&
+ 		if (vd->start[ix] == 0 &&
 		     vd->finish[ix] == vinfo->dim_info[ix].dim_size - 1 &&
-		     vd->stride[ix] == 1)) {
+		     vd->stride[ix] == 1) {
 			sprintf(cp,"%s | :,",NrmQuarkToString(qdim));
 		}
 		else {
-			/* well now we need to go back to the real index */
 			sprintf(cp,"%s | %d:%d:%d,",NrmQuarkToString(qdim),
 				vd->start[ix],vd->finish[ix],vd->stride[ix]);
 		}
@@ -2440,7 +2431,7 @@ static void ReplaceDataSymRef
 	}
 		
 	vinfo = dt->dl->u.var;
-	vd = dt->vdata;
+	vd = &dt->vd_rec;
 	switch (sref->rtype) {
 	case _NgREF_ATTR:
 		/* first see if the attribute named is actually an
@@ -2542,10 +2533,9 @@ static void ReplaceDataSymRef
 					NrmQuarkToString(dt->qvar),
 					NrmQuarkToString(qdim));
 			}
-			if (vd->set_state == _NgDEFAULT_SHAPE ||
-			    (vd->start[i] == 0 && 
-			     vd->finish[i] == vinfo->dim_info[i].dim_size - 1 
-			     && vd->stride[i] == 1)) {
+			if (vd->start[i] == 0 && 
+			    vd->finish[i] == vinfo->dim_info[i].dim_size - 1 &&
+			    vd->stride[i] == 1) {
 				sprintf(&tbuf[strlen(tbuf)],"(:)");
 			}
 			else {
@@ -2724,36 +2714,6 @@ static void InitializeDataTable
 	memset(Data_Table,(char) 0,count * sizeof(DataTableRec));
 	return;
 }
-static void SetDataCoordState
-(
-	int count
-)
-{
-	int i,j;
-
-	for (i = 0; i < count; i++) {
-		AppData appdata = Data_Table[i].appdata;
-		
-		if (! appdata)
-			continue;
-		Data_Table[i].reorder = False;
-
-		/*
-		 * Dimensions in the Data_Table are ordered from fast to
-		 * slow (opposite of ncl), so reordering is required if 
-		 * dimensions in the list are not monotonically decreasing
-		 */
-		for (j = 1; j < appdata->ndims; j++) {
-			if (Data_Table[i].dim_ix[j] > 
-			    Data_Table[i].dim_ix[j-1]) {
-				Data_Table[i].reorder = True;
-				break;
-			}
-		}
-	}
-
-	return;
-}
 
 NhlBoolean NgPlotAppDataUsable
 (
@@ -2857,6 +2817,72 @@ NhlErrorTypes NgUpdatePlotAppDataProfile
 	return NhlNOERROR;
 }
 
+static NhlBoolean DimReorderRequired
+(
+	DataTable dt
+)
+{
+	int i;
+
+	for (i = 1; i < dt->appdata->ndims; i++) {
+		if (dt->dim_ix[i] > dt->dim_ix[i-1])
+			return True;
+	}
+	return False;
+}
+
+static void TransferVarData
+(
+	DataTable dt,
+	NgVarData vdata
+)
+{
+	NclApiVarInfoRec *vinfo = dt->dl->u.var;
+	int i,j,coord_ix = dt->appdata->ndims - 1;
+	NgVarData vd = &dt->vd_rec;
+
+	dt->reorder = DimReorderRequired(dt);
+
+	NgCopyVarData(vd,vdata);
+/*
+ * If the vdata has a default shape, ignore the shape set in the vdata
+ * and base the shape on the expected dimension names.
+ * Otherwise the vdata shape prevails.
+ */
+
+	if (vdata->set_state != _NgDEFAULT_SHAPE)
+		return;
+
+	if (! dt->reorder) {
+		for (i = 0; i < vinfo->n_dims; i++) {
+			vd->start[i] = 0;
+			vd->stride[i] = 1;
+			if (i != dt->dim_ix[coord_ix]) {
+				vd->finish[i] = vd->start[i];
+				continue;
+			}
+			vd->finish[i] = vinfo->dim_info[i].dim_size - 1;
+			coord_ix--;
+		}
+		return;
+	}
+	for (i = 0; i < vinfo->n_dims; i++) {
+		vd->start[i] = 0;
+		vd->stride[i] = 1;
+
+		for (j = 0; j < dt->appdata->ndims; j++) {
+			if (i == dt->dim_ix[j])
+				break;
+		}
+		if (j == dt->appdata->ndims) {
+			/* not found */
+			vd->finish[i] = vd->start[i];
+			continue;
+		}
+		vd->finish[i] = vinfo->dim_info[i].dim_size - 1;
+	}
+}
+
 /*
  * This function is designed to set up the data profile given a variety of
  * kinds of input. If NgVarData records are supplied, they are used first to
@@ -2883,6 +2909,7 @@ NhlErrorTypes NgSetPlotAppDataVars
 	AppData		data;
 	int		dcount;
 	int		init_plot_data = False;
+	NgVarData	vdata;
 	
 
 	if (! go)
@@ -2913,30 +2940,31 @@ NhlErrorTypes NgSetPlotAppDataVars
 	for (data = papp->data; data; data = data->next) {
 		NgPlotData pdata = &dprof->plotdata[dcount];
 		DataTable dt = &Data_Table[dcount];
+		NhlBoolean free = False;
 
 		if (init_plot_data)
 			InitializePlotDataRecs
 				(pdata,data->qdataname,data->description,
 				 data->required,data->ndims);
+		vdata = MatchVarData(papp,data,dcount,varcount,vardata);
 
-		if (MatchVarData(papp,data,dcount,varcount,vardata) ||
-		    MatchVar(papp,data,dcount,qvars) ||
-		    MatchVarFromFile(papp,data,dcount,qfiles)) {
-			;
+		if (! vdata) {
+			vdata = MatchVar(papp,data,dcount,qvars);
+			free = True;
+		}
+		if (! vdata) {
+			vdata = MatchVarFromFile(papp,data,dcount,qfiles);
+			free = True;
 		}
 		
-		if (dt->qvar) {
-			if (dt->vdata) {
-				NgCopyVarData(pdata->vdata,
-					      dt->vdata);
-			}
-			else {
-				/* set new vardata info -- later */ ;
-			}
+		if (vdata) {
+			TransferVarData(dt,vdata);
+			NgCopyVarData(pdata->vdata,&dt->vd_rec);
+			if (free)
+				NgFreeVarData(vdata);
 		}
 		dcount++;
 	}
-	SetDataCoordState(papp->data_count);
 	SubstituteVarSyms(papp,data,plotname,dprof);
 #if 0
 	EvaluateDataProfileVars(papp,data,dprof);
