@@ -2,7 +2,7 @@
 #include <math.h>
 #include "wrapper.h"
 
-extern void NGCALLF(dsimpn,DSIMPN)(int*,double*,double*,double*);
+extern void NGCALLF(dsimpeq,DSIMPEQ)(int*,double*,double*,double*);
 
 NhlErrorTypes simpson_W( void )
 {
@@ -146,7 +146,7 @@ NhlErrorTypes simpson_W( void )
                                 missing_df.doubleval);
     }
     else {
-      NGCALLF(dsimpn,DSIMPN)(&npts,tmp_x,tmp_f,tmp_simpson);
+      NGCALLF(dsimpeq,DSIMPEQ)(&npts,tmp_x,tmp_f,tmp_simpson);
 
       if(type_simpson != NCL_double) {
         coerce_output_float_only(simpson,tmp_simpson,1,i);
