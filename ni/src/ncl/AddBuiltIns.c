@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.21 1996-11-19 22:46:07 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.22 1996-11-20 23:02:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,16 @@ extern "C" {
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
 
+extern NhlErrorTypes _Nclispan(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _Nclfspan(
+#if NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _Nclind(
 #if NhlNeedProto
 void
@@ -743,6 +753,22 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
 	SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
 	NclRegisterFunc( _Ncl1dtond,args,"onedtond",nargs);
+
+	nargs = 0;
+	args = NewArgs(3);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,nargs,"float",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"float",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+	NclRegisterFunc( _Nclfspan,args,"fspan",nargs);
+
+	nargs = 0;
+	args = NewArgs(3);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+	NclRegisterFunc( _Nclispan,args,"ispan",nargs);
 /*
 	nargs = 0;
 	args = NewArgs(1);

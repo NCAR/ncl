@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.50 1996-11-19 23:31:35 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.51 1996-11-20 23:02:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -6287,6 +6287,204 @@ NhlErrorTypes _Nclind
 		0
 	));
 }
+
+NhlErrorTypes _Nclispan
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data0;
+	NclStackEntry data1;
+	NclStackEntry data2;
+	NclMultiDValData tmp_md0 = NULL;
+	NclMultiDValData tmp_md1 = NULL;
+	NclMultiDValData tmp_md2 = NULL;
+	int *out_val;
+	int dimsizes = 1;
+	int i;
+	int strt;
+	int fnsh;
+	int spacing;
+
+	data0 = _NclGetArg(0,3,DONT_CARE);
+	switch(data0.kind) {
+		case NclStk_VAR:
+			tmp_md0 = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md0 = (NclMultiDValData)data0.u.data_obj;
+			break;
+	}
+	if(tmp_md0 == NULL)
+		return(NhlFATAL);
+
+	data1 = _NclGetArg(1,3,DONT_CARE);
+	switch(data1.kind) {
+		case NclStk_VAR:
+			tmp_md1 = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md1 = (NclMultiDValData)data1.u.data_obj;
+			break;
+	}
+	if(tmp_md1 == NULL)
+		return(NhlFATAL);
+	data2 = _NclGetArg(2,3,DONT_CARE);
+	switch(data2.kind) {
+		case NclStk_VAR:
+			tmp_md2 = _NclVarValueRead(data2.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md2 = (NclMultiDValData)data2.u.data_obj;
+			break;
+	}
+	if(tmp_md2 == NULL)
+		return(NhlFATAL);
+
+	if(_NclIsMissing(tmp_md0,tmp_md0->multidval.val)||
+		_NclIsMissing(tmp_md0,tmp_md0->multidval.val)||
+		_NclIsMissing(tmp_md0,tmp_md0->multidval.val)) {
+
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: Missing value detected in input, can't conitue");
+		return(NhlFATAL);
+	}
+
+	
+	spacing = *(int*)tmp_md2->multidval.val;
+	if(spacing < 1) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: spacing parameter must be positive and non-zero");
+		return(NhlFATAL);
+	}
+	fnsh = *(int*)tmp_md1->multidval.val;
+	strt = *(int*)tmp_md0->multidval.val;
+
+	dimsizes  = abs(fnsh-strt)/spacing + 1;
+
+	if((fnsh - strt) > 0) {
+		out_val = (int*)NclMalloc(dimsizes*sizeof(float));
+		for(i = 0; i < dimsizes; i++) {
+			out_val[i] = strt + i * spacing;
+		}
+	} else if((fnsh - strt) < 0) {
+		out_val = (int*)NclMalloc(dimsizes*sizeof(float));
+		for(i = 0; i < dimsizes; i++) {
+			out_val[i] = strt - i * spacing;
+		}
+	} else {
+		out_val = (int*)NclMalloc(sizeof(float));
+		*out_val = strt;
+		dimsizes = 1;
+	}
+
+
+	return(NclReturnValue(
+		out_val,
+		1,
+		&dimsizes,
+		NULL,
+		NCL_int,
+		0
+	));
+}
+
+NhlErrorTypes _Nclfspan
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data0;
+	NclStackEntry data1;
+	NclStackEntry data2;
+	NclMultiDValData tmp_md0 = NULL;
+	NclMultiDValData tmp_md1 = NULL;
+	NclMultiDValData tmp_md2 = NULL;
+	float *out_val;
+	int dimsizes = 1;
+	int i;
+	float strt;
+	float fnsh;
+	float spacing;
+
+	data0 = _NclGetArg(0,3,DONT_CARE);
+	switch(data0.kind) {
+		case NclStk_VAR:
+			tmp_md0 = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md0 = (NclMultiDValData)data0.u.data_obj;
+			break;
+	}
+	if(tmp_md0 == NULL)
+		return(NhlFATAL);
+
+	data1 = _NclGetArg(1,3,DONT_CARE);
+	switch(data1.kind) {
+		case NclStk_VAR:
+			tmp_md1 = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md1 = (NclMultiDValData)data1.u.data_obj;
+			break;
+	}
+	if(tmp_md1 == NULL)
+		return(NhlFATAL);
+	data2 = _NclGetArg(2,3,DONT_CARE);
+	switch(data2.kind) {
+		case NclStk_VAR:
+			tmp_md2 = _NclVarValueRead(data2.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md2 = (NclMultiDValData)data2.u.data_obj;
+			break;
+	}
+	if(tmp_md2 == NULL)
+		return(NhlFATAL);
+
+	if(_NclIsMissing(tmp_md0,tmp_md0->multidval.val)||
+		_NclIsMissing(tmp_md0,tmp_md0->multidval.val)||
+		_NclIsMissing(tmp_md0,tmp_md0->multidval.val)) {
+
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fspan: Missing value detected in input, can't conitue");
+		return(NhlFATAL);
+	}
+
+	
+	dimsizes = *(int*)tmp_md2->multidval.val;
+	if(dimsizes <= 0) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fspan: number of elements parameter is less-than-or-equal-to zero, can't conitue");
+		return(NhlFATAL);
+	} else if(dimsizes > 1) {
+		fnsh = *(float*)tmp_md1->multidval.val;
+		strt = *(float*)tmp_md0->multidval.val;
+
+		spacing = (fnsh - strt)/(float)(dimsizes - 1);
+
+		out_val = (float*)NclMalloc(dimsizes*sizeof(float));
+		for(i = 0; i < dimsizes; i++) {
+			out_val[i] = strt + i * spacing;
+		}
+	} else {
+		out_val = (float*)NclMalloc(sizeof(float));
+		out_val[0] =  *(float*)tmp_md0->multidval.val;
+	}
+
+
+	return(NclReturnValue(
+		out_val,
+		1,
+		&dimsizes,
+		NULL,
+		NCL_float,
+		0
+	));
+}
+
+
+
 #ifdef __cplusplus
 }
 #endif
