@@ -1,5 +1,5 @@
 C
-C	$Id: wmgeti.f,v 1.12 2001-08-07 18:37:35 fred Exp $
+C	$Id: wmgeti.f,v 1.13 2002-10-08 22:45:47 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -146,7 +146,7 @@ C
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'CC1' .OR. CNP(1:3).EQ.'cc1' .OR. 
      +    CNP(1:3).EQ.'Cc1') THEN
-        IVP = ISUNC1
+        IVP = ICLDC1
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'CC2' .OR. CNP(1:3).EQ.'cc2' .OR. 
      +    CNP(1:3).EQ.'Cc2') THEN
