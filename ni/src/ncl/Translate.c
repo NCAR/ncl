@@ -10,6 +10,7 @@ extern  "C" {
 #include <y.tab.h>
 #include <OpsList.h>
 #include <Machine.h>
+#include <data_objs/DataSupport.h>
 
 extern char *cur_load_file;
 extern int loading;
@@ -690,7 +691,7 @@ Unneeded translations
 				step= step->next;
 				_NclPutInstr(CONVERT_TO_LOCAL,funccall->line,funccall->file);
 				_NclPutInstr((NclValue)funccall->func,funccall->line,funccall->file);
-				_NclPutInstr((NclValue)i,funccall->func,funccall->file);
+				_NclPutInstr((NclValue)i,funccall->line,funccall->file);
 				i++;
 			}
 /*
@@ -745,7 +746,7 @@ Unneeded translations
 				step=step->next;
 				_NclPutInstr(CONVERT_TO_LOCAL,funccall->line,funccall->file);
 				_NclPutInstr((NclValue)funccall->func,funccall->line,funccall->file);
-				_NclPutInstr((NclValue)i,funccall->func,funccall->file);
+				_NclPutInstr((NclValue)i,funccall->line,funccall->file);
 				i++;
 			}
 /*

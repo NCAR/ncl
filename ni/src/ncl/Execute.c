@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.1 1993-12-21 19:17:28 ethan Exp $
+ *      $Id: Execute.c,v 1.2 1993-12-30 00:44:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@ extern "C" {
 #endif
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
+#include <data_objs/NclVar.h>
 #include <data_objs/NclMultiDValdoubleData.h>
 #include <data_objs/NclMultiDValfloatData.h>
 #include <data_objs/NclMultiDValintData.h>
@@ -39,6 +40,8 @@ extern "C" {
 #include <Machine.h>
 #include <Execute.h>
 #include <OpsFuncs.h>
+#include <y.tab.h>
+#include <data_objs/DataSupport.h>
 
 extern int cmd_line;
 
@@ -76,24 +79,278 @@ NclExecuteReturnStatus _NclExecute
 			case ENDSTMNT_OP:
 			case NOOP :
 				break;
-			case INT_SUBSCRIPT_OP :
+			case NAMED_INT_SUBSCRIPT_OP :
 				break;
-			case DEFAULT_RANGE_OP :
+			case INT_SUBSCRIPT_OP : {
+				NclStackEntry data;
+				NclStackEntry data1;
+				int mask = (int)(Ncl_MultiDVallongData | Ncl_MultiDValintData | Ncl_MultiDValshortData); 
+
+/*
+* This is the first place that type checks on the vectors and range values can
+* be done since it isn't until here that it is determined that normal integer
+* subscripting is going on
+*/
+				data = _NclPop();
+	
+				data1.kind = NclStk_SUBREC;
+				data1.u.sub_rec = (NclSubRec*)NclMalloc(
+					sizeof(NclSubRec));
+				if(data.kind == NclStk_VECREC) {
+					if(data.u.vec_rec->vec->obj.obj_type_mask & mask ) {
+						data1.u.sub_rec->sub_type = INT_VECT;
+						data1.u.sub_rec->u.vec = data.u.vec_rec;
+					} else{
+						NhlPError(FATAL,E_UNKNOWN,"Illegal subscript. Vector subscripts must be integer");
+						status = FATAL;
+					}
+				} else if(data.kind == NclStk_RANGEREC) {
+					if(((data.u.range_rec->start == NULL)
+						|| (data.u.range_rec->start->obj.obj_type_mask & mask)) &&
+					((data.u.range_rec->finish == NULL)
+						||(data.u.range_rec->finish->obj.obj_type_mask & mask)) &&
+					((data.u.range_rec->stride == NULL)
+						||(data.u.range_rec->stride->obj.obj_type_mask & mask))) {
+						data1.u.sub_rec->sub_type = INT_RANGE;
+						data1.u.sub_rec->u.range = data.u.range_rec;
+					} else {
+						NhlPError(FATAL,E_UNKNOWN,"Illegal subscript. Subscripts must be integer when not using coordinate indexing");
+						status = FATAL;
+					}
+				}
+				if(*ptr == INT_SUBSCRIPT_OP) {
+					data1.u.sub_rec->name = NULL;
+				} else {
+					data = _NclPop();
+					switch(data.kind) {
+					case NclStk_VAL: {
+/*
+* Taking for granted that syntax only allows string litterals here
+*/
+						data1.u.sub_rec->name = NclMalloc(strlen((char*) data.u.data_obj->multidval.val));
+						strcpy(data1.u.sub_rec->name,data.u.data_obj->multidval.val);			
+						_NclDestroyObj((NclObj)data.u.data_obj);
+						
+						break;
+					}
+					default:	
+						NhlPError(WARNING,E_UNKNOWN,"Illegal type for coordinate name in coordinate subscript ignoring value");
+						data1.u.sub_rec->name = NULL;
+						break;
+					}
+				}
+				_NclPush(data1);
 				break;
-			case RANGE_INDEX_OP :
+			}
+			case DEFAULT_RANGE_OP : {
+				NclStackEntry data;
+				data.kind = NclStk_NOVAL;
+				data.u.offset = 0;
+				_NclPush(data);
 				break;
-			case SINGLE_INDEX_OP :
+			}
+			case RANGE_INDEX_OP : {
+				NclStackEntry start;
+				NclStackEntry finish;
+				NclStackEntry stride;
+				NclStackEntry data;
+
+				stride = _NclPop();
+				finish = _NclPop();
+				start  = _NclPop();
+				data.kind = NclStk_RANGEREC;
+				data.u.range_rec = (NclRangeRec*)NclMalloc(
+					sizeof(NclRangeRec));
+				if(start.kind == NclStk_NOVAL) {
+					data.u.range_rec->start = NULL;
+				} else {
+					switch(start.kind) {
+					case NclStk_VAL:
+						if(start.u.data_obj !=NULL) {
+						data.u.range_rec->start = start.u.data_obj;
+						} else {
+							status = FATAL;
+						}
+						break;
+					case NclStk_VAR:
+						data.u.range_rec->start = 
+								_NclGetVarVal(start.u.data_var);
+						if(data.u.range_rec->start == NULL) {
+							status = FATAL;
+						}
+						break;
+					default:
+						status = FATAL;
+						break;
+					}
+				}
+				if(finish.kind == NclStk_NOVAL) {
+					data.u.range_rec->finish = NULL;
+				} else {
+					switch(finish.kind) {
+					case NclStk_VAL:
+						if(finish.u.data_obj !=NULL) {
+						data.u.range_rec->finish= finish.u.data_obj;
+						} else {
+							status = FATAL;
+						}
+						break;
+					case NclStk_VAR:
+						data.u.range_rec->finish= _NclGetVarVal(finish.u.data_var);
+						if(data.u.range_rec->finish == NULL) {
+							status = FATAL;
+						}
+						break;
+					default:
+						status = FATAL;
+						break;
+					}
+				}
+				if(stride.kind == NclStk_NOVAL) {
+					data.u.range_rec->stride= NULL;
+				} else {
+					switch(stride.kind) {
+					case NclStk_VAL:
+						if(stride.u.data_obj !=NULL) {
+						data.u.range_rec->stride= stride.u.data_obj;
+						} else {
+							status = FATAL;
+						}
+						break;
+					case NclStk_VAR:
+						data.u.range_rec->stride= _NclGetVarVal(stride.u.data_var);
+						if(data.u.range_rec->stride == NULL){
+							status = FATAL;
+						}
+						break;
+					default:
+						status = FATAL;
+						break;
+					}
+				}
+				if((data.u.range_rec->start != NULL) &&
+					(data.u.range_rec->start->multidval.kind != SCALAR)) {
+					NhlPError(FATAL,E_UNKNOWN,"Illegal Subscript. Only scalar values are allowed in subscript ranges.\n");
+					status = FATAL;
+				}
+				if((data.u.range_rec->finish != NULL) &&
+					(data.u.range_rec->finish->multidval.kind != SCALAR)) {
+					NhlPError(FATAL,E_UNKNOWN,"Illegal Subscript. Only scalar values are allowed in subscript ranges.\n");
+					status = FATAL;
+				}
+				if((data.u.range_rec->stride != NULL) &&
+					(data.u.range_rec->stride->multidval.kind != SCALAR)) {
+					NhlPError(FATAL,E_UNKNOWN,"Illegal Subscript. Only scalar values are allowed in subscript ranges.\n");
+					status = FATAL;
+				}
+				_NclPush(data);
 				break;
+			}
+			case SINGLE_INDEX_OP : {
+				NclStackEntry data;
+				NclStackEntry data1;
+				NclMultiDValData val;
+
+				data = _NclPop();
+				switch(data.kind) {
+				case NclStk_VAR: 
+					val = _NclGetVarVal(data.u.data_var);;
+					if(val == NULL){
+						status = FATAL;
+					}
+					break;
+				case NclStk_VAL:
+					if(data.u.data_obj != NULL) {
+						val = data.u.data_obj;
+					} else {
+						status = FATAL;
+					}
+					break;
+				default:
+					status = FATAL;
+				}
+				if(status != FATAL) {
+					if(val->multidval.kind == SCALAR) {
+						data1.kind = NclStk_RANGEREC;
+						data1.u.range_rec = 
+							(NclRangeRec*)NclMalloc(
+							sizeof(NclRangeRec));
+						data1.u.range_rec->start = val;
+						data1.u.range_rec->finish = val;
+						data1.u.range_rec->stride=NULL;
+						_NclPush(data1);
+					} else if(val->multidval.n_dims == 1) {
+						data1.kind = NclStk_VECREC;
+						data1.u.vec_rec =
+							(NclVecRec*)NclMalloc(
+							sizeof(NclVecRec));
+						data1.u.vec_rec->vec = val;
+						_NclPush(data1);
+					} else {
+						NhlPError(FATAL,E_UNKNOWN,"Illegal subscript. Subscripts must be scalar or one dimensional vectors\n");
+						status = FATAL;
+					}
+				}
+				break;
+			}
 			case RETURN_OP :
 				break;
 			case IF_OP :
 				break;
-			case NAMED_COORD_SUBSCRIPT_OP :
+			case NAMED_COORD_SUBSCRIPT_OP : 
 				break;
-			case NAMED_INT_SUBSCRIPT_OP :
+			case COORD_SUBSCRIPT_OP : {
+				NclStackEntry data;
+				NclStackEntry data1;
+				int mask = (int)(Ncl_MultiDVallongData | Ncl_MultiDValintData | Ncl_MultiDValshortData); 
+
+/*
+* This is the first place that type checks on the vectors and range values can
+* be done since it isn't until here that it is determined that normal integer
+* subscripting is going on
+*/
+				data = _NclPop();
+	
+				data1.kind = NclStk_SUBREC;
+				data1.u.sub_rec = (NclSubRec*)NclMalloc(
+					sizeof(NclSubRec));
+				if(data.kind == NclStk_VECREC) {
+					data1.u.sub_rec->sub_type = COORD_VECT;
+					data1.u.sub_rec->u.vec = data.u.vec_rec;
+				} else if(data.kind == NclStk_RANGEREC) {
+					if(((data.u.range_rec->stride == NULL)
+						||(data.u.range_rec->stride->obj.obj_type_mask & mask))) {
+						data1.u.sub_rec->sub_type = COORD_RANGE;
+						data1.u.sub_rec->u.range = data.u.range_rec;
+					} else {
+						NhlPError(FATAL,E_UNKNOWN,"Illegal subscript. stride must always be integer regardless of whether coordinate or integer subscripting is being used\n");
+						status = FATAL;
+					}
+				}
+				if(*ptr == COORD_SUBSCRIPT_OP) {
+					data1.u.sub_rec->name = NULL;
+				} else {
+					data = _NclPop();
+					switch(data.kind) {
+					case NclStk_VAL: {
+/*
+* Taking for granted that syntax only allows string litterals here
+*/
+						data1.u.sub_rec->name = NclMalloc(strlen((char*) data.u.data_obj->multidval.val));
+						strcpy(data1.u.sub_rec->name,data.u.data_obj->multidval.val);			
+						_NclDestroyObj((NclObj)data.u.data_obj);
+						
+						break;
+					}
+					default:	
+						NhlPError(WARNING,E_UNKNOWN,"Illegal type for coordinate name in coordinate subscript ignoring value");
+						data1.u.sub_rec->name = NULL;
+						break;
+					}
+				}
+				_NclPush(data1);
 				break;
-			case COORD_SUBSCRIPT_OP :
-				break;
+			} 
 			case NEG_OP : {
 				NclStackEntry data;
 				NclStackEntry operand;
@@ -338,7 +595,6 @@ NclExecuteReturnStatus _NclExecute
 			case PUSH_REAL_LIT_OP : 
 			{
 				NclStackEntry data;
-				float *theval;
 				int dim_size = 1;
 				ptr++;lptr++;fptr++;
 				data.kind = NclStk_VAL;
@@ -416,11 +672,135 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				break;
 			case PARAM_VAR_OP:
-			case ASSIGN_VAR_OP :
-			case VAR_OP :
+			case VAR_OP : {
+				int i;
+				int nsubs;
+				NclStackEntry data;
+				NclStackEntry data1;
+				NclStackEntry* var;
+				NclSymbol *sym;
+				NclSelectionRecord *sel_ptr=NULL;
+
 				ptr++;lptr++;fptr++;
+				sym = (NclSymbol*)*ptr;
+				var = _NclRetrieveRec(sym);
 				ptr++;lptr++;fptr++;
+				nsubs = *ptr;
+				if(nsubs == 0) {
+					if(var != NULL) {
+						_NclPush(*var);
+					}
+				} else {
+					sel_ptr = (NclSelectionRecord*)NclMalloc
+						(sizeof(NclSelectionRecord));
+					sel_ptr->n_entries = nsubs;
+					for(i=0;i<nsubs;i++) {
+						data =_NclPop();
+						switch(data.u.sub_rec->sub_type) {
+						case INT_VECT:
+/*
+* Need to free some stuff here
+*/							
+							_NclBuildVSelection(var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[i]),i,data.u.sub_rec->name);
+							break;
+						case INT_RANGE:
+/*
+* Need to free some stuff here
+*/							
+							_NclBuildRSelection(var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[i]),i,data.u.sub_rec->name);
+							break;
+						case COORD_VECT:
+						case COORD_RANGE:
+							break;
+						}
+					}
+					data1.kind = NclStk_VAL;
+					data1.u.data_obj = _NclVarValueRead(var->u.data_var,sel_ptr);
+					_NclPush(data1);
+				}
 				break;
+			}
+			case ASSIGN_VAR_OP :{
+				NclStackEntry rhs;
+				NclStackEntry data;
+				NclStackEntry *lhs_var;
+				NclMultiDValData rhs_md;
+				int i,nsubs;	
+				NclSymbol *sym;
+			
+			rhs = _NclPop();	
+			if(rhs.kind == NclStk_VAL) {
+				rhs_md = rhs.u.data_obj;
+			} else if(rhs.kind == NclStk_VAR) {
+				rhs_md = _NclGetVarVal(rhs.u.data_var);
+			} else {
+				NhlPError(FATAL,E_UNKNOWN,"Illegal right-hand side type for assignment");
+				status = FATAL;
+			}
+
+			ptr++;lptr++;fptr++;
+			sym = (NclSymbol*)(*ptr);
+
+			ptr++;lptr++;fptr++;
+			nsubs = 0;
+
+			lhs_var = _NclRetrieveRec(sym);
+			if((status != FATAL)&&(lhs_var != NULL)) {
+				if(lhs_var->kind == NclStk_NOVAL) {
+					if(nsubs != 0) {
+						status = FATAL;
+						NhlPError(FATAL,E_UNKNOWN,"Assign: %s is undefined, can not subscript an undefined variable",sym->name);
+						status = FATAL;
+						for(i=0;i<nsubs;i++) {
+/*
+* Need to free this stuff
+*/
+							(void)_NclPop();
+						}
+					} else {
+						lhs_var->u.data_var= _NclVarCreate(sym,rhs_md);
+						if(lhs_var->u.data_var != NULL) {
+							(void)_NclChangeSymbolType(sym,VAR);
+							lhs_var->kind = NclStk_VAR;
+							
+						} else {
+							NhlPError(WARNING,E_UNKNOWN,"Could not create variable (%s)",sym->name);
+							status = WARNING;
+							lhs_var->kind = NclStk_NOVAL;
+						}
+					}
+				} else if(lhs_var->kind == NclStk_VAR) {
+					if(nsubs != lhs_var->u.data_var->var.n_dims) {
+						NhlPError(FATAL,E_UNKNOWN,"Number of subscripts (%d) and number of dimensions (%d) do not match for variable (%s)",nsubs,lhs_var->u.data_var->var.n_dims,sym->name);
+						status = FATAL;
+						for(i=0;i<nsubs;i++) {
+/*
+* Need to free this stuff
+*/
+							(void)_NclPop();
+						}
+					}
+					for(i=0;i<nsubs;i++) {
+/*
+* code for building selection record
+*/
+						data =_NclPop();
+					}
+				} else {
+					NhlPError(FATAL,E_UNKNOWN,"Assignment not supported for left-hand type");
+					status = FATAL;
+				}
+
+			} else {
+				for(i=0;i<nsubs;i++) {
+/*
+* code for building selection record
+*/
+					data =_NclPop();
+				}
+			}
+			break;
+			}
 			case NEW_FRAME_OP:
 				ptr++;lptr++;fptr++;
 				ptr++;lptr++;fptr++;
@@ -464,6 +844,10 @@ NclExecuteReturnStatus _NclExecute
 			case FILEVAR_COORD_OP:
 			case ASSIGN_FILEVAR_COORD_OP:
 			case PARAM_FILEVAR_COORD_OP:
+				ptr++;lptr++;fptr++;
+				ptr++;lptr++;fptr++;
+				ptr++;lptr++;fptr++;
+				ptr++;lptr++;fptr++;
 			default:
 				break;
 		}

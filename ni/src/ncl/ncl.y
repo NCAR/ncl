@@ -105,13 +105,13 @@ statement_list :  statement eoln			{
 									_NclPrintMachine(strt,-1,theoptr);
 									_NclExecute(strt);
 									_NclResetNewSymStack();
-									_NclFreeTree($1,is_error);
+									_NclFreeTree();
 #ifdef MAKEAPI
 									return(0);
 #endif
 								} else {
 									_NclDeleteNewSymStack();
-									_NclFreeTree($1,is_error);
+									_NclFreeTree();
 									is_error = 0;
 #ifdef MAKEAPI
 									return(1);
@@ -131,13 +131,13 @@ statement_list :  statement eoln			{
 									_NclPrintMachine(strt,-1,theoptr);
 									_NclExecute(strt);
 									_NclResetNewSymStack();
-									_NclFreeTree($2,is_error);
+									_NclFreeTree();
 #ifdef MAKEAPI
 									return(0);
 #endif 
 								} else {
 									_NclDeleteNewSymStack();
-									_NclFreeTree($2,is_error);
+									_NclFreeTree();
 									is_error = 0;
 #ifdef MAKEAPI
 									return(1);

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.4 1993-12-21 19:18:09 ethan Exp $
+ *      $Id: SrcTree.h,v 1.5 1993-12-30 00:44:38 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -894,8 +894,7 @@ FILE * /*fp*/
 
 extern void _NclFreeTree(
 #ifdef NhlNeedProto
-void *root,
-int is_error
+void 
 #endif
 );
 

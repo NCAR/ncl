@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.5 1993-12-21 19:17:40 ethan Exp $
+ *      $Id: Machine.c,v 1.6 1993-12-30 00:44:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -37,6 +37,10 @@ extern "C" {
 * This is done so stack size and machine size can be configured at 
 * compile time
 */
+#ifndef NCL_LEVEL_1_SIZE
+#define NCL_LEVEL_1_SIZE 512
+#endif
+
 #ifndef NCL_STACK_SIZE
 #define NCL_STACK_SIZE 2048
 #endif
@@ -58,6 +62,9 @@ NclStackEntry thestack[NCL_STACK_SIZE];
 char *ops_strings[NUM_OPERATORS];
 
 _NclMachineStack *mstk;
+
+NclStackEntry  *level_1_vars;
+int	current_level_1_size;
 
 NclFrame *fp;
 NclStackEntry *sb;
@@ -330,8 +337,114 @@ NhlErrorTypes _NclInitMachine
 	mstk->current_machine_size = NCL_MACHINE_SIZE;
 	mstk->next = NULL;
 	SetUpOpsStrings();
+/*
+* Now set up level 1 variable storage locations
+*/
+	
+	level_1_vars = (NclStackEntry*)NclCalloc(NCL_LEVEL_1_SIZE,
+		sizeof(NclStackEntry));
+	current_level_1_size = NCL_LEVEL_1_SIZE;
+	if(level_1_vars == NULL) {
+		NhlPError(FATAL,errno,"_NhlInitMachine: Can't allocate space for machine");
+		return(FATAL);
+	}
 	return(NOERROR);
 }
+
+NhlErrorTypes _NclPutLevel1Var
+#if  __STDC__
+(int offset,NclStackEntry *therec) 
+#else
+(offset,therec)
+	int offset;
+	NclStackEntry *therec;
+#endif
+{ 	
+	if((offset >= current_level_1_size)||(offset < 0)){
+		return(WARNING);
+	} else {
+		
+		level_1_vars[offset] = *therec;
+		return(NOERROR);
+	}
+}
+NclStackEntry *_NclGetLevel1Var
+#if  __STDC__
+(int offset) 
+#else
+(offset)
+	int offset;
+#endif
+{ 	
+	if((offset >= current_level_1_size)||(offset < 0)){
+		return(NULL);
+	} else {
+		return(&(level_1_vars[offset]));
+	}
+}
+
+NhlErrorTypes _NclPutRec
+#if  __STDC__
+(NclSymbol* the_sym,NclStackEntry *therec)
+#else
+(the_sym,therec)
+NclSymbol* the_sym;
+NclStackEntry *therec;
+#endif
+{
+	int i;
+	NclFrame *previous;
+
+	i = current_scope_level;
+	
+
+	if(the_sym->level == 1) {
+		return(_NclPutLevel1Var(the_sym->offset,therec));
+	} else {
+		previous = (NclFrame*)fp;
+		while(i != the_sym->level) {
+			i--;
+			previous = (NclFrame*)((NclStackEntry*)thestack + ((NclStackEntry*)previous)->u.offset);
+		}
+/*
+* increment over stack frame stuff to base of actual scope
+*/
+		previous++;
+		*((NclStackEntry*)((NclStackEntry*)previous + the_sym->offset)) = *therec;
+		return(NOERROR);
+	}
+}
+
+NclStackEntry *_NclRetrieveRec
+#if  __STDC__
+(NclSymbol* the_sym)
+#else
+(the_sym)
+NclSymbol* the_sym;
+#endif
+{
+	int i;
+	NclFrame *previous;
+
+	i = current_scope_level;
+	
+
+	if(the_sym->level == 1) {
+		return(_NclGetLevel1Var(the_sym->offset));
+	} else {
+		previous = (NclFrame*)fp;
+		while(i != the_sym->level) {
+			i--;
+			previous = (NclFrame*)((NclStackEntry*)thestack + ((NclStackEntry*)previous)->u.offset);
+		}
+/*
+* increment over stack frame stuff to base of actual scope
+*/
+		previous++;
+		return((NclStackEntry*)((NclStackEntry*)previous + the_sym->offset));
+	}
+}
+
 
 void _NclPushFrame
 #if __STDC__
@@ -421,11 +534,14 @@ NclStackEntry _NclPop
 	NclStackEntry tmp;
 	if(sb <= thestack) {
 		NhlPError(FATAL,E_UNKNOWN,"Pop: Stack underflow");
-		tmp.kind = 0;
+		tmp.kind = NclStk_NOVAL;
+		tmp.u.offset = 0;
 		return(tmp);
 	} else {
 		sb--;
 		tmp = (*(sb));
+		sb->kind = NclStk_NOVAL;
+		sb->u.offset = 0;
 		return(tmp);
 	}
 }

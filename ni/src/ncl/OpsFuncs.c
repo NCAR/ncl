@@ -16,6 +16,8 @@ extern "C" {
 #include <Machine.h>
 #include <Execute.h>
 #include <OpsFuncs.h>
+#include <data_objs/NclVar.h>
+#include <data_objs/DataSupport.h>
 
 
 void _NclPrint
@@ -35,47 +37,15 @@ void _NclPrint
 
 	switch(data.kind) {
 	case NclStk_VAL:
-		(*((NclDataClass)(data.u.data_obj)->obj.class_ptr)->data_class.print)((NclData)(data.u.data_obj),fp);
+		_NclMultiDValPrint(data.u.data_obj,fp);
 		break;
 	case NclStk_VAR:
-/*
-		(*((NclVarClass)(data.u.data_var)->obj.class_ptr)->var_class.print)((NclVar)(data.u.data_var),fp);
+		_NclVarPrint(data.u.data_var,fp);
 		break;
-*/
 	default:
 		break;
 	}
 	return;
-}
-NclStackEntry _NclRetrieveRec
-#if  __STDC__
-(NclSymbol* the_sym)
-#else
-(the_sym)
-NclSymbol* the_sym;
-#endif
-{
-	NclStackEntry data;
-	return (data);
-}
-
-NclMultiDValData _NclCoerceData
-#if  __STDC__
-(NclMultiDValData obj, NclObjTypes coerce_to)
-#else
-(obj, coerce_to)
-NclMultiDValData obj;
-NclObjTypes coerce_to;
-#endif
-{
-	int f_selection;
-
-	f_selection = (int)obj->multidval.kind;
-	if( ((NclDataClass)obj->obj.class_ptr)->data_class.coerce[f_selection] != NULL) {
-		return((NclMultiDValData)(*((NclDataClass)obj->obj.class_ptr)->data_class.coerce[f_selection])((NclData)obj,coerce_to));
-	} else {
-		return(NULL);
-	}
 }
 
 NhlErrorTypes _NclDualOp
@@ -89,269 +59,97 @@ NclStackEntry *result;
 int operation ;
 #endif
 {
-	NclMultiDValData lhs_data_obj;
-	NclMultiDValData rhs_data_obj;
-	NclMultiDValData coerce_res;
-	NclDataClassPart *data_part;
-	int f_selection;
+	NclMultiDValData lhs_data_obj = NULL;
+	NclMultiDValData rhs_data_obj = NULL;
+	NclMultiDValData coerce_res = NULL;
 	NhlErrorTypes ret = NOERROR;
+	int lhs_type;
+	int rhs_type;
+
 
 	if(lhs.kind == NclStk_VAL) {
-		lhs_data_obj = (NclMultiDValData)lhs.u.data_obj;
-/*
+		lhs_type = lhs.u.data_obj->obj.obj_type_mask & NCL_VAL_TYPE_MASK;
 	} else if(lhs.kind == NclStk_VAR) {
-		lhs_data_obj = (NclMultiDValData)(*(NclMultiDValData*)lhs.u.data_var);
-*/
+		lhs_type = _NclGetVarRepValue(lhs.u.data_var);
 	} else {
 		return(FATAL);
 	}
 
 	if(rhs.kind == NclStk_VAL) {
-		rhs_data_obj = (NclMultiDValData)rhs.u.data_obj;
-/*
+		rhs_type = rhs.u.data_obj->obj.obj_type_mask & NCL_VAL_TYPE_MASK;
 	} else if(rhs.kind == NclStk_VAR) {
-		rhs_data_obj = (NclMultiDValData)(*(NclMultiDValData*)rhs.u.data_var);
-*/
+		rhs_type = _NclGetVarRepValue(rhs.u.data_var);
 	} else {
 		return(FATAL);
 	}
 
-	if((lhs_data_obj->obj.obj_type_mask & NCL_VAL_TYPE_MASK) !=
-		(rhs_data_obj->obj.obj_type_mask & NCL_VAL_TYPE_MASK)) {
+	if(lhs_type != rhs_type) {
 
-		coerce_res = _NclCoerceData(rhs_data_obj,
-				lhs_data_obj->obj.obj_type_mask & NCL_VAL_TYPE_MASK);
+		if(rhs.kind == NclStk_VAL) {
+			coerce_res = _NclCoerceData(rhs.u.data_obj,
+					lhs_type);
+		} else {
+			coerce_res = _NclCoerceVar(rhs.u.data_var,lhs_type);
+		}
 		if(coerce_res == NULL) {
-			coerce_res = _NclCoerceData(lhs_data_obj,
-				rhs_data_obj->obj.obj_type_mask & NCL_VAL_TYPE_MASK);
+			if(lhs.kind == NclStk_VAL) {
+			coerce_res = _NclCoerceData(lhs.u.data_obj,
+				rhs_type & NCL_VAL_TYPE_MASK);
+			} else {
+			coerce_res = _NclCoerceVar(lhs.u.data_var,
+				rhs_type);
+			}
 			if(coerce_res == NULL) {
 /*
 * Error message needed
 */
 				return(FATAL);
 			} else {
-				if(lhs_data_obj->obj.status != PERMANENT) {
-					(*lhs_data_obj->obj.class_ptr->obj_class.destroy)((NclData)lhs_data_obj);
+				if(lhs.u.data_obj->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)lhs.u.data_obj);
 				}
 				lhs_data_obj = coerce_res;
+				if(rhs.kind == NclStk_VAL) {
+					rhs_data_obj = rhs.u.data_obj;
+				} else {
+					rhs_data_obj = _NclGetVarVal(rhs.u.data_var);
+				}
+
 			}
 		} else {
-			if(rhs_data_obj->obj.status != PERMANENT) {
-				(*rhs_data_obj->obj.class_ptr->obj_class.destroy)((NclData)rhs_data_obj);
+			if(rhs.u.data_obj->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)rhs.u.data_obj);
 			}
 			rhs_data_obj = coerce_res;
+			if(lhs.kind == NclStk_VAL) {
+				lhs_data_obj = lhs.u.data_obj;
+			} else {
+				lhs_data_obj = _NclGetVarVal(lhs.u.data_var);
+			}
 		}
-	}
-	data_part = (NclDataClassPart*)
-		&(((NclDataClass)lhs_data_obj->obj.class_ptr)->data_class);
-
-	f_selection = (int)
-		((lhs_data_obj->multidval.kind<< 1)
-		|(rhs_data_obj->multidval.kind));
-	switch(operation) {
-	case MOD_OP:
-	if(data_part->mod[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->mod[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
+	} else {
+		if(lhs.kind == NclStk_VAL) {
+			lhs_data_obj = lhs.u.data_obj;
 		} else {
-			ret = FATAL;
+			lhs_data_obj = _NclGetVarVal(lhs.u.data_var);
 		}
-	}
-	break;
-	case OR_OP:
-	if(data_part->or[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->or[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
+		if(rhs.kind == NclStk_VAL) {
+			rhs_data_obj = rhs.u.data_obj;
 		} else {
-			ret = FATAL;
+			rhs_data_obj = _NclGetVarVal(rhs.u.data_var);
 		}
 	}
-	break;
-	case AND_OP:
-	if(data_part->and[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->and[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
-		} else {
-			ret = FATAL;
-		}
-	}
-	break;
-	case XOR_OP:
-	if(data_part->xor[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->xor[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
-		} else {
-			ret = FATAL;
-		}
-	}
-	break;
-	case LTSEL_OP:
-	if(data_part->sel_lt[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->sel_lt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
-		} else {
-			ret = FATAL;
-		}
-	}
-	break;
-	case GTSEL_OP:
-	if(data_part->sel_gt[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->sel_gt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
-		} else {
-			ret = FATAL;
-		}
-	}
-	break;
-	case PLUS_OP:
-	if(data_part->plus[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->plus[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
-		} else {
-			ret = FATAL;
-		}
-	}
-	break;
-	case MINUS_OP:
-	if(data_part->minus[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->minus[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
-		} else {
-			ret = FATAL;
-		}
-	}
-	break;
-	case MUL_OP:
-	if(data_part->multiply[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->multiply[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
-		} else {
-			ret = FATAL;
-		}
-	}
-	break;
-	case MAT_OP:
-	if(data_part->mat[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->mat[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
-		} else {
-			ret = FATAL;
-		}
-	}
-	break;
-	case DIV_OP:
-	if(data_part->divide[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->divide[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
-		} else {
-			ret = FATAL;
-		}
-	}
-	break;
-	case EXP_OP:
-	if(data_part->exponent[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->exponent[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
-		} else {
-			ret = FATAL;
-		}
-	}
-	break;
-	case LE_OP:
-	if(data_part->le[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->le[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
-		} else {
-			ret = FATAL;
-		}
-	}
-	break;
-	case GE_OP:
-	if(data_part->ge[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->ge[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
-		} else {
-			ret = FATAL;
-		}
-	}
-	break;
-	case GT_OP:
-	if(data_part->gt[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->gt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
-		} else {
-			ret = FATAL;
-		}
-	}
-	break;
-	case LT_OP:
-	if(data_part->lt[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->lt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
-		} else {
-			ret = FATAL;
-		}
-	}
-	break;
-	case EQ_OP:
-	if(data_part->eq[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->eq[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
-		} else {
-			ret = FATAL;
-		}
-	}
-	break;
-	case NE_OP:
-	if(data_part->ne[f_selection] != NULL) {
-		result->u.data_obj = (NclData)((*data_part->ne[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-		result->kind = NclStk_VAL;
-		if(result->u.data_obj != NULL) {
-			ret = NOERROR;
-		} else {
-			ret = FATAL;
-		}
-	}
-	break;
-	default:
+	if((lhs_data_obj != NULL)&&(rhs_data_obj != NULL)) {
+		ret = _NclCallDualOp(lhs_data_obj,rhs_data_obj,operation,result);
+	} else {
 		return(FATAL);
 	}
+
 	if(lhs_data_obj->obj.status !=PERMANENT ) {
-		(*lhs_data_obj->obj.class_ptr->obj_class.destroy)((NclData)lhs_data_obj);
+		_NclDestroyObj((NclObj)lhs_data_obj);
+	}
+	if(rhs_data_obj->obj.status !=PERMANENT ) {
+		_NclDestroyObj((NclObj)rhs_data_obj);
 	}
 
 	return(ret);
@@ -394,13 +192,11 @@ NhlErrorTypes _NclBuildArray
 	int items_left = n_items;
 	void *value;
 	char *ptr;
-	int kind;
-	NclBasicDataTypes type;
 	int dim_sizes[NCL_MAX_DIMENSIONS];
 	NclMultiDValData theobj,coerce_res;
 	NclStackEntry *data_ptr;
 	NclObjTypes result_type ;
-	NclBasicDataTypes result_data_type;
+	int obj_type ;
 	int must_be_numeric = 1,i;
 	int ndims;
 
@@ -412,25 +208,21 @@ NhlErrorTypes _NclBuildArray
 */
 	data_ptr = _NclPeek(0);
 	if(data_ptr->kind == NclStk_VAL) {	
-		theobj = (NclMultiDValData)data_ptr->u.data_obj;
-/*
+		obj_type = data_ptr->u.data_obj->obj.obj_type_mask;
 	} else if(data_ptr->kind == NclStk_VAR) {
-		theobj = (NclMultiDValData)*(data_ptr->u.data_var);
-*/
+		obj_type = _NclGetVarRepValue(data_ptr->u.data_var);
 	} else {
 		NhlPError(FATAL,E_UNKNOWN,"_NclBuildArray: attempt to build array out of illegal data type, can't continue");
 		return(FATAL);
 	}
-	if(theobj->obj.obj_type_mask & NCL_VAL_NUMERIC_MASK) {
+	if(obj_type & NCL_VAL_NUMERIC_MASK) {
 		must_be_numeric =1;
-		result_type = theobj->obj.obj_type_mask & NCL_VAL_NUMERIC_MASK;
-		result_data_type = theobj->multidval.data_type;
-	} else if(theobj->obj.obj_type_mask & NCL_VAL_CHARSTR_MASK) {
+		result_type = obj_type & NCL_VAL_NUMERIC_MASK;
+	} else if(obj_type & NCL_VAL_CHARSTR_MASK) {
 		must_be_numeric =0;
-		result_type = theobj->obj.obj_type_mask & NCL_VAL_CHARSTR_MASK;
-		result_data_type = theobj->multidval.data_type;
+		result_type = obj_type & NCL_VAL_CHARSTR_MASK;
 	} else {
-		NhlPError(FATAL,E_UNKNOWN,"_NclBuildArray: attempt to build array out of illegal data type, can't continue");
+		NhlPError(FATAL,E_UNKNOWN,"_NclBuildArray: attempt to build array out of illegal data type or undefined element, can't continue");
 		return(FATAL);
 	}
 
@@ -442,26 +234,22 @@ NhlErrorTypes _NclBuildArray
 	for(i = 1; i< n_items; i++) {
 		data_ptr = _NclPeek(i);
 		if(data_ptr->kind == NclStk_VAL) {	
-			theobj = (NclMultiDValData)data_ptr->u.data_obj;
-/*
+			obj_type = data_ptr->u.data_obj->obj.obj_type_mask;
 		} else if(data_ptr->kind == NclStk_VAR) {
-			theobj = (NclMultiDValData)*(data_ptr->u.data_var);
-*/
+			obj_type = _NclGetVarRepValue(data_ptr->u.data_var);
 		} else {
 			NhlPError(FATAL,E_UNKNOWN,"_NclBuildArray: attempt to build array out of illegal data type, can't continue");
 			return(FATAL);
 		}
 		if((must_be_numeric)&&
-			(theobj->obj.obj_type_mask&NCL_VAL_NUMERIC_MASK)) {
-			if(result_type > (theobj->obj.obj_type_mask&NCL_VAL_NUMERIC_MASK)) {
-				result_type = (theobj->obj.obj_type_mask&NCL_VAL_NUMERIC_MASK);
-				result_data_type = theobj->multidval.data_type;
+			( obj_type &NCL_VAL_NUMERIC_MASK)) {
+			if(result_type > (obj_type & NCL_VAL_NUMERIC_MASK)) {
+				result_type = (obj_type & NCL_VAL_NUMERIC_MASK);
 			}
 		} else if((!must_be_numeric)&&
-			(theobj->obj.obj_type_mask & NCL_VAL_CHARSTR_MASK)) {
-			if(result_type > (theobj->obj.obj_type_mask & NCL_VAL_CHARSTR_MASK)) {
-				result_type = (theobj->obj.obj_type_mask&NCL_VAL_CHARSTR_MASK);
-				result_data_type = theobj->multidval.data_type;
+			(obj_type & NCL_VAL_CHARSTR_MASK)) {
+			if(result_type > (obj_type & NCL_VAL_CHARSTR_MASK)) {
+				result_type = (obj_type & NCL_VAL_CHARSTR_MASK);
 			}
 		} else {
 			NhlPError(FATAL,E_UNKNOWN,"_NclBuildArray: can not combine character or string types with numeric types, can't continue");
@@ -479,15 +267,50 @@ NhlErrorTypes _NclBuildArray
 	items_left--;
 	if(data.kind == NclStk_VAL) {
 		theobj = (NclMultiDValData)data.u.data_obj;
+		if(!(theobj->obj.obj_type_mask & result_type)) {
+			coerce_res = _NclCoerceData(theobj,result_type);
+			if(coerce_res == NULL) {
 /*
-	} else if(data.kind == NclStk_VAR){
-		theobj =(NclMultiDValData) *data.u.data_var;	
+* This should not happen because the beginning loops assure that all elements
+* are coercible to result_type.
 */
+				NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
+			}
+			if(theobj->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)theobj);
+			}
+			theobj = coerce_res;
+		}
+	} else if(data.kind == NclStk_VAR){
+		obj_type = _NclGetVarRepValue(data.u.data_var);	
+		if(!(obj_type & result_type)) {
+			theobj = _NclCoerceVar(data.u.data_var,result_type);
+			if(coerce_res == NULL) {
+/*
+* This should not happen because the beginning loops assure that all elements
+* are coercible to result_type.
+*/
+				NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
+				return(FATAL);
+			}
+			if(theobj->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)theobj);
+			}
+			theobj = coerce_res;
+		} else {
+			theobj = _NclGetVarVal(data.u.data_var);
+			if(theobj == NULL) {
+				NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
+				return(FATAL);
+			}
+		}
 	} else {
 		NhlPError(FATAL,E_UNKNOWN,"_NclBuildArray: unknown stack data type");
 		return(FATAL);
 	}
-	partsize = theobj->multidval.totalelements * _NclSizeOf(result_data_type);
+
+
+	partsize = theobj->multidval.totalsize;
 
 /*
 * ------------->Need check for exceeding maximum dimensions <----------
@@ -512,52 +335,63 @@ NhlErrorTypes _NclBuildArray
 		return(FATAL);
 	}
 	ptr = (char*)value;
-	if(!(theobj->obj.obj_type_mask & result_type)) {
-		coerce_res = _NclCoerceData(theobj,result_type);
-		if(coerce_res == NULL) {
-			NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
-		}
-		if(theobj->obj.status != PERMANENT) {
-		 	(*theobj->obj.class_ptr->obj_class.destroy)((NclData)theobj);
-		}
-		theobj = coerce_res;
-	}
 	memcpy(ptr,(char*)theobj->multidval.val,partsize);
 	ptr += partsize;
 	if(theobj->obj.status != PERMANENT) {
-	 	(*theobj->obj.class_ptr->obj_class.destroy)((NclData)theobj);
+		_NclDestroyObj((NclObj)theobj);
 	}
+
+
 	while(items_left) {
 		data = _NclPop();
 		items_left--;
 		if(data.kind == NclStk_VAL) {
 			theobj = (NclMultiDValData)data.u.data_obj;
-/*
-		} else if(data.kind == NclStk_VAR){
-			theobj = (NclMultiDValData)*data.u.data_var;	
-*/
-		} else {
-			NhlPError(FATAL,E_UNKNOWN,"_NclBuildArray: unknown stack data type");
-			return(FATAL);
-		}
-		if(!(theobj->obj.obj_type_mask & result_type)) {
-			coerce_res = _NclCoerceData(theobj,result_type);
-			if(coerce_res == NULL) {
+			if(!(theobj->obj.obj_type_mask & result_type)) {
+				coerce_res = _NclCoerceData(theobj,result_type);
+				if(coerce_res == NULL) {
 /*
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
-				NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
+					NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
+				}
+				if(theobj->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)theobj);
+				}
+				theobj = coerce_res;
 			}
-			if(theobj->obj.status != PERMANENT) {
-			 	(*theobj->obj.class_ptr->obj_class.destroy)((NclData)theobj);
+		} else if(data.kind == NclStk_VAR){
+			obj_type = _NclGetVarRepValue(data.u.data_var);	
+			if(!(obj_type & result_type)) {
+				theobj = _NclCoerceVar(data.u.data_var,result_type);
+				if(coerce_res == NULL) {
+/*
+* This should not happen because the beginning loops assure that all elements
+* are coercible to result_type.
+*/
+					NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
+					return(FATAL);
+				}
+				if(theobj->obj.status != PERMANENT) {
+					_NclDestroyObj((NclObj)theobj);
+				}
+				theobj = coerce_res;
+			} else {
+				theobj = _NclGetVarVal(data.u.data_var);
+				if(theobj == NULL) {
+					NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
+					return(FATAL);
+				}
 			}
-			theobj = coerce_res;
+		} else {
+			NhlPError(FATAL,E_UNKNOWN,"_NclBuildArray: unknown stack data type");
+			return(FATAL);
 		}
 		memcpy(ptr,(char*)theobj->multidval.val,partsize);
 		ptr += partsize;
 		if(theobj->obj.status != PERMANENT) {
-		 	(*theobj->obj.class_ptr->obj_class.destroy)((NclData)theobj);
+			_NclDestroyObj((NclObj)theobj);
 		}
 	}
 	result->kind = NclStk_VAL;
@@ -565,26 +399,26 @@ NhlErrorTypes _NclBuildArray
 *
 * ------------__> stilll need to handle dim info
 */
-	switch(result_data_type) {
-	case NCL_double:
-	result->u.data_obj = (NclData)_NclMultiDValdoubleCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
+	switch(result_type) {
+	case Ncl_MultiDValdoubleData:
+	result->u.data_obj = _NclMultiDValdoubleCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
 	break;
-	case NCL_float:
-	result->u.data_obj = (NclData)_NclMultiDValfloatCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
+	case Ncl_MultiDValfloatData:
+	result->u.data_obj = _NclMultiDValfloatCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
 	break;
-	case NCL_long:
-	result->u.data_obj = (NclData)_NclMultiDVallongCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
+	case Ncl_MultiDVallongData:
+	result->u.data_obj = _NclMultiDVallongCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
 	break;
-	case NCL_int:
-	result->u.data_obj =(NclData) _NclMultiDValintCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
+	case Ncl_MultiDValintData:
+	result->u.data_obj = _NclMultiDValintCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
 	break;
-	case NCL_short:
-	result->u.data_obj = (NclData)_NclMultiDValshortCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
+	case Ncl_MultiDValshortData:
+	result->u.data_obj = _NclMultiDValshortCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
 	break;
-	case NCL_string:
-	result->u.data_obj = (NclData)_NclMultiDValstringCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
+	case Ncl_MultiDValstringData:
+	result->u.data_obj = _NclMultiDValstringCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
 	break;
-	case NCL_char:
+	case Ncl_MultiDValcharData:
 	default:
 		return(FATAL);
 	}

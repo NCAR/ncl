@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.5 1993-12-21 19:17:42 ethan Exp $
+ *      $Id: Machine.h,v 1.6 1993-12-30 00:44:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -169,6 +169,33 @@ int  /*total_arg*/
 extern NclStackEntry *_NclPeek(
 #ifdef NhlNeedProto
 int  /*offset*/
+#endif
+);
+
+
+extern NhlErrorTypes _NclPutRec(
+#ifdef NhlNeedProto
+NclSymbol * /*n_items*/,
+NclStackEntry * /*therec*/
+#endif
+);
+
+extern NhlErrorTypes _NclPutLevel1Var(
+#ifdef NhlNeedProto
+int	/*offset*/,
+NclStackEntry * /*therec*/
+#endif
+);
+
+extern NclStackEntry *_NclRetrieveRec(
+#ifdef NhlNeedProto
+NclSymbol * /*n_items*/
+#endif
+);
+
+extern NclStackEntry *_NclGetLevel1Var(
+#ifdef NhlNeedProto
+int	/*offset*/
 #endif
 );
 

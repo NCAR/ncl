@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.5 1993-12-21 19:18:05 ethan Exp $
+ *      $Id: SrcTree.c,v 1.6 1993-12-30 00:44:34 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3102,11 +3102,9 @@ NclSrcListNode *subscript_list;
 
 void _NclFreeTree
 #if __STDC__
-(void *root,int is_error)
+(void )
 #else
-(root,is_error)
-        void *root;
-	int is_error;
+()
 #endif
 {
 	int i;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.5 1993-12-21 19:18:22 ethan Exp $
+ *      $Id: defs.h,v 1.6 1993-12-30 00:44:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -75,8 +75,10 @@ typedef struct _NclGenericVal {
 } NclGenericVal;
 
 typedef enum stack_value_types { 
-	NclStk_NOVAL = 01, NclStk_OFFSET = 02, 
-	NclStk_VAL = 04,NclStk_VAR = 010
+	NclStk_NOVAL = 0, NclStk_OFFSET = 01, 
+	NclStk_VAL = 02,NclStk_VAR = 04, NclStk_SUBREC = 010,
+	NclStk_PARAMLIST = 020, NclStk_RANGEREC = 040,
+	NclStk_VECREC = 0100
 	} NclStackValueTypes;
 
 
@@ -95,11 +97,40 @@ typedef struct _NclStackEntry{
 * an example is an array passed to a function with two parameters
 * twice.
 */
+		struct _NclRangeRec	*range_rec;
+		struct _NclVecRec	*vec_rec;
+		struct _NclSubRec	*sub_rec;
 		struct _NclParamRecList *the_list;
 		struct _NclVarRec	*data_var;
-		struct _NclDataRec 	*data_obj;
+		struct _NclMultiDValDataRec 	*data_obj;
 	}u;
 }NclStackEntry;
+
+typedef enum { 
+	COORD_VECT,
+	COORD_RANGE,
+	INT_VECT,
+	INT_RANGE
+} NclSubTypes;
+
+typedef struct _NclSubRec {
+	NclSubTypes sub_type; 
+	char *name;
+	union {
+		struct _NclRangeRec *range;
+		struct _NclVecRec *vec;
+	}u;
+} NclSubRec;
+
+typedef struct _NclRangeRec {
+	struct _NclMultiDValDataRec *start;
+	struct _NclMultiDValDataRec *finish;
+	struct _NclMultiDValDataRec *stride;
+}NclRangeRec;
+
+typedef struct _NclVecRec {
+	struct _NclMultiDValDataRec *vec;
+}NclVecRec;
 
 typedef struct _NclFrame{
 	NclStackEntry	func_ret_value;
@@ -143,6 +174,7 @@ typedef struct _NclSelectionRecord {
 	
 	struct _NclSymbol *selected_from_sym;
 	struct _NclVarRec *selected_from_var;
+	int n_entries;
 	NclSelection selection[NCL_MAX_DIMENSIONS];
 } NclSelectionRecord;
 

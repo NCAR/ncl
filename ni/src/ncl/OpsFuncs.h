@@ -1,6 +1,6 @@
 
 /*
- *      $Id: OpsFuncs.h,v 1.1 1993-12-21 19:17:56 ethan Exp $
+ *      $Id: OpsFuncs.h,v 1.2 1993-12-30 00:44:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -48,10 +48,5 @@ NclStackEntry */*result*/
 #endif
 );
 
-NclStackEntry _NclRetrieveRec(
-#ifdef NhlNeedProto
-NclSymbol * /*n_items*/
-#endif
-);
 
 
