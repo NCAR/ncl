@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.17 1995-04-07 10:46:45 boote Exp $
+ *      $Id: NclApi.c,v 1.18 1995-05-20 23:30:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -37,6 +37,10 @@ extern "C" {
 #include <errno.h>
 #include <netcdf.h>
 
+int force_reset = 0;
+int start_state = 0;
+
+
 FILE *the_err_file;
 #if     defined(SunOS) && (MAJOR == 4)
 extern FILE *nclin;
@@ -58,6 +62,17 @@ extern int cur_line_number;
 
 extern FILE* error_fp;
 extern FILE* stdout_fp;
+
+void NclServerReset
+#if 	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	force_reset = 1;
+	return;
+}
 
 int NclInitServer
 #if	NhlNeedProto
@@ -105,6 +120,7 @@ int NclInitServer
 	_NhlRegSymConv(NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
 
 
+	start_state = NclSubmitBlock1("begin\nend",strlen("begin\nend"));
 	return(1);	
 	
 }
@@ -130,6 +146,7 @@ int NclSubmitBlock1
 {
 	static first = 1;
 	int i;
+	int state;
 	char *tmp = script;
 	if(the_input_buffer != NULL) {
 		NclFree(the_input_buffer);
@@ -141,16 +158,13 @@ int NclSubmitBlock1
 	the_input_buffer_ptr = the_input_buffer;
         the_input_buffer_size = script_size+1;
 #if     defined(SunOS) && (MAJOR == 4)
-        if(nclparse((first? 1: 0))==1) {
+        state = nclparse((first||force_reset? 1: 0));
 #else
-        if(yyparse((first? 1: 0))==1) {
+        state = yyparse((first||force_reset? 1: 0));
 #endif
-		first = 0;
-                return(0);
-        } else {
-		first = 0;
-                return(1);
-        }
+	force_reset = 0;
+	first = 0;
+        return(state==start_state);
 }
 
 int NclSubmitBlock2
@@ -165,6 +179,7 @@ int NclSubmitBlock2
 	int size = 0;
 	char *tmp;
 	static int first = 1;
+	int state;
 
 	for(i =0; script[i] != NULL; i++)  
 		size += strlen(script[i]) + 1; 
@@ -187,16 +202,13 @@ int NclSubmitBlock2
 	the_input_buffer_size = size +1;
 	the_input_buffer_ptr = the_input_buffer;
 #if     defined(SunOS) && (MAJOR == 4)
-        if(nclparse((first?1:0))==1) {
+        state = nclparse((first||force_reset? 1: 0));
 #else
-        if(yyparse((first?1:0))==1) {
+        state = yyparse((first||force_reset? 1: 0));
 #endif
-		first = 0;
-                return(0);
-        } else {
-		first = 0;
-                return(1);
-        }
+	first = 0;
+	force_reset = 0;
+        return(state==start_state);
 }
 
 int NclSubmitCommand
@@ -208,19 +220,17 @@ int NclSubmitCommand
 #endif
 {
 	static int first = 1;
+	int state;
 	the_input_buffer_ptr = the_input_buffer = command;
 	the_input_buffer_size = strlen(command);
 #if     defined(SunOS) && (MAJOR == 4)
-	if(nclparse((first?1:0))==1) {
+        state = nclparse((first||force_reset? 1: 0));
 #else
-	if(yyparse((first?1:0))==1) {
+        state = yyparse((first||force_reset? 1: 0));
 #endif
-		first = 0;
-                return(0);
-        } else {
-		first = 0;
-                return(1);
-        }
+	first = 0;
+	force_reset = 0;
+        return(state==start_state);
 }
 
 void NclPrintErrorMsgs

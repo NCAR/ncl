@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.6 1994-12-23 01:18:06 ethan Exp $
+ *      $Id: NclApi.h,v 1.7 1995-05-20 23:30:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,13 @@ extern "C" {
 
 #define NCLAPI_TMP_VAR "__N_C_L__T_M_P__"
 #define NCLAPI_DEL_TMP_VAR "delete(__N_C_L__T_M_P__)"
+
+extern void NclResetServer(
+#if NhlNeedProto
+void
+#endif
+);
+
 
 extern int NclInitServer(
 #if	NhlNeedProto
