@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.19 1999-06-09 00:29:17 dbrown Exp $
+ *      $Id: ResList.c,v 1.20 2003-05-29 00:25:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -525,8 +525,11 @@ NhlRLUnSet
 		 * free the node.
 		 */
 		tnode = *node;
-		node2 = GetNodePtr(&(*node)->left,(*node)->right->nameQ);
-		*node2 = (*node)->right;
+		if ((*node)->right) {
+			node2 = GetNodePtr(&(*node)->left,
+					   (*node)->right->nameQ);
+			*node2 = (*node)->right;
+		}
 		*node = (*node)->left;
 		tnode->left = NULL;
 		tnode->right = NULL;
