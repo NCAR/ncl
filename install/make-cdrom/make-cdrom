@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-cdrom,v 1.2 1993-04-29 18:15:35 clyne Exp $
+#      $Id: make-cdrom,v 1.3 1993-05-25 19:39:26 clyne Exp $
 #
 #########################################################################
 #									#
@@ -54,20 +54,26 @@
 #
 #	globals
 #
+#
+#
+#
+#
+#
+#
 $doDebug = 0;
 
 #
 #	map system names into ISO 9660 legal names
 #
 %archMap= (
-	'HPUX_HP9000_7xx',	'HPUX.7XX',
-	'AIX_RS6000',		'AIX.R6K',
-	'SunOS_sun4',		'SUNOS.SN4',
-	'SunOS_sun3',		'SUNOS.SN3',
-	'Solaris_sun4',		'SOLARIS.SN4',
-	'ULTRIX_RISC',		'ULTRIX.RIS',
-	'IRIX_IP',		'IRIX.IP',
-	'UNICOS_YMP',		'UNICOS.YMP'
+	'HPUX_HP9000_7xx',	'HPUX_7XX',
+	'AIX_RS6000',		'AIX_R6K',
+	'SunOS_sun4',		'SUNOS_S4',
+	'SunOS_sun3',		'SUNOS_S3',
+	'Solaris_sun4',		'SOLARIS',
+	'ULTRIX_RISC',		'ULTRIX',
+	'IRIX_IP',		'IRIX_IP',
+	'UNICOS_YMP',		'UCOS_YMP'
 );
 
 @Archs = keys %archMap;
