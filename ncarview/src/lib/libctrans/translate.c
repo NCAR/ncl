@@ -1,5 +1,5 @@
 /*
- *	$Id: translate.c,v 1.3 1991-01-09 11:06:07 clyne Exp $
+ *	$Id: translate.c,v 1.4 1991-07-18 15:55:08 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -239,7 +239,7 @@ transinit(dev_extent, dev_coord_modifier, device)
 	 * add in any additional scaling or translation
 	 */
 	map.x_scale *= dev_coord_modifier.x_scale;
-	map.x_scale *= dev_coord_modifier.y_scale;
+	map.y_scale *= dev_coord_modifier.y_scale;
 	map.x_off += dev_coord_modifier.x_off;
 	map.y_off += dev_coord_modifier.y_off;
 
