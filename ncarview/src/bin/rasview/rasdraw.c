@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.17 1997-01-31 22:52:51 clyne Exp $
+ *	$Id: rasdraw.c,v 1.18 1997-02-03 23:05:33 clyne Exp $
  */
 /*
  *	rasdraw.c
@@ -445,7 +445,22 @@ static	XImage	*create_ximage(dpy, depth, visual, nx, ny, context)
 			ximage->byte_order = MSBFirst;
 		}
 #else
-		ximage->byte_order = MSBFirst;
+		if (
+			ximage->red_mask == 0xff0000 && 
+			ximage->blue_mask == 0xff) {
+
+			ximage->byte_order = MSBFirst;
+		}
+		else if (
+			ximage->red_mask == 0xff && 
+			ximage->blue_mask == 0xff0000) {
+
+			ximage->byte_order = LSBFirst;
+		}
+		else {
+			ESprintf(E_UNKNOWN,"Unsupported color mask");
+			return(NULL);
+		}
 #endif
 	}
 
