@@ -1,5 +1,5 @@
 /*
- *	$Id: X_pixdump.c,v 1.5 1991-03-12 14:46:41 clyne Exp $
+ *	$Id: X_pixdump.c,v 1.6 1991-03-12 15:59:53 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -10,9 +10,15 @@
 *                      NCAR View V3.01 - UNIX Release                  *
 *                                                                      *
 ***********************************************************************/
+#include <stdio.h>
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+<<<<<<< X_pixdump.c
+#include <X11/XWDFile.h>
+#include <ncarv.h>
+
+=======
 
 #ifdef	RS6000
 #include <X11/Xmd.h>
@@ -22,9 +28,8 @@
 #include <stdio.h>
 
 
+>>>>>>> 1.5
 typedef unsigned long Pixel;
-
-extern	char	*malloc();
 
 
 /*
@@ -234,7 +239,7 @@ static	int get_Xcolors(dpy, visual, colormap, colors)
 	return(0);    /* colormap is not needed */
 
     ncolors = visual->map_entries;
-    if (!(*colors = (XColor *) malloc (sizeof(XColor) * ncolors))) return (-1);
+    *colors = (XColor *) icMalloc (sizeof(XColor) * ncolors);
 
     if (visual->class == DirectColor) {
 	Pixel red, green, blue, red1, green1, blue1;
@@ -291,11 +296,7 @@ static	int get_Xcolors(dpy, visual, cmap, colors)
 		return(0);    /* XXX punt for now */
 
 	ncolors = visual->map_entries;
-	if (!(*colors = (XColor *) malloc 
-			(sizeof(XColor) * (unsigned) ncolors))) {
-
-		return(-1);
-	}
+	*colors = (XColor *) icMalloc (sizeof(XColor) * (unsigned) ncolors);
 
 	for (i=0; i<ncolors; i++)
 		(*colors)[i].pixel = i;
