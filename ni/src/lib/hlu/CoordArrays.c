@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.16 1994-11-07 03:09:14 ethan Exp $
+ *      $Id: CoordArrays.c,v 1.17 1994-12-02 19:28:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1415,7 +1415,7 @@ CoordArraysSetValues
 			ncap->sticky_min_y = True;
 	}
 
-	_NhlDataChanged((NhlDataItemLayer)new->base.parent,status);
+	_NhlDataChanged((NhlDataItemLayer)new,status);
 
 	return	ret;
 }
