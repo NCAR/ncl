@@ -45,18 +45,18 @@
 *vectorplot*pmLabelBarDisplayMode : always
 *vectorplot*pmLabelBarWidthF : 0.1
 *vectorplot*lbTitleOn : true
-*vectorplot*lbTitleString : Surface Pressure
+*vectorplot*lbTitleString : Sea Level Pressure
 *vectorplot*lbTitlePosition : left
 *vectorplot*lbTitleOffsetF : 0.13
 *vectorplot*lbBoxMinorExtentF : 0.25
 *vcRefLengthF : 0.045
 *vcMinFracLengthF : 0.15
 *vcFillArrowsOn : true
-!*vcFillArrowWidthF : 0.07
-!*vcFillArrowMinFracWidthF : 0.3
-!*vcFillArrowHeadMinFracXF : 0.2
-!*vcFillArrowHeadMinFracYF : 0.35
-!*vcFillArrowEdgeWidthF : 3.0
+*vcFillArrowWidthF : 0.06
+*vcFillArrowMinFracWidthF : 0.3
+*vcFillArrowHeadMinFracXF : 0.2
+*vcFillArrowHeadMinFracYF : 0.35
+*vcFillArrowEdgeWidthF : 3.0
 *vcMonoFillArrowFillColor : false
 *vcRefMagnitudeF : 20.0
 *vcMinMagnitudeF : 0.001
@@ -85,7 +85,7 @@
 ! StreamlinePlot resources
 
 *streamlineplot*pmTitleZone : 8
-*streamlineplotanno*txString : Streamlines Represent 500 mb Winds
+*streamlineplotanno*txString : Streamlines (in black) represent 500 mb winds
 *streamlineplotanno*txFontHeightF : 0.013
 *streamlineplotanno*txBackgroundFillColor : 2
 *streamlineplotanno*txFontColor : 0

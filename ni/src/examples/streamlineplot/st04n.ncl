@@ -41,14 +41,16 @@
 begin
 
 ;
-; This example generates 60 frames from 63 timesteps in the data files.
-; If you find that your system lacks the memory resources to view all 
-; the frames in an animation loop, you can reduce the number created 
-; by adjusting the value of TIMESTEPS below.
+; Depending on the value of the TIMESTEPS variable declared below,
+; this example example can generate up to 61 frames from the 64
+; timesteps in the data files. As shipped, only the first 20 frames 
+; are created. To see the complete plot uncomment the second 
+; assignment to TIMESTEPS. Some systems may not have enough physical
+; memory to allow all frames to be viewed as an animation.
 ;
 
-TIMESTEPS = 63
-; TIMESTEPS = 3
+TIMESTEPS = 20
+;TIMESTEPS = 64
 
 ;
 ; Create an application object.
@@ -225,7 +227,7 @@ time = vf->timestep
 hour = new(1,string,"00")
 day = new(1,string,"05")
 
-do i = 0, TIMESTEPS
+do i = 0, TIMESTEPS - 1
 	if (i.ne.17 .and. i.ne.36 .and. i.ne.37) then
 
 ;
