@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.18 1995-12-08 20:08:15 fred Exp $
+C	$Id: gesc.f,v 1.19 1996-01-12 21:11:45 boote Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -58,9 +58,20 @@ C  X driver specific escapes (-1400 through -1410):
 C      -1400  --  Specify the error allowed in matching a requested
 C                 color, expressed as a percentage.  The value "0" is
 C                 special--it means you don't care what color is chosen.
+C                 This is only used if -1402 is "shared"
 C      -1401  --  Used to tell the X driver that the window should have
 C                 its own color map, allowing that window to have 256 
-C                 colors.
+C                 colors.  This has been superceded by -1402.  Setting
+C                 this element is equivalant to calling -1402 with "private".
+C      -1402  --  Used to tell the X driver what color mode to use.  This
+C                 is a super-set of -1401 above.  The three modes are
+C                 "shared=0", "mixed=2", and "private=1".  "private" is the
+C                 same as -1401.  It is possible to switch color modes
+C                 during the middle of execution - but only in one direction.
+C                 From "shared" you can switch to either of the other two
+C                 modes.  From "mixed" you can switch to "private".  If you
+C                 are already using "private" you can not switch.  -1400
+C                 is only used if -1402 is "shared".
 C
 C  PostScript specific escapes:
 C
@@ -301,6 +312,17 @@ C
         RETURN
 C
   160   CONTINUE
+C
+C  If setting the X Color Model, and IWKID == -1, then the setting 
+C  applies to the next open X workstation.
+C
+	IF (FCTID.EQ.-1402 .AND. IWKID.EQ.-1) THEN
+	  READ(IDR(1)(7:11),501,ERR=150) COLMOD
+	  IF (COLMOD.LT.0 .OR. COLMOD.GT.2) THEN
+	    GOTO 150
+	  ENDIF
+	  RETURN
+	ENDIF
 C
 C  Return if not an X11 workstation.
 C

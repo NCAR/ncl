@@ -107,9 +107,19 @@ C
           ID(6) = CURX
           ID(7) = CURY
 C
-C  Scale factor for PostScript workstaitons.
+C  Scale factor for PostScript workstations.
 C
           ID(8) = CPSCL
+	ELSE IF (WTYPE.EQ.GXWE .OR. WTYPE.EQ.GXWC) THEN
+	  IL1   = 4
+	  IL2   = 4
+          ID(1) = WKID
+          ID(2) = CONID
+          ID(3) = WTYPE
+C
+C  Color model for X workstations.
+C
+	  ID(4) = COLMOD
         ELSE
           IL1   = 3
           IL2   = 3
@@ -128,7 +138,8 @@ C
 C
 C  Set the file name for an MO workstation back to default; set the
 C  positioning coordinates back to defaults; set the PostScript 
-C  coordinate scale factor back to the default.
+C  coordinate scale factor back to the default; set the X color model
+C  back to default.
 C
         GFNAME = 'DEFAULT'
         CLLX = -9999
@@ -136,6 +147,7 @@ C
         CURX = -9999
         CURY = -9999
         CPSCL = -1
+        COLMOD = -1
 C
 C  For an X window that does not currently exist, obtain the local 
 C  window ID for all future calls; for an X window that already exists

@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.14 1995-12-08 20:08:18 fred Exp $
+C	$Id: gksbd.f,v 1.15 1996-01-12 21:11:46 boote Exp $
 C
       BLOCKDATA GKSBD
 C
@@ -103,6 +103,7 @@ C       CLLY   -- LOWER LEFT Y COORDINATE FOR POSITIONING PICTURE ON PAGE
 C       CURX   -- UPPER RIGHT X COORDINATE FOR POSITIONING PICTURE ON PAGE
 C       CURY   -- UPPER RIGHT Y COORDINATE FOR POSITIONING PICTURE ON PAGE
 C       CPSCL  -- SCALE FACTOR FOR POSTSCRIPT WORKSTATIONS
+C       COLMOD -- Color Model for X color allocation
 C-----------------------------------------------------------------------
 C
 C     GKEROR:  GKS ERROR STATE LIST
@@ -201,6 +202,7 @@ C-----------------------------------------------------------------------
       DATA GFNAME/'DEFAULT'/
       DATA GSEGRT/'GSEG'/
       DATA CLLX,CLLY,CURX,CURY,CPSCL/-9999,-9999,-9999,-9999,-1/
+      DATA COLMOD/-1/
 C
       DATA IERNMS/    1,    2,    3,    4,    5,    6,    7,    8,
      +               20,   21,   22,   23,   24,   25,   26,   27,
@@ -216,8 +218,8 @@ C
      +             -111, -112, -200, -201, -202, -203, -204, -205,
      +             -206, -207, -208, -209, -210, -211, -212, -213,
      +             -214, -215, -216, -300, -301, -302, -303, -217,
-     +             -218, -219, -220, 2200, 2201, 2202, 2203, 2204,
-     +               90, -113                                     /
+     +             -218, -219, -220, -221, 2200, 2201, 2202, 2203,
+     +             2204,   90, -113/
       DATA ERMSGS(  1)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
      +E GKCL'/
       DATA ERMSGS(  2)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
@@ -388,19 +390,21 @@ C
      +llowed'/
       DATA ERMSGS(115)/' --X driver warning: color allocated is differen
      +t from the color requested'/
-      DATA ERMSGS(116)/' --C-binding specific error: buffer overflow in 
+      DATA ERMSGS(116)/' --X driver warning: unable to change color mode
+     +l'/
+      DATA ERMSGS(117)/' --C-binding specific error: buffer overflow in 
      +input or inquiry function'/
-      DATA ERMSGS(117)/' --C-binding specific error: start index out of 
+      DATA ERMSGS(118)/' --C-binding specific error: start index out of 
      +range'/
-      DATA ERMSGS(118)/' --C-binding specific error: enumeration type ou
+      DATA ERMSGS(119)/' --C-binding specific error: enumeration type ou
      +t of range'/
-      DATA ERMSGS(119)/' --C-binding specific error: length of list is n
+      DATA ERMSGS(120)/' --C-binding specific error: length of list is n
      +egative'/
-      DATA ERMSGS(120)/' --C-binding specific error: cannot allocate mem
+      DATA ERMSGS(121)/' --C-binding specific error: cannot allocate mem
      +ory'/
-      DATA ERMSGS(121)/' --INTERIOR STYLE PATTERN IS NOT SUPPORTED ON TH
+      DATA ERMSGS(122)/' --INTERIOR STYLE PATTERN IS NOT SUPPORTED ON TH
      +IS WORKSTATION'/
-      DATA ERMSGS(122)/' --Warning:  XMIN > XMAX or YMIN > YMAX in windo
+      DATA ERMSGS(123)/' --Warning:  XMIN > XMAX or YMIN > YMAX in windo
      +w (non-standard NCAR extension of GKS)'/
 C
       DATA GNAM(001),GNAM(002),GNAM(003)/'GOPKS' ,'GCLKS' ,'GOPWK' /

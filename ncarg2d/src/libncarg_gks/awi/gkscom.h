@@ -1,5 +1,5 @@
 C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
-      PARAMETER(MXNWK=15,NSEG=100,IWDIM=10000,NUMERS=122)
+      PARAMETER(MXNWK=15,NSEG=100,IWDIM=10000,NUMERS=123)
       COMMON/GKINTR/ NOPWK , NACWK , WCONID, NUMSEG,
      +               SEGS(NSEG)    , CURSEG, SEGLEN(NSEG)  , MXSREC,
      +               SEGT(NSEG,2,3), CURTM(2,3)            , SEGDEL,
@@ -19,7 +19,7 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               CNT   , LSNT(2)       , NTWN(2,4)     , NTVP(2,4),
      +               CCLIP , SWKTP(MXNWK)  , NOPICT, NWKTP ,
      +               LXWKID(MXNWK) , ECONID, CLLX  , CLLY  , CURX  ,
-     +               CURY  , CPSCL
+     +               CURY  , CPSCL , COLMOD 
       INTEGER        SOPWK , SACWK , CPLI  , CLN   , CPLCI , CLNA  ,
      +               CLWSCA, CPLCIA, CPMI  , CMK   , CPMCI , CMKA  ,
      +               CMKSA , CPMCIA, CTXI  , CTXFP , CTXCI , CTXFPA,
@@ -27,7 +27,7 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               CFAIS , CFASI , CFACI , CFAISA, CFASIA, CFACIA,
      +               CNT   , LSNT  , CCLIP , SWKTP , NOPICT, NWKTP ,
      +               LXWKID, ECONID, CLLX  , CLLY  , CURX  , CURY  ,
-     +               CPSCL
+     +               CPSCL , COLMOD
       REAL           NTWN  , NTVP
       COMMON /GKETBI/IERNMS(NUMERS)
       INTEGER IERNMS
