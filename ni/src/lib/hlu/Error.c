@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.3 1993-12-13 22:28:57 boote Exp $
+ *      $Id: Error.c,v 1.4 1993-12-13 22:55:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -47,7 +47,7 @@
 /* Resources */
 #define Oset(field)	NhlOffset(ErrorLayerRec,error.field)
 static NhlResource resources[] = {
-	{NhlNerrbuffer,NhlCerrbuffer,NhlTBoolean,sizeof(NhlBoolean),
+	{NhlNerrBuffer,NhlCerrBuffer,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(buffer_errors),NhlTImmediate,False},
 	{NhlNerrLevel,NhlCerrLevel,NhlTErrorTypes,sizeof(NhlErrorTypes),
 		Oset(error_level),NhlTString,(NhlPointer)"WARNING"},

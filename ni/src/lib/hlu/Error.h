@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.h,v 1.3 1993-12-13 22:29:01 boote Exp $
+ *      $Id: Error.h,v 1.4 1993-12-13 22:55:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -31,8 +31,8 @@
 
 /* Resource Names */
 
-#define NhlNerrbuffer	"errBuffer"
-#define NhlCerrbuffer	"ErrBuffer"
+#define NhlNerrBuffer	"errBuffer"
+#define NhlCerrBuffer	"ErrBuffer"
 #define NhlNerrLevel	"errLevel"
 #define NhlCerrLevel	"ErrLevel"
 #define NhlNerrPrint	"errPrint"
