@@ -10,8 +10,11 @@
 #include <ncarg/ncl/NclBuiltInSupport.h>
 #include <ncarg/gks.h>
 
+
 #define min(x,y)   ((x) < (y) ? (x) : (y))
 #define max(x,y)   ((x) > (y) ? (x) : (y))
+
+extern float powf(float,float);
 
 NhlErrorTypes dv2uvf_W( void )
 {
@@ -33,7 +36,7 @@ NhlErrorTypes dv2uvf_W( void )
  */
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0;
-  float scale = 6.37122e+6;         /* radius of earth */
+  float scale;
 /*
  * Workspace variables
  */
@@ -222,6 +225,8 @@ NhlErrorTypes dv2uvf_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
+  scale = 6.37122e+6;         /* radius of earth */
+
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&ud[0],&scale,&ner);
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&vd[0],&scale,&ner);
 /*
@@ -255,7 +260,7 @@ NhlErrorTypes dv2uvg_W( void )
  */
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0;
-  float scale = 6.37122e+6;         /* radius of earth */
+  float scale;
 /*
  * Workspace variables
  */
@@ -446,6 +451,8 @@ NhlErrorTypes dv2uvg_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
+  scale = 6.37122e+6;         /* radius of earth */
+
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&ud[0],&scale,&ner);
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&vd[0],&scale,&ner);
 /*
@@ -668,8 +675,6 @@ NhlErrorTypes gradsf_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */               /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
   scale = 1./6.37122e+6;       /* 1/(radius of earth) */
 
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&gzx[0],&scale,&ner);
@@ -895,8 +900,6 @@ NhlErrorTypes gradsg_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */               /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
   scale = 1./6.37122e+6;       /* 1/(radius of earth) */
 
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&gzx[0],&scale,&ner);
@@ -1145,9 +1148,7 @@ NhlErrorTypes igradsf_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
   scale = 6.37122e+6;         /* radius of earth */
-/*  scale = 1./6.37122e+6; */      /* 1/(radius of earth) */
 
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&z[0],&scale,&ner);
 /*
@@ -1375,9 +1376,7 @@ NhlErrorTypes igradsF_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
   scale = 6.37122e+6;         /* radius of earth */
-/*  scale = 1./6.37122e+6; */      /* 1/(radius of earth) */
 
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&z[0],&scale,&ner);
 /*
@@ -1617,9 +1616,7 @@ NhlErrorTypes igradsg_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
   scale = 6.37122e+6;         /* radius of earth */
-/*  scale = 1./6.37122e+6; */      /* 1/(radius of earth) */
 
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&z[0],&scale,&ner);
 /*
@@ -1839,9 +1836,7 @@ NhlErrorTypes igradsG_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
   scale = 6.37122e+6;         /* radius of earth */
-/*  scale = 1./6.37122e+6; */      /* 1/(radius of earth) */
 
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&z[0],&scale,&ner);
 /*
@@ -2088,11 +2083,7 @@ NhlErrorTypes ilapsf_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*
- *  scale = 1.0;
- *  scale = 1./6.37122e+6;
- */
-  scale = pow(6.37122e+6,2.);         /* radius of earth**2 */
+  scale = powf(6.37122e+6,2.);         /* radius of earth**2 */
 
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&z[0],&scale,&ner);
 /*
@@ -2321,11 +2312,7 @@ NhlErrorTypes ilapsF_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*
- *  scale = 1.0;
- *  scale = 1./6.37122e+6;
- */
-  scale = pow(6.37122e+6,2.);         /* radius of earth**2 */
+  scale = powf(6.37122e+6,2.);         /* radius of earth**2 */
 
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&z[0],&scale,&ner);
 /*
@@ -2434,7 +2421,7 @@ NhlErrorTypes ilapsg_W( void )
            NULL,
            NULL,
            NULL,
-           1);
+           2);
 /*
  * The output array must also be at least 2-dimensional.
  */
@@ -2572,9 +2559,7 @@ NhlErrorTypes ilapsg_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
-  scale = pow(6.37122e+6,2.);         /* radius of earth**2 */
-/*  scale = 1./6.37122e+6; */      /* 1/(radius of earth) */
+  scale = powf(6.37122e+6,2.);         /* radius of earth**2 */
 
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&z[0],&scale,&ner);
 /*
@@ -2803,9 +2788,7 @@ NhlErrorTypes ilapsG_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
-  scale = pow(6.37122e+6,2.);         /* radius of earth**2 */
-/*  scale = 1./6.37122e+6; */      /* 1/(radius of earth) */
+  scale = powf(6.37122e+6,2.);         /* radius of earth**2 */
 
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&z[0],&scale,&ner);
 /*
@@ -3055,9 +3038,7 @@ NhlErrorTypes ilapvf_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */               /* no scaling */
-  scale = pow(6.37122e+6,2.);         /* radius of earth**2 */
-/*  scale = 1./6.37122e+6; */      /* 1/(radius of earth) */
+  scale = powf(6.37122e+6,2.);         /* radius of earth**2 */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&u[0],&scale,&ner);
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&v[0],&scale,&ner);
@@ -3310,9 +3291,7 @@ NhlErrorTypes ilapvg_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
-  scale = pow(6.37122e+6,2.);         /* radius of earth**2 */
-/*  scale = 1./6.37122e+6; */      /* 1/(radius of earth) */
+  scale = powf(6.37122e+6,2.);         /* radius of earth**2 */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&u[0],&scale,&ner);
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&v[0],&scale,&ner);
@@ -3522,9 +3501,7 @@ NhlErrorTypes lapsf_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
-  scale = pow(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
+  scale = powf(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
  
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&zlap[0],&scale,&ner);
 /*
@@ -3717,9 +3694,7 @@ NhlErrorTypes lapsF_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
-  scale = pow(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
+  scale = powf(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
  
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&zlap[0],&scale,&ner);
 /*
@@ -3929,9 +3904,7 @@ NhlErrorTypes lapsg_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
-  scale = pow(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
+  scale = powf(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&zlap[0],&scale,&ner);
 /*
@@ -4123,9 +4096,7 @@ NhlErrorTypes lapsG_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
-  scale = pow(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
+  scale = powf(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&zlap[0],&scale,&ner);
 /*
@@ -4376,10 +4347,7 @@ NhlErrorTypes lapvf_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
-/*  scale = 1./6.37122e+6; */      /* 1/(radius of earth) */
-   scale = pow(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
+   scale = powf(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
   
    NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&ulap[0],&scale,&ner);
    NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&vlap[0],&scale,&ner);
@@ -4631,9 +4599,7 @@ NhlErrorTypes lapvg_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0;  */               /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
-  scale = pow(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
+  scale = powf(1./6.37122e+6,2.);       /* (1/(radius of earth))**2 */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&ulap[0],&scale,&ner);
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&vlap[0],&scale,&ner);
@@ -5385,8 +5351,6 @@ NhlErrorTypes lderuvf_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0;*/                /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
   scale = 1./6.37122e+6;      /* 1/(radius of earth) */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&uy[0],&scale,&ner);
@@ -5639,8 +5603,6 @@ NhlErrorTypes lderuvg_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0;*/                /* no scaling */
-  /*  scale = 6.37122e+6; */        /* radius of earth */
   scale = 1./6.37122e+6;      /* 1/(radius of earth) */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&uy[0],&scale,&ner);
@@ -5883,8 +5845,6 @@ NhlErrorTypes uv2dvf_W( void ){
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
   scale = 1./6.37122e+6;       /* 1/(radius of earth) */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&dv[0],&scale,&ner);
@@ -6108,8 +6068,6 @@ NhlErrorTypes uv2dvF_W( void ){
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
   scale = 1./6.37122e+6;       /* 1/(radius of earth) */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&dv[0],&scale,&ner);
@@ -6351,8 +6309,6 @@ NhlErrorTypes uv2dvg_W( void ){
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
   scale = 1./6.37122e+6;       /* 1/(radius of earth) */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&dv[0],&scale,&ner);
@@ -6576,8 +6532,6 @@ NhlErrorTypes uv2dvG_W( void ){
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
   scale = 1./6.37122e+6;       /* 1/(radius of earth) */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&dv[0],&scale,&ner);
@@ -6823,8 +6777,6 @@ NhlErrorTypes uv2vrf_W( void ){
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
   scale = 1./6.37122e+6;       /* 1/(radius of earth) */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&vort[0],&scale,&ner);
@@ -7051,8 +7003,6 @@ NhlErrorTypes uv2vrF_W( void ){
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
   scale = 1./6.37122e+6;       /* 1/(radius of earth) */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&vort[0],&scale,&ner);
@@ -7296,8 +7246,6 @@ NhlErrorTypes uv2vrg_W( void ){
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
   scale = 1./6.37122e+6;       /* 1/(radius of earth) */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&vort[0],&scale,&ner);
@@ -7523,8 +7471,6 @@ NhlErrorTypes uv2vrG_W( void ){
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
-/*  scale = 6.37122e+6; */        /* radius of earth */
   scale = 1./6.37122e+6;       /* 1/(radius of earth) */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&vort[0],&scale,&ner);
@@ -7772,6 +7718,7 @@ NhlErrorTypes uv2vrdvf_W( void )
  * (possibly) scale the quantities calculated by this routine
  */
   scale = 1./6.37122e+6;      /* 1/(radius of earth) */
+
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&dv[0],&scale,&ner);
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&vr[0],&scale,&ner);
 /*
@@ -8018,6 +7965,7 @@ NhlErrorTypes uv2vrdvg_W( void )
  * (possibly) scale the quantities calculated by this routine
  */
   scale = 1./6.37122e+6;      /* 1/(radius of earth) */
+
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&dv[0],&scale,&ner);
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&vr[0],&scale,&ner);
 /*
@@ -8243,9 +8191,7 @@ NhlErrorTypes vr2uvf_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
   scale = 6.37122e+6;         /* radius of earth */
-/*  scale = 1./6.37122e+6; */       /* 1/(radius of earth) */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&ur[0],&scale,&ner);
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&vr[0],&scale,&ner);
@@ -8471,9 +8417,7 @@ NhlErrorTypes vr2uvg_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
   scale = 6.37122e+6;         /* radius of earth */
-/*  scale = 1./6.37122e+6; */       /* 1/(radius of earth) */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&ur[0],&scale,&ner);
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&vr[0],&scale,&ner);
@@ -8732,9 +8676,7 @@ NhlErrorTypes vrdv2uvf_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
   scale = 6.37122e+6;         /* radius of earth */
-/*  scale = 1./6.37122e+6; */       /* 1/(radius of earth) */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&u[0],&scale,&ner);
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&v[0],&scale,&ner);
@@ -8991,9 +8933,7 @@ NhlErrorTypes vrdv2uvg_W( void )
 /*
  * (possibly) scale the quantities calculated by this routine
  */
-/*  scale = 1.0; */                /* no scaling */
   scale = 6.37122e+6;         /* radius of earth */
-/*  scale = 1./6.37122e+6; */       /* 1/(radius of earth) */
   
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&u[0],&scale,&ner);
   NGCALLF(geoscl,GEOSCL)(&nlon,&nlat,&nt,&v[0],&scale,&ner);

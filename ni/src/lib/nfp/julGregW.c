@@ -19,10 +19,10 @@
 #include <ncarg/ncl/NclBuiltInSupport.h>
 #include <ncarg/gks.h>
 
-extern double NGCALLF(greg2juld,GREG2JULD)(int *, int *, int *, int *);
-extern int NGCALLF(greg2juli,GREG2JULI)(int *, int *, int *);
-extern void NGCALLF(juld2greg,JULD2GREG)(double *, int *, int *, int *, int *);
-extern void NGCALLF(juli2greg,JULI2GREG)(int *, int *, int *, int *);
+extern double NGCALLF(greg2juld,GREG2JULD)(int *,int *,int *,int *);
+extern int    NGCALLF(greg2juli,GREG2JULI)(int *,int *,int *);
+extern void   NGCALLF(juld2greg,JULD2GREG)(double *,int *,int *,int *,int *);
+extern void   NGCALLF(juli2greg,JULI2GREG)(int *,int *,int *,int *);
 
 NhlErrorTypes greg2jul_W( void )
 {
@@ -188,7 +188,7 @@ NhlErrorTypes jul2greg_W( void )
  * Input variables
  */
   NclStackEntry data;
-  NclMultiDValData tmp_md = NULL;
+  NclMultiDValData tmp_md = NULL, tmp1_md;
   int ndims_jul;
 /*
  * Output variables
@@ -198,7 +198,7 @@ NhlErrorTypes jul2greg_W( void )
 /*
  * Other variables
  */
-  int i, j, total, return_double;;
+  int i, j, total, num_elems, is_double;
 /*
  * Retrieve argument.
  *
@@ -223,14 +223,30 @@ NhlErrorTypes jul2greg_W( void )
 /*
  * Allocate space for output array.
  */
-  return_double = 0;
-  if( tmp_md->multidval.data_type == NCL_double ) {
-	return_double = 1;
-	date = (int*)NclMalloc(4*total*sizeof(int));
+  if( tmp_md->multidval.data_type == NCL_double ||
+      tmp_md->multidval.data_type == NCL_float) {
+
+/*
+ * Promote to double if necessary.
+ */
+	if(tmp_md->multidval.data_type == NCL_float) {
+	  tmp1_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
+	  if(tmp1_md == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"jul2greg: Unable to convert input to double");
+		return(NhlFATAL);
+	  }	
+	}
+	else {
+	  tmp1_md = tmp_md;
+	}
+	is_double = 1;
+	num_elems = 4;
   }
   else {
-	date = (int*)NclMalloc(3*total*sizeof(int));
+	is_double = 0;
+	num_elems = 3;
   }
+  date = (int*)NclMalloc(num_elems*total*sizeof(int));
   if( date == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"jul2greg: Unable to allocate memory for output array");
     return(NhlFATAL);
@@ -238,49 +254,31 @@ NhlErrorTypes jul2greg_W( void )
 /*
  * Call conversion procedure.
  */
-  if(return_double) {
-	j = 0;
-	for( i = 0; i < total; i++ ) {
-	  NGCALLF(juld2greg,JULD2GREG)(&((double*)tmp_md->multidval.val)[i],
+  j = 0;
+  for( i = 0; i < total; i++ ) {
+	if(is_double) {
+	  NGCALLF(juld2greg,JULD2GREG)(&((double*)tmp1_md->multidval.val)[i],
 								   &date[j],&date[j+1],&date[j+2],&date[j+3]);
-	  j += 4;
-	}
-/*
- * Return information.
- */
-	if(ndims_jul == 1 && tmp_md->multidval.dim_sizes[0] == 1) {
-	  ndims_date     = 1;
-	  dsizes_date[0] = 4;
 	}
 	else {
-	  ndims_date = ndims_jul + 1;
-	  for( i = 0; i < ndims_jul; i++ ) {
-		dsizes_date[i] = tmp_md->multidval.dim_sizes[i];
-	  }
-	  dsizes_date[ndims_jul] = 4;
-	}
-  }
-  else {
-	j = 0;
-	for( i = 0; i < total; i++ ) {
 	  NGCALLF(juli2greg,JULI2GREG)(&((int*)tmp_md->multidval.val)[i],
 								   &date[j],&date[j+1],&date[j+2]);
-	  j += 3;
 	}
+	j += num_elems;
+  }
 /*
  * Return information.
  */
-	if(ndims_jul == 1 && tmp_md->multidval.dim_sizes[0] == 1) {
-	  ndims_date = 1;
-	  dsizes_date[0] = 3;
+  if(ndims_jul == 1 && tmp_md->multidval.dim_sizes[0] == 1) {
+	ndims_date     = 1;
+	dsizes_date[0] = num_elems;
+  }
+  else {
+	ndims_date = ndims_jul + 1;
+	for( i = 0; i < ndims_jul; i++ ) {
+	  dsizes_date[i] = tmp_md->multidval.dim_sizes[i];
 	}
-	else {
-	  ndims_date = ndims_jul + 1;
-	  for( i = 0; i < ndims_jul; i++ ) {
-		dsizes_date[i] = tmp_md->multidval.dim_sizes[i];
-	  }
-	  dsizes_date[ndims_jul] = 3;
-	}
+	dsizes_date[ndims_jul] = num_elems;
   }
   return(NclReturnValue((void*)date,ndims_date,dsizes_date,NULL,NCL_int,0));
 }
