@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.147 2004-06-05 18:52:00 haley Exp $
+;      $Id: gsn_code.ncl,v 1.148 2004-07-01 14:34:27 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6564,7 +6564,7 @@ begin
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
-    mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT"/))
+    mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT","tm"/))
     cnres = get_res_ne(res2,(/"mp","sf","vp"/))
 
     attsetvalues_check(map_object,mpres)
@@ -6840,7 +6840,7 @@ begin
     scale     = get_res_value(res2,"gsnScale",shape)
 
     vfres = get_res_eq(res2,"vf")
-    mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT"/))
+    mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT","tm"/))
     stres = get_res_ne(res2,(/"vf","mp","vp"/))
 
     attsetvalues_check(data_object,vfres)
@@ -7654,7 +7654,7 @@ begin
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
     cnres = get_res_eq(res2,(/"cn","tf"/))
-    mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT"/))
+    mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT","tm"/))
     vcres = get_res_ne(res2,(/"cn","mp","sf","vf","vp"/))
 
     attsetvalues_check(vfdata_object,vfres)
@@ -7772,7 +7772,7 @@ begin
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
     vfres = get_res_eq(res2,"vf")
-    mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT"/))
+    mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT","tm"/))
     vcres = get_res_ne(res2,(/"mp","vf","vp"/))
 
     attsetvalues_check(data_object,vfres)
@@ -8053,7 +8053,7 @@ begin
 
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
-    mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT"/))
+    mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT","tm"/))
     vcres = get_res_ne(res2,(/"mp","sf","vf","vp"/))
 
     attsetvalues_check(vfdata_object,vfres)

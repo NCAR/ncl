@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.168 2004-06-18 15:12:29 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.169 2004-07-01 14:34:27 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -8516,6 +8516,28 @@ begin
             bar_colors_below = bar_colors_above
           end if
 ;
+; Now that we've exhausted all the possible ways that bar colors can
+; be set for the above ref line, check that the array is a valid size.
+;
+          if(mlt_above_bar_colors) then
+            bac_rank = dimsizes(dimsizes(bar_colors_above))
+            if(bac_rank.gt.2.or. \
+              (bac_rank.eq.2.and.dimsizes(bar_colors_above(:,0)).ne.nyref)) then
+              print("gsn_csm_xy: Fatal: The resource for specifying bar colors must either be 1D, or 2D where the first dimension is equal to the number of Y reference lines or curves.")
+              print("Will not fill your bar chart.")
+              mlt_above_bar_colors = False
+            end if            
+          end if
+          if(mlt_below_bar_colors) then
+            bbc_rank = dimsizes(dimsizes(bar_colors_below))
+            if(bbc_rank.gt.2.or. \
+              (bbc_rank.eq.2.and.dimsizes(bar_colors_below(:,0)).ne.nyref)) then
+              print("gsn_csm_xy: Fatal: The resource for specifying bar colors must either be 1D, or 2D where the first dimension is equal to the number of Y reference lines or curves.")
+              print("Will not fill your bar chart.")
+              mlt_below_bar_colors = False
+            end if            
+          end if
+;
 ; Check for above reference line fill patterns.
 ;
           if(isatt(res2,"gsnAboveYRefLineBarPatterns")) then
@@ -8581,6 +8603,29 @@ begin
             bar_pttrns_above = get_res_value(res2,"gsnXYBarChartPatterns2",1)
             bar_pttrns_below = bar_pttrns_above
           end if  
+;
+; Now that we've exhausted all the possible ways that bar patterns can
+; be set for the above ref line, check that the array is a valid size.
+;
+          if(mlt_above_bar_pttrns) then
+            bap_rank = dimsizes(dimsizes(bar_pttrns_above))
+            if(bap_rank.gt.2.or. \
+              (bap_rank.eq.2.and.dimsizes(bar_pttrns_above(:,0)).ne.nyref)) then
+              print("gsn_csm_xy: Fatal: The resource for specifying bar patterns must either be 1D, or 2D where the first dimension is equal to the number of Y reference lines or curves.")
+              print("Will not fill your bar chart.")
+              mlt_above_bar_pttrns = False
+            end if            
+          end if
+          if(mlt_below_bar_pttrns) then
+            bbp_rank = dimsizes(dimsizes(bar_pttrns_below))
+            if(bbp_rank.gt.2.or. \
+              (bbp_rank.eq.2.and.dimsizes(bar_pttrns_below(:,0)).ne.nyref)) then
+              print("gsn_csm_xy: Fatal: The resource for specifying bar patterns must either be 1D, or 2D where the first dimension is equal to the number of Y reference lines or curves.")
+              print("Will not fill your bar chart.")
+              mlt_below_bar_pttrns = False
+            end if            
+          end if
+
 ;
 ; Loop across curves and figure out which points are above, below,
 ; and equal to the references lines.  First create arrays to hold points
@@ -8750,10 +8795,18 @@ begin
 ;
           if(mlt_above_bar_colors.or.mlt_above_bar_pttrns) then
             if(mlt_above_bar_colors) then
-              nca = dimsizes(bar_colors_above)
+              if(bac_rank.eq.1) then
+                nca = dimsizes(bar_colors_above)
+              else
+                nca = dimsizes(bar_colors_above(0,:))
+              end if
             end if
             if(mlt_above_bar_pttrns) then
-              npa = dimsizes(bar_pttrns_above)
+              if(bap_rank.eq.1) then
+                npa = dimsizes(bar_pttrns_above)
+              else
+                npa = dimsizes(bar_pttrns_above(0,:))
+              end if
             end if
             do ii = 0,nabove(i)/5-1
               var_string2 = var_string + "above" + ii
@@ -8763,7 +8816,11 @@ begin
                 else
                   ci = ii % nca
                 end if
-                gsres@gsFillColor = bar_colors_above(ci)
+                if(bac_rank.eq.1) then
+                  gsres@gsFillColor = bar_colors_above(ci)
+                else
+                  gsres@gsFillColor = bar_colors_above(i,ci)
+                end if
               end if
               if(mlt_above_bar_pttrns) then
                 if(pttrns2) then 
@@ -8771,7 +8828,11 @@ begin
                 else
                   pi = ii % npa
                 end if
-                gsres@gsFillIndex = bar_pttrns_above(pi)
+                if(bap_rank.eq.1) then
+                  gsres@gsFillIndex = bar_pttrns_above(pi)
+                else
+                  gsres@gsFillIndex = bar_pttrns_above(i,pi)
+                end if
               end if
               xy_object@$var_string2$ = gsn_add_polygon(wks,xy_object, \
                                                      xabove(i,ii*5:ii*5+4), \
@@ -8800,10 +8861,18 @@ begin
 ;
          if(mlt_below_bar_colors.or.mlt_below_bar_pttrns) then
             if(mlt_below_bar_colors) then
-              ncb = dimsizes(bar_colors_below)
+              if(bbc_rank.eq.1) then
+                ncb = dimsizes(bar_colors_below)
+              else
+                ncb = dimsizes(bar_colors_below(0,:))
+              end if
             end if
             if(mlt_below_bar_pttrns) then
-              npb = dimsizes(bar_pttrns_below)
+              if(bbp_rank.eq.1) then
+                npb = dimsizes(bar_pttrns_below)
+              else
+                npb = dimsizes(bar_pttrns_below(0,:))
+              end if
             end if
             do ii = 0,nbelow(i)/5-1
               var_string2 = var_string + "below" + ii
@@ -8813,7 +8882,11 @@ begin
                 else
                   ci = ii % ncb
                 end if
-                gsres@gsFillColor = bar_colors_below(ci)
+                if(bbc_rank.eq.1) then
+                  gsres@gsFillColor = bar_colors_below(ci)
+                else
+                  gsres@gsFillColor = bar_colors_below(i,ci)
+                end if
               end if
               if(mlt_below_bar_pttrns) then
                 if(pttrns2) then 
@@ -8821,7 +8894,11 @@ begin
                 else
                   pi = ii % npb
                 end if
-                gsres@gsFillIndex = bar_pttrns_below(pi)
+                if(bbp_rank.eq.1) then
+                  gsres@gsFillIndex = bar_pttrns_below(pi)
+                else
+                  gsres@gsFillIndex = bar_pttrns_below(i,pi)
+                end if
               end if
               xy_object@$var_string2$ = gsn_add_polygon(wks,xy_object, \
                                                      xbelow(i,ii*5:ii*5+4), \
