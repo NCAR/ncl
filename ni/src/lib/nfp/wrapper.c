@@ -174,6 +174,7 @@ extern NhlErrorTypes rdsstoi_W(void);
 extern NhlErrorTypes vibeta_W(void);
 extern NhlErrorTypes int2p_W(void);
 extern NhlErrorTypes hydro_W(void);
+extern NhlErrorTypes linmsg_W(void);
 
 extern NhlErrorTypes pslhyp_W(void);
 extern NhlErrorTypes pslec_W(void);
@@ -2302,6 +2303,15 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
     NclRegisterFunc(hydro_W,args,"hydro",nargs);
+
+/*
+ * Register "linmsg".
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    NclRegisterFunc(linmsg_W,args,"linmsg",nargs);
 
 /*
  * Register "pslhyp".
