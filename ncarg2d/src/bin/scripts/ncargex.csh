@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.9 1993-01-13 23:39:51 haley Exp $
+#   $Id: ncargex.csh,v 1.10 1993-01-14 00:33:08 haley Exp $
 #
 
 set example_dir=`ncargpath SED_EXAMPLESDIR`
@@ -38,7 +38,7 @@ agex01 agex02 agex03 agex04 agex05 agex06 agex07 agex08 agex09 agex10 \
 agex11 agex12 agex13 arex01 mpex01 mpex02 mpex03 mpex04 mpex05 mpex06 \
 mpex07 mpex08 mpex09 mpex10 mpexfi cpex01 cpex02 cpex03 cpex04 cpex05 \
 cpex06 cpex07 cpex08 cpex09 eezmpa elblba epltch cbex01 coex01 coex02 \
-coex03 srex01 stex01 sfex01 sfex02 example)
+coex03 srex01 stex01 sfex01 sfex02 example nglogy ngrevx ngset1 ngset2)
 
 set test_list=(\
 tagupw tareas tautog tcnqck tcnsmt tcnsup tcolcv tconan tconaq \
