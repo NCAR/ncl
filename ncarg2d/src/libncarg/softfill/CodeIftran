@@ -1,0 +1,1066 @@
+.OP LS=10001 LI=1 CB RT OC UC=0 BI=66
+.EL I
+I***********************************************************************
+I S O F T F I L L   -   I N T R O D U C T I O N
+I***********************************************************************
+I
+I This file contains materials for a software area-fill package called
+I SOFTFILL.  Double-spaced headers like the one above set off major
+I portions of the file.  Included are implementation instructions, a
+I write-up, user-level routines, and internal routines.
+I
+I***********************************************************************
+I S O F T F I L L   -   I M P L E M E N T A T I O N
+I***********************************************************************
+I
+I The master version of SOFTFILL is written in IFTRAN, an extended form
+I of FORTRAN which provides many conveniences.  Running it through the
+I IFTRAN preprocessor yields a standard FORTRAN 77 file, which is the
+I version distributed as a part of NCAR Graphics.
+I
+I SOFTFILL requires various parts of the NCAR Graphics package to have
+I been implemented (in particular, it uses the support routine SETER
+I and various routines from SPPS).
+I
+I***********************************************************************
+I S O F T F I L L   -   I F T R A N   P R E A M B L E
+I***********************************************************************
+I
+I To include a CVS "$Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $" comment in each routine, use ".DE A"; else,
+I use ".EL A".
+I
+.DE A
+I
+I***********************************************************************
+I S O F T F I L L   -   U S E R - L E V E L   R O U T I N E S
+I***********************************************************************
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
+A
+      SUBROUTINE SFSGFA (XRA,YRA,NRA,DST,NST,IND,NND,ICI)
+C
+C Declare the dimensions of argument arrays.
+C
+      DIMENSION XRA(NRA),YRA(NRA),DST(NST),IND(NND)
+C
+C Declare the labeled common block.
+C
+      COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
+C
+C Declare the block data routine external to force its loading.
+C
+      EXTERNAL SFBLDA
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('SFSGFA - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Do fill of the type selected by the values of ICI and ITY.
+C
+      IF (ITY.EQ.0)
+        IF (ICI.GE.0)
+          CALL GQFACI (IER,ISC)
+          IF (IER.NE.0) THEN
+            CALL SETER ('SFSGFA - ERROR EXIT FROM GQFACI',2,1)
+            RETURN
+          END IF
+          CALL GSFACI (ICI)
+        END IF
+        DO (I=1,NRA)
+          XRA(I)=CUFX(XRA(I))
+          IF (ICFELL('SFSGFA',3).NE.0) RETURN
+          YRA(I)=CUFY(YRA(I))
+          IF (ICFELL('SFSGFA',4).NE.0) RETURN
+        END DO
+        CALL GETSET (XLVP,XRVP,YBVP,YTVP,XLWD,XRWD,YBWD,YTWD,LNLG)
+        IF (ICFELL('SFSGFA',5).NE.0) RETURN
+        CALL SET    (XLVP,XRVP,YBVP,YTVP,XLVP,XRVP,YBVP,YTVP,   1)
+        IF (ICFELL('SFSGFA',6).NE.0) RETURN
+        CALL GFA    (NRA,XRA,YRA)
+        CALL SET    (XLVP,XRVP,YBVP,YTVP,XLWD,XRWD,YBWD,YTWD,LNLG)
+        IF (ICFELL('SFSGFA',7).NE.0) RETURN
+        IF (ICI.GE.0) CALL GSFACI (ISC)
+      ELSE IF (ITY.GT.0)
+        IF (ICI.GE.0)
+          CALL GQPLCI (IER,ISC)
+          IF (IER.NE.0) THEN
+            CALL SETER ('SFSGFA - ERROR EXIT FROM GQPLCI',8,1)
+            RETURN
+          END IF
+          CALL GSPLCI (ICI)
+        END IF
+        CALL SFWRLD (XRA,YRA,NRA,DST,NST,IND,NND)
+        IF (ICFELL('SFSGFA',9).NE.0) RETURN
+        IF (ITY.GT.1)
+          AID=AID+90.
+          CALL SFNORM (XRA,YRA,NRA,DST,NST,IND,NND)
+          IF (ICFELL('SFSGFA',10).NE.0) RETURN
+          AID=AID-90.
+        END IF
+        IF (ICI.GE.0) CALL GSPLCI (ISC)
+      ELSE
+        IF (ICI.GT.0)
+          AIS=AID
+          DBS=DBL
+          IT1=-ITY
+          DO (I=1,IT1)
+            IT2=(ICI+IT1-I)/IT1
+            IF (IT2.GT.0) THEN
+              AID=AIS+REAL((I-1)*(180/IT1))
+              DBL=MAX(DBS/8.,DBS*2.**(6-IT2))
+              IF (I.EQ.1) THEN
+                CALL SFWRLD (XRA,YRA,NRA,DST,NST,IND,NND)
+                IF (ICFELL('SFSGFA',11).NE.0) RETURN
+              ELSE
+                CALL SFNORM (XRA,YRA,NRA,DST,NST,IND,NND)
+                IF (ICFELL('SFSGFA',12).NE.0) RETURN
+              END IF
+            END IF
+          END DO
+          AID=AIS
+          DBL=DBS
+        END IF
+      END IF
+C
+C Done.
+C
+      RETURN
+C
+      END
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
+A
+      SUBROUTINE SFWRLD (XRA,YRA,NRA,DST,NST,IND,NND)
+C
+C Declare the dimensions of argument arrays.
+C
+      DIMENSION XRA(NRA),YRA(NRA),DST(NST),IND(NND)
+C
+C Declare the labeled common block.
+C
+      COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
+C
+C Declare the block data routine external to force its loading.
+C
+      EXTERNAL SFBLDA
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('SFWRLD - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Convert the data to the proper units.
+C
+      DO (I=1,NRA)
+        XRA(I)=CUFX(XRA(I))
+        IF (ICFELL('SFWRLD',2).NE.0) RETURN
+        YRA(I)=CUFY(YRA(I))
+        IF (ICFELL('SFWRLD',3).NE.0) RETURN
+      END DO
+C
+C Call the routine SFNORM to finish the job.
+C
+      CALL SFNORM (XRA,YRA,NRA,DST,NST,IND,NND)
+      IF (ICFELL('SFWRLD',4).NE.0) RETURN
+C
+C Done.
+C
+      RETURN
+C
+      END
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
+A
+      SUBROUTINE SFNORM (XRA,YRA,NRA,DST,NST,IND,NND)
+C
+C Declare the dimensions of argument arrays.
+C
+      DIMENSION XRA(NRA),YRA(NRA),DST(NST),IND(NND)
+C
+C Declare the point-coordinate arrays.
+C
+      DIMENSION XPT(100),YPT(100)
+C
+C Declare the labeled common block.
+C
+      COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
+C
+C Declare the block data routine external to force its loading.
+C
+      EXTERNAL SFBLDA
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('SFNORM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Check for obvious errors in the given dimensions.
+C
+      IF (NRA.LE.2)
+        INVOKE (NRA-TOO-SMALL,NR)
+      END IF
+C
+      IF (NST.LE.NRA)
+        INVOKE (NST-TOO-SMALL,NR)
+      END IF
+C
+      IF (NND.LE.NRA)
+        INVOKE (NND-TOO-SMALL,NR)
+      END IF
+C
+C Convert the desired shading angle to radians.
+C
+      AIR=.017453292519943*AID
+C
+C Compute the constants "XCO" and "YCO" such that any line having an
+C equation of the form "XCO*x+YCO*y=c" will have the desired angle.
+C
+      XCO=-SIN(AIR)
+      YCO=+COS(AIR)
+C
+C Compute the spacing between lines.
+C
+      SBL=DBL
+      IF (DBL.LE.0..OR.DBL.GE.1.) SBL=.00125
+C
+C If lines will be drawn, flush the line buffer.  If points will be
+C drawn, re-set the viewport and window and initialize the point buffer.
+C
+      IF (LPA.EQ.0)
+        CALL PLOTIF (0.,0.,2)
+        IF (ICFELL('SFNORM',2).NE.0) RETURN
+      ELSE
+        CALL GETSET (FA1,FA2,FA3,FA4,FA5,FA6,FA7,FA8,IA9)
+        IF (ICFELL('SFNORM',3).NE.0) RETURN
+        CALL SET    (FA1,FA2,FA3,FA4,FA1,FA2,FA3,FA4,  1)
+        IF (ICFELL('SFNORM',4).NE.0) RETURN
+        NPT=0
+      END IF
+C
+C Compute the directed distances of the given points from the line
+C "XCO*x+YCO*y=0".
+C
+      DO (I=1,NRA)
+        DST(I)=XCO*XRA(I)+YCO*YRA(I)
+      END DO
+C
+C Generate a list of indices of the distances, sorted by increasing
+C distance.  DST(IND(1)), DST(IND(2)), ... DST(IND(NRA)) is a list of
+C the directed distances of the given points, in increasing numerical
+C order.
+C
+      CALL SFSORT (DST,NRA,0,IND)
+C
+C Draw lines at distances "DFB" from the baseline "XCO*x+YCO*y=0" which
+C are multiples of "SBL" between the smallest and largest point
+C distances.  JND points to the index of that point having the greatest
+C distance less than the distance of the last line drawn (initially 0)
+C and KND points to the end of the list of line segments which the last
+C line drawn intersected - it is stored backwards at the end of IND -
+C the initial value specifies that this list is empty.
+C
+      JND=0
+      KND=NND+1
+C
+C IPT is the index of the next point past the last line drawn and IPE
+C is the index of the last point.
+C
+      IPT=IND(1)
+      IPE=IND(NRA)
+C
+      FOR (ISP = INT(DST(IPT)/SBL)-1 TO INT(DST(IPE)/SBL)+1)
+C
+        JMP=MOD(ISP,8)
+        IF (JMP.LT.0) JMP=JMP+8
+        JMP=8-JMP
+        DFB=REAL(ISP)*SBL
+C
+C Advance JND to reflect the number of points passed over by the
+C algorithm and update the list of pointers to intersecting lines.
+C
+        LOOP
+          EXIT IF (JND.GE.NRA)
+          EXIT IF (DFB.LE.DST(IPT))
+          IPP=MOD(IPT+NRA-2,NRA)+1
+          IPF=MOD(IPT      ,NRA)+1
+          IF    (DST(IPP).LT.DST(IPT))
+            IPX=IPP
+            INVOKE (REMOVE-INTERSECTING-LINE)
+          ELSE IF (DST(IPP).GT.DST(IPT))
+            IPX=IPP
+            INVOKE (ADD-AN-INTERSECTING-LINE)
+          END IF
+          IF    (DST(IPT).GT.DST(IPF))
+            IPX=IPT
+            INVOKE (REMOVE-INTERSECTING-LINE)
+          ELSE IF (DST(IPT).LT.DST(IPF))
+            IPX=IPT
+            INVOKE (ADD-AN-INTERSECTING-LINE)
+          END IF
+          JND=JND+1
+          IPT=IND(JND+1)
+        END LOOP
+C
+C Compute a set of values representing the intersection points of the
+C current line with the line segments of the polygon.
+C
+        IF (KND.LE.NND)
+          IF (NRA+NND-KND+1.LE.NST)
+            LND=NRA
+            IF (ABS(XCO).GT.ABS(YCO))
+              DO (I=KND,NND)
+                IP1=IND(I)
+                IP2=MOD(IND(I),NRA)+1
+                LND=LND+1
+                TMP=XCO*(XRA(IP2)-XRA(IP1))+YCO*(YRA(IP2)-YRA(IP1))
+                IF (ABS(TMP).GT..000001)
+                  DST(LND)=(DFB*(YRA(IP2)-YRA(IP1))-XCO*
+     +                     (XRA(IP1)*YRA(IP2)-XRA(IP2)*YRA(IP1)))/TMP
+                ELSE
+                  DST(LND)=.5*(YRA(IP1)+YRA(IP2))
+                END IF
+              END DO
+            ELSE
+              DO (I=KND,NND)
+                IP1=IND(I)
+                IP2=MOD(IND(I),NRA)+1
+                LND=LND+1
+                TMP=XCO*(XRA(IP2)-XRA(IP1))+YCO*(YRA(IP2)-YRA(IP1))
+                IF (ABS(TMP).GT..000001)
+                  DST(LND)=(DFB*(XRA(IP2)-XRA(IP1))+YCO*
+     +                     (XRA(IP1)*YRA(IP2)-XRA(IP2)*YRA(IP1)))/TMP
+                ELSE
+                  DST(LND)=.5*(XRA(IP1)+XRA(IP2))
+                END IF
+              END DO
+            END IF
+          ELSE
+            INVOKE (NST-TOO-SMALL,NR)
+          END IF
+C
+C Put these values in ascending order.  Actually, once again, we set up
+C an index array specifying the order.
+C
+          IF (LND.LT.KND)
+            CALL SFSORT (DST(NRA+1),LND-NRA,0,IND(NRA+1))
+          ELSE
+            INVOKE (NND-TOO-SMALL,NR)
+          END IF
+C
+C Draw the line segments specified by the list.
+C
+          IN1=NRA+1
+          IF (LPA.EQ.0)
+            IF (ABS(XCO).GT.ABS(YCO))
+              WHILE (IN1.LT.LND)
+                JN1=NRA+IND(IN1)
+                IN2=IN1+1
+                LOOP
+                  JN2=NRA+IND(IN2)
+                  EXIT IF (IN2.GE.LND)
+                  JNT=NRA+IND(IN2+1)
+                  EXIT IF (DST(JNT)-DST(JN2).GT..000001)
+                  IN2=IN2+2
+                END LOOP
+                IF (DST(JN2)-DST(JN1).GT..000001)
+                  CALL PLOTIF ((DFB-YCO*DST(JN1))/XCO,DST(JN1),0)
+                  IF (ICFELL('SFNORM',5).NE.0) RETURN
+                  CALL PLOTIF ((DFB-YCO*DST(JN2))/XCO,DST(JN2),1)
+                  IF (ICFELL('SFNORM',6).NE.0) RETURN
+                END IF
+                IN1=IN2+1
+              END WHILE
+            ELSE
+              WHILE (IN1.LT.LND)
+                JN1=NRA+IND(IN1)
+                IN2=IN1+1
+                LOOP
+                  JN2=NRA+IND(IN2)
+                  EXIT IF (IN2.GE.LND)
+                  JNT=NRA+IND(IN2+1)
+                  EXIT IF (DST(JNT)-DST(JN2).GT..000001)
+                  IN2=IN2+2
+                END LOOP
+                IF (DST(JN2)-DST(JN1).GT..000001)
+                  CALL PLOTIF (DST(JN1),(DFB-XCO*DST(JN1))/YCO,0)
+                  IF (ICFELL('SFNORM',7).NE.0) RETURN
+                  CALL PLOTIF (DST(JN2),(DFB-XCO*DST(JN2))/YCO,1)
+                  IF (ICFELL('SFNORM',8).NE.0) RETURN
+                END IF
+                IN1=IN2+1
+              END WHILE
+            END IF
+          ELSE
+            IF (ABS(XCO).GT.ABS(YCO))
+              WHILE (IN1.LT.LND)
+                JN1=NRA+IND(IN1)
+                IN2=IN1+1
+                LOOP
+                  JN2=NRA+IND(IN2)
+                  EXIT IF (IN2.GE.LND)
+                  JNT=NRA+IND(IN2+1)
+                  EXIT IF (DST(JNT)-DST(JN2).GT..000001)
+                  IN2=IN2+2
+                END LOOP
+                IF (DST(JN2)-DST(JN1).GT..000001)
+                  DSA=YCO*(DFB-YCO*DST(JN1))/XCO-XCO*DST(JN1)
+                  DSB=YCO*(DFB-YCO*DST(JN2))/XCO-XCO*DST(JN2)
+                  DS1=AMIN1(DSA,DSB)
+                  DS2=AMAX1(DSA,DSB)
+                  JS1=INT(DS1/SBL+.5+SIGN(.5,DS1))
+                  JS2=INT(DS2/SBL-.5+SIGN(.5,DS2))
+                  FOR (JSP = JS1 TO JS2)
+                    IMP=MOD(JSP,8)+1
+                    IF (IMP.LE.0) IMP=IMP+8
+                    IF (LDP(IMP,JMP).NE.0)
+                      SPJ=REAL(JSP)*SBL
+                      NPT=NPT+1
+                      XPT(NPT)=XCO*DFB+YCO*SPJ
+                      YPT(NPT)=YCO*DFB-XCO*SPJ
+                      IF (NPT.EQ.100)
+                        IF (LPA.GT.0)
+                          CALL POINTS (XPT,YPT,100,LCH,0)
+                          IF (ICFELL('SFNORM',9).NE.0) RETURN
+                        ELSE
+                          CALL NGDOTS (XPT,YPT,100,RDS,IDC)
+                        END IF
+                        NPT=0
+                      END IF
+                    END IF
+                  END FOR
+                END IF
+                IN1=IN2+1
+              END WHILE
+            ELSE
+              WHILE (IN1.LT.LND)
+                JN1=NRA+IND(IN1)
+                IN2=IN1+1
+                LOOP
+                  JN2=NRA+IND(IN2)
+                  EXIT IF (IN2.GE.LND)
+                  JNT=NRA+IND(IN2+1)
+                  EXIT IF (DST(JNT)-DST(JN2).GT..000001)
+                  IN2=IN2+2
+                END LOOP
+                IF (DST(JN2)-DST(JN1).GT..000001)
+                  DSA=YCO*DST(JN1)-XCO*(DFB-XCO*DST(JN1))/YCO
+                  DSB=YCO*DST(JN2)-XCO*(DFB-XCO*DST(JN2))/YCO
+                  DS1=AMIN1(DSA,DSB)
+                  DS2=AMAX1(DSA,DSB)
+                  JS1=INT(DS1/SBL+.5+SIGN(.5,DS1))
+                  JS2=INT(DS2/SBL-.5+SIGN(.5,DS2))
+                  FOR (JSP = JS1 TO JS2)
+                    IMP=MOD(JSP,8)+1
+                    IF (IMP.LE.0) IMP=IMP+8
+                    IF (LDP(IMP,JMP).NE.0)
+                      SPJ=REAL(JSP)*SBL
+                      NPT=NPT+1
+                      XPT(NPT)=XCO*DFB+YCO*SPJ
+                      YPT(NPT)=YCO*DFB-XCO*SPJ
+                      IF (NPT.EQ.100)
+                        IF (LPA.GT.0)
+                          CALL POINTS (XPT,YPT,100,LCH,0)
+                          IF (ICFELL('SFNORM',10).NE.0) RETURN
+                        ELSE
+                          CALL NGDOTS (XPT,YPT,100,RDS,IDC)
+                        END IF
+                        NPT=0
+                      END IF
+                    END IF
+                  END FOR
+                END IF
+                IN1=IN2+1
+              END WHILE
+            END IF
+          END IF
+C
+        END IF
+      END FOR
+C
+C If lines were drawn, flush the line buffer.  If points were drawn,
+C flush the point buffer and restore the original viewport and window.
+C
+      IF (LPA.EQ.0)
+        CALL PLOTIF (0.,0.,2)
+        IF (ICFELL('SFNORM',11).NE.0) RETURN
+      ELSE
+        IF (NPT.NE.0)
+          IF (LPA.GT.0)
+            CALL POINTS (XPT,YPT,NPT,LCH,0)
+            IF (ICFELL('SFNORM',12).NE.0) RETURN
+          ELSE
+            CALL NGDOTS (XPT,YPT,NPT,RDS,IDC)
+          END IF
+        END IF
+        CALL SET (FA1,FA2,FA3,FA4,FA5,FA6,FA7,FA8,IA9)
+        IF (ICFELL('SFNORM',13).NE.0) RETURN
+      END IF
+C
+C Done.
+C
+      RETURN
+C
+C Remove the line segment numbered IPX from the list of intersecting
+C line segments.
+C
+      BLOCK (REMOVE-INTERSECTING-LINE)
+        IF (KND.LE.NND)
+          DO (I=KND,NND)
+            IF (IND(I).EQ.IPX)
+              IND(I)=IND(KND)
+              KND=KND+1
+              GO TO 101
+            END IF
+          END DO
+          INVOKE (LOGIC-ERROR,NR)
+        ELSE
+          INVOKE (LOGIC-ERROR,NR)
+        END IF
+  101 END BLOCK
+C
+C Add the line segment numbered IPX to the list of intersecting line
+C line segments.
+C
+      BLOCK (ADD-AN-INTERSECTING-LINE)
+        KND=KND-1
+        IF (KND.GT.NRA)
+          IND(KND)=IPX
+        ELSE
+          INVOKE (NND-TOO-SMALL,NR)
+        END IF
+      END BLOCK
+C
+C Error exits.
+C
+      BLOCK (NRA-TOO-SMALL,NR)
+        CALL SETER ('SFNORM - COORDINATE ARRAYS TOO SMALL',14,1)
+        RETURN
+      END BLOCK
+C
+      BLOCK (NST-TOO-SMALL,NR)
+        CALL SETER ('SFNORM - ARRAY DST IS TOO SMALL',15,1)
+        RETURN
+      END BLOCK
+C
+      BLOCK (NND-TOO-SMALL,NR)
+        CALL SETER ('SFNORM - ARRAY IND IS TOO SMALL',16,1)
+        RETURN
+      END BLOCK
+C
+      BLOCK (LOGIC-ERROR,NR)
+        CALL SETER ('SFNORM - LOGIC ERROR - SEE SPECIALIST',17,1)
+        RETURN
+      END BLOCK
+C
+      END
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
+A
+      SUBROUTINE SFGETC (CNP,CVP)
+C
+        CHARACTER*(*) CNP,CVP
+C
+C This subroutine is called to retrieve the character value of a
+C specified parameter.
+C
+C CNP is the name of the parameter whose value is to be retrieved.
+C
+C CVP is a character variable in which the desired value is to be
+C returned by SFGETC.
+C
+C
+C Declare the labeled common block.
+C
+      COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
+C
+C Declare the block data routine external to force its loading.
+C
+      EXTERNAL SFBLDA
+C
+C Declare a local character variable in which to form an error message.
+C
+      CHARACTER*38 CTM
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('SFGETC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Check for a parameter name that is too short.
+C
+        IF (LEN(CNP).LT.2)
+          CTM(1:36)='SFGETC - PARAMETER NAME TOO SHORT - '
+          CTM(37:36+LEN(CNP))=CNP
+          CALL SETER (CTM(1:36+LEN(CNP)),2,1)
+          RETURN
+        END IF
+C
+C Get the appropriate parameter value.
+C
+        IF (CNP(1:2).EQ.'CH'.OR.CNP(1:2).EQ.'ch')
+          IF (LCH.GT.0)
+            CVP=CHAR(LCH)
+          ELSE
+            CVP=' '
+          END IF
+        ELSE
+          CTM(1:36)='SFGETC - PARAMETER NAME NOT KNOWN - '
+          CTM(37:38)=CNP(1:2)
+          CALL SETER (CTM(1:38),3,1)
+          RETURN
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
+A
+      SUBROUTINE SFGETI (CNP,IVP)
+C
+        CHARACTER*(*) CNP
+C
+C This subroutine is called to retrieve the integer value of a specified
+C parameter.
+C
+C CNP is the name of the parameter whose value is to be retrieved.
+C
+C IVP is an integer variable in which the desired value is to be
+C returned by SFGETI.
+C
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('SFGETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Use SFGETR to retrieve the real value, fix it, and return it to the
+C user.
+C
+        CALL SFGETR (CNP,RVP)
+        IF (ICFELL('SFGETI',2).NE.0) RETURN
+        IVP=INT(RVP)
+C
+C Done.
+C
+        RETURN
+C
+      END
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
+A
+      SUBROUTINE SFGETP (IDP)
+C
+C Dimension the argument array.
+C
+      DIMENSION IDP(8,8)
+C
+C Declare the labeled common block.
+C
+      COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
+C
+C Declare the block data routine external to force its loading.
+C
+      EXTERNAL SFBLDA
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('SFGETP - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Transfer the internal dot-pattern array into the user's array.
+C
+      DO (I=1,8)
+        DO (J=1,8)
+          IDP(I,J)=LDP(I,J)
+        END DO
+      END DO
+C
+C Done.
+C
+      RETURN
+C
+      END
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
+A
+      SUBROUTINE SFGETR (CNP,RVP)
+C
+        CHARACTER*(*) CNP
+C
+C This subroutine is called to retrieve the real value of a specified
+C parameter.
+C
+C CNP is the name of the parameter whose value is to be retrieved.
+C
+C RVP is a real variable in which the desired value is to be returned
+C by SFGETR.
+C
+C
+C Declare the labeled common block.
+C
+      COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
+C
+C Declare the block data routine external to force its loading.
+C
+      EXTERNAL SFBLDA
+C
+C Declare a local character variable in which to form an error message.
+C
+      CHARACTER*38 CTM
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('SFGETR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Check for a parameter name that is too short.
+C
+        IF (LEN(CNP).LT.2)
+          CTM(1:36)='SFGETR - PARAMETER NAME TOO SHORT - '
+          CTM(37:36+LEN(CNP))=CNP
+          CALL SETER (CTM(1:36+LEN(CNP)),2,1)
+          RETURN
+        END IF
+C
+C Get the appropriate parameter value.
+C
+        IF      (CNP(1:2).EQ.'AN'.OR.CNP(1:2).EQ.'an')
+          RVP=AID
+        ELSE IF (CNP(1:2).EQ.'CH'.OR.CNP(1:2).EQ.'ch')
+          RVP=REAL(LCH)
+        ELSE IF (CNP(1:2).EQ.'DC'.OR.CNP(1:2).EQ.'dc')
+          RVP=REAL(IDC)
+        ELSE IF (CNP(1:2).EQ.'DO'.OR.CNP(1:2).EQ.'do')
+          RVP=REAL(LPA)
+        ELSE IF (CNP(1:2).EQ.'DS'.OR.CNP(1:2).EQ.'ds')
+          RVP=RDS
+        ELSE IF (CNP(1:2).EQ.'SP'.OR.CNP(1:2).EQ.'sp')
+          RVP=DBL
+        ELSE IF (CNP(1:2).EQ.'TY'.OR.CNP(1:2).EQ.'ty')
+          RVP=REAL(ITY)
+        ELSE
+          CTM(1:36)='SFGETR - PARAMETER NAME NOT KNOWN - '
+          CTM(37:38)=CNP(1:2)
+          CALL SETER (CTM(1:38),3,1)
+          RETURN
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
+A
+      SUBROUTINE SFSETC (CNP,CVP)
+C
+        CHARACTER*(*) CNP,CVP
+C
+C This subroutine is called to give a character value to a specified
+C parameter.
+C
+C CNP is the name of the parameter whose value is to be set.
+C
+C CVP is a character variable containing the desired value.
+C
+C
+C Declare the labeled common block.
+C
+      COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
+C
+C Declare the block data routine external to force its loading.
+C
+      EXTERNAL SFBLDA
+C
+C Declare a local character variable in which to form an error message.
+C
+      CHARACTER*38 CTM
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('SFSETC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Check for a parameter name that is too short.
+C
+        IF (LEN(CNP).LT.2)
+          CTM(1:36)='SFSETC - PARAMETER NAME TOO SHORT - '
+          CTM(37:36+LEN(CNP))=CNP
+          CALL SETER (CTM(1:36+LEN(CNP)),2,1)
+          RETURN
+        END IF
+C
+C Set the appropriate parameter value.
+C
+        IF (CNP(1:2).EQ.'CH'.OR.CNP(1:2).EQ.'ch')
+          LCH=ICHAR(CVP)
+        ELSE
+          CTM(1:36)='SFSETC - PARAMETER NAME NOT KNOWN - '
+          CTM(37:38)=CNP(1:2)
+          CALL SETER (CTM(1:38),3,1)
+          RETURN
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
+A
+      SUBROUTINE SFSETI (CNP,IVP)
+C
+        CHARACTER*(*) CNP
+C
+C This subroutine is called to give an integer value to a specified
+C parameter.
+C
+C CNP is the name of the parameter whose value is to be set.
+C
+C IVP is an integer variable containing the desired value.
+C
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('SFSETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Convert the given value to a real and then use SFSETR to set the
+C parameter.
+C
+        CALL SFSETR (CNP,REAL(IVP))
+        IF (ICFELL('SFSETI',2).NE.0) RETURN
+C
+C Done.
+C
+        RETURN
+C
+      END
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
+A
+      SUBROUTINE SFSETP (IDP)
+C
+C Dimension the argument array.
+C
+      DIMENSION IDP(8,8)
+C
+C Declare the labeled common block.
+C
+      COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
+C
+C Declare the block data routine external to force its loading.
+C
+      EXTERNAL SFBLDA
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('SFSETP - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Transfer the user's dot-pattern array into the common block.
+C
+      DO (I=1,8)
+        DO (J=1,8)
+          LDP(I,J)=IDP(I,J)
+        END DO
+      END DO
+C
+C Done.
+C
+      RETURN
+C
+      END
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
+A
+      SUBROUTINE SFSETR (CNP,RVP)
+C
+        CHARACTER*(*) CNP
+C
+C This subroutine is called to give a real value to a specified
+C parameter.
+C
+C CNP is the name of the parameter whose value is to be set.
+C
+C RVP is a real variable containing the desired value.
+C
+C
+C Declare the labeled common block.
+C
+      COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
+C
+C Declare the block data routine external to force its loading.
+C
+      EXTERNAL SFBLDA
+C
+C Declare a local character variable in which to form an error message.
+C
+      CHARACTER*38 CTM
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('SFSETR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Check for a parameter name that is too short.
+C
+        IF (LEN(CNP).LT.2)
+          CTM(1:36)='SFSETR - PARAMETER NAME TOO SHORT - '
+          CTM(37:36+LEN(CNP))=CNP
+          CALL SETER (CTM(1:36+LEN(CNP)),2,1)
+          RETURN
+        END IF
+C
+C Set the appropriate parameter.
+C
+        IF      (CNP(1:2).EQ.'AN'.OR.CNP(1:2).EQ.'an')
+          AID=RVP
+        ELSE IF (CNP(1:2).EQ.'CH'.OR.CNP(1:2).EQ.'ch')
+          LCH=INT(RVP)
+        ELSE IF (CNP(1:2).EQ.'DC'.OR.CNP(1:2).EQ.'dc')
+          IDC=MAX(0,MIN(255,INT(RVP)))
+        ELSE IF (CNP(1:2).EQ.'DO'.OR.CNP(1:2).EQ.'do')
+          LPA=INT(RVP)
+        ELSE IF (CNP(1:2).EQ.'DS'.OR.CNP(1:2).EQ.'ds')
+	  RDS=MAX(.0001,MIN(1.,RVP))
+        ELSE IF (CNP(1:2).EQ.'SP'.OR.CNP(1:2).EQ.'sp')
+          DBL=RVP
+        ELSE IF (CNP(1:2).EQ.'TY'.OR.CNP(1:2).EQ.'ty')
+          ITY=MAX(-4,MIN(2,INT(RVP)))
+        ELSE
+          CTM(1:36)='SFSETR - PARAMETER NAME NOT KNOWN - '
+          CTM(37:38)=CNP(1:2)
+          CALL SETER (CTM(1:38),3,1)
+          RETURN
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
+I
+I***********************************************************************
+I S O F T F I L L   -   I N T E R N A L   R O U T I N E S
+I***********************************************************************
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
+A
+      SUBROUTINE SFSORT (RVL,NVL,IOR,IPR)
+C
+        DIMENSION RVL(NVL),IPR(NVL)
+C
+C Given an array of NVL reals in an array RVL and an order flag
+C IOR, this routine returns a permutation vector IPR such that, for
+C every I and J such that 1.LE.I.LE.J.LE.NVL, if IOR is zero, then
+C RVL(IPR(I)).LE.RVL(IPR(J)), else RVL(IPR(I)).GE.RVL(IPR(J)).
+C
+        DO (I=1,NVL)
+          IPR(I)=I
+        END DO
+C                                                                       
+        K=0
+C
+        WHILE (3*K+1.LT.NVL)
+          K=3*K+1
+        END WHILE
+C                                                                       
+        IF (IOR.EQ.0)
+C
+          WHILE (K.GT.0)
+C
+            DO (I=1,NVL-K)
+C
+              J=I
+C
+              LOOP
+                EXIT IF (RVL(IPR(J)).LE.RVL(IPR(J+K)))
+                ITM=IPR(J)
+                IPR(J)=IPR(J+K)
+                IPR(J+K)=ITM
+                J=J-K
+                EXIT IF (J.LT.1)
+              END LOOP
+C
+            END DO
+C
+            K=(K-1)/3
+C
+          END WHILE
+C
+        ELSE
+C
+          WHILE (K.GT.0)
+C
+            DO (I=1,NVL-K)
+C
+              J=I
+C
+              LOOP
+                EXIT IF (RVL(IPR(J)).GE.RVL(IPR(J+K)))
+                ITM=IPR(J)
+                IPR(J)=IPR(J+K)
+                IPR(J+K)=ITM
+                J=J-K
+                EXIT IF (J.LT.1)
+              END LOOP
+C
+            END DO
+C
+            K=(K-1)/3
+C
+          END WHILE
+C
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END                                                               
+A
+A $Id: CodeIftran,v 1.1 2004-05-11 17:10:42 kennison Exp $
+A
+      BLOCK DATA SFBLDA
+C
+C Specify default values for the internal parameters.
+C
+C Declare the labeled common block.
+C
+      COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
+C
+C AID is the angle at which fill lines are to be drawn - a real value,
+C in degrees.
+C
+      DATA AID / 0. /
+C
+C DBL is the distance between fill lines - a real value, in normalized
+C device coordinate units, between 0 and 1.  Values less than zero or
+C greater than 1 act the same as .00125, which is also the default.
+C
+      DATA DBL / .00125 /
+C
+C ITY is a flag specifying the type of fill to be done by the routine
+C SFSGFA.
+C
+      DATA ITY / 0 /
+C
+C LPA is the pattern selector - the value 0 means that solid lines are
+C to be used, the value 1 that dotted lines are to be used (the dots to
+C be arranged according to the pattern specified by "LDP") and the dots
+C are to be drawn using calls to the SPPS routine POINTS, and the value
+C -1 means the same as 1, except that the dotted lines are to be drawn
+C using calls to the routine NGDOTS, in which case RDS specifies the
+C diameter of each dot and IDC specifies the color of each dot (a color
+C index value).
+C
+      DATA LPA,RDS,IDC / 0 , .01 , 1 /
+C
+C If LCH is 0, the dots in a dotted line will be actual dots.  If LCH
+C is non-zero, the character specified by LCH will be used instead of
+C the dots.  See the plot package routine "POINTS".
+C
+      DATA LCH / 0 /
+C
+C LDP contains a set of 0s and 1s defining the current dot pattern, in
+C an 8x8 pixel.  The value 1 turns a dot on, the value 0 turns it off.
+C
+      DATA LDP / 64*1 /
+C
+      END
