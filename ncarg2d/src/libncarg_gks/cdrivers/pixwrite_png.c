@@ -1,5 +1,5 @@
 /*
- *      $Id: pixwrite_png.c,v 1.4 2004-05-26 23:54:42 fred Exp $
+ *      $Id: pixwrite_png.c,v 1.5 2004-05-27 21:39:23 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -214,7 +214,13 @@ void write_png(unsigned char *pix_map, unsigned long width,
                interlace_type, compression_type, filter_method);
 
   
-  if (*(char *)&swaptest) {
+/*
+ *  Check if byte swapping is necessary - if the image is LSBFirst
+ *  and you are running on a big endian machine, or if the image is
+ *  not LSBFirst and you are running on a little endian machine.
+ */
+  if (((*(char *) &swaptest) && (!LSBFirst))
+                || (!(*(char *) &swaptest) && (LSBFirst))) {
     png_transforms = PNG_TRANSFORM_PACKING; 
   }
   else {
