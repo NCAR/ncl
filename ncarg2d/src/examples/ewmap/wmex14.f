@@ -1,5 +1,5 @@
 C
-C	$Id: wmex14.f,v 1.3 1998-06-28 19:32:07 haley Exp $
+C	$Id: wmex14.f,v 1.4 2002-02-22 00:10:26 fred Exp $
 C
       PROGRAM WMEX14
 C
@@ -577,6 +577,7 @@ C----------------
 C  LOs and HIs  |
 C----------------
 C
+      CALL GSCLIP(0)
       IF (IBTYPE .EQ. IBBACK) THEN
         CALL WMSETI('LOS - shadow for low symbols',0)
         CALL WMSETI('LOB - character background for low symbols',1)
