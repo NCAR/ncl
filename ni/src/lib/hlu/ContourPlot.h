@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.10 1997-08-14 16:29:43 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.11 1997-11-13 20:06:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -123,6 +123,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnRasterCellSizeF		"cnRasterCellSizeF"
 #define NhlNcnRasterSmoothingOn		"cnRasterSmoothingOn"
 #define NhlNcnRasterSampleFactorF	"cnRasterSampleFactorF"
+#define NhlNcnRasterMinCellSizeF	"cnRasterMinCellSizeF"
 #define NhlNcnCyclicModeOn		"cnCyclicModeOn"
 
 #define NhlNcnLevels			"cnLevels"
@@ -276,17 +277,11 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnGridBoundPerimThicknessF	"cnGridBoundPerimThicknessF"
 #define NhlNcnGridBoundPerimDashPattern "cnGridBoundPerimDashPattern"
 #define NhlNcnGridBoundPerimColor	"cnGridBoundPerimColor"
-#define NhlNcnGridBoundFillColor	"cnGridBoundFillColor"
-#define NhlNcnGridBoundFillPattern	"cnGridBoundFillPattern"
-#define NhlNcnGridBoundFillScaleF	"cnGridBoundFillScaleF"
 
 #define NhlNcnOutOfRangePerimOn		"cnOutOfRangePerimOn"
 #define NhlNcnOutOfRangePerimThicknessF	"cnOutOfRangePerimThicknessF"
 #define NhlNcnOutOfRangePerimDashPattern "cnOutOfRangePerimDashPattern"
 #define NhlNcnOutOfRangePerimColor	"cnOutOfRangePerimColor"
-#define NhlNcnOutOfRangeFillColor	"cnOutOfRangeFillColor"
-#define NhlNcnOutOfRangeFillPattern	"cnOutOfRangeFillPattern"
-#define NhlNcnOutOfRangeFillScaleF	"cnOutOfRangeFillScaleF"
 
 #define NhlNcnDumpAreaMap		"cnDumpAreaMap"
 #define NhlNcnAreaMapCRange		"cnAreaMapCRange"
@@ -332,6 +327,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnRasterCellSizeF		"CnRasterCellSizeF"
 #define NhlCcnRasterSmoothingOn		"CnRasterSmoothingOn"
 #define NhlCcnRasterSampleFactorF	"CnRasterSampleFactorF"
+#define NhlCcnRasterMinCellSizeF	"CnRasterMinCellSizeF"
 #define NhlCcnCyclicModeOn		"CnCyclicModeOn"
 
 #define NhlCcnLevels			"CnLevels"

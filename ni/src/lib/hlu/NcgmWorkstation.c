@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.28 1997-05-05 21:45:18 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.29 1997-11-13 20:06:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,8 +33,11 @@ static NhlResource resources[] = {
 /* Begin-documented-resources */
 
 	{ NhlNwkMetaName, NhlCwkMetaName, NhlTString, sizeof(char*),
-	NhlOffset(NhlNcgmWorkstationLayerRec,ncgm.meta_name),NhlTString,
-		NULL,0,(NhlFreeFunc)NhlFree }
+          NhlOffset(NhlNcgmWorkstationLayerRec,ncgm.meta_name),NhlTString,
+          NULL,0,(NhlFreeFunc)NhlFree },
+	{NhlNwkVSWidthDevUnits,NhlCwkVSWidthDevUnits,NhlTInteger,sizeof(int),
+          NhlOffset(NhlNcgmWorkstationLayerRec,work.vswidth_dev_units),
+          NhlTImmediate,_NhlUSET((NhlPointer)32767),_NhlRES_GONLY,NULL}
 
 /* End-documented-resources */
 

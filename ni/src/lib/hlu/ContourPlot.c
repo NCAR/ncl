@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.66 1997-09-23 21:54:48 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.67 1997-11-13 20:06:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -138,10 +138,13 @@ static NhlResource resources[] = {
 		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNcnRasterSmoothingOn,NhlCcnRasterSmoothingOn,
          	NhlTBoolean,sizeof(NhlBoolean),Oset(raster_smoothing_on),
-         	NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+         	NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 	{NhlNcnRasterSampleFactorF,NhlCcnRasterSampleFactorF,
          	NhlTFloat,sizeof(float),Oset(raster_sample_factor),
          	NhlTString,_NhlUSET("1.0"),0,NULL},
+	{NhlNcnRasterMinCellSizeF,NhlCcnRasterMinCellSizeF,NhlTFloat,
+         	sizeof(float),Oset(min_cell_size),
+         	NhlTString,_NhlUSET("0.001"),0,NULL},
 
 /* Line resources */
 
@@ -685,15 +688,6 @@ static NhlResource resources[] = {
 	{NhlNcnGridBoundPerimColor,NhlCcnGridBoundPerimColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(grid_bound.perim_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
-	{NhlNcnGridBoundFillColor,NhlCcnGridBoundFillColor,NhlTColorIndex,
-		 sizeof(NhlColorIndex),Oset(grid_bound.fill_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
-	{NhlNcnGridBoundFillPattern,NhlCcnGridBoundFillPattern,NhlTFillIndex,
-		 sizeof(NhlFillIndex),Oset(grid_bound.fill_pat),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHOLLOWFILL),0,NULL},
-	{NhlNcnGridBoundFillScaleF,NhlCcnGridBoundFillScaleF,
-		 NhlTFloat,sizeof(float),Oset(grid_bound.fill_scale),
-		 NhlTString, _NhlUSET("1.0"),0,NULL},
 
 /* Out of range area resources */
 
@@ -710,15 +704,6 @@ static NhlResource resources[] = {
 	{NhlNcnOutOfRangePerimColor,NhlCcnOutOfRangePerimColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(out_of_range.perim_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
-	{NhlNcnOutOfRangeFillColor,NhlCcnOutOfRangeFillColor,NhlTColorIndex,
-		 sizeof(NhlColorIndex),Oset(out_of_range.fill_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
-	{NhlNcnOutOfRangeFillPattern,NhlCcnOutOfRangeFillPattern,NhlTFillIndex,
-		 sizeof(NhlFillIndex),Oset(out_of_range.fill_pat),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHOLLOWFILL),0,NULL},
-	{NhlNcnOutOfRangeFillScaleF,NhlCcnOutOfRangeFillScaleF,
-		 NhlTFloat,sizeof(float),Oset(out_of_range.fill_scale),
-		 NhlTString, _NhlUSET("1.0"),0,NULL},
 
 /* End-documented-resources */
 
@@ -2134,6 +2119,9 @@ ContourPlotInitialize
         cnp->gks_fill_colors = NULL;
         cnp->gks_line_colors = NULL;
         cnp->gks_llabel_colors = NULL;
+        cnp->grid_bound.fill_color = cnp->out_of_range.fill_color = 0;
+        cnp->grid_bound.fill_pat = cnp->out_of_range.fill_pat = 0;
+        cnp->grid_bound.fill_scale = cnp->out_of_range.fill_scale = 1.0;
 
 /*
  * Set up the data
@@ -3306,6 +3294,8 @@ static NhlErrorTypes GetDataBound
 		(NhlContourPlotLayerPart *) &cl->contourplot;
 	int			status;
 	NhlBoolean		ezmap = False;
+	NhlTransformLayerPart	*tfp = &(cl->trans);
+
 
         *linear = False;
 	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
@@ -3314,7 +3304,7 @@ static NhlErrorTypes GetDataBound
 	}
 	else if (cnp->trans_obj->base.layer_class->base_class.class_name ==
 	    NhllogLinTransObjClass->base_class.class_name) {
-                if (! cnp->x_log && !cnp->y_log)
+                if (! cnp->x_log && !cnp->y_log && !cnp->use_irr_trans)
                         *linear = True;
 	}
 
@@ -3354,13 +3344,36 @@ static NhlErrorTypes GetDataBound
 		bbox->t = MAX(fy[0],fy[1]);
 	}
 	else {
-
+		NhlProjection projection;
+		NhlMapLimitMode limit_mode;
+		float center_lat, rotation;
+		float min_lat,max_lat;
+		NhlBoolean rel_center_lat;
 		NhlVAGetValues(cnp->trans_obj->base.id,
 			       NhlNmpLeftNDCF,&bbox->l,
 			       NhlNmpRightNDCF,&bbox->r,
 			       NhlNmpBottomNDCF,&bbox->b,
 			       NhlNmpTopNDCF,&bbox->t,
+			       NhlNmpProjection,&projection,
+			       NhlNmpLimitMode,&limit_mode,
+			       NhlNmpMinLatF,&min_lat,
+			       NhlNmpMaxLatF,&max_lat,
+			       NhlNmpRelativeCenterLat,&rel_center_lat,
+			       NhlNmpCenterLatF,&center_lat,
+			       NhlNmpCenterRotF,&rotation,
 			       NULL);
+		if (projection == NhlCYLINDRICALEQUIDISTANT && 
+		    ! cnp->use_irr_trans) {
+			  if (limit_mode != NhlLATLON || ! rel_center_lat) {
+		    		if (center_lat == 0.0 && rotation == 0.0) 
+					*linear = True;
+			  }
+			  else if (rotation == 0.0 &&
+				   _NhlCmpFAny
+				   (max_lat-min_lat-center_lat,0.0,6) == 0.0) {
+		  			*linear = True;
+			  }
+		}
 	}
 
 	return NhlNOERROR;
@@ -3399,15 +3412,22 @@ static NhlErrorTypes cnInitCellArray
 	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
         int dunits,dwidth,dheight;
+        int max_msize, max_nsize;
         NhlBoolean linear;
 
 	c_cpseti("CAF", -1);
 	subret = GetDataBound(cnl,bbox,&linear,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+        
+        max_msize = (int) ((bbox->r - bbox->l) / cnp->min_cell_size);
+        max_nsize = (int) ((bbox->t - bbox->b) / cnp->min_cell_size);
 
         subret = NhlVAGetValues(cnl->base.wkptr->base.id,
                                 NhlNwkVSWidthDevUnits,&dunits,
                                 NULL);
+	if ((ret = MIN(ret,subret)) < NhlWARNING)
+		return ret;
+
         dwidth = dunits * (bbox->r - bbox->l);
         dheight = dunits * (bbox->t - bbox->b);
 
@@ -3443,6 +3463,8 @@ static NhlErrorTypes cnInitCellArray
         }
         
         if (!cnp->sticky_cell_size_set) {
+                *msize = MIN(*msize,max_msize);
+                *nsize = MIN(*nsize,max_nsize);
                 cnp->cell_size = (bbox->r - bbox->l) / (float) *msize;
         }
 	
@@ -3457,7 +3479,7 @@ static NhlErrorTypes cnInitCellArray
 		e_text = 
 			"%s: error reserving cell array workspace";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
+		return(NhlFATAL);
 	}
 	return ret;
 }
@@ -10999,3 +11021,5 @@ NhlErrorTypes _NhlRasterFill
 
 	return NhlNOERROR;
 }
+
+

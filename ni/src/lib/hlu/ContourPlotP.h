@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.19 1997-09-23 00:02:50 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.20 1997-11-13 20:06:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -155,6 +155,7 @@ typedef struct _NhlContourPlotLayerPart {
 	float		cell_size;
         NhlBoolean	raster_smoothing_on;
         float		raster_sample_factor;
+        float		min_cell_size;
 	NhlBoolean	cyclic_mode_on;
 
 	NhlGenArray	levels;
