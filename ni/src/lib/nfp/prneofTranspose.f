@@ -181,8 +181,9 @@ c temporary arrays (automatic or passed in via interface)
       DOUBLE PRECISION CSSM(LSSM),WORK(LWORK),TEOF(NROW,NEVAL),
      +                 W2D(NROW,NEVAL), XVAR(NCOL),TOTVAR
 
+c local
       CHARACTER*16     LABEL
-      DOUBLE PRECISION TEMP,TOL,EPSMACH
+      DOUBLE PRECISION TEMP,TOL,EPSMACH,TRACER,TRACEO
       INTEGER N,NR,NC,MEVAL,KNT,IPR,IPRFLG,MEVOUT,VLOW,VUP,ILOW,IUP,INFO
       DOUBLE PRECISION TBAR,TVAR,TSTD,TOL,EPSMACH
 
@@ -218,7 +219,7 @@ c activate if print of cov/cor matrix [work] is desired
           CALL DSSMIOX(CSSM,NROBS)
       END IF
 
-c calculate the trace of transposed matrix
+c calculate the trace of transposed matrix (TRACER)
 c before matrix is destroyed by sspevx
 
       N = 0
@@ -233,7 +234,8 @@ c before matrix is destroyed by sspevx
      +     ,'' trace='',fe15.5)') IER,JOPT,TRACE
           RETURN
       END IF
-      TRACE = TEMP
+      TRACER = TEMP
+      TRACE  = TRACER
 
 c calculate specified number of eigenvalues and eigenvectors.
 c .   make sure that  neval <= nrobs
@@ -284,7 +286,7 @@ c .   largest eigenvalues/vectors are first.
 c percent variance explained of *transposed* matrix
 
       DO N = 1,MEVAL
-          PCVAR(N) = (EVAL(N)/TRACE)*100.D0
+          PCVAR(N) = (EVAL(N)/TRACER)*100.D0
       END DO
 
 c ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -299,7 +301,7 @@ c remember: x(nr,nc) are anomalies
               TEMP = 0.0d0
 
               DO NR = 1,NROBS
-                  IF (X(NR,NC).NE.XMSG .AND. TEOF(NR,N).NE.XMSG) THEN
+                  IF (X(NR,NC).NE.XMSG) THEN
                       TEMP = TEMP + TEOF(NR,N)*X(NR,NC)
                   END IF
               END DO
@@ -331,12 +333,13 @@ c normalize by euclidean norm
           END DO
       END DO
 
+
       IF (IREVERT.EQ.1) THEN
 
 c Basically, here we try to create the eigenvalues that would have
 c .   been created using the untransposed data matrix
 c .   totvar is the same as the trace of the *original* matrix
-c .          same as the sum of the diagonal elements
+c .          same as the trace untransposed cov/cor matrix (TRACEO)
 
           IF (JOPT.EQ.0) THEN
               TOTVAR = 0.D0
@@ -347,7 +350,8 @@ c .          same as the sum of the diagonal elements
               TOTVAR = NCSTA
           END IF
 
-          TRACE = TOTVAR
+          TRACEO = TOTVAR
+          TRACE  = TRACEO
 
 c calculate the variance of the 'original' amplitude time series
 c These would be the eigenvalues of the original matrix
@@ -358,7 +362,7 @@ c To avoid confusion, these will be set to the eigenvalues for return
                   TEMP  = 0.0d0
                   DO NC = 1,NCSTA
                       IF (X(NR,NC).NE.XMSG) THEN
-                          TEMP = TEMP + DBLE(EVEC(NC,N)*X(NR,NC))
+                          TEMP = TEMP + EVEC(NC,N)*X(NR,NC)
                       END IF
                   END DO
                   WORK(NR) = TEMP
@@ -366,7 +370,7 @@ c To avoid confusion, these will be set to the eigenvalues for return
 
               CALL DSTAT2(WORK,NROBS,XMSG,TBAR,TVAR,TSTD,KNT,IER)
               EVAL(N)  = TVAR
-              PCVAR(N) = (TVAR/TRACE)*100.D0
+              PCVAR(N) = (TVAR/TRACEO)*100.D0
 
           END DO
       END IF
