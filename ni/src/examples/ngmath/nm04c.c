@@ -1,5 +1,5 @@
 /*
- *      $Id: nm04c.c,v 1.5 1998-06-23 22:52:59 fred Exp $
+ *      $Id: nm04c.c,v 1.6 1998-06-29 06:14:38 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -42,7 +42,7 @@ main()
   int  NCGM=1, X11=0, PS=0;
   int  i, j, k, ier;
   float xi[NUM], yi[NUM], zi[NUM], u[NUM];
-  float xo[NX], yo[NY], zo[NZ], *output;
+  float xo[NX], yo[NY], zo[NZ], *output, outr[NZ][NY][NX];
   float xmin = -2.0, ymin = -2.0, zmin = -2.0;
   float xmax =  2.0, ymax =  2.0, zmax =  2.0;
 /*
@@ -69,7 +69,7 @@ main()
 /*
  *  Interpolate.
  */
-  output = c_dsgrid3s(NUM, zi, yi, xi, u, NZ, NY, NX, zo, yo, xo, &ier);
+  output = c_dsgrid3s(NUM, xi, yi, zi, u, NX, NY, NZ, xo, yo, zo, &ier);
   if (ier != 0) {
     printf(" Error %d returned from nm04c\n",ier);
     exit(1);
@@ -126,7 +126,17 @@ main()
  * LLUs to get a surface plot.
  */
         gactivate_ws (gkswid);
-	c_tdez3d(NX, NY, NZ, xo, yo, zo, output, 3.0, 2., -35., 65., 6);
+/*
+ * Reverse the dimension order before plotting.
+ */
+        for (i = 0; i < NX; i++) {
+          for (j = 0; j < NY; j++) {
+            for (k = 0; k < NZ; k++) {
+              outr[k][j][i] = output[i*NZ*NY + j*NZ + k];
+            }
+          }
+        }
+	c_tdez3d(NX, NY, NZ, xo, yo, zo, &outr[0][0][0], 3.0, 2., -35., 65., 6);
         gdeactivate_ws (gkswid);
 	NhlFrame(wid);
 /*
