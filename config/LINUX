@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX,v 1.14 2002-12-09 23:30:59 haley Exp $
+ *      $Id: LINUX,v 1.15 2002-12-11 18:19:30 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -22,7 +22,7 @@
  *          default setup.
  */
 #define HdfDefines  -DLINUX
-#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_BSD_SOURCE -D_XOPEN_SOURCE -DByteSwapped
+#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped
 #define ByteSwapped
 #define Cstatic
 #define Cdynamic
