@@ -116,27 +116,30 @@ NhlErrorTypes conform_W( void )
  * Check dimension sizes:
  *
  *    1. The dimensions indicated by the third argument must actually be
- *       one of the dimensions of x.
+ *       one of the dimensions of x, or -1 (which indicates all 
+ *       dimensions of x)
  *    2. The dimensions indicated by the third argument must be increasing.
  *    4. The dimensions sizes of the second argument must be the same
  *       as those indicated by the third argument.
  */
-  for(i = 0; i < dsizes_conform[0]; i++ ) {
-    if(conform_dims[i] < 0 || conform_dims[i] > (ndims_x-1)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: the third argument contains a dimension that is out-of-range of the dimensions of x");
-      return(NhlFATAL);
-    }
-    if(i > 0) {
-      if(conform_dims[i-1] >= conform_dims[i]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: The dimensions specified by the third argument must be increasing");
-        return(NhlFATAL);
-      }
-    }
-    if(!scalar_tmp_md && dsizes_x[conform_dims[i]] != 
-                         tmp_md->multidval.dim_sizes[i] ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: the dimensions sizes of the second argument do not match those indicated by the third argument");
-      return(NhlFATAL);
-    }
+  if(!scalar_tmp_md || (scalar_tmp_md && conform_dims[0] != -1)) {
+	for(i = 0; i < dsizes_conform[0]; i++ ) {
+	  if(conform_dims[i] < 0 || conform_dims[i] > (ndims_x-1)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: the third argument contains a dimension that is out-of-range of the dimensions of x");
+		return(NhlFATAL);
+	  }
+	  if(i > 0) {
+		if(conform_dims[i-1] >= conform_dims[i]) {
+		  NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: The dimensions specified by the third argument must be increasing");
+		  return(NhlFATAL);
+		}
+	  }
+	  if(!scalar_tmp_md && dsizes_x[conform_dims[i]] != 
+		 tmp_md->multidval.dim_sizes[i] ) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: the dimensions sizes of the second argument do not match those indicated by the third argument");
+		return(NhlFATAL);
+	  }
+	}
   }
   if(!scalar_tmp_md) {
 /*
@@ -172,15 +175,26 @@ NhlErrorTypes conform_W( void )
   else {
 /*
  * This is the scalar case. The output array will be the size of
- * the dimensions given.
+ * the dimensions given.  If conform_dims[0] == -1, then this
+ * means to use all dimensions of the data. 
  */
-    size_conform = 1;
-    dsizes = (int*)calloc(dsizes_conform[0],sizeof(int));
-    for(i = 0; i < dsizes_conform[0]; i++) {
-      size_conform *= dsizes_x[conform_dims[i]];
-      dsizes[i]     = dsizes_x[conform_dims[i]];
-    }
-    ndims = dsizes_conform[0];
+    if(conform_dims[0] == -1) {
+	  ndims  = ndims_x;
+	  dsizes = dsizes_x;
+	  size_conform = 1;
+	  for(i = 0; i < ndims_x; i++) {
+		size_conform *= dsizes_x[i];
+	  }
+	}
+	else {
+	  size_conform = 1;
+	  dsizes = (int*)calloc(dsizes_conform[0],sizeof(int));
+	  for(i = 0; i < dsizes_conform[0]; i++) {
+		size_conform *= dsizes_x[conform_dims[i]];
+		dsizes[i]     = dsizes_x[conform_dims[i]];
+	  }
+	  ndims = dsizes_conform[0];
+	}
   }
 /*
  * Allocate space for output array.
