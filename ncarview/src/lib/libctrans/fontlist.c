@@ -1,5 +1,5 @@
 /*
- *	$Id: fontlist.c,v 1.8 1992-09-01 23:42:26 clyne Exp $
+ *	$Id: fontlist.c,v 1.9 1992-09-09 15:09:26 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -16,6 +16,7 @@
 #include	<ncarg/c.h>
 #include	"default.h"
 #include	"defines.h"
+#include	"ctrans.h"
 /*	fontlist.c:
  * 
  *	Author	John Clyne	(clyne@bierstadt.UCAR.EDU)
@@ -37,7 +38,6 @@
 
 static	char	Fontlist[MAXFONT][MAX_F_NAME_LEN];
 
-extern	char	*getFcapname();
 extern	int	Init_Font();
 extern	char	msg[];
 
@@ -148,7 +148,7 @@ CGMC *c;
 	}
 
 	/* copy fontlist to the table	*/
-	for (i=0;i<c->Snum;i++) {
+	for (i=0; (unsigned short) i < c->Snum; i++) {
 		(void) strncpy(Fontlist[i],c->s->string[i], MAX_F_NAME_LEN - 1);
 	}
 	return(status);
@@ -235,7 +235,9 @@ int	setFont(font_index)
 	/*
 	 *	building the full path to the font cap
 	 */
-	fcap = getFcapname(font);
+	if ( !(fcap = getFcapname(font))) {
+		return(-1);
+	}
 
 	/* initialize the font processor with the selected font	*/
 

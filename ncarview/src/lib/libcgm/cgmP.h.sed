@@ -17,4 +17,4 @@
 
 #define DEFAULT_GKS_BUFSIZE	SED_GKS_BUFFER_SIZE
 
-#endif	_cgm_toolsP_
+#endif	/* _cgm_toolsP_	*/

@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.19 1992-09-01 23:40:30 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.20 1992-09-09 15:08:15 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -35,6 +35,7 @@
 #include	<string.h>
 #include	<errno.h>
 #include	<fcntl.h>
+#include	<unistd.h>
 #include	<sys/types.h>
 #include	<sys/file.h>
 #include	<ncarg/c.h>
@@ -42,23 +43,23 @@
 #include	"cgmdef.h"
 #include	"cgmP.h"
 #include	"internals.h"
+#include	"mem_file.h"
 	
 #ifndef	L_SET
 #define	L_SET	0
 #endif
 /*LINTLIBRARY*/
 
+static	int	noop()
+{
+	return(0);
+}
 
 /*
  * file descriptor table. Records file type, record size, I/O type,
  * file descriptor(s) and a pointer structure for performing metafile
  * operations
  */
-int	noop();
-int	stream_read(), stream_write(), stream_seek(), stream_close(), 
-	stream_flush();
-int	raw_read(), raw_write(), raw_seek(), raw_close();
-int	memory_read(), memory_write(), memory_seek(), memory_close();
 static	Cgm_tab	cgmTab[] = {
 	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
 	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
@@ -95,6 +96,229 @@ char	*headerType[] = {
 		"header", "NCAR formated printer", 
 		"pre-CGM NCAR", "NCAR CGM", "invalid"
 		};		 /* valid frame types in a NCAR CGM	*/
+
+
+
+static	int	stream_read(cgm_fd, buf)
+	Cgm_fd		cgm_fd;
+	unsigned char	*buf;
+{
+	char *b;
+	int	n, l;
+	int	r = (int) cgmTab[cgm_fd].record_size;
+	FILE	*fp = cgmTab[cgm_fd].fp;
+
+	b=(char *)buf;
+	for (n=0; n<r;) {
+		if ((l=fread(b+n,1,r-n,fp))<0)
+			return(l);
+		else if (l==0)
+			break;
+		n+=l;
+	}
+	return(n);
+}
+static	int	raw_read(cgm_fd, buf)
+	Cgm_fd		cgm_fd;
+	unsigned char	*buf;
+{
+	char *b;
+	int	n, l;
+	int	r = (int) cgmTab[cgm_fd].record_size;
+	int	fd = cgmTab[cgm_fd].fd;
+
+	b=(char *)buf;
+	for (n=0; n<r; ) {
+		if ((l=read(fd,b+n,r-n))<0)
+			return(l);
+		else if (l==0)
+			break;
+		n+=l;
+	}
+	return(n);
+}
+static	int	memory_read(cgm_fd, buf)
+	Cgm_fd		cgm_fd;
+	unsigned char	*buf;
+{
+	int	fd = cgmTab[cgm_fd].fd;
+
+	return(CGM_readMemFile(fd, buf));
+}
+
+static	int	stream_write(cgm_fd, buf)
+	Cgm_fd		cgm_fd;
+	unsigned char	*buf;
+{
+	int	r = cgmTab[cgm_fd].record_size;
+	FILE	*fp = cgmTab[cgm_fd].fp;
+
+	return(fwrite((char *) buf, 1, r, fp)); 
+}
+
+static	int	raw_write(cgm_fd, buf)
+	Cgm_fd		cgm_fd;
+	unsigned char	*buf;
+{
+	int	r = cgmTab[cgm_fd].record_size;
+	int	fd = cgmTab[cgm_fd].fd;
+
+	if (cgmTab[cgm_fd].mtype == Pipe ) {
+		fd = cgmTab[cgm_fd].fdw;
+	}
+
+	return(write(fd, (char *) buf, r));
+}
+
+static	int	memory_write(cgm_fd, buf)
+	Cgm_fd		cgm_fd;
+	unsigned char	*buf;
+{
+	int	fd = cgmTab[cgm_fd].fd;
+
+	return (CGM_writeMemFile(fd, buf));
+}
+
+static	int	stream_seek(cgm_fd, offset, whence)
+	Cgm_fd		cgm_fd;
+	long	offset;
+	int	whence;
+{
+	FILE	*fp = cgmTab[cgm_fd].fp;
+
+	return(fseek(fp, offset, whence));
+}
+
+static	int	raw_seek(cgm_fd, offset, whence)
+	Cgm_fd		cgm_fd;
+	long	offset;
+	int	whence;
+{
+	int	fd = cgmTab[cgm_fd].fd;
+
+	return((int) lseek(fd, (off_t) offset, whence));
+}
+static	int	memory_seek(cgm_fd, offset, whence)
+	Cgm_fd		cgm_fd;
+	long	offset;
+	int	whence;
+{
+	int	fd = cgmTab[cgm_fd].fd;
+	int	r = cgmTab[cgm_fd].record_size;
+	int	offset_ = r ? offset / r : 0;
+
+	return (CGM_lseekMemFile(fd, offset_, whence));
+}
+static	int	stream_close(cgm_fd)
+	Cgm_fd		cgm_fd;
+{
+	FILE	*fp = cgmTab[cgm_fd].fp;
+
+	return(fclose(fp));
+}
+
+static	int	stream_flush(cgm_fd)
+	Cgm_fd		cgm_fd;
+{
+	FILE	*fp = cgmTab[cgm_fd].fp;
+
+	return(fflush(fp));
+}
+
+static	int	raw_close(cgm_fd)
+	Cgm_fd		cgm_fd;
+{
+	int	fd = cgmTab[cgm_fd].fd;
+	int	error;
+
+	error = close(fd);
+	if (cgmTab[cgm_fd].mtype == Pipe ) {
+		int	fdw = cgmTab[cgm_fd].fdw;
+		error -= close(fdw);
+	}
+	return(error);
+}
+	
+static	int	memory_close(cgm_fd)
+	Cgm_fd		cgm_fd;
+{
+	int	fd = cgmTab[cgm_fd].fd;
+
+	return(CGM_closeMemFile (fd));
+}
+
+
+#ifdef	cray
+/*
+*	If output is to a standard file, buffered I/O is used. On
+*	some systems it is desirable to adjust this and several
+*	options for this are available.
+*	Buffer size is adjustable as follows:
+*
+*	1. If environment variable NCARG_GKS_BUFSIZE is set to N
+*
+*			Buffer Size = N * BUFSIZ / 32 bytes.
+*
+*	2. Otherwise, if the value of DEFAULT_GKS_BUFSIZE in wks.h
+*	   is edited by the Makefile to be non-zero.
+*
+*			Buffer Size = DEFAULT_GKS_BUFSIZE * BUFSIZ / 32 bytes.
+*
+*	3. Otherwise, (when DEFAULT_GKS_BUFSIZE is 0)
+*
+*			Buffer Size = BUFSIZ (from stdio.h)
+*
+*/
+static	int	setvbuf_(fp, r)
+	FILE	*fp;
+	int	r;
+{
+	
+	int	i;
+	int	size;
+	char	*b;
+	char	*bufsize_env;
+	int	bufsize;
+
+
+	/*
+	The environment variable NCARG_GKS_BUFSIZE, a macro
+	definition, or a constant from stdio.h can determine
+	buffer size used. See notes at the top of this file.
+	*/
+
+	bufsize_env = getenv("NCARG_GKS_BUFSIZE");
+	if (bufsize_env == (char *) NULL) {
+		if (DEFAULT_GKS_BUFSIZE == 0) {
+			bufsize = BUFSIZ;
+		}
+		else {
+			bufsize = BUFSIZ * DEFAULT_GKS_BUFSIZE / 32;
+		}
+	}
+	else {
+		bufsize = BUFSIZ * atoi(bufsize_env) / 32;
+		if (bufsize <= 0) {
+			bufsize = BUFSIZ;
+		}
+	}
+
+	/*
+	 * find the smallest buffer size that is bigger then r and 
+	 * is an integral of bufsize
+	 */
+	i = r / bufsize;
+	i++;
+	size = i * bufsize;
+
+	if ((b = malloc(size)) == NULL) {
+		return(-1);
+	}
+
+	return(setvbuf(fp, b, _IOFBF, size));
+}
+#endif
+
 
 /*	CGM_open:
  *	PUBLIC
@@ -365,8 +589,8 @@ int	CGM_close(cgm_fd)
 	/*
 	 * free structures for get/put instr
 	 */
-	free((Voidptr) cgmTab[cgm_fd].pg_struct->buf);
-	free((Voidptr) cgmTab[cgm_fd].pg_struct);
+	(void) free((Voidptr) cgmTab[cgm_fd].pg_struct->buf);
+	(void) free((Voidptr) cgmTab[cgm_fd].pg_struct);
 
 	return(error);
 }
@@ -682,7 +906,7 @@ Directory	*CGM_directory(cgm_fd, fp)
 	if (error == 0 && state == END)
 		dir->status = CGM_OK;
 		
-	free ((Voidptr) buf);
+	(void) free ((Voidptr) buf);
 	return(dir);
 
 }
@@ -757,6 +981,67 @@ void	CGM_printDirectory(dir)
 		}
 	}
 
+}
+
+/*	fetch_input
+ *	PRIVATE
+ *		read the next valid binary NCAR CGM record in to the input 
+ *	buffer. Other valid encodings (header, pre-cgm and ncar-formated
+ *	printer) are skipped and ignored.
+ *
+ * on entry
+ *	cgm_fd		: a Cgm_fd open for reading
+ *	*pg		: pointer to the Pg_struct for the cgm_fd
+ * on exit
+ *	return		: number of bytes of useful data in buf
+ */
+static	fetch_input(cgm_fd, pg)
+	Cgm_fd		cgm_fd;
+	Pg_struct	*pg;
+{
+	int		data_count;
+	register unsigned	tmp = 0;
+	/*
+	 *	do until data_count is not zero or EOF or error
+	 */
+	do {
+		if ((data_count = CGM_read(cgm_fd, pg->buf)) < 1) {
+			return(data_count);
+		}
+		pg->buf_ptr = pg->buf;
+
+		
+
+		/*
+		 * make sure valid NCAR CGM. Only record type supported now
+		 */
+		switch (GETBITS(pg->buf_ptr[2],TYPE_POS,TYPE_LEN)) {
+
+		case	NCAR_CGM:
+			break;
+
+		case	HEADER:
+		case	PRINTER:
+		case	PRE_CGM:
+			data_count = 0;
+			continue;
+		default:
+			return(-1);
+		}
+		
+		/*
+		 * each record contains a valid byte count 
+		 * in first two bytes
+		 */
+		tmp = pg->buf_ptr[0] << 8 | pg->buf_ptr[1];
+		data_count = GETBITS(tmp, COUNT_POS, COUNT_LEN);
+		/*
+		 * advance the buf pointer past the NCAR CGM header
+		 */
+		pg->buf_ptr += HEADERSIZE;
+	} while (data_count < 1);
+
+	return(data_count);
 }
 
 
@@ -949,69 +1234,47 @@ void	CGM_flushGetInstr(cgm_fd)
 }
 
 
-/*	fetch_input
+
+/*	put_output
  *	PRIVATE
- *		read the next valid binary NCAR CGM record in to the input 
- *	buffer. Other valid encodings (header, pre-cgm and ncar-formated
- *	printer) are skipped and ignored.
- *
+ *		install NCAR CGM header in output buffer and 
+ *	write the output buffer to the CGM
  * on entry
- *	cgm_fd		: a Cgm_fd open for reading
- *	*pg		: pointer to the Pg_struct for the cgm_fd
+ *	cgm_fd		: a Cgm_fd open for writing
+ *	*pg		: pointer to Pg_struct for the cgm_fd
+ *	numbytes	: number bytes of data left unused in the buffer
  * on exit
- *	return		: number of bytes of useful data in buf
+ *	return		: number of bytes now available in buffer
  */
-fetch_input(cgm_fd, pg)
+static	put_output(cgm_fd, pg, numbytes )
 	Cgm_fd		cgm_fd;
 	Pg_struct	*pg;
+	unsigned int	numbytes;
 {
-	int		data_count;
-	register unsigned	tmp = 0;
+	register unsigned int 	tmp = 0;
+
+	int	bytecount = cgmTab[cgm_fd].record_size - HEADERSIZE - numbytes;
 	/*
-	 *	do until data_count is not zero or EOF or error
+	 * insert bytecount, datatype flag and frame bits into first
+	 * four bytes of the output buffer. (fourth byte is unused)
 	 */
-	do {
-		if ((data_count = CGM_read(cgm_fd, pg->buf)) < 1) {
-			return(data_count);
-		}
-		pg->buf_ptr = pg->buf;
+	PUTBITS(tmp, COUNT_POS, COUNT_LEN, bytecount);/* dataCount*/
+	pg->buf[1] = (char) (tmp & 0x000000ff);
+	pg->buf[0] = (char) ((tmp & 0x0000ff00) >> 8);
 
-		
+	PUTBITS(pg->buf[2], TYPE_POS, TYPE_LEN, 3);	/* type NCAR CGM*/
+	PUTBITS(pg->buf[2], BEG_MF_POS, LEN, pg->beg_meta);/* begin meta*/
+	PUTBITS(pg->buf[2], END_MF_POS, LEN, pg->end_meta);/* end meta	*/
+	PUTBITS(pg->buf[2], FRAME_POS, LEN, pg->new_frame);/* new frame	*/
 
-		/*
-		 * make sure valid NCAR CGM. Only record type supported now
-		 */
-		switch (GETBITS(pg->buf_ptr[2],TYPE_POS,TYPE_LEN)) {
+	pg->buf_ptr = pg->buf + HEADERSIZE;	/* reset output buffer pointer*/
 
-		case	NCAR_CGM:
-			break;
+	if (CGM_write(cgm_fd, pg->buf) != cgmTab[cgm_fd].record_size) {
+		return(-1);
+	}
 
-		case	HEADER:
-		case	PRINTER:
-		case	PRE_CGM:
-			data_count = 0;
-			continue;
-			break;
-		default:
-			return(-1);
-			break;
-		}
-		
-		/*
-		 * each record contains a valid byte count 
-		 * in first two bytes
-		 */
-		tmp = pg->buf_ptr[0] << 8 | pg->buf_ptr[1];
-		data_count = GETBITS(tmp, COUNT_POS, COUNT_LEN);
-		/*
-		 * advance the buf pointer past the NCAR CGM header
-		 */
-		pg->buf_ptr += HEADERSIZE;
-	} while (data_count < 1);
-
-	return(data_count);
+	return(cgmTab[cgm_fd].record_size - HEADERSIZE);
 }
-
 
 
 /*	CGM_putInstr:
@@ -1239,47 +1502,6 @@ int	CGM_flushOutputInstr(cgm_fd)
 	return(status);
 }
 
-/*	put_output
- *	PRIVATE
- *		install NCAR CGM header in output buffer and 
- *	write the output buffer to the CGM
- * on entry
- *	cgm_fd		: a Cgm_fd open for writing
- *	*pg		: pointer to Pg_struct for the cgm_fd
- *	numbytes	: number bytes of data left unused in the buffer
- * on exit
- *	return		: number of bytes now available in buffer
- */
-put_output(cgm_fd, pg, numbytes )
-	Cgm_fd		cgm_fd;
-	Pg_struct	*pg;
-	unsigned int	numbytes;
-{
-	register unsigned int 	tmp = 0;
-
-	int	bytecount = cgmTab[cgm_fd].record_size - HEADERSIZE - numbytes;
-	/*
-	 * insert bytecount, datatype flag and frame bits into first
-	 * four bytes of the output buffer. (fourth byte is unused)
-	 */
-	PUTBITS(tmp, COUNT_POS, COUNT_LEN, bytecount);/* dataCount*/
-	pg->buf[1] = (char) (tmp & 0x000000ff);
-	pg->buf[0] = (char) ((tmp & 0x0000ff00) >> 8);
-
-	PUTBITS(pg->buf[2], TYPE_POS, TYPE_LEN, 3);	/* type NCAR CGM*/
-	PUTBITS(pg->buf[2], BEG_MF_POS, LEN, pg->beg_meta);/* begin meta*/
-	PUTBITS(pg->buf[2], END_MF_POS, LEN, pg->end_meta);/* end meta	*/
-	PUTBITS(pg->buf[2], FRAME_POS, LEN, pg->new_frame);/* new frame	*/
-
-	pg->buf_ptr = pg->buf + HEADERSIZE;	/* reset output buffer pointer*/
-
-	if (CGM_write(cgm_fd, pg->buf) != cgmTab[cgm_fd].record_size) {
-		return(-1);
-	}
-
-	return(cgmTab[cgm_fd].record_size - HEADERSIZE);
-}
-
 
 
 /*	CGM_freeDirectory:
@@ -1301,21 +1523,21 @@ void	CGM_freeDirectory(dir)
 		return;
 
 	if (dir->meta != (int *) NULL)
-		free ((Voidptr) dir->meta);
+		(void) free ((Voidptr) dir->meta);
 
 	for (i = 0; i < dir->dir_size; i++) {
 		if (dir->d[i].text != NULL)
-			free((Voidptr) dir->d[i].text);
+			(void) free((Voidptr) dir->d[i].text);
 	}
 
 	for (i = 0; i < dir->MFDes_size; i++) {
 		if (dir->MFDescription[i] != NULL)
-			free((Voidptr) dir->MFDescription[i]);
+			(void) free((Voidptr) dir->MFDescription[i]);
 	}
 
-	free((Voidptr) dir->d);
-	free((Voidptr) dir->MFDescription);
-	free((Voidptr) dir);
+	(void) free((Voidptr) dir->d);
+	(void) free((Voidptr) dir->MFDescription);
+	(void) free((Voidptr) dir);
 	dir = NULL;
 }
 
@@ -1490,230 +1712,3 @@ Directory	*init_dir()
 
 	return(dir);
 }
-
-
-static	int	stream_read(cgm_fd, buf)
-	Cgm_fd		cgm_fd;
-	unsigned char	*buf;
-{
-	char *b;
-	int	n, l;
-	int	r = (int) cgmTab[cgm_fd].record_size;
-	FILE	*fp = cgmTab[cgm_fd].fp;
-
-	b=(char *)buf;
-	for (n=0; n<r; n+=l) {
-		if ((l=fread(b+n,1,r-n,fp))<0)
-			return(l);
-		else if (l==0)
-			break;
-	}
-	return(n);
-}
-static	int	raw_read(cgm_fd, buf)
-	Cgm_fd		cgm_fd;
-	unsigned char	*buf;
-{
-	char *b;
-	int	n, l;
-	int	r = (int) cgmTab[cgm_fd].record_size;
-	int	fd = cgmTab[cgm_fd].fd;
-
-	b=(char *)buf;
-	for (n=0; n<r; n+=l) {
-		if ((l=read(fd,b+n,r-n))<0)
-			return(l);
-		else if (l==0)
-			break;
-	}
-	return(n);
-}
-static	int	memory_read(cgm_fd, buf)
-	Cgm_fd		cgm_fd;
-	unsigned char	*buf;
-{
-	int	fd = cgmTab[cgm_fd].fd;
-
-	return(CGM_readMemFile(fd, buf));
-}
-
-static	int	stream_write(cgm_fd, buf)
-	Cgm_fd		cgm_fd;
-	unsigned char	*buf;
-{
-	int	r = cgmTab[cgm_fd].record_size;
-	FILE	*fp = cgmTab[cgm_fd].fp;
-
-	return(fwrite((char *) buf, 1, r, fp)); 
-}
-
-static	int	raw_write(cgm_fd, buf)
-	Cgm_fd		cgm_fd;
-	unsigned char	*buf;
-{
-	int	r = cgmTab[cgm_fd].record_size;
-	int	fd = cgmTab[cgm_fd].fd;
-
-	if (cgmTab[cgm_fd].mtype == Pipe ) {
-		fd = cgmTab[cgm_fd].fdw;
-	}
-
-	return(write(fd, (char *) buf, r));
-}
-
-static	int	memory_write(cgm_fd, buf)
-	Cgm_fd		cgm_fd;
-	unsigned char	*buf;
-{
-	int	fd = cgmTab[cgm_fd].fd;
-
-	return (CGM_writeMemFile(fd, buf));
-}
-
-static	int	stream_seek(cgm_fd, offset, whence)
-	Cgm_fd		cgm_fd;
-	long	offset;
-	int	whence;
-{
-	FILE	*fp = cgmTab[cgm_fd].fp;
-
-	return(fseek(fp, offset, whence));
-}
-
-static	int	raw_seek(cgm_fd, offset, whence)
-	Cgm_fd		cgm_fd;
-	long	offset;
-	int	whence;
-{
-	int	fd = cgmTab[cgm_fd].fd;
-
-	return((int) lseek(fd, (off_t) offset, whence));
-}
-static	int	memory_seek(cgm_fd, offset, whence)
-	Cgm_fd		cgm_fd;
-	long	offset;
-	int	whence;
-{
-	int	fd = cgmTab[cgm_fd].fd;
-	int	r = cgmTab[cgm_fd].record_size;
-	int	offset_ = r ? offset / r : 0;
-
-	return (CGM_lseekMemFile(fd, offset_, whence));
-}
-static	int	stream_close(cgm_fd)
-	Cgm_fd		cgm_fd;
-{
-	FILE	*fp = cgmTab[cgm_fd].fp;
-
-	return(fclose(fp));
-}
-
-static	int	stream_flush(cgm_fd)
-	Cgm_fd		cgm_fd;
-{
-	FILE	*fp = cgmTab[cgm_fd].fp;
-
-	return(fflush(fp));
-}
-
-static	int	raw_close(cgm_fd)
-	Cgm_fd		cgm_fd;
-{
-	int	fd = cgmTab[cgm_fd].fd;
-	int	error;
-
-	error = close(fd);
-	if (cgmTab[cgm_fd].mtype == Pipe ) {
-		int	fdw = cgmTab[cgm_fd].fdw;
-		error -= close(fdw);
-	}
-	return(error);
-}
-	
-static	int	memory_close(cgm_fd)
-	Cgm_fd		cgm_fd;
-{
-	int	fd = cgmTab[cgm_fd].fd;
-
-	return(CGM_closeMemFile (fd));
-}
-
-static	int	noop()
-{
-	return(0);
-}
-
-#ifdef	cray
-
-
-
-
-/*
-*	If output is to a standard file, buffered I/O is used. On
-*	some systems it is desirable to adjust this and several
-*	options for this are available.
-*	Buffer size is adjustable as follows:
-*
-*	1. If environment variable NCARG_GKS_BUFSIZE is set to N
-*
-*			Buffer Size = N * BUFSIZ / 32 bytes.
-*
-*	2. Otherwise, if the value of DEFAULT_GKS_BUFSIZE in wks.h
-*	   is edited by the Makefile to be non-zero.
-*
-*			Buffer Size = DEFAULT_GKS_BUFSIZE * BUFSIZ / 32 bytes.
-*
-*	3. Otherwise, (when DEFAULT_GKS_BUFSIZE is 0)
-*
-*			Buffer Size = BUFSIZ (from stdio.h)
-*
-*/
-static	int	setvbuf_(fp, r)
-	FILE	*fp;
-	int	r;
-{
-	
-	int	i;
-	int	size;
-	char	*b;
-	char	*bufsize_env;
-	int	bufsize;
-
-
-	/*
-	The environment variable NCARG_GKS_BUFSIZE, a macro
-	definition, or a constant from stdio.h can determine
-	buffer size used. See notes at the top of this file.
-	*/
-
-	bufsize_env = getenv("NCARG_GKS_BUFSIZE");
-	if (bufsize_env == (char *) NULL) {
-		if (DEFAULT_GKS_BUFSIZE == 0) {
-			bufsize = BUFSIZ;
-		}
-		else {
-			bufsize = BUFSIZ * DEFAULT_GKS_BUFSIZE / 32;
-		}
-	}
-	else {
-		bufsize = BUFSIZ * atoi(bufsize_env) / 32;
-		if (bufsize <= 0) {
-			bufsize = BUFSIZ;
-		}
-	}
-
-	/*
-	 * find the smallest buffer size that is bigger then r and 
-	 * is an integral of bufsize
-	 */
-	i = r / bufsize;
-	i++;
-	size = i * bufsize;
-
-	if ((b = malloc(size)) == NULL) {
-		return(-1);
-	}
-
-	return(setvbuf(fp, b, _IOFBF, size));
-}
-#endif

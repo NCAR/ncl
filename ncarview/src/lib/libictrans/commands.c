@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.17 1992-09-01 23:43:45 clyne Exp $
+ *	$Id: commands.c,v 1.18 1992-09-09 15:09:57 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,10 +36,6 @@
 #else
 #define	FORK	fork
 #endif
-
-#ifndef	TMPDIR
-#define	TMPDIR	"/tmp"
-#endif	/* TMPDIR	*/
 
 IcState	icState = {
 		FALSE, 1, 1, 1, 0, 0, FALSE, 0, NULL, NULL, NULL, NULL, NULL,
@@ -444,7 +440,6 @@ int	iCPlot(ic)
 	register void (*istat)();
 
 	static		short	incCurrentFrame = FALSE;
-	void		sigint_handler();
 	CtransRC	ctrc;
 	CtransRC	status = OK;
 
@@ -744,20 +739,25 @@ static	print_file(ic, translator, dev_win_string)
 int	iCPrint(ic)
 	ICommand	*ic;
 {
-	char		*binpath;
+	const char	*binpath;
 	static	char	*translator = NULL;
 	DevWindow	*dev_win = &icState.dev_window;
 	char		dev_win_string[80];
 
 	if (!Toc) return(-1);
 
-	binpath = GetNCARGPath("BINDIR");
-	binpath = binpath ? binpath : ".";
 
 	/*
 	 * one time creation of spooler translator name
 	 */
 	if (! translator) {
+		if ( !(binpath = GetNCARGPath(BINDIR))) {
+			fprintf(
+				stderr, "NCARG bin path not found [ %s ]", 
+				ErrGetMsg()
+			);
+			return(-1);
+		}
 		translator = malloc(
 			(unsigned) (strlen(binpath) + strlen(SPOOL_TRANS) + 2)
 		);
@@ -1036,7 +1036,10 @@ int	iCDevice(ic)
 	 * get complete path to graphcap.
 	 */
 	if ((dev = getGcapname( s )) == NULL ) {
-		(void) fprintf(stderr, "Invalid device %s\n", s);
+		(void) fprintf(
+			stderr, "Invalid device(%s) [ %s ]\n",
+			s, ErrGetMsg()
+		);
 		return(-1);
 	}
 
@@ -1097,7 +1100,10 @@ int	iCFont(ic)
 	 * get complete path to graphcap.
 	 */
 	if ((font = getFcapname( s )) == NULL ) {
-		(void) fprintf(stderr, "Invalid font %s\n", s);
+		(void) fprintf(
+			stderr, "Can't initialize font(%s) [ %s ]\n",
+			s, ErrGetMsg()
+		);
 		return(-1);
 	}
 	/*
@@ -1413,13 +1419,14 @@ char	*create_tmp_fname()
 {
 	char	*fname;
 	char	pidbuf[20];
+	const char	*tmp_path = GetNCARGPath(TMPDIR);
 
 	(void) sprintf(pidbuf, "ictrans.%d", getpid());
 
 	fname = malloc(
-		(unsigned) (strlen(TMPDIR) + strlen("/") + strlen(pidbuf) + 1)
+		(unsigned) (strlen(tmp_path) + strlen("/") + strlen(pidbuf) + 1)
 	);
-	(void) strcpy(fname, TMPDIR);
+	(void) strcpy(fname, tmp_path);
 	fname = strcat(fname, "/");
 	fname = strcat(fname, pidbuf);
 

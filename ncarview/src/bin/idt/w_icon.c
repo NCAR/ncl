@@ -1,5 +1,5 @@
 /*
- *	$Id: w_icon.c,v 1.2 1992-04-03 23:21:24 clyne Exp $
+ *	$Id: w_icon.c,v 1.3 1992-09-09 15:06:57 clyne Exp $
  */
 /*
  *	w_icon.c
@@ -26,7 +26,7 @@
 static  struct  {
 	int     width,
 	height;
-	char    *bits;
+	unsigned char    *bits;
 	Pixmap  pmap;
 	} icon = {earth_width, earth_height, earth_bits, 0};
 

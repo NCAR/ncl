@@ -1,30 +1,19 @@
 NCARG	= ../..
 #
-#	$Id: yMakefile,v 1.5 1992-06-25 21:47:24 clyne Exp $
+#	$Id: yMakefile,v 1.6 1992-09-09 15:06:17 clyne Exp $
 #
 
 
 MAN	= \ 
 	ctrans ictrans cgm ncarv_spool ncgm2cgm cgm2ncgm med gcaps fcaps \
-	xwdtohdf nriftohdf rasview
-
-UN_MAN	= \
-	idt cgm_edit 
+	xwdtohdf nriftohdf rasview idt cgm_edit 
 
 
-#ifdef	BuildUnsupportedAthenaApplications
-#
-#	unsupported man pages
-#
-MANS	= $(MAN) $(UN_MAN)
-#else
-MANS	= $(MAN)
-#endif
 
 #
 #	we always format
 #
-FORMAT	= $(MAN) $(UN_MAN)
+FORMAT	= $(MAN)
 
 all:
 
@@ -38,27 +27,27 @@ preformatted:
 # Install preformatted troff documents on systems without troff
 
 install::
-	@for name in $(MANS); do\
+	@for name in $(MAN); do\
 	($(INSTALL) -m $(INSTALL_MAN) $$name.p \
-	$(MANDIR)/$$name.$(MAN_SECTION) );\
+	$(MANLPATH)/$$name.$(MANL_SECTION) );\
 	done
 
 #else
 
 install::
-	@for name in $(MANS); do\
-	(sed -e 's@MACRO_SOURCE@$(MANDIR)/ncargmac.$(MAN_SECTION)@' \
-	<$$name.m >$$name.$(MAN_SECTION));\
+	@for name in $(MAN); do\
+	(sed -e 's@MACRO_SOURCE@$(MANLPATH)/ncargmac.$(MANL_SECTION)@' \
+	<$$name.m >$$name.$(MANL_SECTION));\
 	done
 
 install::
-	@for name in $(MANS); do\
-	($(INSTALL) -m $(INSTALL_MAN) $$name.$(MAN_SECTION) $(MANDIR));\
+	@for name in $(MAN); do\
+	($(INSTALL) -m $(INSTALL_MAN) $$name.$(MANL_SECTION) $(MANLPATH));\
 	done
 
 install::
-	@-for name in $(MANS); do\
-	($(RM) $$name.$(MAN_SECTION));\
+	@-for name in $(MAN); do\
+	($(RM) $$name.$(MANL_SECTION));\
 	done
 #endif
 

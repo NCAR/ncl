@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.23 1992-09-01 23:39:16 clyne Exp $
+ *	$Id: w_idt.c,v 1.24 1992-09-09 15:07:03 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -191,7 +191,7 @@ static	char	**get_trans_commandline(targc, app_data)
 {
 	char	**targv;
 	int	i;
-	char	*binpath;
+	const char	*binpath;
 
 	/*
 	 * alloc enough memory for translator name, each option specifier and 
@@ -207,9 +207,11 @@ static	char	**get_trans_commandline(targc, app_data)
 	/*
 	 * get the path to the translator
 	 */
-	binpath = GetNCARGPath("BINDIR");
-	binpath = binpath ? binpath : BINDIR_DEFAULT;
-
+	if ( !(binpath = GetNCARGPath(BINDIR))) {
+		fprintf(stderr, "NCARG bin path not found [ %s ]", ErrGetMsg());
+		return((char **) NULL);
+	}
+		
 	/*
 	 * the translator is the first arg
 	 */
@@ -572,16 +574,6 @@ main(argc, argv)
 	 * hack to ensure idt app resource file is found
 	 */
 	XAppDirPath();
-
-	/*
-	 * hack to ensure ncarg parameter file is found
-	 */
-	if (kludge() < 0) {
-		(void) fprintf(stderr, 
-			"%s: Warning couldn't locate ncarg parameter file. ", 
-			argv[0]);
-		(void) fprintf(stderr,"Is \'ncargpar\' on your search path?\n");
-	}
 
 	toplevel = XtAppInitialize(&app_con, "Idt", options, XtNumber(options),
 			       &argc, argv, fallback_resources, NULL, ZERO);

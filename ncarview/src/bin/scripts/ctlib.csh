@@ -1,13 +1,13 @@
 #!/bin/csh -f
 #
-#	$Id: ctlib.csh,v 1.4 1992-06-24 20:51:25 clyne Exp $
+#	$Id: ctlib.csh,v 1.5 1992-09-09 15:07:47 clyne Exp $
 #
 #
 #	This script simply reports the libraries required by ctrans.
 #	The library list will vary depending on machine configuration
 #
 
-set libdir = `ncargpar LIBDIR`
+set libdir = `ncargpath LIBDIR`
 
 if ($status != 0) then
 	exit 1

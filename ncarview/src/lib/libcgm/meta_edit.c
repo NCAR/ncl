@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.14 1992-09-01 23:40:47 clyne Exp $
+ *	$Id: meta_edit.c,v 1.15 1992-09-09 15:08:34 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -14,6 +14,7 @@
 
 #include	<stdio.h>
 #include	<fcntl.h>
+#include	<unistd.h>
 #include	<sys/types.h>
 #include	<errno.h>
 #include	<string.h>
@@ -75,10 +76,6 @@ static	Directory *workingDir;	/* dir representing the metafile being edited */
 static	Directory *saveDir;	/* actual dir for the metafile being edited */
 static	Cgm_fd	workingFd;	/* read file descriptor for working file   */
 static	FILE *verboseFP = NULL;	/* operate in verbose mode		*/
-
-#ifndef	TMPDIR
-#define	TMPDIR	"/tmp"
-#endif
 
 #define	TMPFILE		"/libcgm.XXXXXX"
 #define	WRITEFILE	"cgm.XXXXXX"
@@ -148,7 +145,7 @@ static	shift_frames (src, dest, num_frames, gap, dir, list)
 
 			if (dir->d[src].text) {
 				if (dir->d[dest].text) {
-					free((Voidptr) dir->d[dest].text);
+					(void) free((Voidptr) dir->d[dest].text);
 				}
 				dir->d[dest].text = malloc (
 					(unsigned) strlen(dir->d[src].text)+1);
@@ -177,7 +174,7 @@ static	shift_frames (src, dest, num_frames, gap, dir, list)
 
 			if (dir->d[src].text) {
 				if (dir->d[dest].text) {
-					free((Voidptr) dir->d[dest].text);
+					(void) free((Voidptr) dir->d[dest].text);
 				}
 				dir->d[dest].text = malloc (
 					(unsigned) strlen(dir->d[src].text)+1);
@@ -246,7 +243,7 @@ static	copy_dir(d1, d2, src, dest, num_frames)
 			d1->d[dest].record = offset;
 
 		if (d2->d[src].text) {
-			if (d1->d[dest].text) free((Voidptr) d1->d[dest].text);
+			if (d1->d[dest].text) (void) free((Voidptr) d1->d[dest].text);
 			d1->d[dest].text = malloc (
 					(unsigned) strlen(d2->d[src].text)+1);
 			if (! d1->d[dest].text) {
@@ -882,7 +879,7 @@ Directory	*CGM_moveFrames (start_frame, num_frames, target)
 		workingList.list[dest] = list.list[i];
 	}
 		
-	free((Voidptr) list.list);
+	(void) free((Voidptr) list.list);
 	CGM_freeDirectory(dir);
 	return(workingDir);
 }
@@ -914,6 +911,7 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp, verbose_fp)
 {
 	int	i;
 	int	r = ABS(record_size);
+	const char	*tmp_path;
 
 	errno = 0;
 
@@ -925,11 +923,16 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp, verbose_fp)
 		(void) CGM_termMetaEdit();
 	}
 
+
 	recordSize = record_size;
 	verboseFP = verbose_fp;
 
 	if (!ncar_cgm) {
 		return(ERR);	/* no file	*/
+	}
+
+	if (! (tmp_path = GetNCARGPath(TMPDIR))) {
+		return ((Directory *) NULL);
 	}
 
 	/*
@@ -986,14 +989,14 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp, verbose_fp)
 	if ((saveDir = CGM_directory(workingFd,verboseFP)) == NULL) {
 		(void) CGM_close(workingFd);
 		CGM_freeDirectory(workingDir);
-		free((Voidptr) workingList.list);
+		(void) free((Voidptr) workingList.list);
 		return(ERR);
 	}
 #else
 	if ((saveDir = CGM_copyCreateDir(workingDir)) == NULL) {
 		(void) CGM_close(workingFd);
 		CGM_freeDirectory(workingDir);
-		free((Voidptr) workingList.list);
+		(void) free((Voidptr) workingList.list);
 		return(ERR);
 	}
 #endif
@@ -1006,7 +1009,7 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp, verbose_fp)
 	 *	Use a default tmp directory if user has not specified 
 	 *	differently.
 	 */
-	if (tempFile) free (tempFile);
+	if (tempFile) (void) free (tempFile);
 	if (local_tmp) {
 		tempFile = malloc(strlen(local_tmp) + strlen(TMPFILE) + 1);
 		if (! tempFile) {
@@ -1015,11 +1018,11 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp, verbose_fp)
 		(void) strcpy(tempFile, local_tmp);
 	}
 	else  {
-		tempFile = malloc(strlen(TMPDIR) + strlen(TMPFILE) + 1);
+		tempFile = malloc(strlen(tmp_path) + strlen(TMPFILE) + 1);
 		if (! tempFile) {
 			return(ERR);
 		}
-		(void) strcpy(tempFile, TMPDIR);
+		(void) strcpy(tempFile, tmp_path);
 	}
 
 	(void) strcat(tempFile, TMPFILE);
@@ -1030,7 +1033,7 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp, verbose_fp)
 		(void) CGM_close(workingFd);
 		CGM_freeDirectory(workingDir);
 		CGM_freeDirectory(saveDir);
-		free((Voidptr) workingList.list);
+		(void) free((Voidptr) workingList.list);
 
 		return(ERR);
 	}
@@ -1065,9 +1068,9 @@ int	CGM_termMetaEdit()
 	(void) unlink(tempFile);	/* remove the temp file		*/
 	(void) CGM_freeDirectory(workingDir);	/* free the working directory*/
 	(void) CGM_freeDirectory(saveDir);	/* free the backup directory*/
-	free((Voidptr) workingList.list);
-	free((Voidptr) tmpBuf);
-	if (recordSize > 0) free((Voidptr) ncarCgm);
+	(void) free((Voidptr) workingList.list);
+	(void) free((Voidptr) tmpBuf);
+	if (recordSize > 0) (void) free((Voidptr) ncarCgm);
 
 	Initialized = 0;		/* no longer are we initialized	*/
 	return(1);			/* success			*/
@@ -1212,7 +1215,7 @@ int	CGM_writeFrames(ncar_cgm, start_frame, num_frames)
 	 */
 	(void) CGM_close(tmp_fd);
 	(void) CGM_close(fd);		/* close the new file		*/
-	free((Voidptr) newfile);
+	(void) free((Voidptr) newfile);
 	return(1);			/* success			*/
 }
 /*
@@ -1296,7 +1299,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	if (CGM_read(fd, buf) < 0 ) {
 		(void) CGM_close(tmp_fd);
 		(void) CGM_close(fd);
-		if (buf) free((Voidptr) buf);
+		if (buf) (void) free((Voidptr) buf);
 		return(-1);
 	}
 	(void) CGM_close(fd);
@@ -1310,7 +1313,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 		GETBITS(tmp, ID_POSS, ID_BITS ) != END_MF_ID) {
 
 		(void) CGM_close(tmp_fd);
-		if (buf) free((Voidptr) buf);
+		if (buf) (void) free((Voidptr) buf);
 		return(-1);
 	}
 
@@ -1319,7 +1322,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	 */
 	if ((fd = CGM_open(ncar_cgm, r, "a" )) < 0) {
 		(void) CGM_close(tmp_fd);
-		if (buf) free((Voidptr) buf);
+		if (buf) (void) free((Voidptr) buf);
 		return(-1);
 	}
 
@@ -1333,7 +1336,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 						saveDir,start_frame) < 0){
 			(void) CGM_close(tmp_fd);
 			(void) CGM_close(fd);
-			if (buf) free((Voidptr) buf);
+			if (buf) (void) free((Voidptr) buf);
 			return(-1);
 		}
 	}
@@ -1349,7 +1352,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	 */
 	(void) CGM_close(tmp_fd);
 	(void) CGM_close(fd);		/* close the new file		*/
-	if (buf) free((Voidptr) buf);
+	if (buf) (void) free((Voidptr) buf);
 	return(1);			/* success			*/
 }
 
@@ -1665,7 +1668,7 @@ Directory	*CGM_editFrame(frame, edit_instr, num_occur)
 	 */
 	if (edit_instr->class == DEL_ELEMENT && edit_instr->id == BEG_PIC_ID) {
 		if (workingDir->d[frame].text != NULL) {
-			free ((Voidptr) workingDir->d[frame].text);
+			(void) free ((Voidptr) workingDir->d[frame].text);
 		}
 
 		workingDir->d[frame].text = malloc (edit_instr->data_length);

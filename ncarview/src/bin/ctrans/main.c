@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.22 1992-09-01 23:38:12 clyne Exp $
+ *	$Id: main.c,v 1.23 1992-09-09 15:06:32 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -356,7 +356,7 @@ char	**argv;
 	 *	it will have no meaning.
          */
         if ((gcap = getGcapname( opt.device )) == NULL ) {
-		usage(od, progName, "Graphics device not specified");
+		usage(od, progName, ErrGetMsg());
 		cleanup(1);
 	}
 
@@ -372,7 +372,10 @@ char	**argv;
 		 *	try to use default font
 		 */
 		if ((fcap = getFcapname( DEFAULTFONT )) == NULL) {
-			fprintf(logFP,"%s: Warning - no known font",progName);
+			fprintf(
+				logFP,"%s: Warning - no known font [ %s ]",
+				progName, ErrGetMsg()
+			);
 		}
         }
 

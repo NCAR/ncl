@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.17 1992-09-01 23:42:56 clyne Exp $
+ *	$Id: rast.c,v 1.18 1992-09-09 15:09:35 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -364,7 +364,7 @@ static	int	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
                 for (k=0; k<nx; k++) {
 
 			/* make sure data available in cgmc     */
-			if (cgmc_index >= c->Cnum && c->more) {
+			if ((unsigned short) cgmc_index >= c->Cnum && c->more) {
 				if (Instr_Dec(c) < 1) {
 					return (-1);
 				}

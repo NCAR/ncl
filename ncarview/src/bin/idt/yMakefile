@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.12 1992-09-01 23:39:23 clyne Exp $
+#	$Id: yMakefile,v 1.13 1992-09-09 15:07:09 clyne Exp $
 #
 #
 #	Makefile for idt -- Interactive Image Display Tool
@@ -8,33 +8,10 @@
 #
 
 NCARG = ../../../..
-BINDIR_LOCAL = ../../../bin
 
 MYNAME	= idt
 
-LOCLIBDIR	= ../../../lib
-
 TRANSLATOR	= ictrans
-
-#
-#	default path to x app defaults directory (only used if params file
-#	not found)
-#
-XAPPDIR_DEFAULT	= /usr/lib/X11/app-defaults
-#
-#	default path to ictrans (only used if params file not found)
-#
-BINDIR_DEFAULT	= $(BINDIR)
-
-#ifdef  sgi
-CDEFINES	= -I/usr/include/bsd
-#else
-#ifdef	sun
-CDEFINES	= -Bstatic
-#else
-CDEFINES	= 
-#endif
-#endif
 
 #if defined(CRAY)
 XLIBS	= \
@@ -51,7 +28,7 @@ XLIBS	= \
 
 
 LOCLIB	= \
-	$(LIBDIR)/libcgm.a $(LIBDIR)/libncarg_c.a
+	$(LIBPATH)/libcgm.a $(LIBPATH)/libncarg_c.a
 
 
 LIBS	= $(LOCLIB) $(XLIBS)
@@ -65,17 +42,17 @@ EQUALHACK = =
 OBJS	= \
 	w_idt.o w_file.o file.o glob.o w_display.o display.o w_dialog.o \
 	commands.o talkto.o xrubber.o scroll.o w_text.o spooler.o w_icon.o \
-	xt_env.o kludge.o animate.o animate_cb.o
+	xt_env.o animate.o animate_cb.o
 
 SRCS	= \
 	w_idt.c w_file.c file.c glob.c w_display.c display.c w_dialog.c \
 	commands.c talkto.c xrubber.c scroll.c w_text.c spooler.c w_icon.c \
-	xt_env.c kludge.c animate.c animate_cb.c
+	xt_env.c animate.c animate_cb.c
 
 
 all::	$(MYNAME)
 
-CBinTarget($(MYNAME),$(OBJS),$(LIBS))
+CTarget($(MYNAME),$(OBJS),$(LIBS))
 MakefileTarget
 CleanTarget
 
@@ -83,19 +60,18 @@ CleanTarget
 #
 #	w_idt.c needs to know the name of the translator
 #
-w_idt.o:     Makefile
-	$(CC) $(CFLAGS) -DTRANSLATOR$(EQUALHACK)'"$(TRANSLATOR)"' \
-	-DBINDIR_DEFAULT$(EQUALHACK)'"$(BINDIR_DEFAULT)"' -c $*.c
+w_idt.o:     w_idt.c Makefile
+	$(CC) $(CFLAGS) \
+	-DTRANSLATOR$(EQUALHACK)'"$(TRANSLATOR)"' \
+	-DBINDIR$(EQUALHACK)'"$(BINDIR)"' \
+	-c $*.c
 
 #
 #	xt_env.c needs to know the default location of the idt resoure file
 #
-xt_env.o:     Makefile
-	$(CC) $(CFLAGS) -DXAPPDIR_DEFAULT$(EQUALHACK)'"$(XAPPDIR_DEFAULT)"' \
-								-c $*.c
+xt_env.o:     xt_env.c Makefile
+	$(CC) $(CFLAGS) -DXAPPDIR$(EQUALHACK)'"$(XAPPDIR)"' -c $*.c
 
 lint:	$(HDR) $(SRCS)
 	lint  -DTRANSLATOR$(EQUALHACK)'"$(TRANSLATOR)"' \
-		-DBINDIR_DEFAULT$(EQUALHACK)'"$(BINDIR_DEFAULT)"' \
-		-DXAPPDIR_DEFAULT$(EQUALHACK)'"$(XAPPDIR_DEFAULT)"' \
 		$(LINTLIBS) $(SRCS)  1> lint.out 2>&1

@@ -1,5 +1,5 @@
 /*
- *      $Id: xt_env.c,v 1.5 1992-09-01 23:39:21 clyne Exp $
+ *      $Id: xt_env.c,v 1.6 1992-09-09 15:07:07 clyne Exp $
  */
 /*
  *	File:		xt_env.c
@@ -31,26 +31,28 @@
  */
 void	XAppDirPath()
 {
-	char	*xapp_path;
+	const char	*xapp_path;
 	char	*xufsp_env	= "XUSERFILESEARCHPATH";
 	char	*xapp_env	= "XAPPLRESDIR";
 
 	static	char	*bufptr = NULL;
 
+#ifdef	DEAD
 	/*
 	 * if either the XUSERFILESEARCHPATH or XAPPLRESDIR environment
 	 * variables are set do nothing.
 	 */
 	if (getenv(xufsp_env)) return;
 	if (getenv(xapp_env)) return;
+#endif
 
-	xapp_path = GetNCARGPath("XAPPDIR");
-
-	/*
-	 * if param file bombed use the default path that we were
-	 * compiled with.
-	 */
-	xapp_path = xapp_path ? xapp_path : XAPPDIR_DEFAULT;
+	if ( !(xapp_path = GetNCARGPath(XAPPDIR))) {
+		(void) fprintf(
+			stderr, "NCARG xapp dir path not found [ %s ]",
+			ErrGetMsg()
+		);
+		return;
+	}
 
 	if (bufptr) free ((Voidptr) bufptr);
 	

@@ -1,5 +1,5 @@
 /*
- *	$Id: gcaprast.c,v 1.12 1992-09-01 23:42:38 clyne Exp $
+ *	$Id: gcaprast.c,v 1.13 1992-09-09 15:09:29 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -435,7 +435,7 @@ CGMC	*c;
 		for (j = 0; j < nx; j++) {
 
 			/* make sure data available in cgmc     */
-			if (index >= c->Cnum && c->more) {
+			if ((unsigned short) index >= c->Cnum && c->more) {
 				if (Instr_Dec(c) < 1) {
 					return (-1);
 				}

@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.13 1992-09-01 23:43:24 clyne Exp $
+ *	$Id: text.c,v 1.14 1992-09-09 15:09:40 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <errno.h>
 #include <ncarg/c.h>
 #include "ctrans.h"
 #include "cgmc.h"
@@ -737,7 +738,7 @@ int	Text(cgmc)
 	/*
 	 *	process each string in the cgmc
 	 */
-	for (str_ind = 0; str_ind < cgmc->Snum; str_ind++) {
+	for (str_ind = 0; (unsigned short) str_ind < cgmc->Snum; str_ind++) {
 
 	/* make sure their is sufficient space in s.string	*/
 	if (( i = cgmc->s->string_space[str_ind]) > str_space) {
@@ -802,7 +803,7 @@ int	Text(cgmc)
 
 
 			/* make sure there is room in cgmc for strokes	*/
-			if (cgmc->Pspace <= numstroke) {
+			if (cgmc->Pspace <= (unsigned short) numstroke) {
 				if (cgmc->p != (Ptype *) NULL) 
 					free((Voidptr) cgmc->p);
 

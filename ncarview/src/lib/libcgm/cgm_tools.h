@@ -168,7 +168,7 @@ extern	Directory	*CGM_directory(
 
 extern	void	CGM_printDirectory(
 #ifdef	NeedFuncProto
-	Directory	*dir
+	const Directory	*dir
 #endif
 );
 

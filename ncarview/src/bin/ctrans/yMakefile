@@ -1,6 +1,6 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.16 1992-09-01 23:38:15 clyne Exp $
+#	$Id: yMakefile,v 1.17 1992-09-09 15:06:35 clyne Exp $
 #
 
 
@@ -31,9 +31,9 @@ SUNLIBS		 = $(DSUNLIBS)
 #
 #	local libraries
 #
-LOCLIB		= $(LIBDIR)/libctrans.o $(LIBDIR)/libcgm.a \
-		$(LIBDIR)/libncarg_ras.a  $(LIBDIR)/libhdf.a \
-		$(LIBDIR)/libncarg_c.a
+LOCLIB		= $(LIBPATH)/libctrans.o $(LIBPATH)/libcgm.a \
+		$(LIBPATH)/libncarg_ras.a  $(LIBPATH)/libhdf.a \
+		$(LIBPATH)/libncarg_c.a
 
 
 SRCS		=  main.c 

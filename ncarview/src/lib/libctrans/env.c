@@ -1,5 +1,5 @@
 /*
- *	$Id: env.c,v 1.5 1992-09-01 23:42:17 clyne Exp $
+ *	$Id: env.c,v 1.6 1992-09-09 15:09:18 clyne Exp $
  */
 		
 
@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include <ncarg/c.h>
 
@@ -53,40 +54,51 @@
 char *  getFcapname( device )
 	const char	*device;
 {
-	char	*path;
+	const char	*path;
 	char	*fcap;
 
 	if ( device == (char *) NULL )
 	{
 		if ( (device = getenv("FONTCAP")) == (char *) NULL)
 		{
+			ESprintf(E_UNKNOWN, "No font specified");
 			return( (char *) NULL);
 		}
 	}
 
 	if ( *device == '/' || *device == '.' ) /* absolute path */
 	{
-		return( device );
+		return( (char * ) device );
 	}
-	else /* default fontcap libraries */
+
+	if ( (path = GetNCARGPath(FONTCAPDIR)) == NULL )
 	{
-		if ( (path = GetNCARGPath("FONTCAPDIR")) == NULL )
-		{
-			/*
-			 * can't find path so assume current directory
-			 */
-			path = ".";
-		}
-
-
-		fcap = (char *)calloc(	(unsigned)strlen(path)+
-				(unsigned)strlen(device) + 2,
-				(unsigned)sizeof(char));
-		fcap = strcat(fcap,path);
-		fcap = strcat(fcap,"/");
-		fcap = strcat(fcap,device);
-		return(fcap);
+#ifdef	DEAD
+		/*
+		 * can't find path so assume current directory
+		 */
+		path = ".";
+#endif
+		ESprintf(
+			E_UNKNOWN, "NCARG font directory not found [ %s ]",
+			ErrGetMsg()
+		);
+		return(NULL);
 	}
+
+
+	fcap = (char *)malloc(
+		(unsigned) strlen(path) +
+		(unsigned) strlen(device) + 2
+	);
+	if (! fcap) {
+		ESprintf(errno, "malloc()");
+		return(NULL);
+	}
+	fcap = strcpy(fcap,path);
+	fcap = strcat(fcap,"/");
+	fcap = strcat(fcap,device);
+	return(fcap);
 }
 
 
@@ -101,38 +113,47 @@ char *  getFcapname( device )
 char *  getGcapname( device )
 	const char	*device;
 {
-	char	*path;
+	const char	*path;
 	char	*gcap;
 
 	if ( device == (char *) NULL )
 	{
 		if ( (device = getenv("GRAPHCAP")) == (char *) NULL)
 		{
+			ESprintf(E_UNKNOWN, "No device specified");
 			return(NULL);
 		}
 	}
 
 	if ( *device == '/' || *device == '.' ) /* absolute path */
 	{
-		return( device );
+		return( (char * ) device );
 	}
-	else /* default graphcap libraries */
+	if ( (path = GetNCARGPath(GRAPHCAPDIR)) == NULL )
 	{
-		if ( (path = GetNCARGPath("GRAPHCAPDIR")) == NULL )
-		{
-			/*
-			 * can't find path so assume current directory
-			 */
-			path = ".";
-		}
-
-		gcap = (char *)calloc(	(unsigned)strlen(path)+
-				(unsigned)strlen(device) + 2,
-				(unsigned)sizeof(char));
-		gcap = strcat(gcap,path);
-		gcap = strcat(gcap,"/");
-		gcap = strcat(gcap,device);
-		return(gcap);
+#ifdef	DEAD
+		/*
+		 * can't find path so assume current directory
+		 */
+		path = ".";
+#endif
+		ESprintf(
+			E_UNKNOWN, "NCARG device directory not found [ %s ]",
+			ErrGetMsg()
+		);
+		return(NULL);
 	}
-}
 
+	gcap = (char *)malloc(
+		(unsigned)strlen(path)+
+		(unsigned)strlen(device) + 2
+	);
+	if (! gcap) {
+		ESprintf(errno, "malloc()");
+		return(NULL);
+	}
+	gcap = strcpy(gcap,path);
+	gcap = strcat(gcap,"/");
+	gcap = strcat(gcap,device);
+	return(gcap);
+}

@@ -1,5 +1,5 @@
 /*
- *	$Id: spooler.c,v 1.9 1992-09-01 23:44:17 clyne Exp $
+ *	$Id: spooler.c,v 1.10 1992-09-09 15:10:17 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -40,6 +40,7 @@
 
 static	Spoolers	spoolers = {NULL, 0, 0};
 static	Spooler		*currentSpooler = NULL;
+static	boolean		isInitialized = FALSE;
 
 int	spoolerJobs = 0;	/* current number of spooler processes	*/
 
@@ -572,7 +573,7 @@ static	file_get_spooler(fp, spoolers)
  *	performs the same action on a system level ./SPOOL_FILE file. 
  *	SPOOL_FILE is defined in spooler.h
  */
-InitSpool()
+int	InitSpool()
 {
 
 	FILE	*fp;
@@ -580,17 +581,21 @@ InitSpool()
 	char	*home;
 	char	*home_spool_file = NULL;
 	char	*sys_spool_file = NULL;
-	char	*libpath;
+	const char	*libpath;
 
 	Spooler	*spool;
 
-	char	*getenv();
-
-	spoolers.spool = (Spooler *) 
-		malloc (SMALL_MALLOC_BLOCK * sizeof (Spooler));
+	spoolers.spool = (Spooler *) malloc (
+		SMALL_MALLOC_BLOCK * sizeof (Spooler)
+	);
+	if (! spoolers.spool) {
+		perror("malloc()");
+		return(-1);
+	}
 	spoolers.num = 0;
 	spoolers.size = SMALL_MALLOC_BLOCK;
 
+	isInitialized = FALSE;
 #ifdef	CRAY
 	/*
 	 * There is no wait3() in unicos yet. This prevents child processes
@@ -613,8 +618,10 @@ InitSpool()
 		}
 	}
 
-	libpath = GetNCARGPath("LIBDIR");
-	libpath = libpath ? libpath : ".";
+	if ( !(libpath = GetNCARGPath(LIBDIR))) {
+		fprintf(stderr, "NCARG lib path not found [ %s ]", ErrGetMsg());
+		return(-1);
+	}
 
 	/*
 	 * build path to system level spooler file
@@ -622,11 +629,19 @@ InitSpool()
 	sys_spool_file = malloc (
 			(unsigned) ( strlen (libpath)
 			+ strlen ("/")
+			+ strlen (NCARGDIR)
+			+ strlen ("/")
 			+ strlen ((char *) SPOOL_FILE)
 			+ 1)
 	);
+	if (! sys_spool_file) {
+		perror("malloc()");
+		return(-1);
+	}
 
 	(void) strcpy (sys_spool_file, libpath);
+	(void) strcat (sys_spool_file, "/");
+	(void) strcat (sys_spool_file, NCARGDIR);
 	(void) strcat (sys_spool_file, "/");
 	(void) strcat (sys_spool_file, (char *) SPOOL_FILE);
 
@@ -649,6 +664,10 @@ InitSpool()
 				+ strlen (SPOOL_FILE)
 				+ 1)
 		);
+		if (! home_spool_file) {
+			perror("malloc()");
+			return(-1);
+		}
 
 		(void) strcpy (home_spool_file, home);
 		(void) strcat (home_spool_file, "/.");
@@ -670,6 +689,7 @@ InitSpool()
 
 	if (sys_spool_file) free ((Voidptr) sys_spool_file);
 	if (home_spool_file) free ((Voidptr) home_spool_file);
+	isInitialized = TRUE;
 }
 
 
@@ -697,6 +717,10 @@ AddSpooler(s)
 {
 	int	i;
 	Spooler	*spool;
+
+	if (! isInitialized)  {
+		return(-1);
+	}
 
 
 	spool = spool_parse( s );
@@ -748,6 +772,9 @@ SetCurrentAlias(alias)
 	char	*alias;
 {
 	int	i;
+	if (! isInitialized)  {
+		return(-1);
+	}
 
 	for (i = 0; i < spoolers.num; i++) {
 		if (strcmp(spoolers.spool[i].alias, alias) == 0) {
@@ -770,6 +797,9 @@ SetCurrentAlias(alias)
  */
 char	*GetCurrentAlias()
 {
+	if (! isInitialized)  {
+		return(NULL);
+	}
 	if (currentSpooler == NULL) 
 		return (NULL);
 
@@ -797,6 +827,10 @@ char	**GetSpoolers(alias)
 	int	i;
 
 	static	char	**spool_list = NULL;
+
+	if (! isInitialized)  {
+		return(NULL);
+	}
 
 	/*
 	 * free memory from last call and malloc enough memory for this one.
@@ -869,6 +903,10 @@ PipeLine(argc, argv, log_fp)
 	int	t_argc;
 
 	void	(*istat)();
+
+	if (! isInitialized)  {
+		return(-1);
+	}
 
 	/* 
 	 * if output is to be redirected to a file see if we can open the 

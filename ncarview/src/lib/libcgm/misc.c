@@ -1,5 +1,5 @@
 /*
- *	$Id: misc.c,v 1.8 1992-09-01 23:40:55 clyne Exp $
+ *	$Id: misc.c,v 1.9 1992-09-09 15:08:40 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -64,7 +64,7 @@ CGM_validCGM(ncar_cgm)
 	 * read in first record of the file
 	 */
 	if (CGM_read (fd, buf) < 0) {
-		if (buf) free ((Voidptr) buf);
+		if (buf) (void) free ((Voidptr) buf);
 		(void) CGM_close(fd);
 		return (-1);
 	}
@@ -75,7 +75,7 @@ CGM_validCGM(ncar_cgm)
 	 */
 	data_len = buf[0] << 8 | buf[1];
 	if (data_len > BUFSIZE - HEADERSIZE ) {
-		if (buf) free ((Voidptr) buf);
+		if (buf) (void) free ((Voidptr) buf);
 		(void) CGM_close(fd);
 		return (0);
 	}
@@ -84,7 +84,7 @@ CGM_validCGM(ncar_cgm)
 	 * make sure valid NCAR CGM. Only record type supported now
 	 */
 	if (GETBITS(buf[2],TYPE_POS,TYPE_LEN) != NCAR_CGM) {
-		if (buf) free ((Voidptr) buf);
+		if (buf) (void) free ((Voidptr) buf);
 		(void) CGM_close(fd);
 		return(0);
 	}
@@ -92,7 +92,7 @@ CGM_validCGM(ncar_cgm)
 	/*
 	 * file is a NCAR binary encoded CGM
 	 */
-	if (buf) free ((Voidptr) buf);
+	if (buf) (void) free ((Voidptr) buf);
 	(void) CGM_close(fd);
 	return (1);
 }

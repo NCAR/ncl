@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: gcaps.csh,v 1.5 1992-06-24 20:51:40 clyne Exp $
+#	$Id: gcaps.csh,v 1.6 1992-09-09 15:07:51 clyne Exp $
 #
 #
 #	Name		gcaps
@@ -14,7 +14,7 @@
 # 
 
 set version = VERSION
-set dir = `ncargpar GRAPHCAPDIR`
+set dir = `ncargpath GRAPHCAPDIR`
 if ($status != 0) then
 	exit 1
 endif

@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.3 1992-09-01 23:40:00 clyne Exp $
+#	$Id: yMakefile,v 1.4 1992-09-09 15:07:34 clyne Exp $
 #
 #
 #	Makefile for rasstat
@@ -8,14 +8,11 @@
 #
 
 NCARG = ../../../..
-BINDIR_LOCAL = ../../../bin
 
 MYNAME	= rasstat
 
-LOCLIBDIR	= ../../../lib
-
-LIBS		= $(LIBDIR)/libncarg_ras.a $(LIBDIR)/libhdf.a \
-		$(LIBDIR)/libncarg_c.a -lm
+LIBS		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libhdf.a \
+		$(LIBPATH)/libncarg_c.a -lm
 
 CDEFINES	= 
 

@@ -1,19 +1,16 @@
 #
 #
-#	$Id: yMakefile,v 1.3 1992-09-01 23:39:42 clyne Exp $
+#	$Id: yMakefile,v 1.4 1992-09-09 15:07:17 clyne Exp $
 #
 #	Makefile for ncgmstat
 #
 #
 
 NCARG = ../../../..
-BINDIR_LOCAL = ../../../bin
 
 MYNAME	= ncgmstat
 
-LOCLIBDIR	= ../../../lib
-
-LIBS		= $(LIBDIR)/libcgm.a $(LIBDIR)/libncarg_c.a
+LIBS		= $(LIBPATH)/libcgm.a $(LIBPATH)/libncarg_c.a
 
 CDEFINES	=
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.11 1992-09-01 23:42:05 clyne Exp $
+ *	$Id: default.c,v 1.12 1992-09-09 15:09:15 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1155,7 +1155,7 @@ CGMC *c;
 		dt->backcolr_damage = at->backcolr_access = TRUE;
 	}
 
-	for (i=0; i < c->CDnum && i<=MAX_C_I; i++, color_index++) {
+	for (i=0; (unsigned short)i <c->CDnum && i<=MAX_C_I; i++,color_index++){
 		tmp = c->cd[i].red * oPtion.rgb_scale;
 		tmp = tmp > max_intensity ? max_intensity : tmp;
 		clut->ce[color_index].rgb.red = (unsigned char) tmp;

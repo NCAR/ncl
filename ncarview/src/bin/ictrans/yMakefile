@@ -1,7 +1,5 @@
 NCARG		= ../../../..
 
-LOCLIBDIR	= ../../../lib
-
 MYNAME		= ictrans
 
 #
@@ -29,9 +27,9 @@ SUNLIBS		= $(DSUNLIBS)
 #
 #	local libraries
 #
-LOCLIB		= $(LIBDIR)/libictrans_.o $(LIBDIR)/libctrans.o \
-		$(LIBDIR)/libcgm.a $(LIBDIR)/libncarg_c.a \
-		$(LIBDIR)/libncarg_ras.a $(LIBDIR)/libhdf.a
+LOCLIB		= $(LIBPATH)/libictrans_.o $(LIBPATH)/libctrans.o \
+		$(LIBPATH)/libcgm.a $(LIBPATH)/libncarg_c.a \
+		$(LIBPATH)/libncarg_ras.a $(LIBPATH)/libhdf.a
 
 SRCS		=  main.c 
 OBJS		= main.o 

@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.25 1992-09-01 23:41:56 clyne Exp $
+ *	$Id: ctrans.c,v 1.26 1992-09-09 15:09:08 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -229,7 +229,7 @@ CGMC *cgmc;
 			return(-1);
 		}
 
-		for (i = 1; i < cgmc->Sspace; i++) {
+		for (i = 1; (unsigned short) i < cgmc->Sspace; i++) {
 			cgmc->s->string_space[i] = 0;
 			cgmc->s->string[i] = NULL;
 		}
@@ -318,7 +318,7 @@ CtransRC	Process(c)
 		 * no function for element
 		 */
 		ESprintf(
-			EINVAL, "Illegal metafile element(class=%d, id=%d)",
+			E_UNKNOWN, "Illegal metafile element(class=%d, id=%d)",
 			c->class, c->command
 		);
 		elog(ErrGetMsg());

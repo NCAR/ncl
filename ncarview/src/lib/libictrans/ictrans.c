@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.15 1992-09-01 23:43:56 clyne Exp $
+ *	$Id: ictrans.c,v 1.16 1992-09-09 15:10:05 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -40,8 +40,6 @@
 #include "get_cmd.h"
 
 extern	char	yytext[];
-extern	char	*getFcapname();
-extern	char	*getGcapname();
 
 extern	IcState	icState;
 extern	int	spoolerJobs;
@@ -225,7 +223,7 @@ ICTrans(argc, argv, mem_cgm)
 	 *	it will have no meaning.
          */
         if ((gcap = getGcapname( opt.device )) == NULL ) {
-		usage(od, "Graphics device not specified");
+		usage(od, ErrGetMsg());
 		return(-1);
 	}
 
@@ -243,7 +241,11 @@ ICTrans(argc, argv, mem_cgm)
 		*	use default font
 		*/
 		if ((fcap = getFcapname( DEFAULTFONT )) == NULL) {
-			fprintf(stderr,"%s: Warning - no known font",progName);
+                        fprintf(
+                                stderr,"%s: Warning - no known font [ %s ]",
+                                progName, ErrGetMsg()
+                        );
+
 		}
         }
 

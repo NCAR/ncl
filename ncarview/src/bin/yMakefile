@@ -3,21 +3,11 @@
 #
 
 NCARG	= ../../..
-BINDIR_LOCAL = ../../bin
 
-SRCSUBDIRS	= ctrans ictrans filter med scripts rascat xwdtohdf nriftohdf \
-		rasstat ncgmstat
+SUBDIRS	= ctrans ictrans filter med scripts rascat xwdtohdf nriftohdf \
+		rasstat ncgmstat cgm_edit idt rasview
 
-BINSUBDIRS	= cgm_edit idt rasview
-SUBDIRS 	= $(SRCSUBDIRS) $(BINSUBDIRS)
-
-MakeSubdirs($(SRCSUBDIRS))
-InstallSubdirs($(SRCSUBDIRS))
-
-#ifdef	BuildUnsupportedAthenaApplications
-MakeBinSubdirs($(BINSUBDIRS))
-InstallBinSubdirs($(BINSUBDIRS))
-#endif
-
+MakeSubdirs($(SUBDIRS))
+InstallSubdirs($(SUBDIRS))
 MakefilesSubdirs($(SUBDIRS))
 CleanSubdirs($(SUBDIRS))

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.18 1992-09-01 23:41:18 clyne Exp $
+ *	$Id: X11_class4.c,v 1.19 1992-09-09 15:08:54 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -540,7 +540,7 @@ static	int	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
                 for (k=0; k<nx; k++) {
 
 			/* make sure data available in cgmc     */
-			if (cgmc_index >= c->Cnum && c->more) {
+			if ((unsigned short) cgmc_index >= c->Cnum && c->more) {
 				if (Instr_Dec(c) < 1) {
 					return (-1);
 				}
@@ -677,7 +677,7 @@ CGMC *c;
 	 * p = count of processed unsent point specifications.
 	 */
 
-	while (n < c->Pnum)
+	while ((unsigned short) n < c->Pnum)
 	{
 		Points.P[p].x = (short) XConvert(c->p[n].x);
 		Points.P[p].y = (short) YConvert(c->p[n].y);
@@ -766,7 +766,7 @@ int	X11_DisjtLine(c)
 	 * last group. n = count of processed points .
 	 * p = count of processed unsent point specifications.
 	 */
-	for(i=0,p=0; i<c->Pnum; i+=2) 
+	for(i=0,p=0; (unsigned short) i<c->Pnum; i+=2) 
 	{
 		xsegments[p].x1 = (short) XConvert(c->p[i].x);
 		xsegments[p].y1 = (short) YConvert(c->p[i].y);
@@ -823,7 +823,7 @@ int	X11_PolyMarker(c)
 
 	switch (MARKER_TYPE) {
 	case MARKER_X:	
-		for(i=0;i<c->Pnum;i++) {
+		for(i=0;(unsigned short) i<c->Pnum;i++) {
 			XDrawLine(dpy, drawable, markerGC,  
 				(int) XConvert(c->p[i].x - offset), 
 				(int) YConvert(c->p[i].y - offset ),
@@ -838,7 +838,7 @@ int	X11_PolyMarker(c)
 		}
 		break;
 	case MARKER_CIRCLE:
-		for(i=0;i<c->Pnum;i++) {
+		for(i=0;(unsigned short) i<c->Pnum;i++) {
 			XDrawArc(dpy, drawable, markerGC, 
 				(int) (XConvert(c->p[i].x) - XScale(offset)),
 				(int) (YConvert(c->p[i].y) - YScale(offset)),
@@ -848,7 +848,7 @@ int	X11_PolyMarker(c)
 		}
 		break;
 	case MARKER_STAR:
-		for(i=0;i<c->Pnum;i++) {
+		for(i=0;(unsigned short) i<c->Pnum;i++) {
 			XDrawLine(dpy, drawable, markerGC,  
 				(int) XConvert(c->p[i].x - offset), 
 				(int) YConvert(c->p[i].y),
@@ -875,7 +875,7 @@ int	X11_PolyMarker(c)
 		}
 		break;
 	case MARKER_PLUS:
-		for(i=0;i<c->Pnum;i++) {
+		for(i=0;(unsigned short) i<c->Pnum;i++) {
 			XDrawLine(dpy, drawable, markerGC,  
 				(int) XConvert(c->p[i].x - offset), 
 				(int) YConvert(c->p[i].y),
@@ -890,7 +890,7 @@ int	X11_PolyMarker(c)
 		}
 		break;
 	case MARKER_DOT:
-		for(i=0;i<c->Pnum;i++) 
+		for(i=0;(unsigned short) i<c->Pnum;i++) 
 			XDrawPoint(dpy, drawable, markerGC, 
 				(int) XConvert(c->p[i].x), 
 				(int) YConvert(c->p[i].y));
@@ -1009,7 +1009,7 @@ int	X11_Polygon(c)
 		/*
 		 *	convert VDC to X coordinates
 		 */
-		for (i=0; i < c->Pnum; i++, xindex++) {
+		for (i=0; (unsigned short) i < c->Pnum; i++, xindex++) {
 			Points.P[xindex].x = (short) XConvert(c->p[i].x);
 			Points.P[xindex].y = (short) YConvert(c->p[i].y);
 		}

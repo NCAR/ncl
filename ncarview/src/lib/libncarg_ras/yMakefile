@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.24 1992-08-27 17:55:11 clyne Exp $
+#	$Id: yMakefile,v 1.25 1992-09-09 15:10:26 clyne Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -99,14 +99,12 @@ SRCS		= $(GENERIC_SRCS)
 
 EQUALHACK	= =
 
-InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCDIR)/ncarg)
+InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCPATH))
 Library($(MYNAME),$(OBJS))
 
 dither.o:	ncarg_ras.h
 error.o:	ncarg_ras.h
 hdf.o:          ncarg_ras.h options.h Makefile
-	$(CC) $(CFLAGS) -DTMPDIR$(EQUALHACK)'"$(TMPDIR)"' -c $*.c
-
 misc.o:		ncarg_ras.h
 nrif.o:		ncarg_ras.h nrif.h
 palette.o:	ncarg_ras.h

@@ -1,5 +1,5 @@
 /*
- *	$Id: fill.c,v 1.9 1992-09-01 23:42:23 clyne Exp $
+ *	$Id: fill.c,v 1.10 1992-09-09 15:09:22 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -638,7 +638,7 @@ fill_S(cgmc,instr)
 				(cgmc->Snum + 10) * sizeof (int));
 
 
-			for (i=cgmc->Sspace; i < cgmc->Snum + 10; i++) {
+			for (i=cgmc->Sspace; i < (int) (cgmc->Snum + 10); i++) {
 				cgmc->s->string_space[i] = 0;
 				cgmc->s->string[i] = NULL;
 			}

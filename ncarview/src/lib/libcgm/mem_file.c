@@ -1,5 +1,5 @@
 /*
- *	$Id: mem_file.c,v 1.6 1992-09-01 23:40:40 clyne Exp $
+ *	$Id: mem_file.c,v 1.7 1992-09-09 15:08:24 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -30,7 +30,7 @@ static
 unsigned int    numOpen = 0;    /* number of files currently open       */
 
 
-CGM_openMemFile(metafile, record_size, type)
+int	CGM_openMemFile(metafile, record_size, type)
 	char	*metafile;
 	int	record_size;
 	char	*type;
@@ -160,7 +160,7 @@ CGM_openMemFile(metafile, record_size, type)
 	return(index);		/* return users file descriptor         */
 }
 
-CGM_readMemFile(fd, buf)
+int	CGM_readMemFile(fd, buf)
 	int	fd;
 	unsigned char	*buf;
 {
@@ -184,7 +184,7 @@ CGM_readMemFile(fd, buf)
 }
 
 
-CGM_writeMemFile(fd, buf)
+int	CGM_writeMemFile(fd, buf)
 	int	fd;
 	unsigned char	*buf;
 {
@@ -233,7 +233,7 @@ CGM_writeMemFile(fd, buf)
 }
 
 
-CGM_lseekMemFile(fd, offset, whence)
+int	CGM_lseekMemFile(fd, offset, whence)
 	int	fd;
 	int	offset;
 	int	whence;
@@ -297,7 +297,7 @@ CGM_lseekMemFile(fd, offset, whence)
 	return ((int) off);
 }
 
-CGM_closeMemFile(fd)
+int	CGM_closeMemFile(fd)
 	int	fd;
 {
 	int	i;
@@ -343,7 +343,7 @@ CGM_closeMemFile(fd)
 	return(1);
 }
 
-CGM_unlinkMemFile(metafile)
+int	CGM_unlinkMemFile(metafile)
 	char	*metafile;
 {
 
@@ -381,12 +381,12 @@ CGM_unlinkMemFile(metafile)
 		return (-1);
 	}
 
-	free( (Voidptr) cgm_iobuf[index].name);
-	free( (Voidptr) cgm_iobuf[index]._base);
-	free( (Voidptr) cgm_iobuf[index]._ptr);
-	free( (Voidptr) cgm_iobuf[index].size);
-	free( (Voidptr) cgm_iobuf[index].len);
-	free( (Voidptr) cgm_iobuf[index].r_size);
+	(void) free( (Voidptr) cgm_iobuf[index].name);
+	(void) free( (Voidptr) cgm_iobuf[index]._base);
+	(void) free( (Voidptr) cgm_iobuf[index]._ptr);
+	(void) free( (Voidptr) cgm_iobuf[index].size);
+	(void) free( (Voidptr) cgm_iobuf[index].len);
+	(void) free( (Voidptr) cgm_iobuf[index].r_size);
 
 
 	cgm_iobuf[index].name	= NULL;

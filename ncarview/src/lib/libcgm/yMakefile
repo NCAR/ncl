@@ -16,17 +16,20 @@ OBJECTS		= cgm_tools.o meta_edit.o misc.o mem_file.o
 
 EQUALHACK	= =
 
-InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCDIR)/ncarg)
+InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCPATH))
 
 Library($(MYNAME),$(OBJECTS))
 
 lint:
-	$(LINT) $(CINC) $(SRCS) 1> lint.out 2>&1
-
-meta_edit.o:	Makefile
-	$(CC) $(CFLAGS) -DTMPDIR$(EQUALHACK)'"$(TMPDIR)"' -c $*.c
+	$(LINT) $(CINC) $(SRCS) \
+	-DTMPDIR$(EQUALHACK)'"$(TMPDIR)"' \
+	1> lint.out 2>&1
 
 cgm_tools.o:	cgmP.h
+
+meta_edit.o:	meta_edit.c Makefile
+	$(CC) $(CFLAGS) -DTMPDIR$(EQUALHACK)'"$(TMPDIR)"' -c $*.c
+
 
 cgmP.h: cgmP.h.sed Makefile
 	@sed \

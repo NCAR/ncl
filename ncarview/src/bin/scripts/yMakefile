@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 1992-08-12 22:42:56 clyne Exp $
+#	$Id: yMakefile,v 1.3 1992-09-09 15:07:54 clyne Exp $
 #
 
 NCARG		= ../../../..
@@ -11,9 +11,7 @@ SCRIPTS		= ncarvversion ctlib gcaps fcaps
 RASTER_SPECIFIERS	= \sun xwd nrif hdf avs sgi
 
 
-#ifdef	BuildClearTextctrans
 CTXT_SPECIFIER = CTXT
-#endif
 
 
 #
@@ -42,7 +40,7 @@ SUN_SPECIFIER	= sunview
 #endif
 
 #
-#       local libraries  (All of these are in $(LIBDIR).)
+#       local libraries  (All of these are in $(LIBPATH).)
 #
 CTRANS_LIBS_A   = libictrans.o libctrans.o libcgm.a libncarv.a \
 		  libncarg_ras.a libhdf.a
@@ -79,11 +77,13 @@ gcaps:	gcaps.csh Makefile
 	@sed \
 	-e 's+DEVICES+$(DEVICE_SPECIFIERS)+' \
 	-e 's+VERSION+$(VERSION)+' \
+	-e 's+GRAPHCAPDIR+$(GRAPHCAPDIR)+' \
 	< gcaps.csh > gcaps
 
 fcaps:	fcaps.csh Makefile
 	@sed \
 	-e 's+VERSION+$(VERSION)+' \
+	-e 's+FONTCAPDIR+$(FONTCAPDIR)+' \
 	< fcaps.csh > fcaps
 
 ncarvversion:	sedscript
@@ -93,18 +93,16 @@ ncarvversion:	sedscript
 sedscript:      Makefile
 	@echo 's+VERSION+$(VERSION)+' > $@
 	@echo '$$a\' >> $@
-#ifdef	BuildUnsupportedAthenaApplications
-	@echo 'echo "NCAR Interactive Installed"' >> $@
-#endif
 
 
 ctlib:	ctlib.csh Makefile
 	@sed \
 	-e 's+CTRANS_LIBS_A+$(CTRANS_LIBS_A)+' \
 	-e 's+CTRANS_LIBS_B+$(CTRANS_LIBS_B)+' \
+	-e 's+LIBDIR+$(LIBDIR)+' \
 	< ctlib.csh > ctlib
 
-InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINDIR))
+InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
 MakefileTarget
 CleanTarget
 

@@ -6,20 +6,12 @@ APP	= \
 
 all:
 
-#ifdef  BuildUnsupportedAthenaApplications
-
 install::
 	@for name in $(APP); do \
-        if (test -f $(XAPPDIR)/$$name) then \
-		echo "Warning - replacing $(XAPPDIR)/$$name"; \
-                cp $(XAPPDIR)/$$name $(XAPPDIR)/$$name.bak ; fi; \
-	($(INSTALL) -m $(INSTALL_APP) $$name.ad $(XAPPDIR)/$$name); \
+        if (test -f $(XAPPPATH)/$$name) then \
+		echo "Warning - replacing $(XAPPPATH)/$$name"; \
+                cp $(XAPPPATH)/$$name $(XAPPPATH)/$$name.bak ; fi; \
+	($(INSTALL) -m $(INSTALL_APP) $$name.ad $(XAPPPATH)/$$name); \
 	done
-#else
-
-install::
-
-#endif
-
 MakefileTarget
 CleanTarget

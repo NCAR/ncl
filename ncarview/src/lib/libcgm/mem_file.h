@@ -8,6 +8,9 @@
 *                                                                      *
 ***********************************************************************/
 
+#ifndef	_mem_file_
+#define	_mem_file_
+
 typedef	struct	{
 	char	*name;		/* name of file			*/
 	unsigned char	*_base;	/* the file			*/
@@ -24,3 +27,50 @@ typedef	struct	{
  * number of records initialy allocated to a newly created file
  */
 #define F_INIT_SIZE	10
+
+
+extern	int	CGM_openMemFile(
+#ifdef	NeedFuncProto
+	char	*metafile,
+	int	record_size,
+	char	*type
+#endif
+);
+
+extern	int	CGM_readMemFile(
+#ifdef	NeedFuncProto
+	int	fd,
+	unsigned char	*buf
+#endif
+);
+
+
+extern	int	CGM_writeMemFile(
+#ifdef	NeedFuncProto
+	int	fd,
+	unsigned char	*buf
+#endif
+);
+
+
+extern	int	CGM_lseekMemFile(
+#ifdef	NeedFuncProto
+	int	fd,
+	int	offset,
+	int	whence
+#endif
+);
+
+extern	int	CGM_closeMemFile(
+#ifdef	NeedFuncProto
+	int	fd
+#endif
+);
+
+extern	int	CGM_unlinkMemFile(
+#ifdef	NeedFuncProto
+	char	*metafile
+#endif
+);
+
+#endif	/* _mem_file_	*/
