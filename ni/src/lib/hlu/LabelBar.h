@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.h,v 1.12 1999-03-27 00:44:50 dbrown Exp $
+ *      $Id: LabelBar.h,v 1.13 2000-02-11 02:47:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -89,6 +89,8 @@ typedef enum _NhllbBoxSizingMode {
 #define NhlNlbLabelConstantSpacingF	"lbLabelConstantSpacingF"
 #define NhlNlbLabelFuncCode		"lbLabelFuncCode"
 #define NhlNlbLabelStride		"lbLabelStride"
+#define NhlNlbMaxLabelLenF		"lbMaxLabelLenF"
+#define NhlNlbMinLabelSpacingF		"lbMinLabelSpacingF"
 
 #define NhlNlbTitleOn			"lbTitleOn"
 #define NhlNlbTitleString		"lbTitleString"
@@ -158,6 +160,8 @@ typedef enum _NhllbBoxSizingMode {
 #define NhlClbLabelPosition		"LbLabelPosition"
 #define NhlClbLabelAlignment		"LbLabelAlignment"
 #define NhlClbLabelStride		"LbLabelStride"
+#define NhlClbMaxLabelLenF		"LbMaxLabelLenF"
+#define NhlClbMinLabelSpacingF		"LbMinLabelSpacingF"
 
 #define NhlClbTitleOn			"LbTitleOn"
 #define NhlClbTitleString		"LbTitleString"

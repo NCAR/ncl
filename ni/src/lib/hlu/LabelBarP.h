@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBarP.h,v 1.11 1999-05-22 00:43:11 dbrown Exp $
+ *      $Id: LabelBarP.h,v 1.12 2000-02-11 02:47:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -93,6 +93,8 @@ typedef struct _NhlLabelBarLayerPart {
 	char	label_func_code;
 	NhlTextDirection label_direction;
 	int     label_stride;
+	float   max_label_len;
+	float   min_label_spacing;
 	
 	float	title_ext;
 	char	*title_string;
