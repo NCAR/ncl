@@ -2933,10 +2933,9 @@ c
       rdn = q*td(n)+hd(n)-sumn
       rd(n) = 0.
 c
-c account for potential roundoff errors in rdn in the
-c following test.
+c modified test based on a communication with Alan Cline, 21-May-02
 c
-      if (rdn .gt. 10.*r1mach(3)) rd(n) = 1./rdn
+      if (rdn .gt. 0. .and. q .ne. 0.) rd(n) = 1./rdn
       ysp(n) = yspn
 c
 c back solve of r(transpose)* r * ysp = ys
