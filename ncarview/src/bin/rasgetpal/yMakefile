@@ -1,0 +1,35 @@
+#
+#
+#	$Id: yMakefile,v 1.1 1993-01-16 03:18:54 don Exp $
+#
+#
+#	Makefile for rasgetpal
+#
+#
+
+NCARG = ../../../..
+
+MYNAME		= rasgetpal
+
+LIBS		= $(LIBPATH)/libncarg_ras.a \
+		$(LIBPATH)/libncarg_c.a $(NETCDFLIB) $(HDFLIB) -lm
+
+CDEFINES	= 
+
+OBJS		= rasgetpal.o
+SRCS		= rasgetpal.c
+
+all::	$(MYNAME)
+
+CTarget($(MYNAME),$(OBJS),$(LIBS))
+MakefileTarget
+CleanTarget
+
+saber_src: $(SRCS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(SRCS) $(LIBS)
+
+saber_obj: $(OBJS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(OBJS) $(LIBS)
+
