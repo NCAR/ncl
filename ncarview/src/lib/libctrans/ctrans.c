@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.37 1995-03-16 22:11:24 haley Exp $
+ *	$Id: ctrans.c,v 1.38 1995-05-10 13:42:08 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -90,6 +90,7 @@ boolean *doBell = &bell_off;
  * device dependent initialization state  (cgi, X11, graphcap, clear_text)
  */
 boolean	deviceIsInit = FALSE;	
+static boolean	metafileIsInit	= FALSE;
 
 /*
  * device dependent option Descriptor
@@ -646,6 +647,7 @@ CtransRC	init_metafile(record, cgm_fd)
 			return(FATAL);
 		}
 	}	 
+	metafileIsInit = TRUE;
 
 	/*
 	 * 'command' now contains a BEG_PIC or an END_METAFILE element 
@@ -939,7 +941,7 @@ void	GraphicsMode(on)
  */
 void	CtransClear()
 {
-	clear_device();
+	if (metafileIsInit) clear_device();
 }
 
 
@@ -968,6 +970,8 @@ void	close_metafile()
 #endif
 		(void)(*cmdtab[devnum][DEL_ELEMENT][END_MF_ID])(&command);
 	}
+
+	metafileIsInit = FALSE;
 }
 
 /*
