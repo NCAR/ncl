@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.13 1994-12-16 20:04:03 boote Exp $
+ *      $Id: Create.c,v 1.14 1995-01-25 23:35:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -328,8 +328,15 @@ _NhlCreate
 	if(parentid == NhlNOPARENT){
 		if(lc->base_class.class_inited & _NhlAppLayerClassFlag)
 			parent = NULL;
-		else
+		else{
 			parent = _NhlGetCurrentApp();
+			if(parent == NULL){
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to access \"default\" App object",
+				func);
+				return NhlFATAL;
+			}
+		}
 	}
 	else{
 		parent = _NhlGetLayer(parentid);
