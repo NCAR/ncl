@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.29 1996-05-09 23:30:46 ethan Exp $
+ *      $Id: Symbol.c,v 1.30 1996-05-17 23:34:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -105,14 +105,19 @@ int _NclInitSymbol
 		NhlPError(NhlFATAL,errno,"InitSymbol: Can't create symbol table list");
 		return(0);
 	}
+	thetablelist->sr = (NclScopeRec*) NclMalloc((unsigned)sizeof(NclScopeRec));
+	if(thetablelist->sr == NULL) {
+		NhlPError(NhlFATAL,errno,"InitSymbol: Can't create symbol table list");
+		return(0);
+	}
 
-	thetablelist->level = 0;
-	thetablelist->cur_offset = 0;
-	thetablelist->this_scope = (NclSymTableElem*) NclMalloc((unsigned) 
+	thetablelist->sr->level = 0;
+	thetablelist->sr->cur_offset = 0;
+	thetablelist->sr->this_scope = (NclSymTableElem*) NclMalloc((unsigned) 
 		sizeof(NclSymTableElem) * NCL_SYM_TAB_SIZE);
 	thetablelist->previous = NULL;
 
-	if(thetablelist->this_scope == NULL) {
+	if(thetablelist->sr->this_scope == NULL) {
 		NhlPError(NhlFATAL,errno,"InitSymbol: Can't create symbol table");
 		return(0);
 	}
@@ -120,8 +125,8 @@ int _NclInitSymbol
 * Clear first symbol table
 */
 	for(i = 0; i< NCL_SYM_TAB_SIZE; i++) {
-		thetablelist->this_scope[i].nelem = 0;
-		thetablelist->this_scope[i].thelist = NULL;
+		thetablelist->sr->this_scope[i].nelem = 0;
+		thetablelist->sr->this_scope[i].thelist = NULL;
 	}
 
 /*
@@ -332,12 +337,17 @@ int _NclNewScope
 		NhlPError(NhlFATAL, errno, "NewScope: Can't create a new symbol table node");
 		return(0);
 	}
+	news->sr = (NclScopeRec*)NclMalloc((unsigned)sizeof(NclScopeRec));
+	if(news->sr == NULL) {
+		NhlPError(NhlFATAL, errno, "NewScope: Can't create a new symbol table node");
+		return(0);
+	}
 
-	news->this_scope = (NclSymTableElem *) NclMalloc((unsigned)
+	news->sr->this_scope = (NclSymTableElem *) NclMalloc((unsigned)
 				sizeof(NclSymTableElem) * NCL_SYM_TAB_SIZE);
 
 
-	if(news->this_scope == NULL) {
+	if(news->sr->this_scope == NULL) {
 		NhlPError(NhlFATAL, errno, "NewScope: Can't create a new symbol table");
 		return(0);
 	}
@@ -347,15 +357,15 @@ int _NclNewScope
 * It will be a multiplier to use to figure out the location of the identifiers
 * value with respect to the frames base pointer.
 */
-	news->cur_offset = 0;
+	news->sr->cur_offset = 0;
 
-	news->level = thetablelist->level + 1;
+	news->sr->level = thetablelist->sr->level + 1;
 	news->previous = thetablelist;
 	thetablelist = news;
 	
 	for(i = 0; i< NCL_SYM_TAB_SIZE; i++) {
-		thetablelist->this_scope[i].nelem = 0;
-		thetablelist->this_scope[i].thelist = NULL;
+		thetablelist->sr->this_scope[i].nelem = 0;
+		thetablelist->sr->this_scope[i].thelist = NULL;
 	}
 	return(1);
 
@@ -376,14 +386,14 @@ int _NclNewScope
  *
  * Side Effect:	
  */
-NclSymTableListNode * _NclPopScope 
+NclScopeRec * _NclPopScope 
 #if	NhlNeedProto
 (void)
 #else
 ()
 #endif
 {
-	NclSymTableListNode *tmp;
+	NclScopeRec *tmp;
 	NclSymTableListNode *tmp1;
 	
 	if(thetablelist == NULL) {
@@ -391,25 +401,26 @@ NclSymTableListNode * _NclPopScope
 		return(NULL);
 	}
 
-	tmp = thetablelist;
+	tmp = thetablelist->sr;
 	tmp1 = thetablelist->previous;
-	tmp->previous = NULL;
+	NclFree(thetablelist);
 	thetablelist = tmp1;
 	return(tmp);
 }
 
 void _NclPushScope 
 #if	NhlNeedProto
-(NclSymTableListNode * the_scope)
+(NclScopeRec * the_scope)
 #else
 (the_scope)
-NclSymTableListNode * the_scope;
+NclScopeRec * the_scope;
 #endif
 {
 	NclSymTableListNode *tmp;
 	
 
-	tmp = the_scope;
+	tmp = (NclSymTableListNode*)NclMalloc(sizeof(NclSymTableListNode));
+	tmp->sr = the_scope;
 	tmp->previous = thetablelist;
 	thetablelist = tmp;
 }
@@ -506,18 +517,18 @@ NclSymbol *_NclAddSym
 	}
 	
 	strncpy(s->name,name,NCL_MAX_STRING);
-	s->level = thetablelist->level;
+	s->level = thetablelist->sr->level;
 	s->type = type;
 	s->ind = index;
-	thetablelist->this_scope[index].nelem++;
-	if(thetablelist->this_scope[index].thelist != NULL) {
-		thetablelist->this_scope[index].thelist->sympre = s;
+	thetablelist->sr->this_scope[index].nelem++;
+	if(thetablelist->sr->this_scope[index].thelist != NULL) {
+		thetablelist->sr->this_scope[index].thelist->sympre = s;
 	}
-	s->symnext = thetablelist->this_scope[index].thelist;
+	s->symnext = thetablelist->sr->this_scope[index].thelist;
 	s->sympre = NULL;
-	thetablelist->this_scope[index].thelist = s;
+	thetablelist->sr->this_scope[index].thelist = s;
 	s->u.var = NULL;
-	s->offset = thetablelist->cur_offset++;
+	s->offset = thetablelist->sr->cur_offset++;
 
 	if(s->level > 0) {
 		new_sym_stack[new_sym_i] = s;
@@ -552,13 +563,13 @@ void _NclDeleteNewSymStack
 	for( i= new_sym_i-1 ; i>= 0; i--) {
 		step = thetablelist;
 		while(step != NULL) {
-               	 if(step->level == new_sym_stack[i]->level)
+               	 if(step->sr->level == new_sym_stack[i]->level)
 			break;
                	 else
                	         step = step->previous;
         	}
 		if(step != NULL) {
-			step->cur_offset = new_sym_stack[i]->offset;
+			step->sr->cur_offset = new_sym_stack[i]->offset;
 			_NclDeleteSym(new_sym_stack[i]);
 		}
 	}
@@ -588,7 +599,7 @@ int _NclGetCurrentScopeLevel
 ()
 #endif
 {
-	return(thetablelist->level);
+	return(thetablelist->sr->level);
 }
 
 
@@ -619,22 +630,22 @@ void _NclDeleteSym
 
 	step = thetablelist;
 	while(step != NULL) {
-		if(step->level == sym->level) 	
+		if(step->sr->level == sym->level) 	
 			break;
 		else 
 			step = step->previous;
 	}
-	step->this_scope[sym->ind].nelem--;
+	step->sr->this_scope[sym->ind].nelem--;
 	if((sym->sympre == NULL) &&(sym->symnext == NULL)) {
-		step->this_scope[sym->ind].thelist = NULL;
-		if(step->this_scope[sym->ind].nelem != 0) {
+		step->sr->this_scope[sym->ind].thelist = NULL;
+		if(step->sr->this_scope[sym->ind].nelem != 0) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NhlDeleteSym: Ack!! a big problem has just occured in the symbol table");
 		}
 	} else if(sym->sympre == NULL) {
 /*
 * New top of list
 */
-		step->this_scope[sym->ind].thelist = sym->symnext;
+		step->sr->this_scope[sym->ind].thelist = sym->symnext;
 		sym->symnext->sympre = NULL;
 	} else if(sym->symnext == NULL) {
 		sym->sympre->symnext = NULL;
@@ -721,7 +732,7 @@ char *name;
 * Searches all scopes in current symbol table list.
 */
 	while(st != NULL) {	
-		s = st->this_scope[index].thelist;
+		s = st->sr->this_scope[index].thelist;
 		while(s != NULL) {
 			if(strcmp(s->name,name) == 0)
 				return(s);
@@ -748,10 +759,10 @@ char *name;
  */
 NclSymbol *_NclLookUpInScope
 #if	NhlNeedProto
-(NclSymTableListNode * thetable, char *name)
+(NclScopeRec * thetable, char *name)
 #else
 (thetable, name)
-NclSymTableListNode *thetable;
+NclScopeRec *thetable;
 char *name;
 #endif
 {
@@ -773,10 +784,10 @@ char *name;
 
 NclSymbol *_NclAddInScope
 #if	NhlNeedProto
-(NclSymTableListNode *thetable, char* name, int type)
+(NclScopeRec *thetable, char* name, int type)
 #else
 (thetable,name,type)
-	NclSymTableListNode 	*thetable;
+	NclScopeRec *thetable;
 	char			*name;
 	int			type;
 #endif
@@ -811,10 +822,10 @@ NclSymbol *_NclAddInScope
 
 void _NclDeleteSymInScope
 #if	NhlNeedProto
-(NclSymTableListNode *thetable, NclSymbol *sym)
+(NclScopeRec *thetable, NclSymbol *sym)
 #else
 (thetable, sym)
-NclSymTableListNode *thetable;
+NclScopeRec *thetable;
 NclSymbol *sym;
 #endif
 {
@@ -867,19 +878,22 @@ void _NclPrintSym
 	NclSymTableListNode *st;
 	NclSymbol *s;
 	int i;
-	if(fp == NULL) return;
+	FILE *ffp = stdout;
+	if(fp != NULL)  {
+		ffp = fp;
+	}
 
 	st = thetablelist;
 
 	while(st != NULL) {
-		fprintf(fp,"Level: %d\n",st->level);
-		fprintf(fp,"Current Offset: %d\n",st->cur_offset);
+		fprintf(ffp,"Level: %d\n",st->sr->level);
+		fprintf(ffp,"Current Offset: %d\n",st->sr->cur_offset);
 		for(i = 0; i < NCL_SYM_TAB_SIZE; i++) {
-			if(st->this_scope[i].nelem != 0) {
-				fprintf(fp,"\tIndex: %d\n",i);
-				s = st->this_scope[i].thelist;
+			if(st->sr->this_scope[i].nelem != 0) {
+				fprintf(ffp,"\tIndex: %d\n",i);
+				s = st->sr->this_scope[i].thelist;
 				while(s != NULL) {
-					fprintf(fp,"\t\t: %d) %s\n",s->offset,s->name);
+					fprintf(ffp,"\t\t: %d) %s\n",s->offset,s->name);
 					s = s->symnext;
 				}
 			}
@@ -990,8 +1004,8 @@ NclApiDataList *_NclGetDefinedFileInfo
 	st = thetablelist;
 	while(st != NULL) {
                 for(i = 0; i < NCL_SYM_TAB_SIZE; i++) {
-                        if(st->this_scope[i].nelem != 0) {
-				s = st->this_scope[i].thelist;
+                        if(st->sr->this_scope[i].nelem != 0) {
+				s = st->sr->this_scope[i].thelist;
                                 while(s != NULL) {
 					if(s->type == VAR) {
 						thevar = _NclRetrieveRec(s,DONT_CARE);
@@ -1066,8 +1080,8 @@ NclApiDataList *_NclGetDefinedProcFuncInfo
 	st = thetablelist;
 	while(st != NULL) {
 		for(i = 0; i < NCL_SYM_TAB_SIZE; i++) {
-			if(st->this_scope[i].nelem != 0) {
-				s = st->this_scope[i].thelist;
+			if(st->sr->this_scope[i].nelem != 0) {
+				s = st->sr->this_scope[i].thelist;
 				while(s != NULL) {
 					switch(s->type) {
 					case FUNC:
@@ -1224,8 +1238,8 @@ NclApiDataList * _NclGetDefinedHLUInfo
 
 	while(st != NULL) {
 		for(i = 0; i < NCL_SYM_TAB_SIZE; i++) {
-			if(st->this_scope[i].nelem != 0) {
-				s = st->this_scope[i].thelist;
+			if(st->sr->this_scope[i].nelem != 0) {
+				s = st->sr->this_scope[i].thelist;
 				while(s != NULL) {
 					if(s->type == VAR) {
 						the_var = _NclRetrieveRec(s,DONT_CARE);	
@@ -1297,8 +1311,8 @@ NclApiDataList *_NclGetDefinedVarInfo
 
 	while(st != NULL) {
 		for(i = 0; i < NCL_SYM_TAB_SIZE; i++) {
-			if(st->this_scope[i].nelem != 0) {
-				s = st->this_scope[i].thelist;
+			if(st->sr->this_scope[i].nelem != 0) {
+				s = st->sr->this_scope[i].thelist;
 				while(s != NULL) {
 					if(s->type == VAR) {
 						the_var = _NclRetrieveRec(s,DONT_CARE);	

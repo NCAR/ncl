@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.47 1996-05-02 23:30:47 ethan Exp $
+ *      $Id: Machine.c,v 1.48 1996-05-17 23:34:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -655,6 +655,10 @@ void _NclAbortFrame
 		while(flist.next != NULL) {
 			tmp = flist.next;
 			tmp_fp = (NclFrame*)(thestack + tmp->fp);
+			if((tmp_fp->parameter_map.u.the_list->fpsym != NULL) 
+				&&(tmp_fp->parameter_map.u.the_list->fpsym->u.procfunc->thescope != NULL)) {
+				(void)_NclPopScope();
+			}
 			flist.next = flist.next->next;
 			NclFree(tmp);
 		}

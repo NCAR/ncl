@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.26 1996-04-24 00:19:48 ethan Exp $
+ *      $Id: SrcTree.c,v 1.27 1996-05-17 23:34:34 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -911,13 +911,13 @@ void _NclNFunctionDefDestroy
  */
 void *_NclMakeNFunctionDef
 #if	NhlNeedProto
-(NclSymbol *func, NclSrcListNode * dec_list,  void *block, NclSymTableListNode* thescope)
+(NclSymbol *func, NclSrcListNode * dec_list,  void *block, NclScopeRec* thescope)
 #else 
 (func,dec_list,block,thescope)
 NclSymbol *func;
 NclSrcListNode * dec_list;
 void* block;
-NclSymTableListNode* thescope; 
+NclScopeRec* thescope; 
 #endif
 {
 	NclFuncDef *tmp = (NclFuncDef*)NclMalloc(
@@ -984,13 +984,13 @@ void _NclEFunctionDefDestroy
  */
 void* _NclMakeEFunctionDef
 #if	NhlNeedProto
-(NclSymbol *func, NclSrcListNode *dec_list, char *path_info_string,NclSymTableListNode* thescope)
+(NclSymbol *func, NclSrcListNode *dec_list, char *path_info_string,NclScopeRec* thescope)
 #else
 (func, dec_list, path_info_string,thescope)
 NclSymbol *func;
 NclSrcListNode *dec_list;
 char *path_info_string;
-NclSymTableListNode *thescope;
+NclScopeRec *thescope;
 #endif
 {
 	NclExternFuncDef *tmp = (NclExternFuncDef*)NclMalloc(
@@ -1153,13 +1153,13 @@ void _NclProcDefDestroy
  */
 void * _NclMakeProcDef
 #if	NhlNeedProto
-(NclSymbol *var, NclSrcListNode *arg_list, void* block,NclSymTableListNode *thescope)
+(NclSymbol *var, NclSrcListNode *arg_list, void* block,NclScopeRec *thescope)
 #else 
 (var, arg_list, block,thescope)
 NclSymbol *var;
 NclSrcListNode *arg_list;
 void* block;
-NclSymTableListNode *thescope;
+NclScopeRec *thescope;
 #endif
 {
 	NclProcDef *tmp = (NclProcDef*)NclMalloc((unsigned)sizeof(NclProcDef));
@@ -1228,13 +1228,13 @@ void _NclEProcDestroy
  */
 void* _NclMakeExternalProcDef
 #if	NhlNeedProto
-(NclSymbol *var,NclSrcListNode *dec_list, char* path_info_string,NclSymTableListNode *thescope)
+(NclSymbol *var,NclSrcListNode *dec_list, char* path_info_string,NclScopeRec *thescope)
 #else
 (var,dec_list,path_info_string,thescope)
 NclSymbol *var;
 NclSrcListNode *dec_list;
 char* path_info_string;
-NclSymTableListNode *thescope;
+NclScopeRec *thescope;
 #endif
 {
 	NclExternProcDef *tmp = (NclExternProcDef*)NclMalloc(

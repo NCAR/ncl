@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.17 1996-04-09 22:06:44 ethan Exp $
+ *      $Id: Symbol.h,v 1.18 1996-05-17 23:34:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@ typedef struct _NclFileInfo {
 	char filename[NCL_MAX_STRING];
 	int level;
 	unsigned int offset;
-	struct _NclSymTableListNode *filescope;
+	struct _NclScopeRec* filescope;
 } NclFileInfo;
 
 typedef struct _NclFileVarInfo {
@@ -72,14 +72,14 @@ typedef struct _NclGenProcFuncInfo {
 	int nargs;
 	struct _NclArgTemplate * theargs;
 	struct _NclSymbol *thesym;
-	struct _NclSymTableListNode* thescope;
+	struct _NclScopeRec* thescope;
 } NclGenProcFuncInfo;
 
 typedef struct _NclProcFuncInfo {
 	int nargs;
 	struct _NclArgTemplate *theargs;
 	struct _NclSymbol *thesym;
-	struct _NclSymTableListNode* thescope;
+	struct _NclScopeRec* thescope;
 	void *mach_rec_ptr;
 } NclProcFuncInfo;
 
@@ -87,7 +87,7 @@ typedef struct _NclBuiltInFuncInfo {
 	int nargs;
 	struct _NclArgTemplate *theargs;
 	struct _NclSymbol *thesym;
-	struct _NclSymTableListNode* thescope;
+	struct _NclScopeRec* thescope;
 	NclBuiltInFuncWrapper thefunc;
 } NclBuiltInFuncInfo;
 
@@ -95,7 +95,7 @@ typedef struct _NclBuiltInProcInfo {
 	int nargs;
 	struct _NclArgTemplate *theargs;
 	struct _NclSymbol *thesym;
-	struct _NclSymTableListNode* thescope;
+	struct _NclScopeRec* thescope;
 	NclBuiltInProcWrapper theproc;
 } NclBuiltInProcInfo;
 
@@ -137,24 +137,27 @@ typedef struct _NclSymTableElem {
 	struct _NclSymbol *thelist;
 } NclSymTableElem;
 
-typedef struct _NclSymTableListNode {
+typedef struct _NclScopeRec {
 	int level;
 	int cur_offset;
 	struct _NclSymTableElem *this_scope;
+} NclScopeRec; 
+typedef struct _NclSymTableListNode {
+	struct _NclScopeRec *sr;
 	struct _NclSymTableListNode *previous;
 }NclSymTableListNode;
 
 
 extern NclSymbol *_NclLookUpInScope(
 #if	NhlNeedProto
-NclSymTableListNode	* /*thetable*/,
+NclScopeRec* /*thetable*/,
 char			* /*name*/
 #endif
 );
 
 extern NclSymbol *_NclAddInScope(
 #if	NhlNeedProto
-	NclSymTableListNode     * /*thetable*/,
+	NclScopeRec */*thetable*/,
 	char			* /* name */,
 	int			  /* type */
 #endif
@@ -162,7 +165,7 @@ extern NclSymbol *_NclAddInScope(
 
 extern void _NclDeleteSymInScope(
 #if	NhlNeedProto
-NclSymTableListNode * /*thetable*/,
+NclScopeRec* /*thetable*/,
 NclSymbol * /*sym*/
 #endif
 );
@@ -207,10 +210,10 @@ void
 
 extern void _NclPushScope(
 #if	NhlNeedProto
-NclSymTableListNode * /* new_scope */
+NclScopeRec * /* new_scope */
 #endif
 );
-extern NclSymTableListNode *_NclPopScope(
+extern NclScopeRec *_NclPopScope(
 #if	NhlNeedProto
 void
 #endif

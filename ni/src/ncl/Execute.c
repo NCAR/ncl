@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.63 1996-05-17 01:09:25 ethan Exp $
+ *      $Id: Execute.c,v 1.64 1996-05-17 23:34:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -356,8 +356,7 @@ NclExecuteReturnStatus _NclExecute
 				
 				ret = _NclPlaceReturn(data);
 				if(ret< NhlWARNING) {
-					level--;
-					return(Ncl_ERRORS);
+					estatus = NhlFATAL;
 				} else {
 					level--;
 					return(Ncl_STOPS);
@@ -3902,32 +3901,36 @@ NclExecuteReturnStatus _NclExecute
 					if(estatus != NhlFATAL) {
 						lhs_var->kind = NclStk_VAR;
 						lhs_var->u.data_var = _NclVarRead(rhs_var->u.data_var,rhs_sel_ptr);
-						if(rhs_sel_ptr != NULL) {
-							for(i = 0; i <  rhs_sel_ptr->n_entries; i++) {
-								if(rhs_sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
-									NclFree(rhs_sel_ptr->selection[i].u.vec.ind);
+						if(lhs_var->u.data_var == NULL) {
+							estatus = NhlFATAL;
+						} else {
+							if(rhs_sel_ptr != NULL) {
+								for(i = 0; i <  rhs_sel_ptr->n_entries; i++) {
+									if(rhs_sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
+										NclFree(rhs_sel_ptr->selection[i].u.vec.ind);
+									}
+								}
+								NclFree(rhs_sel_ptr);
+							}
+							if(!_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT)) {	
+								tmp_var = lhs_var->u.data_var;
+								lhs_var->u.data_var = _NclCopyVar(lhs_var->u.data_var,NULL,NULL);
+								_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT);	
+								if(lhs_var->u.data_var->obj.status != PERMANENT) {
+									_NclDestroyObj((NclObj)tmp_var);
 								}
 							}
-							NclFree(rhs_sel_ptr);
-						}
-						if(!_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT)) {	
-							tmp_var = lhs_var->u.data_var;
-							lhs_var->u.data_var = _NclCopyVar(lhs_var->u.data_var,NULL,NULL);
-							_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT);	
-							if(lhs_var->u.data_var->obj.status != PERMANENT) {
-								_NclDestroyObj((NclObj)tmp_var);
-							}
-						}
 /*
 * ----> May want to encapsulate the following into the NclVar object
 * 	A likely function interface would be: _NclChangeVar(int quark,NclSymbol *thesym, NclVarTypes var_type); 
 * 	which would be a method.
 */
-						lhs_var->u.data_var->var.var_quark = NrmStringToQuark(lhs_sym->name);
-						lhs_var->u.data_var->var.thesym = lhs_sym;
-						(void)_NclChangeSymbolType(lhs_sym,VAR);
-						lhs_var->u.data_var->var.var_type = NORMAL;
-						_NclCallCallBacks((NclObj)lhs_var->u.data_var,CREATED);
+							lhs_var->u.data_var->var.var_quark = NrmStringToQuark(lhs_sym->name);
+							lhs_var->u.data_var->var.thesym = lhs_sym;
+							(void)_NclChangeSymbolType(lhs_sym,VAR);
+							lhs_var->u.data_var->var.var_type = NORMAL;
+							_NclCallCallBacks((NclObj)lhs_var->u.data_var,CREATED);
+						}
 /*
 *-----> end of questionable code
 */
@@ -4063,7 +4066,6 @@ NclExecuteReturnStatus _NclExecute
 * need to clean up stack !!! for current level
 */
 				_NclAbortFrame();
-				_NclPopScope();
 /*
 * Probably still need more stack freeing for other types of errors 
 * this really only handles left overs from failed function and 

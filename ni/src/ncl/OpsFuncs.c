@@ -707,14 +707,15 @@ NhlErrorTypes _NclProcCallOp
 		break;
 	}
 	(void)_NclPopMachine();
-	(void)_NclPopScope();
-	previous_fp = _NclLeaveFrame(caller_level);
 /*
 * Temporary stack management code
 */
 	if(ret != NhlFATAL) {
+		previous_fp = _NclLeaveFrame(caller_level);
+		(void)_NclPopScope();
 		_NclRemapParameters(proc->u.procfunc->nargs,proc->u.procfunc->thescope->cur_offset,previous_fp,PROC_CALL_OP);
-	} else {
+		_NclPopFrame(PROC_CALL_OP);
+	} /* else {
 		for(i = 0; i<proc->u.procfunc->thescope->cur_offset; i++) {
 			data = _NclPop();
 			switch(data.kind) {
@@ -731,8 +732,8 @@ NhlErrorTypes _NclProcCallOp
 			}
 		}
 	}
+	*/
 	
-	_NclPopFrame(PROC_CALL_OP);
 	return(ret);
 }
 NhlErrorTypes _NclFuncCallOp
@@ -773,12 +774,17 @@ NhlErrorTypes _NclFuncCallOp
 		break;
 	}
 	(void)_NclPopMachine();
-	(void)_NclPopScope();
-	previous_fp = _NclLeaveFrame(caller_level);
 
 	if(ret != NhlFATAL) {
+		previous_fp = _NclLeaveFrame(caller_level);
+		(void)_NclPopScope();
 		_NclRemapParameters(func->u.procfunc->nargs,func->u.procfunc->thescope->cur_offset,previous_fp,FUNC_CALL_OP);
-	} else {
+		_NclPopFrame(FUNC_CALL_OP);
+	} /* else {
+
+this not needed since _NclAbortFrame and _NclClearToStackBase are called from _NclExecute
+when an error is detected.
+
 		for(i = 0; i<func->u.procfunc->thescope->cur_offset; i++) {
 			data = _NclPop();
 			switch(data.kind) {
@@ -795,14 +801,15 @@ NhlErrorTypes _NclFuncCallOp
 			}
 		}
 	}
-	_NclPopFrame(FUNC_CALL_OP);
+*/
 /*
 * Doesn't leave return value on stack if an error has occured. Probably
 * should check it to see if it needs to be freed
-*/
 	if(ret < NhlWARNING) {
 		(void)_NclPop();
 	}
+* No longer needed this since _NclAbortFrame takes care of everything
+*/
 
 	return(ret);
 }

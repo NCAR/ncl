@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.16 1996-01-31 23:53:28 ethan Exp $
+ *      $Id: SrcTree.h,v 1.17 1996-05-17 23:34:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -419,7 +419,7 @@ typedef struct ncl_funcdef{
 	NclSymbol	*func;
 	NclSrcListNode  *dec_list;
 	void		*block;
-	NclSymTableListNode *scope;
+	NclScopeRec *scope;
 } NclFuncDef; 
 
 typedef struct ncl_externfuncdef {
@@ -434,7 +434,7 @@ typedef struct ncl_externfuncdef {
 	char *path_info_string;
 */
 	int path_info_string_q;
-	NclSymTableListNode *scope;
+	NclScopeRec *scope;
 } NclExternFuncDef;	
 
 typedef struct ncl_localvardec{
@@ -467,7 +467,7 @@ typedef struct ncl_procdef{
 	NclSymbol *proc;
 	NclSrcListNode *dec_list;
 	void	*block;
-	NclSymTableListNode *scope;
+	NclScopeRec *scope;
 } NclProcDef;
 
 typedef struct ncl_externprocdef{
@@ -482,7 +482,7 @@ typedef struct ncl_externprocdef{
 	char *path_info_string;
 */
 	int path_info_string_q;
-	NclSymTableListNode *scope;
+	NclScopeRec *scope;
 } NclExternProcDef; 
 
 typedef struct ncl_assign{
@@ -674,7 +674,7 @@ extern void *_NclMakeNFunctionDef(
 NclSymbol * /* func */,
 NclSrcListNode * /*dec_list*/,
 void*		/* block */,
-NclSymTableListNode * /*scope*/
+NclScopeRec * /*scope*/
 #endif
 );
 
@@ -683,7 +683,7 @@ extern void* _NclMakeEFunctionDef(
 NclSymbol * /* func */,
 NclSrcListNode * /*dec_list*/,
 char *		/* path_info_string */,
-NclSymTableListNode * /*scope*/
+NclScopeRec* /*scope*/
 #endif
 );
 
@@ -706,7 +706,7 @@ extern void * _NclMakeProcDef(
 NclSymbol * /*var*/,
 NclSrcListNode * /*arg_list */,
 void*	/*block*/,
-NclSymTableListNode * /*thescope*/
+NclScopeRec* /*thescope*/
 #endif
 );
 
@@ -715,7 +715,7 @@ extern void* _NclMakeExternalProcDef(
 NclSymbol * /* var */,
 NclSrcListNode * /*dec_list */,
 char* /*path_info_string*/,
-NclSymTableListNode * /*thescope*/
+NclScopeRec * /*thescope*/
 #endif
 );
 

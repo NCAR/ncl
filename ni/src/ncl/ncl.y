@@ -1100,7 +1100,7 @@ local_list: vname {
 ;
 function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolType($1,NFUNC);_NclAddProcFuncInfoToSym($1,$3); } fp_block		
 								{  
-									NclSymTableListNode *tmp;
+									NclScopeRec *tmp;
 
 									if(is_error) {
 										_NclDeleteNewSymStack();
@@ -1114,7 +1114,7 @@ function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolT
 								}
 	|  func_identifier  LP arg_dec_list  RP opt_eoln LOCAL opt_eoln local_list opt_eoln {_NclChangeSymbolType($1,NFUNC); _NclAddProcFuncInfoToSym($1,$3); } fp_block
 								{  
-									NclSymTableListNode *tmp;
+									NclScopeRec *tmp;
 
 									if(is_error) {
 										_NclDeleteNewSymStack();
@@ -1128,7 +1128,7 @@ function_def :  func_identifier  LP arg_dec_list  RP opt_eoln {_NclChangeSymbolT
 								}
 	| EXTERNAL func_identifier LP arg_dec_list  RP opt_eoln STRING 
 								{  
-									NclSymTableListNode *tmp;
+									NclScopeRec *tmp;
 									if(is_error) {
 										_NclDeleteNewSymStack();
 										tmp = _NclPopScope();	
@@ -1333,7 +1333,7 @@ dim_size_list : LBK INT RBK		{
 proc_identifier: KEYPROC UNDEF { _NclNewScope(); $$ = $2; }
 ;
 procedure_def : proc_identifier LP arg_dec_list RP opt_eoln LOCAL opt_eoln local_list opt_eoln {_NclChangeSymbolType($1,NPROC);_NclAddProcFuncInfoToSym($1,$3); } fp_block   {
-								NclSymTableListNode *tmp;
+								NclScopeRec *tmp;
 								if(is_error) {
 									_NclDeleteNewSymStack();
 								}
@@ -1343,7 +1343,7 @@ procedure_def : proc_identifier LP arg_dec_list RP opt_eoln LOCAL opt_eoln local
 									
 							}
 	| proc_identifier LP arg_dec_list RP opt_eoln {_NclChangeSymbolType($1,NPROC);_NclAddProcFuncInfoToSym($1,$3); } fp_block   {
-								NclSymTableListNode *tmp;
+								NclScopeRec *tmp;
 								if(is_error) {
 									_NclDeleteNewSymStack();
 								}
@@ -1352,7 +1352,7 @@ procedure_def : proc_identifier LP arg_dec_list RP opt_eoln LOCAL opt_eoln local
 									
 							}
 	| EXTERNAL proc_identifier LP arg_dec_list RP opt_eoln STRING	{
-								NclSymTableListNode *tmp;
+								NclScopeRec *tmp;
 								if(is_error) {
 									_NclDeleteNewSymStack();
 								}
