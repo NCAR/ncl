@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.69 2000-02-08 01:18:11 dbrown Exp $
+ *      $Id: TickMark.c,v 1.70 2000-02-09 03:37:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4874,7 +4874,6 @@ static NhlErrorTypes CheckKeyVals
                 NhlPError(NhlWARNING,NhlEZEROSPAN,e_text,error_lead,
 			  NhlNtmXBDataLeftF,NhlNtmXBDataRightF);
 	}
-	tnew->tick.x_t_data_valid = True;
 	tnew->tick.x_t_min_nonzero = MIN(10e-7,0.01 *
 		fabs(MIN(tnew->tick.x_t_data_right,tnew->tick.x_t_data_left)));
 	tnew->tick.x_t_min_nonzero = 
@@ -4882,17 +4881,15 @@ static NhlErrorTypes CheckKeyVals
 		    fabs(tnew->tick.x_t_data_right-tnew->tick.x_t_data_left));
 	tnew->tick.x_t_min_nonzero = 
 		MAX(MIN_NONZERO,tnew->tick.x_t_min_nonzero);
+	tnew->tick.x_t_data_valid = True;
 	if (tmCmpFAny(tnew->tick.x_t_data_left,
 			tnew->tick.x_t_data_right,7,MIN_NONZERO) == 0.0) {
 		tnew->tick.x_t_data_valid = False;
-		tnew->tick.x_t_min_nonzero = MIN_NONZERO;
 		e_text = 
 		 "%s: Zero span between %s and %s, turning top tickmarks off";
                 NhlPError(NhlWARNING,NhlEZEROSPAN,e_text,error_lead,
 			  NhlNtmXTDataLeftF,NhlNtmXTDataRightF);
 	}
-	tnew->tick.y_l_data_valid = True;
-	tnew->tick.y_l_data_valid = True;
 	tnew->tick.y_l_min_nonzero = MIN(10e-7,0.01 *
 		fabs(MIN(tnew->tick.y_l_data_top,tnew->tick.y_l_data_bottom)));
 	tnew->tick.y_l_min_nonzero = 
@@ -4900,16 +4897,15 @@ static NhlErrorTypes CheckKeyVals
 		    fabs(tnew->tick.y_l_data_top-tnew->tick.y_l_data_bottom));
 	tnew->tick.y_l_min_nonzero = 
 		MAX(MIN_NONZERO,tnew->tick.y_l_min_nonzero);
+	tnew->tick.y_l_data_valid = True;
 	if (tmCmpFAny(tnew->tick.y_l_data_bottom,
 			tnew->tick.y_l_data_top,7,MIN_NONZERO) == 0.0) {
 		tnew->tick.y_l_data_valid = False;
-		tnew->tick.y_l_min_nonzero = MIN_NONZERO;
 		e_text = 
 	      "%s: Zero span between %s and %s, turning left tickmarks off";
                 NhlPError(NhlWARNING,NhlEZEROSPAN,e_text,error_lead,
 			  NhlNtmYLDataBottomF,NhlNtmYLDataTopF);
 	}
-	tnew->tick.y_r_data_valid = True;
 	tnew->tick.y_r_min_nonzero = MIN(10e-7,0.01 *
 		fabs(MIN(tnew->tick.y_r_data_top,tnew->tick.y_r_data_bottom)));
 	tnew->tick.y_r_min_nonzero = 
@@ -4917,10 +4913,10 @@ static NhlErrorTypes CheckKeyVals
 		    fabs(tnew->tick.y_r_data_top-tnew->tick.y_r_data_bottom));
 	tnew->tick.y_r_min_nonzero = 
 		MAX(MIN_NONZERO,tnew->tick.y_r_min_nonzero);
+	tnew->tick.y_r_data_valid = True;
 	if (tmCmpFAny(tnew->tick.y_r_data_bottom,
 			tnew->tick.y_r_data_top,7,MIN_NONZERO) == 0.0) {
 		tnew->tick.y_r_data_valid = False;
-		tnew->tick.y_r_min_nonzero = MIN_NONZERO;
 		e_text = 
 	        "%s: Zero span between %s and %s, turning right tickmarks off";
                 NhlPError(NhlWARNING,NhlEZEROSPAN,e_text,error_lead,

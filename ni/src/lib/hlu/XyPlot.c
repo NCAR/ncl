@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.85 2000-02-08 01:18:16 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.86 2000-02-09 03:37:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1132,7 +1132,6 @@ XyPlotChanges
 
 	if(xnew->xyplot.check_ranges || xnew->xyplot.update_req){
 		NhlSetSArg(&sargs[nsargs++],NhlNpmUpdateReq,True);
-		xnew->xyplot.check_ranges = False;
 		xnew->xyplot.update_req = False;
 	}
 
@@ -1156,9 +1155,12 @@ XyPlotChanges
 			"XyPlotChanges");
 	ret1 = MIN(ret1,ret2);
 
-	ret2 = XyResetExtents(xnew);
+	if (xnew->xyplot.check_ranges) {
+		ret2 = XyResetExtents(xnew);
+	}
 	ret1 = MIN(ret1,ret2);
 
+	xnew->xyplot.check_ranges = False;
 	return ret1;
 }
 
