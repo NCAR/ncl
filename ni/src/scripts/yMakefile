@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1 2000-04-18 21:22:50 haley Exp $
+#	$Id: yMakefile,v 1.2 2002-03-29 16:04:43 haley Exp $
 #
 
 #ifdef	BuildWithF90
@@ -9,7 +9,11 @@ NHF_SCRIPT	=	nhlf77
 #endif
 
 SCRIPTS = nhlcc $(NHF_SCRIPT) ng4ex 
-MAN1		= ng4ex
+
+#ifdef	BuildWithF90
+MOREMAN1 = nhlf90
+#endif
+MAN1 = ng4ex nhlcc nhlf77 $(MOREMAN1)
 
 $(NHF_SCRIPT): nhlf77.csh Makefile
 	@sed \
@@ -54,13 +58,13 @@ nhlcc: nhlcc.csh Makefile
 #if UseCatDirs
 FORMAT_EXT	= .p
 #else
-FORMAT_EXT	= .man
+FORMAT_EXT	= .m
 #endif
 
 InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
 CleanFilesTarget($(SCRIPTS))
 InstallManPages($(MAN1),$(FORMAT_EXT),$(MAN1PATH),$(MAN1_SECTION))
-FormatManPages($(MAN1),.man,.p)
+FormatManPages($(MAN1),.m,.p)
 
 #if !defined(CRAY)
 ng4ex: ng4ex.csh Makefile

@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\" $Id: ng4ex.man,v 1.2 2002-03-04 21:58:18 haley Exp $
+.\" $Id: ng4ex.m,v 1.1 2002-03-29 16:04:40 haley Exp $
 .\"
 .\"######################################################################
 .\"#                                                                    #
