@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.85 1998-10-23 17:30:12 boote Exp $
+ *      $Id: Workstation.c,v 1.86 1998-10-26 15:20:27 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2192,6 +2192,12 @@ WorkstationClassInitialize
 		NhlTColorDefinitionGenArray,
 		CvtStringGenArrayToColorDefinitionGenArray,
 		NULL,0,False,NULL);
+	(void)_NhlRegSymConv(NhlworkstationClass,
+		NhlTFloatGenArray,NhlTColorDefinitionGenArray,
+		NhlTFloatGenArray,NhlTFloatGenArray);
+	(void)_NhlRegSymConv(NhlworkstationClass,
+		NhlTDoubleGenArray,NhlTColorDefinitionGenArray,
+		NhlTDoubleGenArray,NhlTFloatGenArray);
 	(void)_NhlRegSymConv(NhlworkstationClass,
 		NhlTGenArray,NhlTColorDefinitionGenArray,
 		NhlTGenArray,NhlTFloatGenArray);
