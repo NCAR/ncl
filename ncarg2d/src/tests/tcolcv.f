@@ -1,5 +1,10 @@
 C
-C	$Id: tcolcv.f,v 1.1.1.1 1992-04-17 22:33:27 ncargd Exp $
+C	$Id: tcolcv.f,v 1.2 1993-03-05 00:11:58 haley Exp $
+C
+      CALL TCOLCV(IERR)
+C
+      STOP
+      END
 C
       SUBROUTINE TCOLCV (IERR)
 C
