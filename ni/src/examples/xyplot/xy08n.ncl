@@ -1,5 +1,5 @@
 ;
-;      $Id: xy08n.ncl,v 1.5 1997-06-06 21:26:59 haley Exp $
+;      $Id: xy08n.ncl,v 1.6 1998-04-15 21:40:48 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                     ;
@@ -99,10 +99,7 @@ explicit_values = 2.^ispan(-6,7,1)
 ; and foreground colors respectively.
 ;
 ncolors = 3
-cmap = new( (/ncolors,3/), float)
-cmap(0,:) = (/1.00,1.00,1.00/)
-cmap(1,:) = (/0.00,0.00,0.00/)
-cmap(2,:) = (/0.00,0.00,1.00/)
+cmap = (/ (/1.00,1.00,1.00/), (/0.00,0.00,0.00/), (/0.00,0.00,1.00/)/)
 
 ;
 ; Create Application object.  The Application object name is used to
@@ -110,7 +107,7 @@ cmap(2,:) = (/0.00,0.00,1.00/)
 ; case.
 ; 
 appid = create "xy08" appClass defaultapp
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
 
@@ -135,7 +132,7 @@ else
 ; Create an XWorkstation object.
 ;
     xworkid = create "xy08Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
       "wkColorMap" : cmap
     end create
   else

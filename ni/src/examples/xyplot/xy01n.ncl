@@ -1,5 +1,5 @@
 ;
-;      $Id: xy01n.ncl,v 1.13 1997-06-06 21:26:55 haley Exp $
+;      $Id: xy01n.ncl,v 1.14 1998-04-15 21:40:46 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -37,21 +37,18 @@ begin
 ; Create variable to contain data.
 ;
 npts = 500
-ydra = new(npts, float)
 
 ;
 ; Initialize some data for the XyPlot object.
 ; 
-ii = ispan(0,npts-1,1)
-ydra = 500.+.9*ii*sin(0.031415926535898*ii)
-delete(ii)
+ydra = 500.+.9*ispan(0,npts-1,1)*sin(0.031415926535898*ii)
 ;
 ; Create Application object.  The Application object name is used to
 ; determine the name of the resource file, which is "xy01.res" in this
 ; case.
 ; 
 appid = create "xy01" appClass defaultapp
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
 
@@ -75,7 +72,7 @@ else
 ; Create an XWorkstation object.
 ;
     xworkid = create "xy01Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then

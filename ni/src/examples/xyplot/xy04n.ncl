@@ -1,5 +1,5 @@
 ;
-;      $Id: xy04n.ncl,v 1.13 1997-06-06 21:26:57 haley Exp $
+;      $Id: xy04n.ncl,v 1.14 1998-04-15 21:40:47 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -40,7 +40,6 @@ begin
 ;
 npts = 500
 ncurve = 4
-ydra = new((/ncurve,npts/), float)
 
 ;
 ; Initialize data for the XyPlot object.
@@ -59,13 +58,12 @@ ydra = jj(y | :,x | :)*200.+ii*.9*sin(0.031415926535898*ii)
 ; and foreground colors respectively.
 ;
 ncolors = 6
-cmap = new( (/ncolors,3/), float)
-cmap(0,:) = (/0.0,0.0,0.0/)
-cmap(1,:) = (/1.0,1.0,1.0/)
-cmap(2,:) = (/1.0,0.0,0.0/)
-cmap(3,:) = (/0.0,1.0,0.0/)
-cmap(4,:) = (/0.0,0.0,1.0/)
-cmap(5,:) = (/1.0,1.0,0.0/)
+cmap = (/ (/0.0,0.0,0.0/), \
+	 (/1.0,1.0,1.0/), \
+	 (/1.0,0.0,0.0/), \
+	 (/0.0,1.0,0.0/), \
+	 (/0.0,0.0,1.0/), \
+	 (/1.0,1.0,0.0/) /)
 
 ;
 ; Create Application object.  The Application object name is used to
@@ -73,7 +71,7 @@ cmap(5,:) = (/1.0,1.0,0.0/)
 ; case.
 ; 
 appid = create "xy04" appClass defaultapp 
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
 
@@ -98,7 +96,7 @@ else
 ; Create an XWorkstation object.
 ;
   xworkid = create "xy04Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
       "wkColorMap" : cmap
   end create
   else

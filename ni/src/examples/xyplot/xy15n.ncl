@@ -1,5 +1,5 @@
 ;
-;      $Id: xy15n.ncl,v 1.3 1997-03-13 22:18:18 haley Exp $
+;      $Id: xy15n.ncl,v 1.4 1998-04-15 21:40:50 ethan Exp $
 ;
 ;***********************************************************************
 ;                                                                      *
@@ -38,17 +38,10 @@ begin
 NPTS=500
 PI100=0.031415926535898
 EXP = 2.7182818
-ydra1 = new(NPTS,float)
-ydra2 = new(NPTS,float)
-ydra3 = new(NPTS,float)
-ydra4 = new(NPTS,float)
-theta = new(NPTS,float)
 ;
 ; Initialize data for the XyPlot object.
 ;
-do i = 0,NPTS-1
-    theta(i) = PI100*i
-end do
+theta = PI100*ispan(0,NPTS-1,1)
 ydra1 = sin(theta)
 ydra2 = sin(theta * theta)
 ydra3 = sin(EXP^theta)
@@ -58,7 +51,7 @@ ydra4 = sin(3*sqrt(fabs(theta)))
 ; resource file.
 ;
 appid = create "xy15" appClass defaultapp 
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
 
@@ -82,7 +75,7 @@ else
 ; Set up an X11 output workstation.
 ;
     xworkid = create "xy15Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then

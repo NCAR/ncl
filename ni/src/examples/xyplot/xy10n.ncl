@@ -1,5 +1,5 @@
 ;
-;      $Id: xy10n.ncl,v 1.4 1996-05-03 00:43:53 ethan Exp $
+;      $Id: xy10n.ncl,v 1.5 1998-04-15 21:40:49 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -59,16 +59,10 @@ begin
 ;
 ; Filter out of range values using _FillValue feature
 ;
-    lat = lat > -90.0
-    lat@_FillValue = -90.0
-    lat = lat < 90.0
-    lat@_FillValue = 90.0
+    lat = mask(lat,(lat.gt.-90.and.lat.lt.90),True)
     lat@_FillValue = spvlt
 
-    lon = lon > -180.0
-    lon@_FillValue = -180.0
-    lon = lon < 180.0
-    lon@_FillValue = 180.0
+    lon = mask(lon,(lon.gt.-180.0.and.lon.lt.180.0),True)
     lon@_FillValue = spvln
     
 end

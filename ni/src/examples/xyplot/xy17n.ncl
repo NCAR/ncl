@@ -24,7 +24,6 @@ begin
 ;
 ncurve = 3
 npts = 129
-y = new((/ncurve,npts/),float)
 length = new(ncurve,integer)
 
 ;
@@ -43,13 +42,13 @@ dataid = new(ncurve,graphic)
 ; case.
 ; 
 appid = create "xy17" appClass defaultapp
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
 ;
 ; Read ASCII file xy.asc
 ;
-x1_y3 = asciiread("xy.asc",4*129,"float")
+x1_y3 = asciiread(ncargpath("data")+"/asc/xy.asc",4*129,"float")
 ;
 ;  xy.asc has 4 vars of length 129 longitudes, lon, u, v, t
 ;
@@ -69,9 +68,7 @@ t   = x1_y3(3:515:4)
 ; print(v)
 ; print(t)
 
-y(0,:) = u(:)
-y(1,:) = v(:)
-y(2,:) = (t(:) - 273.15) * 9 / 5 + 32.0
+y = (/u, v, (t - 273.15) * 9.0 / 5.0 + 32.0/)
 
 NCGM=1
 X11=0
@@ -90,7 +87,7 @@ else
 ; Create an X workstation.
 ;
     wks = create "xy17Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then
@@ -109,8 +106,8 @@ end if
 ; values and at the same time convert it from Degrees K to Degrees F
 ;
 field1 = create "field1" coordArraysClass defaultapp
-     "caXArray": (lon(:) - 1.) * 360./128.
-     "caYArray": (t(:) - 273.15) * 9 / 5 + 32.0
+     "caXArray": (lon - 1.) * 360./128.
+     "caYArray": (t - 273.15) * 9 / 5 + 32.0
 end create
 
 ;
@@ -118,8 +115,8 @@ end create
 ; values and at the same time convert it from Degrees K to Degrees F
 ;
 field2 = create "field2" coordArraysClass defaultapp
-     "caXArray": (lon(:) - 1.) * 360./128.
-     "caYArray": u(:)
+     "caXArray": (lon - 1.) * 360./128.
+     "caYArray": u
 end create
 
 ;
@@ -127,8 +124,8 @@ end create
 ; values and at the same time convert it from Degrees K to Degrees F
 ;
 field3 = create "field3" coordArraysClass defaultapp
-     "caXArray": (lon(:) - 1.) * 360./128.
-     "caYArray": v(:)
+     "caXArray": (lon - 1.) * 360./128.
+     "caYArray": v
 end create
 
 ;
@@ -140,22 +137,22 @@ xy1 = create "xy1" xyPlotClass wks
     "vpWidthF" :  .6
     "vpHeightF" : .2
     "xyCoordData": field1
-    "trYReverse" : "False"
+    "trYReverse" : False
     "trYMaxF" :  -50.
     "trYMinF" :  -90.
     "trXMaxF" :  360.
     "trXMinF" :   0.
-    "tmYROn"    : "False"
-    "tmYUseLeft" : "False"
-    "tmXMajorGrid"    : "True"
-    "tmXBLabelsOn"    : "False"
-    "tmYLLabelsOn"    : "True"
+    "tmYROn"    : False
+    "tmYUseLeft" : False
+    "tmXMajorGrid"    : True
+    "tmXBLabelsOn"    : False
+    "tmYLLabelsOn"    : True
     "tmYLMajorLengthF" : .01
     "tmYLMajorOutwardLengthF" : .0
     "tmYLMode"  : "Explicit"
     "tmYLValues"  : (/-90.,-80.,-70.,-60.,-50./)
     "tmYLLabels"  : (/"-90.","-80.","-70.","-60.","-50."/)
-    "tmYLLabelsOn"    : "True"
+    "tmYLLabelsOn"    : True
     "tmYLLabelFontColor" : 2
     "tiMainString" : "Temperature, U, V Stacked Plots"
     "tiYAxisString" : "Temp (Deg C)"
@@ -164,8 +161,8 @@ xy1 = create "xy1" xyPlotClass wks
     "tiXAxisFont" : "helvetica-bold"
     "tiYAxisFont" : "helvetica-bold"
     "tiYAxisFontColor" : 2
-    "tmYRMinorOn" : "False"
-    "tmYLMinorOn" : "False"
+    "tmYRMinorOn" : False
+    "tmYLMinorOn" : False
 end create
 
 ;
@@ -177,21 +174,21 @@ xy2 = create "xy2" xyPlotClass wks
     "vpWidthF" :  .6
     "vpHeightF" : .2
     "xyCoordData": field2
-    "trYReverse" : "False"
+    "trYReverse" : False
     "trYMaxF" :   60.
     "trYMinF" :   10.
     "trXMaxF" :  360.
     "trXMinF" :   0.
-    "tmYROn"    : "True"
-    "tmYLOn"    : "False"
-    "tmYUseLeft" : "False"
-    "tmXMajorGrid"    : "True"
-    "tmYLLabelsOn"    : "False"
-    "tmYRLabelsOn"    : "True"
+    "tmYROn"    : True
+    "tmYLOn"    : False
+    "tmYUseLeft" : False
+    "tmXMajorGrid"    : True
+    "tmYLLabelsOn"    : False
+    "tmYRLabelsOn"    : True
     "tmYRMode"  : "Explicit"
     "tmYRValues"  : (/10.,20.,30.,40.,50.,60./)
     "tmYRLabels"  : (/"10.","20.","30.","40.","50.","60."/)
-    "tmXBLabelsOn"    : "False"
+    "tmXBLabelsOn"    : False
     "tmYRLabelFontColor" : 3
     "tiYAxisString" : "U (m/s)"
     "tiXAxisFontHeightF" : 0.02
@@ -199,8 +196,8 @@ xy2 = create "xy2" xyPlotClass wks
     "tiXAxisFont" : "helvetica-bold"
     "tiYAxisFont" : "helvetica-bold"
     "tiYAxisFontColor" : 3
-    "tmYRMinorOn" : "False"
-    "tmYLMinorOn" : "False"
+    "tmYRMinorOn" : False
+    "tmYLMinorOn" : False
 end create
 
 ;
@@ -216,20 +213,20 @@ xy3 = create "xy3" xyPlotClass wks
     "vpWidthF" :  .6
     "vpHeightF" : .2
     "xyCoordData": field3
-    "trYReverse" : "False"
+    "trYReverse" : False
     "trYMaxF" :   20.
     "trYMinF" :  -20.
     "trXMaxF" :  360.
     "trXMinF" :   0.
-    "tmYROn"    : "False"
-    "tmYUseLeft" : "False"
-    "tmYLLabelsOn"    : "True"
-    "tmXBLabelsOn"    : "True"
-    "tmXMajorGrid"    : "True"
+    "tmYROn"    : False
+    "tmYUseLeft" : False
+    "tmYLLabelsOn"    : True
+    "tmXBLabelsOn"    : True
+    "tmXMajorGrid"    : True
     "tmYLMajorLengthF" : .01
     "tmYLMajorOutwardLengthF" : .0
     "tmYLMode"  : "Explicit"
-    "tmYLLabelsOn"    : "True"
+    "tmYLLabelsOn"    : True
     "tmYLLabelFontColor" : 4
     "tiYAxisString" : "V (m/s)"
     "tiXAxisString" : "Longitude (Degs)"
@@ -238,8 +235,8 @@ xy3 = create "xy3" xyPlotClass wks
     "tiXAxisFont" : "helvetica-bold"
     "tiYAxisFont" : "helvetica-bold"
     "tiYAxisFontColor" : 4
-    "tmYRMinorOn" : "False"
-    "tmYLMinorOn" : "False"
+    "tmYRMinorOn" : False
+    "tmYLMinorOn" : False
     "tmYLValues"  : (/-20.,-10.,0.,10.,20./)
     "tmYLLabels"  : (/"-20.","-10.","0.","10.","20."/)
 end create
@@ -249,7 +246,7 @@ getvalues xy1
 end getvalues
 
 setvalues spec1
-   "xyMonoLineColor" : "true"
+   "xyMonoLineColor" : True
    "xyLineColor" : 2
 end setvalues
 
@@ -258,7 +255,7 @@ getvalues xy2
 end getvalues
 
 setvalues spec2
-   "xyMonoLineColor" : "true"
+   "xyMonoLineColor" : True
    "xyLineColor" : 3
 end setvalues
 
@@ -267,7 +264,7 @@ getvalues xy3
 end getvalues
 
 setvalues spec3
-   "xyMonoLineColor" : "true"
+   "xyMonoLineColor" : True
    "xyLineColor" : 4
 end setvalues
 

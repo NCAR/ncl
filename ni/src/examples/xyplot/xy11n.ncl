@@ -1,5 +1,5 @@
 ;
-;      $Id: xy11n.ncl,v 1.1 1995-05-09 22:39:47 haley Exp $
+;      $Id: xy11n.ncl,v 1.2 1998-04-15 21:40:50 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -31,8 +31,6 @@ begin
 ; Create variables to contain data.
 ;
 npts = 28
-temp = new(npts, float)
-pressure = new(npts, float)
 
 temp = (/-13.500000,-10.500000,-5.500000,-3.100000,-1.300000,-6.700000,\
 -12.900000,-13.100000,-17.700001,-16.900000,-21.299999,-37.099998,\
@@ -52,7 +50,7 @@ pressure = (/835.000000,832.000000,827.000000,821.000000,791.000000,\
 ; case.
 ; 
 appid = create "xy11" appClass defaultapp
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
 
@@ -66,7 +64,7 @@ end create
 ; Create an XWorkstation object.
 ;
 xworkid = create "xy11Work" xWorkstationClass defaultapp
-      "wkPause"   : "True"
+      "wkPause"   : True
 end create
 
 ;
@@ -93,6 +91,7 @@ plotid = create "xyPlot" xyPlotClass xworkid
     "tiMainOn":   True
     "tiXAxisOn":  True
     "tiYAxisOn":  True
+    "trYReverse" : True
 end create
 
 ;

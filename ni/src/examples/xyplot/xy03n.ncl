@@ -1,5 +1,5 @@
 ;
-;      $Id: xy03n.ncl,v 1.13 1997-06-06 21:26:57 haley Exp $
+;      $Id: xy03n.ncl,v 1.14 1998-04-15 21:40:46 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -38,33 +38,28 @@ begin
 ; Create variables to contain data.
 ;
 npts = 500
-xdra = new(npts, float)
-ydra = new(npts, float)
 
 ;
 ; Modify the color map.  Color indices '0' and '1' are the background
 ; and foreground colors respectively.
 ;
-cmap = new( (/4,3/), float)
-cmap(0,:) = (/0.0,0.0,0.0/)
-cmap(1,:) = (/1.0,1.0,1.0/)
-cmap(2,:) = (/0.0,0.5,1.0/)
-cmap(3,:) = (/0.0,1.0,0.0/)
+cmap = (/ (/0.0,0.0,0.0/), \
+	 (/1.0,1.0,1.0/), \
+	 (/0.0,0.5,1.0/), \
+	 (/0.0,1.0,0.0/) /)
 
 ;
 ; Initialize some data for the XyPlot object.
 ; 
-ii = ispan(0,npts-1,1)
-xdra = 500.+.9*ii*cos(0.031415926535898*ii)
-ydra = 500.+.9*ii*sin(0.031415926535898*ii)
-delete(ii)
+xdra = 500.+.9*ispan(0,npts-1,1)*cos(0.031415926535898*ii)
+ydra = 500.+.9*ispan(0,npts-1,1)*sin(0.031415926535898*ii)
 ;
 ; Create Application object.  The Application object name is used to
 ; determine the name of the resource file, which is "xy03.res" in this
 ; case.
 ; 
 appid = create "xy03" appClass defaultapp
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
 
@@ -89,7 +84,7 @@ else
 ; Create an XWorkstation object.
 ;
     xworkid = create "xy03Work" xWorkstationClass defaultapp
-      "wkPause"   : "True"
+      "wkPause"   : True
       "wkColorMap": cmap
     end create
   else

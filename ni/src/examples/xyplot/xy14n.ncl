@@ -1,5 +1,5 @@
 ;
-;      $Id: xy14n.ncl,v 1.6 1997-06-06 21:27:00 haley Exp $
+;      $Id: xy14n.ncl,v 1.7 1998-04-15 21:40:50 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -72,7 +72,7 @@ else
 ; Set up an X11 output workstation.
 ;
     xworkid = create "simple" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then
@@ -125,7 +125,7 @@ plotid = create "xyPlot" xyPlotClass xworkid
     "tmYLTickStartF": 30.
     "tmYLTickEndF": 60.
     "tmYLTickSpacingF": 5.
-    "tmYLAutoPrecision": "False"
+    "tmYLAutoPrecision": False
     "tmYLPrecision": 2
     "tmYLLabelFont": 22
     "tmYLLabelFontHeightF": 0.024
@@ -180,7 +180,7 @@ plotid = create "xyPlot" xyPlotClass xworkid
     "tmYLTickStartF": 0.
     "tmYLTickEndF": 0.15
     "tmYLTickSpacingF": 0.03
-    "tmYLAutoPrecision": "False"
+    "tmYLAutoPrecision": False
     "tmYLPrecision": 2
     "tmYLLabelFont": 22
     "tmYLLabelFontHeightF": 0.024
@@ -237,9 +237,9 @@ plotid = create "xyPlot" xyPlotClass xworkid
     "tmYLTickSpacingF": 1.
     "tmYLLabelFont": 22
     "tmYLLabelFontHeightF": 0.024
-    "tmYMajorGrid": "True"
-    "tmYLMinorOn": "False"
-    "tmYRMinorOn": "False"
+    "tmYMajorGrid": True
+    "tmYLMinorOn": False
+    "tmYRMinorOn": False
 
 ;
 ; Specify the Y-axis range precisely.
@@ -264,7 +264,7 @@ end create
 dataspec = NhlAddData(plotid,"xyCoordData",dataid)
 setvalues dataspec
       "xyMarkLineMode": "MARKERS"
-      "xyMonoMarkLineMode": "True"
+      "xyMonoMarkLineMode": True
       "xyMarker": 16
       "xyMonoMarkerSize": True
       "xyMarkerSizeF": .02

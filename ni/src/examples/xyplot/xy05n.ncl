@@ -1,5 +1,5 @@
 ;
-;      $Id: xy05n.ncl,v 1.14 1997-06-06 21:26:58 haley Exp $
+;      $Id: xy05n.ncl,v 1.15 1998-04-15 21:40:47 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                     ;
@@ -37,7 +37,6 @@ begin
 ;
 ncurve = 10
 npts = 100
-y = new((/ncurve,npts/),float)
 
 ;
 ; Create array to contain dataitem ids.
@@ -64,19 +63,18 @@ delete(jj)
 ; and foreground colors respectively.
 ;
 ncolors = 12
-cmap = new( (/ncolors,3/), float)
-cmap(0,:) = (/0.00,0.00,0.00/)
-cmap(1,:) = (/1.00,1.00,1.00/)
-cmap(2,:) = (/0.00,0.00,1.00/)
-cmap(3,:) = (/0.00,1.00,0.00/)
-cmap(4,:) = (/0.00,1.00,0.75/)
-cmap(5,:) = (/0.50,0.50,0.63/)
-cmap(6,:) = (/1.00,0.00,0.00/)
-cmap(7,:) = (/0.75,0.38,0.25/)
-cmap(8,:) = (/0.75,0.00,0.75/)
-cmap(9,:) = (/1.00,0.38,0.38/)
-cmap(10,:) = (/1.00,0.83,0.00/)
-cmap(11,:) = (/1.00,1.00,0.00/)
+cmap = (/ (/0.00,0.00,0.00/), \
+	 (/1.00,1.00,1.00/), \
+	 (/0.00,0.00,1.00/), \
+	 (/0.00,1.00,0.00/), \
+	 (/0.00,1.00,0.75/), \
+	 (/0.50,0.50,0.63/), \
+	 (/1.00,0.00,0.00/), \
+	 (/0.75,0.38,0.25/), \
+	 (/0.75,0.00,0.75/), \
+	 (/1.00,0.38,0.38/), \
+	 (/1.00,0.83,0.00/), \
+	 (/1.00,1.00,0.00/) /)
 
 ;
 ; Create Application object.  The Application object name is used to
@@ -84,7 +82,7 @@ cmap(11,:) = (/1.00,1.00,0.00/)
 ; case.
 ; 
 appid = create "xy05" appClass defaultapp
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
 
@@ -109,7 +107,7 @@ else
 ; Create an XWorkstation object.
 ;
     xworkid = create "xy05Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
       "wkColorMap" : cmap
     end create
   else

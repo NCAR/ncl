@@ -32,7 +32,7 @@ npts = 129
 ; case.
 ; 
 appid = create "xy16" appClass defaultapp
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
 ;
@@ -54,7 +54,7 @@ else
 ; Set up an X11 output workstation.
 ;
     xworkid = create "xy16Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then
@@ -71,7 +71,7 @@ end if
 ;
 ; Read ASCII file xy.asc
 ;
-x1_y3 = asciiread("xy.asc",4*129,"float")
+x1_y3 = asciiread(ncargpath("data")+"/asc/xy.asc",4*129,"float")
 ;
 ;  xy.asc has 4 vars of length 129 longitudes, lon, u, v, t
 ;
@@ -91,8 +91,8 @@ t   = x1_y3(3:515:4)
 ; values and at the same time convert it from Degrees K to Degrees F
 ;
 field1 = create "field1" coordArraysClass defaultapp
-     "caXArray": (lon(:) - 1.) * 360./128.
-     "caYArray": (t(:) - 273.15) * 9 / 5 + 32.0
+     "caXArray": (lon - 1.) * 360./128.
+     "caYArray": (t - 273.15) * 9 / 5 + 32.0
 end create
 
 ;
@@ -100,8 +100,8 @@ end create
 ; values and at the same time convert it from Degrees K to Degrees F
 ;
 field2 = create "field2" coordArraysClass defaultapp
-     "caXArray": (lon(:) - 1.) * 360./128.
-     "caYArray": u(:)
+     "caXArray": (lon - 1.) * 360./128.
+     "caYArray": u
 end create
 
 ;
@@ -109,8 +109,8 @@ end create
 ; values and at the same time convert it from Degrees K to Degrees F
 ;
 field3 = create "field3" coordArraysClass defaultapp
-     "caXArray": (lon(:) - 1.) * 360./128.
-     "caYArray": v(:)
+     "caXArray": (lon - 1.) * 360./128.
+     "caYArray": v
 end create
 
 ;
@@ -122,20 +122,20 @@ xy1 = create "xy1" xyPlotClass xworkid
     "vpWidthF" :  .5
     "vpHeightF" : .6
     "xyCoordData": field1
-    "trYReverse" : "False"
+    "trYReverse" : False
     "trYMaxF" :  -50.
     "trYMinF" :  -90.
     "trXMaxF" :  360.
     "trXMinF" :   0.
-    "tmYROn"    : "False"
-    "tmYUseLeft" : "False"
-    "tmYLLabelsOn"    : "True"
+    "tmYROn"    : False
+    "tmYUseLeft" : False
+    "tmYLLabelsOn"    : True
     "tmYLMajorLengthF" : .01
     "tmYLMajorOutwardLengthF" : .01
     "tmYLMode"  : "Explicit"
     "tmYLValues"  : (/-90.,-80.,-70.,-60.,-50./)
     "tmYLLabels"  : (/"-90.","-80.","-70.","-60.","-50."/)
-    "tmYLLabelsOn"    : "True"
+    "tmYLLabelsOn"    : True
     "tmYLLabelFontColor" : 2
     "tiXAxisString" : "Longitude (Degs)"
     "tiYAxisString" : "Temperature in Deg C"
@@ -144,8 +144,8 @@ xy1 = create "xy1" xyPlotClass xworkid
     "tiXAxisFont" : "helvetica-bold"
     "tiYAxisFont" : "helvetica-bold"
     "tiYAxisFontColor" : 2
-    "tmYRMinorOn" : "False"
-    "tmYLMinorOn" : "False"
+    "tmYRMinorOn" : False
+    "tmYLMinorOn" : False
 end create
 
 ;
@@ -157,16 +157,16 @@ xy2 = create "xy2" xyPlotClass xworkid
     "vpWidthF" :  .5
     "vpHeightF" : .6
     "xyCoordData": field2
-    "trYReverse" : "False"
+    "trYReverse" : False
     "trYMaxF" :   50.
     "trYMinF" :    0.
     "trXMaxF" :  360.
     "trXMinF" :   0.
-    "tmYROn"    : "True"
-    "tmYLOn"    : "False"
-    "tmYUseLeft" : "False"
-    "tmYRLabelsOn"    : "True"
-    "tmYLLabelsOn"    : "False"
+    "tmYROn"    : True
+    "tmYLOn"    : False
+    "tmYUseLeft" : False
+    "tmYRLabelsOn"    : True
+    "tmYLLabelsOn"    : False
     "tmYRMajorLengthF" : .01
     "tmYRMajorOutwardLengthF" : .01
     "tmYRMode"  : "Explicit"
@@ -181,8 +181,8 @@ xy2 = create "xy2" xyPlotClass xworkid
     "tiXAxisFont" : "helvetica-bold"
     "tiYAxisFont" : "helvetica-bold"
     "tiYAxisFontColor" : 6
-    "tmYRMinorOn" : "False"
-    "tmYLMinorOn" : "False"
+    "tmYRMinorOn" : False
+    "tmYLMinorOn" : False
 end create
 
 ;
@@ -198,21 +198,21 @@ xy3 = create "xy3" xyPlotClass xworkid
     "vpWidthF" :  .65
     "vpHeightF" : .6
     "xyCoordData": field3
-    "trYReverse" : "False"
+    "trYReverse" : False
     "trYMaxF" :   20.
     "trYMinF" :  -20.
     "trXMaxF" :  468.
     "trXMinF" :   0.
-    "tmYROn"    : "True"
-    "tmYLOn"    : "False"
-    "tmYUseLeft" : "False"
-    "tmYRLabelsOn"    : "True"
+    "tmYROn"    : True
+    "tmYLOn"    : False
+    "tmYUseLeft" : False
+    "tmYRLabelsOn"    : True
     "tmYRMajorLengthF" : .01
     "tmYRMajorOutwardLengthF" : .01
-    "tmXBOn"    : "False"
-    "tmXTOn"    : "False"
-    "tmYLOn"    : "False"
-    "tmYROn"    : "True"
+    "tmXBOn"    : False
+    "tmXTOn"    : False
+    "tmYLOn"    : False
+    "tmYROn"    : True
     "tmYRMode"  : "Explicit"
     "tmYRValues"  : (/-20.,-10.,0.,10.,20./)
     "tmYRLabels"  : (/"-20.","-10.","0.","10.","20."/)
@@ -226,12 +226,12 @@ xy3 = create "xy3" xyPlotClass xworkid
     "tiMainFont" : "helvetica-bold"
     "tiYAxisFont" : "helvetica-bold"
     "tiYAxisFontColor" : 3
-    "tmYRMinorOn" : "False"
-    "tmYLMinorOn" : "False"
-    "tmXBMinorOn" : "False"
-    "tmXTBorderOn" : "False"
-    "tmXBBorderOn" : "False"
-    "tmYLBorderOn" : "False"
+    "tmYRMinorOn" : False
+    "tmYLMinorOn" : False
+    "tmXBMinorOn" : False
+    "tmXTBorderOn" : False
+    "tmXBBorderOn" : False
+    "tmYLBorderOn" : False
 end create
 
 getvalues xy1

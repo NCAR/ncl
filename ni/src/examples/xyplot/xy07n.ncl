@@ -1,5 +1,5 @@
 ;
-;      $Id: xy07n.ncl,v 1.3 1997-06-06 21:26:58 haley Exp $
+;      $Id: xy07n.ncl,v 1.4 1998-04-15 21:40:48 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -26,11 +26,10 @@
 ;
 begin
 
-function fran(
-    xfran:double
+function fran( 
+	xfran:double
 )
 local yfran, j
-
 begin
     yfran = 9821.*xfran+.211327
     j = doubletoint(yfran)
@@ -81,7 +80,7 @@ xfran = 2.718281828459045
 ; case.
 ; 
 appid = create "xy07" appClass defaultapp 
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
     "appUsrDir" : "./"
 end create
 
@@ -116,7 +115,7 @@ else
 ; Create an XWorkstation object.
 ;
     xworkid = create "xy07Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
       "wkColorMap" : cmap
     end create
   else

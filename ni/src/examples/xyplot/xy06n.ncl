@@ -1,5 +1,5 @@
 
-;      $Id: xy06n.ncl,v 1.9 1997-06-10 19:16:43 haley Exp $
+;      $Id: xy06n.ncl,v 1.10 1998-04-15 21:40:48 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -62,25 +62,22 @@ wind_speed = new((/NSTATIONS,NHOURS/),float,spv)
 ; We need to initialize a non-constant dummy array for our Data
 ; object, otherwise we'll get error messages.
 ;
-do  j = 0,NHOURS-1
-   temp(0,j) = j
-end do
+temp(0,:) = ispan(0,NHOURS-1,1)
 
 ;
 ; Modify the color map.  Color indices '0' and '1' are the background
 ; and foreground colors respectively.
 ;
-cmap = new( (/NCOLORS,3/), float)
-cmap(0,:) = (/0.00,0.00,0.00/)
-cmap(1,:) = (/1.00,1.00,1.00/)
-cmap(2,:) = (/0.00,0.00,1.00/)
-cmap(3,:) = (/0.00,1.00,0.00/)
-cmap(4,:) = (/0.00,1.00,0.75/)
-cmap(5,:) = (/0.50,0.50,0.63/)
-cmap(6,:) = (/1.00,0.00,0.00/)
-cmap(7,:) = (/0.75,0.38,0.25/)
-cmap(8,:) = (/0.75,0.00,0.75/)
-cmap(9,:) = (/1.00,1.00,0.00/)
+cmap = (/ (/0.00,0.00,0.00/), \
+	  (/1.00,1.00,1.00/), \
+	  (/0.00,0.00,1.00/), \
+	  (/0.00,1.00,0.00/), \
+	  (/0.00,1.00,0.75/), \
+	  (/0.50,0.50,0.63/), \
+	  (/1.00,0.00,0.00/), \
+	  (/0.75,0.38,0.25/), \
+	  (/0.75,0.00,0.75/), \
+	  (/1.00,1.00,0.00/) /)
 
 
 ;
@@ -94,7 +91,7 @@ NCGM=0
 ; in this case.
 ; 
 appid = create "xy06" appClass defaultapp
-   "appDefaultParent" : "True"
+   "appDefaultParent" : True
    "appUsrDir" : "./"
 end create
 
@@ -111,7 +108,7 @@ else
 ; Create an X workstation
 ;
   xworkid = create "xy06Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
       "wkColorMap" : cmap
   end create
 end if
@@ -122,7 +119,7 @@ end if
 ; get the names of the stations we want data values for.
 ;
 dataid = create "xyData" coordArraysClass defaultapp
-    "caYArray" : temp
+    "caYArray" : temp(0,:)
 end create
 
 ;
@@ -177,34 +174,24 @@ do j = 0,NHOURS-1
 ; Open data file containing grid of global data values.
 ;
   tmpfile = addfile(filename,"r")
-  rdstations = tmpfile->id
-  tdata = tmpfile->T
-  pdata = tmpfile->PSL
-  vdata = tmpfile->SPD
-  isize = dimsizes(tmpfile->id(:,0))
+  rdstations = chartostring(tmpfile->id)
   do l = 0, numids-1
-    do i = 0, (isize-1)
-      if(rdstations(i,:) .eq. station_abrev(l)) 
-        break
-      end if
-    end do
+    i = ind(rdstations.eq.station_abrev(l))
     print("station " + station_abrev(l))
-    if(i .lt. isize) 
+    if(.not.all(ismissing(i)))
       print("loaded hour " + j)
-      temp(l,j) = (/tdata(i)/)
-      pressure(l,j) = (/pdata(i)/)
-      wind_speed(l,j) = (/vdata(i)/)
+      temp(l,j) = (/tmpfile->T(i(0))/)
+      pressure(l,j) = (/tmpfile->PSL(i(0))/)
+      wind_speed(l,j) = (/tmpfile->SPD(i(0))/)
     else
       print("missing hour " + j)
       temp(l,j) = spv
       pressure(l,j) = spv
       wind_speed(l,j) = spv
     end if
+    delete(i)
   end do
   delete(rdstations)
-  delete(tdata)
-  delete(pdata)
-  delete(vdata)
   delete(tmpfile)
 end do
 
