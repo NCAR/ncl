@@ -1,5 +1,5 @@
 /*
- *      $Id: xcbP.h,v 1.2 1997-07-02 15:31:11 boote Exp $
+ *      $Id: xcbP.h,v 1.3 1998-01-29 16:10:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,8 @@
  * Max distance in RGB cube.
  */
 #define _XcbDIST_BW	(0x1bb65)	/* SQRT(MAXRI^2+MAXGI^2+MAXBI^2) */
+#define _XcbBITS_CVAL	(sizeof(unsigned short) * 8)
+#define _XcbMAX_CVAL	(0xffff)
 
 #define _XcbMAX_RWRES	8
 
@@ -70,6 +72,18 @@ struct _XcbDMStatRec{
 	unsigned long	index;
 	unsigned short	val;
 	int		ref;
+	NhlBoolean	rw;
+};
+
+#define	_XcbPMCSIZE	(10)
+
+typedef struct _XcbPixmapCacheRec _XcbPixmapCacheRec, *_XcbPixmapCache;
+struct _XcbPixmapCacheRec{
+	Pixmap		pixmap;
+	int		npixels;
+	unsigned long	*pixels;
+	unsigned long	loc_pixels[_XcbPMCSIZE];
+	_XcbPixmapCache	next;
 };
 
 struct _XcbRec{
@@ -178,6 +192,13 @@ struct _XcbRec{
 	_NhlCBList		allocCBL;
 	_NhlCBList		cfaultCBL;
 	_NhlCBList		destroyCBL;
+
+	/*
+	 * Pixmap cache - this is used to manage the colors allocated by
+	 * Xpm, and to allow the colors to be free'd when the pixmap is
+	 * free'd.
+	 */
+	_XcbPixmapCache		pixmaps;
 };
 
 #ifndef MAX

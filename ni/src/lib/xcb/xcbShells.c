@@ -1,5 +1,5 @@
 /*
- *      $Id: xcbShells.c,v 1.2 1997-07-02 15:31:12 boote Exp $
+ *      $Id: xcbShells.c,v 1.3 1998-01-29 16:10:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -701,6 +701,18 @@ XcbGetXcbFromWidget(
 	return NULL;
 }
 
+void
+XcbFreePixmapCB(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+	(void)XcbFreePixmap(XcbGetXcbFromWidget(w),(Pixmap)udata);
+
+	return;
+}
+
 #define	done(type, value) \
 	{							\
 	    if (toVal->addr != NULL) {				\
@@ -963,7 +975,7 @@ static Boolean XcbCvtStringToVisual(
 	else if (strcasecmp(str,"GrayScale") == 0)	vc = GrayScale;
 	else if (strcasecmp(str,"PseudoColor") == 0)	vc = PseudoColor;
 	else if (strcasecmp(str,"DirectColor") == 0)	vc = DirectColor;
-	else if (strcasecmp(str,"Default") == 0){
+	else if (strcasecmp(str,"DefaultVisual") == 0){
 		if((DefaultDepth(dpy,XScreenNumberOfScreen(scr)) == depth) ||
 			(w->core.widget_class==xcbApplicationShellWidgetClass)){
 			done(Visual*,def_vis);

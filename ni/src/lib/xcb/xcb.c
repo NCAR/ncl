@@ -1,5 +1,5 @@
 /*
- *      $Id: xcb.c,v 1.4 1997-10-23 00:27:45 dbrown Exp $
+ *      $Id: xcb.c,v 1.5 1998-01-29 16:10:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,32 +30,56 @@ Visual
 *XcbBestDepthVisual
 (
 	Display		*dpy,
-	int		scr,
-	NhlBoolean	rw
+	int		scr
 )
 {
 	unsigned long	flags;
 	XVisualInfo	*vinfo,templ;
 	Visual		*vis;
+	XVisualInfo	*def_vinfo;
 	int		numvis,i,best;
 	int		best_depth;
+	NhlBoolean	def_rw,def_gray;
 	NhlBoolean	best_rw,curr_rw;
 	NhlBoolean	curr_gray,best_gray;
 	Screen		*s = ScreenOfDisplay(dpy,scr);
-
-	/*
-	 * If a display only supports one colormap at a time, then
-	 * the best visual is the "DefaultVisual", because otherwise
-	 * you get flashing before you need to.
-	 */
-	if(MaxCmapsOfScreen(s) <= 1)
-		return DefaultVisual(dpy,scr);
 
 	flags = VisualScreenMask;
 	templ.screen = scr;
 	vinfo = XGetVisualInfo(dpy,flags,&templ,&numvis);
 	if(!vinfo)
 		return DefaultVisual(dpy,scr);
+
+	flags = VisualIDMask;
+	templ.visualid = XVisualIDFromVisual(DefaultVisual(dpy,scr));
+	def_vinfo = XGetVisualInfo(dpy,flags,&templ,&i);
+	if(i != 1){
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+					"Unable to query DefaultVisual"));
+		XFree(vinfo);
+		if(def_vinfo) XFree(def_vinfo);
+		return DefaultVisual(dpy,scr);
+	}
+	def_gray = False;
+	switch(def_vinfo->class){
+		case StaticGray:
+			def_gray = True;
+		case StaticColor:
+		case TrueColor:
+			def_rw = False;
+			break;
+		case GrayScale:
+			def_gray = True;
+		case PseudoColor:
+		case DirectColor:
+			def_rw = True;
+			break;
+		default:
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,"Unknown Visual"));
+			XFree(vinfo);
+			XFree(def_vinfo);
+			return DefaultVisual(dpy,scr);
+	}
 
 	best = 0;
 	best_depth = vinfo[0].depth;
@@ -76,6 +100,7 @@ Visual
 		default:
 			NHLPERROR((NhlWARNING,NhlEUNKNOWN,"Unknown Visual"));
 			XFree(vinfo);
+			XFree(def_vinfo);
 			return DefaultVisual(dpy,scr);
 	}
 
@@ -102,11 +127,13 @@ Visual
 			continue;
 
 		/*
-		 * The depth is better take it, or take color over gray,
-		 * or take the requested rw/ro model, or
+		 * The depth is better take it (unless current best is already
+		 * at least 24 bits - then other specifications become more
+		 * important), or take color over gray,
+		 * or take the rw over the ro model, or
 		 * take TrueColor and DirectColor over other models.
 		 */
-		if(	(vinfo[i].depth > best_depth)		||
+		if(((best_depth < 24) && (vinfo[i].depth > best_depth))	||
 			(best_gray && !curr_gray)		||
 			(!best_rw && curr_rw)			||
 			(vinfo[i].class == DirectColor)		||
@@ -118,8 +145,21 @@ Visual
 		}
 	}
 
+	if(MaxCmapsOfScreen(s) > 1){
+		vis = vinfo[best].visual;
+	}
+	else if((vinfo[best].depth > def_vinfo->depth) ||
+			(def_gray && !best_gray) ||
+			(!def_rw && best_rw)){
+		vis = vinfo[best].visual;
+	}
+	else{
+		vis = DefaultVisual(dpy,scr);
+	}
+
 	vis = vinfo[best].visual;
 	XFree(vinfo);
+	XFree(def_vinfo);
 
 	return vis;
 }
@@ -260,11 +300,11 @@ _XcbRefSort(
 	 * (most apps alloc from low end of table first, this will cause this
 	 * one to alloc from top first - hopefully reducing color flash)
 	 */
-#ifdef Solaris
-	return (int)((long)s2->xcol.pixel-(long)s1->xcol.pixel);
-#else
-	return (int)((long long)s2->xcol.pixel-(long long)s1->xcol.pixel);
-#endif
+	if(s1->xcol.pixel < s2->xcol.pixel)
+		return 1;
+	if(s1->xcol.pixel > s2->xcol.pixel)
+		return -1;
+	return 0;
 }
 
 static int
@@ -275,17 +315,8 @@ _XcbDMapRefSort(
 {
 	_XcbDMStat	s1 = *(_XcbDMStat*)arg1;
 	_XcbDMStat	s2 = *(_XcbDMStat*)arg2;
-	int		i;
 
-	i = s1->ref - s2->ref;
-	if(i!=0)
-		return i;
-
-#ifdef Solaris
-	return (int)((long)s2->index - (long)s1->index);
-#else
-	return (int)((long long)s2->index - (long long)s1->index);
-#endif
+	return(s1->ref - s2->ref);
 }
 
 static void
@@ -346,11 +377,11 @@ _XcbDMapValSort(
 	_XcbDMStat	s1 = *(_XcbDMStat*)arg1;
 	_XcbDMStat	s2 = *(_XcbDMStat*)arg2;
 
-	if((s1->ref < 1) && (s2->ref < 1))
+	if((s1->rw || (s1->ref < 1)) && (s2->rw || (s2->ref < 1)))
 		return 0;
-	if(s1->ref < 1)
+	if(s1->rw || (s1->ref < 1))
 		return -1;
-	if(s2->ref < 1)
+	if(s2->rw || (s2->ref < 1))
 		return 1;
 
 	return (s1->val - s2->val);
@@ -475,11 +506,14 @@ _XcbNewNode(
 
 /*
  * Must call DoRefSort before calling this...
+ * req and ret can point at the same memory.
  */
 static NhlBoolean
 GetNullIndex(
 	_XcbDMStat	*sort,
+	_XcbDMStat	map,
 	unsigned int	size,
+	unsigned long	*req,
 	_XcbDMStat	plist,
 	unsigned long	*ret
 )
@@ -490,10 +524,15 @@ GetNullIndex(
 
 	if(sort[i]->ref > 0)
 		return False;
-	pix = sort[i]->index;
+
+	if(req && (map[*req].ref < 1))
+		pix = *req;
+	else
+		pix = sort[i]->index;
+
 	if(plist){
 		ref = plist[pix].ref;
-		for(i=1;(i<size)&& sort[i]->ref < 1;i++){
+		for(i=0;(i<size)&& sort[i]->ref < 1;i++){
 			if(ref < 1)
 				break;
 			if(plist[sort[i]->index].ref < ref){
@@ -604,13 +643,13 @@ _XcbFindNullRefNode(
 		unsigned long	ir,ig,ib;
 	
 		_XcbDoRefSort(xcb);
-		if(!GetNullIndex(xcb->rsort,xcb->rval+1,
+		if(!GetNullIndex(xcb->rsort,xcb->rmap,xcb->rval+1,NULL,
 				(xcb->parent)?(xcb->parent->rmap):(NULL),&ir))
 			return NULL;
-		if(!GetNullIndex(xcb->gsort,xcb->gval+1,
+		if(!GetNullIndex(xcb->gsort,xcb->gmap,xcb->gval+1,NULL,
 				(xcb->parent)?(xcb->parent->gmap):(NULL),&ig))
 			return NULL;
-		if(!GetNullIndex(xcb->bsort,xcb->bval+1,
+		if(!GetNullIndex(xcb->bsort,xcb->bmap,xcb->bval+1,NULL,
 				(xcb->parent)?(xcb->parent->bmap):(NULL),&ib))
 			return NULL;
 		ir = (ir << xcb->shifts.red) & xcb->masks.red;
@@ -630,17 +669,17 @@ _XcbGetCubeNodeList(
 	/*
 	 * Compute "cube" indices.
 	 */
-	xcb->ired = col->red * (xcb->mycube.red_max + 1) / 0xffff;
+	xcb->ired = col->red * (xcb->mycube.red_max + 1) / _XcbMAX_CVAL;
 	if(xcb->ired > (xcb->mycube.red_max))
 		xcb->ired = xcb->mycube.red_max;
 	xcb->icube = xcb->ired * xcb->mycube.red_mult;
 
-	xcb->igreen = col->green * (xcb->mycube.green_max + 1) / 0xffff;
+	xcb->igreen = col->green * (xcb->mycube.green_max + 1) / _XcbMAX_CVAL;
 	if(xcb->igreen > (xcb->mycube.green_max))
 		xcb->igreen = xcb->mycube.green_max;
 	xcb->icube += (xcb->igreen * xcb->mycube.green_mult);
 
-	xcb->iblue = col->blue * (xcb->mycube.blue_max + 1) / 0xffff;
+	xcb->iblue = col->blue * (xcb->mycube.blue_max + 1) / _XcbMAX_CVAL;
 	if(xcb->iblue > (xcb->mycube.blue_max))
 		xcb->iblue = xcb->mycube.blue_max;
 	xcb->icube += (xcb->iblue * xcb->mycube.blue_mult);
@@ -655,6 +694,7 @@ FindDupNode(
 )
 {
 	_XcbCStatRec	key;
+	_XcbCStat	keyptr = &key;
 	_XcbCStat	*node = NULL;
 
 	if((col->pixel < xcb->scstat) && (col->pixel >= 0)){
@@ -664,7 +704,7 @@ FindDupNode(
 	}
 	_XcbDoPixSort(xcb);
 	key.xcol = *col;
-	node = bsearch(&key,xcb->csort,xcb->ncsort,sizeof(_XcbCStat),
+	node = bsearch(&keyptr,xcb->csort,xcb->ncsort,sizeof(_XcbCStat),
 								_XcbPixSort);
 	if(node)
 		return *node;
@@ -720,7 +760,7 @@ InitBW(
 	xcb->white = WhitePixel(xcb->dpy,xcb->scr);
 
 	xcb->rw = False;
-	xcb->rinc = 0xffff;
+	xcb->rinc = _XcbMAX_CVAL;
 	xcb->ginc = 0;
 	xcb->binc = 0;
 
@@ -808,9 +848,9 @@ InitDirect(
 	xcb->mycube.blue_mult = 1;
 	xcb->mycube.base_pixel = 0;
 
-	xcb->rinc = ((float)0xffff)/(xcb->mycube.red_max);
-	xcb->ginc = ((float)0xffff)/(xcb->mycube.green_max);
-	xcb->binc = ((float)0xffff)/(xcb->mycube.blue_max);
+	xcb->rinc = ((float)_XcbMAX_CVAL)/(xcb->mycube.red_max);
+	xcb->ginc = ((float)_XcbMAX_CVAL)/(xcb->mycube.green_max);
+	xcb->binc = ((float)_XcbMAX_CVAL)/(xcb->mycube.blue_max);
 
 	xcb->rval = xcb->visinfo->red_mask >> xcb->shifts.red;
 	xcb->gval = xcb->visinfo->green_mask >> xcb->shifts.green;
@@ -892,7 +932,7 @@ InitGray(
 	memset(xcb->csort,0,sizeof(_XcbCStat)*xcb->scsort);
 	memset(xcb->cube,0,sizeof(_XcbCStat)*xcb->scube);
 
-	xcb->rinc = ((float)0xffff)/(xcb->scube-1);
+	xcb->rinc = ((float)_XcbMAX_CVAL)/(xcb->scube-1);
 	xcb->ginc = 0.0;
 	xcb->binc = 0.0;
 
@@ -959,9 +999,9 @@ InitColor(
 	xcb->mycube.green_mult = xcb->blevels;
 	xcb->mycube.blue_mult = 1;
 	xcb->mycube.base_pixel = 0;
-	xcb->rinc = ((float)0xffff)/(xcb->mycube.red_max);
-	xcb->ginc = ((float)0xffff)/(xcb->mycube.green_max);
-	xcb->binc = ((float)0xffff)/(xcb->mycube.blue_max);
+	xcb->rinc = ((float)_XcbMAX_CVAL)/(xcb->mycube.red_max);
+	xcb->ginc = ((float)_XcbMAX_CVAL)/(xcb->mycube.green_max);
+	xcb->binc = ((float)_XcbMAX_CVAL)/(xcb->mycube.blue_max);
 
 	return;
 }
@@ -1000,7 +1040,7 @@ FreeAllPixels
 		i++;
 	}
 	if(nfpix > 0){
-		if(xcb->parent)
+		if(xcb->parent && !xcb->my_cmap)
 			XcbFreeColors(xcb->parent,fpix,nfpix);
 		else
 			XFreeColors(xcb->dpy,xcb->cmap,fpix,nfpix,0);
@@ -1014,6 +1054,7 @@ _XcbCFault(
 	Xcb	xcb
 )
 {
+	NhlBoolean	first_cmap = False;
 	Visual		*old_vis;
 	Colormap	new_cmap;
 	XColor		cols[256];
@@ -1029,6 +1070,7 @@ _XcbCFault(
 
 
 	if(xcb->cmap == None){
+		first_cmap = True;
 		if(xcb->parent){
 			old_vis = xcb->parent->vis;
 			xcb->cmap = xcb->parent->cmap;
@@ -1175,6 +1217,44 @@ _XcbCFault(
 		XFreeColormap(xcb->dpy,new_cmap);
 		xcb->mode = XcbSHAREDCMAP;
 		return False;
+	}
+	else if(xcb->visinfo->class == DirectColor){
+		/*
+		 * Attempt to minimize color flash with DirectColor by
+		 * initializing colormap as a TrueColor ramp-up.
+		 */
+		unsigned long	max;
+		unsigned long	val;
+		unsigned long	ired,igreen,iblue;
+		
+		max = MAX(xcb->rval,MAX(xcb->gval,xcb->bval))+1;
+		for(i=0;i < max;i+=NhlNumber(cols)){
+			n = MIN(NhlNumber(cols),max-i);
+			for(j=0;j<n;j++){
+				val = i+j;
+				cols[j].flags = 0;
+				if(val <= xcb->rval){
+					cols[j].red = val << (_XcbBITS_CVAL -
+								xcb->bits.red);
+					cols[j].flags |= DoRed;
+				}
+				if(val <= xcb->gval){
+					cols[j].green = val << (_XcbBITS_CVAL -
+							xcb->bits.green);
+					cols[j].flags |= DoGreen;
+				}
+				if(val <= xcb->bval){
+					cols[j].blue = val << (_XcbBITS_CVAL -
+								xcb->bits.blue);
+					cols[j].flags |= DoBlue;
+				}
+				cols[j].pixel =
+				((val << xcb->shifts.red)& xcb->masks.red)|
+				((val << xcb->shifts.green)& xcb->masks.green)|
+				((val << xcb->shifts.blue)& xcb->masks.blue);
+			}
+			XStoreColors(xcb->dpy,new_cmap,cols,n);
+		}
 	}
 
 	for(i=0;i<xcb->ncsort;i++)
@@ -1510,7 +1590,7 @@ XcbCreate(
 		if(xcb->mode == XcbSHAREDCMAP)
 			xcb->vis = def_vis;
 		else
-			xcb->vis = XcbBestDepthVisual(dpy,xcb->scr,rw_req);
+			xcb->vis = XcbBestDepthVisual(dpy,xcb->scr);
 	}
 	vtempl.visualid = XVisualIDFromVisual(xcb->vis);
 	xcb->visinfo = XGetVisualInfo(dpy,VisualIDMask,&vtempl,&n);
@@ -1673,6 +1753,8 @@ XcbCreate(
 							DestroyCB,udata);
 	}
 
+	xcb->pixmaps = NULL;
+
 	if(mask & XcbINITMOTIF){
 		static int	init = 0;
 
@@ -1723,6 +1805,37 @@ XmDONE:
 	return xcb;
 }
 
+static int
+FreePixmapNode(
+	Xcb		xcb,
+	_XcbPixmapCache	node
+)
+{
+	int	status;
+
+	XcbFreeColors(xcb,node->pixels,node->npixels);
+
+	if(node->pixels != node->loc_pixels)
+		XFree(node->pixels);
+	status = XFreePixmap(xcb->dpy,node->pixmap);
+	XFree(node);
+
+	return status;
+}
+
+static void
+FreePixmapCache(
+	Xcb		xcb,
+	_XcbPixmapCache	node
+)
+{
+	if(node->next)
+		FreePixmapCache(xcb,node->next);
+	(void)FreePixmapNode(xcb,node);
+
+	return;
+}
+
 void
 XcbDestroy(
 	Xcb	xcb
@@ -1747,6 +1860,7 @@ XcbDestroy(
 	_NhlCBDelete(xcb->cfaultCB);
 	_NhlCBDelete(xcb->destroyCB);
 
+	FreePixmapCache(xcb,xcb->pixmaps);
 	/*
 	 * This should hopefully be a no-op,since the callbacks should
 	 * have caused anything that allocated colors to free them, but
@@ -1779,7 +1893,11 @@ ulcmp(
 	const void	*arg2
 )
 {
-	return *(unsigned long*)arg1 - *(unsigned long*)arg2;
+	if(*(unsigned long*)arg1 < *(unsigned long*)arg2)
+		return -1;
+	if(*(unsigned long*)arg1 > *(unsigned long*)arg2)
+		return 1;
+	return 0;
 }
 
 void
@@ -1793,6 +1911,9 @@ XcbFreeColors(
 	unsigned long	stack_spix[256],stack_fpix[256];
 	unsigned long	*spix,*fpix;
 	int		i,j,sorti,nfpix=0;
+
+	if(npixels < 1)
+		return;
 
 	if((xcb->visinfo->class == TrueColor) || (xcb->vtype == XcbBW))
 		return;
@@ -1876,10 +1997,19 @@ XcbFreeColors(
 			for(;j<xcb->nrwcells;j++)
 				xcb->rwcells[j]=xcb->rwcells[j+1];
 
-			/*
-			 * Remove from cube.
-			 */
+			if(rwfound && xcb->rmap){
+				xcb->rmap[(node->xcol.pixel&xcb->masks.red) >>
+						xcb->shifts.red].rw = False;
+				xcb->gmap[(node->xcol.pixel&xcb->masks.green) >>
+						xcb->shifts.green].rw = False;
+				xcb->bmap[(node->xcol.pixel & xcb->masks.red) >>
+						xcb->shifts.red].rw = False;
+			}
+
 			if(!rwfound){
+				/*
+				 * Remove from cube.
+				 */
 				_XcbCStat	*tnode;
 
 				/* updates index's */
@@ -1932,6 +2062,7 @@ XcbAllocRWColor(
 )
 {
 	_XcbCStat	node=NULL;
+	int		indx;
 
 	if(!xcb->rw)
 		return False;
@@ -1975,12 +2106,16 @@ XcbAllocRWColor(
 
 	node->ref = 1;
 	if(xcb->rmap){
-		xcb->rmap[(node->xcol.pixel & xcb->masks.red) >>
-						xcb->shifts.red].ref = 1;
-		xcb->gmap[(node->xcol.pixel & xcb->masks.green) >>
-						xcb->shifts.green].ref = 1;
-		xcb->bmap[(node->xcol.pixel & xcb->masks.red) >>
-						xcb->shifts.red].ref = 1;
+		indx = (node->xcol.pixel & xcb->masks.red) >> xcb->shifts.red;
+		xcb->rmap[indx].ref = 1;
+		xcb->rmap[indx].rw = True;
+		indx = (node->xcol.pixel & xcb->masks.green) >>
+							xcb->shifts.green;
+		xcb->gmap[indx].ref = 1;
+		xcb->gmap[indx].rw = True;
+		indx = (node->xcol.pixel & xcb->masks.blue) >> xcb->shifts.blue;
+		xcb->bmap[indx].ref = 1;
+		xcb->bmap[indx].rw = True;
 	}
 
 	_XcbAddToRW(xcb,node);
@@ -1998,19 +2133,20 @@ TrueAlloc(
 	unsigned long	ired,igreen,iblue;
 	unsigned long	vred,vgreen,vblue;
 
-	vred = col->red >> (16 - xcb->bits.red);
-	vgreen = col->green >> (16 - xcb->bits.green);
-	vblue = col->blue >> (16 - xcb->bits.blue);
+	vred = col->red >> (_XcbBITS_CVAL - xcb->bits.red);
+	vgreen = col->green >> (_XcbBITS_CVAL - xcb->bits.green);
+	vblue = col->blue >> (_XcbBITS_CVAL - xcb->bits.blue);
 
 	ired = (vred << xcb->shifts.red) & xcb->masks.red;
 	igreen = (vgreen << xcb->shifts.green) & xcb->masks.green;
 	iblue = (vblue << xcb->shifts.blue) & xcb->masks.blue;
 
-	col->red = (ired >> xcb->shifts.red) << (16 - xcb->bits.red);
+	col->red = (ired >> xcb->shifts.red) <<
+					(_XcbBITS_CVAL - xcb->bits.red);
 	col->green = (igreen >> xcb->shifts.green) <<
-						(16 - xcb->bits.green);
+					(_XcbBITS_CVAL - xcb->bits.green);
 	col->blue = (iblue >> xcb->shifts.blue) <<
-						(16 - xcb->bits.blue);
+					(_XcbBITS_CVAL - xcb->bits.blue);
 	col->pixel = ired|igreen|iblue;
 
 	return;
@@ -2027,14 +2163,14 @@ NoAlloc(
 	/*
 	 * NTSC conversion.
 	 */
-	intensity = (double)col->red/0xffff * 0.3 +
-			(double)col->green/0xffff * 0.59 +
-			(double)col->blue/0xffff * 0.11;
+	intensity = (double)col->red/_XcbMAX_CVAL * 0.3 +
+			(double)col->green/_XcbMAX_CVAL * 0.59 +
+			(double)col->blue/_XcbMAX_CVAL * 0.11;
 	col->red=col->green=col->blue= (unsigned short)
-						(intensity * 0xffff);
+						(intensity * _XcbMAX_CVAL);
 	if(intensity > 0.5){
 		col->pixel = WhitePixel(xcb->dpy,xcb->scr);
-		col->red=col->green=col->blue=0xffff;
+		col->red=col->green=col->blue=_XcbMAX_CVAL;
 	}
 	else{
 		col->pixel = BlackPixel(xcb->dpy,xcb->scr);
@@ -2055,14 +2191,14 @@ BWAlloc(
 	/*
 	 * NTSC conversion.
 	 */
-	intensity = (double)col->red/0xffff * 0.3 +
-			(double)col->green/0xffff * 0.59 +
-			(double)col->blue/0xffff * 0.11;
+	intensity = (double)col->red/_XcbMAX_CVAL * 0.3 +
+			(double)col->green/_XcbMAX_CVAL * 0.59 +
+			(double)col->blue/_XcbMAX_CVAL * 0.11;
 	col->red=col->green=col->blue= (unsigned short)
-						(intensity * 0xffff);
+						(intensity * _XcbMAX_CVAL);
 	if(intensity > 0.5){
 		col->pixel = xcb->white;
-		col->red=col->green=col->blue=0xffff;
+		col->red=col->green=col->blue=_XcbMAX_CVAL;
 	}
 	else{
 		col->pixel = xcb->black;
@@ -2088,29 +2224,29 @@ _XcbValidColor(
 	 * Make sure r/g/b values will get you to the same "node" in the
 	 * cube.
 	 */
-	rci = req->red * (xcb->mycube.red_max + 1) / 0xffff;
+	rci = req->red * (xcb->mycube.red_max + 1) / _XcbMAX_CVAL;
 	if(rci > (xcb->mycube.red_max))
 		rci = xcb->mycube.red_max;
-	cci = cmp->red * (xcb->mycube.red_max + 1) / 0xffff;
+	cci = cmp->red * (xcb->mycube.red_max + 1) / _XcbMAX_CVAL;
 	if(cci > (xcb->mycube.red_max))
 		cci = xcb->mycube.red_max;
 	if(rci != cci)
 		ival = False;
 	if(ival){
-		rci = req->green * (xcb->mycube.green_max + 1) / 0xffff;
+		rci = req->green * (xcb->mycube.green_max + 1) / _XcbMAX_CVAL;
 		if(rci > (xcb->mycube.green_max))
 			rci = xcb->mycube.green_max;
-		cci = cmp->green * (xcb->mycube.green_max + 1) / 0xffff;
+		cci = cmp->green * (xcb->mycube.green_max + 1) / _XcbMAX_CVAL;
 		if(cci > (xcb->mycube.green_max))
 			cci = xcb->mycube.green_max;
 		if(rci != cci)
 			ival = False;
 	}
 	if(ival){
-		rci = req->blue * (xcb->mycube.blue_max + 1) / 0xffff;
+		rci = req->blue * (xcb->mycube.blue_max + 1) / _XcbMAX_CVAL;
 		if(rci > (xcb->mycube.blue_max))
 			rci = xcb->mycube.blue_max;
-		cci = cmp->blue * (xcb->mycube.blue_max + 1) / 0xffff;
+		cci = cmp->blue * (xcb->mycube.blue_max + 1) / _XcbMAX_CVAL;
 		if(cci > (xcb->mycube.blue_max))
 			cci = xcb->mycube.blue_max;
 		if(rci != cci)
@@ -2121,7 +2257,7 @@ _XcbValidColor(
 	if(ret)
 		*ret = err;
 
-	return (ival && (maxerr == 0.0) || (err <= maxerr));
+	return (ival && ((maxerr == 0.0) || (err <= maxerr)));
 }
 
 static NhlBoolean
@@ -2139,7 +2275,7 @@ GetBestIndex(
 		return False;
 
 	if(size == 1){
-		if(list[start]->ref < 1)
+		if(list[start]->rw || (list[start]->ref < 1))
 			return False;
 		*ret = list[start]->index;
 		return True;
@@ -2148,9 +2284,9 @@ GetBestIndex(
 	if(size==2){
 		long	d1,d2;
 
-		if(list[start+1]->ref < 1)
+		if(list[start+1]->rw || (list[start+1]->ref < 1))
 			return False;
-		if(list[start]->ref < 1){
+		if(list[start]->rw || (list[start]->ref < 1)){
 			*ret = list[start+1]->index;
 			return True;
 		}
@@ -2166,7 +2302,8 @@ GetBestIndex(
 	}
 
 	mid = size/2;
-	if((list[start+mid]->ref > 0) && (list[start+mid]->val > val))
+	if(!list[start+mid]->rw && (list[start+mid]->ref > 0) &&
+						(list[start+mid]->val > val))
 		return GetBestIndex(list,start,mid+1,val,ret);
 	return GetBestIndex(list,start+mid,mid+(size%2),val,ret);
 }
@@ -2496,15 +2633,24 @@ _XcbXAllocColor(
 		 */
 		if(nr||ng||nb)
 			_XcbDoRefSort(xcb);
-		if(nr && !GetNullIndex(xcb->rsort,xcb->rval+1,
+		if(nr){
+			ir = nc.red >> (_XcbBITS_CVAL - xcb->bits.red);
+			if(!GetNullIndex(xcb->rsort,xcb->rmap,xcb->rval+1,&ir,
 				(xcb->parent)?(xcb->parent->rmap):(NULL),&ir))
-			return NULL;
-		if(ng && !GetNullIndex(xcb->gsort,xcb->gval+1,
+				return NULL;
+		}
+		if(ng){
+			ig = nc.green >> (_XcbBITS_CVAL - xcb->bits.green);
+			if(!GetNullIndex(xcb->gsort,xcb->gmap,xcb->gval+1,&ig,
 				(xcb->parent)?(xcb->parent->gmap):(NULL),&ig))
-			return NULL;
-		if(nb && !GetNullIndex(xcb->bsort,xcb->bval+1,
+				return NULL;
+		}
+		if(nb){
+			ib = nc.blue >> (_XcbBITS_CVAL - xcb->bits.blue);
+			if(!GetNullIndex(xcb->bsort,xcb->bmap,xcb->bval+1,&ib,
 				(xcb->parent)?(xcb->parent->bmap):(NULL),&ib))
-			return NULL;
+				return NULL;
+		}
 		ir = (ir << xcb->shifts.red) & xcb->masks.red;
 		ig = (ig << xcb->shifts.green) & xcb->masks.green;
 		ib = (ib << xcb->shifts.blue) & xcb->masks.blue;
@@ -2580,7 +2726,6 @@ _XcbAllocROColorTry(
 	XColor		*col
 )
 {
-	NhlBoolean	newcolor = False;
 	_XcbCStat	list,node=NULL,*nptr;
 	XColor		mycol = *col;
 	XColor		tcol;
@@ -2597,7 +2742,6 @@ _XcbAllocROColorTry(
 					NHLPERROR((NhlFATAL,ENOMEM,NULL));
 					return False;
 				}
-				newcolor = True;
 				node->alloc = XcbRO;
 				node->xcol = mycol;
 				nptr = &xcb->cube[xcb->icube];
@@ -2626,13 +2770,13 @@ _XcbAllocROColorTry(
 		 * values for those indexes, and determine if the stdcmap
 		 * color is close enough to use.
 		 */
-		ired = mycol.red * (xcb->stdcmap.red_max + 1) / 0xffff;
+		ired = mycol.red * (xcb->stdcmap.red_max + 1) / _XcbMAX_CVAL;
 		if(ired > xcb->stdcmap.red_max)
 			ired = xcb->stdcmap.red_max;
-		igreen = mycol.green * (xcb->stdcmap.green_max + 1) / 0xffff;
+		igreen = mycol.green * (xcb->stdcmap.green_max + 1) / _XcbMAX_CVAL;
 		if(igreen > xcb->stdcmap.green_max)
 			igreen = xcb->stdcmap.green_max;
-		iblue = mycol.blue * (xcb->stdcmap.blue_max + 1) / 0xffff;
+		iblue = mycol.blue * (xcb->stdcmap.blue_max + 1) / _XcbMAX_CVAL;
 		if(iblue > xcb->stdcmap.blue_max)
 			iblue = xcb->stdcmap.blue_max;
 
@@ -2642,7 +2786,7 @@ _XcbAllocROColorTry(
 		tcol.pixel = (xcb->stdcmap.base_pixel +
 				(ired * xcb->stdcmap.red_mult) +
 				(igreen * xcb->stdcmap.green_mult) +
-				(iblue * xcb->stdcmap.blue_mult)) & 0xffffffff;
+				(iblue * xcb->stdcmap.blue_mult)) & _XcbMAX_CVAL;
 
 		if(_XcbValidColor(xcb,&mycol,&tcol,NULL)){
 			mycol = tcol;
@@ -2653,7 +2797,6 @@ _XcbAllocROColorTry(
 					NHLPERROR((NhlFATAL,ENOMEM,NULL));
 					return False;
 				}
-				newcolor = True;
 				node->alloc = XcbSTDCMAP;
 				node->cube = True;
 				node->xcol = mycol;
@@ -2676,7 +2819,6 @@ _XcbAllocROColorTry(
 		tcol.blue = xcb->iblue * xcb->binc;
 		if(_XcbValidColor(xcb,&mycol,&tcol,NULL) &&
 				(node = _XcbXAllocColor(xcb,&tcol,True))){
-			newcolor = True;
 			node->cube = True;
 			node->next =xcb->cube[xcb->icube];
 			xcb->cube[xcb->icube] = node;
@@ -2703,7 +2845,6 @@ _XcbAllocROColorTry(
 	if(!node)
 		return False;
 
-	newcolor = True;
 	(void)_XcbGetCubeNodeList(xcb,&node->xcol);
 	nptr = &xcb->cube[xcb->icube];
 	if(((xcb->ired*xcb->rinc) == node->xcol.red) &&
@@ -3037,4 +3178,238 @@ XcbGetDepth(
 	if(xcb)
 		return xcb->visinfo->depth;
 	return 0;
+}
+
+/*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+
+*									*
+*	Xpm Support Functions: This will allow Xpm to happily co-exist	*
+*	with Xcb.							*
+*									*
+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*/
+
+/*
+ * Free's colors associated with pixmap as well as pixmap.
+ *
+ * If the pixmap is not in the cache, then no colors were allocated on
+ * it's behalf, and XFreePixmap is simply called.  (This makes it simple
+ * to just replace all XFreePixmap calls with this one, without worrying
+ * that it will break things, if the pixmap was not allocated through
+ * Xcb...)
+ */
+extern int
+XcbFreePixmap(
+	Xcb	xcb,
+	Pixmap	pixmap
+)
+{
+	_XcbPixmapCache	*pmptr;
+	_XcbPixmapCache	node;
+
+	if(!xcb)
+		return 0;
+
+	pmptr = &xcb->pixmaps;
+
+	while(*pmptr){
+		if((*pmptr)->pixmap == pixmap){
+			node = (*pmptr);
+			*pmptr = node->next;
+			return FreePixmapNode(xcb,node);
+		}
+		pmptr = &(*pmptr)->next;
+	}
+
+	return XFreePixmap(xcb->dpy,pixmap);
+}
+
+static int
+_XcbXpmAllocColor(
+	Display		*dpy,
+	Colormap	colormap,
+	char		*colorname,
+	XColor		*xcolor,
+	void		*closure
+)
+{
+	Xcb		xcb = (Xcb)closure;
+
+	if(XcbAllocNamedColor(xcb,colorname,xcolor))
+		return 1;
+	return -1;
+}
+
+static int
+_XcbXpmFreeColors(
+	Display		*dpy,
+	Colormap	colormap,
+	Pixel		*pixels,
+	int		n,
+	void		*closure
+)
+{
+	Xcb		xcb = (Xcb)closure;
+
+	XcbFreeColors(xcb,pixels,n);
+
+	return 0;
+}
+
+static int
+_XcbInitXpmAttributes(
+	Xcb		xcb,
+	XpmAttributes	*attributes,
+	XpmAttributes	*my_attributes
+)
+{
+	if(XpmLibraryVersion() < XpmIncludeVersion){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Xpm Library mis-match"));
+		return 1;
+	}
+
+	if(!xcb){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Invalid Color Broker"));
+		return 1;
+	}
+
+	my_attributes->valuemask = 0;
+
+	if(attributes)
+		memcpy(my_attributes,attributes,sizeof(XpmAttributes));
+
+	my_attributes->valuemask |= XpmVisual|XpmColormap|XpmDepth|
+				XpmReturnAllocPixels|
+				XpmAllocColor|XpmFreeColors|XpmColorClosure;
+
+	my_attributes->visual = xcb->vis;
+	my_attributes->colormap = xcb->cmap;
+	my_attributes->depth = xcb->visinfo->depth;
+	my_attributes->alloc_color = _XcbXpmAllocColor;
+	my_attributes->free_colors = _XcbXpmFreeColors;
+	my_attributes->color_closure = xcb;
+
+	return 0;
+}
+
+static void
+_XcbCloseXpmAttributes(
+	Xcb		xcb,
+	Pixmap		*pixmap_return,
+	XpmAttributes	*attributes,
+	XpmAttributes	*my_attributes
+)
+{
+	Boolean		free_ret_colors = True;
+	_XcbPixmapCache	node;
+
+	if(attributes){
+		if(attributes->valuemask & XpmReturnAllocPixels)
+			free_ret_colors = False;
+		memcpy(attributes,my_attributes,sizeof(XpmAttributes));
+		if(free_ret_colors){
+			attributes->alloc_pixels = NULL;
+			attributes->nalloc_pixels = 0;
+		}
+	}
+
+	if(!*pixmap_return || (my_attributes->nalloc_pixels <= 0))
+		return;
+
+	node = Xmalloc(sizeof(_XcbPixmapCacheRec));
+	if(!node){
+		NHLPERROR((NhlWARNING,ENOMEM,NULL));
+		return;
+	}
+
+	if(my_attributes->nalloc_pixels <= _XcbPMCSIZE){
+		node->pixels = node->loc_pixels;
+	}
+	else{
+		node->pixels = Xmalloc(sizeof(Pixel) *
+						my_attributes->nalloc_pixels);
+		if(!node->pixels){
+			NHLPERROR((NhlWARNING,ENOMEM,NULL));
+			XFree(node);
+			return;
+		}
+	}
+	node->npixels = my_attributes->nalloc_pixels;
+	memcpy(node->pixels,my_attributes->alloc_pixels,
+						sizeof(Pixel)*node->npixels);
+	node->pixmap = *pixmap_return;
+	node->next = xcb->pixmaps;
+	xcb->pixmaps = node;
+
+	return;
+}
+
+int
+XcbXpmCreatePixmapFromData(
+	Xcb		xcb,
+	Drawable	d,
+	char		**data,
+	Pixmap		*pixmap_return,
+	Pixmap		*shapemask_return,
+	XpmAttributes	*attributes
+)
+{
+	XpmAttributes	my_attributes;
+	int		status;
+
+	if(_XcbInitXpmAttributes(xcb,attributes,&my_attributes))
+		return XpmColorFailed;
+
+	status = XpmCreatePixmapFromData(xcb->dpy,d,data,pixmap_return,
+					shapemask_return,&my_attributes);
+	if(status >= 0)
+		_XcbCloseXpmAttributes(xcb,pixmap_return,
+						attributes,&my_attributes);
+	return status;
+}
+
+extern int
+XcbXpmReadFileToPixmap(
+	Xcb		xcb,
+	Drawable	d,
+	char		*filename,
+	Pixmap		*pixmap_return,
+	Pixmap		*shapemask_return,
+	XpmAttributes	*attributes
+)
+{
+	XpmAttributes	my_attributes;
+	int		status;
+
+	if(_XcbInitXpmAttributes(xcb,attributes,&my_attributes))
+		return XpmColorFailed;
+
+	status = XpmReadFileToPixmap(xcb->dpy,d,filename,pixmap_return,
+					shapemask_return,&my_attributes);
+	if(status >= 0)
+		_XcbCloseXpmAttributes(xcb,pixmap_return,
+						attributes,&my_attributes);
+	return status;
+}
+
+extern int
+XcbXpmCreatePixmapFromXpmImage(
+	Xcb		xcb,
+	Drawable	d,
+	XpmImage	*image,
+	Pixmap		*pixmap_return,
+	Pixmap		*shapemask_return,
+	XpmAttributes	*attributes
+)
+{
+	XpmAttributes	my_attributes;
+	int		status;
+
+	if(_XcbInitXpmAttributes(xcb,attributes,&my_attributes))
+		return XpmColorFailed;
+
+	status = XpmCreatePixmapFromXpmImage(xcb->dpy,d,image,pixmap_return,
+					shapemask_return,&my_attributes);
+	if(status >= 0)
+		_XcbCloseXpmAttributes(xcb,pixmap_return,
+						attributes,&my_attributes);
+	return status;
 }

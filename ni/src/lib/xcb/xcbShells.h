@@ -1,5 +1,5 @@
 /*
- *      $Id: xcbShells.h,v 1.1 1997-06-11 20:49:24 boote Exp $
+ *      $Id: xcbShells.h,v 1.2 1998-01-29 16:10:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -55,6 +55,18 @@ XcbIsXcbShell(
 extern Xcb
 XcbGetXcbFromWidget(
 	Widget	w
+);
+
+/*
+ * This function is a convienience function that is used to add a
+ * XmNdestroyCallback to a widget that is using a Pixmap allocated
+ * using any of the XcbXpm functions.
+ */
+extern void
+XcbFreePixmapCB(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
 );
 
 typedef struct XcbApplicationShellClassRec *XcbApplicationShellClass;

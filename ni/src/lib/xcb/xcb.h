@@ -1,5 +1,5 @@
 /*
- *      $Id: xcb.h,v 1.1 1997-06-11 20:49:23 boote Exp $
+ *      $Id: xcb.h,v 1.2 1998-01-29 16:10:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
+#include <X11/xpm.h>
 
 #include <ncarg/hlu/hlu.h>
 
@@ -149,6 +150,12 @@ struct XcbAttrRec{
  * Public API...
  */
 
+extern Visual *
+XcbBestDepthVisual(
+	Display		*dpy,
+	int		screen
+);
+
 extern Xcb
 XcbCreate(
 	Display		*dpy,
@@ -229,10 +236,60 @@ XcbDestroy(
 );
 
 /*
+ * XcbXpm funtions return integers that correspond to the ErrorStatus
+ * codes in the Xpm library.  (These are just wrapper functions that
+ * make sure the colors are allocated correctly, and allow the colors
+ * to be free'd when the pixmap is free'd.
+ *
+ * The visual, colormap, depth, alloc_color, free_color, and color_closure
+ * portions of the XpmAttributes will be over-written by the Xcb, so don't
+ * try and use them.
+ */
+extern int
+XcbXpmCreatePixmapFromData(
+	Xcb		xcb,
+	Drawable	d,
+	char		**data,
+	Pixmap		*pixmap_return,
+	Pixmap		*shapemask_return,
+	XpmAttributes	*attributes
+);
+
+extern int
+XcbXpmReadFileToPixmap(
+	Xcb		xcb,
+	Drawable	d,
+	char		*filename,
+	Pixmap		*pixmap_return,
+	Pixmap		*shapemask_return,
+	XpmAttributes	*attributes
+);
+
+extern int
+XcbXpmCreatePixmapFromXpmImage(
+	Xcb		xcb,
+	Drawable	d,
+	XpmImage	*image,
+	Pixmap		*pixmap_return,
+	Pixmap		*shapemask_return,
+	XpmAttributes	*attributes
+);
+
+/*
+ * Free's colors associated with pixmap as well as pixmap.
+ * (returns int status - same as XFreePixmap)
+ */
+extern int
+XcbFreePixmap(
+	Xcb	xcb,
+	Pixmap	pixmap
+);
+
+/*
  * TODO:
  *
  * The cfaultCBL and destroyCBL callback lists should be publicly
  * accessible, but they aren't yet.  (For now, include the xcbP.h
- * header file, and call _NhlCBAdd directly.
+ * header file, and call _NhlCBAdd directly.)
  */
 #endif	/* XCB_COLOR_H */
