@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.6 1994-02-23 22:41:39 haley Exp $
+#	$Id: ncargcex.csh,v 1.7 1994-03-24 17:10:25 haley Exp $
 #
 
 #********************#
@@ -39,7 +39,7 @@ endif
 
 set example_list=(\
 c_agex07 c_colcon c_mpex05 c_eezmpa c_elblba c_epltch c_cbex01 \
-c_slex01 c_sfex02 c_gtxpac)
+c_slex01 c_sfex02 c_gtxpac c_xwndws)
 
 set X11_option = ""
 
