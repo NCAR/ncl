@@ -17,6 +17,8 @@ LOCINCDIR	= ../../include
 MYNAME		= libncarg_ras.a
 INCLUDES	= ncarg_ras.h
 
+EUALHACK	= =
+
 #ifdef BuildRasterHDF
 HDF_OBJS =	hdf.o
 HDF_SRCS =	hdf.c
@@ -81,7 +83,10 @@ Library($(MYNAME),$(OBJS))
 
 dither.o:	ncarg_ras.h
 error.o:	ncarg_ras.h
-hdf.o:		ncarg_ras.h options.h
+
+hdf.o:		ncarg_ras.h options.h Makefile
+	$(CC) $(CFLAGS) -DTMPDIR$(EQUALHACK)'"$(TMPDIR)"' -c $*.c
+
 misc.o:		ncarg_ras.h
 nrif.o:		ncarg_ras.h nrif.h
 palette.o:	ncarg_ras.h

@@ -1,5 +1,5 @@
 /*
- *	$Id: hdf.c,v 1.2 1991-08-16 11:09:43 clyne Exp $
+ *	$Id: hdf.c,v 1.3 1991-08-19 13:47:04 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -39,6 +39,12 @@
 #include "dfgr.h"
 #include "ncarg_ras.h"
 #include "options.h"
+
+#ifndef	TMPDIR
+#define	TMPDIR	"/tmp"
+#endif	TMPDIR
+
+#define	TMPFILE	"/hdf.XXXXXX"
 
 static char	*FormatName = "hdf";
 
@@ -165,6 +171,14 @@ HDFOpenWrite(name, nx, ny, comment, encoding)
 
 	if (!strcmp(name, "stdout")) {
 		ras->fd = fileno(stdout);
+
+		/*
+		 * hdf routines will only write to a disk file
+		 */
+		name = malloc (strlen(TMPDIR) + strlen(TMPFILE) + 1);
+		(void) strcpy(name, TMPDIR);
+		(void) strcat(name, TMPFILE);
+		(void) mktemp(name);
 	}
 	else {
 		ras->fd = open(name, O_WRONLY | O_CREAT, 0644);
@@ -312,12 +326,43 @@ int
 HDFClose(ras)
 	Raster		*ras;
 {
+	int	status = RAS_OK;
+
+	/*
+	 * if we're supposed to be writing to stdout cat contents of tmp 
+	 * file to stdout.
+	 */
+	if (ras->fd == fileno(stdout)) {
+		char	*buf;
+		int	tmp_fd;
+
+		if ((buf = malloc (BUFSIZ)) == NULL) {
+			(void) RasterSetError(RAS_E_SYSTEM);
+			return(RAS_ERROR);
+		}
+
+		if ((tmp_fd = open(ras->name, O_RDONLY)) < 0 ) {
+			(void) RasterSetError(RAS_E_SYSTEM);
+			return(RAS_ERROR);
+		}
+
+		while ((status = read(tmp_fd, buf, BUFSIZ)) > 0) {
+			if ((status = write(ras->fd, buf, BUFSIZ)) < 0 ) {
+				break;
+			}
+		}
+		(void) close(tmp_fd);
+		(void) unlink(ras->name);
+		(void) free(buf);
+        }
+
 	free( (char *) ras->data);
 	free( (char *) ras->red);
 	free( (char *) ras->green);
 	free( (char *) ras->blue);
 	if ( ras->dep != (char *) NULL ) free( (char *) ras->dep);
-	return(RAS_OK);
+
+	return(status);
 }
 
 int
