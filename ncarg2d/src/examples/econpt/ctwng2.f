@@ -347,6 +347,19 @@ C
         CALL CTSETI ('CLU - CONTOUR LEVEL USE FLAG',1)
         CALL CTSETI ('AIA - AREA IDENTIFIER FOR AREA',1001)
 C
+C Set the point-interpolation flag for contours.  This is done because
+C the grid is quite coarse, resulting in rather large triangles in the
+C triangular mesh; this, in turn, leads to contour lines being drawn
+C with rather long line segments.  On viewpoint 3, near the edge of the
+C globe, this causes one contour line to cross another.  With 'PIT' set
+C to .01, points are interpolated along the contour lines in such a way
+C as to prevent any projected segment from having a length of more than
+C .01 times the width of the user window, so contour lines are projected
+C onto the map using more points, which prevents them from crossing one
+C another.
+C
+        CALL CTSETR ('PIT - MAPPING FLAG',.01)
+C
 C Set the area identifier for areas in "out-of-range" areas.
 C
 C       CALL CTSETI ('PAI',-2)
