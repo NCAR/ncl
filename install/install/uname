@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: uname,v 1.10 1996-07-09 19:59:44 haley Exp $
+#      $Id: uname,v 1.11 1997-01-29 15:30:49 haley Exp $
 #
 #########################################################################
 #									#
@@ -177,6 +177,9 @@ while($#argv)
 				breaksw
 			case	sun3*:
 				set arch = sun3
+				breaksw
+			case	i86pc:
+				set arch = PC
 				breaksw
 			case	sun2*:
 				set arch = sun2

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: rarch,v 1.7 1996-07-03 16:39:51 haley Exp $
+#      $Id: rarch,v 1.8 1997-01-29 15:30:48 haley Exp $
 #
 #########################################################################
 #									#
@@ -97,7 +97,11 @@ case LINUX:
 case SunOS:
 	switch ("$a[3]")
 	case	5*:
-		echo Solaris_Sun4
+        if ("$a[5]" == "i86pc") then
+			echo Solaris_PC
+		else
+			echo Solaris_Sun4
+		endif
 		exit 0
 	default:
 		switch("$a[5]")

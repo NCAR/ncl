@@ -1,0 +1,43 @@
+#!/bin/csh -f
+#
+#      $Id: paths.Solaris_PC,v 1.1 1997-01-29 15:31:00 haley Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		paths.Solaris_PC
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Tue Sep 29 17:05:36 MDT 1992
+#
+#	Description:	Set default installation paths for a PC running
+#                       Solaris. This script is sourced by the get_paths
+#                       script to set the variables bin_path, inc_path,
+#                       lib_path, and  man_path.
+#
+#	Usage:		paths.Solaris_PC
+#
+#	Environment:
+#
+#	Files:		get_paths : sources this script
+#
+#
+#	Options:
+#
+set bin_path = /usr/local/bin
+set inc_path = /usr/local/include
+set lib_path = /usr/local/lib
+set man_path = /usr/local/man
+set man1 = man1
+set man3 = man3
+set man5 = man5
+set man8 = man8
+exit 0
