@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.15 1997-09-30 01:13:24 dbrown Exp $
+ *      $Id: VectorField.c,v 1.16 1998-01-24 01:51:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -198,6 +198,7 @@ static NhlErrorTypes    CheckCopyVType(
 	NhlGenArray	*ga,
 	NhlGenArray	copy_ga,
 	NhlString	resource_name,
+        NhlBoolean	null_ok,
 	NhlString	entry_name
 #endif
 );
@@ -289,6 +290,7 @@ NhlClass NhlvectorFieldFloatClass = (NhlClass)
 static	NrmQuark	Qfloat  = NrmNULLQUARK;
 static	NrmQuark	Qint  = NrmNULLQUARK;
 static	NrmQuark	Qgen_array  = NrmNULLQUARK;
+static	NrmQuark	Qfloat_gen_array  = NrmNULLQUARK;
 static	NrmQuark	Qd_arr  = NrmNULLQUARK;
 static	NrmQuark	Qu_arr  = NrmNULLQUARK;
 static	NrmQuark	Qv_arr  = NrmNULLQUARK;
@@ -1330,7 +1332,7 @@ ValidCoordArray
 
 	if (ga->len_dimensions[0] != len_dim) {
 		e_text = 
-         "%s: irregular coordinate array %s requires %d elements: ignoring %s";
+		  "%s: coordinate array %s requires %d elements: defaulting";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  e_text,entry_name,name,len_dim,name);
 		return False;
@@ -1338,8 +1340,8 @@ ValidCoordArray
 
 	if (! Monotonic((float *)ga->data,ga->num_elements)) {
 		e_text = 
-                "%s: irregular coordinate array %s non-monotonic: ignoring %s";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+             "%s: irregular coordinate array %s non-monotonic: defaulting %s";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,name,name);
 		return False;
 	}
 	return True;
@@ -2234,13 +2236,22 @@ CvtGenVFObjToFloatVFObj
 	vffp->x_arr = NULL;
 	if (vfp->x_arr != NULL && vfp->x_arr->num_elements > 0) {
 		if ((x_arr = GenToFloatGenArray(vfp->x_arr)) == NULL) {
-			e_text = "%s: error converting XCoord data to float";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
+			e_text = 
+			  "%s: error converting %s to float; defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  e_text,entry_name,NhlNvfXArray);
+			ret = MIN(ret,NhlWARNING);
+			NhlFreeGenArray(vfp->x_arr);
+			vfp->x_arr = NULL;
 		}
 		if (ValidCoordArray(vfp,x_arr,vfXCOORD,entry_name)) {
 			NhlSetSArg(&sargs[nargs++],NhlNvfXArray,x_arr);
 			xirr = True;
+		}
+		else {
+			ret = MIN(ret,NhlWARNING);
+			NhlFreeGenArray(vfp->x_arr);
+			vfp->x_arr = NULL;
 		}
 	}
 
@@ -2270,13 +2281,22 @@ CvtGenVFObjToFloatVFObj
 	vffp->y_arr = NULL;
 	if (vfp->y_arr != NULL && vfp->y_arr->num_elements > 0) {
 		if ((y_arr = GenToFloatGenArray(vfp->y_arr)) == NULL) {
-			e_text = "%s: error converting YCoord data to float";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
+			e_text = 
+			  "%s: error converting %s to float; defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  e_text,entry_name,NhlNvfYArray);
+			ret = MIN(ret,NhlWARNING);
+			NhlFreeGenArray(vfp->y_arr);
+			vfp->y_arr = NULL;
 		}
 		if (ValidCoordArray(vfp,y_arr,vfYCOORD,entry_name)) {
 			NhlSetSArg(&sargs[nargs++],NhlNvfYArray,y_arr);
 			yirr = True;
+		}
+		else {
+			ret = MIN(ret,NhlWARNING);
+			NhlFreeGenArray(vfp->y_arr);
+			vfp->y_arr = NULL;
 		}
 	}
 
@@ -2522,6 +2542,7 @@ VectorFieldClassInitialize
 	Qfloat = NrmStringToQuark(NhlTFloat);
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qgen_array = NrmStringToQuark(NhlTGenArray);
+	Qfloat_gen_array = NrmStringToQuark(NhlTFloatGenArray);
 	Qd_arr  = NrmStringToQuark(NhlNvfDataArray);
 	Qu_arr  = NrmStringToQuark(NhlNvfUDataArray);
 	Qv_arr  = NrmStringToQuark(NhlNvfVDataArray);
@@ -2636,13 +2657,13 @@ VectorFieldInitialize
 	NhlVectorFieldLayer	vfl = (NhlVectorFieldLayer)new;
 	NhlVectorFieldLayerPart	*vfp = &(vfl->vfield);
 	NhlGenArray		ga;
+         _NhlConvertContext	context = NULL;
 
 	vfp->vffloat = NULL;
 	vfp->use_d_arr = False;
         vfp->up_to_date = False;
 
-	if (! vfp->d_arr &&
-	    (! vfp->u_arr || ! vfp->v_arr)) {
+	if (! vfp->d_arr && !(vfp->u_arr && vfp->v_arr)) {
 		e_text = 
      "%s: either %s or both %s and %s must be specified to create a %s object";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
@@ -2678,53 +2699,94 @@ VectorFieldInitialize
 				  NhlNvfUDataArray,NhlNvfVDataArray);
 			return NhlFATAL;
 		}
-		if (vfp->u_arr->len_dimensions[1] !=
-		    vfp->v_arr->len_dimensions[1]) {
+		if ( (vfp->u_arr->len_dimensions[0] !=
+                      vfp->v_arr->len_dimensions[0]) ||
+                     (vfp->u_arr->len_dimensions[1] !=
+                      vfp->v_arr->len_dimensions[1]) ) {
 			e_text = 
 			       "%s: dimensions of %s and %s are inconsistent";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNvfUDataArray,NhlNvfVDataArray);
 			return NhlFATAL;
 		}
-		else if ((vfp->u_arr = 
-			  _NhlCopyGenArray(vfp->u_arr,vfp->copy_arrays))
-			 == NULL) {
+		if ((vfp->u_arr =
+                     _NhlCopyGenArray(vfp->u_arr,vfp->copy_arrays)) == NULL) {
 			e_text = "%s: dynamic memory allocation error";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
 		}
-		else if ((vfp->v_arr = 
-			  _NhlCopyGenArray(vfp->v_arr,vfp->copy_arrays))
-			 == NULL) {
+		if ((vfp->v_arr = 
+                     _NhlCopyGenArray(vfp->v_arr,vfp->copy_arrays)) == NULL) {
 			e_text = "%s: dynamic memory allocation error";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
 		}
 		vfp->len_dims[1] = vfp->u_arr->len_dimensions[1];
-		vfp->len_dims[0] = MIN(vfp->u_arr->len_dimensions[0],
-				       vfp->v_arr->len_dimensions[0]);
+		vfp->len_dims[0] = vfp->u_arr->len_dimensions[0];
+	}
+        
+        if (vfp->x_arr) {
+                NrmValue from, to;
+                NhlGenArray fltga;
+                
+                if (! context)
+                        context = _NhlCreateConvertContext(new);
+                from.size = sizeof(NhlGenArray);
+                from.data.ptrval = vfp->x_arr;
+                to.size = sizeof(NhlGenArray);
+                to.data.ptrval = &fltga;
+                subret = _NhlConvertData(context,Qgen_array,
+                                         Qfloat_gen_array,&from,&to);
+                if ((ret = MIN(ret,subret)) < NhlWARNING)
+                        vfp->x_arr = NULL;
+                else if (! ValidCoordArray(vfp,fltga,vfXCOORD,entry_name)) {
+                        vfp->x_arr = NULL;
+                }
+                else {
+                        if ((vfp->x_arr = _NhlCopyGenArray
+                             (vfp->x_arr,vfp->copy_arrays)) == NULL) {
+                                e_text = "%s: dynamic memory allocation error";
+                                NhlPError(NhlFATAL,
+                                          NhlEUNKNOWN,e_text,entry_name);
+                                return NhlFATAL;
+                        }
+                }
 	}
 
-	if (vfp->x_arr != NULL && 
-	    (vfp->x_arr =
-	     _NhlCopyGenArray(vfp->x_arr,vfp->copy_arrays)) == NULL) {
-		e_text = "%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
+        if (vfp->y_arr) {
+                NrmValue from, to;
+                NhlGenArray fltga;
+                
+                if (! context)
+                        context = _NhlCreateConvertContext(new);
+                from.size = sizeof(NhlGenArray);
+                from.data.ptrval = vfp->y_arr;
+                to.size = sizeof(NhlGenArray);
+                to.data.ptrval = &fltga;
+                subret = _NhlConvertData(context,Qgen_array,
+                                         Qfloat_gen_array,&from,&to);
+                if ((ret = MIN(ret,subret)) < NhlWARNING)
+                        vfp->y_arr = NULL;
+                else if (! ValidCoordArray(vfp,fltga,vfYCOORD,entry_name)) {
+                        vfp->y_arr = NULL;
+                }
+                else {
+                        if ((vfp->y_arr = _NhlCopyGenArray
+                             (vfp->y_arr,vfp->copy_arrays)) == NULL) {
+                                e_text = "%s: dynamic memory allocation error";
+                                NhlPError(NhlFATAL,
+                                          NhlEUNKNOWN,e_text,entry_name);
+                                return NhlFATAL;
+                        }
+                }
 	}
-
-	if (vfp->y_arr != NULL && 
-	    (vfp->y_arr =
-	     _NhlCopyGenArray(vfp->y_arr,vfp->copy_arrays)) == NULL) {
-		e_text = "%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
+        if (context)
+                _NhlFreeConvertContext(context);
 
 	if (vfp->missing_u_value != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->missing_u_value,
-					NhlNvfMissingUValueV,entry_name);
+					NhlNvfMissingUValueV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->missing_u_value = ga;
@@ -2732,7 +2794,7 @@ VectorFieldInitialize
 	if (vfp->missing_v_value != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->missing_v_value,
-					NhlNvfMissingVValueV,entry_name);
+					NhlNvfMissingVValueV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->missing_v_value = ga;
@@ -2741,7 +2803,7 @@ VectorFieldInitialize
 	if (vfp->mag_min != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->mag_min,
-					NhlNvfMagMinV,entry_name);
+					NhlNvfMagMinV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->mag_min = ga;
@@ -2749,7 +2811,7 @@ VectorFieldInitialize
 	if (vfp->mag_max != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->mag_max,
-					NhlNvfMagMaxV,entry_name);
+					NhlNvfMagMaxV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->mag_max = ga;
@@ -2757,7 +2819,7 @@ VectorFieldInitialize
 	if (vfp->u_min != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->u_min,
-					NhlNvfUMinV,entry_name);
+					NhlNvfUMinV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->u_min = ga;
@@ -2765,7 +2827,7 @@ VectorFieldInitialize
 	if (vfp->u_max != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->u_max,
-					NhlNvfUMaxV,entry_name);
+					NhlNvfUMaxV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->u_max = ga;
@@ -2773,7 +2835,7 @@ VectorFieldInitialize
 	if (vfp->v_min != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->v_min,
-					NhlNvfVMinV,entry_name);
+					NhlNvfVMinV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->v_min = ga;
@@ -2781,7 +2843,7 @@ VectorFieldInitialize
 	if (vfp->v_max != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->v_max,
-					NhlNvfVMaxV,entry_name);
+					NhlNvfVMaxV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->v_max = ga;
@@ -2790,7 +2852,7 @@ VectorFieldInitialize
 	if (vfp->x_start != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->x_start,
-					NhlNvfXCStartV,entry_name);
+					NhlNvfXCStartV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->x_start = ga;
@@ -2798,7 +2860,7 @@ VectorFieldInitialize
 	if (vfp->x_end != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->x_end,
-					NhlNvfXCEndV,entry_name);
+					NhlNvfXCEndV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->x_end = ga;
@@ -2808,7 +2870,7 @@ VectorFieldInitialize
 	if (vfp->y_start != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->y_start,
-					NhlNvfYCStartV,entry_name);
+					NhlNvfYCStartV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->y_start = ga;
@@ -2816,7 +2878,7 @@ VectorFieldInitialize
 	if (vfp->y_end != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->y_end,
-					NhlNvfYCEndV,entry_name);
+					NhlNvfYCEndV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->y_end = ga;
@@ -2826,7 +2888,7 @@ VectorFieldInitialize
 	if (vfp->x_subset_start != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->x_subset_start,
-					NhlNvfXCStartSubsetV,entry_name);
+					NhlNvfXCStartSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->x_subset_start = ga;
@@ -2834,7 +2896,7 @@ VectorFieldInitialize
 	if (vfp->x_subset_end != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->x_subset_end,
-					NhlNvfXCEndSubsetV,entry_name);
+					NhlNvfXCEndSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->x_subset_end = ga;
@@ -2844,7 +2906,7 @@ VectorFieldInitialize
 	if (vfp->y_subset_start != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->y_subset_start,
-					NhlNvfYCStartSubsetV,entry_name);
+					NhlNvfYCStartSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->y_subset_start = ga;
@@ -2852,7 +2914,7 @@ VectorFieldInitialize
 	if (vfp->y_subset_end != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->y_subset_end,
-					NhlNvfYCEndSubsetV,entry_name);
+					NhlNvfYCEndSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->y_subset_end = ga;
@@ -2903,23 +2965,29 @@ VectorFieldSetValues
 	NhlVectorFieldLayerPart	*ovfp = &(ovfl->vfield);
 	NhlGenArray		ga;
 	NhlBoolean		status = False;
+        _NhlConvertContext	context = NULL;
 
-	if (vfp->use_d_arr && vfp->d_arr != ovfp->d_arr) {
-		if (vfp->d_arr->num_dimensions != 3) {
-			e_text = "%s: invalid number of dimensions in %s";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-				  entry_name,NhlNvfDataArray);
-			return NhlFATAL;
+	if (vfp->d_arr != ovfp->d_arr) {
+                NhlBoolean reset = False;
+		if (! vfp->d_arr && ! (vfp->x_arr && vfp->y_arr)) {
+                        e_text = 
+	    "%s: the %s resource cannot be set NULL, restoring previous value";
+                        NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+                                  entry_name,NhlNvfDataArray);
+                        reset = True;
 		}
-		if (vfp->d_arr == NULL) {
-			e_text = 
-			   "%s:The %s resource cannot be set NULL: resetting";
+		else if (vfp->d_arr->num_dimensions != 3) {
+			e_text =
+            "%s: invalid number of dimensions in %s, restoring previous value";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 				  entry_name,NhlNvfDataArray);
-			ret = NhlWARNING;
-			vfp->d_arr = ovfp->d_arr;
+                        reset = True;
 		}
-		else {
+                if (reset) {
+                        ret = NhlWARNING;
+			vfp->d_arr = ovfp->d_arr;
+                }
+		else if (vfp->d_arr) {
 			NhlFreeGenArray(ovfp->d_arr);
 			if ((ga = 
 			     _NhlCopyGenArray(vfp->d_arr,
@@ -2932,102 +3000,166 @@ VectorFieldSetValues
 			vfp->d_arr = ga;
 			status = True;
 		}
-		vfp->use_d_arr = True;
-		vfp->len_dims[0] = vfp->d_arr->len_dimensions[1];
-		vfp->len_dims[1] = vfp->d_arr->len_dimensions[2];
 	}
-	else if (vfp->u_arr != ovfp->u_arr || vfp->v_arr != ovfp->v_arr) {
-		if (vfp->u_arr->num_dimensions != 2 || 
-		    vfp->v_arr->num_dimensions != 2) {
-			e_text = 
-			       "%s: invalid number of dimensions in %s or %s";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNvfUDataArray,NhlNvfVDataArray);
-			return NhlFATAL;
-		}
-		if (vfp->u_arr->len_dimensions[1] !=
-		    vfp->v_arr->len_dimensions[1]) {
-			e_text = 
-			       "%s: dimensions of %s and %s are inconsistent";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNvfUDataArray,NhlNvfVDataArray);
-			return NhlFATAL;
-		}
-		if (vfp->u_arr == NULL) {
-			e_text = "%s: %s cannot be set NULL: resetting";
+        
+        if (! vfp->d_arr) {
+                vfp->use_d_arr = False;
+        }
+        else {
+                vfp->use_d_arr = True;
+                vfp->len_dims[0] = vfp->d_arr->len_dimensions[1];
+                vfp->len_dims[1] = vfp->d_arr->len_dimensions[2];
+        }
+        
+	if (! vfp->use_d_arr &&
+            (vfp->u_arr != ovfp->u_arr || vfp->v_arr != ovfp->v_arr)) {
+                NhlBoolean reset = False;
+		if (! vfp->u_arr) {
+                        e_text =
+                        "%s: %s cannot be set NULL: restoring previous values";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNvfUDataArray);
-			ret = NhlWARNING;
-			vfp->u_arr = ovfp->u_arr;
+                        reset = True;
 		}
-		else {
-			NhlFreeGenArray(ovfp->u_arr);
-			if ((ga = 
-			     _NhlCopyGenArray(vfp->u_arr,
-					      vfp->copy_arrays)) == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return NhlFATAL;
-			}
-			vfp->u_arr = ga;
-			status = True;
-		}
-		if (vfp->v_arr == NULL) {
-			e_text = "%s: %s cannot be set NULL: resetting";
+		if (! vfp->v_arr) {
+                        e_text =
+                        "%s: %s cannot be set NULL: restoring previous values";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNvfVDataArray);
+                        reset = True;
+		}
+		if (! reset &&
+                    (vfp->u_arr->num_dimensions != 2 || 
+		    vfp->v_arr->num_dimensions != 2)) {
+			e_text =
+     "%s: invalid number of dimensions in %s or %s, restoring previous values";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNvfUDataArray,NhlNvfVDataArray);
+                        reset = True;
+		}
+		if (! reset &&
+                    ((vfp->u_arr->len_dimensions[0] !=
+                     vfp->v_arr->len_dimensions[0]) ||
+                    (vfp->u_arr->len_dimensions[1] !=
+                     vfp->v_arr->len_dimensions[1])) ) {
+			e_text = 
+     "%s: dimensions of %s and %s are inconsistent, restoring previous values";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNvfUDataArray,NhlNvfVDataArray);
+                        reset = True;
+		}
+                if (reset) {
 			ret = NhlWARNING;
+			vfp->u_arr = ovfp->u_arr;
 			vfp->v_arr = ovfp->v_arr;
-		}
+                }
 		else {
-			NhlFreeGenArray(ovfp->v_arr);
-			if ((ga = 
-			     _NhlCopyGenArray(vfp->v_arr,
-					      vfp->copy_arrays)) == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return NhlFATAL;
-			}
-			vfp->v_arr = ga;
-			status = True;
-		}
-		vfp->len_dims[1] = vfp->u_arr->len_dimensions[1];
-		vfp->len_dims[0] = MIN(vfp->u_arr->len_dimensions[0],
-				       vfp->v_arr->len_dimensions[0]);
+                        if (vfp->u_arr != ovfp->u_arr) {
+                                NhlFreeGenArray(ovfp->u_arr);
+                                if ((ga = _NhlCopyGenArray
+                                     (vfp->u_arr,vfp->copy_arrays)) == NULL) {
+                                        e_text =
+                                         "%s: dynamic memory allocation error";
+                                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                                  e_text,entry_name);
+                                        return NhlFATAL;
+                                }
+                                vfp->u_arr = ga;
+                                status = True;
+                        }
+                        if (vfp->v_arr != ovfp->v_arr) {
+                                NhlFreeGenArray(ovfp->v_arr);
+                                if ((ga = _NhlCopyGenArray
+                                     (vfp->v_arr,vfp->copy_arrays)) == NULL) {
+                                        e_text =
+                                         "%s: dynamic memory allocation error";
+                                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                                  e_text,entry_name);
+                                        return NhlFATAL;
+                                }
+                                vfp->v_arr = ga;
+                                status = True;
+                        }
+                }
+                if (! vfp->use_d_arr) {
+                        vfp->len_dims[1] = vfp->u_arr->len_dimensions[1];
+                        vfp->len_dims[0] = vfp->u_arr->len_dimensions[0];
+                }
 	}
 
-	if (vfp->x_arr != ovfp->x_arr) {
-		NhlFreeGenArray(ovfp->x_arr);
-		if (vfp->x_arr != NULL && 
-		    (ga = _NhlCopyGenArray(vfp->x_arr,
-					   vfp->copy_arrays)) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-		vfp->x_arr = ga;
-		status = True;
+	if (!vfp->x_arr && (vfp->x_arr != ovfp->x_arr)) {
+                NhlFreeGenArray(ovfp->x_arr);
+                status = True;
+        }
+        else if (vfp->x_arr != ovfp->x_arr) {
+                NrmValue from, to;
+                NhlGenArray fltga;
+                
+                if (! context)
+                        context = _NhlCreateConvertContext(new);
+                from.size = sizeof(NhlGenArray);
+                from.data.ptrval = vfp->x_arr;
+                to.size = sizeof(NhlGenArray);
+                to.data.ptrval = &fltga;
+                subret = _NhlConvertData(context,Qgen_array,
+                                         Qfloat_gen_array,&from,&to);
+                if ((ret = MIN(ret,subret)) < NhlWARNING)
+                        vfp->x_arr = ovfp->x_arr;
+                else if (! ValidCoordArray(vfp,fltga,vfXCOORD,entry_name)) {
+                        vfp->x_arr = ovfp->x_arr;
+                }
+                else {
+                        NhlFreeGenArray(ovfp->x_arr);
+                        if ((vfp->x_arr = _NhlCopyGenArray
+                             (vfp->x_arr,vfp->copy_arrays)) == NULL) {
+                                e_text = "%s: dynamic memory allocation error";
+                                NhlPError(NhlFATAL,
+                                          NhlEUNKNOWN,e_text,entry_name);
+                                return NhlFATAL;
+                        }
+                }
+                status = True;
 	}
-
-	if (vfp->y_arr != ovfp->y_arr) {
-		NhlFreeGenArray(ovfp->y_arr);
-		if (vfp->y_arr != NULL && 
-		    (ga = _NhlCopyGenArray(vfp->y_arr,
-					   vfp->copy_arrays)) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-		vfp->y_arr = ga;
-		status = True;
+	if (!vfp->y_arr && (vfp->y_arr != ovfp->y_arr)) {
+                NhlFreeGenArray(ovfp->y_arr);
+                status = True;
+        }
+        else if (vfp->y_arr != ovfp->y_arr) {
+                NrmValue from, to;
+                NhlGenArray fltga;
+                
+                if (! context)
+                        context = _NhlCreateConvertContext(new);
+                from.size = sizeof(NhlGenArray);
+                from.data.ptrval = vfp->y_arr;
+                to.size = sizeof(NhlGenArray);
+                to.data.ptrval = &fltga;
+                subret = _NhlConvertData(context,Qgen_array,
+                                         Qfloat_gen_array,&from,&to);
+                if ((ret = MIN(ret,subret)) < NhlWARNING)
+                        vfp->y_arr = ovfp->y_arr;
+                else if (! ValidCoordArray(vfp,fltga,vfYCOORD,entry_name)) {
+                        vfp->y_arr = ovfp->y_arr;
+                }
+                else {
+                        NhlFreeGenArray(ovfp->y_arr);
+                        if ((vfp->y_arr = _NhlCopyGenArray
+                             (vfp->y_arr,vfp->copy_arrays)) == NULL) {
+                                e_text = "%s: dynamic memory allocation error";
+                                NhlPError(NhlFATAL,
+                                          NhlEUNKNOWN,e_text,entry_name);
+                                return NhlFATAL;
+                        }
+                }
+                status = True;
 	}
+        if (context)
+                _NhlFreeConvertContext(context);
 
 	if (vfp->missing_u_value != ovfp->missing_u_value) {
 		subret = CheckCopyVType(&ovfp->missing_u_value,
 					vfp->missing_u_value,
-					NhlNvfMissingUValueV,entry_name);
+					NhlNvfMissingUValueV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->missing_u_value = ovfp->missing_u_value;
@@ -3036,7 +3168,7 @@ VectorFieldSetValues
 	if (vfp->missing_v_value != ovfp->missing_v_value) {
 		subret = CheckCopyVType(&ovfp->missing_v_value,
 					vfp->missing_v_value,
-					NhlNvfMissingVValueV,entry_name);
+					NhlNvfMissingVValueV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->missing_v_value = ovfp->missing_v_value;
@@ -3045,7 +3177,7 @@ VectorFieldSetValues
 
 	if (vfp->mag_min != ovfp->mag_min) {
 		subret = CheckCopyVType(&ovfp->mag_min,vfp->mag_min,
-					NhlNvfMagMinV,entry_name);
+					NhlNvfMagMinV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->mag_min = ovfp->mag_min;
@@ -3053,7 +3185,7 @@ VectorFieldSetValues
 	}
 	if (vfp->mag_max != ovfp->mag_max) {
 		subret = CheckCopyVType(&ovfp->mag_max,vfp->mag_max,
-					NhlNvfMagMaxV,entry_name);
+					NhlNvfMagMaxV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->mag_max = ovfp->mag_max;
@@ -3062,7 +3194,7 @@ VectorFieldSetValues
 
 	if (vfp->u_min != ovfp->u_min) {
 		subret = CheckCopyVType(&ovfp->u_min,vfp->u_min,
-					NhlNvfUMinV,entry_name);
+					NhlNvfUMinV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->u_min = ovfp->u_min;
@@ -3070,7 +3202,7 @@ VectorFieldSetValues
 	}
 	if (vfp->u_max != ovfp->u_max) {
 		subret = CheckCopyVType(&ovfp->u_max,vfp->u_max,
-					NhlNvfUMaxV,entry_name);
+					NhlNvfUMaxV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->u_max = ovfp->u_max;
@@ -3079,7 +3211,7 @@ VectorFieldSetValues
 
 	if (vfp->v_min != ovfp->v_min) {
 		subret = CheckCopyVType(&ovfp->v_min,vfp->v_min,
-					NhlNvfVMinV,entry_name);
+					NhlNvfVMinV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->v_min = ovfp->v_min;
@@ -3087,7 +3219,7 @@ VectorFieldSetValues
 	}
 	if (vfp->v_max != ovfp->v_max) {
 		subret = CheckCopyVType(&ovfp->v_max,vfp->v_max,
-					NhlNvfVMaxV,entry_name);
+					NhlNvfVMaxV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->v_max = ovfp->v_max;
@@ -3096,7 +3228,7 @@ VectorFieldSetValues
 
 	if (vfp->x_start != ovfp->x_start) {
 		subret = CheckCopyVType(&ovfp->x_start,vfp->x_start,
-					NhlNvfXCStartV,entry_name);
+					NhlNvfXCStartV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->x_start = ovfp->x_start;
@@ -3104,7 +3236,7 @@ VectorFieldSetValues
 	}
 	if (vfp->x_end != ovfp->x_end) {
 		subret = CheckCopyVType(&ovfp->x_end,vfp->x_end,
-					NhlNvfXCEndV,entry_name);
+					NhlNvfXCEndV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->x_end = ovfp->x_end;
@@ -3113,7 +3245,7 @@ VectorFieldSetValues
 
 	if (vfp->y_start != ovfp->y_start) {
 		subret = CheckCopyVType(&ovfp->y_start,vfp->y_start,
-					NhlNvfYCStartV,entry_name);
+					NhlNvfYCStartV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->y_start = ovfp->y_start;
@@ -3121,7 +3253,7 @@ VectorFieldSetValues
 	}
 	if (vfp->y_end != ovfp->y_end) {
 		subret = CheckCopyVType(&ovfp->y_end,vfp->y_end,
-					NhlNvfYCEndV,entry_name);
+					NhlNvfYCEndV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->y_end = ovfp->y_end;
@@ -3132,7 +3264,7 @@ VectorFieldSetValues
 	if (vfp->x_subset_start != ovfp->x_subset_start) {
 		subret = CheckCopyVType(&ovfp->x_subset_start,
 					vfp->x_subset_start,
-					NhlNvfXCStartSubsetV,entry_name);
+					NhlNvfXCStartSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->x_subset_start = ovfp->x_subset_start;
@@ -3140,7 +3272,7 @@ VectorFieldSetValues
 	}
 	if (vfp->x_subset_end != ovfp->x_subset_end) {
 		subret = CheckCopyVType(&ovfp->x_subset_end,vfp->x_subset_end,
-					NhlNvfXCEndSubsetV,entry_name);
+					NhlNvfXCEndSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->x_subset_end = ovfp->x_subset_end;
@@ -3151,7 +3283,7 @@ VectorFieldSetValues
 	if (vfp->y_subset_start != ovfp->y_subset_start) {
 		subret = CheckCopyVType(&ovfp->y_subset_start,
 					vfp->y_subset_start,
-					NhlNvfYCStartSubsetV,entry_name);
+					NhlNvfYCStartSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->y_subset_start = ovfp->y_subset_start;
@@ -3159,7 +3291,7 @@ VectorFieldSetValues
 	}
 	if (vfp->y_subset_end != ovfp->y_subset_end) {
 		subret = CheckCopyVType(&ovfp->y_subset_end,vfp->y_subset_end,
-					NhlNvfYCEndSubsetV,entry_name);
+					NhlNvfYCEndSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->y_subset_end = ovfp->y_subset_end;
@@ -3291,7 +3423,7 @@ static NhlPointer CreateData
  * Side Effects:
  */
 
-static NhlVectorFieldFloatLayer ForceConvert
+static NhlErrorTypes ForceConvert
 #if	NhlNeedProto
 (
 	NhlVectorFieldLayer vfl
@@ -3302,6 +3434,7 @@ static NhlVectorFieldFloatLayer ForceConvert
 #endif
 {
 	char *e_text, *entry_name = "VectorFieldGetValues";
+        NhlVectorFieldLayerPart *vfp = &(vfl->vfield);
 	int id;
 	NhlVectorFieldFloatLayer vffl = NULL;
 	NhlErrorTypes ret = NhlNOERROR;
@@ -3319,9 +3452,11 @@ static NhlVectorFieldFloatLayer ForceConvert
 	    (vffl = (NhlVectorFieldFloatLayer) _NhlGetLayer(id)) == NULL) {
 		e_text = "%s: error converting NhlVectorFieldLayer";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+                return ret;
 	}
+        vfp->vffloat = vffl;
 
-	return vffl;
+	return ret;
 }
 
 /*
@@ -3365,7 +3500,7 @@ static NhlErrorTypes    VectorFieldGetValues
         NhlVectorFieldLayer vfl = (NhlVectorFieldLayer)layer;
         NhlVectorFieldLayerPart *vfp = &(vfl->vfield);
 	NhlVectorFieldFloatLayerPart *vffp = NULL;
-	NhlErrorTypes ret = NhlNOERROR;
+	NhlErrorTypes subret = NhlNOERROR,ret = NhlNOERROR;
         NhlGenArray ga;
         char *e_text, *entry_name = "VectorFieldGetValues";
         int i;
@@ -3380,13 +3515,12 @@ static NhlErrorTypes    VectorFieldGetValues
 	int		ival;
 	float		fval;
 
-        if (! (vfp->vffloat && vfp->up_to_date)) {
-                vfp->vffloat = ForceConvert(vfl);
-                if (vfp->vffloat == NULL)
-                        return NhlFATAL;
+	if (! (vfp->vffloat && vfp->up_to_date)) {
+		subret = ForceConvert(vfl);
+                if ((ret = MIN(subret,ret))  < NhlWARNING)
+                        return ret;
         }
         vffp = &vfp->vffloat->vfieldfloat;
-        
 
         for( i = 0; i< num_args; i++ ) {
 		ga = NULL;
@@ -3455,6 +3589,16 @@ static NhlErrorTypes    VectorFieldGetValues
                         typeQ = vfp->x_arr->typeQ;
                         size = vfp->x_arr->size;
                 }
+                else if (resQ == Qx_arr) {
+                            /* may be set NULL during the force convert,
+                               but still would have had a value during
+                               _NhlGetValues
+                             */
+			*(NhlGenArray *)args[i].value.ptrval = NULL;
+			*args[i].type_ret = Qgen_array;
+			*args[i].size_ret = sizeof(NhlGenArray);
+			*args[i].free_func = NULL;
+                }
                 else if (resQ == Qy_arr && vfp->y_arr) {
 			do_genarray = True;
 			ndim = 1;
@@ -3469,6 +3613,16 @@ static NhlErrorTypes    VectorFieldGetValues
                         }
                         typeQ = vfp->y_arr->typeQ;
                         size = vfp->y_arr->size;
+                }
+                else if (resQ == Qy_arr) {
+                            /* may be set NULL during the force convert,
+                               but still would have had a value during
+                               _NhlGetValues
+                             */
+			*(NhlGenArray *)args[i].value.ptrval = NULL;
+			*args[i].type_ret = Qgen_array;
+			*args[i].size_ret = sizeof(NhlGenArray);
+			*args[i].free_func = NULL;
                 }
                 else if (resQ == Qmissing_u_value) {
 			if (vfp->single_missing  && ! vfp->missing_u_value
@@ -3546,8 +3700,8 @@ static NhlErrorTypes    VectorFieldGetValues
 				if ((data = CopyData(vfp->mag_max,resQ))
 				    == NULL)
 					return NhlFATAL;
-				typeQ = vfp->mag_min->typeQ;
-				size = vfp->mag_min->size;
+				typeQ = vfp->mag_max->typeQ;
+				size = vfp->mag_max->size;
 			}
 			else {
 				if ((data = 
@@ -3584,8 +3738,8 @@ static NhlErrorTypes    VectorFieldGetValues
 				if ((data = CopyData(vfp->u_max,resQ))
 				    == NULL)
 					return NhlFATAL;
-				typeQ = vfp->u_min->typeQ;
-				size = vfp->u_min->size;
+				typeQ = vfp->u_max->typeQ;
+				size = vfp->u_max->size;
 			}
 			else {
 				if ((data = 
@@ -3622,8 +3776,8 @@ static NhlErrorTypes    VectorFieldGetValues
 				if ((data = CopyData(vfp->v_max,resQ))
 				    == NULL)
 					return NhlFATAL;
-				typeQ = vfp->v_min->typeQ;
-				size = vfp->v_min->size;
+				typeQ = vfp->v_max->typeQ;
+				size = vfp->v_max->size;
 			}
 			else {
 				if ((data = 
@@ -4020,26 +4174,37 @@ static NhlErrorTypes    CheckCopyVType
 	NhlGenArray	*ga,
 	NhlGenArray	copy_ga,
 	NhlString	resource_name,
+        NhlBoolean	null_ok,
 	NhlString	entry_name
 )
 #else
-(ga,copy_ga,resource_name,entry_name)
+(ga,copy_ga,resource_name,null_ok,entry_name)
 	NhlGenArray	*ga;
 	NhlGenArray	copy_ga;
 	NhlString	resource_name;
+        NhlBoolean	null_ok;
 	NhlString	entry_name;
 #endif
 {
 	char		*e_text;
 
-	if (copy_ga == NULL ||
-	    copy_ga->num_elements != 1 || 
-	    copy_ga->num_dimensions != 1) {
+/*
+ * if null_ok and the copy genarray is Null, sets the return genarray to
+ * null, after freeing it if necessary. If not null_ok and the copy genarray
+ * is null a warning is issued and the return genarray is returned unaltered.
+ */
+        if (null_ok && copy_ga == NULL) {
+                if (*ga != NULL) NhlFreeGenArray(*ga);
+                *ga = NULL;
+                return NhlNOERROR;
+        }
+        else if (copy_ga == NULL ||
+                 copy_ga->num_elements != 1 || 
+                 copy_ga->num_dimensions != 1) {
 		e_text = "%s: variable type resource %s invalid";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  resource_name);
-		*ga = NULL;
-		return NhlFATAL;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          resource_name);
+		return NhlWARNING;
 	}
 
 	if (*ga != NULL) NhlFreeGenArray(*ga);

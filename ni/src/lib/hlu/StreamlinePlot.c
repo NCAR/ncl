@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.37 1997-10-03 20:34:48 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.38 1998-01-24 01:51:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4683,6 +4683,9 @@ void (_NHLCALLF(hlustmpta,HLUSTMPTA))
 		}
 		errno = 0;
 		*ta = atan2((ye-*ynd),(xe-*xnd));
+                if (errno)
+                        *ist = -6;
+#if 0                
 		if (errno == EDOM)
 			printf("ye %f *ynd %f xe %f *xnd %f\n",
 			       ye,*ynd,xe,*xnd);
@@ -4690,6 +4693,7 @@ void (_NHLCALLF(hlustmpta,HLUSTMPTA))
 			printf("*ta %f\n",*ta);
 		else if (errno != 0)
 			printf ("errno - %d\n",errno);
+#endif                
 	}
 	else {
 		float cos_lat;
@@ -4762,6 +4766,9 @@ void (_NHLCALLF(hlustmpta,HLUSTMPTA))
 		}
 		errno = 0;
 		*ta = atan2(sign*yd,sign*xd);
+                if (errno)
+                        *ist = -6;
+#if 0                
 		if (errno == EDOM)
 			printf("ytf %f *ynd %f xtf %f *xnd %f\n",
 			       ytf,*ynd,xtf,*xnd);
@@ -4769,6 +4776,7 @@ void (_NHLCALLF(hlustmpta,HLUSTMPTA))
 			printf("*ta %f\n",*ta);
 		else if (errno != 0)
 			printf ("errno - %d\n",errno);
+#endif                
 	}
 
 	return;

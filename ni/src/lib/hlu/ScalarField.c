@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.28 1998-01-22 17:52:35 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.29 1998-01-24 01:51:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -174,6 +174,7 @@ static NhlErrorTypes    CheckCopyVType(
 	NhlGenArray	*ga,
 	NhlGenArray	copy_ga,
 	NhlString	resource_name,
+        NhlBoolean	null_ok,
 	NhlString	entry_name
 #endif
 );
@@ -265,6 +266,7 @@ NhlClass NhlscalarFieldFloatClass = (NhlClass)
 static	NrmQuark	Qfloat  = NrmNULLQUARK;
 static	NrmQuark	Qint  = NrmNULLQUARK;
 static	NrmQuark	Qgen_array  = NrmNULLQUARK;
+static	NrmQuark	Qfloat_gen_array  = NrmNULLQUARK;
 static	NrmQuark	Qd_arr  = NrmNULLQUARK;
 static	NrmQuark	Qx_arr  = NrmNULLQUARK;
 static	NrmQuark	Qy_arr  = NrmNULLQUARK;
@@ -1815,6 +1817,7 @@ CvtGenSFObjToFloatSFObj
 			xirr = True;
 		}
 		else {
+			ret = MIN(ret,NhlWARNING);
 			NhlFreeGenArray(sfp->x_arr);
 			sfp->x_arr = NULL;
 		}
@@ -1859,6 +1862,7 @@ CvtGenSFObjToFloatSFObj
 			yirr = True;
 		}
 		else {
+			ret = MIN(ret,NhlWARNING);
 			NhlFreeGenArray(sfp->y_arr);
 			sfp->y_arr = NULL;
 		}
@@ -2046,6 +2050,7 @@ ScalarFieldClassInitialize
 	Qfloat = NrmStringToQuark(NhlTFloat);
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qgen_array = NrmStringToQuark(NhlTGenArray);
+	Qfloat_gen_array = NrmStringToQuark(NhlTFloatGenArray);
 	Qd_arr  = NrmStringToQuark(NhlNsfDataArray);
 	Qx_arr  = NrmStringToQuark(NhlNsfXArray);
 	Qy_arr  = NrmStringToQuark(NhlNsfYArray);
@@ -2153,6 +2158,7 @@ ScalarFieldInitialize
 	NhlScalarFieldLayer	sfl = (NhlScalarFieldLayer)new;
 	NhlScalarFieldLayerPart	*sfp = &(sfl->sfield);
 	NhlGenArray		ga;
+         _NhlConvertContext	context = NULL;
 
 	sfp->sffloat = NULL;
         sfp->up_to_date = False;
@@ -2170,49 +2176,69 @@ ScalarFieldInitialize
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-
-	if (sfp->x_arr != NULL) {
-	  /* do a fast check on the array validity */
-		if (sfp->x_arr->len_dimensions[0] != 
-		    sfp->d_arr->len_dimensions[1]) {
-			e_text = 
-		 "%s: coordinate array %s requires %d elements: defaulting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNsfXArray,sfp->d_arr->len_dimensions[1]);
+        
+        if (sfp->x_arr) {
+                NrmValue from, to;
+                NhlGenArray fltga;
+                
+                if (! context)
+                        context = _NhlCreateConvertContext(new);
+                from.size = sizeof(NhlGenArray);
+                from.data.ptrval = sfp->x_arr;
+                to.size = sizeof(NhlGenArray);
+                to.data.ptrval = &fltga;
+                subret = _NhlConvertData(context,Qgen_array,
+                                         Qfloat_gen_array,&from,&to);
+                if ((ret = MIN(ret,subret)) < NhlWARNING)
                         sfp->x_arr = NULL;
-			ret = MIN(ret,NhlWARNING);
-		}
-                else if ((sfp->x_arr = _NhlCopyGenArray
-                          (sfp->x_arr,sfp->copy_arrays)) == NULL) {
-                        e_text = "%s: dynamic memory allocation error";
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-                        return NhlFATAL;
+                else if (! ValidCoordArray(sfp,fltga,sfXCOORD,entry_name)) {
+                        sfp->x_arr = NULL;
+                }
+                else {
+                        if ((sfp->x_arr = _NhlCopyGenArray
+                             (sfp->x_arr,sfp->copy_arrays)) == NULL) {
+                                e_text = "%s: dynamic memory allocation error";
+                                NhlPError(NhlFATAL,
+                                          NhlEUNKNOWN,e_text,entry_name);
+                                return NhlFATAL;
+                        }
                 }
 	}
 
-	if (sfp->y_arr != NULL) {
-	  /* do a fast check on the array validity */
-		if (sfp->y_arr->len_dimensions[0] != 
-		    sfp->d_arr->len_dimensions[0]) {
-			e_text = 
-		 "%s: coordinate array %s requires %d elements: defaulting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNsfYArray,sfp->d_arr->len_dimensions[1]);
+        if (sfp->y_arr) {
+                NrmValue from, to;
+                NhlGenArray fltga;
+                
+                if (! context)
+                        context = _NhlCreateConvertContext(new);
+                from.size = sizeof(NhlGenArray);
+                from.data.ptrval = sfp->y_arr;
+                to.size = sizeof(NhlGenArray);
+                to.data.ptrval = &fltga;
+                subret = _NhlConvertData(context,Qgen_array,
+                                         Qfloat_gen_array,&from,&to);
+                if ((ret = MIN(ret,subret)) < NhlWARNING)
                         sfp->y_arr = NULL;
-			ret = MIN(ret,NhlWARNING);
-		}
-                else if ((sfp->y_arr = _NhlCopyGenArray
-                          (sfp->y_arr,sfp->copy_arrays)) == NULL) {
-                        e_text = "%s: dynamic memory allocation error";
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-                        return NhlFATAL;
+                else if (! ValidCoordArray(sfp,fltga,sfYCOORD,entry_name)) {
+                        sfp->y_arr = NULL;
+                }
+                else {
+                        if ((sfp->y_arr = _NhlCopyGenArray
+                             (sfp->y_arr,sfp->copy_arrays)) == NULL) {
+                                e_text = "%s: dynamic memory allocation error";
+                                NhlPError(NhlFATAL,
+                                          NhlEUNKNOWN,e_text,entry_name);
+                                return NhlFATAL;
+                        }
                 }
 	}
+        if (context)
+                _NhlFreeConvertContext(context);
 
 	if (sfp->missing_value != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,sfp->missing_value,
-					NhlNsfMissingValueV,entry_name);
+					NhlNsfMissingValueV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->missing_value = ga;
@@ -2221,7 +2247,7 @@ ScalarFieldInitialize
 	if (sfp->data_min != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,sfp->data_min,
-					NhlNsfDataMinV,entry_name);
+					NhlNsfDataMinV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->data_min = ga;
@@ -2229,7 +2255,7 @@ ScalarFieldInitialize
 	if (sfp->data_max != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,sfp->data_max,
-					NhlNsfDataMaxV,entry_name);
+					NhlNsfDataMaxV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->data_max = ga;
@@ -2238,7 +2264,7 @@ ScalarFieldInitialize
 	if (sfp->x_start != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,sfp->x_start,
-					NhlNsfXCStartV,entry_name);
+					NhlNsfXCStartV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->x_start = ga;
@@ -2246,7 +2272,7 @@ ScalarFieldInitialize
 	if (sfp->x_end != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,sfp->x_end,
-					NhlNsfXCEndV,entry_name);
+					NhlNsfXCEndV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->x_end = ga;
@@ -2256,7 +2282,7 @@ ScalarFieldInitialize
 	if (sfp->y_start != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,sfp->y_start,
-					NhlNsfYCStartV,entry_name);
+					NhlNsfYCStartV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->y_start = ga;
@@ -2264,7 +2290,7 @@ ScalarFieldInitialize
 	if (sfp->y_end != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,sfp->y_end,
-					NhlNsfYCEndV,entry_name);
+					NhlNsfYCEndV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->y_end = ga;
@@ -2274,7 +2300,7 @@ ScalarFieldInitialize
 	if (sfp->x_subset_start != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,sfp->x_subset_start,
-					NhlNsfXCStartSubsetV,entry_name);
+					NhlNsfXCStartSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->x_subset_start = ga;
@@ -2282,7 +2308,7 @@ ScalarFieldInitialize
 	if (sfp->x_subset_end != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,sfp->x_subset_end,
-					NhlNsfXCEndSubsetV,entry_name);
+					NhlNsfXCEndSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->x_subset_end = ga;
@@ -2292,7 +2318,7 @@ ScalarFieldInitialize
 	if (sfp->y_subset_start != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,sfp->y_subset_start,
-					NhlNsfYCStartSubsetV,entry_name);
+					NhlNsfYCStartSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->y_subset_start = ga;
@@ -2300,7 +2326,7 @@ ScalarFieldInitialize
 	if (sfp->y_subset_end != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,sfp->y_subset_end,
-					NhlNsfYCEndSubsetV,entry_name);
+					NhlNsfYCEndSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->y_subset_end = ga;
@@ -2351,7 +2377,8 @@ ScalarFieldSetValues
 	NhlScalarFieldLayerPart	*osfp = &(osfl->sfield);
 	NhlGenArray		ga;
 	NhlBoolean		status = False;
-
+        _NhlConvertContext	context = NULL;
+        
 	if (sfp->d_arr != osfp->d_arr) {
 		if (sfp->d_arr == NULL || sfp->d_arr->num_dimensions != 2) {
 			e_text = 
@@ -2376,22 +2403,31 @@ ScalarFieldSetValues
 		}
 	}
 
-	if (sfp->x_arr != osfp->x_arr) {
+	if (!sfp->x_arr && (sfp->x_arr != osfp->x_arr)) {
                 NhlFreeGenArray(osfp->x_arr);
-                if (sfp->x_arr != NULL) {
-                            /* do a fast check on the array validity */
-                        if (sfp->x_arr->len_dimensions[0] != 
-                            sfp->d_arr->len_dimensions[1]) {
-                                e_text = 
-		 "%s: coordinate array %s requires %d elements: defaulting";
-                                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-                                          entry_name,NhlNsfXArray,
-                                          sfp->d_arr->len_dimensions[1]);
-                                sfp->x_arr = NULL;
-                                ret = MIN(ret,NhlWARNING);
-                        }
-                        else if ((sfp->x_arr = _NhlCopyGenArray
-                                  (sfp->x_arr,sfp->copy_arrays)) == NULL) {
+                status = True;
+        }
+        else if (sfp->x_arr != osfp->x_arr) {
+                NrmValue from, to;
+                NhlGenArray fltga;
+                
+                if (! context)
+                        context = _NhlCreateConvertContext(new);
+                from.size = sizeof(NhlGenArray);
+                from.data.ptrval = sfp->x_arr;
+                to.size = sizeof(NhlGenArray);
+                to.data.ptrval = &fltga;
+                subret = _NhlConvertData(context,Qgen_array,
+                                         Qfloat_gen_array,&from,&to);
+                if ((ret = MIN(ret,subret)) < NhlWARNING)
+                        sfp->x_arr = osfp->x_arr;
+                else if (! ValidCoordArray(sfp,fltga,sfXCOORD,entry_name)) {
+                        sfp->x_arr = osfp->x_arr;
+                }
+                else {
+                        NhlFreeGenArray(osfp->x_arr);
+                        if ((sfp->x_arr = _NhlCopyGenArray
+                             (sfp->x_arr,sfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
                                 NhlPError(NhlFATAL,
                                           NhlEUNKNOWN,e_text,entry_name);
@@ -2400,23 +2436,31 @@ ScalarFieldSetValues
                 }
                 status = True;
 	}
-
-	if (sfp->y_arr != osfp->y_arr) {
-		NhlFreeGenArray(osfp->y_arr);
-                if (sfp->y_arr != NULL) {
-                            /* do a fast check on the array validity */
-                        if (sfp->y_arr->len_dimensions[0] != 
-                            sfp->d_arr->len_dimensions[0]) {
-                                e_text = 
-		 "%s: coordinate array %s requires %d elements: defaulting";
-                                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-                                          entry_name,NhlNsfYArray,
-                                          sfp->d_arr->len_dimensions[1]);
-                                sfp->y_arr = NULL;
-                                ret = MIN(ret,NhlWARNING);
-                        }
-                        else if ((sfp->y_arr = _NhlCopyGenArray
-                                  (sfp->y_arr,sfp->copy_arrays)) == NULL) {
+	if (!sfp->y_arr && (sfp->y_arr != osfp->y_arr)) {
+                NhlFreeGenArray(osfp->y_arr);
+                status = True;
+        }
+        else if (sfp->y_arr != osfp->y_arr) {
+                NrmValue from, to;
+                NhlGenArray fltga;
+                
+                if (! context)
+                        context = _NhlCreateConvertContext(new);
+                from.size = sizeof(NhlGenArray);
+                from.data.ptrval = sfp->y_arr;
+                to.size = sizeof(NhlGenArray);
+                to.data.ptrval = &fltga;
+                subret = _NhlConvertData(context,Qgen_array,
+                                         Qfloat_gen_array,&from,&to);
+                if ((ret = MIN(ret,subret)) < NhlWARNING)
+                        sfp->y_arr = osfp->y_arr;
+                else if (! ValidCoordArray(sfp,fltga,sfYCOORD,entry_name)) {
+                        sfp->y_arr = osfp->y_arr;
+                }
+                else {
+                        NhlFreeGenArray(osfp->y_arr);
+                        if ((sfp->y_arr = _NhlCopyGenArray
+                             (sfp->y_arr,sfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
                                 NhlPError(NhlFATAL,
                                           NhlEUNKNOWN,e_text,entry_name);
@@ -2425,11 +2469,13 @@ ScalarFieldSetValues
                 }
                 status = True;
 	}
+        if (context)
+                _NhlFreeConvertContext(context);
 
 	if (sfp->missing_value != osfp->missing_value) {
 		subret = CheckCopyVType(&osfp->missing_value,
 					sfp->missing_value,
-					NhlNsfMissingValueV,entry_name);
+					NhlNsfMissingValueV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->missing_value = osfp->missing_value;
@@ -2438,7 +2484,7 @@ ScalarFieldSetValues
 
 	if (sfp->data_min != osfp->data_min) {
 		subret = CheckCopyVType(&osfp->data_min,sfp->data_min,
-					NhlNsfDataMinV,entry_name);
+					NhlNsfDataMinV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->data_min = osfp->data_min;
@@ -2446,7 +2492,7 @@ ScalarFieldSetValues
 	}
 	if (sfp->data_max != osfp->data_max) {
 		subret = CheckCopyVType(&osfp->data_max,sfp->data_max,
-					NhlNsfDataMaxV,entry_name);
+					NhlNsfDataMaxV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->data_max = osfp->data_max;
@@ -2455,7 +2501,7 @@ ScalarFieldSetValues
 
 	if (sfp->x_start != osfp->x_start) {
 		subret = CheckCopyVType(&osfp->x_start,sfp->x_start,
-					NhlNsfXCStartV,entry_name);
+					NhlNsfXCStartV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->x_start = osfp->x_start;
@@ -2463,7 +2509,7 @@ ScalarFieldSetValues
 	}
 	if (sfp->x_end != osfp->x_end) {
 		subret = CheckCopyVType(&osfp->x_end,sfp->x_end,
-					NhlNsfXCEndV,entry_name);
+					NhlNsfXCEndV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->x_end = osfp->x_end;
@@ -2472,7 +2518,7 @@ ScalarFieldSetValues
 
 	if (sfp->y_start != osfp->y_start) {
 		subret = CheckCopyVType(&osfp->y_start,sfp->y_start,
-					NhlNsfYCStartV,entry_name);
+					NhlNsfYCStartV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->y_start = osfp->y_start;
@@ -2480,7 +2526,7 @@ ScalarFieldSetValues
 	}
 	if (sfp->y_end != osfp->y_end) {
 		subret = CheckCopyVType(&osfp->y_end,sfp->y_end,
-					NhlNsfYCEndV,entry_name);
+					NhlNsfYCEndV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->y_end = osfp->y_end;
@@ -2491,7 +2537,7 @@ ScalarFieldSetValues
 	if (sfp->x_subset_start != osfp->x_subset_start) {
 		subret = CheckCopyVType(&osfp->x_subset_start,
 					sfp->x_subset_start,
-					NhlNsfXCStartSubsetV,entry_name);
+					NhlNsfXCStartSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->x_subset_start = osfp->x_subset_start;
@@ -2499,7 +2545,7 @@ ScalarFieldSetValues
 	}
 	if (sfp->x_subset_end != osfp->x_subset_end) {
 		subret = CheckCopyVType(&osfp->x_subset_end,sfp->x_subset_end,
-					NhlNsfXCEndSubsetV,entry_name);
+					NhlNsfXCEndSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->x_subset_end = osfp->x_subset_end;
@@ -2510,7 +2556,7 @@ ScalarFieldSetValues
 	if (sfp->y_subset_start != osfp->y_subset_start) {
 		subret = CheckCopyVType(&osfp->y_subset_start,
 					sfp->y_subset_start,
-					NhlNsfYCStartSubsetV,entry_name);
+					NhlNsfYCStartSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->y_subset_start = osfp->y_subset_start;
@@ -2518,7 +2564,7 @@ ScalarFieldSetValues
 	}
 	if (sfp->y_subset_end != osfp->y_subset_end) {
 		subret = CheckCopyVType(&osfp->y_subset_end,sfp->y_subset_end,
-					NhlNsfYCEndSubsetV,entry_name);
+					NhlNsfYCEndSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->y_subset_end = osfp->y_subset_end;
@@ -2649,7 +2695,7 @@ static NhlPointer CreateData
  * Side Effects:
  */
 
-static NhlScalarFieldFloatLayer ForceConvert
+static NhlErrorTypes ForceConvert
 #if	NhlNeedProto
 (
 	NhlScalarFieldLayer sfl
@@ -2660,6 +2706,7 @@ static NhlScalarFieldFloatLayer ForceConvert
 #endif
 {
 	char *e_text, *entry_name = "ScalarFieldGetValues";
+        NhlScalarFieldLayerPart *sfp = &(sfl->sfield);
 	int id;
 	NhlScalarFieldFloatLayer sffl = NULL;
 	NhlErrorTypes ret = NhlNOERROR;
@@ -2677,9 +2724,11 @@ static NhlScalarFieldFloatLayer ForceConvert
 	    (sffl = (NhlScalarFieldFloatLayer) _NhlGetLayer(id)) == NULL) {
 		e_text = "%s: error converting NhlScalarFieldLayer";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+                return ret;
 	}
-
-	return sffl;
+        sfp->sffloat = sffl;
+        
+	return ret;
 }
 
 /*
@@ -2723,7 +2772,7 @@ static NhlErrorTypes    ScalarFieldGetValues
         NhlScalarFieldLayer sfl = (NhlScalarFieldLayer)layer;
         NhlScalarFieldLayerPart *sfp = &(sfl->sfield);
 	NhlScalarFieldFloatLayerPart *sffp = NULL;
-	NhlErrorTypes ret = NhlNOERROR;
+	NhlErrorTypes subret = NhlNOERROR,ret = NhlNOERROR;
         NhlGenArray ga;
         char *e_text, *entry_name = "ScalarFieldGetValues";
         int i;
@@ -2745,9 +2794,9 @@ static NhlErrorTypes    ScalarFieldGetValues
 	}
 
 	if (! (sfp->sffloat && sfp->up_to_date)) {
-		sfp->sffloat = ForceConvert(sfl);
-                if (sfp->sffloat == NULL)
-                        return NhlFATAL;
+		subret = ForceConvert(sfl);
+                if ((ret = MIN(subret,ret))  < NhlWARNING)
+                        return ret;
         }
         sffp = &sfp->sffloat->sfieldfloat;
 
@@ -2787,6 +2836,16 @@ static NhlErrorTypes    ScalarFieldGetValues
                         typeQ = sfp->x_arr->typeQ;
                         size = sfp->x_arr->size;
                 }
+                else if (resQ == Qx_arr) {
+                            /* may be set NULL during the force convert,
+                               but still would have had a value during
+                               _NhlGetValues
+                             */
+			*(NhlGenArray *)args[i].value.ptrval = NULL;
+			*args[i].type_ret = Qgen_array;
+			*args[i].size_ret = sizeof(NhlGenArray);
+			*args[i].free_func = NULL;
+                }
                 else if (resQ == Qy_arr && sfp->y_arr) {
                         do_genarray = True;
                         ndim = 1;
@@ -2801,6 +2860,16 @@ static NhlErrorTypes    ScalarFieldGetValues
                         }
                         typeQ = sfp->y_arr->typeQ;
                         size = sfp->y_arr->size;
+                }
+                else if (resQ == Qy_arr) {
+                            /* may be set NULL during the force convert,
+                               but still would have had a value during
+                               _NhlGetValues
+                             */
+			*(NhlGenArray *)args[i].value.ptrval = NULL;
+			*args[i].type_ret = Qgen_array;
+			*args[i].size_ret = sizeof(NhlGenArray);
+			*args[i].free_func = NULL;
                 }
                 else if (resQ == Qmissing_value && sfp->missing_value) {
                         do_genarray = True;
@@ -3208,7 +3277,7 @@ ScalarFieldDestroy
 /*
  * Function:    CheckCopyVType
  *
- * Description:	Copies a variable type scalar stored in a GenArray
+ * Description:	Copies a variable type vector stored in a GenArray
  *
  * In Args:	
  *		copy_ga 	GenArray to copy
@@ -3230,26 +3299,37 @@ static NhlErrorTypes    CheckCopyVType
 	NhlGenArray	*ga,
 	NhlGenArray	copy_ga,
 	NhlString	resource_name,
+        NhlBoolean	null_ok,
 	NhlString	entry_name
 )
 #else
-(ga,copy_ga,resource_name,entry_name)
+(ga,copy_ga,resource_name,null_ok,entry_name)
 	NhlGenArray	*ga;
 	NhlGenArray	copy_ga;
 	NhlString	resource_name;
+        NhlBoolean	null_ok;
 	NhlString	entry_name;
 #endif
 {
 	char		*e_text;
 
-	if (copy_ga == NULL ||
-	    copy_ga->num_elements != 1 || 
-	    copy_ga->num_dimensions != 1) {
+/*
+ * if null_ok and the copy genarray is Null, sets the return genarray to
+ * null, after freeing it if necessary. If not null_ok and the copy genarray
+ * is null a warning is issued and the return genarray is returned unaltered.
+ */
+        if (null_ok && copy_ga == NULL) {
+                if (*ga != NULL) NhlFreeGenArray(*ga);
+                *ga = NULL;
+                return NhlNOERROR;
+        }
+        else if (copy_ga == NULL ||
+                 copy_ga->num_elements != 1 || 
+                 copy_ga->num_dimensions != 1) {
 		e_text = "%s: variable type resource %s invalid";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  resource_name);
-		*ga = NULL;
-		return NhlFATAL;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          resource_name);
+		return NhlWARNING;
 	}
 
 	if (*ga != NULL) NhlFreeGenArray(*ga);
@@ -3263,3 +3343,4 @@ static NhlErrorTypes    CheckCopyVType
 
 	return NhlNOERROR;
 }
+
