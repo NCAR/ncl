@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.54 1997-07-25 21:12:13 dbrown Exp $
+ *      $Id: Legend.c,v 1.55 1997-08-06 19:27:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -388,10 +388,6 @@ static NhlResource resources[] = {
 	 sizeof(NhlTextDirection),
 	 NhlOffset(NhlLegendLayerRec,legend.title_direction),
 	 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-{NhlNlgTitleDirection,NhlClgTitleDirection,NhlTTextDirection,
-	 sizeof(NhlTextDirection),
-	 NhlOffset(NhlLegendLayerRec,legend.title_direction),
-	 NhlTImmediate, _NhlUSET((NhlPointer)NhlACROSS),0,NULL},
 {NhlNlgTitleFont, NhlCFont, NhlTFont, 
 	 sizeof(NhlFont), NhlOffset(NhlLegendLayerRec,legend.title_font),
 	 NhlTImmediate, _NhlUSET((NhlPointer) 0),0,NULL},
@@ -5051,7 +5047,7 @@ static NhlErrorTypes	LegendGetValues
 		else if (args[i].quark == Qline_dash_seglens) {
 			ga = lg_p->line_dash_seglens;
 			count = lg_p->item_count;
-			type = NhlNlgMonoLineDashSegLen;
+			type = NhlNlgLineDashSegLens;
 		}
 		else if (args[i].quark == Qline_thicknesses) {
 			ga = lg_p->line_thicknesses;
@@ -5650,7 +5646,7 @@ static NhlErrorTypes    LegendClassInitialize
 	Qline_labels = NrmStringToQuark(NhlNlgLineLabelStrings);
 	Qline_colors = NrmStringToQuark(NhlNlgLineColors);
 	Qmarker_colors = NrmStringToQuark(NhlNlgMarkerColors);
-	Qline_dash_seglens = NrmStringToQuark(NhlNlgMonoLineDashSegLen);
+	Qline_dash_seglens = NrmStringToQuark(NhlNlgLineDashSegLens);
 	Qline_thicknesses = NrmStringToQuark(NhlNlgLineThicknesses);
 	Qmarker_thicknesses = NrmStringToQuark(NhlNlgMarkerThicknesses);
 	Qline_label_font_heights = 

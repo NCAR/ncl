@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.40 1997-07-31 22:16:17 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.41 1997-08-06 19:27:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -287,10 +287,6 @@ static NhlResource resources[] = {
 
 /* intercepted LabelBar resources */
 
-	{NhlNlbLabelBarOn, NhlClbLabelBarOn, NhlTBoolean, 
-		 sizeof(NhlBoolean),
-		 Oset(lbar_on),NhlTImmediate,_NhlUSET((NhlPointer)False),
-         	 _NhlRES_INTERCEPTED,NULL},
 	{NhlNlbJustification, NhlClbJustification, NhlTJustification, 
 		 sizeof(NhlJustification),
 		 Oset(lbar_just),NhlTImmediate,
@@ -304,10 +300,6 @@ static NhlResource resources[] = {
 
 /* intercepted Legend resources */
 
-	{NhlNlgLegendOn, NhlClgLegendOn, NhlTBoolean, 
-		 sizeof(NhlBoolean),
-		 Oset(lgnd_on),NhlTImmediate,
-         	 _NhlUSET((NhlPointer)False),_NhlRES_INTERCEPTED,NULL},
 	{NhlNlgJustification, NhlClgJustification, NhlTJustification, 
 		 sizeof(NhlJustification),
 		 Oset(lgnd_just),NhlTImmediate,

@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.45 1997-01-25 00:42:10 ethan Exp $
+ *      $Id: Converters.c,v 1.46 1997-08-06 19:26:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2188,11 +2188,11 @@ CvtArgs
 	}
 
 	fromgen = from->data.ptrval;
-	fromval = fromgen->data;
 
 	if(!fromgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
+	fromval = fromgen->data;
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
 							fromgen->num_elements);
@@ -2240,11 +2240,11 @@ CvtArgs
 	}
 
 	fromgen = from->data.ptrval;
-	fromval = fromgen->data;
 
 	if(!fromgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
+	fromval = fromgen->data;
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
 							fromgen->num_elements);
@@ -2294,11 +2294,11 @@ CvtArgs
 	}
 
 	fromgen = from->data.ptrval;
-	fromval = fromgen->data;
 
 	if(!fromgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
+	fromval = fromgen->data;
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
 							fromgen->num_elements);
@@ -2347,11 +2347,11 @@ CvtArgs
 	}
 
 	fromgen = from->data.ptrval;
-	fromval = fromgen->data;
 
 	if(!fromgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
+	fromval = fromgen->data;
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
 							fromgen->num_elements);
@@ -2400,11 +2400,11 @@ CvtArgs
 	}
 
 	fromgen = from->data.ptrval;
-	fromval = fromgen->data;
 
 	if(!fromgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
+	fromval = fromgen->data;
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
 							fromgen->num_elements);
@@ -2453,11 +2453,11 @@ CvtArgs
 	}
 
 	fromgen = from->data.ptrval;
-	fromval = fromgen->data;
 
 	if(!fromgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
+	fromval = fromgen->data;
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
 							fromgen->num_elements);
@@ -2506,11 +2506,11 @@ CvtArgs
 	}
 
 	fromgen = from->data.ptrval;
-	fromval = fromgen->data;
 
 	if(!fromgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
+	fromval = fromgen->data;
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
 							fromgen->num_elements);
@@ -2558,11 +2558,11 @@ CvtArgs
 	}
 
 	fromgen = from->data.ptrval;
-	fromval = fromgen->data;
 
 	if(!fromgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
+	fromval = fromgen->data;
 
 	toval = (char *)NhlConvertMalloc(sizeof(char) * fromgen->num_elements);
 	if(toval == NULL){
@@ -2612,11 +2612,11 @@ CvtArgs
 	}
 
 	fromgen = from->data.ptrval;
-	fromval = fromgen->data;
 
 	if(!fromgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
+	fromval = fromgen->data;
 
 	toval = (char *)NhlConvertMalloc(sizeof(char) * fromgen->num_elements);
 	if(toval == NULL){
@@ -2663,11 +2663,11 @@ CvtArgs
 	}
 
 	fromgen = from->data.ptrval;
-	fromval = fromgen->data;
 
 	if(!fromgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
+	fromval = fromgen->data;
 
 	toval = (double *)NhlConvertMalloc(sizeof(double) *
 							fromgen->num_elements);
@@ -2718,11 +2718,11 @@ CvtArgs
 	}
 
 	fromgen = from->data.ptrval;
-	fromval = fromgen->data;
 
 	if(!fromgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
+	fromval = fromgen->data;
 
 	toval = (float *)NhlConvertMalloc(sizeof(float)*fromgen->num_elements);
 	if(toval == NULL){
@@ -2772,11 +2772,11 @@ CvtArgs
 	}
 
 	fromgen = from->data.ptrval;
-	fromval = fromgen->data;
 
 	if(!fromgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
+	fromval = fromgen->data;
 
 	toval = (int *)NhlConvertMalloc(sizeof(int) * fromgen->num_elements);
 	if(toval == NULL){
@@ -2826,11 +2826,11 @@ CvtArgs
 	}
 
 	fromgen = from->data.ptrval;
-	fromval = fromgen->data;
 
 	if(!fromgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
+	fromval = fromgen->data;
 
 	toval = (long *)NhlConvertMalloc(sizeof(long) * fromgen->num_elements);
 	if(toval == NULL){
@@ -2881,11 +2881,11 @@ CvtArgs
 	}
 
 	fromgen = from->data.ptrval;
-	fromval = fromgen->data;
 
 	if(!fromgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
+	fromval = fromgen->data;
 
 	toval = (short *)NhlConvertMalloc(sizeof(short) *fromgen->num_elements);
 	if(toval == NULL){
@@ -2957,11 +2957,11 @@ CvtArgs
 	}
 
 	fromgen = from->data.ptrval;
-	fromval = fromgen->data;
 
 	if(!fromgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
 	}
+	fromval = fromgen->data;
 
 	toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
 							fromgen->num_elements);

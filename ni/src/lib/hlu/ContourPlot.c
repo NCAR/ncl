@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.59 1997-07-31 22:16:09 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.60 1997-08-06 19:26:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -805,7 +805,8 @@ static NhlResource resources[] = {
 		 Oset(x_max),NhlTProcedure,
 		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
 	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_log),NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
+		Oset(x_log),NhlTImmediate,_NhlUSET((NhlPointer)False),
+          	_NhlRES_INTERCEPTED,NULL},
 	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(x_reverse),NhlTImmediate,
           	_NhlUSET((NhlPointer)False),_NhlRES_INTERCEPTED,NULL},
