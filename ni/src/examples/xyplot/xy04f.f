@@ -1,5 +1,5 @@
 C     
-C      $Id: xy04f.f,v 1.14 1998-10-27 19:05:23 haley Exp $
+C      $Id: xy04f.f,v 1.15 1998-11-24 16:21:20 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -88,7 +88,7 @@ C Create an NCGM workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkMetaName','./xy04f.ncgm',ierr)
-         call NhlFRLSetStringArray(rlist,'wkColorMap',NCOLORS,ierr)
+         call NhlFRLSetStringArray(rlist,'wkColorMap',cmap,NCOLORS,ierr)
          call NhlFCreate(xworkid,'xy04Work',
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
       else if (X11.eq.1) then
