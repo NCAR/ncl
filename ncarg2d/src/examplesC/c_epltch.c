@@ -1,9 +1,10 @@
 /*
- *	$Id: c_epltch.c,v 1.1 1992-10-26 19:51:00 haley Exp $
+ *	$Id: c_epltch.c,v 1.2 1992-11-04 15:50:29 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
-#include <ncarg/Cbind.h>
+#include <ncarg/ncargC.h>
+#include <ncarg/ncarg_gksC.h>
 
 main()
 {

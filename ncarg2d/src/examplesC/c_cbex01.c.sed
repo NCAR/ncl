@@ -1,9 +1,10 @@
 /*
- *	$Id: c_cbex01.c.sed,v 1.1 1992-10-26 19:52:05 haley Exp $
+ *	$Id: c_cbex01.c.sed,v 1.2 1992-11-04 15:49:53 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
-#include <ncarg/Cbind.h>
+#include <ncarg/ncargC.h>
+#include <ncarg/ncarg_gksC.h>
 
 int icll, iama[10000];
 

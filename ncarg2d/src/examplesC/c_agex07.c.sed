@@ -1,9 +1,9 @@
 /*
- *	$Id: c_agex07.c.sed,v 1.1 1992-10-26 19:50:17 haley Exp $
+ *	$Id: c_agex07.c.sed,v 1.2 1992-11-04 15:49:37 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
-#include <ncarg/Cbind.h>
+#include <ncarg/ncargC.h>
 
 main()
 {

@@ -1,9 +1,10 @@
 /*
- *	$Id: c_mpex05.c.sed,v 1.1 1992-10-26 19:51:10 haley Exp $
+ *	$Id: c_mpex05.c.sed,v 1.2 1992-11-04 15:50:42 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
-#include <ncarg/Cbind.h>
+#include <ncarg/ncargC.h>
+#include <ncarg/ncarg_gksC.h>
 
 main()
 {

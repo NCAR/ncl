@@ -1,9 +1,10 @@
 /*
- *	$Id: c_elblba.c,v 1.1 1992-10-26 19:50:58 haley Exp $
+ *	$Id: c_elblba.c,v 1.2 1992-11-04 15:50:27 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
-#include <ncarg/Cbind.h>
+#include <ncarg/ncargC.h>
+#include <ncarg/ncarg_gksC.h>
 
 char *llb1[20] = {
     "  0 to 5:H2Q"," 5 to 10:H1Q","10 to 15:H1Q","15 to 20:H1Q","20 to 25:H1Q",
