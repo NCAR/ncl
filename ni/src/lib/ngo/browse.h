@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.h,v 1.9 1999-02-23 03:56:44 dbrown Exp $
+ *      $Id: browse.h,v 1.10 1999-03-05 01:02:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -41,7 +41,8 @@ extern NhlClass NgbrowseClass;
 
 typedef enum _brPageType 
 {
-        _brNULL, _brREGVAR, _brFILEREF, _brFILEVAR, _brHLUVAR
+        _brNULL, _brREGVAR, _brFILEREF, _brFILEVAR, _brHLUVAR, 
+	_brFUNCTION, _brHTML
 } brPageType;
 
 #define NgNoPage 0

@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenus.h,v 1.4 1998-09-18 23:47:40 boote Exp $
+ *      $Id: varmenus.h,v 1.5 1999-03-05 01:02:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,6 +43,7 @@ typedef struct _NgVarMenusRec
         Widget		regvars_mbutton;
         Widget		filerefs_mbutton;
         Widget		filevars_mbutton;
+	Widget		functions_mbutton;
         NrmQuark	qfile;    /* only used for retrieving file vars */
 } NgVarMenusRec, *NgVarMenus;
 
@@ -53,6 +54,7 @@ NgCreateVarMenus(
         XtCallbackProc	regvar_cb,
         XtCallbackProc	fileref_cb,
         XtCallbackProc	filevar_cb,
+        XtCallbackProc	function_cb,
         XtPointer	udata
         );
 

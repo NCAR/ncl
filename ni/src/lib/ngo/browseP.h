@@ -1,5 +1,5 @@
 /*
- *      $Id: browseP.h,v 1.6 1999-02-23 03:56:44 dbrown Exp $
+ *      $Id: browseP.h,v 1.7 1999-03-05 01:02:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -102,6 +102,7 @@ typedef struct _brPane
 	struct _brPageData	*fileref_pages;
 	struct _brPageData	*var_pages;
         struct _brPageData	*hlu_pages;
+	struct _brPageData	*html_pages;
         NhlBoolean		changed;
         int			remove_pos;
         int			active_pos;

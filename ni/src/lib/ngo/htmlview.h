@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.h,v 1.1 1998-01-08 01:19:27 dbrown Exp $
+ *      $Id: htmlview.h,v 1.2 1999-03-05 01:02:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -92,6 +92,12 @@ extern NhlErrorTypes NgReleaseHtmlView(
 extern NhlErrorTypes NgReleasePageHtmlViews(
         int		goid,
         NgPageId	page_id
+        );
+
+extern void NgRefreshHtmlView(
+        int		goid,
+        NgPageId	page_id,
+        HtmlViewId	htmlview_id
         );
 
 #endif	/* _NG_HTMLVIEW_H */
