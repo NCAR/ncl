@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.91 1995-10-13 17:08:37 haley Exp $
+#   $Id: ncargex.csh,v 1.92 1995-12-11 23:32:02 kennison Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -172,7 +172,7 @@ set c_list = ($c_list $colconv_clist)
 #                        #
 #************************#
 set conpack_fex  = (cpex01 cpex02 cpex03 cpex04 cpex05 cpex06 cpex07 \
-		    cpex08 cpex09 cpex10 cpex11 cpex12 cpex13 \
+		    cpex08 cpex09 cpex10 cpex11 cpex12 cpex13 cpex14 \
 		    ${cbivar_fex})
 set conpack_ftst = (tconpa)
 set conpack_fttr = (ccpback ccpcff ccpcfx ccpcica ccpcir ccpcis ccpcit ccpclc \
@@ -1407,6 +1407,10 @@ switch ($name)
     case cpex08:
     case cpex09:
         set extra_src_files = (cpexcc.f)
+    breaksw
+
+    case cpex14:
+	set data_files = (cpex14.dat)
     breaksw
 
     case fcover:
