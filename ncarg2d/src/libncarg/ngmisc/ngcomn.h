@@ -1,5 +1,5 @@
 C
-C $Id: ngcomn.h,v 1.12 2000-08-22 03:45:46 haley Exp $
+C $Id: ngcomn.h,v 1.13 2000-12-21 22:30:31 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -53,11 +53,14 @@ C      IMCX  -  Mixed color model for X.
 C      IPCX  -  Private color model for X.
 C    ICDFLG  -  Flags whether NGDOTS draws circles or dots (0=dots;
 C               1=circles).
+C      ISUP  -  Suppress bkg. and/or bounding box for PS (0=neither;
+C               1=suppress both; 2= suppress bkg.; 3=suppress bb.
 C
       COMMON /NGCOMI/  IWKID, IFULLB,   IXPS, ISTKMX, IPTHMX, 
      +                ILJOIN,  ILCAP,   ILLX,   ILLY,   IURX,
      +                  IURY, FILSPC, HATSPC, RNLSCL, ICOSCL,
      +                RMITER, IERRMX, IGKSCP, IPERCX,  IPSCM,
-     +                IPRIVX, ICDFLG,   ISCX,   IMCX,   IPCX
+     +                IPRIVX, ICDFLG,   ISCX,   IMCX,   IPCX,
+     +                  ISUP
       COMMON /NGCOMC/ CFILNM, CPICNM, CSEGNM
       CHARACTER CFILNM*256, CPICNM*80, CSEGNM*15

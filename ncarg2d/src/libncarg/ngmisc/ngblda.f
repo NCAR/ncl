@@ -1,5 +1,5 @@
 C
-C	$Id: ngblda.f,v 1.10 2000-08-22 15:05:10 haley Exp $
+C	$Id: ngblda.f,v 1.11 2000-12-21 22:30:31 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -33,6 +33,10 @@ C
 C  No full background color by default.
 C
       DATA IFULLB/0/
+C
+C  Supression flag for PS.
+C
+      DATA ISUP/0/
 C
 C  Maximum stack and path sizes.
 C

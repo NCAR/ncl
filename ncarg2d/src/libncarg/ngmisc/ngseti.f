@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.14 2000-08-22 15:05:13 haley Exp $
+C	$Id: ngseti.f,v 1.15 2000-12-21 22:30:31 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -134,6 +134,15 @@ C
           IDR(6:7) = ' 0'
         ENDIF
         CALL GESC(-1517,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  SU - Suppress background and/or bounding box in PS output.
+C
+      ELSE IF (CNP(1:2).EQ.'SU' .OR. CNP(1:2).EQ.'su' .OR.
+     +         CNP(1:2).EQ.'Su') THEN
+        ISUP = IVP
+        WRITE(IDR(1:5), 500) ISUP
+        CALL GESC(-1524,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
 C  IG - Flag for indicating whether clipping rectangles in segments

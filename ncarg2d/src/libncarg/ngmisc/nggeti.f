@@ -1,5 +1,5 @@
 C
-C	$Id: nggeti.f,v 1.11 2000-08-22 15:05:11 haley Exp $
+C	$Id: nggeti.f,v 1.12 2000-12-21 22:30:31 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -71,6 +71,10 @@ C
       ELSE IF (CNP(1:2).EQ.'ER' .OR. CNP(1:2).EQ.'er' .OR. 
      +    CNP(1:2).EQ.'Er') THEN
         IVP = IERRMX
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'SU' .OR. CNP(1:2).EQ.'su' .OR. 
+     +    CNP(1:2).EQ.'Su') THEN
+        IVP = ISUP
         GO TO 110
       ELSE IF (CNP(1:2).EQ.'FU' .OR. CNP(1:2).EQ.'fu' .OR. 
      +    CNP(1:2).EQ.'Fu') THEN
