@@ -1059,7 +1059,7 @@ int	wr_status;
 	fd = fopen(NrmQuarkToString(path),"r");
 	vbuf = (void*)NclMalloc(4*getpagesize());
 	setvbuf(fd,vbuf,_IOFBF,4*getpagesize());
-	if(fd > 0) {
+	if(fd!=NULL) {
 /*
 * If its COS blocked it will set up MySeek and MyRead pointers for COS freads
 * If its NON blocked cray binary file the MySeek and MyRead pointer 
