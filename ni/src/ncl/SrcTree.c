@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.34 1997-08-20 22:56:21 ethan Exp $
+ *      $Id: SrcTree.c,v 1.35 1999-11-05 23:12:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2248,6 +2248,9 @@ void _NclPrintSymbol
 		break;
 	case ELSE:
 		fprintf(fp,"%s\t","ELSE");
+		break;
+	case NCLEXTERNAL:
+		fprintf(fp,"%s\t","NCLEXTERNAL");
 		break;
 	case EXTERNAL:
 		fprintf(fp,"%s\t","EXTERNAL");

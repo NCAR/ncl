@@ -45,6 +45,9 @@ void printtoken
 		case RETURN:
 			fprintf(stdout,"RETURN\n");
 			break;
+		case NCLEXTERNAL:
+			fprintf(stdout,"NCLEXTERNAL\n");
+			break;
 		case EXTERNAL:
 			fprintf(stdout,"EXTERNAL\n");
 			break;

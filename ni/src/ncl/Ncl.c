@@ -73,7 +73,8 @@ int opt
 
 extern NhlErrorTypes _NclPreLoadScript(
 #if     NhlNeedProto
-char * path
+char * /*path*/,
+int /*status*/
 #endif
 );
 
@@ -215,7 +216,7 @@ stdin_fp = stdin;
 					if(pt != NULL) {
 						pt++;
 						if(strncmp(pt,"ncl",3)==0) {
-							if(_NclPreLoadScript(buffer) == NhlFATAL) {
+							if(_NclPreLoadScript(buffer,1) == NhlFATAL) {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"Error loading default script");
 							} else {
 								yyparse(reset);

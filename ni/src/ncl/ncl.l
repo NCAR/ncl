@@ -139,10 +139,11 @@ void _NclResetScanner
 }
 NhlErrorTypes _NclPreLoadScript
 #if	NhlNeedProto
-(char *path)
+(char *path,int status)
 #else
-(char)
+(char,status)
 char *path;
+int status;
 #endif
 {
 	static int first = 1;
@@ -150,7 +151,7 @@ char *path;
 	FILE *tmpfile = NULL;
 
 
-	preloading = 1;	
+	preloading = status;	
 
 	if((first)&&!(YY_CURRENT_BUFFER)) {
 		yyin = stdin;

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.55 1999-10-13 20:28:18 ethan Exp $
+ *      $Id: NclApi.c,v 1.56 1999-11-05 23:12:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -261,7 +261,7 @@ int NclInitServer
 					if(pt != NULL) {
 						pt++;
 						if(strncmp(pt,"ncl",3)==0) {
-							if(_NclPreLoadScript(buffer) == NhlFATAL) {
+							if(_NclPreLoadScript(buffer,1) == NhlFATAL) {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"Error loading default script");
 							} else {
 								yyparse(reset);

@@ -35,6 +35,7 @@ extern int ok_to_start_vsblk;
 int is_error = 0;
 int block_syntax_error = 0;
 int ret_urn = 0;
+ExtStack *tmp_sym= NULL;
 /*
 extern int _NclTranslate(
 #ifdef NhlNeedProto
@@ -78,7 +79,7 @@ char *cur_load_file = NULL;
 %token <sym> INTEGER FLOAT LONG DOUBLE BYTE CHARACTER GRAPHIC STRNG NUMERIC FILETYPE SHORT LOGICAL
 %token <sym> UNDEF VAR WHILE DO QUIT  NPROC PIPROC IPROC UNDEFFILEVAR BREAK NOPARENT NCLNULL
 %token <sym> BGIN END NFUNC IFUNC FDIM IF THEN VBLKNAME CONTINUE
-%token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL RETURN VSBLKGET NEW
+%token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL NCLEXTERNAL RETURN VSBLKGET NEW
 %token <sym> OBJVAR OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP NCLTRUE NCLFALSE DLIB
 %token '='
 %token OR
@@ -204,6 +205,30 @@ statement_list :  statement eoln			{
 									rec = 0;
 								}
 							}
+	| NCLEXTERNAL UNDEF STRING	{
+								char buffer[4*NCL_MAX_STRING];
+								ExtStack *tm;
+
+								$2->u.package = NclMalloc(sizeof(NclSharedLibraryInfo));
+								$2->u.package->so_handle = NULL;
+								sprintf(buffer,"%s",_NGResolvePath($3));
+
+								_NclResetNewSymStack();
+								_NclNewScope();
+								_NclChangeSymbolType($2,DLIB);
+								_NclPreLoadScript(buffer,0);
+								if(tmp_sym == NULL) {
+									tmp_sym = (ExtStack*)NclMalloc(sizeof(ExtStack));
+									tmp_sym->tmp_sym = $2;
+									tmp_sym->next = NULL;
+								} else {
+									tm = (ExtStack*)NclMalloc(sizeof(ExtStack));
+								
+									tm->tmp_sym = $2;
+									tm->next = tmp_sym;
+									tmp_sym = tm;
+								}
+							}
 	| EXTERNAL UNDEF STRING	eoln			{
 								void (*init_function)(void);
 								$2->u.package = NclMalloc(sizeof(NclSharedLibraryInfo));
@@ -241,6 +266,30 @@ statement_list :  statement eoln			{
 									}
 									
 	
+								}
+							}
+	| statement_list NCLEXTERNAL UNDEF STRING {
+								char buffer[4*NCL_MAX_STRING];
+								ExtStack *tm;
+
+								$3->u.package = NclMalloc(sizeof(NclSharedLibraryInfo));
+								$3->u.package->so_handle = NULL;
+								sprintf(buffer,"%s",_NGResolvePath($4));
+
+								_NclResetNewSymStack();
+								_NclNewScope();
+								_NclChangeSymbolType($3,DLIB);
+								_NclPreLoadScript(buffer,0);
+								if(tmp_sym == NULL) {
+									tmp_sym = (ExtStack*)NclMalloc(sizeof(ExtStack));
+									tmp_sym->tmp_sym = $3;
+									tmp_sym->next = NULL;
+								} else {
+									tm = (ExtStack*)NclMalloc(sizeof(ExtStack));
+								
+									tm->tmp_sym = $3;
+									tm->next = tmp_sym;
+									tmp_sym = tm;
 								}
 							}
 	| statement_list EXTERNAL UNDEF STRING eoln		{
@@ -359,6 +408,30 @@ block_statement_list : statement eoln {
 								}
 								$$ = NULL;
 							}
+	| NCLEXTERNAL UNDEF STRING	{
+								char buffer[4*NCL_MAX_STRING];
+								ExtStack *tm;
+
+								$2->u.package = NclMalloc(sizeof(NclSharedLibraryInfo));
+								$2->u.package->so_handle = NULL;
+								sprintf(buffer,"%s",_NGResolvePath($3));
+
+								_NclResetNewSymStack();
+								_NclNewScope();
+								_NclChangeSymbolType($2,DLIB);
+								_NclPreLoadScript(buffer,0);
+								if(tmp_sym == NULL) {
+									tmp_sym = (ExtStack*)NclMalloc(sizeof(ExtStack));
+									tmp_sym->tmp_sym = $2;
+									tmp_sym->next = NULL;
+								} else {
+									tm = (ExtStack*)NclMalloc(sizeof(ExtStack));
+								
+									tm->tmp_sym = $2;
+									tm->next = tmp_sym;
+									tmp_sym = tm;
+								}
+							}
 	| EXTERNAL UNDEF STRING	eoln			{
 								void (*init_function)(void);
 								$$ = NULL;
@@ -394,6 +467,30 @@ block_statement_list : statement eoln {
 										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not find Init() in external file %s, file not loaded",$3);
 										$2->u.package->scope = NULL;
 									}
+								}
+							}
+	| block_statement_list NCLEXTERNAL UNDEF STRING {
+								char buffer[4*NCL_MAX_STRING];
+								ExtStack *tm;
+
+								$3->u.package = NclMalloc(sizeof(NclSharedLibraryInfo));
+								$3->u.package->so_handle = NULL;
+								sprintf(buffer,"%s",_NGResolvePath($4));
+
+								_NclResetNewSymStack();
+								_NclNewScope();
+								_NclChangeSymbolType($3,DLIB);
+								_NclPreLoadScript(buffer,0);
+								if(tmp_sym == NULL) {
+									tmp_sym = (ExtStack*)NclMalloc(sizeof(ExtStack));
+									tmp_sym->tmp_sym = $3;
+									tmp_sym->next = NULL;
+								} else {
+									tm = (ExtStack*)NclMalloc(sizeof(ExtStack));
+								
+									tm->tmp_sym = $3;
+									tm->next = tmp_sym;
+									tmp_sym = tm;
 								}
 							}
 	| block_statement_list EXTERNAL UNDEF STRING eoln	{
@@ -445,7 +542,14 @@ opt_eoln : 		{ /* do nothing */ }
 
 eoln : EOLN 						{ yyerrok; }
 	| EOFF						{ 
+								ExtStack *tm;
 								yyerrok;
+								if(tmp_sym != NULL) {
+									tm = tmp_sym->next;
+									tm->tmp_sym->u.package->scope = _NclPopScope();
+									NclFree(tm);
+								} 
+
 #ifdef MAKEAPI
 								ret_urn = 1;
 #endif
@@ -918,14 +1022,23 @@ procedure : IPROC opt_arg_list    {
 							is_error += 1;
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$4->name,$1->name);
 							$$ = NULL;
-						} else if(s->type == IPROC){
+						} else if(s->type == IPROC) {
 							if(s->u.procfunc->nargs != 0) {
 								is_error += 1;
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",s->name,s->u.procfunc->nargs,0);
 								$$ = NULL;
 							} else {
 								$$ = _NclMakeProcCall(s,NULL,Ncl_INTRINSICPROCCALL); 
-							}
+							} 	
+						} else if(s->type == NPROC) {
+							if(s->u.procfunc->nargs != 0) {
+								is_error += 1;
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",s->name,s->u.procfunc->nargs,0);
+								$$ = NULL;
+							} else {
+								$$ = _NclMakeProcCall(s,NULL,Ncl_PROCCALL); 
+							} 	
+
 						} else {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a procedure in package %s\n",$4->name,$1->name);
 							$$ = NULL;
@@ -958,6 +1071,20 @@ procedure : IPROC opt_arg_list    {
 							} else {
 								$$ = _NclMakeProcCall(s,$5,Ncl_INTRINSICPROCCALL); 
 							}
+						} else if(s->type == NPROC ) {
+							step = $5;
+							while(step != NULL) {
+								count++;
+								step = step->next;
+							}
+							if(count != s->u.procfunc->nargs) {
+								is_error += 1;
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",s->name,s->u.procfunc->nargs,count);
+								$$ = NULL;
+							} else {
+								$$ = _NclMakeProcCall(s,$5,Ncl_PROCCALL); 
+							}
+							
                                                 } else {
                                                         NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a procedure in package %s\n",$4->name,$1->name);
                                                         $$ = NULL;
@@ -1844,6 +1971,9 @@ anysym : INTEGER {
 	| EXTERNAL {
 		$$ = $1;
 	}
+	| NCLEXTERNAL {
+		$$ = $1;
+	}
 	| RETURN {
 		$$ = $1;
 	}
@@ -2002,6 +2132,15 @@ function:  IFUNC opt_arg_list		{
 								} else {
 									$$ = _NclMakeFuncCall(s,NULL,Ncl_INTRINSICFUNCCALL); 
 								}
+							} else if(s->type == NFUNC) {
+								if(s->u.procfunc->nargs != 0) {
+									is_error += 1;
+									NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",s->name,s->u.procfunc->nargs,0);
+									$$ = NULL;
+								} else {
+									$$ = _NclMakeFuncCall(s,NULL,Ncl_FUNCCALL); 
+								}
+
 							} else {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a function in package %s\n",$4->name,$1->name);
 								$$ = NULL;
@@ -2033,6 +2172,19 @@ function:  IFUNC opt_arg_list		{
 									$$ = NULL;
 								} else {
 									$$ = _NclMakeFuncCall(s,$5,Ncl_INTRINSICFUNCCALL); 
+								}
+							} else if(s->type == NFUNC) {
+								step = $5;
+								while(step != NULL) {
+									count++;
+									step = step->next;
+								}
+								if(count != s->u.procfunc->nargs) {
+									is_error += 1;
+									NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",s->name,s->u.procfunc->nargs,count);
+									$$ = NULL;
+								} else {
+									$$ = _NclMakeFuncCall(s,$5,Ncl_FUNCCALL); 
 								}
                                                 	} else {
                                                         	NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a function in package %s\n",$4->name,$1->name);

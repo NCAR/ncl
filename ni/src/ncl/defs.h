@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.24 1998-09-02 22:19:50 ethan Exp $
+ *      $Id: defs.h,v 1.25 1999-11-05 23:12:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -178,6 +178,10 @@ void _NclEndCmdLinePager(
 void
 #endif
 );
+typedef struct _ext_stack {
+        struct _NclSymbol*tmp_sym;
+        struct _ext_stack * next;
+} ExtStack;
 
 #endif /*_NCdefs.h*/
 #ifdef __cplusplus
