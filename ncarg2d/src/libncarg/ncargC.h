@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.11 2001-11-03 00:33:54 kennison Exp $
+ *  $Id: ncargC.h,v 1.12 2001-11-05 17:43:38 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1733,7 +1733,7 @@ extern void c_mdrgol(
 #ifdef NeedFuncProto
     int irgl,
     float *rwrk,
-    int lrwk,
+    int lrwk
 #endif
 );
 
