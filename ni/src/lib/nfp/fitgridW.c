@@ -1108,8 +1108,8 @@ NhlErrorTypes ftcurvs_W(void)
 /*
  *  Return the interpolated smooth curve.
  */
-  if (dsizes_d[0] > 1) isw = 0;
   isw = 1;
+  if (dsizes_d[0] > 1) isw = 0;
   for( i = 0; i < size_leftmost; i++ ) {
     fterr = c_ftcurvs(npts, &xi[index_xi], &yi[index_yi], isw, d, nxo, xo, 
                       &yo[index_out]);
