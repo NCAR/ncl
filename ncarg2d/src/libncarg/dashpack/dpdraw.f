@@ -1,5 +1,5 @@
 C
-C $Id: dpdraw.f,v 1.3 1994-09-09 00:33:25 kennison Exp $
+C $Id: dpdraw.f,v 1.4 1994-09-09 20:09:48 kennison Exp $
 C
       SUBROUTINE DPDRAW (XCPF,YCPF,IFVL)
 C
@@ -202,7 +202,7 @@ C
 C
                 IF (CHRL.EQ.CHRB.OR.CHRL.EQ.CHRG.OR.CHRL.EQ.CHRS) THEN
 C
-                  IF (CHRL.NE.CHRB.AND.ILTL.EQ.0.AND.RLS1.NE.0.) THEN
+                  IF (CHRL.NE.CHRB.AND.RLS1.NE.0.) THEN
                     IF (NDPE.GE.LDPA) GO TO 103
                     NDPE=NDPE+1
                     IDPE(NDPE)=+1
@@ -211,7 +211,7 @@ C
 C
                   IF (NDPE.GE.LDPA) GO TO 103
                   NDPE=NDPE+1
-                  IDPE(NDPE)=REAL(LDPA*I+I-1)
+                  IDPE(NDPE)=LDPA*I+I-1
                   RDPE(NDPE)=RLS2*WCHR
 C
                 END IF
@@ -237,7 +237,7 @@ C
 C
               IF ((CHRN.EQ.CHRG.OR.CHRN.EQ.CHRS).AND.NDPE.NE.0) THEN
 C
-                IF (IDPE(NDPE).GT.1.AND.ILTL.EQ.0.AND.RLS1.NE.0.) THEN
+                IF (IDPE(NDPE).GT.1.AND.RLS1.NE.0.) THEN
                   IF (NDPE.GE.LDPA) GO TO 103
                   NDPE=NDPE+1
                   IDPE(NDPE)=+1
@@ -345,7 +345,8 @@ C
             YCNF=RSPY(1)
 C
             ISPE=ICPE
-            WCPE=WCHR
+C
+            WCPE=0.
 C
             DO 110 I=2,NPSB
 C
@@ -362,7 +363,7 @@ C
                 IF (ICFELL('DPDRAW',8).NE.0) RETURN
               END IF
 C
-              IF (DIST.LT.WCPE) THEN
+              IF (DIST.LE.WCPE) THEN
 C
                 WCPE=WCPE-DIST
 C
@@ -423,7 +424,8 @@ C
 C
             ICPE=1
             WCPE=RDPE(1)
-            IF (IDPE(1).EQ.0) WCPE=RMFS*WCPE
+C
+            IF (IDPE(ICPE).EQ.0) WCPE=RMFS*WCPE
 C
             IF (IDPE(ICPE).GT.1) THEN
               XCGF=XCPF
