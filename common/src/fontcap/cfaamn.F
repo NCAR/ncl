@@ -1,5 +1,5 @@
 C
-C	$Id: cfaamn.F,v 1.3 2000-08-22 03:53:12 haley Exp $
+C	$Id: cfaamn.F,v 1.4 2002-04-03 01:45:05 fred Exp $
 C                                                                      
 C			     Copyright (C)  1997
 C	     University Corporation for Atmospheric Research
@@ -29,9 +29,9 @@ C  directly by ctrans or PLOTCHAR.
 C
 C  This program was created by merging two independent processors
 C  (one for the stroked fonts and the other for the filled fonts).
-C  The forms of the fontcaps quite different in the case of that
+C  The forms of the fontcaps are quite different in the case of 
 C  stroked or filled fonts and the logic in this code that handles 
-C  the two cases is different.  Subrooutines in this code that are
+C  the two cases is different.  Subroutines in this code that are
 C  common to the processing of both forms of the fontcap begin with
 C  the letters "CF"; subroutines that apply to the processing of
 C  the stroked fonts begin with "SF"; subroutines that apply to the
