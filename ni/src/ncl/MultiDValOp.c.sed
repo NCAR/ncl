@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MultiDValOp.c.sed,v 1.10 1997-09-02 20:26:18 ethan Exp $
+ *      $Id: MultiDValOp.c.sed,v 1.11 1997-09-05 22:13:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -46,6 +46,7 @@ NclData result;
 		return(NULL);
 
         if((other_md->multidval.n_dims != self_md->multidval.n_dims)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME: Number of dimensions do not match, can't continue");
                 return(NULL);
         }
 	operand_type = self_md->multidval.type;
@@ -133,6 +134,7 @@ NclData result;
 			if(result_md == NULL) {
 				NclFree(result_val);
 			}
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME: operator failed, can't continue");
 			return(NULL);
 		}
 			
@@ -263,6 +265,7 @@ NclData result;
 			if(result_md == NULL) {
 				NclFree(result_val);
 			}
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME: operator failed, can't continue");
 			return(NULL);
 		}
 	} else {

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.5 1996-11-23 00:55:30 ethan Exp $
+ *      $Id: NclFile.h,v 1.6 1997-09-05 22:13:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -198,6 +198,43 @@ struct _NclSelectionRecord* /*rhs_sel_ptr*/
 #endif
 );
 
+typedef NhlErrorTypes (*NclAddFileDimFunc)(
+#if	NhlNeedProto
+NclFile	/*thefile*/,
+NclQuark /* dimname */,
+int	/*dimsize*/,
+int	/*is_unlimited*/
+#endif
+);
+
+typedef NhlErrorTypes (*NclAddFileVarFunc)(
+#if	NhlNeedProto
+NclFile	/*thefile*/,
+NclQuark /* var_name */,
+NclQuark /* type */,
+NclQuark */* dimnames */,
+int	/*n_dims*/
+#endif
+);
+
+typedef NhlErrorTypes (*NclAddFileVarAttFunc)(
+#if	NhlNeedProto
+NclFile /* thefile */,
+NclQuark /* varname */,
+NclQuark /* attname */,
+struct _NclMultiDValDataRec* /*value*/
+#endif
+);
+
+typedef NhlErrorTypes (*NclAddFileAttFunc)(
+#if	NhlNeedProto
+NclFile /* thefile */,
+NclQuark /* varname */,
+NclQuark /* attname */,
+struct _NclMultiDValDataRec* /*value*/
+#endif
+);
+
 typedef struct _NclFileClassPart {
 
 	NclFileVarRepValueFunc	rep_val;
@@ -223,6 +260,10 @@ typedef struct _NclFileClassPart {
 	NclFileIsAFunc		is_coord;
 	NclReadFileCoordFunc	read_coord_func;
 	NclWriteFileCoordFunc	write_coord_func;
+	NclAddFileDimFunc	add_dim_func;
+	NclAddFileVarFunc	add_var_func;
+	NclAddFileVarAttFunc	add_var_att_func;
+	NclAddFileAttFunc	add_att_func;
 } NclFileClassPart;
 
 typedef struct _NclFileAttInfoList {

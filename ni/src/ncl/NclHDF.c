@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.7 1997-09-03 22:34:10 ethan Exp $
+ *      $Id: NclHDF.c,v 1.8 1997-09-05 22:13:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1247,12 +1247,13 @@ void* data;
 
 static NhlErrorTypes HDFAddDim
 #if	NhlNeedProto
-(void* therec, NclQuark thedim, int size)
+(void* therec, NclQuark thedim, int size,int is_unlimited)
 #else
 (therec, thedim, size)
 void* therec;
 NclQuark thedim;
 int size;
+int is_unlimited;
 #endif
 {
 	HDFFileRecord *rec = (HDFFileRecord*) therec;

@@ -295,6 +295,7 @@ typedef NhlErrorTypes (*NclAddDimFunc) (
 #if	NhlNeedProto
 void *,
 NclQuark,
+int,
 int
 #endif
 );

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.81 1997-08-21 20:43:28 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.82 1997-09-05 22:13:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -10711,6 +10711,7 @@ NhlErrorTypes _NclIFileVarDimsizes
 		return(ret);
 	}
 }
+
 NhlErrorTypes _NclIGetFileVarDims
 #if	NhlNeedProto
 (void)
@@ -10859,6 +10860,111 @@ NhlErrorTypes _NclIGetFileVarAtts
 	}
 
 }
+
+NhlErrorTypes _NclIFileDimDef
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+
+	int dimsize;
+	NclScalar missing;
+	int has_missing;
+
+	int tmp_dimsize;
+	NclScalar tmp_missing;
+	int tmp_has_missing;
+
+	obj *thefile_id;
+	string *dimnames;
+	int *dimsizes;
+	logical *unlimited;
+	int i;
+	NclFile thefile;
+	NhlErrorTypes ret=NhlNOERROR;
+	NhlErrorTypes ret0 = NhlNOERROR;
+
+        thefile_id = (obj*)NclGetArgValue(
+                        0,
+                        4,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+	thefile = (NclFile)_NclGetObj((int)*thefile_id);
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+
+        dimnames = (string*)NclGetArgValue(
+                        1,
+                        4,
+                        NULL,
+                        &dimsize,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+	if(has_missing) {
+		for(i = 0; i < dimsize; i++) {
+			if(dimnames[i] == missing.stringval)  {
+				return(NhlFATAL);
+			}
+		}
+	}
+
+        dimsizes = (int*)NclGetArgValue(
+                        2,
+                        4,
+                        NULL,
+                        &tmp_dimsize,
+                        &tmp_missing,
+                        &tmp_has_missing,
+                        NULL,
+                        0);
+
+	if(tmp_dimsize != dimsize) {
+		return(NhlFATAL);
+	} else if(tmp_has_missing) {
+		for(i = 0; i < dimsize; i++) {
+			if(dimsizes[i] == tmp_missing.intval)  {
+				return(NhlFATAL);
+			}
+		}
+	}
+
+        unlimited = (logical*)NclGetArgValue(
+                        3,
+                        4,
+                        NULL,
+                        &tmp_dimsize,
+                        &tmp_missing,
+                        &tmp_has_missing,
+                        NULL,
+                        0);
+
+	if(tmp_dimsize != dimsize) {
+		return(NhlFATAL);
+	} else if(tmp_has_missing) {
+		for(i = 0; i < dimsize; i++) {
+			if(unlimited[i] == tmp_missing.logicalval)  {
+				return(NhlFATAL);
+			}
+		}
+	}
+	for(i = 0; i < dimsize; i ++) {
+		ret = _NclFileAddDim(thefile,dimnames[i],dimsizes[i],unlimited[i]);
+		if(ret < NhlINFO) {
+			ret0 = ret;
+		}
+	}
+	return(ret0);
+}
+
 #ifdef __cplusplus
 }
 #endif

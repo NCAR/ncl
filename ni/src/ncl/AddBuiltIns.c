@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.34 1997-07-22 17:40:56 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.35 1997-09-05 22:12:59 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,13 @@ extern "C" {
 #include "NclBuiltIns.h"
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
+
+extern NhlErrorTypes _NclIFileDimDef(
+#if NhlNeedProto
+void
+#endif
+);
+
 extern NhlErrorTypes _NclIdim_stddev(
 #if NhlNeedProto
 void
@@ -1295,6 +1302,15 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
 	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
 	NclRegisterFunc(_NclIFileVarDimsizes,args,"filevardimsizes",nargs);
+
+	nargs = 0;
+	args = NewArgs(4);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"integer",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"logical",1,NclANY);nargs++;
+	NclRegisterProc(_NclIFileDimDef,args,"filedimdef",nargs);
 /*
 	nargs = 0;
 	args = NewArgs(1);

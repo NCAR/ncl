@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValnclfileData.c,v 1.7 1997-08-01 21:02:26 ethan Exp $
+ *      $Id: NclMultiDValnclfileData.c,v 1.8 1997-09-05 22:13:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -392,15 +392,10 @@ static NhlErrorTypes MultiDVal_nclfile_md_WriteSection
 
 	if((target_md->multidval.missing_value.has_missing)&&
 		(value_md->multidval.missing_value.has_missing)) {
-		if(target_md->multidval.missing_value.value.intval ==
-			value_md->multidval.missing_value.value.intval) {
-/*
-* No need to check when missing values are equal
-*/
-			chckmiss = 0;
-		} else {
-			chckmiss = 1;
-		}
+		chckmiss = 1;
+	} else if(value_md->multidval.missing_value.has_missing) {
+		_NclResetMissingValue(target_md,&value_md->multidval.missing_value.value);
+		chckmiss = 1;
 	} else {
 		chckmiss = 0;
 	}
@@ -869,9 +864,19 @@ static NhlErrorTypes MultiDVal_nclfile_s_WriteSection
 		} else {
 			_NclDelParent((NclObj)_NclGetObj(((int*)target_md->multidval.val)[to]),(NclObj)target_md);
 		}
-		((int*)target_md->multidval.val)[to] = *val;
-		(void)_NclAddParent((NclObj)_NclGetObj(*val),(NclObj)target_md);
-		_NclSetStatus((NclObj)_NclGetObj(*val),PERMANENT);
+
+		if((value_md->multidval.missing_value.has_missing)&&(value_md->multidval.missing_value.value.objval == *val)) {
+			if(target_md->multidval.missing_value.has_missing) {
+				((int*)target_md->multidval.val)[to] = target_md->multidval.missing_value.value.objval;
+			} else {
+				_NclResetMissingValue(target_md,&value_md->multidval.missing_value.value);
+				((int*)target_md->multidval.val)[to] = *val;
+			}
+		} else {
+			((int*)target_md->multidval.val)[to] = *val;
+			(void)_NclAddParent((NclObj)_NclGetObj(*val),(NclObj)target_md);
+			_NclSetStatus((NclObj)_NclGetObj(*val),PERMANENT);
+		}
 		if(compare_sel[n_dims_target-1] <0) {
 			current_index[n_dims_target -1 ] += strider[n_dims_target-1];
 		} else {

@@ -207,6 +207,41 @@ struct _NclSelectionRecord* /* sel_ptr */
 #endif
 );
 
+static NhlErrorTypes FileAddDim
+#if	NhlNeedProto
+(NclFile thefile, NclQuark dimname, int dimsize, int is_unlimited)
+#else
+(thefile, dimname, dimsize, is_unlimited)
+NclFile thefile;
+NclQuark dimname;
+int dimsize;
+int is_unlimited;
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR;
+	
+	if((thefile->file.wr_status <= 0)&&(thefile->file.format_funcs->add_dim != NULL)) {
+		if((FileIsDim(thefile,dimname)) == -1) {
+			ret = (*thefile->file.format_funcs->add_dim)(
+				thefile->file.private_rec,
+				dimname,
+				dimsize,
+				is_unlimited);
+			if(ret < NhlWARNING) 
+				return(ret);
+			thefile->file.file_dim_info[thefile->file.n_file_dims] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,dimname);
+			thefile->file.n_file_dims++;
+			return(NhlNOERROR);
+		} else {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAddDim: Dimension %s is already defined");
+			return(NhlWARNING);
+		}
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddDim: file (%s) was opened for reading only, can not write",NrmQuarkToString(thefile->file.fname));
+	}
+	return(NhlFATAL);
+}
+
 static void FileAttIsBeingDestroyedNotify
 #if     NhlNeedProto
 (NhlArgVal cbdata, NhlArgVal udata)
@@ -781,7 +816,11 @@ NclFileClassRec nclFileClassRec = {
 		FileWriteDim,
 		FileIsCoord,
 		FileReadCoord,
-		FileWriteCoord
+		FileWriteCoord,
+		FileAddDim,
+		NULL,
+		NULL,
+		NULL
 	}
 };
 
@@ -1130,16 +1169,18 @@ int vtype;
 			}
 		
 			n_dims_output = n_dims_input;
-			i = 0;
-			while((i <  n_dims_output)&&(n_dims_output > 1)) {
-				if(output_dim_sizes[i] == 1) {
-					for(j = i; j < n_dims_output-1; j++) {
-						output_dim_sizes[j] = output_dim_sizes[j+1];
-						(dim_info)[j] = (dim_info)[j+1];
+			if(sel_ptr != NULL) {
+				i = 0;
+				while((i <  n_dims_output)&&(n_dims_output > 1)) {
+					if(output_dim_sizes[i] == 1) {
+						for(j = i; j < n_dims_output-1; j++) {
+							output_dim_sizes[j] = output_dim_sizes[j+1];
+							(dim_info)[j] = (dim_info)[j+1];
+						}
+						n_dims_output--;
+					} else {
+						i++;
 					}
-					n_dims_output--;
-				} else {
-					i++;
 				}
 			}
 		} else if((has_reverse)&&(!has_vectors)&&(!has_reorder)){
@@ -1202,19 +1243,21 @@ int vtype;
 					(void*)val);
 			}
                         n_dims_output = n_dims_input;
-                        i = 0;
-                        while((i <  n_dims_output)&&(n_dims_output > 1)) {
-                                if(output_dim_sizes[i] == 1) {
-                                        for(j = i; j < n_dims_output-1; j++) {
-                                                output_dim_sizes[j] = output_dim_sizes[j+1];
-						compare_sel[j] = compare_sel[j+1];
-                                                (dim_info)[j] = (dim_info)[j+1];
-                                        }
-                                        n_dims_output--;
-                                } else {
-                                        i++;
-                                }
-                        }
+			if(sel_ptr != NULL) {
+                        	i = 0;
+                        	while((i <  n_dims_output)&&(n_dims_output > 1)) {
+                                	if(output_dim_sizes[i] == 1) {
+                                        	for(j = i; j < n_dims_output-1; j++) {
+                                                	output_dim_sizes[j] = output_dim_sizes[j+1];
+							compare_sel[j] = compare_sel[j+1];
+                                                	(dim_info)[j] = (dim_info)[j+1];
+                                        	}
+                                        	n_dims_output--;
+                                	} else {
+                                        	i++;
+                                	}
+                        	}
+			}
 			ReverseIt(val,swap_space,n_dims_output,compare_sel,output_dim_sizes,_NclSizeOf(thefile->file.var_info[index]->data_type));
 			NclFree(swap_space);
 		} else {
@@ -1356,16 +1399,18 @@ int vtype;
 				}
 			}
 			n_dims_output = n_dims_input;
-			i = 0;
-			while((i <  n_dims_output)&&(n_dims_output > 1)) {
-				if(output_dim_sizes[i] == 1) {
-					for(j = i; j < n_dims_output-1; j++) {
-						output_dim_sizes[j] = output_dim_sizes[j+1];
-						(dim_info)[j] = (dim_info)[j+1];
+			if(sel_ptr != NULL) {
+				i = 0;
+				while((i <  n_dims_output)&&(n_dims_output > 1)) {
+					if(output_dim_sizes[i] == 1) {
+						for(j = i; j < n_dims_output-1; j++) {
+							output_dim_sizes[j] = output_dim_sizes[j+1];
+							(dim_info)[j] = (dim_info)[j+1];
+						}
+						n_dims_output--;
+					} else {
+						i++;
 					}
-					n_dims_output--;
-				} else {
-					i++;
 				}
 			}
 		}
@@ -1390,16 +1435,18 @@ int vtype;
 				}
 			
 				n_dims_output = n_dims_input;
-				i = 0;
-				while((i <  n_dims_output)&&(n_dims_output > 1)) {
-					if(output_dim_sizes[i] == 1) {
-						for(j = i; j < n_dims_output-1; j++) {
-							output_dim_sizes[j] = output_dim_sizes[j+1];
-							(dim_info)[j] = (dim_info)[j+1];
+				if(sel_ptr != NULL) {
+					i = 0;
+					while((i <  n_dims_output)&&(n_dims_output > 1)) {
+						if(output_dim_sizes[i] == 1) {
+							for(j = i; j < n_dims_output-1; j++) {
+								output_dim_sizes[j] = output_dim_sizes[j+1];
+								(dim_info)[j] = (dim_info)[j+1];
+							}
+							n_dims_output--;
+						} else {
+							i++;
 						}
-						n_dims_output--;
-					} else {
-						i++;
 					}
 				}
 			} else if((has_reverse)&&(!has_vectors)&&(!has_reorder)){
@@ -1454,19 +1501,21 @@ int vtype;
 						(void*)val);
 				}
                         	n_dims_output = n_dims_input;
-                        	i = 0;
-                        	while((i <  n_dims_output)&&(n_dims_output > 1)) {
-                                	if(output_dim_sizes[i] == 1) {
-                                        	for(j = i; j < n_dims_output-1; j++) {
-                                                	output_dim_sizes[j] = output_dim_sizes[j+1];
-							compare_sel[j] = compare_sel[j+1];
-                                                	(dim_info)[j] = (dim_info)[j+1];
-                                        	}
-                                        	n_dims_output--;
-                                	} else {
-                                        	i++;
-                                	}
-                        	}
+				if(sel_ptr != NULL) {
+                        		i = 0;
+                        		while((i <  n_dims_output)&&(n_dims_output > 1)) {
+                                		if(output_dim_sizes[i] == 1) {
+                                        		for(j = i; j < n_dims_output-1; j++) {
+                                                		output_dim_sizes[j] = output_dim_sizes[j+1];
+								compare_sel[j] = compare_sel[j+1];
+                                                		(dim_info)[j] = (dim_info)[j+1];
+                                        		}
+                                        		n_dims_output--;
+                                		} else {
+                                        		i++;
+                                		}
+                        		}
+				}
 				ReverseIt(val,swap_space,n_dims_output,compare_sel,output_dim_sizes,_NclSizeOf(thefile->file.var_info[index]->data_type));
 				NclFree(swap_space);
 			} else {
@@ -1602,16 +1651,18 @@ int vtype;
 					}
 				}
 				n_dims_output = n_dims_input;
-				i = 0;
-				while((i <  n_dims_output)&&(n_dims_output > 1)) {
-					if(output_dim_sizes[i] == 1) {
-						for(j = i; j < n_dims_output-1; j++) {
-							output_dim_sizes[j] = output_dim_sizes[j+1];
-							(dim_info)[j] = (dim_info)[j+1];
+				if(sel_ptr != NULL ) {
+					i = 0;
+					while((i <  n_dims_output)&&(n_dims_output > 1)) {
+						if(output_dim_sizes[i] == 1) {
+							for(j = i; j < n_dims_output-1; j++) {
+								output_dim_sizes[j] = output_dim_sizes[j+1];
+								(dim_info)[j] = (dim_info)[j+1];
+							}
+							n_dims_output--;
+						} else {
+							i++;
 						}
-						n_dims_output--;
-					} else {
-						i++;
 					}
 				}
 			}
@@ -1674,16 +1725,18 @@ int vtype;
 					current_finish[0] = current_index[0];
 				}
 				n_dims_output = n_dims_input;
-				i = 0;
-				while((i <  n_dims_output)&&(n_dims_output > 1)) {
-					if(output_dim_sizes[i] == 1) {
-						for(j = i; j < n_dims_output-1; j++) {
-							output_dim_sizes[j] = output_dim_sizes[j+1];
-							(dim_info)[j] = (dim_info)[j+1];
+				if(sel_ptr != NULL) {
+					i = 0;
+					while((i <  n_dims_output)&&(n_dims_output > 1)) {
+						if(output_dim_sizes[i] == 1) {
+							for(j = i; j < n_dims_output-1; j++) {
+								output_dim_sizes[j] = output_dim_sizes[j+1];
+								(dim_info)[j] = (dim_info)[j+1];
+							}
+							n_dims_output--;
+						} else {
+							i++;
 						}
-						n_dims_output--;
-					} else {
-						i++;
 					}
 				}
 			} else if((has_reverse)&&(!has_vectors)&&(!has_reorder)){
@@ -1796,19 +1849,21 @@ int vtype;
 				}
 				NclFree(swap_space);
 				n_dims_output = n_dims_input;
-				i = 0;
-				while((i <  n_dims_output)&&(n_dims_output > 1)) {
-					if(output_dim_sizes[i] == 1) {
-						for(j = i; j < n_dims_output-1; j++) {
-							output_dim_sizes[j] = output_dim_sizes[j+1];
-							(dim_info)[j] = (dim_info)[j+1];
+
+				if(sel_ptr != NULL)  {
+					i = 0;
+					while((i <  n_dims_output)&&(n_dims_output > 1)) {
+						if(output_dim_sizes[i] == 1) {
+							for(j = i; j < n_dims_output-1; j++) {
+								output_dim_sizes[j] = output_dim_sizes[j+1];
+								(dim_info)[j] = (dim_info)[j+1];
+							}
+							n_dims_output--;
+						} else {
+							i++;
 						}
-						n_dims_output--;
-					} else {
-						i++;
 					}
 				}
-				
 			} else {
 /*
 * has vectors or reorder or both
@@ -1950,16 +2005,19 @@ int vtype;
 					}
 				}
 				n_dims_output = n_dims_input;
-				i = 0;
-				while((i <  n_dims_output)&&(n_dims_output > 1)) {
-					if(output_dim_sizes[i] == 1) {
-						for(j = i; j < n_dims_output-1; j++) {
-							output_dim_sizes[j] = output_dim_sizes[j+1];
-							(dim_info)[j] = (dim_info)[j+1];
+				fprintf(stdout,"Temporary comment 9\n");
+				if(sel_ptr != NULL) {
+					i = 0;
+					while((i <  n_dims_output)&&(n_dims_output > 1)) {
+						if(output_dim_sizes[i] == 1) {
+							for(j = i; j < n_dims_output-1; j++) {
+								output_dim_sizes[j] = output_dim_sizes[j+1];
+								(dim_info)[j] = (dim_info)[j+1];
+							}
+							n_dims_output--;
+						} else {
+							i++;
 						}
-						n_dims_output--;
-					} else {
-						i++;
 					}
 				}
 			}
@@ -2422,7 +2480,7 @@ int rw_status;
 		if((file_out->file.format_funcs->get_file_rec != NULL)&&((rw_status != -1)||(file_out->file.format_funcs->create_file_rec != NULL))) {
 			
 			if(rw_status == -1) {
-				the_real_path = path;
+				file_out->file.fpath = the_real_path = path;
 				file_out->file.wr_status = rw_status;
 				file_out->file.private_rec = (*file_out->file.format_funcs->create_file_rec)(NrmStringToQuark(_NGResolvePath(NrmQuarkToString(the_real_path))));
 				if(file_out->file.private_rec == NULL) {
@@ -2718,7 +2776,17 @@ int type;
 			} else {
 				for(i = 0 ; i < n_dims_target; i++) {
 					start[i] = 0;
-					finish[i] = thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_size -1;
+					if(thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->is_unlimited) {
+						update_unlimited = 1;
+						if(value->multidval.dim_sizes[i]> thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_size) {
+							finish[i] = value->multidval.dim_sizes[i] -1;
+						} else {
+							finish[i] = thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_size -1;
+						
+						}
+					} else {
+						finish[i] = thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_size -1;
+					}
 					stride[i] = 1;
 					index_map[i] = i;
 					total_elements *= (finish[i] + 1);
@@ -3161,7 +3229,7 @@ int type;
 				if((dindex = FileIsDim(thefile,var)) == -1) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a dimension in file (%s), can not add coordinate variable",NrmQuarkToString(var),NrmQuarkToString(thefile->file.fpath));
 					return(NhlFATAL);
-				} else if(thefile->file.file_dim_info[dindex]->dim_size == value->multidval.dim_sizes[0]){
+				} else if((thefile->file.file_dim_info[dindex]->dim_size == value->multidval.dim_sizes[0])||(thefile->file.file_dim_info[dindex]->is_unlimited)) {
 					if(value->multidval.n_dims != 1) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate variables must be single dimension arrays, attempt to assign (%d) dimension value to coordinate variable",value->multidval.n_dims); 
 						return(NhlFATAL);
@@ -3171,6 +3239,9 @@ int type;
 					start[0] = 0;
 					finish[0] = value->multidval.dim_sizes[0] -1 ;
 					stride[0] = 1;
+					if(thefile->file.file_dim_info[dindex]->is_unlimited) {
+						update_unlimited = 1;
+					}
 				}
 			} else {
 /*
@@ -3189,7 +3260,8 @@ int type;
 						ret = (*thefile->file.format_funcs->add_dim)(
 							thefile->file.private_rec,
 							new_dim_quarks[i],
-							new_dim_sizes[i]);
+							new_dim_sizes[i],
+							0);
 						if(ret < NhlWARNING) {
 							return(ret);
 						}
@@ -3213,16 +3285,20 @@ int type;
 							ret = (*thefile->file.format_funcs->add_dim)(
 								thefile->file.private_rec,
 								new_dim_quarks[i],
-								new_dim_sizes[i]);
+								new_dim_sizes[i],
+								0);
 							if(ret < NhlWARNING) 
 								return(ret);
 							thefile->file.file_dim_info[thefile->file.n_file_dims] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,new_dim_quarks[i]);
 							thefile->file.n_file_dims++;
 						} else {
-							if(thefile->file.file_dim_info[dindex]->dim_size != value->multidval.dim_sizes[i]) {
+							if((thefile->file.file_dim_info[dindex]->dim_size != value->multidval.dim_sizes[i])&&(!(thefile->file.file_dim_info[dindex]->is_unlimited))) {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"File dimension conflict, dimension (%s) has a size of (%d) can not set it to requested size (%d)",NrmQuarkToString(dim_names[i]),thefile->file.file_dim_info[dindex]->dim_size,value->multidval.dim_sizes[i]);
 								return(NhlFATAL);
 			
+							}
+							if(thefile->file.file_dim_info[dindex]->is_unlimited) {
+								update_unlimited = 1;
 							}
 						}
 					}
@@ -3260,6 +3336,15 @@ int type;
 						new_dim_quarks,
 						new_dim_sizes
 					);
+					if(update_unlimited) {
+						for(i = 0; i < thefile->file.n_file_dims;i++) {
+							if(thefile->file.file_dim_info[i]->is_unlimited) {
+								tmpfdim= thefile->file.file_dim_info[i];
+								thefile->file.file_dim_info[i] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,tmpfdim->dim_name_quark);
+								NclFree(tmpfdim);
+							}
+						}
+					}
 				}
 			} else {
 
@@ -3271,6 +3356,15 @@ int type;
 					new_dim_quarks,
 					new_dim_sizes
 				);
+					if(update_unlimited) {
+						for(i = 0; i < thefile->file.n_file_dims;i++) {
+							if(thefile->file.file_dim_info[i]->is_unlimited) {
+								tmpfdim= thefile->file.file_dim_info[i];
+								thefile->file.file_dim_info[i] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,tmpfdim->dim_name_quark);
+								NclFree(tmpfdim);
+							}
+						}
+					}
 				tmp_md = value;
 				NclFree(data_type);
 			}
@@ -4069,7 +4163,7 @@ struct _NclSelectionRecord* sel_ptr;
 	return(NULL);
 }
 
-
+	
 
 static NclQuark FileGetDimName
 #if	NhlNeedProto

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.21 1997-09-03 22:34:11 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.22 1997-09-05 22:13:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -243,9 +243,11 @@ int wr_status;
 			(*stepdlptr)->next = NULL;
 			(*stepdlptr)->dim_inq->dimid = i;
 			ncdiminq(cdfid,i,buffer,&((*stepdlptr)->dim_inq->size));
+/*
 			if((*stepdlptr)->dim_inq->size == 0) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"NetCdf: %s is a zero length dimension some variables may be ignored",buffer);
 			}
+*/
 			(*stepdlptr)->dim_inq->name = NrmStringToQuark(buffer);
 			stepdlptr = &((*stepdlptr)->next);
 		}
@@ -271,10 +273,12 @@ int wr_status;
 			for(j = 0; j < ((*stepvlptr)->var_inq->n_dims); j++) {
 				tmp_size = 0;
 				ncdiminq(cdfid,((*stepvlptr)->var_inq->dim)[j],buffer2,&tmp_size);
+/*
 				if(tmp_size == 0 ) {
 					NhlPError(NhlWARNING,NhlEUNKNOWN,"NetCdf: A zero length dimension was found in variable (%s), ignoring this variable",buffer);
 					break;
 				}
+*/
 			}
 			if(j != ((*stepvlptr)->var_inq->n_dims)) {
 				tmpvlptr = *stepvlptr;
@@ -1254,12 +1258,13 @@ void* data;
 
 static NhlErrorTypes NetAddDim
 #if	NhlNeedProto
-(void* therec, NclQuark thedim, int size)
+(void* therec, NclQuark thedim, int size,int is_unlimited)
 #else
-(therec, thedim, size)
+(therec, thedim, size,is_unlimited)
 void* therec;
 NclQuark thedim;
 int size;
+int is_unlimited;
 #endif
 {
 	NetCdfFileRecord *rec = (NetCdfFileRecord*) therec;
@@ -1280,7 +1285,11 @@ int size;
 			return(NhlFATAL);
 		}
 		ncredef(cdfid);
-		ret = ncdimdef(cdfid,NrmQuarkToString(thedim),(long)size);
+		if(is_unlimited) {
+			ret = ncdimdef(cdfid,NrmQuarkToString(thedim),NC_UNLIMITED);
+		} else {
+			ret = ncdimdef(cdfid,NrmQuarkToString(thedim),(long)size);
+		}
 		ncendef(cdfid);
 		ncclose(cdfid);
 		if(ret == -1) {
@@ -1292,7 +1301,12 @@ int size;
 			rec->dims->dim_inq = (NetCdfDimInqRec*)NclMalloc((unsigned)sizeof(NetCdfDimInqRec));
 			rec->dims->dim_inq->dimid = ret;
 			rec->dims->dim_inq->name = thedim;
-			rec->dims->dim_inq->size = (long)size;
+			if(is_unlimited) {
+				rec->dims->dim_inq->size = (long)0;
+			} else {
+				rec->dims->dim_inq->size = (long)size;
+			}
+			rec->dims->dim_inq->is_unlimited= is_unlimited;
 			rec->dims->next = NULL;
 			rec->n_dims = 1;
 			return(NhlNOERROR);
@@ -1304,7 +1318,12 @@ int size;
 			stepdl->next->dim_inq = (NetCdfDimInqRec*)NclMalloc((unsigned)sizeof(NetCdfDimInqRec));
 			stepdl->next->dim_inq->dimid = ret;
 			stepdl->next->dim_inq->name = thedim;
-			stepdl->next->dim_inq->size = (long)size;
+			if(is_unlimited) {
+				stepdl->next->dim_inq->size = (long)0;
+			} else {
+				stepdl->next->dim_inq->size = (long)size;
+			}
+			stepdl->next->dim_inq->is_unlimited= is_unlimited;
 			stepdl->next->next = NULL;
 			rec->n_dims++;
 			return(NhlNOERROR);

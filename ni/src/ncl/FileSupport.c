@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.12 1996-11-01 23:15:07 ethan Exp $
+ *      $Id: FileSupport.c,v 1.13 1997-09-05 22:13:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1199,6 +1199,33 @@ struct _NclSelectionRecord* sel_ptr;
 	while((NclObjClass)fc != nclObjClass) {
 		if(fc->file_class.write_coord_func != NULL) {
 			return((*fc->file_class.write_coord_func)(thefile, coord_name, value, sel_ptr));
+		} else {
+			fc = (NclFileClass)fc->obj_class.super_class;
+		}
+	}
+	return(NhlFATAL);
+}
+
+extern NhlErrorTypes _NclFileAddDim
+#if     NhlNeedProto
+(NclFile thefile, NclQuark dimname, int dimsize, int is_unlimited)
+#else
+(thefile, dimname, dimsize, is_unlimited)
+NclFile thefile;
+NclQuark dimname;
+int dimsize;
+int is_unlimited;
+#endif
+{
+	NclFileClass fc = NULL;
+
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+	fc = (NclFileClass)thefile->obj.class_ptr;
+	while((NclObjClass)fc != nclObjClass) {
+		if(fc->file_class.add_dim_func != NULL) {
+			return((*fc->file_class.add_dim_func)(thefile, dimname, dimsize, is_unlimited));
 		} else {
 			fc = (NclFileClass)fc->obj_class.super_class;
 		}
