@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.3 1993-10-06 01:54:59 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.4 1993-10-07 21:30:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -438,6 +438,7 @@ CoordArrTableFloatLayerClassRec coordArrTableFloatLayerClassRec = {
 /* class_initialize		*/	NULL,
 /* layer_initialize		*/	CoordArrTableFloatInitialize,
 /* layer_set_values		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NULL
@@ -465,6 +466,7 @@ CoordArrTableIntLayerClassRec coordArrTableIntLayerClassRec = {
 /* class_initialize		*/	NULL,
 /* layer_initialize		*/	CoordArrTableIntInitialize,
 /* layer_set_values		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NULL
@@ -492,6 +494,7 @@ CoordArrTableLayerClassRec coordArrTableLayerClassRec = {
 /* class_initialize		*/	CoordArrTableClassInitialize,
 /* layer_initialize		*/	CoordArrTableInitialize,
 /* layer_set_values		*/	CoordArrTableSetValues,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	CoordArrTableDestroy,

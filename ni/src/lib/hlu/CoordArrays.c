@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.2 1993-09-20 21:37:14 boote Exp $
+ *      $Id: CoordArrays.c,v 1.3 1993-10-07 21:30:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -92,6 +92,7 @@ CoordArraysFloatLayerClassRec coordArraysFloatLayerClassRec = {
 /* class_initialize		*/	NULL,
 /* layer_initialize		*/	NULL,
 /* layer_set_values		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NULL
@@ -119,6 +120,7 @@ CoordArraysIntLayerClassRec coordArraysIntLayerClassRec = {
 /* class_initialize		*/	NULL,
 /* layer_initialize		*/	NULL,
 /* layer_set_values		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NULL
@@ -146,6 +148,7 @@ CoordArraysLayerClassRec coordArraysLayerClassRec = {
 /* class_initialize		*/	CoordArraysClassInitialize,
 /* layer_initialize		*/	CoordArraysInitialize,
 /* layer_set_values		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	CoordArraysDestroy,
