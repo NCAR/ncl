@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.103 1998-09-16 17:20:24 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.104 1999-03-08 22:06:30 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -830,6 +830,7 @@ NhlErrorTypes _Nclsystemfunc
 			close(fildes[1]);
 			command = NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val); 
 			if(!system(command)) {
+				close(new_pipe_fd);
 				exit(0);
 			} else {
 				exit(1);
