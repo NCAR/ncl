@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.37 1995-05-02 21:28:06 boote Exp $
+ *      $Id: Converters.c,v 1.38 1995-05-05 08:50:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -132,7 +132,8 @@ _NhlStringToStringGenArray
 				data_out = NhlConvertMalloc(strlen(strng) + 1);
 				data_ptr = NhlConvertMalloc(sizeof(char*) *
 								strlen(strng));
-				memset(data_ptr,0,sizeof(char*)*strlen(strng));
+				memset((char*)data_ptr,0,
+						sizeof(char*)*strlen(strng));
 				level++;
 				state = 2;
 				if(level >= MAX_DIMENSIONS){
@@ -1925,7 +1926,7 @@ CvtArgs
 		strcpy(*tptr,from->data.strval);
 	}
 	else
-		memcpy(data,&from->data,from->size);
+		memcpy(data,(Const char *)&from->data,from->size);
 	strcpy(buff,NrmQuarkToString(from->typeQ));
 	sgen = _NhlConvertCreateGenArray(data,buff,from->size,1,NULL);
 	if(!sgen){

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.46 1995-05-03 03:11:31 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.47 1995-05-05 08:50:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1064,10 +1064,10 @@ XyPlotInitialize
 	NhlXyPlotLayerPart	*xp = &xnew->xyplot;
 	NhlTransformLayerPart	*tfp = &xnew->trans;
 
-	if(!xp->comp_x_min_set) xp->compute_x_min = False;
-	if(!xp->comp_x_max_set) xp->compute_x_max = False;
-	if(!xp->comp_y_max_set) xp->compute_y_max = False;
-	if(!xp->comp_y_min_set) xp->compute_y_min = False;
+	if(!xp->comp_x_min_set) xp->compute_x_min = !xp->x_min_set;
+	if(!xp->comp_x_max_set) xp->compute_x_max = !xp->x_max_set;
+	if(!xp->comp_y_min_set) xp->compute_y_min = !xp->y_min_set;
+	if(!xp->comp_y_max_set) xp->compute_y_max = !xp->y_max_set;
 
 	if(!xp->x_min_set) xp->x_min = 1.0;
 	if(!xp->x_max_set) xp->x_max = 2.0;
@@ -1796,7 +1796,7 @@ SetUpDataSpec
 	xmissing = xlp->xmissing->data;
 	ymissing = xlp->ymissing->data;
 
-	memset(missing_set,0,
+	memset((char*)missing_set,0,
 			xlp->missing_set->size*xlp->missing_set->num_elements);
 
 	num_data = _NhlGetDataInfo(xlp->curve_data,&datalist);

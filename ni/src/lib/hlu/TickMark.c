@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.36 1995-05-03 08:23:16 boote Exp $
+ *      $Id: TickMark.c,v 1.37 1995-05-05 08:50:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1900,6 +1900,8 @@ NhlTickMarkLayer tlayer;
 			for(i = 0; i < tlayer->tick.x_b_nmajor; i++) {
 				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_b_major_ndc_locs[i],yb,1);
 				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_b_major_ndc_locs[i],yt,0);
+				_NhlWorkstationLineTo(tlayer->base.wkptr,
+					1.0,1.0,1);
 			}
 		} else if(tlayer->tick.x_t_on) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
@@ -1912,6 +1914,7 @@ NhlTickMarkLayer tlayer;
 				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_t_major_ndc_locs[i],yb,1);
 				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_t_major_ndc_locs[i],yt,0);
 			}
+			_NhlWorkstationLineTo(tlayer->base.wkptr,1.0,1.0,1);
 		} else {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"DrawGrid: Either XBOn or XTOn must be set in order to draw an XAxis grid");
 			ret1 = NhlWARNING;
@@ -1929,6 +1932,7 @@ NhlTickMarkLayer tlayer;
 				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_b_minor_ndc_locs[i],yb,1);
 				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_b_minor_ndc_locs[i],yt,0);
 			}
+			_NhlWorkstationLineTo(tlayer->base.wkptr,1.0,1.0,1);
 		} else if((tlayer->tick.x_t_on)&&(tlayer->tick.x_t_minor_on)){
 			NhlVASetValues(tlayer->base.wkptr->base.id,
 				_NhlNwkLineColor,tlayer->tick.x_minor_grid_line_color,
@@ -1940,6 +1944,7 @@ NhlTickMarkLayer tlayer;
 				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_t_minor_ndc_locs[i],yb,1);
 				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_t_minor_ndc_locs[i],yt,0);
 			}
+			_NhlWorkstationLineTo(tlayer->base.wkptr,1.0,1.0,1);
 		} else {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"DrawGrid: Either XBOn or XTOn must be set in order to draw an XAxis minor grid");
 			ret1 = NhlWARNING;
@@ -1957,6 +1962,7 @@ NhlTickMarkLayer tlayer;
 				_NhlWorkstationLineTo(tlayer->base.wkptr,xl,tlayer->tick.y_l_major_ndc_locs[i],1);
 				_NhlWorkstationLineTo(tlayer->base.wkptr,xr,tlayer->tick.y_l_major_ndc_locs[i],0);
 			}
+			_NhlWorkstationLineTo(tlayer->base.wkptr,1.0,1.0,1);
 		} else if(tlayer->tick.y_r_on) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
 				_NhlNwkLineColor,tlayer->tick.y_major_grid_line_color,
@@ -1968,6 +1974,7 @@ NhlTickMarkLayer tlayer;
 				_NhlWorkstationLineTo(tlayer->base.wkptr,xl,tlayer->tick.y_r_major_ndc_locs[i],1);
 				_NhlWorkstationLineTo(tlayer->base.wkptr,xr,tlayer->tick.y_r_major_ndc_locs[i],0);
 			}
+			_NhlWorkstationLineTo(tlayer->base.wkptr,1.0,1.0,1);
 		} else {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"DrawGrid: Either XBOn or XTOn must be set in order to draw an XAxis grid");
 			ret1 = NhlWARNING;
@@ -1985,6 +1992,7 @@ NhlTickMarkLayer tlayer;
 				_NhlWorkstationLineTo(tlayer->base.wkptr,xl,tlayer->tick.y_l_minor_ndc_locs[i],1);
 				_NhlWorkstationLineTo(tlayer->base.wkptr,xr,tlayer->tick.y_l_minor_ndc_locs[i],0);
 			}
+			_NhlWorkstationLineTo(tlayer->base.wkptr,1.0,1.0,1);
 		} else if((tlayer->tick.y_r_on)&&(tlayer->tick.y_r_minor_on)){
 			NhlVASetValues(tlayer->base.wkptr->base.id,
 				_NhlNwkLineColor,tlayer->tick.y_minor_grid_line_color,
@@ -1996,6 +2004,7 @@ NhlTickMarkLayer tlayer;
 				_NhlWorkstationLineTo(tlayer->base.wkptr,xl,tlayer->tick.y_r_minor_ndc_locs[i],1);
 				_NhlWorkstationLineTo(tlayer->base.wkptr,xr,tlayer->tick.y_r_minor_ndc_locs[i],0);
 			}
+			_NhlWorkstationLineTo(tlayer->base.wkptr,1.0,1.0,1);
 		} else {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"DrawGrid: Either XBOn or XTOn must be set in order to draw an XAxis minor grid");
 			ret1 = NhlWARNING;

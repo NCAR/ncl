@@ -121,32 +121,31 @@ NhlCompareDat *_NhlCmpFSetup
 	if(val == 0.0) {
 		tmp->is_zero = 1;
 		return(tmp);
-	} else {
-		tmp->is_zero = 0;	
-		tmp->orig_val = val;
-		if(sig_dig > 7)  {
-			tmp->sig_dig = 7;
-		} else {
-			tmp->sig_dig = sig_dig;
-		}
-		
-		if(val < 0.0)
-			sign = -1;
-		else
-			sign = 1;
-		tmp->b_final = fabs(val);
-		dummy = (float)log10(tmp->b_final);
-		tmp->exp = (long)ceil(log10(tmp->b_final));
-		if((float) tmp->exp == dummy) {
-			tmp->exp++;
-		}
-		tmp->b_final = tmp->b_final/(float)pow(10.0,(double)tmp->exp);
-		tmp->b_final = tmp->b_final * pow(10.0,(double)tmp->sig_dig);
-		tmp->b_final = _NhlRndIt(tmp->b_final,tmp->sig_dig);
-		tmp->b_final *= sign;
-		return(tmp);
 	}
-	return NULL;
+
+	tmp->is_zero = 0;	
+	tmp->orig_val = val;
+	if(sig_dig > 7)  {
+		tmp->sig_dig = 7;
+	} else {
+		tmp->sig_dig = sig_dig;
+	}
+
+	if(val < 0.0)
+		sign = -1;
+	else
+		sign = 1;
+	tmp->b_final = fabs(val);
+	dummy = (float)log10(tmp->b_final);
+	tmp->exp = (long)ceil(log10(tmp->b_final));
+	if((float) tmp->exp == dummy) {
+		tmp->exp++;
+	}
+	tmp->b_final = tmp->b_final/(float)pow(10.0,(double)tmp->exp);
+	tmp->b_final = tmp->b_final * pow(10.0,(double)tmp->sig_dig);
+	tmp->b_final = _NhlRndIt(tmp->b_final,tmp->sig_dig);
+	tmp->b_final *= sign;
+	return(tmp);
 }
 
 /*

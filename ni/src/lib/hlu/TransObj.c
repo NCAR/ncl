@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.14 1995-05-03 03:11:27 dbrown Exp $
+ *      $Id: TransObj.c,v 1.15 1995-05-05 08:50:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -206,9 +206,9 @@ TransCopyPoints
 #endif
 {
 	if(x != xout)
-		memcpy(xout,x,n*sizeof(float));
+		memcpy((char*)xout,(Const char*)x,n*sizeof(float));
 	if(y != yout)
-		memcpy(yout,y,n*sizeof(float));
+		memcpy((char*)yout,(Const char*)y,n*sizeof(float));
 
 	return NhlNOERROR;
 }

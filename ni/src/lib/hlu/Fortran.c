@@ -1,5 +1,5 @@
 /*
- *      $Id: Fortran.c,v 1.10 1995-05-02 21:28:11 boote Exp $
+ *      $Id: Fortran.c,v 1.11 1995-05-05 08:50:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1096,7 +1096,7 @@ CvtGenArrToFArr
 
 		StackAlloc(iarr,num_dim)
 		/* start with 0 indices */
-		memset(iarr,0,sizeof(int)*num_dim);
+		memset((char*)iarr,0,sizeof(int)*num_dim);
 		cindx = findx = 0;
 
 		for(j=0;j<num_passes;j++){
@@ -1176,7 +1176,8 @@ CvtGenArrToFArr
 
 	if(exp->num_dim != NULL){
 		*exp->num_dim = num_dim;
-		memcpy(exp->len_dim,len_dim,sizeof(int)*num_dim);
+		memcpy((char*)exp->len_dim,(Const char*)len_dim,
+							sizeof(int)*num_dim);
 	}
 	else{
 		*exp->len_dim = len_dim[0];

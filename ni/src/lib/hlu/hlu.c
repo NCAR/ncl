@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.30 1995-05-01 17:11:00 ethan Exp $
+ *      $Id: hlu.c,v 1.31 1995-05-05 08:50:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1437,7 +1437,7 @@ _NhlTmpFile
 	sprintf(ptr,"%d",getpid());
 	ptr = buffer + strlen(buffer) + 3;
 	*ptr-- = '\0';
-	tint = a;
+	tint = a++;
 	*ptr-- = (tint % 10) + '0';
 	tint /= 10;
 	*ptr-- = (tint % 10) + '0';

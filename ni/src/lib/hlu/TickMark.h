@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.8 1995-04-07 10:43:59 boote Exp $
+ *      $Id: TickMark.h,v 1.9 1995-05-05 08:50:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -66,12 +66,12 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 
 #define NhlNtmXMajorGrid		"tmXMajorGrid"
 #define NhlNtmXMinorGrid		"tmXMinorGrid"
-#define NhlNtmXMajorGridThicknessF	"tmXBMajorGridThicknessF"
-#define NhlNtmXMajorGridLineColor	"tmXBMajorGridLineColor"
-#define NhlNtmXMajorGridLineDashPattern	"tmXBMajorGridLineDashPattern"
-#define NhlNtmXMinorGridThicknessF	"tmXBMinorGridThicknessF"
-#define NhlNtmXMinorGridLineColor	"tmXBMinorGridLineColor"
-#define NhlNtmXMinorGridLineDashPattern	"tmXBMinorGridLineDashPattern"
+#define NhlNtmXMajorGridThicknessF	"tmXMajorGridThicknessF"
+#define NhlNtmXMajorGridLineColor	"tmXMajorGridLineColor"
+#define NhlNtmXMajorGridLineDashPattern	"tmXMajorGridLineDashPattern"
+#define NhlNtmXMinorGridThicknessF	"tmXMinorGridThicknessF"
+#define NhlNtmXMinorGridLineColor	"tmXMinorGridLineColor"
+#define NhlNtmXMinorGridLineDashPattern	"tmXMinorGridLineDashPattern"
 
 #define NhlNtmXBMinorPerMajor	"tmXBMinorPerMajor"
 #define NhlNtmXTMinorPerMajor	"tmXTMinorPerMajor"

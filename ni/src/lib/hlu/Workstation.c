@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.39 1995-04-29 18:53:41 boote Exp $
+ *      $Id: Workstation.c,v 1.40 1995-05-05 08:50:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2315,10 +2315,10 @@ _NhlSetColor
 	wl->work.private_color_map[ci].red = red;
 	wl->work.private_color_map[ci].green = green;
 	wl->work.private_color_map[ci].blue = blue;
-	if(wl->work.private_color_map[ci].ci == _NhlCOLUNSET)
-		wl->work.private_color_map[ci].ci = _NhlCOLNEW;
+	if(wl->work.private_color_map[ci].cstat == _NhlCOLUNSET)
+		wl->work.private_color_map[ci].cstat = _NhlCOLNEW;
 	else
-		wl->work.private_color_map[ci].ci = _NhlCOLCHANGE;
+		wl->work.private_color_map[ci].cstat = _NhlCOLCHANGE;
 
 	return _NhlAllocateColors(l);
 }
@@ -2413,7 +2413,7 @@ _NhlFreeColor
 		return NhlFATAL;
 	}
 
-	wl->work.private_color_map[ci].ci = _NhlCOLREMOVE;
+	wl->work.private_color_map[ci].cstat = _NhlCOLREMOVE;
 
 	return _NhlAllocateColors(l);
 }
@@ -2516,7 +2516,7 @@ int _NhlNewColor
 
 	for(i=2;i < _NhlMAX_COLOR_MAP;i++){
 		if(wl->work.private_color_map[i].cstat == _NhlCOLUNSET){
-			wl->work.private_color_map[i].ci = _NhlCOLNEW;
+			wl->work.private_color_map[i].cstat = _NhlCOLNEW;
 			wl->work.private_color_map[i].red = red;
 			wl->work.private_color_map[i].green = green;
 			wl->work.private_color_map[i].blue = blue;
