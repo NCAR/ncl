@@ -305,7 +305,7 @@ if(groot != NULL) {
 			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
                         _NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
                         _NclPutInstr(0,dofromto->line,dofromto->file);
-                        _NclPutInstr(GE_OP,dofromto->line,dofromto->file);
+                        _NclPutInstr(LE_OP,dofromto->line,dofromto->file);
 
 
 			
@@ -359,7 +359,7 @@ if(groot != NULL) {
 			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
                         _NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
                         _NclPutInstr(0,dofromto->line,dofromto->file);
-                        _NclPutInstr(LE_OP,dofromto->line,dofromto->file);
+                        _NclPutInstr(GE_OP,dofromto->line,dofromto->file);
 
 			_NclPutInstr(JMP,dofromto->line,dofromto->file);
 			off9 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
@@ -369,7 +369,7 @@ if(groot != NULL) {
 			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
                         _NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
                         _NclPutInstr(0,dofromto->line,dofromto->file);
-                        _NclPutInstr(GE_OP,dofromto->line,dofromto->file);
+                        _NclPutInstr(LE_OP,dofromto->line,dofromto->file);
 			_NclPutInstrAt(off7,off8,dofromto->line,dofromto->file);
 			
 			
@@ -383,139 +383,138 @@ if(groot != NULL) {
 		}
 		case Ncl_DOFROMTOSTRIDE:
 		{
-			NclDoFromToStride *dofromto = (NclDoFromToStride*)root;
+			NclDoFromToStride *dofromtostride = (NclDoFromToStride*)root;
 
+                        int off6 = -1;
                         int off7 = -1;
                         int off8 = -1;
                         int off9 = -1;
                         int off10 = -1;
+                        int off11 = -1;
 			
-/*
-* Nothing on stack here
-*/
-                        off1 =_NclTranslate(dofromto->end_expr,fp);
-			_NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
-			_NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
-			_NclPutInstr(0,dofromto->line,dofromto->file);
-                        _NclTranslate(dofromto->start_expr,fp);
-			_NclPutInstr(DUP_TOFS,dofromto->line,dofromto->file);
-
-			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
-			_NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
-			_NclPutInstr(0,dofromto->line,dofromto->file);
-
-                        _NclPutInstr(LT_OP,dofromto->line,dofromto->file);
-			_NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
-			_NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
-			_NclPutInstr(0,dofromto->line,dofromto->file);
-
-			_NclTranslate(dofromto->stride_expr,fp);
-			_NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
-			_NclPutInstr((NclValue)dofromto->inc_sym,dofromto->line,dofromto->file);
-			_NclPutInstr(0,dofromto->line,dofromto->file);
-
-                        ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_WRITEIT;
-                        _NclTranslate(dofromto->inc_var,fp);
+			off1 = _NclTranslate(dofromtostride->end_expr,fp);
+			_NclPutInstr(ASSIGN_VAR_OP,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
 			
-
-			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr(0,dofromto->line,dofromto->file);
-
-			_NclPutInstr(JMPFALSE,dofromto->line,dofromto->file);
-			off7 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
-
-                        ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_READIT;
-                        _NclTranslate(dofromto->inc_var,fp);
-			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr(0,dofromto->line,dofromto->file);
-                        _NclPutInstr(LT_OP,dofromto->line,dofromto->file);
-			_NclPutInstr(JMP,dofromto->line,dofromto->file);
-			off9 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
-
-
-                        ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_READIT;
-			off8 = _NclTranslate(dofromto->inc_var,fp);
-			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr(0,dofromto->line,dofromto->file);
-                        _NclPutInstr(GT_OP,dofromto->line,dofromto->file);
-			_NclPutInstrAt(off7,off8,dofromto->line,dofromto->file);
+			_NclTranslate(dofromtostride->stride_expr,fp);
+			_NclPutInstr(ASSIGN_VAR_OP,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr((NclValue)dofromtostride->inc_sym,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
 			
+			_NclTranslate(dofromtostride->start_expr,fp);
+			_NclPutInstr(DUP_TOFS,dofromtostride->line,dofromtostride->file);
+			
+			((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_WRITEIT;
+			_NclTranslate(dofromtostride->inc_var,fp);
 /*
-* loop operator plus offset of begining of loop block
-* Stack has value on top followed by increment values followed by indicator of comparision
-* direction, followed by the final value. First thing DO_FROM_TO_OP does is pop that value
-* and compare. then it runs its loop
+* Start expr is left on top of stack
 */
-                        off10 = _NclPutInstr(DO_FROM_TO_OP,dofromto->line,dofromto->file);
-			_NclPutInstrAt(off9,off10,dofromto->line,dofromto->file);
 
-                        off2 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->inc_sym,dofromto->line,dofromto->file);
-/*
-* Jumps over loop block when done
-*/
-                        _NclPutInstr(JMP,dofromto->line,dofromto->file);
-                        off3 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
+			_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
+                        _NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
+                        _NclPutInstr(0,dofromtostride->line,dofromtostride->file);
 
-                        step = dofromto->block_stmnt_list;
-                        if(step != NULL) {
-                                off4 = _NclTranslate(step->node,fp);
-                                step = step->next;
-                        }
-                        _NclPutInstrAt(off2,off4,dofromto->line,dofromto->file);
-                        while(step != NULL) {
-                                (void) _NclTranslate(step->node,fp);
-                                step = step->next;
-                        }
+			_NclPutInstr(LE_OP,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr(DUP_TOFS,dofromtostride->line,dofromtostride->file);
 /*
-* Must leave true or false on top of stack
+* 
 */			
-			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->inc_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr(0,dofromto->line,dofromto->file);
-                        ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_READIT;
-                        _NclTranslate(dofromto->inc_var,fp);
-			_NclPutInstr(PLUS_OP,dofromto->line,dofromto->file);
-                        ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_WRITEIT;
-                        _NclTranslate(dofromto->inc_var,fp);
+			_NclPutInstr(ASSIGN_VAR_OP,dofromtostride->line,dofromtostride->file);
+                        _NclPutInstr((NclValue)dofromtostride->dir_sym,dofromtostride->line,dofromtostride->file);
+                        _NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+		
+			_NclPutInstr(JMPFALSE,dofromtostride->line,dofromtostride->file);
+			off2 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
 
-			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr(0,dofromto->line,dofromto->file);
-			_NclPutInstr(JMPFALSE,dofromto->line,dofromto->file);
-			off7 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
-                        ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_READIT;
-                        _NclTranslate(dofromto->inc_var,fp);
-			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr(0,dofromto->line,dofromto->file);
-                        _NclPutInstr(LE_OP,dofromto->line,dofromto->file);
+			((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_READIT;
+			_NclTranslate(dofromtostride->inc_var,fp);
+			_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
+                        _NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr(LE_OP,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr(JMP,dofromtostride->line,dofromtostride->file);
+			off7 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
 
-			_NclPutInstr(JMP,dofromto->line,dofromto->file);
-			off9 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
+			((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_READIT;
+                        off3 = _NclTranslate(dofromtostride->inc_var,fp);
+			_NclPutInstrAt(off2,off3,dofromtostride->line,dofromtostride->file);      
 
-                        ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_READIT;
-			off8 = _NclTranslate(dofromto->inc_var,fp);
-			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr(0,dofromto->line,dofromto->file);
-                        _NclPutInstr(GE_OP,dofromto->line,dofromto->file);
-			_NclPutInstrAt(off7,off8,dofromto->line,dofromto->file);
+			_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
+                        _NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr(GE_OP,dofromtostride->line,dofromtostride->file);
+
+			off8 = _NclPutInstr(DO_FROM_TO_OP,dofromtostride->line,dofromtostride->file);      
+			_NclPutInstrAt(off7,off8,dofromtostride->line,dofromtostride->file);      
+			off2 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr((NclValue)dofromtostride->dir_sym,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr((NclValue)dofromtostride->inc_sym,dofromtostride->line,dofromtostride->file);
 			
+			_NclPutInstr(JMP,dofromtostride->line,dofromtostride->file);      
+			off3 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
+			
+			step = dofromtostride->block_stmnt_list;
+			if(step != NULL) {
+				off4 = _NclTranslate(step->node,fp);
+				step = step->next;
+			}
+			_NclPutInstrAt(off2,off4,dofromtostride->line,dofromtostride->file);
+			while(step != NULL) {
+				_NclTranslate(step->node,fp);
+				step = step->next;
+			}
+
+			((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_READIT;
+			_NclTranslate(dofromtostride->inc_var,fp);
+
+			_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr((NclValue)dofromtostride->inc_sym,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+
+			_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr((NclValue)dofromtostride->dir_sym,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr(JMPFALSE,dofromtostride->line,dofromtostride->file);
+			off9 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
+
+			_NclPutInstr(PLUS_OP,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr(JMP,dofromtostride->line,dofromtostride->file);
+			off11 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
+			off10 = _NclPutInstr(MINUS_OP,dofromtostride->line,dofromtostride->file);
+			_NclPutInstrAt(off9,off10,dofromtostride->line,dofromtostride->file);
+
+
+			((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_WRITEIT;
+			off10 = _NclTranslate(dofromtostride->inc_var,fp);     
+			_NclPutInstrAt(off11,off10,dofromtostride->line,dofromtostride->file);
 			
 
-                        off10 = _NclPutInstr(STOPSEQ,dofromto->line,dofromto->file);
-			_NclPutInstrAt(off9,off10,dofromto->line,dofromto->file);
-
-                        _NclPutInstrAt(off3, _NclGetCurrentOffset(),dofromto->line,dofromto->file);
-
+			_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);      
+			_NclPutInstr((NclValue)dofromtostride->dir_sym,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
 			
-                        break;
+			_NclPutInstr(JMPFALSE,dofromtostride->line,dofromtostride->file);
+			off5 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
+			((NclGenericRefNode*)dofromtostride->inc_var)->ref_type = Ncl_READIT;                   
+                        _NclTranslate(dofromtostride->inc_var,fp);     
+			_NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);      
+			_NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr(LE_OP,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr(JMP,dofromtostride->line,dofromtostride->file);
+			off6 = _NclPutInstr(NOOP,dofromtostride->line,dofromtostride->file);
+			_NclTranslate(dofromtostride->inc_var,fp);
+			 _NclPutInstr(VAR_READ_OP,dofromtostride->line,dofromtostride->file);
+                        _NclPutInstr((NclValue)dofromtostride->end_sym,dofromtostride->line,dofromtostride->file);
+                        _NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+			_NclPutInstr(GE_OP,dofromtostride->line,dofromtostride->file);
+			_NclPutInstrAt(off5,off6,dofromtostride->line,dofromtostride->file);
+			off7 = _NclPutInstr(STOPSEQ,dofromtostride->line,dofromtostride->file);
+			_NclPutInstrAt(off6,off7,dofromtostride->line,dofromtostride->file);
+			_NclPutInstrAt(off3,_NclGetCurrentOffset(),dofromtostride->line,dofromtostride->file);      
+			break;
 
 		}			
 		case Ncl_ASSIGN:
@@ -702,144 +701,150 @@ if(groot != NULL) {
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
 			
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(MOD_OP,dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_OREXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclPutInstr(JMP_SCALAR_TRUE_OP,dualexpr->line,dualexpr->file);
+			off2 = _NclPutInstr(NOOP,dualexpr->line,dualexpr->file);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(OR_OP,dualexpr->line,dualexpr->file);
+			_NclPutInstrAt(off2,_NclGetCurrentOffset(),dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_ANDEXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclPutInstr(JMP_SCALAR_FALSE_OP,dualexpr->line,dualexpr->file);
+			off2 = _NclPutInstr(NOOP,dualexpr->line,dualexpr->file);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(AND_OP,dualexpr->line,dualexpr->file);
+			_NclPutInstrAt(off2,_NclGetCurrentOffset(),dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_XOREXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(XOR_OP,dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_LTSELECTEXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(LTSEL_OP,dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_GTSELECTEXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(GTSEL_OP,dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_PLUSEXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(PLUS_OP,dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_MINUSEXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(MINUS_OP,dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_MULEXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(MUL_OP,dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_MATMULEXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(MAT_OP,dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_DIVEXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(DIV_OP,dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_EXPEXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(EXP_OP,dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_LEEXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(LE_OP,dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_GEEXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(GE_OP,dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_GTEXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(GT_OP,dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_LTEXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(LT_OP,dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_EQEXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(EQ_OP,dualexpr->line,dualexpr->file);
 			break;
 		}
 		case Ncl_NEEXPR:
 		{
 			NclDualExpr *dualexpr = (NclDualExpr*)root;
-			off1 = _NclTranslate(dualexpr->right_expr,fp);
-			_NclTranslate(dualexpr->left_expr,fp);
+			off1 = _NclTranslate(dualexpr->left_expr,fp);
+			_NclTranslate(dualexpr->right_expr,fp);
 			_NclPutInstr(NE_OP,dualexpr->line,dualexpr->file);
 			break;
 		}

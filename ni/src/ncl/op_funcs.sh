@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: op_funcs.sh,v 1.3 1994-08-25 18:01:27 ethan Exp $
+#      $Id: op_funcs.sh,v 1.4 1994-09-01 17:42:18 ethan Exp $
 #
 #########################################################################
 #									#
@@ -345,8 +345,10 @@ sed \
 -e 's/FUNCNAME/Or/' \
 MultiDValSimpleOpTemplate.c.sed
 
+if [ \( $1 = "int" \) -o \( $1 = "long" \) -o \( $1 = "short" \) ]
+then
 sed \
--e "s/OUTDATATYPE/$1/g" \
+-e "s/OUTDATATYPE/float/g" \
 -e "s/DATATYPE/$1/g" \
 -e 's/FNAME/pow/' \
 -e 's/OPER/\^/' \
@@ -354,6 +356,18 @@ sed \
 -e 's/CAST/double/g' \
 -e 's/INCLUDE/math/' \
 MultiDValFunctionOpTemplate.c.sed
+else
+sed \
+-e "s/OUTDATATYPE/float/g" \
+-e "s/DATATYPE/$1/g" \
+-e 's/FNAME/pow/' \
+-e 's/OPER/\^/' \
+-e 's/FUNCNAME/Exp/' \
+-e 's/CAST/double/g' \
+-e 's/INCLUDE/math/' \
+MultiDValFunctionOpTemplate.c.sed
+fi
+
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \

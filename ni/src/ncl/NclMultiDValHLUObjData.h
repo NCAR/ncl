@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.h,v 1.1 1994-07-14 20:46:48 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.h,v 1.2 1994-09-01 17:41:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -94,8 +94,8 @@ typedef struct _NclMultiDValHLUObjDataClassPart {
 typedef struct _NclMultiDValHLUObjDataClassRec {
 	NclObjClassPart	obj_class;
 	NclDataClassPart data_class;
-	NclMultiDValDataPart multid_class;
-	NclMultiDValDataPart multi_obj_class;
+	NclMultiDValDataClassPart multid_class;
+	NclMultiDValHLUObjDataClassPart multi_obj_class;
 }NclMultiDValHLUObjDataClassRec;
 
 typedef struct _NclMultiDValHLUObjDataRec* NclMultiDValHLUObjData;

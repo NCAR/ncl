@@ -83,4 +83,6 @@
 #define NEW_OP 					83
 #define NEW_WM_OP				84
 #define PUSH_LOG_LIT_OP				85
-#define NUM_OPERATORS				86
+#define JMP_SCALAR_TRUE_OP			86
+#define JMP_SCALAR_FALSE_OP			87
+#define NUM_OPERATORS				88

@@ -170,7 +170,7 @@ statement_list :  statement eoln			{
 * These record statments have to occur here so that the record command isn't written out
 * by the scanner. The scanner writes each line when an EOLN is scanned.
 */
-								recfp = fopen(_NGResolvePath((char*)$3),"w"); 
+								recfp = fopen(_NGResolvePath($3),"w"); 
 								if(recfp != NULL){ 
 									rec =1;
 								} else {
@@ -184,7 +184,7 @@ statement_list :  statement eoln			{
 #endif 
 							}
 	| RECORD STRING eoln				{ 
-								recfp = fopen(_NGResolvePath((char*)$2),"w"); 
+								recfp = fopen(_NGResolvePath($2),"w"); 
 								if(recfp != NULL){ 
 									rec =1;
 								} else {
@@ -211,7 +211,7 @@ statement_list :  statement eoln			{
 								if(loading) {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Recursive script file loading is not supported");
 								} else {
-									tmp_file = fopen(_NGResolvePath((char*)$2),"r");	
+									tmp_file = fopen(_NGResolvePath($2),"r");	
 									if(tmp_file != NULL) {
 										top_level_line = cur_line_number + 1;
 										cur_line_number = 0;
@@ -236,7 +236,7 @@ statement_list :  statement eoln			{
 								if(loading) {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Recursive script file loading is not supported");
 								} else {
-									tmp_file = fopen(_NGResolvePath((char*)$3),"r");	
+									tmp_file = fopen(_NGResolvePath($3),"r");	
 									if(tmp_file != NULL) {
 										top_level_line = cur_line_number + 1;
 										cur_line_number = 0;
@@ -328,7 +328,7 @@ block_statement_list : statement eoln {
 								}
 							}
 	| block_statement_list RECORD STRING eoln				{ 
-								recfp = fopen(_NGResolvePath((char*)$3),"w"); 
+								recfp = fopen(_NGResolvePath($3),"w"); 
 								if(recfp != NULL){ 
 									rec =1;
 								} else {
@@ -340,7 +340,7 @@ block_statement_list : statement eoln {
 									fprintf(stdout,"ncl %d> ",cur_line_number);
 							}
 	| RECORD STRING eoln				{ 
-								recfp = fopen(_NGResolvePath((char*)$2),"w"); 
+								recfp = fopen(_NGResolvePath($2),"w"); 
 								if(recfp != NULL){ 
 									rec =1;
 								} else {
@@ -364,7 +364,7 @@ block_statement_list : statement eoln {
 								if(loading) {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Recursive script file loading is not supported");
 								} else {
-									tmp_file = fopen(_NGResolvePath((char*)$2),"r");	
+									tmp_file = fopen(_NGResolvePath($2),"r");	
 									if(tmp_file != NULL) {
 										top_level_line = cur_line_number +1;
 										cur_line_number = 0;
@@ -389,7 +389,7 @@ block_statement_list : statement eoln {
 								if(loading) {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Recursive script file loading is not supported");
 								} else {
-									tmp_file = fopen(_NGResolvePath((char*)$3),"r");	
+									tmp_file = fopen(_NGResolvePath($3),"r");	
 									if(tmp_file != NULL) {
 										top_level_line = cur_line_number +1;
 										cur_line_number = 0;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: string_ops.c.sed,v 1.3 1994-08-25 18:01:32 ethan Exp $
+ *      $Id: string_ops.c.sed,v 1.4 1994-09-01 17:42:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1626,7 +1626,7 @@ NclMultiDValstringDataClassRec nclMultiDValstringDataClassRec = {
 /* NclGenericFunction destroy; 	*/	MultiDValDestroy, 
 /* NclSetStatusFunciton set_status; 	*/	NULL, 
 /* NclInitPartFunction initialize_part; 	*/	NULL,
-/* NclInitClassFunction initialize_class; 	*/	NULL,
+/* NclInitClassFunction initialize_class; 	*/	MultiDVal_string_InitClass,
 		(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
 /* NclPrintFunction print; 	*/	NclMultiDValstringPrint,

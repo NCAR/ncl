@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.22 1994-08-25 18:00:30 ethan Exp $
+ *      $Id: Machine.c,v 1.23 1994-09-01 17:41:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -161,6 +161,9 @@ static void SetUpOpsStrings() {
 	ops_strings[ASSIGN_VAR_VAR_OP]= "ASSIGN_VAR_VAR_OP";
 	ops_strings[DUP_TOFS]= "DUP_TOFS";
 	ops_strings[PUSH_LOG_LIT_OP]= "PUSH_LOG_LIT_OP";
+	ops_strings[JMP_SCALAR_TRUE_OP] = "JMP_SCALAR_TRUE_OP";
+	ops_strings[JMP_SCALAR_FALSE_OP] = "JMP_SCALAR_FALSE_OP";
+
 }
 
 NclValue *_NclGetCurrentMachine
@@ -1006,6 +1009,8 @@ void _NclPrintMachine
 			case PUSH_INT_LIT_OP :
 			case PUSH_LOG_LIT_OP :
 			case ARRAY_LIT_OP :
+			case JMP_SCALAR_TRUE_OP:
+			case JMP_SCALAR_FALSE_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d\n",(int)*ptr);

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.h,v 1.2 1994-08-25 18:00:46 ethan Exp $
+ *      $Id: NclMultiDValData.h,v 1.3 1994-09-01 17:41:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -57,7 +57,7 @@ typedef struct _NclMultiDValDataRec {
 }NclMultiDValDataRec;
 
 typedef struct _NclMultiDValDataClassPart {
-	NhlString	hlu_gen_type_rep;
+	NhlString hlu_gen_type_rep;
 }NclMultiDValDataClassPart;
 
 typedef struct _NclMultiDValDataClassRec {

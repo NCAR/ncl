@@ -1091,8 +1091,6 @@ int operation;
 */
 					return(NhlFATAL);
 				} else {
-					if(lhs.u.data_obj->obj.status != PERMANENT) 
-						_NclDestroyObj((NclObj)lhs.u.data_obj);
 					lhs_data_obj = coerce_res;
 					if(rhs.kind == NclStk_VAL) {
 						rhs_data_obj = rhs.u.data_obj;
@@ -1122,9 +1120,6 @@ int operation;
 				}
 			}
 		} else {
-			if(rhs.u.data_obj->obj.status != PERMANENT) {
-				_NclDestroyObj((NclObj)rhs.u.data_obj);
-			}
 			rhs_data_obj = coerce_res;
 			if(lhs.kind == NclStk_VAL) {
 				lhs_data_obj = lhs.u.data_obj;
@@ -1151,15 +1146,43 @@ int operation;
 	} else {
 		return(NhlFATAL);
 	}
-        if((lhs.kind == NclStk_VAL)&&(lhs_data_obj->obj.status != PERMANENT)) {
-		_NclDestroyObj((NclObj)lhs_data_obj);
-        } else if((lhs.kind == NclStk_VAR)&&(lhs.u.data_var->obj.status != PERMANENT)) {
-		_NclDestroyObj((NclObj)lhs.u.data_var);
+
+
+
+
+        if(lhs.kind == NclStk_VAL) {
+		if(lhs_data_obj != lhs.u.data_obj) {
+			if(lhs_data_obj->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)lhs_data_obj);
+			}
+		}
+		if(lhs.u.data_obj->obj.status != PERMANENT) {
+			_NclDestroyObj((NclObj)lhs.u.data_obj);
+		}
+        } else if(lhs.kind == NclStk_VAR) {
+		if(lhs_data_obj->obj.status != PERMANENT) {
+			_NclDestroyObj((NclObj)lhs_data_obj);
+		}
+		if(lhs.u.data_var->obj.status != PERMANENT) {
+			_NclDestroyObj((NclObj)lhs.u.data_var);
+		}
         } 
-        if((rhs.kind == NclStk_VAL)&&(rhs_data_obj->obj.status != PERMANENT)) {
-		_NclDestroyObj((NclObj)rhs_data_obj);
-        } else if((rhs.kind == NclStk_VAR)&&(rhs.u.data_var->obj.status != PERMANENT)) {
-		_NclDestroyObj((NclObj)rhs.u.data_var);
+        if(rhs.kind == NclStk_VAL) {
+		if(rhs_data_obj != rhs.u.data_obj) {
+			if(rhs_data_obj->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)rhs_data_obj);
+			}
+		}
+		if(rhs.u.data_obj->obj.status != PERMANENT) {
+			_NclDestroyObj((NclObj)rhs.u.data_obj);
+		}
+        } else if(rhs.kind == NclStk_VAR) {
+		if(rhs_data_obj->obj.status != PERMANENT) {
+			_NclDestroyObj((NclObj)rhs_data_obj);
+		}
+		if(rhs.u.data_var->obj.status != PERMANENT) {
+			_NclDestroyObj((NclObj)rhs.u.data_var);
+		}
         } 
 
 

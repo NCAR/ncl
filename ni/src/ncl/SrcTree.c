@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.16 1994-08-25 18:01:01 ethan Exp $
+ *      $Id: SrcTree.c,v 1.17 1994-09-01 17:42:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2968,8 +2968,10 @@ void *_NclMakeNewOp
 #ifdef __STDC__
 (void * size_expr, struct _NclSymbol * datatype,void *missing_expr)
 #else
+(size_expr,datatype,missing_expr)
 void * size_expr;
 struct _NclSymbol *datatype;
+void *missing_expr;
 #endif
 {
 	NclNew *tmp= (NclNew*)NclMalloc((unsigned)sizeof(NclNew));

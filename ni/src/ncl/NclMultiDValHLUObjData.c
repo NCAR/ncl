@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.2 1994-08-25 18:00:50 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.3 1994-09-01 17:41:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1482,7 +1482,12 @@ NclMultiDValHLUObjDataClassRec nclMultiDValHLUObjDataClassRec = {
 /* NclDataFunction eq; 		*/	{NULL,NULL,NULL,NULL},
 /* NclDataFunction and;	 	*/	{NULL,NULL,NULL,NULL},
 /* NclDataFunction or; 		*/	{NULL,NULL,NULL,NULL},
-/* NclDataFunction xor;		*/	{NULL,NULL,NULL,NULL}
+/* NclDataFunction xor;		*/	{NULL,NULL,NULL,NULL},
+/* NclIsMissingFunction    is_mis; */	NULL
+
+	},
+	{	
+		NULL
 	},
 	{
 		NULL,

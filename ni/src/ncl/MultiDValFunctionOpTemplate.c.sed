@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MultiDValFunctionOpTemplate.c.sed,v 1.1 1994-07-14 20:46:07 ethan Exp $
+ *      $Id: MultiDValFunctionOpTemplate.c.sed,v 1.2 1994-09-01 17:41:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -401,7 +401,7 @@ NclData result;
 			res = (OUTDATATYPE*)result_val;
 			ls = (DATATYPE*)self_md->multidval.val;
 			rs = (DATATYPE*)other_md->multidval.val;
-			*res = (DATATYPE)(FNAME((CAST)*ls,(CAST)*rs));
+			*res = (OUTDATATYPE)(FNAME((CAST)*ls,(CAST)*rs));
 	} else if(!(self_md->multidval.missing_value.has_missing)) {
 			res = (OUTDATATYPE*)result_val;
 			ls = (DATATYPE*)self_md->multidval.val;

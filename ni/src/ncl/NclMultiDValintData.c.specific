@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValintData.c.specific,v 1.2 1994-08-08 22:35:06 ethan Exp $
+ *      $Id: NclMultiDValintData.c.specific,v 1.3 1994-09-01 17:41:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,8 @@
 #include "NclMultiDValdoubleData.h"
 #include "NclMultiDValfloatData.h"
 #include "NclMultiDVallongData.h"
+#include "NclMultiDVallogicalData.h"
+#include "NclMultiDValstringData.h"
 
 static struct _NclDataRec *MultiDVal_int_md_Coerce
 #if  __STDC__

@@ -97,6 +97,7 @@ main() {
 /*
 	_NclPrintUnfreedObjs(stdout);
 */
+
 	NhlClose();
 	exit(0);
 }

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: string_sel.c.sed,v 1.1 1994-07-14 20:47:56 ethan Exp $
+ *      $Id: string_sel.c.sed,v 1.2 1994-09-01 17:42:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -64,12 +64,12 @@ NclData result;
 * When here obj types match, data_types match, n_dims match , dim_sizes match
 * and memory has been allocated.
 */
-	if((self_md->multidval.missing_value.has_missing)&&(self_md->multidval.missing_value.value.stringval != NULL)) {
+	if((self_md->multidval.missing_value.has_missing)&&(self_md->multidval.missing_value.value.stringval != -1)) {
 
 		themissing.value.stringval = self_md->multidval.missing_value.value.stringval;
                	themissing.has_missing = 1;
 
-        } else if((other_md->multidval.missing_value.has_missing)&&(other_md->multidval.missing_value.value.stringval != NULL)) {
+        } else if((other_md->multidval.missing_value.has_missing)&&(other_md->multidval.missing_value.value.stringval != -1)) {
 
 		themissing.value.stringval = other_md->multidval.missing_value.value.stringval;
                 themissing.has_missing = 1;
@@ -91,7 +91,7 @@ NclData result;
 		ls = (string*)self_md->multidval.val;
 		rs = (string*)other_md->multidval.val;
 		for(i=0 ; i< totalelements; i++) {
-			res[i] = SELFUNC(ls[i],rs[i],NULL,NULL,NULL);
+			res[i] = SELFUNC(ls[i],rs[i],-1,-1,-1);
 		}
 	} else if(!(other_md->multidval.missing_value.has_missing)) {
 		res = (string*)result_val;
@@ -100,7 +100,7 @@ NclData result;
 		for(i=0 ; i< totalelements; i++) {
 			res[i] = SELFUNC(ls[i],rs[i],
 			self_md->multidval.missing_value.value.stringval,
-			NULL,
+			-1,
 			self_md->multidval.missing_value.value.stringval);
 		}
 	} else if(!(self_md->multidval.missing_value.has_missing)) {
@@ -108,7 +108,7 @@ NclData result;
 		ls = (string*)self_md->multidval.val;
 		rs = (string*)other_md->multidval.val;
 		for(i=0 ; i< totalelements ; i++) {
-			res[i] = SELFUNC(ls[i],rs[i],NULL,
+			res[i] = SELFUNC(ls[i],rs[i],-1,
 			other_md->multidval.missing_value.value.stringval,
 			other_md->multidval.missing_value.value.stringval);
 		}
@@ -161,13 +161,13 @@ NclData result;
 * and memory has been allocated.
 */
 	if((self_md->multidval.missing_value.has_missing)&&
-		(self_md->multidval.missing_value.value.stringval != NULL)) {
+		(self_md->multidval.missing_value.value.stringval != -1)) {
 
 		themissing.value.stringval = self_md->multidval.missing_value.value.stringval;
                 themissing.has_missing = 1;
 
         } else if((other_md->multidval.missing_value.has_missing)&&
-		(other_md->multidval.missing_value.value.stringval != NULL)) {
+		(other_md->multidval.missing_value.value.stringval != -1)) {
 
 		themissing.value.stringval = other_md->multidval.missing_value.value.stringval;
                 themissing.has_missing = 1;
@@ -190,7 +190,7 @@ NclData result;
 			rs = (string*)other_md->multidval.val;
 			for(i=0 ; i< totalelements; i++) {
 				res[i] = SELFUNC(ls[i],*rs,
-					NULL,NULL,NULL);
+					-1,-1,-1);
 			}
 	} else if(!(other_md->multidval.missing_value.has_missing )) {
 		res = (string*)result_val;
@@ -198,7 +198,7 @@ NclData result;
 		rs = (string*)other_md->multidval.val;
 		for(i=0 ; i< totalelements; i++) {
 			res[i] = SELFUNC(ls[i],*rs,
-			self_md->multidval.missing_value.value.stringval,NULL,
+			self_md->multidval.missing_value.value.stringval,-1,
 			self_md->multidval.missing_value.value.stringval);
 		}
 	} else if(!(self_md->multidval.missing_value.has_missing )) {
@@ -212,7 +212,7 @@ NclData result;
 			} else {
 				for(i=0 ; i< totalelements; i++) {
 					res[i] = SELFUNC(ls[i],*rs,
-						NULL,NULL,NULL);
+						-1,-1,-1);
 				}
 			}
 	} else {
@@ -227,7 +227,7 @@ NclData result;
 				for(i=0 ; i< totalelements; i++) {
 					res[i] = SELFUNC(ls[i],*rs,
 					self_md->multidval.missing_value.value.stringval,
-					NULL, 
+					-1, 
 					self_md->multidval.missing_value.value.stringval);
 				}
 			}
@@ -269,7 +269,7 @@ NclData result;
 * and memory has been allocated.
 */
 	if((self_md->multidval.missing_value.has_missing)&&
-		(self_md->multidval.missing_value.value.stringval!=NULL)) {
+		(self_md->multidval.missing_value.value.stringval!=-1)) {
 		themissing.value.stringval = self_md->multidval.missing_value.value.stringval;
                 themissing.has_missing = 1;
         } else if((other_md->multidval.missing_value.has_missing)&&
@@ -295,14 +295,14 @@ NclData result;
 			rs = (string*)other_md->multidval.val;
 			for(i=0 ; i< totalelements; i++) {
 				res[i] = SELFUNC(*ls,rs[i],
-					NULL,NULL,NULL);
+					-1,-1,-1);
 			}
 	} else if(!(self_md->multidval.missing_value.has_missing)) {
 			res = (string*)result_val;
 			ls = (string*)self_md->multidval.val;
 			rs = (string*)other_md->multidval.val;
 			for(i=0 ; i< totalelements; i++) {
-				res[i] = SELFUNC(*ls,rs[i],NULL,
+				res[i] = SELFUNC(*ls,rs[i],-1,
 				other_md->multidval.missing_value.value.stringval,
 				other_md->multidval.missing_value.value.stringval);
 			}
@@ -317,7 +317,7 @@ NclData result;
 			} else {
 				for(i=0 ; i< totalelements; i++) {
 					res[i] =  SELFUNC(*ls,rs[i],
-						NULL,
+						-1,
 						other_md->multidval.missing_value.value.stringval,
 						self_md->multidval.missing_value.value.stringval);
 				}
@@ -381,12 +381,12 @@ NclData result;
 			res = (string*)result_val;
 			ls = (string*)self_md->multidval.val;
 			rs = (string*)other_md->multidval.val;
-			*res = SELFUNC(*ls,*rs,NULL,NULL,NULL);
+			*res = SELFUNC(*ls,*rs,-1,-1,-1);
 	} else if(!(self_md->multidval.missing_value.has_missing)) {
 			res = (string*)result_val;
 			ls = (string*)self_md->multidval.val;
 			rs = (string*)other_md->multidval.val;
-			*res = SELFUNC(*ls,*rs,NULL,
+			*res = SELFUNC(*ls,*rs,-1,
 				other_md->multidval.missing_value.value.stringval,
 				other_md->multidval.missing_value.value.stringval);
 	} else if(!(other_md->multidval.missing_value.has_missing)) {
@@ -396,7 +396,7 @@ NclData result;
 			if(*(string*)self_md->multidval.val==self_md->multidval.missing_value.value.stringval) {
 				*res = self_md->multidval.missing_value.value.stringval;
 			} else {
-				*res =  SELFUNC(*ls,*rs,NULL,NULL,NULL);
+				*res =  SELFUNC(*ls,*rs,-1,-1,-1);
 			}
 	} else {
 			res = (string*)result_val;
@@ -405,7 +405,7 @@ NclData result;
 			if(*(string*)self_md->multidval.val==self_md->multidval.missing_value.value.stringval) {
 				*res = (string)self_md->multidval.missing_value.value.stringval;
 			} else {
-				*res = SELFUNC(*ls,*rs,NULL,other_md->multidval.missing_value.value.stringval,self_md->multidval.missing_value.value.stringval);
+				*res = SELFUNC(*ls,*rs,-1,other_md->multidval.missing_value.value.stringval,self_md->multidval.missing_value.value.stringval);
 			}
 	}
 	return((NclData)output_md);

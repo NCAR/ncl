@@ -1,3 +1,4 @@
+/*ARGSUSED*/
 static NhlErrorTypes CvtHLUGENTYPEREPToNclData
 #if __STDC__
 (NrmValue *from, NrmValue *to, NhlConvertArgList args, int nargs)
@@ -6,12 +7,11 @@ static NhlErrorTypes CvtHLUGENTYPEREPToNclData
 NrmValue *from;
 NrmValue *to;
 NhlConvertArgList args;
-int narg;
+int nargs;
 #endif
 {
 	NhlGenArray gen;
 	char func[] = "CvtHLUGENTYPEREPToNclData";
-	NhlErrorTypes ret = NhlNOERROR;
 	void *val;
 	NclMultiDValData tmp_md;
 	
@@ -45,6 +45,7 @@ int narg;
         	return(NhlNOERROR);
 	}
 }
+/*ARGSUSED*/
 static NhlErrorTypes CvtHLUTYPEREPToNclData
 #if __STDC__
 (NrmValue *from, NrmValue *to, NhlConvertArgList args, int nargs)
@@ -53,7 +54,7 @@ static NhlErrorTypes CvtHLUTYPEREPToNclData
 NrmValue *from;
 NrmValue *to;
 NhlConvertArgList args;
-int narg;
+int nargs;
 #endif
 {
 	NhlArgVal * tmp;
@@ -72,7 +73,6 @@ int narg;
 		*((NclMultiDValData*)(to->data.ptrval)) = (void*)tmp_md;
         	return(NhlNOERROR);
 	}
-        return(NhlNOERROR);
 }
 
 static NhlErrorTypes MultiDVal_DATATYPE_InitClass
@@ -84,5 +84,6 @@ static NhlErrorTypes MultiDVal_DATATYPE_InitClass
 {
         NhlRegisterConverter(HLUGENTYPEREP,NhlTNclData,CvtHLUGENTYPEREPToNclData,NULL,0,False,NULL);
         NhlRegisterConverter(HLUTYPEREP,NhlTNclData,CvtHLUTYPEREPToNclData,NULL,0,False,NULL);
+	return(NhlNOERROR);
 }
 

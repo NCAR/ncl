@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.h.sed,v 1.2 1994-08-25 18:00:48 ethan Exp $
+ *      $Id: NclMultiDValData.h.sed,v 1.3 1994-09-01 17:41:38 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,6 @@
 #ifndef NclMultiDValDATATYPEData_h
 #define NclMultiDValDATATYPEData_h
 #include "NclMultiDValData.h"
-#include "NclMdInc.h"
 #include "DataSupport.h"
 
 

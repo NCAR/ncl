@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValdoubleData.c.specific,v 1.3 1994-08-08 22:35:03 ethan Exp $
+ *      $Id: NclMultiDValdoubleData.c.specific,v 1.4 1994-09-01 17:41:47 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -20,6 +20,10 @@
  *
  *	Description:	
  */
+#include "NclMultiDValfloatData.h"
+#include "NclMultiDValstringData.h"
+#include "NclMultiDVallogicalData.h"
+
 static NclData MultiDVal_double_md_Coerce
 #if  __STDC__
 (NclData  self, NclObjTypes coerce_to_obj, NclScalar* new_missing)
@@ -140,7 +144,7 @@ NclScalar *new_missing;
                         }
                 }
                 if(chckmiss) {
-                	sprintf(buffer,"%g",((double*)(self_md->multidval.val))[i]);
+                	sprintf(buffer,"%g",*((double*)(self_md->multidval.val)));
                         *svalue = (string)(
                                (*(double*)self_md->multidval.val) == missing.doubleval ?
                        		new_missing->stringval :

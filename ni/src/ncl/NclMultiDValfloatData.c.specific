@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValfloatData.c.specific,v 1.2 1994-08-08 22:35:04 ethan Exp $
+ *      $Id: NclMultiDValfloatData.c.specific,v 1.3 1994-09-01 17:41:49 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,8 @@
  *	Description:	
  */
 #include "NclMultiDValdoubleData.h"
+#include "NclMultiDValstringData.h"
+#include "NclMultiDVallogicalData.h"
 
 static struct _NclDataRec *MultiDVal_float_md_Coerce
 #if  __STDC__

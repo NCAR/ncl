@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValstringData.c.specific,v 1.2 1994-07-28 23:34:10 ethan Exp $
+ *      $Id: NclMultiDValstringData.c.specific,v 1.3 1994-09-01 17:41:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,7 @@
  *	Description:	
  */
 /*ARGSUSED*/
+#include "NclMultiDVallogicalData.h"
 static NclData MultiDVal_string_md_Coerce
 #if  __STDC__
 (NclData  self, NclObjTypes coerce_to_obj, NclScalar* new_missing)

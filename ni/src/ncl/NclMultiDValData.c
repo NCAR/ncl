@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c,v 1.1 1994-07-14 20:46:38 ethan Exp $
+ *      $Id: NclMultiDValData.c,v 1.2 1994-09-01 17:41:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -136,7 +136,8 @@ NclMultiDValDataClassRec nclMultiDValDataClassRec = {
 /* NclDataFunction eq; 		*/	{NULL,NULL,NULL,NULL},
 /* NclDataFunction and;	 	*/	{NULL,NULL,NULL,NULL},
 /* NclDataFunction or; 		*/	{NULL,NULL,NULL,NULL},
-/* NclDataFunction xor;		*/	{NULL,NULL,NULL,NULL}
+/* NclDataFunction xor;		*/	{NULL,NULL,NULL,NULL},
+/* NclIsMissingFuncion is_mis   */	NULL
 	},
 	{
 		NULL

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.2 1994-08-25 18:00:44 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.3 1994-09-01 17:41:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,6 @@
 #include <errno.h>
 #include "NclMultiDValDATATYPEData.h"
 
-REPLACE
 
 static NclData MultiDVal_DATATYPE_md_Coerce(
 #ifdef NhlNeedProto
@@ -67,6 +66,8 @@ NclScalar * /*new_missing*/
 #endif
 );
 
+DSPECIFIC
+REPLACE
 
 NclMultiDValDATATYPEDataClassRec nclMultiDValDATATYPEDataClassRec = {
 	{
@@ -422,4 +423,3 @@ static void MultiDValDestroy
 	return;
 }
 
-DSPECIFIC

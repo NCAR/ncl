@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.5 1994-08-25 18:00:20 ethan Exp $
+ *      $Id: DataSupport.c,v 1.6 1994-09-01 17:41:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -57,7 +57,7 @@ NclMultiDValData str_md;
 #endif
 {
 	char **buffer;
-	int i;
+	int i,n_dims;
 	string *value;
 	int max_len = 0,tmp_len =0,to = 0;
 	char *val = NULL;
@@ -72,10 +72,16 @@ NclMultiDValData str_md;
 			max_len = tmp_len;
 		}
 	}
-	for(i = 0; i < str_md->multidval.n_dims; i++) {
-		dim_sizes[i] = str_md->multidval.dim_sizes[i];
+	if(str_md->multidval.kind == SCALAR) {
+		dim_sizes[0] = max_len;
+		n_dims = 1;
+	} else {
+		for(i = 0; i < str_md->multidval.n_dims; i++) {
+			dim_sizes[i] = str_md->multidval.dim_sizes[i];
+		}
+		dim_sizes[str_md->multidval.n_dims] = max_len;
+		n_dims = str_md->multidval.n_dims +1;
 	}
-	dim_sizes[str_md->multidval.n_dims] = max_len;
 	val = (char*)NclMalloc(max_len * str_md->multidval.totalelements);
 	for(i = 0; i < str_md->multidval.totalelements; i++) {
 		strcpy(&(val[to]),buffer[i]);
@@ -84,11 +90,11 @@ NclMultiDValData str_md;
 	return(_NclMultiDValcharCreate(
 		NULL,
 		NULL,
-		NCL_char,
+		Ncl_MultiDValcharData,
 		0,
 		val,
 		NULL,
-		str_md->multidval.n_dims +1,
+		n_dims,
 		dim_sizes,
 		TEMPORARY,
 		NULL));
@@ -715,7 +721,7 @@ void* val;
 	NclDataClass dc;
 	
 	if(self == NULL) {
-		return(NULL);
+		return(0);
 	}  else {
 		dc = (NclDataClass)self->obj.class_ptr;
 	}

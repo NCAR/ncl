@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.3 1994-08-25 18:00:53 ethan Exp $
+ *      $Id: NclVar.c,v 1.4 1994-09-01 17:42:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -438,7 +438,9 @@ char *var_name)
 	NclObjClass class_ptr;
 	NhlErrorTypes ret = NhlNOERROR;
 	NclStatus status = TEMPORARY;
-	NclMultiDValData tmp = NULL;
+	NclMultiDValData tmp = NULL,tmp_md = NULL;
+	NclScalar *tmp_s = NULL;
+	int tmp_dim_size =1;
 
 
 	ret = _NclInitClass(nclVarClass);
@@ -524,10 +526,44 @@ char *var_name)
 	for(i = 0; i< NCL_MAX_DIMENSIONS ; i++) {
 		var_out->var.coord_vars[i] = -1;
 	}
+	if(value->multidval.missing_value.has_missing) {
+		if(att_id == -1){
+			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+			tmp_s = (NclScalar*)NclMalloc(sizeof(NclScalar));
+			*tmp_s = value->multidval.missing_value.value;
+			tmp_md = _NclCreateVal(
+					NULL,
+					NULL,
+					value->obj.obj_type,
+					0,
+					(void*)tmp_s,
+					NULL,
+					1,
+					&tmp_dim_size,
+					TEMPORARY,
+					NULL);
+			_NclAddAtt(att_id,NCL_MISSING_VALUE_ATT,tmp_md,NULL);
+		} else if(att_id != -1) {
+			tmp_s = (NclScalar*)NclMalloc(sizeof(NclScalar));
+			*tmp_s = value->multidval.missing_value.value;
+			tmp_md = _NclCreateVal(
+					NULL,
+					NULL,
+					value->obj.obj_type,
+					0,
+					(void*)tmp_s,
+					NULL,
+					1,
+					&tmp_dim_size,
+					TEMPORARY,
+					NULL);
+			_NclAddAtt(att_id,NCL_MISSING_VALUE_ATT,tmp_md,NULL);
+		}
+	}
 	var_out->var.att_id = att_id;
 	if(att_id != -1) {
 		_NclAddParent(_NclGetObj(att_id),(NclObj)var_out);
-	}
+	} 
 	if(coords != NULL) {
 		for(i = 0; i<var_out->var.n_dims; i++) {
 			var_out->var.coord_vars[i] = coords[i];
@@ -889,7 +925,7 @@ char* coordname;
 	if(index < 0) {
 		return(0);
 	} else {
-		if(self->var.coord_vars[index] != NULL) {
+		if(self->var.coord_vars[index] != -1) {
 			return(1);
 		} else {
 			return(0);

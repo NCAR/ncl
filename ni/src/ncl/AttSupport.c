@@ -1,5 +1,5 @@
 /*
- *      $Id: AttSupport.c,v 1.1 1994-07-14 20:45:38 ethan Exp $
+ *      $Id: AttSupport.c,v 1.2 1994-09-01 17:41:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -196,6 +196,7 @@ char * attname;
 	while(ac != NULL) {
 		if(ac->att_class.del_att!= NULL) {
 			(*ac->att_class.del_att)(theattobj,attname);
+			return;
 		} else {
 			ac = (NclAttClass)ac->obj_class.super_class;
 		}

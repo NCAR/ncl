@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.6 1994-07-28 23:34:11 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.7 1994-09-01 17:41:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include "defs.h"
-#include <netcdf.h>
+#include "/cyclone/home/ethan/include/netcdf.h"
 #include "NclDataDefs.h"
 #include "NclFileInterfaces.h"
 #include <math.h>
