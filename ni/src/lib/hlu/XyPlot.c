@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.32 1995-02-19 08:19:36 boote Exp $
+ *      $Id: XyPlot.c,v 1.33 1995-03-03 17:36:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1566,6 +1566,7 @@ SetUpDataSpec
 	int				*missing_set;
 	float				*xmissing;
 	float				*ymissing;
+	int				tint;
 
 	memset(buffer,'\0',sizeof(buffer));
 
@@ -1888,7 +1889,9 @@ SetUpDataSpec
 			/*
 			 * clear buffer
 			 */
-			memset(buffer,'\0',sizeof(char)*(strlen(buffer)-1));
+			tint = strlen(buffer);
+			if(tint > 0)
+				memset(buffer,'\0',sizeof(char)*(tint-1));
 			switch(dsp->label_mode) {
 				case NhlNOLABELS:
 					label = NULL;
@@ -1926,7 +1929,9 @@ SetUpDataSpec
 			/*
 			 * lg Labels
 			 */
-			memset(buffer,'\0',sizeof(char)*(strlen(buffer)-1));
+			tint = strlen(buffer);
+			if(tint > 0)
+				memset(buffer,'\0',sizeof(char)*(tint-1));
 			label = NULL;
 			if(j < len_lglabeltable)
 				label = lglabeltable[j];
