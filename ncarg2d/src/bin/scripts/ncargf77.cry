@@ -1,11 +1,11 @@
 #!/bin/csh -f
 #
-#	$Id: ncargf77.cry,v 1.1.1.1 1992-04-17 22:34:46 ncargd Exp $
+#	$Id: ncargf77.cry,v 1.2 1992-05-28 19:39:44 ncargd Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
 set fortran="SED_F77"
-set loadopts = "SED_LD_FFLAGS"
+set loadopts = 'SED_LD_FFLAGS'
 set l = `ncargpar LIBDIR`
 
 if (! -d "$l") then
@@ -108,7 +108,7 @@ foreach arg ($argv)
 		echo "Normal Dash"
 		breaksw
 
-	case "-ictrans"
+	case "-ictrans":
 		echo "Output to ictrans"
 		set ctrans_libs = `ctlib`
 		breaksw
