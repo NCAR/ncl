@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.22 1993-04-27 20:32:48 clyne Exp $
+ *	$Id: gcapdev.c,v 1.23 1993-05-13 19:49:35 clyne Exp $
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -681,6 +681,7 @@ int	gcap_update_color_table()
 	long	data[3];
 	boolean	skipping,
 		defining;
+	boolean	do_background = FALSE;
 	SignedChar	s_char_;
 	int	status = 0;
 
@@ -698,16 +699,17 @@ int	gcap_update_color_table()
         MARKER_COLOUR_DAMAGE = TRUE;
         LINE_COLOUR_DAMAGE = TRUE;
 
+	do_background = (boolean) COLOUR_INDEX_DAMAGE(0);
 	/*
 	 * don't change background color if we've begun drawing
 	 */
-	if ((COLOUR_INDEX_DAMAGE(0) || BACKCOLR_DAMAGE) && startedDrawing) {
+	if (COLOUR_INDEX_DAMAGE(0) && startedDrawing) { 
+		ESprintf(E_UNKNOWN, "Background color changes ignored after drawing has begun");
+		status = -1;
+
 		COLOUR_INDEX_DAMAGE(0) = FALSE;
                 COLOUR_TOTAL_DAMAGE--;
-		BACKCOLR_DAMAGE = FALSE;
-                ESprintf(E_UNKNOWN, "Background color changes ignored after drawing has begun");
-
-		status = -1;
+		do_background = FALSE;
 	}
 
 
@@ -866,7 +868,7 @@ int	gcap_update_color_table()
 	}	/* for	*/
 	}	/* else if  individual	*/
 
-	if (doSimulateBG && BACKCOLR_DAMAGE) {
+	if (doSimulateBG && do_background) {
 		BACKCOLR_DAMAGE = FALSE;
 		(void)	simulate_bg_color();
 	}

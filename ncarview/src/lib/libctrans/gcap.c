@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.37 1993-04-29 22:33:12 clyne Exp $
+ *	$Id: gcap.c,v 1.38 1993-05-13 19:49:32 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -411,6 +411,16 @@ CGMC *c;
 	FILL_COLOUR_DAMAGE = TRUE;
 	LINE_COLOUR_DAMAGE = TRUE;
 	LINE_WIDTH_DAMAGE = TRUE;
+
+	if (gcap_opts.sim_bg) {
+		/*
+		 * force painting of background
+		 */
+		COLOUR_TOTAL_DAMAGE++;
+		COLOUR_INDEX_DAMAGE(0) = TRUE;	/* background color index */
+	}
+
+		
 	return (status);
 }
 

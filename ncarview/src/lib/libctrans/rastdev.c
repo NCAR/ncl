@@ -1,5 +1,5 @@
 /*
- *	$Id: rastdev.c,v 1.16 1993-04-27 20:42:22 clyne Exp $
+ *	$Id: rastdev.c,v 1.17 1993-05-13 19:49:38 clyne Exp $
  */
 #include <stdio.h>
 #include <ncarg/ncarg_ras.h>
@@ -458,6 +458,8 @@ int	rast_update_color_table()
 	 */
 	if (COLOUR_INDEX_DAMAGE(0)) {
 		if (set_back_colr() < 0) status = -1;
+		COLOUR_TOTAL_DAMAGE--;
+		COLOUR_INDEX_DAMAGE(0) = FALSE;
 	}
 
 	for (i=1; COLOUR_TOTAL_DAMAGE > 0 && i<=MAX_C_I && i<MAX_COLOR; i++) {
