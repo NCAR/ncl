@@ -1,4 +1,6 @@
 .TH AREDAM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
 AREDAM - Adds edges to an area map.
 .SH SYNOPSIS
@@ -36,13 +38,28 @@ of the edge.
 Identifier of the area that lies to the 
 right of the edge.
 .SH C-BINDING DESCRIPTION 
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+examples: 
+cardb1,
+cardb2,
+carfill,
+carline,
+carmap,
+arex01,
+cbex01,
+tareas,
+fsppoint.
 .SH ACCESS
 To use AREDAM, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order. To use c_aredam, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
 ncarg_gks, and ncarg_loc, preferably in that order.
+.SH MESSAGES
+See the areas man page for a description of all Areas error
+messages and/or informational messages.
 .SH SEE ALSO
 Online:
 areas, areas_params, ardbpa, ardrln, argeti, argtai, arinam, 

@@ -1,5 +1,7 @@
 '\" t
 .TH ARDBPA 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
 ARDBPA - Produces a plot showing all the edges in an 
 area map with a specified group identifier. In complex
@@ -24,7 +26,7 @@ The group identifier of the group that you want to examine.
 (an input expression of type CHARACTER) - 
 The label you want on the plot.
 .SH C-BINDING DESCRIPTION 
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH USAGE
 By default, each edge in the plot appears in one of four different 
@@ -33,14 +35,15 @@ right are less than or equal to zero or greater than zero, as follows:
 .sp
 .TS
 tab (/);
-c c c
+l l l
 l l l .
 Color/Left area identifier/Right area identifier
+-----/--------------------/---------------------
 .sp
-Magenta/\(<=0/\(<=0
-Yellow/\(<=0/>0
-Cyan/>0/\(<=0
-White/>0/>0
+Magenta/Less than or equal to 0/Less than or equal to 0 
+Yellow/Less than or equal to 0/Greater than 0
+Cyan/Greater than 0/Less than or equal to 0
+White/Greater than 0/Greater than 0
 .TE
 .sp
 You can adjust these colors with the DC parameter.
@@ -59,10 +62,14 @@ that is stored with each edge in the area map.
 .sp
 If ARDBPA is used for a complicated area map, the 
 amount of output can be very large.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+example: 
+cardb2.
 .SH ACCESS
 To use ARDBPA, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order. To use c_ardbpa, load the 
-NCAR Graphics libraries ncargC, ncarg_gksC, @@@, ncarg, ncarg_gks, and 
+NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
 ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:

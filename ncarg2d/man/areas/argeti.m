@@ -1,4 +1,6 @@
 .TH ARGETI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
 ARGETI - Retrieves an integer parameter in Areas.
 .SH SYNOPSIS
@@ -15,7 +17,7 @@ The name of the parameter that you want to retrieve.
 (an input expression of type INTEGER) - 
 An integer variable to hold the parameter value.
 .SH C-BINDING DESCRIPTION 
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH USAGE
 This routine allows you to retrieve the current value of Areas 
@@ -26,6 +28,9 @@ To use ARGETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order. To use c_argeti, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
 ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+.SH MESSAGES
+See the areas man page for a description of all Areas error
+messages and/or informational messages.
 .SH SEE ALSO
 Online:
 areas, areas_params, ardbpa, ardrln, aredam, argtai, arinam, 

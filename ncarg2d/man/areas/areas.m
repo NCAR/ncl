@@ -1,4 +1,6 @@
-.TH AREAS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH Areas 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
 Areas - A set of routines to create an area map from a set of
 edges.
@@ -47,6 +49,57 @@ To use Areas, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order. To use the Areas 
 C-bindings, load the NCAR Graphics libraries ncargC, ncarg_gksC, 
 ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+.SH MESSAGES
+When error conditions are detected, the support routine SETER
+is called in such a way that it writes a message to the standard
+error file (as defined by I1MACH(4)) and then terminates
+execution. The possible error messages are as follows:
+.sp
+ARDRLN - INITIALIZATION DONE IMPROPERLY
+.sp
+ARDRLN - ALGORITHM FAILURE
+.sp
+ARDRLN - MAI TOO SMALL
+.sp
+AREDAM - INITIALIZATION DONE IMPROPERLY
+.sp
+AREDAM - AREA-MAP ARRAY OVERFLOW
+.sp
+ARGETI - PARAMETER NAME TOO SHORT - x
+.sp
+ARGETI - PARAMETER NAME NOT KNOWN - xx
+.sp
+ARGTAI - INITIALIZATION DONE IMPROPERLY
+.sp
+ARGTAI - MAI TOO SMALL
+.sp
+ARGTAI - ALGORITHM FAILURE
+.sp
+ARINAM - AREA-MAP ARRAY IS TOO SMALL
+.sp
+ARPRAM - INITIALIZATION DONE IMPROPERLY
+.sp
+ARPRAM - NO EDGES IN AREA MAP
+.sp
+ARPRAM - AREA-MAP ARRAY OVERFLOW
+.sp
+ARPRAM - ALGORITHM FAILURE
+.sp
+ARPRAM - AREA-MAP ARRAY OVERFLOW
+.sp
+ARSCAM - INITIALIZATION DONE IMPROPERLY
+.sp
+ARSCAM - ALGORITHM FAILURE
+.sp
+ARSCAM - MCS TOO SMALL
+.sp
+ARSCAM - MAI TOO SMALL
+.sp
+ARSCAM - AREA-MAP ARRAY OVERFLOW
+.sp
+ARSETI - PARAMETER NAME TOO SHORT - x
+.sp
+ARSETI - PARAMETER NAME NOT KNOWN - xx
 .SH SEE ALSO
 Online:
 areas_params, ardbpa, ardrln, aredam, argeti, argtai, arinam, 

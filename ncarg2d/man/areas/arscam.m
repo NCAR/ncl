@@ -1,4 +1,6 @@
 .TH ARSCAM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
 ARSCAM - Scans an area map from left to right, extracting the
 definitions of all the areas in the area map.
@@ -23,7 +25,7 @@ doing anything else.
 Hold the X and Y coordinates defining 
 the edge of a given area, for use by ARSCAM in calls to 
 the area-processing routine APR.
-.IP "MCS"
+.IP "MCS" 12
 (an input expression of type INTEGER) - 
 Dimension of each of the arrays XCS and YCS.
 .IP "IAI(MAI), IAG(MAI)" 12
@@ -90,13 +92,49 @@ to achieve some other effect. Before returning control to
 the calling routine, ARSCAM calls SET again to restore the 
 original mapping parameters.
 .SH C-BINDING DESCRIPTION 
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+examples: 
+cardb1,
+carfill,
+ccpcldm,
+ccpfil,
+ccplbam,
+ccpllb,
+ccplll,
+ccpllw,
+ccpscam,
+ccpvs,
+colcon,
+cmpfil,
+cmpgrp,
+cmpita,
+cmptit,
+cpex01,
+cpex02,
+cpex03,
+cpex04,
+cpex05,
+cpex07,
+cpex08,
+eezmpa,
+arex01,
+vvex01,
+tareas,
+tconpa,
+tezmpa,
+fsfsgfa,
+fsppoint.
 .SH ACCESS
 To use ARSCAM, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order. To use c_arscam, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
 ncarg_gks, and ncarg_loc, preferably in that order.
+.SH MESSAGES
+See the areas man page for a description of all Areas error
+messages and/or informational messages.
 .SH SEE ALSO
 Online:
 areas, areas_params, ardbpa, ardrln, aredam, argeti, argtai, 

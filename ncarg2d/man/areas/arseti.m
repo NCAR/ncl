@@ -1,4 +1,6 @@
 .TH ARSETI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
 ARSETI - Sets an integer parameter in Areas.
 .SH SYNOPSIS
@@ -17,17 +19,25 @@ within the quotation marks will be examined.
 (an input expression of type INTEGER) - 
 The integer value you select for the parameter.
 .SH C-BINDING DESCRIPTION 
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH USAGE
 This routine allows you to set the current value of Areas 
 parameters. For a complete list of parameters available in this 
 utility, see the areas_params man page.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+examples: 
+cardb1,
+arex01.
 .SH ACCESS
 To use ARSETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order. To use c_arseti, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
 ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+.SH MESSAGES
+See the areas man page for a description of all Areas error
+messages and/or informational messages.
 .SH SEE ALSO
 Online:
 areas, areas_params, ardbpa, ardrln, aredam, argeti, argtai, 

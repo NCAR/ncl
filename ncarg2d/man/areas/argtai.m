@@ -1,4 +1,6 @@
 .TH ARGTAI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
 ARGTAI - Returns the area identifiers 
 associated with a given point.
@@ -52,13 +54,25 @@ GETSET. This option is valuable if you are
 planning to make thousands of calls to ARGTAI 
 with the same area map.
 .SH C-BINDING DESCRIPTION 
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+examples: 
+carfill,
+carline,
+carmap,
+cbex01,
+tareas,
+fsppoint.
 .SH ACCESS
 To use ARGTAI, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order. To use c_argtai, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
 ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+.SH MESSAGES
+See the areas man page for a description of all Areas error
+messages and/or informational messages.
 .SH SEE ALSO
 Online:
 areas, areas_params, ardbpa, ardrln, aredam, argeti, arinam, 

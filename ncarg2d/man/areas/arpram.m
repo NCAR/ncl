@@ -1,4 +1,6 @@
 .TH ARPRAM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
 ARPRAM - Preprocesses an area map that has been initialized by a
 call to ARINAM and to which edges have been added by 
@@ -24,7 +26,7 @@ when executing other parts of the algorithm.
 .sp
 Step 2: ARPRAM locates all intersections of all edges 
 and interpolates points along these edge segments. 
-This step can take a lot of time. If you set IF1not equal 
+This step can take a lot of time. If you set IF1 not equal 
 to 0, then pairs of edge segments are examined for 
 intersections only if one of the pair has a left or a right 
 area identifier that is zero or negative.
@@ -81,13 +83,23 @@ identifiers by omitting the consideration of
 "holes" in the areas examined. This is appropriate 
 for contour lines.
 .SH C-BINDING DESCRIPTION 
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+examples: 
+eezmpa,
+tareas,
+tezmpa,
+fsppoint.
 .SH ACCESS
 To use ARPRAM, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order. To use c_arpram, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
 ncarg_gks, and ncarg_loc, preferably in that order.
+.SH MESSAGES
+See the areas man page for a description of all Areas error
+messages and/or informational messages.
 .SH SEE ALSO
 Online:
 areas, areas_params, ardbpa, ardrln, aredam, argeti, argtai, 

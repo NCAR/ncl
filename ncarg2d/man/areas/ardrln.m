@@ -1,4 +1,6 @@
 .TH ARDRLN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
 ARDRLN - Draws a polyline that is masked by a given area
 map.
@@ -92,7 +94,9 @@ Before executing the first call to LPR, ARDRLN calls GETSET to
 retrieve the current user-system mapping parameters and then
 executes the following statement:
 .sp
+.in +5
 CALL SET (VPL, VPR, VPB, VPT, VPL, VPR, VPB, VPT, 1)
+.in -5
 .sp
 where VPL, VPR, VPB, and VPT are the viewport left, right, 
 bottom, and top coordinates in NDCs.
@@ -105,13 +109,22 @@ effect. Before returning control to the calling routine, ARDRLN calls
 SET again to restore the original mapping parameters. (APR is 
 described in the man page for ARSCAM.)
 .SH C-BINDING DESCRIPTION 
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+examples: 
+carline,
+tareas,
+fsppoint.
 .SH ACCESS
 To use ARDRLN, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order. To use c_ardrln, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
 ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+.SH MESSAGES
+See the areas man page for a description of all Areas error
+messages and/or informational messages.
 .SH SEE ALSO
 Online:
 areas, areas_params, ardbpa, aredam, argeti, argtai, arinam, 
