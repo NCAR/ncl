@@ -66,7 +66,7 @@
 #define FILEVARATT_OP			66
 #define ASSIGN_FILEVARATT_OP			67
 #define PARAM_FILEVARATT_OP			68
-#define VAR_OP			69
+/*  						69 */
 #define ASSIGN_VAR_OP			70
 #define PARAM_VAR_OP			71
 #define VARATT_OP			72

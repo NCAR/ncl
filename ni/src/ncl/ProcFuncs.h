@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ProcFuncs.h,v 1.4 1994-03-03 21:54:29 ethan Exp $
+ *      $Id: ProcFuncs.h,v 1.5 1994-04-07 16:48:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -28,16 +28,25 @@ extern "C" {
 
 #define ANYDIMSIZE = -1
 
+typedef struct _NclGenProcFuncInfo {
+	int nargs;
+	struct _NclArgTemplate * theargs;
+	struct _NclSymbol *thesym;
+} NclGenProcFuncInfo;
+
 typedef struct _NclProcFuncInfo {
 	int nargs;
 	struct _NclArgTemplate *theargs;
 	struct _NclSymbol *thesym;
+	struct _NclSymTableListNode* thescope;
 	void *mach_rec_ptr;
 } NclProcFuncInfo;
 
 typedef struct _NclArgTemplate {
+	int n_dims;
 	int dim_sizes[NCL_MAX_DIMENSIONS];
 	struct _NclSymbol *arg_data_type; /* use symbol table keyword entries */
+	struct _NclSymbol *arg_sym;
 	int is_dimsizes;
 } NclArgTemplate;
 

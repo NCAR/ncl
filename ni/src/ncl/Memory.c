@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Memory.c,v 1.5 1994-03-03 23:37:58 ethan Exp $
+ *      $Id: Memory.c,v 1.6 1994-04-07 16:48:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@ extern "C" {
 #include <ncarg/hlu/hlu.h>
 #include <errno.h>
 #include <data_objs/NclData.h>
+#include <data_objs/NclMultiDValData.h>
 #include <defs.h>
 
 
@@ -191,7 +192,7 @@ struct _NclSubRec * sub_rec;
 	switch(sub_rec->sub_type) {
 	case COORD_VECT:
 	case INT_VECT:
-		if(sub_rec->u.vec->vec != NULL) {
+		if((sub_rec->u.vec->vec != NULL)&&(sub_rec->u.vec->vec->obj.status != PERMANENT)) {
 			_NclDestroyObj((NclObj)sub_rec->u.vec->vec);
 		}
 		break;
@@ -203,13 +204,13 @@ struct _NclSubRec * sub_rec;
 		if(sub_rec->u.range->start == sub_rec->u.range->finish) {
 			sub_rec->u.range->finish = NULL;
 		}
-		if(sub_rec->u.range->start != NULL) {
+		if((sub_rec->u.range->start != NULL)&&(sub_rec->u.range->start->obj.status != PERMANENT)) {
 			_NclDestroyObj((NclObj)sub_rec->u.range->start);
 		} 
-		if(sub_rec->u.range->finish != NULL) {
+		if((sub_rec->u.range->finish != NULL)&&(sub_rec->u.range->finish->obj.status != PERMANENT)) {
 			_NclDestroyObj((NclObj)sub_rec->u.range->finish);
 		}
-		if(sub_rec->u.range->stride != NULL) {
+		if((sub_rec->u.range->stride != NULL)&&(sub_rec->u.range->stride->obj.status != PERMANENT)) {
 			_NclDestroyObj((NclObj)sub_rec->u.range->stride);
 		}
 		break;

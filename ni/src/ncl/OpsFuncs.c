@@ -104,7 +104,7 @@ NhlErrorTypes _NclDualOp
 NclStackEntry lhs;
 NclStackEntry rhs;
 NclStackEntry *result;
-int operation ;
+int operation;
 #endif
 {
 	NclMultiDValData lhs_data_obj = NULL;
@@ -208,13 +208,17 @@ int operation ;
 	} else {
 		return(NhlFATAL);
 	}
-
-	if(lhs_data_obj->obj.status !=PERMANENT ) {
+        if((lhs.kind == NclStk_VAL)&&(lhs_data_obj->obj.status != PERMANENT)) {
 		_NclDestroyObj((NclObj)lhs_data_obj);
-	}
-	if(rhs_data_obj->obj.status !=PERMANENT ) {
+        } else if((lhs.kind == NclStk_VAR)&&(lhs.u.data_var->obj.status != PERMANENT)) {
+		_NclDestroyObj((NclObj)lhs.u.data_var);
+        } 
+        if((rhs.kind == NclStk_VAL)&&(rhs_data_obj->obj.status != PERMANENT)) {
 		_NclDestroyObj((NclObj)rhs_data_obj);
-	}
+        } else if((rhs.kind == NclStk_VAR)&&(rhs.u.data_var->obj.status != PERMANENT)) {
+		_NclDestroyObj((NclObj)rhs.u.data_var);
+        } 
+
 
 	return(ret);
 }
@@ -245,6 +249,8 @@ int operation;
 	ret = _NclCallMonoOp(operand_md,result,operation);
 
 	if(operand_md->obj.status != PERMANENT) {
+		_NclDestroyObj((NclObj)operand_md);
+	} else if((operand.kind == NclStk_VAR)&&(operand.u.data_var->obj.status != PERMANENT)) {
 		_NclDestroyObj((NclObj)operand_md);
 	}
 
@@ -555,7 +561,7 @@ NhlErrorTypes _NclBuildArray
 	result->kind = NclStk_VAL;
 /*
 *
-* ------------__> stilll need to handle dim info
+* ------------> stilll need to handle dim info
 */
 	result->u.data_obj = _NclCreateVal(NULL,NULL,result_type,0,value,NULL,ndims,dim_sizes,TEMPORARY,NULL);
 	if(result->u.data_obj != NULL) 
@@ -564,6 +570,148 @@ NhlErrorTypes _NclBuildArray
 		return(NhlFATAL);
 }
 
+NhlErrorTypes _NclProcCallOp
+#if __STDC__
+(NclSymbol *proc)
+#else
+(proc)
+	NclSymbol *proc;
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR;
+	NclStackEntry *data_ptr= NULL;
+	NclMultiDValData tmp_val = NULL;
+	NclObjTypes param_type;
+	NclExecuteReturnStatus eret;
+	NclStackEntry data;
+	void* previous_fp = NULL;
+	int i;
+
+/*
+* By the time you get here all of the arguments should've been checked against
+* the templates and converted to the appropriate type and the sizes checked
+*/
+	if(proc->u.procfunc== NULL) {
+		return(NhlFATAL);
+	}
+	
+	_NclPushMachine(proc->u.procfunc->mach_rec_ptr);
+	eret = _NclExecute(0);
+	switch(eret) {
+	case Ncl_ERRORS:
+		ret = NhlFATAL;
+		break;
+	case Ncl_STOPS:
+	case Ncl_BREAKS:
+	case Ncl_CONTINUES:
+	default:
+		ret = NhlNOERROR;
+		break;
+	}
+	(void)_NclPopMachine();
+	previous_fp = _NclLeaveFrame();
+/*
+* Temporary stack management code
+*/
+	if(ret != NhlFATAL) {
+		_NclRemapParameters(proc->u.procfunc->nargs,previous_fp,PROC_CALL_OP);
+	} else {
+		for(i = 0; i<proc->u.procfunc->nargs; i++) {
+			data = _NclPop();
+			switch(data.kind) {
+			case NclStk_VAL: {
+				_NclDestroyObj((NclObj)data.u.data_obj);
+			}
+				break;
+			case NclStk_VAR: {
+				_NclDestroyObj((NclObj)data.u.data_var);
+			}
+				break;
+			default:
+				break;
+			}
+		}
+	}
+/*
+* Remove whats left of frame
+*/
+	for(i = 0; i < sizeof(NclFrame)/sizeof(NclStackEntry); i++) {
+		(void)_NclPop();
+	}
+	
+
+	return(ret);
+}
+NhlErrorTypes _NclFuncCallOp
+#if __STDC__
+(NclSymbol *func)
+#else
+(func)
+	NclSymbol *func;
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR;
+	NclStackEntry *data_ptr= NULL;
+	NclStackEntry data;
+	NclMultiDValData tmp_val = NULL;
+	NclObjTypes param_type;
+	NclExecuteReturnStatus eret;
+	void *previous_fp= NULL;
+	
+	int i;
+
+/*
+* By the time you get here all of the arguments should've been checked against
+* the templates and converted to the appropriate type and the sizes checked
+*/
+	if(func->u.procfunc == NULL) {
+		return(NhlFATAL);
+	}
+	
+	_NclPushMachine(func->u.procfunc->mach_rec_ptr);
+	eret = _NclExecute(0);
+	switch(eret) {
+	case Ncl_ERRORS:
+		ret = NhlFATAL;
+		break;
+	case Ncl_STOPS:
+	case Ncl_BREAKS:
+	case Ncl_CONTINUES:
+	default:
+		ret = NhlNOERROR;
+		break;
+	}
+	(void)_NclPopMachine();
+	previous_fp = _NclLeaveFrame();
+
+	if(ret != NhlFATAL) {
+		_NclRemapParameters(func->u.procfunc->nargs,previous_fp,FUNC_CALL_OP);
+	} else {
+		for(i = 0; i<func->u.procfunc->nargs; i++) {
+			data = _NclPop();
+			switch(data.kind) {
+			case NclStk_VAL: {
+				_NclDestroyObj((NclObj)data.u.data_obj);
+			}
+				break;
+			case NclStk_VAR: {
+				_NclDestroyObj((NclObj)data.u.data_var);
+			}
+				break;
+			default:
+				break;
+			}
+		}
+	}
+	for(i = 0 ; i < (sizeof(NclFrame)/sizeof(NclStackEntry)) - 1; i++) {
+		(void)_NclPop();
+	}
+/*
+* Deal with return value? RETURN operator should deal with packaging return value
+*/
+
+	return(ret);
+}
 
 #ifdef __cplusplus
 }

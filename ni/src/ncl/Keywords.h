@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Keywords.h,v 1.4 1994-01-21 02:49:01 ethan Exp $
+ *      $Id: Keywords.h,v 1.5 1994-04-07 16:48:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -51,9 +51,11 @@ static struct {
 "short",        SHORT,
 "double",       DOUBLE,
 "character",    CHARACTER,
+"string",    	STRNG,
 "byte",         BYTE,
 "file",         FILETYPE,
 "numeric",      NUMERIC,
+"graphic",      GRAPHIC,
 "return",       RETURN,
 "external",     EXTERNAL,
 "record",	RECORD,

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.9 1994-03-03 23:38:03 ethan Exp $
+ *      $Id: SrcTree.c,v 1.10 1994-04-07 16:48:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,9 @@ extern "C" {
 #endif
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
+#include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/NresDB.h>
+
 #include <data_objs/NclData.h>
 #include <defs.h>
 #include <Symbol.h>
@@ -320,7 +323,6 @@ void _NclGResDestroy
 {
 	NclGetResource *tmp = (NclGetResource*)thenode;
 
-	NclFree(tmp->res_name);
 	NclFree(tmp);
 }
 
@@ -353,10 +355,7 @@ void *_NclMakeGetResource
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGResDestroy;
-	tmp->res_name = (char*)NclMalloc((unsigned)strlen(resname)+1);
-	if(tmp->res_name != NULL) {
-		strcpy(tmp->res_name,resname);
-	}
+	tmp->res_name_q = NrmStringToQuark(resname);
 	tmp->var = var;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
@@ -373,7 +372,6 @@ void _NclResDestroy
 {
 	NclResource *tmp = (NclResource*)thenode;
 
-	NclFree(tmp->res_name);
 	NclFree(tmp);
 }
 /*
@@ -404,10 +402,7 @@ void *_NclMakeResource
 	tmp->name = src_tree_names[Ncl_RESOURCE];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->res_name = (char*)NclMalloc((unsigned)strlen(resname)+1);
-	if(tmp->res_name != NULL) {
-		strcpy(tmp->res_name,resname);
-	}
+	tmp->res_name_q = NrmStringToQuark(resname);
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclResDestroy;
 	tmp->expr = expr;
 	_NclRegisterNode((NclGenericNode*)tmp);
@@ -717,6 +712,9 @@ NclSymTableListNode* thescope;
 		tmp1->nargs = i;
 		tmp1->theargs = (NclArgTemplate*)
 				NclMalloc((unsigned)sizeof(NclArgTemplate)*i);
+/*
+		tmp1->theargs = 
+*/
 		step = tmp->dec_list;
 		i = 0;
 		while( step != NULL ) {
@@ -731,10 +729,12 @@ NclSymTableListNode* thescope;
 					step1 = step1->next;
 					j++;
 				}
+				tmp1->theargs[i].n_dims= j;
 			} else {
 				tmp1->theargs[i].is_dimsizes = 0;
 			}
 			tmp1->theargs[i].arg_data_type = var_dec->data_type;
+			tmp1->theargs[i].arg_sym = var_dec->var;
 			
 			step = step->next;		
 			i++;
@@ -747,6 +747,7 @@ NclSymTableListNode* thescope;
 		tmp1->thesym = func;
 		tmp1->mach_rec_ptr = NULL;
 	}
+	tmp1->thescope = thescope;
 	func->u.procfunc = tmp1;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
@@ -762,7 +763,6 @@ void _NclEFunctionDefDestroy
 {
 	NclExternFuncDef *tmp = (NclExternFuncDef*)thenode;
 
-	NclFree((void*)tmp->path_info_string);	
 	NclFree((void*)tmp);
 	
 }
@@ -804,13 +804,7 @@ NclSymTableListNode *thescope;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclEFunctionDefDestroy;
 	tmp->func = func;
 	tmp->dec_list = dec_list;
-	tmp->path_info_string = (char*)NclMalloc(
-					(unsigned)strlen(path_info_string)+1);
-	if(tmp->path_info_string == NULL) {
-		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
-		return(NULL);
-	}
-	strcpy(tmp->path_info_string,path_info_string);
+	tmp->path_info_string_q = NrmStringToQuark(path_info_string);
 	tmp->scope = thescope;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
@@ -977,10 +971,12 @@ NclSymTableListNode *thescope;
                                         step1 = step1->next;
                                         j++;
                                 }
+				tmp1->theargs[i].n_dims = j;
                         } else {
                                 tmp1->theargs[i].is_dimsizes = 0;
                         }
                         tmp1->theargs[i].arg_data_type = var_dec->data_type;
+			tmp1->theargs[i].arg_sym = var_dec->var;
 
                         step = step->next;
                         i++;
@@ -993,6 +989,7 @@ NclSymTableListNode *thescope;
                 tmp1->thesym = var;
                 tmp1->mach_rec_ptr= NULL;
         }
+	tmp1->thescope = thescope;
         var->u.procfunc = tmp1;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
@@ -1008,7 +1005,6 @@ void _NclEProcDestroy
 {
 	NclExternProcDef *tmp = (NclExternProcDef*)thenode;
 
-	NclFree((void*)tmp->path_info_string);
 	NclFree((void*)tmp);
 }
 
@@ -1051,12 +1047,7 @@ NclSymTableListNode *thescope;
 	tmp->proc = var;
 	tmp->dec_list = dec_list;
 	tmp->scope = thescope;
-	tmp->path_info_string = (char*)NclMalloc(
-					(unsigned)strlen(path_info_string)+1);
-	if(tmp->path_info_string == NULL) {
-		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
-		return(NULL);
-	}
+	tmp->path_info_string_q = NrmStringToQuark(path_info_string);
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
@@ -1177,10 +1168,9 @@ char * dimname;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
 	tmp->subexpr = subexpr;
 	if(dimname != NULL) {
-		tmp->dimname = (char*)NclMalloc((unsigned)strlen(dimname) +1);
-		strcpy(tmp->dimname, dimname);
+		tmp->dimname_q = NrmStringToQuark(dimname);
 	} else {
-		tmp->dimname = NULL;
+		tmp->dimname_q = -1;
 	}	
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
@@ -1196,9 +1186,6 @@ void _NclCoordSubscriptDestroy
 {
 	NclSubscript *tmp = (NclSubscript*)thenode;
 
-	if(tmp->dimname != NULL) {
-		NclFree((void*)tmp->dimname);
-	}
 	NclFree((void*)tmp);
 }
 /*
@@ -1236,10 +1223,9 @@ char *dimname;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclCoordSubscriptDestroy;
 	tmp->subexpr =subexpr;
 	if(dimname != NULL) {
-                tmp->dimname = (char*)NclMalloc((unsigned)strlen(dimname) +1);
-                strcpy(tmp->dimname, dimname);
+                tmp->dimname_q = NrmStringToQuark(dimname);
         } else {
-                tmp->dimname = NULL;
+                tmp->dimname_q = -1;
         }       
 	_NclRegisterNode((NclGenericNode*)tmp);
         return((void*)tmp);
@@ -1529,7 +1515,6 @@ void _NclStringExprDestroy
 {
 	NclString *tmp = (NclString*)thenode;
 
-	NclFree((void*)tmp->string);
 	NclFree((void*)tmp);
 }
 /*
@@ -1565,13 +1550,8 @@ char * str;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclStringExprDestroy;
 	if(str != NULL) {
-		tmp->string = (char*)NclMalloc((unsigned)strlen(str)+1);
-		if(tmp->string == NULL) {	
-			NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
-			return(NULL);
-		}
+		tmp->string_q = NrmStringToQuark(str);
 	}
-	strcpy(tmp->string, str);
 	tmp->ref_type = Ncl_READIT;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
@@ -2037,7 +2017,7 @@ if(groot != NULL) {
 			fprintf(fp,"%s\n",resource->name);
 			i++;
 			putspace(i,fp);
-			fprintf(fp,"%s\n",resource->res_name);
+			fprintf(fp,"%s\n",NrmQuarkToString(resource->res_name_q));
 			_NclPrintTree(resource->expr,fp);
 			i--;
 		}
@@ -2049,7 +2029,7 @@ if(groot != NULL) {
 			fprintf(fp,"%s\n",resource->name);
 			i++;
 			putspace(i,fp);
-			fprintf(fp,"%s\n",resource->res_name);
+			fprintf(fp,"%s\n",NrmQuarkToString(resource->res_name_q));
 			putspace(i,fp);
 			_NclPrintSymbol(resource->var,fp);
 			i--;
@@ -2154,7 +2134,7 @@ if(groot != NULL) {
 				step = step->next;
 			}
 			putspace(i,fp);
-			fprintf(fp,"%s",externfuncdef->path_info_string);
+			fprintf(fp,"%s",NrmQuarkToString(externfuncdef->path_info_string_q));
 			i--;
 		}
 			break;
@@ -2235,7 +2215,7 @@ if(groot != NULL) {
 				step = step->next;
 			}
 			putspace(i,fp);
-			fprintf(fp,"%s\n", externprocdef->path_info_string);
+			fprintf(fp,"%s\n", NrmQuarkToString(externprocdef->path_info_string_q));
 			i--;
 		}
 			break;
@@ -2274,9 +2254,9 @@ if(groot != NULL) {
 			putspace(i,fp);
 			fprintf(fp,"%s\n",subscript->name);
 			i++;
-			if(subscript->dimname != NULL) {
+			if(subscript->dimname_q != -1) {
 				putspace(i,fp);
-				fprintf(fp,"%s\n",subscript->dimname);
+				fprintf(fp,"%s\n",NrmQuarkToString(subscript->dimname_q));
 			}
 			if(subscript->subexpr != NULL) {
 				_NclPrintTree(subscript->subexpr,fp);
@@ -2401,7 +2381,7 @@ if(groot != NULL) {
 			fprintf(fp,"%s\n",str->name);
 			putspace(i+1,fp);
 			fprintf(fp,"%s\t",ref_node_names[str->ref_type]);
-			fprintf(fp,"%s\n",str->string);
+			fprintf(fp,"%s\n",NrmQuarkToString(str->string_q));
 		}
 			break;
 		case Ncl_BUILTINFUNCCALL:
@@ -2481,7 +2461,7 @@ if(groot != NULL) {
 			fprintf(fp,"%s\n",filevardim->name);
 			i++;
 			putspace(i,fp);
-			fprintf(fp,"%s\n",filevardim->filevar);
+			fprintf(fp,"%s\n",NrmQuarkToString(filevardim->filevar_q));
 			putspace(i,fp);
 			fprintf(fp,"%s\t",ref_node_names[filevardim->ref_type]);
 			_NclPrintSymbol(filevardim->filesym,fp);
@@ -2512,9 +2492,9 @@ if(groot != NULL) {
 			fprintf(fp,"%s\t",ref_node_names[filevaratt->ref_type]);
 			_NclPrintSymbol(filevaratt->filesym,fp);
 			putspace(i,fp);
-			fprintf(fp,"attname: %s\n",filevaratt->filevar);
+			fprintf(fp,"attname: %s\n",NrmQuarkToString(filevaratt->filevar_q));
 			putspace(i,fp);
-			fprintf(fp,"attname: %s\n",filevaratt->attname);
+			fprintf(fp,"attname: %s\n",NrmQuarkToString(filevaratt->attname_q));
 			step = filevaratt->subscript_list ;
 			while(step != NULL) {
 				_NclPrintTree(step->node,fp);
@@ -2533,7 +2513,7 @@ if(groot != NULL) {
 			fprintf(fp,"%s\t",ref_node_names[varatt->ref_type]);
 			_NclPrintSymbol(varatt->sym,fp);
 			putspace(i,fp);
-			fprintf(fp,"attname: %s",varatt->attname);
+			fprintf(fp,"attname: %s",NrmQuarkToString(varatt->attname_q));
 			step = varatt->subscript_list ;
 			while(step != NULL) {
 				_NclPrintTree(step->node,fp);
@@ -2552,9 +2532,9 @@ if(groot != NULL) {
 			fprintf(fp,"%s\t",ref_node_names[filecoord->ref_type]);
 			_NclPrintSymbol(filecoord->filesym,fp);
 			putspace(i,fp);
-			fprintf(fp,"%s\n",filecoord->filevar);
+			fprintf(fp,"%s\n",NrmQuarkToString(filecoord->filevar_q));
 			putspace(i,fp);
-			fprintf(fp,"coordname: %s\n",filecoord->coord_name);
+			fprintf(fp,"coordname: %s\n",NrmQuarkToString(filecoord->coord_name_q));
 			step = filecoord->subscript_list;
 			while(step != NULL) {
 				_NclPrintTree(step->node,fp);
@@ -2573,7 +2553,7 @@ if(groot != NULL) {
 			fprintf(fp,"%s\t",ref_node_names[coord->ref_type]);
 			_NclPrintSymbol(coord->sym,fp);
 			putspace(i,fp);
-			fprintf(fp,"coordname: %s\n",coord->coord_name);
+			fprintf(fp,"coordname: %s\n",NrmQuarkToString(coord->coord_name_q));
 			step = coord->subscript_list;
 			while(step != NULL) {
 				_NclPrintTree(step->node,fp);
@@ -2592,7 +2572,7 @@ if(groot != NULL) {
 			fprintf(fp,"%s\t",ref_node_names[filevar->ref_type]);
 			_NclPrintSymbol(filevar->dfile,fp);
 			putspace(i,fp);
-			fprintf(fp,"%s\n",filevar->filevar);
+			fprintf(fp,"%s\n",NrmQuarkToString(filevar->filevar_q));
 			step = filevar->subscript_list;
 			while(step != NULL) {
 				_NclPrintTree(step->node,fp);
@@ -2634,7 +2614,6 @@ void _NclFileVarDestroy
 #endif
 {
 	NclFileVar* tmp = (NclFileVar*)thenode;
-	NclFree(tmp->filevar);
 	NclFree((void*)tmp);
 }
 void *_NclMakeFileVarRef
@@ -2659,12 +2638,7 @@ int type;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclFileVarDestroy;
 	tmp->dfile = dfile;
-        tmp->filevar= (char*)NclMalloc((unsigned)strlen(filevar)+1);;
-	if(tmp->filevar == NULL) {
-		NhlPError(NhlFATAL,errno,"_MakeFileVarRef: Memory allocation error");
-		return(NULL);
-	}
-	strcpy(tmp->filevar,filevar);
+        tmp->filevar_q = NrmStringToQuark(filevar);
 	tmp->subscript_list = subscript_list;
 	tmp->ref_type = Ncl_READIT;
 	_NclRegisterNode((NclGenericNode*)tmp);
@@ -2734,7 +2708,6 @@ void _NclFileVarDimNumRefDestroy
 {
 	NclFileVarDim *tmp = (NclFileVarDim*)thenode;
 	
-	NclFree((void*)tmp->filevar);
 	NclFree((void*)tmp);
 }
 void *_NclMakeFileVarDimRef
@@ -2759,12 +2732,7 @@ void *dim_expr;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclFileVarDimNumRefDestroy;
 	tmp->filesym = var;
 	tmp->dim_expr = dim_expr;
-	tmp->filevar= (char*)NclMalloc((unsigned)strlen(filevar)+1) ;
-	if(tmp->filevar == NULL) {
-		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
-		return(NULL);
-	}
-	strcpy(tmp->filevar,filevar);
+	tmp->filevar_q= NrmStringToQuark(filevar);
 	tmp->ref_type = Ncl_READIT;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
@@ -2779,8 +2747,6 @@ void _NclFileVarAttRefDestroy
 #endif
 {
 	NclFileVarAtt *tmp =(NclFileVarAtt*)thenode;
-	NclFree((void*)tmp->attname);
-	NclFree((void*)tmp->filevar);
 	NclFree((void*)tmp);
 }
 void *_NclMakeFileVarAttRef
@@ -2805,18 +2771,8 @@ NclSrcListNode *subscript_list;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclFileVarAttRefDestroy;
 	tmp->filesym = file;
-	tmp->attname= (char*)NclMalloc((unsigned)strlen(attname)+1);
-	if(tmp->attname == NULL) {
-		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
-		return(NULL);
-	}	
-	strcpy(tmp->attname,attname);
-	tmp->filevar = (char*)NclMalloc((unsigned)strlen(filevar)+1);;
-	if(tmp->filevar== NULL) {
-		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
-		return(NULL);
-	}	
-	strcpy(tmp->filevar,filevar);
+	tmp->attname_q= NrmStringToQuark(attname);
+	tmp->filevar_q = NrmStringToQuark(filevar);
 	tmp->subscript_list = subscript_list;
 
 	tmp->ref_type = Ncl_READIT;	
@@ -2832,7 +2788,6 @@ void _NclVarAttRefDestroy
 #endif
 {
 	NclVarAtt *tmp =(NclVarAtt*)thenode;
-	NclFree((void*)tmp->attname);
 	NclFree((void*)tmp);
 }
 void *_NclMakeVarAttRef
@@ -2856,12 +2811,7 @@ NclSrcListNode *subscript_list;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclVarAttRefDestroy;
 	tmp->sym = var;
-	tmp->attname= (char*)NclMalloc((unsigned)strlen(attname)+1);
-	if(tmp->attname == NULL) {
-		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
-		return(NULL);
-	}	
-	strcpy(tmp->attname,attname);
+	tmp->attname_q = NrmStringToQuark(attname);
 	tmp->subscript_list = subscript_list;
 
 	tmp->ref_type = Ncl_READIT;	
@@ -2878,8 +2828,6 @@ void _NclFileVarCoordRefDestroy
 {
 	NclFileCoord *tmp= (NclFileCoord*)thenode;
 
-	NclFree((void*)tmp->coord_name);
-	NclFree((void*)tmp->filevar);
 	NclFree((void*)tmp);
 }
 void *_NclMakeFileVarCoordRef
@@ -2905,19 +2853,8 @@ NclSrcListNode *subscript_list;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclFileVarCoordRefDestroy;
 	tmp->filesym = var;
-	tmp->filevar = (char*)NclMalloc((unsigned)strlen(filevar)+1);
-	if(tmp->filevar== NULL) {
-		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
-		return(NULL);
-	}	
-	strcpy(tmp->filevar,filevar);
-
-	tmp->coord_name = (char*)NclMalloc((unsigned)strlen(coord)+1);
-	if(tmp->coord_name == NULL) {
-		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
-		return(NULL);
-	}	
-	strcpy(tmp->coord_name,coord);
+	tmp->filevar_q = NrmStringToQuark(filevar);
+	tmp->coord_name_q = NrmStringToQuark(coord);
 	tmp->subscript_list = subscript_list;
 	tmp->ref_type = Ncl_READIT;
 	_NclRegisterNode((NclGenericNode*)tmp);
@@ -2933,7 +2870,6 @@ void _NclVarCoordRefDestroy
 {
 	NclCoord *tmp= (NclCoord*)thenode;
 
-	NclFree((void*)tmp->coord_name);
 	NclFree((void*)tmp);
 }
 void *_NclMakeVarCoordRef
@@ -2958,12 +2894,7 @@ NclSrcListNode *subscript_list;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclVarCoordRefDestroy;
 	tmp->sym = var;
-	tmp->coord_name = (char*)NclMalloc((unsigned)strlen(coord)+1);
-	if(tmp->coord_name == NULL) {
-		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
-		return(NULL);
-	}	
-	strcpy(tmp->coord_name,coord);
+	tmp->coord_name_q = NrmStringToQuark(coord);
 	tmp->subscript_list = subscript_list;
 	tmp->ref_type = Ncl_READIT;
 	_NclRegisterNode((NclGenericNode*)tmp);

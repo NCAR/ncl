@@ -51,7 +51,7 @@ char *cur_load_file = NULL;
 %token <integer> INT DIMNUM
 %token <real> REAL
 %token <str> STRING DIM DIMNAME ATTNAME COORD FVAR 
-%token <sym> INTEGER FLOAT LONG DOUBLE BYTE CHARACTER NUMERIC FILETYPE SHORT
+%token <sym> INTEGER FLOAT LONG DOUBLE BYTE CHARACTER GRAPHIC STRNG NUMERIC FILETYPE SHORT
 %token <sym> UNDEF VAR WHILE DO QUIT PROC EPROC NPROC IPROC UNDEFFILEVAR BREAK
 %token <sym> BGIN END FUNC EFUNC NFUNC IFUNC FDIM IF THEN VBLKNAME FILEVAR CONTINUE
 %token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL RETURN VSBLKGET LOAD
@@ -896,12 +896,12 @@ the_list: declaration				{
 							$$->next = NULL;
 							$$->node = $1;
 						}
-	| the_list ',' declaration 		{ 
+	| declaration ',' the_list 	{ 
 						/* once again ordering not important as long as it is consistent with function 
 							and procedure ordering of argument lists */
 							$$ = _NclMakeNewListNode();
-							$$->next = $1;
-							$$->node = $3;
+							$$->next = $3;
+							$$->node = $1;
 							  
 						}
 ;

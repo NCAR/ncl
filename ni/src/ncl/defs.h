@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.10 1994-03-03 21:54:43 ethan Exp $
+ *      $Id: defs.h,v 1.11 1994-04-07 16:48:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -85,8 +85,28 @@ typedef enum stack_value_types {
 	NclStk_NOVAL = 0, NclStk_OFFSET = 01, 
 	NclStk_VAL = 02,NclStk_VAR = 04, NclStk_SUBREC = 010,
 	NclStk_PARAMLIST = 020, NclStk_RANGEREC = 040,
-	NclStk_VECREC = 0100
+	NclStk_VECREC = 0100, NclStk_FILE = 0200, NclStk_GRAPHIC = 0400,
+	NclStk_RETURNVAL = 01000, NclStk_STATIC_LINK = 02000, 
+	NclStk_DYNAMIC_LINK = 04000, NclStk_RET_OFFSET = 010000
 	} NclStackValueTypes;
+/*
+static char *stack_element_names[] = { 
+	"NclStk_NOVAL", 
+	"NclStk_OFFSET", 
+	"NclStk_VAL",
+	"NclStk_VAR", 
+	"NclStk_SUBREC" ,
+	"NclStk_PARAMLIST" , 
+	"NclStk_RANGEREC" ,
+	"NclStk_VECREC" , 
+	"NclStk_FILE" , 
+	"NclStk_GRAPHIC" ,
+	"NclStk_RETURNVAL",
+	"NclStk_STATIC_LINK",
+	"NclStk_DYNAMIC_LINK",
+	"NclStk_RET_OFFSET"
+	};
+*/
 
 
 
@@ -185,10 +205,13 @@ typedef struct _NclSelectionRecord {
 	NclSelection selection[NCL_MAX_DIMENSIONS];
 } NclSelectionRecord;
 
+typedef enum {NONE_P, VALUE_P, VAR_P} NclParamTypes;
+
 typedef struct _NclParamRecList {
-	struct _NclSymbol *var;
+	NclParamTypes p_type;
+	struct _NclSymbol *var_sym;
+	struct _NclVarRec *var_ptr;
 	NclSelectionRecord *rec;
-	struct _NclParamRecList *next;
 }NclParamRecList;
 
 extern int _NclTranslate(

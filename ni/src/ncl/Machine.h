@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.7 1994-03-03 21:54:22 ethan Exp $
+ *      $Id: Machine.h,v 1.8 1994-04-07 16:48:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -45,6 +45,12 @@ typedef struct mach_stack {
         unsigned int current_machine_size;
         struct mach_stack *next;
 } _NclMachineStack;
+
+typedef struct _NclFrameList {
+	int level;
+	struct _NclFrame *fp;
+	struct _NclFrameList * next;
+}NclFrameList;
 
 extern void _NclPush(
 #ifdef NhlNeedProto
@@ -93,7 +99,7 @@ char * /* file*/
 #endif
 );
 
-extern int _NclGetCurrentOFfset(
+extern int _NclGetCurrentOffset(
 #ifdef NhlNeedProto
 void
 #endif
@@ -204,6 +210,53 @@ NclSymbol * /*n_items*/
 extern NclStackEntry *_NclGetLevel1Var(
 #ifdef NhlNeedProto
 int	/*offset*/
+#endif
+);
+
+extern void *_NclLeaveFrame(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+extern void _NclPushFrame(
+#ifdef NhlNeedProto
+struct _NclSymTableListNode* /* thescope */,
+unsigned long /* offset */,
+int  /* nargs */
+#endif
+);
+
+extern void _NclFinishFrame(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+extern void _NclAddObjToParamList(
+#ifdef NhlNeedProto
+struct _NclObjRec * /* obj */,
+int /* arg_num */
+#endif
+);
+
+extern void _NclRemapParameters(
+#ifdef NhlNeedProto
+int /* nargs*/,
+void * /*previous_fp*/,
+int /* from */
+#endif
+);
+
+extern void _NclDumpStack(
+#ifdef NhlNeedProto
+FILE * /*fp*/
+#endif
+);
+
+extern NhlErrorTypes _NclPlaceReturn(
+#ifdef NhlNeedProto
+struct _NclStackEntry data
 #endif
 );
 

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.11 1994-03-03 23:37:53 ethan Exp $
+ *      $Id: Execute.c,v 1.12 1994-04-07 16:48:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,8 @@ extern "C" {
 #endif
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
+#include <ncarg/hlu/NresDB.h>
+
 #include <data_objs/NclVar.h>
 #include <data_objs/NclMultiDValdoubleData.h>
 #include <data_objs/NclMultiDValfloatData.h>
@@ -59,11 +61,13 @@ NclExecuteReturnStatus _NclExecute
 	char **fptr;
 	NclValue *machine;
 	NhlErrorTypes status = NhlNOERROR;
+	static int level = 0;
 
 	machine = _NclGetCurrentMachine();
 	ptr = machine + start_offset;
 	lptr = _NclGetCurrentLineRec() + start_offset;
 	fptr = _NclGetCurrentFileNameRec() + start_offset;
+	level++;
 
 	while(1) {
 		switch(*ptr) {
@@ -71,10 +75,13 @@ NclExecuteReturnStatus _NclExecute
 * Zero Operand Instructions *
 ****************************/
 			case STOPSEQ:
+				level--;
 				return(Ncl_STOPS);
 			case CONTINUE_OP:
+				level--;
 				return(Ncl_CONTINUES);
 			case BREAK_OP:
+				level--;
 				return(Ncl_BREAKS);
 			case ENDSTMNT_OP:
 			case NOOP :
@@ -291,8 +298,18 @@ NclExecuteReturnStatus _NclExecute
 				}
 				break;
 			}
-			case RETURN_OP :
-				break;
+			case RETURN_OP : {
+				NclStackEntry data;
+				NhlErrorTypes ret = NhlNOERROR;
+				data = _NclPop();
+				
+				ret = _NclPlaceReturn(data);
+				if(ret< NhlWARNING) {
+					return(Ncl_ERRORS);
+				} else {
+					return(Ncl_STOPS);
+				}
+			}
 			case IF_OP :
 				break;
 			case NAMED_COORD_SUBSCRIPT_OP : 
@@ -552,6 +569,17 @@ NclExecuteReturnStatus _NclExecute
 /***************************
 * One Operand Instructions *
 ***************************/
+			case FUNC_CALL_OP: {
+				NclSymbol *func = NULL;
+
+				ptr++;lptr++;fptr++;
+				func = (NclSymbol*)(*ptr);
+
+				_NclFinishFrame();
+				
+				status = _NclFuncCallOp(func);
+				break;
+			}
 			case FPDEF:
 				ptr++;lptr++;fptr++;
 				break;
@@ -575,14 +603,13 @@ NclExecuteReturnStatus _NclExecute
 			case PUSH_STRING_LIT_OP :
 			{
 				NclStackEntry data;
-				char **thestr;
+				int *thestr;
 				int dim_size = 1;
 			
 				ptr++;lptr++;fptr++;
 				data.kind = NclStk_VAL;
-				thestr = (char**)NclMalloc((unsigned)sizeof(char*));
-				*thestr = (char*)NclMalloc((unsigned)strlen((char*)*ptr) + 1);
-				strcpy(*thestr,(char*)*ptr);
+				thestr = (int*)NclMalloc((unsigned)sizeof(int));
+				*thestr = *ptr;
 				data.u.data_obj = _NclMultiDValstringCreate(NULL,
 						NULL,Ncl_MultiDValstringData,0,
 						(void*)thestr,NULL,1,&dim_size,
@@ -628,8 +655,15 @@ NclExecuteReturnStatus _NclExecute
 			case GET_OBJ_OP :
 				ptr++;lptr++;fptr++;
 				break;
-			case PROC_CALL_OP:
+			case PROC_CALL_OP:{
+				NclSymbol *proc = NULL;
+
 				ptr++;lptr++;fptr++;
+				proc = (NclSymbol*)(*ptr);
+			
+				_NclFinishFrame();	
+				status = _NclProcCallOp(proc);
+			}
 				break;
 			case BPROC_CALL_OP:
 				ptr++;lptr++;fptr++;
@@ -669,9 +703,6 @@ NclExecuteReturnStatus _NclExecute
 				}
 				ptr++;lptr++;fptr++;
 			}
-				break;
-			case FUNC_CALL_OP:
-				ptr++;lptr++;fptr++;
 				break;
 			case BFUNC_CALL_OP:
 				ptr++;lptr++;fptr++;
@@ -907,71 +938,6 @@ NclExecuteReturnStatus _NclExecute
 				}
 			}
 			break;
-			case VAR_OP : {
-				NhlErrorTypes ret = NhlNOERROR;
-				int dim_is_ref[NCL_MAX_DIMENSIONS];
-				int i;
-				int nsubs;
-				NclStackEntry data;
-				NclStackEntry data1;
-				NclStackEntry* var;
-				NclSymbol *sym;
-				NclSelectionRecord *sel_ptr=NULL;
-
-				ptr++;lptr++;fptr++;
-				sym = (NclSymbol*)*ptr;
-				var = _NclRetrieveRec(sym);
-				ptr++;lptr++;fptr++;
-				nsubs = *ptr;
-				if(nsubs == 0) {
-					if(var != NULL) {
-						_NclPush(*var);
-					}
-				} else {
-					sel_ptr = (NclSelectionRecord*)NclMalloc
-						(sizeof(NclSelectionRecord));
-					sel_ptr->n_entries = nsubs;
-					for(i = 0; i<nsubs;i++) {
-						dim_is_ref[i] = 0;
-					}
-					for(i=0;i<nsubs;i++) {
-						data =_NclPop();
-						switch(data.u.sub_rec->sub_type) {
-						case INT_VECT:
-/*
-* Need to free some stuff here
-*/							
-							ret = _NclBuildVSelection(var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
-							break;
-						case INT_RANGE:
-/*
-* Need to free some stuff here
-*/							
-							ret = _NclBuildRSelection(var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
-							break;
-						case COORD_VECT:
-						case COORD_RANGE:
-							break;
-						}
-						_NclFreeSubRec(data.u.sub_rec);
-						if(ret < NhlWARNING) {
-							status = NhlFATAL;
-						}
-						if(!dim_is_ref[(sel_ptr->selection[nsubs - i - 1]).dim_num]) {
-							dim_is_ref[(sel_ptr->selection[nsubs - i - 1]).dim_num] = 1;
-						} else {
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in subscript # %d,dimension is referenced more than once",i);
-							status = NhlFATAL;
-						}
-					}
-					if(status != NhlFATAL) {
-						data1.kind = NclStk_VAL;
-						data1.u.data_obj = _NclVarValueRead(var->u.data_var,sel_ptr,NULL);
-						_NclPush(data1);
-					}
-				}
-				break;
-			}
 			case ASSIGN_VAR_OP :{
 				NclStackEntry rhs;
 				NclStackEntry data;
@@ -1029,6 +995,12 @@ NclExecuteReturnStatus _NclExecute
 								}
 							} 
 						} else if(rhs.kind == NclStk_VAR) {
+/*
+* -----> need some modification here. Only time this happens is when a funcion
+* returns a variable. Otherwise ASSIGN_VAR_VAR_OP is used by the translator.
+* This should be changed to call possibly the _NclAssignVarToVar  function in
+* this situation as well as destroy the return variable if
+*/
 							rhs_md = _NclVarValueRead(rhs.u.data_var,NULL,NULL);
 							if(rhs_md != NULL) {
 								if(rhs_md->obj.status != TEMPORARY) {
@@ -1038,7 +1010,7 @@ NclExecuteReturnStatus _NclExecute
 */
 									rhs_md= _NclCopyVal(rhs_md,NULL);
 								}
-								lhs_var->u.data_var= _NclVarCreate(NULL,NULL,Ncl_Var,0,sym,rhs_md,NULL,-1,NULL,NORMAL,sym->name);
+								lhs_var->u.data_var= _NclVarCreate(NULL,NULL,Ncl_Var,0,sym,rhs_md,rhs.u.data_var->var.dim_info,rhs.u.data_var->var.att_id,rhs.u.data_var->var.coord_vars,NORMAL,sym->name);
 								if(lhs_var->u.data_var != NULL) {
 									(void)_NclChangeSymbolType(sym,VAR);
 									lhs_var->kind = NclStk_VAR;
@@ -1047,7 +1019,12 @@ NclExecuteReturnStatus _NclExecute
 									status = NhlWARNING;
 									lhs_var->kind = NclStk_NOVAL;
 								}
+							} else {
+								status = NhlFATAL;
 							} 
+							if(rhs.u.data_var->obj.status == TEMPORARY) {
+								_NclDestroyObj((NclObj)rhs.u.data_var);
+							}
 						} else {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal right-hand side type for assignment");
 							status = NhlFATAL;
@@ -1100,26 +1077,32 @@ NclExecuteReturnStatus _NclExecute
 					if(status != NhlFATAL) {
 						if(rhs.kind == NclStk_VAL) {
 							rhs_md = rhs.u.data_obj;
+							if(rhs_md != NULL) {
+								ret = _NclAssignToVar(lhs_var->u.data_var,rhs_md,sel_ptr);
+								if(rhs_md->obj.status != PERMANENT) {
+									_NclDestroyObj((NclObj)rhs_md);
+								}
+								if(ret <= NhlWARNING) {
+									status = ret;
+								}
+							} else {
+								status = NhlFATAL;
+							}
 						} else if(rhs.kind == NclStk_VAR) {
 /*
 * I don't pass in a new missing in this situation because
 * _NclAssignToVar checks the missing values and it has
 * to visit each element anyways
 */
-							rhs_md = _NclVarValueRead(rhs.u.data_var,NULL,NULL);
+							status = _NclAssignVarToVar(rhs.u.data_var,sel_ptr,rhs.u.data_var,NULL);
+							if(rhs.u.data_var->obj.status == TEMPORARY) {
+								_NclDestroyObj((NclObj)rhs.u.data_var);
+							}
 						} else {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal right-hand side type for assignment");
 							status = NhlFATAL;
 						}
-						ret = _NclAssignToVar(lhs_var->u.data_var,rhs_md,sel_ptr);
-						if(rhs_md->obj.status != PERMANENT) {
-							_NclDestroyObj((NclObj)rhs_md);
-						}
-						if(ret <= NhlWARNING) {
-							status = ret;
-						}
 					}
-					
 				} else {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment not supported for left-hand type");
 					status = NhlFATAL;
@@ -1135,14 +1118,233 @@ NclExecuteReturnStatus _NclExecute
 			}
 			break;
 			}
-			case NEW_FRAME_OP:
+			case NEW_FRAME_OP: {
+				NclSymbol *proc;
+				int offset;
 				ptr++;lptr++;fptr++;
+				proc = (NclSymbol*)(*ptr);
 				ptr++;lptr++;fptr++;
+				offset = (int)(*ptr);
+				if((proc->u.procfunc != NULL)&&(proc->u.procfunc->thescope != NULL)&&(offset >= 0)) {
+					_NclPushFrame(proc->u.procfunc->thescope,offset,proc->u.procfunc->nargs);
+				} else {
+					status = NhlFATAL;
+				}
 				break;
-			case CONVERT_TO_LOCAL:
+			}
+			case CONVERT_TO_LOCAL: {
+				NclSymbol *thesym = NULL;
+				NclGenProcFuncInfo *pfinfo = NULL;
+				NclSymbol *argsym = NULL;
+				NclStackEntry data;
+				unsigned int obj_type_param;
+				unsigned int obj_type_arg;
+				NclMultiDValData tmp_md = NULL;
+				NclVar tmp_var = NULL;
+				int i;
+				int arg_num = -1;
+
 				ptr++;lptr++;fptr++;
+				thesym = (NclSymbol*)(*ptr);
 				ptr++;lptr++;fptr++;
+				arg_num = (int)(*ptr);
+
+				switch(thesym->type) {
+/*
+*				case IPROC:
+*				case IFUNC:
+* Intrinsic functions don't have local variables.
+*/
+				case FUNC:
+				case PROC:
+					pfinfo = (NclGenProcFuncInfo*)thesym->u.bproc;
+					break;
+				case NFUNC:
+				case NPROC:
+					pfinfo = (NclGenProcFuncInfo*)thesym->u.procfunc;
+					break;
+				case EFUNC:
+				case EPROC:
+				default:
+					pfinfo = NULL;
+					break;
+				}
+				if(pfinfo == NULL) {
+					status = NhlFATAL;
+				} else if(arg_num >= pfinfo->nargs) {
+					status = NhlFATAL;
+				} else {
+					argsym = pfinfo->theargs[arg_num].arg_sym;
+/*
+*---> Need to look into allowing HLU objects to be used as parameters
+* in which case this will not be enough also files <----
+*/
+					obj_type_arg = _NclKeywordToObjType(pfinfo->theargs[arg_num].arg_data_type);
+					if(obj_type_arg == Ncl_Obj) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal type for argument in argument (%d) of (%s)",arg_num,thesym->name);
+						status = NhlFATAL;
+					}
+/*
+* Check dimensions first since it isn't expensive
+*/		
+					data = _NclPop();
+					switch(data.kind) {
+					case NclStk_VAR: {
+
+						if(pfinfo->theargs[arg_num].is_dimsizes) {
+							if(pfinfo->theargs->n_dims != data.u.data_var->var.n_dims) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions in parameter (%d) of (%s) does not match specification",arg_num,thesym->name);
+								status = NhlFATAL;
+
+							} else {
+								for(i = 0; i< pfinfo->theargs->n_dims; i++) {
+									if(pfinfo->theargs->dim_sizes[i] != -1) {
+										if(pfinfo->theargs->dim_sizes[i] != data.u.data_var->var.dim_info[i].dim_size) {
+											NhlPError(NhlFATAL,NhlEUNKNOWN,"Size of dimension (%d) of argument (%d) does not match specification in (%s) function definition",i,arg_num,thesym->name);
+											status = NhlFATAL;
+										}
+									}
+									if(status == NhlFATAL) {
+										break;
+									} else {
+										i++;
+									}
+								}
+							}
+						}
+/*
+* Variable subsections also point to the symbol of the main variable so the AddObjToParamList just
+* stores the symbol rather than the pointer to variable record
+*/
+						_NclAddObjToParamList((NclObj)data.u.data_var,arg_num);
+						if(status != NhlFATAL) {
+							obj_type_param = _NclGetVarRepValue(data.u.data_var);
+							if(!(obj_type_param & obj_type_arg)){
+								tmp_md = _NclCoerceVar(data.u.data_var,obj_type_arg,NULL);
+								if(tmp_var == NULL) {
+									NhlPError(NhlFATAL,NhlEUNKNOWN,"Argument type mismatch on argument (%d) of (%s) can not coerce",arg_num,thesym->name);
+									status = NhlFATAL;
+								}
+/*
+* Attention: missing value may be different type than variable data until code is put here to fix it
+*/
+								tmp_var = _NclVarCreate(NULL,data.u.data_var->obj.class_ptr,
+										Ncl_Var,
+										0,
+										argsym,
+										tmp_md,
+										data.u.data_var->var.dim_info,
+										data.u.data_var->var.att_id,
+										data.u.data_var->var.coord_vars,
+										PARAM,
+										argsym->name);
+										
+							} else {
+								tmp_var = _NclVarCreate(NULL,data.u.data_var->obj.class_ptr,
+										data.u.data_var->obj.obj_type,
+										data.u.data_var->obj.obj_type_mask,
+										argsym,
+										(NclMultiDValData)_NclGetObj(data.u.data_var->var.thevalue_id),
+										data.u.data_var->var.dim_info,
+										data.u.data_var->var.att_id,
+										data.u.data_var->var.coord_vars,
+										PARAM,
+										argsym->name);
+							}
+/*
+* Need to put ancestor of local variable in the parmeter list so it can be unpacked later
+*/
+
+						}
+						if(status != NhlFATAL) {
+							data.kind = NclStk_VAR;
+							data.u.data_var = tmp_var;
+							_NclPush(data);
+						}
+					}
+					break;
+					case NclStk_VAL: {
+						if(pfinfo->theargs[arg_num].is_dimsizes) {
+							if(pfinfo->theargs->n_dims != data.u.data_obj->multidval.n_dims) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions in parameter (%d) of (%s) does not match specification",arg_num,thesym->name);
+								status = NhlFATAL;
+
+							} else {
+								for(i = 0; i< pfinfo->theargs->n_dims; i++) {
+									if(pfinfo->theargs->dim_sizes[i] != -1) {
+										if(pfinfo->theargs->dim_sizes[i] != data.u.data_obj->multidval.dim_sizes[i]) {
+											NhlPError(NhlFATAL,NhlEUNKNOWN,"Size of dimension (%d) of argument (%d) does not match specification in (%s) function definition",i,arg_num,thesym->name);
+											status = NhlFATAL;
+										}
+									}
+									if(status == NhlFATAL) {
+										break;
+									} else {
+										i++;
+									}
+								}
+							}
+						}
+						_NclAddObjToParamList((NclObj)data.u.data_obj,arg_num);
+                                                if(status != NhlFATAL) {
+                                                        obj_type_param =((NclMultiDValData)data.u.data_obj)->obj.obj_type;
+                                                        if(!(obj_type_param & obj_type_arg)){
+                                                                tmp_md = _NclCoerceData(data.u.data_obj,obj_type_arg,NULL);
+                                                                if(tmp_var == NULL) {
+                                                                        NhlPError(NhlFATAL,NhlEUNKNOWN,"Argument type mismatch on argument (%d) of (%s) can not coerce",arg_num,thesym->name);
+                                                                        status = NhlFATAL;
+                                                                }
+/*
+* Attention: missing value may be different type than variable data until code is put here to fix it
+*/
+                                                                tmp_var = _NclVarCreate(
+										NULL,NULL,
+                                                                                Ncl_Var,
+                                                                                0,
+                                                                                argsym,
+                                                                                tmp_md,
+                                                                                NULL,
+                                                                                -1,
+                                                                                NULL,
+                                                                                PARAM,
+                                                                                argsym->name);
+
+                                                        } else {
+                                                                tmp_var = _NclVarCreate(
+										NULL,NULL,
+                                                                                Ncl_Var,
+                                                                                0,
+                                                                                argsym,
+                                                                                data.u.data_obj,
+                                                                                NULL,
+                                                                                -1,
+                                                                                NULL,
+                                                                                PARAM,
+                                                                                argsym->name);
+                                                        }
+/*
+* Need to put ancestor of local variable in the parmeter list so it can be unpacked later
+*/
+
+                                                }
+                                                if(status != NhlFATAL) {
+                                                        data.kind = NclStk_VAR;
+                                                        data.u.data_var = tmp_var;
+                                                        _NclPush(data);
+                                                }
+					}
+					break;
+					case NclStk_FILE:
+					case NclStk_GRAPHIC:
+					default:
+						break;
+					}
+/*
+					_NclChangeSymbolType(argsym,VAR);
+*/
+				}
 				break;
+			}
 			case DO_WHILE_OP :
 				ptr++;lptr++;fptr++;
 				ptr++;lptr++;fptr++;
@@ -1169,7 +1371,7 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				thesym = (NclSymbol*)(*ptr);
 				ptr++;lptr++;fptr++;
-				attname = (char*)(*ptr);
+				attname = NrmQuarkToString(*ptr);
 				ptr++;lptr++;fptr++;
 				nsubs = (int)(*ptr);
 
@@ -1244,7 +1446,7 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				thesym = (NclSymbol*)*ptr;
 				ptr++;lptr++;fptr++;
-				coord_name = (char*)*ptr;
+				coord_name = NrmQuarkToString(*ptr);
 				ptr++;lptr++;fptr++;
 				nsubs = (int)*ptr;
 
@@ -1317,6 +1519,8 @@ NclExecuteReturnStatus _NclExecute
 							if(status < ret){
 								status = ret;
 							}
+						} else {
+							status = NhlFATAL;
 						}
 					} else {
 						(void)_NclPop();
@@ -1339,7 +1543,7 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				thesym = (NclSymbol*)*ptr;
 				ptr++;lptr++;fptr++;
-				coord_name = (char*)*ptr;
+				coord_name = NrmQuarkToString(*ptr);
 				ptr++;lptr++;fptr++;
 				nsubs = (int)*ptr;
 
@@ -1424,7 +1628,7 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				thesym = (NclSymbol*)(*ptr);
 				ptr++;lptr++;fptr++;
-				attname = (char*)(*ptr);
+				attname = NrmQuarkToString(*ptr);
 				ptr++;lptr++;fptr++;
 				nsubs = (int)(*ptr);
 	
@@ -1690,6 +1894,7 @@ NclExecuteReturnStatus _NclExecute
 /*
 * need to clean up stack !!! for current level
 */
+				level--;
 				return(Ncl_ERRORS);
 			}
 		}	

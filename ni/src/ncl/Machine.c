@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.11 1994-03-03 23:37:56 ethan Exp $
+ *      $Id: Machine.c,v 1.12 1994-04-07 16:48:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,12 @@ extern "C" {
 #endif
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
+#include <ncarg/hlu/NresDB.h>
 #include <data_objs/NclData.h>
+#include <data_objs/NclMultiDValData.h>
+#include <data_objs/NclVar.h>
+#include <data_objs/NclAtt.h>
+#include <data_objs/DataSupport.h>
 #include <defs.h>
 #include <Symbol.h>
 #include <errno.h>
@@ -68,7 +73,7 @@ int	current_level_1_size;
 
 NclFrame *fp;
 NclStackEntry *sb;
-unsigned int current_scope_level = 0;
+unsigned int current_scope_level = 1;
 
 static void SetUpOpsStrings() {
 	ops_strings[0] = "NOOP";
@@ -139,7 +144,6 @@ static void SetUpOpsStrings() {
 	ops_strings[FILEVARATT_OP] = "FILEVARATT_OP";
 	ops_strings[ASSIGN_FILEVARATT_OP] = "ASSIGN_FILEVARATT_OP";
 	ops_strings[PARAM_FILEVARATT_OP] = "PARAM_FILEVARATT_OP";
-	ops_strings[VAR_OP] = "VAR_OP";
 	ops_strings[VAR_READ_OP] = "VAR_READ_OP";
 	ops_strings[ASSIGN_VAR_OP] = "ASSIGN_VAR_OP";
 	ops_strings[PARAM_VAR_OP] = "PARAM_VAR_OP";
@@ -337,7 +341,7 @@ NhlErrorTypes _NclInitMachine
 ()
 #endif
 {
-	fp = NULL;
+	fp = (NclFrame*)thestack;
 	sb = thestack;
 	mstk = (_NclMachineStack*)NclMalloc((unsigned)sizeof(_NclMachineStack));
 	mstk->themachine = (NclValue*)NclCalloc(NCL_MACHINE_SIZE,sizeof(NclValue));
@@ -465,28 +469,77 @@ NclSymbol* the_sym;
 	}
 }
 
+static struct _NclFrameList flist ;
+
+static void SaveFramePtrNLevel
+#if __STDC__
+(struct _NclFrame *tmp_fp,int level)
+#else
+(tmp_fp,level)
+	struct _NclFrame *tmp_fp;
+	int level;
+#endif
+{
+	static inited = 0;
+
+	struct _NclFrameList *tmp;
+
+	if(!inited) {
+		flist.next = NULL;
+		flist.fp = NULL;
+		flist.level = -1;
+		inited = 1;
+	}
+	tmp = flist.next;
+
+	flist.next = (NclFrameList*)NclMalloc((unsigned)sizeof(NclFrameList));
+	flist.next->fp = tmp_fp;
+	flist.next->level = level;
+	flist.next->next = tmp;
+}
+
+static void SetNextFramePtrNLevel
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	struct _NclFrameList *tmp;
+
+	tmp = flist.next;
+	if(tmp != NULL) {
+		flist.next = flist.next->next;
+		fp = tmp->fp;
+		current_scope_level = tmp->level;
+		NclFree(tmp);
+	}
+	
+}
+
 
 void _NclPushFrame
 #if __STDC__
-(NclSymTableListNode *new_scope,unsigned long next_instr_offset)
+(NclSymTableListNode *new_scope,unsigned long next_instr_offset,int nargs)
 #else
-(new_scope,next_instr_offset)
+(new_scope,next_instr_offset,nargs)
 	NclSymTableListNode *new_scope;
 	unsigned long next_instr_offset;
+	int nargs;
 #endif
 {
-	NclFrame *tmp; 
+	NclFrame *tmp,*tmp_fp; 
 	NclFrame *previous; 
 	int i;
 
 	previous = (NclFrame*)fp;	
 
 	tmp = (NclFrame*)(sb);
-	tmp->func_ret_value.kind = NclStk_NOVAL;
+	tmp->func_ret_value.kind = NclStk_RETURNVAL;
 	tmp->func_ret_value.u.data_obj= NULL;
 	if(new_scope->level == current_scope_level+1) {
 		tmp->static_link.u.offset  = (unsigned long)((NclStackEntry*)previous - (NclStackEntry*)thestack);
-		tmp->static_link.kind = NclStk_OFFSET;
+		tmp->static_link.kind = NclStk_STATIC_LINK;
 	} else if(new_scope->level == current_scope_level) {
 		tmp->static_link = previous->static_link;
 	} else  {
@@ -495,37 +548,72 @@ void _NclPushFrame
 			previous = (NclFrame*)((NclStackEntry*)thestack + previous->static_link.u.offset);
 		}
 		tmp->static_link.u.offset = (unsigned long)((NclStackEntry*)previous - (NclStackEntry*)thestack);
-		tmp->static_link.kind = NclStk_OFFSET;
+		tmp->static_link.kind = NclStk_STATIC_LINK;
 	}
 	tmp->dynamic_link.u.offset  = (unsigned long)((NclStackEntry*)previous - (NclStackEntry*)thestack);
+	tmp->dynamic_link.kind = NclStk_DYNAMIC_LINK;
 
 /*
 * Maybe should be pcoffset + 1???
 */
 	tmp->return_pcoffset.u.offset = next_instr_offset ;
-	tmp->return_pcoffset.kind = NclStk_OFFSET;
-
-	fp = tmp;
+	tmp->return_pcoffset.kind = NclStk_RET_OFFSET;
+	if(nargs > 0) {
+		tmp->parameter_map.kind = NclStk_PARAMLIST;
+		tmp->parameter_map.u.the_list = (NclParamRecList*)NclMalloc(
+					(unsigned) sizeof(NclParamRecList) * nargs);
+		for(i = 0 ; i< nargs; i++) {
+			tmp->parameter_map.u.the_list[i].p_type = NONE_P;
+			tmp->parameter_map.u.the_list[i].var_sym = NULL;
+			tmp->parameter_map.u.the_list[i].rec = NULL;
+		}
+	} else {
+		tmp->parameter_map.u.the_list = NULL;
+	}
+	tmp_fp = tmp;
 	
 	tmp++;
 	sb = (NclStackEntry*)tmp;
-
+/*
 	current_scope_level = new_scope->level;
+*/
+
+/* 
+* the frame pointer needs to be returned so it can be set after all of the
+* arguments have been pushed on to the stack. If this isn't done then the
+*  the _NclRetrieveRec function won't be able to find the correct parameters
+* referenced by the instruction sequence. Same goes for the current scope
+* level.
+*/
+	SaveFramePtrNLevel(tmp_fp,new_scope->level);
 	return;
 }
 
-void _NclLeaveFrame
+void _NclFinishFrame
 #if __STDC__
 (void)
 #else
 ()
 #endif
 {
+	SetNextFramePtrNLevel();
+	return;
+}
+
+void *_NclLeaveFrame
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	NclFrame * prev;
 /*
-* --------> Need code to free local variables here <----------
-*/
 	sb = &(fp->func_ret_value);
+*/
+	prev = fp;
 	fp = (NclFrame*)(thestack + fp->dynamic_link.u.offset);
+	return((void*)prev);
 }
 
 void _NclPush
@@ -791,7 +879,7 @@ void _NclPrintMachine
 			case PUSH_STRING_LIT_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%s\n",(char*)*ptr);
+				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				break;
 			case NEW_FRAME_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
@@ -845,9 +933,9 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%s\n",(char*)*ptr);
+				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%s\n",(char*)*ptr);
+				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
@@ -860,7 +948,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%s\n",(char*)*ptr);
+				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
@@ -872,9 +960,9 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%s\n",(char*)*ptr);
+				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%s\n",(char*)*ptr);
+				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
@@ -886,7 +974,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%s\n",(char*)*ptr);
+				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
@@ -899,11 +987,10 @@ void _NclPrintMachine
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
-				fprintf(fp,"%s\n",(char*)*ptr,fp);
+				fprintf(fp,"%s\n",NrmQuarkToString(*ptr),fp);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d",*ptr);
 				break;
-			case VAR_OP :
 			case VAR_READ_OP :
 			case ASSIGN_VAR_OP :
 			case PARAM_VAR_OP :
@@ -962,7 +1049,7 @@ void _NclPrintMachine
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++,fptr++;
 				fprintf(fp,"\t");
-				fprintf(fp,"%s\n",(char*)*ptr);
+				fprintf(fp,"%s\n",NrmQuarkToString(*ptr));
 				break;
 			default:
 				break;
@@ -971,6 +1058,497 @@ void _NclPrintMachine
 	}
 	return;
 }
+
+
+extern void _NclAddObjToParamList
+#if  __STDC__
+(struct _NclObjRec *obj, int arg_num)
+#else
+(obj,arg_num)
+	struct _NclObjRec *obj;
+	int arg_num;
+#endif 
+{
+	NclMultiDValData tmp_md;
+	NclMultiDValData tmp_var;
+	NclFrame *tmp_fp;
+/*
+* guarenteed to have next frame pointer in the flist stack.
+*/
+	tmp_fp = flist.next->fp;
+	if(obj->obj.obj_type_mask & NCL_VAR_TYPE_MASK) {
+		tmp_fp->parameter_map.u.the_list[arg_num].p_type = VAR_P;
+		tmp_fp->parameter_map.u.the_list[arg_num].var_sym = ((NclVar)obj)->var.thesym;
+		tmp_fp->parameter_map.u.the_list[arg_num].var_ptr = (NclVar)obj;
+		if((((NclVar)obj)->var.var_type == VARSUBSEL)
+			||(((NclVar)obj)->var.var_type == COORDSUBSEL)
+			||(((NclVar)obj)->var.var_type == FILEVARSUBSEL)) {
+		
+			tmp_md = (NclMultiDValData)_NclGetObj(((NclVar)obj)->var.thevalue_id);
+			if(tmp_md->multidval.sel_rec != NULL) {
+				tmp_fp->parameter_map.u.the_list[arg_num].rec = (NclSelectionRecord*)NclMalloc((unsigned)sizeof(NclSelectionRecord));
+            			memcpy((char*)tmp_fp->parameter_map.u.the_list[arg_num].rec,(char*)tmp_md->multidval.sel_rec,sizeof(NclSelectionRecord));
+
+			} else {
+				tmp_fp->parameter_map.u.the_list[arg_num].rec = NULL;
+			}
+		}
+	} else if(obj->obj.obj_type_mask & NCL_VAL_TYPE_MASK) {
+		tmp_fp->parameter_map.u.the_list[arg_num].p_type = VALUE_P;
+		tmp_fp->parameter_map.u.the_list[arg_num].var_sym = NULL;
+		tmp_fp->parameter_map.u.the_list[arg_num].var_ptr = NULL;
+		tmp_fp->parameter_map.u.the_list[arg_num].rec = NULL;
+	} else {
+		tmp_fp->parameter_map.u.the_list[arg_num].p_type = NONE_P;
+		tmp_fp->parameter_map.u.the_list[arg_num].var_sym = NULL;
+		tmp_fp->parameter_map.u.the_list[arg_num].var_ptr = NULL;
+		tmp_fp->parameter_map.u.the_list[arg_num].rec = NULL;
+/*
+* handle files 
+*/
+	}
+	
+}
+
+void _NclRemapParameters
+#if __STDC__
+(int nargs,void *previous_fp,int from)
+#else
+(nargs,previous_fp,from)
+	int nargs;
+	void *previous_fp;
+	int from;
+#endif
+{
+	NclParamRecList *the_list;
+	NclStackEntry data,*data_ptr;
+	NclObjTypes param_rep_type,var_rep_type;
+	NclVar anst_var = NULL, tmp_var = NULL,tmp_var1 = NULL;
+	int i = 0,j = 0,contains_vec = 0;
+	NclFrame* tmp_fp = (NclFrame*)previous_fp;
+	int check_ret_status = 0;
+	int value_ref_count = 0;
+	int coord_ids[NCL_MAX_DIMENSIONS];
+	NclAtt tmp_att;
+	NclVar tmp_coord_var;
+/*
+* Some kind of check is need to assure top of stack and arguments are 
+* aligned before the following loop starts up
+*/
+	switch(from) {
+	case FUNC_CALL_OP:
+		check_ret_status = 1;
+		break;
+	default:
+		check_ret_status = 0;
+		break;
+	}
+
+	the_list = tmp_fp->parameter_map.u.the_list;
+	for (i = 0; i < nargs; i++) {
+		data = _NclPop();
+		if(the_list[i].p_type == VAR_P) {
+			if((the_list[i].var_sym != NULL)&&(the_list[i].rec != NULL)) {
+
+/* 
+* Key thing to think about here: if there is a subscript record or no variable 
+* symbol then the value associated with a parameter variable is an array subsection
+* or the result of an expression which can be converted to a temporary value if it has 
+* been placed in the return value spot of the frame. Otherwise, if there is a sym and
+* no selection record then the variable must be copied into a temporary variable.
+*/ 
+
+
+
+/*
+* Variables regardless of subsectioning or type will share att id with parameter
+* variable. So only coordinate variables, type and actual data array values 
+* must bew remapped.
+*/
+				for(j = 0; j< the_list[i].rec->n_entries; j ++) {
+					if(the_list[i].rec->selection[j].sel_type == Ncl_VECSUBSCR) {
+						contains_vec = 1;
+					}
+				}
+				data_ptr = _NclRetrieveRec(the_list[i].var_sym);
+				anst_var = data_ptr->u.data_var;
+				if(data.u.data_var != NULL ) {
+					var_rep_type = _NclGetVarRepValue(data.u.data_var);
+					param_rep_type = _NclGetVarRepValue(anst_var);
+					if((var_rep_type != param_rep_type)&&(!contains_vec)) {
+/*
+* Try reverse coercion which in many cases will
+* just fail.
+*/
+					} else {
+						if(!contains_vec) 
+							_NclAssignVarToVar(anst_var,the_list[i].rec,data.u.data_var,NULL);
+
+					}
+/* 
+* ------->
+* Need to deal with mapping coordinates, attributes and dim_info. THis is
+* not trivial since remapping can cause coord arrays to expand to the
+* size of target dimension and be partially filled in with missing values 
+* <-------
+*/
+				
+					if((the_list[i].var_ptr != NULL)&&(anst_var->obj.id != the_list[i].var_ptr->obj.id)) {
+						_NclDestroyObj((NclObj)the_list[i].var_ptr);
+					}
+
+					value_ref_count = _NclGetObjRefCount(data.u.data_var->var.thevalue_id);
+
+					if((check_ret_status)&&(tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)&&(value_ref_count == 1)) {
+/* data better be a variable otherwise something is majorly hosed */
+/* Here the object is available to be forced into a temporary variable */
+
+							tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
+							tmp_var = _NclVarCreate(
+								NULL,
+								tmp_var1->obj.class_ptr,
+								tmp_var1->obj.obj_type,
+								tmp_var1->obj.obj_type_mask,
+								NULL,
+								(NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),
+								tmp_var1->var.dim_info,
+								tmp_var1->var.att_id,
+								tmp_var1->var.coord_vars,
+								RETURNVAR,
+								NULL
+								);
+							_NclDestroyObj((NclObj)tmp_var1);
+							tmp_fp->func_ret_value.u.data_var = tmp_var;
+							check_ret_status = 0;
+						
+					} else if((check_ret_status)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)){
+						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
+						if(tmp_var1->var.att_id != -1) 
+							tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
+						for(j = 0; j< tmp_var1->var.n_dims; j++) {
+							if(tmp_var1->var.coord_vars[j] != -1) {
+								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[j]),NULL,NULL);
+								coord_ids[j] = tmp_coord_var->obj.id;
+							} else {
+								coord_ids[j] = -1;
+							}
+						}
+						tmp_var = _NclVarCreate(
+							NULL,
+							tmp_var1->obj.class_ptr,
+							tmp_var1->obj.obj_type,
+							tmp_var1->obj.obj_type_mask,
+							NULL,
+							_NclCopyVal((NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),NULL),
+							tmp_var1->var.dim_info,
+							(tmp_att == NULL ? -1:tmp_att->obj.id),
+							coord_ids,
+							RETURNVAR,
+							NULL
+							);
+						_NclDestroyObj((NclObj)tmp_var1);
+						tmp_fp->func_ret_value.u.data_var = tmp_var;
+						check_ret_status = 0;
+					} else {
+						_NclDestroyObj((NclObj)data.u.data_var);
+					}
+				} else {
+					if((the_list[i].var_ptr != NULL)&&(anst_var->obj.id != the_list[i].var_ptr->obj.id)) {
+						_NclDestroyObj((NclObj)the_list[i].var_ptr);
+					}
+				}
+			} else if(the_list[i].var_sym != NULL){
+				data_ptr = _NclRetrieveRec(the_list[i].var_sym);
+				anst_var = data_ptr->u.data_var;
+				if((anst_var->var.att_id == -1)&&(data.u.data_var->var.att_id != -1)) {
+					anst_var->var.att_id = data.u.data_var->var.att_id;
+					_NclAddParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
+				} else if((anst_var->var.att_id != -1)&&(data.u.data_var->var.att_id == -1)){
+
+					_NclDelParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
+					anst_var->var.att_id = -1;
+				} else if(anst_var->var.att_id != data.u.data_var->var.att_id) {
+					_NclDelParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
+					anst_var->var.att_id = data.u.data_var->var.att_id;
+					_NclAddParent(_NclGetObj(anst_var->var.att_id),(NclObj)anst_var);
+				}
+				for(j = 0 ; j < data.u.data_var->var.n_dims; j++) {
+					if((anst_var->var.coord_vars[j] != -1)&&(data.u.data_var->var.coord_vars[j] == -1)) {
+						_NclDelParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
+						anst_var->var.coord_vars[j] = -1;
+						
+						
+					} else if((anst_var->var.coord_vars[j] == -1)&&(data.u.data_var->var.coord_vars[j] == -1)) {
+						anst_var->var.coord_vars[j] = data.u.data_var->var.coord_vars[j];
+						_NclAddParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
+				
+					} else if(anst_var->var.coord_vars[j] != data.u.data_var->var.coord_vars[j]) {
+						_NclDelParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
+						anst_var->var.coord_vars[j] = data.u.data_var->var.coord_vars[j];
+						_NclAddParent(_NclGetObj(anst_var->var.coord_vars[j]),(NclObj)anst_var);
+					} 
+					anst_var->var.dim_info[j] = data.u.data_var->var.dim_info[j];
+				}
+				value_ref_count = _NclGetObjRefCount(data.u.data_var->var.thevalue_id);
+
+				if((check_ret_status)&&(tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)&&(value_ref_count == 1)) {
+/* data better be a variable otherwise something is majorly hosed */
+/* Here the object is available to be forced into a temporary variable */
+						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
+						tmp_var = _NclVarCreate(
+							NULL,
+							tmp_var1->obj.class_ptr,
+							tmp_var1->obj.obj_type,
+							tmp_var1->obj.obj_type_mask,
+							NULL,
+							(NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),
+							tmp_var1->var.dim_info,
+							tmp_var1->var.att_id,
+							tmp_var1->var.coord_vars,
+							RETURNVAR,
+							NULL
+							);
+						_NclDestroyObj((NclObj)tmp_var1);
+						tmp_fp->func_ret_value.u.data_var = tmp_var;
+						check_ret_status = 0;
+						
+				} else if((check_ret_status)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)){
+						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
+						if(tmp_var1->var.att_id != -1) 
+							tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
+						for(i = 0; i< tmp_var1->var.n_dims; i++) {
+							if(tmp_var1->var.coord_vars[i] != -1) {
+								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[i]),NULL,NULL);
+								coord_ids[i] = tmp_coord_var->obj.id;
+							} else {
+								coord_ids[i] = -1;
+							}
+						}
+						tmp_var = _NclVarCreate(
+							NULL,
+							tmp_var1->obj.class_ptr,
+							tmp_var1->obj.obj_type,
+							tmp_var1->obj.obj_type_mask,
+							NULL,
+							_NclCopyVal((NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),NULL),
+							tmp_var1->var.dim_info,
+							(tmp_att == NULL ? -1:tmp_att->obj.id),
+							coord_ids,
+							RETURNVAR,
+							NULL
+							);
+						_NclDestroyObj((NclObj)tmp_var1);
+						tmp_fp->func_ret_value.u.data_var = tmp_var;
+						check_ret_status = 0;
+				} else {
+					_NclDestroyObj((NclObj)data.u.data_var);
+				}
+			} else {
+/*
+* In this situation the variable is a return value which isn't attached to a symbol
+*/
+				value_ref_count = _NclGetObjRefCount(data.u.data_var->var.thevalue_id);
+
+				if((check_ret_status)&&(tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)&&(value_ref_count == 1)) {
+/* data better be a variable otherwise something is majorly hosed */
+/* Here the object is available to be forced into a temporary variable */
+						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
+						tmp_var = _NclVarCreate(
+							NULL,
+							tmp_var1->obj.class_ptr,
+							tmp_var1->obj.obj_type,
+							tmp_var1->obj.obj_type_mask,
+							NULL,
+							(NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),
+							tmp_var1->var.dim_info,
+							tmp_var1->var.att_id,
+							tmp_var1->var.coord_vars,
+							RETURNVAR,
+							NULL
+							);
+						_NclDestroyObj((NclObj)tmp_var1);
+						tmp_fp->func_ret_value.u.data_var = tmp_var;
+						check_ret_status = 0;
+						
+				} else if((check_ret_status)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)){
+						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
+						if(tmp_var1->var.att_id != -1) 
+							tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
+						for(i = 0; i< tmp_var1->var.n_dims; i++) {
+							if(tmp_var1->var.coord_vars[i] != -1) {
+								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[i]),NULL,NULL);
+								coord_ids[i] = tmp_coord_var->obj.id;
+							} else {
+								coord_ids[i] = -1;
+							}
+						}
+						tmp_var = _NclVarCreate(
+							NULL,
+							tmp_var1->obj.class_ptr,
+							tmp_var1->obj.obj_type,
+							tmp_var1->obj.obj_type_mask,
+							NULL,
+							_NclCopyVal((NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),NULL),
+							tmp_var1->var.dim_info,
+							(tmp_att == NULL ? -1:tmp_att->obj.id),
+							coord_ids,
+							RETURNVAR,
+							NULL
+							);
+						_NclDestroyObj((NclObj)tmp_var1);
+						tmp_fp->func_ret_value.u.data_var = tmp_var;
+						check_ret_status = 0;
+				} else {
+					_NclDestroyObj((NclObj)data.u.data_var);
+				}
+			}
+		} else if(the_list[i].p_type == VALUE_P) {
+			if(data.kind == NclStk_VAR) { 
+/*
+* Need to turn data part into a temporary variable and still destroy variable
+*   >Does not currently do this for now it does the same thing as if it were
+*    a variable parameter<
+*/
+				value_ref_count = _NclGetObjRefCount(data.u.data_var->var.thevalue_id);
+
+				if((check_ret_status)&&(tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)&&(value_ref_count == 1)) {
+/* data better be a variable otherwise something is majorly hosed */
+/* Here the object is available to be forced into a temporary variable */
+						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
+						tmp_var = _NclVarCreate(
+							NULL,
+							tmp_var1->obj.class_ptr,
+							tmp_var1->obj.obj_type,
+							tmp_var1->obj.obj_type_mask,
+							NULL,
+							(NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),
+							tmp_var1->var.dim_info,
+							tmp_var1->var.att_id,
+							tmp_var1->var.coord_vars,
+							RETURNVAR,
+							NULL
+							);
+						_NclDestroyObj((NclObj)tmp_var1);
+						tmp_fp->func_ret_value.u.data_var = tmp_var;
+						check_ret_status = 0;
+						
+				} else if((check_ret_status)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)){
+						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
+						if(tmp_var1->var.att_id != -1) 
+							tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
+						for(i = 0; i< tmp_var1->var.n_dims; i++) {
+							if(tmp_var1->var.coord_vars[i] != -1) {
+								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[i]),NULL,NULL);
+								coord_ids[i] = tmp_coord_var->obj.id;
+							} else {
+								coord_ids[i] = -1;
+							}
+						}
+						tmp_var = _NclVarCreate(
+							NULL,
+							tmp_var1->obj.class_ptr,
+							tmp_var1->obj.obj_type,
+							tmp_var1->obj.obj_type_mask,
+							NULL,
+							_NclCopyVal((NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),NULL),
+							tmp_var1->var.dim_info,
+							(tmp_att == NULL ? -1:tmp_att->obj.id),
+							coord_ids,
+							RETURNVAR,
+							NULL
+							);
+						_NclDestroyObj((NclObj)tmp_var1);
+						tmp_fp->func_ret_value.u.data_var = tmp_var;
+						check_ret_status = 0;
+				} else {
+					_NclDestroyObj((NclObj)data.u.data_var);
+				}
+			} else {
+				_NclDestroyObj((NclObj)data.u.data_var);
+			}
+		}
+	}
+}
+
+void _NclDumpStack
+#if __STDC__
+(FILE *fp)
+#else 
+(fp) 
+	FILE *fp;
+#endif
+{
+	NclStackEntry *tmp_ptr = sb;
+
+	fprintf(fp,"\n");
+	tmp_ptr = sb - 1;
+	while(tmp_ptr >= thestack) {
+		fprintf(fp,"%d)\t",(int)(tmp_ptr - thestack));
+		switch(tmp_ptr->kind) {
+		case	NclStk_NOVAL:
+			fprintf(fp,"NclStk_NOVAL\n");
+			break;
+		case	NclStk_OFFSET:
+			fprintf(fp,"NclStk_OFFSET\n");
+			break;
+		case 	NclStk_VAL:
+			fprintf(fp,"NclStk_VAL\n");
+			break;
+		case 	NclStk_VAR:
+			fprintf(fp,"NclStk_VAR\n");
+			break;
+		case 	NclStk_SUBREC:
+			fprintf(fp,"NclStk_SUBREC\n");
+			break;
+		case	NclStk_PARAMLIST:
+			fprintf(fp,"NclStk_PARAMLIST\n");
+			break;
+		case	NclStk_RANGEREC:
+			fprintf(fp,"NclStk_RANGEREC\n");
+			break;
+		case	NclStk_VECREC:
+			fprintf(fp,"NclStk_VECREC\n");
+			break;
+		case	NclStk_FILE:	
+			fprintf(fp,"NclStk_FILE\n");
+			break;
+		case 	NclStk_GRAPHIC:
+			fprintf(fp,"NclStk_GRAPHIC\n");
+			break;
+        	case	NclStk_STATIC_LINK:
+			fprintf(fp,"NclStk_STATIC_LINK\t%d\n",(int)(tmp_ptr->u.offset ));
+			break;
+        	case	NclStk_DYNAMIC_LINK:
+			fprintf(fp,"NclStk_DYNAMIC_LINK\t%d\n",(int)(tmp_ptr->u.offset));
+			break;
+        	case	NclStk_RET_OFFSET:
+			fprintf(fp,"NclStk_RET_OFFSET\t%d\n",(int)(tmp_ptr->u.offset));
+			break;
+		case 	NclStk_RETURNVAL:
+			fprintf(fp,"------------FRAME--------------\n");
+			break;
+		default:
+			fprintf(fp,"\n");
+			break;
+		}
+		tmp_ptr--;
+	}
+	fprintf(fp,"\n");
+}
+
+NhlErrorTypes _NclPlaceReturn
+#if __STDC__
+(struct _NclStackEntry data)
+#else
+(data)
+	struct NclStackEntry data;
+#endif
+{
+	fp->func_ret_value = data;
+	return(NhlNOERROR);
+}
+
+
 #ifdef __cplusplus
 }
 #endif

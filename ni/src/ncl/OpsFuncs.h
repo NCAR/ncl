@@ -1,6 +1,6 @@
 
 /*
- *      $Id: OpsFuncs.h,v 1.2 1993-12-30 00:44:31 ethan Exp $
+ *      $Id: OpsFuncs.h,v 1.3 1994-04-07 16:48:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -45,6 +45,17 @@ NhlErrorTypes _NclBuildArray(
 #ifdef NhlNeedProto
 int	/*n_items*/,
 NclStackEntry */*result*/
+#endif
+);
+
+NhlErrorTypes _NclFuncCallOp(
+#ifdef NhlNeedProto
+NclSymbol * /*func*/
+#endif
+);
+NhlErrorTypes _NclProcCallOp(
+#ifdef NhlNeedProto
+NclSymbol *  /* proc*/
 #endif
 );
 
