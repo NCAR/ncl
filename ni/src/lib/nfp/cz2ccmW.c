@@ -4,16 +4,8 @@
  * The following are the required NCAR Graphics include files.
  * They should be located in ${NCARG_ROOT}/include.
  */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include "Symbol.h"
-#include "NclMdInc.h"
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include <math.h>
-#include <ncarg/gks.h>
 #include "wrapper.h"
+#include <math.h>
 
 extern void NGCALLF(dcz2ccm,DCZ2CCM)(double*,double*,double*,double*,double*,
                                      double*,double*,double*,int*,int*,int*,
@@ -26,8 +18,8 @@ NhlErrorTypes cz2ccm_W( void )
  * Input array variables
  */
   void *ps, *phis, *tv, *p0, *hyam, *hybm, *hyai, *hybi;
-  double *dps, *dphis, *dtv, *dp0;
-  double *dhyam, *dhybm, *dhyai, *dhybi;
+  double *tmp_ps, *tmp_phis, *tmp_tv, *tmp_p0;
+  double *tmp_hyam, *tmp_hybm, *tmp_hyai, *tmp_hybi;
   int has_missing_ps, ndims_ps, dsizes_ps[NCL_MAX_DIMENSIONS];
   int has_missing_phis, dsizes_phis[NCL_MAX_DIMENSIONS];
   int has_missing_tv, ndims_tv, dsizes_tv[NCL_MAX_DIMENSIONS];
@@ -40,9 +32,10 @@ NhlErrorTypes cz2ccm_W( void )
 /*
  * Output array variables
  */
-  double *z2;
-  float *rz2;
+  void *z2;
+  double *tmp_z2;
   int size_leftmost;
+  NclBasicDataTypes type_z2;
 /*
  * work arrays
  */
@@ -50,7 +43,8 @@ NhlErrorTypes cz2ccm_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, k, l, m, nlat, mlon, klev, klev1, nlatmlon, klevnlatmlon;
+  int i, index_ps, index_z2, l, m;
+  int nlat, mlon, klev, klev1, nlatmlon, klevnlatmlon;
   int any_double=0, size_input, size_z2;
 
 /*
@@ -225,87 +219,67 @@ NhlErrorTypes cz2ccm_W( void )
   for( i = 0; i < ndims_tv-3; i++ ) size_leftmost *= dsizes_tv[i];
   size_z2 = size_leftmost*klev*nlat*mlon;
 /*
- * Coerce ps to double precision if necessary.
+ * Allocate space for ps if necessary.
  */
-  size_input = size_leftmost * nlatmlon;
-  dps = coerce_input_double(ps,type_ps,size_input,0,NULL,NULL,NULL);
-  if( dps == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: Unable to allocate memory for coercing ps array to double precision");
-    return(NhlFATAL);
+  if(type_ps != NCL_double) {
+    tmp_ps = (double *)calloc(nlatmlon,sizeof(double));
+    if( tmp_ps == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: Unable to allocate memory for coercing ps array to double precision");
+      return(NhlFATAL);
+    }
   }
 /*
- * Coerce phis to double precision if necessary.
+ * Allocate space for tv if necessary.
  */
-  size_input = nlatmlon;
-  dphis = coerce_input_double(phis,type_phis,size_input,0,NULL,NULL,NULL);
-  if( dphis == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: Unable to allocate memory for coercing phis array to double precision");
-    return(NhlFATAL);
+  if(type_tv != NCL_double) {
+    tmp_tv = (double *)calloc(klevnlatmlon,sizeof(double));
+    if( tmp_tv == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: Unable to allocate memory for coercing tv array double precision");
+      return(NhlFATAL);
+    }
   }
 /*
- * Coerce tv to double precision if necessary.
+ * Coerce input arrays to double if necessary.
  */
-  size_input = size_leftmost * klevnlatmlon;
-  dtv = coerce_input_double(tv,type_tv,size_input,0,NULL,NULL,NULL);
-  if( dtv == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: Unable to allocate memory for coercing tv array double precision");
+  tmp_phis = coerce_input_double(phis,type_phis,nlatmlon,0,NULL,NULL);
+  tmp_p0   = coerce_input_double(p0,type_p0,1,0,NULL,NULL);
+  tmp_hyam = coerce_input_double(hyam,type_hyam,klev,0,NULL,NULL);
+  tmp_hybm = coerce_input_double(hybm,type_hybm,klev,0,NULL,NULL);
+  tmp_hyai = coerce_input_double(hyai,type_hyai,klev1,0,NULL,NULL);
+  tmp_hybi = coerce_input_double(hybi,type_hybi,klev1,0,NULL,NULL);
+  
+  if(tmp_phis == NULL || tmp_p0 == NULL ||
+     tmp_hyam == NULL || tmp_hybm == NULL ||
+     tmp_hyai == NULL || tmp_hybi == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
   }
-
-/*
- * Coerce p0 to double precision if necessary.
- */
-  dp0 = coerce_input_double(p0,type_p0,1,0,NULL,NULL,NULL);
-  if( dp0 == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: Unable to allocate memory for coercing p0 to double precision");
-    return(NhlFATAL);
-  }
-
-/*
- * Coerce hyam to double precision if necessary.
- */
-  dhyam = coerce_input_double(hyam,type_hyam,klev,0,NULL,NULL,NULL);
-  if( dhyam == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: Unable to allocate memory for coercing hyam array to double precision");
-    return(NhlFATAL);
-  }
-
-/*
- * Coerce hybm to double precision if necessary.
- */
-  dhybm = coerce_input_double(hybm,type_hybm,klev,0,NULL,NULL,NULL);
-  if( dhybm == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: Unable to allocate memory for coercing hybm array to double precision");
-    return(NhlFATAL);
-  }
-
-/*
- * Coerce hyai to double precision if necessary.
- */
-  dhyai = coerce_input_double(hyai,type_hyai,klev1,0,NULL,NULL,NULL);
-  if( dhyai == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: Unable to allocate memory for coercing hyai array to double precision");
-    return(NhlFATAL);
-  }
-
-/*
- * Coerce hybi to double precision if necessary.
- */
-  dhybi = coerce_input_double(hybi,type_hybi,klev1,0,NULL,NULL,NULL);
-  if( dhybi == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: Unable to allocate memory for coercing hybi array to double precision");
-    return(NhlFATAL);
-  }
-
 /*
  * Allocate space for output value.
  */
-  z2 = (double *)NclMalloc(size_z2*sizeof(double));
-  if( z2 == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: Unable to allocate memory for output array");
-    return(NhlFATAL);
-  }
+  if(type_ps   != NCL_double && type_phis != NCL_double && 
+     type_tv   != NCL_double && type_p0   != NCL_double && 
+     type_hyam != NCL_double && type_hybm != NCL_double &&
+     type_hyai != NCL_double && type_hybi != NCL_double) {
 
+    type_z2 = NCL_float;
+
+    tmp_z2 = (double *)calloc(klevnlatmlon,sizeof(double));
+    z2     = (float *)NclMalloc(size_z2*sizeof(float));
+
+    if(tmp_z2 == NULL || z2 == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_z2 = NCL_double;
+    z2 = (double *)NclMalloc(size_z2*sizeof(double));
+    if( z2 == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
 /*
  * Allocate space for scratch arrays.
  */
@@ -325,14 +299,42 @@ NhlErrorTypes cz2ccm_W( void )
 /*
  * Call the Fortran version of this routine.
  */
-  j = k = 0;
+  index_ps = index_z2 = 0;
   for( i = 0; i < size_leftmost; i++ ) {
-    NGCALLF(dcz2ccm,DCZ2CCM)(&dps[j],dphis,&dtv[k],dp0,
-                             dhyam,dhybm,dhyai,dhybi,
-                             &mlon,&nlat,&klev,&klev1,&z2[k],pmln,
+/*
+ * Coerce subsection of ps/tv array to double.
+ */
+    if(type_ps != NCL_double) {
+      coerce_subset_input_double(ps,tmp_ps,index_ps,type_ps,nlatmlon,0,
+                                 NULL,NULL);
+    }
+    else {
+      tmp_ps = &((double*)ps)[index_ps];
+    }
+    if(type_tv != NCL_double) {
+      coerce_subset_input_double(tv,tmp_tv,index_z2,type_tv,klevnlatmlon,0,
+                                 NULL,NULL);
+    }
+    else {
+      tmp_tv = &((double*)tv)[index_z2];
+    }
+
+    if(type_z2 == NCL_double) tmp_z2 = &((double*)z2)[index_z2];
+
+    NGCALLF(dcz2ccm,DCZ2CCM)(tmp_ps,tmp_phis,tmp_tv,tmp_p0,
+                             tmp_hyam,tmp_hybm,tmp_hyai,tmp_hybi,
+                             &mlon,&nlat,&klev,&klev1,tmp_z2,pmln,
                              hypdln,hyalph,zslice,hyba,hybb,pterm,tv2);
-    j += nlatmlon;
-    k += klevnlatmlon;
+/*
+ * Coerce output to float if necessary.
+ */
+    if(type_z2 != NCL_double) {
+      for(l = 0; l < klevnlatmlon; l++) {
+        ((float*)z2)[index_z2+l] = (float)tmp_z2[l];
+      }
+    }
+    index_ps += nlatmlon;
+    index_z2 += klevnlatmlon;
   }
 /*
  * Free memory.
@@ -346,36 +348,26 @@ NhlErrorTypes cz2ccm_W( void )
   NclFree(hybb);
   NclFree(pterm);
 
-  if((void*)dps   != ps)   NclFree(dps);
-  if((void*)dphis != phis) NclFree(dphis);
-  if((void*)dtv   != tv)   NclFree(dtv);
-  if((void*)dp0   != p0)   NclFree(dp0);
-  if((void*)dhyam != hyam) NclFree(dhyam);
-  if((void*)dhybm != hybm) NclFree(dhybm);
-  if((void*)dhyai != hyai) NclFree(dhyai);
-  if((void*)dhybi != hybi) NclFree(dhybi);
+  if(type_ps   != NCL_double) NclFree(tmp_ps);
+  if(type_phis != NCL_double) NclFree(tmp_phis);
+  if(type_tv   != NCL_double) NclFree(tmp_tv);
+  if(type_p0   != NCL_double) NclFree(tmp_p0);
+  if(type_hyam != NCL_double) NclFree(tmp_hyam);
+  if(type_hybm != NCL_double) NclFree(tmp_hybm);
+  if(type_hyai != NCL_double) NclFree(tmp_hyai);
+  if(type_hybi != NCL_double) NclFree(tmp_hybi);
         
-  if(type_ps != NCL_double && type_phis != NCL_double && 
-     type_tv != NCL_double && type_p0 != NCL_double && 
-     type_hyam != NCL_double && type_hybm != NCL_double &&
-     type_hyai != NCL_double && type_hybi != NCL_double) {
-/*
- * None of the input was double, so return a float.
- */
-    rz2 = coerce_output_float(z2,NULL,size_z2,0);
-    if( rz2 == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
+  if(type_z2 != NCL_double) {
+    NclFree(tmp_z2);
 /*
  * return float array
  */
-    return(NclReturnValue((void*)rz2,ndims_tv,dsizes_tv,NULL,NCL_float,0));
+    return(NclReturnValue(z2,ndims_tv,dsizes_tv,NULL,NCL_float,0));
   }
   else {
 /*
- * At least one of the input arrays was double, so return a double.
+ * return double array
  */
-    return(NclReturnValue((void*)z2,ndims_tv,dsizes_tv,NULL,NCL_double,0));
+    return(NclReturnValue(z2,ndims_tv,dsizes_tv,NULL,NCL_double,0));
   }
 }

@@ -4,7 +4,25 @@
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/ncl/defs.h>
 #include "Symbol.h"
+#include "NclDataDefs.h"
+#include "Machine.h"
+#include "NclFile.h"
+#include "NclVar.h"
+#include "NclCoordVar.h"
+#include "VarSupport.h"
+#include "DataSupport.h"
 #include "NclMdInc.h"
+#include "NclHLUObj.h"
+#include "parser.h"
+#include "OpsList.h"
+#include "ApiRecords.h"
+#include "TypeSupport.h"
+#include "NclBuiltInSupport.h"
+#include "FileSupport.h"
+#include "NclAtt.h"
+#include "NclList.h"
+#include "ListSupport.h"
+#include "NclFileInterfaces.h"
 #include <ncarg/ncl/NclBuiltIns.h>
 /*
  * Declare wrapper function
@@ -870,7 +888,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
-	NclRegisterProc(uv2dvf_W,args,"uv2dvf",nargs);
+        NclRegisterProc(uv2dvf_W,args,"uv2dvf",nargs);
 
 /*
  * Register "uv2dvg".
@@ -1225,7 +1243,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 1; 
-	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterProc(tri_trunc_W,args,"tri_trunc",nargs);
 
@@ -1278,129 +1296,129 @@ void NclAddUserFuncs(void)
  *
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(5);
+        nargs = 0;
+        args = NewArgs(5);
 /*
  * Configure five parameters identically as single dimension float
  * arrays of any size.
  */
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
-	NclRegisterFunc(natgrids_W,args,"natgrids",nargs);
+        NclRegisterFunc(natgrids_W,args,"natgrids",nargs);
 /*
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(5);
+        nargs = 0;
+        args = NewArgs(5);
 /*
  * Configure five parameters identically as single dimension double
  * arrays of any size.
  */
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
-	NclRegisterFunc(natgridd_W,args,"natgridd",nargs);
+        NclRegisterFunc(natgridd_W,args,"natgridd",nargs);
 /*
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(7);
-	dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        nargs = 0;
+        args = NewArgs(7);
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 /*
  * Configure three parameters identically as single dimension float
  * arrays of any size.
  */
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
 
-	SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
-	NclRegisterProc(drwsrfc_W,args,"drwsrfc",nargs);
+        NclRegisterProc(drwsrfc_W,args,"drwsrfc",nargs);
 /*
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(3);
+        nargs = 0;
+        args = NewArgs(3);
     dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
-	NclRegisterProc(drwvctc_W,args,"drwvctc",nargs);
+        NclRegisterProc(drwvctc_W,args,"drwvctc",nargs);
 /*
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(2);
+        nargs = 0;
+        args = NewArgs(2);
     dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
-	NclRegisterProc(drwconc_W,args,"drwconc",nargs);
+        NclRegisterProc(drwconc_W,args,"drwconc",nargs);
 /*
  * Register tdez2d.
  */
-	nargs = 0;
-	args = NewArgs(8);
+        nargs = 0;
+        args = NewArgs(8);
     dimsizes[0] = 1;
 
         SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
 
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
 
-	SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
-	NclRegisterProc(tdez2d_W,args,"tdez2d",nargs);
+        NclRegisterProc(tdez2d_W,args,"tdez2d",nargs);
 /*
  * Register tdez3d.
  */
-	nargs = 0;
-	args = NewArgs(10);
+        nargs = 0;
+        args = NewArgs(10);
     dimsizes[0] = 1;
         SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
 
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",3,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",3,NclANY);nargs++;
 
-	SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
-	NclRegisterProc(tdez3d_W,args,"tdez3d",nargs);
+        NclRegisterProc(tdez3d_W,args,"tdez3d",nargs);
 
 /*
  *  Register wmsetp.
@@ -1488,120 +1506,120 @@ void NclAddUserFuncs(void)
 /*
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(2);
-    	dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        nargs = 0;
+        args = NewArgs(2);
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 /*
  * Register wrapper function pointer and argument templates
  */
-	NclRegisterFunc(nngetaspects_W,args,"nngetaspects",nargs);
+        NclRegisterFunc(nngetaspects_W,args,"nngetaspects",nargs);
 /*
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(2);
-    	dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        nargs = 0;
+        args = NewArgs(2);
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 /*
  * Register wrapper function pointer and argument templates
  */
-	NclRegisterFunc(nngetaspectd_W,args,"nngetaspectd",nargs);
+        NclRegisterFunc(nngetaspectd_W,args,"nngetaspectd",nargs);
 /*
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(2);
-    	dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        nargs = 0;
+        args = NewArgs(2);
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 /*
  * Register wrapper function pointer and argument templates
  */
-	NclRegisterFunc(nngetslopes_W,args,"nngetslopes",nargs);
+        NclRegisterFunc(nngetslopes_W,args,"nngetslopes",nargs);
 /*
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(2);
-    	dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        nargs = 0;
+        args = NewArgs(2);
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 /*
  * Register wrapper function pointer and argument templates
  */
-	NclRegisterFunc(nngetsloped_W,args,"nngetsloped",nargs);
+        NclRegisterFunc(nngetsloped_W,args,"nngetsloped",nargs);
 /*
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(3);
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        nargs = 0;
+        args = NewArgs(3);
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates
  */
-	NclRegisterProc(nnpntinits_W,args,"nnpntinits",nargs);
+        NclRegisterProc(nnpntinits_W,args,"nnpntinits",nargs);
 /*
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(3);
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        nargs = 0;
+        args = NewArgs(3);
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates
  */
-	NclRegisterProc(nnpntinitd_W,args,"nnpntinitd",nargs);
+        NclRegisterProc(nnpntinitd_W,args,"nnpntinitd",nargs);
 /*
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(2);
+        nargs = 0;
+        args = NewArgs(2);
     dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
 
 /*
  * Register wrapper function pointer and argument templates
  */
-	NclRegisterFunc(nnpnts_W,args,"nnpnts",nargs);
+        NclRegisterFunc(nnpnts_W,args,"nnpnts",nargs);
 /*
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(2);
+        nargs = 0;
+        args = NewArgs(2);
     dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
-	SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
 /*
  * Register wrapper function pointer and argument templates
  */
-	NclRegisterFunc(nnpntd_W,args,"nnpntd",nargs);
+        NclRegisterFunc(nnpntd_W,args,"nnpntd",nargs);
 /*
  * Create private argument array
  */
-	args = NewArgs(0);
-	nargs = 0;
-    dimsizes[0] = 1;
-/*
- * Register wrapper function pointer and argument templates
- */
-	NclRegisterProc(nnpntend_W,args,"nnpntend",nargs);
-/*
- * Create private argument array
- */
-	args = NewArgs(0);
-	nargs = 0;
+        args = NewArgs(0);
+        nargs = 0;
     dimsizes[0] = 1;
 /*
  * Register wrapper function pointer and argument templates
  */
-	NclRegisterProc(nnpntendd_W,args,"nnpntendd",nargs);
+        NclRegisterProc(nnpntend_W,args,"nnpntend",nargs);
+/*
+ * Create private argument array
+ */
+        args = NewArgs(0);
+        nargs = 0;
+    dimsizes[0] = 1;
+/*
+ * Register wrapper function pointer and argument templates
+ */
+        NclRegisterProc(nnpntendd_W,args,"nnpntendd",nargs);
 
 /*
  *  Register Shsgrid functions.
@@ -2070,173 +2088,173 @@ void NclAddUserFuncs(void)
  *
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(5);
+        nargs = 0;
+        args = NewArgs(5);
 /*
  * Configure five parameters identically as single dimension float
  * arrays of any size.
  */
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
-	NclRegisterFunc(dsgrid2s_W,args,"dsgrid2s",nargs);
+        NclRegisterFunc(dsgrid2s_W,args,"dsgrid2s",nargs);
 /*
  * Register "dsgrid2d".
  *
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(5);
+        nargs = 0;
+        args = NewArgs(5);
 /*
  * Configure five parameters identically as single dimension double
  * arrays of any size.
  */
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
-	NclRegisterFunc(dsgrid2d_W,args,"dsgrid2d",nargs);
+        NclRegisterFunc(dsgrid2d_W,args,"dsgrid2d",nargs);
 /*
  * Register "dsgrid3s".
  *
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(7);
+        nargs = 0;
+        args = NewArgs(7);
 /*
  * Configure five parameters identically as single dimension float
  * arrays of any size.
  */
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
-	NclRegisterFunc(dsgrid3s_W,args,"dsgrid3s",nargs);
+        NclRegisterFunc(dsgrid3s_W,args,"dsgrid3s",nargs);
 /*
  * Register "dsgrid3d".
  *
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(7);
+        nargs = 0;
+        args = NewArgs(7);
 /*
  * Configure five parameters identically as single dimension float
  * arrays of any size.
  */
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
-	NclRegisterFunc(dsgrid3d_W,args,"dsgrid3d",nargs);
+        NclRegisterFunc(dsgrid3d_W,args,"dsgrid3d",nargs);
 /*
  * Register "dspnt2s".
  *
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(6);
+        nargs = 0;
+        args = NewArgs(6);
 /*
  * Configure six parameters identically as single dimension float
  * arrays of any size.
  */
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
-	NclRegisterProc(dspnt2s_W,args,"dspnt2s",nargs);
+        NclRegisterProc(dspnt2s_W,args,"dspnt2s",nargs);
 /*
  * Register "dspnt2d".
  *
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(6);
+        nargs = 0;
+        args = NewArgs(6);
 /*
  * Configure six parameters identically as single dimension double
  * arrays of any size.
  */
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
-	NclRegisterProc(dspnt2d_W,args,"dspnt2d",nargs);
+        NclRegisterProc(dspnt2d_W,args,"dspnt2d",nargs);
 /*
  * Register "dspnt3s".
  *
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(8);
+        nargs = 0;
+        args = NewArgs(8);
 /*
  * Configure eight parameters identically as single dimension float
  * arrays of any size.
  */
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
-	NclRegisterProc(dspnt3s_W,args,"dspnt3s",nargs);
+        NclRegisterProc(dspnt3s_W,args,"dspnt3s",nargs);
 /*
  * Register "dspnt3d".
  *
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(8);
+        nargs = 0;
+        args = NewArgs(8);
 /*
  * Configure eight parameters identically as single dimension float
  * arrays of any size.
  */
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
-	NclRegisterProc(dspnt3d_W,args,"dspnt3d",nargs);
+        NclRegisterProc(dspnt3d_W,args,"dspnt3d",nargs);
 
 
 /*
@@ -2305,7 +2323,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(5);
     SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
@@ -2758,16 +2776,13 @@ void NclAddUserFuncs(void)
   return;
 }
 
-double *coerce_input_double(
-void              *x,
+void coerce_missing(
 NclBasicDataTypes type_x,
-int               size_x,
 int               has_missing_x,
 NclScalar         *missing_x,
 NclScalar         *missing_dx,
 NclScalar         *missing_rx)
 {
-  double *dx;
 /*
  * Check for missing value and coerce if neccesary.
  */
@@ -2794,22 +2809,37 @@ NclScalar         *missing_rx)
     }
   }
   else {
+    if(missing_dx != NULL) {
 /*
  * Get the default missing value, just in case.
  */ 
-    if(type_x != NCL_double && missing_rx != NULL) {
-      missing_rx->floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-      missing_dx->doubleval = (double)missing_rx->floatval;
-    }
-    else {
-      missing_dx->doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+      if(type_x != NCL_double) {
+        missing_dx->doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+        if(missing_rx != NULL) {
+          missing_rx->floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+        }
+      }
+      else {
+        missing_dx->doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+      }
     }
   }
+}
+
+double *coerce_input_double(
+void              *x,
+NclBasicDataTypes type_x,
+int               size_x,
+int               has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_dx)
+{
+  double *dx;
 /*
  * Coerce x to double if necessary.
  */
   if(type_x != NCL_double) {
-    dx = (double*)NclMalloc(sizeof(double)*size_x);
+    dx = (double*)calloc(sizeof(double),size_x);
     if( dx == NULL ) return(NULL);
     if(has_missing_x) {
       _Nclcoerce((NclTypeClass)nclTypedoubleClass,
@@ -2839,7 +2869,58 @@ NclScalar         *missing_rx)
   return(dx);
 }
 
-float *coerce_output_float(double *dx, void *x, int size_x, int has_allocated)
+void coerce_subset_input_double(
+void              *x,
+double            *tmp_x,
+int               index_x,
+NclBasicDataTypes type_x,
+int               size_x,
+int               has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_dx
+)
+{
+  NclTypeClass typeclass_x;
+  
+/*
+ * typeclass_x is what allows us to get the size of the type of x.
+ */
+  typeclass_x = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_x)));
+/*
+ * Coerce x to double.
+ */
+  if(has_missing_x) {
+/*
+ * Coerce subset to double, with missing values.
+ */
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               tmp_x,
+               (void*)((char*)x+index_x*(typeclass_x->type_class.size)),
+               size_x,
+               missing_dx,
+               missing_x,
+               typeclass_x);
+  }
+  else {
+/*
+ * Coerce subset to double, with no missing values.
+ */
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               tmp_x,
+               (void*)((char*)x+index_x*(typeclass_x->type_class.size)),
+               size_x,
+               NULL,
+               NULL,
+               typeclass_x);
+  }
+}
+
+float *coerce_output_float(
+double *dx,
+void   *x,
+int    size_x,
+int    has_allocated
+)
 {
   int i;
   float *rx;
@@ -2849,7 +2930,7 @@ float *coerce_output_float(double *dx, void *x, int size_x, int has_allocated)
  * If the NCL wrapper is for a function that needs to return a float,
  * then allocate space for a float here.
  */
-    rx = (float*)NclMalloc(sizeof(float)*size_x);
+    rx = (float*)calloc(size_x,sizeof(float));
   }
   else {
 /*
@@ -2884,7 +2965,7 @@ int               size_x)
  * values coming in).  x can only be float or double, so only allocate
  * space for a d.p. array if x is float.
  */
-    dx = (double*)NclMalloc(sizeof(double)*size_x);
+    dx = (double*)calloc(size_x,sizeof(double));
   }
   else {
 /*
@@ -2895,7 +2976,7 @@ int               size_x)
   return(dx);
 }
 
-float *coerce_output_float_missing(
+float *set_output_float_missing(
 double   *dx,
 int      size_x,
 double   missing) 
@@ -2903,7 +2984,7 @@ double   missing)
   float *rx;
 
   int i;
-  rx = (float*)calloc(size_x*sizeof(float),1);
+  rx = (float*)calloc(size_x,sizeof(float));
   if( rx != NULL ) {
     for( i = 0; i < size_x; i++ ) rx[i]  = (float)missing;
   }
@@ -2911,7 +2992,12 @@ double   missing)
   return(rx);     /* Return float array */
 }
 
-int contains_missing(double *x,int size_x,int has_missing_x,double missing)
+int contains_missing(
+double *x,
+int    size_x,
+int    has_missing_x,
+double missing
+)
 {
   int l, found_missing = 0;
 /*
@@ -2926,8 +3012,34 @@ int contains_missing(double *x,int size_x,int has_missing_x,double missing)
   return(found_missing);
 }
 
-void compute_nlatnlon(int *dsizes,int ndims,int *nlat,int *nlon,
-		      int *nlatnlon,int *nt,int *total)
+void set_subset_output_missing(
+void              *x,
+int               index_x,
+NclBasicDataTypes type_x,
+int               size_x,
+double            missing_x)
+{
+  int i;
+  for(i = 0; i < size_x; i++) {
+    if(type_x != NCL_double) {
+      ((float*)x)[index_x+i] = (float)missing_x;
+    }
+    else {
+      ((double*)x)[index_x+i] = missing_x;
+    }
+  }
+}
+
+
+void compute_nlatnlon(
+int *dsizes,
+int ndims,
+int *nlat,
+int *nlon,
+int *nlatnlon,
+int *nt,
+int *total
+)
 {
   int i;
 
@@ -2939,11 +3051,21 @@ void compute_nlatnlon(int *dsizes,int ndims,int *nlat,int *nlon,
   *total = *nlatnlon * *nt;
 }
 
-void compute_nlatanlona(int *dsizes_in,int *dsizes_out,
-			int ndims_in,int ndims_out,
-			int *nlata,int *nlona,int *nlatanlona,
-			int *nlatb,int *nlonb,int *nlatbnlonb,
-			int *size_leftmost,int *size_in,int *size_out)
+void compute_nlatanlona(
+int *dsizes_in,
+int *dsizes_out,
+int ndims_in,
+int ndims_out,
+int *nlata,
+int *nlona,
+int *nlatanlona,
+int *nlatb,
+int *nlonb,
+int *nlatbnlonb,
+int *size_leftmost,
+int *size_in,
+int *size_out
+)
 {
   int i;
 

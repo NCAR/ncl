@@ -3,11 +3,7 @@
 * The following are the required NCAR Graphics include files.
 * They should be located in ${NCARG_ROOT}/include
 */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include "Symbol.h"
-#include "NclMdInc.h"
+#include "wrapper.h"
 #include "Machine.h"
 #include "NclAtt.h"
 #include <ncarg/ncl/NclVar.h>
@@ -16,9 +12,6 @@
 #include "VarSupport.h"
 #include "NclCoordVar.h"
 #include <ncarg/ncl/NclCallBacksI.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include <ncarg/gks.h>
 #include <math.h>
 
 #define max(x,y)  ((x) > (y) ? (x) : (y))
@@ -33,7 +26,7 @@ NhlErrorTypes regcoef_W( void )
  * Input array variables
  */
   void *x, *y;
-  double *dx, *dy;
+  double *tmp_x, *tmp_y;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_rx;
@@ -42,13 +35,12 @@ NhlErrorTypes regcoef_W( void )
 /*
  * Output array variables
  */
-  void *tval;
-  double *dtval, *rcoef, *xave, *yave;
-  float *rtval, *rrcoef;
+  void *tval, *rcoef;
+  double *tmp_tval, *tmp_rcoef, xave, yave;
   int ndims_tval, dsizes_tval[NCL_MAX_DIMENSIONS];
   int ndims_nptxy, dsizes_nptxy[NCL_MAX_DIMENSIONS];
   int ndims_rcoef, *dsizes_rcoef;
-  NclBasicDataTypes type_tval;
+  NclBasicDataTypes type_tval, type_rcoef;
   int *nptxy;
 /*
  * various
@@ -136,7 +128,7 @@ NhlErrorTypes regcoef_W( void )
  * total_size_x1 is 6 (2x3), total_size_y1 is 5, and npts is 4.
  */
   ndims_rcoef = max(ndims_y-1,1);
-  dsizes_rcoef = (int *)NclMalloc(ndims_rcoef*sizeof(int));
+  dsizes_rcoef = (int *)calloc(ndims_rcoef,sizeof(int));
   total_size_x1 = 1;
   total_size_y1 = 1;
   dsizes_rcoef[0] = 1;
@@ -163,62 +155,6 @@ NhlErrorTypes regcoef_W( void )
     }
   }
 /*
- * Coerce missing values to double.
- *
- * Use the default missing value if one isn't set.
- */
-  if(has_missing_x) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dx,
-               &missing_x,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-
-    if(type_x != NCL_double) {
-      _Nclcoerce((NclTypeClass)nclTypefloatClass,
-                 &missing_rx,
-                 &missing_x,
-                 1,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-  }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_x != NCL_double) {
-      missing_dx.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-      missing_rx.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-    else {
-      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
-  if(has_missing_y) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dy,
-               &missing_y,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-  }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_y != NCL_double) {
-      missing_dy.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-    else {
-      missing_dy.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
-/*
  * tval must be a float or double. It doesn't matter what the input type
  * is.
  */
@@ -228,82 +164,33 @@ NhlErrorTypes regcoef_W( void )
   }
 
 /*
- * The x and y missing values must be the same.
+ * Coerce x and y missing values to double if necessary.
  */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
   if(missing_dx.doubleval != missing_dy.doubleval) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The x and y missing values must be the same");
     return(NhlFATAL);
   }
-
 /*
- * Coerce x to double if necessary.
+ * Allocate space for temporary x and y input.
  */
   if(type_x != NCL_double) {
-    dx = (double*)NclMalloc(sizeof(double)*total_size_x);
-    if( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: Unable to allocate memory for coercing x array to double precision");
+    tmp_x = (double*)calloc(npts,sizeof(double));
+    if(tmp_x == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: Unable to allocate memory for input array");
       return(NhlFATAL);
     }
-    if(has_missing_x) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_x,
-                 &missing_dx,
-                 &missing_x,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 total_size_x,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-  }
-  else {
-/*
- * Input is already double.
- */
-    dx = (double*)x;
-  }
+  } 
 
-/*
- * Coerce y to double if necessary.
- */
   if(type_y != NCL_double) {
-    dy = (double*)NclMalloc(sizeof(double)*total_size_y);
-    if( dy == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: Unable to allocate memory for coercing y array to double precision");
+    tmp_y = (double*)calloc(npts,sizeof(double));
+    if(tmp_y == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: Unable to allocate memory for input array");
       return(NhlFATAL);
     }
-    if(has_missing_y) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 total_size_y,
-                 &missing_dy,
-                 &missing_y,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 total_size_y,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-  }
-  else {
-/*
- * Input is already double.
- */
-    dy = (double*)y;
-  }
+  } 
+
 /*
  * Allocate space for double precision tval. There's no need to do a
  * coercion because tval is an output-only variable (i.e, there are no
@@ -311,27 +198,34 @@ NhlErrorTypes regcoef_W( void )
  * space for a d.p. array if tval is float.
  */
   if(type_tval == NCL_float) {
-    dtval = (double*)NclMalloc(sizeof(double)*total_size_rcoef);
-    if( dtval == NULL ) {
+    tmp_tval = (double*)calloc(1,sizeof(double));
+    if( tmp_tval == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: Unable to allocate memory for coercing tval array to double precision");
       return(NhlFATAL);
     }
   }
-  else {
-/*
- * Input is already double.
- */
-    dtval = (double*)tval;
-  }
 /* 
  * Allocate size for output array (or scalar).
  */
-  rcoef = (double *)NclMalloc(total_size_rcoef*sizeof(double));
-  xave  = (double *)NclMalloc(sizeof(double));
-  yave  = (double *)NclMalloc(sizeof(double));
-  if( rcoef == NULL || xave == NULL || yave == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: Unable to allocate memory for output variables");
-    return(NhlFATAL);
+  if(type_x != NCL_double && type_y != NCL_double) {
+    type_rcoef = NCL_float;
+
+    rcoef     = (float *)calloc(total_size_rcoef,sizeof(float));
+    tmp_rcoef = (double *)calloc(1,sizeof(double));
+
+    if(tmp_rcoef == NULL || rcoef == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: Unable to allocate memory for output variable");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_rcoef = NCL_double;
+
+    rcoef = (double *)calloc(total_size_rcoef,sizeof(double));
+    if(rcoef == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: Unable to allocate memory for output variable");
+      return(NhlFATAL);
+    }
   }
 /*
  * Call the f77 version of 'regcoef' with the full argument list.
@@ -340,12 +234,34 @@ NhlErrorTypes regcoef_W( void )
   for(i = 1; i <= total_size_y1; i++) {
     lx = 0;
     for(j = 1; j <= total_size_x1; j++) {
-      NGCALLF(dregcoef,DREGCOEF)(&dx[lx],&dy[ly],&npts,&missing_dx.doubleval,
-                                 &rcoef[ln],&dtval[ln],&nptxy[ln],
-                                 xave,yave,&ier);
-      ly += npts;
-      lx += npts;
-      ln ++;
+      if(type_x != NCL_double) {
+/*
+ * Coerce npts subsection of x (tmp_x) to double.
+ */
+        coerce_subset_input_double(x,tmp_x,lx,type_x,npts,0,
+                                   &missing_x,&missing_dx);
+      }
+      else {
+        tmp_x  = &((double*)x)[lx];
+      }
+
+      if(type_y != NCL_double) {
+/*
+ * Coerce npts subsection of y (tmp_y) to double.
+ */
+        coerce_subset_input_double(y,tmp_y,ly,type_y,npts,0,
+                                   &missing_y,&missing_dy);
+      }
+      else {
+        tmp_y  = &((double*)y)[ly];
+      }
+
+      if(type_tval  == NCL_double) tmp_tval  = &((double*)tval)[ln];
+      if(type_rcoef == NCL_double) tmp_rcoef = &((double*)rcoef)[ln];
+
+      NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
+                                 tmp_rcoef,tmp_tval,&nptxy[ln],
+                                 &xave,&yave,&ier);
       if (ier == 5) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The x and/or y array contains all missing values");
         return(NhlFATAL);
@@ -354,60 +270,37 @@ NhlErrorTypes regcoef_W( void )
         NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The x and/or y array contains less than 3 non-missing values");
         return(NhlFATAL);
       }
+/*
+ * Coerce output to float if necessary.
+ */
+      if(type_tval  != NCL_double) ((float*)tval)[ln]  = (float)*tmp_tval;
+      if(type_rcoef != NCL_double) ((float*)rcoef)[ln] = (float)*tmp_rcoef;
+
+      ly += npts;
+      lx += npts;
+      ln ++;
     }
   }
 /*
  * free memory.
  */
-  if((void*)dx != x) {
-    NclFree(dx);
-  }
-  if((void*)dy != y) {
-    NclFree(dy);
-  }
+  if(type_x     != NCL_double) NclFree(tmp_x);
+  if(type_y     != NCL_double) NclFree(tmp_y);
+  if(type_tval  != NCL_double) NclFree(tmp_tval);
+  if(type_rcoef != NCL_double) NclFree(tmp_rcoef);
 
-/*
- * If returning float values, we need to copy the coerced float values
- * back to the original location of tval.  Do this by creating a pointer of
- * type float that points to the original location, and then loop through
- * the values and do the coercion.
- */
-  if(type_tval == NCL_float) {
-    rtval = (float*)tval;     /* Float pointer to original tval array */
-    for( i = 0; i < total_size_rcoef; i++ ) rtval[i]  = (float)dtval[i];
-    NclFree(dtval);   /* Free up the double array */
-  }
-
-/*
- * Return values. 
- */
-  if(type_x != NCL_double && type_y != NCL_double) {
-/*
- * None of the input is double, so return floats.
- *
- * First copy double values to float values.
- */
-    rrcoef = (float*)NclMalloc(sizeof(float)*total_size_rcoef);
-    if( rrcoef == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: Unable to allocate memory for coercing return values to floating point");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_rcoef; i++ ) rrcoef[i] = (float)rcoef[i];
-/*
- * Free up double precision values since we don't need them anymore.
- */
-    NclFree(rcoef);
+  if(type_rcoef != NCL_double) {
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue((void*)rrcoef,ndims_rcoef,dsizes_rcoef,&missing_rx,
+    return(NclReturnValue(rcoef,ndims_rcoef,dsizes_rcoef,&missing_rx,
                           NCL_float,0));
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue((void*)rcoef,ndims_rcoef,dsizes_rcoef,&missing_dx,
+    return(NclReturnValue(rcoef,ndims_rcoef,dsizes_rcoef,&missing_dx,
                           NCL_double,0));
   }
 }
@@ -479,62 +372,18 @@ NhlErrorTypes regline_W( void )
     return(NhlFATAL);
   }  
 /*
- * Coerce missing values to double.
- *
- * Use the default missing value if one isn't set.
+ * Coerce x and y to double if necessary.
  */
-  if(has_missing_x) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dx,
-               &missing_x,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-
-    if(type_x != NCL_double) {
-      _Nclcoerce((NclTypeClass)nclTypefloatClass,
-                 &missing_rx,
-                 &missing_x,
-                 1,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
+  dx = coerce_input_double(x,type_x,dsizes_x[0],has_missing_x,&missing_x,
+                           &missing_dx);
+  dy = coerce_input_double(y,type_y,dsizes_y[0],has_missing_y,&missing_y,
+                           &missing_dy);
+  if(dx == NULL || dy == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: Unable to allocate memory for coercing x and y arrays to double precision");
+    return(NhlFATAL);
   }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_x != NCL_double) {
-      missing_dx.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-      missing_rx.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-    else {
-      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
-  if(has_missing_y) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dy,
-               &missing_y,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-  }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_y != NCL_double) {
-      missing_dy.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-    else {
-      missing_dy.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
-
 /*
  * The x and y missing values must be the same.
  */
@@ -544,82 +393,13 @@ NhlErrorTypes regline_W( void )
   }
 
 /*
- * Coerce data to double if necessary.
- */
-  if(type_x != NCL_double) {
-    dx = (double*)NclMalloc(sizeof(double)*dsizes_x[0]);
-    if( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: Unable to allocate memory for coercing x array to double precision");
-      return(NhlFATAL);
-    }
-    if(has_missing_x) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 dsizes_x[0],
-                 &missing_dx,
-                 &missing_x,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dx,
-                 x,
-                 dsizes_x[0],
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-    }
-  }
-  else {
-/*
- * Input is already double.
- */
-    dx = (double*)x;
-  }
-
-/*
- * Coerce y to double.
- */
-  if(type_y != NCL_double) {
-    dy = (double*)NclMalloc(sizeof(double)*dsizes_y[0]);
-    if( dy == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: Unable to allocate memory for coercing y array to double precision");
-      return(NhlFATAL);
-    }
-    if(has_missing_y) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 dsizes_y[0],
-                 &missing_dy,
-                 &missing_y,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dy,
-                 y,
-                 dsizes_y[0],
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
-    }
-  }
-  else {
-/*
- * Input is already double.
- */
-    dy = (double*)y;
-  }
-/*
  * Allocate space for output variables.
  */
-  rcoef = (double *)NclMalloc(sizeof(double));
-  tval  = (double *)NclMalloc(sizeof(double));
-  xave  = (double *)NclMalloc(sizeof(double));
-  yave  = (double *)NclMalloc(sizeof(double));
-  nptxy =   (int *)NclMalloc(sizeof(int));
+  rcoef = (double *)calloc(1,sizeof(double));
+  tval  = (double *)calloc(1,sizeof(double));
+  xave  = (double *)calloc(1,sizeof(double));
+  yave  = (double *)calloc(1,sizeof(double));
+  nptxy =   (int *)calloc(1,sizeof(int));
   if( rcoef == NULL || tval == NULL || xave == NULL || yave == NULL ||
       nptxy == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: Unable to allocate memory for output values");
@@ -642,12 +422,9 @@ NhlErrorTypes regline_W( void )
 /*
  * free memory.
  */
-  if((void*)dx != x) {
-    NclFree(dx);
-  }
-  if((void*)dy != y) {
-    NclFree(dy);
-  }
+  if((void*)dx != x) NclFree(dx);
+  if((void*)dy != y) NclFree(dy);
+
 /*
  * Set up variable to return.
  */
@@ -659,10 +436,10 @@ NhlErrorTypes regline_W( void )
  *
  * Allocate space for coercing output to float.
  */
-    rrcoef = (float *)NclMalloc(sizeof(float));
-    rtval  = (float *)NclMalloc(sizeof(float));
-    rxave  = (float *)NclMalloc(sizeof(float));
-    ryave  = (float *)NclMalloc(sizeof(float));
+    rrcoef = (float *)calloc(1,sizeof(float));
+    rtval  = (float *)calloc(1,sizeof(float));
+    rxave  = (float *)calloc(1,sizeof(float));
+    ryave  = (float *)calloc(1,sizeof(float));
     if( rrcoef == NULL || rtval == NULL || rxave == NULL || ryave == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: Unable to allocate memory for coercing output values back to floating point");
       return(NhlFATAL);

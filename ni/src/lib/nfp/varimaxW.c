@@ -3,22 +3,9 @@
  * The following are the required NCAR Graphics include files.
  * They should be located in ${NCARG_ROOT}/include
  */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include "Symbol.h"
-#include "NclMdInc.h"
-#include "Machine.h"
-#include <ncarg/ncl/NclVar.h>
-#include "DataSupport.h"
-#include "AttSupport.h"
-#include "VarSupport.h"
-#include "NclCoordVar.h"
-#include <ncarg/ncl/NclCallBacksI.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
+
+#include "wrapper.h"
 #include <math.h>
-#include <ncarg/gks.h>
 
 extern void NGCALLF(vors,VORS)(int *, int *, double *, double *, double *, 
                                double *, int *);
@@ -79,57 +66,26 @@ NhlErrorTypes eof_varimax_W( void )
   total_size_evec = nvar * nfac;
 
 /*
- * Coerce evec missing value to double.
+ * Coerce missing values, if any.
  */
-  if(has_missing_evec) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_devec,
-               &missing_evec,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_evec)));
-  }
-
+  coerce_missing(type_evec,has_missing_evec,&missing_evec,
+                 &missing_devec,NULL);
 /*
  * Coerce evec to double no matter what, since we need to make a copy of
  * the input array anyway.
  */
-  devec = (double*)NclMalloc(sizeof(double)*total_size_evec);
+  devec = (double*)calloc(total_size_evec,sizeof(double));
   if( devec == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: Unable to allocate memory for coercing evec array to double precision");
     return(NhlFATAL);
   }
-  if(has_missing_evec) {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               devec,
-               evec,
-               total_size_evec,
-               &missing_devec,
-               &missing_evec,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_evec)));
-  }
-  else {
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               devec,
-               evec,
-               total_size_evec,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_evec)));
-  }
-
+  coerce_subset_input_double(evec,devec,0,type_evec,total_size_evec,
+                             has_missing_evec,&missing_evec,&missing_devec);
 /*
  * Check for a missing value.
  */
-  found_missing = 0;
-  if(has_missing_evec) {
-    i = 0;
-    while( i < total_size_evec && !found_missing ) {
-      if(devec[i] == missing_devec.doubleval) found_missing = 1;
-      i++;
-    }
-  }
+  found_missing = contains_missing(devec,total_size_evec,has_missing_evec,
+                                   missing_devec.doubleval);
   if(found_missing) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: The input array contains missing values.");
     return(NhlFATAL);
@@ -138,9 +94,9 @@ NhlErrorTypes eof_varimax_W( void )
 /*
  * Allocate memory for work arrays.
  */
-  a = (double *)NclMalloc(nvar*sizeof(double));
-  b = (double *)NclMalloc(nvar*sizeof(double));
-  w = (double *)NclMalloc(nvar*sizeof(double));
+  a = (double *)calloc(nvar,sizeof(double));
+  b = (double *)calloc(nvar,sizeof(double));
+  w = (double *)calloc(nvar,sizeof(double));
   if( a == NULL || b == NULL || w == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: Unable to allocate memory for work arrays");
     return(NhlFATAL);
@@ -157,12 +113,11 @@ NhlErrorTypes eof_varimax_W( void )
   NclFree(a);
   NclFree(b);
 
-/*
- * Convert input array so that tmp_md is not used and also to preserve input
- * array.
- */
   if(type_evec == NCL_float) {
-    revec_out = (float *)NclMalloc(total_size_evec*sizeof(float));
+/*
+ * Input is not double, so return float.
+ */
+    revec_out = (float *)calloc(total_size_evec,sizeof(float));
     if( revec_out == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: Unable to allocate memory for floating point output array");
       return(NhlFATAL);

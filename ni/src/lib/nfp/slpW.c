@@ -4,11 +4,7 @@
  * The following are the required NCAR Graphics include files.
  * They should be located in ${NCARG_ROOT}/include.
  */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include "Symbol.h"
-#include "NclMdInc.h"
+#include "wrapper.h"
 #include "Machine.h"
 #include "NclAtt.h"
 #include <ncarg/ncl/NclVar.h>
@@ -17,10 +13,7 @@
 #include "VarSupport.h"
 #include "NclCoordVar.h"
 #include <ncarg/ncl/NclCallBacksI.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
 #include <math.h>
-#include <ncarg/gks.h>
 
 extern double NGCALLF(dpslhy1,DPSLHY1)(double *,double *,double *,double *);
 extern void NGCALLF(dpslec,DPSLEC)(double *,double *,double *,double *,int *,
@@ -35,8 +28,8 @@ NhlErrorTypes pslhyp_W( void )
 /*
  * Input array variables
  */
-  void    *pres,  *z,  *tv;
-  double *dpres, *dz, *dtv;
+  void   *pres, *z, *tv;
+  double *tmp_pres, *tmp_z, *tmp_tv;
   int ndims_pres, dsizes_pres[NCL_MAX_DIMENSIONS];
   int ndims_z,    dsizes_z[NCL_MAX_DIMENSIONS];
   int ndims_tv,   dsizes_tv[NCL_MAX_DIMENSIONS];
@@ -55,9 +48,10 @@ NhlErrorTypes pslhyp_W( void )
 /*
  * Output array variables
  */
-  double *slp;
-  float *rslp;
+  void *slp;
+  double *tmp_slp;
   int size_slp;
+  NclBasicDataTypes type_slp;
 /*
  * Declare various variables for random purposes.
  */
@@ -122,172 +116,134 @@ NhlErrorTypes pslhyp_W( void )
     }
   }
 /*
- * Check for missing values.
- */
-  if(has_missing_pres) {
-/*
- * Coerce missing value to double.
- */
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               &missing_dpres,
-               &missing_pres,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_pres)));
-
-    if(type_pres != NCL_double) {
-      _Nclcoerce((NclTypeClass)nclTypefloatClass,
-                 &missing_rpres,
-                 &missing_pres,
-                 1,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_pres)));
-    }
-  }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_pres != NCL_double) {
-      missing_rpres.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-      missing_dpres.doubleval = (double)missing_rpres.floatval;
-    }
-    else {
-      missing_dpres.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
-/*
  * Compute the total size of the output array.
  */
   size_slp = 1;
   for( i = 0; i < ndims_pres; i++ ) size_slp *= dsizes_pres[i];
 
 /*
+ * Coerce x and y missing values to double if necessary.
+ */
+  coerce_missing(type_pres,has_missing_pres,&missing_pres,&missing_dpres,
+                 &missing_rpres);
+/*
  * Coerce data to double if necessary.
  */
   if(type_pres != NCL_double) {
-    dpres = (double*)NclMalloc(sizeof(double)*size_slp);
-    if( dpres == NULL ) {
+    tmp_pres = (double*)calloc(1,sizeof(double));
+    if( tmp_pres == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhyp: Unable to allocate memory for coercing pres array to double precision");
       return(NhlFATAL);
     }
-    if(has_missing_pres) {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dpres,
-                 pres,
-                 size_slp,
-                 &missing_dpres,
-                 &missing_pres,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_pres)));
-    }
-    else {
-      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-                 dpres,
-                 pres,
-                 size_slp,
-                 NULL,
-                 NULL,
-                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_pres)));
-    }
-  }
-  else {
-/*
- * pres is already double.
- */
-    dpres = (double*)pres;
   }
 /*
  * Coerce z array if necessary.
  */
   if(type_z != NCL_double) {
-    dz = (double*)NclMalloc(sizeof(double)*size_slp);
-    if( dz == NULL ) {
+    tmp_z = (double*)calloc(1,sizeof(double));
+    if( tmp_z == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhyp: Unable to allocate memory for coercing z array to double precision");
       return(NhlFATAL);
     }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dz,
-               z,
-               size_slp,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_z)));
-  }
-  else {
-/*
- * z is already double.
- */
-    dz = (double*)z;
   }
 
 /*
  * Coerce tv array if necessary.
  */
   if(type_tv != NCL_double) {
-    dtv = (double*)NclMalloc(sizeof(double)*size_slp);
-    if( dtv == NULL ) {
+    tmp_tv = (double*)calloc(1,sizeof(double));
+    if( tmp_tv == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhyp: Unable to allocate memory for coercing tv array to double precision");
       return(NhlFATAL);
     }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dtv,
-               tv,
-               size_slp,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_tv)));
   }
-  else {
-/*
- * tv is already double.
- */
-    dtv = (double*)tv;
-  }
-
 /*
  * Allocate space for output value.
  */
-  slp = (double *)NclMalloc(size_slp*sizeof(double));
-  if( slp == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhyp: Unable to allocate memory for output array");
-    return(NhlFATAL);
+  if(type_pres != NCL_double && type_z != NCL_double && 
+     type_tv != NCL_double) {
+
+    type_slp = NCL_float;
+
+    slp     = (void *)calloc(size_slp,sizeof(float));
+    tmp_slp = (double *)calloc(1,sizeof(double));
+    if(slp == NULL || tmp_slp == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhyp: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_slp = NCL_double;
+    slp = (void *)calloc(size_slp,sizeof(double));
+    if(slp == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhyp: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
   }
 
 /*
  * Call the Fortran version of this routine.
- *
  */
   for( i = 0; i < size_slp; i++ ) {
-    slp[i] = NGCALLF(dpslhy1,DPSLHY1)(&dpres[i],&dz[i],&dtv[i],
-                                      &missing_dpres.doubleval);
+    if(type_pres != NCL_double) {
+/*
+ * Coerce subsection of pres (tmp_pres) to double.
+ */
+      coerce_subset_input_double(pres,tmp_pres,i,type_pres,1,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_pres to appropriate location in pres.
+ */
+      tmp_pres = &((double*)pres)[i];
+    }
+    if(type_z != NCL_double) {
+/*
+ * Coerce subsection of z (tmp_z) to double.
+ */
+      coerce_subset_input_double(z,tmp_z,i,type_z,1,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_z to appropriate location in z.
+ */
+      tmp_z = &((double*)z)[i];
+    }
+    if(type_tv != NCL_double) {
+/*
+ * Coerce subsection of tv (tmp_tv) to double.
+ */
+      coerce_subset_input_double(tv,tmp_tv,i,type_tv,1,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_tv to appropriate location in tv.
+ */
+      tmp_tv = &((double*)tv)[i];
+    }
+    if(type_slp == NCL_double) tmp_slp = &((double*)slp)[i];
+
+    *tmp_slp = NGCALLF(dpslhy1,DPSLHY1)(tmp_pres,tmp_z,tmp_tv,
+                                        &missing_dpres.doubleval);
+/*
+ * Copy output values from temporary tmp_slp to slp.
+ */
+    if(type_slp != NCL_double) {
+      ((float*)slp)[i] = (float)(*tmp_slp);
+    }
   }
 /*
  * free memory.
  */
-  if((void*)dpres != pres) NclFree(dpres);
-  if((void*)dz != z) NclFree(dz);
-  if((void*)dtv != tv) NclFree(dtv);
+  if(type_pres != NCL_double) NclFree(tmp_pres);
+  if(type_z    != NCL_double) NclFree(tmp_z);
+  if(type_tv   != NCL_double) NclFree(tmp_tv);
+  if(type_slp  != NCL_double) NclFree(tmp_slp);
 
 /*
  * Set up variable to return.
  */
-  if((type_pres != NCL_double) && (type_z != NCL_double) && 
-     (  type_tv != NCL_double)) {
-/*
- * None of the input is double, so return float values.
- */
-    rslp = (float*)NclMalloc(sizeof(float)*size_slp);
-    if( rslp == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhyp: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < size_slp; i++ ) rslp[i] = (float)slp[i];
-/*
- * Free double precision values.
- */
-    NclFree(slp);
+  if(type_slp != NCL_double) {
 /*
  * Set up return structure.
  */
@@ -296,7 +252,7 @@ NhlErrorTypes pslhyp_W( void )
                         NULL,
                         Ncl_MultiDValData,
                         0,
-                        (void*)rslp,
+                        slp,
                         &missing_rpres,
                         ndims_pres,
                         dsizes_pres,
@@ -314,7 +270,7 @@ NhlErrorTypes pslhyp_W( void )
                         NULL,
                         Ncl_MultiDValData,
                         0,
-                        (void*)slp,
+                        slp,
                         &missing_dpres,
                         ndims_pres,
                         dsizes_pres,
@@ -422,7 +378,7 @@ NhlErrorTypes pslec_W( void )
  * Input array variables
  */
   void *t, *phis, *ps, *pres;
-  double *dt, *dphis, *dps, *dpres;
+  double *tmp_t, *tmp_phis, *tmp_ps, *tmp_pres;
   int ndims_t, dsizes_t[NCL_MAX_DIMENSIONS];
   int ndims_phis, dsizes_phis[NCL_MAX_DIMENSIONS];
   int ndims_ps, dsizes_ps[NCL_MAX_DIMENSIONS];
@@ -441,13 +397,14 @@ NhlErrorTypes pslec_W( void )
 /*
  * Output array variables
  */
-  double *slp;
-  float *rslp;
+  void *slp;
+  double *tmp_slp;
   int size_slp1;
+  NclBasicDataTypes type_slp;
 /*
  * Declare various variables for random purposes.
  */
-  int i, l, nlat, mlon, any_double = 0;
+  int i, j, l, nlat, mlon, nlatmlon;
 /*
  * Retrieve parameters
  *
@@ -522,6 +479,8 @@ NhlErrorTypes pslec_W( void )
   }
   nlat = dsizes_t[ndims_t-2];
   mlon = dsizes_t[ndims_t-1];
+  nlatmlon = nlat*mlon;
+
   if( dsizes_phis[0] != nlat || dsizes_phis[1] != mlon ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: The dimensions of 'phis' must be the same as the last two dimensions of 't'");
     return(NhlFATAL);
@@ -534,107 +493,6 @@ NhlErrorTypes pslec_W( void )
 
   size_phis = 1;
   for( i = 0; i < ndims_phis; i++ ) size_phis *= dsizes_phis[i];
-
-/*
- * Coerce t to double if necessary.
- */
-  if(type_t != NCL_double) {
-    dt = (double*)NclMalloc(sizeof(double)*size_pres);
-    if( dt == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: Unable to allocate memory for coercing t array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dt,
-               t,
-               size_pres,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_t)));
-  }
-  else {
-    any_double = 1;
-/*
- * t is already double.
- */
-    dt = (double*)t;
-  }
-
-/*
- * Coerce phis to double if necessary.
- */
-  if(type_phis != NCL_double) {
-    dphis = (double*)NclMalloc(sizeof(double)*size_phis);
-    if( dphis == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: Unable to allocate memory for coercing phis array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dphis,
-               phis,
-               size_phis,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_phis)));
-  }
-  else {
-    any_double = 1;
-/*
- * phis is already double.
- */
-    dphis = (double*)phis;
-  }
-
-/*
- * Coerce ps to double if necessary.
- */
-  if(type_ps != NCL_double) {
-    dps = (double*)NclMalloc(sizeof(double)*size_pres);
-    if( dps == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: Unable to allocate memory for coercing ps array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dps,
-               ps,
-               size_pres,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_ps)));
-  }
-  else {
-    any_double = 1;
-/*
- * ps is already double.
- */
-    dps = (double*)ps;
-  }
-
-/*
- * Coerce pres to double if necessary.
- */
-  if(type_pres != NCL_double) {
-    dpres = (double*)NclMalloc(sizeof(double)*size_pres);
-    if( dpres == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: Unable to allocate memory for coercing pres array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dpres,
-               pres,
-               size_pres,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_pres)));
-  }
-  else {
-    any_double = 1;
-/*
- * pres is already double.
- */
-    dpres = (double*)pres;
-  }
-
 /*
  * Compute the total size of the output array (minus the nlat,mlon dims).
  */
@@ -642,12 +500,65 @@ NhlErrorTypes pslec_W( void )
   for( i = 0; i < ndims_pres-2; i++ ) size_slp1 *= dsizes_pres[i];
 
 /*
+ * Coerce t to double if necessary.
+ */
+  if(type_t != NCL_double) {
+    tmp_t = (double*)calloc(nlatmlon,sizeof(double));
+    if( tmp_t == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: Unable to allocate memory for coercing t array to double precision");
+      return(NhlFATAL);
+    }
+  }    
+/*
+ * Coerce phis to double if necessary.
+ */
+  tmp_phis = coerce_input_double(phis,type_phis,size_phis,0,NULL,NULL);
+  if( tmp_phis == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: Unable to allocate memory for coercing phis array to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * Coerce ps to double if necessary.
+ */
+  if(type_ps != NCL_double) {
+    tmp_ps = (double*)calloc(nlatmlon,sizeof(double));
+    if( tmp_ps == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: Unable to allocate memory for coercing ps array to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Coerce pres to double if necessary.
+ */
+  if(type_pres != NCL_double) {
+    tmp_pres = (double*)calloc(nlatmlon,sizeof(double));
+    if( tmp_pres == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: Unable to allocate memory for coercing pres array to double precision");
+      return(NhlFATAL);
+    }
+  }
+/*
  * Allocate space for output value.
  */
-  slp = (double *)NclMalloc(size_pres*sizeof(double));
-  if( slp == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: Unable to allocate memory for output array");
-    return(NhlFATAL);
+  if(type_t != NCL_double && type_phis != NCL_double && 
+     type_ps != NCL_double && type_pres != NCL_double) {
+
+    type_slp = NCL_float;
+    tmp_slp = (double*)calloc(nlatmlon,sizeof(double));
+    slp     = (void *)calloc(size_pres,sizeof(float));
+    if(slp == NULL || tmp_slp == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_slp = NCL_double;
+    slp = (void *)calloc(size_pres,sizeof(double));
+    if( slp == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
   }
 
 /*
@@ -656,35 +567,73 @@ NhlErrorTypes pslec_W( void )
  */
   l = 0;
   for( i = 0; i < size_slp1; i++ ) {
-    NGCALLF(dpslec,DPSLEC)(&dt[l],&dphis[0],&dps[l],&dpres[l],&mlon,&nlat,
-                           &slp[l]);
-    l += nlat*mlon;
+    if(type_t != NCL_double) {
+/*
+ * Coerce subsection of t (tmp_t) to double.
+ */
+      coerce_subset_input_double(t,tmp_t,l,type_t,nlatmlon,0,
+                                 NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_t to appropriate location in t.
+ */
+      tmp_t = &((double*)t)[l];
+    }
+    if(type_ps != NCL_double) {
+/*
+ * Coerce subsection of ps (tmp_ps) to double.
+ */
+      coerce_subset_input_double(ps,tmp_ps,l,type_ps,nlatmlon,0,
+                                 NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_ps to appropriate location in ps.
+ */
+      tmp_ps = &((double*)ps)[l];
+    }
+    if(type_pres != NCL_double) {
+/*
+ * Coerce subsection of pres (tmp_pres) to double.
+ */
+      coerce_subset_input_double(pres,tmp_pres,l,type_pres,nlatmlon,0,
+                                 NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_pres to appropriate location in pres.
+ */
+      tmp_pres = &((double*)pres)[l];
+    }
+
+    if(type_slp == NCL_double) tmp_slp = &((double*)slp)[l];
+
+    NGCALLF(dpslec,DPSLEC)(tmp_t,tmp_phis,tmp_ps,tmp_pres,&mlon,&nlat,
+                           tmp_slp);
+/*
+ * Copy output values from temporary tmp_slp to slp.
+ */
+    if(type_slp != NCL_double) {
+      for(j = 0; j < nlatmlon; j++ ) {
+        ((float*)slp)[j+l] = (float)(tmp_slp[j]);
+      }
+    }
+    l += nlatmlon;
   }
 /*
  * Free memory.
  */
-  if((void*)dt != t) NclFree(dt);
-  if((void*)dphis != phis) NclFree(dphis);
-  if((void*)dps != ps) NclFree(dps);
-  if((void*)dpres != pres) NclFree(dpres);
+  if(type_pres != NCL_double) NclFree(tmp_pres);
+  if(type_t    != NCL_double) NclFree(tmp_t);
+  if(type_phis != NCL_double) NclFree(tmp_phis);
+  if(type_ps   != NCL_double) NclFree(tmp_ps);
+  if(type_slp  != NCL_double) NclFree(tmp_slp);
 
 /*
  * Get ready to reeturn.
  */
-  if(!any_double) {
-/*
- * None of the input is double, so return float values.
- */
-    rslp = (float*)NclMalloc(sizeof(float)*size_pres);
-    if( rslp == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < size_pres; i++ ) rslp[i] = (float)slp[i];
-/*
- * Free double precision values.
- */
-    NclFree(slp);
+  if(type_slp != NCL_double) {
 /*
  * Set up return structure.
  */
@@ -693,7 +642,7 @@ NhlErrorTypes pslec_W( void )
                               NULL,
                               Ncl_MultiDValData,
                               0,
-                              (void*)rslp,
+                              slp,
                               NULL,
                               ndims_pres,
                               dsizes_pres,
@@ -711,7 +660,7 @@ NhlErrorTypes pslec_W( void )
                               NULL,
                               Ncl_MultiDValData,
                               0,
-                              (void*)slp,
+                              slp,
                               NULL,
                               ndims_pres,
                               dsizes_pres,
@@ -819,7 +768,7 @@ NhlErrorTypes pslhor_W( void )
  * Input array variables
  */
   void *z, *t, *phis, *ps, *pres, *lats;
-  double *dz, *dt, *dphis, *dps, *dpres, *dlats;
+  double *tmp_z, *tmp_t, *tmp_phis, *tmp_ps, *tmp_pres, *tmp_lats;
   int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS];
   int ndims_t, dsizes_t[NCL_MAX_DIMENSIONS];
   int ndims_phis, dsizes_phis[NCL_MAX_DIMENSIONS];
@@ -841,9 +790,10 @@ NhlErrorTypes pslhor_W( void )
 /*
  * Output array variables
  */
-  double *slp;
-  float *rslp;
+  void *slp;
+  double *tmp_slp;
   int size_slp, size_slp1;
+  NclBasicDataTypes type_slp;
 /*
  * Some extra arrays.
  */
@@ -851,16 +801,12 @@ NhlErrorTypes pslhor_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, k, l, nlat, mlon, klev, any_double = 0;
+  int i, j, k, l, nlat, mlon, klev, nlatmlon, klevnlatmlon;
 /*
  * Retrieve parameters
  *
  * Note that any of the pointer parameters can be set to NULL,
  * which implies you don't care about its value.
- */
-
-/*
- * Retrieve argument #1
  */
   z = (void*)NclGetArgValue(
           0,
@@ -965,6 +911,8 @@ NhlErrorTypes pslhor_W( void )
   klev = dsizes_z[ndims_z-3];
   nlat = dsizes_z[ndims_z-2];
   mlon = dsizes_z[ndims_z-1];
+  nlatmlon = nlat * mlon;
+  klevnlatmlon = klev * nlatmlon;
 
   if( dsizes_ps[ndims_ps-2] != nlat || dsizes_ps[ndims_ps-1] != mlon ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: The last two dimension sizes of array 'ps' must be the same as the last two dimension sizes of array 'z'");
@@ -986,185 +934,107 @@ NhlErrorTypes pslhor_W( void )
   size_pres = 1;
   for( i = 0; i < ndims_pres; i++ ) size_pres *= dsizes_pres[i];
 
-  size_phis = nlat*mlon;
+  size_phis = nlatmlon;
 
   size_ps = 1;
   for( i = 0; i < ndims_ps; i++ ) size_ps *= dsizes_ps[i];
 
-/*
- * Coerce z to double if necessary.
- */
-  if(type_z != NCL_double) {
-    dz = (double*)NclMalloc(sizeof(double)*size_pres);
-    if( dz == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for coercing z array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dz,
-               z,
-               size_pres,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_z)));
-  }
-  else {
-    any_double = 1;
-/*
- * z is already double.
- */
-    dz = (double*)z;
-  }
-
-/*
- * Coerce t to double if necessary.
- */
-  if(type_t != NCL_double) {
-    dt = (double*)NclMalloc(sizeof(double)*size_pres);
-    if( dt == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for coercing t array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dt,
-               t,
-               size_pres,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_t)));
-  }
-  else {
-    any_double = 1;
-/*
- * t is already double.
- */
-    dt = (double*)t;
-  }
-
-/*
- * Coerce phis to double if necessary.
- */
-  if(type_phis != NCL_double) {
-    dphis = (double*)NclMalloc(sizeof(double)*size_phis);
-    if( dphis == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for coercing phis array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dphis,
-               phis,
-               size_phis,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_phis)));
-  }
-  else {
-    any_double = 1;
-/*
- * phis is already double.
- */
-    dphis = (double*)phis;
-  }
-
-/*
- * Coerce ps to double if necessary.
- */
-  if(type_ps != NCL_double) {
-    dps = (double*)NclMalloc(sizeof(double)*size_ps);
-    if( dps == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for coercing ps array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dps,
-               ps,
-               size_ps,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_ps)));
-  }
-  else {
-    any_double = 1;
-/*
- * ps is already double.
- */
-    dps = (double*)ps;
-  }
-
-/*
- * Coerce pres to double if necessary.
- */
-  if(type_pres != NCL_double) {
-    dpres = (double*)NclMalloc(sizeof(double)*size_pres);
-    if( dpres == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for coercing pres array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dpres,
-               pres,
-               size_pres,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_pres)));
-  }
-  else {
-    any_double = 1;
-/*
- * pres is already double.
- */
-    dpres = (double*)pres;
-  }
-
-/*
- * Coerce lats to double if necessary.
- */
-  if(type_lats != NCL_double) {
-    dlats = (double*)NclMalloc(sizeof(double)*nlat);
-    if( dlats == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for coercing lats array to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dlats,
-               lats,
-               nlat,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_lats)));
-  }
-  else {
-    any_double = 1;
-/*
- * lats is already double.
- */
-    dlats = (double*)lats;
-  }
 
 /*
  * Compute the total size of the output array (minus the nlat,mlon,klev dims).
  */
   size_slp1 = 1;
   for( i = 0; i < ndims_z-3; i++ ) size_slp1 *= dsizes_z[i];
-  size_slp = size_slp1*nlat*mlon;
+  size_slp = size_slp1*nlatmlon;
 
+/*
+ * Coerce z to double if necessary.
+ */
+  if(type_z != NCL_double) {
+    tmp_z = (double*)calloc(klevnlatmlon,sizeof(double));
+    if( tmp_z == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for coercing z array to double precision");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Coerce t to double if necessary.
+ */
+  if(type_t != NCL_double) {
+    tmp_t = (double*)calloc(klevnlatmlon,sizeof(double));
+    if( tmp_t == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for coercing t array to double precision");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Coerce phis to double if necessary.
+ */
+  tmp_phis = coerce_input_double(phis,type_phis,size_phis,0,NULL,NULL);
+  if(tmp_phis == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for coercing phis array to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * Coerce ps to double if necessary.
+ */
+  if(type_ps != NCL_double) {
+    tmp_ps = (double*)calloc(nlatmlon,sizeof(double));
+    if(tmp_ps == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for coercing ps array to double precision");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Coerce pres to double if necessary.
+ */
+  if(type_pres != NCL_double) {
+    tmp_pres = (double*)calloc(klevnlatmlon,sizeof(double));
+    if(tmp_pres == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for coercing pres array to double precision");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Coerce lats to double if necessary.
+ */
+  tmp_lats = coerce_input_double(lats,type_lats,nlat,0,NULL,NULL);
+  if( tmp_lats == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for coercing lats array to double precision");
+    return(NhlFATAL);
+  }
 /*
  * Allocate space for output value.
  */
-  slp = (double *)NclMalloc(size_slp*sizeof(double));
-  if( slp == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for output array");
-    return(NhlFATAL);
-  }
+  if(type_z != NCL_double && type_t != NCL_double && 
+     type_phis != NCL_double && type_ps != NCL_double && 
+     type_pres != NCL_double && type_lats != NCL_double) {
 
+    type_slp = NCL_float;
+
+    tmp_slp = (double*)calloc(nlatmlon,sizeof(double));
+    slp     = (void *)calloc(size_slp,sizeof(float));
+    if(tmp_slp == NULL && slp == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_slp = NCL_double;
+    slp = (void *)calloc(size_slp,sizeof(double));
+    if( slp == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
 /*
  * Allocate space for other output values.
  *
  */
-  pslu  = (double *)NclMalloc(nlat*mlon*sizeof(double));
-  zx    = (double *)NclMalloc(klev*mlon*sizeof(double));
-  tx    = (double *)NclMalloc(klev*mlon*sizeof(double));
-  presx = (double *)NclMalloc(klev*mlon*sizeof(double));
+  pslu  = (double *)calloc(nlatmlon,sizeof(double));
+  zx    = (double *)calloc(klev*mlon,sizeof(double));
+  tx    = (double *)calloc(klev*mlon,sizeof(double));
+  presx = (double *)calloc(klev*mlon,sizeof(double));
   if( pslu == NULL || zx == NULL || tx == NULL || presx == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for arrays pslu, zx, tx, and/or presx");
     return(NhlFATAL);
@@ -1175,21 +1045,89 @@ NhlErrorTypes pslhor_W( void )
  */
   k = l = 0;
   for( i = 0; i < size_slp1; i++ ) {
-    NGCALLF(dpslhor,DPSLHOR)(&dz[k],&dt[k],&dphis[0],&dps[l],&dpres[k],
-                             &dlats[0],&mlon,&nlat,&klev,&slp[l],&pslu[0],
-                             &zx[0],&tx[0],&presx[0]);
-    l += nlat*mlon;
-    k += nlat*mlon*klev;
+    if(type_z != NCL_double) {
+/*
+ * Coerce subsection of z (tmp_z) to double.
+ */
+      coerce_subset_input_double(z,tmp_z,k,type_z,klevnlatmlon,0,
+                                 NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_z to appropriate location in z.
+ */
+      tmp_z = &((double*)z)[k];
+    }
+
+    if(type_t != NCL_double) {
+/*
+ * Coerce subsection of t (tmp_t) to double.
+ */
+      coerce_subset_input_double(t,tmp_t,k,type_t,klevnlatmlon,0,
+                                 NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_t to appropriate location in t.
+ */
+      tmp_t = &((double*)t)[k];
+    }
+
+    if(type_pres != NCL_double) {
+/*
+ * Coerce subsection of pres (tmp_pres) to double.
+ */
+      coerce_subset_input_double(pres,tmp_pres,k,type_pres,klevnlatmlon,0,
+                                 NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_pres to appropriate location in pres.
+ */
+      tmp_pres = &((double*)pres)[k];
+    }
+
+    if(type_ps != NCL_double) {
+/*
+ * Coerce subsection of ps (tmp_ps) to double.
+ */
+      coerce_subset_input_double(ps,tmp_ps,l,type_ps,nlatmlon,0,
+                                 NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_ps to appropriate location in ps.
+ */
+      tmp_ps = &((double*)ps)[l];
+    }
+
+    if(type_slp == NCL_double) tmp_slp = &((double*)slp)[l];
+
+
+    NGCALLF(dpslhor,DPSLHOR)(tmp_z,tmp_t,tmp_phis,tmp_ps,tmp_pres,
+                             tmp_lats,&mlon,&nlat,&klev,tmp_slp,pslu,
+                             zx,tx,presx);
+/*
+ * Copy output values from temporary tmp_slp to slp.
+ */
+    if(type_slp != NCL_double) {
+      for(j = 0; j < nlatmlon; j++ ) {
+        ((float*)slp)[j+l] = (float)(tmp_slp[j]);
+      }
+    }
+    l += nlatmlon;
+    k += klevnlatmlon;
   }
 /*
  * Free memory.
  */
-  if((void*)dt != t) NclFree(dt);
-  if((void*)dz != z) NclFree(dz);
-  if((void*)dphis != phis) NclFree(dphis);
-  if((void*)dps != ps) NclFree(dps);
-  if((void*)dpres != pres) NclFree(dpres);
-  if((void*)dlats != lats) NclFree(dlats);
+  if(type_pres != NCL_double) NclFree(tmp_pres);
+  if(type_z    != NCL_double) NclFree(tmp_z);
+  if(type_t    != NCL_double) NclFree(tmp_t);
+  if(type_phis != NCL_double) NclFree(tmp_phis);
+  if(type_ps   != NCL_double) NclFree(tmp_ps);
+  if(type_lats != NCL_double) NclFree(tmp_lats);
+  if(type_slp  != NCL_double) NclFree(tmp_slp);
 
 /*
  * Free "extra" arrays.
@@ -1202,20 +1140,7 @@ NhlErrorTypes pslhor_W( void )
 /*
  * Get ready to return.
  */
-  if(!any_double) {
-/*
- * None of the input is double, so return float values.
- */
-    rslp = (float*)NclMalloc(sizeof(float)*size_slp);
-    if( rslp == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < size_slp; i++ ) rslp[i] = (float)slp[i];
-/*
- * Free double precision values.
- */
-    NclFree(slp);
+  if(type_slp != NCL_double) {
 /*
  * Set up return structure.
  */
@@ -1224,7 +1149,7 @@ NhlErrorTypes pslhor_W( void )
                               NULL,
                               Ncl_MultiDValData,
                               0,
-                              (void*)rslp,
+                              slp,
                               NULL,
                               ndims_ps,
                               dsizes_ps,
@@ -1242,7 +1167,7 @@ NhlErrorTypes pslhor_W( void )
                               NULL,
                               Ncl_MultiDValData,
                               0,
-                              (void*)slp,
+                              slp,
                               NULL,
                               ndims_ps,
                               dsizes_ps,

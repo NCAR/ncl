@@ -4,15 +4,8 @@
  * The following are the required NCAR Graphics include files.
  * They should be located in ${NCARG_ROOT}/include.
  */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include "Symbol.h"
-#include "NclMdInc.h"
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include <ncarg/gks.h>
 #include "wrapper.h"
+
 extern void NGCALLF(chisub,CHISUB)(double*,double*,double*);
 
 NhlErrorTypes chiinv_W( void )
@@ -28,9 +21,10 @@ NhlErrorTypes chiinv_W( void )
 /*
  * output variable 
  */
-  double *chi;
-  float *rchi;
+  void *chi;
+  double *tmp_chi;
   int size_chi;
+  NclBasicDataTypes type_chi;
 /*
  * Declare various variables for random purposes.
  */
@@ -89,8 +83,8 @@ NhlErrorTypes chiinv_W( void )
 /*
  * Coerce p and df to double if necessary.
  */
-  dp  = coerce_input_double( p, type_p,size_chi,0,NULL,NULL,NULL);
-  ddf = coerce_input_double(df,type_df,size_chi,0,NULL,NULL,NULL);
+  dp  = coerce_input_double( p, type_p,size_chi,0,NULL,NULL);
+  ddf = coerce_input_double(df,type_df,size_chi,0,NULL,NULL);
   if(ddf == NULL || dp == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"chiinv: unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -99,48 +93,51 @@ NhlErrorTypes chiinv_W( void )
 /*
  * Allocate space for output array.
  */
-  chi = (double*)NclMalloc(size_chi*sizeof(double));
-  if( chi == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"chiinv: Unable to allocate memory for output array");
-    return(NhlFATAL);
+  if(type_p != NCL_double && type_df != NCL_double) {
+    type_chi = NCL_float;
+
+    chi     = (float*)calloc(size_chi,sizeof(float));
+    tmp_chi = (double *)calloc(1,sizeof(double));
+
+    if(tmp_chi == NULL || chi == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"chiinv: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_chi = NCL_double;
+    chi = (double*)calloc(size_chi,sizeof(double));
+    if(chi == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"chiinv: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
   }
 
 /*
  * Call the Fortran version of this routine.
- *
  */
   for( i = 0; i < size_chi; i++ ) {
-    NGCALLF(chisub,CHISUB)(&dp[i],&ddf[i],&chi[i]);
+    if(type_chi == NCL_double) tmp_chi = &((double*)chi)[i];
+    NGCALLF(chisub,CHISUB)(&dp[i],&ddf[i],tmp_chi);
+    if(type_chi != NCL_double) ((float*)chi)[i] = (float)*tmp_chi;
   }
 /*
  * free memory.
  */
   if((void*)dp  != p) NclFree(dp);
   if((void*)ddf != df) NclFree(ddf);
+  if(type_chi != NCL_double) NclFree(tmp_chi);
 
-/*
- * Copy double values to float values.
- */
-  if(type_p != NCL_double && type_df != NCL_double) {
-/*
- * Neither input array was double, so copy return floats.
- *
- * First copy double values to float array.
- */
-    rchi = coerce_output_float(chi, NULL, size_chi, 0);
-    if( rchi == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"chiinv: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
+  if(type_chi != NCL_double) {
 /*
  * Return float values.
  */
-    return(NclReturnValue((void*)rchi,ndims_p,dsizes_p,NULL,NCL_float,0));
+    return(NclReturnValue(chi,ndims_p,dsizes_p,NULL,NCL_float,0));
   }
   else {
 /*
- * One or both input arrays were double, so return double precision values.
+ * Return double values.
  */
-    return(NclReturnValue((void*)chi,ndims_p,dsizes_p,NULL,NCL_double,0));
+    return(NclReturnValue(chi,ndims_p,dsizes_p,NULL,NCL_double,0));
   }
 }

@@ -4,14 +4,7 @@
  * The following are the required NCAR Graphics include files.
  * They should be located in ${NCARG_ROOT}/include.
  */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include "Symbol.h"
-#include "NclMdInc.h"
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include <ncarg/gks.h>
+#include "wrapper.h"
 
 extern void NGCALLF(dhydro,DHYDRO)(double *,double *,double *,int *,
                                    double *,int *);
@@ -21,23 +14,23 @@ NhlErrorTypes hydro_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, nlvl, ier=0;
+  int i, j, index_zh, nlvl, ier=0;
 /*
  * Input array variables
  */
   void *p, *tkv, *zsfc;
-  double *dp, *dtkv, *dzsfc;
+  double *tmp_p, *tmp_tkv, *tmp_zsfc;
   int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS], has_missing_p;
   int ndims_tkv, dsizes_tkv[NCL_MAX_DIMENSIONS], has_missing_t;
   int ndims_zsfc, dsizes_zsfc[NCL_MAX_DIMENSIONS], has_missing_z;
   NclBasicDataTypes type_p, type_tkv, type_zsfc;
+  int size_zsfc, size_p;
 /*
  * Output array variables
  */
-  double *zh;
-  float *rzh;
-  int size_zsfc, size_p;
-
+  void *zh;
+  double *tmp_zh;
+  NclBasicDataTypes type_zh;
 /*
  * Retrieve parameters
  *
@@ -135,135 +128,126 @@ NhlErrorTypes hydro_W( void )
 
   size_p = nlvl * size_zsfc;
 /*
- * Coerce data to double if necessary.
+ * allocate space for temporary input/output arrays.
  */
   if(type_p != NCL_double) {
-    dp = (double*)NclMalloc(sizeof(double)*size_p);
-    if( dp == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: Unable to allocate memory for coercing p array to double precision");
+    tmp_p = (double*)calloc(nlvl,sizeof(double));
+    if(tmp_p == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: Unable to allocate memory for coercing input array to double precision");
       return(NhlFATAL);
     }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dp,
-               p,
-               size_p,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_p)));
   }
-  else {
-/*
- * Input is already double.
- */
-    dp = (double*)p;
-  }
-/*
- * Coerce tkv to double precision.
- */
   if(type_tkv != NCL_double) {
-    dtkv = (double*)NclMalloc(sizeof(double)*size_p);
-    if( dtkv == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: Unable to allocate memory for coercing tkv array to double precision");
+    tmp_tkv = (double*)calloc(nlvl,sizeof(double));
+    if(tmp_tkv == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: Unable to allocate memory for coercing input array to double precision");
       return(NhlFATAL);
     }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dtkv,
-               tkv,
-               size_p,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_tkv)));
   }
-  else {
-/*
- * Input is already double.
- */
-    dtkv = (double*)tkv;
-  }
-
-/*
- * Coerce tkv to double precision.
- */
   if(type_zsfc != NCL_double) {
-    dzsfc = (double*)NclMalloc(sizeof(double)*size_zsfc);
-    if( dzsfc == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: Unable to allocate memory for coercing zsfc array to double precision");
+    tmp_zsfc = (double*)calloc(1,sizeof(double));
+    if(tmp_zsfc == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: Unable to allocate memory for coercing input array to double precision");
       return(NhlFATAL);
     }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dzsfc,
-               zsfc,
-               size_zsfc,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_zsfc)));
+  }
+  if(type_p != NCL_double && type_tkv != NCL_double &&
+     type_zsfc != NCL_double) {
+
+    type_zh = NCL_float;
+
+    zh     = (void*)calloc(size_p,sizeof(float));
+    tmp_zh = (double*)calloc(nlvl,sizeof(double));
+    if(zh == NULL || tmp_zh == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }    
   }
   else {
-/*
- * Input is already double.
- */
-    dzsfc = (double*)zsfc;
+    type_zh = NCL_double;
+    zh = (void*)calloc(size_p,sizeof(double));
+    if(zh == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }    
   }
-
-/*
- * Allocate space for output value.
- */
-  zh = (double *)NclMalloc(size_p*sizeof(double));
-  if( zh == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: Unable to allocate memory for output array");
-    return(NhlFATAL);
-  }
-
 /*
  * Call the Fortran version of this routine.
  */
-  j = 0;
+  index_zh = 0;
   for( i = 0; i < size_zsfc; i++ ) {
-    NGCALLF(dhydro,DHYDRO)(&dp[j],&dtkv[j],&dzsfc[i],&nlvl,&zh[j],&ier);
-    j += nlvl;
+    if(type_p != NCL_double) {
+/*
+ * Coerce nlvl subsection of p (tmp_p) to double.
+ */
+      coerce_subset_input_double(p,tmp_p,index_zh,type_p,nlvl,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_p to appropriate location in p.
+ */
+      tmp_p = &((double*)p)[index_zh];
+    }
+    if(type_tkv != NCL_double) {
+/*
+ * Coerce nlvl subsection of tkv (tmp_tkv) to double.
+ */
+      coerce_subset_input_double(tkv,tmp_tkv,index_zh,type_tkv,nlvl,0,
+                                 NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_tkv to appropriate location in tkv.
+ */
+      tmp_tkv = &((double*)tkv)[index_zh];
+    }
+    if(type_zsfc != NCL_double) {
+/*
+ * Coerce subsection of zsfc (tmp_zsfc) to double.
+ */
+      coerce_subset_input_double(zsfc,tmp_zsfc,i,type_zsfc,1,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_zsfc to appropriate location in zsfc.
+ */
+      tmp_zsfc = &((double*)zsfc)[i];
+    }
+
+    if(type_zh == NCL_double) tmp_zh = &((double*)zh)[index_zh];
+
+    NGCALLF(dhydro,DHYDRO)(tmp_p,tmp_tkv,tmp_zsfc,&nlvl,tmp_zh,&ier);
+/*
+ * Copy output values from temporary tmp_zh to zh.
+ */
+    if(type_zh != NCL_double) {
+      for(j = 0; j < nlvl; j++) {
+        ((float*)zh)[index_zh+j] = (float)(tmp_zh[j]);
+      }
+    }
+    index_zh += nlvl;
   }
 /*
  * free memory.
  */
-  if((void*)dp != p) {
-    NclFree(dp);
-  }
-  if((void*)dtkv != tkv) {
-    NclFree(dtkv);
-  }
-  if((void*)dzsfc != zsfc) {
-    NclFree(dzsfc);
-  }
+  if(type_p    != NCL_double) NclFree(tmp_p);
+  if(type_tkv  != NCL_double) NclFree(tmp_tkv);
+  if(type_zsfc != NCL_double) NclFree(tmp_zsfc);
+  if(type_zh   != NCL_double) NclFree(tmp_zh);
 
 /*
  * Return values
  */
-  if(type_p != NCL_double && type_tkv != NCL_double && 
-     type_zsfc != NCL_double) {
-/*
- * None of the input is double, so return a float.
- *
- * First copy double values to float values.
- */
-    rzh = (float*)NclMalloc(sizeof(float)*size_p);
-    if( rzh == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < size_p; i++ ) rzh[i] = (float)zh[i];
-/*
- * Free double precision values.
- */
-    NclFree(zh);
+  if(type_zh != NCL_double) {
 /*
  * Return float values.
  */
-    return(NclReturnValue((void*)rzh,ndims_p,dsizes_p,NULL,NCL_float,0));
+    return(NclReturnValue(zh,ndims_p,dsizes_p,NULL,NCL_float,0));
   }
   else {
 /*
  * Return double values.
  */
-    return(NclReturnValue((void*)zh,ndims_p,dsizes_p,NULL,NCL_double,0));
+    return(NclReturnValue(zh,ndims_p,dsizes_p,NULL,NCL_double,0));
   }
 }

@@ -31,7 +31,7 @@ NhlErrorTypes g2gshv_W( void )
  * Input array variables
  */
   void *Ua, *Va;
-  double *dUa, *dVa;
+  double *tmp_Ua, *tmp_Va;
   int ndims_Ua, ndims_Va;
   int dsizes_Ua[NCL_MAX_DIMENSIONS], dsizes_Va[NCL_MAX_DIMENSIONS];
   int nlata, nlona, igrida[2];
@@ -43,8 +43,7 @@ NhlErrorTypes g2gshv_W( void )
  * Output array variables
  */
   void *Ub, *Vb;
-  double *dUb, *dVb;
-  float *rUb, *rVb;
+  double *tmp_Ub, *tmp_Vb;
   int ndims_Ub, ndims_Vb;
   int dsizes_Ub[NCL_MAX_DIMENSIONS], dsizes_Vb[NCL_MAX_DIMENSIONS];
   int nlatb, nlonb, igridb[2];
@@ -52,7 +51,7 @@ NhlErrorTypes g2gshv_W( void )
 /*
  * various
  */
-  int *twave, intl, i, j, lin, lout, l1, ier=0;
+  int *twave, intl, i, j, index_UVa, index_UVb, l1, ier=0;
   int nlatanlona, nlatbnlonb;
   int total_size_in, total_size_out, total_leftmost;
 /*
@@ -172,27 +171,49 @@ NhlErrorTypes g2gshv_W( void )
   igrida[1] = igridb[1] =  0;
 
   intl = 0;
-/* 
- * Coerce Ua and Va to double.
- */
-  dUa = coerce_input_double(Ua,type_Ua,total_size_in,has_missing_Ua,
-                            &missing_Ua,&missing_dUa,NULL);
-  dVa = coerce_input_double(Va,type_Va,total_size_in,has_missing_Va,
-                            &missing_Va,&missing_dVa,NULL);
-  if(dUa == NULL || dVa == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"g2gshv: Unable to allocate memory for coercing input arrays to double precision");
-    return(NhlFATAL);
-  }
 /*
- * Make sure Ub and Vb are double.
+ * Coerce missing values.
  */
-  dUb = coerce_output_double(Ub,type_Ub,total_size_out);
-  dVb = coerce_output_double(Vb,type_Vb,total_size_out);
-
-  if(dUb == NULL || dVb == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"g2gshv: Unable to allocate memory for converting output arrays to double precision");
-    return(NhlFATAL);
+  coerce_missing(type_Ua,has_missing_Ua,&missing_Ua,&missing_dUa,NULL);
+  coerce_missing(type_Va,has_missing_Va,&missing_Va,&missing_dVa,NULL);
+/*
+ * Allocate space for temporary input and output. If the input is not double,
+ * then the output will be float, otherwise the output will be double.
+ * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * of the input and output. We only need to allocate space for them if the
+ * input is not already double, otherwise, we just have them point to the
+ * appropriate locations in Ta and Tb.
+ */
+  if(type_Ua != NCL_double) {
+    tmp_Ua = (double*)calloc(nlatanlona,sizeof(double));
+    if(tmp_Ua == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"g2gshv: Unable to allocate memory for Ua array");
+      return(NhlFATAL);
+    }
   }
+  if(type_Va != NCL_double) {
+    tmp_Va = (double*)calloc(nlatanlona,sizeof(double));
+    if(tmp_Va == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"g2gshv: Unable to allocate memory for Va array");
+      return(NhlFATAL);
+    }
+  }
+  if(type_Ub != NCL_double) {
+    tmp_Ub = (double*)calloc(nlatbnlonb,sizeof(double));
+    if(tmp_Ub == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"g2gshv: Unable to allocate memory for Ub array");
+      return(NhlFATAL);
+    }
+  }
+
+  if(type_Vb != NCL_double) {
+    tmp_Vb = (double*)calloc(nlatbnlonb,sizeof(double));
+    if(tmp_Vb == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"g2gshv: Unable to allocate memory for Vb array");
+      return(NhlFATAL);
+    }
+  }
+
 /*
  * Determine the workspace size.
  */
@@ -228,43 +249,83 @@ NhlErrorTypes g2gshv_W( void )
  * then return all missing values for that grid.  Otherwise, keep going 
  * and do the regridding.
  */ 
-  lin = lout = 0;
+  index_UVa = index_UVb = 0;
   for(i = 1; i <= total_leftmost; i++) {
+    if(type_Ua != NCL_double) {
+/*
+ * Coerce nlata x nlona subsection of Ua (tmp_Ua) to double.
+ */
+      coerce_subset_input_double(Ua,tmp_Ua,index_UVa,type_Ua,nlatanlona,0,
+                                 &missing_Ua,&missing_dUa);
+    }
+    else {
+      tmp_Ua = &((double*)Ua)[index_UVa];
+    
+    }
+    if(type_Va != NCL_double) {
+/*
+ * Coerce nlata x nlona subsection of Va (tmp_Va) to double.
+ */
+      coerce_subset_input_double(Va,tmp_Va,index_UVa,type_Va,nlatanlona,0,
+                                 &missing_Va,&missing_dVa);
+    }
+    else {
+      tmp_Va = &((double*)Va)[index_UVa];
+    }
+/*
+ * Point output arrays to necessary locations in Ub and Vb if necessary.
+ */
+    if(type_Ub == NCL_double) tmp_Ub = &((double*)Ub)[index_UVb];
+    if(type_Vb == NCL_double) tmp_Vb = &((double*)Vb)[index_UVb];
+
 /*
  * Check for missing values in the input arrays.
  */
-    found_missing = contains_missing(&dUa[lin],nlatanlona,has_missing_Ua,
+    found_missing = contains_missing(tmp_Ua,nlatanlona,has_missing_Ua,
                                      missing_dUa.doubleval);
     if(found_missing) {
       missing = missing_dUa.doubleval;
     }
     else {
-      found_missing = contains_missing(&dVa[lin],nlatanlona,has_missing_Va,
+      found_missing = contains_missing(tmp_Va,nlatanlona,has_missing_Va,
                                        missing_dVa.doubleval);
       if(found_missing) missing = missing_dVa.doubleval;
     }
     if(found_missing) {
-      for(j = 0; j < nlatbnlonb; j++) {
-        dUb[lout+j] = missing;
-        dVb[lout+j] = missing;
-      }
+      set_subset_output_missing(Ub,index_UVb,type_Ub,nlatbnlonb,missing);
+      set_subset_output_missing(Vb,index_UVb,type_Vb,nlatbnlonb,missing);
       NhlPError(NhlWARNING,NhlEUNKNOWN,"g2gshv: One or more 2-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
     }
     else {
 /*
  * Call the f77 version of 'trvsph' with the full argument list.
  */
-      NGCALLF(dtrvsph77,DTRVSPH77)(&intl,igrida,&nlona,&nlata,
-                                   &dUa[lin],&dVa[lin],
-                                   igridb,&nlonb,&nlatb,&dUb[lout],&dVb[lout],
+      NGCALLF(dtrvsph77,DTRVSPH77)(&intl,igrida,&nlona,&nlata,tmp_Ua,tmp_Va,
+                                   igridb,&nlonb,&nlatb,tmp_Ub,tmp_Vb,
                                    twave,work,&lwork,wsave,&lsave,dwork,
                                    &ldwork,&ier);
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"g2gshv: ier = %d\n", ier );
       }
+/*
+ * Copy output values from temporary array "tmp_Ub" to final array "Ub".
+ */
+      if(type_Ub != NCL_double) {
+        for(j = 0; j < nlatbnlonb; j++) {
+          ((float*)Ub)[index_UVb+j] = (float)(tmp_Ub[j]);
+        }
+      } 
+/*
+ * Copy output values from temporary array "tmp_Vb" to final array "Vb".
+ */
+      if(type_Vb != NCL_double) {
+        for(j = 0; j < nlatbnlonb; j++) {
+          ((float*)Vb)[index_UVb+j] = (float)(tmp_Vb[j]);
+        }
+      } 
     }
-    lin  += nlatanlona;
-    lout += nlatbnlonb;
+    index_UVa += nlatanlona;
+    index_UVb += nlatbnlonb;
   }
 /*
  * Free workspace arrays.
@@ -272,14 +333,13 @@ NhlErrorTypes g2gshv_W( void )
   NclFree(work);
   NclFree(dwork);
   NclFree(wsave);
-  if((void*)dUa != Ua) NclFree(dUa);
-  if((void*)dVa != Va) NclFree(dVa);
+  if(type_Ua != NCL_double) NclFree(tmp_Ua);
+  if(type_Va != NCL_double) NclFree(tmp_Va);
+  if(type_Ub != NCL_double) NclFree(tmp_Ub);
+  if(type_Vb != NCL_double) NclFree(tmp_Vb);
 /*
  * Return.
  */
-  if(type_Ub == NCL_float) rUb = coerce_output_float(dUb,Ub,total_size_out,1);
-  if(type_Vb == NCL_float) rVb = coerce_output_float(dVb,Vb,total_size_out,1);
-
   return(NhlNOERROR);
 }
 
@@ -290,7 +350,7 @@ NhlErrorTypes f2gshv_W( void )
  * Input array variables
  */
   void *Ua, *Va;
-  double *dUa, *dVa;
+  double *tmp_Ua, *tmp_Va;
   int ndims_Ua, ndims_Va;
   int dsizes_Ua[NCL_MAX_DIMENSIONS], dsizes_Va[NCL_MAX_DIMENSIONS];
   int nlata, nlona, igrida[2];
@@ -302,8 +362,7 @@ NhlErrorTypes f2gshv_W( void )
  * Output array variables
  */
   void *Ub, *Vb;
-  double *dUb, *dVb;
-  float *rUb, *rVb;
+  double *tmp_Ub, *tmp_Vb;
   int ndims_Ub, ndims_Vb;
   int dsizes_Ub[NCL_MAX_DIMENSIONS], dsizes_Vb[NCL_MAX_DIMENSIONS];
   int nlatb, nlonb, igridb[2];
@@ -311,7 +370,7 @@ NhlErrorTypes f2gshv_W( void )
 /*
  * various
  */
-  int *twave, intl, i, j, lin, lout, l1, ier=0;
+  int *twave, intl, i, j, index_UVa, index_UVb, l1, ier=0;
   int nlatanlona, nlatbnlonb;
   int total_size_in, total_size_out, total_leftmost;
 /*
@@ -433,27 +492,28 @@ NhlErrorTypes f2gshv_W( void )
 
   intl = 0;
 /*
- * coerce Ua and Va to double.
+ * Coerce missing values.
  */
-  dUa = coerce_input_double(Ua,type_Ua,total_size_in,has_missing_Ua,
-                            &missing_Ua,&missing_dUa,NULL);
-  dVa = coerce_input_double(Va,type_Va,total_size_in,has_missing_Va,
-                            &missing_Va,&missing_dVa,NULL);
-  if(dUa == NULL || dVa == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2gshv: Unable to allocate memory for coercing input arrays to double precision");
-    return(NhlFATAL);
-  }
+  coerce_missing(type_Ua,has_missing_Ua,&missing_Ua,&missing_dUa,NULL);
+  coerce_missing(type_Va,has_missing_Va,&missing_Va,&missing_dVa,NULL);
 /*
- * Make sure Ub and Vb are double.
+ * Allocate space for temporary input and output. If the input is not double,
+ * then the output will be float, otherwise the output will be double.
+ * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * of the input and output. We only need to allocate space for them if the
+ * input is not already double, otherwise, we just have them point to the
+ * appropriate locations in Ta and Tb.
  */
-  dUb = coerce_output_double(Ub,type_Ub,total_size_out);
-  dVb = coerce_output_double(Vb,type_Vb,total_size_out);
-
-  if(dUb == NULL || dVb == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2gshv: Unable to allocate memory for converting output arrays to double precision");
-    return(NhlFATAL);
-  }
-
+  if(type_Ua != NCL_double) {
+    tmp_Ua = (double*)calloc(nlatanlona,sizeof(double));
+    tmp_Va = (double*)calloc(nlatanlona,sizeof(double));
+    tmp_Ub = (double*)calloc(nlatbnlonb,sizeof(double));
+    tmp_Vb = (double*)calloc(nlatbnlonb,sizeof(double));
+    if(tmp_Ua == NULL || tmp_Va == NULL || tmp_Ub == NULL || tmp_Vb == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2gshv: Unable to allocate memory for input/output arrays");
+      return(NhlFATAL);
+    }
+  } 
 /*
  * Determine the workspace size.
  */
@@ -489,43 +549,82 @@ NhlErrorTypes f2gshv_W( void )
  * then return all missing values for that grid.  Otherwise, keep going 
  * and do the regridding.
  */ 
-  lin = lout = 0;
+  index_UVa = index_UVb = 0;
   for(i = 1; i <= total_leftmost; i++) {
+    if(type_Ua != NCL_double) {
+/*
+ * Coerce nlata x nlona subsection of Ua (tmp_Ua) to double.
+ */
+      coerce_subset_input_double(Ua,tmp_Ua,index_UVa,type_Ua,nlatanlona,0,
+                                 &missing_Ua,&missing_dUa);
+    }
+    else {
+      tmp_Ua = &((double*)Ua)[index_UVa];
+    
+    }
+    if(type_Va != NCL_double) {
+/*
+ * Coerce nlata x nlona subsection of Va (tmp_Va) to double.
+ */
+      coerce_subset_input_double(Va,tmp_Va,index_UVa,type_Va,nlatanlona,0,
+                                 &missing_Va,&missing_dVa);
+    }
+    else {
+      tmp_Va = &((double*)Va)[index_UVa];
+    }
+/*
+ * Point output arrays to necessary locations in Ub and Vb if necessary.
+ */
+    if(type_Ub == NCL_double) tmp_Ub = &((double*)Ub)[index_UVb];
+    if(type_Vb == NCL_double) tmp_Vb = &((double*)Vb)[index_UVb];
 /*
  * Check for missing values in the input arrays.
  */
-    found_missing = contains_missing(&dUa[lin],nlatanlona,has_missing_Ua,
+    found_missing = contains_missing(tmp_Ua,nlatanlona,has_missing_Ua,
                                      missing_dUa.doubleval);
     if(found_missing) {
       missing = missing_dUa.doubleval;
     }
     else {
-      found_missing = contains_missing(&dVa[lin],nlatanlona,has_missing_Va,
+      found_missing = contains_missing(tmp_Va,nlatanlona,has_missing_Va,
                                        missing_dVa.doubleval);
       if(found_missing) missing = missing_dVa.doubleval;
     }
     if(found_missing) {
-      for(j = 0; j < nlatbnlonb; j++) {
-        dUb[lout+j] = missing;
-        dVb[lout+j] = missing;
-      }
+      set_subset_output_missing(Ub,index_UVb,type_Ub,nlatbnlonb,missing);
+      set_subset_output_missing(Vb,index_UVb,type_Vb,nlatbnlonb,missing);
       NhlPError(NhlWARNING,NhlEUNKNOWN,"f2gshv: One or more 2-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
     }
     else {
 /*
  * Call the f77 version of 'trvsph' with the full argument list.
  */
-      NGCALLF(dtrvsph77,DTRVSPH77)(&intl,igrida,&nlona,&nlata,
-                                   &dUa[lin],&dVa[lin],
-                                   igridb,&nlonb,&nlatb,&dUb[lout],&dVb[lout],
+      NGCALLF(dtrvsph77,DTRVSPH77)(&intl,igrida,&nlona,&nlata,tmp_Ua,tmp_Va,
+                                   igridb,&nlonb,&nlatb,tmp_Ub,tmp_Vb,
                                    twave,work,&lwork,wsave,&lsave,dwork,
                                    &ldwork,&ier);
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"f2gshv: ier = %d\n", ier );
       }
+/*
+ * Copy output values from temporary array "tmp_Ub" to final array "Ub".
+ */
+      if(type_Ub != NCL_double) {
+        for(j = 0; j < nlatbnlonb; j++) {
+          ((float*)Ub)[index_UVb+j] = (float)(tmp_Ub[j]);
+        }
+      } 
+/*
+ * Copy output values from temporary array "tmp_Vb" to final array "Vb".
+ */
+      if(type_Vb != NCL_double) {
+        for(j = 0; j < nlatbnlonb; j++) {
+          ((float*)Vb)[index_UVb+j] = (float)(tmp_Vb[j]);
+        }
+      } 
     }
-    lin  += nlatanlona;
-    lout += nlatbnlonb;
+    index_UVa += nlatanlona;
+    index_UVb += nlatbnlonb;
   }
 /*
  * Free workspace arrays.
@@ -533,15 +632,14 @@ NhlErrorTypes f2gshv_W( void )
   NclFree(work);
   NclFree(dwork);
   NclFree(wsave);
-  if((void*)dUa != Ua) NclFree(dUa);
-  if((void*)dVa != Va) NclFree(dVa);
+  if(type_Ua != NCL_double) NclFree(tmp_Ua);
+  if(type_Va != NCL_double) NclFree(tmp_Va);
+  if(type_Ub != NCL_double) NclFree(tmp_Ub);
+  if(type_Vb != NCL_double) NclFree(tmp_Vb);
 
 /*
  * Return.
  */
-  if(type_Ub == NCL_float) rUb = coerce_output_float(dUb,Ub,total_size_out,1);
-  if(type_Vb == NCL_float) rVb = coerce_output_float(dVb,Vb,total_size_out,1);
-
   return(NhlNOERROR);
 }
 
@@ -552,7 +650,7 @@ NhlErrorTypes g2fshv_W( void )
  * Input array variables
  */
   void *Ua, *Va;
-  double *dUa, *dVa;
+  double *tmp_Ua, *tmp_Va;
   int ndims_Ua, ndims_Va;
   int dsizes_Ua[NCL_MAX_DIMENSIONS], dsizes_Va[NCL_MAX_DIMENSIONS];
   int nlata, nlona, igrida[2];
@@ -564,8 +662,7 @@ NhlErrorTypes g2fshv_W( void )
  * Output array variables
  */
   void *Ub, *Vb;
-  double *dUb, *dVb;
-  float *rUb, *rVb;
+  double *tmp_Ub, *tmp_Vb;
   int ndims_Ub, ndims_Vb;
   int dsizes_Ub[NCL_MAX_DIMENSIONS], dsizes_Vb[NCL_MAX_DIMENSIONS];
   int nlatb, nlonb, igridb[2];
@@ -573,7 +670,7 @@ NhlErrorTypes g2fshv_W( void )
 /*
  * various
  */
-  int twave = 0, intl, i, j, l1, lin, lout, ier=0;
+  int twave = 0, intl, i, j, l1, index_UVa, index_UVb, ier=0;
   int nlatanlona, nlatbnlonb;
   int total_size_in, total_size_out, total_leftmost;
 /*
@@ -683,27 +780,28 @@ NhlErrorTypes g2fshv_W( void )
 
   intl = 0;
 /*
- * coerce Ua and Va to double.
+ * Coerce missing values.
  */
-  dUa = coerce_input_double(Ua,type_Ua,total_size_in,has_missing_Ua,
-                            &missing_Ua,&missing_dUa,NULL);
-  dVa = coerce_input_double(Va,type_Va,total_size_in,has_missing_Va,
-                            &missing_Va,&missing_dVa,NULL);
-  if(dUa == NULL || dVa == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"g2fshv: Unable to allocate memory for coercing input arrays to double precision");
-    return(NhlFATAL);
-  }
+  coerce_missing(type_Ua,has_missing_Ua,&missing_Ua,&missing_dUa,NULL);
+  coerce_missing(type_Va,has_missing_Va,&missing_Va,&missing_dVa,NULL);
 /*
- * Make sure Ub and Vb are double.
+ * Allocate space for temporary input and output. If the input is not double,
+ * then the output will be float, otherwise the output will be double.
+ * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * of the input and output. We only need to allocate space for them if the
+ * input is not already double, otherwise, we just have them point to the
+ * appropriate locations in Ta and Tb.
  */
-  dUb = coerce_output_double(Ub,type_Ub,total_size_out);
-  dVb = coerce_output_double(Vb,type_Vb,total_size_out);
-
-  if(dUb == NULL || dVb == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"g2fshv: Unable to allocate memory for converting output arrays to double precision");
-    return(NhlFATAL);
-  }
-
+  if(type_Ua != NCL_double) {
+    tmp_Ua = (double*)calloc(nlatanlona,sizeof(double));
+    tmp_Va = (double*)calloc(nlatanlona,sizeof(double));
+    tmp_Ub = (double*)calloc(nlatbnlonb,sizeof(double));
+    tmp_Vb = (double*)calloc(nlatbnlonb,sizeof(double));
+    if(tmp_Ua == NULL || tmp_Va == NULL || tmp_Ub == NULL || tmp_Vb == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"g2fshv: Unable to allocate memory for input/output arrays");
+      return(NhlFATAL);
+    }
+  } 
 /*
  * Determine the workspace size.
  */
@@ -739,43 +837,82 @@ NhlErrorTypes g2fshv_W( void )
  * then return all missing values for that grid.  Otherwise, keep going 
  * and do the regridding.
  */ 
-  lin = lout = 0;
+  index_UVa = index_UVb = 0;
   for(i = 1; i <= total_leftmost; i++) {
+    if(type_Ua != NCL_double) {
+/*
+ * Coerce nlata x nlona subsection of Ua (tmp_Ua) to double.
+ */
+      coerce_subset_input_double(Ua,tmp_Ua,index_UVa,type_Ua,nlatanlona,0,
+                                 &missing_Ua,&missing_dUa);
+    }
+    else {
+      tmp_Ua = &((double*)Ua)[index_UVa];
+    
+    }
+    if(type_Va != NCL_double) {
+/*
+ * Coerce nlata x nlona subsection of Va (tmp_Va) to double.
+ */
+      coerce_subset_input_double(Va,tmp_Va,index_UVa,type_Va,nlatanlona,0,
+                                 &missing_Va,&missing_dVa);
+    }
+    else {
+      tmp_Va = &((double*)Va)[index_UVa];
+    }
+/*
+ * Point output arrays to necessary locations in Ub and Vb if necessary.
+ */
+    if(type_Ub == NCL_double) tmp_Ub = &((double*)Ub)[index_UVb];
+    if(type_Vb == NCL_double) tmp_Vb = &((double*)Vb)[index_UVb];
 /*
  * Check for missing values in the input arrays.
  */
-    found_missing = contains_missing(&dUa[lin],nlatanlona,has_missing_Ua,
+    found_missing = contains_missing(tmp_Ua,nlatanlona,has_missing_Ua,
                                      missing_dUa.doubleval);
     if(found_missing) {
       missing = missing_dUa.doubleval;
     }
     else {
-      found_missing = contains_missing(&dVa[lin],nlatanlona,has_missing_Va,
+      found_missing = contains_missing(tmp_Va,nlatanlona,has_missing_Va,
                                        missing_dVa.doubleval);
       if(found_missing) missing = missing_dVa.doubleval;
     }
     if(found_missing) {
-      for(j = 0; j < nlatbnlonb; j++) {
-        dUb[lout+j] = missing;
-        dVb[lout+j] = missing;
-      }
+      set_subset_output_missing(Ub,index_UVb,type_Ub,nlatbnlonb,missing);
+      set_subset_output_missing(Vb,index_UVb,type_Vb,nlatbnlonb,missing);
       NhlPError(NhlWARNING,NhlEUNKNOWN,"g2fshv: One or more 2-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
     }
     else {
 /*
  * Call the f77 version of 'trvsph' with the full argument list.
  */
-      NGCALLF(dtrvsph77,DTRVSPH77)(&intl,igrida,&nlona,&nlata,
-                                   &dUa[lin],&dVa[lin],
-                                   igridb,&nlonb,&nlatb,&dUb[lout],&dVb[lout],
+      NGCALLF(dtrvsph77,DTRVSPH77)(&intl,igrida,&nlona,&nlata,tmp_Ua,tmp_Va,
+                                   igridb,&nlonb,&nlatb,tmp_Ub,tmp_Vb,
                                    &twave,work,&lwork,wsave,&lsave,dwork,
                                    &ldwork,&ier);
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"g2fshv: ier = %d\n", ier );
       }
+/*
+ * Copy output values from temporary array "tmp_Ub" to final array "Ub".
+ */
+      if(type_Ub != NCL_double) {
+        for(j = 0; j < nlatbnlonb; j++) {
+          ((float*)Ub)[index_UVb+j] = (float)(tmp_Ub[j]);
+        }
+      } 
+/*
+ * Copy output values from temporary array "tmp_Vb" to final array "Vb".
+ */
+      if(type_Vb != NCL_double) {
+        for(j = 0; j < nlatbnlonb; j++) {
+          ((float*)Vb)[index_UVb+j] = (float)(tmp_Vb[j]);
+        }
+      } 
     }
-    lin  += nlatanlona;
-    lout += nlatbnlonb;
+    index_UVa += nlatanlona;
+    index_UVb += nlatbnlonb;
   }
 /*
  * Free workspace arrays.
@@ -783,14 +920,13 @@ NhlErrorTypes g2fshv_W( void )
   NclFree(work);
   NclFree(dwork);
   NclFree(wsave);
-  if((void*)dUa != Ua) NclFree(dUa);
-  if((void*)dVa != Va) NclFree(dVa);
+  if(type_Ua != NCL_double) NclFree(tmp_Ua);
+  if(type_Va != NCL_double) NclFree(tmp_Va);
+  if(type_Ub != NCL_double) NclFree(tmp_Ub);
+  if(type_Vb != NCL_double) NclFree(tmp_Vb);
 /*
  * Return.
  */
-  if(type_Ub == NCL_float) rUb = coerce_output_float(dUb,Ub,total_size_out,1);
-  if(type_Vb == NCL_float) rVb = coerce_output_float(dVb,Vb,total_size_out,1);
-
   return(NhlNOERROR);
 }
 
@@ -801,7 +937,7 @@ NhlErrorTypes f2fshv_W( void )
  * Input array variables
  */
   void *Ua, *Va;
-  double *dUa, *dVa;
+  double *tmp_Ua, *tmp_Va;
   int ndims_Ua, ndims_Va;
   int dsizes_Ua[NCL_MAX_DIMENSIONS], dsizes_Va[NCL_MAX_DIMENSIONS];
   int nlata, nlona, igrida[2];
@@ -813,8 +949,7 @@ NhlErrorTypes f2fshv_W( void )
  * Output array variables
  */
   void *Ub, *Vb;
-  double *dUb, *dVb;
-  float *rUb, *rVb;
+  double *tmp_Ub, *tmp_Vb;
   int ndims_Ub, ndims_Vb;
   int dsizes_Ub[NCL_MAX_DIMENSIONS], dsizes_Vb[NCL_MAX_DIMENSIONS];
   int nlatb, nlonb, igridb[2];
@@ -822,7 +957,7 @@ NhlErrorTypes f2fshv_W( void )
 /*
  * various
  */
-  int twave = 0, intl, i, j, l1, lin, lout, ier=0;
+  int twave = 0, intl, i, j, l1, index_UVa, index_UVb, ier=0;
   int nlatanlona, nlatbnlonb;
   int total_size_in, total_size_out, total_leftmost;
 /*
@@ -931,27 +1066,28 @@ NhlErrorTypes f2fshv_W( void )
 
   intl = 0;
 /*
- * coerce Ua and Va to double.
+ * Coerce missing values.
  */
-  dUa = coerce_input_double(Ua,type_Ua,total_size_in,has_missing_Ua,
-                            &missing_Ua,&missing_dUa,NULL);
-  dVa = coerce_input_double(Va,type_Va,total_size_in,has_missing_Va,
-                            &missing_Va,&missing_dVa,NULL);
-  if(dUa == NULL || dVa == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fshv: Unable to allocate memory for coercing input arrays to double precision");
-    return(NhlFATAL);
-  }
+  coerce_missing(type_Ua,has_missing_Ua,&missing_Ua,&missing_dUa,NULL);
+  coerce_missing(type_Va,has_missing_Va,&missing_Va,&missing_dVa,NULL);
 /*
- * Make sure Ub and Vb are double.
+ * Allocate space for temporary input and output. If the input is not double,
+ * then the output will be float, otherwise the output will be double.
+ * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * of the input and output. We only need to allocate space for them if the
+ * input is not already double, otherwise, we just have them point to the
+ * appropriate locations in Ta and Tb.
  */
-  dUb = coerce_output_double(Ub,type_Ub,total_size_out);
-  dVb = coerce_output_double(Vb,type_Vb,total_size_out);
-
-  if(dUb == NULL || dVb == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fshv: Unable to allocate memory for converting output arrays to double precision");
-    return(NhlFATAL);
-  }
-
+  if(type_Ua != NCL_double) {
+    tmp_Ua = (double*)calloc(nlatanlona,sizeof(double));
+    tmp_Va = (double*)calloc(nlatanlona,sizeof(double));
+    tmp_Ub = (double*)calloc(nlatbnlonb,sizeof(double));
+    tmp_Vb = (double*)calloc(nlatbnlonb,sizeof(double));
+    if(tmp_Ua == NULL || tmp_Va == NULL || tmp_Ub == NULL || tmp_Vb == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fshv: Unable to allocate memory for input/output arrays");
+      return(NhlFATAL);
+    }
+  } 
 /*
  * Determine the workspace size.
  */
@@ -987,43 +1123,83 @@ NhlErrorTypes f2fshv_W( void )
  * then return all missing values for that grid.  Otherwise, keep going 
  * and do the regridding.
  */ 
-  lin = lout = 0;
+  index_UVa = index_UVb = 0;
   for(i = 1; i <= total_leftmost; i++) {
+    if(type_Ua != NCL_double) {
+/*
+ * Coerce nlata x nlona subsection of Ua (tmp_Ua) to double.
+ */
+      coerce_subset_input_double(Ua,tmp_Ua,index_UVa,type_Ua,nlatanlona,0,
+                                 &missing_Ua,&missing_dUa);
+    }
+    else {
+      tmp_Ua = &((double*)Ua)[index_UVa];
+    
+    }
+    if(type_Va != NCL_double) {
+/*
+ * Coerce nlata x nlona subsection of Va (tmp_Va) to double.
+ */
+      coerce_subset_input_double(Va,tmp_Va,index_UVa,type_Va,nlatanlona,0,
+                                 &missing_Va,&missing_dVa);
+    }
+    else {
+      tmp_Va = &((double*)Va)[index_UVa];
+    }
+/*
+ * Point output arrays to necessary locations in Ub and Vb if necessary.
+ */
+    if(type_Ub == NCL_double) tmp_Ub = &((double*)Ub)[index_UVb];
+    if(type_Vb == NCL_double) tmp_Vb = &((double*)Vb)[index_UVb];
+
 /*
  * Check for missing values in the input arrays.
  */
-    found_missing = contains_missing(&dUa[lin],nlatanlona,has_missing_Ua,
+    found_missing = contains_missing(tmp_Ua,nlatanlona,has_missing_Ua,
                                      missing_dUa.doubleval);
     if(found_missing) {
       missing = missing_dUa.doubleval;
     }
     else {
-      found_missing = contains_missing(&dVa[lin],nlatanlona,has_missing_Va,
+      found_missing = contains_missing(tmp_Va,nlatanlona,has_missing_Va,
                                        missing_dVa.doubleval);
       if(found_missing) missing = missing_dVa.doubleval;
     }
     if(found_missing) {
-      for(j = 0; j < nlatbnlonb; j++) {
-        dUb[lout+j] = missing;
-        dVb[lout+j] = missing;
-      }
+      set_subset_output_missing(Ub,index_UVb,type_Ub,nlatbnlonb,missing);
+      set_subset_output_missing(Vb,index_UVb,type_Vb,nlatbnlonb,missing);
       NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fshv: One or more 2-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
     }
     else {
 /*
  * Call the f77 version of 'trvsph' with the full argument list.
  */
-      NGCALLF(dtrvsph77,DTRVSPH77)(&intl,igrida,&nlona,&nlata,
-                                   &dUa[lin],&dVa[lin],
-                                   igridb,&nlonb,&nlatb,&dUb[lout],&dVb[lout],
+      NGCALLF(dtrvsph77,DTRVSPH77)(&intl,igrida,&nlona,&nlata,tmp_Ua,tmp_Va,
+                                   igridb,&nlonb,&nlatb,tmp_Ub,tmp_Vb,
                                    &twave,work,&lwork,wsave,&lsave,dwork,
                                    &ldwork,&ier);
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fshv: ier = %d\n", ier );
       }
+/*
+ * Copy output values from temporary array "tmp_Ub" to final array "Ub".
+ */
+      if(type_Ub != NCL_double) {
+        for(j = 0; j < nlatbnlonb; j++) {
+          ((float*)Ub)[index_UVb+j] = (float)(tmp_Ub[j]);
+        }
+      } 
+/*
+ * Copy output values from temporary array "tmp_Vb" to final array "Vb".
+ */
+      if(type_Vb != NCL_double) {
+        for(j = 0; j < nlatbnlonb; j++) {
+          ((float*)Vb)[index_UVb+j] = (float)(tmp_Vb[j]);
+        }
+      } 
     }
-    lin  += nlatanlona;
-    lout += nlatbnlonb;
+    index_UVa += nlatanlona;
+    index_UVb += nlatbnlonb;
   }
 /*
  * Free workspace arrays.
@@ -1031,24 +1207,23 @@ NhlErrorTypes f2fshv_W( void )
   NclFree(work);
   NclFree(dwork);
   NclFree(wsave);
-  if((void*)dUa != Ua) NclFree(dUa);
-  if((void*)dVa != Va) NclFree(dVa);
+  if(type_Ua != NCL_double) NclFree(tmp_Ua);
+  if(type_Va != NCL_double) NclFree(tmp_Va);
+  if(type_Ub != NCL_double) NclFree(tmp_Ub);
+  if(type_Vb != NCL_double) NclFree(tmp_Vb);
 /*
  * Return.
  */
-  if(type_Ub == NCL_float) rUb = coerce_output_float(dUb,Ub,total_size_out,1);
-  if(type_Vb == NCL_float) rVb = coerce_output_float(dVb,Vb,total_size_out,1);
-
   return(NhlNOERROR);
 }
 
 NhlErrorTypes fo2fshv_W( void )
 {
 /*
- * Input array vaiables
+ * Input array variables
  */
   void *uoff, *voff;
-  double *duoff, *dvoff;
+  double *tmp_uoff, *tmp_voff;
   int ndims_uoff, ndims_voff;
   int dsizes_uoff[NCL_MAX_DIMENSIONS], dsizes_voff[NCL_MAX_DIMENSIONS];
   int jlat, jlat1, ilon, ilon2, jlatilon,jlat1ilon;
@@ -1060,8 +1235,7 @@ NhlErrorTypes fo2fshv_W( void )
  * Output array variables
  */
   void *ureg, *vreg;
-  double *dureg, *dvreg;
-  float *rureg, *rvreg;
+  double *tmp_ureg, *tmp_vreg;
   int ndims_ureg, ndims_vreg;
   int dsizes_ureg[NCL_MAX_DIMENSIONS], dsizes_vreg[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_ureg, type_vreg;
@@ -1069,7 +1243,7 @@ NhlErrorTypes fo2fshv_W( void )
 /*
  * various
  */
-  int i, j, lin, lout, ioff, ier=0;
+  int i, j, index_uvoff, index_uvreg, ioff, ier=0;
   int total_size_in, total_size_out, total_leftmost;
 /*
  * Workspace variables
@@ -1178,27 +1352,31 @@ NhlErrorTypes fo2fshv_W( void )
     return(NhlFATAL);
   }
 /*
- * Coerce uoff and voff.
+ * Coerce missing values.
  */
-  duoff = coerce_input_double(uoff,type_uoff,total_size_in,has_missing_uoff,
-                              &missing_uoff,&missing_duoff,NULL);
-  dvoff = coerce_input_double(voff,type_voff,total_size_in,has_missing_voff,
-                              &missing_voff,&missing_dvoff,NULL);
-  if(duoff == NULL || dvoff == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"fo2fshv: Unable to allocate memory for coercing input arrays to double precision");
-    return(NhlFATAL);
-  }
+  coerce_missing(type_uoff,has_missing_uoff,&missing_uoff,&missing_duoff,
+                 NULL);
+  coerce_missing(type_voff,has_missing_voff,&missing_voff,&missing_duoff,
+                 NULL);
 /*
- * Make sure ureg and vreg are double.
+ * Allocate space for temporary input and output. If the input is not double,
+ * then the output will be float, otherwise the output will be double.
+ * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * of the input and output. We only need to allocate space for them if the
+ * input is not already double, otherwise, we just have them point to the
+ * appropriate locations in uoff/voff and ureg/vreg.
  */
-  dureg = coerce_output_double(ureg,type_ureg,total_size_out);
-  dvreg = coerce_output_double(vreg,type_vreg,total_size_out);
-
-  if(dureg == NULL || dvreg == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"fo2fshv: Unable to allocate memory for coercing output arrays to double precision");
-    return(NhlFATAL);
-  }
-
+  if(type_uoff != NCL_double) {
+    tmp_uoff = (double*)calloc(jlatilon,sizeof(double));
+    tmp_voff = (double*)calloc(jlatilon,sizeof(double));
+    tmp_ureg = (double*)calloc(jlat1ilon,sizeof(double));
+    tmp_vreg = (double*)calloc(jlat1ilon,sizeof(double));
+    if(tmp_uoff == NULL || tmp_voff == NULL || 
+       tmp_ureg == NULL || tmp_vreg == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"fo2fshv: Unable to allocate memory for input/output arrays");
+      return(NhlFATAL);
+    }
+  } 
 /*
  * Determine the workspace size.
  */
@@ -1224,58 +1402,95 @@ NhlErrorTypes fo2fshv_W( void )
  * then return all missing values for that grid.  Otherwise, keep going 
  * and do the regridding.
  */ 
-  lin = lout = 0;
+  index_uvoff = index_uvreg = 0;
   for(i = 1; i <= total_leftmost; i++) {
+    if(type_uoff != NCL_double) {
+/*
+ * Coerce jlat x ilon subsection of uoff (tmp_uoff) to double.
+ */
+      coerce_subset_input_double(uoff,tmp_uoff,index_uvoff,type_uoff,jlatilon,
+                                 0,&missing_uoff,&missing_duoff);
+    }
+    else {
+      tmp_uoff = &((double*)uoff)[index_uvoff];
+    
+    }
+    if(type_voff != NCL_double) {
+/*
+ * Coerce jlat x ilon subsection of voff (tmp_voff) to double.
+ */
+      coerce_subset_input_double(voff,tmp_voff,index_uvoff,type_voff,jlatilon,
+                                 0,&missing_voff,&missing_dvoff);
+    }
+    else {
+      tmp_voff = &((double*)voff)[index_uvoff];
+    }
+/*
+ * Point output arrays to necessary locations in ureg and vreg if necessary.
+ */
+    if(type_ureg == NCL_double) tmp_ureg = &((double*)ureg)[index_uvreg];
+    if(type_vreg == NCL_double) tmp_vreg = &((double*)vreg)[index_uvreg];
 /*
  * Check for missing values in the input arrays.
  */
-    found_missing = contains_missing(&duoff[lin],jlatilon,has_missing_uoff,
+    found_missing = contains_missing(tmp_uoff,jlatilon,has_missing_uoff,
                                      missing_duoff.doubleval);
     if(found_missing) {
       missing = missing_duoff.doubleval;
     }
     else {
-      found_missing = contains_missing(&dvoff[lin],jlatilon,has_missing_voff,
+      found_missing = contains_missing(tmp_voff,jlatilon,has_missing_voff,
                                        missing_voff.doubleval);
       if(found_missing) missing = missing_dvoff.doubleval;
     }
     if(found_missing) {
-      for(j = 0; j < jlat1ilon; j++) {
-        dureg[lout+j] = missing;
-        dvreg[lout+j] = missing;
-      }
+      set_subset_output_missing(ureg,index_uvreg,type_ureg,jlat1ilon,missing);
+      set_subset_output_missing(ureg,index_uvreg,type_vreg,jlat1ilon,missing);
       NhlPError(NhlWARNING,NhlEUNKNOWN,"fo2fshv: One or more 2-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
     }
     else {
 /*
  * Call the f77 version of 'f2foshv' with the full argument list.
  */
-      NGCALLF(df2foshv,DF2FOSHV)(&duoff[lin],&dvoff[lin],&ilon,&jlat,
-                                 &dureg[lout],&dvreg[lout],&jlat1,
+      NGCALLF(df2foshv,DF2FOSHV)(tmp_uoff,tmp_voff,&ilon,&jlat,
+                                 tmp_ureg,tmp_vreg,&jlat1,
                                  work,&lwork,wsave,&lsave,&ioff,&ier);
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"fo2fshv: ier = %d\n", ier );
       }
+/*
+ * Copy output values from temporary array "tmp_ureg" to final array "ureg".
+ */
+      if(type_ureg != NCL_double) {
+        for(j = 0; j < jlat1ilon; j++) {
+          ((float*)ureg)[index_uvreg+j] = (float)(tmp_ureg[j]);
+        }
+      } 
+/*
+ * Copy output values from temporary array "tmp_Vb" to final array "Vb".
+ */
+      if(type_vreg != NCL_double) {
+        for(j = 0; j < jlat1ilon; j++) {
+          ((float*)vreg)[index_uvreg+j] = (float)(tmp_vreg[j]);
+        }
+      } 
     }
-    lin  += jlatilon;
-    lout += jlat1ilon;
+    index_uvoff += jlatilon;
+    index_uvreg += jlat1ilon;
   }
 /*
  * Free workspace arrays.
  */
   NclFree(work);
   NclFree(wsave);
-  if((void*)duoff != uoff) NclFree(duoff);
-  if((void*)dvoff != voff) NclFree(dvoff);
+  if(type_uoff != NCL_double) NclFree(tmp_uoff);
+  if(type_voff != NCL_double) NclFree(tmp_voff);
+  if(type_ureg != NCL_double) NclFree(tmp_ureg);
+  if(type_vreg != NCL_double) NclFree(tmp_vreg);
 
 /*
  * Return.
  */
-  if(type_ureg == NCL_float) rureg = coerce_output_float(dureg,ureg,
-                                                         total_size_out,1);
-  if(type_vreg == NCL_float) rvreg = coerce_output_float(dvreg,vreg,
-                                                         total_size_out,1);
-
   return(NhlNOERROR);
 }
 
@@ -1286,7 +1501,7 @@ NhlErrorTypes f2foshv_W( void )
  * Input array vaiables
  */
   void *ureg, *vreg;
-  double *dureg, *dvreg;
+  double *tmp_ureg, *tmp_vreg;
   int ndims_ureg, ndims_vreg;
   int dsizes_ureg[NCL_MAX_DIMENSIONS], dsizes_vreg[NCL_MAX_DIMENSIONS];
   int jlat, jlat1, ilon, ilon2, jlatilon, jlat1ilon;
@@ -1298,8 +1513,7 @@ NhlErrorTypes f2foshv_W( void )
  * Output array variables
  */
   void *uoff, *voff;
-  double *duoff, *dvoff;
-  float *ruoff, *rvoff;
+  double *tmp_uoff, *tmp_voff;
   int ndims_uoff, ndims_voff;
   int dsizes_uoff[NCL_MAX_DIMENSIONS], dsizes_voff[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_uoff, type_voff;
@@ -1307,7 +1521,7 @@ NhlErrorTypes f2foshv_W( void )
 /*
  * various
  */
-  int i, j, lin, lout, ioff, ier=0;
+  int i, j, index_uvreg, index_uvoff, ioff, ier=0;
   int total_size_in, total_size_out, total_leftmost;
 /*
  * Workspace variables
@@ -1419,26 +1633,31 @@ NhlErrorTypes f2foshv_W( void )
     return(NhlFATAL);
   }
 /*
- * Coerce uoff and voff.
+ * Coerce missing values.
  */
-  dureg = coerce_input_double(ureg,type_ureg,total_size_in,has_missing_ureg,
-                              &missing_ureg,&missing_dureg,NULL);
-  dvreg = coerce_input_double(vreg,type_vreg,total_size_in,has_missing_vreg,
-                              &missing_vreg,&missing_dvreg,NULL);
-  if(dureg == NULL || dvreg == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2foshv: Unable to allocate memory for coercing input arrays to double precision");
-    return(NhlFATAL);
-  }
+  coerce_missing(type_ureg,has_missing_ureg,&missing_ureg,&missing_dureg,
+                 NULL);
+  coerce_missing(type_vreg,has_missing_vreg,&missing_vreg,&missing_dvreg,
+                 NULL);
 /*
- * Make sure uoff and voff are double.
+ * Allocate space for temporary input and output. If the input is not double,
+ * then the output will be float, otherwise the output will be double.
+ * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * of the input and output. We only need to allocate space for them if the
+ * input is not already double, otherwise, we just have them point to the
+ * appropriate locations in uoff/voff and ureg/vreg.
  */
-  duoff = coerce_output_double(uoff,type_uoff,total_size_out);
-  dvoff = coerce_output_double(voff,type_voff,total_size_out);
-
-  if(duoff == NULL || dvoff == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2foshv: Unable to allocate memory for coercing output arrays to double precision");
-    return(NhlFATAL);
-  }
+  if(type_ureg != NCL_double) {
+    tmp_uoff = (double*)calloc(jlatilon,sizeof(double));
+    tmp_voff = (double*)calloc(jlatilon,sizeof(double));
+    tmp_ureg = (double*)calloc(jlat1ilon,sizeof(double));
+    tmp_vreg = (double*)calloc(jlat1ilon,sizeof(double));
+    if(tmp_uoff == NULL || tmp_voff == NULL || 
+       tmp_ureg == NULL || tmp_vreg == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2foshv: Unable to allocate memory for input/output arrays");
+      return(NhlFATAL);
+    }
+  } 
 
 /*
  * Determine the workspace size.
@@ -1465,57 +1684,95 @@ NhlErrorTypes f2foshv_W( void )
  * then return all missing values for that grid.  Otherwise, keep going 
  * and do the regridding.
  */ 
-  lin = lout = 0;
+  index_uvreg = index_uvoff = 0;
   for(i = 1; i <= total_leftmost; i++) {
+    if(type_ureg != NCL_double) {
+/*
+ * Coerce jlat1 x ilon subsection of ureg (tmp_ureg) to double.
+ */
+      coerce_subset_input_double(ureg,tmp_ureg,index_uvreg,type_ureg,
+                                 jlat1ilon,0,&missing_ureg,&missing_dureg);
+    }
+    else {
+      tmp_ureg = &((double*)ureg)[index_uvreg];
+    
+    }
+    if(type_vreg != NCL_double) {
+/*
+ * Coerce jlat1 x ilon subsection of vreg (tmp_vreg) to double.
+ */
+      coerce_subset_input_double(vreg,tmp_vreg,index_uvreg,type_vreg,
+                                 jlat1ilon,0,&missing_vreg,&missing_dvreg);
+    }
+    else {
+      tmp_vreg = &((double*)vreg)[index_uvreg];
+    }
+/*
+ * Point output arrays to necessary locations in uoff and voff if necessary.
+ */
+    if(type_uoff == NCL_double) tmp_uoff = &((double*)uoff)[index_uvoff];
+    if(type_voff == NCL_double) tmp_voff = &((double*)voff)[index_uvoff];
 /*
  * Check for missing values in the input arrays.
  */
-    found_missing = contains_missing(&dureg[lin],jlat1ilon,has_missing_ureg,
+    found_missing = contains_missing(tmp_ureg,jlat1ilon,has_missing_ureg,
                                      missing_dureg.doubleval);
     if(found_missing) {
       missing = missing_dureg.doubleval;
     }
     else {
-      found_missing = contains_missing(&dvreg[lin],jlat1ilon,has_missing_vreg,
+      found_missing = contains_missing(tmp_vreg,jlat1ilon,has_missing_vreg,
                                        missing_vreg.doubleval);
       if(found_missing) missing = missing_dvreg.doubleval;
     }
     if(found_missing) {
-      for(j = 0; j < jlatilon; j++) {
-        duoff[lout+j] = missing;
-        dvoff[lout+j] = missing;
-      }
+      set_subset_output_missing(uoff,index_uvoff,type_uoff,jlatilon,missing);
+      set_subset_output_missing(uoff,index_uvoff,type_voff,jlatilon,missing);
       NhlPError(NhlWARNING,NhlEUNKNOWN,"f2foshv: One or more 2-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
     }
     else {
 /*
  * Call the f77 version of 'f2foshv' with the full argument list.
  */
-      NGCALLF(df2foshv,DF2FOSHV)(&duoff[lout],&dvoff[lout],&ilon,&jlat,
-                                 &dureg[lin],&dvreg[lin],&jlat1,
+      NGCALLF(df2foshv,DF2FOSHV)(tmp_uoff,tmp_voff,&ilon,&jlat,
+                                 tmp_ureg,tmp_vreg,&jlat1,
                                  work,&lwork,wsave,&lsave,&ioff,&ier);
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"f2foshv: ier = %d\n", ier );
       }
+/*
+ * Copy output values from temporary array "tmp_uoff" to final array "uoff".
+ */
+      if(type_uoff != NCL_double) {
+        for(j = 0; j < jlatilon; j++) {
+          ((float*)uoff)[index_uvoff+j] = (float)(tmp_uoff[j]);
+        }
+      } 
+/*
+ * Copy output values from temporary array "tmp_Vb" to final array "Vb".
+ */
+      if(type_voff != NCL_double) {
+        for(j = 0; j < jlatilon; j++) {
+          ((float*)voff)[index_uvoff+j] = (float)(tmp_voff[j]);
+        }
+      } 
     }
-    lout += jlatilon;
-    lin  += jlat1ilon;
+    index_uvoff += jlatilon;
+    index_uvreg += jlat1ilon;
   }
 /*
  * Free workspace arrays.
  */
   NclFree(work);
   NclFree(wsave);
-  if((void*)dureg != ureg) NclFree(dureg);
-  if((void*)dvreg != vreg) NclFree(dvreg);
+  if(type_uoff != NCL_double) NclFree(tmp_uoff);
+  if(type_voff != NCL_double) NclFree(tmp_voff);
+  if(type_ureg != NCL_double) NclFree(tmp_ureg);
+  if(type_vreg != NCL_double) NclFree(tmp_vreg);
 
 /*
  * Return.
  */
-  if(type_uoff == NCL_float) ruoff = coerce_output_float(duoff,uoff,
-                                                         total_size_out,1);
-  if(type_voff == NCL_float) rvoff = coerce_output_float(dvoff,voff,
-                                                         total_size_out,1);
   return(NhlNOERROR);
 }
 

@@ -284,8 +284,9 @@ NhlErrorTypes dv2uvf_W( void )
 /*
  * Coerce ddv.
  */
+  coerce_missing(type_dv,has_missing_dv,&missing_dv,&missing_ddv,NULL);
   ddv = coerce_input_double(dv,type_dv,total_size_in,has_missing_dv,
-                            &missing_dv,&missing_ddv,NULL);
+                            &missing_dv,&missing_ddv);
   if(ddv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvf: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
@@ -540,8 +541,9 @@ NhlErrorTypes dv2uvg_W( void )
 /*
  * Coerce dv.
  */
+  coerce_missing(type_dv,has_missing_dv,&missing_dv,&missing_ddv,NULL);
   ddv = coerce_input_double(dv,type_dv,total_size_in,has_missing_dv,
-                            &missing_dv,&missing_ddv,NULL);
+                            &missing_dv,&missing_ddv);
   if(ddv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvg: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
@@ -799,8 +801,9 @@ NhlErrorTypes gradsf_W( void )
 /*
  * Coerce z.
  */
+  coerce_missing(type_z,has_missing_z,&missing_z,&missing_dz,NULL);
   dz = coerce_input_double(z,type_z,total_size_in,has_missing_z,
-                           &missing_z,&missing_dz,NULL);
+                           &missing_z,&missing_dz);
   if(dz == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsf: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
@@ -1045,8 +1048,9 @@ NhlErrorTypes gradsg_W( void )
 /*
  * Coerce z.
  */
+  coerce_missing(type_z,has_missing_z,&missing_z,&missing_dz,NULL);
   dz = coerce_input_double(z,type_z,total_size_in,has_missing_z,&missing_z,
-                           &missing_dz,NULL);
+                           &missing_dz);
   if(dz == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsg: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
@@ -1200,7 +1204,6 @@ NhlErrorTypes igradsf_W( void )
   int ndims_gzx, ndims_gzy;
   NclScalar missing_gzx, missing_gzy, missing_dgzx, missing_dgzy;
   NclBasicDataTypes type_gzx, type_gzy;
-  double missing;
   int has_missing_gzx, has_missing_gzy, found_missing;
   int nt, nlat, nlon, nlatnlon;
 /*
@@ -1298,10 +1301,12 @@ NhlErrorTypes igradsf_W( void )
 /*
  * Coerce gzx and gzy
  */
+  coerce_missing(type_gzx,has_missing_gzx,&missing_gzx,&missing_dgzx,NULL);
+  coerce_missing(type_gzy,has_missing_gzy,&missing_gzy,&missing_dgzy,NULL);
   dgzx = coerce_input_double(gzx,type_gzx,total_size_in,has_missing_gzx,
-                             &missing_gzx,&missing_dgzx,NULL);
+                             &missing_gzx,&missing_dgzx);
   dgzy = coerce_input_double(gzy,type_gzy,total_size_in,has_missing_gzy,
-                             &missing_gzy,&missing_dgzy,NULL);
+                             &missing_gzy,&missing_dgzy);
   if(dgzx == NULL || dgzy == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsf: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -1466,7 +1471,6 @@ NhlErrorTypes igradsF_W( void )
   int ndims_gzx, ndims_gzy;
   NclScalar missing_gzx, missing_gzy, missing_dgzx, missing_dgzy;
   NclBasicDataTypes type_gzx, type_gzy;
-  double missing;
   int has_missing_gzx, has_missing_gzy, found_missing;
   int nt, nlat, nlon, nlatnlon;
 /*
@@ -1531,10 +1535,12 @@ NhlErrorTypes igradsF_W( void )
 /*
  * Coerce gzx and gzy
  */
+  coerce_missing(type_gzx,has_missing_gzx,&missing_gzx,&missing_dgzx,NULL);
+  coerce_missing(type_gzy,has_missing_gzy,&missing_gzy,&missing_dgzy,NULL);
   dgzx = coerce_input_double(gzx,type_gzx,total_size_in,has_missing_gzx,
-                             &missing_gzx,&missing_dgzx,NULL);
+                             &missing_gzx,&missing_dgzx);
   dgzy = coerce_input_double(gzy,type_gzy,total_size_in,has_missing_gzy,
-                             &missing_gzy,&missing_dgzy,NULL);
+                             &missing_gzy,&missing_dgzy);
   if(dgzx == NULL || dgzy == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsF: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -1555,32 +1561,8 @@ NhlErrorTypes igradsF_W( void )
   found_missing = contains_missing(dgzy,total_size_in,has_missing_gzy,
                                    missing_dgzy.doubleval);
   if(found_missing) {
-/*
- * Return all missing values.
- */
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"igradsF: The input arrays cannot contain any missing values");
-
-    if(has_missing_gzx) missing = missing_dgzx.doubleval;
-    else                missing = missing_dgzy.doubleval;
-    if(type_gzx != NCL_double && type_gzy != NCL_double) {
-/*
- * Return float missing values. 
- */
-      rz = coerce_output_float_missing(z,total_size_in,missing);
-      if( rz == NULL ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsF: Unable to allocate memory for coercing output to single precision");
-        return(NhlFATAL);
-      }
-      return(NclReturnValue((void*)rz,ndims_gzx,dsizes_gzx,NULL,NCL_float,0));
-    }
-    else {
-/*
- * Return double missing values. 
- */
-      for(i = 0; i < total_size_in; i++) z[i] = missing;
- 
-      return(NclReturnValue((void*)z,ndims_gzx,dsizes_gzx,NULL,NCL_double,0));
-    }
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsF: The input arrays cannot contain any missing values");
+    return(NhlFATAL);
   }
 /*
  * Determine the workspace size.
@@ -1739,7 +1721,6 @@ NhlErrorTypes igradsg_W( void )
   int ndims_gzx, ndims_gzy;
   NclScalar missing_gzx, missing_gzy, missing_dgzx, missing_dgzy;
   NclBasicDataTypes type_gzx, type_gzy;
-  double missing;
   int has_missing_gzx, has_missing_gzy, found_missing;
   int nt, nlat, nlon, nlatnlon;
 /*
@@ -1837,10 +1818,12 @@ NhlErrorTypes igradsg_W( void )
 /*
  * Coerce gzx and gzy
  */
+  coerce_missing(type_gzx,has_missing_gzx,&missing_gzx,&missing_dgzx,NULL);
+  coerce_missing(type_gzy,has_missing_gzy,&missing_gzy,&missing_dgzy,NULL);
   dgzx = coerce_input_double(gzx,type_gzx,total_size_in,has_missing_gzx,
-                             &missing_gzx,&missing_dgzx,NULL);
+                             &missing_gzx,&missing_dgzx);
   dgzy = coerce_input_double(gzy,type_gzy,total_size_in,has_missing_gzy,
-                             &missing_gzy,&missing_dgzy,NULL);
+                             &missing_gzy,&missing_dgzy);
   if(dgzx == NULL || dgzy == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsg: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -1995,7 +1978,6 @@ NhlErrorTypes igradsG_W( void )
   int ndims_gzx, ndims_gzy;
   NclScalar missing_gzx, missing_gzy, missing_dgzx, missing_dgzy;
   NclBasicDataTypes type_gzx, type_gzy;
-  double missing;
   int has_missing_gzx, has_missing_gzy, found_missing;
   int nt, nlat, nlon, nlatnlon;
 /*
@@ -2060,10 +2042,12 @@ NhlErrorTypes igradsG_W( void )
 /*
  * Coerce gzx and gzy
  */
+  coerce_missing(type_gzx,has_missing_gzx,&missing_gzx,&missing_dgzx,NULL);
+  coerce_missing(type_gzy,has_missing_gzy,&missing_gzy,&missing_dgzy,NULL);
   dgzx = coerce_input_double(gzx,type_gzx,total_size_in,has_missing_gzx,
-                             &missing_gzx,&missing_dgzx,NULL);
+                             &missing_gzx,&missing_dgzx);
   dgzy = coerce_input_double(gzy,type_gzy,total_size_in,has_missing_gzy,
-                             &missing_gzy,&missing_dgzy,NULL);
+                             &missing_gzy,&missing_dgzy);
   if(dgzx == NULL || dgzy == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsG: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -2084,32 +2068,8 @@ NhlErrorTypes igradsG_W( void )
   found_missing = contains_missing(dgzy,total_size_in,has_missing_gzy,
                                    missing_dgzy.doubleval);
   if(found_missing) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"igradsG: The input arrays cannot contain any missing values");
-/*
- * Return all missing values.
- */ 
-    if(has_missing_gzx) missing = missing_dgzx.doubleval;
-    else                missing = missing_dgzy.doubleval;
-
-    if(type_gzx != NCL_double && type_gzy != NCL_double) {
-/*
- * Return float missing values. 
- */
-      rz = coerce_output_float_missing(z,total_size_in,missing);
-      if( rz == NULL ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsG: Unable to allocate memory for coercing output to single precision");
-        return(NhlFATAL);
-      }
-      return(NclReturnValue((void*)rz,ndims_gzx,dsizes_gzx,NULL,NCL_float,0));
-    }
-    else {
-/*
- * Return double missing values. 
- */
-      for(i = 0; i < total_size_in; i++) z[i] = missing;
- 
-      return(NclReturnValue((void*)z,ndims_gzx,dsizes_gzx,NULL,NCL_double,0));
-    }
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsG: The input arrays cannot contain any missing values");
+    return(NhlFATAL);
   }
 /*
  * Determine the workspace size.
@@ -2262,7 +2222,6 @@ NhlErrorTypes ilapsf_W( void )
   int ndims_zlap, ndims_zlmbda;
   NclScalar missing_zlap, missing_zlmbda, missing_dzlap, missing_dzlmbda;
   NclBasicDataTypes type_zlap, type_zlmbda;
-  double missing;
   int has_missing_zlap, has_missing_zlmbda, found_missing;
   int nt, nlat, nlon, nlatnlon;
 /*
@@ -2355,11 +2314,15 @@ NhlErrorTypes ilapsf_W( void )
 /*
  * Coerce zlap and zlmbda.
  */
+  coerce_missing(type_zlap,has_missing_zlap,&missing_zlap,
+                 &missing_dzlap,NULL);
+  coerce_missing(type_zlmbda,has_missing_zlmbda,&missing_zlmbda,
+                 &missing_dzlmbda,NULL);
   dzlap = coerce_input_double(zlap,type_zlap,total_size_in,has_missing_zlap,
-                              &missing_zlap,&missing_dzlap,NULL);
+                              &missing_zlap,&missing_dzlap);
   dzlmbda = coerce_input_double(zlmbda,type_zlmbda,total_size_zlmbda,
                                 has_missing_zlmbda,
-                                &missing_zlmbda,&missing_dzlmbda,NULL);
+                                &missing_zlmbda,&missing_dzlmbda);
   if(dzlap == NULL || dzlmbda == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -2409,15 +2372,8 @@ NhlErrorTypes ilapsf_W( void )
  */
   found_missing = contains_missing(zlmbda2,nt,has_missing_zlmbda,
                                    missing_dzlmbda.doubleval);
-  if(found_missing) {
-    missing = missing_dzlmbda.doubleval;
-  }
-  else {
-    found_missing = contains_missing(dzlap,total_size_in,has_missing_zlap,
-                                     missing_dzlap.doubleval);
-    if(found_missing) missing = missing_dzlap.doubleval;
-  }
-
+  found_missing = contains_missing(dzlap,total_size_in,has_missing_zlap,
+                                   missing_dzlap.doubleval);
   if(found_missing) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: The input arrays cannot contain any missing values");
     return(NhlFATAL);
@@ -2550,7 +2506,6 @@ NhlErrorTypes ilapsF_W( void )
   int ndims_zlap, ndims_zlmbda;
   NclScalar missing_zlap, missing_zlmbda, missing_dzlap, missing_dzlmbda;
   NclBasicDataTypes type_zlap, type_zlmbda;
-  double missing;
   int has_missing_zlap, has_missing_zlmbda, found_missing;
   int nt, nlat, nlon, nlatnlon;
 /*
@@ -2612,11 +2567,15 @@ NhlErrorTypes ilapsF_W( void )
 /*
  * Coerce zlap and zlmbda.
  */
+  coerce_missing(type_zlap,has_missing_zlap,&missing_zlap,
+                 &missing_dzlap,NULL);
+  coerce_missing(type_zlmbda,has_missing_zlmbda,&missing_zlmbda,
+                 &missing_dzlmbda,NULL);
   dzlap = coerce_input_double(zlap,type_zlap,total_size_in,has_missing_zlap,
-                              &missing_zlap,&missing_dzlap,NULL);
+                              &missing_zlap,&missing_dzlap);
   dzlmbda = coerce_input_double(zlmbda,type_zlmbda,total_size_zlmbda,
                                 has_missing_zlmbda,&missing_zlmbda,
-                                &missing_dzlmbda,NULL);
+                                &missing_dzlmbda);
   if(dzlap == NULL || dzlmbda == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -2666,38 +2625,11 @@ NhlErrorTypes ilapsF_W( void )
  */
   found_missing = contains_missing(zlmbda2,nt,has_missing_zlmbda,
                                    missing_dzlmbda.doubleval);
+  found_missing = contains_missing(dzlap,total_size_in,has_missing_zlap,
+                                   missing_dzlap.doubleval);
   if(found_missing) {
-    missing = missing_dzlmbda.doubleval;
-  }
-  else {
-    found_missing = contains_missing(dzlap,total_size_in,has_missing_zlap,
-                                     missing_dzlap.doubleval);
-    if(found_missing) missing = missing_dzlap.doubleval;
-  }
-
-  if(found_missing) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapsF: The input arrays cannot contain any missing values");
-
-    if(type_zlap != NCL_double && type_zlmbda != NCL_double) {
-/*
- * Return float missing values. 
- */
-      rz = coerce_output_float_missing(z,total_size_in,missing);
-      if( rz == NULL ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: Unable to allocate memory for coercing output to single precision");
-        return(NhlFATAL);
-      }
-      return(NclReturnValue((void*)rz,ndims_zlap,dsizes_zlap,NULL,
-                            NCL_float,0));
-    }
-    else {
-/*
- * Return double missing values. 
- */
-      for(i = 0; i < total_size_in; i++) z[i] = missing;
-      return(NclReturnValue((void*)z,ndims_zlap,dsizes_zlap,NULL,
-                            NCL_double,0));
-    }
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: The input arrays cannot contain any missing values");
+    return(NhlFATAL);
   }
 /*
  * Determine the workspace size.
@@ -2845,7 +2777,6 @@ NhlErrorTypes ilapsg_W( void )
   int ndims_zlap, ndims_zlmbda;
   NclScalar missing_zlap, missing_zlmbda, missing_dzlap, missing_dzlmbda;
   NclBasicDataTypes type_zlap, type_zlmbda;
-  double missing;
   int has_missing_zlap, has_missing_zlmbda, found_missing;
   int nt, nlat, nlon, nlatnlon;
 /*
@@ -2938,11 +2869,15 @@ NhlErrorTypes ilapsg_W( void )
 /*
  * Coerce zlap and zlmbda.
  */
+  coerce_missing(type_zlap,has_missing_zlap,&missing_zlap,
+                 &missing_dzlap,NULL);
+  coerce_missing(type_zlmbda,has_missing_zlmbda,&missing_zlmbda,
+                 &missing_dzlmbda,NULL);
   dzlap = coerce_input_double(zlap,type_zlap,total_size_in,has_missing_zlap,
-                              &missing_zlap,&missing_dzlap,NULL);
+                              &missing_zlap,&missing_dzlap);
   dzlmbda = coerce_input_double(zlmbda,type_zlmbda,total_size_zlmbda,
                                 has_missing_zlmbda,&missing_zlmbda,
-                                &missing_dzlmbda,NULL);
+                                &missing_dzlmbda);
   if(dzlap == NULL || dzlmbda == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -2993,15 +2928,8 @@ NhlErrorTypes ilapsg_W( void )
  */
   found_missing = contains_missing(zlmbda2,nt,has_missing_zlmbda,
                                    missing_dzlmbda.doubleval);
-  if(found_missing) {
-    missing = missing_dzlmbda.doubleval;
-  }
-  else {
-    found_missing = contains_missing(dzlap,total_size_in,has_missing_zlap,
-                                     missing_dzlap.doubleval);
-    if(found_missing) missing = missing_dzlap.doubleval;
-  }
-
+  found_missing = contains_missing(dzlap,total_size_in,has_missing_zlap,
+                                   missing_dzlap.doubleval);
   if(found_missing) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: The input arrays cannot contain any missing values");
     return(NhlFATAL);
@@ -3135,7 +3063,6 @@ NhlErrorTypes ilapsG_W( void )
   int ndims_zlap, ndims_zlmbda;
   NclScalar missing_zlap, missing_zlmbda, missing_dzlap, missing_dzlmbda;
   NclBasicDataTypes type_zlap, type_zlmbda;
-  double missing;
   int has_missing_zlap, has_missing_zlmbda, found_missing;
   int nt, nlat, nlon, nlatnlon;
 /*
@@ -3198,11 +3125,15 @@ NhlErrorTypes ilapsG_W( void )
 /*
  * Coerce zlap and zlmbda.
  */
+  coerce_missing(type_zlap,has_missing_zlap,&missing_zlap,
+                 &missing_dzlap,NULL);
+  coerce_missing(type_zlmbda,has_missing_zlmbda,
+                 &missing_zlmbda,&missing_dzlmbda,NULL);
   dzlap = coerce_input_double(zlap,type_zlap,total_size_in,has_missing_zlap,
-                              &missing_zlap,&missing_dzlap,NULL);
+                              &missing_zlap,&missing_dzlap);
   dzlmbda = coerce_input_double(zlmbda,type_zlmbda,total_size_zlmbda,
                                 has_missing_zlmbda,&missing_zlmbda,
-                                &missing_dzlmbda,NULL);
+                                &missing_dzlmbda);
   if(dzlap == NULL || dzlmbda == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -3252,38 +3183,11 @@ NhlErrorTypes ilapsG_W( void )
  */
   found_missing = contains_missing(zlmbda2,nt,has_missing_zlmbda,
                                    missing_dzlmbda.doubleval);
+  found_missing = contains_missing(dzlap,total_size_in,has_missing_zlap,
+                                   missing_dzlap.doubleval);
   if(found_missing) {
-    missing = missing_dzlmbda.doubleval;
-  }
-  else {
-    found_missing = contains_missing(dzlap,total_size_in,has_missing_zlap,
-                                     missing_dzlap.doubleval);
-    if(found_missing) missing = missing_dzlap.doubleval;
-  }
-
-  if(found_missing) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapsG: The input arrays cannot contain any missing values");
-
-    if(type_zlap != NCL_double && type_zlmbda != NCL_double) {
-/*
- * Return float missing values. 
- */
-      rz = coerce_output_float_missing(z,total_size_in,missing);
-      if( rz == NULL ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: Unable to allocate memory for coercing output to single precision");
-        return(NhlFATAL);
-      }
-      return(NclReturnValue((void*)rz,ndims_zlap,dsizes_zlap,NULL,
-                            NCL_float,0));
-    }
-    else {
-/*
- * Return double missing values. 
- */
-      for(i = 0; i < total_size_in; i++) z[i] = missing;
-      return(NclReturnValue((void*)z,ndims_zlap,dsizes_zlap,NULL,
-                            NCL_double,0));
-    }
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: The input arrays cannot contain any missing values");
+    return(NhlFATAL);
   }
 /*
  * Determine the workspace size.
@@ -3424,7 +3328,6 @@ NhlErrorTypes ilapvf_W( void )
   int ndims_vlap, dsizes_vlap[NCL_MAX_DIMENSIONS];
   NclScalar missing_ulap, missing_vlap, missing_dulap, missing_dvlap;
   NclBasicDataTypes type_ulap, type_vlap;
-  double missing;
   int has_missing_ulap, has_missing_vlap, found_missing;
 /*
  * Output array variables
@@ -3531,10 +3434,14 @@ NhlErrorTypes ilapvf_W( void )
 /*
  * Coerce ulap and vlap.
  */
+  coerce_missing(type_ulap,has_missing_ulap,&missing_ulap,&missing_dulap,
+                 NULL);
+  coerce_missing(type_vlap,has_missing_vlap,&missing_vlap,&missing_dvlap,
+                 NULL);
   dulap = coerce_input_double(ulap,type_ulap,total_size_in,has_missing_ulap,
-                              &missing_ulap,&missing_dulap,NULL);
+                              &missing_ulap,&missing_dulap);
   dvlap = coerce_input_double(vlap,type_vlap,total_size_in,has_missing_vlap,
-                              &missing_vlap,&missing_dvlap,NULL);
+                              &missing_vlap,&missing_dvlap);
   if( dulap == NULL || dvlap == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvf: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -3698,7 +3605,6 @@ NhlErrorTypes ilapvg_W( void )
   int ndims_vlap, dsizes_vlap[NCL_MAX_DIMENSIONS];
   NclScalar missing_ulap, missing_vlap, missing_dulap, missing_dvlap;
   NclBasicDataTypes type_ulap, type_vlap;
-  double missing;
   int has_missing_ulap, has_missing_vlap, found_missing;
 /*
  * Output array variables
@@ -3805,10 +3711,14 @@ NhlErrorTypes ilapvg_W( void )
 /*
  * Coerce ulap and vlap.
  */
+  coerce_missing(type_ulap,has_missing_ulap,&missing_ulap,&missing_dulap,
+                 NULL);
+  coerce_missing(type_vlap,has_missing_vlap,&missing_vlap,&missing_dvlap,
+                 NULL);
   dulap = coerce_input_double(ulap,type_ulap,total_size_in,has_missing_ulap,
-                              &missing_ulap,&missing_dulap,NULL);
+                              &missing_ulap,&missing_dulap);
   dvlap = coerce_input_double(vlap,type_vlap,total_size_in,has_missing_vlap,
-                              &missing_vlap,&missing_dvlap,NULL);
+                              &missing_vlap,&missing_dvlap);
   if( dulap == NULL || dvlap == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvg: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -4050,8 +3960,9 @@ NhlErrorTypes lapsf_W( void )
 /*
  * Coerce z.
  */
+  coerce_missing(type_z,has_missing_z,&missing_z,&missing_dz,NULL);
   dz = coerce_input_double(z,type_z,total_size_in,has_missing_z,
-                           &missing_z,&missing_dz,NULL);
+                           &missing_z,&missing_dz);
   if(dz == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsf: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
@@ -4254,8 +4165,9 @@ NhlErrorTypes lapsF_W( void )
 /*
  * Coerce z.
  */
+  coerce_missing(type_z,has_missing_z,&missing_z,&missing_dz,NULL);
   dz = coerce_input_double(z,type_z,total_size_in,has_missing_z,
-                           &missing_z,&missing_dz,NULL);
+                           &missing_z,&missing_dz);
   if(dz == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsF: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
@@ -4266,31 +4178,8 @@ NhlErrorTypes lapsF_W( void )
   found_missing = contains_missing(dz,total_size_in,has_missing_z,
                                    missing_dz.doubleval);
   if(found_missing) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapsF: The input arrays cannot contain any missing values");
-/*
- * Coerce values back to float if necessary.
- */
-    if(type_z != NCL_double) {
-/*
- * Return float missing values. 
- */
-      rzlap = coerce_output_float_missing(zlap,total_size_in,
-                                          missing_dz.doubleval);
-      if( rzlap == NULL ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsF: Unable to allocate memory for coercing output to single precision");
-        return(NhlFATAL);
-      }
-      return(NclReturnValue((void*)rzlap,ndims_z,dsizes_z,NULL,
-                            NCL_float,0));
-    }
-    else {
-/*
- * Return double missing values. 
- */
-      for(i = 0; i < total_size_in; i++) zlap[i] = missing_dz.doubleval;
-      return(NclReturnValue((void*)zlap,ndims_z,dsizes_z,NULL,
-                            NCL_double,0));
-    }
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsF: The input arrays cannot contain any missing values");
+    return(NhlFATAL);
   }
 /*
  * Determine the workspace size.
@@ -4507,8 +4396,9 @@ NhlErrorTypes lapsg_W( void )
 /*
  * Coerce z.
  */
+  coerce_missing(type_z,has_missing_z,&missing_z,&missing_dz,NULL);
   dz = coerce_input_double(z,type_z,total_size_in,has_missing_z,
-                           &missing_z,&missing_dz,NULL);
+                           &missing_z,&missing_dz);
   if(dz == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsg: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
@@ -4711,8 +4601,9 @@ NhlErrorTypes lapsG_W( void )
 /*
  * Coerce z.
  */
+  coerce_missing(type_z,has_missing_z,&missing_z,&missing_dz,NULL);
   dz = coerce_input_double(z,type_z,total_size_in,has_missing_z,
-                           &missing_z,&missing_dz,NULL);
+                           &missing_z,&missing_dz);
   if(dz == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsG: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
@@ -4723,31 +4614,8 @@ NhlErrorTypes lapsG_W( void )
   found_missing = contains_missing(dz,total_size_in,has_missing_z,
                                    missing_dz.doubleval);
   if(found_missing) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapsG: The input arrays cannot contain any missing values");
-/*
- * Coerce values back to float if necessary.
- */
-    if(type_z != NCL_double) {
-/*
- * Return float missing values. 
- */
-      rzlap = coerce_output_float_missing(zlap,total_size_in,
-                                          missing_dz.doubleval);
-      if( rzlap == NULL ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsG: Unable to allocate memory for coercing output to single precision");
-        return(NhlFATAL);
-      }
-      return(NclReturnValue((void*)rzlap,ndims_z,dsizes_z,NULL,
-                            NCL_float,0));
-    }
-    else {
-/*
- * Return double missing values. 
- */
-      for(i = 0; i < total_size_in; i++) zlap[i] = missing_dz.doubleval;
-      return(NclReturnValue((void*)zlap,ndims_z,dsizes_z,NULL,
-                            NCL_double,0));
-    }
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsG: The input arrays cannot contain any missing values");
+    return(NhlFATAL);
   }
 /*
  * Determine the workspace size.
@@ -4881,7 +4749,6 @@ NhlErrorTypes lapvf_W( void )
   int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
   int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
-  double missing;
   int has_missing_u, has_missing_v, found_missing;
   NclBasicDataTypes type_u, type_v;
 /*
@@ -4989,10 +4856,12 @@ NhlErrorTypes lapvf_W( void )
 /*
  * Coerce u and v.
  */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
-                           &missing_u,&missing_du,NULL);
+                           &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
-                           &missing_v,&missing_dv,NULL);
+                           &missing_v,&missing_dv);
   if(du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvf: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -5262,10 +5131,12 @@ NhlErrorTypes lapvg_W( void )
 /*
  * Coerce u and v.
  */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
-                           &missing_u,&missing_du,NULL);
+                           &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
-                           &missing_v,&missing_dv,NULL);
+                           &missing_v,&missing_dv);
   if(du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvg: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -5429,7 +5300,6 @@ NhlErrorTypes uv2sfvpf_W( void )
   int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
-  double missing;
   int has_missing_u, has_missing_v, found_missing;
 /*
  * Output array variables
@@ -5536,10 +5406,12 @@ NhlErrorTypes uv2sfvpf_W( void )
 /*
  * Coerce u and v.
  */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
-                           &missing_u,&missing_du,NULL);
+                           &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
-                           &missing_v,&missing_dv,NULL);
+                           &missing_v,&missing_dv);
   if( du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpf: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -5806,10 +5678,12 @@ NhlErrorTypes uv2sfvpg_W( void )
 /*
  * Coerce u and v.
  */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
-                           &missing_u,&missing_du,NULL);
+                           &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
-                           &missing_v,&missing_dv,NULL);
+                           &missing_v,&missing_dv);
   if( du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpg: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -6076,10 +5950,12 @@ NhlErrorTypes lderuvf_W( void )
 /*
  * Coerce u and v.
  */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
-                           &missing_u,&missing_du,NULL);
+                           &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
-                           &missing_v,&missing_dv,NULL);
+                           &missing_v,&missing_dv);
   if( du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvf: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -6347,10 +6223,12 @@ NhlErrorTypes lderuvg_W( void )
 /*
  * Coerce u and v.
  */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
-                           &missing_u,&missing_du,NULL);
+                           &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
-                           &missing_v,&missing_dv,NULL);
+                           &missing_v,&missing_dv);
   if( du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvg: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -6607,10 +6485,12 @@ NhlErrorTypes uv2dvf_W( void )
 /*
  * Coerce u and v.
  */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
-                           &missing_u,&missing_du,NULL);
+                           &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
-                           &missing_v,&missing_dv,NULL);
+                           &missing_v,&missing_dv);
   if( du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvf: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -6770,7 +6650,6 @@ NhlErrorTypes uv2dvF_W( void )
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v, found_missing;
-  double missing;
 /*
  * Output array variables
  */
@@ -6841,10 +6720,12 @@ NhlErrorTypes uv2dvF_W( void )
 /*
  * Coerce u and v.
  */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
-                           &missing_u,&missing_du,NULL);
+                           &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
-                           &missing_v,&missing_dv,NULL);
+                           &missing_v,&missing_dv);
   if( du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvF: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -6857,30 +6738,8 @@ NhlErrorTypes uv2dvF_W( void )
   found_missing = contains_missing(dv,total_size_in,has_missing_v,
                                    missing_dv.doubleval);
   if(found_missing) {
-    if(has_missing_u) missing = missing_du.doubleval;
-    else              missing = missing_dv.doubleval;
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2dvF: The input arrays cannot contain any missing values");
-/*
- * Coerce values back to float if necessary.
- */
-    if(type_u != NCL_double && type_v != NCL_double) {
-/*
- * Return float missing values. 
- */
-      rdv = coerce_output_float_missing(ddv,total_size_in,missing);
-      if( rdv == NULL ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvF: Unable to allocate memory for coercing output to single precision");
-        return(NhlFATAL);
-      }
-      return(NclReturnValue((void*)rdv,ndims_u,dsizes_u,NULL,NCL_float,0));
-    }
-    else {
-/*
- * Return double missing values. 
- */
-      for(i = 0; i < total_size_in; i++) ddv[i] = missing;
-      return(NclReturnValue((void*)ddv,ndims_u,dsizes_u,NULL,NCL_double,0));
-    }
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvF: The input arrays cannot contain any missing values");
+    return(NhlFATAL);
   }
 /*
  * Determine the workspace size.
@@ -7125,10 +6984,12 @@ NhlErrorTypes uv2dvg_W( void )
 /*
  * Coerce u and v.
  */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
-                           &missing_u,&missing_du,NULL);
+                           &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
-                           &missing_v,&missing_dv,NULL);
+                           &missing_v,&missing_dv);
   if( du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvg: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -7287,7 +7148,6 @@ NhlErrorTypes uv2dvG_W( void )
   int ndims_u, ndims_v;
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
-  double missing;
   int has_missing_u, has_missing_v, found_missing;
 /*
  * Output array variables
@@ -7359,10 +7219,12 @@ NhlErrorTypes uv2dvG_W( void )
 /*
  * Coerce u and v.
  */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
-                           &missing_u,&missing_du,NULL);
+                           &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
-                           &missing_v,&missing_dv,NULL);
+                           &missing_v,&missing_dv);
   if( du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrg: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -7375,30 +7237,8 @@ NhlErrorTypes uv2dvG_W( void )
   found_missing = contains_missing(dv,total_size_in,has_missing_v,
                                    missing_dv.doubleval);
   if(found_missing) {
-    if(has_missing_u) missing = missing_du.doubleval;
-    else              missing = missing_dv.doubleval;
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2dvG: The input arrays cannot contain any missing values");
-/*
- * Coerce values back to float if necessary.
- */
-    if(type_u != NCL_double && type_v != NCL_double) {
-/*
- * Return float missing values. 
- */
-      rdv = coerce_output_float_missing(ddv,total_size_in,missing);
-      if( rdv == NULL ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvG: Unable to allocate memory for coercing output to single precision");
-        return(NhlFATAL);
-      }
-      return(NclReturnValue((void*)rdv,ndims_u,dsizes_u,NULL,NCL_float,0));
-    }
-    else {
-/*
- * Return double missing values. 
- */
-      for(i = 0; i < total_size_in; i++) ddv[i] = missing;
-      return(NclReturnValue((void*)ddv,ndims_u,dsizes_u,NULL,NCL_double,0));
-    }
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvG: The input arrays cannot contain any missing values");
+    return(NhlFATAL);
   }
 /*
  * Determine the workspace size.
@@ -7547,7 +7387,6 @@ NhlErrorTypes uv2vrf_W( void )
   int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
-  double missing;
   int has_missing_u, has_missing_v, found_missing;
 /*
  * Output array variables
@@ -7643,10 +7482,12 @@ NhlErrorTypes uv2vrf_W( void )
 /*
  * Coerce u and v.
  */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
-                           &missing_u,&missing_du,NULL);
+                           &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
-                           &missing_v,&missing_dv,NULL);
+                           &missing_v,&missing_dv);
   if( du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrf: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -7806,7 +7647,6 @@ NhlErrorTypes uv2vrF_W( void )
   int ndims_u, ndims_v;
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
-  double missing;
   int has_missing_u, has_missing_v, found_missing;
 /*
  * Output array variables
@@ -7878,10 +7718,12 @@ NhlErrorTypes uv2vrF_W( void )
 /*
  * Coerce u and v.
  */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
-                           &missing_u,&missing_du,NULL);
+                           &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
-                           &missing_v,&missing_dv,NULL);
+                           &missing_v,&missing_dv);
   if( du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrF: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -7894,30 +7736,8 @@ NhlErrorTypes uv2vrF_W( void )
   found_missing = contains_missing(dv,total_size_in,has_missing_v,
                                    missing_dv.doubleval);
   if(found_missing) {
-    if(has_missing_u) missing = missing_du.doubleval;
-    else              missing = missing_dv.doubleval;
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrF: The input arrays cannot contain any missing values");
-/*
- * Coerce values back to float if necessary.
- */
-    if(type_u != NCL_double && type_v != NCL_double) {
-/*
- * Return float missing values. 
- */
-      rvort = coerce_output_float_missing(dvort,total_size_in,missing);
-      if( rvort == NULL ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrF: Unable to allocate memory for coercing output to single precision");
-        return(NhlFATAL);
-      }
-      return(NclReturnValue((void*)rvort,ndims_u,dsizes_u,NULL,NCL_float,0));
-    }
-    else {
-/*
- * Return double missing values. 
- */
-      for(i = 0; i < total_size_in; i++) dvort[i] = missing;
-      return(NclReturnValue((void*)dvort,ndims_u,dsizes_u,NULL,NCL_double,0));
-    }
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrF: The input arrays cannot contain any missing values");
+    return(NhlFATAL);
   }
 /*
  * Determine the workspace size.
@@ -8070,7 +7890,6 @@ NhlErrorTypes uv2vrg_W( void )
   int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
-  double missing;
   int has_missing_u, has_missing_v, found_missing;
 /*
  * Output array variables
@@ -8166,10 +7985,12 @@ NhlErrorTypes uv2vrg_W( void )
 /*
  * Coerce u and v.
  */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
-                           &missing_u,&missing_du,NULL);
+                           &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
-                           &missing_v,&missing_dv,NULL);
+                           &missing_v,&missing_dv);
   if( du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrg: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -8329,7 +8150,6 @@ NhlErrorTypes uv2vrG_W( void )
   int ndims_u, ndims_v;
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
-  double missing;
   int has_missing_u, has_missing_v, found_missing;
 /*
  * Output array variables
@@ -8401,10 +8221,12 @@ NhlErrorTypes uv2vrG_W( void )
 /*
  * Coerce u and v.
  */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
-                           &missing_u,&missing_du,NULL);
+                           &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
-                           &missing_v,&missing_dv,NULL);
+                           &missing_v,&missing_dv);
   if( du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrG: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -8417,30 +8239,8 @@ NhlErrorTypes uv2vrG_W( void )
   found_missing = contains_missing(dv,total_size_in,has_missing_v,
                                    missing_dv.doubleval);
   if(found_missing) {
-    if(has_missing_u) missing = missing_du.doubleval;
-    else              missing = missing_dv.doubleval;
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrG: The input arrays cannot contain any missing values");
-/*
- * Coerce values back to float if necessary.
- */
-    if(type_u != NCL_double && type_v != NCL_double) {
-/*
- * Return float missing values. 
- */
-      rvort = coerce_output_float_missing(dvort,total_size_in,missing);
-      if( rvort == NULL ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrG: Unable to allocate memory for coercing output to single precision");
-        return(NhlFATAL);
-      }
-      return(NclReturnValue((void*)rvort,ndims_u,dsizes_u,NULL,NCL_float,0));
-    }
-    else {
-/*
- * Return double missing values. 
- */
-      for(i = 0; i < total_size_in; i++) dvort[i] = missing;
-      return(NclReturnValue((void*)dvort,ndims_u,dsizes_u,NULL,NCL_double,0));
-    }
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrG: The input arrays cannot contain any missing values");
+    return(NhlFATAL);
   }
 /*
  * Determine the workspace size.
@@ -8698,10 +8498,12 @@ NhlErrorTypes uv2vrdvf_W( void )
 /*
  * Coerce u and v.
  */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
-                           &missing_u,&missing_du,NULL);
+                           &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
-                           &missing_v,&missing_dv,NULL);
+                           &missing_v,&missing_dv);
   if( du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvf: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -8969,10 +8771,12 @@ NhlErrorTypes uv2vrdvg_W( void )
 /*
  * Coerce u and v.
  */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   du = coerce_input_double(u,type_u,total_size_in,has_missing_u,
-                           &missing_u,&missing_du,NULL);
+                           &missing_u,&missing_du);
   dv = coerce_input_double(v,type_v,total_size_in,has_missing_v,
-                           &missing_v,&missing_dv,NULL);
+                           &missing_v,&missing_dv);
   if( du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvg: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -9224,8 +9028,10 @@ NhlErrorTypes vr2uvf_W( void )
 /*
  * Coerce dvort.
  */
+  coerce_missing(type_vort,has_missing_vort,&missing_vort,&missing_dvort,
+                 NULL);
   dvort = coerce_input_double(vort,type_vort,total_size_in,has_missing_vort,
-                              &missing_vort,&missing_dvort,NULL);
+                              &missing_vort,&missing_dvort);
   if(dvort == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvf: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
@@ -9472,8 +9278,10 @@ NhlErrorTypes vr2uvg_W( void )
 /*
  * Coerce dvort.
  */
+  coerce_missing(type_vort,has_missing_vort,&missing_vort,&missing_dvort,
+                 NULL);
   dvort = coerce_input_double(vort,type_vort,total_size_in,has_missing_vort,
-                              &missing_vort,&missing_dvort,NULL);
+                              &missing_vort,&missing_dvort);
   if(dvort == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvg: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
@@ -9629,7 +9437,6 @@ NhlErrorTypes vrdv2uvf_W( void )
   int ndims_dv, dsizes_dv[NCL_MAX_DIMENSIONS];
   NclScalar missing_vr, missing_dv, missing_dvr, missing_ddv;
   NclBasicDataTypes type_vr, type_dv;
-  double missing;
   int has_missing_vr, has_missing_dv, found_missing;
 /*
  * Output array variables
@@ -9737,10 +9544,12 @@ NhlErrorTypes vrdv2uvf_W( void )
 /*
  * Coerce vr and dv.
  */
+  coerce_missing(type_dv,has_missing_dv,&missing_dv,&missing_ddv,NULL);
+  coerce_missing(type_vr,has_missing_vr,&missing_vr,&missing_dvr,NULL);
   dvr = coerce_input_double(vr,type_vr,total_size_in,has_missing_vr,
-                            &missing_vr,&missing_dvr,NULL);
+                            &missing_vr,&missing_dvr);
   ddv = coerce_input_double(dvo,type_dv,total_size_in,has_missing_dv,
-                            &missing_dv,&missing_ddv,NULL);
+                            &missing_dv,&missing_ddv);
   if( dvr == NULL || dvr == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvf: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -9908,7 +9717,6 @@ NhlErrorTypes vrdv2uvg_W( void )
   int ndims_dv, dsizes_dv[NCL_MAX_DIMENSIONS];
   NclScalar missing_vr, missing_dv, missing_dvr, missing_ddv;
   NclBasicDataTypes type_vr, type_dv;
-  double missing;
   int has_missing_vr, has_missing_dv, found_missing;
 /*
  * Output array variables
@@ -10016,10 +9824,12 @@ NhlErrorTypes vrdv2uvg_W( void )
 /*
  * Coerce vr and dv.
  */
+  coerce_missing(type_dv,has_missing_dv,&missing_dv,&missing_ddv,NULL);
+  coerce_missing(type_vr,has_missing_vr,&missing_vr,&missing_dvr,NULL);
   dvr = coerce_input_double(vr,type_vr,total_size_in,has_missing_vr,
-                            &missing_vr,&missing_dvr,NULL);
+                            &missing_vr,&missing_dvr);
   ddv = coerce_input_double(dvo,type_dv,total_size_in,has_missing_dv,
-                            &missing_dv,&missing_ddv,NULL);
+                            &missing_dv,&missing_ddv);
   if( dvr == NULL || dvr == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvg: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -10319,8 +10129,8 @@ NhlErrorTypes vhaec_W( void )
 /*
  * Coerce u and v.
  */
-  du = coerce_input_double(u,type_u,total_size_in,0,NULL,NULL,NULL);
-  dv = coerce_input_double(v,type_v,total_size_in,0,NULL,NULL,NULL);
+  du = coerce_input_double(u,type_u,total_size_in,0,NULL,NULL);
+  dv = coerce_input_double(v,type_v,total_size_in,0,NULL,NULL);
   if(du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaec: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -10566,8 +10376,8 @@ NhlErrorTypes vhagc_W( void )
 /*
  * Coerce u and v.
  */
-  du = coerce_input_double(u,type_u,total_size_in,0,NULL,NULL,NULL);
-  dv = coerce_input_double(v,type_v,total_size_in,0,NULL,NULL,NULL);
+  du = coerce_input_double(u,type_u,total_size_in,0,NULL,NULL);
+  dv = coerce_input_double(v,type_v,total_size_in,0,NULL,NULL);
   if(du == NULL || dv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagc: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -10810,10 +10620,10 @@ NhlErrorTypes vhsec_W( void )
 /*
  * Coerce br, bi, cr, ci.
  */
-  dbr = coerce_input_double(br,type_br,total_size_in,0,NULL,NULL,NULL);
-  dbi = coerce_input_double(bi,type_bi,total_size_in,0,NULL,NULL,NULL);
-  dcr = coerce_input_double(cr,type_cr,total_size_in,0,NULL,NULL,NULL);
-  dci = coerce_input_double(ci,type_ci,total_size_in,0,NULL,NULL,NULL);
+  dbr = coerce_input_double(br,type_br,total_size_in,0,NULL,NULL);
+  dbi = coerce_input_double(bi,type_bi,total_size_in,0,NULL,NULL);
+  dcr = coerce_input_double(cr,type_cr,total_size_in,0,NULL,NULL);
+  dci = coerce_input_double(ci,type_ci,total_size_in,0,NULL,NULL);
   if(dbr == NULL || dbi == NULL || dcr == NULL || dci == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsec: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -11034,10 +10844,10 @@ NhlErrorTypes vhsgc_W( void )
 /*
  * Coerce br, bi, cr, ci.
  */
-  dbr = coerce_input_double(br,type_br,total_size_in,0,NULL,NULL,NULL);
-  dbi = coerce_input_double(bi,type_bi,total_size_in,0,NULL,NULL,NULL);
-  dcr = coerce_input_double(cr,type_cr,total_size_in,0,NULL,NULL,NULL);
-  dci = coerce_input_double(ci,type_ci,total_size_in,0,NULL,NULL,NULL);
+  dbr = coerce_input_double(br,type_br,total_size_in,0,NULL,NULL);
+  dbi = coerce_input_double(bi,type_bi,total_size_in,0,NULL,NULL);
+  dcr = coerce_input_double(cr,type_cr,total_size_in,0,NULL,NULL);
+  dci = coerce_input_double(ci,type_ci,total_size_in,0,NULL,NULL);
   if(dbr == NULL || dbi == NULL || dcr == NULL || dci == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsgc: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -11224,7 +11034,7 @@ NhlErrorTypes shaec_W( void )
 /*
  * Coerce g.
  */
-  dg = coerce_input_double(g,type_g,total_size_in,0,NULL,NULL,NULL);
+  dg = coerce_input_double(g,type_g,total_size_in,0,NULL,NULL);
   if(dg == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shaec: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
@@ -11426,7 +11236,7 @@ NhlErrorTypes shagc_W( void )
 /*
  * Coerce g.
  */
-  dg = coerce_input_double(g,type_g,total_size_in,0,NULL,NULL,NULL);
+  dg = coerce_input_double(g,type_g,total_size_in,0,NULL,NULL);
   if(dg == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shagc: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
@@ -11635,8 +11445,8 @@ NhlErrorTypes shsec_W( void )
 /*
  * Coerce a and b.
  */
-  da = coerce_input_double(a,type_a,total_size_in,0,NULL,NULL,NULL);
-  db = coerce_input_double(b,type_b,total_size_in,0,NULL,NULL,NULL);
+  da = coerce_input_double(a,type_a,total_size_in,0,NULL,NULL);
+  db = coerce_input_double(b,type_b,total_size_in,0,NULL,NULL);
   if(da == NULL || db == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shsec: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -11823,8 +11633,8 @@ NhlErrorTypes shsgc_W( void )
 /*
  * Coerce a and b.
  */
-  da = coerce_input_double(a,type_a,total_size_in,0,NULL,NULL,NULL);
-  db = coerce_input_double(b,type_b,total_size_in,0,NULL,NULL,NULL);
+  da = coerce_input_double(a,type_a,total_size_in,0,NULL,NULL);
+  db = coerce_input_double(b,type_b,total_size_in,0,NULL,NULL);
   if(da == NULL || db == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shsec: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -11960,7 +11770,7 @@ NhlErrorTypes shaeC_W( void )
 /*
  * Coerce g.
  */
-  dg = coerce_input_double(g,type_g,total_size_in,0,NULL,NULL,NULL);
+  dg = coerce_input_double(g,type_g,total_size_in,0,NULL,NULL);
   if(dg == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shaeC: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
@@ -12017,8 +11827,7 @@ NhlErrorTypes shaeC_W( void )
   }
   NGCALLF(dshaeci,DSHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork,&ldwork,&jer);
   j = nt * ndab * mdab;
-  NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&nt,&dg[0],&idg,&jdg,
-                         &dab[0],&dab[j],
+  NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&nt,dg,&idg,&jdg,&dab[0],&dab[j],
                          &mdab,&ndab,wshaec,&lshaec,work,&lwork,&ker);
   NclFree(wshaec);
   NclFree(work);
@@ -12141,7 +11950,7 @@ NhlErrorTypes shagC_W( void )
 /*
  * Coerce g.
  */
-  dg = coerce_input_double(g,type_g,total_size_in,0,NULL,NULL,NULL);
+  dg = coerce_input_double(g,type_g,total_size_in,0,NULL,NULL);
   if(dg == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shagC: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
@@ -12349,7 +12158,7 @@ NhlErrorTypes shseC_W( void )
 /*
  * Coerce ab.
  */
-  dab = coerce_input_double(ab,type_ab,total_size_in,0,NULL,NULL,NULL);
+  dab = coerce_input_double(ab,type_ab,total_size_in,0,NULL,NULL);
   if(dab == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shseC: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
@@ -12538,7 +12347,7 @@ NhlErrorTypes shsgC_W( void )
 /*
  * Coerce ab.
  */
-  dab = coerce_input_double(ab,type_ab,total_size_in,0,NULL,NULL,NULL);
+  dab = coerce_input_double(ab,type_ab,total_size_in,0,NULL,NULL);
   if(dab == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgC: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);

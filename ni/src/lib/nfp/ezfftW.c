@@ -3,12 +3,7 @@
 * The following are the required NCAR Graphics include files.
 * They should be located in ${NCARG_ROOT}/include
 */
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include "Symbol.h"
-#include "NclMdInc.h"
-#include "Machine.h"
+#include "wrapper.h"
 #include "NclAtt.h"
 #include <ncarg/ncl/NclVar.h>
 #include "DataSupport.h"
@@ -16,9 +11,6 @@
 #include "VarSupport.h"
 #include "NclCoordVar.h"
 #include <ncarg/ncl/NclCallBacksI.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include <ncarg/gks.h>
 #include <math.h>
 
 #define max(x,y)  ((x) > (y) ? (x) : (y))
@@ -88,29 +80,13 @@ NhlErrorTypes ezfftf_W( void )
 /*
  * Coerce x to double if necessary.
  */
-  if(type_x != NCL_double) {
-    dx = (double*)NclMalloc(npts*sizeof(double));
-    if ( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for coercing input array to double precision");
-      return(NhlFATAL);
-    }
-
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dx,
-               x,
-               npts,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+  dx = coerce_input_double(x,type_x,npts,0,NULL,NULL);
+  if ( dx == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for coercing input array to double precision");
+    return(NhlFATAL);
   }
-  else {
-/*
- * x is already double precision
- */
-    dx = (double*)x;
-  }
-  dxbar = (double *)NclMalloc(sizeof(double));
-  dcf = (double*)NclMalloc(npts22*sizeof(double));
+  dxbar = (double *)calloc(1,sizeof(double));
+  dcf   = (double*)calloc(npts22,sizeof(double));
   if ( dcf == NULL || dxbar == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for output values" );
     return(NhlFATAL);
@@ -119,7 +95,7 @@ NhlErrorTypes ezfftf_W( void )
 /*
  * Allocate memory for work array
  */
-  work = (double*)NclMalloc((3*npts+15)*sizeof(double));
+  work = (double*)calloc((3*npts+15),sizeof(double));
   if ( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for work array" );
     return(NhlFATAL);
@@ -133,9 +109,7 @@ NhlErrorTypes ezfftf_W( void )
  * Free up memory.
  */
   NclFree(work);
-  if((void*)dx != x) {
-    NclFree(dx);
-  }
+  if((void*)dx != x) NclFree(dx);
 /*
  * Set up variable to return.
  */
@@ -143,8 +117,8 @@ NhlErrorTypes ezfftf_W( void )
 /*
  * Copy double values to float values.
  */
-    rcf   = (float*)NclMalloc(npts22*sizeof(float));
-    rxbar = (float*)NclMalloc(sizeof(float));
+    rcf   = (float*)calloc(npts22,sizeof(float));
+    rxbar = (float*)calloc(1,sizeof(float));
     if( rcf == NULL || rxbar == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Unable to allocate memory for output values");
       return(NhlFATAL);
@@ -328,54 +302,16 @@ NhlErrorTypes ezfftb_W( void )
 /*
  * Coerce input data to double if necessary.
  */
-  if(type_cf != NCL_double) {
-    dcf = (double*)NclMalloc(npts*sizeof(double));
-    if ( dcf == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for coercing cf array to double precision");
-      return(NhlFATAL);
-    }
-
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dcf,
-               cf,
-               npts,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_cf)));
-  }
-  else {
-/*
- * cf is already double
- */
-    dcf = (double*)cf;
-  }
-/*
- * coerce xbar if necessary.
- */
-  if(type_xbar != NCL_double) {
-    dxbar = (double*)NclMalloc(sizeof(double));
-    if ( dxbar == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for coercing xbar to double precision");
-      return(NhlFATAL);
-    }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-               dxbar,
-               xbar,
-               1,
-               NULL,
-               NULL,
-               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_xbar)));
-  }
-  else {
-/*
- * xbar is already double
- */
-    dxbar = (double*)xbar;
+  dcf = coerce_input_double(cf,type_cf,npts,0,NULL,NULL);
+  dxbar = coerce_input_double(xbar,type_xbar,1,0,NULL,NULL);
+  if (dcf == NULL || dxbar == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for coercing input arrays to double precision");
+    return(NhlFATAL);
   }
 /*
  * Allocate memory for output array.
  */
-  dx = (double*)NclMalloc(npts*sizeof(double));
+  dx = (double*)calloc(npts,sizeof(double));
   if ( dx == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for output array" );
     return(NhlFATAL);
@@ -384,7 +320,7 @@ NhlErrorTypes ezfftb_W( void )
 /*
  * Allocate memory for work array
  */
-  work = (double*)NclMalloc((3*npts+15)*sizeof(double));
+  work = (double*)calloc((3*npts+15),sizeof(double));
   if ( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for work array" );
     return(NhlFATAL);
@@ -399,15 +335,13 @@ NhlErrorTypes ezfftb_W( void )
  */
   NclFree(work);
 
-  if((void*)dcf != cf) {
-    NclFree(dcf);
-  }
+  if((void*)dcf != cf) NclFree(dcf);
 
   if(type_cf != NCL_double) {
 /*
  * Copy double values to float values.
  */
-    rx = (float*)NclMalloc(sizeof(float)*npts);
+    rx = (float*)calloc(npts,sizeof(float));
     if( rx == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Unable to allocate memory for output array");
       return(NhlFATAL);
