@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gopen_ws.m,v 1.12 2000-08-22 04:16:11 haley Exp $
+.\"	$Id: gopen_ws.m,v 1.13 2003-03-03 15:42:32 haley Exp $
 .\"
 .TH GOPEN_WS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -33,6 +33,10 @@ package supports.  The legal workstation types in NCAR GKS are:
 -  non-existing X11 window.
 .IP "            10" 18
 -  text dump of graphics output.
+.IP "            11" 18
+-  PDF in portrait mode.
+.IP "            12" 18
+-  PDF in landscape mode.
 .IP "            20" 18
 -  color PostScript in portrait mode.
 .IP "            21" 18
@@ -100,7 +104,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-2000
+Copyright (C) 1987-2003
 .br
 University Corporation for Atmospheric Research
 .br
