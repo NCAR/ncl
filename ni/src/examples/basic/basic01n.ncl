@@ -1,4 +1,4 @@
-; $Id: basic01n.ncl,v 1.2 1995-02-27 17:56:14 scheitln Exp $
+; $Id: basic01n.ncl,v 1.3 1995-02-27 18:11:30 scheitln Exp $
 ;
 ; This example demonstrates how to draw a contour plot using mostly
 ; defaults.  Note: no data is used in this example, so the output appears
@@ -12,6 +12,7 @@
 ;   4. Call frame
 ;   5. Clean up memory
 
+begin
 ; ##########
 ; # STEP 1 #
 ; ##########
@@ -76,3 +77,4 @@ frame(wks)
 ; automatically deletes all of its children.
 
 delete(wks)
+end

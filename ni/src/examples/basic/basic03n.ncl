@@ -1,10 +1,14 @@
-; $Id: basic03n.ncl,v 1.2 1995-02-27 17:56:16 scheitln Exp $
+; $Id: basic03n.ncl,v 1.3 1995-02-27 18:11:32 scheitln Exp $
 ;
 ; This example demonstrates how to:
 ;   1. Create a scalar field data object and assign it to a plot.
 ;   2. Set resources using a resource file.
 ;   3. Set resources during object creation.
 ;   3. Set resources after object creation.
+
+; Begin the ncl script.
+
+begin
 
 ; ###########
 ; # FRAME 1 #
@@ -148,3 +152,7 @@ frame(wks2)
 
 delete(wks)
 delete(appid)
+
+; End the ncl script.
+
+end

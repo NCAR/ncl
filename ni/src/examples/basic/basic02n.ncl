@@ -1,4 +1,4 @@
-; $Id: basic02n.ncl,v 1.3 1995-02-27 17:56:15 scheitln Exp $
+; $Id: basic02n.ncl,v 1.4 1995-02-27 18:11:31 scheitln Exp $
 ;
 ; The first frame in this example demonstrates how to set the view port 
 ; for a contour plot.
@@ -8,6 +8,10 @@
 ; The second frame in this example demonstrates how to produce multiple
 ; plots on a single frame.
 ; 
+; Begin the ncl script.
+
+begin
+
 ; ###########
 ; # FRAME 1 #
 ; ###########
@@ -84,3 +88,7 @@ frame(wks)
 ; children).
 
 delete(wks)
+
+; End the ncl script.
+
+end

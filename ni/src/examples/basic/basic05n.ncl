@@ -1,10 +1,14 @@
-; $Id: basic05n.ncl,v 1.3 1995-02-27 17:56:18 scheitln Exp $
+; $Id: basic05n.ncl,v 1.4 1995-02-27 18:11:34 scheitln Exp $
 ;
 ; This example demonstrates how to read and manipulate colormaps.
 
 ; The first frame displays the default colormap.
 ; The second frame shows how to alter an entry in the colormap.
 ; The third frame shows how to create a completely new colormap.
+
+; Begin the ncl script.
+
+begin
 
 ; ###########
 ; # Frame 1 #
@@ -118,3 +122,7 @@ end setvalues
 
 draw(lbar)
 frame(wks)
+
+; End the ncl script.
+
+end

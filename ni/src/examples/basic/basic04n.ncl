@@ -1,4 +1,4 @@
-; $Id: basic04n.ncl,v 1.2 1995-02-27 17:56:17 scheitln Exp $
+; $Id: basic04n.ncl,v 1.3 1995-02-27 18:11:33 scheitln Exp $
 ;
 ; This example demonstrates how to select and change the workstation
 ; device for drawing your output to an NCGM file or an X workstation window.
@@ -10,6 +10,10 @@
 ;   4. Draw the contour objects.
 ;   5. Call frame.
 ;   6. Clean up memory.
+
+; Begin the ncl script.
+
+begin
 
 ; ##########
 ; # STEP 1 #
@@ -101,3 +105,7 @@ frame(nwks)
 
 delete(xwks)
 delete(nwks)
+
+; End the ncl script.
+
+end
