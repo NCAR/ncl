@@ -86,7 +86,7 @@ begin
 	      "txBackgroundFillColor": i
       end create
       
-      pidpdf = create "TextItems" textItemClass widp
+      pidpdf = create "TextItems" textItemClass widpdf
 	      "txBackgroundFillColor": i
       end create
 
