@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.45 1993-04-30 22:36:49 haley Exp $
+#   $Id: ncargex.csh,v 1.46 1993-04-30 22:48:17 haley Exp $
 #
 
 #********************#
@@ -223,9 +223,8 @@ set labelbar_list = ($ex_labelbar $tst_labelbar)
 # set ngmisc examples #
 #                     #
 #*********************#
-set ex_ngmisc   = (wtable)
 set fnd_ngmisc  = (fngngdts fngwsym)
-set ngmisc_list = ($ex_ngmisc $fnd_ngmisc)
+set ngmisc_list = ($fnd_ngmisc)
 
 #***********************#
 #                       #
@@ -359,7 +358,7 @@ set ttr_overlap = (mpex03 mpex05 arex01 sfex01 tsoftf)
 #                                                                     #
 #*********************************************************************#
 set ex_list  = ($ex_areas $ex_autograph $ex_colconv $ex_conpack $ex_ezmap \
-                $ex_field $ex_labelbar $ex_ngmisc $ex_plotchar \
+                $ex_field $ex_labelbar $ex_plotchar \
                 ${ex_scrlld_title} $ex_softfill $ex_spps $ex_surface $ex_misc)
 
 set tst_list = ($tst_areas $tst_autograph $tst_colconv $tst_conpack \
