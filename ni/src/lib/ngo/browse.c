@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.26 1999-03-05 16:53:29 dbrown Exp $
+ *      $Id: browse.c,v 1.27 1999-03-09 00:47:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2364,19 +2364,6 @@ extern void _NgGetPaneVisibleArea(
         rect->y = clip_y - form_y;
         rect->width = clip_width;
         rect->height = clip_height;
-
-	if (XtIsManaged(pane->vsb)) {
-		XtVaGetValues(pane->vsb,
-			      XmNwidth,&vsb_width,
-			      NULL);
-	}
-	if (XtIsManaged(pane->hsb)) {
-		XtVaGetValues(pane->hsb,
-			      XmNheight,&hsb_height,
-			      NULL);
-		printf("vsb width %d hsb height %d\n",vsb_width,hsb_height);
-	}
-
 
         return;
 }
