@@ -1,5 +1,5 @@
 /*
- *      $Id: HPUX_snake,v 1.12 1999-03-25 14:28:38 haley Exp $
+ *      $Id: HPUX_snake,v 1.13 2000-07-18 19:47:09 haley Exp $
  */
 /************************************************************************
 *									*
@@ -30,5 +30,5 @@
 #define DoesRanlib	NO
 #define	CtoFLibraries	-lf -lm
 
-#define ArchRecLibSearch	-L/usr/lib/Motif1.2_R6 -L/usr/lib/X11R6
+#define ArchRecLibSearch	-L/usr/lib/Motif1.2 -L/usr/lib/X11R6
 #define ArchRecIncSearch	-I/usr/include/Motif1.2 -I/usr/include/X11R6
