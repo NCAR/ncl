@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.98 1998-05-22 16:17:35 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.99 1998-06-09 19:14:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2286,6 +2286,10 @@ NhlErrorTypes _NclIfbindirread(void)
 	if(tmp_md != NULL) {
 		n_dimensions = tmp_md->multidval.totalelements;
 		dimsizes = (int*)tmp_md->multidval.val;
+		if((n_dimensions == 1)&&(dimsizes[0] = -1)) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: -1 is not suppored for fbindirread use cbinread");
+			return(NhlFATAL);
+		}
 	}
 	for(i = 0; i < n_dimensions; i++) {
 		size *= dimsizes[i];
@@ -2325,7 +2329,7 @@ NhlErrorTypes _NclIfbindirread(void)
 			Ncl_MultiDValData,
 			0,
 			tmp_ptr,
-			&(thetype->type_class.default_mis),
+			NULL,
 			n_dimensions,
 			dimsizes,
 			TEMPORARY,
@@ -2382,6 +2386,7 @@ NhlErrorTypes _NclIcbinread
 	int n;
 	char *step = NULL;
 	NclStackEntry data_out;
+	int dim2;
 
 
 	fpath = _NclGetArg(0,3,DONT_CARE);
@@ -2409,24 +2414,6 @@ NhlErrorTypes _NclIcbinread
 		}
 	}
 	tmp_md = NULL;
-	switch(dimensions.kind){
-	case NclStk_VAL:
-		tmp_md = dimensions.u.data_obj;
-		break;
-	case NclStk_VAR:
-		tmp_md = _NclVarValueRead(dimensions.u.data_var,NULL,NULL);
-		break;
-	default:
-		return(NhlFATAL);
-	}
-	if(tmp_md != NULL) {
-		n_dimensions = tmp_md->multidval.totalelements;
-		dimsizes = (int*)tmp_md->multidval.val;
-	}
-	for(i = 0; i < n_dimensions; i++) {
-		size *= dimsizes[i];
-	}
-	tmp_md = NULL;
 	switch(type.kind) {
 	case NclStk_VAL:
 		tmp_md = type.u.data_obj;
@@ -2441,6 +2428,31 @@ NhlErrorTypes _NclIcbinread
 		thetype = _NclNameToTypeClass(*(NclQuark*)tmp_md->multidval.val);
 		if(thetype == NULL) 
 			return(NhlFATAL);	
+	}
+	tmp_md = NULL;
+	switch(dimensions.kind){
+	case NclStk_VAL:
+		tmp_md = dimensions.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(dimensions.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		n_dimensions = tmp_md->multidval.totalelements;
+		dimsizes = (int*)tmp_md->multidval.val;
+	}
+	if((n_dimensions ==1)&&(dimsizes[0] == -1)) {
+		size = buf.st_size/thetype->type_class.size;
+		n_dimensions = 1;
+		dim2 = size;
+		dimsizes = &dim2;
+	} else {
+		for(i = 0; i < n_dimensions; i++) {
+			size *= dimsizes[i];
+		}
 	}
 	if(size*thetype->type_class.size > buf.st_size) {
 		ret = NhlWARNING;
@@ -2463,7 +2475,7 @@ NhlErrorTypes _NclIcbinread
 			Ncl_MultiDValData,
 			0,
 			tmp_ptr,
-			&(thetype->type_class.default_mis),
+			NULL,
 			n_dimensions,
 			dimsizes,
 			TEMPORARY,
@@ -2867,7 +2879,7 @@ NhlErrorTypes _NclIfbinrecread
 				Ncl_MultiDValData,
 				0,
 				value,
-				&(thetype->type_class.default_mis),
+				NULL,
 				dimsize,
 				dimensions,
 				TEMPORARY,
@@ -2889,7 +2901,7 @@ NhlErrorTypes _NclIfbinrecread
 				Ncl_MultiDValData,
 				0,
 				value,
-				&(thetype->type_class.default_mis),
+				NULL,
 				1,
 				&dimsize,
 				TEMPORARY,
@@ -2937,6 +2949,8 @@ NhlErrorTypes _NclIfbinread
 	int n;
 	char *step = NULL;
 	NclStackEntry data_out;
+	int dim2;
+	int fd;
 
 
 	fpath = _NclGetArg(0,3,DONT_CARE);
@@ -2978,8 +2992,14 @@ NhlErrorTypes _NclIfbinread
 		n_dimensions = tmp_md->multidval.totalelements;
 		dimsizes = (int*)tmp_md->multidval.val;
 	}
-	for(i = 0; i < n_dimensions; i++) {
-		size *= dimsizes[i];
+	if((n_dimensions ==1)&&(dimsizes[0] ==-1)){
+		size = -1;
+		dimsizes = &dim2;
+		n_dimensions = 1;
+	} else {
+		for(i = 0; i < n_dimensions; i++) {
+			size *= dimsizes[i];
+		}
 	}
 	tmp_md = NULL;
 	switch(type.kind) {
@@ -2997,8 +3017,20 @@ NhlErrorTypes _NclIfbinread
 		if(thetype == NULL) 
 			return(NhlFATAL);	
 	}
-	totalsize = size*thetype->type_class.size;
-	tmp_ptr = NclMalloc(totalsize);
+	if(size == -1) {
+		fd = open(path_string,O_RDONLY);
+		if(read(fd,(void*)&size,4) != 4) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIfbinread: An error occurred while reading the file (%s), check path",_NGResolvePath(path_string));
+			return(NhlFATAL);
+		}
+		n_dimensions = 1;
+		*dimsizes= size/thetype->type_class.size;
+		totalsize = size;
+		tmp_ptr = NclMalloc(totalsize);
+	} else {
+		totalsize = size*thetype->type_class.size;
+		tmp_ptr = NclMalloc(totalsize);
+	}
 	NGCALLF(nclpfortranread,NCLPFORTRANREAD)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
 	if(tmp_ptr != NULL) {
 		
@@ -3008,7 +3040,7 @@ NhlErrorTypes _NclIfbinread
 			Ncl_MultiDValData,
 			0,
 			tmp_ptr,
-			&(thetype->type_class.default_mis),
+			NULL,
 			n_dimensions,
 			dimsizes,
 			TEMPORARY,
@@ -3293,6 +3325,7 @@ NhlErrorTypes _NclIasciiread
 
 
 
+
 	fpath = _NclGetArg(0,3,DONT_CARE);
 	dimensions = _NclGetArg(1,3,DONT_CARE);
 	type = _NclGetArg(2,3,DONT_CARE);
@@ -3480,14 +3513,26 @@ NhlErrorTypes _NclIasciiread
 		if(fd != NULL) {
 			tmp_ptr = NclMalloc(thetype->type_class.size);
 
-			
-			totalsize = 0;
-			while(!feof(fd)) {
-				if(asciinumeric(fd,thetype->type_class.format,tmp_ptr)) {
-					totalsize++;
-				} else {
-					break;
+			if(thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
+		
+				totalsize = 0;
+				while(!feof(fd)) {
+					if(asciinumeric(fd,thetype->type_class.format,tmp_ptr)) {
+						totalsize++;
+					} else {
+						break;
+					}
 				}
+			} else if(thetype->type_class.type==Ncl_Typechar) {
+				stat(path_string,&buf);
+				totalsize = buf.st_size;
+			} else if(thetype->type_class.type==Ncl_Typestring) {
+				totalsize = 0;
+				while(!feof(fd)) {
+					if(fgetc(fd) == '\n') {
+                                                totalsize++;
+                                        } 
+                                }
 			}
 			NclFree(tmp_ptr);
 			tmp_ptr = NclMalloc(totalsize*thetype->type_class.size);
@@ -3504,7 +3549,7 @@ NhlErrorTypes _NclIasciiread
 				Ncl_MultiDValData,
 				0,
 				tmp_ptr,
-				&(thetype->type_class.default_mis),
+				NULL,
 				n_dimensions,
 				dimsizes,
 				TEMPORARY,
