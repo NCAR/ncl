@@ -2464,10 +2464,10 @@ int wr_status;
 				if((grib_rec->has_gds) && (grib_rec->grid_number != 255)) {
 					fprintf(stdout,"Found one: %d\n",grib_rec->grid_number);
 				} 
-*/
 				if(grib_rec->has_bms) {
 					fprintf(stdout,"Found one with bms (%d,%d)\n",grib_rec->param_number,grib_rec->grid_number);
 				}
+*/
 				grib_rec->start = offset;
 
 				grib_rec->initial_time.year = (short)(((short)grib_rec->pds[24] - 1 )*100 + (short)(int)grib_rec->pds[12]);

@@ -11,6 +11,243 @@
 #include "NclGRIB.h"
 #include <math.h>
 
+#include	<ncarg/hlu/hluP.h>
+#include	<ncarg/hlu/BaseP.h>
+#include <ncarg/hlu/Workstation.h>
+#include 	<ncarg/hlu/WorkstationP.h>
+#include <ncarg/hlu/ConvertersP.h>
+#include <ncarg/hlu/PalettesP.h>
+#include <ncarg/hlu/FortranP.h>
+#include <ncarg/hlu/hluutil.h>
+#include <ncarg/hlu/ErrorI.h>
+#include <ncarg/hlu/TransformI.h>
+#include <ncarg/hlu/MapPlot.h>
+
+
+
+
+typedef struct _NhlDummyWorkstationLayerPart{
+	char *foo;
+} NhlDummyWorkstationLayerPart;
+
+typedef struct _NhlDummyWorkstationLayerRec{
+	NhlBaseLayerPart	base;
+	NhlWorkstationLayerPart	work;
+	NhlDummyWorkstationLayerPart	dwork;
+} NhlDummyWorkstationLayerRec;
+
+typedef struct _NhlDummyWorkstationClassPart{
+	char *foo;
+} NhlDummyWorkstationClassPart;
+
+typedef struct _NhlDummyWorkstationClassRec{
+	NhlBaseClassPart		base_class;
+	NhlWorkstationClassPart		work_class;
+	NhlDummyWorkstationClassPart		dwork_class;
+} NhlDummyWorkstationClassRec;
+	
+
+
+static NhlErrorTypes DummyWorkstationInitialize(
+#if	NhlNeedProto
+        NhlClass,	/* class */
+        NhlLayer,	/* req */
+        NhlLayer,	/* new */
+        _NhlArgList,	/* args */
+        int		/* num_args */
+#endif
+);
+
+
+static NhlErrorTypes DummyWorkstationDestroy(
+#if	NhlNeedProto
+        NhlLayer           /* inst */
+#endif
+);
+
+
+
+static NhlErrorTypes DummyWorkstationOpen(
+#if	NhlNeedProto
+	NhlLayer	/* instance */
+#endif
+);
+
+static NhlErrorTypes DummyWorkstationClose(
+#if	NhlNeedProto
+	NhlLayer	/* instance */
+#endif
+);
+
+static NhlErrorTypes DummyWorkstationActivate(
+#if	NhlNeedProto
+	NhlLayer	/* instance */
+#endif
+);
+
+static NhlErrorTypes DummyWorkstationDeactivate(
+#if	NhlNeedProto
+	NhlLayer	/* instance */
+#endif
+);
+
+NhlDummyWorkstationClassRec NhldummyWorkstationClassRec = {
+        {
+/* class_name			*/	"dummyWorkstationClass",
+/* nrm_class			*/	NrmNULLQUARK,
+/* layer_size			*/	sizeof(NhlDummyWorkstationLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(NhlClass)&NhlworkstationClassRec,
+/* cvt_table			*/	NULL,
+
+/* layer_resources		*/	NULL,
+/* num_resources		*/	0,
+/* all_resources		*/	NULL,
+
+/* class_part_initialize	*/	NULL,
+/* class_initialize		*/	NULL,
+/* layer_initialize		*/	DummyWorkstationInitialize,
+/* layer_set_values		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
+/* layer_get_values		*/	NULL,
+/* layer_reparent		*/	NULL,
+/* layer_destroy		*/	DummyWorkstationDestroy,
+
+/* child_resources		*/	NULL,
+
+/* layer_draw			*/	NULL,
+
+/* layer_pre_draw		*/	NULL,
+/* layer_draw_segonly		*/	NULL,
+/* layer_post_draw		*/	NULL,
+/* layer_clear			*/	NULL
+        },
+	{
+/* def_background	*/	{0.0,0.0,0.0},
+/* open_work		*/	DummyWorkstationOpen,
+/* close_work		*/	DummyWorkstationClose,
+/* activate_work	*/	DummyWorkstationActivate,
+/* deactivate_work	*/	DummyWorkstationDeactivate,
+/* alloc_colors		*/	NULL,
+/* update_work		*/	NULL,
+/* clear_work		*/	NULL,
+/* lineto_work 		*/	NULL,
+/* fill_work		*/	NULL,
+/* marker_work		*/	NULL
+	},
+	{
+				NULL
+	}
+};
+
+NhlClass NhldummyWorkstationClass = (NhlClass)&NhldummyWorkstationClassRec;
+
+static NhlErrorTypes DummyWorkstationInitialize
+#if  NhlNeedProto
+(
+	NhlClass	lc,
+	NhlLayer	req,
+	NhlLayer	new,
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(lc,req,new,args,num_args)
+	NhlClass 	lc;
+	NhlLayer	req;
+	NhlLayer	new;
+	_NhlArgList	args;
+	int		num_args;
+#endif
+{
+
+	return(NhlNOERROR);
+}
+
+
+
+static NhlErrorTypes DummyWorkstationDestroy
+#if	NhlNeedProto
+(
+	NhlLayer	inst
+)
+#else
+(inst)
+	NhlLayer	inst;
+#endif
+{
+	NhlErrorTypes	retcode = NhlNOERROR;
+
+	return(retcode);
+}
+
+
+static NhlErrorTypes
+DummyWorkstationOpen
+#if NhlNeedProto
+(
+	NhlLayer	l
+)
+#else
+(l)
+	NhlLayer	l;
+#endif
+{	
+	return(NhlNOERROR);
+}
+
+static NhlErrorTypes
+DummyWorkstationClose
+#if NhlNeedProto
+(
+	NhlLayer	l
+)
+#else
+(l)
+	NhlLayer	l;
+#endif
+{
+	return	NhlNOERROR;;
+}
+
+static NhlErrorTypes
+DummyWorkstationActivate
+#if NhlNeedProto
+(
+	NhlLayer	l
+)
+#else
+(l)
+	NhlLayer	l;
+#endif
+{
+
+	return NhlNOERROR;
+}
+
+static NhlErrorTypes
+DummyWorkstationDeactivate
+#if NhlNeedProto
+(
+	NhlLayer	l
+)
+#else
+(l)
+	NhlLayer	l;
+#endif
+{
+	NhlErrorTypes		retcode = NhlNOERROR;
+
+	return retcode;
+}
+
+
+
+
+
+
+
+
 
 int grid_index[] = { 1, 2, 3, 4, 5, 6, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 33, 34, 37, 38, 39, 40, 41, 42, 43, 44, 45, 50, 55, 56, 61, 62, 63, 64, 75, 76, 77, 85, 86, 87, 90, 91, 92, 93, 98, 100, 101, 103, 104, 105, 106, 107, 126, 201, 202, 203, 204, 205, 206,207, 208, 209, 210, 211, 212, 213, 214 };
 
@@ -19,8 +256,8 @@ int grid_tbl_len = sizeof(grid_index)/sizeof(int);
 int grid_gds_index[] = { 0, 1, 2, 3, 4, 5, 13, 50, 90, 201, 202 };
 
 int grid_gds_tbl_len = sizeof(grid_gds_index)/sizeof(int);
-
 #define EAR 6371.2213
+#define ear 6367.47
 #define PI 3.14159265
 #define PI4  (PI/4)
 #define RADDEG (180./PI)
@@ -33,6 +270,13 @@ static float xax;
 static float xpp;
 static float ypp;
 static int southern;
+
+float pi = 3.14159265358979323846;
+float pi2 = 1.57079632679489661923;
+float pi4 = 0.78539816339744830962;
+float degtorad = 1.745329e-02;
+float radtodeg = 5.729578e+01;
+
 
 static int is_gpoint
 #if NhlNeedProto
@@ -148,6 +392,365 @@ static int printbinary(int val) {
 	fprintf(stdout,"\n");
 	return(count);
 }
+/*
+* START Mercator
+*/
+void GenMercator
+#if NhlNeedProto
+(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,float lat0, float lon0, float lat1, float lon1, float dx, float dy, float latin, int nx,int ny)
+#else  
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, lat0, lon0, lat1, lon1, dx, dy, latin, nx, ny)
+GribParamList* thevarrec;
+float** lat;
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float lat0;
+float lon0;
+float lat1;
+float lon1;
+float dx;
+float dy;
+float latin;
+int nx;
+int ny;
+#endif
+{
+	static int mapid = -1;
+	static int vpid = -1;
+	static int rlist = -1;
+	float tlat;
+	float tlon;
+	float nx0,nx1,ny0,ny1;
+	float C,d_per_km,dlon,dlat;
+	float ndcdx,ndcdy,start_ndcx,start_ndcy,start_lon = 0.0;
+	float dumx,dumy;
+	int status;
+	float orv;
+	int i,j;
+	float *dummy = NULL;
+
+	if(mapid == -1) {
+		rlist = NhlRLCreate(NhlSETRL);
+		NhlRLClear(rlist);
+		NhlCreate(&vpid,"Map0",NhldummyWorkstationClass,NULL,rlist);
+		NhlRLClear(rlist);
+		NhlRLSetFloat(rlist,NhlNvpXF,0.01);
+		NhlRLSetFloat(rlist,NhlNvpYF,0.99);
+		NhlRLSetFloat(rlist,NhlNvpWidthF,0.98);
+		NhlRLSetFloat(rlist,NhlNvpHeightF,0.98);
+		NhlRLSetString(rlist,NhlNmpProjection,"MERCATOR");
+		NhlRLSetFloat(rlist,NhlNmpCenterLonF,(lon1-lon0)/2.0);
+		NhlRLSetFloat(rlist,NhlNmpCenterLatF,0.0);
+		NhlCreate(&mapid,"Map0",NhlmapPlotClass,vpid,rlist);
+	} else {
+		NhlRLClear(rlist);
+		NhlRLSetString(rlist,NhlNmpProjection,"MERCATOR");
+		NhlRLSetFloat(rlist,NhlNmpCenterLonF,(lon1 - lon0)/2.0);
+		NhlRLSetFloat(rlist,NhlNmpCenterLatF,0.0);
+		NhlSetValues(mapid,rlist);
+	}
+	*lat = (float*)NclMalloc(sizeof(float)*ny);
+	*lon = (float*)NclMalloc(sizeof(float)*nx);
+	dummy = (float*)NclMalloc(sizeof(float)* ( nx > ny ? nx : ny));
+        *dimsizes_lat = (int*)NclMalloc(sizeof(int));
+        *dimsizes_lon = (int*)NclMalloc(sizeof(int));
+        *n_dims_lat = 1;
+        *n_dims_lon = 1;
+        (*dimsizes_lat)[0] = ny;
+        (*dimsizes_lon)[0] = nx;
+
+	C = 2 * pi * EAR * cos(degtorad * latin);
+	d_per_km = 360.0/C;
+	dlon = dx * d_per_km;
+/*
+* lat0 is always closest to pole
+*/
+	tlon = (lon1-lon0) / 2.0;
+	tlat = (lat1-lat0) / 2.0;
+	NhlDataToNDC(mapid,&tlon,&tlat,1,&dumx,&dumy,NULL,NULL,&status,&orv);
+	tlon = lon0 + dlon;
+	NhlDataToNDC(mapid,&start_lon,&lat0,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+	NhlDataToNDC(mapid,&tlon,&lat0,1,&nx1,&ny1,NULL,NULL,&status,&orv);
+	ndcdx = fabs(nx0 - nx1);
+	ndcdy = dy/dx * ndcdx;
+	NhlDataToNDC(mapid,&lon0,&lat0,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+	for(i = 0; i < ny; i++) {
+		(*lat)[i] = ny0 + i * ndcdy;
+		dummy[i] = dumx;
+	}
+	NhlNDCToData(mapid,dummy,*lat,ny,dummy,*lat,NULL,NULL,&status,&orv);
+	for(j = 0; j < nx; j++) {
+		dummy[j] = dumy;
+		(*lon)[j] = nx0 + j * ndcdx;
+	}
+	NhlNDCToData(mapid,*lon,dummy,nx,*lon,dummy,NULL,NULL,&status,&orv);
+	for(j = 0; j < nx; j++) {
+		(*lon)[j] = ((*lon)[j] < 0)? ((*lon)[j] + 360) : (*lon)[j];
+	}
+	
+
+}
+
+void GetGrid_210
+#if NhlNeedProto
+(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
+GribParamList* thevarrec;
+float** lat;
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+#endif
+{
+	GenMercator(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, -25.0/*lat0*/, 110.0 /*lon0*/, 60.644 /*lat1*/, -109.129/* lon1*/, 160.0 /*dx*/, 160.0 /*dy*/, 20.0 /*latin*/, 93/*nx*/, 68/*ny*/);
+}
+void GetGrid_208
+#if NhlNeedProto
+(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
+GribParamList* thevarrec;
+float** lat;
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+#endif
+{
+	GenMercator(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, -25.0/*lat0*/, 110.0 /*lon0*/, 60.644 /*lat1*/, -109.129/* lon1*/, 160.0 /*dx*/, 160.0 /*dy*/, 20.0 /*latin*/, 93/*nx*/, 68/*ny*/);
+}
+void GetGrid_204
+#if NhlNeedProto
+(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
+GribParamList* thevarrec;
+float** lat;
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+#endif
+{
+	GenMercator(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, -25.0/*lat0*/, 110.0 /*lon0*/, 60.644 /*lat1*/, -109.129/* lon1*/, 160.0 /*dx*/, 160.0 /*dy*/, 20.0 /*latin*/, 93/*nx*/, 68/*ny*/);
+}
+
+void GetGrid_1
+#if NhlNeedProto
+(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
+GribParamList* thevarrec;
+float** lat;
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+#endif
+{
+	GenMercator(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, -48.09 /*lat0*/, 0.0/*lon0*/, 48.09 /*lat1*/, 360.0/* lon1*/, 513.669 /*dx*/, 513.669 /*dy*/, 22.5 /*latin*/, 73/*nx*/, 23/*ny*/);
+}
+/*
+* END MERCATOR
+*/
+/*
+* START Lambert Conformal Grids
+*/
+void GenLambert
+#if	NhlNeedProto
+(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,float lat0, float lat1, float lon0, float dx, float dy,float start_lat, float start_lon,int nx,int ny)
+#else  
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, lat0, lat1, lon0, dx, dy, start_lat, start_lon, nx, ny)
+	GribParamList* thevarrec;
+	float** lat;
+	int* n_dims_lat;
+	int** dimsizes_lat;
+	float** lon;
+	int* n_dims_lon;
+	int** dimsizes_lon;
+	loat lat0;
+	float lat1;
+	float lon0;
+	float dx;
+	float dy;
+	float start_lat;
+	float start_lon;
+	int nx;
+	int ny;
+#endif
+{
+	static int mapid = -1;
+	static int vpid = -1;
+	static int rlist = -1;
+	float tlat;
+	float tlon;
+	float nx0,nx1,ny0,ny1;
+	float C,d_per_km,dlon,dlat;
+	float ndcdx,ndcdy,start_ndcx,start_ndcy;
+	int status;
+	float orv;
+	int i,j;
+
+	if(mapid == -1) {
+		rlist = NhlRLCreate(NhlSETRL);
+		NhlRLClear(rlist);
+		NhlCreate(&vpid,"Map0",NhldummyWorkstationClass,NULL,rlist);
+		NhlRLClear(rlist);
+		NhlRLSetFloat(rlist,NhlNvpXF,0.01);
+		NhlRLSetFloat(rlist,NhlNvpYF,0.99);
+		NhlRLSetFloat(rlist,NhlNvpWidthF,0.98);
+		NhlRLSetFloat(rlist,NhlNvpHeightF,0.98);
+		NhlRLSetString(rlist,NhlNmpProjection,"LAMBERTCONFORMAL");
+		NhlRLSetFloat(rlist,NhlNmpLambertParallel1F,lat0);
+		NhlRLSetFloat(rlist,NhlNmpLambertParallel2F,lat1);
+		NhlRLSetFloat(rlist,NhlNmpLambertMeridianF,lon0);
+		NhlCreate(&mapid,"Map0",NhlmapPlotClass,vpid,rlist);
+	} else {
+		NhlRLClear(rlist);
+		NhlRLSetFloat(rlist,NhlNmpLambertParallel1F,lat0);
+		NhlRLSetFloat(rlist,NhlNmpLambertParallel2F,lat1);
+		NhlRLSetFloat(rlist,NhlNmpLambertMeridianF,lon0);
+		NhlSetValues(mapid,rlist);
+	}
+	*lat = (float*)NclMalloc(sizeof(float)*nx*ny);
+	*lon = (float*)NclMalloc(sizeof(float)*nx*ny);
+        *dimsizes_lat = (int*)NclMalloc(sizeof(int)*2);
+        *dimsizes_lon = (int*)NclMalloc(sizeof(int)*2);
+        *n_dims_lat = 2;
+        *n_dims_lon = 2;
+        (*dimsizes_lat)[0] = ny;
+        (*dimsizes_lat)[1] = nx;
+        (*dimsizes_lon)[0] = ny;
+        (*dimsizes_lon)[1] = nx;
+/*
+* Southern case
+*/
+	if((lat0 < 0)&&(lat1 < 0)) {
+		
+		C = 2 * pi * EAR * cos(degtorad * lat0);
+		d_per_km = 360.0/C;
+		dlon = dx * d_per_km;
+/*
+* lat0 is always closest to pole
+*/
+		tlon = lon0 + dlon;
+		NhlDataToNDC(mapid,&lon0,&lat0,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		NhlDataToNDC(mapid,&tlon,&lat0,1,&nx1,&ny1,NULL,NULL,&status,&orv);
+		ndcdx = fabs(nx0 - nx1);
+		ndcdy = dy/dx * ndcdx;
+		NhlDataToNDC(mapid,&start_lon,&start_lat,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		for(i = 0; i < ny; i++) {
+			for(j = 0; j < nx; j++) {
+				(*lon)[i * nx + j] = nx0 + j * ndcdx;
+				(*lat)[i * nx + j] = ny0 + i * ndcdy;
+			}
+		}
+		NhlNDCToData(mapid,*lon,*lat,nx*ny,*lon,*lat,NULL,NULL,&status,&orv);
+
+	} else {
+/*
+* Northern case
+*/
+		C = 2 * pi * EAR * cos(degtorad * lat0);
+		d_per_km = 360.0/C;
+		dlon = dx * d_per_km;
+/*
+* lat0 is always closest to pole
+*/
+		tlon = lon0 + dlon;
+		NhlDataToNDC(mapid,&lon0,&lat0,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		NhlDataToNDC(mapid,&tlon,&lat0,1,&nx1,&ny1,NULL,NULL,&status,&orv);
+		ndcdx = fabs(nx0 - nx1);
+		ndcdy = dy/dx * ndcdx;
+		NhlDataToNDC(mapid,&start_lon,&start_lat,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		for(i = 0; i < ny; i++) {
+			for(j = 0; j < nx; j++) {
+				(*lon)[i * nx + j] = nx0 + j * ndcdx;
+				(*lat)[i * nx + j] = ny0 + i * ndcdy;
+			}
+		}
+		NhlNDCToData(mapid,*lon,*lat,nx*ny,*lon,*lat,NULL,NULL,&status,&orv);
+	}
+
+}
+
+
+void GetGrid_212
+#if NhlNeedProto
+(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
+GribParamList* thevarrec;
+float** lat;
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+#endif
+{
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 40.63525 /*dx*/, 40.63525 /*dy*/, 12.190 /*start_lat*/,  -133.459  /*start_lon*/, 185 /*nx*/, 129 /*ny*/);
+}
+void GetGrid_209
+#if NhlNeedProto
+(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
+GribParamList* thevarrec;
+float** lat;
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+#endif
+{
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 40.63525 /*dx*/, 40.63525 /*dy*/, 22.289 /*start_lat*/,  -117.991 /*start_lon*/, 101 /*nx*/, 81 /*ny*/);
+}
+void GetGrid_206
+#if NhlNeedProto
+(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
+GribParamList* thevarrec;
+float** lat;
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+#endif
+{
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 81.2705 /*dx*/, 81.2705 /*dy*/, 22.289 /*start_lat*/,  -117.991 /*start_lon*/, 51 /*nx*/, 41 /*ny*/);
+}
+void GetGrid_211
+#if NhlNeedProto
+(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
+GribParamList* thevarrec;
+float** lat;
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+#endif
+{
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 81.2705 /*dx*/, 81.2705 /*dy*/, 12.190 /*start_lat*/,  -133.459 /*start_lon*/, 93 /*nx*/, 65 /*ny*/);
+}
+/*
+* END Lambert Conformal Grids
+*/
 /*
 * START lat lon grids
 */
@@ -2474,7 +3077,7 @@ GridInfoRecord grid_gds[] = {
 };
 
 GridInfoRecord grid[] = {
-		NULL,NULL,"1679-point (73x23) Mercator grid with (0,0) at (0W,48.09S), (73,23) at (0W,48.09N); I increasing eastward, Equator at J=12. Grid increment of 5 degs of longitude", /*01*/
+		GenericUnPack,GetGrid_1,"1679-point (73x23) Mercator grid with (0,0) at (0W,48.09S), (73,23) at (0W,48.09N); I increasing eastward, Equator at J=12. Grid increment of 5 degs of longitude", /*01*/
 		GenericUnPack,GetGrid_2,"10512-point (144x73) global longitude-latitude grid.  (0,0) at 0E, 90N, latitude grid.  (0,0) at 0E, 90N, matrix layout.  N.B.: prime meridian not duplicated.", /*2*/
 		GenericUnPack,GetGrid_3,"65160-point (360x181) global longitude-latitude grid.  (0,0) at 0E, 90N, matrix layout.  N.B.: prime meridian not duplicated.", /*3*/
 		GenericUnPack,GetGrid_4,"259920-point (720x361) global lon/lat grid. (0,0) at 0E, 90N; matrix layout; prime meridian not duplicated", /*4*/
@@ -2530,15 +3133,15 @@ GridInfoRecord grid[] = {
 		GenericUnPack,GetGrid_201,"4225-point (65x65) Hemispheric polar stereographic grid oriented 105W; pole at (33,33)", /*201*/
 		GenericUnPack,GetGrid_202,"2795-point (65x43) National - CONUS polar stereographic oriented 105W; pole at (33,45)", /*202*/
 		GenericUnPack,GetGrid_203,"1755-point (45x39) National - Alaska polar stereographic oriented 150W; pole at (27,37)", /*203*/
-		NULL,NULL,"6324-point (93x68) National - Hawaii Mercator (0,0) is 25S,110E, (93,68) is 60.644S,109.129W", /*204*/
+		GenericUnPack,GetGrid_204,"6324-point (93x68) National - Hawaii Mercator (0,0) is 25S,110E, (93,68) is 60.644S,109.129W", /*204*/
 		GenericUnPack,GetGrid_205,"1755-point (45x39) National - Puerto Rico stereographic oriented 60W; pole at (27,57)", /*205*/
-		NULL,NULL,"2091-point (51x41) Regional - Central MARD Lambert Conformal oriented 95W; pole at (30.00,169.745)", /*206*/
+		GenericUnPack,GetGrid_206,"2091-point (51x41) Regional - Central MARD Lambert Conformal oriented 95W; pole at (30.00,169.745)", /*206*/
 		GenericUnPack,GetGrid_205,"1715-point (49x35) Regional - Alaska polar stereographic oriented 150W; pole at 25,51", /*207*/
-		NULL,NULL,"783-point (29x27) Regional - Hawaii mercator (0,0) is 9.343N,167.315W, (29,27) is 28.092N,145.878W", /*208*/
-		NULL,NULL,"8181-point (101x81) Regional - Centeral US MARD - Double Res. Lambert Conformal oriented 95W; pole at (59.000,338.490)", /* 209*/
-		NULL,NULL,"625-point (25x25) Regional - Puerto Rico mercator (0,0) is 9.000N,77.00W (25,25) is 26.422,58.625", /*210*/
-		NULL,NULL,"6045-point (93x65) Regional - CONUS lambert conformal oriented 95W; pole at (53.000,178.745)", /*211*/
-		NULL,NULL,"23865-point (185x129) Regional - CONUS - double resolution lambert conformal oriented 95W; pole at (105.000,256.490)", /* 212 */
+		GenericUnPack,GetGrid_208,"783-point (29x27) Regional - Hawaii mercator (0,0) is 9.343N,167.315W, (29,27) is 28.092N,145.878W", /*208*/
+		GenericUnPack,GetGrid_209,"8181-point (101x81) Regional - Centeral US MARD - Double Res. Lambert Conformal oriented 95W; pole at (59.000,338.490)", /* 209*/
+		GenericUnPack,GetGrid_210,"625-point (25x25) Regional - Puerto Rico mercator (0,0) is 9.000N,77.00W (25,25) is 26.422,58.625", /*210*/
+		GenericUnPack,GetGrid_211,"6045-point (93x65) Regional - CONUS lambert conformal oriented 95W; pole at (53.000,178.745)", /*211*/
+		GenericUnPack,GetGrid_212,"23865-point (185x129) Regional - CONUS - double resolution lambert conformal oriented 95W; pole at (105.000,256.490)", /* 212 */
 		GenericUnPack,GetGrid_213,"10965-point (129x85) National - CONUS - Double Resolution polar stereographic oriented 105W; pole at (65,89)", /*213*/
 		GenericUnPack,GetGrid_214,"6693-point (97x69) Regional - Alaska - Double Resolution polar stereographic oriented 150W; pole at (49,101)", /*214*/
 };
