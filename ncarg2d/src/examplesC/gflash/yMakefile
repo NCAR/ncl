@@ -1,9 +1,8 @@
 #
-#	$Id: yMakefile,v 1.2 1994-05-27 16:56:01 haley Exp $
+#	$Id: yMakefile,v 1.3 1994-10-31 03:36:36 haley Exp $
 #
 
-CSRCS = c_tgflas.c
+TESTS = c_tgflas.c
 
-GENERIC_SRCS = $(CSRCS)
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))
