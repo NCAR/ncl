@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.58 1999-04-12 19:11:42 ethan Exp $
+ *      $Id: PlotManager.c,v 1.59 1999-04-19 23:28:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,11 @@
 #include <ncarg/hlu/AnnoManagerP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
+/*
+ * shouldn't be including the private Title data, but it's necessary to
+ * solve the font height/class resource problem -- see note in ManageTitles
+ */
+#include <ncarg/hlu/TitleP.h>
 
 #define	Oset(field)	NhlOffset(NhlPlotManagerLayerRec,plotmanager.field)
 static NhlResource resources[] = {
@@ -4023,6 +4028,7 @@ ManageTitles
  * only to avoid the no set values called error.
  */
 	if (init) {
+		NhlTitleLayer tl;
 		float main_height,x_axis_height,y_axis_height;
 		strcpy(buffer,ovnew->base.parent->base.name);
 		strcat(buffer,".Title");
@@ -4036,41 +4042,60 @@ ManageTitles
 			return(NhlFATAL);
 		}
 		anno_rec->plot_id = tmpid;
+/*
+ * Title font height setting requires special treatment because these
+ * resources are intercepted but we want to be able to set them in the
+ * resource file based on them belonging to the titleClass. Because the
+ * code here explicitly sets the font height in the Title object based
+ * on the intercepted value of the resource, values set by class in the
+ * resource file are ignored (they do not result in the intercepted resource
+ * value getting set -- only the original value in the Title object itself).
+ * However, explicitly setting the value in the create call causes the 
+ * intercepted resource value to change. The solution for this difficulty
+ * is to check the intercepted value first to see if it has been set. If
+ * it has, do nothing. Otherwise, if the child object's value has been
+ * set use that value. Use the default only if it has not been set at
+ * either level. Shouldn't be looking at the private Title layer data, but
+ * it's the only way to catch the case of setting the height (by class in
+ * the resource file) explicitly to the default value, without creating 
+ * some new resources just for seeing if the resource has been set. 
+ */
 		NhlVAGetValues(tmpid,
 			       NhlNtiMainFontHeightF,&main_height,
 			       NhlNtiXAxisFontHeightF,&x_axis_height,
 			       NhlNtiYAxisFontHeightF,&y_axis_height,
 			       NULL);
-/*
+		tl = (NhlTitleLayer) _NhlGetLayer(tmpid);
 
-I'm commenting these out because I just don't get it.
-
-Setting ovp->ti_main_font_height to main_height forces the default
-height during create whether the user set FontHeightF or not. This
-is clearly not right.
-
-I just don't get why the title object should be created with
-all default resources and the overide user set resources in the
-following lines.
-
-I guess the point was to make the default font height always
-apply when creating the titles so that premature scalling doesn't
-happen. Anyhow the following doesn't work if the user sets
-the font height manually
-
-		if (_NhlCmpFAny(main_height,NhlDEF_TITLE_HEIGHT,6) != 0.0) {
-			ovp->ti_main_font_height_set = True;
+		if (! ovp->ti_main_font_height_set) {
+			if (tl->title.main_font_height_set) {
+				ovp->ti_main_font_height_set = True;
+				ovp->ti_main_font_height = main_height;
+			}
+			else {
+				ovp->ti_main_font_height = NhlDEF_TITLE_HEIGHT;
+			}
 		}
-		ovp->ti_main_font_height = main_height;
-		if (_NhlCmpFAny(x_axis_height,NhlDEF_TITLE_HEIGHT,6) != 0.0) {
-			ovp->ti_x_axis_font_height_set = True;
+		if (! ovp->ti_x_axis_font_height_set) {
+			if (tl->title.x_axis_font_height_set) {
+				ovp->ti_x_axis_font_height_set = True;
+				ovp->ti_x_axis_font_height = x_axis_height;
+			}
+			else {
+				ovp->ti_x_axis_font_height = 
+					NhlDEF_TITLE_HEIGHT;
+			}
 		}
-		ovp->ti_x_axis_font_height = x_axis_height;
-		if (_NhlCmpFAny(y_axis_height,NhlDEF_TITLE_HEIGHT,6) != 0.0) {
-			ovp->ti_y_axis_font_height_set = True;
+		if (! ovp->ti_y_axis_font_height_set) {
+			if (tl->title.y_axis_font_height_set) {
+				ovp->ti_y_axis_font_height_set = True;
+				ovp->ti_y_axis_font_height = y_axis_height;
+			}
+			else {
+				ovp->ti_y_axis_font_height = 
+					NhlDEF_TITLE_HEIGHT;
+			}
 		}
-		ovp->ti_y_axis_font_height = y_axis_height;
-*/
 	}
 	else {
 		if (ovp->titles == NULL) {

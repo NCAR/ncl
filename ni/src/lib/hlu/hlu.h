@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.36 1997-05-12 22:42:17 boote Exp $
+ *      $Id: hlu.h,v 1.37 1999-04-19 23:28:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -157,7 +157,7 @@ union _NhlType_ {
 typedef	union _NhlType_	NhlArgVal;
 
 #if	DEBUG
-#define	NhlINITVAR(var)		memset(&var,0,sizeof(var))
+#define NhlINITVAR(var)		memset(&(var),0,sizeof(var))
 #else
 #define	NhlINITVAR(var)
 #endif
