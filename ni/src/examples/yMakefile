@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.21 1995-04-08 03:02:27 haley Exp $
+#      $Id: yMakefile,v 1.22 1995-04-24 21:42:17 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -25,11 +25,19 @@ SUBDIRS	= basic contourplot labelbar legend mapplot \
 	textitem tickmark title xyplot data
 
 SCRIPTS		= ng4ex 
-MANS		= ng4ex.man
+MAN1		= ng4ex
+
+# Install preformatted troff documents on systems without troff
+#if UseCatDirs
+FORMAT_EXT	= .p
+#else
+FORMAT_EXT	= .man
+#endif
 
 InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
 CleanFilesTarget($(SCRIPTS))
-InstallManPages(ng4ex,.man,$(MAN1PATH),$(MAN1_SECTION))
+InstallManPages($(MAN1),$(FORMAT_EXT),$(MAN1PATH),$(MAN1_SECTION))
+FormatManPages($(MAN1),.man,.p)
 
 ng4ex: ng4ex.csh Makefile
 	@sed \
