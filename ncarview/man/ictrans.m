@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ictrans.m,v 1.7 1991-08-22 14:14:40 clyne Exp $
+.\"	$Id: ictrans.m,v 1.8 1991-09-18 17:44:15 clyne Exp $
 .\"
 .\" ictrans 3.01 90/06/22 
 .TH ICTRANS 1NCARG "22 June 1990" NCAR "NCAR View 3.01"
@@ -580,10 +580,10 @@ is omitted than the current frame is used.
 .BI [ " number " ]
 .br
 Set number of frames to skip over during subsequent plotting. For example,
-if "skip" is set to 2 and a request is made to plot frames 1 through 10
+if "skip" is set to 1 and a request is made to plot frames 1 through 10
 frames 1, 3, 5, 7, and 9 will be displayed. With no arguments 
 .B skip
-reports its current value. The default is one.
+reports its current value. The default is zero.
 .HP
 .B spooler
 .BI [ " spooler_alias " ]

@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.2 1991-08-16 11:12:58 clyne Exp $
+ *	$Id: xwd.c,v 1.3 1991-09-18 17:33:20 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -75,9 +75,15 @@ XWDOpen(name)
 	char	*name;
 {
 	Raster		*ras;
+
+#ifdef	hpux
+	void		*calloc();
+#else
 #ifndef CRAY
 	char		*calloc();
 #endif CRAY
+#endif
+
 	XWDFileHeader	*dep;
 
 	if (name == (char *) NULL) {

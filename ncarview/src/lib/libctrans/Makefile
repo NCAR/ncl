@@ -7,14 +7,14 @@
 #
 #######################################################################
 
-SYSTEM_INCLUDE		= Sun3
+SYSTEM_INCLUDE		= Sun4
 
 PARFIL_INIT     = /tmp/clyne/testlib/params3.1.2
 PARFIL_PERM     = /tmp/clyne/testlib/params3.1.2
 
-BINDIR		= /tmp/clyne/testbin
-LIBDIR		= /tmp/clyne/testlib
-MANDIR		= /tmp/clyne/testman
+BINDIR		= /red/tmp/clyne/testbin
+LIBDIR		= /red/tmp/clyne/testlib
+MANDIR		= /red/tmp/clyne/testman
 MAN_SECTION     = l
 TMPDIR          = /tmp
 XAPPDIR		= /tmp/clyne/testlib
@@ -33,7 +33,7 @@ CONFIGDIR       = $(NCARG)/config
 YMAKE           = $(CONFIGDIR)/ymake -I$(CONFIGDIR)
 
 MAKE            = make
-FLOAT_OPT       = -fswitch
+FLOAT_OPT       =
 OS              =
 ARCH            =
 CC              = cc

@@ -7,14 +7,14 @@
 #
 #######################################################################
 
-SYSTEM_INCLUDE		= Sun3
+SYSTEM_INCLUDE		= Sun4
 
 PARFIL_INIT     = /tmp/clyne/testlib/params3.1.2
 PARFIL_PERM     = /tmp/clyne/testlib/params3.1.2
 
-BINDIR		= /tmp/clyne/testbin
-LIBDIR		= /tmp/clyne/testlib
-MANDIR		= /tmp/clyne/testman
+BINDIR		= /red/tmp/clyne/testbin
+LIBDIR		= /red/tmp/clyne/testlib
+MANDIR		= /red/tmp/clyne/testman
 MAN_SECTION     = l
 TMPDIR          = /tmp
 XAPPDIR		= /tmp/clyne/testlib
@@ -33,7 +33,7 @@ CONFIGDIR       = $(NCARG)/config
 YMAKE           = $(CONFIGDIR)/ymake -I$(CONFIGDIR)
 
 MAKE            = make
-FLOAT_OPT       = -fswitch
+FLOAT_OPT       =
 OS              =
 ARCH            =
 CC              = cc
@@ -94,8 +94,6 @@ LOCINCDIR	= ../../include
 MYNAME		= libncarg_ras.a
 INCLUDES	= ncarg_ras.h
 
-EUALHACK	= =
-
 HDF_OBJS =	hdf.o
 HDF_SRCS =	hdf.c
 HDF_DEFS = 	-DBuildRasterHDF
@@ -131,6 +129,8 @@ GENERIC_OBJS =	raster.o cleartext.o error.o misc.o palette.o dither.o \
 
 GENERIC_SRCS =	raster.c cleartext.c error.c misc.c palette.c dither.c \
 	$(DEVICE_SRCS)
+
+EQUALHACK	= =
 
 OBJS		= $(GENERIC_OBJS) $(OTHER_OBJS)
 SRCS		= $(GENERIC_SRCS) $(OTHER_SRCS)
