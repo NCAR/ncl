@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.89 1997-12-18 01:12:03 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.90 1998-01-05 23:42:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2501,7 +2501,7 @@ NhlErrorTypes _NclIfbinrecwrite
 	total *= type->type_class.size;
 
 
-	fd = open(_NGResolvePath(NrmQuarkToString(*fpath)),(O_CREAT | O_RDWR),0777);
+	fd = open(_NGResolvePath(NrmQuarkToString(*fpath)),(O_CREAT | O_RDWR),0666);
 	if(fd == -1) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: could not open (%s) check path and permissions, can't continue",NrmQuarkToString(*fpath));
 		return(NhlFATAL);
@@ -3520,7 +3520,7 @@ NhlErrorTypes _NclIcbinwrite
 		thetype = tmp_md->multidval.type;
 		totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
 	}
-	fd = open(path_string,(O_CREAT | O_RDWR),0777);
+	fd = open(path_string,(O_CREAT | O_RDWR),0666);
 	if((tmp_ptr != NULL)&&(fd >= 0)) {
 		n = write(fd, tmp_ptr,totalsize);
 		close(fd);
