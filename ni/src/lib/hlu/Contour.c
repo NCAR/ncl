@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.20 1994-07-13 17:27:25 dbrown Exp $
+ *      $Id: Contour.c,v 1.21 1994-07-25 23:33:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2565,7 +2565,7 @@ static NhlErrorTypes ContourDraw
 	}
 
 /* Draw the contours */
-
+fprintf(stdout,"Cprect\n");
 	subret = _NhlCprect(Data,cnp->sfp->fast_dim,cnp->sfp->fast_len,
 			    cnp->sfp->slow_len,Fws,Iws,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
@@ -2594,6 +2594,7 @@ static NhlErrorTypes ContourDraw
 		}
 		Use_Area_Ws = True;
 
+fprintf(stdout,"Arinam\n");
 		subret = _NhlArinam(Aws,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
@@ -2601,12 +2602,13 @@ static NhlErrorTypes ContourDraw
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
 		if (Do_Lines) {
+fprintf(stdout,"Cpclam\n");
 			subret = _NhlCpclam(Data,Fws,Iws,Aws,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-			_NhlDumpAreaMap(Aws,entry_name);
 		}
 
 		if (Do_Labels && cnp->label_masking) {
+fprintf(stdout,"Cplbam\n");
 			subret = _NhlCplbam(Data,Fws,Iws,Aws,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 		}
@@ -2615,6 +2617,7 @@ static NhlErrorTypes ContourDraw
 
 	if (do_fill) {
 		
+fprintf(stdout,"Arscam\n");
 		subret = _NhlArscam(Aws,(_NHLCALLF(nhlfll,NHLFLL)),
 				    entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
@@ -2623,12 +2626,14 @@ static NhlErrorTypes ContourDraw
 	
 	if (Do_Lines && ! cnp->delay_lines) {
 		if (Do_Labels && cnp->label_masking) {
+fprintf(stdout,"Cpcldm\n");
 			subret = _NhlCpcldm(Data,Fws,Iws,Aws,
 					    (_NHLCALLF(cpdrpl,CPDRPL)),
 					    entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 		}
 		else {
+fprintf(stdout,"Cpcldr\n");
 			subret = _NhlCpcldr(Data,Fws,Iws,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 		}
@@ -2637,6 +2642,7 @@ static NhlErrorTypes ContourDraw
 	if (Do_Labels && ! cnp->delay_labels) {	
 		gset_fill_int_style(GSTYLE_SOLID);
 
+fprintf(stdout,"Cplbdr\n");
 		subret = _NhlCplbdr(Data,Fws,Iws,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 	}

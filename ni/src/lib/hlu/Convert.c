@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.8 1994-07-12 20:51:09 boote Exp $
+ *      $Id: Convert.c,v 1.9 1994-07-25 23:33:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1422,8 +1422,8 @@ RecurseGetCvtPtr
 )
 #else
 (fptr,tptr,from,to)
-	_NhlTptr	fptr,
-	_NhlTptr	tptr,
+	_NhlTptr	fptr;
+	_NhlTptr	tptr;
 	NrmQuark	from;
 	NrmQuark	to;
 #endif

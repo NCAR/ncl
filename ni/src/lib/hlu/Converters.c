@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.17 1994-07-13 23:14:37 boote Exp $
+ *      $Id: Converters.c,v 1.18 1994-07-25 23:33:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -444,6 +444,12 @@ _NhlRegisterEnumType
 	}
 
 	if(_NhlRegSymConv(NhlTGenArray,enum_name,NhlTGenArray,NhlTScalar) !=
+								NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
+								func,enum_name);
+		return NhlFATAL;
+	}
+	if(_NhlRegSymConv(NhlTQuark,enum_name,NhlTQuark,NhlTScalar) !=
 								NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
 								func,enum_name);

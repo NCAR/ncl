@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.6 1994-07-12 20:52:56 boote Exp $
+ *      $Id: ScalarField.c,v 1.7 1994-07-25 23:33:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -574,7 +574,7 @@ DataToFloatArrayExchDim
 	NhlString		entry_name
 )
 #else
-(sfp,ga,do_minmax,do_missing,missing_value,dmin,dmax,new_data,entry_name)
+(sfp,do_minmax,do_missing,missing_value,dmin,dmax,entry_name)
  	NhlScalarFieldLayerPart *sfp;
 	NhlBoolean		do_minmax;
 	NhlBoolean		do_missing;
@@ -1562,8 +1562,7 @@ GetCoordBoundsIrregular
 	NhlString		entry_name
 )
 #else
-(sfp,overwrite_ok,c_array,ctype,
- cstart,cend,icstart,icend,scstart,scend,entry_name)
+( sfp, c_array, ctype, overwrite_ok, cstart, cend, icstart, icend, scstart, scend, entry_name)
  	NhlScalarFieldLayerPart *sfp;
 	NhlGenArray		*c_array;
 	sfCoord			ctype;
@@ -2446,7 +2445,7 @@ static NhlPointer CreateData
 	NrmQuark resQ
 )
 #else
-(ga,resQ)
+(fval,resQ)
 	float fval;
 	NrmQuark resQ;
 #endif
