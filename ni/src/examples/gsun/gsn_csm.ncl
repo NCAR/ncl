@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.105 2002-09-09 23:15:21 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.106 2002-09-16 15:06:29 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2827,55 +2827,38 @@ begin
     newdata = new((/ny, mx1/),typeof(data))
     newdata(:,0:mx-1) = data             ; pass everything
     newdata(:,mx)     = (/ data(:,0) /)  ; value only
-
+;
+; Only check the longitude values if we are dealing with a 1D coordinate
+; array. It is possible that if we have a 2D longitudate "coordinate"
+; array, it will not be 360 in range, so we don't want to check 2D arrays.
+;
     if((.not.ismissing(newdata!1)) .and. iscoord(newdata,newdata!1)) then 
       first_val  = newdata&$newdata!1$(0)
       second_val = newdata&$newdata!1$(1)
       last_val   = newdata&$newdata!1$(mx-1)
       delta      = second_val - first_val
       range      = last_val - first_val
+
+      if(any((range+delta).lt.359.))
+        print("gsn_add_cyclic: Warning: The range of your longitude data is not 360.")
+        print("You may want to set gsnAddCyclic to False to avoid a warning")
+        print("message from the spline function.")
+      end if
     else
-      if(isatt(newdata,"lon2d").and. \
-         all(dimsizes(data@lon2d).eq.dimsizes(data))) then
-;
-; Have to store lon2d to a local variable, because NCL doesn't let you 
-; subscript attributes that are greater than one dimension.
-;
-        lon2d = newdata@lon2d
-;
-; We are not guaranteed that the lons start around 0, and end around
-; 359. In fact, we have no idea where the 0 to 360 jump might be.
-; So, to calculate the delta x, we should calculate it from both
-; ends of the data, just to be safe.  One of them has to be the
-; correct delta.  The correct delta will be the positive one, because
-; at the "split", the delta will be negative (i.e. 0.5 - 358.5).
-;
-        first_val            = lon2d(0,0)
-        second_val           = lon2d(0,1)
-        second_to_last_val   = lon2d(0,mx-2)
-        last_val             = lon2d(0,mx-1)
-        dx1 = second_val - first_val
-        dxn = last_val - second_to_last_val
-        if(dx1.gt.0) then
-          delta = lon2d(:,1) - lon2d(:,0)
-        else
-          delta = lon2d(:,mx-1) - lon2d(:,mx-2)
-        end if 
-        range = dim_max(lon2d) - dim_min(lon2d)
-      else
+      if(.not. (isatt(newdata,"lon2d").and. \
+         all(dimsizes(data@lon2d).eq.dimsizes(data)))) then
         return(newdata)
       end if
-    end if
-
-    if(any((range+delta).lt.359.))
-      print("gsn_add_cyclic: Warning: The range of your longitude data is not 360.")
-      print("You may want to set gsnAddCyclic to False to avoid a warning")
-      print("message from the spline function.")
     end if
 
     if((.not.ismissing(newdata!1)) .and. iscoord(newdata,newdata!1)) then 
       newdata&$newdata!1$(mx) = newdata&$newdata!1$(0) + 360
     else 
+;
+; Have to store lat2d/lon2d to a local variable, because NCL
+; doesn't let you subscript attributes that are greater than
+; one dimension.
+;
       lon2d               = newdata@lon2d
       lat2d               = newdata@lat2d
       new_lon2d           = new((/ny,mx1/),typeof(lon2d))
