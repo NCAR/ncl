@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.6 1991-03-12 17:35:41 clyne Exp $
+ *	$Id: ctrans.c,v 1.7 1991-04-18 13:26:45 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,7 +36,7 @@
  * rev 1.01 clyne 4/18/90	: expanded application programmer interace
  */
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.6 1991-03-12 17:35:41 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.7 1991-04-18 13:26:45 clyne Exp $";
 #endif
 
 
@@ -86,6 +86,7 @@ boolean	Batch;		/* if true don't prompt for user interaction	*/
 static	boolean softfill = 0;
 static	boolean debug = 0;
 static	boolean bell_off = 0;
+static	char	*palFname = NULL;
 
 boolean *softFill = &softfill;
 boolean *deBug = &debug;
@@ -232,6 +233,11 @@ Ct_err	init_metafile(record, cgm_fd)
 	int	record;
 	Cgm_fd	cgm_fd;
 {
+
+	int	devnum = devices[currdev].number;	
+
+	Ct_err	noop();
+
 	/*
 	 * 	make sure we've been initialized
 	 */
@@ -267,6 +273,22 @@ Ct_err	init_metafile(record, cgm_fd)
 	else {
 		ct_error(T_FRE, "missing CGM BEGIN METAFILE element");
 		return(DIE);
+	}
+
+	/*
+	 * load the default color palette now if there is one. We need to
+	 * do this after the BEGIN METAFILE is processed and before the
+	 * first BEGIN PICTURE
+	 */
+	if (palFname) {
+		if (LoadPalette(&command, palFname)) {
+			Process(&command);	/* command contains pal	*/
+			/*
+			 * disable future CGM color table entries
+			 */
+			cmdtab[devnum][ATT_ELEMENT][COLOR_TABLE] = noop;
+			
+		}
 	}
 
 	/*
@@ -363,7 +385,115 @@ Ct_err	ctrans(record)
 	}
 
 }
+/*
+ *	ctrans_merge:
+ *	PUBLIC
+ *
+ *	process one frame on top of anonther. Like ctrans() except second
+ *	frame is drawn over first.  
+ *
+ * on entry
+ *	record1 	: first frame to process beginning at record 'record'. 
+ *	record1 	: second frame to process beginning at record 'record'. 
+ * on exit
+ *	return		: one of [ERROR, OK, EOM]
+ */
 
+Ct_err	ctrans_merge(record1, record2)
+	int	record1, record2;
+{
+	/*
+	 * 	make sure we've been initialized
+	 */
+	if (!ctransIsInit) {
+		ct_error(T_NULL, "not in proper state");
+		return(DIE);
+	}
+
+	/*
+	 * advance to first record
+	 */
+	if (SetRecord(record1) != OK) {
+		return(pre_err);
+	}
+
+	/*
+	 * 	Do until get a END PICTURE or END METAFILE element
+	 */
+	do {
+		if (Instr_Dec(&command) != OK) {
+			return(pre_err);
+		}
+
+		Process(&command);
+
+	} while (((command.class != DEL_ELEMENT) 
+			|| (command.command != END_PIC))
+		&& ((command.class != DEL_ELEMENT) 
+			|| (command.command != END_MF)));
+
+	/*
+	 * advance to second record (skip the END_PIC command)
+	 */
+	if (SetRecord(record2) != OK) {
+		return(pre_err);
+	}
+
+	/*
+	 * for the second frame we skip over everthing between the 
+	 * begin-pic and begin-pic-body
+	 */
+	do {
+
+		if (Instr_Dec(&command) != OK) {
+			return (pre_err);
+		}
+	}while((command.class != DEL_ELEMENT || command.command != BEG_PIC_B)
+		&& (command.class != DEL_ELEMENT || command.command != END_MF));
+
+
+	/*
+	 * get the next command
+	 */
+	if (Instr_Dec(&command) != OK) {
+		return (pre_err);
+	}
+
+	/*
+	 * 	Do until get a END PICTURE or END METAFILE element
+	 */
+	while (((command.class != DEL_ELEMENT) 
+			|| (command.command != END_PIC))
+		&& ((command.class != DEL_ELEMENT) 
+			|| (command.command != END_MF))) {
+
+		Process(&command);
+
+		if (Instr_Dec(&command) != OK) {
+			return(pre_err);
+		}
+	}
+
+	/*
+	 * process END_PICTURE or END_METAFILE
+	 */
+	Process(&command);
+
+	if (command.command == END_MF)
+
+		/* end of metafile		*/
+		return(EOM);
+	else {
+		/* 
+		 * end of a single frame. Get BEG_PIC command for next 
+		 * invocation of  ctrans()
+		 */
+		if (Instr_Dec(&command) != OK) {
+			return(pre_err);
+		}
+		return(OK);
+	}
+}
 /*
  *	SetDevice()
  *	PUBLIC
@@ -472,6 +602,23 @@ SetFont(fcap)
 	InitFontList();
 	}
 	return (1);
+}
+
+/*
+ *	SetDefaultPalette
+ *	PUBLIC
+ *
+ *	Inform ctrans to use a default color palette to overide colormap
+ *	entries supplied by the CGM being translated. This routine must
+ *	be called *before* init_metafile() or it will have no effect
+ *
+ * on entry
+ *	*pal_fname	: name of file containing palette
+ */
+void	SetDefaultPalette(pal_fname) 
+	char	*pal_fname;
+{
+	palFname = pal_fname;
 }
 
 /*
@@ -607,15 +754,11 @@ GraphicsMode(on)
 		(void) buffer(ERASE, ERASE_SIZE);
 	}
 	else {	/* put device in text mode	*/
-#ifdef	DEAD
-		(void) buffer(GRAPHIC_INIT, GRAPHIC_INIT_SIZE);
-		(void) buffer(ERASE, ERASE_SIZE);
-#endif
 		(void) buffer(TEXT_INIT, TEXT_INIT_SIZE);
+		deviceIsInit = FALSE;
 	}
 
 	(void) flush();	/* send instruction to device	*/
-
 }
 
 /*
