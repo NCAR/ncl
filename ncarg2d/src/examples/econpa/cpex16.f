@@ -125,7 +125,7 @@ C
 C
 C Declare an array to use in timing calls.
 C
-        DIMENSION TIME(2)
+C       DIMENSION TIME(2)
 C
 C Declare arrays into which to retrieve contour-level information and
 C associated area identifiers.
@@ -139,8 +139,10 @@ C temperature contours, whether or not to do the fill area plot, whether
 C or not to do the cell array plot, and whether or not to do a plot by
 C filling POP grid cells directly.
 C
-        DATA ITIM,IPOP,ILBL,ICON,IFIL,ICEL,IPGC /
-     +          1,   1,   0,   1,   1,   1,   1 /
+C       DATA ITIM,IPOP,ILBL,ICON,IFIL,ICEL,IPGC /
+C    +          1,   1,   0,   1,   1,   1,   1 /
+        DATA      IPOP,ILBL,ICON,IFIL,ICEL,IPGC /
+     +               1,   0,   1,   1,   1,   1 /
 C
 C Define single-precision and double-precision multiplicative constants
 C to convert from degrees to radians and vice-versa.
@@ -153,15 +155,15 @@ C
 C
 C Print elapsed time at start.
 C
-        IF (ITIM.NE.0) THEN
-          PRINT * , 'INITIALLY:'
-          IF (DTIME(TIME).GE.0.) THEN
-            PRINT * , '  USER TIME:  ',TIME(1)
-            PRINT * , '  SYSTEM TIME:',TIME(2)
-          ELSE
-            PRINT * , '  ERROR IN DTIME'
-          END IF
-        END IF
+C       IF (ITIM.NE.0) THEN
+C         PRINT * , 'INITIALLY:'
+C         IF (DTIME(TIME).GE.0.) THEN
+C           PRINT * , '  USER TIME:  ',TIME(1)
+C           PRINT * , '  SYSTEM TIME:',TIME(2)
+C         ELSE
+C           PRINT * , '  ERROR IN DTIME'
+C         END IF
+C       END IF
 C
 C R E A D   T H E   D A T A
 C - - - -   - - -   - - - -
@@ -279,15 +281,15 @@ C
 C
 C Print elapsed time.
 C
-        IF (ITIM.NE.0) THEN
-          PRINT * , 'AFTER READING INPUT DATA:'
-          IF (DTIME(TIME).GE.0.) THEN
-            PRINT * , '  USER TIME:  ',TIME(1)
-            PRINT * , '  SYSTEM TIME:',TIME(2)
-          ELSE
-            PRINT * , '  ERROR IN DTIME'
-          END IF
-        END IF
+C       IF (ITIM.NE.0) THEN
+C         PRINT * , 'AFTER READING INPUT DATA:'
+C         IF (DTIME(TIME).GE.0.) THEN
+C           PRINT * , '  USER TIME:  ',TIME(1)
+C           PRINT * , '  SYSTEM TIME:',TIME(2)
+C         ELSE
+C           PRINT * , '  ERROR IN DTIME'
+C         END IF
+C       END IF
 C
 C C O M P U T E   O T H E R   Q U A N T I T I E S   N E E D E D
 C - - - - - - -   - - - - -   - - - - - - - - - -   - - - - - -
@@ -396,15 +398,15 @@ C
 C
 C Print elapsed time.
 C
-        IF (ITIM.NE.0) THEN
-          PRINT * , 'AFTER SET-UP COMPUTATIONS:'
-          IF (DTIME(TIME).GE.0.) THEN
-            PRINT * , '  USER TIME:  ',TIME(1)
-            PRINT * , '  SYSTEM TIME:',TIME(2)
-          ELSE
-            PRINT * , '  ERROR IN DTIME'
-          END IF
-        END IF
+C       IF (ITIM.NE.0) THEN
+C         PRINT * , 'AFTER SET-UP COMPUTATIONS:'
+C         IF (DTIME(TIME).GE.0.) THEN
+C           PRINT * , '  USER TIME:  ',TIME(1)
+C           PRINT * , '  SYSTEM TIME:',TIME(2)
+C         ELSE
+C           PRINT * , '  ERROR IN DTIME'
+C         END IF
+C       END IF
 C
 C I N I T I A L I Z E   G K S
 C - - - - - - - - - -   - - -
@@ -467,15 +469,15 @@ C
 C
 C Print elapsed time.
 C
-        IF (ITIM.NE.0) THEN
-          PRINT * , 'AFTER INITIALIZING GKS AND VARIOUS UTILITIES:'
-          IF (DTIME(TIME).GE.0.) THEN
-            PRINT * , '  USER TIME:  ',TIME(1)
-            PRINT * , '  SYSTEM TIME:',TIME(2)
-          ELSE
-            PRINT * , '  ERROR IN DTIME'
-          END IF
-        END IF
+C       IF (ITIM.NE.0) THEN
+C         PRINT * , 'AFTER INITIALIZING GKS AND VARIOUS UTILITIES:'
+C         IF (DTIME(TIME).GE.0.) THEN
+C           PRINT * , '  USER TIME:  ',TIME(1)
+C           PRINT * , '  SYSTEM TIME:',TIME(2)
+C         ELSE
+C           PRINT * , '  ERROR IN DTIME'
+C         END IF
+C       END IF
 C
 C P L O T   T H E   P O P   G R I D
 C - - - -   - - -   - - -   - - - -
@@ -630,15 +632,15 @@ C
 C
 C Print elapsed time.
 C
-          IF (ITIM.NE.0) THEN
-            PRINT * , 'AFTER PLOTTING POP GRID:'
-            IF (DTIME(TIME).GE.0.) THEN
-              PRINT * , '  USER TIME:  ',TIME(1)
-              PRINT * , '  SYSTEM TIME:',TIME(2)
-            ELSE
-              PRINT * , '  ERROR IN DTIME'
-            END IF
-          END IF
+C         IF (ITIM.NE.0) THEN
+C           PRINT * , 'AFTER PLOTTING POP GRID:'
+C           IF (DTIME(TIME).GE.0.) THEN
+C             PRINT * , '  USER TIME:  ',TIME(1)
+C             PRINT * , '  SYSTEM TIME:',TIME(2)
+C           ELSE
+C             PRINT * , '  ERROR IN DTIME'
+C           END IF
+C         END IF
 C
         END IF
 C
@@ -695,15 +697,15 @@ C
 C
 C Print elapsed time.
 C
-          IF (ITIM.NE.0) THEN
-            PRINT * , 'AFTER CONPACK INITIALIZATION:'
-            IF (DTIME(TIME).GE.0.) THEN
-              PRINT * , '  USER TIME:  ',TIME(1)
-              PRINT * , '  SYSTEM TIME:',TIME(2)
-            ELSE
-              PRINT * , '  ERROR IN DTIME'
-            END IF
-          END IF
+C         IF (ITIM.NE.0) THEN
+C           PRINT * , 'AFTER CONPACK INITIALIZATION:'
+C           IF (DTIME(TIME).GE.0.) THEN
+C             PRINT * , '  USER TIME:  ',TIME(1)
+C             PRINT * , '  SYSTEM TIME:',TIME(2)
+C           ELSE
+C             PRINT * , '  ERROR IN DTIME'
+C           END IF
+C         END IF
 C
         END IF
 C
@@ -750,15 +752,15 @@ C
 C
 C Print elapsed time.
 C
-          IF (ITIM.NE.0) THEN
-            PRINT * , 'AFTER CONTOUR PLOT:'
-            IF (DTIME(TIME).GE.0.) THEN
-              PRINT * , '  USER TIME:  ',TIME(1)
-              PRINT * , '  SYSTEM TIME:',TIME(2)
-            ELSE
-              PRINT * , '  ERROR IN DTIME'
-            END IF
-          END IF
+C         IF (ITIM.NE.0) THEN
+C           PRINT * , 'AFTER CONTOUR PLOT:'
+C           IF (DTIME(TIME).GE.0.) THEN
+C             PRINT * , '  USER TIME:  ',TIME(1)
+C             PRINT * , '  SYSTEM TIME:',TIME(2)
+C           ELSE
+C             PRINT * , '  ERROR IN DTIME'
+C           END IF
+C         END IF
 C
         END IF
 C
@@ -816,15 +818,15 @@ C
 C
 C Print elapsed time.
 C
-          IF (ITIM.NE.0) THEN
-            PRINT * , 'AFTER FURTHER CONPACK INITIALIZATION:'
-            IF (DTIME(TIME).GE.0.) THEN
-              PRINT * , '  USER TIME:  ',TIME(1)
-              PRINT * , '  SYSTEM TIME:',TIME(2)
-            ELSE
-              PRINT * , '  ERROR IN DTIME'
-            END IF
-          END IF
+C         IF (ITIM.NE.0) THEN
+C           PRINT * , 'AFTER FURTHER CONPACK INITIALIZATION:'
+C           IF (DTIME(TIME).GE.0.) THEN
+C             PRINT * , '  USER TIME:  ',TIME(1)
+C             PRINT * , '  SYSTEM TIME:',TIME(2)
+C           ELSE
+C             PRINT * , '  ERROR IN DTIME'
+C           END IF
+C         END IF
 C
         END IF
 C
@@ -878,16 +880,16 @@ C
 C
 C Print elapsed time.
 C
-          IF (ITIM.NE.0) THEN
-            PRINT * , 'AFTER FILL AREA PLOT:'
-            IF (DTIME(TIME).GE.0.) THEN
-              PRINT * , '  USER TIME:  ',TIME(1)
-              PRINT * , '  SYSTEM TIME:',TIME(2)
-            ELSE
-              PRINT * , '  ERROR IN DTIME'
-            END IF
-            PRINT * , '  AREA MAP SPACE: ',IAMA(1)-(IAMA(6)-IAMA(5)-1)
-          END IF
+C         IF (ITIM.NE.0) THEN
+C           PRINT * , 'AFTER FILL AREA PLOT:'
+C           IF (DTIME(TIME).GE.0.) THEN
+C             PRINT * , '  USER TIME:  ',TIME(1)
+C             PRINT * , '  SYSTEM TIME:',TIME(2)
+C           ELSE
+C             PRINT * , '  ERROR IN DTIME'
+C           END IF
+C           PRINT * , '  AREA MAP SPACE: ',IAMA(1)-(IAMA(6)-IAMA(5)-1)
+C         END IF
 C
         END IF
 C
@@ -929,15 +931,15 @@ C
 C
 C Print elapsed time.
 C
-          IF (ITIM.NE.0) THEN
-            PRINT * , 'AFTER CELL ARRAY PLOT:'
-            IF (DTIME(TIME).GE.0.) THEN
-              PRINT * , '  USER TIME:  ',TIME(1)
-              PRINT * , '  SYSTEM TIME:',TIME(2)
-            ELSE
-              PRINT * , '  ERROR IN DTIME'
-            END IF
-          END IF
+C         IF (ITIM.NE.0) THEN
+C           PRINT * , 'AFTER CELL ARRAY PLOT:'
+C           IF (DTIME(TIME).GE.0.) THEN
+C             PRINT * , '  USER TIME:  ',TIME(1)
+C             PRINT * , '  SYSTEM TIME:',TIME(2)
+C           ELSE
+C             PRINT * , '  ERROR IN DTIME'
+C           END IF
+C         END IF
 C
         END IF
 C
@@ -1016,15 +1018,15 @@ C
 C
 C Print elapsed time.
 C
-          IF (ITIM.NE.0) THEN
-            PRINT * , 'AFTER FILLING POP GRID CELLS:'
-            IF (DTIME(TIME).GE.0.) THEN
-              PRINT * , '  USER TIME:  ',TIME(1)
-              PRINT * , '  SYSTEM TIME:',TIME(2)
-            ELSE
-              PRINT * , '  ERROR IN DTIME'
-            END IF
-          END IF
+C         IF (ITIM.NE.0) THEN
+C           PRINT * , 'AFTER FILLING POP GRID CELLS:'
+C           IF (DTIME(TIME).GE.0.) THEN
+C             PRINT * , '  USER TIME:  ',TIME(1)
+C             PRINT * , '  SYSTEM TIME:',TIME(2)
+C           ELSE
+C             PRINT * , '  ERROR IN DTIME'
+C           END IF
+C         END IF
 C
         END IF
 C
