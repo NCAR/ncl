@@ -1,5 +1,5 @@
 /*
- *	$Id: hplj.c,v 1.2 1991-08-16 11:13:11 clyne Exp $
+ *	$Id: hplj.c,v 1.3 1991-08-20 16:48:42 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -513,4 +513,10 @@ static	create_data_space(hplj, nx, ny)
 	hplj->ras.data = data;
 
 	return(1);
+}
+
+int	HPLJProbe(name)
+	char	*name;
+{
+	return(False);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.13 1991-08-15 17:15:43 clyne Exp $
+ *	$Id: w_idt.c,v 1.14 1991-08-20 16:50:14 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -180,6 +180,16 @@ main(argc, argv)
 	 * hack to ensure idt app resource file is found
 	 */
 	XAppDirPath();
+
+	/*
+	 * hack to ensure ncarg parameter file is found
+	 */
+	if (kludge() < 0) {
+		(void) fprintf(stderr, 
+			"%s: couldn't locate ncarg parameter file. ", argv[0]);
+		(void) fprintf(stderr,"Is \'ncargpar\' on your search path?\n");
+		exit (1);
+	}
 
 	toplevel = XtAppInitialize(&app_con, "Idt", options, XtNumber(options),
 			       &argc, argv, fallback_resources, NULL, ZERO);

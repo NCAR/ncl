@@ -127,12 +127,12 @@ EQUALHACK = =
 OBJS	= \
 	w_idt.o w_file.o file.o glob.o w_display.o display.o w_dialog.o \
 	commands.o talkto.o xrubber.o scroll.o w_text.o spooler.o w_icon.o \
-	xt_env.o
+	xt_env.o kludge.o
 
 SRCS	= \
 	w_idt.c w_file.c file.c glob.c w_display.c display.c w_dialog.c \
 	commands.c talkto.c xrubber.c scroll.c w_text.c spooler.c w_icon.c \
-	xt_env.c
+	xt_env.c kludge.c
 
 all::	$(MYNAME)
 
