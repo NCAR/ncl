@@ -1,5 +1,5 @@
 /*
- *	$Id: spooler.c,v 1.2 1991-01-09 11:13:58 clyne Exp $
+ *	$Id: spooler.c,v 1.3 1991-07-31 17:16:42 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,7 +26,7 @@
 #include	<signal.h>
 #include	<ctype.h>
 #include	<fcntl.h>
-#include	<icmalloc.h>
+#include	<ncarv.h>
 #include	"ictrans.h"
 #include	"spooler.h"
 
@@ -369,6 +369,7 @@ InitSpool()
 	char	*home;
 	char	*home_spool_file = NULL;
 	char	*sys_spool_file = NULL;
+	char	*binpath;
 
 	Spooler	*spool;
 
@@ -401,16 +402,18 @@ InitSpool()
 		}
 	}
 
+	binpath = GetNCARGPath("BINDIR");
+	binpath = binpath ? binpath : "";
 
 	/*
 	 * build path to system level spooler file
 	 */
-	sys_spool_file = icMalloc (strlen ((char *) LIBPATH) 
+	sys_spool_file = icMalloc (strlen (binpath)
 			+ strlen ("/")
 			+ strlen ((char *) SPOOL_FILE)
 			+ 1);
 
-	(void) strcpy (sys_spool_file, (char *) LIBPATH);
+	(void) strcpy (sys_spool_file, binpath);
 	(void) strcat (sys_spool_file, "/");
 	(void) strcat (sys_spool_file, (char *) SPOOL_FILE);
 

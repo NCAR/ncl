@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.4 1991-04-25 12:42:29 clyne Exp $
+ *	$Id: commands.c,v 1.5 1991-07-31 17:16:37 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -569,18 +569,23 @@ int	iCPrint(ic)
 
 	int	argc;
 	char	**argv = NULL;
+	char	*binpath;
 	static char	*translator = NULL;
 	static char	*record_opt = NULL;
 
 	if (!Toc) return;
 
+	binpath = GetNCARGPath("BINDIR");
+	binpath = binpath ? binpath : "";
+
 	/*
 	 * one time creation of spooler translator name
 	 */
 	if (! translator) {
-		translator = icMalloc(strlen(BINDIR) + strlen(SPOOL_TRANS) + 2);
+		translator = icMalloc(strlen(binpath) +
+				      strlen(SPOOL_TRANS) + 2);
 
-		(void) strcpy(translator, BINDIR);
+		(void) strcpy(translator, binpath);
 		(void) strcat(translator, "/");
 		(void) strcat (translator, SPOOL_TRANS); 
 

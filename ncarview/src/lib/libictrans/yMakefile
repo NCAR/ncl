@@ -17,13 +17,13 @@ CDEFINES	= -I$(LOCINCDIR)
 
 EXTENSION_OBJS	= ictrans_mem.o ictrans_wks.o fort_ictrans.o
 
-EXTENSION_SRCS	= ictrans_mem.c ictrans_wks.c fort_ictrans.f
+EXTENSION_SRCS	= ictrans_mem.c ictrans_wks.c 
 
 GENERIC_OBJS	= lex.yy.o commands.o cmd_tab.o get_cmd.o \
-		glob.o spooler.o ictrans.o lex_stuff.o
+		glob.o spooler.o ictrans.o lex_stuff.o input.o
 
-GENERIC_SRCS	= lex.yy.c commands.c cmd_tab.c get_cmd.c \
-		glob.c spooler.c ictrans.c lex_stuff.c
+GENERIC_SRCS	= commands.c cmd_tab.c get_cmd.c \
+		glob.c spooler.c ictrans.c input.c
 
 OBJS	= $(GENERIC_OBJS) $(EXTENSION_OBJS)
 SRCS	= $(GENERIC_SRCS) $(EXTENSION_SRCS)
@@ -52,22 +52,24 @@ ictrans_wks.c: ictrans_wks.c.sed Makefile
 
 # Files that need to know installation directories
 
-spooler.o:	Makefile
-	$(CC) $(CFLAGS) -DLIBPATH$(EQUALHACK)'"$(LIBDIR)"' -c $*.c
-
 commands.o:	Makefile
-	$(CC) $(CFLAGS) -DSPOOL_TRANS$(EQUALHACK)'"$(SPOOL_TRANS)"' \
-		-DBINDIR$(EQUALHACK)'"$(BINDIR)"'  -c $*.c
+	$(CC) $(CFLAGS) -DSPOOL_TRANS$(EQUALHACK)'"$(SPOOL_TRANS)"' -c $*.c
 
-lex.yy.c: lex.l
+lex.yy.c: lex.l sedscript
 	lex lex.l
-	@sed -e 's/yylex/my_yylex/g' lex.yy.c > lex.yy.c.tmp
-	@$(MV) lex.yy.c.tmp lex.yy.c
+	@$(MV) lex.yy.c lex.yy.c.sed
+	@sed -f sedscript < lex.yy.c.sed > lex.yy.c
+	@$(RM) lex.yy.c.sed
+
+sedscript:      Makefile
+	@echo '1a\' >$@
+	@echo '#include "input.h"' >> $@
+	@echo 's/yylex/my_yylex/g' >> $@
+	@echo 's/getc/my_getc/g' >> $@
+
 
 lint: $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS) \ 
-		-DLIBPATH$(EQUALHACK)'"$(LIBDIR)"' \
-		-DSPOOL_TRANS$(EQUALHACK)'"$(SPOOL_TRANS)"' \
-		-DBINDIR$(EQUALHACK)'"$(BINDIR)"' 1> lint.out 2>&1
+		-DSPOOL_TRANS$(EQUALHACK)'"$(SPOOL_TRANS)"' 1> lint.out 2>&1
 
 
