@@ -1,13 +1,13 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-tape,v 1.6 1994-03-15 14:47:31 haley Exp $
+#      $Id: make-tape,v 1.7 1995-06-09 14:23:28 haley Exp $
 #
 #########################################################################
-#									#
-#			   Copyright (C)  1992				#
-#	     University Corporation for Atmospheric Research		#
-#			   All Rights Reserved				#
-#									#
+#									                                    #
+#			   Copyright (C)  1992				                        #
+#	     University Corporation for Atmospheric Research		        #
+#			   All Rights Reserved				                        #
+#									                                    #
 #########################################################################
 #
 #	File:		make-tape
@@ -26,6 +26,7 @@
 #					[-nrdevice <device>] 
 #					[-rhost <rhost>] 
 #					[-<arch>]
+#					[-doc]
 #
 #	Environment:
 #
@@ -36,7 +37,8 @@
 #				  	should be put on the tape.
 #		$build_root/INSTALL/INSTALL.TAR	: install script
 #
-#		$build_root/$arch/{BIN,INC,LIB,MAN}.TAR	: distribution tar files
+#		$build_root/$platform/{BIN,INC,LIB,MAN}.TAR	: distribution tar files
+#		$build_root/$platform/{HTML,PS}.TAR	: documentation tar files
 #
 #
 #	Options:	-debug			: print tape writing commands 
@@ -48,6 +50,7 @@
 #			-nrdevice <device>	: no rewind tape device
 #			-rhost <rhost>		: remote host 
 #			-arch <arch>		: platforms to include.
+#			-doc		: write documentation tar files
 #
 #	globals
 #
@@ -61,7 +64,8 @@ $doDebug = 0;
 	'HPUX_HP9000_7xx',
 	'OSF1_alpha',
 	'UNICOS_YMP',
-	'src'
+	'src',
+	'NGDOC'
 );
 
 
@@ -195,25 +199,25 @@ sub	get_archs {
 ##
 
 
-$nrdevice = "/dev/nrst8";	# no rewind tape device
-$rhost = "windom";		# remote tapedrive host
+$nrdevice = "/dev/nrst0";	# no rewind tape device
+$rhost = "dillon";		# remote tapedrive host
 
 $do_inter = 0;			# do interactive mode?
 $do_src = 0;			# do we record the distribution src to tape
+$do_doc = 0;			# do we record the documentation to tape
 $build_root = "/cyclone/ncargd/dist/binaries";	
 $install_dir = "INSTALL";
 $rsh;				# remote shell command (undefine if local)
 @archs;				# architectures to write binaries for
 $index = 0;			# index for toc
-$usage = "[-debug] [-root <path>] [-inter] [-nrdevice <device>] [-rhost <rhost>] [-<arch>]";
-
+$usage = "[-debug] [-root <path>] [-inter] [-nrdevice <device>] [-rhost <rhost>] [-<arch>] [-doc]";
 
 #
 # Tar files we write for each requested architecture
 # N.B. order is important
 #
 @tars = ("BIN.TAR", "INCLUDE.TAR", "LIB.TAR", "MAN.TAR");	
-
+@doctars = ("HTML.TAR", "PS.TAR");	
 
 
 undef	@archs;
@@ -236,6 +240,9 @@ while ($ARGV[0] =~ /-/) {
 	elsif (/-root/) {
 		$build_root = shift @ARGV;
 	}
+	elsif (/-doc/) {
+		@archs = split(' ',join(' ',@archs,"NGDOC"));
+	}
 	else {
 		foreach $arch (@Archs) {
 			if (/-$arch/) {
@@ -254,7 +261,7 @@ print "rhost=$rhost\n";
 $rsh = "rsh $rhost" if (! ($rhost eq ""));
 
 if (@ARGV) {
-        print STDERR "Usage: $make-tape [-debug]\n";
+        print STDERR "Usage: $make-tape $usage\n";
         exit 1;
 }
 
@@ -268,6 +275,9 @@ print "archs=@archs\n";
 
 $do_src = grep(/^src$/, @archs);	# Do we record the src?
 @archs = grep(!/^src$/, @archs);	# remove 'src' from @archs if exists
+
+$do_doc = grep(/^NGDOC/, @archs);	# Do we record the documentation?
+@archs = grep(!/^NGDOC/, @archs);	# remove 'NGDOC' from @archs if exists
 
 #
 # generate table of contents inside of install script directory. We need
@@ -288,6 +298,11 @@ foreach $arch (@archs) {
 	$index += @tars;
 }
 
+if ($do_doc) {
+	print FP "$index NGDOC\n";
+	$index++;
+}
+
 close(FP);
 
 print "Place tape in device and hit <RETURN> when ready. Ctrl-C to abort ";
@@ -306,8 +321,6 @@ do my_system("$cmd");
 #
 do rewind($rsh, $nrdevice);
 
-
-
 #
 #	write the tar install script tar file
 #
@@ -322,11 +335,15 @@ if ($do_src) {
 	do write ($rsh, $nrdevice, "$build_root", "SRC.TAR");
 }
 
-	
 chdir $build_root;
 foreach $arch (@archs) {
 	print "\n\nWriting $arch binaries to $rhost:$nrdevice...\n";
 	do write ($rsh, $nrdevice, $arch, @tars);
+}
+
+if ($do_doc) {
+  	print "\n\nWriting documentation source to $rhost:$nrdevice...\n";
+	do write ($rsh, $nrdevice, "NGDOC", @doctars);
 }
 
 
