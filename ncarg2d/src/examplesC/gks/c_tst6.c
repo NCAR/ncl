@@ -6,7 +6,10 @@
 
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 
-main ()
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
+main()
 {
 /*
  *  Illustrate polymarkers.
@@ -22,7 +25,9 @@ main ()
     float x0,y0,r,jl,ainc,y;
     float holdx,holdy;
     
-    c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  *  Define the necessary color indices.
  */
@@ -48,7 +53,7 @@ main ()
     rgbs[6].rgb.green = 0.;
     rgbs[6].rgb.blue = 1.;
     for( i = 0; i <= 6; i++ ) {
-        gset_colr_rep(1,i,&rgbs[i]);
+        gset_colr_rep(WKID,i,&rgbs[i]);
     }
     gset_marker_type(1);
     ginq_marker_type(&ierr,&rmty);
@@ -337,5 +342,7 @@ main ()
 /*
  *  Deactivate and close the workstation, close GKS.
  */
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }

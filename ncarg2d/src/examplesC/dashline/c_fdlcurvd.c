@@ -1,11 +1,14 @@
 /*
- *	$Id: c_fdlcurvd.c,v 1.1 1994-05-26 14:36:00 haley Exp $
+ *	$Id: c_fdlcurvd.c,v 1.2 1994-06-21 14:59:52 haley Exp $
  */
 
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -18,7 +21,9 @@ main()
 /*
  * OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
  */
-	c_opngks();
+	gopne_gks ("stdout",0);
+	gopne_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * PURPOSE                To provide a simple demonstration of the
  *                        CURVED line drawing techniques.
@@ -48,32 +53,32 @@ main()
  * Black background
  */
 	rgb.rgb.red = 0.; rgb.rgb.green = 0.; rgb.rgb.blue = 0.;
-	gset_colr_rep (1,0,&rgb);
+	gset_colr_rep (WKID,0,&rgb);
 /*
  * White foreground
  */
 	rgb.rgb.red = 1.; rgb.rgb.green = 1.; rgb.rgb.blue = 1.;
-	gset_colr_rep (1,1,&rgb);
+	gset_colr_rep (WKID,1,&rgb);
 /*
  * Yellow
  */
 	rgb.rgb.red = 1.; rgb.rgb.green = 1.; rgb.rgb.blue = 0.;
-	gset_colr_rep (1,2,&rgb);
+	gset_colr_rep (WKID,2,&rgb);
 /*
  * Gray
  */
 	rgb.rgb.red = 0.4; rgb.rgb.green = 0.4; rgb.rgb.blue = 0.4;
-	gset_colr_rep (1,3,&rgb);
+	gset_colr_rep (WKID,3,&rgb);
 /*
  * Pink
  */
 	rgb.rgb.red = 1.00; rgb.rgb.green = 0.00; rgb.rgb.blue = 0.5;
-	gset_colr_rep (1,4,&rgb);
+	gset_colr_rep (WKID,4,&rgb);
 /*
  * Cyan
  */
 	rgb.rgb.red = 0.00; rgb.rgb.green = 1.00; rgb.rgb.blue = 0.5;
-	gset_colr_rep (1,5,&rgb);
+	gset_colr_rep (WKID,5,&rgb);
 /*
  * Set line color
  */
@@ -159,7 +164,9 @@ main()
  * Advance the Frame
  */
 	c_frame();
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void gncrcl(xcntr, ycntr, rad, npts, xcoord, ycoord)

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpex08.c,v 1.2 1994-05-24 22:42:06 haley Exp $
+ *	$Id: c_cpex08.c,v 1.3 1994-06-21 14:59:45 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -13,6 +13,9 @@ char *llbs[14] = {
     "OCEAN","LAND","< 0","0-10","10-20","20-30","30-40","40-50","50-60",
     "60-70", "70-80","80-90","90-100", "> 100"
 };
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -82,7 +85,9 @@ main()
 /*
  * Open GKS.
  */
-    c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Turn off the clipping indicator.
  */
@@ -210,7 +215,9 @@ main()
 /*
  * Close GKS.
  */
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 int ioci[] = {3,4,5,6,8,9,10,11,12,13,14,15};

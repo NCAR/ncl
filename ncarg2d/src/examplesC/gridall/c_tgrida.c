@@ -1,10 +1,13 @@
 /*
- *	$Id: c_tgrida.c,v 1.1 1994-05-13 14:28:04 haley Exp $
+ *	$Id: c_tgrida.c,v 1.2 1994-06-21 15:01:01 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -13,8 +16,8 @@ main()
  * OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
  */
     gopen_gks ("stdout",0);
-    gopen_ws (1, NULL, 1);
-    gactivate_ws (1);
+    gopen_ws (WKID, NULL, WSTYPE);
+    gactivate_ws (WKID);
 /*
  * INVOKE DEMO DRIVER
  */    
@@ -22,8 +25,8 @@ main()
 /*
  *     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
  */
-    gdeactivate_ws(1);
-    gclose_ws(1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }
 
@@ -172,15 +175,15 @@ int *ier;
     gsel_norm_tran(0);
     rgb.rgb.red = rgb.rgb.green = 0.;
     rgb.rgb.blue = 1.;
-    gset_colr_rep(1,2,&rgb);
+    gset_colr_rep(WKID,2,&rgb);
     rgb.rgb.red = 1.;
-    gset_colr_rep(1,3,&rgb);
+    gset_colr_rep(WKID,3,&rgb);
     rgb.rgb.red = 0.;
     rgb.rgb.green = 1.;
-    gset_colr_rep(1,4,&rgb);
+    gset_colr_rep(WKID,4,&rgb);
     rgb.rgb.red = 1.;
     rgb.rgb.blue = 0.;
-    gset_colr_rep(1,5,&rgb);
+    gset_colr_rep(WKID,5,&rgb);
     c_gacolr(2,3,4,5);
     c_plchlq(.5,.98,"TEST IGPH OPTIONS OF GRIDAL",16.,0.,0.);
     knt= 0;

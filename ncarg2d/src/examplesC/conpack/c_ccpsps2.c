@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpsps2.c,v 1.2 1994-05-31 22:28:24 haley Exp $
+ * $Id: c_ccpsps2.c,v 1.3 1994-06-21 14:59:33 haley Exp $
  */
 
 #include <stdio.h>
@@ -15,6 +15,9 @@
 
 float x[] = {1.,  2.,  3.,  5.,  7., 11., 13., 17., 19., 23., 29., 31., 37., 
              41., 43., 47., 53., 59., 61., 67.};
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 	float y[N], z[N][M], zreg[LZRG], rwrk[LRWK];
@@ -25,7 +28,9 @@ main()
 /*
  * Open GKS
  */
-	c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Turn clipping off
  */
@@ -54,7 +59,9 @@ main()
  * Close frame and close GKS
  */
 	c_frame();
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void getdat (x, y, z, n, m)

@@ -1,11 +1,14 @@
 /*
- *	$Id: c_mpex08.c.sed,v 1.1 1994-05-13 14:26:39 haley Exp $
+ *	$Id: c_mpex08.c.sed,v 1.2 1994-06-21 15:00:13 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/ncargC.h>
 
 char *plbl = "ILLUSTRATING THE USE OF MAPUSR";
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -23,7 +26,9 @@ main()
 /*
  * Open GKS.
  */
-    c_opngks();
+	gopen_gks("stdout",0);
+	gopen_ws(WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Weird up the projection a little.
  */
@@ -45,7 +50,9 @@ main()
 /*
  * Close GKS.
  */
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void bndary()

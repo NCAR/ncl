@@ -1,5 +1,5 @@
 /*
- *	$Id: c_agex09.c.sed,v 1.1 1994-05-13 14:24:16 haley Exp $
+ *	$Id: c_agex09.c.sed,v 1.2 1994-06-21 14:58:42 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -8,6 +8,9 @@
 #define max(x,y)    ((x) > (y) ? (x) : (y) )
 #define min(x,y)    ((x) < (y) ? (x) : (y) )
 #define pow2(x)    ((x)*(x))
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -21,7 +24,9 @@ main()
 /*
  * initialize gks.
  */
-    c_opngks();
+	gopen_gks("stdout",0);
+	gopen_ws(WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * fill the data arrays.
  */
@@ -97,7 +102,9 @@ main()
 /*
  * close gks.
  */
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 
 }
 

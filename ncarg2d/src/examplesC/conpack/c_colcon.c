@@ -21,6 +21,9 @@
 
 float zreg[MREG][NREG];
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
     extern void colcon(), gendat();
@@ -31,7 +34,9 @@ main()
 /*
  * open gks, and turn clipping off
  */
-    c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
     gset_clip_ind(GIND_NO_CLIP);
 /*
  * call conpack color fill routine
@@ -41,7 +46,9 @@ main()
  * close frame and close gks
  */
     c_frame();
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void colcon(zreg,ncl,proj,rlatmn,rlatmx,rlonmn,rlonmx,plat,plon)
@@ -377,17 +384,17 @@ int n;
     Gcolr_rep rgb;
 
     rgb.rgb.red = rgb.rgb.green = rgb.rgb.blue = 0.;
-    gset_colr_rep(1,0,&rgb);
+    gset_colr_rep(WKID,0,&rgb);
 /*
  * first foreground color is white
  */
     rgb.rgb.red = rgb.rgb.green = rgb.rgb.blue = 1.;
-    gset_colr_rep(1,1,&rgb);
+    gset_colr_rep(WKID,1,&rgb);
 /*
  * second foreground color is gray
  */
     rgb.rgb.red = rgb.rgb.green = rgb.rgb.blue = 0.75;
-    gset_colr_rep(1,2,&rgb);
+    gset_colr_rep(WKID,2,&rgb);
 /*
  * choose other foreground colors spaced equally around the spectrum
  */
@@ -399,11 +406,11 @@ int n;
         xhue=i*hues;
         c_hlsrgb(xhue,60.,75.,&rgb.rgb.red,&rgb.rgb.green,&rgb.rgb.blue);
         if (xhue<=redln) {
-            gset_colr_rep(1,(n+2)-(lap-i),&rgb);
+            gset_colr_rep(WKID,(n+2)-(lap-i),&rgb);
             icnt=icnt+1;
         }
         else {
-            gset_colr_rep(1,i-icnt+2,&rgb);
+            gset_colr_rep(WKID,i-icnt+2,&rgb);
         }
     }
 }

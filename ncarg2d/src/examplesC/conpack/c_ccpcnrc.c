@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpcnrc.c,v 1.1 1994-06-08 14:44:33 haley Exp $
+ * $Id: c_ccpcnrc.c,v 1.2 1994-06-21 14:59:17 haley Exp $
  */
 
 #include <stdio.h>
@@ -14,6 +14,9 @@
 #define min(x,y) ((x) < (y) ? (x) : (y))
 #define max(x,y) ((x) > (y) ? (x) : (y))
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 	float zreg[N][M];
@@ -25,7 +28,9 @@ main()
 /*
  * Open GKS
  */
-	c_opngks();
+	gopen_gks("stdout",0);
+	gopen_ws(WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Call c_cpcnrc
  */
@@ -33,7 +38,9 @@ main()
 /*
  * Close GKS
  */
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void mkdat(nctfr,zdat)

@@ -1,5 +1,5 @@
 /*
- * $Id: c_cardb2.c,v 1.1 1994-05-13 14:25:17 haley Exp $
+ * $Id: c_cardb2.c,v 1.2 1994-06-21 14:53:53 haley Exp $
  */
 
 #include <stdio.h>
@@ -12,6 +12,9 @@
 #define NMAP   43
 #define NPTS   50
 #define CNTR   5
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 float xgeo[] = {.63, .12, .05, .07, .10, .04, .19, .31, .31, .41, .39, .47, 
                 .64, .63, .70, .66, .67, .69, .76, .92, .95, .69, .64, .53,
@@ -53,7 +56,9 @@ main()
 /*
  * Open GKS
  */
-    c_opngks();
+    gopen_gks ("stdout",0);
+    gopen_ws (WKID, NULL, WSTYPE);
+    gactivate_ws(WKID);
 /*
  * Outline continents in red
  */
@@ -91,5 +96,7 @@ main()
 /*
  * Close GKS
  */
-    c_clsgks();
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
+    gclose_gks();
 }

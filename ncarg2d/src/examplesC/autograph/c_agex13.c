@@ -1,5 +1,5 @@
 /*
- *	$Id: c_agex13.c,v 1.1 1994-05-13 14:24:22 haley Exp $
+ *	$Id: c_agex13.c,v 1.2 1994-06-21 14:58:47 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -34,6 +34,9 @@ float xycd[226] = {
                 25.4, 22.9, 25.9, 22.5, 26.6, 22.4, 27.4, 23.1, 28.2, 24.0,
                 29.0, 25.0, 30.1, 26.4,1.e36,1.e36};
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 
@@ -46,7 +49,9 @@ main()
 /*
  * initialize gks.
  */
-    c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * fill the data array.
  */
@@ -120,7 +125,9 @@ main()
 /*
  * close gks.
  */
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void bndary()

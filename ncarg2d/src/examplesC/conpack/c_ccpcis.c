@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpcis.c,v 1.1 1994-05-31 22:28:14 haley Exp $
+ * $Id: c_ccpcis.c,v 1.2 1994-06-21 14:59:09 haley Exp $
  */
 
 #include <stdio.h>
@@ -13,6 +13,9 @@
 #define   LRWK   1000
 #define   LIWK   1000
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 	float z[N][K], rwrk[LRWK];
@@ -23,7 +26,9 @@ main()
 /*
  * Open GKS
  */
-	c_opngks();
+	gopen_gks("stdout",0);
+	gopen_ws(WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Change Contour levels to come at increments of 15
  * Draw labels at every other contour level.
@@ -48,7 +53,9 @@ main()
  * Close frame and close GKS
  */
 	c_frame();
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void getdat (z, n, m, k)

@@ -1,5 +1,5 @@
 /*
- *  $Id: c_coex01.c,v 1.1 1994-05-13 14:25:28 haley Exp $
+ *  $Id: c_coex01.c,v 1.2 1994-06-21 14:58:58 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -9,6 +9,9 @@
  */
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -26,8 +29,8 @@ main()
  *  Open GKS.
  */
     gopen_gks("6",1);
-    gopen_ws(1,NULL,1);
-    gactivate_ws(1);
+    gopen_ws( WKID, NULL, WSTYPE);
+    gactivate_ws( WKID );
 /*
  *  Set fill area interior style to solid.
  */
@@ -49,8 +52,8 @@ main()
 /*
  *  Close GKS.
  */
-    gdeactivate_ws(1);
-    gclose_ws(1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }
 
@@ -102,7 +105,7 @@ int index;
         color.rgb.red = rgb[0][ndx];
         color.rgb.green = rgb[1][ndx];
         color.rgb.blue = rgb[2][ndx];
-        gset_colr_rep(1,n+2,&color);
+        gset_colr_rep(WKID,n+2,&color);
         ndx = ndx + 1;
     }
 }
@@ -262,7 +265,7 @@ int npage;
     il[8] = 1;
     
     color.rgb.green = color.rgb.red = color.rgb.blue = 1.;
-    gset_colr_rep(1,1,&color);
+    gset_colr_rep(WKID,1,&color);
     gset_line_colr_ind(1);
 /*
  *  print the title of each axis.

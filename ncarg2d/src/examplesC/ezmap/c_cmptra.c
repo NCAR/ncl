@@ -1,11 +1,14 @@
 /*
- * $Id: c_cmptra.c,v 1.2 1994-05-31 16:27:03 haley Exp $
+ * $Id: c_cmptra.c,v 1.3 1994-06-21 15:00:03 haley Exp $
  */
 
 #include <stdio.h>
 
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -14,7 +17,9 @@ main()
 /*
  * Open GKS, Turn Clipping off
  */
-	c_opngks(); 
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * INVOKE DEMO DRIVER
  */
@@ -26,7 +31,9 @@ main()
 /*
  *     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
  */
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void cmptra(proj, plat, plon, rota, outln, jlim, plim1, plim2, plim3, plim4)

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_agex01.c,v 1.1 1994-05-13 14:24:06 haley Exp $
+ *	$Id: c_agex01.c,v 1.2 1994-06-21 14:58:33 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -7,6 +7,9 @@
 #include <ncarg/ncargC.h>
 
 #define MAX  1001
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -17,7 +20,9 @@ main()
 /*
  *  Initialize GKS.
  */
-      c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  *  Fill the data array.
  */
@@ -38,7 +43,9 @@ main()
 /*
  * Close GKS.
  */
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void bndary()

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpex05.c,v 1.1 1994-05-13 14:25:53 haley Exp $
+ *	$Id: c_cpex05.c,v 1.2 1994-06-21 14:59:41 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -10,6 +10,9 @@ char *llbs[21] = {
  "0"," ","1"," ","2"," ","3"," ","4"," ","5"," ","6"," ","7"," ","8"," ","9",
  " ","10"
 };
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -46,7 +49,9 @@ main()
 /*
  * Open GKS.
  */
-    c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  *   turn off the clipping indicator.
  */
@@ -142,7 +147,9 @@ main()
 /*
  * Close GKS.
  */
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 shadam (xcs,ycs,ncs,iai,iag,nai)

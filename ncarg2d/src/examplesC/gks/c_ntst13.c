@@ -1,11 +1,14 @@
 /*
- *	$Id: c_ntst13.c,v 1.1 1994-05-13 14:27:22 haley Exp $
+ *	$Id: c_ntst13.c,v 1.2 1994-06-21 15:00:38 haley Exp $
  */
 #include <stdio.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-main ()
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
+main()
 {
 /*
  *  Illustrate the various fonts.
@@ -21,21 +24,21 @@ main ()
  *  Open GKS, open and activate the metafile workstation.
  */
     sprintf(label,"NCAR Graphics, Release 3.00");
-    gopen_gks("stdou",0);
-    gopen_ws (1,NULL, 8);
-    gactivate_ws (1);
+    gopen_gks("stdout",0);
+    gopen_ws( WKID, NULL, WSTYPE);
+    gactivate_ws( WKID );
 /*
  *  Define the necessary color indices.
  */
     rgb1.rgb.red = 0.; rgb1.rgb.green = 0.; rgb1.rgb.blue = .6;
-    gset_colr_rep(1,0,&rgb1);
-    ginq_colr_rep(1,0,0,&ierr,&rgb2);
+    gset_colr_rep(WKID,0,&rgb1);
+    ginq_colr_rep(WKID,0,0,&ierr,&rgb2);
     printf( "Testing ginq_colr_rep:  red = %g green = %g blue= %g\n", rgb1.rgb.red, rgb1.rgb.green, rgb1.rgb.blue );
     printf( "                        red = %g green = %g blue= %g\n", rgb2.rgb.red, rgb2.rgb.green, rgb2.rgb.blue );
     rgb1.rgb.red = 1.; rgb1.rgb.green = 1.; rgb1.rgb.blue = 0.;
-    gset_colr_rep(1,1,&rgb1);
+    gset_colr_rep(WKID,1,&rgb1);
     rgb1.rgb.red = 0.; rgb1.rgb.blue = 1.;
-    gset_colr_rep(1,2,&rgb1);
+    gset_colr_rep(WKID,2,&rgb1);
 /*
  *  Set up character attributes.
  */
@@ -73,7 +76,7 @@ main ()
 /*
  *  Deactivate and close the workstation, close GKS.
  */
-    gdeactivate_ws (1);
-    gclose_ws (1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }

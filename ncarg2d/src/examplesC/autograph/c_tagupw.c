@@ -1,10 +1,13 @@
 /*
- *	$Id: c_tagupw.c,v 1.1 1994-05-13 14:24:24 haley Exp $
+ *	$Id: c_tagupw.c,v 1.2 1994-06-21 14:58:49 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -13,8 +16,8 @@ main()
  * OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
  */
     gopen_gks ("stdout",0);
-    gopen_ws (1, NULL, 1);
-    gactivate_ws (1) ;
+    gopen_ws( WKID, NULL, WSTYPE);
+    gactivate_ws( WKID );
 /*
  * INVOKE DEMO DRIVER
  */
@@ -22,8 +25,8 @@ main()
 /*
  *     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
  */
-    gdeactivate_ws (1);
-    gclose_ws (1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }
 tagupw (ierror)

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tlblba.c,v 1.1 1994-05-13 14:28:28 haley Exp $
+ *	$Id: c_tlblba.c,v 1.2 1994-06-21 15:01:12 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -26,6 +26,9 @@ char *llb4[4] = {"I","J","K","L"};
 char *llb5[4] = {"E","F","G","H"};
 char *llb6[4] = {"A","B","C","D"};
 
+#define WSTYPE  SED_WSTYPE
+#define WKID    1
+
 main()
 {
     int idum, ierr;
@@ -33,8 +36,8 @@ main()
  * OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
  */
     gopen_gks ("stdout",0);
-    gopen_ws (1, NULL, 1);
-    gactivate_ws (1);
+    gopen_ws (WKID, NULL, WSTYPE);
+    gactivate_ws (WKID);
 /*
  * INVOKE DEMO DRIVER
  */
@@ -42,8 +45,8 @@ main()
 /*
  *     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
  */
-    gdeactivate_ws(1);
-    gclose_ws(1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }
 
@@ -227,7 +230,7 @@ lbclrs()
  * to index 1 is white.
  */
     for( i = 0; i <= 15; i++ ) {
-        gset_colr_rep(1,i,&rgbv[i]);
+        gset_colr_rep(WKID,i,&rgbv[i]);
     }
     return(1);
 }

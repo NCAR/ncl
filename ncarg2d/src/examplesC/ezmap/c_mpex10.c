@@ -1,5 +1,5 @@
 /*
- *	$Id: c_mpex10.c,v 1.1 1994-05-13 14:26:42 haley Exp $
+ *	$Id: c_mpex10.c,v 1.2 1994-06-21 15:00:15 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -11,6 +11,9 @@
  * Use a positive value less than or equal to 300.
  */
 #define NCLS 300
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -77,22 +80,24 @@ main()
 /*
  * Open GKS.
  */
-    c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Define the color indices required.  0 and 1 are used for black and
  * white (as is customary); the next NCLR values are distributed between
  * pure blue (color 2) and pure red (color NCLR+1).
  */
     rgb.rgb.red = rgb.rgb.green = rgb.rgb.blue = 0.;
-    gset_colr_rep (1,0,&rgb);
+    gset_colr_rep (WKID,0,&rgb);
     rgb.rgb.red = rgb.rgb.green = rgb.rgb.blue = 1.;
-    gset_colr_rep (1,1,&rgb);
+    gset_colr_rep (WKID,1,&rgb);
 
     rgb.rgb.green = 0.;
     for( iclr=1; iclr <= nclr; iclr++ ) {
         rgb.rgb.red = (float)(iclr-1)/(float)(nclr-1);
         rgb.rgb.blue = (float)(nclr-iclr)/(float)(nclr-1);
-        gset_colr_rep (1,1+iclr,&rgb);
+        gset_colr_rep (WKID,1+iclr,&rgb);
     }
 /*
  * Set the EZMAP projection parameters.
@@ -176,10 +181,9 @@ main()
 /*
  * Close GKS.
  */
-    c_clsgks();
-/*
- * Done.
- */
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void bndary()

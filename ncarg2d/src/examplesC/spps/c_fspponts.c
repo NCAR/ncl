@@ -1,5 +1,5 @@
 /*
- * $Id: c_fspponts.c,v 1.1 1994-05-26 14:36:07 haley Exp $
+ * $Id: c_fspponts.c,v 1.2 1994-06-21 15:01:31 haley Exp $
  */
 
 #include <stdio.h>
@@ -9,6 +9,9 @@
 #include <ncarg/gks.h>
 
 #define NPTS   20
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -23,7 +26,9 @@ main()
 /*
  * Initialize GKS.
  */
-	c_opngks();
+	gopen_gks("stdout",0);
+	gopen_ws(WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Set up a color table
  */
@@ -92,7 +97,9 @@ main()
 /*
  * Close GKS.
  */
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 
 }
 
@@ -141,7 +148,7 @@ void dfclrs()
  * to index 1 is white.
  */
 	for( i = 0; i <= 15; i++ ) {
-		gset_colr_rep(1,i,&rgb[i]);
+		gset_colr_rep(WKID,i,&rgb[i]);
 	}
 /*
  * Done.

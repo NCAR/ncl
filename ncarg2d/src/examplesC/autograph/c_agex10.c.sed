@@ -1,9 +1,12 @@
 /*
- *	$Id: c_agex10.c.sed,v 1.1 1994-05-13 14:24:18 haley Exp $
+ *	$Id: c_agex10.c.sed,v 1.2 1994-06-21 14:58:44 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/ncargC.h>
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -17,7 +20,9 @@ main()
 /*
  * initialize gks.
  */
-    c_opngks();
+	gopen_gks("stdout",0);
+	gopen_ws(WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * fill the data arrays.  the independent variable represents
  * time during the year (a hypothetical year with equal-length
@@ -91,7 +96,9 @@ main()
 /*
  * close gks.
  */
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void bndary()

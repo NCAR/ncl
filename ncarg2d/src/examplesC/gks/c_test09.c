@@ -3,7 +3,8 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-#define IWTYPE   1
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -49,8 +50,8 @@ main()
     in_data.escape_r1.size = 7;
     
 	gescape(-1391,&in_data,NULL,NULL);
-	gopen_ws(1,NULL,IWTYPE);
-	gactivate_ws(1);
+	gopen_ws(WKID,NULL,WSTYPE);
+	gactivate_ws(WKID);
 /*
  *  Open WISS
  */
@@ -61,7 +62,7 @@ main()
 	line.num_points = 2;
 	for( i = 1; i <= 9; i++ ) {
         c_gflas1(i);
-        gset_colr_rep(1,i,&rgb[i-1]);
+        gset_colr_rep(WKID,i,&rgb[i-1]);
         sprintf( lab, "%d", i );
         xcp = .1*(float)(i);
         ycp = .89;
@@ -97,7 +98,7 @@ main()
  *  Define color indices in the metafile.
  */
 	for( i = 10; i <= 13; i++ ) {
-		gset_colr_rep(1,i,&rgb[i-1]);
+		gset_colr_rep(WKID,i,&rgb[i-1]);
 	}
 /*
  *  FILL AREA in flash buffer.
@@ -185,8 +186,8 @@ main()
  *  Close things out
  */
 	gclose_ws(2);
-	gdeactivate_ws(1);
-	gclose_ws(1);
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
 	gclose_gks();
 
 }

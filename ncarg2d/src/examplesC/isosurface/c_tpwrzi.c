@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tpwrzi.c,v 1.1 1994-05-13 14:28:22 haley Exp $
+ *	$Id: c_tpwrzi.c,v 1.2 1994-06-21 15:01:07 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -8,6 +8,9 @@
 
 float t[19][31][21],slab[33][33];
 
+#define WSTYPE  SED_WSTYPE
+#define WKID    1
+
 main()
 {
     int idum, ierr;
@@ -15,8 +18,8 @@ main()
  * OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
  */
     gopen_gks ("stdout",0);
-    gopen_ws (1, NULL, 1);
-    gactivate_ws (1);
+    gopen_ws (WKID, NULL, WSTYPE);
+    gactivate_ws (WKID);
 /*
  * INVOKE DEMO DRIVER
  */
@@ -24,8 +27,8 @@ main()
 /*
  *     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
  */
-    gdeactivate_ws(1);
-    gclose_ws(1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }
 

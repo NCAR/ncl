@@ -1,5 +1,5 @@
 /*
- *  $Id: c_fngwsym.c,v 1.1 1994-05-13 14:28:36 haley Exp $
+ *  $Id: c_fngwsym.c,v 1.2 1994-06-21 15:01:19 haley Exp $
  */
 #include <stdio.h>
 
@@ -18,6 +18,9 @@ char *ylab[2][7] = {"a","N","W","CH","CM","CL","C","Pressure Tendency ",
 
 int ylen[2][7] = {1,1,1,2,2,2,1,17,9,12,11,13,10,11};
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 /*
@@ -32,14 +35,16 @@ main()
     char stmp1[20], stmp2[20];
     extern void dtable(), nputs();
 
-    c_opngks();
+	gopen_gks("stdout",0);
+	gopen_ws(WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 
     rgb.rgb.red = 1.;    rgb.rgb.green = 1.;    rgb.rgb.blue = 1.;
-    gset_colr_rep(1,0,&rgb);
+    gset_colr_rep(WKID,0,&rgb);
     rgb.rgb.red = 0.;    rgb.rgb.green = 0.;    rgb.rgb.blue = 0.;
-    gset_colr_rep(1,1,&rgb);
+    gset_colr_rep(WKID,1,&rgb);
     rgb.rgb.red = 1.;    rgb.rgb.green = 1.;    rgb.rgb.blue = 0.;
-    gset_colr_rep(1,2,&rgb);
+    gset_colr_rep(WKID,2,&rgb);
     gset_linewidth(1.);
 /*
  *  Font WW -- Present Weather table.
@@ -88,7 +93,9 @@ main()
     }
     c_frame();
 
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void dtable(font,nr,nc,x1,y1,x2,y2,y3,itx1,itx2,ilnc)

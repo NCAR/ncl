@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpcldm.c.sed,v 1.2 1994-06-08 14:44:29 haley Exp $
+ * $Id: c_ccpcldm.c.sed,v 1.3 1994-06-21 14:59:13 haley Exp $
  */
 
 #include <stdio.h>
@@ -17,6 +17,9 @@
 #define NOGRPS  5
 #define NRAN  30
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 	float xreg[MREG],yreg[NREG],zreg[NREG][MREG];
@@ -29,7 +32,9 @@ main()
 /*
  * Open GKS
  */
-	c_opngks();
+	gopen_gks("stdout",0);
+	gopen_ws(WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Call Conpack color fill routine
  */
@@ -38,7 +43,9 @@ main()
  * Close frame and close GKS
  */
 	c_frame();
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void ccpldm(zreg)
@@ -195,17 +202,17 @@ int n;
  * BLACK
  */
 	rgb.rgb.red = 0.; rgb.rgb.green = 0.; rgb.rgb.blue = 0.;
-	gset_colr_rep(1,0,&rgb);
+	gset_colr_rep(WKID,0,&rgb);
 /*
  * First foreground color is white
  */
 	rgb.rgb.red = 1.; rgb.rgb.green = 1.; rgb.rgb.blue = 1.;
-	gset_colr_rep(1,1,&rgb);
+	gset_colr_rep(WKID,1,&rgb);
 /*
  * Second foreground color is gray
  */
 	rgb.rgb.red = .75; rgb.rgb.green = .75; rgb.rgb.blue = .75;
-	gset_colr_rep(1,2,&rgb);
+	gset_colr_rep(WKID,2,&rgb);
 /*
  * Choose other foreground colors spaced equally around the spectrum
  */
@@ -223,11 +230,11 @@ int n;
  * Sort colors so that the redest is first, and violetest is last
  */
 		if (xhue <= redln) {
-            gset_colr_rep(1,(n+2)-(lap-i),&rgb);
+            gset_colr_rep(WKID,(n+2)-(lap-i),&rgb);
             icnt=icnt+1;
 		}
 		else {
-            gset_colr_rep(1,i-icnt+2,&rgb);
+            gset_colr_rep(WKID,i-icnt+2,&rgb);
 		}
 	}
 	return;

@@ -1,5 +1,5 @@
 /*
- * $Id: c_cmpitm.c,v 1.2 1994-05-31 16:27:02 haley Exp $
+ * $Id: c_cmpitm.c,v 1.3 1994-06-21 15:00:01 haley Exp $
  */
 
 #include <stdio.h>
@@ -23,6 +23,9 @@
 #define NGRPS  2
 #define ISIZ   2
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
     extern int mask1();
@@ -39,7 +42,9 @@ main()
 /*
  * Open GKS.
  */
-    c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Draw the map, and set up area map.
  */
@@ -63,7 +68,9 @@ main()
 /*
  * Close GKS.
  */
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void circle (rlat,rlon,radius,clat,clon,npts)

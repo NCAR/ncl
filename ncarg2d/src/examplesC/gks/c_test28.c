@@ -3,6 +3,9 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 Gtran_matrix tin = { 1., 0., 0., 0., 1., 0. };
 
 main()
@@ -66,9 +69,9 @@ main()
 /*
  *  Open and activate an X workstation.
  */
-    gopen_ws(1,NULL,8);
-    gactivate_ws(1);
-    gset_colr_rep(1,2,&rgb);
+    gopen_ws(WKID,NULL,WSTYPE);
+    gactivate_ws(WKID);
+    gset_colr_rep(WKID,2,&rgb);
 /*
  *  Start with the identity matrix and translate
  */
@@ -122,7 +125,7 @@ main()
 /*
  *  Copy the segment to the X workstation.
  */
-    gcopy_seg_ws(1,9);
+    gcopy_seg_ws(WKID,9);
 /*
  *  Draw rule lines.
  */
@@ -133,12 +136,12 @@ main()
 /*
  *  Deactivate the workstations.
  */
-    gdeactivate_ws(1);
+    gdeactivate_ws(WKID);
     gdeactivate_ws(2);
 /*
  *  Close the workstations.
  */
-    gclose_ws(1);
+    gclose_ws(WKID);
     gclose_ws(2);
 /*
  *  Close GKS.

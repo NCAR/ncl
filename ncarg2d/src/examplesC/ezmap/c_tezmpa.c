@@ -1,10 +1,13 @@
 /*
- *  $Id: c_tezmpa.c,v 1.1 1994-05-13 14:26:47 haley Exp $
+ *  $Id: c_tezmpa.c,v 1.2 1994-06-21 15:00:18 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -13,8 +16,8 @@ main()
  * OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
  */
     gopen_gks ("stdout",0);
-    gopen_ws (1, NULL, 1);
-    gactivate_ws (1);
+    gopen_ws( WKID, NULL, WSTYPE);
+    gactivate_ws( WKID );
 /*
  * invoke demo driver
  */
@@ -22,8 +25,8 @@ main()
 /*
  *     deactivate and close workstation, close gks.
  */
-    gdeactivate_ws(1);
-    gclose_ws(1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }
 
@@ -143,13 +146,13 @@ int *ierror;
  */
     for( j = 1; j <= 14; j++ ) {
         i=ioc[j-1];
-        gset_colr_rep(1,j,&rgb[i-1]);
+        gset_colr_rep(WKID,j,&rgb[i-1]);
     }
 /*
  * set color index 15 to black.
  */
     rgb[0].rgb.red = rgb[0].rgb.green = rgb[0].rgb.blue = 0.00;
-    gset_colr_rep(1,15,&rgb[0]);
+    gset_colr_rep(WKID,15,&rgb[0]);
 /*
  * set up ezmap.
  */

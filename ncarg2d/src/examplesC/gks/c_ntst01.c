@@ -12,7 +12,10 @@
 #define IMXHM IMXH-IX
 #define IMXHP IMXH+IX
 
-main ()
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
+main()
 {
 /*
  *  Illustrate text alignment attributes.
@@ -28,8 +31,8 @@ main ()
  *  Open GKS, open and activate the metafile workstation.
  */
     gopen_gks("stdout",0);
-    gopen_ws (1,NULL, 1);
-    gactivate_ws (1);
+    gopen_ws( WKID, NULL, WSTYPE);
+    gactivate_ws( WKID );
 /*
  *  Define the necessary color indices.
  */
@@ -46,9 +49,9 @@ main ()
     rgbs[3].rgb.green = 1.;
     rgbs[3].rgb.blue = 0.;
     for( i = 0; i <= 3; i++ ) {
-        gset_colr_rep(1,i,&rgbs[i]);
+        gset_colr_rep(WKID,i,&rgbs[i]);
     }
-    ginq_colr_rep( 1, 2, 1, &ierr, &one );
+    ginq_colr_rep( WKID, 2, 1, &ierr, &one );
     if( one.rgb.red != 1. || one.rgb.green != 1. || one.rgb.blue != 0. ) {
         printf( "GINQ_COLR_REP test UNSUCCESSFUL\n" );
     }
@@ -169,8 +172,8 @@ main ()
 /*
  *  Deactivate and close the workstation, close GKS.
  */
-    gdeactivate_ws (1);
-    gclose_ws (1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }
 

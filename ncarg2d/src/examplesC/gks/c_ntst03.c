@@ -6,6 +6,9 @@
 
 #define MAX(x,y)  ((x) > (y) ? (x) : (y))
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 /*
@@ -28,8 +31,8 @@ main()
  *  Open GKS, open and activate the metafile workstation.
  */
     gopen_gks("stdout",0);
-    gopen_ws (1,NULL, 1);
-    gactivate_ws (1);
+    gopen_ws( WKID, NULL, WSTYPE);
+    gactivate_ws( WKID );
 /*
  *  Define necessary color indices.
  */
@@ -49,7 +52,7 @@ main()
     rgbs[4].rgb.green = 1.;
     rgbs[4].rgb.blue = 0.;
     for( i = 0; i <= 4; i++ ) {
-        gset_colr_rep(1,i,&rgbs[i]);
+        gset_colr_rep(WKID,i,&rgbs[i]);
     }
     tfp.font = 12;
     tfp.prec = GPREC_STROKE;
@@ -161,7 +164,7 @@ main()
 /*
  *  Deactivate and close the workstation, close GKS.
  */
-    gdeactivate_ws (1);
-    gclose_ws (1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }

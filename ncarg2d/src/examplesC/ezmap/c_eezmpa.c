@@ -1,5 +1,5 @@
 /*
- *	$Id: c_eezmpa.c,v 1.1 1994-05-13 14:26:27 haley Exp $
+ *	$Id: c_eezmpa.c,v 1.2 1994-06-21 15:00:04 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -13,6 +13,9 @@
 #define max(x,y)   ((x) > (y) ? (x) : (y) )
 
 int iam[250000];
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -82,7 +85,9 @@ main()
 /*
  * open gks.
  */
-    c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * re-set certain aspect source flags to "individual".
  */
@@ -100,7 +105,7 @@ main()
  */
     for( j = 0; j < 16; j++ ) {
         i=ioc[j];
-        gset_colr_rep(1,j,&rgb[i]);
+        gset_colr_rep(WKID,j,&rgb[i]);
     }
 /*
  * set up ezmap, but don't draw anything.
@@ -169,7 +174,9 @@ main()
 /*
  * close gks.
  */
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 #ifdef __STDC__

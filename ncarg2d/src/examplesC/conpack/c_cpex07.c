@@ -1,11 +1,14 @@
 /*
- *	$Id: c_cpex07.c,v 1.2 1994-05-24 22:42:05 haley Exp $
+ *	$Id: c_cpex07.c,v 1.3 1994-06-21 14:59:44 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
 
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -50,7 +53,9 @@ main()
 /*
  * Open GKS.
  */
-    c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Turn off the clipping indicator.
  */
@@ -138,7 +143,9 @@ main()
 /*
  * Close GKS.
  */
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 colram (xcra,ycra,ncra,iaia,igia,naia)

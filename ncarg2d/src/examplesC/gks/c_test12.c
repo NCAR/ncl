@@ -3,6 +3,9 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 /*
@@ -25,20 +28,20 @@ main()
 /*
  *  Open the X workstation.
  */
-    gopen_ws(1,0,8);
+    gopen_ws(WKID,0,WSTYPE);
 /*
  *  Activate the X workstation.
  */
-    gactivate_ws(1);
+    gactivate_ws(WKID);
 
     gpolyline(&points);
-    gupd_ws(1,0);
+    gupd_ws(WKID,0);
     in_data.escape_r1.data = (Gdata *)malloc(5*sizeof(char));
     strcpy(in_data.escape_r1.data, "    1");
     in_data.escape_r1.size = 5;
     gescape(-1396,&in_data,NULL,NULL);
 
-    gdeactivate_ws(1);
-    gclose_ws(1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }

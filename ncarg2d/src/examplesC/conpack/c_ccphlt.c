@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccphlt.c,v 1.1 1994-06-08 14:44:40 haley Exp $
+ * $Id: c_ccphlt.c,v 1.2 1994-06-21 14:59:25 haley Exp $
  */
 
 #include <stdio.h>
@@ -17,6 +17,9 @@
 #define max(x,y)    ((x) > (y) ? (x) : (y))
 #define pow2(x)     ((x)*(x))
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 	float z[N][M], rwrk[LRWK];
@@ -27,7 +30,9 @@ main()
 /*
  * Open GKS
  */
-	c_opngks();
+	gopen_gks("stdout",0);
+	gopen_ws(WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 	gset_clip_ind(GIND_NO_CLIP);
 /*
  * Set up label options
@@ -53,7 +58,9 @@ main()
  * Close frame and close GKS
  */
 	c_frame();
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void gendat (data,idim,m,n,mlow,mhgh,dlow,dhgh)

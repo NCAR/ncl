@@ -1,10 +1,13 @@
 /*
- *	$Id: c_tautog.c,v 1.1 1994-05-13 14:24:25 haley Exp $
+ *	$Id: c_tautog.c,v 1.2 1994-06-21 14:58:50 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -13,8 +16,8 @@ main()
  * open gks, open workstation of type 1, activate workstation
  */
     gopen_gks ("stdout",0);
-    gopen_ws (1, NULL, 1);
-    gactivate_ws(1);
+    gopen_ws( WKID, NULL, WSTYPE);
+    gactivate_ws( WKID );
 /*
  * invoke demo driver
  */
@@ -22,8 +25,8 @@ main()
 /*
  *     deactivate and close workstation, close gks.
  */
-    gdeactivate_ws(1);
-    gclose_ws(1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }
 

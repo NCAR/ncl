@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpvs.c,v 1.1 1994-05-31 22:28:25 haley Exp $
+ * $Id: c_ccpvs.c,v 1.2 1994-06-21 14:59:35 haley Exp $
  */
 
 #include <stdio.h>
@@ -14,6 +14,9 @@
 
 #define LMAP  100000
 #define LWRK    1000
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -31,7 +34,9 @@ main()
 /*
  * Open GKS.
  */
-	c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Turn off the clipping indicator.
  */
@@ -83,10 +88,9 @@ C Tell CONPACK to use 12 contour lines, splitting the range into 13
 /*
  * Close GKS.
  */
-	c_clsgks();
-/*
- * Done.
- */
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 
@@ -239,231 +243,189 @@ float fran()
 
 void color()
 {
-	Gcolr_rep rgb;
+	Gcolr_rep rgb[44];
+	int i;
 /*
  *     BACKGROUND COLOR
  *     BLACK
  */
-	rgb.rgb.red = 0.; rgb.rgb.green = 0.; rgb.rgb.blue = 0.;
-	gset_colr_rep(1,0,&rgb);
+	rgb[0].rgb.red = 0.; rgb[0].rgb.green = 0.; rgb[0].rgb.blue = 0.;
 /*
  *     FORGROUND COLORS
  * White
  */
-	rgb.rgb.red = 1.0; rgb.rgb.green =  1.0; rgb.rgb.blue =  1.0;
-	gset_colr_rep(1, 1,&rgb);
+	rgb[1].rgb.red = 1.0; rgb[1].rgb.green = 1.0; rgb[1].rgb.blue = 1.0;
 /*
  * Aqua
  */
-	rgb.rgb.red = 0.0; rgb.rgb.green =  0.9; rgb.rgb.blue =  1.0;
-	gset_colr_rep(1, 2,&rgb);
+	rgb[2].rgb.red = 0.0; rgb[2].rgb.green = 0.9; rgb[2].rgb.blue = 1.0;
 /*
  * Red1
  */
-	rgb.rgb.red = 0.9; rgb.rgb.green =  0.25; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1, 3,&rgb);
+	rgb[3].rgb.red = 0.9; rgb[3].rgb.green = 0.25; rgb[3].rgb.blue = 0.0;
 /*
  * OrangeRed1
  */
-	rgb.rgb.red = 1.0; rgb.rgb.green =  0.0; rgb.rgb.blue =  0.2;
-	gset_colr_rep(1, 4,&rgb);
+	rgb[4].rgb.red = 1.0; rgb[4].rgb.green = 0.0; rgb[4].rgb.blue = 0.2;
 /*
  * Orange1
  */
-	rgb.rgb.red = 1.0; rgb.rgb.green =  0.65; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1, 5,&rgb);
+	rgb[5].rgb.red = 1.0; rgb[5].rgb.green = 0.65; rgb[5].rgb.blue = 0.0;
 /*
  * Yellow1
  */
-	rgb.rgb.red = 1.0; rgb.rgb.green =  1.0; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1, 6,&rgb);
+	rgb[6].rgb.red = 1.0; rgb[6].rgb.green = 1.0; rgb[6].rgb.blue = 0.0;
 /*
  * GreenYellow1
  */
-	rgb.rgb.red = 0.7; rgb.rgb.green =  1.0; rgb.rgb.blue =  0.2;
-	gset_colr_rep(1, 7,&rgb);
+	rgb[7].rgb.red = 0.7; rgb[7].rgb.green = 1.0; rgb[7].rgb.blue = 0.2;
 /*
  * Chartreuse1
  */
-	rgb.rgb.red = 0.5; rgb.rgb.green =  1.0; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1, 8,&rgb);
+	rgb[8].rgb.red = 0.5; rgb[8].rgb.green = 1.0; rgb[8].rgb.blue = 0.0;
 /*
  * Celeste1
  */
-	rgb.rgb.red = 0.2; rgb.rgb.green =  1.0; rgb.rgb.blue =  0.5;
-	gset_colr_rep(1, 9,&rgb);
+	rgb[9].rgb.red = 0.2; rgb[9].rgb.green = 1.0; rgb[9].rgb.blue = 0.5;
 /*
  * Green1
  */
-	rgb.rgb.red = 0.2; rgb.rgb.green =  0.8; rgb.rgb.blue =  0.2;
-	gset_colr_rep(1, 10,&rgb);
+	rgb[10].rgb.red = 0.2; rgb[10].rgb.green = 0.8; rgb[10].rgb.blue = 0.2;
 /*
  * DeepSkyBlue1
  */
-	rgb.rgb.red = 0.0; rgb.rgb.green =  0.75; rgb.rgb.blue =  1.0;
-	gset_colr_rep(1, 11,&rgb);
+	rgb[11].rgb.red = 0.0; rgb[11].rgb.green = 0.75; rgb[11].rgb.blue = 1.0;
 /*
  * RoyalBlue1
  */
-	rgb.rgb.red = 0.25; rgb.rgb.green =  0.45; rgb.rgb.blue =  0.95;
-	gset_colr_rep(1, 12,&rgb);
+	rgb[12].rgb.red = 0.25; rgb[12].rgb.green = 0.45; rgb[12].rgb.blue = 0.95;
 /*
  * SlateBlue1
  */
-	rgb.rgb.red = 0.4; rgb.rgb.green =  0.35; rgb.rgb.blue =  0.8;
-	gset_colr_rep(1, 13,&rgb);
+	rgb[13].rgb.red = 0.4; rgb[13].rgb.green = 0.35; rgb[13].rgb.blue = 0.8;
 /*
  * DarkViolet1
  */
-	rgb.rgb.red = 0.6; rgb.rgb.green =  0.0; rgb.rgb.blue =  0.8;
-	gset_colr_rep(1, 14,&rgb);
+	rgb[14].rgb.red = 0.6; rgb[14].rgb.green = 0.0; rgb[14].rgb.blue = 0.8;
 /*
  * Orchid1
  */
-	rgb.rgb.red = 0.85; rgb.rgb.green =  0.45; rgb.rgb.blue =  0.8;
-	gset_colr_rep(1, 15,&rgb);
+	rgb[15].rgb.red = 0.85; rgb[15].rgb.green = 0.45; rgb[15].rgb.blue = 0.8;
 /*
  * Red2
  */
-	rgb.rgb.red = 0.77; rgb.rgb.green =  0.21; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1, 16,&rgb);
+	rgb[16].rgb.red = 0.77; rgb[16].rgb.green = 0.21; rgb[16].rgb.blue = 0.0;
 /*
  * OrangeRed2
  */
-	rgb.rgb.red = 0.85; rgb.rgb.green =  0.0; rgb.rgb.blue =  0.17;
-	gset_colr_rep(1, 17,&rgb);
+	rgb[17].rgb.red = 0.85; rgb[17].rgb.green = 0.0; rgb[17].rgb.blue = 0.17;
 /*
  * Orange2
  */
-	rgb.rgb.red = 0.85; rgb.rgb.green =  0.55; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1, 18,&rgb);
+	rgb[18].rgb.red = 0.85; rgb[18].rgb.green = 0.55; rgb[18].rgb.blue = 0.0;
 /*
  * Yellow2
  */
-	rgb.rgb.red = 0.85; rgb.rgb.green =  0.85; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1, 19,&rgb);
+	rgb[19].rgb.red = 0.85; rgb[19].rgb.green = 0.85; rgb[19].rgb.blue = 0.0;
 /*
  * GreenYellow2
  */
-	rgb.rgb.red = 0.6; rgb.rgb.green =  0.85; rgb.rgb.blue =  0.17;
-	gset_colr_rep(1, 20,&rgb);
+	rgb[20].rgb.red = 0.6; rgb[20].rgb.green = 0.85; rgb[20].rgb.blue = 0.17;
 /*
  * Chartreuse2
  */
-	rgb.rgb.red = 0.43; rgb.rgb.green =  0.85; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1, 21,&rgb);
+	rgb[21].rgb.red = 0.43; rgb[21].rgb.green = 0.85; rgb[21].rgb.blue = 0.0;
 /*
  * Celeste2
  */
-	rgb.rgb.red = 0.17; rgb.rgb.green =  0.85; rgb.rgb.blue =  0.43;
-	gset_colr_rep(1, 22,&rgb);
+	rgb[22].rgb.red = 0.17; rgb[22].rgb.green = 0.85; rgb[22].rgb.blue = 0.43;
 /*
  * Green2
  */
-	rgb.rgb.red = 0.17; rgb.rgb.green =  0.68; rgb.rgb.blue =  0.17;
-	gset_colr_rep(1, 23,&rgb);
+	rgb[23].rgb.red = 0.17; rgb[23].rgb.green = 0.68; rgb[23].rgb.blue = 0.17;
 /*
  * DeepSkyBlue2
  */
-	rgb.rgb.red = 0.0; rgb.rgb.green =  0.64; rgb.rgb.blue =  0.85;
-	gset_colr_rep(1, 24,&rgb);
+	rgb[24].rgb.red = 0.0; rgb[24].rgb.green = 0.64; rgb[24].rgb.blue = 0.85;
 /*
  * RoyalBlue2
  */
-	rgb.rgb.red = 0.21; rgb.rgb.green =  0.38; rgb.rgb.blue =  0.81;
-	gset_colr_rep(1, 25,&rgb);
+	rgb[25].rgb.red = 0.21; rgb[25].rgb.green = 0.38; rgb[25].rgb.blue = 0.81;
 /*
  * SlateBlue2
  */
-	rgb.rgb.red = 0.32; rgb.rgb.green =  0.3; rgb.rgb.blue =  0.68;
-	gset_colr_rep(1, 26,&rgb);
+	rgb[26].rgb.red = 0.32; rgb[26].rgb.green = 0.3; rgb[26].rgb.blue = 0.68;
 /*
  * DarkViolet2
  */
-	rgb.rgb.red = 0.51; rgb.rgb.green =  0.0; rgb.rgb.blue =  0.68;
-	gset_colr_rep(1, 27,&rgb);
+	rgb[27].rgb.red = 0.51; rgb[27].rgb.green = 0.0; rgb[27].rgb.blue = 0.68;
 /*
  * Orchid2
  */
-	rgb.rgb.red = 0.72; rgb.rgb.green =  0.38; rgb.rgb.blue =  0.68;
-	gset_colr_rep(1, 28,&rgb);
+	rgb[28].rgb.red = 0.72; rgb[28].rgb.green = 0.38; rgb[28].rgb.blue = 0.68;
 /*
  * Red3
  */
-	rgb.rgb.red = 0.63; rgb.rgb.green =  0.18; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1, 29,&rgb);
+	rgb[29].rgb.red = 0.63; rgb[29].rgb.green = 0.18; rgb[29].rgb.blue = 0.0;
 /*
  * OrangeRed3
  */
-	rgb.rgb.red = 0.7; rgb.rgb.green =  0.0; rgb.rgb.blue =  0.14;
-	gset_colr_rep(1, 30,&rgb);
+	rgb[30].rgb.red = 0.7; rgb[30].rgb.green = 0.0; rgb[30].rgb.blue = 0.14;
 /*
  * Orange3
  */
-	rgb.rgb.red = 0.6; rgb.rgb.green =  0.39; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1, 31,&rgb);
+	rgb[31].rgb.red = 0.6; rgb[31].rgb.green = 0.39; rgb[31].rgb.blue = 0.0;
 /*
  * Yellow3
  */
-	rgb.rgb.red = 0.7; rgb.rgb.green =  0.7; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1, 32,&rgb);
+	rgb[32].rgb.red = 0.7; rgb[32].rgb.green = 0.7; rgb[32].rgb.blue = 0.0;
 /*
  * GreenYellow3
  */
-	rgb.rgb.red = 0.49; rgb.rgb.green =  0.7; rgb.rgb.blue =  0.14;
-	gset_colr_rep(1, 33,&rgb);
+	rgb[33].rgb.red = 0.49; rgb[33].rgb.green = 0.7; rgb[33].rgb.blue = 0.14;
 /*
  * Chartreuse3
  */
-	rgb.rgb.red = 0.35; rgb.rgb.green =  0.7; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1, 34,&rgb);
+	rgb[34].rgb.red = 0.35; rgb[34].rgb.green = 0.7; rgb[34].rgb.blue = 0.0;
 /*
  * Celeste3
  */
-	rgb.rgb.red = 0.14; rgb.rgb.green =  0.7; rgb.rgb.blue =  0.35;
-	gset_colr_rep(1, 35,&rgb);
+	rgb[35].rgb.red = 0.14; rgb[35].rgb.green = 0.7; rgb[35].rgb.blue = 0.35;
 /*
  * Green3
  */
-	rgb.rgb.red = 0.14; rgb.rgb.green =  0.56; rgb.rgb.blue =  0.14;
-	gset_colr_rep(1, 36,&rgb);
+	rgb[36].rgb.red = 0.14; rgb[36].rgb.green = 0.56; rgb[36].rgb.blue = 0.14;
 /*
  * DeepSkyBlue3
  */
-	rgb.rgb.red = 0.0; rgb.rgb.green =  0.53; rgb.rgb.blue =  0.7;
-	gset_colr_rep(1, 37,&rgb);
+	rgb[37].rgb.red = 0.0; rgb[37].rgb.green = 0.53; rgb[37].rgb.blue = 0.7;
 /*
  * RoyalBlue3
  */
-	rgb.rgb.red = 0.18; rgb.rgb.green =  0.32; rgb.rgb.blue =  0.67;
-	gset_colr_rep(1, 38,&rgb);
+	rgb[38].rgb.red = 0.18; rgb[38].rgb.green = 0.32; rgb[38].rgb.blue = 0.67;
 /*
  * SlateBlue3
  */
-	rgb.rgb.red = 0.28; rgb.rgb.green =  0.25; rgb.rgb.blue =  0.56;
-	gset_colr_rep(1, 39,&rgb);
+	rgb[39].rgb.red = 0.28; rgb[39].rgb.green = 0.25; rgb[39].rgb.blue = 0.56;
 /*
  * DarkViolet3
  */
-	rgb.rgb.red = 0.42; rgb.rgb.green =  0.0; rgb.rgb.blue =  0.56;
-	gset_colr_rep(1, 40,&rgb);
+	rgb[40].rgb.red = 0.42; rgb[40].rgb.green = 0.0; rgb[40].rgb.blue = 0.56;
 /*
  * Orchid3
  */
-	rgb.rgb.red = 0.6; rgb.rgb.green =  0.32; rgb.rgb.blue =  0.56;
-	gset_colr_rep(1, 41,&rgb);
+	rgb[41].rgb.red = 0.6; rgb[41].rgb.green = 0.32; rgb[41].rgb.blue = 0.56;
 /*
  * Lavender
  */
-	rgb.rgb.red = 0.8; rgb.rgb.green =  0.8; rgb.rgb.blue =  1.0;
-	gset_colr_rep(1, 42,&rgb);
+	rgb[42].rgb.red = 0.8; rgb[42].rgb.green = 0.8; rgb[42].rgb.blue = 1.0;
 /*
  * Gray
  */
-	rgb.rgb.red = 0.7; rgb.rgb.green =  0.7; rgb.rgb.blue =  0.7;
-	gset_colr_rep(1, 43,&rgb);
-/*
- * Done.
- */
+	rgb[43].rgb.red = 0.7; rgb[43].rgb.green = 0.7; rgb[43].rgb.blue = 0.7;
+	for( i = 0; i <= 43; i++ ) {
+		gset_colr_rep(WKID,i,&rgb[i]);
+	}
+
     return;
 }

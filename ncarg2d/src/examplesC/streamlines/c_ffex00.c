@@ -20,6 +20,9 @@
 
 int ifilix = 196;
 
+#define WSTYPE  SED_WSTYPE
+#define WKID    1
+
 main()
 {
     int ival;
@@ -81,13 +84,13 @@ main()
  *  Open GKS, open and activate the metafile workstation.
  */
     gopen_gks("stdout",0);
-    gopen_ws (1,NULL, 1);
-    gactivate_ws (1);
+    gopen_ws (WKID,NULL, WSTYPE);
+    gactivate_ws (WKID);
 /*
  * Set up colors for fixed table grayscale and color workstations
  */
     for( i = 0; i < NCLRS; i++ ) {
-        gset_colr_rep(1,iclr[i],&rgbv[i]);
+        gset_colr_rep(WKID,iclr[i],&rgbv[i]);
     }
 /*     
  * Generate uniform field intended for polar input mode.
@@ -212,8 +215,8 @@ main()
 /*
  *     Deactivate and close workstation, close GKS.
  */
-    gdeactivate_ws(1);
-    gclose_ws(1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }
 

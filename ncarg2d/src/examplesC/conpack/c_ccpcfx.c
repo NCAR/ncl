@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpcfx.c,v 1.1 1994-05-31 22:28:12 haley Exp $
+ * $Id: c_ccpcfx.c,v 1.2 1994-06-21 14:59:06 haley Exp $
  */
 
 #include <stdio.h>
@@ -13,6 +13,9 @@
 #define   LRWK   3500
 #define   LIWK   4000
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 	float z[N][M], rwrk[LRWK];
@@ -23,7 +26,9 @@ main()
 /*
  * Open GKS
  */
-	c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 	gset_clip_ind (GIND_NO_CLIP);
 /*
  * Initialize Conpack
@@ -45,7 +50,9 @@ main()
  * Close frame and close GKS
  */
 	c_frame();
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 void getdat (z, m, n)
 float *z;

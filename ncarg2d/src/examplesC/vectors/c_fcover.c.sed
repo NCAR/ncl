@@ -1,5 +1,5 @@
 /*
- *	$Id: c_fcover.c.sed,v 1.2 1994-05-26 21:34:11 haley Exp $
+ *	$Id: c_fcover.c.sed,v 1.3 1994-06-21 15:01:47 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -19,6 +19,9 @@
 #define NCLRS1     15
 #define NCLRS2     9
 #define NROWS     11
+
+#define WSTYPE SED_WSTYPE 
+#define WKID   1
 
 int ifilix[2];
 float rlwfac;
@@ -125,7 +128,9 @@ main()
  *
  * open gks, open workstation, activate workstation.
  */
-	c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * give initial value to fill color index stored common block cbfill
  */
@@ -136,7 +141,7 @@ main()
  * set up auxiliary colors
  */
 	for( i = 1; i <= NCLRS2; i++ ) {
-		gset_colr_rep(1,iclr2[i],&rgb2[i]);
+		gset_colr_rep(WKID,iclr2[i],&rgb2[i]);
 	}
 /*
  * read the input array data
@@ -236,7 +241,7 @@ main()
 	c_vvseti("ctv -- color thresholds value", 2);
 	c_vvseti("nlv -- number of levels", NCLRS1);
 	for( j=1; j <= NCLRS1; j++ ) {
-		gset_colr_rep(1,iclr1[j],&rgb1[j]);
+		gset_colr_rep(WKID,iclr1[j],&rgb1[j]);
 		c_vvseti("pai -- parameter array index", j);
 		c_vvseti("clr -- gks color index", iclr1[j]);
 	}
@@ -244,8 +249,8 @@ main()
  * modify the color table for a blue background
  * and modify the contour attributes
  */
-	gset_colr_rep(1,iclr2[1],&rgb2[8]);
-	gset_colr_rep(1,iclr2[2],&rgb2[1]);
+	gset_colr_rep(WKID,iclr2[1],&rgb2[8]);
+	gset_colr_rep(WKID,iclr2[2],&rgb2[1]);
     setcla(nclv, iclr2[7],iclr2[3]);
 /*
  * draw four frames showing first the complete picture, then the
@@ -322,7 +327,9 @@ main()
 /*
  *     deactivate and close workstation, close gks.
  */
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void rddata(u,v,p,m,n)

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_clbbar.c,v 1.1 1994-05-23 21:26:05 haley Exp $
+ *	$Id: c_clbbar.c,v 1.2 1994-06-21 15:01:09 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -16,58 +16,49 @@ char *labels[18] = {"White", "Orchid", "Red", "OrangeRed", "Orange","Gold", \
                     "DarkViolet", "Lavender", "Grey"};
 	
 int index[18] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 	extern void color();
-	c_opngks();
+	gopen_gks("stdout",0);
+	gopen_ws(WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 	color();
 	gset_fill_int_style(GSTYLE_SOLID);
 	c_lblbar(1,0.,1.,0.,1.,18,.5,1.,index,1,labels,18,1);
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 
 void color()
 {
-	Gcolr_rep rgb;
+	Gcolr_rep rgb[19];
+	int i;
 
-	rgb.rgb.red = 0.; rgb.rgb.green = 0.; rgb.rgb.blue = 0.;
-	gset_colr_rep(1,0,&rgb);
-	rgb.rgb.red =  1.0; rgb.rgb.green =  1.0; rgb.rgb.blue =  1.0;
-	gset_colr_rep(1,  1,&rgb);
-	rgb.rgb.red =  0.85; rgb.rgb.green =  0.45; rgb.rgb.blue =  0.8;
-	gset_colr_rep(1,  2,&rgb);
-	rgb.rgb.red =  0.9; rgb.rgb.green =  0.25; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1,  3,&rgb);
-	rgb.rgb.red =  1.0; rgb.rgb.green =  0.0; rgb.rgb.blue =  0.2;
-	gset_colr_rep(1,  4,&rgb);
-	rgb.rgb.red =  1.0; rgb.rgb.green =  0.65; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1,  5,&rgb);
-	rgb.rgb.red =  1.0; rgb.rgb.green =  0.85; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1,  6,&rgb);
-	rgb.rgb.red =  1.0; rgb.rgb.green =  1.0; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1,  7,&rgb);
-	rgb.rgb.red =  0.7; rgb.rgb.green =  1.0; rgb.rgb.blue =  0.2;
-	gset_colr_rep(1,  8,&rgb);
-	rgb.rgb.red =  0.5; rgb.rgb.green =  1.0; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1,  9,&rgb);
-	rgb.rgb.red =  0.2; rgb.rgb.green =  0.8; rgb.rgb.blue =  0.2;
-	gset_colr_rep(1, 10,&rgb);
-	rgb.rgb.red =  0.2; rgb.rgb.green =  1.0; rgb.rgb.blue =  0.5;
-	gset_colr_rep(1, 11,&rgb);
-	rgb.rgb.red =  0.0; rgb.rgb.green =  0.9; rgb.rgb.blue =  1.0;
-	gset_colr_rep(1, 12,&rgb);
-	rgb.rgb.red =  0.0; rgb.rgb.green =  0.75; rgb.rgb.blue =  1.0;
-	gset_colr_rep(1, 13,&rgb);
-	rgb.rgb.red =  0.25; rgb.rgb.green =  0.45; rgb.rgb.blue =  0.95;
-	gset_colr_rep(1, 14,&rgb);
-	rgb.rgb.red =  0.4; rgb.rgb.green =  0.35; rgb.rgb.blue =  0.8;
-	gset_colr_rep(1, 15,&rgb);
-	rgb.rgb.red =  0.6; rgb.rgb.green =  0.0; rgb.rgb.blue =  0.8;
-	gset_colr_rep(1, 16,&rgb);
-	rgb.rgb.red =  0.8; rgb.rgb.green =  0.8; rgb.rgb.blue =  1.0;
-	gset_colr_rep(1, 17,&rgb);
-	rgb.rgb.red =  0.5; rgb.rgb.green =  0.5; rgb.rgb.blue =  0.5;
-	gset_colr_rep(1, 18,&rgb);
-	return;
+	rgb[0].rgb.red = 0.; rgb[0].rgb.green = 0.; rgb[0].rgb.blue = 0.;
+	rgb[1].rgb.red = 1.0; rgb[1].rgb.green = 1.0; rgb[1].rgb.blue = 1.0;
+	rgb[2].rgb.red = 0.85; rgb[2].rgb.green = 0.45; rgb[2].rgb.blue = 0.8;
+	rgb[3].rgb.red = 0.9; rgb[3].rgb.green = 0.25; rgb[3].rgb.blue = 0.0;
+	rgb[4].rgb.red = 1.0; rgb[4].rgb.green = 0.0; rgb[4].rgb.blue = 0.2;
+	rgb[5].rgb.red = 1.0; rgb[5].rgb.green = 0.65; rgb[5].rgb.blue = 0.0;
+	rgb[6].rgb.red = 1.0; rgb[6].rgb.green = 0.85; rgb[6].rgb.blue = 0.0;
+	rgb[7].rgb.red = 1.0; rgb[7].rgb.green = 1.0; rgb[7].rgb.blue = 0.0;
+	rgb[8].rgb.red = 0.7; rgb[8].rgb.green = 1.0; rgb[8].rgb.blue = 0.2;
+	rgb[9].rgb.red = 0.5; rgb[9].rgb.green = 1.0; rgb[9].rgb.blue = 0.0;
+	rgb[10].rgb.red = 0.2; rgb[10].rgb.green = 0.8; rgb[10].rgb.blue = 0.2;
+	rgb[11].rgb.red = 0.2; rgb[11].rgb.green = 1.0; rgb[11].rgb.blue = 0.5;
+	rgb[12].rgb.red = 0.0; rgb[12].rgb.green = 0.9; rgb[12].rgb.blue = 1.0;
+	rgb[13].rgb.red = 0.0; rgb[13].rgb.green = 0.75; rgb[13].rgb.blue = 1.0;
+	rgb[14].rgb.red = 0.25; rgb[14].rgb.green = 0.45; rgb[14].rgb.blue = 0.95;
+	rgb[15].rgb.red = 0.4; rgb[15].rgb.green = 0.35; rgb[15].rgb.blue = 0.8;
+	rgb[16].rgb.red = 0.6; rgb[16].rgb.green = 0.0; rgb[16].rgb.blue = 0.8;
+	rgb[17].rgb.red = 0.8; rgb[17].rgb.green = 0.8; rgb[17].rgb.blue = 1.0;
+	rgb[18].rgb.red = 0.5; rgb[18].rgb.green = 0.5; rgb[18].rgb.blue = 0.5;
+	for( i = 0; i <= 18; i++ ) {
+		gset_colr_rep(WKID,i,&rgb[i]);
+	}	return;
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpcit.c,v 1.2 1994-06-08 14:44:28 haley Exp $
+ * $Id: c_ccpcit.c,v 1.3 1994-06-21 14:59:10 haley Exp $
  */
 
 #include <stdio.h>
@@ -16,6 +16,9 @@
 float cit[10] = {1.,2.,3.,4.,5.,6.,7.,8.,9.,0.};
 float lit[10] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 0};
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 	float z[N][K], rwrk[LRWK];
@@ -26,7 +29,9 @@ main()
 /*
  * Open GKS
  */
-	c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Change nice values to be steps of 1/3. (1/3, 2/3, 3/3...)
  * Draw labels at every 5th contour level no matter which contour
@@ -53,7 +58,9 @@ main()
  * Close frame and close GKS
  */
 	c_frame();
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void getdat (z, n, m, k)

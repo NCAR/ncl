@@ -2,6 +2,9 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 #define nxd 11
 
 main()
@@ -60,8 +63,8 @@ main()
  *  open gks, open and activate the metafile workstation.
  */
     gopen_gks("stdout",0);
-    gopen_ws (1,NULL, 8);
-    gactivate_ws (1);
+    gopen_ws (WKID,NULL, WSTYPE);
+    gactivate_ws (WKID);
 /*
  *  define the required color indices.
  */
@@ -71,7 +74,7 @@ main()
     rgbs[3].rgb.red = 1.;    rgbs[3].rgb.green = 1.;    rgbs[3].rgb.blue = 0.;
     rgbs[4].rgb.red = 1.;    rgbs[4].rgb.green = .4;    rgbs[4].rgb.blue = .4;
     for( i = 0; i <= 4; i++ ) {
-        gset_colr_rep(1,i,&rgbs[i]);
+        gset_colr_rep(WKID,i,&rgbs[i]);
     }
 /*
  *  label the plot
@@ -189,8 +192,8 @@ main()
 /*
  *  deactivate and close the workstation, close gks.
  */
-    gdeactivate_ws (1);
-    gclose_ws (1);
+    gdeactivate_ws (WKID);
+    gclose_ws (WKID);
     gclose_gks();
 }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccphand.c,v 1.1 1994-06-08 14:44:38 haley Exp $
+ * $Id: c_ccphand.c,v 1.2 1994-06-21 14:59:22 haley Exp $
  */
 
 #include <stdio.h>
@@ -16,6 +16,9 @@
 
 float rlevel[INCL] = {-20., -10., -5., -4., -3., -2., -1., 0., 1., 2., 3., 4., 5., 10., 20., 30., 40., 50., 100.};
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 	float z[N][K], rwrk[LRWK];
@@ -27,7 +30,9 @@ main()
 /*
  * Open GKS
  */
-	c_opngks();
+	gopen_gks("stdout",0);
+	gopen_ws(WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Read in hand picked levels
  */
@@ -51,7 +56,9 @@ main()
  * Close frame and close GKS
  */
 	c_frame();
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void getdat (z, n, m, k)

@@ -1,5 +1,5 @@
 /*
- * $Id: c_spps.c.sed,v 1.1 1994-05-13 14:28:57 haley Exp $
+ * $Id: c_spps.c.sed,v 1.2 1994-06-21 15:01:32 haley Exp $
  */
 
 #include <stdio.h>
@@ -7,6 +7,9 @@
 
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -133,7 +136,9 @@ main()
 #endif
     );
 
-    c_opngks();
+	gopen_gks("stdout",0);
+	gopen_ws(WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
     c_set(0.,1.,0.,1.,0.,1.,0.,1.,1);
     c_setusv("LS",4);
     c_getusv("LS",&ival);
@@ -342,5 +347,7 @@ main()
     c_fl2int(.5,.5,&ix1,&iy1);
     ix2 = c_kmpx(ix1);
     iy2 = c_kmpy(iy1);
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }

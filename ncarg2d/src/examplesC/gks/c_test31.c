@@ -9,6 +9,9 @@
 #define MNPTS    12
 #define max(x,y)    ((x) > (y) ? (x) : (y))
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
     Gtran_matrix tran_matrix;
@@ -45,8 +48,8 @@ main()
 /*
  *  Open and activate a workstation.
  */
-	gopen_ws(1,"2",8);
-	gactivate_ws(1);
+	gopen_ws(WKID,"2",WSTYPE);
+	gactivate_ws(WKID);
 /*
  *  Define the segment transformation matrix for segment 9 (scale
  *  the X axis by .5, no rotation, shift by (.25,.5) ).
@@ -69,17 +72,17 @@ main()
  */
     colr_rep.rgb.red = 1.;
     colr_rep.rgb.green = colr_rep.rgb.blue = 0.;
-	gset_colr_rep(1,1,&colr_rep);
+	gset_colr_rep(WKID,1,&colr_rep);
     colr_rep.rgb.green = 1.;
     colr_rep.rgb.red = colr_rep.rgb.blue = 0.;
-	gset_colr_rep(1,2,&colr_rep);
-	gcopy_seg_ws(1,9);
-	gcopy_seg_ws(1,10);
+	gset_colr_rep(WKID,2,&colr_rep);
+	gcopy_seg_ws(WKID,9);
+	gcopy_seg_ws(WKID,10);
 	c_frame();
 /*
  *  Deactivate the workstations.
  */
-	gdeactivate_ws(1);
+	gdeactivate_ws(WKID);
 	gdeactivate_ws(2);
 /*
  * Test ginq_set_seg_names
@@ -98,7 +101,7 @@ main()
 /*
  *  Close the workstations.
  */
-	gclose_ws(1);
+	gclose_ws(WKID);
 	gclose_ws(2);
 /*
  *  Close GKS.

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_mpexfi.c,v 1.1 1994-05-13 14:26:44 haley Exp $
+ *	$Id: c_mpexfi.c,v 1.2 1994-06-21 15:00:16 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -8,6 +8,9 @@
  * Include function prototypes
  */
 #include <ncarg/ncargC.h>
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -40,7 +43,9 @@ main()
 /*
  * Open GKS.
  */
-    c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Fill the data array.
  */
@@ -94,14 +99,9 @@ main()
 /*
  * Close GKS.
  */
-    c_clsgks();
-/*
- * Done.
- */
-/*
- * Format.
- */
-
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void bndary()

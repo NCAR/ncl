@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpexcc.c,v 1.1 1994-05-13 14:26:03 haley Exp $
+ *	$Id: c_cpexcc.c,v 1.2 1994-06-21 14:59:49 haley Exp $
  */
 #include <math.h>
 #include <ncarg/ncargC.h>
@@ -8,6 +8,8 @@
 #define max(x,y)    ((x) > (y) ? (x) : (y) )
 #define min(x,y)    ((x) < (y) ? (x) : (y) )
 #define pow2(x)    ((x)*(x))
+
+#define WKID 1
 
 void gendat (data,idim,m,n,mlow,mhgh,dlow,dhgh)
 float *data, dlow, dhgh;
@@ -211,10 +213,10 @@ void dfclrs()
  * to index 1 is white.
  */
     rgbv[0].rgb.red = rgbv[0].rgb.green = rgbv[0].rgb.blue = 0.0;
-    gset_colr_rep (1,0,&rgbv[0]);
+    gset_colr_rep (WKID,0,&rgbv[0]);
     rgbv[0].rgb.red = rgbv[0].rgb.green = rgbv[0].rgb.blue = 1.00;
     for( i = 0; i < 15; i++ ) {
-        gset_colr_rep(1,i+1,&rgbv[i]);
+        gset_colr_rep(WKID,i+1,&rgbv[i]);
     }
 }
 

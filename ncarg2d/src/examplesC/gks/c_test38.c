@@ -9,6 +9,9 @@
 
 #define min(x,y) ((x) < (y) ? (x) : (y))
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
     int i;
@@ -39,15 +42,15 @@ main()
 /*
  *  open cgm workstation.
  */
-    gopen_ws(1,NULL,1);
-    gset_colr_rep(1,6,&rgb[0]);
-    gset_colr_rep(1,7,&rgb[1]);
+    gopen_ws(WKID,NULL,WSTYPE);
+    gset_colr_rep(WKID,6,&rgb[0]);
+    gset_colr_rep(WKID,7,&rgb[1]);
 	gset_char_ht(.04);
     gset_text_align(&text_align);
 /*
  *  activate the cgm workstation and set the text color to red.
  */
-    gactivate_ws(1);
+    gactivate_ws(WKID);
 /*
  *  create picture 1 in the metafile.
  */
@@ -207,13 +210,13 @@ main()
 /*
  *  deactivate metafile and draw picture 5.
  */
-	gdeactivate_ws(1);
+	gdeactivate_ws(WKID);
 	gtext(&text_pos,"picture 5");
 	c_frame();
 /*
  *  re-activate the metafile.
  */
-        gactivate_ws(1);
+        gactivate_ws(WKID);
         gtext(&text_pos,"picture 6");
         c_frame();
 /*
@@ -228,9 +231,9 @@ main()
         c_frame();
 
         gdeactivate_ws(7);
-        gdeactivate_ws(1);
+        gdeactivate_ws(WKID);
         gclose_ws(7);
-        gclose_ws(1);
+        gclose_ws(WKID);
 /*
  * Close GKS.
  */

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tvelvc.c,v 1.1 1994-05-13 14:29:34 haley Exp $
+ *	$Id: c_tvelvc.c,v 1.2 1994-06-21 15:01:48 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -7,6 +7,9 @@
 #include <ncarg/gks.h>
 
 #define pow2(x)    ((x)*(x))
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 /*
  * OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
@@ -17,8 +20,8 @@ main()
     int idum,ierr;
     
     gopen_gks ("stdout",0);
-    gopen_ws (1, NULL, 1);
-    gactivate_ws (1);
+    gopen_ws (WKID, NULL, WSTYPE);
+    gactivate_ws (WKID);
 /*
  * INVOKE DEMO DRIVER
  */
@@ -26,8 +29,8 @@ main()
 /*
  *     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
  */
-    gdeactivate_ws(1);
-    gclose_ws(1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }
 

@@ -3,6 +3,9 @@
 #include <ncarg/gks.h>
 #include <ncarg/ncargC.h>
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 /*
@@ -33,12 +36,12 @@ main()
  * Open GKS and open and activate workstation.
  */
     gopen_gks ("stdout",0);
-    gopen_ws(1, NULL, 8);
-    gactivate_ws(1);
+    gopen_ws( WKID, NULL, WSTYPE);
+    gactivate_ws( WKID );
 /*
  *  define the necessary color indices.
  */
-    for( i = 0; i < 3; i++ ) gset_colr_rep(1,i,&rgb[i]);
+    for( i = 0; i < 3; i++ ) gset_colr_rep(WKID,i,&rgb[i]);
 /*
  *  marker 3, asterisk (make an asterisk from the asterisk markers.)
  */
@@ -69,7 +72,7 @@ main()
 /*
  *  deactivate and close the workstation, close gks.
  */
-    gdeactivate_ws (1);
-    gclose_ws (1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }

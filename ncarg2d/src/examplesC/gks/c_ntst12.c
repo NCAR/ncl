@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ntst12.c,v 1.1 1994-05-13 14:27:21 haley Exp $
+ *	$Id: c_ntst12.c,v 1.2 1994-06-21 15:00:37 haley Exp $
  */
 #include <stdio.h>
 #include <ncarg/ncargC.h>
@@ -7,7 +7,10 @@
 
 #define ID 10
 
-main ()
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
+main()
 {
 /*
  *  Illustrate the various fill area interior styles.
@@ -21,8 +24,8 @@ main ()
  *  Open GKS, open and activate the metafile workstation.
  */
     gopen_gks("stdout",0);
-    gopen_ws (1,NULL, 8);
-    gactivate_ws (1);
+    gopen_ws( WKID, NULL, WSTYPE);
+    gactivate_ws( WKID );
 /*
  *  Define the necessary color indices.
  */
@@ -34,7 +37,7 @@ main ()
     rgb[5].rgb.red = 0.; rgb[5].rgb.green = 1.; rgb[5].rgb.blue = 1.;
     rgb[6].rgb.red = 1.; rgb[6].rgb.green = 0.; rgb[6].rgb.blue = 1.;
     for( i = 0; i < 7; i++ ) {
-        gset_colr_rep(1,i,&rgb[i]);
+        gset_colr_rep(WKID,i,&rgb[i]);
     }
 /*
  *  Draw a star with interior style hollow (the style index is
@@ -104,8 +107,8 @@ main ()
 /*
  *  Deactivate and close the workstation, close GKS.
  */
-    gdeactivate_ws (1);
-    gclose_ws (1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }
 

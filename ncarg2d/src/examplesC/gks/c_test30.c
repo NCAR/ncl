@@ -7,6 +7,9 @@
 #define min(x,y)    ((x) < (y) ? (x) : (y) )
 #define pow2(x)    ((x)*(x))
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
     float zdat[14][23], rwrk[5000];
@@ -90,8 +93,8 @@ main()
 /*
  *  Open and activate an X workstation.
  */
-    gopen_ws(1,NULL,8);
-    gactivate_ws(1);
+    gopen_ws(WKID,NULL,WSTYPE);
+    gactivate_ws(WKID);
 /*
  *  Define the segment transformation matrix.
  */
@@ -100,17 +103,17 @@ main()
 /*
  *  Copy the segment to the X workstation.
  */
-    gcopy_seg_ws(1,9);
+    gcopy_seg_ws(WKID,9);
     c_frame();
 /*
  *  Deactivate the workstations.
  */
-    gdeactivate_ws(1);
+    gdeactivate_ws(WKID);
     gdeactivate_ws(2);
 /*
  *  Close the workstations.
  */
-    gclose_ws(1);
+    gclose_ws(WKID);
     gclose_ws(2);
 /*
  *  Close GKS.
@@ -383,10 +386,10 @@ void dfclrs()
  * to index 1 is white.
  */
     rgb[0].rgb.red = rgb[0].rgb.green = rgb[0].rgb.blue = 0.0;
-    gset_colr_rep (1,0,&rgb[0]);
+    gset_colr_rep (WKID,0,&rgb[0]);
     rgb[0].rgb.red = rgb[0].rgb.green = rgb[0].rgb.blue = 1.00;
     for( i = 0; i < 15; i++ ) {
-        gset_colr_rep(1,i+1,&rgb[i]);
+        gset_colr_rep(WKID,i+1,&rgb[i]);
     }
 }
 

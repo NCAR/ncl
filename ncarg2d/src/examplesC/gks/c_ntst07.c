@@ -4,6 +4,9 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 /*
@@ -16,8 +19,8 @@ main()
  *  Open GKS, open and activate the metafile workstation.
  */
     gopen_gks("stdout",0);
-    gopen_ws(1, NULL, 8);
-    gactivate_ws (1);
+    gopen_ws( WKID, NULL, WSTYPE);
+    gactivate_ws( WKID );
 /*
  *     Define the color indices.
  */
@@ -37,7 +40,7 @@ main()
     rgb[4].rgb.green = 0.;
     rgb[4].rgb.blue = 0.;
     for( i = 0; i < 5; i++ ) {
-        gset_colr_rep(1,i,&rgb[i]);
+        gset_colr_rep(WKID,i,&rgb[i]);
     }
 /*
  *  Replicate the small filled area over the entire plot.
@@ -64,8 +67,8 @@ main()
  *  close GKS.
  */
     c_frame();
-    gdeactivate_ws (1);
-    gclose_ws (1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }
 

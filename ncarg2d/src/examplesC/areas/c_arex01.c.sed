@@ -1,5 +1,5 @@
 /*
- *	$Id: c_arex01.c.sed,v 1.2 1994-05-13 17:33:45 haley Exp $
+ *	$Id: c_arex01.c.sed,v 1.3 1994-06-21 14:53:52 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -9,6 +9,9 @@
 #define LAMA 10000
 #define NCRA 1000
 #define NGPS 10
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -145,7 +148,9 @@ main()
 /*
  * Open GKS.
  */
-    c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Change the GKS "fill area interior style" to be "solid".
  */
@@ -157,18 +162,18 @@ main()
  * indices 21 through 29 are to be used over "land".
  */
     colr.rgb.red = colr.rgb.green = colr.rgb.blue = 0.;
-    gset_colr_rep (1,0,&colr);
+    gset_colr_rep (WKID,0,&colr);
     colr.rgb.red = colr.rgb.green = colr.rgb.blue = 1.;
-    gset_colr_rep (1,1,&colr);
+    gset_colr_rep (WKID,1,&colr);
     
     for( i=1; i <= 9; i++ ) {
         s=(float)(i)/9.;
         colr.rgb.red = s;
         colr.rgb.green = 1.-s;
         colr.rgb.blue = 0.;
-        gset_colr_rep (1,10+i,&colr);
+        gset_colr_rep (WKID,10+i,&colr);
         colr.rgb.blue = 1.;
-        gset_colr_rep (1,20+i,&colr);
+        gset_colr_rep (WKID,20+i,&colr);
     }
 /*
  * Define the mapping from the user system to the plotter frame.
@@ -241,7 +246,9 @@ main()
 /*
  *  Close GKS
  */
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 #if !defined(cray)

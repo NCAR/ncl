@@ -1,5 +1,5 @@
 /*
- *	$Id: c_agex12.c,v 1.1 1994-05-13 14:24:21 haley Exp $
+ *	$Id: c_agex12.c,v 1.2 1994-06-21 14:58:46 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -10,6 +10,9 @@
 #include <ncarg/ncargC.h>
 
 #define pow2(x)    ((x)*(x))
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -24,7 +27,9 @@ main()
 /*
  * initialize gks.
  */
-    c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * fill the data arrays.  first, we define the histogram
  * outline.  this will be used in the call to c_sfwrld which
@@ -83,7 +88,9 @@ main()
 /*
  * close gks.
  */
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void bndary()

@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpklb.c,v 1.2 1994-05-31 22:28:20 haley Exp $
+ * $Id: c_ccpklb.c,v 1.3 1994-06-21 14:59:28 haley Exp $
  */
 
 #include <stdio.h>
@@ -12,6 +12,9 @@
 #define LRWK    2000
 #define LIWK    2000
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
     float  z[N][K], rwrk[LRWK], clvl;
@@ -23,7 +26,9 @@ main()
 /*
  *  Open GKS
  */
-    c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Initialize Conpack
  */
@@ -50,7 +55,9 @@ main()
  * Close frame and close GKS
  */
     c_frame();
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void getdat (z, n, m, k)

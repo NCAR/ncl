@@ -8,6 +8,9 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
     Gcolr_rep rgb[2];
@@ -30,26 +33,26 @@ main()
 /*
  *  open cgm workstation.
  */
-    gopen_ws(1,NULL,1);
-    gset_colr_rep(1,6,&rgb[0]);
-    gset_colr_rep(1,7,&rgb[1]);
+    gopen_ws( WKID, NULL, WSTYPE);
+    gset_colr_rep(WKID,6,&rgb[0]);
+    gset_colr_rep(WKID,7,&rgb[1]);
     gset_char_ht(.04);
     gset_text_align(&text_align);
 /*
  *  activate the cgm workstation and set the text color to red.
  */
-    gactivate_ws(1);
+    gactivate_ws( WKID );
 /*
  *  create picture 1 in the metafile.
  */
     gset_text_colr_ind(6);
     gtext(&text_pos,"picture 1");
-    c_ngpict(1,1);
+    c_ngpict(WKID,1);
 /*
  *  picture 2 in the metafile--
  */
     gtext(&text_pos,"picture 2");
-    c_ngpict(1,1);
+    c_ngpict(WKID,1);
 /*
  *  picture 3 in the metafile and to x window.
  */
@@ -59,7 +62,7 @@ main()
     gset_colr_rep(5,7,&rgb[1]);
 
     gtext(&text_pos,"picture 3");
-    c_ngpict(1,1);
+    c_ngpict(WKID,1);
     c_ngpict(5,4);
 /*
  *  open another x workstation (window 2).
@@ -70,14 +73,14 @@ main()
     gset_colr_rep(7,7,&rgb[1]);
 
     gtext(&text_pos,"picture 4");
-    c_ngpict(1,1);
+    c_ngpict(WKID,1);
     c_ngpict(7,0);
     c_ngpict(5,4);
     c_ngpict(7,1);
 /*
  *  deactivate metafile and draw picture 5.
  */
-    gdeactivate_ws(1);
+    gdeactivate_ws(WKID);
     gtext(&text_pos,"picture 5");
     c_ngpict(7,0);
     c_ngpict(5,4);
@@ -85,9 +88,9 @@ main()
 /*
  *  re-activate the metafile.
  */
-    gactivate_ws(1);
+    gactivate_ws(WKID);
     gtext(&text_pos,"picture 6");
-    c_ngpict(1,1);
+    c_ngpict(WKID,1);
     c_ngpict(7,0);
     c_ngpict(5,4);
     c_ngpict(7,1);
@@ -97,17 +100,17 @@ main()
     gdeactivate_ws(5);
     gclose_ws(5);
     gtext(&text_pos,"picture 7");
-    c_ngpict(1,1);
+    c_ngpict(WKID,1);
     c_ngpict(7,4);
 
     gtext(&text_pos,"picture 8");
-    c_ngpict(1,1);
+    c_ngpict(WKID,1);
     c_ngpict(7,4);
 
     gdeactivate_ws(7);
-    gdeactivate_ws(1);
+    gdeactivate_ws(WKID);
     gclose_ws(7);
-    gclose_ws(1);
+    gclose_ws(WKID);
 
     gclose_gks();
 }

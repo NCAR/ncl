@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpfil.c,v 1.1 1994-06-08 14:44:36 haley Exp $
+ * $Id: c_ccpfil.c,v 1.2 1994-06-21 14:59:20 haley Exp $
  */
 
 #include <stdio.h>
@@ -17,6 +17,12 @@
 #define NOGRPS  5
 #define NRAN  30
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 	float xreg[MREG],yreg[NREG],zreg[NREG][MREG];
@@ -29,7 +35,9 @@ main()
 /*
  * Open GKS
  */
-	c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Call Conpack color fill routine
  */
@@ -38,7 +46,9 @@ main()
  * Close frame and close GKS
  */
 	c_frame();
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void ccpfil(zreg,ncl)
@@ -173,101 +183,83 @@ float *xreg, *yreg, zreg[NREG][MREG];
 
 void color()
 {
-	Gcolr_rep rgb;
+	Gcolr_rep rgb[18];
 /*
  *     BACKGROUND COLOR
  *     BLACK
  */
-	rgb.rgb.red = 0.; rgb.rgb.green = 0.; rgb.rgb.blue = 0.;
-	gset_colr_rep(1,0,&rgb);
+	rgb[0].rgb.red = 0.; rgb[0].rgb.green = 0.; rgb[0].rgb.blue = 0.;
 /*
  *     FORGROUND COLORS
  * White
  */
-	rgb.rgb.red = 1.0; rgb.rgb.green =  1.0; rgb.rgb.blue =  1.0;
-	gset_colr_rep(1,  1, &rgb );
+	rgb[1].rgb.red = 1.0; rgb[1].rgb.green =  1.0; rgb[1].rgb.blue =  1.0;
 /*
  * Orchid 
  */
-	rgb.rgb.red = 0.85; rgb.rgb.green =  0.45; rgb.rgb.blue =  0.8;
-	gset_colr_rep(1,  2, &rgb );
+	rgb[2].rgb.red = 0.85; rgb[2].rgb.green =  0.45; rgb[2].rgb.blue =  0.8;
 /*
  * Red
  */
-	rgb.rgb.red = 0.9; rgb.rgb.green =  0.25; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1,  3, &rgb);
+	rgb[3].rgb.red = 0.9; rgb[3].rgb.green =  0.25; rgb[3].rgb.blue =  0.0;
 /*
  * OrangeRed
  */
-	rgb.rgb.red = 1.0; rgb.rgb.green =  0.0; rgb.rgb.blue =  0.2;
-	gset_colr_rep(1,  4, &rgb);
+	rgb[4].rgb.red = 1.0; rgb[4].rgb.green =  0.0; rgb[4].rgb.blue =  0.2;
 /*
  * Orange
  */
-	rgb.rgb.red = 1.0; rgb.rgb.green =  0.65; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1,  5, &rgb);
+	rgb[5].rgb.red = 1.0; rgb[5].rgb.green =  0.65; rgb[5].rgb.blue =  0.0;
 /*
  * Gold
  */
-	rgb.rgb.red = 1.0; rgb.rgb.green =  0.85; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1,  6, &rgb);
+	rgb[6].rgb.red = 1.0; rgb[6].rgb.green =  0.85; rgb[6].rgb.blue =  0.0;
 /*
  * Yellow
  */
-	rgb.rgb.red = 1.0; rgb.rgb.green =  1.0; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1,  7, &rgb);
+	rgb[7].rgb.red = 1.0; rgb[7].rgb.green =  1.0; rgb[7].rgb.blue =  0.0;
 /*
  * GreenYellow
  */
-	rgb.rgb.red = 0.7; rgb.rgb.green =  1.0; rgb.rgb.blue =  0.2;
-	gset_colr_rep(1,  8, &rgb);
+	rgb[8].rgb.red = 0.7; rgb[8].rgb.green =  1.0; rgb[8].rgb.blue =  0.2;
 /*
  * Chartreuse
  */
-	rgb.rgb.red = 0.5; rgb.rgb.green =  1.0; rgb.rgb.blue =  0.0;
-	gset_colr_rep(1,  9, &rgb);
+	rgb[9].rgb.red = 0.5; rgb[9].rgb.green =  1.0; rgb[9].rgb.blue =  0.0;
 /*
  * Celeste
  */
-	rgb.rgb.red = 0.2; rgb.rgb.green =  1.0; rgb.rgb.blue =  0.5;
-	gset_colr_rep(1, 10, &rgb);
+	rgb[10].rgb.red = 0.2; rgb[10].rgb.green =  1.0; rgb[10].rgb.blue =  0.5;
 /*
  * Green
  */
-	rgb.rgb.red = 0.2; rgb.rgb.green =  0.8; rgb.rgb.blue =  0.2;
-	gset_colr_rep(1, 11, &rgb);
+	rgb[11].rgb.red = 0.2; rgb[11].rgb.green =  0.8; rgb[11].rgb.blue =  0.2;
 /*
  * Aqua
  */
-	rgb.rgb.red = 0.0; rgb.rgb.green =  0.9; rgb.rgb.blue =  1.0;
-	gset_colr_rep(1, 12, &rgb);
+	rgb[12].rgb.red = 0.0; rgb[12].rgb.green =  0.9; rgb[12].rgb.blue =  1.0;
 /*
  * DeepSkyBlue
  */
-	rgb.rgb.red = 0.0; rgb.rgb.green =  0.75; rgb.rgb.blue =  1.0;
-	gset_colr_rep(1, 13, &rgb);
+	rgb[13].rgb.red = 0.0; rgb[13].rgb.green =  0.75; rgb[13].rgb.blue =  1.0;
 /*
  * RoyalBlue
  */
-	rgb.rgb.red = 0.25; rgb.rgb.green =  0.45; rgb.rgb.blue =  0.95;
-	gset_colr_rep(1, 14, &rgb);
+	rgb[14].rgb.red = 0.25; rgb[14].rgb.green =  0.45; rgb[14].rgb.blue =  0.95;
 /*
  * SlateBlue
  */
-	rgb.rgb.red = 0.4; rgb.rgb.green =  0.35; rgb.rgb.blue =  0.8;
-	gset_colr_rep(1, 15, &rgb);
+	rgb[15].rgb.red = 0.4; rgb[15].rgb.green =  0.35; rgb[15].rgb.blue =  0.8;
 /*
  * DarkViolet
  */
-	rgb.rgb.red = 0.6; rgb.rgb.green =  0.0; rgb.rgb.blue =  0.8;
-	gset_colr_rep(1, 16, &rgb);
+	rgb[16].rgb.red = 0.6; rgb[16].rgb.green =  0.0; rgb[16].rgb.blue =  0.8;
 /*
  * Lavender
  */
-	rgb.rgb.red = 0.8; rgb.rgb.green =  0.8; rgb.rgb.blue =  1.0;
-	gset_colr_rep(1, 17, &rgb);
-/*
- * Done.
- */
+	rgb[17].rgb.red = 0.8; rgb[17].rgb.green =  0.8; rgb[17].rgb.blue =  1.0;
+	for( i = 0; i <= 17; i++ ) {
+		gset_colr_rep(WKID, i, &rgb[i]);
+	}
 	return;
 }

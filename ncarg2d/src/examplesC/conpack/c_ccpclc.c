@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpclc.c,v 1.1 1994-05-31 22:28:16 haley Exp $
+ * $Id: c_ccpclc.c,v 1.2 1994-06-21 14:59:11 haley Exp $
  */
 
 #include <stdio.h>
@@ -13,6 +13,9 @@
 #define   LRWK   1000
 #define   LIWK   1000
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 	float z[N][K], rwrk[LRWK], cval;
@@ -24,7 +27,9 @@ main()
 /*
  * Open GKS
  */
-	c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Set up color table
  */
@@ -60,7 +65,9 @@ main()
  * Close frame and close GKS
  */
 	c_frame();
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void getdat (z, n, m, k)
@@ -81,15 +88,16 @@ int k, *m, n;
 
 void color()
 {
-	Gcolr_rep rgb;
+	Gcolr_rep rgb[4];
+	int i;
 
-	rgb.rgb.red = 1.; rgb.rgb.green = 1.; rgb.rgb.blue = 1.;
-	gset_colr_rep (1,0,&rgb);
-	rgb.rgb.red = 1.; rgb.rgb.green = 0.; rgb.rgb.blue = 0.;
-	gset_colr_rep (1,1,&rgb);
-	rgb.rgb.red = 0.; rgb.rgb.green = 1.; rgb.rgb.blue = 0.;
-	gset_colr_rep (1,2,&rgb);
-	rgb.rgb.red = 0.; rgb.rgb.green = 0.; rgb.rgb.blue = 1.;
-	gset_colr_rep (1,3,&rgb);
+	rgb[0].rgb.red = 1.; rgb[0].rgb.green = 1.; rgb[0].rgb.blue = 1.;
+	rgb[1].rgb.red = 1.; rgb[1].rgb.green = 0.; rgb[1].rgb.blue = 0.;
+	rgb[2].rgb.red = 0.; rgb[2].rgb.green = 1.; rgb[2].rgb.blue = 0.;
+	rgb[3].rgb.red = 0.; rgb[3].rgb.green = 0.; rgb[3].rgb.blue = 1.;
+
+	for( i = 0; i <= 3; i++ ) {
+		gset_colr_rep (WKID,i,&rgb[i]);
+	}
 	return;
 }

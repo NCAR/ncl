@@ -1,5 +1,5 @@
 /*
- *  $Id: c_coex02.c,v 1.1 1994-05-13 14:25:30 haley Exp $
+ *  $Id: c_coex02.c,v 1.2 1994-06-21 14:58:59 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -13,6 +13,9 @@
 int NX= 4;
 int NY=4;
 float SZX= .235,SZY=.135,Y0=.10,Y1=.88;
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -73,7 +76,9 @@ main()
       strcpy(tlab[2][3], "Dark Gray                " );
       strcpy(tlab[3][3], "Black                    " );
 
-      c_opngks();
+	  gopen_gks ("stdout",0);
+	  gopen_ws (WKID, NULL, WSTYPE);
+	  gactivate_ws(WKID);
 /*
  *  Use the Duplex character set of PLOTCHAR.
  */
@@ -83,7 +88,7 @@ main()
  */
       for( j = 0; j < NY; j++ ) {
           for( i = 0; i < NX; i++ ) {
-              gset_colr_rep(1,NX*(j)+i+2,&rgb[i][j]);
+              gset_colr_rep(WKID,NX*(j)+i+2,&rgb[i][j]);
               sprintf(blab[i][j], "R=%4.2f G=%4.2f B=%4.2f", rgb[i][j].rgb.red,rgb[i][j].rgb.green,rgb[i][j].rgb.blue);
           }
       }
@@ -104,7 +109,9 @@ main()
       c_pcseti("CD",1);
       c_plchhq(.5,.96,"Sixteen Sample Colors",.02,0.,0.);
       c_frame();
-      c_clsgks();
+	  gdeactivate_ws(WKID);
+	  gclose_ws(WKID);
+	  gclose_gks();
 }
 
 drbox (x,y,szx,y0,szy,tlab,blab,indx)
@@ -121,7 +128,7 @@ int indx;
     Gcolr_rep rgb;
 
     rgb.rgb.red = rgb.rgb.green = rgb.rgb.blue = 1.;
-    gset_colr_rep(1,1,&rgb);
+    gset_colr_rep(WKID,1,&rgb);
     gset_fill_colr_ind(indx);
     gset_fill_int_style (GSTYLE_SOLID);
 /*
@@ -148,7 +155,7 @@ int indx;
 /*
  *  if the color is black, draw a boundary.
  */
-    ginq_colr_rep(1,indx,0,&ier,&rgb);
+    ginq_colr_rep(WKID,indx,0,&ier,&rgb);
     fill_area.num_points = 5;
     if (rgb.rgb.red == 0. && rgb.rgb.green == 0. && rgb.rgb.blue == 0.) {
         gset_line_colr_ind(1);

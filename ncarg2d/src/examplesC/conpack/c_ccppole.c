@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccppole.c,v 1.3 1994-05-26 21:48:46 haley Exp $
+ * $Id: c_ccppole.c,v 1.4 1994-06-21 14:59:30 haley Exp $
  */
 
 #include <stdio.h>
@@ -44,13 +44,16 @@ int iwrk[LIWK];
 float xcra[NCRA],ycra[NCRA];
 int iaia[10],igia[10];
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 /*
  * Declare an array in which to retrieve aspect source flags.
  */
 	Gasfs iasf;
-	Gcolr_rep rgb;
+	Gcolr_rep rgb[17];
 /*
  * Declare a routine to color the areas represented by the area map.
  */
@@ -106,7 +109,9 @@ main()
 /*
  * Open GKS.
  */
-	c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Turn off the clipping indicator.
  */
@@ -126,40 +131,26 @@ main()
  * bands over ocean.  Colors 4 through 16 are used for contour bands
  * over land.
  */
-	rgb.rgb.red = 0.000; rgb.rgb.green = 0.000; rgb.rgb.blue = 0.000;
-	gset_colr_rep (1, 0, &rgb );
-	rgb.rgb.red = 1.000; rgb.rgb.green = 1.000; rgb.rgb.blue = 1.000;
-	gset_colr_rep (1, 1, &rgb );
-	rgb.rgb.red = 0.000; rgb.rgb.green = 1.000; rgb.rgb.blue = 1.000;
-	gset_colr_rep (1, 2, &rgb );
-	rgb.rgb.red = 0.000; rgb.rgb.green = 0.850; rgb.rgb.blue = 0.850;
-	gset_colr_rep (1, 3, &rgb );
-	rgb.rgb.red = 0.700; rgb.rgb.green = 0.700; rgb.rgb.blue = 0.700;
-	gset_colr_rep (1, 4, &rgb );
-	rgb.rgb.red = 0.750; rgb.rgb.green = 0.500; rgb.rgb.blue = 1.000;
-	gset_colr_rep (1, 5, &rgb );
-	rgb.rgb.red = 0.500; rgb.rgb.green = 0.000; rgb.rgb.blue = 1.000;
-	gset_colr_rep (1, 6, &rgb );
-	rgb.rgb.red = 0.000; rgb.rgb.green = 0.000; rgb.rgb.blue = 1.000;
-	gset_colr_rep (1, 7, &rgb );
-	rgb.rgb.red = 0.000; rgb.rgb.green = 0.500; rgb.rgb.blue = 1.000;
-	gset_colr_rep (1, 8, &rgb );
-	rgb.rgb.red = 0.000; rgb.rgb.green = 1.000; rgb.rgb.blue = 0.600;
-	gset_colr_rep (1, 9, &rgb );
-	rgb.rgb.red = 0.000; rgb.rgb.green = 1.000; rgb.rgb.blue = 0.000;
-	gset_colr_rep (1,10, &rgb );
-	rgb.rgb.red = 0.700; rgb.rgb.green = 1.000; rgb.rgb.blue = 0.000;
-	gset_colr_rep (1,11, &rgb );
-	rgb.rgb.red = 1.000; rgb.rgb.green = 1.000; rgb.rgb.blue = 0.000;
-	gset_colr_rep (1,12, &rgb );
-	rgb.rgb.red = 1.000; rgb.rgb.green = 0.750; rgb.rgb.blue = 0.000;
-	gset_colr_rep (1,13, &rgb );
-	rgb.rgb.red = 1.000; rgb.rgb.green = 0.380; rgb.rgb.blue = 0.380;
-	gset_colr_rep (1,14, &rgb );
-	rgb.rgb.red = 1.000; rgb.rgb.green = 0.000; rgb.rgb.blue = 0.380;
-	gset_colr_rep (1,15, &rgb );
-	rgb.rgb.red = 1.000; rgb.rgb.green = 0.000; rgb.rgb.blue = 0.000;
-	gset_colr_rep (1,16, &rgb );
+	rgb[0].rgb.red = 0.00; rgb[0].rgb.green = 0.00; rgb[0].rgb.blue = 0.00;
+	rgb[1].rgb.red = 1.00; rgb[1].rgb.green = 1.00; rgb[1].rgb.blue = 1.00;
+	rgb[2].rgb.red = 0.00; rgb[2].rgb.green = 1.00; rgb[2].rgb.blue = 1.00;
+	rgb[3].rgb.red = 0.00; rgb[3].rgb.green = 0.85; rgb[3].rgb.blue = 0.85;
+	rgb[4].rgb.red = 0.70; rgb[4].rgb.green = 0.70; rgb[4].rgb.blue = 0.70;
+	rgb[5].rgb.red = 0.75; rgb[5].rgb.green = 0.50; rgb[5].rgb.blue = 1.00;
+	rgb[6].rgb.red = 0.50; rgb[6].rgb.green = 0.00; rgb[6].rgb.blue = 1.00;
+	rgb[7].rgb.red = 0.00; rgb[7].rgb.green = 0.00; rgb[7].rgb.blue = 1.00;
+	rgb[8].rgb.red = 0.00; rgb[8].rgb.green = 0.50; rgb[8].rgb.blue = 1.00;
+	rgb[9].rgb.red = 0.00; rgb[9].rgb.green = 1.00; rgb[9].rgb.blue = 0.60;
+	rgb[10].rgb.red = 0.00; rgb[10].rgb.green = 1.00; rgb[10].rgb.blue = 0.00;
+	rgb[11].rgb.red = 0.70; rgb[11].rgb.green = 1.00; rgb[11].rgb.blue = 0.00;
+	rgb[12].rgb.red = 1.00; rgb[12].rgb.green = 1.00; rgb[12].rgb.blue = 0.00;
+	rgb[13].rgb.red = 1.00; rgb[13].rgb.green = 0.75; rgb[13].rgb.blue = 0.00;
+	rgb[14].rgb.red = 1.00; rgb[14].rgb.green = 0.38; rgb[14].rgb.blue = 0.38;
+	rgb[15].rgb.red = 1.00; rgb[15].rgb.green = 0.00; rgb[15].rgb.blue = 0.38;
+	rgb[16].rgb.red = 1.00; rgb[16].rgb.green = 0.00; rgb[16].rgb.blue = 0.00;
+	for( i = 0; i <= 16; i++ ) {
+		gset_colr_rep (WKID, i, &rgb[i] );
+	}
 /*
  * Generate an array of test data.  It is important that the data should
  * represent a continous function around the globe.  What is used here
@@ -276,10 +267,9 @@ main()
 /*
  * Close GKS.
  */
-	c_clsgks();
-/*
- * Done.
- */
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 int colram(
@@ -316,7 +306,7 @@ int colram(
  * over water (so that the contour bands will be minimally visible)
  * and brighter colors over land.
  */
-    fill = 0;
+    fill = ;
     if (iai1 > 0) {
         if (c_mapaci(iai1) == 1) {
             fill = 1;

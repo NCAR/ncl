@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tseter.c,v 1.1 1994-05-13 14:18:20 haley Exp $
+ *	$Id: c_tseter.c,v 1.2 1994-06-21 15:01:16 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -64,6 +64,9 @@ char *line[40] = {
  * error message returned by the character function SEMESS.
  */
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 	char ermsg[114],semess[114];
@@ -71,7 +74,9 @@ main()
 /*
  * Open GKS.
  */
-	c_opngks();
+	gopen_gks("stdout",0);
+	gopen_ws(WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Produce a single frame of output, detailing what the program ought to
  * print.
@@ -98,7 +103,9 @@ main()
 /*
  * Close GKS.
  */
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 /*
  * Enter recovery mode.
  */

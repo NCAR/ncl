@@ -1,5 +1,5 @@
 /*
- *	$Id: c_thstgr.c,v 1.2 1994-05-16 15:45:21 haley Exp $
+ *	$Id: c_thstgr.c,v 1.3 1994-06-21 15:01:03 haley Exp $
  */
 #include <math.h>
 #include <stdio.h>
@@ -10,13 +10,16 @@
 #define NCLS  17
 #define NWRK  374
   
+#define WSTYPE  SED_WSTYPE
+#define WKID    1
+
 main()
 {
     int idum,ierr;
 
     gopen_gks ("stdout",0);
-    gopen_ws (1, NULL, 1);
-    gactivate_ws (1);
+    gopen_ws (WKID, NULL, WSTYPE);
+    gactivate_ws (WKID);
 /*
  * INVOKE DEMO DRIVER
  */
@@ -24,8 +27,8 @@ main()
 /*
  *     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
  */
-    gdeactivate_ws(1);
-    gclose_ws(1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }
 
@@ -113,7 +116,7 @@ int *ierror;
  *  spectrum, and the last one being white.
  */
     for(i=0;i<=14;i++){
-        gset_colr_rep(1,i+1,&rgb[i]);
+        gset_colr_rep(WKID,i+1,&rgb[i]);
     }
 
 /*

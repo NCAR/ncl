@@ -1,5 +1,5 @@
 /*
- *	$Id: c_mpex09.c.sed,v 1.1 1994-05-13 14:26:40 haley Exp $
+ *	$Id: c_mpex09.c.sed,v 1.2 1994-06-21 15:00:14 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -16,6 +16,9 @@ struct common {
 } limits_;
 
 char *plbl = "SEGMENT NUMBERS FOR OUTLINE DATASET CO";
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -60,7 +63,9 @@ main()
 /*
  * Open GKS.
  */
-    c_opngks();
+	gopen_gks("stdout",0);
+	gopen_ws(WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 /*
  * Set the character size; 6 is about the smallest usable value.
  */
@@ -141,7 +146,9 @@ main()
 /*
  * Close GKS.
  */
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void bndary()

@@ -1,5 +1,5 @@
 /*
- *  $Id: c_coex03.c,v 1.1 1994-05-13 14:25:32 haley Exp $
+ *  $Id: c_coex03.c,v 1.2 1994-06-21 14:59:01 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -14,6 +14,9 @@
 #define NCOL 16
 #define NSAT  4
 #define NPTS  4
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -71,7 +74,9 @@ main()
     st[2] = -.625;
     st[3] =  -.850;
 
-    c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
     gset_clip_ind (GIND_NO_CLIP);
     gset_asfs(&iasf);
     gset_fill_int_style (GSTYLE_SOLID);
@@ -79,9 +84,9 @@ main()
  *  Background and foreground colors.
  */
     color.rgb.red = color.rgb.green = color.rgb.blue = 0.;
-    gset_colr_rep(1,0,&color);
+    gset_colr_rep(WKID,0,&color);
     color.rgb.red = color.rgb.green = color.rgb.blue = 1.;
-    gset_colr_rep(1,1,&color);
+    gset_colr_rep(WKID,1,&color);
 /*
  * Create structure to pass to gfill_area
  */
@@ -121,7 +126,7 @@ main()
                 color.rgb.red = r;
                 color.rgb.green = g;
                 color.rgb.blue = b;
-                gset_colr_rep(1,index,&color);
+                gset_colr_rep(WKID,index,&color);
                 gset_fill_colr_ind(index);
                 rlen = (float)(isat) / (float)(NSAT);
                 fill_area.points[1].x = cos(theta1) * rlen;
@@ -167,7 +172,9 @@ main()
         c_frame();
     }
     free(fill_area.points);
-    c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ntst08.c,v 1.1 1994-05-13 14:27:17 haley Exp $
+ *	$Id: c_ntst08.c,v 1.2 1994-06-21 15:00:34 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -15,6 +15,9 @@ typedef struct {
     float x;
     float y;
 } complex;
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -42,8 +45,8 @@ main()
  *  open gks, open and activate the metafile workstation.
  */
     gopen_gks("stdout",0);
-    gopen_ws (1,NULL, 8);
-    gactivate_ws (1);
+    gopen_ws( WKID, NULL, WSTYPE);
+    gactivate_ws( WKID );
 /*
  *  set up normalizaton transformation.
  */
@@ -64,11 +67,11 @@ main()
     for( k = 1; k <= NITER; k++ ) {
         h = (float)k/(float)(NITER)*360.;;
         c_hlsrgb(h,50.,100.,&rgb.rgb.red,&rgb.rgb.green,&rgb.rgb.blue);
-        gset_colr_rep(1,k,&rgb);
+        gset_colr_rep(WKID,k,&rgb);
     }
     rgb.rgb.red = 1.;
     rgb.rgb.green = rgb.rgb.blue = 0.;
-    gset_colr_rep(1,NITER+1,&rgb);
+    gset_colr_rep(WKID,NITER+1,&rgb);
 /* 
  * Set up cell array structure
  */
@@ -133,8 +136,8 @@ main()
 /*
  *  deactivate and close the workstation, close gks.
  */
-    gdeactivate_ws (1);
-    gclose_ws (1);
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
     gclose_gks();
 }
 

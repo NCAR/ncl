@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpmovi.c,v 1.1 1994-05-31 22:28:21 haley Exp $
+ * $Id: c_ccpmovi.c,v 1.2 1994-06-21 14:59:29 haley Exp $
  */
 
 #include <stdio.h>
@@ -18,6 +18,9 @@
 #define LIWK     5000
 #define ICAM     512
 #define ICAN     512
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -51,7 +54,9 @@ main()
  * Open GKS, turn clipping off, and set up GKS flags
  * Use workstation type 3 for use with Gflash.
  */
-	c_opngks();
+	gopen_gks ("stdout",0);
+	gopen_ws (WKID, NULL, WSTYPE);
+	gactivate_ws(WKID);
 	gset_clip_ind(GIND_NO_CLIP);
 	gset_asfs(&iasf);
 /*
@@ -103,7 +108,9 @@ main()
 /*
  * Close GKS 
  */
-	c_clsgks();
+	gdeactivate_ws(WKID);
+	gclose_ws(WKID);
+	gclose_gks();
 }
 
 void mkdat(nctfr,zdat)
@@ -262,7 +269,7 @@ void color()
         rgb[i].rgb.blue  = max(0.,min(1.,1.-(float)(abs(i-15)/10.)));
 	}
 	for( i = 0; i <= 15; i++ ) {
-		gset_colr_rep(1,i,&rgb[i]);
+		gset_colr_rep(WKID,i,&rgb[i]);
 	}
 	return;
 }
