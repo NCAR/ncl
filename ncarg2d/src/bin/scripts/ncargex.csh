@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.29 1993-04-08 23:30:51 haley Exp $
+#   $Id: ncargex.csh,v 1.30 1993-04-09 14:09:14 haley Exp $
 #
 
 #********************#
@@ -977,6 +977,7 @@ if (! $?NoRunOption) then
         breaksw
         case fgke03:
             $name
+            echo "Metafiles META01 and META02 produced"
         breaksw
         case ccpcff:
             ncargrun -o $name.ncgm $name
@@ -1009,6 +1010,10 @@ switch ($name)
 
     case slex01:
         set rmfiles = ($rmfiles GNFB09)
+    breaksw
+
+    case fgke02:
+        set rmfiles = ($rmfiles GNFB01 GNFB02)
     breaksw
 
     case tgflas:
