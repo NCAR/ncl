@@ -1,5 +1,5 @@
 C
-C       $Id: curvs1.f,v 1.1 2002-08-03 00:27:32 fred Exp $
+C       $Id: curvs1.f,v 1.2 2003-02-21 20:57:25 fred Exp $
 C
       SUBROUTINE CURVS1(N,X,Y,D,ISW,S,EPS,PARAM,XS,YS,XSP,YSP,
      +                  SIGMA,TEMP,IERR)
@@ -8,7 +8,7 @@ C  This subroutine determines the parameters necessary to
 C  compute a smoothing spline under tension from data values
 C  in the plane.  In general the curve will not pass through 
 C  the original data points.  For actual computation of points 
-C  on the C  curve it is necessary to call the subroutine CURVS2.
+C  on the curve it is necessary to call the subroutine CURVS2.
 C
 C  On input:
 C
