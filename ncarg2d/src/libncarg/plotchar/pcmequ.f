@@ -1,5 +1,5 @@
 C
-C $Id: pcmequ.f,v 1.3 1994-03-17 00:23:59 kennison Exp $
+C $Id: pcmequ.f,v 1.4 1994-03-17 18:44:39 kennison Exp $
 C
       SUBROUTINE PCMEQU (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -13,7 +13,7 @@ C
         IF (ICFELL('PCMEQU - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
         CALL PLCHMQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
-        IF (ICFELL('PCMEQU',1).NE.0) RETURN
+        IF (ICFELL('PCMEQU',2).NE.0) RETURN
 C
         RETURN
 C

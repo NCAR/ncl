@@ -1,5 +1,5 @@
 C
-C $Id: pcdlsc.f,v 1.3 1994-03-17 00:23:38 kennison Exp $
+C $Id: pcdlsc.f,v 1.4 1994-03-17 18:44:28 kennison Exp $
 C
       SUBROUTINE PCDLSC (IFCI)
 C
@@ -26,7 +26,7 @@ C
 C Check for error in the argument.
 C
       IF (IFCI.LT.0) THEN
-        CALL SETER ('PCDLSC - FIRST COLOR INDEX IS LESS THAN ZERO',1,1)
+        CALL SETER ('PCDLSC - FIRST COLOR INDEX IS LESS THAN ZERO',2,1)
         RETURN
       END IF
 C

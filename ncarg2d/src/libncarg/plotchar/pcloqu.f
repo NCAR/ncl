@@ -1,5 +1,5 @@
 C
-C $Id: pcloqu.f,v 1.3 1994-03-17 00:23:57 kennison Exp $
+C $Id: pcloqu.f,v 1.4 1994-03-17 18:44:37 kennison Exp $
 C
       SUBROUTINE PCLOQU (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -13,7 +13,7 @@ C
         IF (ICFELL('PCLOQU - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
         CALL PLCHLQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
-        IF (ICFELL('PCLOQU',1).NE.0) RETURN
+        IF (ICFELL('PCLOQU',2).NE.0) RETURN
 C
         RETURN
 C
