@@ -1,7 +1,4 @@
 C
-C	$Id: lbsetr.f,v 1.1.1.1 1992-04-17 22:32:58 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE LBSETR (WHCH,RVAL)
@@ -40,17 +37,17 @@ C
 C
 C Set the appropriate parameter value.
 C
-        IF (WHCH(1:3).EQ.'CBL') THEN
+        IF      (WHCH(1:3).EQ.'CBL'.OR.WHCH(1:3).EQ.'cbl') THEN
           ICBL=MAX(-1,INT(RVAL))
-        ELSE IF (WHCH(1:3).EQ.'CFL') THEN
+        ELSE IF (WHCH(1:3).EQ.'CFL'.OR.WHCH(1:3).EQ.'cfl') THEN
           ICFL=MAX(-1,INT(RVAL))
-        ELSE IF (WHCH(1:3).EQ.'CLB') THEN
+        ELSE IF (WHCH(1:3).EQ.'CLB'.OR.WHCH(1:3).EQ.'clb') THEN
           ICLB=MAX(-1,INT(RVAL))
-        ELSE IF (WHCH(1:3).EQ.'WBL') THEN
+        ELSE IF (WHCH(1:3).EQ.'WBL'.OR.WHCH(1:3).EQ.'wbl') THEN
           WOBL=MAX(0.,RVAL)
-        ELSE IF (WHCH(1:3).EQ.'WFL') THEN
+        ELSE IF (WHCH(1:3).EQ.'WFL'.OR.WHCH(1:3).EQ.'wfl') THEN
           WOFL=MAX(0.,RVAL)
-        ELSE IF (WHCH(1:3).EQ.'WLB') THEN
+        ELSE IF (WHCH(1:3).EQ.'WLB'.OR.WHCH(1:3).EQ.'wlb') THEN
           WOLB=MAX(0.,RVAL)
         ELSE
           CTMP(1:46)='LBSETI OR LBSETR - PARAMETER NAME NOT KNOWN - '

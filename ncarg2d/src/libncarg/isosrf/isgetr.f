@@ -1,7 +1,4 @@
 C
-C	$Id: isgetr.f,v 1.1.1.1 1992-04-17 22:31:24 ncargd Exp $
-C
-C
 C The subroutine ISGETR.
 C --- ---------- -------
 C
@@ -48,35 +45,35 @@ C
 C
 C Get the appropriate parameter value.
 C
-      IF      (IPN(1:2).EQ.'IU') THEN
+      IF      (IPN(1:2).EQ.'IU'.OR.IPN(1:2).EQ.'iu') THEN
         RVL=REAL(NINU)
-      ELSE IF (IPN(1:2).EQ.'IV') THEN
+      ELSE IF (IPN(1:2).EQ.'IV'.OR.IPN(1:2).EQ.'iv') THEN
         RVL=REAL(NINV)
-      ELSE IF (IPN(1:2).EQ.'IW') THEN
+      ELSE IF (IPN(1:2).EQ.'IW'.OR.IPN(1:2).EQ.'iw') THEN
         RVL=REAL(NINW)
-      ELSE IF (IPN(1:2).EQ.'RF') THEN
+      ELSE IF (IPN(1:2).EQ.'RF'.OR.IPN(1:2).EQ.'rf') THEN
         RVL=REAL(IREF)
-      ELSE IF (IPN(1:2).EQ.'RS') THEN
+      ELSE IF (IPN(1:2).EQ.'RS'.OR.IPN(1:2).EQ.'rs') THEN
         RVL=RZERO
-      ELSE IF (IPN(1:2).EQ.'SL') THEN
+      ELSE IF (IPN(1:2).EQ.'SL'.OR.IPN(1:2).EQ.'sl') THEN
         RVL=DBPI
-      ELSE IF (IPN(1:2).EQ.'SM') THEN
+      ELSE IF (IPN(1:2).EQ.'SM'.OR.IPN(1:2).EQ.'sm') THEN
         IF (NX.EQ.128) THEN
           RVL=0.
         ELSE
           RVL=1.
         END IF
-      ELSE IF (IPN(1:2).EQ.'ST') THEN
+      ELSE IF (IPN(1:2).EQ.'ST'.OR.IPN(1:2).EQ.'st') THEN
         RVL=TENSN
-      ELSE IF (IPN(1:2).EQ.'SV') THEN
+      ELSE IF (IPN(1:2).EQ.'SV'.OR.IPN(1:2).EQ.'sv') THEN
         RVL=SVAL
-      ELSE IF (IPN(1:2).EQ.'VL') THEN
+      ELSE IF (IPN(1:2).EQ.'VL'.OR.IPN(1:2).EQ.'vl') THEN
         RVL=XVPL
-      ELSE IF (IPN(1:2).EQ.'VR') THEN
+      ELSE IF (IPN(1:2).EQ.'VR'.OR.IPN(1:2).EQ.'vr') THEN
         RVL=XVPR
-      ELSE IF (IPN(1:2).EQ.'VB') THEN
+      ELSE IF (IPN(1:2).EQ.'VB'.OR.IPN(1:2).EQ.'vb') THEN
         RVL=YVPB
-      ELSE IF (IPN(1:2).EQ.'VT') THEN
+      ELSE IF (IPN(1:2).EQ.'VT'.OR.IPN(1:2).EQ.'vt') THEN
         RVL=YVPT
       ELSE
         CTM(1:46)='ISGETI OR ISGETR - PARAMETER NAME NOT KNOWN - '

@@ -1,5 +1,25 @@
+C***********************************************************************
+C L A B E L B A R   -   I N T R O D U C T I O N
+C***********************************************************************
 C
-C	$Id: lblbar.f,v 1.2 1992-05-18 14:39:28 ncargd Exp $
+C This file contains materials for a package which draws "label bars" -
+C horizontal or vertical rectangles divided into boxes (each of which
+C is either colored or filled with a pattern), and having labels next
+C to it, which serves as a key for a solid-filled plot.
+C
+C***********************************************************************
+C L A B E L B A R   -   I M P L E M E N T A T I O N
+C***********************************************************************
+C
+C LABELBAR is written in standard FORTRAN 77.  No special effort should
+C be required to implement it.  It does require various other parts of
+C the NCAR Graphics package to have been implemented; in particular, it
+C requires the package SOFTFILL, the support routine SETER, and various
+C routines from SPPS.
+C
+C***********************************************************************
+C L A B E L B A R   -   U S E R - L E V E L   R O U T I N E S
+C***********************************************************************
 C
       SUBROUTINE LBLBAR (IHOV,XLEB,XREB,YBEB,YTEB,NBOX,WSFB,HSFB,LFIN,
      +                   IFTP,LLBS,NLBS,LBAB)

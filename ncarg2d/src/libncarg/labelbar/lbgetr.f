@@ -1,7 +1,4 @@
 C
-C	$Id: lbgetr.f,v 1.1.1.1 1992-04-17 22:32:57 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE LBGETR (WHCH,RVAL)
@@ -41,17 +38,17 @@ C
 C
 C Get the appropriate parameter value.
 C
-        IF (WHCH(1:3).EQ.'CBL') THEN
+        IF      (WHCH(1:3).EQ.'CBL'.OR.WHCH(1:3).EQ.'cbl') THEN
           RVAL=REAL(ICBL)
-        ELSE IF (WHCH(1:3).EQ.'CFL') THEN
+        ELSE IF (WHCH(1:3).EQ.'CFL'.OR.WHCH(1:3).EQ.'cfl') THEN
           RVAL=REAL(ICFL)
-        ELSE IF (WHCH(1:3).EQ.'CLB') THEN
+        ELSE IF (WHCH(1:3).EQ.'CLB'.OR.WHCH(1:3).EQ.'clb') THEN
           RVAL=REAL(ICLB)
-        ELSE IF (WHCH(1:3).EQ.'WBL') THEN
+        ELSE IF (WHCH(1:3).EQ.'WBL'.OR.WHCH(1:3).EQ.'wbl') THEN
           RVAL=WOBL
-        ELSE IF (WHCH(1:3).EQ.'WFL') THEN
+        ELSE IF (WHCH(1:3).EQ.'WFL'.OR.WHCH(1:3).EQ.'wfl') THEN
           RVAL=WOFL
-        ELSE IF (WHCH(1:3).EQ.'WLB') THEN
+        ELSE IF (WHCH(1:3).EQ.'WLB'.OR.WHCH(1:3).EQ.'wlb') THEN
           RVAL=WOLB
         ELSE
           CTMP(1:46)='LBGETI OR LBGETR - PARAMETER NAME NOT KNOWN - '

@@ -1,7 +1,4 @@
 C
-C	$Id: issetr.f,v 1.1.1.1 1992-04-17 22:31:24 ncargd Exp $
-C
-C
 C The subroutine ISSETR.
 C --- ---------- -------
 C
@@ -47,19 +44,19 @@ C
 C
 C Set the appropriate parameter value.
 C
-      IF      (IPN(1:2).EQ.'IU') THEN
+      IF      (IPN(1:2).EQ.'IU'.OR.IPN(1:2).EQ.'iu') THEN
         NINU=MAX(-10,MIN(10,INT(RVL)))
-      ELSE IF (IPN(1:2).EQ.'IV') THEN
+      ELSE IF (IPN(1:2).EQ.'IV'.OR.IPN(1:2).EQ.'iv') THEN
         NINV=MAX(-10,MIN(10,INT(RVL)))
-      ELSE IF (IPN(1:2).EQ.'IW') THEN
+      ELSE IF (IPN(1:2).EQ.'IW'.OR.IPN(1:2).EQ.'iw') THEN
         NINW=MAX(-10,MIN(10,INT(RVL)))
-      ELSE IF (IPN(1:2).EQ.'RF') THEN
+      ELSE IF (IPN(1:2).EQ.'RF'.OR.IPN(1:2).EQ.'rf') THEN
         IREF=MAX(0,MIN(1,INT(RVL)))
-      ELSE IF (IPN(1:2).EQ.'RS') THEN
+      ELSE IF (IPN(1:2).EQ.'RS'.OR.IPN(1:2).EQ.'rs') THEN
         RZERO=MAX(0.,RVL)
-      ELSE IF (IPN(1:2).EQ.'SL') THEN
+      ELSE IF (IPN(1:2).EQ.'SL'.OR.IPN(1:2).EQ.'sl') THEN
         DBPI=MAX(.0001,MIN(.1,RVL))
-      ELSE IF (IPN(1:2).EQ.'SM') THEN
+      ELSE IF (IPN(1:2).EQ.'SM'.OR.IPN(1:2).EQ.'sm') THEN
         IF (INT(RVL).EQ.0) THEN
           NX=128
           NY=128
@@ -68,17 +65,17 @@ C
           NY=256
         END IF
         IDONE=0
-      ELSE IF (IPN(1:2).EQ.'ST') THEN
+      ELSE IF (IPN(1:2).EQ.'ST'.OR.IPN(1:2).EQ.'st') THEN
         TENSN=MAX(0.,RVL)
-      ELSE IF (IPN(1:2).EQ.'SV') THEN
+      ELSE IF (IPN(1:2).EQ.'SV'.OR.IPN(1:2).EQ.'sv') THEN
         SVAL=RVL
-      ELSE IF (IPN(1:2).EQ.'VL') THEN
+      ELSE IF (IPN(1:2).EQ.'VL'.OR.IPN(1:2).EQ.'vl') THEN
         XVPL=MAX(0.,MIN(1.,RVL))
-      ELSE IF (IPN(1:2).EQ.'VR') THEN
+      ELSE IF (IPN(1:2).EQ.'VR'.OR.IPN(1:2).EQ.'vr') THEN
         XVPR=MAX(0.,MIN(1.,RVL))
-      ELSE IF (IPN(1:2).EQ.'VB') THEN
+      ELSE IF (IPN(1:2).EQ.'VB'.OR.IPN(1:2).EQ.'vb') THEN
         YVPB=MAX(0.,MIN(1.,RVL))
-      ELSE IF (IPN(1:2).EQ.'VT') THEN
+      ELSE IF (IPN(1:2).EQ.'VT'.OR.IPN(1:2).EQ.'vt') THEN
         YVPT=MAX(0.,MIN(1.,RVL))
       ELSE
         CTM(1:46)='ISSETI OR ISSETR - PARAMETER NAME NOT KNOWN - '
