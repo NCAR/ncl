@@ -1,5 +1,5 @@
 /*
- *      $Id: Cray,v 1.27 1994-04-15 21:53:40 haley Exp $
+ *      $Id: Cray,v 1.28 1997-01-15 15:39:55 haley Exp $
  */
 /************************************************************************
 *									*
@@ -20,8 +20,6 @@
  *	Description:	This file contains the directives necessary to
  *			describe the Cray running unicos.
  */
-#define TmpRoot		/usr/tmp
-#define	InstallManToLocal
 #define	HdfDefines	-DUNICOS
 #define	StdDefines	-DSYSV -DUNICOS -DUSG
 #define FCompiler	cf77
@@ -29,6 +27,8 @@
 #define	ArCommand	bld
 #define ArRegOpt        vr
 #define	FOptimizeFlag	-O 1
+#define CppCommand  /opt/ctl/bin/cpp
+#define FCppCommand  /opt/ctl/bin/cpp
 
 #define DoesRanlib	NO
 #define GksBufferSize	1024
