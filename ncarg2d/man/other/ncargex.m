@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.8 1993-04-19 18:59:01 haley Exp $
+.\"	$Id: ncargex.m,v 1.9 1993-04-29 17:59:43 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1993" NCAR "NCAR GRAPHICS"
@@ -261,10 +261,10 @@ listed according to which utility they belong with:
 .sp
 .I "GKS Examples:"
 	fcell fcell0 fgke01 fgke02 fgke03 fgke04 fgkgpl fgkgpm
-	fgkgtx fgklnclr fgklnwth fgpm01 pgkex01 pgkex02 pgkex03
-	pgkex04 pgkex05 pgkex06 pgkex07 pgkex08 pgkex09 pgkex10
-	pgkex11 pgkex12 pgkex13 pgkex14 pgkex15 pgkex16 pgkex17
-	pgkex18 pgkex19 pgkex20 pgkex21
+	fgkgtx fgklnclr fgklnwth fcirc fgpm01 pgkex01 pgkex02
+	pgkex03 pgkex04 pgkex05 pgkex06 pgkex07 pgkex08 pgkex09
+	pgkex10 pgkex11 pgkex12 pgkex13 pgkex14 pgkex15 pgkex16
+	pgkex17 pgkex18 pgkex19 pgkex20 pgkex21
 .sp
 .I "GRIDALL Example:"
     tgrida
