@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.29 1995-04-22 01:02:21 boote Exp $
+#      $Id: yMakefile,v 1.30 1995-04-27 22:34:18 boote Exp $
 #
 #########################################################################
 #									#
@@ -44,7 +44,7 @@ HDRS		= Base.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		ResList.h ResListP.h Workspace.h WorkspaceI.h WorkspaceP.h \
 		FortranP.h ScalarField.h ScalarFieldP.h ScalarFieldFloatP.h \
 		AnnoManager.h AnnoManagerP.h FormatI.h App.h AppI.h AppP.h \
-		PSWorkstation.h PSWorkstationP.h PalletsP.h
+		PSWorkstation.h PSWorkstationP.h PalettesP.h
 
 CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
@@ -58,7 +58,7 @@ CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		ContourPlot.c PlotManager.c LogLinPlot.c IrregularPlot.c \
 		MapPlot.c XyPlot.c ResList.c Workspace.c Fortran.c Futil.c \
 		ScalarField.c AnnoManager.c Format.c App.c PSWorkstation.c \
-		Pallets.c \
+		Palettes.c \
 		bsearch.c linaprox.c wksisact.c simpletrans.c wksisopn.c cmpf.c
 
 COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
@@ -73,7 +73,7 @@ COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		ContourPlot.o PlotManager.o LogLinPlot.o IrregularPlot.o \
 		MapPlot.o XyPlot.o ResList.o Workspace.o Fortran.o Futil.o \
 		ScalarField.o AnnoManager.o Format.o App.o PSWorkstation.o \
-		Pallets.o \
+		Palettes.o \
 		bsearch.o linaprox.o wksisact.o simpletrans.o wksisopn.o cmpf.o
 
 FSRCS		= DATACOMM.f ERROR.f HLU.f PLOTMANAGER.f RLGEN.f RLSET.f \

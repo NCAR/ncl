@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.11 1995-01-11 00:46:41 boote Exp $
+ *      $Id: ResList.c,v 1.12 1995-04-27 22:34:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1286,25 +1286,20 @@ CvtGenToExpMDArray
 	strcpy(*exp->type,type);
 	*exp->size = gen->size;
 	if(!gen->my_data){
-		if(gen->num_elements == 1){
-			/*
-			 * Probably came from the Scalar To GenArray
-			 * converter...  Lets allocate some real memory.
-			 */
-			*exp->data = NhlMalloc(gen->size);
-			if(*exp->data == NULL){
-				NhlPError(NhlFATAL,ENOMEM,"%s",func);
-				return NhlFATAL;
-			}
-			memcpy(*exp->data,gen->data,gen->size);
+		/*
+		 * Probably came from Scalar To GenArray
+		 * converter and we should get some memory.
+		 */
+		NhlGenArray	tgen;
+
+		tgen = _NhlCopyGenArray(gen,True);
+		if(tgen == NULL){
+			NhlPError(NhlFATAL,ENOMEM,"%s",func);
+			return NhlFATAL;
 		}
-		else{
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
-			"%s:Returning Pointer to Internal Data-Bad Things!",
-									func);
-			ret = NhlWARNING;
-			*exp->data = gen->data;
-		}
+		*exp->data = tgen->data;
+		tgen->my_data = False;
+		NhlFreeGenArray(tgen);
 	}
 	else{
 		/* give ownership to exp */
@@ -1722,8 +1717,7 @@ CvtGenToExpArray
 	if(!gen->my_data){
 		NhlGenArray	tgen;
 		/*
-		 * Probably came from Scalar To GenArray
-		 * converter and we should get some memory.
+		 * Came from another converter so we should get some memory.
 		 */
 		tgen = _NhlCopyGenArray(gen,True);
 		if(tgen == NULL){

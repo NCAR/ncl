@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.36 1995-04-22 01:02:09 boote Exp $
+ *      $Id: Workstation.c,v 1.37 1995-04-27 22:34:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -41,7 +41,7 @@
 #include <limits.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/ConvertersP.h>
-#include <ncarg/hlu/PalletsP.h>
+#include <ncarg/hlu/PalettesP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/WorkstationP.h>
 #include <ncarg/hlu/hluutil.h>
@@ -1083,6 +1083,9 @@ static NhlErrorTypes WorkstationInitialize
                 newl->work.public_lineinfo.line_label = tmp;
         }
 
+	if(newl->work.public_lineinfo.line_label_const_spacing < 0.0)
+		newl->work.public_lineinfo.line_label_const_spacing = 0.0;
+
 	return(retcode);
 }
 
@@ -1292,6 +1295,12 @@ WorkstationSetValues
                         newl->work.private_lineinfo.line_label = tmp;
                 }
         }
+
+	if(newl->work.private_lineinfo.line_label_const_spacing < 0.0)
+		newl->work.private_lineinfo.line_label_const_spacing = 0.0;
+
+	if(newl->work.public_lineinfo.line_label_const_spacing < 0.0)
+		newl->work.public_lineinfo.line_label_const_spacing = 0.0;
 
 	return(retcode);
 }
