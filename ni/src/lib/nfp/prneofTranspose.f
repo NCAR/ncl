@@ -1,6 +1,6 @@
 C NCLFORTSTART
       SUBROUTINE TDRVPRC(X,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,EVAL,EVEC,
-     +                   PCVAR,TRACE,IOPT,JOPT,PCXMIN,IREVERT,IER)
+     +                   PCVAR,TRACE,IOPT,JOPT,PCRIT,IREVERT,IER)
       IMPLICIT NONE
 
 c this operates on the TRANSPOSE of the array "x"
@@ -8,7 +8,7 @@ c .   It results in [sometimes, MUCH] faster execution
 
       INTEGER NROW,NCOL,NROBS,NCSTA,NEVAL,IOPT,JOPT,IREVERT,IER
       DOUBLE PRECISION X(NROW,NCOL),EVAL(NEVAL),EVEC(NCOL,NEVAL),
-     +                 PCVAR(NEVAL),TRACE,XMSG,PCXMIN
+     +                 PCVAR(NEVAL),TRACE,XMSG,PCRIT
 C NCLEND
 
 c======== .so info=====================
@@ -61,7 +61,7 @@ c statistics for this station/grid-point
 c quick way of eliminating stations/grid-points
 
           PCX = (DBLE(KNTX)/DBLE(NROBS))*100.D0
-          IF (PCX.LT.PCXMIN .OR. XSD.LE.0.0D0) THEN
+          IF (PCX.LT.PCRIT .OR. XSD.LE.0.0D0) THEN
               XAVE(NC) = XMSG
           END IF
 
