@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.135 2003-02-27 17:47:14 haley Exp $
+#   $Id: ncargex.csh,v 1.136 2003-06-25 23:38:44 kennison Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -215,6 +215,16 @@ set conpack_clist = ($conpack_cex $conpack_cttr)
 
 set f_list = ($f_list $conpack_flist)
 set c_list = ($c_list $conpack_clist)
+
+#*************************#
+#                         #
+#  Set conpackt examples  #
+#                         #
+#*************************#
+set conpackt_fex   = (ctex01)
+set conpackt_flist = ($conpackt_fex)
+
+set f_list = ($f_list $conpackt_flist)
 
 #******************************#
 #                              #
@@ -689,6 +699,7 @@ set overlap_fttr = (mpex03 mpex05 arex01 sfex01 tsoftf)
 set list_fx11 = (fgke01 fgke04)
 set list_cx11 = (c_xwndws)
 set list_fex = ($areas_fex $autograph_fex $colconv_fex $conpack_fex \
+		$conpackt_fex \
                 $ezmap_fex $field_fex $labelbar_fex $ngmath_fex $plotchar_fex \
                 $polypack_fex ${scrlld_title_fex} $softfill_fex $spps_fex \
                 $surface_fex $tdpack_fex $wmap_fex $misc_fex)
@@ -826,6 +837,11 @@ while ($#argv > 0)
     case "-conpack":
       shift
       set names=($names $conpack_flist $conpack_clist)
+      breaksw
+
+    case "-conpackt":
+      shift
+      set names=($names $conpackt_flist)
       breaksw
 
     case "-conran_family":
