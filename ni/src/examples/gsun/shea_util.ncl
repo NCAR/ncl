@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.5 2003-09-14 02:07:30 shea Exp $
+;      $Id: shea_util.ncl,v 1.6 2004-02-03 16:09:54 haley Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -1527,148 +1527,221 @@ begin
 
 	return(newData)
 end
+
 ; ------------------------------------------------------------------
-function plot_xy2 (wks:graphic, x:numeric, yL:numeric,yR:numeric
-                              , resL:logical, resR:logical)
-local  locResL, locResR, AttsL, AttsR, xyL, xyR, FRAME, DRAW 
+; Created by Mary Haley, copied from Dennis' plot_xy2 function, and
+; made more generic so it can handle the X or the Y axis.
+;
+; This function allows a user to plot two Y curves each with a different
+; Y axis or two X curves each with a different X axis, on the same plot.
+;
+; "w" represents the data for the single axis, and z1, z2 represent
+; the data for the double axis.   The "axis" value is what indicates
+; whether this is a dual Y or X axis situation.
+;
+function plot_x2y2 (wks:graphic, w:numeric, z1:numeric, z2:numeric \
+                               , resLB:logical, resRT:logical, axis:string)
+local  locResLB, locResRT, AttsLB, AttsRT, xyLB, xyRT, FRAME, DRAW 
  begin
-    locResL = True
-    if (resL) then
-        locResL = resL           ; copy input to local resources
+    locResLB = True
+    if (resLB) then
+        locResLB = resLB           ; copy input to local resources
     end if
-    AttsL  = getvaratts(locResL) ; input attributes
-                                 ; The following section is not
-                                 ; needed. it justs prevents
-    if (.not.any(ismissing(AttsL))) then   ; annoying warning msgs
-        if (any(AttsL.eq."trXMinF")) then  ; from being printed 
-            locResL@xyComputeXMin = False 
+    AttsLB  = getvaratts(locResLB) ; input attributes
+                                   ; The following section is not
+                                   ; needed. it justs prevents
+    if (.not.any(ismissing(AttsLB))) then   ; annoying warning msgs
+        if (any(AttsLB.eq."trXMinF")) then  ; from being printed 
+            locResLB@xyComputeXMin = False 
         end if                             
-        if (any(AttsL.eq."trXMaxF")) then
-            locResL@xyComputeXMax = False  ; same
+        if (any(AttsLB.eq."trXMaxF")) then
+            locResLB@xyComputeXMax = False  ; same
         end if
-        if (any(AttsL.eq."trYMinF")) then
-            locResL@xyComputeYMin = False  ; same
+        if (any(AttsLB.eq."trYMinF")) then
+            locResLB@xyComputeYMin = False  ; same
         end if                            
-        if (any(AttsL.eq."trYMaxF")) then
-            locResL@xyComputeYMax = False  ; same
+        if (any(AttsLB.eq."trYMaxF")) then
+            locResLB@xyComputeYMax = False  ; same
         end if
     end if
 
-    locResL@gsnFrame   = False  ; Don't auto advance the
-    locResL@gsnDraw    = False  ; frame or draw the plot when
+    locResLB@gsnFrame   = False  ; Don't auto advance the
+    locResLB@gsnDraw    = False  ; frame or draw the plot when
                                 ; gsn_xy is called.
-    locResL@tmYROn     = False  ; Turn off right tick marks.
-    locResL@tmYRMinorOn= False  ; Turn off right minor tick marks.
-    locResL@tmYUseLeft = False  ; Keep independent of right
-
-    xyL = gsn_xy (wks,x,yL,locResL)
-
-    if (.not.any(ismissing(AttsL))) then   
-        if (any(AttsL.eq."tmYLMode")) then
-            setvalues xyL
-              "tmYLMode"   : "Explicit"
-              "tmYLValues" : locResL@tmYLValues 
-              "tmYLLabels" : locResL@tmYLLabels 
-            end setvalues
+    if(axis.eq."y") then
+        locResLB@tmYROn       = False  ; Turn off right tick marks.
+        locResLB@tmYRMinorOn  = False  ; Turn off right minor tick marks.
+        locResLB@tmYUseLeft   = False  ; Keep independent of right.
+    else
+        locResLB@tmXTOn       = False  ; Turn off top tick marks.
+        locResLB@tmXTMinorOn  = False  ; Turn off top minor tick marks.
+        locResLB@tmXUseBottom = False  ; Keep independent of top.
+    end if
+    if(axis.eq."y") then
+        xyLB = gsn_xy (wks,w,z1,locResLB)
+    else
+        xyLB = gsn_xy (wks,z1,w,locResLB)
+    end if
+    if (.not.any(ismissing(AttsLB))) then   
+        if(axis.eq."y") then
+            if (any(AttsLB.eq."tmYLMode")) then
+                setvalues xyLB
+                  "tmYLMode"   : "Explicit"
+                  "tmYLValues" : locResLB@tmYLValues 
+                  "tmYLLabels" : locResLB@tmYLLabels 
+                end setvalues
+            end if
+        else
+            if (any(AttsLB.eq."tmXBMode")) then
+                setvalues xyLB
+                  "tmXBMode"   : "Explicit"
+                  "tmXBValues" : locResLB@tmXBValues
+                  "tmXBLabels" : locResLB@tmXBLabels 
+                end setvalues
+            end if
         end if
     end if
 
-   ;draw (xyL)
+   ;draw (xyLB)
 
-    locResR = True
-    if (resR) then
-        locResR = resR           ; copy input to local resources
+    locResRT = True
+    if (resRT) then
+        locResRT = resRT           ; copy input to local resources
     end if
-    AttsR  = getvaratts(locResR) ; input attributes
-                                 ; The following section is not
-                                 ; needed. it justs prevents
-    if (.not.any(ismissing(AttsR))) then   ; annoying warning msgs
-        if (any(AttsR.eq."trXMinF")) then  ; from being printed 
-            locResR@xyComputeXMin = False 
+    AttsRT  = getvaratts(locResRT) ; input attributes
+                                   ; The following section is not
+                                   ; needed. it justs prevents
+    if (.not.any(ismissing(AttsRT))) then   ; annoying warning msgs
+        if (any(AttsRT.eq."trXMinF")) then  ; from being printed 
+            locResRT@xyComputeXMin = False 
         end if                             
-        if (any(AttsR.eq."trXMaxF")) then
-            locResR@xyComputeXMax = False  ; same
+        if (any(AttsRT.eq."trXMaxF")) then
+            locResRT@xyComputeXMax = False  ; same
         end if
-        if (any(AttsR.eq."trYMinF")) then
-            locResR@xyComputeYMin = False  ; same
+        if (any(AttsRT.eq."trYMinF")) then
+            locResRT@xyComputeYMin = False  ; same
         end if                            
-        if (any(AttsR.eq."trYMaxF")) then
-            locResR@xyComputeYMax = False  ; same
+        if (any(AttsRT.eq."trYMaxF")) then
+            locResRT@xyComputeYMax = False  ; same
         end if
     end if
 
-    getvalues xyL               ; get assorted info from previous
-      "vpHeightF"  : vpHeightF  ; plot (Left scale) for use Right scale
-      "vpWidthF"   : vpWidthF
+    getvalues xyLB              ; get assorted info from previous
+      "vpHeightF"  : vpHeightF  ; plot (Left/Bottom scale) 
+      "vpWidthF"   : vpWidthF   ; for use Right/Top scale
       "vpXF"       : vpXF
       "vpYF"       : vpYF
     end getvalues
 
-    locResR@vpHeightF          = vpHeightF       ; set to same size
-    locResR@vpWidthF           = vpWidthF 
-    locResR@vpXF               = vpXF     
-    locResR@vpYF               = vpYF     
+    locResRT@vpHeightF          = vpHeightF       ; set to same size
+    locResRT@vpWidthF           = vpWidthF 
+    locResRT@vpXF               = vpXF     
+    locResRT@vpYF               = vpYF     
 
-    locResR@tiXAxisString      = ""     ; already done 
+    locResRT@tmXBLabelsOn       = False  ; Turn off bottom x axis labels
+    locResRT@tmXBMinorOn        = False  ; and tick marks.
+    locResRT@tmXBOn             = False
 
-    locResR@tmXBLabelsOn       = False  ; Turn off bottom x axis labels
-    locResR@tmXBMinorOn        = False  ; and tick marks.
-    locResR@tmXBOn             = False
+    locResRT@tmYLLabelsOn       = False  ; Turn off left y axis labels
+    locResRT@tmYLMinorOn        = False  ; and tick marks.
+    locResRT@tmYLOn             = False
 
-    locResR@tmXTLabelsOn       = False  ; Turn off top x axis labels
-    locResR@tmXTMinorOn        = False  ; and tick marks.
-    locResR@tmXTOn             = False
+    if(axis.eq."y") then
+        locResRT@tiXAxisString      = ""     ; already done 
 
-    locResR@tmYLLabelsOn       = False  ; Turn off left y axis labels
-    locResR@tmYLMinorOn        = False  ; and tick marks.
-    locResR@tmYLOn             = False
+        locResRT@tmXTLabelsOn       = False  ; Turn off top x axis labels
+        locResRT@tmXTMinorOn        = False  ; and tick marks.
+        locResRT@tmXTOn             = False
 
-    locResR@tmYRLabelsOn       = True   ; Turn on right axis label
-    locResR@tmYROn             = True   ; Turn on right tick marks
-    locResR@tmYUseLeft         = False  
-    locResR@tiYAxisSide        = "Right"; put title on Right scale
+        locResRT@tmYRLabelsOn       = True   ; Turn on right axis label
+        locResRT@tmYROn             = True   ; Turn on right tick marks
+        locResRT@tmYUseLeft         = False  
+        locResRT@tiYAxisSide        = "Right"; put title on Right scale
+    else
+        locResRT@tiYAxisString      = ""     ; already done 
 
-    locResR@gsnFrame           = False
-    locResR@gsnDraw            = False 
+        locResRT@tmYRLabelsOn       = False  ; Turn off right y axis labels
+        locResRT@tmYRMinorOn        = False  ; and tick marks.
+        locResRT@tmYROn             = False
 
-    xyR = gsn_xy(wks,x,yR,locResR)  
+        locResRT@tmXTLabelsOn       = True   ; Turn on top axis label
+        locResRT@tmXTOn             = True   ; Turn on top tick marks
+        locResRT@tmXUseBottom       = False  
+        locResRT@tiXAxisSide        = "Top"; put title on Top scale
+    end if
 
-    if (.not.any(ismissing(AttsR))) then 
-        if (any(AttsR.eq."tmYRMode")) then
-            setvalues xyR
-              "tmYRMode"   : "Explicit"
-              "tmYRValues" : locResR@tmYRValues 
-              "tmYRLabels" : locResR@tmYRLabels 
-            end setvalues
+    locResRT@gsnFrame           = False
+    locResRT@gsnDraw            = False 
+
+    if(axis.eq."y") then
+        xyRT = gsn_xy(wks,w,z2,locResRT)  
+    else
+        xyRT = gsn_xy(wks,z2,w,locResRT)  
+    end if
+
+    if (.not.any(ismissing(AttsRT))) then 
+        if(axis.eq."y") then
+            if (any(AttsRT.eq."tmYRMode")) then
+                setvalues xyRT
+                  "tmYRMode"   : "Explicit"
+                  "tmYRValues" : locResRT@tmYRValues 
+                  "tmYRLabels" : locResRT@tmYRLabels 
+                end setvalues
+            end if
+        else
+            if (any(AttsRT.eq."tmXTMode")) then
+                setvalues xyRT
+                  "tmXTMode"   : "Explicit"
+                  "tmXTValues" : locResRT@tmXTValues 
+                  "tmXTLabels" : locResRT@tmXTLabels 
+                end setvalues
+            end if
         end if
     end if
 
-    anno = NhlAddAnnotation(xyL,xyR)
+    anno = NhlAddAnnotation(xyLB,xyRT)
     setvalues anno
       "amZone"         : 0     ; Zone 0 centers tick marks over map.
       "amResizeNotify" : True  ; Resize tick marks if map resized.
     end setvalues
-;    overlay (xyL,xyR)
+;    overlay (xyLB,xyRT)
 
     FRAME = True
-    if (resL .and. isatt(resL,"gsnFrame") .and. .not.resL@gsnFrame) then
+    if (resLB .and. isatt(resLB,"gsnFrame") .and. .not.resLB@gsnFrame) then
         FRAME = False
     end if
 
     DRAW = True
-    if (resL .and. isatt(resL,"gsnDraw") .and. .not.resL@gsnDraw) then
+    if (resLB .and. isatt(resLB,"gsnDraw") .and. .not.resLB@gsnDraw) then
         DRAW = False
     end if
 
     if (DRAW) then  
-        draw (xyL)
+        draw (xyLB)
     end if 
     if (FRAME) then
         frame (wks)
     end if 
 
-    return ( xyL )
+    return ( xyLB )
  end
+
+; ------------------------------------------------------------------
+function plot_xy2 (wks:graphic, x:numeric, yL:numeric,yR:numeric \
+                              , resL:logical, resR:logical)
+begin
+    xyL = plot_x2y2 (wks, x, yL, yR, resL, resR, "y")
+    return ( xyL )
+end
+
+; ------------------------------------------------------------------
+function plot_x2y (wks:graphic, xB:numeric, xT:numeric, y:numeric \
+                              , resB:logical, resT:logical)
+begin
+    xyT = plot_x2y2 (wks, y, xB, xT, resB, resT, "x")
+    return ( xyT )
+end
+
 
 ;*********************************************************
 ; Adam Phillips
