@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.62 1997-08-12 18:03:47 ethan Exp $
+ *      $Id: Machine.c,v 1.63 1997-08-18 15:48:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -80,7 +80,7 @@ NclFrame *fp;
 NclStackEntry *sb;
 */
 unsigned int fp;
-unsigned int sb;
+/*unsigned int sb;*/
 int sb_off;
 unsigned int current_scope_level = 1;
 
@@ -228,7 +228,7 @@ NclStackEntry *_NclPeek
 	int offset;
 #endif
 {
-	return((NclStackEntry*)(thestack + ( sb + sb_off - (offset + 1))));
+	return((NclStackEntry*)(thestack + ( fp + sb_off - (offset + 1))));
 }
 
 NhlErrorTypes _NclPutArg
@@ -243,13 +243,13 @@ int total_args;
 {
 	NclStackEntry *ptr;
 
-	if((sb+sb_off-total_args + arg_num) >= cur_stacksize) {
+	if((fp+sb_off-total_args + arg_num) >= cur_stacksize) {
 		if(IncreaseStackSize() == NhlFATAL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Can not increase stack size, memory error can't continue");
 			return(NhlFATAL);
 		}
 	}
-	ptr = ((NclStackEntry*)(thestack + ( sb + sb_off - total_args))) + arg_num;
+	ptr = ((NclStackEntry*)(thestack + ( fp + sb_off - total_args))) + arg_num;
 	*ptr = data;
  
 	return(NhlNOERROR);
@@ -279,12 +279,12 @@ int access_type;
 		the_list->the_elements[arg_num].is_modified = access_type;
 	}
 
-	if( sb + sb_off - total_args + arg_num  >= cur_stacksize ) {
+	if( fp + sb_off - total_args + arg_num  >= cur_stacksize ) {
 		tmp.kind = NclStk_NOVAL;
 		tmp.u.offset = 0;
 		return(tmp);
 	}
-	ptr = ((NclStackEntry*)(thestack + ( sb + sb_off - total_args))) + arg_num;
+	ptr = ((NclStackEntry*)(thestack + ( fp + sb_off - total_args))) + arg_num;
 
 	return(*ptr);
 }
@@ -376,13 +376,13 @@ void _NclResetMachine
 #endif
 {
 	fp = 0;
-	if((NclStackEntry*)(thestack + (sb + sb_off)) != thestack) {
+	if((NclStackEntry*)(thestack + (fp + sb_off)) != thestack) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"ResetMachine: reseting non-empty stack, memory may leak!");
 	}
 /*
 	sb = thestack;
-*/
 	sb = 0;
+*/
 	sb_off = 0;
 	mstk->the_rec->pcoffset = 0;
 	mstk->the_rec->pc = mstk->the_rec->themachine;
@@ -438,7 +438,7 @@ NhlErrorTypes _NclInitMachine
 	sb = thestack;
 */
 	fp = 0;
-	sb = 0;
+	fp = 0;
 	sb_off = 0;
 	mstk = (_NclMachineStack*)NclMalloc((unsigned)sizeof(_NclMachineStack));
 	mstk->the_rec = (_NclMachineRec*)NclMalloc((unsigned)sizeof(_NclMachineRec));
@@ -675,8 +675,6 @@ void _NclAbortFrame
 */
 			tmp = flist.next;
 			tmp_fp = (NclFrame*)(thestack + tmp->fp);
-        		sb_off = sb + sb_off - (tmp->fp+5 + tmp->sb) + tmp->sb + 5;
-        		sb = tmp->fp;
 			if((tmp_fp->parameter_map.u.the_list !=NULL)&&(tmp_fp->parameter_map.u.the_list->fpsym != NULL) 
 				&&(tmp_fp->parameter_map.u.the_list->fpsym->u.procfunc->thescope != NULL)) {
 				(void)_NclPopScope();
@@ -685,12 +683,9 @@ void _NclAbortFrame
 			NclFree(tmp);
 			_NclCleanUpStack(sb_off - 5);
 			_NclPopFrame(INTRINSIC_PROC_CALL);
+			
 
 		}
-/*
-		sb_off = sb_off + (sb - fp);
-		sb = fp;
-*/
 		flist.next = NULL;
 	}
 }
@@ -703,10 +698,31 @@ void _NclClearToStackBase
 int caller_level;
 #endif
 {
+	struct _NclFrameList *tmp;
+	struct _NclFrame *tmp_fp;
 
 	_NclPopScope();
-	_NclLeaveFrame(caller_level);
+	if(flist.next != NULL) {
+		while((flist.next != NULL)&&(flist.next->fp > fp)) {
+/*
+* have to pop each incomplete frame off the
+* stack
+*/
+			tmp = flist.next;
+			tmp_fp = (NclFrame*)(thestack + tmp->fp);
+			if((tmp_fp->parameter_map.u.the_list !=NULL)&&(tmp_fp->parameter_map.u.the_list->fpsym != NULL) 
+				&&(tmp_fp->parameter_map.u.the_list->fpsym->u.procfunc->thescope != NULL)) {
+				(void)_NclPopScope();
+			}
+			flist.next = flist.next->next;
+			_NclCleanUpStack((fp + sb_off) - (tmp->fp + 5));
+			NclFree(tmp);
+			_NclPopFrame(INTRINSIC_PROC_CALL);
+		}
+
+	}
 	_NclCleanUpStack(sb_off - 5);
+	_NclLeaveFrame(caller_level);
 	_NclPopFrame(INTRINSIC_PROC_CALL);
 	
 }
@@ -721,18 +737,20 @@ static int SetNextFramePtrNLevel
 {
 	struct _NclFrameList *tmp;
 	int tmp_level;
+	int tmp_fp;
 
 	tmp_level = current_scope_level;
 	tmp = flist.next;
 	if(tmp != NULL) {
 		flist.next = flist.next->next;
+		tmp_fp = fp;
 		fp = tmp->fp;
 /*
 		sb_off = sb + sb_off - fp + (tmp->sb);
 		sb = fp;
-*/
 		sb = sb + sb_off + tmp->sb;
-		sb_off = 0;
+*/
+		sb_off = tmp->sb + 5;
 		current_scope_level = tmp->level;
 		NclFree(tmp);
 	}
@@ -820,22 +838,21 @@ NhlErrorTypes _NclPushFrame
 
 	if(the_sym->u.procfunc->thescope != NULL) {
 		new_scope_level = the_sym->u.procfunc->thescope->level; 
-		new_scope_cur_off = (the_sym->u.procfunc->thescope->cur_offset) - the_sym->u.procfunc->nargs;
+		new_scope_cur_off = (the_sym->u.procfunc->thescope->cur_offset);
 	} else {
 		new_scope_level = current_scope_level + 1;
 		new_scope_cur_off = the_sym->u.procfunc->nargs;
-		new_scope_cur_off = 0;
 	}
 
 
 
-	if(sb + sb_off + sizeof(NclFrame)/sizeof(NclStackEntry)>= cur_stacksize) {
+	if(fp + sb_off + sizeof(NclFrame)/sizeof(NclStackEntry)>= cur_stacksize) {
 		if(IncreaseStackSize() == NhlFATAL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Increasing stack size failed, memory allocation problem, can't continue");
 			return(NhlFATAL);
 		}
 	}
-	tmp = (NclFrame*)(thestack + (sb + sb_off));
+	tmp = (NclFrame*)(thestack + (fp + sb_off));
 	tmp->func_ret_value.kind = NclStk_RETURNVAL;
 	tmp->func_ret_value.u.data_obj= (NclMultiDValData)the_sym;
 	if(new_scope_level == current_scope_level+1) {
@@ -882,9 +899,11 @@ NhlErrorTypes _NclPushFrame
 	}
 	tmp_fp = tmp;
 
+/*
 	sb = (unsigned int)((NclStackEntry*)tmp - thestack);
+*/
 	tmp++;
-	sb_off =  (unsigned int)((NclStackEntry*)tmp - thestack) - sb;
+	sb_off =  (unsigned int)((NclStackEntry*)tmp - thestack) - fp;
 /*
 * The stack frame has to be temporarily set to this 
 * since the frame pointer can't be set until the
@@ -936,8 +955,10 @@ void *_NclLeaveFrame
 	sb = fp;
 */
 	prev = (NclFrame*)(thestack + fp);
-	sb_off = sb + sb_off - fp;
+	sb_off = fp + sb_off - ((NclFrame*)(thestack + fp))->dynamic_link.u.offset;
+/*
 	sb = fp;
+*/
 	fp = ((NclFrame*)(thestack + fp))->dynamic_link.u.offset;
 /*
 	sb_off = sb - fp + sb_off;
@@ -955,9 +976,9 @@ NhlErrorTypes _NclPush
         NclStackEntry data;
 #endif
 {
-        *(NclStackEntry*)(thestack + (sb+sb_off)) = data;
+        *(NclStackEntry*)(thestack + (fp+sb_off)) = data;
         sb_off++;
-        if((sb+sb_off) >= cur_stacksize ) {
+        if((fp+sb_off) >= cur_stacksize ) {
 /*
                 NhlPError(NhlFATAL,NhlEUNKNOWN,"Push: Stack overflow");
 */
@@ -980,9 +1001,9 @@ NclStackEntry _NclPop
         NclStackEntry *tmp0 = NULL;
 	if(sb_off == 0) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"Pop: Stack underflow\n");
-		tmp0 = (NclStackEntry*)(thestack +(sb + --sb_off));
+		tmp0 = (NclStackEntry*)(thestack +(fp + --sb_off));
 	} else {
-		tmp0 = (NclStackEntry*)(thestack +(sb + --sb_off));
+		tmp0 = (NclStackEntry*)(thestack +(fp + --sb_off));
 	}
         if(tmp0 + 1 <= thestack) {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,"Pop: Stack underflow");
@@ -2345,122 +2366,122 @@ if(the_list != NULL) {
 
 void _NclDumpStack
 #if	NhlNeedProto
-(FILE *fp,int off)
+(FILE *file,int off)
 #else 
-(fp,off) 
-	FILE *fp;
+(file,off) 
+	FILE *file;
 	int off;
 #endif
 {
-	NclStackEntry *tmp_ptr = (NclStackEntry*)(thestack + (sb + sb_off - off));
+	NclStackEntry *tmp_ptr = (NclStackEntry*)(thestack + (fp + sb_off - off));
 	int i;
 
-	if(fp == NULL) 
-		fp = stdout;
-	fprintf(fp,"\n");
+	if(file == NULL) 
+		file = stdout;
+	fprintf(file,"\n");
 	tmp_ptr = tmp_ptr - 1;
 	while(tmp_ptr >= thestack) {
-		fprintf(fp,"%d)\t",(int)(tmp_ptr - thestack));
+		fprintf(file,"%d)\t",(int)(tmp_ptr - thestack));
 		switch(tmp_ptr->kind) {
 		case	NclStk_NOVAL:
-			fprintf(fp,"NclStk_NOVAL\n");
+			fprintf(file,"NclStk_NOVAL\n");
 			break;
 		case	NclStk_OFFSET:
-			fprintf(fp,"NclStk_OFFSET\t",tmp_ptr->u.offset);
+			fprintf(file,"NclStk_OFFSET\t",tmp_ptr->u.offset);
 			break;
 		case 	NclStk_VAL:
-			fprintf(fp,"NclStk_VAL\t");
+			fprintf(file,"NclStk_VAL\t");
 			if(tmp_ptr->u.data_obj->obj.obj_type_mask & (Ncl_MultiDValHLUObjData | Ncl_MultiDValnclfileData))
-				fprintf(fp,"%s\t",NrmQuarkToString(_NclObjTypeToName(tmp_ptr->u.data_obj->obj.obj_type)));
+				fprintf(file,"%s\t",NrmQuarkToString(_NclObjTypeToName(tmp_ptr->u.data_obj->obj.obj_type)));
 			else 
-				fprintf(fp,"%s\t",NrmQuarkToString(_NclObjTypeToName(tmp_ptr->u.data_obj->multidval.type->type_class.type)));
+				fprintf(file,"%s\t",NrmQuarkToString(_NclObjTypeToName(tmp_ptr->u.data_obj->multidval.type->type_class.type)));
 				
 			for(i = 0; i< tmp_ptr->u.data_obj->multidval.n_dims; i++) {
-				fprintf(fp,"[%d]",tmp_ptr->u.data_obj->multidval.dim_sizes[i]);
+				fprintf(file,"[%d]",tmp_ptr->u.data_obj->multidval.dim_sizes[i]);
 				if(i !=  tmp_ptr->u.data_obj->multidval.n_dims - 1) {
-					fprintf(fp," x ");
+					fprintf(file," x ");
 				}
         		}
-			fprintf(fp,"\t%d",tmp_ptr->u.data_obj->obj.id);
-			fprintf(fp,"\n");
+			fprintf(file,"\t%d",tmp_ptr->u.data_obj->obj.id);
+			fprintf(file,"\n");
 			break;
 		case 	NclStk_VAR:
-			fprintf(fp,"NclStk_VAR\t");
-			fprintf(fp,"%s ",NrmQuarkToString(tmp_ptr->u.data_var->var.var_quark));
+			fprintf(file,"NclStk_VAR\t");
+			fprintf(file,"%s ",NrmQuarkToString(tmp_ptr->u.data_var->var.var_quark));
 			switch(tmp_ptr->u.data_var->var.var_type) {
 			case VARSUBSEL:
-				fprintf(fp,"(subsection)\t");
+				fprintf(file,"(subsection)\t");
 				break;
 			case COORD:
-				fprintf(fp,"(coordinate)\t");
+				fprintf(file,"(coordinate)\t");
 				break;
 			case COORDSUBSEL:
-				fprintf(fp,"(coordinate subsection)\t");
+				fprintf(file,"(coordinate subsection)\t");
 				break;
 			case PARAM:
-				fprintf(fp,"(parameter)\t");
+				fprintf(file,"(parameter)\t");
 				break;
 			case RETURNVAR:
-				fprintf(fp,"(return)\t");
+				fprintf(file,"(return)\t");
 				break;
 			case HLUOBJ:
 			case NORMAL:
 			default:
-				fprintf(fp,"\t");
+				fprintf(file,"\t");
 				break;
 			}
 			for(i = 0; i< tmp_ptr->u.data_var->var.n_dims; i++) {
-				fprintf(fp,"[");
+				fprintf(file,"[");
 				if((tmp_ptr->u.data_var->var.dim_info[i].dim_quark != -1)) {
-					fprintf(fp,"%s | ",NrmQuarkToString(tmp_ptr->u.data_var->var.dim_info[i].dim_quark));
+					fprintf(file,"%s | ",NrmQuarkToString(tmp_ptr->u.data_var->var.dim_info[i].dim_quark));
 				}
-				fprintf(fp,"%d]",tmp_ptr->u.data_var->var.dim_info[i].dim_size);
+				fprintf(file,"%d]",tmp_ptr->u.data_var->var.dim_info[i].dim_size);
 				if(i !=  tmp_ptr->u.data_var->var.n_dims - 1) {
-					fprintf(fp," x ");
+					fprintf(file," x ");
 				}
 			}
 
-			fprintf(fp,"\t%d",tmp_ptr->u.data_var->obj.id);
-			fprintf(fp,"\n");
+			fprintf(file,"\t%d",tmp_ptr->u.data_var->obj.id);
+			fprintf(file,"\n");
 			break;
 		case 	NclStk_SUBREC:
-			fprintf(fp,"NclStk_SUBREC\n");
+			fprintf(file,"NclStk_SUBREC\n");
 			break;
 		case	NclStk_PARAMLIST:
-			fprintf(fp,"NclStk_PARAMLIST\t");
-			fprintf(fp,"\n");
+			fprintf(file,"NclStk_PARAMLIST\t");
+			fprintf(file,"\n");
 			break;
 		case	NclStk_RANGEREC:
-			fprintf(fp,"NclStk_RANGEREC\n");
+			fprintf(file,"NclStk_RANGEREC\n");
 			break;
 		case	NclStk_VECREC:
-			fprintf(fp,"NclStk_VECREC\n");
+			fprintf(file,"NclStk_VECREC\n");
 			break;
 		case	NclStk_FILE:	
-			fprintf(fp,"NclStk_FILE\n");
+			fprintf(file,"NclStk_FILE\n");
 			break;
 		case 	NclStk_GRAPHIC:
-			fprintf(fp,"NclStk_GRAPHIC\n");
+			fprintf(file,"NclStk_GRAPHIC\n");
 			break;
         	case	NclStk_STATIC_LINK:
-			fprintf(fp,"NclStk_STATIC_LINK\t%d\n",(int)(tmp_ptr->u.offset ));
+			fprintf(file,"NclStk_STATIC_LINK\t%d\n",(int)(tmp_ptr->u.offset ));
 			break;
         	case	NclStk_DYNAMIC_LINK:
-			fprintf(fp,"NclStk_DYNAMIC_LINK\t%d\n",(int)(tmp_ptr->u.offset));
+			fprintf(file,"NclStk_DYNAMIC_LINK\t%d\n",(int)(tmp_ptr->u.offset));
 			break;
         	case	NclStk_RET_OFFSET:
-			fprintf(fp,"NclStk_RET_OFFSET\t%d\n",(int)(tmp_ptr->u.offset));
+			fprintf(file,"NclStk_RET_OFFSET\t%d\n",(int)(tmp_ptr->u.offset));
 			break;
 		case 	NclStk_RETURNVAL:
-			fprintf(fp,"------------FRAME(%s)------------\n",((NclSymbol*)tmp_ptr->u.data_obj)->name);
+			fprintf(file,"------------FRAME(%s)------------\n",((NclSymbol*)tmp_ptr->u.data_obj)->name);
 			break;
 		default:
-			fprintf(fp,"\n");
+			fprintf(file,"\n");
 			break;
 		}
 		tmp_ptr--;
 	}
-	fprintf(fp,"\n");
+	fprintf(file,"\n");
 	
 }
 

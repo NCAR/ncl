@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.94 1997-08-12 18:03:44 ethan Exp $
+ *      $Id: Execute.c,v 1.95 1997-08-18 15:48:52 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1866,7 +1866,6 @@ NclExecuteReturnStatus _NclExecute
 */
 							lhs_var->u.data_var = rhs.u.data_var;
 							lhs_var->u.data_var->var.thesym = sym;
-							lhs_var->u.data_var->obj.obj_type = Ncl_Var;
 							lhs_var->u.data_var->var.var_type = NORMAL;
 							lhs_var->u.data_var->var.var_quark = NrmStringToQuark(sym->name);
 							if(lhs_var->u.data_var != NULL) {

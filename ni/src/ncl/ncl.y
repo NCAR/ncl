@@ -69,7 +69,7 @@ char *cur_load_file = NULL;
 %token	<void> RP LP RBC LBC RBK LBK COLON ',' SEMI MARKER LPSLSH SLSHRP DIM_MARKER FSTRING EFSTRING ASTRING CSTRING
 %token <integer> INT DIMNUM
 %token <real> REAL
-%token <str> STRING DIM DIMNAME ATTNAME COORDV FVAR CCFP
+%token <str> STRING DIM DIMNAME ATTNAME COORDV FVAR 
 %token <sym> INTEGER FLOAT LONG DOUBLE BYTE CHARACTER GRAPHIC STRNG NUMERIC FILETYPE SHORT LOGICAL
 %token <sym> UNDEF VAR WHILE DO QUIT  NPROC PIPROC IPROC UNDEFFILEVAR BREAK NOPARENT NCLNULL
 %token <sym> BGIN END NFUNC IFUNC FDIM IF THEN VBLKNAME CONTINUE
@@ -116,8 +116,9 @@ char *cur_load_file = NULL;
 %type <list> block_statement_list resource_list dim_size_list  
 %type <list> arg_list do_stmnt resource vset vget get_resource get_resource_list
 %type <sym> datatype pfname vname
-%type <sym> func_identifier proc_identifier 
+%type <sym> func_identifier proc_identifier anysym
 %%
+
 
 statement_list :  statement eoln			{	
 								int strt;
@@ -844,13 +845,13 @@ procedure : IPROC opt_arg_list    {
 							$$ = _NclMakeProcCall($1,NULL,Ncl_PROCCALL); 
 						}
 				}
-	| DLIB CCFP 		{
+	| DLIB COLON COLON anysym	{
 					NclSymbol *s;
 					if($1->u.package != NULL) {
-						s = _NclLookUpInScope($1->u.package->scope,$2);
+						s = _NclLookUpInScope($1->u.package->scope,$4->name);
 						if(s == NULL) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$1->name,$2);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$1->name,$4->name);
 							$$ = NULL;
 						} else if(s->type == IPROC){
 							if(s->u.procfunc->nargs != 0) {
@@ -861,26 +862,26 @@ procedure : IPROC opt_arg_list    {
 								$$ = _NclMakeProcCall(s,NULL,Ncl_INTRINSICPROCCALL); 
 							}
 						} else {
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a procedure in package %s\n",$1->name,$2);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a procedure in package %s\n",$1->name,$4->name);
 							$$ = NULL;
 						}
 					} else {
 						$$ = NULL;
 					}
 				}
-	| DLIB CCFP opt_arg_list {
+	| DLIB COLON COLON anysym opt_arg_list {
 					NclSrcListNode *step;
 					int count = 0;
 					
 					NclSymbol *s;
 					if($1->u.package != NULL) {
-						s = _NclLookUpInScope($1->u.package->scope,$2);
+						s = _NclLookUpInScope($1->u.package->scope,$4->name);
 						if(s == NULL) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$1->name,$2);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$1->name,$4->name);
 							$$ = NULL;
 						} else if(s->type == IPROC){
-							step = $3;
+							step = $5;
 							while(step != NULL) {
 								count++;
 								step = step->next;
@@ -890,10 +891,10 @@ procedure : IPROC opt_arg_list    {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",s->name,s->u.procfunc->nargs,count);
 								$$ = NULL;
 							} else {
-								$$ = _NclMakeProcCall(s,$3,Ncl_INTRINSICPROCCALL); 
+								$$ = _NclMakeProcCall(s,$5,Ncl_INTRINSICPROCCALL); 
 							}
                                                 } else {
-                                                        NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a procedure in package %s\n",$1->name,$2);
+                                                        NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a procedure in package %s\n",$1->name,$4->name);
                                                         $$ = NULL;
                                                 }
 
@@ -1589,6 +1590,159 @@ expr :  primary				{
 						$$ = _NclMakeExpr($1,$3,Ncl_NEEXPR);
 					}
 ;
+
+anysym : INTEGER {
+		$$ = $1;
+	}
+	| FLOAT {
+		$$ = $1;
+	}
+	| LONG {
+		$$ = $1;
+	}
+	| DOUBLE {
+		$$ = $1;
+	}
+	| BYTE {
+		$$ = $1;
+	}
+	| CHARACTER {
+		$$ = $1;
+	}
+	| GRAPHIC {
+		$$ = $1;
+	}
+	| STRNG {
+		$$ = $1;
+	}
+	| NUMERIC {
+		$$ = $1;
+	}
+	| FILETYPE {
+		$$ = $1;
+	}
+	| SHORT {
+		$$ = $1;
+	}
+	| LOGICAL {
+		$$ = $1;
+	}
+	| UNDEF {
+		$$ = $1;
+	}
+	| VAR {
+		$$ = $1;
+	}
+	| WHILE {
+		$$ = $1;
+	}
+	| DO {
+		$$ = $1;
+	}
+	| QUIT  {
+		$$ = $1;
+	}
+	| NPROC {
+		$$ = $1;
+	}
+	| PIPROC {
+		$$ = $1;
+	}
+	| IPROC {
+		$$ = $1;
+	}
+	| UNDEFFILEVAR {
+		$$ = $1;
+	}
+	| BREAK {
+		$$ = $1;
+	}
+	| NOPARENT {
+		$$ = $1;
+	}
+	| BGIN {
+		$$ = $1;
+	}
+	| END {
+		$$ = $1;
+	}
+	| NFUNC {
+		$$ = $1;
+	}
+	| IFUNC {
+		$$ = $1;
+	}
+	| FDIM {
+		$$ = $1;
+	}
+	| IF {
+		$$ = $1;
+	}
+	| THEN {
+		$$ = $1;
+	}
+	| VBLKNAME {
+		$$ = $1;
+	}
+	| CONTINUE {
+		$$ = $1;
+	}
+	| DFILE {
+		$$ = $1;
+	}
+	| KEYFUNC {
+		$$ = $1;
+	}
+	| KEYPROC {
+		$$ = $1;
+	}
+	| ELSE {
+		$$ = $1;
+	}
+	| EXTERNAL {
+		$$ = $1;
+	}
+	| RETURN {
+		$$ = $1;
+	}
+	| VSBLKGET {
+		$$ = $1;
+	}
+	| NEW {
+		$$ = $1;
+	}
+	| OBJVAR {
+		$$ = $1;
+	}
+	| OBJTYPE {
+		$$ = $1;
+	}
+	| RECORD {
+		$$ = $1;
+	}
+	| VSBLKCREATE {
+		$$ = $1;
+	}
+	| VSBLKSET {
+		$$ = $1;
+	}
+	| LOCAL {
+		$$ = $1;
+	}
+	| STOP {
+		$$ = $1;
+	}
+	| NCLTRUE {
+		$$ = $1;
+	}
+	| NCLFALSE {
+		$$ = $1;
+	}
+	| DLIB {
+		$$ = $1;
+	}
+;
+
 primary : REAL				{
 /*
 * Note all of the structures created below the primary rule are special! They
@@ -1687,13 +1841,13 @@ function:  IFUNC opt_arg_list		{
 							$$ = _NclMakeFuncCall($1,NULL,Ncl_FUNCCALL);
 						}
 					}
-	| DLIB CCFP			{
+	| DLIB COLON COLON anysym		{
 						NclSymbol *s;
 						if($1->u.package != NULL) {
-							s = _NclLookUpInScope($1->u.package->scope,$2);
+							s = _NclLookUpInScope($1->u.package->scope,$4->name);
 							if(s == NULL) {
 								is_error += 1;
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$1->name,$2);
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$1->name,$4->name);
 								$$ = NULL;
 							} else if(s->type == IFUNC){
 								if(s->u.procfunc->nargs != 0) {
@@ -1704,26 +1858,26 @@ function:  IFUNC opt_arg_list		{
 									$$ = _NclMakeFuncCall(s,NULL,Ncl_INTRINSICFUNCCALL); 
 								}
 							} else {
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a function in package %s\n",$1->name,$2);
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a function in package %s\n",$1->name,$4->name);
 								$$ = NULL;
 							}
 						} else {
 							$$ = NULL;
 						}
 					}			
-	| DLIB CCFP opt_arg_list	{
+	| DLIB COLON COLON anysym opt_arg_list	{
 						NclSrcListNode *step;
 						int count = 0;
 						
 						NclSymbol *s;
 						if($1->u.package != NULL) {
-							s = _NclLookUpInScope($1->u.package->scope,$2);
+							s = _NclLookUpInScope($1->u.package->scope,$4->name);
 							if(s == NULL) {
 								is_error += 1;
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$1->name,$2);
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$1->name,$4->name);
 								$$ = NULL;
 							} else if(s->type == IFUNC){
-								step = $3;
+								step = $5;
 								while(step != NULL) {
 									count++;
 									step = step->next;
@@ -1733,10 +1887,10 @@ function:  IFUNC opt_arg_list		{
 									NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",s->name,s->u.procfunc->nargs,count);
 									$$ = NULL;
 								} else {
-									$$ = _NclMakeFuncCall(s,$3,Ncl_INTRINSICFUNCCALL); 
+									$$ = _NclMakeFuncCall(s,$5,Ncl_INTRINSICFUNCCALL); 
 								}
                                                 	} else {
-                                                        	NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a funciton in package %s\n",$1->name,$2);
+                                                        	NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a funciton in package %s\n",$1->name,$4->name);
                                                         	$$ = NULL;
                                                 	}
 	
