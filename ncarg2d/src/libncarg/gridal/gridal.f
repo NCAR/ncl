@@ -1,5 +1,5 @@
 C
-C $Id: gridal.f,v 1.4 1994-03-17 17:27:48 kennison Exp $
+C $Id: gridal.f,v 1.5 1995-12-18 22:41:07 kennison Exp $
 C
       SUBROUTINE GRIDAL (MJRX,MNRX,MJRY,MNRY,IXLB,IYLB,IGPH,XINT,YINT)
 C
@@ -30,15 +30,38 @@ C
         CHARACTER*10 FNLB
         CHARACTER*24 LABL
 C
+C Declare some local variables double-precision.  (They are used to
+C create labels.)
+C
+        DOUBLE PRECISION DLBL,EPSI,OPEP,VEPS,VLBL
+C
+C Initialize the values of EPSI and OPEP so that they will be recomputed
+C by the code itself.
+C
+        SAVE EPSI,OPEP
+C
+        DATA EPSI,OPEP / 0.D0 , 1.D0 /
+C
 C Check for an uncleared prior error.
 C
         IF (ICFELL('GRIDAL - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
-C Compute constants "epsilon" and "1+epsilon", the latter to be used
-C multiplicatively in rounding to get rid of strings of nines in labels.
+C If it has not been done yet, compute the constants "epsilon" and
+C "1+epsilon"; the latter is to be used multiplicatively in rounding
+C to get rid of strings of nines in labels.
 C
-        EPSI=10.**(2-INT(ALOG10(REAL(I1MACH(10)))*REAL(I1MACH(11))))
-        OPEP=1.+EPSI
+        IF (EPSI.EQ.0.D0) THEN
+C
+          NSDR=0
+C
+  101     NSDR=NSDR+1
+          CALL GAGTRN (NSDR,TMP1,TMP2,TMP3)
+          IF (TMP2.NE.1..AND.TMP2.NE.TMP3.AND.NSDR.LT.100) GO TO 101
+C
+          EPSI=10.D0**(1-NSDR)
+          OPEP=1.D0+EPSI
+C
+        END IF
 C
 C Pick up the current definition of the window and the viewport and
 C the current x/y linear/log flag.
@@ -88,7 +111,7 @@ C
         ELSE
           IPTX=MAX(1,MIN(100,MJRX))
           FPTX=REAL(IPTX)
-          NMJX=INT(OPEP*ABS(ALOG10(WDRX/WDLX))/FPTX)
+          NMJX=INT(1.0001*ABS(ALOG10(WDRX/WDLX))/FPTX)
           IF (MNRX.LE.10) THEN
             NMNX=9
           ELSE
@@ -102,7 +125,7 @@ C
         ELSE
           IPTY=MAX(1,MIN(100,MJRY))
           FPTY=REAL(IPTY)
-          NMJY=INT(OPEP*ABS(ALOG10(WDTY/WDBY))/FPTY)
+          NMJY=INT(1.0001*ABS(ALOG10(WDTY/WDBY))/FPTY)
           IF (MNRY.LE.10) THEN
             NMNY=9
           ELSE
@@ -123,7 +146,7 @@ C The following loop runs through the types of items to be drawn.  ITEM
 C = 1 implies minor ticks, 2 implies major ticks, 3 implies the axes,
 C and 4 implies the labels.
 C
-        DO 103 ITEM=1,4
+        DO 104 ITEM=1,4
 C
 C Set the color index and line width for the type of item being drawn.
 C
@@ -220,7 +243,7 @@ C
 C The next loop runs through the four axes.  IAXS = 1 implies the left
 C axis, 2 the bottom axis, 3 the right axis, and 4 the top axis.
 C
-          DO 102 IAXS=1,4
+          DO 103 IAXS=1,4
 C
 C On the first pass through the loop, set up the required parameters
 C to do the left axis.
@@ -230,9 +253,9 @@ C
 C If the left axis isn't being done at all, or if the type of item
 C being drawn now isn't present on the left axis, skip it.
 C
-              IF (IYLB.LT.0) GO TO 102
-              IF (ITEM.EQ.1.AND.NMNY.LE.1) GO TO 102
-              IF (ITEM.EQ.4.AND.IYLB.LE.0) GO TO 102
+              IF (IYLB.LT.0) GO TO 103
+              IF (ITEM.EQ.1.AND.NMNY.LE.1) GO TO 103
+              IF (ITEM.EQ.4.AND.IYLB.LE.0) GO TO 103
 C
 C Set the linear/log flag.
 C
@@ -317,14 +340,14 @@ C local variables required to encode and write the labels.
 C
               IF (ITEM.EQ.4) THEN
 C
-                VLBL=WDTY
+                VLBL=DBLE(WDTY)
                 IF (ILGF.EQ.0) THEN
-                  DLBL=(WDBY-WDTY)/REAL(NMJD)
-                  VEPS=EPSI*ABS(WDTY-WDBY)
+                  DLBL=DBLE(WDBY-WDTY)/DBLE(NMJD)
+                  VEPS=EPSI*DBLE(ABS(WDTY-WDBY))
                 ELSE
-                  DLBL=10.**IPTY
-                  IF (IMIF.NE.0) DLBL=1./DLBL
-                  VEPS=0.
+                  DLBL=10.D0**IPTY
+                  IF (IMIF.NE.0) DLBL=1.D0/DLBL
+                  VEPS=0.D0
                 END IF
 C
                 IF (RDCX.EQ.0.) THEN
@@ -365,9 +388,9 @@ C to do the bottom axis.
 C
             ELSE IF (IAXS.EQ.2) THEN
 C
-              IF (IXLB.LT.0) GO TO 102
-              IF (ITEM.EQ.1.AND.NMNX.LE.1) GO TO 102
-              IF (ITEM.EQ.4.AND.IXLB.LE.0) GO TO 102
+              IF (IXLB.LT.0) GO TO 103
+              IF (ITEM.EQ.1.AND.NMNX.LE.1) GO TO 103
+              IF (ITEM.EQ.4.AND.IXLB.LE.0) GO TO 103
 C
               ILGF=ILGX
 C
@@ -430,14 +453,14 @@ C
 C
               IF (ITEM.EQ.4) THEN
 C
-                VLBL=WDLX
+                VLBL=DBLE(WDLX)
                 IF (ILGF.EQ.0) THEN
-                  DLBL=(WDRX-WDLX)/REAL(NMJD)
-                  VEPS=EPSI*ABS(WDRX-WDLX)
+                  DLBL=DBLE(WDRX-WDLX)/DBLE(NMJD)
+                  VEPS=EPSI*DBLE(ABS(WDRX-WDLX))
                 ELSE
-                  DLBL=10.**IPTX
-                  IF (IMIF.NE.0) DLBL=1./DLBL
-                  VEPS=0.
+                  DLBL=10.D0**IPTX
+                  IF (IMIF.NE.0) DLBL=1.D0/DLBL
+                  VEPS=0.D0
                 END IF
 C
                 DLBX=0.
@@ -484,11 +507,11 @@ C to do the right axis.
 C
             ELSE IF (IAXS.EQ.3) THEN
 C
-              IF (IYLB.LT.0) GO TO 102
-              IF (ITEM.EQ.1.AND.NMNY.LE.1) GO TO 102
-              IF (ITEM.EQ.4) GO TO 102
+              IF (IYLB.LT.0) GO TO 103
+              IF (ITEM.EQ.1.AND.NMNY.LE.1) GO TO 103
+              IF (ITEM.EQ.4) GO TO 103
               IF ((ITEM.EQ.1.OR.ITEM.EQ.2).AND.
-     +                                     MOD(IGPH,4)-1.NE.0) GO TO 102
+     +                                     MOD(IGPH,4)-1.NE.0) GO TO 103
 C
               ILGF=ILGY
 C
@@ -549,10 +572,10 @@ C to do the top axis.
 C
             ELSE IF (IAXS.EQ.4) THEN
 C
-              IF (IXLB.LT.0) GO TO 102
-              IF (ITEM.EQ.1.AND.NMNX.LE.1) GO TO 102
-              IF ((ITEM.EQ.1.OR.ITEM.EQ.2).AND.IGPH/4-1.NE.0) GO TO 102
-              IF (ITEM.EQ.4) GO TO 102
+              IF (IXLB.LT.0) GO TO 103
+              IF (ITEM.EQ.1.AND.NMNX.LE.1) GO TO 103
+              IF ((ITEM.EQ.1.OR.ITEM.EQ.2).AND.IGPH/4-1.NE.0) GO TO 103
+              IF (ITEM.EQ.4) GO TO 103
 C
               ILGF=ILGX
 C
@@ -625,7 +648,7 @@ C
 C Loop through the positions at which tick marks and/or labels need to
 C be drawn.
 C
-              DO 101 IMRK=1,NMJD*NMND+1
+              DO 102 IMRK=1,NMJD*NMND+1
                 IF (IMND.EQ.0) THEN
                   PMJX=QMJX
                   PMJY=QMJY
@@ -650,7 +673,7 @@ C
                   END IF
                   IF (ITEM.EQ.4) THEN
                     IF (FNLB(2:2).NE.'I'.AND.FNLB(2:2).NE.'i') THEN
-                      VNCD=VLBL*OPEP
+                      VNCD=REAL(VLBL*OPEP)
                       IF (ABS(VLBL).LT.VEPS) VNCD=0.
                       WRITE (LABL,FNLB) VNCD
                     ELSE
@@ -710,7 +733,7 @@ C
                   END IF
                 END IF
                 IMND=MOD(IMND+1,NMND)
-  101         CONTINUE
+  102         CONTINUE
             ELSE
 C
 C Draw the axis.
@@ -722,7 +745,7 @@ C
 C
             END IF
 C
-  102     CONTINUE
+  103     CONTINUE
 C
 C Reset the polyline and text color indices.
 C
@@ -750,7 +773,7 @@ C
             CALL GSLWSC (SLWS)
           END IF
 C
-  103   CONTINUE
+  104   CONTINUE
 C
 C Flush the SPPS pen-move buffer.
 C
