@@ -1,5 +1,5 @@
 C
-C $Id: epltch.f,v 1.6 1994-07-08 16:28:41 stautler Exp $
+C $Id: epltch.f,v 1.7 1994-10-25 14:13:35 haley Exp $
 C
       PROGRAM EXMPLS
 C
@@ -685,6 +685,8 @@ C
 C Illustrate the use of filled fonts with shadows and outlines.  First,
 C define some colors to use.
 C
+      CALL GSCR (IWKID,0,0.,0.,0.)
+      CALL GSCR (IWKID,1,1.,1.,1.)
       CALL GSCR (IWKID,2,0.,.5,.5)
       CALL GSCR (IWKID,3,.9,.9,0.)
       CALL GSCR (IWKID,4,1.,.3,.3)
