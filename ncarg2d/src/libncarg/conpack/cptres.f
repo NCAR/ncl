@@ -1,5 +1,5 @@
 C
-C $Id: cptres.f,v 1.8 1995-11-09 00:05:11 kennison Exp $
+C $Id: cptres.f,v 1.9 1998-10-29 23:21:49 kennison Exp $
 C
       SUBROUTINE CPTRES (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
 C
@@ -116,8 +116,8 @@ C
 C Compute quantities used to see if two points are essentially
 C different from one another.
 C
-      SMLX=.0001*ABS(XWDR-XWDL)
-      SMLY=.0001*ABS(YWDT-YWDB)
+      SMLX=.01*ABS(XWDR-XWDL)
+      SMLY=.01*ABS(YWDT-YWDB)
 C
 C Compute quantities used in detecting jumps in the mapping.
 C
