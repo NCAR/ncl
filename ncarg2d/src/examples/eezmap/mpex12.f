@@ -1,5 +1,5 @@
 C
-C $Id: mpex12.f,v 1.3 2001-05-24 17:35:30 kennison Exp $
+C $Id: mpex12.f,v 1.4 2001-08-17 16:08:09 kennison Exp $
 C
       PROGRAM MPEX12
 C
@@ -32,7 +32,7 @@ C
               IAID=I
               WRITE (*,'('' '')')
               WRITE (*,'(''  Madeline Island has area identifier IAID ='
-     +',I4,)') IAID
+     +',I4)') IAID
               GO TO 102
             END IF
           ELSE
