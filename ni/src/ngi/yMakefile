@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.18 1999-02-27 19:13:34 dbrown Exp $
+#      $Id: yMakefile,v 1.19 1999-03-05 01:15:20 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -21,10 +21,11 @@
 
 #define IHaveSubdirs
 
-SUBDIRS = plot_styles 
+SUBDIRS = plot_styles ndv_help
 
 MYNAME	= ngi
 
+#define RESDEBUG
 #ifdef	RESDEBUG
 DEBUGLIBS	=	$(XMULIB)
 DEBUGDEFS	=	-DRESDEBUG
@@ -50,7 +51,9 @@ SYS_LIBS	=    $(XMOTIFCLIENTLIBS) -lXp $(DEBUGLIBS) $(CTOFLIBS) -lm -ldl
 SYS_LIBS	=	$(XMOTIFCLIENTLIBS) $(DEBUGLIBS) $(CTOFLIBS) -lm 
 #endif
 
-
+RESFILE		= ngi.res
+RESFILEPATH	= $(LIBNCARGPATH)/sysappres
+INSTALL_RESFILE = $(INSTALL_DB)
 GENHDRS		= ngi.res.h
 HDRS		= $(PRODUCTIONHDRS)
 SRCS		= ngi.c
@@ -60,6 +63,7 @@ CProgram($(MYNAME),$(OBJS),$(DEPLIBS))
 depend-local:: $(PRODUCTIONHDRS)
 DependTarget($(SRCS))
 CleanFilesTarget($(GENHDRS))
+InstallTarget($(RESFILE),$(INSTALL_RESFILE),$(RESFILEPATH))
 
 #
 # I am taking the ad2c script and actually including it in this yMakefile...
