@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.2 1996-04-11 19:23:42 dbrown Exp $
+#   $Id: yMakefile,v 1.3 1996-04-16 19:14:22 haley Exp $
 #
 #   Makefile for HLU VectorPlot examples
 #
@@ -20,13 +20,11 @@ SRCS        = $(CSRCS) $(FSRCS)
 OBJS        = $(COBJS) $(FOBJS)
 
 RESFILES    = vc01.res vc02.res vc03.res vc04.res
-ASCDATA     = uvdata0.asc
 EXFILES     = $(SRCS) $(INCLUDES)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
-InstallTarget($(ASCDATA),$(INSTALL_LIB),$(DATAROOT)/asc)
 
 CExampleTarget(vc01c,vc01c.o)
 CExampleTarget(vc02c,vc02c.o)
