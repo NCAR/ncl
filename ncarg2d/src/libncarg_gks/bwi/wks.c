@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c,v 1.1 1996-10-25 21:41:11 boote Exp $
+ *      $Id: wks.c,v 1.2 1997-01-21 21:25:31 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -951,6 +951,7 @@ int	NGCALLF(delfil,DELFIL)(fname, status)
 *       Returns:        The unique user id in iuid.
 *
 ************************************************************************/
+void
 NGCALLF(gzgids,GZGIDS)(uid, pid)
 	int	*uid,*pid;
 {
