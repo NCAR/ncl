@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.25 1995-04-04 16:49:11 boote Exp $
+ *      $Id: TextItem.c,v 1.26 1995-04-04 17:16:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -539,8 +539,15 @@ static NhlErrorTypes    TextItemInitialize
 			tnew->text.font_thickness_set ||
 			tnew->text.constant_spacing_set){
 
-			NhlPError(NhlINFO,NhlEUNKNOWN,
+			/*
+			 * Only report error if this is a user created
+			 * textItem.  (It's parent is a workstation.)
+			 */
+			if(tnew->base.parent == tnew->base.wkptr){
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"%s: Cannot set x,y,width,and height when other text attributes have been specified also, proceding with other text attribute requests",func);
+				ret = MIN(NhlWARNING,ret);
+			}
 		}
 		else{
 			do_view_trans = True;
@@ -648,9 +655,9 @@ static NhlErrorTypes TextItemSetValues
 				((tmpvx1-tmpvx0)*(tmpvx1-tmpvx0)) 
 				+((tmpvy1-tmpvy0)*(tmpvy1-tmpvy0))));
 		
-		} else {
-		  NhlPError(NhlINFO,NhlEUNKNOWN,"TextItemSetValues: Can not change x,y,width,and height when other text attribute changes have been requested also, preceding with other text attribute requests");
-		  ret = MIN(ret,NhlINFO);
+		} else if(tnew->base.parent == tnew->base.wkptr){
+		  NhlPError(NhlWARNING,NhlEUNKNOWN,"TextItemSetValues: Can not change x,y,width,and height when other text attribute changes have been requested also, preceding with other text attribute requests");
+		  ret = MIN(ret,NhlWARNING);
 		}
 	} 
 
