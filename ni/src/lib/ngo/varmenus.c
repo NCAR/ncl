@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenus.c,v 1.9 1998-09-18 23:47:40 boote Exp $
+ *      $Id: varmenus.c,v 1.10 1998-09-30 18:42:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -224,9 +224,11 @@ FileVarMenu
                         XtAddCallback(fvar->vbuttons[count],
                                       XmNcascadingCallback,FileVarMenuCB,
                                       vmenus);
+#if 0
                         XtAddEventHandler(fvar->vbuttons[count],
                                           ButtonPressMask,False,
                                           FileVarMenuEH,vmenus);
+#endif
                 }
         }
         
@@ -400,10 +402,12 @@ static void VarMenuCB
                                          XmNcascadingCallback,
                                          FileVarMenuCB,
                                          vmenus);
+#if 0
                                 XtAddEventHandler(vrec->vbuttons[i],
                                                   ButtonPressMask,
                                                   False,
                                                   FileVarMenuEH,vmenus);
+#endif
                         }
                         break;
                 }
