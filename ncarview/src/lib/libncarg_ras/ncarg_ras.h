@@ -1,5 +1,5 @@
 /*
- *	$Id: ncarg_ras.h,v 1.3 1991-10-07 18:08:33 clyne Exp $
+ *	$Id: ncarg_ras.h,v 1.4 1991-11-15 16:59:08 don Exp $
  */
 #ifndef _RASTER_
 #define _RASTER_
@@ -61,10 +61,11 @@
 #define RAS_EOF		0
 #define RAS_ERROR	-1
 
-#define RAS_UNKNOWN	0
-#define RAS_INDEXED	1
-#define RAS_DIRECT	2
-#define RAS_DIRECT_YUV	3
+typedef enum {
+	RAS_INVALID_ENCODING,
+	RAS_INDEXED,
+	RAS_DIRECT
+} RasterEncoding;
 
 struct RasterStruct {
 	/* File Related */
@@ -96,25 +97,6 @@ struct RasterStruct {
 };
 
 typedef struct RasterStruct Raster;
-
-#ifndef	lint
-static char *raster_encodings[] = {
-	"RAS_UNKNOWN",
-	"RAS_INDEXED",
-	"RAS_DIRECT",
-	"RAS_DIRECT_YUV"
-};
-
-static char *raster_formats[] = {
-	"nrif",
-	"sun",
-	"xwd",
-	"hdf"
-};
-#else
-extern	char	*raster_encodings[];
-extern	char	*raster_formats[];
-#endif
 
 #define INDEXED_PIXEL(ras, x, y) \
 	ras->data[((y) * ras->nx) + (x)]
