@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.29 1997-02-24 22:12:24 boote Exp $
+ *      $Id: IrregularTransObj.c,v 1.30 1997-04-09 17:32:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -670,6 +670,8 @@ static NhlErrorTypes SetUpTrans
 		if (! irp->x_max_set) irp->x_max = 1.0;
 		if (! irp->y_min_set) irp->y_min = 0.0;
 		if (! irp->y_max_set) irp->y_max = 1.0;
+                irp->ul = irp->ub = 0.0;
+                irp->ur = irp->ut = 1.0;
 	}
 
 		    
@@ -996,19 +998,27 @@ static NhlErrorTypes SetUpTrans
 			irp->x_samples,irp->y_samples,
 			&xstatus,&ystatus);	
 	}
-	_NhlEvalSplineCoordForward(&irp->thecoord,
-				   irp->x_min,
-				   irp->y_min,
-				   &(irp->ul),
-				   &(irp->ub),
-				   NULL,NULL);
-	_NhlEvalSplineCoordForward(&irp->thecoord,
-				   irp->x_max,
-				   irp->y_max,
-				   &(irp->ur),
-				   &(irp->ut),
-				   NULL,NULL);
-
+        if (xstatus != NhlBOTHTRANS || ystatus != NhlBOTHTRANS) {
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                       "%s: spline coordinate approximation not possible",
+                          error_lead);
+                ret = NhlFATAL;
+        }
+        else {
+                _NhlEvalSplineCoordForward(&irp->thecoord,
+                                           irp->x_min,
+                                           irp->y_min,
+                                           &(irp->ul),
+                                           &(irp->ub),
+                                           NULL,NULL);
+                _NhlEvalSplineCoordForward(&irp->thecoord,
+                                           irp->x_max,
+                                           irp->y_max,
+                                           &(irp->ur),
+                                           &(irp->ut),
+                                           NULL,NULL);
+        }
+        
 	if(irp->x_reverse) {
 		tmpf = irp->ur;
 		irp->ur = irp->ul;

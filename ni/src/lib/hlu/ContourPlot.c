@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.49 1997-02-24 22:12:18 boote Exp $
+ *      $Id: ContourPlot.c,v 1.50 1997-04-09 17:31:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2154,6 +2154,9 @@ ContourPlotInitialize
 	cnp->dash_table = NULL;
 	cnp->sfp = NULL;
 	cnp->osfp = NULL;
+        cnp->gks_fill_colors = NULL;
+        cnp->gks_line_colors = NULL;
+        cnp->gks_llabel_colors = NULL;
 
 /*
  * Set up the data
@@ -2977,14 +2980,17 @@ NhlLayer inst;
 	NhlFreeGenArray(cnp->fill_patterns);
 	NhlFreeGenArray(cnp->fill_scales);
 	NhlFreeGenArray(cnp->line_colors);
-	NhlFree(cnp->gks_line_colors);
-	NhlFree(cnp->gks_fill_colors);
 	NhlFreeGenArray(cnp->dash_table);
 	NhlFreeGenArray(cnp->line_dash_patterns);
 	NhlFreeGenArray(cnp->line_thicknesses);
 	NhlFreeGenArray(cnp->llabel_strings);
 	NhlFreeGenArray(cnp->llabel_colors);
-	NhlFree(cnp->gks_llabel_colors);
+        if (cnp->gks_llabel_colors)
+                NhlFree(cnp->gks_llabel_colors);
+        if (cnp->gks_line_colors)
+                NhlFree(cnp->gks_line_colors);
+        if (cnp->gks_fill_colors)
+                NhlFree(cnp->gks_fill_colors);
 
 	if (cnp->osfp != NULL)
 		NhlFree(cnp->osfp);
@@ -4878,32 +4884,51 @@ static NhlErrorTypes SetCoordBounds
 {
 	NhlErrorTypes	ret = NhlNOERROR;
 	char		*e_text;
-	float		tmin,tmax;
+	float		tmin,tmax,t;
 	NhlBoolean	rev;
 
 	if (ctype == cnXCOORD) {
 
 		rev = cnp->sfp->x_start > cnp->sfp->x_end;
-		if (! rev) {
-			tmin = MAX(cnp->sfp->x_start,cnp->x_min); 
-			tmax = MIN(cnp->sfp->x_end,cnp->x_max);
-		}
-		else {
-			tmin = MAX(cnp->sfp->x_end,cnp->x_min); 
-			tmax = MIN(cnp->sfp->x_start,cnp->x_max);
-		}
-		cnp->xlb = tmin;
-		cnp->xub = tmax;
-
 		if (count == 0) {
+                        if (! rev) {
+                                tmin = MAX(cnp->sfp->x_start,cnp->x_min); 
+                                tmax = MIN(cnp->sfp->x_end,cnp->x_max);
+                        }
+                        else {
+                                tmin = MAX(cnp->sfp->x_end,cnp->x_min); 
+                                tmax = MIN(cnp->sfp->x_start,cnp->x_max);
+                        }
+                        cnp->xlb = tmin;
+                        cnp->xub = tmax;
+
 			cnp->xc1 = cnp->sfp->x_start;
 			cnp->xcm = cnp->sfp->x_end;
 		}
 		else {
+                        if (! rev) {
+                                tmin = MIN(cnp->sfp->x_end,
+                                           MAX(cnp->sfp->x_start,cnp->x_min)); 
+                                tmax = MAX(cnp->sfp->x_start,
+                                           MIN(cnp->sfp->x_end,cnp->x_max));
+                        }
+                        else {
+                                tmin = MIN(cnp->sfp->x_start,
+                                           MAX(cnp->sfp->x_end,cnp->x_min));
+                                tmax = MAX(cnp->sfp->x_end,
+                                           MIN(cnp->sfp->x_start,cnp->x_max));
+                        }
+                        if (tmin > tmax) {
+                                t = tmin;
+                                tmin = tmax;
+                                tmax = t;
+                        }
+                        cnp->xlb = tmin;
+                        cnp->xub = tmax;
 			cnp->xc1 = 0;
 			cnp->xcm = count - 1;
 
-			if (tmin > cnp->x_min) {
+			if (cnp->x_min < tmin || cnp->x_min > tmax) {
 				e_text = 
 "%s: irregular transformation requires %s to be within data coordinate range: resetting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
@@ -4911,7 +4936,7 @@ static NhlErrorTypes SetCoordBounds
 				ret = MIN(ret,NhlWARNING);
 				cnp->x_min = tmin;
 			}
-			if (tmax < cnp->x_max) {
+			if (cnp->x_max > tmax || cnp->x_max < tmin) {
 				e_text = 
 "%s: irregular transformation requires %s to be within data coordinate range: resetting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
@@ -4924,25 +4949,44 @@ static NhlErrorTypes SetCoordBounds
 	else if (ctype == cnYCOORD) {
 
 		rev = cnp->sfp->y_start > cnp->sfp->y_end;
-		if (! rev) {
-			tmin = MAX(cnp->sfp->y_start,cnp->y_min); 
-			tmax = MIN(cnp->sfp->y_end,cnp->y_max);
-		}
-		else {
-			tmin = MAX(cnp->sfp->y_end,cnp->y_min); 
-			tmax = MIN(cnp->sfp->y_start,cnp->y_max);
-		}
-		cnp->ylb = tmin;
-		cnp->yub = tmax;
-
 		if (count == 0) {
+                        if (! rev) {
+                                tmin = MAX(cnp->sfp->y_start,cnp->y_min); 
+                                tmax = MIN(cnp->sfp->y_end,cnp->y_max);
+                        }
+                        else {
+                                tmin = MAX(cnp->sfp->y_end,cnp->y_min); 
+                                tmax = MIN(cnp->sfp->y_start,cnp->y_max);
+                        }
+                        cnp->ylb = tmin;
+                        cnp->yub = tmax;
 			cnp->yc1 = cnp->sfp->y_start;
 			cnp->ycn = cnp->sfp->y_end;
 		}
 		else {
+                        if (! rev) {
+                                tmin = MIN(cnp->sfp->y_end,
+                                           MAX(cnp->sfp->y_start,cnp->y_min)); 
+                                tmax = MAX(cnp->sfp->y_start,
+                                           MIN(cnp->sfp->y_end,cnp->y_max));
+                        }
+                        else {
+                                tmin = MIN(cnp->sfp->y_start,
+                                           MAX(cnp->sfp->y_end,cnp->y_min));
+                                tmax = MAX(cnp->sfp->y_end,
+                                           MIN(cnp->sfp->y_start,cnp->y_max));
+                        }
+                        if (tmin > tmax) {
+                                t = tmin;
+                                tmin = tmax;
+                                tmax = t;
+                        }
+                        cnp->ylb = tmin;
+                        cnp->yub = tmax;
 			cnp->yc1 = 0;
 			cnp->ycn = count - 1;
-			if (tmin > cnp->y_min) {
+                        
+			if (cnp->y_min < tmin || cnp->y_min > tmax) {
 				e_text = 
 "%s: irregular transformation requires %s to be within data coordinate range: resetting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
@@ -4950,7 +4994,7 @@ static NhlErrorTypes SetCoordBounds
 				ret = MIN(ret,NhlWARNING);
 				cnp->y_min = tmin;
 			}
-			if (tmax < cnp->y_max) {
+			if (cnp->y_max > tmax || cnp->y_max < tmin) {
 				e_text = 
 "%s: irregular transformation requires %s to be within data coordinate range: resetting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
@@ -10668,7 +10712,7 @@ void   (_NHLCALLF(hlucpmpxy,HLUCPMPXY))
 			_NhlCompcToWin((NhlLayer)Cnp->trans_obj,
 				       xinp,yinp,1,xotp,yotp,
 				       &status,NULL,NULL);
-		else
+		else 
 			_NhlWinToCompc((NhlLayer)Cnp->trans_obj,
 				       xinp,yinp,1,xotp,yotp,
 				       &status,NULL,NULL);
