@@ -469,11 +469,11 @@ NhlErrorTypes vinth2p_W
 			dim_info[0].dim_quark = plevo_quark;;
 			dim_info[0].dim_num= 0 ; 
 			dim_info[0].dim_size = plevo_dimsizes ; 
-			dim_info[1].dim_quark = val.u.data_var->var.dim_info[2].dim_quark;
-			dim_info[1].dim_size = val.u.data_var->var.dim_info[2].dim_size; 
+			dim_info[1].dim_quark = val.u.data_var->var.dim_info[1].dim_quark;
+			dim_info[1].dim_size = val.u.data_var->var.dim_info[1].dim_size; 
 			dim_info[1].dim_num= 1 ; 
-			dim_info[2].dim_quark = val.u.data_var->var.dim_info[3].dim_quark;
-			dim_info[2].dim_size = val.u.data_var->var.dim_info[3].dim_size; 
+			dim_info[2].dim_quark = val.u.data_var->var.dim_info[2].dim_quark;
+			dim_info[2].dim_size = val.u.data_var->var.dim_info[2].dim_size; 
 			dim_info[2].dim_num= 2 ; 
 			lev_coord_md = _NclCreateVal(NULL,NULL,Ncl_OneDValCoordData,0,plevo2,NULL,1,&(plevo_dimsizes),TEMPORARY,NULL,(NclObjClass)plevo_type_class);
 			lev_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,lev_coord_md,dim_info,-1,NULL,COORD,NrmQuarkToString(plevo_quark),TEMPORARY);
@@ -488,12 +488,12 @@ NhlErrorTypes vinth2p_W
 
 			if((val.u.data_var->var.dim_info[1].dim_quark != -1)&&(_NclIsCoord(val.u.data_var,NrmQuarkToString(val.u.data_var->var.dim_info[1].dim_quark)))) {
 				tmp_var = _NclReadCoordVar(val.u.data_var,NrmQuarkToString(val.u.data_var->var.dim_info[1].dim_quark),NULL);
-				_NclWriteCoordVar(data.u.data_var,_NclVarValueRead(tmp_var,NULL,NULL),NrmQuarkToString(data.u.data_var->var.dim_info[1].dim_quark),NULL);
+				_NclWriteCoordVar(data.u.data_var,_NclVarValueRead(tmp_var,NULL,NULL),NrmQuarkToString(val.u.data_var->var.dim_info[1].dim_quark),NULL);
 			}
 	
 			if((val.u.data_var->var.dim_info[2].dim_quark != -1)&&(_NclIsCoord(val.u.data_var,NrmQuarkToString(val.u.data_var->var.dim_info[2].dim_quark)))) {
 				tmp_var = _NclReadCoordVar(val.u.data_var,NrmQuarkToString(val.u.data_var->var.dim_info[2].dim_quark),NULL);
-				_NclWriteCoordVar(data.u.data_var,_NclVarValueRead(tmp_var,NULL,NULL),NrmQuarkToString(data.u.data_var->var.dim_info[2].dim_quark),NULL);
+				_NclWriteCoordVar(data.u.data_var,_NclVarValueRead(tmp_var,NULL,NULL),NrmQuarkToString(val.u.data_var->var.dim_info[2].dim_quark),NULL);
 			}
 		}
 		data.kind = NclStk_VAR;
