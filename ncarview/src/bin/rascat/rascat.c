@@ -1,5 +1,5 @@
 /*
- *      $Id: rascat.c,v 1.19 1994-04-14 19:46:33 haley Exp $
+ *      $Id: rascat.c,v 1.20 1994-04-15 14:35:34 haley Exp $
  */
 /*
  *	File:		rascat.c
@@ -401,7 +401,9 @@ main(argc, argv)
 				(void) fprintf(stderr, 
 					"%s: RasterOpenWrite(%s, %d, %d, %s,%d,%s) [ %s ]\n",
 					progName, opt.dstfile, nx, ny, Comment, 
-					src->type, opt.dstformat,ErrGetMsg()
+					src->type,
+					opt.dstformat ? opt.dstformat : "NULL",
+					ErrGetMsg()
 				);
 				(void) RasterClose(src);
 				exit(1);
