@@ -1,57 +1,68 @@
-.\"
-.\"	$Id: yiqrgb.m,v 1.1 1993-03-11 16:15:39 haley Exp $
-.\"
 .TH YIQRGB 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
-YIQRGB - converts a color specification given in the YIQ
+YIQRGB - Converts a color specification given in the YIQ
 coordinate system to the equivalent color specification in the
-RGB coordinate system.
+Red, Green, Blue (RGB) coordinate system.
 .SH SYNOPSIS
 CALL YIQRGB (Y, I, Q, R, G, B)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_yiqrgb (float y, float i, float q, float *r, float g, float b)
+void c_yiqrgb (float y, float i, float q, float *r, \\
+.br
+float *g, float *b)
 .SH DESCRIPTION 
 .IP Y 12
-A real variable in the range [0.,1.]. Y is the color
+(REAL, input, range [0.,1.]) 
+specifies the color
 component of a television signal that is shown on
 black-and-white televisions; Y minimizes the effect of
 two colors appearing different to the human eye but
 mapping to similar monochrome intensities.
 .IP I 12
-A real variable in the range [-.6,.6].
+(REAL, input, range [-.6,.6])
 .IP Q 12
-A real variable in the range [-.52,.52].
+(REAL, input, range [-.52,.52])
 .IP R 12
-A real variable in the range [0.,1.] that represents
+(REAL, output, range [0.,1.]) 
+represents
 the red intensity component of the output color in RGB
 color space.
 .IP G 12
-A real variable in the range [0.,1.] that represents
+(REAL, output, range [0.,1.]) 
+represents
 the green intensity component of the output color in
 RGB color space.
 .IP B 12
-A real variable in the range [0.,1.] that represents
+(REAL, output, range [0.,1.]) 
+represents
 the blue intensity component of the output color in RGB
 color space.
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+example:  
+tcolcv.
 .SH ACCESS
-To use YIQRGB load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_yiqrgb load 
+To use YIQRGB, load the NCAR Graphics libraries ncarg, ncarg_gks,
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_yiqrgb, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
-Online: hlsrgb hsvrgb rgbhls rgbhsv rgbyiq yiqrgb ncarg_cbind
-.sp
-Hardcopy: "NCAR Graphics Autograph, A Graphing Utility, Version
-2.00, August 1987", "NCAR Graphics User's Guide,
-Version 2.00", and "NCAR Graphics Guide to New
-Utilities, Version 3.00."
+Online:
+colconv,
+hlsrgb,
+hsvrgb,
+rgbhls,
+rgbhsv,
+rgbyiq,
+ncarg_cbind.
 .SH COPYRIGHT
-(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved

@@ -1,21 +1,35 @@
-.\"
-.\"	$Id: colconv.m,v 1.1 1993-03-11 16:15:20 haley Exp $
-.\"
-.TH COLCONV 3NCARG "12 June 1991" UNIX "NCAR GRAPHICS"
+.TH Colconv 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
-COLCONV - Converts color values from one color space to another
+Colconv - 
+Allows a user to convert among the color models HSV,
+HLS, and YIQ.
 .SH SYNOPSIS
-CALL HLSRGB ( H, L, S, R, G, B ) Convert from HLS to RGB
-.br
-CALL HSVRGB ( H, S, V, R, G, B ) Convert from HSV to RGB
-.br
-CALL RGBHLS ( R, G, B, H, L, S ) Convert from RGB to HLS
-.br
-CALL RGBHSV ( R, G, B, H, S, V ) Convert from RGB to HSV
-.br
-CALL RGBYIQ ( R, G, B, Y, I, Q ) Convert from RGB to YIQ
-.br
-CALL YIQRGB ( Y, I, Q, R, G, B ) Convert from YIQ to RGB
+HLSRGB - Converts a color specification given as the Hue,
+Lightness, and Saturation (HLS) values to Red, Green, and Blue
+(RGB) intensity values in the RGB color space.
+.sp
+HSVRGB - Converts a color specification given in the
+Hue, Saturation, and Value (HSV) color space to color values
+in the Red, Green, Blue (RGB) color space.
+.sp
+RGBHLS - Converts a color specification given in the
+Red, Green, Blue (RGB) color space to color values in the
+Hue, Lightness, Saturation (HLS) color
+space.
+.sp
+RGBHSV - Converts a color specification given in the
+Red, Green, Blue (RGB) color space to color values in the
+Hue, Saturation, and Value (HSV) color space.
+.sp
+RGBYIQ - Converts a color specification given in the RGB
+Red, Green, Blue, (RGB) color space to a color specification in the
+YIQ color space.
+.sp
+YIQRGB - Converts a color specification given in the YIQ
+coordinate system to the equivalent color specification in the
+Red, Green, Blue (RGB) coordinate system.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
@@ -31,20 +45,47 @@ c_rgbyiq
 .br
 c_yiqrgb
 .SH ACCESS 
-To use COLCONV routines load the NCAR Graphics libraries
-ncarg, ncarg_gks, and ncarg_loc, preferably in that order.
-To use the COLCONV C-bindings load the NCAR Graphics libraries
-ncargC, ncarg_gksC, ncarg, ncarg_gks, and ncarg_loc, preferably 
+To use Colconv, routines load the NCAR Graphics libraries
+ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+To use the Colconv C-bindings, load the NCAR Graphics libraries
+ncargC, ncarg_gksC, ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably 
 in that order.
+.SH MESSAGES
+When error conditions are detected, the support routine SETER
+is called in such a way that it writes a message to the standard
+error file (as defined by I1MACH(4)) and then terminates
+execution. The possible error messages are as follows:
+.IP "HLSRGB - L out of range"
+Lightness is less than 0. or greater than 100.
+.IP "HLSRGB - S out of range"
+Saturation is less than 0. or greater than 100.
+.IP "HSVRGB - S out of range"
+Saturation is less than 0. or greater than 1.
+.IP "HSVRGB - V out of range"
+Value of input color is less than 0. or greater than 1.
+.IP "RGBHLS - R out of range"
+Value of red intensity component is less than 0. or greater than 1.
+.IP "RGBHLS - G out of range"
+Value of green intensity component is less than 0. or greater than 1.
+.IP "RGBHLS - B out of range"
+Value of blue intensity component is less than 0. or greater than 1.
+.IP "RGBHSV - R out of range"
+Value of red intensity component is less than 0. or greater than 1.
+.IP "RGBHSV - G out of range"
+Value of green intensity component is less than 0. or greater than 1.
+.IP "RGBHSV - B out of range"
+Value of blue intensity component is less than 0. or greater than 1.
 .SH SEE ALSO
 Online:
-hlsrgb, hsvrgb, rgbhls, rgbhsv, rgbyiq, yiqrgb ncarg_cbind
-.sp
-Hardcopy:
-"NCAR Graphics User's Guide, Version 2.00", and
-"NCAR Graphics Guide to New Utilities, Version 3.00."
+hlsrgb,
+hsvrgb,
+rgbhls,
+rgbhsv,
+rgbyiq,
+yiqrgb,
+ncarg_cbind.
 .SH COPYRIGHT
-(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved

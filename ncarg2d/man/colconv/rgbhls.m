@@ -1,10 +1,10 @@
-.\"
-.\"	$Id: rgbhls.m,v 1.1 1993-03-11 16:15:30 haley Exp $
-.\"
 .TH RGBHLS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
-RGBHLS - RGBHLS converts a color specification given in the
-RGB color space to color values in the HLS color
+RGBHLS - Converts a color specification given in the
+Red, Green, Blue (RGB) color space to color values in the 
+Hue, Lightness, Saturation (HLS) color
 space.
 RGBHSV: RGBHSV converts a color specification given
 in the
@@ -15,34 +15,42 @@ CALL RGBHLS (R, G, B, H, L, S)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_rgbhls (float r, float g, float b, float *h, float *l, float *s)
+void c_rgbhls (float r, float g, float b, float *h, \\
+.br
+float *l, float *s)
 .SH DESCRIPTION 
 .IP R 12
-A real variable in the range [0.,1.] that represents
+(REAL, input, range [0.,1.]) 
+represents
 the red intensity component of the input point in RGB
 color space.
 .IP G 12
-A real variable in the range [0.,1.] that represents
+(REAL, input, range [0.,1.]) 
+represents
 the green intensity component of the input point in RGB
 color space.
 .IP B 12
-A real variable in the range [0.,1.] that represents
+(REAL, input, range [0.,1.]) 
+represents
 the blue intensity component of the input point in RGB
 color space.
 .IP H 12
-A real variable in the range [0.,360.) that represents
+(REAL, output, range [0.,360.]) 
+represents
 the hue of the input point in HLS color space. A value
 of (0.,0.,B) in the input space will result in a hue of
 0. in the output space.
 .IP L 12
-A real variable in the range [0.,100.] that represents
+(REAL, output, range [0.,100.]) 
+represents
 the lightness value of the input point in HLS color
-space.  Lightness is a measure of the quantity of light
-- a lightness of 0. is black, and a lightness of 100.
+space.  Lightness is a measure of the quantity of light - a
+lightness of 0. is black, and a lightness of 100.
 gives white. The pure hues occur at lightness value 50.
 The lightness should be thought of as a percentage.
 .IP S 12
-A real variable in the range [0.,100.] that represents
+(REAL, output, range [0.,100.]) 
+represents
 the saturation value of the input point in HLS color
 space.  Saturation is a measure of how much white light
 is mixed with the color. Saturation values of 0.
@@ -52,24 +60,32 @@ saturated colors. The hue is undefined when S=0.  The
 fully saturated pure hues occur when S=100. and L=50.
 The saturation value should be thought of as a
 percentage.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+example: 
+tcolcv.
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH ACCESS
-To use RGBHLS load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_rgbhls load 
+To use RGBHLS, load the NCAR Graphics libraries ncarg, ncarg_gks,
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_rgbhls, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
+.SH MESSAGES
+See the colconv man page for a description of all Colconv error
+messages and/or informational messages.
 .SH SEE ALSO
-Online: hlsrgb hsvrgb rgbhls rgbhsv rgbyiq yiqrgb ncarg_cbind
-.sp
-Hardcopy: "NCAR Graphics Autograph, A Graphing Utility, Version
-2.00, August 1987", "NCAR Graphics User's Guide,
-Version 2.00", and "NCAR Graphics Guide to New
-Utilities, Version 3.00."
-.sp
+Online:
+colconv,
+hlsrgb,
+hsvrgb,
+rgbhsv,
+rgbyiq,
+yiqrgb,
+ncarg_cbind.
 .SH COPYRIGHT
-(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved
