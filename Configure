@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.9 1994-09-28 21:45:04 boote Exp $
+#      $Id: Configure,v 1.10 1995-06-26 19:12:55 boote Exp $
 #
 #########################################################################
 #									#
@@ -712,7 +712,7 @@ if ("$answer" != "y" && "$answer" != "") then
 	goto proc_save
 endif
 
-if (! $?altered) goto proc_install
+if (! $?altered) goto shortcut
 
 cd config
 
