@@ -1,5 +1,5 @@
 /*
- * $Id: basic05c.c,v 1.4 1995-04-28 19:21:58 scheitln Exp $
+ * $Id: basic05c.c,v 1.5 1995-05-01 22:06:48 scheitln Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,7 +43,7 @@ main()
 {
 	int i;
 	int appid,wks,lbar,rlist,glist,text;
-	char *colorindices[175];
+	char *colorindices[232];
 	int num_dims;
 	int *len_dims;
 	float *cmap;
@@ -55,7 +55,7 @@ main()
  *
  * Initialize labels for the color map entries
  */
-	for(i=1; i<=175; i++)
+	for(i=1; i<=232; i++)
 	{
 	   colorindices[i-1] = (char*)malloc(4*sizeof(char));
 	   sprintf(colorindices[i-1],"%d",i);
@@ -92,6 +92,8 @@ main()
         NhlRLSetString(rlist,"wkPause","True");
         /* Set Colormap to default. Note, this assignment is redundant */
         NhlRLSetString(rlist,"wkColorMap","default");
+        /* Set the colormode to private so there is no color contention */
+        NhlRLSetString(rlist,"wkXColorMode","private");
         NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
     }
 
@@ -101,7 +103,7 @@ main()
         NhlRLClear(rlist);
 
 	/* Assign the labels */
-        NhlRLSetStringArray(rlist,"lbLabelStrings",colorindices,175);
+        NhlRLSetStringArray(rlist,"lbLabelStrings",colorindices,232);
 
 	/* Label every 5th entry */
         NhlRLSetInteger(rlist,"lbLabelStride",5);
@@ -115,8 +117,8 @@ main()
 	/* No lines between colors */
         NhlRLSetString(rlist,"lbBoxLinesOn","False");
 
-	/* Display 131 entries */
-        NhlRLSetInteger(rlist,"lbBoxCount",131);
+	/* Display 31 entries */
+        NhlRLSetInteger(rlist,"lbBoxCount",31);
 
 	/* Turn off labelbar perimeter */
         NhlRLSetString(rlist,"lbPerimOn","False");
@@ -309,11 +311,73 @@ main()
         /* Labelbar title */
         NhlRLSetString(rlist,"lbTitleString","Uniform Colormap");
 
-        /* Label every other entry */
+        /* Label every 10th entry */
         NhlRLSetInteger(rlist, "lbLabelStride", 10);                  
 
         /* Number of entries to display */
         NhlRLSetInteger(rlist, "lbBoxCount", 112);
+
+	NhlSetValues(lbar,rlist);
+
+/*
+ * Draw the labelbar displaying the default colormap and textual annotation
+ */
+	NhlDraw(lbar);
+	NhlDraw(text);
+	NhlFrame(wks);
+
+/*
+ *  Change the colormap to one of the predefined colormaps
+ */
+
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,"wkColorMap","temp1");
+	NhlSetValues(wks,rlist);
+/*
+ *  Change the labelbar title, annotation, and number of entries.
+ */
+
+        NhlRLClear(rlist);
+
+        /* Labelbar title */
+        NhlRLSetString(rlist,"lbTitleString","Temp1 Colormap");
+
+        /* Label every 5th entry */
+        NhlRLSetInteger(rlist, "lbLabelStride", 5);                  
+
+        /* Number of entries to display */
+        NhlRLSetInteger(rlist, "lbBoxCount", 62);
+
+	NhlSetValues(lbar,rlist);
+
+/*
+ * Draw the labelbar displaying the default colormap and textual annotation
+ */
+	NhlDraw(lbar);
+	NhlDraw(text);
+	NhlFrame(wks);
+
+/*
+ *  Change the colormap to one of the predefined colormaps
+ */
+
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,"wkColorMap","psgcap");
+	NhlSetValues(wks,rlist);
+/*
+ *  Change the labelbar title, annotation, and number of entries.
+ */
+
+        NhlRLClear(rlist);
+
+        /* Labelbar title */
+        NhlRLSetString(rlist,"lbTitleString","Psgcap Colormap");
+
+        /* Label every 15th entry */
+        NhlRLSetInteger(rlist, "lbLabelStride", 15);                  
+
+        /* Number of entries to display */
+        NhlRLSetInteger(rlist, "lbBoxCount", 230);
 
 	NhlSetValues(lbar,rlist);
 
