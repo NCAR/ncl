@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.60 1999-08-14 01:25:51 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.61 2000-02-09 03:37:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3747,6 +3747,8 @@ ManageTickMarks
 	float			x_tension,y_tension;
 	NhlBoolean		view_changed = False;
 	float			d_left,d_right,d_bottom,d_top;
+	float			xbd_left,xbd_right,yld_bottom,yld_top;
+	float			xtd_left,xtd_right,yrd_bottom,yrd_top;
 	NhlAxisType		y_axis,x_axis;
 	NhlGenArray		x_coord_ga = NULL,y_coord_ga = NULL;
 
@@ -3929,15 +3931,54 @@ ManageTickMarks
 			d_bottom = y_min; 
 			d_top = y_max;
 		}
-
-		NhlSetSArg(&sargs[nargs++],NhlNtmXBDataLeftF,d_left);
-		NhlSetSArg(&sargs[nargs++],NhlNtmXBDataRightF,d_right);
-		NhlSetSArg(&sargs[nargs++],NhlNtmYLDataBottomF,d_bottom);
-		NhlSetSArg(&sargs[nargs++],NhlNtmYLDataTopF,d_top);
-		NhlSetSArg(&sargs[nargs++],NhlNtmXTDataLeftF,d_left);
-		NhlSetSArg(&sargs[nargs++],NhlNtmXTDataRightF,d_right);
-		NhlSetSArg(&sargs[nargs++],NhlNtmYRDataBottomF,d_bottom);
-		NhlSetSArg(&sargs[nargs++],NhlNtmYRDataTopF,d_top);
+		if (ovp->tickmarks == NULL) {
+			NhlSetSArg(&sargs[nargs++],NhlNtmXBDataLeftF,d_left);
+			NhlSetSArg(&sargs[nargs++],NhlNtmXBDataRightF,d_right);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmYLDataBottomF,d_bottom);
+			NhlSetSArg(&sargs[nargs++],NhlNtmYLDataTopF,d_top);
+			NhlSetSArg(&sargs[nargs++],NhlNtmXTDataLeftF,d_left);
+			NhlSetSArg(&sargs[nargs++],NhlNtmXTDataRightF,d_right);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmYRDataBottomF,d_bottom);
+			NhlSetSArg(&sargs[nargs++],NhlNtmYRDataTopF,d_top);
+		}
+		else {
+			NhlVAGetValues(ovp->tickmarks->base.id,
+				       NhlNtmXBDataLeftF,&xbd_left,
+				       NhlNtmXBDataRightF,&xbd_right,
+				       NhlNtmYLDataBottomF,&yld_bottom,
+				       NhlNtmYLDataTopF,&yld_top,
+				       NhlNtmXTDataLeftF,&xtd_left,
+				       NhlNtmXTDataRightF,&xtd_right,
+				       NhlNtmYRDataBottomF,&yrd_bottom,
+				       NhlNtmYRDataTopF,&yrd_top,
+				       NULL);
+			if (xbd_left != d_left)
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNtmXBDataLeftF,d_left);
+			if (xtd_left != d_left)
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNtmXTDataLeftF,d_left);
+			if (xbd_right != d_right)
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNtmXBDataRightF,d_right);
+			if (xtd_right != d_right)
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNtmXTDataRightF,d_right);
+			if (yld_bottom != d_bottom)
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNtmYLDataBottomF,d_bottom);
+			if (yrd_bottom != d_bottom) 
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNtmYRDataBottomF,d_bottom);
+			if (yld_top != d_top)
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNtmYLDataTopF,d_top);
+			if (yrd_top != d_top)
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNtmYRDataTopF,d_top);
+		}
 	}
 		 
 /*
