@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Overlay.h,v 1.3 1994-01-12 00:35:05 dbrown Exp $
+ *      $Id: Overlay.h,v 1.4 1994-01-24 23:57:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,9 +34,11 @@
  * defines for Display resources (temporary, should be enums)
  */
 
-#define Nhl_ovNever		0
-#define Nhl_ovAlways		1
+#define Nhl_ovNoCreate		0
+#define Nhl_ovNever		1
 #define Nhl_ovConditionally	2
+#define Nhl_ovAlways		3
+
 
 /*
  * Overlay instance resources

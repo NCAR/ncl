@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayP.h,v 1.3 1994-01-12 00:35:08 dbrown Exp $
+ *      $Id: OverlayP.h,v 1.4 1994-01-24 23:57:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,14 +27,23 @@
 #include <ncarg/hlu/Overlay.h>
 
 #define NhlOV_ALLOC_UNIT 8
+#define NhlOV_IRR_COUNT 16
+
+/* flags for Bounding Box include */
+
+#define NhlovTICKMARKS	1<<0
+#define NhlovTITLES	1<<1
+#define NhlovLABELBAR	1<<2
+#define NhlovLEGEND	1<<3
+#define NhlovALL   NhlovTICKMARKS | NhlovTITLES | NhlovLABELBAR | NhlovLEGEND
 
 /* private resources */
 
-#define NhlNovMasterOverlay	".ovMasterOverlay"
 #define NhlNovOverlayRecs	".ovOverlayRecs"
+#define NhlNovUpdateReq		".ovUpdateReq"
 
-#define NhlCovMasterOverlay	".OvMasterOverlay"
 #define NhlCovOverlayRecs	".OvOverlayRecs"
+#define NhlCovUpdateReq		".OvUpdateReq"
 
 typedef struct _ovRec {
 	TransformLayer	plot;		/* overlay plot */
@@ -60,6 +69,16 @@ typedef struct OverlayLayerPart {
 	float			x_b_data_right;
 	float			y_l_data_bottom;
 	float			y_l_data_top;
+	int			x_log;
+	int			y_log;
+	float			x_min;
+	float			y_min;
+	float			x_max;
+	float			y_max;
+	int			x_reverse;
+	int			y_reverse;
+	float			x_tension;
+	float			y_tension;
 
 	/* intercepted title resources */
 
@@ -93,21 +112,13 @@ typedef struct OverlayLayerPart {
 	NhlJustification	lgnd_just;
 	NhlOrientation		lgnd_orient;
 	NhlBoolean		lgnd_on;
-
-
-
-
-
-
 	
 	/* Private resource fields */
 
-	NhlBoolean		master_overlay;
-	NhlGenArray		sub_ov_recs;
+	NhlGenArray		ov_rec_list;
+	NhlBoolean		update_req;
 
 	/* Private Fields */
-
-	Layer			overlay_trans_obj;
 
 	int			overlay_alloc;
 	int			overlay_count;
@@ -130,6 +141,13 @@ typedef struct OverlayLayerPart {
 	float			real_main_offset_x;
 	float			real_y_axis_offset_y;
 	float			real_x_axis_offset_x;
+
+	TickMarkStyles		x_tm_style;
+	TickMarkStyles		y_tm_style;
+	int			x_irr_count;
+	int			y_irr_count;
+	NhlGenArray		x_irr;
+	NhlGenArray		y_irr;
 
 } OverlayLayerPart;
 

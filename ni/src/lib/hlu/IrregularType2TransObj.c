@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObj.c,v 1.6 1993-12-13 23:34:27 ethan Exp $
+ *      $Id: IrregularType2TransObj.c,v 1.7 1994-01-24 23:57:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -763,8 +763,8 @@ static NhlErrorTypes IrNDCToWin
 	int* status;
 #endif
 {
-	float x0;
-	float y0;
+	float x0, x1;
+	float y0, y1;
 	float width;
 	int i;
 	float height;
@@ -780,12 +780,14 @@ static NhlErrorTypes IrNDCToWin
 		NhlNvpHeightF,&height,NULL);
 	if( ret < WARNING)
 		return(ret);
+	x1 = x0 + width;
+	y1 = y0 - height;
 	if((xmissing == NULL)&&(ymissing == NULL)) {
 		for(i = 0; i< n; i++) {
-			if((x[i] > x0 + width)
+			if((x[i] > x1)
 				||(x[i] < x0)
 				||(y[i] > y0)
-				||(y[i] < y0 - height)) {
+				||(y[i] < y1)) {
 				
 				*status = 1;
 				xout[i] = yout[i]= iinstance->trobj.out_of_range;
@@ -800,10 +802,10 @@ static NhlErrorTypes IrNDCToWin
 		for(i = 0; i< n; i++) {
 			if(((xmissing != NULL)&&(*xmissing == x[i]))
 				||((ymissing != NULL)&&(*ymissing == y[i]))
-				||(x[i] > x0 + width)
+				||(x[i] > x1)
 				||(x[i] < x0)
 				||(y[i] > y0)
-				||(y[i] < y0 - height)) {
+				||(y[i] < y1)) {
 				*status = 1;
 				xout[i]=yout[i]=iinstance->trobj.out_of_range;
 			} else {

@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.7 1994-01-14 23:36:13 boote Exp $
+ *      $Id: LogLinTransObj.c,v 1.8 1994-01-24 23:57:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -640,7 +640,6 @@ static NhlErrorTypes LlWinToNDC
 			NhlPError(FATAL,E_UNKNOWN,"Internal Error in LlNDCToWin");
 			return(FATAL);
 	}
-
 	return NOERROR;
 }
 
@@ -817,6 +816,7 @@ static NhlErrorTypes LlNDCToWin
 			NhlPError(FATAL,E_UNKNOWN,"Internal Error in LlNDCToWin");
 			return(FATAL);
 	}
+	return ret;
 }
 
 

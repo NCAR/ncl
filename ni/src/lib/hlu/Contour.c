@@ -1,5 +1,6 @@
+
 /*
- *      $Id: Contour.c,v 1.4 1994-01-13 21:46:20 ethan Exp $
+ *      $Id: Contour.c,v 1.5 1994-01-24 23:57:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -338,6 +339,19 @@ ContourInitialize
 	ContourLayer		cnew = (ContourLayer) new;
 	ContourLayerPart	*cnp = &(cnew->contour);
 
+/* global temp initialization */
+
+	int i,j;
+	float x, y;
+	M=25;
+	N=25;
+	for (i=-N/2;i<=N/2;i++) 
+		for (j=-M/2;j<=M/2;j++) {
+			x = 8.0 * i;
+			y = 8.0 * j;
+			*(T+(M*(i+N/2)+j+M/2)) = sqrt((double)(x*x + y*y));
+		}
+	
 /* initialize private members */
 
 	cnp->overlay_object = NULL;
@@ -398,6 +412,8 @@ static NhlErrorTypes ContourSetValues
 	char			*entry_name = "ContourSetValues";
 	ContourLayer		cnew = (ContourLayer) new;
 	ContourLayerPart	*cnp = &(cnew->contour);
+	NhlSArg			sargs[16];
+	int			nargs = 0;
 
 
 /* Set up the contour object's transformation */
@@ -406,10 +422,11 @@ static NhlErrorTypes ContourSetValues
 	if ((ret = MIN(ret,subret)) < WARNING) 
 		return ret;
 
+
 /* Manage the overlay */
 
 	subret = _NhlManageOverlay(&cnp->overlay_object,new,old,
-			       False,NULL,0,entry_name);
+				   False,sargs,nargs,entry_name);
 	ret = MIN(ret,subret);
 
 	return ret;
@@ -557,7 +574,7 @@ static NhlErrorTypes ContourDraw
         c_cpseti("SET",0);
         c_cpseti("MAP",3);
 
-        c_cprect(T,73,73,10,rwrk,5000,iwrk,1000);
+        c_cprect(T,M,M,N,rwrk,5000,iwrk,1000);
         c_cpcldr(T,rwrk,iwrk);
 
         subret = _NhlDeactivateWorkstation(cl->base.wkptr);

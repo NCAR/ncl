@@ -1,5 +1,5 @@
 /*
- *      $Id: Trans.c,v 1.5 1993-12-22 00:56:22 dbrown Exp $
+ *      $Id: Trans.c,v 1.6 1994-01-24 23:57:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -542,7 +542,7 @@ static NhlErrorTypes CallNDCToData
 		if(tclass->trans_class.ndc_to_data != NULL) 
 			return((*tclass->trans_class.ndc_to_data)(layer,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range));
 		else 
-			return(CallDataToNDC(layer,tclass->base_class.superclass,
+			return(CallNDCToData(layer,tclass->base_class.superclass,
 				x,y,n,xout,yout,xmissing,ymissing,status,out_of_range));
 	} else {
 		NhlPError(FATAL,E_UNKNOWN,"No Transformation function registered for plot class");

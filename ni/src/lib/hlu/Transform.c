@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.5 1994-01-12 00:35:11 dbrown Exp $
+ *      $Id: Transform.c,v 1.6 1994-01-24 23:57:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -202,15 +202,24 @@ static NhlErrorTypes TransformDataToNDC
 	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
 	char			*e_text;
 	TransformLayerPart	*tfp = &(((TransformLayer) plot)->trans);
+	Layer			top;
 	int			mystatus = 0;
 
-	if (tfp->trans_obj == NULL) {
-		e_text = "%s: no transformation object recorded for pid %d";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name, plot->base.id);
-		return(ret);
+	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    tfp->overlay_trans_obj != NULL) {
+		top = tfp->overlay_trans_obj;
+	}
+	else {
+		if ((top = tfp->trans_obj) == NULL) {
+			e_text = 
+			   "%s: no transformation object recorded for pid %d";
+			NhlPError(FATAL,E_UNKNOWN,e_text,
+				  entry_name,plot->base.id);
+			return(ret);
+	        }
 	}
 
-	subret = _NhlSetTrans(tfp->trans_obj, plot);
+	subret = _NhlSetTrans(top, plot);
 
 	if ((ret = MIN(ret,subret)) < WARNING) {
 		e_text = "%s: error setting transformation";
@@ -218,10 +227,10 @@ static NhlErrorTypes TransformDataToNDC
 		return(ret);
 	}
 
-	NhlGetValues(tfp->trans_obj->base.id,
+	NhlGetValues(top->base.id,
 		     NhlNtrOutOfRangeF,out_of_range,NULL);
 
-	subret = _NhlDataToWin(tfp->trans_obj,plot,x,y,n,xout,yout,
+	subret = _NhlDataToWin(top,plot,x,y,n,xout,yout,
 			       &mystatus,xmissing,ymissing);
 
 	if ((ret = MIN(ret,subret)) < WARNING) {
@@ -231,7 +240,7 @@ static NhlErrorTypes TransformDataToNDC
 	}
 	*status = mystatus ? 1 : 0;
 
-	subret = _NhlWinToNDC(tfp->trans_obj,plot,xout,yout,n,xout,yout,
+	subret = _NhlWinToNDC(top,plot,xout,yout,n,xout,yout,
 			      &mystatus,out_of_range,out_of_range);
 
 	if ((ret = MIN(ret,subret)) < WARNING) {
@@ -294,15 +303,24 @@ static NhlErrorTypes TransformNDCToData
 	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
 	char			*e_text;
 	TransformLayerPart	*tfp = &(((TransformLayer) plot)->trans);
+	Layer			top;
 	int			mystatus = 0;
 
-	if (tfp->trans_obj == NULL) {
-		e_text = "%s: no transformation object recorded for pid %d";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name, plot->base.id);
-		return(ret);
+	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    tfp->overlay_trans_obj != NULL) {
+		top = tfp->overlay_trans_obj;
+	}
+	else {
+		if ((top = tfp->trans_obj) == NULL) {
+			e_text = 
+			   "%s: no transformation object recorded for pid %d";
+			NhlPError(FATAL,E_UNKNOWN,e_text,
+				  entry_name,plot->base.id);
+			return(ret);
+	        }
 	}
 
-	subret = _NhlSetTrans(tfp->trans_obj, plot);
+	subret = _NhlSetTrans(top, plot);
 
 	if ((ret = MIN(ret,subret)) < WARNING) {
 		e_text = "%s: error setting transformation";
@@ -310,10 +328,10 @@ static NhlErrorTypes TransformNDCToData
 		return(ret);
 	}
 
-	NhlGetValues(tfp->trans_obj->base.id,
+	NhlGetValues(top->base.id,
 		     NhlNtrOutOfRangeF,out_of_range,NULL);
 
-	subret = _NhlNDCToWin(tfp->trans_obj,plot,x,y,n,xout,yout,
+	subret = _NhlNDCToWin(top,plot,x,y,n,xout,yout,
 			      &mystatus,xmissing,ymissing);
 
 	if ((ret = MIN(ret,subret)) < WARNING) {
@@ -323,7 +341,7 @@ static NhlErrorTypes TransformNDCToData
 	}
 	*status = mystatus ? 1 : 0;
 
-	subret = _NhlWinToData(tfp->trans_obj,plot,xout,yout,n,xout,yout,
+	subret = _NhlWinToData(top,plot,xout,yout,n,xout,yout,
 			       &mystatus,out_of_range,out_of_range);
 
 	if ((ret = MIN(ret,subret)) < WARNING) {
@@ -384,7 +402,8 @@ static NhlErrorTypes TransformDataPolyline
  * Set up the transformation based on whether the plot is part of an
  * overlay.
  */
-	if (tfp->overlay_trans_obj != NULL) {
+	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    tfp->overlay_trans_obj != NULL) {
 		top = (TransObjLayer) tfp->overlay_trans_obj;
 	}
 	else {
@@ -502,7 +521,8 @@ static NhlErrorTypes TransformNDCPolyline
  * Set up the transformation based on whether the plot is part of an
  * overlay.
  */
-	if (tfp->overlay_trans_obj != NULL) {
+	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    tfp->overlay_trans_obj != NULL) {
 		top = (TransObjLayer) tfp->overlay_trans_obj;
 	}
 	else {
