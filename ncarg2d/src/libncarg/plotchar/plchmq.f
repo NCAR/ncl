@@ -1,5 +1,5 @@
 C
-C $Id: plchmq.f,v 1.8 1994-03-09 23:24:09 kennison Exp $
+C $Id: plchmq.f,v 1.9 1994-03-17 00:24:23 kennison Exp $
 C
       SUBROUTINE PLCHMQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -285,6 +285,10 @@ C
 C I N I T I A L I Z A T I O N
 C
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('PLCHMQ - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C On the first call to PLCHMQ, sort LCHR, maintaining its relationship
 C with INDX.  (For example, after sorting, if LCHR(I)='B', INDX(I)=336.)
 C The sorting makes it possible to locate characters quickly.
@@ -303,9 +307,9 @@ C Get the fractional coordinates of the reference point.
 C
       IF (IMAP.LE.0) THEN
         XFRA=CUFX(XPOS)
-        IF (ICFELL('PLCHMQ',1).NE.0) RETURN
-        YFRA=CUFY(YPOS)
         IF (ICFELL('PLCHMQ',2).NE.0) RETURN
+        YFRA=CUFY(YPOS)
+        IF (ICFELL('PLCHMQ',3).NE.0) RETURN
       ELSE
         XFRA=XPOS
         YFRA=YPOS
@@ -315,7 +319,7 @@ C Determine the resolution of the plotter, as declared by default or
 C by the user.
 C
       CALL GETUSV ('XF',IRSX)
-      IF (ICFELL('PLCHMQ',3).NE.0) RETURN
+      IF (ICFELL('PLCHMQ',4).NE.0) RETURN
       RSLN=2.**IRSX-1.
 C
 C Determine a multiplier for the digitized size which will make the
@@ -412,7 +416,7 @@ C
      +                     YMLT*REAL(KYCO(IPNT))*YCOV,
      +                     YLLC+REAL(KXCO(IPNT))*YCOV+
      +                     YMLT*REAL(KYCO(IPNT))*XCOV,IPEN)
-              IF (ICFELL('PLCHMQ',4).NE.0) RETURN
+              IF (ICFELL('PLCHMQ',5).NE.0) RETURN
 C
             ELSE
 C
@@ -455,9 +459,9 @@ C
                   CALL PCMPXY (IMAP,XLLC+XTMI*XCOV-YMLT*YTMI*YCOV,
      +                              YLLC+XTMI*YCOV+YMLT*YTMI*XCOV,
      +                                                  XTMP,YTMP)
-                  IF (ICFELL('PLCHMQ',5).NE.0) RETURN
-                  CALL PLOTIF (CUFX(XTMP),CUFY(YTMP),IPEN)
                   IF (ICFELL('PLCHMQ',6).NE.0) RETURN
+                  CALL PLOTIF (CUFX(XTMP),CUFY(YTMP),IPEN)
+                  IF (ICFELL('PLCHMQ',7).NE.0) RETURN
 C
                 ELSE
 C
@@ -476,7 +480,7 @@ C
                   YNEW=YLLC+XTMI*YCOV+YMLT*YTMI*XCOV
 C
                   CALL PCMPXY (IMAP,XNEW,YNEW,XTMP,YTMP)
-                  IF (ICFELL('PLCHMQ',7).NE.0) RETURN
+                  IF (ICFELL('PLCHMQ',8).NE.0) RETURN
 C
                   IF (XTMP.EQ.OORV) THEN
                     IVSN=0
@@ -503,7 +507,7 @@ C
                         XHLF=.5*(XINV+XVIS)
                         YHLF=.5*(YINV+YVIS)
                         CALL PCMPXY (IMAP,XHLF,YHLF,XTMP,YTMP)
-                        IF (ICFELL('PLCHMQ',8).NE.0) RETURN
+                        IF (ICFELL('PLCHMQ',9).NE.0) RETURN
                         IF (XTMP.EQ.OORV) THEN
                           IF (XHLF.EQ.XINV.AND.YHLF.EQ.YINV) GO TO 103
                           XINV=XHLF
@@ -515,22 +519,22 @@ C
                         END IF
   102                 CONTINUE
   103                 CALL PCMPXY (IMAP,XVIS,YVIS,XTMP,YTMP)
-                      IF (ICFELL('PLCHMQ',9).NE.0) RETURN
-                      XPEN=CUFX(XTMP)
                       IF (ICFELL('PLCHMQ',10).NE.0) RETURN
-                      YPEN=CUFY(YTMP)
+                      XPEN=CUFX(XTMP)
                       IF (ICFELL('PLCHMQ',11).NE.0) RETURN
+                      YPEN=CUFY(YTMP)
+                      IF (ICFELL('PLCHMQ',12).NE.0) RETURN
                       CALL PLOTIF (XPEN,YPEN,0)
                     END IF
 C
                     CALL PCMPXY (IMAP,XNEW,YNEW,XTMP,YTMP)
-                    IF (ICFELL('PLCHMQ',12).NE.0) RETURN
-                    XPEN=CUFX(XTMP)
                     IF (ICFELL('PLCHMQ',13).NE.0) RETURN
-                    YPEN=CUFY(YTMP)
+                    XPEN=CUFX(XTMP)
                     IF (ICFELL('PLCHMQ',14).NE.0) RETURN
-                    CALL PLOTIF (XPEN,YPEN,IPEN)
+                    YPEN=CUFY(YTMP)
                     IF (ICFELL('PLCHMQ',15).NE.0) RETURN
+                    CALL PLOTIF (XPEN,YPEN,IPEN)
+                    IF (ICFELL('PLCHMQ',16).NE.0) RETURN
 C
 C Check for the next combination.
 C
@@ -549,7 +553,7 @@ C
                         XHLF=.5*(XINV+XVIS)
                         YHLF=.5*(YINV+YVIS)
                         CALL PCMPXY (IMAP,XHLF,YHLF,XTMP,YTMP)
-                        IF (ICFELL('PLCHMQ',16).NE.0) RETURN
+                        IF (ICFELL('PLCHMQ',17).NE.0) RETURN
                         IF (XTMP.EQ.OORV) THEN
                           IF (XHLF.EQ.XINV.AND.YHLF.EQ.YINV) GO TO 105
                           XINV=XHLF
@@ -561,13 +565,13 @@ C
                         END IF
   104                 CONTINUE
   105                 CALL PCMPXY (IMAP,XVIS,YVIS,XTMP,YTMP)
-                      IF (ICFELL('PLCHMQ',17).NE.0) RETURN
-                      XPEN=CUFX(XTMP)
                       IF (ICFELL('PLCHMQ',18).NE.0) RETURN
-                      YPEN=CUFY(YTMP)
+                      XPEN=CUFX(XTMP)
                       IF (ICFELL('PLCHMQ',19).NE.0) RETURN
-                      CALL PLOTIF (XPEN,YPEN,1)
+                      YPEN=CUFY(YTMP)
                       IF (ICFELL('PLCHMQ',20).NE.0) RETURN
+                      CALL PLOTIF (XPEN,YPEN,1)
+                      IF (ICFELL('PLCHMQ',21).NE.0) RETURN
                     END IF
 C
 C Check for the next combination.
@@ -577,13 +581,13 @@ C
 C The old and new points are both visible.  An easy case.
 C
                     CALL PCMPXY (IMAP,XNEW,YNEW,XTMP,YTMP)
-                    IF (ICFELL('PLCHMQ',21).NE.0) RETURN
-                    XPEN=CUFX(XTMP)
                     IF (ICFELL('PLCHMQ',22).NE.0) RETURN
-                    YPEN=CUFY(YTMP)
+                    XPEN=CUFX(XTMP)
                     IF (ICFELL('PLCHMQ',23).NE.0) RETURN
-                    CALL PLOTIF (XPEN,YPEN,IPEN)
+                    YPEN=CUFY(YTMP)
                     IF (ICFELL('PLCHMQ',24).NE.0) RETURN
+                    CALL PLOTIF (XPEN,YPEN,IPEN)
+                    IF (ICFELL('PLCHMQ',25).NE.0) RETURN
 C
 C End of checks for different combinations.
 C
@@ -632,7 +636,7 @@ C
 C Flush the buffer in PLOTIF.
 C
       CALL PLOTIF (0.,0.,2)
-      IF (ICFELL('PLCHMQ',25).NE.0) RETURN
+      IF (ICFELL('PLCHMQ',26).NE.0) RETURN
 C
 C Done.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: pcsetr.f,v 1.7 1994-03-09 23:23:59 kennison Exp $
+C $Id: pcsetr.f,v 1.8 1994-03-17 00:24:12 kennison Exp $
 C
       SUBROUTINE PCSETR (WHCH,RVAL)
 C
@@ -24,6 +24,10 @@ C
 C Declare the BLOCK DATA routine external to force it to load.
 C
       EXTERNAL PCBLDA
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('PCSETR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Set the selected parameter.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: plchhq.f,v 1.13 1994-03-11 17:39:06 kennison Exp $
+C $Id: plchhq.f,v 1.14 1994-03-17 00:24:17 kennison Exp $
 C
       SUBROUTINE PLCHHQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -177,6 +177,10 @@ C
 C I N I T I A L I Z A T I O N
 C
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('PLCHHQ - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C If it hasn't already been done, do that part of the initialization
 C which is done only once per loading of the routine.
 C
@@ -235,9 +239,9 @@ C in an arbitrary X/Y system.
 C
       IF (IMAP.LE.0) THEN
         XFRA=CUFX(XPOS)
-        IF (ICFELL('PLCHHQ',1).NE.0) RETURN
-        YFRA=CUFY(YPOS)
         IF (ICFELL('PLCHHQ',2).NE.0) RETURN
+        YFRA=CUFY(YPOS)
+        IF (ICFELL('PLCHHQ',3).NE.0) RETURN
       ELSE
         XFRA=XPOS
         YFRA=YPOS
@@ -247,7 +251,7 @@ C Determine the resolution of the plotter, as declared by default or
 C by the user.
 C
       CALL GETUSV ('XF',IRSX)
-      IF (ICFELL('PLCHHQ',3).NE.0) RETURN
+      IF (ICFELL('PLCHHQ',4).NE.0) RETURN
       RSLN=2.**IRSX-1.
 C
 C Determine a multiplier for the digitized size which will make the
@@ -286,22 +290,22 @@ C
 C
           IBNS=IBNU
           CALL PCFOPN (IBNU,0)
-          IF (ICFELL('PLCHHQ',4).NE.0) RETURN
+          IF (ICFELL('PLCHHQ',5).NE.0) RETURN
 C
           IF (JCOD.NE.0) THEN
             CALL PCFRED (IBNU,0,IDUM,1)
-            IF (ICFELL('PLCHHQ',5).NE.0) RETURN
-            CALL PCFRED (IBNU,0,IDUM,1)
             IF (ICFELL('PLCHHQ',6).NE.0) RETURN
+            CALL PCFRED (IBNU,0,IDUM,1)
+            IF (ICFELL('PLCHHQ',7).NE.0) RETURN
           END IF
 C
           CALL PCFRED (IBNU,0,INDA,INDL)
-          IF (ICFELL('PLCHHQ',7).NE.0) RETURN
-          CALL PCFRED (IBNU,0,IDDA,IDDL)
           IF (ICFELL('PLCHHQ',8).NE.0) RETURN
+          CALL PCFRED (IBNU,0,IDDA,IDDL)
+          IF (ICFELL('PLCHHQ',9).NE.0) RETURN
 C
           CALL PCFCLS (IBNU,0)
-          IF (ICFELL('PLCHHQ',9).NE.0) RETURN
+          IF (ICFELL('PLCHHQ',10).NE.0) RETURN
           IBNU=IBNS
 C
           IERR=0
@@ -539,7 +543,7 @@ C
           END IF
           IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
             CALL PCCFFC (IPSS,IBNU,NFNT,NASC,IPIC,RDGU,MDGU,NDGU)
-            IF (ICFELL('PLCHHQ',10).NE.0) RETURN
+            IF (ICFELL('PLCHHQ',11).NE.0) RETURN
           ELSE
             IF (IMAP.LE.0) THEN
               CHFS=SIZM*HPIC(IPIC)
@@ -548,11 +552,11 @@ C
             END IF
             CALL PCCFFF (IPSS,IBNU,NFNT,NASC,SPIC(IPIC),CHFS,
      +                                        RDGU,MDGU,NDGU)
-            IF (ICFELL('PLCHHQ',11).NE.0) RETURN
+            IF (ICFELL('PLCHHQ',12).NE.0) RETURN
           END IF
           IF (NDGU.EQ.0) THEN
             CALL PCCFFC (IPSS,IBNU,1,NASC,IPIC,RDGU,MDGU,NDGU)
-            IF (ICFELL('PLCHHQ',12).NE.0) RETURN
+            IF (ICFELL('PLCHHQ',13).NE.0) RETURN
             IF (NDGU.EQ.0) CALL PCEXCD (INDP,IPSS,NDGU)
           END IF
         END IF
@@ -560,7 +564,7 @@ C
           CALL PCEXCD (358,IPSS,NDGU)
           IF (NDGU.EQ.0) THEN
             CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (NDGU = 0) - SEE
-     +CONSULTANT',13,1)
+     +CONSULTANT',14,1)
             RETURN
           END IF
         END IF
@@ -813,21 +817,21 @@ C
       CALL GQNT (1,IERR,WNT1,VNT1)
 C
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQNT',14,1)
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQNT',15,1)
         RETURN
       END IF
 C
       CALL GQCNTN (IERR,INTC)
 C
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQCNTN',15,1)
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQCNTN',16,1)
         RETURN
       END IF
 C
       CALL GQNT (INTC,IERR,WNTC,VNTC)
 C
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQNT',16,1)
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQNT',17,1)
         RETURN
       END IF
 C
@@ -838,35 +842,35 @@ C
       CALL GQPLCI (IERR,IPLC)
 C
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQPLCI',17,1)
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQPLCI',18,1)
         RETURN
       END IF
 C
       CALL GQFACI (IERR,IFAC)
 C
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQFACI',18,1)
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQFACI',19,1)
         RETURN
       END IF
 C
       CALL GQTXCI (IERR,ITXC)
 C
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQTXCI',19,1)
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQTXCI',20,1)
         RETURN
       END IF
 C
       CALL GQLWSC (IERR,RILW)
 C
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQLWSC',20,1)
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQLWSC',21,1)
         RETURN
       END IF
 C
       CALL GQFAIS (IERR,IIIS)
 C
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQFAIS',21,1)
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQFAIS',22,1)
         RETURN
       END IF
 C
@@ -995,7 +999,7 @@ C
             ELSE
               IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
                 CALL PCCFFC (2,IBNU,NFNT,NASC,IPIC,RDGU,MDGU,NDGU)
-                IF (ICFELL('PLCHHQ',22).NE.0) RETURN
+                IF (ICFELL('PLCHHQ',23).NE.0) RETURN
               ELSE
                 IF (IMAP.LE.0) THEN
                   CHFS=SIZM*HPIC(IPIC)
@@ -1004,11 +1008,11 @@ C
                 END IF
                 CALL PCCFFF (2,IBNU,NFNT,NASC,SPIC(IPIC),CHFS,
      +                                         RDGU,MDGU,NDGU)
-                IF (ICFELL('PLCHHQ',23).NE.0) RETURN
+                IF (ICFELL('PLCHHQ',24).NE.0) RETURN
               END IF
               IF (NDGU.EQ.0) THEN
                 CALL PCCFFC (2,IBNU,1,NASC,IPIC,RDGU,MDGU,NDGU)
-                IF (ICFELL('PLCHHQ',24).NE.0) RETURN
+                IF (ICFELL('PLCHHQ',25).NE.0) RETURN
                 IF (NDGU.EQ.0) CALL PCEXCD (INDP,2,NDGU)
               END IF
             END IF
@@ -1017,7 +1021,7 @@ C
               CALL PCEXCD (358,2,NDGU)
               IF (NDGU.EQ.0) THEN
                 CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (NDGU = 0) -
-     +SEE CONSULTANT',25,1)
+     +SEE CONSULTANT',26,1)
                 RETURN
               END IF
             END IF
@@ -1032,7 +1036,7 @@ C
           IF (IDRC.NE.ICCI) THEN
             ICCI=IDRC
             CALL PLOTIF (0.,0.,2)
-            IF (ICFELL('PLCHHQ',26).NE.0) RETURN
+            IF (ICFELL('PLCHHQ',27).NE.0) RETURN
             CALL GSPLCI (IDRC)
             CALL GSFACI (IDRC)
             CALL GSTXCI (IDRC)
@@ -1040,7 +1044,7 @@ C
         ELSE IF (ICCI.GE.0) THEN
           ICCI=-1
           CALL PLOTIF (0.,0.,2)
-          IF (ICFELL('PLCHHQ',27).NE.0) RETURN
+          IF (ICFELL('PLCHHQ',28).NE.0) RETURN
           CALL GSPLCI (IPLC)
           CALL GSFACI (IFAC)
           CALL GSTXCI (ITXC)
@@ -1053,7 +1057,7 @@ C
         IF (RDLW.NE.RCLW) THEN
           RCLW=RDLW
           CALL PLOTIF (0.,0.,2)
-          IF (ICFELL('PLCHHQ',28).NE.0) RETURN
+          IF (ICFELL('PLCHHQ',29).NE.0) RETURN
           CALL GSLWSC (RDLW)
         END IF
 C
@@ -1078,7 +1082,7 @@ C
                   YCRA(NCRA)=RDGU(K+1)
                 ELSE
                   CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (XCRA/YCRA
-     +TOO SMALL) - SEE CONSULTANT',29,1)
+     +TOO SMALL) - SEE CONSULTANT',30,1)
                   RETURN
                 END IF
               ELSE
@@ -1093,7 +1097,7 @@ C
   148             CONTINUE
                 ELSE
                   CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (XCRA/YCRA
-     +TOO SMALL) - SEE CONSULTANT',30,1)
+     +TOO SMALL) - SEE CONSULTANT',31,1)
                   RETURN
                 END IF
               END IF
@@ -1155,7 +1159,7 @@ C
      +                            YCEN+XMZM(IPIC)*RDGU(K  )*STSO
      +                                +YMZM(IPIC)*RDGU(K+1)*STCO,
      +                                                 XTMP,YTMP)
-                IF (ICFELL('PLCHHQ',31).NE.0) RETURN
+                IF (ICFELL('PLCHHQ',32).NE.0) RETURN
 C
 C ... and check for an out-of-range point (one that's invisible under
 C the current mapping).  If the out-of-range flag is turned off or
@@ -1166,9 +1170,9 @@ C
 C ... transform the point into the fractional system and save it; ...
 C
                   XCRA(NCRA)=CUFX(XTMP)
-                  IF (ICFELL('PLCHHQ',32).NE.0) RETURN
-                  YCRA(NCRA)=CUFY(YTMP)
                   IF (ICFELL('PLCHHQ',33).NE.0) RETURN
+                  YCRA(NCRA)=CUFY(YTMP)
+                  IF (ICFELL('PLCHHQ',34).NE.0) RETURN
 C
 C ... otherwise, set the X coordinate to the out-of-range flag and
 C save a pointer into the digitization array as the value of the Y
@@ -1278,7 +1282,7 @@ C
                       YHLF=.5*(YINV+YVIS)
 C
                       CALL PCMPXY (IMAP,XHLF,YHLF,XTMP,YTMP)
-                      IF (ICFELL('PLCHHQ',34).NE.0) RETURN
+                      IF (ICFELL('PLCHHQ',35).NE.0) RETURN
 C
                       IF (XTMP.EQ.OORV) THEN
                         IF (XHLF.EQ.XINV.AND.YHLF.EQ.YINV) GO TO 138
@@ -1294,7 +1298,7 @@ C
 C
   138               IF (NPCS.GE.MPCS) THEN
                       CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (NPCS T
-     +OO BIG) - SEE CONSULTANT',35,1)
+     +OO BIG) - SEE CONSULTANT',36,1)
                       RETURN
                     END IF
 C
@@ -1303,11 +1307,11 @@ C
                     XPCB(NPCS)=XVIS
                     YPCB(NPCS)=YVIS
                     CALL PCMPXY (IMAP,XVIS,YVIS,XTMP,YTMP)
-                    IF (ICFELL('PLCHHQ',36).NE.0) RETURN
-                    XCRA(ICRA-1)=CUFX(XTMP)
                     IF (ICFELL('PLCHHQ',37).NE.0) RETURN
-                    YCRA(ICRA-1)=CUFY(YTMP)
+                    XCRA(ICRA-1)=CUFX(XTMP)
                     IF (ICFELL('PLCHHQ',38).NE.0) RETURN
+                    YCRA(ICRA-1)=CUFY(YTMP)
+                    IF (ICFELL('PLCHHQ',39).NE.0) RETURN
                     ISTA=1
 C
 C Similarly, if the last point looked at was not out-of-range and this
@@ -1326,7 +1330,7 @@ C
 C
                         IF (NCRA.GE.MCRA) THEN
                           CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (NC
-     +RA TOO BIG) - SEE CONSULTANT',39,1)
+     +RA TOO BIG) - SEE CONSULTANT',40,1)
                           RETURN
                         END IF
 C
@@ -1358,7 +1362,7 @@ C
                       YHLF=.5*(YINV+YVIS)
 C
                       CALL PCMPXY (IMAP,XHLF,YHLF,XTMP,YTMP)
-                      IF (ICFELL('PLCHHQ',40).NE.0) RETURN
+                      IF (ICFELL('PLCHHQ',41).NE.0) RETURN
 C
                       IF (XTMP.EQ.OORV) THEN
                         IF (XHLF.EQ.XINV.AND.YHLF.EQ.YINV) GO TO 141
@@ -1375,11 +1379,11 @@ C
                     XPCE(NPCS)=XVIS
                     YPCE(NPCS)=YVIS
                     CALL PCMPXY (IMAP,XVIS,YVIS,XTMP,YTMP)
-                    IF (ICFELL('PLCHHQ',41).NE.0) RETURN
-                    XCRA(ICRA)=CUFX(XTMP)
                     IF (ICFELL('PLCHHQ',42).NE.0) RETURN
-                    YCRA(ICRA)=CUFY(YTMP)
+                    XCRA(ICRA)=CUFX(XTMP)
                     IF (ICFELL('PLCHHQ',43).NE.0) RETURN
+                    YCRA(ICRA)=CUFY(YTMP)
+                    IF (ICFELL('PLCHHQ',44).NE.0) RETURN
                     ISTA=0
 C
                   END IF
@@ -1443,7 +1447,7 @@ C that should not have been possible, so take an error exit.
 C
                       IF (XCP1.EQ.OORV.OR.XCP2.EQ.OORV) THEN
                         CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (XCP1
-     + OR XCP2 = OORV) - SEE CONSULTANT',44,1)
+     + OR XCP2 = OORV) - SEE CONSULTANT',45,1)
                         RETURN
                       END IF
 C
@@ -1488,9 +1492,9 @@ C
                           YTM2=YTM0-YSTP
 C
                           CALL PCMPXY (IMAP,XTM1,YTM1,XMP1,YMP1)
-                          IF (ICFELL('PLCHHQ',45).NE.0) RETURN
-                          CALL PCMPXY (IMAP,XTM2,YTM2,XMP2,YMP2)
                           IF (ICFELL('PLCHHQ',46).NE.0) RETURN
+                          CALL PCMPXY (IMAP,XTM2,YTM2,XMP2,YMP2)
+                          IF (ICFELL('PLCHHQ',47).NE.0) RETURN
 C
                           IF      (XMP1.EQ.OORV.AND.XMP2.NE.OORV) THEN
                             XINV=XTM1
@@ -1517,7 +1521,7 @@ C
                             XHLF=.5*(XINV+XVIS)
                             YHLF=.5*(YINV+YVIS)
                             CALL PCMPXY (IMAP,XHLF,YHLF,XTMP,YTMP)
-                            IF (ICFELL('PLCHHQ',47).NE.0) RETURN
+                            IF (ICFELL('PLCHHQ',48).NE.0) RETURN
                             IF (XTMP.EQ.OORV) THEN
                               IF (XHLF.EQ.XINV.AND.
      +                            YHLF.EQ.YINV) GO TO 144
@@ -1534,12 +1538,12 @@ C
 C Replace the original point with one on the visible/invisible edge.
 C
   144                     CALL PCMPXY (IMAP,XVIS,YVIS,XTMP,YTMP)
-                          IF (ICFELL('PLCHHQ',48).NE.0) RETURN
+                          IF (ICFELL('PLCHHQ',49).NE.0) RETURN
 C
                           XCRA(MSTR)=CUFX(XTMP)
-                          IF (ICFELL('PLCHHQ',49).NE.0) RETURN
-                          YCRA(MSTR)=CUFY(YTMP)
                           IF (ICFELL('PLCHHQ',50).NE.0) RETURN
+                          YCRA(MSTR)=CUFY(YTMP)
+                          IF (ICFELL('PLCHHQ',51).NE.0) RETURN
 C
                           GO TO 146
 C
@@ -1602,7 +1606,7 @@ C
                         ICCS=ICCI
                         ICCI=IDRC
                         CALL PLOTIF (0.,0.,2)
-                        IF (ICFELL('PLCHHQ',51).NE.0) RETURN
+                        IF (ICFELL('PLCHHQ',52).NE.0) RETURN
                         CALL GSPLCI (ICCI)
                         CALL GSFACI (ICCI)
                         CALL GSTXCI (ICCI)
@@ -1655,7 +1659,7 @@ C
                   ICCI=ICCS
 C
                   CALL PLOTIF (0.,0.,2)
-                  IF (ICFELL('PLCHHQ',52).NE.0) RETURN
+                  IF (ICFELL('PLCHHQ',53).NE.0) RETURN
 C
                   IF (ICCI.GE.0) THEN
                     CALL GSPLCI (ICCI)
@@ -1694,9 +1698,9 @@ C
 C
           IF (IMAP.LE.0) THEN
             XTMP=CFUX(XCEN)
-            IF (ICFELL('PLCHHQ',53).NE.0) RETURN
-            YTMP=CFUY(YCEN)
             IF (ICFELL('PLCHHQ',54).NE.0) RETURN
+            YTMP=CFUY(YCEN)
+            IF (ICFELL('PLCHHQ',55).NE.0) RETURN
           ELSE
             XTMP=XCEN
             YTMP=YCEN
@@ -1704,7 +1708,7 @@ C
 C
           CALL PCMQLQ (XTMP,YTMP,CHSV(ICSV:ICSV),
      +                   SIZM*WPIC(IPIC),ANGD,0.)
-          IF (ICFELL('PLCHHQ',55).NE.0) RETURN
+          IF (ICFELL('PLCHHQ',56).NE.0) RETURN
 C
         END IF
 C
@@ -1715,7 +1719,7 @@ C width scale factor, and the fill area interior style.
 C
       IF (ICCI.GE.0) THEN
         CALL PLOTIF (0.,0.,2)
-        IF (ICFELL('PLCHHQ',56).NE.0) RETURN
+        IF (ICFELL('PLCHHQ',57).NE.0) RETURN
         CALL GSPLCI (IPLC)
         CALL GSFACI (IFAC)
         CALL GSTXCI (ITXC)
@@ -1723,7 +1727,7 @@ C
 C
       IF (RCLW.NE.RILW) THEN
         CALL PLOTIF (0.,0.,2)
-        IF (ICFELL('PLCHHQ',57).NE.0) RETURN
+        IF (ICFELL('PLCHHQ',58).NE.0) RETURN
         CALL GSLWSC (RILW)
       END IF
 C

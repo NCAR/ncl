@@ -1,5 +1,5 @@
 C
-C $Id: plchlq.f,v 1.6 1994-03-09 23:24:06 kennison Exp $
+C $Id: plchlq.f,v 1.7 1994-03-17 00:24:21 kennison Exp $
 C
       SUBROUTINE PLCHLQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -25,29 +25,33 @@ C Define arrays in which to save the current viewport and window.
 C
       DIMENSION VPRT(4),WNDW(4)
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('PLCHLQ - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Compute the coordinates of (XPOS,YPOS) in the fractional coordinate
 C system (normalized device coordinates XFRA and YFRA).
 C
       IF (IMAP.LE.0) THEN
         XFRA=CUFX(XPOS)
-        IF (ICFELL('PLCHLQ',1).NE.0) RETURN
-        YFRA=CUFY(YPOS)
         IF (ICFELL('PLCHLQ',2).NE.0) RETURN
+        YFRA=CUFY(YPOS)
+        IF (ICFELL('PLCHLQ',3).NE.0) RETURN
       ELSE
         CALL PCMPXY (IMAP,XPOS,YPOS,XTMP,YTMP)
-        IF (ICFELL('PLCHLQ',3).NE.0) RETURN
+        IF (ICFELL('PLCHLQ',4).NE.0) RETURN
         IF (OORV.NE.0..AND.XTMP.EQ.OORV) RETURN
         XFRA=CUFX(XTMP)
-        IF (ICFELL('PLCHLQ',4).NE.0) RETURN
-        YFRA=CUFY(YTMP)
         IF (ICFELL('PLCHLQ',5).NE.0) RETURN
+        YFRA=CUFY(YTMP)
+        IF (ICFELL('PLCHLQ',6).NE.0) RETURN
       END IF
 C
 C Determine the resolution of the plotter, as declared by default or
 C by the user.
 C
       CALL GETUSV ('XF',IRSX)
-      IF (ICFELL('PLCHLQ',6).NE.0) RETURN
+      IF (ICFELL('PLCHLQ',7).NE.0) RETURN
       RSLN=2.**IRSX-1.
 C
 C Determine a character height which will make the characters have the
@@ -68,18 +72,18 @@ C
         SINA=SIN(.017453292519943*ANGD)
         COSA=COS(.017453292519943*ANGD)
         CALL PCMPXY (IMAP,XPOS-.5*SIZE*COSA,YPOS-.5*SIZE*SINA,XTM1,YTM1)
-        IF (ICFELL('PLCHLQ',7).NE.0) RETURN
-        CALL PCMPXY (IMAP,XPOS+.5*SIZE*COSA,YPOS+.5*SIZE*SINA,XTM2,YTM2)
         IF (ICFELL('PLCHLQ',8).NE.0) RETURN
+        CALL PCMPXY (IMAP,XPOS+.5*SIZE*COSA,YPOS+.5*SIZE*SINA,XTM2,YTM2)
+        IF (ICFELL('PLCHLQ',9).NE.0) RETURN
         IF (OORV.NE.0..AND.(XTM1.EQ.OORV.OR.XTM2.EQ.OORV)) RETURN
         XTM1=CUFX(XTM1)
-        IF (ICFELL('PLCHLQ',9).NE.0) RETURN
-        YTM1=CUFY(YTM1)
         IF (ICFELL('PLCHLQ',10).NE.0) RETURN
-        XTM2=CUFX(XTM2)
+        YTM1=CUFY(YTM1)
         IF (ICFELL('PLCHLQ',11).NE.0) RETURN
-        YTM2=CUFY(YTM2)
+        XTM2=CUFX(XTM2)
         IF (ICFELL('PLCHLQ',12).NE.0) RETURN
+        YTM2=CUFY(YTM2)
+        IF (ICFELL('PLCHLQ',13).NE.0) RETURN
         IF (XTM1.EQ.XTM2.AND.YTM1.EQ.YTM2) RETURN
         SIZM=SQRT((XTM2-XTM1)*(XTM2-XTM1)+(YTM2-YTM1)*(YTM2-YTM1))/16.
         ANGV=57.2957795130823*ATAN2(YTM2-YTM1,XTM2-XTM1)
@@ -94,25 +98,25 @@ C and text alignment.
 C
       CALL GQCHH (IERR,HGTO)
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHLQ - ERROR EXIT FROM GQCHH',13,1)
+        CALL SETER ('PLCHLQ - ERROR EXIT FROM GQCHH',14,1)
         RETURN
       END IF
 C
       CALL GQTXP (IERR,ITPO)
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHLQ - ERROR EXIT FROM GQTXP',14,1)
+        CALL SETER ('PLCHLQ - ERROR EXIT FROM GQTXP',15,1)
         RETURN
       END IF
 C
       CALL GQCHUP (IERR,CUXO,CUYO)
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHLQ - ERROR EXIT FROM GQCHUP',15,1)
+        CALL SETER ('PLCHLQ - ERROR EXIT FROM GQCHUP',16,1)
         RETURN
       END IF
 C
       CALL GQTXAL (IERR,ITAX,ITAY)
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHLQ - ERROR EXIT FROM GQTXAL',16,1)
+        CALL SETER ('PLCHLQ - ERROR EXIT FROM GQTXAL',17,1)
         RETURN
       END IF
 C
@@ -158,20 +162,20 @@ C
 C Flush the pen-move buffer.
 C
       CALL PLOTIF (0.,0.,2)
-      IF (ICFELL('PLCHLQ',17).NE.0) RETURN
+      IF (ICFELL('PLCHLQ',18).NE.0) RETURN
 C
 C Save the current window and, if necessary, redefine it so that we can
 C use normalized device coordinates.
 C
       CALL GQCNTN (IERR,NRMT)
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHLQ - ERROR EXIT FROM GQCNTN',18,1)
+        CALL SETER ('PLCHLQ - ERROR EXIT FROM GQCNTN',19,1)
         RETURN
       END IF
       IF (NRMT.NE.0) THEN
         CALL GQNT (NRMT,IERR,WNDW,VPRT)
         IF (IERR.NE.0) THEN
-          CALL SETER ('PLCHLQ - ERROR EXIT FROM GQNT',19,1)
+          CALL SETER ('PLCHLQ - ERROR EXIT FROM GQNT',20,1)
           RETURN
         END IF
         CALL GSWN (NRMT,VPRT(1),VPRT(2),VPRT(3),VPRT(4))
@@ -197,7 +201,7 @@ C
 C Update the pen position.
 C
       CALL PLOTIF (XFRA,YFRA,0)
-      IF (ICFELL('PLCHLQ',20).NE.0) RETURN
+      IF (ICFELL('PLCHLQ',21).NE.0) RETURN
 C
 C Done.
 C

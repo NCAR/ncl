@@ -1,5 +1,5 @@
 C
-C $Id: pcgetc.f,v 1.8 1994-03-09 23:23:31 kennison Exp $
+C $Id: pcgetc.f,v 1.9 1994-03-17 00:23:42 kennison Exp $
 C
       SUBROUTINE PCGETC (WHCH,CVAL)
 C
@@ -28,6 +28,10 @@ C
 C Declare the BLOCK DATA routine external to force it to load.
 C
       EXTERNAL PCBLDA
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('PCGETC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C There are only two possibilities:  In the case of the function-code
 C character, take into account that what is really stored is the index

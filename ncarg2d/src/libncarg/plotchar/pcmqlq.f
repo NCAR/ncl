@@ -1,5 +1,5 @@
 C
-C $Id: pcmqlq.f,v 1.5 1994-03-09 23:23:51 kennison Exp $
+C $Id: pcmqlq.f,v 1.6 1994-03-17 00:24:03 kennison Exp $
 C
       SUBROUTINE PCMQLQ (XSUB,YSUB,CHRS,SIZE,ANGD,CNTR)
 C

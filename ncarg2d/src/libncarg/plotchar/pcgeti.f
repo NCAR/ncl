@@ -1,5 +1,5 @@
 C
-C $Id: pcgeti.f,v 1.5 1994-03-09 23:23:33 kennison Exp $
+C $Id: pcgeti.f,v 1.6 1994-03-17 00:23:44 kennison Exp $
 C
       SUBROUTINE PCGETI (WHCH,IVAL)
 C
@@ -7,6 +7,10 @@ C
 C
 C The subroutine PCGETI may be used to get PLCHHQ parameters which have
 C values of type INTEGER.
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('PCGETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Just convert it into a call to the routine PCGETR.
 C

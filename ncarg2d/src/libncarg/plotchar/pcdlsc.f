@@ -1,5 +1,5 @@
 C
-C $Id: pcdlsc.f,v 1.2 1994-03-09 23:23:27 kennison Exp $
+C $Id: pcdlsc.f,v 1.3 1994-03-17 00:23:38 kennison Exp $
 C
       SUBROUTINE PCDLSC (IFCI)
 C
@@ -18,6 +18,10 @@ C
      +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
      +                YMUL(3)
       SAVE   /PCPRMS/
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('PCDLSC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Check for error in the argument.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: pcsetc.f,v 1.7 1994-03-09 23:23:55 kennison Exp $
+C $Id: pcsetc.f,v 1.8 1994-03-17 00:24:07 kennison Exp $
 C
       SUBROUTINE PCSETC (WHCH,CVAL)
 C
@@ -28,6 +28,10 @@ C
 C Declare the BLOCK DATA routine external to force it to load.
 C
       EXTERNAL PCBLDA
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('PCSETC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C There are two possibilities:  In the case of the function-code
 C character, what is really stored is the index of the character
