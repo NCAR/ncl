@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.12 1994-03-01 21:50:41 haley Exp $
+ *      $Id: wks.c.sed,v 1.13 1994-04-14 16:55:17 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -150,8 +150,8 @@ int	opnwks_(unit, fname, status)
 	unsigned	length = _fcdlen(fname_);
 	char		*fname;
 
-	fname = (char *)malloc(sizeof(char)*length);
-	strncpy( fname, _fcdtocp(fname_), length );
+	fname = (char *)malloc(sizeof(char)*(length+1));
+	strcpy( fname, _fcdtocp(fname_), length );
 #endif
 
 	/* Initialize the table that is used to track LU's. */
