@@ -126,8 +126,11 @@ extern NhlErrorTypes shsetp_W(void);
 extern NhlErrorTypes cstrans_W(void);
 extern NhlErrorTypes csstri_W(void);
 extern NhlErrorTypes cssgrid_W(void);
-extern NhlErrorTypes csscoord_W(void);
+extern NhlErrorTypes css2c_W(void);
+extern NhlErrorTypes csc2s_W(void);
 extern NhlErrorTypes csvoro_W(void);
+extern NhlErrorTypes cssetp_W(void);
+extern NhlErrorTypes csgetp_W(void);
 
 extern NhlErrorTypes ftsetp_W(void);
 extern NhlErrorTypes ftgetp_W(void);
@@ -163,6 +166,8 @@ extern NhlErrorTypes tdez3d_W(void);
 extern NhlErrorTypes wmsetp_W(void);
 extern NhlErrorTypes wmgetp_W(void);
 extern NhlErrorTypes wmbarb_W(void);
+extern NhlErrorTypes wmdrft_W(void);
+extern NhlErrorTypes wmlabs_W(void);
 
 extern NhlErrorTypes regcoef_W(void);
 extern NhlErrorTypes regline_W(void);
@@ -1419,20 +1424,41 @@ void NclAddUserFuncs(void)
 /*
  * Register wmbarb
  */
-	nargs = 0;
-	args = NewArgs(5);
+    nargs = 0;
+    args = NewArgs(5);
     dimsizes[0] = 1;
 
-        SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+    NclRegisterProc(wmbarb_W,args,"wmbarb",nargs);
 
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-	SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
 /*
- * Register wrapper function pointer and argument templates.
+ * Register wmdrft
  */
-	NclRegisterProc(wmbarb_W,args,"wmbarb",nargs);
+    nargs = 0;
+    args = NewArgs(3);
+    dimsizes[0] = 1;
+    
+    SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+    NclRegisterProc(wmdrft_W,args,"wmdrft",nargs);
+
+/*
+ * Register wmlabs
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    dimsizes[0] = 1;
+    
+    SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    NclRegisterProc(wmlabs_W,args,"wmlabs",nargs);
 
 /*
  *  Register nnsetp.
@@ -1634,66 +1660,86 @@ void NclAddUserFuncs(void)
  *  Register csvoro.
  */
     nargs = 0;
-    args = NewArgs(12);
+    args = NewArgs(10);
     
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
     dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
     SetArgTemplate(args, nargs, "integer", 1, dimsizes); nargs++;
     SetArgTemplate(args, nargs, "integer", 1, dimsizes); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
     SetArgTemplate(args, nargs, "integer", 1, dimsizes); nargs++;
     SetArgTemplate(args, nargs, "integer", 1, dimsizes); nargs++;
     SetArgTemplate(args, nargs, "integer", 1, NclANY); nargs++;
     NclRegisterProc(csvoro_W, args, "csvoro", nargs);
 
 /*
- *  Register csscoord.
+ *  Register csc2s.
  */
     nargs = 0;
     args = NewArgs(5);
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    NclRegisterProc(csscoord_W, args, "csscoord", nargs);
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    NclRegisterProc(csc2s_W, args, "csc2s", nargs);
 
 /*
- *  Register cstrans.
+ *  Register css2c.
  */
     nargs = 0;
     args = NewArgs(5);
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    NclRegisterProc(cstrans_W, args, "cstrans", nargs);
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    NclRegisterProc(css2c_W, args, "css2c", nargs);
+
+/*
+ *  Register cssetp.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);
+    nargs++;
+    SetArgTemplate(args, nargs, NclANY, 1, dimsizes);
+    nargs++;
+    NclRegisterProc(cssetp_W, args, "cssetp", nargs);
+
+/*
+ *  Register csgetp.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);
+    nargs++;
+    NclRegisterFunc(csgetp_W, args, "csgetp", nargs);
+
 /*
  *  Register csstri.
  */
     nargs = 0;
-    args = NewArgs(3);
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    args = NewArgs(2);
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
     NclRegisterFunc(csstri_W, args, "csstri", nargs);
+
 /*
  *  Register cssgrid.
  */
     nargs = 0;
-    args = NewArgs(6);
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    args = NewArgs(5);
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
     NclRegisterFunc(cssgrid_W, args, "cssgrid", nargs);
 
 /*

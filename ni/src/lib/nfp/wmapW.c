@@ -28,17 +28,45 @@ NhlErrorTypes wmsetp_W(void)
 {
 
   char  *arg1, *cval;
-  int   numpi, numpf, numpc, i;
+  int   numpi, numpf, numpc, i, j;
 
 /*
  *  List the integer and float parameter names.  To add new ones,
  *  all that needs to be done is add the names to this list.
  */
-  char *params_i[] = {"wbf", "col",
-                      "WBF", "COL"};
-  char *params_f[] = {"wba", "wbc", "wbd", "wbr", "wbs", "wbt",
-                      "WBA", "WBC", "WBD", "WBR", "WBS", "WBT"};
-  char *params_c[] = {"erf", "ERF"};
+  char *params_i[] = {"alo", "aoc", "asc", "awc", "cbc", "cc1", 
+                      "cc2", "cc3", "cfc", "col", "dbc", "dtc",
+                      "hib", "hic", "hif", "his", "lc1", "lc2",
+                      "lc3", "lob", "lof", "los", "mxs", "nbz",
+                      "nms", "pai", "rbs", "rc1", "rc2", "rc3",
+                      "rc4", "rc5", "rev", "rfc", "rls", "ros",
+                      "sc1", "sc2", "sc3", "sc4", "slf", "sty",
+                      "t1c", "t2c", "wbf", "wfc", "wty",
+                      "ALO", "AOC", "ASC", "AWC", "CBC", "CC1", 
+                      "CC2", "CC3", "CFC", "COL", "DBC", "DTC",
+                      "HIB", "HIC", "HIF", "HIS", "LC1", "LC2",
+                      "LC3", "LOB", "LOF", "LOS", "MXS", "NBZ",
+                      "NMS", "PAI", "RBS", "RC1", "RC2", "RC3",
+                      "RC4", "RC5", "REV", "RFC", "RLS", "ROS",
+                      "SC1", "SC2", "SC3", "SC4", "SLF", "STY",
+                      "T1C", "T2C", "WBF", "WFC", "WTY"
+                     };
+
+  char *params_f[] = {"arc", "ard", "arl", "ars", "beg", "bet",
+                      "cht", "cmg", "cs1", "cs2", "dts", "dwd",
+                      "end", "lin", "lwd", "rht", "rmg", "sht",
+                      "sl1", "sl2", "swi", "tht", "wba", "wbc",
+                      "wbd", "wbl", "wbr", "wbs", "wbt", "wht",
+                      "ARC", "ARD", "ARL", "ARS", "BEG", "BET",
+                      "CHT", "CMG", "CS1", "CS2", "DTS", "DWD",
+                      "END", "LIN", "LWD", "RHT", "RMG", "SHT",
+                      "SL1", "SL2", "SWI", "THT", "WBA", "WBC",
+                      "WBD", "WBL", "WBR", "WBS", "WBT", "WHT"
+                     };
+
+  char *params_c[] = {"erf", "fro",
+                      "ERF", "FRO",
+                     };
 
 /*
  * Input array variables
@@ -115,7 +143,13 @@ OK_NAME: pvalue = (void *) NclGetArgValue(
   if (type_pvalue == NCL_int) {
     for (i = 0; i < numpi; i++) {
       if (!strncmp(arg1, params_i[i], strlen(params_i[i]))) {
-        c_wmseti(arg1, *((int *) pvalue));
+        if (!strncmp(arg1, "pai", 3)) {
+          j = (*((int *) pvalue)) + 1;
+        }
+        else {
+          j = *((int *) pvalue);
+        }
+        c_wmseti(arg1, j);
         return(NhlNOERROR);
       }
     }
@@ -359,6 +393,183 @@ NhlErrorTypes wmbarb_W( void )
   gactivate_ws (gkswid);
   for (i = 0; i < dsizes_x[0]; i++) {
     c_wmbarb(*(x+i), *(y+i), *(u+i), *(v+i));
+  }
+  gdeactivate_ws (gkswid);
+
+  NhlRLDestroy(grlist);
+
+  return(NhlNOERROR);
+  
+}
+
+NhlErrorTypes wmdrft_W( void )
+{
+  int grlist,gkswid,i;
+  int *nwid,nid;
+
+/*
+ *  Definte a variable to store the HLU object identifier.
+ */
+  NclHLUObj tmp_hlu_obj;
+
+  float *x;
+  int ndims_x,dsizes_x[1];
+  float *y;
+  int ndims_y,dsizes_y[1];
+
+/*
+ * Retrieve parameters
+ */
+
+/*
+ *  nwid points to the HLU identifier of the graphic object; this is
+ *  converted to the NCL workstation identifier below.
+ */
+  nwid = (int*)  NclGetArgValue(0,3,     NULL,     NULL, NULL,NULL,NULL,2);
+
+  x   = (float*) NclGetArgValue(1,3, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
+  y   = (float*) NclGetArgValue(2,3, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
+/*
+ * Check the input dimension sizes.
+ */
+  if( ndims_x != 1 || ndims_y != 1) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+               "wmdrft: input arguments must be singly-dimensioned");
+        return(NhlFATAL);
+  }
+/*
+ * Check the input sizes.
+ */
+  if (dsizes_x[0] != dsizes_y[0]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+               "wmdrft: input arguments must all have the same array size");
+        return(NhlFATAL);
+  }
+
+/*
+ *  Determine the NCL identifier for the graphic object in nid.
+ */
+  tmp_hlu_obj = (NclHLUObj) _NclGetObj(*nwid);
+  nid = tmp_hlu_obj->hlu.hlu_id;
+
+/*
+ * Retrieve the GKS workstation id from the workstation object.
+ */
+  
+  grlist = NhlRLCreate(NhlGETRL);
+  NhlRLClear(grlist);
+  NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
+  NhlGetValues(nid,grlist);
+
+/*
+ * The following section calls the c_wmdrft function.
+ */
+  gactivate_ws (gkswid);
+  for (i = 0; i < dsizes_x[0]; i++) {
+    c_wmdrft(dsizes_x[0], x, y);
+  }
+  gdeactivate_ws (gkswid);
+
+  NhlRLDestroy(grlist);
+
+  return(NhlNOERROR);
+  
+}
+
+NhlErrorTypes wmlabs_W( void )
+{
+  int grlist,gkswid,i;
+  int *nwid,nid;
+  char *arg1;
+
+/*
+ *  Definte a variable to store the HLU object identifier.
+ */
+  NclHLUObj tmp_hlu_obj;
+
+  float *x;
+  int ndims_x,dsizes_x[1];
+  float *y;
+  int ndims_y,dsizes_y[1];
+  string *symtyp;
+  int ndims_symtyp, dsizes_symtyp[NCL_MAX_DIMENSIONS];
+  
+
+/*
+ * Retrieve parameters
+ */
+
+/*
+ *  nwid points to the HLU identifier of the graphic object; this is
+ *  converted to the NCL workstation identifier below.
+ */
+  nwid = (int*)  NclGetArgValue(0,4,     NULL,     NULL, NULL,NULL,NULL,2);
+
+  x   = (float*) NclGetArgValue(1,4, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
+  y   = (float*) NclGetArgValue(2,4, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
+
+/*
+ * Check the input dimension sizes.
+ */
+  if( ndims_x != 1 || ndims_y != 1) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+               "wmlabs: input arguments must be singly-dimensioned");
+        return(NhlFATAL);
+  }
+/*
+ * Check the input sizes.
+ */
+  if (dsizes_x[0] != dsizes_y[0]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+               "wmlabs: input arguments must all have the same array size");
+        return(NhlFATAL);
+  }
+
+/*
+ * Retrieve the symbol type.
+ */
+  symtyp = (string *) NclGetArgValue(
+          3,
+          4,
+          &ndims_symtyp,
+          dsizes_symtyp,
+          NULL,
+          NULL,
+          NULL,
+          2);
+
+/*
+ * Check number of dimensions for the symbol type.
+ */
+  if(ndims_symtyp != 1) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN,
+              "wmlabs: Argument #4 has the wrong number of dimensions.");
+    return(NhlFATAL);
+  }
+  arg1 = NrmQuarkToString(*symtyp);
+
+
+/*
+ *  Determine the NCL identifier for the graphic object in nid.
+ */
+  tmp_hlu_obj = (NclHLUObj) _NclGetObj(*nwid);
+  nid = tmp_hlu_obj->hlu.hlu_id;
+
+/*
+ * Retrieve the GKS workstation id from the workstation object.
+ */
+  
+  grlist = NhlRLCreate(NhlGETRL);
+  NhlRLClear(grlist);
+  NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
+  NhlGetValues(nid,grlist);
+
+/*
+ * The following section calls the c_wmdrft function.
+ */
+  gactivate_ws (gkswid);
+  for (i = 0; i < dsizes_x[0]; i++) {
+    c_wmlabs(*x, *y, arg1);
   }
   gdeactivate_ws (gkswid);
 
