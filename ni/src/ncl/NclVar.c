@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.63 2001-07-16 19:48:22 ethan Exp $
+ *      $Id: NclVar.c,v 1.64 2002-06-21 21:47:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2046,6 +2046,31 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 /*
 * Taking advatage that the following call fills in the extents for each selection
 */
+		j = 0;
+		for(i=0; i < lhs_sel_ptr->n_entries ; i++) {
+			if(((lhs_sel_ptr->selection[i].sel_type != Ncl_VECSUBSCR) && (!lhs_sel_ptr->selection[i].u.sub.is_single))||
+				((lhs_sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR) && (lhs_sel_ptr->selection[i].u.vec.n_ind != 1) )) {
+					j++;
+				}
+		}
+		lhs_n_elem = j;
+		j = 0;
+		for(i=0; i < rhs_sel_ptr->n_entries ; i++) {
+			if(((rhs_sel_ptr->selection[i].sel_type != Ncl_VECSUBSCR) && (!rhs_sel_ptr->selection[i].u.sub.is_single))||
+				((rhs_sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR) && (rhs_sel_ptr->selection[i].u.vec.n_ind != 1) )) {
+					j++;
+				}
+		}
+		rhs_n_elem = j;
+
+		if(rhs_n_elem > 0 ){
+			if(lhs_n_elem != rhs_n_elem) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"VarVarWrite: Number of dimensions on left hand side does not match right hand side");
+				return(NhlFATAL);
+			}
+		}
+
+
 		if(lhs_md->obj.id != rhs_md->obj.id) {
 			if(rhs_type != lhs_type) {
 				rhs_md = (NclMultiDValData)_NclReadSubSection((NclData)rhs_md,rhs_sel_ptr,NULL); 
@@ -2464,6 +2489,19 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 		fprintf(stdout,"(rhs_sel_ptr == NULL)\n");
 #endif
 		if(lhs_md->obj.id != rhs_md->obj.id) {
+			j = 0;
+			if(rhs_md->multidval.kind != SCALAR) {
+				for(i=0; i < lhs_sel_ptr->n_entries ; i++) {
+					if(((lhs_sel_ptr->selection[i].sel_type != Ncl_VECSUBSCR) && (!lhs_sel_ptr->selection[i].u.sub.is_single))||
+						((lhs_sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR) && (lhs_sel_ptr->selection[i].u.vec.n_ind != 1) )) {
+							j++;
+						}
+				}
+				if(j != rhs_md->multidval.n_dims) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"VarVarWrite: Number of dimensions on left hand side does not match right hand side");
+					return(NhlFATAL);
+				}
+			}
 			ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
 			if(ret < NhlWARNING){
 				return(ret);

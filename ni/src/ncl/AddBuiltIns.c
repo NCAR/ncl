@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.55 2001-09-28 21:14:45 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.56 2002-06-21 21:47:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -606,6 +606,11 @@ void
 );
 
 extern NhlErrorTypes _NclIGetFileVarAtts(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIGetVarDims(
 #if     NhlNeedProto
 void
 #endif
@@ -1423,6 +1428,12 @@ void _NclAddBuiltIns
 	NclRegisterFunc(_NclINhlGetWorkspaceObjectId,args,"NhlGetWorkspaceObjectId",nargs);
 	nargs = 0;
 	NclRegisterFunc(_NclINhlAppGetDefaultParentId,args,"NhlAppGetDefaultParentId",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	NclRegisterFunc(_NclIGetVarDims,args,"getvardims",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);

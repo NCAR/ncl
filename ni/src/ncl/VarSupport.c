@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.22 2001-03-07 22:28:28 ethan Exp $
+ *      $Id: VarSupport.c,v 1.23 2002-06-21 21:47:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1206,6 +1206,7 @@ struct _NclVarRec* from;
 	NclAttList *att_list;
 	int i;
 	NhlErrorTypes ret = NhlNOERROR;
+/*	if((to == NULL) || (from==NULL)) return(NhlFATAL);*/
 
 	if((to->var.att_id != -1)&&(from->var.att_id != -1)&&(to->var.att_id != from->var.att_id)) {
 /*

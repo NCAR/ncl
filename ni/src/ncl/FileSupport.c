@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.17 2001-03-07 22:28:28 ethan Exp $
+ *      $Id: FileSupport.c,v 1.18 2002-06-21 21:47:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1578,15 +1578,13 @@ NclFile thefile;
 	NclSymTableListNode *st;
 	NclSymbol *s;
 	int i,j;
-	NclStackEntry *thevar = NULL;
 	NclMultiDValData theid;
 
 	tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
 	tmp->kind = FILE_LIST;
 	tmp->u.file = (NclApiFileInfoRec*)NclMalloc(sizeof(NclApiFileInfoRec));
-	theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 	if(thefile != NULL) {
-		tmp->u.file->name = thevar->u.data_var->var.var_quark;
+		tmp->u.file->name = thefile->file.fname;
 		tmp->u.file->path = thefile->file.fpath;
 		tmp->u.file->wr_status = thefile->file.wr_status;
 		tmp->u.file->file_type = thefile->file.file_type;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.142 2001-12-17 19:02:25 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.143 2002-06-21 21:47:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -10401,6 +10401,65 @@ NhlErrorTypes _NclIgaus
 }
 
 
+NhlErrorTypes _NclIGetVarDims
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int i;
+	string name;
+	int dimsizes;
+	NclApiDataList *data;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclStackEntry val;
+	NclVar tmp_var;
+	NclFile thefile = NULL;
+	NclMultiDValData tmp_md = NULL;
+	NclMultiDValData file_md = NULL;
+	NclQuark names[2048];
+
+
+
+        val = _NclGetArg(0,1,DONT_CARE);
+        switch(val.kind) {
+		case NclStk_VAR:
+                	tmp_var = val.u.data_var;
+			if(tmp_var->var.var_quark > 0) {
+				name = tmp_var->var.var_quark;
+			} else {
+				name = -1;
+			}
+			break;
+        	case NclStk_VAL:
+		default:
+			dimsizes = 1;
+			return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
+	}
+	if(tmp_var != NULL ) {
+		if(tmp_var->obj.obj_type == Ncl_FileVar) {
+			file_md= (NclMultiDValData)_NclVarValueRead(tmp_var,NULL,NULL);
+			thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
+			data = _NclGetFileInfo2(thefile);
+			for (i=0; i < data->u.file->n_dims;i++) {
+				names[i] = data->u.file->dim_info[i].dim_quark;
+			}
+			ret = NclReturnValue((void*)names, 1, &data->u.file->n_dims, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+		} else {
+			data = _NclGetVarInfo2(tmp_var);
+			for (i=0; i < data->u.var->n_dims;i++) {
+				names[i] = data->u.var->dim_info[i].dim_quark;
+			}
+			ret = NclReturnValue((void*)names, 1, &data->u.var->n_dims, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+		}
+	} else {
+		ret  = NhlFATAL;
+	}
+	return(ret);
+
+
+}
 
 NhlErrorTypes _NclIGetVarAtts
 #if	NhlNeedProto
@@ -10436,8 +10495,8 @@ NhlErrorTypes _NclIGetVarAtts
 			return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
 	}
 
-	if((tmp_var->obj.obj_type == Ncl_Var)||(tmp_var->obj.obj_type == Ncl_HLUVar)){
-		if(name == -1) {
+	if((tmp_var->obj.obj_type == Ncl_Var)||(tmp_var->obj.obj_type == Ncl_HLUVar)||(tmp_var->obj.obj_type == Ncl_CoordVar)){
+		if((name == -1)||(tmp_var->obj.obj_type == Ncl_CoordVar)) {
 			data = _NclGetVarInfo2(tmp_var);
 		} else {
 			data = _NclGetVarInfo(name);
@@ -11942,7 +12001,7 @@ NhlErrorTypes _NclICreateFile(void)
 		}
 		for(j = 0; j < dnames_md->multidval.totalelements; j++) {
 			for(k=0; k < n_dims; k++) {
-				if(((string*)(dnames_md->multidval.val))[k] == dimnames[j]) {
+				if(((string*)(dnames_md->multidval.val))[j] == dimnames[k]) {
 					ids[j] = dim_ids[k];
 				}
 			}
