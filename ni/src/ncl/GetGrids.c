@@ -3196,8 +3196,8 @@ int** dimsizes_lon;
 	int north;
 	unsigned char tmpc[4];
 	int status,idir,jdir,i,j;
-	float orv;
 	unsigned char *gds = (unsigned char*)thevarrec->thelist->rec_inq->gds;
+	float orv;
 	float nx0,nx1,ny0,ny1;
 	float C,d_per_km,dlon,dlat;
 	float start_ndcx,start_ndcy;
@@ -3529,12 +3529,163 @@ int* n_dims_lon;
 int** dimsizes_lon;
 #endif
 {
-			*lat = NULL;
-			*n_dims_lat = 0;
-			*dimsizes_lat = NULL;
-			*lon = NULL;
-			*n_dims_lon= 0;
-			*dimsizes_lon= NULL;
+	static int mapid = -1;
+	static int vpid = -1;
+	static int rlist = -1;
+	int nx;
+	int ny;
+	float la1;
+	float lo1;
+	float lov,tlon;
+	float tlat;
+	float dx;
+	float dy;
+	float deltax;
+	float deltay;
+	float latin0;
+	int north;
+	unsigned char tmpc[4];
+	int status,idir,jdir,i,j;
+	unsigned char *gds = (unsigned char*)thevarrec->thelist->rec_inq->gds;
+	float orv;
+	float nx0,nx1,ny0,ny1;
+	float C,d_per_km,dlon,dlat;
+	float start_ndcx,start_ndcy;
+
+	
+
+
+	nx = UnsignedCnvtToDecimal(2,&(gds[6]));
+	ny = UnsignedCnvtToDecimal(2,&(gds[8]));
+	tmpc[0] = gds[10] & (unsigned char) 0177;
+	tmpc[1] = gds[11];
+	tmpc[2] = gds[12];
+	la1 = (UnsignedCnvtToDecimal(3,tmpc))/1000.0;
+	la1 = ((gds[10] & (unsigned char) 0200)? -la1:la1);
+
+	tmpc[0] = gds[13] & (unsigned char) 0177;
+	tmpc[1] = gds[14];
+	tmpc[2] = gds[15];
+	lo1 = (UnsignedCnvtToDecimal(3,tmpc))/1000.0;
+	lo1 = ((gds[13] & (unsigned char) 0200)? -lo1:lo1);
+
+	tmpc[0] = gds[17] & (unsigned char) 0177;
+	tmpc[1] = gds[18];
+	tmpc[2] = gds[19];
+	lov = (UnsignedCnvtToDecimal(3,tmpc))/1000.0;
+	lov = ((gds[17] & (unsigned char) 0200)? -lov:lov);
+
+	dx = (float)UnsignedCnvtToDecimal(3,&(gds[20]));
+	dy = (float)UnsignedCnvtToDecimal(3,&(gds[23]));
+	tmpc[0] = gds[28] & (unsigned char) 0177;
+	tmpc[1] = gds[29];
+	tmpc[2] = gds[30];
+
+        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
+        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
+        *n_dims_lat = 2;
+        *n_dims_lon = 2;
+        (*dimsizes_lat)[0] = ny;
+        (*dimsizes_lat)[1] = nx;
+        (*dimsizes_lon)[0] = ny;
+        (*dimsizes_lon)[1] = nx;
+	*lat = (float*)NclMalloc(sizeof(float)*nx*ny);
+	*lon = (float*)NclMalloc(sizeof(float)*nx*ny);
+	north= ((unsigned char)0200 & (unsigned char)gds[26])?0:1;
+	idir = ((unsigned char)0200 & (unsigned char)gds[27])?-1:1;
+	jdir = ((unsigned char)0100 & (unsigned char)gds[27])?1:-1;
+
+	if(north) {
+		if(mapid == -1) {
+			rlist = NhlRLCreate(NhlSETRL);
+			NhlRLClear(rlist);
+			NhlCreate(&vpid,"Map0",NhldummyWorkstationClass,NULL,rlist);
+			NhlRLClear(rlist);
+			NhlRLSetFloat(rlist,NhlNvpXF,0.01);
+			NhlRLSetFloat(rlist,NhlNvpYF,0.99);
+			NhlRLSetFloat(rlist,NhlNvpWidthF,0.98);
+			NhlRLSetFloat(rlist,NhlNvpHeightF,0.98);
+			NhlRLSetString(rlist,NhlNmpProjection,"STEREOGRAPHIC");
+			NhlRLSetFloat(rlist,NhlNmpCenterLatF,90.0);
+			NhlRLSetFloat(rlist,NhlNmpCenterLonF,lov);
+			NhlCreate(&mapid,"Map0",NhlmapPlotClass,vpid,rlist);
+		} else {
+			NhlRLClear(rlist);
+			NhlRLSetFloat(rlist,NhlNmpCenterLatF,90.0);
+			NhlRLSetFloat(rlist,NhlNmpCenterLonF,lov);
+			NhlSetValues(mapid,rlist);
+		}
+/*
+* Northern case
+*/
+		latin0 = 60.0;
+		C = 2 * pi * EAR * cos(degtorad * 60)*1000.0;
+
+		d_per_km = 360.0/C;
+		dlon = dx * d_per_km;
+/*
+* latin1 is always closest to pole
+*/
+		tlon = lov + dlon;
+
+		NhlDataToNDC(mapid,&lov,&latin0,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		NhlDataToNDC(mapid,&tlon,&latin0,1,&nx1,&ny1,NULL,NULL,&status,&orv);
+		deltax = fabs(nx0 - nx1);
+		deltay = dy/dx * deltax;
+		NhlDataToNDC(mapid,&lo1,&la1,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		for(j = 0; j < ny; j++) {
+			for(i = 0; i < nx; i++) {
+				(*lon)[j * nx + i] = nx0 + idir * i * deltax;
+				(*lat)[j * nx + i] = ny0 + jdir * j * deltay;
+			}
+		}
+		NhlNDCToData(mapid,*lon,*lat,nx*ny,*lon,*lat,NULL,NULL,&status,&orv);
+	} else {
+		if(mapid == -1) {
+			rlist = NhlRLCreate(NhlSETRL);
+			NhlRLClear(rlist);
+			NhlCreate(&vpid,"Map0",NhldummyWorkstationClass,NULL,rlist);
+			NhlRLClear(rlist);
+			NhlRLSetFloat(rlist,NhlNvpXF,0.01);
+			NhlRLSetFloat(rlist,NhlNvpYF,0.99);
+			NhlRLSetFloat(rlist,NhlNvpWidthF,0.98);
+			NhlRLSetFloat(rlist,NhlNvpHeightF,0.98);
+			NhlRLSetString(rlist,NhlNmpProjection,"STEREOGRAPHIC");
+			NhlRLSetFloat(rlist,NhlNmpCenterLatF,-90.0);
+			NhlRLSetFloat(rlist,NhlNmpCenterLonF,lov);
+			NhlCreate(&mapid,"Map0",NhlmapPlotClass,vpid,rlist);
+		} else {
+			NhlRLClear(rlist);
+			NhlRLSetFloat(rlist,NhlNmpCenterLatF,-90.0);
+			NhlRLSetFloat(rlist,NhlNmpCenterLonF,lov);
+			NhlSetValues(mapid,rlist);
+		}
+/*
+* Southern case
+*/
+		latin0 = -60.0;
+		C = 2 * pi * EAR * cos(degtorad * -60)*1000.0;
+		d_per_km = 360.0/C;
+		dlon = dx * d_per_km;
+
+/*
+* latin1 is always closest to pole
+*/
+		tlon = dlon + lov;
+		NhlDataToNDC(mapid,&tlon,&latin0,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		NhlDataToNDC(mapid,&lov,&latin0,1,&nx1,&ny1,NULL,NULL,&status,&orv);
+		deltax = fabs(nx0 - nx1);
+		deltay = dy/dx * deltax;
+		NhlDataToNDC(mapid,&lo1,&la1,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		for(j = 0; j < ny; j++) {
+			for(i = 0; i < nx; i++) {
+				(*lon)[j * nx + i] = nx0 + idir * i * deltax;
+				(*lat)[j * nx + i] = ny0 + jdir * j * deltay;
+			}
+		}
+		NhlNDCToData(mapid,*lon,*lat,nx*ny,*lon,*lat,NULL,NULL,&status,&orv);
+	}
+	
 }
 void GdsOLGrid
 #if NhlNeedProto
@@ -3681,9 +3832,9 @@ GridInfoRecord grid_gds[] = {
 		GenericUnPack,GdsCEGrid,NULL,"Cylindrical Equidistant Projection Grid", /*0*/
 /**/		GenericUnPack,GdsMEGrid,NULL,"Mercator Projection Grid", /*1*/
 /**/		GenericUnPack,GdsGNGrid,NULL,"Gnomonic Projection Grid", /*2*/
-/**/		GenericUnPack,GdsLEGrid,NULL,"Lambert Conformal Secant or Tangent, Conical or bipolar", /*3*/
+		GenericUnPack,GdsLEGrid,NULL,"Lambert Conformal Secant or Tangent, Conical or bipolar", /*3*/
 		GenericUnPack,GdsGAGrid,NULL,"Gaussian Latitude/Longitude Grid", /*4*/
-/**/		GenericUnPack,GdsSTGrid,NULL,"Polar Stereographic Projection Grid", /*5*/
+		GenericUnPack,GdsSTGrid,NULL,"Polar Stereographic Projection Grid", /*5*/
 /**/		GenericUnPack,GdsOLGrid,NULL,"Oblique Lambert conformal, secant or tangent, conical or bipolar, projection", /*13*/
 		NULL,NULL,NULL,"Spherical Harmonic Coefficients", /*50*/
 		NULL,NULL,NULL,"Space View perspecitve or orthographic grid", /*90*/
