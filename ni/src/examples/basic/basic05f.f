@@ -1,5 +1,5 @@
 C
-C $Id: basic05f.f,v 1.9 1995-06-22 21:07:29 haley Exp $
+C $Id: basic05f.f,v 1.10 1997-09-29 20:32:42 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -116,8 +116,8 @@ C Assign the labels
       call NhlFRLSetStringArray(rlist,'lbLabelStrings',
      1      colorindices,232,ierr)
 
-C Label every other entry 
-      call NhlFRLSetInteger(rlist,'lbLabelStride',2,ierr)
+C Label every 5th entry 
+      call NhlFRLSetInteger(rlist,'lbLabelStride',5,ierr)
 
 C Single pattern used for fill
       call NhlFRLSetString(rlist,'lbMonoFillPattern','True',ierr)
@@ -297,7 +297,7 @@ C Label every 10th entry
       call NhlFRLSetInteger(rlist,'lbLabelStride',10,ierr)
 
 C Number of entries to display
-      call NhlFRLSetInteger(rlist,'lbBoxCount',171,ierr)
+      call NhlFRLSetInteger(rlist,'lbBoxCount',112,ierr)
 
       call NhlFSetValues(lbar,rlist,ierr)
 

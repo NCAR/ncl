@@ -28,6 +28,7 @@ C
 
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFXWorkstationClass
       external NhlFXyPlotClass
       external NhlFCoordArraysClass
@@ -37,7 +38,7 @@ C
       integer appid,rlist
       integer xwork_id,text_id,box_id,data_id
       integer dataspec
-      integer NCGM
+      integer NCGM, X11, PS
       integer i,ierr
 
       character*5 text
@@ -63,6 +64,8 @@ C
 C Set the display. Default is to display output to an X workstation.
 C
       NCGM=0
+      X11=1
+      PS=0
 C
 C Initialize the high level utility library and create application.
 C
@@ -79,12 +82,12 @@ C Create a meta file workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkMetaName',
-     1         './basic06c.ncgm',ierr)
+     1         './basic06f.ncgm',ierr)
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',
      1         cmap,2,dims,ierr)
          call NhlFCreate(xwork_id,'simple',
      1         NhlFncgmWorkstationClass,0,rlist,ierr)
-      else
+      else if (X11.eq.1) then
 C
 C Create an X workstation.
 C
@@ -94,6 +97,18 @@ C
      1         cmap,2,dims,ierr)
          call NhlFCreate(xwork_id,'simple',NhlFxWorkstationClass,
      1         0,rlist,ierr)
+      else if (PS.eq.1) then
+C
+C Create a PS object.
+C
+        call NhlFRLClear(rlist)
+
+        call NhlFRLSetstring(rlist,'wkPSFileName','./basic06f.ps',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',
+     1         cmap,2,dims,ierr)
+
+        call NhlFCreate(xwork_id,'simple',
+     1        NhlFPSWorkstationClass,0,rlist,ierr)
       endif
 C
 C Create data object for an XyPlot
