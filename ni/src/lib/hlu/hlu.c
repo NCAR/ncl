@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.34 1996-09-14 17:07:55 boote Exp $
+ *      $Id: hlu.c,v 1.35 1996-11-24 22:25:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -716,6 +716,29 @@ NhlSetSArg
 	va_end(ap);
 }
 
+int
+_NhlCompareArg
+#if	NhlNeedProto
+(
+	Const void	*ov,
+	Const void	*tv
+)
+#else
+(ov,tv)
+	Const void	*ov;
+	Const void	*tv;
+#endif
+{
+	_NhlArg	*one = (_NhlArg*)ov;
+	_NhlArg	*two = (_NhlArg*)tv;
+
+	if(one->quark < two->quark)
+		return -1;
+	else if(one->quark > two->quark)
+		return 1;
+	return 0;
+}
+
 /*
  * Function:	_NhlSArgToSetArgList
  *
@@ -752,6 +775,8 @@ _NhlSArgToSetArgList
 		args[i].value = sargs[i].value;
 		args[i].type = NrmNULLQUARK;
 	}
+
+	qsort(args,nargs,sizeof(_NhlArg),_NhlCompareArg);
 
 	return;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: NresDB.c,v 1.8 1996-10-16 16:18:35 boote Exp $
+ *      $Id: NresDB.c,v 1.9 1996-11-24 22:25:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2638,14 +2638,10 @@ NrmQinQList
 	NrmQuark	q;	/* quark to search for in list		*/
 #endif
 {
-	NrmQuark	tquark;
-	int		i=0;
-
-	tquark = qlist[i++];
-
-	while(tquark != NrmNULLQUARK){
-		if(tquark == q) return True;
-		else tquark = qlist[i++];
+	while(*qlist != NrmNULLQUARK){
+		if(*qlist == q) return True;
+		if(*qlist > q) return False;
+		qlist++;
 	}
 
 	return False;

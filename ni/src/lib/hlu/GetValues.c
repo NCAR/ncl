@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.18 1995-12-19 20:39:07 boote Exp $
+ *      $Id: GetValues.c,v 1.19 1996-11-24 22:25:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -84,30 +84,35 @@ _NhlGetValues
 	/* Mark each arg as not found */
 	memset((char*)argfound,0,(nargs * sizeof(NhlBoolean)));
 
-	for(i=0; i < nargs; i++){
-		for(j=0; j < num_res; j++){
-			if(args[i].quark == resources[j].nrm_name){
-				if(resources[j].res_info & _NhlRES_NOGACCESS){
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
+	for(i=0,j=0; i < nargs; i++){
+		while(j < num_res){
+			if(args[i].quark > resources[j].nrm_name){
+				j++;
+				continue;
+			}
+			if(args[i].quark < resources[j].nrm_name)
+				break;
+
+			if(resources[j].res_info & _NhlRES_NOGACCESS){
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					"%s:%s does not have \"G\" access",
 					func,NrmQuarkToString(args[i].quark));
 					args[i].quark = NrmNULLQUARK;
-				}
-				else{
-					if(args[i].type != NrmNULLQUARK){
+			}
+			else{
+				if(args[i].type != NrmNULLQUARK){
 					*args[i].type_ret=resources[j].nrm_type;
 					*args[i].size_ret=resources[j].nrm_size;
 					*args[i].free_func =
 							resources[j].free_func;
-					}
-					_NhlCopyToArg((NhlPointer)
+				}
+				_NhlCopyToArg((NhlPointer)
 					(base + resources[j].nrm_offset),
 					&args[i].value,
 					resources[j].nrm_size);
-				}
-				argfound[i] = True;
-				break;
 			}
+			argfound[i] = True;
+			break;
 		}
 		if(!argfound[i]){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -689,6 +694,8 @@ NhlVAGetValues
 	}
 	va_end(ap); 
 
+	qsort(args,i,sizeof(_NhlArg),_NhlCompareArg);
+
 	return _NhlGetLayerValues(l,args,i);
 }
 
@@ -749,6 +756,7 @@ NhlALGetValues
 		args[i].type = NrmNULLQUARK;
 	}
 
+	qsort(args,i,sizeof(_NhlArg),_NhlCompareArg);
 
 	return _NhlGetLayerValues(l,args,nargs);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.33 1996-09-14 17:07:58 boote Exp $
+ *      $Id: hluP.h,v 1.34 1996-11-24 22:25:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -267,6 +267,13 @@ extern NhlErrorTypes _NhlValidatedGenArrayCopy(
 extern FILE *_NhlTmpFile(
 #if	NhlNeedProto
 	void
+#endif
+);
+
+extern int _NhlCompareArg(
+#if	NhlNeedProto
+	Const void	*ov,
+	Const void	*tv
 #endif
 );
 

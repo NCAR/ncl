@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.21 1995-12-19 20:39:26 boote Exp $
+ *      $Id: SetValues.c,v 1.22 1996-11-24 22:25:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -193,53 +193,57 @@ _NhlSetValues
 	/* Mark each arg as not found */ 
 	memset((char*)argfound,0,(nargs * sizeof(NhlBoolean))); 
 		 
-	for(i=0; i < nargs; i++){
-		for(j=0; j < num_res; j++){
-			if(args[i].quark == resources[j].nrm_name) {
-				if(resources[j].res_info & _NhlRES_NOSACCESS){
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
+	for(i=0,j=0; i < nargs; i++){
+		while(j < num_res){
+			if(args[i].quark > resources[j].nrm_name){
+				j++;
+				continue;
+			}
+			if(args[i].quark < resources[j].nrm_name)
+				break;
+
+			if(resources[j].res_info & _NhlRES_NOSACCESS){
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					"%s:%s does not have \"S\" access",
 					func,NrmQuarkToString(args[i].quark));
 					args[i].quark = NrmNULLQUARK;
-				}
-				else if(args[i].type == NrmNULLQUARK){
-					_NhlCopyFromArg(args[i].value,
+			}
+			else if(args[i].type == NrmNULLQUARK){
+				_NhlCopyFromArg(args[i].value,
 					(char*)(base + resources[j].nrm_offset),
 					resources[j].nrm_type,
 					resources[j].nrm_size);
-				}
-				else if(args[i].type==resources[j].nrm_type){
-					_NhlCopyFromArgVal(args[i].value,
+			}
+			else if(args[i].type==resources[j].nrm_type){
+				_NhlCopyFromArgVal(args[i].value,
 					(char*)(base + resources[j].nrm_offset),
 					resources[j].nrm_size);
-				}
-				else{
-					/* 
-					 * call converter
-					 */
-					NrmValue	from, to;
+			}
+			else{
+				/* 
+				 * call converter
+				 */
+				NrmValue	from, to;
 
-					from.size = args[i].size;
-					from.data = args[i].value;
-					to.size = resources[j].nrm_size;
-					to.data.ptrval = ((char*)base +
+				from.size = args[i].size;
+				from.data = args[i].value;
+				to.size = resources[j].nrm_size;
+				to.data.ptrval = ((char*)base +
 						resources[j].nrm_offset);
 
-					if(NhlNOERROR!=_NhlConvertData(context,
+				if(NhlNOERROR!=_NhlConvertData(context,
 							args[i].type,
 							resources[j].nrm_type,
 							&from, &to)){
 					
-						NhlPError(NhlWARNING,
-							NhlEUNKNOWN,
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"Error retrieving resource %s from args - Ignoring Arg",
 					NrmNameToString(resources[j].nrm_name));
-						ret = MIN(NhlWARNING,ret);
-					}
+					ret = MIN(NhlWARNING,ret);
 				}
-				argfound[i] = True;
-				break;
-			}	
+			}
+			argfound[i] = True;
+			break;
 		}
 
 		if(!argfound[i]){

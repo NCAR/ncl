@@ -1,5 +1,5 @@
 /*
- *      $Id: VarArg.c,v 1.6 1995-03-20 09:51:35 boote Exp $
+ *      $Id: VarArg.c,v 1.7 1996-11-24 22:25:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -75,6 +75,8 @@ _NhlVarToSetArgList
 		args[i].type = NrmNULLQUARK;
 		i++;
 	}
+
+	qsort(args,i,sizeof(_NhlArg),_NhlCompareArg);
 
 	return i;
 }

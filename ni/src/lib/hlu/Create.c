@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.22 1996-03-16 21:37:44 boote Exp $
+ *      $Id: Create.c,v 1.23 1996-11-24 22:25:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -862,6 +862,29 @@ NhlALCreate
 	return _NhlCreate(pid, name, lc, parentid, args, nargs, NULL);
 }
 
+static int
+qcompare
+#if	NhlNeedProto
+(
+	Const void	*ov,
+	Const void	*tv
+)
+#else
+(ov,tv)
+	Const void	*ov;
+	Const void	*tv;
+#endif
+{
+	NrmQuark	*one = (NrmQuark*)ov;
+	NrmQuark	*two = (NrmQuark*)tv;
+
+	if(*one < *two)
+		return -1;
+	if(*one > *two)
+		return 1;
+	return 0;
+}
+
 /*
  * Function:	InitAllResources
  *
@@ -896,8 +919,9 @@ InitAllResources
 #endif
 {
 	NrmQuark		list[_NhlMAXRESLIST+1];
+	NrmQuark		tlist[_NhlMAXRESLIST+1];
 	NrmQuark		tquark;
-	int			i;
+	int			i,j,k=0;
 	NrmResourceList		parentlist =
 				(NrmResourceList)lc->base_class.resources;
 	int			num_all_res = 0;
@@ -914,16 +938,28 @@ InitAllResources
 	memset((char*)list,0,sizeof(list));
 
 	/*
-	 * If the class uses children add there resources to the list
+	 * If the class uses children add their resources to the list
 	 * but only add each resource to the list once even if it occurs
 	 * in more then one child.
 	 */
 	while(tnode != NULL){
 
-		i = 0;
-		while((tquark = tnode->resources[i++]) != NrmNULLQUARK)
-			if(!NrmQinQList(list,tquark))
-				list[num_all_res++] = tquark;
+		memcpy((char*)tlist,list,sizeof(NrmQuark)*k);
+		i=0;j=0;k=0;
+		while((tlist[i] != NrmNULLQUARK) &&
+					(tnode->resources[j] != NrmNULLQUARK)){
+			if(tnode->resources[j] < tlist[i])
+				list[k++] = tnode->resources[j++];
+			else if(tnode->resources[j] > tlist[i])
+				list[k++] = tlist[i++];
+			else
+				j++;
+		}
+		while(tlist[i] != NrmNULLQUARK)
+			list[k++] = tlist[i++];
+		while(tlist[j] != NrmNULLQUARK)
+			list[k++] = tnode->resources[j++];
+
 		tnode = tnode->next;
 	}
 
@@ -933,15 +969,26 @@ InitAllResources
 	 * have any of the resources that the parent has.
 	 */
 
-	for(i= 0;i < lc->base_class.num_resources;i++)
-		list[i + num_all_res] = parentlist[i].nrm_name;
+	memcpy((char*)tlist,list,sizeof(NrmQuark)*k);
+	i=0;j=0;k=0;
+	while((i < lc->base_class.num_resources) && (tlist[j] != NrmNULLQUARK)){
+		if(parentlist[i].nrm_name < tlist[j])
+			list[k++] = parentlist[i++].nrm_name;
+		else
+			list[k++] = tlist[j++];
+	}
+	while(tlist[j] != NrmNULLQUARK)
+		list[k++] = tlist[j++];
+	while(i < lc->base_class.num_resources)
+		list[k++] = parentlist[i++].nrm_name;
 
-	num_all_res += lc->base_class.num_resources;
+	num_all_res = k;
 
 	lc->base_class.all_resources = (NrmQuarkList)NhlMalloc((unsigned)
 					((num_all_res + 1) * sizeof(NrmQuark)));
 	if(lc->base_class.all_resources == NULL){
-		NHLPERROR((NhlFATAL,12,"Unable to initialize all_resources of %s",
+		NHLPERROR((NhlFATAL,ENOMEM,
+			"Unable to initialize all_resources of %s",
 							_NhlClassName(lc)));
 		return NhlFATAL;
 	}
@@ -1064,6 +1111,8 @@ _NhlRegisterChildClass
 				name = (NhlString)(va_arg(ap, NhlString)))
 		varqlist[i++] = NrmStringToName(name);
 	va_end(ap);
+
+	qsort(varqlist,i,sizeof(NrmQuark),qcompare);
 
 	/*
 	 * Fill resources list with the resources that should be forwarded

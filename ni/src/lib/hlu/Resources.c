@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.29 1996-09-14 17:07:09 boote Exp $
+ *      $Id: Resources.c,v 1.30 1996-11-24 22:25:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -356,58 +356,63 @@ _NhlGetResources
 
 	/* Set resources specified via args */
 
-	for (i=0; i < num_args; i++){
-		for(j=0; j < num_res; j++) {
-			if(args[i].quark == resources[j].nrm_name) {
-				if(resources[j].res_info & _NhlRES_NOCACCESS){
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
+	for (i=0,j=0; i < num_args; i++){
+		while(j < num_res) {
+			if(args[i].quark > resources[j].nrm_name){
+				j++;
+				continue;
+			}
+
+			if(args[i].quark < resources[j].nrm_name)
+				break;
+
+			if(resources[j].res_info & _NhlRES_NOCACCESS){
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					"%s:%s does not have \"C\" access",
 					func,NrmQuarkToString(args[i].quark));
 					args[i].quark = NrmNULLQUARK;
-				}
-				else if(args[i].type == NrmNULLQUARK){
-					_NhlCopyFromArg(args[i].value,
+			}
+			else if(args[i].type == NrmNULLQUARK){
+				_NhlCopyFromArg(args[i].value,
 					(char*)(base + resources[j].nrm_offset),
 					resources[j].nrm_type,
 					resources[j].nrm_size);
 					resfound[j] = True;
-				}
-				else if(args[i].type==resources[j].nrm_type){
-					_NhlCopyFromArgVal(args[i].value,
+			}
+			else if(args[i].type==resources[j].nrm_type){
+				_NhlCopyFromArgVal(args[i].value,
 					(char*)(base + resources[j].nrm_offset),
 					resources[j].nrm_size);
 					resfound[j] = True;
-				}
-				else{
-					/* 
-					 * call converter
-					 */
-					NrmValue	from, to;
+			}
+			else{
+				/* 
+				 * call converter
+				 */
+				NrmValue	from, to;
 
-					from.size = args[i].size;
-					from.data = args[i].value;
-					to.size = resources[j].nrm_size;
-					to.data.ptrval =(NhlPointer)(base +
+				from.size = args[i].size;
+				from.data = args[i].value;
+				to.size = resources[j].nrm_size;
+				to.data.ptrval =(NhlPointer)(base +
 						resources[j].nrm_offset);
 
-					lret = _NhlConvertData(context,
-							args[i].type,
-							resources[j].nrm_type,
-							&from, &to);
+				lret = _NhlConvertData(context,args[i].type,
+						resources[j].nrm_type,
+						&from, &to);
 					
-					if(lret!=NhlNOERROR){
-						NhlPError(NhlWARNING,NhlEUNKNOWN,
+				if(lret!=NhlNOERROR){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"Error retrieving resource %s from args - Ignoring Arg",
 					NrmNameToString(resources[i].nrm_name));
 						ret = MIN(NhlWARNING,ret);
-					}
-					else{
-						resfound[j] = True;
-					}
 				}
-				argfound[i] = True;
-				break;
+				else{
+					resfound[j] = True;
+				}
 			}
+			argfound[i] = True;
+			break;
 		}
 		if(!argfound[i]){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -841,8 +846,32 @@ _NhlCompileResourceList
 		nrmres->nrm_default_type= PSToQ(resources->default_type);
 	}
 #undef PSToQ
+
 	return;
 } /* _NhlCompileResourceList */
+
+static int
+CompareRes
+#if	NhlNeedProto
+(
+	Const void	*ov,
+	Const void	*tv
+)
+#else
+(ov,tv)
+	Const void	*ov;
+	Const void	*tv;
+#endif
+{
+	NrmResource	*one = (NrmResource*)ov;
+	NrmResource	*two = (NrmResource*)tv;
+
+	if(one->nrm_name < two->nrm_name)
+		return -1;
+	if(one->nrm_name > two->nrm_name)
+		return 1;
+	return 0;
+}
 
 /*
  * Function:	_NhlGroupResources
@@ -882,8 +911,11 @@ _NhlGroupResources
 	 * If superclass has no resources then the classes resource list
 	 * is already complete.
 	 */
-	if((sc == NULL) || (sc->base_class.num_resources < 1))
-		return;
+	if((sc == NULL) || (sc->base_class.num_resources < 1)){
+		num_rlist = lc->base_class.num_resources;
+		rlist = (NrmResourceList)lc->base_class.resources;
+		goto SORT;
+	}
 
 	/*
 	 * If class doesn't have any resources then point to the
@@ -947,6 +979,12 @@ _NhlGroupResources
 		if(!override)
 			rlist[next++] = classlist[i];
 	}
+
+SORT:
+	/*
+	 * Sort the resource list.
+	 */
+	qsort(rlist,num_rlist,sizeof(NrmResource),CompareRes);
 
 	lc->base_class.resources = (NhlResourceList)rlist;
 	lc->base_class.num_resources = num_rlist;
@@ -1039,46 +1077,42 @@ _NhlMergeArgLists
 #endif
 {
 	NhlBoolean	argfound;
-	int		i,j;
+	int		i,j,k;
+	int		total_args;
 
 	/*
 	 * Initialize num_ret_args
 	 */
 	*num_ret_args = 0;
 
+	total_args = num_oargs + num_args;
 	/*
 	 * take care of simplest case
 	 */
-	if((num_oargs + num_args) == 0)
+	if(total_args == 0)
 		return;
 
 	/*
 	 * Add args from args list only if that argname doesn't exist in
 	 * the override arg list
 	 */
-	for(i=0;i < num_args;i++){
-		argfound = False;
+	i=0;j=0;k=0;
+	while(i < num_args && j < num_oargs){
 
-		for(j=0;j < num_oargs; j++){
-			if(args[i].quark == oargs[j].quark){
-				argfound = True;
-				break;
-			}
-		}
+		if(args[i].quark < oargs[j].quark)
+			ret_args[k++] = args[i++];
+		else if(args[i].quark > oargs[j].quark)
+			ret_args[k++] = oargs[j++];
+		else
+			i++;
 
-		if(!argfound){
-			ret_args[*num_ret_args] = args[i];
-			(*num_ret_args)++;
-		}
 	}
+	while(i < num_args)
+		ret_args[k++] = args[i++];
+	while(j < num_oargs)
+		ret_args[k++] = oargs[j++];
 
-	/*
-	 * Add all the oargs to the ret list
-	 */
-	for(i=0;i < num_oargs;i++){
-		ret_args[*num_ret_args] = oargs[i];
-		(*num_ret_args)++;
-	}
+	*num_ret_args = k;
 }
 
 /*
@@ -1112,11 +1146,15 @@ _NhlResInClass
 {
 	int		i;
 	NrmResourceList	nrmres = (NrmResourceList)lc->base_class.resources;
+	NrmResource	key;
 
-	for(i=0;i < lc->base_class.num_resources;i++)
-		if(nrmres[i].nrm_name == res) return True;
+	key.nrm_name = res;
 
-	return False;
+	nrmres = bsearch(&key,(NrmResourceList)lc->base_class.resources,
+			lc->base_class.num_resources,sizeof(NrmResource),
+			CompareRes);
+
+	return (nrmres != NULL);
 }
 
 /*
