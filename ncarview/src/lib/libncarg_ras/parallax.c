@@ -1,5 +1,5 @@
 /*
- *	$Id: parallax.c,v 1.4 1991-10-11 10:08:27 clyne Exp $
+ *	$Id: parallax.c,v 1.5 1991-11-15 16:46:20 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -148,7 +148,7 @@ ParallaxOpenWrite(name, nx, ny, comment, encoding)
 
 	ras = RasterCreate(nx, ny, encoding);
 
-	ras->name = (char *) calloc((unsigned) (strlen(name) + 1), 1);
+	ras->name = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
 	(void) strcpy(ras->name, FormatName);
 
 	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
@@ -273,7 +273,7 @@ ParallaxWrite(ras)
 			else if (ras->type == RAS_DIRECT) {
 			  parallax->fb.line[dy].pixel[dx].lwd =
 				DIRECT_RED(ras, sx, sy) | 
-				DIRECT_GREEN(ras, sx, sy) <<8 | 
+				DIRECT_GREEN(ras, sx, sy) << 8 | 
 				DIRECT_BLUE(ras, sx, sy) << 16;
 			}
 		}
@@ -467,7 +467,6 @@ ParallaxInit()
 
 ParallaxPrintStatus()
 {
-	static int	arg;
 	static int	format;
 	static int	out;
 	static int	compout;
