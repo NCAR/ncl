@@ -50,6 +50,7 @@ extern FILE* recfp;
 extern FILE* yyin;
 
 int loading = 0;
+int preloading = 0;
 int top_level_line;
 char *cur_load_file = NULL;
 

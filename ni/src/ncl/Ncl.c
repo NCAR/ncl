@@ -15,7 +15,14 @@ extern "C" {
 #include <ncarg/hlu/ConvertP.h>
 #include <ncarg/hlu/Error.h>
 #include <ncarg/hlu/App.h>
-#include <netcdf.h>
+#include "netcdf-3.3.1/src/libsrc/netcdf.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <dlfcn.h>
+
+
+
 
 FILE *thefptr;
 FILE *theoptr;
@@ -60,10 +67,28 @@ int opt
 #endif
 );
 
+extern NhlErrorTypes _NclPreLoadScript(
+#if     NhlNeedProto
+char * path
+#endif
+);
+
+
 main() {
 
 	int errid = -1;
 	int appid;
+	int k;
+	int reset = 1;
+	DIR *d;
+	struct dirent *ent;
+	void *so_handle;
+	char buffer[4*NCL_MAX_STRING];
+	void (*init_function)(void);
+	char *libpath;
+	char *scriptpath;
+	char *pt;
+
 #ifdef YYDEBUG
 	extern int yydebug;
 	yydebug = 1;
@@ -74,8 +99,10 @@ main() {
 
 	error_fp = stderr;
 	stdout_fp = stdout;
-
 /*
+         k = (mode_t)umask(22);
+	fprintf(stdout,"%d\n",k);
+
 	stdout_fp = fopen("/dev/null","w");
 */
 
@@ -106,6 +133,34 @@ main() {
 
 	_NhlRegSymConv(NULL,NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
 /*
+* Now handle default directories
+*/
+	if((libpath = getenv("NCL_DEF_LIB_DIR"))!=NULL) {
+		d = opendir(_NGResolvePath(libpath));
+		if(d != NULL) {
+			while((ent = readdir(d)) != NULL) {
+				if(*ent->d_name != '.') {
+					sprintf(buffer,"%s/%s",_NGResolvePath(libpath),ent->d_name);
+					so_handle = dlopen(buffer,RTLD_NOW);
+					if(so_handle != NULL) {
+						init_function = dlsym(so_handle, "Init");
+						if(init_function != NULL) {
+							(*init_function)();
+						} else {
+							dlclose(so_handle);
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not find Init() in external file %s, file not loaded",buffer);
+						}
+					} else {
+						NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s), possibly not a shared object",buffer);
+					}
+				}
+			}
+		} else {
+			closedir(d);
+			NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s), no libraries loaded",libpath);
+		}
+	}
+/*
 	if(cmd_line)	
 		fprintf(stdout_fp,"ncl %d> ",0);
 */
@@ -117,13 +172,45 @@ main() {
 	} else {
 		InitializeReadLine(0);
 	}
+	if((scriptpath = getenv("NCL_DEF_SCRIPTS_DIR"))!=NULL) {
+		d = opendir(_NGResolvePath(scriptpath));
+		if(d!= NULL) {
+			while((ent = readdir(d)) != NULL) {
+				if(*ent->d_name != '.') {
+					sprintf(buffer,"%s/%s",_NGResolvePath(scriptpath),ent->d_name);
+					pt = strrchr(buffer,'.');
+					if(pt != NULL) {
+						pt++;
+						if(strncmp(pt,"ncl",3)==0) {
+							if(_NclPreLoadScript(buffer) == NhlFATAL) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Error loading default script");
+							} else {
+								yyparse(reset);
+/*
+								if(reset)
+									reset = 0;
+*/
+							}
+						} else {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Scripts must have the \".ncl\" file extension");
+						}
+					} else {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Scripts must have the \".ncl\" file extension");
+					}
+				}
+			}
+		} else {
+			closedir(d);
+                        NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s), no scripts loaded",scriptpath);
+		}
 
+	}
 /*
 #if     defined(SunOS) && (MAJOR == 4)
 	nclparse(1);
 #else
 */
-	yyparse(1);
+	yyparse(reset);
 /*
 #endif
 */

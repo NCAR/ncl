@@ -26,6 +26,7 @@ int last_line_length = 0;
 int ok_to_start_vsblk = 0;
 int cur_line_maxsize = 0;
 extern int loading;
+extern int preloading;
 #include <ctype.h>
 char *the_input_buffer = NULL;
 char *the_input_buffer_ptr = NULL;
@@ -106,17 +107,18 @@ void _NclResetScanner
 ()
 #endif
 {
+	preloading = 0;
 	if ( --loading < 0 ) {
 		loading = 0;
 		return;
 	} else {
-/*
+		yy_flush_buffer(YY_CURRENT_BUFFER );
 		yy_delete_buffer( YY_CURRENT_BUFFER );
-*/
-		yy_switch_to_buffer(include_stack[loading] );
-/*
-		yy_flush_buffer(include_stack[loading]);
-*/
+
+		yy_set_bol(1);
+		if(include_stack[loading] != NULL)  {
+			yy_switch_to_buffer(include_stack[loading] );
+		}
 		SetLine(line_numbers[loading]);
 		cur_load_file = file_names[loading];
 		if(yyin != NULL) {
@@ -132,6 +134,53 @@ void _NclResetScanner
 		} else {
 			cmd_line = 0;
 		}
+	}
+}
+NhlErrorTypes _NclPreLoadScript
+#if	NhlNeedProto
+(char *path)
+#else
+(char)
+char *path;
+#endif
+{
+	static int first = 1;
+	char *tmp = path;
+	FILE *tmpfile = NULL;
+
+
+	preloading = 1;	
+
+	if((first)&&!(YY_CURRENT_BUFFER)) {
+		yyin = stdin;
+		yy_switch_to_buffer(yy_create_buffer( yyin,  YY_BUF_SIZE ) );
+		first = 0;	
+	} else {
+		first = 0;	
+	}
+
+	if ( loading >= MAX_INCLUDE_DEPTH )
+	{
+		fprintf( stderr, "Includes nested too deeply" );
+		exit( 1 );
+	}
+	line_numbers[loading] = cur_line_number;
+	SetLine(0);
+	file_names[loading] = cur_load_file;
+	include_stack[loading++] = YY_CURRENT_BUFFER;
+	tmpfile = fopen( _NGResolvePath(tmp), "r" );
+	if(tmpfile != NULL) {
+		yyin = tmpfile;
+		yy_switch_to_buffer(yy_create_buffer( yyin, YY_BUF_SIZE ) );
+		cmd_line = isatty(fileno(yyin));
+		cur_load_file = NclMalloc((unsigned)strlen(tmp)+1);
+		strcpy(cur_load_file,tmp);
+		return(NhlNOERROR);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)\n",tmp);
+		_NclResetScanner();
+		SetLine(line_numbers[loading]);
+		return(NhlFATAL);
 	}
 }
 %}
@@ -199,16 +248,24 @@ digit	[0-9]
 	BEGIN 0;
 }
 <<EOF>> {
-	if ( --loading < 0 ) {
+	inc_line = 1;
+	yyterminate();
+/*	if ( --loading < 0 ) {
 		loading = 0;
+		fprintf(stdout,"yyterminate....\n");
+		yy_flush_buffer( YY_CURRENT_BUFFER );
+		yy_switch_to_buffer(yy_create_buffer( stdin , YY_BUF_SIZE) );
+		yy_set_interactive(1);
 		yyterminate();
 	} else {
+		yy_flush_buffer( YY_CURRENT_BUFFER );
 		yy_delete_buffer( YY_CURRENT_BUFFER );
 		yy_switch_to_buffer(include_stack[loading] );
 		SetLine(line_numbers[loading]);
 
 		cur_load_file = file_names[loading];
 	}
+*/
 }
 \;[^\n\\]*[\\][ \t]*[\n] {
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
@@ -570,7 +627,7 @@ digit	[0-9]
 	return(EOFF);
 }
 . {  
-	printtoken(yytext[0],(char*)NULL);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+	printtoken(yytext[0],(char*)NULL);
 	return(yytext[0]);
 }

@@ -6,6 +6,7 @@ extern "C" {
 #include "defs.h"
 #include <errno.h>
 extern int loading;
+extern int preloading;
 extern char *cur_load_file;
 extern int cur_line_number;
 extern int top_level_line;
@@ -19,13 +20,16 @@ void
 );
 int yywrap() 
 {
-#if NCLDEBUG
-	fprintf(stderr,"In yywrap\n");
+#if YYDEBUG
+	fprintf(stdout,"In yywrap %d,%d\n",loading,preloading);
 #endif
-	if(loading) {
+	if((loading)&&(!preloading)) {
 		_NclResetScanner();
 		return(0);
-	} 
+	}  else if(loading&&preloading){
+		_NclResetScanner();
+		return(1);
+	}
 	return(1);
 }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.46 1997-08-04 17:58:28 ethan Exp $
+ *      $Id: NclApi.c,v 1.47 1997-10-13 16:19:48 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -46,6 +46,8 @@ extern "C" {
 #include "NclFile.h"
 #include "NclFileVar.h"
 #include "HLUSupport.h"
+#include <dirent.h>
+#include <dlfcn.h>
 
 int force_reset = 0;
 int start_state = 0;
@@ -146,13 +148,23 @@ void NclResetServer
 	return;
 }
 
-int NclInitServer
+int NclInitServer 
 #if	NhlNeedProto
 (void)
 #else
 ()
 #endif
 {
+        DIR *d;
+        struct dirent *ent;
+        void *so_handle;
+        char buffer[4*NCL_MAX_STRING];
+        void (*init_function)(void);
+        char *libpath;
+        char *scriptpath;
+        char *pt;
+	int reset = 1;
+
 #ifdef YYDEBUG
 /*
 #if     defined(SunOS) && (MAJOR == 4)
@@ -181,6 +193,35 @@ int NclInitServer
 	_NclInitDataClasses();
 	_NhlRegSymConv(NULL,NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
 
+/*
+* Now handle default directories
+*/
+	if((libpath = getenv("NCL_DEF_LIB_DIR"))!=NULL) {
+		d = opendir(_NGResolvePath(libpath));
+		if(d != NULL) {
+			while((ent = readdir(d)) != NULL) {
+				if(*ent->d_name != '.') {
+					sprintf(buffer,"%s/%s",_NGResolvePath(libpath),ent->d_name);
+					so_handle = dlopen(buffer,RTLD_NOW);
+					if(so_handle != NULL) {
+						init_function = dlsym(so_handle, "Init");
+						if(init_function != NULL) {
+							(*init_function)();
+						} else {
+							dlclose(so_handle);
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not find Init() in external file %s, file not loaded",buffer);
+						}
+					} else {
+						NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s), possibly not a shared object",buffer);
+					}
+				}
+			}
+		} else {
+			closedir(d);
+			NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s), no libraries loaded",libpath);
+		}
+	}
+
 	_NclInitClass(nclHLUObjClass);
 	_NclInitClass(nclHLUVarClass);
 	_NclInitClass(nclVarClass);
@@ -192,6 +233,40 @@ int NclInitServer
 	the_input_buffer_size = strlen("begin\nend\n");
 	start_state = _NclParseString(the_input_buffer,1);
 	the_input_buffer = NULL;
+
+	if((scriptpath = getenv("NCL_DEF_SCRIPTS_DIR"))!=NULL) {
+		d = opendir(_NGResolvePath(scriptpath));
+		if(d!= NULL) {
+			while((ent = readdir(d)) != NULL) {
+				if(*ent->d_name != '.') {
+					sprintf(buffer,"%s/%s",_NGResolvePath(scriptpath),ent->d_name);
+					pt = strrchr(buffer,'.');
+					if(pt != NULL) {
+						pt++;
+						if(strncmp(pt,"ncl",3)==0) {
+							if(_NclPreLoadScript(buffer) == NhlFATAL) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Error loading default script");
+							} else {
+								yyparse(reset);
+/*
+								if(reset)
+									reset = 0;
+*/
+							}
+						} else {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Scripts must have the \".ncl\" file extension");
+						}
+					} else {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Scripts must have the \".ncl\" file extension");
+					}
+				}
+			}
+		} else {
+			closedir(d);
+                        NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s), no scripts loaded",scriptpath);
+		}
+
+	}
 
 	return(1);	
 }
