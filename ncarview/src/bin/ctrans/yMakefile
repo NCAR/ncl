@@ -1,4 +1,7 @@
 NCARG	= ../../../..
+#
+#	$Id: yMakefile,v 1.4 1992-02-13 18:14:55 clyne Exp $
+#
 
 LOCINCDIR	= ../../include
 
@@ -30,8 +33,8 @@ SUNLIBS		 = $(DSUNLIBS)
 #	local libraries
 #
 LOCLIB		= $(LIBDIR)/libctrans.o $(LIBDIR)/libcgm.a \
-		$(LIBDIR)/libncarv.a $(LIBDIR)/libncarg_ras.a \
-		$(LIBDIR)/libhdf.a
+		$(LIBDIR)/libncarg_ras.a  $(LIBDIR)/libhdf.a \
+		$(LIBDIR)/libncarv.a
 
 
 SRCS		=  main.c 
@@ -69,6 +72,15 @@ all:: $(MYNAME)
 CTarget($(MYNAME),$(OBJS),$(LIBS))
 MakefileTarget
 CleanTarget
+
+saber_src: $(SRCS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(SRCS) $(LIBS)
+
+saber_obj: $(OBJS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(OBJS) $(LIBS)
+
 
 lint: $(HDR) $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1

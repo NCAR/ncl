@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.12 1991-10-01 11:53:28 clyne Exp $
+ *	$Id: main.c,v 1.13 1992-02-13 18:14:53 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -68,6 +68,7 @@ static	struct	{
 	FloatType_ 	max_line_width;	/* maximun line width		*/
 	FloatType_ 	line_scale;	/* additional line scaling	*/
 	StringType_	pal;		/* optional color palette	*/
+	BoolType_       version;	/* print the verison number	*/
 	} commLineOpt;
 	
 
@@ -83,6 +84,7 @@ static	OptDescRec	set_options[] = {
 	{"lmax", OptSepArg, "-1"},	
 	{"lscale", OptSepArg, "-1"},	
 	{"pal", OptSepArg, NULL},	
+        {"Version", OptIsArg, "false"},
 	{NULL}
 	};
 
@@ -109,6 +111,8 @@ static	Option	get_options[] = {
 							sizeof (FloatType_ )},
 	{"pal", StringType, (unsigned long) &(commLineOpt.pal), 
 							sizeof(StringType_)},	
+        {"Version", BoolType, (unsigned long) &commLineOpt.version, 
+							sizeof (BoolType_ )},
 	{NULL}
 	};
 
@@ -140,7 +144,8 @@ char	**argv;
 	char	**meta_files = (char **) 
 			malloc ((unsigned) ((argc * sizeof(char *)) + 1));
 	int	i,j;
-	int	status;
+
+	extern	void	SetDefaultPalette();
 
 	/* put the program name in a global variable */
 
@@ -167,6 +172,11 @@ char	**argv;
 
 	batch = commLineOpt.movie != -1;
 	sleep_time = commLineOpt.movie;
+
+	if (commLineOpt.version) {
+		PrintVersion(program_name);
+		exit(0);
+	}
 
 	/*
 	 * set line scaling options
@@ -279,7 +289,7 @@ char	**argv;
 		 *	multible metafiles to reside in a single file. This 
 		 *	driver will only process the first.
 		 */
-		if ((status = init_metafile(NEXT, cgm_fd)) < 1) {
+		if (init_metafile(NEXT, cgm_fd) < 1) {
 			meta_files++;
 			continue;	/* skip to next metafile	*/
 		}
