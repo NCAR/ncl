@@ -1,5 +1,5 @@
 C
-C $Id: EzmapDemo.f,v 1.6 2001-09-12 17:37:46 kennison Exp $
+C $Id: EzmapDemo.f,v 1.7 2001-11-02 22:52:18 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,9 +25,12 @@ C
 C
 C Declarations required to do color fill.
 C
-        PARAMETER (LAMA=2000000,NCRA=100000,NGPS=10)
+        PARAMETER (LAMA=2000000,NCRA=100000,NGPS=10,LRWK=2*NCRA)
 C
         DIMENSION IAMA(LAMA),XCRA(NCRA),YCRA(NCRA),IAAI(NGPS),IAGI(NGPS)
+C
+        DIMENSION RWRK(LRWK)
+        EQUIVALENCE (RWRK(1),XCRA(1)),(RWRK(NCRA+1),YCRA(1))
 C
         EXTERNAL COLORA,DRAWLA,COLORB,DRAWLB
 C
@@ -160,12 +163,15 @@ C
 C Set the default value of the parameter saying at what level the new
 C RANGS/GSHHS database should be used.
 C
-        DATA IRGL / 0 /
+        DATA IRGL / 5 /
 C
 C Set the default value of the miscellaneous minor parameters.
 C
         DATA IPER,IELL,ILBL,IDOT,IDBD,GSPC,GSLA,GSLO,GLAT,GLON
      +     /    1,   0,   1,   0,  96,  5.,  0.,  0.,  0., 90. /
+C
+        DATA IINT,IRPF
+     +     /   50,   1 /
 C
 C Set a couple of counters that keep track of how many NCGM and
 C PostScript frames have been saved.
@@ -464,6 +470,8 @@ C
         CALL MPSETR ('GT',GSLA)
         CALL MPSETR ('GN',GSLO)
         CALL MPSETR ('GP',1000.*GLAT+GLON)
+        CALL MPSETI ('II',1000*IINT+IINT)
+        CALL MPSETI ('RP',IRPF)
         IF (PTYP.NE.'UT') THEN
           CALL MAPINT
         ELSE
@@ -478,6 +486,12 @@ C
         RVPT=RVPT-EPSI
         PRINT * , ' '
         PRINT * , 'U/V limits used: ', XWDL,XWDR,YWDB,YWDT
+        IF (ODNM.EQ.'RG'.AND.IRGL.GE.5) THEN
+          CALL MDRGDL (IRGL)
+          IRGL=IRGL+5
+          PRINT * , ' '
+          PRINT * , 'RANGS/GSHHS data level picked:',MOD(IRGL,5)
+        END IF
         IF (ISTY.EQ.0) THEN
           CALL MAPGRD
           CALL MAPLBL
@@ -486,7 +500,7 @@ C
             IF (ODNM.EQ.'E2') CALL MPLNDR ('Earth..2',ILVL)
             IF (ODNM.EQ.'E3') CALL MPLNDR ('Earth..3',ILVL)
           ELSE IF (ODNM.EQ.'RG') THEN
-            CALL MDRGOL (IRGL)
+            CALL MDRGOL (MOD(IRGL,5),RWRK,LRWK)
             IF (NERRO(NERR).NE.0) GO TO 901
           ELSE
             CALL MAPLOT
@@ -510,7 +524,7 @@ C
             IF (ODNM.EQ.'E3') CALL MPLNDR ('Earth..3',ILVL)
             CALL MAPGRM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,DRAWLB)
           ELSE IF (ODNM.EQ.'RG') THEN
-            CALL MDRGSF (IRGL)
+            CALL MDRGSF (MOD(IRGL,5),RWRK,LRWK,IAMA,LAMA)
             IF (NERRO(NERR).NE.0) GO TO 901
             CALL MAPGRD
             IF (NERRO(NERR).NE.0) GO TO 901
@@ -1967,7 +1981,7 @@ C
           END IF
 C
           PRINT * , ' '
-          PRINT * , 'Change name of outline dataset to use (Y or N)?'
+          PRINT * , 'Change outline dataset parameters (Y or N)?'
           READ  '(A1)', COMD
           IF (COMD.EQ.'Y'.OR.COMD.EQ.'y') THEN
             PRINT * , ' '
@@ -1999,16 +2013,76 @@ C
               CALL EMRDIN (ILVL,ILVL)
             ELSE IF (ODNM.EQ.'RG') THEN
               PRINT * , ' '
-              PRINT * , 'Current name of data directory:',USNM
+              PRINT * , 'Current name of data directory: ',USNM
               PRINT * , ' '
               PRINT * , 'Enter new name of data directory:'
               READ (*,'(A60)') CHRT
               IF (CHRT.NE.' ') USNM=CHRT
               PRINT * , ' '
-              PRINT * , 'Current database level specifier:',IRGL
+              PRINT * , 'Current database level specifier:',MIN(5,IRGL)
               PRINT * , ' '
-              PRINT * , 'Enter new database level specifier:'
+              PRINT * , 'Enter new database level specifier (0 => use'
+              PRINT * , 'highest resolution, 1 to 4 => use successively'
+              PRINT * , 'lower resolutions, 5 => pick a value for me):'
               CALL EMRDIN (IRGL,IRGL)
+              IRGL=MAX(0,MIN(5,IRGL))
+              PRINT * , ' '
+              PRINT * , 'Change any color-fill flags (Y or N)?'
+              READ  '(A1)', COMD
+              IF (COMD.EQ.'Y'.OR.COMD.EQ.'y') THEN
+                PRINT * , ' '
+                IF (LCSF(1).GE.0) THEN
+                  PRINT * , 'Ocean will be filled.'
+                ELSE
+                  PRINT * , 'Ocean will not be filled.'
+                END IF
+                PRINT * , ' '
+                PRINT * , 'Toggle this fill flag (Y or N)?'
+                READ  '(A1)', COMD
+                IF (COMD.EQ.'Y'.OR.COMD.EQ.'y') LCSF(1)=-LCSF(1)
+                PRINT * , ' '
+                IF (LCSF(2).GE.0) THEN
+                  PRINT * , 'Land will be filled.'
+                ELSE
+                  PRINT * , 'Land will not be filled.'
+                END IF
+                PRINT * , ' '
+                PRINT * , 'Toggle this fill flag (Y or N)?'
+                READ  '(A1)', COMD
+                IF (COMD.EQ.'Y'.OR.COMD.EQ.'y') LCSF(2)=-LCSF(2)
+                PRINT * , ' '
+                IF (LCSF(3).GE.0) THEN
+                  PRINT * , 'Lakes will be filled.'
+                ELSE
+                  PRINT * , 'Lakes will not be filled.'
+                END IF
+                PRINT * , ' '
+                PRINT * , 'Toggle this fill flag (Y or N)?'
+                READ  '(A1)', COMD
+                IF (COMD.EQ.'Y'.OR.COMD.EQ.'y') LCSF(3)=-LCSF(3)
+                PRINT * , ' '
+                IF (LCSF(4).GE.0) THEN
+                  PRINT * , 'Islands in lakes will be filled.'
+                ELSE
+                  PRINT * , 'Islands in lakes will not be filled.'
+                END IF
+                PRINT * , ' '
+                PRINT * , 'Toggle this fill flag (Y or N)?'
+                READ  '(A1)', COMD
+                IF (COMD.EQ.'Y'.OR.COMD.EQ.'y') LCSF(4)=-LCSF(4)
+                PRINT * , ' '
+                IF (LCSF(5).GE.0) THEN
+                  PRINT * , 'Ponds on islands in lakes will be filled.'
+                ELSE
+                  PRINT * , 'Ponds on islands in lakes will not be fille
+     +d.'
+                END IF
+                PRINT * , ' '
+                PRINT * , 'Toggle this fill flag (Y or N)?'
+                READ  '(A1)', COMD
+                IF (COMD.EQ.'Y'.OR.COMD.EQ.'y') LCSF(5)=-LCSF(5)
+                CALL MDRGSC (LCOL,LCSF)
+              END IF
             END IF
           END IF
 C
@@ -2032,6 +2106,8 @@ C
             PRINT * , 'Current longitude line spacing:   ',GSLO
             PRINT * , 'Current polar latitude control:   ',GLAT
             PRINT * , 'Current polar longitude control:  ',GLON
+            PRINT * , 'Current RG interpolation control: ',IINT
+            PRINT * , 'Current RG data processing flag:  ',IRPF
             PRINT * , ' '
             PRINT * , 'Enter new perimeter flag (0 or 1):'
             CALL EMRDIN (IPER,IPER)
@@ -2076,6 +2152,14 @@ C
      +uppress them at poles):'
             CALL EMRDRN (GLON,GLON)
             GLON=MAX(0.,MIN(90.,GLON))
+            PRINT * , ' '
+            PRINT * , 'Enter RANGS/GSHHS interpolation flag:'
+            CALL EMRDIN (IINT,IINT)
+            IINT=MAX(1,MIN(999,IINT))
+            PRINT * , ' '
+            PRINT * , 'Enter RANGS/GSHHS data processing flag:'
+            CALL EMRDIN (IRPF,IRPF)
+            IRPF=MAX(0,MIN(2,IRPF))
           END IF
 C
           PRINT * , ' '
@@ -2396,6 +2480,8 @@ C
             CALL MPSETR ('GT',GSLA)
             CALL MPSETR ('GN',GSLO)
             CALL MPSETR ('GP',1000.*GLAT+GLON)
+            CALL MPSETI ('II',1000*IINT+IINT)
+            CALL MPSETI ('RP',IRPF)
             IF (PTYP.NE.'UT') THEN
               CALL MAPINT
             ELSE
@@ -2409,7 +2495,7 @@ C
                 IF (ODNM.EQ.'E2') CALL MPLNDR ('Earth..2',ILVL)
                 IF (ODNM.EQ.'E3') CALL MPLNDR ('Earth..3',ILVL)
               ELSE IF (ODNM.EQ.'RG') THEN
-                CALL MDRGOL (IRGL)
+                CALL MDRGOL (MOD(IRGL,5 ),RWRK,LRWK)
               ELSE
                 CALL MAPLOT
               END IF
@@ -2428,7 +2514,7 @@ C
                 IF (ODNM.EQ.'E3') CALL MPLNDR ('Earth..3',ILVL)
                 CALL MAPGRM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,DRAWLB)
               ELSE IF (ODNM.EQ.'RG') THEN
-                CALL MDRGSF (IRGL)
+                CALL MDRGSF (MOD(IRGL,5),RWRK,LRWK,IAMA,LAMA)
                 CALL MAPGRD
               ELSE
                 CALL MPSETC ('OU',ODNM)
