@@ -1,5 +1,5 @@
 /*
- *      $Id: NresDB.c,v 1.6 1995-03-24 11:27:32 boote Exp $
+ *      $Id: NresDB.c,v 1.7 1995-04-29 18:53:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -447,6 +447,7 @@ static void PrintQuarkList(quarks, stream)
 static void mbnoop(state)
     NhlPointer state;
 {
+	return;
 }
 
 /*ARGSUSED*/
@@ -485,6 +486,7 @@ static NrmDatabase NewDatabase()
 	 * This is where you would use a function to set the methods based
 	 * on the actual local - I am just making it default to this one
 	 */
+	db->mbstate = NULL;
 	db->methods = (NrmMethods)&mb_methods;
     }
     return db;

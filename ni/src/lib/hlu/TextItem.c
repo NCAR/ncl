@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.30 1995-04-27 16:58:42 dbrown Exp $
+ *      $Id: TextItem.c,v 1.31 1995-04-29 18:53:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -447,8 +447,6 @@ static NhlErrorTypes    TextItemInitialize
 		ret = MIN(NhlWARNING,ret);
 	}
 
-	tnew->text.x_corners = (float*)NhlMalloc((unsigned)4*sizeof(float));
-	tnew->text.y_corners = (float*)NhlMalloc((unsigned)4*sizeof(float));
 	if(tnew->text.direction == NhlDOWN) {
 		sprintf(tnew->text.dirstr,"%cD%c",tnew->text.func_code,
 							tnew->text.func_code);
@@ -1336,8 +1334,6 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 	miny = 1e10;
 	maxy = -1e10;
 	for(i= 0; i<4; i++ ) {
-		tnew->text.x_corners[i] = xpoints[i];
-		tnew->text.y_corners[i] = ypoints[i];
 		if(xpoints[i] < minx)
 			minx = xpoints[i];
 		if(xpoints[i] > maxx)

@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.12 1995-04-22 01:02:15 boote Exp $
+ *      $Id: XWorkstation.c,v 1.13 1995-04-29 18:53:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -233,6 +233,8 @@ static NhlErrorTypes XWorkstationInitialize
 	char			*error_lead="XWorkstationInitialize";
 	NhlXWorkstationLayer	wnew = (NhlXWorkstationLayer) new;
 	NhlErrorTypes		ret = NhlNOERROR;
+
+	if(!wnew->xwork.pause_set) wnew->xwork.pause = True;
 
 	if(!wnew->xwork.window_id_set) {
 	/*

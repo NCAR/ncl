@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.16 1995-04-22 01:01:38 boote Exp $
+ *      $Id: GetValues.c,v 1.17 1995-04-29 18:53:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -302,7 +302,6 @@ _NhlGetLayerValues
 
 				tchldnode = tchldnode->next;
 			}
-			_NhlFreeChildArgs(chld_args);
 			for(i=0;i<nargs;i++){
 				if(!chld_args_used[i]){
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -312,6 +311,7 @@ _NhlGetLayerValues
 				}
 			}
 		}
+		_NhlFreeChildArgs(chld_args);
 	}
 
 	lret = _NhlGetValues((char*)l,

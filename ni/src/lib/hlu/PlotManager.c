@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.8 1995-04-27 16:58:40 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.9 1995-04-29 18:53:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -6303,6 +6303,9 @@ extern NhlErrorTypes _NhlManageOverlay
 		}
 		tfp->overlay_object = *overlay_object;
 		tfp->overlay_status = _tfCurrentOverlayBase;
+
+		NhlFree(lsargs);
+
 		return ret;
 	}
 	else if (tfp->overlay_on == False) {

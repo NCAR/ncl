@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.35 1995-04-27 16:58:31 dbrown Exp $
+ *      $Id: Legend.c,v 1.36 1995-04-29 18:53:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -5536,6 +5536,7 @@ static NhlErrorTypes    LegendDestroy
 	NhlFreeGenArray(lg_p->dash_indexes);
 	NhlFreeGenArray(lg_p->marker_indexes);
 	NhlFreeGenArray(lg_p->line_colors);
+	NhlFreeGenArray(lg_p->line_label_colors);
 	NhlFreeGenArray(lg_p->marker_colors);
 	NhlFreeGenArray(lg_p->line_dash_seglens);
 	NhlFreeGenArray(lg_p->line_thicknesses);

@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItemP.h,v 1.8 1995-04-07 10:43:50 boote Exp $
+ *      $Id: TextItemP.h,v 1.9 1995-04-29 18:53:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -50,8 +50,6 @@ typedef struct _NhlTextItemLayerPart{
 	NhlBoolean		constant_spacing_set;
 	float			constant_spacing;
 	char			func_code;
-	float			*x_corners;
-	float			*y_corners;
 	
 	int	perim_on;
 	int	perim_color;

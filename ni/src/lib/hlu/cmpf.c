@@ -68,7 +68,7 @@ float    _NhlCmpF
 {
         float   a_final;
         long a_int,b_int;
-        int signa;
+        int signa = 1;
 
 	if((a==0.0)&&(!b->is_zero)&&(b->lg_abs <= 0.0)){
 		a_int = 0;
@@ -90,7 +90,8 @@ float    _NhlCmpF
 * store sign info and make sure both numbers are positive so log10 can be
 * used.
 */
-        signa = ((float)fabs(a))/a;
+	if(a < 0)
+	        signa = -1;
         a_final = fabs(a);
 /*
 * Now divide through by the exponent determined above

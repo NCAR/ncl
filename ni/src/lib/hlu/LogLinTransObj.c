@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.19 1995-04-07 10:42:47 boote Exp $
+ *      $Id: LogLinTransObj.c,v 1.20 1995-04-29 18:53:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -680,7 +680,6 @@ static NhlErrorTypes LlNDCToWin
 {
 	int i;
 	NhlLogLinTransObjLayer linstance = (NhlLogLinTransObjLayer)instance;
-	NhlErrorTypes ret;
 	float urtmp,ultmp,uttmp,ubtmp;
 	float xmin,ymin,xmax,ymax;
 	
@@ -689,8 +688,7 @@ static NhlErrorTypes LlNDCToWin
 	xmax = linstance->trobj.x + linstance->trobj.width;
 	ymin = linstance->trobj.y - linstance->trobj.height;
 	ymax = linstance->trobj.y;
-	if( ret < NhlWARNING)
-		return(ret);
+
 	*status = 0;
 	switch(linstance->lltrans.log_lin_value) {
 		case 4:
@@ -814,7 +812,7 @@ static NhlErrorTypes LlNDCToWin
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Internal Error in LlNDCToWin");
 			return(NhlFATAL);
 	}
-	return ret;
+	return NhlNOERROR;
 }
 
 

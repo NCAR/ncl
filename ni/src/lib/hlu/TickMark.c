@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.33 1995-04-07 10:43:56 boote Exp $
+ *      $Id: TickMark.c,v 1.34 1995-04-29 18:53:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1420,7 +1420,7 @@ static NhlErrorTypes	TickMarkInitialize
 
 /*
 * ALL COMPUTATIONALLY INTENSIVE ROUTINES FOLLOW. CONVENTIONS FOR DETERMINING
-* WHETHER OR NOT THESE ROUTINES NEED TO BE CALLED EVERY NhlTIME ARE NEEDED
+* WHETHER OR NOT THESE ROUTINES NEED TO BE CALLED EVERY TIME ARE NEEDED
 */
 /*
 * At this point all resource values should be confirmed and can then procede
@@ -3111,8 +3111,8 @@ int	cutoff;
 	int sign = 1;
 
 	tmp = _NhlRndIt(value,convert_precision);
-	if(tmp != 0.0)
-		sign = (long)(fabs(tmp)/tmp);
+	if(tmp < 0.0)
+		sign = -1;
 	tmp = fabs(tmp);
 
 

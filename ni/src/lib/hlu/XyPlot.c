@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.44 1995-04-07 10:44:33 boote Exp $
+ *      $Id: XyPlot.c,v 1.45 1995-04-29 18:53:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2557,8 +2557,10 @@ NhlLayer inst;
 	NhlFreeGenArray(xp->item_types);
 	NhlFreeGenArray(xp->lg_label_strings);
 	NhlFreeGenArray(xp->line_colors);
+	NhlFreeGenArray(xp->dash_seg_lens);
 	NhlFreeGenArray(xp->llabel_colors);
 	NhlFreeGenArray(xp->llabel_strings);
+	NhlFreeGenArray(xp->llabel_fheights);
 	NhlFreeGenArray(xp->line_thicknesses);
 	NhlFreeGenArray(xp->marker_colors);
 	NhlFreeGenArray(xp->marker_indexes);

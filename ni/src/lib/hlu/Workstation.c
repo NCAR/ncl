@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.38 1995-04-28 00:14:35 boote Exp $
+ *      $Id: Workstation.c,v 1.39 1995-04-29 18:53:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -175,8 +175,8 @@ static NhlResource resources[] = {
 /* Begin-documented-resources */
 
 	{NhlNwkColorMap,NhlCwkColorMap,NhlTColorMap,sizeof(NhlGenArray),
-		Oset(color_map),NhlTString,_NhlUSET("default"),_NhlRES_DEFAULT,
-		(NhlFreeFunc)NhlFreeGenArray},
+		Oset(color_map),NhlTString,_NhlUSET("default"),
+		_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNwkColorMapLen,NhlCwkColorMapLen,NhlTInteger,sizeof(int),
 		Oset(color_map_len),NhlTImmediate,
 		_NhlUSET(0),_NhlRES_GONLY,NULL},
@@ -838,6 +838,10 @@ DoCmap
 			else
 				pcmap[i].cstat = _NhlCOLCHANGE;
 		}
+		for(i=wp->color_map_len; i < _NhlMAX_COLOR_MAP;i++){
+			if(pcmap[i].cstat == _NhlCOLSET)
+				pcmap[i].cstat = _NhlCOLREMOVE;
+		}
 	}
 
 	/*
@@ -851,10 +855,10 @@ DoCmap
 	if(wp->bkgnd_color){
 		tcp = wp->bkgnd_color->data;
 		if((*tcp)[0] < 0.0)
-			pcmap[NhlBACKGROUND].cstat = _NhlCOLUNSET;
+			tcp = NULL;
 		wp->bkgnd_color = NULL;
 	}
-	if(pcmap[NhlBACKGROUND].cstat == _NhlCOLUNSET){
+	if((pcmap[NhlBACKGROUND].cstat == _NhlCOLUNSET) && !tcp){
 		tcp = &wcp->def_background;
 	}
 	if(tcp){
@@ -875,10 +879,10 @@ DoCmap
 	if(wp->foregnd_color){
 		tcp = wp->foregnd_color->data;
 		if((*tcp)[0] < 0.0)
-			pcmap[NhlBACKGROUND].cstat = _NhlCOLUNSET;
+			tcp = NULL;
 		wp->foregnd_color = NULL;
 	}
-	if(pcmap[NhlFOREGROUND].cstat == _NhlCOLUNSET){
+	if((pcmap[NhlFOREGROUND].cstat == _NhlCOLUNSET) && !tcp){
 		if(pcmap[NhlBACKGROUND].red * pcmap[NhlBACKGROUND].red +
 		pcmap[NhlBACKGROUND].green * pcmap[NhlBACKGROUND].green +
 		pcmap[NhlBACKGROUND].blue * pcmap[NhlBACKGROUND].blue < .75){

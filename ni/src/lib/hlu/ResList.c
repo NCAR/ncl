@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.12 1995-04-27 22:34:15 boote Exp $
+ *      $Id: ResList.c,v 1.13 1995-04-29 18:53:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,7 @@ static NrmQuark	floatQ;
 static NrmQuark	intQ;
 static NrmQuark	stringQ;
 static NrmQuark	genQ;
+static NrmQuark	pointerQ;
 static NrmQuark	expMDQ;
 static NrmQuark	expMDTypeQ;
 static NrmQuark	expQ;
@@ -642,7 +643,7 @@ NhlRLSet
 		size = sizeof(float);
 	}
 	else if(typeQ == stringQ){
-		value.strval = (NhlString)va_arg(ap,long);
+		value.strval = (NhlString)va_arg(ap,NhlString);
 		size = sizeof(NhlString);
 	}
 	else if(typeQ == doubleQ){
@@ -650,7 +651,11 @@ NhlRLSet
 		size = sizeof(double);
 	}
 	else if(_NhlIsSubtypeQ(genQ,typeQ)){	/* gets all GenArray types */
-		value.ptrval = (NhlPointer)va_arg(ap,long);
+		value.ptrval = (NhlPointer)va_arg(ap,NhlPointer);
+		size = sizeof(NhlGenArray);
+	}
+	else if(typeQ == pointerQ){
+		value.ptrval = (NhlPointer)va_arg(ap,NhlPointer);
 		size = sizeof(NhlGenArray);
 	}
 	else{
@@ -799,7 +804,7 @@ NhlRLSetMDArray
 	int		*len_dimensions;
 #endif
 {
-	_NhlArgVal	gen;
+	_NhlArgVal	gen = {0};
 	
 	gen.ptrval = _NhlCreateGenArray(data,type,size,num_dimensions,
 							len_dimensions,False);
@@ -2359,6 +2364,7 @@ InitRLList
 	stringQ = NrmStringToQuark(NhlTString);
 	intQ = NrmStringToQuark(NhlTInteger);
 	genQ = NrmStringToQuark(NhlTGenArray);
+	pointerQ = NrmStringToQuark(NhlTPointer);
 	expMDQ = NrmStringToQuark(_NhlTExpMDArray);
 	expMDTypeQ = NrmStringToQuark(_NhlTExpMDTypeArray);
 	expQ = NrmStringToQuark(_NhlTExpArray);
