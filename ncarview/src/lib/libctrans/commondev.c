@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.25 1994-03-10 01:11:01 clyne Exp $
+ *	$Id: commondev.c,v 1.26 1994-03-21 18:15:14 clyne Exp $
  */
 #include <math.h>
 #include <stdio.h>
@@ -868,10 +868,13 @@ int	ComLineSim (x1,y1,x2,y2)
 	if (! *pptr) pptr = pattern;	/* reset pattern	*/
 
 	/*
-	 * draw the final *partial* dash if necessary
+	 * draw the final *partial* pattern 
 	 */
 	if (*pptr == DASH) {
 		dev->line((VDCtype) x, (VDCtype) y, x2, y2);
+	}
+	else if (*pptr == DOT) {
+		dev->line(x2, y2, x2, y2);
 	}
 		
 	return (0);
