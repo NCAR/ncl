@@ -1,5 +1,5 @@
 C
-C	$Id: gflas4.f,v 1.6 2001-08-22 23:16:12 fred Exp $
+C	$Id: gflas4.f,v 1.7 2003-09-21 00:46:33 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -112,7 +112,7 @@ C
       COMMON /GFLASH/MODEF,IOPWKS(100),IOACT(100),NUMOP,IWISSI
 C
       CHARACTER*(*) FNAME
-      CHARACTER*80 IDR(1),ODR(1)
+      CHARACTER*80 IDR(2),ODR(1)
 C
       IF (MODEF .EQ. 1) THEN
         GO TO 106
@@ -160,15 +160,26 @@ C
 C  Encode parameters into input data record.
 C
       IDR(1) = ' '
+      IDR(2) = ' '
       IFID = -1392
       ILEN = LEN(FNAME)
-      IF (ILEN .GT. 57) GO TO 107
       WRITE(IDR(1)( 1:10),500) IFID
       WRITE(IDR(1)(11:20),500) ID
       WRITE(IDR(1)(21:23),501) ICONW
-      IDR(1)(24:24+ILEN-1) = FNAME(1:ILEN)
+      IF (ILEN .LE. 57) THEN
+        IDR(1)(24:24+ILEN-1) = FNAME(1:ILEN)
+      ELSE IF (ILEN .LE. 137) THEN
+        IDR(1)(24:24+ILEN-1) = FNAME(1:57)
+        IDR(2)(1:ILEN-57) = FNAME(58:ILEN)
+      ELSE
+        GO TO 107
+      ENDIF
       CALL PLOTIT(0,0,2)
-      CALL GESC(IFID,1,IDR,1,IDUM,ODR)
+      IF (ILEN .LE. 57) THEN
+        CALL GESC(IFID,1,IDR,1,IDUM,ODR)
+      ELSE
+        CALL GESC(IFID,2,IDR,1,IDUM,ODR)
+      ENDIF
       CALL PLOTIT(0,0,2)
       RETURN
 C
@@ -197,8 +208,8 @@ C
      -',14,2)
   107 CONTINUE
       CALL GECLKS
-      CALL SETER(' GFLAS4 -- Maximum length of a file name is 57 charact
-     -ers',15,2)
+      CALL SETER(' GFLAS4 -- Maximum length of a file name is 137 charac
+     -ters',15,2)
 C
   500 FORMAT(I10)
   501 FORMAT(I3)
