@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: nhlex.csh,v 1.4 1994-12-05 22:52:41 haley Exp $
+#   $Id: nhlex.csh,v 1.5 1994-12-10 00:21:06 haley Exp $
 #
 
 if (SED_VERBOSE) then
@@ -85,6 +85,26 @@ if ($?List) then
 endif
 
 foreach name ($names)
+
+#*******************************#
+#                               #
+# Make sure this example exists #
+#                               #
+#*******************************#
+unset found
+foreach name2($example_list)
+  if ("$name" == "$name2") then
+    set found
+    break
+  endif
+end
+
+if (! $?found) then
+  echo ""
+  echo "Example name $name not found"
+  echo ""
+  exit
+endif
 
 set rmfiles
 
