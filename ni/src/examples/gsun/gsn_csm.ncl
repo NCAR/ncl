@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.84 2001-10-23 01:49:58 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.85 2001-12-27 21:21:35 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -604,6 +604,9 @@ end
 ;***********************************************************************;
 procedure set_xaxis_string(res:logical,data:numeric)
 begin
+  res2 = res
+  is_xyplot = get_res_value_keep(res2,"gsnXYPlot", False)
+  is_xaxis  = get_res_value_keep(res2,"gsnXAxis", False)
 ;
 ; If the X axis tickmarks are being labeled explicitly by the user, 
 ; then don't put a label on the X axis.
@@ -611,9 +614,16 @@ begin
   if(check_attr(res,"tmXBMode","Explicit",True))
     set_attr(res,"tiXAxisString","")
   else
-    if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
-            isatt(data&$data!1$,"long_name"))
-      set_attr(res,"tiXAxisString",data&$data!1$@long_name)
+    if(is_xyplot.and.is_xaxis) then
+      if(.not.ismissing(data!0).and.iscoord(data,data!0).and.\
+              isatt(data&$data!0$,"long_name"))
+        set_attr(res,"tiXAxisString",data&$data!0$@long_name)
+      end if
+    else    
+      if(.not.is_xyplot.and..not.ismissing(data!1).and.iscoord(data,data!1) \
+              .and.isatt(data&$data!1$,"long_name"))
+        set_attr(res,"tiXAxisString",data&$data!1$@long_name)
+      end if
     end if
   end if
 
@@ -630,6 +640,8 @@ end
 ;***********************************************************************;
 procedure set_yaxis_string(res:logical,data:numeric)
 begin
+  is_xyplot = get_res_value_keep(res,"gsnXYPlot", False)
+  is_yaxis  = get_res_value_keep(res,"gsnYAxis", False)
 ;
 ; If the Y axis tickmarks are being labeled explicitly by the user, 
 ; then don't put a label on the Y axis.
@@ -637,9 +649,11 @@ begin
   if(check_attr(res,"tmYLMode","Explicit",True))
     set_attr(res,"tiYAxisString","")
   else
-    if(.not.ismissing(data!0).and.iscoord(data,data!0).and.\
-            isatt(data&$data!0$,"long_name"))
-      set_attr(res,"tiYAxisString",data&$data!0$@long_name)
+    if((is_xyplot.and.is_yaxis).or.(.not.is_xyplot)) then
+      if(.not.ismissing(data!0).and. \
+         iscoord(data,data!0).and.isatt(data&$data!0$,"long_name"))
+        set_attr(res,"tiYAxisString",data&$data!0$@long_name)
+      end if
     end if
   end if
 
@@ -889,6 +903,7 @@ end
 ;                                                                       ;
 ; Get list of names allowed for the units attribute of a latitude       ;
 ; coordinate array.                                                     ; 
+print("entering is_valid_lat_xcoord")
 ;                                                                       ;
 ;***********************************************************************;
 function get_allowed_lat_units()
@@ -908,6 +923,7 @@ begin
   return((/"degrees_east","degree_east","degrees east","degrees_E"/))
 end
 
+print("exit is_valid_lat_xcoord")
 ;***********************************************************************;
 ; Function : is_valid_lat_xcoord                                        ;
 ;                                                                       ;
@@ -2299,7 +2315,13 @@ end
 ;***********************************************************************;
 ; Function : get_lat_labels                                             ;
 ;                lat_values[*]: numeric                                 ;
-  set_attr(tmres,"tiXAxisOn"        , False)
+;                                                                       ;
+; Return some nice latitude labels given latitude values "lat_values".  ;
+;***********************************************************************;
+
+function get_lat_labels(lat_values:numeric)
+local lat_index
+begin
 
 ; Create labels for latitude tick marks.
   lat_labels = new(dimsizes(lat_values),string)
@@ -2335,7 +2357,13 @@ end
 ;                 res: logical                                          ;
 ;                                                                       ;
 ; Add "nice" longitude labels ("120W", "60E", etc) to the X axis.       ;
-    set_attr(tmres,"tiXAxisOn"        , False)
+;***********************************************************************;
+
+procedure add_lon_labels(plot:graphic,min_lon:numeric,max_lon:numeric,\
+                         lon_spacing:numeric,mlon_spacing:numeric,\
+                         range_array,lonspacing_array,mlonspacing_array, \
+                         res:logical)
+local tmres, lonvalues, lonlabels
 begin
   tmres = get_res_eq(res,(/"tm","ti"/))  ; Get tickmark resources
 
@@ -2371,7 +2399,13 @@ end
 ;                                                                       ;
 ;                                                                       ;
 ; Add "nice" latitude labels ("90S", "30N", etc) to the X axis in       ;
-    set_attr(tmres,"tiYAxisOn"        , False)
+; "plot".                                                               ;
+;***********************************************************************;
+
+procedure add_lat_labels_xaxis(plot:graphic,min_lat:numeric,max_lat:numeric,\
+                               lat_spacing:numeric,mlat_spacing:numeric, \
+                               res:logical)
+local tmres, latvalues, latlabels
 begin
   tmres = get_res_eq(res,(/"tm","ti"/))  ; Get tickmark resources
 
@@ -2390,16 +2424,15 @@ begin
 ; to False.
 ;
     if(.not.(isatt(tmres,"tiXAxisString").and.tmres@tiXAxisString.ne.""))
-  res2 = res
       set_attr(tmres,"tiXAxisOn"      , False)
     end if
     attsetvalues(plot,tmres)
   end if
   return
 end
-  is_xyplot = get_res_value(res2,"gsnXYPlot", False)
-  is_xaxis  = get_res_value(res2,"gsnXAxis", False)
-  is_yaxis  = get_res_value(res2,"gsnYAxis", False)
+
+;***********************************************************************;
+; Procedure : add_lat_labels_yaxis                                      ;
 ;             min_lat: numeric                                          ;
 ;             max_lat: numeric                                          ;
 ;         lat_spacing: numeric                                          ;
@@ -2412,7 +2445,12 @@ end
 
 procedure add_lat_labels_yaxis(plot:graphic,min_lat:numeric,max_lat:numeric,\
                                lat_spacing:numeric,mlat_spacing:numeric, \)
-    add_lat_labels_xaxis(plot,min_lat,max_lat,0,0,res2)
+                               res:logical)
+  else
+;
+; Only set a X axis label if it is not a lat axis.
+;
+    set_xaxis_string(res,data)
   tmres = get_res_eq(res,(/"tm","ti"/))  ; Get tickmark resources
 
   lat_spacing2 = get_res_value(tmres,"tmYLTickSpacingF",lat_spacing)
@@ -2426,7 +2464,12 @@ procedure add_lat_labels_yaxis(plot:graphic,min_lat:numeric,max_lat:numeric,\
     set_attr(tmres,"tmYLValues"       , latvalues)
     set_attr(tmres,"tmYLMinorValues"  , latvalues@minor)
 ;
-    add_lat_labels_yaxis(plot,min_lat,max_lat,0,0,res2)
+; If the user has set tiYAxisString explicitly, then don't set tiYAxisOn
+; to False.
+;
+    if(.not.(isatt(tmres,"tiYAxisString").and.tmres@tiYAxisString.ne.""))
+      set_attr(tmres,"tiYAxisOn"      , False)
+    end if
     attsetvalues(plot,tmres)
   end if
   return
@@ -2447,7 +2490,12 @@ local min_lat, max_lat, min_lon, max_lon, lat_spacing
 begin
 ;
 ; If the plot coming in is an XY plot, then it won't have 
-                   lon_spacing_arr,mlon_spacing_arr,res2)
+; coordinate variables associated with it.  Instead, we have
+  else
+;
+; Only set a X axis label if it is not a lon axis.
+;
+    set_xaxis_string(res,data)
   end if
   is_xyplot = get_res_value_keep(res,"gsnXYPlot", False)
   is_xaxis  = get_res_value_keep(res,"gsnXAxis", False)
@@ -7284,7 +7332,6 @@ begin
 ;
 ; Get bar widths.  They are either set by user via a resource, or 
 ; from the smallest dx.
-
 ;
           bar_widths = get_bar_widths(x,ncurves,res2)
           if(any(ismissing(bar_widths)).or.any(bar_widths.le.0))
@@ -7298,6 +7345,7 @@ begin
 ; above and below reference lines.
 ;
           xabove = new((/ncurves,5*npts/),double,1e36)
+          yabove = new((/ncurves,5*npts/),double,1e36)
           xbelow = new((/ncurves,5*npts/),double,1e36)
           ybelow = new((/ncurves,5*npts/),double,1e36)
 ;
@@ -7575,11 +7623,6 @@ end
 ;                    data: data to contour                              ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
-
-; Check to see if X and/or Y axis labels should be set.
-
-    set_xaxis_string(res2,datanew)
-    set_yaxis_string(res2,datanew)
 ; This function creates and draws a titled contour plot to the          ;
 ; workstation  "wks" (the variable returned from a previous call to     ;
 ; "gsn_open_wks"). "resources" is an optional list of  resources. The   ;
@@ -7616,7 +7659,7 @@ begin
     lbar_on       = False     ; Labelbar flag
     main_zone     = 2         ; Zone for main title (may change later)
     res2          = get_resources(resources)
-    add_latlon_labels(contour_plot,data,res2)
+
 ; This section tests for more special resources: those that start
 ; with "gsn."
 
@@ -8199,11 +8242,6 @@ begin
 
 ; Return loglin plot with contour plot object as an attribute.
 
-; Check to see if X and/or Y axis labels should be set.
-
-    set_xaxis_string(res2,unew)
-    set_yaxis_string(res2,unew)
-
     loglin_object@contour = contour_object
     loglin_object@data    = contour_object@data
     return(loglin_object)
@@ -8470,11 +8508,6 @@ begin
 ; Draw all this stuff: vector over contour plot.
 
   draw_and_frame(wks,contour,calldraw,callframe,maxbb)
-
-; Check to see if X and/or Y axis labels should be set.
-
-    set_xaxis_string(res2,unew)
-    set_yaxis_string(res2,unew)
 
 ; Return contour/vector plot with data objects as attributes.
 

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.77 2001-10-23 01:49:58 haley Exp $
+;      $Id: gsn_code.ncl,v 1.78 2001-12-27 21:21:35 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -86,10 +86,10 @@ undef("gsn_text_ndc_return")
 undef("gsn_text_ndc")
 undef("gsn_text")
 undef("gsn_add_text")
+undef("draw_bb")
 undef("gsn_panel_return")
 undef("gsn_panel")
 undef("gsn_attach_plots")
-undef("draw_bb")
 undef("get_rgb_values")
 undef("gsn_define_colormap")
 undef("gsn_retrieve_colormap")
@@ -2486,6 +2486,53 @@ begin
 end
 
 ;***********************************************************************;
+; Procedure : draw_bb                                                   ;
+;               plot:graphic                                            ;
+;               opts:logical                                            ;
+;                                                                       ;
+; This procedure draws a box around the bounding box of the given plot  ;
+; objects.                                                              ; 
+;***********************************************************************;
+procedure draw_bb(plot:graphic,opts:logical)
+local wks, bb, top, bot, lft, rgt, gsres, drawit, frameit
+begin
+  drawit  = isatt(opts,"gsnDraw").and.opts@gsnDraw
+  frameit = isatt(opts,"gsnFrame").and.opts@gsnFrame
+
+  wks = NhlGetParentWorkstation(plot(0))
+  dimplot = dimsizes(plot)
+
+  if(dimplot.eq.1) then
+;
+; Force bb to be 2-dimensional so we don't have to have a
+; bunch of "if" tests later.
+;
+    bb = new((/1,4/),float)
+    bb(0,:) = NhlGetBB(plot)
+  else
+    bb = NhlGetBB(plot)
+  end if
+  gsres = True
+  gsres@gsLineThicknessF = 5.0
+  gsres@gsLineColor      = "red"
+  do i=0,dimplot-1
+    top = bb(i,0)
+    bot = bb(i,1)
+    lft = bb(i,2)
+    rgt = bb(i,3)
+  
+    if(drawit) then
+       draw(plot(i))
+    end if
+    gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/), \
+                         (/bot,bot,top,top,bot/),gsres)
+    if(frameit) 
+      frame(wks)
+    end if
+  end do
+end
+
+;***********************************************************************;
 ; Procedure : gsn_panel                                                 ;
 ;                 wks: workstation object                               ;
 ;               plot : array of plots to put on one page.               ;
@@ -3017,10 +3064,7 @@ begin
           max_top = max((/top,max_top/))
 
           if(draw_boxes)
-            gsres = True
-            gsres@gsLineThicknessF = 5.0
-            gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/), \
-                                 (/bot,bot,top,top,bot/),gsres)
+            draw_bb(pplot,False)
           end if
         end if
       end if
@@ -3036,6 +3080,7 @@ begin
     end if
     num_plots_left = nplots - nplot
     nr = nr + 1   ; increment rows
+    delete(xpos)
   end do    ; end of plots
 ;
 ; Calculate the biggest rescaled widths and heights (technically, they
@@ -3271,18 +3316,9 @@ begin
 ; Draw bounding boxes around each plot object for debugging purposes.
 ;
   if(draw_boxes)
-    gsres = True
-    gsres@gsLineThicknessF = 3.0
     do i=0,dimsizes(newplots)-1
       if(.not.ismissing(newplots(i)))
-        bb  = NhlGetBB(newplots(i)) ; Get bounding box of plot
-        top = bb(0)
-        lft = bb(2)
-        bot = bb(1)
-        rgt = bb(3)
-
-        gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/), \
-                             (/bot,bot,top,top,bot/),gsres)
+        draw_bb(newplots(i),False)
       end if
     end do
   end if
@@ -3324,39 +3360,40 @@ end
 
 ;***********************************************************************;
 ; Function : gsn_attach_plots                                           ;
-;                  plot1 : first plot                                   ;
-;                  plot2 : second plot                                  ;
+;                   base : base plot                                    ;
+;                  plots : list of plots to attach                      ;
 ;               resplot1 : logical                                      ;
 ;               resplot2 : logical                                      ;
 ;                                                                       ;
-; This function attaches plot2 to plot1 either on the right Y axis or   ;
-; bottom X axis of plot1. The default is to attach the plots at the Y   ;
-; axis, unless gsnAttachPlotsXAxis is set to True.                      ;
+; This function attaches the list of "plots" to the "base" plot,  either;
+; on the right Y axis or bottom X axis of the base plot. The default is ;
+; to attach the plots at the Y axis, unless gsnAttachPlotsXAxis is set  ;
+; to True.                                                              ;
 ;                                                                       ;
-; By default, the viewport heights of both plots will be made the same, ;
+; By default, the viewport heights of all plots will be made the same,  ;
 ; appropriate tick marks and labels will be turned off, and the aspect  ;
 ; ratio preserved.                                                      ;
 ;                                                                       ;
 ; For example, if you have the following plots and you want them        ;
 ; attached at the Y axis:                                               ;
 ;                                                                       ;
-;    ___________      _____                                             ;
-;    |         |      |   |                                             ;
-;    |         |      |   |                                             ;
-;    |         |      |   |                                             ;
-;    |         |      |   |                                             ;
-;    |         |      |   |                                             ;
-;    -----------      -----                                             ;
+;    ___________      _____  __________                                 ;
+;    |         |      |   |  |        |                                 ;
+;    |         |      |   |  |        |                                 ;
+;    |  base   |      |   |  |        |                                 ;
+;    |         |      |   |  |        |                                 ;
+;    |         |      |   |  |        |                                 ;
+;    -----------      -----  ----------                                 ;
 ;                                                                       ;
 ; you will end up with:                                                 ;
 ;                                                                       ;
-;    _______________                                                    ;
-;    |         |   |                                                    ;
-;    |         |   |                                                    ;
-;    |         |   |                                                    ;
-;    |         |   |                                                    ;
-;    |         |   |                                                    ;
-;    ---------------                                                    ;
+;    _________________________                                          ;
+;    |         |   |         |                                          ;
+;    |         |   |         |                                          ;
+;    |  base   |   |         |                                          ;
+;    |         |   |         |                                          ;
+;    |         |   |         |                                          ;
+;    -------------------------                                          ;
 ;                                                                       ;
 ; Or, if you have the following plots and you want them attached at the ;
 ; X axis:                                                               ;
@@ -3364,7 +3401,7 @@ end
 ;    ___________      ___________                                       ;
 ;    |         |      |         |                                       ;
 ;    |         |      |         |                                       ;
-;    |         |      |         |                                       ;
+;    |  base   |      |         |                                       ;
 ;    |         |      -----------                                       ;
 ;    |         |                                                        ;
 ;    -----------                                                        ;
@@ -3374,7 +3411,7 @@ end
 ;    ___________                                                        ;
 ;    |         |                                                        ;
 ;    |         |                                                        ;
-;    |         |                                                        ;
+;    |  base   |                                                        ;
 ;    |         |                                                        ;
 ;    |         |                                                        ;
 ;    -----------                                                        ;
@@ -3387,7 +3424,7 @@ end
 ; this function.                                                        ;
 ;                                                                       ;
 ;***********************************************************************;
-function gsn_attach_plots(oldplot1:graphic,oldplot2:graphic, \
+function gsn_attach_plots(oldbaseplot:graphic,oldplots:graphic, \
                           plotres1:logical, plotres2:logical)
 local anno, width1, width2, height1, height2, font_height1, font_height2, \
 mj_length1, mj_length2, mjo_length1, mjo_length2, mno_length1, mno_length2, \
@@ -3395,32 +3432,45 @@ mno_length1, mno_length2, total_width1, total_width2, scale1, scale2, scale
 begin
   res1  = plotres1
   res2  = plotres2
-  plot1 = oldplot1
-  plot2 = oldplot2
+  base  = oldbaseplot
+  plots = oldplots
 
   attach_y = .not.get_res_value(res1,"gsnAttachPlotsXAxis",False)
   attach_y = .not.get_res_value(res2,"gsnAttachPlotsXAxis",.not.attach_y)
+  border_on = get_res_value(res1,"gsnAttachBorderOn",True)
+
 ;
 ; Retrieve tickmark lengths and font height labels so we can make
 ; them the same size later.
 ;
 ; Also get the viewport widths and heights so we can maintain the
-; aspect ratio, but yet make the heights the same.
+; aspect ratio, but yet make the heights or widths the same.
 ;
-  getvalues plot1
-    "vpWidthF"                : width1
-    "vpHeightF"               : height1
-
-    "tiMainFontHeightF"       : main_font_height1
+  getvalues base
+    "vpWidthF"          : width1
+    "vpHeightF"         : height1
+    "tiMainFontHeightF" : main_font_height1
   end getvalues
 
-  getvalues plot2
-    "vpWidthF"                : width2
-    "vpHeightF"               : height2
-  end getvalues
+  nplots  = dimsizes(plots)
+  widths  = new(dimsizes(plots),float)
+  heights = new(dimsizes(plots),float)
+
+  do i=0,nplots-1
+    getvalues plots(i)
+      "vpWidthF"  : widths(i)
+      "vpHeightF" : heights(i)
+    end getvalues
+  end do
+
+  mj_lengths   = new(nplots,float)
+  mjo_lengths  = new(nplots,float)
+  mn_lengths   = new(nplots,float)
+  mno_lengths  = new(nplots,float)
+  font_heights = new(nplots,float)
 
   if(attach_y)
-    getvalues plot1
+    getvalues base
       "tmXBMajorLengthF"        : mj_length1
       "tmXBMajorOutwardLengthF" : mjo_length1
       "tmXBMinorLengthF"        : mn_length1
@@ -3428,16 +3478,17 @@ begin
       "tmXBLabelFontHeightF"    : font_height1
     end getvalues
 
-    getvalues plot2
-      "tmXBMajorLengthF"        : mj_length2
-      "tmXBMajorOutwardLengthF" : mjo_length2
-      "tmXBMinorLengthF"        : mn_length2
-      "tmXBMinorOutwardLengthF" : mno_length2
-      "tmXBLabelFontHeightF"    : font_height2
-    end getvalues
-
+    do i=0,nplots-1
+      getvalues plots(i)
+        "tmXBMajorLengthF"        : mj_lengths(i)
+        "tmXBMajorOutwardLengthF" : mjo_lengths(i)
+        "tmXBMinorLengthF"        : mn_lengths(i)
+        "tmXBMinorOutwardLengthF" : mno_lengths(i)
+        "tmXBLabelFontHeightF"    : font_heights(i)
+      end getvalues
+    end do
   else
-    getvalues plot1
+    getvalues base
       "tmYLMajorLengthF"        : mj_length1
       "tmYLMajorOutwardLengthF" : mjo_length1
       "tmYLMinorLengthF"        : mn_length1
@@ -3445,115 +3496,192 @@ begin
       "tmYLLabelFontHeightF"    : font_height1
     end getvalues
 
-    getvalues plot2
-      "tmYLMajorLengthF"        : mj_length2
-      "tmYLMajorOutwardLengthF" : mjo_length2
-      "tmYLMinorLengthF"        : mn_length2
-      "tmYLMinorOutwardLengthF" : mno_length2
-      "tmYLLabelFontHeightF"    : font_height2
-    end getvalues
+    do i=0,nplots-1
+      getvalues plots(i)
+        "tmYLMajorLengthF"        : mj_lengths(i)
+        "tmYLMajorOutwardLengthF" : mjo_lengths(i)
+        "tmYLMinorLengthF"        : mn_lengths(i)
+        "tmYLMinorOutwardLengthF" : mno_lengths(i)
+        "tmYLLabelFontHeightF"    : font_heights(i)
+      end getvalues
+    end do
   end if
 
 ;
 ; Calculate the scale factor needed to make the plots the same
 ; size in the appropriate axis.  If we are attaching plots at the Y axis,
 ; then we want to make them the same height. Otherwise, we want to make
-; them the same width.
+; them the same width.  We do this by keeping the size of the largest
+; plot the same, and scaling the rest of the plots to be the same height
+; (or width).
 ;
+  scales = new(nplots,float)
   if(attach_y) then
-    if(height1.lt.height2) then
-      scale1 = height2/height1
-      scale2 = 1.
+    if(any(height1.lt.heights)) then
+      scale1 = max(heights)/height1
+      scales = max(heights)/heights
     else
-      scale2 = height1/height2
       scale1 = 1.
+      scales = height1/heights
     end if
   else 
-    if(width1.lt.width2) then
-      scale1 = width2/width1
-      scale2 = 1.
+    if(any(width1.lt.widths)) then
+      scale1 = max(widths)/width1
+      scales = max(widths)/widths
     else
-      scale2 = width1/width2
       scale1 = 1.
+      scales = width1/widths
     end if
   end if
 ;
-; Because we are attaching two plots right at an axis, turn off
+; Because we are attaching plots along an axis, turn off
 ; tickmarks and labels where appropriate.
 ;
   if(attach_y) then
-    setvalues plot1
-      "tmYROn"       : get_res_value(res1,"tmYROn",False)
+    setvalues base
       "tmYUseLeft"   : get_res_value(res1,"tmYUseLeft",False)
+      "tmYROn"       : get_res_value(res1,"tmYROn",False)
+      "tmYRLabelsOn" : get_res_value(res1,"tmYRLabelsOn",False)
+      "tmYRBorderOn" : get_res_value(res1,"tmYRBorderOn",border_on)
     end setvalues
-
-    setvalues plot2
+    do i=0,nplots-2
+      setvalues plots(i)
+        "tmYUseLeft"   : get_res_value(res2,"tmYUseLeft",False)
+        "tmYLOn"       : get_res_value(res2,"tmYLOn",False)
+        "tmYLBorderOn" : get_res_value(res2,"tmYLBorderOn",border_on)
+        "tmYROn"       : get_res_value(res2,"tmYROn",False)
+        "tmYRLabelsOn" : get_res_value(res2,"tmYRLabelsOn",False)
+        "tmYRBorderOn" : get_res_value(res2,"tmYRBorderOn",border_on)
+        "tiYAxisOn"    : get_res_value(res2,"tiYAxisOn",False)
+      end setvalues
+    end do
+    setvalues plots(nplots-1)
+      "tmYUseLeft"   : get_res_value(res2,"tmYUseLeft",False)
       "tiYAxisOn"    : get_res_value(res2,"tiYAxisOn",False)
       "tmYLOn"       : get_res_value(res2,"tmYLOn",False)
-      "tmYUseLeft"   : get_res_value(res2,"tmYUseLeft",False)
+      "tmYLBorderOn" : get_res_value(res2,"tmYLBorderOn",border_on)
+      "tmYLLabelsOn" : get_res_value(res1,"tmYLLabelsOn",False)
     end setvalues
   else
-    setvalues plot1
-      "tmXBOn"       : get_res_value(res1,"tmXBOn",False)
+    setvalues base
       "tmXUseBottom" : get_res_value(res1,"tmXUseBottom",False)
+      "tmXBOn"       : get_res_value(res1,"tmXBOn",False)
+      "tmXBBorderOn" : get_res_value(res1,"tmXBBorderOn",border_on)
+      "tmXBLabelsOn" : get_res_value(res1,"tmXBLabelsOn",False)
       "tiXAxisOn"    : get_res_value(res1,"tiXAxisOn",False)
     end setvalues
 
-    setvalues plot2
-      "tmXTOn"       : get_res_value(res2,"tmXTOn",False)
+    do i=0,nplots-2
+      setvalues plots(i)
+        "tmXUseBottom" : get_res_value(res2,"tmXUseBottom",False)
+        "tmXBOn"       : get_res_value(res2,"tmXBOn",False)
+        "tmXBBorderOn" : get_res_value(res2,"tmXBBorderOn",border_on)
+        "tmXBLabelsOn" : get_res_value(res2,"tmXBLabelsOn",False)
+        "tmXTOn"       : get_res_value(res2,"tmXTOn",False)
+        "tmXTBorderOn" : get_res_value(res2,"tmXTBorderOn",border_on)
+        "tmXTLabelsOn" : get_res_value(res2,"tmXTLabelsOn",False)
+        "tiMainOn"     : get_res_value(res2,"tiMainOn",False)
+        "tiXAxisOn"    : get_res_value(res2,"tiXAxisOn",False)
+      end setvalues
+    end do
+    setvalues plots(nplots-1)
       "tmXUseBottom" : get_res_value(res2,"tmXUseBottom",False)
+      "tmXTOn"       : get_res_value(res2,"tmXTOn",False)
+      "tmXTBorderOn" : get_res_value(res2,"tmXTBorderOn",border_on)
+      "tmXTLabelsOn" : get_res_value(res2,"tmXTLabelsOn",False)
       "tiMainOn"     : get_res_value(res2,"tiMainOn",False)
     end setvalues
   end if
 
 ;
-; Now that we've turned off the necessary tickmark stuff, 
-; retrieve the bounding box of each plot.
+; Now that we've turned off the tickmark stuff, retrieve the bounding box
+; of each plot.
 ;
-  bb1 = NhlGetBB(plot1) ; Get bounding box of plot
+; First create arrays to hold bounding box and viewport information.
+;
+  bbs  = new((/nplots,4/),float)
+  vpxs = new((/nplots/),float)
+  vpys = new((/nplots/),float)
+  vphs = new((/nplots/),float)
+  vpws = new((/nplots/),float)
+
+  bb1 = NhlGetBB(base) ; Get bounding box of plot
   top1 = bb1(0)
   bot1 = bb1(1)
   lft1 = bb1(2)
   rgt1 = bb1(3)
 
-  bb2 = NhlGetBB(plot2) ; Get bounding box of plot
-  top2 = bb2(0)
-  bot2 = bb2(1)
-  lft2 = bb2(2)
-  rgt2 = bb2(3)
+;
+; Have to deal with special case of only having one plot.
+;
+  if(nplots.eq.1)
+    bbs(0,:) = NhlGetBB(plots)
+  else
+    bbs = NhlGetBB(plots)
+  end if
 
-  total_height1 = top1 - bot1
-  total_height2 = top2 - bot2
-  total_width1  = rgt1 - lft1
-  total_width2  = rgt2 - lft2
-
+  tops = bbs(:,0)
+  bots = bbs(:,1)
+  lfts = bbs(:,2)
+  rgts = bbs(:,3)
+;
+; Retrieve viewports.
 ;
 ; Calculate the largest scale factor possible that will allow us
-; to fit both plots on the page, with 5% white space on both sides.
+; to fit all plots on the page, with 0.5% white space on the ends.
 ;
+  getvalues base
+    "vpYF"      : vpy1
+    "vpHeightF" : vph1
+    "vpXF"      : vpx1
+    "vpWidthF"  : vpw1
+  end getvalues 
+
+  do i=0,nplots-1
+    getvalues plots(i)
+      "vpYF"      : vpys(i)
+      "vpHeightF" : vphs(i)
+      "vpXF"      : vpxs(i)
+      "vpWidthF"  : vpws(i)
+    end getvalues 
+  end do
+
   if(attach_y) then
-    scale_width   = 1. / (1.1 * (scale1*total_width1 + scale2*total_width2))
-    scale_height1 = 1. / (1.1 * scale1*total_height1)
-    scale_height2 = 1. / (1.1 * scale2*total_height2)
-    scale = min((/scale_height1,scale_height2,scale_width/))
+    total_height1 = top1 - bot1
+    total_heights = tops - bots
+    total_width1  = (vpx1+vpw1) - lft1
+    total_widths  = vpws
+    total_widths(nplots-1) = rgts(nplots-1) - vpxs(nplots-1)
+
+    scale_widths  = 1. / (1.01 * (scale1*total_width1 + sum(scales*total_widths)))
+    scale_height1 = 1. / (1.01 * scale1*total_height1)
+    scale_heights = 1. / (1.01 * scales*total_heights)
+    scale = min((/scale_height1,min(scale_heights),min(scale_widths)/))
   else
-    scale_height = 1. / (1.1 * (scale1*total_height1 + scale2*total_height2))
-    scale_width1 = 1. / (1.1 * scale1*total_width1)
-    scale_width2 = 1. / (1.1 * scale2*total_width2)
-    scale = min((/scale_height,scale_width1,scale_width2/))
+    total_width1  = rgt1 - lft1
+    total_widths  = rgts - lfts
+    total_height1 = vph1 + (top1 - vpy1)
+    total_heights = vphs
+    total_heights(nplots-1) = vpys(nplots-1)-bots(nplots-1)
+
+    scale_heights = 1. / (1.01 * (scale1*total_height1 + sum(scales*total_heights)))
+    scale_width1  = 1. / (1.01 * scale1*total_width1)
+    scale_widths  = 1. / (1.01 * scales*total_widths)
+    scale = min((/scale_width1,min(scale_heights),min(scale_widths)/))
   end if
+
 ;
-; Resize both plots with new scale factor, and set sizes of tick marks
+; Resize all plots with new scale factor, and set sizes of tick marks
 ; and tick marks labels to be the same.
 ;
   new_scale1 = scale * scale1
-  new_scale2 = scale * scale2
+  new_scales = scale * scales
 
-  new_mj_length   = (new_scale1*mj_length1  + new_scale2*mj_length2)/2.
-  new_mjo_length  = (new_scale1*mjo_length1 + new_scale2*mjo_length2)/2.
-  new_mn_length   = (new_scale1*mn_length1  + new_scale2*mn_length2)/2.
-  new_mno_length  = (new_scale1*mno_length1 + new_scale2*mno_length2)/2.
-  new_font_height = (new_scale1*font_height1 + new_scale2*font_height2)/2.
+  new_mj_length = (new_scale1*mj_length1 + sum(new_scales*mj_lengths))/(nplots+1)
+  new_mjo_length = (new_scale1*mjo_length1 + sum(new_scales*mjo_lengths))/(nplots+1)
+  new_mn_length = (new_scale1*mn_length1 + sum(new_scales*mn_lengths))/(nplots+1)
+  new_mno_length = (new_scale1*mno_length1 + sum(new_scales*mno_lengths))/(nplots+1)
+  new_font_height = (new_scale1*font_height1 + sum(new_scales*font_heights))/(nplots+1)
   new_main_font_height = new_scale1*main_font_height1
 
   if(attach_y) then
@@ -3578,7 +3706,8 @@ begin
   font_heighty  = get_res_value(res1,"tiYAxisFontHeightF",new_font_height)
   main_font_height = get_res_value(res2,"tiMainFontHeightF", \
                      max((/new_main_font_height,new_font_height/)))
-  setvalues plot1
+
+  setvalues base
     "vpHeightF"               : new_scale1 * height1
     "vpWidthF"                : new_scale1 * width1
 
@@ -3633,131 +3762,141 @@ begin
   main_font_height = get_res_value(res2,"tiMainFontHeightF", \
                      max((/new_main_font_height,new_font_height/)))
 
-  setvalues plot2
-    "vpHeightF"               : new_scale2 * height2
-    "vpWidthF"                : new_scale2 * width2
+  do i=0,nplots-1
+    setvalues plots(i)
+      "vpHeightF"               : new_scales * heights(i)
+      "vpWidthF"                : new_scales * widths(i)
 
-    "tiXAxisFontHeightF"      : font_heightx
-    "tiYAxisFontHeightF"      : font_heighty
-    "tiMainFontHeightF"       : main_font_height
+      "tiXAxisFontHeightF"      : font_heightx
+      "tiYAxisFontHeightF"      : font_heighty
+      "tiMainFontHeightF"       : main_font_height
 
-    "tmYRMajorLengthF"        : mj_length
-    "tmYRMajorOutwardLengthF" : mjo_length
-    "tmYRMinorLengthF"        : mn_length
-    "tmYRMinorOutwardLengthF" : mno_length
+      "tmYRMajorLengthF"        : mj_length
+      "tmYRMajorOutwardLengthF" : mjo_length
+      "tmYRMinorLengthF"        : mn_length
+      "tmYRMinorOutwardLengthF" : mno_length
 
-    "tmYLMajorLengthF"        : mj_length
-    "tmYLMajorOutwardLengthF" : mjo_length
-    "tmYLMinorLengthF"        : mn_length
-    "tmYLMinorOutwardLengthF" : mno_length
+      "tmYLMajorLengthF"        : mj_length
+      "tmYLMajorOutwardLengthF" : mjo_length
+      "tmYLMinorLengthF"        : mn_length
+      "tmYLMinorOutwardLengthF" : mno_length
 
-    "tmXBMajorLengthF"        : mj_length
-    "tmXBMajorOutwardLengthF" : mjo_length
-    "tmXBMinorLengthF"        : mn_length
-    "tmXBMinorOutwardLengthF" : mno_length
+      "tmXBMajorLengthF"        : mj_length
+      "tmXBMajorOutwardLengthF" : mjo_length
+      "tmXBMinorLengthF"        : mn_length
+      "tmXBMinorOutwardLengthF" : mno_length
 
-    "tmXTMajorLengthF"        : mj_length
-    "tmXTMajorOutwardLengthF" : mjo_length
-    "tmXTMinorLengthF"        : mn_length
-    "tmXTMinorOutwardLengthF" : mno_length
+      "tmXTMajorLengthF"        : mj_length
+      "tmXTMajorOutwardLengthF" : mjo_length
+      "tmXTMinorLengthF"        : mn_length
+      "tmXTMinorOutwardLengthF" : mno_length
 
-    "tmXBLabelFontHeightF"    : font_heightx
-    "tmYLLabelFontHeightF"    : font_heighty
-  end setvalues
+      "tmXBLabelFontHeightF"    : font_heightx
+      "tmYLLabelFontHeightF"    : font_heighty
+    end setvalues
+  end do
 ;
 ; Get new bounding boxes and sizes of resized plots, so we can
-; figure out where to position the first plot.
+; figure out where to position the base plot.
 ;
-  bb1 = NhlGetBB(plot1) ; Get bounding box of plot
+  bb1 = NhlGetBB(base) ; Get bounding box of plot
+
   top1 = bb1(0)
   bot1 = bb1(1)
   lft1 = bb1(2)
   rgt1 = bb1(3)
 
-  bb2 = NhlGetBB(plot2) ; Get bounding box of plot
-  top2 = bb2(0)
-  bot2 = bb2(1)
-  lft2 = bb2(2)
-  rgt2 = bb2(3)
+  if(nplots.eq.1)
+    bbs(0,:) = NhlGetBB(plots)
+  else
+    bbs = NhlGetBB(plots)
+  end if
+  tops = bbs(:,0)
+  bots = bbs(:,1)
+  lfts = bbs(:,2)
+  rgts = bbs(:,3)
 
-  total_height1 = top1 - bot1
-  total_height2 = top2 - bot2
-  total_width1  = rgt1 - lft1
-  total_width2  = rgt2 - lft2
+  getvalues base
+    "vpYF"      : vpy1
+    "vpHeightF" : vph1
+    "vpXF"      : vpx1
+    "vpWidthF"  : vpw1
+  end getvalues 
 
-  getvalues plot1
-    "vpXF" : vpx1
-    "vpYF" : vpy1
-  end getvalues
+  do i=0,nplots-1
+    getvalues plots(i)
+      "vpYF"      : vpys(i)
+      "vpHeightF" : vphs(i)
+      "vpXF"      : vpxs(i)
+      "vpWidthF"  : vpws(i)
+    end getvalues 
+  end do
 
   if(attach_y) then
-    total_width_left  = 1. - (total_width1 + total_width2)
-    total_height_left = 1. - max((/total_height1,total_height2/))
+    total_height1          = top1 - bot1
+    total_heights          = tops - bots
+    total_width1           = (vpx1+vpw1) - lft1
+    total_widths           = vpws
+    total_widths(nplots-1) = rgts(nplots-1) - vpxs(nplots-1)
+    total_width_left  = max((/0.,1. - (total_width1 + sum(total_widths))/))
+    total_height_left = max((/1. - max((/total_height1,max(total_heights)/))/))
   else
-    total_height_left = 1. - (total_height1 + total_height2)
-    total_width_left  = 1. - max((/total_width1,total_width2/))
+    total_width1  = rgt1 - lft1
+    total_widths  = rgts - lfts
+    total_height1 = vph1 + (top1 - vpy1)
+    total_heights = vphs
+    total_heights(nplots-1) = vpys(nplots-1)-bots(nplots-1)
+
+    total_height_left = max((/0.,1. - (total_height1 + sum(total_heights))/))
+    total_width_left  = max((/0.,1. - max((/total_width1,max(total_widths)/))/))
   end if
 
   new_vpx1 = total_width_left/2. + (vpx1-lft1)
   new_vpy1 = 1. - (total_height_left/2. + (top1-vpy1))
 
-  setvalues plot1
+  setvalues base
     "vpYF" : new_vpy1
     "vpXF" : new_vpx1
   end setvalues
 
-  anno = NhlAddAnnotation(plot1,plot2)
+;
+; Attach each plot.  If attaching them on the X axis, then start with
+; the bottommost plot. If attaching on the Y axis, start with the
+; rightmost plot.
+;
   zone = get_res_value(res2,"amZone",2)
   para = get_res_value(res2,"amParallelPosF",0.5)
   orth = get_res_value(res2,"amOrthogonalPosF",0.0)
-  if(attach_y) then
-    setvalues anno
-      "amZone"          : zone
-      "amSide"          : "right"  ; Plot at right.
-      "amResizeNotify"  : True     ; Allow resize if plot resized.
-      "amParallelPosF"  : para
-      "amOrthogonalPosF": orth
-    end setvalues
-  else
-    setvalues anno
-      "amZone"          : zone
-      "amSide"          : "bottom" ; Plot at bottom
-      "amResizeNotify"  : True     ; Allow resize if plot resized.
-      "amParallelPosF"  : para
-      "amOrthogonalPosF": orth
-    end setvalues
-  end if
 
-  return(anno)
+  annos = new(nplots,graphic)
+
+  do i=nplots-1,0,1
+    if(i.gt.0) then
+      annos(i) = NhlAddAnnotation(plots(i-1),plots(i))
+    else
+      annos(0) = NhlAddAnnotation(base,plots(0))
+    end if
+    if(attach_y) then
+      setvalues annos(i)
+        "amZone"          : zone
+        "amSide"          : "right"  ; Plot at right.
+        "amResizeNotify"  : True     ; Allow resize if plot resized.
+        "amParallelPosF"  : para
+        "amOrthogonalPosF": orth
+      end setvalues
+    else
+      setvalues annos(i)
+        "amZone"          : zone
+        "amSide"          : "bottom" ; Plot at bottom
+        "amResizeNotify"  : True     ; Allow resize if plot resized.
+        "amParallelPosF"  : para
+        "amOrthogonalPosF": orth
+    end setvalues
+    end if
+  end do
+
+  return(annos)
   
-end
-
-;***********************************************************************;
-; Procedure : draw_bb                                                   ;
-;                wks:graphic                                            ;
-;               plot:graphic                                            ;
-; This procedure draws a box around the bounding box of the given plot  ;
-; objects.                                                              ; 
-;***********************************************************************;
-procedure draw_bb(wks:graphic,plot:graphic)
-begin
-  dimplot = dimsizes(plot)
-  if(dimsizes(dimplot).eq.1) then
-;
-; Force bb to be 2-dimensional so we don't have to have a
-; bunch of "if" tests later.
-;
-    bb = new((/1,4/),float)
-    bb(0,:) = NhlGetBB(plot)
-  else
-    bb = NhlGetBB(plot)
-  end if
-  top = max(bb(:,0))
-  bot = min(bb(:,1))
-  lft = min(bb(:,2))
-  rgt = max(bb(:,3))
-
-  gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/),(/bot,bot,top,top,bot/),False)
 end
 
 ;***********************************************************************;
@@ -4789,6 +4928,7 @@ begin
     check_for_tickmarks_off(res2)
 
     cnres = get_res_ne(res2,"sf")
+
     attsetvalues_check(plot_object,cnres)
 
     if(sprdcols)
@@ -5615,7 +5755,7 @@ begin
 
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
-    cnres = get_res_eq(res2,(/"cn","vp"/))
+    cnres = get_res_eq(res2,(/"cn","vp","tf"/))
     vcres = get_res_ne(res2,(/"vf","sf","cn","vp"/))
 
     attsetvalues_check(vfdata_object,vfres)
@@ -5887,7 +6027,7 @@ begin
 
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
-    cnres = get_res_eq(res2,"cn")
+    cnres = get_res_eq(res2,(/"cn","tf"/))
     mpres = get_res_eq(res2,(/"mp","vp"/))
     vcres = get_res_ne(res2,(/"cn","mp","sf","vf","vp"/))
 
