@@ -1,5 +1,5 @@
 C
-C $Id: mapblm.f,v 1.3 1994-05-03 21:24:35 kennison Exp $
+C $Id: mapblm.f,v 1.4 1995-04-26 23:41:11 kennison Exp $
 C
       SUBROUTINE MAPBLM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
@@ -434,8 +434,8 @@ C
 C
 C See if the user wants to omit this point group.
 C
-      CALL MAPEOD (NOUT,NSEG,IDOS(NOUT)+IDLS,
-     +                       IDOS(NOUT)+IDRS,NPTS,PNTS)
+      CALL HLUMAPEOD (NOUT,NSEG,IDOS(NOUT)+IDLS,
+     +                          IDOS(NOUT)+IDRS,NPTS,PNTS)
       IF (.NOT.(ICFELL('MAPBLM',13).NE.0)) GO TO 10064
       IIER=-1
       RETURN

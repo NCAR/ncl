@@ -1,5 +1,5 @@
 C
-C $Id: mapbla.f,v 1.5 1994-05-03 21:24:33 kennison Exp $
+C $Id: mapbla.f,v 1.6 1995-04-26 23:41:09 kennison Exp $
 C
       SUBROUTINE MAPBLA (IAMP)
 C
@@ -456,7 +456,7 @@ C
 C
 C See if the user wants to omit this point group.
 C
-      CALL MAPEOD (NOUT,NSEG,IDLT,IDRT,NPTS,PNTS)
+      CALL HLUMAPEOD (NOUT,NSEG,IDLT,IDRT,NPTS,PNTS)
       IF (.NOT.(ICFELL('MAPBLA',10).NE.0)) GO TO 10068
       IIER=-1
       RETURN
