@@ -1,5 +1,5 @@
 C
-C	$Id: wmcomn.h,v 1.14 2002-08-03 01:29:36 fred Exp $
+C	$Id: wmcomn.h,v 1.15 2004-09-08 21:52:33 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -136,6 +136,7 @@ C    IEZFLG  EZF   Flag for NCL to know if wmap is being used with mapping.
 C    TNSION  SIG   Tension factor for tension spline routines.
 C    ISMOTH  SMF   Flags whether interpolation (=0) or smoothing (=1) is done.
 C    RSMOTH  SMT   Smoothing parameter for the smoothing spline routines.
+C    IUNITS  UNT   Flags use of imperial units or metric units.
 C    OBSERR  OER   Observational weights for data for smoothing spline routines.
 C    RSMRET  ---   Used to return the default setting of RSMOTH.
 C    OBSRET  ---   Used to return the default setting of OBSERR.
@@ -154,7 +155,7 @@ C
      +                IRGLC1, IRGLC2, IRGLC3, IRGLC4, IDOTBG, IAROWC, 
      +                IARSHC, IRLLSC, IRLOUC, IRLBKC, IHIGC4, IAROUC, 
      +                IRGLC5, ITRO1C, ITRO2C, ILOWC4, IEZFLG, TNSION, 
-     +                ISMOTH, RSMOTH, OBSERR, RSMRET, OBSRET,
+     +                ISMOTH, RSMOTH, OBSERR, RSMRET, OBSRET, IUNITS,
      +                ISTYPE(ISDIM)
 C
 C  WMARRS contains arrray space.

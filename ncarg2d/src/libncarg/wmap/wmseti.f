@@ -1,5 +1,5 @@
 C
-C	$Id: wmseti.f,v 1.11 2001-08-07 18:37:36 fred Exp $
+C	$Id: wmseti.f,v 1.12 2004-09-08 21:52:33 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -468,6 +468,15 @@ C
       ELSE IF (CNP(1:3).EQ.'AOC' .OR. CNP(1:3).EQ.'aoc' .OR.
      +    CNP(1:3).EQ.'Aoc') THEN
         IAROUC = IVP
+        GO TO 120
+C
+C  UNT - flags whether to use imperial units (as described in the
+C        NOAA chart), or metric units as per:
+C          http://weather.unisys.com/wxp/Appendices/Formats/SYNOP.html
+C
+      ELSE IF (CNP(1:3).EQ.'UNT' .OR. CNP(1:3).EQ.'unt' .OR.
+     +    CNP(1:3).EQ.'Unt') THEN
+        IUNITS = IVP
         GO TO 120
       ELSE
         CTM(1:36) = 'WMSETI - Parameter name not known - '

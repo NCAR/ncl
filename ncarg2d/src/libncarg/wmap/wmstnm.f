@@ -1,5 +1,5 @@
 C
-C	$Id: wmstnm.f,v 1.9 2004-07-14 20:42:11 fred Exp $
+C	$Id: wmstnm.f,v 1.10 2004-09-08 21:52:33 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -35,7 +35,9 @@ C
 C     IMDAT(1)( 1: 1) = iR - precipitation data indictor.
 C     IMDAT(1)( 2: 2) = iX - weather data and station type indicator. 
 C     IMDAT(1)( 3: 3) =  h - height above ground of base lowest cloud.
-C     IMDAT(1)( 4: 5) = VV - visibility in miles and fractions.
+C     IMDAT(1)( 4: 5) = VV - visibility in miles and fractions for
+C                            imperial units (UNT=0), or kilometers
+C                            in metric units (UNT=1).
 C
 C     IMDAT(2)( 1: 1) =  N - total amount of cloud cover.
 C     IMDAT(2)( 2: 3) = dd - direction from which wind is blowing.
@@ -109,11 +111,16 @@ C
 C
       PARAMETER (NUMSYM=14,D2RAD=0.017453293)
       CHARACTER*5 IMDAT(NFIELD)
+C
+C  IPRSNT is an array indicating whether a value for a symbol
+C  has been entered.
+C
       DIMENSION SYMPOS(2,NUMSYM),IFNTNM(NUMSYM),IPRSNT(NUMSYM)
       CHARACTER*3 CHRS(NUMSYM)
       CHARACTER CHR5*5,CHR3*3,IFMT*8
 C
       DIMENSION BRBEXT(4),CHREXT(4),RINTSC(4)
+      REAL CTEMP
 C
 C  Sample character strings to help position labels.
 C
@@ -136,11 +143,26 @@ C
       READ(IMDAT(1)(1:1),'(I1)') IR 
       READ(IMDAT(1)(2:2),'(I1)') IX 
       IF (IX.EQ.2 .OR. IX.EQ.5) RETURN
-      READ(IMDAT(1)(3:3),'(I1)') H
-      IPRSNT(13) = 1
-      READ(IMDAT(1)(4:5),'(I2)') VV
-      IPRSNT(5) = 1
-      READ(IMDAT(2)(1:1),'(I1)') N
+C
+      IF (IMDAT(1)(3:3) .EQ. '/') THEN
+        IPRSNT(13) = 0
+      ELSE
+        READ(IMDAT(1)(3:3),'(I1)') H
+        IPRSNT(13) = 1
+      ENDIF
+C
+      IF (IMDAT(1)(4:5) .EQ. '//') THEN
+        IPRSNT(5) = 0
+      ELSE
+        READ(IMDAT(1)(4:5),'(I2)') VV
+        IPRSNT(5) = 1
+      ENDIF
+C
+      IF (IMDAT(2)(1:1) .EQ. '/') THEN
+        N = 0
+      ELSE
+        READ(IMDAT(2)(1:1),'(I1)') N
+      ENDIF
       READ(IMDAT(2)(2:3),'(I2)') DD
       IBFLAG = 1
 C
@@ -893,13 +915,24 @@ C
 C
 C   Current air temperature.
 C
-      IRTEMP = NINT(0.18*REAL(TTT)+32.)
-      CHR5 = ' '
-      WRITE(CHR5,'(I5)') IRTEMP
-      LL = WMGTLN(CHR5,LEN(CHR5),1)
-      IF (IPRSNT(3) .EQ. 1) THEN
-        CALL PLCHHQ(SYMPOS(1,3),SYMPOS(2,3),CHR5(LL:LEN(CHR5)),
-     +              SIZ,0.,0.)       
+      IF (IUNITS .EQ. 0) THEN
+        IRTEMP = NINT(0.18*REAL(TTT)+32.)
+        CHR5 = ' '
+        WRITE(CHR5,'(I5)') IRTEMP
+        LL = WMGTLN(CHR5,LEN(CHR5),1)
+        IF (IPRSNT(3) .EQ. 1) THEN
+          CALL PLCHHQ(SYMPOS(1,3),SYMPOS(2,3),CHR5(LL:LEN(CHR5)),
+     +                SIZ,0.,0.)       
+        ENDIF
+      ELSE
+        CTEMP = FLOAT(TTT)/10.
+        CHR5 = ' '
+        WRITE(CHR5,'(F5.1)') CTEMP
+        LL = WMGTLN(CHR5,LEN(CHR5),1)
+        IF (IPRSNT(3) .EQ. 1) THEN
+          CALL PLCHHQ(SYMPOS(1,3),SYMPOS(2,3),CHR5(LL:LEN(CHR5)),
+     +                SIZ,0.,0.)       
+        ENDIF
       ENDIF
 C
 C   Barometric pressure.
@@ -915,153 +948,245 @@ C
 C
 C   Horizontal visibility at surface.
 C
-      IPLFLG = 1
-      IFR = 0
-      IF (VV .LE. 50) THEN
-        IF (VV .EQ. 0) THEN
-          IWH = 0
-        ELSE
-          IWH = VV/16
-          IFR = MOD(VV,16)
-        ENDIF
-      ELSE IF (VV.GE.56 .AND. VV.LE.80) THEN
-        IVV = 60+10*(VV-56)
-        IWH = IVV/16
-        IFR = MOD(IVV,16)
-      ELSE IF (VV.GT.80 .AND. VV.LT.90) THEN
-        IVV = 300+50*(VV-80)
-        IWH = IVV/16
-        IFR = MOD(IVV,16)
-      ELSE IF (VV.EQ.90) THEN
-        IWH = 0
-      ELSE IF (VV.EQ.91) THEN
-        IWH = 0
-        IFR = 1
-      ELSE IF (VV.EQ.92) THEN
-        IWH = 0
-        IFR = 2
-      ELSE IF (VV.EQ.93) THEN
-        IWH = 0
-        IFR = 5
-      ELSE IF (VV.EQ.94) THEN
-        IWH = 0
-        IFR = 10
-      ELSE IF (VV.EQ.95) THEN
-        IWH = 1
-        IFR = 4
-      ELSE IF (VV.EQ.96) THEN
-        IWH = 2
-        IFR = 8
-      ELSE IF (VV.EQ.97) THEN
-        IWH = 6
-        IFR = 2
-      ELSE IF (VV.EQ.98) THEN
-        IWH = 12
-        IFR = 8
-      ELSE IF (VV.EQ.99) THEN
-        IWH = 31
-        IFR = 4
-      ELSE
-        IPLFLG = 0
-      ENDIF 
-      ASIZ = .67*SIZ
-      BOFF = .33*SIZ
-      IF (IPRSNT(5).EQ.1 .AND. IWH.LE.10 .AND. IPLFLG.EQ.1) THEN
-        IF (IFR .EQ. 0) THEN
-          CHR3 = ' '
-          WRITE(CHR3,'(I3)') IWH
-          LL = WMGTLN(CHR3,LEN(CHR3),1)
-          CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),CHR3(LL:3),SIZ,0.,0.)
-        ELSE
-          CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),'/',SIZ,0.,0.)
-          IF (IFR .EQ. 1) THEN
-            CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
-     +                  '16',ASIZ,0.,-1.)
-            CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
-     +                  '1',ASIZ,0.,+1.)
-          ELSE IF (IFR .EQ. 2) THEN
-            CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
-     +                  '8',ASIZ,0.,-1.)
-            CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
-     +                  '1',ASIZ,0.,+1.)
-          ELSE IF (IFR .EQ. 3) THEN
-            CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
-     +                  '16',ASIZ,0.,-1.)
-            CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
-     +                  '3',ASIZ,0.,+1.)
-          ELSE IF (IFR .EQ. 4) THEN
-            CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
-     +                  '4',ASIZ,0.,-1.)
-            CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
-     +                  '1',ASIZ,0.,+1.)
-          ELSE IF (IFR .EQ. 5) THEN
-            CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
-     +                  '16',ASIZ,0.,-1.)
-            CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
-     +                  '5',ASIZ,0.,+1.)
-          ELSE IF (IFR .EQ. 6) THEN
-            CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
-     +                  '8',ASIZ,0.,-1.)
-            CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
-     +                  '3',ASIZ,0.,+1.)
-          ELSE IF (IFR .EQ. 7) THEN
-            CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
-     +                  '16',ASIZ,0.,-1.)
-            CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
-     +                  '7',ASIZ,0.,+1.)
-          ELSE IF (IFR .EQ. 8) THEN
-            CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
-     +                  '2',ASIZ,0.,-1.)
-            CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
-     +                  '1',ASIZ,0.,+1.)
-          ELSE IF (IFR .EQ. 9) THEN
-            CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
-     +                  '16',ASIZ,0.,-1.)
-            CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
-     +                  '9',ASIZ,0.,+1.)
-          ELSE IF (IFR .EQ. 10) THEN
-            CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
-     +                  '8',ASIZ,0.,-1.)
-            CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
-     +                  '5',ASIZ,0.,+1.)
-          ELSE IF (IFR .EQ. 11) THEN
-            CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
-     +                  '16',ASIZ,0.,-1.)
-            CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
-     +                  '11',ASIZ,0.,+1.)
-          ELSE IF (IFR .EQ. 12) THEN
-            CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
-     +                  '4',ASIZ,0.,-1.)
-            CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
-     +                  '3',ASIZ,0.,+1.)
-          ELSE IF (IFR .EQ. 13) THEN
-            CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
-     +                  '16',ASIZ,0.,-1.)
-            CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
-     +                  '13',ASIZ,0.,+1.)
-          ELSE IF (IFR .EQ. 14) THEN
-            CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
-     +                  '8',ASIZ,0.,-1.)
-            CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
-     +                  '7',ASIZ,0.,+1.)
-          ELSE IF (IFR .EQ. 15) THEN
-            CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
-     +                  '16',ASIZ,0.,-1.)
-            CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
-     +                  '15',ASIZ,0.,+1.)
+C
+C   Imperial units if IUNITS .EQ. 0.
+C
+      IF (IUNITS .EQ. 0) THEN
+        IPLFLG = 1
+        IFR = 0
+        IF (VV .LE. 50) THEN
+          IF (VV .EQ. 0) THEN
+            IWH = 0
+          ELSE
+            IWH = VV/16
+            IFR = MOD(VV,16)
           ENDIF
-          IF (IWH .NE. 0) THEN
+        ELSE IF (VV.GE.56 .AND. VV.LE.80) THEN
+          IVV = 60+10*(VV-56)
+          IWH = IVV/16
+          IFR = MOD(IVV,16)
+        ELSE IF (VV.GT.80 .AND. VV.LT.90) THEN
+          IVV = 300+50*(VV-80)
+          IWH = IVV/16
+          IFR = MOD(IVV,16)
+        ELSE IF (VV.EQ.90) THEN
+          IWH = 0
+        ELSE IF (VV.EQ.91) THEN
+          IWH = 0
+          IFR = 1
+        ELSE IF (VV.EQ.92) THEN
+          IWH = 0
+          IFR = 2
+        ELSE IF (VV.EQ.93) THEN
+          IWH = 0
+          IFR = 5
+        ELSE IF (VV.EQ.94) THEN
+          IWH = 0
+          IFR = 10
+        ELSE IF (VV.EQ.95) THEN
+          IWH = 1
+          IFR = 4
+        ELSE IF (VV.EQ.96) THEN
+          IWH = 2
+          IFR = 8
+        ELSE IF (VV.EQ.97) THEN
+          IWH = 6
+          IFR = 2
+        ELSE IF (VV.EQ.98) THEN
+          IWH = 12
+          IFR = 8
+        ELSE IF (VV.EQ.99) THEN
+          IWH = 31
+          IFR = 4
+        ELSE
+          IPLFLG = 0
+        ENDIF 
+        ASIZ = .67*SIZ
+        BOFF = .33*SIZ
+        IF (IPRSNT(5).EQ.1 .AND. IWH.LE.10 .AND. IPLFLG.EQ.1) THEN
+C
+C  If the fraction of a mile is 0, then plot the whole mile number.
+C
+          IF (IFR .EQ. 0) THEN
+            CHR3 = ' '
+            WRITE(CHR3,'(I3)') IWH
+            LL = WMGTLN(CHR3,LEN(CHR3),1)
+            CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),CHR3(LL:3),SIZ,0.,0.)
+C
+C  Plot the fractional part (the whole part will be plotted after
+C  this whold IF block.
+C
+          ELSE
+            CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),'/',SIZ,0.,0.)
+            IF (IFR .EQ. 1) THEN
+              CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
+     +                    '16',ASIZ,0.,-1.)
+              CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
+     +                    '1',ASIZ,0.,+1.)
+            ELSE IF (IFR .EQ. 2) THEN
+              CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
+     +                    '8',ASIZ,0.,-1.)
+              CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
+     +                    '1',ASIZ,0.,+1.)
+            ELSE IF (IFR .EQ. 3) THEN
+              CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
+     +                    '16',ASIZ,0.,-1.)
+              CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
+     +                    '3',ASIZ,0.,+1.)
+            ELSE IF (IFR .EQ. 4) THEN
+              CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
+     +                    '4',ASIZ,0.,-1.)
+              CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
+     +                    '1',ASIZ,0.,+1.)
+            ELSE IF (IFR .EQ. 5) THEN
+              CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
+     +                    '16',ASIZ,0.,-1.)
+              CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
+     +                    '5',ASIZ,0.,+1.)
+            ELSE IF (IFR .EQ. 6) THEN
+              CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
+     +                    '8',ASIZ,0.,-1.)
+              CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
+     +                    '3',ASIZ,0.,+1.)
+            ELSE IF (IFR .EQ. 7) THEN
+              CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
+     +                    '16',ASIZ,0.,-1.)
+              CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
+     +                    '7',ASIZ,0.,+1.)
+            ELSE IF (IFR .EQ. 8) THEN
+              CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
+     +                    '2',ASIZ,0.,-1.)
+              CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
+     +                    '1',ASIZ,0.,+1.)
+            ELSE IF (IFR .EQ. 9) THEN
+              CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
+     +                    '16',ASIZ,0.,-1.)
+              CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
+     +                    '9',ASIZ,0.,+1.)
+            ELSE IF (IFR .EQ. 10) THEN
+              CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
+     +                    '8',ASIZ,0.,-1.)
+              CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
+     +                    '5',ASIZ,0.,+1.)
+            ELSE IF (IFR .EQ. 11) THEN
+              CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
+     +                    '16',ASIZ,0.,-1.)
+              CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
+     +                    '11',ASIZ,0.,+1.)
+            ELSE IF (IFR .EQ. 12) THEN
+              CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
+     +                    '4',ASIZ,0.,-1.)
+              CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
+     +                    '3',ASIZ,0.,+1.)
+            ELSE IF (IFR .EQ. 13) THEN
+              CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
+     +                    '16',ASIZ,0.,-1.)
+              CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
+     +                    '13',ASIZ,0.,+1.)
+            ELSE IF (IFR .EQ. 14) THEN
+              CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
+     +                    '8',ASIZ,0.,-1.)
+              CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
+     +                    '7',ASIZ,0.,+1.)
+            ELSE IF (IFR .EQ. 15) THEN
+              CALL PLCHHQ(SYMPOS(1,5)+BOFF,SYMPOS(2,5)-BOFF,
+     +                    '16',ASIZ,0.,-1.)
+              CALL PLCHHQ(SYMPOS(1,5)-BOFF,SYMPOS(2,5)+BOFF,
+     +                    '15',ASIZ,0.,+1.)
+            ENDIF
+C
+C  Plot the whole mile part if required.
+C
+            IF (IWH .NE. 0) THEN
 C
 C  Get the left extent of the last character string (which was the
 C  numerator of the fraction).
 C
-            CALL PCGETR('DL',XL)
-            XP = SYMPOS(1,5)-2.*BOFF-XL
-            CHR3 = ' '
-            WRITE(CHR3,'(I3)') IWH
-            LL = WMGTLN(CHR3,LEN(CHR3),1)
-            CALL PLCHHQ(XP,SYMPOS(2,5),CHR3(LL:3),SIZ,0.,+1.)
+              CALL PCGETR('DL',XL)
+              XP = SYMPOS(1,5)-2.*BOFF-XL
+              CHR3 = ' '
+              WRITE(CHR3,'(I3)') IWH
+              LL = WMGTLN(CHR3,LEN(CHR3),1)
+              CALL PLCHHQ(XP,SYMPOS(2,5),CHR3(LL:3),SIZ,0.,+1.)
+            ENDIF
           ENDIF
+        ENDIF
+      ELSE
+C
+C  Metric units if IUNITS .NE. 0.
+C
+        IPLFLG = 1
+        IF (VV .LE. 50) THEN
+          IF (VV .EQ. 0) THEN
+            RWH = 0.
+          ELSE
+            RWH = 0.1*FLOAT(VV)
+          ENDIF
+C
+C  Values of VV strictly between 50 and 56 are not used.
+C
+        ELSE IF (VV.GT.50 .AND. VV.LT.56) THEN
+          IPLFLG = 0
+        ELSE IF (VV.GE.56 .AND. VV.LE.80) THEN
+          RWH = FLOAT(VV) - 50.
+        ELSE IF (VV.GT.80 .AND. VV.LT.90) THEN
+          RWH = 30. + 5.*(FLOAT(VV)-80.)
+        ELSE IF (VV.EQ.90) THEN
+          RWH = 0.
+        ELSE IF (VV.EQ.91) THEN
+          RWH = 0.05
+        ELSE IF (VV.EQ.92) THEN
+          RWH = 0.20
+        ELSE IF (VV.EQ.93) THEN
+          RWH = 0.50
+        ELSE IF (VV.EQ.94) THEN
+          RWH = 1.
+        ELSE IF (VV.EQ.95) THEN
+          RWH = 2.
+        ELSE IF (VV.EQ.96) THEN
+          RWH = 4.
+        ELSE IF (VV.EQ.97) THEN
+          RWH = 10.
+        ELSE IF (VV.EQ.98) THEN
+          RWH = 20.
+        ELSE IF (VV.EQ.99) THEN
+          RWH = 50.
+        ELSE
+          IPLFLG = 0
+        ENDIF 
+        ASIZ = .67*SIZ
+        IF (IPRSNT(5).EQ.1 .AND. VV.GE.0 .AND. VV .LE. 50 .AND. 
+     +    IPLFLG.EQ.1) THEN
+          CHR3 = ' '
+          WRITE(CHR3,'(F3.1)') RWH
+          CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),CHR3,SIZ,0.,0.)
+        ELSE IF (IPRSNT(5).EQ.1 .AND. VV.GE.56 .AND. VV.LT.89 .AND. 
+     +           IPLFLG.EQ.1) THEN
+          CHR3 = ' '
+          WRITE(CHR3,'(F3.0)') RWH
+          CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),CHR3(1:3),SIZ,0.,0.)
+        ELSE IF (IPRSNT(5).EQ.1 .AND. VV.EQ.89 .AND. IPLFLG.EQ.1) THEN      
+          CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),'>70',SIZ,0.,0.)
+        ELSE IF (IPRSNT(5).EQ.1 .AND. VV.EQ.90 .AND. IPLFLG.EQ.1) THEN      
+          CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),'<.05',SIZ,0.,0.)
+        ELSE IF (IPRSNT(5).EQ.1 .AND. VV.EQ.91 .AND. IPLFLG.EQ.1) THEN      
+          CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),'.05',SIZ,0.,0.)
+        ELSE IF (IPRSNT(5).EQ.1 .AND. VV.EQ.92 .AND. IPLFLG.EQ.1) THEN      
+          CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),'0.2',SIZ,0.,0.)
+        ELSE IF (IPRSNT(5).EQ.1 .AND. VV.EQ.93 .AND. IPLFLG.EQ.1) THEN      
+          CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),'0.5',SIZ,0.,0.)
+        ELSE IF (IPRSNT(5).EQ.1 .AND. VV.EQ.94 .AND. IPLFLG.EQ.1) THEN      
+          CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),'1.0',SIZ,0.,0.)
+        ELSE IF (IPRSNT(5).EQ.1 .AND. VV.EQ.95 .AND. IPLFLG.EQ.1) THEN      
+          CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),'2.0',SIZ,0.,0.)
+        ELSE IF (IPRSNT(5).EQ.1 .AND. VV.EQ.96 .AND. IPLFLG.EQ.1) THEN      
+          CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),'4.0',SIZ,0.,0.)
+        ELSE IF (IPRSNT(5).EQ.1 .AND. VV.EQ.97 .AND. IPLFLG.EQ.1) THEN      
+          CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),'10.',SIZ,0.,0.)
+        ELSE IF (IPRSNT(5).EQ.1 .AND. VV.EQ.98 .AND. IPLFLG.EQ.1) THEN      
+          CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),'20.',SIZ,0.,0.)
+        ELSE IF (IPRSNT(5).EQ.1 .AND. VV.EQ.99 .AND. IPLFLG.EQ.1) THEN      
+          CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),'>50.',SIZ,0.,0.)
         ENDIF
       ENDIF
 C     
@@ -1103,13 +1228,24 @@ C
 C
 C  Dew point.
 C
-      IRTEMP = NINT(0.18*REAL(TD)+32.)
-      CHR5 = ' '
-      WRITE(CHR5,'(I5)') IRTEMP
-      LL = WMGTLN(CHR5,LEN(CHR5),1)
-      IF (IPRSNT(9) .EQ. 1) THEN
-        CALL PLCHHQ(SYMPOS(1,9),SYMPOS(2,9),CHR5(LL:LEN(CHR5)),
-     +              SIZ,0.,0.)       
+      IF (IUNITS .EQ. 0) THEN
+        IRTEMP = NINT(0.18*REAL(TD)+32.)
+        CHR5 = ' '
+        WRITE(CHR5,'(I5)') IRTEMP
+        LL = WMGTLN(CHR5,LEN(CHR5),1)
+        IF (IPRSNT(9) .EQ. 1) THEN
+          CALL PLCHHQ(SYMPOS(1,9),SYMPOS(2,9),CHR5(LL:LEN(CHR5)),
+     +                SIZ,0.,0.)       
+        ENDIF
+      ELSE
+        CTEMP = FLOAT(TD)/10.
+        CHR5 = ' '
+        WRITE(CHR5,'(F5.1)') CTEMP
+        LL = WMGTLN(CHR5,LEN(CHR5),1)
+        IF (IPRSNT(9) .EQ. 1) THEN
+          CALL PLCHHQ(SYMPOS(1,9),SYMPOS(2,9),CHR5(LL:LEN(CHR5)),
+     +                SIZ,0.,0.)       
+        ENDIF
       ENDIF
 C
 C  Low clouds.

@@ -1,5 +1,5 @@
 C
-C	$Id: wmblda.f,v 1.12 2001-08-07 18:37:32 fred Exp $
+C	$Id: wmblda.f,v 1.13 2004-09-08 21:52:33 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -229,5 +229,12 @@ C
 C  Flags whether interpolation (=0) or smoothing (=1) is done.
 C
       DATA ISMOTH/0/
+C
+C  Flags whether to use imperial units (as per the NOAA chart),
+C  or metric units (as per SYNOP Data Format (FM-12) as in
+C
+C    http://weather.unisys.com/wxp/Appendices/Formats/SYNOP.html
+C
+      DATA IUNITS/0/
 C
       END

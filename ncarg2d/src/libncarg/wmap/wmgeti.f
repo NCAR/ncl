@@ -1,5 +1,5 @@
 C
-C	$Id: wmgeti.f,v 1.13 2002-10-08 22:45:47 fred Exp $
+C	$Id: wmgeti.f,v 1.14 2004-09-08 21:52:33 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -259,6 +259,10 @@ C
       ELSE IF (CNP(1:3).EQ.'WDF' .OR. CNP(1:3).EQ.'wdf' .OR. 
      +    CNP(1:3).EQ.'Wdf') THEN
         IVP = IWBDIR
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'UNT' .OR. CNP(1:3).EQ.'unt' .OR. 
+     +    CNP(1:3).EQ.'Unt') THEN
+        IVP = IUNITS
         GO TO 110
       ELSE
         CTM(1:36) = 'WMGETI - Parameter name not known - '
