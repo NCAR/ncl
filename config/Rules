@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.14 1993-12-09 23:18:11 boote Exp $
+ *	$Id: Rules,v 1.15 1994-03-02 20:17:05 haley Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -377,7 +377,7 @@ CleanFilesTarget(library objects)
 all-local:: library]\
 ]\
 library:: sources]\
-	@echo "sources" > name;\]\
+	@echo sources > name;\]\
 	$(RM) library;\]\
 	$(AR_QUICK) library name sources;\]\
 	$(RANLIB) library;\]\
