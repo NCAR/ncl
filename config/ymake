@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.14 1994-04-08 04:16:08 boote Exp $
+#	$Id: ymake,v 1.15 1994-04-14 18:27:55 boote Exp $
 #
 ######################################################################
 #
@@ -181,9 +181,9 @@ if ($?YMAKE_DEV_FILE) then
 endif
 
 if (-e $config_dir/Site.local) then
-	set defines=($defines -DSiteFile=\"Site.local\")
+	set defines=($defines -DSiteFile=\"Site.local\" -DSiteFileName=Site.local)
 else
-	set defines=($defines -DSiteFile=\"Site\")
+	set defines=($defines -DSiteFile=\"Site\" -DSiteFileName=Site)
 endif
 
 set ymakefile
