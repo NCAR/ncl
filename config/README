@@ -3,8 +3,8 @@
 #
 ENVIRONMENT VARS
 
-NCARG	is no longer usefull - the distribution keeps track of it's directory
-	hierachy dynamically - so directories can be moved around within
+NCARG	is no longer useful - the distribution keeps track of its directory
+	hierarchy dynamically - so directories can be moved around within
 	the distribution without having to edit ymake files directly - You
 	may need to edit the $TOP/config/Project file to update any MAKE
 	symbols that are set to know where that part of the distribution
@@ -17,18 +17,20 @@ ymake if you are using ymake from the installed directory - It takes no
 effect for a full build of the system.  You can set this variable to a
 filename anywhere on the system. ymake will then include this file into
 the Makefile it creates - directly before it includes the yMakefile.  This
-file can over-ride any of the MAKE symbols that are set in the Template,Arch,
-Site, or Project files.  This is very usefull if you only want to have part
-of the distribution checked out at a time.  You can over-ride the values
+file can override any of the MAKE symbols that are set in the Template,Arch,
+Site, or Project files.  This is very useful if you only want to have part
+of the distribution checked out at a time.  You can override the values
 that have been assigned to NCARGLIB or any of the other libraries.  That
 way if you are currently working on that library you can put the line
+
 NCARGLIB = /path/to/work/dir/libncarg.a
+
 in this file - and all the application directories that use ymake will use
 this symbol to retrieve the ncarg library instead of using the installed
 library..
 
 Template sets up defaults for the following cpp variables - They can be
-over-riden in the "architecture" files or in the "Site" file.
+overridden in the "architecture" files or in the "Site" file.
 
 cpp symbol	default			Make Symbol(s) set or description
 
@@ -45,7 +47,7 @@ XMutilLibrary	-lXmu			$(XMULIB)
 XawLibrary	-lXaw			$(XAWLIB)
 XmotifLibrary	-lXm			$(XMOTIFLIB)
 
-UseCatDirs	NO			formated/unformated manpages
+UseCatDirs	NO			formatted/unformatted manpages
 MakeProgram	make			$(MAKE)
 CCompiler	cc			$(CC)
 CLoader		CCompiler		$(CC_LD)
@@ -198,7 +200,7 @@ HLULIBSRC		$(NILIBSRC)/hlu
 HLUUTILLIBSRC		$(NILIBSRC)/hlu_util
 
 THESE ARE VERY IMPORTANT!! They should be used instead of using the library
-directly so dependancies can be determined. They will use the libraries
+directly so dependencies can be determined. They will use the libraries
 in the distribution if ymake is being used in the distribution - but if ymake
 is being used from the installed space then they will use the installed versions
 of these libraries.
@@ -233,7 +235,7 @@ DEPCTRANSLIB		$(CTRANSLIB)
 DEPICTRANSLIB		$(ICTRANSLIB)
 DEPICTRANS_LIB		$(ICTRANS_LIB)
 
-These are convienience symbols that include a number of the libs together.
+These are convenience symbols that include a number of the libs together.
 
 NCARGLIBS		$(NCARGLIB) $(NCARGGKSLIB) $(NCARGLOCLIB) $(NCARGCLIB)
 CNCARGLIBS		$(CNCARGLIB) $(CNCARGGKSLIB)
@@ -286,7 +288,7 @@ DisableOptimize		if defined COptimizeFlag and FOptimizeFlag will be
 			defined as null.
 
 COptimizeFlag		This is usually set in the "arch" file but can be
-			over-ridden in a specific yMakefile to use a specific
+			overridden in a specific yMakefile to use a specific
 			level of optimization.
 
 FOptimizeFlag		"see COptimizeFlag above"
@@ -326,7 +328,7 @@ SystemV			SystemVArch
 $(EXTRA_CDEFINES)	Used as part of CFLAGS to compile C programs - put in
 			additional -D flags to compile.
 
-$(EXTRA_FDEFINES)	Used to add -D flags to fortran compile - be carefull
+$(EXTRA_FDEFINES)	Used to add -D flags to fortran compile - be careful
 			since this isn't supported on all arch's.
 
 $(EXTRA_DEFINES)	Used to add -D flags to both fortran and C compiles.
@@ -386,7 +388,7 @@ All of the NCAR Graphics Library symbols can be specified in this file.
 *************************************************************************
 * Rules creates the following cpp macros that should be used in ymake	*
 * files.  PLEASE - Don't put Make targets in ymake files unless in is	*
-* truely a unique directory!: It makes things very difficult to update	*
+* truly a unique directory!: It makes things very difficult to update	*
 *************************************************************************
 
 -------------------------------------------------------------------------
@@ -448,13 +450,13 @@ FortranProgram(program,objects,deplibs)
 
 FortranTarget(program,objects)
 
-	This rule is essentually identical to FortranProgram except that it
+	This rule is essentially identical to FortranProgram except that it
 	doesn't keep track of the Dependent Libraries - so it doesn't re-link
 	if the libraries are re-compiled.
 
 FNotInstalledTarget(program,objects)
 
-	This rule is essentually identical to FortranTarget except that it
+	This rule is essentially identical to FortranTarget except that it
 	doesn't put the install rule in.  It is intended to be used to create
 	programs that are only used within the distribution or are installed
 	into a different dir than $(BINPATH).
@@ -526,7 +528,7 @@ PartialSourceLibraryRoot(library,dirs)
 	library	- source library to create in the current dir.
 	dirs	- sub-dirs that contain the source for library.
 
-	This rule is analagous to the PartialLibraryRoot rule but for a source
+	This rule is analogous to the PartialLibraryRoot rule but for a source
 	library.  It is a null rule unless BuildNCARGSourceLibrary is defined.
 
 PartialSourceLibraryTarget(name,library,sources)
@@ -561,7 +563,7 @@ DependTarget(srcs)
 
 	This rule looks threw the C sources in srcs and follows all the
 	#include line to find out which files each of those sources are
-	dependendt upon and appends that information to the Makefile.
+	dependent upon and appends that information to the Makefile.
 
 BuildIncludes(srclist,dstsubdir,dstupdir)
 	srclist		- include files that eventually need to be installed.
