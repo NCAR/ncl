@@ -68,13 +68,13 @@ over GKS calls to GSVP and GSWN using normalized device coordinates
 and world coordinates.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
-spset1, spset2, splogy, sprevx.
+fcoord1, fcoord2, splogy, sprevx.
 .sp
 sprevx shows the use of routine SET for an X axis scaling reversal,
 splogy shows the use of routine SET for logarithmic scaling of the Y axis,
-spset1 shows the mapping from GKS world coordinates to GKS normalized
+fcoord1 shows the mapping from GKS world coordinates to GKS normalized
 device coordinates, and
-spset2 shows the mapping from NCAR Graphics user coordinates to GKS
+fcoord2 shows the mapping from NCAR Graphics user coordinates to GKS
 normalized device coordinates.
 .SH ACCESS
 To use SET, load the NCAR Graphics libraries ncarg, ncarg_gks,
