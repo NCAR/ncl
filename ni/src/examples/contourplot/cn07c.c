@@ -1,5 +1,5 @@
 /*
-**      $Id: cn07c.c,v 1.2 1996-01-10 21:25:44 haley Exp $
+**      $Id: cn07c.c,v 1.3 1996-02-13 00:15:57 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -47,13 +47,15 @@ main()
  */
     int     appid, workid, field1, con1;
     int     srlist, i;
+    int     icount[2];
 /*
  * Declare variables for getting information from netCDF file.
  */
-    int     ncid, lon_id, lat_id, frtime_id, Z_id, frtime[7];
+    int     ncid, lon_id, lat_id, frtime_id, Z_id;
     float   Z[33][36], special_value;
     float   lon[36], lat[33];
-    long    start[4], count[4], lonlen, latlen, frtimelen;
+    nclong  start[4], count[4], lonlen, latlen, frtimelen;
+    nclong  frtime[7];
     char    filename[256];
     const char *dir = _NGGetNCARGEnv("data");
 /*
@@ -124,29 +126,29 @@ main()
     count[0] = count[1] = 1;
     count[2] = latlen;
     count[3] = lonlen;
-    ncvarget(ncid,Z_id,(long const *)start,(long const *)count,Z);
+    ncvarget(ncid,Z_id,(nclong const *)start,(nclong const *)count,Z);
     ncattget(ncid,Z_id,"_FillValue",&special_value);
 /*
  * Read in lat/lon/frtime values.
  */
     lat_id = ncvarid(ncid,"lat");
     count[0] = latlen;
-    ncvarget(ncid,lat_id,(long const *)start,(long const *)count,lat);
+    ncvarget(ncid,lat_id,(nclong const *)start,(nclong const *)count,lat);
 
     lon_id = ncvarid(ncid,"lon");
     count[0] = lonlen;
-    ncvarget(ncid,lon_id,(long const *)start,(long const *)count,lon);
+    ncvarget(ncid,lon_id,(nclong const *)start,(nclong const *)count,lon);
 
     frtime_id = ncvarid(ncid,"frtime");
     count[0] = frtimelen;
-    ncvarget(ncid,frtime_id,(long const *)start,(long const *)count,frtime);
+    ncvarget(ncid,frtime_id,(nclong const *)start,(nclong const *)count,frtime);
 /*
  * Create a scalar field object and configure the missing values and
  * the start and end information.
  */
-    count[0] = latlen; count[1] = lonlen;
+    icount[0] = latlen; icount[1] = lonlen;
     NhlRLClear(srlist);
-    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&Z[0][0],2,(int *)count);
+    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&Z[0][0],2,(int *)icount);
     NhlRLSetFloat(srlist,NhlNsfMissingValueV,special_value);
     NhlRLSetFloat(srlist,NhlNsfXCStartV,lon[0]);
     NhlRLSetFloat(srlist,NhlNsfXCEndV,lon[lonlen-1]);
@@ -205,14 +207,14 @@ main()
         count[1] = 1;
         count[2] = latlen;
         count[3] = lonlen;
-        ncvarget(ncid,Z_id,(long const *)start,(long const *)count,Z);
+        ncvarget(ncid,Z_id,(nclong const *)start,(nclong const *)count,Z);
 /*
  * Create new scalar field.
  */
         NhlRLClear(srlist);
-        count[0] = latlen; count[1] = lonlen;
+        icount[0] = latlen; icount[1] = lonlen;
         NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&Z[0][0],2,
-                            (int *)count);
+                            (int *)icount);
         NhlSetValues(field1,srlist);
         NhlDraw(con1);
         NhlFrame(workid);

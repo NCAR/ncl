@@ -1,5 +1,5 @@
 /*
-**      $Id: cn05c.c,v 1.2 1996-01-10 21:25:43 haley Exp $
+**      $Id: cn05c.c,v 1.3 1996-02-13 00:15:56 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -56,6 +56,7 @@ main()
     int     appid, workid, field1, con1;
     int     mapid, lb1id, lb2id;
     int     srlist, i, day;
+    int     icount[2];
 /*
  * Declare variables for defining color map.
  */
@@ -72,8 +73,8 @@ main()
  */
     int     ncid, t_id, lon_id, lat_id, time_id;
     float   T[40][49];
-    int     lon[49], lat[40];
-    long    start[3], count[3], lonlen, latlen, nframes;
+    nclong  lon[49], lat[40];
+    nclong  start[3], count[3], lonlen, latlen, nframes;
     char    filename[256], daystr[10];
     const char *dir = _NGGetNCARGEnv("data");
 /*
@@ -151,18 +152,18 @@ main()
  */
     start[0] = start[1] = start[2] = 0;
     count[0] = 1; count[1] = latlen; count[2] = lonlen;
-    ncvarget(ncid,t_id,(long const *)start,(long const *)count,T);
+    ncvarget(ncid,t_id,(nclong const *)start,(nclong const *)count,T);
     count[0] = latlen;
-    ncvarget(ncid,lat_id,(long const *)start,(long const *)count,lat);
+    ncvarget(ncid,lat_id,(nclong const *)start,(nclong const *)count,lat);
     count[0] = lonlen;
-    ncvarget(ncid,lon_id,(long const *)start,(long const *)count,lon);
+    ncvarget(ncid,lon_id,(nclong const *)start,(nclong const *)count,lon);
 /*
  * Create a scalar field object that will be used as the
  * dataset for the contour object.
  */
-    count[0] = latlen; count[1] = lonlen;
+    icount[0] = latlen; icount[1] = lonlen;
     NhlRLClear(srlist);
-    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&T[0][0],2,(int *)count);
+    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&T[0][0],2,(int *)icount);
     NhlRLSetInteger(srlist,NhlNsfXCStartV,lon[0]);
     NhlRLSetInteger(srlist,NhlNsfXCEndV,lon[lonlen-1]);
     NhlRLSetInteger(srlist,NhlNsfYCStartV,lat[0]);
@@ -328,10 +329,10 @@ main()
  */
         start[0] = i; start[1] = start[2] = 0;
         count[0] = 1; count[1] = latlen; count[2] = lonlen;
-        ncvarget(ncid,t_id,(long const *)start,(long const *)count,T);
-        count[0] = latlen; count[1] = lonlen;
+        ncvarget(ncid,t_id,(nclong const *)start,(nclong const *)count,T);
+        icount[0] = latlen; icount[1] = lonlen;
         NhlRLClear(srlist);
-        NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&T[0][0],2,(int *)count);
+        NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&T[0][0],2,(int *)icount);
         NhlSetValues(field1,srlist);
 /*
  * Increment day string.

@@ -1,5 +1,5 @@
 /*
-**      $Id: cn06c.c,v 1.2 1996-01-09 21:38:47 haley Exp $
+**      $Id: cn06c.c,v 1.3 1996-02-13 00:15:57 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -51,13 +51,15 @@ main()
  */
     int     appid, workid, field1, con1;
     int     srlist, i, j, k;
+    int     icount[2];
 /*
  * Declare variables for getting information from netCDF file.
  */
-    int     ncid, lon_id, lat_id, frtime_id, T_id, frtime[7];
+    int     ncid, lon_id, lat_id, frtime_id, Tid;
     float   T[NLAT][NLON], special_value;
     float   lon[NLON], lat[NLAT];
-    long    start[4], count[4], lonlen, latlen, frtimelen;
+    nclong  start[4], count[4], lonlen, latlen, frtimelen;
+    nclong  frtime[7];
     char    filename[256], *title, *hist, full_title[256];
     char    lat_name[128], lon_name[128];
     nc_type t_type;
@@ -136,29 +138,29 @@ main()
 /*
  * Read in T.
  */
-    T_id = ncvarid(ncid,"T");
+    Tid = ncvarid(ncid,"T");
     start[0] = start[1] = start[2] = start[3] = 0;
     count[0] = count[1] = 1;
     count[2] = latlen;
     count[3] = lonlen;
-    ncvarget(ncid,T_id,(long const *)start,(long const *)count,T);
-    ncattget(ncid,T_id,"_FillValue",&special_value);
+    ncvarget(ncid,Tid,(nclong const *)start,(nclong const *)count,T);
+    ncattget(ncid,Tid,"_FillValue",&special_value);
 /*
  * Read in lat/lon/frtime values.
  */
     lat_id = ncvarid(ncid,"lat");
     count[0] = latlen;
-    ncvarget(ncid,lat_id,(long const *)start,(long const *)count,lat);
+    ncvarget(ncid,lat_id,(nclong const *)start,(nclong const *)count,lat);
     ncattget(ncid,lat_id,"long_name",(void *)lat_name);
 
     lon_id = ncvarid(ncid,"lon");
     count[0] = lonlen;
-    ncvarget(ncid,lon_id,(long const *)start,(long const *)count,lon);
+    ncvarget(ncid,lon_id,(nclong const *)start,(nclong const *)count,lon);
     ncattget(ncid,lon_id,"long_name",(void *)lon_name);
 
     frtime_id = ncvarid(ncid,"frtime");
     count[0] = frtimelen;
-    ncvarget(ncid,frtime_id,(long const *)start,(long const *)count,frtime);
+    ncvarget(ncid,frtime_id,(nclong const *)start,(nclong const *)count,frtime);
 /*
  * Convert T from Degrees K to Degrees F.
  */
@@ -167,9 +169,9 @@ main()
  * Create a scalar field object and configure the missing values and
  * the start and end information.
  */
-    count[0] = latlen; count[1] = lonlen;
+    icount[0] = latlen; icount[1] = lonlen;
     NhlRLClear(srlist);
-    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&T[0][0],2,(int *)count);
+    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&T[0][0],2,(int *)icount);
     NhlRLSetFloat(srlist,NhlNsfMissingValueV,special_value);
     NhlRLSetFloat(srlist,NhlNsfXCStartV,lon[0]);
     NhlRLSetFloat(srlist,NhlNsfXCEndV,lon[lonlen-1]);
@@ -232,7 +234,7 @@ main()
         count[1] = 1;
         count[2] = latlen;
         count[3] = lonlen;
-        ncvarget(ncid,T_id,(long const *)start,(long const *)count,T);
+        ncvarget(ncid,Tid,(nclong const *)start,(nclong const *)count,T);
 /*
  * Convert T from Degrees K to Degrees F.
  */
@@ -241,9 +243,9 @@ main()
  * Create new scalar field.
  */
         NhlRLClear(srlist);
-        count[0] = latlen; count[1] = lonlen;
+        icount[0] = latlen; icount[1] = lonlen;
         NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&T[0][0],2,
-                            (int *)count);
+                            (int *)icount);
         NhlSetValues(field1,srlist);
         NhlDraw(con1);
         NhlFrame(workid);

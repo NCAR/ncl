@@ -1,5 +1,5 @@
 /*
-**      $Id: cn09c.c,v 1.1 1995-09-28 16:36:36 haley Exp $
+**      $Id: cn09c.c,v 1.2 1996-02-13 00:15:58 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -42,13 +42,15 @@ main()
  */
     int     appid, workid, field1, con1;
     int     srlist, i, j, k;
+	int     icount[2];
 /*
  * Declare variables for getting information from netCDF file.
  */
-    int     ncid, lon_id, lat_id, frtime_id, press_id, frtime[7];
+    int     ncid, lon_id, lat_id, frtime_id, press_id;
     float   press[33][36], special_value;
     float   lon[36], lat[33];
-    long    start[3], count[3], lonlen, latlen, frtimelen;
+    nclong  start[3], count[3], lonlen, latlen, frtimelen;
+    nclong  frtime[7];
     char    filename[256], string[20];
     const char *dir = _NGGetNCARGEnv("data");
 /*
@@ -116,7 +118,7 @@ main()
     press_id = ncvarid(ncid,"Psl");
     start[0] = start[1] = start[2] = 0;
     count[0] = 1; count[1] = latlen; count[2] = lonlen;
-    ncvarget(ncid,press_id,(long const *)start,(long const *)count,press);
+    ncvarget(ncid,press_id,(nclong const *)start,(nclong const *)count,press);
     ncattget(ncid,press_id,"_FillValue",&special_value);
     for( j = 0; j < latlen; j++ ) {
         for( k = 0; k < lonlen; k++ ) {
@@ -128,22 +130,22 @@ main()
  */
     lat_id = ncvarid(ncid,"lat");
     count[0] = latlen;
-    ncvarget(ncid,lat_id,(long const *)start,(long const *)count,lat);
+    ncvarget(ncid,lat_id,(nclong const *)start,(nclong const *)count,lat);
 
     lon_id = ncvarid(ncid,"lon");
     count[0] = lonlen;
-    ncvarget(ncid,lon_id,(long const *)start,(long const *)count,lon);
+    ncvarget(ncid,lon_id,(nclong const *)start,(nclong const *)count,lon);
 
     frtime_id = ncvarid(ncid,"frtime");
     count[0] = frtimelen;
-    ncvarget(ncid,frtime_id,(long const *)start,(long const *)count,frtime);
+    ncvarget(ncid,frtime_id,(nclong const *)start,(nclong const *)count,frtime);
 /*
  * Create scalar field configured with first time step
  * of pressure data.
  */
-    count[0] = latlen; count[1] = lonlen;
+    icount[0] = latlen; icount[1] = lonlen;
     NhlRLClear(srlist);
-    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&press[0][0],2,(int *)count);
+    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&press[0][0],2,(int *)icount);
     NhlRLSetFloat(srlist,NhlNsfMissingValueV,special_value);
     NhlRLSetFloat(srlist,NhlNsfXCStartV,lon[0]);
     NhlRLSetFloat(srlist,NhlNsfXCEndV,lon[lonlen-1]);
@@ -184,16 +186,16 @@ main()
  */
         start[0] = i; start[1] = start[2] = 0;
         count[0] = 1; count[1] = latlen; count[2] = lonlen;
-        ncvarget(ncid,press_id,(long const *)start,(long const *)count,press);
+        ncvarget(ncid,press_id,(nclong const *)start,(nclong const *)count,press);
         for( j = 0; j < latlen; j++ ) {
             for( k = 0; k < lonlen; k++ ) {
                 press[j][k] /= 100.;
             }
         }
         NhlRLClear(srlist);
-        count[0] = latlen; count[1] = lonlen;
+        icount[0] = latlen; icount[1] = lonlen;
         NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&press[0][0],2,
-                            (int *)count);
+                            (int *)icount);
 /*
  * Create new scalar field.
  */

@@ -1,5 +1,5 @@
 /*
-**      $Id: cn08c.c,v 1.1 1995-09-28 19:24:42 haley Exp $
+**      $Id: cn08c.c,v 1.2 1996-02-13 00:15:58 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -42,6 +42,7 @@ main()
  */
     int     appid, workid, field1, con1;
     int     srlist, i, j, k;
+    int     icount[2];
 /*
  * Declare variables for getting information from netCDF file.
  */
@@ -49,7 +50,7 @@ main()
     float temp[10][33], special_value;
     float lon[36], lat[33], level[10];
     float min_lat, min_level, max_lat, max_level;
-    long  start[4], count[4], lonlen, latlen, levellen;
+    nclong  start[4], count[4], lonlen, latlen, levellen;
     char  filename[256], string[50];
     const char *dir = _NGGetNCARGEnv("data");
 /*
@@ -117,7 +118,7 @@ main()
     temp_id = ncvarid(ncid,"T");
     start[0] = start[1] = start[2] = start[3] = 0;
     count[0] = 1; count[1] = levellen; count[2] = latlen; count[3] = 1;
-    ncvarget(ncid,temp_id,(long const *)start,(long const *)count,temp);
+    ncvarget(ncid,temp_id,(nclong const *)start,(nclong const *)count,temp);
     ncattget(ncid,temp_id,"_FillValue",&special_value);
     for( j = 0; j < levellen; j++ ) {
         for( k = 0; k < latlen; k++ ) {
@@ -129,22 +130,22 @@ main()
  */
     lat_id = ncvarid(ncid,"lat");
     count[0] = latlen;
-    ncvarget(ncid,lat_id,(long const *)start,(long const *)count,lat);
+    ncvarget(ncid,lat_id,(nclong const *)start,(nclong const *)count,lat);
 
     lon_id = ncvarid(ncid,"lon");
     count[0] = lonlen;
-    ncvarget(ncid,lon_id,(long const *)start,(long const *)count,lon);
+    ncvarget(ncid,lon_id,(nclong const *)start,(nclong const *)count,lon);
 
     level_id = ncvarid(ncid,"level");
     count[0] = levellen;
-    ncvarget(ncid,level_id,(long const *)start,(long const *)count,level);
+    ncvarget(ncid,level_id,(nclong const *)start,(nclong const *)count,level);
 /*
  * Set up initial scalar field with longitude of temperature data.
  */
-    count[0] = levellen; count[1] = latlen;
+    icount[0] = levellen; icount[1] = latlen;
     NhlRLClear(srlist);
     NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&temp[0][0],2,
-                         (int *)count);
+                         (int *)icount);
     NhlRLSetFloat(srlist,NhlNsfMissingValueV,special_value);
     NhlRLSetFloat(srlist,NhlNsfXCStartV,lat[0]);
     NhlRLSetFloat(srlist,NhlNsfXCEndV,lat[latlen-1]);
@@ -210,7 +211,7 @@ main()
         start[3] = i;
         count[0] = 1; count[1] = levellen;
         count[2] = latlen; count[3] = 1;
-        ncvarget(ncid,temp_id,(long const *)start,(long const *)count,
+        ncvarget(ncid,temp_id,(nclong const *)start,(nclong const *)count,
                  temp);
         for( j = 0; j < levellen; j++ ) {
             for( k = 0; k < latlen; k++ ) {
@@ -218,9 +219,9 @@ main()
             }
         }
         NhlRLClear(srlist);
-        count[0] = levellen; count[1] = latlen;
+        icount[0] = levellen; icount[1] = latlen;
         NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&temp[0][0],2,
-                            (int *)count);
+                            (int *)icount);
 /*
  * Create new scalar field.
  */
