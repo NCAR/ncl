@@ -1,0 +1,505 @@
+/*
+ *	$Id: c_cbex01.c.sed,v 1.1 1992-10-26 19:52:05 haley Exp $
+ */
+#include <stdio.h>
+#include <math.h>
+#include <ncarg/Cbind.h>
+
+int icll, iama[10000];
+
+main()
+{
+/*
+ * LATEST REVISION        September, 1989
+ *
+ *
+ * PURPOSE                To provide a simple demonstration of the
+ *                        use of BIVAR and CONPACK together as a
+ *                        temporary replacement for CONRAN.
+ *
+ * PRECISION              Single.
+ *
+ * REQUIRED LIBRARY       BIVAR, CONPACK.
+ * FILES
+ *
+ *
+ * LANGUAGE               FORTRAN.
+ * HISTORY                Written September, 1989, by Dave Kennison.
+ * ALGORITHM              At each of nine points scattered "at random"
+ *                        in a portion of the x/y plane, a mathematical
+ *                        function is evaluated to obtain a value of z.
+ *                        The resulting triplets approximately describe
+ *                        the surface which is defined exactly by the
+ *                        function.  The routine BIVAR is then called to
+ *                        obtain an array of interpolated values of z on
+ *                        a regular grid, approximating the same surface,
+ *                        and this data is used as input to CONPACK to
+ *                        draw two different contour plots.
+ *                        On the first plot, contours are shown in a
+ *                        rectangular area containing the x/y positions
+ *                        of the original nine data points and those
+ *                        positions are marked on the plot.
+ *                        On the second plot, capabilities of CONPACK
+ *                        and AREAS are used to limit the drawing of
+ *                        contours to the convex hull of the original
+ *                        nine x/y positions.
+ */
+
+/*
+ * Define arrays to be used below.  XRAN, YRAN, and ZRAN are used for
+ * the "random data".  XCNV and YCNV are used to define the convex hull
+ * of the x/y positions of this data.  XDAT, YDAT, and ZDAT are used for
+ * the regular grid of data returned by BIVAR.  IWRK and RWRK are used
+ * as integer and real workspace arrays, both in calls to BIVAR and in
+ * calls to CONPACK.
+ */
+    float xran[9],yran[9],zran[9],xcnv[7],ycnv[7];
+    float xdat[11],ydat[12],zdat[11][12],rwrk[1000];
+    float dumi[1][1], xval1, yval1, xval2, yval2;
+    int iwrk[1000];
+    int i,j;
+    extern void dfclrs();
+/*
+ * Define a temporary character variable for use below.
+ */
+    char ichr[2];
+/*
+ * Declare the routine which will draw contour lines, avoiding labels.
+ */
+    extern int cpdrpl_(
+#ifdef NeedFuncProto
+        float *xcra,
+        float *ycra,
+        int *ncra,
+        int *iaia,
+        int *igia,
+        int *nagi
+#endif
+);
+/*
+ * Specify the X and Y input data values.
+ */
+    xran[0] = 0.4;    yran[0] = 5.4;
+    xran[1] = 2.0;    yran[1] = 1.1;
+    xran[2] = 2.8;    yran[2] = 3.7;
+    xran[3] = 5.0;    yran[3] = 6.8;
+    xran[4] = 4.8;    yran[4] = 9.5;
+    xran[5] = 8.8;    yran[5] = 9.8;
+    xran[6] = 5.1;    yran[6] = 0.7;
+    xran[7] = 6.2;    yran[7] = 2.7;
+    xran[8] = 9.1;    yran[8] = 3.0;
+/*
+ * Specify the Z input data values.
+ */
+    for( i =0; i < 9; i++ ) {
+        zran[i]=exp(-pow(xran[i]-3.,2.)/9.-pow(yran[i]-5.,2.)/25.)-
+                exp(-pow(xran[i]-6.,2.)/9.-pow(yran[i]-5.,2.)/25.);
+    }
+/*
+ * Specify the points defining the convex hull.
+ */
+    xcnv[0]=xran[0];  ycnv[0]=yran[0];
+    xcnv[1]=xran[1];  ycnv[1]=yran[1];  
+    xcnv[2]=xran[6];  ycnv[2]=yran[6];  
+    xcnv[3]=xran[8];  ycnv[3]=yran[8];
+    xcnv[4]=xran[5];  ycnv[4]=yran[5];  
+    xcnv[5]=xran[4];  ycnv[5]=yran[4];
+    xcnv[6]=xran[0];  ycnv[6]=yran[0];
+/*
+ * Specify the X and Y coordinates of the points on the regular grid.
+ */
+    for(  i = 0; i < 11; i++ ) {
+        xdat[i]=(float)i;
+    }
+
+    for(  j = 0; j < 12; j++ ) {
+        ydat[j]=(float)j;
+    }
+/*
+ * Call IDSFFT to obtain a regular grid of values on the fitted surface.
+ */
+    c_idsfft(1,9,xran,yran,zran,11,12,11,xdat,ydat,(float *)zdat,iwrk,rwrk);
+/*
+ * Open GKS.
+ */
+    c_opngks();
+/*
+ * Turn off clipping.
+ */
+    c_gsclip (0);
+/*
+ * Define a set of colors to use.
+ */
+    dfclrs();
+/*
+ * Tell CONPACK to position labels using the "regular" scheme.
+ */
+    c_cpseti ("LLP - LINE LABEL POSITIONING",2);
+/*
+ * Tell CONPACK to put the informational label in a different place.
+ */
+    c_cpseti ("ILP - INFORMATIONAL LABEL POSITIONING",-2);
+    c_cpsetr ("ILX - INFORMATIONAL LABEL X COORDINATE",.98);
+    c_cpsetr ("ILY - INFORMATIONAL LABEL Y COORDINATE",.02);
+/*
+ * Provide a little more room below the viewport; otherwise, the labels
+ * on AUTOGRAPH"s X axis get squashed.
+ */
+    c_cpsetr ("VPB - VIEWPORT BOTTOM EDGE",.08);
+/*
+ * Tell CONPACK in what ranges to generate X and Y coordinates.
+ */
+    c_cpsetr ("XC1 - X COORDINATE AT I=1",0.);
+    c_cpsetr ("XCM - X COORDINATE AT I=M",10.);
+    c_cpsetr ("YC1 - Y COORDINATE AT J=1",0.);
+    c_cpsetr ("YCN - Y COORDINATE AT J=N",11.);
+/*
+ * Turn off the culling of labels by CPCHHL and CPCHLL.
+ */
+    icll=0;
+/*
+ * Dump the polyline buffer and change the polyline color to white.
+ * Change the text color to orange.  CONPACK will use these colors.
+ */
+    c_plotif (0.,0.,2);
+    c_gsplci (1);
+    c_gstxci (12);
+/*
+ * Initialize the drawing of the first contour plot.
+ */
+    c_cprect ((float *)zdat,12,11,11,12,rwrk,1000,iwrk,1000);
+/*
+ * Initialize the area map which will be used to keep contour lines from
+ * passing through labels.
+ */
+    c_arinam (iama,10000);
+/*
+ * Put label boxes in the area map.
+ */
+    c_cplbam ((float *)zdat,11,12,rwrk,iwrk,iama);
+/*
+ * Draw the contour lines, masked by the area map.
+ */
+    c_cpcldm ((float *)zdat,11,12,rwrk,iwrk,iama,cpdrpl_);
+/*
+ * Draw all the labels.
+ */
+    c_cplbdr ((float *)zdat,11,12,rwrk,iwrk);
+/*
+ * Dump the polyline buffer and change the polyline color to orange.
+ * Change the text color to orange, too, so that the AUTOGRAPH background
+ * will come out entirely in that color.
+ */
+    c_plotif (0.,0.,2);
+    c_gsplci (12);
+    c_gstxci (12);
+/*
+ * Use AUTOGRAPH to produce a background for the contour plot, forcing
+ * it to pick up appropriate values from CONPACK"s SET call.
+ */
+    c_agseti ("SET.",4);
+    c_agstup ((float *)dumi,1,1,1,1,1,1,(float *)dumi,1,1,1,1,1,1);
+    c_agback();
+/*
+ * Dump the polyline buffer and change the polyline color to green.
+ */
+    c_plotif (0.,0.,2);
+    c_gsplci (9);
+/*
+ * Change the aspect ratio of the characters drawn by PLCHMQ to make
+ * them approximately square.
+ */
+    c_pcsetr ("HW",1.);
+/*
+ * At each of the "random" data positions, put the index of the point
+ * and a starburst to set it off.
+ */
+    for( i = 0; i < 9; i++ ) {
+        sprintf( ichr, "%d", i+1 );
+        c_plchmq (xran[i],yran[i],ichr,.0175,0.,0.);
+        xval1 = c_cfux(c_cufx(xran[i])-.02);
+        yval1 = c_cfuy(c_cufy(yran[i])-.02);
+        xval2 = c_cfux(c_cufx(xran[i])-.01);
+        yval2 = c_cfuy(c_cufy(yran[i])-.01);
+        c_line (xval1,yval1,xval2,yval2);
+        xval1 = c_cfux(c_cufx(xran[i])+.01);
+        yval1 = c_cfuy(c_cufy(yran[i])+.01);
+        xval2 = c_cfux(c_cufx(xran[i])+.02);
+        yval2 = c_cfuy(c_cufy(yran[i])+.02);
+        c_line (xval1,yval1,xval2,yval2);
+        xval1 = c_cfux(c_cufx(xran[i])-.02);
+        yval1 = c_cfuy(c_cufy(yran[i])+.02);
+        xval2 = c_cfux(c_cufx(xran[i])-.01);
+        yval2 = c_cfuy(c_cufy(yran[i])+.01);
+        c_line (xval1,yval1,xval2,yval2);
+        xval1 = c_cfux(c_cufx(xran[i])+.01);
+        yval1 = c_cfuy(c_cufy(yran[i])-.01);
+        xval2 = c_cfux(c_cufx(xran[i])+.02);
+        yval2 = c_cfuy(c_cufy(yran[i])-.02);
+        c_line (xval1,yval1,xval2,yval2);
+        xval1 = c_cfux(c_cufx(xran[i])-.02828);
+        yval1 = c_cfuy(c_cufy(yran[i]));
+        xval2 = c_cfux(c_cufx(xran[i])-.01414);
+        yval2 = c_cfuy(c_cufy(yran[i]));
+        c_line (xval1,yval1,xval2,yval2);
+        xval1 = c_cfux(c_cufx(xran[i])+.01414);
+        yval1 = c_cfuy(c_cufy(yran[i]));
+        xval2 = c_cfux(c_cufx(xran[i])+.02828);
+        yval2 = c_cfuy(c_cufy(yran[i]));
+        c_line (xval1,yval1,xval2,yval2);
+        xval1 = c_cfux(c_cufx(xran[i]));
+        yval1 = c_cfuy(c_cufy(yran[i])-.02828);
+        xval2 = c_cfux(c_cufx(xran[i]));
+        yval2 = c_cfuy(c_cufy(yran[i])-.01414);
+        c_line (xval1,yval1,xval2,yval2);
+        xval1 = c_cfux(c_cufx(xran[i]));
+        yval1 = c_cfuy(c_cufy(yran[i])+.01414);
+        xval2 = c_cfux(c_cufx(xran[i]));
+        yval2 = c_cfuy(c_cufy(yran[i])+.02828);
+        c_line (xval1,yval1,xval2,yval2);
+    }
+/*
+ * Dump the polyline buffer and switch the polyline color to yellow.
+ */
+    c_plotif (0.,0.,2);
+    c_gsplci (11);
+/*
+ * Put a label at the top of the plot.
+ */
+    c_set (0.,1.,0.,1.,0.,1.,0.,1.,1);
+    c_plchhq (.5,.975,"DEMONSTRATING THE USE OF BIVAR AND CONPACK",.012,0.,0.);
+/*
+ * Advance the frame.
+ */
+    c_frame();
+/*
+ * Do another frame.  First, turn on the culling of labels by the
+ * routines CPCHHL and CPCHLL (which see, below).
+ */
+    icll=1;
+/*
+ * Dump the polyline buffer and switch the polyline color back to white.
+ * Force the text color index to orange.
+ */
+    c_plotif (0.,0.,2);
+    c_gsplci (1);
+    c_gstxci (12);
+/*
+ * Initialize the drawing of the second contour plot.
+ */
+    c_cprect ((float *)zdat,12,11,11,12,rwrk,1000,iwrk,1000);
+/*
+ * Initialize the area map.
+ */
+    c_arinam (iama,10000);
+/*
+ * Put the convex hull of the "random" data in the area map, using group
+ * identifier 4, an area identifier of 0 inside the hull, and an area
+ * identifier of -1 outside the hull.
+ */
+    c_aredam (iama,xcnv,ycnv,7,4,0,-1);
+/*
+ * Put label boxes in the area map.
+ */
+    c_cplbam ((float *)zdat,11,12,rwrk,iwrk,iama);
+/*
+ * Draw contour lines, masked by the area map.
+ */
+    c_cpcldm ((float *)zdat,11,12,rwrk,iwrk,iama,cpdrpl_);
+/*
+ * Draw labels.
+ */
+    c_cplbdr ((float *)zdat,11,12,rwrk,iwrk);
+/*
+ * Dump the polyline buffer and switch the polyline color to orange.
+ */
+    c_plotif (0.,0.,2);
+    c_gsplci (12);
+/*
+ * Use AUTOGRAPH to draw a background.
+ */
+    c_agseti ("SET.",4);
+    c_agstup ((float *)dumi,1,1,1,1,1,1,(float *)dumi,1,1,1,1,1,1);
+    c_agback();
+/*
+ * Dump the polyline buffer and switch the polyline color to yellow.
+ */
+    c_plotif (0.,0.,2);
+    c_gsplci (11);
+/*
+ * Draw a label at the top of the plot.
+ */
+    c_set (0.,1.,0.,1.,0.,1.,0.,1.,1);
+    c_plchhq (.5,.975,"DEMONSTRATING THE USE OF BIVAR AND CONPACK",.012,0.,0.);
+/*
+ * Advance the frame.
+ */
+    c_frame();
+/*
+ * Close GKS.
+ */
+    c_clsgks();
+}
+
+c_idsfft (md,ndp,xd,yd,zd,nxi,nyi,nzi,xi,yi,zi,iwk,wk)
+float *xd, *yd, *zd, *xi, *yi, *zi, *wk;
+int *iwk, md, ndp, nxi, nyi, nzi;
+{
+    float *xd2, *yd2, *zd2, *xi2, *yi2, *zi2, *wk2;
+    int *iwk2, i, j, k, k2;
+
+    xd2 = (float *)C_malloc(ndp*sizeof(float));
+    yd2 = (float *)C_malloc(ndp*sizeof(float));
+    zd2 = (float *)C_malloc(ndp*sizeof(float));
+    xi2 = (float *)C_malloc(nxi*sizeof(float));
+    yi2 = (float *)C_malloc(nyi*sizeof(float));
+    zi2 = (float *)C_malloc(nzi*nyi*sizeof(float));
+    wk2 = (float *)C_malloc(6*ndp*sizeof(float));
+    iwk2 = (int *)C_malloc((31*ndp+nxi*nyi)*sizeof(float));
+    for( i = 0; i < ndp; i++ ) {
+        xd2[i] = xd[i];
+        yd2[i] = yd[i];
+        zd2[i] = zd[i];
+    }
+    for( i = 0; i < nxi; i++ ) xi2[i] = xi[i];
+    for( i = 0; i < nyi; i++ ) yi2[i] = yi[i];
+    for( i = 1; i <= nzi; i++ ) {
+        k = (i-1) * nyi;
+        k2 = i - 1;
+        for( j = 1; j <= nyi; j++ ) {
+            zi2[k2] = zi[k++];
+            k2 += nzi;
+        }
+    }
+    for( i = 0; i < 6*ndp; i++ ) wk2[i] = wk[i];
+    for( i = 0; i < (31*ndp+nxi*nyi); i++ ) iwk2[i] = iwk[i];
+
+    idsfft_(&md,&ndp,xd2,yd2,zd2,&nxi,&nyi,&nzi,xi2,yi2,zi2,iwk2,wk2);
+
+    for( i = 0; i < ndp; i++ ) {
+        xd[i] = xd2[i];
+        yd[i] = yd2[i];
+        zd[i] = zd2[i];
+    }
+    for( i = 0; i < nxi; i++ ) xi[i] = xi2[i];
+    for( i = 0; i < nyi; i++ ) yi[i] = yi2[i];
+    for( i = 1; i <= nzi; i++ ) {
+        k = (i-1) * nyi;
+        k2 = i - 1;
+        for( j = 1; j <= nyi; j++ ) {
+            zi[k++] = zi2[k2];
+            k2 += nzi;
+        }
+    }
+    for( i = 0; i < 6*ndp; i++ ) wk[i] = wk2[i];
+    for( i = 0; i < (31*ndp+nxi*nyi); i++ ) iwk[i] = iwk2[i];
+    free(xd2);
+    free(yd2);
+    free(zd2);
+    free(xi2);
+    free(yi2);
+    free(zi2);
+    free(wk2);
+    free(iwk2);
+    return(1);
+}
+
+void dfclrs()
+{
+/*
+ * Define a set of RGB color triples for colors 1 through 15 on
+ * workstation 1.
+ */
+    float rgbv[3][15];
+    int i;
+/*
+ * Define the RGB color triples needed below.
+ */
+    rgbv[0][0] = 1.00;    rgbv[1][0] = 1.00;    rgbv[2][0] = 1.00;
+    rgbv[0][1] = 0.70;    rgbv[1][1] = 0.70;    rgbv[2][1] = 0.70;
+    rgbv[0][2] = 0.75;    rgbv[1][2] = 0.50;    rgbv[2][2] = 1.00;
+    rgbv[0][3] = 0.50;    rgbv[1][3] = 0.00;    rgbv[2][3] = 1.00;
+    rgbv[0][4] = 0.00;    rgbv[1][4] = 0.00;    rgbv[2][4] = 1.00;
+    rgbv[0][5] = 0.00;    rgbv[1][5] = 0.50;    rgbv[2][5] = 1.00;
+    rgbv[0][6] = 0.00;    rgbv[1][6] = 1.00;    rgbv[2][6] = 1.00;
+    rgbv[0][7] = 0.00;    rgbv[1][7] = 1.00;    rgbv[2][7] = 0.60;
+    rgbv[0][8] = 0.00;    rgbv[1][8] = 1.00;    rgbv[2][8] = 0.00;
+    rgbv[0][9] = 0.70;    rgbv[1][9] = 1.00;    rgbv[2][9] = 0.00;
+    rgbv[0][10] = 1.00;   rgbv[1][10] = 1.00;   rgbv[2][10] = 0.00;
+    rgbv[0][11] = 1.00;   rgbv[1][11] = 0.75;   rgbv[2][11] = 0.00;
+    rgbv[0][12] = 1.00;   rgbv[1][12] = 0.38;   rgbv[2][12] = 0.38;
+    rgbv[0][13] = 1.00;   rgbv[1][13] = 0.00;   rgbv[2][13] = 0.38;
+    rgbv[0][14] = 1.00;   rgbv[1][14] = 0.00;   rgbv[2][14] = 0.00;
+/*
+ * Define 16 different color indices, for indices 0 through 15.  The
+ * color corresponding to index 0 is black and the color corresponding
+ * to index 1 is white.
+ */
+    c_gscr (1,0,0.,0.,0.);
+
+    for( i = 0; i < 15; i++ ) {
+        c_gscr (1,i+1,rgbv[0][i],rgbv[1][i],rgbv[2][i]);
+    }
+}
+
+struct common1 {
+    int icll,iama[10000];
+} amapra_;
+
+cpchhl_(iflg)
+int *iflg;
+{
+/*
+ * this version of cpchhl, if and only if icll is non-zero, examines a
+ * high/low label which is about to be drawn.  if that label would fall
+ * in an area outside the convex hull defined by edge group 4, the text
+ * of the label is changed to a blank, so that the label is effectively
+ * deleted.
+ */
+    int i,iaai[10],iagi[10],nair,ivis;
+    float xpos, ypos;
+
+    if (amapra_.icll == 0) return(1);
+    if ((*iflg >= 2 && *iflg <= 4) || (*iflg >= 6 && *iflg <= 8)) {
+        c_cpgetr ("LBX",&xpos);
+        c_cpgetr ("LBY",&ypos);
+        c_argtai (amapra_.iama,xpos,ypos,iaai,iagi,10,&nair,1);
+        ivis=1;
+        for( i=0; i < nair; i++ ) {
+            if (iagi[i] == 4 && iaai[i] < 0) ivis=0;
+        }
+        if (ivis == 0) {
+            c_cpsetc ("CTM"," ");
+        }
+    }
+    return(1);
+}
+
+cpchll_(iflg)
+int *iflg;
+{
+/*
+ * this version of cpchll, if and only if icll is non-zero, examines a
+ * contour-line label which is about to be drawn.  if that label would
+ * fall in an area outside the convex hull defined by edge group 4, the
+ * text of the label is changed to a blank, so that it is effectively
+ * deleted.
+ */
+    int i,iaai[10],iagi[10],nair,ivis;
+    float xpos, ypos;
+
+    if (amapra_.icll == 0) return(1);
+    if (*iflg >= 2 && *iflg <= 4) {
+        c_cpgetr ("LBX",&xpos);
+        c_cpgetr ("LBY",&ypos);
+        c_argtai (amapra_.iama,xpos,ypos,iaai,iagi,10,&nair,1);
+        ivis=1;
+        for( i=0; i < nair; i++ ) {
+            if (iagi[i] == 4 && iaai[i] < 0) ivis=0;
+        }
+        if (ivis == 0) {
+            c_cpsetc ("CTM"," ");
+        }
+    }
+    return(1);
+}
