@@ -45,11 +45,19 @@ LOCLIB		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a \
 		$(LIBPATH)/libdf.a
 #endif
 
+#ifdef	RS6000
+HDFDEFINES	= -DIBM6000
+#endif
+
+#ifdef	sun
+HDFDEFINES	= -DSUN
+#endif
+
 
 #ifdef BuildRasterHDF
 HDF_OBJS =	hdf.o
 HDF_SRCS =	hdf.c
-HDF_DEFS = 	-DBuildRasterHDF -DIBM6000
+HDF_DEFS = 	-DBuildRasterHDF $(HDFDEFINES)
 #endif
 
 #ifdef BuildRasterHPLaser
