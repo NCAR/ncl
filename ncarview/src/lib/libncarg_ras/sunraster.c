@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.11 1992-09-10 21:05:24 don Exp $
+ *	$Id: sunraster.c,v 1.12 1992-09-14 23:03:25 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -253,6 +253,7 @@ int
 SunRead(ras)
 	Raster	*ras;
 {
+	char			*errmsg = "SunRead(\"%s\")";
 	unsigned int		image_size;
 	SunInfo			*dep;
 	int			i;
@@ -273,7 +274,7 @@ SunRead(ras)
 	if (ras->dep == (char *) NULL) {
 		ras->dep =  (char *) calloc(sizeof(SunInfo),1);
 		if (ras->dep == (char *) NULL) {
-			(void) ESprintf(errno, "");
+			(void) ESprintf(errno, errmsg, ras->name);
 			return(RAS_ERROR);
 		}
 	}
@@ -299,15 +300,54 @@ SunRead(ras)
 
 	/* Weed out unsupported color mapping schemes */
 
-	ras->nx = dep->ras_width;
-	ras->ny = dep->ras_height;
-
 	if (dep->ras_maptype == RMT_EQUAL_RGB) {
+		if (ras->read == False) {
+			ras->read	= True;
+			ras->file_nx	= dep->ras_width;
+			ras->file_ny	= dep->ras_height;
+			ras->file_type	= RAS_INDEXED;
+		}
+
+		if (ras->file_nx != dep->ras_width ||
+		    ras->file_ny != dep->ras_height) {
+			(void) ESprintf(RAS_E_IMAGE_SIZE_CHANGED,
+					errmsg, ras->name);
+			return(RAS_ERROR);
+		}
+
+		if (ras->file_type != RAS_INDEXED) {
+			(void) ESprintf(RAS_E_IMAGE_TYPE_CHANGED,
+				errmsg, ras->name);
+			return(RAS_ERROR);
+		}
+
+		ras->nx		= dep->ras_width;
+		ras->ny		= dep->ras_height;
 		ras->ncolor	= dep->ras_maplength / 3;
 		ras->type	= RAS_INDEXED;
 		ras->length	= ras->nx * ras->ny;
 	}
 	else if (dep->ras_maptype == RMT_NONE) {
+		if (ras->read == False) {
+			ras->read	= True;
+			ras->file_nx	= dep->ras_width;
+			ras->file_ny	= dep->ras_height;
+			ras->file_type	= RAS_DIRECT;
+		}
+
+		if (ras->file_nx != dep->ras_width ||
+		    ras->file_ny != dep->ras_height) {
+			(void) ESprintf(RAS_E_IMAGE_SIZE_CHANGED,
+					errmsg, ras->name);
+			return(RAS_ERROR);
+		}
+
+		if (ras->file_type != RAS_DIRECT) {
+			(void) ESprintf(RAS_E_IMAGE_TYPE_CHANGED,
+					errmsg, ras->name);
+			return(RAS_ERROR);
+		}
+
 		ras->ncolor	= 0;
 		ras->type	= RAS_DIRECT;
 		ras->length	= ras->nx * ras->ny * 3;
