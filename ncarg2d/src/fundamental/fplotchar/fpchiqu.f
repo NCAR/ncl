@@ -124,8 +124,8 @@ C
 C Combine characters from several different fonts to produce a single
 C line.
 C
-      CALL PLCHHQ (.990,.410,'/F13/A line with characters from several fo
-     +nts:  /F8/P/BF13/0/N/=/F5/g/SF13/2/N/+/F5/j/SF13/2/N/',
+      CALL PLCHHQ (.990,.410,'/F13/A line with characters from several f
+     +onts:  /F8/P/BF13/0/N/=/F5/g/SF13/2/N/+/F5/j/SF13/2/N/',
      +                                                       .012,0.,1.)
 C
 C Reset the internal parameter 'FN' to 4 and write a line illustrating
