@@ -1,5 +1,5 @@
 /*
- * $Id: rwchinfl.c,v 1.4 2001-11-26 16:39:08 haley Exp $
+ * $Id: rwchinfl.c,v 1.5 2003-12-09 17:03:48 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -18,7 +18,7 @@
 * General Public License for more details.                              *
 *                                                                       *
 * You should have received a copy of the GNU General Public License     *
-* along with this software; if not, write to the Free Software         *
+* along with this software; if not, write to the Free Software          *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307   *
 * USA.                                                                  *
 *                                                                       *
@@ -26,7 +26,11 @@
 
 
 #include <ncarg/c.h>
+#ifdef	FreeBSD
+#include <sys/filio.h>
+#else
 #include <sys/file.h>
+#endif	/* FreeBSD */
 #include <fcntl.h>
 
 
