@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1 1993-01-13 17:58:58 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-01-13 18:03:35 haley Exp $
 #
 NCARG	= ../../../..
 
@@ -14,7 +14,7 @@ GENERIC_SRCS = \
 	ccpnof.f ccpnsd.f ccppc.f ccppc1.f ccppc2.f ccppc3.f ccppc4.f ccppkcl.f \
 	ccprc.f ccprect.f ccprwc.f ccprwu.f ccpscam.f ccpset.f ccpsps1.f \
 	ccpsps2.f ccpspv.f ccptitle.f ccpvp.f ccpvs.f cidsfft.f colcon.f ggdini.f \
-	ccpall.dat ccpila.dat cpmpxy1.dat cpmpxy2.dat
+	ccpex.dat ccpila.dat cpmpxy1.dat cpmpxy2.dat
 
 all::
 
