@@ -243,7 +243,7 @@ NhlErrorTypes hyi2hyo_W( void )
 /*
  * Allocate space for output value.
  */
-  if(type_ps != NCL_double || type_xi != NCL_double) {
+  if(type_ps != NCL_double && type_xi != NCL_double) {
     type_xo = NCL_float;
 
     tmp_xo = (double *)calloc(klevonlatmlon,sizeof(double));
@@ -305,7 +305,7 @@ NhlErrorTypes hyi2hyo_W( void )
  */
     if(type_xo != NCL_double) {
       coerce_output_float_only(xo,tmp_xo,klevonlatmlon,index_xo);
-    }
+     }
     index_ps += nlatmlon;
     index_xi += klevinlatmlon;
     index_xo += klevonlatmlon;
@@ -331,3 +331,5 @@ NhlErrorTypes hyi2hyo_W( void )
  */
   return(NclReturnValue(xo,ndims_xi,dsizes_xo,NULL,type_xo,0));
 }
+
+

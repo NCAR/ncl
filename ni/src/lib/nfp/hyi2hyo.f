@@ -1,9 +1,7 @@
-C NCLFORTSTART
-      SUBROUTINE DHYI2HYOA(P0,HYAI,HYBI,PSFC,MLON,NLAT,KLEVI,XI,HYAO,
-     +                     HYBO,KLEVO,XO)
+      SUBROUTINE DHYI2HYOB(P0,HYAI,HYBI,PSFC,MLON,NLAT,KLEVI,XI,HYAO,
+     +                     HYBO,KLEVO,XO,PI,PO)
       IMPLICIT NONE
-
-c NCL: xo = hybrid2hybrid (p0,hyai,hybi,psfc,xi,  hyao,hybo)
+c NCL: xo = hyi2hyo (p0,hyai,hybi,psfc,xi,hyao,hybo)
 
 c this routine interploates one hybrid level to another
 c     formula for the pressure of a hybrid surface is;
@@ -25,35 +23,16 @@ c          xo     - pressure at hybrid levels [Pa]
 c                                                 ! input
       INTEGER MLON,NLAT,KLEVI,KLEVO
       DOUBLE PRECISION P0,HYAI(KLEVI),HYBI(KLEVI),HYAO(KLEVO),
-     +                 HYBO(KLEVO),PSFC(MLON,NLAT),XI(MLON,NLAT,KLEVI)
-c                                                 ! output
-      DOUBLE PRECISION XO(MLON,NLAT,KLEVO)
-C NCLEND
-c                                                 ! local (automatic)
-      DOUBLE PRECISION PI(KLEVI),PO(KLEVO)
-
-      CALL DHYI2HYOB(P0,HYAI,HYBI,PSFC,MLON,NLAT,KLEVI,XI,HYAO,HYBO,
-     +               KLEVO,XO,PI,PO)
-      RETURN
-      END
-
-C NCLFORTSTART
-      SUBROUTINE DHYI2HYOB(P0,HYAI,HYBI,PSFC,MLON,NLAT,KLEVI,XI,HYAO,
-     +                     HYBO,KLEVO,XO,PI,PO)
-      IMPLICIT NONE
-      INTEGER MLON,NLAT,KLEVI,KLEVO
-      DOUBLE PRECISION P0,HYAI(KLEVI),HYBI(KLEVI),HYAO(KLEVO),
      +                 HYBO(KLEVO),PSFC(MLON,NLAT),XI(MLON,NLAT,KLEVI),
      +                 PI(KLEVI),PO(KLEVO)
 c                                                 ! output
       DOUBLE PRECISION XO(MLON,NLAT,KLEVO)
-C NCLEND
 c                                                 ! local
       INTEGER NL,ML,KI,KO
 c f77
+
       DO NL = 1,NLAT
           DO ML = 1,MLON
-
               DO KI = 1,KLEVI
                   PI(KI) = HYAI(KI)*P0 + HYBI(KI)*PSFC(ML,NL)
               END DO
