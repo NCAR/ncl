@@ -144,7 +144,7 @@ int c_shgeti(char *pnam)
  */
     if ( !pnam ) {
         fprintf( stderr, "c_shgeti:  illegal parameter name (NULL)\n");
-        return;
+        return(-1);
     }
     len = NGSTRLEN(pnam);
     pnam2 = NGCstrToFstr(pnam,len);
