@@ -111,6 +111,10 @@ NCAR Graphics C-binding:
 .BR ncarg_cbind(3NCARG)
 .BR ncarg_gks_cbind(3NCARG)
 .sp
+Descriptions of environment variables:
+.sp
+.BR ncarg_env(5NCARG),
+.sp
 Descriptions of fontcaps and graphcaps:
 .sp
 .BR fcaps(1NCARG),
