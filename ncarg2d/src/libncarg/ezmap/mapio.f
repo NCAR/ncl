@@ -1,5 +1,5 @@
 C
-C $Id: mapio.f,v 1.7 1994-03-18 23:50:14 kennison Exp $
+C $Id: mapio.f,v 1.8 1995-06-30 23:49:32 kennison Exp $
 C
       SUBROUTINE MAPIO (IACT)
 C
@@ -14,68 +14,80 @@ C
       COMMON /MAPCM3/ ITPN,NOUT,NPTS,IGID,IDLS,IDRS,BLAG,SLAG,BLOG,SLOG,
      +                PNTS(200),IDOS(4)
       SAVE /MAPCM3/
+      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(5),LDCL(5),PDCT(10),PDCL(10)
+      CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
+      SAVE /MAPCM5/
       COMMON /MAPCMB/ IIER
       SAVE /MAPCMB/
 C
+C Declare a variable in which to form the name of an outline data file.
+C
+      CHARACTER*128 FLNM
+C
+C Save the file-descriptor parameter from one call to the next.
+C
+      SAVE IFDE
+C
+C Either open the requested dataset ...
+C
       IF (IACT.EQ.1) THEN
 C
-C Open the dataset using this code for a typical Unix system ...
+        CALL MPDBDI (FLNM,ISTA)
+        IF (ISTA.EQ.-1) GO TO 901
 C
-        CALL OPENMP (ITPN)
+        DO 101 I=1,111
+          IF (FLNM(I:I).EQ.CHAR(0)) THEN
+            FLNM(I:I+17)='/EzmapOutlines.'//DDCT(NOUT+1)//CHAR(0)
+            GO TO 102
+          ENDIF
+  101   CONTINUE
 C
-C or this code for an old COS system ...
+        GO TO 901
 C
-C       ITPN=6LEZMPCD
-C       IF (IFDNT(ITPN).EQ.0) THEN
-C         CALL SDACCESS (IERR,ITPN)
-C         IF (IERR.NE.0) GO TO 901
-C       END IF
+  102   CALL NGOFRO (FLNM,IFDE,ISTA)
+        IF (ISTA.NE.0) GO TO 901
 C
-C rewind it, ...
+        RETURN
 C
-        REWIND ITPN
-C
-C and position to the desired file.
-C
-        IF (NOUT.NE.1) THEN
-          ITMP=NOUT
-  101     READ (ITPN,END=902,ERR=903) NPTS,IGID,IDLS,IDRS,
-     +                                BLAG,SLAG,BLOG,SLOG,
-     +                                (PNTS(I),I=1,NPTS)
-          IF (NPTS.GT.1) GO TO 101
-          ITMP=ITMP-1
-          IF (ITMP.GT.1) GO TO 101
-        END IF
+C ... or read the next record.
 C
       ELSE
 C
-C Read the next record.
+        CALL NGRDIN (IFDE,NPTS,4,ISTA)
 C
-        READ (ITPN,ERR=903) NPTS,IGID,IDLS,IDRS,
-     +                      BLAG,SLAG,BLOG,SLOG,
-     +                      (PNTS(I),I=1,NPTS)
-        NPTS=NPTS/2
+        IF (ISTA.EQ.4) THEN
+          IF (NPTS.LE.1) THEN
+            NPTS=0
+            RETURN
+          ELSE
+            CALL NGRDFL (IFDE,BLAG,4+NPTS,ISTA)
+            IF (ISTA.EQ.4+NPTS) THEN
+              NPTS=NPTS/2
+              RETURN
+            END IF
+          END IF
+        END IF
+C
+        CALL NGCLFI (IFDE)
+        IF (ISTA.LT.0) GO TO 902
+        GO TO 903
 C
       END IF
 C
-C Done.
-C
-      RETURN
-C
 C Error exits.
 C
-C 901 IIER=17
-C     CALL SETER ('MAPIO - OUTLINE DATASET IS UNREADABLE',IIER,1)
-C     NOUT=0
-C     RETURN
-C
-  902 IIER=18
-      CALL SETER ('MAPIO - EOF ENCOUNTERED IN OUTLINE DATASET',IIER,1)
+  901 IIER=17
+      CALL SETER ('MAPIO - OUTLINE DATASET IS UNREADABLE',IIER,1)
       NOUT=0
       RETURN
 C
-  903 IIER=23
+  902 IIER=23
       CALL SETER ('MAPIO - ERROR ON READ OF OUTLINE DATASET',IIER,1)
+      NOUT=0
+      RETURN
+C
+  903 IIER=18
+      CALL SETER ('MAPIO - EOF ENCOUNTERED IN OUTLINE DATASET',IIER,1)
       NOUT=0
       RETURN
 C

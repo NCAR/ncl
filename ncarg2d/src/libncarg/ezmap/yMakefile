@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1995-04-26 23:34:52 kennison Exp $
+#	$Id: yMakefile,v 1.8 1995-06-30 23:49:34 kennison Exp $
 #
 
 MYNAME	= ezmap
@@ -24,22 +24,22 @@ GENERIC_OBJS = \
 	mpgeti.o mpgetl.o mpgetr.o mpsetc.o mpseti.o mpsetl.o mpsetr.o supcon.o \
 	supmap.o
 
-UNIX_SRCS = openmp.f
+UNIX_SRCS = mpdbdi.f
 
-UNIX_OBJS = openmp.o
+UNIX_OBJS = mpdbdi.o
 
 SOURCES = $(GENERIC_SRCS) $(UNIX_SRCS)
 
 OBJECTS	= $(GENERIC_OBJS) $(UNIX_OBJS)
 
-FCPP_OBJS	= openmp.f openmp.F
+FCPP_OBJS       = mpdbdi.f mpdbdi.F
 
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
 
 CleanFilesTarget($(FCPP_OBJS))
 
-openmp.F: openmp.F.sed Makefile
+mpdbdi.F: mpdbdi.F.sed Makefile
 	@sed \
 	-e 's+SED_DBDIR+$(DBDIR)+' \
-	<openmp.F.sed >openmp.F
+	<mpdbdi.F.sed >mpdbdi.F
