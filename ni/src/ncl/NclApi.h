@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.11 1996-07-23 21:13:14 ethan Exp $
+ *      $Id: NclApi.h,v 1.12 1996-07-25 19:47:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -227,8 +227,7 @@ NclQuark  /*file_sym_name*/
 extern struct _NclExtValueRec *NclReadFileAtt(
 #if NhlNeedProto
 NclQuark /* file_sym_name */,
-NclQuark /* attname */,
-int /*copy_data*/
+NclQuark /* attname */
 #endif
 );
 
@@ -258,7 +257,9 @@ extern struct _NclExtValueRec *NclReadFileVar(
 #if NhlNeedProto
 NclQuark /*file_sym_name */,
 NclQuark /*file_var_name */,
-int	/*copy_data*/
+long	* /*start*/,
+long	* /*finish*/,
+long	* /*stride*/
 #endif
 );
 
@@ -266,8 +267,7 @@ extern struct _NclExtValueRec *NclReadFileVarAtt(
 #if NhlNeedProto
 NclQuark /*file_sym_name */,
 NclQuark /*file_var_name */,
-NclQuark /*attname */,
-int	/*copy_data*/
+NclQuark /*attname */
 #endif
 );
 
@@ -276,7 +276,9 @@ extern struct _NclExtValueRec *NclReadFileVarCoord(
 NclQuark /*file_sym_name */,
 NclQuark /*file_var_name */,
 NclQuark /*coordname*/,
-int     /*copy_data*/
+long	* /*start*/,
+long	* /*finish*/,
+long	* /*stride*/
 #endif
 );
 
@@ -295,15 +297,16 @@ NclQuark /*coordname*/
 extern struct _NclExtValueRec* NclReadVar(
 #if NhlNeedProto
 NclQuark /*var_sym_name */,
-int	/*copy_data*/
+long	* /*start*/,
+long	* /*finish*/,
+long	* /*stride*/
 #endif
 );
 
 extern struct _NclExtValueRec* NclReadVarAtt(
 #if NhlNeedProto
 NclQuark /*var_sym_name */,
-NclQuark /*attname*/,
-int	/*copy_data*/
+NclQuark /*attname*/
 #endif
 );
 
@@ -311,7 +314,9 @@ extern struct _NclExtValueRec* NclReadVarCoord(
 #if NhlNeedProto
 NclQuark /*var_sym_name */,
 NclQuark /*coordname*/,
-int	/*copy_data*/
+long	* /*start*/,
+long	* /*finish*/,
+long	* /*stride*/
 #endif
 );
 
@@ -319,8 +324,7 @@ extern struct _NclExtValueRec* NclReadVarCoordAtt(
 #if NhlNeedProto
 NclQuark /*var_sym_name */,
 NclQuark /*coordname*/,
-NclQuark /*attname*/,
-int	/*copy_data*/
+NclQuark /*attname*/
 #endif
 );
 

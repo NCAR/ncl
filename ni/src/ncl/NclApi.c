@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.30 1996-07-23 23:02:59 ethan Exp $
+ *      $Id: NclApi.c,v 1.31 1996-07-25 19:47:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -395,15 +395,14 @@ NclQuark file_sym_name
 
 struct _NclExtValueRec * NclReadFileAtt
 #if  	NhlNeedProto
-(NclQuark file_sym_name,NclQuark attname,int copy_data) 
+(NclQuark file_sym_name,NclQuark attname) 
 #else
 (file_sym_name,attname) 
 NclQuark file_sym_name;
 NclQuark attname;
-int copy_data;
 #endif
 {
-	return(_NclReadFileAtt(file_sym_name,attname,copy_data));
+	return(_NclReadFileAtt(file_sym_name,attname));
 }
 struct _NclApiDataList* NclGetFileList
 #if	NhlNeedProto
@@ -476,17 +475,19 @@ struct _NclExtValueRec *NclGetVarValue
 }
 struct _NclExtValueRec *NclReadVar
 #if	NhlNeedProto
-(NclQuark var_name,int copy_data)
+(NclQuark var_name,long *start, long *finish, long* stride)
 #else
-(var_name,copy_data)
+(var_name,start,finish,stride)
 	NclQuark var_name;
-	int copy_data;
+	long *start;
+	long *finish;
+	long *stride;
 #endif
 {
 	NclSymbol *s;
 
 	s = _NclLookUp(NrmQuarkToString(var_name));
-	return(_NclGetVarValue(s,copy_data));
+	return(_NclReadVarValue(s,start,finish,stride));
 }
 
 NclExtValueRec *NclGetExprValue
@@ -656,43 +657,46 @@ NclQuark coord_name;
 
 struct _NclExtValueRec *NclReadFileVar
 #if     NhlNeedProto
-(NclQuark file_sym_name,NclQuark file_var_name, int copy_data)
+(NclQuark file_sym_name,NclQuark file_var_name, long *start, long *finish, long *stride)
 #else
-(file_sym_name,file_var_name, copy_data)
+(file_sym_name,file_var_name, start,finish, stride)
 NclQuark file_sym_name;
 NclQuark file_var_name;
-int copy_data;
+long * start;
+long * finish;
+long * stride;
 #endif
 {
-	return(_NclReadFileVar(file_sym_name,file_var_name,copy_data));
+	return(_NclReadFileVar(file_sym_name,file_var_name,start,finish,stride));
 }
 
 struct _NclExtValueRec *NclReadFileVarAtt
 #if     NhlNeedProto
-(NclQuark file_sym_name,NclQuark file_var_name, NclQuark attname, int copy_data)
+(NclQuark file_sym_name,NclQuark file_var_name, NclQuark attname )
 #else
-(file_sym_name,file_var_name,attname, copy_data)
+(file_sym_name,file_var_name,attname )
 NclQuark file_sym_name;
 NclQuark file_var_name;
 NclQuark attname;
-int copy_data;
 #endif
 {
-	return(_NclReadFileVarAtt(file_sym_name,file_var_name,attname,copy_data));
+	return(_NclReadFileVarAtt(file_sym_name,file_var_name,attname));
 }
 
 struct _NclExtValueRec *NclReadFileVarCoord
 #if     NhlNeedProto
-(NclQuark file_sym_name,NclQuark file_var_name, NclQuark coordname, int copy_data)
+(NclQuark file_sym_name,NclQuark file_var_name, NclQuark coordname, long *start, long* finish, long * stride)
 #else
-(file_sym_name,file_var_name,coordname, copy_data)
+(file_sym_name,file_var_name,coordname,start,finish,stride)
 NclQuark file_sym_name;
 NclQuark file_var_name;
 NclQuark coordname;
-int copy_data;
+long * start;
+long * finish;
+long * stride;
 #endif
 {
-	return(_NclReadFileVarCoord(file_sym_name,file_var_name,coordname, copy_data));
+	return(_NclReadFileVarCoord(file_sym_name,file_var_name,coordname, start,finish,stride));
 }
 
 struct _NclApiDataList *NclGetVarInfo
@@ -721,42 +725,42 @@ NclQuark coordname;
 
 struct _NclExtValueRec *NclReadVarAtt
 #if     NhlNeedProto
-(NclQuark var_sym_name,NclQuark attname, int copy_data)
+(NclQuark var_sym_name,NclQuark attname )
 #else
-(var_sym_name,attname,copy_data)
+(var_sym_name,attname)
 NclQuark var_sym_name;
 NclQuark attname;
-int copy_data;
 #endif
 {
-	return(_NclReadVarAtt(var_sym_name,attname,copy_data));
+	return(_NclReadVarAtt(var_sym_name,attname));
 }
 
 struct _NclExtValueRec *NclReadVarCoord
 #if     NhlNeedProto
-(NclQuark var_sym_name,NclQuark coordname, int copy_data)
+(NclQuark var_sym_name,NclQuark coordname, long *start, long *finish, long *stride)
 #else
-(var_sym_name,coordname,copy_data)
+(var_sym_name,coordname,start, finish, stride)
 NclQuark var_sym_name;
 NclQuark coordname;
-int copy_data;
+long *start;
+long *finish;
+long *stride;
 #endif
 {
-	return(_NclReadVarCoord(var_sym_name,coordname,copy_data));
+	return(_NclReadVarCoord(var_sym_name,coordname,start,finish,stride));
 }
 
 struct _NclExtValueRec *NclReadVarCoordAtt
 #if     NhlNeedProto
-(NclQuark var_sym_name,NclQuark coordname, NclQuark attname, int copy_data)
+(NclQuark var_sym_name,NclQuark coordname, NclQuark attname)
 #else
-(var_sym_name,coordname,attname,copy_data)
+(var_sym_name,coordname,attname)
 NclQuark var_sym_name;
 NclQuark coordname;
 NclQuark attname
-int copy_data;
 #endif
 {
-	return(_NclReadVarCoordAtt(var_sym_name,coordname,attname,copy_data));
+	return(_NclReadVarCoordAtt(var_sym_name,coordname,attname));
 }
 
 #ifdef __cplusplus

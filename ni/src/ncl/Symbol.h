@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.20 1996-07-23 23:03:04 ethan Exp $
+ *      $Id: Symbol.h,v 1.21 1996-07-25 19:47:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -336,6 +336,14 @@ void* /*list*/
 #endif
 );
 
+extern struct _NclExtValueRec *_NclReadVarValue(
+#if NhlNeedProto
+NclSymbol * /*the_sym*/,
+long * /*start*/,
+long * /*finish*/,
+long * /*stride*/
+#endif
+);
 extern struct _NclExtValueRec *_NclGetVarValue(
 #if NhlNeedProto
 NclSymbol * /*the_sym*/,
@@ -376,8 +384,7 @@ NclQuark /*file_sym_name*/
 extern struct _NclExtValueRec * _NclReadFileAtt(
 #if     NhlNeedProto
 NclQuark /*file_sym_name*/,
-NclQuark /*attname*/,
-int /*copy_data*/
+NclQuark /*attname*/
 #endif
 );
 
@@ -407,7 +414,9 @@ extern struct _NclExtValueRec *_NclReadFileVar(
 #if     NhlNeedProto
 NclQuark /*file_sym_name*/,
 NclQuark /*file_var_name*/,
-int /*copy_data*/
+long    * /*start*/,
+long    * /*finish*/,
+long    * /*stride*/
 #endif
 );
 
@@ -415,8 +424,7 @@ extern struct _NclExtValueRec *_NclReadFileVarAtt(
 #if     NhlNeedProto
 NclQuark /*file_sym_name*/,
 NclQuark /*file_var_name*/,
-NclQuark /*attname*/,
-int /*copy_data*/
+NclQuark /*attname*/
 #endif
 );
 
@@ -425,7 +433,9 @@ extern struct _NclExtValueRec *_NclReadFileVarCoord(
 NclQuark /*file_sym_name*/,
 NclQuark /*file_var_name*/,
 NclQuark /*coordname*/,
-int /*copy_data*/
+long    * /*start*/,
+long    * /*finish*/,
+long    * /*stride*/
 #endif
 );
 
@@ -446,8 +456,7 @@ NclQuark /*coordname*/
 extern struct _NclExtValueRec *_NclReadVarAtt(
 #if     NhlNeedProto
 NclQuark /*var_sym_name*/,
-NclQuark /*attname*/,
-int /*copy_data*/
+NclQuark /*attname*/
 #endif
 );
 
@@ -455,7 +464,9 @@ extern struct _NclExtValueRec *_NclReadVarCoord(
 #if     NhlNeedProto
 NclQuark /*var_sym_name*/,
 NclQuark /*coordname*/,
-int /*copy_data*/
+long    * /*start*/,
+long    * /*finish*/,
+long    * /*stride*/
 #endif
 );
 
@@ -463,8 +474,7 @@ extern struct _NclExtValueRec *_NclReadVarCoordAtt(
 #if     NhlNeedProto
 NclQuark /*var_sym_name*/,
 NclQuark /*coordname*/,
-NclQuark /*attname*/,
-int /*copy_data*/
+NclQuark /*attname*/
 #endif
 );
 
