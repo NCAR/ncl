@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.70 1996-09-27 21:26:58 ethan Exp $
+ *      $Id: Execute.c,v 1.71 1996-11-11 23:37:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -131,7 +131,8 @@ NclExecuteReturnStatus _NclExecute
 * Taking for granted that syntax only allows string litterals here
 */
 							data1.u.sub_rec->name = NrmQuarkToString(*((NclQuark*) data.u.data_obj->multidval.val));
-							_NclDestroyObj((NclObj)data.u.data_obj);
+							if(data.u.data_obj->obj.status != PERMANENT)
+								_NclDestroyObj((NclObj)data.u.data_obj);
 							
 							break;
 						}
@@ -399,8 +400,9 @@ NclExecuteReturnStatus _NclExecute
 * Taking for granted that syntax only allows string litterals here
 */
 						data1.u.sub_rec->name = NrmQuarkToString(*(NclQuark*) data.u.data_obj->multidval.val);
-						
-						_NclDestroyObj((NclObj)data.u.data_obj);
+							
+						if(data.u.data_obj->obj.status != PERMANENT)
+							_NclDestroyObj((NclObj)data.u.data_obj);
 						break;
 					}
 					default:	
