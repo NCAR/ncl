@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.41 1996-07-23 21:13:11 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.42 1996-08-29 23:39:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1611,7 +1611,7 @@ NhlErrorTypes _NclIDelete
 	NclStackEntry* var;
 	NclSymbol *thesym;
 	int sub_sel = 0;
-	NclObj tmp;
+	NclObj tmp,pobj;
 	NclRefList *rlist = NULL;
 
 	data = _NclGetArg(0,1,DONT_CARE);
@@ -1685,10 +1685,11 @@ NhlErrorTypes _NclIDelete
 				case Ncl_CoordVar:
 					rlist = data.u.data_obj->obj.parents;
 					while(rlist != NULL) {
-						if(rlist->pptr->obj.obj_type == Ncl_Var) {
-							_NclDeleteCoordVar((NclVar)rlist->pptr,NrmQuarkToString(data.u.data_var->var.var_quark));
+						pobj = _NclGetObj(rlist->pid);
+						if(pobj->obj.obj_type == Ncl_Var) {
+							_NclDeleteCoordVar((NclVar)pobj,NrmQuarkToString(data.u.data_var->var.var_quark));
 						} else {
-							_NclDelParent((NclObj)data.u.data_obj,(NclObj)rlist->pptr);
+							_NclDelParent((NclObj)data.u.data_obj,(NclObj)pobj);
 						}
 						rlist = rlist->next;
 					}
@@ -1696,7 +1697,8 @@ NhlErrorTypes _NclIDelete
 				default:
 					rlist = data.u.data_obj->obj.parents;
 					while(rlist != NULL) {
-						_NclDelParent((NclObj)data.u.data_obj,(NclObj)rlist->pptr);
+						pobj = _NclGetObj(rlist->pid);
+						_NclDelParent((NclObj)data.u.data_obj,(NclObj)pobj);
 						rlist = rlist->next;
 					}
 					break;
