@@ -7,6 +7,7 @@
 #include "wrapper.h"
 
 extern void NGCALLF(betainc,BETAINC)(double*,double*,double*,double*);
+extern void NGCALLF(cumgam,CUMGAM)(double*,double*,double*,double*);
 
 NhlErrorTypes betainc_W( void )
 {
@@ -185,15 +186,172 @@ NhlErrorTypes betainc_W( void )
     if(type_x != NCL_double) ((float*)alpha)[i] = (float)*tmp_alpha;
   }
 /*
- * free memory.
+ * Free memory.
  */
-  if(type_x != NCL_double) NclFree(tmp_x);
+  if(type_x != NCL_double) {
+    NclFree(tmp_x);
+    NclFree(tmp_alpha);
+  }
   if(type_a != NCL_double) NclFree(tmp_a);
   if(type_b != NCL_double) NclFree(tmp_b);
-  if(type_x != NCL_double) NclFree(tmp_alpha);
 
 /*
  * Return.
  */
   return(NclReturnValue(alpha,ndims_x,dsizes_x,NULL,type_x,0));
+}
+
+
+NhlErrorTypes gammainc_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x, *a;
+  double *tmp_x, *tmp_a;
+  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_x, type_a;
+/*
+ * output variable 
+ */
+  void *cum;
+  double *tmp_cum, tmp_ccum;
+  int size_cum;
+/*
+ * Declare various variables for random purposes.
+ */
+  int i;
+/*
+ * Retrieve parameters
+ *
+ * Note that any of the pointer parameters can be set to NULL,
+ * which implies you don't care about its value.
+ */
+
+/*
+ * Retrieve argument #1
+ */
+  x = (void*)NclGetArgValue(
+          0,
+          2,
+          &ndims_x,
+          dsizes_x,
+          NULL,
+          NULL,
+          &type_x,
+          2);
+
+  a = (void*)NclGetArgValue(
+          1,
+          2,
+          &ndims_a,
+          dsizes_a,
+          NULL,
+          NULL,
+          &type_a,
+          2);
+
+
+/*
+ * Check type of x, which must be float or double.
+ */
+  if(type_x != NCL_float && type_x != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gammainc: x must be float or double");
+    return(NhlFATAL);
+  }
+/*
+ * Check dimensions.
+ */
+  if (ndims_x != ndims_a) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gammainc: The two input arrays must have the same number of dimensions");
+    return(NhlFATAL);
+  }
+  for( i = 0; i < ndims_x; i++ ) {
+    if (dsizes_x[i] != dsizes_a[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"gammainc: The two input arrays must have the same dimension sizes");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Calculate size of output value.
+ */
+  size_cum = 1;
+  for( i = 0; i < ndims_x; i++ ) size_cum *= dsizes_x[i];
+
+/*
+ * Coerce x and a to double if necessary, and create space for output array.
+ */
+  if(type_x != NCL_double) {
+    tmp_x   = (double*)calloc(1,sizeof(double));
+    cum     =  (float*)calloc(size_cum,sizeof(float));
+    tmp_cum = (double*)calloc(1,sizeof(double));
+
+    if(tmp_x== NULL || tmp_cum == NULL || cum == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"gammainc: Unable to allocate memory for input/output arrays");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    cum = (double*)calloc(size_cum,sizeof(double));
+    if(cum == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"gammainc: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+
+  if(type_a != NCL_double) {
+    tmp_a = (double*)calloc(1,sizeof(double));
+    if( tmp_a == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"gammainc: Unable to allocate memory for coercing a to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Call the Fortran version of this routine.
+ */
+  for( i = 0; i < size_cum; i++ ) {
+    if(type_x != NCL_double) {
+/*
+ * Coerce subsection of x (tmp_x) to double, if necessary.
+ */
+      coerce_subset_input_double(x,tmp_x,i,type_x,1,0,NULL,NULL);
+    }
+    else {
+/*
+ * Otherwise, point tmp_x to appropriate location in x.
+ */
+      tmp_x = &((double*)x)[i];
+    }
+    if(type_a != NCL_double) {
+/*
+ * Coerce subsection of a (tmp_a) to double, if necessary.
+ */
+      coerce_subset_input_double(a,tmp_a,i,type_a,1,0,NULL,NULL);
+    }
+    else {
+/*
+ * Otherwise, point tmp_a to appropriate location in a.
+ */
+      tmp_a = &((double*)a)[i];
+    }
+
+    if(type_x == NCL_double) tmp_cum = &((double*)cum)[i];
+    NGCALLF(cumgam,GAMMAINC)(tmp_x,tmp_a,tmp_cum,&tmp_ccum);
+    if(type_x != NCL_double) ((float*)cum)[i] = (float)*tmp_cum;
+  }
+/*
+ * Free memory.
+ */
+  if(type_x != NCL_double) {
+    NclFree(tmp_x);
+    NclFree(tmp_cum);
+  }
+  if(type_a != NCL_double) NclFree(tmp_a);
+
+/*
+ * Return.
+ */
+  return(NclReturnValue(cum,ndims_x,dsizes_x,NULL,type_x,0));
 }
