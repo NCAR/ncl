@@ -1,5 +1,5 @@
 C
-C	$Id: cpex08.f,v 1.3 1995-06-14 13:56:26 haley Exp $
+C	$Id: cpex08.f,v 1.4 1996-07-24 20:12:45 kennison Exp $
 C
       PROGRAM EXMPL8
 C
@@ -10,7 +10,7 @@ C
 C
 C Declare required data arrays and workspace arrays.
 C
-        DIMENSION ZDAT(40,40),RWRK(1000),IWRK(1000),IAMA(100000)
+	DIMENSION ZDAT(40,40),RWRK(1000),IWRK(1000),IAMA(125000)
         DIMENSION IASF(13)
         DIMENSION XCRA(5000),YCRA(5000)
         DIMENSION IAIA(10),IGIA(10)
@@ -80,7 +80,7 @@ C
 C
 C Initialize the area map.
 C
-        CALL ARINAM (IAMA,100000)
+	CALL ARINAM (IAMA,125000)
 C
 C Use EZMAP and EZMAPA to create a background.
 C
@@ -168,7 +168,7 @@ C
 C Compute and print statistics for the plot, label it, and put a
 C boundary line at the edge of the plotter frame.
 C
-        CALL CAPSAP ('EXAMPLE 8',TIME,IAMA,100000)
+	CALL CAPSAP ('EXAMPLE 8',TIME,IAMA,125000)
         CALL LABTOP ('EXAMPLE 8',.017)
         CALL BNDARY
 C
