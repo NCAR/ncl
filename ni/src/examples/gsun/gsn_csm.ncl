@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.147 2003-12-04 15:56:44 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.148 2003-12-04 22:01:11 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -42,6 +42,7 @@ undef("find_cross_xy")
 undef("check_for_subtitles")
 undef("set_right_subtitle")
 undef("set_left_subtitle")
+undef("set_xaxis_string")
 undef("set_yaxis_string")
 undef("set_subtitles_res")
 undef("is_valid_xcoord")
@@ -774,6 +775,37 @@ begin
 end 
 
 ;***********************************************************************;
+; Procedure : set_xaxis_string                                          ;
+;                 res: logical                                          ;
+;                data: numeric                                          ;
+;                                                                       ;
+; This procedure sets the tiXAxisString resource depending on current   ;
+; resource and/or attribute settings.                                   ;
+;***********************************************************************;
+procedure set_xaxis_string(plot:graphic,res:logical,data:numeric)
+begin
+  tires = get_res_eq(res,(/"ti"/))  ; Get tickmark resources
+  is_xyplot = get_res_value_keep(res,"gsnXYPlot", False)
+;
+; If the X axis tickmarks are being labeled explicitly by the user, 
+; then don't put a label on the X axis.
+;
+  if(check_attr(res,"tmXBMode","Explicit",True))
+    set_attr(tires,"tiXAxisString","")
+  else
+    if(.not.is_xyplot.and.is_valid_xcoord(data)) then
+      lname = get_valid_long_name_value(data&$data!1$)
+      if(.not.any(ismissing(lname))) then
+        set_attr(tires,"tiXAxisString",lname(1))
+      end if
+    end if
+  end if
+
+  attsetvalues_check(plot,tires)
+  return
+end
+
+;***********************************************************************;
 ; Procedure : set_yaxis_string                                          ;
 ;                 res: logical                                          ;
 ;                data: numeric                                          ;
@@ -785,7 +817,6 @@ procedure set_yaxis_string(plot:graphic,res:logical,data:numeric)
 begin
   tires = get_res_eq(res,(/"ti"/))  ; Get tickmark resources
   is_xyplot = get_res_value_keep(res,"gsnXYPlot", False)
-  is_yaxis  = get_res_value_keep(res,"gsnYAxis", False)
 ;
 ; If the Y axis tickmarks are being labeled explicitly by the user, 
 ; then don't put a label on the Y axis.
@@ -2836,7 +2867,6 @@ begin
   is_xyplot = get_res_value_keep(res,"gsnXYPlot", False)
   is_xaxis  = get_res_value_keep(res,"gsnXAxis", False)
   is_yaxis  = get_res_value_keep(res,"gsnYAxis", False)
-  set_xaxis = False
 
   if((is_xyplot.and.is_xaxis.and.isatt(data,"units").and. \
       any(data@units.eq.get_allowed_lat_units)).or. \
@@ -2851,7 +2881,6 @@ begin
 
     add_lat_labels_xaxis(plot,min_lat,max_lat,0,0,res)
 
-    set_xaxis = True
   end if
 
   if((is_xyplot.and.is_yaxis.and.isatt(data,"units").and. \
@@ -2892,8 +2921,11 @@ begin
 
     add_lon_labels(plot,min_lon,max_lon,0,0,lon_range, \
                    lon_spacing_arr,mlon_spacing_arr,res)
-
-    set_xaxis = True
+  else
+;
+; Only set a X axis label if it is not a lon axis.
+;
+    set_xaxis_string(plot,res,data)
   end if
 end
 
