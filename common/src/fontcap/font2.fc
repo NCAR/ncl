@@ -1,5 +1,5 @@
 /*
-/*	$Id: font2.fc,v 1.2 1992-09-04 19:49:54 ncargd Exp $
+/*	$Id: font2.fc,v 1.3 1993-01-08 01:35:09 fred Exp $
 /*
 /*
 /* Character fontcap for: HERSHEY:CARTOGRAPHIC_ROMAN
@@ -17,7 +17,7 @@ FONT_RIGHT
 FONT_TOP
 137
 FONT_CAP
-131
+132
 FONT_HALF
 127
 FONT_BASE
