@@ -3,8 +3,8 @@ NCARG	= .
 SUBDIRS	= common ncarg2d ncarview
 
 NEWDIRS	= $(BINPATH) $(LIBPATH) $(INCPATH) $(MANPATH) $(FONTCAPPATH) \
-	$(GRAPHCAPPATH) $(DBPATH) $(ROBJPATH) $(EXAMPLESPATH) $(TESTSPATH) \
-	$(XAPPPATH) $(TUTORIALPATH)
+	$(GRAPHCAPPATH) $(DBPATH) $(DOCPATH) $(ROBJPATH) $(EXAMPLESPATH) \
+	$(TESTSPATH) $(XAPPPATH) $(TUTORIALPATH)
 
 all::	dirs
 
@@ -33,6 +33,7 @@ Info:
 	echo "	Include Directory            " $(INCPATH); \
 	echo "	Manpage Directory            " $(MANPATH); \
 	echo "	Data Base Directory          " $(DBPATH); \
+	echo "	Programmer Doc Directory     " $(DOCPATH); \
 	echo "	Relocatable Obj. Directory   " $(ROBJPATH); \
 	echo "	Examples Directory           " $(EXAMPLESPATH); \
 	echo "	Tutorial Directory           " $(TUTORIALPATH); \
@@ -124,6 +125,10 @@ dirs::
 	@-if (test ! -d $(DBPATH)) then mkdir $(DBPATH); else continue; fi
 	@-if (test ! -d $(DBPATH) || test ! -w $(DBPATH)) then \
 	echo "Installation Error - $(DBPATH) is not writeable"; exit 1; \
+	else continue; fi
+	@-if (test ! -d $(DOCPATH)) then mkdir $(DOCPATH); else continue; fi
+	@-if (test ! -d $(DOCPATH) || test ! -w $(DOCPATH)) then \
+	echo "Installation Error - $(DOCPATH) is not writeable"; exit 1; \
 	else continue; fi
 	@-if (test ! -d $(ROBJPATH)) then mkdir $(ROBJPATH); \
 	else continue; fi
