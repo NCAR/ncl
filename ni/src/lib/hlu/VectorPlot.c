@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.23 1996-07-20 00:37:52 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.24 1996-07-24 02:14:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1970,18 +1970,18 @@ VectorPlotInitialize
 				return ret;
 		}
 		if (vcp->refvec_anno.on) {
+			NhlBoolean on = vcp->data_init && ! vcp->zero_field;
 			subret = ManageAnnotation(vcnew,True,
 						  &vcp->refvec_anno_rec,NULL,
-						  &vcp->refvec_anno_id,
-						  !vcp->display_zerof_no_data);
+						  &vcp->refvec_anno_id,on);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
 				return ret;
 		}
 		if (vcp->minvec_anno.on) {
+			NhlBoolean on = vcp->data_init && ! vcp->zero_field;
 			subret = ManageAnnotation(vcnew,True,
 						  &vcp->minvec_anno_rec,NULL,
-						  &vcp->minvec_anno_id,
-						  !vcp->display_zerof_no_data);
+						  &vcp->minvec_anno_id,on);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
 				return ret;
 		}
@@ -2973,10 +2973,6 @@ static NhlErrorTypes vcInitDraw
 	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
 	NhlString		e_text;
 
-	vcp->fws = NULL;
-	vcp->wk_active = False;
-	vcp->seg_open = False;
-
 	NhlVASetValues(vcl->base.wkptr->base.id,
 		       _NhlNwkReset,	True,
 		       NULL);
@@ -3171,7 +3167,11 @@ static NhlErrorTypes VectorPlotPreDraw
 	NhlVectorPlotLayer	vcl = (NhlVectorPlotLayer) layer;
 	NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
 
-	if (! vcp->data_init || vcp->display_zerof_no_data) {
+	vcp->fws = NULL;
+	vcp->wk_active = False;
+	vcp->seg_open = False;
+
+	if (! vcp->data_init || vcp->zero_field) {
 		return NhlNOERROR;
 	}
 
@@ -3258,7 +3258,7 @@ static NhlErrorTypes VectorPlotDraw
 	NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
 	NhlString		e_text,entry_name = "VectorPlotDraw";
 
-	if (! vcp->data_init || vcp->display_zerof_no_data) {
+	if (! vcp->data_init || vcp->zero_field) {
 		Vcp = NULL;
 		return NhlNOERROR;
 	}
@@ -3336,13 +3336,11 @@ static NhlErrorTypes VectorPlotPostDraw
 	Vcp = vcp;
 	Vcl = vcl;
 
-	if (vcp->display_zerof_no_data) {
-		if (tfp->overlay_status == _tfNotInOverlay) {
+	if (! vcp->data_init || vcp->zero_field) {
+		if (vcp->display_zerof_no_data &&
+		    tfp->overlay_status == _tfNotInOverlay) {
 			subret = NhlDraw(vcp->zerof_lbl_rec.id);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				Vcp = NULL;
-				return ret;
-			}
+			ret = MIN(subret,ret);
 		}
 		Vcp = NULL;
 		return ret;
@@ -5647,7 +5645,7 @@ static NhlErrorTypes ManageVecAnno
 			/* go on so that text position can be set */
 		}
 		else {
-			on = ilp->on && ! vcp->display_zerof_no_data;
+			on = ilp->on && vcp->data_init && ! vcp->zero_field;
 			subret = ManageAnnotation(vcnew,True,
 						  anrp,oanrp,idp,on);
 			return MIN(ret,subret);
@@ -5748,7 +5746,7 @@ static NhlErrorTypes ManageVecAnno
 	}
 
 	if (tfp->overlay_status != _tfNotInOverlay) {
-		on = ilp->on && ! vcp->display_zerof_no_data;
+		on = ilp->on && vcp->data_init && ! vcp->zero_field;
 		subret = ManageAnnotation(vcnew,True,anrp,oanrp,idp,on);
 		ret = MIN(ret,subret);
 	}
@@ -6559,8 +6557,18 @@ static NhlErrorTypes    ManageVectorData
 	if (vcp->vector_field_data != NULL)
 		ndata = _NhlGetDataInfo(vcp->vector_field_data,&dlist);
 	if (ndata <= 0) {
-		vcp->a_params.uvmn = vcp->mag_scale.min_val = vcp->zmin = 0.01;
-		vcp->a_params.uvmx = vcp->mag_scale.max_val = vcp->zmax = 1.0;
+		if (vcp->min_level_set)
+			vcp->a_params.uvmn = vcp->mag_scale.min_val = 
+				vcp->zmin = vcp->min_level_val;
+		else
+			vcp->a_params.uvmn = 
+				vcp->mag_scale.min_val = vcp->zmin = 0.01;
+		if (vcp->max_level_set) 
+			vcp->a_params.uvmx = vcp->mag_scale.max_val = 
+				vcp->zmax = vcp->max_level_val;
+		else
+			vcp->a_params.uvmx = vcp->mag_scale.max_val = 
+				vcp->zmax = MAX(1.0,vcp->zmin*10.0);
 		vcp->data_init = False;
 		vcp->vfp = NULL;
 		return NhlNOERROR;
@@ -6595,6 +6603,37 @@ static NhlErrorTypes    ManageVectorData
 	
 	vcp->vfp = (NhlVectorFieldFloatLayerPart *) &vfl->vfieldfloat;
 
+	if (vcp->vfp->miss_mode != vfNONE) {
+		if (vcp->vfp->miss_mode == vfVONLY &&
+		     vcp->vfp->mag_max == vcp->vfp->v_missing_value)
+		    vcp->data_init = False;
+		else if (vcp->vfp->mag_max == vcp->vfp->u_missing_value)
+		    vcp->data_init = False;
+		else
+		    vcp->data_init = True;
+
+		if (! vcp->data_init) {
+			e_text = 
+          "%s: no valid values in vector field; VectorPlot not possible";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			if (vcp->min_level_set)
+				vcp->mag_scale.min_val = 
+					vcp->zmin = vcp->min_level_val;
+			else
+				vcp->mag_scale.min_val = vcp->zmin = 0.01;
+			if (vcp->max_level_set)
+				vcp->mag_scale.max_val = 
+					vcp->zmax = vcp->max_level_val;
+			else
+				/* ensure max > min */
+				vcp->mag_scale.max_val = vcp->zmax =
+					MAX(1.0,vcp->zmin * 10.0);
+			vcp->data_changed = True;
+			ret = MIN(NhlWARNING,ret);
+			return ret;
+		}
+	}
+
 	if (vcp->min_magnitude > 0.0)
 		vcp->zmin = vcp->min_magnitude;
 	else
@@ -6613,7 +6652,7 @@ static NhlErrorTypes    ManageVectorData
 		True : False;
 	if (vcp->zero_field) {
 		e_text = 
-		 "%s: zero vector field; no VectorPlot possible";
+		 "%s: zero vector field; VectorPlot not possible";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ret = MIN(NhlWARNING,ret);
 	}
@@ -6686,8 +6725,17 @@ static NhlErrorTypes    ManageScalarData
 	if (vcp->scalar_field_data != NULL)
 		ndata = _NhlGetDataInfo(vcp->scalar_field_data,&dlist);
 	if (ndata != 1) {
-		vcp->svalue_scale.min_val = vcp->scalar_min = 0.0;
-		vcp->svalue_scale.max_val = vcp->scalar_max = 1.0;
+		if (vcp->min_level_set)
+			vcp->svalue_scale.min_val = vcp->scalar_min = 
+				vcp->min_level_val;
+		else
+			vcp->svalue_scale.min_val = vcp->scalar_min = 0.01;
+		if (vcp->max_level_set) 
+			vcp->svalue_scale.max_val = vcp->scalar_max = 
+				vcp->max_level_val;
+		else
+			vcp->svalue_scale.max_val = vcp->scalar_max = 
+				MAX(1.0,vcp->scalar_min*10.0);
 		vcp->scalar_data_init = False;
 		vcp->sfp = NULL;
 		if (ndata > 1) {
@@ -6732,8 +6780,15 @@ static NhlErrorTypes    ManageScalarData
 		ret = NhlWARNING;
 		vcp->scalar_data_init = False;
 		vcp->sfp = NULL;
-		vcp->svalue_scale.min_val = vcp->scalar_min = 0.0;
-		vcp->svalue_scale.max_val = vcp->scalar_max = 1.0;
+	}
+	else if (vcp->sfp->missing_value_set && 
+		 vcp->sfp->data_max == vcp->sfp->missing_value) {
+		e_text = "%s: ignoring %s: no valid data";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+			  NhlNvcScalarFieldData);
+		ret = NhlWARNING;
+		vcp->scalar_data_init = False;
+		vcp->sfp = NULL;
 	}
 	else {
 		vcp->svalue_scale.min_val = 
@@ -6743,6 +6798,20 @@ static NhlErrorTypes    ManageScalarData
 		vcp->scalar_data_init = True;
 		vcp->data_changed = True;
 	}
+	if (! vcp->scalar_data_init) {
+		if (vcp->min_level_set)
+			vcp->svalue_scale.min_val = vcp->scalar_min = 
+				vcp->min_level_val;
+		else
+			vcp->svalue_scale.min_val = vcp->scalar_min = 0.01;
+		if (vcp->max_level_set) 
+			vcp->svalue_scale.max_val = vcp->scalar_max = 
+				vcp->max_level_val;
+		else
+			vcp->svalue_scale.max_val = vcp->scalar_max = 
+				MAX(1.0,vcp->scalar_min*10.0);
+	}
+
 	return ret;
 }
 

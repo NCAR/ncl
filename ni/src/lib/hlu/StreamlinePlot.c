@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.16 1996-07-20 00:37:47 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.17 1996-07-24 02:14:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1477,6 +1477,7 @@ StreamlinePlotInitialize
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(NhlFATAL);
 	}
+#if 0
 	subret = ManageScalarData(stnew,(NhlStreamlinePlotLayer) req,
 				  True,args,num_args);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -1484,6 +1485,7 @@ StreamlinePlotInitialize
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
+#endif
  
 	subret = InitCoordBounds(stp,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
@@ -1748,12 +1750,14 @@ static NhlErrorTypes StreamlinePlotSetValues
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
+#if 0
 	subret = ManageScalarData(stnew,stold,False,args,num_args);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error setting view dependent resources";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
+#endif
 
 	subret = InitCoordBounds(stp,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
@@ -2331,10 +2335,6 @@ static NhlErrorTypes stInitDraw
 	NhlStreamlinePlotLayerPart	*stp = &(stl->streamlineplot);
 	NhlString		e_text;
 
-	stp->fws = NULL;
-	stp->wk_active = False;
-	stp->seg_open = False;
-
 	NhlVASetValues(stl->base.wkptr->base.id,
 		       _NhlNwkReset,	True,
 		       NULL);
@@ -2535,7 +2535,11 @@ static NhlErrorTypes StreamlinePlotPreDraw
 	NhlStreamlinePlotLayer		stl = (NhlStreamlinePlotLayer) layer;
 	NhlStreamlinePlotLayerPart	*stp = &stl->streamlineplot;
 
-	if (! stp->data_init || stp->display_zerof_no_data) {
+	stp->fws = NULL;
+	stp->wk_active = False;
+	stp->seg_open = False;
+
+	if (! stp->data_init || stp->zero_field) {
 		return NhlNOERROR;
 	}
 
@@ -2623,7 +2627,7 @@ static NhlErrorTypes StreamlinePlotDraw
 	NhlString		e_text,entry_name = "StreamlinePlotDraw";
 
 
-	if (! stp->data_init || stp->display_zerof_no_data) {
+	if (! stp->data_init || stp->zero_field) {
 		return NhlNOERROR;
 	}
 	if (stp->streamline_order != NhlDRAW) {
@@ -2699,13 +2703,11 @@ static NhlErrorTypes StreamlinePlotPostDraw
 	Stp = stp;
 	Stl = stl;
 
-	if (stp->display_zerof_no_data) {
-		if (tfp->overlay_status == _tfNotInOverlay) {
+	if (! stp->data_init || stp->zero_field) {
+		if (stp->display_zerof_no_data &&
+		    tfp->overlay_status == _tfNotInOverlay) {
 			subret = NhlDraw(stp->zerof_lbl_rec.id);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				Stp = NULL;
-				return ret;
-			}
+			ret = MIN(subret,ret);
 		}
 		Stp = NULL;
 		return ret;
@@ -4924,7 +4926,7 @@ static NhlErrorTypes SetTextPosition
 /*
  * Function:  ManageVectorData
  *
- * Description: Handles updating of the streamline data
+ * Description: Handles updating of the vector data
  *
  * In Args:
  *
@@ -4974,8 +4976,18 @@ static NhlErrorTypes    ManageVectorData
 	if (stp->vector_field_data != NULL)
 		ndata = _NhlGetDataInfo(stp->vector_field_data,&dlist);
 	if (ndata <= 0) {
-		stp->mag_scale.min_val = stp->zmin = 0.01;
-		stp->mag_scale.max_val = stp->zmax = 1.0;
+		if (stp->min_level_set)
+			stp->mag_scale.min_val = 
+				stp->zmin = stp->min_level_val;
+		else
+			stp->mag_scale.min_val = stp->zmin = 0.01;
+		if (stp->max_level_set)
+			stp->mag_scale.max_val = 
+				stp->zmax = stp->max_level_val;
+		else
+			/* ensure max > min */
+			stp->mag_scale.max_val = stp->zmax = 
+				MAX(1.0,stp->zmin * 10.0);
 		stp->data_init = False;
 		stp->vfp = NULL;
 		return NhlNOERROR;
@@ -5010,6 +5022,37 @@ static NhlErrorTypes    ManageVectorData
 	
 	stp->vfp = (NhlVectorFieldFloatLayerPart *) &vfl->vfieldfloat;
 
+	if (stp->vfp->miss_mode != vfNONE) {
+		if (stp->vfp->miss_mode == vfVONLY &&
+		     stp->vfp->mag_max == stp->vfp->v_missing_value)
+		    stp->data_init = False;
+		else if (stp->vfp->mag_max == stp->vfp->u_missing_value)
+		    stp->data_init = False;
+		else
+		    stp->data_init = True;
+
+		if (! stp->data_init) {
+			e_text = 
+          "%s: no valid values in vector field; StreamlinePlot not possible";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			if (stp->min_level_set)
+				stp->mag_scale.min_val = 
+					stp->zmin = stp->min_level_val;
+			else
+				stp->mag_scale.min_val = stp->zmin = 0.01;
+			if (stp->max_level_set)
+				stp->mag_scale.max_val = 
+					stp->zmax = stp->max_level_val;
+			else
+				/* ensure max > min */
+				stp->mag_scale.max_val = stp->zmax =
+					MAX(1.0,stp->zmin * 10.0);
+			stp->data_changed = True;
+			ret = MIN(NhlWARNING,ret);
+			return ret;
+		}
+	}
+
 	stp->zmin = stp->vfp->mag_min;
 	stp->zmax = stp->vfp->mag_max;
 
@@ -5020,7 +5063,7 @@ static NhlErrorTypes    ManageVectorData
 		True : False;
 	if (stp->zero_field) {
 		e_text = 
-		 "%s: zero vector field; no StreamlinePlot possible";
+		 "%s: zero vector field; StreamlinePlot not possible";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ret = MIN(NhlWARNING,ret);
 	}

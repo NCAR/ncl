@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.19 1996-03-26 01:36:07 boote Exp $
+ *      $Id: ScalarField.c,v 1.20 1996-07-24 02:14:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -454,6 +454,7 @@ DataToFloatArray
 	int		ixend = sfp->ix_end;
 	int		iystart = sfp->iy_start;
 	int		iyend = sfp->iy_end;
+	int		valid_data_count = 0;
 
 /*
  * Convert the data array
@@ -504,6 +505,7 @@ DataToFloatArray
 						(iystart+i*sfp->y_stride) +
 						ixstart+j*sfp->x_stride);
 					if (tmp != missing_value) {
+						valid_data_count++;
 						if (tmp < *dmin) *dmin = tmp;
 						if (tmp > *dmax) *dmax = tmp;
 					}
@@ -512,6 +514,7 @@ DataToFloatArray
 			}
 		}
 		else if (do_minmax) {
+			valid_data_count = out_len[0] * out_len[1];
 			for (i = 0; i < out_len[0]; i++) {
 				for (j = 0; j < out_len[1]; j++) {
 					tmp = *(ifp + inlen_1 *
@@ -524,6 +527,7 @@ DataToFloatArray
 			}
 		}
 		else {
+			valid_data_count = out_len[0] * out_len[1];
 			for (i = 0; i < out_len[0]; i++) {
 				for (j = 0; j < out_len[1]; j++) {
 					*(fp+(i * out_len[1] + j)) = 
@@ -571,6 +575,7 @@ DataToFloatArray
 						(iystart+i*sfp->y_stride) +
 						ixstart+j*sfp->x_stride);
 					if (tmp != missing_value) {
+						valid_data_count++;
 						if (tmp < *dmin) *dmin = tmp;
 						if (tmp > *dmax) *dmax = tmp;
 					}
@@ -578,6 +583,7 @@ DataToFloatArray
 			}
 		}
 		else if (do_minmax) {
+			valid_data_count = out_len[0] * out_len[1];
 			for (i = 0; i < out_len[0]; i++) {
 				for (j = 0; j < out_len[1]; j++) {
 					tmp = *(ifp + inlen_1 *
@@ -588,7 +594,15 @@ DataToFloatArray
 				}
 			}
 		}
+		else {
+			*dmin = 0.0;
+			*dmax = 1.0;
+		}
 		
+	}
+	if (valid_data_count == 0) {
+		*dmin = missing_value;
+		*dmax = missing_value;
 	}
 	return out_ga;
 }
@@ -648,6 +662,7 @@ DataToFloatArrayExchDim
 	int		iyend = sfp->iy_end;
 	int		x_stride = sfp->x_stride;
 	int		y_stride = sfp->y_stride;
+	int		valid_data_count = 0;
 
 /*
  * Convert the data array
@@ -710,6 +725,7 @@ DataToFloatArrayExchDim
 					inlen_1*(iystart+i*y_stride) +
 					ixstart+j*x_stride);
 				if (tmp != missing_value) {
+					valid_data_count++;
 					if (tmp < *dmin) *dmin = tmp;
 					if (tmp > *dmax) *dmax = tmp;
 				}
@@ -718,6 +734,7 @@ DataToFloatArrayExchDim
 		}
 	}
 	else if (do_minmax) {
+		valid_data_count = out_len[0] * out_len[1];
 		for (i = 0; i < out_len[1]; i++) {
 			for (j = 0; j < out_len[0]; j++) {
 				tmp = *(ifp + 
@@ -733,6 +750,7 @@ DataToFloatArrayExchDim
 		/* nothing to check so it doesn't matter 
 		 * if there are missing values 
 		 */
+		valid_data_count = out_len[0] * out_len[1];
 		for (i = 0; i < out_len[1]; i++) {
 			for (j = 0; j < out_len[0]; j++) {
 				*(fp+(j * out_len[1] + i)) = 
@@ -741,6 +759,8 @@ DataToFloatArrayExchDim
 					  ixstart+j*x_stride);
 			}
 		}
+		*dmin = 0.0;
+		*dmax = 1.0;
 	}
 
 	if (overwrite_ok) {
@@ -775,6 +795,10 @@ DataToFloatArrayExchDim
 		out_ga->size = sizeof(float);
 		out_ga->data = (NhlPointer)fp;
 		out_ga->my_data = True;
+	}
+	if (valid_data_count == 0) {
+		*dmin = missing_value;
+		*dmax = missing_value;
 	}
 	return out_ga;
 }
@@ -1935,7 +1959,7 @@ CvtGenSFObjToFloatSFObj
 			return ret;
 		}
 	}
-	if (tmax <= tmin) {
+	if (tmax < tmin) {
 		e_text = "%s: %s greater than %s: exchanging";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNsfDataMinV,NhlNsfDataMaxV);

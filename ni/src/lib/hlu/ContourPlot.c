@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.43 1996-07-20 00:37:40 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.44 1996-07-24 02:14:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3121,8 +3121,7 @@ static NhlErrorTypes ContourPlotGetBB
 	if (cntp->overlay_status == _tfCurrentOverlayMember)
 		return ret;
 
-	if (cnp->info_anno_id != NhlNULLOBJID && cnp->info_lbl.on &&
-	    ! cnp->display_constf_no_data) {
+	if (cnp->info_anno_id != NhlNULLOBJID && cnp->info_lbl_rec.on) {
 		subret = NhlVAGetValues(cnp->info_anno_id,
 					NhlNvpXF,&x,
 					NhlNvpYF,&y,
@@ -3132,8 +3131,7 @@ static NhlErrorTypes ContourPlotGetBB
 
 		_NhlAddBBInfo(y,y-height,x+width,x,thebox);
 	}
-	if (cnp->constf_anno_id != NhlNULLOBJID && 
-	    cnp->display_constf_no_data) {
+	if (cnp->constf_anno_id != NhlNULLOBJID && cnp->constf_lbl_rec.on) {
 		subret = NhlVAGetValues(cnp->constf_anno_id,
 					NhlNvpXF,&x,
 					NhlNvpYF,&y,
@@ -3607,7 +3605,7 @@ static NhlErrorTypes ContourPlotPreDraw
 	NhlContourPlotLayer	cnl = (NhlContourPlotLayer) layer;
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
 
-	if (! cnp->data_init || cnp->display_constf_no_data)
+	if (! cnp->data_init || cnp->const_field)
 		return NhlNOERROR;
 	
 	Cnp = cnp;
@@ -3694,7 +3692,7 @@ static NhlErrorTypes ContourPlotDraw
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
 	NhlString	e_text,entry_name = "ContourPlotDraw";
 
-	if (! cnp->data_init || cnp->display_constf_no_data) {
+	if (! cnp->data_init || cnp->const_field) {
 		Cnp = NULL;
 		return NhlNOERROR;
 	}
@@ -3774,8 +3772,9 @@ static NhlErrorTypes ContourPlotPostDraw
 	Cnp = cnp;
 	Cnl = cnl;
 
-	if (cnp->display_constf_no_data) {
-		if (tfp->overlay_status == _tfNotInOverlay) {
+	if (! cnp->data_init || cnp->const_field) {
+		if (cnp->display_constf_no_data &&
+		    tfp->overlay_status == _tfNotInOverlay) {
 			subret = NhlDraw(cnp->constf_lbl_rec.id);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				Cnp = NULL;
@@ -6943,7 +6942,7 @@ static NhlErrorTypes ManageInfoLabel
 			   NhlNtxBackgroundFillColor,ilp->back_color);
 
 		sprintf(buffer,"%s",cnnew->base.name);
-		strcat(buffer,".Text");
+		strcat(buffer,".InfoLabel");
 		subret = NhlALCreate(&tmpid,buffer,NhltextItemClass,
 				     cnnew->base.id,targs,targc);
 		
@@ -7172,7 +7171,7 @@ static NhlErrorTypes ManageConstFLabel
 			   NhlNtxBackgroundFillColor,cflp->back_color);
 
 		sprintf(buffer,"%s",cnnew->base.name);
-		strcat(buffer,".Text");
+		strcat(buffer,".ConstFLabel");
 		subret = NhlALCreate(&tmpid,buffer,NhltextItemClass,
 				     cnnew->base.id,targs,targc);
 		
@@ -7258,7 +7257,7 @@ static NhlErrorTypes ManageConstFLabel
 	subret = NhlALSetValues(cnp->constf_lbl_rec.id,targs,targc);
 
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-		e_text = "%s: error setting values for information label";
+	 e_text = "%s: error setting values for constant field/no data label";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
@@ -7320,7 +7319,8 @@ static NhlErrorTypes ManageAnnotation
 		rec = &cnp->info_lbl_rec;
 		orec = &ocnp->info_lbl_rec;
 		idp = &cnp->info_anno_id;
-		rec->on = cnp->info_lbl.on && ! cnp->display_constf_no_data;
+		rec->on = cnp->info_lbl.on 
+			&& cnp->data_init && ! cnp->const_field;
 	}
 	else {
 		rec = &cnp->constf_lbl_rec;
@@ -8024,8 +8024,14 @@ static NhlErrorTypes    ManageData
 	if (cnp->scalar_field_data != NULL)
 		ndata = _NhlGetDataInfo(cnp->scalar_field_data,&dlist);
 	if (ndata <= 0) {
-		cnp->zmin = 0.0;
-		cnp->zmax = 1.0;
+		if (cnp->min_level_set)
+			cnp->zmin = cnp->min_level_val;
+		else
+			cnp->zmin = 0.0;
+		if (cnp->max_level_set) 
+			cnp->zmax = cnp->max_level_val;
+		else
+			cnp->zmax = MAX(1.0,fabs(cnp->zmin*10.0));
 		cnp->data_init = False;
 		cnp->sfp = NULL;
 		return NhlNOERROR;
@@ -8060,13 +8066,30 @@ static NhlErrorTypes    ManageData
 	
 	cnp->sfp = (NhlScalarFieldFloatLayerPart *) &sfl->sfieldfloat;
 
+	if (cnp->sfp->missing_value_set && 
+	    cnp->sfp->data_max == cnp->sfp->missing_value) {
+		e_text = 
+          "%s: no valid values in scalar field; ContourPlot not possible";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		cnp->data_init = False;
+		if (cnp->min_level_set)
+			cnp->zmin = cnp->min_level_val;
+		else
+			cnp->zmin = 0.0;
+		if (cnp->max_level_set) 
+			cnp->zmax = cnp->max_level_val;
+		else
+			cnp->zmax = MAX(1.0,fabs(cnp->zmin*10.0));
+		return MIN(NhlWARNING,ret);
+	}
+
 	cnp->zmin = cnp->sfp->data_min;
 	cnp->zmax = cnp->sfp->data_max;
 	cnp->const_field = _NhlCmpFAny(cnp->zmax,cnp->zmin,8) <= 0.0 ?
 		True : False;
 	if (cnp->const_field) {
 		e_text = 
-		 "%s: scalar field is constant; no ContourPlot plot possible";
+		 "%s: scalar field is constant; ContourPlot not possible";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ret = MIN(NhlWARNING,ret);
 	}

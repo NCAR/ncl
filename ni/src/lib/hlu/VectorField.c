@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.6 1996-07-08 20:06:56 dbrown Exp $
+ *      $Id: VectorField.c,v 1.7 1996-07-24 02:14:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -691,6 +691,7 @@ DataToVFField
 	NhlVectorFieldFloatLayerPart *vffp = &vfp->vffloat->vfieldfloat;
 	NhlBoolean	overwrite_ok;
 	NhlBoolean	do_mag_minmax,do_uv_minmax;
+	int		valid_data_count = 0;
 	int		out_len[2];
 	int		i,j;
 	float		*uf,*vf;
@@ -777,6 +778,7 @@ DataToVFField
 					break;
 				}
 				if (! missing) {
+					valid_data_count++;
 					if (do_mag_minmax) {
 						if (vfp->polar_data)
 							mag = ut;
@@ -858,6 +860,7 @@ DataToVFField
 					break;
 				}
 				if (! missing) {
+					valid_data_count++;
 					if (do_mag_minmax) {
 						if (vfp->polar_data)
 							mag = ut;
@@ -880,27 +883,51 @@ DataToVFField
 	}
 	vffp->u_arr = uga;
 	vffp->v_arr = vga;
-	if (do_mag_minmax) {
-		if (vfp->polar_data) {
-			if (mag_min < 0.0) {
-				e_text = "%s: polar data invalid";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return NhlFATAL;
-			}
-			vffp->mag_min = mag_min;
-			vffp->mag_max = mag_max;
+	if (valid_data_count == 0) {
+		if (miss_mode == vfVONLY) {
+			vffp->mag_min = v_missing;
+			vffp->mag_max = v_missing;
+			vffp->u_min = v_missing;
+			vffp->u_max = v_missing;
 		}
 		else {
-			vffp->mag_min = sqrt(mag_min);
-			vffp->mag_max = sqrt(mag_max);
+			vffp->mag_min = u_missing;
+			vffp->mag_max = u_missing;
+			vffp->u_min = u_missing;
+			vffp->u_max = u_missing;
+		}
+		if (miss_mode == vfUONLY) {
+			vffp->v_min = u_missing;
+			vffp->v_max = u_missing;
+		}
+		else {
+			vffp->v_min = v_missing;
+			vffp->v_max = v_missing;
 		}
 	}
-	if (do_uv_minmax) {
-		vffp->u_min = u_min;
-		vffp->u_max = u_max;
-		vffp->v_min = v_min;
-		vffp->v_max = v_max;
+	else {
+		if (do_mag_minmax) {
+			if (vfp->polar_data) {
+				if (mag_min < 0.0) {
+					e_text = "%s: polar data invalid";
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  e_text,entry_name);
+					return NhlFATAL;
+				}
+				vffp->mag_min = mag_min;
+				vffp->mag_max = mag_max;
+			}
+			else {
+				vffp->mag_min = sqrt(mag_min);
+				vffp->mag_max = sqrt(mag_max);
+			}
+		}
+		if (do_uv_minmax) {
+			vffp->u_min = u_min;
+			vffp->u_max = u_max;
+			vffp->v_min = v_min;
+			vffp->v_max = v_max;
+		}
 	}
 
 /*
@@ -971,6 +998,7 @@ DataToVFFieldExchDim
 	NhlVectorFieldFloatLayerPart *vffp = &vfp->vffloat->vfieldfloat;
 	NhlBoolean	overwrite_ok;
 	NhlBoolean	do_mag_minmax,do_uv_minmax;
+	int		valid_data_count = 0;
 	int		out_len[2];
 	int		i,j;
 	float		*uf,*vf;
@@ -1064,6 +1092,7 @@ DataToVFFieldExchDim
 				break;
 			}
 			if (! missing) {
+				valid_data_count++;
 				if (do_mag_minmax) {
 					if (vfp->polar_data)
 						mag = ut;
@@ -1130,28 +1159,53 @@ DataToVFFieldExchDim
 
 	vffp->u_arr = uga;
 	vffp->v_arr = vga;
-	if (do_mag_minmax) {
-		if (vfp->polar_data) {
-			if (mag_min < 0.0) {
-				e_text = "%s: polar data invalid";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return NhlFATAL;
-			}
-			vffp->mag_min = mag_min;
-			vffp->mag_max = mag_max;
+	if (valid_data_count == 0) {
+		if (miss_mode == vfVONLY) {
+			vffp->mag_min = v_missing;
+			vffp->mag_max = v_missing;
+			vffp->u_min = v_missing;
+			vffp->u_max = v_missing;
 		}
 		else {
-			vffp->mag_min = sqrt(mag_min);
-			vffp->mag_max = sqrt(mag_max);
+			vffp->mag_min = u_missing;
+			vffp->mag_max = u_missing;
+			vffp->u_min = u_missing;
+			vffp->u_max = u_missing;
+		}
+		if (miss_mode == vfUONLY) {
+			vffp->v_min = u_missing;
+			vffp->v_max = u_missing;
+		}
+		else {
+			vffp->v_min = v_missing;
+			vffp->v_max = v_missing;
 		}
 	}
-	if (do_uv_minmax) {
-		vffp->u_min = u_min;
-		vffp->u_max = u_max;
-		vffp->v_min = v_min;
-		vffp->v_max = v_max;
+	else {
+		if (do_mag_minmax) {
+			if (vfp->polar_data) {
+				if (mag_min < 0.0) {
+					e_text = "%s: polar data invalid";
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  e_text,entry_name);
+					return NhlFATAL;
+				}
+				vffp->mag_min = mag_min;
+				vffp->mag_max = mag_max;
+			}
+			else {
+				vffp->mag_min = sqrt(mag_min);
+				vffp->mag_max = sqrt(mag_max);
+			}
+		}
+		if (do_uv_minmax) {
+			vffp->u_min = u_min;
+			vffp->u_max = u_max;
+			vffp->v_min = v_min;
+			vffp->v_max = v_max;
+		}
 	}
+	
 	vffp->begin = 0;
 	vffp->fast_dim = uga->len_dimensions[1];
 	vffp->fast_len = uga->len_dimensions[1];
