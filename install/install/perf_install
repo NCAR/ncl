@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: perf_install,v 1.1 1993-02-20 00:11:21 clyne Exp $
+#      $Id: perf_install,v 1.2 1993-02-26 21:28:41 clyne Exp $
 #
 #########################################################################
 #									#
@@ -73,12 +73,26 @@ endif
 
 if ("$inc_path" != "/dev/null") then
 	set inc_line = "	C includes	$inc_path"
+
+	#
+	# this is a hack to make sure there isn't already a ncarg directory
+	# in the include dir. tar won't overwrite it with a symlink if 
+	# there is so we move it away first
+	#
+	if (-d "$inc_path/ncarg") then
+		echo "Moving $inc_path/ncarg to $inc_path/ncarg.old" > /dev/tty	
+		$MV $inc_path/ncarg $inc_path/ncarg.old
+	endif
 else
 	set inc_line = ""
 endif
 
 if ("$lib_path" != "/dev/null") then
 	set lib_line = "	Libraries	$lib_path"
+	if (-d "$lib_path/ncarg") then
+		echo "Moving $lib_path/ncarg to $lib_path/ncarg.old" > /dev/tty	
+		$MV $lib_path/ncarg $lib_path/ncarg.old
+	endif
 else
 	set lib_line = ""
 endif
