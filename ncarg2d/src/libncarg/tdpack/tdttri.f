@@ -1,5 +1,5 @@
 C
-C $Id: tdttri.f,v 1.1 2001-06-21 22:40:04 kennison Exp $
+C $Id: tdttri.f,v 1.2 2003-11-24 20:38:32 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -24,8 +24,8 @@ C
      +                        NTRI,IRST,UMIN,VMIN,WMIN,UMAX,VMAX,WMAX)
 C
 C The routine TDTTRI, given a trajectory defined by a series of points,
-C points, calls TDMTRI to create markers showing the trajectory.
-C The arguments are as follows:
+C calls TDMTRI to create markers showing the trajectory.  The arguments
+C are as follows:
 C
 C   UCRA is a real array of U coordinates of points on the trajectory.
 C
