@@ -1,9 +1,9 @@
 C
-C $Id: mpipai.f,v 1.3 1998-05-24 00:40:50 kennison Exp $
+C $Id: mpipai.f,v 1.4 1999-07-29 22:55:47 kennison Exp $
 C
       INTEGER FUNCTION MPIPAI (IAIN,IAIP)
 C
-        PARAMETER (MNAI=2000)
+        PARAMETER (MNAI=6000)
 C
 C The value of MPIPAI (IAIN,IAIP) is non-zero if and only if the area
 C with area identifier IAIN is a part of the area with area identifier

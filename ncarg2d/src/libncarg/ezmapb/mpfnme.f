@@ -1,9 +1,9 @@
 C
-C $Id: mpfnme.f,v 1.3 1998-05-24 00:40:44 kennison Exp $
+C $Id: mpfnme.f,v 1.4 1999-07-29 22:55:46 kennison Exp $
 C
       CHARACTER*128 FUNCTION MPFNME (IAIN,ILVL)
 C
-        PARAMETER (MNAI=2000)
+        PARAMETER (MNAI=6000)
 C
 C The value of MPFNME(IAIN) is the full name of the area with the area
 C identifier IAIN, including the names of all its parents up to the

@@ -1,9 +1,9 @@
 C
-C $Id: mplndr.f,v 1.7 1999-04-02 23:03:05 kennison Exp $
+C $Id: mplndr.f,v 1.8 1999-07-29 22:55:48 kennison Exp $
 C
       SUBROUTINE MPLNDR (FLNM,ILVL)
 C
-        PARAMETER (MNAI=2000)
+        PARAMETER (MNAI=6000)
 C
         CHARACTER*(*) FLNM
 C

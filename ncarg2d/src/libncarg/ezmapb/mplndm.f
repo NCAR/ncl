@@ -1,10 +1,10 @@
 C
-C $Id: mplndm.f,v 1.7 1999-04-02 23:03:05 kennison Exp $
+C $Id: mplndm.f,v 1.8 1999-07-29 22:55:48 kennison Exp $
 C
       SUBROUTINE MPLNDM (FLNM,ILVL,IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,
      +                                                           ULPR)
 C
-        PARAMETER (MNAI=2000)
+        PARAMETER (MNAI=6000)
 C
         CHARACTER*(*) FLNM
         DIMENSION XCRA(MCRA),YCRA(MCRA),IAAI(MNOG),IAGI(MNOG)

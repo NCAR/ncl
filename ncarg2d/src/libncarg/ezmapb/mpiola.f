@@ -1,9 +1,9 @@
 C
-C $Id: mpiola.f,v 1.1 1998-05-24 00:40:49 kennison Exp $
+C $Id: mpiola.f,v 1.2 1999-07-29 22:55:46 kennison Exp $
 C
       INTEGER FUNCTION MPIOLA (IAID,ILVL)
 C
-        PARAMETER (MNAI=2000)
+        PARAMETER (MNAI=6000)
 C
 C The value of MPIOLA(IAID,ILVL) is the area identifier of the largest
 C area, at level ILVL, that contains the area with area identifier IAID.

@@ -1,9 +1,9 @@
 C
-C $Id: mpipan.f,v 1.3 1998-05-24 00:40:51 kennison Exp $
+C $Id: mpipan.f,v 1.4 1999-07-29 22:55:47 kennison Exp $
 C
       INTEGER FUNCTION MPIPAN (IAIN,ANME)
 C
-        PARAMETER (MNAI=2000)
+        PARAMETER (MNAI=6000)
 C
         CHARACTER*(*) ANME
 C

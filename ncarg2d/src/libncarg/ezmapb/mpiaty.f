@@ -1,9 +1,9 @@
 C
-C $Id: mpiaty.f,v 1.3 1998-05-24 00:40:46 kennison Exp $
+C $Id: mpiaty.f,v 1.4 1999-07-29 22:55:46 kennison Exp $
 C
       INTEGER FUNCTION MPIATY (IAIN)
 C
-        PARAMETER (MNAI=2000)
+        PARAMETER (MNAI=6000)
 C
 C The value of MPIATY(IAIN) is the area type for the area whose area
 C identifier is IAIN.

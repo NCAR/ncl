@@ -1,9 +1,9 @@
 C
-C $Id: mplnam.f,v 1.7 1999-04-02 23:03:04 kennison Exp $
+C $Id: mplnam.f,v 1.8 1999-07-29 22:55:48 kennison Exp $
 C
       SUBROUTINE MPLNAM (FLNM,ILVL,IAMA)
 C
-        PARAMETER (MNAI=2000)
+        PARAMETER (MNAI=6000)
 C
         CHARACTER*(*) FLNM
         DIMENSION IAMA(*)

@@ -1,9 +1,9 @@
 C
-C $Id: mpipar.f,v 1.3 1998-05-24 00:40:51 kennison Exp $
+C $Id: mpipar.f,v 1.4 1999-07-29 22:55:47 kennison Exp $
 C
       INTEGER FUNCTION MPIPAR (IAIN)
 C
-        PARAMETER (MNAI=2000)
+        PARAMETER (MNAI=6000)
 C
 C The value of MPIPAR(IAIN) is the area identifier of the parent of the
 C area whose area identifier is IAIN.  The parent of an an area is the

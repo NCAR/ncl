@@ -1,9 +1,9 @@
 C
-C $Id: mpisci.f,v 1.3 1998-05-24 00:40:52 kennison Exp $
+C $Id: mpisci.f,v 1.4 1999-07-29 22:55:48 kennison Exp $
 C
       INTEGER FUNCTION MPISCI (IAIN)
 C
-        PARAMETER (MNAI=2000)
+        PARAMETER (MNAI=6000)
 C
 C The value of MPISCI(IAIN) is a "suggested color index" for the area
 C whose area identifier is IAIN.  The suggested color indices for

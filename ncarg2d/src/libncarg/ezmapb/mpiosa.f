@@ -1,9 +1,9 @@
 C
-C $Id: mpiosa.f,v 1.1 1998-05-24 00:40:50 kennison Exp $
+C $Id: mpiosa.f,v 1.2 1999-07-29 22:55:47 kennison Exp $
 C
       INTEGER FUNCTION MPIOSA (IAID,ILVL)
 C
-        PARAMETER (MNAI=2000)
+        PARAMETER (MNAI=6000)
 C
 C The value of MPIOSA(IAID,ILVL) is the area identifier of the smallest
 C area, at level ILVL, that contains the area with area identifier IAID.
