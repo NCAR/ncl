@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.6 1994-01-14 23:36:02 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.7 1994-01-21 19:29:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -885,14 +885,14 @@ CoordArrTableClassPartInitialize
 		"%s:%s and %s must one dimensional arrays:ignoring",	\
 					error_lead,NhlNct##DIM##Table,	\
 					NhlNct##DIM##TableLengths);	\
-			imp##dim = True;				\
+			inv##dim = True;				\
 		}							\
 		else if(gen->len_dimensions[0]!=gen2->len_dimensions[0]){\
 			NhlPError(WARNING,E_UNKNOWN,			\
 	"%s:%s and %s must be arrays of the same length:ignoring",	\
 					error_lead,NhlNct##DIM##Table,	\
 					NhlNct##DIM##TableLengths);	\
-			imp##dim = True;				\
+			inv##dim = True;				\
 		}							\
 	}								\
 	else if((ncat->cat##type.dim##table != NULL) ||			\
@@ -901,7 +901,7 @@ CoordArrTableClassPartInitialize
 		"%s:%s and %s must be set together:resetting both",	\
 					error_lead,NhlNct##DIM##Table,	\
 					NhlNct##DIM##TableLengths);	\
-		imp##dim = True;					\
+		inv##dim = True;					\
 	}								\
 	else								\
 		imp##dim = True;					\
@@ -1001,7 +1001,16 @@ CoordArrTableClassPartInitialize
 
 #define	INIT_TABLES(type,dim,DIM)\
 {									\
+	NhlBoolean	inv##dim = False;				\
+									\
 	CHECK_TABLES(type,dim,DIM)					\
+									\
+	if(inv##dim){							\
+		NhlPError(FATAL,E_UNKNOWN,				\
+		"%s:Resources specifying %s dimension are invalid",	\
+						error_lead,#DIM);	\
+		return FATAL;						\
+	}								\
 									\
 	if(!imp##dim){							\
 		COPY_TABLE_LEN(type,dim)				\
@@ -1241,11 +1250,11 @@ CoordArrTableSetValues
 	CoordArrTableLayer	ocat = (CoordArrTableLayer)old;
 
 	if(ncat->cat.type_string != ocat->cat.type_string){
-		NhlPError(INFO,E_UNKNOWN,
+		NhlPError(WARNING,E_UNKNOWN,
 			"%s:%s is setable only at create time - ignoring!",
 							error_lead,NhlNdiType);
 		ncat->cat.type_string = ocat->cat.type_string;
-		ret = INFO;
+		ret = WARNING;
 	}
 
 	return	ret;
@@ -1253,35 +1262,42 @@ CoordArrTableSetValues
 
 #define	SET_TABLES(type,dim,DIM)\
 {									\
-	NhlBoolean	imp##dim = False;				\
-									\
 	/* only do stuff if one of the fields changed */		\
 	if((ncat->cat##type.dim##table !=				\
 					ocat->cat##type.dim##table) ||	\
 		(ncat->cat##type.dim##table_lens !=			\
 				ocat->cat##type.dim##table_lens)){	\
 									\
+		NhlBoolean	inv##dim = False;			\
+									\
 		CHECK_TABLES(type,dim,DIM)				\
 									\
-		/* if imp##dim then bad values - reset */		\
-		if(imp##dim){						\
+		if(inv##dim){						\
+			NhlPError(WARNING,E_UNKNOWN,			\
+			"%s:invalid %s dimension: resetting %s and %s",	\
+				error_lead,#DIM,NhlNct##DIM##Table,	\
+					NhlNct##DIM##TableLengths);	\
 			ncat->cat##type.dim##table =			\
 					ocat->cat##type.dim##table;	\
 			ncat->cat##type.dim##table_lens =		\
 					ocat->cat##type.dim##table_lens;\
+									\
+			if(ncat->cat##type.dim##table == NULL)		\
+				imp##dim = True;			\
 		}							\
-		else{							\
-			if(ncat->cat##type.dim##table_lens !=		\
-					ocat->cat##type.dim##table_lens){\
-				COPY_TABLE_LEN(type,dim)		\
-				FREE_TABLE_LEN(type,dim,o)		\
-			}						\
-			if(ncat->cat##type.dim##table !=		\
-					ocat->cat##type.dim##table){	\
-				COPY_TABLE(type,dim)			\
-				FREE_TABLE(type,dim,o)			\
-			}						\
-		}							\
+	}								\
+}
+
+#define	FINISH_TABLES(type,dim,DIM)\
+{									\
+	if(ncat->cat##type.dim##table_lens !=				\
+				ocat->cat##type.dim##table_lens){	\
+		COPY_TABLE_LEN(type,dim)				\
+		FREE_TABLE_LEN(type,dim,o)				\
+	}								\
+	if(ncat->cat##type.dim##table != ocat->cat##type.dim##table){	\
+		COPY_TABLE(type,dim)					\
+		FREE_TABLE(type,dim,o)					\
 	}								\
 									\
 	/*								\
@@ -1301,9 +1317,40 @@ CoordArrTableSetValues
 	char		*error_lead = #name "SetValues";		\
 	name##Layer	ncat = (name##Layer)new;			\
 	name##Layer	ocat = (name##Layer)old;			\
+	NhlBoolean	impx = False, impy = False;			\
+	NhlErrorTypes	ret = NOERROR;					\
 									\
 	SET_TABLES(type,x,X)						\
 	SET_TABLES(type,x,X)						\
+									\
+	if(impx && impy){						\
+		NhlPError(WARNING,E_UNKNOWN,				\
+		"%s:Cannot have Implied X and Y values:resetting",	\
+							error_lead);	\
+		ret = MIN(ret,WARNING);					\
+		ncat->cat##type.xtable = ocat->cat##type.xtable;	\
+		ncat->cat##type.ytable = ocat->cat##type.ytable;	\
+		ncat->cat##type.xtable_lens = ocat->cat##type.xtable_lens;\
+		ncat->cat##type.ytable_lens = ocat->cat##type.ytable_lens;\
+									\
+	}								\
+									\
+	FINISH_TABLES(type,y,Y)						\
+	FINISH_TABLES(type,x,X)						\
+									\
+	if(ncat->cat##type.missing_x != ocat->cat##type.missing_x)	\
+		ncat->cat##type.missing_x_set = True;			\
+	if(ncat->cat##type.missing_y != ocat->cat##type.missing_y)	\
+		ncat->cat##type.missing_y_set = True;			\
+									\
+	if(ncat->cat##type.max_x != ocat->cat##type.max_x)		\
+		ncat->cat##type.max_x_set = True;			\
+	if(ncat->cat##type.min_x != ocat->cat##type.min_x)		\
+		ncat->cat##type.min_x_set = True;			\
+	if(ncat->cat##type.max_y != ocat->cat##type.max_y)		\
+		ncat->cat##type.max_y_set = True;			\
+	if(ncat->cat##type.min_y != ocat->cat##type.min_y)		\
+		ncat->cat##type.min_y_set = True;			\
 									\
 	/*								\
 	 * Set Max's and Min's						\
@@ -1311,7 +1358,7 @@ CoordArrTableSetValues
 	CHECK_MINMAX(type,x,y)						\
 	CHECK_MINMAX(type,y,x)						\
 									\
-	return	NOERROR;						\
+	return	ret;							\
 }
 
 /*

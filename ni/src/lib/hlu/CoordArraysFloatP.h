@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArraysFloatP.h,v 1.1 1993-09-15 22:10:38 boote Exp $
+ *      $Id: CoordArraysFloatP.h,v 1.2 1994-01-21 19:29:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,22 +34,35 @@ extern LayerClass coordArraysFloatLayerClass;
 
 typedef struct _CoordArraysFloatLayerPart{
 	/* User setable resource fields */
-	int		foo;
-	/* Private Fields */
+	NhlGenArray	xarray;
+	NhlGenArray	yarray;
+
+	int		x_cast;
+	int		y_cast;
+
+	NhlBoolean	copy_arrays;
+
+	float		missing_x;
+	float		missing_y;
 	float		max_x;
 	float		max_y;
 	float		min_x;
 	float		min_y;
 
+	/* Private Fields */
 	NhlBoolean	missing_x_set;
 	NhlBoolean	missing_y_set;
-	float		missing_x;
-	float		missing_y;
+	NhlBoolean	max_x_set;
+	NhlBoolean	max_y_set;
+	NhlBoolean	min_x_set;
+	NhlBoolean	min_y_set;
+	NhlBoolean	x_cast_set;
+	NhlBoolean	y_cast_set;
 } CoordArraysFloatLayerPart;
 
 typedef struct _CoordArraysFloatLayerRec{
 	ObjLayerPart			base;
-	CoordArraysFloatLayerPart	carraysfloat;
+	CoordArraysFloatLayerPart	carrfloat;
 } CoordArraysFloatLayerRec;
 
 typedef struct _CoordArraysFloatLayerClassPart{
@@ -58,7 +71,7 @@ typedef struct _CoordArraysFloatLayerClassPart{
 
 typedef struct _CoordArraysFloatLayerClassRec{
 	ObjLayerClassPart			base_class;
-	CoordArraysFloatLayerClassPart		ccarraysfloat_class;
+	CoordArraysFloatLayerClassPart		ccarrfloat_class;
 } CoordArraysFloatLayerClassRec;
 
 extern CoordArraysFloatLayerClassRec coordArraysFloatLayerClassRec;

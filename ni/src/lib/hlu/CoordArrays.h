@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.h,v 1.1 1993-09-15 22:10:34 boote Exp $
+ *      $Id: CoordArrays.h,v 1.2 1994-01-21 19:29:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,10 +27,44 @@
  * New Resource Names
  */
 
-#define	NhlNcaXData	"caXData"
-#define	NhlCcaXData	"CaXData"
-#define	NhlNcaYData	"caYData"
-#define	NhlCcaYData	"CaYData"
+#define	NhlNcaXArray	"caXArray"
+#define	NhlCcaXArray	"CaXArray"
+#define	NhlNcaYArray	"caYArray"
+#define	NhlCcaYArray	"CaYArray"
+
+#define	NhlNcaXCast	"caXCast"
+#define	NhlCcaXCast	"CaXCast"
+#define	NhlNcaYCast	"caYCast"
+#define	NhlCcaYCast	"CaYCast"
+
+#define	NhlNcaCopyArrays	"caCopyArrays"
+#define	NhlCcaCopyArrays	"CaCopyArrays"
+
+#define	NhlNcaXMissingF	"caXMissingF"
+#define	NhlCcaXMissingF	"CaXMissingF"
+#define	NhlNcaYMissingF	"caYMissingF"
+#define	NhlCcaYMissingF	"CaYMissingF"
+#define	NhlNcaXMaxF	"caXMaxF"
+#define	NhlCcaXMaxF	"CaXMaxF"
+#define	NhlNcaYMaxF	"caYMaxF"
+#define	NhlCcaYMaxF	"CaYMaxF"
+#define	NhlNcaXMinF	"caXMinF"
+#define	NhlCcaXMinF	"CaXMinF"
+#define	NhlNcaYMinF	"caYMinF"
+#define	NhlCcaYMinF	"CaYMinF"
+
+#define	NhlNcaXMissing	"caXMissing"
+#define	NhlCcaXMissing	"CaXMissing"
+#define	NhlNcaYMissing	"caYMissing"
+#define	NhlCcaYMissing	"CaYMissing"
+#define	NhlNcaXMax	"caXMax"
+#define	NhlCcaXMax	"CaXMax"
+#define	NhlNcaYMax	"caYMax"
+#define	NhlCcaYMax	"CaYMax"
+#define	NhlNcaXMin	"caXMin"
+#define	NhlCcaXMin	"CaXMin"
+#define	NhlNcaYMin	"caYMin"
+#define	NhlCcaYMin	"CaYMin"
 
 typedef struct _CoordArraysLayerClassRec *CoordArraysLayerClass;
 typedef struct _CoordArraysLayerRec *CoordArraysLayer;

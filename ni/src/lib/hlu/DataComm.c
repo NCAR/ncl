@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.7 1994-01-12 00:34:18 dbrown Exp $
+ *      $Id: DataComm.c,v 1.8 1994-01-21 19:29:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1858,19 +1858,19 @@ NhlRemoveData
 (
 	int		dcommid,	/* id of layer w/ data resource	*/
 	NhlString	res_name,	/* name of data resource	*/
-	int		ditemid		/* id of data to add		*/
+	int		ditemid		/* id of data to rm		*/
 )
 #else
 (dcommid,res_name,ditemid)
 	int		dcommid;	/* id of layer w/ data resource	*/
 	NhlString	res_name;	/* name of data resource	*/
-	int		ditemid;	/* id of data to add		*/
+	int		ditemid;	/* id of data to rm		*/
 #endif
 {
 	_NhlExtArg	larg;
 	Layer		dcl = _NhlGetLayer(dcommid);
 
-	if((dcl == NULL) || !(_NhlIsDataComm(dcl) || _NhlIsDataSpec(dcl))){
+	if((dcl == NULL) || !_NhlIsDataComm(dcl)){
 		NhlPError(FATAL,E_UNKNOWN,
 				"NhlRemoveData:Invalid DataComm id %d",dcommid);
 		return FATAL;

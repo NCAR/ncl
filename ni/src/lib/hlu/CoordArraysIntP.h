@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArraysIntP.h,v 1.1 1993-09-15 22:10:41 boote Exp $
+ *      $Id: CoordArraysIntP.h,v 1.2 1994-01-21 19:29:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,17 +34,35 @@ extern LayerClass coordArraysIntLayerClass;
 
 typedef struct _CoordArraysIntLayerPart{
 	/* User setable resource fields */
-	int		foo;
-	/* Private Fields */
+	NhlGenArray	xarray;
+	NhlGenArray	yarray;
+
+	int		x_cast;
+	int		y_cast;
+
+	NhlBoolean	copy_arrays;
+
+	int		missing_x;
+	int		missing_y;
 	int		max_x;
 	int		max_y;
 	int		min_x;
 	int		min_y;
+
+	/* Private Fields */
+	NhlBoolean	missing_x_set;
+	NhlBoolean	missing_y_set;
+	NhlBoolean	max_x_set;
+	NhlBoolean	max_y_set;
+	NhlBoolean	min_x_set;
+	NhlBoolean	min_y_set;
+	NhlBoolean	x_cast_set;
+	NhlBoolean	y_cast_set;
 } CoordArraysIntLayerPart;
 
 typedef struct _CoordArraysIntLayerRec{
 	ObjLayerPart			base;
-	CoordArraysIntLayerPart		carraysint;
+	CoordArraysIntLayerPart		carrint;
 } CoordArraysIntLayerRec;
 
 typedef struct _CoordArraysIntLayerClassPart{
@@ -53,7 +71,7 @@ typedef struct _CoordArraysIntLayerClassPart{
 
 typedef struct _CoordArraysIntLayerClassRec{
 	ObjLayerClassPart		base_class;
-	CoordArraysIntLayerClassPart	carraysint_class;
+	CoordArraysIntLayerClassPart	carrint_class;
 } CoordArraysIntLayerClassRec;
 
 extern CoordArraysIntLayerClassRec coordArraysIntLayerClassRec;

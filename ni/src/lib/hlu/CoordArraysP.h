@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArraysP.h,v 1.1 1993-09-15 22:10:44 boote Exp $
+ *      $Id: CoordArraysP.h,v 1.2 1994-01-21 19:29:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,24 +30,19 @@
 /*
  * Private Resource Names
  */
-#define	_NhlNcaXarray	"ca.x.array"
-#define	_NhlCcaXarray	"Ca.x.array"
-#define	_NhlNcaYarray	"ca.y.array"
-#define	_NhlCcaYarray	"Ca.y.array"
-
 typedef struct _CoordArraysLayerPart{
 	/* User setable resource fields */
-	int			foo;
+	NhlString		type_string;
 
 	/* Private Fields */
-	NrmQuark		type_child;
-	int			child;
+	NrmQuark		type;
+	Layer			child;
 } CoordArraysLayerPart;
 
 typedef struct _CoordArraysLayerRec{
 	BaseLayerPart			base;
 	DataItemLayerPart		dataitem;
-	CoordArraysLayerPart		carrays;
+	CoordArraysLayerPart		carr;
 } CoordArraysLayerRec;
 
 typedef struct _CoordArraysLayerClassPart{
@@ -57,7 +52,7 @@ typedef struct _CoordArraysLayerClassPart{
 typedef struct _CoordArraysLayerClassRec{
 	BaseLayerClassPart		base_class;
 	DataItemLayerClassPart		dataitem_class;
-	CoordArraysLayerClassPart	carrays_class;
+	CoordArraysLayerClassPart	carr_class;
 } CoordArraysLayerClassRec;
 
 extern CoordArraysLayerClassRec coordArraysLayerClassRec;
