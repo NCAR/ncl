@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.125 2004-07-23 21:24:54 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.126 2004-07-24 05:25:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,7 +34,6 @@
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/CnStdRenderer.h>
 #include <ncarg/hlu/CnTriMeshRenderer.h>
-#include <ncarg/hlu/CnDelaunayRenderer.h>
 
 #define Oset(field)     NhlOffset(NhlContourPlotLayerRec,contourplot.field)
 static NhlResource resources[] = {
