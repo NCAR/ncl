@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1 1992-06-24 20:51:51 clyne Exp $
+#	$Id: yMakefile,v 1.2 1992-08-12 22:42:56 clyne Exp $
 #
 
 NCARG		= ../../../..
@@ -8,7 +8,7 @@ MYNAME		= scripts
 
 SCRIPTS		= ncarvversion ctlib gcaps fcaps 
 
-RASTER_SPECIFIERS	= \sun xwd nrif hdf
+RASTER_SPECIFIERS	= \sun xwd nrif hdf avs sgi
 
 
 #ifdef	BuildClearTextctrans
@@ -30,7 +30,7 @@ CGI_SPECIFIER	= cgi
 #
 #ifdef BuildXlibDependentCode
 X11LIBS		= $(DX11LIBS)
-X11_SPECIFIER	= X11 xbfr
+X11_SPECIFIER	= X11 
 #endif BuildXlibDependentCode
 
 #
@@ -38,7 +38,7 @@ X11_SPECIFIER	= X11 xbfr
 #
 #ifdef BuildSunViewctrans
 SUNLIBS		= $(DSUNLIBS)
-SUN_SPECIFIER	= sunview sunraster
+SUN_SPECIFIER	= sunview 
 #endif
 
 #
