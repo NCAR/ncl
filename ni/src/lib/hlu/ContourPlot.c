@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.118 2003-06-04 19:03:56 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.119 2003-07-07 21:52:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3616,9 +3616,16 @@ static NhlErrorTypes GetDataBound
                                 *ylinear = False;
                         }
                 }
+		/*
+		 * I'm not really sure what the following is supposed
+		 * to accomplish: but it is probably needed for some
+		 * map overlay permutation. It should be examined in
+		 * detail at some point.
+                 */
 		if (*xlinear || *ylinear) {
 			float tx[2],ty[2];
 			float fx[2],fy[2];
+			float dx[2],dy[2];
 			float lmin,lmax;
 			
 			fx[0] = bbox->l;
@@ -3629,14 +3636,13 @@ static NhlErrorTypes GetDataBound
 				     2,tx,ty,&status,NULL,NULL);
 			if (! status) {
 				_NhlWinToData(cnp->trans_obj,tx,ty,
-					      2,cxd,cyd,&status,NULL,NULL);
+					      2,dx,dy,&status,NULL,NULL);
 			}
-			if (status) {
-				e_text = "%s: data boundary is out of range";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
-					  e_text,entry_name);
-				ret = MIN(ret,NhlWARNING);
-				return ret;
+			if (! status) {
+				cxd[0] = dx[0];
+				cyd[0] = dy[0];
+				cxd[1] = dx[1];
+				cyd[1] = dy[1];
 			}
 			if (limit_mode == NhlLATLON & rel_center_lon)
 				center_lon = center_lon + min_lon 
@@ -3873,12 +3879,15 @@ static NhlErrorTypes cnUpdateTrans
 
 			xmin = MIN (cnp->sfp->x_start,cnp->sfp->x_end);
 			xmax = MAX (cnp->sfp->x_start,cnp->sfp->x_end);
-
+#if 0
+			/* this is no good */
 			if (! cnp->sfp->xc_is_bounds) {
 				cell_size = (xmax - xmin) / (cnp->sfp->fast_len-1);
 				xmin -= 0.5 * cell_size;
 				xmax += 0.5 * cell_size;
 			}
+#endif
+
 			if (cnp->sfp->x_start < cnp->sfp->x_end) {
 				subret = NhlVASetValues
 					(cnp->trans_obj->base.id,
