@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.41 1999-03-24 18:05:17 haley Exp $
+.\"	$Id: ncargex.m,v 1.42 1999-12-15 00:03:43 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "June 1998" NCAR "NCAR GRAPHICS"
@@ -9,16 +9,19 @@ ncargex \- NCAR Graphics Fortran and C Low-Level Utility Examples
 .nf
 \fBncargex\fP [\fB-A\fR] [\fB-E\fR] [\fB-F\fR] [\fB-P\fR] [\fB-T\fR]
 [\fB-U\fR] [\fB-C\fR] [\fB-Fortran\fR] [\fB-class\fR] [\fB-ps\fR]
-[\fB-x11\fR] [\fB-W workstation_type\fR] [\fB-areas] [\fB-autograph\fR]
-[\fB-bivar\fR] [\fB-colconv\fR] [\fB-conpack\fR] [\fB-conran_family\fR]
-[\fB-conrec_family\fR] [\fB-dashline\fR] [\fB-dashpack\fR] [\fB-ezmap\fR]
-[\fB-field_flow\fR] [\fB-gflash\fR] [\fB-gks\fR] [\fB-gridall\fR]
-[\fB-halftone\fR] [\fB-histogram\fR] [\fB-isosrfhr\fR] [\fB-isosurface\fR]
-[\fB-labelbar\fR] [\fB-ngmath\fR] [\fB-ngmisc\fR] [\fB-plotchar\fR]
-[\fB-polypack\fR] [\fB-pwrite_family\fR] [\fB-scrolled_title\fR] [\fB-seter\fR]
-[\fB-softfill\fR] [\fB-spps\fR] [\fB-streamlines\fR] [\fB-surface\fR]
-[\fB-tdpack\fR] [\fB-threed\fR] [\fB-vectors\fR] [\fB-wmap\fR] [\fB-misc\fR]
-[\fB-clean\fR] [\fB-n\fR] [\fB-noX11\fR] [\fB-onebyone\fR] \fBexample_name ...\fR
+[\fB-x11\fR] [\fB-W workstation_type\fR] [\fB-areas]
+[\fB-autograph\fR] [\fB-bivar\fR] [\fB-colconv\fR] [\fB-conpack\fR]
+[\fB-conran_family\fR] [\fB-conrec_family\fR] [\fB-csagrid\fR]
+[\fB-cssgrid\fR] [\fB-dashline\fR] [\fB-dashpack\fR] [\fB-dsgrid\fR]
+[\fB-ezmap\fR] [\fB-field_flow\fR] [\fB-fitgrid\fR] [\fB-gflash\fR]
+[\fB-gks\fR] [\fB-gridall\fR] [\fB-halftone\fR] [\fB-histogram\fR]
+[\fB-isosrfhr\fR] [\fB-isosurface\fR] [\fB-labelbar\fR]
+[\fB-natgrid\fR] [\fB-ngmath\fR] [\fB-ngmisc\fR] [\fB-plotchar\fR]
+[\fB-polypack\fR] [\fB-pwrite_family\fR] [\fB-scrolled_title\fR]
+[\fB-seter\fR] [\fB-shgrid\fR] [\fB-softfill\fR] [\fB-spps\fR]
+[\fB-streamlines\fR] [\fB-surface\fR] [\fB-tdpack\fR] [\fB-threed\fR]
+[\fB-vectors\fR] [\fB-wmap\fR] [\fB-misc\fR] [\fB-clean\fR] [\fB-n\fR]
+[\fB-noX11\fR] [\fB-onebyone\fR] \fBexample_name ...\fR
 .fi
 .SH DESCRIPTION
 .I ncargex
@@ -180,11 +183,20 @@ Generate all Conran Fortran examples.
 .IP \-conrec_family " " ""
 Generate all Conrec Fortran examples.
 .sp
+.IP \-csagrid " " ""
+Generate all Ngmath Csagrid C/Fortran examples.
+.sp
+.IP \-cssgrid " " ""
+Generate all Ngmath Cssgrid C/Fortran examples.
+.sp
 .IP \-dashline " " ""
 Generate all Dashline C/Fortran examples.
 .sp
 .IP \-dashpack " " ""
 Generate all Dashpack C/Fortran examples.
+.sp
+.IP \-dsgrid " " ""
+Generate all Ngmath Dsgrid C/Fortran examples.
 .sp
 .IP \-ezmap " " ""
 Generate all Ezmap C/Fortran examples.
@@ -192,6 +204,9 @@ Generate all Ezmap C/Fortran examples.
 .IP \-field_flow " " ""
 Generate all Field_flow C/Fortran examples.  Includes streamlines and vectors 
 examples.
+.sp
+.IP \-fitgrid " " ""
+Generate all Ngmath Fitgrid C/Fortran examples.
 .sp
 .IP \-gflash " " ""
 Generate all Gflash C/Fortran examples.
@@ -217,6 +232,9 @@ Generate all Isosurface C/Fortran examples.
 .IP \-labelbar " " ""
 Generate all Labelbar C/Fortran examples.
 .sp
+.IP \-natgrid " " ""
+Generate all Ngmath Natgrid C/Fortran examples.
+.sp
 .IP \-ngmath " " ""
 Generate all Ngmath C/Fortran examples.
 .sp
@@ -237,6 +255,9 @@ Generate all Scrolled title C/Fortran examples.
 .sp
 .IP \-seter " " ""
 Generate all Seter C/Fortran examples.
+.sp
+.IP \-shgrid " " ""
+Generate all Ngmath Shgrid C/Fortran examples.
 .sp
 .IP \-softfill " " ""
 Generate all Softfill C/Fortran examples.
@@ -327,6 +348,15 @@ tconan tconaq tconas
 .sp
 tcnqck tcnsmt tcnsup tconre
 .sp
+.I "CSAGRID Examples:"
+.sp
+csex01 csex02 csex03 csex04 csex05 csex06 csex07 c_csex01 c_csex02
+c_csex03 c_csex04 c_csex05 c_csex06 c_csex07
+.sp
+.I "CSSGRID Examples:"
+.sp
+cssex01 cssex02 cssex03 c_cssex01 c_cssex02 c_cssex03
+.sp
 .I "DASHLINE Examples:"
 .sp
 fdlcurvd fdldashc fdldashd fdlsmth tdashc tdashl tdashp
@@ -335,6 +365,11 @@ tdashs c_fdldashc
 .I "DASHPACK Examples:"
 .sp
 tdshpk c_tdshpk
+.sp
+.I "DSGRID Examples:"
+.sp
+dsex01 dsex01d dsex02 dsex03 dsex04 dsex05 dsex06 c_dsex01 c_dsex01d
+c_dsex02 c_dsex03 c_dsex04 c_dsex05 c_dsex06
 .sp
 .I "EZMAP Examples:"
 .sp
@@ -350,6 +385,11 @@ c_mpex05 c_eezmpa c_eezmpb
 .sp
 ffex00 ffex01 ffex02 ffex03 ffex04 ffex05 fcover fstream
 stex01 stex02 stex03 vvex01 vvex02 vvex03 c_ffex03 c_vvex03
+.sp
+.I "FITGRID Examples:"
+.sp
+ftex01 ftex02 ftex03 ftex04 ftex05 ftex06 c_ftex01 c_ftex02 c_ftex03
+c_ftex04 c_ftex05 c_ftex06
 .sp
 .I "GFLASH Example:"
 .sp
@@ -388,15 +428,22 @@ fisissrf fispwrzi tisosr tpwrzi c_tisosr
 .sp
 elblba tlblba clbfil clbbar clblbr c_elblba
 .sp
+.I "NATGRID Examples:"
+.sp
+nnex01 nnex01d nnex02 nnex03 nnex04 nnex05 nnex06 nnex07 nnex08 nnex09
+c_nnex01 c_nnex01d c_nnex02 c_nnex03 c_nnex06
+.sp
 .I "NGMATH Examples:"
 .sp
-csex01 csex02 csex03 csex04 csex05 csex06 csex07 dsex01 dsex02 dsex03
-dsex04 dsex05 dsex06 dsex01d nnex01 nnex02 nnex03 nnex04 nnex05 nnex06
-nnex07 nnex08 nnex09 nnex01d ftex01 ftex02 ftex03 ftex04 ftex05 ftex06
-c_csex01 c_csex02 c_csex03 c_csex04 c_csex05 c_csex06 c_csex07 c_dsex01
-c_dsex02 c_dsex03 c_dsex04 c_dsex05 c_dsex06 c_dsex01d c_nnex01 c_nnex02
-c_nnex03 c_nnex06 c_nnex01d c_ftex01 c_ftex02 c_ftex03 c_ftex04 c_ftex05
-c_ftex06
+csex01 csex02 csex03 csex04 csex05 csex06 csex07 cssex01 cssex02
+cssex03 dsex01 dsex01d dsex02 dsex03 dsex04 dsex05 dsex06 ftex01
+ftex02 ftex03 ftex04 ftex05 ftex06 nnex01 nnex01d nnex02 nnex03 nnex04
+nnex05 nnex06 nnex07 nnex08 nnex09 shex01 shex02 shex03 c_csex01
+c_csex02 c_csex03 c_csex04 c_csex05 c_csex06 c_csex07 c_cssex01
+c_cssex02 c_cssex03 c_dsex01 c_dsex01d c_dsex02 c_dsex03 c_dsex04
+c_dsex05 c_dsex06 c_ftex01 c_ftex02 c_ftex03 c_ftex04 c_ftex05
+c_ftex06 c_nnex01 c_nnex01d c_nnex02 c_nnex03 c_nnex06 c_shex01
+c_shex02 c_shex03
 .sp
 .I "NGMISC Examples:"
 .sp
@@ -421,6 +468,10 @@ fslfont slex01 slex02 tstitl c_slex01
 .I "SETER Examples:"
 .sp
 tseter
+.sp
+.I "SHGRID Examples:"
+.sp
+shex01 shex02 shex03 c_shex01 c_shex02 c_shex03
 .sp
 .I "SOFTFILL Examples:"
 .sp
