@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.3 1991-03-12 17:34:18 clyne Exp $
+ *	$Id: X11_class0.c,v 1.4 1991-04-04 16:01:09 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -63,12 +63,31 @@ extern	Ct_err	init_polygon();
 
 static	struct	{
 	StringType_	Geometry;
+	StringType_	foreground;
+	StringType_	background;
+	BoolType_	reverse;
 	} commLineOpt;
 
 static	Option	options[] =  {
-	{"geometry", StringType, 
-		(unsigned long) &commLineOpt.Geometry, sizeof (StringType_ )},
-	{NULL},
+	{
+	"geometry", StringType, 
+		(unsigned long) &commLineOpt.Geometry, sizeof (StringType_ )
+	},
+	{
+	"foreground", StringType, 
+		(unsigned long) &commLineOpt.foreground, sizeof (StringType_ )
+	},
+	{
+	"background", StringType, 
+		(unsigned long) &commLineOpt.background, sizeof (StringType_ )
+	},
+	{
+	"reverse", BoolType, 
+		(unsigned long) &commLineOpt.Geometry, sizeof (BoolType_ )
+	},
+	{
+	NULL
+	},
 	};
 
 #include	"ncaricon.bit"
@@ -187,7 +206,8 @@ CGMC *c;
 	 *	of window. These colours will be used if the user doesn't 
 	 *	supply his own colour table through the CGM.
 	 */
-	(void) init_color(&fg, &bg, &bd);
+	(void) init_color(commLineOpt.foreground, commLineOpt.background, 
+			(boolean) commLineOpt.reverse, &fg, &bg, &bd);
 
 
 	if (stand_Alone) {

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class5.c,v 1.2 1991-01-09 11:07:28 clyne Exp $
+ *	$Id: X11_class5.c,v 1.3 1991-04-04 16:01:04 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -206,14 +206,23 @@ CGMC *c;
 
 #define		COL_2_ALLOC	5
 
-Ct_err	init_color(fg, bg, bd)
+Ct_err	init_color(foreground, background, reverse, fg, bg, bd)
+	char		*foreground,
+			*background;
+	boolean		reverse;
 	Pixeltype	*fg, *bg, *bd;
 {
 
 	int	i;
 	Pixeltype	planedummy[1];		/* not used	*/
 	Pixeltype	pixel_return[1];	/* device index	*/
-	static	char	*name[] = {"black", "white", "red", "green", "blue"};
+	char	*name[5];
+
+	name[0] = background;
+	name[1] = foreground;
+	name[2] = "red";
+	name[3] = "green";
+	name[4] = "blue";
 
 
 
@@ -228,9 +237,16 @@ Ct_err	init_color(fg, bg, bd)
 
 		/* one plane monochrome display	*/
 
-		*fg = WhitePixel(dpy, DefaultScreen(dpy));
-		*bd = WhitePixel(dpy, DefaultScreen(dpy));
-		*bg = BlackPixel(dpy, DefaultScreen(dpy));
+		if (! reverse) {	/* if not reverse video	*/
+			*fg = WhitePixel(dpy, DefaultScreen(dpy));
+			*bd = WhitePixel(dpy, DefaultScreen(dpy));
+			*bg = BlackPixel(dpy, DefaultScreen(dpy));
+		}
+		else {	/* reverse video	*/
+			*fg = BlackPixel(dpy, DefaultScreen(dpy));
+			*bd = BlackPixel(dpy, DefaultScreen(dpy));
+			*bg = WhitePixel(dpy, DefaultScreen(dpy));
+		}
 
 		return (OK);
 	}

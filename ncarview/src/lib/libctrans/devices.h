@@ -1,3 +1,6 @@
+/*
+ *	$Id: devices.h,v 1.3 1991-04-04 16:01:07 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1989                         *
@@ -99,12 +102,19 @@
 
 static	OptDescRec	raster_opts[] = {
 	{"resolution", OptSepArg, "512x512"},
+	{"compress", OptIsArg, "false"},
+	{"landscape", OptIsArg, "false"},
+	{"rle", OptIsArg, "false"},
+	{"dpi", OptSepArg, "75"},
 	{NULL}
 	};
 
 #ifdef	X11
 static	OptDescRec	X11_opts[] = {
 	{"geometry", OptSepArg, NULL},
+	{"foreground", OptSepArg, "white"},
+	{"background", OptSepArg, "black"},
+	{"reverse", OptIsArg, "false"},
 	{NULL}
 	};
 #endif
