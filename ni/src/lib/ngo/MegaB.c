@@ -1,4 +1,4 @@
-/* $Id: MegaB.c,v 1.4 1997-10-03 20:07:45 dbrown Exp $ */
+/* $Id: MegaB.c,v 1.5 1998-01-24 02:10:36 dbrown Exp $ */
 /*
  * Copyright 1994 John L. Cwikla
  *
@@ -567,7 +567,9 @@ static XtWidgetProc destroy(XmMegaButtonWidget _mbw)
                 }
                 XtFree((XtPointer)COLORS(_mbw));
         }
+#if 0        
         printf("colors allocated at destroy: %d\n", count);
+#endif        
         
 	return (XtWidgetProc)NULL;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.17 1998-01-08 22:45:04 dbrown Exp $
+ *      $Id: addfile.c,v 1.18 1998-01-24 02:10:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -311,7 +311,7 @@ AddFileScript
 	char		func[] = "AddFileScript";
 	NgAddFile	l = (NgAddFile)go;
 	NgAddFilePart	*np = &l->addfile;
-	char		*vname;
+	char		*vname,*vname1;
 	Widget		rtype;
 	char		*rw = "r";
         NhlBoolean	writable;
@@ -329,15 +329,16 @@ AddFileScript
 		XtFree(vname);
 		return;
 	}
+        vname1 = NgNclGetSymName(np->nsid,vname,False);
 
 	/*
 	 * Make sure dirstr and vname aren't so long they blow out the
 	 * stack memory.
 	 */
-	if((strlen(np->dirspec)+strlen(vname)) > (sizeof(Buffer) - 19)){
+	if((strlen(np->dirspec)+strlen(vname1)) > (sizeof(Buffer) - 19)){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			"%s:variable name and filename too long:%s:%s",func,
-                           vname,np->dirspec));
+                           vname1,np->dirspec));
 		XtFree(vname);
 		return;
 	}
@@ -349,7 +350,7 @@ AddFileScript
 		rw = "w";
 
 	rw = "r";
-	sprintf(Buffer,"%s = addfile(\"%s\",\"%s\")\n",vname,np->dirspec,rw);
+	sprintf(Buffer,"%s = addfile(\"%s\",\"%s\")\n",vname1,np->dirspec,rw);
 
 	(void)NgNclSubmitBlock(np->nsid,Buffer);
 

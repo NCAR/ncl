@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.9 1998-01-08 22:45:17 dbrown Exp $
+ *      $Id: restree.c,v 1.10 1998-01-24 02:10:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -669,7 +669,7 @@ static void GetInstanceResValues
                                                 (context,resp->real_class);
 					last_class = resp->real_class;
 				}
-                                from.size = sizeof(Qgenarray);
+                                from.size = sizeof(NhlGenArray);
                                 from.data.ptrval = values[i];
                                 to.size = sizeof(NhlPointer);
                                 to.data.ptrval = &strval;
@@ -1351,7 +1351,7 @@ static void AdjustOverlayWidgetPositions
                         new_y = hvip->y + row_change * Row_Height;
                         NgSetHtmlViewPosition
                                 (rtp->go->base.id,rtp->page_id,hvip->id,
-                                 rtp->restree.tree,(level-10)*2,new_y);
+                                 rtp->restree.tree,(level-15)*2,new_y);
                         hvip->y = new_y;
                 }
         }
@@ -1819,7 +1819,7 @@ static NhlBoolean CheckToggleSetState
                                 = _NhlCreateConvertContext(NULL);
                         _NhlConvertContextClass(context,
                                                 svp->res_data->real_class);
-                        from.size = sizeof(Qgenarray);
+                        from.size = sizeof(NhlGenArray);
                         from.data.ptrval = value;
                         to.size = sizeof(NhlPointer);
                         to.data.ptrval = &strval;
@@ -2937,7 +2937,7 @@ NhlErrorTypes NgResTreeResUpdateComplete
                                                 (context,resp->real_class);
 					last_class = resp->real_class;
 				}
-                                from.size = sizeof(Qgenarray);
+                                from.size = sizeof(NhlGenArray);
                                 from.data.ptrval = values[i];
                                 to.size = sizeof(NhlPointer);
                                 to.data.ptrval = &strval;

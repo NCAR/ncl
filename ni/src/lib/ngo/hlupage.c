@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.12 1998-01-08 01:19:26 dbrown Exp $
+ *      $Id: hlupage.c,v 1.13 1998-01-24 02:10:39 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -587,14 +587,19 @@ CreateInstance
                 (rec->go->base.id,&hlu_id,
                  NrmQuarkToString(page->qvar),parent,
                  rec->public.class_name,1,setresproc,setresdata);
+        if (ret < NhlWARNING) {
+                char buf[512];
+                sprintf(buf,"%s = %s@_FillValue\n",
+                        NrmQuarkToString(page->qvar),
+                        NrmQuarkToString(page->qvar));
+                (void)NgNclSubmitBlock(rec->nclstate,buf);
+                return ret;
+        }
         if (NhlClassIsSubclass(rec->class,NhlviewClass)) {
                 NgDrawGraphic
                         (rec->go->base.id,NrmQuarkToString(page->qvar),True);
         }
-        if (ret > NhlFATAL)
-                return hlu_id;
-        
-        return ret;
+        return hlu_id;
 }
 
 static int

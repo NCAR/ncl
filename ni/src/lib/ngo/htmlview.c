@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.c,v 1.3 1998-01-12 20:20:07 dbrown Exp $
+ *      $Id: htmlview.c,v 1.4 1998-01-24 02:10:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,7 @@
 #include <ncarg/ngo/htmlviewP.h>
 #include <ncarg/ngo/nclstate.h>
 
-#define DOCTOP "ngdoc/ng4.0/"
+#define DOCTOP "ngdoc/ng4.1alpha/"
 #define DOCHLURESDIR "ref/hlu/obj/"
 #define DOCRESEXT ".res.html"
 #define MAX_HTML_OBJECT_LIST_LEN 10
