@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.53 2001-09-07 21:16:04 dbrown Exp $
+ *      $Id: Transform.c,v 1.54 2002-03-18 21:20:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2371,19 +2371,24 @@ extern NhlErrorTypes _NhltfInitSegment
 	return ret;
 }
 
+/*
+ * Trans type is 0 for LogLin, 1 for Irregular, and 2 for Curvilinear
+ * Note that x_axis_type and y_axis_type is ignored for Curvilinear
+ */
+ 
 extern NhlErrorTypes _NhltfCheckCoordBounds
 #if	NhlNeedProto
 (
         NhlTransformLayer	new,
 	NhlTransformLayer	old,
-        NhlBoolean		use_irr_trans,
+        int			trans_type,
 	NhlString		entry_name
 )
 #else
 (new,old,use_irr_trans,entry_name)
         NhlTransformLayer	new;
 	NhlTransformLayer	old;
-        NhlBoolean		use_irr_trans;
+        int                     trans_type;
 	NhlString		entry_name;
         
 #endif
@@ -2443,7 +2448,7 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
 		tfp->x_max = ftmp;
                 tfp->sticky_x_min_set = tfp->sticky_x_max_set = False;
 	}
-	if (! use_irr_trans && tfp->x_log && tfp->x_min <= 0.0) {
+	if (trans_type == 0 && tfp->x_log && tfp->x_min <= 0.0) {
 		e_text = 
 		 "%s: Log axis requires all positive extent: setting %s False";
 		ret = MIN(ret,NhlWARNING);
@@ -2452,7 +2457,7 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
                 tfp->x_axis_type = tfp->x_axis_type == NhlLOGAXIS ?
                         NhlLINEARAXIS : tfp->x_axis_type;
 	}
-        else if (use_irr_trans && tfp->x_axis_type == NhlLOGAXIS &&
+        else if (trans_type == 1 && tfp->x_axis_type == NhlLOGAXIS &&
                  (tfp->x_min <= 0.0 ||
                   MIN(tfp->data_xstart,tfp->data_xend) <= 0.0 )) {
 		e_text = 
@@ -2490,7 +2495,7 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
 		tfp->y_max = ftmp;
                 tfp->sticky_y_min_set = tfp->sticky_y_max_set = False;
 	}
-	if (! use_irr_trans && tfp->y_log && tfp->y_min <= 0.0) {
+	if (trans_type == 0 && tfp->y_log && tfp->y_min <= 0.0) {
 		e_text = 
 		 "%s: Log axis requires all positive extent: setting %s False";
 		ret = MIN(ret,NhlWARNING);
@@ -2499,7 +2504,7 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
                 tfp->y_axis_type = tfp->y_axis_type == NhlLOGAXIS ?
                         NhlLINEARAXIS : tfp->y_axis_type;
 	}
-        else if (use_irr_trans && tfp->y_axis_type == NhlLOGAXIS &&
+        else if (trans_type == 1 && tfp->y_axis_type == NhlLOGAXIS &&
                  (tfp->y_min <= 0.0 ||
                   MIN(tfp->data_ystart,tfp->data_yend) <= 0.0 )) {
 		e_text = 
@@ -2510,8 +2515,12 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
 		tfp->y_log = False;
                 tfp->y_axis_type = NhlLINEARAXIS;
         }
+	/*
+	 * Both irregular and curvilinear require that the max and min
+	 * values be within the data bounds
+	 */
                 
-        if (use_irr_trans) {
+        if (trans_type > 0) {
                 e_text = 
 "%s: irregular transformation requires %s to be within data coordinate range: resetting";
                 if (tfp->x_min < MIN(tfp->data_xstart,tfp->data_xend)) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.26 2001-07-09 23:56:49 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.27 2002-03-18 21:20:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -97,6 +97,10 @@ typedef struct _NhlcnRegionAttrs {
 	NhlFillIndex	fill_pat;
 	float		fill_scale;
 } NhlcnRegionAttrs;
+
+typedef enum _cnTransType {
+	cnLOGLIN, cnIRREGULAR, cnCURVILINEAR
+} cnTransType;
 
 typedef struct _NhlContourPlotDataDepLayerPart{
 	/* Public resources	*/
@@ -262,7 +266,7 @@ typedef struct _NhlContourPlotLayerPart {
 	int		fws_id;
 	int		cws_id;
 	int		aws_id;
-	NhlBoolean	use_irr_trans;
+	cnTransType	trans_type;
 	float		xc1,xcm,yc1,ycn; /* data bounds for Conpack */
 	float		xlb,xub,ylb,yub; /* window boundaries */
 	int		info_anno_id;

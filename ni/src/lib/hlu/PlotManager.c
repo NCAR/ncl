@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.66 2001-11-28 02:47:50 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.67 2002-03-18 21:20:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <ncarg/hlu/PlotManagerP.h>
 #include <ncarg/hlu/LogLinTransObjP.h>
 #include <ncarg/hlu/IrregularTransObj.h>
+#include <ncarg/hlu/CurvilinearTransObj.h>
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/AnnoManagerP.h>
 #include <ncarg/hlu/ConvertersP.h>

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.109 2002-02-11 19:17:18 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.110 2002-03-18 21:20:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/IrregularTransObjP.h>
 #include <ncarg/hlu/MapTransObj.h>
+#include <ncarg/hlu/CurvilinearTransObjP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 
@@ -967,6 +968,14 @@ static NhlErrorTypes SetCoordBounds(
 );
 
 static NhlErrorTypes SetUpIrrTransObj(
+#if	NhlNeedProto
+	NhlContourPlotLayer	cnew,
+	NhlContourPlotLayer	cold,
+	NhlBoolean	init
+#endif
+);
+
+static NhlErrorTypes SetUpCrvTransObj(
 #if	NhlNeedProto
 	NhlContourPlotLayer	cnew,
 	NhlContourPlotLayer	cold,
@@ -2069,7 +2078,7 @@ ContourPlotInitialize
 	cnp->overlay_object = NULL;
 	cnp->data_changed = True;
 	cnp->ll_strings = NULL;
-	cnp->use_irr_trans = False;
+	cnp->trans_type = cnLOGLIN;
 	cnp->const_field = False;
 	cnp->lbar_labels_set = False;
 	cnp->lbar_labels = NULL;
@@ -2150,21 +2159,32 @@ ContourPlotInitialize
 	subret = InitCoordBounds(cnew,NULL,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
-	if (cnp->use_irr_trans) {
-		subret = SetUpIrrTransObj(cnew,(NhlContourPlotLayer) req,True);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: error setting up transformation";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return(ret);
-		}
-	}
-	else {
+	switch (cnp->trans_type) {
+	case cnLOGLIN:
+	default:
 		subret = SetUpLLTransObj(cnew,(NhlContourPlotLayer) req,True);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return(ret);
 		}
+		break;
+	case cnIRREGULAR:
+		subret = SetUpIrrTransObj(cnew,(NhlContourPlotLayer) req,True);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error setting up transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(ret);
+		}
+		break;
+	case cnCURVILINEAR:
+		subret = SetUpCrvTransObj(cnew,(NhlContourPlotLayer) req,True);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error setting up transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(ret);
+		}
+		break;
 	}
 
 /* 
@@ -2478,22 +2498,32 @@ static NhlErrorTypes ContourPlotSetValues
 	subret = InitCoordBounds(cnew,cold,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
-	if (cnp->use_irr_trans) {
-		subret = SetUpIrrTransObj(cnew,
-					  (NhlContourPlotLayer) old,False);
+	switch (cnp->trans_type) {
+	case cnLOGLIN:
+	default:
+		subret = SetUpLLTransObj(cnew,(NhlContourPlotLayer)old,False);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return(ret);
 		}
-	}
-	else {
-		subret = SetUpLLTransObj(cnew,(NhlContourPlotLayer) old,False);
+		break;
+	case cnIRREGULAR:
+		subret = SetUpIrrTransObj(cnew,(NhlContourPlotLayer)old,False);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return(ret);
 		}
+		break;
+	case cnCURVILINEAR:
+		subret = SetUpCrvTransObj(cnew,(NhlContourPlotLayer)old,False);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error setting up transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(ret);
+		}
+		break;
 	}
 /* 
  * Manage the PlotManager (including the PlotManager annotations)
@@ -3083,26 +3113,35 @@ static NhlErrorTypes cnInitDraw
         cnp->ylb = MAX(tfp->y_min,MIN(tfp->data_ystart,tfp->data_yend));
         cnp->yub = MIN(tfp->y_max,MAX(tfp->data_ystart,tfp->data_yend));
         
-	if (!cnp->use_irr_trans) {
+	if (cnp->trans_type == cnLOGLIN) {
                 cnp->xc1 = tfp->data_xstart;
                 cnp->xcm = tfp->data_xend;
                 cnp->yc1 = tfp->data_ystart;
                 cnp->ycn = tfp->data_yend;
         }
-        else {
+        else if (cnp->trans_type == cnIRREGULAR) {
                 int xcount,ycount;
 
-                xcount = tfp->x_axis_type == NhlIRREGULARAXIS ?
-                        cnp->sfp->x_arr->len_dimensions[0] : 3;
-                ycount = tfp->y_axis_type == NhlIRREGULARAXIS ?
-                        cnp->sfp->y_arr->len_dimensions[0] : 3;
-                
+		xcount = tfp->x_axis_type == NhlIRREGULARAXIS ?
+			cnp->sfp->x_arr->len_dimensions[0] : 3;
+		ycount = tfp->y_axis_type == NhlIRREGULARAXIS ?
+			cnp->sfp->y_arr->len_dimensions[0] : 3;
+
                 cnp->xc1 = 0;
                 cnp->xcm = xcount - 1;
                 cnp->yc1 = 0;
                 cnp->ycn = ycount - 1;
         }
-        
+	else if (cnp->trans_type == cnCURVILINEAR) {
+                int xcount,ycount;
+
+		xcount = cnp->sfp->x_arr->len_dimensions[1];
+		ycount = cnp->sfp->x_arr->len_dimensions[0];
+                cnp->xc1 = 0;
+                cnp->xcm = xcount - 1;
+                cnp->yc1 = 0;
+                cnp->ycn = ycount - 1;
+	}
 	
 	return ret;
 }
@@ -3351,18 +3390,21 @@ static NhlErrorTypes GetDataBound
 		(NhlTransformLayerPart *) &cl->trans;
 	int			status;
 	NhlBoolean		ezmap = False,x_irr = False,y_irr = False;
+	NhlBoolean		curvy = False;
 	float			xsoff,xeoff,ysoff,yeoff,xexact,yexact;
 	float			cxd[2],cyd[2];
+	float 			tx[2],ty[2];
+	float 			fx[2],fy[2];
 	float			fstep;
 
 #define EPSILON 1e-2
         
-	*xlinear = False;
-        *ylinear = False;
+	*xlinear = True;
+        *ylinear = True;
 	*mcount = cnp->sfp->fast_len;
 	*ncount = cnp->sfp->slow_len;
 
-        if (cnp->use_irr_trans) {
+        if (cnp->trans_type == cnIRREGULAR) {
                 int i;
                 float *coords,start_diff,diff,eps,sum;
                 if (cnp->sfp->x_arr) {
@@ -3401,22 +3443,39 @@ static NhlErrorTypes GetDataBound
 	
 #undef EPSILON
                 
+
 	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
-	    NhlmapTransObjClass->base_class.class_name) {
-		ezmap = True;
+	    NhlcurvilinearTransObjClass->base_class.class_name) {
+
+		if (_NhlIsOverlay(cl->base.id)) {
+			*xlinear = False;
+			*ylinear = False;
+		}
+
+		cxd[0] = cnp->xlb;
+		cxd[1] = cnp->xub;
+		cyd[0] = cnp->ylb;
+		cyd[1] = cnp->yub;
+
+		tx[0] = cnp->xc1;
+		tx[1] = cnp->xcm;
+		ty[0] = cnp->yc1;
+		ty[0] = cnp->ycn;
+		_NhlWinToNDC(cnp->trans_obj,tx,ty,
+			      2,fx,fy,&status,NULL,NULL);
+
+		bbox->l = MIN(fx[0],fx[1]);
+		bbox->r = MAX(fx[0],fx[1]);
+		bbox->b = MIN(fy[0],fy[1]);
+		bbox->t = MAX(fy[0],fy[1]);
 	}
 	else if (cnp->trans_obj->base.layer_class->base_class.class_name ==
-                 NhllogLinTransObjClass->base_class.class_name ||
-                 ! _NhlIsOverlay(cl->base.id)) {
-                if (! cl->trans.x_log && ! x_irr)
-                        *xlinear = True;
-                if (! cl->trans.y_log && ! y_irr)
-                        *ylinear = True;
-	}
+                 NhlirregularTransObjClass->base_class.class_name) {
 
-	if (! ezmap) {
-		float tx[2],ty[2];
-		float fx[2],fy[2];
+		if (_NhlIsOverlay(cl->base.id)) {
+			*xlinear = False;
+			*ylinear = False;
+		}
 
 		cxd[0] = cnp->xlb;
 		cxd[1] = cnp->xub;
@@ -3428,7 +3487,8 @@ static NhlErrorTypes GetDataBound
 			      NULL,NULL);
 		if (status) {
 			e_text = "%s: data boundary is out of range";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  e_text,entry_name);
 			ret = MIN(ret,NhlWARNING);
 			return ret;
 		}
@@ -3440,13 +3500,69 @@ static NhlErrorTypes GetDataBound
 		bbox->b = MIN(fy[0],fy[1]);
 		bbox->t = MAX(fy[0],fy[1]);
 	}
-	else {
+	else if (cnp->trans_obj->base.layer_class->base_class.class_name ==
+                 NhllogLinTransObjClass->base_class.class_name) {
+
+		if (cl->trans.x_log || x_irr || 
+		    cnp->trans_type == cnCURVILINEAR)
+			*xlinear = False;
+		if (cl->trans.y_log || y_irr ||
+		    cnp->trans_type == cnCURVILINEAR)
+			*ylinear = False;
+
+		cxd[0] = cnp->xlb;
+		cxd[1] = cnp->xub;
+		cyd[0] = cnp->ylb;
+		cyd[1] = cnp->yub;
+
+		if (_NhlIsOverlay(cl->base.id)) {
+			float xmin,xmax,ymin,ymax;
+			NhlVAGetValues(cnp->trans_obj->base.id,
+				       NhlNtrXMinF,&xmin,
+				       NhlNtrXMaxF,&xmax,
+				       NhlNtrYMinF,&ymin,
+				       NhlNtrYMaxF,&ymax,
+				       NULL);
+			cxd[0] = MAX(xmin,cxd[0]);
+			cxd[1] = MIN(xmax,cxd[1]);
+			cyd[0] = MAX(ymin,cyd[0]);
+			cyd[1] = MIN(ymax,cyd[1]);
+		}
+
+		_NhlDataToWin(cnp->trans_obj,cxd,cyd,
+			      2,tx,ty,&status,
+			      NULL,NULL);
+		if (status) {
+			e_text = "%s: data boundary is out of range";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+			return ret;
+		}
+
+		_NhlWinToNDC(cnp->trans_obj,tx,ty,
+			      2,fx,fy,&status,NULL,NULL);
+
+		bbox->l = MIN(fx[0],fx[1]);
+		bbox->r = MAX(fx[0],fx[1]);
+		bbox->b = MIN(fy[0],fy[1]);
+		bbox->t = MAX(fy[0],fy[1]);
+	}
+	else if (cnp->trans_obj->base.layer_class->base_class.class_name ==
+	    NhlmapTransObjClass->base_class.class_name) {
 		
 		NhlProjection projection;
 		NhlMapLimitMode limit_mode;
 		float center_lat,center_lon,rotation;
 		float min_lat,max_lat,min_lon,max_lon;
 		NhlBoolean rel_center_lat,rel_center_lon;
+
+		if (cl->trans.x_log || x_irr || 
+		    cnp->trans_type == cnCURVILINEAR)
+			*xlinear = False;
+		if (cl->trans.y_log || y_irr ||
+		    cnp->trans_type == cnCURVILINEAR)
+			*ylinear = False;
 
 		NhlVAGetValues(cnp->trans_obj->base.id,
 			       NhlNmpLeftNDCF,&bbox->l,
@@ -3465,22 +3581,22 @@ static NhlErrorTypes GetDataBound
 			       NhlNmpRelativeCenterLon,&rel_center_lon,
 			       NhlNmpCenterRotF,&rotation,
 			       NULL);
+		if (projection != NhlCYLINDRICALEQUIDISTANT) {
+			*xlinear = False;
+			*ylinear = False;
+		}
 		if (projection == NhlCYLINDRICALEQUIDISTANT) {
                         if (limit_mode != NhlLATLON || ! rel_center_lat) {
-		    		if (center_lat == 0.0 && rotation == 0.0) {
-					*xlinear = (cl->trans.x_log || x_irr) ?
-                                                False : True;
-					*ylinear = (cl->trans.y_log || y_irr) ?
-                                                False : True;
+		    		if (!(center_lat == 0.0 && rotation == 0.0)) {
+					*xlinear = False;
+					*ylinear = False;
                                 }
                         }
-                        else if (rotation == 0.0 && _NhlCmpFAny2
-                                 (max_lat-min_lat-center_lat,
-				  0.0,6,1e-6) == 0.0) {
-                                *xlinear = (cl->trans.x_log || x_irr) ?
-                                        False : True;
-                                *ylinear = (cl->trans.y_log || y_irr) ?
-                                        False : True;
+                        else if (! (rotation == 0.0 && _NhlCmpFAny2
+				    (max_lat-min_lat-center_lat,
+				     0.0,6,1e-6) == 0.0)) {
+                                *xlinear = False;
+                                *ylinear = False;
                         }
                 }
 		if (*xlinear || *ylinear) {
@@ -3506,26 +3622,6 @@ static NhlErrorTypes GetDataBound
 					   &cxd[0],&cxd[1]);
 			CanonicalLonBounds(cnp->xlb,cnp->xub,center_lon,
 					   &lmin,&lmax);
-#if 0
-			if (cxd[0] == cxd[1] && tx[0] != tx[1])
-				cxd[0] -= 360;
-			while (cxd[0] > cxd[1]) {
-				cxd[1] += 360;
-			}
-			if (cxd[1] > center_lon + 180
-			if (cxd[1] > 540) {
-				cxd[0] -= 360;
-				cxd[1] -= 360;
-			}
-			while (cxd[0] > cnp->xub) {
-				cxd[0] -= 360;
-				cxd[1] -= 360;
-			}
-			while (cxd[1] < cnp->xlb) {
-				cxd[0] += 360;
-				cxd[1] += 360;
-			}
-#endif
 			cxd[0] = MAX(lmin,cxd[0]);
 			cxd[1] = MIN(lmax,cxd[1]);
 			cyd[0] = MAX(cnp->ylb,cyd[0]);
@@ -3697,120 +3793,6 @@ static NhlErrorTypes cnInitCellArray
 	}
 	return ret;
 }
-
-#if 0
-/*
- * Function:	cnInitCellArray
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes cnInitCellArray
-#if	NhlNeedProto
-(
-	NhlContourPlotLayer	cnl,
-	int		*msize,
-	int		*nsize,
-	NhlBoundingBox	*bbox,
-	NhlString	entry_name
-)
-#else
-(cnl,entry_name)
-        NhlContourPlotLayer cnl;
-	NhlString	entry_name;
-#endif
-{
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
-	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
-        int dunits,dwidth,dheight;
-        int max_msize, max_nsize;
-        NhlBoolean xlinear,ylinear;
-
-	c_cpseti("CAF", -1);
-	subret = GetDataBound(cnl,bbox,&xlinear,&ylinear,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-        
-        max_msize = (int) ((bbox->r - bbox->l) / cnp->min_cell_size);
-        max_nsize = (int) ((bbox->t - bbox->b) / cnp->min_cell_size);
-
-        subret = NhlVAGetValues(cnl->base.wkptr->base.id,
-                                NhlNwkVSWidthDevUnits,&dunits,
-                                NULL);
-	if ((ret = MIN(ret,subret)) < NhlWARNING)
-		return ret;
-
-        dwidth = dunits * (bbox->r - bbox->l);
-        dheight = dunits * (bbox->t - bbox->b);
-
-        if (cnp->sticky_cell_size_set) {
-                if ((bbox->r - bbox->l) / cnp->cell_size <= 1.0 ||
-                    (bbox->t - bbox->b) / cnp->cell_size <= 1.0) {
-                        e_text = 
-                                "%s: invalid value for %s: defaulting";
-                        NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-                                  entry_name,NhlNcnRasterCellSizeF);
-                        ret = NhlWARNING;
-                        cnp->sticky_cell_size_set = False;
-                }
-        }
-                
-	if (cnp->sticky_cell_size_set) {
-		*msize = (int) ((bbox->r - bbox->l) / cnp->cell_size + 0.5);
-		*nsize = (int) ((bbox->t - bbox->b) / cnp->cell_size + 0.5);
-	}
-        else if (cnp->raster_sample_factor <= 0.0) {
-                *msize = cnp->sfp->fast_len;
-                *nsize = cnp->sfp->slow_len;
-        }
-        else if (cnp->raster_smoothing_on) {
-                *msize = dwidth * cnp->raster_sample_factor;
-                *nsize = dheight * cnp->raster_sample_factor;
-        }
-        else {
-                if (! xlinear)
-                        *msize = dwidth * cnp->raster_sample_factor;
-                else
-                        *msize = MIN(dwidth,cnp->sfp->fast_len) 
-                                * cnp->raster_sample_factor;
-                if (! ylinear)
-                        *nsize = dheight * cnp->raster_sample_factor;
-                else
-                        *nsize = MIN(dheight,cnp->sfp->slow_len)
-                                * cnp->raster_sample_factor;
-        }
-        
-        if (!cnp->sticky_cell_size_set && cnp->raster_sample_factor > 0.0) {
-                *msize = MIN(*msize,max_msize);
-                *nsize = MIN(*nsize,max_nsize);
-                cnp->cell_size = (bbox->r - bbox->l) / (float) *msize;
-        }
-	
-	if (cnp->cws_id < 1) {
-		cnp->cws_id = 
-			_NhlNewWorkspace(NhlwsOTHER,NhlwsNONE,
-					 (*msize * *nsize) * sizeof(int));
-		if (cnp->cws_id < 1) 
-			return MIN(ret,(NhlErrorTypes)cnp->cws_id);
-	}
-	if ((cnp->cws = _NhlUseWorkspace(cnp->cws_id)) == NULL) {
-		e_text = 
-			"%s: error reserving cell array workspace";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
-	return ret;
-}
-
-#endif
 /*
  * Function:	cnUpdateTrans
  *
@@ -5362,7 +5344,7 @@ static NhlErrorTypes InitCoordBounds
         NhlTransformLayerPart	*tfp = &cl->trans;
 
 	cnp->do_low_level_log = False;
-        cnp->use_irr_trans = False;
+        cnp->trans_type = cnLOGLIN;
         
 	if (! cnp->data_init) {
                 tfp->data_xstart = tfp->data_xend = 0.0;
@@ -5392,10 +5374,14 @@ static NhlErrorTypes InitCoordBounds
         tfp->data_ystart = cnp->sfp->y_start;
         tfp->data_yend = cnp->sfp->y_end;
         
-        if (cnp->sfp->x_arr || cnp->sfp->y_arr)
-                cnp->use_irr_trans = True;
+	if (cnp->sfp->x_arr && cnp->sfp->y_arr &&
+	    cnp->sfp->x_arr->num_dimensions == 2 &&
+	    cnp->sfp->y_arr->num_dimensions == 2)
+		cnp->trans_type = cnCURVILINEAR;
+        else if (cnp->sfp->x_arr || cnp->sfp->y_arr)
+                cnp->trans_type = cnIRREGULAR;
         
-        if (cnp->use_irr_trans) {
+        if (cnp->trans_type == cnIRREGULAR) {
                 if (cnp->sfp->x_arr && ! tfp->x_axis_type_set) {
 			if (! cnp->osfp || (cnp->data_changed  &&
 			    (cnp->sfp->changed & _NhlsfXARR_CHANGED)))
@@ -5420,9 +5406,10 @@ static NhlErrorTypes InitCoordBounds
                 }
         }
         
-		ret = _NhltfCheckCoordBounds
+	ret = _NhltfCheckCoordBounds
                 ((NhlTransformLayer)cl,(NhlTransformLayer)ocl,
-                 cnp->use_irr_trans,entry_name);
+		 (int) cnp->trans_type,
+                 entry_name);
         
 	return ret;
 }
@@ -5744,6 +5731,175 @@ static NhlErrorTypes SetUpIrrTransObj
         cnp->do_low_level_log = tfp->x_axis_type == NhlLOGAXIS ||
                 tfp->y_axis_type == NhlLOGAXIS ? True : False;
         
+	return MIN(ret,subret);
+
+}
+
+/*
+ * Function:	SetUpCrvTransObj
+ *
+ * Description: Sets up a Curvilinear transformation object.
+ *
+ * In Args:	xnew	new instance record
+ *		xold	old instance record if not initializing
+ *		init	true if initialization
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	Objects created and destroyed.
+ */
+static NhlErrorTypes SetUpCrvTransObj
+#if	NhlNeedProto
+(
+	NhlContourPlotLayer	cnew,
+	NhlContourPlotLayer	cold,
+	NhlBoolean	init
+)
+#else 
+(cnew,cold,init)
+	NhlContourPlotLayer	cnew;
+	NhlContourPlotLayer	cold;
+	NhlBoolean	init;
+#endif
+{
+ 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	char			*entry_name;
+	NhlContourPlotLayerPart	*cnp = &(cnew->contourplot);
+	NhlContourPlotLayerPart	*ocnp = &(cold->contourplot);
+	NhlTransformLayerPart	*tfp = &(cnew->trans);
+	char			buffer[_NhlMAXRESNAMLEN];
+	int			tmpid;
+        NhlSArg			sargs[32];
+        int			nargs = 0;
+
+	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
+
+	if (init)
+		tfp->trans_obj = NULL;
+	if (tfp->trans_obj &&
+            tfp->trans_obj->base.layer_class->base_class.class_name !=
+	    NhlcurvilinearTransObjClass->base_class.class_name) {
+		subret = NhlDestroy(tfp->trans_obj->base.id);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: Error destroying irregular trans object";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+		tfp->trans_obj = NULL;
+	}
+	if (! cnp->data_init) return ret;
+        
+        if (tfp->x_reverse_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,tfp->x_reverse);
+        if (tfp->y_reverse_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,tfp->y_reverse);
+
+	if (init || tfp->trans_obj == NULL) {
+
+		cnp->new_draw_req = True;
+                cnp->update_req = True;
+                
+		if (cnp->sfp->x_arr)
+			NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
+				   cnp->sfp->x_arr);
+		if (cnp->sfp->y_arr)
+			NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
+				   cnp->sfp->y_arr);
+                
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
+                NhlSetSArg(&sargs[nargs++],NhlNtrDataXStartF,tfp->data_xstart);
+                NhlSetSArg(&sargs[nargs++],NhlNtrDataXEndF,tfp->data_xend);
+                NhlSetSArg(&sargs[nargs++],NhlNtrDataYStartF,tfp->data_ystart);
+                NhlSetSArg(&sargs[nargs++],NhlNtrDataYEndF,tfp->data_yend);
+                NhlSetSArg(&sargs[nargs++],NhlNtrLineInterpolationOn,
+			   tfp->line_interpolation_on);
+                
+		sprintf(buffer,"%s",cnew->base.name);
+		strcat(buffer,".Trans");
+
+		subret = NhlALCreate(&tmpid,buffer,
+				     NhlcurvilinearTransObjClass,
+				     cnew->base.id,sargs,nargs);
+
+		ret = MIN(subret,ret);
+
+		tfp->trans_obj = _NhlGetLayer(tmpid);
+		if(tfp->trans_obj == NULL){
+			e_text = "%s: Error creating transformation object";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
+        else {
+                if (cnp->data_changed &&cnp->sfp->x_arr &&
+                    (cnp->sfp->changed & _NhlsfXARR_CHANGED))
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrXCoordPoints,cnp->sfp->x_arr);
+                if (cnp->data_changed && cnp->sfp->y_arr &&
+		    (cnp->sfp->changed & _NhlsfYARR_CHANGED))
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrYCoordPoints,cnp->sfp->y_arr);
+        
+                if (tfp->x_min != cold->trans.x_min)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
+                if (tfp->x_max != cold->trans.x_max)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
+                if (tfp->y_min != cold->trans.y_min)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
+                if (tfp->y_max != cold->trans.y_max)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
+        
+                if (tfp->data_xstart != cold->trans.data_xstart)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrDataXStartF,tfp->data_xstart);
+                if (tfp->data_xend != cold->trans.data_xend)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrDataXEndF,tfp->data_xend);
+                if (tfp->data_ystart != cold->trans.data_ystart)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrDataYStartF,tfp->data_ystart);
+                if (tfp->data_yend != cold->trans.data_yend)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrDataYEndF,tfp->data_yend);
+		if (tfp->line_interpolation_on != 
+		    cold->trans.line_interpolation_on)
+			NhlSetSArg(&sargs[nargs++],NhlNtrLineInterpolationOn,
+				   tfp->line_interpolation_on);
+
+        
+                if (cnp->x_tension != ocnp->x_tension)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrXTensionF,cnp->x_tension);
+                if (cnp->y_tension != ocnp->y_tension)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrYTensionF,cnp->y_tension);
+                subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
+
+                if (nargs > 0) {
+                        cnp->new_draw_req = True;
+                        cnp->update_req = True;
+                }
+        }
+        
+        NhlVAGetValues(tfp->trans_obj->base.id,
+                       NhlNtrXReverse,&tfp->x_reverse,
+                       NhlNtrYReverse,&tfp->y_reverse,
+                       NhlNtrDataXStartF,&tfp->data_xstart,
+                       NhlNtrDataXEndF,&tfp->data_xend,
+                       NhlNtrDataYStartF,&tfp->data_ystart,
+                       NhlNtrDataYEndF,&tfp->data_yend,
+                       NhlNtrXMinF,&tfp->x_min,
+                       NhlNtrXMaxF,&tfp->x_max,
+                       NhlNtrYMinF,&tfp->y_min,
+                       NhlNtrYMaxF,&tfp->y_max,
+                       NULL);
+
 	return MIN(ret,subret);
 
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.h,v 1.9 1998-04-16 03:08:41 dbrown Exp $
+ *      $Id: IrregularTransObj.h,v 1.10 2002-03-18 21:20:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,8 +33,6 @@ typedef enum {
 
 #define NhlNtrXAxisType		"trXAxisType"
 #define NhlCtrXAxisType		"TrXAxisType"
-#define NhlNtrXCoordPoints	"trXCoordPoints"
-#define NhlCtrXCoordPoints	"TrXCoordPoints"
 #define NhlNtrXInterPoints	"trXInterPoints"
 #define NhlCtrXInterPoints	"TrXInterPoints"
 #define NhlNtrXTensionF		"trXTensionF"
@@ -44,8 +42,6 @@ typedef enum {
 
 #define NhlNtrYAxisType		"trYAxisType"
 #define NhlCtrYAxisType		"TrYAxisType"
-#define NhlNtrYCoordPoints	"trYCoordPoints"
-#define NhlCtrYCoordPoints	"TrYCoordPoints"
 #define NhlNtrYInterPoints	"trYInterPoints"
 #define NhlCtrYInterPoints	"TrYInterPoints"
 #define NhlNtrYTensionF		"trYTensionF"

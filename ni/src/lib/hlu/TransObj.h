@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.h,v 1.13 1999-04-02 23:51:16 dbrown Exp $
+ *      $Id: TransObj.h,v 1.14 2002-03-18 21:20:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -49,6 +49,15 @@
 
 #define NhlNtrLineInterpolationOn 	"trLineInterpolationOn"
 #define NhlCtrLineInterpolationOn 	"TrLineInterpolationOn"
+
+/*
+ * both Irregular and Curvilinear define these array resources
+ */
+
+#define NhlNtrXCoordPoints	"trXCoordPoints"
+#define NhlCtrXCoordPoints	"TrXCoordPoints"
+#define NhlNtrYCoordPoints	"trYCoordPoints"
+#define NhlCtrYCoordPoints	"TrYCoordPoints"
 
 extern NhlClass NhltransObjClass;
 

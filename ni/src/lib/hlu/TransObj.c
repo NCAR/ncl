@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.33 2000-02-16 01:43:35 dbrown Exp $
+ *      $Id: TransObj.c,v 1.34 2002-03-18 21:20:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -731,15 +731,13 @@ float missing;
                                         *x0 = *x0 - dx/dy * (*y0- ymax);
                                         *y0 = ymax;
                                 } else if( outcodeb & CBOTTOM) {
-                                        *x0 = *x0 + dx/dy * (ymin - *y0)
-;
+                                        *x0 = *x0 + dx/dy * (ymin - *y0);
                                         *y0 = ymin;
                                 } else if( outcodeb & CRIGHT) {
                                         *y0 = *y0 - dy/dx * (*x0 - xmax);
                                         *x0 = xmax;
                                 } else if( outcodeb & CLEFT) {
-                                        *y0 = *y0 + dy/dx * (xmin - *x0)
-;
+                                        *y0 = *y0 + dy/dx * (xmin - *x0);
                                         *x0 = xmin;
                                 }
                         }

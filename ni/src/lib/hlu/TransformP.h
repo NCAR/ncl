@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.24 2000-06-28 19:04:04 dbrown Exp $
+ *      $Id: TransformP.h,v 1.25 2002-03-18 21:20:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -204,7 +204,7 @@ extern NhlErrorTypes _NhltfCheckCoordBounds(
 #if	NhlNeedProto
         NhlTransformLayer	new,
 	NhlTransformLayer	old,
-        NhlBoolean		use_irr_trans,
+        int		        trans_type,    /* 0 LL, 1 IR, 2 CR */
 	NhlString		entry_name
 #endif
 );

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorFieldP.h,v 1.3 1998-04-16 03:09:21 dbrown Exp $
+ *      $Id: VectorFieldP.h,v 1.4 2002-03-18 21:20:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,8 +31,6 @@
 #endif
 
 typedef struct _NhlVectorFieldLayerPart{
-
-	NhlString		type_string;
 
 	/* Public resources */
 

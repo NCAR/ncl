@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.33 1999-08-14 01:25:52 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.34 2002-03-18 21:20:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -881,9 +881,10 @@ Monotonic
  *
  * Description:	This function checks the coordinate arrays used to
  *		specify irregular scalar field grids. 
- *		It checks to ensure the array is monotonic and that the
- *		number of elements is equal to the corresponding 
- *		dimension of the data array.
+ *              First it checks to ensure dimensionality is correct.
+ *		1-d arrays are checked to ensure monotonicity.
+ *              All arrays are checked to ensure that corresponding
+ *		dimensions have equal numbers of elements.
  *
  * In Args:	
  *
@@ -923,6 +924,27 @@ ValidCoordArray
 		len_dim = sfp->y_el_count;
 		name = NhlNsfYArray;
 	}
+
+	if (ga->num_dimensions > 2 || ga->num_dimensions < 1) {
+		e_text = 
+          "%s: coordinate array %s has invalid dimensionality: defaulting %s";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,name,name);
+		return False;
+	}
+	else if (ga->num_dimensions == 2) {
+		if (ga->len_dimensions[0] != sfp->y_el_count ||
+		    ga->len_dimensions[1] != sfp->x_el_count) {
+			e_text = 
+   "%s: 2d coordinate array %s has an incorrect dimension size: defaulting %s";
+			NhlPError(NhlWARNING,
+				  NhlEUNKNOWN,e_text,entry_name,name,name);
+			return False;
+		}
+		/* for now at this point assume that grid is okay */
+		return True;
+	}
+
+	/* 1d case */
 
 	if (ga->len_dimensions[0] != len_dim) {
 		e_text = 
@@ -1352,6 +1374,371 @@ GetSubsetBounds
 
 
 /*
+ * Function:	GetSubsetBounds2D
+ *
+ * Description:	Depending on the value of the NhlNsfSubsetByIndex resource,
+ *		determines one coordinate of the data array subset, 
+ *		based either on the 
+ *		IndexStart/End resources or the SubsetStart/End resources.
+ *              Actually for now it only handles index subsetting.
+ *		In either case the true clipping rectangle is determined
+ *		based on the calculated or user assigned array index 
+ *		start/end values. The clipping boundaries may not be exactly
+ *		what the user asked for due to the truncation involved in
+ *		converting from data points to integer array indexes, but
+ *		the specified data points are guaranteed to be included.
+ *
+ * In Args:	sfp
+ *		ctypef
+ *		cstart,cend
+ *		entry_name
+ * In/Out Args: icstart,icend
+ * Out Args:	sxstart,sxend
+ *
+ * Scope:	private
+ * Returns:	NhlGenArray or NULL on error
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+GetSubsetBounds2D
+#if	NhlNeedProto
+(
+ 	NhlScalarFieldLayerPart *sfp,
+	NhlGenArray		*c_array,
+	sfCoord			ctype,
+	NhlBoolean		overwrite_ok,
+	int			xistart,
+	int			xiend,
+	int			yistart,
+	int			yiend,
+	float			*cstart,
+	float			*cend,
+	float			*scstart,
+	float			*scend,
+	NhlString		entry_name
+)
+#else
+(sfp,c_array,ctype,overwrite_ok,
+ xistart,xiend,yistart,yiend,overwrite_ok,cstart,cend,scstart,scend,entry_name)
+ 	NhlScalarFieldLayerPart *sfp;
+	NhlGenArray		*c_array;
+	sfCoord			ctype;
+	NhlBoolean		overwrite_ok;
+	int			xistart;
+	int			xiend;
+	int			yistart;
+	int			yiend;
+	float			*cstart;
+	float			*cend;
+	float			*scstart;
+	float			*scend;
+	NhlString		entry_name;
+#endif
+{
+	char		*e_text;
+	NhlErrorTypes   ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlBoolean      do_subset = False;
+	NhlBoolean	rev;
+	int		i,j;
+	NhlGenArray	*subset_start,*subset_end;
+        NhlGenArray     out_ga;
+	NhlBoolean	nullstart = False,nullend = False;
+        NhlBoolean	start_byindex,end_byindex;
+	char		*c_name;
+	float		*fp, *nfp;
+	int		rem,stride;
+	float           min, max;
+	int		imin,imax,jmin,jmax;
+
+	fp = (float *) (*c_array)->data;
+
+	min = max = fp[0];
+	imin = imax = jmin = jmax = 0;
+	for (i = 0; i < sfp->y_el_count; i++) {
+		for (j = 0; j < sfp->x_el_count; j++) {
+			float val = *(fp + i * sfp->x_el_count + j);
+			if (val < min) {
+				min = val;
+				imin = i;
+				jmin = j;
+			}
+			if (val > max) {
+				max = val;
+				imax = i;
+				jmax = j;
+			}
+		}
+	}
+	if (ctype == sfXCOORD) {
+		if (jmin == jmax) 
+			rev = imin > imax;
+		else
+			rev = jmin > jmax;
+		c_name = "X coordinate";
+		if (rev) {
+			*cstart = max;
+			*cend = min;
+			sfp->xc_start_el = imax * sfp->x_el_count + jmax; 
+			sfp->xc_end_el = imin * sfp->x_el_count + jmin; 
+		}
+		else {
+			*cstart = min;
+			*cend = max;
+			sfp->xc_start_el = imin * sfp->x_el_count + jmin; 
+			sfp->xc_end_el = imax * sfp->x_el_count + jmax; 
+		}
+	}
+	else {
+		if (imin == imax)
+			rev = jmin > jmax;
+		else
+			rev = imin > imax;
+		c_name = "Y coordinate";
+		if (rev) {
+			*cstart = max;
+			*cend = min;
+			sfp->yc_start_el = imax * sfp->x_el_count + jmax; 
+			sfp->yc_end_el = imin * sfp->x_el_count + jmin; 
+		}
+		else {
+			*cstart = min;
+			*cend = max;
+			sfp->yc_start_el = imin * sfp->x_el_count + jmin; 
+			sfp->yc_end_el = imax * sfp->x_el_count + jmax; 
+		}
+	}
+
+	if (xistart > 0 || yistart > 0 || 
+	    xiend < sfp->x_el_count - 1 || yiend < sfp->y_el_count - 1 ||
+	    sfp->x_stride > 1 || sfp->y_stride > 1)
+		do_subset = True;
+
+	if (! do_subset) {
+		*scstart = *cstart;
+		*scend = *cend;
+		return NhlNOERROR;
+	}
+	for (i = yistart; i <= yiend; i++) {
+		for (j = xistart; j <= xiend; j++) {
+			float val = *(fp + i * sfp->x_el_count + j);
+			if (val < min) {
+				min = val;
+				imin = i;
+				jmin = j;
+			}
+			if (val > max) {
+				max = val;
+				imax = i;
+				jmax = j;
+			}
+		}
+	}
+	if (rev) {
+		*scstart = max;
+		*scend = min;
+	}
+	else {
+		*scstart = min;
+		*scend = max;
+	}
+	return NhlNOERROR;
+#if 0		
+
+	if (! sfp->subset_by_index) {
+		float fval;
+
+		rev = *cstart > *cend;
+		if (*subset_start != NULL && ! start_byindex) {
+			subret = GetVTypeValue(*subset_start,&fval);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				e_text = 
+				      "%s: error getting variable type value";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return ret;
+			}
+                        if ((! rev && fval < *cstart) ||
+                            (rev && fval > *cstart)) {
+				e_text = 
+			      "%s: %s subset start out of range: defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+                                          e_text,entry_name,c_name);
+                                ret = MIN(NhlWARNING,ret);
+                                *scstart = *cstart;
+                                NhlFreeGenArray(*subset_start);
+                                *subset_start = NULL;
+                        }
+                        else {
+                                *scstart = fval;
+                        }
+		}
+		else {
+			*scstart = *cstart;
+			nullstart = True;
+		}
+
+		if (*subset_end != NULL && ! end_byindex) {
+			subret = GetVTypeValue(*subset_end,&fval);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				e_text = 
+				      "%s: error getting variable type value";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return ret;
+			}
+                        if ((! rev && fval > *cend) ||
+                            (rev && fval < *cend)) {
+				e_text = 
+			      "%s: %s subset end out of range: defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+                                          e_text,entry_name,c_name);
+                                ret = MIN(NhlWARNING,ret);
+                                *scend = *cend;
+                                NhlFreeGenArray(*subset_end);
+                                *subset_end = NULL;
+                        }
+                        else {
+                                *scend = fval;
+                        }
+		}
+		else {
+			*scend = *cend;
+			nullend = True;
+		}
+
+		if (rev != (*scstart > *scend)) {
+                        NhlGenArray tmp_ga;
+                        float fval;
+			e_text = 
+"%s: %s start/end subset order opposed to start/end order: reversing subset order";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  e_text,entry_name,c_name,c_name);
+			ret = MIN(NhlWARNING,ret);
+                        tmp_ga = *subset_start;
+                        *subset_start = *subset_end;
+                        *subset_end = tmp_ga;
+                        fval = *scstart;
+                        *scstart = *scend;
+                        *scend = fval;
+		}
+
+		if (! rev) {
+                        if (! start_byindex) {
+                                for (i = 0; i < len; i++) {
+                                        if (*scstart < *(fp + i)) {
+                                                *icstart = MAX(i-1,0);
+                                                break;
+                                        }
+                                }
+                        }
+                        if (! end_byindex) {
+                                for (i = len - 1; i >= 0; i--) {
+                                        if (*scend > *(fp + i)) {
+                                                *icend = MIN(i+1,len-1);
+                                                break;
+                                        }
+                                }
+                        }
+                        
+		}
+		else {
+                        if (! start_byindex) {
+                                for (i = 0; i < len; i++) {
+                                        if (*scstart > *(fp + i)) {
+                                                *icstart = MAX(i-1,0);
+                                                break;
+                                        }
+                                }
+                        }
+                        if (! end_byindex) {
+                                for (i = len - 1; i >= 0; i--) {
+                                        if (*scend < *(fp + i)) {
+                                                *icend = MIN(i+1,len-1);
+                                                break;
+                                        }
+                                }
+                        }
+                }
+
+		if (*icend - *icstart < 2) {
+			e_text = 
+		        "%s: %s subset data range not large enough: ignoring";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+				  c_name,c_name);
+			ret = MIN(NhlWARNING,ret);
+			*scstart = *cstart;
+			*scend = *cend;
+			*icstart = 0;
+			*icend = len - 1;
+		}
+	}
+
+/* 
+ * if a stride is specified, the end index must be a multiple of the stride 
+ * value. Increas the specified end index if necessary, unless it 
+ * would exceed the max index. In this case subtract -- it is not possible
+ * to include the complete data range.
+ */
+	rem = (*icend - *icstart) % stride;
+	if (rem  > 0) {
+		if (*icend + stride - rem <= len -1)
+			*icend += stride - rem;
+		else
+			*icend -= rem;
+	}
+	*scstart = fp[*icstart];
+	*scend = fp[*icend];
+/*
+ * If the data is a subset of the complete array, copy the relevant
+ * part of the irregular coordinate array to a new array. The old data
+ * space will eventually be freed (I think) by the Converter 
+ * memory management routines.
+ */
+	if (*icstart > 0 || *icend < len - 1 || stride > 1) {
+		int nlen = (*icend - *icstart) / stride + 1;
+		if (overwrite_ok) {
+			for (i = 0; i < nlen; i++) {
+				fp[i] = fp[*icstart+i*stride];
+			}
+			(*c_array)->num_elements = nlen;
+		}
+		else {
+			if ((nfp = (float *)
+			     NhlConvertMalloc(nlen * 
+					      sizeof(float))) == NULL) { 
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				return NhlFATAL;
+			}
+			for (i = 0; i < nlen; i++) {
+				nfp[i] = fp[*icstart+i*stride];
+			}
+			if ((out_ga = (NhlGenArray) 
+			     NhlConvertMalloc(sizeof(NhlGenArrayRec)))
+			    == NULL) {
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				return NhlFATAL;
+			}
+			out_ga->num_dimensions = 1;
+			out_ga->len_dimensions = &out_ga->num_elements;
+			out_ga->num_elements = nlen;
+			out_ga->typeQ = Qfloat;
+			out_ga->size = sizeof(float);
+			out_ga->data = (NhlPointer)nfp;
+			out_ga->my_data = True;
+			*c_array = out_ga;
+		}
+	}
+
+	return ret;
+#endif
+}
+
+/*
  * Function:	GetSubsetBoundsIrregular
  *
  * Description:	Depending on the value of the NhlNsfSubsetByIndex resource,
@@ -1420,6 +1807,11 @@ GetSubsetBoundsIrregular
 	float		*fp, *nfp;
 	int		rem,stride;
 
+	len = (*c_array)->len_dimensions[0];
+	fp = (float *) (*c_array)->data;
+	*cstart = fp[0];
+	*cend = fp[len-1];
+
 	if (ctype == sfXCOORD) {
 		subset_start = &sfp->x_subset_start;
 		subset_end = &sfp->x_subset_end;
@@ -1427,6 +1819,8 @@ GetSubsetBoundsIrregular
                 start_byindex = sfp->xstart_byindex;
                 end_byindex = sfp->xend_byindex;
 		c_name = "X coordinate";
+		sfp->xc_start_el = 0;
+		sfp->xc_end_el = len - 1;
 	}
 	else {
 		subset_start = &sfp->y_subset_start;
@@ -1435,12 +1829,11 @@ GetSubsetBoundsIrregular
                 start_byindex = sfp->ystart_byindex;
                 end_byindex = sfp->yend_byindex;
 		c_name = "Y coordinate";
+		sfp->yc_start_el = 0;
+		sfp->yc_end_el = len - 1;
 	}
 
-	len = (*c_array)->len_dimensions[0];
-	fp = (float *) (*c_array)->data;
-	*cstart = fp[0];
-	*cend = fp[len-1];
+	
 
 	if (! sfp->subset_by_index) {
 		float fval;
@@ -1698,6 +2091,100 @@ GetCoordBounds
 	return ret;
 }
 
+/*
+ * Function:	GetCoordBounds2D
+ *
+ * Description:	For 2D coordinate arrays, the max and min coord array elements
+ *		define the start and end of the data space; the x/y start/end 
+ *		resources are ignored. However, it is still possible to create
+ *		subsets of the 	data using either the index or the subset 
+ *		start/end resources.
+ *              For now, only subsetting by index is allowed.
+ *              The resources are given someone different meanings from
+ *              the 1D case: 
+ *              The XC{Start|End}Index, and XCStride resources apply to the
+ *              X axis of both coordinate arrays, while the 
+ *              YC{Start|End}Index and YCStride resources apply to the 
+ *              Y Axis of both coordinate arrays.
+ *              In contast, the XC{Start|End}V and XC{Start|End}SubsetV
+ *              arrays apply only to the XArray, while the
+ *              the YC{Start|End}V and YC{Start|End}SubsetV arrays apply
+ *              only to the YArray.
+ *
+ * In Args:	sfp
+ *              ctype
+ *		entry_name
+ *
+ * Out Args:	cstart,cend
+ *		icstart,icend
+ *		scstart,scend
+ *
+ * Scope:	private
+ * Returns:	NhlGenArray or NULL on error
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+GetCoordBounds2D
+#if	NhlNeedProto
+(
+ 	NhlScalarFieldLayerPart *sfp,
+	NhlGenArray		*c_array,
+	sfCoord			ctype,
+	NhlBoolean		overwrite_ok,
+	float			*cstart,
+	float			*cend,
+	int			*icstart,
+	int			*icend,
+	float			*scstart,
+	float			*scend,
+	NhlString		entry_name
+)
+#else
+( sfp, c_array, ctype, overwrite_ok, cstart, cend, icstart, icend, scstart, scend, entry_name)
+ 	NhlScalarFieldLayerPart *sfp;
+	NhlGenArray		*c_array;
+	sfCoord			ctype;
+	NhlBoolean		overwrite_ok;
+	float			*cstart;
+	float			*cend;
+	int			*icstart;
+	int			*icend;
+	float			*scstart;
+	float			*scend;
+	NhlString		entry_name;
+#endif
+{
+	NhlErrorTypes   ret = NhlNOERROR, subret = NhlNOERROR;
+	int xistart,xiend,yistart,yiend;
+
+	subret = GetIndexBounds(sfp,sfXCOORD,&xistart,&xiend,entry_name);
+	if ((ret = MIN(ret,subret))  < NhlWARNING) 
+		return ret;
+	subret = GetIndexBounds(sfp,sfYCOORD,&yistart,&yiend,entry_name);
+	if ((ret = MIN(ret,subret))  < NhlWARNING) 
+		return ret;
+
+	subret = GetSubsetBounds2D(sfp,c_array,ctype,overwrite_ok,
+				   xistart,xiend,yistart,yiend,
+				   cstart,cend,scstart,scend,entry_name);
+
+	if ((ret = MIN(ret,subret))  < NhlWARNING) 
+		return ret;
+	
+	switch (ctype) {
+	case sfXCOORD:
+		*icstart = xistart;
+		*icend = xiend;
+		break;
+	case sfYCOORD:
+		*icstart = yistart;
+		*icend = yiend;
+		break;
+	}
+	return ret;
+}
+
 
 /*
  * Function:	GetCoordBoundsIrregular
@@ -1896,12 +2383,22 @@ CvtGenSFObjToFloatSFObj
 	}
 	else {
 		overwrite_ok = x_arr != sfp->x_arr;
-		subret = GetCoordBoundsIrregular(sfp,&x_arr,sfXCOORD,
-						 overwrite_ok,
-						 &xstart,&xend,
-						 &ixstart,&ixend,
-						 &sxstart,&sxend,
-						 entry_name);
+		if (x_arr->num_dimensions == 2) {
+			subret = GetCoordBounds2D(sfp,&x_arr,sfXCOORD,
+						  overwrite_ok,
+						  &xstart,&xend,
+						  &ixstart,&ixend,
+						  &sxstart,&sxend,
+						  entry_name);
+		}
+		else {
+			subret = GetCoordBoundsIrregular(sfp,&x_arr,sfXCOORD,
+							 overwrite_ok,
+							 &xstart,&xend,
+							 &ixstart,&ixend,
+							 &sxstart,&sxend,
+							 entry_name);
+		}
 		if ((ret = MIN(ret,subret))  < NhlWARNING) 
 			return ret;
 	}
@@ -1909,6 +2406,7 @@ CvtGenSFObjToFloatSFObj
 	sffp->ix_end = sfp->ix_end = ixend;
 	sfp->x_actual_start = sxstart;
 	sfp->x_actual_end = sxend;
+	
         if (! sfp->subset_by_index) {
                 sfp->x_index_start = sfp->ix_start;
                 sfp->x_index_end = sfp->ix_end;
@@ -1944,12 +2442,22 @@ CvtGenSFObjToFloatSFObj
 	}
 	else {
 		overwrite_ok = y_arr != sfp->y_arr;
-		subret = GetCoordBoundsIrregular(sfp,&y_arr,sfYCOORD,
-						 overwrite_ok,
-						 &ystart,&yend,
-						 &iystart,&iyend,
-						 &systart,&syend,
-						 entry_name);
+		if (y_arr->num_dimensions == 2) {
+			subret = GetCoordBounds2D(sfp,&y_arr,sfYCOORD,
+						  overwrite_ok,
+						  &ystart,&yend,
+						  &iystart,&iyend,
+						  &systart,&syend,
+						  entry_name);
+		}
+		else {
+			subret = GetCoordBoundsIrregular(sfp,&y_arr,sfYCOORD,
+							 overwrite_ok,
+							 &ystart,&yend,
+							 &iystart,&iyend,
+							 &systart,&syend,
+							 entry_name);
+		}
 		if ((ret = MIN(ret,subret))  < NhlWARNING) 
 			return ret;
 	}
@@ -2667,11 +3175,16 @@ ScalarFieldSetValues
                         sfp->x_arr = osfp->x_arr;
                 }
                 else {
-		        if ((! osfp->x_arr) || x_dim_changed || 
+		        if ( (! osfp->x_arr) || x_dim_changed || 
 			    sfp->x_arr->size != osfp->x_arr->size ||
 			    sfp->x_arr->typeQ != osfp->x_arr->typeQ ||
+			    sfp->x_arr->num_dimensions != 
+			    osfp->x_arr->num_dimensions ||
+			    (sfp->x_arr->num_dimensions == 2 &&
+			     y_dim_changed) ||
 			    memcmp(sfp->x_arr->data,osfp->x_arr->data,
-				   sfp->x_arr->size * sfp->x_el_count))
+				   sfp->x_arr->size 
+				   * sfp->x_arr->num_elements) )
 				x_arr_changed = True;
 
                         if ((sfp->x_arr = _NhlCopyGenArray
@@ -2710,8 +3223,13 @@ ScalarFieldSetValues
 		        if ((! osfp->y_arr) || y_dim_changed || 
 			    sfp->y_arr->size != osfp->y_arr->size ||
 			    sfp->y_arr->typeQ != osfp->y_arr->typeQ ||
+			    sfp->y_arr->num_dimensions != 
+			    osfp->y_arr->num_dimensions ||
+			    (sfp->y_arr->num_dimensions == 2 &&
+			     x_dim_changed) ||
 			    memcmp(sfp->y_arr->data,osfp->y_arr->data,
-				   sfp->y_arr->size * sfp->y_el_count))
+				   sfp->y_arr->size * 
+				   sfp->y_arr->num_elements) )
 				y_arr_changed = True;
                         if ((sfp->y_arr = _NhlCopyGenArray
                              (sfp->y_arr,sfp->copy_arrays)) == NULL) {
@@ -3193,8 +3711,15 @@ static NhlErrorTypes    ScalarFieldGetValues
                 }
                 else if (resQ == Qx_arr && sfp->x_arr) {
                         do_genarray = True;
-                        ndim = 1;
-                        dlen[0] = sfp->x_arr->len_dimensions[0];
+			if (sfp->x_arr->num_dimensions == 2) {
+				ndim = 2;
+				dlen[0] = sfp->x_arr->len_dimensions[0];
+				dlen[1] = sfp->x_arr->len_dimensions[1];
+			}
+			else {
+				ndim = 1;
+				dlen[0] = sfp->x_arr->len_dimensions[0];
+			}
                         if (sfp->copy_arrays) {
                                 if ((data = CopyData(sfp->x_arr,resQ)) == NULL)
                                         return NhlFATAL;
@@ -3218,8 +3743,15 @@ static NhlErrorTypes    ScalarFieldGetValues
                 }
                 else if (resQ == Qy_arr && sfp->y_arr) {
                         do_genarray = True;
-                        ndim = 1;
-                        dlen[0] = sfp->y_arr->len_dimensions[0];
+			if (sfp->y_arr->num_dimensions == 2) {
+				ndim = 2;
+				dlen[0] = sfp->y_arr->len_dimensions[0];
+				dlen[1] = sfp->y_arr->len_dimensions[1];
+			}
+			else {
+				ndim = 1;
+				dlen[0] = sfp->y_arr->len_dimensions[0];
+			}
                         if (sfp->copy_arrays) {
                                 if ((data = CopyData(sfp->y_arr,resQ)) == NULL)
                                         return NhlFATAL;
@@ -3296,8 +3828,9 @@ static NhlErrorTypes    ScalarFieldGetValues
 			dlen[0] = 1;
 			if (sfp->x_arr) {
 				data = CreateVData
-					((NhlPointer)sfp->x_arr->data,
-					 sfp->x_arr->size,resQ);
+				     ((NhlPointer)((char *)sfp->x_arr->data +
+				       (sfp->xc_start_el * sfp->x_arr->size)),
+				      sfp->x_arr->size,resQ);
 				if (!data)
 					return NhlFATAL;
 				typeQ = sfp->x_arr->typeQ;
@@ -3326,7 +3859,7 @@ static NhlErrorTypes    ScalarFieldGetValues
 			if (sfp->x_arr) {
 				data = CreateVData
 				  ((NhlPointer)((char *)sfp->x_arr->data + 
-				   (sfp->x_el_count-1) * sfp->x_arr->size),
+				   (sfp->xc_end_el * sfp->x_arr->size)),
 				   sfp->x_arr->size,resQ);
 				if (!data)
 					return NhlFATAL;
@@ -3355,7 +3888,9 @@ static NhlErrorTypes    ScalarFieldGetValues
 			dlen[0] = 1;
 			if (sfp->y_arr) {
 				data = CreateVData
-				  (sfp->y_arr->data,sfp->y_arr->size,resQ);
+				  ((NhlPointer)((char *)sfp->y_arr->data + 
+				   (sfp->yc_start_el * sfp->y_arr->size)),
+				   sfp->y_arr->size,resQ);
 				if (!data)
 					return NhlFATAL;
 				typeQ = sfp->y_arr->typeQ;
@@ -3384,7 +3919,7 @@ static NhlErrorTypes    ScalarFieldGetValues
 			if (sfp->y_arr) {
 				data = CreateVData
 				  ((NhlPointer)((char *)sfp->y_arr->data + 
-				   (sfp->y_el_count-1) * sfp->y_arr->size),
+				   (sfp->yc_end_el * sfp->y_arr->size)),
 				   sfp->y_arr->size,resQ);
 				if (!data)
 					return NhlFATAL;

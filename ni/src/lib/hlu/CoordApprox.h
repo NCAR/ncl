@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordApprox.h,v 1.4 1995-01-24 01:25:08 boote Exp $
+ *      $Id: CoordApprox.h,v 1.5 2002-03-18 21:20:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,6 +19,10 @@
  *
  *	Description:	
  */
+
+#ifndef _NCoordApprox_h
+#define  _NCoordApprox_h
+
 #include <ncarg/hlu/hluP.h>
 typedef enum _NhlOrdering{
 	NhlNONMONOTONIC,
@@ -145,3 +149,5 @@ float*		/* xmissing */,
 float*		/* ymissing */
 #endif
 );
+
+#endif  /*_NCoordApprox_h*/ 

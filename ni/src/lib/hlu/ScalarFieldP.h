@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarFieldP.h,v 1.8 1998-04-16 03:09:04 dbrown Exp $
+ *      $Id: ScalarFieldP.h,v 1.9 2002-03-18 21:20:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,8 +31,6 @@
 #endif
 
 typedef struct _NhlScalarFieldLayerPart{
-
-	NhlString		type_string;
 
 	/* Public resources */
 
@@ -78,6 +76,10 @@ typedef struct _NhlScalarFieldLayerPart{
 	int		ix_end;
 	int		iy_start;
 	int		iy_end;
+	int		xc_start_el;
+	int		xc_end_el;
+	int		yc_start_el;
+	int		yc_end_el;
         
         NhlBoolean	xstart_byindex;
         NhlBoolean	xend_byindex;
