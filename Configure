@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.23 2004-12-14 06:21:28 haley Exp $
+#      $Id: Configure,v 1.24 2004-12-14 22:57:18 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2004-12-14 06:21:28 $
+#	$Date: 2004-12-14 22:57:18 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -1115,7 +1115,11 @@ cat <<"EOF"
 	You have completed the configuration process. Once you exit this
 	program you may initiate the installation procedure by typing:
 
-		make Everything |& tee make-output &
+		make Everything >& make-output &
+
+    You can watch the output with:
+
+		tail -f make-output
 
 "EOF"
 
@@ -1124,7 +1128,7 @@ cat <<"EOF"
 	If this is not your first installation attempt, and you simply 
 	made some changes in the configuration, restart the process using:
 
-		make All |& tee make-output &
+		make All >>& make-output &
 	
 	This command does not erase object code that has already
 	been compiled.
