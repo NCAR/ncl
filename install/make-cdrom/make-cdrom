@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-cdrom,v 1.10 1996-04-19 17:00:30 haley Exp $
+#      $Id: make-cdrom,v 1.11 1996-07-09 19:37:52 haley Exp $
 #
 #########################################################################
 #									#
@@ -62,6 +62,7 @@
 #
 $doDebug = 0;
 $do_src = 0;		# do we record the distribution src to cd-rom
+$do_doc = 0;		# do we record the distribution doc to cd-rom
 
 
 #
@@ -77,7 +78,8 @@ $do_src = 0;		# do we record the distribution src to cd-rom
 	'IRIX_IP',		'IRIX_IP',
 	'IRIX64_IP',		'IRIX64',
 	'UNICOS_YMP',		'UCOS_YMP',
-	'src',			'UNUSED'
+	'src',			'UNUSED',
+	'doc',			'UNUSED'
 );
 
 @Archs = keys %archMap;
@@ -215,8 +217,9 @@ sub	get_archs {
 ##
 
 
-$device = "/dev/rst8";		# tape device
-$rhost = "windom";		# remote tapedrive host
+$device = "/dev/rst0";		# tape device
+$nrdevice = "/dev/nrst0";		# no-rewind tape device
+$rhost = "dillon";		# remote tapedrive host
 
 $do_inter = 0;			# do interactive mode?
 $build_root = "/cyclone/ncargd/dist/binaries";	
@@ -312,6 +315,8 @@ if (! defined (@archs)) {
 $do_src = grep(/^src$/, @archs);        # Do we record the src?
 @archs = grep(!/^src$/, @archs);        # remove 'src' from @archs if exists
 
+$do_doc = grep(/^doc/, @archs);        # Do we record the documentation?
+@archs = grep(!/^doc/, @archs);        # remove 'doc' from @archs if exists
 
 $rsh = "rsh $rhost" if (! ($rhost eq ""));
 
@@ -333,6 +338,14 @@ do my_system("$cmd");
 #
 if ($do_src) {
 	$cmd = "ln -s $build_root/SRC.TAR $scratch_dir/SRC.TAR";
+	do my_system($cmd);
+}
+
+#
+#	jam a symlink in pointing to the doc tar file
+#
+if ($do_doc) {
+	$cmd = "ln -s $build_root/DOC.TAR $scratch_dir/DOC.TAR";
 	do my_system($cmd);
 }
 
