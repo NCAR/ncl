@@ -29,8 +29,8 @@ C
 CInterested parties can obtain the entire package on disk or  tape
 Cfrom Pleasant  Valley Software, 8603 Altus Cove, Austin TX (USA),
 C78759 at a cost of $495 US. A 340 page manual  is  available  for
-C$30  US  per  copy.  The  package  includes  examples and machine
-Creadable documentation.
+C30 US dollars per  copy.  The  package  includes  examples and
+Cmachine readable documentation.
 C
       subroutine nhlcurv1 (n,x,y,slp1,slpn,islpsw,yp,temp,
      *                  sigma,ierr)
