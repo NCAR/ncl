@@ -1,5 +1,5 @@
 C
-C $Id: basic05f.f,v 1.11 1997-10-08 21:39:10 haley Exp $
+C $Id: basic05f.f,v 1.12 2003-02-28 21:43:13 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -30,6 +30,7 @@ C
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFLabelBarClass
       external NhlFTextItemClass
 
@@ -48,6 +49,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 
 C Initialize libraries and create a resource list.
 
@@ -99,6 +101,21 @@ C Set Colormap to default. Note, this assignment is redundant
 
         call NhlFCreate(wks,'wks',
      1        NhlFPSWorkstationClass,0,rlist,ierr)
+
+      else if (PDF.eq.1) then
+C
+C Create a PDF object.
+C
+        call NhlFRLClear(rlist)
+
+        call NhlFRLSetstring(rlist,'wkPDFFileName','./basic05f.pdf',
+     1        ierr)
+
+C Set Colormap to default. Note, this assignment is redundant
+        call NhlFRLSetString(rlist,'wkColorMap','default',ierr)
+
+        call NhlFCreate(wks,'wks',
+     1        NhlFPDFWorkstationClass,0,rlist,ierr)
       endif
 
 C Initialize labels for the colormap entries

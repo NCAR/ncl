@@ -1,5 +1,5 @@
 C
-C $Id: basic02f.f,v 1.12 1996-01-04 16:45:14 haley Exp $
+C $Id: basic02f.f,v 1.13 2003-02-28 21:43:13 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -32,11 +32,12 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFContourPlotClass
 
       integer appid,wks,con1,rlist,ierr
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Initialize the graphics libraries and create a resource list that
 C is normally used to assign name/value pairs within objects.  Then
@@ -62,6 +63,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 
       if (NCGM.eq.1) then
 C
@@ -87,7 +89,17 @@ C
          call NhlFRLSetstring(rlist,'wkPSFileName','./basic02f.ps',ierr)
          call NhlFCreate(wks,"wks",NhlFPSWorkstationClass,0,
      1        rlist,ierr)
+C
+C Create a PDF object.
+C
+      else if (PDF.eq.1) then
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPDFFileName','./basic02f.pdf',
+     1        ierr)
+         call NhlFCreate(wks,"wks",NhlFPDFWorkstationClass,0,
+     1        rlist,ierr)
       endif
+C
 C
 C Create a plot object.  In this example, we will create a contour plot.
 C

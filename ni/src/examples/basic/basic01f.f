@@ -1,5 +1,5 @@
 C
-C $Id: basic01f.f,v 1.11 1995-06-28 23:31:20 scheitln Exp $
+C $Id: basic01f.f,v 1.12 2003-02-28 21:43:13 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -38,12 +38,13 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFContourPlotClass
 
       integer appid,wks,con1,rlist,ierr
 
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C ##########
 C # STEP 1 #
@@ -79,7 +80,7 @@ C output to an NCAR Computer Graphics Metafile (NCGM) and view it
 C later using the NCAR Graphics utilities ctrans or idt.  You may also
 C write your output directly into a window of a workstation running
 C the X Window system (as demonstrated in this example), or you can
-C write your ouput into  a PostScript file.  
+C write your ouput into  a PostScript or PDF file.  
 C
 C The first argument, wks, is a variable that identifies the object.
 C The second argument, '"wks"', sets the name of the object being
@@ -100,6 +101,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 
       if (NCGM.eq.1) then
 C
@@ -124,6 +126,15 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPSFileName','./basic01f.ps',ierr)
          call NhlFCreate(wks,"wks",NhlFPSWorkstationClass,0,
+     1        rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPDFFileName','./basic01f.pdf',
+     1        ierr)
+         call NhlFCreate(wks,"wks",NhlFPDFWorkstationClass,0,
      1        rlist,ierr)
       endif
 

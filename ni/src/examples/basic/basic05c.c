@@ -1,5 +1,5 @@
 /*
- * $Id: basic05c.c,v 1.9 1996-01-04 16:45:15 haley Exp $
+ * $Id: basic05c.c,v 1.10 2003-02-28 21:43:13 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -33,6 +33,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/LabelBar.h>
 #include <ncarg/hlu/hlu.h>
@@ -47,7 +48,7 @@ main()
     int *len_dims;
     float *cmap;
     float newcmap[100*3];
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Display the default colormap.
  *
@@ -106,6 +107,19 @@ main()
         NhlRLSetString(rlist,NhlNwkPSFileName,"./basic05c.ps");
         NhlCreate(&wks,"wks",NhlpsWorkstationClass,NhlDEFAULT_APP,rlist);
     }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+/*
+ * Set Colormap to default. Note, this assignment is redundant
+ */
+        NhlRLSetString(rlist,"wkColorMap","default");
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./basic05c.pdf");
+        NhlCreate(&wks,"wks",NhlpdfWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+
 /*
  * Create a labelbar object. 
  */

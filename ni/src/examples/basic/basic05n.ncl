@@ -1,4 +1,4 @@
-; $Id: basic05n.ncl,v 1.12 1998-04-23 22:19:44 ethan Exp $
+; $Id: basic05n.ncl,v 1.13 2003-02-28 21:43:14 grubin Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -37,6 +37,7 @@ colorindices = ispan(1,232,1)
 NCGM=0
 X11=1
 PS=0
+PDF=0
 
 if (NCGM .eq. 1) then
 ;
@@ -69,6 +70,17 @@ else
         "wkColorMap" : "default"       ; Set Colormap to default. Note,
                                        ; this assignment is redundant.
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+        wks = create "wks" pdfWorkstationClass defaultapp
+          "wkPDFFileName" : "basic05n.pdf"
+          "wkColorMap" : "default"       ; Set Colormap to default. Note,
+                                         ; this assignment is redundant.
+        end create
+      end if
     end if
   end if
 end if

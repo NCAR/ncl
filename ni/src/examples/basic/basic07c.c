@@ -21,13 +21,14 @@
 
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/TextItem.h>
 
 main()
 {
-      int appid, widx,widn,widp, pidx,pidn,pidp;
+      int appid, widx,widn,widp,widpdf, pidx,pidn,pidp,pidpdf;
       int srlist;
       int i;
 /*
@@ -63,6 +64,15 @@ main()
       NhlCreate(&widp,"basic07ps",NhlpsWorkstationClass,NhlDEFAULT_APP,
                 srlist);
 /*
+ * Create a PDF workstation.
+ */
+      NhlRLClear(srlist);
+      NhlRLSetString(srlist,NhlNwkPDFFileName,"basic07c.pdf");
+      NhlRLSetString(srlist,NhlNwkOrientation,"portrait");
+      NhlRLSetString(srlist,NhlNwkPDFFormat,"pdf");
+      NhlCreate(&widpdf,"basic07pdf",NhlpdfWorkstationClass,NhlDEFAULT_APP,
+                srlist);
+/*
  * Create an X Workstation.
  */
       NhlRLClear(srlist);
@@ -70,7 +80,7 @@ main()
       NhlCreate(&widx,"basic07x11",NhlxWorkstationClass,NhlDEFAULT_APP,
                 srlist);
 /*
- * Create three plots, one for each workstation type.
+ * Create four plots, one for each workstation type.
  *
  *  Use color index 2
  */
@@ -83,18 +93,24 @@ main()
 
       NhlCreate(&pidp,"TextItems",NhltextItemClass,widp,srlist);
 
+      NhlCreate(&pidpdf,"TextItems",NhltextItemClass,widpdf,srlist);
+
       NhlDraw(pidx);
       NhlDraw(pidn);
       NhlDraw(pidp);
+      NhlDraw(pidpdf);
       NhlFrame(widx);
       NhlFrame(widp);
+      NhlFrame(widpdf);
       NhlFrame(widn);
  
       NhlDestroy(pidx);
       NhlDestroy(pidn);
       NhlDestroy(pidp);
+      NhlDestroy(pidpdf);
       NhlDestroy(widx);
       NhlDestroy(widp);
+      NhlDestroy(widpdf);
       NhlDestroy(widn);
       NhlDestroy(appid);
 

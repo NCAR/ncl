@@ -1,4 +1,4 @@
-; $Id: basic02n.ncl,v 1.10 1995-06-28 23:35:12 scheitln Exp $
+; $Id: basic02n.ncl,v 1.11 2003-02-28 21:43:14 grubin Exp $
 ;
 ; The first frame in this example demonstrates how to set the view port 
 ; for a contour plot.
@@ -24,6 +24,7 @@ begin
 NCGM=0
 X11=1
 PS=0
+PDF=0
 
 if (NCGM.eq.1) then
 ;
@@ -48,6 +49,15 @@ else
       wks = create "wks" psWorkstationClass defaultapp
         "wkPSFileName" : "./basic02n.ps"
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDF workstation.
+;
+        wks = create "wks" pdfWorkstationClass defaultapp
+          "wkPDFFileName" : "./basic02n.pdf"
+        end create
+      end if
     end if
   end if
 end if

@@ -1,5 +1,5 @@
 /*
- * $Id: basic02c.c,v 1.10 1996-01-04 16:45:13 haley Exp $
+ * $Id: basic02c.c,v 1.11 2003-02-28 21:43:13 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -31,6 +31,7 @@
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/hlu.h>
@@ -39,7 +40,7 @@ main()
 {
     int appid,wks,con1,rlist;
 
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 
 /*
  * Initialize the graphics libraries and create a resource list that
@@ -85,6 +86,16 @@ main()
         NhlCreate(&wks,"wks",NhlpsWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./basic02c.pdf");
+        NhlCreate(&wks,"wks",NhlpdfWorkstationClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+
 /*
  * Create a plot object.  In this example, we will create a contour plot.
  *

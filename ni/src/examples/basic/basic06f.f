@@ -29,6 +29,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFXyPlotClass
       external NhlFCoordArraysClass
@@ -38,7 +39,7 @@ C
       integer appid,rlist
       integer xwork_id,text_id,box_id,data_id
       integer dataspec
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
       integer i,ierr
 
       character*5 text
@@ -66,6 +67,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the high level utility library and create application.
 C
@@ -109,6 +111,19 @@ C
 
         call NhlFCreate(xwork_id,'simple',
      1        NhlFPSWorkstationClass,0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF object.
+C
+        call NhlFRLClear(rlist)
+
+        call NhlFRLSetstring(rlist,'wkPDFFileName','./basic06f.pdf',
+     1        ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',
+     1         cmap,2,dims,ierr)
+
+        call NhlFCreate(xwork_id,'simple',
+     1        NhlFPDFWorkstationClass,0,rlist,ierr)
       endif
 C
 C Create data object for an XyPlot

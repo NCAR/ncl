@@ -1,5 +1,5 @@
 /*
- * $Id: basic01c.c,v 1.10 1996-01-04 16:45:13 haley Exp $
+ * $Id: basic01c.c,v 1.11 2003-02-28 21:43:13 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -37,6 +37,7 @@
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/hlu.h>
@@ -45,7 +46,7 @@ main()
 {
     int appid,wks,con1,rlist;
 
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 
 /*
  * ##########
@@ -120,6 +121,16 @@ main()
         NhlCreate(&wks,"wks",NhlpsWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
+    else if (PDF) {
+/*
+ *  Create a PDF file workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./basic01c.pdf");
+        NhlCreate(&wks,"wks",NhlpdfWorkstationClass,NhlDEFAULT_APP,
+                  rlist);
+   }
+
 /*
  * ##########
  * # STEP 3 #

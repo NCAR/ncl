@@ -30,6 +30,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
@@ -69,7 +70,7 @@ main()
 /*
  * Set the display. Default is to display output to an X workstation.
  */
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 
 /*
  * Initialize the high level utility library and create application.
@@ -113,6 +114,16 @@ main()
         NhlRLSetString(rlist,NhlNwkPSFileName,"./basic06c.ps");
         NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,dims);
         NhlCreate(&xwork_id,"simple",NhlpsWorkstationClass,
+              NhlDEFAULT_APP,rlist);
+    }
+    else if (PDF) {
+    /*
+     * Create a PS file workstation.
+     */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./basic06c.pdf");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,dims);
+        NhlCreate(&xwork_id,"simple",NhlpdfWorkstationClass,
               NhlDEFAULT_APP,rlist);
     }
 

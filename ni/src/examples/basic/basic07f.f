@@ -20,11 +20,12 @@ C                      out of NCGM, PostScript, and X11.
 C
       external NhlFAppClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFTextItemClass
 
-      integer appid, widx,widn,widp, pidx,pidn,pidp
+      integer appid, widx,widn,widp,widpdf, pidx,pidn,pidp,pidpdf
       integer srlist, ierr
       integer i
 C------------------------------------------------------
@@ -62,6 +63,15 @@ C
       call NhlFCreate(widp,'basic07ps',NhlFPSWorkstationClass,0,
      1        srlist,ierr)
 C
+C Create a PDF workstation.
+C
+      call NhlFRLClear(srlist)
+      call NhlFRLSetString(srlist,'wkPDFFileName','basic07f.pdf',ierr)
+      call NhlFRLSetString(srlist,'wkOrientation','portrait',ierr)
+      call NhlFRLSetString(srlist,'wkPDFFormat','pdf',ierr)
+      call NhlFCreate(widp,'basic07pdf',NhlFPDFWorkstationClass,0,
+     1        srlist,ierr)
+C
 C Create an X Workstation.
 C
       call NhlFRLClear(srlist)
@@ -84,19 +94,25 @@ C  Use color index 2
 
       call NhlFCreate(pidp,'TextItems',NhlFTextItemClass,
      $     widp,srlist,ierr)
+      call NhlFCreate(pidpdf,'TextItems',NhlFTextItemClass,
+     $     widpdf,srlist,ierr)
 
       call NhlFDraw(pidx,ierr)
       call NhlFDraw(pidn,ierr)
       call NhlFDraw(pidp,ierr)
+      call NhlFDraw(pidpdf,ierr)
       call NhlFFrame(widx,ierr)
       call NhlFFrame(widp,ierr)
+      call NhlFFrame(widpdf,ierr)
       call NhlFFrame(widn,ierr)
 C
       call NhlFDestroy(pidx,ierr)
       call NhlFDestroy(pidn,ierr)
       call NhlFDestroy(pidp,ierr)
+      call NhlFDestroy(pidpdf,ierr)
       call NhlFDestroy(widx,ierr)
       call NhlFDestroy(widp,ierr)
+      call NhlFDestroy(widpdf,ierr)
       call NhlFDestroy(widn,ierr)
       call NhlFDestroy(appid,ierr)
       call NhlFClose

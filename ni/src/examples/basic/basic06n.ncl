@@ -1,4 +1,4 @@
-; $Id: basic06n.ncl,v 1.5 1998-04-23 22:19:45 ethan Exp $
+; $Id: basic06n.ncl,v 1.6 2003-02-28 21:43:14 grubin Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -108,6 +108,7 @@ cmap = (/ (/1.0, 1.0, 1.0/), \
 NCGM=0
 X11=1
 PS=0
+PDF=0
 
 if (NCGM .eq. 1) then
 ;
@@ -135,6 +136,16 @@ else
         "wkPSFileName"   : "basic06n.ps"
         "wkColorMap"     : cmap
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+        xwork_id = create "simple" pdfWorkstationClass defaultapp
+          "wkPDFFileName"   : "basic06n.pdf"
+          "wkColorMap"     : cmap
+        end create
+      end if
     end if
   end if
 end if

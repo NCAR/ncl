@@ -54,6 +54,14 @@ begin
 		 "wkPSFormat": "ps"
          end create	
 ;
+; Create a PDF workstation.
+;
+	 widpdf = create "basic07pdf" pdfWorkstationClass defaultapp
+		 "wkPDFFileName": "basic07n.pdf"
+		 "wkOrientation": "portrait"
+		 "wkPDFFormat": "pdf"
+         end create	
+;
 ; Create an X Workstation.
 ;
 	 widx = create "basic07x11" xWorkstationClass defaultapp
@@ -77,19 +85,27 @@ begin
       pidp = create "TextItems" textItemClass widp
 	      "txBackgroundFillColor": i
       end create
+      
+      pidpdf = create "TextItems" textItemClass widp
+	      "txBackgroundFillColor": i
+      end create
 
       draw(pidx)
       draw(pidn)
       draw(pidp)
+      draw(pidpdf)
       frame(widx)
       frame(widp)
+      frame(widpdf)
       frame(widn)
  
       destroy(pidx)
       destroy(pidn)
       destroy(pidp)
+      destroy(pidpdf)
       destroy(widx)
       destroy(widp)
+      destroy(widpdf)
       destroy(widn)
       destroy(appid)
 
