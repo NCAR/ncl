@@ -42,9 +42,10 @@ NhlErrorTypes sindex_yrmo_W( void )
 /*
  * Output array variables
  */
-  double *soi, *soi_noise;
-  float *rsoi;
+  void *soi;
+  double *tmp_soi, *soi_noise;
   int *dsizes_soi;
+  NclBasicDataTypes type_soi;
 /*
  * various
  */
@@ -126,9 +127,18 @@ NhlErrorTypes sindex_yrmo_W( void )
 /*
  * Allocate space for output arrays.
  */
-  soi = (double *)calloc(total_size_xy,sizeof(double));
+  if(type_x != NCL_double && type_y != NCL_double) {
+    type_soi = NCL_float;
+    soi = (void *)calloc(total_size_xy,sizeof(float));
+  }
+  else {
+    type_soi = NCL_double;
+    soi = (void *)calloc(total_size_xy,sizeof(double));
+  }
+  tmp_soi   = coerce_output_double(soi,type_soi,total_size_xy);
   soi_noise = (double *)calloc(total_size_xy,sizeof(double));
-  if( soi == NULL || soi_noise == NULL ) {
+
+  if( tmp_soi == NULL || soi == NULL || soi_noise == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"sindex_yrmo: Unable to allocate memory for output array(s)");
     return(NhlFATAL);
   }
@@ -145,9 +155,13 @@ NhlErrorTypes sindex_yrmo_W( void )
  * Call the f77 version of 'sindex' with the full argument list.
  */
   NGCALLF(dindx77,DINDX77)(dx,dy,&nmos,&nyrs,&missing_dx.doubleval,iprnt,
-                           work,&lwork,soi,soi_noise,&ler);
+                           work,&lwork,tmp_soi,soi_noise,&ler);
   if (ler == 2) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"sindex_yrmo: One or both of the input data arrays contains all missing values");
+  }
+  if(type_soi == NCL_float) {
+    coerce_output(soi,tmp_soi,total_size_xy,0);
+    NclFree(tmp_soi);
   }
 /*
  * free memory.
@@ -160,18 +174,7 @@ NhlErrorTypes sindex_yrmo_W( void )
 /*
  * Return values. 
  */
-  if(type_x != NCL_double && type_y != NCL_double) {
-/*
- * Copy double values to float values.
- */
-    rsoi = (float*)calloc(total_size_xy,sizeof(float));
-    if( rsoi == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"sindex_yrmo: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_xy; i++ ) rsoi[i] = (float)soi[i];
-
-    NclFree(soi);
+  if(type_soi == NCL_float) {
 /*
  * Return float values with missing value set.
  */
@@ -180,7 +183,7 @@ NhlErrorTypes sindex_yrmo_W( void )
                               NULL,
                               Ncl_MultiDValData,
                               0,
-                              (void*)rsoi,
+                              soi,
                               &missing_rx,
                               2,
                               dsizes_x,
@@ -198,7 +201,7 @@ NhlErrorTypes sindex_yrmo_W( void )
                               NULL,
                               Ncl_MultiDValData,
                               0,
-                              (void*)soi,
+                              soi,
                               &missing_dx,
                               2,
                               dsizes_x,
@@ -326,10 +329,10 @@ NhlErrorTypes snindex_yrmo_W( void )
 /*
  * Output array variables
  */
-  void *soi_noise;
-  double *soi, *dsoi_noise;
-  float *rsoi, *rsoi_noise;
+  void *soi, *soi_noise;
+  double *tmp_soi, *tmp_soi_noise;
   int *dsizes_soi;
+  NclBasicDataTypes type_soi;
 /*
  * various
  */
@@ -435,16 +438,25 @@ NhlErrorTypes snindex_yrmo_W( void )
  * values coming in).  soi_noise can only be float or double, so only allocate
  * space for a d.p. array if soi_noise is float.
  */
-  dsoi_noise = coerce_output_double(soi_noise,type_soi_noise,total_size_xy);
-  if( dsoi_noise == NULL ) {
+  tmp_soi_noise = coerce_output_double(soi_noise,type_soi_noise,
+                                       total_size_xy);
+  if( tmp_soi_noise == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: Unable to allocate memory for coercing soi_noise array to double precision");
     return(NhlFATAL);
   }
 /*
  * Allocate space for output arrays.
  */
-  soi = (double*)calloc(total_size_xy,sizeof(double));
-  if( soi == NULL ) {
+  if(type_x != NCL_double && type_y != NCL_double) {
+    type_soi = NCL_float;
+    soi = calloc(total_size_xy,sizeof(float));
+  }
+  else {
+    type_soi = NCL_double;
+    soi = calloc(total_size_xy,sizeof(double));
+  }
+  tmp_soi = coerce_output_double(soi,type_soi,total_size_xy);
+  if( soi == NULL || tmp_soi == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
@@ -461,9 +473,20 @@ NhlErrorTypes snindex_yrmo_W( void )
  * Call the f77 version of 'sindex' with the full argument list.
  */
   NGCALLF(dindx77,DINDX77)(dx,dy,&nmos,&nyrs,&missing_dx.doubleval,iprnt,
-                           work,&lwork,soi,dsoi_noise,&ler);
+                           work,&lwork,tmp_soi,tmp_soi_noise,&ler);
   if (ler == 2) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"snindex_yrmo: One or both of the input data arrays contains all missing values");
+  }
+/*
+ * If returning float values, we need to coerce the double precision values.
+ */
+  if(type_soi_noise == NCL_float) {
+    coerce_output(soi_noise,tmp_soi_noise,total_size_xy,0);
+    NclFree(tmp_soi_noise);   /* Free up the double array */
+  }
+  if(type_soi == NCL_float) {
+    coerce_output(soi,tmp_soi,total_size_xy,0);
+    NclFree(tmp_soi);   /* Free up the double array */
   }
 /*
  * Free memory.
@@ -471,37 +494,11 @@ NhlErrorTypes snindex_yrmo_W( void )
   if((void*)dx != x) NclFree(dx);
   if((void*)dy != y) NclFree(dy);
   NclFree(work);
-/*
- * If returning float values, we need to copy the coerced float values
- * back to the original location of soi_noise. Do this by creating a
- * pointer of type float that points to the original location, and then
- * loop through the values and do the coercion.
- */
-  if(type_soi_noise == NCL_float) {
-    rsoi_noise = (float*)soi_noise;  /* Float ptr to original soi_noise */
-    for( i = 0; i < total_size_xy; i++ ) {
-      rsoi_noise[i]  = (float)dsoi_noise[i];
-    }
-    NclFree(dsoi_noise);   /* Free up the double array */
-  }
 
 /*
  * Set up variable to return.
  */
-  if(type_x != NCL_double && type_y != NCL_double) {
-/*
- * Copy double values to float values.
- */
-    rsoi = (float*)calloc(total_size_xy,sizeof(float));
-    if( rsoi == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < total_size_xy; i++ ) rsoi[i] = (float)soi[i];
-/*
- * Free up d.p array.
- */
-    NclFree(soi);
+  if(type_soi == NCL_float) {
 /*
  * Return float values with missing value set.
  */
@@ -510,7 +507,7 @@ NhlErrorTypes snindex_yrmo_W( void )
                               NULL,
                               Ncl_MultiDValData,
                               0,
-                              (void*)rsoi,
+                              soi,
                               &missing_rx,
                               2,
                               dsizes_x,
@@ -528,7 +525,7 @@ NhlErrorTypes snindex_yrmo_W( void )
                               NULL,
                               Ncl_MultiDValData,
                               0,
-                              (void*)soi,
+                              soi,
                               &missing_dx,
                               2,
                               dsizes_x,

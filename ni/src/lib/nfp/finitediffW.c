@@ -25,7 +25,7 @@ NhlErrorTypes center_finite_diff_W( void )
  */
   void *q, *r;
   logical *cyclic;
-  int *opt;
+  int *opt, r_one_d, r_scalar;
   double *tmp_q, *tmp_r;
   int ndims_q, dsizes_q[NCL_MAX_DIMENSIONS];
   int ndims_r, dsizes_r[NCL_MAX_DIMENSIONS];
@@ -94,9 +94,24 @@ NhlErrorTypes center_finite_diff_W( void )
  */
   npts  = dsizes_q[ndims_q-1];
   npts1 = npts + 1;
-  if(dsizes_r[0] > 1 && dsizes_r[0] != npts) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff: r must either be a scalar or a 1D array the same length as the rightmost dimemsion of q");
+
+  if((ndims_r == 1 && (dsizes_r[0] != npts && dsizes_r[0] != 1)) ||
+     (ndims_r > 1 && ndims_r != ndims_q)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff: r must either be a scalar, a 1D array the same length as the rightmost dimemsion of q, or the same size as q");
     return(NhlFATAL);
+  }
+
+  if(ndims_r > 1) {
+    r_one_d = 0;
+    for( i = 0; i < ndims_r-1; i++ ) {
+      if(dsizes_r[i] != dsizes_q[i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff: r must either be a scalar, a 1D array the same length as the rightmost dimemsion of q, or the same size as q");
+        return(NhlFATAL);
+      }
+    }
+  }
+  else {
+    r_one_d = 1;
   }
 /*
  * Compute the total size of the q array.
@@ -129,28 +144,32 @@ NhlErrorTypes center_finite_diff_W( void )
       return(NhlFATAL);
     }
   }
-
-  if(type_r != NCL_double || dsizes_r[0] == 1) {
+/*
+ * 'r' can be a scalar, one-dimensional, or multi-dimensional.
+ * If it is a scalar, then we need to construct an npts-sized 'r'
+ * that is based on the scalar value.
+ */
+  r_scalar = is_scalar(ndims_r,dsizes_r);
+  if(type_r != NCL_double || r_scalar) {
     tmp_r = (double*)calloc(npts,sizeof(double));
     if( tmp_r == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff: Unable to allocate memory for coercing r to double precision");
       return(NhlFATAL);
     }
-  }
-
-  if(type_r != NCL_double || dsizes_r[0] == 1) {
 /*
- * Coerce r (tmp_r) to double.
+ * Coerce r (tmp_r) to double if necessary.
  */
-    coerce_subset_input_double(r,tmp_r,0,type_r,dsizes_r[0],0,NULL,NULL);
+    if(r_one_d) {
+      coerce_subset_input_double(r,tmp_r,0,type_r,dsizes_r[0],0,NULL,NULL);
+    }
 /*
  * If r is a scalar, then copy it npts-1 times to rest of the array.
  */
-    if(dsizes_r[0] == 1) {
+    if(r_scalar) {
       for(i = 1; i < npts; i++ ) tmp_r[i] = tmp_r[i-1] + tmp_r[0];
     }
   }
-  else {
+  if(type_r == NCL_double && !r_scalar && r_one_d) {
 /*
  * Point tmp_r to r.
  */
@@ -159,7 +178,6 @@ NhlErrorTypes center_finite_diff_W( void )
 /*
  * Allocate space for output array.
  */
-  tmp_dqdr = (double*)calloc(npts,sizeof(double));
   if(type_q == NCL_double || type_r == NCL_double) {
     type_dqdr = NCL_double;
     dqdr      = (void*)calloc(size_q,sizeof(double));
@@ -168,15 +186,13 @@ NhlErrorTypes center_finite_diff_W( void )
     type_dqdr = NCL_float;
     dqdr      = (void*)calloc(size_q,sizeof(float));
   }
+  tmp_dqdr = coerce_output_double(dqdr,type_dqdr,npts);
   if( dqdr == NULL || tmp_dqdr == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
 
-/*
- * Loop through leftmost dimensions and call Fortran routine.
- */
   if(*cyclic) {
     iend = 0;
   }
@@ -184,6 +200,9 @@ NhlErrorTypes center_finite_diff_W( void )
     iend = 1;
   }
 
+/*
+ * Loop through leftmost dimensions and call Fortran routine.
+ */
   index_q = 0;
   for(i = 0; i < size_leftmost; i++ ) {
     if(type_q != NCL_double) {
@@ -197,20 +216,29 @@ NhlErrorTypes center_finite_diff_W( void )
  * Point tmp_q to q.
  */
       tmp_q = &((double*)q)[index_q];
-  }
+    }
+    if(!r_one_d) {
+      if(type_r != NCL_double) {
+/*
+ * Coerce delta (tmp_r) to double.
+ */
+        coerce_subset_input_double(r,tmp_r,index_q,type_r,npts,0,NULL,NULL);
+      }
+      else {
+/*
+ * Point tmp_r to r.
+ */
+        tmp_r = &((double*)r)[index_q];
+      }
+    }
 /*
  * Call the Fortran routine.
  */
     NGCALLF(dcfindif,DCFINDIF)(tmp_q,tmp_r,&npts,&missing_dq.doubleval,
                                &missing_dr.doubleval,cyclic,&iend,
                                qq,rr,&npts1,tmp_dqdr,&ier);
-    for(j = 0; j < npts; j++) {
-      if(type_dqdr == NCL_double) {
-        ((double*)dqdr)[index_q+j] = tmp_dqdr[j];
-      }
-      else {
-        ((float*)dqdr)[index_q+j] = (float)(tmp_dqdr[j]);
-      }
+    if(type_dqdr != NCL_double) {
+      coerce_output(dqdr,tmp_dqdr,npts,index_q);
     }
 
     index_q += npts;
@@ -218,9 +246,9 @@ NhlErrorTypes center_finite_diff_W( void )
 /*
  * Free temp arrays.
  */
-  if(type_r != NCL_double || dsizes_r[0] == 1) NclFree(tmp_r);
-  if(type_q != NCL_double) NclFree(tmp_q);
-  NclFree(tmp_dqdr);
+  if(type_r != NCL_double || r_scalar) NclFree(tmp_r);
+  if(type_q != NCL_double)             NclFree(tmp_q);
+  if(type_dqdr != NCL_double)          NclFree(tmp_dqdr);
   NclFree(qq);
   NclFree(rr);
 

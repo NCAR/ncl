@@ -639,7 +639,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(4);
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;

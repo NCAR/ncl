@@ -186,7 +186,7 @@ NhlErrorTypes zonal_mpsi_W( void )
  */
   for(i = 0; i < nlev; i++ ) {
     if( tmp_p[i] <= 500 || tmp_p[i] >= 100500) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"zonal_mpsi: The pressure array must be monotonically increasing, and 500 < p(0) < p(1) < ... < p(nlev-1) < 100500");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"zonal_mpsi: The pressure array must be between the values of 500 and 100500 (exclusive), and monotonically increasing");
       return(NhlFATAL);
     }
     if(i < nlev-1) {

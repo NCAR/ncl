@@ -148,7 +148,7 @@ C -----------------------------------------------------
       END DO
 
       YTMP  = YMEAN*YMEAN/N
-      YVAR  = MAX( (YVAR-YTMP)/N , 0. ) ! prevent possible roundoff
+      YVAR  = MAX( (YVAR-YTMP)/N , 0.D0 ) ! prevent possible roundoff
       YMEAN = YMEAN/N
 
       LAG1    = 0.0
