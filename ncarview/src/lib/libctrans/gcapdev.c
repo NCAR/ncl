@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.21 1993-04-04 20:53:27 clyne Exp $
+ *	$Id: gcapdev.c,v 1.22 1993-04-27 20:32:48 clyne Exp $
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +15,7 @@
 #include "format.h"
 
 extern	boolean	doSimulateBG;
+extern	boolean	startedDrawing;
 
 /*
  * defines for the markers in the strings
@@ -34,12 +35,11 @@ static	int	simulate_bg_color()
 {
 	static	boolean first = TRUE;
 	static	CGMC	cgmc;
+	int	status = 0;
 
 
 	Etype	fill_style = INT_STYLE;
 	CItype	fill_color = FILL_COLOUR.index;
-
-	void	gcap_update_color_table();
 
         /*
 	 * create space for temp cmgc
@@ -61,7 +61,7 @@ static	int	simulate_bg_color()
 	}
 
 	if (COLOUR_TABLE_DAMAGE) {
-		gcap_update_color_table();
+		if (gcap_update_color_table() < 0) status = -1;
 		COLOUR_TABLE_DAMAGE = FALSE;
 	}
 
@@ -114,7 +114,7 @@ static	int	simulate_bg_color()
         cgmc.Enum = 1;
         (void) Process(&cgmc);
 
-	return(0);
+	return(status);
 }
 
 void	gcap_open(max_poly_points)
@@ -675,13 +675,14 @@ float	width;
  */
 #define MAD     -6      /* Colour Index */
 
-void	gcap_update_color_table()
+int	gcap_update_color_table()
 {
 	int	i,k;		/* loop var */
 	long	data[3];
 	boolean	skipping,
 		defining;
 	SignedChar	s_char_;
+	int	status = 0;
 
 
 	if (!COLOUR_AVAIL)
@@ -696,6 +697,18 @@ void	gcap_update_color_table()
         FILL_COLOUR_DAMAGE = TRUE;
         MARKER_COLOUR_DAMAGE = TRUE;
         LINE_COLOUR_DAMAGE = TRUE;
+
+	/*
+	 * don't change background color if we've begun drawing
+	 */
+	if ((COLOUR_INDEX_DAMAGE(0) || BACKCOLR_DAMAGE) && startedDrawing) {
+		COLOUR_INDEX_DAMAGE(0) = FALSE;
+                COLOUR_TOTAL_DAMAGE--;
+		BACKCOLR_DAMAGE = FALSE;
+                ESprintf(E_UNKNOWN, "Background color changes ignored after drawing has begun");
+
+		status = -1;
+	}
 
 
 
@@ -857,4 +870,6 @@ void	gcap_update_color_table()
 		BACKCOLR_DAMAGE = FALSE;
 		(void)	simulate_bg_color();
 	}
+
+	return(status);
 }

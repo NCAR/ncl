@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.21 1993-04-04 20:53:24 clyne Exp $
+ *	$Id: commondev.c,v 1.22 1993-04-27 20:32:28 clyne Exp $
  */
 #include <math.h>
 #include <stdio.h>
@@ -217,12 +217,13 @@ CGMC *c;
 {
 	long	x1,y1,x2,y2;	/* the clipped line coords */
 	register long	n,p;
+	int	status = 0;
 
 	/*
 	 *	Make sure the line attributes are set
 	 */
 	if (COLOUR_TABLE_DAMAGE) {
-		dev->update_color_table();
+		if (dev->update_color_table() < 0) status = -1;
 		COLOUR_TABLE_DAMAGE = FALSE;
 	}
 
@@ -321,7 +322,7 @@ CGMC *c;
 		dev->point_flush(coordBuf, &coordBufNum, FALSE, FALSE);
 	}
 
-	return (0);
+	return (status);
 }
 
 /*ARGSUSED*/
@@ -329,12 +330,13 @@ int  DisjtLine(c)
 CGMC *c;
 {
 	register long	i;
+	int	status = 0;
 
 	/*
 	 *	Make sure the line attributes are set
 	 */
 	if (COLOUR_TABLE_DAMAGE) {
-		dev->update_color_table();
+		if (dev->update_color_table() < 0) status = -1;
 		COLOUR_TABLE_DAMAGE = FALSE;
 	}
 
@@ -370,16 +372,17 @@ CGMC *c;
 	for(i=0; i<c->Pnum; i+=2) {
 		dev->line(c->p[i].x, c->p[i].y, c->p[i+1].x, c->p[i+1].y);
 	}
-	return(0);
+	return(status);
 }
 
 
 int	_PolyMarker(c, fat_dot)
 	CGMC *c;
-int	fat_dot;
+	int	fat_dot;
 {
 	int	offset;
 	int	i;
+	int	status = 0;
 
 	CItype	line_colour;
 	float	line_width;
@@ -389,7 +392,7 @@ int	fat_dot;
 	VDCtype xlen, ylen;
 
 	if (COLOUR_TABLE_DAMAGE) {
-		dev->update_color_table();
+		if (dev->update_color_table() < 0) status = -1;
 		COLOUR_TABLE_DAMAGE = FALSE;
 	}
 
@@ -498,7 +501,7 @@ int	fat_dot;
 	dev->setlinewidth(line_width);
 	dev->setlinestyle(line_type);
 
-	return (0);
+	return (status);
 }
 
 
@@ -509,6 +512,7 @@ CGMC *c;
 {
 	int	i;		/* loop variable */
 	long	x1,y1,x2,y2;	/* the clipped line coords */
+	int	status = 0;
 
 	boolean	draw = FALSE;
 
@@ -517,7 +521,7 @@ CGMC *c;
 	extern	long	clipxmax, clipxmin, clipymax, clipymin;
 
 	if (COLOUR_TABLE_DAMAGE) {
-		dev->update_color_table();
+		if (dev->update_color_table() < 0) status = -1;
 		COLOUR_TABLE_DAMAGE = FALSE;
 	}
 
@@ -726,7 +730,7 @@ CGMC *c;
 		return(-1);
 	}
 
-	return (0);
+	return (status);
 }
 
 

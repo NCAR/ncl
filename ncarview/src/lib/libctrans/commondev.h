@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.h,v 1.4 1992-04-03 20:56:28 clyne Exp $
+ *	$Id: commondev.h,v 1.5 1993-04-27 20:32:33 clyne Exp $
  */
 #ifndef	_commondev_
 #define	_commondev_
@@ -15,7 +15,7 @@ typedef	struct	ComDev_ {
 	void	(*setlinecolour)();
 	void	(*setfillcolour)();
 	void	(*setlinewidth)();
-	void	(*update_color_table)();
+	int	(*update_color_table)();
 	} ComDev;
 	
 

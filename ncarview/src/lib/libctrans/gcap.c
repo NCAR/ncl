@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.35 1993-03-26 15:43:24 clyne Exp $
+ *	$Id: gcap.c,v 1.36 1993-04-27 20:32:41 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -296,7 +296,7 @@ CGMC *c;
 		 * load the common default color NOW. Later, the 
 		 * graphcap-defined default colormap will override this one
 		 */
-		gcap_update_color_table();
+		(void) gcap_update_color_table();
 	}
 
 
@@ -642,12 +642,13 @@ CGMC *c;
 	int	nx, ny;		/* dimensions of cell array by number of cells*/
 	Etype	mode;		/* cell representation mode		*/
 	boolean	clip = FALSE;
+	int	status = 0;
 
 	int	cell_array(), non_rect_cell_array(), CellArray_();
 	extern	long	clipxmax, clipxmin, clipymax, clipymin;
 
 	if (COLOUR_TABLE_DAMAGE) {
-		gcap_update_color_table();
+		if (gcap_update_color_table() < 0) status = -1;
 		COLOUR_TABLE_DAMAGE = FALSE;
 	}
 
@@ -730,7 +731,7 @@ CGMC *c;
 	}
 
 	(void) MunchCGM(c);
-	return (0);
+	return (status);
 }
 
 /*ARGSUSED*/

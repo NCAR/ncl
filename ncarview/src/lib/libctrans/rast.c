@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.28 1993-02-04 19:53:30 clyne Exp $
+ *	$Id: rast.c,v 1.29 1993-04-27 20:32:59 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -704,7 +704,6 @@ CGMC *c;
 
 #define	PACKED_MODE	1
 
-	void	rast_update_color_table();
 
 	/*	
 	 *	programmers unfamiliar with CGM representation of Cell arrays
@@ -719,11 +718,12 @@ CGMC *c;
 		Rcoord;	/* cell array corner boundries		*/
 	int	nx, ny;		/* dimensions of cell array by number of cells*/
 	Etype	mode;		/* cell representation mode		*/
+	int	status;
 
 	int	ras_cell_array(), ras_non_rect_cell_array();
 
 	if (COLOUR_TABLE_DAMAGE) {
-		rast_update_color_table();
+		if (rast_update_color_table() < 0) status = -1;
 		COLOUR_TABLE_DAMAGE = FALSE;
 	}
 	if (CLIP_DAMAGE) {
@@ -774,8 +774,9 @@ CGMC *c;
         /*
          * cell array is a rectangluar
          */
-        return(ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny));
+        if (ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny) < 0) status = -1;
 
+	return(status);
 }
 
 
