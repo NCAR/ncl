@@ -3780,9 +3780,9 @@ int wr_status;
 		} 
 	}
 	if(fd != NULL) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Could not open (%s) check permissions",NrmQuarkToString(path));
-	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Could not open (%s) no grib records found",NrmQuarkToString(path));
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Could not open (%s) check permissions",NrmQuarkToString(path));
 	}
 	return(NULL);
 }
