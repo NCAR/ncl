@@ -4840,6 +4840,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     NclRegisterFunc(chiinv_W,args,"chiinv",nargs);
+    NclRegisterFunc(chiinv_W,args,"cdfchi_x",nargs);
 
 /*
  * Register "betainc".
