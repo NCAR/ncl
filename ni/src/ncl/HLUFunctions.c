@@ -527,6 +527,7 @@ NhlErrorTypes _NclIChangeWorkstation
 	obj *wk_obj_id;
 	NclHLUObj wk_ptr;
 	NhlErrorTypes ret = NhlNOERROR;
+	NclHLUExpChildList *exp_list;
 	
 	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
 			0,
@@ -584,6 +585,20 @@ NhlErrorTypes _NclIChangeWorkstation
 	}
 	for( i = 0; i < j; i++) {
 		if((tmp_hlu_ptr[i]!= NULL)&&(_NhlIsView(_NhlGetLayer(tmp_hlu_ptr[i]->hlu.hlu_id)))) {
+			if(tmp_hlu_ptr[i]->hlu.exp_list != NULL) {
+/*
+* All exported objects will be moved to the new workstation by the HLU's
+* This is hear to assure NCL keeps track of this fact.
+*/
+				exp_list = tmp_hlu_ptr[i]->hlu.exp_list;
+				while(exp_list != NULL) {
+					if(tmp_hlu_ptr[i]->hlu.parent_hluobj_id != -1) {
+						_NclDelHLUChild((NclHLUObj)_NclGetObj(tmp_hlu_ptr[i]->hlu.parent_hluobj_id),exp_list->child_id);
+					}
+					_NclAddHLUChild(wk_ptr,exp_list->child_id);
+					exp_list = exp_list->next;
+				}
+			}
 			if(tmp_hlu_ptr[i]->hlu.parent_hluobj_id != -1) {
 				_NclDelHLUChild((NclHLUObj)_NclGetObj(tmp_hlu_ptr[i]->hlu.parent_hluobj_id),tmp_hlu_ptr[i]->obj.id);
 			}
