@@ -1,5 +1,5 @@
 /*
- *      $Id: ResourcesP.h,v 1.10 1995-04-07 10:43:35 boote Exp $
+ *      $Id: ResourcesP.h,v 1.11 1995-04-13 00:43:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -87,9 +87,10 @@ extern void _NhlCopyFromArgVal(
 
 extern void _NhlCopyFromArg(
 #if	NhlNeedProto
-	_NhlArgVal,	/* src	*/
-	void*,		/* dst	*/
-	unsigned int	/* size	*/
+	_NhlArgVal	src,
+	void*		dst,
+	NrmQuark	name,
+	unsigned int	size
 #endif
 );
 

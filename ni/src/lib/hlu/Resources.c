@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.22 1995-04-07 10:43:34 boote Exp $
+ *      $Id: Resources.c,v 1.23 1995-04-13 00:43:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -121,29 +121,39 @@ _NhlCopyFromArg
 (
 	_NhlArgVal	src,	/* source	*/
 	void *		dst,	/* destination	*/
+	NrmQuark	name,	/* name		*/
 	unsigned int	size	/* size		*/
 ) 
 #else
-(src,dst,size) 
+(src,dst,name,size) 
 	_NhlArgVal	src;	/* source	*/
 	void*		dst;	/* destination	*/
+	NrmQuark	name;	/* name		*/
 	unsigned int	size;	/* size		*/
 #endif
 {
 
-    if (size == sizeof(float))	*(float *)dst = *(float*)&src.lngval;
-    else if (size == sizeof(double))	*(double *)dst = *(float*)&src.lngval;
-    else if (size == sizeof(char))	*(char *)dst = (char)src.lngval;
-    else if (size == sizeof(short))	*(short *)dst = (short)src.lngval;
-    else if (size == sizeof(int))	*(int *)dst = (int)src.lngval;
-    else if(size == sizeof(long))	*(long *)dst = src.lngval;
-    else if (size == sizeof(NhlPointer))
+	if(_NhlIsFloatRes(NrmQuarkToString(name))){
+		if (size == sizeof(float))
+			*(float *)dst = *(float*)&src.lngval;
+		else if (size == sizeof(double))
+			*(double *)dst = *(float*)&src.lngval;
+		else
+			memcpy((void*)dst,(void*)&src,size);
+		return;
+	}
+	if (size == sizeof(char))	*(char *)dst = (char)src.lngval;
+	else if (size == sizeof(short))	*(short *)dst = (short)src.lngval;
+	else if (size == sizeof(int))	*(int *)dst = (int)src.lngval;
+	else if(size == sizeof(long))	*(long *)dst = src.lngval;
+	else if (size == sizeof(NhlPointer))
 				*(NhlPointer *)dst = (NhlPointer)src.lngval;
-    else if (size == sizeof(NhlString))
+	else if (size == sizeof(NhlString))
 				*(NhlString *)dst = (NhlString)src.lngval;
-    else if (size == sizeof(_NhlArgVal))	*(_NhlArgVal *)dst = src;
-    else
-        memcpy((void*)dst,(void*)&src,size);
+	else if (size == sizeof(_NhlArgVal))	*(_NhlArgVal *)dst = src;
+	else memcpy((void*)dst,(void*)&src,size);
+
+	return;
 }
 
 /*
@@ -345,6 +355,7 @@ GetResources
 				else if(args[i].type == NrmNULLQUARK){
 					_NhlCopyFromArg(args[i].value,
 					(char*)(base + resources[j].nrm_offset),
+					resources[j].nrm_name,
 					resources[j].nrm_size);
 					resfound[j] = True;
 				}
