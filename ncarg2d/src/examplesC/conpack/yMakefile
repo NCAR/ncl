@@ -1,9 +1,7 @@
 #
-#	$Id: yMakefile,v 1.1 1994-05-13 16:28:17 haley Exp $
+#	$Id: yMakefile,v 1.2 1994-10-31 14:31:34 haley Exp $
 #
 
-CSRCS = c_colcon.c
+TUTOR = c_colcon.c
 
-GENERIC_SRCS = $(CSRCS)
-
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+InstallTarget($(TUTOR),$(INSTALL_LIB),$(TUTORIALPATH))
