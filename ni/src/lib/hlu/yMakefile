@@ -1,0 +1,62 @@
+#
+#      $Id: yMakefile,v 1.1 1993-04-30 17:26:55 boote Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1993				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		yMakefile
+#
+#	Author:		Jeff W. Boote
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Tue Apr 27 15:05:52 MDT 1993
+#
+#	Description:	yMakefile for ncarg/ni/src/lib/hlu
+
+NCARG	= ../../../..
+
+MYNAME		= libhlu.a
+
+CDEFINES	= 
+
+INCLUDES	= Base.h BaseP.h Convert.h ConvertP.h \
+		CoordApprox.h Error.h ErrorP.h IrregularTransObj.h \
+		IrregularTransObjP.h IrregularType2TransObj.h \
+		IrregularType2TransObjP.h LogLinTransObj.h LogLinTransObjP.h \
+		MapTransObj.h MapTransObjP.h MultiText.h MultiTextP.h \
+		NcgmWorkstation.h NcgmWorkstationP.h NresDB.h ResourcesP.h \
+		Segments.h TextItem.h TextItemP.h TickMark.h TickMarkP.h \
+		Title.h TitleP.h TransObj.h TransObjP.h Transform.h \
+		TransformP.h VarArg.h View.h ViewP.h Workstation.h \
+		WorkstationP.h XWorkstation.h XWorkstationP.h XyPlot.h \
+		XyPlotP.h defs.h hlu.h hluP.h
+
+SRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
+		Create.c Destroy.c Draw.c Error.c GetValues.c \
+		IrregularTransObj.c IrregularType2TransObj.c LogLinTransObj.c \
+		MapTransObj.c MultiText.c NcgmWorkstation.c NresDB.c Open.c \
+		Quarks.c Reparent.c Resources.c Segments.c SetValues.c \
+		SplineCoord.c TextItem.c TickMark.c Title.c Trans.c \
+		TransObj.c Transform.c VarArg.c View.c Workstation.c \
+		XWorkstation.c XyPlot.c hlu.c 
+
+OBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
+		Create.o Destroy.o Draw.o Error.o GetValues.o \
+		IrregularTransObj.o IrregularType2TransObj.o LogLinTransObj.o \
+		MapTransObj.o MultiText.o NcgmWorkstation.o NresDB.o Open.o \
+		Quarks.o Reparent.o Resources.o Segments.o SetValues.o \
+		SplineCoord.o TextItem.o TickMark.o Title.o Trans.o \
+		TransObj.o Transform.o VarArg.o View.o Workstation.o \
+		XWorkstation.o XyPlot.o hlu.o 
+
+InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(HLUINCPATH))
+
+Library($(MYNAME),$(OBJS))
+
+DependTarget($(SRCS))
