@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.67 1997-10-02 22:48:23 ethan Exp $
+ *      $Id: Machine.c,v 1.68 1998-01-30 23:52:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2352,6 +2352,11 @@ if(the_list != NULL) {
 * Value is a constant
 */
 					data.u.data_var->obj.status = TEMPORARY;
+/*
+* This is a problem since any parameter passed in as (/x,y,z.../) will pass through here. 
+* This only showed up as a problem when using the GUI but it appears it my cause memory
+* problems I'm not sure.
+*/
 					(void)_NclStripVarData(data.u.data_var);
 					_NclDestroyObj((NclObj)data.u.data_var);
 				}

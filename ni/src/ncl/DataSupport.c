@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.35 1997-10-02 20:54:09 ethan Exp $
+ *      $Id: DataSupport.c,v 1.36 1998-01-30 23:52:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -183,15 +183,17 @@ unsigned int type;
 			}
 			break;
 		}
-		while(cl != NULL) {
-			ret1 = (*(NclCallBack)cl->func)(call_data,cl->user_data);
-			if(ret1 < ret) {	
-				ret = ret1;
-			}
-			cl = cl->next;
-		}
 		if(call_data != NULL) {
-			NclFree(call_data);
+			while(cl != NULL) {
+				ret1 = (*(NclCallBack)cl->func)(call_data,cl->user_data);
+				if(ret1 < ret) {	
+					ret = ret1;
+				}
+				cl = cl->next;
+			}
+			if(call_data != NULL) {
+				NclFree(call_data);
+			}
 		}
 		return(ret);
 	} else {
