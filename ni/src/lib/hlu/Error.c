@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.14 1994-11-07 03:09:24 ethan Exp $
+ *      $Id: Error.c,v 1.15 1994-11-23 22:41:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -141,6 +141,14 @@ static NhlErrorTypes ErrorDestroy(
 #endif
 );
 
+static NhlErrorTypes ErrorGetValues(
+#if	NhlNeedProto
+	NhlLayer	/* l */,
+	_NhlArgList 	/* args */,
+	int		/* nargs */
+#endif
+);
+
 /* Class definition	*/
 
 NhlErrorLayerClassRec NhlerrorLayerClassRec = {
@@ -161,7 +169,7 @@ NhlErrorLayerClassRec NhlerrorLayerClassRec = {
 /* layer_initialize		*/	ErrorInitialize,
 /* layer_set_values		*/	ErrorSetValues,
 /* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	NULL,
+/* layer_get_values		*/	ErrorGetValues,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	ErrorDestroy,
 /* child_resources		*/	NULL,
@@ -1959,4 +1967,30 @@ void _NHLCALLF(nhl_fgerhnd,NHL_FGERHND)
 	c_seter(_NhlGKSERRMSG,_NhlGKSERRNUM,1);
 
 	return;
+}
+static NhlErrorTypes ErrorGetValues
+#if	NhlNeedProto
+(NhlLayer l, _NhlArgList args, int nargs)
+#else
+(l, args, nargs)
+NhlLayer l;
+_NhlArgList args;
+int nargs;
+#endif
+{
+	NhlErrorLayerPart *erp = &(((NhlErrorLayer)l)->error);
+	NrmQuark Qerrfile = NrmStringToQuark(NhlNerrFileName);
+	int i;
+
+	for(i = 0; i < nargs; i++) {
+		if(args[i].quark == Qerrfile) {	
+			if(erp->error_file != NULL) {
+			*((NhlString*)args[i].value.ptrval) = (NhlString)NhlMalloc(strlen(erp->error_file) +1);
+				strcpy(*((NhlString*)args[i].value.ptrval),erp->error_file);
+			} else {
+				*((NhlString*)args[i].value.ptrval) = NULL;
+			}
+		}
+	}
+	return(NhlNOERROR);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.8 1994-11-07 03:10:03 ethan Exp $
+ *      $Id: NcgmWorkstation.c,v 1.9 1994-11-23 22:41:49 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -72,6 +72,14 @@ static NhlErrorTypes NcgmWorkstationSetValues(
         NhlLayer,		/* new */
         _NhlArgList,	/* args */
         int		/* num_args*/
+#endif
+);
+
+static NhlErrorTypes NcgmWorkstationGetValues(
+#ifdef NhlNeedProto
+	NhlLayer, /*l */
+	_NhlArgList, /* args */
+	int	/*nargs*/
 #endif
 );
 
@@ -351,4 +359,38 @@ static NhlErrorTypes NcgmWorkstationOpen
 	gescape(-1391,&indat,NULL,&outdat);
 
 	return(NhlNOERROR);
+}
+static NhlErrorTypes NcgmWorkstationGetValues
+#if  __STDC__
+(NhlLayer l, _NhlArgList args, int nargs)
+#else
+(l, args, nargs)
+NhlLayer l;
+_NhlArgList args;
+int nargs;
+#endif
+{
+	int i = 0;
+	NrmQuark QMetaName = NrmStringToQuark(NhlNwkMetaName);
+	NhlNcgmWorkstationLayerPart * ncwk = & ((NhlNcgmWorkstationLayer)l)->ncgm;
+	char *e_text;
+
+	for(i = 0; i < nargs; i++) {
+		if(args[i].quark == QMetaName) {
+			if(ncwk->meta_name != NULL) {
+				*((NhlString*)(args[i].value.ptrval)) = NhlMalloc(strlen(ncwk->meta_name)+1);
+				if(*((NhlString*)(args[i].value.ptrval)) != NULL) {
+					strcpy(*((NhlString*)(args[i].value.ptrval)),ncwk->meta_name);
+				} else {
+					e_text = "%s: error copying String";
+					NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+						"NcgmWorkStationGetValues");
+					return NhlFATAL;
+				}
+			} else {
+				*((NhlString*)(args[i].value.ptrval)) = NULL;
+			}
+		}
+	}
+	return(NhlNOERROR); 
 }

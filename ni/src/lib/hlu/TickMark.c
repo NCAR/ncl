@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.21 1994-11-07 03:10:22 ethan Exp $
+ *      $Id: TickMark.c,v 1.22 1994-11-23 22:41:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -774,6 +774,15 @@ static NhlErrorTypes	TickMarkDraw(
 #endif
 );
 
+static NhlErrorTypes TickMarkGetValues(
+#ifdef NhlNeedProto
+        NhlLayer        l,
+        _NhlArgList     args,
+        int             nargs
+#endif
+
+);
+
 static void SetTop(
 #ifdef NhlNeedProto
 NhlTickMarkLayer 	/* tnew */
@@ -945,7 +954,7 @@ NhlTickMarkLayerClassRec NhltickMarkLayerClassRec = {
 /* layer_initialize	*/      TickMarkInitialize,
 /* layer_set_values	*/      TickMarkSetValues,
 /* layer_set_values_hook*/      NULL,
-/* layer_get_values	*/      NULL,
+/* layer_get_values	*/      TickMarkGetValues,
 /* layer_reparent	*/      NULL,
 /* layer_destroy	*/      TickMarkDestroy,
 
@@ -998,7 +1007,18 @@ _NHLCALLF(nhlftickmarkclass,NHLFTICKMARKCLASS)
 
 static NrmQuark Qfloat = NrmNULLQUARK;
 static NrmQuark Qstring = NrmNULLQUARK;
-
+static NrmQuark QXBIrregularPoints;
+static NrmQuark QXTIrregularPoints;
+static NrmQuark QYLIrregularPoints;
+static NrmQuark QYRIrregularPoints;
+static NrmQuark QXBValues;
+static NrmQuark QXTValues;
+static NrmQuark QYLValues;
+static NrmQuark QYRValues;
+static NrmQuark QXBLabels;
+static NrmQuark QXTLabels;
+static NrmQuark QYLLabels;
+static NrmQuark QYRLabels;
 /*
 * Function definitions
 */
@@ -1691,6 +1711,19 @@ static NhlErrorTypes	TickMarkClassInitialize
 
 	Qfloat = NrmStringToQuark(NhlTFloat);
 	Qstring = NrmStringToQuark(NhlTString);
+
+	QXBIrregularPoints = NrmStringToQuark(NhlNtmXBIrregularPoints);
+	QXTIrregularPoints = NrmStringToQuark(NhlNtmXTIrregularPoints);
+	QYLIrregularPoints = NrmStringToQuark(NhlNtmYLIrregularPoints);
+	QYRIrregularPoints = NrmStringToQuark(NhlNtmYRIrregularPoints);
+	QXBValues = NrmStringToQuark(NhlNtmXBValues);
+	QXTValues = NrmStringToQuark(NhlNtmXTValues);
+	QYLValues = NrmStringToQuark(NhlNtmYLValues);
+	QYRValues = NrmStringToQuark(NhlNtmYRValues);
+	QXBLabels = NrmStringToQuark(NhlNtmXBLabels);
+	QXTLabels = NrmStringToQuark(NhlNtmXTLabels);
+	QYLLabels = NrmStringToQuark(NhlNtmYLLabels);
+	QYRLabels = NrmStringToQuark(NhlNtmYRLabels);
 
 	return(NhlNOERROR);
 }
@@ -4237,7 +4270,7 @@ static NhlErrorTypes CheckExplicit
 				return NhlFATAL;
 			}
 		}
-	}
+	} 
 
 	if(free_xb_labels)
 		NhlFreeGenArray(told->tick.x_b_labels);
@@ -5338,8 +5371,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.x_b_tick_start,
                                         tnew->tick.x_b_tick_end,
                                         tnew->tick.x_b_precision,
-                                        tnew->tick.x_b_values->data,
-                                        tnew->tick.x_b_labels->data,
+                                        (tnew->tick.x_b_values == NULL ? NULL : tnew->tick.x_b_values->data),
+                                        (tnew->tick.x_b_labels == NULL ? NULL : tnew->tick.x_b_labels->data),
                                         &tnew->tick.x_b_nmajor,
 					tnew->tick.x_b_values->num_elements);
                                 break;
@@ -5424,8 +5457,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.x_t_tick_start,
                                         tnew->tick.x_t_tick_end,
                                         tnew->tick.x_t_precision,
-                                        tnew->tick.x_t_values->data,
-                                        tnew->tick.x_t_labels->data,
+                                        (tnew->tick.x_t_values == NULL ? NULL : tnew->tick.x_t_values->data),
+                                        (tnew->tick.x_t_labels == NULL ? NULL : tnew->tick.x_t_labels->data),
                                         &tnew->tick.x_t_nmajor,
 					tnew->tick.x_t_values->num_elements);
                                 break;
@@ -5510,8 +5543,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.y_l_tick_start,
                                         tnew->tick.y_l_tick_end,
                                         tnew->tick.y_l_precision,
-                                        tnew->tick.y_l_values->data,
-                                        tnew->tick.y_l_labels->data,
+                                        (tnew->tick.y_l_values == NULL ? NULL : tnew->tick.y_l_values->data),
+                                        (tnew->tick.y_l_labels == NULL ? NULL : tnew->tick.y_l_labels->data),
                                         &tnew->tick.y_l_nmajor,
 					tnew->tick.y_l_values->num_elements);
                                 break;
@@ -5594,8 +5627,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.y_r_tick_start,
                                         tnew->tick.y_r_tick_end,
                                         tnew->tick.y_r_precision,
-                                        tnew->tick.y_r_values->data,
-                                        tnew->tick.y_r_labels->data,
+                                        (tnew->tick.y_r_values == NULL ? NULL : tnew->tick.y_r_values->data),
+                                        (tnew->tick.y_r_labels == NULL ? NULL : tnew->tick.y_r_labels->data),
                                         &tnew->tick.y_r_nmajor,
 					tnew->tick.y_r_values->num_elements);
                                 break;
@@ -7714,4 +7747,73 @@ int num_args;
 
 	} 
 	return ret;
+}
+
+static NhlErrorTypes TickMarkGetValues
+#if     __STDC__ 
+(
+        NhlLayer        l,
+        _NhlArgList     args,
+        int             nargs
+)
+#else
+(l,args,nargs)
+        NhlLayer        l;
+        _NhlArgList     args;
+        int             nargs;
+#endif
+{
+
+	int i;
+	NhlGenArray ga;
+	NhlTickMarkLayerPart *tmp = &((NhlTickMarkLayer)l)->tick;
+	for(i = 0; i < nargs; i++) {
+		ga = NULL;
+		if(args[i].quark == QXBIrregularPoints) {
+			ga = tmp->x_b_irregular_points;
+		}
+		if(args[i].quark == QXTIrregularPoints) {
+			ga = tmp->x_t_irregular_points;
+		}
+		if(args[i].quark == QYLIrregularPoints) {
+			ga = tmp->y_l_irregular_points;
+		}
+		if(args[i].quark == QYRIrregularPoints) {
+			ga = tmp->y_r_irregular_points;
+		}
+		if(args[i].quark == QXBValues) {
+			ga = tmp->x_b_values;
+		}
+		if(args[i].quark == QXTValues) {
+			ga = tmp->x_t_values;
+		}
+		if(args[i].quark == QYLValues) {
+			ga = tmp->y_l_values;
+		}
+		if(args[i].quark == QYRValues) {
+			ga = tmp->y_r_values;
+		}
+		if(args[i].quark == QXBLabels) {
+			ga = tmp->x_b_labels;
+		}
+		if(args[i].quark == QXTLabels) {
+			ga = tmp->x_t_labels;
+		}
+		if(args[i].quark == QYLLabels) {
+			ga = tmp->y_l_labels;
+		}
+		if(args[i].quark == QYRLabels) {
+			ga = tmp->y_r_labels;
+		}
+
+		if(ga != NULL) {
+			*((NhlGenArray *)args[i].value.ptrval) = _NhlCopyGenArray(ga,True);
+			if(!*(NhlGenArray *)args[i].value.ptrval){
+                                NhlPError(NhlWARNING,ENOMEM,
+                                        "TickMarkGetValues:Unable to retrieve %s",
+                                        NrmQuarkToString(args[i].quark));
+                        }
+		}
+	}
+	return(NhlNOERROR);
 }

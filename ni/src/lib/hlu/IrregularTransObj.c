@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.10 1994-11-07 03:09:29 ethan Exp $
+ *      $Id: IrregularTransObj.c,v 1.11 1994-11-23 22:41:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -244,6 +244,14 @@ int     /* upordown */
 #endif
 );
 
+static NhlErrorTypes IrTransGetValues(
+#if  NhlNeedProto
+	NhlLayer /* l */,
+	_NhlArgList /*args */,
+	int /* nargs */
+#endif 
+);
+
 static NhlErrorTypes IrCompcLineTo(
 #if 	NhlNeedProto
 NhlLayer	/* instance */,
@@ -274,7 +282,7 @@ NhlIrregularTransObjLayerClassRec NhlirregularTransObjLayerClassRec = {
 /* layer_initialize		*/	IrTransInitialize,
 /* layer_set_values		*/	IrTransSetValues,
 /* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	NULL,
+/* layer_get_values		*/	IrTransGetValues,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NULL
         },
@@ -1204,4 +1212,66 @@ int upordown;
 
         }
 
+}
+static NhlErrorTypes IrTransGetValues
+#if  __STDC__
+(NhlLayer l, _NhlArgList args, int nargs)
+#else
+(l, args, nargs)
+NhlLayer l;
+_NhlArgList args;
+int nargs;
+#endif 
+{
+	NhlIrregularTransObjLayerPart *irp = (&((NhlIrregularTransObjLayer)l)->irtrans);
+	int i;
+	NrmQuark QtrXCoordPoints = NrmStringToQuark(NhlNtrXCoordPoints);
+	NrmQuark QtrXInterPoints = NrmStringToQuark(NhlNtrXInterPoints);
+	NrmQuark QtrYCoordPoints = NrmStringToQuark(NhlNtrYCoordPoints);
+	NrmQuark QtrYInterPoints = NrmStringToQuark(NhlNtrYInterPoints);
+
+	for(i = 0; i< nargs; i++) {
+		if(args[i].quark == QtrXCoordPoints ) {
+			if((irp->x_coord_points != NULL)&&(irp->x_num_points > 0)) {
+				*((float**)args[i].value.ptrval) = (float*) NhlMalloc(sizeof(float) * irp->x_num_points);
+				memcpy((void*)*((float**)args[i].value.ptrval),
+					(void*)irp->x_coord_points,
+					irp->x_num_points * sizeof(float));
+			} else {
+				*((float*)args[i].value.ptrval) = NULL;
+			}
+		} 
+		if(args[i].quark == QtrXInterPoints) {
+			if((irp->x_inter_points != NULL)&&(irp->x_num_points > 0)) {
+				*((float**)args[i].value.ptrval) = (float*) NhlMalloc(sizeof(float) * irp->x_num_points);
+				memcpy((void*)*((float**)args[i].value.ptrval),
+					(void*)irp->x_inter_points,
+					irp->x_num_points * sizeof(float));
+			} else {
+				*((float*)args[i].value.ptrval) = NULL;
+			}
+		} 
+		if(args[i].quark == QtrYCoordPoints ) {
+			if((irp->y_coord_points != NULL)&&(irp->y_num_points > 0)) {
+				*((float**)args[i].value.ptrval) = (float*) NhlMalloc(sizeof(float) * irp->y_num_points);
+				memcpy((void*)*((float**)args[i].value.ptrval),
+					(void*)irp->y_coord_points,
+					irp->y_num_points * sizeof(float));
+			} else {
+				*((float*)args[i].value.ptrval) = NULL;
+			}
+		} 
+		if(args[i].quark == QtrYInterPoints) {
+			if((irp->y_inter_points != NULL)&&(irp->y_num_points > 0)) {
+				*((float**)args[i].value.ptrval) = (float*) NhlMalloc(sizeof(float) * irp->y_num_points);
+				memcpy((void*)*((float**)args[i].value.ptrval),
+					(void*)irp->y_inter_points,
+					irp->y_num_points * sizeof(float));
+			} else {
+				*((float*)args[i].value.ptrval) = NULL;
+			}
+		} 
+	}
+	return(NhlNOERROR);
+	
 }
