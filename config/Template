@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.7 1993-10-21 17:21:43 haley Exp $
+ *      $Id: Template,v 1.8 1993-10-21 18:45:54 haley Exp $
  */
 /************************************************************************
 *									*
@@ -131,12 +131,6 @@
 #define SystemIncludes		"SystemV"
 #define SystemIncludesName	SystemV
 #define	SystemVArch
-#endif
-
-#if defined(OSF1) && defined(alpha)
-#define SystemIncludes		"AlphaOSF1"
-#define SystemIncludesName	AlphaOSF1
-#define	AlphaOSF1Arch
 #endif
 
 SYSTEM_INCLUDE		= SystemIncludesName
