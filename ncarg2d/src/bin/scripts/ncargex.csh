@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.96 1996-04-17 23:30:24 haley Exp $
+#   $Id: ncargex.csh,v 1.97 1996-08-30 14:20:50 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -148,7 +148,6 @@ set cbivar_cex   = (c_cbex01)
 set cbivar_clist = ($cbivar_cex)
 
 set f_list = ($f_list $cbivar_flist)
-set c_list = ($c_list $cbivar_clist)
 
 #************************#
 #                        #
