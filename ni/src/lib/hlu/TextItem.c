@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.23 1995-03-15 11:48:39 boote Exp $
+ *      $Id: TextItem.c,v 1.24 1995-03-17 00:45:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -102,7 +102,7 @@ static NhlResource resources[] = {
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.just_set),
 			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
-	{ NhlNtxJust, NhlCtxJust, NhlTInteger, sizeof(int),
+	{ NhlNtxJust, NhlCtxJust, NhlTJustification, sizeof(int),
 		NhlOffset(NhlTextItemLayerRec, text.just),
 		NhlTProcedure,_NhlUSET((NhlPointer)ResUnset),0,NULL},
 	{ NhlNtxFontQuality, NhlCtxFontQuality, NhlTFontQuality, 
