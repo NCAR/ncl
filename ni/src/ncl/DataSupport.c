@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.40 2000-08-25 21:30:11 ethan Exp $
+ *      $Id: DataSupport.c,v 1.41 2001-01-05 22:47:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -802,17 +802,67 @@ NclBasicDataTypes totype;
 			return(0);
 		}
 	case NCL_char:
-	case NCL_byte:
 		switch(totype) {
 		case NCL_byte:
+			*(byte*) to = *(char*)from;
+			return(1);
 		case NCL_char:
 			*(char*) to = *(char*)from;
+			return(1);
+		case NCL_float:
+			*(float*) to = *(char*)from;
+			return(1);
+		case NCL_double:
+			*(double*) to = *(char*)from;
+			return(1);
+		case NCL_long:
+			*(long*) to = *(char*)from;
+			return(1);
+		case NCL_logical:
+			*(logical*) to = *(char*)from;
+			return(1);
+		case NCL_short:
+			*(short*) to = *(char*)from;
 			return(1);
 		case NCL_int:
 			*(int*) to = *(char*)from;
 			return(1);
 		case NCL_string:
 			buffer[0] = *(char*)from;
+			buffer[1] = '\0';
+			*(string*)to = NrmStringToQuark(buffer);
+			return(1);
+		default:
+			return(0);
+		}
+	case NCL_byte:
+		switch(totype) {
+		case NCL_byte:
+			*(byte*) to = *(byte*)from;
+			return(1);
+		case NCL_char:
+			*(char*) to = *(byte*)from;
+			return(1);
+		case NCL_float:
+			*(float*) to = *(byte*)from;
+			return(1);
+		case NCL_double:
+			*(double*) to = *(byte*)from;
+			return(1);
+		case NCL_long:
+			*(long*) to = *(byte*)from;
+			return(1);
+		case NCL_logical:
+			*(logical*) to = *(byte*)from;
+			return(1);
+		case NCL_short:
+			*(short*) to = *(byte*)from;
+			return(1);
+		case NCL_int:
+			*(int*) to = *(byte*)from;
+			return(1);
+		case NCL_string:
+			buffer[0] = *(byte*)from;
 			buffer[1] = '\0';
 			*(string*)to = NrmStringToQuark(buffer);
 			return(1);
