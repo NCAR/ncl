@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.25 2003-05-12 23:37:42 dbrown Exp $
+ *      $Id: VarSupport.c,v 1.26 2003-05-31 00:49:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1332,7 +1332,7 @@ struct _NclVarRec* self;
 			break;
 		}
 		if(thevalue->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
-			ret0 = _NclPrint(thevalue,fp);
+			ret0 = _NclPrint((NclObj)thevalue,fp);
 		} else {
 			if(thevalue != NULL) 
 				ret = nclfprintf(fp,"Type: %s\n",_NclBasicDataTypeToName(thevalue->multidval.data_type));

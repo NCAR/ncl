@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDVallistData.c,v 1.4 2002-09-26 22:14:40 haley Exp $
+ *      $Id: NclMultiDVallistData.c,v 1.5 2003-05-31 00:49:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -49,7 +49,7 @@ FILE *fp;
 	NhlErrorTypes ret;
 	
 
-	tmp_list = _NclGetObj(*(obj*)self_md->multidval.val);
+	tmp_list = (NclList) _NclGetObj(*(obj*)self_md->multidval.val);
 
 	step = tmp_list->list.first;
 	

@@ -3583,3 +3583,638 @@ NhlErrorTypes _NclINhlPalGetDefined
                 0
         );
 }
+
+NhlErrorTypes _NclISetDashPattern
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int nargs = 3;
+	int n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing,has_missing0,has_missing1,has_missing2;
+        int size0=1,size1=1,size2=1;
+	NclScalar missing0;
+	NclScalar missing1;
+	NclScalar missing2;
+	NclBasicDataTypes type;
+	int nwks;
+        int i,j=0;
+	NclHLUObj tmp_wks;
+	NclScalar missing;
+	obj *wks_obj_ids;
+	int *dash_indexes;
+	string *dash_patterns;
+	NhlErrorTypes subret,ret = NhlNOERROR;
+	
+
+	wks_obj_ids = (obj*)NclGetArgValue(
+			0,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing0,
+			&has_missing0,
+			NULL,
+			0);
+	size0 = dimsizes[0];
+
+	dash_indexes = (int*)NclGetArgValue(
+			1,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing1,
+			&has_missing1,
+			NULL,
+			0);
+	size1 = dimsizes[0];
+
+	dash_patterns = (string*)NclGetArgValue(
+			2,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing2,
+			&has_missing2,
+			NULL,
+			0);
+	size2 = dimsizes[0];
+
+	nwks = 0;
+	for (i = 0; i < size0; i++) {
+		if (has_missing0 && wks_obj_ids[i] == missing0.objval)
+			continue;
+		tmp_wks = (NclHLUObj)_NclGetObj(wks_obj_ids[i]);
+		if (tmp_wks == NULL)
+			continue;
+		nwks++;
+		for( j = 0; j < size1; j++) {
+			if (has_missing1 && (dash_indexes[j] == missing1.intval))
+				continue;
+			if (j < size2 && (! has_missing2 || (dash_patterns[j] != missing2.stringval))) {
+				subret = NhlSetDashPattern(tmp_wks->hlu.hlu_id,
+							   dash_indexes[j],NrmQuarkToString(dash_patterns[j]));
+			}
+			else {
+				subret = NhlSetDashPattern(tmp_wks->hlu.hlu_id,dash_indexes[j],"");
+			}
+			ret = MIN(ret,subret);
+			if (ret < NhlWARNING) {
+				return ret;
+			}
+		}
+	}
+	if (nwks == 0) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclISetDashPattern: No valid workstation");
+		return(NhlWARNING);
+	}
+	return(ret);
+}
+
+NhlErrorTypes _NclINewDashPattern
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int nargs = 2;
+	int n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing,has_missing0,has_missing1;
+        int size0=1,size1=1;
+	NclScalar missing0;
+	NclScalar missing1;
+	NclBasicDataTypes type;
+	int nwks;
+        int i,j=0;
+	NclHLUObj tmp_wks;
+	NclScalar missing;
+	obj *wks_obj_ids;
+	string *dash_patterns;
+	NhlErrorTypes subret,ret = NhlNOERROR;
+	int *indexes = NULL;
+
+	wks_obj_ids = (obj*)NclGetArgValue(
+			0,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing0,
+			&has_missing0,
+			NULL,
+			0);
+	size0 = dimsizes[0];
+
+	dash_patterns = (string*)NclGetArgValue(
+			1,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing1,
+			&has_missing1,
+			NULL,
+			0);
+	size1 = dimsizes[0];
+
+	indexes = (int *)NclMalloc(size0 * size1 * sizeof(int));
+
+	nwks = 0;
+	for (i = 0; i < size0; i++) {
+		int wks_is_missing = 0;
+		if (has_missing0 && wks_obj_ids[i] == missing0.objval) {
+			wks_is_missing = 1;
+		}
+		else { 
+			tmp_wks = (NclHLUObj)_NclGetObj(wks_obj_ids[i]);
+			if (tmp_wks == NULL || ! NhlIsWorkstation(tmp_wks->hlu.hlu_id)) {
+				wks_is_missing = 1;
+			}
+			else {
+				nwks++;
+			}
+		}
+		for( j = 0; j < size1; j++) {
+			int *index = indexes + i * size0 + j;
+			if (wks_is_missing) {
+				*index = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+				continue;
+			}
+			if (has_missing1 && (dash_patterns[j] == missing1.stringval)) {
+				*index = NhlNewDashPattern(tmp_wks->hlu.hlu_id,"");
+			}
+			else {
+				*index = NhlNewDashPattern(tmp_wks->hlu.hlu_id,NrmQuarkToString(dash_patterns[j]));
+			}
+			if (*index < 0) {
+				subret = (NhlErrorTypes) *index;
+				*index = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			}
+			ret = MIN(ret,subret);
+			if (ret < NhlWARNING) {
+				return ret;
+			}
+		}
+	}
+	if (nwks == 0) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclINewDashPattern: No valid workstation");
+		ret = MIN(ret,NhlWARNING);
+	}
+	n_dims = 1;
+	if (size0 > 1 && size1 > 1) {
+		n_dims = 2;
+		dimsizes[0] = size0;
+		dimsizes[1] = size1;
+	}
+	else if (size0 > 1) {
+		dimsizes[0] = size0;
+	}
+	else if (size1 > 1) {
+		dimsizes[0] = size1;
+	}
+	else {
+		dimsizes[0] = 1;
+	}
+	
+	subret = NclReturnValue (
+		(void*)indexes,
+                n_dims,
+                dimsizes,
+                &(((NclTypeClass)nclTypeintClass)->type_class.default_mis),
+		NCL_int,
+		0
+                );
+
+	return(MIN(ret,subret));
+}
+
+NhlErrorTypes _NclISetMarker
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int nargs = 8;
+	int n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing,has_missing0,has_missing1,has_missing2,has_missing3,
+		has_missing4,has_missing5,has_missing6,has_missing7;
+	NclScalar missing0;
+	NclScalar missing1;
+	NclScalar missing2;
+	NclScalar missing3;
+	NclScalar missing4;
+	NclScalar missing5;
+	NclScalar missing6;
+	NclScalar missing7;
+	NclBasicDataTypes type;
+        int size0,size1,size2,size3,size4,size5,size6,size7;
+	int nwks;
+        int i,j=0;
+	NclHLUObj tmp_wks;
+	NclScalar missing;
+	obj *wks_obj_ids;
+	int *marker_indexes;
+	string *marker_strings;
+	float *m_x_off;
+	float *m_y_off;
+	float *m_aspect_adj;
+	float *m_size_adj;
+	float *m_angle;
+	NhlErrorTypes subret,ret = NhlNOERROR;
+	
+	wks_obj_ids = (obj*)NclGetArgValue(
+			0,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing0,
+			&has_missing0,
+			NULL,
+			0);
+	size0 = dimsizes[0];
+
+	marker_indexes = (int*)NclGetArgValue(
+			1,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing1,
+			&has_missing1,
+			NULL,
+			0);
+	size1 = dimsizes[0];
+
+	marker_strings = (string*)NclGetArgValue(
+			2,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing2,
+			&has_missing2,
+			NULL,
+			0);
+	size2 = dimsizes[0];
+
+	m_x_off = (float*)NclGetArgValue(
+			3,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing3,
+			&has_missing3,
+			NULL,
+			0);
+	size3 = dimsizes[0];
+
+	m_y_off = (float*)NclGetArgValue(
+			4,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing4,
+			&has_missing4,
+			NULL,
+			0);
+	size4 = dimsizes[0];
+
+	m_aspect_adj = (float*)NclGetArgValue(
+			5,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing5,
+			&has_missing5,
+			NULL,
+			0);
+	size5 = dimsizes[0];
+
+	m_size_adj = (float*)NclGetArgValue(
+			6,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing6,
+			&has_missing6,
+			NULL,
+			0);
+	size6 = dimsizes[0];
+
+	m_angle = (float*)NclGetArgValue(
+			7,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing7,
+			&has_missing7,
+			NULL,
+			0);
+	size7 = dimsizes[0];
+
+	nwks = 0;
+	for (i = 0; i < size0; i++) {
+		if (has_missing0 && wks_obj_ids[i] == missing0.objval)
+			continue;
+		tmp_wks = (NclHLUObj)_NclGetObj(wks_obj_ids[i]);
+		if (tmp_wks == NULL)
+			continue;
+		nwks++;
+		for( j = 0; j < size1; j++) {
+			float x_off,y_off,aspect_adj,size_adj,angle;
+			string marker_string;
+
+			if (has_missing1 && (marker_indexes[j] == missing1.intval))
+				continue;
+
+			/* 
+			 * If the marker_string is scalar it is used for all markers, otherwise if not
+			 * available the default marker is used.
+			 * Parameters that are scalar apply to all markers, otherwise if not available
+			 * default values are used.
+			 */
+
+			if (size2 == 1 && ! (marker_strings[0] == missing2.stringval)) {
+				marker_string = marker_strings[0];
+			}
+			else if (j >= size2 || (has_missing2 && (marker_strings[j] == missing2.stringval))) {
+				subret = NhlSetMarker(tmp_wks->hlu.hlu_id,marker_indexes[j],"",0.0,0.0,0.0,0.0,0.0);
+				continue;
+			}
+			else {
+				marker_string = marker_strings[j];
+			}
+
+			if (size3 == 1 && !(has_missing3 && (m_x_off[0] == missing3.floatval))) {
+				x_off = m_x_off[0];
+			}
+			else {
+				x_off = (j >= size3 || (has_missing3 && (m_x_off[j] == missing3.floatval))) ?
+					0.0 : m_x_off[j];
+			}
+			if (size4 == 1 && ! (has_missing4 && (m_y_off[0] == missing4.floatval))) {
+				y_off = m_y_off[0];
+			}
+			else {
+				y_off = (j >= size4 || (has_missing4 && (m_y_off[j] == missing4.floatval))) ?
+					0.0 : m_y_off[j];
+			}
+			if (size5 == 1 && ! (has_missing5 && (m_aspect_adj[0] == missing5.floatval))) {
+				aspect_adj = m_aspect_adj[0];
+			}
+			else {
+				aspect_adj = (j >= size5 || (has_missing5 && (m_aspect_adj[j] == missing5.floatval))) ?
+					0.0 : m_aspect_adj[j];
+			}
+			if (size6 == 1 && ! (has_missing6 && (m_size_adj[0] == missing6.floatval))) {
+				size_adj = m_size_adj[0];
+			}
+			else {
+				size_adj = (j >= size6 || (has_missing6 && (m_size_adj[j] == missing6.floatval))) ?
+					0.0 : m_size_adj[j];
+			}
+			if (size7 == 1 && ! (has_missing7 && (m_angle[0] == missing7.floatval))) {
+				angle = m_angle[0];
+			}
+			else {
+				angle = (j >= size7 || (has_missing7 && (m_angle[j] == missing7.floatval))) ?
+					0.0 : m_angle[j];
+			}
+			subret = NhlSetMarker(tmp_wks->hlu.hlu_id,marker_indexes[j],NrmQuarkToString(marker_string),
+					      x_off,y_off,aspect_adj,size_adj,angle);
+			ret = MIN(ret,subret);
+			if (ret < NhlWARNING) {
+				return ret;
+			}
+		}
+	}
+	if (nwks == 0) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclISetMarker: No valid workstation");
+		return(NhlWARNING);
+	}
+	return(ret);
+}
+
+NhlErrorTypes _NclINewMarker
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int nargs = 7;
+	int n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing,has_missing0,has_missing1,has_missing2,has_missing3,
+		has_missing4,has_missing5,has_missing6;
+	NclScalar missing0;
+	NclScalar missing1;
+	NclScalar missing2;
+	NclScalar missing3;
+	NclScalar missing4;
+	NclScalar missing5;
+	NclScalar missing6;
+	NclBasicDataTypes type;
+        int size0,size1,size2,size3,size4,size5,size6;
+	int nwks;
+        int i,j=0;
+	NclHLUObj tmp_wks;
+	NclScalar missing;
+	obj *wks_obj_ids;
+	string *marker_strings;
+	float *m_x_off;
+	float *m_y_off;
+	float *m_aspect_adj;
+	float *m_size_adj;
+	float *m_angle;
+	NhlErrorTypes subret,ret = NhlNOERROR;
+	int *indexes = NULL;
+
+	wks_obj_ids = (obj*)NclGetArgValue(
+			0,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing0,
+			&has_missing0,
+			NULL,
+			0);
+	size0 = dimsizes[0];
+
+	marker_strings = (string*)NclGetArgValue(
+			1,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing1,
+			&has_missing1,
+			NULL,
+			0);
+	size1 = dimsizes[0];
+
+	m_x_off = (float*)NclGetArgValue(
+			2,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing2,
+			&has_missing2,
+			NULL,
+			0);
+	size2 = dimsizes[0];
+
+	m_y_off = (float*)NclGetArgValue(
+			3,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing3,
+			&has_missing3,
+			NULL,
+			0);
+	size3 = dimsizes[0];
+
+	m_aspect_adj = (float*)NclGetArgValue(
+			4,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing4,
+			&has_missing4,
+			NULL,
+			0);
+	size4 = dimsizes[0];
+
+	m_size_adj = (float*)NclGetArgValue(
+			5,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing5,
+			&has_missing5,
+			NULL,
+			0);
+	size5 = dimsizes[0];
+
+	m_angle = (float*)NclGetArgValue(
+			6,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing6,
+			&has_missing6,
+			NULL,
+			0);
+	size6 = dimsizes[0];
+
+	indexes = (int *)NclMalloc(size0 * size1 * sizeof(int));
+
+	nwks = 0;
+	for (i = 0; i < size0; i++) {
+		int wks_is_missing = 0;
+		if (has_missing0 && wks_obj_ids[i] == missing0.objval) {
+			wks_is_missing = 1;
+		}
+		else { 
+			tmp_wks = (NclHLUObj)_NclGetObj(wks_obj_ids[i]);
+			if (tmp_wks == NULL || ! NhlIsWorkstation(tmp_wks->hlu.hlu_id)) {
+				wks_is_missing = 1;
+			}
+			else {
+				nwks++;
+			}
+		}
+		for( j = 0; j < size1; j++) {
+			int *index = indexes + i * size0 + j;
+			if (wks_is_missing) {
+				*index = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+				continue;
+			}
+			if (has_missing1 && (marker_strings[j] == missing1.stringval)) {
+				*index = NhlNewMarker(tmp_wks->hlu.hlu_id,"",0.0,0.0,0.0,0.0,0.0);
+			}
+			else {
+				float x_off,y_off,aspect_adj,size_adj,angle;
+
+				/* 
+				 * Parameters that are scalar apply to all markers, otherwise if not available
+				 * default values are used.
+				 */
+
+				if (size2 == 1 && !(has_missing2 && (m_x_off[0] == missing2.floatval))) {
+					x_off = m_x_off[0];
+				}
+				else {
+					x_off = (j >= size2 || (has_missing2 && (m_x_off[j] == missing2.floatval))) ?
+						0.0 : m_x_off[j];
+				}
+				if (size3 == 1 && ! (has_missing3 && (m_y_off[0] == missing3.floatval))) {
+					y_off = m_y_off[0];
+				}
+				else {
+					y_off = (j >= size3 || (has_missing3 && (m_y_off[j] == missing3.floatval))) ?
+						0.0 : m_y_off[j];
+				}
+				if (size4 == 1 && ! (has_missing4 && (m_aspect_adj[0] == missing4.floatval))) {
+					aspect_adj = m_aspect_adj[0];
+				}
+				else {
+					aspect_adj = (j >= size4 || (has_missing4 && (m_aspect_adj[j] == missing4.floatval))) ?
+						0.0 : m_aspect_adj[j];
+				}
+				if (size5 == 1 && ! (has_missing5 && (m_size_adj[0] == missing5.floatval))) {
+					size_adj = m_size_adj[0];
+				}
+				else {
+					size_adj = (j >= size5 || (has_missing5 && (m_size_adj[j] == missing5.floatval))) ?
+						0.0 : m_size_adj[j];
+				}
+				if (size6 == 1 && ! (has_missing6 && (m_angle[0] == missing6.floatval))) {
+					angle = m_angle[0];
+				}
+				else {
+					angle = (j >= size6 || (has_missing6 && (m_angle[j] == missing6.floatval))) ?
+						0.0 : m_angle[j];
+				}
+				*index = NhlNewMarker(tmp_wks->hlu.hlu_id,NrmQuarkToString(marker_strings[j]),
+						      x_off,y_off,aspect_adj,size_adj,angle);
+			}
+			if (*index < 0) {
+				subret = (NhlErrorTypes) *index;
+				*index = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			}
+			ret = MIN(ret,subret);
+			if (ret < NhlWARNING) {
+				return ret;
+			}
+		}
+	}
+	if (nwks == 0) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclINewMarker: No valid workstation");
+		ret = MIN(ret,NhlWARNING);
+	}
+	n_dims = 1;
+	if (size0 > 1 && size1 > 1) {
+		n_dims = 2;
+		dimsizes[0] = size0;
+		dimsizes[1] = size1;
+	}
+	else if (size0 > 1) {
+		dimsizes[0] = size0;
+	}
+	else if (size1 > 1) {
+		dimsizes[0] = size1;
+	}
+	else {
+		dimsizes[0] = 1;
+	}
+	subret = NclReturnValue (
+		(void*)indexes,
+                n_dims,
+                dimsizes,
+                &(((NclTypeClass)nclTypeintClass)->type_class.default_mis),
+		NCL_int,
+		0
+                );
+
+	return(MIN(ret,subret));
+}

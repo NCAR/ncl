@@ -123,4 +123,28 @@ void
 #endif
 );
 
+extern NhlErrorTypes _NclINewDashPattern(
+#if	NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclISetDashPattern(
+#if	NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclINewMarker(
+#if	NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclISetMarker(
+#if	NhlNeedProto
+void
+#endif
+);
+
 #endif /*_NCHLUFunctions_h*/

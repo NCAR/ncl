@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.67 2003-05-21 18:38:35 haley Exp $
+ *      $Id: AddBuiltIns.c,v 1.68 2003-05-31 00:49:40 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -704,88 +704,88 @@ void _NclAddBuiltIns
 	int nargs = 0;
 
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclsinh,args,"sinh",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclcosh,args,"cosh",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Ncltanh,args,"tanh",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclsin,args,"sin",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclcos,args,"cos",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Ncltan,args,"tan",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclasin,args,"asin",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclacos,args,"acos",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclatan,args,"atan",nargs);
 
 	nargs = 0;
 	args = NewArgs(2);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
-	SetArgTemplate(args,1,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclatan2,args,"atan2",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclceil,args,"ceil",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclfloor,args,"floor",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclfabs,args,"fabs",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Ncllog,args,"log",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclexp,args,"exp",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Ncllog10,args,"log10",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclsqrt,args,"sqrt",nargs);
 
 	nargs = 0;
@@ -812,7 +812,7 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(2);
 	dimsizes[0] = 1;
-	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"graphic",0,NclANY);nargs++;
 	SetArgTemplate(args,1,"graphic",1,dimsizes);nargs++;
 	NclRegisterProc(_NclIChangeWorkstation,args,"NhlChangeWorkstation",nargs);
 	nargs = 0;
@@ -967,265 +967,300 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,0,"graphic",1,dimsizes);nargs++;
 	SetArgTemplate(args,1,"graphic",1,NclANY);nargs++;
 	NclRegisterProc(_NclIRemovePrimitive,args,"NhlRemovePrimitive",nargs);
-	
+
+	nargs = 0;
+	args = NewArgs(3);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"integer",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"string",1,NclANY);nargs++;
+	NclRegisterProc(_NclISetDashPattern,args,"NhlSetDashPattern",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	NclRegisterFunc(_NclINewDashPattern,args,"NhlNewDashPattern",nargs);
+
+	nargs = 0;
+	args = NewArgs(8);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"integer",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,4,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,5,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,6,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,7,"float",1,NclANY);nargs++;
+	NclRegisterProc(_NclISetMarker,args,"NhlSetMarker",nargs);
+
+	nargs = 0;
+	args = NewArgs(7);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,4,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,5,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,6,"float",1,NclANY);nargs++;
+	NclRegisterFunc(_NclINewMarker,args,"NhlNewMarker",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIinttobyte,args,"integertobyte",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIinttobyte,args,"inttobyte",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIinttochar,args,"integertocharacter",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIinttochar,args,"integertochar",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIinttochar,args,"inttochar",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIinttoshort,args,"integertoshort",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIinttoshort,args,"inttoshort",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"short",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"short",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIshorttobyte,args,"shorttobyte",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"short",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"short",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIshorttochar,args,"shorttocharacter",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"short",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"short",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIshorttochar,args,"shorttochar",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"long",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"long",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIlongtobyte,args,"longtobyte",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"long",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"long",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIlongtochar,args,"longtocharacter",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"long",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"long",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIlongtochar,args,"longtochar",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"long",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"long",0,NclANY);nargs++;
 	NclRegisterFunc(_NclIlongtoshort,args,"longtoshort",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"long",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"long",0,NclANY);nargs++;
 	NclRegisterFunc(_NclIlongtoint,args,"longtointeger",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"long",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"long",0,NclANY);nargs++;
 	NclRegisterFunc(_NclIlongtoint,args,"longtoint",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIfloattobyte,args,"floattobyte",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIfloattochar,args,"floattocharacter",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIfloattochar,args,"floattochar",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIfloattoshort,args,"floattoshort",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIfloattoint,args,"floattointeger",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIfloattoint,args,"floattoint",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIfloattolong,args,"floattolong",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"double",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIdoubletobyte,args,"doubletobyte",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"double",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIdoubletochar,args,"doubletocharacter",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"double",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIdoubletochar,args,"doubletochar",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"double",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIdoubletoshort,args,"doubletoshort",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"double",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIdoubletoint,args,"doubletointeger",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"double",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIdoubletoint,args,"doubletoint",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"double",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIdoubletolong,args,"doubletolong",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"double",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIdoubletofloat,args,"doubletofloat",nargs);
 
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"character",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartodouble,args,"charactertodouble",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"character",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartodouble,args,"chartodouble",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"character",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartofloat,args,"charactertofloat",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"character",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartofloat,args,"chartofloat",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"character",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartolong,args,"charactertolong",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"character",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartolong,args,"chartolong",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"character",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartoshort,args,"charactertoshort",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"character",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartoshort,args,"chartoshort",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"character",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartoint,args,"charactertointeger",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"character",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartoint,args,"chartointeger",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"character",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartoint,args,"chartoint",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"character",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartostring,args,"charactertostring",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"character",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartostring,args,"chartostring",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIstringtoshort,args,"stringtoshort",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIstringtodouble,args,"stringtodouble",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIstringtolong,args,"stringtolong",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIstringtointeger,args,"stringtoint",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIstringtointeger,args,"stringtointeger",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIstringtofloat,args,"stringtofloat",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIstringtochar,args,"stringtocharacter",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIstringtochar,args,"stringtochar",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsVar,args,"isvar",nargs);
 
 	nargs = 0;
 	args = NewArgs(2);
 	dimsizes[0] = 1;
 	SetArgTemplate(args,nargs,"file",1,dimsizes); nargs++;
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsFileVar,args,"isfilevar",nargs);
 
 	nargs = 0;
 	args = NewArgs(2);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsCoord,args,"iscoord",nargs);
 
 	nargs = 0;
 	args = NewArgs(2);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsAtt,args,"isatt",nargs);
 
     nargs = 0;
@@ -1240,7 +1275,7 @@ void _NclAddBuiltIns
 	dimsizes[0] = 1;
 	SetArgTemplate(args,nargs,"file",1,dimsizes); nargs++;
 	SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsFileVarDim,args,"isfilevardim",nargs);
 
 	nargs = 0;
@@ -1248,7 +1283,7 @@ void _NclAddBuiltIns
 	dimsizes[0] = 1;
 	SetArgTemplate(args,nargs,"file",1,dimsizes); nargs++;
 	SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsFileVarCoord,args,"isfilevarcoord",nargs);
 
 	nargs = 0;
@@ -1256,59 +1291,59 @@ void _NclAddBuiltIns
 	dimsizes[0] = 1;
 	SetArgTemplate(args,nargs,"file",1,dimsizes); nargs++;
 	SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsFileVarAtt,args,"isfilevaratt",nargs);
 	
 	nargs = 0;
 	args = NewArgs(2);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsDim,args,"isdim",nargs);
 
 	nargs = 0;
 	args = NewArgs(2);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
-	SetArgTemplate(args,nargs,"integer",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"integer",0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsDimNamed,args,"isdimnamed",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
 	NclRegisterFunc( _Nclproduct,args,"product",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
 	NclRegisterFunc( _Ncldim_product,args,"dim_product",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
 	NclRegisterFunc( _Ncldim_sum,args,"dim_sum",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
 	NclRegisterFunc( _Nclsum,args,"sum",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
 	NclRegisterFunc( _Nclavg,args,"avg",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
 	NclRegisterFunc( _Ncldim_avg,args,"dim_avg",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _Nclndto1d,args,"ndtooned",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"logical",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"logical",0,NclANY); nargs++;
 	NclRegisterFunc( _Nclnum,args,"num",nargs);
 
 	nargs = 0;
@@ -1318,7 +1353,7 @@ void _NclAddBuiltIns
 
 	nargs = 0;
 	args = NewArgs(2);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
 	NclRegisterFunc( _Ncl1dtond,args,"onedtond",nargs);
 
@@ -1341,8 +1376,8 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(3);
 	dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	SetArgTemplate(args,nargs,NclANY,1,dimsizes); nargs++;
 	NclRegisterFunc( _Nclmask,args,"mask",nargs);
 
@@ -1358,22 +1393,22 @@ void _NclAddBuiltIns
 	nargs = 0;
 
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
 	NclRegisterFunc( _Nclmax,args,"max",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
 	NclRegisterFunc( _Nclmin,args,"min",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
 	NclRegisterFunc( _Ncldim_max,args,"dim_max",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
 	NclRegisterFunc( _Ncldim_min,args,"dim_min",nargs);
 
 	nargs = 0;
@@ -1381,123 +1416,123 @@ void _NclAddBuiltIns
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsFunc,args,"isfunc",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsProc,args,"isproc",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsDefined,args,"isdefined",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsInteger,args,"isinteger",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsByte,args,"isbyte",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsShort,args,"isshort",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsLong,args,"islong",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsFloat,args,"isfloat",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsDouble,args,"isdouble",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsString,args,"isstring",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsChar,args,"ischar",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsNumeric,args,"isnumeric",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsFile,args,"isfile",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsGraphic,args,"isgraphic",nargs);
 	
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsLogical,args,"islogical",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclITypeOf,args,"typeof",nargs);
 
 	nargs = 0;
 	args = NewArgs(2);
 	dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"file",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"file",0,NclANY); nargs++;
 	SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
 	NclRegisterFunc( _NclIFileVarTypeOf,args,"filevartypeof",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"string",0,NclANY); nargs++;
 	NclRegisterProc( _NclIUnDef,args,"undef",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"graphic",0,NclANY);nargs++;
 	NclRegisterFunc(_NclINhlIsApp,args,"NhlIsApp",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"graphic",0,NclANY);nargs++;
 	NclRegisterFunc(_NclINhlIsDataComm,args,"NhlIsDataComm",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"graphic",0,NclANY);nargs++;
 	NclRegisterFunc(_NclINhlIsDataItem,args,"NhlIsDataItem",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"graphic",0,NclANY);nargs++;
 	NclRegisterFunc(_NclINhlIsDataSpec,args,"NhlIsDataSpec",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"graphic",0,NclANY);nargs++;
 	NclRegisterFunc(_NclINhlIsTransform,args,"NhlIsTransform",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"graphic",0,NclANY);nargs++;
 	NclRegisterFunc(_NclINhlIsView,args,"NhlIsView",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"graphic",0,NclANY);nargs++;
 	NclRegisterFunc(_NclINhlIsWorkstation,args,"NhlIsWorkstation",nargs);
 
 	nargs = 0;
@@ -1507,22 +1542,22 @@ void _NclAddBuiltIns
 	NclRegisterFunc(_NclIgaus,args,"gaus",nargs);
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_NclIvariance,args,"variance",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_NclIdim_variance,args,"dim_variance",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_NclIstddev,args,"stddev",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_NclIdim_stddev,args,"dim_stddev",nargs);
 
 	nargs = 0;
@@ -1533,38 +1568,38 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(1);
 	dimsizes[0] = 1;
-	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,NclANY,0,NclANY);nargs++;
 	NclRegisterFunc(_NclIGetVarDims,args,"getvardims",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
 	dimsizes[0] = 1;
-	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,NclANY,0,NclANY);nargs++;
 	NclRegisterFunc(_NclIGetVarAtts,args,"getvaratts",nargs);
 
 	nargs = 0;
 	args = NewArgs(2);
 	dimsizes[0] = 1;
-	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
 	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
 	NclRegisterFunc(_NclIGetFileVarAtts,args,"getfilevaratts",nargs);
 
     nargs = 0;
     args = NewArgs(1);
     dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "file", NclANY, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "file", 0, NclANY);  nargs++;
     NclRegisterFunc(_NclIGetFileDimsizes, args, "getfiledimsizes", nargs);
 
 	nargs = 0;
 	args = NewArgs(2);
-	SetArgTemplate(args, nargs, "file", NclANY, NclANY);nargs++;
-	SetArgTemplate(args, nargs, "string", NclANY, NclANY);nargs++;
+	SetArgTemplate(args, nargs, "file", 0, NclANY);nargs++;
+	SetArgTemplate(args, nargs, "string", 0, NclANY);nargs++;
 	NclRegisterFunc(_NclIGetFileVarTypes, args, "getfilevartypes", nargs);
 
 	nargs = 0;
 	args = NewArgs(2);
 	dimsizes[0] = 1;
-	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
 	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
 	NclRegisterFunc(_NclIGetFileVarDims,args,"getfilevardims",nargs);
 
@@ -1584,7 +1619,7 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(4);
 	dimsizes[0] = 1;
-	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
 	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
 	SetArgTemplate(args,2,"integer",1,NclANY);nargs++;
 	SetArgTemplate(args,3,"logical",1,NclANY);nargs++;
@@ -1593,7 +1628,7 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(4);
 	dimsizes[0] = 1;
-	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
 	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
 	SetArgTemplate(args,2,"string",1,NclANY);nargs++;
 	SetArgTemplate(args,3,"string",1,NclANY);nargs++;
@@ -1601,56 +1636,56 @@ void _NclAddBuiltIns
 
 	nargs = 0;
 	args = NewArgs(2);
-	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
-	SetArgTemplate(args,1,NclANY,NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+	SetArgTemplate(args,1,NclANY,0,NclANY);nargs++;
 	NclRegisterProc(_NclIFileAttDef,args,"fileattdef",nargs);
 
 	nargs = 0;
 	args = NewArgs(3);
-	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
 	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
-	SetArgTemplate(args,2,NclANY,NclANY,NclANY);nargs++;
+	SetArgTemplate(args,2,NclANY,0,NclANY);nargs++;
 	NclRegisterProc(_NclIFileVarAttDef,args,"filevarattdef",nargs);
 
     nargs = 0;
     args = NewArgs(2);
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
     NclRegisterFunc(sprintf_W,args,"sprintf",nargs);
 
     nargs = 0;
     args = NewArgs(2);
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
     NclRegisterFunc(sprinti_W,args,"sprinti",nargs);
 
     nargs = 0;
     args = NewArgs(1);
-    SetArgTemplate(args,nargs,"graphic",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"graphic",0,NclANY);nargs++;
     NclRegisterFunc(_NclINhlGetParentWorkstation,args,"NhlGetParentWorkstation",nargs);
 
     nargs = 0;
     args = NewArgs(1);
-    SetArgTemplate(args,nargs,"graphic",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"graphic",0,NclANY);nargs++;
     NclRegisterFunc(_NclINhlGetParentId,args,"NhlGetParentId",nargs);
 
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"graphic",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"graphic",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     NclRegisterProc(_NclIAttSetValues,args,"attsetvalues",nargs);
 
     nargs = 0;
     args = NewArgs(1);
-    SetArgTemplate(args,nargs,"list",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"list",0,NclANY);nargs++;
     NclRegisterFunc(_NclIPop,args,"ListPop",nargs);
 
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"list",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,NclANY,NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"list",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
     NclRegisterProc(_NclIPush,args,"ListPush",nargs);
 
     nargs = 0;
@@ -1674,7 +1709,7 @@ void _NclAddBuiltIns
 
     nargs = 0;
     args = NewArgs(1);
-    SetArgTemplate(args,nargs,NclANY,NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
     NclRegisterProc(_NclIprintVarSummary,args,"printVarSummary",nargs);
 
 
@@ -1682,7 +1717,7 @@ void _NclAddBuiltIns
     nargs = 0;
     args = NewArgs(2);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"file",NclANY,NclANY); nargs++;
+    SetArgTemplate(args,nargs,"file",0,NclANY); nargs++;
     SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
     NclRegisterProc(_NclIprintFileVarSummary,args,"printFileVarSummary",nargs);
 
@@ -1690,7 +1725,7 @@ void _NclAddBuiltIns
     nargs = 0;
     args = NewArgs(2);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+    SetArgTemplate(args,nargs,"string",0,NclANY); nargs++;
     SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
     NclRegisterFunc(_NclIAddFiles,args,"addfiles",nargs);
 
@@ -1702,50 +1737,50 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,"string",1,NclANY); nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
     SetArgTemplate(args,nargs,"list",1,dimsizes); nargs++;
-    SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+    SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
     NclRegisterFunc(_NclICreateFile,args,"createfile",nargs);
 
     nargs = 0;
     args = NewArgs(2);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+    SetArgTemplate(args,nargs,"string",0,NclANY); nargs++;
     SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
     NclRegisterFunc(_NclIAddFiles,args,"addfilelist",nargs);
 
     nargs = 0;
     args = NewArgs(1);
-    SetArgTemplate(args, nargs, "string", NclANY, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "string", 0, NclANY);  nargs++;
     NclRegisterFunc( _NclIFileIsPresent, args, "isfilepresent", nargs);
 
     nargs = 0;
     args = NewArgs(1);
-    SetArgTemplate(args,nargs,"short",NclANY,NclANY); nargs++;
+    SetArgTemplate(args,nargs,"short",0,NclANY); nargs++;
     NclRegisterFunc(_NclIushorttoint,args,"ushorttoint",nargs);
     
 /*
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"float",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclrint,args,"rint",nargs);
 	
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"float",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclasinh,args,"asinh",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"float",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclacosh,args,"acosh",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"float",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclatanh,args,"atanh",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"float",0,NclANY);nargs++;
 	NclRegisterFunc(_Ncltrunc,args,"trunc",nargs);
 
 */

@@ -156,7 +156,7 @@ void _NclTransTerminate
 }
 int number_of_constants = 0;
 
-static struct _NclMultiDValDataRec *CreateConst
+static NclObj CreateConst
 #if     NhlNeedProto
 (NclObj inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, void *val, NclScalar *missing_value, int n_dims, int *dim_sizes, NclStatus status, NclSelectionRecord *sel_rec, NclTypeClass type)
 #else
@@ -176,13 +176,13 @@ NclTypeClass type;
 {
 	NclObj tmp_obj;
 	number_of_constants++;
-	tmp_obj = _NclCreateMultiDVal(inst, theclass, obj_type, obj_type_mask, val, missing_value, n_dims, dim_sizes, status, sel_rec, type);
+	tmp_obj = (NclObj) _NclCreateMultiDVal(inst, theclass, obj_type, obj_type_mask, val, missing_value, n_dims, dim_sizes, status, sel_rec, type);
 	tmp_obj->obj.is_constant = tmp_obj->obj.id+1;
 	return((NclObj)tmp_obj);
 
 }
 
-static struct _NclMultiDValDataRec *CreateTrueConst
+static NclObj CreateTrueConst
 #if     NhlNeedProto
 (void)
 #else
@@ -196,11 +196,11 @@ static struct _NclMultiDValDataRec *CreateTrueConst
 		number_of_constants++;
 		first = 0;
 	}
-	tmp_obj = _NclCreateTrue();
+	tmp_obj = (NclObj) _NclCreateTrue();
 	tmp_obj->obj.is_constant = tmp_obj->obj.id+1;
 	return(tmp_obj);
 }
-static struct _NclMultiDValDataRec *CreateFalseConst
+static NclObj CreateFalseConst
 #if     NhlNeedProto
 (void)
 #else
@@ -214,9 +214,9 @@ static struct _NclMultiDValDataRec *CreateFalseConst
 		number_of_constants++;
 		first = 0;
 	}
-	tmp_obj = _NclCreateFalse();
+	tmp_obj = (NclObj) _NclCreateFalse();
 	tmp_obj->obj.is_constant = tmp_obj->obj.id+1;
-	return((NclMultiDValData)tmp_obj);
+	return(tmp_obj);
 }
 
 
@@ -248,7 +248,7 @@ int _NclTranslate
 	NclSrcListNode *step;
 	int off1 = -1 ,off2 = -1 ,off3 = -1, off4 = -1 ,off5 = -1;
 	static int nesting = 0;
-	NclMultiDValData tmp_md = NULL;
+	NclObj tmp_md = NULL;
 	void *tmp_val = NULL;
 	int dim_size = 1;
 
