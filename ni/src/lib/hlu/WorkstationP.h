@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.25 1999-10-18 22:25:54 dbrown Exp $
+ *      $Id: WorkstationP.h,v 1.26 2001-01-23 23:58:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -148,6 +148,8 @@ typedef struct _NhlWorkstationLayerPart{
 	int		fill_table_len;
 	int		marker_table_len;
 	int		def_graphic_style_id;
+	int		*views;
+	int		*top_level_views;
 
 	/* Private settable resource fields */
 

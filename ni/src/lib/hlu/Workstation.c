@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.97 2000-03-02 01:30:19 dbrown Exp $
+ *      $Id: Workstation.c,v 1.98 2001-01-23 23:58:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -176,6 +176,8 @@ static NrmQuark	marker_tbl_strings_name;
 static NrmQuark marker_tbl_params_name;
 static NrmQuark dash_table_name;
 static NrmQuark def_graphic_style_id_name;
+static NrmQuark views_name;
+static NrmQuark top_level_views_name;
 
 #define Oset(field) NhlOffset(NhlWorkstationLayerRec,work.field)
 static NhlResource resources[] = {
@@ -214,6 +216,14 @@ static NhlResource resources[] = {
 	{NhlNwkDefGraphicStyleId,NhlCwkDefGraphicStyleId,
 		 NhlTObjId,sizeof(int),Oset(def_graphic_style_id),
 		 NhlTImmediate,_NhlUSET((NhlPointer)0),_NhlRES_GONLY,NULL},
+	{NhlNwkViews,NhlCwkViews,NhlTObjIdGenArray,
+		sizeof(NhlGenArray),Oset(views),
+		NhlTImmediate,_NhlUSET(NULL),_NhlRES_GONLY,
+         	(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNwkTopLevelViews,NhlCwkTopLevelViews,NhlTObjIdGenArray,
+		sizeof(NhlGenArray),Oset(top_level_views),
+		NhlTImmediate,_NhlUSET(NULL),_NhlRES_GONLY,
+         	(NhlFreeFunc)NhlFreeGenArray},
 
 #define POset(field) Oset(public_lineinfo.field)
 	{NhlNwkDashPattern,NhlCwkDashPattern,NhlTDashIndex,
@@ -2262,6 +2272,8 @@ WorkstationClassInitialize
 	marker_tbl_params_name = NrmStringToQuark(_NhlNwkMarkerTableParams);
 	dash_table_name = NrmStringToQuark(_NhlNwkDashTable);
 	def_graphic_style_id_name = NrmStringToQuark(NhlNwkDefGraphicStyleId);
+ 	views_name = NrmStringToQuark(NhlNwkViews);
+ 	top_level_views_name = NrmStringToQuark(NhlNwkTopLevelViews);
 
 	ginq_op_st(&status);
 
@@ -3674,7 +3686,76 @@ WorkstationGetValues
 			ga->my_data = True;
 			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
 		}
+		else if (args[i].quark == views_name) {
+			_NhlAllChildList ch = l->base.all_children;
+			int *views;
 
+			count[0] = 0;
+			while (ch) {
+				if (NhlIsView(ch->pid))
+					count[0]++;
+				ch = ch->next;
+			}
+			if (! count) {
+				continue;
+			}
+			if (! (views = NhlMalloc(count[0] * sizeof(int)))) {
+				NHLPERROR((NhlFATAL,ENOMEM,NULL));
+				return NhlFATAL;
+			}
+			ch = l->base.all_children;
+			j = 0;
+			while (ch) {
+				if (NhlIsView(ch->pid))
+					views[j++] = ch->pid;
+				ch = ch->next;
+			}
+			if ((ga = NhlCreateGenArray((NhlPointer)views,
+						    NhlTObjId,
+						    sizeof(int),
+						    1,count)) == NULL) {
+				NHLPERROR((NhlFATAL,ENOMEM,NULL));
+				return NhlFATAL;
+			}
+			ga->my_data = True;
+			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
+		}
+		else if (args[i].quark == top_level_views_name) {
+			_NhlAllChildList ch = l->base.all_children;
+			int *views;
+
+			count[0] = 0;
+			while (ch) {
+				if (NhlIsView(ch->pid) && 
+				    !_NhlIsPlotMember(ch->pid))
+					count[0]++;
+				ch = ch->next;
+			}
+			if (! count) {
+				continue;
+			}
+			if (! (views = NhlMalloc(count[0] * sizeof(int)))) {
+				NHLPERROR((NhlFATAL,ENOMEM,NULL));
+				return NhlFATAL;
+			}
+			ch = l->base.all_children;
+			j = 0;
+			while (ch) {
+				if (NhlIsView(ch->pid) && 
+				    !_NhlIsPlotMember(ch->pid))
+					views[j++] = ch->pid;
+				ch = ch->next;
+			}
+			if ((ga = NhlCreateGenArray((NhlPointer)views,
+						    NhlTObjId,
+						    sizeof(int),
+						    1,count)) == NULL) {
+				NHLPERROR((NhlFATAL,ENOMEM,NULL));
+				return NhlFATAL;
+			}
+			ga->my_data = True;
+			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
+		}
 	}
 	return(ret);
 }

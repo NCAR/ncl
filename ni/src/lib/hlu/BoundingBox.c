@@ -1,5 +1,5 @@
 /*
- *      $Id: BoundingBox.c,v 1.8 1998-03-12 02:35:16 dbrown Exp $
+ *      $Id: BoundingBox.c,v 1.9 2001-01-23 23:58:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -144,15 +144,37 @@ NhlErrorTypes NhlGetBB
 {
 	NhlLayer instance;
 	char  buffer[80];
-	
+
 	thebox->set = 0;
 	thebox->t  = 0.0;
 	thebox->b  = 0.0;
 	thebox->l  = 0.0;
 	thebox->r  = 0.0;
-	instance = _NhlGetLayer(pid);
-	if(instance != NULL)
+	if (NhlIsView(pid)) {
+		instance = _NhlGetLayer(pid);
 		return(_NhlGetBB(instance,thebox));
+	}	
+	else if (NhlIsWorkstation(pid)) {
+		int *views;
+		int i,count;
+		int grlist;
+		NhlErrorTypes ret = NhlNOERROR,subret;
+
+		grlist = NhlRLCreate(NhlGETRL);
+		NhlRLClear(grlist);
+		NhlRLGetIntegerArray(grlist,NhlNwkTopLevelViews,&views,&count);
+		NhlGetValues(pid,grlist);
+		for (i = 0; i < count; i++) {
+			instance = _NhlGetLayer(views[i]);
+		        subret = _NhlGetBB(instance,thebox);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				return ret;
+			}
+		}
+		NhlFree(views);
+		NhlRLDestroy(grlist);
+		return ret;
+	}
 	else {
 		sprintf(buffer,"Invalid plot ID=%d passed to NhlGetBB",pid);
 		NhlPError(NhlFATAL,NhlEUNKNOWN,buffer);
