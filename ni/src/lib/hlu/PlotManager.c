@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.63 2000-05-16 01:35:32 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.64 2000-06-14 23:07:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4605,7 +4605,7 @@ ManageLabelBar
 		if (! ovp->lbar_height_set)
 			ovp->lbar_height *= ratio;
 	}
-	else {
+	else { 
 		if (! ovp->lbar_width_set)
 			ovp->lbar_width *= tfp->bw / wold;
 		if (! ovp->lbar_height_set)
@@ -4888,12 +4888,33 @@ ManageLegend
  * If the view width or height has changed adjust the Legend width and
  * height if they have not been set explcitly by the user
  */
-	wold = init ? NHL_DEFAULT_VIEW_WIDTH : tfp->bw;
-	hold = init ? NHL_DEFAULT_VIEW_HEIGHT : tfp->bh;
-	if (! ovp->lgnd_width_set)
-		ovp->lgnd_width *= tfp->bw / wold;
-	if (! ovp->lgnd_height_set)
-		ovp->lgnd_height *= tfp->bh / hold;
+	wold = init ? NHL_DEFAULT_VIEW_WIDTH : otfp->bw;
+	hold = init ? NHL_DEFAULT_VIEW_HEIGHT : otfp->bh;
+	if (ovp->lgnd_keep_aspect) {
+		float ratio;
+
+		switch (ovp->lgnd_side) {
+		default:
+		case NhlTOP:
+		case NhlBOTTOM:
+			ratio = tfp->bw / wold;
+			break;
+		case NhlLEFT:
+		case NhlRIGHT:
+			ratio = tfp->bh / hold;
+			break;
+		}
+		if (! ovp->lgnd_width_set)
+			ovp->lgnd_width *= ratio;
+		if (! ovp->lgnd_height_set)
+			ovp->lgnd_height *= ratio;
+	}
+	else { 
+		if (! ovp->lgnd_width_set)
+			ovp->lgnd_width *= tfp->bw / wold;
+		if (! ovp->lgnd_height_set)
+			ovp->lgnd_height *= tfp->bh / hold;
+	}
 
 /*
  * Get the bounding box for the zone inside the annotation zone, 
@@ -4995,7 +5016,8 @@ ManageLegend
 		NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,ovp->lgnd_height);
 		NhlSetSArg(&sargs[nargs++],
 				   NhlNlgOrientation,ovp->lgnd_orient);
-
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNvpKeepAspect,ovp->lgnd_keep_aspect);
 		subret = _NhlALCreateChild(&tmpid,buffer,NhllegendClass,
 					   (NhlLayer)ovnew,sargs,nargs);
 		anno_rec->plot_id = tmpid;
@@ -5023,6 +5045,9 @@ ManageLegend
 		if (ovp->lgnd_orient != oovp->lgnd_orient)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNlgOrientation,ovp->lgnd_orient);
+		if (ovp->lgnd_keep_aspect != oovp->lgnd_keep_aspect)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNvpKeepAspect,ovp->lgnd_keep_aspect);
                 if (ovnew->view.use_segments != ovold->view.use_segments)
 			NhlSetSArg(&sargs[nargs++],
                                    NhlNvpUseSegments,ovnew->view.use_segments);
