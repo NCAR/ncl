@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.104 1998-09-16 23:13:37 ethan Exp $
+ *      $Id: Execute.c,v 1.105 1998-11-19 02:38:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1867,7 +1867,11 @@ void CallASSIGN_VAR_OP(void) {
 								((NclHLUVar)lhs_var->u.data_var)->hvar.cb = _NclAddCallback((NclObj)tmp_md,NULL,_NclHLUVarValChange,HLUVALCHANGE,&udata);
 
 								for(i = 0; i < tmp_md->multidval.totalelements;i++) {
-									_NclAddHLURef(((obj*)tmp_md->multidval.val)[i],lhs_var->u.data_var->var.var_quark,-1,i);
+									if(lhs_var->u.data_var->var.thesym != NULL) {
+										_NclAddHLURef(((obj*)tmp_md->multidval.val)[i],lhs_var->u.data_var->var.var_quark,-1,i,lhs_var->u.data_var->var.thesym->level);
+									} else {
+										_NclAddHLURef(((obj*)tmp_md->multidval.val)[i],lhs_var->u.data_var->var.var_quark,-1,i,-1);
+									}
 								}
 							}
 						} else {
@@ -5098,7 +5102,11 @@ void CallASSIGN_VAR_VAR_OP(void) {
 									tmp_md = (NclMultiDValData)_NclGetObj(lhs_var->u.data_var->var.thevalue_id);
 									((NclHLUVar)lhs_var->u.data_var)->hvar.cb = _NclAddCallback((NclObj)tmp_md,NULL,_NclHLUVarValChange,HLUVALCHANGE,&udata);
 									for(i = 0; i < tmp_md->multidval.totalelements;i++) {
-										_NclAddHLURef(((obj*)tmp_md->multidval.val)[i],lhs_var->u.data_var->var.var_quark,-1,i);
+										if(lhs_var->u.data_var->var.thesym != NULL) {
+											_NclAddHLURef(((obj*)tmp_md->multidval.val)[i],lhs_var->u.data_var->var.var_quark,-1,i,lhs_var->u.data_var->var.thesym->level);
+										} else {
+											_NclAddHLURef(((obj*)tmp_md->multidval.val)[i],lhs_var->u.data_var->var.var_quark,-1,i,-1);
+										}
 									}
 								}
 							}

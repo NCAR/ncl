@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclHLUVar.c,v 1.13 1998-01-30 23:52:45 ethan Exp $
+ *      $Id: NclHLUVar.c,v 1.14 1998-11-19 02:38:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -61,7 +61,11 @@ struct _NclObjRec*      self;
 	if((self_var->var.var_type == NORMAL)||(self_var->var.var_type == HLUOBJ)) {
 		_NhlCBDelete(self_var->hvar.cb);
 		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
-			_NclDelHLURef(((obj*)tmp_md->multidval.val)[i],self_var->var.var_quark,-1,i);
+			if(self_var->var.thesym != NULL) {
+				_NclDelHLURef(((obj*)tmp_md->multidval.val)[i],self_var->var.var_quark,-1,i,self_var->var.thesym->level);
+			} else {
+				_NclDelHLURef(((obj*)tmp_md->multidval.val)[i],self_var->var.var_quark,-1,i,-1);
+			}
 		}
 	}
 	(*(self_var->obj.class_ptr->obj_class.super_class->obj_class.destroy))(self);
@@ -206,9 +210,9 @@ NhlArgVal udata;
 	NclHLUUData *ud = (NclHLUUData*)udata.ptrval;
 	NclHLUCbData *cb = (NclHLUCbData*)cbdata.ptrval;
 
-	_NclDelHLURef(cb->prev_id,ud->vq,ud->aq,cb->off);
+	_NclDelHLURef(cb->prev_id,ud->vq,ud->aq,cb->off,ud->level);
 	if(!cb->kind) {
-		_NclAddHLURef(cb->ncl_id,ud->vq,ud->aq,cb->off);
+		_NclAddHLURef(cb->ncl_id,ud->vq,ud->aq,cb->off,ud->level);
 	}
 	
 }
@@ -267,9 +271,18 @@ NclStatus status)
 		}
 	
 		((NclHLUUData*)udata.ptrval)->aq = -1;
+		if(thesym != NULL) {
+			((NclHLUUData*)udata.ptrval)->level = thesym->level;
+		} else {
+			((NclHLUUData*)udata.ptrval)->level = -1;
+		}
 		hvar->hvar.cb = _NclAddCallback((NclObj)tmp_md,NULL,_NclHLUVarValChange,HLUVALCHANGE,&udata);
 		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
-			_NclAddHLURef(((obj*)tmp_md->multidval.val)[i],((NclHLUUData*)udata.ptrval)->vq,-1,i);
+			if(thesym != NULL) {
+				_NclAddHLURef(((obj*)tmp_md->multidval.val)[i],((NclHLUUData*)udata.ptrval)->vq,-1,i,thesym->level);
+			} else {
+				_NclAddHLURef(((obj*)tmp_md->multidval.val)[i],((NclHLUUData*)udata.ptrval)->vq,-1,i,-1);
+			}
 		}
 	}
 	if(cptr == nclHLUVarClass) {

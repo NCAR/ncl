@@ -4,6 +4,7 @@
 typedef struct _NclHLUUData {
 	NclQuark vq;
 	NclQuark aq;
+	int level;
 }NclHLUUData;
 typedef struct _NclHLUCbData {
 	int prev_id;
@@ -14,6 +15,7 @@ typedef struct _NclHLUCbData {
 typedef struct _NclHLURefList {
 	NclQuark vq;
 	NclQuark aq;
+	int level;
 	int n_refs;
 	int refs_size;
 	int *refs;
@@ -56,7 +58,8 @@ extern NhlErrorTypes _NclAddHLURef(
 int 	/*ncl_id*/,
 NclQuark /*vq*/,
 NclQuark /*aq*/,
-int	/*off*/
+int	/*off*/,
+int	/*level*/
 #endif
 );
 
@@ -65,7 +68,8 @@ extern NhlErrorTypes _NclDelHLURef(
 int 	/*id*/,
 NclQuark /*vq*/,
 NclQuark /*aq*/,
-int	/*off*/
+int	/*off*/,
+int	/*level*/
 #endif
 );
 

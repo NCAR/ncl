@@ -36,13 +36,14 @@ int id;
 
 NhlErrorTypes _NclAddHLURef
 #if NhlNeedProto
-(int ncl_id, NclQuark vq, NclQuark aq, int off)
+(int ncl_id, NclQuark vq, NclQuark aq, int off,int level)
 #else
-(ncl_id, vq, aq, off)
+(ncl_id, vq, aq, off,level)
 int ncl_id;
 NclQuark vq;
 NclQuark aq;
 int off;
+int level;
 #endif
 {
 	static int first = 1;
@@ -77,7 +78,7 @@ int off;
 		while(tmp != NULL) {
 			if(tmp->hlu_id == id) {
 				for(i = 0; i < tmp->n_entries; i++) {
-					if((tmp->ref_list[i].vq == vq)&&(tmp->ref_list[i].aq == aq)) {
+					if((tmp->ref_list[i].vq == vq)&&(tmp->ref_list[i].aq == aq)&&(tmp->ref_list[i].level == level)) {
 						for(j = 0; j < tmp->ref_list[i].n_refs; j++ ) {
 							if(tmp->ref_list[i].refs[j] == off) {
 								return(NhlNOERROR);
@@ -115,6 +116,7 @@ int off;
 				if(i == tmp->n_entries) {
 					tmp->ref_list[i].vq = vq;
 					tmp->ref_list[i].aq = aq;
+					tmp->ref_list[i].level = level;
 					tmp->ref_list[i].n_refs = 1;
 					tmp->ref_list[i].refs_size = REF_LIST_SIZE;
 					tmp->ref_list[i].refs = NclMalloc(sizeof(int)*REF_LIST_SIZE);
@@ -141,6 +143,7 @@ int off;
 			prev->next->ref_list =  NclMalloc(sizeof(NclHLURefList)*REF_LIST_SIZE);
 			prev->next->ref_list[0].vq = vq;
 			prev->next->ref_list[0].aq = aq;
+			prev->next->ref_list[0].level = level;
 			prev->next->ref_list[0].n_refs = 1;
 			prev->next->ref_list[0].refs_size = REF_LIST_SIZE;
 			prev->next->ref_list[0].refs = NclMalloc(sizeof(int)*REF_LIST_SIZE);
@@ -156,6 +159,7 @@ int off;
 		hlu_tab[index].ref_list = NclMalloc(sizeof(NclHLURefList)*REF_LIST_SIZE);
 		hlu_tab[index].ref_list[0].vq = vq;
 		hlu_tab[index].ref_list[0].aq = aq;
+		hlu_tab[index].ref_list[0].level =level;
 		hlu_tab[index].ref_list[0].n_refs = 1;
 		hlu_tab[index].ref_list[0].refs_size = REF_LIST_SIZE;
 		hlu_tab[index].ref_list[0].refs = NclMalloc(sizeof(int)*REF_LIST_SIZE);
@@ -188,13 +192,14 @@ NclHLUObj _NclLookUpHLU
 
 NhlErrorTypes _NclDelHLURef
 #if NhlNeedProto
-(int ncl_id, NclQuark vq, NclQuark aq, int off)
+(int ncl_id, NclQuark vq, NclQuark aq, int off,int level)
 #else
 (ncl_id, vq, aq, off)
 int ncl_id;
 NclQuark vq;
 NclQuark aq;
 int off;
+int level;
 #endif
 {
 	int i,j = -1,k;
