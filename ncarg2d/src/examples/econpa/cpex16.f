@@ -2635,7 +2635,7 @@ C       DOUBLE PRECISION XCC1,YCC1,ZCC1
         DOUBLE PRECISION      YCC3,ZCC3
         DOUBLE PRECISION DNOM
 C
-        DOUBLE PRECISION DPGCDP
+        DOUBLE PRECISION ADGCDP
 C
 C Define a multiplicative constant to convert from radians to degrees.
 C
