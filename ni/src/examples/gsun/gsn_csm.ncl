@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.178 2004-12-14 23:31:43 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.179 2004-12-15 18:05:23 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1985,8 +1985,8 @@ end
 ;                res: logical                                           ;
 ;            add_hgt: logical                                           ;
 ;                                                                       ;
-; This procedure sets some resources necessary to label the X and Y axes;
-; with "nice" pressure and height values. The left axis is for pressure ;
+; This procedure sets some resources necessary to label the left and    ;
+; right Y axis with "nice" pressure and height values. The left axis is ;
 ; values, and the right for height values. The pressure values are      ;
 ; assumed to be in millibars.                                           ;
 ;***********************************************************************;
@@ -10112,11 +10112,12 @@ begin
                            ; already reversed.
     res2          = get_resources(resources)
 
-    calldraw     = get_res_value(res2,"gsnDraw", True)
-    callframe    = get_res_value(res2,"gsnFrame",True)
-    maxbb        = get_bb_res(res2)
-    lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",0)
-    mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",0)
+    add_hgt_label = get_res_value(res2,"gsnPresHgtHeightLabelOn",True)
+    calldraw      = get_res_value(res2,"gsnDraw", True)
+    callframe     = get_res_value(res2,"gsnFrame",True)
+    maxbb         = get_bb_res(res2)
+    lat_spacing   = get_res_value(res2,"gsnMajorLatSpacing",0)
+    mlat_spacing  = get_res_value(res2,"gsnMinorLatSpacing",0)
 
     if(is_valid_coord(data,"y"))
       title = get_csm_long_name_units_string(data&$data!0$)
@@ -10216,7 +10217,7 @@ begin
 ;
 ; Add a right Y axis "height" label.
 ;
-    if(add_hgt)
+    if(add_hgt.and.add_hgt_label)
       rightaxis_string = create "right_axis" textItemClass wks
         "txString"      : "Height (km)"
         "txFontHeightF" : yaxis_font_height
