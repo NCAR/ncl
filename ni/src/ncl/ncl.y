@@ -1993,6 +1993,7 @@ array : LPSLSH expr_list SLSHRP	 {
 
 ;
 expr_list :  expr				{	
+							_NclValOnly($1);
 							$$ = _NclMakeRowList();
 							$$->list = _NclMakeNewListNode();
 							$$->list->next = NULL;
@@ -2002,6 +2003,7 @@ expr_list :  expr				{
 						}
 	| expr_list ',' expr   		{ 
 						/* pushed on backwards so they can be popped of in correct order*/
+							_NclValOnly($3);
 							if($1 == NULL) {
 								$$ = _NclMakeRowList();
 								$$->nelem = 1;
