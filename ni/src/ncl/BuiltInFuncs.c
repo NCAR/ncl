@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.149 2003-02-25 17:47:17 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.150 2003-03-03 18:25:52 haley Exp $
  */
 /************************************************************************
 *									*
@@ -6821,7 +6821,7 @@ NhlErrorTypes _NclIIsDim
 	));
 }
 
-NhlErrorTypes _NclIIsNamedDim
+NhlErrorTypes _NclIIsDimNamed
 #if	NhlNeedProto
 (void)
 #else
@@ -6862,7 +6862,7 @@ NhlErrorTypes _NclIIsNamedDim
 	
 
 	if(tmp_var == NULL) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsNamedDim: Non variable passed returning missing");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsDimNamed: Non variable passed returning missing");
 		NclReturnValue(
 			&miss,
 			1,

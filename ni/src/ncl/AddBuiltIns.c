@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.58 2003-02-25 17:47:17 dbrown Exp $
+ *      $Id: AddBuiltIns.c,v 1.59 2003-03-03 18:25:52 haley Exp $
  */
 /************************************************************************
 *									*
@@ -444,7 +444,7 @@ void
 #endif
 );
 
-extern NhlErrorTypes _NclIIsNamedDim(
+extern NhlErrorTypes _NclIIsDimNamed(
 #if     NhlNeedProto
 void
 #endif
@@ -1186,7 +1186,7 @@ void _NclAddBuiltIns
 	args = NewArgs(2);
 	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
 	SetArgTemplate(args,nargs,"integer",NclANY,NclANY); nargs++;
-	NclRegisterFunc( _NclIIsNamedDim,args,"isnameddim",nargs);
+	NclRegisterFunc( _NclIIsDimNamed,args,"isdimnamed",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
