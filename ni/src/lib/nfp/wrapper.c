@@ -239,6 +239,7 @@ extern NhlErrorTypes linint1_W(void);
 extern NhlErrorTypes linint2_W(void);
 extern NhlErrorTypes linint2_points_W(void);
 extern NhlErrorTypes pres_hybrid_W(void);
+extern NhlErrorTypes dpres_hybrid_W(void);
 extern NhlErrorTypes pslhyp_W(void);
 extern NhlErrorTypes pslec_W(void);
 extern NhlErrorTypes pslhor_W(void);
@@ -2933,6 +2934,20 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(pres_hybrid_W,args,"pres_hybrid",nargs);
+
+/*
+ * Register "dpres_hybrid".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+
+    NclRegisterFunc(dpres_hybrid_W,args,"dpres_hybrid",nargs);
 
 /*
  * Register "pslhyp".
