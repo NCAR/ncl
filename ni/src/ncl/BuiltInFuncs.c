@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.128 2000-10-17 19:55:12 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.129 2000-10-30 17:09:41 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -11528,7 +11528,7 @@ NhlErrorTypes _NclIAddFiles( void )
 	} else {
 		rw_v = 0;
 	} 
-	tmp_list = (NclList)_NclListCreate(NULL,NULL,0,0,NCL_JOIN | NCL_FIFO);
+	tmp_list = (NclList)_NclListCreate(NULL,NULL,0,0,NCL_CONCAT | NCL_FIFO);
 
 	*id = tmp_list->obj.id;
 	data.kind = NclStk_VAL;
