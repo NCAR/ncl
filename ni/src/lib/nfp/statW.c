@@ -658,11 +658,15 @@ NhlErrorTypes dim_median_W( void )
  * missing value.
  */
     if(tmp_md->multidval.missing_value.has_missing) {
-      missing.floatval = tmp_md->multidval.missing_value.value.floatval;
+      if(tmp_md->multidval.data_type == NCL_float) {
+	missing.floatval = tmp_md->multidval.missing_value.value.floatval;
+      }
+      else {
+	missing.floatval = (float)tmp_md->multidval.missing_value.value.intval;
+      }
     }
     else {
       missing.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-
     }
     xmsg = (double)missing.floatval;
   }
@@ -842,8 +846,12 @@ NhlErrorTypes dim_rmvmean_W( void )
       missing.doubleval = tmp_md->multidval.missing_value.value.doubleval;
       xmsg = missing.doubleval;
     }
-    else {
+    else if(tmp_md->multidval.data_type == NCL_float) {
       missing.floatval = tmp_md->multidval.missing_value.value.floatval;
+      xmsg = (double)missing.floatval;
+    }
+    else {
+      missing.floatval = (float)tmp_md->multidval.missing_value.value.intval;
       xmsg = (double)missing.floatval;
     }
   }
@@ -987,8 +995,12 @@ NhlErrorTypes dim_rmvmed_W( void )
       missing.doubleval = tmp_md->multidval.missing_value.value.doubleval;
       xmsg = missing.doubleval;
     }
-    else {
+    else if(tmp_md->multidval.data_type == NCL_float) {
       missing.floatval = tmp_md->multidval.missing_value.value.floatval;
+      xmsg = (double)missing.floatval;
+    }
+    else {
+      missing.floatval = (float)tmp_md->multidval.missing_value.value.intval;
       xmsg = (double)missing.floatval;
     }
   }
@@ -1154,8 +1166,12 @@ NhlErrorTypes dim_standardize_W( void )
       missing.doubleval = tmp_md->multidval.missing_value.value.doubleval;
       xmsg = missing.doubleval;
     }
-    else {
+    else if(tmp_md->multidval.data_type == NCL_float) {
       missing.floatval = tmp_md->multidval.missing_value.value.floatval;
+      xmsg = (double)missing.floatval;
+    }
+    else {
+      missing.floatval = (float)tmp_md->multidval.missing_value.value.intval;
       xmsg = (double)missing.floatval;
     }
   }

@@ -1055,7 +1055,7 @@ NhlErrorTypes f2fosh_W( void )
 /*
  * Call the f77 version of 'f2fosh' with the full argument list.
  */
-	  NGCALLF(fo2f,FO2F)(&goff[lin],&ilon,&jlat,&greg[lout],&jlat1,
+	  NGCALLF(fo2f,FO2F)(&goff[lout],&ilon,&jlat,&greg[lin],&jlat1,
 						 work,&lwork,wsave,&lsave,&ioff,&ier);
 	  if (ier) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fosh: ier = %d\n", ier );
