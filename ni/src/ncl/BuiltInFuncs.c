@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.139 2001-07-11 16:40:14 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.140 2001-09-28 17:00:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -62,6 +62,7 @@ extern "C" {
 #include "ListSupport.h"
 #include "NclFileInterfaces.h"
 #include <signal.h>
+#include <netcdf.h>
 
 extern int cmd_line;
 NhlErrorTypes _NclIListHLUObjs
@@ -11780,6 +11781,249 @@ NhlErrorTypes _NclIListSetType(void)
 	}
 	return(NhlNOERROR);
 }
+static nc_type _MapType (NclBasicDataTypes data_type) {
+	nc_type the_type;
+		switch(data_type) {
+			case NCL_short:
+				the_type = NC_SHORT;
+				break;
+			case NCL_logical:
+			case NCL_int:
+			case NCL_long:
+				the_type = NC_LONG;
+				break;
+			case NCL_float:
+				the_type = NC_FLOAT;
+				break;
+			case NCL_double:
+				the_type = NC_DOUBLE;
+				break;
+			case NCL_char:
+				the_type = NC_CHAR;
+				break;
+			case NCL_byte:
+				the_type = NC_BYTE;
+				break;
+			default:
+				the_type = -1;
+		}
+	return(the_type);
+}
+NhlErrorTypes _NclICreateFile(void)
+{
+	NclStackEntry out_data,data;
+	string *path;
+	string *filename;
+	string *dimnames;
+	int *dimsizes;
+	string *varnames;
+	obj *varinfo;
+	NclObj fileatts_obj;
+	int n_dims,n_dims0;
+	int n_vars;
+	int n_fileatts;
+	char filename_buffer[2048];
+	NclList  varinfo_obj, attlist_obj, attvals_obj;
+	NclListObjList *thelist,*attvals,*attlist;
+	int i,j,k;
+	NclVar tmp_var;
+	NclMultiDValData dnames_md,tmp_md,tmp_val;
+	nc_type the_type;
+	int varids[2048];
+	int dim_ids[2048];
+	int ids[2048];
+	int cdfid;
+	NclAtt tmp_att;
+	NclAttList *nclattlist;
+        NclMultiDValData p_md = NULL;
+        NclFile file = NULL;
+        NclMultiDValData out_md = NULL;
+        int *id = (int*)NclMalloc((unsigned)sizeof(int));
+        int dim_size = 1;
+	
+	
+
+
+  	path = (string*)NclGetArgValue(
+           0,
+           5,
+	   NULL,
+	   NULL,
+	   NULL,
+	   NULL,
+	   NULL,
+	   DONT_CARE);
+  	dimnames = (string*)NclGetArgValue(
+           1,
+           5,
+	   NULL,
+	   &n_dims,
+	   NULL,
+	   NULL,
+	   NULL,
+	   DONT_CARE);
+  	dimsizes = (int*)NclGetArgValue(
+           2,
+           5,
+	   NULL,
+	   &n_dims0,
+	   NULL,
+	   NULL,
+	   NULL,
+	   DONT_CARE);
+  	varinfo = (obj*)NclGetArgValue(
+           3,
+           5,
+	   NULL,
+	   &n_vars,
+	   NULL,
+	   NULL,
+	   NULL,
+	   DONT_CARE);
+	data= _NclGetArg(4,5,DONT_CARE);
+	fileatts_obj = (NclObj)data.u.data_obj;
+	
+
+	sprintf(filename_buffer,"%s",NrmQuarkToString(*path));
+	if(NrmStringToQuark(&(filename_buffer[strlen(filename_buffer)-3]))!= NrmStringToQuark(".nc")) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"createfile: Only netCDF creation is supported at this time. Use \".nc\" suffix");
+		return(NhlFATAL);
+	}
+
+	cdfid = nccreate(NrmQuarkToString(*path),(NC_WRITE|NC_NOCLOBBER));
+
+
+	if(cdfid == -1) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"The specified netCDF file can't be created, either the file exists or the path is incorrect");
+		return(NhlFATAL);
+	}
+	for(i = 0; i < n_dims; i++) {
+		if(dimsizes[i] == -1) {	
+			dim_ids[i] = ncdimdef(cdfid,NrmQuarkToString(dimnames[i]),NC_UNLIMITED);
+		} else {
+			dim_ids[i] = ncdimdef(cdfid,NrmQuarkToString(dimnames[i]),(long)dimsizes[i]);
+		}
+	}
+	varinfo_obj = (NclList)_NclGetObj(*varinfo);
+	thelist = varinfo_obj->list.first;
+
+	i=0;
+	while(thelist != NULL) {
+		tmp_var = (NclVar)_NclGetObj(thelist->obj_id);
+		if(tmp_var == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Something is wrong with the varinfo parameter");
+			return(NhlFATAL);
+	
+		}
+		tmp_md = (NclMultiDValData)_NclGetObj(tmp_var->var.thevalue_id);
+		if(tmp_md->multidval.data_type != NCL_string) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"varinfo parameter must be a list of string variable names");
+			return(NhlFATAL);
+		}
+		if(tmp_var->var.att_id != -1) {
+			tmp_att= (NclAtt)_NclGetObj(tmp_var->var.att_id);
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"varinfo parameter list elements must at minimum contain the attributes \"dims\" and \"type\" ");
+			return(NhlFATAL);
+		}
+		nclattlist = tmp_att->att.att_list;
+		dnames_md = NULL;
+		while(nclattlist != NULL) {
+			if(nclattlist->quark == NrmStringToQuark("dims")) {
+				dnames_md = nclattlist->attvalue;
+				break;
+			} else {
+				nclattlist = nclattlist->next;
+			}
+		}
+		if(dnames_md == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"varinfo parameter list elements must at minimum contain the attributes \"dims\" and \"type\", attribute \"dims\" not found");
+			return(NhlFATAL);
+		}
+		for(j = 0; j < dnames_md->multidval.totalelements; j++) {
+			for(k=0; k < n_dims; k++) {
+				if(((string*)(dnames_md->multidval.val))[k] == dimnames[j]) {
+					ids[j] = dim_ids[k];
+				}
+			}
+		}
+		nclattlist = tmp_att->att.att_list;
+		the_type = 0;
+		while(nclattlist != NULL) {
+			if(nclattlist->quark == NrmStringToQuark("type")){
+				the_type = _MapType(_NclKeywordToDataType( _NclLookUp(NrmQuarkToString(*(string*)(nclattlist->attvalue->multidval.val)))));
+				break;
+			} else {
+				nclattlist = nclattlist->next;
+			}
+		}
+		if(the_type == 0) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Either and unsupported type was requested or the \"type\" attribute was not supplied");
+			return(NhlFATAL);
+		}
+
+		varids[i]= ncvardef(cdfid,NrmQuarkToString(*(string*)tmp_md->multidval.val),the_type,dnames_md->multidval.totalelements,ids);
+		nclattlist = tmp_att->att.att_list;
+		while(nclattlist != NULL){ 
+			if((nclattlist->quark != NrmStringToQuark("type"))&&(nclattlist->quark!=NrmStringToQuark("dims"))){
+				if(nclattlist->attvalue->multidval.data_type != NCL_string) {		
+					the_type = _MapType(nclattlist->attvalue->multidval.data_type);
+					ncattput(cdfid,varids[i],nclattlist->attname,the_type,nclattlist->attvalue->multidval.totalelements,nclattlist->attvalue->multidval.val);
+				} else {
+					ncattput(cdfid,varids[i],nclattlist->attname,NC_CHAR,strlen(NrmQuarkToString(*(string*)nclattlist->attvalue->multidval.val)),NrmQuarkToString(*(string*)nclattlist->attvalue->multidval.val));
+				}
+			}
+			nclattlist = nclattlist->next;
+		}
+
+
+		thelist = thelist->next;
+		i++;
+	}
+
+	if(fileatts_obj->obj.obj_type & Ncl_Var) {
+		if(((NclVar)fileatts_obj)->var.att_id != -1) {
+			tmp_att = (NclAtt)_NclGetObj(((NclVar)fileatts_obj)->var.att_id);
+			nclattlist = tmp_att->att.att_list;
+			while(nclattlist != NULL){ 
+				if((nclattlist->quark != NrmStringToQuark("type"))&&(nclattlist->quark!=NrmStringToQuark("dims"))){
+					if(nclattlist->attvalue->multidval.data_type != NCL_string) {		
+						the_type = _MapType(nclattlist->attvalue->multidval.data_type);
+						ncattput(cdfid,NC_GLOBAL,nclattlist->attname,the_type,nclattlist->attvalue->multidval.totalelements,nclattlist->attvalue->multidval.val);
+					} else {
+						ncattput(cdfid,NC_GLOBAL,nclattlist->attname,NC_CHAR,strlen(NrmQuarkToString(*(string*)nclattlist->attvalue->multidval.val)),NrmQuarkToString(*(string*)nclattlist->attvalue->multidval.val));
+					}
+				}
+				nclattlist = nclattlist->next;
+			}
+		}
+	} else {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"fileatts parameter must be a variable, which optionaly contains globus file attributes, a value was passed in"); 
+	}
+	ncendef(cdfid);
+	ncclose(cdfid);
+
+
+        file = _NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,*(NclQuark*)path,1);
+        if(file != NULL) {
+                *id = file->obj.id;
+                out_md = _NclMultiDValnclfileDataCreate(NULL,NULL,Ncl_MultiDValnclfileData,0,id,NULL,1,&dim_size,TEMPORARY,NULL);
+                if(out_md != NULL) {
+                        out_data.kind = NclStk_VAL;
+                        out_data.u.data_obj = out_md;
+                        _NclPlaceReturn(out_data);
+                        return(NhlNOERROR);
+                } else {
+                        NclFree(id);
+                        _NclDestroyObj((NclObj)file);
+                        return(NhlFATAL);
+                }
+	}
+
+	return(NhlNOERROR);
+}
+
+
 
 #ifdef __cplusplus
 }

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.53 2000-10-17 19:55:12 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.54 2001-09-28 17:00:52 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,11 @@ extern "C" {
 #include "NclBuiltIns.h"
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
+extern NhlErrorTypes _NclICreateFile(
+#if NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _NclIAddFiles(
 #if NhlNeedProto
 void
@@ -1557,7 +1562,17 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
     NclRegisterFunc(_NclIAddFiles,args,"addfiles",nargs);
 
+
     nargs = 0;
+    args = NewArgs(5);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY); nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
+    SetArgTemplate(args,nargs,"list",1,dimsizes); nargs++;
+    SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+    NclRegisterFunc(_NclICreateFile,args,"createfile",nargs);
+
     args = NewArgs(2);
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
