@@ -1,5 +1,5 @@
 
-C	$Id: wmlabs.f,v 1.5 1994-12-16 17:51:50 fred Exp $
+C	$Id: wmlabs.f,v 1.6 1995-04-25 23:29:02 fred Exp $
 C
       SUBROUTINE WMLABS(X,Y,SYMTYP)
 C
@@ -13,7 +13,7 @@ C         'ARROW'
 C         'DOT'
 C         'CLOUD'
 C         'ICE'
-C         'IS' (Intermittant showers)
+C         'IS' (Intermittent showers)
 C         'IT' (Sunny, chance of T-storms)
 C         'MC' (Mostly cloudy)
 C         'MS' (Mostly sunny)

@@ -1,5 +1,5 @@
 C
-C	$Id: wmrgwt.f,v 1.3 1994-12-16 17:51:58 fred Exp $
+C	$Id: wmrgwt.f,v 1.4 1995-04-25 23:29:04 fred Exp $
 C
       SUBROUTINE WMRGWT(N,X,Y,IFNT,NASC)
 C
@@ -42,7 +42,9 @@ C
 C
 C  Get the digitization of the character.
 C
-      CALL PCCFFF (2,3,IFNT,NASC,WSIZER,WSIZER,RWORK,MDGU,NDGU)
+      IPSS = 2
+      IBNU = 3
+      CALL PCCFFF (IPSS,IBNU,IFNT,NASC,WSIZER,WSIZER,RWORK,MDGU,NDGU)
 C
 C  Set up character width and height, depending on the character
 C  being drawn.  IOFFLG flags whether the characters should be
