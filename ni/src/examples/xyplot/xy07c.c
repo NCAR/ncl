@@ -1,5 +1,5 @@
 /*
-**      $Id: xy07c.c,v 1.2 1995-04-25 22:15:47 haley Exp $
+**      $Id: xy07c.c,v 1.3 1995-05-09 21:45:46 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -104,7 +104,7 @@ main()
  * we need to create two Data obects here.
  */
 
-    for( j = 0; j <= 2; j++ ) {
+    for( j = 0; j < 2; j++ ) {
 /*
  * Initialize data.
  */

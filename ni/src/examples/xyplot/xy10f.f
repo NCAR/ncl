@@ -1,5 +1,5 @@
 C
-C      $Id: xy10f.f,v 1.2 1995-05-09 20:03:14 haley Exp $
+C      $Id: xy10f.f,v 1.3 1995-05-09 21:45:50 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -92,10 +92,10 @@ C
       call gngpat(filename,"data",ierr)
       write(dir,31)file
  31   format('/cdf/',a16 )
-      flen = len(dir)
+      ilen = len(dir)
       do 32 i=1,256
          if( filename(i:i).eq.char(0) ) then
-            filename(i:i+flen)=dir
+            filename(i:i+ilen)=dir
             goto 34
          endif
  32   continue
