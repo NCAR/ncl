@@ -222,6 +222,8 @@ C Boulder.  Color indices 101 through 116 are to be used for contour
 C bands in the area near Boulder; they are evenly distributed between
 C pure red and pure blue.
 C
+        CALL GSCR   (IWKID,0,0.,0.,0.)
+        CALL GSCR   (IWKID,1,1.,1.,1.)
         CALL GSCR   (IWKID,2,.6,.6,.6)
         CALL GSCR   (IWKID,3,0.,0.,0.)
         CALL GSCR   (IWKID,4,1.,1.,1.)

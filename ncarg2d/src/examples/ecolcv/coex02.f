@@ -1,5 +1,5 @@
 C
-C	$Id: coex02.f,v 1.2 1994-07-08 16:27:37 stautler Exp $
+C	$Id: coex02.f,v 1.3 1994-10-25 14:01:20 haley Exp $
 C
       PROGRAM SMPCOL
 C
@@ -70,6 +70,8 @@ C
 C
 C  Define color indices and RGB labels..
 C
+      CALL GSCR(IWKID,0,0.,0.,0.)
+      CALL GSCR(IWKID,1,1.,1.,1.)
       DO 10 J=1,NY
       DO 20 I=1,NX
       CALL GSCR(IWKID,NX*(J-1)+I+1,RGB(1,I,J),RGB(2,I,J),RGB(3,I,J))
@@ -111,7 +113,6 @@ C
       CHARACTER*(*) TLAB,BLAB
       DIMENSION  A(5),B(5)
 C
-      CALL GSCR(IWKID,1,1.,1.,1.)
       CALL GSFACI(INDX)
       CALL GSFAIS(1)
       A(1) = X

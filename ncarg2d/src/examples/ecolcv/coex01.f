@@ -1,5 +1,5 @@
 C
-C	$Id: coex01.f,v 1.2 1994-07-08 16:27:36 stautler Exp $
+C	$Id: coex01.f,v 1.3 1994-10-25 14:01:19 haley Exp $
 C
 C
 C  This program produces five 9 x 9 color charts.  Blue and green
@@ -81,6 +81,8 @@ C
 C  Define color indices 3-84 to contain the desired colors.
 C
       DIMENSION RGB(3,405)
+      CALL GSCR(IWKID,0,0.,0.,0.)
+      CALL GSCR(IWKID,1,1.,1.,1.)
       NDX = 81*(INDEX-1)+1
       DO 10 N=1,81
       CALL GSCR(IWKID,N+2,RGB(1,NDX),RGB(2,NDX),RGB(3,NDX))
@@ -177,7 +179,6 @@ C
       DATA IL(1),IL(2),IL(3),IL(4),IL(5),IL(6),IL(7),IL(8),IL(9)
      1    /    3,    2,    2,    2,    1,    1,    1,    1,    1/
 C
-      CALL GSCR(IWKID,1,1.,1.,1.)
       CALL GSPLCI(1)
 C
 C  Print the title of each axis.
