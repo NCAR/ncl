@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: ymkmf,v 1.8 1994-09-13 14:51:54 haley Exp $
+#      $Id: ymkmf,v 1.9 1994-10-11 15:00:37 boote Exp $
 #
 #########################################################################
 #									#
@@ -103,7 +103,7 @@ set	base = `basename $thisdir`
 set	ndir = `dirname $thisdir`
 
 while ("$base" != "$topname")
-	if ("$base" == "/") then
+	if (("$base" == "/") || ("$base" == "")) then
 		if ($?def_topname) then
 			set topdir = .
 			set curdir = .
