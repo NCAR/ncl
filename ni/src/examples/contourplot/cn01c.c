@@ -1,5 +1,5 @@
 /*
- *      $Id: cn01c.c,v 1.7 1996-01-04 16:46:34 haley Exp $
+ *      $Id: cn01c.c,v 1.8 2003-02-28 22:19:25 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -36,6 +36,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/ContourPlot.h>
 
@@ -49,7 +50,7 @@ main(int argc, char *argv[])
     int     srlist;
     float   x,y;
     int     i,j;
-    int     NCGM=0, X11=1, PS=0;
+    int     NCGM=0, X11=1, PS=0, PDF=0;
 
 /* create a simple bull's eye pattern test data set */
 
@@ -100,6 +101,14 @@ main(int argc, char *argv[])
         NhlRLClear(srlist);
         NhlRLSetString(srlist,NhlNwkPSFileName,"./cn01c.ps");
         NhlCreate(&wid,"cn01Work",NhlpsWorkstationClass,appid,srlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkPDFFileName,"./cn01c.pdf");
+        NhlCreate(&wid,"cn01Work",NhlpdfWorkstationClass,appid,srlist);
     }
 /*
  * Create a ScalarField data object using the data set defined above.

@@ -1,5 +1,5 @@
 C
-C      $Id: cn14f.f,v 1.2 1999-03-22 17:17:57 haley Exp $
+C      $Id: cn14f.f,v 1.3 2003-02-28 22:19:25 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -24,6 +24,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFScalarFieldClass
       external NhlFContourPlotClass
@@ -72,6 +73,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Generate a color map.
 C
@@ -159,6 +161,14 @@ C
          call NhlFRLSetString(srlist,'wkPSFileName','./cn14f.ps',ierr)
          call NhlFCreate(workid,'cn14Work',
      +        NhlFPSWorkstationClass,0,srlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkPDFFileName','./cn14f.pdf',ierr)
+         call NhlFCreate(workid,'cn14Work',
+     +        NhlFPDFWorkstationClass,0,srlist,ierr)
       endif
 C
 C Set color map resource.

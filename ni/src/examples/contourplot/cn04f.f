@@ -1,5 +1,5 @@
 C
-C     $Id: cn04f.f,v 1.6 1995-06-27 00:47:53 dbrown Exp $
+C     $Id: cn04f.f,v 1.7 2003-02-28 22:19:25 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -25,6 +25,7 @@ C
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external nhlfscalarfieldclass
       external nhlfcontourplotclass
 
@@ -45,13 +46,14 @@ C
       real levels(25), thicknesses(25)
       integer lvlflag_count, pat_count, level_count,thick_count
       data lvlflag_count,pat_count,level_count,thick_count/25,25,25,25/
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to display output to an X workstation
 C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C This program emulates the output of cpex02 with a few differences:
 C 1. Because the information label is implemented as an HLU Annotation
@@ -98,6 +100,15 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPSFileName','./cn04f.ps',ierr)
          call NhlFCreate(wid,'cn04Work',NhlFPSWorkstationClass,
+     1     0,rlist,ierr) 
+      else if (PDF.eq.1) then
+C
+C Create a PDF object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPDFFileName','./cn04f.pdf',
+     1        ierr)
+         call NhlFCreate(wid,'cn04Work',NhlFPDFWorkstationClass,
      1     0,rlist,ierr) 
       endif
 C

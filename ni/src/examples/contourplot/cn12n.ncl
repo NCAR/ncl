@@ -53,6 +53,7 @@ begin
   NCGM=0
   X11=1
   PS=0
+  PDF=0
 
   if (NCGM .eq. 1) then
 ;
@@ -77,6 +78,15 @@ begin
         wid = create "cn12Work" psWorkstationClass defaultapp
          "wkPSFileName" : "./cn12n.ps"
         end create
+      else
+        if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+          wid = create "cn12Work" pdfWorkstationClass defaultapp
+           "wkPDFFileName" : "./cn12n.pdf"
+          end create
+        end if
       end if
     end if
   end if

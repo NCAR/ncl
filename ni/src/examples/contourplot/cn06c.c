@@ -1,5 +1,5 @@
 /*
- *      $Id: cn06c.c,v 1.5 1997-10-08 17:21:47 haley Exp $
+ *      $Id: cn06c.c,v 1.6 2003-02-28 22:19:25 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -31,6 +31,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <netcdf.h>
@@ -70,7 +71,7 @@ main()
 /*
  * Default is to create an NCGM file.
  */
-    int NCGM=1, X11=0, PS=0;
+    int NCGM=1, X11=0, PS=0, PDF=0;
 /*
  * Initialize the HLU library and set up resource template.
  */
@@ -132,6 +133,16 @@ main()
 		NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,icount);
         NhlRLSetString(srlist,NhlNwkPSFileName,"./cn06c.ps");
         NhlCreate(&workid,"cn06Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,srlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(srlist);
+		NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,icount);
+        NhlRLSetString(srlist,NhlNwkPDFFileName,"./cn06c.pdf");
+        NhlCreate(&workid,"cn06Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,srlist);
     }
 /*

@@ -1,5 +1,5 @@
 C
-C      $Id: cn17f.f,v 1.2 1998-05-29 16:14:53 haley Exp $
+C      $Id: cn17f.f,v 1.3 2003-02-28 22:19:26 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -37,6 +37,7 @@ C
       external nhlfxworkstationclass
       external nhlfncgmworkstationclass
       external nhlfpsworkstationclass
+      external nhlfpdfworkstationclass
       external nhlfscalarfieldclass
       external nhlftextitemclass
       external nhlfcontourplotclass
@@ -204,6 +205,7 @@ c
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C     
 C Initialize the HLU library and set up resource template.
 C
@@ -277,6 +279,16 @@ C
          call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
      +        ierr)
          call NhlFCreate(workid,'cn17Work',NhlFPSWorkstationClass,
+     +        0,srlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF object.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetstring(srlist,'wkPDFFileName','./cn17f.pdf',ierr)
+         call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
+     +        ierr)
+         call NhlFCreate(workid,'cn17Work',NhlFPDFWorkstationClass,
      +        0,srlist,ierr)
       endif
 C

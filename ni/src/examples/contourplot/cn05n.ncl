@@ -116,6 +116,7 @@ mfile =  addfile (datafile,"r")
 NCGM=1
 X11=0
 PS=0
+PDF=0
 
 if (NCGM.eq.1) then
 ;
@@ -140,6 +141,15 @@ else
       wks = create "cn05Work" psWorkstationClass defaultapp
         "wkPSFileName" : "./cn05n.ps"
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDF workstation.
+;
+        wks = create "cn05Work" pdfWorkstationClass defaultapp
+          "wkPDFFileName" : "./cn05n.pdf"
+        end create
+      end if
     end if
   end if
 end if

@@ -85,6 +85,8 @@ begin
   NCGM=0
   X11=1
   PS=0
+  PDF=0
+
   if (NCGM.eq.1) then
 ;
 ; Create an ncgmWorkstation object.
@@ -111,6 +113,16 @@ begin
           "wkPSFileName" : "./cn17n.ps"
           "wkColorMap" : cmap
         end create
+      else 
+        if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+          wid = create "cn17Work" pdfWorkstationClass defaultapp
+            "wkPDFFileName" : "./cn17n.pdf"
+            "wkColorMap" : cmap
+          end create
+        end if
       end if
     end if
   end if

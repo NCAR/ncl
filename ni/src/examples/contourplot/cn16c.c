@@ -1,5 +1,5 @@
 /*
- *      $Id: cn16c.c,v 1.3 1998-02-17 16:27:41 haley Exp $
+ *      $Id: cn16c.c,v 1.4 2003-02-28 22:19:25 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -29,6 +29,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/ScalarField.h>
@@ -75,7 +76,7 @@ main()
 /*
  * Default is to create an X11 window.
  */
-  int NCGM=0, X11=1, PS=0;
+  int NCGM=0, X11=1, PS=0, PDF=0;
 
 /*
  * Initialize the HLU library and set up resource template.
@@ -112,6 +113,14 @@ main()
     NhlRLClear(srlist);
     NhlRLSetString(srlist,"wkPSFileName","./cn16c.ps");
     NhlCreate(&wid,"cn16Work",NhlpsWorkstationClass,0,srlist);
+  }
+  else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+    NhlRLClear(srlist);
+    NhlRLSetString(srlist,"wkPDFFileName","./cn16c.pdf");
+    NhlCreate(&wid,"cn16Work",NhlpdfWorkstationClass,0,srlist);
   }
 /*
  * Read NCL created NetCDF file containing U and V wind components.

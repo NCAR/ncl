@@ -1,5 +1,5 @@
 C
-C     $Id: cn11f.f,v 1.1 1995-06-27 00:47:57 dbrown Exp $
+C     $Id: cn11f.f,v 1.2 2003-02-28 22:19:25 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -24,6 +24,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external nhlftickmarkclass
       external NhlFTitleClass
@@ -53,7 +54,7 @@ C
       real t(M,N)
       data level / 1000.0, 850.0, 700.0, 500.0, 400.0, 300.0, 
      1      250.0, 200.0, 150.0, 100.0 /
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C data file name
 C
@@ -65,6 +66,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C read data
 C     
@@ -113,6 +115,14 @@ C
          call NhlFRLSetstring(rlist,'wkPSFileName','./cn11f.ps',ierr)
          call NhlFCreate(wid,'cn11Work',
      1        NhlFPSWorkstationClass,0,rlist,ierr) 
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPDFFileName','./cn11f.pdf',ierr)
+         call NhlFCreate(wid,'cn11Work',
+     1        NhlFPDFWorkstationClass,0,rlist,ierr) 
       endif
 C  
 C  retrieve gks workstation id from the workstation object

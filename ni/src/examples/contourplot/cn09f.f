@@ -1,5 +1,5 @@
 C
-C      $Id: cn09f.f,v 1.6 1997-10-08 17:21:53 haley Exp $
+C      $Id: cn09f.f,v 1.7 2003-02-28 22:19:25 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -23,6 +23,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFScalarFieldClass
       external NhlFContourPlotClass
@@ -46,13 +47,14 @@ C
 C
 C Default is to create an NCGM file.
 C
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to create an NCGM file.
 C
       NCGM=1
       X11=0
       PS=0
+      PDF=0
 C
 C Initialize the HLU library and set up resource template.
 C
@@ -165,6 +167,16 @@ C
          call NhlFRLSetString(srlist,'wkPSFileName','./cn09f.ps',ierr)
          call NhlFCreate(workid,'cn09Work',
      +        NhlFPSWorkstationClass,0,srlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,count,
+     +        ierr)
+         call NhlFRLSetString(srlist,'wkPDFFileName','./cn09f.pdf',ierr)
+         call NhlFCreate(workid,'cn09Work',
+     +        NhlFPDFWorkstationClass,0,srlist,ierr)
       endif
 C
 C Open data file containing surface pressure data for

@@ -1,5 +1,5 @@
 /*
- *      $Id: cn17c.c,v 1.2 1998-05-29 16:14:52 haley Exp $
+ *      $Id: cn17c.c,v 1.3 2003-02-28 22:19:25 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,6 +43,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/ScalarField.h>
@@ -147,7 +148,7 @@ main()
 /*
  * Default is to create an X11 window.
  */
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Initialize the HLU library and set up resource template.
  * A resource file is not used in this example, but if you did
@@ -218,6 +219,15 @@ main()
       NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
       NhlRLSetString(srlist,NhlNwkPSFileName,"./cn17c.ps");
       NhlCreate(&wid,"cn17Work",NhlpsWorkstationClass,0,srlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+      NhlRLClear(srlist);
+      NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
+      NhlRLSetString(srlist,NhlNwkPDFFileName,"./cn17c.pdf");
+      NhlCreate(&wid,"cn17Work",NhlpdfWorkstationClass,0,srlist);
     }
 /*
  * Create a "great" circle in lat/lon coordinates. We don't want to draw

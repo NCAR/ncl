@@ -68,6 +68,7 @@ begin
   NCGM=1
   X11=1
   PS=1
+  PDF=1
 ;
 ; Create an ncgmWorkstation object.
 ;
@@ -89,8 +90,15 @@ begin
     "wkPSFileName" : "./cn15n.ps"      ; name the PostScript file
     "wkColorMap"   : cmap              ; assign the new color map
 ;
+; Create a PDFWorkstation object.
+;
+   pdf = create "cn15Work" pdfWorkstationClass defaultapp
+    "wkVisualType" : "color"
+    "wkPDFFileName" : "./cn15n.pdf"      ; name the PostScript file
+    "wkColorMap"   : cmap              ; assign the new color map
+;
 ; Since the plots are beside each other, use landscape mode and the
-; PostScript resources for positioning the plot on the paper.
+; PostScript/PDF resources for positioning the plot on the paper.
 ;
     "wkOrientation" : "landscape"
     "wkDeviceLowerX" :   0
@@ -297,4 +305,21 @@ begin
   draw(xy_plot)
   draw(tx)
   frame(ps)
+;
+; Reassign the workstation to save PDF.
+;
+  NhlChangeWorkstation (ice,pdf)
+  NhlChangeWorkstation (cn,pdf)
+  NhlChangeWorkstation (mp,pdf)
+  NhlChangeWorkstation (xy_plot,pdf)
+  NhlChangeWorkstation (tx,pdf)
+;
+; Draw all objects to PDF.
+;
+  draw(ice)
+  draw(cn)
+  draw(mp)
+  draw(xy_plot)
+  draw(tx)
+  frame(pdf)
 end

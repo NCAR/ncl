@@ -59,6 +59,7 @@ cmap = (/ (/0.0, 0.0, 0.0/), \
 NCGM=1
 X11=0
 PS=0
+PDF=0
 
 if (NCGM.eq.1) then
 ;
@@ -86,6 +87,16 @@ else
         "wkPSFileName" : "cn08n.ps"
         "wkColorMap" : cmap
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Open PDF workstation.
+;
+        wks = create "cn08Work" pdfWorkstationClass defaultapp
+          "wkPDFFileName" : "cn08n.pdf"
+          "wkColorMap" : cmap
+        end create
+      end if
     end if
   end if
 end if

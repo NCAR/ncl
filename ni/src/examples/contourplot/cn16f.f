@@ -1,5 +1,5 @@
 C
-C      $Id: cn16f.f,v 1.1 1997-03-14 17:17:07 haley Exp $
+C      $Id: cn16f.f,v 1.2 2003-02-28 22:19:26 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -23,6 +23,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFScalarFieldClass
       external NhlFContourPlotClass
@@ -63,10 +64,11 @@ C
 C
 C Default is to create an X11 window.
 C
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the HLU library and set up resource template.
 C A resource file is not used in this example, but if you did
@@ -103,6 +105,14 @@ C
          call NhlFRLSetString(srlist,'wkPSFileName','./cn16f.ps',ierr)
          call NhlFCreate(wid,'cn16Work',
      +        NhlFPSWorkstationClass,0,srlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkPDFFileName','./cn16f.pdf',ierr)
+         call NhlFCreate(wid,'cn16Work',
+     +        NhlFPDFWorkstationClass,0,srlist,ierr)
       endif
 C
 C Read NCL created NetCDF file containing U and V wind components.

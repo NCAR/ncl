@@ -1,5 +1,5 @@
 C
-C     $Id: cn12f.f,v 1.2 1995-10-18 15:52:03 haley Exp $
+C     $Id: cn12f.f,v 1.3 2003-02-28 22:19:25 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -27,6 +27,7 @@ C
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external nhlfscalarfieldclass
       external nhlfcontourplotclass
       external nhlfmapplotclass
@@ -38,7 +39,7 @@ C
       real z(M,N)
       integer len_dims(2)
 
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Areas we want to fill.
 C
@@ -65,6 +66,8 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
+
       call NhlFInitialize
 C
 C Create an application object.
@@ -97,6 +100,14 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPSFileName','./cn12f.ps',ierr)
          call NhlFCreate(wid,'cn12Work',NhlFPSWorkstationClass,
+     1     0,rlist,ierr) 
+      else if (PDF.eq.1) then
+C
+C Create a PDF object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPDFFileName','./cn12f.pdf',ierr)
+         call NhlFCreate(wid,'cn12Work',NhlFPDFWorkstationClass,
      1     0,rlist,ierr) 
       endif
 C

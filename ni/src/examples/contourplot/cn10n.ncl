@@ -76,6 +76,7 @@ cmap = (/ (/1.00, 1.00, 1.00/), \
 NCGM=0
 X11=1
 PS=0
+PDF=0
 
 if (NCGM .eq. 1) then
 ;
@@ -106,6 +107,17 @@ else
         "wkColorMap"         : cmap
         "wkBackgroundColor"  : (/ 1., 1., 1. /)
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create an PDFWorkstation object.
+;
+        workstation_id = create "moundp" pdfWorkstationClass defaultapp
+          "wkPDFFileName"       : "cn10n.pdf"
+          "wkColorMap"         : cmap
+          "wkBackgroundColor"  : (/ 1., 1., 1. /)
+        end create
+      end if
     end if
   end if
 end if

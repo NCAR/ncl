@@ -1,5 +1,5 @@
 C
-C     $Id: cn03f.f,v 1.6 1995-06-27 00:47:52 dbrown Exp $
+C     $Id: cn03f.f,v 1.7 2003-02-28 22:19:25 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -26,6 +26,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external nhlfscalarfieldclass
       external nhlfcontourplotclass
@@ -56,7 +57,7 @@ C
       integer rlist, grlist
       integer len_dims(2)
       real xvp,yvp,heightvp,widthvp
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Data file name
 C
@@ -68,6 +69,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Read data
 C     
@@ -112,6 +114,15 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPSFileName','./cn03f.ps',ierr)
          call NhlFCreate(wid,'cn03Work',NhlFPSWorkstationClass,
+     1        0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPDFFileName','./cn03f.pdf',
+     1        ierr)
+         call NhlFCreate(wid,'cn03Work',NhlFPDFWorkstationClass,
      1        0,rlist,ierr)
       endif
 C

@@ -1,5 +1,5 @@
 /*
- *      $Id: cn12c.c,v 1.2 1995-10-18 15:52:03 haley Exp $
+ *      $Id: cn12c.c,v 1.3 2003-02-28 22:19:25 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -39,6 +39,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/MapPlot.h>
@@ -75,7 +76,7 @@ main(int argc, char *argv[])
 
     extern void bndary();
     extern void gendat (float *,int,int,int,int,int,float,float);
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Initialize the high level utility library
  */
@@ -108,12 +109,21 @@ main(int argc, char *argv[])
     }
     else if (PS) {
 /*
- * Create a meta file workstation.
+ * Create a PS workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"./cn12c.ps");
         NhlCreate(&wid,"cn12Work",
                   NhlpsWorkstationClass,NhlDEFAULT_APP,rlist); 
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./cn12c.pdf");
+        NhlCreate(&wid,"cn12Work",
+                  NhlpdfWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
 /*
  * Call the routine 'gendat' to create an array of contour data.

@@ -61,6 +61,7 @@ cmap = (/ (/1.00,1.00,1.00/), \  ; white
   NCGM=0
   X11=1
   PS=0
+  PDF=0
 ;                 ncl supports if-then and if-then-else logic.
 ;
   if (NCGM .eq. 1) then
@@ -88,6 +89,16 @@ cmap = (/ (/1.00,1.00,1.00/), \  ; white
 	"wkPSFileName" : "./cn14n.ps"      ; name the PostScript file
 	"wkColorMap" : cmap              ; assign the new color map
         end create
+      else
+        if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+	  wks = create "cn14Work" pdfWorkstationClass defaultapp
+	  "wkPDFFileName" : "./cn14n.pdf"      ; name the PDF file
+	  "wkColorMap" : cmap              ; assign the new color map
+          end create
+        end if
       end if
     end if
   end if

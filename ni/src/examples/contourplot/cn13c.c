@@ -1,5 +1,5 @@
 /*
-**      $Id: cn13c.c,v 1.5 1996-03-07 20:51:54 haley Exp $
+**      $Id: cn13c.c,v 1.6 2003-02-28 22:19:25 grubin Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -31,6 +31,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/ScalarField.h>
@@ -58,7 +59,7 @@ main()
 /*
  * Default is to display to an X11 window.
  */
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Initialize the HLU library and set up resource template.
  */
@@ -113,6 +114,16 @@ main()
         NhlRLSetString(srlist,NhlNwkPSFileName,"./cn13c.ps");
         NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
         NhlCreate(&workid,"cn13Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,srlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkPDFFileName,"./cn13c.pdf");
+        NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
+        NhlCreate(&workid,"cn13Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,srlist);
     }
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: cn04c.c,v 1.5 1995-06-22 21:07:43 haley Exp $
+ *      $Id: cn04c.c,v 1.6 2003-02-28 22:19:25 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -35,6 +35,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/TextItem.h>
@@ -60,7 +61,7 @@ main(int argc, char *argv[])
 
     extern void bndary();
     extern void gendat (float *,int,int,int,int,int,float,float);
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * This program emulates the output of cpex02 with a few differences:
  * 1. Because the information label is implemented as an HLU Annotation
@@ -111,6 +112,15 @@ main(int argc, char *argv[])
         NhlRLSetString(rlist,NhlNwkPSFileName,"./cn04c.ps");
         NhlCreate(&wid,"cn04Work",
                   NhlpsWorkstationClass,NhlDEFAULT_APP,rlist); 
+    }
+    else if (PDF) {
+/*
+ * Create a meta file workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./cn04c.pdf");
+        NhlCreate(&wid,"cn04Work",
+                  NhlpdfWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
 /*
  * Call the Fortran routine 'GENDAT' to create the first array of contour

@@ -1,5 +1,5 @@
 C
-C      $Id: cn15f.f,v 1.6 1999-07-26 14:40:05 haley Exp $
+C      $Id: cn15f.f,v 1.7 2003-02-28 22:19:26 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -24,6 +24,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFScalarFieldClass
       external NhlFTextItemClass
@@ -76,11 +77,12 @@ C
 C
 C Output to all three workstations.
 C
-      integer ncgm1, x1, ps1
-      integer NCGM, X11, PS
+      integer ncgm1, x1, ps1, PDF1
+      integer NCGM, X11, PS, PDF
       NCGM=1
       X11=1
       PS=1
+      PDF=1
 C
 C Generate a color map.
 C
@@ -184,6 +186,25 @@ C
      +     ierr)
       call NhlFCreate(ps1,'cn15Work',
      +     NhlFPSWorkstationClass,0,srlist,ierr)
+C
+C Create a PDF workstation.
+C
+      call NhlFRLClear(srlist)
+      call NhlFRLSetString(srlist,'wkPDFFileName','./cn15f.pdf',ierr)
+      call NhlFRLSetString(srlist,'wkVisualType','color',ierr)
+C
+C Since the plots are beside each other, use landscape mode and the
+C PDF resources for positioning the plot on the paper.
+C
+      call NhlFRLSetString(srlist,'wkOrientation','landscape',ierr)
+      call NhlFRLSetInteger(srlist,'wkDeviceLowerX',0,ierr)
+      call NhlFRLSetInteger(srlist,'wkDeviceLowerY',60,ierr)
+      call NhlFRLSetInteger(srlist,'wkDeviceUpperX',600,ierr)
+      call NhlFRLSetInteger(srlist,'wkDeviceUpperY',700,ierr)
+      call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
+     +     ierr)
+      call NhlFCreate(pdf1,'cn15Work',
+     +     NhlFPDFWorkstationClass,0,srlist,ierr)
 C
 C Open and read NetCDF file.
 C

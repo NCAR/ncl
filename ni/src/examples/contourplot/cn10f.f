@@ -1,5 +1,5 @@
 C
-C      $Id: cn10f.f,v 1.5 1997-10-08 17:21:55 haley Exp $
+C      $Id: cn10f.f,v 1.6 2003-02-28 22:19:25 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -30,6 +30,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFScalarFieldClass
       external NhlFCoordArraysClass
@@ -62,13 +63,14 @@ C
       character*256 filename
       character*50 recname
 
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to an X workstation.
 C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the HLU library and set up resource template.
 C
@@ -204,6 +206,16 @@ C
      +        ierr)
          call NhlFCreate(work_id,'cn10Work',
      +        NhlFPSWorkstationClass,0,srlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkPDFFileName','./cn10f.pdf',ierr)
+         call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
+     +        ierr)
+         call NhlFCreate(work_id,'cn10Work',
+     +        NhlFPDFWorkstationClass,0,srlist,ierr)
       endif
 C
 C Open the netCDF file.

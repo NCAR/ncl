@@ -1,5 +1,5 @@
 C
-C      $Id: cn05f.f,v 1.5 1999-03-15 18:05:47 haley Exp $
+C      $Id: cn05f.f,v 1.6 2003-02-28 22:19:25 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -23,6 +23,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFScalarFieldClass
       external NhlFContourPlotClass
@@ -88,13 +89,14 @@ C
       character*15 daystr
       character*50 recname
 
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to create an NCGM file.
 C
       NCGM=1
       X11=0
       PS=0
+      PDF=0
 C
 C Open the netCDF file.
 C
@@ -145,6 +147,15 @@ C
          call NhlFRLSetString(srlist,'wkPSFileName','./cn05f.ps',ierr)
          call NhlFCreate(workid,'cn05Work',
      +        NhlFPSWorkstationClass,0,srlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkPDFFileName','./cn05f.pdf',
+     +        ierr)
+         call NhlFCreate(workid,'cn05Work',
+     +        NhlFPDFWorkstationClass,0,srlist,ierr)
       endif
 C
 C Assign the colormap to the workstation.

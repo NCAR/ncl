@@ -1,5 +1,5 @@
 C
-C     $Id: cn02f.f,v 1.5 1995-06-27 00:47:49 dbrown Exp $
+C     $Id: cn02f.f,v 1.6 2003-02-28 22:19:25 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -25,6 +25,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external nhlfscalarfieldclass
       external nhlfcontourplotclass
@@ -41,13 +42,14 @@ C
       real fscales(1000)
       integer colors(256)
       integer count, itmp
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to display output to an X workstation
 C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Create a simple bull's eye pattern test data set
 C     
@@ -97,6 +99,15 @@ C
          call NhlFRLClear(srlist)
          call NhlFRLSetstring(srlist,'wkPSFileName','./cn02f.ps',ierr)
          call NhlFCreate(wid,'cn02Work',NhlFPSWorkstationClass,
+     1     0,srlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF object.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetstring(srlist,'wkPDFFileName','./cn02f.pdf',
+     1        ierr)
+         call NhlFCreate(wid,'cn02Work',NhlFPDFWorkstationClass,
      1     0,srlist,ierr)
       endif
 C

@@ -1,5 +1,5 @@
 /*
- *      $Id: cn11c.c,v 1.1 1995-06-27 00:47:55 dbrown Exp $
+ *      $Id: cn11c.c,v 1.2 2003-02-28 22:19:25 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,7 @@
 #include <ncarg/hlu/Title.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/gks.h>
 #include <ncarg/ncargC.h>
@@ -49,7 +50,7 @@ main()
     int iwrk[1000];
     NhlBoundingBox thebox;
     int rlist, grlist;
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Initialize the high level utility library
  */
@@ -86,13 +87,23 @@ main()
     }
     else if (PS) {
 /*
- * Create a meta file workstation.
+ * Create a PS workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"./cn11c.ps");
         NhlCreate(&wid,"cn11Work",
                   NhlpsWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./cn11c.pdf");
+        NhlCreate(&wid,"cn11Work",
+                  NhlpdfWorkstationClass,NhlDEFAULT_APP,rlist); 
+    }
+
 /*
 * Retrieve GKS workstation id from the workstation object
 */

@@ -1,5 +1,5 @@
 /*
- *      $Id: cn15c.c,v 1.6 1999-03-15 18:05:48 haley Exp $
+ *      $Id: cn15c.c,v 1.7 2003-02-28 22:19:25 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -25,6 +25,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/TextItem.h>
@@ -85,8 +86,8 @@ main()
 /*
  * Output to all three workstations.
  */
-    int ncgm1,x1,ps1;
-    int NCGM=1, X111=1, PS=1;
+    int ncgm1,x1,ps1, pdf1;
+    int NCGM=1, X111=1, PS=1, PDF=1;
     int nlt, nln, zonal, ksst;
     float sstzon;
 /*
@@ -175,6 +176,12 @@ main()
       NhlRLSetString(srlist,NhlNwkPSFileName,"./cn15c.ps");
       NhlRLSetString(srlist,NhlNwkVisualType,"color");
 /*
+ * Create a PDF workstation.
+ */
+      NhlRLClear(srlist);
+      NhlRLSetString(srlist,NhlNwkPDFFileName,"./cn15c.pdf");
+      NhlRLSetString(srlist,NhlNwkVisualType,"color");
+/*
  * Since the plots are beside each other, use landscape mode and the
  * PostScript resources for positioning the plot on the paper.
  */
@@ -185,6 +192,7 @@ main()
       NhlRLSetInteger(srlist,NhlNwkDeviceUpperY,700);
       NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
       NhlCreate(&ps1,"cn15Work",NhlpsWorkstationClass,0,srlist);
+      NhlCreate(&pdf1,"cn15Work",NhlpdfWorkstationClass,0,srlist);
 /*
  * Open and read NetCDF file.
  */
@@ -434,9 +442,31 @@ main()
       NhlDraw(xy_plot);
       NhlDraw(tx);
       NhlFrame(ps1);
+/*
+ * Reassign the workstation to save PDF.
+ */
+      NhlChangeWorkstation (ice,pdf1);
+      NhlChangeWorkstation (cn,pdf1);
+      NhlChangeWorkstation (mp,pdf1);
+      NhlChangeWorkstation (xy_plot,pdf1);
+      NhlChangeWorkstation (tx,pdf1);
+/*
+ * Draw all objects to PDF.
+ */
+      NhlDraw(ice);
+      NhlDraw(cn);
+      NhlDraw(mp);
+      NhlDraw(xy_plot);
+      NhlDraw(tx);
+      NhlFrame(pdf1);
+ /*
+  * Remove resources
+  */
       NhlDestroy(ncgm1);
       NhlDestroy(x1);
       NhlDestroy(ps1);
+      NhlDestroy(pdf1);
       NhlDestroy(appid);
+
 }
 
