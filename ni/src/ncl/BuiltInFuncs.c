@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.9 1995-04-12 00:04:42 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.10 1995-04-14 20:11:30 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2139,23 +2139,24 @@ NhlErrorTypes _NclIrand
 ()
 #endif
 {
-	NclStackEntry args;
+	NclStackEntry data_out;
 	NclMultiDValData tmp_md= NULL;
+	int tmp ;
+	int dimsize = 1;
 
 
-	args  = _NclGetArg(0,1,DONT_CARE);
-	switch(args.kind) {
-	case NclStk_VAL:
-		tmp_md = args.u.data_obj;
-		break;
-	case NclStk_VAR:
-		tmp_md = _NclVarValueRead(args.u.data_var,NULL,NULL);
-		break;
-	default:
-		return(NhlFATAL);
-	}
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"Function or procedure not implemented");
-	return(NhlFATAL);
+	tmp = rand();
+	
+	
+	return(NclReturnValue(
+		&tmp,
+		1,
+		&dimsize,
+		&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
+		NCL_int,
+		1
+	));
+
 }
 NhlErrorTypes _NclIsrand
 #if	NhlNeedProto
@@ -2179,8 +2180,11 @@ NhlErrorTypes _NclIsrand
 	default:
 		return(NhlFATAL);
 	}
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"Function or procedure not implemented");
-	return(NhlFATAL);
+	if (tmp_md != NULL) {
+		srand(*(int*)tmp_md->multidval.val);
+	} else {
+		return(NhlFATAL);
+	}
 }
 NhlErrorTypes _NclIabs
 #if	NhlNeedProto
@@ -2191,6 +2195,8 @@ NhlErrorTypes _NclIabs
 {
 	NclStackEntry args;
 	NclMultiDValData tmp_md= NULL;
+	int *out_val = NULL;
+	int i;
 
 
 	args  = _NclGetArg(0,1,DONT_CARE);
@@ -2204,8 +2210,31 @@ NhlErrorTypes _NclIabs
 	default:
 		return(NhlFATAL);
 	}
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"Function or procedure not implemented");
-	return(NhlFATAL);
+	if(tmp_md != NULL) {
+		out_val = (int*)NclMalloc(tmp_md->multidval.totalelements);
+		if(tmp_md->multidval.missing_value.has_missing) {
+			for( i = 0 ; i < tmp_md->multidval.totalelements; i ++ ) {
+				if(((int*)tmp_md->multidval.val)[i] != tmp_md->multidval.missing_value.value.intval) {
+					out_val[i] = (int)abs(((int*)tmp_md->multidval.val)[i]);
+				} else {
+					out_val[i] = tmp_md->multidval.missing_value.value.intval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < tmp_md->multidval.totalelements; i ++ ) {
+				out_val[i] = (int)abs(((int*)tmp_md->multidval.val)[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			tmp_md->multidval.n_dims,
+			tmp_md->multidval.dim_sizes,
+			&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
+			NCL_int,
+			0
+			));
+	}
+	return(NhlNOERROR);
 }
 NhlErrorTypes _NclIncargpath
 #if	NhlNeedProto
