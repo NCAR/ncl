@@ -2,7 +2,7 @@
 .na
 .nh
 .SH NAME
-Projects points.
+MAPTRA - Projects points.
 .SH SYNOPSIS
 CALL MAPTRA (RLAT,RLON,UVAL,VVAL)
 .SH C-BINDING SYNOPSIS

@@ -1,41 +1,47 @@
-.\"
-.\"	$Id: ezstrm.m,v 1.1 1993-03-11 16:33:27 haley Exp $
-.\"
-.TH EZSTRM 3NCARG "12 June 1991" UNIX "NCAR GRAPHICS"
+.TH EZSTRM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
-EZSTRM - draws a streamline representation of the flow field.
-The representation is independent of the flow speed.  EZSTRM
-requires that the whole array is to be processed, the arrays
-are dimensioned U(IMAX,JMAX), V(IMAX,JMAX), and
-WORK(2*IMAX*JMAX).   The window and viewport are chosen by
-STRMLN, and PERIM is called.
+EZSTRM - 
+Used as a front-end to STRMLN with a simpler interface.
+Like STRMLN, it may be used to create a streamline field
+flow plot in a single call. The restrictions are: (1) the
+actual first dimension of the array must be equal to the
+size given to Streamlines (i.e. IMAX); and (2), assuming
+the default value of the compatibility mode parameter, CPM,
+Streamlines will perform a SET call and will draw a
+perimeter around the plot using a call to PERIM.
 .SH SYNOPSIS
-CALL EZSTRM (U,V,WORK,IMAX,JMAX)
+CALL EZSTRM (U,V,WORK,IMAX,JMAX) 
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
 void c_ezstrm (float *u, float *v, float *work, int imax, int jmax)
 .SH DESCRIPTION 
-.IP U,V 12
-Two dimensional arrays containing the velocity fields
-to be plotted.  Note: If the U and V components are,
-for example, defined in Cartesian coordinates and the
-user wishes to plot them on a different projection
-(such as stereographic), then the appropriate
-transformation must be made to the U and V components
-via the functions FU and FV (located in DRWSTR).
+.IP U 12
+(REAL 2-dimensional array, dimensioned IMAX x n: n >=
+JMAX, input) By default, assumed to contain the first
+dimensional Cartesian components of the vector field.
+However, if PLR is non-zero, it is treated as containing
+the vector magnitudes.
+.IP V 12
+(REAL 2-dimensional array, dimensioned IMAX x n: n >=
+JMAX, input) By default, assumed to contain the second
+dimensional Cartesian components of the vector field.
+However, if PLR is non-zero, it is treated as containing
+the vector angles.
 .IP WORK 12
-User provided work array. The dimension of this array
-must be .GE. 2*IMAX*JPTSY.
-.sp
-Caution: This routine does not check the size of the
-work array.
+(REAL array, dimensioned n: n>= 2*IMAX*JMAX working
+space): User provided work array used to store the
+normalized vector component values, and also to keep track
+of the grid boxes eligible for starting a streamline or
+placement of a directional arrow.
 .IP IMAX 12
-The first dimension of U and V in the calling program
-(X-direction).
+(INTEGER, input) Actual size of the first dimension of
+arrays U and V
 .IP JMAX 12
-The second dimension of U and V in the calling program
-(Y-direction).
+(INTEGER, input) Assumed size of the second dimension
+of arrays U and V.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the Fortran 
 argument descriptions with the following exceptions:
@@ -45,17 +51,28 @@ The second dimension of u and v in the calling program.
 .IP jmax 12
 The first dimension of u and v in the calling program.
 .SH ACCESS
-To use EZSTRM load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_ezstrm load 
-the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
+To use EZSTRM, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
-strmln, ezstrm, ncarg_cbind
-.sp
-Hardcopy:  "NCAR Graphics User's Guide, Version 2.00"
+streamlines,
+fx,
+fy,
+stgeti,
+stgetr,
+stinit,
+stream,
+strmln,
+strset,
+stseti,
+stsetr,
+stuixy,
+stumsl,
+stumta,
+stumxy,
+ncarg_cbind.
 .SH COPYRIGHT
-(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved

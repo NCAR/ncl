@@ -2,7 +2,8 @@
 .na
 .nh
 .SH NAME
-Pwrite_family - is a utility for drawing text and other characters using polylines.
+Pwrite_family - is a utility for drawing text and other characters using
+polylines.
 .SH STATUS
 Pwrite_family is obsolete.  It has been replaced by the Plotchar utility.
 .sp
