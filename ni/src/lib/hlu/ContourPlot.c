@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.128 2004-10-08 23:37:40 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.129 2004-11-17 23:29:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2069,6 +2069,15 @@ ContourPlotInitialize
 		return(ret);
 	}
  
+	/*
+	 * CellFill is not supported for 1D data arrays
+	 */
+	if (cnp->sfp->d_arr->num_dimensions == 1 
+	    && cnp->fill_mode == NhlCELLFILL) {
+		e_text = "%s: CellFill mode not supported for MeshScalarField data; defaulting to RasterFill";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		cnp->fill_mode = NhlRASTERFILL;
+	}
 
 /* Set view dependent resources */
 
@@ -2436,7 +2445,15 @@ static NhlErrorTypes ContourPlotSetValues
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-
+	/*
+	 * CellFill is not supported for 1D data arrays
+	 */
+	if (cnp->sfp->d_arr->num_dimensions == 1 
+	    && cnp->fill_mode == NhlCELLFILL) {
+		e_text = "%s: CellFill mode not supported for MeshScalarField data; defaulting to RasterFill";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		cnp->fill_mode = NhlRASTERFILL;
+	}
 
 /* Set view dependent resources */
 
