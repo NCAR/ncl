@@ -1,12 +1,12 @@
 #
-#      $Id: yMakefile,v 1.58 2002-07-02 11:36:30 haley Exp $
+#      $Id: yMakefile,v 1.59 2003-02-27 21:36:15 grubin Exp $
 #
 #########################################################################
-#									#
-#			   Copyright (C)  1993				#
-#	     University Corporation for Atmospheric Research		#
-#			   All Rights Reserved				#
-#									#
+#                                                                       #
+#			   Copyright (C)  1993                                      #
+#	     University Corporation for Atmospheric Research                #
+#			   All Rights Reserved                                      #
+#                                                                       #
 #########################################################################
 #
 #	File:		yMakefile
@@ -54,7 +54,8 @@ HDRS		= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		MapRGDataHandler.h MapRGDataHandlerP.h \
 		Primitive.h PrimitiveP.h \
 		CurvilinearTransObj.h CurvilinearTransObjP.h \
-		SphericalTransObj.h SphericalTransObjP.h SphericalGeometryP.h
+		SphericalTransObj.h SphericalTransObjP.h SphericalGeometryP.h \
+        PDFWorkstation.h PDFWorkstationP.h
 
 CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
@@ -74,7 +75,8 @@ CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		MapV41DataHandler.c MapRGDataHandler.c Primitive.c \
 		CurvilinearTransObj.c SphericalTransObj.c SphericalGeometry.c \
 		bsearch.c linaprox.c wksisact.c simpletrans.c wksisopn.c \
-		cmpf.c nicevals.c
+		cmpf.c nicevals.c \
+        PDFWorkstation.c
 
 COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
@@ -94,7 +96,8 @@ COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		MapV41DataHandler.o MapRGDataHandler.o Primitive.o \
 		CurvilinearTransObj.o SphericalTransObj.o SphericalGeometry.o \
 		bsearch.o linaprox.o wksisact.o simpletrans.o wksisopn.o \
-		cmpf.o nicevals.o
+		cmpf.o nicevals.o \
+        PDFWorkstation.o
 
 FSRCS		= DATACOMMF.f ERRORF.f HLUF.f PLOTMANAGERF.f RLGEN.f RLSET.f \
 		RLGET.f TRANSFORMF.f VIEWF.f WORKSPACEF.f WORKSTATIONF.f \
