@@ -1,5 +1,5 @@
 /*
- *      $Id: ngi.c,v 1.11 1999-02-23 04:01:59 dbrown Exp $
+ *      $Id: ngi.c,v 1.12 1999-09-11 00:44:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -81,7 +81,7 @@ main
 	char	**argv;
 #endif
 {
-	int		appid,nxapp,ncl,ne,browse,mn,xwk;
+	int		appid,nxapp,ncl,ne,browse,mn;
 
 	NhlInitialize();
 

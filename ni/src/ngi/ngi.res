@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.27 1999-06-02 03:28:11 dbrown Exp $
+!      $Id: ngi.res,v 1.28 1999-09-11 00:44:03 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -806,6 +806,12 @@ addfile*Start_Stop.translations: #override \
 *browseMGR*DataGrid*translations: #override \
         <Key>osfDown:	XmLGridTraverse(DOWN) \
 			GridTraverseAction()
+*browseMGR*DataVarGrid*translations: #override \
+        <Btn3Up>:	PopupShaperAction() \n\
+	<Btn1Up>(2+):	PopupShaperAction() \n\
+        <Btn1Down>,<Btn1Up>: XmLGridSelect(BEGIN) \
+				XmLGridSelect(END)  
+
 
 ! Geometry
 browse.title:				Data Browser
@@ -1134,10 +1140,14 @@ browse.title:				Data Browser
 !addfile*directory: /fs/scd/home1/ncargd/dev/sun4_SunOS_5_5_1/lib/ncarg/data/cdf
 !addfile*directory: /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
 !addfile*directory: /usr/local/ncarg/lib/ncarg/data/cdf/
+!addfile*directory: /home/dbrown/src/data/
+!addfile*directory: /usr/local/ncarg/lib/ncarg/data/cdf/
+!addfile*directory: /l/home/dbrown/data/
+!addfile*directory: /fs/scd/home1/dbrown/src/data
 
 
 !htmlview: display is sgi,linux
-!*html*fontSizeList: 12,8,22,18,14,12,10,8
+*html*fontSizeList: 12,8,22,18,14,12,10,8
 !htmlview: display is sun
 !*html*fontSizeList: 10,8,20,16,12,10,8,6
 *enableBadHTMLWarnings : HTML_NONE
