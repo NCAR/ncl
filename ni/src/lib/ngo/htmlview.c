@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.c,v 1.9 1998-09-24 19:54:07 dbrown Exp $
+ *      $Id: htmlview.c,v 1.10 1998-10-02 19:27:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -388,13 +388,15 @@ FindEndOfResource
         )
 {
         XmHTMLObjectTableElement el;
-        NhlBoolean started = False;
+        NhlBoolean started = False; 
         int level = 0;
 
 /*
  * look for an opening and closing HT_DD at level 0
  */
         for (el = begin; el != NULL; el = el->next) {
+                if (! el->object)
+                        continue;
                 if (el->object->id == HT_DD && level == 0 &&
                     el->object->terminated && !el->object->is_end) {
                         started = True;
@@ -474,7 +476,7 @@ _NgSetHtmlContent(
                 if (!hobject)
                         return NhlFATAL;
         }
-        
+        begin = NULL;
         if (htmlview->locator != QerrorNotFound) {
                 sprintf(buf,"#%s",NrmQuarkToString(name));
                 begin = _XmHTMLGetAnchorByName(xmhtml,buf);
