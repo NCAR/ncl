@@ -571,6 +571,8 @@ int** lv_vals1;
 			tmp = strt->next;
                         strt->next = strt->next->next;
 			thevar->n_entries--;
+			if(tmp->rec_inq->var_name != NULL) NclFree(tmp->rec_inq->var_name);
+			if(tmp->rec_inq->gds != NULL) NclFree(tmp->rec_inq->gds);
                         NclFree(tmp->rec_inq);
                         NclFree(tmp);
 
@@ -3844,7 +3846,7 @@ void *therec;
 		while(dim != NULL) {
 			dim1 = dim->next;
 			if(dim->dim_inq != NULL) {
-				if(dim->dim_inq->is_gds) {
+				if(dim->dim_inq->gds != NULL) {
 					NclFree(dim->dim_inq->gds);
 				}
 				NclFree(dim->dim_inq);
